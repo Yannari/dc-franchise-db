@@ -21,6 +21,8 @@
 //   pleas:    { name: lines }      each nominee asking the holder
 //   renom:    lines                the replacement nominee, in the Diary Room
 //   goodbye:  lines                the evicted houseguest leaving the house
+//   suite:    { open, enter: { name: lines }, hold, short: { name: lines },
+//               clock, safe, plus, passed, none }   the Safety Suite (Phase 7)
 // }
 // A line is { kind: 'say' | 'dr' | 'beat', by, text }. A part the act does not
 // have is left out; the viewer falls back to the format's own words.
@@ -28,7 +30,7 @@ import { gs } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { stableRng } from '../knowledge.js';
 import { makeScene } from './scene.js';
-import { writeScene } from './write.js';
+import { writeScene, transcript } from './write.js';
 
 function allied(a, b) {
   return (gs.namedAlliances || []).some(al => al.active !== false && (al.members || []).includes(a) && (al.members || []).includes(b));
@@ -140,6 +142,39 @@ export function writeCeremony(act, week, house, extra = {}) {
     const byBond = stay.slice().sort((x, y) => getBond(out, y) - getBond(out, x));
     const friend = byBond.find(n => !against.has(n)) || byBond[0];
     if (friend) script.goodbye = part('evict.goodbye', { a: out, b: friend }, ending, ctx, house, out);
+  }
+
+  // ── the Safety Suite: who swiped, who held, the clock, the Plus One ──
+  // The act's beats carry a `part`; each gets its words, and its text becomes
+  // the transcript of them, so the feed and the backlog say what was said.
+  if (act.type === 'safety-suite') {
+    const h = week.hohSecret ? null : act.hoh || null;
+    const sctx = { ...ctx, hoh: h };
+    const entrants = act.entrants || [];
+    const first = entrants[0] || (act.held || [])[0];
+    const suite = { enter: {}, short: {} };
+    if (first) suite.open = part('suiteact.open', h && h !== first ? { a: first, b: h } : { a: first }, h && h !== first ? 'hoh' : 'plain', sctx, house, `open|${first}`);
+    entrants.forEach((n, i) => { const l = part('suiteact.enter', { a: n }, i ? 'next' : 'first', sctx, house, `enter|${n}`); if (l) suite.enter[n] = l; });
+    for (const b of act.beats || []) {
+      const who = (b.players || [])[0];
+      if (b.part === 'hold' && who) suite.hold = part('suiteact.hold', { a: who }, 'scene', sctx, house, `hold|${who}`);
+      if (b.part === 'short' && who) {
+        const run = (act.runs || []).find(r => r.name === who);
+        const slow = run && run.score >= (act.clock || 5);
+        suite.short[who] = part(slow ? 'suiteact.slow' : 'suiteact.short', { a: who }, 'scene', sctx, house, `short|${who}`);
+      }
+      if (b.part === 'clock' && who) suite.clock = part('suiteact.clock', { a: who }, act.solo ? 'solo' : 'many', sctx, house, `clock|${who}`);
+      if (b.part === 'none' && who) suite.none = part('suiteact.none', { a: who }, 'scene', sctx, house, `none|${who}`);
+    }
+    if (act.winner) suite.safe = part('suiteact.safe', { a: act.winner }, 'scene', sctx, house, `safe|${act.winner}`);
+    if (act.winner && act.plusOne) suite.plus = part('suiteact.plus', { a: act.winner, b: act.plusOne }, act.punishment || 'slop', sctx, house, `plus|${act.plusOne}`);
+    if (act.winner && act.passed) suite.passed = part('suiteact.passed', { a: act.passed, b: act.winner }, 'scene', sctx, house, `passed|${act.passed}`);
+    script.suite = suite;
+    for (const b of act.beats || []) {
+      const who = (b.players || [])[0];
+      const lines = b.part === 'enter' ? suite.enter[who] : b.part === 'short' ? suite.short[who] : suite[b.part];
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
   }
 
   for (const k of Object.keys(script)) {

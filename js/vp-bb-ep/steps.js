@@ -499,6 +499,120 @@ function reunionScreen(act, ctx) {
     seated: seatLiving(act.finalTwo || [], who), steps };
 }
 
+// ── the Safety Suite (Phase 7, mockup/mockup-bb-twist-safety-suite.html) ──
+// Four screens: Big Brother reads the rules over the living room while the
+// pass rail lights; the hallway, where each swipe spends a pass for good; the
+// suite, where every run rises against the clock; and the Plus One, whose
+// price card turns over. The people's words are act.script.suite
+// (bb/script/ceremony.js); Big Brother's are the format's own.
+const SUITE_RULES = [
+  "Each of you has one pass. It has to last the whole season. Once you swipe it, it's gone.",
+  'Everyone who swipes will play inside the suite against the clock.',
+  'Beat the clock, and you cannot be nominated this week. If more than one of you beats it, the fastest is safe.',
+  'The winner must also make one other houseguest safe. That person will pay a price for it.',
+];
+const PRICE = { slop: 'A WEEK ON SLOP', costume: 'THE COSTUME', solitary: 'A NIGHT IN SOLITARY', chore: 'EVERY CHORE, ALONE' };
+function suiteScreens(act, ctx) {
+  const sc = act.script?.suite || {};
+  const hoh = act.hoh || ctx.hoh || null;
+  const house = ctx.house.filter(n => !ctx.hidden.has(n));
+  const entrants = (act.entrants || []).filter(n => house.includes(n));
+  const preSpent = (act.exhausted || []).filter(n => !entrants.includes(n));
+  const rail = { names: house, hoh, spent: preSpent };
+  const base = (id, extra) => ({ id, kind: 'suite', anchor: ctx.anchor, day: ctx.day, rail, ...extra });
+  const out = [];
+  // 1 · the rules
+  const others = house.filter(n => n !== hoh);
+  out.push(base(`bb-suite-open-w${ctx.week}`, {
+    set: 'ceremony', room: 'Living Room', cam: 4, time: '10:00', kicker: 'Cam 04 · Living room', title: 'The Safety Suite',
+    label: 'Safety Suite', sub: 'One pass each, for the whole season', seated: seatLiving([], others, hoh),
+    steps: [
+      { k: 'bb', t: 'Houseguests, the Safety Suite is open for one hour. Here is how it works.', rule: 0 },
+      ...SUITE_RULES.map((t, i) => ({ k: 'bb', t, rule: i + 1, ...(i === 0 ? { railLit: true } : {}) })),
+      ...scriptSteps(sc.open),
+    ],
+  }));
+  // 2 · the swipe
+  const door = [];
+  const shown = entrants.slice(0, 3);
+  const spentToast = () => [`${word(entrants.length).toUpperCase()} ${entrants.length === 1 ? 'PASS' : 'PASSES'} SPENT`, '#f5c542'];
+  shown.forEach((n, i) => {
+    const said = scriptSteps(sc.enter?.[n]);
+    if (said.length) said[0] = { ...said[0], at: [[n, 40]] };
+    const lastSwipe = i === shown.length - 1 && entrants.length <= 3;
+    door.push(...said, { k: 'beat', t: `${n} swipes the pass.`, swipe: [n], ...(said.length ? {} : { at: [[n, 40]] }), ...(lastSwipe ? { toast: spentToast() } : {}) });
+  });
+  const rest = entrants.slice(3);
+  if (rest.length) door.push({ k: 'beat', t: `Then ${listOf(rest)} ${rest.length === 1 ? 'swipes' : 'swipe'} too.`, swipe: rest, at: [[rest[0], 40]], toast: spentToast() });
+  if (sc.hold?.length) door.push(...scriptSteps(sc.hold).map(st => ({ ...st, hold: st.by })));
+  if (!entrants.length) door.push(...scriptSteps(sc.none));
+  door.push({ k: 'bb', t: entrants.length ? 'The Safety Suite is now closed.' : 'Nobody has swiped. The Safety Suite is now closed.', shut: true });
+  out.push(base(`bb-suite-door-w${ctx.week}`, {
+    set: 'door', built: true, room: 'Suite Door', cam: 7, time: '10:24', kicker: 'Cam 07 · Hallway', title: 'The swipe',
+    label: 'Safety Suite · the swipe', sub: 'The door is open for an hour', cast: [], door: true, steps: door,
+  }));
+  if (!entrants.length) return out;
+  // 3 · the clock, slowest run first
+  const runs = (act.runs || []).filter(r => entrants.includes(r.name));
+  const order = runs.length ? runs : entrants.map(name => ({ name, score: 0 }));
+  const shownRuns = order.slice(-6);
+  const xs = shownRuns.length === 1 ? [56] : shownRuns.map((_, i) => Math.round(34 + (46 * i) / (shownRuns.length - 1)));
+  const runners = shownRuns.map((r, i) => [r.name, xs[i]]);
+  // The clock line sits at 80% of a column. A run that missed it stays under it, one
+  // that beat it but was not the fastest goes over it in silver, and the winner is
+  // the tallest column in gold. Heights follow the scores, so a near miss looks near.
+  const clock = act.clock || 5;
+  const beat = r => r.score >= clock;
+  const top = Math.max(clock + 0.01, ...order.map(r => r.score));
+  const height = r => {
+    if (r.name === act.winner) return 98;
+    if (beat(r)) return Math.round(82 + ((r.score - clock) / (top - clock)) * 12);   // over the line, under the winner
+    return Math.round(18 + Math.max(0, Math.min(1, r.score / clock)) * 58);          // under the line, by how close
+  };
+  const resultOf = r => r.name === act.winner ? 'ok' : beat(r) ? 'slow' : 'short';
+  const inside = [
+    { k: 'beat', t: `Inside: ${word(entrants.length)} ${entrants.length === 1 ? 'station' : 'stations'}, a wall of white light, and a clock.` },
+    { k: 'bb', t: entrants.length === 1 ? 'To be safe this week, you must beat the clock.'
+      : 'To be safe this week, you must beat the clock. If more than one of you does, the fastest is safe.' },
+  ];
+  for (const r of shownRuns) {
+    const won = r.name === act.winner;
+    const last = r === shownRuns.at(-1);
+    const words = won ? sc.safe : last && !act.winner ? sc.clock : sc.short?.[r.name];
+    const said = scriptSteps(words);
+    const run = { run: [r.name, height(r), resultOf(r)], stamp: [r.name, resultOf(r)],
+      ...(won ? { safe: r.name, toast: ['SAFE', '#12b76a'] } : {}) };
+    if (said.length) { said[0] = { ...said[0], ...run }; inside.push(...said); }
+    else inside.push({ k: 'beat', t: won ? `${r.name} beats the clock.` : beat(r) ? `${r.name} beats the clock, but not fast enough.` : `${r.name} runs out of time.`, ...run });
+  }
+  inside.push(act.winner
+    ? { k: 'bb', t: `${act.winner}, you have beaten the clock. You are safe this week.${act.plusOne ? ' You must now choose one other houseguest to be safe with you.' : ''}` }
+    : { k: 'bb', t: 'Nobody has beaten the clock. Nobody is safe this week.' });
+  out.push(base(`bb-suite-clock-w${ctx.week}`, {
+    set: 'suite', built: true, bright: true, room: 'Safety Suite', cam: 8, time: '11:30', kicker: 'Cam 08 · Safety Suite', title: 'Beat the clock',
+    label: 'Safety Suite · the clock', sub: `${titleCase(word(entrants.length))} ${entrants.length === 1 ? 'entrant' : 'entrants'}, one clock`,
+    cast: runners, runners, railHidden: true, steps: inside,
+  }));
+  // 4 · the Plus One
+  if (act.winner && act.plusOne) {
+    const plus = scriptSteps(sc.plus);
+    const named = plus.findIndex(st => st.by === act.winner);
+    const at = named >= 0 ? named : 0;
+    const bill = { k: 'beat', t: `${act.winner} turns the card over.`, bill: PRICE[act.punishment] || String(act.punishmentLabel || 'A PRICE').toUpperCase() };
+    const steps = [{ k: 'bb', t: `${act.winner}, your Plus One will be safe this week. But their safety has a price.` }];
+    if (plus.length) { plus[at] = { ...plus[at], plus: act.plusOne }; steps.push(...plus.slice(0, at + 1), bill, ...plus.slice(at + 1)); }
+    else steps.push({ k: 'beat', t: `${act.winner} picks ${act.plusOne}.`, plus: act.plusOne }, bill);
+    if (sc.passed?.length) { const p = scriptSteps(sc.passed); p[0] = { ...p[0], passed: act.passed }; steps.push(...p); }
+    out.push(base(`bb-suite-plus-w${ctx.week}`, {
+      set: 'ceremony', room: 'Living Room', cam: 4, time: '12:10', kicker: 'Cam 04 · Living room', title: 'The Plus One',
+      label: 'Safety Suite · the Plus One', sub: 'Safety, and the bill that comes with it',
+      // the two people this screen is about get the front seats
+      seated: seatLiving([], [act.plusOne, act.passed, ...house].filter((n, i, all) => n && n !== act.winner && all.indexOf(n) === i), act.winner), steps,
+    }));
+  }
+  return out;
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -581,6 +695,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'jury-vote': ceremony(juryVoteScreen(act, ctx, host, row)); break;
       case 'americas-favourite': ceremony(favouriteScreen(act, ctx, host)); break;
       case 'reunion': { const r = reunionScreen(act, ctx); if (r) ceremony(r); break; }
+      case 'safety-suite': flush(); for (const scr of suiteScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'rivals-hoh':
         // the latecomers walk in here: from now on they are in the house
         flush(); out.push({ slot: act.type }); ctx.hidden = new Set(); beatsOf(act); break;
@@ -608,7 +723,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

@@ -49,12 +49,23 @@ const MEDAL = `<svg viewBox="0 0 60 80"><defs><radialGradient id="bbxmg" cx=".4"
 /** Everything settled by step `idx` of screen `si`: earlier screens count as watched in full. */
 export function ledgerAt(screens, si, idx) {
   const S0 = screens[si] || screens[0] || {};
-  const L = { status: {}, nom: [], veto: null, out: [], votes: null, vetoPlay: [], ballots: [], revealed: [], hoh: null, moves: [], stances: {} };
+  const L = { status: {}, nom: [], veto: null, out: [], votes: null, vetoPlay: [], ballots: [], revealed: [], hoh: null, moves: [], stances: {},
+    spent: [], held: [], runs: {}, stamps: {}, safe: [], plus: null, bill: null, passed: null, shut: false };
   for (const n of S0.priorOut || []) { L.status[n] = 'out'; L.out.push(n); }
   for (let s = 0; s <= si; s++) {
     const steps = screens[s].steps; const upto = s < si ? steps.length - 1 : idx;
+    for (const n of screens[s].rail?.spent || []) if (!L.spent.includes(n)) L.spent.push(n);
     for (let i = 0; i <= upto; i++) {
       const st = steps[i];
+      for (const n of st.swipe || []) if (!L.spent.includes(n)) L.spent.push(n);
+      if (st.hold && !L.held.includes(st.hold)) L.held.push(st.hold);
+      if (st.shut) L.shut = true;
+      if (st.run) L.runs[st.run[0]] = st.run;
+      if (st.stamp) L.stamps[st.stamp[0]] = st.stamp[1];
+      if (st.safe && !L.safe.includes(st.safe)) L.safe.push(st.safe);
+      if (st.plus) { L.plus = st.plus; if (!L.safe.includes(st.plus)) L.safe.push(st.plus); }
+      if (st.bill) L.bill = st.bill;
+      if (st.passed) L.passed = st.passed;
       if (st.hoh) { if (L.hoh && L.status[L.hoh] === 'hoh') L.status[L.hoh] = ''; L.hoh = st.hoh; L.status[st.hoh] = 'hoh'; }
       if (st.nom) { L.nom.forEach(n => { if (L.status[n] === 'nom') L.status[n] = ''; }); L.nom = st.nom.slice(); st.nom.forEach(n => { L.status[n] = 'nom'; }); }
       if (st.veto) L.veto = st.veto;
@@ -91,6 +102,7 @@ function castAt(S, i) {
     const seated = seatsAt(S, i);
     return Object.keys(seated).filter(n => !gone.has(n) && seatOf(S, seated, n)).map(n => [n, seatOf(S, seated, n).at[0]]);
   }
+  for (let j = i; j >= 0; j--) if (S.steps[j]?.at) return S.steps[j].at;
   return S.cast || [];
 }
 function chipsFor(n, L) {
@@ -99,11 +111,14 @@ function chipsFor(n, L) {
   if (L.out.includes(n)) c.push('<span class="chipx out">Evicted</span>');
   else if (L.nom.includes(n)) c.push('<span class="chipx nom">Nom</span>');
   if (L.veto === n) c.push('<span class="chipx veto">Veto</span>');
+  if (L.plus === n) c.push('<span class="chipx plus">Plus one</span>');
+  else if (L.safe.includes(n)) c.push('<span class="chipx safe">Safe</span>');
+  else if (L.spent.includes(n) && L.status[n] !== 'hoh') c.push('<span class="chipx spent">Pass spent</span>');
   return c.join('');
 }
 function camOf(S, i) {
   const st = S.steps[i];
-  if (!st || !st.push || !st.by) return 'none';
+  if (!st || !st.push || !st.by || S.set === 'suite') return 'none';
   if (st.k === 'host') return 'scale(1.18)|20% 30%';
   if (st.k === 'dr') return 'scale(1.18)|50% 42%';
   if (S.seated) { const seated = seatsAt(S, i); const a = seatOf(S, seated, st.by); if (a) return `scale(1.3)|${a.at[0]}% ${100 - a.at[1] - a.w * 1.1}%`; }
@@ -169,13 +184,74 @@ function nomScreenHtml(S, L, st, fresh) {
     <div class="nkeys" style="left:${b.at[0]}%;bottom:${(b.at[1] * 0.5625).toFixed(2)}cqw;width:${(b.w * 1.15).toFixed(2)}cqw;z-index:${zOf(b) + 2}">${keys}</div>`;
 }
 
+// ── the Safety Suite's objects (Phase 7) ───────────────────────────────
+const PASSEYE = `<svg class="pe" viewBox="-30 -18 60 36"><path d="M-28 0 C-15 -17 15 -17 28 0 C15 17 -15 17 -28 0Z" fill="none" stroke="#22e1ff" stroke-width="3"/><circle r="9" fill="#22e1ff"/><circle r="3" fill="#02060c"/></svg>`;
+const DOOR = `<svg viewBox="0 0 120 200"><rect x="6" y="6" width="80" height="190" rx="3" fill="#0b1018" stroke="#f5c542" stroke-width="2.4"/>
+  <rect x="12" y="12" width="68" height="178" rx="2" fill="#e8ecf3" opacity=".16"/>
+  <text x="46" y="40" text-anchor="middle" font-family="Chakra Petch" font-weight="700" font-size="8" fill="#f5c542" letter-spacing="2">SAFETY</text>
+  <text x="46" y="51" text-anchor="middle" font-family="Chakra Petch" font-weight="700" font-size="8" fill="#f5c542" letter-spacing="2">SUITE</text>
+  <rect x="94" y="88" width="20" height="34" rx="3" fill="#121a26" stroke="#5c6b80" stroke-width="1"/><rect x="98" y="94" width="12" height="3" rx="1" fill="#22e1ff" opacity=".6"/>
+  <circle class="lamp" cx="104" cy="112" r="3.6" fill="#5c6b80"/><circle class="scan2" cx="104" cy="112" r="5" fill="none" stroke="#12e08a" stroke-width="1" opacity="0" style="transform-origin:104px 112px"/></svg>`;
+function clockSvg(left, ok) {
+  const C = 2 * Math.PI * 40;
+  const ticks = Array.from({ length: 12 }, (_, i) => `<line x1="0" y1="-44" x2="0" y2="-40" stroke="#1a2233" stroke-width="1.4" transform="rotate(${i * 30})"/>`).join('');
+  return `<svg class="sclock" viewBox="-50 -50 100 100"><circle r="46" fill="#ffffff" stroke="#1a2233" stroke-width="1.6"/>${ticks}
+    <circle class="arc" r="40" fill="none" stroke="${ok ? '#f5c542' : '#22b5ff'}" stroke-width="5" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - left)).toFixed(1)}" transform="rotate(-90)" stroke-linecap="round"/>
+    <text y="-6" text-anchor="middle" font-family="Chakra Petch" font-weight="700" font-size="7" fill="#1a2233" letter-spacing="1.5">${ok ? 'BEATEN' : 'THE CLOCK'}</text>
+    <text y="10" text-anchor="middle" font-family="Archivo" font-weight="900" font-size="15" fill="${ok ? '#b8860b' : '#1a2233'}">${ok ? 'SAFE' : `0${Math.max(0, Math.round(5 - left * 5))}:00`}</text></svg>`;
+}
+const SUITE_RULE_ROWS = [['ONE PASS', 'per houseguest, for the whole season'], ['SWIPE', 'and play inside against the clock'],
+  ['BEAT THE CLOCK', 'safe this week — fastest wins'], ['PLUS ONE', 'the winner saves one more, who pays a price']];
+function rulesHtml(n, fresh) {
+  return `<div class="rules"><div class="rt">THE SAFETY SUITE · HOW IT WORKS</div>${SUITE_RULE_ROWS.map(([a, b], i) =>
+    `<div class="rr ${i < n ? 'on' : ''} ${fresh && i === n - 1 ? 'now' : ''}"><span class="rk">${i + 1}</span><b>${a}</b><span>${b}</span></div>`).join('')}</div>`;
+}
+const passHtml = (n, cls) => `<div class="pass ${cls}">${PASSEYE}<i class="chipline"></i>${img(n)}<span class="pn">${esc(n)}</span></div>`;
+function railHtml(S, L, st, fresh) {
+  const lit = fresh && st && st.railLit;
+  return `<div class="rail ${lit ? 'lit' : ''}"><span class="rh">PASSES · ONE PER SEASON</span>${(S.rail.names || []).map(n => {
+    const cls = n === S.rail.hoh ? 'na' : L.spent.includes(n) ? 'spent' : L.held.includes(n) ? 'held' : '';
+    const now = fresh && st && ((st.swipe || []).includes(n) || st.hold === n);
+    return passHtml(n, `${cls} ${now ? 'now' : ''}`);
+  }).join('')}</div>`;
+}
+function billHtml(L, st, fresh) {
+  const now = fresh && st && st.bill;
+  return `<div class="bill ${now ? 'fresh' : 'flip'}"><div class="in"><div class="face front">THE PRICE</div>
+    <div class="face back"><div><small>PLUS ONE PAYS</small><b>${esc(L.bill)}</b></div></div></div></div>`;
+}
+function suiteObjects(S, L, st, idx, fresh) {
+  let h = '';
+  if (S.door) {
+    const ping = fresh && st && (st.swipe || []).length;
+    h += `<div class="obj door ${L.shut ? 'shut' : 'go'} ${ping ? 'ping' : ''}">${DOOR}</div>`;
+  }
+  if (S.set === 'suite' && idx >= 0) {
+    const done = Object.keys(L.runs).filter(n => S.runners.some(([m]) => m === n)).length;
+    h += clockSvg(Math.min(1, done / Math.max(1, S.runners.length)), L.safe.some(n => S.runners.some(([m]) => m === n)));
+    h += `<div class="cols">${S.runners.map(([n, x]) => {
+      const r = L.runs[n]; const now = fresh && st && st.run && st.run[0] === n;
+      return `<div class="col ${r ? r[2] : ''} ${now ? 'grow' : ''}" style="left:${x}%"><div class="fill" style="--h:${r ? r[1] : 0}%"></div></div>`;
+    }).join('')}</div><div class="clockline"><b>THE CLOCK</b></div>`;
+    for (const [n, x] of S.runners) {
+      const k = L.stamps[n]; if (!k) continue;
+      const now = fresh && st && st.stamp && st.stamp[0] === n;
+      h += `<div class="stamp ${k} ${now ? 'fresh' : ''}" style="--x:${x}%">${k === 'ok' ? 'SAFE' : k === 'slow' ? 'TOO SLOW' : 'SHORT'}</div>`;
+    }
+  }
+  return h;
+}
+
 function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   const isDr = st && st.k === 'dr';
   if (isDr) {
-    return `${setDiv('dr', o.season)}<div class="drring">${DRRING}</div>${tileHtml(st.by, 50, 'speak', L, '', 'width:15cqw;bottom:17cqw')}`;
+    const held = st.hold ? `<div class="drpass ${fresh ? 'fresh' : ''}">${passHtml(st.by, 'held')}<b>STILL IN MY POCKET</b></div>` : '';
+    return `${setDiv('dr', o.season)}<div class="drring">${DRRING}</div>${tileHtml(st.by, 50, 'speak', L, '', 'width:15cqw;bottom:17cqw')}${held}`;
   }
   const arena = S.arena;
-  let h = arena ? `<div class="set photo" style="background-image:url('assets/bb/house/${o.season}/${S.set}-td-b.webp?v=${V}')"></div>` : setDiv(S.set, o.season);
+  let h = arena ? `<div class="set photo" style="background-image:url('assets/bb/house/${o.season}/${S.set}-td-b.webp?v=${V}')"></div>`
+    : S.built ? `<div class="set set-${S.set}"><div class="floor"></div></div>` : setDiv(S.set, o.season);
+  h += suiteObjects(S, L, st, idx, fresh);
   h += wallHtml(S, L, st, fresh);
   if (S.tvObj && !(L.out.length && st && st.k !== 'host' && L.out.at(-1) && S.steps.some(x => x.out))) {
     h += `<div class="obj ledtv ${st && st.k === 'host' ? 'on' : ''} ${L.votes && st && st.k === 'host' ? 'dim' : ''}">${img(o.host, true)}<div class="lb"><span>● LIVE · HOST</span>${esc(String(o.host).toUpperCase())}</div></div>`;
@@ -186,7 +262,7 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   const seated = S.seated ? seatsAt(S, idx) : null;
   for (const [n, x] of cast) {
     const entered = fresh && idx === 0;
-    const cls = [n === speaker ? 'speak' : (st && st.push) ? 'out' : '', entered ? 'in' : ''].join(' ');
+    const cls = [n === speaker ? 'speak' : (st && st.push) ? 'out' : '', entered ? 'in' : '', L.plus === n ? 'plus' : '', L.passed === n ? 'passed' : ''].join(' ');
     if (seated) {
       const a = seatOf(S, seated, n);
       h += tileHtml(n, x, cls, L, '', `bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}`);
@@ -239,6 +315,10 @@ export function stageHtml(screens, si, idx, fresh, o) {
   const cut = fresh && prevSt && st && ((st.k === 'dr') !== (prevSt.k === 'dr'));
   let h = `<div class="cam" data-cam="${camNow}" style="${camStyle(fresh && idx > 0 ? camOf(S, idx - 1) : camNow)}"><div class="lens ${cut ? 'cut' : ''}">${sceneHtml(S, st, prevSt, L, idx, fresh, o)}</div></div>`;
   h += `<div class="grain"></div><div class="vign"></div>`;
+  const isDr = st && st.k === 'dr';
+  if (S.rail && !S.railHidden && !isDr && idx >= 0) h += railHtml(S, L, st, fresh);
+  if (st && st.rule != null) h += rulesHtml(st.rule, fresh);
+  if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;
   }
@@ -250,5 +330,5 @@ export function stageHtml(screens, si, idx, fresh, o) {
     if (st.chip) h += `<div class="vchip">${st.chip.chip === 'choice' ? `<b>Houseguest's<br>choice</b>` : img(st.chip.chip)}<i>${esc(st.chip.drawer)} draws</i></div>`;
     if (cut) h += `<div class="flash"></div>`;
   }
-  return { html: h, cls: `stage ${st && st.k === 'bb' ? 'bbspeaks' : ''} ${fresh && st && st.shake ? 'shake' : ''}`, cam: camNow, ledger: L };
+  return { html: h, cls: `stage ${st && st.k === 'bb' ? 'bbspeaks' : ''} ${st && st.rule != null ? 'rulesup' : ''} ${S.bright && !(st && st.k === 'dr') ? 'lightset' : ''} ${fresh && st && st.shake ? 'shake' : ''}`, cam: camNow, ledger: L };
 }

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hangout Focus</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0b16;--ink:#f4f0ff;--dim:#a99fc8;--pk:#ff4fb4;--cy:#3fd8ff;--vi:#8b5cff;--ok:#3fd88f;--no:#ff2a4a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Montserrat,system-ui,sans-serif;padding:16px}
+h1{font-size:19px;margin:0 0 4px}p.lead{color:var(--dim);margin:0 0 12px;max-width:980px;font-size:14px}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.ctl button{background:#211b36;color:var(--ink);border:1px solid #3a3060;border-radius:999px;padding:7px 15px;cursor:pointer;font:600 13px Montserrat}
+.ctl button.main{background:var(--pk);border-color:var(--pk)}
+.stage{position:relative;max-width:1100px;aspect-ratio:16/9;container-type:inline-size;border-radius:14px;overflow:hidden;background:#000}
+.set{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* the Influencers' cameras */
+.cam{position:absolute;top:13%;width:21cqw;aspect-ratio:1;border-radius:1.2cqw;background:#1b1f45 center 25%/cover;border:.3cqw solid #fff;box-shadow:0 0 3cqw var(--glow);z-index:6;transition:transform .4s}
+.cam.L{left:3%;transform:perspective(60cqw) rotateY(14deg)}.cam.R{right:3%;transform:perspective(60cqw) rotateY(-14deg)}
+.cam.talk{box-shadow:0 0 0 .4cqw rgba(255,210,63,.7),0 0 4cqw var(--glow)}
+.cam b{position:absolute;left:.7cqw;top:.7cqw;font:800 .8cqw Montserrat;letter-spacing:.14em;background:rgba(0,0,0,.6);padding:.3cqw .5cqw;border-radius:.3cqw}
+.where{position:absolute;left:50%;top:2.5%;transform:translateX(-50%);z-index:9;font:800 1cqw Montserrat;letter-spacing:.16em;padding:.5cqw 1.4cqw;border-radius:99px;background:linear-gradient(90deg,#3f6bff,#ff4fb4)}
+.dlg{position:absolute;left:29%;right:4%;bottom:4.5%;z-index:9;background:rgba(30,22,64,.88);border:1px solid rgba(139,92,255,.5);border-radius:1cqw;padding:1.2cqw 1.6cqw;font:600 1.45cqw/1.35 Montserrat;min-height:6cqw}
+.dlg .who{position:absolute;top:-1.4cqw;left:1.2cqw;font:800 1cqw Montserrat;letter-spacing:.1em;padding:.35cqw .9cqw;border-radius:.4cqw;background:linear-gradient(90deg,#3f6bff,#ff4fb4)}
+
+/* ── the LED wall: the board, or one profile open ── */
+.wall{position:absolute;left:32.9%;top:15.5%;width:34.2%;height:38.2%;z-index:5;border-radius:.4cqw;overflow:hidden}
+.board,.focus{position:absolute;inset:0;transition:opacity .45s,transform .55s cubic-bezier(.2,.9,.25,1),filter .45s}
+.board{display:flex;flex-direction:column;justify-content:center;gap:.6cqw;padding:1cqw}
+.board .hd{text-align:center;font:900 1cqw Montserrat;letter-spacing:.24em;color:#ff8fb0}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.45cqw}
+.tile{position:relative;display:flex;align-items:center;gap:.5cqw;background:rgba(26,30,70,.88);border-radius:.5cqw;padding:.4cqw .5cqw;transition:all .4s;border:.12cqw solid transparent}
+.tile .ph{flex:none;width:2.3cqw;aspect-ratio:1;border-radius:50%;background:#1b1f45 center 25%/cover;border:.16cqw solid var(--ring)}
+.tile .n{font:800 .8cqw Montserrat;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .tx{display:flex;flex-direction:column;gap:.2cqw;min-width:0}
+.tile .mk{align-self:flex-start;font:900 .52cqw Montserrat;letter-spacing:.08em;padding:.1cqw .35cqw;border-radius:.25cqw}
+.tile.safe{opacity:.55}.tile.safe .mk{background:rgba(63,216,143,.18);color:var(--ok);border:1px solid var(--ok)}
+.tile.cut{background:rgba(120,10,30,.55);border-color:var(--no);box-shadow:0 0 1.2cqw rgba(255,42,74,.55);animation:pulse 1.6s ease-in-out infinite}
+.tile.cut .mk{background:var(--no);color:#fff}
+.tile.land{animation:land .7s cubic-bezier(.2,1.3,.3,1)}
+@keyframes land{0%{transform:scale(1.35);filter:brightness(2)}100%{transform:none}}
+@keyframes pulse{50%{box-shadow:0 0 .4cqw rgba(255,42,74,.3)}}
+.wall.focused .board{opacity:0;transform:scale(.92);filter:blur(6px)}
+.wall:not(.focused) .focus{opacity:0;transform:scale(.4);pointer-events:none}
+
+/* the profile, open */
+.focus{display:grid;grid-template-columns:auto 1fr;grid-template-rows:1fr auto;gap:.6cqw 1.2cqw;padding:1.2cqw 1.4cqw 1cqw;
+  background:radial-gradient(120% 90% at 20% 30%,rgba(139,92,255,.35),transparent 60%),linear-gradient(160deg,#120d2c,#1c1240)}
+.focus:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 2px,transparent 2px 4px);pointer-events:none}
+.fph{grid-row:1;width:12.5cqw;aspect-ratio:1;border-radius:1cqw;background:#1b1f45 center 22%/cover;border:.3cqw solid var(--ring);box-shadow:0 0 2.5cqw var(--ring);transition:filter .4s,box-shadow .4s}
+.finfo{grid-row:1;display:flex;flex-direction:column;justify-content:center;gap:.45cqw;min-width:0}
+.pill{align-self:flex-start;display:flex;align-items:center;gap:.45cqw;font:800 .7cqw Montserrat;letter-spacing:.2em;color:#ffd8ef;background:rgba(255,79,180,.18);border:1px solid rgba(255,79,180,.6);padding:.3cqw .7cqw;border-radius:99px}
+.pill i{width:.55cqw;height:.55cqw;border-radius:50%;background:var(--pk);box-shadow:0 0 .8cqw var(--pk);animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+.fname{font:900 2.6cqw/1 Montserrat;letter-spacing:.02em}
+.ffacts{font:700 .95cqw Montserrat;color:#c9bfff;letter-spacing:.06em}
+.fbio{font:italic 500 .85cqw/1.35 Montserrat;color:#e6e0ff;opacity:.85}
+.strip{grid-column:1/-1;display:flex;gap:.45cqw;justify-content:center}
+.strip span{width:1.9cqw;aspect-ratio:1;border-radius:50%;background:#1b1f45 center 25%/cover;border:.14cqw solid rgba(255,255,255,.5);opacity:.55;position:relative}
+.strip span.on{opacity:1;border-color:var(--pk);box-shadow:0 0 .9cqw var(--pk);transform:scale(1.2)}
+.strip span.safe{border-color:var(--ok)}.strip span.cut{border-color:var(--no);opacity:.9}
+/* the verdict, stamped */
+.stamp{position:absolute;left:50%;top:46%;z-index:3;transform:translate(-50%,-50%) rotate(-9deg);font:900 3.1cqw/1 Montserrat;letter-spacing:.06em;
+  padding:.7cqw 1.6cqw;border:.4cqw double currentColor;border-radius:.6cqw;white-space:nowrap;opacity:0;pointer-events:none;text-shadow:0 0 1.5cqw currentColor}
+.stamp.ok{color:var(--ok);background:rgba(10,40,25,.55)}.stamp.no{color:#ff4a62;background:rgba(50,5,12,.6)}
+.focus.ok .fph{box-shadow:0 0 3cqw var(--ok);border-color:var(--ok)}
+.focus.no .fph{filter:saturate(.6) brightness(.8);box-shadow:0 0 3cqw var(--no);border-color:var(--no)}
+.focus.ok .stamp,.focus.no .stamp{animation:slam .55s cubic-bezier(.2,1.4,.3,1) forwards}
+@keyframes slam{0%{opacity:0;transform:translate(-50%,-50%) rotate(-20deg) scale(2.6)}60%{opacity:1}100%{opacity:1;transform:translate(-50%,-50%) rotate(-9deg) scale(1)}}
+.wall.shake{animation:shake .35s .2s}
+@keyframes shake{25%{transform:translate(.4cqw,.2cqw)}50%{transform:translate(-.4cqw,-.1cqw)}75%{transform:translate(.2cqw,-.2cqw)}}
+.flash{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0}
+.flash.go{animation:flash .5s .18s}
+@keyframes flash{0%{opacity:.7}100%{opacity:0}}
+.flash.ok{background:radial-gradient(circle,rgba(63,216,143,.6),transparent 70%)}.flash.no{background:radial-gradient(circle,rgba(255,42,74,.65),transparent 70%)}
+.notes{max-width:1100px;color:var(--dim);font-size:13px;margin-top:12px;line-height:1.5}
+</style></head><body>
+<h1>The Hangout: a profile opens, the verdict lands</h1>
+<p class="lead">When the Influencers start on someone, that player's profile opens full-screen on the LED wall: photo, name, age, status, job, bio, with a pulsing DISCUSSING tag and the other at-risk faces in a strip below. The verdict stamps down on the line where they decide, never before. Then the profile shrinks back into its tile on the board, which keeps the mark. Click the stage or "Next" to step through it.</p>
+<div class="ctl"><button class="main" id="next">Next ▸</button><button id="auto">Play all</button><button id="reset">Restart</button></div>
+<div class="stage" id="stage"><img class="set" src="../assets/sets/circle/hangout.webp" alt="">
+  <div class="where">THE HANGOUT · INFLUENCERS ONLY</div>
+  <div class="cam L" id="camL" style="--glow:#3fd8ff;background-image:url('../assets/avatars/dj.png')"><b>INFLUENCER · DJ</b></div>
+  <div class="cam R" id="camR" style="--glow:#ff4fb4;background-image:url('../assets/avatars/cody.png')"><b>INFLUENCER · CODY</b></div>
+  <div class="wall" id="wall"><div class="board" id="board"></div><div class="focus" id="focus"></div></div>
+  <div class="dlg" id="dlg"><span class="who" id="who">THE CIRCLE</span><span id="line">Two Influencers, one decision. They have the whole night.</span></div>
+</div>
+<p class="notes">In the real viewer every beat is a line of the scene: the profile opens on the first line about that player, stays open while they talk it through, and the stamp lands with the line that settles it. The board fits up to twelve. A player already decided stays marked when another profile opens (their face in the strip carries the colour).</p>
+<script>
+const P = [
+  { n: 'Gwen', img: 'gwen', ring: '#8b5cff', facts: '28 · SINGLE', job: 'Tattoo artist', bio: 'Dark humor, soft heart. Will judge your playlist.' },
+  { n: 'Duncan', img: 'duncan', ring: '#3fd88f', facts: '27 · SINGLE', job: 'Line cook', bio: 'Rules are suggestions. Ask anyone.' },
+  { n: 'Courtney', img: 'courtney', ring: '#ff8a3d', facts: '26 · TAKEN', job: 'Paralegal', bio: 'I always have a plan B. And a plan C.' },
+  { n: 'Owen', img: 'owen', ring: '#ffd23f', facts: '24 · SINGLE', job: 'Food truck owner', bio: 'Hug first, ask questions later!' },
+  { n: 'Heather', img: 'heather', ring: '#ff4fb4', facts: '25 · SINGLE', job: 'Influencer (the other kind)', bio: 'Not here to make friends. Here to win.' },
+  { n: 'Dawn', img: 'dawn', ring: '#7ae0d0', facts: '23 · SINGLE', job: 'Yoga teacher', bio: 'Your aura is lovely today.' },
+  { n: 'Bridgette', img: 'bridgette', ring: '#3fd8ff', facts: '25 · TAKEN', job: 'Surf instructor', bio: 'Salt water fixes everything.' },
+  { n: 'LeShawna', img: 'leshawna', ring: '#ff5d7a', facts: '27 · SINGLE', job: 'Nurse', bio: 'I say what everybody is thinking.' },
+];
+// The scene, a line at a time: [who, line, focus index or null, verdict or null]
+const SCRIPT = [
+  ['THE CIRCLE', 'Two Influencers, one decision. They have the whole night.', null, null],
+  ['DJ', "Okay. Let's go one by one. Starting with Heather.", 4, null],
+  ['CODY', "Heather told me straight up she's not here to make friends. That scares me.", 4, null],
+  ['DJ', "She's on the table. No question.", 4, 'cut'],
+  ['CODY', 'What about Dawn? I barely know her, but she has never been anything but kind.', 5, null],
+  ['DJ', "Dawn's safe. I'd feel terrible.", 5, 'ok'],
+  ['DJ', "Duncan. He's been coming at me in Circle Chat for days.", 1, null],
+  ['CODY', "I hear you. But he's never come at me.", 1, null],
+  ['DJ', 'Then he goes on the table. I need him gone more than you need him here.', 1, 'cut'],
+  ['THE CIRCLE', 'Two names left on the table. They have decided.', null, null],
+];
+const state = { i: 0, marks: {} };
+const $ = id => document.getElementById(id);
+const face = p => `background-image:url('../assets/avatars/${p.img}.png')`;
+function board(land = null) {
+  const decided = SCRIPT.slice(0, state.i + 1).some(r => r[0] === 'THE CIRCLE' && /decided/.test(r[1]));
+  $('board').innerHTML = `<div class="hd">${decided ? "THEY'VE DECIDED" : 'AT RISK'}</div><div class="grid">${P.map((p, k) => {
+    const m = state.marks[k];
+    return `<div class="tile ${m === 'ok' ? 'safe' : m === 'cut' ? 'cut' : ''}${land === k ? ' land' : ''}" style="--ring:${p.ring}"><div class="ph" style="${face(p)}"></div><div class="tx"><div class="n">${p.n.toUpperCase()}</div>${m ? `<span class="mk">${m === 'ok' ? '✓ SAFE' : 'ON THE TABLE'}</span>` : ''}</div></div>`;
+  }).join('')}</div>`;
+}
+function focus(k, verdict) {
+  const p = P[k];
+  $('focus').className = `focus${verdict === 'ok' ? ' ok' : verdict === 'cut' ? ' no' : ''}`;
+  $('focus').style.setProperty('--ring', p.ring);
+  $('focus').innerHTML = `<div class="fph" style="${face(p)}"></div>
+    <div class="finfo"><span class="pill"><i></i>DISCUSSING</span><div class="fname">${p.n.toUpperCase()}</div>
+      <div class="ffacts">${p.facts}</div><div class="ffacts" style="color:#fff;font-weight:600">${p.job}</div><div class="fbio">“${p.bio}”</div></div>
+    <div class="strip">${P.map((q, j) => `<span class="${j === k ? 'on' : state.marks[j] === 'ok' ? 'safe' : state.marks[j] === 'cut' ? 'cut' : ''}" style="${face(q)}"></span>`).join('')}</div>
+    ${verdict ? `<div class="stamp ${verdict === 'ok' ? 'ok' : 'no'}">${verdict === 'ok' ? '✓ SAFE' : 'ON THE TABLE'}</div><div class="flash go ${verdict === 'ok' ? 'ok' : 'no'}"></div>` : ''}`;
+}
+let closing = null;
+function show() {
+  const [who, line, k, verdict] = SCRIPT[state.i];
+  const prev = state.i > 0 ? SCRIPT[state.i - 1] : null;
+  $('who').textContent = who; $('line').textContent = line;
+  $('camL').classList.toggle('talk', who === 'DJ'); $('camR').classList.toggle('talk', who === 'CODY');
+  const wall = $('wall');
+  clearTimeout(closing);
+  if (k !== null) {
+    wall.classList.add('focused');
+    focus(k, verdict);
+    if (verdict) {
+      state.marks[k] = verdict;
+      wall.classList.remove('shake'); void wall.offsetWidth; wall.classList.add('shake');
+    }
+  } else {
+    // back to the board: the last one decided lands on its tile
+    const landed = prev && prev[2] !== null ? prev[2] : null;
+    wall.classList.remove('focused');
+    board(landed);
+  }
+  // A verdict that is the last line about that player: close it after the stamp, onto the board.
+  const next = SCRIPT[state.i + 1];
+  if (verdict && next && next[2] !== k) closing = setTimeout(() => { board(k); wall.classList.remove('focused'); }, 1500);
+}
+function step() { if (state.i < SCRIPT.length - 1) { state.i++; show(); } }
+$('next').onclick = step; $('stage').onclick = step;
+$('reset').onclick = () => { state.i = 0; state.marks = {}; $('wall').classList.remove('focused'); board(); show(); };
+$('auto').onclick = () => { $('reset').onclick(); const t = setInterval(() => { if (state.i >= SCRIPT.length - 1) return clearInterval(t); step(); }, 2600); };
+board(); show();
+</script></body></html>

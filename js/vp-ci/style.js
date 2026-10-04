@@ -251,21 +251,61 @@ export const CIV_CSS = `
 .civ-hcam.L{left:3%;transform:perspective(60cqw) rotateY(14deg)}.civ-hcam.R{right:3%;transform:perspective(60cqw) rotateY(-14deg)}.civ-hcam.M{left:50%;margin-left:-8cqw;width:16cqw;top:3%}
 .civ-hcam.talk .civ-mcam{box-shadow:0 0 0 .4cqw rgba(255,210,63,.6),0 0 4cqw var(--glow,#3fd8ff)}
 .civ-atrisk{position:absolute;left:28%;right:28%;top:15%;bottom:28%;z-index:5;display:flex;flex-direction:column;gap:.6cqw}
-/* on the Hangout's LED wall (assets/sets/circle/hangout.webp) */
-.civ-hangout .civ-atrisk{left:32.5%;right:32.5%;top:14%;bottom:44%;justify-content:center}
+/* on the Hangout's LED wall (assets/sets/circle/hangout.webp; the screen measured from the camera) */
+.civ-hwall{position:absolute;left:32.9%;top:15.5%;width:34.2%;height:38.2%;z-index:5;border-radius:.4cqw;overflow:hidden}
+.civ-hangout .civ-atrisk{inset:0;padding:1cqw;justify-content:center;gap:.6cqw}
+.civ-atrisk.back{animation:civHBack .5s ease-out both}
+@keyframes civHBack{from{opacity:0;transform:scale(.94);filter:blur(5px)}}
+.civ-htile{position:relative;display:flex;align-items:center;gap:.5cqw;background:rgba(26,30,70,.88);border-radius:.5cqw;padding:.4cqw .5cqw;border:.12cqw solid transparent;transition:all .4s}
+.civ-htile .ph{flex:none;width:2.4cqw;aspect-ratio:1;border-radius:50%;background:#1b1f45 center 25%/cover;border:.16cqw solid var(--ring,#2f7bff);display:grid;place-items:center;font-weight:800;font-size:1cqw}
+.civ-htile .tx{display:flex;flex-direction:column;gap:.2cqw;min-width:0}
+.civ-htile .n{font-weight:800;font-size:.85cqw;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.civ-htile .mk{align-self:flex-start;font-weight:900;font-size:.52cqw;letter-spacing:.08em;padding:.1cqw .35cqw;border-radius:.25cqw}
+.civ-htile.safe{opacity:.55}.civ-htile.safe .mk{background:rgba(63,216,143,.18);color:#3fd88f;border:1px solid #3fd88f}
+.civ-htile.cut{background:rgba(120,10,30,.55);border-color:#ff2a4a;box-shadow:0 0 1.2cqw rgba(255,42,74,.55);animation:civHPulse 1.6s ease-in-out infinite}
+.civ-htile.cut .mk{background:#ff2a4a;color:#fff}
+.civ-htile.land{animation:civHLand .7s .25s cubic-bezier(.2,1.3,.3,1) both}
+@keyframes civHLand{0%{transform:scale(1.35);filter:brightness(2)}100%{transform:none}}
+@keyframes civHPulse{50%{box-shadow:0 0 .4cqw rgba(255,42,74,.3)}}
+/* a profile open on the wall */
+.civ-hfocus{position:absolute;inset:0;display:grid;grid-template-columns:auto 1fr;grid-template-rows:1fr auto;gap:.6cqw 1.2cqw;padding:1.2cqw 1.4cqw 1cqw;
+  background:radial-gradient(120% 90% at 20% 30%,rgba(139,92,255,.35),transparent 60%),linear-gradient(160deg,#120d2c,#1c1240)}
+.civ-hfocus:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 2px,transparent 2px 4px);pointer-events:none}
+.civ-hfocus.opening{animation:civHOpen .55s cubic-bezier(.2,.9,.25,1) both}
+@keyframes civHOpen{from{opacity:0;transform:scale(.4)}}
+.civ-hfocus .fph{width:12.5cqw;aspect-ratio:1;border-radius:1cqw;background:#1b1f45 center 22%/cover;border:.3cqw solid var(--ring);box-shadow:0 0 2.5cqw var(--ring);display:grid;place-items:center;font-weight:900;font-size:5cqw;transition:filter .4s,box-shadow .4s}
+.civ-hfocus .finfo{display:flex;flex-direction:column;justify-content:center;gap:.45cqw;min-width:0}
+.civ-hfocus .pill{align-self:flex-start;display:flex;align-items:center;gap:.45cqw;font-weight:800;font-size:.7cqw;letter-spacing:.2em;color:#ffd8ef;background:rgba(255,79,180,.18);border:1px solid rgba(255,79,180,.6);padding:.3cqw .7cqw;border-radius:99px}
+.civ-hfocus .pill i{width:.55cqw;height:.55cqw;border-radius:50%;background:#ff4fb4;box-shadow:0 0 .8cqw #ff4fb4;animation:civBlink 1s infinite}
+.civ-hfocus .fname{font-weight:900;font-size:2.6cqw;line-height:1;letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.civ-hfocus .ffacts{font-weight:700;font-size:.95cqw;color:#c9bfff;letter-spacing:.06em}
+.civ-hfocus .fjob{font-weight:600;font-size:.95cqw}
+.civ-hfocus .fbio{font-style:italic;font-size:.85cqw;line-height:1.35;color:#e6e0ff;opacity:.85;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.civ-hfocus .strip{grid-column:1/-1;display:flex;gap:.45cqw;justify-content:center}
+.civ-hfocus .strip span{width:1.9cqw;aspect-ratio:1;border-radius:50%;background:#1b1f45 center 25%/cover;border:.14cqw solid rgba(255,255,255,.5);opacity:.55;display:grid;place-items:center;font-size:.7cqw;font-weight:800}
+.civ-hfocus .strip span.on{opacity:1;border-color:#ff4fb4;box-shadow:0 0 .9cqw #ff4fb4;transform:scale(1.2)}
+.civ-hfocus .strip span.safe{border-color:#3fd88f}.civ-hfocus .strip span.cut{border-color:#ff2a4a;opacity:.9}
+.civ-hfocus .stamp{position:absolute;left:50%;top:46%;z-index:3;transform:translate(-50%,-50%) rotate(-9deg);font-weight:900;font-size:3.1cqw;line-height:1;letter-spacing:.06em;
+  padding:.7cqw 1.6cqw;border:.4cqw double currentColor;border-radius:.6cqw;white-space:nowrap;pointer-events:none;text-shadow:0 0 1.5cqw currentColor}
+.civ-hfocus .stamp.ok{color:#3fd88f;background:rgba(10,40,25,.55)}.civ-hfocus .stamp.no{color:#ff4a62;background:rgba(50,5,12,.6)}
+.civ-hfocus.ok .fph{box-shadow:0 0 3cqw #3fd88f;border-color:#3fd88f}
+.civ-hfocus.no .fph{filter:saturate(.6) brightness(.8);box-shadow:0 0 3cqw #ff2a4a;border-color:#ff2a4a}
+.civ-hfocus.slam .stamp{animation:civHSlam .55s cubic-bezier(.2,1.4,.3,1) both}
+@keyframes civHSlam{0%{opacity:0;transform:translate(-50%,-50%) rotate(-20deg) scale(2.6)}60%{opacity:1}100%{opacity:1;transform:translate(-50%,-50%) rotate(-9deg) scale(1)}}
+.civ-hwall:has(.civ-hfocus.slam){animation:civHShake .35s .2s}
+@keyframes civHShake{25%{transform:translate(.4cqw,.2cqw)}50%{transform:translate(-.4cqw,-.1cqw)}75%{transform:translate(.2cqw,-.2cqw)}}
+.civ-hfocus .flash{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;animation:civHFlash .5s .18s}
+@keyframes civHFlash{0%{opacity:.7}100%{opacity:0}}
+.civ-hfocus .flash.ok{background:radial-gradient(circle,rgba(63,216,143,.6),transparent 70%)}.civ-hfocus .flash.no{background:radial-gradient(circle,rgba(255,42,74,.65),transparent 70%)}
 /* seven or more at risk: three narrow columns, so twelve still fit the wall */
 .civ-atrisk.dense{gap:.4cqw}
 .civ-atrisk.dense .grid{grid-template-columns:1fr 1fr 1fr;gap:.4cqw}
-.civ-atrisk.dense .civ-mtile{gap:.45cqw;padding:.35cqw .45cqw;border-radius:.45cqw}
-.civ-atrisk.dense .civ-mtile .ph{width:2.2cqw;font-size:.9cqw}
-.civ-atrisk.dense .civ-mtile .n{font-size:.78cqw;letter-spacing:.03em}
-.civ-atrisk.dense .civ-verdict{font-size:.6cqw;padding:.1cqw .3cqw}
+.civ-atrisk.dense .civ-htile{gap:.45cqw;padding:.35cqw .45cqw;border-radius:.45cqw}
+.civ-atrisk.dense .civ-htile .ph{width:2.2cqw;font-size:.9cqw}
+.civ-atrisk.dense .civ-htile .n{font-size:.78cqw;letter-spacing:.03em}
+@media (prefers-reduced-motion: reduce){.civ-hfocus,.civ-hfocus .stamp,.civ-hwall,.civ-htile,.civ-atrisk.back,.civ-hfocus .flash{animation:none!important}}
 .civ-atrisk .hd{text-align:center;font-weight:900;font-size:1.1cqw;letter-spacing:.22em;color:#ff8fb0}
 .civ-atrisk .grid{display:grid;grid-template-columns:1fr 1fr;gap:.6cqw}
-.civ-mtile.keep{opacity:.55}.civ-mtile.cut{background:rgba(255,42,74,.28);box-shadow:0 0 1.4cqw rgba(255,42,74,.5)}
-.civ-mtile.doomed{background:rgba(255,42,74,.55);box-shadow:0 0 2.4cqw rgba(255,42,74,.9);transform:scale(1.08);opacity:1}
-.civ-verdict{position:absolute;right:.5cqw;bottom:-.7cqw;font-weight:900;font-size:.62cqw;letter-spacing:.12em;padding:.15cqw .4cqw;border-radius:.2cqw;background:#10143a;border:1px solid rgba(255,255,255,.2)}
-.civ-mtile.cut .civ-verdict{color:#ff8fa0;border-color:#ff2a4a}.civ-mtile.keep .civ-verdict{color:#3fd88f}
 /* the blocking */
 .civ-redwash{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 60%,transparent 40%,rgba(120,0,30,.45));opacity:.3;transition:opacity 1s}
 .civ-blocked.done .civ-redwash{opacity:1}

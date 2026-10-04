@@ -81,21 +81,28 @@ describe('the blocking', () => {
 });
 
 describe('the Hangout', () => {
-  it('the names at risk sit between the Influencers; each is kept or cut as they talk', () => {
+  it('the names at risk sit between the Influencers; a profile opens to be discussed, and the verdict lands on the line that settles it', () => {
     for (const x of of('hangout')) {
       const d0 = at(x, -1);
-      expect(d0.querySelectorAll('.civ-atrisk .civ-mtile')).toHaveLength(x.screen.d.atRisk.length);
+      expect(d0.querySelectorAll('.civ-atrisk .civ-htile')).toHaveLength(x.screen.d.atRisk.length);
       const cutAt = firstIdx(x.screen, /view\.\w+\.cut$/);
       if (cutAt < 0) continue;
-      expect(at(x, cutAt - 1).querySelector('.civ-mtile.cut')).toBeNull();
+      // The discussion opens the profile across the wall, with no verdict yet...
+      const who = x.screen.steps[cutAt].on.c;
+      let end = cutAt;
+      while (x.screen.steps[end + 1]?.on?.c === who && /view\.\w+\.cut$/.test(x.screen.steps[end + 1].key || '')) end++;
+      const open = at(x, cutAt);
+      expect(open.querySelector('.civ-hfocus')?.dataset.h).toBe(who);
+      if (end > cutAt) expect(open.querySelector('.civ-hfocus .stamp')).toBeNull();
+      // ...and the stamp lands on the line that settles it.
+      expect(at(x, end).querySelector('.civ-hfocus .stamp.no')).not.toBeNull();
       // Two names go on the table, the one they block and the runner-up:
       // the debate does not give the answer away.
       const onTable = [x.screen.d.target, x.screen.d.runnerUp].filter(Boolean);
-      expect(onTable).toContain(at(x, cutAt).querySelector('.civ-mtile.cut').dataset.h);
-      const end = at(x, x.screen.steps.length - 1);
-      expect([...end.querySelectorAll('.civ-mtile.cut')].map(e => e.dataset.h).sort()).toEqual([...onTable].sort());
-      // ...and the screen never shows the decision: that airs in the blocking.
-      expect(end.querySelector('.civ-mtile.doomed')).toBeNull();
+      expect(onTable).toContain(who);
+      const last = at(x, x.screen.steps.length - 1);
+      const board = last.querySelector('.civ-hfocus') ? null : last;
+      if (board) expect([...board.querySelectorAll('.civ-htile.cut')].map(e => e.dataset.h).sort()).toEqual([...onTable].sort());
       expect(x.screen.steps.some(s => /^hangout\.(agree|trade|yield|trio\.|solo\.decide)/.test(s.key || ''))).toBe(false);
     }
   });

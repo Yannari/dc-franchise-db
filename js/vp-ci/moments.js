@@ -72,31 +72,74 @@ function rateStage(row, screen, idx, fresh) {
 }
 
 // ── THE HANGOUT ────────────────────────────────────────────────────────
+// The Hangout (user, 2026-10-04: "when they discuss someone they open his
+// profile so it's the focus, then they mark it safe or on the table ... more
+// visually pleasing"; mockup/mockup-circle-hangout-focus.html, "perfect").
+// The LED wall shows the board; on the first line about a player their
+// profile opens across it (DISCUSSING, the other faces in a strip); the
+// verdict stamps down on the line that settles it — never before; then the
+// profile closes and their tile lands on the board with the mark.
+const VIEW = /^hangout\.(?:solo\.)?view\.\w+\.(keep|cut)$/;
+/** Each player's discussion: the run of lines about them, and how it ended. */
+function discussions(screen) {
+  const out = [];
+  screen.steps.forEach((x, i) => {
+    const m = VIEW.exec(x.key || '');
+    const c = m && x.on?.c;
+    if (!c) return;
+    const last = out.at(-1);
+    if (last && last.c === c && last.end === i - 1) last.end = i;
+    else out.push({ c, start: i, end: i, verdict: m[1] });
+  });
+  return out;
+}
 function hangoutStage(row, screen, idx, fresh) {
   const d = screen.d || { atRisk: [], target: null };
   const st = idx >= 0 ? screen.steps[idx] : null;
   const seen = upTo(screen, idx);
   const infl = screen.who;
+  const talks = discussions(screen);
+  // A mark is on the board once the line that settled it has played.
   const verdict = {};
-  const VIEW = /^hangout\.(?:solo\.)?view\.\w+\.(keep|cut)$/;
-  for (const x of seen) {
-    const m = VIEW.exec(x.key || '');
-    if (m && x.on?.c) verdict[x.on.c] = m[1];
-  }
-  const current = VIEW.test(st?.key || '') ? st.on?.c : null;
+  for (const t of talks) if (idx >= t.end) verdict[t.c] = t.verdict;
+  const now = talks.find(t => idx >= t.start && idx <= t.end) || null;
+  const justClosed = !now && talks.find(t => t.end === idx - 1) || null;
   // The show cuts before the name (the decision airs in the blocking's
   // flashback): the board ends DECIDED with two names still on the table.
   const sealed = seen.some(x => /^hangout\.(solo\.)?sealed$/.test(x.key || ''));
-  const decided = null;
   const talking = st?.who || speakerAt(screen, idx);
   const cams = infl.map((h, i) => `<div class="civ-hcam ${i === 0 ? 'L' : i === 1 ? 'R' : 'M'}${h === talking ? ' talk' : ''}">${cam(row, h, '', `INFLUENCER · ${realOf(row, h).toUpperCase()}`)}</div>`).join('');
+  const mark = v => (v === 'keep' ? '✓ SAFE' : 'ON THE TABLE');
   const tiles = d.atRisk.map(h => {
     const v = verdict[h];
-    const cls = [v === 'keep' ? 'keep' : v === 'cut' ? 'cut' : '', h === current ? 'talk' : '', h === decided ? 'doomed' : ''].join(' ');
-    return tile(row, h, cls, v ? `<span class="civ-verdict">${v === 'keep' ? '✓ SAFE' : '✗ ON THE TABLE'}</span>` : '');
+    const url = faceUrl(faceOf(row, h, 'profile'));
+    const land = fresh && justClosed?.c === h;
+    return `<div class="civ-htile${v === 'keep' ? ' safe' : v === 'cut' ? ' cut' : ''}${land ? ' land' : ''}" data-h="${esc(h)}" style="--ring:${ringOf(row, h)}">
+      <div class="ph"${bg(url)}>${url ? '' : esc(nameOf(row, h)[0] || '?')}</div>
+      <div class="tx"><div class="n">${esc(nameOf(row, h).toUpperCase())}</div>${v ? `<span class="mk">${mark(v)}</span>` : ''}</div></div>`;
   }).join('');
-  return `<div class="civ-layer civ-hangout">${setImg('hangout')}${cams}
-    <div class="civ-atrisk${d.atRisk.length > 6 ? ' dense' : ''}"><div class="hd">${sealed ? "THEY'VE DECIDED" : 'AT RISK'}</div><div class="grid">${tiles}</div></div>
+  let wall;
+  if (now) {
+    const h = now.c, p = row.ci.profiles[h] || {};
+    const url = faceUrl(faceOf(row, h, 'profile'));
+    const stamped = idx === now.end ? now.verdict : null;
+    const strip = d.atRisk.map(o => {
+      const u = faceUrl(faceOf(row, o, 'profile'));
+      const cls = o === h ? 'on' : verdict[o] === 'keep' ? 'safe' : verdict[o] === 'cut' ? 'cut' : '';
+      return `<span class="${cls}"${bg(u)}>${u ? '' : esc(nameOf(row, o)[0] || '?')}</span>`;
+    }).join('');
+    const facts = [p.age, p.status].filter(x => x != null && x !== '').map(x => esc(String(x).toUpperCase())).join(' · ');
+    wall = `<div class="civ-hwall focused"><div class="civ-hfocus${stamped === 'keep' ? ' ok' : stamped === 'cut' ? ' no' : ''}${fresh && idx === now.start ? ' opening' : ''}${fresh && stamped ? ' slam' : ''}" data-h="${esc(h)}" style="--ring:${ringOf(row, h)}">
+      <div class="fph"${bg(url)}>${url ? '' : esc(nameOf(row, h)[0] || '?')}</div>
+      <div class="finfo"><span class="pill"><i></i>DISCUSSING</span><div class="fname">${esc(nameOf(row, h).toUpperCase())}</div>
+        ${facts ? `<div class="ffacts">${facts}</div>` : ''}${p.job ? `<div class="fjob">${esc(p.job)}</div>` : ''}${p.bio ? `<div class="fbio">“${esc(p.bio)}”</div>` : ''}</div>
+      <div class="strip">${strip}</div>
+      ${stamped ? `<div class="stamp ${stamped === 'keep' ? 'ok' : 'no'}">${mark(stamped)}</div>${fresh ? `<div class="flash ${stamped === 'keep' ? 'ok' : 'no'}"></div>` : ''}` : ''}
+    </div></div>`;
+  } else {
+    wall = `<div class="civ-hwall"><div class="civ-atrisk${d.atRisk.length > 6 ? ' dense' : ''}${fresh && justClosed ? ' back' : ''}"><div class="hd">${sealed ? "THEY'VE DECIDED" : 'AT RISK'}</div><div class="grid">${tiles}</div></div></div>`;
+  }
+  return `<div class="civ-layer civ-hangout">${setImg('hangout')}${cams}${wall}
     ${where(infl.length > 1 ? 'THE HANGOUT · INFLUENCERS ONLY' : 'THE INFLUENCER DECIDES')}${dlg(row, st, fresh)}</div>`;
 }
 

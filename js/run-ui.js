@@ -768,7 +768,7 @@ export function renderRunTab() {
   } else {
     const review = document.getElementById('episode-review');
     if (review) review.style.display = 'flex';
-    const epToShow = viewingEpNum ? gs.episodeHistory.find(e=>e.num===viewingEpNum) : gs.episodeHistory[gs.episodeHistory.length-1];
+    const epToShow = viewingEpNum ? _epByNum(viewingEpNum) : gs.episodeHistory[gs.episodeHistory.length-1];
     if (epToShow) renderEpisodeView(epToShow);
     renderEpisodeHistory();
     document.getElementById('ep-history-wrap').style.display = 'flex';
@@ -1080,6 +1080,30 @@ export function renderEpisodeView(epRecord) {
     _tEl.style.display = '';
     return;
   }
+  if (epRecord && epRecord.tr && epRecord.tr.reunionEpisode) {
+    const R = epRecord.tr.reunion || {};
+    const won = (R.takers || []).join(' & ');
+    card.innerHTML = `<div class="ep-result">
+      <div class="ep-result-header">
+        <span class="ep-result-num">Episode ${_hubEsc(String(epRecord.tr.ep || ''))}</span>
+        <span class="ep-result-phase" style="color:#e8c270">THE REUNION</span>
+      </div>
+      <div class="ep-facts">
+        <div class="ep-fact"><label>Back in the room</label><span>${(R.cast || []).length}</span></div>
+        <div class="ep-fact ep-eliminated"><label>Took the money</label><span>${
+          _spoilerFree ? '???' : _hubEsc(won || 'Nobody')}</span></div>
+        <div class="ep-fact"><label>The pot</label><span>${
+          _spoilerFree ? '???' : Number(R.pot || 0).toLocaleString('en-GB')}</span></div>
+      </div>
+      ${_spoilerFree ? `<div style="margin-top:8px;font-size:11px;color:var(--muted);font-style:italic;text-align:center">Spoiler-free mode — open Visual Player to watch the episode</div>` : ''}
+    </div>`;
+    const _tEl = document.getElementById('ep-output-text');
+    let _txt = '';
+    try { _txt = _spoilerFree ? '' : (window.generateSummaryText?.(epRecord) || ''); } catch { _txt = ''; }
+    _tEl.value = _txt;
+    _tEl.style.display = '';
+    return;
+  }
   if (_isCastleRow(epRecord)) {
     const [banishWord, murderWord] = exitVerbs('traitors');
     const exits = roundExits(epRecord, 'traitors');
@@ -1340,7 +1364,7 @@ export function toggleSpoilerFree(next) {
   const history = gs?.episodeHistory || [];
   if (history.length) {
     renderEpisodeHistory();
-    const epToShow = viewingEpNum ? history.find(e => e.num === viewingEpNum) : history[history.length - 1];
+    const epToShow = viewingEpNum ? _epByNum(viewingEpNum) : history[history.length - 1];
     if (epToShow) renderEpisodeView(epToShow);
   }
   renderSeasonHub();
@@ -1442,9 +1466,10 @@ export function renderEpisodeHistory() {
       </div>`
         // AND AFTER THE FINALE, THE REUNION: an episode of its own in the viewer
         + (ep.tr && ep.tr.reunion && gs._trReunionAired
-          ? `<div class="ep-hist-reunion" onclick="openVisualPlayer('reunion-${ep.num}')" style="cursor:pointer;padding:10px 12px;border:1px solid rgba(232,194,112,.45);background:rgba(232,194,112,.08);border-radius:6px">
-        <div class="ep-hist-ep">Episode ${ep.num + 1} · The Reunion</div>
-        <div class="ep-hist-elim">Everybody back, nothing left to hide</div></div>` : '');
+          ? `<div class="ep-hist-card ${currentNum === 'reunion-' + ep.num ? 'active' : ''}" onclick="viewEpisode('reunion-${ep.num}')">
+        <div class="ep-hist-ep">Episode ${ep.num + 1}</div>
+        <div class="ep-hist-elim">The Reunion</div>
+        <div><span class="ep-hist-tag" style="background:rgba(232,194,112,0.15);color:#e8c270">Reunion</span></div></div>` : '');
     }
     const riTag = ep.riChoice==='REDEMPTION ISLAND' ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">RI</span>` : ep.riChoice==='WENT HOME' ? `<span class="ep-hist-tag" style="background:rgba(148,163,184,0.1);color:var(--muted)">Home</span>` : '';
     const mergeTag = ep.isMerge ? `<span class="ep-hist-tag" style="background:rgba(16,185,129,0.15);color:var(--accent)">MERGE</span>` : '';
@@ -1561,9 +1586,21 @@ export function renderEpisodeHistory() {
   }).join('');
 }
 
+// A ROW OF THE SEASON, OR THE CASTLE'S REUNION (the user, 2026-10-03: "the
+// reunion doesnt act like an episode so i cant rewatch"). The reunion rides on
+// the finale row and is keyed 'reunion-<finale>' (js/vp-ui.js
+// `trReunionEpisode`); once it has aired it is selected, viewed, transcribed
+// and replayed in the viewer like any other episode.
+function _epByNum(num) {
+  const hit = (gs?.episodeHistory || []).find(e => e.num === num);
+  if (hit) return hit;
+  if (!gs?._trReunionAired || typeof window === 'undefined') return null;
+  return window.trReunionEpisode?.(num) || null;
+}
+
 export function viewEpisode(num) {
   viewingEpNum = num;
-  const epRecord = gs.episodeHistory.find(e=>e.num===num);
+  const epRecord = _epByNum(num);
   if (epRecord) { renderEpisodeView(epRecord); renderEpisodeHistory(); renderGameState(); renderSeasonHub(); }
 }
 
@@ -1762,6 +1799,7 @@ export function simulateNext() {
       if (fin && !gs._trReunionAired) {
         gs._trReunionAired = true;
         saveGameState();
+        viewingEpNum = 'reunion-' + fin.num;
         renderRunTab();
         window.openVisualPlayer?.('reunion-' + fin.num);
         return;
@@ -1908,6 +1946,8 @@ export function simulateMultipleEpisodes(count) {
  * in-memory checkpoints the other shows use.
  */
 function _canReplay(epNum) {
+  // the reunion decides nothing, so there is nothing to re-run
+  if (/^reunion-/.test(String(epNum))) return false;
   if (isTraitorsSeason()) return !!(gs && gs._trSeed);
   // The villa has no re-roll yet; the button stays away rather than re-airing.
   if (isPerfectMatchSeason()) return perfectMatchCanRerun();
@@ -2352,7 +2392,7 @@ function _replayTraitorsEpisode(epNum) {
 
 export function copyOutput() {
   const ta = document.getElementById('ep-output-text');
-  const epRecord = viewingEpNum ? gs.episodeHistory.find(e=>e.num===viewingEpNum) : gs.episodeHistory[gs.episodeHistory.length-1];
+  const epRecord = viewingEpNum ? _epByNum(viewingEpNum) : gs.episodeHistory[gs.episodeHistory.length-1];
   const text = (epRecord && _freshTranscript(epRecord)) || ta.value;
   const btn = event.target;
   if (!text) { btn.textContent = 'Nothing to copy'; setTimeout(()=>btn.textContent='Copy', 1500); return; }

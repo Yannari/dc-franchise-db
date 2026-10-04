@@ -966,7 +966,7 @@ export function renderVPScreen() {
 // record rides on the season's finale row (a row of its own would be a game
 // episode to every reader that counts them); the viewer airs it as an episode
 // of its own, keyed 'reunion-<finale>', carrying nothing but the reunion.
-function _reunionEpisode(num) {
+export function trReunionEpisode(num) {
   const m = /^reunion-(\d+)$/.exec(String(num || ''));
   if (!m) return null;
   const f = (gs?.episodeHistory || []).find(e => String(e.num) === m[1] && e.tr && e.tr.reunion);
@@ -977,7 +977,7 @@ function _reunionEpisode(num) {
 export function openVisualPlayer(epNum) {
   // Fall back to most recent episode if called with null (e.g. after page reload)
   const num = epNum ?? gs?.episodeHistory?.slice(-1)[0]?.num;
-  const epRecord = gs?.episodeHistory?.find(e => e.num === num) || _reunionEpisode(num);
+  const epRecord = gs?.episodeHistory?.find(e => e.num === num) || trReunionEpisode(num);
   if (!epRecord) { alert('No episode data. Simulate an episode first.'); return; }
   vpCurrentScreen = 0;
   const savedMode = localStorage.getItem('vp_view_mode');

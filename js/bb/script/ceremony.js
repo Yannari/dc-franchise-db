@@ -372,6 +372,22 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── The Time Capsule: America's favourite, alone in a room ──
+  if (act.type === 'time-capsule') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `cap|${b.part}|${b.index || ''}|${p.join('|')}`;
+      let lines = null;
+      if (b.part === 'entry' && p[0]) lines = fresh('capact.entry', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'stage' && p[0]) lines = fresh('capact.stage', { a: p[0] }, { ending: b.grade || 'near' }, salt);
+      if (b.part === 'won' && p[0]) lines = fresh('capact.won', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'lost' && p[0]) lines = fresh('capact.lost', { a: p[0] }, { ending: b.costume ? 'costume' : 'slop' }, salt);
+      if (b.part === 'tether' && p.length === 2) lines = fresh('capact.tether', { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   for (const k of Object.keys(script)) {
     const v = script[k];
     if (!v || (typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length)) delete script[k];

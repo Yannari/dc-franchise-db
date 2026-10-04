@@ -308,6 +308,24 @@ function pxHtml(S, L, st, fresh) {
   return `<div class="pxtable"><span class="pt">THE BOXES · ONE HOLDS THE VETO</span><div class="pxr">${boxes}</div></div>`;
 }
 
+// ── The Time Capsule's meter (Phase 7) ─────────────────────────────────
+function capsuleHtml(S, L, st, fresh, idx) {
+  const C = S.capsule || {};
+  const seen = S.steps.slice(0, idx + 1);
+  const done = seen.filter(x => x.capStage).map(x => x.capStage);
+  const end = seen.find(x => x.capEnd)?.capEnd;
+  const total = done.reduce((s, x) => s + (x[2] || 0), 0);
+  const pct = C.target ? Math.max(0, Math.min(100, (total / C.target) * 100)) : 0;
+  const segs = Array.from({ length: C.n || 0 }, (_, i) => {
+    const d = done[i];
+    const now = fresh && d && st?.capStage?.[0] === d[0];
+    return `<span class="cs ${d ? d[1] : ''} ${now ? 'now' : ''}">${i + 1}</span>`;
+  }).join('');
+  return `<div class="capboard ${end || ''}"><span class="cph">THE TIME CAPSULE · ${esc((C.name || '').toUpperCase())}</span>`
+    + `<div class="csr">${segs}</div><div class="cbar"><i style="width:${pct.toFixed(1)}%"></i><em></em></div>`
+    + `<span class="cpf">${end === 'won' ? 'BEATEN' : end === 'lost' ? 'OUT OF TIME' : 'TARGET'}</span></div>`;
+}
+
 // ── The Secret Power Competition's doors (Phase 7) ─────────────────────
 function spowerHtml(S, L, st, fresh, idx) {
   const D = S.spower || {};
@@ -467,6 +485,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.camp && !isDr && idx >= 0 && !(st && st.rule != null)) h += campHtml(S, L, st, fresh, idx);
   if (S.wild && !isDr && idx >= 0 && !(st && st.rule != null)) h += wildHtml(S, L, st, fresh, idx);
   if (S.spower && !isDr && idx >= 0 && !(st && st.rule != null)) h += spowerHtml(S, L, st, fresh, idx);
+  if (S.capsule && !isDr && idx >= 0 && !(st && st.rule != null)) h += capsuleHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;

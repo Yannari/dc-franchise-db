@@ -1046,6 +1046,46 @@ function secretPowerScreens(act, ctx) {
   }];
 }
 
+// ── The Time Capsule (Phase 7) ──────────────────────────────────────────
+// America picks a favourite, who goes into the capsule alone. Big Brother
+// explains it on a rules card, the challenge says what is in the room, and the
+// run plays stage by stage against a meter that fills toward the target. Beat
+// it and they come out holding a secret power (never named); lose it and they
+// come out wearing a punishment in front of everybody. Words: lines/capact.js.
+function capsuleScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  const a = act.recipient;
+  const n = act.challenge?.stages || beats.filter(b => b.part === 'stage').length;
+  const steps = [
+    { k: 'bb', t: 'Houseguests, America has voted for its favourite houseguest. Each of you can be picked once a season.', rule: 1 },
+    { k: 'bb', t: 'America\'s favourite will go into the Time Capsule alone and face one challenge.', rule: 2 },
+    { k: 'bb', t: 'Beat it, and they come out with a power from a past season. Only they will know what it is.', rule: 3 },
+    { k: 'bb', t: 'Lose, and they come out with a punishment from a past season, for everyone to see.', rule: 4 },
+    { k: 'bb', t: `${a}, America has chosen you. Please go to the Time Capsule.`, toast: ["AMERICA'S FAVOURITE", '#f5c542'] },
+  ];
+  for (const b of beats) {
+    if (b.part === 'entry') steps.push(...linesOf(b));
+    if (b.part === 'room') steps.push({ k: 'beat', t: b.text, capRoom: true });
+    if (b.part === 'stage') {
+      const said = linesOf(b);
+      const mark = { capStage: [b.index, b.grade, b.score] };
+      steps.push({ k: 'beat', t: `Stage ${word(b.index)} of ${word(n)}: ${b.grade === 'good' ? 'clean' : b.grade === 'near' ? 'slow, but done' : 'missed'}.`, ...mark }, ...said);
+    }
+    if (b.part === 'won') steps.push({ k: 'beat', t: `${a} beats the Time Capsule and comes out holding something.`, capEnd: 'won', toast: ['THE CAPSULE IS BEATEN', '#f5c542'] }, ...linesOf(b));
+    if (b.part === 'lost') steps.push({ k: 'beat', t: `${a} does not beat the clock, and comes out ${act.punishmentVerb || 'wearing'} ${act.punishment}.`, capEnd: 'lost', toast: ['THE CAPSULE WINS', '#ff3355'] }, ...linesOf(b));
+    if (b.part === 'tether') steps.push(...linesOf(b));
+  }
+  return [{
+    id: `bb-capsule-w${ctx.week}`, kind: 'capsule', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '15:00',
+    kicker: 'Cam 04 · Living room', title: 'The Time Capsule', label: 'The Time Capsule', sub: `${act.challenge?.name || 'One challenge'}, alone`,
+    cast: [[a, 50]], capsule: { n, target: act.target, name: act.challenge?.name || '' },
+    rules: [["AMERICA'S PICK", 'the country chooses one houseguest, once a season each'], ['THE CAPSULE', 'they go in alone and face one challenge'],
+      ['BEAT IT', 'a secret power from a past season'], ['LOSE IT', 'a punishment from a past season, in public']],
+    rulesTitle: 'THE TIME CAPSULE · HOW IT WORKS', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1140,6 +1180,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         ctx.vetoHolder = act.vetoHolder || ctx.vetoHolder; beatsOf(act); break;
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
+      case 'time-capsule': flush(); for (const scr of capsuleScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'wildcard': flush(); for (const scr of wildcardScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'safety-suite': flush(); for (const scr of suiteScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'rivals-hoh':
@@ -1169,7 +1210,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

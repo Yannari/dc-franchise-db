@@ -511,6 +511,8 @@ const SUITE_RULES = [
   'Beat the clock, and you cannot be nominated this week. If more than one of you beats it, the fastest is safe.',
   'The winner must also make one other houseguest safe. That person will pay a price for it.',
 ];
+const SUITE_RULE_ROWS = [['ONE PASS', 'per houseguest, for the whole season'], ['SWIPE', 'and play inside against the clock'],
+  ['BEAT THE CLOCK', 'safe this week — fastest wins'], ['PLUS ONE', 'the winner saves one more, who pays a price']];
 const PRICE = { slop: 'A WEEK ON SLOP', costume: 'THE COSTUME', solitary: 'A NIGHT IN SOLITARY', chore: 'EVERY CHORE, ALONE' };
 function suiteScreens(act, ctx) {
   const sc = act.script?.suite || {};
@@ -524,6 +526,7 @@ function suiteScreens(act, ctx) {
   // 1 · the rules
   const others = house.filter(n => n !== hoh);
   out.push(base(`bb-suite-open-w${ctx.week}`, {
+    rules: SUITE_RULE_ROWS, rulesTitle: 'THE SAFETY SUITE · HOW IT WORKS',
     set: 'ceremony', room: 'Living Room', cam: 4, time: '10:00', kicker: 'Cam 04 · Living room', title: 'The Safety Suite',
     label: 'Safety Suite', sub: 'One pass each, for the whole season', seated: seatLiving([], others, hoh),
     steps: [
@@ -613,6 +616,118 @@ function suiteScreens(act, ctx) {
   return out;
 }
 
+// ── the Chain of Safety (Phase 7) ─────────────────────────────────────
+// No nominations: the house saves itself one name at a time. Screens: Big
+// Brother's rules and the first link; the chain itself (a line of linked
+// portraits growing across the top while the "still waiting" row shrinks);
+// on a Québec week the chain again; and on a Canada week the last three
+// playing for safety. Words: act.script.chain (bb/script/ceremony.js).
+const CHAIN_RULES = {
+  canada: [['NO NOMINATIONS', 'the house decides who is safe instead'], ['ONE LINK', 'the first person is safe, and names the next'],
+    ['PASS IT ON', 'each person saved names one more, in front of everyone'], ['THE LAST THREE', 'play for safety — the other two are nominated']],
+  quebec: [['NO NOMINATIONS', 'the house decides who is safe instead'], ['ONE LINK', 'the first person is safe, and names the next'],
+    ['THE ONE LEFT', 'nobody names them, so they are nominated'], ['AGAIN, THEN A DUEL', 'a second chain finds the other — they duel, the loser goes']],
+};
+function chainScreens(act, ctx) {
+  const quebec = act.style === 'quebec';
+  const runs = act.script?.chain || [];
+  const house = ctx.house.filter(n => !ctx.hidden.has(n));
+  const out = [];
+  const base = (id, extra) => ({ id, kind: 'chain', anchor: ctx.anchor, day: ctx.day, chainStyle: quebec ? 'quebec' : 'canada', ...extra });
+  const beatsOf = run => (act.beats || []).filter(b => (b.run === 1 ? 1 : 0) === run);
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  // 1 · the rules, and the first link
+  const first = act.order?.[0] || act.starter;
+  const startBeat = beatsOf(0).find(b => b.part === 'start');
+  const rules = [
+    { k: 'bb', t: 'Houseguests, there will be no nomination ceremony this week. Instead, you will decide who is safe.', rule: 1 },
+    { k: 'bb', t: 'One person starts the chain. They are safe, and they choose one other houseguest to be safe.', rule: 2 },
+    quebec
+      ? { k: 'bb', t: 'That person chooses the next, and so on, until one houseguest is left. Nobody chose them, so they are nominated.', rule: 3 }
+      : { k: 'bb', t: 'That person chooses the next, and so on. When three houseguests are left, the chain stops.', rule: 3 },
+    quebec
+      ? { k: 'bb', t: 'Then the chain runs again for the second nominee. The two nominees will play head to head, and the loser is evicted. There is no vote.', rule: 4 }
+      : { k: 'bb', t: 'Those three will play for safety. The winner is safe, and the other two are nominated.', rule: 4 },
+    act.variant === 'hoh' && startBeat?.how === 'hoh'
+      ? { k: 'bb', t: `${first}, as Head of Household, you will start the chain.`, chainStart: first }
+      : { k: 'beat', t: `${first} wins the safety competition and holds the first link.`, chainStart: first, toast: ['FIRST LINK', '#f5c542'] },
+    ...linesOf(startBeat),
+  ];
+  out.push(base(`bb-chain-open-w${ctx.week}`, {
+    set: 'ceremony', room: 'Living Room', cam: 4, time: '13:00', kicker: 'Cam 04 · Living room', title: 'Chain of Safety',
+    label: 'Chain of Safety', sub: 'No nominations: the house saves itself', seated: seatLiving([], house.filter(n => n !== first), first),
+    rules: CHAIN_RULES[quebec ? 'quebec' : 'canada'], rulesTitle: 'CHAIN OF SAFETY · HOW IT WORKS', steps: rules,
+  }));
+  // 2 · the chain, once or twice
+  const runScreen = (run, title, sub) => {
+    const bs = beatsOf(run);
+    const starter = run === 0 ? first : act.secondChain?.order?.[0];
+    const pool = run === 0 ? house : house.filter(n => n !== act.nominees?.[0]);
+    const steps = [];
+    if (run === 1) {
+      const again = (act.beats || []).find(b => b.part === 'again');
+      steps.push({ k: 'bb', t: `${act.nominees?.[0]}, you are nominated. The chain will now run again for the second nominee.`, nom: [act.nominees?.[0]].filter(Boolean) });
+      steps.push(...linesOf(again));
+      const st2 = bs.find(b => b.part === 'start');
+      steps.push({ k: 'beat', t: `${starter} starts the chain this time.`, chainStart: starter, at: [[starter, 50]] }, ...linesOf(st2));
+    }
+    for (const b of bs) {
+      const [a, x] = b.players || [];
+      if (b.part === 'link') {
+        const said = linesOf(b);
+        const step = { link: [a, x], at: [[a, 34], [x, 66]] };
+        if (said.length) { said[0] = { ...said[0], ...step }; steps.push(...said); }
+        else steps.push({ k: 'beat', t: `${a} picks ${x}.`, ...step });
+      }
+      if (b.part === 'passed') {
+        const said = linesOf(b);
+        if (said.length) { said[0] = { ...said[0], snub: [x, a] }; steps.push(...said); }
+      }
+      if (b.part === 'last') {
+        const said = linesOf(b);
+        if (said.length) { said[0] = { ...said[0], at: [[a, 50]] }; steps.push(...said); }
+      }
+      if (b.part === 'leftover') {
+        const left = b.players || [];
+        const xs = left.length === 1 ? [50] : left.map((_, i) => Math.round(30 + (40 * i) / (left.length - 1)));
+        steps.push({ k: 'beat', t: left.length === 1 ? `Nobody picked ${left[0]}.` : `Nobody picked ${listOf(left)}.`,
+          leftover: left, at: left.map((n, i) => [n, xs[i]]), toast: ['CHOSEN BY NOBODY', '#ff3355'] }, ...linesOf(b));
+      }
+    }
+    out.push(base(`bb-chain-run${run}-w${ctx.week}`, {
+      set: 'ceremony', room: 'Living Room', cam: 4, time: run ? '14:20' : '13:20', kicker: 'Cam 04 · Living room', title, label: `Chain of Safety · ${title.toLowerCase()}`,
+      sub, cast: [[starter, 50]], chainRun: { pool, starter }, steps,
+    }));
+  };
+  runScreen(0, 'The chain', `${titleCase(word(house.length - 1))} names to give`);
+  if (quebec && act.secondChain) runScreen(1, 'The chain, again', 'One more nominee to find');
+  // 3 · how it ends
+  const noms = (act.nominees || []).filter(Boolean);
+  if (!quebec) {
+    const finalBeat = (act.beats || []).find(b => b.part === 'final');
+    const nomBeat = (act.beats || []).find(b => b.part === 'noms');
+    const three = act.leftover || [];
+    const xs = three.map((_, i) => three.length === 1 ? 50 : Math.round(28 + (44 * i) / (three.length - 1)));
+    const steps = [{ k: 'bb', t: `${listOf(three)}, nobody chose you. You will now play for safety. The winner is safe, and the other two will be nominated.`, at: three.map((n, i) => [n, xs[i]]) }];
+    if (act.safetyWinner) {
+      const said = linesOf(finalBeat);
+      const win = { safe: act.safetyWinner, toast: ['SAFE', '#12b76a'] };
+      steps.push({ k: 'beat', t: `${act.safetyWinner} wins and is safe.`, ...win }, ...said);
+    }
+    if (noms.length) {
+      steps.push({ k: 'bb', t: `${listOf(noms)}, you are this week's nominees.`, nom: noms, toast: ['NOMINATED', '#ff3355'], at: noms.map((n, i) => [n, noms.length === 1 ? 50 : 36 + i * 28]) }, ...linesOf(nomBeat));
+    }
+    out.push(base(`bb-chain-final-w${ctx.week}`, {
+      set: 'ceremony', room: 'Living Room', cam: 4, time: '15:00', kicker: 'Cam 04 · Living room', title: 'The last three',
+      label: 'Chain of Safety · the last three', sub: 'One safe, two nominated', cast: three.map((n, i) => [n, xs[i]]), steps,
+    }));
+  } else if (noms.length === 2) {
+    out.at(-1).steps.push({ k: 'bb', t: `${listOf(noms)}, you are this week's nominees. You will face each other head to head, and the loser will be evicted.`,
+      nom: noms, toast: ['NOMINATED', '#ff3355'], at: noms.map((n, i) => [n, 36 + i * 28]) });
+  }
+  return out;
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -695,6 +810,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'jury-vote': ceremony(juryVoteScreen(act, ctx, host, row)); break;
       case 'americas-favourite': ceremony(favouriteScreen(act, ctx, host)); break;
       case 'reunion': { const r = reunionScreen(act, ctx); if (r) ceremony(r); break; }
+      case 'chain-of-safety': flush(); for (const scr of chainScreens(act, ctx)) ceremony(scr);
+        ctx.nominees = (act.nominees || ctx.nominees).slice(); ctx.anchor = 'noms'; beatsOf(act); break;
       case 'safety-suite': flush(); for (const scr of suiteScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'rivals-hoh':
         // the latecomers walk in here: from now on they are in the house
@@ -723,7 +840,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

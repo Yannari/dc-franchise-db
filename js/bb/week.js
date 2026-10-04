@@ -3123,9 +3123,10 @@ export function simulateBBWeek(options = {}) {
           week.chainOfSafety.leftover = [...week.chainOfSafety.nominees];
           week.chainOfSafety.beats = [
             ...(week.chainOfSafety.beats || []),
-            { text: `${first} is on the block, and the house is told to do the whole thing again.`,
-              players: [first], badgeText: 'AND AGAIN', badgeClass: 'red' },
-            ...(second.beats || []),
+            { text: `${first} is nominated, and the chain runs again.`,
+              players: [first], badgeText: 'AND AGAIN', badgeClass: 'red', part: 'again' },
+            // the second run's beats, marked so its words land on the right chain
+            ...(second.beats || []).map(b => ({ ...b, run: 1 })),
           ];
           week.chainOfSafety.slights = [
             ...(week.chainOfSafety.slights || []), ...(second.slights || [])];

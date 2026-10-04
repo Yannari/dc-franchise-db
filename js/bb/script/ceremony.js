@@ -23,6 +23,8 @@
 //   goodbye:  lines                the evicted houseguest leaving the house
 //   suite:    { open, enter: { name: lines }, hold, short: { name: lines },
 //               clock, safe, plus, passed, none }   the Safety Suite (Phase 7)
+//   chain:    [run, run?]  each { start, links: { 'a>b': lines }, passed: { 'a>b': lines },
+//               last, leftover }, plus chainFinal, chainNoms, chainAgain   the Chain of Safety
 // }
 // A line is { kind: 'say' | 'dr' | 'beat', by, text }. A part the act does not
 // have is left out; the viewer falls back to the format's own words.
@@ -46,6 +48,16 @@ function part(kind, who, ending, ctx, house, salt) {
     return writeScene(scene, ctx, rng).lines;
   } catch { return null; }
 }
+
+/** `part` with data the lines fill in ({group}). */
+function partData(kind, who, data, ctx, house, salt) {
+  try {
+    const scene = makeScene(kind, who, data, house, 'living-room');
+    const rng = stableRng(gs.bb?.seasonSalt || 0, ctx.week?.num || 0, kind, salt);
+    return writeScene(scene, ctx, rng).lines;
+  } catch { return null; }
+}
+const listOf = names => names.length <= 1 ? (names[0] || '') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 
 /** The script for a ceremony act, or null. `extra` is what addBeats was handed. */
 export function writeCeremony(act, week, house, extra = {}) {
@@ -175,6 +187,53 @@ export function writeCeremony(act, week, house, extra = {}) {
       const lines = b.part === 'enter' ? suite.enter[who] : b.part === 'short' ? suite.short[who] : suite[b.part];
       if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
     }
+  }
+
+  // ── the Chain of Safety: every link, everybody passed over, the leftovers ──
+  if (act.type === 'chain-of-safety') {
+    const quebec = act.style === 'quebec';
+    const runs = [{ start: null, links: {}, passed: {} }, { start: null, links: {}, passed: {} }];
+    const key = (a, b) => `${a}>${b}`;
+    // Ten picks from the same few pools in one act: an entry already used tonight
+    // is drawn again (a different salt), up to four times.
+    const usedIds = new Set();
+    const fresh = (kind, who, data, salt) => {
+      let got = null;
+      for (let k = 0; k < 4; k++) {
+        try {
+          const scene = makeScene(kind, who, data, house, 'living-room');
+          const rng = stableRng(gs.bb?.seasonSalt || 0, ctx.week?.num || 0, kind, `${salt}|${k}`);
+          got = writeScene(scene, ctx, rng);
+        } catch { return null; }
+        if (!usedIds.has(got.lineId)) break;
+      }
+      if (got?.lineId) usedIds.add(got.lineId);
+      return got ? got.lines : null;
+    };
+    for (const b of act.beats || []) {
+      const r = runs[b.run === 1 ? 1 : 0];
+      const [a, x] = b.players || [];
+      const salt = `chain|${b.run || 0}|${b.part}|${(b.players || []).join('|')}`;
+      let lines = null;
+      if (b.part === 'start') lines = r.start = part('chain.start', { a }, b.how || 'comp', ctx, house, salt);
+      if (b.part === 'link') lines = r.links[key(a, x)] = fresh('chain.link', { a, b: x }, { ending: b.kind || 'mid' }, salt);
+      if (b.part === 'passed') lines = r.passed[key(a, x)] = fresh('chain.passed', { a: x, b: a }, { ending: 'scene' }, salt);
+      if (b.part === 'last') {
+        const left = (b.players || []).slice(1);
+        lines = r.last = quebec ? part('chain.last', { a, b: left[0] }, 'quebec', ctx, house, salt)
+          : partData('chain.last', { a }, { ending: 'canada', group: listOf(left) }, ctx, house, salt);
+      }
+      if (b.part === 'leftover') {
+        const left = b.players || [];
+        lines = r.leftover = quebec ? part('chain.leftover', { a: left[0] }, 'quebec', ctx, house, salt)
+          : partData('chain.leftover', { a: left[0] }, { ending: 'canada', group: listOf(left.slice(1)) }, ctx, house, salt);
+      }
+      if (b.part === 'final') lines = script.chainFinal = part('chain.final', { a }, 'scene', ctx, house, salt);
+      if (b.part === 'noms' && a && x) lines = script.chainNoms = part('chain.noms', { a, b: x }, 'scene', ctx, house, salt);
+      if (b.part === 'again') lines = script.chainAgain = part('chain.again', { a }, 'scene', ctx, house, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+    script.chain = quebec && act.secondChain ? runs : [runs[0]];
   }
 
   for (const k of Object.keys(script)) {

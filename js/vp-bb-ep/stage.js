@@ -50,7 +50,8 @@ const MEDAL = `<svg viewBox="0 0 60 80"><defs><radialGradient id="bbxmg" cx=".4"
 export function ledgerAt(screens, si, idx) {
   const S0 = screens[si] || screens[0] || {};
   const L = { status: {}, nom: [], veto: null, out: [], votes: null, vetoPlay: [], ballots: [], revealed: [], hoh: null, moves: [], stances: {},
-    spent: [], held: [], runs: {}, stamps: {}, safe: [], plus: null, bill: null, passed: null, shut: false };
+    spent: [], held: [], runs: {}, stamps: {}, safe: [], plus: null, bill: null, passed: null, shut: false,
+    chain: [], snubs: [], leftover: [] };
   for (const n of S0.priorOut || []) { L.status[n] = 'out'; L.out.push(n); }
   for (let s = 0; s <= si; s++) {
     const steps = screens[s].steps; const upto = s < si ? steps.length - 1 : idx;
@@ -66,6 +67,12 @@ export function ledgerAt(screens, si, idx) {
       if (st.plus) { L.plus = st.plus; if (!L.safe.includes(st.plus)) L.safe.push(st.plus); }
       if (st.bill) L.bill = st.bill;
       if (st.passed) L.passed = st.passed;
+      if (st.chainStart && !L.safe.includes(st.chainStart)) L.safe.push(st.chainStart);
+      if (st.link && !L.safe.includes(st.link[1])) L.safe.push(st.link[1]);
+      if (s === si && st.chainStart) L.chain = [st.chainStart];
+      if (s === si && st.link) { if (!L.chain.length && screens[s].chainRun?.starter) L.chain = [screens[s].chainRun.starter]; L.chain.push(st.link[1]); }
+      if (s === si && st.snub) L.snubs.push(st.snub);
+      if (st.leftover) L.leftover = st.leftover.slice();
       if (st.hoh) { if (L.hoh && L.status[L.hoh] === 'hoh') L.status[L.hoh] = ''; L.hoh = st.hoh; L.status[st.hoh] = 'hoh'; }
       if (st.nom) { L.nom.forEach(n => { if (L.status[n] === 'nom') L.status[n] = ''; }); L.nom = st.nom.slice(); st.nom.forEach(n => { L.status[n] = 'nom'; }); }
       if (st.veto) L.veto = st.veto;
@@ -113,6 +120,7 @@ function chipsFor(n, L) {
   if (L.veto === n) c.push('<span class="chipx veto">Veto</span>');
   if (L.plus === n) c.push('<span class="chipx plus">Plus one</span>');
   else if (L.safe.includes(n)) c.push('<span class="chipx safe">Safe</span>');
+  else if (L.leftover.includes(n) && !L.nom.includes(n)) c.push('<span class="chipx nom">Not chosen</span>');
   else if (L.spent.includes(n) && L.status[n] !== 'hoh') c.push('<span class="chipx spent">Pass spent</span>');
   return c.join('');
 }
@@ -200,10 +208,9 @@ function clockSvg(left, ok) {
     <text y="-6" text-anchor="middle" font-family="Chakra Petch" font-weight="700" font-size="7" fill="#1a2233" letter-spacing="1.5">${ok ? 'BEATEN' : 'THE CLOCK'}</text>
     <text y="10" text-anchor="middle" font-family="Archivo" font-weight="900" font-size="15" fill="${ok ? '#b8860b' : '#1a2233'}">${ok ? 'SAFE' : `0${Math.max(0, Math.round(5 - left * 5))}:00`}</text></svg>`;
 }
-const SUITE_RULE_ROWS = [['ONE PASS', 'per houseguest, for the whole season'], ['SWIPE', 'and play inside against the clock'],
-  ['BEAT THE CLOCK', 'safe this week — fastest wins'], ['PLUS ONE', 'the winner saves one more, who pays a price']];
-function rulesHtml(n, fresh) {
-  return `<div class="rules"><div class="rt">THE SAFETY SUITE · HOW IT WORKS</div>${SUITE_RULE_ROWS.map(([a, b], i) =>
+/** A twist's rules, read out by Big Brother: one row lights per line (the screen's `rules`). */
+function rulesHtml(S, n, fresh) {
+  return `<div class="rules"><div class="rt">${esc(S.rulesTitle || 'HOW IT WORKS')}</div>${(S.rules || []).map(([a, b], i) =>
     `<div class="rr ${i < n ? 'on' : ''} ${fresh && i === n - 1 ? 'now' : ''}"><span class="rk">${i + 1}</span><b>${a}</b><span>${b}</span></div>`).join('')}</div>`;
 }
 const passHtml = (n, cls) => `<div class="pass ${cls}">${PASSEYE}<i class="chipline"></i>${img(n)}<span class="pn">${esc(n)}</span></div>`;
@@ -240,6 +247,20 @@ function suiteObjects(S, L, st, idx, fresh) {
     }
   }
   return h;
+}
+
+// ── the Chain of Safety's line of links (Phase 7) ──────────────────────
+const LINK = `<svg class="lk" viewBox="0 0 24 12"><rect x="1" y="2" width="12" height="8" rx="4" fill="none" stroke="#f5c542" stroke-width="2"/><rect x="11" y="2" width="12" height="8" rx="4" fill="none" stroke="#f5c542" stroke-width="2"/></svg>`;
+function chainHtml(S, L, st, fresh) {
+  const run = S.chainRun;
+  const order = L.chain.length ? L.chain : (run.starter ? [run.starter] : []);
+  const waiting = (run.pool || []).filter(n => !order.includes(n));
+  const newest = fresh && st && (st.link || st.chainStart) ? order.at(-1) : null;
+  const holder = order.at(-1);
+  const cells = order.map((n, i) => `${i ? LINK : ''}<div class="cl ${n === newest ? 'now' : ''} ${n === holder && !L.leftover.length ? 'hold' : ''}" style="--c:${col(n)}">${img(n)}<span class="cn">${i + 1}</span><b>${esc(n)}</b></div>`).join('');
+  const wait = waiting.map(n => `<div class="cw ${L.leftover.includes(n) ? 'left' : ''}" style="--c:${col(n)}">${img(n)}<b>${esc(n)}</b></div>`).join('');
+  return `<div class="chainbar"><span class="ch">THE CHAIN · ${order.length} SAFE</span><div class="cls">${cells}</div>
+    <div class="cwr"><span class="ch2">${L.leftover.length ? 'CHOSEN BY NOBODY' : `STILL WAITING · ${waiting.length}`}</span>${wait}</div></div>`;
 }
 
 function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
@@ -317,7 +338,8 @@ export function stageHtml(screens, si, idx, fresh, o) {
   h += `<div class="grain"></div><div class="vign"></div>`;
   const isDr = st && st.k === 'dr';
   if (S.rail && !S.railHidden && !isDr && idx >= 0) h += railHtml(S, L, st, fresh);
-  if (st && st.rule != null) h += rulesHtml(st.rule, fresh);
+  if (st && st.rule != null && S.rules) h += rulesHtml(S, st.rule, fresh);
+  if (S.chainRun && !isDr && idx >= 0) h += chainHtml(S, L, st, fresh);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;

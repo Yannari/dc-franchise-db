@@ -430,6 +430,33 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── Premiere night: two hunts for the host and the relic ──
+  if (act.type === 'premiere-mystery') {
+    const fresh = freshWriter(ctx, house);
+    for (const h of act.hunts || []) {
+      // A searcher's first warm lead is worth hearing; their third is not, and
+      // a hunt of seven people would otherwise talk over itself.
+      const voiced = new Set();
+      for (const r of h.rounds || []) {
+        if (r.outcome === 'warm' && (voiced.has(r.who) || voiced.size >= 3)) continue;
+        if (r.outcome === 'warm') voiced.add(r.who);
+        if (r.outcome === 'warm') r.lines = fresh('pmact.warm', { a: r.who }, { ending: 'scene', room: r.room }, `pm|warm|${r.round}|${r.who}`) || undefined;
+        if (r.outcome === 'found') r.lines = fresh('pmact.found', { a: r.who }, { ending: h.target === 'the relic' ? 'relic' : 'host' }, `pm|found|${r.who}`) || undefined;
+      }
+      for (const e of h.events || []) {
+        const [a, b] = e.players || [];
+        if (a && b) e.lines = fresh(`pmact.${e.kind}`, { a, b }, { ending: 'scene', room: e.room || '' }, `pm|${e.kind}|${a}|${b}`) || undefined;
+      }
+    }
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      let lines = null;
+      if (b.part === 'night' && p.length >= 2) lines = fresh('pmact.night', { a: p[0], b: p[1] }, { ending: 'scene' }, `pm|night`);
+      if (b.part === 'secret' && p[0]) lines = fresh('pmact.secret', { a: p[0] }, { ending: 'scene' }, `pm|secret`);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   // ── The Mystery Competitor, the Mystery Veto, and its second ceremony ──
   if (['mystery-competitor', 'mystery-guest-result', 'mystery-veto', 'second-veto-ceremony'].includes(act.type)) {
     const fresh = freshWriter(ctx, house);

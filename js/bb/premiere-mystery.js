@@ -50,8 +50,6 @@ const ROOMS = [
 const stat = (name, key) => {
   try { return Number(pStats(name)?.[key]) || 5; } catch { return 5; }
 };
-const cap = t => `${t[0].toUpperCase()}${t.slice(1)}`;
-const pick = (draw, list) => list[Math.floor(draw() * list.length)];
 
 /**
  * One group's hunt, as a sequence of rooms rather than a die roll.
@@ -106,22 +104,15 @@ function runHunt({ team, target, targetName, draw, api }) {
       if (right) {
         // Closer, not finished. How much closer is what the room asks of you.
         heat[p.who] += 1 + (draw() < skill ? 1 : 0);
+        // Plain facts; a warm search is spoken (lines/pmact.js). Each used to
+        // pick its wording with one draw, and the draw stays.
+        draw();
         rounds.push({ round: round + 1, who: p.who, room: p.room.name, outcome: 'warm',
-          text: pick(draw, [
-            `${p.who} is in ${p.room.name} — ${p.room.detail} — and comes out with nothing, and a face that tells four people where to go next.`,
-            `${p.who} spends far too long in ${p.room.name} and leaves without saying why, which is itself an answer.`,
-            `Something in ${p.room.name} is not sitting right and ${p.who} cannot say what.`,
-            `${p.who} has been in ${p.room.name} twice now. The second time, the door gets shut.`,
-          ]) });
+          text: `${p.who} searches ${p.room.name} and gets closer.` });
       } else {
+        draw();
         rounds.push({ round: round + 1, who: p.who, room: p.room.name, outcome: 'cold',
-          text: pick(draw, [
-            `${p.who} takes ${p.room.name} apart. ${cap(p.room.detail)}. Nothing.`,
-            `Nothing in ${p.room.name}, and ${p.who} has now checked it properly enough to say so out loud.`,
-            `${p.who} tries ${p.room.name} — ${p.room.detail} — and gives it up after five minutes.`,
-            `${p.who} works ${p.room.name} over and finds a light switch, a draught and nothing else.`,
-            `${p.who} is not the first person through ${p.room.name} tonight and can tell.`,
-          ]) });
+          text: `${p.who} searches ${p.room.name} and finds nothing.` });
       }
     }
 
@@ -139,14 +130,12 @@ function runHunt({ team, target, targetName, draw, api }) {
       if (draw() < 0.55) {
         api.bond(a, b, 1.6);
         events.push({ kind: 'together', players: [a, b], round: round + 1,
-          text: `${a} and ${b} end up in ${room.name} together and stop searching to talk. `
-            + `It is the first conversation either of them has had in this house that was not a name and a handshake.`,
+          text: `${a} and ${b} meet in ${room.name} and stop searching to talk.`, room: room.name,
           badge: 'FIRST NIGHT' });
       } else {
         api.bond(a, b, -1.2);
         events.push({ kind: 'collide', players: [a, b], round: round + 1,
-          text: `${a} and ${b} arrive at ${room.name} within seconds of each other and neither `
-            + `leaves. They search around one another in silence, and both of them remember it.`,
+          text: `${a} and ${b} search ${room.name} at the same time, in silence.`, room: room.name,
           badge: 'IN EACH OTHER’S WAY' });
       }
     }
@@ -162,9 +151,7 @@ function runHunt({ team, target, targetName, draw, api }) {
         metPairs.add(key);
         api.bond(quiet, mark, -0.6);
         events.push({ kind: 'withheld', players: [quiet, mark], round: round + 1,
-          text: `${quiet} has narrowed it down and says so to nobody. When ${mark} asks whether `
-            + `${quiet} has checked ${hidingIn.name}, the answer is a shrug — on night one, before `
-            + `anybody has done anything to anybody.`,
+          text: `${quiet} keeps a lead on ${hidingIn.name} from ${mark}.`, room: hidingIn.name,
           badge: 'KEEPS IT' });
       }
     }
@@ -176,9 +163,7 @@ function runHunt({ team, target, targetName, draw, api }) {
     || (stat(b, hidingIn.lean) - stat(a, hidingIn.lean))
     || (stat(b, 'intuition') - stat(a, 'intuition')))[0];
   rounds.push({ round: ROUNDS + 1, who: found, room: hidingIn.name, outcome: 'found',
-    text: `${found} has been circling ${hidingIn.name} all night and goes back one more time. `
-      + `${cap(targetName)} comes out of the wall, and the rest of the house hears about it `
-      + `from the noise.` });
+    text: `${found} finds ${targetName} in ${hidingIn.name}.` });
   api.pop(found, 2);
 
   return { found, rounds, events, hidingIn: hidingIn.name, target, targetName,
@@ -313,8 +298,6 @@ export function runPremiereMystery(week, house, { rng = Math.random } = {}) {
     try { addBond(n, hostWinner, -0.4); } catch { /* night one, barely anybody */ }
   }
 
-  const p = pronouns ? (() => { try { return pronouns(relicWinner); } catch { return null; } })() : null;
-
   return {
     relicWinner, hostWinner, relicTeam, hostTeam,
     act: {
@@ -338,20 +321,14 @@ export function runPremiereMystery(week, house, { rng = Math.random } = {}) {
       money: 10000,
       relicGranted: !!relicGranted,
       buyOffGranted: !!buyOffGranted,
+      // Plain facts with a `part`; the words are lines/pmact.js.
       beats: [{
-        text: `Nobody has unpacked. The host is gone, the Head of Household relic is gone with `
-          + `${p ? p.obj : 'them'}, and the house is told it has been split in two and sent looking. `
-          + `<strong>${relicWinner}</strong> comes back with the relic and the right to say who `
-          + `plays for the first crown. <strong>${hostWinner}</strong> comes back with the host and `
-          + `ten thousand dollars, and everybody watches ${hostWinner} be handed it.`,
+        text: `${relicWinner} finds the relic and ${hostWinner} finds the host, winning $10,000.`, part: 'night',
         players: [relicWinner, hostWinner],
         badgeText: 'PREMIERE NIGHT', badgeClass: 'gold',
         eventId: 'premiere-mystery', category: 'twist', location: 'living-room',
       }, {
-        text: `What the room does not hear is the second half of what ${hostWinner} is told: the `
-          + `money is not a prize, it is a key. Spent once, before the jury, it takes `
-          + `${hostWinner} off the block and leaves whoever is Head of Household naming somebody `
-          + `else on the spot with no say in it.`,
+        text: `${hostWinner} is told in private that the money is the Buy-Off: once, it takes ${hostWinner} off the block.`, part: 'secret',
         players: [hostWinner],
         badgeText: 'AND THE OTHER HALF', badgeClass: 'purple',
         eventId: 'premiere-buy-off-secret', category: 'twist', location: 'diary-room',

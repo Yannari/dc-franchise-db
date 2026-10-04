@@ -1596,6 +1596,45 @@ function mysteryScreens(act, ctx) {
   }];
 }
 
+// ── Premiere night (Phase 7) ────────────────────────────────────────────
+// The host has been taken and the Head of Household relic with her. Big
+// Brother explains the night; the house splits in two (and the screen says
+// how); each group hunts one of them over three rounds, and the hunt is shown
+// as what was worth seeing: the warm leads, the first conversations and
+// silences, a clue kept, and the find. The relic is loud; the money is the
+// quiet prize. Words: lines/pmact.js.
+function premiereScreens(act, ctx) {
+  const linesOf = x => (x && x.lines?.length ? scriptSteps(x.lines) : []);
+  const steps = [
+    { k: 'bb', t: 'Houseguests, the host has been taken, and the Head of Household relic is gone with her.', rule: 1 },
+    { k: 'bb', t: 'You will split into two groups. One group hunts for the host. The other hunts for the relic.', rule: 2 },
+    { k: 'bb', t: 'Whoever finds the relic will choose the four houseguests who play for the first Head of Household.', rule: 3 },
+    { k: 'bb', t: 'Whoever finds the host wins ten thousand dollars.', rule: 4 },
+    { k: 'beat', t: act.splitRule || 'The house splits in two.' },
+  ];
+  for (const h of act.hunts || []) {
+    steps.push({ k: 'beat', t: `Hunting for ${h.target}: ${listOf(h.team || [])}.`, pmHunt: h.target });
+    const byRound = {};
+    for (const r of h.rounds || []) (byRound[r.round] ||= []).push(r);
+    for (const e of h.events || []) (byRound[e.round] ||= []).push({ event: e });
+    for (const k of Object.keys(byRound).map(Number).sort((a, b) => a - b)) {
+      for (const x of byRound[k]) {
+        if (x.event) steps.push(...linesOf(x.event));
+        else if (x.outcome === 'warm') steps.push(...linesOf(x));
+        else if (x.outcome === 'found') steps.push({ k: 'beat', t: x.text, pmFound: [h.target, x.who], toast: [h.target === 'the relic' ? 'THE RELIC IS FOUND' : 'THE HOST IS FOUND', '#f5c542'] }, ...linesOf(x));
+      }
+    }
+  }
+  for (const b of act.beats || []) steps.push(...linesOf(b));
+  return [{
+    id: `bb-premiere-w${ctx.week}`, kind: 'premiere', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '21:00',
+    kicker: 'Cam 04 · Living room', title: 'Premiere Night', label: 'Premiere Night', sub: 'Two hunts, two prizes',
+    cast: [], nv: true,
+    rules: [['THE HOST IS GONE', 'and the HOH relic with her'], ['TWO GROUPS', 'one hunt each'], ['THE RELIC', 'its finder picks who plays for HOH'], ['THE HOST', 'her finder wins $10,000']],
+    rulesTitle: 'PREMIERE NIGHT · HOW IT WORKS', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1691,6 +1730,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
+      case 'premiere-mystery': flush(); for (const scr of premiereScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'mystery-competitor': case 'mystery-veto': case 'second-veto-ceremony':
         flush(); for (const scr of mysteryScreens(act, ctx)) ceremony(scr);
         if (act.type === 'second-veto-ceremony') ctx.nominees = [...(act.nominees || ctx.nominees)];
@@ -1735,7 +1775,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

@@ -52,6 +52,7 @@ import ANON from './anon.js';
 import SOLO from './solo.js';
 import SUITEACT from './suiteact.js';
 import CHAINACT from './chainact.js';
+import HUNTACT from './huntact.js';
 
-export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...JURY, ...PLAN, ...KNOWN, ...CER, ...ROMANCE, ...UPKEEP, ...ENGINE, ...DRINKS, ...MEETING, ...SLOP, ...WHACK, ...TWIST1, ...TWIST2, ...TWIST3, ...TWIST4, ...TWIST5, ...TWIST6, ...TWIST7, ...TWIST8, ...TWIST9, ...TWIST10, ...TWIST11, ...TWIST12, ...VFALL, ...ENGINE2, ...KIN, ...PAST, ...ANON, ...SOLO, ...SUITEACT, ...CHAINACT };
+export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...JURY, ...PLAN, ...KNOWN, ...CER, ...ROMANCE, ...UPKEEP, ...ENGINE, ...DRINKS, ...MEETING, ...SLOP, ...WHACK, ...TWIST1, ...TWIST2, ...TWIST3, ...TWIST4, ...TWIST5, ...TWIST6, ...TWIST7, ...TWIST8, ...TWIST9, ...TWIST10, ...TWIST11, ...TWIST12, ...VFALL, ...ENGINE2, ...KIN, ...PAST, ...ANON, ...SOLO, ...SUITEACT, ...CHAINACT, ...HUNTACT };
 export const POOL_KEYS = Object.keys(POOLS);

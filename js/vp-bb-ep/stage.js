@@ -11,6 +11,7 @@
 // wall come from Blender's anchors (anchors.js).
 import { playerAvatarUrl } from '../players.js';
 import { ANCH } from './anchors.js';
+import { HUNT_SPOTS } from './steps.js';
 
 const ROOM_FILE = { kitchen: 'kitchen', ceremony: 'living', bedroom: 'bedroom', hoh: 'hoh', dr: 'dr', yard: 'yard', dining: 'dining' };
 export const SEASON_DIR = { 'summer-of-temptation': 'temptation', 'machine-summer': 'machine', 'summer-of-mystery': 'mystery',
@@ -51,11 +52,12 @@ export function ledgerAt(screens, si, idx) {
   const S0 = screens[si] || screens[0] || {};
   const L = { status: {}, nom: [], veto: null, out: [], votes: null, vetoPlay: [], ballots: [], revealed: [], hoh: null, moves: [], stances: {},
     spent: [], held: [], runs: {}, stamps: {}, safe: [], plus: null, bill: null, passed: null, shut: false,
-    chain: [], snubs: [], leftover: [] };
+    chain: [], snubs: [], leftover: [], looks: {}, heat: 0, found: null, secret: false };
   for (const n of S0.priorOut || []) { L.status[n] = 'out'; L.out.push(n); }
   for (let s = 0; s <= si; s++) {
     const steps = screens[s].steps; const upto = s < si ? steps.length - 1 : idx;
     for (const n of screens[s].rail?.spent || []) if (!L.spent.includes(n)) L.spent.push(n);
+    if (s === si && screens[s].hunt) L.heat = screens[s].hunt.heat || 0;
     for (let i = 0; i <= upto; i++) {
       const st = steps[i];
       for (const n of st.swipe || []) if (!L.spent.includes(n)) L.spent.push(n);
@@ -73,6 +75,10 @@ export function ledgerAt(screens, si, idx) {
       if (s === si && st.link) { if (!L.chain.length && screens[s].chainRun?.starter) L.chain = [screens[s].chainRun.starter]; L.chain.push(st.link[1]); }
       if (s === si && st.snub) L.snubs.push(st.snub);
       if (st.leftover) L.leftover = st.leftover.slice();
+      if (s === si && st.look) (L.looks[st.look[1]] ||= []).push(st.look[0]);
+      if (s === si && st.seen) L.heat = Math.min(4, L.heat + 1);
+      if (s === si && st.found) L.found = { name: st.found[0], place: st.found[1] };
+      if (s === si && st.secret) L.secret = true;
       if (st.hoh) { if (L.hoh && L.status[L.hoh] === 'hoh') L.status[L.hoh] = ''; L.hoh = st.hoh; L.status[st.hoh] = 'hoh'; }
       if (st.nom) { L.nom.forEach(n => { if (L.status[n] === 'nom') L.status[n] = ''; }); L.nom = st.nom.slice(); st.nom.forEach(n => { L.status[n] = 'nom'; }); }
       if (st.veto) L.veto = st.veto;
@@ -263,6 +269,23 @@ function chainHtml(S, L, st, fresh) {
     <div class="cwr"><span class="ch2">${L.leftover.length ? 'CHOSEN BY NOBODY' : `STILL WAITING · ${waiting.length}`}</span>${wait}</div></div>`;
 }
 
+// ── the Hidden Power's map of the house (Phase 7) ──────────────────────
+function huntHtml(S, L, st, fresh) {
+  const cells = HUNT_SPOTS.map(([id, name]) => {
+    const looked = L.looks[id] || [];
+    const isIt = id === S.hunt.place;
+    const found = L.found && L.found.place === id;
+    const now = fresh && st && ((st.look && st.look[1] === id) || (st.found && st.found[1] === id));
+    const cls = [found ? 'found' : '', isIt && L.secret && !found ? 'secret' : '', now ? 'now' : ''].join(' ');
+    const who = found ? `<span class="hf" style="--c:${col(L.found.name)}">${img(L.found.name)}</span>`
+      : looked.map(n => `<span class="hl" style="--c:${col(n)}">${img(n)}</span>`).join('');
+    const tag = found ? 'FOUND · ONLY YOU KNOW' : isIt && L.secret ? 'IT WAS HERE' : looked.length ? 'NOTHING' : '';
+    return `<div class="hc ${cls}"><b>${esc(name)}</b><div class="hw">${who}</div>${tag ? `<i>${tag}</i>` : ''}</div>`;
+  }).join('');
+  const bars = Array.from({ length: 4 }, (_, i) => `<span class="${i < L.heat ? 'on' : ''}"></span>`).join('');
+  return `<div class="huntmap"><div class="hh"><span>WHERE COULD IT BE</span><span class="hb">THE HOUSE BELIEVES ${bars}</span></div><div class="hg">${cells}</div></div>`;
+}
+
 function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   const isDr = st && st.k === 'dr';
   if (isDr) {
@@ -340,6 +363,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.rail && !S.railHidden && !isDr && idx >= 0) h += railHtml(S, L, st, fresh);
   if (st && st.rule != null && S.rules) h += rulesHtml(S, st.rule, fresh);
   if (S.chainRun && !isDr && idx >= 0) h += chainHtml(S, L, st, fresh);
+  if (S.hunt && !isDr && idx >= 0 && !(st && st.rule != null)) h += huntHtml(S, L, st, fresh);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;
@@ -352,5 +376,5 @@ export function stageHtml(screens, si, idx, fresh, o) {
     if (st.chip) h += `<div class="vchip">${st.chip.chip === 'choice' ? `<b>Houseguest's<br>choice</b>` : img(st.chip.chip)}<i>${esc(st.chip.drawer)} draws</i></div>`;
     if (cut) h += `<div class="flash"></div>`;
   }
-  return { html: h, cls: `stage ${st && st.k === 'bb' ? 'bbspeaks' : ''} ${st && st.rule != null ? 'rulesup' : ''} ${S.bright && !(st && st.k === 'dr') ? 'lightset' : ''} ${fresh && st && st.shake ? 'shake' : ''}`, cam: camNow, ledger: L };
+  return { html: h, cls: `stage ${st && st.k === 'bb' ? 'bbspeaks' : ''} ${st && st.rule != null ? 'rulesup' : ''} ${S.bright && !(st && st.k === 'dr') ? 'lightset' : ''} ${S.nv && !(st && st.k === 'dr') ? 'nv' : ''} ${fresh && st && st.shake ? 'shake' : ''}`, cam: camNow, ledger: L };
 }

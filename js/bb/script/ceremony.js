@@ -49,6 +49,28 @@ function part(kind, who, ending, ctx, house, salt) {
   } catch { return null; }
 }
 
+/**
+ * A writer for an act that draws many lines from the same few pools (a chain's
+ * ten picks, a week of searching): an entry already used in this act is drawn
+ * again with a different salt, up to four times.
+ */
+function freshWriter(ctx, house) {
+  const used = new Set();
+  return (kind, who, data, salt) => {
+    let got = null;
+    for (let k = 0; k < 4; k++) {
+      try {
+        const scene = makeScene(kind, who, data, house, 'living-room');
+        const rng = stableRng(gs.bb?.seasonSalt || 0, ctx.week?.num || 0, kind, `${salt}|${k}`);
+        got = writeScene(scene, ctx, rng);
+      } catch { return null; }
+      if (!used.has(got.lineId)) break;
+    }
+    if (got?.lineId) used.add(got.lineId);
+    return got ? got.lines : null;
+  };
+}
+
 /** `part` with data the lines fill in ({group}). */
 function partData(kind, who, data, ctx, house, salt) {
   try {
@@ -194,22 +216,7 @@ export function writeCeremony(act, week, house, extra = {}) {
     const quebec = act.style === 'quebec';
     const runs = [{ start: null, links: {}, passed: {} }, { start: null, links: {}, passed: {} }];
     const key = (a, b) => `${a}>${b}`;
-    // Ten picks from the same few pools in one act: an entry already used tonight
-    // is drawn again (a different salt), up to four times.
-    const usedIds = new Set();
-    const fresh = (kind, who, data, salt) => {
-      let got = null;
-      for (let k = 0; k < 4; k++) {
-        try {
-          const scene = makeScene(kind, who, data, house, 'living-room');
-          const rng = stableRng(gs.bb?.seasonSalt || 0, ctx.week?.num || 0, kind, `${salt}|${k}`);
-          got = writeScene(scene, ctx, rng);
-        } catch { return null; }
-        if (!usedIds.has(got.lineId)) break;
-      }
-      if (got?.lineId) usedIds.add(got.lineId);
-      return got ? got.lines : null;
-    };
+    const fresh = freshWriter(ctx, house);
     for (const b of act.beats || []) {
       const r = runs[b.run === 1 ? 1 : 0];
       const [a, x] = b.players || [];
@@ -234,6 +241,31 @@ export function writeCeremony(act, week, house, extra = {}) {
       if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
     }
     script.chain = quebec && act.secondChain ? runs : [runs[0]];
+  }
+
+  // ── the Hidden Power: the announcement, the searching, the find ──
+  // Where somebody looked is said the way a houseguest says it ("the pantry").
+  if (act.type === 'hidden-power') {
+    const SPOT = { pantry: 'the pantry', 'have-not': 'the have-not room', diary: 'the Diary Room', 'hoh-bath': 'the HOH bathroom',
+      storage: 'the storage room', yard: 'the backyard', laundry: 'the laundry room', memory: 'the memory wall' };
+    const fresh = freshWriter(ctx, house);
+    const others = house.filter(n => n && n !== hoh);
+    for (const b of act.beats || []) {
+      const [a, x] = b.players || [];
+      const salt = `hunt|${b.part}|${(b.players || []).join('|')}`;
+      let lines = null;
+      if (b.part === 'announce' && others.length) {
+        const voice = others[(Number(week?.num) || 0) % others.length];
+        lines = fresh('hunt.announce', { a: voice }, { ending: 'scene' }, salt);
+        if (lines) b.players = [voice];
+      }
+      if (b.part === 'search' && a) lines = fresh('hunt.search', { a }, { ending: 'scene', place: SPOT[b.place] || 'there' }, salt);
+      if (b.part === 'seen' && a && x) lines = fresh('hunt.seen', { a, b: x }, { ending: 'scene' }, salt);
+      if (b.part === 'spread' && a) lines = fresh('hunt.spread', { a }, { ending: 'scene' }, salt);
+      if (b.part === 'found' && a) lines = fresh('hunt.found', { a }, { ending: 'scene', place: SPOT[b.place] || 'there', power: act.power || 'it' }, salt);
+      if (b.part === 'near' && a) lines = fresh('hunt.near', { a }, { ending: 'scene' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
   }
 
   for (const k of Object.keys(script)) {

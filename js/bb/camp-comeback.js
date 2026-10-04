@@ -27,12 +27,14 @@
 // event pool cast a camper as a voter, a nominee or a veto player in
 // narration, which is a much worse bug than the one it solves.
 import { gs } from '../core.js';
-import { pStats, pronouns } from '../players.js';
+import { pStats } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';
-import { aptitude, makePicker } from '../bb-comps/_shared.js';
+import { aptitude } from '../bb-comps/_shared.js';
 
-const beat = (text, players, badgeText, badgeClass = 'gold') =>
-  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass });
+// Beats are plain facts with a `part`; the words are written by
+// bb/script/ceremony.js from lines/campact.js.
+const beat = (text, players, badgeText, badgeClass = 'gold', part = null, extra = {}) =>
+  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass, ...(part ? { part } : {}), ...extra });
 
 /** How many go to camp before the door opens. The show ran four. */
 export const CAMP_SIZE = 4;
@@ -44,12 +46,6 @@ export const campers = () => store().filter(c => !c.returned && !c.gone).map(c =
 /** Is this houseguest a camper right now? */
 export const isCamper = name => campers().includes(name);
 
-const ARRIVAL = [
-  (n, p) => `${n} is voted out, hugs everybody, walks to the door — and is told to turn around. The camper's uniform is already folded on the bed.`,
-  (n, p) => `The vote goes against ${n}, and then nothing happens. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} still here, still at the table, with no game left to play and nowhere to go.`,
-  (n, p) => `${n} is evicted and stays evicted, in the house, in the room with the small television and the bad bed.`,
-  (n, p) => `"You are not leaving." It sounds like mercy for about four seconds, and then ${n} works out what the rest of the week is going to be like.`,
-];
 
 /**
  * Send an evictee to camp instead of out of the house.
@@ -63,24 +59,23 @@ export function sendToCamp({ week, evicted, house = [], rng = Math.random } = {}
   if (living.length >= CAMP_SIZE) return null;        // the door is already full
 
   camp.push({ name: evicted, week: week?.num || 0, returned: false, gone: false });
-  const p = pronouns(evicted);
-  const say = makePicker(rng);
-  const beats = [beat(say(ARRIVAL)(evicted, p), [evicted], 'NOT LEAVING', 'red')];
+  const nth = campers().length;
+  rng();   // the draw that used to pick this beat's wording
+  const beats = [beat(`${evicted} is evicted but stays in the house, in camp (${nth} of ${CAMP_SIZE}).`,
+    [evicted], 'NOT LEAVING', 'red', 'arrive', { nth })];
 
   // Whoever voted them out has to keep living with them, which is the whole
   // twist in one sentence.
   const against = (week?.ballots || []).filter(b => b.evict === evicted)
     .map(b => b.voter).filter(n => house.includes(n));
   if (against.length) {
-    beats.push(beat(
-      `${against.slice(0, 3).join(', ')} voted ${evicted} out and will be eating breakfast with ${p.obj} tomorrow, `
-        + 'and every morning after that, for as long as this lasts.',
-      [evicted, ...against.slice(0, 3)], 'STILL AT THE TABLE', 'red'));
+    beats.push(beat(`${against.slice(0, 3).join(', ')} voted ${evicted} out and still live with ${evicted}.`,
+      [evicted, ...against.slice(0, 3)], 'STILL AT THE TABLE', 'red', 'voters'));
   }
   const full = campers().length >= CAMP_SIZE;
   return {
     type: 'camp-comeback', week: week?.num || 0, secret: false,
-    arrival: evicted, camp: campers(), full, beats,
+    arrival: evicted, camp: campers(), nth, size: CAMP_SIZE, full, beats,
   };
 }
 
@@ -105,17 +100,13 @@ export function runCampComeback({ week, house = [], rng = Math.random } = {}) {
     name, score: aptitude(name, RETURN_MIX) + (rng() - 0.5) * 5.2,
   })).sort((a, b) => b.score - a.score);
   const winner = runs[0].name;
-  const beats = [beat(
-    `The camp room opens and all ${living.length} of them are walked into the yard. Only one is walking back `
-      + 'into the game, and every houseguest still playing has to stand there and watch which.',
-    [...living], 'THE DOOR OPENS', 'gold')];
+  const beats = [beat(`All ${living.length} campers play for one place back in the game.`,
+    [...living], 'THE DOOR OPENS', 'gold', 'open')];
 
-  for (const r of runs.slice(1)) {
-    const p = pronouns(r.name);
-    beats.push(beat(
-      `${r.name} does not get there. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} been evicted twice now, `
-        + 'which is a thing almost nobody in this game can say.',
-      [r.name], 'GONE FOR GOOD', 'red'));
+  // last place first, so the door closes on them one at a time
+  for (const r of runs.slice(1).reverse()) {
+    beats.push(beat(`${r.name} loses the return competition and leaves the house for good.`,
+      [r.name], 'GONE FOR GOOD', 'red', 'out', { place: runs.indexOf(r) + 1 }));
   }
 
   // Who in the house is least pleased about this, which is a real fact rather
@@ -123,10 +114,11 @@ export function runCampComeback({ week, house = [], rng = Math.random } = {}) {
   const bond = (a, b) => { try { return getPerceivedBond(a, b); } catch { return 0; } };
   const enemy = [...house].filter(n => n !== winner)
     .sort((a, b) => bond(winner, a) - bond(winner, b))[0];
-  beats.push(beat(
-    `${winner} walks back in with four weeks of watching behind ${pronouns(winner).obj} — every conversation `
-      + `the house had while it thought ${pronouns(winner).sub} could not hear${enemy ? `, including the ones ${enemy} had` : ''}.`,
-    [winner, enemy].filter(Boolean), 'BACK IN, AND INFORMED', 'gold'));
+  const since = camp.find(c => c.name === winner)?.week || 0;
+  const weeks = Math.max(0, (week?.num || 0) - since);   // 0: sent to camp tonight
+  beats.push(beat(weeks ? `${winner} wins and is back in the game after ${weeks} ${weeks === 1 ? 'week' : 'weeks'} in camp.`
+    : `${winner} was sent to camp tonight, wins, and is straight back in the game.`,
+    [winner, enemy].filter(Boolean), 'BACK IN, AND INFORMED', 'gold', 'back', { weeks }));
 
   for (const c of camp) {
     if (c.returned || c.gone) continue;
@@ -135,7 +127,7 @@ export function runCampComeback({ week, house = [], rng = Math.random } = {}) {
 
   return {
     type: 'camp-return', week: week?.num || 0, secret: false,
-    played: [...living], winner,
+    played: [...living], winner, order: runs.map(r => r.name),
     gone: living.filter(n => n !== winner), beats,
   };
 }

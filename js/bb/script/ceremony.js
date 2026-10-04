@@ -307,6 +307,35 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── Camp Comeback: evicted and kept, and the night the door opens ──
+  if (act.type === 'camp-comeback' || act.type === 'camp-return') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `camp|${act.type}|${b.part}|${p.join('|')}`;
+      let lines = null;
+      if (b.part === 'arrive' && p[0]) lines = fresh('campact.arrive', { a: p[0] },
+        { ending: b.nth === 1 ? 'first' : b.nth >= (act.size || 4) ? 'last' : 'more' }, salt);
+      // one voter speaks for the rest (a different one each week): they voted,
+      // and they still have to see them. Not for the last camper, who plays
+      // for the door the same night and never has a morning in camp.
+      if (b.part === 'voters' && p.length >= 2 && !act.full) {
+        const v = p[1 + ((act.week || 0) % (p.length - 1))];
+        lines = fresh('campact.voters', { a: v, b: p[0] }, { ending: 'scene' }, salt);
+      }
+      if (b.part === 'open' && p.length) lines = fresh('campact.open', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'out' && p[0]) lines = fresh('campact.out', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'back' && p[0]) {
+        lines = fresh('campact.back', { a: p[0] }, { ending: b.weeks ? 'long' : 'tonight' }, salt);
+        if (p[1]) {
+          const more = fresh('campact.enemy', { a: p[1], b: p[0] }, { ending: 'scene' }, `${salt}|enemy`);
+          if (Array.isArray(lines) && Array.isArray(more)) lines = [...lines, ...more];
+        }
+      }
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   for (const k of Object.keys(script)) {
     const v = script[k];
     if (!v || (typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length)) delete script[k];

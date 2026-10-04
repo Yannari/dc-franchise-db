@@ -7829,6 +7829,9 @@ export function simulateBBWeek(options = {}) {
         competition: options.battleBackCompetition || null,
       });
       if (week.battleBack) {
+        // The words (lines/bkact.js), without addBeats: the evictees are not in
+        // the house, so this schedules no house scenes.
+        try { writeCeremony(week.battleBack, week, gs.activePlayers || [], {}); } catch { /* words never stop a week */ }
         week.acts.push(week.battleBack);
         if (week.battleBack.returned) week.returnedHouseguest = week.battleBack.returned;
       }

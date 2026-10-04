@@ -1406,6 +1406,49 @@ function nightmareScreens(act, ctx) {
   }];
 }
 
+// ── Battle Back (Phase 7) ───────────────────────────────────────────────
+// The evicted come back through the door for one place in the house. Big
+// Brother explains the shape: the ladder (the first two evicted face off and
+// the winner takes on the next, in eviction order) or the showdown (one heat,
+// a final, and a champion the house elects to hold the door). The board is
+// the field, greying out as they fall. Words: lines/bkact.js.
+function battleBackScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  const n = (act.contenders || []).length;
+  const show = act.style === 'showdown';
+  const steps = show ? [
+    { k: 'bb', t: `Evicted houseguests, ${word(n)} of you have one more chance to get back into this house.`, rule: 1 },
+    { k: 'bb', t: 'You will all play one heat. The top two will go head to head.', rule: 2 },
+    { k: 'bb', t: 'The winner of that will face a champion, chosen by the houseguests inside.', rule: 3 },
+    { k: 'bb', t: 'Beat the champion and you are back in the game, with no safety. Lose, and nobody comes back.', rule: 4 },
+  ] : [
+    { k: 'bb', t: `Evicted houseguests, ${word(n)} of you have one more chance to get back into this house.`, rule: 1 },
+    { k: 'bb', t: 'You will play in the order you were evicted. The first two of you face off first.', rule: 2 },
+    { k: 'bb', t: 'The winner takes on the next evictee, and so on down the line.', rule: 3 },
+    { k: 'bb', t: 'The last one standing is back in the game, with no safety at all.', rule: 4 },
+  ];
+  for (const b of beats) {
+    const p = b.players || [];
+    if (b.part === 'open') steps.push(...linesOf(b));
+    if (b.part === 'heat') steps.push({ k: 'beat', t: `${listOf(p)} finish in the top two.`, toast: ['TOP TWO', '#22e1ff'] }, ...linesOf(b));
+    if (b.part === 'duel') steps.push({ k: 'beat', t: `${b.label ? b.label.charAt(0) + b.label.slice(1).toLowerCase() + ': ' : ''}${p[0]} beats ${p[1]}.`, bkWin: p[0] }, ...linesOf(b));
+    if (b.part === 'out') steps.push({ k: 'beat', t: `${p[0]} is out, for good.`, bkOut: p[0] }, ...linesOf(b));
+    if (b.part === 'champion') steps.push({ k: 'beat', t: `The house votes ${p[0]} its champion, ${b.votes} of ${b.of}, to face ${p[1]}.`, bkChamp: p[0], toast: ['THE CHAMPION', '#f5c542'] }, ...linesOf(b));
+    if (b.part === 'held') steps.push({ k: 'beat', t: `${p[0]} beats ${p[1]}. Nobody comes back.`, bkOut: p[1], toast: ['THE DOOR HOLDS', '#ff3355'] }, ...linesOf(b));
+    if (b.part === 'back') steps.push({ k: 'bb', t: `${p[0]}, you are back in the game.`, bkBack: p[0], toast: ['BACK IN THE HOUSE', '#f5c542'] }, ...linesOf(b));
+  }
+  return [{
+    id: `bb-battleback-w${ctx.week}`, kind: 'battleback', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: 'LIVE',
+    kicker: 'Cam 05 · Backyard', title: 'Battle Back', label: 'Battle Back', sub: show ? 'One heat, one champion' : 'The ladder, in eviction order',
+    cast: [], battleback: { field: [...(act.contenders || [])] },
+    rules: show
+      ? [['ONE HEAT', 'every evictee plays; the top two go on'], ['HEAD TO HEAD', 'the top two face off'], ['THE CHAMPION', 'the house picks someone to hold the door'], ['NO SAFETY', 'beat them, and you are back — and nominatable']]
+      : [['THE LADDER', 'in eviction order, two at a time'], ['WINNER STAYS', 'the winner faces the next evictee'], ['LAST STANDING', 'goes back into the house'], ['NO SAFETY', 'the returnee can go straight on the block']],
+    rulesTitle: 'BATTLE BACK · HOW IT WORKS', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1501,6 +1544,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
+      case 'battle-back': flush(); for (const scr of battleBackScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'nightmare-power': flush(); for (const scr of nightmareScreens(act, ctx)) ceremony(scr); ctx.nominees = [...(act.nominees || ctx.nominees)]; beatsOf(act); break;
       case 'temptation': case 'temptation-curse': flush(); for (const scr of temptationScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'second-veto': flush(); for (const scr of secondVetoScreens(act, ctx)) ceremony(scr); if (act.used) ctx.nominees = [...(act.nominees || ctx.nominees)]; beatsOf(act); break;
@@ -1538,7 +1582,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

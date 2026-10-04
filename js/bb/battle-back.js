@@ -27,7 +27,7 @@
 import { gs, seasonConfig } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { addBond } from '../bonds.js';
-import { aptitude, makePicker, clamp } from '../bb-comps/_shared.js';
+import { aptitude, clamp } from '../bb-comps/_shared.js';
 
 export const BATTLE_BACK_STYLES = Object.freeze(['gauntlet', 'showdown']);
 
@@ -37,22 +37,10 @@ const DEFAULT_MIX = Object.freeze({ endurance: 0.3, physical: 0.28, mental: 0.24
 const round2 = v => Math.round(v * 100) / 100;
 const noise = (rng, amt = 2.5) => (rng() - 0.5) * amt * 2;
 
-const beat = (text, players, badgeText, badgeClass = 'challenge') =>
-  ({ type: 'battle-back', text, players: [...players], badgeText, badgeClass });
-
-const DUEL_WIN = [
-  (w, l, p) => `${w} takes it off ${l} by a margin nobody in the yard could call, and ${p.sub} does not celebrate so much as exhale.`,
-  (w, l) => `${w} is simply better at this than ${l} is, and it is over early enough that the crew stops pretending otherwise.`,
-  (w, l, p) => `${l} leads it for most of the way. ${w} takes it at the end, and ${p.sub} knows exactly how close that was.`,
-  (w, l) => `${w} beats ${l} on the last exchange. One of them goes back to a bed inside and the other one goes to the airport.`,
-];
-
-const DUEL_OUT = [
-  (n, p) => `${n} sits down on the mat and does not get up for a while. ${p.Sub} was eleven days from a second chance and is now finished.`,
-  (n) => `${n} shakes the winner's hand, which costs ${n} something, and walks off without looking at the house.`,
-  (n, p) => `${n} says ${p.sub} would rather have gone out in the house than out here, and means it.`,
-  (n) => `That is the end of it for ${n} — evicted once, and now beaten for the right to argue about it.`,
-];
+// Beats are plain facts with a `part`; the words are written by
+// bb/script/ceremony.js from lines/bkact.js.
+const beat = (text, players, badgeText, badgeClass = 'challenge', part = null, extra = {}) =>
+  ({ type: 'battle-back', text, players: [...players], badgeText, badgeClass, ...(part ? { part } : {}), ...extra });
 
 /**
  * Who is eligible to fight their way back.
@@ -127,8 +115,9 @@ export function runBattleBack({ week, rng = Math.random, style = 'gauntlet', com
   if (field.length < 2) return null;
 
   const mix = competition?.stats && Object.keys(competition.stats).length ? competition.stats : DEFAULT_MIX;
-  const say = makePicker(rng);
-  const out = makePicker(rng);
+  // Each beat's wording used to be one draw from one of two pickers; the draws stay.
+  const say = () => rng();
+  const out = () => rng();
   const beats = [];
   const rounds = [];
   const house = [...(gs.activePlayers || [])];
@@ -142,9 +131,8 @@ export function runBattleBack({ week, rng = Math.random, style = 'gauntlet', com
   });
 
   const compName = competition?.name || 'the battle back';
-  beats.push(beat(
-    `The yard is not the yard tonight. ${field.length} evicted houseguests come back through a door they were told they would never see again, and only one of them is going through it the other way.`,
-    field.slice(0, 4), 'BATTLE BACK', 'challenge'));
+  beats.push(beat(`${field.length} evicted houseguests play for one place back in the house.`,
+    field.slice(0, 4), 'BATTLE BACK', 'challenge', 'open', { count: field.length }));
 
   let returned = null;
   let champion = null;
@@ -160,13 +148,12 @@ export function runBattleBack({ week, rng = Math.random, style = 'gauntlet', com
 
     const advancing = heat.slice(0, 2).map(h => h.name);
     const knocked = heat.slice(2).map(h => h.name);
-    beats.push(beat(
-      `${compName} runs as one heat with everybody in it. ${advancing.join(' and ')} finish one-two and stay alive.${
-        knocked.length ? ` ${knocked.join(', ')} ${knocked.length === 1 ? 'is' : 'are'} done for good.` : ''}`,
-      advancing, 'TOP TWO', 'challenge'));
+    beats.push(beat(`${compName}: ${advancing.join(' and ')} finish in the top two.`,
+      advancing, 'TOP TWO', 'challenge', 'heat', { knocked: [...knocked] }));
     knocked.forEach(n => {
       eliminatedForGood.push(n);
-      beats.push(beat(out(DUEL_OUT)(n, pronouns(n)), [n], 'ELIMINATED', 'grey'));
+      out();
+      beats.push(beat(`${n} is out of the battle back.`, [n], 'ELIMINATED', 'grey', 'out'));
     });
 
     let survivor = advancing[0];
@@ -174,28 +161,27 @@ export function runBattleBack({ week, rng = Math.random, style = 'gauntlet', com
       const d = duel(advancing[0], advancing[1], mix, rng, weeksOutOf);
       survivor = d.winner;
       rounds.push({ label: 'FINAL', kind: 'duel', a: advancing[0], b: advancing[1], winner: d.winner, scores: d.scores });
-      beats.push(beat(say(DUEL_WIN)(d.winner, d.loser, pronouns(d.winner)), [d.winner, d.loser], 'HEAD TO HEAD', 'challenge'));
+      say();
+      beats.push(beat(`${d.winner} beats ${d.loser}.`, [d.winner, d.loser], 'HEAD TO HEAD', 'challenge', 'duel', { label: 'FINAL' }));
       eliminatedForGood.push(d.loser);
-      beats.push(beat(out(DUEL_OUT)(d.loser, pronouns(d.loser)), [d.loser], 'ELIMINATED', 'grey'));
+      out();
+      beats.push(beat(`${d.loser} is out of the battle back.`, [d.loser], 'ELIMINATED', 'grey', 'out'));
     }
 
     // The house sends somebody to hold the door shut.
     const elected = electChampion(house, mix, rng);
     if (elected) {
       champion = elected;
-      beats.push(beat(
-        `The house votes for who defends the door and lands on ${elected.name}, ${elected.votes} of ${house.length}. ${
-          pronouns(elected.name).Sub} walks out to face ${survivor} carrying everybody else's week.`,
-        [elected.name, survivor], 'THE CHAMPION', 'gold'));
+      beats.push(beat(`The house elects ${elected.name}, ${elected.votes} of ${house.length}, to defend the door against ${survivor}.`,
+        [elected.name, survivor], 'THE CHAMPION', 'gold', 'champion', { votes: elected.votes, of: house.length }));
       const d = duel(survivor, elected.name, mix, rng, weeksOutOf);
       rounds.push({ label: 'THE DOOR', kind: 'duel', a: survivor, b: elected.name, winner: d.winner, scores: d.scores });
       if (d.winner === survivor) {
         returned = survivor;
       } else {
         eliminatedForGood.push(survivor);
-        beats.push(beat(
-          `${elected.name} holds the door. ${survivor} came the whole way back and is beaten one round from a bed, and nobody re-enters this house tonight.`,
-          [elected.name, survivor], 'DOOR HELD', 'red'));
+        beats.push(beat(`${elected.name} beats ${survivor}. Nobody comes back.`,
+          [elected.name, survivor], 'DOOR HELD', 'red', 'held'));
         // Defending the house is a real credential and the house treats it as
         // one — this is a comp win in front of everybody.
         gs.popularity ||= {};
@@ -212,10 +198,13 @@ export function runBattleBack({ week, rng = Math.random, style = 'gauntlet', com
       const challenger = field[i];
       const d = duel(holder, challenger, mix, rng, weeksOutOf);
       rounds.push({ label: `ROUND ${i}`, kind: 'duel', a: holder, b: challenger, winner: d.winner, scores: d.scores });
-      beats.push(beat(say(DUEL_WIN)(d.winner, d.loser, pronouns(d.winner)), [d.winner, d.loser],
-        i === field.length - 1 ? 'FINAL ROUND' : `ROUND ${i}`, i === field.length - 1 ? 'gold' : 'challenge'));
+      say();
+      beats.push(beat(`Round ${i}: ${d.winner} beats ${d.loser}.`, [d.winner, d.loser],
+        i === field.length - 1 ? 'FINAL ROUND' : `ROUND ${i}`, i === field.length - 1 ? 'gold' : 'challenge', 'duel',
+        { label: i === field.length - 1 ? 'FINAL ROUND' : `ROUND ${i}` }));
       eliminatedForGood.push(d.loser);
-      beats.push(beat(out(DUEL_OUT)(d.loser, pronouns(d.loser)), [d.loser], 'ELIMINATED', 'grey'));
+      out();
+      beats.push(beat(`${d.loser} is out of the battle back.`, [d.loser], 'ELIMINATED', 'grey', 'out'));
       holder = d.winner;
     }
     returned = holder;
@@ -283,12 +272,7 @@ export function applyReturn(name, act, weekNum) {
   // A Bonus Life return happens minutes after the vote rather than weeks
   // later, so the act it writes into carries no weeksOut ledger at all.
   const weeksOut = act.weeksOut?.[name] || 0;
-  act.beats.push(beat(
-    `${name} walks back into the house. ${grudges.length
-      ? `${grudges.length === 1 ? 'One person' : `${grudges.length} people`} in that room voted ${
-        pronouns(name).obj} out and ${pronouns(name).sub} has had ${
-        weeksOut > 1 ? `${weeksOut} weeks` : weeksOut === 1 ? 'a week'
-          : 'about eleven minutes'} to learn their names.`
-      : 'Nobody in that room voted against them, which is its own kind of problem for whoever did.'} No immunity, no head start, and the block is open to ${pronouns(name).obj} on Thursday like anybody else.`,
-    [name], 'BACK IN THE HOUSE', 'gold'));
+  // Votes are secret: the returnee knows how many voted against them, never who.
+  act.beats.push(beat(`${name} walks back into the house, with no immunity.`,
+    [name], 'BACK IN THE HOUSE', 'gold', 'back', { against: grudges.length, weeksOut }));
 }

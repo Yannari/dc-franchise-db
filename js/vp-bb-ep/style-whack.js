@@ -66,6 +66,21 @@ export const BBX_WHACK_CSS = `
 .bbx .stage .v2c.off i{color:#f5c542}
 .bbx .stage .v2c.new{box-shadow:inset 0 0 0 .18cqw #ff3355,0 0 1.6cqw rgba(255,51,85,.55)}
 .bbx .stage .v2c.now{animation:bbx-whin .5s cubic-bezier(.2,1.4,.4,1) both}
+.bbx .stage .bkboard{position:absolute;left:50%;transform:translateX(-50%);top:7.2cqw;z-index:7;max-width:84cqw;padding:.6cqw 1.2cqw .8cqw;border-radius:1cqw;
+  background:linear-gradient(180deg,rgba(6,14,24,.88),rgba(6,14,24,.64));box-shadow:0 0 0 .1cqw rgba(34,225,255,.42);backdrop-filter:blur(.6cqw)}
+.bbx .stage .bkboard .bkh{display:block;text-align:center;font:700 .74cqw 'Chakra Petch';letter-spacing:.22cqw;color:#22e1ff;margin-bottom:.5cqw}
+.bbx .stage .bkr{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.6cqw}
+.bbx .stage .bkt{width:5.6cqw;display:flex;flex-direction:column;align-items:center;gap:.2cqw;padding:.4cqw .3cqw .45cqw;border-radius:.6cqw;background:rgba(34,225,255,.07);box-shadow:inset 0 0 0 .12cqw rgba(34,225,255,.4)}
+.bbx .stage .bkf{position:relative;width:4cqw;aspect-ratio:1;border-radius:.4cqw;overflow:hidden;background:var(--c)}
+.bbx .stage .bkf img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.bbx .stage .bkt b{font:800 .58cqw Archivo;text-transform:uppercase;color:#fff;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bbx .stage .bkt i{font:700 .5cqw 'Chakra Petch';letter-spacing:.1cqw;font-style:normal;color:#9eefff}
+.bbx .stage .bkt.out{filter:grayscale(1) brightness(.5)}
+.bbx .stage .bkt.back{box-shadow:inset 0 0 0 .18cqw #f5c542,0 0 1.6cqw rgba(245,197,66,.6);background:rgba(245,197,66,.16)}
+.bbx .stage .bkt.back i{color:#f5c542}
+.bbx .stage .bkt.champ{box-shadow:inset 0 0 0 .16cqw #f5c542}
+.bbx .stage .bkt.now{animation:bbx-whin .5s cubic-bezier(.2,1.4,.4,1) both}
+.bbx .stage .bkvs{font:800 1cqw Archivo;color:#f5c542;padding:0 .3cqw}
 @keyframes bbx-coinflip{0%{transform:rotateX(0)}60%{transform:rotateX(1080deg)}100%{transform:rotateX(1080deg)}}
 @media (prefers-reduced-motion:reduce){.bbx .stage .cres{animation:none}}
 @keyframes bbx-whin{from{transform:translateY(-.6cqw);opacity:.3}}

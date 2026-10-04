@@ -430,6 +430,20 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── Battle Back (and the door a Bonus Life opens) ──
+  if (act.type === 'battle-back' || act.type === 'bonus-life') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `bk|${b.part}|${b.label || ''}|${p.join('|')}`;
+      let lines = null;
+      if (['open', 'heat', 'out'].includes(b.part) && p[0]) lines = fresh(`bkact.${b.part}`, { a: p[0] }, { ending: 'scene' }, salt);
+      if (['duel', 'champion', 'held'].includes(b.part) && p.length >= 2) lines = fresh(`bkact.${b.part}`, { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
+      if (b.part === 'back' && p[0]) lines = fresh('bkact.back', { a: p[0] }, { ending: b.against ? 'voted' : 'clean' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   // ── The Nightmare Power: a ceremony undone at three in the morning ──
   if (act.type === 'nightmare-power') {
     const fresh = freshWriter(ctx, house);

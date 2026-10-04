@@ -308,6 +308,20 @@ function pxHtml(S, L, st, fresh) {
   return `<div class="pxtable"><span class="pt">THE BOXES · ONE HOLDS THE VETO</span><div class="pxr">${boxes}</div></div>`;
 }
 
+// ── Battle Back's field (Phase 7) ──────────────────────────────────────
+function battleBackHtml(S, L, st, fresh, idx) {
+  const B = S.battleback || {};
+  const seen = S.steps.slice(0, idx + 1);
+  const out = new Set(seen.filter(x => x.bkOut).map(x => x.bkOut));
+  const champ = seen.find(x => x.bkChamp)?.bkChamp, back = seen.find(x => x.bkBack)?.bkBack;
+  const tile = (n, cls = '') => {
+    const now = fresh && (st?.bkOut === n || st?.bkWin === n || st?.bkBack === n || st?.bkChamp === n);
+    const tag = n === back ? 'BACK IN' : out.has(n) ? 'OUT' : cls === 'champ' ? 'CHAMPION' : 'EVICTED';
+    return `<div class="bkt ${cls} ${n === back ? 'back' : out.has(n) ? 'out' : ''} ${now ? 'now' : ''}"><span class="bkf" style="--c:${col(n)}">${img(n)}</span><b>${esc(n)}</b><i>${tag}</i></div>`;
+  };
+  return `<div class="bkboard"><span class="bkh">BATTLE BACK</span><div class="bkr">${(B.field || []).map(n => tile(n)).join('')}${champ ? `<span class="bkvs">VS</span>${tile(champ, 'champ')}` : ''}</div></div>`;
+}
+
 // ── The second veto's block (Phase 7) ──────────────────────────────────
 function veto2Html(S, L, st, fresh, idx) {
   const V = S.veto2 || {};
@@ -575,6 +589,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.power && !isDr && idx >= 0 && !(st && st.rule != null)) h += powerCardHtml(S, L, st, fresh, idx);
   if (S.coin && !isDr && idx >= 0 && !(st && st.rule != null)) h += coinHtml(S, L, st, fresh, idx);
   if (S.veto2 && !isDr && idx >= 0 && !(st && st.rule != null)) h += veto2Html(S, L, st, fresh, idx);
+  if (S.battleback && !isDr && idx >= 0 && !(st && st.rule != null)) h += battleBackHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;

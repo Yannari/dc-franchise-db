@@ -77,11 +77,12 @@ describe('the week produced the acts', () => {
   });
 });
 
+// Phase 7: the week plays as stepped sets (js/vp-bb-ep), which replace the
+// classic pairing / chained / partner boards.
 describe('and every one of them reached a screen', () => {
   it('draws the pairing, with the pairs on it', () => {
-    const [screen] = screensFor('You Go, They Go: The Pairing');
+    const [screen] = screensFor('You Go, They Go');
     expect(screen, 'the pairing never became a screen').toBeTruthy();
-    expect(screen.html).toContain('YOU GO, THEY GO');
     const open = acts.find(a => a.type === 'duo-week-open');
     for (const [a, b] of open.pairs) {
       expect(screen.html, `the pair ${a} & ${b} is missing`).toContain(a);
@@ -92,25 +93,21 @@ describe('and every one of them reached a screen', () => {
   it('states the rule that makes the week worth watching', () => {
     // Not "two evictions" — the specific, cruel half: the partner leaves on
     // whatever the room thought of them, including nothing.
-    const html = htmlFor('You Go, They Go: The Pairing');
-    expect(html).toMatch(/does not matter if it was none/i);
+    expect(htmlFor('You Go, They Go')).toMatch(/Even if it was none/);
   });
 
-  it('draws the week’s duo events, with their text', () => {
-    const html = htmlFor('You Go, They Go: Chained');
+  it('draws the week’s duo events', () => {
+    const html = htmlFor('You Go, They Go · chained');
     expect(html.length, 'the events never became a screen').toBeGreaterThan(0);
-    const ev = acts.find(a => a.type === 'duo-week-events');
-    const first = ev.events[0];
-    // A slice, because the renderer escapes — the run of words has to survive.
-    expect(html).toContain(first.badgeText);
+    expect(html).toContain('Two pairs are on the block');
   });
 
   it('draws both names at the door', () => {
-    const list = screensFor('You Go, They Go: And Their Partner');
+    const list = screensFor('You Go, They Go · they go too');
     expect(list.length, 'two people left and only the vote was drawn').toBeGreaterThan(0);
     const out = acts.find(a => a.type === 'duo-week-eviction');
     const html = list.map(s => s.html).join('');
-    expect(html).toContain('AND THEIR PARTNER');
+    expect(html).toContain('You are evicted too');
     expect(html).toContain(out.evicted);
     expect(html).toContain(out.taken);
   });
@@ -120,7 +117,7 @@ describe('and every one of them reached a screen', () => {
     // name leaving was not a close vote, it was not a vote at all.
     const zero = acts.filter(a => a.type === 'duo-week-eviction' && a.gotNothing);
     if (!zero.length) return; // covered exhaustively in the mechanics file
-    expect(htmlFor('You Go, They Go: And Their Partner')).toMatch(/ZERO VOTES/);
+    expect(htmlFor('You Go, They Go · they go too')).toMatch(/Not one houseguest voted/);
   });
 });
 

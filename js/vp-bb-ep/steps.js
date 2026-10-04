@@ -100,6 +100,11 @@ function compScreen(act, ctx, kind) {
   if (isHoh && act.secret) {
     // The Invisible HOH: the house never sees who won. Only the viewer does.
     steps.push({ k: 'beat', t: `The lights go out before anybody sees who finished first. ONLY YOU KNOW: ${winner} is the Head of Household, and nobody in the house will be told.`, toast: ['ONLY YOU KNOW', '#7c5cff'], hoh: winner });
+  } else if (!isHoh && act.orderOnly) {
+    // Prizes and Punishments: this race only set the pick order — the veto is in a box.
+    const order = act.pickOrder || [];
+    steps.push({ k: 'beat', t: `${winner} finishes first, so ${winner} picks last.${order[0] ? ` ${order[0]} finished last and picks first.` : ''}`,
+      toast: ['PICK ORDER', '#d99a10'] });
   } else if (isHoh && act.coHoh) {
     steps.push({ k: 'beat', t: `${winner} and ${act.coHoh} both win. TWO HEADS OF HOUSEHOLD this week, and each of them names a block.`, toast: ['TWO HOHS', '#d99a10'], hoh: winner });
   } else {
@@ -108,7 +113,7 @@ function compScreen(act, ctx, kind) {
   }
   const reaction = kind === 'final' ? null : isHoh ? act.script?.hoh : act.script?.veto;
   if (reaction?.length && !(isHoh && act.secret)) steps.push(...scriptSteps(reaction));
-  else if (!(isHoh && act.secret)) steps.push({ k: 'say', by: winner, push: true, t: pickBy(isHoh
+  else if (!(isHoh && act.secret) && !(!isHoh && act.orderOnly)) steps.push({ k: 'say', by: winner, push: true, t: pickBy(isHoh
     ? ['Yes! Oh my god, yes!', 'I needed that. I really needed that.', 'Head of Household. Say it again.', 'Okay. Okay! Breathe.']
     : ['That veto is mine.', 'Yes! I am not going anywhere this week.', 'Power of Veto, baby!', 'I needed that one.'], `${ctx.week}|${kind}|${winner}`) });
   return {
@@ -796,6 +801,99 @@ function huntScreens(act, ctx) {
   })];
 }
 
+// ── Prizes and Punishments (Phase 7) ────────────────────────────────────
+// The veto competition only set the pick order. One wrapped box per player on
+// a table across the room: each is opened in turn — the veto, a prize or a
+// punishment — and each opener may swap for any box already open, so the veto
+// can change hands in public. Words: lines/pxact.js on the act's beats.
+function pxScreens(act, ctx) {
+  const order = (act.order || []).filter(Boolean);
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const steps = [
+    { k: 'bb', t: 'The veto competition did not decide the veto. It decided the order you pick in. Last place picks first.', rule: 1 },
+    { k: 'bb', t: 'There is one box for each of you. One holds the Power of Veto. The rest hold prizes, or punishments.', rule: 2 },
+    { k: 'bb', t: 'When you open your box, you may swap it for any box that has already been opened.', rule: 3 },
+    { k: 'bb', t: 'Whatever you are holding at the end is yours: the veto, the prize, or the punishment.', rule: 4 },
+  ];
+  if (order[0]) steps.push({ k: 'bb', t: `${order[0]}, you finished last, so you pick first.` });
+  for (const b of act.beats || []) {
+    const [a, x] = b.players || [];
+    const said = linesOf(b);
+    const mark = b.part === 'open' ? { open: [a, b.boxNo, b.kind, b.item], ...(b.kind === 'veto' ? { toast: ['THE VETO IS OUT', '#f5c542'] } : {}) }
+      : b.part === 'swap' ? { swap: [a, x, b.boxNo, b.gaveNo], ...(b.kind === 'veto' ? { toast: ['THE VETO CHANGES HANDS', '#ff3355'] } : {}) } : {};
+    if (said.length) { said[0] = { ...said[0], ...mark }; steps.push(...said); }
+    else steps.push({ k: 'beat', t: b.text, ...mark });
+  }
+  if (act.vetoHolder) steps.push({ k: 'bb', t: `${act.vetoHolder}, you are holding the Power of Veto.`, veto: act.vetoHolder });
+  return [{
+    id: `bb-px-w${ctx.week}`, kind: 'px', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '15:30',
+    kicker: 'Cam 04 · Living room', title: 'Prizes and Punishments', label: 'Prizes & Punishments', sub: 'The veto is in one of the boxes',
+    seated: seatLiving([], order.slice(0, 9), null), px: { boxes: act.boxCount || order.length },
+    rules: [['PICK ORDER', 'last place in the competition picks first'], ['ONE BOX EACH', 'one holds the veto — the rest, prizes or punishments'],
+      ['SWAP ONCE', 'trade for any box already opened'], ['KEEP IT', 'what you hold at the end is yours']],
+    rulesTitle: 'PRIZES AND PUNISHMENTS · HOW IT WORKS', steps,
+  }];
+}
+
+// ── Duo Week, "You Go, They Go" (Phase 7) ──────────────────────────────
+// One week in pairs: Big Brother's rules over a board of the pairs (two faces
+// chained together, the solo houseguest who cannot be nominated, the HOH with
+// nobody); the week chained together, each pair's story lit on the board; and
+// after the vote, the partner who leaves on votes they never got. The duo
+// nomination ceremony and the eviction are the core screens. Words:
+// lines/duoact.js on the acts' beats.
+function duoWeekScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const base = (id, extra) => ({ id, kind: 'duo', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4,
+    kicker: 'Cam 04 · Living room', ...extra });
+  if (act.type === 'duo-week-open') {
+    ctx.duoWeek = { pairs: (act.pairs || []).map(p => [...p]), solo: act.solo || null, hoh: act.hoh || ctx.hoh };
+    const steps = [
+      { k: 'bb', t: 'Houseguests, this week you will play in pairs. Everyone except the Head of Household is chained to a partner.', rule: 1 },
+      { k: 'bb', t: 'The Head of Household will nominate two pairs, so four of you will sit on the block.', rule: 2 },
+      { k: 'bb', t: 'You will vote the way you always do: one name each. Whoever gets the most votes is evicted.', rule: 3 },
+      { k: 'bb', t: "And their partner is evicted with them, however many votes they got. Even if it was none.", rule: 4 },
+    ];
+    for (const b of act.beats || []) {
+      const p = b.players || [];
+      if (b.part === 'pair') steps.push({ k: 'bb', t: `${p[0]} and ${p[1]}.`, pair: [p[0], p[1]] }, ...linesOf(b));
+      if (b.part === 'hoh') steps.push(...linesOf(b));
+      if (b.part === 'solo') steps.push({ k: 'bb', t: `${p[0]}, you have no partner this week. You cannot be nominated.`, solo: p[0], toast: ['CAN’T BE NOMINATED', '#12b76a'] }, ...linesOf(b));
+    }
+    return [base(`bb-duo-open-w${ctx.week}`, {
+      time: '11:00', title: 'You Go, They Go', label: 'You Go, They Go', sub: 'One week, in pairs',
+      seated: seatLiving([], ctx.house.filter(n => n !== ctx.hoh), ctx.hoh), duo: { ...ctx.duoWeek, reveal: true },
+      rules: [['IN PAIRS', 'everyone but the HOH is chained to a partner'], ['TWO PAIRS UP', 'the HOH nominates two pairs — four on the block'],
+        ['ONE VOTE EACH', 'the most votes is evicted'], ['THEY GO TOO', 'and their partner leaves with them, votes or not']],
+      rulesTitle: 'YOU GO, THEY GO · HOW IT WORKS', steps,
+    })];
+  }
+  if (act.type === 'duo-week-events') {
+    const steps = [{ k: 'beat', t: `Two pairs are on the block. Everybody else is still chained to somebody.` }];
+    for (const b of act.beats || []) {
+      const said = linesOf(b);
+      const on = (b.players || []).slice(0, b.kind === 'pact' ? 4 : 2);
+      if (said.length) { said[0] = { ...said[0], pairOn: on }; steps.push(...said); }
+    }
+    return [base(`bb-duo-week-w${ctx.week}`, {
+      time: '16:00', title: 'Chained', label: 'You Go, They Go · chained', sub: 'A week in pairs',
+      cast: [], duo: { ...(ctx.duoWeek || {}), nominees: [...ctx.nominees] }, steps,
+    })];
+  }
+  // the partner, after the vote
+  const taken = act.taken, gone = act.evicted;
+  const b = (act.beats || []).find(x => x.part === 'taken');
+  return [base(`bb-duo-taken-w${ctx.week}`, {
+    time: 'LIVE', title: 'They go too', label: 'You Go, They Go · they go too', sub: `${gone} and ${taken} leave together`,
+    cast: [[gone, 36], [taken, 64]], steps: [
+      { k: 'host', by: ctx.host || 'Valeria', t: `${taken}, you are ${gone}'s partner. You are evicted too.`, out: taken, toast: ['THEY GO TOO', '#ff3355'] },
+      { k: 'beat', t: act.gotNothing ? `Not one houseguest voted to evict ${taken}.` : `${titleCase(word(act.votesAgainstTaken || 0))} ${act.votesAgainstTaken === 1 ? 'houseguest' : 'houseguests'} voted to evict ${taken}. It would not have been enough.` },
+      ...linesOf(b),
+      { k: 'beat', t: `${gone} and ${taken} walk out of the front door together.`, exit: taken },
+    ],
+  })];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -880,6 +978,12 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'reunion': { const r = reunionScreen(act, ctx); if (r) ceremony(r); break; }
       case 'chain-of-safety': flush(); for (const scr of chainScreens(act, ctx)) ceremony(scr);
         ctx.nominees = (act.nominees || ctx.nominees).slice(); ctx.anchor = 'noms'; beatsOf(act); break;
+      case 'duo-week-open': case 'duo-week-events': case 'duo-week-eviction':
+        flush(); for (const scr of duoWeekScreens(act, { ...ctx, host })) ceremony(scr);
+        if (act.type === 'duo-week-open') ctx.duoWeek = { pairs: (act.pairs || []).map(p => [...p]), solo: act.solo || null };
+        beatsOf(act); break;
+      case 'prize-exchange': flush(); for (const scr of pxScreens(act, ctx)) ceremony(scr);
+        ctx.vetoHolder = act.vetoHolder || ctx.vetoHolder; beatsOf(act); break;
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'safety-suite': flush(); for (const scr of suiteScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'rivals-hoh':
@@ -909,7 +1013,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

@@ -28,12 +28,12 @@
 // the format working rather than a leak: each later picker sees a table the
 // previous one did not, and taking it is exactly what the last seat is for.
 import { gs } from '../core.js';
-import { pStats, pronouns } from '../players.js';
+import { pStats } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';
 import { BB_PUNISHMENTS, applyPunishment, drawPunishment } from './punishments.js';
 
-const beat = (text, players, badgeText, badgeClass = 'gold') =>
-  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass });
+const beat = (text, players, badgeText, badgeClass = 'gold', part = null, extra = {}) =>
+  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass, ...(part ? { part } : {}), ...extra });
 
 /**
  * What is in the boxes besides the veto.
@@ -43,11 +43,11 @@ const beat = (text, players, badgeText, badgeClass = 'gold') =>
  *          on whether you are sitting on the block.
  */
 export const EXCHANGE_PRIZES = [
-  { id: 'cash', name: '$5,000', want: 6.5, line: n => `${n} unwraps five thousand dollars, and the room makes the noise it always makes at money.` },
-  { id: 'trip', name: 'a holiday', want: 5.2, line: n => `${n} gets a holiday somewhere warm, for after all this, assuming there is an after all this.` },
-  { id: 'call-home', name: 'a call home', want: 7.4, line: n => `${n} opens a phone call home, which is the one prize in this house nobody pretends not to want.` },
-  { id: 'suite', name: 'a night in the HOH suite', want: 3.1, line: n => `${n} wins a night in the HOH suite, which is a bed and a bath and somebody else's room.` },
-  { id: 'nothing', name: 'a bag of confetti', want: 0.4, line: n => `${n} unwraps a bag of confetti. It is not a metaphor for anything, it is just confetti.` },
+  { id: 'cash', name: '$5,000', want: 6.5 },
+  { id: 'trip', name: 'a holiday', want: 5.2 },
+  { id: 'call-home', name: 'a call home', want: 7.4 },
+  { id: 'suite', name: 'a night in the HOH suite', want: 3.1 },
+  { id: 'nothing', name: 'a bag of confetti', want: 0.4 },
 ];
 
 /**
@@ -85,12 +85,6 @@ function prizeDesire(name, prize, archetypeOf) {
   return want;
 }
 
-const PUNISH_LINE = [
-  (n, p) => `${n} opens ${p.name} and holds it up like a dead fish. There is no putting it back.`,
-  (n, p) => `${n} gets ${p.name}, which the room finds a great deal funnier than ${n} does.`,
-  (n, p) => `It is ${p.name} for ${n}. ${p.blurb}`,
-  (n, p) => `${n} unwraps ${p.name} and the laugh goes round the room twice.`,
-];
 
 /**
  * Run the exchange.
@@ -154,15 +148,17 @@ export function runPrizeExchange({ week, order = [], nominees = [], hoh = null,
   const openFor = (name) => {
     const box = unopened.splice(Math.floor(rng() * unopened.length), 1)[0];
     held.set(name, box);
+    // The words are written by bb/script/ceremony.js (lines/pxact.js); the
+    // beat keeps the plain fact, and the punishment keeps the draw that used to
+    // pick its wording.
+    const open = { boxNo: box.boxNo, kind: box.kind, item: box.name };
     if (box.kind === 'veto') {
-      beats.push(beat(
-        `${name} opens the box with the Power of Veto in it, in front of everybody, with people still to pick.`,
-        [name], 'THE VETO IS OUT', 'gold'));
+      beats.push(beat(`${name} opens box ${box.boxNo}: the Power of Veto.`, [name], 'THE VETO IS OUT', 'gold', 'open', open));
     } else if (box.kind === 'punishment') {
-      beats.push(beat(PUNISH_LINE[Math.floor(rng() * PUNISH_LINE.length)](name, box.def),
-        [name], 'A BOX NOBODY WANTED', 'red'));
+      rng();
+      beats.push(beat(`${name} opens box ${box.boxNo}: ${box.name}.`, [name], 'A BOX NOBODY WANTED', 'red', 'open', open));
     } else {
-      beats.push(beat(box.prize.line(name), [name], 'OPENED', 'blue'));
+      beats.push(beat(`${name} opens box ${box.boxNo}: ${box.name}.`, [name], 'OPENED', 'blue', 'open', open));
     }
     return box;
   };
@@ -208,12 +204,10 @@ export function runPrizeExchange({ week, order = [], nominees = [], hoh = null,
     held.set(best.owner, mine);
     steals.push({ thief: picker, victim: best.owner, item: best.box.name,
       kind: best.box.kind, boxNo: best.box.boxNo, gave: mine.name, gaveKind: mine.kind });
-    beats.push(beat(
-      best.box.kind === 'veto'
-        ? `${picker} trades ${mine.name} to ${best.owner} for the Power of Veto, and does it without a flicker.`
-        : `${picker} hands ${mine.name} to ${best.owner} and takes ${best.box.name} instead.`,
-      [picker, best.owner],
-      best.box.kind === 'veto' ? 'THE VETO CHANGES HANDS' : 'TRADED', 'red'));
+    beats.push(beat(`${picker} swaps ${mine.name} for ${best.owner}'s ${best.box.name}.`, [picker, best.owner],
+      best.box.kind === 'veto' ? 'THE VETO CHANGES HANDS' : 'TRADED', 'red', 'swap',
+      { item: best.box.name, kind: best.box.kind, gave: mine.name, gaveKind: mine.kind,
+        boxNo: best.box.boxNo, gaveNo: mine.boxNo, onBlock: nominees.includes(best.owner) }));
   }
 
   // Anybody still empty-handed takes what is left.
@@ -236,24 +230,21 @@ export function runPrizeExchange({ week, order = [], nominees = [], hoh = null,
   // The moment this format exists for: somebody had the veto and let it go.
   const gaveItUp = steals.find(s => s.kind === 'veto');
   if (gaveItUp && nominees.includes(gaveItUp.victim)) {
-    beats.push(beat(
-      `${gaveItUp.victim} is on the block and had the veto in ${pronouns(gaveItUp.victim).posAdj} hands. `
-        + `${gaveItUp.thief} took it. There is no version of this week where that is forgotten.`,
-      [gaveItUp.victim, gaveItUp.thief], 'TAKEN OFF A NOMINEE', 'red'));
+    beats.push(beat(`${gaveItUp.thief} took the veto from ${gaveItUp.victim}, who is on the block.`,
+      [gaveItUp.victim, gaveItUp.thief], 'TAKEN OFF A NOMINEE', 'red', 'robbed'));
   }
   const soldOut = [...held.entries()].find(([name, box]) =>
     box.kind === 'prize' && nominees.includes(name) && box.id !== 'call-home');
   if (soldOut) {
-    beats.push(beat(
-      `${soldOut[0]} is sitting on the block holding ${soldOut[1].name}, and will be explaining that choice `
-        + 'to a jury in about six weeks.',
-      [soldOut[0]], 'CHOSE THE MONEY', 'gold'));
+    beats.push(beat(`${soldOut[0]} is on the block, holding ${soldOut[1].name}.`,
+      [soldOut[0]], 'CHOSE THE MONEY', 'gold', 'soldout', { item: soldOut[1].name }));
   }
 
   return {
     type: 'prize-exchange', week: week?.num || 0, secret: false,
     order: [...pickers], vetoHolder, steals, punished, prizes,
     held: [...held.entries()].map(([name, box]) => ({ name, item: box.name, kind: box.kind, boxNo: box.boxNo })),
+    boxCount: boxes.length, nominees: [...nominees],
     beats,
   };
 }

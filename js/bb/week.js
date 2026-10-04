@@ -5642,7 +5642,7 @@ export function simulateBBWeek(options = {}) {
          one half of the new duo wherever the pairing allows it. */
       if (duoWeekActive(week)) {
         try {
-          const swapped = duoWeekAfterVeto(week, { nominees, saved: vetoDecision.save,
+          const swapped = duoWeekAfterVeto(week, { nominees, saved: vetoDecision.save, replacement,
             house, protectedNames: [...protectedNames, replacement], rng });
           if (swapped) {
             nominees = [...swapped.nominees];

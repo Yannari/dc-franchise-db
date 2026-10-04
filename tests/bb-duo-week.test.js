@@ -59,7 +59,8 @@ describe('pairing the house for the week', () => {
     const week = aWeek();
     const act = openDuoWeek(week, { house: NAMES, hoh: 'A', rng: Math.random });
     expect(duoWeekSafe(week)).toEqual([act.solo]);
-    expect(act.beats.some(b => /cannot be put on that block/.test(b.text))).toBe(true);
+    // the words are lines/duoact.js; the engine says it as a fact on a 'solo' beat
+    expect(act.beats.some(b => b.part === 'solo' && b.players[0] === act.solo)).toBe(true);
   });
 
   it('pairs evenly when the house is odd, because the HOH comes out of it', () => {
@@ -164,7 +165,7 @@ describe('the second name', () => {
 
     expect(act.type).toBe('duo-week-eviction');
     expect(act.gotNothing).toBe(true);
-    expect(act.beats.some(b => /Not one houseguest/.test(b.text))).toBe(true);
+    expect(act.beats.some(b => b.part === 'taken' && b.gotNothing && b.votes === 0)).toBe(true);
   });
 
   it('makes the audience love whoever it happened to', () => {
@@ -195,7 +196,7 @@ describe('strategy for two', () => {
     expect(act, 'a duo week produced no events at all').toBeTruthy();
     expect(act.events.length).toBeGreaterThan(0);
     for (const e of act.events) {
-      expect(e.text.length).toBeGreaterThan(40);
+      expect(e.kind, 'an event with no kind for the words to come from').toBeTruthy();
       expect(e.players.length).toBeGreaterThan(0);
       expect(e.badgeText, 'an event with no badge').toBeTruthy();
     }

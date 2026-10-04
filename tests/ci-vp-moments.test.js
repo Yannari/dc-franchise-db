@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs';
 // @vitest-environment jsdom
 // ci-vp-moments.test.js — the big moments on their own sets (Plan 5, spec 18.3).
 // Played on a real season: nothing is drawn before its line.
@@ -143,6 +144,13 @@ describe('the visit and the meet', () => {
 });
 
 describe('the shared sets', () => {
+  // The AT RISK board sits on the Hangout's LED wall. A second, older rule
+  // further down the sheet once won and dropped it to the bottom of the wall
+  // (user, 2026-10-04: "the hangout screen it's not center").
+  it('the Hangout board has one rule placing it, on the wall', () => {
+    const css = readFileSync('js/vp-ci/style.js', 'utf-8');
+    expect(css.match(/\.civ-hangout \.civ-atrisk\{/g)).toHaveLength(1);
+  });
   // the Hangout, the finale lounge and the finale studio are Blender renders
   // (tools/blender/circle-sets.py), drawn behind each screen's UI
   it('each screen stands in its own set', () => {

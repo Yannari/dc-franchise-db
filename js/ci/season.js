@@ -42,7 +42,7 @@ import { runEvent, endSwap } from './twists.js';
 import { addAI } from './ai.js';
 import { openLedger, noteJoin, airDay, fanFavorite, publicPick, publicSnapshot, publicStanding } from './public.js';
 import { buildSchedule, rhythmOf } from './schedule.js';
-import { finalDay, finaleDay } from './finale.js';
+import { finalDay, finaleDay, finalMorning } from './finale.js';
 import { chooseAired } from './airing.js';
 import { writeDay } from './script.js';
 import { pickGame, runGame } from './games.js';
@@ -87,7 +87,8 @@ export const STAGE_DATA = {
   // The visit: why they came, and, if it turned into an argument, how (blocking.js clash).
   visit: d => ({ motive: d.motive || null, clash: d.clash || null }),
   blocking: d => ({ target: d.target ?? null, by: d.by || [], channel: d.channel || null, secret: !!d.secret, reason: d.reason || null }),
-  reveal: d => ({ placements: (d.placements || []).map(p => ({ profile: p.profile, place: p.place })) }),
+  // The seats are in the order they arrived: the screen's layout must never hint at the result.
+  reveal: d => ({ placements: (d.placements || []).map(p => ({ profile: p.profile, place: p.place })), seats: d.seats || null, fan: d.fan || null }),
   party: d => ({ theme: d.theme, props: d.props || [] }),
   // The Newsfeed: how many likes each player's post got this morning.
   likes: d => ({ counts: likeCounts(d.likes) }),
@@ -250,6 +251,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
         }
       }
       // Finale day is the studio: the phones are off after the final ratings.
+      // The last morning: waking up a finalist, messages from home (finale.js).
+      if (d.final) finalMorning(state, ds(`final-morning:${d.day}`));
       if (!d.finale) morningFeed(state, rng);
     }
     // Chosen by the Influencers: they pick which of two waiting profiles comes
@@ -332,7 +335,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       } else tonight = { rating, night };
     }
     if (d.final) { finalRow = finalDay(state, rng); rating = finalRow; }
-    if (d.finale) result = finaleDay(state, rng, finalRow);
+    if (d.finale) result = finaleDay(state, rng, finalRow, { fan: fanFavorite(state) });
 
     // The edit, then the words: what aired is decided first, and the writing
     // layer has its own dice (Plan 2), so neither can move a result.

@@ -356,6 +356,27 @@ export const CIV_CSS = `
 .civ-board.studio{left:50%;right:auto;width:44%;margin-left:-22%;top:9%;bottom:auto}
 .civ-aka{font-weight:700;font-size:.85cqw;color:#ff9fd6;white-space:nowrap}
 .civ-couch{position:absolute;left:3%;right:3%;bottom:23%;display:flex;justify-content:center;gap:1.4cqw;z-index:6}
+/* finale night: the pause before a name, the last two, the speech (moments.js studioStage) */
+.civ-slot.drum .civ-mtile{animation:civDrum .55s ease-in-out infinite;box-shadow:0 0 1.6cqw rgba(255,210,63,.55);border:1px solid rgba(255,210,63,.6)}
+@keyframes civDrum{50%{transform:scale(1.03);box-shadow:0 0 3cqw rgba(255,210,63,.9)}}
+.civ-seat{position:relative;transition:transform .45s,filter .45s,opacity .45s}
+.civ-seat.tense{animation:civTense .9s ease-in-out infinite}
+@keyframes civTense{50%{transform:translateY(-.25cqw)}}
+.civ-studio.final2 .civ-seat.dim{opacity:.35;filter:grayscale(.6)}
+.civ-seat.stand{transform:translateY(-2.2cqw) scale(1.15);z-index:3}
+.civ-seat.stand .civ-mcam{box-shadow:0 0 0 .35cqw #ffd23f,0 0 4cqw rgba(255,210,63,.8)}
+.civ-seat.spot .civ-mcam{box-shadow:0 0 0 .4cqw #ffd23f,0 0 6cqw rgba(255,210,63,.9)}
+.civ-spot{position:absolute;inset:0;z-index:5;pointer-events:none;background:radial-gradient(ellipse 30% 45% at 50% 78%,transparent 40%,rgba(0,0,0,.45) 100%);animation:civFade .6s reverse both}
+.civ-seatplace{position:absolute;left:50%;bottom:-1.6cqw;transform:translateX(-50%);font-weight:900;font-size:.85cqw;letter-spacing:.12em;padding:.2cqw .6cqw;border-radius:99px;background:#1b1f45;border:1px solid rgba(255,255,255,.35);white-space:nowrap;animation:civUp .4s both}
+.civ-seatplace.gold{background:#ffd23f;color:#2a1d00;border-color:#ffd23f}
+.civ-seatfan{position:absolute;left:50%;top:-1.6cqw;transform:translateX(-50%);font-weight:900;font-size:.7cqw;letter-spacing:.12em;padding:.2cqw .6cqw;border-radius:99px;background:#ff4fb4;white-space:nowrap;animation:civUp .5s both}
+.civ-crowd{position:absolute;left:3%;top:9%;z-index:6;display:flex;flex-wrap:wrap;gap:.45cqw;max-width:22%;align-items:center}
+.civ-crowd .hd{width:100%;font-weight:800;font-size:.75cqw;letter-spacing:.2em;color:#c9bfff}
+.civ-crowd span:not(.hd){width:2.6cqw;aspect-ratio:1;border-radius:50%;background:#1b1f45 center 25%/cover;border:.15cqw solid rgba(255,255,255,.4);opacity:.7;display:grid;place-items:center;font-size:.9cqw;font-weight:800;transition:all .3s}
+.civ-crowd span.talk{opacity:1;transform:scale(1.35);border-color:#ffd23f;box-shadow:0 0 1.2cqw #ffd23f}
+.civ-crowd span.fan{opacity:1;border-color:#ff4fb4;box-shadow:0 0 1.2cqw #ff4fb4}
+.civ-mtile.secret{opacity:.9;border:1px dashed rgba(255,210,63,.7)}.civ-mtile.secret .ph{border-color:#ffd23f;color:#ffd23f}.civ-mtile.secret .n{color:#ffd23f;letter-spacing:.12em}
+@media (prefers-reduced-motion: reduce){.civ-slot.drum .civ-mtile,.civ-seat.tense{animation:none}}
 .civ-seat{width:8.5cqw;transition:transform .35s}.civ-seat .civ-mcam{width:100%;font-size:3.5cqw}
 .civ-seat.talk{transform:translateY(-1cqw)}
 .civ-seat.win .civ-mcam{box-shadow:0 0 0 .5cqw #ffd23f,0 0 5cqw #ffd23f}

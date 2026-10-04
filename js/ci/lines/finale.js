@@ -173,36 +173,34 @@ export const FINALE = {
       { by: 'a', say: "Maybe. If you're lucky." },
     ] },
   ],
-  'reveal.place': [
-    { id: 'reveal.place.01', turns: [
-      { by: 'host', say: "Finishing next, it's {a.aka}!" },
-      { by: 'a', react: "That's okay. I made it this far." },
+  // Played as someone from their own life: {q} is who that is to them ("girlfriend", "brother").
+  'meet.explain.family.kin': [
+    { id: 'meet.explain.family.kin.01', turns: [
+      { by: 'b', say: "So who's in the pictures?" },
+      { by: 'a', say: "That's my {q}! I'm {a.real}. I played as my {q} the whole time." },
+      { by: 'b', react: "Your {q}?! That's amazing." },
     ] },
-    { id: 'reveal.place.02', turns: [
-      { by: 'host', say: "The next name on the board is {a.aka}." },
-      { by: 'a', react: "Oh! Okay. Wow. Thank you, everybody." },
-    ], beat: '{a} claps along with everyone else.' },
-    { id: 'reveal.place.03', turns: [
-      { by: 'host', say: "Let's see where {a.aka} finished!" },
-      { by: 'a', react: "I'm just happy to be here. Really." },
+    { id: 'meet.explain.family.kin.02', turns: [
+      { by: 'a', say: "I'm {a.real}. {a} is my {q}. Real person, real pictures, just not me." },
+      { by: 'b', say: "So everything I liked about {a}..." },
+      { by: 'a', say: "...is my {q}. I'll tell them you said hi." },
     ] },
-    { id: 'reveal.place.04', turns: [
-      { by: 'host', say: "Taking the next spot on the board, {a.aka}!" },
-      { by: 'a', react: "Okay. I'll take it. I had the best time." },
+    { id: 'meet.explain.family.kin.03', turns: [
+      { by: 'b', say: "Wait. Who is that on your profile?" },
+      { by: 'a', say: "My {q}. Nobody knows them better than I do, so I could play them." },
+      { by: 'b', react: "That's the sweetest catfish I've ever heard of." },
     ] },
   ],
+  // The host names the place; how it lands is its own block (finale-night.js reveal.react.*). {x}: "fifth".
+  'reveal.place': [
+    { id: 'reveal.place.01', turns: [{ by: 'host', say: "In {x} place... {a.aka}!" }] },
+    { id: 'reveal.place.02', turns: [{ by: 'host', say: "Finishing in {x} place, it's {a.aka}." }] },
+    { id: 'reveal.place.03', turns: [{ by: 'host', say: "{a.aka}. You finished {x}." }] },
+    { id: 'reveal.place.04', turns: [{ by: 'host', say: "Taking {x} place, {a.aka}!" }] },
+  ],
   'reveal.winner': [
-    { id: 'reveal.winner.01', turns: [
-      { by: 'host', say: "And the winner of The Circle is... {a.aka}!" },
-      { by: 'a', react: "Me? No. No way. Me?" },
-    ], beat: '{a} drops to the floor, and everyone piles on.' },
-    { id: 'reveal.winner.02', turns: [
-      { by: 'host', say: "The Player who finishes first, and takes home the prize, is {a.aka}!" },
-      { by: 'a', react: "Oh my God! Oh my God!" },
-    ], beat: 'Confetti comes down over the whole room.' },
-    { id: 'reveal.winner.03', turns: [
-      { by: 'host', say: "Your winner... {a.aka}!" },
-      { by: 'a', react: "I did it! I actually did it!" },
-    ], beat: '{a} covers {a.posAdj} face with both hands.' },
+    { id: 'reveal.winner.01', turns: [{ by: 'host', say: "And the winner of The Circle is... {a.aka}!" }], beat: 'Confetti comes down over the whole room.' },
+    { id: 'reveal.winner.02', turns: [{ by: 'host', say: "The Player who finishes first, and takes home the prize, is {a.aka}!" }], beat: 'The studio erupts.' },
+    { id: 'reveal.winner.03', turns: [{ by: 'host', say: "Your winner... {a.aka}!" }], beat: 'Gold confetti fills the air.' },
   ],
 };

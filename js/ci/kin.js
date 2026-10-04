@@ -60,7 +60,10 @@ export const knowsKin = (state, obs, h) => !!state.kinKnown?.[obs]?.[h];
 
 /** What `me` calls `them`: "sister", "best friend", "ex" (the lines' {q}). */
 export function kinWord(state, kin, me, them) {
-  const p = state.people[them] || {}, q = state.people[me] || {};
+  return kinWordOf(kin, state.people[me] || {}, state.people[them] || {});
+}
+/** The same word from two people's gender and age (a catfish face is not in the cast). */
+export function kinWordOf(kin, q = {}, p = {}) {
   const g = p.gender, older = (p.age ?? 0) > (q.age ?? 0);
   const by = (f, m, n) => (g === 'f' ? f : g === 'm' ? m : n);
   switch (kin) {

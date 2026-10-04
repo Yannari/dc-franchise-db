@@ -25,7 +25,7 @@ export { SAME_DAY, SAID_AGAIN, USED_DECAY, RECENT };
 import { GAMES, PARTY_THEMES, NEVER_HAVE_I_EVER } from './games-data.js';
 import { TRIVIA, FACTS } from './games-content.js';
 import { topicsOf, wingsIt, JOB_TOPIC, townOf } from './topics.js';
-import { kinBetween, kinWord, TENSE, knowsKin } from './kin.js';
+import { kinBetween, kinWord, kinWordOf, TENSE, knowsKin } from './kin.js';
 // What a calls b, and b calls a, when they are family, partners or friends (ci/kin.js).
 const kinText = (state, a, b) => {
   const k = kinBetween(state, a, b), r = kinBetween(state, b, a);
@@ -619,7 +619,12 @@ const BLOCKS = {
         continue;
       }
       if (final) {
-        out.push({ key: `final.rate.${b.reasons[0]}`, cast: { a: b.voter, b: first }, extra: { final: true } });
+        // The first place is kept for finale night: said aloud, never shown (user: "limit the final ratings
+        // screen to just some placements, so it doesn't spoil the next episode").
+        if (s.data.ballots.indexOf(b) < 3) out.push({ key: 'final.rate.tease', cast: { a: b.voter } });
+        // A placement from the middle: something to see, nothing that names the winner.
+        const mid = b.order.length >= 3 ? b.order[Math.floor(b.order.length / 2)] : null;
+        if (mid) out.push({ key: 'final.rate.middle', cast: { a: b.voter, b: mid } });
         if (last && last !== first) out.push({ key: `rate.${b.reasons.at(-1)}.bottom`, cast: { a: b.voter, b: last }, extra: { band: 'bottom', final: true } });
         continue;
       }
@@ -1038,11 +1043,37 @@ const BLOCKS = {
     return out;
   },
   meet(state, s) {
+    // All of them in one room, for the first time (finale.js).
+    if (s.data.all) {
+      // A toast, then a few of them say what it is like to finally see everyone.
+      return [{ key: 'meet.all', cast: { a: s.who[0], b: s.who[1], c: s.who[2] || s.who[0] } },
+        ...s.who.slice(-3).map(h => ({ key: 'meet.reflect', cast: { a: h } }))];
+    }
+    const out = BLOCKS.meetArrival(state, s);
+    // What two people have to settle when they finally meet (finale.js talkKind).
+    const talks = (s.data.talks || []).map(t => {
+      const key = `meet.talk.${t.kind}${t.outcome ? `.${t.outcome}` : ''}`;
+      const [x, y] = t.kind === 'catfishfriend' ? [t.catfish, t.catfish === t.a ? t.b : t.a]
+        : t.kind === 'knewit' || t.kind === 'wrongsuspect' ? [t.who, t.about] : [t.a, t.b];
+      return { key, cast: { a: x, b: y, ...(t.kind.startsWith('kin') ? { text: kinText(state, x, y) } : {}) } };
+    });
+    const settle = out.findIndex(b => b.key === 'meet.settle');
+    out.splice(settle >= 0 ? settle : out.length, 0, ...talks);
+    return out;
+  },
+  meetArrival(state, s) {
     const [a, ...present] = s.who;
     // The first one in waits alone in the studio.
     if (!present.length) return [{ key: 'meet.first', cast: { a } }];
     const explain = (h, to) => {
       const why = state.profiles[h].reason;
+      // Played as someone from their own life (a roster face, ci-run.js facePersonas):
+      // the pictures are "my girlfriend", "my brother".
+      const persona = why === 'family' && state.pool.find(p => p.id === state.profiles[h].personaId);
+      if (persona?.kin && persona.kin !== 'none') {
+        const me = state.people[state.profiles[h].players[0]] || {};
+        return { key: 'meet.explain.family.kin', cast: { a: h, b: to, text: { q: kinWordOf(persona.kin, me, persona) } } };
+      }
       return { key: `meet.explain.${why || 'strategic'}`, cast: { a: h, b: to }, extra: { reasonKind: why || undefined } };
     };
     const fake = h => state.profiles[h].mode === 'catfish';
@@ -1076,10 +1107,30 @@ const BLOCKS = {
     out.push({ key: 'meet.settle', cast: { a, b } });
     return out;
   },
+  // FINALE NIGHT (finale.js): the host and the blocked players, then the
+  // board from last to first — every name after a pause, every placement
+  // landing on its face — then the last two, the winner, the speech, the fans.
   reveal(state, s) {
     const pl = s.data.placements;
-    return [...pl.slice(1).reverse().map(x => ({ key: 'reveal.place', cast: { a: x.profile }, extra: { place: PLACE_WORDS[x.place - 1] } })),
-      { key: 'reveal.winner', cast: { a: pl[0].profile } }];
+    const out = [{ key: 'reveal.open', cast: { a: pl[0].profile } }];
+    for (const t of s.data.studio || []) out.push({ key: `studio.${t.kind}`, cast: { a: t.a, b: t.b } });
+    out.push({ key: 'reveal.board', cast: { a: pl[0].profile } });
+    for (const x of pl.slice(2).reverse()) {
+      out.push({ key: 'reveal.suspense', cast: { a: x.profile }, extra: { place: PLACE_WORDS[x.place - 1] } },
+        { key: 'reveal.place', cast: { a: x.profile, text: { x: PLACE_WORDS[x.place - 1] } }, extra: { place: PLACE_WORDS[x.place - 1] } },
+        { key: `reveal.react.${x.tone || 'proud'}`, cast: { a: x.profile } });
+      if (x.witness) out.push({ key: `reveal.witness.${x.witness.how}`, cast: { a: x.witness.by, b: x.profile } });
+    }
+    // The last two stand up together; the order on screen gives nothing away.
+    const [w, r] = [pl[0]?.profile, pl[1]?.profile];
+    const two = [w, r].filter(Boolean).sort((p, q) => (state.profiles[p]?.shown?.name || '').localeCompare(state.profiles[q]?.shown?.name || ''));
+    if (r) out.push({ key: 'reveal.final2', cast: { a: two[0], b: two[1] } });
+    out.push({ key: 'reveal.winner', cast: { a: w } });
+    out.push({ key: 'reveal.react.win', cast: { a: w } });
+    if (r) out.push({ key: 'reveal.react.second', cast: { a: r, b: w } });
+    out.push({ key: state.profiles[w]?.mode === 'catfish' ? 'reveal.speech.catfish' : 'reveal.speech', cast: { a: w, b: s.data.thanks || r || w } });
+    if (s.data.fan) out.push({ key: 'reveal.fan', cast: { a: s.data.fan } });
+    return out;
   },
   // A game airs as its beats (js/ci/game-beats.js): the alert, the rounds
   // with every answer that matters, the reveal, the verdict, the prize.
@@ -1152,6 +1203,9 @@ const BLOCKS = {
     return [out[0], ...tail.slice(0, (d.dancers || []).length + (d.photos || []).length), ...out.slice(1), ...tail.slice((d.dancers || []).length + (d.photos || []).length)];
   },
   life(state, s) {
+    // The last day (finale.js): waking up a finalist; the goodbye to the apartment.
+    if (s.data.event === 'final.morning') return [{ key: s.data.about ? 'final.morning.friend' : 'final.morning', cast: { a: s.who[0], b: s.data.about || undefined } }];
+    if (s.data.event === 'final.leave') return [{ key: 'final.leave', cast: { a: s.who[0] } }];
     // Finding out a partner kissed somebody at the door (twotiming.js kissFallout).
     if (s.data.event === 'cheated') return [{ key: 'kin.cheated.react', cast: { a: s.who[0], b: s.data.about, c: s.data.with, text: kinText(state, s.who[0], s.data.about) } }];
     // A pair that is something to each other: often it's the two of them.
@@ -1161,7 +1215,11 @@ const BLOCKS = {
     return [{ key: `life.${s.data.habit}`, cast: { a: s.who[0], personA: s.data.person } }];
   },
   // Private to the apartment: only its player is cast.
-  'home-video'(state, s) { return [{ key: 'home.video', cast: { a: s.who[0] } }]; },
+  'home-video'(state, s) {
+    // On the last day: a message from a blocked friend, or from home (finale.js).
+    if (s.data.final) return [{ key: s.data.from ? 'final.video.friend' : 'final.video.home', cast: { a: s.who[0], b: s.data.from || undefined } }];
+    return [{ key: 'home.video', cast: { a: s.who[0] } }];
+  },
 };
 
 
@@ -1423,7 +1481,13 @@ export const POOL_KEYS = [
   ...['charm', 'confess', 'deny'].flatMap(k => [`busted.${k}`, `busted.end.${k}`]), 'party.twotime', 'game.twotime', 'goodbye.warning.playing',
   ...['fire', 'take', 'defend'].map(k => `visit.talk.confront.${k}`), ...['walkout', 'cooled'].flatMap(k => [`visit.talk2.confront.${k}`, `visit.bye.${k}`]), 'visit.after.confront',
   'visit.door.real', 'visit.door.catfish', 'visit.door.caught', 'visit.door.both', 'visit.hand', 'visit.kiss', 'visit.bye', 'report',
-  'goodbye.guess', ...['honest', 'polished', 'edited', 'shared'].map(m => `goodbye.video.${m}`),
+  'goodbye.guess', 'meet.all', 'meet.reflect', 'final.rate.tease', 'final.rate.middle', 'final.morning', 'final.morning.friend', 'final.leave', 'final.video.friend', 'final.video.home',
+  ...['kin', 'ally', 'knewit', 'wrongsuspect'].map(k => `meet.talk.${k}`), 'meet.talk.catfishfriend.forgive', 'meet.talk.catfishfriend.hurt',
+  'meet.talk.flirt.spark', 'meet.talk.flirt.awkward', 'meet.talk.rival.clear', 'meet.talk.rival.clash', 'meet.talk.kin.tense.thaw', 'meet.talk.kin.tense.cold',
+  'reveal.open', 'studio.confront', 'studio.cheer', 'reveal.board', 'reveal.suspense', 'reveal.final2',
+  ...['proud', 'surprised', 'gutted', 'shocked', 'second', 'win'].map(t => `reveal.react.${t}`), 'reveal.witness.smirk', 'reveal.witness.cheer',
+  'reveal.speech', 'reveal.speech.catfish', 'reveal.fan',
+  'meet.explain.family.kin', ...['honest', 'polished', 'edited', 'shared'].map(m => `goodbye.video.${m}`),
   ...WHY_.map(w => `goodbye.video.catfish.${w}`), 'goodbye.warning.catfish', 'goodbye.warning.distrusts', 'goodbye.warning.seen',
   'goodbye.react.guilty', 'goodbye.react.warned', 'goodbye.react.vindicated', 'goodbye.react.surprised',
   'meet.arrive.real', 'meet.arrive.catfish', 'meet.found', 'meet.both', ...WHY_.map(w => `meet.explain.${w}`),

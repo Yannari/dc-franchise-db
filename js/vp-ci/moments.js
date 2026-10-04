@@ -59,10 +59,18 @@ function rateStage(row, screen, idx, fresh) {
   const sent = seen.some(x => /^(ratings|final)\.done$/.test(x.key || '') && x.who === who);
   const placed = new Map(mine.map(x => [x.on.b, x]));
   const n = ballot?.order.length || 0;
+  // The final ratings decide the winner, and finale night reveals them: a
+  // ballot here shows only the names said out loud, never the whole order,
+  // and the first place is a secret (user: "limit the final ratings screen
+  // to just some placements to not spoil the results for the next episode").
+  const teased = final && seen.some(x => x.key === 'final.rate.tease' && x.who === who);
   const slots = (ballot?.order || []).map((h, i) => {
-    const open = sent || placed.has(h);
+    const open = (!final && sent) || placed.has(h);
     const now = st && placed.get(h) === st;
-    return `<div class="civ-slot${open ? ' open' : ''}${now ? ' now' : ''}${now && fresh ? ' land' : ''}"><b>${i + 1}</b>${open ? tile(row, h, 'row') : '<div class="civ-mtile row hidden"><div class="ph">?</div><div class="n">· · ·</div></div>'}</div>`;
+    const secret = teased && i === 0 && !open;
+    return `<div class="civ-slot${open ? ' open' : ''}${now ? ' now' : ''}${now && fresh ? ' land' : ''}"><b>${i + 1}</b>${open ? tile(row, h, 'row')
+      : secret ? '<div class="civ-mtile row hidden secret"><div class="ph">★</div><div class="n">KEPT SECRET</div></div>'
+        : '<div class="civ-mtile row hidden"><div class="ph">?</div><div class="n">· · ·</div></div>'}</div>`;
   }).join('');
   return `<div class="civ-layer civ-rate">${bgUi}
     ${cam(row, who, 'side')}
@@ -249,25 +257,60 @@ function videoStage(row, screen, idx, fresh) {
 }
 
 // ── THE FINALE STUDIO ──────────────────────────────────────────────────
+// User (2026-10-04): "the way they're placed in the winner screen spoiled the
+// final result"; "the final board should have more suspense". The couch is in
+// the order they arrived at the meeting, never the order they finished. A
+// place opens only on the line that names it (the host's build-up before it
+// knows who it is about, and must not show it): the slot pulses through the
+// pause, the last two stand in a spotlight, then the winner.
+const ORD = n => `${n}${n % 10 === 1 && n !== 11 ? 'ST' : n % 10 === 2 && n !== 12 ? 'ND' : n % 10 === 3 && n !== 13 ? 'RD' : 'TH'}`;
 function studioStage(row, screen, idx, fresh) {
   const st = idx >= 0 ? screen.steps[idx] : null;
+  const k = st?.key || '';
   const pl = [...(screen.d?.placements || [])].sort((a, b) => a.place - b.place);
+  const finalists = pl.map(p => p.profile);
   const seen = upTo(screen, idx);
-  const shown = new Set(seen.filter(x => /^reveal\./.test(x.key || '')).map(x => x.on?.a).filter(Boolean));
-  const winner = seen.some(x => x.key === 'reveal.winner') ? pl[0]?.profile : null;
-  const newest = st && /^reveal\./.test(st.key || '') ? st.on?.a : null;
+  const winnerOut = seen.some(x => x.key === 'reveal.winner');
+  // Open: a place named by the host; the winner's line opens the top two.
+  const shown = new Set(seen.filter(x => x.key === 'reveal.place').map(x => x.on?.a).filter(Boolean));
+  if (winnerOut) for (const p of pl.slice(0, 2)) shown.add(p.profile);
+  const winner = winnerOut ? pl[0]?.profile : null;
+  const placeOf = h => pl.find(p => p.profile === h)?.place;
+  const nextHidden = [...pl].reverse().find(p => !shown.has(p.profile));
+  const final2 = !winnerOut && seen.some(x => x.key === 'reveal.final2');
+  const standing = final2 ? (() => { const f = seen.filter(x => x.key === 'reveal.final2').at(-1); return [f.on?.a, f.on?.b]; })() : [];
+  const drum = k === 'reveal.suspense' ? new Set([nextHidden?.place]) : final2 ? new Set([1, 2]) : new Set();
+  const newest = k === 'reveal.place' ? st.on?.a : k === 'reveal.winner' ? winner : null;
   const board = pl.map(p => {
     const open = shown.has(p.profile);
-    return `<div class="civ-slot${open ? ' open' : ''}${p.profile === winner ? ' crown' : ''}${open && fresh && p.profile === newest ? ' land' : ''}"><b>${p.place}</b>${open
+    return `<div class="civ-slot${open ? ' open' : ''}${p.profile === winner ? ' crown' : ''}${!open && drum.has(p.place) ? ' drum' : ''}${open && fresh && (p.profile === newest || (k === 'reveal.winner' && p.place <= 2)) ? ' land' : ''}"><b>${p.place}</b>${open
       ? `${tile(row, p.profile, 'row')}<span class="civ-aka">${isCatfish(row, p.profile) ? `aka ${esc(realOf(row, p.profile))}` : ''}</span>`
       : '<div class="civ-mtile row hidden"><div class="ph">?</div><div class="n">· · ·</div></div>'}</div>`;
   }).join('');
-  const couch = pl.map(p => p.profile).map(h => `<div class="civ-seat${h === st?.who ? ' talk' : ''}${h === winner ? ' win' : ''}">${cam(row, h, 'seat', realOf(row, h).toUpperCase())}</div>`).join('');
-  return `<div class="civ-layer civ-studio">${setImg('studio')}
+  // The couch, in the order they walked into the meeting.
+  const seats = (screen.d?.seats || []).filter(h => finalists.includes(h));
+  const order = seats.length === finalists.length ? seats : [...finalists].sort((a, b) => nameOf(row, a).localeCompare(nameOf(row, b)));
+  const fanSeen = seen.some(x => x.key === 'reveal.fan') ? screen.d?.fan : null;
+  const speech = /^reveal\.speech/.test(k);
+  const couch = order.map(h => {
+    const placed = shown.has(h);
+    const cls = [h === st?.who ? 'talk' : '', h === winner ? 'win' : '', final2 && standing.includes(h) ? 'stand' : '', final2 && !standing.includes(h) ? 'dim' : '',
+      !placed && k === 'reveal.suspense' ? 'tense' : '', speech && h === winner ? 'spot' : ''].filter(Boolean).join(' ');
+    return `<div class="civ-seat ${cls}">${cam(row, h, 'seat', realOf(row, h).toUpperCase())}${placed ? `<span class="civ-seatplace${h === winner ? ' gold' : ''}">${h === winner ? 'WINNER' : ORD(placeOf(h))}</span>` : ''}${fanSeen === h ? '<span class="civ-seatfan">FAN FAVORITE</span>' : ''}</div>`;
+  }).join('');
+  // The blocked players are in the studio audience; the host talks with some of them first.
+  const audience = (screen.cast || []).filter(h => !finalists.includes(h));
+  const crowd = audience.length ? `<div class="civ-crowd"><span class="hd">IN THE AUDIENCE</span>${audience.map(h => {
+    const u = faceUrl(faceOf(row, h, 'profile'));
+    return `<span class="${h === st?.who ? 'talk' : ''}${fanSeen === h ? ' fan' : ''}"${bg(u)}>${u ? '' : esc(nameOf(row, h)[0] || '?')}</span>`;
+  }).join('')}</div>` : '';
+  const label = speech ? "THE WINNER'S SPEECH" : final2 ? 'THE FINALE · THE LAST TWO' : 'THE FINALE · LIVE';
+  return `<div class="civ-layer civ-studio${final2 ? ' final2' : ''}">${setImg('studio')}
     <div class="civ-board studio"><div class="hd">THE FINAL BOARD</div>${board}</div>
-    <div class="civ-couch">${couch}</div>
-    ${winner && fresh && st?.key === 'reveal.winner' ? '<div class="civ-confetti"></div><div class="civ-winner">WINNER</div>' : ''}
-    ${where('THE FINALE · LIVE')}${dlg(row, st, fresh)}</div>`;
+    ${crowd}<div class="civ-couch">${couch}</div>
+    ${final2 ? '<div class="civ-spot"></div>' : ''}
+    ${winner && fresh && k === 'reveal.winner' ? '<div class="civ-confetti"></div><div class="civ-winner">WINNER</div>' : ''}
+    ${where(label)}${dlg(row, st, fresh)}</div>`;
 }
 
 // ── THE NEWSFEED ───────────────────────────────────────────────────────

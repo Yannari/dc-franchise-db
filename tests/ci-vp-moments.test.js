@@ -7,7 +7,7 @@ import { setPlayers } from '../js/core.js';
 import { playCircleSeason } from '../js/ci/season.js';
 import { circleScreens } from '../js/vp-ci/steps.js';
 import { stageInner } from '../js/vp-ci/stage.js';
-import { roomImg } from '../js/vp-ci/parts.js';
+import { roomImg, realOf } from '../js/vp-ci/parts.js';
 import { rosterCast, circleSetup } from './helpers/ci-cast.js';
 import { DEFAULT_POOL } from '../js/ci/default-pool.js';
 
@@ -183,13 +183,42 @@ describe('the goodbye video', () => {
 describe('the finale studio', () => {
   it('the board is read from last place, and the winner is crowned last', () => {
     for (const x of of('reveal')) {
-      const d0 = at(x, 0);
-      expect(d0.querySelectorAll('.civ-board .civ-slot.open')).toHaveLength(1);
-      const last = Math.max(...x.screen.d.placements.map(p => p.place));
-      expect(Number(d0.querySelector('.civ-slot.open b').textContent)).toBe(last);
+      // Nothing is open while the host talks with the blocked players.
+      expect(at(x, 0).querySelectorAll('.civ-board .civ-slot.open')).toHaveLength(0);
+      // The build-up before a name gives nothing away; the name opens the last place.
+      const sus = firstIdx(x.screen, /^reveal\.suspense$/);
+      if (sus >= 0) expect(at(x, sus).querySelectorAll('.civ-board .civ-slot.open')).toHaveLength(0);
+      const first = firstIdx(x.screen, /^reveal\.place$/);
+      if (first >= 0) {
+        const d0 = at(x, first);
+        expect(d0.querySelectorAll('.civ-board .civ-slot.open')).toHaveLength(1);
+        const last = Math.max(...x.screen.d.placements.map(p => p.place));
+        expect(Number(d0.querySelector('.civ-slot.open b').textContent)).toBe(last);
+      }
       const win = firstIdx(x.screen, /^reveal\.winner$/);
       expect(at(x, win - 1).querySelector('.civ-slot.crown')).toBeNull();
       expect(at(x, win).querySelector('.civ-slot.crown b').textContent).toBe('1');
+    }
+  });
+  // User, 2026-10-04: "limit the final ratings screen to just some placements to not spoil the results for the next episode".
+  it('the final ratings never show a first place, on any line', () => {
+    let checked = 0;
+    for (const x of of('final-ratings')) {
+      for (let i = 0; i < x.screen.steps.length; i++) {
+        const d = at(x, i);
+        for (const slot of d.querySelectorAll('.civ-board .civ-slot')) {
+          if (slot.querySelector('b')?.textContent === '1') { checked++; expect(slot.classList.contains('open')).toBe(false); }
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+  // User, 2026-10-04: "the way they're placed in the winner screen spoiled the final result".
+  it('the couch is in the order they arrived, never the order they finished', () => {
+    for (const x of of('reveal')) {
+      const seats = [...at(x, 0).querySelectorAll('.civ-couch .civ-seat .civ-mcam')].map(e => e.dataset.cam);
+      const arrived = x.screen.d.seats.filter(h => x.screen.d.placements.some(p => p.profile === h)).map(h => realOf(x.row, h).toUpperCase());
+      expect(seats).toEqual(arrived);
     }
   });
 });

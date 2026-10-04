@@ -36,30 +36,15 @@
 //   with no time to plan and their first two choices off the table. It is the
 //   only power here that makes the Head of Household do their own job twice.
 import { gs } from '../core.js';
-import { pStats, pronouns } from '../players.js';
+import { pStats } from '../players.js';
 import { getPerceivedBond, addBond } from '../bonds.js';
 import { nominationScore } from './strategy.js';
-import { makePicker, clamp } from '../bb-comps/_shared.js';
+import { clamp } from '../bb-comps/_shared.js';
 
-const beat = (text, players, badgeText, badgeClass = 'gold') =>
-  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass });
-
-const WOKEN = [
-  () => 'The lights come on at ten past three in the morning and every houseguest is called to the living room. Nobody has been told why.',
-  () => 'Three in the morning. The house lights go to full, the wall lights up, and sixteen people arrive in the living room in whatever they were asleep in.',
-  () => 'Nobody sleeps through it. The call goes out in the middle of the night and the whole house comes down the stairs already knowing that something has been taken back.',
-  () => 'It is the middle of the night and the living room is being filled one confused houseguest at a time. The wall is already showing two faces that are about to stop meaning anything.',
-];
-const VOIDED = [
-  (a, b) => `The nominations are void. ${a} and ${b} come off that wall, and neither of them has done anything to earn it.`,
-  (a, b) => `${a} and ${b} are no longer nominated. The keys turn backwards and the room makes a noise it has not made before.`,
-  (a, b) => `Whatever happened at that ceremony is undone. ${a} and ${b} are safe, and nobody in this room has any idea who decided that.`,
-];
-const REDONE = [
-  (hoh, a, b) => `${hoh} has to do it again, on the spot, with the first two names off the table. ${a} and ${b} go up instead.`,
-  (hoh, a, b, p) => `${hoh} is handed the box a second time in one night. ${p.Sub} names ${a} and ${b}, and ${p.sub} does not get to explain either of them.`,
-  (hoh, a, b) => `Two new keys turn. ${a} and ${b}, chosen in a living room at three in the morning by somebody who had a plan four hours ago.`,
-];
+// Beats are plain facts with a `part`; the words are written by
+// bb/script/ceremony.js from lines/nmact.js. The holder is in none of them.
+const beat = (text, players, badgeText, badgeClass = 'gold', part = null) =>
+  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass, ...(part ? { part } : {}) });
 
 /**
  * Whether the holder spends it on this ceremony.
@@ -108,7 +93,6 @@ export function nightmarePull(holder, { nominees = [], weeksLeft = 0, rng = Math
 export function runNightmarePower({ week, house, hoh, holder, nominees = [],
   untouchable = [], rng = Math.random } = {}) {
   const room = (house || []).filter(Boolean);
-  const say = makePicker(rng);
   // ── THE ORIGINAL TWO ARE OFF THE TABLE, AND SO IS THE HEAD OF HOUSEHOLD ──
   //
   // The holder is NOT excluded. They are not safe — they bought a redo, not
@@ -129,11 +113,12 @@ export function runNightmarePower({ week, house, hoh, holder, nominees = [],
     .slice(0, 2)
     .map(x => x.name);
 
-  const p = pronouns(hoh);
+  // Three draws, where the three beats' wording used to be picked.
+  rng(); rng(); rng();
   const beats = [
-    beat(say(WOKEN)(), [], 'THREE IN THE MORNING', 'red'),
-    beat(say(VOIDED)(nominees[0], nominees[1]), [...nominees], 'NOMINATIONS VOID', 'gold'),
-    beat(say(REDONE)(hoh, named[0], named[1], p), [hoh, ...named], 'AND AGAIN', 'red'),
+    beat('The house is woken in the middle of the night and called to the living room.', [hoh], 'THREE IN THE MORNING', 'red', 'woken'),
+    beat(`The nominations are void: ${nominees[0]} and ${nominees[1]} are safe.`, [...nominees], 'NOMINATIONS VOID', 'gold', 'voided'),
+    beat(`${hoh} must nominate again, and names ${named[0]} and ${named[1]}.`, [hoh, ...named], 'AND AGAIN', 'red', 'redone'),
   ];
 
   // ── WHAT IT COSTS, AND WHO PAYS ──
@@ -150,11 +135,8 @@ export function runNightmarePower({ week, house, hoh, holder, nominees = [],
     if (!gs.popularity) gs.popularity = {};
     gs.popularity[name] = (gs.popularity[name] || 0) + 1;
   }
-  beats.push(beat(
-    `${named[0]} and ${named[1]} are angry with ${hoh}, who is the only person in this room who said `
-      + `their names out loud — and who was asleep an hour ago with a completely different week planned. `
-      + 'Nobody will ever be told whose power did this.',
-    [hoh, ...named], 'THE WRONG PERSON IS BLAMED', 'red'));
+  beats.push(beat(`${named[0]} and ${named[1]} blame ${hoh}, who did not choose to nominate again.`,
+    [named[0], hoh, named[1]], 'THE WRONG PERSON IS BLAMED', 'red', 'blamed'));
 
   return {
     nominees: named,

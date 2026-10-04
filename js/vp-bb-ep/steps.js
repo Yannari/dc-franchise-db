@@ -1374,6 +1374,38 @@ function temptationScreens(act, ctx) {
   }];
 }
 
+// ── The Nightmare Power (Phase 7) ───────────────────────────────────────
+// Three in the morning: a secret power voids the nominations and the Head of
+// Household has to name two new nominees on the spot. Big Brother explains it
+// to a house in its pyjamas; the old two come off the board, the new two go
+// up, and the HOH takes the blame for a ceremony they did not choose to
+// repeat. Whose power it was is never shown. Words: lines/nmact.js.
+function nightmareScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const [o1, o2] = act.voided || [];
+  const [n1, n2] = act.nominees || [];
+  const steps = [];
+  for (const b of act.beats || []) {
+    if (b.part === 'woken') steps.push(...linesOf(b),
+      { k: 'bb', t: 'Houseguests, somebody in this house has used the Nightmare Power.', rule: 1 },
+      { k: 'bb', t: `The nominations are void. ${o1} and ${o2}, you are no longer nominated.`, rule: 2, nmOff: true },
+      { k: 'bb', t: `${act.hoh}, you must name two new nominees, now. ${o1} and ${o2} cannot go back up.`, rule: 3 },
+      { k: 'bb', t: 'You will not be told who used the power.', rule: 4 });
+    if (b.part === 'voided') steps.push(...linesOf(b));
+    if (b.part === 'redone') steps.push(...linesOf(b), { k: 'beat', t: `${n1} and ${n2} are the new nominees.`, nmOn: true, toast: ['NOMINATED AGAIN', '#ff3355'] });
+    if (b.part === 'blamed') steps.push(...linesOf(b));
+  }
+  return [{
+    id: `bb-nightmare-w${ctx.week}`, kind: 'nightmare', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '03:10',
+    kicker: 'Cam 04 · Living room', title: 'The Nightmare Power', label: 'The Nightmare Power', sub: 'The nominations, undone',
+    seated: seatLiving([o1, o2].filter(Boolean), ctx.house.filter(n => n !== act.hoh && n !== o1 && n !== o2), act.hoh), nv: true,
+    veto2: { before: [o1, o2].filter(Boolean) }, nightmare: { voided: [o1, o2], named: [n1, n2] },
+    rules: [['NIGHTMARE', 'a secret power voids the nominations'], ['SAFE', `${o1} and ${o2} come off and cannot go back up`],
+      ['NOW', `${act.hoh} names two new nominees on the spot`], ['SECRET', 'nobody is told who used it']],
+    rulesTitle: 'THE NIGHTMARE POWER · 3 A.M.', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1469,6 +1501,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
+      case 'nightmare-power': flush(); for (const scr of nightmareScreens(act, ctx)) ceremony(scr); ctx.nominees = [...(act.nominees || ctx.nominees)]; beatsOf(act); break;
       case 'temptation': case 'temptation-curse': flush(); for (const scr of temptationScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'second-veto': flush(); for (const scr of secondVetoScreens(act, ctx)) ceremony(scr); if (act.used) ctx.nominees = [...(act.nominees || ctx.nominees)]; beatsOf(act); break;
       case 'coin-of-destiny': flush(); for (const scr of coinScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -1505,7 +1538,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

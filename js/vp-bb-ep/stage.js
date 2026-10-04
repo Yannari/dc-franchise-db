@@ -314,7 +314,10 @@ function veto2Html(S, L, st, fresh, idx) {
   const seen = S.steps.slice(0, idx + 1);
   const saved = seen.find(x => x.v2Save)?.v2Save, rep = seen.find(x => x.v2Rep)?.v2Rep;
   const chip = (n, cls) => `<div class="v2c ${cls} ${fresh && (st?.v2Save === n || st?.v2Rep === n) ? 'now' : ''}"><span class="v2f" style="--c:${col(n)}">${img(n)}</span><b>${esc(n)}</b><i>${cls === 'off' ? 'SAVED' : cls === 'new' ? 'REPLACEMENT' : 'NOMINATED'}</i></div>`;
-  const chips = (V.before || []).map(n => chip(n, n === saved ? 'off' : '')).join('') + (rep ? chip(rep, 'new') : '');
+  const N = S.nightmare;
+  const off = N && seen.some(x => x.nmOff), on = N && seen.some(x => x.nmOn);
+  const chips = N ? (N.voided || []).map(n => chip(n, off ? 'off' : '')).join('') + (on ? (N.named || []).map(n => chip(n, 'new')).join('') : '')
+    : (V.before || []).map(n => chip(n, n === saved ? 'off' : '')).join('') + (rep ? chip(rep, 'new') : '');
   return `<div class="v2board"><span class="v2h">THE BLOCK${seen.some(x => x.v2Kept) ? ' · UNCHANGED' : ''}</span><div class="v2r">${chips}</div></div>`;
 }
 

@@ -430,6 +430,20 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── The Nightmare Power: a ceremony undone at three in the morning ──
+  if (act.type === 'nightmare-power') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `nm|${b.part}|${p.join('|')}`;
+      let lines = null;
+      if (b.part === 'woken' && p[0]) lines = fresh('nmact.woken', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'voided' && p.length === 2) lines = fresh('nmact.voided', { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
+      if ((b.part === 'redone' || b.part === 'blamed') && p.length === 3) lines = fresh(`nmact.${b.part}`, { a: p[0], b: p[1], c: p[2] }, { ending: 'scene' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   // ── The Den of Temptation, and the curse it leaves ──
   if (act.type === 'temptation' || act.type === 'temptation-curse') {
     const fresh = freshWriter(ctx, house);

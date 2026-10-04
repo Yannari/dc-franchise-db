@@ -32,7 +32,7 @@
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';
-import { aptitude, makePicker, clamp } from '../bb-comps/_shared.js';
+import { aptitude, clamp } from '../bb-comps/_shared.js';
 import { applyReturn } from './battle-back.js';
 import { BB_POWER_DEFINITIONS, activePowersAt, usePower } from './powers.js';
 import { allyStake } from './shared-strategy.js';
@@ -47,47 +47,13 @@ const REENTRY_MIX = Object.freeze({ endurance: 0.32, mental: 0.26, physical: 0.2
  */
 const REENTRY_STANDARD = 5.9;
 
-const beat = (text, players, badgeText, badgeClass = 'twist') =>
-  ({ type: 'bonus-life', text, players: [...players].filter(Boolean), badgeText, badgeClass });
+// Beats are plain facts with a `part`; the words are written by
+// bb/script/ceremony.js from lines/blact.js (and lines/bkact.js for the return).
+const beat = (text, players, badgeText, badgeClass = 'twist', part = null, extra = {}) =>
+  ({ type: 'bonus-life', text, players: [...players].filter(Boolean), badgeText, badgeClass, ...(part ? { part } : {}), ...extra });
 
 const noise = (rng, amt = 2.5) => (rng() - 0.5) * amt * 2;
 const round2 = v => Math.round(v * 100) / 100;
-
-const SPEND_ALLY = [
-  (h, b, p) => `${h} does not hesitate. ${p.Sub} has been carrying this thing around for weeks waiting for exactly one name to come out of that envelope, and it just did — ${b} is not going home tonight without a fight.`,
-  (h, b) => `${h} spends it on ${b}, and spends it fast. There is a version of this house where ${b} owes ${h} everything, and ${h} has just bought it outright.`,
-  (h, b, p) => `${h} plays the Bonus Life on ${b}. ${p.Sub} could have kept it for ${p.ref}. ${p.Sub} will be reminding ${b} of that until one of them leaves.`,
-];
-
-const SPEND_SELF = [
-  (h, p) => `${h} is the one walking out the door, which makes this the easiest decision anybody has made all summer. ${p.Sub} plays it on ${p.ref} before the applause has finished.`,
-  (h) => `The votes are read and ${h} is evicted — and ${h} is already reaching for the Bonus Life. Nobody sits on this one when it is their own name.`,
-  (h, p) => `${h} loses the vote and immediately stops looking like somebody who lost it. ${p.Sub} has had this in ${p.posAdj} pocket the whole time.`,
-];
-
-const HOARD = [
-  (h, e, p) => `${h} has a Bonus Life in ${p.posAdj} pocket and ${e} is going home without one. ${p.Sub} says nothing, which is the whole move.`,
-  (h, e) => `${h} could stop this. ${h} watches ${e} hug the room, watches the door close, and keeps the power for a week that matters more.`,
-  (h, e, p) => `Nobody knows ${h} is making a decision tonight, so nobody sees ${p.obj} decide against ${e}. It is the quietest thing that happens all week.`,
-];
-
-const AUTO_FIRE = [
-  (b) => `Big Brother stops the show. The Bonus Life was never used, and it does not simply expire — it goes off, here, on ${b}, who did not ask for it and does not yet understand what is being offered.`,
-  (b) => `The fuse runs out live on air. An unspent Bonus Life activates on tonight's evictee by default, and tonight's evictee is ${b}.`,
-  (b, p) => `Nobody played it, so the house rules play it. ${b} is halfway to the door when ${p.sub} is told ${p.sub} has one competition standing between ${p.obj} and a bed ${p.sub} has already stripped.`,
-];
-
-const WON = [
-  (n, p) => `${n} beats the standard with room to spare, and the sound out of the house is not applause. ${p.Sub} is coming back in.`,
-  (n) => `It comes down to the last of it, and ${n} holds on. The eviction is reversed on live television.`,
-  (n, p) => `${n} does not miss. ${p.Sub} was evicted eleven minutes ago and ${p.sub} is now walking back through the door ${p.sub} was walked out of.`,
-];
-
-const LOST = [
-  (n, p) => `${n} falls short. ${p.Sub} was given a second chance in front of ten million people and could not take it, which is a worse way to leave than the vote was.`,
-  (n) => `The standard holds. ${n} came within one competition of undoing the whole night and goes to the jury house anyway.`,
-  (n, p) => `${n} misses it. Somewhere a houseguest who sat on this power for four weeks watches ${p.obj} lose it and says nothing at all.`,
-];
 
 /**
  * Does the holder spend it on tonight's evictee?
@@ -136,7 +102,7 @@ export function resolveBonusLife({ week, evicted, rng = Math.random } = {}) {
   const instance = live[0];
   const def = BB_POWER_DEFINITIONS['bonus-life'];
   const holder = instance.holder;
-  const say = makePicker(rng);
+  const say = () => rng();   // each beat's wording used to be one draw here; the draw stays
   const beats = [];
 
   const read = spendRead(instance, evicted, weekNum, rng);
@@ -151,7 +117,7 @@ export function resolveBonusLife({ week, evicted, rng = Math.random } = {}) {
     return {
       type: 'bonus-life', week: weekNum, fired: false, hoarded: true,
       holder, evicted, secret: instance.visibility !== 'public',
-      beats: [beat(say(HOARD)(holder, evicted, pronouns(holder)), [holder, evicted], 'NOT PLAYED', 'grey')],
+      beats: [(say(), beat(`${holder} keeps the Bonus Life and lets ${evicted} go.`, [holder, evicted], 'NOT PLAYED', 'grey', 'hoard'))],
     };
   }
 
@@ -161,21 +127,21 @@ export function resolveBonusLife({ week, evicted, rng = Math.random } = {}) {
   instance.beneficiary = beneficiary;
 
   if (auto) {
-    beats.push(beat(say(AUTO_FIRE)(beneficiary, pronouns(beneficiary)), [beneficiary, holder], 'FUSE RUNS OUT', 'gold'));
+    say();
+    beats.push(beat(`The unused Bonus Life goes off on ${beneficiary}.`, [beneficiary, holder], 'FUSE RUNS OUT', 'gold', 'auto'));
   } else if (read.reason === 'self') {
-    beats.push(beat(say(SPEND_SELF)(holder, pronouns(holder)), [holder], 'BONUS LIFE', 'gold'));
+    say();
+    beats.push(beat(`${holder} plays the Bonus Life on themselves.`, [holder], 'BONUS LIFE', 'gold', 'self'));
   } else {
-    beats.push(beat(say(SPEND_ALLY)(holder, beneficiary, pronouns(holder)), [holder, beneficiary], 'BONUS LIFE', 'gold'));
+    say();
+    beats.push(beat(`${holder} plays the Bonus Life on ${beneficiary}.`, [holder, beneficiary], 'BONUS LIFE', 'gold', 'ally'));
   }
 
   // ── One competition, alone, against a standard ──
   const score = round2(aptitude(beneficiary, REENTRY_MIX) + noise(rng, 2.6));
   const won = score >= REENTRY_STANDARD;
-  const pr = pronouns(beneficiary);
-
-  beats.push(beat(
-    `The yard is lit for one person. ${beneficiary} plays the re-entry competition alone — no field, no rival, nothing to beat except the number Big Brother set before ${pr.sub} got here.`,
-    [beneficiary], 'RE-ENTRY', 'challenge'));
+  beats.push(beat(`${beneficiary} plays the re-entry competition alone and scores ${score} against ${REENTRY_STANDARD}.`,
+    [beneficiary], 'RE-ENTRY', 'challenge', 'reentry', { score, standard: REENTRY_STANDARD }));
 
   const act = {
     type: 'bonus-life', week: weekNum, fired: true, hoarded: false,
@@ -188,12 +154,14 @@ export function resolveBonusLife({ week, evicted, rng = Math.random } = {}) {
   };
 
   if (won) {
-    beats.push(beat(say(WON)(beneficiary, pr), [beneficiary], 'RE-ENTRY WON', 'gold'));
+    say();
+    beats.push(beat(`${beneficiary} beats the standard.`, [beneficiary], 'RE-ENTRY WON', 'gold', 'won'));
     applyReturn(beneficiary, act, weekNum);
     gs.bb ||= {};
     (gs.bb.returns || []).forEach(r => { if (r.name === beneficiary && r.week === weekNum) r.style = 'bonus-life'; });
   } else {
-    beats.push(beat(say(LOST)(beneficiary, pr), [beneficiary], 'RE-ENTRY LOST', 'red'));
+    say();
+    beats.push(beat(`${beneficiary} misses the standard.`, [beneficiary], 'RE-ENTRY LOST', 'red', 'lost'));
     // The holder wore this in public if the power was public, and the house
     // remembers a big swing that missed either way it was spent.
     if (!act.self && holder && (gs.activePlayers || []).includes(holder)) {

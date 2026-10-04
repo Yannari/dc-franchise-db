@@ -6438,8 +6438,8 @@ export function simulateBBWeek(options = {}) {
       beats: week.powersExpired.map(x => ({
         type: 'power-expired',
         text: x.reason === 'holder-evicted'
-          ? `${x.holder} leaves the house still holding ${x.name}.`
-          : `${x.holder} never played ${x.name}, held since week ${x.heldSince}, and it expires.`,
+          ? `${x.holder} leaves the house still holding ${x.name}. Nobody inside ever knew.`
+          : `${x.holder} has held ${x.name} since week ${x.heldSince} and never played it. Tonight it expires.`,
         players: [x.holder],
         badgeText: x.reason === 'holder-evicted' ? 'LEFT WITH THEM' : 'NEVER PLAYED',
         badgeClass: 'grey',
@@ -7726,6 +7726,8 @@ export function simulateBBWeek(options = {}) {
     try {
       week.bonusLife = resolveBonusLife({ week, evicted, rng });
       if (week.bonusLife) {
+        // Words without addBeats: the evictee is outside, so no house scenes.
+        try { writeCeremony(week.bonusLife, week, gs.activePlayers || [], {}); } catch { /* words never stop a week */ }
         week.acts.push(week.bonusLife);
         if (week.bonusLife.returned) week.returnedHouseguest = week.bonusLife.returned;
       }
@@ -7790,8 +7792,8 @@ export function simulateBBWeek(options = {}) {
       beats: week.powersExpired.map(x => ({
         type: 'power-expired',
         text: x.reason === 'holder-evicted'
-          ? `${x.holder} leaves the house still holding ${x.name}.`
-          : `${x.holder} never played ${x.name}, held since week ${x.heldSince}, and it expires.`,
+          ? `${x.holder} leaves the house still holding ${x.name}. Nobody inside ever knew.`
+          : `${x.holder} has held ${x.name} since week ${x.heldSince} and never played it. Tonight it expires.`,
         players: [x.holder],
         badgeText: x.reason === 'holder-evicted' ? 'LEFT WITH THEM' : 'NEVER PLAYED',
         badgeClass: 'grey',

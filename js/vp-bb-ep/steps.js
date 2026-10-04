@@ -1189,6 +1189,7 @@ function expiredScreens(act, ctx) {
   for (const b of act.beats || []) {
     const a = b.players?.[0];
     if (!a) continue;
+    // the engine's fact is this caption, word for word (so a power with no lines still airs)
     steps.push({ k: 'beat', t: b.part === 'evicted' ? `${a} leaves the house still holding ${b.power}. Nobody inside ever knew.`
       : `${a} has held ${b.power} since week ${b.since} and never played it. Tonight it expires.`, expCard: [a, b.power, b.part], at: [[a, 50]] },
       ...(b.lines?.length ? scriptSteps(b.lines) : []));
@@ -1449,6 +1450,47 @@ function battleBackScreens(act, ctx) {
   }];
 }
 
+// ── The Bonus Life (Phase 7) ────────────────────────────────────────────
+// On eviction night: a power that can undo the vote. Kept in a pocket, it is
+// a Diary Room note the house never hears. Played (or gone off by itself at
+// the end of its window), Big Brother explains it, the evictee plays one
+// competition alone against a set score on the Time Capsule's meter, and
+// either walks back in or goes. Words: lines/blact.js and lines/bkact.js.
+function bonusLifeScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  if (!act.fired) {
+    const b = beats.find(x => x.part === 'hoard');
+    return [{
+      id: `bb-bonuslife-w${ctx.week}`, kind: 'expired', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: 'LIVE',
+      kicker: 'Cam 01 · Diary room', title: 'Not played', label: 'Bonus Life · not played', sub: 'The house never knew', cast: [], expired: true,
+      steps: [{ k: 'beat', t: `${act.holder} has a Bonus Life, and lets ${act.evicted} go without it.`, expCard: [act.holder, 'Bonus Life', 'kept'], at: [[act.holder, 50]] }, ...linesOf(b)],
+    }];
+  }
+  const who = act.beneficiary;
+  const steps = [
+    { k: 'bb', t: 'Houseguests, the Bonus Life has been played.', rule: 1 },
+    { k: 'bb', t: `${who} will play one competition, alone, against a score set by Big Brother.`, rule: 2 },
+    { k: 'bb', t: `Beat it, and ${who} comes back into the house. Miss it, and the eviction stands.`, rule: 3 },
+  ];
+  for (const b of beats) {
+    if (b.part === 'auto') steps.push({ k: 'beat', t: `Nobody played the Bonus Life, so at the end of its time it goes off by itself, on ${who}.` }, ...linesOf(b));
+    if (b.part === 'self') steps.push({ k: 'beat', t: `${act.holder} has just been evicted, and plays it.` }, ...linesOf(b));
+    if (b.part === 'ally') steps.push({ k: 'beat', t: `${act.holder} plays it on ${who}.` }, ...linesOf(b));
+    if (b.part === 'reentry') steps.push(...linesOf(b), { k: 'beat', t: `${who} scores ${b.score}, against ${b.standard}.`, capStage: [1, b.score >= b.standard ? 'good' : 'bad', b.score] });
+    if (b.part === 'won') steps.push({ k: 'beat', t: `${who} beats it.`, capEnd: 'won', toast: ['THE EVICTION IS UNDONE', '#f5c542'] }, ...linesOf(b));
+    if (b.part === 'lost') steps.push({ k: 'beat', t: `${who} misses it. The eviction stands.`, capEnd: 'lost', toast: ['THE EVICTION STANDS', '#ff3355'] }, ...linesOf(b));
+    if (b.part === 'back') steps.push({ k: 'bb', t: `${who}, you are back in the game.` }, ...linesOf(b));
+  }
+  return [{
+    id: `bb-bonuslife-w${ctx.week}`, kind: 'bonuslife', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: 'LIVE',
+    kicker: 'Cam 05 · Backyard', title: 'Bonus Life', label: 'Bonus Life', sub: `${who} gets one more chance`,
+    cast: [[who, 50]], capsule: { n: 1, target: act.competition?.standard, name: 'RE-ENTRY' },
+    rules: [['BONUS LIFE', 'a power that can undo an eviction'], ['ALONE', 'one competition against a set score'], ['BEAT IT', 'and walk back in, with no safety']],
+    rulesTitle: 'BONUS LIFE · HOW IT WORKS', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1544,6 +1586,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
+      case 'bonus-life': flush(); for (const scr of bonusLifeScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'battle-back': flush(); for (const scr of battleBackScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'nightmare-power': flush(); for (const scr of nightmareScreens(act, ctx)) ceremony(scr); ctx.nominees = [...(act.nominees || ctx.nominees)]; beatsOf(act); break;
       case 'temptation': case 'temptation-curse': flush(); for (const scr of temptationScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -1582,7 +1625,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

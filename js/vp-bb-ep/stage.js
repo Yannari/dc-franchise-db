@@ -366,7 +366,7 @@ function expiredHtml(S, L, st, fresh, idx) {
   const card = S.steps.slice(0, idx + 1).filter(x => x.expCard).at(-1)?.expCard;
   if (!card) return '';
   const [a, power, part] = card;
-  return `<div class="expcard ${fresh && st?.expCard ? 'now' : ''}"><span class="eh">${part === 'evicted' ? 'LEFT WITH THEM' : 'NEVER PLAYED'}</span>`
+  return `<div class="expcard ${fresh && st?.expCard ? 'now' : ''}"><span class="eh">${part === 'evicted' ? 'LEFT WITH THEM' : part === 'kept' ? 'KEPT IN A POCKET' : 'NEVER PLAYED'}</span>`
     + `<b>${esc(power || '')}</b><i>held by ${esc(a)}</i></div>`;
 }
 

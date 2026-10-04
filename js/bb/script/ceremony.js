@@ -440,6 +440,8 @@ export function writeCeremony(act, week, house, extra = {}) {
       if (['open', 'heat', 'out'].includes(b.part) && p[0]) lines = fresh(`bkact.${b.part}`, { a: p[0] }, { ending: 'scene' }, salt);
       if (['duel', 'champion', 'held'].includes(b.part) && p.length >= 2) lines = fresh(`bkact.${b.part}`, { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
       if (b.part === 'back' && p[0]) lines = fresh('bkact.back', { a: p[0] }, { ending: b.against ? 'voted' : 'clean' }, salt);
+      if (['auto', 'self', 'reentry', 'won', 'lost'].includes(b.part) && p[0]) lines = fresh(`blact.${b.part}`, { a: p[0] }, { ending: 'scene' }, salt);
+      if ((b.part === 'hoard' || b.part === 'ally') && p.length >= 2) lines = fresh(`blact.${b.part}`, { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
       if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
     }
   }
@@ -525,7 +527,8 @@ export function writeCeremony(act, week, house, extra = {}) {
   // ── A power that was never played (a note to the viewer) ──
   if (act.type === 'power-expired') {
     const fresh = freshWriter(ctx, house);
-    for (const b of act.beats || []) {
+    // Words for the first three; a night that bins eight powers is a list, not eight speeches.
+    for (const b of (act.beats || []).slice(0, 3)) {
       const a = (b.players || [])[0];
       if (!a || !b.part) continue;
       const lines = fresh('expact.gone', { a }, { ending: b.part === 'evicted' ? 'evicted' : 'expired' }, `exp|${a}|${b.power || ''}`);

@@ -36,7 +36,7 @@
 import { rel, bump, S, clamp, addScene } from './state.js';
 import { feel, mood } from './mind.js';
 import { makeClaim, learn } from './claims.js';
-import { togetherInCast } from './kin.js';
+import { togetherInCast, partnersOf, knowsKin } from './kin.js';
 
 export const FOCUS = 0.75;           // how hard loyalty pulls a player toward one romance
 export const TAKEN_RESTRAINT = 0.6;  // how hard loyalty holds back someone who is taken
@@ -61,9 +61,9 @@ const ROMANTIC = new Set(['couple', 'married']);
 /** Two people together, sharing one profile (shared.js relation). */
 export const romanticPair = (state, h) => (state.profiles[h]?.players?.length || 0) > 1 && ROMANTIC.has(state.profiles[h]?.relation);
 // A couple sharing a profile, or a spouse/partner who is in the cast too (ci/kin.js).
-const takenOf = (state, h) => (romanticPair(state, h) || togetherInCast(state, h) ? 1 : takenness(realOf(state, h)?.status));
-/** Really in a relationship (whatever the profile says); a couple is, by each other. */
-export const taken = (state, h) => takenOf(state, h) >= 1;
+const takenOf = (state, h) => Math.max(romanticPair(state, h) ? 1 : 0, togetherInCast(state, h), takenness(realOf(state, h)?.status));
+/** Really in a relationship (whatever the profile says); a couple is, by each other; dating counts. */
+export const taken = (state, h) => takenOf(state, h) >= 0.8;
 /** Says so on the profile? A taken player can show "Single" (profiles.js edits). */
 const showsSingle = (state, h) => takenness(state.profiles[h]?.shown?.status) < 1;
 /** Taken, and everybody can see it on the profile. */
@@ -294,4 +294,75 @@ export function coupleRevealed(state, obs, h, scene) {
   feel(state, obs, 'stress', 0.8);
   (state.coupleReveals ||= []).push({ obs, h, scene: scene?.id ?? null, day: state.day });
   return true;
+}
+
+// ── A kiss at the door, with a partner in the building ────────────────
+// User (2026-10-04): "when Axel got eliminated she kissed Wayne on her way out
+// but there wasn't even a cheating allegation even though her boyfriend is in
+// the same game ... it doesn't affect real life". The kiss is private, but
+// the one who was kissed can talk, it travels as gossip, and if it reaches
+// the partner — who knows that profile is theirs — they find out. The season
+// records it either way (ledger-record.js): the audience saw it.
+export const KISS_TELL = 0.7;   // how readily the one kissed tells somebody, at most
+export const KISS_WARN = 0.45;  // how readily a friend who knows both things tells the partner, at most
+/** A visit kiss (blocking.js runVisit). Taken: remember it, it can come out. */
+export function noteKiss(state, sc, h, to) {
+  const partners = partnersOf(state, h).filter(p => p !== to);
+  if (!partners.length && !taken(state, h)) return null;
+  const k = { kisser: h, kissed: to, partners, day: state.day, scene: sc.id, told: false, found: [] };
+  (state.kisses ||= []).push(k);
+  sc.data.cheat = true;
+  return k;
+}
+/**
+ * Each day: the one who was kissed may tell their closest friend (the more
+ * social and the less discreet, the likelier), in a chat of its own; from
+ * there it is gossip. Then any partner who has heard it, and knows that
+ * profile is theirs, finds out.
+ */
+export function kissFallout(state, rng) {
+  const out = [];
+  for (const k of state.kisses || []) {
+    if (!k.told && state.active.includes(k.kissed) && state.day > k.day) {
+      const st = x => S(state, k.kissed, x) / 10;
+      if (rng() < KISS_TELL * (0.4 + st('social') * 0.6) * (1.15 - st('loyalty') * 0.7)) {
+        const friend = state.active.filter(o => o !== k.kissed && o !== k.kisser)
+          .sort((x, y) => rel(k.kissed, y, 'trust') + rel(k.kissed, y, 'affection') - rel(k.kissed, x, 'trust') - rel(k.kissed, x, 'affection'))[0];
+        if (friend) {
+          const sc = addScene(state, 'chat', [k.kissed, friend], { intent: 'kisstold', ending: 'warm', about: k.kisser,
+            partner: k.partners.includes(friend) ? friend : null, turns: [], claims: [], pact: null });
+          const cl = makeClaim(state, { kind: 'playing', holder: k.kisser, about: k.kissed, truth: true, by: k.kissed, to: friend });
+          learn(state, friend, cl, k.kissed, sc); sc.data.claims.push(cl.id);
+          k.told = true; k.claim = cl.id;
+          out.push(sc);
+        }
+      }
+    }
+    if (!k.claim) continue;
+    // Somebody who heard about the kiss AND knows the two are together (one of
+    // them told them, kin.js) goes and tells the partner: the closer, the likelier.
+    for (const p of k.partners) {
+      if (k.found.includes(p) || !state.active.includes(p) || state.know[p]?.[k.claim]) continue;
+      const knowsCouple = x => state.claims.some(c => c.kind === 'ally' && state.know[x]?.[c.id]
+        && ((c.holder === p && c.about === k.kisser) || (c.holder === k.kisser && c.about === p)));
+      const teller = state.active.filter(x => x !== p && x !== k.kissed && state.know[x]?.[k.claim] && knowsCouple(x))
+        .sort((x, y) => rel(y, p, 'affection') - rel(x, p, 'affection'))[0];
+      if (!teller || rng() >= KISS_WARN * clamp(0.3 + rel(teller, p, 'affection') / 10, 0.1, 1)) continue;
+      const sc = addScene(state, 'chat', [teller, p], { intent: 'kisswarn', ending: 'neutral', about: k.kisser, with: k.kissed, turns: [], claims: [], pact: null });
+      learn(state, p, state.claims.find(c => c.id === k.claim), teller, sc); sc.data.claims.push(k.claim);
+      k.warnedBy = teller;
+      out.push(sc);
+    }
+    for (const p of k.partners) {
+      if (k.found.includes(p) || !state.active.includes(p) || !state.know[p]?.[k.claim] || !knowsKin(state, p, k.kisser)) continue;
+      k.found.push(p);
+      bump(p, k.kisser, 'resentment', 3); bump(p, k.kisser, 'trust', -3); bump(p, k.kisser, 'affection', -2);
+      bump(p, k.kissed, 'resentment', 2);
+      feel(state, p, 'stress', 2); feel(state, p, 'loneliness', 1);
+      // Told to their face by the one who was kissed: the chat itself is the reveal. Otherwise, alone in the apartment.
+      const direct = state.scenes.find(s => ((s.data?.intent === 'kisstold' && s.data.partner === p) || (s.data?.intent === 'kisswarn' && s.who[1] === p)) && s.data.about === k.kisser);
+      if (!direct) out.push(addScene(state, 'life', [p], { habit: 'cheated', event: 'cheated', about: k.kisser, with: k.kissed }, [p]));
+    }
+  }
+  return out;
 }

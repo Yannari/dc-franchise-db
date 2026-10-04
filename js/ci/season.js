@@ -28,7 +28,7 @@ import { S, rel } from './state.js';
 import { initMind, driftMind } from './mind.js';
 import { seedAttraction, planChats, contextFor } from './chat.js';
 import { groupChats } from './groupchats.js';
-import { compareNotes } from './twotiming.js';
+import { compareNotes, kissFallout } from './twotiming.js';
 import { kinRecognise } from './kin.js';
 import { runChat } from './conversation.js';
 import { morningFeed, runCircleChat } from './feed.js';
@@ -299,6 +299,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       groupChats(state, ds(`gc:${d.day}`), { ratingSoon: !!d.block && !d.final });
       // Two people the same player is romancing compare notes (twotiming.js).
       compareNotes(state, ds(`notes:${d.day}`));
+      // A kiss at the door with a partner in the building: it gets around (twotiming.js).
+      kissFallout(state, ds(`kiss:${d.day}`));
     }
     if (d.disrupter) runDisrupter(state, ds(`disrupter:${d.day}`));
     if (d.game) {

@@ -73,8 +73,9 @@ export function ciLedgerRecord(rows = [], state = null, { cast = null, winners =
       || state.pacts.some(p => pairKey(p.a, p.b) === pairKey(h, o) && (p.kept || []).length)).flatMap(peopleOfAll);
     const rivals = others(h).filter(o => Math.max(rel(h, o, 'resentment'), rel(o, h, 'resentment')) >= RIVAL_RESENTMENT)
       .flatMap(peopleOfAll).filter(o => !allies.includes(o));
-    const showmances = others(h).filter(o => rel(h, o, 'attraction') >= ROMANCE_ATTRACTION && rel(o, h, 'attraction') >= ROMANCE_ATTRACTION
-      && (flirts.get(pairKey(h, o)) || 0) >= ROMANCE_FLIRTS)
+    // A romance both felt and acted on; a kiss at the door is acting on it, flirts or not.
+    const showmances = others(h).filter(o => (rel(h, o, 'attraction') >= ROMANCE_ATTRACTION && rel(o, h, 'attraction') >= ROMANCE_ATTRACTION
+      && (flirts.get(pairKey(h, o)) || 0) >= ROMANCE_FLIRTS) || kissed.has(pairKey(h, o)))
       .flatMap(o => peopleOfAll(o).map(partner => ({ partner,
         ended: (met.has(h) && met.has(o)) || kissed.has(pairKey(h, o)) ? 'intact' : 'breakup' })));
     rec.players[n] = {
@@ -106,6 +107,8 @@ export function ciLedgerRecord(rows = [], state = null, { cast = null, winners =
   for (const b of state.blocked) {
     for (const by of b.by || []) if (state.pacts.some(p => p.kind === 'protect' && pairKey(p.a, p.b) === pairKey(by, b.handle))) wrong(by, b.handle);
   }
+  // A kiss at the door with a partner in the game: the audience saw it, whether or not they did (twotiming.js).
+  for (const k of state.kisses || []) for (const p of k.partners) wrong(k.kisser, p);
   // A visit lie that turned somebody against a rival.
   for (const s of state.scenes) if (s.kind === 'report' && s.data?.rival) wrong(s.who[0], s.data.rival);
   // A catfish who flirted in character with someone who fell for the persona.

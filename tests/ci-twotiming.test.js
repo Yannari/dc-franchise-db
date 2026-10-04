@@ -7,7 +7,10 @@ import { setGs, setPlayers } from '../js/core.js';
 import { streamFor } from '../js/dr/rng.js';
 import { newState, bump, rel } from '../js/ci/state.js';
 import { initMind } from '../js/ci/mind.js';
-import { focusDamp, caught, gameTwoTimer, flingsOf, coupleFlirt, coupleRevealed, taken } from '../js/ci/twotiming.js';
+import { focusDamp, caught, gameTwoTimer, flingsOf, coupleFlirt, coupleRevealed, taken, noteKiss, kissFallout } from '../js/ci/twotiming.js';
+import { makeClaim, learn } from '../js/ci/claims.js';
+import { ciLedgerRecord } from '../js/ci/ledger-record.js';
+import { addScene } from '../js/ci/state.js';
 import { makePlayers, makePool } from './helpers/ci-cast.js';
 import { playCircleSeason } from '../js/ci/season.js';
 import { rosterCast, circleSetup } from './helpers/ci-cast.js';
@@ -184,5 +187,58 @@ describe('a couple playing one profile together', () => {
       return n;
     };
     expect(flirtsOf('married')).toBeLessThan(flirtsOf('friends') * 0.6);
+  });
+});
+
+// A kiss at the door with a partner still in the game (user, 2026-10-04: "she
+// kissed Wayne on her way out ... her boyfriend is in the same game but
+// another apartment ... it doesn't affect real life").
+describe('a kiss at the door, with a partner in the building', () => {
+  beforeEach(() => setGs({ bonds: {}, relationshipDimensions: {}, episodeHistory: [] }));
+  function axel() {
+    // P is the boyfriend (still in), C kissed B at the door on the way out, D is a friend.
+    const s = room();
+    s.kin = [{ a: 'C', b: 'P', kin: 'dating' }];
+    for (const n of ['P', 'B', 'C', 'D']) s.handleOf[n] = `@${n.toLowerCase()}`;
+    ((s.kinKnown ||= {})['@p'] ||= {})['@c'] = 1;
+    s.active = ['@p', '@b', '@d'];
+    const sc = addScene(s, 'visit', ['@c', '@b'], { kiss: true }, ['@c', '@b']);
+    const k = noteKiss(s, sc, '@c', '@b');
+    s.day += 1;
+    return { s, k };
+  }
+  it('the season remembers it: the kiss is a romance, and a betrayal of the partner, for life after the show', () => {
+    const { s } = axel();
+    bump('@c', '@b', 'attraction', 7); bump('@b', '@c', 'attraction', 7);
+    s.blocked = [{ handle: '@c', day: s.day - 1, by: [] }];
+    const rec = ciLedgerRecord([{}, {}], s, { cast: ['P', 'B', 'C', 'D'] });
+    expect(rec.players.C.betrayed).toContain('P');
+    expect(rec.players.P.betrayedBy).toContain('C');
+    expect(rec.players.C.showmances.map(x => x.partner)).toContain('B');
+  });
+  it('a boyfriend in the cast makes the kiss cheating', () => {
+    const { s, k } = axel();
+    expect(taken(s, '@c')).toBe(true);
+    expect(k.partners).toEqual(['@p']);
+  });
+  it('the one who was kissed tells their closest friend; when that is the partner, he finds out', () => {
+    const { s } = axel();
+    bump('@b', '@p', 'affection', 8); bump('@b', '@p', 'trust', 8);
+    kissFallout(s, () => 0);
+    expect(rel('@p', '@c', 'resentment')).toBeGreaterThan(0);
+    expect(rel('@p', '@b', 'resentment')).toBeGreaterThan(0);
+    expect(s.scenes.some(x => x.data?.intent === 'kisstold' && x.data.partner === '@p')).toBe(true);
+  });
+  it('a friend who knows they are a couple tells the partner, and he finds out', () => {
+    const { s } = axel();
+    bump('@b', '@d', 'affection', 8); bump('@b', '@d', 'trust', 8); bump('@d', '@p', 'affection', 6);
+    // P told D about the relationship earlier (kin.js): D can connect the two.
+    const told = addScene(s, 'chat', ['@p', '@d'], { intent: 'kintold' }, ['@p', '@d']);
+    learn(s, '@d', makeClaim(s, { kind: 'ally', holder: '@p', about: '@c', truth: true, by: '@p', to: '@d' }), '@p', told);
+    kissFallout(s, () => 0);          // B tells D
+    s.day += 1;
+    kissFallout(s, () => 0);          // D tells P
+    expect(s.scenes.some(x => x.data?.intent === 'kisswarn' && x.who[1] === '@p')).toBe(true);
+    expect(rel('@p', '@c', 'trust')).toBeLessThan(0);
   });
 });

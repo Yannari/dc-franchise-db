@@ -213,6 +213,18 @@ export function kinAtDoor(state, h, to, sc) {
   return out;
 }
 
-/** Really with someone else in the cast (twotiming.js taken): married, engaged, partners. */
-export const togetherInCast = (state, h) => (state.kin || []).some(e => TOGETHER.has(e.kin) && e.kin !== 'dating'
-  && peopleIn(state, h).some(n => n === e.a || n === e.b));
+/** How taken by someone else in the cast (twotiming.js): married, engaged, partners 1; dating 0.8. */
+export function togetherInCast(state, h) {
+  let t = 0;
+  for (const e of state.kin || []) if (TOGETHER.has(e.kin) && peopleIn(state, h).some(n => n === e.a || n === e.b)) t = Math.max(t, e.kin === 'dating' ? 0.8 : 1);
+  return t;
+}
+/** The profiles of the people this player is together with, in the cast (blocked or not). */
+export function partnersOf(state, h) {
+  const out = [];
+  for (const e of state.kin || []) {
+    if (!TOGETHER.has(e.kin)) continue;
+    for (const [x, y] of [[e.a, e.b], [e.b, e.a]]) if (peopleIn(state, h).includes(x) && state.handleOf[y] && state.handleOf[y] !== h) out.push(state.handleOf[y]);
+  }
+  return [...new Set(out)];
+}

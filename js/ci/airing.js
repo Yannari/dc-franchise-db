@@ -23,7 +23,9 @@ const DRAMA = { bond: 0.5, checkin: 0.8, ally: 1.2, flirt: 1.3, probe: 1.6, pump
   // Two people working out that they are being played (twotiming.js): it always makes the episode.
   notes: 9,
   // Relatives (ci/kin.js): deciding whether to tell anyone, and the test of a hidden one.
-  kin: 5, kintest: 7, kintold: 4 };
+  kin: 5, kintest: 7, kintold: 4,
+  // The one who was kissed at the door, telling somebody (twotiming.js kissFallout).
+  kisstold: 6, kisswarn: 8 };
 const TONE = { low: 2, high: 1.5, steady: 0.5 };
 
 export function chooseAired(state, day) {

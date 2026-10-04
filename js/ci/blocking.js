@@ -21,6 +21,8 @@ import { THEORY_LINE } from './slips.js';
 import { handOver } from './powers.js';
 import { rideOrDieTarget } from './twists.js';
 import { kinVisit, kinGoodbye, kinAtDoor } from './kin.js';
+import { focusDamp, noteKiss } from './twotiming.js';
+import { streamFor } from '../dr/rng.js';
 
 export function atRiskOf(state, influencers) {
   const pool = state.active.filter(h => !influencers.includes(h));
@@ -190,8 +192,15 @@ export function runVisit(state, rng, h, blockers, { to: forced = null, inPerson 
     learn(state, to, c, h, sc);
     sc.data.handed = c.id;
   }
+  // A kiss at the door: both want it, and somebody who is taken holds back as
+  // much as they are loyal (twotiming.js focusDamp). If they kiss anyway with a
+  // partner in the building, it is cheating, and it can come out (noteKiss).
   if (!sc.data.clash && attractionOk(state, h, to) && attractionOk(state, to, h)
-    && rel(h, to, 'attraction') > 6 && rel(to, h, 'attraction') > 6) sc.data.kiss = true;
+    && rel(h, to, 'attraction') > 6 && rel(to, h, 'attraction') > 6
+    && streamFor(state.seed, `kiss:${sc.id}`)() < focusDamp(state, h, to)) {
+    sc.data.kiss = true;
+    noteKiss(state, sc, h, to);
+  }
   if (schemeEligible(state, to)
     && rng() < clamp(S(state, to, 'strategic') / 10 * (REPORT_LIE - S(state, to, 'loyalty') / 10), 0, 0.9)) {
     state.pendingReports.push({ by: to, blocked: h, day: state.day });

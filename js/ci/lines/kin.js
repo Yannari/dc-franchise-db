@@ -135,6 +135,31 @@ export const KIN_LINES = {
     { turns: [{ by: 'a', say: "Now you're playing for both of us." }, { by: 'b', say: "Then I'm not losing." }] },
   ]),
 
+  // A kiss at the door (twotiming.js kissFallout). c kissed a on the way out.
+  //   kiss.told           a tells b, a friend
+  //   kiss.told.partner   a tells b — who is c's partner ({q}: what b calls c)
+  //   kin.cheated.react   a (c's partner, {q}) finds out c kissed b
+  ...E('kiss.told', [
+    { turns: [{ by: 'a', send: "Okay I have to tell somebody. {c} kissed me at the door {e:hearteyes}" }, { by: 'b', send: "STOP. Kissed you??" }, { by: 'a', send: "On the way out. I'm still shaking" }] },
+    { turns: [{ by: 'a', say: "I can't keep this in.", send: "Promise you won't tell anyone. {c} kissed me before leaving" }, { by: 'b', send: "Your secret's safe with me. Kind of {e:laugh}" }] },
+    { turns: [{ by: 'a', send: "So {c}'s visit was... a lot" }, { by: 'b', send: "A lot how?" }, { by: 'a', send: "A kiss lot {e:fire}" }] },
+  ]),
+  ...E('kiss.told.partner', [
+    { turns: [{ by: 'a', send: "I have to tell somebody. {c} kissed me at the door" }, { by: 'b', react: "Excuse me?" }, { by: 'b', say: "My {q}. My {q} kissed somebody on the way out." }], beat: '{b} puts the remote down very slowly.' },
+    { turns: [{ by: 'a', send: "Okay this is crazy. {c} kissed me before leaving {e:hearteyes}" }, { by: 'b', react: "No. No, no, no." }, { by: 'b', send: "Can we talk later. I need a minute" }] },
+    { turns: [{ by: 'a', send: "Guess who kissed me on the way out. {c}!" }, { by: 'b', react: "Oh my God." }, { by: 'b', say: "That's my {q}. That's my {q} they're talking about." }] },
+  ]),
+  // kiss.warn: a tells b that b's partner ({q}) kissed c at the door.
+  ...E('kiss.warn', [
+    { turns: [{ by: 'a', send: "I don't know how to say this. I'd want to know if it was me" }, { by: 'b', send: "Just say it" }, { by: 'a', send: "Your {q} kissed {c} at the door. I'm so sorry" }, { by: 'b', react: "No." }], beat: '{b} reads it twice, then a third time.' },
+    { turns: [{ by: 'a', say: "This is going to hurt, but it's the right thing.", send: "You deserve to hear this from a friend. Your {q} and {c} kissed when your {q} left" }, { by: 'b', send: "Are you sure?" }, { by: 'a', send: "{c} told me. I'm sorry" }] },
+    { turns: [{ by: 'a', send: "Can I tell you something you won't like?" }, { by: 'b', send: "...okay" }, { by: 'a', send: "{c} says your {q} kissed {c} at the door" }, { by: 'b', react: "Of course. Of course that happened." }] },
+  ]),
+  ...E('kin.cheated.react', [
+    { turns: [{ by: 'a', react: "Hold on. {b} kissed {c}?" }, { by: 'a', say: "My {q}. On the way out. In front of the cameras." }], beat: '{a} sits down on the floor of the apartment.' },
+    { turns: [{ by: 'a', say: "I heard what happened at {c}'s door." }, { by: 'a', say: "We're going to have a very long talk when I get out of here." }] },
+    { turns: [{ by: 'a', react: "Wow. Okay." }, { by: 'a', say: "My {q} kissed somebody else, and I had to hear it from the Circle." }], beat: '{a} turns off the screen and stares at the wall.' },
+  ]),
   ...E('goodbye.kin.open', [
     { turns: [{ by: 'a', video: "And {b}? My {q}. I love you. Go win this." }] },
     { turns: [{ by: 'a', video: "One last thing. {b} is my {q}. So whoever blocked me, good luck with that." }] },

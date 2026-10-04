@@ -25,7 +25,7 @@ export { SAME_DAY, SAID_AGAIN, USED_DECAY, RECENT };
 import { GAMES, PARTY_THEMES, NEVER_HAVE_I_EVER } from './games-data.js';
 import { TRIVIA, FACTS } from './games-content.js';
 import { topicsOf, wingsIt, JOB_TOPIC, townOf } from './topics.js';
-import { kinBetween, kinWord, TENSE } from './kin.js';
+import { kinBetween, kinWord, TENSE, knowsKin } from './kin.js';
 // What a calls b, and b calls a, when they are family, partners or friends (ci/kin.js).
 const kinText = (state, a, b) => {
   const k = kinBetween(state, a, b), r = kinBetween(state, b, a);
@@ -356,6 +356,10 @@ const BLOCKS = {
     const [a, b] = s.who;
     // Relatives who found each other (ci/kin.js): keep it quiet or tell; test a hidden one.
     if (s.data.intent === 'kin') return [{ key: `kin.pact.${s.data.outcome}`, cast: { a, b, text: kinText(state, a, b) } }];
+    // A kiss at the door, told (twotiming.js kissFallout): to a friend, or straight to the partner.
+    if (s.data.intent === 'kisstold') return [{ key: s.data.partner && knowsKin(state, b, s.data.about) ? 'kiss.told.partner' : 'kiss.told', cast: { a, b, c: s.data.about, text: kinText(state, b, s.data.about) } }];
+    // A friend who knows they are together tells the partner (twotiming.js): {q} is what b calls them.
+    if (s.data.intent === 'kisswarn') return [{ key: 'kiss.warn', cast: { a, b, c: s.data.with, text: kinText(state, b, s.data.about) } }];
     if (s.data.intent === 'kintold') return [{ key: 'kin.told', cast: { a, b, c: s.data.about, text: kinText(state, a, s.data.about) } }];
     if (s.data.intent === 'kintest') {
       return [{ key: s.data.outcome === 'admit' ? 'kin.test.admit' : `kin.test.dodge.${kinTone(s.data.kin)}`, cast: { a, b, text: kinText(state, a, b) } }];
@@ -1140,6 +1144,8 @@ const BLOCKS = {
     return [out[0], ...tail.slice(0, (d.dancers || []).length + (d.photos || []).length), ...out.slice(1), ...tail.slice((d.dancers || []).length + (d.photos || []).length)];
   },
   life(state, s) {
+    // Finding out a partner kissed somebody at the door (twotiming.js kissFallout).
+    if (s.data.event === 'cheated') return [{ key: 'kin.cheated.react', cast: { a: s.who[0], b: s.data.about, c: s.data.with, text: kinText(state, s.who[0], s.data.about) } }];
     // A pair that is something to each other: often it's the two of them.
     const p = state.profiles[s.who[0]];
     const hs = [...`${s.id}:pair`].reduce((x, ch) => (x * 31 + ch.charCodeAt(0)) >>> 0, 7);
@@ -1401,7 +1407,7 @@ export const POOL_KEYS = [
   ...MOTIVES_.filter(m => m !== 'confront').flatMap(m => [`visit.choose.${m}`, `visit.talk.${m}`]), 'visit.choose.confront', 'visit.wait', 'visit.wait.catfish',
   // Playing two people, and getting caught (twotiming.js, lines/twotiming.js).
   // Family, partners and old friends in the cast (ci/kin.js, lines/kin.js).
-  ...['warm', 'tense'].flatMap(t => ['open', 'mutual', 'hidden'].map(h => `recognise.kin.${t}.${h}`)), 'kin.pact.secret', 'kin.pact.tell', 'kin.told',
+  ...['warm', 'tense'].flatMap(t => ['open', 'mutual', 'hidden'].map(h => `recognise.kin.${t}.${h}`)), 'kin.pact.secret', 'kin.pact.tell', 'kin.told', 'kiss.told', 'kiss.told.partner', 'kiss.warn', 'kin.cheated.react',
   'kin.test.admit', 'kin.test.dodge.warm', 'kin.test.dodge.tense', 'visit.kin.door.warm', 'visit.kin.door.tense',
   'goodbye.kin.open', 'goodbye.kin.hidden', 'goodbye.kin.react',
   'couple.flirt.game', ...['sent', 'stopped'].flatMap(o => ['face', 'brain'].map(r => `couple.flirt.jealous.${o}.${r}`)), 'couple.reveal',

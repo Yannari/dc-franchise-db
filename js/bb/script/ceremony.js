@@ -356,6 +356,22 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── The Secret Power Competition: the doors in the yard ──
+  if (act.type === 'secret-power-comp') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `sp|${b.part}|${b.door || ''}|${p.join('|')}`;
+      let lines = null;
+      if (b.part === 'open' && p[0]) lines = fresh('spact.open', { a: p[(act.week || 0) % p.length] }, { ending: 'scene' }, salt);
+      if (b.part === 'barred' && p[0]) lines = fresh('spact.barred', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'won' && p[0]) lines = fresh('spact.won', { a: p[0] }, { ending: b.rivals ? 'beat' : 'alone' }, salt);
+      if (b.part === 'price' && p[0]) lines = fresh('spact.price', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'handed' && p[0]) lines = fresh('spact.handed', { a: p[0] }, { ending: 'scene' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   for (const k of Object.keys(script)) {
     const v = script[k];
     if (!v || (typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length)) delete script[k];

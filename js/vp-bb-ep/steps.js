@@ -1011,6 +1011,41 @@ function wildcardScreens(act, ctx) {
 }
 const listNames = ns => ns.length < 2 ? ns.join('') : `${ns.slice(0, -1).join(', ')} and ${ns.at(-1)}`;
 
+// ── The Secret Power Competition (Phase 7) ──────────────────────────────
+// Straight after the Head of Household it was hiding inside: Big Brother's
+// rules, then the doors in the yard opened one at a time on a board. A won
+// door shows its winner (to the viewer only; the house never learns) and
+// what the power does; an unclaimed one stays dark. Then the price: whoever
+// had the best score and gave the crown away for it. Words: lines/spact.js.
+function secretPowerScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  const n = (act.doors || []).length;
+  const steps = [
+    { k: 'bb', t: `Houseguests, this Head of Household competition was hiding ${word(n)} secret ${n === 1 ? 'power' : 'powers'}, each behind a door in the yard.`, rule: 1 },
+    { k: 'bb', t: 'Before it started, each of you chose: play for Head of Household, or play for a door.', rule: 2 },
+    { k: 'bb', t: 'If you chose a door, you could not win Head of Household, however well you did.', rule: 3 },
+    { k: 'bb', t: 'Whoever went furthest for a door wins its power. Nobody else will ever be told who.', rule: 4 },
+  ];
+  for (const b of beats.filter(x => x.part === 'open' || x.part === 'barred')) steps.push(...linesOf(b));
+  const order = (act.doors || []);
+  for (const b of beats.filter(x => x.part === 'won' || x.part === 'unclaimed')) {
+    const i = order.indexOf(b.door);
+    steps.push({ k: 'beat', t: `Door ${word(i + 1)}: ${b.power}.${b.blurb ? ' ' + b.blurb : ''}`, spDoor: i, spName: b.power });
+    if (b.part === 'won') steps.push({ k: 'beat', t: `${b.players[0]} gets there first.`, spOpen: [i, b.players[0]], toast: ['A SECRET POWER', '#b07cff'] }, ...linesOf(b));
+    else steps.push({ k: 'beat', t: `Nobody went for it. It goes back in the box.`, spOpen: [i, null] });
+  }
+  for (const b of beats.filter(x => x.part === 'price' || x.part === 'handed')) steps.push(...linesOf(b));
+  return [{
+    id: `bb-secretpower-w${ctx.week}`, kind: 'spower', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: '21:40',
+    kicker: 'Cam 05 · Backyard', title: 'Secret Powers', label: 'Secret Powers', sub: 'The competition behind the competition',
+    cast: [], spower: { doors: n },
+    rules: [['THE DOORS', `${word(n)} secret powers, hidden in the competition`], ['ONE CHOICE', 'play for HOH, or for a door'],
+      ['NO CROWN', 'choose a door and you cannot win HOH'], ['SECRET', 'nobody is told who won a power']],
+    rulesTitle: 'SECRET POWERS · HOW IT WORKS', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1104,6 +1139,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'prize-exchange': flush(); for (const scr of pxScreens(act, ctx)) ceremony(scr);
         ctx.vetoHolder = act.vetoHolder || ctx.vetoHolder; beatsOf(act); break;
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
+      case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'wildcard': flush(); for (const scr of wildcardScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'safety-suite': flush(); for (const scr of suiteScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'rivals-hoh':
@@ -1133,7 +1169,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

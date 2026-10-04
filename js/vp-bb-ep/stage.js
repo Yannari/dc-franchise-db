@@ -308,6 +308,23 @@ function pxHtml(S, L, st, fresh) {
   return `<div class="pxtable"><span class="pt">THE BOXES · ONE HOLDS THE VETO</span><div class="pxr">${boxes}</div></div>`;
 }
 
+// ── The Secret Power Competition's doors (Phase 7) ─────────────────────
+function spowerHtml(S, L, st, fresh, idx) {
+  const D = S.spower || {};
+  const seen = S.steps.slice(0, idx + 1);
+  const shown = new Set(seen.filter(x => x.spDoor != null).map(x => x.spDoor));
+  const opened = new Map(seen.filter(x => x.spOpen).map(x => [x.spOpen[0], x.spOpen[1]]));
+  const names = Object.fromEntries(S.steps.filter(x => x.spDoor != null).map(x => [x.spDoor, x.spName]));
+  const door = i => {
+    const now = fresh && (st?.spDoor === i || st?.spOpen?.[0] === i);
+    if (!shown.has(i)) return `<div class="spd shut"><span class="spn">${i + 1}</span><i>DOOR ${i + 1}</i></div>`;
+    const who = opened.get(i);
+    const face = who ? `<span class="spf" style="--c:${col(who)}">${img(who)}</span><b>${esc(who)}</b>` : opened.has(i) ? `<span class="spf none">—</span><b>UNCLAIMED</b>` : `<span class="spf none">?</span><b>&nbsp;</b>`;
+    return `<div class="spd ${who ? 'won' : opened.has(i) ? 'none' : 'open'} ${now ? 'now' : ''}">${face}<i>${esc(names[i] || '')}</i></div>`;
+  };
+  return `<div class="spboard"><span class="sph">SECRET POWERS · THE HOUSE NEVER SEES THIS</span><div class="spr">${Array.from({ length: D.doors || 3 }, (_, i) => door(i)).join('')}</div></div>`;
+}
+
 // ── The Wildcard's hat board (Phase 7) ─────────────────────────────────
 function wildHtml(S, L, st, fresh, idx) {
   const W = S.wild || {};
@@ -449,6 +466,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.duo && !isDr && idx >= 0 && !(st && st.rule != null)) h += duoHtml(S, L, st, fresh, idx);
   if (S.camp && !isDr && idx >= 0 && !(st && st.rule != null)) h += campHtml(S, L, st, fresh, idx);
   if (S.wild && !isDr && idx >= 0 && !(st && st.rule != null)) h += wildHtml(S, L, st, fresh, idx);
+  if (S.spower && !isDr && idx >= 0 && !(st && st.rule != null)) h += spowerHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;

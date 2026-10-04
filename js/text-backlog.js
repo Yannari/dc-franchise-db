@@ -3669,6 +3669,20 @@ export function generateTraitorsSummaryText(ep, observer = 'audience') {
   const ln = s => L.push(s);
   const sec = t => { ln(''); ln(`=== ${t} ===`); };
 
+  // THE REUNION is an episode with nobody in a castle and nobody leaving it:
+  // the whole cast is back, so the castle header (who is still standing, who
+  // has gone) and the ruled-off book have nothing true to say about it.
+  if (ep.tr && ep.tr.reunionEpisode) {
+    ln(`THE TRAITORS — EPISODE ${ep.tr.ep != null ? ep.tr.ep : ep.num}: THE REUNION`);
+    ln('═'.repeat(46));
+    for (const scr of traitorsScreensRevealed(ep, observer)) {
+      sec(scr.label.toUpperCase());
+      for (const line of _vpTextLines(screenNarration(scr.html))) ln(`  ${line}`);
+    }
+    ln('');
+    return L.join('\n');
+  }
+
   // The night the CASTLE lived, off the record, never off `num` — `num` is the
   // VP's key and a copy of a row is free to carry a different one.
   const night = ep.tr && ep.tr.ep != null ? ep.tr.ep : ep.num;

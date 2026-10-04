@@ -2145,11 +2145,11 @@ export function defaultConfig() {
     // How many are left when the mandated game hands off to the endgame (the
     // fire round). Final three by default; the setup screen offers 2-5.
     trEndgameSize: 3,
-    // Endgame reveals OFF by default — the modern show (since 2024) hides a
-    // finale-banished player's alignment and the survivors go on nerve alone.
-    // Turned ON, the endgame plays like Ireland S1: every banished player is
-    // turned over at the table, the same as any earlier Round Table.
-    trEndgameReveal: false,
+    // Endgame reveals ON by default (the user, 2026-10-03: "they're supposed to
+    // have a reveal when they get eliminated even at the endgame"). Turned OFF,
+    // the endgame plays like the modern show since 2024: a finale-banished
+    // player's alignment stays hidden and the survivors go on nerve alone.
+    trEndgameReveal: true,
     // WHERE A SHIELD COMES FROM, and it changes what the Traitors can know.
     //   'mission' (default) — the modern show: the Reliquary's searcher breaks
     //      away and wins it in the open, so who saw it decides what the pact

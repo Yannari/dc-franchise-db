@@ -18,16 +18,9 @@
 // the theme.
 //
 // And the standing law: THEY COULD TAKE IT WELL OR LESS WELL, REALLY DEPENDS.
-import { pronouns } from '../players.js';
 import { pStats, band, perceived, firedThisWeek } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 const _reactable = ctx => ctx?.act === 'house' || ctx?.act === 'campaign';
 
@@ -47,30 +40,21 @@ const richMan = {
   },
   fire(house, ctx, api) {
     const who = ctx.week.premiereMystery.hostWinner;
-    const p = pronouns(who);
     const watcher = _others(house, who)
       .sort((a, b) => pStats(b).intuition - pStats(a).intuition)[0];
     if (!watcher) return null;
     // An intuitive watcher circles the calm; everybody else circles the cash.
     const circles = pStats(watcher).intuition >= 6;
     if (circles) {
-      const text = _variant([
-        `${watcher} keeps coming back to the wrong detail: not the ten thousand, the CALM. ${who} painted the biggest target of the night onto ${p.posAdj} own back and has slept like a stone ever since. People with targets do not sleep like that.`,
-        `"Ten grand should make a person nervous." ${watcher} says it to nobody, watching ${who} hum through the washing-up. Something about the maths of ${who}'s mood refuses to balance.`,
-        `${watcher} has met people who won money before. They check the room more, after. ${who} checks it LESS, and ${watcher} cannot find the version of night one that explains it.`,
-      ], ctx, who, watcher);
+      const scene = makeScene('premiere.rich', { a: watcher, b: who }, { ending: 'circles' }, [], 'kitchen');
       api.suspicion(watcher, who, 1.3);
       api.remember(watcher, who, 'too-calm-for-the-money', 1.5, { twist: 'premiere-mystery' });
-      return { text, players: [watcher, who], badgeText: 'THE CALM, CIRCLED', badgeClass: 'grey' };
+      return { scene, players: [watcher, who], badgeText: 'THE CALM, CIRCLED', badgeClass: 'grey' };
     }
-    const text = _variant([
-      `${watcher} has started pricing things in ${who}-units — "that's a tenth of what ${who} made on night one" — and the joke has legs precisely because nobody is entirely joking.`,
-      `${who} offers to make the tea and somebody asks if ${p.sub} can afford it. The kitchen laughs. ${who} laughs longest, which is the correct play and everybody knows it is a play.`,
-      `The first vote count anybody sketches this season has ${who}'s name pencilled at the top, with a number next to it instead of a reason.`,
-    ], ctx, who, watcher);
+    const scene = makeScene('premiere.rich', { a: watcher, b: who }, { ending: 'priced' }, [], 'kitchen');
     api.popDelta(who, -0.5);
     api.remember(watcher, who, 'the-ten-thousand', 1, { twist: 'premiere-mystery' });
-    return { text, players: [watcher, who], badgeText: 'PRICED IN PUBLIC', badgeClass: 'blue' };
+    return { scene, players: [watcher, who], badgeText: 'PRICED IN PUBLIC', badgeClass: 'blue' };
   },
 };
 
@@ -90,7 +74,6 @@ const namedTheFour = {
   },
   fire(house, ctx, api) {
     const who = ctx.week.premiereMystery.relicWinner;
-    const p = pronouns(who);
     const speaker = _others(house, who)
       .sort((a, b) => pStats(b).boldness - pStats(a).boldness)[0];
     if (!speaker) return null;
@@ -98,23 +81,15 @@ const namedTheFour = {
     // Wearing the decision or apologising for it — social carries the wear.
     const wears = st.social >= 5.5;
     if (wears) {
-      const text = _variant([
-        `${speaker} needles ${who} about playing kingmaker on night one, and ${who} does not flinch: "Somebody was going to hold that relic. Be glad it was somebody who likes you." It lands as charm and files as warning.`,
-        `${who} owns the four names without apology — "you'd have picked YOUR four too" — and the honesty buys more room than any excuse would have.`,
-        `${who} takes the kingmaker jokes with a grin all week, and only ${speaker} notices that ${p.sub} never once says the four names were random.`,
-      ], ctx, who, speaker);
+      const scene = makeScene('premiere.four', { a: who, b: speaker }, { ending: 'owns' }, [], 'living-room');
       api.popDelta(who, 0.5);
       api.remember(speaker, who, 'comfortable-choosing', 1, { twist: 'premiere-mystery' });
-      return { text, players: [who, speaker], badgeText: 'WEARS THE RELIC', badgeClass: 'gold' };
+      return { scene, players: [who, speaker], badgeText: 'WEARS THE RELIC', badgeClass: 'gold' };
     }
-    const text = _variant([
-      `${who} is still explaining the four names two days later, to people who had stopped asking. Every explanation adds a person who was not in it.`,
-      `${speaker} asks, mildly, what it felt like to pick who got to play for power on night one. ${who}'s answer takes ninety seconds and satisfies nobody, including ${who}.`,
-      `${who} tries "it was practically alphabetical" on a house that has already checked. It was not practically alphabetical. The kitchen keeps that one for later.`,
-    ], ctx, who, speaker);
+    const scene = makeScene('premiere.four', { a: who, b: speaker }, { ending: 'ages' }, [], 'living-room');
     api.popDelta(who, -0.5);
     api.addBond(speaker, who, -0.4);
-    return { text, players: [who, speaker], badgeText: 'THE FOUR NAMES AGE BADLY', badgeClass: 'red' };
+    return { scene, players: [who, speaker], badgeText: 'THE FOUR NAMES AGE BADLY', badgeClass: 'red' };
   },
 };
 
@@ -144,7 +119,6 @@ const anomaly = {
     const sc = ctx.week.secretPowerComp;
     const best = [...sc.results].sort((a, b) => (b.score || 0) - (a.score || 0))[0];
     const who = best.name;
-    const p = pronouns(who);
     const reader = _others(house, who)
       .sort((a, b) => pStats(b).intuition + pStats(b).strategic
         - pStats(a).intuition - pStats(a).strategic)[0];
@@ -152,23 +126,15 @@ const anomaly = {
     // The scorer's cover is social; a bad liar makes the anomaly worse.
     const covers = pStats(who).social >= 5.5;
     if (covers) {
-      const text = _variant([
-        `${reader} cannot let it go: ${who} posted the best score of the whole afternoon and is not wearing the crown. ${who} shrugs — "choked the last bit, didn't I" — and the shrug is good. The maths still is not.`,
-        `${reader} re-runs the board out loud at dinner. Top score, no crown. ${who} laughs along at ${p.posAdj} own "collapse", charmingly, and ${reader} notices the laugh arrives a half-second rehearsed.`,
-        `"Fastest legs in the house and somehow not Head of Household." ${reader} says it as a compliment. It is not a compliment. ${who} accepts it as one anyway, beautifully.`,
-      ], ctx, who, reader);
+      const scene = makeScene('secret.anomaly', { a: reader, b: who }, { ending: 'covers' }, [], 'kitchen');
       api.suspicion(reader, who, 1.2);
       api.remember(reader, who, 'the-score-with-no-crown', 1.5, { twist: 'secret-power-comp' });
-      return { text, players: [reader, who], badgeText: 'THE BOARD DOES NOT ADD UP', badgeClass: 'grey' };
+      return { scene, players: [reader, who], badgeText: 'THE BOARD DOES NOT ADD UP', badgeClass: 'grey' };
     }
-    const text = _variant([
-      `${reader} asks ${who}, directly, how the best score of the day loses. ${who}'s explanation has three versions by evening, and ${reader} has collected all three.`,
-      `${who} gets cornered on the arithmetic and reaches for "the pressure got me", which would land better from somebody who had looked pressured. The kitchen goes quietly certain of nothing in particular.`,
-      `Every time the comp comes up, ${who} changes the subject with the smoothness of a dropped tray. The house does not know WHAT it is looking at. It knows it is looking at something.`,
-    ], ctx, who, reader);
+    const scene = makeScene('secret.anomaly', { a: reader, b: who }, { ending: 'cracks' }, [], 'kitchen');
     api.suspicion(reader, who, 1.5);
     api.popDelta(who, -0.5);
-    return { text, players: [reader, who], badgeText: 'A DROPPED TRAY', badgeClass: 'red' };
+    return { scene, players: [reader, who], badgeText: 'A DROPPED TRAY', badgeClass: 'red' };
   },
 };
 

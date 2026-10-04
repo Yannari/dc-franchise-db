@@ -16,7 +16,11 @@ export const BB_FACT_KEYS = ['ending', 'result', 'intent', 'reason', 'act', 'ear
   // where the scene is: a line that stages a room ("pulls her into the storage room") airs only there
   'room',
   // how the speaker (a) talks: the picker weights a line written for it well above a plain one
-  'register'];
+  'register',
+  // how b talks, for a scene whose feeling sits with b (the one left out, the one blamed)
+  'registerB',
+  // the scene names the week's target ({target} in its data): only then may a line say it
+  'known'];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 const VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
@@ -59,6 +63,8 @@ export function factsFor(scene, ctx = {}) {
     late: house > 0 && house <= 6,
     third: !!c,
     room: scene.room || null,
+    // never true when the target is one of the people in the scene: nobody says "{target} going" about themselves
+    known: !!scene.data?.target && !Object.values(scene.who || {}).includes(scene.data.target),
   };
   if (a) {
     f.hohA = a === ctx.hoh || (ctx.hohs || []).includes(a);
@@ -72,6 +78,7 @@ export function factsFor(scene, ctx = {}) {
     const bond = getBond(a, b);
     f.band = bond <= -3 ? 'enemies' : bond < 0 ? 'cold' : bond < 3 ? 'neutral' : 'friends';
     f.hohB = b === ctx.hoh || (ctx.hohs || []).includes(b);
+    f.registerB = registerOf(b);
     f.nomB = (ctx.nominees || []).includes(b);
     f.alliance = sharesAlliance(a, b);
     f.showmance = inShowmance(a, b);

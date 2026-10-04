@@ -25,18 +25,18 @@
 // with somebody they cannot stand.
 
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import {
   pStats, bond, perceived, band, beatsInvolving, spotlightOrder, grudge, romanceOf,
   romanceOn, sharesAlliance, archetype, suspicionOf,
 } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
+/** Which room a scene happens in: by hash, never a die. */
+function _room(rooms, ctx, ...people) {
+  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${people.join('|')}`;
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
+  return rooms[hash % rooms.length];
 }
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 const _quiet = pool => spotlightOrder(pool);
@@ -109,21 +109,14 @@ const firstKiss = {
     const sh = (gs.showmances || []).find(s => (s.players || []).includes(a));
     if (sh) sh.kissed = true;
     const witness = _quiet(_others(house, a, b))[0];
-    const p = pronouns(a);
 
-    const text = _variant([
-      `It happens in the dark, badly, with both of them laughing at how long it took. The only kiss anybody in this house has had that was not a strategy.`,
-      `${a} kisses ${b} in the kitchen at four in the morning because there is nobody there, and then they both look at the camera in the corner and start laughing.`,
-      `They have been circling this for a week and a half. ${a} stops circling. Neither of them says anything clever about it afterwards, which is how ${witness || 'the house'} will know it was real.`,
-      `${b} says something completely unremarkable and ${a} kisses ${b} mid-sentence. It is the least strategic thing either of them has done in the house.`,
-    ], ctx, a, b);
-
+    const scene = makeScene('bond.kiss', { a, b }, { ending: 'scene' }, [], 'bedroom');
     api.addBond(a, b, 2.4);
     api.popDelta(a, 2);
     api.popDelta(b, 2);
     // And the house has a couple now, whatever the two of them call it.
     if (witness) api.remember(witness, a, 'they-are-a-pair', 2, { about: b });
-    return { text, players: [a, b], badgeText: 'FIRST KISS', badgeClass: 'gold' };
+    return { scene, players: [a, b], badgeText: 'FIRST KISS', badgeClass: 'gold' };
   },
 };
 
@@ -139,17 +132,10 @@ const quietNight = {
   fire(house, ctx, api) {
     const { a, b } = _pair(house);
     _spend(this.id, ctx);
-    const p = pronouns(a);
-    const text = _variant([
-      `${a} and ${b} stay up talking about nothing that could possibly help either of them: home, a dog, a job ${a} hated. It is the first hour in weeks that neither of them spends counting.`,
-      `They fall asleep talking. Somebody covers them with a blanket on the way past and does not mention it in the morning.`,
-      `${b} asks ${a} what ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} going to do first when this is over. The answer takes twenty minutes and none of it is about money.`,
-      `For about an hour the house is just a house, and ${a} and ${b} are two people in it who like each other.`,
-    ], ctx, a, b);
-
+    const scene = makeScene('bond.quiet', { a, b }, { ending: 'scene' }, [], 'bedroom');
     api.addBond(a, b, 1.2);
     api.popDelta(a, 1);
-    return { text, players: [a, b], badgeText: 'A QUIET HOUR', badgeClass: 'green' };
+    return { scene, players: [a, b], badgeText: 'A QUIET HOUR', badgeClass: 'green' };
   },
 };
 
@@ -171,7 +157,6 @@ const bestFriends = {
     }
     const { a, b } = pair;
     const watcher = _quiet(_others(house, a, b))[0];
-    const p = pronouns(a);
 
     // ── NO LINE HERE MAY COUNT WEEKS ──
     //
@@ -181,13 +166,8 @@ const bestFriends = {
     // most of the time it prints. Claims like this get phrased so they are true
     // whenever they fire. `tests/bb-plain-text.test.js` sweeps week one for the
     // whole pattern.
-    const text = _variant([
-      `${a} and ${b} have a joke nobody else understands and neither of them can remember starting. It is not funny to anybody outside it, which is most of the point.`,
-      `Neither of them has ever suggested working together. They just end up in the same room every time either of them has a bad hour, which the house has noticed and neither of them has.`,
-      `${a} makes ${b} a plate without being asked and without making anything of it. ${watcher || 'Somebody'} clocks it and quietly moves both their names down a list.`,
-      `${a} and ${b} are not an alliance. Ask either of them and they will say so honestly. Ask one of them to write the other's name down and watch what happens.`,
-    ], ctx, a, b);
-
+    const scene = makeScene('bond.friends', { a, b, c: watcher || null }, { ending: 'scene' }, [],
+      _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, a, b));
     api.addBond(a, b, 1);
     api.remember(a, b, 'my-person', 2, {});
     api.remember(b, a, 'my-person', 2, {});
@@ -197,7 +177,7 @@ const bestFriends = {
       api.remember(watcher, a, 'they-are-a-pair', 1, { about: b });
     }
     api.popDelta(a, 1);
-    return { text, players: [a, b, watcher].filter(Boolean),
+    return { scene, players: [a, b, watcher].filter(Boolean),
       badgeText: 'THICK AS THIEVES', badgeClass: 'green' };
   },
 };
@@ -219,21 +199,12 @@ const badDay = {
     const low = _quiet(house).find(n => (gs.popularity?.[n] || 0) < 0
       || pStats(n).temperament <= 4) || house[0];
     const friend = _others(house, low).sort((x, y) => bond(y, low) - bond(x, low))[0];
-    const p = pronouns(low);
-    const weekNum = Math.max(1, Number(ctx?.week?.num) || 1);
-    const timeTogether = `${weekNum} ${weekNum === 1 ? 'week' : 'weeks'}`;
-    const text = _variant([
-      `${low} is having a bad day for reasons that have nothing to do with the game, and ${friend} is the only person who asks about the reasons instead of the game.`,
-      `${friend} finds ${low} sitting on the bathroom floor and does not ask what happened, just sits down too. They are there twenty minutes and neither of them says much.`,
-      `Nobody in here gets to be homesick out loud. ${low} is anyway, and ${friend} lets ${p.obj} be, and does not tell anybody afterwards.`,
-      `After ${timeTogether} in one house, ${friend} notices when ${low} skips lunch and goes quiet. ${friend} knows better than to ask in front of everyone and waits until they are alone.`,
-    ], ctx, low, friend);
-
+    const scene = makeScene('bond.bad-day', { a: low, b: friend }, { ending: 'scene' }, [], 'bedroom');
     api.addBond(low, friend, 1.5);
     api.remember(low, friend, 'was-there', 2, { about: 'a bad day' });
     api.popDelta(low, 1);
     api.popDelta(friend, 1);
-    return { text, players: [low, friend], badgeText: 'JUST SAT WITH THEM', badgeClass: 'green' };
+    return { scene, players: [low, friend], badgeText: 'JUST SAT WITH THEM', badgeClass: 'green' };
   },
 };
 
@@ -257,14 +228,8 @@ const coldWar = {
     const { a, b } = pair;
     const watcher = _quiet(_others(house, a, b))[0];
 
-    const text = _variant([
-      `${a} and ${b} manage an entire day in a house this size without speaking once. It takes real coordination and both of them are putting the work in.`,
-      `${b} comes into the kitchen. ${a} finishes making tea with enormous care and leaves without it. Nobody comments, because everybody has watched this for a week.`,
-      `${a} asks ${b} to pass a plate. ${b} passes it without looking up, and the person between them `
-        + `finds an excuse to leave the table.`,
-      `${a} has started timing showers around ${b}'s schedule. ${b} has started doing the same thing. Neither has said a word about it.`,
-    ], ctx, a, b);
-
+    const scene = makeScene('bond.cold-war', { a, b }, { ending: 'scene' }, [],
+      _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, a, b));
     api.addBond(a, b, -0.5);
     if (watcher) {
       api.remember(watcher, a, 'cold-war', 1, { about: b });
@@ -273,7 +238,7 @@ const coldWar = {
       api.popDelta(a, -1);
       api.popDelta(b, -1);
     }
-    return { text, players: [a, b], badgeText: 'NOT SPEAKING', badgeClass: 'grey' };
+    return { scene, players: [a, b], badgeText: 'NOT SPEAKING', badgeClass: 'grey' };
   },
 };
 
@@ -296,19 +261,12 @@ const pettyNeedling = {
     const sharper = pStats(a).temperament <= pStats(b).temperament ? a : b;
     const other = sharper === a ? b : a;
 
-    const text = _variant([
-      `It is about a pan. It is not about a pan. ${sharper} says the thing about the pan in a tone that makes three people leave the kitchen.`,
-      `${sharper} repeats back something ${other} said, in ${other}'s voice, to two people, twice. ${other} hears about it within the hour.`,
-      `${other} takes the last of something. ${sharper} does not mention it, and then mentions it, and then mentions it again at dinner.`,
-      `${other} wipes down the counter and leaves the dirty pan beside ${sharper}'s plate. ${sharper} carries it `
-        + `back to the sink, sets it down harder than necessary, and asks whether this is supposed to be funny.`,
-    ], ctx, a, b);
-
+    const scene = makeScene('bond.petty', { a: sharper, b: other }, { ending: 'scene' }, [], 'kitchen');
     api.addBond(a, b, -0.9);
     api.suspicion(other, sharper, 0.6);
     api.remember(other, sharper, 'petty', 1, {});
     api.popDelta(sharper, -1);
-    return { text, players: [sharper, other], badgeText: 'IT IS NOT ABOUT THE PAN', badgeClass: 'orange' };
+    return { scene, players: [sharper, other], badgeText: 'IT IS NOT ABOUT THE PAN', badgeClass: 'orange' };
   },
 };
 
@@ -328,22 +286,11 @@ const apologyRefused = {
     _spend(this.id, ctx);
     const asker = pStats(pair.a).loyalty >= pStats(pair.b).loyalty ? pair.a : pair.b;
     const refuser = asker === pair.a ? pair.b : pair.a;
-    const p = pronouns(asker);
     // Some people can let a thing go. Most, five weeks in, cannot.
     const accepted = pStats(refuser).temperament >= 7 && grudge(refuser, asker) < 3;
 
-    const text = accepted ? _variant([
-      `${asker} apologises properly — no explanation attached, no version where ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} secretly right. ${refuser} is so surprised by that that ${refuser} accepts it.`,
-      `It does not fix anything and both of them know it. They agree to stop making everybody else carry it, which in this house counts as a resolution.`,
-      `${asker} names what ${p.sub} did, apologises for it and waits without asking ${refuser} to make the moment easier. ${refuser} accepts, cautiously, because the apology asks for nothing in return.`,
-      `${refuser} expects another argument when ${asker} asks to talk. Instead, ${asker} gives a short apology and admits ${refuser} had a reason to be hurt. They agree to try again.`,
-    ], ctx, asker, refuser) : _variant([
-      `${asker} apologises. ${refuser} says "okay" in a way that means nothing of the sort, and the conversation is somehow worse afterwards than it was before.`,
-      `"I'd rather you just didn't talk to me." ${refuser} says it calmly. ${asker} had a whole speech ready and does not get to use any of it.`,
-      `${asker} asks whether they can put the fight behind them. ${refuser} says, “You still think the problem was the fight.” That ends the conversation.`,
-      `${asker} apologises for the argument but not for the comment that started it. ${refuser} notices the distinction and ends the conversation before it becomes another fight.`,
-    ], ctx, asker, refuser);
-
+    const scene = makeScene('bond.apology', { a: asker, b: refuser }, { ending: accepted ? 'accepted' : 'refused' }, [],
+      _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, asker, refuser));
     if (accepted) {
       api.addBond(asker, refuser, 2);
       api.remember(refuser, asker, 'made-it-right', 2, {});
@@ -357,7 +304,7 @@ const apologyRefused = {
       // is the one the edit holds responsible.
       api.popDelta(asker, -1);
     }
-    return { text, players: [asker, refuser],
+    return { scene, players: [asker, refuser],
       badgeText: accepted ? 'THEY LET IT GO' : 'NOT ACCEPTED',
       badgeClass: accepted ? 'green' : 'red' };
   },

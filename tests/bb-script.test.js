@@ -42,6 +42,14 @@ describe('the pools keep their contract', () => {
     }
   });
 
+  it('never writes an entry that is only narration', () => {
+    // A scene is people talking. An entry of stage directions alone aired as a
+    // caption with nobody in it (eight of them in power.js before this guard).
+    for (const [key, pool] of Object.entries(POOLS)) {
+      for (const e of pool) expect(e.turns.some(t => t.say || t.dr), `${key} ${e.id} has nobody speaking`).toBe(true);
+    }
+  });
+
   it('gives every turn a known speaker and exactly one kind of line', () => {
     for (const [key, pool] of all) {
       for (const e of pool) {
@@ -59,7 +67,7 @@ describe('the pools keep their contract', () => {
     // ending, a nomination speech (the second nominee), and the talk families
     // about somebody who is not in the room. Anywhere else an entry may only
     // speak of c behind `when: { third: true }`; otherwise it prints a raw slot.
-    const WITH_C = [/\.smoothed$/, /^noms\.speech\./, /^talk\.(gossip|pitch-target|hoh-decide)\./, /^social\.rumour\./, /^deals\.(exposed|final-three|competing|hedged)\./];
+    const WITH_C = [/\.smoothed$/, /^noms\.speech\./, /^talk\.(gossip|pitch-target|hoh-decide)\./, /^social\.rumour\./, /^deals\.(exposed|final-three|competing|hedged)\./, /^alliance\.(inner|overlap|protect|recruited|formed)\./, /^power\.(pawn|replaced-reacts|veto-fallout|veto-promise|spy|backdoor|queue|reveal)\./, /^life\.(table|game|inside-joke)\./, /^friction\.(condescend|story)\./, /^phase\.(prepos|last-equal|hoh-room|targets)\./, /^bloc\.(noticed|votes|blowup)\./, /^reign\.both\./, /^scheme\.kiss\.setup$/, /^scheme\.collapse\./, /^texture\.(backyard|trial|namedrop)\./, /^editorial\.(bedroom|whisper|latenight|spill|orbit|flip|roast|meeting)\./, /^arc\.(court|debt)\./, /^couple\.(hiding|leak|jealous|underground)\./, /^plan\.seen\./, /^cer\.(nomgame|nompersonal)\./, /^romance\.(showmanceNoticed|showmanceTarget|showmanceJealousy|friendshipJealousy|triangle\w+|affairCaught|affairChoice|showmanceSabotage)\./, /^engine\.block\./, /^meeting\./, /^whack\.(suspect)\./, /^hex\.spent\./, /^road\.theory\./, /^suite\.plusone\./, /^inv\.circle\./, /^hack\.table\./, /^engine\.samecase\./];
     for (const [key, pool] of all) {
       if (WITH_C.some(re => re.test(key))) continue;
       for (const e of pool) {

@@ -39,6 +39,11 @@ import { arrivalStageScreen } from './arrival-stage.js';
 import { rpBuildWeb } from './web.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
 import { suspicionStageScreen } from './suspicion-stage.js';
+import { offerStageScreen } from './offer-stage.js';
+import { armouryStageScreen } from './armoury-stage.js';
+import { endgameStageScreen } from './endgame-stage.js';
+import { rpBuildReunion } from './reunion.js';
+import { reunionStageScreen } from './reunion-stage.js';
 // The Alcove is folded into the night castle segment (Plan 11); only its gate
 // is needed here, for that segment's `when`.
 import { _hasConfessionals } from './confessionals.js';
@@ -163,7 +168,8 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-armoury', label: 'The Armoury', suffix: 'armoury',
     badge: { text: 'Armoury', color: '#8fe0c4' },
     when: r => !!(r.tr && r.tr.armoury && (r.tr.armoury.entrants || []).length),
-    build: rpBuildArmoury, revealAll: trArmouryRevealAll, revealAllName: 'trArmouryRevealAll' },
+    build: (r, o) => armouryStageScreen(r, o, rpBuildArmoury(r, o)),
+    revealAll: trArmouryRevealAll, revealAllName: 'trArmouryRevealAll' },
   // THE AFTERNOON — the road back and the manoeuvring before the table — sits
   // between the mission and the Round Table. Still pre-banishment, still guarded.
   { id: 'tr-castle-afternoon', label: 'The Afternoon', suffix: 'castleday-afternoon',
@@ -219,7 +225,8 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-recruitment', label: 'The Offer', suffix: 'recruitment',
     badge: { text: 'The Offer', color: '#8b5cf6' },
     when: r => !!(r.tr && r.tr.recruitment),
-    build: rpBuildRecruitment, revealAll: trRecruitmentRevealAll, revealAllName: 'trRecruitmentRevealAll' },
+    build: (r, o) => offerStageScreen(r, o, rpBuildRecruitment(r, o)),
+    revealAll: trRecruitmentRevealAll, revealAllName: 'trRecruitmentRevealAll' },
   // ── THE CASTLE DAY IS NOW THREE SEGMENTS, ABOVE ──────────────────────
   //
   // It used to be one screen here, at the foot after the conclave, because two
@@ -275,10 +282,45 @@ export const TRAITORS_SCREENS = [
     badge: { text: 'The Web', color: '#c9a24a' },
     when: r => !!(r.tr && r.tr.beliefs && (r.tr.beliefs.living || []).length),
     build: (r, o) => rpBuildWeb(r, o) },
-  { id: 'tr-endgame', label: 'The Endgame', suffix: 'endgame',
+  // ── THE FINALE, AS THE US SHOW PLAYS IT (2026-10-03) ────────────────
+  //
+  // The user: pouches thrown into the fire, green to end it and red to banish
+  // again, the choice burning in front of everybody; then a real Round Table
+  // (a debate, a name on every chalkboard and a reason for it, a reveal); and
+  // only when the fire burns all green, the reveal of who everybody was and
+  // the money. So it is several screens, in the order it happens: the fire,
+  // the table the fire forced, the fire again ... and the finale. Each forced
+  // table is a full Round Table, built from the table record the engine kept
+  // (`tables[n].record`), so it has everything the season's tables have.
+  ...Array.from({ length: 8 }, (_, n) => [
+    // labels are UNIQUE on an episode: the transcript finds a screen's section by its heading
+    { id: 'tr-endgame-fire-' + n, label: 'The Fire Of Truth' + (n ? ' · ' + (n + 1) : ''), suffix: 'endgame-' + n,
+      // one pill per kind on the timeline: the later slots share the first's
+      badge: n ? undefined : { text: 'The Fire', color: '#ff8a3a' },
+      when: r => !!(r.tr && r.tr.endgame && (r.tr.endgame.asks || [])[n]),
+      build: (r, o) => endgameStageScreen(r, o, rpBuildEndgame(r, o, 'fire:' + n), 'fire:' + n),
+      revealAll: trEndgameRevealAll, revealAllName: 'trEndgameRevealAll' },
+    { id: 'tr-endgame-table-' + n, label: 'The Vote At The Fire' + (n ? ' · ' + (n + 1) : ''), suffix: 'roundtable',
+      badge: n ? undefined : { text: 'The Vote', color: '#b91c3c' },
+      when: r => !!(r.tr && r.tr.endgame && ((r.tr.endgame.tables || [])[n] || {}).record),
+      build: (r, o) => {
+        const t = r.tr.endgame.tables[n];
+        const er = { ...r, num: Number(r.num) * 100 + 50 + n, tr: { ...r.tr, table: t.record, strategy: null } };
+        return tableStageScreen(er, o, rpBuildRoundTable(er, o));
+      },
+      revealAll: trRoundTableRevealAll, revealAllName: 'trRoundTableRevealAll' },
+  ]).flat(),
+  { id: 'tr-endgame', label: 'The Endgame', suffix: 'endgame-99',
     badge: { text: 'Endgame', color: '#4cffb3' },
     when: r => !!(r.tr && r.tr.endgame),
-    build: rpBuildEndgame, revealAll: trEndgameRevealAll, revealAllName: 'trEndgameRevealAll' },
+    build: (r, o) => endgameStageScreen(r, o, rpBuildEndgame(r, o, 'finale'), 'finale'),
+    revealAll: trEndgameRevealAll, revealAllName: 'trEndgameRevealAll' },
+  // AND THEN EVERYBODY COMES BACK (2026-10-03): the season's last screen
+  { id: 'tr-reunion', label: 'The Reunion', suffix: 'reunion',
+    badge: { text: 'Reunion', color: '#e8c270' },
+    // only on the reunion's own episode (js/vp-ui.js `_reunionEpisode`)
+    when: r => !!(r.tr && r.tr.reunionEpisode && r.tr.reunion && (r.tr.reunion.cast || []).length),
+    build: (r, o) => reunionStageScreen(r, o, rpBuildReunion(r)) },
 ];
 
 /**

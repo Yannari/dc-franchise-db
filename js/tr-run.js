@@ -267,9 +267,9 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null, rerolls = null
       // either runs on a night it was pinned to, or it does not run.
       randomMurderTwists: Array.isArray(seasonConfig.trRandomMurderTwists)
         ? seasonConfig.trRandomMurderTwists : [],
-      // Off by default: finale banishments stay blind (the modern show). On,
-      // the endgame turns every banished player over like any earlier table.
-      endgameReveal: seasonConfig.trEndgameReveal === true,
+      // On by default: the endgame turns every banished player over like any
+      // earlier table. Off, finale banishments stay blind (the modern show).
+      endgameReveal: seasonConfig.trEndgameReveal !== false,
       // On by default: the pact may recruit on its own when thin. Off, only a
       // recruitment the author pins from the timeline ever runs.
       autoRecruit: seasonConfig.trAutoRecruit !== false,

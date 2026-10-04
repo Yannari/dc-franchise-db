@@ -7,7 +7,6 @@ import {
 import { makeEndgameDeal, makeJuryPact, breakDeal, exposeDeal, tierOf } from './deals.js';
 import { isDrinksNight, nightModifier } from '../bb-events/drinks-night.js';
 import { scheduleWeightedEvents } from '../event-scheduler.js';
-import { markAired } from './aired.js';
 import { writeScene } from './script/write.js';
 import { stableRng } from './knowledge.js';
 
@@ -518,7 +517,6 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
       }
       const result = validateBeat(event, raw, beatCtx);
       result.effects = [...api._drainLedger(), ..._worldMoved(worldBefore)];
-      markAired(ctx.week?.num, result.text);
       recordBeat({ week: ctx.week?.num || 0, act: ctx.act, eventId: event.id, players: [...result.players] });
       return result;
     },

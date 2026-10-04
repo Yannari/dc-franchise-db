@@ -24,16 +24,9 @@
 // power changed hands. Everything else about that night is fair game, because
 // the house was standing there.
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import { pStats, band, perceived, closestTo, furthestFrom, isVillainous } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 
 const _whack = ctx => ctx?.week?.whacktivity || null;
@@ -138,16 +131,10 @@ const declaredIt = {
     const cast = _declaredCast(house, ctx);
     if (!cast) return null;
     const { room, who, watcher } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `Nobody knows what happened behind that door. Everybody knows ${who} walked through the one marked ${room.power}, because everybody was standing there watching ${p.obj} do it.`,
-      `${watcher} does not need to guess what ${who} wanted. The door said ${room.power}, and ${who} crossed the room in front of everybody to enter it.`,
-      `"You wanted ${room.power}." ${watcher} says it as a fact, because it is one. ${who} cannot argue with a door ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} seen walking through.`,
-      `${who} spends the evening being asked, lightly and repeatedly, why ${room.power} specifically. There is no good answer that is not also a confession about how ${p.posAdj} week is going.`,
-    ], ctx, who, room.power);
+    const scene = makeScene('whack.declared', { a: who, b: watcher }, { ending: 'scene', power: room.power }, [], 'living-room');
     api.suspicion(watcher, who, 1.1);
     try { api.remember(watcher, who, 'wanted-power', 1, { twist: 'bb-whacktivity', door: room.power }); } catch { /* texture */ }
-    return { text, players: [who, watcher], badgeText: 'SAID IT OUT LOUD', badgeClass: 'gold' };
+    return { scene, players: [who, watcher], badgeText: 'SAID IT OUT LOUD', badgeClass: 'gold' };
   },
 };
 
@@ -164,16 +151,11 @@ const crowdedRoom = {
     if (!cast) return null;
     const { room, a, b, rest } = cast;
     const others = rest.length ? ` (and ${rest.slice(0, 2).join(', ')})` : '';
-    const text = _variant([
-      `${a} and ${b}${others} all wanted the same thing badly enough to walk at it in front of everybody. They came out of that room knowing exactly how much competition they have, and it is each other.`,
-      `The door marked ${room.power} took ${room.entrants.length} of them. That is not a secret alliance, it is a public list of people with identical plans.`,
-      `${a} looks at ${b} in the ${room.power} queue and neither of them says the obvious thing, which is that one of them is now a problem for the other.`,
-      `Everybody who wanted ${room.power} found out at the same moment that everybody else wanted it too. Nothing about the rest of this week gets easier for any of them.`,
-    ], ctx, a, b);
+    const scene = makeScene('whack.crowd', { a, b, c: rest[0] || null }, { ending: 'scene', power: room.power }, [], 'living-room');
     api.addBond(a, b, -0.6);
     api.suspicion(a, b, 0.7);
     api.suspicion(b, a, 0.7);
-    return { text, players: [a, b, ...rest.slice(0, 2)], badgeText: 'A CROWDED DOOR', badgeClass: 'red' };
+    return { scene, players: [a, b, ...rest.slice(0, 2)], badgeText: 'A CROWDED DOOR', badgeClass: 'red' };
   },
 };
 
@@ -189,17 +171,11 @@ const stayedShut = {
     const cast = _shutCast(house, ctx);
     if (!cast) return null;
     const { room, who, watcher } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} paid the entire price of wanting ${room.power} and got none of it. The door never opened. The house still watched ${p.obj} walk to it, and that part does not get undone.`,
-      `The worst outcome in this competition is not losing. It is ${who}'s: a room that did not open, a want that everybody now knows about, and nothing whatsoever to show for it.`,
-      `${who} chose the wrong door and the wrong door was quiet. ${watcher || 'The house'} will remember the choice long after forgetting that it came to nothing.`,
-      `"I didn't even get to play." ${who} is right, and it does not help — nobody in this house is filing ${p.obj} under 'did not play'. They are filing ${p.obj} under 'went for it'.`,
-    ], ctx, who, room.power);
+    const scene = makeScene('whack.shut', { a: who, b: watcher || null }, { ending: 'scene', intent: watcher ? 'seen' : 'alone', power: room.power }, [], 'living-room');
     // The cost lands even though the room stayed shut, which is the twist.
     if (watcher) api.suspicion(watcher, who, 0.9);
     api.popDelta(who, 0.5);
-    return { text, players: [who, watcher].filter(Boolean),
+    return { scene, players: [who, watcher].filter(Boolean),
       badgeText: 'PAID FOR NOTHING', badgeClass: 'red' };
   },
 };
@@ -216,20 +192,11 @@ const satItOut = {
     const cast = _satOutCast(house, ctx);
     if (!cast) return null;
     const { who, reader } = cast;
-    const p = pronouns(who);
     const safe = pStats(who).strategic >= 6;
-    const text = safe ? _variant([
-      `${who} did not walk through anything, and that is a statement too: only somebody who thinks they are safe declines a free swing at power. ${reader} notices ${p.obj} thinking it.`,
-      `${who} watched everybody else cross the room and stayed exactly where ${p.sub} ${p.sub === 'they' ? 'were' : 'was'}. ${reader} files that under comfortable, which is a much worse thing to be than ambitious.`,
-      `"I didn't need it." ${who} says it lightly. ${reader} hears somebody who believes this week cannot touch ${p.obj}, and starts wondering why.`,
-    ], ctx, who, reader) : _variant([
-      `${who} could not decide fast enough and ended up choosing nothing, which the house has decided to read as choosing nothing.`,
-      `${who} stayed on the sofa. Half the room thinks that was clever and the other half thinks ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} scared to be seen wanting something, and both halves say so.`,
-      `Not walking was supposed to be invisible. ${reader} points out, to the room, exactly who did not move, and it stops being invisible.`,
-    ], ctx, who, reader);
+    const scene = makeScene('whack.satout', { a: who, b: reader }, { ending: safe ? 'safe' : 'scared' }, [], 'living-room');
     api.suspicion(reader, who, safe ? 0.8 : 0.4);
     if (!safe) api.popDelta(who, -0.5);
-    return { text, players: [who, reader],
+    return { scene, players: [who, reader],
       badgeText: safe ? 'TOO COMFORTABLE TO PLAY' : 'DID NOT MOVE',
       badgeClass: safe ? 'gold' : 'grey' };
   },
@@ -248,14 +215,9 @@ const suspectList = {
     if (!cast) return null;
     const { room, inIt, watcher } = cast;
     const named = inIt.slice(0, 3).join(', ');
-    const text = _variant([
-      `The house cannot work out whether anybody came out of that room with anything. What it can do is name the ${inIt.length} people who were in it — ${named} — and watch all of them for a week.`,
-      `${watcher} does not have to hunt for a suspect this time. The suspects walked into the room in front of everybody. ${watcher} just cannot tell WHICH of ${named} it is, which turns out to be nearly as bad.`,
-      `Every one of ${named} spends the week being treated as though they are holding something, and at most one of them is.`,
-      `"One of you has it." ${watcher} says it to the whole room offering ${room.power}, and gets ${inIt.length} identical shrugs back.`,
-    ], ctx, inIt[0], watcher);
+    const scene = makeScene('whack.suspect', { a: watcher, b: inIt[0], c: inIt[1] }, { ending: 'scene', power: room.power }, [], 'living-room');
     inIt.forEach(n => api.suspicion(watcher, n, 0.9));
-    return { text, players: [watcher, ...inIt.slice(0, 3)],
+    return { scene, players: [watcher, ...inIt.slice(0, 3)],
       badgeText: 'THE SUSPECTS ARE KNOWN', badgeClass: 'gold' };
   },
 };
@@ -272,16 +234,10 @@ const hohWatched = {
     const cast = _hohCast(house, ctx);
     if (!cast) return null;
     const { hoh, mark, count } = cast;
-    const p = pronouns(hoh);
-    const text = _variant([
-      `${hoh} was the one person not allowed to play, and spent the whole thing watching ${count} houseguests walk across a room towards something that could be used on ${p.obj}. ${mark} was one of them.`,
-      `The Head of Household does not get a door. ${hoh} gets a list instead, and ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} been keeping it since the first person stood up. ${mark} is on it.`,
-      `"Interesting who moved." ${hoh} says it to nobody, watching ${mark} come back to the sofas, and everybody within earshot understands it was said to be overheard.`,
-      `${hoh} cannot be in that room and cannot stop anybody else being in it either, which leaves exactly one thing to do about ${mark}: remember.`,
-    ], ctx, hoh, mark);
+    const scene = makeScene('whack.hoh', { a: hoh, b: mark }, { ending: 'scene' }, [], 'living-room');
     api.suspicion(hoh, mark, 1.2);
     try { api.remember(hoh, mark, 'went-for-power', 1, { twist: 'bb-whacktivity' }); } catch { /* texture */ }
-    return { text, players: [hoh, mark], badgeText: 'THE HOH KEPT A LIST', badgeClass: 'red' };
+    return { scene, players: [hoh, mark], badgeText: 'THE HOH KEPT A LIST', badgeClass: 'red' };
   },
 };
 
@@ -299,21 +255,12 @@ const beingNormal = {
     const { who, watcher, room } = cast;
     const st = pStats(who);
     const overplayed = pStats(watcher).intuition >= 7 && st.strategic <= 6;
-    const p = pronouns(who);
-    const text = overplayed ? _variant([
-      `${who} calls the room a waste of time before ${watcher} asks how it went. The answer is casual; volunteering it is not.`,
-      `${who} keeps steering conversations away from the ${room.power} room with the enthusiasm of somebody steering a car. ${watcher} is in the passenger seat noticing every turn.`,
-      `"Honestly it was nothing." ${who} says it once too often, and ${watcher} — who was not thinking about it — starts thinking about it.`,
-    ], ctx, who, watcher) : _variant([
-      `${who} is exactly as vague about that room as everybody else who was in it, which is the only correct amount of vague.`,
-      `Somebody asks ${who} how it went. “Fine.” That is the whole answer, delivered with the same shrug everybody else brought back from the room.`,
-      `${who} lets the subject die and does not resurrect it, which is harder than it sounds and is why nobody looks twice.`,
-    ], ctx, who, watcher);
+    const scene = makeScene('whack.normal', { a: who, b: watcher }, { ending: overplayed ? 'overplayed' : 'fine', power: room?.power || 'that room' }, [], 'kitchen');
     if (overplayed) {
       api.suspicion(watcher, who, 1.5);
       try { api.remember(watcher, who, 'came-out-with-something', 1, { twist: 'bb-whacktivity' }); } catch { /* texture */ }
     }
-    return { text, players: [who, watcher],
+    return { scene, players: [who, watcher],
       badgeText: overplayed ? 'TOO KEEN TO DROP IT' : 'AS VAGUE AS EVERYBODY',
       badgeClass: overplayed ? 'gold' : 'grey' };
   },
@@ -331,14 +278,9 @@ const stillWatching = {
     const cast = _afterCast(house, ctx);
     if (!cast) return null;
     const { room, inIt, watcher } = cast;
-    const text = _variant([
-      `${watcher} can still name everyone who entered the ${room.power} room. What ${watcher} cannot tell is whether any of them left with an advantage.`,
-      `A week on, ${inIt.slice(0, 2).join(' and ')} are still being handled slightly carefully by people who cannot say why out loud.`,
-      `Nobody has produced anything. ${watcher} points out that nobody producing anything is exactly what holding something looks like.`,
-      `The room that opened is old news everywhere except in the heads of the people who were not in it.`,
-    ], ctx, watcher, inIt[0]);
+    const scene = makeScene('whack.after', { a: watcher, b: inIt[0], c: inIt[1] || null }, { ending: 'scene', power: room.power }, [], 'kitchen');
     inIt.slice(0, 2).forEach(n => api.suspicion(watcher, n, 0.5));
-    return { text, players: [watcher, ...inIt.slice(0, 2)],
+    return { scene, players: [watcher, ...inIt.slice(0, 2)],
       badgeText: 'STILL ON THE LIST', badgeClass: 'grey' };
   },
 };

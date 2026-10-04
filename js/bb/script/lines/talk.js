@@ -47,7 +47,7 @@ export default {
       { by: 'a', say: "Then I'll be quick. If I go home this week, who do you think is next?" },
       { by: 'b', say: '...' },
       { by: 'a', say: "Exactly. Think about that before you vote." },
-      { by: 'b', dr: "I walked in there with my mind made up. I walked out doing maths." },
+      { by: 'b', dr: "I walked in there with my mind made up. Now I'm not so sure." },
     ] },
     { id: 'tc.l2', turns: [
       { by: 'a', say: "You don't owe me anything. I know that. I'm asking anyway." },
@@ -142,7 +142,7 @@ export default {
       { by: 'a', say: "I'm not going to say anything bad about anybody. I just really want to stay with you guys." },
       { by: 'b', say: "That's it? No dirt on anyone?" },
       { by: 'a', say: "I don't do dirt." },
-      { by: 'b', dr: "Everyone else came to me with a knife. {a} came with a hug. It worked, weirdly." },
+      { by: 'b', dr: "Everyone else came to me with dirt on somebody. {a} was just nice. And it worked." },
     ] },
     { id: 'tc.rc1', when: { register: 'competitor' }, turns: [
       { by: 'a', say: "Keep me and I'll win comps that protect you. Simple as that." },
@@ -162,7 +162,7 @@ export default {
       { by: 'b', say: 'Sure.' },
       { by: 'a', say: "I just want to know where your head's at for Thursday." },
       { by: 'b', say: "I'm still thinking." },
-      { by: 'a', dr: "\"Still thinking\" is how people say no in this house." },
+      { by: 'a', dr: "When people say they're still thinking, it usually means no." },
     ] },
     { id: 'tc.r2', turns: [
       { by: 'b', say: "I hear you. I do." },
@@ -233,7 +233,7 @@ export default {
       { by: 'a', say: "You know I could make your life very easy in here." },
       { by: 'b', say: "That sounded like a threat." },
       { by: 'a', say: "It was a promise." },
-      { by: 'b', dr: "With {a} there's no difference. That's exactly why I'm voting {a.obj} out." },
+      { by: 'b', dr: "With {a}, I can't tell the difference. That's why I'm voting {a.obj} out." },
     ] },
     { id: 'tc.rf2', when: { register: 'fiery' }, turns: [
       { by: 'a', say: "So that's it? You're just going to let them push me out?" },
@@ -271,13 +271,13 @@ export default {
       { by: 'b', say: "I'm not laughing." },
       { by: 'a', say: "Final two. You and me. Whatever happens." },
       { by: 'b', say: "Whatever happens." },
-      { by: 'a', dr: "Nobody wrote it down. We both know every word of it." },
+      { by: 'a', dr: "We didn't write it down. We don't need to. I'll remember." },
     ] },
     { id: 'tf.m2', turns: [
       { by: 'a', say: "Is this a final two? What we've got?" },
       { by: 'b', say: "I assumed it already was." },
       { by: 'a', say: "Then let's say it properly." },
-      { beat: 'They shake on it. Then they hug, because a handshake felt too small.' },
+      { beat: 'They shake on it, then hug.' },
     ] },
     { id: 'tf.m3', turns: [
       { by: 'a', say: "If it's us at the end, I'm not going to feel bad about beating you." },
@@ -339,7 +339,7 @@ export default {
       { by: 'a', say: "Say it. Out loud. So I know it's real." },
       { by: 'b', say: "Final two, {a}. You and me." },
       { by: 'a', say: 'Okay. Okay. Good.' },
-      { by: 'a', dr: "In this house, saying it out loud is basically a wedding." },
+      { by: 'a', dr: "In this house, saying it out loud is a big deal." },
     ] },
   ],
 
@@ -413,24 +413,24 @@ export default {
     { id: 'ts.l4', turns: [
       { by: 'b', say: "Promise me I'm safe." },
       { by: 'a', say: "Promise." },
-      { by: 'a', dr: "I've made a lot of promises today. Not all of them were the kind you keep." },
+      { by: 'a', dr: "I've made a lot of promises today. I'm not going to keep all of them." },
     ] },
     { id: 'ts.l5', turns: [
       { by: 'a', say: "You and me are fine. Go and enjoy your week." },
       { by: 'b', say: "That's the best thing anyone's said to me in days." },
-      { by: 'a', dr: "It's easier to put somebody up when they're not expecting it. Fewer speeches." },
+      { by: 'a', dr: "It's easier to put somebody up when they're not expecting it. They don't have time to fight it." },
     ] },
     { id: 'ts.l6', turns: [
       { by: 'b', say: "I'm not going up, right?" },
       { by: 'a', say: "Why would you go up? Relax." },
       { by: 'b', say: "Okay. Okay. Thank you." },
-      { by: 'a', dr: "I didn't say no. I said relax. There's a difference, and {b} will find out what it is." },
+      { by: 'a', dr: "I never actually said {b} was safe. I just told {b.obj} to relax." },
     ] },
     { id: 'ts.l7', turns: [
       { by: 'a', say: "Deal. One week each way." },
       { by: 'b', say: "Shake on it?" },
       { by: 'a', say: "Shake on it." },
-      { by: 'a', dr: "Handshakes are free. Nominations aren't." },
+      { by: 'a', dr: "Shaking hands costs me nothing. I can still put {b} up." },
     ] },
   ],
   'talk.safety.seen': [
@@ -442,7 +442,7 @@ export default {
     { id: 'ts.s2', turns: [
       { by: 'a', say: "Keep me safe next week and you're safe now. Easy." },
       { by: 'b', say: "Sure. Deal." },
-      { by: 'b', dr: "A promise from a Head of Household is a weather forecast. Nice to hear. Means nothing." },
+      { by: 'b', dr: "A promise from the Head of Household is nice to hear. It doesn't mean much." },
     ] },
     { id: 'ts.s3', turns: [
       { by: 'a', say: "I'd never put you up." },
@@ -454,23 +454,23 @@ export default {
       { by: 'a', say: "Deal?" },
       { by: 'b', say: "Deal." },
       { beat: '{b} holds eye contact one second longer than a friend would.' },
-      { by: 'b', dr: "Now I've got a promise I can wave around when it gets broken. That's all this was." },
+      { by: 'b', dr: "I don't believe it. But if {a} breaks it, everyone's going to hear about it." },
     ] },
     { id: 'ts.s5', turns: [
       { by: 'b', say: "Am I safe?" },
       { by: 'a', say: "Of course you're safe." },
-      { by: 'b', dr: "\"Of course.\" Nobody says \"of course\" about something they actually mean." },
+      { by: 'b', dr: "{a} said \"of course\" way too quickly. I don't believe it." },
     ] },
     { id: 'ts.s6', turns: [
       { by: 'a', say: "We're good. You're not going anywhere." },
       { by: 'b', say: 'Good to know.' },
-      { by: 'b', dr: "I've counted the house. I know whose name is in {a.posAdj} head. Saying no would only make it sooner." },
+      { by: 'b', dr: "I'm pretty sure {a} wants me out. If I'd said no to the deal, I'd be going up even sooner." },
     ] },
     { id: 'ts.s7', turns: [
       { by: 'a', say: "Trust me." },
       { by: 'b', say: "I'm trying." },
       { by: 'a', say: "Try harder." },
-      { by: 'b', dr: "When somebody tells you to trust them twice, don't." },
+      { by: 'b', dr: "{a} told me to trust {a.obj} twice. That's not a good sign." },
     ] },
   ],
 
@@ -532,7 +532,7 @@ export default {
       { by: 'a', say: "We've definitely got the votes. Definitely. Probably." },
       { by: 'b', say: "Which is it?" },
       { by: 'a', say: "Definitely probably." },
-      { by: 'b', dr: "That is not a sentence that makes me feel safe." },
+      { by: 'b', dr: "That doesn't make me feel safe at all." },
     ] },
     { id: 'tn.k3', turns: [
       { by: 'b', say: "Did you actually ask them, or did you just assume?" },
@@ -553,7 +553,7 @@ export default {
       { by: 'a', say: "I think we're fine." },
       { by: 'b', say: "You think." },
       { by: 'a', say: "I think very confidently." },
-      { by: 'a', dr: "I'm not good at numbers. I'm good at people. Right now I'm not sure I'm good at either." },
+      { by: 'a', dr: "I'm usually good at reading people. Right now I've got no idea who's voting which way." },
     ] },
     { id: 'tn.k7', turns: [
       { by: 'b', say: "Who's the swing vote?" },
@@ -576,7 +576,7 @@ export default {
     ] },
     { id: 'tr.s2', turns: [
       { beat: '{a} bumps {b}\'s shoulder on the way past. {b} nods once.' },
-      { by: 'a', dr: "We don't even have to talk about it any more. That nod is the whole conversation." },
+      { by: 'a', dr: "We don't even have to talk about it any more. We both know where we stand." },
     ] },
     { id: 'tr.s3', turns: [
       { by: 'a', say: "We good?" },
@@ -589,7 +589,7 @@ export default {
       { by: 'a', say: "Let's do the order. Who goes next, in a perfect world?" },
       { by: 'b', say: "Honestly? We agree on everyone except one." },
       { by: 'a', say: "Then we argue about the one." },
-      { beat: 'They argue about the one for five minutes, and leave with a plan they can both repeat.' },
+      { beat: 'They argue about it for five minutes, then agree on a plan.' },
     ] },
     { id: 'tr.s5', turns: [
       { by: 'b', say: "Do you ever worry I'll turn on you?" },
@@ -653,12 +653,12 @@ export default {
     ] },
     { id: 'tr.s16', turns: [
       { beat: '{a} and {b} do a secret handshake that is clearly getting longer every week.' },
-      { by: 'b', dr: "It started as a fist bump. It is now about twelve moves long. That's how you know it's real." },
+      { by: 'b', dr: "It started as a fist bump. Now it's about twelve moves long. We're very close." },
     ] },
     { id: 'tr.rs1', when: { register: 'schemer' }, turns: [
       { by: 'a', say: "You and me are the only real thing in this house." },
       { by: 'b', say: "I know." },
-      { by: 'a', dr: "And I mean it. Which, for me, is very unusual." },
+      { by: 'a', dr: "And I actually mean it. I don't say that about many people in here." },
     ] },
     { id: 'tr.rf1', when: { register: 'fiery' }, turns: [
       { by: 'a', say: "If anybody comes for you, they come through me. I mean it." },
@@ -687,7 +687,7 @@ export default {
     { id: 'tr.d1', turns: [
       { by: 'a', say: "We're still good, right?" },
       { by: 'b', say: "...Yeah. Of course." },
-      { by: 'a', dr: "There was a pause. It wasn't long. It wasn't nothing, either." },
+      { by: 'a', dr: "There was a pause before {b} answered. Only a short one, but I noticed it." },
     ] },
     { id: 'tr.d2', turns: [
       { by: 'a', say: "Still us?" },
@@ -709,7 +709,7 @@ export default {
       { by: 'a', say: "Are you still with me? Honestly?" },
       { by: 'b', say: "Honestly? Yes." },
       { by: 'a', say: "Okay." },
-      { by: 'a', dr: "{b} said every right word. I walked away and couldn't tell you which one bothered me." },
+      { by: 'a', dr: "{b} said all the right things. Something still felt off, and I don't know what." },
     ] },
     { id: 'tr.d6', turns: [
       { by: 'b', say: "I saw you talking to the others last night." },
@@ -721,12 +721,12 @@ export default {
       { by: 'b', say: "That's not a fair question." },
       { by: 'a', say: "It wasn't supposed to be fair." },
       { by: 'b', say: '...You. Obviously.' },
-      { by: 'a', dr: "\"Obviously\" took {b} four seconds." },
+      { by: 'a', dr: "{b} took a long time to say \"obviously\"." },
     ] },
     { id: 'tr.d8', turns: [
       { by: 'a', say: "Same deal as always?" },
       { by: 'b', say: 'Same deal.' },
-      { beat: 'Both of them smile. Neither smile goes all the way up.' },
+      { beat: 'Both of them smile, but neither of them looks happy.' },
     ] },
     { id: 'tr.d9', turns: [
       { by: 'b', say: "Can I ask you something without you getting upset?" },
@@ -739,7 +739,7 @@ export default {
       { by: 'a', say: "Nothing's changed between us, has it?" },
       { by: 'b', say: "Has it for you?" },
       { by: 'a', say: "I asked first." },
-      { by: 'b', dr: "When you answer a question with a question in this house, you've already answered it." },
+      { by: 'b', dr: "I didn't answer {a}'s question. I couldn't, honestly." },
     ] },
     { id: 'tr.d11', when: { late: true }, turns: [
       { by: 'a', say: "We're nearly there. Don't go weird on me now." },
@@ -751,14 +751,14 @@ export default {
       { by: 'a', say: "Whatever happens, we're good. Yeah?" },
       { by: 'b', say: "\"Whatever happens\"? What's going to happen?" },
       { by: 'a', say: "Nothing. It's just a thing people say." },
-      { by: 'b', dr: "Nobody says \"whatever happens\" unless something is about to." },
+      { by: 'b', dr: "{a} keeps saying \"whatever happens\". It's making me nervous." },
     ] },
     { id: 'tr.d13', turns: [
       { by: 'a', say: "You'd tell me if you heard my name, right?" },
       { by: 'b', say: "Course I would." },
       { by: 'a', say: "Have you heard my name?" },
       { by: 'b', say: "...No." },
-      { by: 'a', dr: "That was a long \"no\". Way too long." },
+      { by: 'a', dr: "{b} took ages to say no. I don't believe it." },
     ] },
     { id: 'tr.d14', turns: [
       { by: 'b', say: "You've been spending a lot of time with the others." },
@@ -781,7 +781,7 @@ export default {
     { id: 'tr.rs2', when: { register: 'schemer' }, turns: [
       { by: 'a', say: "Still us, darling?" },
       { by: 'b', say: "Of course." },
-      { by: 'a', dr: "\"Of course.\" That's what I say when I'm lying. I know the sound." },
+      { by: 'a', dr: "{b} said \"of course\" a bit too fast. That's how I say it when I'm lying." },
     ] },
     { id: 'tr.rf2', when: { register: 'fiery' }, turns: [
       { by: 'a', say: "Be straight with me. Are we good or not?" },
@@ -815,7 +815,7 @@ export default {
     { id: 'tr.c1', turns: [
       { by: 'a', say: "Still us. Still the end." },
       { by: 'b', say: "Still us." },
-      { by: 'a', dr: "I meant every word except the ones that matter." },
+      { by: 'a', dr: "I meant most of it. Not the part about the end." },
     ] },
     { id: 'tr.c2', turns: [
       { by: 'b', say: "I don't know what I'd do in here without you." },
@@ -824,7 +824,7 @@ export default {
     ] },
     { id: 'tr.c3', turns: [
       { beat: 'The same handshake they have done for weeks.' },
-      { by: 'a', dr: "Only one of us knows that was goodbye." },
+      { by: 'a', dr: "{b} doesn't know it yet, but I'm planning to cut {b.obj}." },
     ] },
     { id: 'tr.c4', turns: [
       { by: 'a', say: "Finale night, you and me, still standing. I can see it." },
@@ -858,7 +858,7 @@ export default {
     { id: 'tr.e3', turns: [
       { by: 'a', say: "You and me at the end. Like always." },
       { by: 'b', say: "Like always." },
-      { by: 'b', dr: "{a} used to say that like a promise. Now it sounds like a goodbye card." },
+      { by: 'b', dr: "{a} used to say that and mean it. Now it just sounds like words." },
     ] },
     { id: 'tr.e4', turns: [
       { by: 'b', say: "You'd tell me if something changed, right?" },
@@ -886,7 +886,7 @@ export default {
       { by: 'a', say: "Why? So you can talk over me again?" },
       { by: 'b', say: "Nobody's talking over you." },
       { by: 'a', say: "You do it every single time I open my mouth!" },
-      { beat: 'Everyone in the kitchen suddenly needs to be somewhere else.' },
+      { beat: 'Everyone else in the kitchen quietly leaves.' },
     ] },
     { id: 'tx.v2', turns: [
       { by: 'a', say: "Say it again. Say it to my face." },
@@ -920,7 +920,7 @@ export default {
       { by: 'b', say: "That's paranoid." },
       { by: 'a', say: "Then why are you in here?" },
       { by: 'b', say: "I live here!" },
-      { beat: 'It is the last quiet sentence either of them says for ten minutes.' },
+      { beat: 'After that, they shout at each other for ten minutes.' },
     ] },
     { id: 'tx.v7', turns: [
       { by: 'a', say: "You told people something I said to you in private." },
@@ -953,14 +953,14 @@ export default {
       { by: 'a', say: "Don't walk away from me while I'm talking!" },
       { by: 'b', say: "Then stop shouting and I'll stay!" },
       { by: 'a', say: "I'm not shouting!" },
-      { beat: 'Everyone else in the room disagrees, silently.' },
+      { beat: 'Everyone else in the room looks at each other.' },
     ] },
     { id: 'tx.v12', turns: [
       { by: 'b', say: "Why are you so angry all the time?" },
       { by: 'a', say: "Because of people like you!" },
       { by: 'b', say: "What does that even mean?" },
       { by: 'a', say: "It means leave me alone!" },
-      { by: 'b', dr: "I asked one question. I got a weather warning." },
+      { by: 'b', dr: "I asked one question and {a} went off at me." },
     ] },
     { id: 'tx.v13', turns: [
       { by: 'a', say: "If you've got something to say, say it now. Not behind my back. Now." },
@@ -993,7 +993,7 @@ export default {
       { by: 'a', say: "You've been playing both sides." },
       { by: 'b', say: "I've been playing the game." },
       { by: 'a', say: "Both sides of it, yes. That's what I said." },
-      { by: 'a', dr: "I wasn't angry. I was organised. I've been writing this conversation in my head for days." },
+      { by: 'a', dr: "I wasn't angry. I was prepared. I've been planning what to say for days." },
     ] },
     { id: 'tx.c4', turns: [
       { by: 'a', say: "Did our deal ever mean anything to you?" },
@@ -1052,7 +1052,7 @@ export default {
       { by: 'a', say: "Can I talk to you? Alone?" },
       { by: 'b', say: "Whatever you want to say, you can say it here." },
       { by: 'a', say: "Fine. Here it is, then." },
-      { beat: 'Everybody at the table suddenly finds their plate very interesting.' },
+      { beat: 'Everybody at the table looks down at their plate.' },
     ] },
     { id: 'tx.g5', turns: [
       { by: 'a', say: "Did you call me the easy vote?" },
@@ -1130,7 +1130,7 @@ export default {
       { by: 'a', say: "Is there a reason you rolled your eyes at me?" },
       { by: 'b', say: "My eyes are allowed to move." },
       { by: 'a', say: "Not like that, they're not." },
-      { beat: 'It escalates from there, very quickly, about very little.' },
+      { beat: 'It turns into a real argument over almost nothing.' },
     ] },
     { id: 'tx.g17', turns: [
       { by: 'b', say: "You've been weird with me for days. Just say it." },
@@ -1209,7 +1209,7 @@ export default {
       { by: 'a', say: "Have you noticed how {c} is always in the room when a plan changes?" },
       { by: 'b', say: "...Now that you say it." },
       { by: 'a', say: "Now that I say it. Exactly." },
-      { by: 'a', dr: "I don't know if {c} is pulling strings. But now {b} is watching {c}, and that's worth something." },
+      { by: 'a', dr: "I don't know if {c} is really behind it all. But now {b} is keeping an eye on {c}, and that helps me." },
     ] },
     { id: 'tg.t7', when: { late: false }, turns: [
       { by: 'a', say: "Swear you won't repeat this." },
@@ -1228,7 +1228,7 @@ export default {
       { by: 'a', say: "I've got something." },
       { by: 'b', say: "About who?" },
       { by: 'a', say: "Who do you think? {c}." },
-      { by: 'b', dr: "Every bit of news in this house has {c}'s name on it this week." },
+      { by: 'b', dr: "Every rumour this week seems to be about {c}." },
     ] },
     { id: 'tg.t10', turns: [
       { by: 'a', say: "{c} asked me who you were voting for." },
@@ -1285,7 +1285,7 @@ export default {
       { by: 'a', say: "{c} said you'd be the first to flip if things got tight." },
       { by: 'b', say: "{c} said that?" },
       { by: 'a', say: "Word for word." },
-      { by: 'b', dr: "If {c} thinks I'm the flipper, I'll flip. Just not the way {c} expects." },
+      { by: 'b', dr: "If {c} thinks I'm going to flip, fine. I'll flip on {c}." },
     ] },
     { id: 'tg.t19', turns: [
       { by: 'a', say: "I'm not saying it's true. I'm saying it's what I heard." },
@@ -1328,7 +1328,7 @@ export default {
       { by: 'a', say: "I probably shouldn't tell you this..." },
       { by: 'b', say: "But you're going to." },
       { by: 'a', say: "{c} has been saying your name. A lot." },
-      { by: 'a', dr: "Is that strictly true? Mostly. Is it useful? Very." },
+      { by: 'a', dr: "It's mostly true. And it helps me." },
     ] },
     { id: 'tg.rf1', when: { register: 'fiery' }, turns: [
       { by: 'a', say: "Do you know what {c} said about you? Because I'm furious about it, and it wasn't even about me!" },
@@ -1354,7 +1354,7 @@ export default {
       { by: 'a', say: "I'll give you one piece of information. You decide what it's worth." },
       { by: 'b', say: "Fair." },
       { by: 'a', say: "{c} has been asking everyone the same question: who are you closest to?" },
-      { by: 'b', dr: "That's not gossip. That's somebody building a map." },
+      { by: 'b', dr: "{c} is trying to work out who's close to who. That worries me." },
     ] },
   ],
 
@@ -1512,7 +1512,7 @@ export default {
       { by: 'b', say: "Help yourself." },
       { by: 'a', say: "Thanks. Can I ask you something? What are you thinking about {c}?" },
       { by: 'b', say: "...Why? What have you heard?" },
-      { by: 'b', dr: "{a} came up for a drink and left me with a name. I'm not mad. It's a good name." },
+      { by: 'b', dr: "{a} came up for a drink and ended up telling me who to nominate. I don't hate the idea." },
     ] },
     { id: 'tp.l2', turns: [
       { by: 'a', say: "I'm not telling you what to do." },
@@ -1524,7 +1524,7 @@ export default {
       { by: 'a', say: "Can I be honest about {c}?" },
       { by: 'b', say: "Please." },
       { by: 'a', say: "{c} is the only person in this house who could win this whole thing without anybody noticing." },
-      { by: 'b', dr: "I'd been going back and forth all day. {a} just stopped the back and forth." },
+      { by: 'b', dr: "I'd been going back and forth all day. {a} helped me make my mind up." },
     ] },
     { id: 'tp.l4', turns: [
       { by: 'b', say: "Who would you put up?" },
@@ -1567,7 +1567,7 @@ export default {
       { by: 'a', say: "So I was thinking you should put up {c}." },
       { by: 'b', say: "You've been in here two minutes." },
       { by: 'a', say: "I'm efficient." },
-      { by: 'b', dr: "When somebody runs up the stairs with a name ready, you start looking at them instead." },
+      { by: 'b', dr: "{a} came up here with a name ready. Now I'm wondering about {a}." },
     ] },
     { id: 'tp.o3', turns: [
       { by: 'a', say: "{c}, {c}, {c}. That's all I'm saying." },
@@ -1605,7 +1605,7 @@ export default {
       { by: 'a', say: "I'd never tell you what to do. But {c}. Seriously." },
       { by: 'b', say: "You just told me what to do." },
       { by: 'a', say: "I suggested." },
-      { by: 'b', dr: "That was not a suggestion. That was a shopping list." },
+      { by: 'b', dr: "That wasn't a suggestion. {a} was telling me what to do." },
     ] },
   ],
 
@@ -1620,7 +1620,7 @@ export default {
     { id: 'th.c2', turns: [
       { by: 'a', say: "Who wants a snack from the basket?" },
       { by: 'b', say: "Me. Always me." },
-      { by: 'a', dr: "Nothing gets decided up here. That's not the point. The point is who's in the room." },
+      { by: 'a', dr: "Nothing really gets decided up here. It's more about who gets invited up." },
     ] },
     { id: 'th.c3', when: { third: true }, turns: [
       { by: 'b', say: "Look at us. The cool kids' table." },
@@ -1637,7 +1637,7 @@ export default {
       { by: 'b', say: "Can I have the good side of the bed?" },
       { by: 'a', say: "You've been on it since dinner." },
       { by: 'b', say: "And I'm very comfortable." },
-      { by: 'a', dr: "{b} has been up here since dinner. In this house, that's a public statement about who's safe." },
+      { by: 'a', dr: "{b} has been up here since dinner. Everyone downstairs will think {b}'s safe this week." },
     ] },
     { id: 'th.c6', when: { third: true }, turns: [
       { by: 'c', say: "We should go down. People are going to talk." },
@@ -1659,7 +1659,7 @@ export default {
     ] },
     { id: 'th.c9', turns: [
       { beat: '{a} and {b} lie on the HOH bed watching the camera feeds of the house below.' },
-      { by: 'b', say: "Look at them all down there. Like a nature documentary." },
+      { by: 'b', say: "Look at them all down there. They've got no idea we can see them." },
       { by: 'a', say: "Be nice. Next week we could be the ones down there." },
     ] },
     { id: 'th.c10', turns: [
@@ -1739,7 +1739,7 @@ export default {
     ] },
     { id: 'th.rk1', when: { register: 'cool' }, turns: [
       { beat: '{a} sits back against the headboard and lets everybody else do the talking.' },
-      { by: 'a', dr: "People say the most interesting things when you let them fill a silence." },
+      { by: 'a', dr: "If I stay quiet, people tell me things. It works every time." },
     ] },
   ],
 
@@ -1772,7 +1772,7 @@ export default {
       { by: 'a', say: "Can you keep a secret?" },
       { by: 'b', say: "Better than anyone in this house." },
       { by: 'a', say: "It's {c}. Don't tell anyone. I mean anyone." },
-      { by: 'b', dr: "{a} trusted me with the name. That's the most dangerous thing anybody can give you in here." },
+      { by: 'b', dr: "{a} told me the name. Now I have to keep it to myself, and that's not easy." },
     ] },
     { id: 'tw.n6', turns: [
       { by: 'a', say: "Talk me out of putting up {c}." },

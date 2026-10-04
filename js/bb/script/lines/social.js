@@ -62,7 +62,7 @@ export default {
       { by: 'a', say: "I need one person in here who'll tell me if my name comes up." },
       { by: 'b', say: "And you'd do the same for me?" },
       { by: 'a', say: "The second I hear it." },
-      { beat: 'They shake on it quickly, as if a fast handshake were a secret one.' },
+      { beat: 'They shake on it quickly, while nobody is looking.' },
     ] },
     { id: 'sa.f7', when: { early: true }, turns: [
       { by: 'a', say: "It's early, I know. But I'd rather have one real person than ten maybes." },
@@ -342,7 +342,7 @@ export default {
       { by: 'b', say: "...You should." },
     ] },
     { id: 'sp.w9', turns: [
-      { by: 'a', dr: "Everyone says I'm overthinking it. Overthinking is how you stay alive in here." },
+      { by: 'a', dr: "Everyone says I'm overthinking it. Maybe I am. I'd rather that than get blindsided." },
       { beat: 'Meanwhile {b} is telling somebody else how much {b} trusts {a}.' },
     ] },
     { id: 'sp.w10', turns: [
@@ -378,14 +378,14 @@ export default {
       { by: 'a', dr: "For forty minutes. Sure." },
     ] },
     { id: 'sp.f3', turns: [
-      { by: 'a', dr: "{b} keeps asking me who I'm voting for. Friends don't need to ask that. Friends already know." },
+      { by: 'a', dr: "{b} keeps asking me who I'm voting for. If we were really close, {b} would already know." },
     ] },
     { id: 'sp.f4', turns: [
       { by: 'a', say: "You've been different with me this week." },
       { by: 'b', say: "I haven't." },
       { by: 'a', say: "You have. And I'd rather you just told me why." },
       { by: 'b', say: "There's nothing to tell." },
-      { by: 'a', dr: "There's always something to tell. {b} just isn't telling it." },
+      { by: 'a', dr: "{b} is hiding something. I can tell." },
     ] },
     { id: 'sp.f5', turns: [
       { beat: '{a} watches {b} leave the HOH room for the third time today.' },
@@ -403,7 +403,7 @@ export default {
       { by: 'a', say: "I heard my name in the bedroom earlier." },
       { by: 'b', say: "People say everyone's name." },
       { by: 'a', say: "In your voice?" },
-      { beat: '{b} doesn\'t answer straight away. It is all the answer {a} needs.' },
+      { beat: '{b} doesn\'t answer straight away. {a} doesn\'t need to hear any more.' },
     ] },
     { id: 'sp.f9', turns: [
       { by: 'a', dr: "I've been wrong about people in here before. I really don't think I'm wrong about {b}." },
@@ -420,7 +420,7 @@ export default {
       { by: 'a', say: "I know who you told me you voted for." },
       { beat: '{b} doesn\'t answer.' },
     ] },
-    { id: 'sp.f13', when: { register: 'cool' }, turns: [{ by: 'a', dr: "The numbers don't add up unless {b} lied to me. Numbers don't lie. People do." }] },
+    { id: 'sp.f13', when: { register: 'cool' }, turns: [{ by: 'a', dr: "The votes don't add up unless {b} lied to me. So {b} lied to me." }] },
     { id: 'sp.f14', when: { register: 'fiery' }, turns: [
       { by: 'a', say: "Stop. Just stop pretending, {b}." },
       { by: 'b', say: "Pretending what?" },
@@ -437,19 +437,19 @@ export default {
       { by: 'a', say: "{c} has been putting your name forward. As a target." },
       { by: 'b', say: "...{c} said that? Word for word?" },
       { by: 'a', say: "Word for word." },
-      { by: 'a', dr: "Almost word for word. One word was mine." },
+      { by: 'a', dr: "Almost word for word. I changed one word." },
     ] },
     { id: 'sr.l2', turns: [
       { by: 'a', say: "Don't react. Just listen." },
       { by: 'b', say: "Okay..." },
       { by: 'a', say: "{c} called you fake. In front of people." },
-      { by: 'b', dr: "{c}? I would never have guessed. Which is probably exactly how {c} wanted it." },
+      { by: 'b', dr: "{c}? I'd never have guessed. Maybe that's the point." },
     ] },
     { id: 'sr.l3', turns: [
       { by: 'a', say: "Watch {c} tonight. Just watch." },
       { by: 'b', say: "Watch for what?" },
       { by: 'a', say: "You'll see. I've already said too much." },
-      { beat: '{b} spends the evening watching {c}. Every smile looks different now.' },
+      { beat: '{b} spends the evening watching {c} closely.' },
     ] },
     { id: 'sr.l4', turns: [
       { by: 'a', say: "You know {c} has a final two with someone, right? And it isn't you." },
@@ -461,7 +461,7 @@ export default {
       { by: 'a', say: "I probably shouldn't say this." },
       { by: 'b', say: "Then why are you saying it?" },
       { by: 'a', say: "Because {c} is saying worse about you, and you deserve to know." },
-      { by: 'a', dr: "Planting a seed is easy. You just have to pick the right soil." },
+      { by: 'a', dr: "It's easy to get people suspicious. You just have to pick the right person to tell." },
     ] },
     { id: 'sr.l6', turns: [
       { by: 'a', say: "{c} laughed when your name came up. Like, properly laughed." },
@@ -494,7 +494,7 @@ export default {
       { by: 'a', say: "I just think you should know what {c} has been saying." },
       { by: 'b', say: "Okay." },
       { beat: 'The second {a} walks off, {b} goes straight to find {c}.' },
-      { by: 'b', dr: "If someone brings you dirt, check the dirt. And check who brought it." },
+      { by: 'b', dr: "When someone tells me something like that, I check it. And I ask myself why they told me." },
     ] },
     { id: 'sr.c3', turns: [
       { by: 'a', say: "{c} said something really nasty about you." },
@@ -506,7 +506,7 @@ export default {
       { by: 'a', say: "Don't trust {c}. That's all I'm saying." },
       { by: 'b', say: "Funny. {c} has never once told me not to trust you." },
       { by: 'a', say: "..." },
-      { by: 'b', dr: "And that's how I know which one of them to watch." },
+      { by: 'b', dr: "So now I'm watching {a}, not {c}." },
     ] },
     { id: 'sr.c5', turns: [
       { by: 'a', say: "Apparently {c} has been talking about you behind your back." },
@@ -530,7 +530,7 @@ export default {
       { by: 'a', say: "Did you hear what {c} said about you?" },
       { by: 'b', say: "No, and I don't want to. Not from you." },
       { by: 'a', say: "Wow. Okay." },
-      { by: 'b', dr: "{a} has been stirring the pot all week. Now I know whose hand is on the spoon." },
+      { by: 'b', dr: "{a} has been stirring things up all week. Now I know it's been {a} the whole time." },
     ] },
   ],
 
@@ -590,7 +590,7 @@ export default {
       { by: 'a', say: "I saved you the last pancake." },
       { by: 'b', say: "You saved me the last pancake?" },
       { by: 'a', say: "Don't make it a whole thing." },
-      { by: 'b', dr: "It's a whole thing. In this house, a pancake is a love letter." },
+      { by: 'b', dr: "It is a whole thing. In this house, saving somebody food means something." },
     ] },
     { id: 'sk.s11', turns: [
       { by: 'b', say: "You keep looking at me." },
@@ -653,7 +653,7 @@ export default {
     ] },
     { id: 'sg.h2', turns: [
       { beat: '{a} is perfectly friendly to {b} over dinner.' },
-      { by: 'a', dr: "The next time I have any power in this house, {b} is going up. I'm being nice because nice is cheaper." },
+      { by: 'a', dr: "The next time I have any power in this house, {b} is going up. Until then, I'm being nice. It's easier." },
     ] },
     { id: 'sg.h3', turns: [
       { by: 'a', dr: "\"I'm over it\", I keep telling people. I'm not over it. I'm making a list, and {b} is at the top." },
@@ -666,20 +666,20 @@ export default {
       { by: 'a', dr: "Laugh while you can. That's all I'm going to say." },
     ] },
     { id: 'sg.h6', turns: [
-      { by: 'a', dr: "People think I've let it go because I've stopped talking about it. I've stopped talking about it because I've decided." },
+      { by: 'a', dr: "People think I've let it go because I've stopped talking about it. I haven't. I've made up my mind." },
     ] },
     { id: 'sg.h7', turns: [
-      { by: 'a', dr: "{b} said sorry, sort of. A sort-of sorry doesn't count in here. A vote counts." },
+      { by: 'a', dr: "{b} said sorry, sort of. That's not a real apology, and I'm not accepting it." },
     ] },
     { id: 'sg.h8', turns: [
       { by: 'a', dr: "I don't hate {b}. I just need {b} out of this house more than I need almost anything else." },
     ] },
     { id: 'sg.h9', when: { room: ['backyard'] }, turns: [
       { beat: '{a} sits alone on the backyard steps, staring at nothing in particular.' },
-      { by: 'a', dr: "Some things you forgive. Some things you remember. {b} is in the second pile." },
+      { by: 'a', dr: "Some things I can forgive. What {b} did isn't one of them." },
     ] },
     { id: 'sg.h10', turns: [
-      { by: 'a', dr: "Every time {b} walks past me, I smile. And every time, I think the same thing: not much longer." },
+      { by: 'a', dr: "Every time {b} walks past me, I smile. I'm just waiting for my chance." },
     ] },
     { id: 'sg.h11', when: { late: true }, turns: [
       { by: 'a', dr: "There aren't many weeks left. I'm not leaving here without making sure {b} leaves first." },
@@ -695,28 +695,28 @@ export default {
     { id: 'sg.r5', when: { reason: 'vote' }, turns: [{ by: 'a', dr: "{b} put me in that chair. I'm going to put {b} in it. That's just fair." }] },
     { id: 'sg.r6', when: { reason: 'vote' }, turns: [{ by: 'a', dr: "Being on that block wasn't a game move to me. It was personal, and {b} did it." }] },
     { id: 'sg.r7', when: { reason: 'lie' }, turns: [{ by: 'a', dr: "{b} lied to my face. Looked me in the eye and lied. I can forgive almost anything in this game. Not that." }] },
-    { id: 'sg.r8', when: { reason: 'lie' }, turns: [{ by: 'a', dr: "Every word {b} says to me now, I hear the lie underneath it. I'm done listening." }] },
+    { id: 'sg.r8', when: { reason: 'lie' }, turns: [{ by: 'a', dr: "I don't believe anything {b} says to me any more. I'm done listening." }] },
     { id: 'sg.r9', when: { reason: 'lie' }, turns: [{ by: 'a', dr: "{b} plays both sides and thinks nobody notices. I noticed. I'm going to make sure everybody notices." }] },
     { id: 'sg.r10', when: { reason: 'humiliation' }, turns: [{ by: 'a', dr: "{b} embarrassed me in front of the whole house. The whole house. I haven't forgotten a single word." }] },
     { id: 'sg.r11', when: { reason: 'humiliation' }, turns: [{ by: 'a', dr: "{b} made me look like a fool in front of everybody. I'm going to make {b} look like a fool on eviction night." }] },
     { id: 'sg.r12', when: { reason: 'humiliation' }, turns: [{ by: 'a', dr: "People still bring up what {b} said to me. Every time they do, I get a little more sure." }] },
-    { id: 'sg.r13', when: { reason: 'promise' }, turns: [{ by: 'a', dr: "{b} gave me {b.posAdj} word. In this house your word is all you've got. {b} doesn't have one any more." }] },
-    { id: 'sg.r14', when: { reason: 'promise' }, turns: [{ by: 'a', dr: "We had a deal. I kept my half. {b} didn't. Simple maths." }] },
-    { id: 'sg.r15', when: { reason: 'promise' }, turns: [{ by: 'a', dr: "{b} broke a promise to me. I'm going to keep one to myself: {b} goes before I do." }] },
+    { id: 'sg.r13', when: { reason: 'promise' }, turns: [{ by: 'a', dr: "{b} gave me {b.posAdj} word. In this house, your word is all you've got. I can't trust {b}'s any more." }] },
+    { id: 'sg.r14', when: { reason: 'promise' }, turns: [{ by: 'a', dr: "We had a deal. I kept my side. {b} didn't. It's that simple." }] },
+    { id: 'sg.r15', when: { reason: 'promise' }, turns: [{ by: 'a', dr: "{b} broke a promise to me. So I've made one to myself: {b} goes before I do." }] },
     { id: 'sg.r16', when: { reason: 'left-out' }, turns: [{ by: 'a', dr: "{b} held a meeting about the vote and didn't invite me. Fine. I'll hold one about {b} and not invite {b} either." }] },
-    { id: 'sg.r17', when: { reason: 'left-out' }, turns: [{ by: 'a', dr: "{b} keeps deciding things without me, like I'm furniture. Furniture can vote." }] },
+    { id: 'sg.r17', when: { reason: 'left-out' }, turns: [{ by: 'a', dr: "{b} keeps deciding things without me, like I don't matter. I've still got a vote." }] },
     { id: 'sg.r18', when: { reason: 'house' }, turns: [{ by: 'a', dr: "Is it petty to want {b} out because of the mess? Maybe. Do I care? Not even a little." }] },
     { id: 'sg.r19', when: { reason: 'house' }, turns: [{ by: 'a', dr: "{b} has made living here miserable. Every single day. I want to live in this house without {b} in it." }] },
     { id: 'sg.r20', when: { reason: 'plan' }, turns: [{ by: 'a', dr: "{b} is planning to come after me. I know it. So I'm going to get there first." }] },
-    { id: 'sg.r21', when: { reason: 'plan' }, turns: [{ by: 'a', dr: "I heard {b}'s plan. I know my name is in it. Now {b}'s name is in mine." }] },
+    { id: 'sg.r21', when: { reason: 'plan' }, turns: [{ by: 'a', dr: "I heard {b}'s plan, and I know I'm in it. So now I'm going after {b}." }] },
     { id: 'sg.h13', turns: [{ by: 'a', dr: "{b} thinks we're fine. We are not fine. We are very far from fine." }] },
-    { id: 'sg.h14', turns: [{ by: 'a', dr: "I used to argue with {b}. I've stopped. When I stop arguing, it means I've already decided." }] },
+    { id: 'sg.h14', turns: [{ by: 'a', dr: "I used to argue with {b}. I've stopped. There's no point. I've decided {b} has to go." }] },
     { id: 'sg.h15', turns: [
       { beat: '{a} passes {b} in the hallway and says good morning, warmly.' },
-      { by: 'a', dr: "Good morning. Enjoy it. You've got a limited number of them left in here." },
+      { by: 'a', dr: "Enjoy your mornings in here, {b}. You won't have many more." },
     ] },
     { id: 'sg.h16', turns: [{ by: 'a', dr: "I'm not looking for an apology from {b} any more. I'm looking for four votes." }] },
-    { id: 'sg.rs1', when: { register: 'schemer' }, turns: [{ by: 'a', dr: "I don't get angry. I get organised. {b} has been very, very helpful in getting me organised." }] },
+    { id: 'sg.rs1', when: { register: 'schemer' }, turns: [{ by: 'a', dr: "I don't get angry. I make plans. And {b} is at the centre of my next one." }] },
     { id: 'sg.rs2', when: { register: 'schemer' }, turns: [{ by: 'a', dr: "I'll smile at {b}, I'll help {b} with the dishes, and I'll write {b}'s name down the first chance I get." }] },
     { id: 'sg.rf1', when: { register: 'fiery' }, turns: [{ by: 'a', dr: "Every time I see {b}'s face I want to scream. So I'm going to do the next best thing. Vote." }] },
     { id: 'sg.rf2', when: { register: 'fiery' }, turns: [{ by: 'a', dr: "People keep telling me to calm down about {b}. I am calm. This is me calm. You don't want to see the other version." }] },
@@ -742,7 +742,7 @@ export default {
       { by: 'b', say: "Okay. Here's where it is." },
     ] },
     { id: 'sd.a3', turns: [
-      { by: 'a', dr: "I just realised I've gone a whole day without a single game conversation. That's not floating. That's sinking." },
+      { by: 'a', dr: "I just realised I haven't had a single game conversation all day. That's bad. I need to fix it." },
       { by: 'a', say: "{b}, got a minute? Tell me what I've missed." },
     ] },
     { id: 'sd.a4', turns: [
@@ -758,7 +758,7 @@ export default {
       { by: 'b', say: "You're not next. But you're not safe either." },
     ] },
     { id: 'sd.a6', turns: [
-      { by: 'a', dr: "Everybody likes me. Nobody needs me. That's the most dangerous thing you can be in here." },
+      { by: 'a', dr: "Everybody likes me, but nobody needs me. That's how people go home in here." },
       { by: 'a', say: "{b}. We should work together." },
       { by: 'b', say: "Where's this come from?" },
       { by: 'a', say: "Survival." },

@@ -71,7 +71,7 @@
 //      and a branch that never receives the data cannot leak it at all.
 import { tidyNames } from './tidy.js';
 import { seasonConfig, players } from '../core.js';
-import { pronouns } from '../players.js';
+import { pronouns, pStats } from '../players.js';
 import { exitVerbs, publicBallots, showWords } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../shows.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
@@ -1472,64 +1472,74 @@ const RT_CSS = `
 // words: the host resolves through `_host()` and the words through `_verbs()`,
 // and tests/tr-vp.test.js scans this file for both.
 
+// THE SAME SLOTS, AT THE FIRE: a finale vote is held where the pouches burned
+const HOST_FIRE = {
+  open: ['Stay where you are. We will do this here, at the fire.', 'Nobody leaves the fire. One of you is going home tonight.',
+    'The fire burned red, so we vote. Right here, right now.'],
+  debate: ['Somebody threw red. Tell the others who you suspect, and why.', 'Speak now. Who do you think is still a Traitor?',
+    'This is your last chance to make your case. Who is it?'],
+  write: ['Take your slate and write the name of the person you want to banish.', 'Write one name on your slate. Everybody votes.',
+    'It is time. Write your vote.'],
+  read: ['One at a time, show us your slate and tell us why.', 'Turn your slates around, one by one.', 'Show the fire your vote.'],
+  count: ['The votes are in.', 'Every slate has been shown.', 'That is every vote.'],
+  silence: ['There will be no reveal. You will find out what they were at the very end.'],
+};
 const HOST_LINES = {
   open: [
-    'Sit down. All of you. Nobody leaves this room until a name has been said out loud.',
-    'Take your places. In a few minutes one of you will not have one.',
-    'Somebody at this table killed one of your friends last night. Somebody at this table is going to smile at you about it.',
-    'Look around the table. Count the faces. The number is smaller than it was yesterday, and one of the ones left did that.',
+    'Welcome to the Round Table. Please take your seats.',
+    'Good evening. Please sit down. Tonight, one of you will leave this castle for good.',
+    'Last night, the Traitors took one of your friends. The person responsible may be sitting at this table.',
+    'Please sit. There are fewer of you than there were yesterday, and the Traitors are still among you.',
   ],
   debate: [
-    'So say it. Out loud, to the face, while everybody is watching.',
-    'You have suspicions. This is the only hour of the day you are allowed to spend them.',
-    'Talk. And listen to who talks back, and to who does not.',
-    'Accuse each other. It is the only tool any of you have, and it is a blunt one.',
+    'The floor is open. If you suspect someone, now is the time to say so.',
+    'Who do you suspect, and why? Say it to their face.',
+    'This is your chance to find a Traitor. Speak up.',
+    'I would like to hear your suspicions. Who would like to begin?',
   ],
   write: [
-    'Enough. Pick up your chalk.',
-    'That is the debate. Write a name.',
-    'Stop talking and start writing. One name each, and no one may sit it out.',
-    'Chalk down. One name, and be certain, because you are about to read it aloud yourselves.',
+    'The discussion is over. Please write down the name of the person you wish to banish.',
+    'It is time to vote. Write one name on your slate.',
+    'Pick up your chalk and write the name of the person you believe is a Traitor.',
+    'Please write your vote now. Everybody votes.',
   ],
   read: [
-    'Turn them over. One at a time, so the room can watch each other hear it.',
-    'Show me. And show each other, which is the part that will cost you.',
-    'Read them out. This is the only true thing any of you will be given all day.',
-    'Hold it up. Everything else in this castle is a guess; this is not.',
+    'One at a time, please reveal your vote and tell us why.',
+    'Let us see your votes. Turn your slates around, one by one.',
+    'Please show your slate to the table, and explain your choice.',
+    'It is time to reveal your votes, one at a time.',
   ],
   count: [
-    'Then the room has decided, and the room will find out shortly what it decided.',
-    'That is the count. Nobody gets to take it back.',
-    'The chalk is dry. Let us see what you have done to yourselves.',
-    'The names are in. Now the room lives with them.',
+    'All the votes have been read. The room has made its decision.',
+    'Thank you. The votes are in.',
+    'That is every vote. We have a result.',
+    'The votes have been counted.',
   ],
   tie: [
-    'A tie. Which means we go again, and only the tied are in question — and they do not get a say.',
-    'You have split yourselves. The two of you may sit and listen; everybody else, chalk up.',
-    'Nobody wins a tie in this castle. We do it again, smaller.',
-    'Level. So the rest of you will decide it without them, and they will watch you do it.',
+    'We have a tie. Everyone except the tied players will now vote again, choosing only between them.',
+    'The vote is tied. The tied players will not vote. The rest of you, please vote again.',
+    'It is a tie, so we vote again. Only the tied names may be written down.',
+    'We have a tie. Please vote again, choosing only between the tied players.',
   ],
-  // `{banish}` and `{Nm}` are filled at the last possible moment — the verb
-  // from the registry through `_verbs()`, the name off the record. A host line
-  // that spelled either of them out is the bug this whole file is careful
-  // about, one clause further in.
+  // `{banish}` and `{Nm}` are filled at the last possible moment, the verb from
+  // the registry through `_verbs()`, the name off the record.
   verdict: [
-    '{Nm}. The room has spoken, and you are {banish}.',
-    'The most names on the wood. {Nm} is {banish} — say goodbye to the people who did it.',
-    'It is done. {Nm} is {banish}, tonight, by the hands of everybody sitting here.',
-    '{Nm} is {banish}. Whatever the truth turns out to be, this room chose it together.',
+    '{Nm}, the room has spoken. You have been {banish}.',
+    '{Nm}, you received the most votes. You have been {banish}.',
+    '{Nm}, I am sorry. You have been {banish} from the castle.',
+    'The decision is made. {Nm}, you have been {banish}.',
   ],
   reveal: [
-    'Before you go — tell them what you were.',
-    'Turn it over. Let them see what they have just done.',
-    'One more thing, and it is the only certainty this room will get today.',
-    'Show them. They have earned the answer, one way or the other.',
+    'Before you leave, please tell the room: are you a Faithful, or a Traitor?',
+    '{Nm}, please reveal yourself. Are you a Faithful, or a Traitor?',
+    'Please turn and tell everyone what you are.',
+    'One last thing before you go. Tell us what you are.',
   ],
   silence: [
-    'And this far in, nobody is told anything. You will sit with it.',
-    'No. Not tonight. From here you find out at the end, or you do not find out.',
-    'There is no answer coming. That is the game now.',
-    'You will get nothing. Whatever you decided, you decided it blind, and you live in it.',
+    'At this stage of the game, there are no reveals. You will not learn what they were.',
+    'From now on, nobody reveals themselves when they leave. You will find out at the very end.',
+    'There will be no reveal tonight.',
+    'This late in the game, the people who leave keep their secret.',
   ],
 };
 
@@ -1627,11 +1637,11 @@ function _needle(v, opener, openTarget) {
 // filled from the registry at the last moment like every other verb in this
 // file -- `{kill}` is never written out.
 const HOST_SENDOFF = [
-  'The rest of you, go to bed. Traitors — you have work tonight, and one of these faces will not be at breakfast.',
-  'Off you go. Traitors, whoever you are: choose well. The rest of you, sleep if you can manage it.',
-  'That is tonight. Somewhere in this room are people who now have a second decision to make, and they will be making it without you.',
-  'Goodnight to all of you. To some of you, good luck — you have somebody to {kill} before morning.',
-  'Go up. Traitors, the castle is yours for a few hours. Do try to be interesting about it.',
+  'That concludes tonight’s Round Table. Faithfuls, go to bed. Traitors, you will meet tonight to choose your next victim.',
+  'Thank you, everyone. Please return to your rooms. Traitors, I will see you in the turret.',
+  'Goodnight, everyone. Faithfuls, sleep well if you can. Traitors, you have someone to {kill} before the sun comes up.',
+  'That is all for tonight. Faithfuls, to bed. Traitors, you have somebody to {kill} before morning.',
+  'Please go to your rooms. Traitors, your work begins now.',
 ];
 
 
@@ -1814,15 +1824,15 @@ const CITE_OWN_SELF = [
   'I’ll say it again, then. {t}.',
 ];
 const HOST_PRESS = [
-  '{T}, that is {n} people at this table. Would you like another go?',
-  '{N} of them, {T}. I am not sure that answer is going to be enough.',
-  '{T}, I would think very carefully about the next thing you say.',
-  'That is {n} names in a row, {T}. The room is waiting.',
+  '{T}, {n} people have named you. How do you respond?',
+  '{T}, that is {n} accusations. What do you have to say?',
+  '{T}, you need to answer this. {N} people at this table suspect you.',
+  '{T}, the room is waiting for your answer.',
 ];
 // only on the LAST name argued: "Anybody else? No?" over a debate that then
 // moved on to somebody else was the host contradicting the table
 const HOST_PRESS_LAST = [
-  'Anybody else? No? Then {T}, I would start worrying.',
+  'Does anybody else want to speak? No? {T}, you have heard what they think of you.',
 ];
 
 const MINDCHANGE_SAID = [
@@ -2002,6 +2012,36 @@ const DEFENCE_BY = {
     'If {v} and I were working together, do you think I’d have been that obvious about it?',
     '{v} lied to my face for days, {A}. You think that makes me feel good?',
   ],
+  // THEY HAVE CAUGHT ONE BEFORE, and say so. Used when the accused named a
+  // revealed Traitor at an earlier table (`speech.targetCalled`): {x} is that
+  // Traitor. Answers a "you put a Faithful out" every time and anything else
+  // sometimes. `lead` lines are for the one who drove that vote.
+  'redeemed-lead': [
+    'A few nights ago I was the one who stood up and said {x}. {x} was a Traitor. You were all happy to follow me then.',
+    'I got {v} wrong. I got {x} right, and I got it right first. You don’t get to count only one of those.',
+    'I led the vote on {x}. Remember how that turned out? Then think about why I’m the one sitting here now.',
+    'If I were a Traitor, why would I hand you {x}?',
+    'Every one of you wrote {x} because I said it first. Now I’m the problem?',
+  ],
+  'redeemed-join': [
+    'I wrote {x} too, and {x} was a Traitor. I’ve been right as often as anybody at this table.',
+    'Yes, I got {v} wrong. So did most of you. I also wrote {x}, and that one was right.',
+    'You keep bringing up {v}. Nobody ever brings up {x}, and I wrote that one too.',
+    'I was on the right side of {x}. Doesn’t that count for anything in here?',
+  ],
+  // "I took you to the Seer": a claim nobody else in the room can check
+  seer: [
+    'You can say anything about a meeting nobody else saw, {A}.',
+    'The Seer? Then why are we only hearing about it now?',
+    'You’re lying, {A}. Nobody else was in that room, so nobody can prove a word of it.',
+  ],
+  // "burned the fire red": the accused kept the game going, in front of everybody
+  'fire-red': [
+    'I burned it red because I don’t trust this room yet. That isn’t a crime.',
+    'Red means I think there’s still a Traitor here. A Traitor would want it over.',
+    'If I were a Traitor, I’d have burned it green and taken the money tonight.',
+    'I put red in the fire because something still doesn’t add up, {A}. It still doesn’t.',
+  ],
   // "helped put X out, and X was a Faithful"
   'faithful-out': [
     'We all got {v} wrong. I wrote the name the same as most of you did.',
@@ -2082,6 +2122,11 @@ const COMEBACK_BY = {
     'Then give me a reason not to feel it.', 'I know what I’ve seen.'],
   hearsay: ['It isn’t only {F} saying it.', 'I believe {F}. That’s enough for me.',
     '{F} hasn’t been wrong yet.'],
+  seer: ['I was in that room. You were not.', 'I know what I saw.', 'Believe me or don’t. I know.'],
+  'fire-red': ['Or you need one more of us gone before the end.', 'A Traitor who needs one more Faithful out burns it red too.',
+    'Then tell us who you meant.'],
+  redeemed: ['One right call doesn’t cancel out a wrong one.', 'A Traitor would give up another Traitor to save their own neck.',
+    'You got {x}. Fine. That was then.', 'Funny how you only got it right once people were already looking at you.'],
   'gone-cold': ['And you’ve given me nothing to change my mind.', 'Days, and you still haven’t answered it.',
     'I’ll stop saying it when you give me a reason to.'],
   generic: ['That’s not an answer.', 'You still haven’t told us why.', 'We’ll see.'],
@@ -2089,7 +2134,7 @@ const COMEBACK_BY = {
 // Which kind of reason a stored clue is, by the REASON_PHRASINGS entry it
 // matches (same order); anything else is something seen in the castle.
 const REASON_CAT = ['caught', 'night', 'night', 'shield', 'pair-traitor', 'faithful-out',
-  'pair', 'follower', 'threw', 'solved'];
+  'pair', 'follower', 'threw', 'solved', 'fire-red', 'seer'];
 // AND SOMETIMES THROWS IT BACK — only at a name they ACTUALLY put up tonight
 // (`byTarget` says so), never an invented one. `{d}` is that name.
 const ACCUSED_DEFLECT = [
@@ -2211,6 +2256,20 @@ const REASON_PHRASINGS = [
   [/^finished a board nobody thought (.+) could$/, [
     'solved a board nobody expected to see solved, like the answers were already known',
     'got through that board faster than anybody, which is easy if you already know who everybody is',
+  ]],
+  // THE FIRE (js/tr/endgame.js): a red pouch thrown in front of everybody
+  [/^burned the fire red when the rest of the room wanted it over$/, [
+    'put red in the fire when the rest of us were ready to stop. You only want another table if there is a name you need gone',
+    'burned the fire red while the rest of us burned it green. That is somebody with a plan',
+    'was the one who kept this going. I want to know who they had in mind, and why',
+  ]],
+  // THE SEER (js/tr/deduction.js SEER_SOURCE): the one meeting that gives a
+  // certain answer, said out loud by the person who had it. Raw, the source
+  // printed "Look at Bridgette. She the seer."
+  [/^the seer$/, [
+    'is the person I took to the Seer. I sat across from them, and I know exactly what they are',
+    'is the one I asked the Seer about, and I got my answer',
+    'is the name I took into that room with the Seer. I am not guessing any more',
   ]],
 ];
 
@@ -2393,28 +2452,29 @@ const MINDCHANGE_MORE = [
 // `_view` before a player observer's screen is built, and never written at a
 // finale table.
 const IRONY_TRUE = [
-  'And the room is right — {t} really is a Traitor. They have no proof, but they have the right name.',
-  'Correct, even though the reasoning that got them here was wrong.',
-  'True — which at this table is a coincidence more often than it is a deduction.',
+  '{t} really is a Traitor. The room has no proof, but it has the right name.',
+  'They are right about {t}, even if their reasons are wrong.',
+  '{t} is a Traitor. The room got there by guessing, not by working it out.',
 ];
 // the same truth, on a name the room then lets go: these two say what is
 // about to happen, so they are only drawn when it does
 const IRONY_TRUE_LOST = [
-  'They have the right name. Watch how little that is worth in a minute.',
-  'The room has it. The room will now talk itself out of it.',
+  '{t} really is a Traitor, and the room is about to let {t} off.',
+  'They have the right name in {t}. In a minute they will talk themselves out of it.',
+  '{t} is one of the Traitors. The room is close, and it is about to look somewhere else.',
 ];
 const IRONY_FALSE = [
-  'And it is not true. Not a word of it.',
-  'Wrong, and expensively so.',
-  'This is a loyal player being taken apart for having an honest face.',
-  'Nothing here is true. The room built it out of nerves and one bad breakfast.',
-  'Innocent, and about to spend the rest of the hour proving a negative.',
+  '{t} is Faithful. None of this is true.',
+  '{t} is Faithful, and this mistake is going to cost the room.',
+  '{t} is a loyal player, being pulled apart for no good reason.',
+  '{t} is Faithful. The room has built this out of nerves and guesswork.',
+  '{t} is innocent, and will spend the next hour trying to prove it.',
 ];
 const IRONY_STEER = [
-  'And most of the hands pointing here belong to the people who did it.',
-  'Steered. The pact picked this name before the room did, and the room has not noticed.',
-  'The loudest accusers at this table have the most obvious reason to be loud.',
-  'A clean player, held up by the very people who know it.',
+  '{t} is Faithful, and most of the people accusing {t} are Traitors.',
+  'The Traitors picked {t} before the room did, and the room has not noticed.',
+  'The loudest voices against {t} are Traitors, and they know {t} is innocent.',
+  '{t} is Faithful. The people pushing hardest for {t} know it.',
 ];
 
 const WRITE_TEXT = [
@@ -2500,34 +2560,231 @@ const VERDICT_TEXT = [
 // screen takes (`burns`, and the name if there is one); the words are the
 // screen's. `speech.text` stays on the record for a reader that wants a
 // sentence rather than a scene.
-const BURN_SAID = [
-  'Before I go: it’s {t}. Look at {obj}. It’s been {t} all along.',
-  'You’ve made a mistake, and the mistake is sitting right there. {t}.',
-  'Watch {t}. That’s all I’ll say.',
-  'One thing. {t}. When you work it out, remember who told you first.',
-  'I’m not angry at all of you. I’m angry at {t}, and you should be too.',
-  'Fine. But start with {t}, because I’ve run out of time to prove it.',
-];
-const QUIET_SAID = [
-  'I’ve no idea who it is. I hope one of you does.',
-  'I don’t blame anyone. I’d probably have written my own name too.',
-  'Well. That’s that. Be careful with each other.',
-  'I got it wrong. I hope you get it right.',
-  'Just think about who wanted this.',
-  'Good luck. You’re going to need it.',
-];
-const SPEECH_BURN = [
-  'It isn’t a quiet exit.',
-  'One last accusation, from the doorway.',
-  'A parting shot.',
-  'There’s nothing left to lose, so it all comes out.',
-];
-const SPEECH_QUIET = [
-  'It’s said calmly, which somehow makes it worse.',
-  'A last sentence, and it’s almost kind.',
-  'No shouting. Just that, and the door.',
-  'Said quietly, to a room that will be arguing about it by breakfast.',
-];
+// HOW THEY GO. The goodbye was one pool of six quiet lines for everybody,
+// and "I got it wrong. I hope you get it right." came round at table after
+// table (the user: "its always i was wrong i hope you get it right its super
+// repetitive give us good goodbye dramatic calm mean sad idgaf idk"). Every
+// leaver now goes out in a TONE, chosen from who they are (their stats and
+// archetype, in proportion) and how it happened (a landslide, a squeaker, one
+// person who led the charge), and the same tone carries on into the card they
+// turn over. Lines are objects so a line that names somebody is only offered
+// when there is somebody to name:
+//   lead   - a player argued for this name out loud tonight
+//   unan   - every slate said it
+//   narrow - it came down to one slate, or to a revote
+//   many   - at least three wrote it ({n} is a number worth saying)
+// {w} is one person who wrote the name: the slates are read out, so everyone knows.
+const GOODBYE = {
+  dramatic: [
+    { t: 'Wow. Okay. You have no idea what you’ve just done, and you’re going to find out the hard way.' },
+    { t: 'Remember this. When it all falls apart, I want every one of you to remember it started tonight.' },
+    { t: 'Fine. Take the chair. Take the money. It won’t be enough to save you.' },
+    { t: 'I came here to win, and I’m leaving halfway through a sentence. Unbelievable.' },
+    { t: 'Every one of you will end up sitting where I’m sitting. Every one of you.' },
+    { t: 'You’ve just made the biggest mistake of this game, and you’re pleased with yourselves.' },
+    { t: '{n} of you. {n}! I hope you all sleep well, because I won’t.', need: 'many' },
+    { t: 'Not one of you. Not one of you even hesitated.', need: 'unan' },
+    { t: 'One slate. I’m going home over one slate.', need: 'narrow' },
+    { t: '{lead}, you’ve been after me for days. Enjoy it. You’ve earned it.', need: 'lead' },
+  ],
+  calm: [
+    { t: 'That’s fair. I’d probably have written the same name if I were you.' },
+    { t: 'No hard feelings. It’s a game, and I’ve lost this round of it.' },
+    { t: 'It’s been a privilege. Honestly. Look after each other.' },
+    { t: 'I understand why. I don’t agree with it, but I understand it.' },
+    { t: 'Thank you for having me. I mean that. Enjoy the rest of it.' },
+    { t: 'I’m going to go quietly. It’s the only part of this I still get to choose.' },
+    { t: 'Okay. Think carefully tomorrow. That’s all I’d ask.' },
+    { t: 'It was close. That’s something, at least.', need: 'narrow' },
+    { t: '{lead}, you made a good case. I’d have believed it too.', need: 'lead' },
+    { t: 'All of you. Well, at least nobody can say it was a stitch-up.', need: 'unan' },
+  ],
+  mean: [
+    { t: 'Good luck. Some of you are going to need a lot more of it than others.' },
+    { t: 'I’ll be watching. I’m actually looking forward to it.' },
+    { t: '{w}, you wrote my name with a straight face. I’ll remember that face.' },
+    { t: 'Honestly, this table couldn’t find a Traitor if one stood up and waved.' },
+    { t: 'Enjoy each other. You deserve each other.' },
+    { t: 'Half of you have no idea what’s going on, and the other half are lying about it.' },
+    { t: 'Well done. You’ve got rid of the one person here who was actually paying attention.' },
+    { t: 'All of you at once. How brave.', need: 'unan' },
+    { t: '{lead}, well done. You finally won an argument.', need: 'lead' },
+    { t: 'You needed a second go to get rid of me. Bear that in mind.', need: 'narrow' },
+  ],
+  sad: [
+    { t: 'I really thought I had friends at this table. I suppose I’ll find out later who they were.' },
+    { t: 'I’m sorry. I don’t even know what for, but I’m sorry.' },
+    { t: 'I loved it here. I loved all of you. That’s the stupid part.' },
+    { t: 'Can I say goodbye properly? No? Okay. Bye, everyone.' },
+    { t: '{w}… I really thought you had my back.' },
+    { t: 'I’m going to miss this. Even tonight. Even this.' },
+    { t: 'I don’t want to cry in front of you. Give me a second. Okay. Bye.' },
+    { t: 'Everyone. Even the people I’d have called my friends.', need: 'unan' },
+    { t: '{lead}, I hope you’re right about me. I really do.', need: 'lead' },
+  ],
+  idgaf: [
+    { t: 'Cool. I was getting sick of the porridge anyway.' },
+    { t: 'Yeah, fine. Whatever. Enjoy your castle.' },
+    { t: 'Honestly? Bed. I’m going to bed.' },
+    { t: 'No speech. You’ll all be arguing about this by breakfast either way.' },
+    { t: 'Sure. Somebody has to go. Might as well be the one who stopped caring yesterday.' },
+    { t: 'That’s the least surprising thing that’s happened all week.' },
+    { t: 'Unanimous. Very efficient. Night, everyone.', need: 'unan' },
+    { t: '{lead}, you put a lot of effort into that. Good for you.', need: 'lead' },
+  ],
+  idk: [
+    { t: 'I genuinely don’t know what just happened. I don’t know what I did.' },
+    { t: 'Was it something I said? Something I didn’t say? I honestly have no idea.' },
+    { t: 'I’m so confused. I thought we were all writing somebody else tonight.' },
+    { t: 'Okay. Um. I don’t really know what to say. Good luck, I suppose?' },
+    { t: 'I still don’t know who it is. I thought I was getting close. Apparently not.' },
+    { t: '{n} of you? When did that happen? Nobody told me.', need: 'many' },
+    { t: '{lead}, I still don’t understand what you think I did.', need: 'lead' },
+  ],
+};
+// THE SAME TONE, WITH A NAME IN IT: the engine decided they go out naming
+// somebody (`speech.burns`); how they say it is theirs.
+const BURN_BY_TONE = {
+  dramatic: [
+    'Before I go: it’s {t}. Look at {obj}. It’s been {t} all along.',
+    'One thing. {t}. When you work it out, remember who told you first.',
+    'You’re sending the wrong person home. The right one is sitting right there. {t}.',
+  ],
+  calm: [
+    'One thing before I go. Look at {t}. That’s all I’m asking.',
+    'I’m not angry. But if I were you, I’d keep an eye on {t}.',
+    'For what it’s worth, my money is on {t}. Think about it.',
+  ],
+  mean: [
+    'You’ve made a mistake, and the mistake is sitting right there. {t}.',
+    'I’m not angry at all of you. I’m angry at {t}, and you should be too.',
+    'Watch {t}. Or don’t. You’ve been wrong about everything else.',
+  ],
+  sad: [
+    'I trusted {t}. Please don’t make the same mistake I did.',
+    'I don’t want to point at anyone. But I’d be careful around {t}.',
+    'Be careful of {t}. I wasn’t, and look where I am.',
+  ],
+  idgaf: [
+    'It’s {t}, by the way. You’re welcome. Night.',
+    'Not that anyone listens to me, but it’s {t}.',
+    '{t}. That’s my answer. Do what you want with it.',
+  ],
+  idk: [
+    'I don’t know. Maybe {t}? Something about {t} has never sat right with me.',
+    'If I had to guess… {t}? I don’t know. I really don’t.',
+    'It might be {t}. Or it might not. I clearly can’t tell.',
+  ],
+};
+// What the room sees as they go, in the same tone.
+const EXIT_BY_TONE = {
+  dramatic: ['Loud enough to carry down the corridor.', 'Nobody tries to interrupt.', 'The door goes harder than it needs to.', 'The whole table flinches.', 'It hangs there long after the footsteps have gone.'],
+  calm: ['Said evenly, without a crack in it.', 'A small nod round the table, and out.', 'No drama at all, which somehow makes it worse.', 'The chair is pushed in neatly on the way past.', 'A hand on the nearest shoulder, and gone.'],
+  mean: ['It lands. A couple of them look down at the table.', 'A last dig, and every word of it is enjoyed.', 'Nobody answers. Nobody quite dares.', 'Somebody opens their mouth to reply, and thinks better of it.', 'A smile on the way out that nobody likes.'],
+  sad: ['The voice goes on the last word.', 'A wave from the doorway, and nobody waves back in time.', 'Quiet enough that half the table leans in to hear it.', 'Two of them are crying before the door shuts.', 'One last look at the empty chair, and out.'],
+  idgaf: ['A shrug, and gone before anyone can reply.', 'The chair doesn’t even get pushed back in.', 'Said to the door more than to the room.', 'Gone before the host has finished the sentence.', 'Not one look back.'],
+  idk: ['A look round the table, as if somebody might explain it.', 'Nobody does explain it.', 'A second longer in the doorway than there needs to be.', 'A puzzled half-wave, and out.', 'It’s still a question when the door closes.'],
+};
+// THE CARD THEY TURN, in their own voice. The only fact a line may assert is
+// the alignment the record reveals here (never in the endgame).
+const ANNOUNCE_BY_TONE = {
+  traitor: {
+    dramatic: [
+      'I am a Traitor. I have been one since the first night, and every one of you sat next to it and smiled.',
+      'Yes. It was me. You will want to remember that I was not the only one at this table.',
+      'Traitor. You got one right — and you have no idea how far that is from getting them all.',
+      'I am a Traitor. Look hard at who was quietest tonight, because I am leaving one behind.',
+    ],
+    calm: ['I’m a Traitor. Well played. Genuinely.', 'Traitor. Fair enough. I’d have voted for me too.', 'I’m a Traitor. No speech. You earned this one.', 'Traitor. You worked it out, and I’d have done the same in your shoes.', 'Yes, I’m a Traitor. It was fun while it lasted.'],
+    mean: ['Traitor. And you only got me because I let my guard down for one day.', 'Traitor. Enjoy tonight. Tomorrow you go back to being wrong.', 'Yes, Traitor. And some of you were so easy it was boring.', 'I’m a Traitor, and I’ve been laughing at some of you for a week.', 'Traitor. Don’t celebrate too hard. You’re nowhere near finished.'],
+    sad: ['I’m a Traitor. And I’m sorry, a bit. Some of you I really did like.', 'Traitor. I meant the friendships. I know that sounds stupid now.', 'I’m a Traitor. Lying to you every day was the hardest thing I’ve ever done.', 'Traitor. I hated lying to some of you. Not all of you. Some of you.'],
+    idgaf: ['Traitor. Obviously. Took you long enough.', 'Yeah, Traitor. Enjoy it.', 'Traitor. There. Can I go now?', 'Yep. Traitor. Don’t make it a whole thing.'],
+    idk: ['I’m a Traitor. Honestly, I’m amazed I lasted this long.', 'Traitor. I’m as surprised as you are that you picked me.', 'I’m a Traitor. Did any of you actually know, or did you just guess?', 'Traitor. I still don’t know how you worked it out.'],
+  },
+  faithful: {
+    dramatic: [
+      'I am a Faithful. I always was, and you have just done their work for them.',
+      'Faithful. Every single day. Look at what you have done, and look at who talked you into it.',
+      'A Faithful. That is what this room burned tonight, and the ones who wanted it are still sitting there.',
+      'I am a Faithful — and now you get to live with that while a Traitor of yours walks free.',
+    ],
+    calm: ['I’m Faithful. It’s alright. Just make the next one count.', 'Faithful. It happens. Find the real ones.', 'I’m Faithful. No hard feelings. Learn from it.', 'Faithful. Take a breath, all of you, and start again tomorrow.', 'Faithful. Don’t beat yourselves up. Well, not too much.'],
+    mean: ['Faithful. Congratulations. You’ve just helped the Traitors more than they ever helped themselves.', 'Faithful. Every one of you who wrote my name should feel stupid right now.', 'I’m Faithful. Have fun explaining that to yourselves.', 'I’m Faithful, and I hope that ruins somebody’s breakfast.'],
+    sad: ['I’m Faithful. I always was. I just couldn’t make you see it.', 'Faithful. I really wanted to be the one who found them.', 'I’m Faithful. Please don’t do this to the next one.', 'Faithful. I hope you find them. I really do.', 'Faithful. I told you. I kept telling you.'],
+    idgaf: ['Faithful. Told you. Night.', 'Faithful. Not my problem any more.', 'Faithful. Good luck with that.', 'Faithful. Anyway. Breakfast is your problem now.'],
+    idk: ['I’m Faithful. So… who is it, then? Because it wasn’t me.', 'Faithful. I don’t understand what I was supposed to do differently.', 'I’m Faithful. Why did everyone think it was me?', 'Faithful. I don’t know what else I could have said.'],
+  },
+};
+const _NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const _VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
+const _DRIFT = new Set(['floater', 'wildcard', 'chaos-agent']);
+/**
+ * The tone a leaver goes out in. Proportional throughout: every stat feeds
+ * every weight, an archetype tilts rather than decides, and the night itself
+ * (a landslide, a squeaker) tilts again. Weights are squared so a strong
+ * trait usually wins without making the others impossible.
+ */
+function _exitTone(name, ctx, key) {
+  const st = (typeof pStats === 'function' && pStats(name)) || {};
+  const g = k => (Number.isFinite(st[k]) ? st[k] : 5);
+  const arch = (players.find(p => p.name === name) || {}).archetype || '';
+  const w = {
+    dramatic: g('boldness') * .6 + (10 - g('temperament')) * .6,
+    calm: g('temperament') * .7 + g('strategic') * .4,
+    mean: ((10 - g('temperament')) * .5 + (10 - g('loyalty')) * .5) * (_NICE.has(arch) ? .25 : _VILLAIN.has(arch) ? 1.5 : 1),
+    sad: g('social') * .35 + g('loyalty') * .45 + (_NICE.has(arch) ? 1 : 0),
+    idgaf: g('boldness') * .3 + (10 - g('social')) * .4 + (_DRIFT.has(arch) ? 2 : 0),
+    idk: (10 - g('intuition')) * .5 + (10 - g('strategic')) * .5,
+  };
+  if (ctx.unan) { w.idgaf *= 1.3; w.calm *= 1.2; w.sad *= 1.2; }
+  if (ctx.narrow) { w.dramatic *= 1.3; w.mean *= 1.2; }
+  const keys = Object.keys(w), sq = keys.map(k => Math.max(.1, w[k]) ** 2);
+  let r = (_hash(key + '|tone') / 4294967296) * sq.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < keys.length; i++) { r -= sq[i]; if (r <= 0) return keys[i]; }
+  return keys[keys.length - 1];
+}
+/** Who wrote the name in the deciding count, who argued for it, and how it went. */
+function _exitContext(v) {
+  const last = (v.rounds && v.rounds.length && v.rounds[v.rounds.length - 1].ballots.length)
+    ? v.rounds[v.rounds.length - 1].ballots : (v.first || []);
+  const voters = last.filter(b => b.target === v.chosen).map(b => b.voter).filter(n => n && n !== v.chosen);
+  const tally = {};
+  for (const b of last) tally[b.target] = (tally[b.target] || 0) + 1;
+  const counts = Object.values(tally).sort((a, b) => b - a);
+  const said = {};
+  for (const sp of v.speeches || []) if (sp.target === v.chosen && sp.speaker !== v.chosen) said[sp.speaker] = (said[sp.speaker] || 0) + 1;
+  const lead = Object.keys(said).sort((a, b) => said[b] - said[a] || a.localeCompare(b))[0] || null;
+  return {
+    voters, lead, n: voters.length,
+    unan: last.length >= 3 && voters.length === last.length,
+    narrow: (v.rounds || []).length > 0 || (counts.length > 1 && counts[0] - counts[1] <= 1),
+  };
+}
+// A SEASON WALKS EACH TONE'S POOL: consecutive nights in the same tone get
+// consecutive lines (the hash only chooses where the walk starts), so a line
+// comes back only after the whole pool has been used.
+function _rot(pool, ep, salt) {
+  if (!pool || !pool.length) return '';
+  return pool[((Number(ep) || 0) + _hash(salt)) % pool.length];
+}
+function _goodbye(v, key) {
+  const ctx = _exitContext(v), tone = _exitTone(v.chosen, ctx, key);
+  const burn = v.speech && v.speech.burns && v.speech.target;
+  let line;
+  if (burn) {
+    line = _fill(_rot(BURN_BY_TONE[tone], v.ep, 'bs|' + tone), { t: _esc(v.speech.target), obj: _pr(v.speech.target).obj });
+  } else {
+    const ok = l => !l.need || (l.need === 'lead' ? !!ctx.lead : l.need === 'many' ? ctx.n >= 3 : !!ctx[l.need]);
+    const pool = GOODBYE[tone].filter(ok).map(l => l.t);
+    const others = ctx.voters.filter(n => n !== ctx.lead);
+    const nw = _numWord(ctx.n);
+    line = _fill(_rot(pool, v.ep, 'qs|' + tone + '|' + pool.length), {
+      lead: _esc(ctx.lead || ''), n: nw.charAt(0).toUpperCase() + nw.slice(1),
+      w: _esc(others.length ? others[_hash(key + '|w') % others.length] : (ctx.voters[0] || '')),
+    });
+  }
+  return { tone, line, exit: _rot(EXIT_BY_TONE[tone], v.ep, 'sp|' + tone) };
+}
 const REVEAL_TRAITOR = [
   'They got one.',
   'The room was right. Of everything they guessed tonight, this was true.',
@@ -2539,23 +2796,6 @@ const REVEAL_FAITHFUL = [
   'A loyal player, sent home by the people they were loyal to.',
   'The vote was clear, and it was wrong.',
   'They did that to one of their own, in front of everyone.',
-];
-// FIRST PERSON, SPOKEN AT THE DOOR. The banished turns their own card — the
-// one certainty the format hands the room comes out of the mouth of the person
-// leaving. Original lines; the only fact they may assert is the alignment the
-// record already reveals here (never in the endgame, where nothing is turned
-// over).
-const ANNOUNCE_TRAITOR = [
-  'I am a Traitor. I have been one since the first night, and every one of you sat next to it and smiled.',
-  'Yes. It was me. You will want to remember that I was not the only one at this table.',
-  'Traitor. You got one right — and you have no idea how far that is from getting them all.',
-  'I am a Traitor. Look hard at who was quietest tonight, because I am leaving one behind.',
-];
-const ANNOUNCE_FAITHFUL = [
-  'I am a Faithful. I always was, and you have just done their work for them.',
-  'Faithful. Every single day. Look at what you have done, and look at who talked you into it.',
-  'A Faithful. That is what this room burned tonight, and the ones who wanted it are still sitting there.',
-  'I am a Faithful — and now you get to live with that while a Traitor of yours walks free.',
 ];
 // THE ROOM, AFTER. Public on every layer — the mood of a table that has just
 // been handed its one true thing, or spent it on an innocent.
@@ -2902,8 +3142,11 @@ function _view(rec, observer, trial = null, strategy = null) {
     chosen: rec.chosen || null,
     // The deal, as it was watched. Public on every layer — see `_tableRecord`.
     deal: rec.deal ? { ...rec.deal, ballots: (rec.deal.ballots || []).map(b => ({ ...b })) } : null,
-    chosenAlignment: endgame ? null : (rec.chosenAlignment || null),
-    truth: (isAudience && !endgame) ? (rec.truth || {}) : null,
+    // BLIND only at a finale table played with reveals OFF (spec §8); with the
+    // author's reveals on, the endgame turns the banished over like any table
+    chosenAlignment: (endgame && !rec.endgameReveal) ? null : (rec.chosenAlignment || null),
+    truth: (isAudience && (!endgame || rec.endgameReveal)) ? (rec.truth || {}) : null,
+    endgameBlind: endgame && !rec.endgameReveal,
     betrayals,
     speech: rec.speech || null,
     dagger: rec.dagger || null,
@@ -2931,11 +3174,13 @@ function _buildBeats(v) {
   // ── the room sits down ──────────────────────────────────────────────
   const seats = v.seated.map(n => _faceChip(n, 28)).join('');
   push('gather', _card(
-    v.endgame ? 'What Is Left Of The Room' : 'The Room Sits Down',
+    v.endgame ? 'At The Fire' : 'The Room Sits Down',
     'The table', 'table',
     '<p>' + _cap(_numWord(v.seated.length)) + ' of them, and one chalkboard each. '
-    + (v.endgame
+    + (v.endgameBlind
       ? 'This far in there is nothing to work with but each other, and no answer coming afterwards.'
+      : v.endgame
+      ? 'The fire burned red, so they vote right there, standing round it. Whoever goes will tell the others what they were.'
       : 'Whatever anybody has worked out since breakfast has to be said here or not at all.')
     + '</p><div class="rt-faces">' + seats + '</div>'
     + _murmur(key + '|m0')), 'open', { kind: 'gather' });
@@ -2975,9 +3220,9 @@ function _buildBeats(v) {
       // NO RAW WEIGHTS IN A SENTENCE. "weight 0.58 against 0.49" is the
       // debug screen's language; the reason is that the room listens to one
       // of them more, and that is what the card says.
-      + '<span><b>' + _esc(t.by) + '</b> suspects both of them and has one vote. The room '
-      + 'listens to ' + _esc(t.against) + ' more, so ' + _esc(t.by) + ' votes for '
-      + _esc(t.against) + ' tonight and leaves ' + _esc(t.spared) + ' for later.</span>'
+      + '<span><b>' + _esc(t.by) + '</b> suspects both of them but only has one vote. The room '
+      + 'listens to ' + _esc(t.against) + ' more, so ' + _esc(t.by) + ' is going after '
+      + _esc(t.against) + ' tonight and leaving ' + _esc(t.spared) + ' for another day.</span>'
       + '<span>' + (t.shared
         ? _esc(t.circleName || 'Their own people') + ' know about it.'
         : 'Nobody else knows. Not even ' + _esc(t.circleName || 'their own circle') + '.')
@@ -2993,14 +3238,15 @@ function _buildBeats(v) {
   for (const pl of (v.plans || [])) {
     if (pl.outcome !== 'landed' || !(v.seated || []).includes(pl.by)) continue;
     push('debate', '<div class="rt-irony rt-deal"><b>What the room cannot see &middot; the test</b>'
-      + '<span>' + _esc(pl.by) + ' gave ' + _esc(pl.bait) + '&rsquo;s name to '
-      + _esc(pl.suspect) + ' and to nobody else, and the pact went for '
-      + _esc(pl.bait) + ' that night.</span>'
+      // SAID PLAINLY (2026-10-03): "gave Carrie's name to Sanders and to
+      // nobody else" made the reader work out what a test is. Say it.
+      + '<span>' + _esc(pl.by) + ' set a trap. ' + _esc(pl.by) + ' told only '
+      + _esc(pl.suspect) + ' that ' + _esc(pl.bait) + ' would be an easy target, and that night '
+      + 'the Traitors went straight for ' + _esc(pl.bait) + '.</span>'
       + '<div class="rt-faces">' + [pl.by, pl.suspect, pl.bait].map(n => _faceChip(n, 26)).join('')
       + '</div>'
-      + '<span>' + _esc(pl.by) + ' can say the name at this table. '
-      + _esc(pl.by) + ' cannot say how the name was got, because saying it means '
-      + 'admitting to handing somebody a target.</span></div>', null, { kind: 'test' });
+      + '<span>So ' + _esc(pl.by) + ' is now sure about ' + _esc(pl.suspect) + ', but cannot '
+      + 'explain why without admitting to using ' + _esc(pl.bait) + ' as bait.</span></div>', null, { kind: 'test' });
   }
 
   // ── AND WHAT IS HANGING OVER IT ─────────────────────────────────────
@@ -3221,6 +3467,15 @@ function _buildBeats(v) {
       F: _esc((leadSp && leadSp.hearsayFrom) || '') };
     // a line about {v} needs a {v}; a reason about the accused alone has none
     const fits = l => (dsubs.v || l.indexOf('{v}') < 0) && (dsubs.F || l.indexOf('{F}') < 0);
+    // A RIGHT CALL ANSWERS A WRONG ONE: if the accused has named a revealed
+    // Traitor before tonight, that is what they say, always against "you put
+    // a Faithful out" and on about a third of the other cards
+    const called = (leadSp && leadSp.targetCalled) || [];
+    if (called.length && (cat === 'faithful-out' || _hash(key + '|redeem|' + c.t) % 3 === 0)) {
+      const best = called.find(x => x.lead) || called[called.length - 1];
+      dsubs.x = _esc(best.name);
+      cat = best.lead ? 'redeemed-lead' : 'redeemed-join';
+    }
     const defPool = (DEFENCE_BY[cat] || []).filter(fits);
     const defLine = defPool.length
       ? _fill(_fresh(defPool, key + '|def|' + c.t), dsubs)
@@ -3229,7 +3484,7 @@ function _buildBeats(v) {
     inner += _said(c.t, defLine);
     // THE LEAD COMES BACK, on most cards: the exchange, not two statements
     if (_hash(key + '|cb|' + c.t) % 3 !== 0 && lead !== c.t) {
-      const cbPool = (COMEBACK_BY[cat] || COMEBACK_BY.generic).filter(fits);
+      const cbPool = (COMEBACK_BY[cat] || COMEBACK_BY[String(cat).replace(/-(lead|join)$/, '')] || COMEBACK_BY.generic).filter(fits);
       if (cbPool.length) inner += _said(lead, _fill(_fresh(cbPool, key + '|cb|' + c.t), dsubs));
     }
     if (c.acc.length >= 3 && !v.endgame) {
@@ -3266,8 +3521,8 @@ function _buildBeats(v) {
         : (steered ? IRONY_STEER : IRONY_FALSE);
       const betrayers = c.acc.filter(n => sacrificing.has(n + '>' + c.t));
       const line = betrayers.length
-        ? _esc(betrayers[0]) + ' is not agreeing with the room. ' + _esc(betrayers[0])
-          + ' is burying a fellow Traitor, before ' + _esc(c.t) + ' can be asked a question with an answer.'
+        ? _esc(betrayers[0]) + ' is not just going along with the room. ' + _esc(betrayers[0])
+          + ' is a Traitor getting rid of another Traitor, before anyone asks ' + _esc(c.t) + ' something awkward.'
         : _fill(_fresh(pool, key + '|iro|' + c.t), { t: _esc(c.t), T: _esc(c.t) });
       inner += '<div class="rt-irony"><b>What the room cannot see</b><span>' + line + '</span></div>';
     }
@@ -3650,13 +3905,9 @@ function _buildBeats(v) {
       + '<div class="rt-chair">' + _chair() + '</div></div>'
       + '<p>' + _pick(VERDICT_TEXT, key + '|vd') + '</p>';
     if (v.speech) {
-      const burn = v.speech.burns && v.speech.target;
-      const tp = burn ? _pr(v.speech.target) : pr;
-      const line = burn
-        ? _fill(_pick(BURN_SAID, key + '|bs'), { t: _esc(v.speech.target), obj: tp.obj })
-        : _pick(QUIET_SAID, key + '|qs');
-      vh += _said(v.chosen, line)
-        + '<p>' + _pick(burn ? SPEECH_BURN : SPEECH_QUIET, key + '|sp') + '</p>';
+      const gb = _goodbye(v, key);
+      v._exitTone = gb.tone;
+      vh += _said(v.chosen, gb.line) + '<p>' + gb.exit + '</p>';
     }
     push('verdict', _card(null, 'The chair', 'chair', vh, _icon),
       'verdict', { kind: 'verdict', who: v.chosen });
@@ -3670,14 +3921,14 @@ function _buildBeats(v) {
   // already null on a finale table — `_view` drops it and the record never
   // carried it — and this branch refuses a second time, so that a mutation to
   // either lock is caught rather than covered for.
-  if (!v.endgame && v.chosenAlignment) {
+  if (!v.endgameBlind && v.chosenAlignment) {
     const isTraitor = v.chosenAlignment === 'traitor';
     // THE BANISHED TURNS THEIR OWN CARD. The one certain thing the format hands
     // the room is said out loud, in the leaving player's own voice, before the
     // seal confirms it — the "circle of truth" the reveal used to skip straight
     // past. First person, and it may assert only the alignment already revealed.
     push('verdict',
-      _said(v.chosen, _pick(isTraitor ? ANNOUNCE_TRAITOR : ANNOUNCE_FAITHFUL, key + '|an'))
+      _said(v.chosen, _rot(ANNOUNCE_BY_TONE[isTraitor ? 'traitor' : 'faithful'][v._exitTone || _exitTone(v.chosen, _exitContext(v), key)], v.ep, 'an|' + (isTraitor ? 't' : 'f') + (v._exitTone || '')))
       + '<div class="rt-reveal" data-reveal="alignment"><div class="rt-reveal-inner">'
       + '<div class="rt-reveal-face" data-side="' + _esc(v.chosenAlignment) + '">'
       + _icon('seal', 40, isTraitor ? '#c9283c' : 'rgba(222,214,196,.75)')
@@ -3761,11 +4012,10 @@ function _buildBeats(v) {
       + '<b>What the room cannot see &middot; ' + (held ? 'the deal held' : 'the deal is dead')
       + '</b><span>' + _esc(t.resolvedLine || '') + '</span>'
       + '<span>' + (held
-        ? _esc(t.by) + ' spent one vote and got the name ' + _esc(t.by) + ' wanted. '
-          + _esc(t.spared) + ' is still here, and still owes ' + _esc(t.by) + ' a week.'
-        : 'The room took ' + _esc(t.spared) + ' &mdash; the one name '
-          + _esc(t.by) + ' had promised not to say. A week of protection, spent on '
-          + 'somebody who is now walking out of the door.')
+        ? _esc(t.by) + ' used the vote and got the result ' + _esc(t.by) + ' wanted. '
+          + _esc(t.spared) + ' is still here, and now owes ' + _esc(t.by) + ' a favour.'
+        : 'The room picked ' + _esc(t.spared) + ' anyway: the one person '
+          + _esc(t.by) + ' had promised to protect. The deal is worth nothing now.')
       + '</span></div>', null, { kind: 'deal-out' });
   }
 
@@ -4080,7 +4330,7 @@ function _stage(state, idx) {
       : reads.length ? (roundIx ? 'Reading again' : 'Reading the slates')
         : debates.length ? 'In session' : 'Convening';
   const say = revealShown
-    ? (v.endgame ? 'Nothing was turned over, and nothing will be.'
+    ? (v.endgameBlind ? 'Nothing was turned over, and nothing will be.'
       : 'Everybody knows one true thing now, and only one.')
     : verdictShown ? 'One chair back, and nobody looking up.'
       : reads.length
@@ -4329,8 +4579,9 @@ export function rpBuildRoundTable(ep, observer = 'audience') {
   // a different vote — banishing one of those names takes it off the list.
   const v = _view(rec, observer, (ep && ep.tr && ep.tr.trial) || null,
     (ep && ep.tr && ep.tr.strategy) || null);
-  // the endgame follows this table tonight: there is no night to send them to
-  if (v && ep && ep.tr && ep.tr.endgame) v.noNight = true;
+  // the endgame follows this table tonight: there is no night to send them to,
+  // and it is THE LAST ROUND TABLE, the last one before the Fire of Truth
+  if (v && ep && ep.tr && ep.tr.endgame) { v.noNight = true; if (!v.endgame) v.lastTable = true; }
   const beats = _buildBeats(v);
   const total = beats.length;
   const epNum = ep.num || v.ep || 0;
@@ -4382,7 +4633,7 @@ export function rpBuildRoundTable(ep, observer = 'audience') {
   const stream = beats.map((b, i) =>
     '<div class="rt-beat' + (i <= st.idx ? ' rt-vis' : '')
     + '" id="rt-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
-    + (b.hostSlot ? _hostBand(_fill(_pick(HOST_LINES[b.hostSlot],
+    + (b.hostSlot ? _hostBand(_fill(_pick((v.endgame && HOST_FIRE[b.hostSlot]) || HOST_LINES[b.hostSlot],
       'rt|host|' + b.hostSlot + '|' + seedEp + '|' + (v.chosen || '')),
     { Nm: _esc(v.chosen || ''), nm: _esc(v.chosen || ''),
       banish: _esc(_verbs().banish), Banish: _esc(_cap(_verbs().banish)) })) : '')
@@ -4416,13 +4667,16 @@ export function rpBuildRoundTable(ep, observer = 'audience') {
     // one would be a fact the screen does not have. The two lines are a pair:
     // the table sits in the evening and the turret meets that night.
     + '<div class="rt-eyebrow">The Traitors &middot; Evening ' + (v.ep || epNum)
-    + (v.endgame ? ' &middot; No Answers From Here' : '') + '</div>'
-    + '<h1 class="rt-title">THE ROUND TABLE</h1>'
+    + (v.endgameBlind ? ' &middot; No Answers From Here' : v.endgame ? ' &middot; The Final' : '') + '</div>'
+    + '<h1 class="rt-title">' + (v.endgame ? 'THE VOTE AT THE FIRE' : v.lastTable ? 'THE LAST ROUND TABLE' : 'THE ROUND TABLE') + '</h1>'
     + '<div class="rt-title-rule"><i></i>' + _icon('seal', 40, '#8e1526') + '<i></i></div>'
     + '<p class="rt-sub">'
-    + (v.endgame
+    + (v.endgameBlind
       ? 'The same table, the same chalk, and nothing turned over at the end of it. '
         + 'Whoever is left carries on with exactly the beliefs they walked in with.'
+      : v.endgame
+      ? 'The fire burned red, so they stay where they are. They argue around the fire, they write '
+        + 'one name each on a slate, and whoever goes turns over before they leave.'
       : 'They sit down together, argue in the open, and write one name each in chalk. '
         + 'It is the only hour of the day this castle is handed something true.')
     + '</p></div></div>'
@@ -4607,12 +4861,13 @@ export function roundTableStageData(ep, observer = 'audience') {
   _tableUsed = new Set();
   const v = _view(rec, observer, (ep && ep.tr && ep.tr.trial) || null,
     (ep && ep.tr && ep.tr.strategy) || null);
-  // the endgame follows this table tonight: there is no night to send them to
-  if (v && ep && ep.tr && ep.tr.endgame) v.noNight = true;
+  // the endgame follows this table tonight: there is no night to send them to,
+  // and it is THE LAST ROUND TABLE, the last one before the Fire of Truth
+  if (v && ep && ep.tr && ep.tr.endgame) { v.noNight = true; if (!v.endgame) v.lastTable = true; }
   const beats = _buildBeats(v);
   const seedEp = v.ep != null ? v.ep : (ep.num || 0);
   const key = 'rt|' + v.ep + '|' + (v.chosen || '');
-  const hostHtml = b => (b.hostSlot ? _hostBand(_fill(_pick(HOST_LINES[b.hostSlot],
+  const hostHtml = b => (b.hostSlot ? _hostBand(_fill(_pick((v.endgame && HOST_FIRE[b.hostSlot]) || HOST_LINES[b.hostSlot],
     'rt|host|' + b.hostSlot + '|' + seedEp + '|' + (v.chosen || '')),
   { Nm: _esc(v.chosen || ''), nm: _esc(v.chosen || ''),
     banish: _esc(_verbs().banish), Banish: _esc(_cap(_verbs().banish)) })) : '');

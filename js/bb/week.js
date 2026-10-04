@@ -70,7 +70,8 @@ import {
 } from './strategy.js';
 import { scheduleHouseBeats } from './house-events.js';
 import { writeCeremony } from './script/ceremony.js';
-import { campaignArgument } from '../bb-events/_read.js';
+import { scriptBeat, joinScripts, numberWord } from './script/inject.js';
+import { campaignArgument, campaignCase } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
 import { runVoteOperation, resolveFinalPleas } from './vote-operation.js';
 import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions, setBBTarget, getBBTarget } from './shared-strategy.js';
@@ -972,11 +973,46 @@ function runHouseRomance(week, rng) {
   }
   week.coupleTargets = consequences;
 
-  return [...ep.campEvents.merge.pre, ...ep.campEvents.merge.post].map(e => {
+  // The scene each beat plays: its cast in the pipeline's player order, and an
+  // ending decided by the same facts the old sentences branched on.
+  const romanceScene = (e, hit) => {
+    const [a, b, c, d] = (e.players || []).filter(Boolean);
+    const who = { a: a || null, b: b || null, c: c || null };
+    switch (e.type) {
+      case 'showmanceTarget':
+        return [who, hit ? { ending: 'scene', intent: 'hit', target: hit.target } : { ending: 'scene' }];
+      case 'triangleTension':
+        return [who, { ending: (e.sourceType || 'dual-showmance') === 'dual-showmance' ? 'dual' : 'onesided' }];
+      case 'triangleEscalation':
+        return d ? [{ a }, { ending: 'schemed', first: b, centre: c, second: d }] : [who, { ending: 'three' }];
+      case 'triangleResolved': {
+        if (e.kind !== 'chose') return [who, { ending: 'faded' }];
+        const arch = (players.find(x => x.name === c) || {}).archetype || '';
+        let st = {};
+        try { st = pStats(c) || {}; } catch { st = {}; }
+        if (['villain', 'schemer', 'mastermind'].includes(arch)) return [who, { ending: 'villain' }];
+        if ((st.strategic ?? 5) >= 7 && (st.loyalty ?? 5) <= 4) return [who, { ending: 'cool' }];
+        return [who, { ending: 'hurt' }];
+      }
+      case 'triangleCut':
+        return [who, { ending: e.kind === 'center-gone' ? 'centre' : e.byTheirHand ? 'hand' : 'house' }];
+      case 'affairExposed':
+        return [{ a: a || null, b: b || null }, { ending: 'scene', target: c }];
+      default:
+        return [who, { ending: 'scene' }];
+    }
+  };
+
+  return [...ep.campEvents.merge.pre, ...ep.campEvents.merge.post].map((e, i) => {
     const hit = e.type === 'showmanceTarget'
       && consequences.find(c => c.plotter === (e.players || [])[0]);
+    const [who, data] = romanceScene(e, hit);
+    const script = Object.values(data).some(v => v === undefined) ? null
+      : scriptBeat(`romance.${e.type}`, who, data, { week, act: 'house', room: 'bedroom', salt: `romance|${i}` });
     return {
-      text: bbRomanceText(e) + (hit ? ` ${hit.plotter} settles on ${hit.target} — ${hit.why}.` : ''),
+      text: script ? script.text
+        : bbRomanceText(e) + (hit ? ` ${hit.plotter} settles on ${hit.target} — ${hit.why}.` : ''),
+      ...(script ? { lines: script.lines, lineId: script.lineId } : {}),
       players: (e.players || []).filter(Boolean),
       badgeText: hit ? 'A NAME, NOT A COMPLAINT' : (e.badgeText || 'SHOWMANCE'),
       badgeClass: hit ? 'red' : (e.badgeClass || 'gold'),
@@ -1163,11 +1199,19 @@ function runHouseMaintenance(week, rng = Math.random) {
           .replace(/\bthe camp\b/g, 'the house').replace(/\bcamp\b/g, 'the house');
     }
   };
-  return ep.campEvents.merge.pre.map(e => ({
-    text: bbMaintenanceText(e), players: (e.players || []).filter(Boolean),
-    badgeText: e.badgeText || 'THE HOUSE SHIFTS', badgeClass: e.badgeClass || 'grey',
-    eventId: `upkeep-${e.type || 'beat'}`, category: 'social', location: 'living-room',
-  })).filter(b => b.text);
+  return ep.campEvents.merge.pre.map((e, i) => {
+    const [a, b] = (e.players || []).filter(Boolean);
+    const script = a ? scriptBeat(`upkeep.${e.type}`, { a, b: b || null },
+      { ending: 'scene', intent: b ? 'pair' : 'solo' },
+      { week, act: 'house', room: 'living-room', salt: `upkeep|${i}` }) : null;
+    return {
+      text: script ? script.text : bbMaintenanceText(e),
+      ...(script ? { lines: script.lines, lineId: script.lineId } : {}),
+      players: (e.players || []).filter(Boolean),
+      badgeText: e.badgeText || 'THE HOUSE SHIFTS', badgeClass: e.badgeClass || 'grey',
+      eventId: `upkeep-${e.type || 'beat'}`, category: 'social', location: 'living-room',
+    };
+  }).filter(b => b.text);
 }
 
 /**
@@ -1193,6 +1237,10 @@ function runHouseMaintenance(week, rng = Math.random) {
  * them there sets the same face beside itself. It also reads wrong — the
  * argument about who flipped is had by the people still in the room.
  */
+/** Spread a written script over an engine beat; with none, the beat keeps its sentence. */
+const _withScript = (beat, script) => (script
+  ? { ...beat, text: script.text, lines: script.lines, lineId: script.lineId } : beat);
+
 function _reactingFaces(names, week) {
   return [...new Set(names.filter(Boolean))].filter(n => n !== week?.evicted);
 }
@@ -1202,6 +1250,9 @@ function _attachAllianceFallout(week, house) {
   // The cycle's own house. ORing in the global roster let alliance fallout
   // name somebody sealed off on the other side of a Split House wall.
   const inHouse = n => house.includes(n);
+  // Who is still in an alliance, by its name: the people a fallout scene is had with.
+  const membersOf = name => [...new Set(((gs.namedAlliances || []).find(a => a.name === name)?.members || []).filter(inHouse))];
+  const wctx = { week, act: 'eviction', hoh: week.hoh || null, room: 'living-room' };
 
   for (const incident of week.allianceChanges?.betrayals || []) {
     const { player, victim, alliance, repair, known } = incident;
@@ -1211,7 +1262,7 @@ function _attachAllianceFallout(week, house) {
     // anybody to accuse. The vote is read as a COUNT, so what the room actually
     // has is arithmetic that does not work, and the wrong person to suspect.
     if (!known) {
-      beats.push({
+      beats.push(_withScript({
         text: `The count does not work. <strong>${alliance}</strong> went into the vote sure of `
           + `its own numbers and came out of it one short, and nobody in that room is going to `
           + `admit which chair it came from. <strong>${player}</strong> asks the question twice, `
@@ -1223,14 +1274,15 @@ function _attachAllianceFallout(week, house) {
         players: _reactingFaces([player, victim], week),
         badgeText: 'THE NUMBERS DO NOT ADD UP', badgeClass: 'grey',
         eventId: 'alliance-betrayal-unseen', category: 'deals', location: 'living-room',
-      });
+      }, scriptBeat('engine.unseen', { a: player }, { ending: 'scene', group: alliance },
+        { ...wctx, salt: `unseen|${player}` })));
       // Somebody has to have done it, and the room has picked. This is the
       // half the viewer needs and the house never gets: the accusation lands
       // on a person who did nothing, and — when the real one steered it —
       // lands there because the real one put it there.
       const mis = incident.misattribution;
       if (mis) {
-        beats.push({
+        beats.push(_withScript({
           text: mis.deflected
             ? `<strong>${player}</strong> does not wait to be asked. By the time anybody has finished `
               + `counting, ${player} has walked <strong>${mis.reactor}</strong> through it twice and left `
@@ -1245,11 +1297,16 @@ function _attachAllianceFallout(week, house) {
           badgeClass: 'red',
           eventId: mis.deflected ? 'alliance-deflected-blame' : 'alliance-misattributed',
           category: 'deals', location: 'living-room',
-        });
+        }, scriptBeat('engine.blame', { a: mis.reactor, b: mis.wrongSuspect },
+          { ending: mis.deflected ? 'deflected' : 'blamed', source: player },
+          { ...wctx, salt: `blame|${mis.reactor}` })));
       }
       continue;
     }
 
+    // Written as a scene with somebody still in the alliance. The beat's
+    // players are left exactly as they were: the engine counts them.
+    const accuser = membersOf(alliance).find(n => n !== player && n !== victim) || null;
     beats.push({
       text: `<strong>${player}</strong> votes to evict <strong>${victim}</strong>, even though they `
         + `were together in <strong>${alliance}</strong>. By the time everyone gets back inside, `
@@ -1257,6 +1314,10 @@ function _attachAllianceFallout(week, house) {
       players: _reactingFaces([player, victim], week),
       badgeText: 'VOTED OUT AN ALLY', badgeClass: 'red',
       eventId: 'alliance-betrayal', category: 'deals', location: 'living-room',
+      ...((accuser ? scriptBeat('alliance.betrayal', { a: accuser, b: player }, { ending: 'flipped', alliance, target: victim },
+        { ...wctx, seenBy: membersOf(alliance) })
+        : scriptBeat('alliance.betrayal', { a: player }, { ending: 'alone', alliance, target: victim },
+          { ...wctx, room: 'diary-room', seenBy: [player] })) || {}),
     });
 
     if (!repair) continue;
@@ -1272,9 +1333,15 @@ function _attachAllianceFallout(week, house) {
             badgeText: 'WORKING TRUCE', badgeClass: 'grey' }
         : { text: `${how}. The rest of <strong>${alliance}</strong> reject the explanation. The meeting ends with people leaving separately.`,
             badgeText: repair.outcome === 'fracture' ? 'FRACTURED' : 'REJECTED', badgeClass: 'red' };
+    const ending = repair.outcome === 'forgiven' ? 'forgiven' : repair.outcome === 'working-truce' ? 'truce' : 'rejected';
+    const approach = ['apology', 'strategic-explanation', 'refusal'].includes(repair.approach) ? repair.approach : 'denial';
     beats.push({
       ...outcome, players: [player].filter(inHouse),
       eventId: 'alliance-repair', category: 'deals', location: 'bedroom',
+      ...(inHouse(player) && (accuser ? scriptBeat('alliance.repair', { a: accuser, b: player }, { ending, reason: approach, alliance },
+        { ...wctx, room: 'bedroom', seenBy: membersOf(alliance) })
+        : scriptBeat('alliance.repair', { a: player }, { ending: 'alone', alliance, target: victim },
+          { ...wctx, room: 'diary-room', seenBy: [player] })) || {}),
     });
   }
 
@@ -1296,6 +1363,9 @@ function _attachAllianceFallout(week, house) {
       players: [...new Set(left)].slice(0, 4),
       badgeText: collapsed ? 'IT STOPS BEING TRUE' : 'OUT OF NUMBERS', badgeClass: 'red',
       eventId: 'alliance-collapsed', category: 'deals', location: 'living-room',
+      ...((collapsed ? left.length >= 2 : left.length >= 1)
+        && scriptBeat('alliance.collapsed', { a: left[0], b: collapsed ? left[1] : null }, { ending: collapsed ? 'faded' : 'numbers', alliance: alliance.name },
+          { ...wctx, seenBy: left }) || {}),
     });
   }
 
@@ -1998,6 +2068,8 @@ export function simulateBBWeek(options = {}) {
           badgeText: 'AN ALLIANCE INSIDE AN ALLIANCE', badgeClass: 'gold',
           eventId: 'alliance-inner-circle', category: 'deals', location: 'pantry',
           newAlliance: true, allianceName: alliance.name, allianceId: alliance.id,
+          ...(scriptBeat('alliance.formed', { a: members[0], b: members[1], c: members[2] || null },
+            { ending: 'inner', alliance: alliance.name, alliance2: alliance.parentName }, { week, hoh: week.hoh || null, room: 'pantry', seenBy: members }) || {}),
         };
       }
 
@@ -2009,6 +2081,8 @@ export function simulateBBWeek(options = {}) {
         badgeText: 'ALLIANCE FORMED', badgeClass: 'gold',
         eventId: 'alliance-formed', category: 'deals', location: 'bedroom',
         newAlliance: true, allianceName: alliance.name, allianceId: alliance.id,
+        ...(scriptBeat('alliance.formed', { a: members[0], b: members[1], c: members[2] || null },
+          { ending: 'formed', alliance: alliance.name }, { week, hoh: week.hoh || null, room: 'bedroom', seenBy: members }) || {}),
       };
     }
 
@@ -2025,6 +2099,8 @@ export function simulateBBWeek(options = {}) {
       badgeText: 'BROUGHT IN', badgeClass: 'blue',
       eventId: 'alliance-recruited', category: 'deals', location: 'bedroom',
       newAlliance: false, allianceName: alliance.name, allianceId: alliance.id, joined,
+      ...(scriptBeat('alliance.recruited', { a: joined, b: members.filter(n => n !== joined)[0] || null, c: members.filter(n => n !== joined)[1] || null },
+        { ending: 'joined', alliance: alliance.name }, { week, hoh: week.hoh || null, room: 'bedroom', seenBy: members }) || {}),
     };
   };
 
@@ -2209,8 +2285,10 @@ export function simulateBBWeek(options = {}) {
     const firstWordLine = fw ? (who => fw.replace(/\{who\}/g, who)) : null;
     const schemer = byStat('strategic')[0];
     const bold = byStat('boldness').find(n => n !== schemer) || byStat('boldness')[0];
+    const register = paranoid ? 'paranoid' : dread ? 'dread' : 'power';
+    const actx = { week, act: 'hoh', hoh: null, room: 'living-room' };
     if (bold) {
-      beats.push({
+      beats.push(_withScript({
         text: paranoid
           ? `${bold} breaks the silence first, and does it by looking straight down the sofa: "Well. It's one of you." Half the room laughs. The other half works out where they were sitting.`
           : (dread && firstWordLine)
@@ -2225,14 +2303,16 @@ export function simulateBBWeek(options = {}) {
         players: [bold], badgeText: 'FIRST WORD', badgeClass: 'gold',
         eventId: 'twist-announcement-bravado', category: 'ceremonies', location: 'living-room',
         effects: [{ kind: 'pop', text: `${bold} +1`, delta: 1 }],
-      });
+      // A twist that brings its own first line keeps it.
+      }, (dread && firstWordLine) ? null
+        : scriptBeat('engine.bravado', { a: bold }, { ending: register }, { ...actx, salt: `bravado|${annIdx}` })));
       if (seasonConfig.popularityEnabled !== false) {
         if (!gs.popularity) gs.popularity = {};
         gs.popularity[bold] = (gs.popularity[bold] || 0) + 1;
       }
     }
     if (schemer && schemer !== bold) {
-      beats.push({
+      beats.push(_withScript({
         text: paranoid
           ? `${schemer} says nothing at all, and is already doing the only arithmetic that matters: ${house.length - 1} other people, one of them lying, and a whole season to find out which. Nobody in this room is going to be believed about anything again.`
           : dread
@@ -2242,7 +2322,8 @@ export function simulateBBWeek(options = {}) {
             : `${schemer} says nothing at all, which from ${schemer} is the loudest possible reaction. The rule has already been taken apart and reassembled twice behind those eyes.`,
         players: [schemer], badgeText: paranoid ? 'COUNTING THE ROOM' : dread ? 'NO TIME TO WORK' : 'RECALCULATING', badgeClass: 'grey',
         eventId: 'twist-announcement-recalc', category: 'ceremonies', location: 'living-room',
-      });
+      }, scriptBeat('engine.recalc', { a: schemer }, { ending: register, intent: noVetoThisWeek ? 'noveto' : 'veto' },
+        { ...actx, salt: `recalc|${annIdx}` })));
     }
     // The two people with the least power in the room hear the same rule and
     // reach for each other — shared dread is how outsiders become a pair. Under
@@ -2251,7 +2332,7 @@ export function simulateBBWeek(options = {}) {
     const outsiders = byStat('strategic').slice(-2);
     if (outsiders.length === 2 && getBond(outsiders[0], outsiders[1]) > -1) {
       _cappedBondWindow(() => addBond(outsiders[0], outsiders[1], 0.3));
-      beats.push({
+      beats.push(_withScript({
         text: paranoid
           ? `${outsiders[0]} and ${outsiders[1]} find each other before anybody has moved. Neither says the sentence out loud, because the sentence is "it isn't you, is it" and saying it makes it a question. They rule each other out, on nothing, and stay that way for weeks.`
           : dread
@@ -2260,7 +2341,8 @@ export function simulateBBWeek(options = {}) {
         players: [...outsiders], badgeText: paranoid ? 'RULING EACH OTHER OUT' : dread ? 'NOTHING TO ASK FOR' : 'SHARED DREAD', badgeClass: 'blue',
         eventId: 'twist-announcement-dread', category: 'ceremonies', location: 'living-room',
         effects: [{ kind: 'bond', text: `${outsiders[0]} & ${outsiders[1]} +0.3`, delta: 0.3 }],
-      });
+      }, scriptBeat('engine.outsiders', { a: outsiders[0], b: outsiders[1] }, { ending: register },
+        { ...actx, salt: `outsiders|${annIdx}` })));
     }
     // Only decorate a rule the contract already made public. The theme helper
     // also verifies that this exact week/type came from the theme's stamped
@@ -3041,9 +3123,10 @@ export function simulateBBWeek(options = {}) {
           week.chainOfSafety.leftover = [...week.chainOfSafety.nominees];
           week.chainOfSafety.beats = [
             ...(week.chainOfSafety.beats || []),
-            { text: `${first} is on the block, and the house is told to do the whole thing again.`,
-              players: [first], badgeText: 'AND AGAIN', badgeClass: 'red' },
-            ...(second.beats || []),
+            { text: `${first} is nominated, and the chain runs again.`,
+              players: [first], badgeText: 'AND AGAIN', badgeClass: 'red', part: 'again' },
+            // the second run's beats, marked so its words land on the right chain
+            ...(second.beats || []).map(b => ({ ...b, run: 1 })),
           ];
           week.chainOfSafety.slights = [
             ...(week.chainOfSafety.slights || []), ...(second.slights || [])];
@@ -4613,13 +4696,15 @@ export function simulateBBWeek(options = {}) {
       const nomAct = _lastStagedAct(week) || {};
       const shielded = hohBloc.inHouse.filter(m => m !== hoh);
       shielded.forEach(m => _cappedBondWindow(() => addBond(hoh, m, 0.15)));
-      (nomAct.socialBeats ||= []).push({
+      (nomAct.socialBeats ||= []).push(_withScript({
         text: `Nobody says the name out loud, but the block has a shape: every member of ${hohBloc.name} is off it. ${shielded.slice(0, 3).join(', ')}${shielded.length > 3 ? ' and the rest' : ''} clock what ${hoh} just did for them — and so does everybody who is NOT in that room.`,
         players: [hoh, ...shielded.slice(0, 3)],
         badgeText: 'THE BLOC HOLDS', badgeClass: 'blue',
         eventId: 'alliance-shaped-block', category: 'ceremonies', location: 'living-room',
         effects: shielded.slice(0, 3).map(m => ({ kind: 'bond', text: `${hoh} & ${m} +0.15`, delta: 0.15 })),
-      });
+      }, scriptBeat('engine.block', { a: hoh, b: shielded[0] || null, c: shielded[1] || null },
+        { ending: 'scene', group: hohBloc.name },
+        { week, act: 'nominations', hoh, room: 'living-room', salt: `block|${hoh}` })));
       nomAct.allianceShield = { alliance: hohBloc.name, protected: shielded };
     }
   }
@@ -6558,6 +6643,23 @@ export function simulateBBWeek(options = {}) {
         const worn = before !== undefined;   // this is the follow-up that landed
         let words = '';
         try { words = campaignArgument(pitch.pitcher, response.voter, pitch.pitchTarget); } catch { words = ''; }
+        // The conversation, written: the case the engine chose and the reply
+        // the count produced (bb/script/lines/campaign.js). A return visit that
+        // lands is the reply alone; the case was heard the first time.
+        let script = null;
+        let caseScript = null;
+        try {
+          const who = { a: pitch.pitcher, b: response.voter };
+          const sctx = { week, act: 'campaign', hoh: week.hoh || null, nominees: [...visibleBlock], room: 'bedroom', seenBy: [pitch.pitcher, response.voter] };
+          const reply = scriptBeat('campaign.reply', who, { ending: worn ? 'worn' : response.accepted ? 'receptive' : 'unmoved' }, sctx);
+          if (worn) script = joinScripts(reply);
+          else {
+            const c = campaignCase(pitch.pitcher, response.voter, pitch.pitchTarget);
+            caseScript = scriptBeat('campaign.case', who, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance,
+              theirComps: numberWord(c.theirComps), myComps: numberWord(c.myComps) }, sctx);
+            script = joinScripts(caseScript, reply);
+          }
+        } catch { script = null; }
         return {
           text: worn
             ? `${pitch.pitcher} goes back to ${response.voter} — same argument, new day. This time ${response.voter} listens, and something in the count changes.`
@@ -6570,7 +6672,8 @@ export function simulateBBWeek(options = {}) {
           badgeClass: response.accepted ? 'green' : 'grey',
           eventId: 'campaign-pitch', category: 'deals', location: 'bedroom',
           _fold: !response.accepted && !worn && words
-            ? { pitcher: pitch.pitcher, voter: response.voter, words } : null,
+            ? { pitcher: pitch.pitcher, voter: response.voter, words, caseScript } : null,
+          ...(script || {}),
         };
       }).filter(Boolean));
     // The same argument to three people is one scene, not three. A nominee
@@ -6584,10 +6687,18 @@ export function simulateBBWeek(options = {}) {
       if (!same.length) continue;
       const voters = [f.voter, ...same.map(b => b._fold.voter)];
       const list = `${voters.slice(0, -1).join(', ')} and ${voters[voters.length - 1]}`;
+      // The case is heard once, then the same case goes round the rest.
+      const rest = scriptBeat('engine.samecase', { a: f.pitcher, b: voters[0], c: voters[1] },
+        { ending: voters.length === 2 ? 'two' : 'many', group: list },
+        { week, act: 'campaign', hoh: week.hoh || null, nominees: [...visibleBlock], room: 'bedroom',
+          seenBy: [f.pitcher, ...voters], salt: `samecase|${f.pitcher}` });
+      const folded = joinScripts(f.caseScript, rest);
       Object.assign(pitchBeats[i], {
         text: `${f.pitcher} makes the same case to ${list}, one at a time. ${f.words} `
           + `${voters.length === 2 ? 'Neither of them moves' : 'Not one of them moves'}.`,
         players: [f.pitcher, ...voters],
+        lines: undefined, lineId: undefined,
+        ...(folded ? { text: folded.text, lines: folded.lines, lineId: folded.lineId } : {}),
       });
       for (const b of same) b._drop = true;
     }
@@ -6654,12 +6765,14 @@ export function simulateBBWeek(options = {}) {
             : `${pitch.pitcher} does not campaign. ${p.Sub} knows the number and has decided that `
               + `walking up to people and asking would not change it — which may be the read of `
               + `the week, or the last mistake of a season.`;
-        quietBeats.push({
+        quietBeats.push(_withScript({
           text, players: [pitch.pitcher],
           badgeText: d.misread ? 'DOES NOT SEE IT' : 'SITS IT OUT',
           badgeClass: d.misread ? 'red' : 'grey',
           eventId: 'campaign-declined', category: 'deals', location: 'bedroom',
-        });
+        }, scriptBeat('engine.declined', { a: pitch.pitcher },
+          { ending: d.misread ? 'misread' : d.felt < 0.34 ? 'safe' : 'resigned' },
+          { week, act: 'campaign', hoh, room: 'bedroom', salt: `declined|${pitch.pitcher}` })));
       }
     }
 

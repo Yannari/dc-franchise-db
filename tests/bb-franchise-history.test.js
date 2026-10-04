@@ -12,6 +12,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, setGs } from '../js/core.js';
 import { FRANCHISE_HISTORY_EVENTS } from '../js/bb-events/franchise-history.js';
 import { pastBetween, sharedPast, pastPairs, pastProfile, isVeteran } from '../js/bb-events/_read.js';
+import { scriptBeat } from '../js/bb/script/inject.js';
+
+// An event now returns a scene; this writes it the way a season does.
+const said = (beat, week = 1) => beat.text ?? scriptBeat(beat.scene.kind, beat.scene.who, beat.scene.data,
+  { week: { num: week }, room: beat.scene.room })?.text;
 
 const HOUSE = ['Misha', 'Jules', 'Joel', 'Tobias'];
 
@@ -83,7 +88,9 @@ describe('the house says why', () => {
     const ev = byId('past-surfaces');
     expect(ev.weight(HOUSE, ctx())).toBeGreaterThan(0);
     const out = ev.fire(HOUSE, ctx(), api());
-    expect(out.text).toContain('Season 1');
+    // The season is named in the scene's data; the words come from past.surfaces.
+    expect(out.scene.data.when).toBe('Season 1');
+    expect(said(out)).not.toMatch(/undefined|\{/);
     expect(out.badgeText).toBe('OLD WOUNDS');
     expect(out.players).toEqual(expect.arrayContaining(['Jules', 'Misha']));
   });
@@ -121,7 +128,8 @@ describe('the power changes hands and the debt does not', () => {
     expect(ev.weight(HOUSE, ctx({ act: 'nominations', week: nomWeek }))).toBeGreaterThan(0);
     const a = api();
     const out = ev.fire(HOUSE, ctx({ act: 'nominations', week: nomWeek }), a);
-    expect(out.text).toMatch(/Season 1/);
+    expect(out.scene.data.when).toBe('Season 1');
+    expect(said(out)).not.toMatch(/undefined|\{/);
     expect(out.players).toEqual(expect.arrayContaining(['Jules', 'Misha']));
     // It costs the bond and makes a target, or it is just narration.
     expect(a.calls.bonds.length).toBeGreaterThan(0);
@@ -142,7 +150,8 @@ describe('eviction night collects an old debt', () => {
     const ev = byId('past-settled-tonight');
     expect(ev.weight(HOUSE, ctx({ act: 'eviction', week }))).toBeGreaterThan(0);
     const out = ev.fire(HOUSE, ctx({ act: 'eviction', week }), api());
-    expect(out.text).toMatch(/Season 1/);
+    expect(out.scene.data.when).toBe('Season 1');
+    expect(said(out)).not.toMatch(/undefined|\{/);
     expect(out.badgeText).toBe('SOME DEBTS CARRY OVER');
     // Settling a score on camera reads cold.
     expect(gs.popularity.Jules).toBeLessThan(0);
@@ -162,8 +171,10 @@ describe('a reputation arrives before the player does', () => {
     expect(ev.weight(HOUSE, ctx())).toBeGreaterThan(0);
     const a = api();
     const out = ev.fire(HOUSE, ctx(), a);
-    expect(out.text).toContain('Cut three allies');
-    expect(out.players).toEqual(['Misha']);
+    // The reputation is the scene (past.known), said by somebody who watched the season.
+    expect(out.scene.kind).toBe('past.known');
+    expect(said(out)).not.toMatch(/undefined|\{/);
+    expect(out.players[0]).toBe('Misha');
     // The house watches them, which is the whole cost of a reputation.
     expect(a.calls.suspicion.length).toBeGreaterThan(0);
     expect(a.calls.suspicion.every(([, subject]) => subject === 'Misha')).toBe(true);

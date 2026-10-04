@@ -110,7 +110,8 @@ function _pick(pool, key) {
  */
 function _pickAway(pool, key, seen) {
   if (!pool || !pool.length) return '';
-  const start = _hash(key) % pool.length;
+  // a key starting 'walk|' has been rotated already: take it from the front
+  const start = String(key).startsWith('walk|') ? 0 : _hash(key) % pool.length;
   for (let n = 0; n < pool.length; n++) {
     const line = pool[(start + n) % pool.length];
     if (!seen || !seen.has(line)) { if (seen) seen.add(line); return line; }
@@ -427,56 +428,76 @@ const LEDGER_FORCED_GAIN = [
 
 /** How a Traitor argues, by the term that actually drove the pick. */
 const REASON_LINES = {
+  // SAID, NOT REPORTED (2026-10-02). These were written like a briefing
+  // ("Removing {obj} would weaken the Faithfuls socially") and came round
+  // every few nights; they are now somebody in a cloak making a case, and
+  // there are enough of them to get through a season.
   beloved: [
-    '{T} is well liked and could influence several votes. If we leave {obj} here, {sub} may become too difficult to remove at the Round Table.',
-    '{T} has strong relationships across the castle. Removing {obj} would weaken the Faithfuls socially.',
-    'Other players listen to {t}. That influence could unite the castle against us later.',
-    '{T} is protected by too many relationships. Tonight may be our safest chance to remove {obj}.',
+    'Everybody loves {t}. We will never get {obj} out at a Round Table, so it has to be tonight.',
+    'Half that castle would follow {t} off a cliff. Take {obj} and they lose their glue.',
+    '{T} has a friend in every room. That is a lot of people who will listen when {sub} finally points at one of us.',
+    'Nobody is ever voting {t} out. Which means if we want {obj} gone, this is the only way.',
+    'Watch dinner tomorrow. Everybody sits near {t}. That is a problem we can fix tonight.',
+    '{T} is the one they all trust. I would rather they trusted nobody.',
+    'When {t} walks into a room, people stop arguing. I do not want a room that agrees with itself.',
+    '{T} is the reason half of them are still friends. Take {obj} and they start turning on each other.',
+    'I tried to get people doubting {t} this week. Nobody would hear a word of it.',
+    'If {t} ever says one of our names, it is over. Nobody in that castle would argue with {obj}.',
+    '{T} is the heart of the place. Hearts are easier to stop at night.',
+    'They would never write {t}’s name. Not this week, not next week. It is now or never.',
   ],
   'onto-me': [
-    '{T} has publicly suspected me. Keeping {obj} here gives the Faithfuls another chance to investigate me.',
-    '{T} is watching me closely and may persuade other players to do the same.',
-    '{T} has begun connecting evidence to me. I want {obj} removed before that suspicion spreads.',
-    '{T} is the most dangerous name to me. {T} already suspects me and will pull others along.',
+    '{T} said my name today. Out loud. I am not sitting through another day of that.',
+    '{T} is watching me. Every time I speak, {sub} is looking straight at me.',
+    '{T} has started putting things together, and the things are me. It has to be {obj}.',
+    'If {t} is still here tomorrow, I am the one at the Round Table. Simple as that.',
+    '{T} asked me where I was last night. Nobody else asked. Just {obj}.',
+    'I can feel {t} on me all day. It is getting closer, and I want it stopped.',
   ],
   // ── EARNED STANDING, WHICH IS NOT THE SAME AS BEING LIKED ─────────
   //
   // `beloved` is a social stat: people enjoy having them around. This is a
   // TRACK RECORD — they have put names up and the reveals agreed with them —
   // and the Traitors are pre-empting somebody who has not come at them yet.
-  // Written apart from `onto-me` because the reasoning is different: that one
-  // is fear of a person already looking at you, this one is fear of what
-  // happens the day they do.
   'listened-to': [
-    '{T} has called this right before, and the room remembers. When {sub} says a name next, it will be written down.',
-    'Nobody has been more right than {t} this season. That is a problem whether or not {sub} is looking at me yet.',
-    '{T} has not said my name once. {T} does not need to — the castle has started taking {pos} word for things.',
-    'Every read {t} has offered has landed. I would rather not be the next one.',
-    'The table follows {t} now. Removing {obj} costs the Faithfuls the only voice they have all agreed on.',
+    '{T} has called this right before, and the room remembers. The next name {sub} says, they will all write down.',
+    'Nobody has been more right than {t} this season. I do not want to find out who {sub} is right about next.',
+    '{T} has not said my name yet. {T} does not need to. When {sub} does, it is over.',
+    'Every read {t} has made has landed. I would rather not be the next one.',
+    'The table follows {t} now. Take {obj} and they have nobody to follow.',
+    '{T} keeps getting it right. That is the most dangerous thing in this castle.',
   ],
   // A BAD REASON, SAID AS A GOOD ONE. The engine reaches this label when the
   // pick is somebody the room already suspects — which throws away the name
   // the Faithfuls were about to vote for (murder.js: "a bad reason,
   // deliberately reachable"). These lines are the PROPOSER's words, so they
-  // argue FOR the pick; the old ones spelled out why it was a mistake, and the
-  // Traitor ended up arguing against the name they had just put forward.
+  // argue FOR the pick.
   'wasted-decoy': [
     'They all suspect {t}. Kill {obj} tonight and they decide they had it wrong, and spend tomorrow doubting themselves instead of us.',
-    '{T} is the name they are about to write. If {sub} dies first, the castle reads it as proof {sub} was innocent, and a room full of guilt does not look for anybody.',
-    '{T} is already under suspicion, so nobody will ask why {sub} was chosen. It is the quietest kill on the table.',
-    'Take {t} off the board and the castle loses the only theory it has. Let them start again from nothing.',
+    '{T} is the name they are about to write. If {sub} dies first, they will think {sub} was innocent, and a guilty room does not go looking.',
+    '{T} is already under suspicion, so nobody will ask why {sub} was chosen. It is the quietest one on the table.',
+    'Take {t} away and the castle loses the only theory it has. Let them start again from nothing.',
+    'They are going to vote {t} out anyway. Beat them to it, and watch them argue about what it means.',
   ],
   convenient: [
-    '{T} has fewer close allies than the other options. Removing {obj} is less likely to unite the castle against us.',
-    'Nobody is strongly protecting {t}. We can remove {obj} without creating an obvious enemy.',
-    '{T} is the lowest-risk target because fewer players are personally attached to {obj}.',
-    'This is not the most ambitious choice. {T} is simply the target least likely to expose us.',
+    'Nobody is going to go to war over {t}. That is the whole argument.',
+    '{T} is easy. No big friendships, no big reaction. We get a quiet morning.',
+    'I am not trying to be clever tonight. {T} is safe, and safe is fine.',
+    'If {t} goes, nobody looks upstairs. If anyone else goes, they might.',
+    'There are better names. There is no safer one than {t}.',
+    '{T} will be missed, but not for long, and not by anybody loud.',
+    '{T} is not a threat to anyone, which makes {obj} perfect. Nobody will see a reason in it.',
+    'If we take someone big, they will be looking for a pattern. There is no pattern in {t}.',
+    '{T} keeps to {pos} corner. Nobody will be standing guard over {obj}.',
+    'I want to wake up to confusion, not anger. {T} gives us confusion.',
+    'We do not need a statement every night. Tonight we need {t}.',
+    'Nobody will connect {t} to any of us. That is enough for me.',
   ],
   sacrifice: [
     '{T} is my friend, and it is no secret to anyone. That is exactly why it should be {obj}: nobody suspects the person who just lost somebody.',
-    'They have started saying my name. So I give them {t} — someone I am close to — and let them wonder why a Traitor would ever do that.',
-    'It costs me an ally, and it buys me the one thing I cannot make any other way: a reason for the room to cross me off.',
-    'I know how this looks. I am counting on how it looks. You do not kill your own friend unless you are innocent, and I need them believing that.',
+    'They have started saying my name. So I give them {t}, someone I am close to, and let them wonder why a Traitor would ever do that.',
+    'It costs me an ally. It buys me the one thing I cannot get any other way: a reason for the room to cross me off.',
+    'I know how this looks. I am counting on how it looks. You do not kill your own friend unless you are innocent.',
   ],
   forced: [
     'It is not a choice and we are all going to behave as though it were one. That is the part I mind.',
@@ -754,42 +775,168 @@ function _card(title, label, ic, inner) {
     + '<h3 class="cv-card-title">' + _esc(title) + '</h3>'
     + inner + '</div>';
 }
-// ── THE PACT TALKS BACK (2026-09-30) ──────────────────────────────────
+// ── THE PACT TALKS BACK (2026-09-30), AND ANSWERS THE REASON (2026-10-02) ─
 //
-// The user: "we need more dialogue in the conclave". A proposal was a speech
-// into silence; now somebody answers it — backing the name when it is the one
-// they came up the stair with, pushing their own when it is not — and the
-// proposer gets the last word. The overrule is said out loud by both sides,
-// and the name is spoken before the wax. {t} the name proposed, {mine} the
-// answering Traitor's own, {T} tonight's. No exit verb is written here.
-const TALK_AGREE = [
-  '{t}. Yes. I was going to say the same.',
-  'Fine by me. {t} has been getting far too close.',
-  'Good. Nobody will look at us for {t}.',
-  '{t} works. Clean, quiet, nobody sees it coming.',
-];
-// a pushback and the proposer's answer TO THAT pushback, as pairs, so the
-// comeback always answers what was actually said
-const TALK_PUSH = [
-  ['{t}? {t} is harmless. It’s {mine} who worries me.', 'Harmless people win this game. That’s exactly the problem.'],
-  ['Not {t}. If {t} goes tonight, they’ll look straight at us.', 'They’ll look at whoever they already suspect. That isn’t us.'],
-  ['I hear you. But {mine} is the one asking the questions.', 'Questions I can handle. {t} is the one getting answers.'],
-  ['You’re wasting a night on {t}. {mine} is the problem.', '{mine} can wait a night. {t} can’t.'],
-];
+// The user: "we need more dialogue in the conclave", then "and argument in
+// the conclave are also repetitive". The replies were four agreements and
+// four push-and-answer pairs for every night of every season, and none of
+// them knew WHY anybody wanted a name. They are now keyed by the engine's own
+// reason labels (js/tr/murder.js `_reasonFor`):
+//   - agreeing, you agree with THEIR reason;
+//   - pushing back, you push with YOUR reason for YOUR name;
+//   - and the proposer answers with THEIR reason, so the exchange is two
+//     motives meeting rather than two stock sentences.
+// {t} the name proposed, {mine} the answering Traitor's own, {T} tonight's.
+// Every pool walks by episode (see `_talkPick`), so a season uses its pools
+// before it repeats them. No exit verb is written here.
+const TALK_AGREE_BY = {
+  'onto-me': [
+    'Yes. I’ve seen how {t} looks at you. Do it before {t} starts saying it out loud.',
+    'Agreed. If {t} is onto you, {t} is onto all of us by Friday.',
+    '{t}, then. I’d rather lose a night than lose you.',
+    'Fine by me. {t} has been asking far too many questions.',
+    'Then it’s {t}. You can’t play this game with someone breathing down your neck.',
+    'Yes. Better {t} than you at that table tomorrow.',
+  ],
+  'listened-to': [
+    '{t}. Yes. When {t} talks, the whole table writes it down.',
+    'Agreed. Take {t} and the room loses the one voice it trusts.',
+    'Good. {t} has been right too often for my liking.',
+    'Yes. Every time {t} speaks, someone changes their vote.',
+  ],
+  beloved: [
+    'Yes. Everybody loves {t}. That’s exactly why {t} can’t be beaten at the table.',
+    '{t}. Agreed. We’ll never vote {t} out, so this is the only way.',
+    'Fine. They’ll grieve all morning instead of hunting.',
+    'Good choice. Half that castle would follow {t} anywhere.',
+    '{t}. Yes. I’ve tried to turn people against {t} and it just doesn’t stick.',
+    'Agreed. If {t} ever points at one of us, the whole room points with {t}.',
+    'Yes. We can’t beat {t} in the daylight, so we do it now.',
+  ],
+  'wasted-decoy': [
+    'Clever. They’re all looking at {t} anyway. Let them feel stupid for it.',
+    'Yes. Take {t} and they’ll tear up every theory they have.',
+    '{t}, fine. Nobody will ask why. They’ll just feel guilty.',
+    'I like it. They lose their only suspect and start again from nothing.',
+  ],
+  convenient: [
+    '{t} works. Clean, quiet, nobody sees it coming.',
+    'Fine by me. Nobody is going to go to war over {t}.',
+    'Good. {t} won’t leave a hole anybody notices for a day or two.',
+    'Yes. Safe, boring, and nobody looks upstairs.',
+    '{t}. Sure. Nobody’s going to cry for long.',
+    'Fine. I’d rather a quiet night than a clever one.',
+    '{t} it is. Easy in, easy out.',
+  ],
+  sacrifice: [
+    'Your own friend. That’s cold. It’s also brilliant.',
+    'If you can live with it, I can. Nobody will ever suspect you after this.',
+    'I wouldn’t have the stomach for it. But yes. {t}.',
+  ],
+};
+// a pushback for THEIR OWN name, by their own reason
+const TALK_PUSH_BY = {
+  'onto-me': [
+    'No. {mine} has been onto me for two days. Every night {mine} is alive, I’m closer to that chair.',
+    'Not {t}. {mine} said my name at breakfast. My name. I need {mine} gone tonight.',
+    'I’m sorry, but {mine} is watching me. If you don’t want to lose me, it has to be {mine}.',
+    '{mine} cornered me in the kitchen today. Asked me straight out. It’s {mine} or it’s me.',
+  ],
+  'listened-to': [
+    '{t}? The room doesn’t listen to {t}. It listens to {mine}.',
+    'You’re aiming at the wrong person. {mine} is the one they follow.',
+    'Forget {t}. When {mine} names someone, the whole table writes it down.',
+  ],
+  beloved: [
+    '{t} is nobody. {mine} is the one everybody loves, and we’ll never get {mine} at a Round Table.',
+    'If we’re only taking one, take {mine}. We will never out-vote that many friends.',
+    'Not {t}. {mine} has the whole castle wrapped round a finger.',
+    'Everyone adores {mine}. That’s more dangerous than anything {t} has done.',
+    '{mine} has more friends in this castle than the three of us put together. Take {mine}.',
+  ],
+  'wasted-decoy': [
+    'Why waste it on {t}? They’re all looking at {mine} already. Let them watch {mine} die and feel stupid.',
+    'Take {mine}. They suspect {mine}, and nothing confuses them like a suspect turning up dead.',
+  ],
+  convenient: [
+    '{t} is a risk. {mine} is easy. Nobody fights over {mine}.',
+    'Too loud. {t} has friends. Do {mine}, quietly, and get some sleep.',
+    'I’d rather not start a war tonight. {mine} is the safe one.',
+    'Why risk it? {mine} goes, nobody notices till lunch.',
+    '{mine}. No fuss, no friends, no questions in the morning.',
+  ],
+  sacrifice: [
+    'If anybody’s spending a friend tonight, it’s me. {mine}. Nobody will ever look at me again.',
+    'Let me give them {mine}. I know what it costs. That’s the point.',
+  ],
+};
+// and the proposer's answer, by THEIR reason for {t}
+const TALK_ANSWER_BY = {
+  'onto-me': [
+    '{mine} can wait. {t} is onto ME, and I’m the one who has to sit at that table tomorrow.',
+    'And if {t} gets me sent home, who’s left to protect you? It’s {t}.',
+    'I hear you. But {t} said my name out loud. {mine} hasn’t.',
+    'You’re not the one {t} is staring at all day. I am.',
+  ],
+  'listened-to': [
+    '{mine} can talk all they like. When {t} speaks, people actually move.',
+    'Kill {mine} and they’ll find someone else to follow. Kill {t} and there’s no one left to follow.',
+    '{t} has been right every time. One more right call and it’s one of us.',
+  ],
+  beloved: [
+    '{mine} we can vote out any week. Nobody is ever voting out {t}.',
+    'You can win an argument against {mine}. Nobody wins one against {t}. They’re too liked.',
+    'Look at who sits with {t} at dinner. All of them. That’s why.',
+    '{mine} is a problem for next week. {t} is a problem for every week.',
+    'If {t} turns on one of us, we’re finished. {mine} can’t do that.',
+  ],
+  'wasted-decoy': [
+    'That’s the point. They’re about to vote {t} out. Take {t} first and they’ll never trust their own guess again.',
+    'If the table takes {t}, they learn something. If we take {t}, they learn nothing.',
+  ],
+  convenient: [
+    'Exactly why it’s {t}. Nobody notices {t} is gone until lunch.',
+    '{mine} would be a statement. I don’t want a statement. I want a quiet night.',
+    'Big names get big reactions. {t} gets a shrug.',
+    'I don’t want anybody looking up the stairs tomorrow. {t} keeps their eyes down.',
+    '{mine} would start a manhunt. {t} won’t.',
+  ],
+  sacrifice: [
+    'I know {t} is my friend. That’s why it works. Nobody kills their own friend unless they’re innocent.',
+    'It has to be someone close to me. It’s the only way they stop looking at me.',
+  ],
+};
+// the overruled one, and the one who won
 const TALK_LOSES = [
   'Fine. But when this goes wrong, remember I said {t}.',
   'I don’t like it. I’ll go along with it, but I don’t like it.',
   'You’re making a mistake. I want that on the record.',
+  'Fine. Don’t come crying to me when {t} is still at breakfast asking questions.',
+  'Two against one. Lovely. I’ll remember that.',
+  'Do what you like. I’ve said my piece.',
+  'Okay. But {t} isn’t going anywhere, and neither is the problem.',
+  'I’ll write it. I won’t pretend I agree.',
 ];
 const TALK_WINS = [
   'Noted. Now let’s move on.',
   'It won’t go wrong.',
   'Then you can be the first to say you told us so.',
+  'We’ll deal with {t} another night. Promise.',
+  'Thank you. I know that wasn’t easy.',
+  'Trust me on this one.',
+  'You’ll get your night. Just not this one.',
+  'If I’m wrong, you can have the pen next time.',
 ];
 const TALK_SETTLE = [
   'Then it’s settled. {T}.',
   'That’s it, then. {T}. Write it down.',
   '{T}. Nobody changes their mind on the stairs.',
+  'Right. {T}. Let’s go before anyone hears us.',
+  '{T}, then. Sleep well, everyone.',
+  'Done. {T}. Not a word of this at breakfast.',
+  '{T}. And everybody acts surprised in the morning.',
+  'Agreed, then. {T}. Blow the candles out.',
+  'So it’s {T}. Back downstairs, one at a time.',
 ];
 
 function _said(who, line) {
@@ -1022,8 +1169,12 @@ function _buildBeats(rec, ep) {
   // SOMEBODY ANSWERS: the next Traitor round the table, backing the name or
   // pushing their own; if they push, the proposer has the last word
   const talkUsed = new Set();
+  const epNo = Number(rec.ep) || 0;
   const _pickFresh = (pool, k) => {
-    const i0 = _hash(k) % pool.length;
+    // A SEASON WALKS THE POOL: each night starts about a third of the way on
+    // from the last, so the same exchange does not come back a few nights
+    // later; within a night `talkUsed` still skips anything already said
+    const i0 = (epNo * Math.max(2, Math.ceil(pool.length / 3)) + (_hash(k) % 2)) % pool.length;
     for (let d = 0; d < pool.length; d++) {
       const x = pool[(i0 + d) % pool.length], id = Array.isArray(x) ? x[0] : x;
       if (!talkUsed.has(id)) { talkUsed.add(id); return x; }
@@ -1037,17 +1188,25 @@ function _buildBeats(rec, ep) {
     const k = key + '|ans|' + i + '|' + by.traitor;
     const agree = by.target === a.target;
     const subs = { t: _esc(a.target), mine: _esc(by.target) };
-    if (agree) return _said(by.traitor, _fill(_pickFresh(TALK_AGREE, k), subs));
-    const pair = _pickFresh(TALK_PUSH, k);
-    return _said(by.traitor, _fill(pair[0], subs)) + _said(a.traitor, _fill(pair[1], subs));
+    // agreeing, you agree with THEIR reason; pushing, you push YOUR reason,
+    // and they answer with theirs
+    if (agree) return _said(by.traitor, _fill(_pickFresh(TALK_AGREE_BY[a.reason] || TALK_AGREE_BY.convenient, k), subs));
+    const push = _pickFresh(TALK_PUSH_BY[by.reason] || TALK_PUSH_BY.convenient, k + '|p');
+    const back = _pickFresh(TALK_ANSWER_BY[a.reason] || TALK_ANSWER_BY.convenient, k + '|b');
+    return _said(by.traitor, _fill(push, subs)) + _said(a.traitor, _fill(back, subs));
   };
   // the overrule shows the losing slip again: with the words it was put with
   const saidReason = new Map();
   argued.forEach((a, i) => {
     const subs = Object.assign({ t: a.target, T: a.target, a: a.traitor, A: a.traitor },
       _pr(a.target));
-    const reason = _fill(_pickAway(REASON_LINES[a.reason] || REASON_LINES.convenient,
-      key + '|why|' + a.traitor + '|' + a.target, said), subs);
+    // the reasons walk by episode too: the same case was being made, word for
+    // word, every few nights
+    const rpool = REASON_LINES[a.reason] || REASON_LINES.convenient;
+    // three a night, so consecutive nights never share a reason
+    const r0 = (epNo * 3 + i) % rpool.length;
+    const reason = _fill(_pickAway([...rpool.slice(r0), ...rpool.slice(0, r0)],
+      'walk|' + a.traitor, said), subs);
     saidReason.set(a.traitor + '|' + a.target, reason);
     // The unsaid fires on `onto-me` and only there: that is the one label the
     // engine records where the stated argument and the real motive are
@@ -1174,8 +1333,8 @@ function _buildBeats(rec, ep) {
           Object.assign({ t: lost, T: lost, a: x.loser, A: x.loser }, _pr(lost))),
         });
       }).join('')
-      + _said(o.loser, _fill(_pick(TALK_LOSES, key + '|loses'), { t: _esc(kept) }))
-      + _said(o.winner, _pick(TALK_WINS, key + '|wins'))
+      + _said(o.loser, _fill(_pickFresh(TALK_LOSES, key + '|loses'), { t: _esc(kept) }))
+      + _said(o.winner, _fill(_pickFresh(TALK_WINS, key + '|wins'), { t: _esc(kept) }))
       + '<p>' + _pick(OVERRULE_KEPT, key + '|kept') + '</p>'),
     'overrule', 'overrule');
   }

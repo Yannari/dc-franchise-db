@@ -28,16 +28,27 @@
 //   be used and the HOH not care at all, because the person who came down was
 //   never the point. Anger belongs to the week where the TARGET walked.
 import { addBond, getPerceivedBond } from '../bonds.js';
-import { pronouns } from '../players.js';
 import { allyStake, rememberBBStrategy, setBBTarget } from './shared-strategy.js';
 import { recordProtection, recordStrategicRespect } from '../relationship-events.js';
+import { scriptBeat } from './script/inject.js';
 
 const beat = (text, players, badgeText, badgeClass = 'blue') =>
   ({ text, players: [...new Set((players || []).filter(Boolean))], badgeText, badgeClass });
 
+// A ceremony consequence, written as a scene (lines/vfall.js). The plain
+// sentence stays only for a scene that could not be written.
+function scene(eventId, kind, who, data, plain, players, badgeText, badgeClass, { week, hoh }) {
+  const b = { ...beat(plain, players, badgeText, badgeClass), eventId, category: 'ceremonies', location: 'living-room' };
+  const s = scriptBeat(kind, who, data, { week, act: 'veto-ceremony', hoh, room: 'living-room',
+    salt: `${eventId}|${who.a}` });
+  return s ? { ...b, text: s.text, lines: s.lines, lineId: s.lineId } : b;
+}
+
 const bond = (a, b) => { try { return getPerceivedBond(a, b); } catch { return 0; } };
 const stake = (a, b) => { try { return allyStake(a, b); } catch { return 0; } };
-const pick = (pool, rng) => pool[Math.floor((rng ? rng() : Math.random()) * pool.length)];
+// The wording used to be drawn from the ceremony's own dice. The draw stays, so
+// the season after it rolls exactly as it did; the words now come from a scene.
+const draw = rng => (rng ? rng() : Math.random());
 
 /**
  * How much the Head of Household actually lost.
@@ -91,45 +102,6 @@ export function saveExpectation({ nominee, holder, decision, replacementPool = [
   return Math.max(0, Math.min(1, base * (selfSave ? 0.45 : 1)));
 }
 
-const LEFT_UP = [
-  (n, h, p) => `${n} watches ${h} put the veto back in the box and does not look away from ${h} `
-    + `while ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} it.`,
-  (n, h) => `${h} had one thing that could have moved ${n} off that block and chose to keep it. `
-    + `${n} says nothing at the ceremony, which everybody notices more than shouting.`,
-  (n, h) => `${n} thanks ${h} for nothing, quietly, on the way out of the room. It is not a joke `
-    + 'and both of them know it.',
-  (n, h) => `${n} had spent the week being told this was handled. ${h} handled it by doing `
-    + 'absolutely nothing, and there is a version of this house where that is the last favour '
-    + `${n} ever does ${h}.`,
-];
-
-const SEATED = [
-  (r, hoh) => `${r} was not on anybody's list this morning and is on the block by the afternoon. `
-    + `${hoh} says it is not personal. ${r} has heard that before.`,
-  (r, hoh, saved) => `${r} takes the chair ${saved} was sitting in an hour ago and does the `
-    + `arithmetic out loud: somebody had to go up, and ${hoh} thought about it for four seconds.`,
-  (r, hoh) => `"Pawn." ${r} repeats the word back to ${hoh} without any particular expression. `
-    + 'Pawns go home in this game and everybody in the room knows the statistics.',
-  (r, hoh, saved) => `${r} is polite to ${hoh} and cannot look at ${saved} at all, which is the `
-    + 'wrong way round and is going to matter in about nine days.',
-];
-
-const OVERRULED = [
-  (h, hoh, saved) => `${hoh} runs the ceremony, says the right words, and watches ${saved} walk off `
-    + `a block ${hoh} spent three days building. ${h} did that in front of everybody.`,
-  (h, hoh) => `${hoh} does not react at the ceremony. ${hoh} reacts about forty minutes later, to `
-    + `somebody else, in a room ${h} is not in.`,
-  (h, hoh, saved) => `The week was pointed at ${saved} and is not any more. ${hoh} has one nomination `
-    + `left to spend and a much shorter list of people to spend it on, and ${h} is now on it.`,
-];
-
-const SHRUG = [
-  (h, hoh, saved) => `${saved} comes down and ${hoh} barely moves. The block still has the name on `
-    + `it that ${hoh} wanted on it, and a swapped chair is not a wrecked week.`,
-  (h, hoh) => `${hoh} shrugs it off, honestly rather than for show: the veto changed a face and did `
-    + 'not change the plan.',
-];
-
 /**
  * Everything the ceremony costs, applied.
  *
@@ -153,10 +125,8 @@ export function applyVetoFallout({
     // And the bond, which even this did not move. Being taken off the block is
     // the single largest favour available in the format.
     addBond(holder, saved, 2.2);
-    beats.push(beat(
-      `${saved} comes off the block because ${holder} decided so. That is not a gesture in this `
-        + 'house, it is a debt, and it will be called in.',
-      [holder, saved], 'A DEBT', 'gold'));
+    beats.push(scene('veto-debt', 'vfall.debt', { a: saved, b: holder }, { ending: 'scene' },
+      `${holder} uses the veto on ${saved}.`, [holder, saved], 'A DEBT', 'gold', { week, hoh }));
     // ── 4. AND THE HOUSE READS IT ──
     //
     // A veto used on somebody in front of everybody is information. The Coup
@@ -187,8 +157,10 @@ export function applyVetoFallout({
     if (expectation >= 0.5 && bond(n, holder) < 0) {
       try { setBBTarget(n, holder, 'left me on the block', { week: weekNum }); } catch { /* texture */ }
     }
-    beats.push(beat(pick(LEFT_UP, rng)(n, holder, pronouns(holder)),
-      [n, holder], expectation >= 0.5 ? 'LEFT UP BY A FRIEND' : 'LEFT UP', 'red'));
+    draw(rng);
+    beats.push(scene('veto-left-up', 'vfall.leftup', { a: n, b: holder },
+      { ending: expectation >= 0.5 ? 'friend' : 'plain' }, `${holder} leaves ${n} on the block.`,
+      [n, holder], expectation >= 0.5 ? 'LEFT UP BY A FRIEND' : 'LEFT UP', 'red', { week, hoh }));
   }
 
   // ── 3. THE CHAIR NOBODY VOLUNTEERED FOR ──
@@ -204,8 +176,11 @@ export function applyVetoFallout({
       // left it is arithmetic and nobody blames arithmetic.
       try { setBBTarget(replacement, hoh, 'put me up as a replacement', { week: weekNum }); } catch { /* texture */ }
     }
-    beats.push(beat(pick(SEATED, rng)(replacement, hoh || 'the Head of Household', saved || 'nobody'),
-      [replacement, hoh, saved], 'AND ONE MORE', 'red'));
+    draw(rng);
+    beats.push(scene('veto-seated', 'vfall.seated',
+      { a: replacement, b: hoh || null, c: saved && saved !== replacement ? saved : null },
+      { ending: 'scene', intent: hoh ? 'hoh' : 'anon' }, `${replacement} goes up as the replacement.`,
+      [replacement, hoh, saved], 'AND ONE MORE', 'red', { week, hoh }));
   }
 
   // ── 4. THE HEAD OF HOUSEHOLD, IN PROPORTION TO WHAT IT COST THEM ──
@@ -217,14 +192,17 @@ export function applyVetoFallout({
       // does not only resent that; it revises upward.
       try { recordStrategicRespect(hoh, holder, damage * 1.8, 'used the veto against my week', weekNum); } catch { /* texture */ }
       try { rememberBBStrategy(hoh, holder, 'crossed-me', damage * 2, { week: weekNum }); } catch { /* texture */ }
-      beats.push(beat(pick(OVERRULED, rng)(holder, hoh, saved || 'a nominee'),
-        [hoh, holder], 'THE PLAN, IN PIECES', 'red'));
+      draw(rng);
+      beats.push(scene('veto-overruled', 'vfall.overruled', { a: hoh, b: holder },
+        { ending: 'scene', saved: saved || 'a nominee' }, `${holder}'s veto breaks up ${hoh}'s block.`,
+        [hoh, holder], 'THE PLAN, IN PIECES', 'red', { week, hoh }));
     } else if (saved && saved !== holder) {
       // Said out loud, because "the veto was used and the Head of Household did
       // not mind" is a real outcome and reads as an omission if nothing marks
       // it. A swapped pawn is not a wrecked week.
-      beats.push(beat(pick(SHRUG, rng)(holder, hoh, saved),
-        [hoh, holder], 'NO REAL DAMAGE', 'grey'));
+      draw(rng);
+      beats.push(scene('veto-shrug', 'vfall.shrug', { a: hoh, b: holder }, { ending: 'scene', saved },
+        `${hoh} shrugs off the veto.`, [hoh, holder], 'NO REAL DAMAGE', 'grey', { week, hoh }));
     }
   }
 

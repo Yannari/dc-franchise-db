@@ -23,17 +23,10 @@
 //
 // The act carries `steals` with `kind` and `gave`, so which of these fired is
 // a fact about the week rather than a guess.
-import { pronouns } from '../players.js';
 import { pStats, band, closestTo } from './_read.js';
 import { BB_PUNISHMENTS } from '../bb/punishments.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 const _reactable = ctx => ctx?.act === 'house' || ctx?.act === 'campaign';
 
@@ -98,20 +91,11 @@ const choseTheMoney = {
     const cast = _soldOutCast(house, ctx);
     if (!cast) return null;
     const { who, item, judge } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} is on the block holding ${item}. Everybody in this house watched ${p.obj} choose it, `
-        + `and ${judge} has already worked out how that sentence sounds at a jury vote.`,
-      `"${item}." ${judge} says it flatly, twice, at two different people, and does not add anything to it. `
-        + 'It does not need anything added to it.',
-      `${who} explains the choice to anybody who will listen, and the explanation gets longer every time, `
-        + `which ${judge} finds more revealing than the choice did.`,
-      `There was one thing on that table that could have saved ${who}, and ${p.sub} came away with ${item}. ${judge} says this is the story jurors will hear if ${who} reaches the end.`,
-    ], ctx, who, judge);
+    const scene = makeScene('swap.money', { a: who, b: judge }, { ending: 'scene', item }, [], 'living-room');
     api.popDelta(who, -1);
     api.suspicion(judge, who, 0.8);
     try { api.remember(judge, who, 'chose-a-prize-over-the-veto', 2, { twist: 'bb-prizes-and-punishments', item }); } catch { /* texture */ }
-    return { text, players: [who, judge], badgeText: 'A JURY WILL HEAR THIS', badgeClass: 'red' };
+    return { scene, players: [who, judge], badgeText: 'A JURY WILL HEAR THIS', badgeClass: 'red' };
   },
 };
 
@@ -128,23 +112,13 @@ const theRobbery = {
     const cast = _robbedCast(house, ctx);
     if (!cast) return null;
     const { victim, thief, gave } = cast;
-    const p = pronouns(victim);
-    const text = _variant([
-      `${thief} took the veto out of ${victim}'s hands while ${victim} was sitting on the block, and handed `
-        + `over ${gave} for it. There is no reading of that ${victim} has to pretend not to have.`,
-      `${victim} had the only thing on that table that mattered for about ninety seconds. ${thief} has it now, `
-        + `and ${victim} has ${gave} and a campaign to run.`,
-      `"You knew where I was sitting." ${victim} says it once, quietly, and ${thief} does not have an answer `
-        + 'that survives being said out loud.',
-      `Everybody watched it happen, which is the part ${thief} did not think about: this was not a trade, `
-        + `it was a public decision about whether ${victim} stays in this house.`,
-    ], ctx, victim, thief);
+    const scene = makeScene('swap.robbery', { a: victim, b: thief }, { ending: 'scene', gave }, [], 'living-room');
     api.addBond(victim, thief, -2.2);
     api.suspicion(victim, thief, 1.8);
     api.popDelta(victim, 1.5);
     try { api.setTarget(victim, thief, 'took the veto off me on the block'); } catch { /* texture */ }
     try { api.remember(victim, thief, 'robbed-me-of-the-veto', 3, { twist: 'bb-prizes-and-punishments' }); } catch { /* texture */ }
-    return { text, players: [victim, thief], badgeText: 'NOT A TRADE', badgeClass: 'red' };
+    return { scene, players: [victim, thief], badgeText: 'NOT A TRADE', badgeClass: 'red' };
   },
 };
 
@@ -160,19 +134,9 @@ const gaveItAway = {
     const cast = _gaveItAwayCast(house, ctx);
     if (!cast) return null;
     const { who, took, watcher } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} had the Power of Veto and swapped it for ${took}. ${watcher} cannot decide whether that is `
-        + `somebody who is not playing or somebody who wanted the house to think so.`,
-      `Handing the veto away is either the most relaxed thing anybody has done all season or the most `
-        + `calculated, and ${watcher} has been turning it over since it happened.`,
-      `"${p.Sub} gave it away." ${watcher} keeps saying it like the sentence has more in it than it does. `
-        + `It might.`,
-      `${who} looks perfectly happy with ${took}, which is exactly what ${watcher} would do in ${p.posAdj} position `
-        + 'if it had been deliberate.',
-    ], ctx, who, watcher);
+    const scene = makeScene('swap.gave', { a: who, b: watcher }, { ending: 'scene', took }, [], 'kitchen');
     api.suspicion(watcher, who, 0.9);
-    return { text, players: [who, watcher], badgeText: 'LET IT GO', badgeClass: 'blue' };
+    return { scene, players: [who, watcher], badgeText: 'LET IT GO', badgeClass: 'blue' };
   },
 };
 
@@ -187,22 +151,15 @@ const outOfTheBoxes = {
   fire(house, ctx, api) {
     const cast = _costumeCast(house, ctx);
     if (!cast) return null;
-    const { who, item, def, other, all } = cast;
-    const serving = def?.verb ? `${def.verb} ${item}` : `serving ${item}`;
-    const text = _variant([
-      `${who} left the competition ${serving}. ${other} keeps pointing out that ${who} did not have to take that box, which is not true and does not make the week easier.`,
-      `${all.length > 1 ? `${all.map(x => x.name).join(' and ')} are` : `${who} is`} paying for a competition `
-        + `that was over on Wednesday, and will still be paying on Thursday when it matters.`,
-      `${who} drew ${item} by luck. The cost is predictable: every summons, restriction or interruption gives ${other} another chance to finish a conversation without ${who}.`,
-      `${who} unwrapped ${item} in front of everybody and now has to serve it. ${other} finds it funny for about a day and strategically useful for the rest of the week.`,
-    ], ctx, who, other);
+    const { who, item, other, all } = cast;
+    const scene = makeScene('swap.boxes', { a: who, b: other }, { ending: 'scene', item }, [], 'kitchen');
     api.popDelta(who, 1);
     api.suspicion(other, who, -0.3);
     // The trailing slot is "somebody else still serving it" and was taken
     // straight off the list, so when that happened to be `other` the card
     // showed the same face twice.
     const alsoWearing = all.slice(1, 3).map(x => x.name).filter(n => n !== who && n !== other);
-    return { text, players: [who, other, alsoWearing[0]].filter(Boolean),
+    return { scene, players: [who, other, alsoWearing[0]].filter(Boolean),
       badgeText: 'STILL WEARING IT', badgeClass: 'red' };
   },
 };

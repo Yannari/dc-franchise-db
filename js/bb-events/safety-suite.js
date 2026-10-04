@@ -21,16 +21,10 @@
 // Nothing here needs protecting. Every fact in this twist is public, which is
 // exactly why the pressure lands where it does.
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import { pStats, band, perceived, closestTo, furthestFrom } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
+import { numberWord } from '../bb/script/inject.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 const _reactable = ctx => ctx?.act === 'house' || ctx?.act === 'campaign';
 
@@ -95,18 +89,11 @@ const thePlusOne = {
     const cast = _plusOneCast(house, ctx);
     if (!cast) return null;
     const { s, who, giver, watcher } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} is safe this week and paying for it in ${s.punishmentLabel || 'public'}, which is a strange thing to have to thank somebody for. `
-        + `${p.Sub} ${p.sub === 'they' ? 'thank' : 'thanks'} ${giver} anyway, twice, in front of people.`,
-      `${giver} had exactly one of those to give and gave it to ${who}. ${watcher} did not need any more than that to know where those two stand.`,
-      `"You could have just not picked me." "You'd be on the block." ${who} does not have an answer to that and resents having to not have one.`,
-      `A gift with a bill attached: ${who} cannot be nominated and cannot stop being reminded why. ${watcher} has written the pair of them down as a pair.`,
-    ], ctx, who, giver);
+    const scene = makeScene('suite.plusone', { a: who, b: giver, c: watcher }, { ending: 'scene', bill: s.punishmentLabel || 'a punishment' }, [], 'kitchen');
     api.addBond(who, giver, 1.4);
     api.suspicion(watcher, giver, 1.2);
     try { api.remember(watcher, giver, 'named-a-plus-one', 1, { twist: 'bb-safety-suite', plusOne: who }); } catch { /* texture */ }
-    return { text, players: [who, giver, watcher], badgeText: 'SAFE, AND PAYING FOR IT', badgeClass: 'gold' };
+    return { scene, players: [who, giver, watcher], badgeText: 'SAFE, AND PAYING FOR IT', badgeClass: 'gold' };
   },
 };
 
@@ -122,19 +109,10 @@ const spentForNothing = {
     const cast = _wastedCast(house, ctx);
     if (!cast) return null;
     const { who, watcher } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} has nothing left. The one entry ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} ever going to get went on a week `
-        + `${p.sub} lost, and every week after this one gets played without a net.`,
-      `${watcher} watched ${who} spend it and lose, and has been thinking about that ever since — not unkindly. `
-        + 'It is simply a name that can no longer buy its way off the block.',
-      `"At least I tried." ${who} says it a few times. ${watcher} agrees warmly and moves ${who} up a list.`,
-      `The entry is gone and the safety never arrived, which is the worst outcome the suite has, and ${who} `
-        + `has been carrying it around all week like ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} not.`,
-    ], ctx, who, watcher);
+    const scene = makeScene('suite.wasted', { a: who, b: watcher }, { ending: 'scene' }, [], 'living-room');
     api.popDelta(who, -0.5);
     try { api.setTarget(watcher, who, 'no entry left and no protection'); } catch { /* texture */ }
-    return { text, players: [who, watcher], badgeText: 'NOTHING LEFT TO SPEND', badgeClass: 'red' };
+    return { scene, players: [who, watcher], badgeText: 'NOTHING LEFT TO SPEND', badgeClass: 'red' };
   },
 };
 
@@ -150,18 +128,10 @@ const heldItAndLost = {
     const cast = _heldWrongCast(house, ctx);
     if (!cast) return null;
     const { who, watcher } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} kept the pass, because this was not going to be the week. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} on the block `
-        + 'with it still in hand, which is a bet lost in front of the entire house.',
-      `The pass is worth nothing on the block and ${who} still has one, which is the single most expensive `
-        + `read ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} made all season.`,
-      `"I didn't think it was me." Everybody nods. ${watcher || 'The room'} does not point out that this is what the suite is FOR.`,
-      `${who} sat out an hour that was designed for exactly this situation, and is now campaigning through it.`,
-    ], ctx, who, watcher);
+    const scene = makeScene('suite.held', { a: who, b: watcher || null }, { ending: 'scene', intent: watcher ? 'seen' : 'alone' }, [], 'living-room');
     api.popDelta(who, 1);
     if (watcher) api.suspicion(watcher, who, 0.6);
-    return { text, players: [who, watcher].filter(Boolean),
+    return { scene, players: [who, watcher].filter(Boolean),
       badgeText: 'THE BET, LOST IN PUBLIC', badgeClass: 'red' };
   },
 };
@@ -178,17 +148,10 @@ const countingTheEntries = {
     const cast = _exhaustedCast(house, ctx);
     if (!cast) return null;
     const { counter, bare, spent, left } = cast;
-    const text = _variant([
-      `${counter} keeps the count in ${pronouns(counter).posAdj} head and it is the most useful thing anybody in this house owns: `
-        + `${spent.length} people have nothing left, ${left.length} still do, and the first list is where next week's nominations come from.`,
-      `Nobody is hiding anything here — that is what makes it dangerous. ${counter} can name every houseguest who can no longer buy safety, `
-        + `starting with ${bare}.`,
-      `"Who's still got one?" It gets asked at the table like a card count, and ${counter} answers before anybody else can.`,
-      `${bare} is out of entries and there is no version of the rest of this season where that stops being true. ${counter} has built a plan on it.`,
-    ], ctx, counter, bare);
+    const scene = makeScene('suite.count', { a: counter, b: bare }, { ending: 'scene', intent: left.length > 1 ? 'many' : 'one', spent: numberWord(spent.length), left: numberWord(left.length) }, [], 'kitchen');
     api.suspicion(counter, bare, 1.1);
     try { api.setTarget(counter, bare, 'no safety left to buy'); } catch { /* texture */ }
-    return { text, players: [counter, bare], badgeText: 'THE COUNT', badgeClass: 'blue' };
+    return { scene, players: [counter, bare], badgeText: 'THE COUNT', badgeClass: 'blue' };
   },
 };
 
@@ -204,18 +167,10 @@ const whenToSpendIt = {
     const cast = _timingCast(house, ctx);
     if (!cast) return null;
     const { who, pressed } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} and ${pressed} spend an hour on the only question the suite actually asks: not whether to use it, but when. `
-        + `Neither of them says a number out loud and both of them are holding one.`,
-      `"If we both go in, one of us wastes it." ${pressed} is right, and ${who} now knows ${pressed} has been thinking about it as a pair.`,
-      `${who} tries to talk ${pressed} into going first, warmly, for ${pressed}'s own sake. ${pressed} notices the warmth arriving before the argument.`,
-      `The entry is worth more every week ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} not spend it and worth nothing at all the week `
-        + `${p.sub} ${p.sub === 'they' ? 'are' : 'is'} evicted holding it. ${who} says that sentence to ${pressed} like it is a plan.`,
-    ], ctx, who, pressed);
+    const scene = makeScene('suite.when', { a: who, b: pressed }, { ending: 'scene' }, [], 'backyard');
     api.addBond(who, pressed, 0.5);
     api.suspicion(pressed, who, 0.5);
-    return { text, players: [who, pressed], badgeText: 'NOT WHETHER — WHEN', badgeClass: 'blue' };
+    return { scene, players: [who, pressed], badgeText: 'NOT WHETHER — WHEN', badgeClass: 'blue' };
   },
 };
 

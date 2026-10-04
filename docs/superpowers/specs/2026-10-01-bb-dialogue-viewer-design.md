@@ -149,6 +149,67 @@ plain one and its decay rotates them. A `room` fact gates staging that names a
 room. Pools sized by sweep (plays per season vs entries); 3-season read: under
 3% of lines repeat, none within a week.
 
+**Phase 6 status (2026-10-02, in progress):** converted so far — social.js,
+deals.js and power.js in full; alliance-life.js; the week engine's own
+alliance beats (formed / recruited / betrayal / repair / collapsed, via
+`bb/script/inject.js scriptBeat`); campaign pitches (`campaignCase` split
+from `campaignArgument`: the CASE keyed on the argument the engine chose,
+joined with the voter's REPLY); house-life.js except have-nots and the house
+meeting; house-friction.js in full. Every batch: five seeded seasons replay
+identically, a season read, and pools grown until under ~3% of lines repeat.
+New guards: no pool entry may be narration only; staging that names a room
+needs `when.room`. **Writing rule (user, 2026-10-02):** plain English, no
+clever writing, and the old prose is not a model — a plain-English pass
+rewrote ~200 lines.
+
+**Phase 6 status (2026-10-03):** also converted — phases, blocs, venue,
+fallout, bonds, reign (not its house meeting), schemes, story-followups,
+location-texture, editorial-social, consequence-arcs, showmance and
+showmance-arcs. Patterns worth keeping:
+- **Generators that return several results** (schemes.js →
+  social-manipulation.js): each result type maps to a scene, `scriptBeat`
+  writes each with the story's dice and `joinScripts` joins them; names a
+  result does not carry come from the event as `extra`, and the fold result
+  must carry `location` or it stages in the Diary Room.
+- **Events that picked text with the ENGINE's rng** (editorial-social.js):
+  the removed pick becomes a bare `rng()` so the draw is kept.
+- **Rare events** (a first kiss, Battle of the Block pairs, the kiss trap,
+  young showmances) sit in bb-talk's `RARE` set and are read rendered.
+- **A scene's room must be one of `BB_ROOMS`** — 'storage' or 'bathroom' is
+  dropped and the transcript's "in the Diary Room" wins; bb-talk now asserts
+  no converted beat with a spoken line is staged there.
+- People a scene is ABOUT are data (`{target}`, `{partner}`), never in `who`.
+
+**Phase 6 done (2026-10-03).** Every file in `bb-events/` is a scene — the
+house meetings (`bb/script/meeting.js`, four parts), have-nots, vote plans,
+the jury bubble, power knowledge, kinship, franchise history and all
+twenty-odd twist families — and so are the week engine's own beats: the
+veto ceremony's consequences (`bb/veto-fallout.js`, lines/vfall.js), the
+folded campaign pitch, the alliance with nobody left to react, and the
+veto week with a secret HOH (lines/anon.js). `aired.js` and `freshLine`
+are deleted: the last callers were picking PEOPLE, and a name is never an
+aired line. Measured: no beat in the five seeded seasons carries text
+without a script, and they replay identically. More patterns:
+- **Twist-only and setup-only events** read in seasons that run them (the
+  scratch harness scheduled one twist per season, at a chosen week, with a
+  theme, declared kin or a seeded franchise ledger); registered in
+  bb-talk's `TWIST_ONLY`.
+- **Secrets stay secret in the Diary Room too**: the Invisible HOH, the
+  Hacker, America's MVP, the Coin winner and whoever took the Den's offer
+  are never named as such; a right guess shows only on the badge.
+- **Speech says the person, not the form**: kinship's `{kinword}` is "my
+  brother", "my wife" by the person's pronouns; the ledger's "(Season 3)"
+  becomes `{when}`, and nothing it does not record is said.
+- **A number or a list goes mid-sentence** ("There are {campers} people…"),
+  and a line that needs two or more is gated (`intent: 'many'`).
+Left for Phase 7, by design: the twists' own ACT narration (Safety Suite,
+Chain of Safety, the Hidden Power hunt, the prize exchange, Duo Week, the
+comeback rounds, the White Locust chain, Pandora's box opening, and so on —
+about 250 beats across one season of each twist), which the section 5 plan
+gives a stepped set and a mockup each. Three cases with nobody in them
+("nothing to trade", an alliance down to nobody, an empty-house meeting)
+keep their sentence.
+
 ### 4.3 BB's clock and facts
 
 - **`clock` is a BB day:** `week.num * 10 + dayIndex`, where `dayIndex` comes
@@ -331,6 +392,25 @@ volume settings hold.
 - `tests/bb-vp-sound.test.js`: every set and every stepped scene kind maps to a
   bed in the catalog; no sting fires on Reveal all; every file named in the
   catalog exists or is listed as pending in `docs/bb-music.md`.
+
+**Phase 7 status (2026-10-03):** the Safety Suite is the first twist built
+as its own set (mockup/mockup-bb-twist-safety-suite.html, approved; commit
+79c2b291). The pattern for the rest:
+- **A twist explains itself first** (user, 2026-10-03: "explain the twist
+  better"). Its opening screen has Big Brother read the rules, one line per
+  rule, while a rules card fills in and the voice drops to a caption.
+- **Four parts, each its own screen:** the announcement and rules, the
+  choice, the contest, the consequence. Built sets (`built: true`) are light
+  and colour with the twist's own SVG objects (keycards, door, clock, price
+  card); a bright set (`bright`) switches the HUD to dark text.
+- **The engine keeps its dice and drops its prose:** each beat gets a plain
+  fact and a `part`; ceremony.js writes the words from a `<twist>act.*` pool
+  with its own dice and puts them on the beat. The viewer reads the act's
+  data (who, scores, prices) for the objects and Big Brother's fixed lines.
+- **Draw what the engine decided, not a simplification of it:** a run that
+  beat the clock but lost is TOO SLOW, not SHORT.
+- The classic board's id joins `REPLACED`; a test plays real twist weeks
+  (tests/bb-vp-safety-suite.test.js).
 
 ## 5. Phases
 

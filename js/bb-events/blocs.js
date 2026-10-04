@@ -28,25 +28,24 @@ import {
   listBlocs, knowledgeOf, knownBlocsFor, readPower, pointOfAttack, chooseBlocTarget,
   tellAbout, exposeBloc, outsidersTo, hasPlanAgainst, recordPlanAgainst, blocExposure,
 } from '../bb/blocs.js';
-import { timesVotedTogether, evictionCount } from '../bb/fallout.js';
-import { freshLine } from '../bb/aired.js';
+import { timesVotedTogether } from '../bb/fallout.js';
+import { makeScene } from '../bb/script/scene.js';
+import { numberWord } from '../bb/script/inject.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
+/** Which room a scene happens in: by hash, never a die; the HOH room needs the HOH. */
+function _room(rooms, ctx, ...people) {
+  const ok = rooms.filter(r => r !== 'hoh-room' || (ctx?.hoh && people.includes(ctx.hoh)));
+  const pool = ok.length ? ok : ['backyard'];
+  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${people.join('|')}`;
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
+  return pool[hash % pool.length];
 }
 
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 
 /** "Raj, Brightly and Ripper" — not "Raj and Brightly and Ripper". */
-const _list = names => (names.length <= 1 ? (names[0] || '')
-  : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
-
 /** "both of them" for a pair; "all four of them" for a group. */
-const WORDS = ['', '', 'both', 'all three', 'all four', 'all five', 'all six', 'all seven'];
-const _count = n => WORDS[n] || `all ${n}`;
 /** Least-seen first, so the same two people do not carry every beat. */
 /** Least-seen first, weighted toward whoever this week is about. */
 const _quiet = pool => spotlightOrder(pool);
@@ -93,28 +92,15 @@ const blocNoticed = {
       .some(entry => entry.known >= 0.3 && entry.known <= 0.8)) || house[0];
     const entry = knownBlocsFor(seer).find(e => e.known >= 0.3 && e.known <= 0.8)
       || knownBlocsFor(seer)[0];
-    if (!entry) return { text: `${seer} watches the house and counts.`, players: [seer],
+    if (!entry) return { scene: makeScene('bloc.quiet', { a: seer }, { ending: 'scene' }, [], _room(['bedroom', 'backyard'], ctx, seer)), players: [seer],
       badgeText: 'COUNTING', badgeClass: 'grey' };
     const bloc = entry.bloc;
-    const p = pronouns(seer);
-    const names = bloc.members.slice(0, 3).join(', ');
-
-    const text = bloc.kind === 'couple' ? _variant([
-      `${seer} stops pretending ${p.sub} ${p.sub === 'they' ? 'have not' : 'has not'} noticed. ${bloc.members[0]} and ${bloc.members[1]} are not two people any more, they are one vote that arrives twice.`,
-      `It is the small things that give ${bloc.members[0]} and ${bloc.members[1]} away, and ${seer} has been collecting them: who follows whom out of a room, who looks at whom before answering.`,
-      `${seer} works out that ${bloc.members[0]} and ${bloc.members[1]} will never, under any circumstances, write each other's names down. Everything else follows from that.`,
-    ], ctx, seer, bloc.id) : _variant([
-      `${seer} has been keeping a list of who ends up in the same room and the same names keep appearing on it. ${names} — always, and never by accident.`,
-      `The conversation stops when ${seer} walks in. It is not the first time, and the same people always seem to be in the room.`,
-      `${seer} does the arithmetic ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} been avoiding: if ${names} are together, the votes are being decided before everybody else enters the room.`,
-      `${seer} cannot prove it and does not need to. ${names} move like people who have already agreed.`,
-    ], ctx, seer, bloc.id);
-
-    // Noticing is not knowing. It moves the read and makes them warier of the
-    // members, which is what actually changes behaviour next week.
+    const scene = makeScene('bloc.noticed', { a: seer, b: bloc.members[0], c: bloc.members[1] || null },
+      { ending: bloc.kind === 'couple' ? 'couple' : 'group', intent: bloc.members.length > 2 ? 'big' : 'pair' }, [],
+      _room(['kitchen', 'living-room', 'backyard'], ctx, seer));
     bloc.members.forEach(m => api.suspicion(seer, m, 0.5));
     api.remember(seer, bloc.members[0], 'reads-the-room', 1, { about: bloc.label });
-    return { text, players: [seer, ...bloc.members.slice(0, 2)],
+    return { scene, players: [seer, ...bloc.members.slice(0, 2)],
       badgeText: bloc.kind === 'couple' ? 'ONE VOTE, TWICE' : 'A PATTERN',
       badgeClass: 'blue' };
   },
@@ -134,7 +120,7 @@ function _lastTally() {
   const t = {};
   for (const b of w.ballots) if (b?.evict) t[b.evict] = (t[b.evict] || 0) + 1;
   const counts = Object.values(t).sort((a, b) => b - a);
-  return { text: counts.join('–'), minority: counts.slice(1).reduce((a, b) => a + b, 0) };
+  return { text: counts.join('–'), words: counts.map(numberWord).join('-'), minority: counts.slice(1).reduce((a, b) => a + b, 0) };
 }
 
 const blocVoteTell = {
@@ -152,27 +138,14 @@ const blocVoteTell = {
     const counter = _quiet(house).find(name => knownBlocsFor(name)
       .some(entry => entry.known >= 0.45)) || house[0];
     const entry = knownBlocsFor(counter).find(e => e.known >= 0.45) || knownBlocsFor(counter)[0];
-    if (!entry) return { text: `${counter} runs the last vote back in ${pronouns(counter).posAdj} head.`,
+    if (!entry) return { scene: makeScene('bloc.quiet', { a: counter }, { ending: 'scene' }, [], _room(['bedroom', 'backyard'], ctx, counter)),
       players: [counter], badgeText: 'COUNTING', badgeClass: 'grey' };
     const bloc = entry.bloc;
-    const p = pronouns(counter);
-    // How many times this has actually happened, rather than a number chosen to
-    // sound good. These lines used to claim "again" and "twice running" with
-    // nothing behind them, which is how an event ended up describing two
-    // previous evictions in week two.
-    const together = timesVotedTogether(bloc);
-    const evictions = evictionCount();
-    const again = together >= 2 ? ` That is ${together} votes in a row.` : '';
-    const tally = _lastTally()?.text || 'split';
-
-    const text = _variant([
-      `${counter} goes back over the last tally — ${tally} — and works out who could possibly have made up those numbers. "${_list(bloc.members.slice(0, 3))}. It has to be."${again}`,
-      `Nobody has to be told what happened at the last eviction; ${counter} just has to do the arithmetic in front of somebody. A ${tally} vote does not happen unless people walked into the Diary Room already agreed${evictions >= 2 ? `, and it is not the first time` : ''}.`,
-      `"Tell me that's a coincidence." ${counter} lists who was talking to whom the night before a ${tally} vote, and waits. Nobody in the room takes the bet.`,
-      `${counter} has stopped guessing about ${bloc.label}. The tally did the work — ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} looking at the wrong thing all week.`,
-    ], ctx, counter, bloc.id);
+    const scene = makeScene('bloc.votes', { a: counter, b: bloc.members[0], c: bloc.members[1] || null },
+      { ending: bloc.kind === 'couple' ? 'couple' : 'group', tally: _lastTally()?.words || 'split',
+        again: timesVotedTogether(bloc) >= 2 }, [], _room(['bedroom', 'backyard', 'living-room'], ctx, counter));
     bloc.members.forEach(m => api.suspicion(counter, m, 0.7));
-    return { text, players: [counter, ...bloc.members.slice(0, 2)],
+    return { scene, players: [counter, ...bloc.members.slice(0, 2)],
       badgeText: 'THE VOTES SAY SO', badgeClass: 'orange' };
   },
 };
@@ -190,32 +163,24 @@ const blocTargetPicked = {
     const read = _firstReader(house);
     if (!read) {
       const who = house[0];
-      return { text: `${who} decides the house is not yet a shape worth attacking.`,
+      return { scene: makeScene('bloc.quiet', { a: who }, { ending: 'scene' }, [], _room(['bedroom', 'backyard'], ctx, who)),
         players: [who], badgeText: 'WAITING', badgeClass: 'grey' };
     }
     const { name: plotter, bloc, target, why } = read;
-    const p = pronouns(plotter);
     const confidant = closestTo(plotter, outsidersTo(bloc, plotter));
-
-    const text = bloc.kind === 'couple' ? _variant([
-      `"You cannot take them both out at once." ${plotter} has settled on ${target} — break the pair and what remains is one angry houseguest instead of two locked votes.`,
-      `${plotter} says it plainly${confidant ? ` to ${confidant}` : ''}: ${bloc.members.join(' and ')} will keep choosing each other unless somebody separates them, and ${target} has less protection around the house.`,
-      `${plotter} does not care which of them goes. ${p.Sub} ${p.sub === 'they' ? 'care' : 'cares'} that one of them does, and ${target} is the name with the fewest people behind it.`,
-    ], ctx, plotter, target) : _variant([
-      `${plotter} stops talking about ${bloc.label} as a rumour and starts talking about it as a problem with a solution. ${why}.`,
-      `"We are not playing against ${bloc.members.length} people, we are playing against one group that votes ${bloc.members.length} times." ${plotter} names ${target} — ${why}.`,
-      `${plotter} works backwards from the end of the season and arrives at ${target}${confidant ? `, and tells ${confidant} so` : ''}. ${why}.`,
-      `${plotter} has counted it enough times to be sure. The way through ${bloc.label} is ${target}. ${why}.`,
-    ], ctx, plotter, target);
-
-    // The whole point of the layer: this is a real target now.
+    const scene = makeScene('bloc.target', { a: plotter, b: confidant || null }, {
+      ending: bloc.kind === 'couple' ? 'couple' : 'group',
+      reason: /nobody outside/.test(why || '') ? 'alone' : /keeps winning/.test(why || '') ? 'wins' : 'reach',
+      intent: confidant ? 'told' : 'alone',
+      target, partner: bloc.members.find(m => m !== target && m !== plotter && m !== confidant) || null,
+    }, [], _room(['bedroom', 'backyard'], ctx, plotter, confidant));
     api.setTarget(plotter, target, bloc.kind === 'couple'
       ? `to break up ${bloc.label}` : `to break up ${bloc.label}`);
     api.remember(plotter, target, 'bloc-threat', 2, { about: bloc.label });
     api.suspicion(plotter, target, 0.8);
     if (confidant) api.addBond(plotter, confidant, 0.4);
     recordPlanAgainst(plotter, bloc.id, ctx?.week?.num || 0);
-    return { text, players: [plotter, target, confidant].filter(Boolean),
+    return { scene, players: [plotter, target, confidant].filter(Boolean),
       badgeText: 'A PLAN WITH A NAME', badgeClass: 'red' };
   },
 };
@@ -242,7 +207,7 @@ const blocRecruit = {
     const target = targetOf(plotter);
     const bloc = listBlocs().find(b => b.members.includes(target) && !b.members.includes(plotter));
     if (!target || !bloc) {
-      return { text: `${plotter} looks for somebody to talk to and finds the house already spoken for.`,
+      return { scene: makeScene('bloc.quiet', { a: plotter }, { ending: 'scene' }, [], _room(['bedroom', 'backyard'], ctx, plotter)),
         players: [plotter], badgeText: 'NO TAKERS', badgeClass: 'grey' };
     }
 
@@ -268,19 +233,13 @@ const blocRecruit = {
       }
     }
 
-    const p = pronouns(plotter);
-    const spoken = joined.length + refused.length;
-    const text = joined.length ? _variant([
-      `${plotter} spends the afternoon making the same case ${spoken === 1 ? 'once' : `${spoken} separate times`}. ${_list(joined)} ${joined.length > 1 ? 'come' : 'comes'} out of it agreeing that ${target} goes first.`,
-      `"I am not asking you to like me, I am asking you to count." ${_list(joined)} ${joined.length > 1 ? 'do' : 'does'} the counting and ${joined.length > 1 ? 'arrive' : 'arrives'} where ${plotter} did.${refused.length ? ` ${_list(refused)} ${refused.length > 1 ? 'do' : 'does'} not.` : ''}`,
-      `${plotter} pulls people aside one at a time, which is the only way this ever works. By evening ${joined.length === 1 ? 'one more person is' : `${joined.length} more people are`} prepared to say ${target}'s name.`,
-    ], ctx, plotter, target) : _variant([
-      `${plotter} makes the case to ${spoken === 1 ? 'the one person who will listen' : `${spoken} separate people`} and watches it land nowhere.${refused.length ? ` ${_list(refused)} ${refused.length > 1 ? 'either do not' : 'does not'} see ${bloc.label} or ${refused.length > 1 ? 'do not' : 'does not'} trust the person pointing at it.` : ''}`,
-      `"Think about who benefits from you saying that." ${refused[0] || 'Nobody'} does not disagree with ${plotter} about ${bloc.label} so much as disagree with ${plotter}.`,
-      `Everybody ${plotter} talks to nods and does nothing. The plan is sound and ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} the wrong person to be carrying it.`,
-    ], ctx, plotter, target);
-
-    return { text, players: [plotter, ...joined.slice(0, 2)],
+    const listener = joined[0] || refused[0] || null;
+    const scene = makeScene('bloc.recruit', { a: plotter, b: listener }, {
+      ending: joined.length ? 'joined' : 'refused',
+      intent: joined.length ? (joined.length > 1 ? 'many' : 'one') : (listener ? 'asked' : 'nobody'),
+      target,
+    }, [], _room(['bedroom', 'backyard', 'kitchen'], ctx, plotter, listener));
+    return { scene, players: [plotter, ...joined.slice(0, 2)],
       badgeText: joined.length ? `${joined.length} ON BOARD` : 'NOBODY MOVES',
       badgeClass: joined.length ? 'red' : 'grey' };
   },
@@ -304,26 +263,22 @@ const blocTold = {
     const teller = _quiet(house).find(name => knownBlocsFor(name).some(e => e.known >= 0.55
       && outsidersTo(e.bloc, name).length)) || house[0];
     const entry = knownBlocsFor(teller).find(e => e.known >= 0.55) || knownBlocsFor(teller)[0];
-    if (!entry) return { text: `${teller} keeps it to ${pronouns(teller).ref || 'themselves'}.`,
+    if (!entry) return { scene: makeScene('bloc.quiet', { a: teller }, { ending: 'scene' }, [], _room(['bedroom', 'backyard'], ctx, teller)),
       players: [teller], badgeText: 'SAYS NOTHING', badgeClass: 'grey' };
     const bloc = entry.bloc;
     const listener = _quiet(outsidersTo(bloc, teller))[0];
-    if (!listener) return { text: `${teller} has nobody left to tell.`, players: [teller],
+    if (!listener) return { scene: makeScene('bloc.quiet', { a: teller }, { ending: 'scene' }, [], _room(['bedroom', 'backyard'], ctx, teller)), players: [teller],
       badgeText: 'NOBODY LEFT', badgeClass: 'grey' };
 
     const result = tellAbout(teller, listener, bloc);
-    const p = pronouns(listener);
-    const text = result.believed ? _variant([
-      `${teller} tells ${listener} about ${bloc.label}. ${listener} does not argue — ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} already noticed enough to need somebody else to say it first.`,
-      `"You know they are working together." ${listener} says nothing for a moment, then starts naming votes that suddenly make sense.`,
-      `${teller} lays it out and ${listener} believes it, because ${result.why}.`,
-    ], ctx, teller, listener) : _variant([
-      `${teller} tells ${listener} about ${bloc.label} and watches it land badly. ${listener} hears a person with a motive, not a person with information.`,
-      `"And who told you that?" ${listener} does not believe ${teller} — ${result.why} — and spends the rest of the evening wondering what ${teller} is setting up.`,
-      `It is true and ${listener} does not believe it, which is the whole risk of being the one who says it out loud. ${result.why.charAt(0).toUpperCase()}${result.why.slice(1)}.`,
-      `${teller} is right about ${bloc.label}. ${listener} has decided ${teller} is playing an angle, and being right does not survive that.`,
-    ], ctx, teller, listener);
-
+    const named = bloc.members.filter(m => m !== teller && m !== listener);
+    const why = result.why || '';
+    const scene = makeScene('bloc.told', { a: teller, b: listener }, {
+      ending: result.believed ? 'believed' : 'doubted',
+      reason: result.believed ? (/already seen/.test(why) ? 'matched' : 'trust')
+        : /do not trust/.test(why) ? 'distrust' : /messenger/.test(why) ? 'messenger' : 'sudden',
+      target: named[0] || null, partner: named[1] || null,
+    }, [], _room(['bedroom', 'backyard', 'kitchen'], ctx, teller, listener));
     if (result.believed) {
       api.addBond(teller, listener, 0.6);
       bloc.members.forEach(m => api.suspicion(listener, m, 0.5));
@@ -333,7 +288,7 @@ const blocTold = {
       api.addBond(teller, listener, -0.5);
       api.remember(listener, teller, 'working-an-angle', 1, { about: bloc.label });
     }
-    return { text, players: [teller, listener],
+    return { scene, players: [teller, listener],
       badgeText: result.believed ? 'IT LANDS' : 'NOT BELIEVED',
       badgeClass: result.believed ? 'orange' : 'grey' };
   },
@@ -358,19 +313,11 @@ const blocBlowup = {
       && knownBlocsFor(name).some(e => e.known >= 0.6 && blocExposure(e.bloc) < 0.85)) || house[0];
     const entry = knownBlocsFor(angry).find(e => e.known >= 0.6 && blocExposure(e.bloc) < 0.85)
       || knownBlocsFor(angry)[0];
-    if (!entry) return { text: `${angry} bites it back down.`, players: [angry],
+    if (!entry) return { scene: makeScene('bloc.quiet', { a: angry }, { ending: 'scene' }, [], _room(['bedroom', 'backyard'], ctx, angry)), players: [angry],
       badgeText: 'HELD IT IN', badgeClass: 'grey' };
     const bloc = entry.bloc;
-    const p = pronouns(angry);
-
-    const text = _variant([
-      `It comes out in the kitchen with everybody standing there. "${bloc.members.slice(0, 3).join(', ')} — we all know," ${angry} says. Stop pretending those votes are independent." Nobody has to be told twice; there is no unhearing it.`,
-      `${angry} has been holding it in since ${pronouns(angry).sub} first noticed the pattern and lets go at the worst possible moment, in front of the entire house. ${bloc.label} is not a theory any more; it is a thing that was shouted.`,
-      `"Say it to my face that you are not working together." ${bloc.members[0]} says nothing, which is the loudest answer available, and every person in the room does the arithmetic at the same time.`,
-      `The argument is about something else for about forty seconds. Then ${angry} names ${_count(bloc.members.length)} of them out loud and the house stops being able to pretend.`,
-    ], ctx, angry, bloc.id);
-
-    // Everybody heard it. No belief check — they were standing there.
+    const scene = makeScene('bloc.blowup', { a: angry, b: bloc.members[0], c: bloc.members[1] || null },
+      { ending: bloc.kind === 'couple' ? 'couple' : 'group' }, house, 'kitchen');
     exposeBloc(bloc, { everybody: true, week: ctx?.week?.num || 0, how: 'blowup' });
     bloc.members.forEach(m => {
       api.suspicion(angry, m, 1.2);
@@ -378,7 +325,7 @@ const blocBlowup = {
       _others(house, ...bloc.members).forEach(w => api.suspicion(w, m, 0.6));
     });
     api.popDelta(angry, pStats(angry).boldness >= 7 ? 2 : -1);
-    return { text, players: [angry, ...bloc.members.slice(0, 2)],
+    return { scene, players: [angry, ...bloc.members.slice(0, 2)],
       badgeText: 'SAID OUT LOUD', badgeClass: 'red' };
   },
 };

@@ -13,6 +13,8 @@
 import { bbWeekSteps, REPLACED, ANCHOR_OF } from './steps.js';
 import { stageHtml, camStyle, esc, escT, col, img, eyeSvg, SEASON_DIR } from './stage.js';
 import { BBX_CSS, BBX_FONTS } from './style.js';
+import { BBX_SUITE_CSS } from './style-suite.js';
+import { BBX_CHAIN_CSS } from './style-chain.js';
 
 const reg = () => (typeof window !== 'undefined' ? (window._bbx ||= {}) : (globalThis._bbx ||= {}));
 const SHELL_CSS = `
@@ -63,6 +65,11 @@ function sideHtml(L, S) {
       ${L.hoh ? row(L.hoh, 'HOH', 'hoh') : '<div class="bbx-pend">No Head of Household yet.</div>'}
       ${L.nom.map(n => row(n, L.out.includes(n) ? 'Evicted' : 'Nominated', L.out.includes(n) ? 'out' : 'nom')).join('')}
       ${L.veto ? row(L.veto, 'Veto', 'veto') : ''}</div>
+    ${S.kind === 'chain' ? `<div class="bbx-panel"><h4>Chain of Safety</h4>${L.safe.length
+      ? L.safe.map((n, i) => row(n, `Safe · ${i + 1}`, 'hoh')).join('') : '<div class="bbx-pend">Nobody is safe yet.</div>'}${(L.leftover || []).map(n => row(n, 'Not chosen', 'nom')).join('')}</div>` : ''}
+    ${S.kind === 'suite' ? `<div class="bbx-panel"><h4>Safety Suite · ${L.shut ? 'closed' : 'open'}</h4>${L.spent.length
+      ? L.spent.filter(n => !(S.rail?.spent || []).includes(n)).map(n => row(n, L.plus === n ? 'Plus one' : L.safe.includes(n) ? 'Safe' : L.stamps[n] === 'short' ? 'Short' : L.stamps[n] === 'slow' ? 'Too slow' : 'Pass spent', L.safe.includes(n) ? 'hoh' : 'out')).join('')
+      : ''}${L.held.map(n => row(n, 'Held', 'veto')).join('')}${L.plus && !L.spent.includes(L.plus) ? row(L.plus, `Plus one${L.bill ? ' · ' + esc(L.bill.toLowerCase()) : ''}`, 'hoh') : ''}${!L.spent.length && !L.held.length ? '<div class="bbx-pend">Nobody has swiped yet.</div>' : ''}</div>` : ''}
     ${L.vetoPlay.length ? `<div class="bbx-panel"><h4>Veto players</h4>${[...new Set(L.vetoPlay)].map(n => row(n, 'Plays', '')).join('')}</div>` : ''}
     ${S.kind === 'jury-q' ? `<div class="bbx-panel"><h4>WHERE THE JURY IS</h4>${Object.keys(L.stances || {}).length
       ? Object.values(L.stances).map(([j, stance, asked]) => row(j, `${esc(stance)} on ${esc(asked)}`, '')).join('')
@@ -146,7 +153,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     out.push({
       id: ids[si],
       label: S.label || S.title,
-      html: `<div class="bbx" data-uid="${uid}"><style>${BBX_FONTS}${BBX_CSS}${SHELL_CSS}</style>
+      html: `<div class="bbx" data-uid="${uid}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${SHELL_CSS}</style>
   <div class="bbx-stage stage" id="bbx-st-${uid}" onclick="bbxNext('${uid}')" title="Click for the next line">${stageHtml(steps, si, -1, false, o).html}</div>
   <div class="bbx-ctrl">
     <button type="button" class="bbx-btn" onclick="bbxBack('${uid}')">◀ Back</button>
@@ -159,7 +166,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     <span class="bbx-count" id="bbx-count-${uid}">0 / ${S.steps.length}</span>
   </div>
   <div class="bbx-under"><div class="bbx-script" id="bbx-script-${uid}">${scriptHtml(S)}</div>
-    <aside class="bbx-side" id="bbx-side-${uid}">${sideHtml({ hoh: null, nom: [], veto: null, out: [], vetoPlay: [], ballots: [], stances: {} }, S)}</aside></div>
+    <aside class="bbx-side" id="bbx-side-${uid}">${sideHtml({ hoh: null, nom: [], veto: null, out: [], vetoPlay: [], ballots: [], stances: {}, spent: [], held: [], safe: [], stamps: {}, plus: null, bill: null, shut: false, chain: [], snubs: [], leftover: [] }, S)}</aside></div>
 </div>`,
     });
     out.push(...slotted[si]);

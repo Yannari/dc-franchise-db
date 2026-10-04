@@ -31,6 +31,8 @@ import {
   _generateExposeSchemer, _generateComfortVictim,
 } from '../social-manipulation.js';
 import { getBond } from '../bonds.js';
+import { makeScene } from '../bb/script/scene.js';
+import { scriptBeat, joinScripts } from '../bb/script/inject.js';
 import { endgameDealsOf, tierOf } from '../bb/deals.js';
 import {
   pStats, band, furthestFrom, willScheme, isNice, beatsInvolving, spotlightOrder,
@@ -59,8 +61,6 @@ function doubleDealPartners(name) {
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 /** Least-seen first, weighted toward whoever this week is about. */
 const _quiet = pool => spotlightOrder(pool);
-const _listNames = names => (names.length <= 1 ? (names[0] || 'nobody')
-  : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
 const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
 const _textPick = (lines, result, salt = '') => {
   const key = `${salt}|${(result.players || []).join('|')}|${result.text || ''}|${result.badgeText || ''}`;
@@ -313,7 +313,70 @@ function _bbResultText(result, salt = '') {
  * this is purely presentation: the texts read as one moment because that is
  * what they are.
  */
-function _fold(results, badgeText, badgeClass, salt = '') {
+/**
+ * One generator result as a scene: its kind, its people, and what it was. The
+ * names a result does not carry (who a note was about, the decoy in a fake
+ * vote, who started a lie) come from the event in `extra`. Null for a result
+ * this file has no words for, which keeps the beat's old sentence.
+ */
+function _sceneOf(r, extra = {}) {
+  const p = r.players || [];
+  const has = text => String(r.consequences || '').includes(text);
+  switch (r.type) {
+    case 'forgeNote':
+      if (r.badgeText === 'EXPOSED') return ['scheme.note', { a: p[0], b: p[1] }, { ending: 'exposed' }];
+      return ['scheme.note', { a: p[0], b: p[1] },
+        { ending: has('seed of doubt') ? 'doubt' : 'believed', target: p[2] || extra.target }];
+    case 'spreadLies':
+      if (r.badgeText === 'CONFRONTATION') return ['scheme.lie', { a: p[0], b: p[1] }, { ending: 'confront' }];
+      if (r.badgeText === 'WARNED') return ['scheme.lie', { a: p[0], b: p[1] }, { ending: 'warned', source: extra.source }];
+      return ['scheme.lie', { a: p[0], b: p[1] }, { ending: p[2] ? 'believed' : 'rejected', target: p[2] || extra.target }];
+    case 'comfortVictim':
+      return ['scheme.comfort', { a: p[0], b: p[1] }, { ending: extra.aware ? 'aware' : 'unaware' }];
+    case 'exposeSchemer': {
+      const partners = doubleDealPartners(p[1]);
+      return ['scheme.exposed', { a: p[0], b: p[1] }, partners.length >= 2
+        ? { ending: 'scene', intent: 'double', target: partners[0], partner: partners[1] }
+        : { ending: 'scene' }];
+    }
+    case 'whisperCampaign':
+      return ['scheme.whisper', { a: p[0] }, { ending: 'spread', target: p[1] }];
+    case 'whisperCampaignExposed':
+      return ['scheme.whisper', { a: p[0], b: p[1] }, { ending: 'exposed' }];
+    case 'campaignRally':
+      return ['scheme.rally', { a: p[0] }, { ending: 'scene', target: p[1] }];
+    case 'falseMajority':
+      return ['scheme.majority', { a: p[0], b: p[1] }, { ending: 'fooled', target: extra.target }];
+    case 'falseMajorityResisted':
+      return ['scheme.majority', { a: p[0], b: p[1] }, { ending: 'refused', target: extra.target }];
+    case 'kissTrap':
+      if (has('failed')) return ['scheme.kiss', { a: p[0], b: p[1] }, { ending: 'failed' }];
+      if (p.length >= 4) return ['scheme.kiss', { a: p[0], b: p[2], c: p[3] }, { ending: 'setup', partner: p[1] }];
+      return ['scheme.kiss', { a: p[0], b: p[1] },
+        { ending: r.badgeText === 'SHOWMANCE DESTROYED' ? 'over' : 'heartbroken' }];
+    default:
+      return null;
+  }
+}
+
+/** Every result's script, joined; null if any one of them has no words. */
+function _scriptOf(list, extra, ctx, room, salt) {
+  // A victim only knows what was said about them once it came out in front of
+  // them: a confrontation, an exposure, a whisper traced back.
+  const aware = list.some(r => r.badgeText === 'CONFRONTATION' || r.type === 'exposeSchemer'
+    || r.type === 'whisperCampaignExposed' || r.badgeText === 'EXPOSED');
+  const parts = list.map((r, i) => {
+    const decided = _sceneOf(r, { ...extra, aware });
+    if (!decided) return null;
+    const [kind, who, data] = decided;
+    if (Object.values(data).some(v => v === undefined)) return null;
+    return scriptBeat(kind, who, data, { week: ctx?.week, act: ctx?.act || 'house', hoh: ctx?.hoh || null,
+      nominees: ctx?.nominees || [], room, salt: `${salt}|${i}` });
+  });
+  return joinScripts(...parts);
+}
+
+function _fold(results, badgeText, badgeClass, salt = '', extra = {}, ctx = null, room = null) {
   const list = (results || []).filter(r => r && r.text)
     // Some shared generators append the triggering action after its detection
     // result. A house cannot expose a whisper campaign before it happens.
@@ -329,8 +392,11 @@ function _fold(results, badgeText, badgeClass, salt = '') {
   // consequence of it — a kiss trap that ends with somebody being consoled is
   // still a kiss trap, and labelling it COMFORTED buries the event.
   const first = list[0];
+  const script = _scriptOf(list, extra, ctx, room, salt);
   return {
-    text: list.map((result, index) => _bbResultText(result, `${salt}|${index}`)).join(' '),
+    ...(script || {}),
+    ...(script && room ? { location: room } : {}),
+    text: script ? script.text : list.map((result, index) => _bbResultText(result, `${salt}|${index}`)).join(' '),
     players: [...new Set(list.flatMap(r => r.players || []))].filter(Boolean),
     badgeText: first.badgeText || badgeText,
     badgeClass: first.badgeClass || badgeClass,
@@ -338,9 +404,13 @@ function _fold(results, badgeText, badgeClass, salt = '') {
 }
 
 /** Something renderable when a scheme's cast does not come together. */
-const _quietBeat = (text, players) => ({
-  text, players: players.filter(Boolean), badgeText: 'NOTHING COMES OF IT', badgeClass: 'grey',
-});
+const _quietBeat = (text, players) => {
+  const who = players.filter(Boolean);
+  return who.length
+    ? { scene: makeScene('scheme.quiet', { a: who[0] }, { ending: 'scene' }), players: who,
+      badgeText: 'NOTHING COMES OF IT', badgeClass: 'grey' }
+    : { text, players: who, badgeText: 'NOTHING COMES OF IT', badgeClass: 'grey' };
+};
 
 /**
  * Run a generator and keep what it leaves behind.
@@ -355,7 +425,7 @@ const _quietBeat = (text, players) => ({
  * last moment must not hand the scheduler a null, which throws and takes the
  * whole week with it.
  */
-function _run(ctx, generate, badgeText, badgeClass, quiet, rng) {
+function _run(ctx, generate, badgeText, badgeClass, quiet, rng, extra = {}, room = null) {
   const ep = { num: ctx?.week?.num || gs.episode || 1 };
   // The Total Drama generators reach for Math.random directly — they predate
   // the seeded scheduler and are shared with a simulator that does not need
@@ -376,7 +446,7 @@ function _run(ctx, generate, badgeText, badgeClass, quiet, rng) {
   if (ep._socialSchemer) gs._lastBBSchemer = ep._socialSchemer;
   if (ep._socialVictim) gs._lastBBVictim = ep._socialVictim;
   if (ep._socialVictimTarget) gs._lastBBVictimTarget = ep._socialVictimTarget;
-  return _fold(results, badgeText, badgeClass, `${ctx?.week?.num || 0}|${ctx?.act || ''}`) || quiet;
+  return _fold(results, badgeText, badgeClass, `${ctx?.week?.num || 0}|${ctx?.act || ''}`, extra, ctx, room) || quiet;
 }
 
 /** Who is willing to scheme, least-seen first so it is not always one player. */
@@ -414,7 +484,7 @@ const forgeNote = {
     }
     return _run(ctx, ep => _generateForgeNote(schemer, { a: reader, b: alleged }, house, ep, _pick),
       'FORGED NOTE', 'red',
-      _quietBeat(`${schemer} plants a note and nobody ever finds it.`, [schemer]), rng);
+      _quietBeat(`${schemer} plants a note and nobody ever finds it.`, [schemer]), rng, { target: alleged }, 'bedroom');
   },
 };
 
@@ -433,7 +503,8 @@ const spreadLies = {
     }
     return _run(ctx, ep => _generateSpreadLies(schemer, { a: listener, b: accused }, house, ep, _pick),
       'SPREADING LIES', 'red',
-      _quietBeat(`${schemer} tries a line on ${listener} and it goes nowhere.`, [schemer, listener]), rng);
+      _quietBeat(`${schemer} tries a line on ${listener} and it goes nowhere.`, [schemer, listener]), rng,
+      { target: accused, source: schemer }, 'kitchen');
   },
 };
 
@@ -450,7 +521,7 @@ const whisperCampaign = {
     }
     return _run(ctx, ep => _generateWhisperCampaign(schemer, target, house, ep, _pick),
       'WHISPER CAMPAIGN', 'red',
-      _quietBeat(`${schemer} plants a doubt about ${target} that does not take.`, [schemer, target]), rng);
+      _quietBeat(`${schemer} plants a doubt about ${target} that does not take.`, [schemer, target]), rng, {}, 'backyard');
   },
 };
 
@@ -470,7 +541,7 @@ const campaignRally = {
     }
     return _run(ctx, ep => _generateCampaignRally(rallier, target, house, ep, _pick),
       'RALLY', 'red',
-      _quietBeat(`${rallier} tries to move the house against ${target} and cannot.`, [rallier, target]), rng);
+      _quietBeat(`${rallier} tries to move the house against ${target} and cannot.`, [rallier, target]), rng, {}, 'living-room');
   },
 };
 
@@ -501,7 +572,7 @@ const falseMajority = {
     }
     return _run(ctx, ep => _generateFalseMajority(schemer, victim, decoy, house, ep, _pick),
       'FALSE MAJORITY', 'red',
-      _quietBeat(`${schemer} floats a fake plan at ${victim}, who does not bite.`, [schemer, victim]), rng);
+      _quietBeat(`${schemer} floats a fake plan at ${victim}, who does not bite.`, [schemer, victim]), rng, { target: decoy }, 'kitchen');
   },
 };
 
@@ -541,7 +612,7 @@ const kissTrap = {
     return _run(ctx, ep => _generateKissTrap(setup.schemer, { showmance: setup.showmance }, house, ep, _pick),
       'KISS TRAP', 'red',
       _quietBeat(`${setup.schemer} sets something up around ${setup.kissTarget}, and it does not happen.`,
-        [setup.schemer, setup.kissTarget]), rng);
+        [setup.schemer, setup.kissTarget]), rng, {}, 'bedroom');
   },
 };
 
@@ -602,7 +673,7 @@ const exposeSchemer = {
     }
     const beat = _run(ctx, ep => [_generateExposeSchemer(exposer, schemer, victim, house, ep, _pick)],
       'EXPOSED', 'gold',
-      _quietBeat(`${exposer} is almost sure about ${schemer}, and almost is not enough to say out loud.`, [exposer, schemer]), rng);
+      _quietBeat(`${exposer} is almost sure about ${schemer}, and almost is not enough to say out loud.`, [exposer, schemer]), rng, {}, 'living-room');
     // This is explicitly a public exposure, and the shared generator changes
     // every houseguest's relationship with the schemer. Show the room that
     // witnessed it instead of making those consequences appear off-screen.
@@ -624,7 +695,7 @@ const comfortVictim = {
     const victim = gs._lastBBVictim;
     return _run(ctx, ep => [_generateComfortVictim(victim, house, ep, _pick)],
       'COMFORTED', 'green',
-      _quietBeat(`${victim} sits with it alone, and nobody comes to find ${victim}.`, [victim]), rng);
+      _quietBeat(`${victim} sits with it alone, and nobody comes to find ${victim}.`, [victim]), rng, {}, 'bedroom');
   },
 };
 
@@ -662,7 +733,6 @@ const falseAccusation = {
       return _quietBeat('Nobody has anything worth making up today.', []);
     }
     const audience = _quiet(_others(house, liar, mark)).slice(0, 3);
-    const p = pronouns(liar);
 
     // A lie about somebody lands on the teller's standing, not on evidence —
     // there is none, because none exists.
@@ -675,16 +745,9 @@ const falseAccusation = {
     // _textPick, not _pick: the latter is Math.random and a seeded season has to
     // replay identically. Two events reached for the convenient one and the
     // reproducibility guarantee went with them.
-    const seed = { players: [liar, mark], text: `${convinced.length}`, badgeText: 'lie' };
-    const text = convinced.length ? _textPick([
-      `${liar} tells ${_listNames(audience)} that ${mark} has been offering the same final-two deal all over the house. ${liar} cannot name two actual deals, but ${_listNames(convinced)} ${convinced.length > 1 ? 'believe' : 'believes'} the warning anyway.`,
-      `"Ask ${mark} who ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} going to the end with. Then ask somebody else." ${liar} has invented the whole thing and ${_listNames(convinced)} ${convinced.length > 1 ? 'go' : 'goes'} away to check.`,
-      `${liar} asks the room how many final-two promises ${mark} has made, then goes quiet and lets everybody supply their own number. There is no evidence behind the question.`,
-    ], seed, 'false-accusation') : _textPick([
-      `${liar} claims ${mark} has several final-two deals. Somebody asks for one name, then another. ${liar} cannot provide either, and the room moves on.`,
-      `“How many people has ${mark} promised?” ${liar} asks. “You brought it up,” somebody answers. “You tell us.” ${liar} has nothing ready.`,
-    ], seed, 'false-accusation-flat');
-
+    const told = convinced[0] || audience[0] || null;
+    const scene = makeScene('scheme.accuse', { a: liar, b: told, c: audience.find(n => n !== told) || null },
+      { ending: convinced.length ? 'landed' : 'flat', target: mark }, [], 'kitchen');
     convinced.forEach(listener => {
       api.suspicion(listener, mark, 1.3);
       api.addBond(listener, mark, -0.7);
@@ -703,7 +766,7 @@ const falseAccusation = {
       // double-dealing in week three can genuinely be doing it by week ten.
       partnersAtClaim: doubleDealPartners(mark).length,
     });
-    return { text, players: [liar, mark, ...audience],
+    return { scene, players: [liar, mark, ...audience],
       badgeText: convinced.length ? 'A LIE THAT LANDS' : 'NOBODY BUYS IT',
       badgeClass: convinced.length ? 'orange' : 'grey' };
   },
@@ -726,17 +789,8 @@ const accusationCollapses = {
     const checker = _quiet(claim.believers.filter(n => house.includes(n)))[0]
       || _others(house, liar, mark)[0];
     claim.exposed = true;
-    const p = pronouns(liar);
 
-    const text = _textPick([
-      `${checker} asks ${mark} directly, then checks with the people ${liar} implied were involved. There is no web of final-two deals—only a story that traces back to ${liar}.`,
-      `${checker} puts the supposed deals side by side. The names and promises do not exist the way ${liar} described them, and everyone involved ends up in the same room comparing notes.`,
-      `"Who told you that?" ${mark} asks it calmly and waits, and the answer works its way back to ${liar} in front of everybody.`,
-      `${checker} asks enough questions to prove the accusation was invented. Once ${liar}'s name comes up as the source, people start bringing ${p.obj} other stories they want checked.`,
-    ], { players: [checker, liar, mark], text: '', badgeText: 'collapse' }, 'collapse');
-
-    // The gamble, collected. A false accuser is worse than a schemer, because
-    // the house now has to discount everything they have ever said.
+    const scene = makeScene('scheme.collapse', { a: checker, b: mark, c: liar }, { ending: 'scene' }, house, 'living-room');
     house.filter(n => n !== liar).forEach(n => {
       api.suspicion(n, liar, 1.4);
       api.addBond(n, liar, -0.8);
@@ -748,7 +802,7 @@ const accusationCollapses = {
     api.popDelta(mark, 1);
     // Everyone hears the correction and every remaining houseguest receives
     // the corresponding suspicion, bond and memory effects.
-    return { text, players: [...house],
+    return { scene, players: [...house],
       badgeText: 'IT WAS NEVER TRUE', badgeClass: 'red' };
   },
 };

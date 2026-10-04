@@ -27,11 +27,15 @@ const ledger = () => ((gs.bb ||= {}).lineLedger ||= newLedger());
 const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven',
   'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
 
-/** {a}, {b}, {c}, {hoh}; {a.sub}, {a.Obj}, ...; {count} — the people in the house, as a word. */
-export function fill(text, who, ctx = {}) {
+/**
+ * {a}, {b}, {c}, {hoh}; {a.sub}, {a.Obj}, ...; {count} — the people in the house, as a word.
+ * Anything else is a name the scene decided and carries in its data: {alliance},
+ * {alliance2}, {target} (a person talked about, never a speaker).
+ */
+export function fill(text, who, ctx = {}, data = {}) {
   return text.replace(/\{(\w+)(?:\.(\w+))?\}/g, (m, role, part) => {
     if (role === 'count') return WORDS[gs.activePlayers?.length || 0] || String(gs.activePlayers?.length || 0);
-    const name = role === 'hoh' ? ctx.hoh : who[role];
+    const name = role === 'hoh' ? ctx.hoh : (who[role] ?? (typeof data[role] === 'string' ? data[role] : undefined));
     if (!name) return m;
     if (!part) return name;
     const p = pronouns(name) || {};
@@ -62,7 +66,7 @@ export function writeScene(scene, ctx = {}, rng = Math.random) {
   const lines = entry.turns.map(t => {
     const kind = t.dr ? 'dr' : t.beat ? 'beat' : 'say';
     const by = t.by ? who[t.by] || (t.by === 'hoh' ? ctx.hoh : null) : null;
-    return { kind, by, text: fill(t.dr || t.beat || t.say, who, ctx) };
+    return { kind, by, text: fill(t.dr || t.beat || t.say, who, ctx, scene.data || {}) };
   });
   return { lines, text: transcript(lines), lineId: entry.id };
 }

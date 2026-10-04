@@ -24,7 +24,6 @@ import {
   suspicionOf, targetOf, isHunting, threat, biggestThreat, couldRomance,
   showmanceOf, willScheme, isNice, isVillainous, archetype, beatsInvolving, spotlightOrder,
 } from './_read.js';
-import { freshLine } from '../bb/aired.js';
 import { makeScene } from '../bb/script/scene.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
@@ -33,7 +32,7 @@ function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
+  return list.length ? list[hash % list.length] : undefined;
 }
 
 // A deterministic but well-spread pick from a pool, so the same two people are

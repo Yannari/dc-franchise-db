@@ -36,8 +36,155 @@ const PHASE6 = [
   // bb-events/deals.js
   'deals-exposed', 'deals-defection', 'deals-broken-promise', 'deals-jury-management', 'deals-final-three-pact',
   'deals-competing', 'deals-hedged', 'deals-jury-pact', 'deals-vote-flip',
+  // bb-events/alliance-life.js
+  'alliance-missed-meeting', 'alliance-inner-two', 'alliance-overlap-compares-notes', 'alliance-unauthorized-vote-fear',
+  'alliance-side-deal-protected', 'alliance-wrong-blame', 'alliance-name-slips',
+  // built inside the week engine (bb/script/inject.js)
+  'alliance-formed', 'alliance-inner-circle', 'alliance-recruited', 'alliance-betrayal', 'alliance-repair', 'alliance-collapsed',
+  'campaign-pitch',
+  // bb-events/power.js
+  'power-nom-campaign', 'power-block-pressure', 'power-pawn-resents', 'power-ceremony-confrontation',
+  'power-hoh-traffic', 'power-hoh-weight', 'power-hoh-promise',
+  'power-replacement-fallout', 'power-saved-guilt', 'power-hoh-refuses', 'power-veto-draw-lobby', 'power-veto-promise',
+  'power-hoh-room-reveal', 'power-hoh-room-overstay', 'power-hoh-room-queue', 'power-hoh-room-last-night', 'power-hoh-room-spy',
+  'power-pawn-ask', 'power-backdoor-plan', 'power-nom-eve-guessing', 'power-saved-themselves', 'power-replacement-reacts',
+  'power-veto-no-surprise', 'power-pick-me-lobby', 'power-fears-backdoor',
+  // bb-events/house-life.js
+  'life-prank', 'life-chores', 'life-diary-room', 'life-sleepless', 'life-homesick', 'life-kitchen-table', 'life-showmance-domestic',
+  // bb-events/house-friction.js
+  'friction-noise', 'friction-condescended', 'friction-space', 'friction-same-story', 'friction-snapped', 'friction-joke-lands-wrong',
+  'life-workout', 'life-cooks-for-everybody', 'life-invented-game', 'life-real-conversation', 'life-grooming', 'life-talking-about-home',
+  'life-boredom', 'life-inside-joke',
+  // bb-events/phases.js
+  'phase-open-field', 'phase-pre-positioning', 'phase-scramble', 'phase-power-changes-people', 'phase-block-isolation',
+  'phase-safe-relief', 'phase-lobby-veto', 'phase-veto-holder-weighs', 'phase-last-night-equal', 'phase-outgoing-exposed',
+  'phase-hoh-room', 'phase-targets-align', 'phase-nominee-reckons', 'phase-house-takes-sides', 'phase-hoh-pressures-veto',
+  'phase-replacement-fear',
+  // bb-events/blocs.js
+  'bloc-noticed', 'bloc-vote-tell', 'bloc-target-picked', 'bloc-recruit', 'bloc-told', 'bloc-blowup',
+  // bb-events/venue.js
+  'venue-shared-space', 'venue-private-corner', 'venue-atmosphere', 'venue-overlooked',
+  // bb-events/fallout.js
+  'fallout-grief', 'fallout-hypocrisy', 'fallout-relief', 'fallout-blame', 'fallout-denial', 'fallout-recognition',
+  'fallout-rogue-hunt', 'fallout-word-gets-around',
+  // bb-events/bonds.js
+  'bond-first-kiss', 'bond-quiet-night', 'bond-best-friends', 'bond-bad-day', 'bond-cold-war', 'bond-petty',
+  'bond-apology-refused',
+  // bb-events/reign.js (the house meeting keeps its own screen)
+  'reign-announces-target', 'reign-loyalty-test', 'reign-house-decides', 'reign-apologises', 'reign-reckoning',
+  'reign-carve-it-up', 'reign-works-both-rooms',
+  // bb-events/schemes.js
+  'scheme-forge-note', 'scheme-spread-lies', 'scheme-whisper-campaign', 'scheme-campaign-rally', 'scheme-false-majority',
+  'scheme-kiss-trap', 'scheme-exposed', 'scheme-comfort-victim', 'scheme-false-accusation', 'scheme-accusation-collapses',
+  // bb-events/story-followups.js
+  'followup-isolation-check-in', 'followup-overheard-confrontation', 'followup-lie-damage-control', 'followup-fight-aftershock',
+  // bb-events/location-texture.js
+  'texture-kitchen-lesson', 'texture-backyard-game', 'texture-bedroom-snoring', 'texture-washroom-haircut',
+  'texture-living-room-trial', 'texture-pantry-name-drop', 'texture-diary-room-rant', 'texture-hoh-letter',
+  // bb-events/editorial-social.js
+  'editorial-bedroom-politics', 'editorial-interrupted-whisper', 'editorial-kitchen-after-dark', 'editorial-secret-spill',
+  'editorial-hoh-orbit', 'editorial-apology-tour', 'editorial-poolside-spark', 'editorial-vote-flip-room',
+  'editorial-house-roast', 'editorial-storage-room-breakdown', 'editorial-meeting-crash', 'editorial-silent-standoff',
+  // bb-events/consequence-arcs.js
+  'arc-lie-disproved-later', 'arc-apology-without-trust', 'arc-fight-splits-the-room', 'arc-promise-exposed-by-count',
+  'arc-comfort-becomes-loyalty', 'arc-blindside-rewatch', 'arc-rogue-vote-denial', 'arc-wrong-person-blamed-lingers',
+  'arc-threatened-remembers', 'arc-endgame-sole-voter-court', 'arc-endgame-cut-calculus',
+  'arc-endgame-unbeatable-realization', 'arc-endgame-final-three-promises-compared', 'arc-endgame-jury-math',
+  // bb-events/showmance.js, showmance-arcs.js
+  'showmance-hiding-it', 'showmance-blind-spot', 'showmance-third-wheel', 'showmance-game-vs-heart', 'showmance-fight',
+  'showmance-two-votes', 'showmance-defined', 'showmance-goes-underground', 'showmance-separate-campaigns',
+  'showmance-leak-channel', 'showmance-jealousy', 'showmance-block-pressure',
+  // bb-events/jury-bubble.js
+  'jury-counting-down', 'jury-written-off', 'jury-told-to-their-face', 'jury-bubble-nerves', 'jury-seat-as-payment',
+  'jury-bury-them-first', 'jury-line-crossed',
+  // bb-events/vote-plans.js
+  'plan-meeting-seen', 'plan-count-on-fingers', 'plan-recruit-report', 'plan-false-commitment-doubt',
+  'plan-internal-dissent', 'plan-swing-courted-twice', 'plan-competing-counts', 'plan-organizer-overconfident',
+  'plan-quiet-refusal-spreads', 'plan-lie-almost-caught', 'backdoor-target-played-veto', 'pawn-in-danger-panic',
+  'plan-blame-forming', 'plan-flip-collapses', 'target-survives-regroup',
+  // bb-events/power-knowledge.js (twist-driven: a public power)
+  'powerknown-arithmetic', 'powerknown-wait', 'powerknown-flush', 'powerknown-spent-mark',
+  // bb-events/ceremonies.js
+  'nom-speech-game', 'nom-speech-personal', 'nom-pawn-reassured', 'nom-blindside', 'nom-stoic',
+  'veto-saved-gratitude', 'veto-left-on-block', 'veto-backdoor-lands', 'veto-replacement-shock',
+  'evict-farewell-gracious', 'evict-farewell-scorched', 'evict-farewell-blindsided',
+  // week.js engine beats
+  'alliance-betrayal-unseen', 'alliance-misattributed', 'alliance-deflected-blame', 'alliance-shaped-block',
+  'campaign-declined', 'twist-announcement-bravado', 'twist-announcement-recalc', 'twist-announcement-dread',
+  // bb-events/drinks-night.js
+  'drinks-night', 'drinks-confession', 'drinks-grievance', 'drinks-stayed-sharp',
+  // the two house meetings (bb/script/meeting.js)
+  'life-house-meeting', 'reign-house-meeting',
+  // the have-not week (havenot-life.js, house-life's have-nots)
+  'havenot-slop-argument', 'havenot-sleep-deprived-snap', 'havenot-cold-shower-solidarity', 'havenot-selection-resentment',
+  'havenot-midnight-kitchen-watch', 'life-have-nots',
+  // bb-events/whacktivity.js (twist-driven)
+  'whack-declared-it', 'whack-crowded-room', 'whack-stayed-shut', 'whack-sat-it-out', 'whack-suspect-list', 'whack-hoh-watched', 'whack-being-normal', 'whack-still-watching',
+  // bb-events/eviction-powers.js, side-bet.js, roadkill.js (twist-driven)
+  'evictionpower-still-here', 'evictionpower-spent-it', 'side-bet-counts-the-rail', 'side-bet-collected', 'roadkill-third-key-theory', 'roadkill-accused-defends', 'roadkill-second-signature',
+  // bb-events/cliques.js, camp-director.js, premiere-mystery.js (twist-driven)
+  'cliques-covered', 'cliques-heading-holds', 'cliques-on-your-own', 'camp-director-needled', 'camp-director-survivor', 'camp-director-empty-chair', 'premiere-rich-man', 'premiere-named-the-four', 'secret-comp-anomaly',
+  // bb-events/wildcard.js, returned.js, white-locust.js (twist-driven)
+  'wildcard-serving', 'wildcard-refusal-tested', 'wildcard-wearing-it', 'returned-first-morning', 'returned-re-priced', 'returned-door-defender', 'locust-called-out-survived', 'locust-closest-call', 'locust-no-vote-to-argue-with', 'locust-asterisk-reign',
+  // bb-events/punishments.js, camp-comeback.js, prize-exchange.js (twist-driven)
+  'punish-not-taken-seriously', 'punish-the-horn', 'punish-the-tether', 'punish-pity', 'camp-still-at-the-table', 'camp-honest-voice', 'camp-one-is-coming-back', 'camp-the-room', 'exchange-chose-the-money', 'exchange-the-robbery', 'exchange-gave-it-away', 'exchange-out-of-the-boxes',
+  // bb-events/team-america.js, americas-nominee.js, high-rollers.js (twist-driven)
+  'team-the-tell', 'team-the-saboteur', 'team-the-reluctance', 'team-the-cover', 'americas-chair', 'americas-hunt', 'americas-outside-room', 'americas-playing-to-camera', 'americas-mvp-quiet', 'hrr-walked-in', 'hrr-lost-the-seat', 'hrr-wheeled-up', 'hrr-derby-second-veto',
+  // bb-events/veto-variants.js, safety-suite.js, coin-of-destiny.js (twist-driven)
+  'vetovar-courted-in-the-dark', 'vetovar-two-medallions', 'vetovar-left-in-the-box', 'vetovar-no-say-in-it', 'suite-plus-one', 'suite-spent-for-nothing', 'suite-held-it-and-lost', 'suite-counting-entries', 'suite-when-to-spend', 'coin-dethroned-by-nobody', 'coin-paid-in-public', 'coin-kept-their-money', 'coin-seated-by-nobody', 'coin-called-it-quietly',
+  // bb-events/care-package.js, coup.js (twist-driven)
+  'care-country-favourite', 'care-passed-over', 'care-the-costume', 'care-appointed-co-hoh', 'care-silenced-in-public', 'care-public-money', 'coup-dethroned', 'coup-seated', 'coup-saved-debt', 'coup-now-a-target', 'coup-afterwards',
+  // bb-events/invisible.js, nightmare.js (twist-driven)
+  'invisible-whodunit-circle', 'invisible-accusation', 'invisible-false-credit', 'invisible-performed-innocence', 'invisible-alibi-pact', 'invisible-nominee-detective', 'nightmare-came-down', 'nightmare-went-up', 'nightmare-counts-the-room', 'nightmare-hoh-after',
+  // bb-events/temptation.js (twist-driven)
+  'temptation-carries-it', 'temptation-hunting', 'temptation-innocent-pays', 'temptation-would-you-take-it', 'temptation-performing-sympathy', 'temptation-refused', 'temptation-afterwards',
+  // bb-events/split-house.js (twist-driven)
+  'split-picked-last', 'split-missing-ally', 'split-small-room', 'split-through-the-wall', 'split-odd-couple', 'split-rehearsing-reunion', 'split-comparing-weeks',
+  // bb-events/pandora.js (twist-driven)
+  'pandora-price-resented', 'pandora-story-tested', 'pandora-doubters-compare', 'pandora-would-you-open', 'pandora-watching-for-it', 'pandora-oversells', 'pandora-left-closed', 'pandora-still-paying',
+  // bb-events/hacker.js (twist-driven)
+  'hacker-benefit-math', 'hacker-swapped-in-hunts', 'hacker-hoh-disowns', 'hacker-seat-witness', 'hacker-missing-vote', 'hacker-silenced-voter', 'hacker-round-table', 'hacker-alibi-trade', 'hacker-false-claim', 'hacker-performed-confusion',
+  // bb/veto-fallout.js (engine: what the ceremony costs)
+  'veto-debt', 'veto-left-up', 'veto-seated', 'veto-overruled', 'veto-shrug',
+  // bb-events/kinship.js and franchise-history.js (need declared kin / an aired-season ledger)
+  'kin-ex-relapse', 'kin-ex-unrequited', 'kin-ex-cold-war', 'kin-estranged-attempt', 'kin-family-shield', 'kin-family-compared', 'kin-partners-strain', 'kin-partners-break', 'kin-exfriends-apology', 'kin-known-before', 'kin-blood-question',
+  'past-surfaces', 'past-nominated-again', 'past-settled-tonight', 'past-known-for-it',
 ];
-const EVENT_IDS = new Set([...Object.values(CONVERTED), ...PHASE6]);
+// Engine beats keep the players list the engine counts; a fallout scene is had
+// with an alliance member who is not on it, so these skip the speaker check.
+const OFF_CARD = new Set(['alliance-betrayal', 'alliance-repair', 'bloc-recruit', 'life-house-meeting']);
+// Engine beats fall back to their plain sentence when there is nobody to have
+// the scene with (an alliance down to its betrayer): those carry no script.
+// The shared romance and end-of-week layers, as week.js builds them (Phase 6).
+// Which of these fires is a matter of luck, so the fires-check skips them; a
+// type without words keeps its old sentence.
+const LAYER = new Set([
+  'romance-showmanceSabotage',
+  'romance-affairCaught', 'romance-affairChoice', 'romance-affairExposed', 'romance-affairRumor',
+  'romance-affairSecret', 'romance-affairSilent', 'romance-firstMove', 'romance-friendshipJealousy',
+  'romance-showmanceBreakup', 'romance-showmanceHoneymoon', 'romance-showmanceJealousy', 'romance-showmanceNoticed',
+  'romance-showmanceRekindle', 'romance-showmanceRideOrDie', 'romance-showmanceSpark', 'romance-showmanceTarget',
+  'romance-triangleConfrontation', 'romance-triangleCut', 'romance-triangleEscalation', 'romance-triangleLonely',
+  'romance-trianglePublicFight', 'romance-triangleResolved', 'romance-triangleTension', 'romance-triangleUltimatum',
+  'upkeep-allianceBlindspot', 'upkeep-betrayalDenial', 'upkeep-goatKeeping', 'upkeep-perceptionRealization',
+  'upkeep-providerEntitlement', 'upkeep-showmanceBlindspot', 'upkeep-swapLoyaltyAssumption', 'upkeep-villainManipulation',
+]);
+const INJECTED = new Set([...LAYER, 'life-house-meeting', 'reign-house-meeting', 'alliance-betrayal-unseen', 'alliance-misattributed', 'alliance-deflected-blame', 'alliance-shaped-block', 'campaign-declined', 'twist-announcement-bravado', 'twist-announcement-recalc', 'twist-announcement-dread', 'alliance-formed', 'alliance-inner-circle', 'alliance-recruited', 'alliance-betrayal', 'alliance-repair', 'alliance-collapsed',
+  'campaign-pitch',     // a pitch folded into one summary for several voters keeps its sentence
+  // with no HOH to name (an Invisible HOH week) these keep a plain sentence
+  'power-replacement-fallout', 'power-saved-themselves', 'power-replacement-reacts', 'power-veto-fallout', 'power-veto-no-surprise']);
+const scripted = b => EVENT_IDS.has(b.eventId) && (Array.isArray(b.lines) || !INJECTED.has(b.eventId));
+const EVENT_IDS = new Set([...Object.values(CONVERTED), ...PHASE6, ...LAYER]);
+// Converted, but these three seasons cannot be sure of one: a first kiss needs a
+// showmance (not a spark) under two weeks old, about 0.4 a season; the two
+// reign-* ones need two Heads of Household, which only Battle of the Block gives;
+// a kiss trap needs a showmance and an accomplice the schemer is close to;
+// a young showmance hiding or naming itself, or campaigning apart, is as rare.
+// Fires only under a scheduled twist, which these plain seasons never run; read
+// in twist seasons by the Phase 6 harness instead.
+const TWIST_ONLY = new Set(['kin-ex-relapse', 'kin-ex-unrequited', 'kin-ex-cold-war', 'kin-estranged-attempt', 'kin-family-shield', 'kin-family-compared', 'kin-partners-strain', 'kin-partners-break', 'kin-exfriends-apology', 'kin-known-before', 'kin-blood-question', 'past-surfaces', 'past-nominated-again', 'past-settled-tonight', 'past-known-for-it', 'hacker-benefit-math', 'hacker-swapped-in-hunts', 'hacker-hoh-disowns', 'hacker-seat-witness', 'hacker-missing-vote', 'hacker-silenced-voter', 'hacker-round-table', 'hacker-alibi-trade', 'hacker-false-claim', 'hacker-performed-confusion', 'pandora-price-resented', 'pandora-story-tested', 'pandora-doubters-compare', 'pandora-would-you-open', 'pandora-watching-for-it', 'pandora-oversells', 'pandora-left-closed', 'pandora-still-paying', 'split-picked-last', 'split-missing-ally', 'split-small-room', 'split-through-the-wall', 'split-odd-couple', 'split-rehearsing-reunion', 'split-comparing-weeks', 'temptation-carries-it', 'temptation-hunting', 'temptation-innocent-pays', 'temptation-would-you-take-it', 'temptation-performing-sympathy', 'temptation-refused', 'temptation-afterwards', 'invisible-whodunit-circle', 'invisible-accusation', 'invisible-false-credit', 'invisible-performed-innocence', 'invisible-alibi-pact', 'invisible-nominee-detective', 'nightmare-came-down', 'nightmare-went-up', 'nightmare-counts-the-room', 'nightmare-hoh-after', 'care-country-favourite', 'care-passed-over', 'care-the-costume', 'care-appointed-co-hoh', 'care-silenced-in-public', 'care-public-money', 'coup-dethroned', 'coup-seated', 'coup-saved-debt', 'coup-now-a-target', 'coup-afterwards', 'vetovar-courted-in-the-dark', 'vetovar-two-medallions', 'vetovar-left-in-the-box', 'vetovar-no-say-in-it', 'suite-plus-one', 'suite-spent-for-nothing', 'suite-held-it-and-lost', 'suite-counting-entries', 'suite-when-to-spend', 'coin-dethroned-by-nobody', 'coin-paid-in-public', 'coin-kept-their-money', 'coin-seated-by-nobody', 'coin-called-it-quietly', 'team-the-tell', 'team-the-saboteur', 'team-the-reluctance', 'team-the-cover', 'americas-chair', 'americas-hunt', 'americas-outside-room', 'americas-playing-to-camera', 'americas-mvp-quiet', 'hrr-walked-in', 'hrr-lost-the-seat', 'hrr-wheeled-up', 'hrr-derby-second-veto', 'punish-not-taken-seriously', 'punish-the-horn', 'punish-the-tether', 'punish-pity', 'camp-still-at-the-table', 'camp-honest-voice', 'camp-one-is-coming-back', 'camp-the-room', 'exchange-chose-the-money', 'exchange-the-robbery', 'exchange-gave-it-away', 'exchange-out-of-the-boxes', 'wildcard-serving', 'wildcard-refusal-tested', 'wildcard-wearing-it', 'returned-first-morning', 'returned-re-priced', 'returned-door-defender', 'locust-called-out-survived', 'locust-closest-call', 'locust-no-vote-to-argue-with', 'locust-asterisk-reign', 'cliques-covered', 'cliques-heading-holds', 'cliques-on-your-own', 'camp-director-needled', 'camp-director-survivor', 'camp-director-empty-chair', 'premiere-rich-man', 'premiere-named-the-four', 'secret-comp-anomaly', 'evictionpower-still-here', 'evictionpower-spent-it', 'side-bet-counts-the-rail', 'side-bet-collected', 'roadkill-third-key-theory', 'roadkill-accused-defends', 'roadkill-second-signature', 'whack-declared-it', 'whack-crowded-room', 'whack-stayed-shut', 'whack-sat-it-out', 'whack-suspect-list', 'whack-hoh-watched', 'whack-being-normal', 'whack-still-watching', 'havenot-slop-argument', 'havenot-sleep-deprived-snap', 'havenot-cold-shower-solidarity', 'havenot-selection-resentment', 'havenot-midnight-kitchen-watch', 'life-have-nots', 'twist-announcement-bravado', 'twist-announcement-recalc', 'twist-announcement-dread', 'powerknown-arithmetic', 'powerknown-wait', 'powerknown-flush', 'powerknown-spent-mark']);
+const RARE = new Set(['alliance-deflected-blame', 'alliance-misattributed', 'alliance-betrayal-unseen', 'bond-first-kiss', 'reign-carve-it-up', 'reign-works-both-rooms', 'scheme-kiss-trap',
+  'showmance-hiding-it', 'showmance-defined', 'showmance-separate-campaigns', 'showmance-block-pressure']);
 
 function playSeason(seed, shift) {
   const cast = Array.from({ length: 14 }, (_, i) => POOL[(i * 11 + 3 + shift) % POOL.length]).map(p => ({ name: p.name,
@@ -77,21 +224,33 @@ describe('every intent airs as a script', () => {
   it('fires each converted event as a written exchange', () => {
     const fired = new Set();
     for (const eps of seasons) for (const b of beatsOf(eps)) {
-      if (!EVENT_IDS.has(b.eventId)) continue;
+      if (!scripted(b)) continue;
       fired.add(b.eventId);
       // A script: at least one line somebody SAYS (a lone Diary Room counts), never only narration.
       expect(Array.isArray(b.lines) && b.lines.some(l => l.kind !== 'beat'), `${b.eventId} week ${b.week} has no script`).toBe(true);
     }
-    for (const id of EVENT_IDS) expect(fired.has(id), `${id} never fired in three seasons`).toBe(true);
+    for (const id of EVENT_IDS) if (!RARE.has(id) && !TWIST_ONLY.has(id) && !LAYER.has(id)) expect(fired.has(id), `${id} never fired in three seasons`).toBe(true);
   });
 
   it('fills every slot, and only the people in the scene speak', () => {
     for (const eps of seasons) for (const b of beatsOf(eps)) {
-      if (!EVENT_IDS.has(b.eventId)) continue;
+      if (!scripted(b)) continue;
       for (const l of b.lines) {
         expect(l.text, `${b.lineId}`).not.toMatch(/[{}]|undefined|null/);
-        if (l.by) expect(b.players.includes(l.by), `${l.by} speaks in ${b.lineId} but is not in it`).toBe(true);
+        if (l.by && !OFF_CARD.has(b.eventId)) expect(b.players.includes(l.by), `${l.by} speaks in ${b.lineId} but is not in it`).toBe(true);
       }
+    }
+  });
+
+  // A scene's room must be one of BB_ROOMS. One that is not ('storage',
+  // 'bathroom') is dropped, the room is then guessed from the transcript, and
+  // "in the Diary Room" on any confessional line wins: two people arguing out
+  // loud, staged in the Diary Room.
+  it('never stages people talking out loud in the Diary Room', () => {
+    for (const eps of seasons) for (const b of beatsOf(eps)) {
+      if (!scripted(b) || !EVENT_IDS.has(b.eventId)) continue;
+      const aloud = b.lines.some(l => l.kind === 'say');
+      expect(aloud && b.location === 'diary-room', `${b.eventId} ${b.lineId} talks out loud in the Diary Room`).toBe(false);
     }
   });
 
@@ -101,7 +260,7 @@ describe('every intent airs as a script', () => {
       const heard = new Map();
       let lines = 0, repeats = 0, selfRepeats = 0;
       for (const b of beatsOf(eps)) {
-        if (!EVENT_IDS.has(b.eventId)) continue;
+        if (!scripted(b)) continue;
         const k = `${b.week}|${b.lineId}`;
         expect(week.has(k), `${b.lineId} twice in week ${b.week}`).toBe(false);
         week.add(k);
@@ -121,7 +280,7 @@ describe('every intent airs as a script', () => {
 
   it('puts nobody in the HOH room without the HOH', () => {
     for (const eps of seasons) for (const b of beatsOf(eps)) {
-      if (!EVENT_IDS.has(b.eventId) || b.location !== 'hoh-room' || !b.hoh) continue;
+      if (!scripted(b) || b.location !== 'hoh-room' || !b.hoh) continue;
       expect(b.players.includes(b.hoh), `${b.eventId} week ${b.week} is in the HOH room without ${b.hoh}`).toBe(true);
     }
   });
@@ -159,10 +318,10 @@ describe('the talk pools', () => {
   // in the bedroom.
   const ROOM_WORDS = [['kitchen', /kitchen|cupboard/i], ['bedroom', /bedroom|between the beds|'s bed\b/i],
     ['backyard', /backyard|the grass/i], ['pantry', /storage room|pantry/i], ['living-room', /living room/i]];
-  const FIXED = { 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
+  const FIXED = { 'kin.coldwar': 'kitchen', 'kin.estranged': 'backyard', 'kin.break': 'bedroom', 'kin.apology': 'backyard', 'past.surfaces': 'kitchen', 'tempt.carries': 'kitchen', 'inv.accuse': 'kitchen', 'nm.up': 'kitchen', 'nm.count': 'kitchen', 'inv.alibi': 'backyard', 'nm.down': 'kitchen', 'an.mvp': 'kitchen', 'roller.walked': 'kitchen', 'returned.morning': 'kitchen', 'premiere.rich': 'kitchen', 'slop.argument': 'kitchen', 'slop.snap': 'kitchen', 'slop.kitchen': 'kitchen', 'slop.picked': 'bedroom', 'slop.solidarity': 'washroom', 'drinks.open': 'kitchen', 'drinks.grievance': 'kitchen', 'plan.seen': 'bedroom', 'plan.backdoor': 'bedroom', 'jury.face': 'kitchen', 'jury.payment': 'pantry', 'couple.hiding': 'bedroom', 'couple.fight': 'bedroom', 'couple.jealous': 'kitchen', 'couple.defined': 'bedroom', 'editorial.bedroom': 'bedroom', 'editorial.latenight': 'kitchen', 'editorial.spark': 'backyard', 'editorial.flip': 'bedroom', 'editorial.breakdown': 'pantry', 'editorial.meeting': 'bedroom', 'editorial.standoff': 'kitchen', 'texture.kitchen': 'kitchen', 'texture.backyard': 'backyard', 'texture.snoring': 'bedroom', 'texture.namedrop': 'pantry', 'texture.trial': 'living-room', 'followup.isolation': 'kitchen', 'followup.overheard': 'living-room', 'followup.damage': 'pantry', 'followup.aftershock': 'bedroom', 'reign.carve': 'hoh-room', 'reign.both': 'hoh-room', 'bond.kiss': 'bedroom', 'bond.quiet': 'bedroom', 'bond.bad-day': 'bedroom', 'bond.petty': 'kitchen', 'fallout.grief': 'bedroom', 'fallout.rogue': 'kitchen', 'bloc.blowup': 'kitchen', 'phase.hoh-room': 'hoh-room', 'phase.scramble': 'hoh-room', 'phase.targets': 'hoh-room', 'phase.leaned': 'hoh-room', 'friction.dishes': 'kitchen', 'friction.food': 'kitchen', 'life.chores': 'kitchen', 'life.table': 'kitchen', 'life.cook': 'kitchen', 'life.workout': 'backyard', 'talk.safety': 'hoh-room', 'talk.pitch-target': 'hoh-room', 'talk.hoh-visit': 'hoh-room', 'talk.hoh-decide': 'hoh-room' };
   it('only stages a room where the scene is', () => {
     for (const [key, pool] of Object.entries(POOLS)) {
-      if (!/^(talk|social|deals)\./.test(key)) continue;
+      if (!/^(talk|social|deals|alliance|power|campaign|life|friction|phase|bloc|venue|fallout|bond|reign|scheme|followup|texture|editorial|arc|couple|jury|plan|known|cer|romance|upkeep|engine|drinks|meeting|slop|whack|hex|bet|road|clique|director|premiere|secret|wild|returned|locust|punish|camp|swap|team|an|roller|vv|suite|coin|care|coup|inv|nm|tempt|split|pan|hack|vfall|kin|past)\./.test(key)) continue;
       const fixed = FIXED[key.split('.').slice(0, 2).join('.')];
       for (const e of pool) for (const t of e.turns) {
         if (!t.beat) continue;

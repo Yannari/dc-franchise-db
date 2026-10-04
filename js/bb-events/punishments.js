@@ -17,17 +17,10 @@
 // is PITY, which is worse for the wearer's game than laughter and much worse
 // for their jury résumé.
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import { BB_PUNISHMENTS, punishmentFor, activePunishments } from '../bb/punishments.js';
 import { pStats, band, closestTo, furthestFrom } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 const _reactable = ctx => ctx?.act === 'house' || ctx?.act === 'campaign';
 
@@ -84,19 +77,10 @@ const notTakenSeriously = {
     const cast = _wornCast(house, ctx);
     if (!cast) return null;
     const { def, who, other } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} makes the best argument ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} made all season, in ${def.name}, `
-        + `and watches ${other} not quite manage to hold a straight face through it. The argument was right. It did not matter.`,
-      `${other} keeps agreeing with ${who} in the tone people use on children. ${p.Sub} ${p.sub === 'they' ? 'notice' : 'notices'}, `
-        + 'and there is nothing to be done about it while the suit is on.',
-      `Strategy in ${def.name} is still strategy, but ${who} has to say everything twice — once to get the laugh out of the room, `
-        + `and again to get ${other} to actually listen.`,
-      `"Can you take it off for five minutes?" "No." ${other} shrugs, and the conversation ${who} needed to have does not happen today.`,
-    ], ctx, who, other);
+    const scene = makeScene('punish.serious', { a: who, b: other }, { ending: 'scene' }, [], 'living-room');
     api.popDelta(who, 1);
     api.suspicion(other, who, -0.4);
-    return { text, players: [who, other],
+    return { scene, players: [who, other],
       badgeText: 'NOT TAKEN SERIOUSLY', badgeClass: 'red' };
   },
 };
@@ -113,18 +97,10 @@ const theHorn = {
     const cast = _hornCast(house, ctx);
     if (!cast) return null;
     const { def, who, mid } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${who} is halfway through the most important sentence of ${p.posAdj} week when the horn goes, and `
-        + `${def.name} takes ${p.obj} out of the room. ${mid} finishes the conversation with somebody else.`,
-      `The house has learned exactly how long ${who} gets between summonses, and ${mid} has started `
-        + 'timing the difficult questions for the gap.',
-      `${who} comes back to find the room has moved on without ${p.obj}, which it has done four times today.`,
-      `Every plan ${who} is part of this week has a hole in the middle of it shaped like ${def.name}.`,
-    ], ctx, who, mid);
+    const scene = makeScene('punish.horn', { a: who, b: mid }, { ending: 'scene' }, [], 'living-room');
     api.popDelta(who, 0.5);
     api.addBond(who, mid, -0.3);
-    return { text, players: [who, mid], badgeText: 'SUMMONED, AGAIN', badgeClass: 'red' };
+    return { scene, players: [who, mid], badgeText: 'SUMMONED, AGAIN', badgeClass: 'red' };
   },
 };
 
@@ -140,21 +116,11 @@ const theTether = {
     const cast = _tetherCast(house, ctx);
     if (!cast) return null;
     const { who, partner } = cast;
-    const p = pronouns(partner);
-    const text = _variant([
-      `${partner} has not had a private conversation since the tether went on, and neither has ${who}. `
-        + 'Every deal either of them makes this week is made in front of the other one.',
-      `${who} and ${partner} are learning exactly how much of this game is conducted in whispers, `
-        + `by being unable to have any. ${p.Sub} ${p.sub === 'they' ? 'blame' : 'blames'} ${who} for it, `
-        + 'which is unfair and completely understandable.',
-      `The tether means ${partner} hears every pitch ${who} makes, and ${who} hears every one of ${p.posAdj}. `
-        + 'By Wednesday they know more about each other than either wanted to.',
-      `“I need ten minutes alone.” “So do I.” ${who} and ${partner} have had the same argument three times without ever getting more than one metre apart.`,
-    ], ctx, who, partner);
+    const scene = makeScene('punish.tether', { a: who, b: partner }, { ending: 'scene' }, [], 'kitchen');
     api.addBond(who, partner, -0.8);
     api.suspicion(partner, who, 0.6);
     api.popDelta(partner, 1);
-    return { text, players: [who, partner], badgeText: 'TETHERED', badgeClass: 'red' };
+    return { scene, players: [who, partner], badgeText: 'TETHERED', badgeClass: 'red' };
   },
 };
 
@@ -170,18 +136,10 @@ const thePity = {
     const cast = _pityCast(house, ctx);
     if (!cast) return null;
     const { def, who, kind } = cast;
-    const p = pronouns(who);
-    const text = _variant([
-      `${kind} is kind about ${def.name}, genuinely and repeatedly, and that is somehow worse than being laughed at — `
-        + `${who} has become somebody the house is nice TO rather than somebody it works WITH.`,
-      `${kind} makes one joke about ${def.name}, sees how tired ${who} is and quietly stops. Being handled gently feels worse to ${who} than the joke did.`,
-      `“At least people feel bad for you,” ${kind} says, trying to help. ${who} asks whether pity comes with a vote.`,
-      `${kind} carries ${who}'s plate over without being asked. Small kindnesses all week, and every one of them `
-        + `is the house filing ${who} under somebody who is having a hard time rather than somebody who is playing.`,
-    ], ctx, who, kind);
+    const scene = makeScene('punish.pity', { a: who, b: kind }, { ending: 'scene' }, [], 'kitchen');
     api.addBond(who, kind, 0.6);
     api.popDelta(who, 1.5);
-    return { text, players: [who, kind], badgeText: 'PITIED', badgeClass: 'grey' };
+    return { scene, players: [who, kind], badgeText: 'PITIED', badgeClass: 'grey' };
   },
 };
 

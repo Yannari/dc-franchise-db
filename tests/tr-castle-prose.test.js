@@ -1972,8 +1972,12 @@ describe('a universal claim is evidenced, wired, or it does not ship', () => {
     expect(scanned).toBe(files.length);
     // ANTI-VACUITY: the scan has to be finding the shape at all, or a matcher
     // that quietly stopped matching would report the library clean.
+    // 20 -> 12 (2026-10-03): the host lines were rewritten to say plainly
+    // what happens next, which removed a handful of "the whole room" claims.
+    // A liveness floor, not a measurement: it exists to catch a matcher that
+    // found NOTHING, and 12 is far clear of zero.
     expect(seen, 'the consensus matcher found nothing anywhere — it has stopped matching')
-      .toBeGreaterThan(20);
+      .toBeGreaterThan(12);
     expect(offenders,
       'these say everyone/the whole castle with nothing checking the evidence. Either '
       + 'route the line through api.consensusPhrase (give it {who}) or add it to '

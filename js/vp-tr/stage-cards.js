@@ -54,7 +54,63 @@ export function playCard(el, st, S, fresh) {
 }
 
 
+// ── WHO TOOK THE SHIELD (2026-10-03) ─────────────────────────────────
+//
+// The user: "i cant really see who won the shield in the watch it played
+// viewer during a mission". It was a line of text on a card; the field did
+// not change. Now the relic RISES over the field with the winner's face in
+// it and their name under it, and from then on the winner wears a small
+// gold shield on their portrait. A layer that did not see who took it gets
+// the relic with a question mark in it — the page's own gate.
+const _RELIC_PATH = 'M50 4 L94 16 V52 C94 84 72 100 50 110 C28 100 6 84 6 52 V16 Z';
+export function relicBadge(kind) {
+  return `<i class="trs-relic-badge" data-kind="${kind === 'dagger' ? 'dagger' : 'shield'}"><svg viewBox="0 0 100 114" aria-hidden="true">`
+    + (kind === 'dagger'
+      ? '<path d="M50 4 L58 70 H42 Z" fill="#e6e9ee" stroke="#3a2208" stroke-width="5"/><rect x="28" y="70" width="44" height="9" rx="3" fill="#d8b46a"/><rect x="45" y="79" width="10" height="28" rx="3" fill="#5a3a18"/>'
+      : `<path d="${_RELIC_PATH}" fill="#8e1526" stroke="#e8c270" stroke-width="9"/><circle cx="50" cy="52" r="12" fill="#e8c270"/>`)
+    + '</svg></i>';
+}
+/** The relic, risen over the stage. `r` = { kind, holder (null when unseen), awarded }. */
+export function relicReveal(r, fresh) {
+  const kind = r.kind === 'dagger' ? 'dagger' : 'shield';
+  const word = kind === 'dagger' ? 'The Dagger' : 'The Shield';
+  const name = !r.awarded ? 'Nothing came back' : r.holder ? r.holder : 'You did not see who';
+  return `<div class="trs-relic${fresh ? ' trs-relic-in' : ''}${r.awarded ? '' : ' trs-relic-none'}" data-kind="${kind}">`
+    + `<div class="trs-relic-emblem"><svg class="trs-relic-svg" viewBox="0 0 100 114" aria-hidden="true">`
+    + `<defs><clipPath id="trsRelicClip"><path d="${_RELIC_PATH}"/></clipPath></defs>`
+    + `<path d="${_RELIC_PATH}" fill="${kind === 'dagger' ? '#20242c' : '#5a0c16'}"/></svg>`
+    + (r.awarded && r.holder ? `<div class="trs-relic-face">${face(r.holder)}</div>`
+      : `<div class="trs-relic-q">${r.awarded ? '?' : ''}</div>`)
+    + `<svg class="trs-relic-rim" viewBox="0 0 100 114" aria-hidden="true"><path d="${_RELIC_PATH}" fill="none" stroke="#e8c270" stroke-width="5"/></svg></div>`
+    + `<div class="trs-relic-k">${word}</div><div class="trs-relic-nm">${esc(name)}</div></div>`;
+}
+
 export const CARD_CSS = `
+.trs-relic{position:absolute;left:50%;top:9%;z-index:2200;transform:translateX(-50%);text-align:center;pointer-events:none;
+  filter:drop-shadow(0 18px 30px rgba(0,0,0,.85))}
+.trs-relic.trs-relic-in{animation:trsRelicIn 1.3s cubic-bezier(.2,1.2,.3,1) both}
+@keyframes trsRelicIn{0%{opacity:0;transform:translateX(-50%) translateY(60px) scale(.4)}60%{opacity:1}100%{opacity:1;transform:translateX(-50%)}}
+.trs-relic-emblem{position:relative;width:clamp(110px,13vw,170px);aspect-ratio:100/114;margin:0 auto}
+.trs-relic-emblem::before{content:"";position:absolute;inset:-30%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,206,120,.55),transparent);
+  animation:trsRelicGlow 2.4s ease-in-out infinite}
+@keyframes trsRelicGlow{50%{opacity:.45;transform:scale(.9)}}
+.trs-relic-svg,.trs-relic-rim{position:absolute;inset:0;width:100%;height:100%}
+.trs-relic-rim{z-index:3}
+.trs-relic-face{position:absolute;inset:0;z-index:2;clip-path:path('M50 4 L94 16 V52 C94 84 72 100 50 110 C28 100 6 84 6 52 V16 Z');overflow:hidden}
+.trs-relic-face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 16%}
+.trs-relic-q{position:absolute;inset:0;z-index:2;display:grid;place-items:center;font-family:var(--v-display);font-weight:900;font-size:clamp(40px,5vw,70px);color:#e8c270}
+.trs-relic-k{margin-top:10px;font-family:var(--v-display);font-weight:700;font-size:12px;letter-spacing:.42em;text-transform:uppercase;color:#e8c270}
+.trs-relic-nm{display:inline-block;margin-top:5px;padding:4px 14px;font-family:var(--v-display);font-weight:900;font-size:clamp(14px,1.6vw,22px);letter-spacing:.14em;
+  text-transform:uppercase;color:#241b11;background:linear-gradient(180deg,#f7e2a6,#c99a48)}
+.trs-relic.trs-relic-none{opacity:.75}
+.trs-relic.trs-relic-none .trs-relic-nm{background:rgba(20,16,12,.85);color:#ded6c4}
+.trs-relic-badge{position:absolute;right:-18%;top:-14%;z-index:8;width:55%;max-width:44px;min-width:22px;filter:drop-shadow(0 0 8px rgba(255,206,120,.85)) drop-shadow(0 3px 4px rgba(0,0,0,.8));
+  animation:trsBadge 2.4s ease-in-out infinite}
+.trs-relic-badge svg{display:block;width:100%}
+@keyframes trsBadge{50%{filter:drop-shadow(0 0 14px rgba(255,206,120,1)) drop-shadow(0 3px 4px rgba(0,0,0,.8))}}
+.trs-relic-holder{z-index:40!important;filter:none!important;opacity:1!important}
+.trs-relic-holder [class$="-av"]{box-shadow:0 0 0 3px #e8c270,0 0 26px rgba(232,194,112,.75)!important}
+@media (prefers-reduced-motion:reduce){.trs-relic,.trs-relic-badge,.trs-relic-emblem::before{animation:none!important}}
 .tsc-slot{position:absolute;left:50%;bottom:3.5%;width:min(64%,780px);transform:translate(-50%,12px);opacity:0;z-index:3200;transition:.4s}
 .tsc-slot.tsc-in{opacity:1;transform:translate(-50%,0)}
 .tsc-slot.tsc-over{z-index:3400}

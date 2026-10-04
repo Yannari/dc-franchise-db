@@ -1330,7 +1330,7 @@ export function saveConfig() {
     // On unless switched off (an older save has no setting: the draws it always had).
     ciSurprises: g('cfg-ci-surprises') ? g('cfg-ci-surprises').checked : seasonConfig.ciSurprises !== false,
     trAutoDouble: g('cfg-tr-auto-double') ? g('cfg-tr-auto-double').checked : true,
-    trEndgameReveal: g('cfg-tr-endgame-reveal') ? g('cfg-tr-endgame-reveal').checked : false,
+    trEndgameReveal: g('cfg-tr-endgame-reveal') ? g('cfg-tr-endgame-reveal').checked : true,
     trEndgameSize: parseInt(g('cfg-tr-endgame-size')?.value) || 3,
     trAutoRecruit: g('cfg-tr-auto-recruit') ? g('cfg-tr-auto-recruit').checked : true,
     trDensity: g('cfg-tr-density')?.value || TR_DENSITY_DEFAULT,
@@ -1537,7 +1537,7 @@ export function renderConfig() {
   try { window.renderCircleCastSetup?.(); } catch { /* the panel is optional chrome */ }
   set('cfg-tr-traitor-mode', seasonConfig.trTraitorMode || 'random');
   if (g('cfg-tr-auto-double')) g('cfg-tr-auto-double').checked = seasonConfig.trAutoDouble !== false;
-  if (g('cfg-tr-endgame-reveal')) g('cfg-tr-endgame-reveal').checked = seasonConfig.trEndgameReveal === true;
+  if (g('cfg-tr-endgame-reveal')) g('cfg-tr-endgame-reveal').checked = seasonConfig.trEndgameReveal !== false;
   set('cfg-tr-endgame-size', seasonConfig.trEndgameSize || 3);
   if (g('cfg-tr-auto-recruit')) g('cfg-tr-auto-recruit').checked = seasonConfig.trAutoRecruit !== false;
   try { updateDensityUI(); } catch (e) {}

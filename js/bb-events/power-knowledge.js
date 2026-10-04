@@ -22,15 +22,15 @@
 // house has learned who ends up holding things, which is not a fact about this
 // week at all.
 import { gs } from '../core.js';
-import { pronouns } from '../players.js';
 import { pStats, band, closestTo, furthestFrom } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
+/** Which room a scene happens in: by hash, never a die. */
+function _room(rooms, ctx, ...people) {
+  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${people.join('|')}`;
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
+  return rooms[hash % rooms.length];
 }
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 const _reactable = ctx => ctx?.act === 'house' || ctx?.act === 'campaign';
@@ -86,20 +86,10 @@ const theArithmetic = {
     const cast = _knownCast(house, ctx);
     if (!cast) return null;
     const { holder, counter } = cast;
-    const p = pronouns(holder);
-    const text = _variant([
-      `${counter} keeps coming back to the same sum: ${holder} is holding something everybody has been told about, `
-        + `and every week ${p.sub} ${p.sub === 'they' ? 'keep' : 'keeps'} it is a week it can go off.`,
-      `"We know. That's the whole point — we KNOW." ${counter} cannot let it go, because a power you can see `
-        + 'is the one kind you are allowed to plan around.',
-      `${counter} would rather spend a nomination on ${holder} than spend a season wondering when it lands. `
-        + 'It is not personal and it will absolutely be taken personally.',
-      `${holder} has not done anything. ${counter} points out that this is precisely the argument for going now, `
-        + 'while the doing has not happened yet.',
-    ], ctx, holder, counter);
+    const scene = makeScene('known.target', { a: holder, b: counter }, { ending: 'scene' }, [], _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, holder, counter));
     api.suspicion(counter, holder, 1.4);
     try { api.setTarget(counter, holder, 'holding a power everybody can see'); } catch { /* texture */ }
-    return { text, players: [holder, counter],
+    return { scene, players: [holder, counter],
       badgeText: 'BEFORE IT GOES OFF', badgeClass: 'red' };
   },
 };
@@ -116,19 +106,10 @@ const waitItOut = {
     const cast = _waitCast(house, ctx);
     if (!cast) return null;
     const { holder, patient, left } = cast;
-    const p = pronouns(holder);
     const weeks = left === 1 ? 'one more week' : `${left} more weeks`;
-    const text = _variant([
-      `${patient} does the other sum, the one nobody likes: ${weeks} and the thing in ${holder}'s pocket `
-        + `stops existing on its own. Nominating ${holder} costs a week. Waiting costs nothing but nerve.`,
-      `"It expires." ${patient} says it like a man refusing to panic, and is right, and will be unbearable about it if it works.`,
-      `${patient} would rather outlast the power than spend a nomination on it, which is correct and requires `
-        + `${weeks} of everybody else agreeing not to lose their heads.`,
-      `The fuse is public too, so ${patient} has been counting it down out loud, which is doing more for `
-        + `${holder}'s safety than ${p.posAdj} own campaigning has.`,
-    ], ctx, holder, patient);
+    const scene = makeScene('known.wait', { a: holder, b: patient }, { ending: 'scene', weeks }, [], _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, holder, patient));
     api.suspicion(patient, holder, 0.5);
-    return { text, players: [holder, patient],
+    return { scene, players: [holder, patient],
       badgeText: 'OUTLAST IT', badgeClass: 'blue' };
   },
 };
@@ -147,21 +128,12 @@ const flushIt = {
     const cast = _knownCast(house, ctx);
     if (!cast) return null;
     const { holder, counter } = cast;
-    const p = pronouns(holder);
     const bait = furthestFrom(holder, _others(house, holder, counter))
       || _others(house, holder, counter)[0];
-    const text = _variant([
-      `${counter} does not want ${holder} gone this week. ${counter} wants that power SPENT, and is arranging `
-        + `a week where using it is the only thing ${holder} can do.`,
-      `The plan is to make the power worth less than the moment: put ${holder} somewhere ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} `
-        + 'to burn it to get out, and then deal with an ordinary houseguest next week.',
-      `"Force it out of ${p.obj}." ${counter} has said it three times today and each time it has sounded more like a plan.`,
-      `${counter} floats a week aimed at ${bait} for no reason other than to see whether ${holder} moves to protect ${bait} `
-        + 'and spends the thing doing it.',
-    ], ctx, holder, counter);
+    const scene = makeScene('known.flush', { a: holder, b: counter }, { ending: 'scene', target: bait || null }, [], _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, holder, counter));
     api.suspicion(counter, holder, 1.1);
     api.addBond(counter, holder, -0.5);
-    return { text, players: [holder, counter, bait].filter(Boolean),
+    return { scene, players: [holder, counter, bait].filter(Boolean),
       badgeText: 'FLUSH IT OUT', badgeClass: 'gold' };
   },
 };
@@ -178,17 +150,9 @@ const theMarkItLeaves = {
     const cast = _spentCast(house, ctx);
     if (!cast) return null;
     const { holder, watcher } = cast;
-    const p = pronouns(holder);
-    const text = _variant([
-      `${holder} no longer has the power, but ${watcher} still checks every conversation for signs `
-        + `${p.sub} ${p.sub === 'they' ? 'have' : 'has'} found something else. Once somebody produces one advantage, `
-        + `the house starts imagining a second.`,
-      `${holder} is carrying nothing now. ${watcher} keeps checking anyway, which is what a spent power actually costs you.`,
-      `"They had one. Why would they only have one?" ${watcher} cannot prove it, cannot forget it, and cannot stop saying it.`,
-      `Using it in public bought ${holder} a week and sold ${p.obj} the rest of the season as somebody to watch.`,
-    ], ctx, holder, watcher);
+    const scene = makeScene('known.spent', { a: holder, b: watcher }, { ending: 'scene' }, [], _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, holder, watcher));
     api.suspicion(watcher, holder, 1.2);
-    return { text, players: [holder, watcher],
+    return { scene, players: [holder, watcher],
       badgeText: 'THEY HAD ONE ONCE', badgeClass: 'grey' };
   },
 };

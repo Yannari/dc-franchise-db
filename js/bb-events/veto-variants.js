@@ -26,16 +26,9 @@
 // Everything here reads `week.secondVeto` and `week.vetoRules`, which the week
 // engine writes onto the week rather than only onto its act, so the reaction
 // survives into the campaign and into the week after.
-import { pronouns } from '../players.js';
 import { pStats, band, bond, closestTo, spotlightOrder } from './_read.js';
-import { freshLine } from '../bb/aired.js';
+import { makeScene } from '../bb/script/scene.js';
 
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 
 /** Current medallion only: every scene below also reads this week's block. */
 const _second = ctx => ctx?.week?.secondVeto || null;
@@ -58,22 +51,11 @@ const courtedInTheDark = {
     const cast = _cast(house, ctx);
     if (!cast) return null;
     const { holder, suitor } = cast;
-    const p = pronouns(holder);
-    const text = _variant([
-      `${suitor} has spent twenty minutes explaining to ${holder} why this week does not have to go the way `
-        + `it looks like going. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} holding the answer to that in `
-        + `${p.posAdj} pocket and lets ${suitor} finish.`,
-      `"You're the only person in here I can actually talk to." ${suitor} means it, which is what makes it `
-        + `worse — ${holder} could end this conversation with one sentence and does not.`,
-      `${holder} asks questions ${p.sub} already knows the answers to, because the answers tell ${p.obj} what `
-        + `${suitor} is worth. ${suitor} thinks it is going well.`,
-      `${suitor} is campaigning to somebody who came second in a competition and walked away with something `
-        + `for it. Nobody in this house has worked that out, ${suitor} least of all.`,
-    ], ctx, holder, suitor);
+    const scene = makeScene('vv.courted', { a: holder, b: suitor }, { ending: 'scene' }, [], 'backyard');
     api.addBond(holder, suitor, 1.1);
     api.popDelta(suitor, 0.5);
     try { api.remember(holder, suitor, 'came-to-me-first', 1, { twist: 'bb-double-veto' }); } catch { /* texture */ }
-    return { text, players: [holder, suitor], badgeText: 'STILL TALKING', badgeClass: 'blue' };
+    return { scene, players: [holder, suitor], badgeText: 'STILL TALKING', badgeClass: 'blue' };
   },
 };
 
@@ -113,20 +95,12 @@ const twoMedallions = {
     const hoh = ctx?.hoh;
     if (!sec?.used || !hoh || sec.holder === hoh) return null;
     const { holder, replacement } = sec;
-    const p = pronouns(hoh);
-    const text = _variant([
-      `${hoh} put up the original block and watched it change twice. ${holder} made the second change after the first veto decision was already over.`,
-      `"I had one week." ${hoh} keeps coming back to that sentence. ${holder} rewrote the only week ${p.sub} `
-        + `is ever going to get, and did it in front of everybody.`,
-      `The arithmetic ${hoh} is doing is simple: two medallions came out, and ${replacement} is now sitting in a chair ${p.sub} did not put ${pronouns(replacement).obj} in.`,
-      `${holder} tries to have a normal conversation with ${hoh} about something else entirely. It lasts about `
-        + `a minute and a half.`,
-    ], ctx, hoh, holder);
+    const scene = makeScene('vv.medallions', { a: hoh, b: holder }, { ending: 'scene', replacement: replacement || 'someone' }, [], 'kitchen');
     api.addBond(hoh, holder, -1.8);
     api.suspicion(hoh, holder, 1.4);
     try { api.setTarget(hoh, holder, 'took my week off me after the meeting ended'); } catch { /* texture */ }
     try { api.remember(hoh, holder, 'rewrote-my-block', 2, { twist: 'bb-double-veto' }); } catch { /* texture */ }
-    return { text, players: [hoh, holder, replacement].filter(Boolean), badgeText: 'THE SECOND CHANGE WASN’T MINE', badgeClass: 'red' };
+    return { scene, players: [hoh, holder, replacement].filter(Boolean), badgeText: 'THE SECOND CHANGE WASN’T MINE', badgeClass: 'red' };
   },
 };
 
@@ -152,22 +126,12 @@ const leftInTheBox = {
     const suspectPool = house.filter(n => n !== nominee && !noms.includes(n) && n !== ctx?.hoh);
     const suspect = suspectPool.sort((a, b) => pStats(b).strategic - pStats(a).strategic)[0];
     if (!suspect) return null;
-    const p = pronouns(nominee);
     const right = suspect === sec.holder;
-    const text = _variant([
-      `There was a second medallion in that meeting and it never came out. ${nominee} has spent the evening `
-        + `working out who was sitting on it, and has arrived at ${suspect}${right ? '' : ', who was not'}.`,
-      `${nominee} does not need to know who held it to know what it means: somebody in this house looked at `
-        + `${p.obj} on that block and decided ${p.sub} could stay there.`,
-      `"Somebody chose this." ${nominee} says it to nobody in particular, twice, and ${suspect} is the person `
-        + `who happens to be in the room the second time.`,
-      `The medallion that was not used is the loudest thing that happened at that meeting, and ${nominee} is `
-        + `the only person in the house who cannot stop hearing it.`,
-    ], ctx, nominee, suspect);
+    const scene = makeScene('vv.box', { a: nominee, b: suspect }, { ending: right ? 'right' : 'wrong' }, [], 'living-room');
     api.suspicion(nominee, suspect, right ? 1.6 : 1.1);
     api.addBond(nominee, suspect, -0.9);
     api.popDelta(nominee, 0.5);
-    return { text, players: [nominee, suspect], badgeText: right ? 'AND IS RIGHT' : 'AND IS WRONG',
+    return { scene, players: [nominee, suspect], badgeText: right ? 'AND IS RIGHT' : 'AND IS WRONG',
       badgeClass: 'grey' };
   },
 };
@@ -184,23 +148,13 @@ const noSayInIt = {
     const cast = _forcedCast(house, ctx);
     if (!cast) return null;
     const { holder, replacement, saved } = cast;
-    const p = pronouns(holder);
-    const text = _variant([
-      `${replacement} is on the block because a rule said the medallion had to come out and ${holder} had to `
-        + `put a name on it. Knowing that changes nothing about how ${replacement} says ${holder}'s name.`,
-      `"You could have picked me." ${saved} says it as a joke to ${holder}. ${replacement}, two rooms away, `
-        + `is not treating it as one.`,
-      `${holder} explains the rule to ${replacement} carefully and completely, and it is all true, and it does `
-        + `not help even slightly. ${replacement} knows whose mouth ${pronouns(replacement).posAdj} name came out of.`,
-      `The only person in this house who did not get a decision this week is ${holder}, and ${p.sub} `
-        + `${p.sub === 'they' ? 'are' : 'is'} the one everybody is angry with.`,
-    ], ctx, holder, replacement);
+    const scene = makeScene('vv.forced', { a: replacement, b: holder, c: saved || null }, { ending: 'scene' }, [], 'living-room');
     api.addBond(replacement, holder, -1.6);
     api.suspicion(replacement, holder, 1.2);
     api.popDelta(holder, -0.5);
     if (saved) api.addBond(saved, holder, 0.8);
     try { api.remember(replacement, holder, 'named-me-with-a-forced-veto', 2, { twist: 'bb-forced-veto' }); } catch { /* texture */ }
-    return { text, players: [replacement, holder, saved].filter((n, i, a) => n && a.indexOf(n) === i),
+    return { scene, players: [replacement, holder, saved].filter((n, i, a) => n && a.indexOf(n) === i),
       badgeText: 'A RULE SAID SO', badgeClass: 'red' };
   },
 };

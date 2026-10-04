@@ -882,7 +882,7 @@ export function renderVPScreen() {
   // Sidebar
   if (sidebar) {
     let lastPhase = '';
-    sidebar.innerHTML = '<div class="rp-sidebar-ep"><span>Episode ' + vpEpNum + '</span><b>' + (visiblePos + 1) + '/' + visibleIndexes.length + '</b></div>' +
+    sidebar.innerHTML = '<div class="rp-sidebar-ep"><span>Episode ' + _vpEpLabel(vpEpNum) + '</span><b>' + (visiblePos + 1) + '/' + visibleIndexes.length + '</b></div>' +
       visibleIndexes.map(i => {
         const s = vpScreens[i];
         const phase = _vpPhaseForScreen(s.id);
@@ -962,10 +962,27 @@ export function renderVPScreen() {
   }
 }
 
+// THE REUNION IS ITS OWN EPISODE IN THE VIEWER (the user, 2026-10-03). The
+// record rides on the season's finale row (a row of its own would be a game
+// episode to every reader that counts them); the viewer airs it as an episode
+// of its own, keyed 'reunion-<finale>', carrying nothing but the reunion.
+// the reunion's key is 'reunion-<finale>'; on screen it is the episode after the finale
+function _vpEpLabel(num) {
+  const m = /^reunion-(\d+)$/.exec(String(num));
+  return m ? (Number(m[1]) + 1) + ' · The Reunion' : num;
+}
+export function trReunionEpisode(num) {
+  const m = /^reunion-(\d+)$/.exec(String(num || ''));
+  if (!m) return null;
+  const f = (gs?.episodeHistory || []).find(e => String(e.num) === m[1] && e.tr && e.tr.reunion);
+  if (!f) return null;
+  return { num: String(num), format: f.format || 'traitors', exits: [], eliminated: null, reunionEpisode: true,
+    tr: { reunion: f.tr.reunion, reunionEpisode: true, ep: (f.tr.ep || f.num) + 1, pot: f.tr.pot } };
+}
 export function openVisualPlayer(epNum) {
   // Fall back to most recent episode if called with null (e.g. after page reload)
   const num = epNum ?? gs?.episodeHistory?.slice(-1)[0]?.num;
-  const epRecord = gs?.episodeHistory?.find(e => e.num === num);
+  const epRecord = gs?.episodeHistory?.find(e => e.num === num) || trReunionEpisode(num);
   if (!epRecord) { alert('No episode data. Simulate an episode first.'); return; }
   vpCurrentScreen = 0;
   const savedMode = localStorage.getItem('vp_view_mode');

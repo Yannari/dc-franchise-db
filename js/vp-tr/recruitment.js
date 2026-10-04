@@ -331,6 +331,9 @@ function _filters() {
 // THE VISUAL SYSTEM — a narrow column, a hairline, and nothing moving
 // ══════════════════════════════════════════════════════════════════════
 const NT_CSS = `
+.nt-said{display:flex;gap:12px;align-items:flex-start;margin:14px 0 4px}
+.nt-said-txt{font-family:var(--v-hand,Georgia),serif;font-style:italic;font-size:17px;line-height:1.45;color:#efe4cf}
+.nt-said cite{display:block;margin-top:4px;font-style:normal;font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.65}
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap');
 
 .nt-root{
@@ -1058,6 +1061,44 @@ const WHY_THEM = {
 // THE BEATS
 // ══════════════════════════════════════════════════════════════════════
 
+// ── SAID OUT LOUD (2026-10-02) ──────────────────────────────────────
+//
+// The Offer was the one castle screen with nobody speaking on it: a run of
+// cards ABOUT a conversation. An ultimatum is a person in a corridor saying
+// the words, so they say them; and whoever was asked answers in their own
+// voice, out loud in the passage or under their breath over a note.
+const ULTIMATUM_SAID = [
+  'Don’t scream. Just listen. I’m a Traitor, and tonight you get to be one too.',
+  'You’ve seen my face now, so there’s no going back. Join us, or you won’t be at breakfast.',
+  'I’ll keep this short. I’m a Traitor, and I want you with me. Say yes, and you come upstairs tonight.',
+  'I’m not going to ask twice. The turret, tonight. Yes or no.',
+  'I picked you because you’re good at this. Be good at it with us.',
+  'Nobody else knows I’m here. Keep it that way, and come with me.',
+];
+const ANSWER_SAID = {
+  ultimatumYes: ['…Fine. Yes. Show me the stairs.', 'Okay. I’m in. Don’t make me regret it.',
+    'I didn’t come here to go home in the night. Yes.', 'Yes. God help me, yes.'],
+  ultimatumNo: ['No. I’d rather go home a Faithful.', 'Not a chance. Do what you have to.',
+    'I can’t. I’m sorry. I won’t.', 'No. And I’ll be telling everyone your name at breakfast. If I make it to breakfast.'],
+  noteYes: ['Well. Somebody thinks I’d be good at this.', 'Okay. The turret it is.',
+    'I shouldn’t. I really shouldn’t. …I’m going to.', 'Right. Burn the note, and go upstairs.'],
+  noteNo: ['No. Not like this.', 'Nice try, whoever you are.', 'Absolutely not. Into the fire with you.',
+    'I’m not going to win it like that.'],
+};
+function _said(who, line) {
+  return '<div class="nt-said">' + _av(who, 44)
+    + '<div><div class="nt-said-txt">&ldquo;' + _esc(line) + '&rdquo;</div>'
+    + '<cite>' + _esc(who) + '</cite></div></div>';
+}
+
+/** The page's beats, for a stage to play (js/vp-tr/offer-stage.js). Same gates as the page. */
+export function recruitmentStageData(ep, observer = 'audience') {
+  const v = _view(ep, observer);
+  if (!v || !v.present) return null;
+  const h = _host();
+  return { v, beats: _buildBeats(v), host: { name: h.name, slug: h.slug } };
+}
+
 function _buildBeats(v) {
   const beats = [];
   const key = 'nt|' + v.ep + '|' + v.target + '|' + v.mode;
@@ -1116,7 +1157,9 @@ function _buildBeats(v) {
     // not say the thing that actually matters, which is that refusing a NOTE
     // is survivable and refusing an ULTIMATUM is not.
     + '<p class="nt-rule">' + _esc(ruleReminder(
-      v.mode === 'ultimatum' ? 'recruitment-ultimatum' : 'recruitment-note') || '') + '</p>'),
+      v.mode === 'ultimatum' ? 'recruitment-ultimatum' : 'recruitment-note') || '') + '</p>'
+    + (v.mode === 'ultimatum' && v.recruiterKnown
+      ? _said(v.recruiter, _pick(ULTIMATUM_SAID, key + '|say')) : '')),
   { kind: 'ask' });
 
   // ── the pause ───────────────────────────────────────────────────────
@@ -1135,7 +1178,8 @@ function _buildBeats(v) {
     '<div class="nt-verdict" data-answer="' + (v.accepted ? 'yes' : 'no') + '">'
     + '<div class="nt-verdict-w">' + (v.accepted ? 'Yes' : 'No') + '</div>'
     + '<div class="nt-verdict-s">' + _pick(ANSWER[v.accepted ? 'yes' : 'no'], key + '|answer')
-    + '</div></div>'),
+    + '</div></div>'
+    + _said(v.target, _pick(ANSWER_SAID[(v.mode === 'ultimatum' ? 'ultimatum' : 'note') + (v.accepted ? 'Yes' : 'No')], key + '|said'))),
   { kind: 'answer' });
 
   // ── and what that costs ─────────────────────────────────────────────

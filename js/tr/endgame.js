@@ -36,6 +36,22 @@ import { suspicion, knowsAlignmentOf, potShare } from './deduction.js';
 import { runRoundTable } from './roundtable.js';
 import { settleDaggers, openSeer } from './powers.js';
 import { lineFor, _lineHash } from './castle/lines.js';
+import { learn } from '../knowledge.js';
+import { addBond } from '../bonds.js';
+import { alignmentFactId } from './deduction.js';
+
+// ── THE FIRE IS PUBLIC (2026-10-03) ─────────────────────────────────────
+//
+// The user, checking the US format: every finalist throws a pouch into the
+// fire and it burns GREEN to end the game or RED to banish again — in front
+// of everybody. So a red is not a secret: the people who burned it green
+// watched who kept the game going, and that is what the debate after it is
+// about ("you burned it red when the rest of us wanted to stop"). Priced
+// only when the reds are the minority — a room that mostly wants another
+// table is not singling anybody out.
+const FIRE_RED_DOUBT = 0.18;
+const FIRE_RED_BOND = -0.4;
+const FIRE_RED_SOURCE = 'burned the fire red when the rest of the room wanted it over';
 
 /** A stable 0..1 from a string. No rng draw — see the note on the choice. */
 function hash01(key) { return _lineHash(key) / 4294967296; }
@@ -327,6 +343,16 @@ export function runEndgame(startEp, rng = Math.random, { reveal = false } = {}) 
     }
     ballots.push({ ep, choices, living });
     if (alreadyWon || !choices.some(c => c.choice === 'banish')) break;
+    // THE GREEN SAW THE RED: a public choice has a public cost
+    const reds = choices.filter(c => c.choice === 'banish').map(c => c.name);
+    const greens = choices.filter(c => c.choice !== 'banish').map(c => c.name);
+    if (reds.length && reds.length < greens.length) {
+      for (const red of reds) for (const g of greens) {
+        learn(g, alignmentFactId(red), { source: FIRE_RED_SOURCE, sourceType: 'deduced',
+          confidence: FIRE_RED_DOUBT, ep, rng });
+        addBond(g, red, FIRE_RED_BOND);
+      }
+    }
     // `reveal` is the author's Castle Option (spec §8's rule is the default:
     // OFF, nobody turned over). ON plays the endgame like Ireland S1 — every
     // banished player is revealed at the table, the same as any earlier one.

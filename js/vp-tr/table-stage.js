@@ -80,7 +80,7 @@ export function tableStageScreen(ep, observer, pageHtml) {
     return { data, steps: parseBeats(data), traitors: Object.keys(truth).filter(n => truth[n] === 'traitor') };
   };
   const uid = 'trt-' + String(ep.num) + '-' + (hash(observer) % 1e6);
-  reg()[uid] = { uid, steps: null, init, idx: -1, title: 'The Round Table', traitors: [],
+  reg()[uid] = { uid, steps: null, init, idx: -1, title: rec.endgame ? 'The Vote At The Fire' : 'The Round Table', traitors: [], fire: !!rec.endgame,
     day: (ep.tr && ep.tr.ep) || ep.num, pot: ep.tr && ep.tr.pot, timers: [], painter: paintTable };
   if (typeof queueMicrotask === 'function' && typeof window !== 'undefined' && window.trStageMountAll) {
     queueMicrotask(window.trStageMountAll);
@@ -104,9 +104,28 @@ export function rtPlateBox(W, H) {
   return { ox: (W - dw) / 2, oy: (H - dh) / 2, dw, dh,
     x: f => (W - dw) / 2 + f * dw, y: f => (H - dh) / 2 + f * dh };
 }
-const PLATE_IMG = `<img class="trt-plate" src="${RT_PLATE}" alt="">`;
+const ROOM_IMG = `<img class="trt-plate" src="${RT_PLATE}" alt="">`;
+// AT THE FIRE (the user, 2026-10-03: "they dont go at the round table they
+// discuss right there"). A finale vote is argued and written where the
+// pouches burned, so its stage is the fire (tools/blender/traitors-endgame.py):
+// everybody stands in an arc behind the flames and the host at the side, and
+// the threads and the counter centre on the fire. Set per paint from the
+// stage's own record.
+const FIRE_IMG = '<img class="trt-plate" src="assets/sets/traitors/endgame.webp" alt="">';
+let FIRE = false;
+const plateImg = () => (FIRE ? FIRE_IMG : ROOM_IMG);
+const PLATE_IMG_ROOM = ROOM_IMG;
+function fireSeat(slot, slots, W, H) {
+  const B = rtPlateBox(W, H);
+  if (slot === 0) return { x: B.x(.2), y: B.y(.74), z: 160, gap: B.dw * .07 };
+  const n = Math.max(1, slots - 1), t = n === 1 ? .5 : (slot - 1) / (n - 1);
+  const a = Math.PI * (1.1 + .8 * t);
+  const x = B.x(.49 + .26 * Math.cos(a)), y = B.y(.72 + .13 * Math.sin(a));
+  return { x, y, z: 100 + Math.round(y), gap: Math.max(B.dw * .06, B.dw * .52 / n) };
+}
 const _ringCache = new Map();
 function seatAt(slot, slots, W, H) {
+  if (FIRE) return fireSeat(slot, slots, W, H);
   const k = slots + '|' + Math.round(W) + '|' + Math.round(H);
   let ring = _ringCache.get(k);
   if (!ring) {
@@ -151,6 +170,7 @@ function stateAt(S) {
 const HANDS = ["'Caveat',cursive", "'Kalam',cursive", "'Gochi Hand',cursive", "'Shadows Into Light',cursive", "'Reenie Beanie',cursive"];
 
 function paintTable(root, S, fresh) {
+  FIRE = !!S.fire;
   const view = root.querySelector('.trs-view'), rt = root.querySelector('.trt');
   const W = view.clientWidth, H = view.clientHeight;
   if (!W) return;
@@ -162,8 +182,9 @@ function paintTable(root, S, fresh) {
   });
   const start = root.querySelector('.trs-start');
   if (S.idx < 0) {
-    rt.innerHTML = PLATE_IMG;
-    start.innerHTML = `<b>The Round Table</b><span>${D.seated.length} at the table · press Next, or click the table</span>`;
+    rt.innerHTML = plateImg();
+    start.innerHTML = FIRE ? `<b>The Vote At The Fire</b><span>${D.seated.length} at the fire · press Next, or click the fire</span>`
+      : `<b>The Round Table</b><span>${D.seated.length} at the table · press Next, or click the table</span>`;
     start.classList.add('trs-in');
     root.querySelector('.trs-corner').classList.remove('trs-in');
     return;
@@ -181,8 +202,8 @@ function paintTable(root, S, fresh) {
   const pair = st.pair || [];
   const focus = st.t === 'say' || st.t === 'slate' || st.t === 'host' || pair.length > 0 || !!narrWho;
   let h = `<div class="trt-world">` + `<svg width="0" height="0" style="position:absolute"><filter id="trtChalk"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6"/></filter></svg>`
-    + PLATE_IMG;
-  const TB = rtPlateBox(W, H), tcx = TB.x(.5), tcy = TB.y(TABLE_CY);
+    + plateImg();
+  const TB = rtPlateBox(W, H), tcx = TB.x(FIRE ? .49 : .5), tcy = TB.y(FIRE ? .72 : TABLE_CY);
   // the red threads: who has put whom up, the newest drawn as it is said
   const pos = n => { const i = D.seated.indexOf(n); const p = seatAt(i + 1, slots, W, H); return [p.x, p.y]; };
   if (r.phase === 'debate' || r.phase === 'gather' || st.t === 'say' || st.accs.length) {
@@ -388,7 +409,7 @@ function paintTable(root, S, fresh) {
   // the corner
   const corner = root.querySelector('.trs-corner');
   const label = r.turned ? 'The reveal' : r.chair ? 'The chair' : r.counted ? 'The count' : r.reads ? 'The slates' : r.phase === 'debate' ? 'The debate' : 'The table sits';
-  corner.innerHTML = `The Round Table · <b>${label}</b>`;
+  corner.innerHTML = `${FIRE ? 'At the fire' : 'The Round Table'} · <b>${label}</b>`;
   corner.classList.add('trs-in');
 }
 

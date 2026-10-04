@@ -23,14 +23,20 @@
 // the room reads somebody. A row about a frying pan does not move a vote. It
 // moves who somebody sits next to for the next three days, and eventually
 // that moves a vote.
-import { pronouns } from '../players.js';
 import { gs } from '../core.js';
 import {
   pStats, bond, band, closestTo, furthestFrom, dislikes, trusts,
   sharesAlliance, resentmentOf, grudge, isVillainous, isNice, spotlightOrder,
 } from './_read.js';
-import { freshLine } from '../bb/aired.js';
 import { makeScene } from '../bb/script/scene.js';
+
+/** Which room a scene happens in: by hash, never a die. */
+function _room(rooms, ctx, ...people) {
+  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${people.join('|')}`;
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  return rooms[hash % rooms.length];
+}
 
 // Head-counts in prose follow the house. "Eleven other people" was written for
 // a house of twelve and printed over sixteen.
@@ -39,13 +45,6 @@ const _WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'ei
   'eighteen', 'nineteen', 'twenty'];
 const _countWord = n => _WORDS[n] || String(n);
 const _capWord = w => w.charAt(0).toUpperCase() + w.slice(1);
-
-function _variant(list, ctx, ...salt) {
-  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return freshLine(list, hash, ctx);
-}
 
 /**
  * Ordinary life happens in the gaps, and barely at all on a ceremony day.
@@ -241,16 +240,11 @@ const theNoise = {
   },
   fire(house, ctx, api) {
     const { culprit, annoyed } = _grating(house, ctx);
-    const text = _variant([
-      `${culprit} and two others are still talking at three in the morning, in a room with beds in it, at a volume that is not quite a whisper. ${annoyed} lies there doing the arithmetic on how many hours are left.`,
-      `Somebody is singing. Big Brother tells them to stop singing. Somebody starts singing again forty seconds later, and ${annoyed} makes a sound into the pillow that carries further than the singing did.`,
-      `${annoyed} asks the room to keep it down. ${culprit} keeps it down for about four minutes. The second time ${annoyed} asks, it is not a request.`,
-      `The lights go on at seven because ${culprit} is a morning person and has never once thought about what that means for ${_countWord(house.length - 1)} other people.`,
-    ], ctx, culprit, annoyed);
     api.addBond(annoyed, culprit, -0.7);
     api.remember(annoyed, culprit, 'kept-me-awake', 1, { about: 'the bedroom' });
+    const scene = makeScene('friction.noise', { a: annoyed, b: culprit }, { ending: 'scene' }, [], 'bedroom');
     return {
-      text, players: [annoyed, culprit],
+      scene, players: [annoyed, culprit],
       badgeText: 'NOBODY SLEPT', badgeClass: 'grey',
     };
   },
@@ -268,19 +262,13 @@ const condescension = {
   },
   fire(house, ctx, api) {
     const { culprit, annoyed } = _grating(house, ctx);
-    const p = pronouns(annoyed);
     const witness = _others(house, culprit, annoyed)[0];
-    const text = _variant([
-      `${culprit} explains something ${annoyed} already knows, slowly, using ${p.posAdj} first name twice. ${annoyed} lets it finish and then leaves the room.`,
-      `It is the way ${culprit} says "no, listen" — as though ${annoyed} had not been. ${witness || 'Somebody'} catches ${annoyed}'s face and pretends not to have.`,
-      `${culprit} finishes ${annoyed}'s sentence for ${p.obj}, wrongly, and moves on before ${annoyed} can correct it. That is the third time today.`,
-      `"You would not get it." ${culprit} means it kindly, which is worse than if ${p.sub} had not.`,
-    ], ctx, culprit, annoyed);
     api.addBond(annoyed, culprit, -1.1);
     api.remember(annoyed, culprit, 'talks-down-to-me', 2, { about: 'being spoken to' });
     if (witness) api.addBond(annoyed, witness, 0.3);
+    const scene = makeScene('friction.condescend', { a: annoyed, b: culprit, c: witness || null }, { ending: 'scene' }, [], _room(['kitchen', 'living-room'], ctx, annoyed, culprit));
     return {
-      text, players: [annoyed, culprit, witness].filter(Boolean),
+      scene, players: [annoyed, culprit, witness].filter(Boolean),
       badgeText: 'SPOKEN TO LIKE THAT', badgeClass: 'red',
     };
   },
@@ -296,30 +284,10 @@ const theSpace = {
   },
   fire(house, ctx, api) {
     const { culprit, annoyed } = _grating(house, ctx);
-    const week = Number(ctx?.week?.num) || 1;
-    const lines = [
-      `${culprit} has been in the bathroom for fifty minutes. There are ${_countWord(house.length - 1)} other people in this house and exactly one mirror that anybody wants.`,
-      `Somebody has moved ${annoyed}'s things off the good bed. Nobody admits to it. ${annoyed} knows exactly who, and says so to the wrong person first.`,
-      `${culprit} borrows a jumper without asking. It comes back smelling of the backyard and ${annoyed} does not mention it, which everybody notices more than a row.`,
-    ];
-    // ── A LINE THAT CLAIMS A HISTORY NEEDS THERE TO BE ONE ──
-    //
-    // This variant used to sit in the pool unconditionally and read "it has
-    // been ${annoyed}'s chair for three weeks" — printed, in a real backlog,
-    // during WEEK ONE, about a house that had been standing for four days.
-    //
-    // `theStory` below already had the right shape for this (`week < 3` and it
-    // weights UP as the season runs), so the fix is that pattern rather than a
-    // new one, and the claim is softened to one that cannot drift: a first week
-    // exists as soon as there has been a second.
-    if (week >= 2) {
-      lines.splice(1, 0, `${annoyed} comes back to find ${culprit} in the chair. It is not `
-        + `${annoyed}'s chair. It has been ${annoyed}'s chair since the first week.`);
-    }
-    const text = _variant(lines, ctx, culprit, annoyed);
     api.addBond(annoyed, culprit, -0.6);
+    const scene = makeScene('friction.space', { a: annoyed, b: culprit }, { ending: 'scene' }, [], _room(['bedroom', 'living-room'], ctx, annoyed, culprit));
     return {
-      text, players: [annoyed, culprit],
+      scene, players: [annoyed, culprit],
       badgeText: 'NOT YOUR SEAT', badgeClass: 'grey',
     };
   },
@@ -340,18 +308,11 @@ const theStory = {
     const pool = _live(house);
     const teller = pool.slice().sort((a, b) => (pStats(b).social || 5) - (pStats(a).social || 5))[0];
     const tired = _others(house, teller).slice(0, 2);
-    const p = pronouns(teller);
-    const text = _variant([
-      `${teller} tells the story again. Everybody in this room has heard the story. ${tired[0]} mouths the ending along with ${p.obj} and has to look at the floor.`,
-      `There is a version of ${teller}'s story that takes four minutes and a version that takes eleven, and tonight is an eleven. ${tired[0]} and ${tired[1] || 'somebody'} have a whole conversation about it with their eyebrows.`,
-      `${teller} says "did I ever tell you about—" and three people say yes at the same time, and it is not unkind, quite.`,
-      `${teller}'s story has grown. It was a good story in week one. There is a helicopter in it now, and ${tired[0]} has started keeping a private count of the additions.`,
-    ], ctx, teller);
-    // Being the person everybody has heard enough of costs a little standing.
     api.popDelta(teller, -1);
     tired.forEach(n => api.addBond(n, tired.find(m => m !== n) || n, 0.3));
+    const scene = makeScene('friction.story', { a: teller, b: tired[0] || null, c: tired[1] || null }, { ending: 'scene' }, [], _room(['kitchen', 'living-room'], ctx, teller));
     return {
-      text, players: [teller, ...tired].filter(Boolean),
+      scene, players: [teller, ...tired].filter(Boolean),
       badgeText: 'HEARD IT', badgeClass: 'grey',
     };
   },
@@ -373,18 +334,12 @@ const theSnap = {
     const snapper = pool.slice().sort((a, b) =>
       (pStats(a).temperament || 5) - (pStats(b).temperament || 5))[0];
     const at = _others(house, snapper)[0];
-    const p = pronouns(snapper);
-    const text = _variant([
-      `${snapper} snaps at ${at} over something that does not deserve it, hears it happen, and apologises before ${at} has finished being surprised.`,
-      `It is not about ${at}. Everybody in the room can tell it is not about ${at}, including ${at}, which is the only reason it does not become a fight.`,
-      `${snapper} has been fine for six weeks and is not fine for about ninety seconds. ${p.Sub} ${p.sub === 'they' ? 'go' : 'goes'} outside afterwards and ${p.sub === 'they' ? 'stand' : 'stands'} there until it passes.`,
-      `Somebody asks ${snapper} if ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} alright and gets a much sharper answer than the question deserved.`,
-    ], ctx, snapper, at);
     api.addBond(snapper, at, -0.4);
     // A house that watched somebody crack reads them differently afterwards.
     _others(house, snapper).slice(0, 3).forEach(w => api.suspicion(w, snapper, 0.2));
+    const scene = makeScene('friction.snap', { a: snapper, b: at }, { ending: 'scene' }, [], _room(['kitchen', 'living-room', 'bedroom'], ctx, snapper));
     return {
-      text, players: [snapper, at],
+      scene, players: [snapper, at],
       badgeText: 'NOT ABOUT YOU', badgeClass: 'blue',
     };
   },
@@ -401,18 +356,13 @@ const theJoke = {
   fire(house, ctx, api) {
     const { culprit, annoyed } = _grating(house, ctx);
     const room = _others(house, culprit, annoyed).slice(0, 3);
-    const text = _variant([
-      `${culprit} does an impression of ${annoyed}. It is good, which is the problem. The room laughs and then works out that ${annoyed} is not laughing, and the laugh dies in stages.`,
-      `The joke is about something ${annoyed} said in confidence three weeks ago. ${culprit} does not appear to remember that it was in confidence.`,
-      `"${annoyed} cannot take a joke" is said in the room ${annoyed} has just walked out of, which settles the question of whether it was a joke.`,
-      `${culprit} keeps going after the first laugh, past the second, into the part where everybody is looking somewhere else.`,
-    ], ctx, culprit, annoyed);
     api.addBond(annoyed, culprit, -1.2);
     api.remember(annoyed, culprit, 'made-me-the-joke', 2, { about: 'a joke' });
     api.popDelta(culprit, isVillainous(culprit) ? 0 : -1);
     room.forEach(w => api.addBond(w, annoyed, 0.25));
+    const scene = makeScene('friction.joke', { a: culprit, b: annoyed }, { ending: 'scene' }, room, _room(['kitchen', 'living-room'], ctx, culprit));
     return {
-      text, players: [culprit, annoyed, ...room].filter(Boolean),
+      scene, players: [culprit, annoyed, ...room].filter(Boolean),
       badgeText: 'NOBODY ELSE LAUGHED', badgeClass: 'red',
     };
   },
@@ -433,16 +383,10 @@ const theWorkout = {
   },
   fire(house, ctx, api) {
     const { a, b } = _casualPair(house, ctx);
-    const pb = pronouns(b);
-    const text = _variant([
-      `${a} is out there at nine every morning and by now ${b} is too, mostly because there is nothing else to do and it is somewhere to be.`,
-      `${a} counts ${b}'s reps out loud and ${b} does four more than ${pb.sub} meant to, which is the entire point of having somebody count.`,
-      `${a} and ${b} talk about nothing for forty minutes — training, an old injury, a dog ${a} had as a child — and it is the least strategic conversation either of them has had all week.`,
-      `${b} cannot do the thing ${a} is doing. ${a} shows ${b} how, badly, and they both end up laughing on the grass.`,
-    ], ctx, a, b);
     api.addBond(a, b, 1.1);
+    const scene = makeScene('life.workout', { a, b }, { ending: 'scene' }, [], 'backyard');
     return {
-      text, players: [a, b],
+      scene, players: [a, b],
       badgeText: 'THE BACKYARD', badgeClass: 'blue',
     };
   },
@@ -464,16 +408,11 @@ const theCook = {
       ((pStats(b).social || 5) + (pStats(b).temperament || 5))
       - ((pStats(a).social || 5) + (pStats(a).temperament || 5)))[0];
     const fed = _others(house, cook).slice(0, 4);
-    const text = _variant([
-      `${cook} cooks for the whole house without being asked and without making it a favour, which is a much harder thing to do than the cooking.`,
-      `There is a proper dinner tonight because ${cook} decided there would be. ${_capWord(_countWord(house.length))} people sit down at the same time, which has not happened since move-in.`,
-      `${cook} has quietly become the person who feeds everybody. Nobody voted on it. It is the most reliable social position in the house and ${cook} may not have noticed holding it.`,
-      `${cook} makes something out of almost nothing and the house is briefly, genuinely happy about it. ${fed[0]} says so out loud, which nobody usually bothers to do.`,
-    ], ctx, cook);
     fed.forEach(n => api.addBond(cook, n, 0.5));
     api.popDelta(cook, 1);
+    const scene = makeScene('life.cook', { a: cook, b: fed[0] || null }, { ending: 'scene' }, fed, 'kitchen');
     return {
-      text, players: [cook, ...fed].filter(Boolean),
+      scene, players: [cook, ...fed].filter(Boolean),
       badgeText: 'FED THE HOUSE', badgeClass: 'blue',
     };
   },
@@ -489,17 +428,12 @@ const theGame = {
   fire(house, ctx, api) {
     const pool = _live(house);
     const players4 = pool.slice(0, 4);
-    const text = _variant([
-      `${players4[0]} invents a game. It has eleven rules, four of which ${players4[1]} made up on the spot to win an argument, and by evening all of them are playing it and taking it far too seriously.`,
-      `The card game has a running score now. It is on the wall. ${players4[0]} is winning and will not stop mentioning it.`,
-      `Pool, badly, for two hours. ${players4[1]} is inexplicably brilliant at it and nobody can work out why that is annoying.`,
-      `They are playing the game again. Nobody remembers who invented it. ${players4[0]} and ${players4[2] || players4[1]} have a genuine argument about a rule that does not exist.`,
-    ], ctx, ...players4);
     for (const a of players4) {
       for (const b of players4) if (a < b) api.addBond(a, b, 0.45);
     }
+    const scene = makeScene('life.game', { a: players4[0], b: players4[1], c: players4[2] || null }, { ending: 'scene' }, players4, _room(['living-room', 'backyard', 'kitchen'], ctx, ...players4));
     return {
-      text, players: players4,
+      scene, players: players4,
       badgeText: 'SOMETHING TO DO', badgeClass: 'blue',
     };
   },
@@ -515,16 +449,11 @@ const theRealConversation = {
   },
   fire(house, ctx, api) {
     const { a, b } = _casualPair(house, ctx);
-    const text = _variant([
-      `${a} and ${b} end up in the kitchen at three in the morning talking about ${a}'s father, and not one word of it is about this game.`,
-      `It starts as small talk and stops being small talk. By the end of it ${b} knows something about ${a} that nobody in this house knows, and ${b} did not ask for it.`,
-      `${a} says the thing out loud for the first time in years. ${b} does not do anything clever with it — just listens, and says the right small thing at the end.`,
-      `Neither ${a} nor ${b} mentions the game once. After five weeks in this house that is close to a holiday, and both of them notice it afterwards.`,
-    ], ctx, a, b);
     api.addBond(a, b, 1.6);
     api.remember(b, a, 'told-me-something-real', 3, { about: 'a late night' });
+    const scene = makeScene('life.real', { a, b }, { ending: 'scene' }, [], _room(['kitchen', 'backyard', 'bedroom'], ctx, a, b));
     return {
-      text, players: [a, b],
+      scene, players: [a, b],
       badgeText: 'NOTHING TO DO WITH THE GAME', badgeClass: 'blue',
     };
   },
@@ -540,15 +469,10 @@ const theGrooming = {
   },
   fire(house, ctx, api) {
     const { a, b } = _casualPair(house, ctx);
-    const text = _variant([
-      `${b} braids ${a}'s hair on the sofa for an hour and a half. It is the longest anybody has sat still all week and they talk the entire time.`,
-      `${a} cuts ${b}'s hair with the house clippers. It goes about as well as that always goes, and ${b} decides to find it funny.`,
-      `Nails, on the bathroom floor, under the worst light in the building. ${a} and ${b} would not otherwise have spent an hour together, and now they have.`,
-      `${b} shaves ${a}'s head on a dare and then has to sit with what ${b} has done. The house is delighted. ${a} is quieter about it.`,
-    ], ctx, a, b);
     api.addBond(a, b, 0.9);
+    const scene = makeScene('life.grooming', { a, b }, { ending: 'scene' }, [], _room(['living-room', 'bedroom'], ctx, a, b));
     return {
-      text, players: [a, b],
+      scene, players: [a, b],
       badgeText: 'AN HOUR OF ATTENTION', badgeClass: 'blue',
     };
   },
@@ -566,16 +490,11 @@ const theHomeTalk = {
   fire(house, ctx, api) {
     const { a, b } = _casualPair(house, ctx);
     const room = _others(house, a, b).slice(0, 2);
-    const text = _variant([
-      `${a} starts describing the kitchen at home — where the light falls, which cupboard sticks. Within ten minutes ${b} is doing it too, and the room has gone quiet and warm and slightly unbearable.`,
-      `${a} works out what day it is at home and what everybody there would be doing. ${b} says please stop, and does not mean it.`,
-      `${a} and ${b} talk about food they miss for half an hour. It is the most emotional conversation of the week and the subject of it is a sandwich.`,
-      `${a} has missed something — a birthday, a wedding, a first day. ${b} does not try to fix it, which is the correct thing to do and rarer than it sounds.`,
-    ], ctx, a, b);
     api.addBond(a, b, 1);
     room.forEach(n => api.addBond(a, n, 0.3));
+    const scene = makeScene('life.home-talk', { a, b }, { ending: 'scene' }, room, _room(['backyard', 'kitchen', 'living-room'], ctx, a, b));
     return {
-      text, players: [a, b, ...room].filter(Boolean),
+      scene, players: [a, b, ...room].filter(Boolean),
       badgeText: 'NONE OF THEM CAN GO HOME', badgeClass: 'blue',
     };
   },
@@ -592,15 +511,10 @@ const theBoredom = {
   fire(house, ctx, api) {
     const pool = _live(house);
     const [a, b] = pool;
-    const text = _variant([
-      `Nothing happens for an entire day. ${a} and ${b} lie in the sun talking about absolutely nothing, and it is the best day either of them has had in a fortnight.`,
-      `${a} counts the tiles in the bathroom and reports the number to ${b}, who checks it, and then they argue about the method.`,
-      `The house has run out of things to say. ${a} reads the back of a washing-up liquid bottle aloud, in full, and ${b} asks for the ingredients again.`,
-      `${a} sleeps for fourteen hours. Nobody wakes ${a}, because there is nothing to wake ${a} for.`,
-    ], ctx, a, b);
     api.addBond(a, b, 0.3);
+    const scene = makeScene('life.boredom', { a, b }, { ending: 'scene' }, [], _room(['backyard', 'living-room'], ctx, a, b));
     return {
-      text, players: [a, b].filter(Boolean),
+      scene, players: [a, b].filter(Boolean),
       badgeText: 'A DAY WITH NOTHING IN IT', badgeClass: 'grey',
     };
   },
@@ -618,17 +532,12 @@ const theInsideJoke = {
     const pool = _live(house);
     const inOnIt = pool.slice(0, 3);
     const outside = _others(house, ...inOnIt)[0];
-    const text = _variant([
-      `Something stupid happens at breakfast and by evening it is a whole language. ${inOnIt[0]} only has to say the word and ${inOnIt[1]} is gone.`,
-      `The joke is a week old now and has stopped being explainable. ${outside || 'Somebody'} asks what is so funny and gets "you had to be there", which is true and is also a door closing.`,
-      `${inOnIt[2]} says it at exactly the wrong moment, during something serious, and three people have to leave the room.`,
-      `Nobody can remember what the joke originally was, ${inOnIt[0]} least of all. It has survived longer than most alliances in this house, and everyone has quietly noticed that.`,
-    ], ctx, ...inOnIt);
     for (const a of inOnIt) for (const b of inOnIt) if (a < b) api.addBond(a, b, 0.6);
     // A joke you are not in is a small, real exclusion.
     if (outside) api.addBond(outside, inOnIt[0], -0.3);
+    const scene = makeScene('life.inside-joke', { a: inOnIt[0], b: inOnIt[1], c: inOnIt[2] || null }, { ending: 'scene' }, inOnIt, _room(['kitchen', 'living-room'], ctx, ...inOnIt));
     return {
-      text, players: [...inOnIt, outside].filter(Boolean),
+      scene, players: [...inOnIt, outside].filter(Boolean),
       badgeText: 'YOU HAD TO BE THERE', badgeClass: 'blue',
     };
   },

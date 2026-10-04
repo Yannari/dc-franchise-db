@@ -23,12 +23,12 @@
 // houseguest enters, safety is not a formality. They still have to beat the
 // clock, and losing it in an empty room is the worst outcome the twist has.
 import { gs } from '../core.js';
-import { pStats, pronouns } from '../players.js';
+import { pStats } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';
-import { aptitude, makePicker, clamp } from '../bb-comps/_shared.js';
+import { aptitude, clamp } from '../bb-comps/_shared.js';
 
-const beat = (text, players, badgeText, badgeClass = 'gold') =>
-  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass });
+const beat = (text, players, badgeText, badgeClass = 'gold', part = null) =>
+  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass, ...(part ? { part } : {}) });
 
 /** A suite run is a scramble against a clock, not a test of one stat. */
 const SUITE_MIX = { physical: 0.30, mental: 0.28, endurance: 0.24, temperament: 0.18 };
@@ -43,28 +43,16 @@ const CLOCK = 5.0;
  * expensive for the person receiving it is the entire rule.
  */
 export const PLUS_ONE_PUNISHMENTS = [
-  { id: 'slop', label: 'a week on slop',
-    line: (n, g) => `${n} is safe and on slop until Thursday, which is ${g}'s doing and will be mentioned.` },
-  { id: 'costume', label: 'the costume',
-    line: (n, g) => `${n} is safe and wearing the costume for it, so nobody in this house will get through a day without being reminded who handed it over.` },
-  { id: 'solitary', label: 'a night in solitary',
-    line: (n, g) => `${n} is safe and spending a night away from every conversation in the building — a week of information lost for a week of protection.` },
-  { id: 'chore', label: 'the house chores, alone',
-    line: (n, g) => `${n} is safe and doing every dish in the house alone, in front of everybody, courtesy of ${g}.` },
+  { id: 'slop', label: 'a week on slop' },
+  { id: 'costume', label: 'the costume' },
+  { id: 'solitary', label: 'a night in solitary' },
+  { id: 'chore', label: 'the house chores, alone' },
 ];
 
 const used = () => { gs.bb ||= {}; gs.bb.safetySuiteUsed ||= []; return gs.bb.safetySuiteUsed; };
 
-const ENTER = [
-  (n, p) => `${n} swipes the pass. It is the only one ${p.sub} will ever get and ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} spending it now, which tells the house exactly how safe ${p.sub} ${p.sub === 'they' ? 'feel' : 'feels'}.`,
-  (n, p) => `${n} goes in, and does it fast enough that nobody has to ask whether ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} worried.`,
-  (n, p) => `${n} takes the offer. One entry, one season, spent on this week.`,
-  (n, p) => `${n} enters last, after watching who else did — which is information ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} now paid ${p.posAdj} only entry for.`,
-];
-const HELD = [
-  (n, p) => `${n} lets the hour run out with the pass still in ${p.posAdj} pocket. It is a bet that a worse week is coming and that ${p.sub} will still have this when it does.`,
-  (n, p) => `${n} does not enter, and makes sure the room sees ${p.obj} not entering.`,
-];
+// The words are written by bb/script/ceremony.js (lines/suiteact.js). The
+// sentence each beat carries is the plain fact, kept for a save from before.
 
 /**
  * Run the suite.
@@ -80,7 +68,6 @@ export function runSafetySuite({ week, house, hoh, rng = Math.random } = {}) {
   // what makes the last week of the twist a different decision from the first.
   const eligible = room.filter(n => n !== hoh && !spent.includes(n));
   if (!eligible.length) return null;
-  const say = makePicker(rng);
   const beats = [];
   const bond = (a, b) => { try { return getPerceivedBond(a, b); } catch { return 0; } };
 
@@ -104,20 +91,20 @@ export function runSafetySuite({ week, house, hoh, rng = Math.random } = {}) {
       entrants: [], held: [...held], winner: null, plusOne: null, punishment: null,
       beatTheClock: false, hoh: hoh || null, safe: [],
       exhausted: room.filter(n => spent.includes(n)),
-      beats: [beat(
-        `Nobody swipes. The suite sits empty for an hour and ${room.length - 1} people decide, separately, `
-          + `that whatever is coming this week is survivable${who ? ` — ${who} loudest of all` : ''}.`,
-        [who].filter(Boolean), 'NOBODY SWIPED', 'grey')],
+      runs: [], clock: CLOCK, passed: null,
+      beats: [beat('Nobody swipes a pass.', [who].filter(Boolean), 'NOBODY SWIPED', 'grey', 'none')],
     };
   }
 
   for (const name of entrants) {
-    beats.push(beat(say(ENTER)(name, pronouns(name)), [name], 'ONE ENTRY, SPENT', 'gold'));
+    rng();   // the draw that used to pick this beat's wording
+    beats.push(beat(`${name} swipes the pass.`, [name], 'ONE ENTRY, SPENT', 'gold', 'enter'));
     spent.push(name);
   }
   if (held.length) {
     const who = held[0];
-    beats.push(beat(say(HELD)(who, pronouns(who)), [who], 'HELD THE PASS', 'blue'));
+    rng();
+    beats.push(beat(`${who} keeps the pass.`, [who], 'HELD THE PASS', 'blue', 'hold'));
   }
 
   // The run. Scored against each other AND against the clock, because a lone
@@ -130,11 +117,8 @@ export function runSafetySuite({ week, house, hoh, rng = Math.random } = {}) {
   const solo = entrants.length === 1;
 
   for (const r of runs.slice(1)) {
-    const p = pronouns(r.name);
-    beats.push(beat(
-      `${r.name} runs it and comes up short, and has now spent the only entry ${p.sub} will ever have on a week `
-        + `${p.sub} ${p.sub === 'they' ? 'are' : 'is'} still not safe in.`,
-      [r.name], 'SPENT IT FOR NOTHING', 'red'));
+    beats.push(beat(r.score >= CLOCK ? `${r.name} beats the clock, but ${best.name} is faster.` : `${r.name} does not beat the clock.`,
+      [r.name], 'SPENT IT FOR NOTHING', 'red', 'short'));
   }
 
   const act = {
@@ -143,25 +127,21 @@ export function runSafetySuite({ week, house, hoh, rng = Math.random } = {}) {
     winner: null, plusOne: null, punishment: null, beatTheClock,
     hoh: hoh || null, safe: [],
     exhausted: room.filter(n => spent.includes(n)),
+    // How each run went, slowest first, so the viewer can play them in order.
+    runs: [...runs].reverse().map(r => ({ name: r.name, score: Math.round(r.score * 100) / 100 })),
+    clock: CLOCK, passed: null,
     beats,
   };
 
   if (!beatTheClock) {
-    const p = pronouns(best.name);
-    beats.push(beat(
-      solo
-        ? `${best.name} is alone in there with nobody to beat, and still does not beat the clock. `
-          + `${p.Sub} ${p.sub === 'they' ? 'walk' : 'walks'} out with no safety and no entry left.`
-        : `${best.name} is the best of them and the clock beats all of them. Nobody comes out of the suite safe.`,
-      [best.name], 'THE CLOCK WINS', 'red'));
+    beats.push(beat(solo ? `${best.name} does not beat the clock.` : 'Nobody beats the clock.',
+      [best.name], 'THE CLOCK WINS', 'red', 'clock'));
     return act;
   }
 
   act.winner = best.name;
   act.safe = [best.name];
-  beats.push(beat(
-    `${best.name} beats the clock and is safe for the week — and now has to make somebody else safe too.`,
-    [best.name], 'SAFE', 'gold'));
+  beats.push(beat(`${best.name} beats the clock and is safe this week.`, [best.name], 'SAFE', 'gold', 'safe'));
 
   // ── the Plus One ──
   //
@@ -178,16 +158,14 @@ export function runSafetySuite({ week, house, hoh, rng = Math.random } = {}) {
     act.punishment = punishment.id;
     act.punishmentLabel = punishment.label;
     act.safe = [best.name, plusOne];
-    beats.push(beat(punishment.line(plusOne, best.name), [plusOne, best.name],
-      'PLUS ONE, AND THE BILL', 'gold'));
+    beats.push(beat(`${best.name} makes ${plusOne} safe too, at the price of ${punishment.label}.`, [plusOne, best.name],
+      'PLUS ONE, AND THE BILL', 'gold', 'plus'));
     // Everybody the winner did not choose, which is everybody else.
     const passed = pool.filter(n => n !== plusOne)
       .sort((a, b) => bond(best.name, b) - bond(best.name, a))[0];
     if (passed) {
-      beats.push(beat(
-        `${best.name} had exactly one of those to give and gave it to ${plusOne}. ${passed} was the next name on that list `
-          + 'and is now on the block-shaped side of it.',
-        [passed, best.name], 'NOT CHOSEN', 'grey'));
+      act.passed = passed;
+      beats.push(beat(`${passed} was the next name on ${best.name}'s list.`, [passed, best.name], 'NOT CHOSEN', 'grey', 'passed'));
     }
   }
   return act;

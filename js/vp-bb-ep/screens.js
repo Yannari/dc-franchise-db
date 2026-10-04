@@ -16,6 +16,7 @@ import { BBX_CSS, BBX_FONTS } from './style.js';
 import { BBX_SUITE_CSS } from './style-suite.js';
 import { BBX_CHAIN_CSS } from './style-chain.js';
 import { BBX_HUNT_CSS } from './style-hunt.js';
+import { BBX_PX_CSS } from './style-px.js';
 
 const reg = () => (typeof window !== 'undefined' ? (window._bbx ||= {}) : (globalThis._bbx ||= {}));
 const SHELL_CSS = `
@@ -154,7 +155,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     out.push({
       id: ids[si],
       label: S.label || S.title,
-      html: `<div class="bbx" data-uid="${uid}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${SHELL_CSS}</style>
+      html: `<div class="bbx" data-uid="${uid}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${BBX_PX_CSS}${SHELL_CSS}</style>
   <div class="bbx-stage stage" id="bbx-st-${uid}" onclick="bbxNext('${uid}')" title="Click for the next line">${stageHtml(steps, si, -1, false, o).html}</div>
   <div class="bbx-ctrl">
     <button type="button" class="bbx-btn" onclick="bbxBack('${uid}')">◀ Back</button>

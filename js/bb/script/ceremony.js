@@ -268,6 +268,21 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── Prizes and Punishments: every box opened, every swap ──
+  if (act.type === 'prize-exchange') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const [a, x] = b.players || [];
+      const salt = `px|${b.part}|${(b.players || []).join('|')}|${b.boxNo || ''}`;
+      let lines = null;
+      if (b.part === 'open' && a) lines = fresh('pxact.open', { a }, { ending: b.kind === 'punishment' ? 'punish' : b.kind, item: b.item }, salt);
+      if (b.part === 'swap' && a && x) lines = fresh('pxact.swap', { a, b: x }, { ending: b.kind === 'veto' ? 'veto' : 'prize', item: b.item, gave: b.gave }, salt);
+      if (b.part === 'robbed' && a && x) lines = fresh('pxact.robbed', { a, b: x }, { ending: 'scene' }, salt);
+      if (b.part === 'soldout' && a) lines = fresh('pxact.soldout', { a }, { ending: 'scene', item: b.item }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   for (const k of Object.keys(script)) {
     const v = script[k];
     if (!v || (typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length)) delete script[k];

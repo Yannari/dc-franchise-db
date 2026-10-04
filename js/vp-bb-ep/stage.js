@@ -52,7 +52,7 @@ export function ledgerAt(screens, si, idx) {
   const S0 = screens[si] || screens[0] || {};
   const L = { status: {}, nom: [], veto: null, out: [], votes: null, vetoPlay: [], ballots: [], revealed: [], hoh: null, moves: [], stances: {},
     spent: [], held: [], runs: {}, stamps: {}, safe: [], plus: null, bill: null, passed: null, shut: false,
-    chain: [], snubs: [], leftover: [], looks: {}, heat: 0, found: null, secret: false };
+    chain: [], snubs: [], leftover: [], looks: {}, heat: 0, found: null, secret: false, boxes: {} };
   for (const n of S0.priorOut || []) { L.status[n] = 'out'; L.out.push(n); }
   for (let s = 0; s <= si; s++) {
     const steps = screens[s].steps; const upto = s < si ? steps.length - 1 : idx;
@@ -79,6 +79,12 @@ export function ledgerAt(screens, si, idx) {
       if (s === si && st.seen) L.heat = Math.min(4, L.heat + 1);
       if (s === si && st.found) L.found = { name: st.found[0], place: st.found[1] };
       if (s === si && st.secret) L.secret = true;
+      if (s === si && st.open) L.boxes[st.open[1]] = { holder: st.open[0], kind: st.open[2], item: st.open[3] };
+      if (s === si && st.swap) {
+        const [thief, victim, got, gave] = st.swap;
+        if (L.boxes[got]) L.boxes[got].holder = thief;
+        if (L.boxes[gave]) L.boxes[gave].holder = victim;
+      }
       if (st.hoh) { if (L.hoh && L.status[L.hoh] === 'hoh') L.status[L.hoh] = ''; L.hoh = st.hoh; L.status[st.hoh] = 'hoh'; }
       if (st.nom) { L.nom.forEach(n => { if (L.status[n] === 'nom') L.status[n] = ''; }); L.nom = st.nom.slice(); st.nom.forEach(n => { L.status[n] = 'nom'; }); }
       if (st.veto) L.veto = st.veto;
@@ -286,6 +292,22 @@ function huntHtml(S, L, st, fresh) {
   return `<div class="huntmap"><div class="hh"><span>WHERE COULD IT BE</span><span class="hb">THE HOUSE BELIEVES ${bars}</span></div><div class="hg">${cells}</div></div>`;
 }
 
+// ── Prizes and Punishments' table of boxes (Phase 7) ──────────────────────
+const GIFT = `<svg viewBox="0 0 40 40"><rect x="4" y="14" width="32" height="22" rx="3" fill="#1d3a66" stroke="#22e1ff" stroke-opacity=".6"/>
+  <rect x="2" y="9" width="36" height="7" rx="2" fill="#24497f" stroke="#22e1ff" stroke-opacity=".6"/><rect x="18" y="9" width="4" height="27" fill="#f5c542"/>
+  <path d="M20 9 C14 2 8 6 13 9 Z M20 9 C26 2 32 6 27 9 Z" fill="#f5c542"/></svg>`;
+function pxHtml(S, L, st, fresh) {
+  const boxes = Array.from({ length: S.px.boxes }, (_, i) => {
+    const no = i + 1; const b = L.boxes[no];
+    const now = fresh && st && ((st.open && st.open[1] === no) || (st.swap && (st.swap[2] === no || st.swap[3] === no)));
+    if (!b) return `<div class="pxb"><span class="pn">${no}</span>${GIFT}</div>`;
+    return `<div class="pxb open ${b.kind} ${now ? 'now' : ''}"><span class="pn">${no}</span>
+      <span class="pi">${b.kind === 'veto' ? 'POWER OF VETO' : esc(b.item)}</span>
+      <span class="ph" style="--c:${col(b.holder)}">${img(b.holder)}</span><b>${esc(b.holder)}</b></div>`;
+  }).join('');
+  return `<div class="pxtable"><span class="pt">THE BOXES · ONE HOLDS THE VETO</span><div class="pxr">${boxes}</div></div>`;
+}
+
 function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   const isDr = st && st.k === 'dr';
   if (isDr) {
@@ -364,6 +386,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (st && st.rule != null && S.rules) h += rulesHtml(S, st.rule, fresh);
   if (S.chainRun && !isDr && idx >= 0) h += chainHtml(S, L, st, fresh);
   if (S.hunt && !isDr && idx >= 0 && !(st && st.rule != null)) h += huntHtml(S, L, st, fresh);
+  if (S.px && !isDr && idx >= 0 && !(st && st.rule != null)) h += pxHtml(S, L, st, fresh);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;

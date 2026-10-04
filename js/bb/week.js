@@ -7546,6 +7546,8 @@ export function simulateBBWeek(options = {}) {
       const hex = resolveHaltingHex({ week, evicted, nominees, hoh, rng });
       if (hex) {
         week.haltingHex = hex;
+        // The words (lines/hexact.js), without addBeats: the eviction night's scenes are already scheduled.
+        try { writeCeremony(hex, week, house, {}); } catch { /* words never stop a week */ }
         week.acts.push(hex);
         week.evictionCancelled = true;
         week.evicted = null;

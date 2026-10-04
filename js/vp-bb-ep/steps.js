@@ -349,11 +349,16 @@ function evictionScreen(act, ctx, host) {
   }
   if (evicted) {
     if (ballots.length) steps.push({ k: 'host', by: host, push: true, t: a === ballots.length ? `By a unanimous vote...` : `By a vote of ${word(a)} to ${word(others)}...`, votes: [a, others] });
-    steps.push({ k: 'host', by: host, t: `...${evicted}, you are evicted from the Big Brother house.`, out: evicted, toast: ['EVICTED', '#ff3355'], shake: true });
-    const bye = scriptSteps(act.script?.goodbye);
-    if (bye.length) steps.push({ k: 'beat', t: `${evicted} has a few seconds with the house.` }, ...bye, { k: 'beat', t: `${evicted} picks up a bag and walks to the front door.` });
-    else steps.push({ k: 'beat', t: `${evicted} hugs the house goodbye, picks up a bag, and walks to the front door.` });
-    steps.push({ k: 'beat', t: `The front door closes. On the memory wall, ${evicted}'s portrait goes black and white.`, exit: evicted });
+    steps.push({ k: 'host', by: host, t: `...${evicted}, you are evicted from the Big Brother house.`, ...(ctx.hexed ? {} : { out: evicted }), toast: ['EVICTED', '#ff3355'], shake: true });
+    if (ctx.hexed) {
+      // A Halting Hex is about to cancel this: no goodbye, no door, no black-and-white portrait.
+      steps.push({ k: 'beat', t: `${evicted} stands up to say goodbye.` });
+    } else {
+      const bye = scriptSteps(act.script?.goodbye);
+      if (bye.length) steps.push({ k: 'beat', t: `${evicted} has a few seconds with the house.` }, ...bye, { k: 'beat', t: `${evicted} picks up a bag and walks to the front door.` });
+      else steps.push({ k: 'beat', t: `${evicted} hugs the house goodbye, picks up a bag, and walks to the front door.` });
+      steps.push({ k: 'beat', t: `The front door closes. On the memory wall, ${evicted}'s portrait goes black and white.`, exit: evicted });
+    }
   }
   const rest = ctx.house.filter(n => !noms.includes(n));
   return { id: 'bb-evict-v', kind: 'evict', anchor: 'evict', set: 'ceremony', room: ROOM_NAME.ceremony, cam: 1,
@@ -1635,6 +1640,29 @@ function premiereScreens(act, ctx) {
   }];
 }
 
+// ── The Halting Hex (Phase 7) ───────────────────────────────────────────
+// The result is read and somebody is leaving, and then they are not. Big
+// Brother explains the Hex once it is out; the evictee stays and the block
+// empties. Votes are secret, and stay secret. Words: lines/hexact.js.
+function hexScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const steps = [];
+  for (const b of act.beats || []) {
+    if (b.part === 'stop') steps.push(...linesOf(b),
+      { k: 'bb', t: `Houseguests, ${act.holder} has played the Halting Hex.`, rule: 1, toast: ['THE EVICTION IS CANCELLED', '#f5c542'] },
+      { k: 'bb', t: 'It cancels tonight\'s eviction, after the vote has been read.', rule: 2 },
+      { k: 'bb', t: `${act.spared} stays in the house, and nobody leaves tonight.`, rule: 3 });
+    if (b.part === 'after') steps.push(...linesOf(b));
+  }
+  return [{
+    id: `bb-hex-w${ctx.week}`, kind: 'hex', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: 'LIVE',
+    kicker: 'Cam 04 · Living room', title: 'The Halting Hex', label: 'The Halting Hex', sub: 'Nobody goes home tonight',
+    cast: [...new Set([act.spared, act.holder])].map((n, i, all) => [n, all.length === 1 ? 50 : 36 + i * 28]),
+    rules: [['THE HALTING HEX', 'cancels tonight\'s eviction'], ['AFTER THE VOTE', 'played once the result is read'], ['NOBODY GOES', 'the evictee stays; the votes do not count']],
+    rulesTitle: 'THE HALTING HEX · PLAYED', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1668,6 +1696,7 @@ export function chooseAired(beats, cap, seen = new Set()) {
 export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = null } = {}) {
   const house = (row.houseAtStart || []).slice();
   const ctx = { week: row.num || 1, hoh: row.hoh, house, nominees: (row.initialNominees || []).slice(), vetoHolder: row.vetoWinner,
+    hexed: (row.acts || []).some(x => x.type === 'halting-hex'),
     pleas: row.finalPleas || [], plea, anchor: 'start', day: 1, jury: [...(row.jury || [])], finalTwo: [...(row.finalTwo || [])] };
   let finalPart = 0;
   // Houseguests who walk in later in the week (rivals) are not in the house until they do.
@@ -1730,6 +1759,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
+      case 'halting-hex': flush(); for (const scr of hexScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'premiere-mystery': flush(); for (const scr of premiereScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'mystery-competitor': case 'mystery-veto': case 'second-veto-ceremony':
         flush(); for (const scr of mysteryScreens(act, ctx)) ceremony(scr);
@@ -1775,7 +1805,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

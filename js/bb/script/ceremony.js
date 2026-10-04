@@ -430,6 +430,19 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── The Halting Hex: an eviction cancelled after the vote ──
+  if (act.type === 'halting-hex') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      let lines = null;
+      if (b.part === 'stop') lines = act.selfSave ? fresh('hexact.stop', { a: act.holder }, { ending: 'self' }, 'hex|stop')
+        : fresh('hexact.stop', { a: act.holder, b: act.spared }, { ending: 'other' }, 'hex|stop');
+      if (b.part === 'after' && p[0]) lines = fresh('hexact.after', { a: p[0] }, { ending: 'scene' }, 'hex|after');
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   // ── Premiere night: two hunts for the host and the relic ──
   if (act.type === 'premiere-mystery') {
     const fresh = freshWriter(ctx, house);

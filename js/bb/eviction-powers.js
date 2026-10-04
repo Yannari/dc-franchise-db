@@ -14,12 +14,13 @@
 // It resolves before anybody is removed from the roster, because the whole
 // power is that the removal does not happen.
 import { gs } from '../core.js';
-import { pStats, pronouns } from '../players.js';
+import { pStats } from '../players.js';
 import { activePowersAt, usePower, spendPull } from './powers.js';
 import { allyStake } from './shared-strategy.js';
 
-const beat = (text, players, badgeText, badgeClass = 'gold') =>
-  ({ text, players: players.filter(Boolean), badgeText, badgeClass });
+// Beats are plain facts with a `part`; the words are lines/hexact.js.
+const beat = (text, players, badgeText, badgeClass = 'gold', part = null) =>
+  ({ text, players: players.filter(Boolean), badgeText, badgeClass, ...(part ? { part } : {}) });
 
 /**
  * Does the Hex get played tonight?
@@ -92,22 +93,16 @@ export function resolveHaltingHex({ week, evicted, nominees = [], hoh, rng = Mat
 
   usePower(inst, week.num);
   inst.revealed = true;
-  const p = pronouns(holder);
   const selfSave = evicted === holder;
   const beats = [beat(
-    selfSave
-      ? `The vote is read out and ${evicted} is leaving. ${evicted} does not stand up. `
-        + `${p.Sub} ${p.sub === 'they' ? 'produce' : 'produces'} the Hex instead, and the eviction stops where it is.`
-      : `The vote is read out and ${evicted} is leaving — and then ${holder} stops the night. `
-        + `Nobody is going home. ${holder} has just told this entire house that ${p.sub} `
-        + `${p.sub === 'they' ? 'were' : 'was'} holding something, and spent it on somebody else.`,
+    selfSave ? `${evicted} is evicted, and plays the Halting Hex to cancel it.`
+      : `${evicted} is evicted, and ${holder} plays the Halting Hex to cancel it.`,
     // Deduped: on a self-save the holder and the person leaving are the same
     // houseguest, and the card drew their face twice side by side.
-    [...new Set([holder, evicted])], 'THE EVICTION IS CANCELLED', 'gold'),
-  beat(
-    `${nominees.filter(Boolean).join(' and ')} come off the block by default. Every vote cast tonight `
-      + 'is now a matter of public record and no consequence, which is its own problem for the people who cast them.',
-    nominees.filter(Boolean), 'THE VOTES STAND, THE RESULT DOES NOT', 'grey')];
+    [...new Set([holder, evicted])], 'THE EVICTION IS CANCELLED', 'gold', 'stop'),
+  // Votes are secret: nobody learns who voted which way, only that it did not count.
+  beat(`${nominees.filter(Boolean).join(' and ')} stay in the house. Tonight's votes do not count.`,
+    nominees.filter(Boolean), 'THE VOTES STAND, THE RESULT DOES NOT', 'grey', 'after')];
 
   return {
     type: 'halting-hex', week: week.num, holder, spared: evicted,

@@ -85,14 +85,6 @@ export function rewindPull({ holder, evicted, ballots = [], weeksLeft = 0, hoh =
   return spendPull({ need, weeksLeft, nerve, exposes: true });
 }
 
-const STOP = [
-  (h) => 'The votes have been read. The house is sitting there with the count in the air and '
-    + `nobody standing up yet, and then it does not happen. ${h} has stopped the night.`,
-  (h) => `Everybody has heard everybody. Chairs are already moving — and then the screen in the `
-    + `living room goes gold, and ${h} is holding something nobody knew was in this building.`,
-  (h) => `The count is announced. It stands for about four seconds. ${h} spends the biggest thing `
-    + 'in the game to make sure it stands for no longer than that.',
-];
 
 /**
  * Fire it: void the eviction, erase the reign, publish every ballot.
@@ -120,21 +112,15 @@ export function resolveRewind({ week, evicted, nominees = [], hoh, house = [],
   usePower(inst, weekNum);
   inst.revealed = true;
 
-  const p = pronouns(holder);
-  const beats = [beat(STOP[Math.floor(rng() * STOP.length)](holder),
-    [holder, evicted], 'THE NIGHT STOPS', 'gold')];
+  rng();   // the draw that used to pick the stop's wording
+  // Plain facts with a `part`; the words are lines/rwact.js.
+  const beats = [{ ...beat(`${holder} plays the Rewind after the vote is read.`, [holder, evicted], 'THE NIGHT STOPS', 'gold'), part: 'stop' }];
 
   // ── the week goes ──
-  beats.push(beat(
-    `${evicted} does not leave. The block clears, the veto goes back in the box, and ${hoh || 'the Head of Household'} `
-      + 'is not Head of Household any more — not deposed, not overruled, simply never crowned. '
-      + `Three days of work on a week that no longer exists.`,
-    [evicted, hoh], 'THE WEEK IS ERASED', 'red'));
-  beats.push(beat(
-    `In the morning ${[...nominees].filter(Boolean).join(' and ') || 'everybody'} will play for Head `
-      + `of Household, and so will ${hoh || 'the last one'}. Nobody is barred from anything. This `
-      + 'house starts the week again from a standing start, except for one thing.',
-    [...nominees, hoh], 'EVERYBODY PLAYS', 'blue'));
+  beats.push({ ...beat(`${evicted} stays; the week is erased and ${hoh || 'the Head of Household'} loses the reign.`,
+    [evicted, hoh], 'THE WEEK IS ERASED', 'red'), part: 'erased' });
+  beats.push({ ...beat('Everybody plays for Head of Household again in the morning.',
+    [...nominees, hoh], 'EVERYBODY PLAYS', 'blue'), part: 'everybody' });
 
   // ── AND THE ONE THING: the ballots are public now ──
   //
@@ -167,17 +153,11 @@ export function resolveRewind({ week, evicted, nominees = [], hoh, house = [],
 
   if (exposed.length) {
     const worst = exposed[0];
-    beats.push(beat(
-      `Every ballot in that room was read out before the button landed, and now nobody is going `
-        + `home to be angry about it. ${worst.voter} voted to evict ${worst.voted}, who is still `
-        + `standing there, and who now knows.`,
-      [worst.voter, worst.voted], 'THE COUNT IS PUBLIC', 'red'));
+    beats.push({ ...beat(`The ballots are public: ${worst.voter} voted to evict ${worst.voted}.`,
+      [worst.voter, worst.voted], 'THE COUNT IS PUBLIC', 'red'), part: 'public' });
     if (exposed.length > 1) {
-      beats.push(beat(
-        `${exposed.slice(1, 4).map(e => e.voter).join(', ')} ${exposed.length > 2 ? 'were' : 'was'} `
-          + 'named in the same count, out loud, with a week now standing between them and any '
-          + 'chance to explain it away.',
-        exposed.slice(1, 4).map(e => e.voter), 'AND THE REST OF THEM', 'red'));
+      beats.push({ ...beat(`${exposed.slice(1, 4).map(e => e.voter).join(', ')} ${exposed.length > 2 ? 'are' : 'is'} named in the same count.`,
+        exposed.slice(1, 4).map(e => e.voter), 'AND THE REST OF THEM', 'red'), part: 'rest' });
     }
   }
 
@@ -185,11 +165,8 @@ export function resolveRewind({ week, evicted, nominees = [], hoh, house = [],
   const cost = selfExposure(holder, ballots);
   if (cost >= 0.25) {
     const mine = ballots.find(b => b?.voter === holder);
-    beats.push(beat(
-      `${holder} is in that count as well. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} just spent `
-        + `the biggest thing in this game to keep ${evicted} in the house, and published ${p.posAdj} `
-        + `own vote against ${mine?.voted} doing it.`,
-      [holder, mine?.voted], 'INCLUDING THEIRS', 'red'));
+    beats.push({ ...beat(`${holder}'s own vote against ${mine?.voted} is in the count too.`,
+      [holder, mine?.voted], 'INCLUDING THEIRS', 'red'), part: 'theirs' });
   }
 
   // Saved, and they know exactly who by.

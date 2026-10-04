@@ -430,6 +430,34 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── The Rewind, and the White Locust's call-out chain ──
+  if (act.type === 'rewind') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      let lines = null;
+      if (b.part === 'stop' && p[0]) lines = fresh('rwact.stop', { a: p[0] }, { ending: 'scene' }, 'rw|stop');
+      if (b.part === 'erased' && p.length >= 2) lines = fresh('rwact.erased', { a: p[0], b: p[1] }, { ending: 'scene' }, 'rw|erased');
+      if (b.part === 'everybody' && p[0]) lines = fresh('rwact.everybody', { a: p[0] }, { ending: 'scene' }, 'rw|everybody');
+      if (b.part === 'public' && p.length >= 2) lines = fresh('rwact.public', { a: p[0], b: p[1] }, { ending: 'scene' }, 'rw|public');
+      if (b.part === 'rest' && p[0]) lines = fresh('rwact.rest', { a: p[0] }, { ending: 'scene' }, 'rw|rest');
+      if (b.part === 'theirs' && p.length >= 2) lines = fresh('rwact.theirs', { a: p[0], b: p[1] }, { ending: 'scene' }, 'rw|theirs');
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+  if (act.type === 'white-locust') {
+    const fresh = freshWriter(ctx, house);
+    for (const r of act.rounds || []) {
+      if (r.caller) r.callLines = fresh('rwact.call', { a: r.caller, b: r.target }, { ending: r.betrayal ? 'ally' : 'plain' }, `wl|call|${r.target}`) || undefined;
+      if (!r.sweep) r.endLines = fresh(r.made ? 'rwact.made' : 'rwact.failed', { a: r.target }, { ending: 'scene' }, `wl|end|${r.target}`) || undefined;
+    }
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const lines = b.part === 'out' && p[0] ? fresh('rwact.out', { a: p[0] }, { ending: 'scene' }, 'wl|out') : null;
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   // ── No Eviction, and Dead Last ──
   if (act.type === 'no-eviction' || act.type === 'dead-last') {
     const fresh = freshWriter(ctx, house);

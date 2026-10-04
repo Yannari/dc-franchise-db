@@ -318,6 +318,18 @@ function teamHtml(S, L, st, fresh, idx) {
     + `<b>${esc(T.name || '')}</b><i>${done === 'done' ? 'COMPLETE' : done === 'failed' ? 'FAILED' : 'IN PLAY'}${noticed ? ' · NOTICED' : ''}</i></div>`;
 }
 
+// ── The White Locust's call-out chain (Phase 7) ────────────────────────
+function locustHtml(S, L, st, fresh, idx) {
+  const seen = S.steps.slice(0, idx + 1);
+  const safe = seen.find(x => x.wlSafe)?.wlSafe;
+  const state = new Map();
+  for (const x of seen) if (x.wlRound) state.set(x.wlRound[0], x.wlRound);
+  const tile = (n, cls, tag) => `<div class="bkt ${cls} ${fresh && (st?.wlRound?.[0] === n || st?.wlSafe === n) ? 'now' : ''}"><span class="bkf" style="--c:${col(n)}">${img(n)}</span><b>${esc(n)}</b><i>${tag}</i></div>`;
+  const tiles = [safe ? tile(safe, 'back', 'SAFE') : '', ...[...state.values()].map(([n, s, lim, t]) =>
+    tile(n, s === 'out' ? 'out' : s === 'made' ? '' : 'champ', s === 'up' ? `${lim}s ON THE CLOCK` : s === 'made' ? `${t}s / ${lim}s` : 'OUT'))].join('');
+  return `<div class="bkboard"><span class="bkh">THE CALL-OUT CHAIN</span><div class="bkr">${tiles || '<span class="bkh">PLAYING FOR SAFETY</span>'}</div></div>`;
+}
+
 // ── Battle Back's field (Phase 7) ──────────────────────────────────────
 function battleBackHtml(S, L, st, fresh, idx) {
   const B = S.battleback || {};
@@ -600,6 +612,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.coin && !isDr && idx >= 0 && !(st && st.rule != null)) h += coinHtml(S, L, st, fresh, idx);
   if (S.veto2 && !isDr && idx >= 0 && !(st && st.rule != null)) h += veto2Html(S, L, st, fresh, idx);
   if (S.battleback && !isDr && idx >= 0 && !(st && st.rule != null)) h += battleBackHtml(S, L, st, fresh, idx);
+  if (S.locust && !isDr && idx >= 0 && !(st && st.rule != null)) h += locustHtml(S, L, st, fresh, idx);
   if (S.team && idx >= 0 && !(st && st.rule != null)) h += teamHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {

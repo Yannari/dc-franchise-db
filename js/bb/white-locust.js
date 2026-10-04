@@ -193,7 +193,6 @@ export function runCallOutChain(week, house, { rng = Math.random } = {}) {
     }
   }
 
-  const p = P(evicted);
   return {
     evicted,
     hoh,
@@ -203,10 +202,8 @@ export function runCallOutChain(week, house, { rng = Math.random } = {}) {
       rounds, evicted, hoh,
       survivors: survivors.map(s => ({ ...s })),
       beats: [{
-        text: `<strong>${evicted}</strong> does not check out. The chain reached ${p.obj} with `
-          + `${rounds[rounds.length - 1].limit} seconds on the clock and ${p.sub} `
-          + `${p.sub === 'they' ? 'were' : 'was'} still ${rounds[rounds.length - 1].doing.split(' ').slice(0, 4).join(' ')} `
-          + `when it ran out. There is no vote and nothing to campaign against.`,
+        // A plain fact with a `part`; the words are lines/rwact.js.
+        text: `${evicted} fails the call-out and does not check out of the resort.`, part: 'out',
         players: [evicted], badgeText: 'DID NOT CHECK OUT', badgeClass: 'red',
         eventId: 'white-locust-eliminated', category: 'twist', location: 'living-room',
       }],

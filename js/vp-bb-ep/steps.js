@@ -1698,6 +1698,57 @@ function quietScreens(act, ctx) {
 }
 const ordinalWord = n => ({ 1: 'first', 2: 'second', 3: 'third', 4: 'fourth', 5: 'fifth', 6: 'sixth', 7: 'seventh', 8: 'eighth', 9: 'ninth', 10: 'tenth', 11: 'eleventh', 12: 'twelfth', 13: 'thirteenth', 14: 'fourteenth', 15: 'fifteenth', 16: 'sixteenth' }[n] || `number ${n}`);
 
+// ── The Rewind, and the White Locust (Phase 7) ─────────────────────────
+// The Rewind: after the vote is read, a power erases the whole week. The
+// evictee stays, the Head of Household loses the reign, everybody plays again,
+// and (the one public count in this game) every ballot is read out. The White
+// Locust: a resort call-out chain. Win safety, call somebody out; survive the
+// task against the clock and call out the next, with less time; fail, and you
+// do not check out. Words: lines/rwact.js.
+function rewindScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  if (act.type === 'rewind') {
+    const steps = [];
+    for (const b of act.beats || []) {
+      if (b.part === 'stop') steps.push(...linesOf(b),
+        { k: 'bb', t: `Houseguests, ${act.holder} has played the Rewind.`, rule: 1, toast: ['THE WEEK IS ERASED', '#f5c542'] },
+        { k: 'bb', t: `${act.spared} stays. ${act.deposed ? `${act.deposed} is no longer Head of Household. ` : ''}This week never happened.`, rule: 2 },
+        { k: 'bb', t: 'Everybody will play for Head of Household again. And every vote cast tonight is now public.', rule: 3 });
+      else steps.push(...linesOf(b));
+    }
+    return [{
+      id: `bb-rewind-w${ctx.week}`, kind: 'rewind', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: 'LIVE',
+      kicker: 'Cam 04 · Living room', title: 'The Rewind', label: 'The Rewind', sub: 'The week is erased', cast: [[act.holder, 36], [act.spared, 64]].filter(x => x[0]),
+      rules: [['THE REWIND', 'erases the whole week, after the vote'], ['NOBODY LEAVES', 'and the HOH loses the reign'], ['THE COUNT', 'every ballot is read out']],
+      rulesTitle: 'THE REWIND · PLAYED', steps,
+    }];
+  }
+  // the White Locust
+  const steps = [
+    { k: 'bb', t: 'Houseguests, welcome to the White Locust Resort. By the end of your stay, one of you will not be checking out.', rule: 1 },
+    { k: 'bb', t: 'First, you will all play for safety. The winner starts the call-out chain.', rule: 2 },
+    { k: 'bb', t: 'Whoever is called out must finish a task before the clock runs out. Survive, and you call out the next person, with less time.', rule: 3 },
+    { k: 'bb', t: 'Fail, and you are out of the game. No vote. The fastest survivor becomes Head of Household.', rule: 4 },
+    { k: 'beat', t: `${act.safe} wins ${act.safetyTask} and is safe.`, wlSafe: act.safe, toast: ['SAFE', '#22e1ff'] },
+  ];
+  for (const r of act.rounds || []) {
+    if (r.sweep) { steps.push({ k: 'beat', t: `Nobody has failed. The resort keeps the slowest survivor: ${r.target}.`, wlRound: [r.target, 'out'] }); continue; }
+    steps.push(...(r.callLines?.length ? scriptSteps(r.callLines) : [{ k: 'say', by: r.caller, t: `${r.target}, you're up.` }]));
+    steps.push({ k: 'beat', t: `${r.target} has ${word(r.limit)} seconds: ${r.doing}.`, wlRound: [r.target, 'up', r.limit] });
+    steps.push({ k: 'beat', t: r.made ? `${r.target} finishes in ${Math.round(r.time)} seconds.` : `${r.target} runs out of time.`, wlRound: [r.target, r.made ? 'made' : 'out', r.limit, Math.round(r.time)],
+      ...(r.made ? {} : { toast: ['DOES NOT CHECK OUT', '#ff3355'] }) }, ...(r.endLines?.length ? scriptSteps(r.endLines) : []));
+  }
+  for (const b of act.beats || []) steps.push(...linesOf(b));
+  if (act.hoh) steps.push({ k: 'bb', t: `${act.hoh}, you were the fastest. You are the new Head of Household.`, toast: ['NEW HEAD OF HOUSEHOLD', '#f5c542'] });
+  return [{
+    id: `bb-locust-w${ctx.week}`, kind: 'locust', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: '16:00',
+    kicker: 'Cam 05 · Backyard', title: 'The White Locust Resort', label: 'White Locust Resort', sub: 'One guest does not check out',
+    cast: [], locust: { safe: act.safe },
+    rules: [['SAFETY', 'the winner starts the chain'], ['CALL OUT', 'name who plays next'], ['THE CLOCK', 'finish in time, or you are out'], ['FASTEST', 'the quickest survivor is HOH']],
+    rulesTitle: 'THE WHITE LOCUST · HOW IT WORKS', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1731,7 +1782,8 @@ export function chooseAired(beats, cap, seen = new Set()) {
 export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = null } = {}) {
   const house = (row.houseAtStart || []).slice();
   const ctx = { week: row.num || 1, hoh: row.hoh, house, nominees: (row.initialNominees || []).slice(), vetoHolder: row.vetoWinner,
-    hexed: (row.acts || []).some(x => x.type === 'halting-hex'),
+    // a Halting Hex or a Rewind is about to cancel tonight's eviction
+    hexed: (row.acts || []).some(x => x.type === 'halting-hex' || x.type === 'rewind'),
     pleas: row.finalPleas || [], plea, anchor: 'start', day: 1, jury: [...(row.jury || [])], finalTwo: [...(row.finalTwo || [])] };
   let finalPart = 0;
   // Houseguests who walk in later in the week (rivals) are not in the house until they do.
@@ -1794,6 +1846,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
+      case 'rewind': case 'white-locust': flush(); for (const scr of rewindScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'no-eviction': case 'dead-last': flush(); for (const scr of quietScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'halting-hex': flush(); for (const scr of hexScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'premiere-mystery': flush(); for (const scr of premiereScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -1841,7 +1894,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

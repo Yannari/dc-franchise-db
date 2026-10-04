@@ -393,6 +393,25 @@ volume settings hold.
   bed in the catalog; no sting fires on Reveal all; every file named in the
   catalog exists or is listed as pending in `docs/bb-music.md`.
 
+**Phase 7 status (2026-10-03):** the Safety Suite is the first twist built
+as its own set (mockup/mockup-bb-twist-safety-suite.html, approved; commit
+79c2b291). The pattern for the rest:
+- **A twist explains itself first** (user, 2026-10-03: "explain the twist
+  better"). Its opening screen has Big Brother read the rules, one line per
+  rule, while a rules card fills in and the voice drops to a caption.
+- **Four parts, each its own screen:** the announcement and rules, the
+  choice, the contest, the consequence. Built sets (`built: true`) are light
+  and colour with the twist's own SVG objects (keycards, door, clock, price
+  card); a bright set (`bright`) switches the HUD to dark text.
+- **The engine keeps its dice and drops its prose:** each beat gets a plain
+  fact and a `part`; ceremony.js writes the words from a `<twist>act.*` pool
+  with its own dice and puts them on the beat. The viewer reads the act's
+  data (who, scores, prices) for the objects and Big Brother's fixed lines.
+- **Draw what the engine decided, not a simplification of it:** a run that
+  beat the clock but lost is TOO SLOW, not SHORT.
+- The classic board's id joins `REPLACED`; a test plays real twist weeks
+  (tests/bb-vp-safety-suite.test.js).
+
 ## 5. Phases
 
 | Phase | Deliverable | Done when |

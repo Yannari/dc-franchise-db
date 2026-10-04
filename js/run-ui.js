@@ -607,6 +607,13 @@ export function renderSeasonHub() {
   const phaseLabel = (_bbSeason || isTraitorsSeason() || isPerfectMatchSeason() || isCircleSeason())
     ? (model.phase === 'complete' ? 'Complete' : model.remaining ? 'Final ' + model.remaining : 'Setup')
     : model.phase === 'pre-merge' ? 'Pre-Merge' : model.phase === 'post-merge' ? 'Post-Merge' : model.phase === 'finale' ? 'Finale' : model.phase === 'complete' ? 'Complete' : 'Setup';
+  // A castle's season ends with the reunion: until it has aired, the main
+  // button airs it; once it has, it is the last tape on the rail.
+  const _reunionDue = _trReunionPending();
+  const _reunionRow = isTraitorsSeason() && gs?._trReunionAired
+    ? (gs.episodeHistory || []).filter(e => e && e.tr && e.tr.reunion).pop() : null;
+  const _reunionKey = _reunionRow ? 'reunion-' + _reunionRow.num : null;
+  if (_reunionDue && !model.isHistorical) { model.primaryLabel = 'Air The Reunion'; model.primaryAction = 'simulate'; }
   const primaryClick = model.primaryAction === 'results' ? "showTab('results')" : model.primaryAction === 'current' ? `viewEpisode(${model.liveEpisode})` : 'simulateNext()';
   // Season Controls default OPEN in every lifecycle; the user's manual
   // open/closed choice is remembered across renders and reloads.
@@ -639,6 +646,13 @@ export function renderSeasonHub() {
           const label = _spoilerFree ? `Episode ${ep.num}` : `Episode ${ep.num}${eliminatedLabel ? ` — ${eliminatedLabel} eliminated` : ''}`;
           return `<button class="hub-rail-episode${active ? ' active' : ''}" type="button" aria-current="${active ? 'true' : 'false'}" aria-label="${_hubEsc(label)}" title="${_hubEsc(label)}" onclick="viewEpisode(${Number(ep.num)})"><span class="hub-rail-num">EP ${String(ep.num).padStart(2, '0')}</span>${outcome}</button>`;
         }).join('')}
+        ${_reunionKey ? (() => {
+          // THE REUNION ON THE TAPE (the user, 2026-10-03: "when i close it i
+          // cant rewatch it cause its not in season tape"): selecting it plays it.
+          const on = viewingEpNum === _reunionKey;
+          const label = `Episode ${_reunionRow.num + 1} — The Reunion`;
+          return `<button class="hub-rail-episode${on ? ' active' : ''}" type="button" aria-current="${on}" aria-label="${_hubEsc(label)}" title="${_hubEsc(label)}" onclick="viewEpisode('${_reunionKey}');openVisualPlayer('${_reunionKey}')"><span class="hub-rail-num">EP ${String(_reunionRow.num + 1).padStart(2, '0')}</span><span class="hub-rail-locked" style="color:#e8c270;font-size:10px;letter-spacing:.08em">REUNION</span></button>`;
+        })() : ''}
       </div>
       <div class="hub-rail-position">${model.isHistorical ? `Reviewing ${model.latest.num} / ${model.liveEpisode}` : `Current · ${model.liveEpisode}`}</div>
     </nav>`;
@@ -688,7 +702,7 @@ export function renderSeasonHub() {
   const canBatch = !model.isHistorical && model.lifecycle !== 'complete' && model.phase !== 'finale';
   const canReplay = !!(model.latest && typeof gsCheckpoints !== 'undefined' && gsCheckpoints[model.latest.num]);
   const secondaryActions = model.lifecycle === 'setup' ? '' : `<nav class="hub-secondary-actions" aria-label="Secondary season actions">
-    <button type="button" onclick="openVisualPlayer(${Number(model.latest?.num || model.liveEpisode)})" ${model.latest ? '' : 'disabled'}>Watch latest</button>
+    <button type="button" onclick="openVisualPlayer(${_reunionKey && !model.isHistorical ? `'${_reunionKey}'` : Number(model.latest?.num || model.liveEpisode)})" ${model.latest ? '' : 'disabled'}>Watch latest</button>
     <button type="button" onclick="simulateMultipleEpisodes(5)" ${canBatch ? '' : 'disabled'}>Sim 5</button>
     <button type="button" onclick="simulateMultipleEpisodes()" ${canBatch ? '' : 'disabled'}>Sim to finale</button>
     <button type="button" onclick="replayEpisode(${Number(model.latest?.num || 0)})" ${canReplay ? '' : 'disabled'}>Replay viewed</button>

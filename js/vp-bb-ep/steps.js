@@ -1319,6 +1319,61 @@ function secondVetoScreens(act, ctx) {
   }];
 }
 
+// ── The Den of Temptation, and the curse (Phase 7) ─────────────────────
+// The Den: one houseguest alone in a red room, offered a power for free, and
+// told somebody else will pay. Big Brother explains it; the taker speaks only
+// in the Diary Room. The curse comes at the nominations: the cursed
+// houseguest puts themselves on the block, and the house starts working out
+// who did it. Words: lines/tempact.js.
+function temptationScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  if (act.type === 'temptation') {
+    const a = act.entrant;
+    const steps = [
+      { k: 'bb', t: 'Houseguests, the Den of Temptation is open. One of you has been chosen to go in.', rule: 1 },
+      { k: 'bb', t: 'Inside, they will be offered a power. No competition, no vote.', rule: 2 },
+      { k: 'bb', t: 'But for every temptation taken, there is a consequence, and it lands on somebody else.', rule: 3 },
+      { k: 'bb', t: 'You will never be told who was offered it, or whether they said yes.', rule: 4 },
+      // called in private: the whole twist is that the house never knows who went in
+      { k: 'beat', t: `Later, ${a} is called to the Diary Room alone. Behind it, a red door opens into the Den.` },
+    ];
+    for (const b of beats) {
+      if (b.part === 'offer') steps.push({ k: 'beat', t: `${a} is offered ${act.power}.` }, ...linesOf(b));
+      if (b.part === 'accepted') steps.push({ k: 'beat', t: `${a} accepts.`, pwMark: 'took', toast: ['TEMPTATION TAKEN', '#ff3355'] }, ...linesOf(b));
+      if (b.part === 'declined') steps.push({ k: 'beat', t: `${a} turns it down. Nobody will ever know.`, toast: ['DECLINED', '#9aa4b2'] }, ...linesOf(b));
+      if (b.part === 'suspect') steps.push(...linesOf(b));
+    }
+    return [{
+      id: `bb-den-w${ctx.week}`, kind: 'den', anchor: ctx.anchor, day: ctx.day, set: 'hoh', room: 'The Den', cam: CAM.hoh, time: '11:20',
+      kicker: 'Cam 13 · The Den', title: 'The Den of Temptation', label: 'The Den of Temptation', sub: 'Free, and somebody else pays',
+      cast: [[a, 50]], power: { name: act.power, holder: a },
+      rules: [['THE DEN', 'one houseguest is offered a power'], ['FREE', 'no competition, no vote'],
+        ['THE CONSEQUENCE', 'take it, and somebody else is cursed'], ['SECRET', 'the house is never told who']],
+      rulesTitle: 'THE DEN OF TEMPTATION · HOW IT WORKS', steps,
+    }];
+  }
+  // the curse, at the nominations
+  const c = act.cursed;
+  const steps = [
+    { k: 'bb', t: 'Houseguests, somebody in this house accepted a temptation. Now there is a consequence.', rule: 1 },
+    { k: 'bb', t: 'The cursed houseguest must nominate themselves, alongside the Head of Household\'s nominees.', rule: 2 },
+    { k: 'bb', t: 'You will not be told who took the temptation.', rule: 3 },
+  ];
+  for (const b of beats) {
+    if (b.part === 'cursed') steps.push({ k: 'bb', t: `${c}, you have been cursed. You must nominate yourself.`, curseOn: c, toast: ['CURSED', '#ff3355'] }, ...linesOf(b));
+    if (b.part === 'missed') steps.push({ k: 'bb', t: 'Everybody who could be cursed is protected. The curse has nowhere to land.', toast: ['THE CURSE MISSES', '#9aa4b2'] }, ...linesOf(b));
+    if (b.part === 'reads') steps.push(...linesOf(b));
+  }
+  return [{
+    id: `bb-curse-w${ctx.week}`, kind: 'curse', anchor: ctx.anchor, day: ctx.day, set: 'dining', room: ROOM_NAME.dining, cam: CAM.dining, time: ACT_TIME.nominations,
+    kicker: 'Cam 03 · Dining room', title: 'The Curse', label: 'The Curse', sub: c ? `${c} pays for somebody else's temptation` : 'A curse with nowhere to go',
+    cast: c ? [[c, 50]] : [],
+    rules: [['A TEMPTATION', 'somebody took one'], ['THE THIRD CHAIR', 'the cursed nominate themselves'], ['NOBODY KNOWS', 'who took it']],
+    rulesTitle: 'THE CURSE · HOW IT WORKS', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1414,6 +1469,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
+      case 'temptation': case 'temptation-curse': flush(); for (const scr of temptationScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'second-veto': flush(); for (const scr of secondVetoScreens(act, ctx)) ceremony(scr); if (act.used) ctx.nominees = [...(act.nominees || ctx.nominees)]; beatsOf(act); break;
       case 'coin-of-destiny': flush(); for (const scr of coinScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-expired': flush(); for (const scr of expiredScreens(act, ctx)) ceremony(scr); break;
@@ -1449,7 +1505,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

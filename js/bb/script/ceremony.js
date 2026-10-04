@@ -430,6 +430,20 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── The Den of Temptation, and the curse it leaves ──
+  if (act.type === 'temptation' || act.type === 'temptation-curse') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `tp|${b.part}|${p.join('|')}`;
+      let lines = null;
+      if (['offer', 'accepted', 'declined', 'cursed', 'missed'].includes(b.part) && p[0]) lines = fresh(`tempact.${b.part}`, { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'suspect' && p.length === 2) lines = fresh('tempact.suspect', { a: p[0], b: p[1] }, { ending: b.correct ? 'right' : 'wrong' }, salt);
+      if (b.part === 'reads' && p.length === 3) lines = fresh('tempact.reads', { a: p[0], b: p[1], c: p[2] }, { ending: 'scene' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   // ── The second veto: a meeting that ends twice ──
   if (act.type === 'second-veto') {
     const fresh = freshWriter(ctx, house);

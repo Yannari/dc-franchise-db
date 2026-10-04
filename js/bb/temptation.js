@@ -28,7 +28,7 @@
 import { gs, players } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { addBond, getBond, getPerceivedBond } from '../bonds.js';
-import { makePicker, clamp } from '../bb-comps/_shared.js';
+import { clamp } from '../bb-comps/_shared.js';
 import { BB_POWER_DEFINITIONS, grantPower } from './powers.js';
 
 /**
@@ -44,39 +44,10 @@ export const TEMPTATION_CURSES = Object.freeze({
   },
 });
 
-const beat = (text, players, badgeText, badgeClass = 'twist') =>
-  ({ type: 'temptation', text, players: [...players].filter(Boolean), badgeText, badgeClass });
-
-const OFFER = [
-  (n, p, power) => `${n} is called to the Den alone. The room is red and there is nothing in it but a screen, and the screen offers ${p.obj} ${power} — no competition, no vote, no catch that ${p.sub} can see.`,
-  (n, p, power) => `The Den opens for ${n}. ${p.Sub} sits down and is offered ${power} outright, and then is told the other half: taking it puts a curse into the house, and the curse will not land on ${p.obj}.`,
-  (n, p, power) => `${n} walks into the Den expecting a competition and finds a chair. ${power} is on the table. Somebody else pays for it. ${p.Sub} has about ninety seconds.`,
-];
-
-const ACCEPT = [
-  (n, p) => `${n} takes it. ${p.Sub} does not agonise, and the part ${p.sub} will replay later is how easy ${p.sub} found it.`,
-  (n, p) => `${n} accepts. Somewhere behind ${p.obj} a name is being drawn out of a hat and ${p.sub} has decided ${p.sub} can live with that.`,
-  (n) => `${n} says yes before the screen has finished the sentence.`,
-  (n, p) => `${n} asks whether the house will know. The screen says no. ${p.Sub} takes it.`,
-];
-
-const DECLINE = [
-  (n, p) => `${n} says no. ${p.Sub} sits with it for a long moment and then says no again, and walks out of the Den with exactly what ${p.sub} walked in with.`,
-  (n, p) => `${n} turns it down. Not out of strategy — ${p.sub} simply will not have somebody else pay for ${p.posAdj} week.`,
-  (n) => `${n} refuses. The screen goes dark, the Den closes, and nothing at all happens to anybody.`,
-];
-
-const CURSED = [
-  (v, p) => `Big Brother calls the house to the living room. Somebody accepted a temptation, and ${v} has been cursed for it — ${p.sub} will nominate ${p.ref} this week, and ${p.sub} does not get to know who did this to ${p.obj}.`,
-  (v) => `The curse lands on ${v}. No competition, no vote, no reason: a name came out of a hat because somebody in that room said yes to something.`,
-  (v, p) => `${v} is told to put ${p.ref} on the block. ${p.Sub} looks around the room at nine faces and knows one of them is the reason.`,
-];
-
-const SUSPECT = [
-  (who, at) => `${who} has decided it was ${at}, and says so quietly enough to be deniable and loudly enough to spread.`,
-  (who, at) => `${who} works through who has looked comfortable all week and lands on ${at}.`,
-  (who, at) => `${who} is certain it was ${at}. ${who} is not certain of much else, but ${who} is certain of that.`,
-];
+// Beats are plain facts with a `part`; the words are written by
+// bb/script/ceremony.js from lines/tempact.js.
+const beat = (text, players, badgeText, badgeClass = 'twist', part = null, extra = {}) =>
+  ({ type: 'temptation', text, players: [...players].filter(Boolean), badgeText, badgeClass, ...(part ? { part } : {}), ...extra });
 
 /**
  * Who goes into the Den.
@@ -176,7 +147,7 @@ export function runDenOfTemptation({ week, house, rng = Math.random, offered = '
   if (room.length < 5) return null;
 
   const weekNum = Number(week?.num) || (gs.bb?.weeks?.length || 0) + 1;
-  const say = makePicker(rng);
+  const say = () => rng();   // each beat's wording used to be one draw here; the draw stays
   const beats = [];
 
   const shelf = Object.keys(BB_POWER_DEFINITIONS);
@@ -185,14 +156,14 @@ export function runDenOfTemptation({ week, house, rng = Math.random, offered = '
 
   const entrant = pickEntrant(room, rng);
   if (!entrant) return null;
-  const pr = pronouns(entrant);
-
-  beats.push(beat(say(OFFER)(entrant, pr, def.name), [entrant], 'THE DEN', 'gold'));
+  say();
+  beats.push(beat(`${entrant} is offered ${def.name} in the Den.`, [entrant], 'THE DEN', 'gold', 'offer', { power: def.name }));
 
   const accepted = acceptRead(entrant, rng, { house: room, hoh: week?.hoh || null });
 
   if (!accepted) {
-    beats.push(beat(say(DECLINE)(entrant, pr), [entrant], 'DECLINED', 'grey'));
+    say();
+    beats.push(beat(`${entrant} turns the temptation down.`, [entrant], 'DECLINED', 'grey', 'declined'));
     // Nobody will ever know they did this, which is exactly the point — the
     // house gets no curse and no explanation for why not.
     gs.popularity ||= {};
@@ -205,7 +176,8 @@ export function runDenOfTemptation({ week, house, rng = Math.random, offered = '
   }
 
   grantPower(powerId, entrant, { week: weekNum, visibility: 'secret', source: 'bb-den-of-temptation' });
-  beats.push(beat(say(ACCEPT)(entrant, pr), [entrant], 'ACCEPTED', 'red'));
+  say();
+  beats.push(beat(`${entrant} accepts the temptation.`, [entrant], 'ACCEPTED', 'red', 'accepted'));
 
   // ── the house pays, but not yet ──
   //
@@ -242,8 +214,9 @@ export function runDenOfTemptation({ week, house, rng = Math.random, offered = '
     const guess = right ? entrant : (others[Math.floor(rng() * others.length)] || entrant);
     if (!guess) continue;
     guesses.push({ who, guess, correct: guess === entrant });
-    beats.push(beat(say(SUSPECT)(who, guess), [who, guess], guess === entrant ? 'CLOSE' : 'WRONG NAME',
-      guess === entrant ? 'gold' : 'grey'));
+    say();
+    beats.push(beat(`${who} suspects ${guess} took the temptation.`, [who, guess], guess === entrant ? 'CLOSE' : 'WRONG NAME',
+      guess === entrant ? 'gold' : 'grey', 'suspect', { correct: guess === entrant }));
     addBond(who, guess, -1.1);
   }
 
@@ -277,7 +250,7 @@ export function resolveCurse({ week, house, protectedNames = [], rng = Math.rand
   const off = new Set([t.entrant, ...protectedNames].filter(Boolean));
   const eligible = (house || []).filter(n => n && !off.has(n));
   const weekNum = Number(week?.num) || (gs.bb?.weeks?.length || 0) + 1;
-  const say = makePicker(rng);
+  const say = () => rng();   // the cursed beat's wording used to be one draw here; the draw stays
 
   if (!eligible.length) {
     // Everybody left is safe. The curse has nowhere to go, and the house is
@@ -286,9 +259,7 @@ export function resolveCurse({ week, house, protectedNames = [], rng = Math.rand
     return {
       type: 'temptation-curse', week: weekNum, cursed: null, missed: true,
       curse: t.curse,
-      beats: [beat(
-        'Big Brother calls the house in to name the cursed houseguest and then does not name one. Everybody still standing is protected by something, so the curse has nowhere to land — and somebody in that room is realising they took a temptation for free.',
-        [], 'CURSE MISSES', 'grey')],
+      beats: [beat('The curse has nowhere to land: everybody eligible is protected.', [t.entrant], 'CURSE MISSES', 'grey', 'missed')],
     };
   }
 
@@ -349,10 +320,9 @@ export function resolveCurse({ week, house, protectedNames = [], rng = Math.rand
       .sort((a, b) => getPerceivedBond(cursed, b) - getPerceivedBond(cursed, a))[0];
     if (near && getPerceivedBond(cursed, near) > 2) {
       const rightForTheRightReason = near === t.entrant;
-      inferenceBeats.push(beat(
-        `${reader} works the block backwards. Nobody put ${cursed} up, so the question is who benefits from ${cursed} being there — and the answer ${reader} keeps arriving at is ${near}, because they are the person ${cursed} has been closest to all week.`,
-        [reader, near], rightForTheRightReason ? 'READS IT RIGHT' : 'READS IT WRONG',
-        rightForTheRightReason ? 'gold' : 'grey'));
+      inferenceBeats.push(beat(`${reader} decides ${near}, the person closest to ${cursed}, took the temptation.`,
+        [reader, near, cursed], rightForTheRightReason ? 'READS IT RIGHT' : 'READS IT WRONG',
+        rightForTheRightReason ? 'gold' : 'grey', 'reads', { correct: rightForTheRightReason }));
       addBond(reader, near, -0.8);
       t.inference = { reader, accused: near, correct: rightForTheRightReason };
     }
@@ -361,7 +331,7 @@ export function resolveCurse({ week, house, protectedNames = [], rng = Math.rand
   return {
     type: 'temptation-curse', week: weekNum, cursed, missed: false, curse: t.curse,
     inference: t.inference || null,
-    beats: [beat(say(CURSED)(cursed, pronouns(cursed)), [cursed], 'CURSED', 'red'),
+    beats: [(say(), beat(`${cursed} is cursed and must nominate themselves.`, [cursed], 'CURSED', 'red', 'cursed')),
       ...inferenceBeats],
   };
 }

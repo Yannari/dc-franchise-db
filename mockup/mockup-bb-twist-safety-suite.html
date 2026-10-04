@@ -473,6 +473,18 @@ body.tvm .main{grid-template-columns:1fr;max-width:1600px}
 .stage .drpass .pass .pn{font-size:1cqw}
 .stage .drpass b{display:block;margin-top:.8cqw;font:700 .95cqw 'Chakra Petch';letter-spacing:.2cqw;color:#22e1ff}
 .stage .drpass.fresh{animation:bbx-billin .6s ease-out both}
+.stage .rules{position:absolute;left:50%;top:14cqw;transform:translateX(-50%);width:44cqw;z-index:11;padding:1.2cqw 1.4cqw;border-radius:1cqw;
+  background:linear-gradient(160deg,rgba(8,16,30,.92),rgba(4,8,16,.86));box-shadow:0 0 0 .12cqw rgba(34,225,255,.45),0 2cqw 4cqw rgba(0,0,0,.5)}
+.stage .rules .rt{font:700 .9cqw 'Chakra Petch';letter-spacing:.24cqw;color:#22e1ff;margin-bottom:.8cqw}
+.stage .rules .rr{display:grid;grid-template-columns:2.6cqw auto;column-gap:.8cqw;align-items:center;padding:.5cqw 0;opacity:.28;transition:opacity .4s}
+.stage .rules .rr.on{opacity:1}
+.stage .rules .rr.now{animation:bbx-billin .5s ease-out both}
+.stage .rules .rk{grid-row:span 2;width:2.6cqw;height:2.6cqw;border-radius:50%;display:grid;place-items:center;font:800 1.1cqw Archivo;color:#2a1d00;background:#f5c542}
+.stage .rules .rr b{font:800 1.6cqw Archivo;font-stretch:90%;letter-spacing:.1cqw;color:#fff}
+.stage .rules .rr span:last-child{font:500 1.25cqw Archivo;color:#b9c4d8}
+.stage.rulesup .bbv{justify-content:flex-end;padding-bottom:4cqw}
+.stage.rulesup .bbv .eye{display:none}
+.stage.rulesup .bbv .tx{font-size:2cqw;max-width:62cqw}
 /* the corridor and the door */
 .stage .set-door{--fl1:#1b2230;--fl2:#07090e;background:radial-gradient(30cqw 40cqw at 72% 30%,rgba(255,240,210,.32),transparent 70%),
   linear-gradient(90deg,rgba(255,255,255,.04) 0 .1cqw,transparent .1cqw 9cqw) 0 0/9cqw 100%,linear-gradient(180deg,#1a2130,#0b0f17)}
@@ -641,8 +653,11 @@ const SCREENS = [
     seated: { Heather: 'stand', Gwen: 'L0', Courtney: 'L1', Duncan: 'L2', Scott: 'R0', Zoey: 'R1', Bridgette: 'R2', Alejandro: 'L3', Geoff: 'R3' },
     rail: true,
     steps: [
-      { k: 'bb', t: `Houseguests, the Safety Suite is open.` },
-      { k: 'bb', t: `Each of you has one pass. You get one for the whole season. Swipe it in the next hour, and you will play for safety this week.`, railLit: true },
+      { k: 'bb', t: `Houseguests, the Safety Suite is open for one hour. Here is how it works.`, rule: 0 },
+      { k: 'bb', t: `Each of you has one pass. It has to last the whole season. Once you swipe it, it's gone.`, railLit: true, rule: 1 },
+      { k: 'bb', t: `Everyone who swipes will play inside the suite against the clock.`, rule: 2 },
+      { k: 'bb', t: `Beat the clock, and you cannot be nominated this week. If more than one of you beats it, the fastest is safe.`, rule: 3 },
+      { k: 'bb', t: `The winner must also make one other houseguest safe. That person will pay a price for it.`, rule: 4 },
       { k: 'say', by: 'Heather', t: `Not me, obviously. I'm already safe.`, push: true },
       { k: 'say', by: 'Scott', t: `One pass for the whole season? So if I use it now, it's gone.` },
       { k: 'bb', t: `That is correct, Scott.` },
@@ -932,6 +947,13 @@ function railHtml(S, L, st, fresh) {
     return `<div class="pass ${cls} ${now ? 'now' : ''}">${PASSEYE}<i class="chipline"></i>${img(n)}<span class="pn">${n}</span></div>`;
   }).join('')}</div>`;
 }
+// The rules, read out by Big Brother: one row lights per line.
+const RULES = [['1', 'ONE PASS', 'per houseguest, for the whole season'], ['2', 'SWIPE', 'and play inside against the clock'],
+  ['3', 'BEAT THE CLOCK', 'safe this week — fastest wins'], ['4', 'PLUS ONE', 'the winner saves one more, who pays a price']];
+function rulesHtml(n, fresh) {
+  return `<div class="rules"><div class="rt">THE SAFETY SUITE · HOW IT WORKS</div>${RULES.map(([k, a, b], i) =>
+    `<div class="rr ${i < n ? 'on' : ''} ${fresh && i === n - 1 ? 'now' : ''}"><span class="rk">${k}</span><b>${a}</b><span>${b}</span></div>`).join('')}</div>`;
+}
 function billHtml(L, st, fresh) {
   if (!L.bill) return '';
   const now = fresh && st && st.bill;
@@ -977,7 +999,7 @@ function paint(fresh = false) {
   const prevSt = idx > 0 ? S.steps[idx - 1] : null;
   const L = ledger(cur, idx);
   const isDr = st && st.k === 'dr';
-  stage.className = `stage ${S.light && !isDr ? 'lightset' : ''} ${S.nv && !isDr ? 'nv' : ''} ${st && st.k === 'bb' && S.set !== 'quad' ? 'bbspeaks' : ''} ${fresh && st && st.shake ? 'shake' : ''}`;
+  stage.className = `stage ${st && st.rule != null ? 'rulesup' : ''} ${S.light && !isDr ? 'lightset' : ''} ${S.nv && !isDr ? 'nv' : ''} ${st && st.k === 'bb' && S.set !== 'quad' ? 'bbspeaks' : ''} ${fresh && st && st.shake ? 'shake' : ''}`;
   const camNow = S.set === 'quad' ? 'none' : camOf(S, idx);
   const camPrev = fresh && idx > 0 ? camOf(S, idx - 1) : camNow;
   const cut = fresh && prevSt && st && ((st.k === 'dr') !== (prevSt.k === 'dr'));
@@ -986,6 +1008,7 @@ function paint(fresh = false) {
   h += `<div class="grain"></div><div class="vign"></div>`;
   if (S.rail && !isDr && idx >= 0) h += railHtml(S, L, st, fresh);
   if (!isDr && st && st.k !== 'dr' && cur === SCREENS.length - 1) h += billHtml(L, st, fresh);
+  if (st && st.rule != null) h += rulesHtml(st.rule, fresh);
   if (!onwall && S.wall && !isDr && (S.wall !== 'after' || (L.out.length && st && st.k !== 'host'))) h += wallHtml(L, st, fresh);
   if (L.votes && !isDr && st && st.k === 'host') {
     const named = L.out.length && S.id === 'evict';

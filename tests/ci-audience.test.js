@@ -37,6 +37,27 @@ describe('shares of the vote', () => {
   });
 });
 
+describe('the Hangout on an America Block night', () => {
+  // User, 2026-10-04: "Tyler was supposed to be the one blocked". The
+  // Influencers' first pick went up with a runner-up and the audience saved
+  // it, but the Hangout read like any night ("That's the name", THEY'VE
+  // DECIDED): the night has to say the two names go to America.
+  it('nominates two for the audience, and says so', () => {
+    const { rows } = booked('ci-audience-block');
+    let checked = 0;
+    for (const row of rows) for (const screen of circleScreens(row)) {
+      if (screen.kind !== 'hangout' || screen.d?.format !== 'audience-block') continue;
+      checked++;
+      const keys = screen.steps.map(x => x.key);
+      expect(keys.some(k => /^hangout\.(solo\.)?sealed\.audience$/.test(k))).toBe(true);
+      const end = dom(stageInner(row, screen, screen.steps.length - 1));
+      expect(end.textContent).toMatch(/TWO NAMES (GO TO|FOR) AMERICA/);
+      expect(end.textContent).not.toMatch(/THEY'VE DECIDED/);
+    }
+    expect(checked).toBe(1);
+  });
+});
+
 describe('the audience saves one of two', () => {
   const { vote, state, rows } = booked('ci-audience-block');
   it('the Influencers put up their pick and their runner-up; the smaller share is blocked', () => {

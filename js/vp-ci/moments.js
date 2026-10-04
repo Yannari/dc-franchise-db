@@ -109,7 +109,9 @@ function hangoutStage(row, screen, idx, fresh) {
   const sealed = seen.some(x => /^hangout\.(solo\.)?sealed$/.test(x.key || ''));
   const talking = st?.who || speakerAt(screen, idx);
   const cams = infl.map((h, i) => `<div class="civ-hcam ${i === 0 ? 'L' : i === 1 ? 'R' : 'M'}${h === talking ? ' talk' : ''}">${cam(row, h, '', `INFLUENCER · ${realOf(row, h).toUpperCase()}`)}</div>`).join('');
-  const mark = v => (v === 'keep' ? '✓ SAFE' : 'ON THE TABLE');
+  // America's Block (formats.js): the two names on the table go to the audience, who decide.
+  const america = d.format === 'audience-block';
+  const mark = v => (v === 'keep' ? '✓ SAFE' : america ? 'UP TO AMERICA' : 'ON THE TABLE');
   const tiles = d.atRisk.map(h => {
     const v = verdict[h];
     const url = faceUrl(faceOf(row, h, 'profile'));
@@ -137,10 +139,10 @@ function hangoutStage(row, screen, idx, fresh) {
       ${stamped ? `<div class="stamp ${stamped === 'keep' ? 'ok' : 'no'}">${mark(stamped)}</div>${fresh ? `<div class="flash ${stamped === 'keep' ? 'ok' : 'no'}"></div>` : ''}` : ''}
     </div></div>`;
   } else {
-    wall = `<div class="civ-hwall"><div class="civ-atrisk${d.atRisk.length > 6 ? ' dense' : ''}${fresh && justClosed ? ' back' : ''}"><div class="hd">${sealed ? "THEY'VE DECIDED" : 'AT RISK'}</div><div class="grid">${tiles}</div></div></div>`;
+    wall = `<div class="civ-hwall"><div class="civ-atrisk${d.atRisk.length > 6 ? ' dense' : ''}${fresh && justClosed ? ' back' : ''}"><div class="hd">${sealed ? (america ? 'TWO NAMES GO TO AMERICA' : "THEY'VE DECIDED") : 'AT RISK'}</div><div class="grid">${tiles}</div></div></div>`;
   }
   return `<div class="civ-layer civ-hangout">${setImg('hangout')}${cams}${wall}
-    ${where(infl.length > 1 ? 'THE HANGOUT · INFLUENCERS ONLY' : 'THE INFLUENCER DECIDES')}${dlg(row, st, fresh)}</div>`;
+    ${where(america ? 'THE HANGOUT · TWO NAMES FOR AMERICA' : infl.length > 1 ? 'THE HANGOUT · INFLUENCERS ONLY' : 'THE INFLUENCER DECIDES')}${dlg(row, st, fresh)}</div>`;
 }
 
 // ── THE BLOCKING ───────────────────────────────────────────────────────

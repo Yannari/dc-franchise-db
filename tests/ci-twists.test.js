@@ -61,6 +61,27 @@ describe('the clone (US 3, UK 3)', () => {
     expect(state.blocked.some(b => b.handle === fake && b.day === day)).toBe(true);
     expect(result.placements).toHaveLength(5);
   });
+  // User, 2026-10-04: "there was a clone of Denise ... I don't know, Wayne as
+  // Denise got eliminated". The viewer is told who the copy is, and the end
+  // is told as what it was.
+  it('the host tells the viewer who the copy really is, and how it ended', () => {
+    for (const seed of [5, 6, 7, 8]) {
+      const { on, state } = booked('rating4', 'ci-clone', seed);
+      const c = on('clone')[0];
+      if (!c) continue;
+      const { original, clone, fake } = c.data;
+      const keys = c.script.blocks.map(b => b.key);
+      const text = c.script.blocks.flatMap(b => b.lines).map(l => l.text).join(' ');
+      const realName = state.profiles[clone].players[0].split(' ')[0];
+      expect(keys.indexOf('clone.host.intro')).toBe(keys.indexOf('clone.alert') + 1);
+      expect(text).toContain(realName);
+      const caught = fake === clone;
+      expect(keys).toContain(caught ? 'clone.host.caught' : 'clone.host.fooled');
+      expect(keys).toContain(caught ? 'clone.out.caught' : 'clone.out.fooled');
+      expect(keys).not.toContain(caught ? 'clone.out.fooled' : 'clone.out.caught');
+      expect(original).not.toBe(clone);
+    }
+  });
 });
 
 describe('Ride or Die (US 6)', () => {

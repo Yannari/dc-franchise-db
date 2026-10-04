@@ -717,10 +717,17 @@ const BLOCKS = {
   'swap-back'(state, s) { return s.data.handles.map(h => ({ key: 'swap.back', cast: { a: h } })); },
   clone(state, s) {
     const { original, clone, votes, fake } = s.data;
+    // The room never learns who the copy is; the viewer does, from the host,
+    // right after the alert (user, 2026-10-04: "I don't know, Wayne as Denise
+    // got eliminated"). The ending is told for what it was: the copy caught,
+    // or the room fooled and the real one blocked.
+    const caught = fake === clone;
     const out = [{ key: 'clone.alert', cast: { a: Object.keys(votes)[0] || original } },
+      { key: 'clone.host.intro', cast: { a: clone, b: original } },
       { key: 'clone.plea.old', cast: { a: original } }, { key: 'clone.plea.new', cast: { a: clone } }];
     for (const [v, t] of Object.entries(votes).slice(0, 4)) out.push({ key: t === clone ? 'clone.vote.new' : 'clone.vote.old', cast: { a: v } });
-    out.push({ key: 'clone.out', cast: { a: fake } });
+    out.push({ key: caught ? 'clone.host.caught' : 'clone.host.fooled', cast: { a: clone, b: original } });
+    out.push({ key: caught ? 'clone.out.caught' : 'clone.out.fooled', cast: { a: fake } });
     return out;
   },
   'ride-or-die'(state, s) {
@@ -837,8 +844,9 @@ const BLOCKS = {
         const reason = viewReason(s, v.handle);
         out.push({ key: `hangout.solo.view.${reason}.${onTable(s, v.handle) ? 'cut' : 'keep'}`, cast: { a, c: v.handle }, extra: { reason } });
       }
-      // The decision itself airs later, in the blocking's flashback.
-      out.push({ key: 'hangout.solo.sealed', cast: { a } });
+      // The decision itself airs later, in the blocking's flashback; on an
+      // America's Block night it is two names for the audience, said so.
+      out.push({ key: s.data.format === 'audience-block' ? 'hangout.solo.sealed.audience' : 'hangout.solo.sealed', cast: { a } });
       return out;
     }
     const [a, b] = s.who;
@@ -854,7 +862,7 @@ const BLOCKS = {
     });
     // The show cuts before the name: the decision airs in the blocking's
     // flashback, after the announcement has named them.
-    out.push({ key: 'hangout.sealed', cast: { a: s.data.decider || a, b: s.who.find(h => h !== (s.data.decider || a)) || b } });
+    out.push({ key: s.data.format === 'audience-block' ? 'hangout.sealed.audience' : 'hangout.sealed', cast: { a: s.data.decider || a, b: s.who.find(h => h !== (s.data.decider || a)) || b } });
     if (s.data.offers.some(o => o.pact)) out.push({ key: 'hangout.pact', cast: { a, b } });
     return out;
   },
@@ -1355,7 +1363,7 @@ const WHY_ = ['strategic', 'protective', 'experimental', 'family'];
 const BLOCK_WHY_ = ['fake', 'threat', 'grudge', 'noBond'];
 export const POOL_KEYS = [
   // the audience votes (lines/audience.js)
-  'alert.audience-block', 'alert.audience-immunity', 'audience.open.block', 'audience.open.immunity', 'audience.wait', 'audience.wait.immunity', 'audience.result.block', 'audience.result.immunity', 'audience.react.saved', 'audience.react.blocked', 'audience.react.immune', 'audience.react.missed', 'block.announce.audience',
+  'alert.audience-block', 'alert.audience-immunity', 'hangout.sealed.audience', 'hangout.solo.sealed.audience', 'audience.open.block', 'audience.open.immunity', 'audience.wait', 'audience.wait.immunity', 'audience.result.block', 'audience.result.immunity', 'audience.react.saved', 'audience.react.blocked', 'audience.react.immune', 'audience.react.missed', 'block.announce.audience',
   // a chat that builds (lines/chat-depth.js)
   'chat.hello', 'chat.hello.serious', 'chat.hello.cool', 'chat.close.warm', 'chat.close.neutral', 'chat.deep',
   // the group chats that are not alliances (lines/groupchats.js)
@@ -1399,7 +1407,7 @@ export const POOL_KEYS = [
   'hack.send', 'hack.read', 'hack.undone', 'joker.chat', 'joker.pick', 'burner.exposed',
   'alert.public-super', 'alert.none', 'block.react.guess', 'noblock.alert', 'noblock.influencer', 'noblock.relief', 'mission.given', 'mission.success',
   'block.announce.mission', 'swap.told', 'swap.back', 'clone.alert', 'clone.plea.old', 'clone.plea.new', 'clone.vote.new', 'clone.vote.old',
-  'clone.out', 'alert.most-human', 'rate.human.top', 'rate.human.bottom', 'goodbye.video.ai', 'meet.arrive.ai', 'secondchance.back', 'secondchance.react', 'secondchance.recognize', 'egg.intro', 'egg.vote.first', 'egg.vote.second', 'egg.stays', 'egg.goes', 'rod.partner', 'sacrifice.go', 'sacrifice.kept', 'sacrifice.saved', 'disrupter.alert', 'disrupter.win.immunity', 'disrupter.win.pick', 'disrupter.slow', 'disrupter.pick', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
+  'clone.host.intro', 'clone.host.caught', 'clone.host.fooled', 'clone.out.caught', 'clone.out.fooled', 'alert.most-human', 'rate.human.top', 'rate.human.bottom', 'goodbye.video.ai', 'meet.arrive.ai', 'secondchance.back', 'secondchance.react', 'secondchance.recognize', 'egg.intro', 'egg.vote.first', 'egg.vote.second', 'egg.stays', 'egg.goes', 'rod.partner', 'sacrifice.go', 'sacrifice.kept', 'sacrifice.saved', 'disrupter.alert', 'disrupter.win.immunity', 'disrupter.win.pick', 'disrupter.slow', 'disrupter.pick', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
   'race.win', 'race.lose', 'newparty.throw', 'newparty.guest', 'newparty.left', 'lurk.watch', 'lurk.reveal',
   'chosen.offer', 'chosen.pick', 'chosen.thanks', 'pairarrival.chat', 'alert.antivirus', 'antivirus.open', 'antivirus.pass', 'antivirus.got', 'antivirus.left', 'block.announce.antivirus',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',

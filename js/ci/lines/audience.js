@@ -28,6 +28,17 @@ export const AUDIENCE_LINES = {
     { turns: [{ by: 'a', react: "'The audience has been watching.' That's a scary sentence." }, { by: 'b', say: "If they like me, I'm safe. If they don't, I'm in trouble." }] },
     { turns: [{ by: 'a', react: "The audience picks who's safe? I've been nice to everyone. On camera. Mostly." }, { by: 'b', react: "Mostly. Okay. I'm nervous for you." }] },
   ]),
+  // The Hangout on an America's Block night: they don't block, they nominate two.
+  ...E('hangout.sealed.audience', [
+    { turns: [{ by: 'a', send: "So those are our two. America does the rest" }, { by: 'b', send: "I don't envy either of them" }], beat: 'Neither of them moves to leave.' },
+    { turns: [{ by: 'a', say: "We don't even get the last word tonight." }, { by: 'b', send: "Two names. That's all they asked us for. Done" }] },
+    { turns: [{ by: 'a', send: "Okay. Two names, and the audience picks one" }, { by: 'b', send: "At least it's not on us alone" }], beat: 'They sit with it for a long moment.' },
+  ]),
+  ...E('hangout.solo.sealed.audience', [
+    { turns: [{ by: 'a', say: "Two names. That's my job tonight. The audience does the rest." }] },
+    { turns: [{ by: 'a', say: "I pick two, and America picks one. I can live with that. I think." }], beat: '{a} leans back and exhales.' },
+    { turns: [{ by: 'a', say: "Okay. Those are my two. Whatever happens now isn't on me." }] },
+  ]),
   ...E('audience.open.block', [
     host("The Influencers have put up {a} and {b}. Now it's out of their hands. The audience at home has voted to save one of them."),
     host("Two names went up from the Hangout tonight: {a} and {b}. Only one of them will still be in The Circle in a minute. The audience decides which."),

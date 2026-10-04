@@ -83,7 +83,7 @@ export function likeCounts(likes = {}) {
 }
 export const STAGE_DATA = {
   ratings: board, 'final-ratings': board,
-  hangout: d => ({ atRisk: d.atRisk || [], target: d.target ?? null, runnerUp: d.runnerUp?.handle ?? null }),
+  hangout: d => ({ atRisk: d.atRisk || [], target: d.target ?? null, runnerUp: d.runnerUp?.handle ?? null, format: d.format || null }),
   // The visit: why they came, and, if it turned into an argument, how (blocking.js clash).
   visit: d => ({ motive: d.motive || null, clash: d.clash || null }),
   blocking: d => ({ target: d.target ?? null, by: d.by || [], channel: d.channel || null, secret: !!d.secret, reason: d.reason || null }),

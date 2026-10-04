@@ -23,7 +23,7 @@ describe('the Hangout keeps its secret', () => {
   it('never airs the decision, and ends sealed', () => {
     for (const { sc } of scenes('hangout')) {
       expect(sc.script.blocks.some(b => DECISION.test(b.key))).toBe(false);
-      expect(sc.script.blocks.at(-1).key === 'hangout.pact' ? sc.script.blocks.at(-2).key : sc.script.blocks.at(-1).key).toMatch(/^hangout\.(solo\.)?sealed$/);
+      expect(sc.script.blocks.at(-1).key === 'hangout.pact' ? sc.script.blocks.at(-2).key : sc.script.blocks.at(-1).key).toMatch(/^hangout\.(solo\.)?sealed(\.audience)?$/);
     }
   });
   it('puts two names on the table when there is a second, so the debate does not give it away', () => {

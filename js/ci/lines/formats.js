@@ -941,12 +941,33 @@ export const IDENTITY_LINES = {
     { turns: [{ by: 'a', say: "The new one answered everything I asked. The old one never does." }] },
     { turns: [{ by: 'a', say: "Old account. Fake. I'm sticking with it." }] },
   ]),
-  ...E('clone.out', [
+  // The host tells the viewer who the copy is (the room never learns it):
+  // a is the copy (the blocked player back, {a.real}), b the profile copied.
+  ...E('clone.host.intro', [
+    { turns: [{ by: 'host', say: "Here's what nobody in the room knows. The new {b} is {a.real}, blocked last night and back with one day of notes on {b}." }] },
+    { turns: [{ by: 'host', say: "The copy of {b} is {a.real}. Blocked, and back for one more shot, wearing somebody else's profile." }] },
+    { turns: [{ by: 'host', say: "Two {b}s. One is real. The other is {a.real}, who was blocked and has been studying {b} ever since." }] },
+  ]),
+  ...E('clone.host.caught', [
+    { turns: [{ by: 'host', say: "The room got it right. The copy of {b} was {a.real}, and {a.real} is blocked from The Circle for good." }] },
+    { turns: [{ by: 'host', say: "The real {b} stays. {a.real}, the copy, is out of The Circle. Again." }] },
+    { turns: [{ by: 'host', say: "Caught. The fake {b} was {a.real}, and the room saw right through it." }] },
+  ]),
+  ...E('clone.host.fooled', [
+    { turns: [{ by: 'host', say: "The room got it wrong. The real {b} has been blocked, and {a.real} keeps {b}'s profile. Nobody knows." }] },
+    { turns: [{ by: 'host', say: "They blocked the real {b}. From tonight, {b} is {a.real}, and the room has no idea." }] },
+    { turns: [{ by: 'host', say: "The copy wins. {a.real} is {b} now, and the real {b} is gone." }] },
+  ]),
+  // The one who goes: the copy, caught; or the real one, the room fooled.
+  ...E('clone.out.caught', [
+    { turns: [{ by: 'a', react: "Called a fake by the room. The irony is not lost on me." }] },
+    { turns: [{ by: 'a', react: 'One day of notes was not enough. Worth a shot.' }], beat: '{a} laughs and shakes {a.posAdj} head.' },
+    { turns: [{ by: 'a', react: 'They knew the real one too well. I can respect that.' }] },
+  ]),
+  ...E('clone.out.fooled', [
     { turns: [{ by: 'a', react: 'They picked the other one. They think I am the fake.' }], beat: '{a} stares at the screen, stunned.' },
-    { turns: [{ by: 'a', react: 'Blocked as a fake. As myself. Unbelievable.' }], when: { catfish: false } },
-    { turns: [{ by: 'a', react: "Called a fake by the room. The irony is not lost on me." }], when: { catfish: true } },
     { turns: [{ by: 'a', react: 'After all of that, the room believed the copy.' }], beat: '{a} sits down slowly on the floor.' },
-    { turns: [{ by: 'a', react: 'So that is it. The room chose.' }] },
+    { turns: [{ by: 'a', react: 'Blocked as a fake. I was the real one the whole time.' }] },
   ]),
   ...E('rod.partner', [
     { turns: [{ by: 'a', react: "'Your Ride or Die is {b}.' Oh, I can work with that." }], beat: '{a} smiles at the screen.' },

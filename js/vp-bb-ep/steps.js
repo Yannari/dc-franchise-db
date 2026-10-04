@@ -728,6 +728,74 @@ function chainScreens(act, ctx) {
   return out;
 }
 
+// ── the Hidden Power (Phase 7) ─────────────────────────────────────────
+// A power hidden somewhere in the house, found only by looking. The set is a
+// map of the eight places it could be; every search stamps the searcher on the
+// spot they tried, being seen looking raises "the house believes", and the
+// viewer — never the house — is shown where it really is. Words:
+// lines/huntact.js on the act's beats (bb/script/ceremony.js).
+export const HUNT_SPOTS = [['pantry', 'Pantry'], ['have-not', 'Have-not room'], ['diary', 'Diary Room chair'], ['hoh-bath', 'HOH bathroom'],
+  ['storage', 'Storage'], ['yard', 'By the hammock'], ['laundry', 'Laundry'], ['memory', 'Memory wall']];
+const HUNT_SAID = { pantry: 'the pantry', 'have-not': 'the have-not room', diary: 'the Diary Room chair', 'hoh-bath': 'the HOH bathroom',
+  storage: 'the storage room', yard: 'the hammock', laundry: 'the laundry room', memory: 'the memory wall' };
+function huntScreens(act, ctx) {
+  const house = ctx.house.filter(n => !ctx.hidden.has(n));
+  const power = act.power || 'a power';
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const base = (id, extra) => ({ id, kind: 'hunt', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4,
+    kicker: 'Cam 04 · Living room', hunt: { place: act.place, heat: act.heatBefore || 0, expired: act.phase === 'expired' }, ...extra });
+  if (act.phase === 'hidden') {
+    const weeks = act.weeksLeft || 4;
+    const announce = (act.beats || []).find(b => b.part === 'announce');
+    return [base(`bb-hunt-hidden-w${ctx.week}`, {
+      time: '09:00', title: 'Something in this house', label: 'Hidden Power', sub: `${power} is hidden somewhere inside`,
+      seated: seatLiving([], house.filter(n => n !== ctx.hoh), ctx.hoh),
+      rules: [['HIDDEN', 'a power is somewhere in this house'], ['NO CLUES', 'no map, no competition — you just look'],
+        ['FINDERS KEEPERS', 'whoever finds it keeps it, and tells nobody'], ["IT WON'T WAIT", `gone in ${word(weeks)} weeks if nobody finds it`]],
+      rulesTitle: 'THE HIDDEN POWER · HOW IT WORKS',
+      steps: [
+        { k: 'bb', t: `Houseguests, ${power} is hidden somewhere in this house.`, rule: 1 },
+        { k: 'bb', t: 'There are no clues and no competition. If you want it, you will have to look for it.', rule: 2 },
+        { k: 'bb', t: 'Whoever finds it keeps it. Nobody else will be told.', rule: 3 },
+        { k: 'bb', t: `If nobody finds it in ${word(weeks)} weeks, it will be gone for good.`, rule: 4 },
+        { k: 'beat', t: 'Nobody knows where it is. It could be in any room in the house.' },
+        ...linesOf(announce),
+      ],
+    })];
+  }
+  if (act.phase === 'expired') {
+    return [base(`bb-hunt-expired-w${ctx.week}`, {
+      time: '09:00', title: 'Never found', label: 'Hidden Power · never found', sub: 'Nobody ever looked in the right place',
+      cast: [], steps: [
+        { k: 'beat', t: 'Nobody found it, and now it is gone.', secret: true },
+        { k: 'beat', t: `${power} was ${act.placeName} the whole time. Nobody in the house will ever know it was there.`, toast: ['NEVER FOUND', '#8fa0bb'] },
+      ],
+    })];
+  }
+  // a week of searching
+  const left = act.weeksLeft || 1;
+  const steps = [{ k: 'beat', t: left === 1 ? 'This is the last week anyone can find it.'
+    : `${titleCase(word(left))} weeks left to find it, and the searching starts.` }];
+  for (const b of act.beats || []) {
+    const [a, x] = b.players || [];
+    const said = linesOf(b);
+    const mark = b.part === 'search' ? { look: [a, b.place], at: [[a, 50]] }
+      : b.part === 'seen' ? { seen: [a, x], at: [[a, 36], [x, 64]] }
+        : b.part === 'spread' ? { spread: a, at: [[a, 50]] }
+          : b.part === 'found' ? { found: [a, b.place], at: [[a, 50]], toast: ['FOUND IT', '#f5c542'] }
+            : b.part === 'near' ? { at: [[a, 50]] } : {};
+    // The map is the set: a search or the find plays on it first, then the words.
+    if (b.part === 'search') { steps.push({ k: 'beat', t: `${a} searches ${HUNT_SAID[b.place] || 'the house'}.`, ...mark }, ...said); continue; }
+    if (b.part === 'found') { steps.push({ k: 'beat', t: `${a} reaches into ${HUNT_SAID[b.place] || 'the right place'}, and it's there.`, ...mark }, ...said); continue; }
+    if (said.length) { said[0] = { ...said[0], ...mark }; steps.push(...said); }
+    else steps.push({ k: 'beat', t: b.text, ...mark });
+  }
+  return [base(`bb-hunt-search-w${ctx.week}`, {
+    time: '04:10', nv: true, title: act.found ? 'Found it' : 'The search', label: act.found ? 'Hidden Power · found' : 'Hidden Power · the search',
+    sub: act.found ? 'Somebody has it, and nobody knows' : 'Everybody is looking', cast: [], steps,
+  })];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -812,6 +880,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'reunion': { const r = reunionScreen(act, ctx); if (r) ceremony(r); break; }
       case 'chain-of-safety': flush(); for (const scr of chainScreens(act, ctx)) ceremony(scr);
         ctx.nominees = (act.nominees || ctx.nominees).slice(); ctx.anchor = 'noms'; beatsOf(act); break;
+      case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'safety-suite': flush(); for (const scr of suiteScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'rivals-hoh':
         // the latecomers walk in here: from now on they are in the house
@@ -840,7 +909,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

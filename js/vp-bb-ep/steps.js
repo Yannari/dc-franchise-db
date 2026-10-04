@@ -1180,6 +1180,62 @@ function whackScreens(act, ctx) {
   }];
 }
 
+// ── A power never played (Phase 7) ──────────────────────────────────────
+// The house is told nothing; this is the viewer's note. One Diary Room card
+// per power: what it was, who held it and since when, and the holder's own
+// word on why it went unplayed.
+function expiredScreens(act, ctx) {
+  const steps = [];
+  for (const b of act.beats || []) {
+    const a = b.players?.[0];
+    if (!a) continue;
+    steps.push({ k: 'beat', t: b.part === 'evicted' ? `${a} leaves the house still holding ${b.power}. Nobody inside ever knew.`
+      : `${a} has held ${b.power} since week ${b.since} and never played it. Tonight it expires.`, expCard: [a, b.power, b.part], at: [[a, 50]] },
+      ...(b.lines?.length ? scriptSteps(b.lines) : []));
+  }
+  if (!steps.length) return [];
+  return [{
+    id: `bb-expired-w${ctx.week}`, kind: 'expired', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: '23:50',
+    kicker: 'Cam 01 · Diary room', title: 'Never played', label: 'Never played', sub: 'The house never knew', cast: [], expired: true, steps,
+  }];
+}
+
+// ── A power, played (Phase 7) ───────────────────────────────────────────
+// The Relic, the Cloud, the Buy-Off and the Coup d'État all arrive as one act
+// type. One screen each: a card naming the power and what it does (Big
+// Brother's when the house sees it played, the narrator's when it is a
+// secret), then the scene it makes. The Relic's is the longest: the lobbying
+// before the four names, and the promises it breaks. Words: lines/pwact.js.
+const POWER_ROOM = { 'hoh-gatekeeper': 'ceremony', 'the-cloud': 'dining', 'buy-off': 'ceremony', 'coup-d-etat': 'ceremony' };
+function powerScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  if (!beats.some(b => b.part)) return null;   // a power this set does not draw yet keeps its classic card
+  const who = act.holder;
+  // Held in secret or not, a power played is played in front of the house.
+  const steps = [
+    { k: 'bb', t: `Houseguests, ${who} has played a power: ${act.name}.`, rule: 1 },
+    ...(act.blurb ? [{ k: 'bb', t: act.blurb, rule: 2 }] : []),
+  ];
+  const set = POWER_ROOM[act.powerId] || 'ceremony';
+  for (const b of beats) {
+    if (b.part === 'lobby') { const said = linesOf(b); if (said.length) said[0] = { ...said[0], at: [[b.players[0], 36], [who, 64]] }; steps.push(...said); }
+    if (b.part === 'relic') steps.push({ k: 'beat', t: `${who} names the only four houseguests who can play for Head of Household: ${listOf(act.eligible || [])}.`, pwMark: 'relic', toast: ['THE FOUR', '#f5c542'] }, ...linesOf(b));
+    if (b.part === 'broken') steps.push(...linesOf(b));
+    if (b.part === 'cloud') steps.push({ k: 'beat', t: `${who} cannot be nominated at this ceremony.`, pwMark: 'cloud', toast: ['UNDER THE CLOUD', '#22e1ff'] }, ...linesOf(b));
+    if (b.part === 'buyoff') steps.push({ k: 'beat', t: `${who} hands ${act.hoh} $10,000 and steps off the block. ${act.replacement} goes up instead.`, pwMark: 'buyoff', toast: ['BOUGHT OFF THE BLOCK', '#f5c542'] }, ...linesOf(b));
+    if (b.part === 'coup') steps.push({ k: 'bb', t: `${listOf(b.removed || [])}, you are off the block. ${listOf(b.named || [])}, you are now nominated.`, pwMark: 'coup', toast: ["COUP D'ÉTAT", '#ff3355'] }, ...linesOf(b));
+  }
+  return [{
+    id: `bb-pw-${act.powerId}-w${ctx.week}`, kind: 'power', anchor: ctx.anchor, day: ctx.day, set, room: ROOM_NAME[set], cam: CAM[set],
+    time: act.timing === 'veto-ceremony' ? ACT_TIME['veto-ceremony'] : act.powerId === 'hoh-gatekeeper' ? '18:30' : ACT_TIME.nominations,
+    kicker: `Cam ${String(CAM[set]).padStart(2, '0')} · ${ROOM_NAME[set]}`, title: act.name, label: act.name, sub: `${who} plays it`,
+    cast: [[who, 50]], power: { name: act.name, holder: who },
+    rules: [['THE POWER', act.name], ...(act.blurb ? [['WHAT IT DOES', act.blurb]] : [])],
+    rulesTitle: `${String(act.name).toUpperCase()} · PLAYED`, steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1274,6 +1330,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         ctx.vetoHolder = act.vetoHolder || ctx.vetoHolder; beatsOf(act); break;
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
+      case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
+      case 'power-expired': flush(); for (const scr of expiredScreens(act, ctx)) ceremony(scr); break;
       case 'whacktivity': flush(); for (const scr of whackScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'interrogation': flush(); for (const scr of interrogationScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'time-capsule': flush(); for (const scr of capsuleScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -1306,7 +1364,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

@@ -2677,6 +2677,7 @@ export function simulateBBWeek(options = {}) {
       week.acts.push(addBeats({
         type: 'power-played', powerId: 'hoh-gatekeeper', holder: relic.holder,
         name: BB_POWER_DEFINITIONS['hoh-gatekeeper'].name, timing: 'nominations',
+        blurb: BB_POWER_DEFINITIONS['hoh-gatekeeper'].blurb || '',
         secret: relic.visibility === 'secret', visibility: relic.visibility,
         eligible: [...hohPlayers], includedSelf: hohPlayers.includes(relic.holder),
         detail: `${relic.holder} names the only four houseguests allowed to play for this week's `
@@ -2687,16 +2688,10 @@ export function simulateBBWeek(options = {}) {
           // The hours before the names, one beat each. A power whose whole
           // weight is who lobbied for it should not resolve in one sentence.
           ...lobby.map(l => ({
-            text: l.won
-              ? `${l.asker} gets to ${relic.holder} early and offers ${
-                l.offer === 'target' ? 'to go after somebody on their behalf'
-                  : l.offer === 'vote' ? 'a vote, whenever it is needed and without asking why'
-                    : l.offer === 'safety' ? 'a week of safety if it ever comes to that'
-                      : l.offer === 'plea' ? 'nothing at all, and simply asks'
-                        : `the only thing ${l.asker} has on night one, which is loyalty`}. `
-                + `${relic.holder} says yes. Neither of them writes it down and both of them will remember it.`
-              : `${l.asker} makes the case and ${relic.holder} listens to all of it and does not say yes. `
-                + `${l.asker} goes back to the bedroom having spent something and bought nothing.`,
+            // Plain facts with a `part`; the words are lines/pwact.js.
+            text: l.won ? `${l.asker} asks ${relic.holder} for a place, offering ${l.offer || 'loyalty'}, and is told yes.`
+              : `${l.asker} asks ${relic.holder} for a place and is not told yes.`,
+            part: 'lobby', won: !!l.won, offer: l.offer || 'loyalty',
             players: [l.asker, relic.holder],
             badgeText: l.won ? 'A PROMISE' : 'TURNED DOWN',
             badgeClass: l.won ? 'gold' : 'grey',
@@ -2704,8 +2699,7 @@ export function simulateBBWeek(options = {}) {
             category: 'deals', location: 'kitchen',
           })),
           ...broken.map(n => ({
-            text: `${n} was told yes. ${n} is not one of the four names. On night one, in front of `
-              + `everybody, before a single competition has been played.`,
+            text: `${n} was promised a place and is not one of the four names.`, part: 'broken',
             players: [n, relic.holder],
             badgeText: 'PROMISED AND NOT KEPT', badgeClass: 'red',
             eventId: 'relic-promise-broken', category: 'deals', location: 'living-room',
@@ -2714,10 +2708,8 @@ export function simulateBBWeek(options = {}) {
           // No markup in a power-played beat: the shared power screen escapes
           // beat text (it has never carried any, so nothing was broken by
           // that), and tags here would render as literal <strong> on the page.
-          text: `${relic.holder} reads out four names, and the rest of the house `
-            + `is not playing today. ${hohPlayers.join(', ')} go to the yard`
-            + `${hohPlayers.includes(relic.holder) ? '' : ` — and ${relic.holder} does not`}. `
-            + `Everybody can count who is missing.`,
+          text: `${relic.holder} names ${hohPlayers.join(', ')} as the only players for Head of Household.`,
+          part: 'relic', self: hohPlayers.includes(relic.holder),
           players: [...new Set([relic.holder, ...hohPlayers])].slice(0, 5),
           badgeText: 'THE RELIC', badgeClass: 'gold',
           eventId: 'relic-gatekeeper', category: 'power', location: 'backyard',
@@ -3425,6 +3417,9 @@ export function simulateBBWeek(options = {}) {
       secret: cloud.visibility === 'secret', visibility: cloud.visibility,
       detail: `${cloud.holder} cannot be nominated at this ceremony. It does not cover the veto ceremony, `
         + 'and everybody who can count knows that.',
+      blurb: BB_POWER_DEFINITIONS['the-cloud'].blurb || '', hoh,
+      beats: [{ text: `${cloud.holder} plays ${BB_POWER_DEFINITIONS['the-cloud'].name} and cannot be nominated.`,
+        players: [cloud.holder, hoh].filter(Boolean), badgeText: 'UNDER THE CLOUD', badgeClass: 'gold', part: 'cloud' }],
     }, { players: [cloud.holder] }));
   }
 
@@ -5741,12 +5736,10 @@ export function simulateBBWeek(options = {}) {
               + `${hoh} has no say in it — ${replacementUp} goes up in their place, named on the `
               + 'spot in front of the room.',
             hoh, replacement: replacementUp, amount: 10000,
+            blurb: BB_POWER_DEFINITIONS['buy-off'].blurb || '',
             beats: [{
-              text: `${bo.holder} does not ask. The envelope goes across the table to `
-                + `${hoh}, and the ten thousand dollars everybody watched `
-                + `${bo.holder} win turns out to have been a key all along. ${bo.holder} steps off `
-                + `the block; ${hoh} has to put ${replacementUp} up in their place `
-                + `with the room watching and no say in it.`,
+              text: `${bo.holder} pays ${hoh} $10,000 to come off the block; ${replacementUp} goes up instead.`,
+              part: 'buyoff', who: replacementUp,
               players: [bo.holder, hoh, replacementUp],
               badgeText: 'BOUGHT OFF THE BLOCK', badgeClass: 'gold',
               eventId: 'buy-off-played', category: 'power', location: 'living-room',
@@ -5835,6 +5828,10 @@ export function simulateBBWeek(options = {}) {
             detail: `${coup.holder} takes ${taken.join(' and ')} off the block and puts up `
               + `${named.join(' and ')}. ${hoh} watches a week of work come apart from a chair `
               + 'nobody can put them in.',
+            blurb: BB_POWER_DEFINITIONS['coup-d-etat'].blurb || '', hoh,
+            beats: [{ text: `${coup.holder} plays ${BB_POWER_DEFINITIONS['coup-d-etat'].name}: ${taken.join(' and ')} come down, ${named.join(' and ')} go up.`,
+              players: [coup.holder, hoh].filter(Boolean), badgeText: "COUP D'ÉTAT", badgeClass: 'red', part: 'coup',
+              removed: [...taken], named: [...named] }],
           }, { nominees: [...named], players: [coup.holder] });
           // Overruling somebody in public is not free, and the two people just
           // put up did not have a week that ended this way an hour ago.
@@ -6451,13 +6448,17 @@ export function simulateBBWeek(options = {}) {
       beats: week.powersExpired.map(x => ({
         type: 'power-expired',
         text: x.reason === 'holder-evicted'
-          ? `${x.holder} walks out of the front door still holding ${x.name}, and it goes out with them. Nobody in that house ever knew it was in the building.`
-          : `${x.holder} has been carrying ${x.name} since week ${x.heldSince} and never played it. The window closes tonight. It is simply gone, and the house will never learn there was anything to use.`,
+          ? `${x.holder} leaves the house still holding ${x.name}.`
+          : `${x.holder} never played ${x.name}, held since week ${x.heldSince}, and it expires.`,
         players: [x.holder],
         badgeText: x.reason === 'holder-evicted' ? 'LEFT WITH THEM' : 'NEVER PLAYED',
         badgeClass: 'grey',
+        part: x.reason === 'holder-evicted' ? 'evicted' : 'expired', power: x.name, since: x.heldSince,
       })),
     });
+    // The words (lines/expact.js), without addBeats: the house is told nothing,
+    // so this note must not schedule any house scenes either.
+    try { writeCeremony(week.acts.at(-1), week, house, {}); } catch { /* words never stop a week */ }
   }
     if (!gs.eliminated.includes(departure.name)) gs.eliminated.push(departure.name);
     week.allianceChanges.betrayals = _cappedBondWindow(() => settleBBAllianceWeek(week, rng));
@@ -7799,13 +7800,17 @@ export function simulateBBWeek(options = {}) {
       beats: week.powersExpired.map(x => ({
         type: 'power-expired',
         text: x.reason === 'holder-evicted'
-          ? `${x.holder} walks out of the front door still holding ${x.name}, and it goes out with them. Nobody in that house ever knew it was in the building.`
-          : `${x.holder} has been carrying ${x.name} since week ${x.heldSince} and never played it. The window closes tonight. It is simply gone, and the house will never learn there was anything to use.`,
+          ? `${x.holder} leaves the house still holding ${x.name}.`
+          : `${x.holder} never played ${x.name}, held since week ${x.heldSince}, and it expires.`,
         players: [x.holder],
         badgeText: x.reason === 'holder-evicted' ? 'LEFT WITH THEM' : 'NEVER PLAYED',
         badgeClass: 'grey',
+        part: x.reason === 'holder-evicted' ? 'evicted' : 'expired', power: x.name, since: x.heldSince,
       })),
     });
+    // The words (lines/expact.js), without addBeats: the house is told nothing,
+    // so this note must not schedule any house scenes either.
+    try { writeCeremony(week.acts.at(-1), week, house, {}); } catch { /* words never stop a week */ }
   }
   // Somebody leaving rearranges everybody's plan: a shield walks out and the
   // person hiding behind them is suddenly the biggest thing in the room, and a

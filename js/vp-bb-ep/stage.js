@@ -308,6 +308,23 @@ function pxHtml(S, L, st, fresh) {
   return `<div class="pxtable"><span class="pt">THE BOXES · ONE HOLDS THE VETO</span><div class="pxr">${boxes}</div></div>`;
 }
 
+// ── A power, played: the card (Phase 7) ───────────────────────────────
+function powerCardHtml(S, L, st, fresh, idx) {
+  const P = S.power || {};
+  const mark = S.steps.slice(0, idx + 1).filter(x => x.pwMark).at(-1)?.pwMark;
+  return `<div class="expcard live ${mark ? 'played' : ''} ${fresh && st?.pwMark ? 'now' : ''}"><span class="eh">${mark ? 'PLAYED' : 'A POWER'}</span>`
+    + `<b>${esc(P.name || '')}</b><i>held by ${esc(P.holder || '')}</i></div>`;
+}
+
+// ── A power never played: the card (Phase 7) ───────────────────────────
+function expiredHtml(S, L, st, fresh, idx) {
+  const card = S.steps.slice(0, idx + 1).filter(x => x.expCard).at(-1)?.expCard;
+  if (!card) return '';
+  const [a, power, part] = card;
+  return `<div class="expcard ${fresh && st?.expCard ? 'now' : ''}"><span class="eh">${part === 'evicted' ? 'LEFT WITH THEM' : 'NEVER PLAYED'}</span>`
+    + `<b>${esc(power || '')}</b><i>held by ${esc(a)}</i></div>`;
+}
+
 // ── The Whacktivity's corridor of doors (Phase 7) ──────────────────────
 function whackHtml(S, L, st, fresh, idx) {
   const W = S.whack || {};
@@ -523,6 +540,8 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.capsule && !isDr && idx >= 0 && !(st && st.rule != null)) h += capsuleHtml(S, L, st, fresh, idx);
   if (S.interro && !isDr && idx >= 0 && !(st && st.rule != null)) h += interroHtml(S, L, st, fresh, idx);
   if (S.whack && !isDr && idx >= 0 && !(st && st.rule != null)) h += whackHtml(S, L, st, fresh, idx);
+  if (S.expired && idx >= 0) h += expiredHtml(S, L, st, fresh, idx);
+  if (S.power && !isDr && idx >= 0 && !(st && st.rule != null)) h += powerCardHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;

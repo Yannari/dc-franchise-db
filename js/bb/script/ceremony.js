@@ -430,6 +430,35 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── A power, played in front of the house ──
+  if (act.type === 'power-played') {
+    const fresh = freshWriter(ctx, house);
+    const OFFERS = ['target', 'vote', 'safety', 'plea', 'loyalty'];
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `pw|${act.powerId}|${b.part}|${p.join('|')}`;
+      let lines = null;
+      if (b.part === 'lobby' && p.length >= 2) lines = fresh('pwact.lobby', { a: p[0], b: p[1] }, { ending: b.won ? (OFFERS.includes(b.offer) ? b.offer : 'loyalty') : 'no' }, salt);
+      if (b.part === 'broken' && p.length >= 2) lines = fresh('pwact.broken', { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
+      if (b.part === 'relic' && p[0]) lines = fresh('pwact.relic', { a: p[0] }, { ending: b.self ? 'self' : 'notself' }, salt);
+      if (b.part === 'cloud' && p.length >= 2) lines = fresh('pwact.cloud', { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
+      if (b.part === 'buyoff' && p.length >= 2) lines = fresh('pwact.buyoff', { a: p[0], b: p[1] }, { ending: 'scene', who: b.who || '' }, salt);
+      if (b.part === 'coup' && p.length >= 2) lines = fresh('pwact.coup', { a: p[0], b: p[1] }, { ending: 'scene' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
+  // ── A power that was never played (a note to the viewer) ──
+  if (act.type === 'power-expired') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const a = (b.players || [])[0];
+      if (!a || !b.part) continue;
+      const lines = fresh('expact.gone', { a }, { ending: b.part === 'evicted' ? 'evicted' : 'expired' }, `exp|${a}|${b.power || ''}`);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   for (const k of Object.keys(script)) {
     const v = script[k];
     if (!v || (typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length)) delete script[k];

@@ -24,6 +24,7 @@ import { BBX_SPOWER_CSS } from './style-spower.js';
 import { BBX_CAPSULE_CSS } from './style-capsule.js';
 import { BBX_INTERRO_CSS } from './style-interro.js';
 import { BBX_WHACK_CSS } from './style-whack.js';
+import { bedFor, playStep } from './sound.js';
 
 const reg = () => (typeof window !== 'undefined' ? (window._bbx ||= {}) : (globalThis._bbx ||= {}));
 const SHELL_CSS = `
@@ -162,7 +163,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     out.push({
       id: ids[si],
       label: S.label || S.title,
-      html: `<div class="bbx" data-uid="${uid}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${BBX_PX_CSS}${BBX_DUO_CSS}${BBX_CAMP_CSS}${BBX_WILD_CSS}${BBX_SPOWER_CSS}${BBX_CAPSULE_CSS}${BBX_INTERRO_CSS}${BBX_WHACK_CSS}${SHELL_CSS}</style>
+      html: `<div class="bbx" data-uid="${uid}" data-ambient="${bedFor(S)}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${BBX_PX_CSS}${BBX_DUO_CSS}${BBX_CAMP_CSS}${BBX_WILD_CSS}${BBX_SPOWER_CSS}${BBX_CAPSULE_CSS}${BBX_INTERRO_CSS}${BBX_WHACK_CSS}${SHELL_CSS}</style>
   <div class="bbx-stage stage" id="bbx-st-${uid}" onclick="bbxNext('${uid}')" title="Click for the next line">${stageHtml(steps, si, -1, false, o).html}</div>
   <div class="bbx-ctrl">
     <button type="button" class="bbx-btn" onclick="bbxBack('${uid}')">◀ Back</button>
@@ -226,6 +227,8 @@ function paint(uid, fresh) {
   if (side) side.innerHTML = sideHtml(out.ledger, S);
   const count = document.getElementById(`bbx-count-${uid}`);
   if (count) count.textContent = `${Math.max(0, R.idx + 1)} / ${S.steps.length}`;
+  // the music turns and the stings land on a click, never on Reveal all or a repaint
+  if (fresh && R.idx >= 0) playStep(S, R.idx);
   // the line types itself out on a fresh step
   const tx = el.querySelector('.tx[data-full]');
   if (fresh && tx && !tx.textContent) {

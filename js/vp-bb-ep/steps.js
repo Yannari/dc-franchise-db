@@ -74,7 +74,17 @@ function sceneScreen(beat, ctx, n) {
     id: `bb-house-v${n}`, kind: 'scene', anchor: ctx.anchor, set, room: ROOM_NAME[set], cam: CAM[set],
     title: titleCase(beat.badgeText || 'House life'), kicker: `Cam ${String(CAM[set]).padStart(2, '0')} · ${ROOM_NAME[set]}`,
     sub: listOf(people), day: ctx.day, time: ACT_TIME.house, cast: people.map((p, i) => [p, xs[i]]), steps,
+    mood: sceneMood(beat),
   };
+}
+/** What a scene is, for the music (vp-bb-ep/sound.js): a fight, a deal, a plan, or just the house. */
+function sceneMood(beat) {
+  const c = beat.category || '', cls = beat.badgeClass || '';
+  if (cls === 'red') return 'drama';
+  if (c === 'deals') return cls === 'purple' || cls === 'orange' ? 'scheming' : 'deals';
+  if (c === 'ceremonies' || c === 'phases') return 'ceremony';
+  if (c === 'invisible') return 'secret';
+  return 'house';
 }
 
 // ── a competition, in its arena ────────────────────────────────────────

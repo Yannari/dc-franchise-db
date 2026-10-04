@@ -141,7 +141,7 @@ function _freshTranscript(epRecord) {
        with the screens it retranscribes. It also self-heals a season played
        before any of this, which is the only way one gets a transcript now. */
     const _regen = epRecord && typeof window.generateSummaryText === 'function'
-      && (_isCastleRow(epRecord) || _isDragRow(epRecord)
+      && (_isCastleRow(epRecord) || _isDragRow(epRecord) || _isCircleRow(epRecord)
         ? !epRecord.summaryText || (epRecord.textV || 0) < (window.TEXT_BACKLOG_V || 1)
         : false);
     if (_regen) {
@@ -275,6 +275,9 @@ function _hubRailFace(name, cast = players) {
  */
 const _isCastleRow = ep => !!ep && ep.format === TRAITORS_FORMAT;
 const _isDragRow = ep => !!ep && ep.format === DRAG_FORMAT;
+// The Circle stores no text either: its transcript is derived from the aired
+// scenes (ci/transcript.js), so deriving it again is always safe.
+const _isCircleRow = ep => !!ep && ep.format === CIRCLE_FORMAT;
 // Same question for the main stage. A stored drag episode shares none of Total
 // Drama's eighty flags, so running them over it would be eighty reads of
 // fields that are not there; it gets its own card.

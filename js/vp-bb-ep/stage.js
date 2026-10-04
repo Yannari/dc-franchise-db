@@ -308,6 +308,24 @@ function pxHtml(S, L, st, fresh) {
   return `<div class="pxtable"><span class="pt">THE BOXES · ONE HOLDS THE VETO</span><div class="pxr">${boxes}</div></div>`;
 }
 
+// ── Duo Week's board of pairs (Phase 7) ─────────────────────────────────
+const DUOLINK = `<svg class="dl" viewBox="0 0 24 12"><rect x="1" y="2" width="12" height="8" rx="4" fill="none" stroke="#22e1ff" stroke-width="2"/><rect x="11" y="2" width="12" height="8" rx="4" fill="none" stroke="#22e1ff" stroke-width="2"/></svg>`;
+function duoHtml(S, L, st, fresh, idx) {
+  const D = S.duo || {};
+  const shown = D.reveal ? S.steps.slice(0, idx + 1).filter(x => x.pair).map(x => x.pair) : (D.pairs || []);
+  const on = new Set(st?.pairOn || st?.pair || []);
+  const noms = new Set(D.nominees || []);
+  const face = n => `<span class="df" style="--c:${col(n)}">${img(n)}<b>${esc(n)}</b></span>`;
+  const pairs = shown.map(p => {
+    const nom = p.some(n => noms.has(n));
+    const now = fresh && st && st.pair && st.pair[0] === p[0];
+    return `<div class="dp ${p.some(n => on.has(n)) ? 'on' : ''} ${nom ? 'nom' : ''} ${now ? 'now' : ''}">${face(p[0])}${DUOLINK}${face(p[1])}${nom ? '<i>ON THE BLOCK</i>' : ''}</div>`;
+  }).join('');
+  const soloShown = D.solo && (!D.reveal || S.steps.slice(0, idx + 1).some(x => x.solo));
+  const solo = soloShown ? `<div class="dp solo ${on.has(D.solo) ? 'on' : ''}">${face(D.solo)}<i>CAN'T BE NOMINATED</i></div>` : '';
+  return `<div class="duoboard"><span class="dh">YOU GO, THEY GO · ${shown.length} ${shown.length === 1 ? 'PAIR' : 'PAIRS'}</span><div class="dr2">${pairs}${solo}</div></div>`;
+}
+
 function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   const isDr = st && st.k === 'dr';
   if (isDr) {
@@ -387,6 +405,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.chainRun && !isDr && idx >= 0) h += chainHtml(S, L, st, fresh);
   if (S.hunt && !isDr && idx >= 0 && !(st && st.rule != null)) h += huntHtml(S, L, st, fresh);
   if (S.px && !isDr && idx >= 0 && !(st && st.rule != null)) h += pxHtml(S, L, st, fresh);
+  if (S.duo && !isDr && idx >= 0 && !(st && st.rule != null)) h += duoHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;

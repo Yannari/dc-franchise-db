@@ -30,17 +30,16 @@
 // nominated at all this week — there is no pair to put up with them. Being the
 // odd one out is a shield, exactly once, and the house knows it.
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns } from '../players.js';
+import { pStats } from '../players.js';
 import { addBond, getBond, getPerceivedBond } from '../bonds.js';
 import { duoOf } from './duos.js';
 
 /** Four nominees, a Head of Household and a room left to vote with. */
 export const DUO_WEEK_MIN_HOUSE = 8;
 
-const beat = (text, players, badgeText, badgeClass = 'gold') =>
-  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass });
+const beat = (text, players, badgeText, badgeClass = 'gold', part = null, extra = {}) =>
+  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass, ...(part ? { part } : {}), ...extra });
 
-const pick = (arr, rng = Math.random) => arr[Math.floor(rng() * arr.length)];
 
 const archetypeOf = name => players.find(p => p.name === name)?.archetype || '';
 
@@ -97,19 +96,10 @@ export function duoWeekSafe(week) {
 
 // ══ pairing ════════════════════════════════════════════════════════════
 
-const PAIR_REACTIONS = [
-  // [minimum bond, line]
-  [6, (a, b) => `${a} and ${b} are already each other's game, and have just been told so in front of everybody.`],
-  [3, (a, b) => `${a} and ${b} take it well. They would have voted together anyway; now they cannot do anything else.`],
-  [0, (a, b) => `${a} and ${b} look at each other and do the arithmetic in silence.`],
-  [-3, (a, b) => `${a} and ${b} have been circling each other for weeks and are now, by order of the house, a unit.`],
-  [-99, (a, b) => `${a} and ${b}. The room reacts before either of them does.`],
-];
-
-function reactionFor(a, b) {
+/** How a pair takes being chained together, from their bond (the words are lines/duoact.js). */
+function pairMood(a, b) {
   const bond = getBond(a, b);
-  const row = PAIR_REACTIONS.find(([floor]) => bond >= floor) || PAIR_REACTIONS[PAIR_REACTIONS.length - 1];
-  return row[1](a, b);
+  return bond >= 6 ? 'close' : bond >= 3 ? 'easy' : bond >= 0 ? 'unsure' : bond >= -3 ? 'tense' : 'enemies';
 }
 
 /**
@@ -184,15 +174,12 @@ export function openDuoWeek(week, { house = gs.activePlayers || [], hoh = null, 
         + 'It does not matter if it was none.',
       'Two of you are leaving on Thursday, and only one of you is going to have been chosen.',
     ],
+    // Plain facts; the words are written by bb/script/ceremony.js (lines/duoact.js).
     beats: [
-      beat('Two chairs is not enough this week. There are going to be four, and they are going to '
-        + 'come in pairs.', [], 'YOU GO, THEY GO', 'gold'),
-      ...pairs.map(([a, b]) => beat(reactionFor(a, b), [a, b], 'CHAINED', 'blue')),
-      ...(hoh ? [beat(`${hoh} is Head of Household and is not in a pair. There is nobody standing `
-        + `next to ${pronouns(hoh).obj} to lose.`, [hoh], 'HOH', 'gold')] : []),
-      ...(solo ? [beat(`${solo} has nobody. In any other week that would be the worst thing in this `
-        + `house — this week it means ${pronouns(solo).sub} cannot be put on that block at all.`,
-      [solo], 'UNNOMINATABLE', 'green')] : []),
+      beat('This week the house plays in pairs.', [], 'YOU GO, THEY GO', 'gold', 'open'),
+      ...pairs.map(([a, b]) => beat(`${a} and ${b} are a pair.`, [a, b], 'CHAINED', 'blue', 'pair', { mood: pairMood(a, b) })),
+      ...(hoh ? [beat(`${hoh} is Head of Household and is not in a pair.`, [hoh], 'HOH', 'gold', 'hoh')] : []),
+      ...(solo ? [beat(`${solo} has no partner and cannot be nominated this week.`, [solo], 'UNNOMINATABLE', 'green', 'solo')] : []),
     ],
   };
 }
@@ -251,21 +238,27 @@ export function duoWeekNominees(week, { plan = {}, house = gs.activePlayers || [
  * Returns null when there is no eligible pair left, which the ceremony reads
  * the same way it reads any other empty chair.
  */
-export function duoWeekAfterVeto(week, { nominees = [], saved = null, house = gs.activePlayers || [], protectedNames = [], rng = Math.random } = {}) {
+export function duoWeekAfterVeto(week, { nominees = [], saved = null, replacement = null, house = gs.activePlayers || [], protectedNames = [], rng = Math.random } = {}) {
   const st = duoWeekState(week);
   if (!st || !saved) return null;
   const down = duoWeekPairOf(week, saved);
   if (!down) return null;
 
-  const block = new Set([...protectedNames, ...down, ...nominees, ...duoWeekSafe(week)].filter(Boolean));
-  const candidates = st.pairs.filter(p => p.every(n => house.includes(n) && !block.has(n)));
+  // The ordinary ceremony has already seated one replacement. They are not
+  // kept on their own (that left five on the block); their pair goes up whole
+  // when it can, and otherwise the HOH picks a pair.
+  const others = nominees.filter(n => n !== replacement);
+  const block = new Set([...protectedNames, ...down, ...others, ...duoWeekSafe(week)].filter(n => n && n !== replacement));
+  const eligible = p => p.every(n => house.includes(n) && !block.has(n));
+  const theirs = replacement ? st.pairs.find(p => p.includes(replacement) && eligible(p)) : null;
+  const candidates = theirs ? [theirs] : st.pairs.filter(p => eligible(p) && !p.includes(replacement));
   if (!candidates.length) return null;
 
   const up = candidates
     .map(p => ({ p, score: p.reduce((s, n) => s + getPerceivedBond(st.hoh, n), 0) + (rng() * 2 - 1) }))
     .sort((a, b) => a.score - b.score)[0].p;
 
-  const kept = nominees.filter(n => !down.includes(n));
+  const kept = others.filter(n => !down.includes(n));
   st.nominatedPairs = [kept.length === 2 ? [...kept] : kept, [...up]].filter(p => p.length);
   return { nominees: [...kept, ...up], down: [...down], up: [...up] };
 }
@@ -285,16 +278,6 @@ export function duoWeekSecondEvictee(week, evicted, house = gs.activePlayers || 
   return partner;
 }
 
-const TAKEN_LINES = [
-  (gone, taken, v) => `${gone} is evicted with ${v} ${v === 1 ? 'vote' : 'votes'}. `
-    + `${taken} is evicted with whatever the room thought of ${pronouns(taken).obj}, which was never asked.`,
-  (gone, taken) => `The house votes out ${gone}. ${taken} stands up because there is nothing else to do — `
-    + `the rule was read out on Monday and nobody has been able to think about anything else since.`,
-  (gone, taken, v) => `${v} ${v === 1 ? 'vote' : 'votes'} to evict ${gone}. `
-    + `${taken} walks out beside ${pronouns(gone).obj} on none of ${pronouns(taken).posAdj} own.`,
-  (gone, taken) => `${gone} loses the vote and ${taken} loses the week, and only one of those two things `
-    + `was decided by anybody in this room.`,
-];
 
 /**
  * The double walk-out.
@@ -307,7 +290,7 @@ export function duoWeekEviction(week, { evicted, taken, votes = {} } = {}) {
   if (!evicted || !taken) return null;
   const v = votes[taken] || 0;
   const gotNothing = v === 0;
-  const line = pick(TAKEN_LINES)(evicted, taken, votes[evicted] || 0);
+  Math.random();   // the draw that used to pick this beat's wording
 
   // Being taken out for somebody else's week is the single most sympathetic
   // thing that can happen to a houseguest, and the audience reacts accordingly.
@@ -317,15 +300,8 @@ export function duoWeekEviction(week, { evicted, taken, votes = {} } = {}) {
     type: 'duo-week-eviction', week: week.num, secret: false,
     evicted, taken, votesAgainstTaken: v, gotNothing,
     beats: [
-      beat(line, [evicted, taken], 'YOU GO, THEY GO', 'red'),
-      gotNothing
-        ? beat(`Not one houseguest in this house wrote ${taken}'s name down. `
-          + `${pronouns(taken).Sub} ${pronouns(taken).sub === 'they' ? 'are' : 'is'} leaving anyway.`,
-        [taken], 'ZERO VOTES', 'red')
-        : beat(`${taken} had ${v} against ${pronouns(taken).obj} and would have survived every one of them.`,
-          [taken], `${v} AGAINST`, 'blue'),
-      beat('Two chairs empty at once, and the house has to work out which of the two it actually did '
-        + 'on purpose.', [], 'THE ROOM AFTER', 'blue'),
+      beat(`${evicted} is evicted, and ${taken} goes too.`, [taken, evicted], 'YOU GO, THEY GO', 'red', 'taken',
+        { votes: v, gotNothing }),
     ],
   };
 }
@@ -338,22 +314,18 @@ export function duoWeekEviction(week, { evicted, taken, votes = {} } = {}) {
 // say to each other, and all of it survives the week.
 
 function ev(kind, text, playersIn, badgeText, badgeClass) {
-  return { kind, text, players: [...playersIn].filter(Boolean), badgeText, badgeClass };
+  const ps = [...playersIn].filter(Boolean);
+  // A plain fact; the words are lines/duoact.js `duoact.event.<kind>`.
+  return { kind, text: text || `${ps.join(' and ')}: ${kind.replace('-', ' ')}.`, players: ps, badgeText, badgeClass };
 }
 
 /** A nominated duo campaigns as one thing, because they have no other option. */
-function packageDeal(pair, rng) {
+function packageDeal(pair, rng, free = false) {
   const [a, b] = pair;
   addBond(a, b, 2);
   bumpPop(a, 1); bumpPop(b, 1);
-  return ev('package', pick([
-    `${a} and ${b} stop campaigning separately by Tuesday. There is no version of this where one of `
-      + `them talks the house round and the other one does not, so they walk into every conversation together.`,
-    `${a} does the talking and ${b} does the listening, and between them they work the whole house in a `
-      + `day. Whatever else this block has done, it has made them a unit nobody can pick apart.`,
-    `"We're a package," ${a} says, to somebody who already knew. Saying it out loud still changes `
-      + `something between ${pronouns(a).obj} and ${b}.`,
-  ], rng), pair, 'A PACKAGE', 'blue');
+  rng();   // the draw that used to pick this event's wording
+  return { ...ev('package', '', pair, 'A PACKAGE', 'blue'), ...(free ? { free: true } : {}) };
 }
 
 /** Somebody tries the one pitch the rules have already ruled out. */
@@ -362,28 +334,16 @@ function sellOut(pair, rng) {
   addBond(a, b, -4);
   bumpPop(a, -3);
   bumpPop(b, 1);
-  return ev('sell-out', pick([
-    `${a} corners three people in the storage room to explain why the house should keep ${pronouns(a).obj} `
-      + `and lose ${b}. All three of them know that is not a thing that can happen. Two of them tell ${b}.`,
-    `"Vote for ${b}, not me" is a sentence ${a} gets most of the way through before somebody says the `
-      + `quiet part: it is the same vote. It gets back to ${b} before dinner.`,
-    `${a} spends the week quietly building a case against the person ${pronouns(a).sub} ${pronouns(a).sub === 'they' ? 'are' : 'is'} `
-      + `chained to. The house lets ${pronouns(a).obj} finish, and then somebody repeats all of it to ${b}, word for word.`,
-  ], rng), [a, b], 'SOLD OUT', 'red');
+  rng();   // the draw that used to pick this event's wording
+  return ev('sell-out', '', [a, b], 'SOLD OUT', 'red');
 }
 
 /** The vote you cannot cast, because of who you came in with. */
 function theDrag(pair, other, rng) {
   const [a, b] = pair;
   addBond(a, b, -1);
-  return ev('drag', pick([
-    `${a} wants ${other} gone and has wanted it for weeks. ${b} will not write that name down and `
-      + `cannot explain why in a way ${a} is willing to hear.`,
-    `${b} is close enough to ${other} that this vote was never going to be simple. ${a} watches the `
-      + `problem arrive and says nothing about it, which is somehow worse.`,
-    `Two votes, one pair, and ${other}'s name sitting between them. ${a} and ${b} spend an hour on it `
-      + `and come out of the room agreeing on nothing.`,
-  ], rng), [a, b, other], 'THE DRAG', 'red');
+  rng();   // the draw that used to pick this event's wording
+  return ev('drag', '', [a, b, other], 'THE DRAG', 'red');
 }
 
 /** Standing next to a bigger problem is the cheapest safety in this house. */
@@ -391,14 +351,8 @@ function theShield(pair, rng) {
   const [big, small] = [...pair].sort((x, y) =>
     ((pStats(y)?.strategic || 0) + (pStats(y)?.physical || 0)) - ((pStats(x)?.strategic || 0) + (pStats(x)?.physical || 0)));
   addBond(small, big, 1);
-  return ev('shield', pick([
-    `${small} works it out on the sofa and is careful not to look pleased: nobody in this house is `
-      + `coming for ${pronouns(small).obj} this week, because coming for ${pronouns(small).obj} means `
-      + `taking a shot at ${big}, and nobody is ready to do that.`,
-    `${big} is the reason ${small} is in danger and the reason ${small} is safe, and ${small} has decided `
-      + `to be grateful for the second one.`,
-    `"They'd have to be willing to lose ${big} too," ${small} says, and hears how well it sounds.`,
-  ], rng), [small, big], 'THE SHIELD', 'green');
+  rng();   // the draw that used to pick this event's wording
+  return ev('shield', '', [small, big], 'THE SHIELD', 'green');
 }
 
 /** Two people who cannot stand each other, handcuffed for a week. */
@@ -407,43 +361,22 @@ function stuckWith(pair, rng) {
   const thaw = rng() < 0.45;
   addBond(a, b, thaw ? 3 : -2);
   bumpPop(a, thaw ? 1 : 0); bumpPop(b, thaw ? 1 : 0);
-  return thaw
-    ? ev('thaw', pick([
-      `${a} and ${b} have not had a civil conversation since week one and are now each other's whole `
-        + `game. It takes them two days and one very long night to become something like allies.`,
-      `Nothing fixes a grudge like a shared problem. ${a} and ${b} come out of this week on terms `
-        + `neither of them would have predicted on Monday.`,
-    ], rng), pair, 'THE THAW', 'green')
-    : ev('blowup', pick([
-      `${a} and ${b} make it to Wednesday before it goes up in the kitchen in front of everybody. `
-        + `They are still chained together afterwards, which is the part that stings.`,
-      `Being tied to somebody you already could not live with does not make you live with them. `
-        + `${a} and ${b} spend the week making the house watch.`,
-    ], rng), pair, 'IT BLOWS UP', 'red');
+  rng();   // the draw that used to pick this event's wording
+  return thaw ? ev('thaw', '', pair, 'THE THAW', 'green') : ev('blowup', '', pair, 'IT BLOWS UP', 'red');
 }
 
 /** Four people deciding to be eight votes. */
 function thePact(p1, p2, rng) {
   for (const a of p1) for (const b of p2) addBond(a, b, 1);
-  return ev('pact', pick([
-    `${p1[0]} and ${p1[1]} find ${p2[0]} and ${p2[1]} in the have-not room and come out of it as four. `
-      + `In a week where everybody counts in twos, four is most of a majority.`,
-    `Two duos, one agreement: neither pair writes down a name from the other. It holds exactly as long `
-      + `as nobody from either pair is on that block.`,
-  ], rng), [...p1, ...p2], 'FOUR AS ONE', 'blue');
+  rng();   // the draw that used to pick this event's wording
+  return ev('pact', '', [...p1, ...p2], 'FOUR AS ONE', 'blue');
 }
 
 /** The one person nobody can touch, and what that does to them. */
 function soloWeek(solo, rng) {
   bumpPop(solo, 1);
-  return ev('solo', pick([
-    `${solo} cannot be nominated and everybody in this house has worked that out. By Tuesday ${pronouns(solo).sub} `
-      + `${pronouns(solo).sub === 'they' ? 'have' : 'has'} been offered three deals ${pronouns(solo).sub} did not ask for.`,
-    `Being alone in this house has been ${solo}'s whole problem for weeks. For one week it is the safest `
-      + `thing anybody has got, and the room cannot decide whether to resent ${pronouns(solo).obj} for it.`,
-    `${solo} is the only houseguest whose name cannot go on that wall, which makes ${pronouns(solo).obj} the `
-      + `most popular person in the building and the least trusted one in it.`,
-  ], rng), [solo], 'UNTOUCHABLE', 'green');
+  rng();   // the draw that used to pick this event's wording
+  return ev('solo', '', [solo], 'UNTOUCHABLE', 'green');
 }
 
 /**
@@ -484,7 +417,7 @@ export function duoWeekEvents(week, { house = gs.activePlayers || [], nominees =
     const target = nominees.find(n => house.includes(n)
       && getBond(pair[1], n) >= 3 && getBond(pair[0], n) <= 0);
     if (target && rng() < 0.7) { events.push(theDrag(pair, target, rng)); continue; }
-    if (rng() < 0.3) events.push(packageDeal(pair, rng));
+    if (rng() < 0.3) events.push(packageDeal(pair, rng, true));
   }
 
   // ── the deal that needs four people in a room ──
@@ -499,6 +432,6 @@ export function duoWeekEvents(week, { house = gs.activePlayers || [], nominees =
   return {
     type: 'duo-week-events', week: week.num, secret: false,
     events: st.events,
-    beats: events.map(e => beat(e.text, e.players, e.badgeText, e.badgeClass)),
+    beats: events.map(e => beat(e.text, e.players, e.badgeText, e.badgeClass, 'event', { kind: e.kind, ...(e.free ? { free: true } : {}) })),
   };
 }

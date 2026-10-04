@@ -283,6 +283,30 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── Duo Week: the pairs, the week chained together, the partner who goes too ──
+  if (['duo-week-open', 'duo-week-events', 'duo-week-eviction'].includes(act.type)) {
+    const fresh = freshWriter(ctx, house);
+    const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `duo|${act.type}|${b.part}|${b.kind || ''}|${p.join('|')}`;
+      let lines = null;
+      if (b.part === 'pair' && p.length === 2) lines = fresh('duoact.pair', { a: p[0], b: p[1] }, { ending: b.mood || 'unsure' }, salt);
+      if (b.part === 'hoh' && p[0]) lines = fresh('duoact.hoh', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'solo' && p[0]) lines = fresh('duoact.solo', { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'event') {
+        const k = b.kind;
+        if (k === 'drag' && p.length >= 3) lines = fresh('duoact.event', { a: p[0], b: p[1] }, { ending: 'drag', target: p[2] }, salt);
+        else if (k === 'pact' && p.length >= 4) lines = fresh('duoact.event', { a: p[0], b: p[2] }, { ending: 'pact' }, salt);
+        else if (k === 'solo' && p[0]) lines = fresh('duoact.event', { a: p[0] }, { ending: 'solo' }, salt);
+        else if (p.length >= 2) lines = fresh('duoact.event', { a: p[0], b: p[1] }, { ending: k === 'package' && b.free ? 'team' : k }, salt);
+      }
+      if (b.part === 'taken' && p.length === 2) lines = fresh('duoact.taken', { a: p[0], b: p[1] },
+        { ending: b.gotNothing ? 'zero' : 'some', votes: WORDS[b.votes] || String(b.votes) }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   for (const k of Object.keys(script)) {
     const v = script[k];
     if (!v || (typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length)) delete script[k];

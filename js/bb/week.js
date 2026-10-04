@@ -3482,15 +3482,13 @@ export function simulateBBWeek(options = {}) {
     week.cancelledEviction = true;
     week.acts.push(addBeats({
       type: 'no-eviction',
+      // Plain facts with a `part`; the words are lines/quietact.js.
       beats: [{
-        text: 'There is no ceremony this week. No nominations, no veto, no vote — this house is '
-          + 'the same size on Thursday as it is right now, and everybody in it has to spend the '
-          + 'week looking at each other knowing that.',
-        players: [...house].slice(0, 6), badgeText: 'NOBODY GOES HOME', badgeClass: 'gold',
+        text: 'There is no nomination, veto or eviction this week.',
+        players: [...house].slice(0, 6), badgeText: 'NOBODY GOES HOME', badgeClass: 'gold', part: 'none',
       }, {
-        text: `${hoh} holds a Head of Household with nothing to spend it on, which is either the `
-          + 'safest week of their game or the most useless.',
-        players: [hoh].filter(Boolean), badgeText: 'A CROWN AND NO BLOCK', badgeClass: 'blue',
+        text: `${hoh} is Head of Household with nobody to nominate.`,
+        players: [hoh].filter(Boolean), badgeText: 'A CROWN AND NO BLOCK', badgeClass: 'blue', part: 'idle',
       }],
     }, { players: [hoh].filter(Boolean) }));
     // ── STORE IT. THE WEEK STILL HAPPENED. ──
@@ -3604,11 +3602,10 @@ export function simulateBBWeek(options = {}) {
         place, of: hohCompetition.placements.length,
         competition: hohCompetition.name || '', threw,
         beats: [{
-          text: threw
-            ? `${deadLastSeat} threw it. ${deadLastSeat} threw it in the one week in this house where `
-              + `coming last puts you on the block, and the whole room watched ${pronouns(deadLastSeat).obj} do it.`
-            : `${deadLastSeat} finishes last of ${hohCompetition.placements.length} and is nominated for it `
-              + `before ${hoh} has said a single name.`,
+          // the facts the old test read (the place and the field size) stay in it
+          text: threw ? `${deadLastSeat} threw the competition, finished last of ${hohCompetition.placements.length}, and is nominated.`
+            : `${deadLastSeat} finishes last of ${hohCompetition.placements.length} and is nominated for it before ${hoh} has said a single name.`,
+          part: 'last', threw,
           players: [deadLastSeat], badgeText: 'DEAD LAST', badgeClass: 'red',
         }],
       }, { nominees: [deadLastSeat] }));

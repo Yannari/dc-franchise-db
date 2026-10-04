@@ -1663,6 +1663,41 @@ function hexScreens(act, ctx) {
   }];
 }
 
+// ── No Eviction, and Dead Last (Phase 7) ──────────────────────────────
+// Two rule changes to an ordinary week, each explained by Big Brother: a
+// week with no ceremonies and nobody leaving, and a Head of Household
+// competition whose last place is the first nominee. Words: lines/quietact.js.
+function quietScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  if (act.type === 'no-eviction') {
+    const steps = [
+      { k: 'bb', t: 'Houseguests, there will be no eviction this week.', rule: 1, toast: ['NOBODY GOES HOME', '#f5c542'] },
+      { k: 'bb', t: 'No nominations, no veto, and no vote. Everybody in this house will still be here next week.', rule: 2 },
+    ];
+    for (const b of beats) steps.push(...linesOf(b));
+    return [{
+      id: `bb-noevict-w${ctx.week}`, kind: 'quiet', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '13:00',
+      kicker: 'Cam 04 · Living room', title: 'No Eviction', label: 'No Eviction', sub: 'Nobody goes home this week',
+      seated: seatLiving([], ctx.house.filter(n => n !== ctx.hoh), ctx.hoh),
+      rules: [['NO EVICTION', 'nobody goes home this week'], ['NO CEREMONIES', 'no nominations, no veto, no vote']], rulesTitle: 'THIS WEEK', steps,
+    }];
+  }
+  const n = act.nominee;
+  const steps = [
+    { k: 'bb', t: 'Houseguests, this week, last place in the Head of Household competition is nominated.', rule: 1 },
+    { k: 'bb', t: 'The Head of Household names the other nominees.', rule: 2 },
+    { k: 'bb', t: `${n}, you finished last${act.of ? `, ${ordinalWord(act.place)} of ${word(act.of)}` : ''}. You are the first nominee.`, toast: ['DEAD LAST', '#ff3355'] },
+  ];
+  for (const b of beats) steps.push(...linesOf(b));
+  return [{
+    id: `bb-deadlast-w${ctx.week}`, kind: 'quiet', anchor: ctx.anchor, day: ctx.day, set: 'dining', room: ROOM_NAME.dining, cam: CAM.dining, time: ACT_TIME.nominations,
+    kicker: 'Cam 03 · Dining room', title: 'Dead Last', label: 'Dead Last', sub: `${n} is nominated by the competition`, cast: [[n, 50]],
+    rules: [['DEAD LAST', 'last place in the HOH competition is nominated'], ['THE REST', 'the HOH names the others']], rulesTitle: 'DEAD LAST · HOW IT WORKS', steps,
+  }];
+}
+const ordinalWord = n => ({ 1: 'first', 2: 'second', 3: 'third', 4: 'fourth', 5: 'fifth', 6: 'sixth', 7: 'seventh', 8: 'eighth', 9: 'ninth', 10: 'tenth', 11: 'eleventh', 12: 'twelfth', 13: 'thirteenth', 14: 'fourteenth', 15: 'fifteenth', 16: 'sixteenth' }[n] || `number ${n}`);
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1759,6 +1794,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
+      case 'no-eviction': case 'dead-last': flush(); for (const scr of quietScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'halting-hex': flush(); for (const scr of hexScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'premiere-mystery': flush(); for (const scr of premiereScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'mystery-competitor': case 'mystery-veto': case 'second-veto-ceremony':
@@ -1805,7 +1841,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

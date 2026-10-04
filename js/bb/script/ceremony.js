@@ -430,6 +430,19 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── No Eviction, and Dead Last ──
+  if (act.type === 'no-eviction' || act.type === 'dead-last') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      let lines = null;
+      if (b.part === 'none' && p[0]) lines = fresh('quietact.none', { a: p[(act.week || 0) % p.length] || p[0] }, { ending: 'scene' }, 'q|none');
+      if (b.part === 'idle' && p[0]) lines = fresh('quietact.idle', { a: p[0] }, { ending: 'scene' }, 'q|idle');
+      if (b.part === 'last' && p[0]) lines = fresh('quietact.last', { a: p[0] }, { ending: b.threw ? 'threw' : 'plain' }, 'q|last');
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   // ── The Halting Hex: an eviction cancelled after the vote ──
   if (act.type === 'halting-hex') {
     const fresh = freshWriter(ctx, house);

@@ -882,7 +882,7 @@ export function renderVPScreen() {
   // Sidebar
   if (sidebar) {
     let lastPhase = '';
-    sidebar.innerHTML = '<div class="rp-sidebar-ep"><span>Episode ' + vpEpNum + '</span><b>' + (visiblePos + 1) + '/' + visibleIndexes.length + '</b></div>' +
+    sidebar.innerHTML = '<div class="rp-sidebar-ep"><span>Episode ' + _vpEpLabel(vpEpNum) + '</span><b>' + (visiblePos + 1) + '/' + visibleIndexes.length + '</b></div>' +
       visibleIndexes.map(i => {
         const s = vpScreens[i];
         const phase = _vpPhaseForScreen(s.id);
@@ -966,6 +966,11 @@ export function renderVPScreen() {
 // record rides on the season's finale row (a row of its own would be a game
 // episode to every reader that counts them); the viewer airs it as an episode
 // of its own, keyed 'reunion-<finale>', carrying nothing but the reunion.
+// the reunion's key is 'reunion-<finale>'; on screen it is the episode after the finale
+function _vpEpLabel(num) {
+  const m = /^reunion-(\d+)$/.exec(String(num));
+  return m ? (Number(m[1]) + 1) + ' · The Reunion' : num;
+}
 export function trReunionEpisode(num) {
   const m = /^reunion-(\d+)$/.exec(String(num || ''));
   if (!m) return null;

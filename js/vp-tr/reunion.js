@@ -420,6 +420,15 @@ const CSS = `
 .ru-card{margin:18px 0;padding:18px 20px;background:linear-gradient(170deg,rgba(28,18,12,.92),rgba(14,9,6,.92));border:1px solid rgba(201,162,74,.28);box-shadow:0 14px 34px rgba(0,0,0,.5)}
 .ru-card-title{margin:0 0 10px;font-family:var(--v-display);font-weight:800;font-size:16px;letter-spacing:.16em;text-transform:uppercase;color:#e8c270}
 .ru-card p{margin:6px 0;line-height:1.55}
+/* the shared portrait (conclave.js \`_portrait\`) leans on CONCLAVE_CSS for its
+   size and clipping; this page does not load that sheet, and without these the
+   raw <img> rendered at its natural size over the whole page */
+.ru-root .cv-av{position:relative;display:inline-block;overflow:hidden;flex:none;vertical-align:middle;
+  border-radius:50% 50% 12% 12% / 44% 44% 9% 9%;background:linear-gradient(162deg,#2b2418,#0b0906);
+  box-shadow:0 0 0 1px rgba(232,194,112,.35),0 4px 12px rgba(0,0,0,.6)}
+.ru-root .cv-av img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;display:block;position:relative;z-index:2}
+.ru-root .cv-av-ini{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;
+  font-family:var(--v-display);font-weight:900;color:rgba(232,194,112,.6)}
 .ru-faces{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
 .ru-host{display:flex;gap:12px;align-items:flex-start;margin:12px 0;padding:10px 12px;background:rgba(201,162,74,.08);border-left:3px solid #c9a24a}
 .ru-host-nm{font-family:var(--v-display);font-weight:700;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#c9a24a}

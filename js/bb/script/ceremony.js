@@ -430,6 +430,19 @@ export function writeCeremony(act, week, house, extra = {}) {
     }
   }
 
+  // ── The Coin of Destiny: pay in, play, call it in private ──
+  if (act.type === 'coin-of-destiny') {
+    const fresh = freshWriter(ctx, house);
+    for (const b of act.beats || []) {
+      const p = (b.players || []).filter(Boolean);
+      const salt = `coin|${b.part}|${p.join('|')}`;
+      let lines = null;
+      if (['buyin', 'declined', 'short', 'empty', 'holds', 'wrong'].includes(b.part) && p[0]) lines = fresh(`coinact.${b.part}`, { a: p[0] }, { ending: 'scene' }, salt);
+      if (b.part === 'rewritten' && p.length >= 3) lines = fresh('coinact.rewritten', { a: p[0], b: p[2] }, { ending: 'scene' }, salt);
+      if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
+    }
+  }
+
   // ── A power, played in front of the house ──
   if (act.type === 'power-played') {
     const fresh = freshWriter(ctx, house);

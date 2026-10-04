@@ -1236,6 +1236,53 @@ function powerScreens(act, ctx) {
   }];
 }
 
+// ── The Coin of Destiny (Phase 7) ───────────────────────────────────────
+// Before the nominations: Big Brother explains it, the house buys in (or
+// cannot) in public, the buyers play alone, and the winner calls a coin toss
+// in private. Right, and the block is theirs to write while the house is told
+// only that it was rewritten; wrong, and nothing happens that anybody sees.
+// The board shows the viewer what the house never learns. Words: lines/coinact.js.
+function coinScreens(act, ctx) {
+  const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
+  const beats = act.beats || [];
+  const price = act.price > 0 ? ` It costs ${act.price} BB Bucks.` : '';
+  const steps = [
+    { k: 'bb', t: `Houseguests, the Coin of Destiny is in play. Anybody except the Head of Household may buy in.${price}`, rule: 1 },
+    { k: 'bb', t: 'Everybody who buys in plays one game, alone. The best score wins the coin.', rule: 2 },
+    { k: 'bb', t: 'The winner will call a coin toss, in private.', rule: 3 },
+    { k: 'bb', t: 'Call it right, and the winner makes this week\'s nominations instead of the Head of Household. Nobody will be told who.', rule: 4 },
+  ];
+  // The engine writes a beat for the first four buyers only; everybody who
+  // paid still walks up on screen, or a fifth buyer could win a coin they were
+  // never seen buying.
+  const voiced = new Set(beats.filter(b => b.part === 'buyin').map(b => b.players[0]));
+  let restShown = false;
+  const showRest = () => {
+    if (restShown) return; restShown = true;
+    for (const n of (act.buyers || []).filter(x => !voiced.has(x))) steps.push({ k: 'beat', t: `${n} buys in too.`, coinIn: n });
+  };
+  for (const b of beats) {
+    if (b.part !== 'buyin' && b.part !== 'short' && voiced.size) showRest();
+    if (b.part === 'buyin') steps.push({ k: 'beat', t: `${b.players[0]} buys in.`, coinIn: b.players[0] }, ...linesOf(b));
+    if (b.part === 'short') steps.push({ k: 'beat', t: `${b.players[0]} wants in, and cannot pay.`, coinShort: b.players[0] }, ...linesOf(b));
+    if (b.part === 'declined' || b.part === 'empty') steps.push(...linesOf(b));
+    if (b.part === 'holds') steps.push({ k: 'beat', t: `${b.players[0]} has the best score and holds the coin. The house is not told.`, coinWin: b.players[0], toast: ['HOLDS THE COIN', '#f5c542'] }, ...linesOf(b));
+    if (b.part === 'wrong') steps.push({ k: 'beat', t: `${b.players[0]} calls it, and calls it wrong.`, coinCall: 'wrong', toast: ['CALLED IT WRONG', '#9aa4b2'] }, ...linesOf(b));
+    if (b.part === 'rewritten') steps.push({ k: 'beat', t: `${act.winner} calls it right. ${listOf(act.nominees || [])} are nominated, and the house is told only that ${act.hoh} did not choose them.`, coinCall: 'right', toast: ['THE BLOCK IS REWRITTEN', '#ff3355'] }, ...linesOf(b));
+  }
+  showRest();
+  // every buyer the board will show, in the order they walked up
+  const buyers = [...(act.buyers || [])];
+  return [{
+    id: `bb-coin-w${ctx.week}`, kind: 'coin', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '12:30',
+    kicker: 'Cam 04 · Living room', title: 'The Coin of Destiny', label: 'The Coin of Destiny', sub: 'Pay in, play, call it in private',
+    seated: seatLiving([], ctx.house.filter(n => n !== ctx.hoh), ctx.hoh), coin: { buyers, short: [...(act.short || [])] },
+    rules: [['BUY IN', `anybody but the HOH, in public${act.price > 0 ? ` · ${act.price} BB Bucks` : ''}`], ['THE GAME', 'buyers play alone; the best score wins the coin'],
+      ['CALL IT', 'one coin toss, called in private'], ['RIGHT', 'the winner makes the nominations, and nobody is told who']],
+    rulesTitle: 'THE COIN OF DESTINY · HOW IT WORKS', steps,
+  }];
+}
+
 // Twist acts whose classic screen goes exactly where the act happened.
 const TWIST_SLOT = /^(rivals-|twist-announcement|duos-open|twin-|saboteur-|hacker|roadkill|coin|pandoras|power-played|interrogation|mystery-)/;
 
@@ -1331,6 +1378,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
+      case 'coin-of-destiny': flush(); for (const scr of coinScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-expired': flush(); for (const scr of expiredScreens(act, ctx)) ceremony(scr); break;
       case 'whacktivity': flush(); for (const scr of whackScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'interrogation': flush(); for (const scr of interrogationScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -1364,7 +1412,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

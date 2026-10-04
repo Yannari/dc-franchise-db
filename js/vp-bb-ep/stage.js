@@ -308,6 +308,24 @@ function pxHtml(S, L, st, fresh) {
   return `<div class="pxtable"><span class="pt">THE BOXES · ONE HOLDS THE VETO</span><div class="pxr">${boxes}</div></div>`;
 }
 
+// ── The Coin of Destiny's table (Phase 7) ──────────────────────────────
+const COIN_SVG = `<svg viewBox="0 0 20 20" class="cn"><circle cx="10" cy="10" r="8.5" fill="#f5c542" stroke="#a57c12" stroke-width="1.4"/><circle cx="10" cy="10" r="5.6" fill="none" stroke="#a57c12" stroke-width="1"/></svg>`;
+function coinHtml(S, L, st, fresh, idx) {
+  const C = S.coin || {};
+  const seen = S.steps.slice(0, idx + 1);
+  const ins = seen.filter(x => x.coinIn).map(x => x.coinIn);
+  const shorts = seen.filter(x => x.coinShort).map(x => x.coinShort);
+  const win = seen.find(x => x.coinWin)?.coinWin;
+  const call = seen.find(x => x.coinCall)?.coinCall;
+  const tile = (n, cls) => {
+    const now = fresh && (st?.coinIn === n || st?.coinShort === n || st?.coinWin === n);
+    return `<div class="ct ${cls} ${n === win ? 'win' : ''} ${now ? 'now' : ''}"><span class="ctf" style="--c:${col(n)}">${img(n)}</span><b>${esc(n)}</b><i>${cls === 'short' ? 'CANNOT PAY' : n === win ? 'HOLDS IT' : 'BOUGHT IN'}</i></div>`;
+  };
+  const tiles = [...ins.map(n => tile(n, 'in')), ...shorts.map(n => tile(n, 'short'))].join('') || '<div class="ce">nobody at the table yet</div>';
+  const result = call ? `<div class="cres ${call}">${COIN_SVG}<b>${call === 'right' ? 'CALLED RIGHT' : 'CALLED WRONG'}</b></div>` : '';
+  return `<div class="coinboard"><span class="ch2">${COIN_SVG} THE COIN OF DESTINY</span><div class="ctr">${tiles}${result}</div></div>`;
+}
+
 // ── A power, played: the card (Phase 7) ───────────────────────────────
 function powerCardHtml(S, L, st, fresh, idx) {
   const P = S.power || {};
@@ -542,6 +560,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.whack && !isDr && idx >= 0 && !(st && st.rule != null)) h += whackHtml(S, L, st, fresh, idx);
   if (S.expired && idx >= 0) h += expiredHtml(S, L, st, fresh, idx);
   if (S.power && !isDr && idx >= 0 && !(st && st.rule != null)) h += powerCardHtml(S, L, st, fresh, idx);
+  if (S.coin && !isDr && idx >= 0 && !(st && st.rule != null)) h += coinHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   if (L.votes && st && st.k === 'host') {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;

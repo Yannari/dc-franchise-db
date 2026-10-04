@@ -20,13 +20,15 @@
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getBond, getPerceivedBond } from '../bonds.js';
-import { aptitude, makePicker, clamp } from '../bb-comps/_shared.js';
+import { aptitude, clamp } from '../bb-comps/_shared.js';
 import { stableRng } from './knowledge.js';
 import { canAfford, spend } from './bb-bucks.js';
 import { spendPull } from './powers.js';
 
-const beat = (text, players, badgeText, badgeClass = 'gold') =>
-  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass });
+// Beats are plain facts with a `part`; the words are written by
+// bb/script/ceremony.js from lines/coinact.js.
+const beat = (text, players, badgeText, badgeClass = 'gold', part = null, extra = {}) =>
+  ({ text, players: [...players].filter(Boolean), badgeText, badgeClass, ...(part ? { part } : {}), ...extra });
 
 /** What the game of skill asks for. Not the same shape as an HOH comp. */
 const COIN_MIX = { mental: 0.34, physical: 0.24, temperament: 0.22, intuition: 0.20 };
@@ -137,31 +139,6 @@ function nerveFor(name) {
   return clamp(((st.boldness ?? 5) * 0.7 + (10 - (st.temperament ?? 5)) * 0.3) / 10, 0, 1);
 }
 
-const BUY_IN = [
-  (n, p) => `${n} buys in without pretending to think about it, which tells the room something ${p.sub} cannot take back.`,
-  (n, p) => `${n} pays, and does it late, after watching who else did — the last person to commit and the one who learned the most by waiting.`,
-  (n, p) => `${n} buys in and spends the next ten minutes explaining why to people who had not asked.`,
-  (n, p) => `${n} pays quietly and says nothing about it. Everybody saw anyway; that is the price and it is not refundable.`,
-];
-const DECLINED = [
-  n => `${n} keeps their money and their reputation for not wanting anything, which is worth more to ${n} this week than a coin toss.`,
-  (n, p) => `${n} does not buy in. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} either safe or pretending to be, and the room will decide which.`,
-];
-// Walked up, counted, and could not. The most expensive thing on the menu is
-// the one most people are watching somebody else buy.
-const SHORT = [
-  (n, p, price) => `${n} gets as far as the table and counts it out one more time. It is ${price} and ${p.sub} does not have ${p.pos}, and the counting is the part everybody watches.`,
-  (n, p, price) => `The buy-in is ${price}. ${n} is short, and being short in front of a room is its own kind of nomination.`,
-  (n, p) => `${n} wants this one and cannot pay for it. ${p.Sub} has been paid every week of this season and has nothing to show anybody for it.`,
-  (n, p, price) => `${n} does the arithmetic on ${price}, comes up under, and walks back to the sofa with everybody's eyes on the walk.`,
-];
-// Nobody could pay. The floor's most expensive product, announced to a house
-// that spent the money in July.
-const EMPTY_FLOOR = [
-  (price, n) => `${n === 1 ? 'One houseguest gets' : `${n} houseguests get`} as far as the table and not one of them can make ${price}. The Coin is offered to a house that spent it, and the offer simply expires.`,
-  (price) => `The buy-in is ${price} and this house does not have ${price}. The game is announced, the table is set, and nobody sits down at it.`,
-  (price) => `Nobody plays. The floor put its most expensive product on the table at ${price} and found out exactly what this season has been doing with its money.`,
-];
 
 /**
  * Run the Coin.
@@ -172,7 +149,7 @@ export function runCoinOfDestiny({ week, house, hoh, nominees = [], price = COIN
   rng = stableRng('coin-of-destiny', gs?.bb?.seasonSalt || 0, week?.num || 0) } = {}) {
   const room = (house || []).filter(Boolean);
   if (room.length < 5) return null;
-  const say = makePicker(rng);
+  const say = () => rng();   // each beat's wording used to be one draw here; the draw stays
   const beats = [];
 
   // ── WHO WALKS UP, AND ONLY THEN WHETHER THEY CAN PAY ──
@@ -209,7 +186,6 @@ export function runCoinOfDestiny({ week, house, hoh, nominees = [], price = COIN
   const buyers = [];
   const short = [];
   for (const { name } of approached) {
-    const p = pronouns(name);
     // ── A PRICE OF ZERO IS A SEASON WITH NO CURRENCY, NOT A FREE GAME ──
     //
     // This twist is older than the money and is schedulable on any Big Brother
@@ -222,7 +198,8 @@ export function runCoinOfDestiny({ week, house, hoh, nominees = [], price = COIN
       // `spend` returning false is the ledger's own last word on affordability
       // and is honoured as a closed door. No retry, no partial seat.
       short.push(name);
-      beats.push(beat(say(SHORT)(name, p, price), [name], 'CANNOT PAY', 'grey'));
+      say();
+      beats.push(beat(`${name} cannot pay the ${price} to buy in.`, [name], 'CANNOT PAY', 'grey', 'short', { price }));
       continue;
     }
     // ── THE MONEY LEAVES HERE ──
@@ -237,8 +214,9 @@ export function runCoinOfDestiny({ week, house, hoh, nominees = [], price = COIN
     // The floor opened and nobody could sit down. A real event, and on this
     // theme the most loaded one available — so it is transcribed rather than
     // swallowed. `winner: null` is the flag every writer branches on.
-    beats.push(beat(say(EMPTY_FLOOR)(price, short.length), short.slice(0, 3),
-      'NOBODY COULD PAY', 'grey'));
+    say();
+    beats.push(beat(`Nobody can pay the ${price} to buy in.`, short.slice(0, 3),
+      'NOBODY COULD PAY', 'grey', 'empty', { price, count: short.length }));
     return {
       type: 'coin-of-destiny', week: week?.num || 0, secret: true, price,
       buyers: [], short: [...short], declined: [...declined], winner: null,
@@ -247,11 +225,13 @@ export function runCoinOfDestiny({ week, house, hoh, nominees = [], price = COIN
   }
 
   for (const name of buyers.slice(0, 4)) {
-    beats.push(beat(say(BUY_IN)(name, pronouns(name)), [name], 'BOUGHT IN', 'gold'));
+    say();
+    beats.push(beat(`${name} buys in.`, [name], 'BOUGHT IN', 'gold', 'buyin'));
   }
   if (declined.length) {
     const who = declined[0];
-    beats.push(beat(say(DECLINED)(who, pronouns(who)), [who], 'KEPT OUT OF IT', 'grey'));
+    say();
+    beats.push(beat(`${who} does not buy in.`, [who], 'KEPT OUT OF IT', 'grey', 'declined'));
   }
 
   // ── the game ──
@@ -260,11 +240,8 @@ export function runCoinOfDestiny({ week, house, hoh, nominees = [], price = COIN
     score: aptitude(name, COIN_MIX) + (rng() - 0.5) * 5.6,
   })).sort((a, b) => b.score - a.score);
   const winner = scores[0].name;
-  beats.push(beat(
-    `They go through one at a time, alone, and ${winner} comes out of it holding the coin. The house is `
-      + 'not told that, and will not be told it later — the only thing the room saw for certain was who '
-      + 'was willing to pay.',
-    [winner], 'HOLDS THE COIN', 'gold'));
+  beats.push(beat(`${winner} wins the game and holds the coin. The house is not told.`,
+    [winner], 'HOLDS THE COIN', 'gold', 'holds', { scores: scores.map(s => ({ name: s.name, score: +s.score.toFixed(1) })) }));
 
   // ── the call ──
   //
@@ -278,11 +255,7 @@ export function runCoinOfDestiny({ week, house, hoh, nominees = [], price = COIN
     nominees: [], hoh: hoh || null, beats,
   };
   if (!calledRight) {
-    beats.push(beat(
-      `${winner} calls it, and calls it wrong. ${pronouns(winner).Sub} ${pronouns(winner).sub === 'they' ? 'have' : 'has'} `
-        + 'paid, played and lost, and the only thing the house will ever know for certain is that '
-        + `${winner} wanted it badly enough to try.`,
-      [winner], 'CALLED IT WRONG', 'red'));
+    beats.push(beat(`${winner} calls the coin wrong.`, [winner], 'CALLED IT WRONG', 'red', 'wrong'));
   }
   return act;
 }
@@ -307,9 +280,7 @@ export function coinNominations({ act, house, hoh, untouchable = [],
     .sort((a, b) => (bond(act.winner, a) + rng() * 2.2) - (bond(act.winner, b) + rng() * 2.2))
     .slice(0, 2);
   act.nominees = [...named];
-  act.beats.push(beat(
-    `The keys turn and they are not the keys ${hoh} chose. ${named.join(' and ')} are nominated, `
-      + `and ${hoh} finds out with everybody else — including the part where nobody will say who did it.`,
-    named, 'THE BLOCK IS REWRITTEN', 'red'));
+  act.beats.push(beat(`${named.join(' and ')} are nominated by somebody other than ${hoh}.`,
+    [...named, hoh].filter(Boolean), 'THE BLOCK IS REWRITTEN', 'red', 'rewritten'));
   return named;
 }

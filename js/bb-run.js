@@ -2219,7 +2219,14 @@ export function summariseWeek(week) {
       default:
         break;
     }
-    // House life, in the act it happened in.
+    // House life, in the act it happened in: the scenes that aired (js/bb/story), then the rest.
+    for (const sc of act.scenes || []) {
+      line(`    ── ${sc.roomName || 'The house'} · ${(sc.cast || []).join(', ')} ──`);
+      for (const l of sc.lines || []) {
+        line(l.kind === 'beat' ? `      ${plainText(l.text)}`
+          : l.kind === 'dr' ? `      ${l.by} (Diary Room): "${plainText(l.text)}"` : `      ${l.by}: "${plainText(l.text)}"`);
+      }
+    }
     for (const beat of act.socialBeats || []) {
       // `plainText` because a few events bold an alliance or a name for the
       // viewing party, and this surface is read in a terminal.

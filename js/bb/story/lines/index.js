@@ -1,0 +1,19 @@
+// Every house-scene pool for the storyline layer (js/bb/story/write.js), by key
+// 'story.<type>.<step>.<outcome>' and 'recap.<type>.<step>[.<outcome>].<a|b|caption>'.
+// Written against docs/bb-dialogue-style.md; tests/bb-story.test.js holds them to it.
+import FEUD from './feud.js';
+import ALLIANCE from './alliance.js';
+import SHOWMANCE from './showmance.js';
+import TARGET from './target.js';
+import SCHEME from './scheme.js';
+import LIFE from './life.js';
+import MORE_ALLIANCE from './more-alliance.js';
+
+// Ids are prefixed 'st:' so a story entry can never share an id (and so a usage ledger
+// entry) with an old house-event line.
+const RAW = {};
+// the 'more-*' files widen pools that already exist: their entries are added, never replace
+for (const part of [FEUD, ALLIANCE, SHOWMANCE, TARGET, SCHEME, LIFE, MORE_ALLIANCE]) {
+  for (const [k, pool] of Object.entries(part)) RAW[k] = [...(RAW[k] || []), ...pool];
+}
+export const STORY_POOLS = Object.fromEntries(Object.entries(RAW).map(([k, pool]) => [k, pool.map(e => ({ ...e, id: `st:${e.id}` }))]));

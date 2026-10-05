@@ -24,7 +24,7 @@
 import { arenaFor } from '../bb/comp-arenas.js';
 
 const ROOM_SET = { 'kitchen': 'kitchen', 'living-room': 'ceremony', 'bedroom': 'bedroom', 'hoh-room': 'hoh',
-  'backyard': 'yard', 'diary-room': 'dr', 'pantry': 'kitchen', 'washroom': 'bedroom' };
+  'backyard': 'yard', 'diary-room': 'dr', 'pantry': 'kitchen', 'washroom': 'bedroom', 'bathroom': 'bedroom', 'storage-room': 'kitchen' };
 const ROOM_NAME = { kitchen: 'Kitchen', ceremony: 'Living Room', bedroom: 'Bedroom', hoh: 'HOH Room', yard: 'Backyard',
   dr: 'Diary Room', dining: 'Dining Room' };
 const CAM = { kitchen: 2, ceremony: 4, bedroom: 9, hoh: 14, yard: 5, dr: 1, dining: 3 };
@@ -1953,6 +1953,48 @@ function houseLifeScreen(beats, ctx, n) {
 }
 
 /**
+ * House Life from storylines (js/bb/story, spec 2026-10-05-bb-house-storylines). The
+ * engine already chose three to five whole scenes for this stretch and wrote them; this
+ * only stages them: each scene opens on its room and its people, its lines play in order,
+ * and a Diary Room line cuts to the chair. Nothing is merged or reordered here.
+ */
+const SET_OF_ROOM = r => { const s = ROOM_SET[r] || 'ceremony'; return s === 'dr' ? 'ceremony' : s; };
+function storyLifeScreen(scenes, ctx, n) {
+  const steps = [];
+  let mood = 'house';
+  for (const sc of scenes) {
+    const set = SET_OF_ROOM(sc.room);
+    const xs = spread(sc.cast.length);
+    // the set is the nearest one the stage has; the label is the room the scene is really in
+    const label = sc.roomName || ROOM_NAME[set];
+    const scene = { set, room: label, cam: CAM[set], kicker: `Cam ${String(CAM[set]).padStart(2, '0')} · ${label}`,
+      cast: sc.cast.map((p, i) => [p, xs[i]]), mood: sc.mood || 'house' };
+    if ((MOOD_RANK[scene.mood] || 0) > (MOOD_RANK[mood] || 0)) mood = scene.mood;
+    const lines = (sc.lines || []).map(l => ({ k: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, t: l.text }));
+    // a scene that opens on its own staging line carries the cut; otherwise a caption names the room
+    const firstSpoken = lines.findIndex(l => l.k !== 'dr');
+    if (firstSpoken >= 0 && lines[firstSpoken].k === 'beat' && firstSpoken === lines.findIndex(l => l.k !== 'dr')) {
+      lines[firstSpoken] = { ...lines[firstSpoken], scene };
+      // a recap before it (Diary Room) still has to cut somewhere first
+      if (firstSpoken > 0) lines[0] = { ...lines[0], scene };
+    } else {
+      lines.unshift({ k: 'beat', t: `${label}. ${listOf(sc.cast)}.`, scene, caption: true });
+    }
+    steps.push(...lines);
+  }
+  if (ctx.week === 1 && n === 1 && steps.length) {
+    steps.unshift({ k: 'beat', t: 'The first night. Bags are still on the floor, and everybody is still working out who is who.', scene: steps.find(s => s.scene)?.scene });
+  }
+  const first = steps.find(s => s.scene)?.scene || {};
+  return {
+    id: `bb-hl-${n}`, kind: 'houselife', anchor: ctx.anchor, day: ctx.day, time: ACT_TIME.house,
+    title: `House Life · Day ${ctx.day}`, label: 'House Life', sub: `Day ${ctx.day} in the house`,
+    set: first.set || 'ceremony', room: first.room || 'Living Room', cam: first.cam || 4, kicker: first.kicker || 'Cam 04 · Living room',
+    cast: first.cast || [], mood, steps, storyScenes: scenes.map(sc => sc.id),
+  };
+}
+
+/**
  * A beat that pays something off airs with the beat that set it up. Picking scenes by
  * drama alone aired "we need a name for the alliance" without the alliance ever forming:
  * the payoff ranked higher than its setup. So for every beat chosen, an earlier unchosen
@@ -2010,9 +2052,20 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   let scenes = 0;
   let stretch = [];
   const aired = new Set();
-  const beatsOf = act => { stretch.push(...(act.socialBeats || [])); };
+  // Seasons played with the storyline layer carry their chosen scenes on the acts; older
+  // saves fall back to choosing among the snippets.
+  const storied = (row.acts || []).some(a => Array.isArray(a?.scenes));
+  let storyStretch = [];
+  const beatsOf = act => { stretch.push(...(act.socialBeats || [])); storyStretch.push(...(act.scenes || [])); };
   // a stretch of house life airs before the next ceremony
   const flush = () => {
+    if (houseLife === 'segments' && storied) {
+      const scs = storyStretch.filter(sc => !(sc.cast || []).some(n => ctx.hidden.has(n)) && (sc.lines || []).length);
+      if (scs.length) { const sc = storyLifeScreen(scs, ctx, ++scenes); sc.hidden = new Set(ctx.hidden); out.push(sc); }
+      stretch = []; storyStretch = [];
+      return;
+    }
+    storyStretch = [];
     if (houseLife === 'segments') {
       // the whole stretch as one House Life screen
       const beats = withSetups(chooseAired(stretch, HOUSE_LIFE_CAP[ctx.anchor] ?? 7, aired), stretch, aired)

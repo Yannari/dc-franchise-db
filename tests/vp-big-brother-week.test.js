@@ -102,7 +102,9 @@ describe('the Big Brother visual player', () => {
     // decides — six play and three of them find out there.
     // Voting Plans sits between the ceremony and the live show: the reads and
     // the result no longer share a page.
-    expect(ceremonies).toEqual(['bb-cold', 'bb-hoh', 'bb-noms', 'bb-vdraw', 'bb-veto', 'bb-cer', 'bb-plans', 'bb-evict']);
+    // Week one opens on move-in day, before anything else (the user: "move-in is always first").
+    expect(ceremonies.filter(id => id !== 'bb-moveinday')).toEqual(['bb-cold', 'bb-hoh', 'bb-noms', 'bb-vdraw', 'bb-veto', 'bb-cer', 'bb-plans', 'bb-evict']);
+    if (ceremonies.includes('bb-moveinday')) expect(ceremonies.indexOf('bb-moveinday')).toBe(1);
     // ...with stretches of house life between them, and no campaign screen:
     // campaigning belongs in the feed with everything else that happens in a
     // bedroom at two in the morning.

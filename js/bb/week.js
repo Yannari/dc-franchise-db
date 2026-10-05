@@ -72,6 +72,7 @@ import { scheduleHouseBeats } from './house-events.js';
 import { writeCeremony } from './script/ceremony.js';
 import { scriptBeat, joinScripts, numberWord } from './script/inject.js';
 import { transcript } from './script/write.js';
+import { airStorylines } from './story/director.js';
 import { campaignArgument, campaignCase } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
 import { runVoteOperation, resolveFinalPleas } from './vote-operation.js';
@@ -2102,7 +2103,8 @@ export function simulateBBWeek(options = {}) {
         text: `${named} meet in the bedroom and finally make the agreement official. `
           + `They name the alliance <strong>${alliance.name}</strong>, decide who is allowed to know about it `
           + `and leave the room one at a time.`,
-        players: members.slice(0, 4),
+        // the one who started it first: the storyline layer casts the scene from this order
+        players: [lead, ...rest].slice(0, 4), against: target,
         badgeText: 'ALLIANCE FORMED', badgeClass: 'gold',
         eventId: 'alliance-formed', category: 'deals', location: 'bedroom',
         newAlliance: true, allianceName: alliance.name, allianceId: alliance.id, evidence: alliance.formationEvidence || null,
@@ -7929,6 +7931,10 @@ export function simulateBBWeek(options = {}) {
     }
     delete week._chainFallout;
   }
+
+  // House life as storylines (js/bb/story): file the week's beats and choose the
+  // three to five conversations each stretch airs. Words only — no game state moves.
+  try { airStorylines(week); } catch (err) { if (typeof process !== 'undefined' && process.env?.BB_STORY_DEBUG) throw err; }
 
   // Two stretches of house life with nothing between them is a RENDERING
   // question, and it is answered in js/vp-screens.js where the folding

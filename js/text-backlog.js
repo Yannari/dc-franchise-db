@@ -4813,12 +4813,27 @@ export function generateBBSummaryText(ep) {
   // flush after the switch catches those without double-printing the acts
   // that already came through here.
   const socialDone = new Set();
+  // The house-life scenes the episode aired (js/bb/story), line for line as the viewer plays
+  // them; then (in beats) the full record of everything else that happened in the house.
+  const scenesOf = act => {
+    for (const sc of act?.scenes || []) {
+      ln('');
+      ln(`  ── ${sc.roomName || 'The house'} · ${(sc.cast || []).join(', ')} ──`);
+      for (const l of sc.lines || []) {
+        ln(l.kind === 'beat' ? `    ${plainText(l.text)}`
+          : l.kind === 'dr' ? `    ${l.by} (Diary Room): "${plainText(l.text)}"`
+            : `    ${l.by}: "${plainText(l.text)}"`);
+      }
+    }
+  };
   const beats = (act, { own = true } = {}) => {
     // `plainText` on both: a few events carry <strong> for the viewing party,
     // and this file is the plain-text transcript.
     if (own) (act?.beats || []).forEach(b => ln(`  ${plainText(b.text)}`));
     if (!act || socialDone.has(act)) return;
     socialDone.add(act);
+    scenesOf(act);
+    if ((act.scenes || []).length && (act.socialBeats || []).length) { ln(''); ln('  Also in the house:'); }
     (act.socialBeats || []).forEach(b =>
       ln(`  [${b.badgeText || 'HOUSE'}] ${plainText(b.text)}`));
   };
@@ -5414,8 +5429,7 @@ export function generateBBSummaryText(ep) {
           ln('');
           ln(`  "${nomNames.join(', ')} — you have been nominated for eviction. This nomination ceremony is complete."`);
           ln('  No speech. No reasons. A room full of people performing innocence.');
-          (act.socialBeats || []).forEach(b => ln(`  [${b.badgeText || 'HOUSE'}] ${b.text}`));
-          socialDone.add(act);
+          beats(act, { own: false });
           break;
         }
         // THE ACT'S OWN HEAD OF HOUSEHOLD, not the episode's.
@@ -5484,6 +5498,7 @@ export function generateBBSummaryText(ep) {
           ln(`  ${nomHoh}, and everybody in the room can count.`);
         }
         // Everything else that happened in the room.
+        scenesOf(act);
         (act.socialBeats || []).filter(b => !spoken.includes(b))
           .forEach(b => ln(`  [${b.badgeText || 'HOUSE'}] ${b.text}`));
         // Printed here, in the room, so the flush after the switch must not
@@ -6116,10 +6131,8 @@ export function generateBBSummaryText(ep) {
 
       case 'move-in':
         sec('MOVE-IN DAY');
-        for (const b of act.beats || []) {
-          if (!b.lines?.length) { ln(`  ${b.text}`); continue; }
-          for (const l of b.lines) ln(l.by ? `  ${l.by}${l.kind === 'dr' ? ' (Diary Room)' : ''}: ${l.text}` : `  ${l.text}`);
-        }
+        // each arrival as its transcript (who walks in, what they say, the Diary Room)
+        for (const b of act.beats || []) ln(`  ${plainText(b.text)}`);
         break;
 
       case 'power-expired':

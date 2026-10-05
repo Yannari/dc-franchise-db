@@ -22,7 +22,7 @@ export default {
       { by: 'a', say: "...Yes. Okay. Final two." },
       { by: 'b', dr: "Asking someone to be your final two is somehow scarier than asking someone on a date. And I've been turned down for dates." },
     ] },
-    { id: 'af3.f2', turns: [
+    { id: 'af3.f2', when: { early: true }, turns: [
       { by: 'a', say: "Okay, hear me out." },
       { by: 'b', say: "I'm hearing." },
       { by: 'a', say: "You're good at comps. I'm good at talking. Nobody's looking at either of us properly yet." },
@@ -77,7 +77,7 @@ export default {
       { by: 'b', say: "That's a yes." },
       { by: 'b', dr: "{a} slipped a final two in at the end of a completely different promise. Smooth. Annoyingly smooth." },
     ] },
-    { id: 'af3.f6', when: { third: true }, turns: [
+    { id: 'af3.f6', when: { late: false, third: true }, turns: [
       { by: 'c', say: "Can I just say, we three never fight." },
       { by: 'a', say: "We don't, do we?" },
       { by: 'b', say: "We really don't. Everybody else is screaming at each other." },

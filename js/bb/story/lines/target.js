@@ -203,7 +203,7 @@ export default {
       { by: 'b', say: "Whose turn it is." },
       { by: 'c', say: "Right." },
       { beat: '{c} leaves. {a} waits a beat.' },
-      { by: 'a', say: "Anyway. {target}. Same thing I said. Watch who {target} sits next to tonight." },
+      { by: 'a', say: "Anyway. {target}. Watch who {target} sits next to tonight. That's all I'm saying." },
       { by: 'b', dr: "We were not talking about laundry. We will never be talking about laundry." },
     ] },
     { id: 'tg.6', turns: [

@@ -185,7 +185,9 @@ const blowUp = {
   weight(house, ctx) {
     // Needs real friction: someone who dislikes someone, or a hot temper.
     const friction = house.filter(n => house.some(m => m !== n && bond(n, m) <= -2));
-    const tempers = house.filter(n => pStats(n).temperament <= 4);
+    // A short fuse needs something to go off at: on the first night, real friction only.
+    const firstNight = (ctx?.week?.num || 0) === 1 && ctx?.phase === 'pre-hoh';
+    const tempers = firstNight ? [] : house.filter(n => pStats(n).temperament <= 4);
     if (!friction.length && !tempers.length) return 0;
     return _w(friction.length * 2.2 + tempers.length * 0.9, ctx);
   },

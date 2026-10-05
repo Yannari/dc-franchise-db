@@ -21,7 +21,7 @@
 export default {
   // ── formed: a pitch ──────────────────────────────────────────────────
   'story.alliance.formed.strategic-pitch': [
-    { id: 'af2.p1', room: 'bedroom', turns: [
+    { id: 'af2.p1', room: 'bedroom', when: { late: false }, turns: [
       { by: 'a', say: "Hey. Can I grab you for a sec?" },
       { by: 'b', say: "Sure. What's up?" },
       { by: 'a', say: "Not here. Come on." },
@@ -92,7 +92,7 @@ export default {
       { by: 'b', say: "We're what?" },
       { by: 'a', dr: "Every alliance needs a name. Mostly so you can say it to each other across a room and nobody else knows what it means." },
     ] },
-    { id: 'af2.p5', when: { early: false }, turns: [
+    { id: 'af2.p5', when: { late: false, early: false }, turns: [
       { by: 'a', say: "Can I ask you something? Who are you working with right now?" },
       { by: 'b', say: "Honestly? Nobody. Not really." },
       { by: 'a', say: "Same. And everybody else has a group by now. You can feel it." },
@@ -244,7 +244,7 @@ export default {
       { by: 'b', say: "Perfect. Nobody will ever guess what that means." },
       { by: 'b', dr: "Funny how fast you trust somebody when you both want the same person out." },
     ] },
-    { id: 'af2.e4', when: { known: true }, turns: [
+    { id: 'af2.e4', when: { late: false, known: true }, turns: [
       { by: 'a', say: "Am I crazy, or is {target} running half this house?" },
       { by: 'b', say: "You're not crazy." },
       { by: 'a', say: "Every time I go to talk to somebody, {target}'s already been there." },
@@ -921,7 +921,7 @@ export default {
 
   // ── exposed: a has worked out b and c's deal ─────────────────────────
   'story.alliance.exposed.any': [
-    { id: 'ax2.1', presumes: ['vote'], turns: [
+    { id: 'ax2.1', presumes: ['vote'], when: { late: false }, turns: [
       { by: 'a', say: "So. You and {c}." },
       { by: 'b', say: "What about me and {c}?" },
       { by: 'a', say: "Don't. Don't do the face. I know." },
@@ -1201,7 +1201,7 @@ export default {
       { by: 'b', say: "Deal. A week." },
       { by: 'a', dr: "I'm not soft. I'm practical. Losing {b} costs me more than forgiving {b}." },
     ] },
-    { id: 'aw2.f5', turns: [
+    { id: 'aw2.f5', when: { late: false }, turns: [
       { by: 'a', say: "You've got one thing going for you." },
       { by: 'b', say: "What's that?" },
       { by: 'a', say: "You told me the truth. When I asked. Most people in here wouldn't have." },

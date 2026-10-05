@@ -31,7 +31,7 @@ import { seasonId } from '../shows.js';
 const reg = () => (typeof window !== 'undefined' ? (window._bbx ||= {}) : (globalThis._bbx ||= {}));
 const SHELL_CSS = `
 .bbx .bbx-feed{margin-top:14px;border-top:1px solid rgba(34,225,255,.25);padding-top:10px}
-.bbx .bbx-feed-h{font:700 11px 'Chakra Petch',system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#22e1ff;margin:0 0 8px}
+.bbx .bbx-feed-h{font:700 11px 'Chakra Petch',system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#22e1ff;margin:0 0 8px;cursor:pointer}
 
 .bbx{--bbx-line:rgba(255,255,255,.12);color:#e8eefb;font-family:Archivo,system-ui,sans-serif;max-width:1180px;margin:0 auto}
 .bbx .bbx-stage{position:relative;aspect-ratio:16/9;container-type:inline-size;overflow:hidden;border-radius:14px;background:#03050a;cursor:pointer;user-select:none;isolation:isolate;box-shadow:0 0 0 1px rgba(34,225,255,.18),0 30px 70px -20px rgba(0,20,60,.55)}
@@ -176,7 +176,9 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     // a House Life segment holds its stretch's classic House Life screens (and takes the first one's id)
     const feed = S.kind === 'houselife' ? (houseOf[keyOf[si]] || []).splice(0) : [];
     // the stepped screen sets the music, not the record underneath it
-    const feedHtml = feed.length ? `<div class="bbx-feed"><div class="bbx-feed-h">The house this stretch · the full record</div>${feed.map(L => String(L.html).replace(/\sdata-ambient="[^"]*"/g, '')).join('')}</div>` : '';
+    // Folded away by default: the episode is the scenes above. This is the record of
+    // everything else that happened in the house this stretch, off camera.
+    const feedHtml = feed.length ? `<details class="bbx-feed"><summary class="bbx-feed-h">Off camera this stretch · the full record</summary>${feed.map(L => String(L.html).replace(/\sdata-ambient="[^"]*"/g, '')).join('')}</details>` : '';
     out.push({
       id: feed[0]?.id || ids[si],
       label: S.label || S.title,

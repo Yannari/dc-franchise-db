@@ -457,7 +457,7 @@ export default {
       { by: 'c', say: "Better. Slightly." },
       { by: 'a', dr: "We played 'fake secrets' for an hour. In a house where everyone has real ones. It was weirdly relaxing." },
     ] },
-    { id: 'lb2.5', turns: [
+    { id: 'lb2.5', when: { late: false }, turns: [
       { by: 'a', say: "I'm going to ask Big Brother for more toilet paper." },
       { by: 'b', say: "Again?" },
       { by: 'a', say: "Somebody in this house is eating it." },
@@ -558,7 +558,7 @@ export default {
       { by: 'b', say: "It's the best I've got." },
       { by: 'a', dr: "It sounded nothing like rain. It was perfect." },
     ] },
-    { id: 'lh2.3', turns: [
+    { id: 'lh2.3', room: 'living-room', turns: [
       { beat: '{a} is sitting by the memory wall, looking at nothing in particular.' },
       { by: 'b', say: "Penny for them." },
       { by: 'a', say: "Just thinking about home." },

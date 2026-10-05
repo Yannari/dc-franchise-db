@@ -280,6 +280,8 @@ const apologyRefused = {
     if (_once('bond-apology-refused', ctx)) return 0;
     const pair = _enemies(house);
     if (!pair) return 0;
+    // An apology answers something: one of them has to be carrying something from the other.
+    if (grudge(pair.a, pair.b) <= 0 && grudge(pair.b, pair.a) <= 0) return 0;
     // Somebody has to be the sort of person who tries.
     const tries = pStats(pair.a).loyalty >= 6 || pStats(pair.b).loyalty >= 6;
     return tries ? _quietTime(ctx, 6) : 0;

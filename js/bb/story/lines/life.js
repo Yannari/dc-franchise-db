@@ -241,7 +241,7 @@ export default {
     ] },
   ],
   'story.life.chores.any': [
-    { id: 'lc.1', room: 'kitchen', turns: [
+    { id: 'lc.1', room: 'kitchen', when: { late: false }, turns: [
       { beat: '{a} is washing up. A mountain of it.' },
       { by: 'b', say: "Need a hand?" },
       { by: 'a', say: "Grab a towel." },
@@ -346,7 +346,7 @@ export default {
       { by: 'b', say: "I think you could. I think I'd have to beat you first." },
       { by: 'a', dr: "{b} said it like a joke. It wasn't a joke. That's the nicest threat anyone's ever made me." },
     ] },
-    { id: 'll.5', room: 'bedroom', turns: [
+    { id: 'll.5', room: 'bedroom', when: { late: false }, turns: [
       { beat: 'Everyone else is asleep. {a} is lying awake, staring at the ceiling.' },
       { by: 'a', dr: "You'd think it would be quiet at night. It's not. A house full of people breathing, a fridge humming, and a camera turning to look at you every time you move." },
       { beat: '{a} rolls over. A camera on the wall turns with a soft whirr.' },

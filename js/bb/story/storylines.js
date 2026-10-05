@@ -92,6 +92,12 @@ function kindRule(kind, ending, beat) {
   return null;
 }
 
+const takenElsewhere = (x, other) => {
+  try {
+    return (gs.activePlayers || []).some(p => p !== x && p !== other && REL_KINSHIP[kinshipBetween(x, p)]?.group === 'Together');
+  } catch { return false; }
+};
+
 /** Which storyline and step a fired house beat is, or null (it stays off camera). */
 export function classify(beat) {
   const kind = beat?.scene?.kind || '';
@@ -126,6 +132,9 @@ export function classify(beat) {
   // "what are we" are the stolen moments of a couple keeping a secret.
   if (rule.type === 'showmance' && ['spark', 'declare'].includes(rule.step)
     && REL_KINSHIP[kinshipBetween(roles.a, roles.b)]?.group === 'Together') rule.outcome = 'couple';
+  // ...and somebody secretly with someone else does not get a romance with a third person on
+  // screen: it would read as cheating nobody wrote. It stays off camera.
+  if (rule.type === 'showmance' && rule.outcome !== 'couple' && [roles.a, roles.b].some(x => takenElsewhere(x, x === roles.a ? roles.b : roles.a))) return null;
   let key;
   const { a: ra, b: rb, c: rc } = roles;
   if (rule.type === 'alliance') key = data.alliance ? `name:${data.alliance}` : `pair:${[ra, rb].sort().join('|')}`;

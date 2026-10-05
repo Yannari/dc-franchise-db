@@ -35,6 +35,7 @@ const ROOM = { kitchen: 'Kitchen', 'living-room': 'Living Room', bedroom: 'Bedro
 
 // an outcome's own pool when it has one (a couple's spark is not a stranger's), else the step's
 const keysFor = (type, step, outcome) => [`story.${type}.${step}.${outcome}`, `story.${type}.${step}.any`].filter(k => STORY_POOLS[k]?.length).slice(0, 1);
+export const roomName = r => ROOM[r] || 'Living Room';
 export const hasPool = (type, step, outcome) => keysFor(type, step, outcome).length > 0;
 
 // The mood a scene sets for the music (BED_BY_MOOD in js/vp-bb-ep/sound.js).
@@ -135,5 +136,5 @@ export function writeStoryScene(line, step, ctx) {
   // On stage: the people the scene actually uses — who speaks, or who a stage direction names.
   // (The event's third person is often only somebody the scene never needed.)
   const used = cast.filter(n => lines.some(l => l.by === n || (l.kind === 'beat' && l.text.includes(n))));
-  return { ...base, cast: used.length ? used : cast, recap: recap.length > 0, lineId: entry.id, lines: [...recap, ...lines] };
+  return { ...base, cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: recap.length > 0, lineId: entry.id, lines: [...recap, ...lines] };
 }

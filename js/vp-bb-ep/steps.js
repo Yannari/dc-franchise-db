@@ -1242,7 +1242,9 @@ function powerScreens(act, ctx) {
     if (b.part === 'broken') steps.push(...linesOf(b));
     if (b.part === 'cloud') steps.push({ k: 'beat', t: `${who} cannot be nominated at this ceremony.`, pwMark: 'cloud', toast: ['UNDER THE CLOUD', '#22e1ff'] }, ...linesOf(b));
     if (b.part === 'buyoff') steps.push({ k: 'beat', t: `${who} hands ${act.hoh} $10,000 and steps off the block. ${act.replacement} goes up instead.`, pwMark: 'buyoff', toast: ['BOUGHT OFF THE BLOCK', '#f5c542'] }, ...linesOf(b));
-    if (b.part === 'coup') steps.push({ k: 'bb', t: `${listOf(b.removed || [])}, you are off the block. ${listOf(b.named || [])}, you are now nominated.`, pwMark: 'coup', toast: ["COUP D'ÉTAT", '#ff3355'] }, ...linesOf(b));
+    // a coup by the HOH (overruling their own block) has nobody to say the two-person lines to:
+    // the beat's own sentence says what happened instead
+    if (b.part === 'coup') steps.push({ k: 'bb', t: `${listOf(b.removed || [])}, you are off the block. ${listOf(b.named || [])}, you are now nominated.`, pwMark: 'coup', toast: ["COUP D'ÉTAT", '#ff3355'] }, ...(b.lines?.length ? linesOf(b) : [{ k: 'beat', t: stripTags(b.text) }]));
   }
   return [{
     id: `bb-pw-${act.powerId}-w${ctx.week}`, kind: 'power', anchor: ctx.anchor, day: ctx.day, set, room: ROOM_NAME[set], cam: CAM[set],

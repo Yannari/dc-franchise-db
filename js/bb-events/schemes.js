@@ -465,7 +465,10 @@ const _ramp = ctx => {
   const week = ctx?.week?.num || gs.episode || 1;
   return Math.min(1, 0.25 + (week - 1) * 0.25);
 };
-const _w = (base, ctx) => band((ctx?.act === 'eviction' ? base * 0.4 : base) * _ramp(ctx));
+// No scheme on the first night: there is nobody to lie about yet and nothing to lie with
+// (the user, 2026-10-05: a whole kiss-trap scheme aired as a night-one confessional).
+const _w = (base, ctx) => ((ctx?.week?.num || 0) === 1 && ctx?.phase === 'pre-hoh' ? 0
+  : band((ctx?.act === 'eviction' ? base * 0.4 : base) * _ramp(ctx)));
 
 // ── the schemes ───────────────────────────────────────────────────────
 

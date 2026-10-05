@@ -15,7 +15,7 @@
 
 import { gs } from '../../core.js';
 import { classify, file, causeOf } from './storylines.js';
-import { writeStoryScene, hasPool } from './write.js';
+import { writeStoryScene, hasPool, roomName } from './write.js';
 
 const CEREMONY = new Set(['hoh', 'nominations', 'veto', 'veto-ceremony', 'eviction']);
 
@@ -102,9 +102,20 @@ export function airStorylines(week) {
       const q = cand.find(x => x.step === cause);
       if (q && !picked.includes(q)) picked.push(q);
     }
+    // A scene that does not set its own room is wherever the event put it, which is mostly
+    // the bedroom: five bedroom scenes in a row read as one long night. Move it along.
+    const ROTA = ['kitchen', 'living-room', 'backyard', 'bedroom'];
+    let lastRoom = null;
     for (const p of picked.sort((x, y) => x.step.at - y.step.at)) {
       const scene = writeStoryScene(p.line, p.step, ctx);
       if (!scene) continue;
+      if (!scene.fixedRoom && scene.room === lastRoom) {
+        const h = [...scene.id].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
+        const options = ROTA.filter(r => r !== lastRoom);
+        scene.room = options[h % options.length];
+        scene.roomName = roomName(scene.room);
+      }
+      lastRoom = scene.room;
       p.step.aired = true;
       (p.act.scenes ||= []).push(scene);
       const k = `${p.line.type}.${p.step.step}.${p.step.outcome}`;

@@ -232,7 +232,7 @@ export default {
       { by: 'a', say: "Yeah, me too." },
       { by: 'b', dr: "That's the last time I invite {a} to anything. Cards. It was cards." },
     ] },
-    { id: 'sf.s6', room: 'bedroom', turns: [
+    { id: 'sf.s6', room: 'bedroom', when: { late: false }, turns: [
       { beat: '{b} sits down on the end of a bed.' },
       { by: 'a', say: "That's my bed." },
       { by: 'b', say: "I'm just sitting for a second." },
@@ -303,7 +303,7 @@ export default {
       { by: 'b', say: "I said I hear you. What else do you want?" },
       { by: 'a', dr: "'I hear you.' That's what people say when they're waiting for you to stop talking." },
     ] },
-    { id: 'sa.4', room: 'kitchen', when: { band: 'enemies' }, turns: [
+    { id: 'sa.4', room: 'kitchen', when: { late: false, band: 'enemies' }, turns: [
       { by: 'a', say: "Oh, look who it is." },
       { by: 'b', say: "Don't start." },
       { by: 'a', say: "I'm not starting anything. I'm just standing in my own kitchen." },

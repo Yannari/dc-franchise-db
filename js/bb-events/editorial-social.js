@@ -1,6 +1,6 @@
 // Big Brother house-life scenes: ordinary rooms becoming strategic territory.
 // Each event has four written cuts and leaves state behind for later decisions.
-import { bond, closestTo, couldRomance, pStats, targetOf } from './_read.js';
+import { bond, closestTo, couldRomance, grudge, pStats, targetOf } from './_read.js';
 import { makeScene } from '../bb/script/scene.js';
 
 /** Which room a scene happens in: by hash, never a die. */
@@ -91,7 +91,8 @@ const hohOrbit = {
 
 const apologyTour = {
   id:'editorial-apology-tour', category:'social',
-  weight:(h,c) => h.length >= 4 ? fit(c, 1.9) : 0,
+  // an apology tour needs something to apologise for: somebody in the house carrying a grievance
+  weight:(h,c) => h.length >= 4 && h.some(x => h.some(y => y !== x && grudge(y, x) > 0)) ? fit(c, 1.9) : 0,
   fire(h,c,api,rng) {
     const a=actor(h,rng); const b=[...h].filter(n=>n!==a).sort((x,y)=>bond(a,x)-bond(a,y))[0];
     rng(); // the draw the old line pick made: the engine's dice must not move

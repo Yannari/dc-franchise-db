@@ -204,7 +204,10 @@ const record = eps => eps.map(ep => [ep.hoh, ...(ep.initialNominees || []), ep.v
   ...(ep.acts || []).flatMap(a => (a.socialBeats || []).map(b => `${b.eventId}:${(b.players || []).join(',')}:${b.badgeText}`))].join('|'));
 
 let seasons = [];
-beforeAll(() => { seasons = [playSeason(4242, 0), playSeason(777, 5), playSeason(31337, 10)]; }, 900000);
+// Four seasons: an event that needs a particular kind of HOH (a hothead making nominations
+// personal, a veto holder saving a friend) can miss three by chance once the house's draws move
+// (they moved with the first-night and cause gates, 2026-10-05).
+beforeAll(() => { seasons = [playSeason(4242, 0), playSeason(777, 5), playSeason(31337, 10), playSeason(2026, 15)]; }, 900000);
 
 describe('converting the words did not change the game', () => {
   it('plays the same season with the words muted', () => {
@@ -297,11 +300,12 @@ describe('people sound like themselves', () => {
     const registers = new Set();
     for (let i = 0; i < seasons.length; i++) {
       const eps = seasons[i];
-      playSeason([4242, 777, 31337][i], [0, 5, 10][i]);   // the season's players, for registerOf
+      playSeason([4242, 777, 31337, 2026][i], [0, 5, 10, 15][i]);   // the season's players, for registerOf
       for (const b of beatsOf(eps)) {
         const want = byId.get(b.lineId)?.when?.register;
         if (!want) continue;
-        const speaker = b.players[0];   // every converted event lists its a first
+        // the scene's own a; players[] is not always in role order (alliance-inner lists the outsider first)
+        const speaker = b.scene?.who?.a || b.players[0];
         aired++;
         registers.add(want);
         expect(registerOf(speaker), `${b.lineId} is written for ${want}, spoken by ${speaker}`).toBe(want);

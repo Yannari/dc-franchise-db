@@ -257,7 +257,7 @@ export default {
       { by: 'b', say: "Come here." },
       { by: 'b', dr: "Everybody keeps telling me a showmance is a target. I know. I just don't care right now." },
     ] },
-    { id: 'sd.2', turns: [
+    { id: 'sd.2', when: { late: false }, turns: [
       { by: 'b', say: "So what are we?" },
       { by: 'a', say: "What do you mean?" },
       { by: 'b', say: "You know what I mean. Are we a thing? A game thing? A thing-thing?" },

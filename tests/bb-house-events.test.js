@@ -90,8 +90,10 @@ describe('Big Brother house-event scheduler contract', () => {
     // The jury house is not one of these and cannot be: it is the one act of
     // the week that happens somewhere the houseguests are not, so no house
     // event can attach to it. It carries its own beats instead.
+    // Move-in is the house filling up, before anybody can react to anything (its words are
+    // the arrivals themselves).
     const ceremonies = week.acts.filter(a => a.type !== 'house' && a.type !== 'campaign'
-      && a.type !== 'jury-house');
+      && a.type !== 'jury-house' && a.type !== 'move-in');
     const campaigns = week.acts.filter(a => a.type === 'campaign');
     expect(ceremonies.every(act => act.socialBeats.length >= 1 && act.socialBeats.length <= 6)).toBe(true);
     expect(campaigns.every(act => act.socialBeats.length >= 1)).toBe(true);
@@ -136,16 +138,15 @@ describe('Big Brother house-event scheduler contract', () => {
     expect(got).toBe('function');
   });
 
-  it('uses the current week in the bad-day bond event prose', () => {
+  it('writes the bad-day bond event as a scene, from the record', () => {
+    // It used to print "After 2 weeks in one house" as prose. The event now decides a scene
+    // and the words come from bb/script (bond.bad-day), so what it must hand back is the scene.
     gs.popularity.A = -1;
     const event = BOND_EVENTS.find(({ id }) => id === 'bond-bad-day');
     const api = createHouseEventApi({ act:'house', week:{ num:2 } });
-    const variants = Array.from({ length: 12 }, (_, beat) =>
-      event.fire([...gs.activePlayers], { act:'house', beat, week:{ num:2 } }, api).text);
-    const elapsedTimeVariant = variants.find(text => text.includes('2 weeks in one house'));
-
-    expect(elapsedTimeVariant).toContain('After 2 weeks in one house');
-    expect(elapsedTimeVariant).not.toContain('five weeks');
+    const out = event.fire([...gs.activePlayers], { act:'house', beat: 0, week:{ num:2 } }, api);
+    expect(out?.scene?.kind).toBe('bond.bad-day');
+    expect((out.players || []).length).toBeGreaterThan(0);
   });
 
   it('feeds event targets and suspicion into later nomination strategy', () => {

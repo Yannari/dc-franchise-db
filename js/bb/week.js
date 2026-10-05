@@ -5858,7 +5858,8 @@ export function simulateBBWeek(options = {}) {
               + 'nobody can put them in.',
             blurb: BB_POWER_DEFINITIONS['coup-d-etat'].blurb || '', catch: BB_POWER_DEFINITIONS['coup-d-etat'].catch || '', hoh,
             beats: [{ text: `${coup.holder} plays ${BB_POWER_DEFINITIONS['coup-d-etat'].name}: ${taken.join(' and ')} come down, ${named.join(' and ')} go up.`,
-              players: [coup.holder, hoh].filter(Boolean), badgeText: "COUP D'ÉTAT", badgeClass: 'red', part: 'coup',
+              // the holder can be the HOH (overruling their own block): one face on the card, not two
+              players: [...new Set([coup.holder, hoh].filter(Boolean))], badgeText: "COUP D'ÉTAT", badgeClass: 'red', part: 'coup',
               removed: [...taken], named: [...named] }],
           }, { nominees: [...named], players: [coup.holder] });
           // Overruling somebody in public is not free, and the two people just

@@ -167,9 +167,10 @@ export default {
       { by: 'b', say: "Then stop being polite and make your own." },
       { by: 'b', dr: "{a} has eaten everything I've made in here, and then made fun of it. That's a special kind of person." },
     ] },
-    { id: 'sf.j7', when: { register: 'schemer' }, turns: [
+    { id: 'sf.j7', when: { register: 'schemer', third: true }, turns: [
+      { by: 'c', say: "What do you make of {b}, honestly?" },
       { by: 'a', say: "Honestly, I love {b}. {b}'s like a golden retriever." },
-      { by: 'b', say: "Thank you?" },
+      { by: 'b', say: "I'm standing right here." },
       { by: 'a', say: "Loyal. Happy. Not a lot going on upstairs." },
       { by: 'b', say: "Wow." },
       { by: 'a', say: "I'm kidding! Kind of." },
@@ -255,7 +256,7 @@ export default {
       { by: 'b', say: "I don't roll my eyes—" },
       { by: 'a', say: "—you're doing it right now!" },
       { by: 'b', say: "Because you're being dramatic!" },
-      { by: 'a', say: "I'm being dramatic? You haven't said a nice word to me in days!" },
+      { by: 'a', say: "I'm being dramatic? You haven't said one nice word to me since!" },
       { by: 'b', say: "Maybe because you haven't given me a reason to!" },
       { beat: 'Nobody else in the house is talking any more.' },
       { by: 'a', say: "Wow. Okay. Good to know." },

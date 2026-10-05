@@ -10,6 +10,7 @@ import { gs } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { players } from '../../core.js';
 import { pStats } from '../../players.js';
+import { kinshipBetween, REL_KINSHIP } from '../../core.js';
 
 export const BB_FACT_KEYS = ['ending', 'result', 'intent', 'reason', 'act', 'early', 'late', 'band',
   'showmance', 'alliance', 'hohA', 'hohB', 'nomA', 'nomB', 'havenot', 'third', 'nice', 'villain', 'again',
@@ -20,7 +21,9 @@ export const BB_FACT_KEYS = ['ending', 'result', 'intent', 'reason', 'act', 'ear
   // how b talks, for a scene whose feeling sits with b (the one left out, the one blamed)
   'registerB',
   // the scene names the week's target ({target} in its data): only then may a line say it
-  'known'];
+  'known',
+  // what a and b were to each other before the show (the cast's kinship): together | family | friends | history
+  'kin'];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 const VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
@@ -82,6 +85,7 @@ export function factsFor(scene, ctx = {}) {
     f.nomB = (ctx.nominees || []).includes(b);
     f.alliance = sharesAlliance(a, b);
     f.showmance = inShowmance(a, b);
+    try { f.kin = (REL_KINSHIP[kinshipBetween(a, b)]?.group || '').toLowerCase() || 'none'; } catch { f.kin = 'none'; }
   }
   const d = scene.data || {};
   for (const k of ['ending', 'result', 'intent', 'reason', 'again']) if (d[k] !== undefined && d[k] !== null) f[k] = d[k];

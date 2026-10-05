@@ -18,7 +18,7 @@
 // a beat that is not a chapter of anything stays off camera, its consequences
 // already applied.
 
-import { gs } from '../../core.js';
+import { gs, kinshipBetween, REL_KINSHIP } from '../../core.js';
 
 // One rule per scene family (the part of the kind before the dot) or kind.
 // `to(beat, who, data, ending)` returns { type, step, outcome, roles, data } or null.
@@ -122,6 +122,10 @@ export function classify(beat) {
   if (!roles.a) return null;
   // Two-person storylines need two people; life may be one person alone.
   if (rule.type !== 'life' && !roles.b) return null;
+  // A couple who came in together does not flirt like strangers: their spark and their
+  // "what are we" are the stolen moments of a couple keeping a secret.
+  if (rule.type === 'showmance' && ['spark', 'declare'].includes(rule.step)
+    && REL_KINSHIP[kinshipBetween(roles.a, roles.b)]?.group === 'Together') rule.outcome = 'couple';
   let key;
   const { a: ra, b: rb, c: rc } = roles;
   if (rule.type === 'alliance') key = data.alliance ? `name:${data.alliance}` : `pair:${[ra, rb].sort().join('|')}`;

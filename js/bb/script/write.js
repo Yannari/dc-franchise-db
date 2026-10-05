@@ -56,7 +56,7 @@ export const writing = { muted: false };
  * A line that talks about the house's past is held back then; if a pool has nothing else,
  * it keeps what it has rather than going silent.
  */
-const PAST = /(yesterday|last night|last week|all week|this week|day one|for days|every day|every night|these days|lately|any ?more|used to|again|three nights|two nights|since the start)/i;
+const PAST = new RegExp(String.raw`(^|[^a-z])(yesterday|last night|last week|all week|this week|day one|for days|every day|every night|these days|lately|any ?more|used to|again|three nights|two nights|since the start)([^a-z]|$)`, "i");
 const firstNight = ctx => (ctx.week?.num || 0) === 1 && ctx.phase === 'pre-hoh';
 function noPast(key) {
   const out = {};

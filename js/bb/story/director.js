@@ -34,6 +34,8 @@ const dramaOf = s => DRAMA[`${s.type}.${s.step}.${s.outcome}`] ?? DRAMA[`${s.typ
 
 // ...and the house's own clock: a vote count needs nominees, a pitch needs an HOH.
 const NEEDS_WEEK = {
+  // nobody breaks down or gets homesick on the first night: the house has not happened yet
+  'life.breakdown': 'hoh', 'life.homesick': 'hoh',
   'target.pitch': 'hoh', 'target.backdoor': 'hoh', 'target.lobby': 'noms', 'target.block': 'noms', 'target.count': 'noms',
 };
 

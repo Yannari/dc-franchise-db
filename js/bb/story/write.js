@@ -33,7 +33,8 @@ const ROOM = { kitchen: 'Kitchen', 'living-room': 'Living Room', bedroom: 'Bedro
   backyard: 'Backyard', 'diary-room': 'Diary Room', pantry: 'Storage Room', bathroom: 'Bathroom', washroom: 'Bathroom',
   'storage-room': 'Storage Room', 'have-not-room': 'Have-Not Room', dining: 'Kitchen' };
 
-const keysFor = (type, step, outcome) => [`story.${type}.${step}.${outcome}`, `story.${type}.${step}.any`].filter(k => STORY_POOLS[k]?.length);
+// an outcome's own pool when it has one (a couple's spark is not a stranger's), else the step's
+const keysFor = (type, step, outcome) => [`story.${type}.${step}.${outcome}`, `story.${type}.${step}.any`].filter(k => STORY_POOLS[k]?.length).slice(0, 1);
 export const hasPool = (type, step, outcome) => keysFor(type, step, outcome).length > 0;
 
 // The mood a scene sets for the music (BED_BY_MOOD in js/vp-bb-ep/sound.js).
@@ -70,7 +71,12 @@ function pick(keys, who, data, ctx, room, salt) {
   // {c} with no third person) is not a candidate: it would print the raw slot
   const can = e => (e.turns || []).every(t => (!t.by || !!who[t.by]) && [...String(t.say || t.dr || t.beat || '').matchAll(/\{(\w+)(?:\.\w+)?\}/g)]
     .every(([, r]) => r === 'hoh' ? !!ctx.hoh : r === 'count' || !!who[r] || typeof data[r] === 'string'));
-  for (const k of keys) pools[k] = (STORY_POOLS[k] || []).filter(e => presumed(e, ctx) && can(e));
+  // a couple or family who came in together are not "friends": a line that calls them that is wrong
+  const facts0 = factsFor({ who, data, room }, { week: ctx.week, act: 'house', hoh: ctx.hoh, nominees: ctx.nominees });
+  const close = ['together', 'family'].includes(facts0.kin);
+  const FRIEND = new RegExp(String.raw`(^|[^a-z])friends?([^a-z]|$)`, "i");
+  const fits = e => !close || !FRIEND.test(JSON.stringify(e.turns));
+  for (const k of keys) pools[k] = (STORY_POOLS[k] || []).filter(e => presumed(e, ctx) && can(e) && fits(e));
   if (!keys.some(k => pools[k].length)) return null;
   const facts = factsFor({ who, data, room }, { week: ctx.week, act: 'house', hoh: ctx.hoh, nominees: ctx.nominees });
   const rng = stableRng(gs.bb?.seasonSalt || 0, ctx.week?.num || 0, 'story', salt);

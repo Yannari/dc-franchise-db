@@ -30,8 +30,8 @@ export default {
     { id: 'sv8.p3', turns: [{ by: 'a', say: "I've got the other veto, and I'd like to use it." }] },
   ],
   'secact.stand.anon': [
-    { id: 'sv8.a1', turns: [{ beat: 'The meeting is over. Then the screen lights up again.' }] },
-    { id: 'sv8.a2', turns: [{ beat: 'Everyone is getting up when the screen comes back on.' }] },
+    { id: 'sv8.a1', turns: [{ beat: 'The meeting is over. Then the screen lights up again.' }, { by: 'a', dr: "Nobody in that room knows it's me. That's the whole point." }] },
+    { id: 'sv8.a2', turns: [{ beat: 'Everyone is getting up when the screen comes back on.' }, { by: 'a', dr: "I sat there and looked as surprised as everybody else." }] },
   ],
   'secact.used.public': [
     { id: 'sv8.u1', turns: [{ by: 'a', say: "{b}, I'm using this on you. Come off the block." }] },

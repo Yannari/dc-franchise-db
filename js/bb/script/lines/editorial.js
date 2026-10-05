@@ -50,7 +50,7 @@ export default {
   ],
   'editorial.spill.scene': [
     { id: 'es.1', turns: [{ by: 'a', say: "When {b} told me..." }, { beat: '{a} stops.' }, { by: 'b', say: "Don't." }, { by: 'c', dr: "Too late. I heard it." }] },
-    { id: 'es.2', turns: [{ by: 'a', say: "Wait till you hear what {b} said yesterday." }, { by: 'b', say: "That was private." }, { beat: '{c} is listening from the sofa.' }] },
+    { id: 'es.2', turns: [{ beat: '{a} is halfway through a story when {b} walks in.' }, { by: 'a', say: "...and then {b} said—" }, { by: 'b', say: "That was private." }, { by: 'c', dr: "It was private until about ten seconds ago." }] },
     { id: 'es.3', turns: [{ by: 'a', say: "...our final three..." }, { beat: 'Nobody speaks.' }, { by: 'c', say: "Our what?" }] },
     { id: 'es.4', turns: [{ by: 'b', say: "How did you find out about the plan?" }, { by: 'a', say: "{c} told me." }, { by: 'c', say: "I did not!" }] },
     { id: 'es.5', turns: [{ by: 'b', dr: "I told {a} one thing in private. Now {c} knows. Great." }] },

@@ -998,6 +998,8 @@ export function updateBBAllianceLifecycle({ phase = 'opening', house = gs.active
     trust: members.reduce((sum, a, i) =>
       sum + members.slice(i + 1).reduce((n, b) => n + pairTrust(a, b), 0), 0) / pairCount,
     formationEvidence: chosen.evidence, against: chosen.against || null,
+    // who made the pitch, so the scene can open on it (the members are sorted)
+    pitchedBy: chosen.evidence === 'strategic-pitch' ? chosen.members[0] : null,
     betrayals: [], quits: [],
     history: [{ week: weekNum, type: 'formed', evidence: chosen.evidence }],
   };

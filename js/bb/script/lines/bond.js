@@ -22,6 +22,15 @@ export default {
     { id: 'bk.6', turns: [{ by: 'b', dr: "Everyone in here is playing a game. That kiss wasn't part of it." }] },
     { id: 'bk.7', turns: [{ beat: '{a} kisses {b}.' }, { by: 'a', say: "The cameras saw that." }, { by: 'b', say: "Let them." }] },
   ],
+  // a and b were together before the show (kinship: married, engaged, partners, dating)
+  'bond.kiss.couple': [
+    { id: 'bkc.1', turns: [{ beat: 'The lights are off. {a} checks the door, then kisses {b}.' }, { by: 'b', say: "Somebody's going to see." }, { by: 'a', say: "I don't care. I've missed you." }] },
+    { id: 'bkc.2', turns: [{ by: 'a', dr: "{b} and I came in here together. Keeping my hands off {b.obj} all day is the hardest competition in this house." }] },
+    { id: 'bkc.3', turns: [{ by: 'b', say: "We said we'd keep it quiet in here." }, { by: 'a', say: "We are. It's just us." }, { beat: '{a} kisses {b}.' }] },
+    { id: 'bkc.4', turns: [{ beat: '{a} kisses {b} in the middle of a sentence.' }, { by: 'b', say: "I was talking!" }, { by: 'a', say: "You can talk later. I've had to pretend I barely know you all day." }] },
+    { id: 'bkc.5', turns: [{ by: 'b', dr: "Everyone thinks {a} and I just met. Pretending I'm not in love with {a.obj} is the hardest part of this game." }] },
+    { id: 'bkc.6', turns: [{ beat: "Everyone else is asleep. {b} slides over to {a}'s bed." }, { by: 'a', say: "We agreed." }, { by: 'b', say: "Five minutes." }, { beat: '{a} kisses {b}.' }] },
+  ],
   'bond.quiet.scene': [
     { id: 'bq2.1', turns: [{ by: 'b', say: "What's the first thing you'll do when this is over?" }, { by: 'a', say: "Sleep in a bed without a camera over it." }, { by: 'b', say: "And then?" }, { by: 'a', say: "Then I'll call you." }] },
     { id: 'bq2.2', turns: [{ by: 'a', say: "Are you asleep?" }, { by: 'b', say: "Nearly." }, { by: 'a', say: "Okay. Night." }, { by: 'b', say: "Night." }, { beat: 'Neither of them falls asleep for another hour.' }] },

@@ -71,6 +71,7 @@ import {
 import { scheduleHouseBeats } from './house-events.js';
 import { writeCeremony } from './script/ceremony.js';
 import { scriptBeat, joinScripts, numberWord } from './script/inject.js';
+import { transcript } from './script/write.js';
 import { campaignArgument, campaignCase } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
 import { runVoteOperation, resolveFinalPleas } from './vote-operation.js';
@@ -2085,6 +2086,18 @@ export function simulateBBWeek(options = {}) {
         };
       }
 
+      // The scene says WHY first: the reason the lifecycle actually formed it (a pitch, a pair
+      // who have been inseparable, a shared enemy, the two nobody talks to). Without it a day-one
+      // alliance was two people naming a group out of nowhere.
+      const lead = alliance.pitchedBy && members.includes(alliance.pitchedBy) ? alliance.pitchedBy : members[0];
+      const rest = members.filter(n => n !== lead);
+      const target = alliance.against && house.includes(alliance.against) ? alliance.against : null;
+      const why = scriptBeat('alliance.why', { a: lead, b: rest[0], c: rest[1] || null },
+        { ending: alliance.formationEvidence || 'close-pair', alliance: alliance.name, ...(target ? { target } : {}) },
+        { week, hoh: week.hoh || null, room: 'bedroom', seenBy: members, salt: 'why' });
+      const made = scriptBeat('alliance.formed', { a: lead, b: rest[0], c: rest[1] || null },
+        { ending: 'formed', alliance: alliance.name }, { week, hoh: week.hoh || null, room: 'bedroom', seenBy: members });
+      const lines = [...(why?.lines || []), ...(made?.lines || [])];
       return {
         text: `${named} meet in the bedroom and finally make the agreement official. `
           + `They name the alliance <strong>${alliance.name}</strong>, decide who is allowed to know about it `
@@ -2092,9 +2105,9 @@ export function simulateBBWeek(options = {}) {
         players: members.slice(0, 4),
         badgeText: 'ALLIANCE FORMED', badgeClass: 'gold',
         eventId: 'alliance-formed', category: 'deals', location: 'bedroom',
-        newAlliance: true, allianceName: alliance.name, allianceId: alliance.id,
-        ...(scriptBeat('alliance.formed', { a: members[0], b: members[1], c: members[2] || null },
-          { ending: 'formed', alliance: alliance.name }, { week, hoh: week.hoh || null, room: 'bedroom', seenBy: members }) || {}),
+        newAlliance: true, allianceName: alliance.name, allianceId: alliance.id, evidence: alliance.formationEvidence || null,
+        ...(made || {}),
+        ...(lines.length ? { lines, text: transcript(lines) } : {}),
       };
     }
 
@@ -2141,7 +2154,9 @@ export function simulateBBWeek(options = {}) {
     if (formedHere) {
       const beat = allianceBeat(formedHere);
       if (beat) {
-        act.socialBeats.unshift(beat);
+        // decided at the END of the stretch, from what the stretch did to the house, so it airs
+        // there: at the front it opened move-in night with a pact nobody had talked their way into
+        act.socialBeats.push(beat);
         if (beat.newAlliance) week.allianceChanges.formed.push(formedHere.name);
       }
     }

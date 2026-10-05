@@ -50,6 +50,24 @@ export function fill(text, who, ctx = {}, data = {}) {
  */
 export const writing = { muted: false };
 
+/**
+ * Move-in night (week one, before the first Head of Household). Nobody has a yesterday in
+ * this house yet: "wait till you hear what {b} said yesterday" aired on the first night.
+ * A line that talks about the house's past is held back then; if a pool has nothing else,
+ * it keeps what it has rather than going silent.
+ */
+const PAST = /(yesterday|last night|last week|all week|this week|day one|for days|every day|every night|these days|lately|any ?more|used to|again|three nights|two nights|since the start)/i;
+const firstNight = ctx => (ctx.week?.num || 0) === 1 && ctx.phase === 'pre-hoh';
+function noPast(key) {
+  const out = {};
+  for (const k of [].concat(key)) {
+    const pool = POOLS[k] || [];
+    const kept = pool.filter(e => !(e.turns || []).some(t => PAST.test(t.say || t.dr || t.beat || '')));
+    out[k] = kept.length ? kept : pool;
+  }
+  return out;
+}
+
 /** Pick and fill. Returns { lines, text } — `text` is the transcript the old screens and the backlog print. */
 export function writeScene(scene, ctx = {}, rng = Math.random) {
   if (writing.muted) return { lines: [{ kind: 'beat', by: null, text: scene.kind }], text: scene.kind, lineId: null };
@@ -61,7 +79,7 @@ export function writeScene(scene, ctx = {}, rng = Math.random) {
   const who = scene.who || {};
   const pairKey = [who.a, who.b].filter(Boolean).sort().join('|');
   const speakers = Object.values(who).filter(Boolean);
-  const entry = pickEntry(ledger(), POOLS, key, facts, pairKey, rng, speakers, clockOf(ctx));
+  const entry = pickEntry(ledger(), firstNight(ctx) ? noPast(key) : POOLS, key, facts, pairKey, rng, speakers, clockOf(ctx));
   if (!entry) throw new Error(`no lines for ${key}`);
   const lines = entry.turns.map(t => {
     const kind = t.dr ? 'dr' : t.beat ? 'beat' : 'say';

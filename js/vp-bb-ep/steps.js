@@ -1862,7 +1862,10 @@ export function conversationsOf(beats) {
     if (presentIn(b).length) continue;
     const speaker = (b.lines || [])[0]?.by;
     const about = (b.players || []).filter(n => n !== speaker);
-    const home = talk.find(c => c.people.has(speaker) && about.every(n => c.people.has(n)));
+    // ...and only if it is the same KIND of moment: "we finally said it out loud" about a
+    // couple is not a comment on the same couple's argument (the user, 2026-10-05)
+    const fitsTalk = t => presentIn(t).length && t.category === b.category && [speaker, ...about].every(n => (t.players || []).includes(n));
+    const home = talk.find(c => c.beats.some(fitsTalk));
     if (home) { home.beats.push(b); home.lines += size(b); continue; }
     convos.push({ beats: [b], people: new Set([speaker].filter(Boolean)), lines: size(b), diary: true, at: order.get(b) });
   }
@@ -1879,7 +1882,7 @@ export function conversationsOf(beats) {
       const about = (x.players || []).filter(n => n !== sp);
       const want = about.length ? about : [sp];
       let at = -1;
-      talk.forEach((t, i) => { if (want.every(n => (t.players || []).includes(n)) && (order.get(t) < order.get(x) || at < 0)) at = i; });
+      talk.forEach((t, i) => { if (t.category === x.category && want.every(n => (t.players || []).includes(n)) && (order.get(t) < order.get(x) || at < 0)) at = i; });
       if (at < 0) at = talk.findIndex(t => order.get(t) > order.get(x)) - 1;
       talk.splice(Math.max(at, 0) + 1, 0, x);
     }

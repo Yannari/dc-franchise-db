@@ -24,7 +24,7 @@
 // other, people who like each other, and people who have to share a kitchen
 // with somebody they cannot stand.
 
-import { gs } from '../core.js';
+import { gs, kinshipBetween, REL_KINSHIP } from '../core.js';
 import {
   pStats, bond, perceived, band, beatsInvolving, spotlightOrder, grudge, romanceOf,
   romanceOn, sharesAlliance, archetype, suspicionOf,
@@ -110,13 +110,16 @@ const firstKiss = {
     if (sh) sh.kissed = true;
     const witness = _quiet(_others(house, a, b))[0];
 
-    const scene = makeScene('bond.kiss', { a, b }, { ending: 'scene' }, [], 'bedroom');
+    // A couple who were together before the show is not having a FIRST kiss: they are two
+    // people who walked in together and have been keeping their hands to themselves since.
+    const together = REL_KINSHIP[kinshipBetween(a, b)]?.group === 'Together';
+    const scene = makeScene('bond.kiss', { a, b }, { ending: together ? 'couple' : 'scene' }, [], 'bedroom');
     api.addBond(a, b, 2.4);
     api.popDelta(a, 2);
     api.popDelta(b, 2);
     // And the house has a couple now, whatever the two of them call it.
     if (witness) api.remember(witness, a, 'they-are-a-pair', 2, { about: b });
-    return { scene, players: [a, b], badgeText: 'FIRST KISS', badgeClass: 'gold' };
+    return { scene, players: [a, b], badgeText: together ? 'THE COUPLE' : 'FIRST KISS', badgeClass: 'gold' };
   },
 };
 

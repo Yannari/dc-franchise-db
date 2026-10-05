@@ -36,7 +36,13 @@ describe('the pools keep their contract', () => {
   });
 
   it('is big enough, and always has something that fits', () => {
+    // A twist ceremony's own pools (bb/script/ceremony.js, the `<twist>act.` families) are
+    // not occasional pools: each is one moment of one ceremony, aired once or twice a season,
+    // and freshWriter already never repeats a line inside the ceremony. The floor is for the
+    // house pools that fire week after week.
+    const CEREMONY = /^[a-z]+act\./;
     for (const [key, pool] of all) {
+      if (CEREMONY.test(key)) continue;
       expect(pool.length, `${key} is under the floor`).toBeGreaterThanOrEqual(FLOOR);
       expect(pool.filter(e => !e.when).length, `${key} has too few unconditional entries`).toBeGreaterThanOrEqual(3);
     }
@@ -67,7 +73,7 @@ describe('the pools keep their contract', () => {
     // ending, a nomination speech (the second nominee), and the talk families
     // about somebody who is not in the room. Anywhere else an entry may only
     // speak of c behind `when: { third: true }`; otherwise it prints a raw slot.
-    const WITH_C = [/\.smoothed$/, /^noms\.speech\./, /^talk\.(gossip|pitch-target|hoh-decide)\./, /^social\.rumour\./, /^deals\.(exposed|final-three|competing|hedged)\./, /^alliance\.(inner|overlap|protect|recruited|formed)\./, /^power\.(pawn|replaced-reacts|veto-fallout|veto-promise|spy|backdoor|queue|reveal)\./, /^life\.(table|game|inside-joke)\./, /^friction\.(condescend|story)\./, /^phase\.(prepos|last-equal|hoh-room|targets)\./, /^bloc\.(noticed|votes|blowup)\./, /^reign\.both\./, /^scheme\.kiss\.setup$/, /^scheme\.collapse\./, /^texture\.(backyard|trial|namedrop)\./, /^editorial\.(bedroom|whisper|latenight|spill|orbit|flip|roast|meeting)\./, /^arc\.(court|debt)\./, /^couple\.(hiding|leak|jealous|underground)\./, /^plan\.seen\./, /^cer\.(nomgame|nompersonal)\./, /^romance\.(showmanceNoticed|showmanceTarget|showmanceJealousy|friendshipJealousy|triangle\w+|affairCaught|affairChoice|showmanceSabotage)\./, /^engine\.block\./, /^meeting\./, /^whack\.(suspect)\./, /^hex\.spent\./, /^road\.theory\./, /^suite\.plusone\./, /^inv\.circle\./, /^hack\.table\./, /^engine\.samecase\./];
+    const WITH_C = [/\.smoothed$/, /^noms\.speech\./, /^talk\.(gossip|pitch-target|hoh-decide)\./, /^social\.rumour\./, /^deals\.(exposed|final-three|competing|hedged)\./, /^alliance\.(inner|overlap|protect|recruited|formed)\./, /^power\.(pawn|replaced-reacts|veto-fallout|veto-promise|spy|backdoor|queue|reveal)\./, /^life\.(table|game|inside-joke)\./, /^friction\.(condescend|story)\./, /^phase\.(prepos|last-equal|hoh-room|targets)\./, /^bloc\.(noticed|votes|blowup)\./, /^reign\.both\./, /^scheme\.kiss\.setup$/, /^scheme\.collapse\./, /^texture\.(backyard|trial|namedrop)\./, /^editorial\.(bedroom|whisper|latenight|spill|orbit|flip|roast|meeting)\./, /^arc\.(court|debt)\./, /^couple\.(hiding|leak|jealous|underground)\./, /^plan\.seen\./, /^cer\.(nomgame|nompersonal)\./, /^romance\.(showmanceNoticed|showmanceTarget|showmanceJealousy|friendshipJealousy|triangle\w+|affairCaught|affairChoice|showmanceSabotage)\./, /^engine\.block\./, /^meeting\./, /^whack\.(suspect)\./, /^hex\.spent\./, /^road\.theory\./, /^suite\.plusone\./, /^inv\.circle\./, /^hack\.table\./, /^engine\.samecase\./, /^tempact\.reads\./, /^nmact\.(redone|blamed)\./, /^teamact\.(opening|effect\.(rumour|block|meeting|expose))$/, /^teamact\.opening\./];
     for (const [key, pool] of all) {
       if (WITH_C.some(re => re.test(key))) continue;
       for (const e of pool) {

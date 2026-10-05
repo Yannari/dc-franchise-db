@@ -79,12 +79,12 @@ export default {
   ],
   // the same deal, made by a pair NOT on the block: they have nothing to plead for
   'duoact.event.team': [
-    { id: 'dw7.t1', turns: [{ by: 'a', dr: "{b} and I aren't on the block, and we want to keep it that way. We vote together, all week." }] },
-    { id: 'dw7.t2', turns: [{ by: 'a', say: "Whoever we vote for, we vote for together." }, { by: 'b', say: "Agreed." }] },
-    { id: 'dw7.t3', turns: [{ by: 'b', dr: "{a} and I have started finishing each other's pitches. It's a bit scary." }] },
-    { id: 'dw7.t4', turns: [{ by: 'a', dr: "Two votes that always land in the same place. People notice that. Good." }] },
-    { id: 'dw7.t5', turns: [{ by: 'a', say: "We go to every conversation together this week." }, { by: 'b', say: "Every one." }] },
-    { id: 'dw7.t6', turns: [{ by: 'b', dr: "I didn't pick {a}, but I'd pick {a} now." }] },
+    { id: 'dw7.tm1', turns: [{ by: 'a', dr: "{b} and I aren't on the block, and we want to keep it that way. We vote together, all week." }] },
+    { id: 'dw7.tm2', turns: [{ by: 'a', say: "Whoever we vote for, we vote for together." }, { by: 'b', say: "Agreed." }] },
+    { id: 'dw7.tm3', turns: [{ by: 'b', dr: "{a} and I have started finishing each other's pitches. It's a bit scary." }] },
+    { id: 'dw7.tm4', turns: [{ by: 'a', dr: "Two votes that always land in the same place. People notice that. Good." }] },
+    { id: 'dw7.tm5', turns: [{ by: 'a', say: "We go to every conversation together this week." }, { by: 'b', say: "Every one." }] },
+    { id: 'dw7.tm6', turns: [{ by: 'b', dr: "I didn't pick {a}, but I'd pick {a} now." }] },
   ],
   'duoact.event.sell-out': [
     { id: 'dw7.o1', turns: [{ by: 'a', say: "Vote out {b}, not me." }, { beat: 'Somebody points out that it is the same vote.' }, { by: 'b', dr: "It got back to me before dinner." }] },

@@ -28,7 +28,7 @@
 // }
 // A line is { kind: 'say' | 'dr' | 'beat', by, text }. A part the act does not
 // have is left out; the viewer falls back to the format's own words.
-import { gs, players } from '../../core.js';
+import { gs, players, kinshipBetween, REL_KINSHIP } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { stableRng } from '../knowledge.js';
 import { makeScene } from './scene.js';
@@ -442,8 +442,18 @@ export function writeCeremony(act, week, house, extra = {}) {
       const arch = archOf(a) || 'floater';
       let lines = fresh('moveinact.arrive', { a }, { ending: arch }, `mi|${a}`)
         || fresh('moveinact.arrive', { a }, { ending: 'floater' }, `mi|${a}|f`);
-      // every third arrival has a first impression of somebody already inside
-      if (arrived.length && b.order % 3 === 2) {
+      // Somebody already inside they knew before the show (the cast's kinship: a couple, a
+      // sibling, an old friend, an ex). That is the first thing the viewer needs to know about
+      // them, or a kiss on the first night is two strangers kissing.
+      const known = arrived.find(o => (REL_KINSHIP[kinshipBetween(a, o)]?.group || '') !== '');
+      if (known) {
+        const kin = kinshipBetween(a, known);
+        const more = fresh('moveinact.known', { a, b: known }, { ending: kin }, `mi|known|${a}`)
+          || fresh('moveinact.known', { a, b: known }, { ending: REL_KINSHIP[kin].group.toLowerCase() }, `mi|known|${a}|g`);
+        if (Array.isArray(lines) && Array.isArray(more)) lines = [...lines, ...more];
+        b.knew = known; b.kin = kin;
+      } else if (arrived.length && b.order % 3 === 2) {
+        // every third arrival has a first impression of somebody already inside
         // somebody who walked in just before them: the people you meet first are the ones near the door
         const other = arrived[Math.max(0, arrived.length - 1 - (b.order % 2))];
         const tone = NICE.includes(arch) ? 'warm' : 'wary';

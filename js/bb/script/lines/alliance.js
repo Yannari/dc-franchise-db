@@ -522,6 +522,194 @@ export default {
       { by: 'b', say: "Then let's be first. {alliance}." },
     ] },
   ],
+  // Why an alliance forms, said before it is named. The ending is the reason the lifecycle
+  // recorded (shared-strategy.js formationTriggers); a is the one who starts the talk.
+  'alliance.why.strategic-pitch': [
+    { id: 'aw.p1', when: { room: ['bedroom'] }, turns: [
+      { by: 'a', say: "Can I grab you for a minute? Not out here." },
+      { beat: '{a} shuts the bedroom door.' },
+      { by: 'a', say: "I've talked to pretty much everyone now. You're the one I want to work with." },
+      { by: 'b', say: "Why me?" },
+      { by: 'a', say: "Because you were listening while everybody else was talking." },
+    ] },
+    { id: 'aw.p2', turns: [
+      { by: 'a', say: "People are already pairing off. I can see it happening." },
+      { by: 'b', say: "So can I." },
+      { by: 'a', say: "I'd rather be in a group than be the one left out of all of them." },
+      { by: 'b', say: "What are you asking?" },
+      { by: 'a', say: "I'm asking you to be in mine." },
+    ] },
+    { id: 'aw.p3', when: { early: true }, turns: [
+      { by: 'a', say: "Nobody knows anybody yet. That's exactly why we should decide now who we trust." },
+      { by: 'b', say: "And you trust me?" },
+      { by: 'a', say: "More than anybody else I've met so far." },
+    ] },
+    { id: 'aw.p4', when: { third: true, room: ['bedroom'] }, turns: [
+      { beat: '{a} brings {b} and {c} into the bedroom, one at a time.' },
+      { by: 'c', say: "What is this?" },
+      { by: 'a', say: "The three people in this house I actually want to win with." },
+    ] },
+    { id: 'aw.p5', when: { early: false }, turns: [
+      { by: 'a', say: "Everybody else has a group by now. We don't." },
+      { by: 'b', say: "I know. I've been feeling it." },
+      { by: 'a', say: "Then let's fix that." },
+    ] },
+    { id: 'aw.p6', turns: [
+      { by: 'a', say: "I'm going to be straight with you, because I think you'd see through anything else." },
+      { by: 'b', say: "Go on." },
+      { by: 'a', say: "I want to work with you. Properly. Not a 'let's see how it goes'." },
+    ] },
+    { id: 'aw.p7', turns: [
+      { by: 'b', say: "You've been watching everybody all day." },
+      { by: 'a', say: "And you're the one I keep coming back to." },
+      { by: 'b', say: "Is that a compliment or a pitch?" },
+      { by: 'a', say: "Both." },
+    ] },
+  ],
+  'alliance.why.close-pair': [
+    { id: 'aw.c1', when: { early: true }, turns: [
+      { by: 'a', say: "We've barely left each other's side since we walked in." },
+      { by: 'b', say: "I noticed." },
+      { by: 'a', say: "People are going to think we're working together anyway." },
+      { by: 'b', say: "Then we might as well actually do it." },
+    ] },
+    { id: 'aw.c2', turns: [
+      { by: 'a', say: "You're the only person in here I'd tell the truth to." },
+      { by: 'b', say: "Same." },
+      { by: 'a', say: "So let's stop pretending we're not a team." },
+    ] },
+    { id: 'aw.c3', when: { early: false }, turns: [
+      { by: 'a', say: "Everyone already thinks we're working together." },
+      { by: 'b', say: "We sort of are." },
+      { by: 'a', say: "Then let's make it real." },
+    ] },
+    { id: 'aw.c4', turns: [
+      { by: 'b', say: "If one of us goes up, the other one's going to be next anyway." },
+      { by: 'a', say: "So we might as well protect each other on purpose." },
+    ] },
+    { id: 'aw.c5', turns: [
+      { by: 'a', say: "Can I tell you something? You're the only person in here I actually like." },
+      { by: 'b', say: "Same. Is that bad?" },
+      { by: 'a', say: "It's only bad if we don't use it." },
+    ] },
+    { id: 'aw.c6', turns: [
+      { by: 'a', dr: "{b} and I just get on. It's not strategy. But in this house, everything turns into strategy eventually." },
+    ] },
+  ],
+  'alliance.why.shared-enemy': [
+    { id: 'aw.e1', when: { known: true }, turns: [
+      { by: 'a', say: "Can I be honest about {target}?" },
+      { by: 'b', say: "Please." },
+      { by: 'a', say: "I don't trust {target}." },
+      { by: 'b', say: "Neither do I. Not even a little." },
+      { by: 'a', say: "Then we should be looking out for each other." },
+    ] },
+    { id: 'aw.e2', when: { known: true }, turns: [
+      { by: 'b', say: "What do you make of {target}?" },
+      { by: 'a', say: "Honestly? I don't like {target}." },
+      { by: 'b', say: "Oh, thank God. Me neither." },
+    ] },
+    { id: 'aw.e3', turns: [
+      { by: 'a', say: "We want the same person gone. We both know who." },
+      { by: 'b', say: "We do." },
+      { by: 'a', say: "Then we're on the same side." },
+    ] },
+    { id: 'aw.e4', when: { known: true }, turns: [
+      { by: 'a', say: "Am I the only one who thinks {target} is running this house?" },
+      { by: 'b', say: "No. You're really not." },
+    ] },
+    { id: 'aw.e5', turns: [
+      { by: 'b', say: "I keep ending up on the wrong side of the same person." },
+      { by: 'a', say: "So do I. That makes us the right side." },
+    ] },
+    { id: 'aw.e6', turns: [
+      { by: 'a', say: "We don't have to like each other much. We just have to want the same thing." },
+      { by: 'b', say: "We do want the same thing." },
+    ] },
+  ],
+  'alliance.why.survival-pact': [
+    { id: 'aw.s1', turns: [
+      { by: 'a', say: "Have you noticed nobody comes to talk to us?" },
+      { by: 'b', say: "All day. I thought it was just me." },
+      { by: 'a', say: "Then we talk to each other." },
+    ] },
+    { id: 'aw.s2', turns: [
+      { by: 'a', say: "If they're picking people to get rid of, it's us two first." },
+      { by: 'b', say: "I know." },
+      { by: 'a', say: "So we stick together. Nobody else is going to stick with us." },
+    ] },
+    { id: 'aw.s3', turns: [
+      { by: 'b', say: "Every group in this house has a name except ours." },
+      { by: 'a', say: "Because we're not in one." },
+      { by: 'b', say: "So let's be one." },
+    ] },
+    { id: 'aw.s4', turns: [
+      { by: 'a', dr: "{b} and I are on the outside of everything in here. Two people on the outside is a start." },
+    ] },
+    { id: 'aw.s5', turns: [
+      { by: 'a', say: "Nobody's going to save us." },
+      { by: 'b', say: "Then we save each other." },
+    ] },
+    { id: 'aw.s6', turns: [
+      { by: 'b', say: "When they need a name for the block, it's going to be one of us." },
+      { by: 'a', say: "Unless there are two of us asking for votes instead of one." },
+    ] },
+  ],
+  'alliance.why.shared-block': [
+    { id: 'aw.b1', turns: [
+      { by: 'a', say: "We sat on that block together." },
+      { by: 'b', say: "And we're both still here." },
+      { by: 'a', say: "Let's keep it that way." },
+    ] },
+    { id: 'aw.b2', turns: [
+      { by: 'b', say: "Whoever put us up there thought we'd turn on each other." },
+      { by: 'a', say: "We didn't." },
+      { by: 'b', say: "So let's make them regret it." },
+    ] },
+    { id: 'aw.b3', turns: [
+      { by: 'a', dr: "{b} and I sat next to each other on the block. You learn a lot about somebody in those chairs." },
+    ] },
+    { id: 'aw.b4', turns: [
+      { by: 'b', say: "We both got told we were pawns." },
+      { by: 'a', say: "Nobody's going to use us like that again." },
+    ] },
+    { id: 'aw.b5', turns: [
+      { by: 'a', say: "You never once threw me under the bus up there." },
+      { by: 'b', say: "Neither did you." },
+      { by: 'a', say: "That's worth something in here." },
+    ] },
+    { id: 'aw.b6', turns: [
+      { by: 'b', say: "Same chairs, same week, same people wanting us gone." },
+      { by: 'a', say: "So same side." },
+    ] },
+  ],
+  'alliance.why.genuine-deal': [
+    { id: 'aw.d1', turns: [
+      { by: 'a', say: "We already shook on it." },
+      { by: 'b', say: "We did." },
+      { by: 'a', say: "Then let's make it more than a handshake." },
+    ] },
+    { id: 'aw.d2', turns: [
+      { by: 'b', say: "That deal we made. Did you mean it?" },
+      { by: 'a', say: "Every word." },
+      { by: 'b', say: "Me too. So let's build on it." },
+    ] },
+    { id: 'aw.d3', turns: [
+      { by: 'a', dr: "{b} kept every promise so far. In this house, that makes {b} the most valuable person I know." },
+    ] },
+    { id: 'aw.d4', turns: [
+      { by: 'b', say: "You haven't gone back on one thing you told me." },
+      { by: 'a', say: "And I'm not going to start." },
+    ] },
+    { id: 'aw.d5', turns: [
+      { by: 'a', say: "Our deal's held. Everybody else's has fallen apart." },
+      { by: 'b', say: "So let's make it permanent." },
+    ] },
+    { id: 'aw.d6', turns: [
+      { by: 'b', say: "I trust you. I didn't expect to say that in here." },
+      { by: 'a', say: "Then let's do something with it." },
+    ] },
+  ],
   'alliance.formed.inner': [
     { id: 'af.i1', turns: [
       { by: 'a', say: "We're still in {alliance2}. Nothing changes there." },

@@ -81,6 +81,33 @@ export default {
     A('mi7.pp1', "Hi, everybody.", "Watch who sits next to who in the first hour. People tell you everything without meaning to."),
     A('mi7.pp2', "Hey. Nice to meet you all.", "Three people in here have already made a friend. I saw it happen."),
   ],
+  // a walks in and somebody already inside is somebody they knew before the show. The house
+  // does not know; the Diary Room does. By kinship word, then by its group.
+  'moveinact.known.married': [
+    { id: 'mik.m1', turns: [{ beat: '{a} walks in and sees {b}. Neither of them lets it show.' }, { by: 'a', dr: "{b} and I are married. If this house finds out, we're both on the block by the weekend." }] },
+  ],
+  'moveinact.known.engaged': [
+    { id: 'mik.e1', turns: [{ beat: '{a} walks in and sees {b}. {a} looks away first.' }, { by: 'a', dr: "{b} and I are engaged. Nobody in here can know that." }] },
+  ],
+  'moveinact.known.together': [
+    { id: 'mik.t1', turns: [{ beat: '{a} walks in and sees {b}. Neither of them lets it show.' }, { by: 'a', dr: "{b} and I are together. Nobody in this house knows, and it has to stay that way." }] },
+    { id: 'mik.t2', turns: [{ beat: '{a} shakes hands with {b} like they have never met.' }, { by: 'a', dr: "That's my partner I just shook hands with. We agreed: strangers, for as long as we can manage it." }] },
+  ],
+  'moveinact.known.twins': [
+    { id: 'mik.w1', turns: [{ beat: '{a} walks in. {b} is already on the sofa, and does not get up.' }, { by: 'a', dr: "{b} is my twin. We agreed to play this alone for as long as nobody notices." }] },
+  ],
+  'moveinact.known.family': [
+    { id: 'mik.f1', turns: [{ beat: '{a} walks in and sees {b}. A quick look, then nothing.' }, { by: 'a', dr: "{b} and I are family. Nobody in here needs to know that yet." }] },
+  ],
+  'moveinact.known.friends': [
+    { id: 'mik.r1', turns: [{ beat: '{a} walks in and spots {b} straight away.' }, { by: 'a', dr: "I know {b} from before the show. We're going to act like we just met. For now." }] },
+  ],
+  'moveinact.known.exes': [
+    { id: 'mik.x1', turns: [{ beat: '{a} walks in, sees {b} and stops for half a second.' }, { by: 'a', dr: "{b} is my ex. Of all the people to walk through that door." }] },
+  ],
+  'moveinact.known.history': [
+    { id: 'mik.h1', turns: [{ beat: '{a} walks in, sees {b} and the smile goes.' }, { by: 'a', dr: "{b} and I have history. Not the good kind. And now we live together." }] },
+  ],
   'moveinact.meet.warm': [
     { id: 'mi7.w1', turns: [{ by: 'a', dr: "{b} made a space for me on the sofa the second I walked in. I like {b} already." }] },
     { id: 'mi7.w2', turns: [{ by: 'a', dr: "{b} seems genuinely nice. That might be a problem later. For now, I like {b}." }] },

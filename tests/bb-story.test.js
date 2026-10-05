@@ -137,6 +137,21 @@ describe('house life in real weeks', () => {
     expect(aired).toEqual(acts.filter(id => aired.includes(id)));
   });
 
+  it('never airs the same scene twice, and keeps the rhythm of real house talk', () => {
+    // Measured against Big Brother 22 transcripts (docs/bb-dialogue-style.md): strategy talk is
+    // mostly short turns, but a season is not all clipped — arguments and heart-to-hearts run long.
+    const ids = scenes.map(sc => sc.lineId);
+    expect(ids.length - new Set(ids).size, 'a scene aired twice').toBe(0);
+    const says = scenes.flatMap(sc => sc.lines.filter(l => l.kind === 'say').map(l => l.text.split(/\s+/).length));
+    const mean = says.reduce((a, b) => a + b, 0) / says.length;
+    const short = says.filter(n => n <= 4).length / says.length;
+    expect(mean).toBeGreaterThan(4);
+    expect(mean).toBeLessThan(9);
+    expect(short).toBeGreaterThan(0.25);
+    expect(short).toBeLessThan(0.6);
+    expect(Math.max(...scenes.map(sc => sc.lines.length))).toBeGreaterThanOrEqual(14);
+  });
+
   it('classifies a friction beat with the offender as a, whichever way round the old pool had it', () => {
     const c = classify({ scene: { kind: 'friction.dishes', who: { a: 'Hurt', b: 'Did' }, data: { ending: 'snipe' } }, players: ['Hurt', 'Did'] });
     expect(c.roles.a).toBe('Did');

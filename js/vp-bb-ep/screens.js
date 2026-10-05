@@ -10,7 +10,7 @@
 // the part of the week it belongs to (spec decision D1).
 //
 // Switch back to the old screens: localStorage 'bb-classic-vp' = '1'.
-import { bbWeekSteps, REPLACED, ANCHOR_OF } from './steps.js';
+import { bbWeekSteps, REPLACED, ANCHOR_OF, houseLifeMode } from './steps.js';
 import { stageHtml, camStyle, esc, escT, col, img, eyeSvg, SEASON_DIR } from './stage.js';
 import { BBX_CSS, BBX_FONTS } from './style.js';
 import { BBX_SUITE_CSS } from './style-suite.js';
@@ -30,6 +30,9 @@ import { seasonId } from '../shows.js';
 
 const reg = () => (typeof window !== 'undefined' ? (window._bbx ||= {}) : (globalThis._bbx ||= {}));
 const SHELL_CSS = `
+.bbx .bbx-feed{margin-top:14px;border-top:1px solid rgba(34,225,255,.25);padding-top:10px}
+.bbx .bbx-feed-h{font:700 11px 'Chakra Petch',system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#22e1ff;margin:0 0 8px}
+
 .bbx{--bbx-line:rgba(255,255,255,.12);color:#e8eefb;font-family:Archivo,system-ui,sans-serif;max-width:1180px;margin:0 auto}
 .bbx .bbx-stage{position:relative;aspect-ratio:16/9;container-type:inline-size;overflow:hidden;border-radius:14px;background:#03050a;cursor:pointer;user-select:none;isolation:isolate;box-shadow:0 0 0 1px rgba(34,225,255,.18),0 30px 70px -20px rgba(0,20,60,.55)}
 .bbx .bbx-ctrl{display:flex;gap:6px;align-items:center;margin:10px 0 0;flex-wrap:wrap}
@@ -98,12 +101,25 @@ function seasonOf(row) { return SEASON_DIR[row.themeId] || 'default'; }
  */
 export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted = [], plea = null } = {}) {
   const steps = bbWeekSteps(row, { host, priorEvicted, plea });
+  const houseLife = steps.some(S => S.kind === 'houselife');
   if (!steps.length) return legacy;
   const o = { season: seasonOf(row), host };
   // Twist and House Life screens, by the part of the week they followed in the old running
   // order. Counted by OCCURRENCE: on a double or triple eviction the first cycle's eviction
   // is a different place from the second's, and filing both under "after the eviction"
   // stacked every cycle's House Life together at the end of the night.
+  // the same counting over the stepped screens: each screen's key, and where each key ends
+  const keyOf = [];
+  {
+    const occ = {}; let type = 'start'; let key = 'start#0';
+    for (const S of steps) {
+      if (S.kind !== 'scene' && S.kind !== 'houselife' && S.anchor && S.anchor !== type) { occ[S.anchor] = (occ[S.anchor] || 0) + 1; type = S.anchor; key = `${S.anchor}#${occ[S.anchor]}`; }
+      keyOf.push(key);
+    }
+  }
+  // The stretches that have a House Life segment: their classic House Life screens go INSIDE it.
+  const segKeys = new Set(steps.map((S, i) => (S.kind === 'houselife' ? keyOf[i] : null)).filter(Boolean));
+  const houseOf = {};
   const after = { 'start#0': [] };
   {
     const occ = {}; let type = 'start'; let key = 'start#0';
@@ -111,16 +127,11 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
       const a = ANCHOR_OF(L.id);
       if (a) { if (a !== type) { occ[a] = (occ[a] || 0) + 1; type = a; key = `${a}#${occ[a]}`; after[key] ||= []; } continue; }
       if (REPLACED.test(L.id)) continue;
+      // In the House Life view the segment IS the stretch's house life, so the classic House
+      // Life screen (the full record, the powers band, the payout, the season's register) goes
+      // inside it, under the stage, instead of airing beside it as a second House Life screen.
+      if (houseLife && /^bb-house-\d+(-\d+)?$/.test(L.id) && segKeys.has(key)) { (houseOf[key] ||= []).push(L); continue; }
       after[key].push(L);
-    }
-  }
-  // the same counting over the stepped screens: each screen's key, and where each key ends
-  const keyOf = [];
-  {
-    const occ = {}; let type = 'start'; let key = 'start#0';
-    for (const S of steps) {
-      if (S.kind !== 'scene' && S.anchor && S.anchor !== type) { occ[S.anchor] = (occ[S.anchor] || 0) + 1; type = S.anchor; key = `${S.anchor}#${occ[S.anchor]}`; }
-      keyOf.push(key);
     }
   }
   const lastAt = {};
@@ -145,7 +156,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   // cycle's copy (a double eviction) gets the classic suffix.
   const seenIds = {};
   const ids = steps.map(S => {
-    if (S.kind === 'scene' || !/v\d*$/.test(S.id)) return S.id;   // a scene, or an id already final
+    if (S.kind === 'scene' || S.kind === 'houselife' || !/v\d*$/.test(S.id)) return S.id;   // a scene, a House Life segment, or an id already final
     const base = S.id.replace(/-v\d*$/, '').replace(/v$/, '');
     seenIds[base] = (seenIds[base] || 0) + 1;
     return seenIds[base] === 1 ? base : `${base}-${seenIds[base]}`;
@@ -162,8 +173,12 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     }
     const uid = `bbx${esc(row.num)}-${si}`;
     reg()[uid] = { screens: steps, si, idx: -1, o, auto: false, timer: null };
+    // a House Life segment holds its stretch's classic House Life screens (and takes the first one's id)
+    const feed = S.kind === 'houselife' ? (houseOf[keyOf[si]] || []).splice(0) : [];
+    // the stepped screen sets the music, not the record underneath it
+    const feedHtml = feed.length ? `<div class="bbx-feed"><div class="bbx-feed-h">The house this stretch · the full record</div>${feed.map(L => String(L.html).replace(/\sdata-ambient="[^"]*"/g, '')).join('')}</div>` : '';
     out.push({
-      id: ids[si],
+      id: feed[0]?.id || ids[si],
       label: S.label || S.title,
       html: `<div class="bbx" data-uid="${uid}" data-ambient="${bedFor(S)}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${BBX_PX_CSS}${BBX_DUO_CSS}${BBX_CAMP_CSS}${BBX_WILD_CSS}${BBX_SPOWER_CSS}${BBX_CAPSULE_CSS}${BBX_INTERRO_CSS}${BBX_WHACK_CSS}${SHELL_CSS}</style>
   <div class="bbx-stage stage" id="bbx-st-${uid}" onclick="bbxNext('${uid}')" title="Click for the next line">${stageHtml(steps, si, -1, false, o).html}</div>
@@ -175,16 +190,19 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     <button type="button" class="bbx-btn" id="bbx-auto-${uid}" onclick="bbxAuto('${uid}')">Auto</button>
     <button type="button" class="bbx-btn" onclick="bbxTv()">TV mode</button>
     <button type="button" class="bbx-btn" onclick="bbxSwitchViewer('classic')" title="Back to the classic screens">Classic</button>
+    <button type="button" class="bbx-btn" onclick="bbxHouseLife()" title="House life as one segment per stretch, or one scene per screen">${houseLifeMode() === 'scenes' ? 'House Life view' : 'Scenes view'}</button>
     <span class="bbx-count" id="bbx-count-${uid}">0 / ${S.steps.length}</span>
   </div>
   <div class="bbx-under"><div class="bbx-script" id="bbx-script-${uid}">${scriptHtml(S)}</div>
     <aside class="bbx-side" id="bbx-side-${uid}">${sideHtml({ hoh: null, nom: [], veto: null, out: [], vetoPlay: [], ballots: [], stances: {}, spent: [], held: [], safe: [], stamps: {}, plus: null, bill: null, shut: false, chain: [], snubs: [], leftover: [] }, S)}</aside></div>
+  ${feedHtml}
 </div>`,
     });
     out.push(...slotted[si]);
     // the twist and House Life screens that followed this part of the week, once it has aired
     flushKey();
   });
+  for (const k of Object.keys(houseOf)) if (houseOf[k].length) { (after[k] ||= []).push(...houseOf[k]); if (placed.has(k)) out.push(...houseOf[k]); }
   // A part of the classic week with no stepped screen of its own (a cycle with no draw):
   // its screens go after the last stepped screen of the same kind that came before it.
   for (const k of Object.keys(after)) if (!placed.has(k) && after[k].length) {
@@ -285,6 +303,15 @@ export function bbxTv() {
   } catch { /* fullscreen refused: the bigger stage still applies */ }
 }
 /** Switch between the stepped viewer and the classic screens, and redraw this week. */
+/** Flip house life between one segment per stretch and one scene per screen, and redraw. */
+export function bbxHouseLife() {
+  try { localStorage.setItem('bb-houselife', houseLifeMode() === 'scenes' ? 'segments' : 'scenes'); } catch { /* per-viewer convenience */ }
+  try {
+    const ep = window.vpEpNum ?? window._vpEpNum;
+    if (typeof window.openVisualPlayer === 'function' && ep != null) window.openVisualPlayer(ep);
+    else location.reload();
+  } catch { location.reload(); }
+}
 export function bbxSwitchViewer(which) {
   try { localStorage.setItem('bb-vp', which === 'stepped' ? 'stepped' : 'classic'); } catch { /* per-viewer convenience */ }
   try {
@@ -293,7 +320,7 @@ export function bbxSwitchViewer(which) {
     else location.reload();
   } catch { location.reload(); }
 }
-if (typeof window !== 'undefined') Object.assign(window, { bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer });
+if (typeof window !== 'undefined') Object.assign(window, { bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife });
 // Closing the Viewing Party only hides it: stop every Auto run and the line typing out,
 // or Auto keeps clicking through the week (and its music) behind a closed window.
 if (typeof document !== 'undefined') document.addEventListener('vp:close', () => {

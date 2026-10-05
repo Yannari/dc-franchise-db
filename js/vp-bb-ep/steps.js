@@ -1801,6 +1801,182 @@ export function dramaOf(beat) {
   return (BADGE_DRAMA[beat.badgeClass] || 1) + (beat.lines?.length ? 2.5 : 0) + Math.min(4, (beat.players || []).length) * 0.25
     + (beat.category === 'deals' || beat.category === 'strategy' ? 0.5 : 0);
 }
+// ── House Life: one segment per stretch of the week ─────────────────────
+// The default way house life airs (the user, 2026-10-05: one-moment screens
+// with two-line conversations "is dumb"). Every stretch between ceremonies is
+// ONE screen, and the camera cuts room to room through it. Beats that share
+// people join into one conversation; when the next beat's people differ,
+// somebody walks in or heads off first, so nobody hears a line that was not
+// said in front of them. Nothing here invents a fact: it stages the beats the
+// engine wrote. The old one-scene-per-screen view is still there (houseLife:
+// 'scenes', the "Scenes" button).
+export const HOUSE_LIFE_CAP = { start: 9, hoh: 9, noms: 9, veto: 7, cer: 9, evict: 5 };
+const DOING = {
+  kitchen: ['is making something to eat', 'are making something to eat'],
+  ceremony: ['is on the sofa', 'are on the sofas'],
+  bedroom: ['is lying on a bed', 'are sitting on the beds'],
+  yard: ['is out by the pool', 'are out by the pool'],
+  hoh: ['is up in the HOH room', 'are up in the HOH room'],
+  dining: ['is at the dining table', 'are at the dining table'],
+};
+const MOOD_RANK = { drama: 5, scheming: 4, secret: 3, deals: 2, ceremony: 1, house: 0 };
+const ROOM_IN = { kitchen: 'kitchen', ceremony: 'living room', bedroom: 'bedroom', hoh: 'HOH room', yard: 'backyard', dining: 'dining room' };
+const setOfBeat = b => { const s = ROOM_SET[b.location] || 'ceremony'; return s === 'dr' ? 'ceremony' : s; };
+const beatSteps = b => (b.lines?.length
+  ? b.lines.map(l => ({ k: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, t: l.text }))
+  : [{ k: 'beat', t: stripTags(b.text) }]);
+
+/** Who is physically in a beat: the people who speak out loud (or, for a staged-only beat, its players). */
+const presentIn = b => {
+  const said = [...new Set((b.lines || []).filter(l => l.kind !== 'dr' && l.kind !== 'beat' && l.by).map(l => l.by))];
+  if (said.length) return said.slice(0, 4);
+  if ((b.lines || []).length && (b.lines || []).every(l => l.kind === 'dr')) return [];   // a Diary Room aside
+  return (b.players || []).slice(0, 4);
+};
+
+/**
+ * Join a stretch's beats into conversations. A beat joins the conversation
+ * already holding one of its speakers (anywhere in the stretch, not only the
+ * one just before it), up to 4 people and 18 lines a conversation; a Diary
+ * Room aside joins the conversation its speaker is in, or the latest one.
+ * Within a conversation the beats keep the order they happened in.
+ */
+export function conversationsOf(beats) {
+  const convos = [];
+  const size = b => b.lines?.length || 1;
+  const order = new Map(beats.map((b, i) => [b, i]));
+  // the talk first, so an aside can find the conversation it is about wherever it sits
+  for (const b of beats) {
+    const here = presentIn(b);
+    if (!here.length) continue;
+    const fit = convos.find(c => here.some(n => c.people.has(n))
+      && new Set([...c.people, ...here]).size <= 4 && c.lines + size(b) <= 18);
+    if (fit) { fit.beats.push(b); here.forEach(n => fit.people.add(n)); fit.lines += size(b); }
+    else convos.push({ beats: [b], people: new Set(here), lines: size(b) });
+  }
+  // A Diary Room aside joins a conversation only if it is ABOUT the people in it: a line
+  // about kissing Ripper does not belong in an alliance talk Ripper is not part of. An
+  // aside about nobody on stage airs on its own, in the Diary Room.
+  const talk = convos.slice();
+  for (const b of beats) {
+    if (presentIn(b).length) continue;
+    const speaker = (b.lines || [])[0]?.by;
+    const about = (b.players || []).filter(n => n !== speaker);
+    const home = talk.find(c => c.people.has(speaker) && about.every(n => c.people.has(n)));
+    if (home) { home.beats.push(b); home.lines += size(b); continue; }
+    convos.push({ beats: [b], people: new Set([speaker].filter(Boolean)), lines: size(b), diary: true, at: order.get(b) });
+  }
+  for (const c of convos) {
+    c.beats.sort((x, y) => order.get(x) - order.get(y));
+    c.at = order.get(c.beats[0]);
+    // a conversation opens on the talk, not on somebody's aside about it
+    if (c.diary) continue;
+    // ...and an aside airs straight after the moment it is about (the last talk with those people in it)
+    const asides = c.beats.filter(x => !presentIn(x).length);
+    const talk = c.beats.filter(x => presentIn(x).length);
+    for (const x of asides) {
+      const sp = (x.lines || [])[0]?.by;
+      const about = (x.players || []).filter(n => n !== sp);
+      const want = about.length ? about : [sp];
+      let at = -1;
+      talk.forEach((t, i) => { if (want.every(n => (t.players || []).includes(n)) && (order.get(t) < order.get(x) || at < 0)) at = i; });
+      if (at < 0) at = talk.findIndex(t => order.get(t) > order.get(x)) - 1;
+      talk.splice(Math.max(at, 0) + 1, 0, x);
+    }
+    c.beats = talk;
+  }
+  return convos.sort((x, y) => x.at - y.at);
+}
+
+function houseLifeScreen(beats, ctx, n) {
+  const steps = [];
+  let mood = 'house';
+  const spots = k => { const xs = spread(k.length); return k.map((p, i) => [p, xs[i]]); };
+  for (const c of conversationsOf(beats)) {
+    if (c.diary) {
+      const who = [...c.people];
+      const dl = c.beats.flatMap(beatSteps);
+      if (dl.length) dl[0] = { ...dl[0], scene: { set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, kicker: 'Cam 01 · Diary room', cast: who.map(p => [p, 50]), mood: sceneMood(c.beats[0]) } };
+      steps.push(...dl);
+      continue;
+    }
+    let here = [];
+    let set = null;
+    let started = false;
+    for (const b of c.beats) {
+      const people = presentIn(b);
+      const bmood = sceneMood(b);
+      if ((MOOD_RANK[bmood] || 0) > (MOOD_RANK[mood] || 0)) mood = bmood;
+      if (!people.length && started) { steps.push(...beatSteps(b)); continue; }   // a Diary Room aside, mid-talk
+      const who = people.length ? people : [(b.lines || [])[0]?.by].filter(Boolean);
+      const bset = setOfBeat(b);
+      const scene = { set: bset, room: ROOM_NAME[bset], cam: CAM[bset], kicker: `Cam ${String(CAM[bset]).padStart(2, '0')} · ${ROOM_NAME[bset]}`, cast: spots(who), mood: bmood };
+      if (!started) {
+        const [one, many] = DOING[bset] || DOING.ceremony;
+        steps.push({ k: 'beat', t: `${ROOM_NAME[bset]}. ${listOf(who)} ${who.length === 1 ? one : many}.`, scene });
+        started = true;
+      } else {
+        // the same talk, continued: people come and go, or it moves rooms
+        const stay = who.filter(p => here.includes(p));
+        const joins = who.filter(p => !here.includes(p));
+        const leaves = here.filter(p => !who.includes(p));
+        const bits = [];
+        if (leaves.length) bits.push(`${listOf(leaves)} ${leaves.length === 1 ? 'heads' : 'head'} off.`);
+        if (bset !== set && stay.length) bits.push(`${listOf(stay)} ${stay.length === 1 ? 'goes' : 'go'} through to the ${ROOM_IN[bset] || 'living room'}.`);
+        if (joins.length) bits.push(`${listOf(joins)} ${joins.length === 1 ? 'comes' : 'come'} in${bset !== set && !stay.length ? ` to the ${ROOM_IN[bset] || 'living room'}` : ''}.`);
+        if (bits.length) steps.push({ k: 'beat', t: bits.join(' '), scene });
+        else steps.push({ k: 'beat', t: '', scene, silent: true });
+      }
+      steps.push(...beatSteps(b));
+      here = who; set = bset;
+    }
+  }
+  // a cut with nothing to say (the same people, the same room) is only a marker
+  const out = [];
+  for (const st of steps) {
+    if (st.silent) { const nx = steps[steps.indexOf(st) + 1]; if (nx) nx.scene = st.scene; continue; }
+    out.push(st);
+  }
+  if (ctx.week === 1 && n === 1 && out.length) {
+    out.unshift({ k: 'beat', t: 'The first night. Bags are still on the floor, and everybody is still working out who is who.', scene: out.find(s => s.scene)?.scene });
+  }
+  const first = out.find(s => s.scene)?.scene || {};
+  return {
+    id: `bb-hl-${n}`, kind: 'houselife', anchor: ctx.anchor, day: ctx.day, time: ACT_TIME.house,
+    title: `House Life · Day ${ctx.day}`, label: 'House Life', sub: `Day ${ctx.day} in the house`,
+    set: first.set || 'ceremony', room: first.room || 'Living Room', cam: first.cam || 4, kicker: first.kicker || 'Cam 04 · Living room',
+    cast: first.cast || [], mood, steps: out,
+  };
+}
+
+/**
+ * A beat that pays something off airs with the beat that set it up. Picking scenes by
+ * drama alone aired "we need a name for the alliance" without the alliance ever forming:
+ * the payoff ranked higher than its setup. So for every beat chosen, an earlier unchosen
+ * beat in the same stretch about the same alliance, or about the same two people in the
+ * same kind of scene, comes with it (it is placed first by keeping the stretch's order).
+ */
+export function withSetups(chosen, stretch, aired) {
+  const keep = new Set(chosen);
+  for (const b of chosen) {
+    const at = stretch.indexOf(b);
+    const ps = new Set(b.players || []);
+    for (let i = at - 1; i >= 0; i--) {
+      const a = stretch[i];
+      if (keep.has(a)) continue;
+      const sameAlliance = a.allianceId && a.allianceId === b.allianceId;
+      const shared = (a.players || []).filter(n => ps.has(n)).length;
+      if (sameAlliance || (shared >= 2 && a.category === b.category)) { keep.add(a); if (a.eventId) aired.add(a.eventId); break; }
+    }
+  }
+  return stretch.filter(x => keep.has(x));
+}
+
+/** Which way house life airs: one segment per stretch (default) or one scene per screen. */
+export function houseLifeMode() {
+  try { return (typeof localStorage !== 'undefined' && localStorage.getItem('bb-houselife')) === 'scenes' ? 'scenes' : 'segments'; } catch { return 'segments'; }
+}
+
 export function chooseAired(beats, cap, seen = new Set()) {
   const ranked = beats.map((b, i) => ({ b, i, d: dramaOf(b) })).sort((x, y) => y.d - x.d || x.i - y.i);
   const keep = [];
@@ -1817,7 +1993,7 @@ export function chooseAired(beats, cap, seen = new Set()) {
  * Returns screens in the order the week happened; each carries `anchor`, the
  * part of the week a legacy twist screen belongs after.
  */
-export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = null } = {}) {
+export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = null, houseLife = houseLifeMode() } = {}) {
   const house = (row.houseAtStart || []).slice();
   const ctx = { week: row.num || 1, hoh: row.hoh, house, nominees: (row.initialNominees || []).slice(), vetoHolder: row.vetoWinner,
     // a Halting Hex or a Rewind is about to cancel tonight's eviction
@@ -1834,6 +2010,14 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   const beatsOf = act => { stretch.push(...(act.socialBeats || [])); };
   // a stretch of house life airs before the next ceremony
   const flush = () => {
+    if (houseLife === 'segments') {
+      // the whole stretch as one House Life screen
+      const beats = withSetups(chooseAired(stretch, HOUSE_LIFE_CAP[ctx.anchor] ?? 7, aired), stretch, aired)
+        .filter(b => !(b.players || []).some(n => ctx.hidden.has(n)));
+      if (beats.length) { const sc = houseLifeScreen(beats, ctx, ++scenes); sc.hidden = new Set(ctx.hidden); out.push(sc); }
+      stretch = [];
+      return;
+    }
     for (const b of chooseAired(stretch, AIRS_PER_STRETCH[ctx.anchor] ?? 3, aired)) {
       if ((b.players || []).some(n => ctx.hidden.has(n))) continue;
       const sc = sceneScreen(b, ctx, ++scenes); sc.hidden = new Set(ctx.hidden); out.push(sc);
@@ -1842,7 +2026,10 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   };
   const ceremony = scr => { flush(); scr.hidden = new Set(ctx.hidden); out.push(scr); };
   for (const act of row.acts || []) {
-    ctx.day = ((ctx.week - 1) * 7) + 1 + (ACT_DAY[act.type] ?? (row.isFinale ? 6 : 0));
+    // An act with no day of its own (most twists) happens where the week has got to:
+    // the clock never runs backwards within a week.
+    const dayOf = ((ctx.week - 1) * 7) + 1 + (ACT_DAY[act.type] ?? (row.isFinale ? 6 : 0));
+    ctx.day = ACT_DAY[act.type] != null || row.isFinale ? Math.max(ctx.day || 0, dayOf) : Math.max(ctx.day || 0, ((ctx.week - 1) * 7) + 1);
     switch (act.type) {
       case 'house': case 'campaign': beatsOf(act); break;
       case 'hoh':
@@ -1910,7 +2097,9 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         // the latecomers walk in here: from now on they are in the house
         flush(); out.push({ slot: act.type }); ctx.hidden = new Set(); beatsOf(act); break;
       default:
-        if (TWIST_SLOT.test(act.type)) { flush(); out.push({ slot: act.type }); }
+        // a classic twist screen airs where it happened; in the House Life view it does not cut
+        // the stretch in two (the house carries on after it as one segment, not two)
+        if (TWIST_SLOT.test(act.type)) { if (houseLife !== 'segments') flush(); out.push({ slot: act.type }); }
         beatsOf(act);
     }
   }
@@ -1933,7 +2122,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|cold)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|cold)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

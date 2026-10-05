@@ -77,7 +77,7 @@ const BED_BY_MOOD = { drama: 'bb-drama', deals: 'bb-deals', scheming: 'bb-schemi
 
 /** The bed a screen opens on (a track of it). */
 export function bedFor(screen) {
-  let base = screen?.kind === 'scene' ? (BED_BY_MOOD[screen.mood] || 'bb-house') : BED_BY_KIND[screen?.kind] || 'bb-house';
+  let base = (screen?.kind === 'scene' || screen?.kind === 'houselife') ? (BED_BY_MOOD[screen.mood] || 'bb-house') : BED_BY_KIND[screen?.kind] || 'bb-house';
   // A few screens inside a kind are a different moment.
   if (/^bb-campdoor/.test(screen?.id || '')) base = 'bb-comp';
   if (/^bb-deepfake/.test(screen?.id || '')) base = 'bb-secret';
@@ -178,6 +178,10 @@ export function soundFor(screen, idx) {
   if (st.k === 'dr' && (!prev || prev.k !== 'dr')) return { cue: 'bb-dr-cut', bed: null };
   if (st.k === 'bb' && !(prev && prev.k === 'bb')) return { cue: 'bb-voice', bed: null };
   if (screen.kind === 'scene' && idx === 0) return { cue: 'bb-blink', bed: null };
+  // House Life: each new conversation is a camera cut, and its music follows its mood
+  if (screen.kind === 'houselife' && st.scene && (!prev || prev.scene?.set !== st.scene.set || idx === 0)) {
+    return { cue: 'bb-blink', bed: BED_BY_MOOD[st.scene.mood] || 'bb-house' };
+  }
   return { cue: null, bed: null };
 }
 

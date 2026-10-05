@@ -56,7 +56,8 @@ describe('the Big Brother viewer’s sound', () => {
   });
 
   it('does not play every house scene to the same music', () => {
-    const moods = new Set(SCREENS.filter(S => S.kind === 'scene').map(S => S.mood));
+    // a House Life segment changes mood per conversation (its scene markers)
+    const moods = new Set(SCREENS.flatMap(S => S.kind === 'scene' ? [S.mood] : S.kind === 'houselife' ? S.steps.filter(st => st.scene).map(st => st.scene.mood) : []));
     expect(moods.size).toBeGreaterThan(1);
   });
 });

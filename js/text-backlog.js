@@ -6114,6 +6114,14 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'move-in':
+        sec('MOVE-IN DAY');
+        for (const b of act.beats || []) {
+          if (!b.lines?.length) { ln(`  ${b.text}`); continue; }
+          for (const l of b.lines) ln(l.by ? `  ${l.by}${l.kind === 'dr' ? ' (Diary Room)' : ''}: ${l.text}` : `  ${l.text}`);
+        }
+        break;
+
       case 'power-expired':
         sec('WHAT QUIETLY LEFT THE GAME');
         (act.beats || []).forEach(b => ln(`  ${b.text}`));

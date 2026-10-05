@@ -27,8 +27,12 @@ import { installRivals, rivalsState, isRival, rivalPartner, openRivals, announce
 import { BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
 import { generateSummaryText } from '../js/text-backlog.js';
 import { buildVPScreens, _tvState } from '../js/vp-screens.js';
+import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
 import { seedGame } from './helpers/setup.js';
 import { seededRandom } from './helpers/rng.js';
+// These pin the classic House Life feed, which airs in the Scenes view (the House Life view
+// replaces it with one segment per stretch: tests/bb-vp-steps.test.js).
+try { localStorage.setItem('bb-houselife', 'scenes'); } catch { /* no storage: the default view */ }
 
 const STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
   'loyalty', 'boldness', 'intuition', 'temperament'];
@@ -422,6 +426,20 @@ describe('a season with one running', () => {
       expect(gs.bb.stats[n]).toBeTruthy();
     }
   }, 60000);
+
+  it('keeps them out of the House Life segments until they walk in (the House Life view)', () => {
+    house({ bbRivals: 'declared', bbRivalsCount: 3 });
+    seasonConfig.twistSchedule = [];
+    const ep = simulateBBEpisode();
+    const late = (ep.acts || []).find(a => a.type === 'rivals-open')?.arrived || [];
+    expect(late.length).toBe(3);
+    const steps = bbWeekSteps(ep, { houseLife: 'segments' });
+    const handover = steps.findIndex(s => (s.slotsAfter || []).includes('rivals-hoh') || s.kind === 'hoh');
+    for (const S of steps.slice(0, Math.max(0, handover))) {
+      if (S.kind !== 'houselife') continue;
+      for (const st of S.steps) for (const n of late) expect(st.t, `${n} in House Life before walking in`).not.toContain(n);
+    }
+  });
 
   it('keeps them off the screens that happen before they arrive', () => {
     // The transcript was fixed first and the SCREENS were not, so move-in day

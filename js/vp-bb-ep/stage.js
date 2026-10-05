@@ -598,7 +598,12 @@ function lineHtml(S, st, fresh, L) {
 
 /** The whole stage for step `idx` of screen `si`. `o` = { season, host }. */
 export function stageHtml(screens, si, idx, fresh, o) {
-  const S = screens[si];
+  // A House Life segment cuts room to room: the latest `scene` marker up to
+  // this step says which room, camera and people are on screen.
+  const S0 = screens[si];
+  let sc = null;
+  if (S0.kind === 'houselife') for (let i = Math.max(0, idx); i >= 0; i--) { if (S0.steps[i]?.scene) { sc = S0.steps[i].scene; break; } }
+  const S = sc ? { ...S0, ...sc } : S0;
   const st = idx >= 0 ? S.steps[idx] : null;
   const prevSt = idx > 0 ? S.steps[idx - 1] : null;
   const L = ledgerAt(screens, si, idx);

@@ -1741,6 +1741,11 @@ export function summariseWeek(week) {
         }
         break;
       }
+      case 'move-in':
+        line('');
+        line('MOVE-IN DAY');
+        line(`  ${(act.arrivals || []).join(', ')} move into the house, in that order.`);
+        break;
       case 'power-expired':
         line('');
         line('WHAT QUIETLY LEFT THE GAME');

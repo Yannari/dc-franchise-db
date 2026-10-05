@@ -22,6 +22,9 @@ import { buildVPScreens } from '../js/vp-screens.js';
 import { generateSummaryText } from '../js/text-backlog.js';
 import { resolveWeekTwistState, BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
 import { seedGame } from './helpers/setup.js';
+// These pin the classic House Life feed, which airs in the Scenes view (the House Life view
+// replaces it with one segment per stretch: tests/bb-vp-steps.test.js).
+try { localStorage.setItem('bb-houselife', 'scenes'); } catch { /* no storage: the default view */ }
 
 const STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
   'loyalty', 'boldness', 'intuition', 'temperament'];

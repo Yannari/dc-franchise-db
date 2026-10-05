@@ -171,6 +171,9 @@ describe('Split House', () => {
 import { buildVPScreens, _tvState } from '../js/vp-screens.js';
 import { summariseWeek } from '../js/bb-run.js';
 import { generateSummaryText } from '../js/text-backlog.js';
+// These pin the classic House Life feed, which airs in the Scenes view (the House Life view
+// replaces it with one segment per stretch: tests/bb-vp-steps.test.js).
+try { localStorage.setItem('bb-houselife', 'scenes'); } catch { /* no storage: the default view */ }
 
 describe('Split House, on the surfaces', () => {
   beforeEach(() => house());

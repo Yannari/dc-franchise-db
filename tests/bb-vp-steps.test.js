@@ -7,7 +7,7 @@ import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { initGameState } from '../js/savestate.js';
 import { simulateBBEpisode, runBBFinale } from '../js/bb-run.js';
-import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
+import { bbWeekSteps, conversationsOf, withSetups } from '../js/vp-bb-ep/steps.js';
 import { stageHtml, ledgerAt } from '../js/vp-bb-ep/stage.js';
 import { bbStepScreens } from '../js/vp-bb-ep/screens.js';
 import { withSeededRandom } from './helpers/rng.js';
@@ -54,12 +54,31 @@ describe('every step is well-formed', () => {
 });
 
 describe('what airs is chosen', () => {
-  it('airs a programme, not every beat: a few scenes per stretch, no event twice in a week', () => {
-    for (const { row, screens } of weeks) {
-      const scenes = screens.filter(s => s.kind === 'scene');
+  it('airs a programme, not every beat: a few scenes per stretch, no event twice in a week (the Scenes view)', () => {
+    for (const { row } of weeks) {
+      const scenes = bbWeekSteps(row, { houseLife: 'scenes' }).filter(s => s.kind === 'scene');
       const beats = row.acts.flatMap(a => a.socialBeats || []).length;
       expect(scenes.length, `week ${row.num}: ${scenes.length} scenes from ${beats} beats`).toBeLessThanOrEqual(21);
       if (beats > 30) expect(scenes.length).toBeGreaterThan(8);
+    }
+  });
+
+  it('airs house life as one segment per stretch, with no beat twice and nobody staged who does not speak', () => {
+    for (const { row } of weeks) {
+      const screens = bbWeekSteps(row, { houseLife: 'segments' });
+      const segs = screens.filter(s => s.kind === 'houselife');
+      expect(segs.length, `week ${row.num}`).toBeGreaterThan(2);
+      expect(segs.length).toBeLessThanOrEqual(7);
+      // between two ceremonies there is never more than one House Life screen
+      screens.forEach((s, i) => { if (s.kind === 'houselife') expect(screens[i + 1]?.kind).not.toBe('houselife'); });
+      // a line spoken out loud is spoken by somebody on stage at that moment
+      for (const S of segs) {
+        let cast = new Set((S.cast || []).map(c => c[0]));
+        for (const st of S.steps) {
+          if (st.scene) cast = new Set(st.scene.cast.map(c => c[0]));
+          if (st.k === 'say' && st.by) expect(cast.has(st.by), `${st.by} speaks off stage: ${st.t}`).toBe(true);
+        }
+      }
     }
   });
 });
@@ -190,5 +209,31 @@ describe('finale night is in the viewer too', () => {
   });
   it('paints every step', () => {
     screens.forEach((S, si) => { for (let i = -1; i < S.steps.length; i++) expect(stageHtml(screens, si, i, true, { season: 'default', host: 'Valeria' }).html).not.toMatch(/undefined|NaN/); });
+  });
+});
+
+describe('House Life makes sense in order', () => {
+  const talk = (a, b, extra = {}) => ({ players: [a, b], lines: [{ by: a, kind: 'say', text: 'hi' }, { by: b, kind: 'say', text: 'hey' }], ...extra });
+  const dr = (by, about, extra = {}) => ({ players: [by, ...about], lines: [{ by, kind: 'dr', text: 'aside' }], ...extra });
+
+  it('airs a Diary Room aside only beside the people it is about', () => {
+    // the user's day 1: an alliance talk with a Diary Room line about a kiss with somebody else
+    const alliance = talk('Axel', 'Bowie');
+    const kiss = dr('Axel', ['Ripper']);
+    const cs = conversationsOf([alliance, kiss]);
+    expect(cs.find(c => c.beats.includes(alliance)).beats).not.toContain(kiss);
+    expect(cs.find(c => c.beats.includes(kiss)).diary).toBe(true);
+    // ...and one that IS about them stays in their conversation, after the talk
+    const about = dr('Axel', ['Bowie']);
+    const cs2 = conversationsOf([about, alliance]);
+    expect(cs2).toHaveLength(1);
+    expect(cs2[0].beats).toEqual([alliance, about]);
+  });
+
+  it('brings the setup of a payoff with it, in order', () => {
+    const formed = talk('Axel', 'Bowie', { allianceId: 'a1', eventId: 'f' });
+    const other = talk('Zee', 'Chase', { eventId: 'o' });
+    const named = talk('Axel', 'Bowie', { allianceId: 'a1', eventId: 'n' });
+    expect(withSetups([named], [formed, other, named], new Set())).toEqual([formed, named]);
   });
 });

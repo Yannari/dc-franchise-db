@@ -103,7 +103,7 @@ export default {
   ],
   'editorial.roast.lands': [
     { id: 'er.l1', turns: [{ by: 'a', say: "This is {b} walking into a strategy talk." }, { beat: '{a} does the walk.' }, { by: 'c', say: "That's exactly it!" }, { by: 'b', say: "...Okay, that's fair." }] },
-    { id: 'er.l2', turns: [{ by: 'a', say: "And the award for most dramatic veto speech goes to... {b}!" }, { by: 'b', say: "I want a recount!" }] },
+    { id: 'er.l2', turns: [{ by: 'a', say: "And the award for most dramatic sigh in this house goes to... {b}!" }, { by: 'b', say: "I want a recount!" }] },
     { id: 'er.l3', turns: [{ beat: '{a} pulls {b}\'s face for when someone has a bad plan.' }, { by: 'b', say: "I don't do that face." }, { beat: '{b} does the face.' }] },
     { id: 'er.l4', turns: [{ by: 'c', dr: "{a} did an impression of {b} and I nearly fell off the sofa. Even {b} laughed." }] },
     { id: 'er.l5', turns: [{ by: 'b', say: "Do me again." }, { by: 'a', say: "No. Once is enough." }] },

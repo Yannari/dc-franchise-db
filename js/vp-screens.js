@@ -25186,6 +25186,17 @@ function _bbCycleScreens(view, screens, suffix = '') {
         if (ne) screens.push({ id: id('bb-no-eviction'), label: 'No Eviction', html: ne });
         break;
       }
+      case 'move-in': {
+        // The classic view's move-in: the arrivals, in order, with what each said walking in.
+        // (The stepped viewer draws its own and drops this one — see REPLACED.)
+        const rows = (act.beats || []).map(b => {
+          const said = (b.lines || []).map(l => `<div style="margin:2px 0">${l.by ? `<b>${_bbEsc(l.by)}${l.kind === 'dr' ? ' · Diary Room' : ''}:</b> ` : ''}${_bbEsc(l.text)}</div>`).join('') || `<div>${_bbEsc(b.text)}</div>`;
+          return `<div style="margin:10px 0;padding:8px 10px;border-left:3px solid #f5c542">${said}</div>`;
+        }).join('');
+        screens.push({ id: id('bb-moveinday'), label: 'Move-In Day',
+          html: `<div class="rp-page"><div class="rp-title">Move-In Day</div><div style="opacity:.75;margin-bottom:8px">${(act.arrivals || []).length} houseguests walk through the front door, one at a time.</div>${rows}</div>` });
+        break;
+      }
       case 'whacktivity':
         screens.push({ id: id('bb-whacktivity'), label: 'Whacktivity', html: rpBuildBBWhacktivity(view, act) });
         break;

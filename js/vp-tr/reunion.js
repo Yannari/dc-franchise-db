@@ -24,6 +24,7 @@ import { pronouns, pStats } from '../players.js';
 import { HOSTS_BY_FORMAT } from '../shows.js';
 import { _portrait, conclaveStageData } from './conclave.js';
 import { roundTableStageData } from './round-table.js';
+import { endgameStageData } from './endgame.js';
 import { beatLines } from './stage-lines.js';
 
 const TR = 'traitors';
@@ -536,7 +537,9 @@ function _sceneSteps(row, which) {
   if (box[which]) return box[which];
   let steps = [];
   try {
-    const d = which === 'table' ? roundTableStageData(row, 'audience') : conclaveStageData(row, 'audience');
+    const d = which === 'table' ? roundTableStageData(row, 'audience')
+      : which === 'fire' ? endgameStageData(row, 'audience', 'finale')
+        : conclaveStageData(row, 'audience');
     if (d && typeof document !== 'undefined') steps = beatLines(d.beats, () => null);
   } catch { steps = []; }
   box[which] = steps;
@@ -608,8 +611,17 @@ function _buildBeats(R, ep) {
     const said = (scene && scene.said) || [];
     if (!lines.length && !said.length) return '';
     const people = [...new Set(said.map(x => x.who).concat((scene && scene.people) || []))];
+    // THE SCENE ON THE PAGE TOO (the user, 2026-10-06: "i still dont
+    // visually see the throwback"): a still of that night's set, sepia, with
+    // the people in it standing in it — the page is what opens first, and the
+    // stage only plays it once Watch it played is pressed
+    const still = scene && scene.set ? '<div class="ru-scene" style="background-image:url(assets/sets/traitors/' + _esc(scene.set) + '.webp)">'
+      + '<i class="ru-scene-bug">Throwback</i><em class="ru-scene-when">' + _esc(head.replace(/^Throwback · /, '')) + '</em>'
+      + '<div class="ru-scene-cast">' + people.map(n => '<div class="ru-scene-p' + ((scene.gone || []).includes(n) ? ' ru-gone' : '') + '">'
+        + _av(n, 64) + '<small>' + _esc(n) + '</small></div>').join('') + '</div></div>' : '';
     return '<div class="ru-tape"' + (scene && scene.set ? ' data-set="' + _esc(scene.set) + '"' : '')
-      + (people.length ? ' data-people="' + _esc(people.join('|')) + '"' : '') + '><b>' + _esc(head) + '</b>'
+      + (people.length ? ' data-people="' + _esc(people.join('|')) + '"' : '')
+      + (scene && scene.gone && scene.gone.length ? ' data-gone="' + _esc(scene.gone.join('|')) + '"' : '') + '><b>' + _esc(head) + '</b>' + still
       + lines.map(l => '<span>' + _esc(l) + '</span>').join('')
       + said.map(x => '<q class="ru-q" data-who="' + _esc(x.who) + '">' + _av(x.who, 26)
         + '<span class="ru-q-txt">&ldquo;' + _esc(x.text) + '&rdquo;</span><cite>' + _esc(x.who) + '</cite></q>').join('')
@@ -679,8 +691,11 @@ function _buildBeats(R, ep) {
     const closest = R.takers.map(W => ({ W, t: R.tables.filter(t => t.chosen !== W && (t.tally || {})[W] >= 2)
       .sort((a, b) => b.tally[W] - a.tally[W])[0] })).filter(x => x.t).sort((a, b) => b.t.tally[b.W] - a.t.tally[a.W])[0];
     const survived = closest ? _replay(rowAt(closest.t.ep), 'table', [closest.W], { max: 2, kinds: ['debate', 'clash'] }) : [];
+    const finRow = rows.length ? rows[rows.length - 1] : null;
+    const atFire = finRow ? _replay(finRow, 'fire', R.takers, { max: Math.min(4, R.takers.length + 1), kinds: ['money', 'celebrate'] }) : [];
     card('How They Won It', 'tape', host(_fill(pickFrom(TAPE_HOST, key + '|tph'), { Ws, they: many ? 'they' : (p1.sub || 'they') }))
       + tape(many ? 'Their Game' : R.takers[0] + '’s Game', lines)
+      + tape('Throwback · The last fire', [], { set: 'endgame', said: atFire, people: R.takers })
       + (survived.length ? tape('Throwback · Day ' + closest.t.ep + ', the Round Table',
         [`${closest.t.tally[closest.W]} names against ${closest.W}.`], { set: 'roundtable', said: survived }) : ''), {});
   }
@@ -731,7 +746,7 @@ function _buildBeats(R, ep) {
     tl.sort((a, b) => a.k - b.k);
     for (let i = 0; i < tl.length; i++) tl[i] = tl[i].text;
     card('The Traitors', 'traitors-open', host(pickFrom(THROWBACK_HOST.traitors, key + '|tbt'))
-      + tape('Throwback · The Turret', tl.slice(0, 7))
+      + tape('Throwback · The Turret', tl.slice(0, 7), { set: 'conclave-back', people: chosen })
       + '<p>The cloaks are off. For the first time, the Traitors get to tell it their way.</p>'
       + '<div class="ru-faces">' + R.traitors.map(n => _av(n, 34)).join('') + '</div>'
       + host(pickFrom(HOST_TRAITORS, key + '|ht')));
@@ -757,7 +772,8 @@ function _buildBeats(R, ep) {
   // 4. THE MURDERED ASK WHY
   if (R.murders.length) {
     card('The Breakfasts', 'murders-open', host(pickFrom(THROWBACK_HOST.murders, key + '|tbm'))
-      + tape('Throwback · Breakfast', R.murders.slice(0, 4).map(m => `Night ${m.ep}: the Traitors choose ${m.victim}. The next morning, ${m.victim} does not come down to breakfast.`)));
+      + tape('Throwback · Breakfast', R.murders.slice(0, 4).map(m => `Night ${m.ep}: the Traitors choose ${m.victim}. The next morning, ${m.victim} does not come down to breakfast.`),
+        { set: 'breakfast', people: R.murders.slice(0, 4).map(m => m.victim), gone: R.murders.slice(0, 4).map(m => m.victim) }));
   }
   R.murders.slice(0, 4).forEach(m => {
     const pool = KILLER_WHY[m.reason] || KILLER_WHY._;
@@ -819,7 +835,7 @@ function _buildBeats(R, ep) {
       const inner = tape('Throwback · Day ' + t.ep + ', the Round Table', [
           `${t.votes} name${t.votes === 1 ? '' : 's'} against ${F} at the Round Table. ${L} spoke first.`,
           ...(said.some(x => x.who === F && /Faithful/.test(x.text)) ? [] : [`${F} turns to the room: “I am a Faithful.”`]),
-        ], { set: 'roundtable', said })
+        ], { set: 'roundtable', said, people: [L, F] })
         + host(_fill(pickFrom(HOST_MISTAKE, key + '|hmi|' + F), { F, n: String(t.ep) }))
         + voice(F, F_SAY, key + '|fs|' + F, { L })
         + voice(L, LEAD_SAY, key + '|lds|' + F, { F })
@@ -834,7 +850,7 @@ function _buildBeats(R, ep) {
     const said = _replay(rowAt(x.ep), 'table', [x.by, x.target], { max: 3, kinds: ['debate', 'clash', 'reveal'],
       must: [{ kind: 'reveal', who: x.target }], about: [x.by, x.target] });
     const inner = tape('Throwback · Day ' + x.ep + ', the Round Table', [`${x.by} writes ${x.target}’s name. Both of them were Traitors.`],
-      { set: 'roundtable', said })
+      { set: 'roundtable', said, people: [x.by, x.target] })
       + host(_fill(pickFrom(HOST_TURNED, key + '|htu|' + x.target), { A: x.by, B: x.target }))
       + voice(x.by, TURNED_SAY, key + '|tus|' + x.target, { B: x.target })
       + voice(x.target, TURNED_BACK, key + '|tub|' + x.target, {});
@@ -940,6 +956,17 @@ const CSS = `
   border:1px solid rgba(232,194,112,.3);filter:sepia(.25)}
 .ru-tape b{display:block;margin-bottom:6px;font-family:var(--v-display);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#e8c270}
 .ru-tape > span{display:block;margin:4px 0;padding-left:14px;position:relative;line-height:1.45;color:#e9dcc0}
+.ru-scene{position:relative;margin:4px -2px 10px;aspect-ratio:16/7;background-size:cover;background-position:center;
+  filter:sepia(.7) contrast(1.1) brightness(.85);border:1px solid rgba(232,194,112,.35);overflow:hidden}
+.ru-scene::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(90% 90% at 50% 50%,transparent 45%,rgba(0,0,0,.6)),repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px)}
+.ru-scene-bug{position:absolute;top:10px;right:12px;z-index:2;padding:3px 8px;border:1px solid rgba(232,194,112,.7);background:rgba(10,8,4,.65);
+  font-family:var(--v-display);font-style:normal;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#e8c270}
+.ru-scene-when{position:absolute;top:12px;left:14px;z-index:2;font-family:var(--v-display);font-style:normal;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#f3e3c4;text-shadow:0 2px 6px #000}
+.ru-scene-cast{position:absolute;left:0;right:0;bottom:12%;z-index:1;display:flex;justify-content:center;gap:4%}
+.ru-scene-p{display:flex;flex-direction:column;align-items:center;gap:4px}
+.ru-scene-p small{padding:1px 6px;background:rgba(4,5,8,.75);font-family:var(--v-display);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#ece3d0}
+.ru-scene-p.ru-gone .cv-av{filter:grayscale(1) brightness(.6);opacity:.75}
 .ru-q{display:flex;gap:10px;align-items:flex-start;margin:8px 0 2px;quotes:none}
 .ru-q-txt{font-style:italic;font-size:15px;line-height:1.4;color:#f3e6c8}
 .ru-q cite{margin-left:auto;align-self:center;font-style:normal;font-size:9px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;white-space:nowrap}

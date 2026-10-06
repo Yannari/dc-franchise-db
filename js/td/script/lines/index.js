@@ -9,8 +9,9 @@ import deals from './deals.js';
 import gossip from './gossip.js';
 import plans from './plans.js';
 import fallout, { GUARANTEED as falloutG } from './fallout.js';
+import caught from './caught.js';
 
-const FILES = [deals, gossip, plans, fallout];
+const FILES = [deals, gossip, plans, fallout, caught];
 
 export const POOLS = Object.assign({}, ...FILES);
 

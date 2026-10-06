@@ -131,9 +131,21 @@ export function transcript(lines) {
  * spot, and a `text` that is now the transcript.
  */
 export function scriptEvent(event, scene, ctx = {}) {
-  const { lines, text, lineId } = writeScene(scene, ctx);
-  event.scene = { kind: scene.kind, who: scene.who, data: scene.data, seenBy: scene.seenBy, spot: scene.spot, lineId };
-  event.lines = lines;
-  event.text = text;
+  return scriptEventParts(event, [scene], ctx);
+}
+
+/**
+ * A scene written in parts, each from its own pool (the traitor's answer, then the
+ * group's verdict): two decided things that would otherwise need a pool for every
+ * combination. The parts share the people; the event records the first part's scene
+ * and every part's line id.
+ */
+export function scriptEventParts(event, scenes, ctx = {}) {
+  const parts = scenes.filter(Boolean).map(sc => ({ sc, w: writeScene(sc, ctx) }));
+  const [first] = parts;
+  event.scene = { kind: first.sc.kind, who: first.sc.who, data: first.sc.data, seenBy: first.sc.seenBy, spot: first.sc.spot,
+    lineId: first.w.lineId, ...(parts.length > 1 ? { parts: parts.map(p => ({ kind: p.sc.kind, data: p.sc.data, lineId: p.w.lineId })) } : {}) };
+  event.lines = parts.flatMap(p => p.w.lines);
+  event.text = transcript(event.lines);
   return event;
 }

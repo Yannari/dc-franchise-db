@@ -17,7 +17,7 @@ import { campRoster, isCoach as isCoachName } from './coaches.js';
 import { recordIntimidation, recordProtection, recordBetrayal } from './relationship-events.js';
 import { attachCampAccessToEvents, buildCampAccessSchedule, findConversationAccess } from './camp-access.js';
 import { makeScene, spotOf, spotFromAccess } from './td/script/scene.js';
-import { scriptEvent } from './td/script/write.js';
+import { scriptEvent, scriptEventParts } from './td/script/write.js';
 import { ensureIntentions, evolveIntentions, getIntentions, evaluateEndgameBeatability } from './intentions.js';
 import { getRelationshipDimensions } from './relationships.js';
 
@@ -7641,12 +7641,28 @@ export function generateCampEvents(ep, phase = 'both') {
             : _repair.outcome === 'fracture'
               ? ` ${traitor}'s ${_repair.approach.replace('-', ' ')} failed to land. The relationship is now a practical fracture, not a temporary argument.`
               : ` ${traitor} tried to explain it, but the group did not accept the account. Strategy access remains closed.`;
-        ep.campEvents[_campKey].pre.push({ type: 'betrayalReckoning', players: _partner ? [traitor, _partner] : [traitor], badgeText: 'Caught Flipping', badgeClass: 'red', text: _rp([
-          `Everyone knows. ${traitor} ${_what} at tribal, and ${_allw} caught it. ${allyEliminated ? `${votedFor} went home because of it.` : ''} ${_tPr.Sub} ${_tPr.sub === 'they' ? "walk" : "walks"} into camp a marked player — the trust is gone, and nobody's pretending otherwise.`,
-          `${traitor} got caught. ${_allw} knows ${_tPr.sub} ${_what}, and the reckoning is immediate — cold shoulders, hushed conversations that stop when ${_tPr.sub} ${_tPr.sub === 'they' ? "walk" : "walks"} up. ${_tPr.Sub} ${_tPr.sub === 'they' ? "are" : "is"} on the outside now.`,
-          `No hiding this one. ${traitor} ${_what} against ${_allw}, ${_tPr.posAdj} own alliance, and got made for it. ${allyEliminated ? `${votedFor} paid the price. ` : ''}The group is already talking about who's next, and the name at the top of the list is ${_tPr.posAdj} own.`,
-          `${traitor} broke ${_allw} — ${_what} — and it wasn't subtle enough. Now ${_tPr.sub} ${_tPr.sub === 'they' ? "have" : "has"} a target painted on ${_tPr.posAdj} back and no alliance to hide behind. The betrayal bought ${_tPr.obj} nothing but enemies.`,
-        ]).replace(/\s+$/, '') + _repairText });
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        // Who says it to the traitor's face: the ally they voted against, if still here; otherwise
+        // the alliance member who trusts them least. Nobody left to say it: the camera hears it.
+        const _al = (gs.namedAlliances || []).find(a => a.name === alliance);
+        const _campMates = _campKey === 'merge' ? gs.activePlayers : (gs.tribes.find(t => t.name === _campKey)?.members || []);
+        const _accuser = _partner || (_al?.members || [])
+          .filter(m => m !== traitor && gs.activePlayers.includes(m) && _campMates.includes(m))
+          .sort((x, y) => getBond(x, traitor) - getBond(y, traitor) || x.localeCompare(y))[0] || null;
+        const _approach = { apology: 'apology', 'strategic-explanation': 'explain', refusal: 'refusal', denial: 'denial' }[_repair?.approach] || 'none';
+        const _verdict = { forgiven: 'forgiven', 'working-truce': 'truce', fracture: 'fracture', rejected: 'rejected' }[_repair?.outcome] || 'none';
+        const _cData = { wrote: votedFor || null, plan: consensusWas || null, group: alliance || null,
+          result: _partner ? 'victim' : 'member', fallen: allyEliminated ? votedFor : null };
+        const _cWho = _accuser ? { a: traitor, b: _accuser } : { a: traitor };
+        const _cSpot = _accuser ? spotOf(ep, traitor, _accuser, 'pre').spot : { id: 'confessional', label: 'Confessional' };
+        ep.campEvents[_campKey].pre.push(scriptEventParts(
+          { type: 'betrayalReckoning', players: _partner ? [traitor, _partner] : [traitor], badgeText: 'Caught Flipping', badgeClass: 'red' },
+          _accuser
+            ? [makeScene('caught.face', _cWho, { ..._cData, ending: _approach }, [], _cSpot),
+               // no repair attempted: the 'none' confrontation already ends with the verdict
+               _approach === 'none' ? null : makeScene('caught.verdict', _cWho, { ..._cData, ending: _verdict }, [], _cSpot)]
+            : [makeScene('caught.alone', _cWho, { ..._cData, ending: _verdict }, [], _cSpot)],
+          { ep: ep.num, phase: 'pre' }));
       }
     }
   }

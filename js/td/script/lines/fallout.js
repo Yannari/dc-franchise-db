@@ -486,6 +486,8 @@ export default {
 };
 
 export const GUARANTEED = {
+  'fallout.mourn.one': ['fallen'],
+  'fallout.mourn.many': ['fallen'],
   'fallout.blame.swapped': ['plan', 'boot'],
   'fallout.blame.ally': ['boot'],
   'fallout.flip.swap': ['wrote', 'plan'],

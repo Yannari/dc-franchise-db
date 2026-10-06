@@ -1679,17 +1679,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const b = others.length ? wRandom(others, n => Math.max(0.1, Math.random() * 3 + 1)) : null;
       if (b) addBond(a, b, (Math.random() > 0.5 ? 1.0 : -1.0));
       const boA = pStats(a).boldness;
-      const _wcA = pronouns(a);
-      const wcLines = boA >= 8
-        ? [`Nobody predicted ${a}'s next move. Not even ${a}, probably.`,
-           `${a} flips the dynamic at camp in a way nobody can immediately explain. The tribe takes a moment.`,
-           b ? `${a} gravitates toward ${b} for reasons that don't fit the obvious pattern. The tribe adjusts its read of both of them.`
-             : `${a} shifts ${_wcA.posAdj} energy entirely between breakfast and dinner. It is not the same person at both meals.`,
-           `${a} says something so unexpected that the tribe goes completely silent. Then looks at each other. Then at ${_wcA.obj}.`]
-        : [`${a} moves differently today — not toward the obvious play. The tribe tries to read it.`,
-           b ? `${a} and ${b} end up in conversation nobody would have predicted. Nobody knows what to do with that.`
-             : `${a} declines to play the expected role today. What ${_wcA.sub} ${_wcA.sub==='they'?'do':'does'} instead doesn't fit any pattern.`];
-      events.push({ type: 'wildcardPivot', text: wcLines[Math.floor(Math.random() * wcLines.length)], player: a, players: [a], badgeText: 'WILDCARD', badgeClass: 'gold' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      events.push(scriptEvent({ type: 'wildcardPivot', player: a, players: [a], badgeText: 'WILDCARD', badgeClass: 'gold' },
+        b ? makeScene('wild.pivot', { a, b }, { ending: boA >= 8 ? 'wild' : 'odd' }, [], _spotNow(a, b))
+          : makeScene('wild.solo', { a }, { ending: boA >= 8 ? 'wild' : 'odd' }, [], { id: 'confessional', label: 'Confessional' })));
 
     } else if (eventType === 'chaosAgentStirsUp') {
       // Chaos agent deliberately engineers drama between two others
@@ -1852,15 +1845,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       if (!defended.length) continue;
       const b = wRandom(defended, n => Math.max(0.1, getBond(a, n) * 0.4 + 1));
       addBond(a, b, 0.8);
-      const pA = pronouns(a), pB = pronouns(b);
-      const _defLines = [
-        `Someone starts talking about ${b} when ${pB.sub}'${pB.sub==='they'?'re':'s'} not around. ${a} shuts it down. "That's not what happened." The conversation ends.`,
-        `${a} hears ${b}'s name come up as a target. ${pA.Sub} don't${pA.sub==='they'?'':'es'}n't campaign — ${pA.sub} just say${pA.sub==='they'?'':'s'} one thing: "Not ${b}." It carries weight.`,
-        `${a} catches wind of a plan against ${b} and quietly redirects the conversation. ${b} will never know. ${a} doesn't need ${pB.obj} to.`,
-        `The tribe is venting about ${b}. ${a} stays quiet until it goes too far, then says something that changes the temperature. Nobody comes for ${b} again that day.`,
-        `${a} goes to bat for ${b} in a strategy conversation. It's not subtle. The tribe reads it as loyalty — because it is.`,
-      ];
-      events.push({ type: 'loyaltyProof', text: _defLines[Math.floor(Math.random() * _defLines.length)], players: [a, b], badgeText: 'LOYALTY PROOF', badgeClass: 'green' });
+      Math.random();
+      // b is not there when a defends b: the scene is a with somebody else at camp, and the camera.
+      events.push(scriptEvent({ type: 'loyaltyProof', players: [a, b], badgeText: 'LOYALTY PROOF', badgeClass: 'green' },
+        makeScene('loyal.defend', { a, b }, {}, [], { id: 'confessional', label: 'Confessional' })));
 
     // ── NEW NEGATIVE EVENTS ──
 
@@ -1898,15 +1886,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const _groupBonds = others.filter(p => others.filter(q => q !== p && getBond(p, q) >= 1).length >= 2);
       if (_groupBonds.length < 3) continue;
       _groupBonds.forEach(p => addBond(excluded, p, -0.4));
-      const pE = pronouns(excluded);
-      const _exclLines = [
-        `The tribe clusters into a conversation that ${excluded} isn't part of. ${pE.Sub} hover${pE.sub==='they'?'':'s'} at the edge, waiting for an opening. It doesn't come.`,
-        `${excluded} walks up to a group conversation and it goes quiet. They say it's nothing. ${excluded} knows it's not nothing.`,
-        `${excluded} eats alone today. Not by choice — the tribe just... forgot to include ${pE.obj}. Or didn't forget.`,
-        `There's a strategy meeting happening. ${excluded} finds out about it after. ${pE.Sub} pretend${pE.sub==='they'?'':'s'} not to care. The pretending is visible.`,
-        `The tribe laughs at something. ${excluded} asks what's funny. "You had to be there." ${pE.Sub} ${pE.sub==='they'?'were':'was'} there. Just not included.`,
-      ];
-      events.push({ type: 'exclusion', text: _exclLines[Math.floor(Math.random() * _exclLines.length)], players: [excluded], badgeText: 'EXCLUDED', badgeClass: 'red' });
+      Math.random();
+      events.push(scriptEvent({ type: 'exclusion', players: [excluded], badgeText: 'EXCLUDED', badgeClass: 'red' },
+        makeScene('conf.excluded', { a: excluded }, {}, [], { id: 'confessional', label: 'Confessional' })));
 
     } else if (eventType === 'blame') {
       // Someone blamed for challenge loss — target must have actually performed poorly
@@ -1924,15 +1906,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const a = _pick(blamers, n => Math.max(0.1, pStats(n).boldness * 0.4 + (10 - pStats(n).loyalty) * 0.2 + 1));
       addBond(a, target, -0.7);
       addBond(target, a, -0.7);
-      const pA = pronouns(a), pT = pronouns(target);
-      const _blameLines = [
-        `${a} brings it up at camp. "We lost because of that puzzle." Everyone knows ${pA.sub} mean${pA.sub==='they'?'':'s'} ${target}. ${target} knows too.`,
-        `${a} doesn't name names — but the way ${pA.sub} describe${pA.sub==='they'?'':'s'} the challenge loss makes it clear who ${pA.sub} blame${pA.sub==='they'?'':'s'}. ${target} stares at the fire.`,
-        `"We had it. We literally had it." ${a} looks at ${target} for one second too long. The accusation is silent but deafening.`,
-        `${a} replays the challenge loss out loud. Every detail points to ${target}. ${pA.Sub} ${pA.sub==='they'?'say':'says'} it's just analysis. It's not just analysis.`,
-        `${target} apologizes for the challenge performance. ${a} accepts the apology in a way that makes it worse. "It's fine." It's not fine.`,
-      ];
-      events.push({ type: 'blame', text: _blameLines[Math.floor(Math.random() * _blameLines.length)], players: [a, target], badgeText: 'BLAME', badgeClass: 'red' });
+      Math.random();
+      events.push(scriptEvent({ type: 'blame', players: [a, target], badgeText: 'BLAME', badgeClass: 'red' },
+        makeScene('blame.loss', { a, b: target }, {}, [], _spotNow(a, target))));
 
     } else if (eventType === 'passiveAggressive') {
       // Subtle dig — initiator: temperament <= 5, target: bond <= 1 with initiator
@@ -2009,34 +1985,14 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       if (!detectPool.length) continue;
       const a = _pick(detectPool, n => Math.max(0.1, pStats(n).intuition * 0.5 + 1));
       addBond(a, b, -0.8);
-      const pA = pronouns(a), pB = pronouns(b);
       const _ci = _contradictorInfo[b];   // concrete vote contradiction (preferred — most specific)
       const _mi = _multiInfo[b];          // two-timing across named alliances
-      let _crackLines;
-      if (_ci) {
-        const _wasWere = pB.sub === 'they' ? 'were' : 'was';
-        _crackLines = [
-          `${a} noticed something at the last tribal. ${b} was locked in on ${_ci.expected} with the rest of ${_ci.alliance} — but ${pB.sub} wrote ${_ci.actual} instead. ${a} hasn't said anything yet. But ${pA.sub} will.`,
-          `${a} pulls the voting apart in ${pA.posAdj} head. The ${_ci.alliance} plan was ${_ci.expected}. ${b} wrote ${_ci.actual}. ${pB.Sub} broke from the group and assumed nobody would notice. ${a} noticed.`,
-          `${b} told ${_ci.alliance} ${pB.sub} ${_wasWere} voting ${_ci.expected}. At tribal ${pB.posAdj} vote landed on ${_ci.actual}. ${a} caught the contradiction, and the trust between them just cracked.`,
-          `Something ${b} said yesterday doesn't match what ${pB.sub} did at tribal — ${pB.sub} promised ${_ci.expected}, then wrote ${_ci.actual}. ${a} caught it. The trust between them just cracked.`,
-        ];
-      } else if (_mi) {
-        const [_n1, _n2] = _mi.names;
-        _crackLines = [
-          `${a} has been doing the math. ${b} is in both ${_n1} and ${_n2} — two alliances that can't both survive. ${a} brings it up, not to ${b}, but to someone who matters more.`,
-          `${a} realizes ${b} has been making promises to ${_n1} and ${_n2} at the same time. The timelines don't match. ${a} files that information somewhere dangerous.`,
-          `"Who are you actually with — ${_n1} or ${_n2}?" ${a} asks ${b} directly. ${b}'s answer takes half a second too long. ${a} got what ${pA.sub} needed.`,
-          `${a} compares notes with ${_n2}. ${b}'s story there doesn't match what ${pB.sub} told ${_n1}. The contradiction is undeniable.`,
-        ];
-      } else {
-        // Fallback — rare; target qualified but the specifics couldn't be reconstructed
-        _crackLines = [
-          `${a} noticed something at the last tribal. ${b}'s vote didn't match what ${pB.sub} said ${pB.sub} ${pB.sub==='they'?'were':'was'} going to do. ${a} hasn't mentioned it yet. But ${pA.sub} will.`,
-          `${a} pulls the voting data apart in ${pA.posAdj} head. ${b} was supposed to vote one way. ${pB.Sub} didn't. ${a} doesn't confront — ${pA.sub} adjust${pA.sub==='they'?'':'s'}.`,
-        ];
-      }
-      events.push({ type: 'trustCrack', text: _crackLines[Math.floor(Math.random() * _crackLines.length)], players: [a, b], badgeText: 'TRUST CRACKED', badgeClass: 'red' });
+      Math.random(); // the draw that picked the sentence
+      events.push(scriptEvent({ type: 'trustCrack', players: [a, b], badgeText: 'TRUST CRACKED', badgeClass: 'red' },
+        makeScene('trust.crack', { a, b },
+          _ci ? { ending: 'vote', plan: _ci.expected, wrote: _ci.actual, group: _ci.alliance }
+            : _mi ? { ending: 'double', group: _mi.names[0], group2: _mi.names[1] }
+              : { ending: 'vague' }, [], _spotNow(a, b))));
 
     // ═══════════════════════════════════════════════════════════
     // NEW POSITIVE EVENTS

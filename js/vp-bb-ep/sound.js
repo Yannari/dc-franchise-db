@@ -78,7 +78,7 @@ const BED_BY_KIND = {
   whack: 'bb-comp', power: 'bb-confused', expired: 'bb-secret', coin: 'bb-secret', veto2: 'bb-veto-meeting',
   den: 'bb-secret', curse: 'bb-drama', nightmare: 'bb-confused', battleback: 'bb-comp', bonuslife: 'bb-comp',
   team: 'bb-scheming', mystery: 'bb-secret', premiere: 'bb-confused', hex: 'bb-confused', quiet: 'bb-house',
-  rewind: 'bb-confused', locust: 'bb-comp', movein: 'bb-celebration', twist: 'bb-confused',
+  rewind: 'bb-confused', locust: 'bb-comp', movein: 'bb-celebration', twist: 'bb-confused', interview: 'bb-ending',
 };
 // A house scene sounds like what it is: a fight, a deal, or just the house.
 // The user, 2026-10-06: "all the music seems really sad, always… limit music to the moments
@@ -138,6 +138,11 @@ function loadSting(ctx, name) {
       .then(b => ctx.decodeAudioData(b)).then(buf => { buffers[name].push(buf); }).catch(() => { /* missing file: silence */ });
   }
 }
+// The crowd stings (applause, the studio crowd, the winner's crowd) run for several seconds; the
+// user, 2026-10-06: "the clap sound doesn't stop at the appropriate moment". Each playing sting is
+// kept, and the next step fades the crowd out (stopCrowd) rather than letting it run under the host.
+const CROWD = new Set(['bb-crowd', 'bb-winner']);
+const live = [];
 for (const [name, s] of Object.entries(BB_STINGS)) {
   CUE_CATALOG[name] = { duck: true, build(ctx, dest, now) {
     const got = buffers[name] || [];
@@ -146,7 +151,24 @@ for (const [name, s] of Object.entries(BB_STINGS)) {
     src.buffer = got[(turn[name] = ((turn[name] ?? -1) + 1)) % got.length];
     const g = ctx.createGain(); g.gain.value = 10 ** ((s.lift || 0) / 20);
     src.connect(g); g.connect(dest); src.start(now);
+    const item = { name, src, g, at: now };
+    live.push(item);
+    src.onended = () => { const i = live.indexOf(item); if (i >= 0) live.splice(i, 1); };
   } };
+}
+/** Fade out any crowd still cheering (the next line has started). */
+export function stopCrowd(fade = 0.6) {
+  for (const it of live.slice()) {
+    if (!CROWD.has(it.name)) continue;
+    try {
+      const c = it.g.context; const now = c.currentTime;
+      if (now - it.at < 0.4) continue;   // the one that has only just started is this step's own
+      it.g.gain.cancelScheduledValues(now);
+      it.g.gain.setValueAtTime(it.g.gain.value, now);
+      it.g.gain.linearRampToValueAtTime(0.0001, now + fade);
+      it.src.stop(now + fade + 0.05);
+    } catch { /* already stopped */ }
+  }
 }
 /** Fetch every sting once, so the first click is not silent. */
 export function warmStings() {
@@ -218,6 +240,8 @@ export function playStep(screen, idx) {
   const vp = typeof document !== 'undefined' ? document.getElementById('visual-player') : null;
   if (vp && vp.style.display === 'none') return;
   const { cue, bed } = soundFor(screen, idx);
+  // a new line: the crowd from the line before stops cheering
+  stopCrowd();
   try {
     // no music: the room is not silent, it sounds like the room (voices.js); music: the room steps back
     if (bed === 'none' && typeof a.ambient === 'function') { a.ambient(null); startRoom(screen.steps[idx]?.scene?.set || 'ceremony'); }
@@ -225,3 +249,5 @@ export function playStep(screen, idx) {
     if (cue) a.sfx(cue);
   } catch { /* sound must never break a screen */ }
 }
+
+if (typeof document !== 'undefined') { document.addEventListener('vp:screen', () => stopCrowd(0.3)); document.addEventListener('vp:close', () => stopCrowd(0.2)); }

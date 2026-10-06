@@ -806,9 +806,10 @@ export function stageHtml(screens, si, idx, fresh, o) {
       : `<div class="bigrev ${fresh ? 'fresh' : ''}"><i>${esc(a)}</i><b>${esc(b)}</b></div>`;
   }
   if (fresh && st && st.door) h += '<div class="doorflood"></div>';
-  if (fresh && st && st.card && ['alliance', 'meeting'].includes(st.card.kind)) {
+  if (fresh && st && st.card && ['alliance', 'meeting', 'joined', 'out', 'deal'].includes(st.card.kind)) {
     const faces = (st.card.members || []).slice(0, 6).map((n, i) => `<span class="alf" style="--c:${col(n)};--i:${i}">${img(n)}</span>`).join('');
-    const over = st.card.kind === 'meeting' ? `CALLED BY ${esc(String((st.card.members || [])[0] || '').toUpperCase())}` : 'AN ALLIANCE IS BORN';
+    const who = esc(String((st.card.members || [])[0] || '').toUpperCase());
+    const over = st.card.kind === 'meeting' ? `CALLED BY ${who}` : st.card.kind === 'joined' ? `${who} JOINS` : st.card.kind === 'out' ? `${who} IS NO LONGER IN` : st.card.kind === 'deal' ? 'A DEAL IS MADE' : 'AN ALLIANCE IS BORN';
     h += `<div class="alcard ${st.card.kind}"><i>${over}</i><b>${esc(st.card.name)}</b><div class="alfs">${faces}</div></div>`;
   }
   if (fresh && st && st.scene && st.scene.slate && (S0.kind === 'houselife' || S0.kind === 'movein')) {

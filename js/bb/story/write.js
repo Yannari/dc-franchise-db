@@ -348,6 +348,10 @@ export function writeStoryScene(line, step, ctx) {
   sc.why = whyOf(`${line.type}.${step.step}`, STEP_WHY, who, data, sc.cast);
   // an alliance with a name, formed on screen, gets its title (the user, 2026-10-06)
   if (line.type === 'alliance' && step.step === 'formed' && data.alliance) sc.title = titleOf(data.alliance, sc.cast);
+  // somebody brought in gets theirs (the user, 2026-10-06: "recruitment and removal from an alliance have a title too")
+  if (line.type === 'alliance' && step.step === 'recruit' && data.alliance && data.joined && step.outcome !== 'refused') sc.title = { kind: 'joined', name: data.alliance, members: [data.joined] };
+  // a final two, a final three: the deal gets its card (the user, 2026-10-06: "same for final 2/3")
+  if (line.type === 'alliance' && step.step === 'formed' && data.pact && !data.alliance) sc.title = { kind: 'deal', name: data.pact, members: sc.cast.slice(0, data.pact === 'Final Three' ? 3 : 2) };
   return sc;
 }
 
@@ -499,6 +503,9 @@ export function writeEngineScene(beat, ctx, at) {
     room, roomName: ROOM[room] || 'Living Room', cast, mood: /blow|grudge|confront|fight/.test(id) ? 'drama' : /^scheme-/.test(id) ? 'scheming' : /^bloc-|^plan-/.test(id) ? 'plan' : 'deals', at, fixedRoom: true, recap: false,
     lineId: beat.lineId || null, why, lines };
   if (/alliance-formed|alliance-forms/.test(id) && beat.allianceName) sc.title = titleOf(beat.allianceName, cast);
+  if (id === 'alliance-recruited' && beat.allianceName && beat.joined) sc.title = { kind: 'joined', name: beat.allianceName, members: [beat.joined] };
+  const pact = /final-two/.test(id) ? 'Final Two' : /final-three/.test(id) ? 'Final Three' : /jury-pact/.test(id) ? 'To the Jury, Together' : null;
+  if (pact && !/compared|exposed|broken|collapse/.test(id)) sc.title = { kind: 'deal', name: pact, members: (beat.players || []).slice(0, pact === 'Final Three' ? 3 : 2) };
   if (meeting) sc.title = { kind: 'meeting', name: 'House Meeting', members: cast.slice(0, 1) };
   return sc;
 }

@@ -441,5 +441,10 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .alcard .alf img{width:100%;height:100%;object-fit:cover;object-position:50% 14%}
 @keyframes bbx-alcard{0%{opacity:0;transform:translate(-50%,-50%) scale(1.6);filter:blur(1cqw)}12%{opacity:1;transform:translate(-50%,-50%) scale(.98);filter:none}18%{transform:translate(-50%,-50%) scale(1)}82%{opacity:1}100%{opacity:0}}
 @keyframes bbx-alf{from{opacity:0;transform:translateY(1.5cqw) scale(.6)}}
+.bbx .alcard.joined i{color:#7fe9ff}.bbx .alcard.joined .alf{box-shadow:0 0 0 .2cqw #22e1ff}
+.bbx .alcard.out i{color:#ff9db0}.bbx .alcard.out b{text-decoration:line-through;text-decoration-color:#ff2e4d;text-decoration-thickness:.4cqw}
+.bbx .alcard.out .alf{box-shadow:0 0 0 .2cqw #ff2e4d;filter:grayscale(.6)}
+.bbx .alcard.meeting i{color:#fff}
+.bbx .alcard.deal i{color:#ffd76a}.bbx .alcard.deal .alf{box-shadow:0 0 0 .2cqw #ffd76a}
 @media (prefers-reduced-motion:reduce){.bbx .gt[class*="act-"] .tile,.bbx .gt .fx{animation:none}}
 @media (prefers-reduced-motion:reduce){.bbx .gt.bgp .tile,.bbx .gt.tense .tile{animation:none}}`;

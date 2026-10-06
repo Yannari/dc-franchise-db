@@ -294,9 +294,14 @@ export function updatePerceivedBonds(ep) {
         // Cap wake-up call events at 2 per episode to avoid flooding camp feed
         const _wakeUpCount = ep.campEvents[campKey].pre.filter(e => e.type === 'perceptionRealization').length;
         if (_wakeUpCount < 3) {
+          _pick(variants); // the draw that picked the sentence (the season must not move)
+          // A scene, written by td/script later (this module sits below it): from tells the camera
+          // what has finally clicked about to, for the reason the engine decided.
           ep.campEvents[campKey].pre.push({
-            type: 'perceptionRealization', players: [from, to],
-            text: _pick(variants), badgeText: 'WAKE-UP CALL', badgeClass: 'red'
+            type: 'perceptionRealization', players: [from, to], badgeText: 'WAKE-UP CALL', badgeClass: 'red',
+            pendingScene: { kind: 'wake.call', who: { a: from, b: to },
+              data: { ending: Object.prototype.hasOwnProperty.call(_realizationText, entry.reason) ? entry.reason : 'other' },
+              spot: { id: 'confessional', label: 'Confessional' }, phase: 'pre' },
           });
         }
       }

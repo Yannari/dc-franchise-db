@@ -4478,33 +4478,14 @@ export function checkAllianceQuitting(ep) {
         const _qTribeName = gs.isMerged ? 'merge'
           : gs.tribes.find(t => t.members.includes(member))?.name;
         if (_qTribeName && ep.campEvents?.[_qTribeName]) {
-          const _qPrn = pronouns(member);
-          const _qLines = {
-            'betrayed by alliance member': [
-              `${member} found out someone in ${alliance.name} voted against them. No confrontation. But ${_qPrn.sub} ${_qPrn.sub==='they'?'are':'is'} done with that group.`,
-              `${member} knows who in ${alliance.name} turned on them. ${_qPrn.Sub} say${_qPrn.sub==='they'?'':'s'} nothing. The quiet is loud.`,
-            ],
-            'tribe split — drifted away on separate tribe': [
-              `${member} quietly steps away from ${alliance.name}. The swap put them on opposite sides — the alliance can't survive the distance, and ${_qPrn.sub} know${_qPrn.sub==='they'?'':'s'} it.`,
-              `The tribe swap ends ${member}'s commitment to ${alliance.name}. ${_qPrn.Sub} ${_qPrn.sub==='they'?'are':'is'} out — separated by geography, done by choice.`,
-            ],
-            'relationship breakdown': [
-              `${member} stops showing up to ${alliance.name} conversations. The bonds were already gone. The behavior finally matches.`,
-              `Something about ${alliance.name} stopped working for ${member}. ${_qPrn.Sub} ${_qPrn.sub==='they'?'don\'t':'doesn\'t'} say it out loud — ${_qPrn.sub} just stop${_qPrn.sub==='they'?'':'s'} being present.`,
-            ],
-            'strategic pivot': [
-              `${member} is still friendly to the ${alliance.name} crowd. But the math has changed. ${_qPrn.Sub} ${_qPrn.sub==='they'?'have':'has'} already moved on.`,
-              `${member} recalculates quietly. ${alliance.name} doesn't fit the new plan. ${_qPrn.Sub} start${_qPrn.sub==='they'?'':'s'} working around them instead of through them.`,
-            ],
-            'went solo': [
-              `${member} decides ${alliance.name} is more liability than asset. ${_qPrn.Sub} detach${_qPrn.sub==='they'?'':'es'} quietly — no announcement, just a shift in where the energy goes.`,
-              `${member} steps back from ${alliance.name}. No drama, no blow-up. ${_qPrn.Sub} just stop${_qPrn.sub==='they'?'':'s'} showing up to those conversations.`,
-            ],
-          };
-          const _qOpts = _qLines[reason] || _qLines['went solo'];
-          const _qText = _qOpts[Math.floor(Math.random() * _qOpts.length)];
+          Math.random(); // the draw that picked the sentence (the season must not move)
+          const _qEnding = { 'betrayed by alliance member': 'betrayed', 'tribe split — drifted away on separate tribe': 'split',
+            'relationship breakdown': 'breakdown', 'strategic pivot': 'pivot', 'went solo': 'solo' }[reason] || 'solo';
           const _qBlock = ep.campEvents[_qTribeName];
-          (_qBlock.post?.length >= 0 ? _qBlock.post : _qBlock.pre).push({ type: 'allianceCrack', text: _qText, players: [member] });
+          (_qBlock.post?.length >= 0 ? _qBlock.post : _qBlock.pre).push(scriptEvent(
+            { type: 'allianceCrack', players: [member], badgeText: 'WALKED AWAY', badgeClass: 'red' },
+            makeScene('alliance.quit', { a: member }, { ending: _qEnding, group: alliance.name }, [], { id: 'confessional', label: 'Confessional' }),
+            { ep: ep.num, phase: 'post' }));
         }
       }
     });
@@ -5012,9 +4993,10 @@ export function checkSocialIntel(ep) {
       gs.knownIdolHoldersThisEp.add(_hiddenIdolHolder);
       if (!gs.knownIdolHoldersPersistent) gs.knownIdolHoldersPersistent = new Set();
       gs.knownIdolHoldersPersistent.add(_hiddenIdolHolder);
-      _pushEvt({ type: 'socialIntel', players: [socialP, _hiddenIdolHolder], text:
-        `${socialP} has a way of making people talk without asking direct questions. After a long conversation with ${_hiddenIdolHolder}, ${_pr.sub} ${_pr.sub==='they'?'know':'knows'} something ${_pr.sub} ${_pr.sub==='they'?'weren\'t':'wasn\'t'} supposed to know.`,
-        badgeText: 'Social Intel', badgeClass: 'gold' });
+      // A long friendly talk, then the camera hears what socialP worked out. The holder never knows.
+      _pushEvt(scriptEvent({ type: 'socialIntel', players: [socialP, _hiddenIdolHolder], badgeText: 'Social Intel', badgeClass: 'gold' },
+        makeScene('intel.social', { a: socialP, b: _hiddenIdolHolder }, { ending: 'idol' }, [], spotOf(ep, socialP, _hiddenIdolHolder, 'pre').spot),
+        { ep: ep.num, phase: 'pre' }));
       return; // one intel per episode max
     }
 
@@ -5022,9 +5004,9 @@ export function checkSocialIntel(ep) {
     const _targetedPlayers = tribeMembers.filter(p => computeHeat(p, tribeMembers.concat(socialP), []) >= 3);
     if (_targetedPlayers.length && Math.random() < 0.30) {
       const _target = _targetedPlayers[Math.floor(Math.random() * _targetedPlayers.length)];
-      _pushEvt({ type: 'socialIntel', players: [socialP], text:
-        `${socialP} doesn't need to eavesdrop. ${_pr.Sub} just listen${_pr.sub==='they'?'':'s'} — really listen${_pr.sub==='they'?'':'s'} — and by sunset ${_pr.sub} ${_pr.sub==='they'?'know':'knows'} ${_target}'s name is floating. Nobody told ${_pr.obj} directly. ${_pr.Sub} just pieced it together.`,
-        badgeText: 'Social Read', badgeClass: 'gold' });
+      _pushEvt(scriptEvent({ type: 'socialIntel', players: [socialP], badgeText: 'Social Read', badgeClass: 'gold' },
+        makeScene('intel.social', { a: socialP }, { ending: 'target', target: _target }, [], { id: 'confessional', label: 'Confessional' }),
+        { ep: ep.num, phase: 'pre' }));
       // Boost their eavesdrop flag so voting plans are more accurate for them
       if (gs.playerStates?.[socialP]) gs.playerStates[socialP].eavesdropBoostThisEp = true;
       return;
@@ -5040,9 +5022,9 @@ export function checkSocialIntel(ep) {
     });
     if (_crackingAlliances.length && Math.random() < 0.25) {
       const _crackA = _crackingAlliances[Math.floor(Math.random() * _crackingAlliances.length)];
-      _pushEvt({ type: 'socialIntel', players: [socialP], text:
-        `${socialP} watches ${_crackA.name} interact at camp and sees what nobody else is admitting: the trust isn't there anymore. ${_pr.Sub} file${_pr.sub==='they'?'':'s'} that away for later.`,
-        badgeText: 'Social Read', badgeClass: 'gold' });
+      _pushEvt(scriptEvent({ type: 'socialIntel', players: [socialP], badgeText: 'Social Read', badgeClass: 'gold' },
+        makeScene('intel.social', { a: socialP }, { ending: 'crack', group: _crackA.name }, [], { id: 'confessional', label: 'Confessional' }),
+        { ep: ep.num, phase: 'pre' }));
     }
   });
 }
@@ -7881,23 +7863,15 @@ export function generateCampEvents(ep, phase = 'both') {
             const _p = pronouns(name);
             const totalSitOuts = gs.sitOutCount?.[name] || 1;
             if (isLoser) {
-              post.push({ type: 'sitOutHeat', text: _rp([
-                `${tribe.name} comes back without a win. Eyes move to ${name}. ${_p.Sub} ${_p.sub==='they'?'were':'was'} on the bench — make of that what you will.`,
-                `${name} sat this one out. ${tribe.name} lost. Those two facts are going to follow ${_p.obj} into tribal council.`,
-                `The loss stings harder with someone watching from the sideline. ${name} didn't compete today, and somebody is going to bring that up.`,
-              ]) });
+              Math.random(); post.push(scriptEvent({ type: 'sitOutHeat', players: [name], badgeText: 'BENCHED', badgeClass: 'red' },
+                makeScene('sitout.heat', { a: name }, { tribe: tribe.name }, [], { id: 'confessional', label: 'Confessional' }), { ep: ep.num, phase: 'post', tribal: isLoser }));
             }
             if (totalSitOuts >= 2) {
-              post.push({ type: 'sitOutRecurring', text: _rp([
-                `${name} is on the bench again. The tribe keeps moving, but the pattern is being noticed.`,
-                `Another sit-out for ${name}. ${_p.Sub} ${_p.sub==='they'?'don\'t':'doesn\'t'} make an issue of it — which might be the issue.`,
-                `${name} has sat out more than once now. Whether it's strategy or necessity, someone is going to use it.`,
-              ]) });
+              Math.random(); post.push(scriptEvent({ type: 'sitOutRecurring', players: [name], badgeText: 'BENCHED AGAIN', badgeClass: 'red' },
+                makeScene('sitout.again', { a: name }, { tribe: tribe.name }, [], { id: 'confessional', label: 'Confessional' }), { ep: ep.num, phase: 'post', tribal: isLoser }));
               if (totalSitOuts >= 3) {
-                post.push({ type: 'sitOutPolitics', text: _rp([
-                  `The sit-out pattern around ${name} is becoming a talking point. It doesn't take much for "liability" to become a vote target.`,
-                  `${name} sitting out again gives someone an easy angle: why keep a player who doesn't compete?`,
-                ]) });
+                Math.random(); post.push(scriptEvent({ type: 'sitOutPolitics', players: [name], badgeText: 'BENCH TALK', badgeClass: 'red' },
+                makeScene('sitout.politics', { a: name }, { tribe: tribe.name }, [], { id: 'confessional', label: 'Confessional' }), { ep: ep.num, phase: 'post', tribal: isLoser }));
               }
             }
           });
@@ -7906,10 +7880,8 @@ export function generateCampEvents(ep, phase = 'both') {
           returnedCompetitors.forEach(name => {
             if (Math.random() < 0.4) {
               const _p = pronouns(name);
-              post.push({ type: 'sitOutReturn', text: _rp([
-                `${name} is back in the lineup today after sitting out last time. ${_p.Sub} ${_p.sub==='they'?'throw':'throws'} everything into it. The bench wasn't ${_p.posAdj} preference.`,
-                `${name} competed today — couldn't sit out again. ${_p.Sub} ${_p.sub==='they'?'make':'makes'} it clear ${_p.sub} ${_p.sub==='they'?'want':'wants'} to be out there.`,
-              ]) });
+              Math.random(); post.push(scriptEvent({ type: 'sitOutReturn', players: [name], badgeText: 'BACK IN', badgeClass: 'green' },
+                makeScene('sitout.back', { a: name }, { tribe: tribe.name }, [], { id: 'confessional', label: 'Confessional' }), { ep: ep.num, phase: 'post', tribal: isLoser }));
             }
           });
         });

@@ -8,7 +8,7 @@ import { wRandom, computeHeat, formAlliances, detectBetrayals, applyPitchAllianc
 import { pruneIdolIntel, recordIdolIntel } from './advantage-intel.js';
 import { simulateVotes, resolveVotes, checkShotInDark, simulateRevote, summarizePitchReactions, describePitchReaction } from './voting.js';
 import { makeScene, spotOf } from './td/script/scene.js';
-import { scriptEventParts, numberWord } from './td/script/write.js';
+import { scriptEvent, scriptEventParts, numberWord } from './td/script/write.js';
 import { rollDeparture, departureText } from './departures.js';
 import { checkIdolPlays, checkIdolPreTribal, checkNonIdolAdvantageUse, findAdvantages, handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge, simulateTribeChallenge, pickChallenge, simulateLastChance } from './challenges-core.js';
@@ -4256,15 +4256,13 @@ export function simulateEpisode() {
       const _pdTribeName = gs.isMerged ? 'merge'
         : gs.tribes.find(t => t.members.includes(q.player))?.name;
       if (!_pdTribeName || !ep.campEvents?.[_pdTribeName]) return;
-      const _pdPrn = pronouns(q.player);
-      const _pdLines = [
-        `${q.player} walks into tribal knowing ${_pdPrn.sub} ${_pdPrn.sub==='they'?'are':'is'} no longer part of ${q.alliance}. The alliance made the call without ${_pdPrn.obj}. ${_pdPrn.Sub} got the message.`,
-        `${q.player} is out of ${q.alliance}. Not by choice — the group stopped including ${_pdPrn.obj} in the plan. ${_pdPrn.Sub} ${_pdPrn.sub==='they'?'notice':'notices'} it before tribal and files it away.`,
-        `The conversations before tribal tell ${q.player} everything. ${_pdPrn.Sub} ${_pdPrn.sub==='they'?'aren\'t':'isn\'t'} in the ${q.alliance} plan anymore. ${_pdPrn.Sub} ${_pdPrn.sub==='they'?'have':'has'} to figure out what that means for tonight's vote.`,
-      ];
-      const _pdText = _pdLines[Math.floor(Math.random() * _pdLines.length)];
+      Math.random(); // the draw that picked the sentence
       const _pdBlock = ep.campEvents[_pdTribeName];
-      (_pdBlock.post?.length >= 0 ? _pdBlock.post : _pdBlock.pre).push({ type: 'allianceCrack', text: _pdText, players: [q.player] });
+      // Cut out of the plan right before Tribal: this camp votes tonight.
+      (_pdBlock.post?.length >= 0 ? _pdBlock.post : _pdBlock.pre).push(scriptEvent(
+        { type: 'allianceCrack', players: [q.player], badgeText: 'LEFT OUT', badgeClass: 'red' },
+        makeScene('alliance.dropped', { a: q.player }, { group: q.alliance }, [], { id: 'confessional', label: 'Confessional' }),
+        { ep: ep.num, phase: 'post', tribal: true }));
     });
     gs._pendingDepartures = [];
   }

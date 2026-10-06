@@ -62,6 +62,8 @@ const MEDAL = `<svg viewBox="0 0 60 80"><defs><radialGradient id="bbxmg" cx=".4"
 
 // ── the week so far ────────────────────────────────────────────────────
 /** Everything settled by step `idx` of screen `si`: earlier screens count as watched in full. */
+// Screens that cut between rooms with `scene` markers on their steps.
+const SCENE_KINDS = new Set(['houselife', 'movein', 'final-cut', 'jury-q', 'closing', 'jury-vote', 'afp', 'reunion']);
 export function ledgerAt(screens, si, idx) {
   const S0 = screens[si] || screens[0] || {};
   const L = { status: {}, nom: [], veto: null, out: [], votes: null, vetoPlay: [], ballots: [], revealed: [], hoh: null, moves: [], stances: {},
@@ -107,6 +109,8 @@ export function ledgerAt(screens, si, idx) {
       if (st.vetoPlay && s === si) L.vetoPlay.push(...st.vetoPlay);
       if (st.reveal && s === si) L.revealed.push(st.reveal);
       if (st.ballot && s === si) L.ballots.push(st.ballot);
+      if (st.key && s === si) (L.keys ||= []).push(st.key);
+      if (st.keyIn && s === si) (L.keyIn ||= []).push(st.keyIn);
       if (s === si && st.scene) L.why = st.scene.why || null;
       if (s === si && st.why) L.why = st.why;
       if (st.stance && s === si) L.stances[st.stance[0]] = st.stance;
@@ -645,6 +649,7 @@ function reactionOf(st) {
     || (/!/.test(t) && /^(what|oh my|no way|are you (serious|kidding)|shut up|excuse me)/i.test(t)))) return 'wow';
   return null;
 }
+const KEY_SVG = '<svg viewBox="0 0 24 24"><circle cx="7" cy="12" r="4.5" fill="none" stroke="#f5c542" stroke-width="2.4"/><path d="M11 12h11M18 12v4M21 12v3" stroke="#f5c542" stroke-width="2.4" stroke-linecap="round"/></svg>';
 const REACT_WOW = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#ff2e4d"/><rect x="10.6" y="5" width="2.8" height="9" rx="1.4" fill="#fff"/><circle cx="12" cy="17.6" r="1.7" fill="#fff"/></svg>';
 const REACT_LAUGH = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#f5c542"/><path d="M7 13.5q5 5.5 10 0" fill="none" stroke="#3a2600" stroke-width="2.2" stroke-linecap="round"/><path d="M7.5 9.5l2 -1.5M16.5 9.5l-2 -1.5" stroke="#3a2600" stroke-width="2" stroke-linecap="round"/></svg>';
 
@@ -668,7 +673,7 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   // the host on the stage with them (move-in night), not on a screen
   if (S.hostOn && o.host) h += `<div class="gt host ${speaker === o.host ? 'speak' : ''}" style="left:9%;--c:#ff2e4d;--ry:10deg"><div class="tile">${img(o.host, true)}</div><div class="plate"><b>${esc(o.host)}</b><span class="hostlab">HOST</span></div></div>`;
   const seated = S.seated ? seatsAt(S, idx) : null;
-  if ((S.kind === 'houselife' || S.kind === 'movein') && !seated && cast.length > 3) {
+  if (SCENE_KINDS.has(S.kind) && !seated && cast.length > 3) {
     const focus = focusAt(S, idx);
     const before = idx > sceneStartOf(S, idx) ? focusAt(S, idx - 1) : focus;
     const back = cast.map(([n]) => n).filter(n => !focus.includes(n));
@@ -763,7 +768,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   // this step says which room, camera and people are on screen.
   const S0 = screens[si];
   let sc = null;
-  if (S0.kind === 'houselife' || S0.kind === 'movein') for (let i = Math.max(0, idx); i >= 0; i--) { if (S0.steps[i]?.scene) { sc = S0.steps[i].scene; break; } }
+  if (SCENE_KINDS.has(S0.kind)) for (let i = Math.max(0, idx); i >= 0; i--) { if (S0.steps[i]?.scene) { sc = S0.steps[i].scene; break; } }
   const S = sc ? { ...S0, ...sc } : S0;
   const st = idx >= 0 ? S.steps[idx] : null;
   const prevSt = idx > 0 ? S.steps[idx - 1] : null;
@@ -806,6 +811,23 @@ export function stageHtml(screens, si, idx, fresh, o) {
       : `<div class="bigrev ${fresh ? 'fresh' : ''}"><i>${esc(a)}</i><b>${esc(b)}</b></div>`;
   }
   if (fresh && st && st.door) h += '<div class="doorflood"></div>';
+  // the jury's keys: in the box (a count), then pulled one at a time onto the board
+  if (S.kind === 'jury-vote' && (S.keysFor || []).length) {
+    const keys = L.keys || [];
+    const inBox = (L.keyIn || []).length;
+    if (keys.length) {
+      const col2 = (S.keysFor || []).slice(0, 2).map(n => {
+        const k = keys.filter(x => x[1] === n).length;
+        const lastNow = fresh && st?.key?.[1] === n;
+        return `<div class="kcol ${k >= (S.keysNeed || 99) ? 'won' : ''}"><span class="kf" style="--c:${col(n)}">${img(n)}</span><b>${esc(n)}</b><div class="kn ${lastNow ? 'bump' : ''}">${k}</div><div class="kp">${Array.from({ length: k }, (_, i) => `<i class="${lastNow && i === k - 1 ? 'new' : ''}">${KEY_SVG}</i>`).join('')}</div></div>`;
+      }).join('<span class="kvs">VS</span>');
+      h += `<div class="keyboard"><span class="kh">THE JURY'S KEYS · ${S.keysNeed} TO WIN</span><div class="kr">${col2}</div></div>`;
+    } else if (inBox) {
+      h += `<div class="ballots"><div class="k">Keys in the box</div><div class="n">${inBox}</div></div>`;
+    }
+  }
+  if (fresh && st && st.confetti) h += `<div class="confetti">${Array.from({ length: 60 }, (_, i) => `<i style="left:${(i * 37) % 100}%;--d:${((i * 13) % 20) / 10}s;--x:${((i * 29) % 40) - 20}cqw;--r:${(i * 47) % 360}deg;background:${['#f5c542', '#ff2e4d', '#22e1ff', '#7c5cff', '#fff', '#12b76a'][i % 6]}"></i>`).join('')}</div>`;
+  if (S.finale && idx >= 0) h += '<div class="beams"><i></i><i></i><i></i></div>';
   if (fresh && st && st.card && ['alliance', 'meeting', 'joined', 'out', 'deal'].includes(st.card.kind)) {
     const faces = (st.card.members || []).slice(0, 6).map((n, i) => `<span class="alf" style="--c:${col(n)};--i:${i}">${img(n)}</span>`).join('');
     const who = esc(String((st.card.members || [])[0] || '').toUpperCase());

@@ -201,6 +201,8 @@ export function soundFor(screen, idx) {
     if (idx === 0) return { cue: 'bb-crowd', bed: null };
   }
   if (screen.kind === 'jury-vote' && st.winner) return { cue: 'bb-winner', bed: 'bb-celebration' };
+  if (st.key) return { cue: 'bb-result', bed: null };
+  if (st.confetti) return { cue: 'bb-hoh-crown', bed: 'bb-celebration' };
   if (screen.kind === 'noms') {
     if (/turns the (first|next) key/.test(t)) return { cue: 'bb-key-turn', bed: null };
     if (st.nom) return { cue: 'bb-face', bed: null };

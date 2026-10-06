@@ -434,6 +434,30 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 /* ── the jury house: the same building's warmth, lamplit, slow ── */
 .bbx .stage.lodge .set{filter:sepia(.55) saturate(1.25) brightness(.72) hue-rotate(-8deg)}
 .bbx .stage.lodge .vign{background:radial-gradient(ellipse at 50% 40%,transparent 35%,rgba(30,16,4,.75))}
+/* ── finale night: the key board, confetti, sweeping spotlights ── */
+.bbx .keyboard{position:absolute;left:50%;top:9cqw;transform:translateX(-50%);z-index:10;padding:1.2cqw 2cqw;background:rgba(10,8,2,.88);border:.15cqw solid #e8c98a;border-radius:1cqw;text-align:center;box-shadow:0 0 4cqw rgba(232,201,138,.25)}
+.bbx .keyboard .kh{display:block;font:700 .95cqw 'Chakra Petch';letter-spacing:.4cqw;color:#e8c98a;margin-bottom:.8cqw}
+.bbx .keyboard .kr{display:flex;align-items:center;gap:2.4cqw}
+.bbx .keyboard .kcol{display:flex;flex-direction:column;align-items:center;gap:.4cqw;min-width:16cqw}
+.bbx .keyboard .kf{width:5.4cqw;aspect-ratio:4/5;border-radius:.8cqw;overflow:hidden;background:var(--c);box-shadow:0 0 0 .2cqw rgba(255,255,255,.3)}
+.bbx .keyboard .kf img{width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.bbx .keyboard b{font:900 1.6cqw Archivo;font-stretch:78%;letter-spacing:.15cqw;color:#fff;text-transform:uppercase}
+.bbx .keyboard .kn{font:700 4.4cqw/1 'Chakra Petch';color:#fff;text-shadow:0 0 2cqw rgba(232,201,138,.7)}
+.bbx .keyboard .kn.bump{animation:bbx-bump .6s cubic-bezier(.2,1.8,.4,1) both}
+@keyframes bbx-bump{0%{transform:scale(1.8);color:#f5c542}100%{transform:scale(1)}}
+.bbx .keyboard .kp{display:flex;gap:.3cqw;min-height:2cqw}
+.bbx .keyboard .kp i{width:2cqw;height:2cqw}.bbx .keyboard .kp i svg{width:100%;height:100%;display:block}
+.bbx .keyboard .kp i.new{animation:bbx-keyin .7s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes bbx-keyin{from{transform:translateY(-3cqw) rotate(-90deg) scale(1.8);opacity:0}}
+.bbx .keyboard .kvs{font:900 1.4cqw Archivo;color:#8e8371}
+.bbx .keyboard .kcol.won .kf{box-shadow:0 0 0 .3cqw #f5c542,0 0 3cqw #f5c542}
+.bbx .confetti{position:absolute;inset:0;z-index:13;pointer-events:none;overflow:hidden}
+.bbx .confetti i{position:absolute;top:-4%;width:.9cqw;height:1.5cqw;border-radius:.15cqw;animation:bbx-confetti 3.2s var(--d) cubic-bezier(.3,.6,.5,1) both}
+@keyframes bbx-confetti{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(var(--x),62cqw) rotate(var(--r));opacity:.9}}
+.bbx .beams{position:absolute;inset:0;z-index:2;pointer-events:none;mix-blend-mode:screen}
+.bbx .beams i{position:absolute;top:-10%;left:50%;width:12cqw;height:80cqw;transform-origin:50% 0;background:linear-gradient(180deg,rgba(255,236,190,.28),transparent 70%);filter:blur(1cqw);animation:bbx-beam 7s ease-in-out infinite}
+.bbx .beams i:nth-child(1){left:20%;animation-delay:-2s}.bbx .beams i:nth-child(3){left:80%;animation-delay:-4.5s}
+@keyframes bbx-beam{0%,100%{transform:rotate(-22deg)}50%{transform:rotate(22deg)}}
 /* ── an alliance is born: its title ── */
 .bbx .alcard{position:absolute;left:50%;top:38%;z-index:12;transform:translate(-50%,-50%);text-align:center;pointer-events:none;animation:bbx-alcard 3.6s ease-out both}
 .bbx .alcard::before{content:"";position:absolute;inset:-3cqw -9cqw;z-index:-1;background:radial-gradient(closest-side,rgba(10,8,2,.92),rgba(10,8,2,.6) 60%,transparent)}
@@ -449,5 +473,5 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .alcard.out .alf{box-shadow:0 0 0 .2cqw #ff2e4d;filter:grayscale(.6)}
 .bbx .alcard.meeting i{color:#fff}
 .bbx .alcard.deal i{color:#ffd76a}.bbx .alcard.deal .alf{box-shadow:0 0 0 .2cqw #ffd76a}
-@media (prefers-reduced-motion:reduce){.bbx .gt[class*="act-"] .tile,.bbx .gt .fx{animation:none}}
+@media (prefers-reduced-motion:reduce){.bbx .gt[class*="act-"] .tile,.bbx .gt .fx,.bbx .beams i,.bbx .confetti i{animation:none}}
 @media (prefers-reduced-motion:reduce){.bbx .gt.bgp .tile,.bbx .gt.tense .tile{animation:none}}`;

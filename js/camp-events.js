@@ -1612,33 +1612,18 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const wyB = wRandom(wyOthers, n => Math.max(0.1, pStats(n).strategic * 0.3 + pStats(n).boldness * 0.2 + 1));
       addBond(wyA, wyB, -0.5);
       const intA = pStats(wyA).intuition;
-      const _wyA = pronouns(wyA);
-      const wyLines = intA >= 7
-        ? [`${wyA} catches ${wyB} watching ${_wyA.obj} from across camp. ${_wyA.Sub} smile${_wyA.sub==='they'?'':'s'} back and give${_wyA.sub==='they'?'':'s'} nothing away.`,
-           `${wyA} clocks that ${wyB} has been paying close attention and adjust${_wyA.sub==='they'?'':'s'} accordingly.`,
-           `${wyA} notices the surveillance and uses it — feeds ${wyB} exactly what ${_wyA.sub} want${_wyA.sub==='they'?'':'s'} ${wyB} to see.`,
-           `${wyA} catches ${wyB}'s eye and holds it. A small acknowledgment: I know you're watching. ${wyB} looks away first.`]
-        : [`${wyA} gets the feeling that ${wyB} is watching every move. ${_wyA.Sub} ${_wyA.sub==='they'?'are':'is'} not wrong.`,
-           `${wyA} notices ${wyB} tracking where ${_wyA.sub} go${_wyA.sub==='they'?'':'es'} and who ${_wyA.sub} talk${_wyA.sub==='they'?'':'s'} to. It makes ${_wyA.obj} uncomfortable.`,
-           `Something changes in how ${wyA} moves through camp after noticing ${wyB}'s attention. ${_wyA.Sub} ${_wyA.sub==='they'?'are':'is'} more careful now.`,
-           `${wyA} can feel ${wyB}'s eyes on ${_wyA.obj} during every group conversation. It's not paranoia. It's accurate.`];
-      events.push({ type: 'watchingYou', text: wyLines[Math.floor(Math.random() * wyLines.length)], players: [wyA, wyB], badgeText: 'WATCHING', badgeClass: 'red' });
+      
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      events.push(scriptEvent({ type: 'watchingYou', players: [wyA, wyB], badgeText: 'WATCHING', badgeClass: 'red' },
+        makeScene('read.watched', { a: wyA, b: wyB }, { ending: intA >= 7 ? 'sharp' : 'uneasy' }, [], _spotNow(wyA, wyB))));
 
     } else if (eventType === 'loneWolf') {
       const p = _pick(group, n => Math.max(0.1, (10 - pStats(n).loyalty) * 0.4 + pStats(n).boldness * 0.25 + 1));
-      const _lwP = pronouns(p);
+      
       group.filter(x => x !== p).forEach(other => addBond(p, other, -0.15));
-      const lwLines = [
-        `${p} declines an alliance approach today. Politely, but clearly. The tribe takes note.`,
-        `${p} handles camp alone — no check-ins, no alliances. ${_lwP.Sub} seem${_lwP.sub==='they'?'':'s'} fine with that.`,
-        `${p} makes it clear — quietly — that ${_lwP.sub} ${_lwP.sub==='they'?'are':'is'} not locking in right now. The tribe finds this suspicious.`,
-        `${p} pulls back from the social game entirely for a day. Confidence or detachment. The tribe hasn't decided which.`,
-        `${p} eats alone. Not angrily — just... alone. The tribe watches from a distance and wonders what ${_lwP.posAdj} game actually is.`,
-        `${p} goes for a walk and doesn't come back for hours. When ${_lwP.sub} ${_lwP.sub==='they'?'do':'does'}, ${_lwP.sub} ${_lwP.sub==='they'?'don\'t':'doesn\'t'} explain where ${_lwP.sub} went.`,
-        `${p} sits at the edge of every group conversation. Present but not participating. It's calculated or it's checked out. Nobody can tell.`,
-        `Someone tries to loop ${p} into the vote discussion. ${p} listens, nods, contributes nothing. The non-answer is an answer.`,
-      ];
-      events.push({ type: 'loneWolf', text: lwLines[Math.floor(Math.random() * lwLines.length)], player: p, players: [p], badgeText: 'LONE WOLF', badgeClass: '' });
+      Math.random();
+      events.push(scriptEvent({ type: 'loneWolf', player: p, players: [p], badgeText: 'LONE WOLF', badgeClass: '' },
+        makeScene('conf.lonewolf', { a: p }, {}, [], { id: 'confessional', label: 'Confessional' })));
 
     } else if (eventType === 'tribeMood') {
       const tmP = group[Math.floor(Math.random() * group.length)];
@@ -1668,14 +1653,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       addBond(b, a, 0.6); // b trusts a more — they're being played
       const strA = pStats(a).strategic, loA = pStats(a).loyalty;
       const _smA = pronouns(a);
-      const smLines = (strA >= 9 && loA <= 3)
-        ? [`${a} builds ${b} into their plan so naturally that ${b} thinks the idea was theirs.`,
-           `${a} tells ${b} exactly the right things — each word calculated. ${b} walks away feeling trusted. That was the goal.`,
-           `${a} spends an hour with ${b} creating a loyalty that doesn't actually exist. ${_smA.Sub} ${_smA.sub==='they'?'are':'is'} very good at this.`]
-        : [`${a} pulls ${b} close with information that sounds valuable. Some of it is. The rest is useful to ${a}.`,
-           `${a} makes ${b} feel like an equal partner. The split of power in their arrangement is not equal.`,
-           `${a} works ${b} through a slow conversation that ends with ${b} committed to something ${_smA.sub} barely had to ask for.`];
-      events.push({ type: 'schemerManipulates', text: smLines[Math.floor(Math.random() * smLines.length)], player: a, players: [a, b], badgeText: 'MANIPULATION', badgeClass: 'red' });
+      Math.random();
+      events.push(scriptEvent({ type: 'schemerManipulates', player: a, players: [a, b], badgeText: 'MANIPULATION', badgeClass: 'red' },
+        makeScene('read.played', { a, b }, { ending: (strA >= 9 && loA <= 3) ? 'deep' : 'plain' }, [], _spotNow(a, b))));
 
     } else if (eventType === 'mastermindOrchestrates') {
       // Mastermind quietly engineers something without anyone knowing
@@ -1685,15 +1665,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + pStats(n).social * 0.2 + 1));
       addBond(a, b, 0.4);
       const strA = pStats(a).strategic, tmpA = pStats(a).temperament;
-      const _mmA = pronouns(a);
-      const mmLines = (strA >= 9 && tmpA >= 5)
-        ? [`${a} doesn't tell anyone what ${_mmA.sub} ${_mmA.sub==='they'?'are':'is'} doing. The tribe just finds itself moving in the direction ${_mmA.sub} chose.`,
-           `${a} runs three separate conversations through ${b} without ${b} realizing they're a relay. The message arrives exactly where it needed to.`,
-           `${a} made something happen today without being visible anywhere near it. That's the whole point.`]
-        : [`${a} positions ${b} for a move ${_mmA.sub} won't make until next week. ${b} has no idea ${_mmA.sub}'s already that far ahead.`,
-           `${a} and ${b} have a conversation that looks like small talk and functions as architecture.`,
-           `${a} didn't speak much at camp today. ${_mmA.Sub} didn't need to. The pieces are already where ${_mmA.sub} put${_mmA.sub==='they'?'':'s'} them.`];
-      events.push({ type: 'mastermindOrchestrates', text: mmLines[Math.floor(Math.random() * mmLines.length)], player: a, players: [a, b], badgeText: 'ORCHESTRATING', badgeClass: 'red' });
+      
+      Math.random();
+      events.push(scriptEvent({ type: 'mastermindOrchestrates', player: a, players: [a, b], badgeText: 'ORCHESTRATING', badgeClass: 'red' },
+        makeScene('read.orchestrate', { a, b }, { ending: (strA >= 9 && tmpA >= 5) ? 'unseen' : 'setup' }, [], _spotNow(a, b))));
 
     } else if (eventType === 'hotheadExplosion') {
       // Hothead loses control — wide bond damage
@@ -1872,19 +1847,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const b = wRandom(others, n => Math.max(0.1, pStats(n).strategic * 0.3 + pStats(n).boldness * 0.2 + 1));
       addBond(a, b, -0.5);
       const intA = pStats(a).intuition, socA = pStats(a).social;
-      const _prA = pronouns(a);
-      const prLines = (intA >= 8 && socA >= 7)
-        ? [`${a} catches something in ${b}'s story that doesn't line up. ${_prA.Sub} don't${_prA.sub==='they'?'':'es'} call it out. ${_prA.Sub} just know${_prA.sub==='they'?'':'s'} now.`,
-           `${a} reads ${b}'s body language through a conversation they weren't technically part of. The conclusion changes how ${_prA.sub} see${_prA.sub==='they'?'':'s'} the next three days.`,
-           `${a} in confessional: "They think they're being subtle. They're not. I've known for two days."`,
-           `${a} watches ${b} talk to the tribe and hears the version under the version. The tribe takes it at face value. ${_prA.Sub} can't.`]
-        : intA >= 7
-        ? [`${a} doesn't have proof — but ${_prA.sub} ${_prA.sub==='they'?'have':'has'} enough. ${_prA.Sub} start${_prA.sub==='they'?'':'s'} adjusting accordingly.`,
-           `Something ${b} said confirms what ${a} suspected. The tribe doesn't see it yet.`,
-           `${a} has been watching ${b}. Today, ${b} gave something away without knowing it. ${a} filed it.`]
-        : [`${a} senses something is off with ${b} before anyone else does. ${_prA.Sub} can't explain exactly how. ${_prA.Sub} know${_prA.sub==='they'?'':'s'} what ${_prA.sub} know${_prA.sub==='they'?'':'s'}.`,
-           `${a} checks in with ${b}. The response is slightly wrong. Not wrong enough for anyone else to notice. ${a} notices.`];
-      events.push({ type: 'perceptiveReads', text: prLines[Math.floor(Math.random() * prLines.length)], players: [a, b], badgeText: 'SHARP READ', badgeClass: 'gold' });
+      
+      Math.random();
+      events.push(scriptEvent({ type: 'perceptiveReads', players: [a, b], badgeText: 'SHARP READ', badgeClass: 'gold' },
+        makeScene('read.sharp', { a, b }, { ending: (intA >= 8 && socA >= 7) ? 'expert' : intA >= 7 ? 'sure' : 'gut' }, [], _spotNow(a, b))));
 
     // ── NEW POSITIVE EVENTS ──
 

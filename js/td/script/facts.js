@@ -27,7 +27,12 @@ export const TD_FACT_KEYS = [
   'spot',
   // a third part is present
   'third',
+  // the real reasons a line may give (td/script/context.js): true when the
+  // scene's data names one, and only then may a line say {rival}, {threat}...
+  'rival', 'friend', 'threat', 'weak', 'lastBoot',
 ];
+
+export const CONTEXT_SLOTS = ['rival', 'friend', 'threat', 'weak', 'lastBoot'];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 const VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
@@ -89,5 +94,6 @@ export function factsFor(scene, ctx = {}) {
   }
   const d = scene.data || {};
   for (const k of ['ending', 'result', 'intent', 'reason', 'again', 'size']) if (d[k] !== undefined && d[k] !== null) f[k] = d[k];
+  for (const k of CONTEXT_SLOTS) f[k] = !!d[k];
   return f;
 }

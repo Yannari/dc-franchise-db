@@ -24,6 +24,7 @@ import { pickEntry, newLedger } from '../../script/pick.js';
 import { stableRng } from '../../script/rng.js';
 import { POOLS } from './lines/index.js';
 import { factsFor } from './facts.js';
+import { campContext } from './context.js';
 
 // The episode being played. gs.episode still holds the last one until it ends.
 export const epOf = ctx => ctx.ep || (gs.episode || 0) + 1;
@@ -97,6 +98,8 @@ function noPast(keys) {
 export function writeScene(scene, ctx = {}) {
   if (writing.muted) return { lines: [{ kind: 'beat', by: null, text: scene.kind }], text: scene.kind, lineId: null };
   const rng = sceneRng(scene, ctx);
+  // The reasons a line may give, read now (the scene's own data wins).
+  scene.data = { ...campContext(scene.who?.a, scene.who?.b), ...(scene.data || {}) };
   const facts = factsFor(scene, ctx);
   // A family's '.any' pool fits every ending, so it is merged with the ending's own.
   const ending = scene.data?.ending || 'any';

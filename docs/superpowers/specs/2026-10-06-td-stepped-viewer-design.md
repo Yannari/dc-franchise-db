@@ -28,7 +28,8 @@ dialogue lives in the engine and the record, and the text backlog prints the sam
 | What airs | Everything. Strategy, romance and drama as full scenes; flavour events as 1–2 line cutaways |
 | Architecture | A: TD's own viewer (`js/vp-td-ep/`) and script layer (`js/td/script/`), on the shared picker. No shared kit with BB yet |
 | Look | Blender-rendered spot backdrops, mockup approved first |
-| Ceremony | The engine's Survivor-style Tribal (torches, "the tribe has spoken"), unchanged |
+| Ceremony | The season's setting decides (§7): the vote is cast and counted as now, but staged as that setting's real ceremony |
+| Voice | The show's own (§5.1), after reading TDI and Disventure Camp transcripts; the first plain pools were "a little too conversation" |
 
 ## 3. Phases
 
@@ -87,6 +88,27 @@ Mirrors `js/bb/script/`.
 
 **The event shape after conversion:** `{ type, players, badgeText, badgeClass,
 scene, lines, text, spot }` — `players`/badge untouched (spotlight and tests count them).
+
+### 5.1 The voice (user, 2026-10-06)
+
+The first pools were plain, polite two-person exchanges ("Final two?" "Final
+two." "Thank you. I mean it."). The user: "a little too conversation — look up
+Total Drama / Disventure Camp transcripts". From TDI *Who Can You Trust?* and
+Disventure Camp 5, every pool follows:
+
+- **An activity under the scene.** Strategy happens while doing something
+  (breakfast, fishing, chores, a game), from the scene's spot.
+- **Reasons, from real game facts.** A line that gives a reason names what the
+  engine knows: a rival (`{rival}`, a's worst bond in camp), a challenge threat
+  (`{threat}`), the last boot (`{lastBoot}`), a friend (`{friend}`). Computed
+  into scene data at fire time (`td/script/context.js`), never invented.
+- **Pushback.** Nobody agrees in two lines.
+- **Attitude in the characters' own plain words** (sass, insults, comebacks).
+  The narration stays plain; the humour belongs to the speaker.
+- **Real idioms only.** "Owen thinks with his stomach", never an invented
+  shortcut like "Owen thinks the challenge is a buffet" (user).
+- **The confessional lands one sharp thought or reveal.**
+- 5–8 lines a scene. No therapy-speak.
 
 ### Phase 1 families (strategy)
 
@@ -162,6 +184,14 @@ Mockups in `mockup/` approved before stage code: (1) camp scene + cutaway +
 confessional; (2) Tribal. Both themes. 1100×900, 946×720, 400×800.
 
 ## 7. Tribal Council
+
+**The ceremony is the setting's.** The vote is the same machine; how it is
+staged is the season's setting (`currentSetting()`): `hosted-camp` —
+marshmallows, the Dock of Shame, the Boat of Losers; `film-lot` — the awards
+statuettes, the Walk of Shame, the Lame-o-sine; `world-tour`, `carnival` and
+`survival-island` each their own (torches for a survival island). Each is
+checked against the show's wiki before it is built (user 2026-10-06: "season
+setting decides").
 
 **Written at simulation time.** `buildTribalQA` leaves `vp-screens.js` for
 `js/td/script/tribal.js` and runs in `episode.js` once the vote is decided; saved as

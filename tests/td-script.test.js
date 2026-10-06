@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'fs';
 import { POOLS } from '../js/td/script/lines/index.js';
-import { TD_FACT_KEYS } from '../js/td/script/facts.js';
+import { TD_FACT_KEYS, CONTEXT_SLOTS } from '../js/td/script/facts.js';
 import { makeScene, witness } from '../js/td/script/scene.js';
 import { fill } from '../js/td/script/write.js';
 import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
@@ -81,6 +81,24 @@ describe('the pools keep their contract', () => {
     for (const [key, pool] of all) for (const e of pool) {
       if (e.when?.tribal === true) continue;
       for (const x of texts(e)) expect(/tonight/i.test(x), `${key} ${e.id}: ${x}`).toBe(false);
+    }
+  });
+
+  it('only gives a reason the engine knows', () => {
+    // {rival}, {threat}, {lastBoot}... are names td/script/context.js read at the scene.
+    // A line that says one must ask for it, or it prints a raw slot (or a name that is not true).
+    for (const [key, pool] of all) for (const e of pool) {
+      const used = CONTEXT_SLOTS.filter(k => texts(e).some(x => x.includes(`{${k}`)));
+      for (const k of used) expect(e.when?.[k], `${key} ${e.id} says {${k}} without when.${k}`).toBe(true);
+    }
+  });
+
+  it('only talks about the team before the merge', () => {
+    // Seed 4242: "If we lose again, it's going to be Cody" aired at the merge, when nobody has a team.
+    const TEAM = /(if we lose|we lose again|our team|my team|your team|the team|won us|lost us|team challenge)/i;
+    for (const [key, pool] of all) for (const e of pool) {
+      if (e.when?.merged === false) continue;
+      for (const x of texts(e)) expect(TEAM.test(x), `${key} ${e.id}: ${x}`).toBe(false);
     }
   });
 

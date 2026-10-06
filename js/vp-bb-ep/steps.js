@@ -284,7 +284,10 @@ function nomScreen(act, ctx) {
       steps.push({ k: 'say', by: n, t: pickBy(['Then I\'ll see you on the other side of the veto.', 'Fine. Enjoy your week.', 'Remember this. Because I will.'], salt) });
       steps.push({ k: 'beat', t: pickBy([`Nobody at the table moves. Somebody very slowly puts a fork down.`, `The table goes silent. ${hoh} stares at the key box.`], salt) });
     } else if (bond >= 3) {
-      steps.push({ k: 'beat', t: pickBy([`${n} catches ${hoh}'s eye and gives a small nod. They talked about this.`, `${n} nods, very slowly, and doesn't say a word.`, `${n} lets out a breath that is almost a laugh.`], salt) });
+      const inOnIt = n === act.pawn || (act.backdoorTarget && !noms.includes(act.backdoorTarget));
+      steps.push({ k: 'beat', t: inOnIt
+        ? pickBy([`${n} catches ${hoh}'s eye and gives a small nod. They talked about this.`, `${n} nods, very slowly, and doesn't say a word.`, `${n} lets out a breath that is almost a laugh.`], salt)
+        : pickBy([`${n} stares at ${hoh}. ${hoh} can't hold the look.`, `${n} goes very still. Of all the faces that could have come up, it was not supposed to be this one.`, `${n} looks at ${hoh} like ${hoh} is somebody new.`], salt) });
     } else if (bond <= -2) {
       steps.push({ k: 'say', by: n, t: pickBy(['Saw that coming.', 'Of course.', 'Great. Thanks.'], salt) });
     } else {
@@ -741,7 +744,7 @@ function juryQuestionsScreen(act, ctx) {
     let cut = false;
     for (const a of ex.answers || []) {
       if (a.text) { const sp = spoken(a.finalist, a.text, { push: a.finalist === ex.asked }); if (!cut && sp[0]) { sp[0] = { ...sp[0], scene: inHouse(f2) }; cut = true; } steps.push(...sp); }
-      if (a.reaction) steps.push({ k: 'beat', t: stripTags(a.reaction) });
+      if (a.reaction) steps.push(...proseSteps(a.reaction, [ex.juror]));
     }
   }
   if ((act.exchanges || []).length === 0) steps.push({ k: 'beat', t: 'The jury has no questions tonight.' });
@@ -773,12 +776,17 @@ function juryVoteScreen(act, ctx, host, row) {
   steps.push({ k: 'host', by: host, t: `Remember: tonight you are voting for the houseguest you want to WIN. Nobody will see your key until it comes out of that box.` });
   // each juror walks to the box, says a line that names nobody, and drops the key in
   let prev = null;
+  // every juror says something different at the box (four of seven said the same line)
+  const SAYS = ['This one is for the best game I saw.', 'I thought about this for a long time. This is my vote.', 'No hard feelings, whichever way this goes.',
+    'I voted with my head tonight, not my heart.', 'Congratulations to you both. This is for the one who earned it.', 'This one is for the person who actually played.',
+    'I hope you both understand.', 'I know exactly what I am doing with this key.', 'I made up my mind a while ago. Tonight just confirmed it.',
+    'This was harder than I thought it would be.', 'Good luck to both of you. I mean that.', 'I went back and forth all week. This is where I landed.'];
+  const off = [...String(ctx.week)].reduce((n, ch) => n + ch.charCodeAt(0), 0);
+  const sayOf = new Map((act.reasoning || []).map((r, i) => [r.juror, SAYS[(off + i * 5) % SAYS.length]]));
   for (const r of act.reasoning || []) {
     steps.push({ k: 'beat', t: pick([`${r.juror} walks to the box.`, `${r.juror} stands, takes a key, and looks at the name on it for a long moment.`, `${r.juror} gets up and crosses the stage.`], r.juror),
       tense: [r.juror], seat: { ...(prev && home[prev] ? { [prev]: home[prev] } : {}), [r.juror]: 'box' } });
-    steps.push({ k: 'say', by: r.juror, keyIn: r.juror, juryVote: [r.juror, r.votedFor], t: pick(['This one is for the best game I saw.', 'I thought about this for a long time. This is my vote.', 'No hard feelings, whichever way this goes.',
-      'I voted with my head tonight, not my heart.', 'Congratulations to you both. This is for the one who earned it.', 'This one is for the person who actually played.',
-      'I hope you both understand.', 'I know exactly what I am doing with this key.'], `say|${r.juror}`) });
+    steps.push({ k: 'say', by: r.juror, keyIn: r.juror, juryVote: [r.juror, r.votedFor], t: sayOf.get(r.juror) });
     steps.push({ k: 'beat', t: pick(['The key drops into the box.', 'The key goes in with a click.', 'In it goes.'], `drop|${r.juror}`), drop: r.juror });
     prev = r.juror;
   }
@@ -2220,7 +2228,13 @@ function proseSteps(text, players = []) {
   const re = /[“"]([^”"]+)[”"]/g;
   const parts = [];
   let last = 0, m;
-  while ((m = re.exec(t))) { parts.push({ narr: t.slice(last, m.index) }); parts.push({ quote: m[1] }); last = m.index + m[0].length; }
+  while ((m = re.exec(t))) {
+    const before = t.slice(last, m.index);
+    // a short quoted phrase in the middle of a sentence ('starts a sentence with "when we vote"
+    // and the room...') is part of the narration, not a line somebody speaks
+    if (/^[a-z]/.test(m[1]) && m[1].length < 40 && /[A-Za-z]\s$/.test(before)) continue;
+    parts.push({ narr: before }); parts.push({ quote: m[1] }); last = m.index + m[0].length;
+  }
   parts.push({ narr: t.slice(last) });
   if (!parts.some(x => x.quote)) return [{ k: 'beat', t }];
   const esc = n => n.replace(/[.*+?^${}()|[\]\\]/g, x => '\\' + x);
@@ -2234,17 +2248,20 @@ function proseSteps(text, players = []) {
       // the speaker of the next quotation is the person named earliest in the narration before it
       // an attribution straight after a quotation names who said it ("You weren't there," Hicks
       // says): that line is Hicks's, whoever the narration before it named
-      const tag = new RegExp('^[\\s,]*(' + who + ')\\s+(?:says|asks|adds|replies|snaps|mutters|whispers)\\b').exec(x.narr);
+      const tag = new RegExp('^[\\s,]*(?:(' + who + ')\\s+(?:says|asks|adds|replies|snaps|mutters|whispers)|(?:says|asks|adds|replies|snaps|mutters|whispers)\\s+(' + who + '))\\b').exec(x.narr);
+      const tagged = tag ? tag[1] || tag[2] : null;
       const prevSay = out[out.length - 1];
-      if (tag && prevSay && prevSay.k === 'say') { prevSay.by = tag[1]; speaker = tag[1]; }
+      if (tagged && prevSay && prevSay.k === 'say') { prevSay.by = tagged; speaker = tagged; }
       const named = players.filter(p => x.narr.includes(p)).sort((a, b) => x.narr.indexOf(a) - x.narr.indexOf(b));
       if (named.length && !tag) speaker = named[0];
       // what is left after an attribution ("..., and that is where it stops") is its own sentence
-      const n = x.narr.replace(ATTR, '').replace(/^[\s,.;:—-]+/, '').replace(/^and\s+/i, '').trim().replace(/^[a-z]/, c => c.toUpperCase());
+      const n0 = x.narr.replace(ATTR, '').replace(/^[\s,.;:—-]+/, '').trim();
+      const n = n0.replace(/^and\s+/i, '').replace(/^[a-z]/, c => c.toUpperCase());
       // "the wall says," / "slowly," / "she adds quietly," between quotations is not a line of its own
-      const manner = n.length < 28 && !/[.!?]$/.test(n.replace(/,$/, '')) && /,$|^(?:[a-z]|the |and )/.test(n);
+      const manner = n0.length < 28 && !/[.!?]$/.test(n0.replace(/,$/, '')) && /,$|^(?:[a-z]|the |and )/.test(n0);
       const said = /\b(says|asks|adds|replies|snaps|mutters|whispers)\b[,.]?$/i.test(n);
-      if (n.length > 2 && !manner && !said) out.push({ k: 'beat', t: /[.!?]$/.test(n) ? n : n + '.' });
+      // a beat that led into the quotation ends on a full stop, not ",." ("tells the dark monitor,.")
+      if (n.length > 2 && !manner && !said) out.push({ k: 'beat', t: /[.!?]$/.test(n) ? n : n.replace(/[\s,;:—-]+$/, '') + '.' });
       continue;
     }
     const by = speaker || players[0] || null;
@@ -2544,7 +2561,12 @@ function storyLifeScreen(scenes, ctx, n) {
     // a scene that opens on its own staging line carries the cut; otherwise a caption names the room
     const firstSpoken = lines.findIndex(l => l.k !== 'dr');
     if (firstSpoken >= 0 && lines[firstSpoken].k === 'beat' && !lines[firstSpoken].bg) {
-      lines[firstSpoken] = { ...lines[firstSpoken], scene };
+      // the engine's own moments open on what happens ("An argument about the dishes turns into
+      // something else") and never say where: a run of them read as one jumbled montage
+      const t0 = String(lines[firstSpoken].t || '');
+      const where = sc.type === 'event' && !/^(the )?(bedroom|kitchen|backyard|living room|hoh room|storage room|dining|have-not|diary|yard|pool|lounge|bathroom|dinner|breakfast|lights out|late|morning|later|that night|after)/i.test(t0)
+        ? `${label}. ` : '';
+      lines[firstSpoken] = { ...lines[firstSpoken], t: where + t0, scene };
       // a recap before it (Diary Room) still has to cut somewhere first
       if (firstSpoken > 0) lines[0] = { ...lines[0], scene };
     } else if (firstSpoken < 0 && lines.length) {
@@ -2772,7 +2794,24 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   out.leadingSlots = leading;
   for (const s of out) { s.wall = s.hidden?.size ? wall.filter(n => !s.hidden.has(n)) : wall; s.priorOut = priorEvicted.slice(); s.week = ctx.week; delete s.hidden; }
   if (out.length && !out.some(s => s.steps.some(st => st.hoh)) && ctx.hoh) out[0].steps[0] = { ...out[0].steps[0], hoh: ctx.hoh };
+  for (const s of out) for (const st of s.steps || []) if (typeof st.t === 'string') st.t = countWords(st.t);
   return out;
+}
+
+// Small counts in what people say and what the narrator says read as words: "week three",
+// "survived eleven of them", "six correct votes" (the prose audit, 2026-10-06, found "week 11"
+// and "6 correct votes" in the finale). Times (2:15), money, scores in the vault and anything
+// over twenty stay as digits.
+const COUNT_WORD = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+  'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
+const COUNTED = 'of them|of us|of you|correct|votes?|weeks?|days?|people|times|houseguests|jurors|keys|trips|eggs|more|pictures|faces|competitions?|wins?|HOHs?|vetoes|promises|nights?';
+function countWords(t) {
+  const w = n => COUNT_WORD[+n] ?? n;
+  return t
+    .replace(/\b(week|Week|day|Day) (\d{1,2})\b(?![:.,]\d)/g, (m, k, n) => (+n <= 20 ? `${k} ${w(n)}` : m))
+    .replace(new RegExp(`(^|[\\s(—])(\\d{1,2})(?= (?:${COUNTED})\\b)`, 'g'), (m, pre, n) => (+n <= 20 ? pre + w(n) : m))
+    .replace(/^([0-9]{1,2})\b(?![:.,]\d)/, (m, n) => (+n <= 20 ? w(n) : m))
+    .replace(new RegExp(`^(${COUNT_WORD.join('|')})\\b`), m => m[0].toUpperCase() + m.slice(1));
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */

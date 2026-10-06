@@ -124,7 +124,9 @@ export function writeCeremony(act, week, house, extra = {}) {
         if (lines) script.nomThird[n] = lines;
       }
       for (const n of noms.filter(x => !spoke.has(x))) {
-        const end = n === act.pawn && !backdoor ? 'pawn' : close(n, hoh) ? 'blindsided' : n === target ? 'target' : 'any';
+        // in a backdoor nobody on the block is the target: a friend sitting there was asked to (the
+        // audit, 2026-10-06: a pawn nodded at the HOH, then told the Diary Room she was blindsided)
+        const end = (n === act.pawn && !backdoor) || (backdoor && close(n, hoh)) ? 'pawn' : close(n, hoh) ? 'blindsided' : n === target ? 'target' : 'any';
         const lines = part('noms.dr', { a: n, b: hoh }, end, { ...ctx, nominees: noms }, house, n);
         if (lines) script.nomDr[n] = lines;
       }

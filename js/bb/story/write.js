@@ -199,7 +199,13 @@ function pick(keys, who, data, ctx, room, salt) {
   const close = ['together', 'family'].includes(facts0.kin);
   const FRIEND = new RegExp(String.raw`(^|[^a-z])friends?([^a-z]|$)`, "i");
   const fits = e => !close || !FRIEND.test(JSON.stringify(e.turns));
-  for (const k of keys) pools[k] = (STORY_POOLS[k] || []).filter(e => presumed(e, ctx) && can(e) && fits(e));
+  // a scene where people promise their votes ("we've talked about it, we want to keep you") is
+  // not spoken by somebody who has no vote: the other nominee, or the HOH (the audit, 2026-10-06:
+  // Priya, on the block beside Damien, was one of the three keeping him)
+  const PLEDGE = /keep you|we've talked about it|three votes|our votes|vote to keep|votes for one promise/i;
+  const noVote = new Set([...(ctx.nominees || []), ...(ctx.hoh ? [ctx.hoh] : [])]);
+  const voters = e => !PLEDGE.test(JSON.stringify(e.turns)) || (e.turns || []).every(t => !t.by || t.by === 'a' || !noVote.has(who[t.by]));
+  for (const k of keys) pools[k] = (STORY_POOLS[k] || []).filter(e => presumed(e, ctx) && can(e) && fits(e) && voters(e));
   // inside a set piece the room is the set's: a scene that stages its own room waits, unless nothing else fits
   if (ctx.inSet) for (const k of keys) { const free = pools[k].filter(e => !e.room); if (free.length) pools[k] = free; }
   if (!keys.some(k => pools[k].length)) return null;
@@ -517,7 +523,10 @@ export function writeEngineScene(beat, ctx, at) {
   const id = String(beat.eventId || '');
   // a house meeting is the whole house in the living room, whoever speaks
   const meeting = /house-meeting|meeting-crash/.test(id) && !/meeting-crash/.test(id);
-  const room = meeting ? 'living-room' : ROOM[beat.location] ? beat.location : 'living-room';
+  // what they are doing says where they are: breakfast is not made in the backyard
+  const allText = lines.map(l => l.text).join(' ');
+  const kitchen = /\b(breakfast|making (?:dinner|lunch|tea|coffee|toast)|the dishes|washing up|the fridge|the oven|the stove|cooking)\b/i.test(allText);
+  const room = meeting ? 'living-room' : kitchen ? 'kitchen' : ROOM[beat.location] ? beat.location : 'living-room';
   if (meeting) for (const n of present) if (!cast.includes(n)) cast.push(n);
   const fam = FAMILY_WHY.find(([re]) => re.test(id))?.[1];
   const badge = beat.badgeText ? `${String(beat.badgeText).charAt(0)}${String(beat.badgeText).slice(1).toLowerCase()}.` : null;

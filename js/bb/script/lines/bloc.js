@@ -34,7 +34,7 @@ export default {
     { id: 'bn.g2', turns: [{ beat: 'The conversation stops when {a} walks in.' }, { by: 'a', dr: "That's the third time today. Same people every time." }] },
     { id: 'bn.g3', turns: [{ by: 'a', dr: "{b} and {c} are working together. I can't prove it. I don't need to." }] },
     { id: 'bn.g4', turns: [{ by: 'a', dr: "I've been keeping track of who ends up in the same room. {b} and {c} are always there." }] },
-    { id: 'bn.g5', turns: [{ by: 'a', dr: "If {b} and {c} are together, then the votes get decided before the rest of us even hear about them." }] },
+    { id: 'bn.g5', turns: [{ by: 'a', dr: "If two people are that close in a house this small, the votes get decided before the rest of us even hear about them." }] },
     { id: 'bn.g6', turns: [{ by: 'a', dr: "{b} and {c} never disagree about anything. In this house, that's not normal." }] },
     { id: 'bn.g7', when: { intent: 'big' }, turns: [{ by: 'a', dr: "{b}, {c} and at least one more. I'm nearly sure. That's a lot of votes." }] },
     { id: 'bn.g8', turns: [{ by: 'a', dr: "Something's going on with {b} and {c}. They act like people who've already agreed on everything." }] },

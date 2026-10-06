@@ -38,6 +38,9 @@ import { seedJurorReads, moveRead, readOf, stanceOf } from './jury-sentiment.js'
 const clamp01 = v => Math.max(0, Math.min(1, v));
 const archetypeOf = name => players.find(p => p.name === name)?.archetype || 'floater';
 const P = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
+// 'is' or 'are' for whoever the pronoun is ('They is not impressed' was printed)
+const IS = name => (P(name).sub === 'they' ? 'are' : 'is');
+const COUNT_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 const pick = (rng, list) => list[Math.floor(rng() * list.length) % list.length];
 
 /** A picker that will not repeat itself inside one scene. See last-words.js. */
@@ -106,7 +109,7 @@ function arrivalBeats(newcomer, residents, week, rng, out, lastWords = null) {
       `${newcomer} comes through the door still in eviction clothes, and ${greeter} is up before it shuts. "You're here. Okay. Okay — sit down, tell me everything."`,
       `The lodge goes quiet, then loud. ${greeter} gets to ${newcomer} first and holds on a beat too long. "I'm sorry. I'm so glad it's you."`,
       `${newcomer} drops a bag by the door and stands there. ${greeter} pours a drink without being asked and pushes it across the counter.`,
-      `"Well," says ${greeter}, "that makes ${residents.length + 1} of us." ${newcomer} manages about half a laugh.`,
+      `"Well," ${greeter} says, "that makes ${COUNT_WORDS[residents.length + 1] || residents.length + 1} of us." ${newcomer} manages about half a laugh.`,
     ])
     : `${newcomer} walks into an empty lodge, first one out here, and listens to how quiet it is with nobody else in it.`));
 
@@ -278,7 +281,7 @@ function roundtable(residents, week, rng) {
       `${doubter} shakes ${P(doubter).posAdj} head. "Every one of us is out here because somebody made a hard call. ${player} has never made one."`,
       `"You're all describing somebody who was in the room when things happened," ${doubter} says. "That isn't the same as doing them."`,
       `"${player} has been safe for six weeks," ${doubter} says. "Ask yourselves who arranged that, because it was not ${P(player).obj}."`,
-      `${doubter} wants a single decision named that cost ${player} anything. The room offers a few. ${P(doubter).Sub} is not impressed by any of them.`,
+      `${doubter} wants a single decision named that cost ${player} anything. The room offers a few. ${P(doubter).Sub} ${IS(doubter)} not impressed by any of them.`,
       `"I liked ${player}," says ${doubter}. "I'm not paying somebody for being pleasant to me on the way to the door."`,
       `${doubter} has heard this speech about ${player} three times now and it gets shorter every week.`,
     ]);

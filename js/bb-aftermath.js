@@ -859,7 +859,7 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
     const politeReacts = [
       `${evictee} nods politely at the screen, filing the message under people who were never really in the story.`,
       `A small smile, nothing behind it. Some goodbyes are just administration.`,
-      `${evictee} tilts a head at the screen — genuinely unsure, for a second, who that was.`,
+      `${evictee} tilts ${pronouns(evictee)?.posAdj || 'their'} head at the screen — genuinely unsure, for a second, who that was.`,
       `Polite applause from the audience. ${evictee} matches it exactly.`,
       `"That's kind." ${evictee} means it and will not think about it again.`,
       `${evictee} gives the monitor a thumbs up. The monitor, being a monitor, does not respond.`,

@@ -467,66 +467,30 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
     const name = find.finder;
     // Auction idol find — use auction-specific narrative
     if (find.fromAuction) {
-      const _ap = pronouns(name);
-      events.push({ type: 'idolFound', players: [name], text: `${name} spent their auction money on an idol clue and followed it immediately. ${_ap.Sub} come${_ap.sub==='they'?'':'s'} back to camp quiet — and armed.`, badgeText: 'IDOL FOUND', badgeClass: 'gold' });
+      events.push(scriptEvent({ type: 'idolFound', players: [name], badgeText: 'IDOL FOUND', badgeClass: 'gold' },
+        makeScene('adv.found', { a: name }, { ending: 'auction' }, [], { id: 'confessional', label: 'Confessional' })));
       return;
     }
     // Gift 2 (idol clue) — narrative already handled by ep.giftNarrativeEvents injection; skip duplicate
     if (find.fromGift2) return;
     // Beware activation is a group event — handle separately
     if (find.type === 'beware-activated') {
-      const holderList = find.holders.join(', ');
-      events.push({ type: 'idolFound', players: find.holders || [], text: `The final Beware Advantage has been found. Every tribe has now claimed theirs. The idols activate: ${holderList}. The vote restriction is lifted. Each holder now has a live Hidden Immunity Idol.`, badgeText: 'IDOLS ACTIVATED', badgeClass: 'gold' });
+      // Each holder in this camp tells the camera: the idol is live, and the vote is back.
+      const _here = (find.holders || []).filter(h => group.includes(h));
+      if (_here.length) events.push(scriptEventParts({ type: 'idolFound', players: find.holders || [], badgeText: 'IDOLS ACTIVATED', badgeClass: 'gold' },
+        _here.slice(0, 2).map(h => makeScene('adv.found', { a: h }, { ending: 'beware-live' }, [], { id: 'confessional', label: 'Confessional' }))));
       return;
     }
     const advType = find.type || 'idol';
-    const _fp = pronouns(name);
-    const _fhv = _fp.sub === 'they' ? "they've" : _fp.sub === 'she' ? "she's" : "he's";
-    const advTextMap = {
-      idol: [
-        `${name} slips away to search and comes back with more than ${_fp.sub} left with. Nobody else knows what ${_fp.sub} found.`,
-        `${name} finds a Hidden Immunity Idol buried near camp. Heart pounding, ${_fp.sub} pocket${_fp.sub==='they'?'':'s'} it and return${_fp.sub==='they'?'':'s'} to the group like nothing happened.`,
-        `${name} locates the idol during a quiet moment alone. ${_fp.Sub} do${_fp.sub==='they'?'':'es'} not tell a single person.`,
-        `${name} finds the Hidden Immunity Idol. ${_fp.PosAdj} expression gives nothing away when ${_fp.sub} return${_fp.sub==='they'?'':'s'} to tribe.`,
-      ],
-      extraVote: [
-        `${name} finds a note tucked under a rock near camp. An Extra Vote. ${_fp.Sub} read${_fp.sub==='they'?'':'s'} it twice, pocket${_fp.sub==='they'?'':'s'} it, and act${_fp.sub==='they'?'':'s'} like nothing happened.`,
-        `${name} discovers a hidden parchment while collecting water. Extra Vote. ${_fp.Sub} tell${_fp.sub==='they'?'':'s'} nobody.`,
-      ],
-      voteSteal: [
-        `${name} uncovers a Vote Steal advantage hidden at camp. One vote, taken from someone else at tribal. ${_fp.Sub} keep${_fp.sub==='they'?'':'s'} it quiet.`,
-        `${name} finds a note tucked out of sight. Vote Steal. The power to take someone else's voice — ${_fp.posAdj} now.`,
-      ],
-      legacy: [
-        `${name} finds the Legacy Advantage buried at camp. It can only be used at a specific moment near the end. ${_fp.Sub} tuck${_fp.sub==='they'?'':'s'} it away silently.`,
-        `${name} discovers the Legacy Advantage. It will only activate at the right moment — but that moment will come.`,
-      ],
-      kip: [
-        `${name} finds Knowledge is Power — the ability to steal any advantage from any player at tribal. Nobody sees ${_fp.obj} find it.`,
-        `${name} locates a hidden note near the water well. Knowledge is Power. ${_fp.Sub} now know${_fp.sub==='they'?'':'s'} what everyone else is holding.`,
-      ],
-      amulet: [
-        `${name} finds an Amulet Advantage at camp. Its power grows as other holders are eliminated.`,
-        `${name} discovers the Amulet — it starts weak but gets stronger the longer it survives. ${_fp.Sub} say${_fp.sub==='they'?'':'s'} nothing.`,
-      ],
-      secondLife: [
-        `${name} finds the Second Life Amulet hidden at camp. If ${_fp.sub} ${_fp.sub==='they'?'are':'is'} voted out, ${_fp.sub} can activate it — pick an opponent and duel for survival.`,
-        `${name} discovers a glowing amulet stashed out of sight. The Second Life Amulet. One chance to cheat elimination. ${_fp.Sub} hide${_fp.sub==='they'?'':'s'} it deep.`,
-      ],
-      'idol-totem': [
-        `${name} unwraps the third gift. Inside: a fully-operative Immunity Totem. An idol — no searching required. Just a decision, and a secret. ${_fp.Sub} close${_fp.sub==='they'?'':'s'} the box, pocket${_fp.sub==='they'?'':'s'} it, and head${_fp.sub==='they'?'':'s'} back to camp with the cover story ready.`,
-        `${name} chose the Immunity Totem at the Three Gifts ceremony. ${_fp.Sub} walk${_fp.sub==='they'?'':'s'} back to camp holding a live Hidden Immunity Idol. Nobody knows. The story ${_fp.sub} told${_fp.sub==='they'?'':'s'} their tribe is something about a fire-starting challenge. It worked.`,
-      ],
-      beware: [
-        `${name} finds the Beware Advantage — a Hidden Immunity Idol buried with a note attached. The catch: ${_fp.sub} cannot vote at tribal council until every tribe has found their own beware. ${_fp.Sub} pocket${_fp.sub==='they'?'':'s'} it in silence.`,
-        `${name} discovers something buried near camp. The Beware Advantage. A powerful idol — but it costs ${_fp.obj} the vote. Until all tribes have found theirs, ${_fp.sub} sit${_fp.sub==='they'?'':'s'} at tribal mute. ${_fp.Sub} debate${_fp.sub==='they'?'':'s'} for a moment. Then ${_fp.sub} keep${_fp.sub==='they'?'':'s'} it.`,
-      ],
-    };
+    // What can be found here, by its engine name (the scene's ending).
+    const FINDABLE = ["idol", "extraVote", "voteSteal", "legacy", "kip", "amulet", "secondLife", "idol-totem", "beware"];
     // Tactical advantages (teamSwap, voteBlock, voteSteal, safetyNoPower, soleVote) already
     // generate their own discovery camp events via key+'Found' in findAdvantages — skip them here
     if (['teamSwap', 'voteBlock', 'voteSteal', 'safetyNoPower', 'soleVote'].includes(advType)) return;
-    const lines = advTextMap[advType] || advTextMap.idol;
-    events.push({ type: 'idolFound', advType, text: lines[Math.floor(Math.random() * lines.length)], players: [name], badgeText: 'ADVANTAGE FOUND', badgeClass: 'gold' });
+    Math.random(); // the draw that picked the sentence (the season must not move)
+    const _found = FINDABLE.includes(advType) ? advType : 'idol';
+    events.push(scriptEvent({ type: 'idolFound', advType, players: [name], badgeText: 'ADVANTAGE FOUND', badgeClass: 'gold' },
+      makeScene('adv.found', { a: name }, { ending: _found.toLowerCase() }, [], { id: 'confessional', label: 'Confessional' })));
   });
 
   // Chain of Command aftermath — gratitude, resentment, blame
@@ -741,19 +705,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const searchers = group.filter(n => !findsInGroup.some(f => f.finder === n));
       if (!searchers.length) continue;
       const p = _pick(searchers, n => Math.max(0.1, pStats(n).intuition * 0.5 + 1));
-      const _srP = pronouns(p);
-      const _gone = _srP.sub === 'they' ? "they're" : _srP.sub === 'she' ? "she's" : "he's";
-      const searchLines = [
-        `${p} slips away from camp while everyone else is distracted. ${_srP.Sub} come${_srP.sub==='they'?'':'s'} back empty-handed — for now.`,
-        `${p} wanders far from camp, searching for a hidden advantage. No one notices ${_gone} gone.`,
-        `${p} is seen disappearing into the woods alone. Nobody follows. Nobody asks.`,
-        `${p} searches the entire shoreline methodically. ${_srP.Sub} find${_srP.sub==='they'?'':'s'} nothing — but ${_srP.sub} ${_srP.sub==='they'?'are':'is'} not done looking.`,
-        `${p} volunteers for a water run and takes twice as long as usual. The tribe suspects exactly what ${_gone} doing.`,
-        `${p} digs through tree roots near camp while the others sleep. Nothing yet — but the desperation is building.`,
-        `${p} checks behind the same rock for the third time this week. The idol isn't there. The paranoia is.`,
-        `${p} comes back from a "walk" with dirt on ${_srP.posAdj} hands and a face that says nothing. The tribe reads everything.`,
-      ];
-      events.push({ type: 'idolSearch', text: searchLines[Math.floor(Math.random() * searchLines.length)], players: [p], badgeText: 'SEARCHING', badgeClass: 'gold' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      events.push(scriptEvent({ type: 'idolSearch', players: [p], badgeText: 'SEARCHING', badgeClass: 'gold' },
+        makeScene('adv.search', { a: p }, {}, [], { id: 'confessional', label: 'Confessional' })));
 
     } else if (eventType === 'injury') {
       // Low survival = more injury-prone (weakened body). Survival 80 = 1x, 40 = 1.6x, 20 = 2.2x
@@ -2471,13 +2425,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       if (!others.length) continue;
       const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
       addBond(a, b, 0.4);
-      const lines = [
-        `The host promises a "spa afternoon." It's a mud pit behind the outhouse. ${a} and ${b} sit in it laughing at their own gullibility.`,
-        `"Letters from home!" the host announces. The envelopes contain the campers' own unpaid bills. ${a} reads ${b}'s out loud and they both lose it.`,
-        `The host wheels out a "feast." The lids come off to reveal more of Chef's slop. ${a} and ${b} toast the betrayal with mystery stew and gallows humor.`,
-        `A "helicopter reward" turns out to be the host filming them run in circles for nothing. ${a} and ${b} give up, flop in the dirt, and bond over being had.`,
-      ];
-      events.push({ type: 'fakeReward', players: [a, b], badgeText: 'GOTCHA', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      Math.random();
+      events.push(scriptEvent({ type: 'fakeReward', players: [a, b], badgeText: 'GOTCHA', badgeClass: 'green' },
+        makeScene('host.gotcha', { a, b }, {}, [], _spotNow(a, b))));
 
     // ═══════════════ CASUAL NIGHT GAMES ═══════════════
     } else if (eventType === 'nightGame') {

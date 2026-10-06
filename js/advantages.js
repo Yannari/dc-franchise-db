@@ -1,5 +1,7 @@
 // js/advantages.js - Advantage finding, idol plays, advantage inheritance
 import { gs, players, ADVANTAGES, seasonConfig } from './core.js';
+import { makeScene, spotOf } from './td/script/scene.js';
+import { scriptEvent } from './td/script/write.js';
 import { pStats, pronouns, threatScore, getPlayerState } from './players.js';
 import { getBond, getPerceivedBond, addBond } from './bonds.js';
 import { computeHeat, wRandom } from './alliances.js';
@@ -308,18 +310,13 @@ export function checkIdolPreTribal(ep, tribalPlayers) {
     if (!gs._idolExposureResponses) gs._idolExposureResponses = {};
     gs._idolExposureResponses[holder] = exposure;
     if (exposure.informedPlayers.length || exposure.mode === 'panic') {
-      const lines = exposure.mode === 'countermove' ? [
-        `${holder} notices conversations stopping when ${pronouns(holder).sub} walks over. ${exposure.counterTarget} keeps appearing near the center of them. ${holder} doesn't know the whole plan, but ${pronouns(holder).sub} know${pronouns(holder).sub==='they'?'':'s'} the idol is no longer fully secret.`,
-        `${holder} reads the room before tribal and reaches one conclusion: somebody knows. ${exposure.counterTarget} is the name ${pronouns(holder).sub} keep${pronouns(holder).sub==='they'?'':'s'} coming back to.`,
-      ] : exposure.mode === 'panic' ? [
-        `${holder} reads danger into every quiet conversation. Nobody has exposed the idol, but ${pronouns(holder).sub} can't shake the feeling that everyone knows.`,
-        `${holder}'s nerves turn ordinary camp whispers into a warning. The idol may still be secret. It doesn't feel secret anymore.`,
-      ] : exposure.mode === 'unaware' ? [
-        `${holder}'s idol has become part of other people's conversations. ${holder} misses the change completely and walks toward tribal believing the secret is intact.`,
-      ] : [
-        `${holder} senses that the idol may be exposed, but can't identify who knows or whether the danger is real. ${pronouns(holder).Sub} keep${pronouns(holder).sub==='they'?'':'s'} it close.`,
-      ];
-      pushCampEvt({ type:'idolExposureRead', players:[holder, ...exposure.informedPlayers], text:_pick(lines), exposure });
+      _pick([0]); // the draw that picked the sentence (the season must not move)
+      // a countermove names who is behind it; without a name it is only a feeling
+      const _xMode = exposure.mode === 'countermove' ? (exposure.counterTarget ? 'countermove' : 'unsure')
+        : ['panic', 'unaware'].includes(exposure.mode) ? exposure.mode : 'unsure';
+      pushCampEvt(scriptEvent({ type:'idolExposureRead', players:[holder, ...exposure.informedPlayers], exposure, badgeText: 'IDOL EXPOSED?', badgeClass: 'red' },
+        makeScene('adv.exposed', { a: holder }, { ending: _xMode, target: _xMode === 'countermove' ? exposure.counterTarget || null : null }, [], { id: 'confessional', label: 'Confessional' }),
+        { ep: ep.num, phase: 'post', tribal: true }));
     }
 
     // ── DECEPTION: find the most dangerous schemer on the same tribal group ──
@@ -348,12 +345,12 @@ export function checkIdolPreTribal(ep, tribalPlayers) {
         adv.holder = schemer;
         ep.idolGiveBetrayal = { victim: holder, schemer };
         addBond(holder, schemer, -3);
-        const vP = pronouns(holder);
-        pushCampEvt({ type: 'idolBetrayal', text: _pick([
-          `Before tribal, ${schemer} pulled ${holder} aside and made a case: hand over the idol, play it together, cover each other. ${holder} weighed it — and trusted ${schemer}. ${vP.Sub} shouldn't have.`,
-          `${holder} had the idol. ${schemer} had a plan. The conversation was short and the logic felt clean. ${holder} passed it over. ${schemer} pocketed it without a word about what came next.`,
-          `"Give it to me — I'll protect you." ${holder} believed it. ${holder} handed the idol to ${schemer} on the walk to tribal.`,
-        ]) });
+        _pick([0]);
+        // The schemer talks the holder out of the idol on the walk to the vote; only the schemer's
+        // confessional says what comes next.
+        pushCampEvt(scriptEvent({ type: 'idolBetrayal', players: [schemer, holder], badgeText: 'IDOL HANDED OVER', badgeClass: 'red' },
+          makeScene('adv.handover', { a: schemer, b: holder }, {}, [], spotOf(ep, schemer, holder, 'post').spot),
+          { ep: ep.num, phase: 'post', tribal: true }));
         return; // holder no longer has the idol — skip share check
       }
 
@@ -364,11 +361,11 @@ export function checkIdolPreTribal(ep, tribalPlayers) {
       ));
       if (holderSusceptible && Math.random() < flushChance) {
         ep.idolFlushPlanted.push({ holder, schemer });
-        pushCampEvt({ type: 'idolConfession', text: _pick([
-          `${schemer} sat next to ${holder} before the tribe left and quietly said a name. "I've been hearing things. You should be careful tonight." ${holder} filed it away.`,
-          `${schemer} found a moment alone with ${holder}. The message was simple: your name is out there. Whether that was true or not, ${holder} believed it.`,
-          `${holder} hadn't planned to use the idol. Then ${schemer} pulled ${pronouns(holder).obj} aside. The conversation lasted two minutes. ${holder} walked to tribal with a different read.`,
-        ]) });
+        _pick([0]);
+        // The flush: the schemer plants a fear so the holder wastes the idol. The holder believes it.
+        pushCampEvt(scriptEvent({ type: 'idolConfession', players: [schemer, holder], badgeText: 'FEAR PLANTED', badgeClass: 'red' },
+          makeScene('adv.flush', { a: schemer, b: holder }, {}, [], spotOf(ep, schemer, holder, 'post').spot),
+          { ep: ep.num, phase: 'post', tribal: true }));
         return; // deception fired — skip share for this holder
       }
     }
@@ -404,12 +401,10 @@ export function checkIdolPreTribal(ep, tribalPlayers) {
     adv.holder = best.name;
     ep.idolShares.push({ from: holder, to: best.name, bond: best.bond, sharedAlliance, veryClose });
     addBond(holder, best.name, 1.0);
-    const hP = pronouns(holder);
-    pushCampEvt({ type: 'idolShare', text: _pick([
-      `${holder} and ${best.name} found a moment alone before tribal. What ${holder} handed over wasn't just an idol — it was trust made physical. ${best.name} took it without hesitating.`,
-      `${holder} pulled ${best.name} aside and pressed the idol into ${pronouns(best.name).posAdj} hands. "Take it. I trust you more than I trust luck tonight."`,
-      `${hP.Sub} didn't say much. ${holder} just put something in ${best.name}'s palm on the walk to tribal. ${best.name} looked down and understood.`,
-    ]) });
+    _pick([0]);
+    pushCampEvt(scriptEvent({ type: 'idolShare', players: [holder, best.name], badgeText: 'IDOL SHARED', badgeClass: 'gold' },
+      makeScene('adv.share', { a: holder, b: best.name }, { ending: veryClose ? 'close' : 'ally' }, [], spotOf(ep, holder, best.name, 'post').spot),
+      { ep: ep.num, phase: 'post', tribal: true }));
   });
 }
 

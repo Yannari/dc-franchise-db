@@ -43,7 +43,9 @@ export function reunionStageScreen(ep, observer, pageHtml) {
         const set = n.dataset.set || null, people = (n.dataset.people || '').split('|').filter(Boolean);
         const gone = (n.dataset.gone || '').split('|').filter(Boolean);
         const out = [];
-        for (const c of n.children) {
+        // the caption(s) and the lines, wherever the page put them (inside
+        // the scene now), in the order they read
+        for (const c of n.querySelectorAll('.ru-cap, q.ru-q')) {
           if (c.tagName === 'SPAN') out.push({ t: 'narr', tag: head, text: c.textContent.trim(), tape: true, set, people, gone });
           else if (c.tagName === 'Q') out.push({ t: 'say', who: c.dataset.who, tag: head, set, people, tape: true,
             text: ((c.querySelector('.ru-q-txt') || {}).textContent || '').trim().replace(/^[“"]+|[”"]+$/g, '') });
@@ -51,7 +53,9 @@ export function reunionStageScreen(ep, observer, pageHtml) {
         return out;
       }
       if (part === 'clip') {
-        const said = (n.querySelector('span') || {}).textContent || '';
+        // the line itself — the first <span> in the clip is the portrait's
+        // hidden initials, which the stage printed as "Ezekiel, in the turret: E"
+        const said = (n.querySelector('.ru-clip-txt') || {}).textContent || '';
         return [{ t: 'narr', who: n.dataset.who || null, react: true, tag: n.dataset.tag || 'Never seen',
           text: (n.dataset.who ? n.dataset.who + ', in the turret: ' : '') + said.trim() }];
       }

@@ -1656,6 +1656,17 @@ const ACCUSE_CITED = [
   'I think it’s {T}, and here’s why. {Who} {src}.',
   '{T}. Think about it. {Who} {src}.',
 ];
+// A SEER RESULT IS NOT A SUSPICION (the user, 2026-10-06, on "I’m saying
+// Stephanie. She is the person I took to the Seer. I sat across from them, and
+// I know exactly what they are. Nobody has explained that to me."): the
+// speaker KNOWS, so a frame built for behaviour that wants explaining reads as
+// nonsense after it, and the reason's own "them/they" fought the "She". It is
+// said whole, in the accused's own pronouns, and never names the answer.
+const ACCUSE_SEER = [
+  'I’m saying {T}, and I’m not guessing. I took {T} to the Seer. I sat across from {obj}, and I know exactly what {who} is.',
+  '{T}. I asked the Seer about {T}, and I got my answer. That’s all I need.',
+  'It’s {T}. I took {T} into that room with the Seer. I’m not guessing any more.',
+];
 const ACCUSE_SECOND = [
   'And that’s not all. {Who} {src2}.',
   'There’s more. {Who} {src2}.',
@@ -2267,7 +2278,7 @@ const REASON_PHRASINGS = [
   // certain answer, said out loud by the person who had it. Raw, the source
   // printed "Look at Bridgette. She the seer."
   [/^the seer$/, [
-    'is the person I took to the Seer. I sat across from them, and I know exactly what they are',
+    'is the person I took to the Seer, and I know the answer',
     'is the one I asked the Seer about, and I got my answer',
     'is the name I took into that room with the Seer. I am not guessing any more',
   ]],
@@ -3398,6 +3409,11 @@ function _buildBeats(v) {
       src: src ? _esc(_firstPerson(_pred(extra.t, _sayReason(src.text, key + '|' + salt + '|' + extra.t)), who)) : '',
       src2: src2 ? _esc(_firstPerson(_pred(extra.t, _sayReason(src2.text, key + '|' + salt + '2|' + extra.t)), who)) : '',
       F: sp && sp.hearsayFrom ? _esc(sp.hearsayFrom) : '' };
+    // the Seer's answer is said whole, not dropped into a suspicion's frame
+    if (src && /^the seer$/.test(String(src.text || '')) && citedPool === ACCUSE_CITED) {
+      return { line: _fill(_fresh(ACCUSE_SEER, key + '|seer|' + salt + '|' + who),
+        { ...subs, obj: pr.sub === 'they' ? _esc(extra.t) : pr.obj }), subs: { ...subs, src2: '' } };
+    }
     // a reason can end on a question now; the frame's own full stop must not follow it
     if (subs.src) return { line: _fill(_fresh(citedPool, key + '|' + salt + '|' + who), subs).replace(/\?\./g, '?').replace(/\?,/g, '?').replace(/\.\./g, '.'), subs };
     if (!barePool) return { line: '', subs };

@@ -25,6 +25,7 @@ import { HOSTS_BY_FORMAT } from '../shows.js';
 import { _portrait, conclaveStageData } from './conclave.js';
 import { roundTableStageData } from './round-table.js';
 import { endgameStageData } from './endgame.js';
+import { recruitmentStageData } from './recruitment.js';
 import { beatLines } from './stage-lines.js';
 
 const TR = 'traitors';
@@ -539,6 +540,7 @@ function _sceneSteps(row, which) {
   try {
     const d = which === 'table' ? roundTableStageData(row, 'audience')
       : which === 'fire' ? endgameStageData(row, 'audience', 'finale')
+        : which === 'recruit' ? recruitmentStageData(row, 'audience')
         : conclaveStageData(row, 'audience');
     if (d && typeof document !== 'undefined') steps = beatLines(d.beats, () => null);
   } catch { steps = []; }
@@ -611,21 +613,32 @@ function _buildBeats(R, ep) {
     const said = (scene && scene.said) || [];
     if (!lines.length && !said.length) return '';
     const people = [...new Set(said.map(x => x.who).concat((scene && scene.people) || []))];
-    // THE SCENE ON THE PAGE TOO (the user, 2026-10-06: "i still dont
-    // visually see the throwback"): a still of that night's set, sepia, with
-    // the people in it standing in it — the page is what opens first, and the
-    // stage only plays it once Watch it played is pressed
-    const still = scene && scene.set ? '<div class="ru-scene" style="background-image:url(assets/sets/traitors/' + _esc(scene.set) + '.webp)">'
-      + '<i class="ru-scene-bug">Throwback</i><em class="ru-scene-when">' + _esc(head.replace(/^Throwback · /, '')) + '</em>'
-      + '<div class="ru-scene-cast">' + people.map(n => '<div class="ru-scene-p' + ((scene.gone || []).includes(n) ? ' ru-gone' : '') + '">'
-        + _av(n, 64) + '<small>' + _esc(n) + '</small></div>').join('') + '</div></div>' : '';
-    return '<div class="ru-tape"' + (scene && scene.set ? ' data-set="' + _esc(scene.set) + '"' : '')
+    const cap = l => '<span class="ru-cap">' + _esc(l) + '</span>';
+    const attrs = (scene && scene.set ? ' data-set="' + _esc(scene.set) + '"' : '')
       + (people.length ? ' data-people="' + _esc(people.join('|')) + '"' : '')
-      + (scene && scene.gone && scene.gone.length ? ' data-gone="' + _esc(scene.gone.join('|')) + '"' : '') + '><b>' + _esc(head) + '</b>' + still
-      + lines.map(l => '<span>' + _esc(l) + '</span>').join('')
-      + said.map(x => '<q class="ru-q" data-who="' + _esc(x.who) + '">' + _av(x.who, 26)
-        + '<span class="ru-q-txt">&ldquo;' + _esc(x.text) + '&rdquo;</span><cite>' + _esc(x.who) + '</cite></q>').join('')
-      + '</div>';
+      + (scene && scene.gone && scene.gone.length ? ' data-gone="' + _esc(scene.gone.join('|')) + '"' : '');
+    if (!(scene && scene.set)) return '<div class="ru-tape"' + attrs + '><b>' + _esc(head) + '</b>' + lines.map(cap).join('') + '</div>';
+    // THE SCENE IS THE PICTURE AND THEY TALK IN IT (the user, 2026-10-06: "i
+    // still dont see their avatar icons dialoguing in the throwback just a
+    // summary", "it give a summary then give us immage", "theres some
+    // repetition"). The set fills the panel; the people in it say their own
+    // lines from that night as speech beside their faces, turn by turn; one
+    // caption sets it up and nothing the dialogue says is said twice. With no
+    // line on record the people stand in the set under the caption.
+    const sides = new Map();
+    for (const x of said) if (!sides.has(x.who)) sides.set(x.who, sides.size % 2);
+    const body = said.length
+      ? '<div class="ru-convo">' + said.map(x => '<q class="ru-q' + (sides.get(x.who) ? ' ru-q-r' : '') + '" data-who="' + _esc(x.who) + '">'
+          + _av(x.who, 54) + '<span class="ru-q-bub"><cite>' + _esc(x.who) + '</cite><span class="ru-q-txt">&ldquo;' + _esc(x.text)
+          + '&rdquo;</span></span></q>').join('') + '</div>'
+      : '<div class="ru-scene-cast">' + people.map(n => '<div class="ru-scene-p' + ((scene.gone || []).includes(n) ? ' ru-gone' : '') + '">'
+          + _av(n, 64) + '<small>' + _esc(n) + '</small></div>').join('') + '</div>';
+    return '<div class="ru-tape ru-tape-scene"' + attrs + '><b>' + _esc(head) + '</b>'
+      + '<div class="ru-scene" style="background-image:url(assets/sets/traitors/' + _esc(scene.set) + '.webp)">'
+      + '<i class="ru-scene-bug">' + (/^Never Seen/.test(head) ? 'Never seen' : 'Throwback') + '</i><em class="ru-scene-when">' + _esc(head.replace(/^(Throwback|Never Seen) · /, '')) + '</em>'
+      + (said.length ? (lines[0] ? cap(lines[0]) : '') : lines.map(cap).join('')) + body + '</div>'
+      // what is left of the account once the scene has played, under it
+      + (said.length ? lines.slice(1).map(cap).join('') : '') + '</div>';
   };
   const rows = (ep && ep.tr && ep.tr.rows) || [];
   const rowAt = n => rows.find(r => Number(r.num) === Number(n)) || null;
@@ -746,7 +759,8 @@ function _buildBeats(R, ep) {
     tl.sort((a, b) => a.k - b.k);
     for (let i = 0; i < tl.length; i++) tl[i] = tl[i].text;
     card('The Traitors', 'traitors-open', host(pickFrom(THROWBACK_HOST.traitors, key + '|tbt'))
-      + tape('Throwback · The Turret', tl.slice(0, 7), { set: 'conclave-back', people: chosen })
+      + tape('Throwback · The Turret', tl.slice(0, 7), { set: 'conclave-back', people: chosen,
+        said: _replay(rows.find(r => r.tr && r.tr.conclave) || null, 'turret', chosen, { max: 3, kinds: ['argue', 'overrule'] }) })
       + '<p>The cloaks are off. For the first time, the Traitors get to tell it their way.</p>'
       + '<div class="ru-faces">' + R.traitors.map(n => _av(n, 34)).join('') + '</div>'
       + host(pickFrom(HOST_TRAITORS, key + '|ht')));
@@ -772,18 +786,23 @@ function _buildBeats(R, ep) {
   // 4. THE MURDERED ASK WHY
   if (R.murders.length) {
     card('The Breakfasts', 'murders-open', host(pickFrom(THROWBACK_HOST.murders, key + '|tbm'))
-      + tape('Throwback · Breakfast', R.murders.slice(0, 4).map(m => `Night ${m.ep}: the Traitors choose ${m.victim}. The next morning, ${m.victim} does not come down to breakfast.`),
+      + tape('Throwback · Breakfast', [`${names(R.murders.slice(0, 4).map(m => m.victim))}: ${R.murders.slice(0, 4).length === 1 ? 'one morning, one empty chair' : 'one empty chair a morning, from night ' + R.murders[0].ep}.`],
         { set: 'breakfast', people: R.murders.slice(0, 4).map(m => m.victim), gone: R.murders.slice(0, 4).map(m => m.victim) }));
   }
   R.murders.slice(0, 4).forEach(m => {
     const pool = KILLER_WHY[m.reason] || KILLER_WHY._;
     const warm = (m.bond || 0) > 2;
-    const turretSaid = _replay(rowAt(m.ep), 'turret', [m.by], { max: 2, kinds: ['argue', 'overrule'], about: [m.victim] })
-      .filter(x => x.text.includes(m.victim));
+    // the turret that night, all of them: whoever put the name forward, and
+    // the others answering — a scene, not one person talking to nobody
+    const turretRow = rowAt(m.ep);
+    const pact = ((turretRow && turretRow.tr && turretRow.tr.conclave && turretRow.tr.conclave.turret) || [m.by]);
+    let turretSaid = _replay(turretRow, 'turret', pact, { max: 3, kinds: ['argue', 'overrule'], about: [m.victim],
+      must: [{ kind: 'argue', who: m.by }] });
+    if (!turretSaid.some(x => x.text.includes(m.victim))) turretSaid = [];
     // calm or unbothered, the murdered has made their peace with it, and the
     // murderer answers that rather than an anger nobody showed
     const easy = ['calm', 'idgaf'].includes(_tone(m.victim));
-    const inner = (turretSaid.length ? tape('Throwback · Night ' + m.ep + ', the turret', [], { set: 'conclave-back', said: turretSaid, people: [m.victim] }) : '')
+    const inner = (turretSaid.length ? tape('Throwback · Night ' + m.ep + ', the turret', [], { set: 'conclave-back', said: turretSaid }) : '')
       + host(_fill(pickFrom(HOST_MURDER, key + '|hm|' + m.victim), { V: m.victim, K: m.by, n: String(m.ep) }))
       + voice(m.by, { [_tone(m.by)]: pool }, key + '|kw|' + m.victim, { V: m.victim })
       + voice(m.victim, VICTIM_SAY, key + '|vs|' + m.victim, {})
@@ -803,12 +822,22 @@ function _buildBeats(R, ep) {
       + host(pickFrom(HOST_FOOTAGE, key + '|hrc')));
     RC.forEach(x => {
       const V = x.target, B = x.by;
-      // the line from the turret that night, if the screen had one naming them
-      const real = _replay(rowAt(x.ep), 'turret', [B], { max: 6, kinds: ['argue', 'overrule'] }).find(l => l.text.includes(V));
-      const clip = real ? real.text : _fill(pickFrom(CLIP_SAID[x.reason] || CLIP_SAID._, key + '|clip|' + V), { V });
-      let inner = '<p>Night ' + _esc(String(x.ep)) + ', in the turret. ' + _esc(B) + ' puts a name forward.</p>'
-        + '<div class="ru-clip" data-who="' + _esc(B) + '" data-tag="Never seen · night ' + _esc(String(x.ep)) + '">'
-        + _av(B, 34) + '<div><b>' + _esc(B) + ', in the turret</b><span>&ldquo;' + _esc(clip) + '&rdquo;</span></div></div>';
+      // THE TURRET THAT NIGHT, played as a scene: the Traitor putting the name
+      // forward and the others answering, in their own words off that night's
+      // screen. Only when no line on record names them does the footage fall
+      // back to a single line in the Traitor's reason.
+      const fRow = rowAt(x.ep);
+      const fPact = (fRow && fRow.tr && fRow.tr.conclave && fRow.tr.conclave.turret) || [B];
+      let fSaid = _replay(fRow, 'turret', fPact, { max: 3, kinds: ['argue', 'overrule'], about: [V], must: [{ kind: 'argue', who: B }] });
+      if (!fSaid.some(l => l.who === B && l.text.includes(V))) {
+        const own = _replay(fRow, 'turret', [B], { max: 6, kinds: ['argue', 'overrule'] }).find(l => l.text.includes(V));
+        fSaid = own ? [own, ...fSaid.filter(l => l.who !== B)].slice(0, 3) : [];
+      }
+      let inner = fSaid.length
+        ? tape('Never Seen · Night ' + x.ep + ', the turret', [`${B} puts ${V}’s name forward.`], { set: 'conclave-back', said: fSaid })
+        : '<div class="ru-clip" data-who="' + _esc(B) + '" data-tag="Never seen · night ' + _esc(String(x.ep)) + '">'
+          + _av(B, 34) + '<div><b>' + _esc(B) + ', in the turret</b><span class="ru-clip-txt">&ldquo;'
+          + _esc(_fill(pickFrom(CLIP_SAID[x.reason] || CLIP_SAID._, key + '|clip|' + V), { V })) + '&rdquo;</span></div></div>';
       inner += host(_fill(pickFrom(x.won ? HOST_FOOTAGE_WON : HOST_FOOTAGE_ASK, key + '|hra|' + V), { V, B, n: String(x.ep) }));
       inner += voice(V, x.bond > 2 ? FOOTAGE_FRIEND : FOOTAGE_PLAIN, key + '|rv|' + V, { B });
       inner += voice(B, FOOTAGE_BY, key + '|rb|' + V, { V });
@@ -859,7 +888,13 @@ function _buildBeats(R, ep) {
 
   // 7. THE RECRUITS
   R.recruits.slice(0, 2).forEach(x => {
-    const inner = host(_fill(pickFrom(x.accepted ? HOST_RECRUIT : HOST_REFUSED, key + '|hr|' + x.target), { R: x.target, T: x.by }))
+    // THE NIGHT OF THE OFFER (the user, 2026-10-06: "the recruited traitors
+    // dont get a throwback"): the corridor, and what the two of them said
+    const offerSaid = _replay(rowAt(x.ep), 'recruit', [x.by, x.target], { max: 4, about: [x.by, x.target] });
+    const inner = tape('Throwback · Night ' + x.ep + ', the offer',
+        [x.mode === 'note' ? `A note under ${x.target}’s door, from ${x.by}.` : `${x.by} finds ${x.target} alone in the passage.`],
+        { set: 'corridor', said: offerSaid, people: [x.by, x.target] })
+      + host(_fill(pickFrom(x.accepted ? HOST_RECRUIT : HOST_REFUSED, key + '|hr|' + x.target), { R: x.target, T: x.by }))
       + voice(x.target, x.accepted ? RECRUIT_SAY : REFUSE_SAY, key + '|rs|' + x.target, {});
     card(x.accepted ? 'Recruited' : 'The Offer Refused', 'recruit', inner, { focus: x.target });
   });
@@ -955,7 +990,7 @@ const CSS = `
 .ru-tape{position:relative;margin:12px 0;padding:14px 16px 12px;background:linear-gradient(180deg,rgba(60,48,30,.55),rgba(30,24,16,.55));
   border:1px solid rgba(232,194,112,.3);filter:sepia(.25)}
 .ru-tape b{display:block;margin-bottom:6px;font-family:var(--v-display);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#e8c270}
-.ru-tape > span{display:block;margin:4px 0;padding-left:14px;position:relative;line-height:1.45;color:#e9dcc0}
+.ru-tape > span.x{display:block;margin:4px 0;padding-left:14px;position:relative;line-height:1.45;color:#e9dcc0}
 .ru-scene{position:relative;margin:4px -2px 10px;aspect-ratio:16/7;background-size:cover;background-position:center;
   filter:sepia(.7) contrast(1.1) brightness(.85);border:1px solid rgba(232,194,112,.35);overflow:hidden}
 .ru-scene::after{content:"";position:absolute;inset:0;pointer-events:none;
@@ -967,9 +1002,23 @@ const CSS = `
 .ru-scene-p{display:flex;flex-direction:column;align-items:center;gap:4px}
 .ru-scene-p small{padding:1px 6px;background:rgba(4,5,8,.75);font-family:var(--v-display);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#ece3d0}
 .ru-scene-p.ru-gone .cv-av{filter:grayscale(1) brightness(.6);opacity:.75}
-.ru-q{display:flex;gap:10px;align-items:flex-start;margin:8px 0 2px;quotes:none}
-.ru-q-txt{font-style:italic;font-size:15px;line-height:1.4;color:#f3e6c8}
-.ru-q cite{margin-left:auto;align-self:center;font-style:normal;font-size:9px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;white-space:nowrap}
+.ru-tape-scene > b{display:none}
+.ru-tape-scene .ru-scene{aspect-ratio:auto;min-height:300px;padding:48px 18px 18px;display:flex;flex-direction:column;justify-content:flex-end;gap:8px}
+.ru-scene .ru-cap{position:relative;z-index:1;align-self:center;max-width:90%;padding:4px 12px;background:rgba(6,5,3,.72);text-align:center;
+  font-size:13px;color:#f3e3c4;letter-spacing:.02em}
+.ru-scene .ru-cap::before{display:none}
+.ru-convo{position:relative;z-index:1;display:flex;flex-direction:column;gap:10px}
+.ru-q{display:flex;gap:12px;align-items:flex-end;quotes:none;max-width:82%}
+.ru-q.ru-q-r{flex-direction:row-reverse;align-self:flex-end;text-align:right}
+.ru-q .cv-av{box-shadow:0 0 0 2px rgba(243,227,196,.8),0 6px 14px rgba(0,0,0,.7)}
+.ru-q-bub{position:relative;padding:8px 13px 9px;background:rgba(14,10,6,.86);border:1px solid rgba(232,194,112,.45);border-radius:12px}
+.ru-q-bub cite{display:block;font-style:normal;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#e8c270;margin-bottom:2px}
+.ru-q-txt{font-style:italic;font-size:15px;line-height:1.4;color:#f6ead2}
+.ru-scene{filter:none}
+.ru-tape-scene .ru-scene-cast{position:relative;bottom:auto;margin:4px 0 6px}
+.ru-scene::before{content:"";position:absolute;inset:0;background:inherit;background-size:cover;background-position:center;filter:sepia(.75) contrast(1.1) brightness(.7)}
+.ru-tape .ru-cap{display:block;margin:4px 0;padding-left:14px;position:relative;line-height:1.45;color:#e9dcc0}
+.ru-tape > .ru-cap::before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;border-radius:50%;background:#c9a24a}
 .ru-tape > span::before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;border-radius:50%;background:#c9a24a}
 .ru-dir{margin:10px 0 4px;padding-left:12px;border-left:2px solid rgba(232,194,112,.25);font-style:italic;color:#bfb293}
 .ru-clip{display:flex;gap:12px;align-items:flex-start;margin:12px 0;padding:12px 14px;background:rgba(120,20,30,.18);

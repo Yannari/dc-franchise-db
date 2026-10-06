@@ -110,6 +110,11 @@ export function classify(beat) {
   const c = who.c || null;
   const data = { ...(beat.scene?.data || {}) };
   if (beat.allianceName) data.alliance = beat.allianceName;
+  if (beat.joined) data.joined = beat.joined;
+  // a deal about the end has a name of its own (its title card, bb/story/write.js)
+  if (kind === 'talk.final-two') data.pact = 'Final Two';
+  if (kind === 'deals.final-three') data.pact = 'Final Three';
+  if (kind === 'deals.jury-pact') data.pact = 'To the Jury, Together';
   if (beat.against && !data.target) data.target = beat.against;
   let roles = { a, b, c };
   // In a friction step a is always the one who DID it and b the one it was done to. The

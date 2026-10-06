@@ -41,16 +41,21 @@ export function reunionStageScreen(ep, observer, pageHtml) {
         // replayed off that night's screen, each said by its speaker
         const head = (n.querySelector(':scope > b') || {}).textContent || 'Throwback';
         const set = n.dataset.set || null, people = (n.dataset.people || '').split('|').filter(Boolean);
+        const gone = (n.dataset.gone || '').split('|').filter(Boolean);
         const out = [];
-        for (const c of n.children) {
-          if (c.tagName === 'SPAN') out.push({ t: 'narr', tag: head, text: c.textContent.trim(), tape: true, set, people });
+        // the caption(s) and the lines, wherever the page put them (inside
+        // the scene now), in the order they read
+        for (const c of n.querySelectorAll('.ru-cap, q.ru-q')) {
+          if (c.tagName === 'SPAN') out.push({ t: 'narr', tag: head, text: c.textContent.trim(), tape: true, set, people, gone });
           else if (c.tagName === 'Q') out.push({ t: 'say', who: c.dataset.who, tag: head, set, people, tape: true,
             text: ((c.querySelector('.ru-q-txt') || {}).textContent || '').trim().replace(/^[“"]+|[”"]+$/g, '') });
         }
         return out;
       }
       if (part === 'clip') {
-        const said = (n.querySelector('span') || {}).textContent || '';
+        // the line itself — the first <span> in the clip is the portrait's
+        // hidden initials, which the stage printed as "Ezekiel, in the turret: E"
+        const said = (n.querySelector('.ru-clip-txt') || {}).textContent || '';
         return [{ t: 'narr', who: n.dataset.who || null, react: true, tag: n.dataset.tag || 'Never seen',
           text: (n.dataset.who ? n.dataset.who + ', in the turret: ' : '') + said.trim() }];
       }
@@ -118,7 +123,7 @@ function paint(root, S, fresh) {
     ppl.forEach((n, i) => {
       const x = ppl.length === 1 ? .5 : .32 + (.36 * i) / (ppl.length - 1), w = b.dw * .085;
       const on = n === speaker;
-      h += `<div class="tru-p${on ? ' tru-speak' : (speaker ? ' tru-quiet' : '')}" style="left:${b.x(x)}px;top:${b.y(.5)}px;width:${w}px;z-index:${on ? 50 : 10}">`
+      h += `<div class="tru-p${on ? ' tru-speak' : (speaker ? ' tru-quiet' : '')}${(scene.gone || []).includes(n) ? ' tru-gone' : ''}" style="left:${b.x(x)}px;top:${b.y(.5)}px;width:${w}px;z-index:${on ? 50 : 10}">`
         + `<div class="tru-av">${face(n)}</div><div class="tru-nm">${esc(n)}</div></div>`;
     });
     h += '</div><div class="tru-vt"><b>Throwback</b></div>';
@@ -182,6 +187,7 @@ const CSS = `
   letter-spacing:.12em;text-transform:uppercase;color:#ded6c4;background:rgba(4,5,8,.78)}
 .tru-p.tru-t .tru-av{box-shadow:0 0 0 2px #c9283c,0 8px 18px rgba(0,0,0,.85)}
 .tru-p.tru-w .tru-av{box-shadow:0 0 0 2px #e8c270,0 0 16px rgba(232,194,112,.5),0 8px 18px rgba(0,0,0,.85)}
+.tru-p.tru-gone{filter:grayscale(1) brightness(.55);opacity:.7}
 .tru-p.tru-quiet{filter:brightness(.5) saturate(.7)}
 .tru-p.tru-speak{transform:translate(-50%,-62%) scale(1.6)}
 .tru-p.tru-speak .tru-av{box-shadow:0 0 0 2px #fff3d2,0 0 34px rgba(255,214,150,.6),0 8px 18px rgba(0,0,0,.85)}

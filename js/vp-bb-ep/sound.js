@@ -13,6 +13,7 @@
 // the medallion, the vote count, a door. Only a click plays a sting (never
 // Reveal all), and a step only ever sounds like something on screen.
 import { BED_CATALOG, CUE_CATALOG } from '../audio.js';
+import { startRoom, stopRoom } from './voices.js';
 
 const dir = 'assets/audio/bb/';
 const BASE_VOL = 0.4;
@@ -24,9 +25,16 @@ export const BB_BEDS = {
   'bb-previously':   { files: ['previously.mp3'], lift: { 'previously.mp3': 1 }, what: 'previously on: builds hard in its last third' },
   'bb-coming-up':    { files: ['coming-up.mp3'], what: 'coming up / next time: a steady build' },
   'bb-ending':       { files: ['ending.mp3'], what: 'the closing credits: quiet, loops' },
-  'bb-house':        { files: ['house-talk.mp3', 'house-low.mp3'], what: 'everyday house talk; laying low' },
+  // house-low.mp3 (E minor) is left out: under a quiet week it read as sad
+  'bb-house':        { files: ['house-talk.mp3'], what: 'everyday house talk: D major, bright' },
   'bb-deals':        { files: ['deals.mp3', 'night.mp3'], what: 'deals and late-night talks: flat, no hits, the cleanest loops' },
-  'bb-scheming':     { files: ['scheming.mp3', 'planning.mp3'], what: 'alliances scheming, a plan coming together' },
+  // Split by MEASURED mode (2026-10-06, key/mode/tempo/brightness of every bed; the user: "the
+  // music still doesn't really fit"): scheming.mp3 is D minor (a lie, a betrayal, a scheme),
+  // planning.mp3 is D major (a plan coming together). Sharing one slot played a minor track under
+  // half the alliances being formed.
+  'bb-scheming':     { files: ['scheming.mp3'], what: 'a scheme, a lie, a betrayal: D minor, sneaky' },
+  'bb-planning':     { files: ['planning.mp3'], what: 'a plan coming together, an alliance formed: D major, 107 bpm' },
+  'bb-light':        { files: ['house-talk.mp3'], what: 'the fun of the house: D major, bright, 129 bpm' },
   'bb-campaign':     { files: ['campaign.mp3'], what: 'campaigning and arm-twisting: the strongest beat' },
   'bb-drama':        { files: ['drama.mp3'], what: 'a fight: heavy bass, constant hits' },
   'bb-brewing':      { files: ['brewing.mp3'], lift: { 'brewing.mp3': 0.1 }, what: 'suspicion and ceremonies: slow, low, quiet' },
@@ -34,7 +42,7 @@ export const BB_BEDS = {
   'bb-secret':       { files: ['secret.mp3'], what: 'secret powers and private rooms: steady, 144 bpm' },
   'bb-pre-hoh':      { files: ['pre-hoh.mp3'], lift: { 'pre-hoh.mp3': 0.5 }, what: 'before a competition: anticipation' },
   'bb-comp':         { files: ['comp-1.mp3', 'comp-2.mp3', 'comp-3.mp3', 'comp-4.mp3'], lift: { 'comp-2.mp3': 0.4 }, what: 'a competition: bright and fast, fast, heavy, building' },
-  'bb-post-hoh':     { files: ['post-hoh.mp3'], what: 'after a win, lighter moments: bright, loops' },
+  'bb-post-hoh':     { files: ['post-hoh.mp3'], what: 'after a win: bright on top but A minor underneath (measured), so not for light moments' },
   'bb-comp-win':     { files: ['comp-win.mp3'], lift: { 'comp-win.mp3': 0.5 }, what: 'a winner crowned' },
   'bb-celebration':  { files: ['celebration.mp3'], lift: { 'celebration.mp3': 1.6 }, what: 'a celebration: back in the house, America\'s favourite, the winner' },
   'bb-veto-meeting': { files: ['veto-meeting.mp3'], what: 'the veto meeting' },
@@ -60,24 +68,34 @@ export function variantOf(base, screen) {
 
 // What each kind of screen sounds like when it opens.
 const BED_BY_KIND = {
-  hoh: 'bb-comp', veto: 'bb-comp', final: 'bb-comp', vdraw: 'bb-post-hoh',
+  hoh: 'bb-comp', veto: 'bb-comp', final: 'bb-comp', vdraw: 'bb-pre-hoh',
   noms: 'bb-brewing', cer: 'bb-veto-meeting', evict: 'bb-live-vote',
   brief: 'bb-coming-up', 'final-cut': 'bb-brewing', 'jury-q': 'bb-brewing', closing: 'bb-campaign',
   'jury-vote': 'bb-jury-wait', afp: 'bb-celebration', reunion: 'bb-ending',
   // the twist sets
-  suite: 'bb-scheming', chain: 'bb-campaign', hunt: 'bb-secret', px: 'bb-post-hoh', duo: 'bb-scheming',
+  suite: 'bb-scheming', chain: 'bb-campaign', hunt: 'bb-secret', px: 'bb-pre-hoh', duo: 'bb-scheming',
   camp: 'bb-brewing', wild: 'bb-comp', spower: 'bb-secret', capsule: 'bb-comp', interro: 'bb-drama',
-  whack: 'bb-comp', power: 'bb-confused', expired: 'bb-deals', coin: 'bb-secret', veto2: 'bb-veto-meeting',
+  whack: 'bb-comp', power: 'bb-confused', expired: 'bb-secret', coin: 'bb-secret', veto2: 'bb-veto-meeting',
   den: 'bb-secret', curse: 'bb-drama', nightmare: 'bb-confused', battleback: 'bb-comp', bonuslife: 'bb-comp',
   team: 'bb-scheming', mystery: 'bb-secret', premiere: 'bb-confused', hex: 'bb-confused', quiet: 'bb-house',
-  rewind: 'bb-confused', locust: 'bb-comp', movein: 'bb-post-hoh',
+  rewind: 'bb-confused', locust: 'bb-comp', movein: 'bb-celebration', twist: 'bb-confused', interview: 'bb-ending', juryhouse: 'bb-ending',
 };
 // A house scene sounds like what it is: a fight, a deal, or just the house.
-const BED_BY_MOOD = { drama: 'bb-drama', deals: 'bb-deals', scheming: 'bb-scheming', ceremony: 'bb-brewing', secret: 'bb-secret', house: 'bb-house' };
+// The user, 2026-10-06: "all the music seems really sad, always… limit music to the moments
+// that really fit and leave it empty when it isn't necessary." The house is SILENT by default:
+// music under a fight, a plan coming together, a campaign, a secret and the fun moments, and
+// nothing under ordinary talk, a quiet word, a morning, a Diary Room.
+// Measured (scratch mood.py): the minor, dark beds (night, deals, house-low, post-hoh, jury-wait)
+// read as sad under ordinary house scenes, so the house uses only the bright major ones.
+const BED_BY_MOOD = { drama: 'bb-drama', scheming: 'bb-scheming', plan: 'bb-planning', campaign: 'bb-campaign', ceremony: 'bb-brewing', secret: 'bb-secret', fun: 'bb-light',
+  deals: null, house: null };
 
 /** The bed a screen opens on (a track of it). */
 export function bedFor(screen) {
-  let base = (screen?.kind === 'scene' || screen?.kind === 'houselife') ? (BED_BY_MOOD[screen.mood] || 'bb-house') : BED_BY_KIND[screen?.kind] || 'bb-house';
+  // a House Life segment opens on its first scene's music (or silence); its scenes take it from there
+  if (screen?.kind === 'houselife') return 'none';
+  if (screen?.kind === 'scene' && !BED_BY_MOOD[screen.mood]) return 'none';
+  let base = screen?.kind === 'scene' ? BED_BY_MOOD[screen.mood] : BED_BY_KIND[screen?.kind] || 'bb-house';
   // A few screens inside a kind are a different moment.
   if (/^bb-campdoor/.test(screen?.id || '')) base = 'bb-comp';
   if (/^bb-deepfake/.test(screen?.id || '')) base = 'bb-secret';
@@ -120,6 +138,11 @@ function loadSting(ctx, name) {
       .then(b => ctx.decodeAudioData(b)).then(buf => { buffers[name].push(buf); }).catch(() => { /* missing file: silence */ });
   }
 }
+// The crowd stings (applause, the studio crowd, the winner's crowd) run for several seconds; the
+// user, 2026-10-06: "the clap sound doesn't stop at the appropriate moment". Each playing sting is
+// kept, and the next step fades the crowd out (stopCrowd) rather than letting it run under the host.
+const CROWD = new Set(['bb-crowd', 'bb-winner']);
+const live = [];
 for (const [name, s] of Object.entries(BB_STINGS)) {
   CUE_CATALOG[name] = { duck: true, build(ctx, dest, now) {
     const got = buffers[name] || [];
@@ -128,7 +151,24 @@ for (const [name, s] of Object.entries(BB_STINGS)) {
     src.buffer = got[(turn[name] = ((turn[name] ?? -1) + 1)) % got.length];
     const g = ctx.createGain(); g.gain.value = 10 ** ((s.lift || 0) / 20);
     src.connect(g); g.connect(dest); src.start(now);
+    const item = { name, src, g, at: now };
+    live.push(item);
+    src.onended = () => { const i = live.indexOf(item); if (i >= 0) live.splice(i, 1); };
   } };
+}
+/** Fade out any crowd still cheering (the next line has started). */
+export function stopCrowd(fade = 0.6) {
+  for (const it of live.slice()) {
+    if (!CROWD.has(it.name)) continue;
+    try {
+      const c = it.g.context; const now = c.currentTime;
+      if (now - it.at < 0.4) continue;   // the one that has only just started is this step's own
+      it.g.gain.cancelScheduledValues(now);
+      it.g.gain.setValueAtTime(it.g.gain.value, now);
+      it.g.gain.linearRampToValueAtTime(0.0001, now + fade);
+      it.src.stop(now + fade + 0.05);
+    } catch { /* already stopped */ }
+  }
 }
 /** Fetch every sting once, so the first click is not silent. */
 export function warmStings() {
@@ -181,8 +221,13 @@ export function soundFor(screen, idx) {
   if (st.k === 'bb' && !(prev && prev.k === 'bb')) return { cue: 'bb-voice', bed: null };
   if (screen.kind === 'scene' && idx === 0) return { cue: 'bb-blink', bed: null };
   // House Life: each new conversation is a camera cut, and its music follows its mood
-  if (screen.kind === 'houselife' && st.scene && (!prev || prev.scene?.set !== st.scene.set || idx === 0)) {
-    return { cue: 'bb-blink', bed: BED_BY_MOOD[st.scene.mood] || 'bb-house' };
+  if (st.card) return { cue: 'bb-twist', bed: 'bb-planning' };
+  if (screen.kind === 'houselife' && st.scene) {
+    // every scene sets its own music, silence included ('none'), so a fight's bed never runs on
+    // under the quiet conversation after it
+    const bed = BED_BY_MOOD[st.scene.mood] || 'none';
+    const cut = !prev || prev.scene?.set !== st.scene.set || idx === 0;
+    return { cue: cut ? 'bb-blink' : null, bed };
   }
   return { cue: null, bed: null };
 }
@@ -195,8 +240,14 @@ export function playStep(screen, idx) {
   const vp = typeof document !== 'undefined' ? document.getElementById('visual-player') : null;
   if (vp && vp.style.display === 'none') return;
   const { cue, bed } = soundFor(screen, idx);
+  // a new line: the crowd from the line before stops cheering
+  stopCrowd();
   try {
-    if (bed && typeof a.ambient === 'function') a.ambient(variantOf(bed, screen));
+    // no music: the room is not silent, it sounds like the room (voices.js); music: the room steps back
+    if (bed === 'none' && typeof a.ambient === 'function') { a.ambient(null); startRoom(screen.steps[idx]?.scene?.set || 'ceremony'); }
+    else if (bed && typeof a.ambient === 'function') { stopRoom(); a.ambient(variantOf(bed, screen)); }
     if (cue) a.sfx(cue);
   } catch { /* sound must never break a screen */ }
 }
+
+if (typeof document !== 'undefined') { document.addEventListener('vp:screen', () => stopCrowd(0.3)); document.addEventListener('vp:close', () => stopCrowd(0.2)); }

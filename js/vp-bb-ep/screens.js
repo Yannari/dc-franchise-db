@@ -11,6 +11,7 @@
 //
 // Switch back to the old screens: localStorage 'bb-classic-vp' = '1'.
 import { bbWeekSteps, REPLACED, ANCHOR_OF, houseLifeMode } from './steps.js';
+import { voiceTick, voiceSay, voicesOn, bbxVoices } from './voices.js';
 import { stageHtml, camStyle, esc, escT, col, img, eyeSvg, SEASON_DIR } from './stage.js';
 import { BBX_CSS, BBX_FONTS } from './style.js';
 import { BBX_SUITE_CSS } from './style-suite.js';
@@ -58,6 +59,9 @@ const SHELL_CSS = `
 .bbx .bbx-mini{width:26px;height:26px;border-radius:7px;overflow:hidden;flex:none;position:relative;background:var(--c)}
 .bbx .bbx-mini img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
 .bbx .bbx-pend{font-size:12px;color:#7d89a3;font-style:italic}
+.bbx .bbx-btn.bbx-voices:not(.on){opacity:.5;text-decoration:line-through}
+.bbx .bbx-jump{width:74px;margin-left:8px;padding:6px 8px;border-radius:7px;border:1px solid var(--bbx-line,#273049);background:#0d1220;color:#e8ecf6;font:600 12px 'Chakra Petch',monospace}
+.bbx .bbx-ln{cursor:pointer}.bbx .bbx-ln:hover{background:rgba(34,225,255,.06)}
 .bbx .bbx-tally{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
 .bbx .bbx-tal{font:600 12px Archivo,sans-serif;color:#c7d0e4;background:#151c2e;border-radius:6px;padding:3px 8px}
 .bbx .bbx-tal b{font:700 15px 'Chakra Petch',monospace;color:#ff6b82;margin-right:3px}
@@ -78,7 +82,7 @@ function scriptHtml(S) {
         : st.k === 'dr' ? `<span class="bbx-who dr">${esc(st.by)} · DR</span>`
           : `<span class="bbx-who">${esc(st.by)}${st.k === 'host' ? ' (live)' : ''}</span>`;
     const line = st.k === 'beat' ? `<i>${escT(st.t)}</i>` : st.k === 'bb' ? escT(st.t) : `"${escT(st.t)}"`;
-    return `<div class="bbx-ln" data-s="${i}">${who}<span>${line}</span></div>`;
+    return `<div class="bbx-ln" data-s="${i}" onclick="bbxJumpFromLine(this, ${i})" title="Jump here">${who}<span>${line}</span></div>`;
   }).join('') || '<div class="bbx-empty">Nothing aired here.</div>';
 }
 
@@ -210,9 +214,11 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     <button type="button" class="bbx-btn" onclick="bbxReset('${uid}')">Restart</button>
     <button type="button" class="bbx-btn" id="bbx-auto-${uid}" onclick="bbxAuto('${uid}')">Auto</button>
     <button type="button" class="bbx-btn" onclick="bbxTv()">TV mode</button>
+    <button type="button" class="bbx-btn bbx-voices ${voicesOn() ? 'on' : ''}" onclick="bbxVoices()" title="The houseguests' voices, and the room sound when there is no music">Voices</button>
     <button type="button" class="bbx-btn" onclick="bbxSwitchViewer('classic')" title="Back to the classic screens">Classic</button>
     <button type="button" class="bbx-btn" onclick="bbxHouseLife()" title="House life as one segment per stretch, or one scene per screen">${houseLifeMode() === 'scenes' ? 'House Life view' : 'Scenes view'}</button>
     <span class="bbx-count" id="bbx-count-${uid}">0 / ${S.steps.length}</span>
+    <input class="bbx-jump" type="number" min="1" max="${S.steps.length}" placeholder="Go to" title="Jump to a step: type its number and press Enter" onkeydown="if(event.key==='Enter')bbxJump('${uid}', this.value)">
   </div>
   <div class="bbx-under"><div class="bbx-script" id="bbx-script-${uid}">${scriptHtml(S)}</div>
     <aside class="bbx-side" id="bbx-side-${uid}">${sideHtml({ hoh: null, nom: [], veto: null, out: [], vetoPlay: [], ballots: [], stances: {}, spent: [], held: [], safe: [], stamps: {}, plus: null, bill: null, shut: false, chain: [], snubs: [], leftover: [] }, S)}</aside></div>
@@ -287,13 +293,15 @@ function paint(uid, fresh) {
     const un = v => v.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
     const full = un(tx.dataset.full);
     const done = () => { tx.innerHTML = un(tx.dataset.emph || '') || tx.textContent; tx.classList.add('lit'); };
-    if (full.length <= 34) { el.querySelector('.l3')?.classList.add('snap'); done(); }
+    const cur = R.screens[R.si]?.steps?.[R.idx] || {};
+    if (full.length <= 34) { el.querySelector('.l3')?.classList.add('snap'); done(); voiceSay(cur.by, cur.k, full); }
     else {
       let n = 0, wait = 0;
       R.typing = setInterval(() => {
         if (wait > 0) { wait--; return; }
         n += full.length > 160 ? 3 : 2;
         tx.textContent = full.slice(0, n);
+        voiceTick(cur.by, cur.k, full, n - (n % 3 === 0 ? 0 : n % 3));
         const ch = full[Math.min(n, full.length) - 1];
         if (/[.!?…]/.test(ch) && n < full.length) wait = 9;
         else if (/[,;:—]/.test(ch) && n < full.length) wait = 4;
@@ -317,6 +325,18 @@ export function bbxNext(uid) {
 }
 export function bbxBack(uid) { const R = sync(uid); if (!R || R.idx < 0) return; stopAuto(R); R.idx--; paint(uid, false); }
 export function bbxAll(uid) { const R = sync(uid); if (!R) return; stopAuto(R); R.idx = R.screens[R.si].steps.length - 1; paint(uid, false); }
+/** Jump to step n (1-based) of this screen, as if it had just been reached. */
+export function bbxJump(uid, n) {
+  const R = sync(uid); if (!R) return;
+  const S = R.screens[R.si];
+  const k = Math.max(0, Math.min(S.steps.length, Math.round(Number(n) || 0)));
+  stopAuto(R); R.idx = k - 1; paint(uid, k > 0);
+}
+/** A line of the script, clicked: jump to it. */
+export function bbxJumpFromLine(el, i) {
+  const root = el.closest('.bbx[data-uid]');
+  if (root) bbxJump(root.dataset.uid, i + 1);
+}
 export function bbxReset(uid) { const R = sync(uid); if (!R) return; stopAuto(R); R.idx = -1; paint(uid, false); }
 // a reveal holds the screen longer: the room needs a beat with the name
 const holdFor = st => Math.min(9000, 1600 + String(st?.t || '').length * 40) + (st?.big ? 2600 : 0) + (st?.tense ? 1200 : 0) + (st?.scene?.slate ? 600 : 0);
@@ -374,7 +394,7 @@ export function bbxSwitchViewer(which) {
     if (i > 0 && typeof window.vpGoTo === 'function') window.vpGoTo(i);
   } catch { location.reload(); }
 }
-if (typeof window !== 'undefined') Object.assign(window, { bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife });
+if (typeof window !== 'undefined') Object.assign(window, { bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
 // Closing the Viewing Party only hides it: stop every Auto run and the line typing out,
 // or Auto keeps clicking through the week (and its music) behind a closed window.
 if (typeof document !== 'undefined') document.addEventListener('vp:close', () => {

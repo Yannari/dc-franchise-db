@@ -575,7 +575,7 @@ export default {
     ] },
     { id: 'sc.3', room: 'bedroom', turns: [
       { beat: '{b} walks into the bedroom. {a} picks up a pillow and walks out the other door.' },
-      { by: 'b', dr: "That's the third room {a} has left because I walked into it. At this point it's a workout plan." },
+      { by: 'b', dr: "That's the third room {a} has left because I walked into it. We live in the same house. This can't go on." },
       { by: 'a', dr: "I'm not being petty. I'm just choosing where I am. And where I am is wherever {b} isn't." },
     ] },
     { id: 'sc.4', room: 'kitchen', turns: [

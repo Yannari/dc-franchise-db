@@ -19,6 +19,9 @@ import { writeStoryScene, writeSetPiece, writeGameTalk, writeCampaignScene, writ
 import { gameTalkFor, bondTalkFor, styleTalkFor, phaseOf } from './gametalk.js';
 
 const CEREMONY = new Set(['hoh', 'nominations', 'veto', 'veto-ceremony', 'eviction']);
+// the ceremonies' own moments (kept in step with vp-bb-ep/steps.js NOM_MOMENT / VETO_MOMENT)
+const CER_NOM = /^(nom-stoic|nom-blindside|nom-pawn-reassured|power-ceremony-confrontation)$/;
+const CER_VETO = /^(veto-seated|veto-left-on-block|veto-saved-gratitude|veto-backdoor-lands|veto-replacement-shock|power-replacement-fallout|power-ceremony-confrontation)$/;
 
 // How much each step is worth on screen (narrative weighting, never gameplay).
 const DRAMA = {
@@ -86,7 +89,10 @@ export function airStorylines(week) {
     // Ranked by what they do to the game; texture (chores, boredom, the weather) stays optional.
     // Up to three a stretch, one per set of people, never somebody not in the house yet.
     // 4: the machinery of the vote (who the group is voting for, recruiting, pleading, blame)
-    const WEIGHT = id => /^(bloc-|plan-|fallout-blame|fallout-word|phase-lobby-veto|phase-targets|veto-left|scheme-campaign|power-nom-campaign|deals-vote)/.test(id) ? 4 : /^(bloc-|plan-|fallout-|scheme-|power-nom|power-ceremony|phase-lobby-veto|phase-replacement|phase-targets|phase-house-takes-sides|arc-lie|followup-lie|veto-left|alliance-name-slips|alliance-overlap|social-paranoia|social-grudge|deals-exposed|deals-defection|deals-vote-flip|deals-safety|deals-jury|arc-comfort-becomes|arc-fight-splits|reign-reckoning|phase-scramble|phase-hoh-pressures|phase-block-isolation|phase-outgoing|power-veto-promise|power-veto-draw|alliance-side-deal|campaign-declined|texture-pantry-name|editorial-secret|editorial-interrupted|editorial-meeting-crash)/.test(id) ? 3
+    // (and, the user 2026-10-06: "do they ask to be picked for veto, ask that the veto is used on
+    // them, try to play the HOH… house meetings?" — every one of those at 0% before this)
+    const WEIGHT = id => /^(bloc-|plan-|fallout-blame|fallout-word|phase-lobby-veto|phase-targets|veto-left|scheme-campaign|power-nom-campaign|deals-vote|power-pick-me|power-veto-promise|power-hoh-pitch|power-hoh-promise|power-hoh-deciding|power-hoh-refuses|phase-veto-holder-weighs|phase-hoh-pressures|life-house-meeting|reign-house-meeting|veto-overruled|veto-debt)/.test(id) ? 4
+      : /^(power-hoh-|phase-hoh-room|texture-hoh-letter|editorial-hoh-orbit|editorial-meeting-crash|veto-shrug|deals-competing)/.test(id) ? 3 : /^(bloc-|plan-|fallout-|scheme-|power-nom|power-ceremony|phase-lobby-veto|phase-replacement|phase-targets|phase-house-takes-sides|arc-lie|followup-lie|veto-left|alliance-name-slips|alliance-overlap|social-paranoia|social-grudge|deals-exposed|deals-defection|deals-vote-flip|deals-safety|deals-jury|arc-comfort-becomes|arc-fight-splits|reign-reckoning|phase-scramble|phase-hoh-pressures|phase-block-isolation|phase-outgoing|power-veto-promise|power-veto-draw|alliance-side-deal|campaign-declined|texture-pantry-name|editorial-secret|editorial-interrupted|editorial-meeting-crash)/.test(id) ? 3
       : /^(deals-|alliance-|power-|reign-|arc-|followup-|phase-|social-info|social-blow|jury-)/.test(id) ? 2 : 0;
     const shown = new Set();
     const eng = stretchBeats.filter(({ beat }) => !beat.aired && beat.eventId !== 'campaign-pitch' && WEIGHT(String(beat.eventId || '')) >= 2
@@ -97,7 +103,7 @@ export function airStorylines(week) {
     let engAired = 0;
     for (const { act: ea, beat } of eng) {
       // three a stretch; a busy stretch makes room for two more that move the game
-      if (engAired >= 6 || (engAired >= 4 && WEIGHT(String(beat.eventId)) < 4) || (engAired >= 3 && WEIGHT(String(beat.eventId)) < 3)) break;
+      if (engAired >= 8 || (engAired >= 6 && WEIGHT(String(beat.eventId)) < 4) || (engAired >= 4 && WEIGHT(String(beat.eventId)) < 3)) break;
       const key = [...beat.players].sort().join('|');
       if (shown.has(key) || shown.has(String(beat.eventId))) continue;
       const sc = writeEngineScene(beat, { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) }, at);
@@ -301,6 +307,8 @@ export function airStorylines(week) {
     if (act.type === 'safety') clock.safety = true;
     for (const beat of act.socialBeats || []) {
       at++;
+      // a moment that happens AT a ceremony plays in the ceremony screen (vp-bb-ep/steps.js)
+      if ((act.type === 'nominations' && CER_NOM.test(String(beat.eventId || ''))) || (act.type === 'veto-ceremony' && CER_VETO.test(String(beat.eventId || '')))) { beat.aired = true; continue; }
       stretchBeats.push({ act, beat });
       const c = classify(beat);
       if (!c) continue;

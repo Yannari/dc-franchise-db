@@ -108,7 +108,7 @@ function arrivalBeats(newcomer, residents, week, rng, out, lastWords = null) {
       `${newcomer} drops a bag by the door and stands there. ${greeter} pours a drink without being asked and pushes it across the counter.`,
       `"Well," says ${greeter}, "that makes ${residents.length + 1} of us." ${newcomer} manages about half a laugh.`,
     ])
-    : `${newcomer} walks into an empty lodge, first one out here, and listens to how quiet a house is without fifteen people in it.`));
+    : `${newcomer} walks into an empty lodge, first one out here, and listens to how quiet it is with nobody else in it.`));
 
   // What they believe, said out loud to a room that will argue with it.
   const believed = believedVoters(newcomer, newcomer);

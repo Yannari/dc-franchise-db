@@ -38,7 +38,8 @@ describe('move-in day', () => {
   it('walks everybody in, in order, each with their own hello', () => {
     const act = W1.acts[0];
     const S = bbWeekSteps(W1)[0];
-    expect(S.steps.filter(st => st.miIn).map(st => st.miIn)).toEqual(act.arrivals);
+    // a group walks in together (move-in night, 2026-10-06): every arrival, in order, once
+    expect(S.steps.filter(st => st.miIn).flatMap(st => [].concat(st.miIn))).toEqual(act.arrivals);
     for (const b of act.beats) {
       expect(b.lines?.length).toBeGreaterThan(0);
       expect(b.lines[0].by).toBe(b.players[0]);

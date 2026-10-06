@@ -92,3 +92,33 @@ episode of the stepped viewer. Both have a Skip button, follow the site's
 volume and mute, stop the music bed while they play (`data-ambient="none"`),
 show a Play button if the browser blocks autoplay, and fall back to the
 generic pair when a season has no render of its own.
+
+## Mood, measured (2026-10-06)
+
+The user, on the House Life music: "all the music seems really sad, always" and, after the
+first fix, "the music still doesn't really fit". The beds had been placed by loudness, energy and
+tempo, but nobody had measured whether a track sounds sad, which is mostly major against minor.
+Every bed was measured for key and mode (chroma against the Krumhansl key profiles; the
+margin is major fit minus minor fit), tempo and brightness (spectral centroid):
+
+| Bed | Key | Margin | BPM | Centroid | Reads as | Plays under |
+|---|---|---|---|---|---|---|
+| house-talk | D major | +0.14 | 129 | 2811 | bright, bouncy | the fun of the house (`bb-light`), quiet weeks |
+| celebration | D major | +0.33 | 161 | 2686 | the happiest | move-in night, a celebration, the winner |
+| planning | D major | +0.07 | 107 | 2048 | a plan coming together | an alliance formed, recruiting, the strategist (`bb-planning`) |
+| pre-hoh | A# major | +0.07 | 107 | 2707 | bright anticipation | the veto draw, the prize exchange |
+| campaign | F major | +0.18 | 80 | 2041 | steady, purposeful | campaigning |
+| secret | C major | +0.25 | 129 | 1875 | steady | secrets, powers |
+| brewing | C major | +0.07 | 80 | 1046 | slow, low | the nomination ceremony |
+| scheming | D minor | −0.12 | 129 | 2557 | sneaky | a scheme, a lie, a betrayal |
+| drama | F minor | 0.00 | 161 | 1459 | heavy | a fight |
+| post-hoh | A minor | −0.13 | 107 | 2371 | bright on top, sad underneath | **no longer used for light moments** |
+| house-low | E minor | −0.03 | 215 | 1414 | low | **dropped from the house** |
+| deals | F# minor | −0.27 | 92 | 1411 | sad | **not in the house** |
+| night | B minor | −0.29 | 92 | 1260 | sad | **not in the house** |
+| jury-wait | B minor | −0.21 | 80 | 1058 | heavy | the jury votes read |
+
+The house is silent by default; a scene gets music only for a fight, a scheme, a plan, a
+campaign, a secret, or a fun moment. The measuring script is plain numpy with miniaudio
+(decode, chroma 55 Hz–2 kHz, key profiles, autocorrelated onset flux for tempo); keep it in mind
+before placing any new bed. **Measure the mode, not just the energy.**

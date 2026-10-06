@@ -22,7 +22,10 @@ fifth show: the build order that worked, the transcript as the main tool, and
 the writing bug classes to check in every new pool) come first. A show that is
 mostly CONVERSATION reads §17 (the sixth show, The Circle: a scene decided then
 written, the line picker's repetition rules, and the one-click-per-line viewer in
-`js/vp-ci/`). The document lists every file
+`js/vp-ci/`). Building a viewer, or porting a classic one to a stepped one,
+reads §18 first (what four shows' viewers taught: animate every action, the side
+panel for what the house cannot see, music only where it earns it, and the Big
+Brother port recipe). The document lists every file
 that branches on show, the eight that still hold their own copy of the show
 list, and §13 has the commands to re-derive all of it when this drifts.
 

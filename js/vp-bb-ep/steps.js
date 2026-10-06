@@ -23,6 +23,15 @@
 // bb/script/ceremony.js); a save from before that falls back to a plain line.
 import { arenaFor } from '../bb/comp-arenas.js';
 import { pronouns } from '../players.js';
+import { players as ROSTER } from '../core.js';
+
+// The engine's own moments that happen AT a ceremony (the user, 2026-10-06: "most of the time the
+// reactions are after, but sometimes it causes drama during the ceremony, same for veto"). They play
+// inside the ceremony screen, and House Life does not air them again (bb/story/director.js).
+export const NOM_MOMENT = /^(nom-stoic|nom-blindside|nom-pawn-reassured|power-ceremony-confrontation)$/;
+export const VETO_MOMENT = /^(veto-seated|veto-left-on-block|veto-saved-gratitude|veto-backdoor-lands|veto-replacement-shock|power-replacement-fallout|power-ceremony-confrontation)$/;
+const momentSteps = (act, re) => (act.socialBeats || []).filter(b => re.test(String(b.eventId || '')))
+  .flatMap(b => (b.lines?.length ? scriptSteps(b.lines) : [{ k: 'beat', t: stripTags(b.text) }]));
 
 // ── inside their heads: the side panel's lines for the ceremonies ───────
 // The user, 2026-10-06: "the nomination ceremony needs the same insight panel too", "and veto
@@ -119,7 +128,8 @@ const DINING_SEATS = ['S3', 'S4', 'S2', 'S5', 'S1', 'S6', 'S0', 'S7'];
 
 function seatLiving(nominees, others, standing = null) {
   const seated = {};
-  nominees.slice(0, 2).forEach((n, i) => { seated[n] = i ? 'N1' : 'N-1'; });
+  // two chairs in the render; a third nominee gets the place between them
+  nominees.slice(0, 3).forEach((n, i) => { seated[n] = i === 0 ? 'N-1' : i === 1 ? 'N1' : 'N0'; });
   if (standing && !seated[standing]) seated[standing] = 'stand';
   others.filter(n => !seated[n]).slice(0, LIVING_SEATS.length).forEach((n, i) => { seated[n] = LIVING_SEATS[i]; });
   return seated;
@@ -166,7 +176,13 @@ function compScreen(act, ctx, kind) {
   const desc = String(comp.desc || '').split(/(?<=\.)\s/)[0];
   if (comp.name) steps.push({ k: 'beat', t: `${comp.name}. ${desc}` });
   // the competition's own play-by-play, as the engine wrote it
-  for (const b of (comp.beats || []).slice(0, 6)) { const t = stripTags(b.text); if (t) steps.push({ k: 'beat', t }); }
+  for (const b of (comp.beats || []).slice(0, 10)) { const t = stripTags(b.text); if (t) steps.push({ k: 'beat', t }); }
+  // what happened between them during it (a collision, a taunt, somebody helping a rival): the
+  // engine wrote these and the screen never showed them (the user, 2026-10-06: "events related to comp")
+  for (const e of (comp.events || []).slice(0, 4)) {
+    if (e.lines?.length) steps.push(...scriptSteps(e.lines));
+    else { const t = stripTags(e.text); if (t) steps.push({ k: 'beat', t }); }
+  }
   const early = results.slice(4);
   if (early.length) steps.push({ k: 'beat', t: `${listOf(early)} ${early.length > 1 ? 'are' : 'is'} out of it.` });
   for (const n of finalists.slice(1).reverse()) steps.push({ k: 'beat', t: `${n} is out. ${finalists.indexOf(n) === 1 ? 'It comes down to the last one standing.' : ''}`.trim() });
@@ -217,7 +233,8 @@ function nomScreen(act, ctx) {
   if (act.anonymous) return anonNomScreen(act, ctx, hoh, noms, seated);
   const steps = [
     { k: 'bb', t: 'This is the nomination ceremony.' },
-    { k: 'say', by: hoh, t: `It is my responsibility as Head of Household to nominate ${word(noms.length)} houseguests for eviction. I'm going to turn the first key.` },
+    { k: 'say', by: hoh, t: `This is the nomination ceremony. It is my responsibility as Head of Household to nominate ${word(noms.length)} houseguests for eviction.` },
+    { k: 'say', by: hoh, t: `I will now turn my first key.` },
   ];
   const nwhy = nomWhy(act, hoh, noms, ctx.row);
   noms.forEach((n, i) => {
@@ -225,9 +242,11 @@ function nomScreen(act, ctx) {
       ...(i === noms.length - 1 ? { nom: noms.slice(), toast: ['NOMINATED', '#ff3355'], ...(nwhy.length ? { why: nwhy } : {}) } : {}) });
   });
   const named = noms.map((n, i) => (i === noms.length - 1 && noms.length > 1 ? `and you, ${n}` : `you, ${n}`)).join(noms.length > 2 ? ', ' : ' ');
-  steps.push({ k: 'say', by: hoh, push: true, t: `I have nominated ${named}.` });
+  steps.push({ k: 'say', by: hoh, push: true, t: `I have nominated ${named}, for eviction.` });
   if (act.script?.noms?.length) {
     steps.push(...scriptSteps(act.script.noms));
+    // every nominee past the two the speech was about hears a reason too
+    for (const n of noms) steps.push(...scriptSteps(act.script?.nomThird?.[n]));
   } else if (act.target) {
     const why = act.target === act.backdoorTarget ? null
       : act.structure === 'expendables' ? `This isn't personal. I had to put two people up, and I went with the people I've connected with least.`
@@ -235,7 +254,37 @@ function nomScreen(act, ctx) {
           : `${act.target}, I think you know why you're sitting there.`;
     if (why) steps.push({ k: 'say', by: hoh, t: why });
   }
-  steps.push({ k: 'bb', t: 'This nomination ceremony is adjourned.' });
+  // at the table: the engine's own moments first, then everybody else's reaction, by where they
+  // stood with the HOH at the ceremony (act.bondsAt); somebody volatile who cannot stand the HOH
+  // does not wait for the Diary Room
+  const moments = momentSteps(act, NOM_MOMENT);
+  steps.push(...moments);
+  const reacted = new Set(moments.map(s => s.by).filter(Boolean));
+  const VOLATILE = new Set(['hothead', 'wildcard', 'chaos-agent', 'villain']);
+  for (const n of noms) {
+    if (reacted.has(n)) continue;
+    const bond = act.bondsAt?.[`${hoh}|${n}`] ?? 0;
+    const arch = (ROSTER || []).find(p => p.name === n)?.archetype;
+    const salt = `${ctx.week}|react|${n}`;
+    if (bond <= -3 && VOLATILE.has(arch)) {
+      steps.push({ k: 'say', by: n, t: pickBy(['You know what? Say it. Say why. Out loud.', 'Wow. You couldn\'t even look at me while you did that!', 'Of course it\'s me. OF COURSE it\'s me.'], salt) });
+      steps.push({ k: 'say', by: hoh, t: pickBy(['I said what I had to say.', 'It\'s a game. You know it\'s a game.', 'Not here. Not now.'], salt) });
+      steps.push({ k: 'say', by: n, t: pickBy(['Then I\'ll see you on the other side of the veto.', 'Fine. Enjoy your week.', 'Remember this. Because I will.'], salt) });
+      steps.push({ k: 'beat', t: pickBy([`Nobody at the table moves. Somebody very slowly puts a fork down.`, `The table goes silent. ${hoh} stares at the key box.`], salt) });
+    } else if (bond >= 3) {
+      steps.push({ k: 'beat', t: pickBy([`${n} stares at ${hoh}. ${hoh} can't hold the look.`, `${n} nods, very slowly, and doesn't say a word.`, `${n} lets out a breath that is almost a laugh.`], salt) });
+    } else if (bond <= -2) {
+      steps.push({ k: 'say', by: n, t: pickBy(['Saw that coming.', 'Of course.', 'Great. Thanks.'], salt) });
+    } else {
+      steps.push({ k: 'beat', t: pickBy([`${n} keeps a straight face. Just about.`, `${n} sits very still.`, `${n} looks down at the table.`], salt) });
+    }
+  }
+  steps.push({ k: 'say', by: hoh, t: 'This nomination ceremony is adjourned.' });
+  // an alliance broken by these nominations: who walked away, who was thrown out
+  for (const x of act.allianceExits || []) {
+    if (!x?.player || !x.alliance || x.kind === 'hidden') continue;
+    steps.push({ k: 'beat', t: x.kind === 'quit' ? `${x.player} walks away from ${x.alliance}.` : `${x.alliance} throws ${x.player} out.`, card: { kind: 'out', name: x.alliance, members: [x.player] } });
+  }
   for (const n of noms) steps.push(...scriptSteps(act.script?.nomDr?.[n]));
   return { id: 'bb-noms-v', kind: 'noms', anchor: 'noms', set: 'dining', room: ROOM_NAME.dining, cam: CAM.dining,
     title: 'Nomination Ceremony', kicker: 'Cam 03 · Dining room', sub: `${hoh} at the head of the table`,
@@ -317,6 +366,11 @@ function drawScreen(act, ctx) {
   }
   const players = new Set(steps.flatMap(s => s.vetoPlay || []));
   const others = ctx.house.filter(n => !players.has(n) && n !== hoh && !block.includes(n));
+  // the draw ends on the field, not on the last chip (the user, 2026-10-06: "the draw ends abruptly")
+  const field = [...players];
+  steps.push({ k: 'say', by: hoh, t: pickBy([`That's our ${word(field.length)}. Good luck, everybody.`, `So that's the field. ${listOf(field)}. Good luck.`, `${titleCase(word(field.length))} players. May the best one win.`], `${ctx.week}|drawend`) });
+  steps.push({ k: 'bb', t: `${listOf(field)}: the Power of Veto competition will begin shortly.` });
+  steps.push({ k: 'beat', t: pickBy([`The six of them look at each other and start sizing each other up.`, `Somebody is already stretching. Somebody else is very obviously not.`, `Everybody who isn't playing gets very interested in the kitchen.`], `${ctx.week}|drawbeat`).replace('The six', `The ${word(field.length)}`) });
   return { id: 'bb-vdraw-v', kind: 'vdraw', anchor: 'veto', label: 'The Draw', set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony,
     title: 'Veto Player Pick', kicker: 'Cam 04 · Living room', sub: 'Chips for the veto', day: ctx.day, time: '10:15',
     seated: seatLiving(block, [...players].filter(n => n !== hoh && !block.includes(n)).concat(others), hoh), steps };
@@ -327,12 +381,13 @@ function vetoMeetingScreen(act, ctx) {
   const holder = act.holder || ctx.vetoHolder;
   const before = ctx.nominees.slice();
   const hoh = act.chairAuthority || ctx.hoh;
-  const steps = [{ k: 'bb', t: 'This is the Power of Veto meeting.', veto: holder, medal: 'on' }];
   const holderOnBlock = before.includes(holder);
+  const steps = [{ k: 'say', by: holder, t: 'This is the Power of Veto meeting.', veto: holder, medal: 'on' }];
+  steps.push({ k: 'say', by: holder, t: `${hoh} has nominated ${holderOnBlock ? listOf(['me', ...before.filter(n => n !== holder)]) : listOf(before)} for eviction. I have the power to veto one of these nominations.` });
   if (act.diamond) steps.push({ k: 'say', by: holder, t: `This is the DIAMOND POWER OF VETO. If I use it, I name the replacement nominee myself, not the Head of Household.`, toast: ['DIAMOND VETO', '#22e1ff'] });
   steps.push({ k: 'say', by: holder, t: holderOnBlock
-    ? `I have called this meeting because I won the Power of Veto.`
-    : `I have called this meeting because I won the Power of Veto. I'm going to give the nominees a chance to tell me why I should use it on them.` });
+    ? `I'm one of the nominees, so I'll make this quick.`
+    : `I'm going to give the nominees a chance to tell me why I should use the Power of Veto on them. ${before.find(n => n !== holder)}, please begin.` });
   const written = act.script?.pleas || {};
   if (!holderOnBlock) {
     for (const n of before) if (written[n]?.length) steps.push(...scriptSteps(written[n]));
@@ -362,16 +417,21 @@ function vetoMeetingScreen(act, ctx) {
     } else if (act.replacement) {
       // The Diamond Power of Veto: whoever used it names the replacement, not the HOH.
       const namer = act.diamond ? holder : hoh;
+      if (!act.diamond) steps.push({ k: 'say', by: holder, t: `${hoh}, since I have just vetoed one of your nominations, you must now name a replacement nominee.` });
       steps.push({ k: 'say', by: namer, t: act.diamond
         ? `The diamond veto has been used, so the replacement is mine to name.`
-        : `Since the veto has been used, I have to name a replacement nominee.` });
+        : `I knew it might come to this. My replacement nominee is...` });
       steps.push({ k: 'say', by: namer, push: true, why: vetoWhy(act, holder, before, hoh), t: `${act.replacement}, I'm sorry. You're going up.`,
         nom: after, seat: { [act.replacement]: after.indexOf(act.replacement) ? 'N1' : 'N-1', [act.saved]: 'stand2' }, toast: [act.diamond ? 'DIAMOND VETO' : 'RENOMINATED', '#ff3355'] });
       steps.push(...scriptSteps(act.script?.renom));
     }
   } else {
-    steps.push({ k: 'say', by: holder, push: true, t: `...not to use the Power of Veto.`, toast: ['NOT USED', '#d99a10'], why: vetoWhy(act, holder, before, hoh) });
+    steps.push({ k: 'say', by: holder, push: true, t: `...not to use the Power of Veto, and to keep the nominations the same.`, toast: ['NOT USED', '#d99a10'], why: vetoWhy(act, holder, before, hoh) });
   }
+  // the room's reaction, at the meeting itself (the engine's moments: the replacement seated, a
+  // nominee left up, a confrontation in front of everybody)
+  // (the replacement already reacted in the renomination scene: the engine's own version would be a second, different reaction)
+  steps.push(...momentSteps(act, act.script?.renom?.length ? new RegExp(VETO_MOMENT.source.replace('|veto-replacement-shock', '').replace('|power-replacement-fallout', '')) : VETO_MOMENT));
   steps.push({ k: 'say', by: holder, t: 'This veto meeting is adjourned.' });
   const others = ctx.house.filter(n => !before.includes(n) && n !== holder);
   return { id: 'bb-cer-v', kind: 'cer', anchor: 'cer', set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony,
@@ -1875,24 +1935,205 @@ function rewindScreens(act, ctx) {
 // in their own voice (some share a first impression of somebody already
 // inside), and the wall of frames above the living room fills face by face.
 // Big Brother speaks once everybody is in. Words: lines/moveinact.js.
-function moveInScreen(act, ctx, host) {
+function moveInScreen(act, ctx, host, row) {
+  // Move-in night, the way the live show runs it (the user, 2026-10-06: "check how move-in
+  // actually happens: entering in groups, first they're on the set with the host"). Groups of
+  // about four meet the host on the stage, each says a few words, and the group goes through the
+  // front door together; inside, the people already in greet the next group; when the house is
+  // full the host speaks to them on the living room screen. Words: bb/script/lines/moveinact.js.
   const arrivals = act.arrivals || [];
-  const steps = [
-    { k: 'host', by: host, t: `Good evening, and welcome to Big Brother. ${titleCase(word(arrivals.length))} strangers are about to move into this house, and only one of them will leave with the prize.` },
-  ];
-  for (const b of act.beats || []) {
-    const n = b.players?.[0];
-    if (!n) continue;
-    steps.push({ k: 'beat', t: b.order === 0 ? `The front door opens. The first houseguest through it is ${n}.` : `The front door opens again. It's ${n}.`, miIn: n, at: [[n, 50]] });
-    steps.push(...(b.lines?.length ? scriptSteps(b.lines) : []));
-  }
-  steps.push({ k: 'bb', t: 'Houseguests, welcome to the Big Brother house.', toast: ['THE HOUSE IS FULL', '#f5c542'] });
-  steps.push({ k: 'beat', t: 'The competition for the first Head of Household begins tonight.' });
+  const groups = (act.groups || []).length ? act.groups : [arrivals];
+  const beatOf = n => (act.beats || []).find(b => (b.players || [])[0] === n) || {};
+  const pick = (list, salt) => pickBy(list, `${ctx.week}|movein|${salt}`);
+  const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
+  const stage = (cast, extra = {}) => ({ set: 'arena-stage', arena: true, room: 'The Stage', cam: 7, kicker: 'Live · The stage', cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'ceremony', hostOn: true, time: '8:00 PM', slate: true, ...extra });
+  const inside = (cast, room = 'ceremony', extra = {}) => ({ set: room, arena: false, hostOn: false, room: ROOM_NAME[room] || 'Living Room', cam: CAM[room] || 4, kicker: `Cam ${String(CAM[room] || 4).padStart(2, '0')} · ${ROOM_NAME[room] || 'Living room'}`, cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'house', time: '8:30 PM', slate: true, ...extra });
+  const steps = [];
+  steps.push({ k: 'host', by: host, scene: stage([]), t: pick([`Good evening, and welcome to Big Brother! Tonight, ${word(arrivals.length)} strangers move into the Big Brother house, and only one of them will walk out with the prize.`,
+    `Hello, and welcome to the premiere of Big Brother! ${titleCase(word(arrivals.length))} houseguests. One house. Cameras everywhere. And one winner at the end of it.`], 'open') });
+  steps.push({ k: 'host', by: host, t: groups.length > 1 ? `They'll move in ${word(groups.length)} groups of about ${word(Math.round(arrivals.length / groups.length))}. Let's meet the first group.` : `Let's meet them.` });
+  const inHouse = [];
+  groups.forEach((g, gi) => {
+    // on the stage, with the host
+    steps.push({ k: 'beat', scene: stage(g), t: pick([`${listOf(g)} walk out onto the stage. The crowd goes up a notch.`, `The ${ORD[gi] || 'next'} group comes out to a roar: ${listOf(g)}.`, `${listOf(g)} step out under the lights, waving at a crowd they can barely see.`], `g${gi}`) });
+    steps.push({ k: 'host', by: host, t: pick([`Welcome, all of you! Quickly, before you go in: how are you going to play this game?`, `Welcome! One question each, and then the house is yours. What's your game?`, `You're about to walk into that house. Tell me how you plan to play it.`], `q${gi}`) });
+    for (const n of g) {
+      const st = beatOf(n).stageLines;
+      if (st?.length) steps.push(...scriptSteps(st));
+      else steps.push({ k: 'say', by: n, t: pick(["I'm just going to be myself.", "I'm ready. I've been ready for years.", "Have fun, play hard, see what happens."], n) });
+    }
+    steps.push({ k: 'host', by: host, t: pick([`${listOf(g)}... the Big Brother house is waiting. Go on in!`, `Alright, ${g.length === 2 ? 'you two' : 'all of you'}. Through those doors. Good luck!`, `That's it. ${listOf(g)}, the house is yours.`], `go${gi}`) });
+    // through the front door, together
+    inHouse.push(...g);
+    const before = inHouse.filter(n => !g.includes(n));
+    // the front door opens into the living room; when the group's scene opens on its own staging
+    // line, the cut goes on that line rather than a second 'the front door opens'
+    const door = { scene: inside([...g, ...before.slice(-4)], 'ceremony'), miIn: g };
+    const walk = scriptSteps((act.groupLines || [])[gi]);
+    if (walk[0]?.k === 'beat') { walk[0] = { ...walk[0], ...door }; steps.push(...walk); }
+    else steps.push({ k: 'beat', ...door, t: gi === 0 ? `The front door opens. ${listOf(g)} are the first ones in.` : `The front door opens again. ${listOf(g)} are in.` }, ...walk);
+    // each arrival's own first words in the house (and the first impressions)
+    for (const n of g) { const b = beatOf(n); if (b.lines?.length) steps.push(...scriptSteps(b.lines)); }
+    if (gi < groups.length - 1) steps.push({ k: 'host', by: host, scene: stage([]), t: pick([`${titleCase(word(inHouse.length))} in. ${titleCase(word(arrivals.length - inHouse.length))} to go. Let's meet the next group.`, `That's ${word(inHouse.length)} in the house. Here comes group number ${word(gi + 2)}.`], `next${gi}`) });
+  });
+  // the house is full: the host on the living room screen
+  const announced = (row?.acts || []).some(a => a?.type === 'twist-announcement');
+  steps.push({ k: 'bb', scene: inside(arrivals.slice(0, 16), 'ceremony', { tvObj: true, time: '10:00 PM' }), t: 'Houseguests, please gather in the living room.', toast: ['THE HOUSE IS FULL', '#f5c542'] });
+  steps.push({ k: 'host', by: host, t: `Houseguests! Welcome to the Big Brother house. For the next few months, this is home. Take a look around: everybody standing in this room wants the same thing you do.` });
+  if (announced) steps.push({ k: 'host', by: host, t: `And this season, the game has a twist. You'll hear all about it very soon.` });
+  steps.push({ k: 'host', by: host, t: `Get comfortable, but not too comfortable. The competition for the first Head of Household is coming, and it won't wait for you to unpack. Good luck.` });
+  steps.push({ k: 'beat', t: pick(['The screen goes dark. Sixteen people look at each other at once.', 'The screen goes black. For about three seconds, nobody says anything. Then everybody does.', 'The host is gone. The house erupts.'], 'end').replace('Sixteen', titleCase(word(arrivals.length))) });
   return {
-    id: 'bb-movein-v', kind: 'movein', anchor: 'start', day: 1, set: 'ceremony', room: 'Living Room', cam: 4, time: '19:00',
-    kicker: 'Cam 04 · Living room', title: 'Move-In Day', label: 'Move-In Day', sub: `${arrivals.length} strangers, one house`,
+    id: 'bb-movein-v', kind: 'movein', anchor: 'start', day: 1, set: 'arena-stage', arena: true, room: 'The Stage', cam: 7, time: '8:00 PM',
+    kicker: 'Live · Move-in night', title: 'Move-In Night', label: 'Move-In Night', sub: `${arrivals.length} strangers, ${groups.length} groups, one house`,
     cast: [], movein: { arrivals: [...arrivals] }, steps,
   };
+}
+
+// ── the evictee's interview ────────────────────────────────────────────
+// Out of the front door and into the studio: the walk to the crowd, the host's questions, what
+// they never saw (who organised it, who lied), the goodbye messages the house recorded, their
+// last word, and where they are going now. The words are the engine's (ep.evictionInterview).
+function interviewScreen(iv, ctx, host, row) {
+  const ev = iv.evictee;
+  if (!ev) return null;
+  const h = iv.host || host;
+  const T = x => stripTags(String(x || '')).replace(/^["“]|["”]$/g, '').trim();
+  const steps = [];
+  steps.push({ k: 'beat', t: T(iv.walkout?.line) || `${ev} walks out of the front door to the studio crowd.`, door: true });
+  steps.push({ k: 'host', by: h, t: pickBy([`${ev}, come and sit down. Welcome.`, `Welcome, ${ev}! Have a seat.`, `${ev}, come on over.`], `${ctx.week}|ivhi`) });
+  if (iv.homecoming?.line) steps.push({ k: 'beat', t: T(iv.homecoming.line) });
+  for (const q of iv.questions || []) {
+    if (q.q) steps.push({ k: 'host', by: h, t: T(q.q) });
+    if (q.a) steps.push({ k: 'say', by: ev, t: T(q.a) });
+    if (q.wrong) steps.push({ k: 'beat', t: `${ev} has named the wrong person, and the host knows it.` });
+  }
+  if (iv.truth) {
+    const t = iv.truth;
+    steps.push({ k: 'host', by: h, t: T(iv.hostLines?.truth) || 'Before the goodbyes, there are a couple of things you should know.' });
+    if (t.organizer) steps.push({ k: 'host', by: h, t: `${t.organizer} organised it${t.alliance ? `, with ${t.alliance}` : ''}.` });
+    for (const liar of t.liars || []) steps.push({ k: 'host', by: h, t: `${liar} told the house one name and voted another.` });
+    if (t.reaction) steps.push({ k: 'beat', t: T(t.reaction) });
+  }
+  if ((iv.goodbyes || []).length) {
+    steps.push({ k: 'host', by: h, t: T(iv.hostLines?.goodbyes) || 'Your housemates recorded some messages, in case tonight went the way it went.' });
+    for (const g of iv.goodbyes) {
+      if (g.tone === 'montage') { steps.push({ k: 'beat', t: T(g.text) }); continue; }
+      steps.push({ k: 'dr', by: g.name, t: T(g.text) });
+      if (g.react) steps.push({ k: 'beat', t: T(g.react) });
+    }
+  }
+  if (iv.parting) steps.push({ k: 'say', by: ev, t: T(iv.parting) });
+  steps.push({ k: 'beat', t: iv.joinsJury ? `${ev} is going to the jury house${iv.juryNumber ? `, juror number ${word(iv.juryNumber)}` : ''}.` : `${ev} is going home.`,
+    big: [ev, iv.joinsJury ? 'To the jury' : 'Going home', iv.joinsJury ? 'safe' : 'out'] });
+  return { id: 'bb-interview-v', kind: 'interview', anchor: 'evict', label: 'Evictee Interview',
+    set: 'arena-stage', arena: true, room: 'The Studio', cam: 7, kicker: 'Live · The studio', title: 'The Exit Interview', sub: `${h} and ${ev}`,
+    day: ctx.day, time: 'LIVE', hostOn: true, cast: [[ev, 62]], steps };
+}
+
+// ── the jury house ─────────────────────────────────────────────────────
+// The user, 2026-10-06: "does the jury house have a viewer? adapt it too". The lodge night the
+// engine records (bb/jury-house.js): the newcomer walking in with what they think they know, the
+// long week, the roundtable (every player still in the house argued for and against), working the
+// room, and the night before the finale. Its prose carries quotations; each is split into the
+// staging and the spoken line, spoken by the person the line names first. The side panel is the
+// board: where every juror leans, from before the roundtable until it has been played.
+function proseSteps(text, players = []) {
+  const t = stripTags(String(text || '')).trim();
+  if (!t) return [];
+  const re = /[“"]([^”"]+)[”"]/g;
+  const parts = [];
+  let last = 0, m;
+  while ((m = re.exec(t))) { parts.push({ narr: t.slice(last, m.index) }); parts.push({ quote: m[1] }); last = m.index + m[0].length; }
+  parts.push({ narr: t.slice(last) });
+  if (!parts.some(x => x.quote)) return [{ k: 'beat', t }];
+  const esc = n => n.replace(/[.*+?^${}()|[\]\\]/g, x => '\\' + x);
+  const who = players.map(esc).join('|') || 'NOBODY';
+  // an attribution on its own ("says Misha", "Misha says.", "MK asks") is not narration
+  const ATTR = new RegExp('^[\\s,.;:—-]*(?:(?:' + who + ')\\s+(?:says|asks|adds|replies|snaps|mutters)|(?:says|asks|adds|replies|snaps|mutters)\\s+(?:' + who + '))[\\s,.;:—-]*', 'i');
+  const out = [];
+  let speaker = null;
+  for (const x of parts) {
+    if (x.narr != null) {
+      // the speaker of the next quotation is the person named earliest in the narration before it
+      const named = players.filter(p => x.narr.includes(p)).sort((a, b) => x.narr.indexOf(a) - x.narr.indexOf(b));
+      if (named.length) speaker = named[0];
+      const n = x.narr.replace(ATTR, '').replace(/^[\s,.;:—-]+/, '').trim();
+      if (n.length > 2) out.push({ k: 'beat', t: /[.!?]$/.test(n) ? n : n + '.' });
+      continue;
+    }
+    const by = speaker || players[0] || null;
+    const q = x.quote.trim().replace(/,$/, '.');
+    const prev = out[out.length - 1];
+    // a quotation broken by its attribution is one line
+    if (prev && prev.k === 'say' && prev.by === by) prev.t = prev.t.replace(/[,.]$/, '.') + ' ' + q;
+    else out.push(by ? { k: 'say', by, t: q } : { k: 'beat', t: '"' + q + '"' });
+  }
+  return out;
+}
+function juryBoard(reads, contenders) {
+  const out = [];
+  for (const [j, row] of Object.entries(reads || {})) {
+    const ranked = contenders.filter(p => row[p] != null).sort((a, b) => row[b] - row[a]);
+    if (!ranked.length) continue;
+    out.push(`${j} leans to ${ranked[0]}${ranked.length > 1 ? `; least of all ${ranked.at(-1)}` : ''}.`);
+  }
+  return out;
+}
+function juryHouseScreen(act, ctx) {
+  const residents = act.residents || [];
+  if (!residents.length) return null;
+  const contenders = Object.keys(Object.values(act.reads || {})[0] || {});
+  const before = ['Where the jury leans, before tonight:', ...juryBoard(act.readsBefore, contenders)];
+  const after = ['Where the jury leans now:', ...juryBoard(act.reads, contenders)];
+  const steps = [];
+  const alone = residents.length === 1;
+  steps.push({ k: 'beat', t: act.newcomer ? (alone ? `The jury house. The lodge is empty. A car pulls up outside.` : `The jury house. A car pulls up outside, and the jurors inside go quiet.`) : `The jury house, at night. A lamp in the window, and nobody on a clock.`, why: before });
+  for (const a of act.acts || []) {
+    if (a.roundtable) {
+      steps.push({ k: 'beat', t: 'The jurors pull their chairs into a circle. It is time for the roundtable.', toast: ['THE ROUNDTABLE', '#e8c98a'] });
+      for (const l of a.roundtable.lines || []) {
+        steps.push({ k: 'beat', t: `On ${l.player}.` });
+        steps.push(...proseSteps(l.backText, [l.backer, l.player]));
+        steps.push(...proseSteps(l.doubtText, [l.doubter, l.player]));
+      }
+      steps.push({ k: 'beat', t: 'The circle breaks up. Nobody has changed their mind out loud. A few have changed it quietly.', why: after });
+      continue;
+    }
+    steps.push({ k: 'beat', t: a.title === 'The Door Opens' ? 'The door opens.' : `${a.title}.` });
+    for (const b of a.beats || []) steps.push(...proseSteps(b.text, b.players || []));
+  }
+  if (!(act.acts || []).some(a => a.roundtable) && steps.length) steps[steps.length - 1] = { ...steps[steps.length - 1], why: after };
+  return { id: `bb-jury-house-${act.week || ctx.week}-v`, kind: 'juryhouse', anchor: 'evict', label: act.full ? 'Jury House · Roundtable' : 'Jury House',
+    set: 'hoh', room: 'The Jury House', cam: 12, kicker: 'Elsewhere · The jury house', title: 'The Jury House', sub: `${listOf(residents)}`,
+    day: ctx.day, time: 'NIGHT', lodge: true, cast: residents.slice(0, 8).map((n, i, a) => [n, spread(a.length)[i]]), steps };
+}
+
+// ── a twist announcement, stepped ──────────────────────────────────────
+// The house is called to the living room and the host reads the rule on the screen, with the
+// rules card filling as it goes, then the line that lands (sting), then how the house takes it
+// (the engine's reaction beats). The user, 2026-10-06: "do we have twist announcements in the viewer?"
+function twistAnnounceScreen(act, ctx, host) {
+  const ann = (act.announced || []).filter(Boolean);
+  if (!ann.length) return null;
+  const sentences = t => String(t || '').split(/(?<=[.!?])\s+(?=[A-Z])/).map(x => x.trim()).filter(Boolean);
+  const rules = [];
+  const steps = [{ k: 'bb', t: act.secondCall ? 'Houseguests, please gather in the living room. There is more.' : 'Houseguests, please gather in the living room.' }];
+  steps.push({ k: 'host', by: host, t: act.secondCall ? `Houseguests, one more thing.`
+    : ctx.week === 1 && ctx.anchor === 'start' ? `Houseguests, before you compete for the first Head of Household, there is something you need to know.`
+      : `Hello, houseguests. I hope you're settled in, because I'm about to change everything.` });
+  for (const a of ann) {
+    const name = a.name || 'A twist';
+    steps.push({ k: 'host', by: host, t: `Introducing: ${name.toUpperCase()}.`, toast: [name.toUpperCase(), '#7c5cff'] });
+    for (const s of sentences(a.rule)) { rules.push([rules.length ? '' : name.toUpperCase(), s]); steps.push({ k: 'host', by: host, t: s, rule: rules.length }); }
+    if (a.sting) steps.push({ k: 'host', by: host, t: a.sting, shake: true });
+  }
+  steps.push({ k: 'beat', t: 'The screen goes dark. Nobody moves.' });
+  for (const b of act.socialBeats || []) steps.push(...(b.lines?.length ? scriptSteps(b.lines) : [{ k: 'beat', t: stripTags(b.text) }]));
+  return { id: act.secondCall ? 'bb-twist-2-v' : 'bb-twist-v', kind: 'twist', anchor: ctx.anchor || 'start', label: ann.length === 1 ? `${ann[0].name || 'Twist'}: Announcement` : 'The Announcement',
+    set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · Living room', title: 'The Announcement', sub: ann.map(a => a.name).filter(Boolean).join(' · '),
+    day: ctx.day, time: '9:00 PM', tvObj: true, seated: seatLiving([], ctx.house.filter(n => !ctx.hidden?.has?.(n))),
+    rules, rulesTitle: `${ann.map(a => (a.name || 'THE TWIST').toUpperCase()).join(' · ')} · HOW IT WORKS`, steps };
 }
 
 // Twist acts whose classic screen goes exactly where the act happened.
@@ -2092,6 +2333,10 @@ function storyLifeScreen(scenes, ctx, n) {
   let mood = 'house';
   let clock = 0;
   scenes.forEach((sc, si) => { clock = clockOf(sc, si, scenes.length, clock); sc._clock = clockText(clock); });
+  if (n === 1) for (const d of ctx.departures || []) {
+    if (!d?.player || !d.alliance) continue;
+    steps.push({ k: 'beat', t: `After last week's vote, ${d.player} is no longer part of ${d.alliance}.`, card: { kind: 'out', name: d.alliance, members: [d.player] } });
+  }
   for (const sc of scenes) {
     const set = SET_OF_ROOM(sc.room);
     const xs = spread(sc.cast.length);
@@ -2102,6 +2347,9 @@ function storyLifeScreen(scenes, ctx, n) {
     delete sc._clock;
     if ((MOOD_RANK[scene.mood] || 0) > (MOOD_RANK[mood] || 0)) mood = scene.mood;
     const lines = (sc.lines || []).map(l => ({ k: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, t: l.text, ...(l.bg ? { bg: true } : {}) }));
+    // an alliance named on screen gets its title card on the last line of the conversation
+    if (sc.title?.kind === 'meeting') { const k = lines.findIndex(l => l.k !== 'dr'); if (k >= 0) lines[k] = { ...lines[k], card: sc.title }; }
+    else if (sc.title) { let k = lines.length - 1; while (k > 0 && lines[k].k === 'dr') k--; if (lines[k]) lines[k] = { ...lines[k], card: sc.title }; }
     // a scene that opens on its own staging line carries the cut; otherwise a caption names the room
     const firstSpoken = lines.findIndex(l => l.k !== 'dr');
     if (firstSpoken >= 0 && lines[firstSpoken].k === 'beat' && !lines[firstSpoken].bg) {
@@ -2179,6 +2427,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     hexed: (row.acts || []).some(x => x.type === 'halting-hex' || x.type === 'rewind'),
     // the week's Block Buster, announced at the top of eviction night
     safety: (row.acts || []).find(x => x && x.type === 'safety' && x.winner) || null,
+    departures: (row.allianceDepartures || []).filter(d => d && d.carried),
     row,
     pleas: row.finalPleas || [], plea, anchor: 'start', day: 1, jury: [...(row.jury || [])], finalTwo: [...(row.finalTwo || [])] };
   let finalPart = 0;
@@ -2240,8 +2489,14 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'veto-ceremony':
         if (ctx.vetoHolder || act.holder) ceremony(vetoMeetingScreen(act, ctx));
         ctx.nominees = (act.nominees || ctx.nominees).slice(); ctx.anchor = 'cer'; beatsOf(act); break;
-      case 'eviction':
-        ceremony(evictionScreen(act, ctx, host)); ctx.anchor = 'evict'; beatsOf(act); break;
+      case 'eviction': {
+        ceremony(evictionScreen(act, ctx, host));
+        // the evictee's interview, straight after the door closes (the user, 2026-10-06)
+        const iv = [row.evictionInterview, row.secondEvictionInterview, row.thirdEvictionInterview].find(x => x && x.evictee === act.evicted);
+        const ivs = iv ? interviewScreen(iv, ctx, host, row) : null;
+        if (ivs) ceremony(ivs);
+        ctx.anchor = 'evict'; beatsOf(act); break;
+      }
       case 'finale-house': out.push(...finaleHouseScreens(act, ctx)); ctx.anchor = 'finale'; break;
       case 'finale-brief': ceremony(finaleBriefScreen(act, ctx, host)); break;
       case 'final-hoh-part': finalPart = act.partNum || finalPart + 1; ceremony(finalPartScreen(act, ctx, finalPart)); break;
@@ -2264,7 +2519,9 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
-      case 'move-in': flush(); ceremony(moveInScreen(act, ctx, host)); break;
+      case 'move-in': flush(); ceremony(moveInScreen(act, ctx, host, row)); break;
+      case 'jury-house': { const jh = juryHouseScreen(act, ctx); flush(); if (jh) ceremony(jh); break; }
+      case 'twist-announcement': { const tw = twistAnnounceScreen(act, ctx, host); flush(); if (tw) ceremony(tw); else out.push({ slot: act.type }); beatsOf(act); break; }
       case 'rewind': case 'white-locust': flush(); for (const scr of rewindScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'no-eviction': case 'dead-last': flush(); for (const scr of quietScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'halting-hex': flush(); for (const scr of hexScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -2315,7 +2572,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|cold)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|twist|twist-2|interview|interview-2|jury-house(-\d+)*|cold)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

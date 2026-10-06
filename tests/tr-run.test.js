@@ -43,6 +43,8 @@ import { TRAITORS_SCREENS } from '../js/vp-tr/screens.js';
 import { rpBuildReunion } from '../js/vp-tr/reunion.js';
 import { roundTableStageData } from '../js/vp-tr/round-table.js';
 import { conclaveStageData } from '../js/vp-tr/conclave.js';
+import { endgameStageData } from '../js/vp-tr/endgame.js';
+import { recruitmentStageData } from '../js/vp-tr/recruitment.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
 import roster from '../franchise_roster.json';
 
@@ -658,7 +660,7 @@ describe('the reunion airs as the episode after the finale', () => {
 // episode's own screen, so every one must be on that season's screens word for
 // word — a line the reunion wrote itself would be a scene that never aired.
 describe('the reunion throwbacks replay what was actually said', () => {
-  it('every replayed line is on one of that season Round Table or turret screens', () => {
+  it('every replayed line is on one of that season Round Table, turret, offer or fire screens', () => {
     airWholeSeason(SEEDS[0]);
     const rows = gsRef.episodeHistory;
     const fin = rows[rows.length - 1];
@@ -668,7 +670,8 @@ describe('the reunion throwbacks replay what was actually said', () => {
     tpl.innerHTML = rpBuildReunion(rep);
     const quoted = [...tpl.content.querySelectorAll('.ru-q .ru-q-txt')].map(x => x.textContent.replace(/^[“"]+|[”"]+$/g, ''));
     expect(quoted.length, 'no throwback replayed a single line, so this proves nothing').toBeGreaterThan(3);
-    const aired = rows.map(r => [roundTableStageData(r), conclaveStageData(r)].filter(Boolean)
+    // (the fire's lines come off the finale's own screen)
+    const aired = rows.map(r => [roundTableStageData(r), conclaveStageData(r), r.tr.endgame ? endgameStageData(r, 'audience', 'finale') : null, recruitmentStageData(r)].filter(Boolean)
       .map(d => d.beats.map(b => b.html).join('')).join('')).join('');
     const unesc = s => s.replace(/&amp;/g, '&').replace(/&#39;|&#x27;/g, "'").replace(/&quot;/g, '"');
     for (const q of quoted) expect(unesc(aired).includes(q), `never said on screen: "${q}"`).toBe(true);

@@ -6129,11 +6129,23 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
-      case 'move-in':
-        sec('MOVE-IN DAY');
-        // each arrival as its transcript (who walks in, what they say, the Diary Room)
-        for (const b of act.beats || []) ln(`  ${plainText(b.text)}`);
+      case 'move-in': {
+        sec('MOVE-IN NIGHT');
+        // as the stepped viewer plays it: groups on the stage with the host, a few words each,
+        // through the front door together, then each arrival's first words inside
+        const groups = (act.groups || []).length ? act.groups : [(act.beats || []).map(b => (b.players || [])[0]).filter(Boolean)];
+        const said = lines => (lines || []).map(l => l.kind === 'beat' ? `    ${plainText(l.text)}` : l.kind === 'dr' ? `    ${l.by} (Diary Room): "${plainText(l.text)}"` : `    ${l.by}: "${plainText(l.text)}"`);
+        groups.forEach((g, gi) => {
+          ln(`  ON THE STAGE · GROUP ${gi + 1}: ${g.join(', ')}`);
+          for (const n of g) { const b = (act.beats || []).find(x => (x.players || [])[0] === n); said(b?.stageLines).forEach(x => ln(x)); }
+          ln(`  THROUGH THE FRONT DOOR`);
+          said((act.groupLines || [])[gi]).forEach(x => ln(x));
+          for (const n of g) { const b = (act.beats || []).find(x => (x.players || [])[0] === n); if (b) ln(`    ${plainText(b.text)}`); }
+          ln('');
+        });
+        ln('  The house is full. The host, on the living room screen: welcome home, and the first Head of Household competition is coming.');
         break;
+      }
 
       case 'power-expired':
         sec('WHAT QUIETLY LEFT THE GAME');

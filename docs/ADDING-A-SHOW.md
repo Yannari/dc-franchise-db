@@ -2727,3 +2727,107 @@ Each shipped, was read in a transcript, and has a test in
    Randomize book what it draws.
 5. When adding a new kind of scene, measure what it displaces before you
    measure what it does.
+
+
+## 18. The viewer: what four shows taught, and how to port a classic viewer
+
+§6.5 is the pinned stage and §17.2 is The Circle's one-click-per-line viewer. This section
+puts what The Traitors, Perfect Match, The Circle and Big Brother each learned in one place,
+then gives the recipe Big Brother followed to replace its classic screens with a stepped viewer
+(`js/vp-bb-ep/`). Read it before building any show's viewer, and before porting one.
+
+### 18.1 The shape every stepped viewer shares
+
+- **`steps.js` is pure**: a played row (the week's acts) in, a list of screens out, no DOM.
+  One step is one line, one stage direction or one reveal. The stage, the script under it
+  and the side panel all read the same list, so they cannot drift (§17.2).
+- **Paint step N deterministically** (`stage.js stageHtml(screens, si, idx, fresh, o)`), with
+  only the newest step animating (`fresh`). Next, Back, Reveal all and Restart are then trivial.
+- **A ledger, not state**: what is true at step N (who is HOH, who is nominated, which votes
+  are cast) is folded from the steps up to N (`ledgerAt`). Never kept in a variable that a
+  repaint can lose (the `_tvState` wipe class, §11.5).
+- **Three places for information, and each has its job**:
+  - the **stage** is the show: who is in the room, what they do, the big reveal;
+  - the **script** under it is every word, in order;
+  - the **side panel** is what the viewer knows that the house does not.
+
+### 18.2 What each show taught
+
+**The Traitors: a stage that does not move is a slideshow.** The first Traitors stages were
+rejected as static: every click has to change something on the stage (a face lights, someone
+moves, a meter fills), or the stage is decoration and the transcript is the real viewer.
+
+**Perfect Match: animate what people DO.** A kiss leans the two in and pops a heart; a big
+scene pushes the camera in; the first step of a scene carries its one-shot effects. The action
+is read from what HAPPENS (stage directions, the action parts), never from dialogue: "after that
+kiss, there wasn't really a choice" is not a kiss. Music is per moment, with cutaways.
+
+**The Circle: one click is one line, and nothing before its line.** A test renders every step
+of real seasons and fails if a result is on screen before the step that says it. If a line
+reacts to something (a board, a vote), that something is on screen by then. Mockups first:
+every new set was an approved static HTML page before any stage code.
+
+**Big Brother (2026-10): a whole house, a live show, and the minds behind it.**
+- *House Life is segments, not snippets.* One screen per stretch between ceremonies, cutting
+  room to room (`scene` markers on steps). Every cut opens on a time card (DAY 1 · 8:46 PM,
+  BACKYARD); set pieces keep their hour, and the clock never runs backwards.
+- *The camera finds the people talking.* Up to three in focus; everybody else in the room
+  stands on the floor in the gaps, smaller and dimmer (never floating above the furniture).
+  A loud line makes one or two of them react (a jump and a badge; a laugh shakes them).
+- *Every action is animated* (`stage.js actionOf`, the Perfect Match lesson): a shout pulses
+  the speaker with sound rings; a hug or a kiss leans the two in (a kiss pops a heart); storming
+  off slides them out of frame; tears fall; a slam flashes and shakes; a laugh bounces; a
+  whisper leans in. Read from the stage direction (who it names) or, for a shout, from how the
+  line is said.
+- *Title cards for the moments a viewer should never miss*: an alliance formed on screen gets
+  its name slammed in with its founders' faces (the people in the scene, not the end-of-week
+  membership).
+- *Text has a pace.* A short line lands at once with a punch; a long one types at speaking
+  pace and breathes at full stops and commas. When it is complete, names and the words of the
+  game (Block Buster, veto, evict, jury) light up. A Diary Room line is a pull quote.
+- *The live show is researched, not imagined.* Move-in night (groups of four on the stage
+  with the host, then through the front door together) and the live eviction (the host's
+  running order, a counter of ballots cast that never shows whose, "by a vote of…" held alone
+  before the name, light at the front door) were both checked against the wiki first (§11.5,
+  "check the wiki first").
+- *Inside their heads is a side panel* (`screens.js sideHtml`): the vote's count and each
+  ballot's chain (wanted → asked → told the house → cast); each House Life scene's why (what it
+  is in the game, who is in which alliance, the bonds); each ceremony's reasoning (the plan, the
+  pawn's answer, why the HOH turned on an ally, the holder's reasons), shown only from the step
+  where the fact is public. **Record facts when they happen** (`act.bondsAt`): read live, a
+  replayed week 1 showed week 5's bonds.
+- *Music only where the moment earns it.* Silence is the default in the house. There is music
+  under a fight, a plan coming together, a campaign, a secret and the fun moments, and nothing
+  under ordinary talk. A screen asks for silence with `data-ambient="none"`, a step with
+  `bed: 'none'`; otherwise the last bed (a competition's) plays on into the quiet.
+- *Measure what reaches the screen.* An airing audit (every event kind: how often it fires,
+  how often it airs) found campaigning and the whole vote machinery at 0%, because the director
+  only aired what it could file as a storyline. Every game-moving moment now has a route, and a
+  guard fails if the vote machinery drops under 70%.
+
+### 18.3 Porting a classic viewer to a stepped one (the Big Brother recipe)
+
+1. **Keep the classic screens, one click away, on every screen.** The switch remembers where
+   you were and lands on the same screen in the other viewer (by id, then by the part of the
+   week, then by the same fraction of it). A viewer that sends you back to screen one gets
+   abandoned.
+2. **Reuse the classic ids** for the screens the stepped viewer replaces (`bb-noms`, `bb-cer`,
+   `bb-evict`…), and list them in one pattern (`REPLACED`). Twist screens not yet ported keep
+   their classic version and air exactly where their act happened (`TWIST_SLOT`), with a switch
+   back above them.
+3. **Port one kind of screen at a time, and inventory it first.** Write down everything the
+   classic screen tells the viewer (every number, every reason, every chain), and give each
+   item a place: the stage, the script, or the side panel. Losing the classic screen's insight
+   was the loudest complaint of the whole port ("I don't have insight into their minds like I
+   had with the classic version").
+4. **Render, never invent.** The engine's beats already carry their lines; the viewer stages
+   them. When a screen needs words the engine did not write (the host's running order, a stage
+   question), write them in a pool or with a seeded pick, true to what everybody in the room knows.
+5. **Keep the transcript equal to the screen.** Every new thing the stepped screen shows (a
+   personal vote, a stage answer, a walk-in) is printed by the text backlog in the same order.
+6. **Test on real seasons**: render every step of every screen; fail on anything shown before
+   its step; check every cue and bed exists; and audit airing per event kind.
+7. **Look at it.** A harness page that imports `stage.js` and `style.js` and paints a JSON of
+   steps, served on a spare port and screenshotted, caught what no test did: a reveal behind the
+   nominees, a houseguest beside the Diary Room chair instead of in it, a black room. Bust the
+   module cache with `import('…?t=' + Date.now())`, or the browser shows the old code.

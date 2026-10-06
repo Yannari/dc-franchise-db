@@ -255,7 +255,7 @@ export default {
       { by: 'b', say: "And then says 'thank you, guys!' like we're staff." },
       { by: 'd', say: "Okay, that's actually really annoying." },
       { by: 'a', say: "Welcome. You're one of us now." },
-      { by: 'd', dr: "I walked in neutral on {target}. I walked out hating {target}'s plate. That's what this house does." },
+      { by: 'd', dr: "I had no problem with {target} this morning. Now every time I see a plate by the sink, I think of {target}. This house gets in your head." },
     ] },
     { id: 'gg.3', room: 'kitchen', when: { early: true }, turns: [
       { beat: 'Kitchen. {a}, {b} and {c} are pretending to make sandwiches.' },

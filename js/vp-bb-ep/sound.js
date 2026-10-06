@@ -24,9 +24,16 @@ export const BB_BEDS = {
   'bb-previously':   { files: ['previously.mp3'], lift: { 'previously.mp3': 1 }, what: 'previously on: builds hard in its last third' },
   'bb-coming-up':    { files: ['coming-up.mp3'], what: 'coming up / next time: a steady build' },
   'bb-ending':       { files: ['ending.mp3'], what: 'the closing credits: quiet, loops' },
-  'bb-house':        { files: ['house-talk.mp3', 'house-low.mp3'], what: 'everyday house talk; laying low' },
+  // house-low.mp3 (E minor) is left out: under a quiet week it read as sad
+  'bb-house':        { files: ['house-talk.mp3'], what: 'everyday house talk: D major, bright' },
   'bb-deals':        { files: ['deals.mp3', 'night.mp3'], what: 'deals and late-night talks: flat, no hits, the cleanest loops' },
-  'bb-scheming':     { files: ['scheming.mp3', 'planning.mp3'], what: 'alliances scheming, a plan coming together' },
+  // Split by MEASURED mode (2026-10-06, key/mode/tempo/brightness of every bed; the user: "the
+  // music still doesn't really fit"): scheming.mp3 is D minor (a lie, a betrayal, a scheme),
+  // planning.mp3 is D major (a plan coming together). Sharing one slot played a minor track under
+  // half the alliances being formed.
+  'bb-scheming':     { files: ['scheming.mp3'], what: 'a scheme, a lie, a betrayal: D minor, sneaky' },
+  'bb-planning':     { files: ['planning.mp3'], what: 'a plan coming together, an alliance formed: D major, 107 bpm' },
+  'bb-light':        { files: ['house-talk.mp3'], what: 'the fun of the house: D major, bright, 129 bpm' },
   'bb-campaign':     { files: ['campaign.mp3'], what: 'campaigning and arm-twisting: the strongest beat' },
   'bb-drama':        { files: ['drama.mp3'], what: 'a fight: heavy bass, constant hits' },
   'bb-brewing':      { files: ['brewing.mp3'], lift: { 'brewing.mp3': 0.1 }, what: 'suspicion and ceremonies: slow, low, quiet' },
@@ -34,7 +41,7 @@ export const BB_BEDS = {
   'bb-secret':       { files: ['secret.mp3'], what: 'secret powers and private rooms: steady, 144 bpm' },
   'bb-pre-hoh':      { files: ['pre-hoh.mp3'], lift: { 'pre-hoh.mp3': 0.5 }, what: 'before a competition: anticipation' },
   'bb-comp':         { files: ['comp-1.mp3', 'comp-2.mp3', 'comp-3.mp3', 'comp-4.mp3'], lift: { 'comp-2.mp3': 0.4 }, what: 'a competition: bright and fast, fast, heavy, building' },
-  'bb-post-hoh':     { files: ['post-hoh.mp3'], what: 'after a win, lighter moments: bright, loops' },
+  'bb-post-hoh':     { files: ['post-hoh.mp3'], what: 'after a win: bright on top but A minor underneath (measured), so not for light moments' },
   'bb-comp-win':     { files: ['comp-win.mp3'], lift: { 'comp-win.mp3': 0.5 }, what: 'a winner crowned' },
   'bb-celebration':  { files: ['celebration.mp3'], lift: { 'celebration.mp3': 1.6 }, what: 'a celebration: back in the house, America\'s favourite, the winner' },
   'bb-veto-meeting': { files: ['veto-meeting.mp3'], what: 'the veto meeting' },
@@ -60,24 +67,26 @@ export function variantOf(base, screen) {
 
 // What each kind of screen sounds like when it opens.
 const BED_BY_KIND = {
-  hoh: 'bb-comp', veto: 'bb-comp', final: 'bb-comp', vdraw: 'bb-post-hoh',
+  hoh: 'bb-comp', veto: 'bb-comp', final: 'bb-comp', vdraw: 'bb-pre-hoh',
   noms: 'bb-brewing', cer: 'bb-veto-meeting', evict: 'bb-live-vote',
   brief: 'bb-coming-up', 'final-cut': 'bb-brewing', 'jury-q': 'bb-brewing', closing: 'bb-campaign',
   'jury-vote': 'bb-jury-wait', afp: 'bb-celebration', reunion: 'bb-ending',
   // the twist sets
-  suite: 'bb-scheming', chain: 'bb-campaign', hunt: 'bb-secret', px: 'bb-post-hoh', duo: 'bb-scheming',
+  suite: 'bb-scheming', chain: 'bb-campaign', hunt: 'bb-secret', px: 'bb-pre-hoh', duo: 'bb-scheming',
   camp: 'bb-brewing', wild: 'bb-comp', spower: 'bb-secret', capsule: 'bb-comp', interro: 'bb-drama',
-  whack: 'bb-comp', power: 'bb-confused', expired: 'bb-deals', coin: 'bb-secret', veto2: 'bb-veto-meeting',
+  whack: 'bb-comp', power: 'bb-confused', expired: 'bb-secret', coin: 'bb-secret', veto2: 'bb-veto-meeting',
   den: 'bb-secret', curse: 'bb-drama', nightmare: 'bb-confused', battleback: 'bb-comp', bonuslife: 'bb-comp',
   team: 'bb-scheming', mystery: 'bb-secret', premiere: 'bb-confused', hex: 'bb-confused', quiet: 'bb-house',
-  rewind: 'bb-confused', locust: 'bb-comp', movein: 'bb-post-hoh', twist: 'bb-confused',
+  rewind: 'bb-confused', locust: 'bb-comp', movein: 'bb-celebration', twist: 'bb-confused',
 };
 // A house scene sounds like what it is: a fight, a deal, or just the house.
 // The user, 2026-10-06: "all the music seems really sad, always… limit music to the moments
 // that really fit and leave it empty when it isn't necessary." The house is SILENT by default:
 // music under a fight, a plan coming together, a campaign, a secret and the fun moments, and
 // nothing under ordinary talk, a quiet word, a morning, a Diary Room.
-const BED_BY_MOOD = { drama: 'bb-drama', scheming: 'bb-scheming', campaign: 'bb-campaign', ceremony: 'bb-brewing', secret: 'bb-secret', fun: 'bb-post-hoh',
+// Measured (scratch mood.py): the minor, dark beds (night, deals, house-low, post-hoh, jury-wait)
+// read as sad under ordinary house scenes, so the house uses only the bright major ones.
+const BED_BY_MOOD = { drama: 'bb-drama', scheming: 'bb-scheming', plan: 'bb-planning', campaign: 'bb-campaign', ceremony: 'bb-brewing', secret: 'bb-secret', fun: 'bb-light',
   deals: null, house: null };
 
 /** The bed a screen opens on (a track of it). */
@@ -189,7 +198,7 @@ export function soundFor(screen, idx) {
   if (st.k === 'bb' && !(prev && prev.k === 'bb')) return { cue: 'bb-voice', bed: null };
   if (screen.kind === 'scene' && idx === 0) return { cue: 'bb-blink', bed: null };
   // House Life: each new conversation is a camera cut, and its music follows its mood
-  if (st.card) return { cue: 'bb-twist', bed: 'bb-scheming' };
+  if (st.card) return { cue: 'bb-twist', bed: 'bb-planning' };
   if (screen.kind === 'houselife' && st.scene) {
     // every scene sets its own music, silence included ('none'), so a fight's bed never runs on
     // under the quiet conversation after it

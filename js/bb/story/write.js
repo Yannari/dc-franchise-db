@@ -134,7 +134,7 @@ export const hasPool = (type, step, outcome) => keysFor(type, step, outcome).len
 function moodOf(type, step) {
   if (type === 'feud') return step === 'apology' ? 'house' : 'drama';
   // a plan coming together has music; a quiet word between two people does not
-  if (type === 'alliance') return ['crack', 'exposed', 'betrayal', 'formed', 'recruit', 'poach'].includes(step) ? 'scheming' : 'deals';
+  if (type === 'alliance') return ['crack', 'exposed', 'betrayal'].includes(step) ? 'scheming' : ['formed', 'recruit', 'poach'].includes(step) ? 'plan' : 'deals';
   if (type === 'showmance') return ['fight', 'breakup', 'jealous'].includes(step) ? 'drama' : step === 'hiding' ? 'secret' : 'house';
   if (type === 'target') return step === 'block' ? 'ceremony' : 'scheming';
   if (type === 'scheme') return step === 'caught' ? 'drama' : 'secret';
@@ -365,7 +365,8 @@ export function writeGameTalk(talk, ctx, at) {
   let room = 'living-room';
   const cast = Object.values(who).filter(Boolean);
   const base = { id: `talk:${ctx.week?.num || 0}:${ctx.stretch}:${kind}`, line: null, type: 'talk', step: kind, outcome: talk.phase || 'any',
-    room, roomName: ROOM[room], cast, mood: kind.startsWith('bond.vent') || kind === 'style.provocateur' ? 'drama' : kind.startsWith('style.') ? 'house' : 'deals', at };
+    room, roomName: ROOM[room], cast, mood: kind.startsWith('bond.vent') || kind === 'style.provocateur' ? 'drama' : kind === 'style.manipulator' ? 'scheming'
+      : kind === 'style.strategist' || kind === 'prejury' || kind === 'jury.manage' || kind === 'bb.hoh' ? 'plan' : kind === 'style.social' ? 'fun' : 'deals', at };
   if (writing.muted) return { ...base, lines: [] };
   const entry = pick([key], who, data, { ...ctx, phase: talk.phase }, room, salt);
   if (!entry) return null;
@@ -492,7 +493,7 @@ export function writeEngineScene(beat, ctx, at) {
   const badge = beat.badgeText ? `${String(beat.badgeText).charAt(0)}${String(beat.badgeText).slice(1).toLowerCase()}.` : null;
   const why = [...(badge ? [badge] : []), ...(fam ? [fam] : []), ...standings(cast)];
   const sc = { id: `ev:${ctx.week?.num || 0}:${ctx.stretch}:${id}:${cast.join('>')}`, line: null, type: 'event', step: id, outcome: 'any',
-    room, roomName: ROOM[room] || 'Living Room', cast, mood: /blow|grudge|confront|fight/.test(id) ? 'drama' : /^bloc-|^plan-|^scheme-/.test(id) ? 'scheming' : 'deals', at, fixedRoom: true, recap: false,
+    room, roomName: ROOM[room] || 'Living Room', cast, mood: /blow|grudge|confront|fight/.test(id) ? 'drama' : /^scheme-/.test(id) ? 'scheming' : /^bloc-|^plan-/.test(id) ? 'plan' : 'deals', at, fixedRoom: true, recap: false,
     lineId: beat.lineId || null, why, lines };
   if (/alliance-formed|alliance-forms/.test(id) && beat.allianceName) sc.title = titleOf(beat.allianceName, cast);
   return sc;

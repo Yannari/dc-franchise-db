@@ -15,8 +15,8 @@ const epOf = ctx => ctx.ep || (gs.episode || 0) + 1;
 export const TD_FACT_KEYS = [
   // what was decided (from the scene's data)
   'ending', 'result', 'intent', 'reason', 'again', 'size',
-  // the relationship between a and b
-  'band', 'alliance', 'showmance', 'kin',
+  // the relationship between a and b; whether each is in any active alliance at all
+  'band', 'alliance', 'showmance', 'kin', 'allied', 'alliedB',
   // how a and b talk
   'register', 'registerB', 'nice', 'villain',
   // where in the season and the episode
@@ -31,13 +31,13 @@ export const TD_FACT_KEYS = [
   // scene's data names one, and only then may a line say {rival}, {threat}...
   'rival', 'friend', 'threat', 'weak', 'lastBoot',
   // optional names an event decides
-  'group', 'plan', 'boot', 'wrote', 'fallen',
+  'group', 'plan', 'boot', 'wrote', 'fallen', 'more',
 ];
 
 // Names a scene MAY carry: a line saying one must ask for it (when: { slot: true }).
 // The context reasons, plus the optional names an event decides (an alliance's
 // name is only there when the alliance has one; a plan may have had no target).
-export const CONTEXT_SLOTS = ['rival', 'friend', 'threat', 'weak', 'lastBoot', 'group', 'plan', 'boot', 'wrote', 'fallen'];
+export const CONTEXT_SLOTS = ['rival', 'friend', 'threat', 'weak', 'lastBoot', 'group', 'plan', 'boot', 'wrote', 'fallen', 'more'];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 const VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
@@ -83,7 +83,9 @@ export function factsFor(scene, ctx = {}) {
     spot: scene.spot?.id || null,
     known: !!scene.data?.target && !Object.values(scene.who || {}).includes(scene.data.target),
   };
+  const inAny = n => (gs.namedAlliances || []).some(al => al.active !== false && (al.members || []).includes(n));
   if (a) {
+    f.allied = inAny(a);
     f.register = registerOf(a);
     f.nice = NICE.has(archOf(a));
     f.villain = VILLAIN.has(archOf(a));
@@ -93,6 +95,7 @@ export function factsFor(scene, ctx = {}) {
     const bond = getBond(a, b);
     f.band = bond <= -3 ? 'enemies' : bond < 0 ? 'cold' : bond < 3 ? 'neutral' : 'friends';
     f.registerB = registerOf(b);
+    f.alliedB = inAny(b);
     f.alliance = sharesAlliance(a, b);
     f.showmance = inShowmance(a, b);
     try { f.kin = (REL_KINSHIP[kinshipBetween(a, b)]?.group || '').toLowerCase() || 'none'; } catch { f.kin = 'none'; }

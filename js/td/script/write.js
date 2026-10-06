@@ -74,6 +74,20 @@ export function fill(text, who, data = {}) {
   });
 }
 
+/**
+ * The ambient scene context: the camp generator (camp-events.js
+ * generateCampEventsForGroup) is not handed the episode or the phase, so its
+ * callers wrap it in withSceneCtx and every scene written inside reads them.
+ * An explicit ctx passed to scriptEvent always wins.
+ */
+let ambient = null;
+export const ambientCtx = () => ambient || {};
+export function withSceneCtx(ctx, fn) {
+  const prev = ambient;
+  ambient = ctx;
+  try { return fn(); } finally { ambient = prev; }
+}
+
 /** For tests only: muted, a scene is not written (no pick, no ledger). */
 export const writing = { muted: false };
 
@@ -141,6 +155,7 @@ export function scriptEvent(event, scene, ctx = {}) {
  * and every part's line id.
  */
 export function scriptEventParts(event, scenes, ctx = {}) {
+  ctx = { ...(ambient || {}), ...ctx };
   const parts = scenes.filter(Boolean).map(sc => ({ sc, w: writeScene(sc, ctx) }));
   const [first] = parts;
   event.scene = { kind: first.sc.kind, who: first.sc.who, data: first.sc.data, seenBy: first.sc.seenBy, spot: first.sc.spot,

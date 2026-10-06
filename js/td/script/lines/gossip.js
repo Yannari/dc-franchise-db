@@ -212,6 +212,26 @@ const NAME = [
     { by: 'b', say: "Harsh." },
     { by: 'a', say: "Hey, I'm just the messenger." },
   ] },
+  { id: 'gs.n28', turns: [
+    { by: 'b', say: "You've got that face on. The gossip face." },
+    { by: 'a', say: "I don't have a gossip face." },
+    { by: 'b', say: "You totally do. What is it?" },
+    { by: 'a', say: "Fine. People are talking about voting {target} out." },
+    { by: 'b', say: "I knew it was something good." },
+  ] },
+  { id: 'gs.n29', turns: [
+    { beat: '{a} catches up with {b} on the path back from the bathroom.' },
+    { by: 'a', say: "Hey. Walk with me a sec." },
+    { by: 'b', say: "What's up?" },
+    { by: 'a', say: "{target}'s name. It's out there. Thought you should know." },
+    { by: 'b', say: "Huh. Thanks for the heads-up." },
+  ] },
+  { id: 'gs.n30', when: { register: 'sweet' }, turns: [
+    { by: 'a', say: "I feel bad even saying this, but people want {target} gone." },
+    { by: 'b', say: "Aw, really? {target}'s nice." },
+    { by: 'a', say: "I know. That's why I feel bad." },
+    { by: 'b', say: "This game is so mean sometimes." },
+  ] },
 ];
 
 const WARN = [

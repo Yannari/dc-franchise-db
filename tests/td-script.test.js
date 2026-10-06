@@ -17,7 +17,9 @@ import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 const ROLES = new Set(['a', 'b', 'c']);
 const FLOOR = 6;
 // Keys that only say WHAT was decided — an entry gated on these alone still fits every scene of its kind.
-const DECIDED = new Set(['ending', 'result', 'intent', 'reason', 'size']);
+// 'third' and 'more' are structural (how many people the scene holds), so each case needs its own floor:
+// an alliance of three must never be written by an entry that only has two people in it.
+const DECIDED = new Set(['ending', 'result', 'intent', 'reason', 'size', 'third', 'more']);
 const texts = e => e.turns.map(t => t.say || t.conf || t.beat);
 const all = Object.entries(POOLS);
 
@@ -99,6 +101,18 @@ describe('the pools keep their contract', () => {
     for (const [key, pool] of all) for (const e of pool) {
       if (e.when?.merged === false) continue;
       for (const x of texts(e)) expect(TEAM.test(x), `${key} ${e.id}: ${x}`).toBe(false);
+    }
+  });
+
+  it('only stages a place where the scene is', () => {
+    // Settings differ (a hosted camp has cabins and a mess hall; a survival island has a
+    // shelter and a beach; a film lot has trailers). Found writing pools: "dish duty",
+    // "a boat home", "{fallen}'s bunk" in entries that fit every setting. A setting's own
+    // word belongs in an entry gated on the spot it is true in.
+    const PLACE = /(cabins?|bunks?|lake|boat|chef|mess hall|dock|trays?|dish(es)?|plates?|island|shelter|trailers?|plane)/i;
+    for (const [key, pool] of all) for (const e of pool) {
+      if (e.when?.spot) continue;
+      for (const x of texts(e)) expect(PLACE.test(x) ? x.match(PLACE)[0] : null, `${key} ${e.id}: ${x}`).toBe(null);
     }
   });
 
@@ -203,6 +217,19 @@ describe('a played season', () => {
       if (ep.eliminated) gone.add(ep.eliminated);
     }
     expect(ghosts).toEqual([]);
+  });
+
+  it('everyone a scene holds appears in it', () => {
+    // Seed 4242: Sierra co-founded The Trifecta in a scene written for two, and
+    // never appeared in it; a four-person alliance was introduced as "the three of us".
+    const missing = [];
+    for (const e of scripted) {
+      const shown = new Set(e.lines.flatMap(l => [l.by, ...Object.values(e.scene.who).filter(n => l.text.includes(n))]));
+      const more = String(e.scene.data?.more || '');
+      for (const n of Object.values(e.scene.who)) if (!shown.has(n) && !more.includes(n)) missing.push(`${e.type} ${e.scene.lineId}: ${n}`);
+      for (const n of e.players || []) if (e.type === 'allianceForm' && !e.text.includes(n)) missing.push(`${e.type} ${e.scene.lineId}: member ${n}`);
+    }
+    expect(missing).toEqual([]);
   });
 
   it('survives a save', () => {

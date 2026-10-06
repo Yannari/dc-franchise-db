@@ -17,7 +17,10 @@ import { campRoster, isCoach as isCoachName } from './coaches.js';
 import { recordIntimidation, recordProtection, recordBetrayal } from './relationship-events.js';
 import { attachCampAccessToEvents, buildCampAccessSchedule, findConversationAccess } from './camp-access.js';
 import { makeScene, spotOf, spotFromAccess } from './td/script/scene.js';
-import { scriptEvent, scriptEventParts } from './td/script/write.js';
+import { scriptEvent, scriptEventParts, withSceneCtx, ambientCtx } from './td/script/write.js';
+
+// Where two people talk, in the phase the camp generator is writing (its callers set it).
+const _spotNow = (a, b) => spotOf(null, a, b, ambientCtx().phase === 'post' ? 'post' : 'pre').spot;
 import { ensureIntentions, evolveIntentions, getIntentions, evaluateEndgameBeatability } from './intentions.js';
 import { getRelationshipDimensions } from './relationships.js';
 
@@ -725,7 +728,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} pulls ${b} aside for a long game conversation. Names are floated. A loose agreement is made.`,
            `${a} approaches ${b} quietly. "We need to talk." They do. For a long time.`,
            `${a} and ${b} find a spot away from camp. A check-in becomes a full strategic session.`];
-      events.push({ type: 'strategicTalk', text: stalkLines[Math.floor(Math.random() * stalkLines.length)], players: [a, b], badgeText: 'STRATEGY', badgeClass: 'gold' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      events.push(scriptEvent({ type: 'strategicTalk', players: [a, b], badgeText: 'STRATEGY', badgeClass: 'gold' },
+        makeScene('talk.game', { a, b }, {}, [], _spotNow(a, b))));
 
     } else if (eventType === 'dispute') {
       // Strategic + bold initiates disputes. Low temperament makes them escalate faster.
@@ -801,7 +806,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
 
       // Helper: create alliance, boost bonds, push event
       // Guards: duplicate check + hostile members check
-      const _createAlliance = (members, formText) => {
+      const _createAlliance = (members, sceneOf) => {
         const _sorted = [...members].sort();
         const _alreadyAllied = gs.namedAlliances?.some(a => a.active && _sorted.length === a.members.length && _sorted.every(m => a.members.includes(m)));
         const _pairAlreadyAllied = members.length === 2 && gs.namedAlliances?.some(a => a.active && a.members.includes(members[0]) && a.members.includes(members[1]));
@@ -818,7 +823,8 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         const allianceName = nameNewAlliance(members.length);
         gs.namedAlliances.push({ id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`, name: allianceName, members: [...members], formed: gs.episode + 1, betrayals: [], active: true });
         for (let x = 0; x < members.length; x++) for (let y = x + 1; y < members.length; y++) addBond(members[x], members[y], 0.2);
-        events.push({ type: 'allianceForm', text: formText.replace(/\{name\}/g, allianceName), alliance: allianceName, members, players: members, badgeText: 'ALLIANCE', badgeClass: 'gold' });
+        events.push(scriptEvent({ type: 'allianceForm', alliance: allianceName, members, players: members, badgeText: 'ALLIANCE', badgeClass: 'gold' },
+          sceneOf(allianceName)));
       };
       const _isAllied = p => gs.namedAlliances?.some(a => a.active && a.members.includes(p) && a.members.filter(m => group.includes(m)).length >= 2);
       // Global cap: max active alliances scales with active player count
@@ -935,7 +941,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       // Execute the chosen trigger
       if (_chosen.id === 'coach-protege' && _cpPair) {
         const [_cA, _cB] = _cpPair;
-        _createAlliance([_cA, _cB], `${_cA} and ${_cB} stop pretending the sessions were only about drills. What they have been building all along gets a name, and ${_cA} — who cannot vote for it, and cannot be voted out of it by ${_cB} alone — is in it.`);
+        _createAlliance([_cA, _cB], name => makeScene('alliance.form', { a: _cA, b: _cB }, { ending: 'coach', group: name }, [], _spotNow(_cA, _cB)));
       } else if (_chosen.id === 'strategic-pitch') {
         // Pick initiator: highest strategic OR social (social butterflies can recruit too)
         const initiator = _stratPlayers.sort((a,b) => Math.max(pStats(b).strategic, pStats(b).social) - Math.max(pStats(a).strategic, pStats(a).social))[0];
@@ -956,47 +962,31 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         if (!safeRecruits.length) continue;
         const allianceMembers = [initiator, ...safeRecruits];
         if (gs.namedAlliances?.some(a => a.active && allianceMembers.every(m => a.members.includes(m)))) continue;
-        const strI = pStats(initiator).strategic;
-        const formText = strI >= 8
-          ? _rpl([`${initiator} approaches ${safeRecruits.join(' and ')} with a clear proposal. Names, targets, order. {name} is formed before the sun goes down.`,
-                  `${initiator} maps it out for ${safeRecruits.join(' and ')}. The logic is clean. Everyone nods. {name}.`])
-          : _rpl([`${initiator} pulls ${safeRecruits.join(' and ')} aside. "It should be us." Nobody disagrees. {name} begins.`,
-                  `A quiet conversation between ${initiator} and ${safeRecruits.join(' and ')} turns into something more. {name} is real now.`]);
-        _createAlliance(allianceMembers, formText);
+        Math.random(); // the draw that picked the sentence
+        // a pitches; b and c are the first two recruits; anyone past them is named in {more}.
+        const [_r1, _r2, ..._rMore] = safeRecruits;
+        _createAlliance(allianceMembers, name => makeScene('alliance.form', { a: initiator, b: _r1, ...(_r2 ? { c: _r2 } : {}) },
+          { ending: 'pitch', group: name, more: _rMore.length ? _rMore.join(' and ') : null }, [], _spotNow(initiator, _r1)));
 
       } else if (_chosen.id === 'power-couple') {
         const [a, b] = _pcPair;
-        const formText = _rpl([
-          `${a} and ${b} have been gravitating toward each other all game. Tonight they made it official. {name} \u2014 built on trust, not strategy.`,
-          `"I trust you more than anyone out here." ${a} said it first. ${b} didn't hesitate. {name} is real.`,
-          `No pitch. No strategy talk. ${a} and ${b} just looked at each other and knew. {name} forms naturally \u2014 the way the best alliances do.`,
-        ]);
-        _createAlliance([a, b], formText);
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        _createAlliance([a, b], name => makeScene('alliance.form', { a, b }, { ending: 'couple', group: name }, [], _spotNow(a, b)));
 
       } else if (_chosen.id === 'mutual-enemy') {
         const [a, b] = _mePair;
-        const formText = _rpl([
-          `${a} and ${b} realized they share a common enemy: ${_meEnemy}. "I can't stand ${_meEnemy}." "Neither can I." {name} was born from frustration.`,
-          `"We both know who needs to go." ${a} looked at ${b}. ${b} nodded. {name} forms around one shared goal: ${_meEnemy} has to leave.`,
-        ]);
-        _createAlliance([a, b], formText);
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        _createAlliance([a, b], name => makeScene('alliance.form', { a, b }, { ending: 'enemy', group: name, target: _meEnemy }, [], _spotNow(a, b)));
 
       } else if (_chosen.id === 'survival-pact') {
         const [a, b] = _bottomPlayers;
-        const formText = _rpl([
-          `${a} and ${b} are both on the outside looking in. They know it. "If we don't stick together, we're next." {name} is a survival move \u2014 nothing more, nothing less.`,
-          `Nobody's including ${a} or ${b} in their plans. So they made their own. {name} forms at the bottom \u2014 two players with nothing to lose and everything to fight for.`,
-          `${a} found ${b} sitting alone by the water. "Everyone's got someone. We don't." By the time they walked back to camp, {name} existed.`,
-        ]);
-        _createAlliance([a, b], formText);
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        _createAlliance([a, b], name => makeScene('alliance.form', { a, b }, { ending: 'survival', group: name }, [], _spotNow(a, b)));
 
       } else if (_chosen.id === 'shared-struggle') {
         const [a, b] = _ssPair;
-        const formText = _rpl([
-          `${a} and ${b} both survived close votes recently. That kind of fear bonds people. "We almost went home. Let's make sure it doesn't happen again." {name} forms from shared survival.`,
-          `They both know what it feels like to see your name on the parchment. ${a} and ${b} form {name} \u2014 born from the shared experience of almost going home.`,
-        ]);
-        _createAlliance([a, b], formText);
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        _createAlliance([a, b], name => makeScene('alliance.form', { a, b }, { ending: 'struggle', group: name }, [], _spotNow(a, b)));
       }
 
     } else if (eventType === 'rumor') {
@@ -1674,7 +1664,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${acA} hasn't been told the full ${acNa.name} plan in two days. The exclusion is quiet but deliberate.`,
         `${acA} tests ${acB} with a small piece of information. When it comes back wrong, ${_acA.sub} ${_acA.sub==='they'?'know':'knows'} ${acNa.name} has a trust problem.`,
       ];
-      events.push({ type: 'allianceCrack', text: crackLines[Math.floor(Math.random() * crackLines.length)], players: [acA, acB], alliance: acNa.name, badgeText: 'ALLIANCE CRACK', badgeClass: 'red' });
+      Math.random();
+      events.push(scriptEvent({ type: 'allianceCrack', players: [acA, acB], alliance: acNa.name, badgeText: 'ALLIANCE CRACK', badgeClass: 'red' },
+        makeScene('alliance.crack', { a: acA, b: acB }, { group: acNa.name }, [], _spotNow(acA, acB))));
 
     } else if (eventType === 'sideDeal') {
       const sdCandidates = group.filter(n => {
@@ -1700,7 +1692,11 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${sdA} and ${sdB} have a conversation the rest of the tribe doesn't see. By tomorrow, the game might look different.`,
         `${sdA} pulls ${sdB} aside with a pitch that's either brilliant or desperate. ${sdB} is going to sleep on it.`,
       ];
-      events.push({ type: 'strategicApproach', text: sdLines[Math.floor(Math.random() * sdLines.length)], players: [sdA, sdB], badgeText: 'SIDE DEAL', badgeClass: 'gold' });
+      Math.random();
+      events.push(scriptEvent({ type: 'strategicApproach', players: [sdA, sdB], badgeText: 'SIDE DEAL', badgeClass: 'gold' },
+        makeScene('talk.approach', { a: sdA, b: sdB },
+          { ending: gs.namedAlliances?.some(al => al.active && al.members.includes(sdA) && al.members.includes(sdB)) ? 'inside' : 'outside' },
+          [], _spotNow(sdA, sdB))));
 
     } else if (eventType === 'bigMoveThoughts') {
       const p = _pick(group, n => {
@@ -6966,7 +6962,7 @@ export function generateCampEvents(ep, phase = 'both') {
         const tribeBoosts = ep.giftTribeBoosts?.[tribe.name]
           ? (() => { const tb = { ...boosts }; Object.entries(ep.giftTribeBoosts[tribe.name]).forEach(([k,v]) => { tb[k] = (tb[k]||0) + v; }); return tb; })()
           : boosts;
-        const preEvents = generateCampEventsForGroup(present, idolFinds, tribeBoosts, preCount);
+        const preEvents = withSceneCtx({ ep: ep.num, phase: 'pre' }, () => generateCampEventsForGroup(present, idolFinds, tribeBoosts, preCount));
         // Prepend gift return narrative as the first camp event for this tribe
         if (ep.giftNarrativeEvents?.[tribe.name]) preEvents.unshift(ep.giftNarrativeEvents[tribe.name]);
         if (ep.twistNarrativeEvents?.[tribe.name]) preEvents.unshift(ep.twistNarrativeEvents[tribe.name]);
@@ -7115,7 +7111,7 @@ export function generateCampEvents(ep, phase = 'both') {
       const total = totalForGroup(gs.activePlayers);
       const preCount = phase === 'both' ? total : Math.ceil(total / 2);
       const _campActivePlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-      const mergePreEvents = generateCampEventsForGroup(_campActivePlayers, idolFinds, boosts, preCount);
+      const mergePreEvents = withSceneCtx({ ep: ep.num, phase: 'pre' }, () => generateCampEventsForGroup(_campActivePlayers, idolFinds, boosts, preCount));
       if (ep.twistNarrativeEvents?.['merge']) mergePreEvents.unshift(ep.twistNarrativeEvents['merge']);
       if (!ep.campEvents) ep.campEvents = {};
       const _existingMergePre = ep.campEvents.merge?.pre || [];
@@ -8133,7 +8129,8 @@ export function generateCampEvents(ep, phase = 'both') {
           : Math.floor(Math.random() * 3) + Math.max(5, Math.ceil(total * 0.7));
         if (!ep.campEvents[tribe.name]) ep.campEvents[tribe.name] = { pre: [], post: [] };
         const _existingPostEvts = ep.campEvents[tribe.name].post || [];
-        ep.campEvents[tribe.name].post = [..._existingPostEvts, ...generateCampEventsForGroup(present, [], tribeBoosts, postCount)];
+        ep.campEvents[tribe.name].post = [..._existingPostEvts, ...withSceneCtx({ ep: ep.num, phase: 'post', tribal: ep.loser?.name === tribe.name },
+          () => generateCampEventsForGroup(present, [], tribeBoosts, postCount))];
       });
       // ── Sit-out narrative events ──
       if (ep.chalSitOuts) {
@@ -8193,7 +8190,8 @@ export function generateCampEvents(ep, phase = 'both') {
       const postCount = Math.floor(Math.random() * 3) + Math.max(5, Math.ceil(total * 0.72));
       if (!ep.campEvents.merge) ep.campEvents.merge = { pre: [], post: [] };
       const _existingMergePost = ep.campEvents.merge.post || [];
-      ep.campEvents.merge.post = [..._existingMergePost, ...generateCampEventsForGroup(gs.activePlayers.filter(p => p !== gs.exileDuelPlayer), [], postBoostsMerge, postCount)];
+      ep.campEvents.merge.post = [..._existingMergePost, ...withSceneCtx({ ep: ep.num, phase: 'post', tribal: true },
+        () => generateCampEventsForGroup(gs.activePlayers.filter(p => p !== gs.exileDuelPlayer), [], postBoostsMerge, postCount))];
     }
 
     // ── Temporary bloc alignment events (non-named alliances forming for this vote) ──

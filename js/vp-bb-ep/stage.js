@@ -583,12 +583,26 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
     const focus = focusAt(S, idx);
     const before = idx > sceneStartOf(S, idx) ? focusAt(S, idx - 1) : focus;
     const back = cast.map(([n]) => n).filter(n => !focus.includes(n));
-    // the room first, far back and soft; then the conversation, up front
-    back.forEach((n, i) => {
-      const x = Math.round(10 + (80 * (i + 0.5)) / back.length);
-      h += tileHtml(n, x, 'bgp', L, '', 'z-index:1');
-    });
     const xs = FRONT[Math.min(3, focus.length)] || FRONT[3];
+    // The rest of the room stands on the floor too, in the gaps beside and between the
+    // people talking (never floating above the furniture): smaller and dimmer, so they read
+    // as further back. Spots are the free stretches of floor, filled from the edges in.
+    const front = xs.slice(0, Math.min(3, focus.length));
+    const spots = [];
+    for (let x = 5; x <= 95; x += 1) if (front.every(f => Math.abs(f - x) >= 9.5)) spots.push(x);
+    const runs = [];
+    for (const x of spots) { const r = runs.at(-1); if (r && x === r.at(-1) + 1) r.push(x); else runs.push([x]); }
+    const places = [];
+    const per = Math.max(1, Math.ceil(back.length / Math.max(1, runs.length)));
+    for (const r of runs) {
+      const k = Math.min(per, Math.max(1, Math.floor(r.length / 5)));
+      for (let j = 0; j < k; j++) places.push(r[0] + Math.round(((j + 0.5) * r.length) / k));
+    }
+    places.sort((p, q) => Math.abs(50 - q) - Math.abs(50 - p));
+    back.forEach((n, i) => {
+      const x = places[i % Math.max(1, places.length)] ?? 50;
+      h += tileHtml(n, x, 'bgp', L, '', `z-index:1;bottom:${(21.5 + (i % 2) * 0.8).toFixed(1)}cqw`);
+    });
     focus.slice(0, 3).forEach((n, i) => {
       const cls = [n === speaker ? 'speak' : '', fresh && !before.includes(n) ? 'step' : '', L.plus === n ? 'plus' : ''].join(' ');
       h += tileHtml(n, xs[i], cls, L);

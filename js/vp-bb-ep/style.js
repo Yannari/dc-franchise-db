@@ -65,7 +65,7 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 @keyframes bbx-tin{from{opacity:0;transform:perspective(50cqw) rotateY(var(--ry,0deg)) translateY(3cqw) scale(.94)}}
 .bbx .gt.gone .tile img{filter:grayscale(1) brightness(.6)}
 /* House Life: the rest of the room, out of focus at the back */
-.bbx .gt.bgp{bottom:31.5cqw;width:5.2cqw;filter:brightness(.38) saturate(.55) blur(.16cqw);z-index:1}
+.bbx .gt.bgp{bottom:21.5cqw;width:6.8cqw;filter:brightness(.4) saturate(.55) blur(.12cqw);z-index:1}
 .bbx .gt.bgp .tile{-webkit-box-reflect:none;box-shadow:0 .8cqw 1.6cqw rgba(0,0,0,.4)}
 .bbx .gt.bgp .plate{display:none}
 /* somebody joining the conversation comes forward */

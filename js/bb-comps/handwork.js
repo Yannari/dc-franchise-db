@@ -20,6 +20,10 @@
 //   arrive at the puzzle first and lose the competition sitting still.
 import { pStats, pronouns } from '../players.js';
 import { beat, clamp, makePicker, toResult, vb } from './_shared.js';
+// small counts read as words on screen ("six pictures", not "6 pictures")
+const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const wd = n => WORDS[n] ?? String(n);
+
 
 const round2 = v => Math.round(v * 100) / 100;
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
@@ -112,8 +116,8 @@ export const cagedEggs = {
         // a messy run still finishes — it just costs, and the line should say
         // that rather than reporting both halves as if they were the same fact.
         + ` ${broken
-    ? `${broken} broken and replaced. The final egg reaches the cradle at ${clock(times[name])}.`
-    : `All ${EGGS} reach the cradle unbroken in ${clock(times[name])}.`}`,
+    ? `${wd(broken)[0].toUpperCase() + wd(broken).slice(1)} ${broken === 1 ? 'egg breaks and gets' : 'eggs break and get'} replaced. The last egg reaches the cradle at ${clock(times[name])}.`
+    : `All ${wd(EGGS)} eggs reach the cradle without a crack, in ${clock(times[name])}.`}`,
         [name], broken === 0 ? 'CLEAN RUN' : `${broken} BROKEN`, broken === 0 ? 'challenge' : 'grey'));
     }
 

@@ -703,7 +703,7 @@ export default {
   'veto.dr.self': [
     { id: 'vd.s1', turns: [{ by: 'a', dr: "Easiest decision I'll ever make in this house. I'm taking myself off that block." }] },
     { id: 'vd.s2', turns: [{ by: 'a', dr: "Am I using the veto on myself? Is that a real question? Yes. Yes, I am." }] },
-    { id: 'vd.s3', turns: [{ by: 'a', dr: "I get to sit in that chair one more time, say \"I've decided to use it on myself\", and watch the Head of Household's face." }] },
+    { id: 'vd.s3', turns: [{ by: 'a', dr: "One more time in that chair. Then I say I'm using it on myself, and somebody else's week gets a lot worse." }] },
     { id: 'vd.s4', turns: [{ by: 'a', dr: "Tomorrow I'm off the block and somebody else is on it. Somebody who thought they were safe this week." }] },
     { id: 'vd.s5', turns: [{ by: 'a', dr: "I won this so I'd never have to rely on anyone else's vote. That's exactly what it's going to do." }] },
     { id: 'vd.s6', turns: [{ by: 'a', dr: "They put me up. I'm taking me down. That's the whole speech." }] },

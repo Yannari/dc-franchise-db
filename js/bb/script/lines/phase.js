@@ -41,7 +41,7 @@ export default {
     { id: 'pp2.3', turns: [{ by: 'a', dr: "Nobody's got any power yet. That's the best time to agree on a target." }] },
     { id: 'pp2.4', turns: [{ by: 'a', say: "Can we agree on one thing before the comp?" }, { by: 'b', say: "Go on." }, { by: 'a', say: "{c}. Whoever wins puts {c} up." }, { by: 'b', say: "Deal." }] },
     { id: 'pp2.5', turns: [{ by: 'b', say: "Why {c}?" }, { by: 'a', say: "Because if {c} wins, one of us is going up." }, { by: 'b', say: "...Fair enough." }] },
-    { id: 'pp2.6', turns: [{ by: 'a', dr: "I've told three people the same thing about {c} this morning. If any of them wins, I've done my job." }] },
+    { id: 'pp2.6', turns: [{ by: 'a', dr: "I've told three people the same thing about {c} today. If any of them wins, I've done my job." }] },
     { id: 'pp2.7', turns: [{ by: 'a', say: "Promise me. If you win, {c} goes up." }, { by: 'b', say: "I promise. Does it work both ways?" }, { by: 'a', say: "It works both ways." }] },
   ],
   'phase.scramble.desperate': [

@@ -57,7 +57,7 @@ export function airStorylines(week) {
   let at = 0;
   let pending = [];   // { act, line, step } filed this stretch
   let stretchBeats = [];   // every beat of the stretch, filed or not: { act, beat }
-  const clock = { hoh: false, noms: false, nomsJust: false, hohJust: false, veto: false, safety: false };
+  const clock = { hoh: false, noms: false, nomsJust: false, hohJust: false, veto: false, safety: false, cer: false };
   // the game talk this week has aired (gametalk.js): one of each kind a week, one talk per pair
   const talked = new Set();
   const talkedPairs = new Set();
@@ -69,9 +69,18 @@ export function airStorylines(week) {
   const present = () => (week.houseAtStart || []).filter(n => !gone.has(n) && !late.has(n));
   // how often each kind of scene has aired this season (kept with the storylines)
   const seasonAired = ((gs.bb ||= {}).storyAired ||= {});
+  // Who each alliance's title card has shown in it, all season: somebody already shown as a
+  // founder is not "recruited" into it later (the audit, 2026-10-06: Axel founded The Guard on
+  // the grass, and three days later was asked to join it)
+  const shownIn = (gs.bb.allianceShown ||= {});
+  const rejoins = sc => sc?.title?.kind === 'joined' && (shownIn[sc.title.name] || []).some(n => (sc.title.members || []).includes(n));
+  const remember = sc => {
+    const t = sc?.title;
+    if (t?.name && (t.kind === 'alliance' || t.kind === 'joined')) shownIn[t.name] = [...new Set([...(shownIn[t.name] || []), ...(t.members || [])])];
+  };
   const lastGone = [...(gs.bb?.weeks || [])].reverse().find(w => w !== week && w.evicted)?.evicted || null;
   const ctxOf = () => ({ week, hoh: clock.hoh ? (week.hoh || null) : null,
-    nominees: clock.noms ? (week.finalNominees || week.initialNominees || []) : [], stretch,
+    nominees: clock.noms ? ((clock.cer ? week.finalNominees : week.initialNominees) || week.finalNominees || week.initialNominees || []) : [], stretch,
     firstNight: (week.num || 0) === 1 && stretch === 0, present: present(), phase: season.phase, jurors: season.jurors });
 
   // Which whole-house set piece opens this stretch.
@@ -107,7 +116,8 @@ export function airStorylines(week) {
       const key = [...beat.players].sort().join('|');
       if (shown.has(key) || shown.has(String(beat.eventId))) continue;
       const sc = writeEngineScene(beat, { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) }, at);
-      if (!sc) continue;
+      if (!sc || rejoins(sc)) continue;
+      remember(sc);
       shown.add(key); shown.add(String(beat.eventId));
       beat.aired = true; engAired++;
       seasonAired[`ev:${beat.eventId}`] = (seasonAired[`ev:${beat.eventId}`] || 0) + 1;
@@ -191,7 +201,8 @@ export function airStorylines(week) {
     const inside = [];
     for (const p of embedded.sort((x, y) => x.step.at - y.step.at)) {
       const sc = writeStoryScene(p.line, p.step, { ...ctx, inSet: true });
-      if (!sc) continue;
+      if (!sc || rejoins(sc)) continue;
+      remember(sc);
       inside.push({ p, sc });
     }
     const set = atStart.length >= 4
@@ -241,8 +252,12 @@ export function airStorylines(week) {
     };
     ordered.forEach((p, i) => {
       if (i === mid) airTalks(p.act);
-      const scene = writeStoryScene(p.line, p.step, { ...ctx, avoidRoom: lastRoom });
+      // the house as the stretch began, latecomers not in it yet: the background of a scene is
+      // drawn from this (a Rivals latecomer was asleep on a lounger before walking in)
+      const scene = writeStoryScene(p.line, p.step, { ...ctx, present: tctx.present, avoidRoom: lastRoom });
       if (!scene) return;
+      if (rejoins(scene)) { p.step.aired = true; return; }
+      remember(scene);
       lastRoom = scene.room;
       p.step.aired = true;
       p.beat.aired = true;
@@ -302,6 +317,7 @@ export function airStorylines(week) {
       if (act.type === 'hoh') clock.hoh = true;
       if (act.type === 'nominations') clock.noms = true;
       if (act.type === 'veto') clock.veto = true;
+      if (act.type === 'veto-ceremony') clock.cer = true;
       if (act.type === 'eviction' && act.evicted) gone.add(act.evicted);
     } else if (act.type === 'rivals-hoh') late.clear();
     if (act.type === 'safety') clock.safety = true;

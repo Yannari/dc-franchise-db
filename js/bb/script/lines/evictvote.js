@@ -118,7 +118,7 @@ export default {
     V('ev.b2', "{c}, if it was just me, it'd be you. It's not just me. I vote to evict {b}."),
     V('ev.b3', "I'll go with the group this time. Sorry, {b}. I vote to evict {b}."),
     V('ev.b4', "My gut says one thing. My alliance says another. My alliance wins tonight. I vote to evict {b}."),
-    V('ev.b5', "I lost the argument this week. Fine. I vote to evict {b}."),
+    V('ev.b5', "We talked it through as a group, and this is where we landed. I vote to evict {b}."),
     V('ev.b6', "Team vote. Not my first choice. I vote to evict {b}."),
   ],
   'evict.vote.plain': [

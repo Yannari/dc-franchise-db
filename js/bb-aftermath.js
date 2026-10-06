@@ -472,7 +472,7 @@ function goodbyeMessages(evictee, house, week, rng) {
     messages.push({
       name: null, tone: 'montage', against: false,
       montage: montage.slice(),
-      text: `The rest of the house goes by in a montage — ${montage.slice(0, 3).join(', ')}${montage.length > 3 ? ` and ${montage.length - 3} more` : ''} — waves, half-jokes, one blown kiss. Nothing anybody will quote tomorrow.`,
+      text: `The rest of the house goes by in a montage — ${montage.slice(0, 3).join(', ')}${montage.length > 3 ? ` and ${['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][montage.length - 3] || montage.length - 3} more` : ''} — waves, half-jokes, one blown kiss. Nothing anybody will quote tomorrow.`,
     });
   }
   return messages;

@@ -56,7 +56,7 @@ export default {
       { by: 'c', say: "So we're all being played?" },
       { by: 'a', say: "Not all of us. Not if we compare notes." },
       { by: 'b', say: "Okay. What has {target} told you?" },
-      { by: 'a', dr: "Ten minutes later we'd worked out {target} had told each of us something different. Good morning to me." },
+      { by: 'a', dr: "Ten minutes later we'd worked out {target} had told each of us something different. That was a useful ten minutes." },
     ] },
     { id: 'gg2.5', presumes: ['hoh'], room: 'backyard', turns: [
       { beat: 'Backyard. {a}, {b} and {c} are in the pool, which is the only place in the house the microphones struggle.' },

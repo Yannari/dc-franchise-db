@@ -233,13 +233,18 @@ function shuffled(list, salt) {
   const rng = stableRng(gs.bb?.seasonSalt || 0, 'story-cast', salt);
   return list.map(n => [rng(), n]).sort((x, y) => x[0] - y[0]).map(x => x[1]);
 }
+// Is this houseguest named in the text, as a whole name ("Raj's", not "Rajesh")?
+const nameIn = (n, text) => new RegExp(`(^|\\W)${String(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!\\w)`).test(String(text || ''));
 
 // The rest of the house is somewhere. A private conversation in a shared room shows who else
 // is around (the user, 2026-10-06: "all one-on-one with no one in the background"), and a row
 // in a shared room gets a reaction from them.
 const SHARED = new Set(['kitchen', 'living-room', 'backyard', 'bedroom']);
 function background(lines, sc, ctx, salt, loud) {
-  const others = shuffled((ctx.present || []).filter(n => !sc.cast.includes(n)), salt);
+  // nobody in the background is the person the scene is talking about (Priya doing a puzzle at
+  // the table while somebody says Priya still needs to go)
+  const spoken = lines.map(l => String(l.text || '')).join(' ');
+  const others = shuffled((ctx.present || []).filter(n => !sc.cast.includes(n) && !nameIn(n, spoken)), salt);
   if (others.length < 2 || !SHARED.has(sc.room)) return lines;
   const who = { x: others[0], y: others[1] };
   const rng = stableRng(gs.bb?.seasonSalt || 0, 'story-bg', salt);
@@ -437,7 +442,10 @@ export function writeCampaignScene(beat, ctx, at, salt) {
   const h = [...salt].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
   const pdr = outcome !== 'worn' && h % 10 < 3;
   const dr = pick([pdr ? `camp.pdr.${outcome}` : `camp.vdr.${outcome}`], who, data, sctx, 'bedroom', `${salt}|dr`);
-  const body = (beat.lines || []).filter(l => l && l.text).map(l => ({ kind: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, text: l.text }));
+  // only the people in this conversation speak in it: the engine's beat can carry the other
+  // voters' answers too ('Axel: No.' 'Hicks: No.' in a pitch to Brightly alone)
+  const inScene = new Set(ps);
+  const body = (beat.lines || []).filter(l => l && l.text && (!l.by || inScene.has(l.by))).map(l => ({ kind: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, text: l.text }));
   if (!body.length && beat.text) body.push({ kind: 'beat', by: null, text: String(beat.text).replace(/<[^>]+>/g, '') });
   const room = open?.room || ['bedroom', 'backyard', 'kitchen', 'living-room'][h % 4];
   // the engine's own Diary Room (if it wrote one) closes the scene in place of ours: a Diary
@@ -491,6 +499,21 @@ export function writeEngineScene(beat, ctx, at) {
   }
   // nobody speaks who is not in the scene
   if (lines.some(l => l.by && !cast.includes(l.by))) return null;
+  // a moment about somebody who has since walked out of the front door, in the present tense
+  // ('not while Scary Girl is sitting in my chair', aired after Scary Girl was evicted), is stale
+  const left = ctx.week?.evicted;
+  if (left && !present.includes(left) && lines.some(l => nameIn(left, l.text) && !/evict|gone|left|leav|vote|jury|goodbye|miss|door|out of here/i.test(l.text))) return null;
+  // the person a moment is ABOUT is not in the room for it: somebody named in another
+  // person's line, who says nothing and does nothing on screen, is talked about, not talked to
+  // (an audit, 2026-10-06: 'Bowie's going up. Guaranteed.' with Bowie on the sofa; a pitch
+  // against Damien in the HOH room with Damien sitting in it)
+  const said = new Set(lines.filter(l => l.by).map(l => l.by));
+  const named = (n, ls) => ls.some(l => nameIn(n, l.text));
+  for (const n of [...cast]) {
+    if (said.has(n) || named(n, lines.filter(l => l.kind === 'beat'))) continue;
+    if (named(n, lines.filter(l => l.kind !== 'beat'))) cast.splice(cast.indexOf(n), 1);
+  }
+  if (!cast.length) return null;
   const id = String(beat.eventId || '');
   // a house meeting is the whole house in the living room, whoever speaks
   const meeting = /house-meeting|meeting-crash/.test(id) && !/meeting-crash/.test(id);

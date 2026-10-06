@@ -34,7 +34,9 @@ const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eig
  */
 export function fill(text, who, ctx = {}, data = {}) {
   return text.replace(/\{(\w+)(?:\.(\w+))?\}/g, (m, role, part) => {
-    if (role === 'count') return WORDS[gs.activePlayers?.length || 0] || String(gs.activePlayers?.length || 0);
+    // a scene that carries its own count (the vote as the host read it: 'Seven to two') says that;
+    // otherwise {count} is how many are in the house (the audit, 2026-10-06: 'Ten.' for a 7-2 vote)
+    if (role === 'count') return typeof data.count === 'string' ? data.count : (WORDS[gs.activePlayers?.length || 0] || String(gs.activePlayers?.length || 0));
     const name = role === 'hoh' ? ctx.hoh : (who[role] ?? (typeof data[role] === 'string' ? data[role] : undefined));
     if (!name) return m;
     if (!part) return name;

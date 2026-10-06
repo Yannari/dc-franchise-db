@@ -176,7 +176,12 @@ function compScreen(act, ctx, kind) {
   const desc = String(comp.desc || '').split(/(?<=\.)\s/)[0];
   if (comp.name) steps.push({ k: 'beat', t: `${comp.name}. ${desc}` });
   // the competition's own play-by-play, as the engine wrote it
-  for (const b of (comp.beats || []).slice(0, 10)) { const t = stripTags(b.text); if (t) steps.push({ k: 'beat', t }); }
+  // all of it when it is short; the opening and the ending when it is long (the ending is where
+  // the winner is: cutting at ten left a winner who never appeared, and a leader who then lost)
+  const all = (comp.beats || []).map(b => stripTags(b.text)).filter(Boolean);
+  const shown = all.length > 14 ? [...all.slice(0, 6), ...all.slice(-8)] : all;
+  for (const t of shown) steps.push({ k: 'beat', t });
+  const told = shown.slice(-4).some(t => t.includes(winner));
   // what happened between them during it (a collision, a taunt, somebody helping a rival): the
   // engine wrote these and the screen never showed them (the user, 2026-10-06: "events related to comp")
   for (const e of (comp.events || []).slice(0, 4)) {
@@ -184,8 +189,15 @@ function compScreen(act, ctx, kind) {
     else { const t = stripTags(e.text); if (t) steps.push({ k: 'beat', t }); }
   }
   const early = results.slice(4);
-  if (early.length) steps.push({ k: 'beat', t: `${listOf(early)} ${early.length > 1 ? 'are' : 'is'} out of it.` });
-  for (const n of finalists.slice(1).reverse()) steps.push({ k: 'beat', t: `${n} is out. ${finalists.indexOf(n) === 1 ? 'It comes down to the last one standing.' : ''}`.trim() });
+  // how it ended, when the play-by-play has not already said: the field falls away, then two are
+  // left. Said so it is true of a race, a quiz and an endurance alike (the old "X is out" ladder
+  // ran after a winner had already been named, and ended "It comes down to the last one
+  // standing" with one person left)
+  if (!told && !(isHoh && act.secret) && !(!isHoh && act.orderOnly)) {
+    const gone = [...early.slice().reverse(), ...finalists.slice(2).reverse()];
+    if (gone.length) steps.push({ k: 'beat', t: `${listOf(gone)} ${gone.length > 1 ? 'are' : 'is'} out of the running.` });
+    if (finalists.length >= 2) steps.push({ k: 'beat', t: `It comes down to ${finalists[0]} and ${finalists[1]}.`, tense: finalists.slice(0, 2) });
+  }
   if (isHoh && act.secret) {
     // The Invisible HOH: the house never sees who won. Only the viewer does.
     steps.push({ k: 'beat', t: `The lights go out before anybody sees who finished first. ONLY YOU KNOW: ${winner} is the Head of Household, and nobody in the house will be told.`, toast: ['ONLY YOU KNOW', '#7c5cff'], hoh: winner });
@@ -272,7 +284,7 @@ function nomScreen(act, ctx) {
       steps.push({ k: 'say', by: n, t: pickBy(['Then I\'ll see you on the other side of the veto.', 'Fine. Enjoy your week.', 'Remember this. Because I will.'], salt) });
       steps.push({ k: 'beat', t: pickBy([`Nobody at the table moves. Somebody very slowly puts a fork down.`, `The table goes silent. ${hoh} stares at the key box.`], salt) });
     } else if (bond >= 3) {
-      steps.push({ k: 'beat', t: pickBy([`${n} stares at ${hoh}. ${hoh} can't hold the look.`, `${n} nods, very slowly, and doesn't say a word.`, `${n} lets out a breath that is almost a laugh.`], salt) });
+      steps.push({ k: 'beat', t: pickBy([`${n} catches ${hoh}'s eye and gives a small nod. They talked about this.`, `${n} nods, very slowly, and doesn't say a word.`, `${n} lets out a breath that is almost a laugh.`], salt) });
     } else if (bond <= -2) {
       steps.push({ k: 'say', by: n, t: pickBy(['Saw that coming.', 'Of course.', 'Great. Thanks.'], salt) });
     } else {
@@ -443,7 +455,14 @@ function vetoMeetingScreen(act, ctx) {
 const PLEA = {
   default: [`I'm not going to make promises I can't keep. Keep me, and you'll know exactly what you're getting.`,
     `I've loved living with every one of you. I'd love one more week.`,
-    `I'm loyal to the people who are loyal to me. Vote with your heart tonight.`],
+    `I'm loyal to the people who are loyal to me. Vote with your heart tonight.`,
+    `I know I haven't talked to all of you as much as I should have. Give me one more week and I will.`,
+    `I'm not done in here. I've got a lot more game to play, and I'd like to play it with you.`,
+    `Whatever you've heard about me this week, I'd rather you judged me on what you've actually seen.`,
+    `I came in here to play the whole game. Please don't make tonight the end of it.`,
+    `I'm not going to beg. I'll just say this: I've been straight with the people in this room, and I'll keep being straight with you.`,
+    `This house has been the best and worst thing that's ever happened to me. I'd like a few more weeks of both.`,
+    `If you keep me, I won't forget it. That's not a line. That's a promise.`],
   'target-warning': [`Before you vote, think about who benefits if I leave. It isn't you.`,
     `There's a plan being finished in this house tonight, and I'm not the end of it.`],
   'loyalty': [`I've kept every promise I made in here. I'm asking you to keep yours.`],
@@ -629,8 +648,8 @@ function finalPartScreen(act, ctx, n) {
   S.title = `Final HOH · ${act.part || `Part ${n}`}`;
   S.label = S.title;
   S.steps[0] = { k: 'bb', t: `Final Head of Household competition, ${String(act.part || `Part ${n}`).replace(/ —.*/, '')}.` };
-  // a two-person race has no "X is out. It comes down to the last one standing."
-  if (players.length <= 2) S.steps = S.steps.filter(x => !/ is out.( It comes down to the last one standing.)?$/.test(String(x.t || '')));
+  // a two-person race has no "It comes down to A and B"
+  if (players.length <= 2) S.steps = S.steps.filter(x => !/^It comes down to | is out of the running\.$/.test(String(x.t || '')));
   const win = S.steps.findIndex(s => s.toast);
   if (win >= 0) S.steps[win] = { k: 'beat', t: `${comp.winner} wins ${act.part || `Part ${n}`} and goes through to Part Three!`, big: [comp.winner, `Wins ${String(act.part || `Part ${n}`).replace(/ —.*/, '')}`, 'safe'], confetti: true };
   // a board that moves as the competition plays (the user, 2026-10-06: "the final HOH parts need
@@ -2155,7 +2174,11 @@ function interviewScreen(iv, ctx, host, row) {
   const steps = [];
   steps.push({ k: 'beat', t: T(iv.walkout?.line) || `${ev} walks out of the front door to the studio crowd.`, door: true });
   steps.push({ k: 'host', by: h, t: pickBy([`${ev}, come and sit down. Welcome.`, `Welcome, ${ev}! Have a seat.`, `${ev}, come on over.`], `${ctx.week}|ivhi`) });
-  if (iv.homecoming?.line) steps.push({ k: 'beat', t: T(iv.homecoming.line) });
+  // the reactions are prose with the evictee's words inside them: split into the staging and the
+  // line (stripping the outer quotes cut '"Priya? I sat across from her..." The sentence just
+  // stops there.' into a beat that opened mid-quotation)
+  const said = x => proseSteps(x, [ev]);
+  if (iv.homecoming?.line) steps.push(...said(iv.homecoming.line));
   for (const q of iv.questions || []) {
     if (q.q) steps.push({ k: 'host', by: h, t: T(q.q) });
     if (q.a) steps.push({ k: 'say', by: ev, t: T(q.a) });
@@ -2166,14 +2189,14 @@ function interviewScreen(iv, ctx, host, row) {
     steps.push({ k: 'host', by: h, t: T(iv.hostLines?.truth) || 'Before the goodbyes, there are a couple of things you should know.' });
     if (t.organizer) steps.push({ k: 'host', by: h, t: `${t.organizer} organised it${t.alliance ? `, with ${t.alliance}` : ''}.` });
     for (const liar of t.liars || []) steps.push({ k: 'host', by: h, t: `${liar} told the house one name and voted another.` });
-    if (t.reaction) steps.push({ k: 'beat', t: T(t.reaction) });
+    if (t.reaction) steps.push(...said(t.reaction));
   }
   if ((iv.goodbyes || []).length) {
     steps.push({ k: 'host', by: h, t: T(iv.hostLines?.goodbyes) || 'Your housemates recorded some messages, in case tonight went the way it went.' });
     for (const g of iv.goodbyes) {
       if (g.tone === 'montage') { steps.push({ k: 'beat', t: T(g.text) }); continue; }
       steps.push({ k: 'dr', by: g.name, t: T(g.text) });
-      if (g.react) steps.push({ k: 'beat', t: T(g.react) });
+      if (g.react) steps.push(...said(g.react));
     }
   }
   if (iv.parting) steps.push({ k: 'say', by: ev, t: T(iv.parting) });
@@ -2209,9 +2232,15 @@ function proseSteps(text, players = []) {
   for (const x of parts) {
     if (x.narr != null) {
       // the speaker of the next quotation is the person named earliest in the narration before it
+      // an attribution straight after a quotation names who said it ("You weren't there," Hicks
+      // says): that line is Hicks's, whoever the narration before it named
+      const tag = new RegExp('^[\\s,]*(' + who + ')\\s+(?:says|asks|adds|replies|snaps|mutters|whispers)\\b').exec(x.narr);
+      const prevSay = out[out.length - 1];
+      if (tag && prevSay && prevSay.k === 'say') { prevSay.by = tag[1]; speaker = tag[1]; }
       const named = players.filter(p => x.narr.includes(p)).sort((a, b) => x.narr.indexOf(a) - x.narr.indexOf(b));
-      if (named.length) speaker = named[0];
-      const n = x.narr.replace(ATTR, '').replace(/^[\s,.;:—-]+/, '').trim();
+      if (named.length && !tag) speaker = named[0];
+      // what is left after an attribution ("..., and that is where it stops") is its own sentence
+      const n = x.narr.replace(ATTR, '').replace(/^[\s,.;:—-]+/, '').replace(/^and\s+/i, '').trim().replace(/^[a-z]/, c => c.toUpperCase());
       // "the wall says," / "slowly," / "she adds quietly," between quotations is not a line of its own
       const manner = n.length < 28 && !/[.!?]$/.test(n.replace(/,$/, '')) && /,$|^(?:[a-z]|the |and )/.test(n);
       const said = /\b(says|asks|adds|replies|snaps|mutters|whispers)\b[,.]?$/i.test(n);
@@ -2224,7 +2253,9 @@ function proseSteps(text, players = []) {
     // a quotation broken by its attribution is one line: "Before we go any further," the wall
     // says, "let's look at week 1." continues after its comma
     if (prev && prev.k === 'say' && prev.by === by) {
-      const cont = /,$/.test(prev.t) || /^[a-z]/.test(q);
+      // it carries on with a comma only when the second part does ("...," she says, "and then");
+      // a new sentence ("...could lose," Mia says. "That's not a game") gets a full stop first
+      const cont = /^[a-z]/.test(q);
       prev.t = cont ? prev.t.replace(/[,.]$/, '') + ', ' + q : prev.t.replace(/,$/, '.') + ' ' + q;
     } else out.push(by ? { k: 'say', by, t: q } : { k: 'beat', t: '"' + q + '"' });
   }
@@ -2516,10 +2547,14 @@ function storyLifeScreen(scenes, ctx, n) {
       lines[firstSpoken] = { ...lines[firstSpoken], scene };
       // a recap before it (Diary Room) still has to cut somewhere first
       if (firstSpoken > 0) lines[0] = { ...lines[0], scene };
+    } else if (firstSpoken < 0 && lines.length) {
+      // only Diary Room: a confessional, not a room with nobody talking in it
+      lines[0] = { ...lines[0], scene };
     } else {
       // the caption goes before the first line on the stage (after any Diary Room recap)
       const at0 = Math.max(0, firstSpoken);
-      lines.splice(at0, 0, { k: 'beat', t: `${label}. ${listOf(sc.cast)}.`, scene, caption: true });
+      const who = sc.cast.length >= 7 ? 'The whole house' : listOf(sc.cast);
+      lines.splice(at0, 0, { k: 'beat', t: `${label}. ${who}.`, scene, caption: true });
       if (at0 > 0) lines[0] = { ...lines[0], scene };
     }
     steps.push(...lines);

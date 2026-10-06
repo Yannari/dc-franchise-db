@@ -297,7 +297,7 @@ export default {
       { beat: 'Backyard. {a}, {b}, {c} and {d} on the loungers, all facing away from the house.' },
       { by: 'b', say: "Okay, is {target} watching?" },
       { by: 'c', say: "No, {target}'s inside." },
-      { by: 'b', say: "Okay. So. {target} told me something weird this morning." },
+      { by: 'b', say: "Okay. So. {target} told me something weird earlier." },
       { by: 'a', say: "What?" },
       { by: 'b', say: "That we should all be 'careful who we trust'." },
       { by: 'd', say: "That's what people say when they're the one you shouldn't trust." },

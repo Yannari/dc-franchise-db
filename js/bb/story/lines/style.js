@@ -43,7 +43,7 @@ export default {
       { by: 'a', say: "I like the room. Not the person in it." },
       { by: 'a', dr: "Whoever has the key to this room is my best friend for seven days. It's not personal. It's real estate." },
     ] },
-    { id: 'gy-sf.4', turns: [
+    { id: 'gy-sf.4', presumes: ['vote'], turns: [
       { beat: 'The backyard. {a} and {b} are on loungers, watching two groups talk at either end of the yard.' },
       { by: 'b', say: "Which one are you going to?" },
       { by: 'a', say: "Neither. I'll wait and see which one gets bigger." },
@@ -80,7 +80,7 @@ export default {
       { by: 'a', dr: "My game is simple. If I win, I stay. If I keep winning, nobody can touch me. That's the plan." },
     ] },
     { id: 'gy-sb.2', room: 'bedroom', turns: [
-      { beat: 'Bedroom. {b} sits down beside {a}, keeping the voice low.' },
+      { beat: 'Bedroom. {b} sits down beside {a} and talks quietly.' },
       { by: 'b', say: "People are talking about you." },
       { by: 'a', say: "Because I keep winning?" },
       { by: 'b', say: "Because you keep winning." },
@@ -133,7 +133,7 @@ export default {
       { by: 'a', dr: "I didn't say anything untrue. {c} did ask about the vote. {b} will do the rest." },
     ] },
     { id: 'gy-sm.2', room: 'bedroom', turns: [
-      { beat: 'Bedroom. {a} sits close to {b} and lowers their voice.' },
+      { beat: 'Bedroom. {a} sits close to {b} and starts talking very quietly.' },
       { by: 'a', say: "I'm only telling you because I trust you." },
       { by: 'b', say: "Okay..." },
       { by: 'a', say: "I don't think {c} is as loyal to you as you think." },

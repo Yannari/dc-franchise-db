@@ -772,9 +772,12 @@ const FALSE_START = [
   n => `Second false start for ${n}, who has now spent more of this competition walking backwards than forwards.`,
   (n, p) => `${n} is moving before ${p.sub} ${vb(p, 'has', 'have')} finished hearing it. Back to the start.`,
 ];
+// small counts read as words on screen ("six pictures", not "6 pictures")
+const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const wd = n => WORDS[n] ?? String(n);
 const HELD_STILL = [
-  (n, p) => `Everybody else twitches. ${n} does not — not a foot, not a shoulder — and by the fourth call ${p.sub} ${vb(p, 'is', 'are')} the only one who has not lost a length.`,
-  n => `${n} treats every call like it might be the wrong one, which is slow, and which is why ${n} is winning.`,
+  (n, p) => `Around ${p.obj}, people twitch. ${n} does not — not a foot, not a shoulder — and by the fourth call ${p.sub} ${vb(p, 'has', 'have')} not lost a single length.`,
+  n => `${n} treats every call like it might be the wrong one. It is slow, and it never costs ${n} a length.`,
   (n, p) => `${n} has worked out that this is not a race. ${p.Sub} ${vb(p, 'moves', 'move')} late every single time and gains on all of them.`,
 ];
 
@@ -867,7 +870,7 @@ const readySetWoah = {
         // fact about the sheet rather than about them.
         const recovered = Math.round(r.ground);
         beats.push(beat(recovered > 0
-          ? `${r.name} loses one to a WOAH and spends what is left of the sheet making the ground back up. ${recovered} down the course at the horn.`
+          ? `${r.name} goes on one WOAH, gets sent back to the line, and spends the rest of the calls winning the ground back. ${r.name} is ${wd(recovered)} ${recovered === 1 ? 'metre' : 'metres'} down the course when the horn goes.`
           : `${r.name} is sent back with almost nothing left to run, and the horn goes before any of it can be made up again. Nothing on the board.`,
         [r.name], `${recovered}M`));
       }

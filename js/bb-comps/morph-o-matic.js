@@ -31,15 +31,19 @@ const NEUTRAL = { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', ref:
 const pron = name => { try { return pronouns(name) || NEUTRAL; } catch { return NEUTRAL; } };
 const bondTo = (a, b) => { try { return getBond(a, b) || 0; } catch { return 0; } };
 const round1 = v => Math.round(v * 10) / 10;
+// small counts read as words on screen ("six pictures", not "6 pictures")
+const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const wd = n => WORDS[n] ?? String(n);
+
 
 // Written as functions of the board size — a fixed "twelve pictures" line
 // contradicted a six-face board every time it came up.
 const OPEN_LINES = [
   () => 'The screen lights up with a face that is two people and belongs to neither of them, which is somehow worse than either.',
-  n => `${n} pictures, each one a person who does not exist, assembled out of two who do.`,
+  n => `${wd(n)[0].toUpperCase() + wd(n).slice(1)} pictures, each one a person who does not exist, made out of two who do.`,
   () => 'The rule is the cruel one: you stay on the picture until you get it right, and the clock does not care how long that takes.',
-  () => 'Nobody mentions that half the faces on the board left this house weeks ago. Everybody notices.',
-  n => `${n} faces, none of them real, all of them familiar. The first button press is nearly a minute away.`,
+  () => 'Every face on the board is made out of somebody in this house. Nobody enjoys seeing their own nose on somebody else.',
+  n => `${wd(n)[0].toUpperCase() + wd(n).slice(1)} faces, none of them real, all of them familiar.`,
 ];
 
 const CLEAN_LINES = [

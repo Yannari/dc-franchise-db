@@ -72,7 +72,7 @@ export default {
     { id: 'mt.b1', turns: [{ by: 'b', say: "Are you finished?" }, { beat: 'Someone on the sofa mutters, "Let {b} answer."' }] },
     { id: 'mt.b2', turns: [{ by: 'b', say: "Can I answer now?" }, { beat: 'It gets the biggest reaction of the meeting.' }] },
     { id: 'mt.b3', turns: [{ by: 'b', say: "I wasn't even in the room when you say I said that. Ask anyone." }, { beat: 'People start checking {a}\'s story instead.' }] },
-    { id: 'mt.b4', turns: [{ by: 'a', say: "And another thing..." }, { by: 'b', say: "That's a different complaint." }, { beat: 'The room turns.' }] },
+    { id: 'mt.b4', turns: [{ by: 'a', say: "And another thing. You've been doing this since day one." }, { by: 'b', say: "Now it's since day one? Five minutes ago it was this week." }, { beat: 'The room turns on {a}.' }] },
     { id: 'mt.b5', when: { third: true }, turns: [{ by: 'c', say: "Let {b} speak, {a}." }, { by: 'a', say: "I'm just saying..." }, { by: 'c', say: "We know what you're saying." }] },
     { id: 'mt.b6', turns: [{ by: 'b', dr: "I barely had to defend myself. {a} did all the damage alone." }] },
   ],

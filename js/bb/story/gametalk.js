@@ -99,7 +99,9 @@ export function gameTalkFor(week, ctx, clock, talked, lastGone) {
   if (!clock.hoh && lastGone) {
     const prev = [...(gs.bb?.weeks || [])].reverse().find(w => w !== week && w.evicted === lastGone);
     const ev = (prev?.acts || []).find(a => a?.type === 'eviction');
-    const ballots = (ev?.ballots || []).filter(b => b && b.voter && b.evict);
+    // one ballot per voter, the last one cast (the list can carry a voter more than once, and the
+    // count came out as 'Ten' on a seven-to-two night)
+    const ballots = [...new Map((ev?.ballots || []).filter(b => b && b.voter && b.evict).map(b => [b.voter, b])).values()];
     const lost = ballots.filter(b => b.evict !== lastGone && house.includes(b.voter) && house.includes(b.evict));
     const won = ballots.length - lost.length;
     if (lost.length && won > lost.length) {

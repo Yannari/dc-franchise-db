@@ -230,7 +230,7 @@ export default {
     { id: 'pp.r1', turns: [{ by: 'a', say: "You're not going up. Not this week, not while I've got this." }, { by: 'b', say: "You mean that?" }, { by: 'a', say: "I mean it." }] },
     { id: 'pp.r2', turns: [{ by: 'a', say: "I'm telling you the plan before anyone else." }, { by: 'b', say: "Does that mean our deal's still real?" }, { by: 'a', say: "It's still real." }] },
     { id: 'pp.r3', turns: [{ by: 'a', say: "You're safe with me. That's it. That's the whole speech." }, { by: 'b', dr: "It wasn't a grand alliance. It was one sentence. It was enough." }] },
-    { id: 'pp.r4', turns: [{ by: 'b', say: "I need a straight answer. Am I going up?" }, { by: 'a', say: "Your key isn't coming out of that box." }, { by: 'b', say: "Thank you." }] },
+    { id: 'pp.r4', turns: [{ by: 'b', say: "I need a straight answer. Am I going up?" }, { by: 'a', say: "You're not going up. I promise." }, { by: 'b', say: "Thank you." }] },
     { id: 'pp.r5', turns: [{ by: 'a', say: "Whatever you hear this week, ignore it. You're safe." }, { by: 'b', say: "And if the veto gets used?" }, { by: 'a', say: "Still safe. I promise." }] },
     { id: 'pp.r6', turns: [{ by: 'a', dr: "{b} is the one person I'm not putting up whatever happens. I told {b.obj} so. I meant it." }] },
   ],
@@ -300,7 +300,7 @@ export default {
   ],
   'power.draw-lobby.declines': [
     { id: 'pl.d1', turns: [{ by: 'b', say: "Pick me if you can." }, { by: 'a', say: "I can't promise anything." }, { by: 'b', dr: "{a} wouldn't promise. That's a no." }] },
-    { id: 'pl.d2', turns: [{ by: 'a', say: "I'd rather pick somebody neutral." }, { by: 'b', say: "Neutral." }, { by: 'b', dr: "I heard the word loud and clear. {a} doesn't trust me with the veto." }] },
+    { id: 'pl.d2', turns: [{ by: 'a', say: "If I get houseguest's choice, I'd rather pick somebody neutral." }, { by: 'b', say: "Neutral. Right. Not me, then." }, { by: 'b', dr: "I heard the word loud and clear. {a} doesn't trust me with the veto." }] },
     { id: 'pl.d3', turns: [{ by: 'b', say: "Would you pick me for houseguest's choice?" }, { by: 'a', say: "Let's see what happens." }, { beat: '{a} changes the subject.' }] },
     { id: 'pl.d4', turns: [{ by: 'a', dr: "{b} wants the veto very badly. That's exactly why {b} isn't getting near it." }] },
     { id: 'pl.d5', turns: [{ by: 'b', say: "I'd play for you." }, { by: 'a', say: "Would you?" }, { by: 'b', say: "...Yes." }, { by: 'a', dr: "{b} hesitated. I'm not picking {b}." }] },

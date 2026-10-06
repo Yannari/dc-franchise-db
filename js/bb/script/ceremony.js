@@ -729,5 +729,17 @@ export function writeCeremony(act, week, house, extra = {}) {
     const v = script[k];
     if (!v || (typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length)) delete script[k];
   }
+  // Where the people at this ceremony stood with each other AT the ceremony, for the viewer's
+  // side panel (vp-bb-ep/steps.js). Read live when the screen is drawn, a replayed week 1
+  // showed week 5's bonds. Only the pairs the panel names, rounded.
+  {
+    const pairs = [];
+    const add = (x, y) => { if (x && y && x !== y) pairs.push([x, y]); };
+    if (act.type === 'nominations') for (const n of act.nominees || []) add(act.hoh || hoh, n);
+    if (act.type === 'veto') { const w = act.vetoHolder || act.winner; for (const n of act.blockAtDraw || nominees) add(w, n); }
+    if (act.type === 'veto-ceremony') { const h = act.holder; for (const n of nominees) add(h, n); if (act.saved) add(h, act.saved); add(h, hoh); }
+    // on the act, not the script: a script is lines and only lines
+    if (pairs.length) act.bondsAt = Object.fromEntries(pairs.map(([x, y]) => [`${x}|${y}`, Math.round(getBond(x, y))]));
+  }
   return Object.keys(script).length ? script : null;
 }

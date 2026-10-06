@@ -22,6 +22,69 @@
 // written by the engine when the ceremony happened (act.script, from
 // bb/script/ceremony.js); a save from before that falls back to a plain line.
 import { arenaFor } from '../bb/comp-arenas.js';
+import { pronouns } from '../players.js';
+
+// ── inside their heads: the side panel's lines for the ceremonies ───────
+// The user, 2026-10-06: "the nomination ceremony needs the same insight panel too", "and veto
+// too". Read from what the engine recorded on the act and the week (the plan, the grievance,
+// the pawn's answer, the alliance's say, the draw's reasons, the holder's reasoning), never
+// guessed. A step carries `why` from the moment its fact is public, so the panel never tells
+// the viewer a key before it turns.
+const BW = v => v >= 6 ? 'very close' : v >= 3 ? 'friendly' : v > -2 ? 'neutral' : v > -5 ? 'wary of each other' : 'enemies';
+// the bond as it stood at the ceremony (recorded by bb/script/ceremony.js); none on record, no line
+const bondLine = (x, y, act) => {
+  const b = act?.bondsAt || {};
+  const v = b[`${x}|${y}`] ?? b[`${y}|${x}`];
+  return v == null ? null : `${x} & ${y}: ${BW(v)} (${v > 0 ? '+' : ''}${v})`;
+};
+const obj = n => { try { return pronouns(n)?.obj || 'them'; } catch { return 'them'; } };
+function nomWhy(act, hoh, noms, row) {
+  const out = [];
+  const bt = act.backdoorTarget;
+  if (bt && !noms.includes(bt)) out.push(`The plan is a backdoor: ${bt} is the real target and is not on the block. If the veto is used, ${bt} goes up in a nominee's place.`);
+  else if (act.structure && act.structure !== 'target-pawn' && act.structureWhy) out.push(`The plan: ${act.structureWhy}.`);
+  else if (act.target && noms.includes(act.target)) out.push(`${act.target} is the target${act.pawn && noms.includes(act.pawn) ? `; ${act.pawn} is the pawn` : ''}.`);
+  const ask = row?.pawnAsk;
+  if (ask?.pawn && noms.includes(ask.pawn)) out.push(ask.forced ? `${ask.pawn} was asked to be the pawn, said no, and went up anyway.`
+    : ask.willing ? `${ask.pawn} agreed to be the pawn, and ${hoh} now owes them.` : `${ask.pawn} said yes to being the pawn, without much choice.`);
+  for (const n of noms) {
+    const g = act.grievances?.[n];
+    if (!g?.alliance) continue;
+    const tail = g.kind === 'betrayal' ? `but ${hoh} holds a betrayal against ${obj(n)}` : g.kind === 'suspicion' ? `but ${hoh} suspects ${n} of working against ${obj(hoh)}`
+      : g.kind === 'soured' ? 'but the two of them have cooled off' : 'and nothing has gone wrong between them: this is about who can win';
+    out.push(`${n} is in ${g.alliance} with ${hoh}, ${tail}.`);
+  }
+  for (const b of row?.brokenPromises || []) if (b && noms.includes(b.victim)) out.push(`${b.hoh || hoh} had promised ${b.victim} ${b.type === 'safety' ? 'safety' : 'a deal'}, and broke it${b.sincere === false ? ' (it was never meant)' : ''}.`);
+  for (const t of act.allianceConsults || []) {
+    if (!t) continue;
+    out.push(t.stance === 'sanctioned' ? `${t.hoh} cleared it with ${t.alliance} first: ${t.agrees} of ${t.of} said yes.`
+      : t.stance === 'overruled' ? `${t.alliance} told ${t.hoh} no (${t.of - t.agrees} of ${t.of} against), and ${t.hoh} did it anyway.`
+        : `${t.hoh} never told ${t.alliance}.`);
+  }
+  for (const x of act.allianceExits || []) {
+    if (!x) continue;
+    out.push(x.kind === 'quit' ? `${x.player} has walked away from ${x.alliance} over it.` : x.kind === 'hidden' ? `${x.player} stays in ${x.alliance} and says nothing. For now.` : `${x.alliance} has thrown ${x.player} out.`);
+  }
+  for (const n of noms.slice(0, 3)) out.push(bondLine(hoh, n, act));
+  return out.filter(Boolean);
+}
+const VETO_WHY = {
+  self: '{holder} was on the block, so the veto comes straight off {holder}.',
+  backdoor: 'The backdoor: {holder} takes {saved} down so the real target can go up.',
+  'own-deal': '{holder} had promised {saved}.',
+  'own-nominations': '{holder} is happy with the block as it is.',
+  forced: 'The rules forced the veto onto {saved}.',
+  'no-replacement': 'There was nobody left to put up, so the veto could not change anything.',
+};
+function vetoWhy(act, holder, before, hoh) {
+  const out = [];
+  const t = act.why || VETO_WHY[act.reason];
+  if (t) out.push(String(t).replace(/\{holder\}/g, holder).replace(/\{saved\}/g, act.saved || 'a nominee'));
+  if (act.replacementWhy) out.push(`The replacement: ${String(act.replacementWhy).replace(/\.$/, '')}.`);
+  for (const n of before.filter(n => n !== holder).slice(0, 3)) out.push(bondLine(holder, n, act));
+  if (hoh && holder !== hoh) out.push(bondLine(holder, hoh, act));
+  return out.filter(Boolean);
+}
 
 const ROOM_SET = { 'kitchen': 'kitchen', 'living-room': 'ceremony', 'bedroom': 'bedroom', 'hoh-room': 'hoh',
   'backyard': 'yard', 'diary-room': 'dr', 'pantry': 'kitchen', 'washroom': 'bedroom', 'bathroom': 'bedroom', 'storage-room': 'kitchen' };
@@ -118,8 +181,11 @@ function compScreen(act, ctx, kind) {
   } else if (isHoh && act.coHoh) {
     steps.push({ k: 'beat', t: `${winner} and ${act.coHoh} both win. TWO HEADS OF HOUSEHOLD this week, and each of them names a block.`, toast: ['TWO HOHS', '#d99a10'], hoh: winner });
   } else {
+    const threw = (act.results || []).filter(r => r.threw && r.name !== winner).map(r => r.name);
+    const cwhy = [...(threw.length ? [`${listOf(threw)} threw it on purpose.`] : []),
+      ...(!isHoh ? (ctx.nominees || []).filter(n => n !== winner).slice(0, 3).map(n => bondLine(winner, n, act)).filter(Boolean) : [])];
     steps.push({ k: 'beat', t: isHoh ? `${winner} wins Head of Household!` : `${winner} wins the Power of Veto!`,
-      toast: [isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO', '#d99a10'], ...(isHoh ? { hoh: winner } : { veto: winner }) });
+      toast: [isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO', '#d99a10'], ...(isHoh ? { hoh: winner } : { veto: winner }), ...(cwhy.length ? { why: cwhy } : {}) });
   }
   const reaction = kind === 'final' ? null : isHoh ? act.script?.hoh : act.script?.veto;
   if (reaction?.length && !(isHoh && act.secret)) steps.push(...scriptSteps(reaction));
@@ -153,9 +219,10 @@ function nomScreen(act, ctx) {
     { k: 'bb', t: 'This is the nomination ceremony.' },
     { k: 'say', by: hoh, t: `It is my responsibility as Head of Household to nominate ${word(noms.length)} houseguests for eviction. I'm going to turn the first key.` },
   ];
+  const nwhy = nomWhy(act, hoh, noms, ctx.row);
   noms.forEach((n, i) => {
     steps.push({ k: 'beat', t: i === 0 ? `${hoh} turns the first key. A face fills the first slot on the screen.` : `${hoh} turns the next key.`, reveal: n,
-      ...(i === noms.length - 1 ? { nom: noms.slice(), toast: ['NOMINATED', '#ff3355'] } : {}) });
+      ...(i === noms.length - 1 ? { nom: noms.slice(), toast: ['NOMINATED', '#ff3355'], ...(nwhy.length ? { why: nwhy } : {}) } : {}) });
   });
   const named = noms.map((n, i) => (i === noms.length - 1 && noms.length > 1 ? `and you, ${n}` : `you, ${n}`)).join(noms.length > 2 ? ', ' : ' ');
   steps.push({ k: 'say', by: hoh, push: true, t: `I have nominated ${named}.` });
@@ -238,10 +305,12 @@ function drawScreen(act, ctx) {
     { k: 'bb', t: `${listOf([hoh, ...block])}, please come to the living room for the veto player pick.` },
     { k: 'say', by: hoh, t: `The nominees and I play in the veto. Each of us draws one chip. If you pull houseguest's choice, you pick anybody you want.`, vetoPlay: [hoh, ...block] },
   ];
+  const dwhy = [];
   for (const d of draws) {
     if (d.chip === 'choice') {
       steps.push({ k: 'beat', t: `${d.drawer} draws. The chip says HOUSEGUEST'S CHOICE.`, chip: { drawer: d.drawer, chip: 'choice' } });
-      if (d.chose) steps.push({ k: 'say', by: d.drawer, push: true, t: `Houseguest's choice. ${d.chose}, you're playing.`, vetoPlay: [d.chose] });
+      if (d.why) dwhy.push(String(d.why).trim());
+      if (d.chose) steps.push({ k: 'say', by: d.drawer, push: true, t: `Houseguest's choice. ${d.chose}, you're playing.`, vetoPlay: [d.chose], ...(dwhy.length ? { why: dwhy.slice() } : {}) });
     } else if (d.drew) {
       steps.push({ k: 'beat', t: `${d.drawer} draws ${d.drew}.`, chip: { drawer: d.drawer, chip: d.drew }, vetoPlay: [d.drew] });
     }
@@ -280,7 +349,7 @@ function vetoMeetingScreen(act, ctx) {
   const after = (act.nominees || before).slice();
   if (act.used && act.saved) {
     steps.push({ k: 'say', by: holder, push: true, t: act.saved === holder ? `...to use the Power of Veto on myself.` : `...to use the Power of Veto on ${act.saved}.`,
-      toast: ['VETO USED', '#d99a10'], exit: null });
+      toast: ['VETO USED', '#d99a10'], exit: null, why: vetoWhy({ ...act, replacementWhy: null }, holder, before, hoh) });
     const down = (act.duoDown || []).filter(Boolean);
     const up = (act.duoUp || []).filter(Boolean);
     if (down.length) {
@@ -296,12 +365,12 @@ function vetoMeetingScreen(act, ctx) {
       steps.push({ k: 'say', by: namer, t: act.diamond
         ? `The diamond veto has been used, so the replacement is mine to name.`
         : `Since the veto has been used, I have to name a replacement nominee.` });
-      steps.push({ k: 'say', by: namer, push: true, t: `${act.replacement}, I'm sorry. You're going up.`,
+      steps.push({ k: 'say', by: namer, push: true, why: vetoWhy(act, holder, before, hoh), t: `${act.replacement}, I'm sorry. You're going up.`,
         nom: after, seat: { [act.replacement]: after.indexOf(act.replacement) ? 'N1' : 'N-1', [act.saved]: 'stand2' }, toast: [act.diamond ? 'DIAMOND VETO' : 'RENOMINATED', '#ff3355'] });
       steps.push(...scriptSteps(act.script?.renom));
     }
   } else {
-    steps.push({ k: 'say', by: holder, push: true, t: `...not to use the Power of Veto.`, toast: ['NOT USED', '#d99a10'] });
+    steps.push({ k: 'say', by: holder, push: true, t: `...not to use the Power of Veto.`, toast: ['NOT USED', '#d99a10'], why: vetoWhy(act, holder, before, hoh) });
   }
   steps.push({ k: 'say', by: holder, t: 'This veto meeting is adjourned.' });
   const others = ctx.house.filter(n => !before.includes(n) && n !== holder);
@@ -2110,6 +2179,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     hexed: (row.acts || []).some(x => x.type === 'halting-hex' || x.type === 'rewind'),
     // the week's Block Buster, announced at the top of eviction night
     safety: (row.acts || []).find(x => x && x.type === 'safety' && x.winner) || null,
+    row,
     pleas: row.finalPleas || [], plea, anchor: 'start', day: 1, jury: [...(row.jury || [])], finalTwo: [...(row.finalTwo || [])] };
   let finalPart = 0;
   // Houseguests who walk in later in the week (rivals) are not in the house until they do.

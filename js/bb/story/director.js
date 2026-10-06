@@ -178,7 +178,11 @@ export function airStorylines(week) {
     // that already holds the Block Buster has played it: nobody plans for it afterwards.
     const talks = [];
     // the house as it was when the stretch began (a Rivals latecomer is not in it yet)
-    const tctx = { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) };
+    // and a latecomer is not in it while the act it would air on comes before they walk in
+    const arriveAt = week.acts.findIndex(x => x?.type === 'rivals-hoh');
+    const lateNames = new Set(week.acts.find(x => x?.type === 'rivals-open')?.arrived || []);
+    const before = arriveAt >= 0 && week.acts.indexOf(pending[0].act) < arriveAt;
+    const tctx = { ...ctx, present: ctx.present.filter(n => atStart.includes(n) && !(before && lateNames.has(n))) };
     if (!ctx.firstNight) {
       const game = gameTalkFor(week, tctx, { ...clock, safety: clock.safety || pending.some(p => p.act.type === 'safety') }, talked, lastGone)[0];
       if (game) talks.push(game);

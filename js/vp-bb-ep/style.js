@@ -455,6 +455,23 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 @keyframes bbx-recoil-r{0%{translate:0}25%{translate:1.1cqw 0;rotate:7deg}60%{translate:-.4cqw 0;rotate:-3deg}100%{translate:0;rotate:0deg}}
 .bbx .fx-wow{position:absolute;right:-.6cqw;top:-1.6cqw;width:2.6cqw;height:2.6cqw;z-index:6;animation:bbx-pop .5s .15s cubic-bezier(.2,1.8,.4,1) both}
 .bbx .fx-wow svg{width:100%;height:100%;display:block}
+/* moving through the house: off to the side, up the stairs, in from the side, passing behind */
+.bbx .gt.act-go.toL .tile{animation:bbx-go-l 1.1s ease-in both}
+.bbx .gt.act-go.toR .tile{animation:bbx-go-r 1.1s ease-in both}
+@keyframes bbx-go-l{20%{translate:.4cqw 0}100%{translate:-26cqw 0;opacity:0}}
+@keyframes bbx-go-r{20%{translate:-.4cqw 0}100%{translate:26cqw 0;opacity:0}}
+.bbx .gt.act-up .tile{animation:bbx-up 1.4s ease-in both}
+@keyframes bbx-up{0%{translate:0 0}30%{translate:1cqw -1cqw}100%{translate:6cqw -9cqw;scale:.55;opacity:0}}
+.bbx .gt.act-come.toL .tile{animation:bbx-come-l .9s cubic-bezier(.2,.8,.2,1) both}
+.bbx .gt.act-come.toR .tile{animation:bbx-come-r .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes bbx-come-l{from{translate:-24cqw 0;opacity:0}to{translate:0 0;opacity:1}}
+@keyframes bbx-come-r{from{translate:24cqw 0;opacity:0}to{translate:0 0;opacity:1}}
+.bbx .gt.passer{pointer-events:none}
+.bbx .gt.passer .plate{opacity:.85}
+.bbx .gt.passer.across{animation:bbx-pass 3.2s ease-in-out both}
+@keyframes bbx-pass{0%{translate:-14cqw 0;opacity:0}15%{opacity:1}85%{opacity:1}100%{translate:62cqw 0;opacity:0}}
+.bbx .gt.passer.up{animation:bbx-passup 2.8s ease-in both}
+@keyframes bbx-passup{0%{translate:0 0;opacity:0}15%{opacity:1}100%{translate:9cqw -12cqw;scale:.5;opacity:0}}
 .bbx .speedl{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;background:repeating-conic-gradient(from 0deg at var(--sx,50%) 55%,#fff0 0 3deg,#ffffff2e 3deg 4deg);-webkit-mask:radial-gradient(circle at var(--sx,50%) 55%,transparent 12%,#000 62%);mask:radial-gradient(circle at var(--sx,50%) 55%,transparent 12%,#000 62%);animation:bbx-speedl .7s ease-out both}
 @keyframes bbx-speedl{0%{opacity:0;scale:1.2}20%{opacity:1}100%{opacity:0;scale:1}}
 @keyframes gtwalk{0%{transform:translateX(-50%) translate(var(--wx),var(--wy))}30%{transform:translateX(-50%) translate(calc(var(--wx) * .75),calc(var(--wy) * .75 - .6cqw))}60%{transform:translateX(-50%) translate(calc(var(--wx) * .3),calc(var(--wy) * .3 - .6cqw))}100%{transform:translateX(-50%)}}

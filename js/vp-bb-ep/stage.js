@@ -610,7 +610,13 @@ const FRONT = { 1: [50], 2: [36, 64], 3: [27, 50, 73] };
 const ACTIONS = [
   ['kiss', /\bkiss(es|ed)?\b/i, 2],
   ['hug', /\bhug(s|ged)?\b|\bembrace|into a hug|squeezes .{0,20}(shoulder|hand)/i, 2],
-  ['storm', /storms? (off|out)|walks (out|off|away)|leaves the room|heads (off|upstairs|out)|slams the door|goes upstairs/i, 1],
+  // moving through the house (the user, 2026-10-06: "watches Brightly climb the HOH stairs: it is
+  // not shown with actual animations"): storming off is angry; walking out, going up the stairs
+  // and walking in are not
+  ['storm', /storms? (off|out)|slams the door|marches (off|out)/i, 1],
+  ['up', /climb(s|ing)? (the )?(hoh )?stairs|goes upstairs|heads upstairs|runs upstairs|disappears upstairs/i, 1],
+  ['go', /walks (out|off|away)|leaves the room|heads (off|out)|wanders (off|out)|slips out|gets up and goes|goes outside|goes inside/i, 1],
+  ['come', /walks in|comes in|wanders in|comes over|slips in|comes back in|comes down(stairs)?/i, 1],
   ['slam', /\bslams?\b|\bbangs?\b|\bthrows?\b|\bkicks?\b|\bpunches\b/i, 0],
   ['cry', /\bcr(y|ies|ying)\b|in tears|tears up|wipes? .{0,15}eyes|\bsobs?\b/i, 1],
   ['laugh', /\blaugh|cracks up|giggl|\bsnorts?\b|falls apart|in stitches/i, 3],
@@ -627,7 +633,7 @@ export function actionOf(st, names) {
     return shout && st.by ? { kind: 'shout', who: [st.by] } : null;
   }
   if (st.k !== 'beat') return null;
-  const named = names.filter(n => new RegExp(`(^|[^\\w])${n.replace(/[.*+?^${}()|[\]\\]/g, '\\const FRONT = { 1: [50], 2: [36, 64], 3: [27, 50, 73] };')}(?![\\w])`).test(t))
+  const named = names.filter(n => new RegExp(`(^|[^\\w])${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w])`).test(t))
     .sort((x, y) => t.indexOf(x) - t.indexOf(y));
   for (const [kind, re, need] of ACTIONS) {
     if (!re.test(t)) continue;
@@ -651,12 +657,24 @@ function actOn(A, n, x, xs) {
   if (!A.who.includes(n)) return { cls: '', fx: '' };
   const other = A.who.find(m => m !== n);
   const ox = other != null ? xs[other] : null;
+  // walking off or in: towards (or from) the nearer side of the room
+  if (A.kind === 'go' || A.kind === 'come' || A.kind === 'up') return { cls: `act-${A.kind} ${x < 50 ? 'toL' : 'toR'}`, fx: '' };
   const side = ox == null ? '' : ox > x ? 'toR' : 'toL';
   // the one being shouted at does not shout back: they flinch away, with a '!' over them
   if (A.kind === 'shout' && n !== A.who[0]) return { cls: `act-recoil ${side}`, fx: `<span class="fx fx-wow">${REACT_WOW}</span>` };
   return { cls: `act-${A.kind} ${side}`, fx: FX[A.kind] && (A.kind !== 'kiss' || side === 'toR') ? FX[A.kind] : '' };
 }
 // what a line does to the rest of the room: 'laugh', 'wow', or nothing
+// Somebody a stage direction names who is NOT in the scene, moving: "From downstairs, Julia watches
+// Brightly climb the HOH stairs." Brightly crosses the back of the shot, or climbs out of it.
+const PASSING = /climb(s|ing)? (the )?(hoh )?stairs|goes upstairs|heads upstairs|walks (past|through|by|across|in|out)|wanders (past|through|in|out|off)|crosses the|disappears|comes (back )?down(stairs)?|goes (outside|inside)|heads (to|out|off)/i;
+function passersHtml(S, st, castNames, L, fresh) {
+  if (!fresh || !st || st.k !== 'beat' || st.bg || !PASSING.test(st.t || '')) return '';
+  const t = String(st.t || '');
+  const who = (S.wall || []).filter(n => !castNames.includes(n) && new RegExp(`(^|[^\\w])${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w])`).test(t)).slice(0, 2);
+  const up = /stairs|upstairs/i.test(t);
+  return who.map((n, i) => tileHtml(n, up ? 62 + i * 8 : 18 + i * 10, `bgp passer ${up ? 'up' : 'across'}`, L, '', 'z-index:1;bottom:21cqw')).join('');
+}
 function reactionOf(st) {
   if (!st || st.bg) return null;
   const t = String(st.t || '');
@@ -730,6 +748,7 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
     });
     if (A && A.kind === 'slam') h += '<div class="fx-impact"></div>';
     if (A && A.kind === 'shout') h += `<div class="speedl" style="--sx:${at[A.who[0]] ?? 50}%"></div>`;
+    h += passersHtml(S, st, cast.map(([n]) => n), L, fresh);
     return h;
   }
   const A2 = fresh ? actionOf(st, cast.map(([n]) => n)) : null;
@@ -760,6 +779,7 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
     h += `<img class="front" src="assets/bb/house/${o.season}/dining-td-b-nombox.webp?v=${V}" alt="" style="z-index:${zOf(ANCH.dining.box)}">`;
     h += nomScreenHtml(S, L, st, fresh);
   }
+  if (!seated) h += passersHtml(S, st, cast.map(([n]) => n), L, fresh);
   if (S.medalOn && L.veto === S.medalOn && seated) {
     const ma = seatOf(S, seated, S.medalOn);
     const on = S.steps.slice(0, idx + 1).some(s => s.medal);

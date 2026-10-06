@@ -51,7 +51,7 @@ describe('the storyline pools', () => {
         if (t.say || t.dr) expect(['a', 'b', 'c', 'd', 'e', 'f', 'x', 'y'], `${key} ${e.id}`).toContain(t.by);
       }
       for (const k of Object.keys(e.when || {})) expect(BB_FACT_KEYS, `${key} ${e.id} when.${k}`).toContain(k);
-      for (const p of e.presumes || []) expect(['hoh', 'noms', 'vote'], `${key} ${e.id}`).toContain(p);
+      for (const p of e.presumes || []) expect(['hoh', 'noms', 'vote', 'jurors'], `${key} ${e.id}`).toContain(p);
       if (e.room) expect(ROOMS.has(e.room), `${key} ${e.id} room ${e.room}`).toBe(true);
       // background lines and cutaways are stage directions by design
       if (!/^(bg\.|set\.cut\.)/.test(key)) expect(e.turns.some(t => t.say || t.dr), `${key} ${e.id} has nobody speaking`).toBe(true);
@@ -85,6 +85,8 @@ describe('the storyline pools', () => {
       const text = e.turns.map(t => t.say || t.dr || t.beat).join(' ');
       // the first-night sets only air on night one; the morning after only after an eviction
       if (/^set\.(firstnight|firstbed|morningafter)\./.test(key)) continue;
+      // game talk written for later in the season (bb/story/gametalk.js) airs only then
+      if (e.phase && !e.phase.includes('early')) continue;
       if (PAST.test(text) && !e.presumes && !CAUSED.test(key) && e.when?.early !== false) bad.push(`${key} ${e.id}`);
     }
     expect(bad).toEqual([]);
@@ -111,7 +113,11 @@ describe('house life in real weeks', () => {
     const sets = scenes.filter(sc => sc.type === 'set');
     expect(sets.length, 'no whole-house set pieces').toBeGreaterThanOrEqual(A.eps.length * 3);
     expect(Math.min(...sets.map(sc => sc.cast.length))).toBeGreaterThanOrEqual(4);
-    const crowded = scenes.filter(sc => sc.cast.length >= 3).length / scenes.length;
+    // the week's game talk (gametalk.js) is mostly two people working out the game in private,
+    // as on the real show; the rest of the house talk is what has to fill the room
+    const house = scenes.filter(sc => sc.type !== 'talk');
+    const crowded = house.filter(sc => sc.cast.length >= 3).length / house.length;
+    expect(scenes.filter(sc => sc.type === 'talk').length / scenes.length).toBeLessThan(0.3);
     expect(crowded).toBeGreaterThan(0.5);
     // and a private scene in a shared room usually shows somebody else around
     const bg = scenes.filter(sc => sc.type !== 'set' && sc.lines.some(l => l.bg)).length;

@@ -63,7 +63,10 @@ function presumed(entry, ctx) {
     if (p === 'hoh' && !ctx.hoh) return false;
     if (p === 'noms' && !(ctx.nominees || []).length) return false;
     if (p === 'vote' && !(gs.bb?.weeks || []).some(w => w !== ctx.week && w.evicted)) return false;
+    if (p === 'jurors' && !(ctx.jurors > 0)) return false;
   }
+  // a line written for one stage of the season (bb/story/lines/gametalk.js) airs only then
+  if (entry.phase && !entry.phase.includes(ctx.phase || 'early')) return false;
   return true;
 }
 
@@ -108,6 +111,9 @@ function pick(keys, who, data, ctx, room, salt) {
   // inside a set piece the room is the set's: a scene that stages its own room waits, unless nothing else fits
   if (ctx.inSet) for (const k of keys) { const free = pools[k].filter(e => !e.room); if (free.length) pools[k] = free; }
   if (!keys.some(k => pools[k].length)) return null;
+  // nothing airs twice in a season while something unused still fits
+  const used = ledger().uses || {};
+  for (const k of keys) { const unused = pools[k].filter(e => !used[e.id]); if (unused.length) pools[k] = unused; }
   // what this viewer saw in recent seasons waits while something new still fits
   const seen = seenAcross();
   if (seen.size) for (const k of keys) { const fresh = pools[k].filter(e => !seen.has(e.id)); if (fresh.length) pools[k] = fresh; }
@@ -247,6 +253,40 @@ export function writeStoryScene(line, step, ctx) {
   const sc = { ...base, cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: recap.length > 0, lineId: entry.id };
   if (!ctx.inSet) lines = background(lines, sc, ctx, sc.id, LOUD(line.type, step.step, step.outcome));
   sc.lines = [...recap, ...lines];
+  return sc;
+}
+
+// ── game talk: what the house is talking about this week of the game ────
+/**
+ * One conversation from bb/story/gametalk.js (which says who and why): a Block Buster plan,
+ * a nominee's hope for the veto, who has to go before jury, a juror's bitterness, final-two
+ * talk, venting or trust. Shaped like a storyline scene, with the room around it.
+ */
+export function writeGameTalk(talk, ctx, at) {
+  const { kind, who, data } = talk;
+  const key = `talk.${kind}`;
+  if (!STORY_POOLS[key]?.length) return null;
+  const salt = `gt|${ctx.week?.num || 0}|${ctx.stretch}|${kind}`;
+  let room = 'living-room';
+  const cast = Object.values(who).filter(Boolean);
+  const base = { id: `talk:${ctx.week?.num || 0}:${ctx.stretch}:${kind}`, line: null, type: 'talk', step: kind, outcome: talk.phase || 'any',
+    room, roomName: ROOM[room], cast, mood: kind.startsWith('bond.vent') ? 'drama' : 'deals', at };
+  if (writing.muted) return { ...base, lines: [] };
+  const entry = pick([key], who, data, { ...ctx, phase: talk.phase }, room, salt);
+  if (!entry) return null;
+  if (entry.room) room = entry.room;
+  else if (ctx.avoidRoom) {
+    const ROTA = ['kitchen', 'living-room', 'backyard', 'bedroom'].filter(r => r !== ctx.avoidRoom);
+    room = ROTA[[...salt].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7) % ROTA.length];
+  }
+  // a scene staged outdoors ("the backyard", "the hammock", "by the pool") is in the backyard
+  if (!entry.room && /backyard|hammock|pool|lounger|grass/i.test(entry.turns[0]?.beat || '')) room = 'backyard';
+  const lines = render(entry, who, ctx, data);
+  const used = cast.filter(n => lines.some(l => l.by === n || (l.kind === 'beat' && l.text.includes(n))));
+  const sc = { ...base, room, roomName: ROOM[room] || 'Living Room', cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: false, lineId: entry.id };
+  // private talk is private: the room around it only where people would be (never a shut door)
+  const shut = kind === 'bond.vent' || /door shut|closes the door|shuts the door|door,? shut|voices? (low|down)|whisper|quiet/i.test(JSON.stringify(entry.turns));
+  sc.lines = shut ? lines : background(lines, sc, ctx, sc.id, false);
   return sc;
 }
 

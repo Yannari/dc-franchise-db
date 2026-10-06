@@ -15,7 +15,8 @@
 
 import { gs } from '../../core.js';
 import { classify, file, causeOf } from './storylines.js';
-import { writeStoryScene, writeSetPiece, hasPool, roomName } from './write.js';
+import { writeStoryScene, writeSetPiece, writeGameTalk, hasPool, roomName } from './write.js';
+import { gameTalkFor, bondTalkFor, phaseOf } from './gametalk.js';
 
 const CEREMONY = new Set(['hoh', 'nominations', 'veto', 'veto-ceremony', 'eviction']);
 
@@ -52,7 +53,11 @@ export function airStorylines(week) {
   let stretch = 0;
   let at = 0;
   let pending = [];   // { act, line, step } filed this stretch
-  const clock = { hoh: false, noms: false, nomsJust: false, hohJust: false };
+  const clock = { hoh: false, noms: false, nomsJust: false, hohJust: false, veto: false, safety: false };
+  // the game talk this week has aired (gametalk.js): one of each kind a week, one talk per pair
+  const talked = new Set();
+  const talkedPairs = new Set();
+  const season = phaseOf(week);
   // Who is in the house: everybody who started the week, less whoever has gone out of the
   // front door, less latecomers (Rivals) until they walk in.
   const late = new Set(week.acts.find(a => a?.type === 'rivals-open')?.arrived || []);
@@ -63,7 +68,7 @@ export function airStorylines(week) {
   const lastGone = [...(gs.bb?.weeks || [])].reverse().find(w => w !== week && w.evicted)?.evicted || null;
   const ctxOf = () => ({ week, hoh: clock.hoh ? (week.hoh || null) : null,
     nominees: clock.noms ? (week.finalNominees || week.initialNominees || []) : [], stretch,
-    firstNight: (week.num || 0) === 1 && stretch === 0, present: present() });
+    firstNight: (week.num || 0) === 1 && stretch === 0, present: present(), phase: season.phase, jurors: season.jurors });
 
   // Which whole-house set piece opens this stretch.
   const setFor = ctx => {
@@ -167,14 +172,38 @@ export function airStorylines(week) {
     // the bedroom: five bedroom scenes in a row read as one long night. Move it along.
     const ROTA = ['kitchen', 'living-room', 'backyard', 'bedroom'];
     let lastRoom = set?.room || null;
-    for (const p of picked.sort((x, y) => x.step.at - y.step.at)) {
+    // The game talk of the moment (gametalk.js): what the house is saying about THIS week of
+    // the game — the Block Buster, the veto, jury, the end — and one conversation driven by a
+    // bond, warm or sour. They air in the middle of the stretch's private scenes. A stretch
+    // that already holds the Block Buster has played it: nobody plans for it afterwards.
+    const talks = [];
+    if (!ctx.firstNight) {
+      const game = gameTalkFor(week, ctx, { ...clock, safety: clock.safety || pending.some(p => p.act.type === 'safety') }, talked, lastGone)[0];
+      if (game) talks.push(game);
+      const bond = stretch % 2 === 1 || !game ? bondTalkFor(week, ctx, talkedPairs) : null;
+      if (bond && !talked.has(bond.kind)) talks.push(bond);
+    }
+    const ordered = picked.sort((x, y) => x.step.at - y.step.at);
+    const mid = Math.max(1, Math.floor(ordered.length / 2));
+    const airTalks = act => {
+      for (const t of talks.splice(0)) {
+        const scene = writeGameTalk(t, { ...ctx, avoidRoom: lastRoom }, pending[0].step.at);
+        if (!scene) continue;
+        talked.add(t.kind);
+        lastRoom = scene.room;
+        (act.scenes ||= []).push(scene);
+      }
+    };
+    ordered.forEach((p, i) => {
+      if (i === mid) airTalks(p.act);
       const scene = writeStoryScene(p.line, p.step, { ...ctx, avoidRoom: lastRoom });
-      if (!scene) continue;
+      if (!scene) return;
       lastRoom = scene.room;
       p.step.aired = true;
       (p.act.scenes ||= []).push(scene);
       note(p);
-    }
+    });
+    if (talks.length) airTalks((ordered.at(-1) || pending[0]).act);
     // The first night ends with the lights going out on a full house.
     if (ctx.firstNight) {
       const bed = writeSetPiece('firstbed', ctx, [], { at: at + 0.5 });
@@ -192,8 +221,10 @@ export function airStorylines(week) {
       clock.nomsJust = act.type === 'nominations';
       if (act.type === 'hoh') clock.hoh = true;
       if (act.type === 'nominations') clock.noms = true;
+      if (act.type === 'veto') clock.veto = true;
       if (act.type === 'eviction' && act.evicted) gone.add(act.evicted);
     } else if (act.type === 'rivals-hoh') late.clear();
+    if (act.type === 'safety') clock.safety = true;
     for (const beat of act.socialBeats || []) {
       at++;
       const c = classify(beat);

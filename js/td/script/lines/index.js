@@ -21,8 +21,9 @@ import camp from './camp.js';
 import quit, { GUARANTEED as quitG } from './quit.js';
 import adv, { GUARANTEED as advG } from './adv.js';
 import tail, { GUARANTEED as tailG } from './tail.js';
+import tests from './tests.js';
 
-const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind, reads, ends, threat, camp, quit, adv, tail];
+const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind, reads, ends, threat, camp, quit, adv, tail, tests];
 
 export const POOLS = Object.assign({}, ...FILES);
 

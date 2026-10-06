@@ -6138,14 +6138,9 @@ export function checkSocialPolitics(ep) {
         // Counter-detection: target might realize they're being tested
         if (Math.random() < pStats(target).intuition * 0.05) {
           addBond(target, tester, -1.0);
-          pre.push({
-            type: 'loyaltyTestCaught', players: [target, tester],
-            text: _pick([
-              `${target} figured out what ${tester} was doing. The "information" was too convenient, too specific. ${target} said nothing — but the trust is damaged.`,
-              `${tester} tried to test ${target}. ${target} saw through it. That's worse than failing the test.`,
-            ]),
-            badgeText: 'TEST CAUGHT', badgeClass: 'red'
-          });
+          _pick([0]); // the draw that picked the sentence (the season must not move)
+          pre.push(scriptEvent({ type: 'loyaltyTestCaught', players: [target, tester], badgeText: 'TEST CAUGHT', badgeClass: 'red' },
+            makeScene('test.caught', { a: target, b: tester }, {}, [], spotOf(ep, target, tester, 'pre').spot), { ep: curEp, phase: 'pre' }));
           ep._politicsLog.push(`TEST CAUGHT: ${tester} tried to test ${target}, caught`);
           budget--;
           return;
@@ -6156,16 +6151,12 @@ export function checkSocialPolitics(ep) {
           tester, target, falseInfo: `voting for ${fakeTarget}`,
           plantedEp: curEp, resolved: false
         });
-        const tPr = pronouns(tester);
-        pre.push({
-          type: 'loyaltyTest', players: [tester, target],
-          text: _pick([
-            `${tester} told ${target} something very specific. Something that isn't true. Now ${tester} waits.`,
-            `A test disguised as a conversation. ${tester} planted a seed with ${target}. If it grows somewhere it shouldn't, ${tester} will know who to cut.`,
-            `${tester} leaned in close to ${target}: "I heard something about the vote." What ${tester} said was a lie. The question is whether ${target} keeps it.`,
-          ]),
-          badgeText: 'LOYALTY TEST', badgeClass: 'gold'
-        });
+        _pick([0]);
+        // The lie is the test: tester tells target the vote is fakeTarget, and waits to hear it back.
+        pre.push(scriptEvent({ type: 'loyaltyTest', players: [tester, target], badgeText: 'LOYALTY TEST', badgeClass: 'gold' },
+          makeScene('test.plant', { a: tester, b: target }, { target: fakeTarget !== tester && fakeTarget !== target ? fakeTarget : null,
+            ending: fakeTarget !== tester && fakeTarget !== target ? 'named' : 'vague' }, [], spotOf(ep, tester, target, 'pre').spot),
+          { ep: curEp, phase: 'pre' }));
         ep._politicsLog.push(`TEST: ${tester} → ${target} (planted false info about ${fakeTarget})`);
         budget--;
       });
@@ -6187,14 +6178,9 @@ export function checkSocialPolitics(ep) {
       addBond(test.tester, test.target, -1.5);
       const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(test.tester))?.name || 'merge');
       if (ep.campEvents?.[campKey]?.pre) {
-        ep.campEvents[campKey].pre.push({
-          type: 'loyaltyTestFailed', players: [test.tester, test.target],
-          text: _pick([
-            `${test.tester} planted a seed. It grew. Now ${test.tester} knows exactly who can't keep their mouth shut.`,
-            `The false information came back. ${test.tester} heard it from someone else — which means ${test.target} talked. Trust revoked.`,
-          ]),
-          badgeText: 'FAILED TEST', badgeClass: 'red'
-        });
+        _pick([0]);
+        ep.campEvents[campKey].pre.push(scriptEvent({ type: 'loyaltyTestFailed', players: [test.tester, test.target], badgeText: 'FAILED TEST', badgeClass: 'red' },
+          makeScene('test.failed', { a: test.tester, b: test.target }, {}, [], { id: 'confessional', label: 'Confessional' }), { ep: curEp, phase: 'pre' }));
       }
       ep._politicsLog.push(`TEST FAILED: ${test.target} leaked (planted ep ${test.plantedEp})`);
     } else if (epsSincePlant >= 2) {
@@ -6202,14 +6188,9 @@ export function checkSocialPolitics(ep) {
       addBond(test.tester, test.target, 0.8);
       const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(test.tester))?.name || 'merge');
       if (ep.campEvents?.[campKey]?.pre) {
-        ep.campEvents[campKey].pre.push({
-          type: 'loyaltyTestPassed', players: [test.tester, test.target],
-          text: _pick([
-            `${test.tester} told ${test.target} something nobody else knows. ${test.target} kept it quiet. That means something.`,
-            `Two episodes. Not a word. ${test.target} passed a test they didn't know they were taking.`,
-          ]),
-          badgeText: 'TRUST EARNED', badgeClass: 'green'
-        });
+        _pick([0]);
+        ep.campEvents[campKey].pre.push(scriptEvent({ type: 'loyaltyTestPassed', players: [test.tester, test.target], badgeText: 'TRUST EARNED', badgeClass: 'green' },
+          makeScene('test.passed', { a: test.tester, b: test.target }, {}, [], { id: 'confessional', label: 'Confessional' }), { ep: curEp, phase: 'pre' }));
       }
       ep._politicsLog.push(`TEST PASSED: ${test.target} kept quiet (planted ep ${test.plantedEp})`);
     }
@@ -6277,19 +6258,16 @@ export function checkConflictingDeals(ep) {
       deal.brokenAgainst = partner;
       deal.breakReason = 'conflicting endgame promises were exposed';
       recordBetrayal(partner, player, { severity:1.1, applyWarmth:false, ep:curEp });
-      const pr = pronouns(player);
       const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(player))?.name || 'merge');
       if (ep.campEvents?.[campKey]?.pre) {
         const otherPartners = deals.filter(d => d !== deal && d.active).map(d => d.players.find(p => p !== player)).filter(Boolean);
-        ep.campEvents[campKey].pre.push({
-          type: 'conflictingDeals', players: [partner, player, ...(otherPartners.slice(0, 1))],
-          text: _pick([
-            `${partner} found out. ${player} promised final two to ${partner} — and to ${otherPartners[0] || 'someone else'}. The math doesn't work. ${partner} knows it now.`,
-            `${player} has been making deals. Too many deals. ${partner} just figured that out the hard way.`,
-            `"How many final twos do you have?" ${partner} asked it quietly. ${player} didn't answer. That was the answer.`,
-          ]),
-          badgeText: 'DOUBLE DEALER', badgeClass: 'red'
-        });
+        _pick([0]);
+        // Face to face when they share a camp; otherwise the partner tells the camera.
+        const _sameCamp = gs.isMerged || gs.tribes.some(t => t.members.includes(partner) && t.members.includes(player));
+        ep.campEvents[campKey].pre.push(scriptEvent({ type: 'conflictingDeals', players: [partner, player, ...(otherPartners.slice(0, 1))], badgeText: 'DOUBLE DEALER', badgeClass: 'red' },
+          makeScene('deal.double', { a: partner, b: player }, { ending: _sameCamp ? 'confront' : 'alone', other: otherPartners[0] || null }, [],
+            _sameCamp ? spotOf(ep, partner, player, 'pre').spot : { id: 'confessional', label: 'Confessional' }),
+          { ep: curEp, phase: 'pre' }));
       }
     });
   });

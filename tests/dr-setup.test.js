@@ -173,7 +173,7 @@ describe('the setup screen shows one show at a time', () => {
     'f-name': null, 'f-slug': null, 'f-gender-seg': null, 'f-sexuality': null,
     'f-archetype': null, 'f-returnee': null, 'f-portrait-picker': null,
     'f-portrait-status': null, 'f-background-preview': null,
-    'f-tribe': 'total-drama',       // a house, a castle and a workroom have no tribes
+    'f-tribe': ['total-drama', 'the-circle'], // a house, a castle and a workroom have no tribes; the Circle's are its cast categories
     'f-coach': 'total-drama',       // a coach trains a tribe from the sideline
     'f-background': 'traitors',     // Alumni / Celebrity / Civilian is the castle's question
     'f-drag-style': 'drag-race',    // only this show's judges score a drag style
@@ -197,8 +197,9 @@ describe('the setup screen shows one show at a time', () => {
       if (fmt === null) {
         expect(shownOn, `${id} is universal but scoped to ${shownOn.join(', ')}`).toEqual([]);
       } else {
-        expect(shownOn, `${id} belongs to ${fmt} but is drawn on ${shownOn.join(', ') || 'nothing'}`)
-          .toEqual([fmt]);
+        const want = [].concat(fmt).sort();
+        expect(shownOn.sort(), `${id} belongs to ${want.join(', ')} but is drawn on ${shownOn.join(', ') || 'nothing'}`)
+          .toEqual(want);
       }
     }
   });

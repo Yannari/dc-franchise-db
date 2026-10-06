@@ -656,6 +656,22 @@ export const RESUME_SCALE = 1.35;
 export const RESUME_CLAMP = 2.3;
 /* Four points apart on the crown song, the season says nothing (week.js's line). */
 export const CROWN_BLOWOUT = 4;
+/* THE CROWN READS A CLEAR SEASON HARDER THAN A CLOSE ONE. Measured on the
+   real show (fandom progress tables, S9-S17, lip sync for the crown, scored
+   with RECORD_POINTS): every final where the winner's record was clearly
+   better (0.4+ apart: S9, S13, S15, S17) went to her, and the close ones
+   were a coin flip (1 of 5: Yvie, Willow, Nymphia and Jaida all won from
+   behind). A flat résumé edge got the shape wrong — 56% for a clear season,
+   55% for a close one — so the edge grows with the gap: unchanged inside
+   0.1 of the field's mean, steeper beyond it. Now 70% clear / 55% close
+   (tools/dr-finale-audit.mjs, 400 top2 seasons). Only on the LAST song:
+   counted over whole fields the best record took the crown 3 of 9 times —
+   she reached the final song and lost the close ones there, or went out in
+   a semifinal (Shea, S9) — so a bracket's semis read the season flat. The taper below still
+   zeroes it on a 4-point song, so a clear lip sync winner still wins. The
+   cut is untouched: it reads the season through resumeOf, which already
+   kept the best record off the chopping block (15% against 50%). */
+export const CROWN_RESUME = 6;
 
 export function recordStrength(record = []) {
   const rated = record.filter(r => r in RECORD_POINTS);
@@ -709,7 +725,13 @@ function duel(state, a, b, ctx, song, finale = null) {
       // THE SAME TWO CONSTANTS THE CUT USES. They were written out here and
       // the cut had none at all; now both read the season through one rule,
       // so tuning one cannot silently leave the other behind.
-      edge[n] = clamp((recordStrength(state.record[n] || []) - recAvg) * RESUME_SCALE, RESUME_CLAMP)
+      const d = recordStrength(state.record[n] || []) - recAvg;
+      // Only the song that hands over the crown, and measured between the two
+      // queens singing it (the real-show pattern is about THAT gap): a
+      // semifinal reads the season flat (Shea, S9).
+      const pair = (recordStrength(state.record[a] || []) + recordStrength(state.record[b] || [])) / 2;
+      const grow = finale.last ? 1 + CROWN_RESUME * Math.max(0, Math.abs(recordStrength(state.record[n] || []) - pair) - 0.1) : 1;
+      edge[n] = clamp(d * RESUME_SCALE * grow, RESUME_CLAMP * grow)
         + clamp(((Number(showcase[n]) || 0) - showAvg) * 0.24, 1.3);
     }
     /* A CLEAR WIN ON THE STAGE TAKES THE CROWN. The weekly lip sync's rule
@@ -992,7 +1014,7 @@ export function runFinale(state, cfg, ctx) {
   if (type === 'top4' && finalists.length >= 4) {
     const s1 = duel(state, finalists[0], finalists[1], ctx, song(), fctx);
     const s2 = duel(state, finalists[2], finalists[3], ctx, song(), fctx);
-    const f = duel(state, s1.winner, s2.winner, ctx, song(), fctx);
+    const f = duel(state, s1.winner, s2.winner, ctx, song(), { ...fctx, last: true });
     rounds.push(s1, s2, f);
     /* THIRD IS THE BETTER OF THE TWO SEMI LOSERS, not the first one drawn.
        Semi one's loser was always third, so a queen who scored 6.4 was placed
@@ -1005,7 +1027,7 @@ export function runFinale(state, cfg, ctx) {
     placements = [f.winner, f.loser, third, fourth, ...finalists.slice(4)];
   } else if (type === 'top3' && finalists.length >= 3) {
     const s1 = duel(state, finalists[0], finalists[1], ctx, song(), fctx);
-    const f = duel(state, s1.winner, finalists[2], ctx, song(), fctx);
+    const f = duel(state, s1.winner, finalists[2], ctx, song(), { ...fctx, last: true });
     rounds.push(s1, f);
     placements = [f.winner, f.loser, s1.loser, ...finalists.slice(3)];
   } else if ((type === 'perform-then-lipsync' || type === 'perform-then-lipsync-3') && finalists.length >= 2) {
@@ -1077,7 +1099,7 @@ export function runFinale(state, cfg, ctx) {
       }
     }
 
-    const f = duel(state, order[0], order[1], ctx, song(), fctx);
+    const f = duel(state, order[0], order[1], ctx, song(), { ...fctx, last: true });
     rounds.push(f);
     placements = [f.winner, f.loser, ...order.slice(2)];
     // THE ONLY FORMAT WITH A CUT. These queens never sang: the field was
@@ -1087,7 +1109,7 @@ export function runFinale(state, cfg, ctx) {
     // top2, and the fallback for any finale that arrives smaller than its
     // shape expects — two queens, one song, one crown.
     const [a, b] = finalists;
-    const f = duel(state, a, b, ctx, song(), fctx);
+    const f = duel(state, a, b, ctx, song(), { ...fctx, last: true });
     rounds.push(f);
     placements = [f.winner, f.loser, ...finalists.slice(2)];
   }

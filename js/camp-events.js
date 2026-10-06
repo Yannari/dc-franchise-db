@@ -979,16 +979,12 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const spreader = wRandom(others, n => Math.max(0.1, pStats(n).strategic * 0.3 + (10 - pStats(n).loyalty) * 0.2 + 1));
       addBond(target, spreader, -0.7);
       const tmpT = pStats(target).temperament;
-      const _rP = pronouns(target);
-      const rumorLines = tmpT <= 3
-        ? [`${target} finds out ${spreader} has been floating ${_rP.posAdj} name as a vote. ${_rP.Sub} do${_rP.sub==='they'?'':'es'} not take it calmly.`,
-           `Word gets back to ${target} that ${spreader} has been pushing ${_rP.posAdj} name around camp. ${_rP.Sub} file${_rP.sub==='they'?'':'s'} it away. For now.`]
-        : tmpT <= 6
-        ? [`${target} hears ${_rP.posAdj} name came up as a target in a conversation with ${spreader} that ${_rP.sub} wasn't part of. The paranoia sets in quietly.`,
-           `${target} realizes people are talking about them without them. ${_rP.Sub} smile${_rP.sub==='they'?'':'s'} at camp. Internally, ${_rP.sub} ${_rP.sub==='they'?'are':'is'} already rethinking everything.`]
-        : [`${target} gets wind that ${_rP.posAdj} name was thrown out. ${_rP.Sub} brush${_rP.sub==='they'?'':'es'} it off in public — but quietly starts paying closer attention.`,
-           `Someone lets it slip that ${target}'s name was mentioned. ${_rP.Sub} tuck${_rP.sub==='they'?'':'s'} that information away and say nothing.`];
-      events.push({ type: 'rumor', text: rumorLines[Math.floor(Math.random() * rumorLines.length)], players: [spreader, target], badgeText: 'RUMOR', badgeClass: 'red' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      // tmpT is text selection only: a short fuse confronts the spreader, the rest keep it to themselves.
+      events.push(scriptEvent({ type: 'rumor', players: [spreader, target], badgeText: 'RUMOR', badgeClass: 'red' },
+        tmpT <= 3
+          ? makeScene('rumor.heard', { a: target, b: spreader }, { ending: 'confront' }, [], _spotNow(target, spreader))
+          : makeScene('rumor.heard', { a: target, b: spreader }, { ending: tmpT <= 6 ? 'stew' : 'shrug' }, [], { id: 'confessional', label: 'Confessional' })));
 
     } else if (eventType === 'comfort') {
       // One player supports another after a hard day — builds a real bond
@@ -1020,16 +1016,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const p = _pick(group, n => Math.max(0.1, pStats(n).strategic * 0.5 + pStats(n).boldness * 0.3 + (10 - pStats(n).temperament) * 0.1 + 1));
       group.filter(x => x !== p).forEach(other => addBond(p, other, -0.4));
       const strP = pStats(p).strategic;
-      const _opP = pronouns(p);
-      const overplayLines = strP >= 9
-        ? [`${p} is everywhere today — talking to everyone, making deals in every corner of camp. The tribe is starting to notice.`,
-           `${p} can't stop. Every conversation is a potential angle. The tribe watches and takes notes.`]
-        : strP >= 7
-        ? [`${p} is clearly working overtime. Too many check-ins, too many whispers. It's visible from across camp.`,
-           `${p} pulls too many people aside in too short a window. The energy ${_opP.sub} ${_opP.sub==='they'?'give':'gives'} off is making people uncomfortable.`]
-        : [`${p} is moving too hard for this early in the game. ${_opP.Sub} ${_opP.sub==='they'?'aren\'t':'isn\'t'} subtle about it. People are noticing.`,
-           `${p} is nervous and it shows. ${_opP.Sub} ${_opP.sub==='they'?'keep':'keeps'} bringing up the vote when nobody asked. The tribe goes quiet.`];
-      events.push({ type: 'overplay', text: overplayLines[Math.floor(Math.random() * overplayLines.length)], player: p, players: [p], badgeText: 'OVERPLAYING', badgeClass: 'red' });
+      Math.random();
+      events.push(scriptEvent({ type: 'overplay', player: p, players: [p], badgeText: 'OVERPLAYING', badgeClass: 'red' },
+        makeScene('conf.overplay', { a: p }, { ending: strP >= 9 ? 'everywhere' : strP >= 7 ? 'overtime' : 'nervous' }, [], { id: 'confessional', label: 'Confessional' })));
 
     // ══════════════════════════════════════════════════════════
     // TOTAL DRAMA — SOCIAL & BONDING
@@ -1503,16 +1492,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       });
       group.filter(x => x !== p).forEach(other => addBond(p, other, -0.2));
       const paSt = getPlayerState(p);
-      const _paP = pronouns(p);
-      const paraLines = paSt.emotional === 'desperate'
-        ? [`${p} pulls three people aside in one hour. Nobody thinks that's normal.`,
-           `${p} is visibly unraveling. The tribe watches ${_paP.obj} scramble and quietly agrees this changes nothing.`,
-           `${p} cannot stop talking about the vote. Every conversation circles back. The tribe is exhausted by it.`]
-        : [`${p} has been watching everyone too carefully. The tribe notices the noticing.`,
-           `${p} reads a normal conversation as something threatening. ${_paP.Sub} spend${_paP.sub==='they'?'':'s'} the rest of the day quietly processing that.`,
-           `${p} is in ${_paP.posAdj} own head today. The tribe can feel the energy shift.`,
-           `Something has gotten to ${p}. ${_paP.Sub} ${_paP.sub==='they'?'are':'is'} still functional — but barely.`];
-      events.push({ type: 'paranoia', text: paraLines[Math.floor(Math.random() * paraLines.length)], players: [p], badgeText: 'PARANOIA', badgeClass: 'red' });
+      Math.random();
+      events.push(scriptEvent({ type: 'paranoia', players: [p], badgeText: 'PARANOIA', badgeClass: 'red' },
+        makeScene('conf.paranoia', { a: p }, { ending: paSt.emotional === 'desperate' ? 'unraveling' : 'watching' }, [], { id: 'confessional', label: 'Confessional' })));
 
     } else if (eventType === 'scramble') {
       const a = _pick(group, n => {
@@ -1544,16 +1526,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
 
     } else if (eventType === 'readingRoom') {
       const p = _pick(group, n => Math.max(0.1, pStats(n).intuition * 0.6 + pStats(n).strategic * 0.2 + 1));
-      const _rrP = pronouns(p);
       const intP = pStats(p).intuition;
-      const rrLines = intP >= 8
-        ? [`${p} hasn't been in every conversation — but ${_rrP.sub} know${_rrP.sub==='they'?'':'s'} what was said in all of them.`,
-           `${p} puts together three separate conversations ${_rrP.sub} wasn't part of and reads the game with eerie accuracy.`,
-           `${p} in confessional: "I know exactly who's in trouble tonight. I didn't need anyone to tell me."`]
-        : [`${p} notices something the rest of the tribe missed. ${_rrP.Sub} don't${_rrP.sub==='they'?'':'es'} say it out loud. Not yet.`,
-           `${p} watches two people talk across camp and reads the whole dynamic from body language alone.`,
-           `${p} has been paying quiet attention. More than anyone realized. The picture ${_rrP.sub} ${_rrP.sub==='they'?'have':'has'} is fuller than everyone else's.`];
-      events.push({ type: 'readingRoom', text: rrLines[Math.floor(Math.random() * rrLines.length)], players: [p], badgeText: 'READING', badgeClass: '' });
+      Math.random();
+      events.push(scriptEvent({ type: 'readingRoom', players: [p], badgeText: 'READING', badgeClass: '' },
+        makeScene('conf.readroom', { a: p }, { ending: intP >= 8 ? 'expert' : 'quiet' }, [], { id: 'confessional', label: 'Confessional' })));
 
     } else if (eventType === 'allianceCrack') {
       // A crack only makes sense between allies whose trust is actually thinning — NEVER between
@@ -1738,17 +1714,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.5 + pStats(n).loyalty * 0.2 + 2));
       addBond(a, b, 0.6);
       const loA = pStats(a).loyalty;
-      const _lsA = pronouns(a);
-      const lsLines = loA >= 9
-        ? [`${a} finds ${b} and says, simply: "We're good. I'm not moving." ${b} believes ${_lsA.obj}. That's the thing about ${_lsA.obj}.`,
-           `${a} checks in with ${b} at the end of the day — not to plan, just to confirm. ${_lsA.Sub} ${_lsA.sub==='they'?'are':'is'} steady. That steadiness costs ${_lsA.obj} nothing.`,
-           `${a} reassures ${b} without being asked. "Same plan, same people." ${b} nods. In this game that counts for something.`]
-        : loA >= 7
-        ? [`${a} finds a quiet moment to check in with ${b}. Nothing has changed. ${_lsA.Sub} just want${_lsA.sub==='they'?'':'s'} ${b} to know that.`,
-           `${a} pulls ${b} aside — not with information, just with presence. "We're fine." ${b} believes it.`]
-        : [`${a} and ${b} exchange a look across camp that means something. No words needed. No words used.`,
-           `${a} shows up for ${b} in a small way today. ${b} clocks it. That's how loyalty works in here.`];
-      events.push({ type: 'soldierCheckin', text: lsLines[Math.floor(Math.random() * lsLines.length)], player: a, players: [a, b], badgeText: 'LOYALTY', badgeClass: 'green' });
+      Math.random();
+      events.push(scriptEvent({ type: 'soldierCheckin', player: a, players: [a, b], badgeText: 'LOYALTY', badgeClass: 'green' },
+        makeScene('talk.checkin', { a, b }, { ending: loA >= 9 ? 'rock' : loA >= 7 ? 'steady' : 'quiet' }, [], _spotNow(a, b))));
 
     } else if (eventType === 'wildcardPivot') {
       // Wildcard does something nobody predicted — direction could go either way
@@ -1828,16 +1796,11 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const b = others.length ? wRandom(others, n => Math.max(0.1, pStats(n).strategic * 0.4 + 1)) : null;
       if (b) addBond(b, a, 0.3); // strategic player values their goat
       const strA = pStats(a).strategic;
-      const _goA = pronouns(a);
-      const goLines = strA <= 3
-        ? [`${a} is having a great day. The tribe is having a great day because ${_goA.sub} ${_goA.sub==='they'?'are':'is'} having a great day. Nobody mentions what they all know.`,
-           `${a} tells the confessional ${_goA.sub} think${_goA.sub==='they'?'':'s'} ${_goA.sub} ${_goA.sub==='they'?'are':'is'} in a really good spot. ${_goA.Sub} ${_goA.sub==='they'?'are':'is'} in the spot everyone wants ${_goA.obj} in.`,
-           b ? `${b} protects ${a} from a conversation that would have changed ${_goA.posAdj} whole read of the game. ${b} needs ${a} exactly as ${_goA.sub} ${_goA.sub==='they'?'are':'is'}.`
-             : `${a} is safe. Completely. That safety has nothing to do with ${_goA.posAdj} game and everything to do with who everyone is planning to beat.`]
-        : [`${a} moves through camp without reading the subtext. The subtext is about ${_goA.obj}.`,
-           b ? `${b} makes sure ${a} feels valued today. It costs ${b} nothing. It means everything to ${a}.`
-             : `${a} isn't playing the game aggressively. The tribe has filed that information in a very specific place.`];
-      events.push({ type: 'goatOblivious', text: goLines[Math.floor(Math.random() * goLines.length)], players: [a], badgeText: 'OBLIVIOUS', badgeClass: 'red' });
+      Math.random();
+      // b (when there is one) is the strategist who wants a kept exactly as a is: only b's confessional says why.
+      events.push(scriptEvent({ type: 'goatOblivious', players: [a], badgeText: 'OBLIVIOUS', badgeClass: 'red' },
+        b ? makeScene('goat.kept', { a, b }, { ending: strA <= 3 ? 'happy' : 'drifting' }, [], _spotNow(a, b))
+          : makeScene('goat.alone', { a }, { ending: strA <= 3 ? 'happy' : 'drifting' }, [], { id: 'confessional', label: 'Confessional' })));
 
     } else if (eventType === 'perceptiveReads') {
       // Perceptive player catches something others missed — trust in target drops
@@ -7088,27 +7051,18 @@ export function generateCampEvents(ep, phase = 'both') {
       .sort((a, b) => (b.rec.podiums + b.rec.wins * 2) - (a.rec.podiums + a.rec.wins * 2))
       .slice(0, 2); // at most 2 players flagged per merge episode
     _chalDom.forEach(({ name: threat, rec }) => {
-      const _tp = pronouns(threat);
-      const s3 = _tp.sub === 'they';
       // Notifier: most strategic player who isn't the threat
       const _notifier = gs.activePlayers.filter(p => p !== threat)
         .reduce((best, p) => pStats(p).strategic > pStats(best).strategic ? p : best,
           gs.activePlayers.filter(p => p !== threat)[0]);
-      const _np = pronouns(_notifier);
-      const _winsNote = rec.wins >= 1 ? ` and won ${rec.wins} individual challenge${rec.wins > 1 ? 's' : ''} before merge` : '';
-      const _threatLine = _rp([
-        `${threat} finished in the top of ${rec.podiums} pre-merge challenges${_winsNote}. At merge, that résumé doesn't earn respect — it earns a target.`,
-        `Everyone arrived at merge camp knowing ${threat}'s name. Not because of strategy. Because ${_tp.sub} ${s3 ? 'were' : 'was'} winning challenges all pre-merge. That kind of record travels.`,
-        `${threat} was the best challenge performer coming into this merge. ${rec.podiums} top finishes. The question isn't whether people are worried — it's who acts first.`,
-        `Pre-merge, ${threat} was an asset. At merge, that asset becomes a liability for everyone who has to compete against ${_tp.obj}.`,
-      ]);
-      const _reactLine = _rp([
-        `${_notifier} brought it up within the first hour. The name ${threat} came out of ${_np.posAdj} mouth like ${_np.sub} ${s3 ? 'had' : 'had'} been sitting on it for days.`,
-        `${_notifier} didn't need long to do the math. ${threat} wins challenges. ${threat} has allies. ${threat} has to go early.`,
-        `${_notifier} saw the same résumé everyone else saw. The difference is ${_np.sub} ${s3 ? 'are' : 'is'} already planning around it.`,
-      ]);
-      pre.push({ type: 'chalThreat',         text: _threatLine, players: [threat] });
-      pre.push({ type: 'chalThreatReaction', text: _reactLine,  players: [_notifier, threat] });
+      Math.random(); Math.random(); // the two draws that picked the sentences (the season must not move)
+      const _cw = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+      const _mData = { ending: 'merge', count: _cw[rec.podiums] || String(rec.podiums), wins: rec.wins >= 1 ? (_cw[rec.wins] || String(rec.wins)) : null };
+      const _cf = { id: 'confessional', label: 'Confessional' };
+      pre.push(scriptEvent({ type: 'chalThreat', players: [threat], badgeText: 'THREAT', badgeClass: 'gold' },
+        makeScene('threat.self', { a: threat }, _mData, [], _cf), { ep: ep.num, phase: 'pre' }));
+      pre.push(scriptEvent({ type: 'chalThreatReaction', players: [_notifier, threat], badgeText: 'TAKING NOTE', badgeClass: 'red' },
+        makeScene('threat.notice', { a: _notifier, b: threat }, _mData, [], _cf), { ep: ep.num, phase: 'pre' }));
     });
 
     // Boost merge-specific events in the generated list

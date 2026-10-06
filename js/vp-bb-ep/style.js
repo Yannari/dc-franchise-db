@@ -437,6 +437,26 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .stage.lodge .vign{background:radial-gradient(ellipse at 50% 40%,transparent 35%,rgba(30,16,4,.75))}
 /* ── finale night: the key board, confetti, sweeping spotlights ── */
 .bbx .gt.walk{animation:gtwalk 1s cubic-bezier(.45,0,.3,1) both}
+/* The cast is alive (the user, 2026-10-06: "use the avatar animations from the Total Drama
+   episode viewer"): everybody breathes on their own beat, the speaker talks, a soft shadow sits
+   under each of them, and the one talking has a ring. :where() keeps all of it UNDER the
+   entrances, the actions and the tension pulse, which still win. */
+.bbx :where(.gt:not(.bgp)) .tile{animation:bbx-breathe2 2.6s ease-in-out infinite alternate;animation-delay:var(--ph,0s)}
+@keyframes bbx-breathe2{to{translate:0 -.22cqw;scale:1 1.012}}
+.bbx :where(.gt.speak) .tile{animation:bbx-talk .32s ease-in-out infinite alternate}
+@keyframes bbx-talk{to{translate:0 -.45cqw;scale:1.025 .975}}
+.bbx .gt:not(.bgp):not(.host)::after{content:'';position:absolute;left:16%;right:16%;bottom:-.8cqw;height:1cqw;border-radius:50%;background:#000;opacity:.38;filter:blur(.32cqw);z-index:-1;pointer-events:none;animation:bbx-shpulse 2.6s ease-in-out infinite alternate;animation-delay:var(--ph,0s)}
+@keyframes bbx-shpulse{to{scale:.86 1;opacity:.26}}
+.bbx .gt.speak:not(.bgp)::before{content:'';position:absolute;left:-.7cqw;right:-.7cqw;top:-.7cqw;height:calc(100% + 1.4cqw);border:.16cqw dashed var(--c);border-radius:1.8cqw;opacity:.75;pointer-events:none;animation:bbx-ringp 1.4s ease-in-out infinite alternate}
+@keyframes bbx-ringp{to{scale:1.035;opacity:.4}}
+.bbx .gt.act-recoil.toR .tile{animation:bbx-recoil-l .5s ease-out both}
+.bbx .gt.act-recoil.toL .tile,.bbx .gt.act-recoil:not(.toR):not(.toL) .tile{animation:bbx-recoil-r .5s ease-out both}
+@keyframes bbx-recoil-l{0%{translate:0}25%{translate:-1.1cqw 0;rotate:-7deg}60%{translate:.4cqw 0;rotate:3deg}100%{translate:0;rotate:0deg}}
+@keyframes bbx-recoil-r{0%{translate:0}25%{translate:1.1cqw 0;rotate:7deg}60%{translate:-.4cqw 0;rotate:-3deg}100%{translate:0;rotate:0deg}}
+.bbx .fx-wow{position:absolute;right:-.6cqw;top:-1.6cqw;width:2.6cqw;height:2.6cqw;z-index:6;animation:bbx-pop .5s .15s cubic-bezier(.2,1.8,.4,1) both}
+.bbx .fx-wow svg{width:100%;height:100%;display:block}
+.bbx .speedl{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;background:repeating-conic-gradient(from 0deg at var(--sx,50%) 55%,#fff0 0 3deg,#ffffff2e 3deg 4deg);-webkit-mask:radial-gradient(circle at var(--sx,50%) 55%,transparent 12%,#000 62%);mask:radial-gradient(circle at var(--sx,50%) 55%,transparent 12%,#000 62%);animation:bbx-speedl .7s ease-out both}
+@keyframes bbx-speedl{0%{opacity:0;scale:1.2}20%{opacity:1}100%{opacity:0;scale:1}}
 @keyframes gtwalk{0%{transform:translateX(-50%) translate(var(--wx),var(--wy))}30%{transform:translateX(-50%) translate(calc(var(--wx) * .75),calc(var(--wy) * .75 - .6cqw))}60%{transform:translateX(-50%) translate(calc(var(--wx) * .3),calc(var(--wy) * .3 - .6cqw))}100%{transform:translateX(-50%)}}
 .bbx .obj.keydrop{position:absolute;transform:translateX(-50%);z-index:30;animation:keydrop 1.1s cubic-bezier(.5,0,.8,.4) both;filter:drop-shadow(0 0 .8cqw #f5c542)}
 @keyframes keydrop{0%{transform:translateX(-50%) translateY(-9cqw) rotate(-40deg);opacity:0}25%{opacity:1}70%{transform:translateX(-50%) translateY(0) rotate(90deg);opacity:1}100%{transform:translateX(-50%) translateY(1.2cqw) rotate(90deg) scale(.4);opacity:0}}
@@ -507,4 +527,5 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .alcard.meeting i{color:#fff}
 .bbx .alcard.deal i{color:#ffd76a}.bbx .alcard.deal .alf{box-shadow:0 0 0 .2cqw #ffd76a}
 @media (prefers-reduced-motion:reduce){.bbx .gt[class*="act-"] .tile,.bbx .gt .fx,.bbx .beams i,.bbx .confetti i{animation:none}}
-@media (prefers-reduced-motion:reduce){.bbx .gt.bgp .tile,.bbx .gt.tense .tile{animation:none}}`;
+@media (prefers-reduced-motion:reduce){.bbx .gt.bgp .tile,.bbx .gt.tense .tile{animation:none}}
+@media (prefers-reduced-motion:reduce){.bbx .gt .tile,.bbx .gt::before,.bbx .gt::after,.bbx .speedl{animation:none}}`;

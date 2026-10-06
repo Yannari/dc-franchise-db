@@ -187,7 +187,9 @@ export const camStyle = c => c === 'none' ? 'transform:none' : `transform:${c.sp
 
 function tileHtml(n, x, cls, L, extra = '', more = '', fx = '') {
   const ry = ((50 - x) * 0.28).toFixed(1);
-  return `<div class="gt ${cls}" style="left:${x}%;--c:${col(n)};--ry:${ry}deg;${more}">${fx}
+  // each person breathes on their own beat (the Total Drama episode viewer's rig)
+  const ph = (-((String(n).length * 7 + Math.round(x)) % 26) / 10).toFixed(1);
+  return `<div class="gt ${cls}" style="left:${x}%;--c:${col(n)};--ry:${ry}deg;--ph:${ph}s;${more}">${fx}
     <div class="tile"><span class="i">${esc(String(n)[0])}</span>${img(n)}${extra}</div>
     <div class="plate"><b>${esc(n)}</b>${chipsFor(n, L)}</div></div>`;
 }
@@ -649,6 +651,8 @@ function actOn(A, n, x, xs) {
   const other = A.who.find(m => m !== n);
   const ox = other != null ? xs[other] : null;
   const side = ox == null ? '' : ox > x ? 'toR' : 'toL';
+  // the one being shouted at does not shout back: they flinch away, with a '!' over them
+  if (A.kind === 'shout' && n !== A.who[0]) return { cls: `act-recoil ${side}`, fx: `<span class="fx fx-wow">${REACT_WOW}</span>` };
   return { cls: `act-${A.kind} ${side}`, fx: FX[A.kind] && (A.kind !== 'kiss' || side === 'toR') ? FX[A.kind] : '' };
 }
 // what a line does to the rest of the room: 'laugh', 'wow', or nothing
@@ -724,10 +728,12 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
       h += tileHtml(n, xs[i], cls, L, '', '', a.fx);
     });
     if (A && A.kind === 'slam') h += '<div class="fx-impact"></div>';
+    if (A && A.kind === 'shout') h += `<div class="speedl" style="--sx:${at[A.who[0]] ?? 50}%"></div>`;
     return h;
   }
   const A2 = fresh ? actionOf(st, cast.map(([n]) => n)) : null;
   const at2 = Object.fromEntries(cast);
+  if (A2 && A2.kind === 'shout') h += `<div class="speedl" style="--sx:${at2[A2.who[0]] ?? 50}%"></div>`;
   for (const [n, x] of cast) {
     const a2 = actOn(A2, n, x, at2);
     const entered = fresh && idx === 0;

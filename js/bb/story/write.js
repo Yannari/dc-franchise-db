@@ -329,7 +329,10 @@ export function writeStoryScene(line, step, ctx) {
   const entry = pick(keys, who, data, ctx, room, `${line.id}|${line.steps.indexOf(step)}`);
   if (!entry) return null;
   // A scene that is set somewhere ("the sink's right there") happens there.
-  if (entry.room && !ctx.inSet) { room = entry.room; base.room = room; base.roomName = ROOM[room] || base.roomName; }
+  // Inside a set piece too: a scene that stages its own room ("Bedroom, after lights out") is not
+  // folded into the kitchen around it; it is marked, and the director airs it as its own scene
+  // (the user, 2026-10-06: "it didn't switch scenes, we were still in the kitchen")
+  if (entry.room) { room = entry.room; base.room = room; base.roomName = ROOM[room] || base.roomName; if (ctx.inSet) base.ownRoom = true; }
   // A scene that does not set its own room moves along if the last scene was in the same one
   // (five bedroom scenes in a row read as one long night). Decided here, BEFORE the background
   // is chosen, so "laps of the backyard" never plays in the living room.

@@ -28,7 +28,7 @@
 // }
 // A line is { kind: 'say' | 'dr' | 'beat', by, text }. A part the act does not
 // have is left out; the viewer falls back to the format's own words.
-import { gs, players, kinshipBetween, REL_KINSHIP } from '../../core.js';
+import { gs, players, kinshipBetween, kinshipPairs, REL_KINSHIP } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { stableRng } from '../knowledge.js';
 import { evictionSeatsAJuror } from '../jury.js';
@@ -475,6 +475,57 @@ export function writeCeremony(act, week, house, extra = {}) {
     const fresh = freshWriter(ctx, house);
     const NICE = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat', 'floater'];
     const archOf = n => { try { return (players || []).find(p => p.name === n)?.archetype; } catch { return null; } };
+    // Who knew whom before the show (the cast's kinship), and whether the house is about to be
+    // told: a Dynamic Duos season pairs the house by exactly these relations and announces them
+    // on night one, so those pairs walk out together; every other pair is a secret and goes in a
+    // different group (the user, 2026-10-06: "special move-in interactions when they know each
+    // other, or if they enter as a dynamic duo").
+    const order0 = (act.beats || []).map(b => (b.players || [])[0]).filter(Boolean);
+    const pairKey = (x, y) => [x, y].sort().join('|');
+    const kinPairs = [];
+    { const seen = new Set();
+      for (const pr of (() => { try { return kinshipPairs(); } catch { return []; } })()) {
+        if (!order0.includes(pr.a) || !order0.includes(pr.b) || seen.has(pr.a) || seen.has(pr.b)) continue;
+        if (!(REL_KINSHIP[pr.kin]?.group)) continue;
+        seen.add(pr.a); seen.add(pr.b); kinPairs.push(pr);
+      } }
+    const duoKeys = new Set((gs.bb?.duos?.pairs || []).map(([x, y]) => pairKey(x, y)));
+    const openKey = new Set(kinPairs.filter(pr => duoKeys.has(pairKey(pr.a, pr.b))).map(pr => pairKey(pr.a, pr.b)));
+    const partnerOf = new Map();
+    for (const pr of kinPairs) { partnerOf.set(pr.a, pr.b); partnerOf.set(pr.b, pr.a); }
+    const isOpen = (x, y) => openKey.has(pairKey(x, y));
+    const k0 = Math.max(1, Math.round(order0.length / 4));
+    const sizes = Array.from({ length: k0 }, (_, g) => Math.floor(order0.length / k0) + (g < order0.length % k0 ? 1 : 0));
+    const groups0 = sizes.map(() => []);
+    const units = [];
+    { const used = new Set();
+      for (const n of order0) {
+        if (used.has(n)) continue;
+        const m = partnerOf.get(n);
+        if (m && isOpen(n, m)) { units.push([n, m]); used.add(n); used.add(m); } else { units.push([n]); used.add(n); }
+      } }
+    for (const u of units) {
+      const roomIn = gi => sizes[gi] - groups0[gi].length;
+      // a secret pair is kept apart: never the group the partner is already in, if there is another
+      const apart = gi => !(u.length === 1 && partnerOf.has(u[0]) && !isOpen(u[0], partnerOf.get(u[0])) && groups0[gi].includes(partnerOf.get(u[0])));
+      let gi = groups0.findIndex((g, i) => roomIn(i) >= u.length && apart(i));
+      if (gi < 0) gi = groups0.findIndex((g, i) => roomIn(i) >= u.length);
+      if (gi < 0) gi = groups0.findIndex((g, i) => roomIn(i) > 0);
+      if (gi < 0) gi = groups0.length - 1;
+      groups0[gi].push(...u);
+    }
+    // the house walks in in that order
+    const pos = new Map(groups0.flat().map((n, i) => [n, i]));
+    if (Array.isArray(act.beats)) act.beats.sort((x, y) => (pos.get((x.players || [])[0]) ?? 99) - (pos.get((y.players || [])[0]) ?? 99));
+    if (Array.isArray(act.arrivals)) act.arrivals.sort((x, y) => (pos.get(x) ?? 99) - (pos.get(y) ?? 99));
+    // what they are, said the way a person would say it on a stage (the kinship's own words, nothing added)
+    const REL_SAY = { married: "We're married.", engaged: "We're engaged.", partners: "We're partners. A couple.", dating: "We're dating.",
+      twins: "We're twins.", siblings: "We're siblings.", 'step-siblings': "We're step-siblings.", 'parent-child': "We're family. Parent and child.",
+      grandparent: "We're family. Grandparent and grandchild.", 'aunt-uncle': "We're family.", cousins: "We're cousins.", 'in-laws': "We're in-laws.",
+      'best-friends': "We're best friends.", 'childhood-friends': "We grew up together.", 'old-friends': "We've been friends for a long time.",
+      roommates: "We used to live together.", colleagues: "We used to work together.", teammates: "We used to be on the same team.",
+      estranged: "We're family. We just don't really talk.", exes: "We used to go out." };
+    const relSay = kin => REL_SAY[kin] || (REL_KINSHIP[kin]?.group === 'History' ? "We know each other. It's complicated." : REL_KINSHIP[kin]?.group === 'Friends' ? "We're friends from before the show." : REL_KINSHIP[kin]?.group === 'Family' ? "We're family." : "We know each other from before the show.");
     const arrived = [];
     for (const b of act.beats || []) {
       const a = (b.players || [])[0];
@@ -486,7 +537,8 @@ export function writeCeremony(act, week, house, extra = {}) {
       // sibling, an old friend, an ex). That is the first thing the viewer needs to know about
       // them, or a kiss on the first night is two strangers kissing.
       const known = arrived.find(o => (REL_KINSHIP[kinshipBetween(a, o)]?.group || '') !== '');
-      if (known) {
+      if (known && isOpen(a, known)) { b.knew = known; b.kin = kinshipBetween(a, known); b.openPair = true; }
+      else if (known) {
         const kin = kinshipBetween(a, known);
         const more = fresh('moveinact.known', { a, b: known }, { ending: kin }, `mi|known|${a}`)
           || fresh('moveinact.known', { a, b: known }, { ending: REL_KINSHIP[kin].group.toLowerCase() }, `mi|known|${a}|g`);
@@ -511,11 +563,36 @@ export function writeCeremony(act, week, house, extra = {}) {
       hothead: 'fighter', 'challenge-beast': 'fighter', wildcard: 'fighter', 'chaos-agent': 'fighter',
       hero: 'heart', 'loyal-soldier': 'heart', 'social-butterfly': 'heart', showmancer: 'heart',
       floater: 'quiet', underdog: 'quiet', goat: 'quiet' };
-    const names = (act.beats || []).map(b => (b.players || [])[0]).filter(Boolean);
-    const k = Math.max(1, Math.round(names.length / 4));
-    const groups = [];
-    for (let g = 0, at = 0; g < k; g++) { const size = Math.floor(names.length / k) + (g < names.length % k ? 1 : 0); groups.push(names.slice(at, at + size)); at += size; }
+    const groups = groups0.filter(g => g.length);
     act.groups = groups;
+    // the pairs who knew each other: what they say on the stage, what the house says when they
+    // walk in, and a secret pair's first private minute once the house is full
+    act.kinPairs = kinPairs.map(pr => ({ a: pr.a, b: pr.b, kin: pr.kin, group: (REL_KINSHIP[pr.kin]?.group || '').toLowerCase(), open: isOpen(pr.a, pr.b) }));
+    act.kinStage = {}; act.kinHouse = {}; act.kinAlone = [];
+    {
+      const insideNow = [];
+      groups.forEach((g, gi) => {
+        for (const pr of act.kinPairs) {
+          if (!g.includes(pr.a) || !g.includes(pr.b)) continue;
+          const [x, y] = g.indexOf(pr.a) < g.indexOf(pr.b) ? [pr.a, pr.b] : [pr.b, pr.a];
+          if (pr.open) {
+            const st = fresh('moveinact.kinstage', { a: x, b: y }, { ending: pr.group, rel: relSay(pr.kin) }, `kin|stage|${x}`);
+            if (Array.isArray(st) && st.length) act.kinStage[gi] = { pair: [x, y], open: true, lines: st };
+            const c = insideNow.length ? insideNow[(gi * 2) % insideNow.length] : g.find(n => n !== x && n !== y);
+            const hs = c ? fresh('moveinact.kinhouse', { a: x, b: y, c }, { ending: pr.group }, `kin|house|${x}`) : null;
+            if (Array.isArray(hs) && hs.length) act.kinHouse[gi] = hs;
+          } else {
+            const st = fresh('moveinact.kinstage', { a: x, b: y }, { ending: 'secret' }, `kin|secret|${x}`);
+            if (Array.isArray(st) && st.length) act.kinStage[gi] = { pair: [x, y], open: false, lines: st };
+          }
+        }
+        insideNow.push(...g);
+      });
+      for (const pr of act.kinPairs.filter(q => !q.open)) {
+        const al = fresh('moveinact.kinalone', { a: pr.a, b: pr.b }, { ending: pr.group }, `kin|alone|${pr.a}`);
+        if (Array.isArray(al) && al.length) act.kinAlone.push({ pair: [pr.a, pr.b], lines: al });
+      }
+    }
     for (const b of act.beats || []) {
       const a = (b.players || [])[0];
       if (!a) continue;

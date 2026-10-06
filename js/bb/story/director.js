@@ -205,13 +205,16 @@ export function airStorylines(week) {
       remember(sc);
       inside.push({ p, sc });
     }
+    // a moment that happens in a room of its own (the bedroom after lights out) is cut to, not
+    // played inside the kitchen set piece
+    const inSet = inside.filter(x => !x.sc.ownRoom);
     const set = atStart.length >= 4
-      ? writeSetPiece(setFor(ctx), { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) }, inside.map(x => x.sc), { gone: lastGone, at: pending[0].step.at - 0.5 }) : null;
+      ? writeSetPiece(setFor(ctx), { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) }, inSet.map(x => x.sc), { gone: lastGone, at: pending[0].step.at - 0.5 }) : null;
     if (set) (firstAct.scenes ||= []).push(set);
     for (const { p, sc } of inside) {
       p.step.aired = true; p.beat.aired = true; note(p);
-      // no set piece to stage it in: it airs on its own
-      if (!set) (p.act.scenes ||= []).push(sc);
+      // no set piece to stage it in, or a room of its own: it airs on its own
+      if (!set || sc.ownRoom) (p.act.scenes ||= []).push(sc);
     }
 
     // ── the private conversations, in the order they happened ──

@@ -4260,16 +4260,14 @@ export function checkGoatTargeting(ep) {
         : visible.length === 2 ? `${visible[0]} and ${visible[1]}`
         : `${visible.slice(0, -1).join(', ')}, and ${visible.at(-1)}`;
       const remainder = goats.length - visible.length;
-      const observerText = observer
-        ? ` ${observer} quietly considers which of them could become a dependable number deeper in the game.`
-        : '';
-      arr.push({
-        type: 'goatMergeAssessment',
-        text: `${names}${remainder > 0 ? ` and ${remainder} other${remainder === 1 ? '' : 's'}` : ''} enter the merge with the weakest challenge records. The tribe sees possible endgame passengers, but social bonds still decide who is actually usable.${observerText}`,
-        players: [...new Set([observer, ...visible].filter(Boolean))],
-        candidates: [...goats], observer,
-        badgeText: 'ENDGAME OPTIONS', badgeClass: 'gold',
-      });
+      // The strongest strategist sizes up the weakest challenge records at the merge, to the camera.
+      const _goatScene = observer
+        ? makeScene('goat.merge', { a: observer }, { ending: visible.length === 1 ? 'one' : 'many', goats: names, target: visible[0] }, [], { id: 'confessional', label: 'Confessional' })
+        : null;
+      const _goatEvt = { type: 'goatMergeAssessment', players: [...new Set([observer, ...visible].filter(Boolean))],
+        candidates: [...goats], observer, badgeText: 'ENDGAME OPTIONS', badgeClass: 'gold' };
+      arr.push(_goatScene ? scriptEvent(_goatEvt, _goatScene, { ep: ep.num, phase: 'pre' })
+        : { ..._goatEvt, text: `${names} enter the merge with the weakest challenge records.` });
       goats.forEach(player => ep.goatEvents.push({ player, observer, type: 'mergeGoat', ep: ep.num }));
     }
     // Do not immediately repeat the same read as a late-game FTC reassessment.
@@ -4452,22 +4450,16 @@ export function checkFakeIdolPlant(ep) {
     const _caughtBy = _witnesses.find(w => Math.random() < pStats(w).intuition * 0.03 + pStats(w).mental * 0.01);
     if (_caughtBy) {
       // Exposed — no fake idol enters the game
-      const cPr = pronouns(_caughtBy);
       addBond(_caughtBy, planter, -1.0);
       _witnesses.filter(w => w !== _caughtBy).forEach(w => addBond(w, planter, -0.3));
       if (!gs.challengeThrowHeat) gs.challengeThrowHeat = {};
       // Reuse heat mechanism — schemer exposed
-      const evtText = _pick([
-        `${_caughtBy} catches ${planter} tucked out of sight, carving something out of wood and paint. "What is that?" ${planter} freezes. "Nothing." It's not nothing — it's a fake idol. ${_caughtBy} tells the tribe. ${planter}'s credibility evaporates.`,
-        `${_caughtBy} follows ${planter} off alone and watches ${pPr.obj} bury something out of the way. ${cPr.Sub} digs it up later — a fake idol, crudely made but convincing enough. "You tried to play us." Word spreads by morning.`,
-        `${_caughtBy} notices ${planter} working on something at night. A carved trinket, wrapped in string, painted dark. It looks like an idol. It's not. "${planter} was making a fake idol. I SAW it." The tribe turns. ${planter} has nowhere to hide.`,
-      ], planter + _caughtBy + 'caught');
 
       if (ep.campEvents?.[campKey]) {
-        (ep.campEvents[campKey].pre || ep.campEvents[campKey].post || []).push({
-          type: 'fakeIdolCaught', players: [_caughtBy, planter], text: evtText,
-          badgeText: 'FAKE IDOL EXPOSED', badgeClass: 'red',
-        });
+        (ep.campEvents[campKey].pre || ep.campEvents[campKey].post || []).push(scriptEvent(
+          { type: 'fakeIdolCaught', players: [_caughtBy, planter], badgeText: 'FAKE IDOL EXPOSED', badgeClass: 'red' },
+          makeScene('adv.fakecaught', { a: _caughtBy, b: planter }, {}, [], spotOf(ep, _caughtBy, planter, 'pre').spot),
+          { ep: ep.num, phase: 'pre' }));
       }
       if (!ep.fakeIdolEvents) ep.fakeIdolEvents = [];
       ep.fakeIdolEvents.push({ arc: 'caught-crafting', planter, caughtBy: _caughtBy });
@@ -5242,10 +5234,9 @@ export function checkHeroVillainEvents(ep) {
       // Gloating — villain celebrates an enemy's departure
       const _elimBond = getBond(v, ep.eliminated);
       if (_elimBond < -1) {
-        pushEvt({ type: 'villainGloat', players: [v], text: _rp([
-          `${v} doesn't hide ${_vPr.posAdj} satisfaction this morning. ${ep.eliminated} is gone and ${v} wants everyone to know ${_vPr.sub} ${_vPr.sub==='they'?'are':'is'} happy about it.`,
-          `"One down." ${v} says it with a smile that makes the rest of the tribe uncomfortable.`,
-        ]), badgeText: 'Gloating', badgeClass: 'red' });
+        _rp([0]); // the draw that picked the sentence
+        pushEvt(scriptEvent({ type: 'villainGloat', players: [v], badgeText: 'Gloating', badgeClass: 'red' },
+          makeScene('villain.gloat', { a: v }, { fallen: ep.eliminated }, [], { id: 'confessional', label: 'Confessional' }), { ep: ep.num, phase: 'pre' }));
         tribeMembers.forEach(p => { if (getBond(p, ep.eliminated) >= 2) addBond(p, v, -0.3); }); // allies of eliminated resent
       }
     } else {
@@ -5253,10 +5244,9 @@ export function checkHeroVillainEvents(ep) {
       const _bestAlly = tribeMembers.sort((a, b) => getBond(v, b) - getBond(v, a))[0];
       if (_bestAlly && getBond(v, _bestAlly) >= 1) {
         addBond(v, _bestAlly, 0.4);
-        pushEvt({ type: 'villainLoyalty', players: [v, _bestAlly], text: _rp([
-          `${v} is ruthless with everyone — except ${_bestAlly}. The loyalty there is real. And it makes ${_bestAlly} untouchable.`,
-          `${v} pulls ${_bestAlly} aside. "Nobody touches you. That's not strategy — that's a promise." ${_bestAlly} believes it.`,
-        ]), badgeText: 'Inner Circle', badgeClass: 'gold' });
+        _rp([0]);
+        pushEvt(scriptEvent({ type: 'villainLoyalty', players: [v, _bestAlly], badgeText: 'Inner Circle', badgeClass: 'gold' },
+          makeScene('villain.loyal', { a: v, b: _bestAlly }, {}, [], spotOf(ep, v, _bestAlly, 'pre').spot), { ep: ep.num, phase: 'pre' }));
       }
     }
   });
@@ -6359,25 +6349,12 @@ export function checkComfortBlindspot(ep) {
     if (!observers.length) return;
     const observer = observers[Math.floor(Math.random() * observers.length)];
 
-    const _p  = pronouns(heatLeader);
-    const _o  = pronouns(observer);
-    const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
-    const os3 = _o.sub !== 'they';
-
-    const cbText = _rp([
-      `${observer} watch${os3 ? 'es' : ''} ${heatLeader} move through camp — easy, unhurried, like there's nothing to worry about. ${_o.Sub} file${os3 ? 's' : ''} that away.`,
-      `${heatLeader} seems settled. Too settled. ${observer} clock${os3 ? 's' : ''} it and doesn't say anything.`,
-      `${observer} notice${os3 ? 's' : ''} that ${heatLeader} hasn't asked about the vote in days. ${_o.Sub} wonder${os3 ? 's' : ''} if ${_p.sub} even know${_p.sub==='they'?'':'s'} what's coming.`,
-      `There's a stillness about ${heatLeader} at camp today. ${observer} has a read on it but isn't sure what to do with it yet.`,
-    ]);
-    const reText = _rp([
-      `${observer} check${os3 ? 's' : ''} in on ${heatLeader} — casual, nothing to flag. But ${_o.sub === 'they' ? "they're" : _o.sub === 'he' ? "he's" : "she's"} paying attention in a way ${heatLeader} isn't.`,
-      `${observer} mention${os3 ? 's' : ''} ${heatLeader}'s name quietly to one other person. Just to float it. Just to see.`,
-    ]);
-
+    Math.random(); Math.random(); // the two draws that picked the sentences (the season must not move)
     ep.campEvents[campKey].pre.push(
-      { type: 'comfortBlindspot', text: cbText, players: [heatLeader, observer] },
-      { type: 'clockingIt',       text: reText, players: [observer] }
+      scriptEvent({ type: 'comfortBlindspot', players: [heatLeader, observer], badgeText: 'TOO COMFORTABLE', badgeClass: 'red' },
+        makeScene('blind.comfy', { a: observer, b: heatLeader }, {}, [], { id: 'confessional', label: 'Confessional' }), { ep: ep.num, phase: 'pre' }),
+      scriptEvent({ type: 'clockingIt', players: [observer], badgeText: 'CLOCKED', badgeClass: 'red' },
+        makeScene('blind.clock', { a: observer, b: heatLeader }, {}, [], spotOf(ep, observer, heatLeader, 'pre').spot), { ep: ep.num, phase: 'pre' })
     );
     ep.comfortBlindspotPlayer = heatLeader;
   });

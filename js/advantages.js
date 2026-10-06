@@ -170,34 +170,17 @@ export function findAdvantages(ep) {
         // ── Discovery camp event for tactical advantages ──
         if (['teamSwap', 'voteBlock', 'voteSteal', 'safetyNoPower', 'soleVote'].includes(key)) {
           const _discLabel = { teamSwap: 'Team Swap', voteBlock: 'Vote Block', voteSteal: 'Vote Steal', safetyNoPower: 'Safety Without Power', soleVote: 'Sole Vote' }[key];
-          const _discPr = pronouns(name);
-          const _discLines = key === 'safetyNoPower' ? [
-            `${name} found a Safety Without Power hidden at camp. ${_discPr.Sub} read the note twice. Leave tribal. Stay safe. Lose your vote. That's one hell of a trade-off.`,
-            `${name} discovered a Safety Without Power tucked under a rock. ${_discPr.Sub} can walk out of tribal whenever ${_discPr.sub} want${_discPr.sub === 'they' ? '' : 's'}. The question is whether ${_discPr.sub}'ll have the nerve to use it.`,
-            `${name} found something at camp — a Safety Without Power. An escape hatch. No vote, no voice, but no torch snuffed either. ${_discPr.Sub} pocketed it fast.`,
-          ] : key === 'soleVote' ? [
-            `${name} found a Sole Vote hidden at camp. ${_discPr.Sub} read the parchment: "When played, you cast the only vote. All other votes are void." ${_discPr.Sub} didn't blink.`,
-            `${name} discovered a Sole Vote wedged under a tree root. One vote. The only vote. Everyone else silenced. ${_discPr.Sub} tucked it away before anyone noticed.`,
-            `${name} found something terrifying — a Sole Vote. Play it, and you decide who goes home. No discussion. No democracy. Just you.`,
-          ] : key === 'teamSwap' ? [
-            `${name} found something hidden at camp — a ${_discLabel}. ${_discPr.Sub} can feel the weight of it already. The power to move someone between tribes... that changes everything.`,
-            `${name} was alone when ${_discPr.sub} found the ${_discLabel}. ${_discPr.Sub} turned it over in ${_discPr.posAdj} hands. This could save ${_discPr.obj} — or save someone else. Either way, the game just shifted.`,
-            `${name} discovered a ${_discLabel} tucked into a tree. ${_discPr.Sub} pocketed it fast. Nobody saw. But now ${_discPr.sub} ${_discPr.sub === 'they' ? 'have' : 'has'} an escape route nobody knows about.`,
-          ] : [
-            `${name} found a ${_discLabel} at camp. A quiet advantage — but a useful one. The right play at the right time could change a vote.`,
-            `${name} discovered a ${_discLabel} hidden near the well. ${_discPr.Sub} slipped it into ${_discPr.posAdj} bag without a word. One more tool in the arsenal.`,
-            `${name} was searching near the shelter when ${_discPr.sub} found a ${_discLabel}. Not flashy, but tactical. ${_discPr.Sub} ${_discPr.sub === 'they' ? 'know' : 'knows'} exactly when to use it.`,
-          ];
           const _discTribe = _advTribe;
           // Ensure campEvents structure exists (findAdvantages runs before generateCampEvents)
           if (!ep.campEvents) ep.campEvents = {};
           if (_discTribe && !ep.campEvents[_discTribe]) ep.campEvents[_discTribe] = { pre: [], post: [] };
           if (_discTribe && ep.campEvents[_discTribe]) {
             const _discBlock = ep.campEvents[_discTribe];
-            (Array.isArray(_discBlock) ? _discBlock : (_discBlock.pre || [])).push({
-              type: key + 'Found', players: [name],
-              text: _discLines[Math.floor(Math.random() * _discLines.length)]
-            });
+            Math.random(); // the draw that picked the sentence (the season must not move)
+            (Array.isArray(_discBlock) ? _discBlock : (_discBlock.pre || [])).push(scriptEvent(
+              { type: key + 'Found', players: [name], badgeText: 'ADVANTAGE FOUND', badgeClass: 'gold' },
+              makeScene('adv.found', { a: name }, { ending: key.toLowerCase(), label: _discLabel }, [], { id: 'confessional', label: 'Confessional' }),
+              { ep: ep.num, phase: 'pre' }));
           }
         }
         break;

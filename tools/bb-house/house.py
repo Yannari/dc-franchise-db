@@ -1223,7 +1223,24 @@ def anchors(room, theme='default', w=1920, h=1080):
         out['screen'] = rect_of('NomScreen')
     if room == 'studio':
         # the guest's chair (left) and the host's (right), at chest height
-        out['seats'] = {k: {'at': px((x, y, 1.25)), 'w': width_pct((x, y, 1.25), 0.62)} for k, (x, y, _) in zip(('G', 'H'), STUDIO_CHAIRS)}
+        out['seats'] = {k: {'at': px((x, y + 0.05, 1.18)), 'w': width_pct((x, y, 1.18), 0.66)} for k, (x, y, _) in zip(('G', 'H'), STUDIO_CHAIRS)}
+    if room == 'finale':
+        # where each portrait's bottom edge rests: a seated person at chest height above the seat,
+        # a standing one at chest height above the floor (the house's convention: living.json)
+        seats = {}
+        for i, (x, y, r) in enumerate(FIN_CHAIRS):
+            co = (x, y + 0.05, FIN_PLAT[2] + 0.86 + 0.32)
+            seats[f'F{i}'] = {'at': px(co), 'w': width_pct(co, 1.05)}
+        for i, (x, y, z, r) in enumerate(FIN_JURY):
+            co = (x, y + 0.05, z + 0.42 + 0.3)
+            seats[f'J{i}'] = {'at': px(co), 'w': width_pct(co, 0.85)}
+        seats['box'] = {'at': px((FIN_BOX[0] + 0.62, FIN_BOX[1], 1.15)), 'w': width_pct((FIN_BOX[0], FIN_BOX[1], 1.15), 0.85)}
+        seats['H'] = {'at': px((FIN_HOST[0], FIN_HOST[1], 1.15)), 'w': width_pct((FIN_HOST[0], FIN_HOST[1], 1.15), 0.85)}
+        # the front of the stage, two people side by side (the finalists walking out)
+        for i, x in enumerate((-0.8, 0.8)):
+            seats[f'D{i}'] = {'at': px((x, 3.0, 1.15)), 'w': width_pct((x, 3.0, 1.15), 0.85)}
+        out['seats'] = seats
+        out['slot'] = {'at': px((FIN_BOX[0], FIN_BOX[1], FIN_BOX[2] + 0.43)), 'w': width_pct((FIN_BOX[0], FIN_BOX[1], FIN_BOX[2]), 0.62)}
     d = os.path.join(OUT, theme); os.makedirs(d, exist_ok=True)
     path = os.path.join(d, f'{room}.json')
     open(path, 'w').write(json.dumps(out, indent=1))
@@ -1720,10 +1737,72 @@ def room_studio_wide(T):
     world('#24324a', 0.5)
     camera((0, -3.2, 1.7), (85, 0, 0), lens=22)
 
+# The finale stage (the user, 2026-10-06: "we need an actual stage"): the finalists' two chairs on a
+# raised round platform, the jury on risers either side, the key box on a pedestal in front, the
+# host's mark. Every place is an anchor, measured where the person's portrait rests.
+FIN_PLAT = (0.0, 6.0, 0.42)                                   # centre x, y, top of the platform
+FIN_CHAIRS = ((-1.05, 6.0, 25), (1.05, 6.0, -25))
+FIN_JURY = []                                                  # (x, y, seat height, turn)
+for sx in (-1, 1):
+    for x in (4.55, 3.55):                                  # front row, on the floor
+        FIN_JURY.append((sx * x, 3.5, 0.5, sx * -12))
+    for x in (5.2, 4.1, 3.0):                                  # back row, on the riser, between the front seats
+        FIN_JURY.append((sx * x, 4.75, 1.3, sx * -12))
+FIN_BOX = (-2.0, 2.3, 1.02)                                     # the top of the pedestal
+FIN_HOST = (1.75, 1.9)
+
+def jury_chair(name, loc, rot_z, fabric):
+    g = _group(name, loc, rot_z)
+    leg = mat('studioleg', '#34363c', 0.4, 0.5)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            _child(g, box(f'{name}Leg{sx}{sy}', (0.05, 0.05, 0.36), (sx * 0.24, sy * 0.22, 0.18), leg, bevel=0))
+    _child(g, box(f'{name}Seat', (0.6, 0.56, 0.16), (0, 0, 0.42), fabric, bevel=0))
+    _child(g, box(f'{name}Back', (0.6, 0.1, 0.55), (0, 0.24, 0.75), fabric, bevel=0))
+    return g
+
+def room_finale(T):
+    W, D, H = 18.0, 10.0, 6.0
+    T = dict(T, ceiling='#2b3346')
+    shell(T, W, D, H, wall_mat=mat('studiowalls', '#566176', 0.7), floor_mat=mat('studiofloorbase', '#aeb8c8', 0.3))
+    box('StudioFloorGloss', (W, D, 0.02), (0, D / 2, 0.005), mat('studiogloss', '#b9c3d2', 0.12, 0.25, coat=1.0), bevel=0)
+    _studio_back(T, W, D, H, '#2aa8ff', video_x=0, video_w=6.4, video_h=2.9)
+    # the platform: a raised disc with a lit rim, and two steps down to the floor
+    px, py, pz = FIN_PLAT
+    cyl('Platform', 2.5, pz, (px, py, pz / 2), mat('platform', '#d9dfe8', 0.25, 0.2), verts=96, bevel=0)
+    cyl('PlatformRim', 2.52, 0.05, (px, py, pz - 0.03), mat('platrim', '#ffffff', emit='#4fc8ff', strength=14), verts=96, bevel=0)
+    cyl('PlatformRing', 1.9, 0.012, (px, py, pz + 0.006), mat('platring', '#ffffff', emit='#9fe4ff', strength=8), verts=96, bevel=0)
+    for i in range(2):
+        box(f'PlatStep{i}', (2.6 - i * 0.5, 0.42, 0.14 * (i + 1)), (px, py - 2.75 + i * 0.4, 0.07 * (i + 1)), mat('studiostep', '#d9dfe8', 0.25, 0.2), bevel=0)
+        box(f'PlatStepLight{i}', (2.6 - i * 0.5, 0.02, 0.02), (px, py - 2.96 + i * 0.4, 0.14 * (i + 1) + 0.01), mat('steplight', '#ffffff', emit='#7fd6ff', strength=14), bevel=0)
+    fabric = mat('studiofabric', '#9a9fa8', 0.85)
+    for i, (x, y, r) in enumerate(FIN_CHAIRS):
+        studio_chair(f'FinalChair{i}', (x, y, pz), r, fabric)
+    # the jury: a riser on each side, two rows of chairs
+    jfab = mat('juryfabric', '#3c4a66', 0.85)
+    riser = mat('riser', '#4a5568', 0.5)
+    for sx in (-1, 1):
+        box(f'Riser{sx}', (3.4, 1.2, 0.8), (sx * 4.2, 4.8, 0.4), riser, bevel=0)
+        box(f'RiserEdge{sx}', (3.4, 0.03, 0.03), (sx * 4.2, 4.19, 0.8), mat('riseredge', '#ffffff', emit='#4fc8ff', strength=12), bevel=0)
+    for i, (x, y, z, r) in enumerate(FIN_JURY):
+        jury_chair(f'JuryChair{i}', (x, y, z - 0.5), r, jfab)
+    # the key box: a clear box on a pedestal, a gold slot in the lid
+    bx, by, bz = FIN_BOX
+    cyl('BoxPedestal', 0.2, bz, (bx, by, bz / 2), mat('pedestal', '#c9d1dd', 0.25, 0.4), verts=48, bevel=0)
+    cyl('BoxFoot', 0.38, 0.05, (bx, by, 0.025), mat('pedestal', '#c9d1dd', 0.25, 0.4), verts=48, bevel=0)
+    box('KeyBox', (0.62, 0.44, 0.42), (bx, by, bz + 0.21), mat('keybox', '#bfe9ff', 0.05, 0.0, emit='#7fd6ff', strength=1.2), bevel=0)
+    box('KeySlot', (0.3, 0.06, 0.012), (bx, by, bz + 0.425), mat('keyslot', '#f5c542', 0.3, 0.9), bevel=0)
+    neon_eye((bx, by - 0.225, bz + 0.21), 0.09, rot=(90, 0, 0), color='#ffffff', glow='#8fe6ff')
+    # the host's mark: a lit circle on the floor
+    cyl('HostMark', 0.3, 0.012, (FIN_HOST[0], FIN_HOST[1], 0.012), mat('hostmark', '#ffffff', emit='#9fe4ff', strength=6), verts=48, bevel=0)
+    area('StudioKey', (6, 3), (0, -0.5, 5.4), 1800, '#ffffff', rot=(-50, 0, 0))
+    world('#24324a', 0.5)
+    camera((0, -2.4, 2.2), (79, 0, 0), lens=19)
+
 ROOMS = {'kitchen': room_kitchen, 'living': room_living, 'bedroom': room_bedroom, 'hoh': room_hoh, 'dr': room_dr,
          'yard': room_yard, 'storage': room_storage, 'havenot': room_havenot, 'dining': room_dining}
 ROOMS.update(ARENA_ROOMS)
-ROOMS.update({'studio': room_studio, 'studio-wide': room_studio_wide})
+ROOMS.update({'studio': room_studio, 'studio-wide': room_studio_wide, 'finale': room_finale})
 
 # ══════════════════════════════════════════════════════════════════════
 # Build and render

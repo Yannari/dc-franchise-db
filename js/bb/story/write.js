@@ -67,6 +67,32 @@ function presumed(entry, ctx) {
   return true;
 }
 
+// ── across seasons ─────────────────────────────────────────────────────
+// The season's ledger stops a scene repeating inside a season, but a viewer watches season
+// after season: the first night is one scene a season, and with a handful to choose from the
+// same opening came back (the user, 2026-10-06: "is it happening every first episode?").
+// The scenes this browser has aired recently are remembered, and a new season prefers ones
+// the viewer has not seen while any are left. Words only: a saved season keeps the words it
+// was written with; nothing in the game reads this.
+const SEEN_KEY = 'bb-story-seen';
+const SEEN_MAX = 900;
+let seenCache = null;
+function seenAcross() {
+  if (seenCache) return seenCache;
+  try { seenCache = new Set(JSON.parse(globalThis.localStorage?.getItem(SEEN_KEY) || '[]')); } catch { seenCache = new Set(); }
+  return seenCache;
+}
+function noteAcross(id) {
+  try {
+    if (!globalThis.localStorage) return;
+    const seen = seenAcross();
+    seen.delete(id); seen.add(id);
+    const list = [...seen].slice(-SEEN_MAX);
+    seenCache = new Set(list);
+    globalThis.localStorage.setItem(SEEN_KEY, JSON.stringify(list));
+  } catch { /* storage is a convenience */ }
+}
+
 function pick(keys, who, data, ctx, room, salt) {
   const pools = {};
   // an entry that names something the scene does not have ({alliance} on an unnamed pact,
@@ -82,13 +108,18 @@ function pick(keys, who, data, ctx, room, salt) {
   // inside a set piece the room is the set's: a scene that stages its own room waits, unless nothing else fits
   if (ctx.inSet) for (const k of keys) { const free = pools[k].filter(e => !e.room); if (free.length) pools[k] = free; }
   if (!keys.some(k => pools[k].length)) return null;
+  // what this viewer saw in recent seasons waits while something new still fits
+  const seen = seenAcross();
+  if (seen.size) for (const k of keys) { const fresh = pools[k].filter(e => !seen.has(e.id)); if (fresh.length) pools[k] = fresh; }
   const facts = factsFor({ who, data, room }, { week: ctx.week, act: 'house', hoh: ctx.hoh, nominees: ctx.nominees });
   const rng = stableRng(gs.bb?.seasonSalt || 0, ctx.week?.num || 0, 'story', salt);
   const speakers = Object.values(who).filter(Boolean);
   const pairKey = [who.a, who.b].filter(Boolean).sort().join('|');
   const clock = (ctx.week?.num || 0) * 10 + (ctx.stretch || 0);
   const key = keys.length > 1 ? keys : keys[0];
-  return pickEntry(ledger(), pools, key, facts, pairKey, rng, speakers, clock);
+  const got = pickEntry(ledger(), pools, key, facts, pairKey, rng, speakers, clock);
+  if (got) noteAcross(got.id);
+  return got;
 }
 
 const render = (entry, who, ctx, data) => entry.turns.map(t => {

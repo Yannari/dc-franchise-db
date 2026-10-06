@@ -139,7 +139,9 @@ describe('the pools read for every camper', () => {
       'whether it means anything', 'is a question for later', "that's the point", 'something had changed',
       'nobody notices', "doesn't know it happened", 'the work speaks', 'it does not go unnoticed', 'surgical',
       'files it away', 'files that away', 'recalculates', 'the mechanism', 'permanently.',
-      'say that to everyone', 'works on everyone', 'costs me nothing'];
+      'say that to everyone', 'works on everyone', 'costs me nothing',
+      // round 2 (own read, 2026-10-06): epigram replies
+      "unless you shouldn't", "can't be disappointed", 'least scary way', 'thinks the challenge is a buffet'];
     const bad = [];
     for (const [key, pool] of all) for (const e of pool) for (const x of texts(e)) for (const c of CLEVER) {
       if (x.toLowerCase().includes(c)) bad.push(`${key} ${e.id}: "${c}"`);

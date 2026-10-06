@@ -314,43 +314,18 @@ export function updateChalRecord(ep) {
     if (!notifiers.length) return;
     const notifier = notifiers.reduce((best, p) => pStats(p).strategic > pStats(best).strategic ? p : best, notifiers[0]);
 
-    const prn = pronouns(name);
-    const s3 = prn.sub === 'they';
-    const nPrn = pronouns(notifier);
-    const ns3 = nPrn.sub === 'they';
-
     const isWinStreak = crossed.key === 'wins';
-    const mainLines = isWinStreak ? [
-      `${name} keep${s3 ? '' : 's'} winning challenges. At some point the tribe stops calling it luck and starts calling it a problem.`,
-      `${name} win${s3 ? '' : 's'} again. The reaction around camp is quiet — but it's there. ${prn.Sub} ${s3 ? 'are' : 'is'} becoming a name people say in whispers.`,
-      `Every time there's a challenge, ${name} is near the top. The tribe is starting to notice the pattern even if no one's said it out loud yet.`,
-      `${name} doesn't lose challenges. That's not a compliment anymore — it's a threat assessment.`,
-      `Another strong challenge from ${name}. The mood around camp after isn't celebration. It's calculation.`,
-      `${prn.Sub} ${s3 ? 'keep' : 'keeps'} performing. Every win ${name} gets is another reason someone adds ${prn.obj} to their shortlist.`,
-    ] : [
-      `${name} keeps finishing near the top. It's becoming a pattern. The tribe sees it.`,
-      `${name} is quietly building a challenge résumé. No one's panicking yet — but the number is getting hard to ignore.`,
-      `Three top finishes for ${name}. Not dominant enough to scare people today. Consistent enough to terrify them later.`,
-      `${name}'s challenge record is starting to write a story. The tribe hasn't finished reading it yet — but they're paying attention.`,
-      `${name} doesn't stand out loudly. ${prn.Sub} just ${s3 ? 'keep' : 'keeps'} placing. And that consistency is its own kind of danger.`,
-      `Every episode ${name} finishes near the top is another data point. The tribe is collecting them.`,
-    ];
 
-    const reactLines = [
-      `${notifier} clock${ns3 ? '' : 's'} it and say${ns3 ? '' : 's'} nothing out loud. But ${nPrn.posAdj} wheels are turning.`,
-      `${notifier} ha${ns3 ? 've' : 's'} been watching ${name}'s challenge record quietly. ${nPrn.Sub} ${ns3 ? 'are' : 'is'} not the only one.`,
-      `${notifier} file${ns3 ? '' : 's'} it away. ${name} is becoming someone you deal with before you can't anymore.`,
-      `${notifier} bring${ns3 ? '' : 's'} it up — carefully, just to one person, like it's a casual observation. It isn't.`,
-    ];
-
-    const hashBase = [...name].reduce((a, c) => a + c.charCodeAt(0), 0);
-    const seed = ep.num * 23;
-    const mainText = mainLines[(hashBase + seed) % mainLines.length];
-    const reactText = reactLines[(hashBase + seed * 5) % reactLines.length];
-
+    // Scenes, written later by td/script (this module sits below it, so it leaves them pending):
+    // the one who keeps winning, then the strategist who has noticed. The sentences they replace
+    // were picked by a hash of the name, never the engine's dice, so nothing else moves.
+    const _count = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+    const _threatData = { ending: isWinStreak ? 'wins' : 'podiums', count: _count[isWinStreak ? rec.wins : rec.podiums] || String(isWinStreak ? rec.wins : rec.podiums) };
     const arr = ep.campEvents[campKey].post;
-    arr.push({ type: 'chalThreat', text: mainText, players: [name] });
-    arr.push({ type: 'chalThreatReaction', text: reactText, players: [notifier, name] });
+    arr.push({ type: 'chalThreat', players: [name], badgeText: 'THREAT', badgeClass: 'gold',
+      pendingScene: { kind: 'threat.self', who: { a: name }, data: _threatData, spot: { id: 'confessional', label: 'Confessional' }, phase: 'post' } });
+    arr.push({ type: 'chalThreatReaction', players: [notifier, name], badgeText: 'TAKING NOTE', badgeClass: 'red',
+      pendingScene: { kind: 'threat.notice', who: { a: notifier, b: name }, data: _threatData, spot: { id: 'confessional', label: 'Confessional' }, phase: 'post' } });
 
     if (!ep.chalThreatEvents) ep.chalThreatEvents = [];
     ep.chalThreatEvents.push({ player: name, notifier, threshold: `${crossed.key}>=${crossed.val}` });

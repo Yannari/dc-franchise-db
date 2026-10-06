@@ -25,6 +25,7 @@ import { stableRng } from '../../script/rng.js';
 import { POOLS } from './lines/index.js';
 import { factsFor } from './facts.js';
 import { campContext } from './context.js';
+import { makeScene } from './scene.js';
 
 // The episode being played. gs.episode still holds the last one until it ends.
 export const epOf = ctx => ctx.ep || (gs.episode || 0) + 1;
@@ -146,6 +147,25 @@ export function transcript(lines) {
  */
 export function scriptEvent(event, scene, ctx = {}) {
   return scriptEventParts(event, [scene], ctx);
+}
+
+/**
+ * Scenes a module could not write itself. players.js (updateChalRecord) sits
+ * below this layer — importing it would make a cycle — so it leaves
+ * `pendingScene: { kind, who, data, spot, phase }` on its camp event, and
+ * this writes them all. Called at the top of text-backlog generateSummaryText,
+ * the one place every episode path passes before its text is frozen.
+ */
+export function scriptPendingScenes(ep) {
+  for (const block of Object.values(ep?.campEvents || {})) {
+    const events = Array.isArray(block) ? block : [...(block?.pre || []), ...(block?.post || [])];
+    for (const ev of events) {
+      const p = ev?.pendingScene;
+      if (!p) continue;
+      delete ev.pendingScene;
+      scriptEvent(ev, makeScene(p.kind, p.who, p.data || {}, [], p.spot || null), { ep: ep.num, phase: p.phase || 'post' });
+    }
+  }
 }
 
 /**

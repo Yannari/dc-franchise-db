@@ -7088,27 +7088,18 @@ export function generateCampEvents(ep, phase = 'both') {
       .sort((a, b) => (b.rec.podiums + b.rec.wins * 2) - (a.rec.podiums + a.rec.wins * 2))
       .slice(0, 2); // at most 2 players flagged per merge episode
     _chalDom.forEach(({ name: threat, rec }) => {
-      const _tp = pronouns(threat);
-      const s3 = _tp.sub === 'they';
       // Notifier: most strategic player who isn't the threat
       const _notifier = gs.activePlayers.filter(p => p !== threat)
         .reduce((best, p) => pStats(p).strategic > pStats(best).strategic ? p : best,
           gs.activePlayers.filter(p => p !== threat)[0]);
-      const _np = pronouns(_notifier);
-      const _winsNote = rec.wins >= 1 ? ` and won ${rec.wins} individual challenge${rec.wins > 1 ? 's' : ''} before merge` : '';
-      const _threatLine = _rp([
-        `${threat} finished in the top of ${rec.podiums} pre-merge challenges${_winsNote}. At merge, that résumé doesn't earn respect — it earns a target.`,
-        `Everyone arrived at merge camp knowing ${threat}'s name. Not because of strategy. Because ${_tp.sub} ${s3 ? 'were' : 'was'} winning challenges all pre-merge. That kind of record travels.`,
-        `${threat} was the best challenge performer coming into this merge. ${rec.podiums} top finishes. The question isn't whether people are worried — it's who acts first.`,
-        `Pre-merge, ${threat} was an asset. At merge, that asset becomes a liability for everyone who has to compete against ${_tp.obj}.`,
-      ]);
-      const _reactLine = _rp([
-        `${_notifier} brought it up within the first hour. The name ${threat} came out of ${_np.posAdj} mouth like ${_np.sub} ${s3 ? 'had' : 'had'} been sitting on it for days.`,
-        `${_notifier} didn't need long to do the math. ${threat} wins challenges. ${threat} has allies. ${threat} has to go early.`,
-        `${_notifier} saw the same résumé everyone else saw. The difference is ${_np.sub} ${s3 ? 'are' : 'is'} already planning around it.`,
-      ]);
-      pre.push({ type: 'chalThreat',         text: _threatLine, players: [threat] });
-      pre.push({ type: 'chalThreatReaction', text: _reactLine,  players: [_notifier, threat] });
+      Math.random(); Math.random(); // the two draws that picked the sentences (the season must not move)
+      const _cw = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+      const _mData = { ending: 'merge', count: _cw[rec.podiums] || String(rec.podiums), wins: rec.wins >= 1 ? (_cw[rec.wins] || String(rec.wins)) : null };
+      const _cf = { id: 'confessional', label: 'Confessional' };
+      pre.push(scriptEvent({ type: 'chalThreat', players: [threat], badgeText: 'THREAT', badgeClass: 'gold' },
+        makeScene('threat.self', { a: threat }, _mData, [], _cf), { ep: ep.num, phase: 'pre' }));
+      pre.push(scriptEvent({ type: 'chalThreatReaction', players: [_notifier, threat], badgeText: 'TAKING NOTE', badgeClass: 'red' },
+        makeScene('threat.notice', { a: _notifier, b: threat }, _mData, [], _cf), { ep: ep.num, phase: 'pre' }));
     });
 
     // Boost merge-specific events in the generated list

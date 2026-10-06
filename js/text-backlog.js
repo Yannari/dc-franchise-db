@@ -12,6 +12,7 @@ import { describeIntentionsPlan } from './intentions.js';
 import { buildInfoFlowLog } from './knowledge-integration.js';
 import { standingFromSnapshot, standingMovement, roleLabel } from './social-status.js';
 import { pStats, pronouns, challengeWeakness } from './players.js';
+import { scriptPendingScenes } from './td/script/write.js';
 import { getBond, bondLabel } from './bonds.js';
 import { EDIT_LABELS } from './edit-layer.js';
 import { buildCrashout, vpGenerateQuote, _riLastWords, _bbFinalPleaSpeech,
@@ -3739,6 +3740,8 @@ export function generateTraitorsSummaryText(ep, observer = 'audience') {
 }
 
 export function generateSummaryText(ep) {
+  // Camp scenes a lower module left unwritten (td/script/write.js scriptPendingScenes).
+  scriptPendingScenes(ep);
   // A Big Brother week is a different show and shares none of the structure
   // below — no tribes, no challenge, no Tribal Council. It gets its own
   // transcript, built from the same acts the visual player renders, so the two

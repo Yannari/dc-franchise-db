@@ -20,6 +20,19 @@ export default {
     { id: 'mt.c5', turns: [{ beat: 'The house gathers. {b} takes the seat nearest the door.' }, { by: 'a', say: "Thanks for coming." }] },
     { id: 'mt.c6', turns: [{ by: 'a', say: "Sit down, everyone. This won't take long." }, { beat: 'It takes a long time.' }] },
   ],
+  // the house coming in, before anybody says why (the user, 2026-10-06: "'Living room. Everyone.
+  // Five minutes.' and straight into it: no time to breathe, no reaction, wait for what, what's
+  // going on, a Diary Room"): people arriving, wondering, the one it is about feeling it coming
+  'meeting.gather.scene': [
+    { id: 'mt.ga1', when: { room: 'living-room' }, turns: [{ beat: 'One by one, the house drifts into the living room. Nobody sits down properly.' }, { by: 'c', say: "What is this about?" }, { by: 'a', say: "You'll see. Is everybody here?" }, { by: 'b', dr: "The second I heard 'house meeting', I knew. You always know when it's about you." }] },
+    { id: 'mt.ga2', turns: [{ beat: 'Somebody turns the music off. People squeeze onto the sofas, still holding cups and plates.' }, { by: 'c', say: "Should I be worried?" }, { by: 'a', say: "Not you." }, { by: 'c', dr: "'Not you.' Which means somebody in this room should be very worried." }] },
+    { id: 'mt.ga3', turns: [{ beat: 'The house files in. {b} takes the seat nearest the door.' }, { by: 'b', say: "This had better be good. I was in the shower." }, { by: 'a', say: "It's important. I promise." }, { by: 'a', dr: "I've been holding this in for days. Tonight the whole house hears it." }] },
+    { id: 'mt.ga4', turns: [{ beat: 'Everybody arrives at once and then nobody speaks. {a} waits until the room is completely quiet.' }, { by: 'b', dr: "Everybody looked at {a}. Then half of them looked at me. That's when my stomach dropped." }] },
+    { id: 'mt.ga5', turns: [{ beat: 'People wander in from all over the house, asking each other what is going on. Nobody knows.' }, { by: 'c', say: "Has somebody died? Why is everyone so serious?" }, { by: 'a', say: "Just sit down. Please." }, { by: 'c', dr: "In here, a house meeting means one thing. Somebody is about to get dragged in front of everybody." }] },
+    { id: 'mt.ga6', when: { room: 'living-room' }, turns: [{ beat: 'The living room fills up. {b} sits down, catches {a}\'s eye, and looks away first.' }, { by: 'a', say: "Thanks for coming, everybody. This won't take long." }, { by: 'b', dr: "'This won't take long.' Nobody who has ever said that in this house has been telling the truth." }] },
+    { id: 'mt.ga7', turns: [{ beat: 'The house gathers on the sofas. {a} stays standing.' }, { by: 'b', say: "Are you going to sit down?" }, { by: 'a', say: "No. I'd rather stand for this." }, { by: 'a', dr: "If I'm going to do this, I'm doing it standing up, where everybody can see me." }] },
+    { id: 'mt.ga8', turns: [{ beat: 'Someone is still eating cereal. The spoon is the only sound in the room.' }, { by: 'a', say: "Okay. Is everybody here?" }, { by: 'b', say: "Everybody's here. Go on, then." }, { by: 'b', dr: "I could tell from {a}'s face exactly where this was going. I just didn't know how bad." }] },
+  ],
   'meeting.case.lie': [
     { id: 'mt.l1', turns: [{ by: 'a', say: "Somebody in this room has been telling people I made deals I never made." }, { beat: '{a} turns to {b}.' }] },
     { id: 'mt.l2', turns: [{ by: 'a', say: "{b}, tell everyone what you've been saying about me. Go on. Say it again, here." }] },

@@ -339,13 +339,13 @@ function teamHtml(S, L, st, fresh, idx) {
 // ── Move-in day: the wall of frames filling ────────────────────────────
 function moveInHtml(S, L, st, fresh, idx) {
   const M = S.movein || {};
-  const seen = new Set(S.steps.slice(0, idx + 1).filter(x => x.miIn).map(x => x.miIn));
+  const seen = new Set(S.steps.slice(0, idx + 1).filter(x => x.miIn).flatMap(x => [].concat(x.miIn)));
   const tiles = (M.arrivals || []).map(n => {
     if (!seen.has(n)) return '<span class="mif empty">?</span>';
-    const now = fresh && st?.miIn === n;
+    const now = fresh && [].concat(st?.miIn || []).includes(n);
     return `<span class="mif ${now ? 'now' : ''}" style="--c:${col(n)}" title="${esc(n)}">${img(n)}</span>`;
   }).join('');
-  return `<div class="miboard"><span class="mih">MOVE-IN DAY · ${seen.size} OF ${(M.arrivals || []).length}</span><div class="mir">${tiles}</div></div>`;
+  return `<div class="miboard"><span class="mih">IN THE HOUSE · ${seen.size} OF ${(M.arrivals || []).length}</span><div class="mir">${tiles}</div></div>`;
 }
 
 // ── The White Locust's call-out chain (Phase 7) ────────────────────────
@@ -609,8 +609,10 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   if (idx < 0) return h;
   const cast = castAt(S, idx);
   const speaker = st && (st.k === 'say' || st.k === 'host') ? st.by : null;
+  // the host on the stage with them (move-in night), not on a screen
+  if (S.hostOn && o.host) h += `<div class="gt host ${speaker === o.host ? 'speak' : ''}" style="left:9%;--c:#ff2e4d;--ry:10deg"><div class="tile">${img(o.host, true)}</div><div class="plate"><b>${esc(o.host)}</b><span class="hostlab">HOST</span></div></div>`;
   const seated = S.seated ? seatsAt(S, idx) : null;
-  if (S.kind === 'houselife' && !seated && cast.length > 3) {
+  if ((S.kind === 'houselife' || S.kind === 'movein') && !seated && cast.length > 3) {
     const focus = focusAt(S, idx);
     const before = idx > sceneStartOf(S, idx) ? focusAt(S, idx - 1) : focus;
     const back = cast.map(([n]) => n).filter(n => !focus.includes(n));
@@ -698,7 +700,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   // this step says which room, camera and people are on screen.
   const S0 = screens[si];
   let sc = null;
-  if (S0.kind === 'houselife') for (let i = Math.max(0, idx); i >= 0; i--) { if (S0.steps[i]?.scene) { sc = S0.steps[i].scene; break; } }
+  if (S0.kind === 'houselife' || S0.kind === 'movein') for (let i = Math.max(0, idx); i >= 0; i--) { if (S0.steps[i]?.scene) { sc = S0.steps[i].scene; break; } }
   const S = sc ? { ...S0, ...sc } : S0;
   const st = idx >= 0 ? S.steps[idx] : null;
   const prevSt = idx > 0 ? S.steps[idx - 1] : null;
@@ -741,7 +743,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
       : `<div class="bigrev ${fresh ? 'fresh' : ''}"><i>${esc(a)}</i><b>${esc(b)}</b></div>`;
   }
   if (fresh && st && st.door) h += '<div class="doorflood"></div>';
-  if (fresh && st && st.scene && st.scene.slate && S0.kind === 'houselife') {
+  if (fresh && st && st.scene && st.scene.slate && (S0.kind === 'houselife' || S0.kind === 'movein')) {
     h += `<div class="slate"><span>DAY ${esc(S.day)} · ${esc(st.scene.time || S.time || '')}</span><b>${esc(st.scene.room || S.room || '')}</b></div>`;
   }
   if (L.votes && st && st.k === 'host' && !st.big) {

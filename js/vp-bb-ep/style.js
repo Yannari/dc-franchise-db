@@ -385,4 +385,7 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 @keyframes bbx-tense{50%{scale:1.06}}
 .bbx .doorflood{position:absolute;inset:0;z-index:7;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(ellipse 30% 62% at 50% 55%,rgba(255,250,232,.96),rgba(255,214,140,.5) 42%,transparent 76%);animation:bbx-flood 2.8s ease-out both}
 @keyframes bbx-flood{0%{opacity:0;transform:scaleX(.08)}25%{opacity:1;transform:scaleX(1.15)}100%{opacity:0;transform:scaleX(1.7)}}
+.bbx .gt.host{z-index:3}
+.bbx .gt.host .tile{box-shadow:inset 0 0 0 .16cqw #ff2e4d,0 1.4cqw 3cqw rgba(0,0,0,.5)}
+.bbx .gt.host .hostlab{font:800 .75cqw 'Chakra Petch';letter-spacing:.2cqw;color:#fff;background:#ff2e4d;padding:.1cqw .5cqw;border-radius:.3cqw}
 @media (prefers-reduced-motion:reduce){.bbx .gt.bgp .tile,.bbx .gt.tense .tile{animation:none}}`;

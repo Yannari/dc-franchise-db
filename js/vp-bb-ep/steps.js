@@ -1875,24 +1875,86 @@ function rewindScreens(act, ctx) {
 // in their own voice (some share a first impression of somebody already
 // inside), and the wall of frames above the living room fills face by face.
 // Big Brother speaks once everybody is in. Words: lines/moveinact.js.
-function moveInScreen(act, ctx, host) {
+function moveInScreen(act, ctx, host, row) {
+  // Move-in night, the way the live show runs it (the user, 2026-10-06: "check how move-in
+  // actually happens: entering in groups, first they're on the set with the host"). Groups of
+  // about four meet the host on the stage, each says a few words, and the group goes through the
+  // front door together; inside, the people already in greet the next group; when the house is
+  // full the host speaks to them on the living room screen. Words: bb/script/lines/moveinact.js.
   const arrivals = act.arrivals || [];
-  const steps = [
-    { k: 'host', by: host, t: `Good evening, and welcome to Big Brother. ${titleCase(word(arrivals.length))} strangers are about to move into this house, and only one of them will leave with the prize.` },
-  ];
-  for (const b of act.beats || []) {
-    const n = b.players?.[0];
-    if (!n) continue;
-    steps.push({ k: 'beat', t: b.order === 0 ? `The front door opens. The first houseguest through it is ${n}.` : `The front door opens again. It's ${n}.`, miIn: n, at: [[n, 50]] });
-    steps.push(...(b.lines?.length ? scriptSteps(b.lines) : []));
-  }
-  steps.push({ k: 'bb', t: 'Houseguests, welcome to the Big Brother house.', toast: ['THE HOUSE IS FULL', '#f5c542'] });
-  steps.push({ k: 'beat', t: 'The competition for the first Head of Household begins tonight.' });
+  const groups = (act.groups || []).length ? act.groups : [arrivals];
+  const beatOf = n => (act.beats || []).find(b => (b.players || [])[0] === n) || {};
+  const pick = (list, salt) => pickBy(list, `${ctx.week}|movein|${salt}`);
+  const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
+  const stage = (cast, extra = {}) => ({ set: 'arena-stage', arena: true, room: 'The Stage', cam: 7, kicker: 'Live · The stage', cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'ceremony', hostOn: true, time: '8:00 PM', slate: true, ...extra });
+  const inside = (cast, room = 'ceremony', extra = {}) => ({ set: room, room: ROOM_NAME[room] || 'Living Room', cam: CAM[room] || 4, kicker: `Cam ${String(CAM[room] || 4).padStart(2, '0')} · ${ROOM_NAME[room] || 'Living room'}`, cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'house', time: '8:30 PM', slate: true, ...extra });
+  const steps = [];
+  steps.push({ k: 'host', by: host, scene: stage([]), t: pick([`Good evening, and welcome to Big Brother! Tonight, ${word(arrivals.length)} strangers move into the Big Brother house, and only one of them will walk out with the prize.`,
+    `Hello, and welcome to the premiere of Big Brother! ${titleCase(word(arrivals.length))} houseguests. One house. Cameras everywhere. And one winner at the end of it.`], 'open') });
+  steps.push({ k: 'host', by: host, t: groups.length > 1 ? `They'll move in ${word(groups.length)} groups of about ${word(Math.round(arrivals.length / groups.length))}. Let's meet the first group.` : `Let's meet them.` });
+  const inHouse = [];
+  groups.forEach((g, gi) => {
+    // on the stage, with the host
+    steps.push({ k: 'beat', scene: stage(g), t: pick([`${listOf(g)} walk out onto the stage. The crowd goes up a notch.`, `The ${ORD[gi] || 'next'} group comes out to a roar: ${listOf(g)}.`, `${listOf(g)} step out under the lights, waving at a crowd they can barely see.`], `g${gi}`) });
+    steps.push({ k: 'host', by: host, t: pick([`Welcome, all of you! Quickly, before you go in: how are you going to play this game?`, `Welcome! One question each, and then the house is yours. What's your game?`, `You're about to walk into that house. Tell me how you plan to play it.`], `q${gi}`) });
+    for (const n of g) {
+      const st = beatOf(n).stageLines;
+      if (st?.length) steps.push(...scriptSteps(st));
+      else steps.push({ k: 'say', by: n, t: pick(["I'm just going to be myself.", "I'm ready. I've been ready for years.", "Have fun, play hard, see what happens."], n) });
+    }
+    steps.push({ k: 'host', by: host, t: pick([`${listOf(g)}... the Big Brother house is waiting. Go on in!`, `Alright, ${g.length === 2 ? 'you two' : 'all of you'}. Through those doors. Good luck!`, `That's it. ${listOf(g)}, the house is yours.`], `go${gi}`) });
+    // through the front door, together
+    inHouse.push(...g);
+    const before = inHouse.filter(n => !g.includes(n));
+    // the front door opens into the living room; when the group's scene opens on its own staging
+    // line, the cut goes on that line rather than a second 'the front door opens'
+    const door = { scene: inside([...g, ...before.slice(-4)], 'ceremony'), miIn: g };
+    const walk = scriptSteps((act.groupLines || [])[gi]);
+    if (walk[0]?.k === 'beat') { walk[0] = { ...walk[0], ...door }; steps.push(...walk); }
+    else steps.push({ k: 'beat', ...door, t: gi === 0 ? `The front door opens. ${listOf(g)} are the first ones in.` : `The front door opens again. ${listOf(g)} are in.` }, ...walk);
+    // each arrival's own first words in the house (and the first impressions)
+    for (const n of g) { const b = beatOf(n); if (b.lines?.length) steps.push(...scriptSteps(b.lines)); }
+    if (gi < groups.length - 1) steps.push({ k: 'host', by: host, scene: stage([]), t: pick([`${titleCase(word(inHouse.length))} in. ${titleCase(word(arrivals.length - inHouse.length))} to go. Let's meet the next group.`, `That's ${word(inHouse.length)} in the house. Here comes group number ${word(gi + 2)}.`], `next${gi}`) });
+  });
+  // the house is full: the host on the living room screen
+  const announced = (row?.acts || []).some(a => a?.type === 'twist-announcement');
+  steps.push({ k: 'bb', scene: inside(arrivals.slice(0, 16), 'ceremony', { tvObj: true, time: '10:00 PM' }), t: 'Houseguests, please gather in the living room.', toast: ['THE HOUSE IS FULL', '#f5c542'] });
+  steps.push({ k: 'host', by: host, t: `Houseguests! Welcome to the Big Brother house. For the next few months, this is home. Take a look around: everybody standing in this room wants the same thing you do.` });
+  if (announced) steps.push({ k: 'host', by: host, t: `And this season, the game has a twist. You'll hear all about it very soon.` });
+  steps.push({ k: 'host', by: host, t: `Get comfortable, but not too comfortable. The competition for the first Head of Household is coming, and it won't wait for you to unpack. Good luck.` });
+  steps.push({ k: 'beat', t: pick(['The screen goes dark. Sixteen people look at each other at once.', 'The screen goes black. For about three seconds, nobody says anything. Then everybody does.', 'The host is gone. The house erupts.'], 'end').replace('Sixteen', titleCase(word(arrivals.length))) });
   return {
-    id: 'bb-movein-v', kind: 'movein', anchor: 'start', day: 1, set: 'ceremony', room: 'Living Room', cam: 4, time: '19:00',
-    kicker: 'Cam 04 · Living room', title: 'Move-In Day', label: 'Move-In Day', sub: `${arrivals.length} strangers, one house`,
+    id: 'bb-movein-v', kind: 'movein', anchor: 'start', day: 1, set: 'arena-stage', arena: true, room: 'The Stage', cam: 7, time: '8:00 PM',
+    kicker: 'Live · Move-in night', title: 'Move-In Night', label: 'Move-In Night', sub: `${arrivals.length} strangers, ${groups.length} groups, one house`,
     cast: [], movein: { arrivals: [...arrivals] }, steps,
   };
+}
+
+// ── a twist announcement, stepped ──────────────────────────────────────
+// The house is called to the living room and the host reads the rule on the screen, with the
+// rules card filling as it goes, then the line that lands (sting), then how the house takes it
+// (the engine's reaction beats). The user, 2026-10-06: "do we have twist announcements in the viewer?"
+function twistAnnounceScreen(act, ctx, host) {
+  const ann = (act.announced || []).filter(Boolean);
+  if (!ann.length) return null;
+  const sentences = t => String(t || '').split(/(?<=[.!?])\s+(?=[A-Z])/).map(x => x.trim()).filter(Boolean);
+  const rules = [];
+  const steps = [{ k: 'bb', t: act.secondCall ? 'Houseguests, please gather in the living room. There is more.' : 'Houseguests, please gather in the living room.' }];
+  steps.push({ k: 'host', by: host, t: act.secondCall ? `Houseguests, one more thing.`
+    : ctx.week === 1 && ctx.anchor === 'start' ? `Houseguests, before you compete for the first Head of Household, there is something you need to know.`
+      : `Hello, houseguests. I hope you're settled in, because I'm about to change everything.` });
+  for (const a of ann) {
+    const name = a.name || 'A twist';
+    steps.push({ k: 'host', by: host, t: `Introducing: ${name.toUpperCase()}.`, toast: [name.toUpperCase(), '#7c5cff'] });
+    for (const s of sentences(a.rule)) { rules.push([rules.length ? '' : name.toUpperCase(), s]); steps.push({ k: 'host', by: host, t: s, rule: rules.length }); }
+    if (a.sting) steps.push({ k: 'host', by: host, t: a.sting, shake: true });
+  }
+  steps.push({ k: 'beat', t: 'The screen goes dark. Nobody moves.' });
+  for (const b of act.socialBeats || []) steps.push(...(b.lines?.length ? scriptSteps(b.lines) : [{ k: 'beat', t: stripTags(b.text) }]));
+  return { id: act.secondCall ? 'bb-twist-2-v' : 'bb-twist-v', kind: 'twist', anchor: ctx.anchor || 'start', label: ann.length === 1 ? `${ann[0].name || 'Twist'}: Announcement` : 'The Announcement',
+    set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · Living room', title: 'The Announcement', sub: ann.map(a => a.name).filter(Boolean).join(' · '),
+    day: ctx.day, time: '9:00 PM', tvObj: true, seated: seatLiving([], ctx.house.filter(n => !ctx.hidden?.has?.(n))),
+    rules, rulesTitle: `${ann.map(a => (a.name || 'THE TWIST').toUpperCase()).join(' · ')} · HOW IT WORKS`, steps };
 }
 
 // Twist acts whose classic screen goes exactly where the act happened.
@@ -2264,7 +2326,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'hidden-power': flush(); for (const scr of huntScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
-      case 'move-in': flush(); ceremony(moveInScreen(act, ctx, host)); break;
+      case 'move-in': flush(); ceremony(moveInScreen(act, ctx, host, row)); break;
+      case 'twist-announcement': { const tw = twistAnnounceScreen(act, ctx, host); flush(); if (tw) ceremony(tw); else out.push({ slot: act.type }); beatsOf(act); break; }
       case 'rewind': case 'white-locust': flush(); for (const scr of rewindScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'no-eviction': case 'dead-last': flush(); for (const scr of quietScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'halting-hex': flush(); for (const scr of hexScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -2315,7 +2378,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|cold)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|twist|twist-2|cold)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

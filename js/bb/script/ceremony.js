@@ -492,6 +492,35 @@ export function writeCeremony(act, week, house, extra = {}) {
       if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
       arrived.push(a);
     }
+    // Move-in night as the live show runs it: groups of about four meet the host on the stage,
+    // each says a few words, and the group goes through the front door together. The words
+    // for the stage and the walk-in ride on the act (the viewer and the transcript read them).
+    const VOICE = { mastermind: 'player', schemer: 'player', villain: 'player', 'perceptive-player': 'player',
+      hothead: 'fighter', 'challenge-beast': 'fighter', wildcard: 'fighter', 'chaos-agent': 'fighter',
+      hero: 'heart', 'loyal-soldier': 'heart', 'social-butterfly': 'heart', showmancer: 'heart',
+      floater: 'quiet', underdog: 'quiet', goat: 'quiet' };
+    const names = (act.beats || []).map(b => (b.players || [])[0]).filter(Boolean);
+    const k = Math.max(1, Math.round(names.length / 4));
+    const groups = [];
+    for (let g = 0, at = 0; g < k; g++) { const size = Math.floor(names.length / k) + (g < names.length % k ? 1 : 0); groups.push(names.slice(at, at + size)); at += size; }
+    act.groups = groups;
+    for (const b of act.beats || []) {
+      const a = (b.players || [])[0];
+      if (!a) continue;
+      const st = fresh('moveinact.stage', { a }, { ending: VOICE[archOf(a)] || 'quiet' }, `stage|${a}`);
+      if (Array.isArray(st) && st.length) b.stageLines = st;
+    }
+    const inside = [];
+    act.groupLines = groups.map((g, gi) => {
+      let out = null;
+      if (g.length >= 3) {
+        const greeter = inside.length ? inside[(gi * 3) % inside.length] : null;
+        out = greeter ? fresh('moveinact.group', { a: g[0], b: g[1], c: greeter }, { ending: 'next' }, `group|${gi}`)
+          : fresh('moveinact.group', { a: g[0], b: g[1], c: g[2] }, { ending: 'first' }, `group|${gi}`);
+      }
+      inside.push(...g);
+      return Array.isArray(out) ? out : null;
+    });
   }
 
   // ── The Rewind, and the White Locust's call-out chain ──

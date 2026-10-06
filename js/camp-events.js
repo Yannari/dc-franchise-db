@@ -3645,12 +3645,19 @@ export function checkAllianceRecruitment(ep) {
       addBond(recruit, recruiter, -0.2);
       ep.allianceRefusals = ep.allianceRefusals || [];
       ep.allianceRefusals.push({ player: recruit, recruiter, alliance: alliance.name, scenario });
-      // Refusal camp event
-      const _refKey = Object.keys(ep.campEvents || {})[0];
-      if (_refKey && ep.campEvents[_refKey]) {
+      // Refusal camp event — in the recruit's own camp. It used to go to the episode's first
+      // camp whoever was in it, so a refusal could air in the other tribe's camp.
+      const _refCamp = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(recruit))?.name;
+      const _refKey = (_refCamp && ep.campEvents?.[_refCamp]) ? _refCamp : null;
+      if (_refKey) {
         const _refBlock = ep.campEvents[_refKey].post || ep.campEvents[_refKey].pre;
-        if (Array.isArray(_refBlock)) _refBlock.push({ type: 'allianceRefusal', players: [recruit, recruiter],
-          text: _getRefusalEventText(recruit, recruiter, alliance.name, scenario) });
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        const _rb = getPerceivedBond(recruit, recruiter);
+        if (Array.isArray(_refBlock)) _refBlock.push(scriptEvent({ type: 'allianceRefusal', players: [recruit, recruiter], badgeText: 'TURNED DOWN', badgeClass: 'red' },
+          makeScene('recruit.refuse', { a: recruiter, b: recruit },
+            { ending: _rb <= -1 ? 'hostile' : _rb >= 2 ? 'friendly' : 'neutral', group: alliance.name }, [],
+            spotOf(ep, recruiter, recruit, 'post').spot),
+          { ep: ep.num, phase: 'post' }));
       }
       return;
     }
@@ -3680,16 +3687,18 @@ export function checkAllianceRecruitment(ep) {
 
     // Camp event — guaranteed: find recruit's tribe block, fall back to any available block
     const _recruitCampKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(recruit))?.name;
-    const _campKey = (_recruitCampKey && ep.campEvents?.[_recruitCampKey])
-      ? _recruitCampKey
-      : Object.keys(ep.campEvents || {})[0];
-    if (_campKey && ep.campEvents?.[_campKey]) {
-      const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
-      const _rPrn = pronouns(recruit);
+    // The recruit's own camp only (the fallback to the episode's first camp aired it in the wrong one).
+    const _campKey = (_recruitCampKey && ep.campEvents?.[_recruitCampKey]) ? _recruitCampKey : null;
+    if (_campKey) {
       const _block = ep.campEvents[_campKey];
-      const _target = _block.post?.length >= 0 ? _block.post : _block.pre;
-      _target.push({ type: 'allianceRecruit', players: [recruit, recruiter],
-        text: _getRecruitEventText(recruit, recruiter, alliance, scenario) });
+      const _target = _block.post || _block.pre;
+      Math.random(); // the draw that picked the sentence
+      const _RECRUIT_KINDS = ['swap-outsider', 'post-quit', 'blindside-swing', 'free-agent', 'post-betrayal', 'power-couple', 'idol-shield'];
+      _target.push(scriptEvent({ type: 'allianceRecruit', players: [recruit, recruiter], badgeText: 'RECRUITED', badgeClass: 'gold' },
+        makeScene('recruit.join', { a: recruiter, b: recruit },
+          { ending: _RECRUIT_KINDS.includes(scenario) ? scenario : 'other', group: alliance.name }, [],
+          spotOf(ep, recruiter, recruit, 'post').spot),
+        { ep: ep.num, phase: 'post' }));
     }
   };
 
@@ -3869,72 +3878,7 @@ export function checkAllianceRecruitment(ep) {
 
 // ── Scenario-specific camp event text for recruitment ──
 // Called from doRecruit's camp event injection — replaces generic text with scenario-aware narration
-export function _getRecruitEventText(recruit, recruiter, alliance, scenario) {
-  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
-  const rPrn = pronouns(recruit);
-  switch (scenario) {
-    case 'swap-outsider': return _rp([
-      `${recruit} is the new face on this tribe. ${recruiter} doesn't waste time \u2014 by sundown, ${recruit} is part of ${alliance.name}. "You need us. We need numbers. Let's not overthink it."`,
-      `After the swap, ${recruit} was on the outside looking in. ${recruiter} saw an opportunity: bring ${recruit} in, and ${alliance.name} controls this new tribe. The pitch worked.`,
-    ]);
-    case 'post-quit': return _rp([
-      `${recruit} just walked away from everything. ${recruiter} was waiting. "Your old alliance is done. We're not. Come with us." ${recruit} didn't need to think long.`,
-      `After leaving ${rPrn.pos} old alliance, ${recruit} was floating. ${recruiter} offered a lifeline: ${alliance.name}. "We saw what they did to you. That won't happen here."`,
-    ]);
-    case 'blindside-swing': return _rp([
-      `${recruit} voted with the majority last tribal. ${recruiter} noticed. "You made the right call. Now make another one \u2014 join us." ${alliance.name} just got stronger.`,
-      `The blindside reshuffled everything. ${recruit} was the swing vote, and now ${recruiter} wants to lock that in. ${alliance.name} absorbs the free agent before anyone else can.`,
-    ]);
-    case 'free-agent': return _rp([
-      `${recruit} has been on the outside for too long. ${recruiter} finally extended the invitation. "You don't have to play alone anymore." ${recruit} joined ${alliance.name} \u2014 not out of love, but necessity.`,
-      `"I need people," ${recruit} told ${recruiter}. "And you need numbers." It wasn't romantic. It was math. ${alliance.name} adds ${recruit} to the fold.`,
-      `${recruiter} pulled ${recruit} aside after the challenge. "Everyone's talking about targeting you. Come with us." ${recruit} didn't hesitate. ${alliance.name} has a new member.`,
-    ]);
-    case 'emergency-pair': return _rp([
-      `With no alliances left standing, ${recruit} and the others had to start from scratch. It began with a look across the fire. By morning, they had a name for it.`,
-    ]);
-    case 'mutual-enemy': return _rp([
-      `${recruit} found someone who hates the same person. That's not trust \u2014 but it's a starting point. ${alliance.name} was built on shared frustration.`,
-    ]);
-    case 'post-betrayal': return _rp([
-      `${recruit}'s old alliance stabbed ${rPrn.obj} in the back. ${recruiter} saw the wreckage and moved in. "They threw you away. We won't." ${recruit} joins ${alliance.name} \u2014 hurt, angry, and looking for payback.`,
-      `${recruiter} approached ${recruit} the morning after the betrayal. "I know what they did to you. Come with us." ${recruit} was already nodding before ${recruiter} finished the sentence.`,
-    ]);
-    case 'power-couple': return _rp([
-      `${recruit} and ${recruiter} have been inseparable all season. It was only a matter of time before they made it official. ${alliance.name} is less a strategy and more a bond.`,
-      `Everyone at camp already knew ${recruit} and ${recruiter} were a pair. Now they have a name for it: ${alliance.name}. "We trust each other more than anyone else out here. That's enough."`,
-    ]);
-    case 'idol-shield': return _rp([
-      `${recruiter} has something hidden \u2014 and needs someone big enough to draw fire away. ${recruit} is the perfect shield. ${alliance.name} forms with an unspoken deal: protection for loyalty.`,
-      `${recruiter} brought ${recruit} in close. "I have safety. You have strength. Together, nobody touches us." ${recruit} doesn't know about the idol yet \u2014 but ${recruiter} knows ${recruit} is the kind of target that keeps ${recruiter} safe.`,
-    ]);
-    default: return _rp([
-      `${recruiter} brought ${recruit} into the fold. ${alliance.name} just got bigger.`,
-      `${recruit} is now part of ${alliance.name}. ${recruiter} made the pitch. The numbers shifted.`,
-    ]);
-  }
-}
-
-// ── Refusal camp event text ──
-export function _getRefusalEventText(recruit, recruiter, allianceName, scenario) {
-  const rPrn = pronouns(recruit);
-  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
-  const bond = getPerceivedBond(recruit, recruiter);
-  if (bond <= -1) return _rp([
-    `${recruiter} tried to bring ${recruit} into ${allianceName}. ${recruit} didn't even let ${recruiter} finish. "After what you did? No." The rejection was immediate.`,
-    `${recruiter} approached ${recruit} about joining ${allianceName}. ${recruit} looked ${recruiter} dead in the eye. "I don't trust you. And I'm not going to pretend I do." ${recruiter} walked away empty-handed.`,
-  ]);
-  if (bond >= 2) return _rp([
-    `${recruiter} pitched ${allianceName} to ${recruit}. Surprisingly, ${recruit} said no. "I like you, ${recruiter}. But I don't like where this alliance is going. I need to keep my options open."`,
-    `${recruit} turned down ${recruiter}'s offer to join ${allianceName}. "It's not about you. I just can't commit right now. I need to see how the next vote plays out first."`,
-  ]);
-  return _rp([
-    `${recruiter} made the pitch. ${recruit} listened. Then shook ${rPrn.pos} head. "I'm not ready to lock in with anyone yet." ${recruiter} tried not to look hurt.`,
-    `${recruit} heard ${recruiter} out about ${allianceName}. Thought about it. Walked away. "I'll think about it" is a no in this game \u2014 and ${recruiter} knows it.`,
-    `${recruiter} offered ${recruit} a spot in ${allianceName}. ${recruit} paused. "I appreciate the offer. But I need to play my own game right now." The conversation ended there.`,
-    `"Not right now," ${recruit} told ${recruiter}. It wasn't hostile. It wasn't personal. But it was a no. ${recruiter} will have to look elsewhere.`,
-  ]);
-}
+// The recruit and refusal sentences became scenes (td/script/lines/recruit.js).
 
 // [1] PARANOIA SPIRAL — paranoid + strategic player turns on a real ally, creating a self-fulfilling prophecy.
 // The ally was loyal. Now they might not be.

@@ -660,7 +660,7 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
     return `${setDiv('dr', o.season)}<div class="drring">${DRRING}</div>${tileHtml(st.by, 40, 'speak', L, '', 'width:15cqw;bottom:17cqw')}${held}`;
   }
   const arena = S.arena;
-  let h = arena ? `<div class="set photo" style="background-image:url('assets/bb/house/${o.season}/${S.set}-td-b.webp?v=${V}')"></div>`
+  let h = arena ? `<div class="set photo" style="background-image:url('assets/bb/house/${/^studio/.test(S.set) ? 'default' : o.season}/${S.set}-td-b.webp?v=${V}')"></div>`
     : S.built ? `<div class="set set-${S.set}"><div class="floor"></div></div>` : setDiv(S.set, o.season);
   h += suiteObjects(S, L, st, idx, fresh);
   h += wallHtml(S, L, st, fresh);
@@ -720,6 +720,11 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
     const entered = fresh && idx === 0;
     const tense = st && st.tense ? (st.tense.includes(n) ? 'tense' : 'out') : '';
     const cls = [tense || (n === speaker ? 'speak' : (st && st.push) ? 'out' : ''), entered ? 'in' : '', L.plus === n ? 'plus' : '', L.passed === n ? 'passed' : '', a2.cls].join(' ');
+    if (seated && n === o.host) {
+      const a = seatOf(S, seated, n);
+      if (a) h += `<div class="gt host ${speaker === o.host ? 'speak' : ''}" style="left:${a.at[0]}%;--c:#ff2e4d;bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}"><div class="tile">${img(o.host, true)}</div><div class="plate"><b>${esc(o.host)}</b><span class="hostlab">HOST</span></div></div>`;
+      continue;
+    }
     if (seated) {
       const a = seatOf(S, seated, n);
       h += tileHtml(n, x, cls, L, '', `bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}`, a2.fx);

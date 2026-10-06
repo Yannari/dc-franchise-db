@@ -661,11 +661,11 @@ function finalPartScreen(act, ctx, n) {
 // show; same for the reunion on set; no vote counter; the finale isn't grandiose, it's lame".
 // The finale is one live show: the house and the studio set, cut between (scene markers), the host
 // in person on the set, the jury's keys on a board, and the winner under confetti.
-const onSet = (cast, extra = {}) => ({ set: 'arena-stage', arena: true, room: 'The Finale Stage', cam: 7, kicker: 'Live · The finale stage', hostOn: true,
+const onSet = (cast, extra = {}) => ({ set: 'studio-wide', arena: true, room: 'The Finale Stage', cam: 7, kicker: 'Live · The finale stage', hostOn: true,
   cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'ceremony', ...extra });
 const inHouse = (cast, extra = {}) => ({ set: 'ceremony', arena: false, hostOn: false, room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · The living room',
   cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'ceremony', tvObj: true, ...extra });
-const finaleScreen = (id, kind, title, sub, ctx, steps, extra = {}) => ({ id, kind, anchor: 'finale', set: 'arena-stage', arena: true, room: 'The Finale Stage', cam: 7,
+const finaleScreen = (id, kind, title, sub, ctx, steps, extra = {}) => ({ id, kind, anchor: 'finale', set: 'studio-wide', arena: true, room: 'The Finale Stage', cam: 7,
   title, kicker: 'Live · Finale night', sub, day: ctx.day, time: 'LIVE', cast: [], finale: true, steps, ...extra });
 
 function finalCutScreen(act, ctx) {
@@ -2058,7 +2058,7 @@ function moveInScreen(act, ctx, host, row) {
   const beatOf = n => (act.beats || []).find(b => (b.players || [])[0] === n) || {};
   const pick = (list, salt) => pickBy(list, `${ctx.week}|movein|${salt}`);
   const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
-  const stage = (cast, extra = {}) => ({ set: 'arena-stage', arena: true, room: 'The Stage', cam: 7, kicker: 'Live · The stage', cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'ceremony', hostOn: true, time: '8:00 PM', slate: true, ...extra });
+  const stage = (cast, extra = {}) => ({ set: 'studio-wide', arena: true, room: 'The Stage', cam: 7, kicker: 'Live · The stage', cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'ceremony', hostOn: true, time: '8:00 PM', slate: true, ...extra });
   const inside = (cast, room = 'ceremony', extra = {}) => ({ set: room, arena: false, hostOn: false, room: ROOM_NAME[room] || 'Living Room', cam: CAM[room] || 4, kicker: `Cam ${String(CAM[room] || 4).padStart(2, '0')} · ${ROOM_NAME[room] || 'Living room'}`, cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'house', time: '8:30 PM', slate: true, ...extra });
   const steps = [];
   steps.push({ k: 'host', by: host, scene: stage([]), t: pick([`Good evening, and welcome to Big Brother! Tonight, ${word(arrivals.length)} strangers move into the Big Brother house, and only one of them will walk out with the prize.`,
@@ -2096,7 +2096,7 @@ function moveInScreen(act, ctx, host, row) {
   steps.push({ k: 'host', by: host, t: `Get comfortable, but not too comfortable. The competition for the first Head of Household is coming, and it won't wait for you to unpack. Good luck.` });
   steps.push({ k: 'beat', t: pick(['The screen goes dark. Sixteen people look at each other at once.', 'The screen goes black. For about three seconds, nobody says anything. Then everybody does.', 'The host is gone. The house erupts.'], 'end').replace('Sixteen', titleCase(word(arrivals.length))) });
   return {
-    id: 'bb-movein-v', kind: 'movein', anchor: 'start', day: 1, set: 'arena-stage', arena: true, room: 'The Stage', cam: 7, time: '8:00 PM',
+    id: 'bb-movein-v', kind: 'movein', anchor: 'start', day: 1, set: 'studio-wide', arena: true, room: 'The Stage', cam: 7, time: '8:00 PM',
     kicker: 'Live · Move-in night', title: 'Move-In Night', label: 'Move-In Night', sub: `${arrivals.length} strangers, ${groups.length} groups, one house`,
     cast: [], movein: { arrivals: [...arrivals] }, steps,
   };
@@ -2139,8 +2139,8 @@ function interviewScreen(iv, ctx, host, row) {
   steps.push({ k: 'beat', t: iv.joinsJury ? `${ev} is going to the jury house${iv.juryNumber ? `, juror number ${word(iv.juryNumber)}` : ''}.` : `${ev} is going home.`,
     big: [ev, iv.joinsJury ? 'To the jury' : 'Going home', iv.joinsJury ? 'safe' : 'out'] });
   return { id: 'bb-interview-v', kind: 'interview', anchor: 'evict', label: 'Evictee Interview',
-    set: 'arena-stage', arena: true, room: 'The Studio', cam: 7, kicker: 'Live · The studio', title: 'The Exit Interview', sub: `${h} and ${ev}`,
-    day: ctx.day, time: 'LIVE', hostOn: true, cast: [[ev, 62]], steps };
+    set: 'studio', arena: true, room: 'The Studio', cam: 7, kicker: 'Live · The studio', title: 'The Exit Interview', sub: `${h} and ${ev}`,
+    day: ctx.day, time: 'LIVE', cast: [[ev, 36], [h, 64]], seated: { [ev]: 'G', [h]: 'H' }, steps };
 }
 
 // ── the jury house ─────────────────────────────────────────────────────

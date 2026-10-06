@@ -20,7 +20,7 @@ export default {
     { id: 'gt2.vh2', room: 'bedroom', turns: [
       { beat: 'Bedroom. {a} is lying face down on a bed. {b} sits on the next one.' },
       { by: 'b', say: "Are you alive?" },
-      { by: 'a', say: "Barely." },
+      { by: 'a', say: "Barely. I'm so tired." },
       { by: 'b', say: "Veto's tomorrow. You need sleep." },
       { by: 'a', say: "I need that necklace." },
       { by: 'b', say: "Then sleep, and go and get it." },
@@ -73,7 +73,7 @@ export default {
     { id: 'gt2.vh7', room: 'kitchen', turns: [
       { beat: 'Kitchen, morning. {a} is eating a huge breakfast very slowly. {b} watches.' },
       { by: 'b', say: "That's a lot of eggs." },
-      { by: 'a', say: "Veto fuel." },
+      { by: 'a', say: "In case I get picked to play veto." },
       { by: 'b', say: "You don't even know if you're playing." },
       { by: 'a', say: "Then I'll be very full and very disappointed." },
       { by: 'b', say: "If you play, what's the plan?" },
@@ -89,7 +89,7 @@ export default {
       { by: 'b', say: "And if it's not?" },
       { by: 'a', say: "Then anyone. Including us." },
       { by: 'b', say: "If {c} wins, are we safe?" },
-      { by: 'a', say: "Define safe." },
+      { by: 'a', say: "What do you mean by safe?" },
       { by: 'b', say: "Not on the block." },
       { by: 'a', say: "Then no. Not for sure." },
       { by: 'b', dr: "{c} keeps winning, and every time it happens, the rest of us get a little more nervous." },
@@ -102,7 +102,7 @@ export default {
       { by: 'b', say: "Nobody's been able to." },
       { by: 'a', say: "Then one of us wins HOH and does it. Simple." },
       { by: 'b', say: "And if {c} wins it instead?" },
-      { by: 'a', say: "Then we've had this conversation for nothing. Again." },
+      { by: 'a', say: "Then we've wasted another week just talking about it." },
       { by: 'a', dr: "If {c} wins one more competition, it's going to be too late to stop {c} at all." },
     ] },
     { id: 'gt2.nh3', turns: [
@@ -133,7 +133,7 @@ export default {
       { by: 'b', say: "You're doing that thing where you invent a whole comp from a curtain." },
       { by: 'a', say: "I'm preparing." },
       { by: 'b', say: "You're panicking." },
-      { by: 'a', say: "It's both." },
+      { by: 'a', say: "Okay, it's a bit of both." },
       { by: 'b', dr: "{a} reads the house like a mystery novel. Most of the clues are just curtains." },
     ] },
     { id: 'gt2.nh6', room: 'bedroom', turns: [
@@ -274,7 +274,7 @@ export default {
       { by: 'a', say: "Why is it always about {c}?" },
       { by: 'b', say: "Because it's always about {c}." },
       { by: 'a', say: "...Yes. It's about {c}." },
-      { by: 'b', say: "Go on, then. Explode." },
+      { by: 'b', say: "Go on, then. Get it all out." },
       { beat: '{a} talks for a long time. {b} nods in all the right places.' },
       { by: 'b', dr: "I'm {a}'s person for {c} complaints now. It's a full-time job." },
     ] },
@@ -324,7 +324,7 @@ export default {
     { id: 'gt2.bt2', room: 'bedroom', turns: [
       { beat: 'Bedroom. {a} is braiding {b}’s hair, or trying to.' },
       { by: 'b', say: "Is it working?" },
-      { by: 'a', say: "Define working." },
+      { by: 'a', say: "Kind of? It's not finished." },
       { by: 'b', say: "Do I look good?" },
       { by: 'a', say: "You look like you lost a fight with a hedge." },
       { by: 'b', say: "Perfect." },
@@ -334,7 +334,7 @@ export default {
     { id: 'gt2.bt3', phase: ['prejury', 'jury', 'endgame'], room: 'living-room', turns: [
       { beat: 'Living room, after a long day. {a} and {b} are lying on the floor, side by side.' },
       { by: 'b', say: "We've made it this far." },
-      { by: 'a', say: "Together." },
+      { by: 'a', say: "Together. I honestly didn't think we would." },
       { by: 'b', say: "Whatever happens next, I'm not putting your name down. I want you to know that." },
       { by: 'a', say: "Same. I mean it." },
       { by: 'b', say: "I know you do." },
@@ -345,7 +345,7 @@ export default {
     { id: 'gt2.bt4', turns: [
       { beat: 'The backyard. {a} is lying on a lounger. {b} drags another one over to sit right next to it.' },
       { by: 'b', say: "Bad day?" },
-      { by: 'a', say: "Long day." },
+      { by: 'a', say: "Just a really long day." },
       { by: 'b', say: "Want to talk about it?" },
       { by: 'a', say: "No. Want to just sit here?" },
       { by: 'b', say: "I can do that." },
@@ -367,7 +367,7 @@ export default {
     { id: 'gt2.jb2', phase: ['jury', 'endgame'], room: 'kitchen', turns: [
       { beat: 'Kitchen. {b} is washing a mug that was {gone}’s favourite. {a} notices.' },
       { by: 'a', say: "That's {gone}'s mug." },
-      { by: 'b', say: "Was." },
+      { by: 'b', say: "It was. I didn't want to just shove it in the cupboard." },
       { by: 'a', say: "Do you feel bad?" },
       { by: 'b', say: "About the vote? A bit. About the game? No." },
       { by: 'a', say: "{gone} will want to know why." },
@@ -381,7 +381,7 @@ export default {
       { by: 'a', say: "Neither did you." },
       { by: 'b', say: "Fair." },
       { by: 'a', say: "That's the bit I hate. You can miss somebody and still be glad they've gone." },
-      { by: 'b', say: "{gone} will understand. Eventually." },
+      { by: 'b', say: "{gone} will understand one day." },
       { by: 'a', say: "Will {gone}?" },
       { by: 'a', dr: "Everyone on that jury is someone we chose to send there. That's going to be a very interesting room." },
     ] },

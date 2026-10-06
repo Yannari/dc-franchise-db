@@ -1221,6 +1221,9 @@ def anchors(room, theme='default', w=1920, h=1080):
         bx, by, bz = DIN_BOX
         out['box'] = {'at': px((bx, by, bz + 0.18)), 'w': width_pct((bx, by, bz), 0.44)}
         out['screen'] = rect_of('NomScreen')
+    if room == 'studio':
+        # the guest's chair (left) and the host's (right), at chest height
+        out['seats'] = {k: {'at': px((x, y, 1.25)), 'w': width_pct((x, y, 1.25), 0.62)} for k, (x, y, _) in zip(('G', 'H'), STUDIO_CHAIRS)}
     d = os.path.join(OUT, theme); os.makedirs(d, exist_ok=True)
     path = os.path.join(d, f'{room}.json')
     open(path, 'w').write(json.dumps(out, indent=1))
@@ -1623,9 +1626,104 @@ ARENA_ROOMS = {'arena-endurance': room_arena_endurance, 'arena-course': room_are
                'arena-podiums': room_arena_podiums, 'arena-stage': room_arena_stage, 'arena-lanes': room_arena_lanes,
                'arena-pool': room_arena_pool, 'arena-luck': room_arena_luck, 'arena-blockbuster': room_arena_blockbuster}
 
+
+# ══════════════════════════════════════════════════════════════════════
+# THE STUDIO: where the host interviews the evictee, and the finale stage
+# ══════════════════════════════════════════════════════════════════════
+# The user, 2026-10-06, with five photographs of the real set: two tall grey upholstered chairs
+# turned toward each other, glowing blue panels and doors between silver pillars, a glossy floor
+# with small lights set into it, and a video wall with the logo. 'studio' is the interview
+# (two chairs, close); 'studio-wide' is the finale stage (the big wall in the middle, steps).
+STUDIO_CHAIRS = ((-0.95, 2.55, 40), (0.95, 2.55, -40))   # x, y, turned toward the middle (deg)
+
+def studio_chair(name, loc, rot_z, fabric):
+    """A tall upholstered bar chair: a deep cushioned seat, a square back, arms, thin dark legs and a footrest."""
+    g = _group(name, loc, rot_z)
+    leg = mat('studioleg', '#34363c', 0.4, 0.5)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            _child(g, box(f'{name}Leg{sx}{sy}', (0.05, 0.05, 0.78), (sx * 0.27, sy * 0.25, 0.39), leg, bevel=0))
+    _child(g, box(f'{name}Foot', (0.6, 0.04, 0.04), (0, -0.25, 0.28), leg, bevel=0))
+    _child(g, box(f'{name}Seat', (0.66, 0.62, 0.16), (0, 0, 0.86), fabric, bevel=0.04))
+    _child(g, box(f'{name}Back', (0.66, 0.12, 0.62), (0, 0.27, 1.22), fabric, bevel=0.04))
+    for sx in (-1, 1):
+        _child(g, box(f'{name}Arm{sx}', (0.1, 0.56, 0.26), (sx * 0.31, 0.02, 1.05), fabric, bevel=0.03))
+    return g
+
+def _studio_back(T, W, D, H, blue, video_x, video_w, video_h, doors_x=None):
+    """The back wall: silver pillars, tall glowing blue panels between them, the video wall, the doors."""
+    pillar = mat('studiopillar', '#9aa3b1', 0.35, 0.4)
+    glow = mat('studioblue', '#ffffff', emit=blue, strength=9)
+    frame = mat('studioframe', '#6f7888', 0.4, 0.5)
+    box('StudioBack', (W, 0.04, H), (0, D, H / 2), mat('studiobackwall', '#4a5568', 0.7), bevel=0)
+    n = int(W // 1.3)
+    for i in range(n + 1):
+        x = -W / 2 + i * W / n
+        box(f'Pillar{i}', (0.32, 0.3, H), (x, D - 0.15, H / 2), pillar, bevel=0)
+        box(f'PillarStrip{i}', (0.05, 0.02, H - 0.4), (x, D - 0.31, H / 2), glow, bevel=0)
+    for i in range(n):
+        x = -W / 2 + (i + 0.5) * W / n
+        if abs(x - video_x) < video_w / 2 + 0.4 or (doors_x is not None and abs(x - doors_x) < 0.9):
+            continue
+        box(f'BluePanel{i}', (W / n - 0.5, 0.03, H - 1.0), (x, D - 0.05, H / 2 + 0.15), glow, bevel=0)
+    # the video wall: deep blue with a lighter ripple, the eye in the middle
+    vz = 0.9 + video_h / 2
+    box('VideoFrame', (video_w + 0.2, 0.12, video_h + 0.2), (video_x, D - 0.25, vz), frame, bevel=0)
+    box('VideoWall', (video_w, 0.04, video_h), (video_x, D - 0.32, vz),
+        mat_graphic('videowall', ['#0d4fa3', '#1f86e0', '#0d4fa3', '#39b6ff'], scale=0.6, angle=20), bevel=0)
+    neon_eye((video_x, D - 0.36, vz), video_h * 0.22, rot=(90, 0, 0), color='#ffffff', glow='#8fe6ff')
+    if doors_x is not None:
+        # the front-door style double doors, frosted, lit from behind
+        for sx in (-1, 1):
+            box(f'Door{sx}', (0.7, 0.04, 2.5), (doors_x + sx * 0.38, D - 0.06, 1.25), glow, bevel=0)
+            box(f'DoorFrame{sx}', (0.08, 0.1, 2.6), (doors_x + sx * 0.78, D - 0.1, 1.3), frame, bevel=0)
+        box('DoorHead', (1.64, 0.1, 0.1), (doors_x, D - 0.1, 2.6), frame, bevel=0)
+
+def _studio_floor(T, W, D):
+    """A glossy pale floor with a run of small round lights set into it."""
+    box('StudioFloorGloss', (W, D, 0.02), (0, D / 2, 0.005), mat('studiogloss', '#c6cfdc', 0.12, 0.25, coat=1.0), bevel=0)
+    dot = mat('floordot', '#ffffff', emit='#cfeeff', strength=14)
+    for y in (1.2, 2.6, 4.0):
+        for i in range(9):
+            x = -W / 2 + 0.9 + i * (W - 1.8) / 8
+            cyl(f'FloorDot{y}{i}', 0.05, 0.012, (x, y, 0.016), dot, verts=16, bevel=0)
+    box('StageEdge', (W - 1.0, 0.04, 0.02), (0, D - 1.0, 0.02), mat('stageedge', '#ffffff', emit='#4fc8ff', strength=12), bevel=0)
+
+def room_studio(T):
+    """The interview set: two tall chairs turned to each other, the blue-lit wall, the video wall behind."""
+    W, D, H = 8.0, 5.0, 4.0
+    T = dict(T, ceiling='#2b3346')
+    shell(T, W, D, H, wall_mat=mat('studiowalls', '#566176', 0.7), floor_mat=mat('studiofloorbase', '#aeb8c8', 0.3))
+    _studio_floor(T, W, D)
+    _studio_back(T, W, D, H, '#2aa8ff', video_x=-2.3, video_w=2.4, video_h=1.5, doors_x=1.9)
+    fabric = mat('studiofabric', '#9a9fa8', 0.85)
+    for i, (x, y, r) in enumerate(STUDIO_CHAIRS):
+        studio_chair(f'StudioChair{i}', (x, y, 0), r, fabric)
+    for sx in (-1, 1):
+        plant(f'StudioPlant{sx}', (sx * 3.3, 3.6, 0), height=1.1, pot='#6f7888', leaf='#3d7d4a')
+    area('StudioKey', (3, 2), (0, -0.4, 3.4), 520, '#ffffff', rot=(-55, 0, 0))
+    world('#24324a', 0.5)
+    camera((0, -2.2, 1.45), (86, 0, 0), lens=26)
+
+def room_studio_wide(T):
+    """The finale stage: the big video wall in the middle, steps up to the stage, the blue-lit wings."""
+    W, D, H = 14.0, 8.0, 5.0
+    T = dict(T, ceiling='#2b3346')
+    shell(T, W, D, H, wall_mat=mat('studiowalls', '#566176', 0.7), floor_mat=mat('studiofloorbase', '#aeb8c8', 0.3))
+    _studio_floor(T, W, D)
+    _studio_back(T, W, D, H, '#2aa8ff', video_x=0, video_w=5.6, video_h=2.6)
+    step = mat('studiostep', '#d9dfe8', 0.25, 0.2)
+    for i in range(3):
+        box(f'StageStep{i}', (7.0 - i * 0.6, 0.45, 0.14 * (i + 1)), (0, D - 2.4 + i * 0.45, 0.07 * (i + 1)), step, bevel=0)
+        box(f'StepLight{i}', (7.0 - i * 0.6, 0.02, 0.02), (0, D - 2.62 + i * 0.45, 0.14 * (i + 1) + 0.01), mat('steplight', '#ffffff', emit='#7fd6ff', strength=14), bevel=0)
+    area('StudioKey', (5, 3), (0, -0.4, 4.4), 1400, '#ffffff', rot=(-50, 0, 0))
+    world('#24324a', 0.5)
+    camera((0, -3.2, 1.7), (85, 0, 0), lens=22)
+
 ROOMS = {'kitchen': room_kitchen, 'living': room_living, 'bedroom': room_bedroom, 'hoh': room_hoh, 'dr': room_dr,
          'yard': room_yard, 'storage': room_storage, 'havenot': room_havenot, 'dining': room_dining}
 ROOMS.update(ARENA_ROOMS)
+ROOMS.update({'studio': room_studio, 'studio-wide': room_studio_wide})
 
 # ══════════════════════════════════════════════════════════════════════
 # Build and render

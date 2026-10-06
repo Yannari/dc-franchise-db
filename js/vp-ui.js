@@ -977,7 +977,10 @@ export function trReunionEpisode(num) {
   const f = (gs?.episodeHistory || []).find(e => String(e.num) === m[1] && e.tr && e.tr.reunion);
   if (!f) return null;
   return { num: String(num), format: f.format || 'traitors', exits: [], eliminated: null, reunionEpisode: true,
-    tr: { reunion: f.tr.reunion, reunionEpisode: true, ep: (f.tr.ep || f.num) + 1, pot: f.tr.pot } };
+    tr: { reunion: f.tr.reunion, reunionEpisode: true, ep: (f.tr.ep || f.num) + 1, pot: f.tr.pot,
+      // the season's own episodes, for the throwbacks to replay their scenes
+      // from (built on the fly, never saved)
+      rows: (gs?.episodeHistory || []).filter(e => e && e.tr && !e.tr.reunionEpisode) } };
 }
 export function openVisualPlayer(epNum) {
   // Fall back to most recent episode if called with null (e.g. after page reload)

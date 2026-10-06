@@ -37,8 +37,17 @@ export function reunionStageScreen(ep, observer, pageHtml) {
       // the turret footage: the Traitor's own words from the night, with their face
       // a throwback: one step per moment, played as old footage
       if (part === 'tape') {
-        const head = (n.querySelector('b') || {}).textContent || 'Throwback';
-        return [...n.querySelectorAll('span')].map(x => ({ t: 'narr', tag: head, text: x.textContent.trim(), tape: true }));
+        // its own children only: the heading, the account, then the lines
+        // replayed off that night's screen, each said by its speaker
+        const head = (n.querySelector(':scope > b') || {}).textContent || 'Throwback';
+        const set = n.dataset.set || null, people = (n.dataset.people || '').split('|').filter(Boolean);
+        const out = [];
+        for (const c of n.children) {
+          if (c.tagName === 'SPAN') out.push({ t: 'narr', tag: head, text: c.textContent.trim(), tape: true, set, people });
+          else if (c.tagName === 'Q') out.push({ t: 'say', who: c.dataset.who, tag: head, set, people, tape: true,
+            text: ((c.querySelector('.ru-q-txt') || {}).textContent || '').trim().replace(/^[“"]+|[”"]+$/g, '') });
+        }
+        return out;
       }
       if (part === 'clip') {
         const said = (n.querySelector('span') || {}).textContent || '';
@@ -99,7 +108,29 @@ function paint(root, S, fresh) {
   if (st && (st.tape || st.react) && st.text) for (const n of R.cast) if (st.text.includes(n)) lit.add(n);
   // A THROWBACK PLAYS AS OLD FOOTAGE: the room goes sepia and grainy under a
   // THROWBACK bug for as long as the tape runs
-  let h = '<div class="tru-world' + (st && st.tape ? ' tru-throwback' : '') + '"><img class="tru-plate" src="' + PLATE + '" alt="" draggable="false"><div class="tru-shade"></div>';
+  // A THROWBACK WITH A SCENE cuts to that night's set — the Round Table, the
+  // turret — with only the people in it, and plays their own words
+  const scene = st && st.tape && st.set ? st : null;
+  let h = '<div class="tru-world' + (st && st.tape ? ' tru-throwback' : '') + '"><img class="tru-plate" src="'
+    + (scene ? 'assets/sets/traitors/' + scene.set + '.webp' : PLATE) + '" alt="" draggable="false"><div class="tru-shade"></div>';
+  if (scene) {
+    const b = box(W, H), ppl = scene.people.length ? scene.people : (scene.who ? [scene.who] : []);
+    ppl.forEach((n, i) => {
+      const x = ppl.length === 1 ? .5 : .32 + (.36 * i) / (ppl.length - 1), w = b.dw * .085;
+      const on = n === speaker;
+      h += `<div class="tru-p${on ? ' tru-speak' : (speaker ? ' tru-quiet' : '')}" style="left:${b.x(x)}px;top:${b.y(.5)}px;width:${w}px;z-index:${on ? 50 : 10}">`
+        + `<div class="tru-av">${face(n)}</div><div class="tru-nm">${esc(n)}</div></div>`;
+    });
+    h += '</div><div class="tru-vt"><b>Throwback</b></div>';
+    start.classList.remove('trs-in');
+    h += footCard(st, S.data.host || { name: '', slug: null }, { head: st.t === 'say' ? `<span class="tsc-tag">${esc(st.tag)}</span>` : '' });
+    el.innerHTML = h;
+    playCard(el, st, S, fresh);
+    const corner = root.querySelector('.trs-corner');
+    corner.innerHTML = 'The reunion · <b>' + esc(st.tag) + '</b>';
+    corner.classList.add('trs-in');
+    return;
+  }
   // the host, in the wingback
   { const b = box(W, H), w = b.dw * .05, hostSpeaking = st && st.t === 'host';
     h += `<div class="tru-p tru-host${hostSpeaking ? ' tru-speak' : (speaker ? ' tru-quiet' : '')}" style="left:${b.x(HOST[0])}px;top:${b.y(HOST[1]) - w * .2}px;width:${w}px;z-index:${hostSpeaking ? 50 : 12}">`

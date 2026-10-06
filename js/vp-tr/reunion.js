@@ -22,7 +22,9 @@
 import { seasonConfig, players } from '../core.js';
 import { pronouns, pStats } from '../players.js';
 import { HOSTS_BY_FORMAT } from '../shows.js';
-import { _portrait } from './conclave.js';
+import { _portrait, conclaveStageData } from './conclave.js';
+import { roundTableStageData } from './round-table.js';
+import { beatLines } from './stage-lines.js';
 
 const TR = 'traitors';
 function _hash(s) {
@@ -517,6 +519,55 @@ const HOST_CLOSE = [
 ];
 
 // ══════════════════════════════════════════════════════════════════════
+// THE REPLAY: what was actually said, off the episode's own screen
+// ══════════════════════════════════════════════════════════════════════
+// The user, 2026-10-06: "i need visual for the throwback with actual dialogue
+// that happened". A throwback replays the scene it is about: the episode's
+// Round Table or turret is rebuilt from its record, exactly as that night's
+// screen drew it, and the lines the people in question said are lifted out of
+// it word for word. Nothing here writes dialogue; if the night has no line by
+// them (a season played on older code, a reader with no document), the
+// throwback keeps its plain account and nothing is invented.
+// keyed on the episode record itself, so two seasons never share a night
+const _replayCache = new WeakMap();
+function _sceneSteps(row, which) {
+  const box = _replayCache.get(row) || {};
+  if (!_replayCache.has(row)) _replayCache.set(row, box);
+  if (box[which]) return box[which];
+  let steps = [];
+  try {
+    const d = which === 'table' ? roundTableStageData(row, 'audience') : conclaveStageData(row, 'audience');
+    if (d && typeof document !== 'undefined') steps = beatLines(d.beats, () => null);
+  } catch { steps = []; }
+  box[which] = steps;
+  return steps;
+}
+/**
+ * Up to `max` lines said by `people` on that night, in the order they were
+ * said. `must` are lines to keep first if they exist (a kind, and optionally a
+ * speaker), `about` prefers lines that name somebody.
+ */
+function _replay(row, which, people, { max = 3, kinds = null, must = [], about = null } = {}) {
+  if (!row) return [];
+  const all = _sceneSteps(row, which).map((s, i) => ({ ...s, i }))
+    .filter(s => s.t === 'say' && s.who && people.includes(s.who) && s.text && (!kinds || kinds.includes(s.kind)));
+  const picked = new Map();
+  for (const m of must) {
+    const hit = all.find(s => s.kind === m.kind && (!m.who || s.who === m.who));
+    if (hit) picked.set(hit.i, hit);
+  }
+  // one line from each of them first (naming the other, if they did), then the rest in order
+  for (const p of people) {
+    if ([...picked.values()].some(s => s.who === p)) continue;
+    const mine = all.filter(s => s.who === p);
+    const hit = (about && mine.find(s => about.some(a => a !== p && s.text.includes(a)))) || mine[0];
+    if (hit) picked.set(hit.i, hit);
+  }
+  for (const s of all) { if (picked.size >= max) break; if (!picked.has(s.i)) picked.set(s.i, s); }
+  return [...picked.values()].sort((a, b) => a.i - b.i).slice(0, max).map(s => ({ who: s.who, text: s.text }));
+}
+
+// ══════════════════════════════════════════════════════════════════════
 // THE SHOW
 // ══════════════════════════════════════════════════════════════════════
 export function reunionStageData(ep) {
@@ -551,8 +602,21 @@ function _buildBeats(R, ep) {
   const names = l => (l.length <= 1 ? l.join('') : l.length === 2 ? l.join(' and ') : l.slice(0, -1).join(', ') + ' and ' + l[l.length - 1]);
   // A THROWBACK: the footage played before a segment, a heading and one line
   // per moment, every line read off the season record
-  const tape = (head, lines) => (lines.length ? '<div class="ru-tape"><b>' + _esc(head) + '</b>'
-    + lines.map(l => '<span>' + _esc(l) + '</span>').join('') + '</div>' : '');
+  // `scene`: { set, said: [{who, text}] } — the set the stage cuts to, and the
+  // lines replayed off that night's own screen
+  const tape = (head, lines, scene) => {
+    const said = (scene && scene.said) || [];
+    if (!lines.length && !said.length) return '';
+    const people = [...new Set(said.map(x => x.who).concat((scene && scene.people) || []))];
+    return '<div class="ru-tape"' + (scene && scene.set ? ' data-set="' + _esc(scene.set) + '"' : '')
+      + (people.length ? ' data-people="' + _esc(people.join('|')) + '"' : '') + '><b>' + _esc(head) + '</b>'
+      + lines.map(l => '<span>' + _esc(l) + '</span>').join('')
+      + said.map(x => '<q class="ru-q" data-who="' + _esc(x.who) + '">' + _av(x.who, 26)
+        + '<span class="ru-q-txt">&ldquo;' + _esc(x.text) + '&rdquo;</span><cite>' + _esc(x.who) + '</cite></q>').join('')
+      + '</div>';
+  };
+  const rows = (ep && ep.tr && ep.tr.rows) || [];
+  const rowAt = n => rows.find(r => Number(r.num) === Number(n)) || null;
   const roleAt = n => ((R.exits || []).find(x => x.name === n) || {}).role;
   const recruitedIn = new Set((R.recruits || []).filter(x => x.accepted).map(x => x.target));
   // a stage direction: what the room sees happen, between the lines
@@ -611,8 +675,14 @@ function _buildBeats(R, ep) {
     lines.sort((a, b) => a.k - b.k);
     for (let i = 0; i < lines.length; i++) lines[i] = lines[i].text;
     lines.push(many ? `The last fire: it burns green, and ${Ws} split ${_money(R.pot)}.` : `The last fire: ${Ws} takes ${_money(R.pot)}.`);
+    // and the night one of them came closest, replayed: what they said to save themselves
+    const closest = R.takers.map(W => ({ W, t: R.tables.filter(t => t.chosen !== W && (t.tally || {})[W] >= 2)
+      .sort((a, b) => b.tally[W] - a.tally[W])[0] })).filter(x => x.t).sort((a, b) => b.t.tally[b.W] - a.t.tally[a.W])[0];
+    const survived = closest ? _replay(rowAt(closest.t.ep), 'table', [closest.W], { max: 2, kinds: ['debate', 'clash'] }) : [];
     card('How They Won It', 'tape', host(_fill(pickFrom(TAPE_HOST, key + '|tph'), { Ws, they: many ? 'they' : (p1.sub || 'they') }))
-      + tape(many ? 'Their Game' : R.takers[0] + '’s Game', lines), {});
+      + tape(many ? 'Their Game' : R.takers[0] + '’s Game', lines)
+      + (survived.length ? tape('Throwback · Day ' + closest.t.ep + ', the Round Table',
+        [`${closest.t.tally[closest.W]} names against ${closest.W}.`], { set: 'roundtable', said: survived }) : ''), {});
   }
 
   // 2. THE WINNERS
@@ -692,10 +762,13 @@ function _buildBeats(R, ep) {
   R.murders.slice(0, 4).forEach(m => {
     const pool = KILLER_WHY[m.reason] || KILLER_WHY._;
     const warm = (m.bond || 0) > 2;
+    const turretSaid = _replay(rowAt(m.ep), 'turret', [m.by], { max: 2, kinds: ['argue', 'overrule'], about: [m.victim] })
+      .filter(x => x.text.includes(m.victim));
     // calm or unbothered, the murdered has made their peace with it, and the
     // murderer answers that rather than an anger nobody showed
     const easy = ['calm', 'idgaf'].includes(_tone(m.victim));
-    const inner = host(_fill(pickFrom(HOST_MURDER, key + '|hm|' + m.victim), { V: m.victim, K: m.by, n: String(m.ep) }))
+    const inner = (turretSaid.length ? tape('Throwback · Night ' + m.ep + ', the turret', [], { set: 'conclave-back', said: turretSaid, people: [m.victim] }) : '')
+      + host(_fill(pickFrom(HOST_MURDER, key + '|hm|' + m.victim), { V: m.victim, K: m.by, n: String(m.ep) }))
       + voice(m.by, { [_tone(m.by)]: pool }, key + '|kw|' + m.victim, { V: m.victim })
       + voice(m.victim, VICTIM_SAY, key + '|vs|' + m.victim, {})
       // THE EXCHANGE GOES ON (the user, 2026-10-06: "do what u gotta do about
@@ -714,7 +787,9 @@ function _buildBeats(R, ep) {
       + host(pickFrom(HOST_FOOTAGE, key + '|hrc')));
     RC.forEach(x => {
       const V = x.target, B = x.by;
-      const clip = _fill(pickFrom(CLIP_SAID[x.reason] || CLIP_SAID._, key + '|clip|' + V), { V });
+      // the line from the turret that night, if the screen had one naming them
+      const real = _replay(rowAt(x.ep), 'turret', [B], { max: 6, kinds: ['argue', 'overrule'] }).find(l => l.text.includes(V));
+      const clip = real ? real.text : _fill(pickFrom(CLIP_SAID[x.reason] || CLIP_SAID._, key + '|clip|' + V), { V });
       let inner = '<p>Night ' + _esc(String(x.ep)) + ', in the turret. ' + _esc(B) + ' puts a name forward.</p>'
         + '<div class="ru-clip" data-who="' + _esc(B) + '" data-tag="Never seen · night ' + _esc(String(x.ep)) + '">'
         + _av(B, 34) + '<div><b>' + _esc(B) + ', in the turret</b><span>&ldquo;' + _esc(clip) + '&rdquo;</span></div></div>';
@@ -739,10 +814,12 @@ function _buildBeats(R, ep) {
       // harder to give to somebody whose answer was not an apology
       const apologised = _tone(L) !== 'mean';
       const forgives = warmTone(F) && ((t.leadBond || 0) > 0 || (apologised && (t.leadBond || 0) > -2 && ['calm', 'idgaf', 'sad'].includes(_tone(F))));
-      const inner = tape('Throwback · Day ' + t.ep, [
+      const said = _replay(rowAt(t.ep), 'table', [L, F], { max: 4, kinds: ['debate', 'clash', 'reveal'],
+        must: [{ kind: 'reveal', who: F }], about: [L, F] });
+      const inner = tape('Throwback · Day ' + t.ep + ', the Round Table', [
           `${t.votes} name${t.votes === 1 ? '' : 's'} against ${F} at the Round Table. ${L} spoke first.`,
-          `${F} turns to the room: “I am a Faithful.”`,
-        ])
+          ...(said.some(x => x.who === F && /Faithful/.test(x.text)) ? [] : [`${F} turns to the room: “I am a Faithful.”`]),
+        ], { set: 'roundtable', said })
         + host(_fill(pickFrom(HOST_MISTAKE, key + '|hmi|' + F), { F, n: String(t.ep) }))
         + voice(F, F_SAY, key + '|fs|' + F, { L })
         + voice(L, LEAD_SAY, key + '|lds|' + F, { F })
@@ -754,7 +831,10 @@ function _buildBeats(R, ep) {
 
   // 6. TRAITOR AGAINST TRAITOR
   R.turned.slice(0, 2).forEach(x => {
-    const inner = tape('Throwback · Day ' + x.ep, [`${x.by} writes ${x.target}’s name. Both of them were Traitors.`])
+    const said = _replay(rowAt(x.ep), 'table', [x.by, x.target], { max: 3, kinds: ['debate', 'clash', 'reveal'],
+      must: [{ kind: 'reveal', who: x.target }], about: [x.by, x.target] });
+    const inner = tape('Throwback · Day ' + x.ep + ', the Round Table', [`${x.by} writes ${x.target}’s name. Both of them were Traitors.`],
+      { set: 'roundtable', said })
       + host(_fill(pickFrom(HOST_TURNED, key + '|htu|' + x.target), { A: x.by, B: x.target }))
       + voice(x.by, TURNED_SAY, key + '|tus|' + x.target, { B: x.target })
       + voice(x.target, TURNED_BACK, key + '|tub|' + x.target, {});
@@ -787,7 +867,17 @@ function _buildBeats(R, ep) {
     const fl = [];
     if (ab.length) fl.push(`${rv.a} writes ${rv.b}’s name ${ab.length === 1 ? 'on day ' + ab[0] : ab.length + ' times'}.`);
     if (ba.length) fl.push(`${rv.b} writes ${rv.a}’s name ${ba.length === 1 ? 'on day ' + ba[0] : ba.length + ' times'}.`);
-    card('The Feud', 'rivals', tape('Throwback · The Round Table', fl)
+    // the night they went at each other hardest: the table where both spoke
+    // and the most lines named the other
+    let feudNight = null, feudSaid = [];
+    for (const r of rows) {
+      if (!(r.tr && r.tr.table)) continue;
+      const got = _replay(r, 'table', [rv.a, rv.b], { max: 4, kinds: ['debate', 'clash'], about: [rv.a, rv.b] });
+      const hits = got.filter(x => x.text.includes(x.who === rv.a ? rv.b : rv.a)).length;
+      if (new Set(got.map(x => x.who)).size === 2 && hits > (feudNight ? feudNight.hits : 0)) { feudNight = { ep: r.num, hits }; feudSaid = got; }
+    }
+    card('The Feud', 'rivals', tape(feudNight ? 'Throwback · Day ' + feudNight.ep + ', the Round Table' : 'Throwback · The Round Table', fl,
+      feudNight ? { set: 'roundtable', said: feudSaid } : null)
       + host(_fill(pickFrom(HOST_RIVALS, key + '|hrv'), { A: rv.a, B: rv.b }))
       + voice(rv.a, RIVAL_SAY, key + '|ra', { O: rv.b }) + voice(rv.b, RIVAL_SAY, key + '|rb', { O: rv.a })
       + voice(rv.a, RIVAL_BACK, key + '|rba', { O: rv.b })
@@ -849,8 +939,11 @@ const CSS = `
 .ru-tape{position:relative;margin:12px 0;padding:14px 16px 12px;background:linear-gradient(180deg,rgba(60,48,30,.55),rgba(30,24,16,.55));
   border:1px solid rgba(232,194,112,.3);filter:sepia(.25)}
 .ru-tape b{display:block;margin-bottom:6px;font-family:var(--v-display);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#e8c270}
-.ru-tape span{display:block;margin:4px 0;padding-left:14px;position:relative;line-height:1.45;color:#e9dcc0}
-.ru-tape span::before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;border-radius:50%;background:#c9a24a}
+.ru-tape > span{display:block;margin:4px 0;padding-left:14px;position:relative;line-height:1.45;color:#e9dcc0}
+.ru-q{display:flex;gap:10px;align-items:flex-start;margin:8px 0 2px;quotes:none}
+.ru-q-txt{font-style:italic;font-size:15px;line-height:1.4;color:#f3e6c8}
+.ru-q cite{margin-left:auto;align-self:center;font-style:normal;font-size:9px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;white-space:nowrap}
+.ru-tape > span::before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;border-radius:50%;background:#c9a24a}
 .ru-dir{margin:10px 0 4px;padding-left:12px;border-left:2px solid rgba(232,194,112,.25);font-style:italic;color:#bfb293}
 .ru-clip{display:flex;gap:12px;align-items:flex-start;margin:12px 0;padding:12px 14px;background:rgba(120,20,30,.18);
   border:1px solid rgba(201,40,60,.4);box-shadow:inset 0 0 30px rgba(0,0,0,.5)}

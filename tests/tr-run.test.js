@@ -40,6 +40,9 @@ import { getEpisodeEliminations, renderEpisodeHistory, renderEpisodeView,
   buildSeasonOverviewModel, buildEpisodeMap } from '../js/run-ui.js';
 import { exitVerbs } from '../js/shows.js';
 import { TRAITORS_SCREENS } from '../js/vp-tr/screens.js';
+import { rpBuildReunion } from '../js/vp-tr/reunion.js';
+import { roundTableStageData } from '../js/vp-tr/round-table.js';
+import { conclaveStageData } from '../js/vp-tr/conclave.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
 import roster from '../franchise_roster.json';
 
@@ -647,5 +650,27 @@ describe('the reunion airs as the episode after the finale', () => {
       }
     }
     expect(seen, 'no season had any footage, so this proves nothing').toBeGreaterThan(0);
+  });
+});
+
+// "i need visual for the throwback with actual dialogue that happened"
+// (the user, 2026-10-06): a throwback's quoted lines are lifted off the
+// episode's own screen, so every one must be on that season's screens word for
+// word — a line the reunion wrote itself would be a scene that never aired.
+describe('the reunion throwbacks replay what was actually said', () => {
+  it('every replayed line is on one of that season Round Table or turret screens', () => {
+    airWholeSeason(SEEDS[0]);
+    const rows = gsRef.episodeHistory;
+    const fin = rows[rows.length - 1];
+    const rep = { num: 'reunion-' + fin.num, format: 'traitors', exits: [],
+      tr: { reunion: fin.tr.reunion, reunionEpisode: true, ep: fin.num + 1, rows } };
+    const tpl = document.createElement('template');
+    tpl.innerHTML = rpBuildReunion(rep);
+    const quoted = [...tpl.content.querySelectorAll('.ru-q .ru-q-txt')].map(x => x.textContent.replace(/^[“"]+|[”"]+$/g, ''));
+    expect(quoted.length, 'no throwback replayed a single line, so this proves nothing').toBeGreaterThan(3);
+    const aired = rows.map(r => [roundTableStageData(r), conclaveStageData(r)].filter(Boolean)
+      .map(d => d.beats.map(b => b.html).join('')).join('')).join('');
+    const unesc = s => s.replace(/&amp;/g, '&').replace(/&#39;|&#x27;/g, "'").replace(/&quot;/g, '"');
+    for (const q of quoted) expect(unesc(aired).includes(q), `never said on screen: "${q}"`).toBe(true);
   });
 });

@@ -431,6 +431,9 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 @keyframes bbx-spark{0%{opacity:0;transform:translateX(-50%) scale(0) rotate(0)}50%{opacity:1;transform:translateX(-50%) scale(1.3) rotate(90deg)}100%{opacity:0;transform:translateX(-50%) translateY(-2cqw) scale(1) rotate(180deg)}}
 .bbx .fx-impact{position:absolute;inset:0;z-index:7;pointer-events:none;background:radial-gradient(circle at 50% 60%,rgba(255,255,255,.35),transparent 45%);animation:bbx-impact .45s ease-out both}
 @keyframes bbx-impact{from{opacity:1;transform:scale(.6)}to{opacity:0;transform:scale(1.4)}}
+/* ── the jury house: the same building's warmth, lamplit, slow ── */
+.bbx .stage.lodge .set{filter:sepia(.55) saturate(1.25) brightness(.72) hue-rotate(-8deg)}
+.bbx .stage.lodge .vign{background:radial-gradient(ellipse at 50% 40%,transparent 35%,rgba(30,16,4,.75))}
 /* ── an alliance is born: its title ── */
 .bbx .alcard{position:absolute;left:50%;top:38%;z-index:12;transform:translate(-50%,-50%);text-align:center;pointer-events:none;animation:bbx-alcard 3.6s ease-out both}
 .bbx .alcard::before{content:"";position:absolute;inset:-3cqw -9cqw;z-index:-1;background:radial-gradient(closest-side,rgba(10,8,2,.92),rgba(10,8,2,.6) 60%,transparent)}

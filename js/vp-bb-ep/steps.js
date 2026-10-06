@@ -2031,6 +2031,84 @@ function interviewScreen(iv, ctx, host, row) {
     day: ctx.day, time: 'LIVE', hostOn: true, cast: [[ev, 62]], steps };
 }
 
+// ── the jury house ─────────────────────────────────────────────────────
+// The user, 2026-10-06: "does the jury house have a viewer? adapt it too". The lodge night the
+// engine records (bb/jury-house.js): the newcomer walking in with what they think they know, the
+// long week, the roundtable (every player still in the house argued for and against), working the
+// room, and the night before the finale. Its prose carries quotations; each is split into the
+// staging and the spoken line, spoken by the person the line names first. The side panel is the
+// board: where every juror leans, from before the roundtable until it has been played.
+function proseSteps(text, players = []) {
+  const t = stripTags(String(text || '')).trim();
+  if (!t) return [];
+  const re = /[“"]([^”"]+)[”"]/g;
+  const parts = [];
+  let last = 0, m;
+  while ((m = re.exec(t))) { parts.push({ narr: t.slice(last, m.index) }); parts.push({ quote: m[1] }); last = m.index + m[0].length; }
+  parts.push({ narr: t.slice(last) });
+  if (!parts.some(x => x.quote)) return [{ k: 'beat', t }];
+  const esc = n => n.replace(/[.*+?^${}()|[\]\\]/g, x => '\\' + x);
+  const who = players.map(esc).join('|') || 'NOBODY';
+  // an attribution on its own ("says Misha", "Misha says.", "MK asks") is not narration
+  const ATTR = new RegExp('^[\\s,.;:—-]*(?:(?:' + who + ')\\s+(?:says|asks|adds|replies|snaps|mutters)|(?:says|asks|adds|replies|snaps|mutters)\\s+(?:' + who + '))[\\s,.;:—-]*', 'i');
+  const out = [];
+  let speaker = null;
+  for (const x of parts) {
+    if (x.narr != null) {
+      // the speaker of the next quotation is the person named earliest in the narration before it
+      const named = players.filter(p => x.narr.includes(p)).sort((a, b) => x.narr.indexOf(a) - x.narr.indexOf(b));
+      if (named.length) speaker = named[0];
+      const n = x.narr.replace(ATTR, '').replace(/^[\s,.;:—-]+/, '').trim();
+      if (n.length > 2) out.push({ k: 'beat', t: /[.!?]$/.test(n) ? n : n + '.' });
+      continue;
+    }
+    const by = speaker || players[0] || null;
+    const q = x.quote.trim().replace(/,$/, '.');
+    const prev = out[out.length - 1];
+    // a quotation broken by its attribution is one line
+    if (prev && prev.k === 'say' && prev.by === by) prev.t = prev.t.replace(/[,.]$/, '.') + ' ' + q;
+    else out.push(by ? { k: 'say', by, t: q } : { k: 'beat', t: '"' + q + '"' });
+  }
+  return out;
+}
+function juryBoard(reads, contenders) {
+  const out = [];
+  for (const [j, row] of Object.entries(reads || {})) {
+    const ranked = contenders.filter(p => row[p] != null).sort((a, b) => row[b] - row[a]);
+    if (!ranked.length) continue;
+    out.push(`${j} leans to ${ranked[0]}${ranked.length > 1 ? `; least of all ${ranked.at(-1)}` : ''}.`);
+  }
+  return out;
+}
+function juryHouseScreen(act, ctx) {
+  const residents = act.residents || [];
+  if (!residents.length) return null;
+  const contenders = Object.keys(Object.values(act.reads || {})[0] || {});
+  const before = ['Where the jury leans, before tonight:', ...juryBoard(act.readsBefore, contenders)];
+  const after = ['Where the jury leans now:', ...juryBoard(act.reads, contenders)];
+  const steps = [];
+  const alone = residents.length === 1;
+  steps.push({ k: 'beat', t: act.newcomer ? (alone ? `The jury house. The lodge is empty. A car pulls up outside.` : `The jury house. A car pulls up outside, and the jurors inside go quiet.`) : `The jury house, at night. A lamp in the window, and nobody on a clock.`, why: before });
+  for (const a of act.acts || []) {
+    if (a.roundtable) {
+      steps.push({ k: 'beat', t: 'The jurors pull their chairs into a circle. It is time for the roundtable.', toast: ['THE ROUNDTABLE', '#e8c98a'] });
+      for (const l of a.roundtable.lines || []) {
+        steps.push({ k: 'beat', t: `On ${l.player}.` });
+        steps.push(...proseSteps(l.backText, [l.backer, l.player]));
+        steps.push(...proseSteps(l.doubtText, [l.doubter, l.player]));
+      }
+      steps.push({ k: 'beat', t: 'The circle breaks up. Nobody has changed their mind out loud. A few have changed it quietly.', why: after });
+      continue;
+    }
+    steps.push({ k: 'beat', t: a.title === 'The Door Opens' ? 'The door opens.' : `${a.title}.` });
+    for (const b of a.beats || []) steps.push(...proseSteps(b.text, b.players || []));
+  }
+  if (!(act.acts || []).some(a => a.roundtable) && steps.length) steps[steps.length - 1] = { ...steps[steps.length - 1], why: after };
+  return { id: `bb-jury-house-${act.week || ctx.week}-v`, kind: 'juryhouse', anchor: 'evict', label: act.full ? 'Jury House · Roundtable' : 'Jury House',
+    set: 'hoh', room: 'The Jury House', cam: 12, kicker: 'Elsewhere · The jury house', title: 'The Jury House', sub: `${listOf(residents)}`,
+    day: ctx.day, time: 'NIGHT', lodge: true, cast: residents.slice(0, 8).map((n, i, a) => [n, spread(a.length)[i]]), steps };
+}
+
 // ── a twist announcement, stepped ──────────────────────────────────────
 // The house is called to the living room and the host reads the rule on the screen, with the
 // rules card filling as it goes, then the line that lands (sting), then how the house takes it
@@ -2442,6 +2520,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'secret-power-comp': flush(); for (const scr of secretPowerScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-played': { const pw = powerScreens(act, ctx); if (pw) { flush(); for (const scr of pw) ceremony(scr); } else { flush(); out.push({ slot: act.type }); } beatsOf(act); break; }
       case 'move-in': flush(); ceremony(moveInScreen(act, ctx, host, row)); break;
+      case 'jury-house': { const jh = juryHouseScreen(act, ctx); flush(); if (jh) ceremony(jh); break; }
       case 'twist-announcement': { const tw = twistAnnounceScreen(act, ctx, host); flush(); if (tw) ceremony(tw); else out.push({ slot: act.type }); beatsOf(act); break; }
       case 'rewind': case 'white-locust': flush(); for (const scr of rewindScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'no-eviction': case 'dead-last': flush(); for (const scr of quietScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -2493,7 +2572,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|twist|twist-2|interview|interview-2|cold)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|twist|twist-2|interview|interview-2|jury-house(-\d+)*|cold)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

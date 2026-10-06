@@ -78,7 +78,7 @@ const BED_BY_KIND = {
   whack: 'bb-comp', power: 'bb-confused', expired: 'bb-secret', coin: 'bb-secret', veto2: 'bb-veto-meeting',
   den: 'bb-secret', curse: 'bb-drama', nightmare: 'bb-confused', battleback: 'bb-comp', bonuslife: 'bb-comp',
   team: 'bb-scheming', mystery: 'bb-secret', premiere: 'bb-confused', hex: 'bb-confused', quiet: 'bb-house',
-  rewind: 'bb-confused', locust: 'bb-comp', movein: 'bb-celebration', twist: 'bb-confused', interview: 'bb-ending',
+  rewind: 'bb-confused', locust: 'bb-comp', movein: 'bb-celebration', twist: 'bb-confused', interview: 'bb-ending', juryhouse: 'bb-ending',
 };
 // A house scene sounds like what it is: a fight, a deal, or just the house.
 // The user, 2026-10-06: "all the music seems really sad, always… limit music to the moments

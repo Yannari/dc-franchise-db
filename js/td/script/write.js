@@ -25,8 +25,10 @@ import { stableRng } from '../../script/rng.js';
 import { POOLS } from './lines/index.js';
 import { factsFor } from './facts.js';
 
+// The episode being played. gs.episode still holds the last one until it ends.
+export const epOf = ctx => ctx.ep || (gs.episode || 0) + 1;
 const PHASE_CLOCK = { pre: 0, challenge: 1, post: 2, tribal: 3 };
-export const clockOf = ctx => (ctx.ep || gs.episode || 0) * 10 + (PHASE_CLOCK[ctx.phase] ?? 0);
+export const clockOf = ctx => (epOf(ctx)) * 10 + (PHASE_CLOCK[ctx.phase] ?? 0);
 const ledger = () => (gs.tdLineLedger ||= newLedger());
 
 /** The season's word salt: who is in it and what it is called. No dice. */
@@ -43,9 +45,9 @@ function salt() {
 /** The scene's own word stream. Same scene in the same season, same words. */
 export function sceneRng(scene, ctx = {}) {
   const who = scene.who || {};
-  const base = [ctx.ep || gs.episode || 0, ctx.phase || '', scene.kind, who.a || '', who.b || '', who.c || ''].join('|');
+  const base = [epOf(ctx), ctx.phase || '', scene.kind, who.a || '', who.b || '', who.c || ''].join('|');
   const seen = (gs._tdSceneSeen ||= {});
-  if (seen.ep !== (ctx.ep || gs.episode || 0)) { for (const k of Object.keys(seen)) delete seen[k]; seen.ep = ctx.ep || gs.episode || 0; }
+  if (seen.ep !== (epOf(ctx))) { for (const k of Object.keys(seen)) delete seen[k]; seen.ep = epOf(ctx); }
   const n = (seen[base] = (seen[base] || 0) + 1);
   return stableRng('td-words', salt(), base, n);
 }
@@ -80,7 +82,7 @@ export const writing = { muted: false };
  * keeps what it has rather than going silent.
  */
 const PAST = new RegExp(String.raw`(^|[^a-z])(yesterday|last night|last week|all week|this week|day one|for days|every day|every night|lately|any ?more|used to|again|since the start|last time)([^a-z]|$)`, 'i');
-const firstDay = ctx => (ctx.ep || gs.episode || 0) <= 1 && ctx.phase === 'pre';
+const firstDay = ctx => (epOf(ctx)) <= 1 && ctx.phase === 'pre';
 function noPast(keys) {
   const out = {};
   for (const k of [].concat(keys)) {

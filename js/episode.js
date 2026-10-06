@@ -4519,7 +4519,7 @@ export function simulateEpisode() {
       // challenge they had not lost yet. A pair split across camps never talked.
       const _campOf = n => gs.isMerged ? (gs.mergeName || 'merge') : gs.tribes.find(t => t.members.includes(n))?.name;
       const _sameCamp = _knowledgeEventsResult.filter(e => e?.from && e?.to && _campOf(e.from) && _campOf(e.from) === _campOf(e.to));
-      knowledgeCampCards(_sameCamp).forEach(card => {
+      knowledgeCampCards(_sameCamp, { tribal: tribalPlayers }).forEach(card => {
         const _feed = ep.campEvents?.[_campOf(card.players[0])];
         if (_feed && !Array.isArray(_feed)) (_feed.post ||= []).push(card);
       });

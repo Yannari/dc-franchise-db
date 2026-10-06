@@ -76,6 +76,14 @@ describe('the pools keep their contract', () => {
     }
   });
 
+  it('only says "tonight" where the camp is voting tonight', () => {
+    // Gossip airs after the challenge in BOTH camps; the winners have no vote tonight.
+    for (const [key, pool] of all) for (const e of pool) {
+      if (e.when?.tribal === true) continue;
+      for (const x of texts(e)) expect(/tonight/i.test(x), `${key} ${e.id}: ${x}`).toBe(false);
+    }
+  });
+
   it('never writes a cast member into a pool', () => {
     // {a} and {b} are filled at render time. A name in a pool is somebody else's line.
     const names = JSON.parse(fs.readFileSync('franchise_roster.json', 'utf8')).players.map(p => p.name).filter(n => n.length > 3);

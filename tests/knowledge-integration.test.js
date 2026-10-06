@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { POOLS } from '../js/td/script/lines/index.js';
 import { seedGame } from './helpers/setup.js';
 import { believes, factId } from '../js/knowledge.js';
 import { knowledgeCampCards, recordDetectedBetrayalKnowledge,
@@ -27,7 +28,14 @@ describe('knowledge integration', () => {
   });
   it('renders uncertainty rather than revealing pitch results', () => {
     const [card] = knowledgeCampCards([{ from: 'A', to: 'B', subject: 'D', sourceType: 'rumor' }]);
-    expect(card.text).toMatch(/no promise|nothing away/);
+    expect(card.lines?.length).toBeGreaterThan(1);
     expect(card.text).not.toMatch(/accepted|rejected|flipped/i);
+    // The card is a scene now (td/script): whatever the listener says, nobody
+    // commits a vote in it — the vote has not happened, and the pitch's result
+    // is not theirs to know. Checked across every line the scene can pick.
+    const COMMITS = /(i'll vote|i'm voting|i will vote|my vote is|you have my vote|you've got my vote|count me in|i'll write)/i;
+    for (const [key, pool] of Object.entries(POOLS)) if (key.startsWith('flow.gossip.')) {
+      for (const e of pool) for (const t of e.turns) expect(COMMITS.test(t.say || t.conf || t.beat), `${key} ${e.id}`).toBe(false);
+    }
   });
 });

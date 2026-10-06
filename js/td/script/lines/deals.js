@@ -160,6 +160,19 @@ const HOLLOW = [
     { beat: '{b} grins and heads back to the others.' },
     { by: 'a', conf: "I do like {b}. But I came here to win, and I'm not going to win sitting next to {b.obj}." },
   ] },
+  { id: 'sd.h7', turns: [
+    { by: 'b', say: "Can I trust you? Like, actually trust you?" },
+    { by: 'a', say: "Of course. Final {size}. I'll shake on it right now." },
+    { beat: 'They shake.' },
+    { by: 'a', conf: "{b} is a vote I need right now. Later, {b} is a vote I don't need." },
+  ] },
+  { id: 'sd.h8', when: { early: true }, turns: [
+    { by: 'a', say: "We should look out for each other. Final {size}." },
+    { by: 'b', say: "This early?" },
+    { by: 'a', say: "The earlier the better." },
+    { by: 'b', say: "Okay. Yeah, why not." },
+    { by: 'a', conf: "It's way too early to know who I'm taking to the end. But {b} doesn't need to know that." },
+  ] },
 ];
 
 export default {

@@ -203,14 +203,16 @@ function clearTimers(S) { (S.timers || []).forEach(t => clearTimeout(t) || clear
 function later(S, fn, ms) { const t = setTimeout(fn, ms); S.timers.push(t); return t; }
 
 function chrome(root, S) {
-  $(root, 'eyebrow').textContent = 'The Traitors · Day ' + S.day;
+  // a stage that is not a day in the castle (the reunion) names itself, and
+  // has no breakfast-to-night clock to walk
+  $(root, 'eyebrow').textContent = S.eyebrow || 'The Traitors · Day ' + S.day;
   $(root, 'title').textContent = S.title || SEGMENT_TITLE[S.segment] || 'The Castle';
   const fund = $(root, 'fund');
   if (S.pot != null) {
     fund.querySelector('b').textContent = '£' + Math.round(S.pot).toLocaleString('en-GB');
     fund.querySelector('span').textContent = 'in the prize fund';
   }
-  $(root, 'clock').innerHTML = CLOCK.map(([k, l]) => `<div class="trs-seg" data-k="${k}">${l}</div>`).join('');
+  $(root, 'clock').innerHTML = S.noClock ? '' : CLOCK.map(([k, l]) => `<div class="trs-seg" data-k="${k}">${l}</div>`).join('');
   const L = { restart: 'Restart', next: 'Next', all: 'Skip to the end', text: 'Transcript' };
   root.querySelectorAll('.trs-btn').forEach(b => { b.textContent = L[b.dataset.l] || ''; });
   const stars = $(root, 'stars');

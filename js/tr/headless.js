@@ -1202,6 +1202,12 @@ function _recruitmentRecord(night) {
 // the worst rivalries. Read off the episode rows, which are the season's own
 // record of itself, so the reunion cannot remember a different season.
 // Plain objects: survives a save.
+// a bond, or nothing: the reunion reads warmth and grudges, and a pair the
+// engine never scored is neither
+function _bondOr0(a, b) {
+  const v = a && b ? getBond(a, b) : 0;
+  return Number.isFinite(v) ? Math.round(v * 10) / 10 : 0;
+}
 function _reunionRecord(endgame, rows) {
   const lastEp = Number((rows[rows.length - 1] || {}).num) || 0;
   const exitOf = {};                 // name -> { ep, channel }
@@ -1215,7 +1221,8 @@ function _reunionRecord(endgame, rows) {
   for (const r of rows) {
     const c = r.tr && r.tr.conclave;
     if (c && c.target && c.decidedBy && murdered.has(c.target) && !murders.some(m => m.victim === c.target)) {
-      murders.push({ ep: Number(r.num), victim: c.target, by: c.decidedBy, reason: c.reason || null });
+      murders.push({ ep: Number(r.num), victim: c.target, by: c.decidedBy, reason: c.reason || null,
+        bond: _bondOr0(c.decidedBy, c.target) });
     }
   }
   // THE TABLES: every banishment, what they were, and who led it
@@ -1225,7 +1232,8 @@ function _reunionRecord(endgame, rows) {
     const votes = (t.votes || []).filter(b => b.channel === 'banishment' && (b.target || b.voted));
     const against = votes.filter(b => (b.target || b.voted) === t.chosen).map(b => b.voter);
     const lead = ((t.speeches || []).find(sp => sp.target === t.chosen) || {}).speaker || against[0] || null;
-    tables.push({ ep, chosen: t.chosen, role: role || roleOf(t.chosen), votes: against.length, against, lead });
+    tables.push({ ep, chosen: t.chosen, role: role || roleOf(t.chosen), votes: against.length, against, lead,
+      leadBond: lead ? _bondOr0(lead, t.chosen) : 0 });
   };
   for (const r of rows) if (r.tr && r.tr.table) addTable(Number(r.num), r.tr.table, r.tr.table.chosenAlignment);
   for (const t of ((endgame && endgame.tables) || [])) if (t.record) addTable(Number(t.ep), t.record, null);
@@ -1250,10 +1258,33 @@ function _reunionRecord(endgame, rows) {
   pairs.sort((x, y) => y.bond - x.bond);
   const friends = pairs.filter(p => p.bond > 2).slice(0, 2);
   const rivals = pairs.slice().reverse().filter(p => p.bond < -1).slice(0, 2);
+  // THE FOOTAGE: what the turret said that the room never heard. Every
+  // night each Traitor put a name forward (`conclave.argued`); the names that
+  // were NOT taken are the footage the reunion plays back — somebody nearly
+  // murdered, and the friend who suggested it. The winners first, then the
+  // closest friendships, then how hard the name was pushed.
+  const takersEnd = new Set((endgame && endgame.takers) || []);
+  const footage = [];
+  for (const r of rows) {
+    const c = r.tr && r.tr.conclave;
+    if (!c || !Array.isArray(c.argued)) continue;
+    for (const a of c.argued) {
+      if (!a || !a.traitor || !a.target || a.target === c.target || a.target === a.traitor || !cast.includes(a.target)) continue;
+      if (traitors.includes(a.target)) continue;
+      const bond = _bondOr0(a.traitor, a.target);
+      const score = (takersEnd.has(a.target) ? 100 : 0) + Math.max(0, bond) * 3 + (Number(a.conviction) || 0) * 5;
+      const prev = footage.find(x => x.target === a.target);
+      if (prev && prev.score >= score) continue;
+      if (prev) footage.splice(footage.indexOf(prev), 1);
+      footage.push({ ep: Number(r.num), by: a.traitor, target: a.target, reason: a.reason || null,
+        victim: c.target || null, decidedBy: c.decidedBy || null, bond, won: takersEnd.has(a.target), score });
+    }
+  }
+  footage.sort((x, y) => y.score - x.score);
   return {
     cast, lastEp,
     exits: cast.map(n => ({ name: n, ep: exitOf[n] ? exitOf[n].ep : null, channel: exitOf[n] ? exitOf[n].channel : null, role: roleOf(n) })),
-    traitors, murders, tables, turned, recruits, friends, rivals,
+    traitors, murders, tables, turned, recruits, friends, rivals, footage: footage.slice(0, 3),
     takers: [...((endgame && endgame.takers) || [])],
     losers: [...((endgame && endgame.losers) || [])],
     winner: (endgame && endgame.winner) || null,

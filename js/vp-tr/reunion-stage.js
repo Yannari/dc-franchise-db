@@ -32,11 +32,20 @@ export function reunionStageScreen(ep, observer, pageHtml) {
   const init = () => {
     const data = reunionStageData(ep);
     if (!data) return { steps: [] };
-    const steps = beatLines(data.beats, (n, part) => (part === 'faces' ? [] : null));
+    const steps = beatLines(data.beats, (n, part) => {
+      if (part === 'faces') return [];
+      // the turret footage: the Traitor's own words from the night, with their face
+      if (part === 'clip') {
+        const said = (n.querySelector('span') || {}).textContent || '';
+        return [{ t: 'narr', who: n.dataset.who || null, react: true, tag: n.dataset.tag || 'Never seen',
+          text: (n.dataset.who ? n.dataset.who + ', in the turret: ' : '') + said.trim() }];
+      }
+      return null;
+    });
     return { data, steps };
   };
   const uid = 'tru-' + String(ep.num) + '-' + (hash(observer) % 1e6);
-  reg()[uid] = { uid, steps: null, init, idx: -1, title: 'The Reunion',
+  reg()[uid] = { uid, steps: null, init, idx: -1, title: 'The Reunion', eyebrow: 'The Traitors · After The Castle', noClock: true,
     day: (ep.tr && ep.tr.ep) || ep.num, pot: null, timers: [], painter: paint };
   if (typeof queueMicrotask === 'function' && typeof window !== 'undefined' && window.trStageMountAll) {
     queueMicrotask(window.trStageMountAll);
@@ -44,15 +53,25 @@ export function reunionStageScreen(ep, observer, pageHtml) {
   return trsFold(stageShell(uid, '<div class="tru"></div><div class="trs-corner"></div><div class="trs-start"></div>', CARD_CSS + CSS), pageHtml);
 }
 
-// the cast on the sofas: spread over the seats (front tier first), each face
-// a little above where a seated head is, sized for its tier
+// the cast on the sofas: front tier first, each face a little above where a
+// seated head is, sized for its tier. The two tiers are STAGGERED — a place
+// along each sofa's curve, the back row in the gaps of the front — and the
+// back row sits higher, so nobody's face is behind anybody else's (picking
+// the nearest measured seat lined the rows up head behind head).
+function along(row, t) {
+  const f = Math.max(0, Math.min(1, t)) * (row.length - 1), i = Math.min(row.length - 2, Math.floor(f)), u = f - i;
+  return [row[i][0] + (row[i + 1][0] - row[i][0]) * u, row[i][1] + (row[i + 1][1] - row[i][1]) * u];
+}
 function seatOf(i, n, W, H) {
   const b = box(W, H), front = SEATS.filter(s => s[2] === 0), back = SEATS.filter(s => s[2] === 1);
-  const nf = Math.min(front.length, Math.ceil(n / 2) + (n > 20 ? 1 : 0)), nb = n - nf;
-  const pick = (row, k, m) => row[Math.round((row.length - 1) * (m <= 1 ? .5 : k / (m - 1)))];
-  const s = i < nf ? pick(front, i, nf) : pick(back, i - nf, nb);
-  const w = b.dw * (s[2] === 0 ? .042 : .036);
-  return { x: b.x(s[0]), y: b.y(s[1]) - w * .2, w };
+  const nf = Math.min(front.length, Math.ceil(n / 2)), nb = n - nf;
+  const isFront = i < nf;
+  const t = isFront ? (i + .25) / nf : (i - nf + .75) / Math.max(1, nb);
+  // the back tier's measured curve runs wider than the front's; keep it to
+  // the stretch behind the front sofa
+  const [x, y] = isFront ? along(front, t) : along(back, .06 + t * .88);
+  const w = b.dw * (isFront ? .04 : .034);
+  return { x: b.x(x), y: b.y(y) - w * (isFront ? .2 : .55), w };
 }
 
 function paint(root, S, fresh) {
@@ -65,7 +84,7 @@ function paint(root, S, fresh) {
   const st = S.idx >= 0 ? S.steps[S.idx] : null;
   const m = (st && st.meta) || {};
   const speaker = st && st.t === 'say' ? st.who : null;
-  const focus = speaker || m.focus || null;
+  const focus = speaker || (st && st.react && st.who) || m.focus || null;
   const traitors = new Set(R.traitors || []), takers = new Set(R.takers || []);
   let h = '<div class="tru-world"><img class="tru-plate" src="' + PLATE + '" alt="" draggable="false"><div class="tru-shade"></div>';
   // the host, in the wingback

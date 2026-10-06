@@ -458,6 +458,10 @@ export function rerunTraitorsEpisode(epNum) {
       + 'sooner. Re-run an earlier episode to change that.');
   }
   _lastRefusal = null;
+  // A NEW FUTURE HAS A REUNION THAT HAS NOT AIRED. The one that did belonged
+  // to the ending this re-run just replaced (js/run-ui.js airs it once the
+  // castle is out of episodes).
+  gs._trReunionAired = false;
   // PERSIST THE REROLL so a reload can reproduce THIS season, not the original.
   // `_trQueue` normally survives the save intact, but if it is ever lost (an IDB
   // quota failure, an older save), `simulateTraitorsEpisode` rebuilds it from

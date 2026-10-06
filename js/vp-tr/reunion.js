@@ -73,7 +73,7 @@ function _tone(name) {
 // ══════════════════════════════════════════════════════════════════════
 const HOST_OPEN = [
   'Good evening, and welcome to the reunion. For the first time since the castle, everybody is back in one room: the winners, the people sent home at the table, and the people who never made it to breakfast. Tonight, nobody has to lie.',
-  'Welcome back. Every single one of them is here tonight, and for once, everybody knows the truth. Let us talk about what really happened.',
+  'Welcome back. Every single one of them is here tonight, and for once, there are no secrets left. Let us talk about what really happened.',
   'Good evening. The game is over, the money has been won, and every secret is out. Tonight, they finally get to say what they really think.',
 ];
 const NARR_OPEN = [
@@ -249,12 +249,183 @@ const HOST_RIVALS = [
 ];
 const RIVAL_SAY = {
   dramatic: ['Absolutely not. {O} knows exactly what {O} did.', 'I will never forgive {O} for what was said at that table.'],
-  calm: ['We’ve talked. We’re fine now. It was the game.', 'I don’t hold grudges. Mostly.'],
+  calm: ['It got heated in there. I’d like to think we’re past it.', 'I don’t hold grudges. Mostly.'],
   mean: ['I have nothing to say to {O}.', 'Let’s just say {O} is not on my Christmas list.'],
   sad: ['I wish it had been different. It got out of hand.', 'I’d like to fix it, if {O} would.'],
   idgaf: ['Don’t care, honestly.', 'Never think about {O}.'],
   idk: ['I’m not even sure what we fell out about.', 'Are we still fighting? I genuinely don’t know.'],
 };
+// ── CONFRONTATIONS: the second and third lines of an exchange ────────────
+// The murderer, after the murdered has answered. A friendship still warm at
+// the end of the season gets the softer line.
+const KILLER_AFTER_FRIEND = {
+  dramatic: ['I cried in the turret afterwards, {V}. You have to believe me.', 'It was the worst night of the whole game for me, {V}. I mean that.'],
+  calm: ['For what it’s worth, {V}, I meant every conversation we had.', 'The friendship was real, {V}. The game just needed you gone.'],
+  mean: ['If it helps, {V}, you were the best decision I made all game.', 'You should take it as a compliment, {V}. I only killed the people I rated.'],
+  sad: ['I’m so sorry, {V}. I still think about that night.', 'I wanted to tell you so many times, {V}.'],
+  idgaf: ['We’re still good though, {V}, yeah?', 'Drinks after this, {V}? My treat.'],
+  idk: ['Can we still be friends, {V}? Please?', 'I honestly don’t know how I did it, {V}.'],
+};
+const KILLER_AFTER = {
+  dramatic: ['And I would do it again, {V}!', 'Somebody had to go that night, {V}, and I am not sorry it was you.'],
+  calm: ['It was the right call, {V}, and I stand by it.', 'I’d make the same choice again, {V}. That’s the honest answer.'],
+  mean: ['Honestly, {V}, you made it very easy.', 'You were never going to win anyway, {V}.'],
+  sad: ['I am sorry, though, {V}. I mean that.', 'It doesn’t make it feel any better, {V}. I know.'],
+  idgaf: ['Anyway. No hard feelings, {V}.', 'It was a game, {V}. We move on.'],
+  idk: ['I don’t really know what else to say, {V}.', 'Sorry? Is that what I’m supposed to say?'],
+};
+// whoever the room wrongly sent home, after the apology (or the lack of one)
+const HOST_FORGIVE = [
+  '{F}, can you forgive {L}?',
+  '{F}, is that enough for you?',
+  '{F}, what do you want to say to {L} now?',
+];
+const FORGIVE_YES = {
+  dramatic: ['Come here. Of course I forgive you, {L}.', 'I’ve waited months to hear that, {L}. Yes.'],
+  calm: ['Yes. We were all guessing in there, {L}.', 'I forgave you a long time ago, {L}.'],
+  mean: ['Fine. But you’re buying the drinks tonight, {L}.', 'Yes. Just don’t ever do it again.'],
+  sad: ['I already have, {L}. I just needed to hear you say it.', 'Yes. I missed you, {L}.'],
+  idgaf: ['Yeah, it’s fine, {L}. Water under the bridge.', 'Course. It’s done.'],
+  idk: ['I think so? Yes. Yes, I do.', 'Yes. I think. Yes.'],
+};
+const FORGIVE_NO = {
+  dramatic: ['No. Not tonight, {L}. Maybe not ever.', 'Sorry doesn’t give me my game back, {L}.'],
+  calm: ['I accept the apology, {L}. I’m just not there yet.', 'I hear you, {L}. It will take time.'],
+  mean: ['No. You don’t get off that easily, {L}.', 'Nice speech, {L}. Still no.'],
+  sad: ['I want to, {L}. I just can’t yet.', 'It still hurts too much, {L}.'],
+  idgaf: ['Don’t really care either way, {L}.', 'Doesn’t matter to me now.'],
+  idk: ['I don’t know, {L}. Ask me next year.', 'I really don’t know yet.'],
+};
+const DIR_FORGIVE = [
+  '{L} gets up and hugs {F}. The room applauds.',
+  '{F} and {L} hug it out, and half the room is in tears.',
+];
+const DIR_NO_FORGIVE = [
+  'Nobody moves. {L} looks down at the floor.',
+  '{L} nods and sits back. The silence says the rest.',
+];
+// a feud, after both have had their say
+const RIVAL_BACK = {
+  dramatic: ['You are unbelievable, {O}. Truly.', 'Oh, here we go again.'],
+  calm: ['I think we both said things we didn’t mean, {O}.', 'I’m not going to argue about it on television, {O}.'],
+  mean: ['Same old {O}.', 'Still bitter, {O}? Wow.'],
+  sad: ['That’s not fair, {O}, and you know it.', 'I really wanted tonight to be different, {O}.'],
+  idgaf: ['Okay.', 'Right. Cool.'],
+  idk: ['What did I even do to you, {O}?', 'I genuinely don’t know what this is about.'],
+};
+const HOST_SHAKE = [
+  'Will you two shake hands tonight?',
+  'Can we end it here? Shake hands?',
+];
+const SHAKE_YES = {
+  dramatic: ['Fine. Come here, {O}.', 'Go on, then. Come here, {O}.'],
+  calm: ['Of course. Life is too short.', 'Yes. It was a game.'],
+  sad: ['I’d like that.', 'Yes. I’ve wanted to for months.'],
+  idgaf: ['Sure, whatever.', 'Yeah, go on then.'],
+  idk: ['I suppose so? Yes.', 'Okay. Yes. Why not.'],
+};
+const SHAKE_NO = {
+  dramatic: ['Absolutely not.', 'Not a chance, {O}.'],
+  calm: ['Not tonight.', 'I don’t think that would be honest.'],
+  mean: ['I’d rather not touch {O}, thanks.', 'No.'],
+  sad: ['I can’t. Not yet.', 'I’m sorry. I just can’t.'],
+  idgaf: ['Nah.', 'I’m good, thanks.'],
+  idk: ['Do I have to?', 'Maybe later?'],
+};
+const DIR_SHAKE = [
+  '{A} and {B} stand up and shake hands. The room cheers.',
+  'They shake hands. It is stiff, but it happens.',
+];
+const DIR_NO_SHAKE = [
+  'Neither of them moves. {H} moves on.',
+  '{A} folds {posA} arms. {B} does not move either.',
+];
+const DIR_HALF_SHAKE = [
+  '{Y} holds out a hand. {N} leaves it hanging.',
+  '{Y} stands up. {N} stays sitting. {Y} sits back down.',
+];
+const KILLER_ACCEPTED = {
+  dramatic: ['Thank you, {V}. Honestly, that means everything.', 'Oh, thank God. I was dreading this, {V}.'],
+  calm: ['I knew you’d understand, {V}. Thank you.', 'That’s generous of you, {V}. Thank you.'],
+  mean: ['See? {V} gets it.', 'Finally, somebody in this room who understands the game.'],
+  sad: ['That’s kind of you, {V}. I still feel awful.', 'Thank you, {V}. I didn’t deserve that.'],
+  idgaf: ['Good. Glad we’re sorted, {V}.', 'Nice one, {V}.'],
+  idk: ['Oh. Okay. Thank you, {V}?', 'Really? That’s it? Thank you, {V}.'],
+};
+const DIR_MURDER_EASY = [
+  '{V} shrugs and holds out a hand. {K} shakes it.',
+  '{V} nods. It is clearly old news.',
+];
+const DIR_MURDER_WARM = [
+  '{V} reaches across and squeezes {K}’s hand.',
+  '{V} laughs and shakes {posV} head. {K} looks relieved.',
+];
+const DIR_MURDER_COLD = [
+  '{V} turns away from {K} and does not look back.',
+  '{V} stares at {K} for a long moment. {K} looks at the floor.',
+];
+
+// ── NEVER SEEN BEFORE: the footage the room never saw ──────────────────
+const HOST_FOOTAGE = [
+  'Now, there are a few things some of you have never seen. Let us go back to the turret.',
+  'Before we go any further, there is some footage some of you need to see.',
+  'The Traitors did not only talk about the people they took in the night. Let us look at the ones they nearly took.',
+];
+// what the Traitor said in the turret, on the night, about somebody who survived it
+const CLIP_SAID = {
+  beloved: ['Everybody loves {V}. We will never get {V} out at the table, so it has to be at night.', '{V} is the heart of this castle. Take {V} and they fall apart.'],
+  'onto-me': ['{V} keeps asking me questions. I don’t like it. I want {V} gone tonight.', '{V} is getting close to me. Too close.'],
+  'listened-to': ['When {V} talks, the whole table listens. That makes {V} dangerous.', '{V} keeps getting it right. We need {V} gone before {V} gets us.'],
+  'wasted-decoy': ['Half the castle already suspects {V}. If we kill {V}, nobody will know what to think.', 'They are about to vote for {V} anyway. Kill {V} and they will be lost.'],
+  convenient: ['What about {V}? Nobody would fight for {V}.', '{V}. It would be an easy night.'],
+  sacrifice: ['I know {V} is my friend. That is exactly why nobody would suspect me.', 'If I lose {V}, they will feel sorry for me. Trust me.'],
+  forced: ['We have to pick someone. I say {V}.', 'I hate it, but I say {V}.'],
+  _: ['I want {V} tonight.', 'My vote is {V}. Let’s just do it.'],
+};
+const HOST_FOOTAGE_ASK = [
+  '{V}, that was {B}, on night {n}. What do you say to that?',
+  '{V}, you had no idea, did you?',
+  '{V}, you are watching {B} put your name forward. How does that feel?',
+];
+const HOST_FOOTAGE_WON = [
+  '{V}, you nearly did not make it past night {n}, and you walked away with the money. What do you say to {B}?',
+];
+const FOOTAGE_FRIEND = {
+  dramatic: ['You wanted me dead? You hugged me every single morning, {B}!', 'I would have taken a bullet for you, {B}!'],
+  calm: ['Wow. I genuinely thought you were in my corner, {B}.', 'Well. That explains a few looks I got at breakfast, {B}.'],
+  mean: ['Two-faced. I always knew it, {B}.', 'Remind me to never trust a word you say, {B}.'],
+  sad: ['That really hurts, {B}. I trusted you more than anyone.', 'I feel sick watching that, {B}.'],
+  idgaf: ['Ha. Classic {B}.', 'Fair play, {B}. Nice try.'],
+  idk: ['Wait, that was you, {B}? Seriously?', 'I don’t even know what to say to that, {B}.'],
+};
+const FOOTAGE_PLAIN = {
+  dramatic: ['Oh my God. I had no idea it was that close!', 'I could have died that night and I never knew!'],
+  calm: ['Interesting. I had no idea I was even on the list.', 'I suspected something like that. Good to know.'],
+  mean: ['And yet here I am, {B}.', 'Should have tried harder, {B}.'],
+  sad: ['I didn’t think anybody saw me as a threat.', 'That’s a horrible feeling, honestly.'],
+  idgaf: ['Glad they didn’t. I liked the food.', 'Ha. Missed me.'],
+  idk: ['Me? Why me?', 'I honestly thought nobody noticed me in there.'],
+};
+const FOOTAGE_BY = {
+  dramatic: ['I’m sorry! The turret makes you say things, {V}!', 'You were a threat, {V}! It was a compliment!'],
+  calm: ['It was nothing personal, {V}. You were a threat, and that was the job.', 'I had to put names forward, {V}. Yours made sense.'],
+  mean: ['And I was right about you, {V}.', 'Honestly, {V}? I’d say it again.'],
+  sad: ['I hated saying it, {V}. I really did.', 'I’m sorry you had to see that, {V}.'],
+  idgaf: ['Yeah, that was me. Moving on.', 'It was a long night, {V}.'],
+  idk: ['Did I say that? I don’t even remember saying that.', 'I think I just panicked, {V}.'],
+};
+const HOST_SAVED_BY = [
+  '{V}, it sounds like you owe {D} a thank you. {D} chose {X} that night instead.',
+];
+const SAVED_BY_SAY = {
+  dramatic: ['Don’t thank me, {V}. I just wanted {X} gone more.', 'You’re welcome, {V}! I saved your life!'],
+  calm: ['It wasn’t about you, {V}. {X} was the bigger threat.', '{X} made more sense that night. That’s all it was.'],
+  mean: ['Don’t get excited, {V}. You were just not worth it yet.', 'I was saving you for later, {V}.'],
+  sad: ['I couldn’t do it to you, {V}. I really couldn’t.', 'I liked you too much, {V}. That’s the truth.'],
+  idgaf: ['Yeah, no worries, {V}.', 'Lucky you, {V}.'],
+  idk: ['I did? I don’t remember that at all.', 'Wait, did I? Okay. You’re welcome.'],
+};
+
 // the last question
 const HOST_LAST = [
   'One last question, for every one of you: would you do it all again?',
@@ -306,6 +477,10 @@ function _buildBeats(R, ep) {
   const card = (title, kind, inner, meta) => beats.push({ html: '<div class="ru-card" data-kind="' + kind + '">'
     + '<h3 class="ru-card-title">' + _esc(title) + '</h3>' + inner + '</div>', meta: { kind, ...(meta || {}) } });
   const pr = n => pronouns(n) || {};
+  // a stage direction: what the room sees happen, between the lines
+  const dir = (pool, k, subs) => '<p class="ru-dir">' + _esc(_fill(pickFrom(pool, k), subs)) + '</p>';
+  // someone who is nasty in the moment rarely makes peace on camera
+  const warmTone = n => _tone(n) !== 'mean';
 
   // 1. EVERYBODY BACK
   card('The Reunion', 'open', '<p>' + _esc(pickFrom(NARR_OPEN, key + '|no')) + '</p>'
@@ -349,18 +524,60 @@ function _buildBeats(R, ep) {
   // 4. THE MURDERED ASK WHY
   R.murders.slice(0, 4).forEach(m => {
     const pool = KILLER_WHY[m.reason] || KILLER_WHY._;
+    const warm = (m.bond || 0) > 2;
+    // calm or unbothered, the murdered has made their peace with it, and the
+    // murderer answers that rather than an anger nobody showed
+    const easy = ['calm', 'idgaf'].includes(_tone(m.victim));
     const inner = host(_fill(pickFrom(HOST_MURDER, key + '|hm|' + m.victim), { V: m.victim, K: m.by, n: String(m.ep) }))
       + voice(m.by, { [_tone(m.by)]: pool }, key + '|kw|' + m.victim, { V: m.victim })
-      + voice(m.victim, VICTIM_SAY, key + '|vs|' + m.victim, {});
+      + voice(m.victim, VICTIM_SAY, key + '|vs|' + m.victim, {})
+      // THE EXCHANGE GOES ON (the user, 2026-10-06: "do what u gotta do about
+      // the reunion"): the murderer answers back, and the room sees how the
+      // murdered take it, warm or cold, from the bond the season left them
+      + voice(m.by, easy ? KILLER_ACCEPTED : warm ? KILLER_AFTER_FRIEND : KILLER_AFTER, key + '|ka|' + m.victim, { V: m.victim })
+      + dir(easy ? DIR_MURDER_EASY : warm && warmTone(m.victim) ? DIR_MURDER_WARM : DIR_MURDER_COLD, key + '|dm|' + m.victim,
+        { V: m.victim, K: m.by, posV: pr(m.victim).posAdj || 'their' });
     card('Taken In The Night: ' + m.victim, 'murder', inner, { focus: m.victim });
   });
+
+  // 4b. NEVER SEEN BEFORE: the turret footage the room never saw
+  const RC = (R.footage || []).slice(0, 3);
+  if (RC.length) {
+    card('Never Seen Before', 'footage-open', '<p>The screen behind them lights up: the turret, by candlelight, and the conversations nobody downstairs ever heard.</p>'
+      + host(pickFrom(HOST_FOOTAGE, key + '|hrc')));
+    RC.forEach(x => {
+      const V = x.target, B = x.by;
+      const clip = _fill(pickFrom(CLIP_SAID[x.reason] || CLIP_SAID._, key + '|clip|' + V), { V });
+      let inner = '<p>Night ' + _esc(String(x.ep)) + ', in the turret. ' + _esc(B) + ' puts a name forward.</p>'
+        + '<div class="ru-clip" data-who="' + _esc(B) + '" data-tag="Never seen · night ' + _esc(String(x.ep)) + '">'
+        + _av(B, 34) + '<div><b>' + _esc(B) + ', in the turret</b><span>&ldquo;' + _esc(clip) + '&rdquo;</span></div></div>';
+      inner += host(_fill(pickFrom(x.won ? HOST_FOOTAGE_WON : HOST_FOOTAGE_ASK, key + '|hra|' + V), { V, B, n: String(x.ep) }));
+      inner += voice(V, x.bond > 2 ? FOOTAGE_FRIEND : FOOTAGE_PLAIN, key + '|rv|' + V, { B });
+      inner += voice(B, FOOTAGE_BY, key + '|rb|' + V, { V });
+      // and the Traitor who chose somebody else that night, if it was not this one
+      const D = x.decidedBy, X = x.victim;
+      if (D && X && D !== B && D !== V && R.cast.includes(D)) {
+        inner += host(_fill(pickFrom(HOST_SAVED_BY, key + '|hsb|' + V), { V, D, X }));
+        inner += voice(D, SAVED_BY_SAY, key + '|sb|' + V, { V, X });
+      }
+      card('Never Seen Before: ' + V, 'footage', inner, { focus: V });
+    });
+  }
 
   // 5. THE FAITHFULS THE ROOM GOT WRONG
   R.tables.filter(t => t.role === 'faithful' && t.lead && t.lead !== t.chosen)
     .sort((a, b) => b.votes - a.votes).slice(0, 3).forEach(t => {
-      const inner = host(_fill(pickFrom(HOST_MISTAKE, key + '|hmi|' + t.chosen), { F: t.chosen, n: String(t.ep) }))
-        + voice(t.chosen, F_SAY, key + '|fs|' + t.chosen, { L: t.lead })
-        + voice(t.lead, LEAD_SAY, key + '|lds|' + t.chosen, { F: t.chosen });
+      const F = t.chosen, L = t.lead;
+      // forgiveness is earned by the bond the season left them, and it is
+      // harder to give to somebody whose answer was not an apology
+      const apologised = _tone(L) !== 'mean';
+      const forgives = warmTone(F) && ((t.leadBond || 0) > 0 || (apologised && (t.leadBond || 0) > -2 && ['calm', 'idgaf', 'sad'].includes(_tone(F))));
+      const inner = host(_fill(pickFrom(HOST_MISTAKE, key + '|hmi|' + F), { F, n: String(t.ep) }))
+        + voice(F, F_SAY, key + '|fs|' + F, { L })
+        + voice(L, LEAD_SAY, key + '|lds|' + F, { F })
+        + host(_fill(pickFrom(HOST_FORGIVE, key + '|hfg|' + F), { F, L }))
+        + voice(F, forgives ? FORGIVE_YES : FORGIVE_NO, key + '|fg|' + F, { L })
+        + dir(forgives ? DIR_FORGIVE : DIR_NO_FORGIVE, key + '|dfg|' + F, { F, L });
       card('Sent Home, Faithful: ' + t.chosen, 'mistake', inner, { focus: t.chosen });
     });
 
@@ -384,8 +601,24 @@ function _buildBeats(R, ep) {
   if (fr) card('The Friendship', 'friends', host(_fill(pickFrom(HOST_FRIENDS, key + '|hf'), { A: fr.a, B: fr.b }))
     + voice(fr.a, FRIEND_SAY, key + '|fa', { O: fr.b }) + voice(fr.b, FRIEND_SAY, key + '|fb', { O: fr.a }), { focus: fr.a });
   const rv = R.rivals[0];
-  if (rv) card('The Feud', 'rivals', host(_fill(pickFrom(HOST_RIVALS, key + '|hrv'), { A: rv.a, B: rv.b }))
-    + voice(rv.a, RIVAL_SAY, key + '|ra', { O: rv.b }) + voice(rv.b, RIVAL_SAY, key + '|rb', { O: rv.a }), { focus: rv.a });
+  if (rv) {
+    // the handshake, decided by each of them: the nasty never offer, the
+    // calm and the soft will for anything short of a real hatred, the
+    // dramatic only for a grudge that is not deep
+    // (the feud on this card is the coldest pair of the season, so the bar is
+    // set against that: only a near-total hatred stops the calm offering)
+    const BAR = { calm: -8, sad: -8, idk: -8, idgaf: -6, dramatic: -4 };
+    const willing = n => _tone(n) !== 'mean' && rv.bond > (BAR[_tone(n)] ?? -4);
+    const ya = willing(rv.a), yb = willing(rv.b), shakes = ya && yb;
+    card('The Feud', 'rivals', host(_fill(pickFrom(HOST_RIVALS, key + '|hrv'), { A: rv.a, B: rv.b }))
+      + voice(rv.a, RIVAL_SAY, key + '|ra', { O: rv.b }) + voice(rv.b, RIVAL_SAY, key + '|rb', { O: rv.a })
+      + voice(rv.a, RIVAL_BACK, key + '|rba', { O: rv.b })
+      + host(pickFrom(HOST_SHAKE, key + '|hsh'))
+      + voice(rv.b, yb ? SHAKE_YES : SHAKE_NO, key + '|shb', { O: rv.a })
+      + voice(rv.a, ya ? SHAKE_YES : SHAKE_NO, key + '|sha', { O: rv.b })
+      + dir(shakes ? DIR_SHAKE : ya !== yb ? DIR_HALF_SHAKE : DIR_NO_SHAKE, key + '|dsh',
+        { A: rv.a, B: rv.b, Y: ya ? rv.a : rv.b, N: ya ? rv.b : rv.a, H: _host().name, posA: pr(rv.a).posAdj || 'their' }), { focus: rv.a });
+  }
 
   // 9. THE LAST QUESTION
   const asked = R.cast.filter(n => !R.takers.includes(n)).slice(0, 6).concat(R.takers.slice(0, 2));
@@ -435,5 +668,10 @@ const CSS = `
 .ru-host-line{font-style:italic;font-size:16px;line-height:1.45}
 .ru-said{display:flex;gap:12px;align-items:flex-start;margin:10px 0 2px}
 .ru-said-txt{font-family:var(--v-hand,Georgia),serif;font-style:italic;font-size:17px;line-height:1.45;color:#f3ead8}
+.ru-dir{margin:10px 0 4px;padding-left:12px;border-left:2px solid rgba(232,194,112,.25);font-style:italic;color:#bfb293}
+.ru-clip{display:flex;gap:12px;align-items:flex-start;margin:12px 0;padding:12px 14px;background:rgba(120,20,30,.18);
+  border:1px solid rgba(201,40,60,.4);box-shadow:inset 0 0 30px rgba(0,0,0,.5)}
+.ru-clip b{display:block;font-family:var(--v-display);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#e0808c}
+.ru-clip span{display:block;margin-top:4px;font-style:italic;font-size:16px;line-height:1.45;color:#f3dcd6}
 .ru-said cite{display:block;margin-top:4px;font-style:normal;font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.65}
 `;

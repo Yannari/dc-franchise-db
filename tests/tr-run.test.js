@@ -592,3 +592,60 @@ describe('the tape explains a castle night that took nobody', () => {
       .toBeGreaterThan(0);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// THE REUNION IS AN EPISODE (the user, 2026-10-03/06): "i cant simulate a
+// reunion episode it stoppeed at the endgame", "make sure the reunion is also
+// in the season timeline", "i cant rewatch it cause its not in season tape".
+// ══════════════════════════════════════════════════════════════════════
+describe('the reunion airs as the episode after the finale', () => {
+  it('the timeline counts it: the Fire of Truth is the finale and the reunion follows it', () => {
+    airWholeSeason(SEEDS[1]);
+    const rows = gsRef.episodeHistory;
+    const fin = rows[rows.length - 1];
+    expect(fin.tr && fin.tr.reunion, 'the finale row carries no reunion').toBeTruthy();
+    const map = buildEpisodeMap();
+    expect(map.length, 'the timeline does not count the reunion as an episode').toBe(rows.length + 1);
+    expect(map[map.length - 2]).toMatchObject({ ep: fin.num, phase: 'finale' });
+    expect(map[map.length - 1]).toMatchObject({ ep: fin.num + 1, phase: 'finale', reunion: true });
+  });
+
+  it('the history shows it as an episode once it has aired, and not before', () => {
+    airWholeSeason(SEEDS[1]);
+    const fin = gsRef.episodeHistory[gsRef.episodeHistory.length - 1];
+    document.body.innerHTML = '<div id="ep-history-grid"></div>';
+    gsRef._trReunionAired = false;
+    renderEpisodeHistory();
+    expect(document.getElementById('ep-history-grid').innerHTML).not.toContain(`reunion-${fin.num}`);
+    gsRef._trReunionAired = true;
+    renderEpisodeHistory();
+    const html = document.getElementById('ep-history-grid').innerHTML;
+    expect(html, 'the aired reunion is not a selectable episode').toContain(`viewEpisode('reunion-${fin.num}')`);
+    expect(html).toContain(`Episode ${fin.num + 1}`);
+  });
+
+  it('a re-run makes a new ending, whose reunion has not aired', () => {
+    airWholeSeason(37);
+    gsRef._trReunionAired = true;
+    expect(rerunTraitorsEpisode(3), String(lastTraitorsRerunRefusal())).toBe(true);
+    expect(gsRef._trReunionAired, 'the replaced ending\'s reunion still counts as aired').toBe(false);
+  });
+
+  it('the footage it plays is real: a name a Traitor put forward in the turret, on a night it was not taken', () => {
+    let seen = 0;
+    for (const seed of SEEDS) {
+      airWholeSeason(seed);
+      const rows = gsRef.episodeHistory;
+      const R = rows[rows.length - 1].tr.reunion;
+      for (const x of R.footage || []) {
+        const c = rows.find(r => r.num === x.ep).tr.conclave;
+        expect(c.argued.some(a => a.traitor === x.by && a.target === x.target),
+          `${x.by} never put ${x.target} forward on night ${x.ep}`).toBe(true);
+        expect(c.target, `${x.target} WAS taken on night ${x.ep}; that is a murder, not a near miss`).not.toBe(x.target);
+        expect(R.traitors).toContain(x.by);
+        seen++;
+      }
+    }
+    expect(seen, 'no season had any footage, so this proves nothing').toBeGreaterThan(0);
+  });
+});

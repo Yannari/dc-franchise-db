@@ -15,8 +15,8 @@
 
 import { gs } from '../../core.js';
 import { classify, file, causeOf } from './storylines.js';
-import { writeStoryScene, writeSetPiece, writeGameTalk, hasPool, roomName } from './write.js';
-import { gameTalkFor, bondTalkFor, phaseOf } from './gametalk.js';
+import { writeStoryScene, writeSetPiece, writeGameTalk, writeCampaignScene, writeEngineScene, hasPool, roomName } from './write.js';
+import { gameTalkFor, bondTalkFor, styleTalkFor, phaseOf } from './gametalk.js';
 
 const CEREMONY = new Set(['hoh', 'nominations', 'veto', 'veto-ceremony', 'eviction']);
 
@@ -53,6 +53,7 @@ export function airStorylines(week) {
   let stretch = 0;
   let at = 0;
   let pending = [];   // { act, line, step } filed this stretch
+  let stretchBeats = [];   // every beat of the stretch, filed or not: { act, beat }
   const clock = { hoh: false, noms: false, nomsJust: false, hohJust: false, veto: false, safety: false };
   // the game talk this week has aired (gametalk.js): one of each kind a week, one talk per pair
   const talked = new Set();
@@ -80,12 +81,41 @@ export function airStorylines(week) {
     return rota[((week.num || 0) * 3 + stretch) % rota.length];
   };
 
+  const airEngine = (ctx, atStart) => {
+    // ── the engine's own moments, so nothing that moves the game is lost ──
+    // Ranked by what they do to the game; texture (chores, boredom, the weather) stays optional.
+    // Up to three a stretch, one per set of people, never somebody not in the house yet.
+    // 4: the machinery of the vote (who the group is voting for, recruiting, pleading, blame)
+    const WEIGHT = id => /^(bloc-|plan-|fallout-blame|fallout-word|phase-lobby-veto|phase-targets|veto-left|scheme-campaign|power-nom-campaign|deals-vote)/.test(id) ? 4 : /^(bloc-|plan-|fallout-|scheme-|power-nom|power-ceremony|phase-lobby-veto|phase-replacement|phase-targets|phase-house-takes-sides|arc-lie|followup-lie|veto-left|alliance-name-slips|alliance-overlap|social-paranoia|social-grudge|deals-exposed|deals-defection|deals-vote-flip|deals-safety|deals-jury|arc-comfort-becomes|arc-fight-splits|reign-reckoning|phase-scramble|phase-hoh-pressures|phase-block-isolation|phase-outgoing|power-veto-promise|power-veto-draw|alliance-side-deal|campaign-declined|texture-pantry-name|editorial-secret|editorial-interrupted|editorial-meeting-crash)/.test(id) ? 3
+      : /^(deals-|alliance-|power-|reign-|arc-|followup-|phase-|social-info|social-blow|jury-)/.test(id) ? 2 : 0;
+    const shown = new Set();
+    const eng = stretchBeats.filter(({ beat }) => !beat.aired && beat.eventId !== 'campaign-pitch' && WEIGHT(String(beat.eventId || '')) >= 2
+      && (beat.players || []).length)
+      // most important first; inside a weight, the kind of moment this season has aired least
+      .sort((x, y) => WEIGHT(String(y.beat.eventId)) - WEIGHT(String(x.beat.eventId))
+        || (seasonAired[`ev:${x.beat.eventId}`] || 0) - (seasonAired[`ev:${y.beat.eventId}`] || 0));
+    let engAired = 0;
+    for (const { act: ea, beat } of eng) {
+      // three a stretch; a busy stretch makes room for two more that move the game
+      if (engAired >= 6 || (engAired >= 4 && WEIGHT(String(beat.eventId)) < 4) || (engAired >= 3 && WEIGHT(String(beat.eventId)) < 3)) break;
+      const key = [...beat.players].sort().join('|');
+      if (shown.has(key) || shown.has(String(beat.eventId))) continue;
+      const sc = writeEngineScene(beat, { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) }, at);
+      if (!sc) continue;
+      shown.add(key); shown.add(String(beat.eventId));
+      beat.aired = true; engAired++;
+      seasonAired[`ev:${beat.eventId}`] = (seasonAired[`ev:${beat.eventId}`] || 0) + 1;
+      (ea.scenes ||= []).push(sc);
+    }
+
+  };
+
   let presentAtStart = null;
   const choose = () => {
     const ctx = ctxOf();
     const atStart = presentAtStart || ctx.present;
     presentAtStart = null;
-    if (!pending.length) return;
+    if (!pending.length) { airEngine(ctx, atStart); stretchBeats = []; return; }
     const cand = pending.filter(p => {
       const need = NEEDS_WEEK[`${p.line.type}.${p.step.step}`];
       if (need && !clock[need]) return false;
@@ -162,7 +192,7 @@ export function airStorylines(week) {
       ? writeSetPiece(setFor(ctx), { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) }, inside.map(x => x.sc), { gone: lastGone, at: pending[0].step.at - 0.5 }) : null;
     if (set) (firstAct.scenes ||= []).push(set);
     for (const { p, sc } of inside) {
-      p.step.aired = true; note(p);
+      p.step.aired = true; p.beat.aired = true; note(p);
       // no set piece to stage it in: it airs on its own
       if (!set) (p.act.scenes ||= []).push(sc);
     }
@@ -188,6 +218,9 @@ export function airStorylines(week) {
       if (game) talks.push(game);
       const bond = stretch % 2 === 1 || !game ? bondTalkFor(week, tctx, talkedPairs) : null;
       if (bond && !talked.has(bond.kind)) talks.push(bond);
+      // and one houseguest playing their own game (gametalk.js styleTalkFor)
+      const style = styleTalkFor(week, tctx, seasonAired);
+      if (style) talks.push(style);
     }
     const ordered = picked.sort((x, y) => x.step.at - y.step.at);
     const mid = Math.max(1, Math.floor(ordered.length / 2));
@@ -206,20 +239,55 @@ export function airStorylines(week) {
       if (!scene) return;
       lastRoom = scene.room;
       p.step.aired = true;
+      p.beat.aired = true;
       (p.act.scenes ||= []).push(scene);
       note(p);
     });
     if (talks.length) airTalks((ordered.at(-1) || pending[0]).act);
+    airEngine(ctx, atStart);
+
     // The first night ends with the lights going out on a full house.
     if (ctx.firstNight) {
       const bed = writeSetPiece('firstbed', ctx, [], { at: at + 0.5 });
       if (bed) (pending[pending.length - 1].act.scenes ||= []).push(bed);
     }
     pending = [];
+    stretchBeats = [];
+  };
+
+  // ── the campaign: the nominees work the house ──
+  // The user, 2026-10-06: "do they even campaign in your house life?" The engine writes a pitch
+  // for every nominee-voter conversation, and none of them aired: a pitch is not a storyline
+  // step. Each campaign act airs up to four of its pitches, every nominee at least once,
+  // the ones that moved a vote first, never the same nominee and voter twice in a week.
+  const pitchedPairs = new Set();
+  const airCampaign = act => {
+    const ctx = ctxOf();
+    const pitches = (act.socialBeats || []).filter(b => b && b.eventId === 'campaign-pitch' && (b.players || []).length >= 2
+      && b.players.every(n => ctx.present.includes(n)) && !pitchedPairs.has(b.players.join('>')));
+    const rank = b => (b.pitchOutcome === 'worn' ? 3 : b.pitchOutcome === 'receptive' ? 2 : 1);
+    const chosen = [];
+    const voter = b => b.players[b.players.length - 1];
+    for (const nominee of [...new Set(pitches.map(b => b.players[0]))]) {
+      const best = pitches.filter(b => b.players[0] === nominee && !chosen.some(c => voter(c) === voter(b))).sort((x, y) => rank(y) - rank(x))[0];
+      if (best) chosen.push(best);
+    }
+    for (const b of pitches.slice().sort((x, y) => rank(y) - rank(x))) {
+      if (chosen.length >= 4) break;
+      if (!chosen.includes(b) && !chosen.some(c => voter(c) === voter(b))) chosen.push(b);
+    }
+    chosen.slice(0, 4).forEach((b, i) => {
+      const sc = writeCampaignScene(b, ctx, at + i * 0.1, `${week.num || 0}|${act.campaignIndex ?? 0}|${i}|${b.players.join('>')}`);
+      if (!sc) return;
+      pitchedPairs.add(b.players.join('>'));
+      b.aired = true;
+      (act.scenes ||= []).push(sc);
+    });
   };
 
   for (const act of week.acts) {
     if (!act) continue;
+    if (act.type === 'campaign') airCampaign(act);
     if (CEREMONY.has(act.type)) {
       choose();
       stretch++;
@@ -233,11 +301,12 @@ export function airStorylines(week) {
     if (act.type === 'safety') clock.safety = true;
     for (const beat of act.socialBeats || []) {
       at++;
+      stretchBeats.push({ act, beat });
       const c = classify(beat);
       if (!c) continue;
       if (!pending.length && !presentAtStart) presentAtStart = present();
       const { line, step } = file(c, { week: week.num || 0, stretch, beatAt: at });
-      pending.push({ act, line, step });
+      pending.push({ act, line, step, beat });
     }
   }
   choose();

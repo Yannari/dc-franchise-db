@@ -6662,6 +6662,7 @@ export function simulateBBWeek(options = {}) {
         // lands is the reply alone; the case was heard the first time.
         let script = null;
         let caseScript = null;
+        let made = null;
         try {
           const who = { a: pitch.pitcher, b: response.voter };
           const sctx = { week, act: 'campaign', hoh: week.hoh || null, nominees: [...visibleBlock], room: 'bedroom', seenBy: [pitch.pitcher, response.voter] };
@@ -6669,6 +6670,7 @@ export function simulateBBWeek(options = {}) {
           if (worn) script = joinScripts(reply);
           else {
             const c = campaignCase(pitch.pitcher, response.voter, pitch.pitchTarget);
+            made = { kind: c.kind, target: c.opponent || null, partner: c.partner || null, alliance: c.alliance || null };
             caseScript = scriptBeat('campaign.case', who, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance,
               theirComps: numberWord(c.theirComps), myComps: numberWord(c.myComps) }, sctx);
             script = joinScripts(caseScript, reply);
@@ -6685,6 +6687,8 @@ export function simulateBBWeek(options = {}) {
           badgeText: response.accepted ? (worn ? 'WORN DOWN' : 'RECEPTIVE') : 'UNMOVED',
           badgeClass: response.accepted ? 'green' : 'grey',
           eventId: 'campaign-pitch', category: 'deals', location: 'bedroom',
+          // which case the nominee made, for House Life (bb/story) and the viewer's panel
+          ...(made ? { pitchCase: made } : {}), pitchOutcome: worn ? 'worn' : response.accepted ? 'receptive' : 'unmoved',
           _fold: !response.accepted && !worn && words
             ? { pitcher: pitch.pitcher, voter: response.voter, words, caseScript } : null,
           ...(script || {}),

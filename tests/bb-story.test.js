@@ -61,7 +61,8 @@ describe('the storyline pools', () => {
   it('write scenes, not snippets: a scene is at least six lines (a Diary Room recap is one)', () => {
     for (const [key, pool] of all) {
       // recaps, cutaways, background lines and set-piece closes are one or two lines by design
-      if (/^(recap\.|bg\.|set\.cut\.|set\.\w+\.close)/.test(key)) continue;
+      // ...and the campaign's pieces, which wrap the engine's own pitch into one scene (write.js)
+      if (/^(recap\.|bg\.|set\.cut\.|set\.\w+\.close|camp\.)/.test(key)) continue;
       // one person alone (a monologue to the Diary Room) or the cold war's silence can be shorter
       const solo = e => !JSON.stringify(e.turns).includes('{b}');
       for (const e of pool) expect(e.turns.length, `${key} ${e.id}`).toBeGreaterThanOrEqual(solo(e) || /^story\.feud\.cold/.test(key) ? 3 : 6);
@@ -115,13 +116,14 @@ describe('house life in real weeks', () => {
     expect(Math.min(...sets.map(sc => sc.cast.length))).toBeGreaterThanOrEqual(4);
     // the week's game talk (gametalk.js) is mostly two people working out the game in private,
     // as on the real show; the rest of the house talk is what has to fill the room
-    const house = scenes.filter(sc => sc.type !== 'talk');
+    // (and so are a campaign pitch and the engine's own moments: private by nature)
+    const house = scenes.filter(sc => !['talk', 'campaign', 'event'].includes(sc.type));
     const crowded = house.filter(sc => sc.cast.length >= 3).length / house.length;
     expect(scenes.filter(sc => sc.type === 'talk').length / scenes.length).toBeLessThan(0.3);
     expect(crowded).toBeGreaterThan(0.5);
     // and a private scene in a shared room usually shows somebody else around
-    const bg = scenes.filter(sc => sc.type !== 'set' && sc.lines.some(l => l.bg)).length;
-    expect(bg).toBeGreaterThan(scenes.length * 0.3);
+    const bg = house.filter(sc => sc.type !== 'set' && sc.lines.some(l => l.bg)).length;
+    expect(bg).toBeGreaterThan(house.length * 0.3);
   });
 
   it('prints no raw slot, and nobody speaks who is not on stage', () => {
@@ -184,6 +186,23 @@ describe('house life in real weeks', () => {
     const aired = screens.flatMap(s => s.storyScenes || []);
     const acts = A.eps[1].acts.flatMap(a => (a.scenes || []).map(sc => sc.id));
     expect(aired).toEqual(acts.filter(id => aired.includes(id)));
+  });
+
+  it('airs the engine moments that move the game, the campaign, and every player\'s own game', () => {
+    // The user, 2026-10-06: "make sure the engine's really necessary events don't get ignored".
+    // Measured before this guard: an alliance picking its target, recruiting votes, a veto plea,
+    // blame after a vote — 0% aired, every one; and not one campaign pitch on screen.
+    const beats = A.eps.flatMap(ep => ep.acts.flatMap(a => a.socialBeats || []));
+    const vital = beats.filter(b => /^(bloc-|phase-lobby-veto|phase-targets|fallout-blame|veto-left)/.test(String(b.eventId || '')));
+    expect(vital.length, 'no vote machinery fired to measure').toBeGreaterThan(3);
+    expect(vital.filter(b => b.aired).length / vital.length).toBeGreaterThan(0.7);
+    // every week with a campaign airs some of it
+    for (const ep of A.eps) if (ep.acts.some(a => a.type === 'campaign' && (a.socialBeats || []).some(b => b.eventId === 'campaign-pitch'))) {
+      expect(ep.acts.flatMap(a => a.scenes || []).filter(sc => sc.type === 'campaign').length, `week ${ep.num} campaigned off screen`).toBeGreaterThan(0);
+    }
+    // and different ways of playing get seen
+    const styles = new Set(scenes.filter(sc => String(sc.step).startsWith('style.')).map(sc => sc.step));
+    expect(styles.size).toBeGreaterThanOrEqual(4);
   });
 
   it('never airs the same scene twice, and keeps the rhythm of real house talk', () => {

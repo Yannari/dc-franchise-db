@@ -77,10 +77,12 @@ export const FINALE_STAGE_CSS = `
 /* THE SETS: each room is a render (tools/blender/dr-werkroom.py, dr-sets.py),
    under a dark veil so the cards on top still read. The main stage is the
    default: every unthemed frame (the finale, the crown) is on it too. */
-.fsx-bg::before{content:'';position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(8,2,10,.38),rgba(8,2,10,.62) 55%,rgba(8,2,10,.86)),url(assets/sets/dr/mainstage.webp) center 30%/cover no-repeat}
-.fsx.th-werk .fsx-bg::before{background-image:linear-gradient(180deg,rgba(5,4,15,.38),rgba(5,4,15,.62) 55%,rgba(5,4,15,.86)),url(assets/sets/dr/werkroom.webp)}
-.fsx.th-lounge .fsx-bg::before{background-image:linear-gradient(180deg,rgba(7,4,13,.38),rgba(7,4,13,.62) 55%,rgba(7,4,13,.86)),url(assets/sets/dr/untucked.webp)}
+.fsx-bg::before{content:'';position:absolute;inset:-6px;pointer-events:none;filter:blur(2.5px) saturate(.85);
+  background:linear-gradient(180deg,rgba(8,2,10,.5),rgba(8,2,10,.72) 55%,rgba(8,2,10,.9)),url(assets/sets/dr/mainstage.webp) center 30%/cover no-repeat}
+.fsx.th-werk .fsx-bg::before{background-image:linear-gradient(180deg,rgba(5,4,15,.5),rgba(5,4,15,.72) 55%,rgba(5,4,15,.9)),url(assets/sets/dr/werkroom.webp)}
+.fsx.th-lounge .fsx-bg::before{background-image:linear-gradient(180deg,rgba(7,4,13,.5),rgba(7,4,13,.72) 55%,rgba(7,4,13,.9)),url(assets/sets/dr/untucked.webp)}
+/* a frame with its own lit box (the runway hall) keeps the room faint around it */
+.fsx:has(.rwx-hall) .fsx-bg::before{opacity:.45}
 .fsx.th-exit .fsx-bg::before{background-image:linear-gradient(180deg,rgba(8,2,10,.25),rgba(8,2,10,.5) 55%,rgba(8,2,10,.8)),url(assets/sets/dr/exit.webp)}
 .fsx.th-exit .fsx-rays{display:none}
 .fsx.th-stage .fsx-rays{background:repeating-conic-gradient(from 180deg at 50% -12%,rgba(255,123,200,.07) 0 4deg,transparent 4deg 11deg)}

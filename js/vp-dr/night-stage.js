@@ -76,7 +76,7 @@ export const NIGHT_STAGE_CSS = `${FINALE_STAGE_CSS}
 .rwx-bulbs i{width:6px;height:6px;border-radius:50%;background:#ffd66b;box-shadow:0 0 8px #ffd66b;animation:rwx-bulb 1.2s steps(2) infinite;animation-delay:var(--dl)}
 @keyframes rwx-bulb{50%{background:#5a3a10;box-shadow:none}}
 .rwx-hall{position:relative;height:230px;margin-top:10px;border-radius:14px;overflow:hidden;perspective:520px;
-  background:radial-gradient(60% 60% at 50% 20%,rgba(255,255,255,.08),transparent 70%),linear-gradient(180deg,rgba(10,3,8,.15),rgba(10,3,8,.55)),url(assets/sets/dr/mainstage.webp) center 62%/cover no-repeat,#0a0308}
+  background:radial-gradient(60% 60% at 50% 20%,rgba(255,255,255,.08),transparent 70%),radial-gradient(38% 70% at 50% 45%,rgba(10,3,8,.55),transparent 75%),linear-gradient(180deg,rgba(10,3,8,.35),rgba(10,3,8,.65)),url(assets/sets/dr/mainstage.webp) center 62%/cover no-repeat,#0a0308}
 /* the render has the runway; the drawn floor only under reduced sets */
 .rwx-hall .rwx-floor{opacity:0}
 .rwx-floor{position:absolute;left:50%;bottom:-40px;width:170px;height:420px;margin-left:-85px;transform-origin:50% 100%;
@@ -84,7 +84,7 @@ export const NIGHT_STAGE_CSS = `${FINALE_STAGE_CSS}
   box-shadow:-6px 0 0 #ff7bc8,6px 0 0 #ff7bc8,0 0 60px rgba(255,123,200,.4)}
 .rwx-pit{position:absolute;top:30%;bottom:0;width:22%;display:grid;grid-template-columns:repeat(3,1fr);align-content:end;gap:6px;padding:8px}
 .rwx-pit.l{left:0}.rwx-pit.r{right:0}
-.rwx-pit i{height:12px;border-radius:3px;background:#1e1016;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.rwx-pit i{height:12px;border-radius:3px;background:transparent}
 .fsx.flash .rwx-pit i{animation:rwx-flash .5s steps(1) 4;animation-delay:var(--dl)}
 @keyframes rwx-flash{50%{background:#fff;box-shadow:0 0 22px 8px rgba(255,255,255,.9)}}
 .rwx-q{position:absolute;left:50%;top:14px;display:none;flex-direction:column;align-items:center;gap:6px;transform:translateX(-50%)}

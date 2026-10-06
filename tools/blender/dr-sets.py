@@ -157,8 +157,8 @@ def main_stage(lipsync=False):
             p = cube((1.4, 0.4, 9 - k * 0.6), (x, BY - 0.6 - k * 0.5, (9 - k * 0.6) / 2)); assign(p, wall2 if k % 2 else wall)
             s = cube((0.1, 0.06, 8 - k * 0.6), (x + side * 0.55, BY - 0.85 - k * 0.5, (8 - k * 0.6) / 2 + 0.2)); assign(s, strip if k % 2 == 0 else stripg); NOINK.append(s)
             # neon chevrons stacked up the panel
-            for c in range(3):
-                z = 2.2 + c * 1.6
+            for c in range(1):   # one chevron a panel: the wall is a backdrop, not the show
+                z = 6.2 - k * 0.5
                 neon_curve([(-0.45, -0.3), (0.0, 0.15), (0.45, -0.3)], (x - side * 0.05, BY - 0.82 - k * 0.5, z), strip if (k + c) % 2 else stripg, 0.04)
 
     # ── the entrance arch at the head of the runway: bulbs round a gold frame, a sequin curtain inside
@@ -242,7 +242,7 @@ def main_stage(lipsync=False):
         bpy.ops.object.light_add(type='SUN', location=(0, -4, 6))
         key = bpy.context.object; key.data.energy = 1.5; key.data.color = (1.0, 0.92, 0.95)
         key.rotation_euler = (math.radians(52), 0, math.radians(-12))
-        for (x, y, z) in cans[2:7]:
+        for (x, y, z) in cans[3:6:2]:
             beam((x, y, z), (x * 0.25, 3.5, 0.5), 7.5, 0.7, beamm)
         bpy.ops.object.light_add(type='POINT', location=(0, BY - 1.5, 3))
         p = bpy.context.object.data; p.energy = 900; p.color = (1.0, 0.75, 0.4)

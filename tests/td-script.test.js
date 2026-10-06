@@ -126,7 +126,9 @@ describe('the pools keep their contract', () => {
 
   it('never writes a cast member into a pool', () => {
     // {a} and {b} are filled at render time. A name in a pool is somebody else's line.
-    const names = JSON.parse(fs.readFileSync('franchise_roster.json', 'utf8')).players.map(p => p.name).filter(n => n.length > 3);
+    // Names that are also ordinary English words ("Will you…", "a few miles", "the lake") are skipped.
+    const WORDS = new Set(['Brick', 'Chase', 'Dawn', 'Junior', 'Lightning', 'Miles', 'Rock', 'Sugar', 'Will', 'Hunter', 'Lake', 'Jade']);
+    const names = JSON.parse(fs.readFileSync('franchise_roster.json', 'utf8')).players.map(p => p.name).filter(n => n.length > 3 && !WORDS.has(n));
     const re = new RegExp(`\\b(${names.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`);
     for (const [key, pool] of all) for (const e of pool) for (const x of texts(e)) {
       expect(re.test(x) ? x.match(re)[0] : null, `${key} ${e.id}: ${x}`).toBe(null);

@@ -13,8 +13,9 @@ import caught from './caught.js';
 import alliance, { GUARANTEED as allianceG } from './alliance.js';
 import pitch, { GUARANTEED as pitchG } from './pitch.js';
 import recruit, { GUARANTEED as recruitG } from './recruit.js';
+import mind from './mind.js';
 
-const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit];
+const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind];
 
 export const POOLS = Object.assign({}, ...FILES);
 

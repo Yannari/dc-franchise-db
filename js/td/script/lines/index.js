@@ -17,8 +17,9 @@ import mind from './mind.js';
 import reads from './reads.js';
 import ends, { GUARANTEED as endsG } from './ends.js';
 import threat from './threat.js';
+import camp from './camp.js';
 
-const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind, reads, ends, threat];
+const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind, reads, ends, threat, camp];
 
 export const POOLS = Object.assign({}, ...FILES);
 

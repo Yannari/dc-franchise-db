@@ -50,7 +50,11 @@ export const PMV_CSS = `/* ═════════════════�
 .pmv-sc-terrace{background:
   radial-gradient(60% 50% at 30% 20%,#ffb3d966,#0000 70%),
   linear-gradient(180deg,#4d1d66 0%,#b1407e 45%,#ff8a7a 75%,#ffc39a 100%)}
+/* The fire pit at night: a rendered set (tools/blender/pm-firepit.py), drawn
+   in the avatars' style — flat cel bands, plum ink — with the old gradient
+   under it while it loads. The light effects still play on top. */
 .pmv-sc-night{background:
+  url(assets/sets/pm/firepit-night.webp) center 62%/cover no-repeat,
   radial-gradient(55% 45% at 50% 100%,#ff7a3a99,#ff2e8833 45%,#0000 70%),
   linear-gradient(180deg,#0c0620 0%,#26103f 50%,#4a1747 100%)}
 .pmv-sc-hut{background:#d9307a}

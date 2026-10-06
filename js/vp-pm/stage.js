@@ -112,7 +112,8 @@ function sceneHtml(bg) {
   const inner = {
     day: `<div class="${P('sun')}"></div><div class="${P('shimmer')}"></div>${bokeh(14, '', 5, 50, 5)}${string(6)}`,
     terrace: `${bokeh(26, 'string', 4, 60, 4)}`,
-    night: `${bokeh(18, '', 2, 40, 1.6)}<div class="${P('glow')}"></div>${embers}${string(5)}`,
+    // The set has its own string lights (assets/sets/pm/firepit-night.webp): no drawn run over them.
+    night: `${bokeh(10, '', 2, 30, 1.2)}<div class="${P('glow')}"></div>${embers}`,
     hut: `${HUT_SET}${bokeh(6, '', 5, 60, 3)}`,
     casa: `${bokeh(24, '', 5, 80, 3)}`,
     // The intro tape: a studio, not the villa — a colour wall, the show's

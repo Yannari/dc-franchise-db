@@ -14045,8 +14045,12 @@ export function buildVPScreens(epRecord) {
       // bb-powers-visible). The switch is on both sets of screens.
       let stepped = true;
       try { stepped = window.localStorage?.getItem('bb-vp') !== 'classic'; } catch { /* storage can throw */ }
-      if (!stepped && vpScreens[0]) {
-        vpScreens[0] = { ...vpScreens[0], html: `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" class="bbx-switch" onclick="bbxSwitchViewer('stepped')" style="border:1px solid #22e1ff;background:#0d1220;color:#22e1ff;border-radius:8px;padding:7px 12px;font:600 11px monospace;letter-spacing:1px;cursor:pointer">▶ TRY THE NEW STEPPED VIEWER</button></div>${vpScreens[0].html}` };
+      // the way back is on EVERY classic screen, and lands on the same part of the week
+      if (!stepped) {
+        for (let i = 0; i < vpScreens.length; i++) {
+          if (!vpScreens[i]?.html) continue;
+          vpScreens[i] = { ...vpScreens[i], html: `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" class="bbx-switch" onclick="bbxSwitchViewer('stepped')" style="border:1px solid #22e1ff;background:#0d1220;color:#22e1ff;border-radius:8px;padding:7px 12px;font:600 11px monospace;letter-spacing:1px;cursor:pointer">▶ STEPPED VIEWER</button></div>${vpScreens[i].html}` };
+        }
       }
       if (stepped) {
         try {

@@ -31,6 +31,7 @@
 import { gs, players, kinshipBetween, REL_KINSHIP } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { stableRng } from '../knowledge.js';
+import { evictionSeatsAJuror } from '../jury.js';
 import { makeScene } from './scene.js';
 import { writeScene, transcript } from './write.js';
 
@@ -181,19 +182,26 @@ export function writeCeremony(act, week, house, extra = {}) {
     // them, they are protecting the one staying, they nearly went the other way), then the
     // formula. The user, 2026-10-06: "the vote is not really personalised".
     const fresh = freshWriter(ctx, house);
+    const juryNight = evictionSeatsAJuror((week.houseAtStart || house || []).length);
     script.votes = {};
     for (const b of act.ballots || []) {
       if (!b || !b.voter || !b.evict) continue;
       const kept = (act.nominees || []).find(n => n !== b.evict) || null;
       const told = b.stated && b.stated !== b.evict;
-      const kind = (b.changed || told) ? 'flip'
+      // a flip is telling the house one name and writing another; wanting somebody else and
+      // voting with your people anyway is a different vote, and says so
+      const withBloc = b.preference && b.preference !== b.evict && !told;
+      const kind = told ? 'flip' : withBloc ? 'bloc'
         : getBond(b.voter, b.evict) >= 3 ? 'friend'
           : getBond(b.voter, b.evict) <= -2 ? 'enemy'
             : kept && getBond(b.voter, kept) >= 3.5 ? 'loyal'
               : Math.abs(Number(b.margin) || 0) < 0.6 ? 'hard' : 'plain';
       // c is always the nominee who stays (a three-way vote names the strongest of the others)
       const who = { a: b.voter, b: b.evict, c: kept || b.evict };
-      const lines = fresh('evict.vote', who, { ending: kind }, `vote|${b.voter}`) || fresh('evict.vote', who, { ending: 'plain' }, `vote|${b.voter}|p`);
+      // on a night that seats a juror, about half the voters say so
+      const jh = [...b.voter].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, week.num || 0);
+      const lines = (juryNight && jh % 2 ? fresh('evict.vote', who, { ending: `${kind}jury` }, `vote|${b.voter}|j`) : null)
+        || fresh('evict.vote', who, { ending: kind }, `vote|${b.voter}`) || fresh('evict.vote', who, { ending: 'plain' }, `vote|${b.voter}|p`);
       if (lines?.length) script.votes[b.voter] = lines;
     }
   }

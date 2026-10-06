@@ -94,6 +94,24 @@ export function gameTalkFor(week, ctx, clock, talked, lastGone) {
     const nom = noms.includes(nomAct?.pawn) ? nomAct.pawn : noms[Math.floor(rng() * noms.length)];
     if (nom) want('veto.hope', { a: nom, b: closest(nom, [ctx.hoh, ...noms]), c: ctx.hoh });
   }
+  // ── the morning after: somebody who voted against the house ──
+  // Only when it is news: they were close to the one who left, or almost nobody voted with them.
+  if (!clock.hoh && lastGone) {
+    const prev = [...(gs.bb?.weeks || [])].reverse().find(w => w !== week && w.evicted === lastGone);
+    const ev = (prev?.acts || []).find(a => a?.type === 'eviction');
+    const ballots = (ev?.ballots || []).filter(b => b && b.voter && b.evict);
+    const lost = ballots.filter(b => b.evict !== lastGone && house.includes(b.voter) && house.includes(b.evict));
+    const won = ballots.length - lost.length;
+    if (lost.length && won > lost.length) {
+      const m = lost.slice().sort((x, y) => getBond(y.voter, lastGone) - getBond(x.voter, lastGone))[0];
+      if (lost.length <= 2 || getBond(m.voter, lastGone) >= 2) {
+        const W = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen'];
+        const say = n => W[n] || String(n);
+        const count = `${say(won)[0].toUpperCase()}${say(won).slice(1)} to ${say(lost.length)}`;
+        want('outside', { a: m.voter, b: closest(m.voter, [m.evict]), c: m.evict }, { gone: lastGone, count });
+      }
+    }
+  }
   // ── the morning after: a juror has just walked out ──
   if (!clock.hoh && lastGone && phase !== 'early' && phase !== 'prejury') {
     const prev = [...(gs.bb?.weeks || [])].reverse().find(w => w !== week && w.evicted === lastGone);

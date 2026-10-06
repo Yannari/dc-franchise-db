@@ -37,6 +37,87 @@ const ROOM = { kitchen: 'Kitchen', 'living-room': 'Living Room', bedroom: 'Bedro
 // an outcome's own pool when it has one (a couple's spark is not a stranger's), else the step's
 const keysFor = (type, step, outcome) => [`story.${type}.${step}.${outcome}`, `story.${type}.${step}.any`].filter(k => STORY_POOLS[k]?.length).slice(0, 1);
 export const roomName = r => ROOM[r] || 'Living Room';
+
+// ── the why: what the viewer cannot see from the dialogue alone ─────────
+// The user, 2026-10-06: "I don't have insight into their minds like I had with the classic
+// version… I don't get the alliance, the strategy". Each scene carries a few plain lines for
+// the viewer's side panel (never the stage): what this conversation is in the game, and how
+// the people in it stand with each other and with the alliances. Bonds are read as the week
+// ends. Words only.
+const STEP_WHY = {
+  'feud.friction': '{a} and {b} are rubbing each other up the wrong way.',
+  'feud.argument': '{a} confronts {b}: this has been building.',
+  'feud.apology': '{a} tries to make peace with {b}.',
+  'feud.cold': '{a} and {b} have stopped speaking.',
+  'alliance.formed': '{a} and {b} make an alliance{al}.',
+  'alliance.recruit': '{a} is trying to bring {b} into {alx}.',
+  'alliance.checkin': '{alx} checks its numbers.',
+  'alliance.leftout': '{a} realises {alx} met without them.',
+  'alliance.poach': '{a} is trying to pull {b} away from their group.',
+  'alliance.exposed': '{alx} has been found out.',
+  'alliance.betrayal': '{a} turns on {b}.',
+  'alliance.repair': '{a} and {b} try to patch things up.',
+  'showmance.spark': '{a} and {b} are flirting.',
+  'showmance.kiss': '{a} and {b} kiss.',
+  'showmance.declare': '{a} tells {b} how they feel.',
+  'showmance.hiding': '{a} and {b} are keeping it quiet.',
+  'showmance.jealous': '{a} is jealous.',
+  'showmance.fight': '{a} and {b} are fighting.',
+  'showmance.breakup': '{a} and {b} are ending it.',
+  'target.pitch': '{a} is pitching {target} as the target.',
+  'target.gossip': 'The talk is about {target}.',
+  'target.lobby': '{a} is lobbying {b} on the vote{tgt}.',
+  'target.block': 'Life on the block.',
+  'target.backdoor': 'A plan to backdoor {target}.',
+  'target.count': 'Counting the votes{tgt}.',
+  'scheme.lie': '{a} is lying to {b}.',
+  'scheme.caught': '{a} has been caught out.',
+};
+const TALK_WHY = {
+  'bb.hoh': '{a} is Head of Household and put {c} up as the real target. If {c} wins the Block Buster, the plan falls apart.',
+  'bb.nominee': '{a} is one of three on the block. The Block Buster is the only way off that does not need anyone\'s vote.',
+  'veto.hope': '{a} is on the block. Winning the veto is the surest way off it.',
+  'nexthoh': 'An HOH is coming. {c} has won the most so far, and {a} and {b} are afraid of {c} holding power.',
+  'prejury': 'Jury is close. Whoever leaves before it starts gets no vote for the winner: {a} and {b} want {c} out first.',
+  'jury.bitter': '{gone} has just gone to the jury. {b} voted {gone} out.',
+  'outside': '{a} voted to evict {c}, but the house sent {gone} home, {count}. {a} is on the outside of this vote.',
+  'jury.manage': 'The jury decides the winner. {c} is liked by almost everybody, which makes {c} dangerous at the end.',
+  'endgame': 'Six or fewer left. Every competition could end a game now.',
+  'bond.vent': '{a} cannot stand {c}, and {b} is who {a} tells.',
+  'bond.trust': '{a} and {b} are each other\'s closest person in the house.',
+};
+const BONDWORD = v => v >= 6 ? 'very close' : v >= 3 ? 'friendly' : v > -2 ? 'neutral' : v > -5 ? 'wary of each other' : 'enemies';
+function standings(cast) {
+  const ppl = cast.filter(Boolean).slice(0, 4);
+  // who is in which alliance first: it is what the dialogue cannot show
+  const groups = [];
+  for (const al of gs.namedAlliances || []) {
+    if (al.active === false || al.dissolved) continue;
+    const inIt = ppl.filter(n => (al.members || []).includes(n));
+    const outOf = ppl.filter(n => !inIt.includes(n));
+    if (inIt.length >= 2) groups.push(`${inIt.join(' & ')}: ${inIt.length === 2 ? 'both' : 'all'} in ${al.name}${outOf.length ? ` (${outOf.join(' & ')} not)` : ''}`);
+    else if (inIt.length === 1) groups.push(`${inIt[0]} is in ${al.name}`);
+  }
+  const bonds = [];
+  for (let i = 0; i < ppl.length && bonds.length < 3; i++) for (let j = i + 1; j < ppl.length && bonds.length < 3; j++) {
+    const v = getBond(ppl[i], ppl[j]);
+    bonds.push(`${ppl[i]} & ${ppl[j]}: ${BONDWORD(v)} (${v > 0 ? '+' : ''}${Math.round(v)})`);
+  }
+  return [...groups.slice(0, 3), ...bonds];
+}
+const fillWhy = (t, who, data) => t.replace(/\{(\w+)\}/g, (m, k) => {
+  if (k === 'al') return data.alliance ? ` (${data.alliance})` : '';
+  if (k === 'alx') return data.alliance || 'their alliance';
+  if (k === 'tgt') return data.target ? ` (${data.target})` : '';
+  if (k === 'target') return data.target || 'somebody';
+  if (k === 'count') return String(data.count || '').toLowerCase();
+  return who[k] || data[k] || m;
+});
+function whyOf(key, table, who, data, cast) {
+  const t = table[key];
+  const first = t ? fillWhy(t, who, data) : '';
+  return [...(first ? [first[0].toUpperCase() + first.slice(1)] : []), ...standings(cast)];
+}
 export const hasPool = (type, step, outcome) => keysFor(type, step, outcome).length > 0;
 
 // The mood a scene sets for the music (BED_BY_MOOD in js/vp-bb-ep/sound.js).
@@ -253,6 +334,7 @@ export function writeStoryScene(line, step, ctx) {
   const sc = { ...base, cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: recap.length > 0, lineId: entry.id };
   if (!ctx.inSet) lines = background(lines, sc, ctx, sc.id, LOUD(line.type, step.step, step.outcome));
   sc.lines = [...recap, ...lines];
+  sc.why = whyOf(`${line.type}.${step.step}`, STEP_WHY, who, data, sc.cast);
   return sc;
 }
 
@@ -287,6 +369,7 @@ export function writeGameTalk(talk, ctx, at) {
   // private talk is private: the room around it only where people would be (never a shut door)
   const shut = kind === 'bond.vent' || /door shut|closes the door|shuts the door|door,? shut|voices? (low|down)|whisper|quiet/i.test(JSON.stringify(entry.turns));
   sc.lines = shut ? lines : background(lines, sc, ctx, sc.id, false);
+  sc.why = whyOf(kind, TALK_WHY, who, data, Object.values(who).filter(Boolean));
   return sc;
 }
 

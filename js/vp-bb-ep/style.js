@@ -172,12 +172,12 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .spy .q.hot span::after{content:" ● LIVE";color:#ff2e4d;animation:bbx-blink 1s steps(2) infinite}
 .bbx .spy .q .fig{position:absolute;bottom:8%;width:14%;aspect-ratio:3/4;border-radius:40% 40% .3cqw .3cqw;background:rgba(150,255,170,.6)}
 .bbx .spy .q.nvq .set{filter:grayscale(1) sepia(1) hue-rotate(62deg) saturate(2.4)}
-.bbx .ledtv{left:8%;top:9cqw;width:17cqw;margin-left:0;aspect-ratio:16/9;border-radius:.6cqw;overflow:hidden;background:#05070d;box-shadow:0 0 0 .3cqw #101624,0 0 4cqw rgba(255,46,77,.18);transition:box-shadow .4s,transform .5s}
+.bbx .ledtv{left:8%;top:8.6cqw;width:20cqw;margin-left:0;aspect-ratio:16/9;border-radius:.6cqw;overflow:hidden;background:#05070d;box-shadow:0 0 0 .3cqw #101624,0 0 4cqw rgba(255,46,77,.18);transition:box-shadow .4s,transform .5s}
 .bbx .ledtv.on{box-shadow:0 0 0 .3cqw #ff2e4d,0 0 5cqw rgba(255,46,77,.45);transform:scale(1.03)}
-.bbx .ledtv.dim img{filter:brightness(.28) blur(.2cqw)}
-.bbx .ledtv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
-.bbx .ledtv::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 .12cqw,transparent .12cqw .3cqw),linear-gradient(0deg,rgba(0,0,0,.55),transparent 40%)}
-.bbx .ledtv .lb{position:absolute;left:1cqw;bottom:.8cqw;z-index:2;font:900 1.4cqw Archivo;font-stretch:72%;letter-spacing:.2cqw;color:#fff}
+.bbx .ledtv.dim img{filter:brightness(.62)}
+.bbx .ledtv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%;filter:brightness(1.12) contrast(1.06) saturate(1.1)}
+.bbx .ledtv::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.06) 0 .1cqw,transparent .1cqw .3cqw),linear-gradient(0deg,rgba(0,0,0,.7),transparent 28%)}
+.bbx .ledtv .lb{position:absolute;left:.6cqw;bottom:.6cqw;z-index:2;padding:.35cqw .8cqw;border-radius:.35cqw;background:rgba(4,6,12,.78);font:900 1.4cqw Archivo;font-stretch:72%;letter-spacing:.2cqw;color:#fff}
 .bbx .ledtv .lb span{display:block;font:700 .75cqw 'Chakra Petch';letter-spacing:.2cqw;color:#ff2e4d}
 .bbx .votes{position:absolute;left:16.5%;top:23%;transform:translate(-50%,-50%);z-index:9;display:flex;gap:2cqw;align-items:center}
 .bbx .votes .v{text-align:center}

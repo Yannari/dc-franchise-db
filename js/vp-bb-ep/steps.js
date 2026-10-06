@@ -363,7 +363,15 @@ function evictionScreen(act, ctx, host) {
       // the voter's own words (bb/script/lines/evictvote.js), the formula last
       const said = (voteLines[b.voter] || []).map(l => l.text).join(' ') || `I vote to evict ${b.evict}.`;
       if (i === 0) steps.push({ k: 'dr', by: b.voter, t: `Hi, ${host}.` });
-      steps.push({ k: 'dr', by: b.voter, t: said, ballot: [b.voter, b.evict] });
+      // the chain behind the ballot, for the side panel (the house cannot see it):
+      // what they wanted, who asked, what they told the house, what they cast
+      const chain = [];
+      if (b.preference) chain.push(`wanted ${b.preference}`);
+      if (b.assignment) chain.push(b.assignment.kind === 'recruited' ? `asked by ${b.assignment.recruiter || b.assignment.by} for ${b.assignment.target}` : `${b.assignment.by} asked for ${b.assignment.target}`);
+      if (b.stated) chain.push(`told the house ${b.stated}`);
+      if (b.pleaMove) chain.push(`moved by ${b.movedBy}'s plea`);
+      chain.push(`casts ${b.evict}`);
+      steps.push({ k: 'dr', by: b.voter, t: said, ballot: [b.voter, b.evict, chain] });
       const next = ballots[i + 1]?.voter;
       if (next) steps.push({ k: 'host', by: host, t: pickH([`Thank you, ${b.voter}. ${next}, you're next.`, `Thank you. ${next}, please go to the Diary Room.`, `Thank you, ${b.voter}. ${next}?`, `${next}, you're up.`], `next|${i}`) });
     });
@@ -2021,7 +2029,7 @@ function storyLifeScreen(scenes, ctx, n) {
     // the set is the nearest one the stage has; the label is the room the scene is really in
     const label = sc.roomName || ROOM_NAME[set];
     const scene = { set, room: label, cam: CAM[set], kicker: `Cam ${String(CAM[set]).padStart(2, '0')} · ${label}`,
-      cast: sc.cast.map((p, i) => [p, xs[i]]), mood: sc.mood || 'house', time: sc._clock, slate: true };
+      cast: sc.cast.map((p, i) => [p, xs[i]]), mood: sc.mood || 'house', time: sc._clock, slate: true, ...(sc.why?.length ? { why: sc.why } : {}) };
     delete sc._clock;
     if ((MOOD_RANK[scene.mood] || 0) > (MOOD_RANK[mood] || 0)) mood = scene.mood;
     const lines = (sc.lines || []).map(l => ({ k: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, t: l.text, ...(l.bg ? { bg: true } : {}) }));

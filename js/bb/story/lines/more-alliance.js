@@ -25,7 +25,7 @@ export default {
     { id: 'af3.f2', when: { early: true }, turns: [
       { by: 'a', say: "Okay, hear me out." },
       { by: 'b', say: "I'm hearing." },
-      { by: 'a', say: "You're good at comps. I'm good at talking. Nobody's looking at either of us properly yet." },
+      { by: 'a', say: "You look like you could win a competition. I can talk to anyone. Nobody's looking at either of us properly yet." },
       { by: 'b', say: "And?" },
       { by: 'a', say: "And if we put those together, we go a long way. Like, all the way." },
       { by: 'b', say: "You want a final two." },
@@ -362,7 +362,7 @@ export default {
       { by: 'a', say: "...Okay. I'm in." },
       { by: 'a', dr: "I joined something I didn't know existed, with rules I just heard, run by people I've known for a week. Best decision I've made in here." },
     ] },
-    { id: 'ar3.2', turns: [
+    { id: 'ar3.2', presumes: ['vote'], turns: [
       { by: 'b', say: "We've been watching you." },
       { by: 'a', say: "That's creepy." },
       { by: 'b', say: "In a good way. You don't gossip, you don't panic, and you're good at comps." },

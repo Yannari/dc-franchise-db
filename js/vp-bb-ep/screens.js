@@ -58,6 +58,14 @@ const SHELL_CSS = `
 .bbx .bbx-mini{width:26px;height:26px;border-radius:7px;overflow:hidden;flex:none;position:relative;background:var(--c)}
 .bbx .bbx-mini img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
 .bbx .bbx-pend{font-size:12px;color:#7d89a3;font-style:italic}
+.bbx .bbx-tally{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.bbx .bbx-tal{font:600 12px Archivo,sans-serif;color:#c7d0e4;background:#151c2e;border-radius:6px;padding:3px 8px}
+.bbx .bbx-tal b{font:700 15px 'Chakra Petch',monospace;color:#ff6b82;margin-right:3px}
+.bbx .bbx-chain{font-size:11px;line-height:1.45;color:#9aa6c0;margin:0 0 6px 30px}
+.bbx .bbx-chain i{color:#22e1ff;font-style:normal}
+.bbx .bbx-why .bbx-wl{font-size:12.5px;line-height:1.45;color:#c7d0e4;padding:3px 0;border-bottom:1px solid rgba(125,137,163,.15)}
+.bbx .bbx-why .bbx-wl:first-of-type{color:#fff;font-weight:600}
+.bbx .bbx-why .bbx-wl:last-child{border-bottom:0}
 #visual-player.bbx-tv .bbx .bbx-under{display:none}
 `;
 
@@ -74,6 +82,16 @@ function scriptHtml(S) {
   }).join('') || '<div class="bbx-empty">Nothing aired here.</div>';
 }
 
+// The vote as it stands, which the house cannot see: a count per nominee, and every ballot
+// with the chain behind it (the user, 2026-10-06: "wanted Brightly → The Outwit Club asked
+// Brightly → told the house Brightly → casts Brightly helps me understand what's going on").
+function voteHtml(L, row) {
+  const count = {};
+  for (const [, e] of L.ballots) count[e] = (count[e] || 0) + 1;
+  const tally = Object.entries(count).sort((a, b) => b[1] - a[1]).map(([n, k]) => `<span class="bbx-tal"><b>${k}</b> ${esc(n)}</span>`).join('');
+  const rows = L.ballots.map(([v, e, chain]) => `${row(v, `evict ${esc(e)}`, 'nom')}${chain?.length ? `<div class="bbx-chain">${chain.map(esc).join(' <i>→</i> ')}</div>` : ''}`).join('');
+  return `<div class="bbx-panel"><h4>The vote · the house can't see this</h4><div class="bbx-tally">${tally}</div>${rows}</div>`;
+}
 function sideHtml(L, S) {
   const row = (n, tag, cls) => `<div class="bbx-row">${mini(n)}<b>${esc(n)}</b><span class="bbx-tag ${cls}">${tag}</span></div>`;
   return `<div class="bbx-panel"><h4>Week ${esc(S.week)}</h4>
@@ -89,7 +107,8 @@ function sideHtml(L, S) {
     ${S.kind === 'jury-q' ? `<div class="bbx-panel"><h4>WHERE THE JURY IS</h4>${Object.keys(L.stances || {}).length
       ? Object.values(L.stances).map(([j, stance, asked]) => row(j, `${esc(stance)} on ${esc(asked)}`, '')).join('')
       : '<div class="bbx-pend">Nobody has asked a question yet.</div>'}</div>` : ''}
-    ${L.ballots.length ? `<div class="bbx-panel"><h4>The vote · the house can't see this</h4>${L.ballots.map(([v, e]) => row(v, `evict ${esc(e)}`, 'nom')).join('')}</div>` : ''}`;
+    ${L.ballots.length ? voteHtml(L, row) : ''}
+    ${L.why?.length ? `<div class="bbx-panel bbx-why"><h4>Inside their heads</h4>${L.why.map(w => `<div class="bbx-wl">${esc(w)}</div>`).join('')}<div class="bbx-pend" style="margin-top:6px;font-size:10.5px">Bonds and alliances as the week ends.</div></div>` : ''}`;
 }
 
 function seasonOf(row) { return SEASON_DIR[row.themeId] || 'default'; }
@@ -221,7 +240,9 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   const key = seasonId('big-brother', sc.seasonNumber || row.seasonNumber || 1);
   out.unshift(titleScreen('intro', key));
   out.push(titleScreen('outro', key));
-  return out;
+  // a classic screen kept inside the stepped week (a twist) still has the way to the classic viewer
+  const SWITCH = `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" class="bbx-switch" onclick="bbxSwitchViewer('classic')" style="border:1px solid #22e1ff;background:#0d1220;color:#22e1ff;border-radius:8px;padding:7px 12px;font:600 11px monospace;letter-spacing:1px;cursor:pointer">CLASSIC VIEWER</button></div>`;
+  return out.map(x => (x && typeof x.html === 'string' && !x.html.includes('class="bbx"') && !x.html.includes('bbxSwitchViewer') && !/^bb-(titles|closing)$/.test(x.id || '') ? { ...x, html: SWITCH + x.html } : x));
 }
 
 // ── the reveal ─────────────────────────────────────────────────────────
@@ -331,12 +352,26 @@ export function bbxHouseLife() {
     else location.reload();
   } catch { location.reload(); }
 }
+// The user, 2026-10-06: "switching to classic takes me to the first screen". The switch keeps
+// the place: the screen you were on by id (the stepped core screens keep the classic ids), or
+// failing that the same part of the week (its anchor), or failing that the same fraction of it.
+const baseId = id => String(id || '').replace(/-v(\d*)$/, '').replace(/(-\d+)$/, '');
 export function bbxSwitchViewer(which) {
   try { localStorage.setItem('bb-vp', which === 'stepped' ? 'stepped' : 'classic'); } catch { /* per-viewer convenience */ }
   try {
+    const before = window.vpScreens || [];
+    const at = window.vpCurrentScreen || 0;
+    const cur = before[at] || {};
+    const frac = before.length > 1 ? at / (before.length - 1) : 0;
     const ep = window.vpEpNum ?? window._vpEpNum;
-    if (typeof window.openVisualPlayer === 'function' && ep != null) window.openVisualPlayer(ep);
-    else location.reload();
+    if (typeof window.openVisualPlayer !== 'function' || ep == null) { location.reload(); return; }
+    window.openVisualPlayer(ep);
+    const now = window.vpScreens || [];
+    let i = now.findIndex(s => s.id && s.id === cur.id);
+    if (i < 0) i = now.findIndex(s => baseId(s.id) && baseId(s.id) === baseId(cur.id));
+    if (i < 0 && cur.anchor) i = now.findIndex(s => s.anchor === cur.anchor);
+    if (i < 0) i = Math.round(frac * Math.max(0, now.length - 1));
+    if (i > 0 && typeof window.vpGoTo === 'function') window.vpGoTo(i);
   } catch { location.reload(); }
 }
 if (typeof window !== 'undefined') Object.assign(window, { bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife });

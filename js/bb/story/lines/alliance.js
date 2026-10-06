@@ -313,7 +313,7 @@ export default {
       { by: 'b', say: "Of course it is." },
       { by: 'a', dr: "Nobody wants to be in an alliance with the people at the bottom. That's exactly why the people at the bottom need one." },
     ] },
-    { id: 'af2.s3', turns: [
+    { id: 'af2.s3', presumes: ['vote'], turns: [
       { by: 'b', say: "Every group in here has a name except ours." },
       { by: 'a', say: "Because we're not in one." },
       { by: 'b', say: "So let's be one." },

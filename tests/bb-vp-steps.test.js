@@ -164,7 +164,8 @@ describe('the twists stay', () => {
     // the core screens are the stepped ones now, under the classic ids
     for (const id of ['bb-noms', 'bb-cer', 'bb-evict']) expect(out.find(x => x.id === id)?.html, id).toContain('class="bbx"');
     // a competition plays its own themed board (here the fixture's), in the stepped screen's slot
-    for (const id of ['bb-hoh', 'bb-veto']) expect(out.find(x => x.id === id)?.html, id).toBe('<div></div>');
+    // a kept classic screen is unchanged, with the way to the classic viewer above it (the user, 2026-10-06)
+    for (const id of ['bb-hoh', 'bb-veto']) { const h = out.find(x => x.id === id)?.html || ''; expect(h.endsWith('<div></div>'), id).toBe(true); expect(h, id).toContain("bbxSwitchViewer('classic')"); }
     // House Life stays: the classic feed is the week's record, every beat and the powers band
     expect(ids).toContain('bb-house-1');
     // (a twist that still keeps its classic screen; the Coin has a stepped set of its own now)

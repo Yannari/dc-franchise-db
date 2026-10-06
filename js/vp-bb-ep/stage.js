@@ -107,6 +107,7 @@ export function ledgerAt(screens, si, idx) {
       if (st.vetoPlay && s === si) L.vetoPlay.push(...st.vetoPlay);
       if (st.reveal && s === si) L.revealed.push(st.reveal);
       if (st.ballot && s === si) L.ballots.push(st.ballot);
+      if (s === si && st.scene) L.why = st.scene.why || null;
       if (st.stance && s === si) L.stances[st.stance[0]] = st.stance;
       if (st.votes && s === si) L.votes = st.votes;
       if (st.out) { L.out.push(st.out); L.status[st.out] = 'out'; L.nom.forEach(n => { if (n !== st.out) L.status[n] = ''; }); }

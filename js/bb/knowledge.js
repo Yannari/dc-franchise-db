@@ -30,6 +30,7 @@ import { pStats } from '../players.js';
 import { getBond, getPerceivedBond, addBond } from '../bonds.js';
 import { factId, recordFact, learn, believes, getFact, propagate, pruneStale }
   from '../knowledge.js';
+import { stableRng } from '../script/rng.js';
 
 const live = () => (gs.activePlayers || []).filter(Boolean);
 
@@ -46,20 +47,11 @@ const live = () => (gs.activePlayers || []).filter(Boolean);
  * better one, because it is also more faithful. Whether a particular person
  * believes a particular piece of news should not depend on how many unrelated
  * dice were rolled earlier in the week.
+ *
+ * It lives in js/script/rng.js now (every show's script layer uses it) and is
+ * re-exported here, so the many Big Brother imports of it stay as they are.
  */
-export function stableRng(...parts) {
-  let seed = 2166136261;
-  const key = parts.join('|');
-  for (let i = 0; i < key.length; i++) seed = Math.imul(seed ^ key.charCodeAt(i), 16777619);
-  seed >>>= 0;
-  return () => {
-    seed = (seed + 0x6D2B79F5) >>> 0;
-    let t = seed;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+export { stableRng };
 
 // ── recording ─────────────────────────────────────────────────────────
 

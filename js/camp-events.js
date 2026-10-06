@@ -16,6 +16,8 @@ import { reputationModifier } from './reputation.js';
 import { campRoster, isCoach as isCoachName } from './coaches.js';
 import { recordIntimidation, recordProtection, recordBetrayal } from './relationship-events.js';
 import { attachCampAccessToEvents, buildCampAccessSchedule, findConversationAccess } from './camp-access.js';
+import { makeScene, spotOf } from './td/script/scene.js';
+import { scriptEvent } from './td/script/write.js';
 import { ensureIntentions, evolveIntentions, getIntentions, evaluateEndgameBeatability } from './intentions.js';
 import { getRelationshipDimensions } from './relationships.js';
 
@@ -6384,18 +6386,14 @@ export function checkSocialPolitics(ep) {
         if (!genuine) {
           addPerceivedBond(partner, initiator, getBond(partner, initiator) + 1.5, 'side-deal-fake');
         }
-        const pr = pronouns(initiator);
-        const pPr = pronouns(partner);
-        pre.push({
-          type: 'sideDeal', players: [initiator, partner],
-          text: _pick([
-            `${initiator} pulled ${partner} aside after dark. "Final ${dealType === 'f2' ? 'two' : 'three'}." The conversation lasted ten minutes. When they came back, something had changed.`,
-            `${initiator} and ${partner} made a final ${dealType === 'f2' ? 'two' : 'three'} deal. Whether it means anything is a question for later.`,
-            `${initiator} looked ${partner} in the eye: "Final ${dealType === 'f2' ? 'two' : 'three'}. You and me." ${partner} didn't hesitate.`,
-            `${initiator} and ${partner} shook on a final ${dealType === 'f2' ? 'two' : 'three'} deal. Not in front of anyone. That's the point.`,
-          ]),
-          badgeText: 'SIDE DEAL', badgeClass: 'gold'
-        });
+        // A scene, not a sentence (td/script, spec 2026-10-06). The draw that
+        // used to pick the sentence stays, so the season does not move.
+        Math.random();
+        const { spot } = spotOf(ep, initiator, partner, 'pre');
+        pre.push(scriptEvent({ type: 'sideDeal', players: [initiator, partner], badgeText: 'SIDE DEAL', badgeClass: 'gold' },
+          makeScene('deal.side', { a: initiator, b: partner },
+            { ending: genuine ? 'genuine' : 'hollow', size: dealType === 'f2' ? 'two' : 'three' }, [], spot),
+          { ep: curEp, phase: 'pre' }));
         ep._politicsLog.push(`DEAL: ${initiator} + ${partner} (${dealType}, genuine=${genuine})`);
         budget--;
       });

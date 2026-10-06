@@ -4513,11 +4513,16 @@ export function simulateEpisode() {
     if (_knowledgeEventsResult?.length) {
       attachInfoFlowLocations(_knowledgeEventsResult); // stamp location while the schedule is current (persists for replay)
       ep.knowledgeEvents = [...(ep.knowledgeEvents || []), ..._knowledgeEventsResult];
-      const _knowledgeCampKey = gs.isMerged ? 'merge'
-        : (gs.tribes.find(t => t.members.some(m => tribalPlayers.includes(m)))?.name || Object.keys(ep.campEvents || {})[0]);
-      if (_knowledgeCampKey && ep.campEvents?.[_knowledgeCampKey]?.pre) {
-        ep.campEvents[_knowledgeCampKey].pre.push(...knowledgeCampCards(_knowledgeEventsResult));
-      }
+      // A gossip card belongs to the camp BOTH people live in, after the challenge.
+      // Gossip spreads through the whole game, and every card used to land in the
+      // tribal tribe's pre-challenge feed: Gophers talking in the Bass camp before a
+      // challenge they had not lost yet. A pair split across camps never talked.
+      const _campOf = n => gs.isMerged ? (gs.mergeName || 'merge') : gs.tribes.find(t => t.members.includes(n))?.name;
+      const _sameCamp = _knowledgeEventsResult.filter(e => e?.from && e?.to && _campOf(e.from) && _campOf(e.from) === _campOf(e.to));
+      knowledgeCampCards(_sameCamp).forEach(card => {
+        const _feed = ep.campEvents?.[_campOf(card.players[0])];
+        if (_feed && !Array.isArray(_feed)) (_feed.post ||= []).push(card);
+      });
     }
     if (voteMiscommunications?.length) ep.voteMiscommunications = (ep.voteMiscommunications || []).concat(voteMiscommunications);
     if (defections?.length) ep.defections = [...(ep.defections || []), ...defections];

@@ -55,3 +55,34 @@ describe('a double crown', () => {
     expect(last).toContain('The winners');
   });
 });
+
+/* ── AND NOTHING ELSE ON THE NIGHT SAYS ONE OF THEM LOST ──
+   Checked on an All Stars season (seed 29): the crown song called Q4 its
+   winner, the crowning's placements read "1 crowned, 2", and the closing
+   paragraph had "the winner dancing with the runner-up". */
+import { DRAG_SCREENS } from '../js/vp-dr/screens.js';
+describe('a double crown on All Stars', () => {
+  const S = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
+  const mk = seed => { const g = rngFor(seed); const r = () => 1 + Math.floor(g() * 10);
+    return Array.from({ length: 12 }, (_, i) => ({ name: `Q${i + 1}`, slug: `q${i + 1}`, gender: 'f', archetype: 'hero', age: 25 + i,
+      stats: Object.fromEntries(S.map(k => [k, r()])), drag: { acting: r(), comedy: r(), dance: r(), design: r(), runway: r(), lipsync: r(), singing: r() } })); };
+  const out = playDragSeason({ cast: mk(929), seed: 29, config: { drDoubleCrown: true, drAllStars: true } });
+  const row = out.rows.at(-1);
+  const text = DRAG_SCREENS.filter(sc => !sc.when || sc.when(row))
+    .map(sc => (sc.build(row) || '').replace(/<style[\s\S]*?<\/style>/g, '').replace(/<[^>]+>/g, ' ')).join(' ').replace(/\s+/g, ' ');
+
+  it('crowns two', () => {
+    expect(row.dr.finale.doubleCrown).toBe(true);
+    expect(row.dr.finale.winners).toHaveLength(2);
+  });
+  it('never calls one of them the runner-up, or the last song her loss', () => {
+    expect(text).not.toMatch(/runner-up/i);
+    expect(text).not.toMatch(/wins the lip sync for the crown/);
+    expect(text).toMatch(/neither of them lost this song/);
+  });
+  it('puts both first on the placements', () => {
+    const [a, b] = row.dr.finale.winners;
+    expect(text).toContain(`1 ${a} crowned`);
+    expect(text).toContain(`1 ${b} crowned`);
+  });
+});

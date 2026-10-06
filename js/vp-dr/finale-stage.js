@@ -558,8 +558,11 @@ export function crownLipsyncStage(row, list, rounds, { ep, uid = 'x' } = {}) {
       st.phase = 'verdict';
       st.mood = 'gold';
       const final = r === lastRound;
-      st.stamps = { [d.winner]: 'win', [d.loser || (d.a === d.winner ? d.b : d.a)]: 'out' };
-      st.banner = { text: d.winner || '', sub: final ? 'wins the lip sync for the crown' : 'goes through to the final' };
+      // A double crown: nobody lost the last song (season.js TWO WINNERS).
+      st.dead = final && !!row?.dr?.finale?.doubleCrown;
+      st.stamps = st.dead ? { [d.a]: 'win', [d.b]: 'win' } : { [d.winner]: 'win', [d.loser || (d.a === d.winner ? d.b : d.a)]: 'out' };
+      st.banner = st.dead ? { text: 'A dead heat', sub: 'neither of them lost this song' }
+        : { text: d.winner || '', sub: final ? 'wins the lip sync for the crown' : 'goes through to the final' };
       st.burst = final;
       st.stars = !final;
     }
@@ -631,7 +634,7 @@ export function crownLipsyncStage(row, list, rounds, { ep, uid = 'x' } = {}) {
       if (i !== r) return;
       const done = !!st && st.phase === 'verdict';
       const final = done && r === lastRound;
-      if (final) du.classList.add(rd.winner === rd.a ? 'to-a' : 'to-b');
+      if (final && !st.dead) du.classList.add(rd.winner === rd.a ? 'to-a' : 'to-b');
       const qs = [...du.querySelectorAll('.clx-q')];
       if (qs.length === 2) du.style.setProperty('--hop', `${Math.round((qs[1].offsetLeft - qs[0].offsetLeft) / 2) || 140}px`);
       for (const q of qs) {
@@ -643,7 +646,7 @@ export function crownLipsyncStage(row, list, rounds, { ep, uid = 'x' } = {}) {
         q.classList.remove('st-win', 'st-out');
         const stamp = done ? st.stamps[nm] : null;
         if (stamp) q.classList.add(`st-${stamp}`);
-        q.querySelector('[data-st]').textContent = stamp === 'win' ? (r === lastRound ? 'Winner' : 'Through') : stamp === 'out' ? (r === lastRound ? 'Runner-up' : 'Out') : '';
+        q.querySelector('[data-st]').textContent = stamp === 'win' ? (r === lastRound ? (st.dead ? 'Level' : 'Winner') : 'Through') : stamp === 'out' ? (r === lastRound ? 'Runner-up' : 'Out') : '';
         const parts4 = (rd.beats?.[nm] || []).map(x => Number(x.delta) || 0);
         const k = st ? Math.min(4, st.heard[nm] || 0) : 0;
         const sum = parts4.slice(0, k).reduce((t, v) => t + v, 0);

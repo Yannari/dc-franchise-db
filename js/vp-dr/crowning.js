@@ -577,13 +577,15 @@ export function rpBuildCrowning(row) {
       <span class="cr-vs">vs</span>
       <b class="dr-disp">${esc(r.b)}</b>${_portrait(r.b, ep, { size: 34 })}
       <span class="cr-song">${esc(r.song || '')}</span>
-      <span class="cr-took dr-disp">${esc(r.winner || '')} takes it</span>
+      <span class="cr-took dr-disp">${fin.doubleCrown && r === fin.rounds.at(-1) ? 'dead heat' : `${esc(r.winner || '')} takes it`}</span>
     </div>`).join('');
+  // Two winners share first: nobody is second (season.js TWO WINNERS).
+  const co = fin.doubleCrown ? 2 : 1;
   const places = placements.map((n, idx) => `<div class="cr-place-row">
-      <span class="cr-n dr-disp">${idx + 1}</span>
+      <span class="cr-n dr-disp">${idx < co ? 1 : idx + 1}</span>
       ${_portrait(n, ep, { size: 34 })}
       <b class="dr-disp">${esc(n)}</b>
-      ${idx === 0 ? '<span class="cr-took dr-disp">crowned</span>' : ''}
+      ${idx < co ? '<span class="cr-took dr-disp">crowned</span>' : ''}
     </div>`).join('');
 
   let n = scenes.length;

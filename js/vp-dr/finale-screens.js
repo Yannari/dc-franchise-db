@@ -245,8 +245,12 @@ export function rpBuildCrownLipSync(row) {
     const d = s.duel;
     const sa = Number(d.scores?.[d.a]) || 0;
     const sb = Number(d.scores?.[d.b]) || 0;
-    return finaleCard({ id, ep, who: d.winner, cls: 'big', tag: `${label(s.r)} · ${d.song || ''}`,
-      text: `${d.a} ${sa.toFixed(1)} · ${d.b} ${sb.toFixed(1)}. ${d.winner} ${s.r === n - 1 ? 'wins the lip sync for the crown' : 'goes through'}.` });
+    /* A DOUBLE CROWN: the last song is a dead heat, and the crowning crowns
+       both. Calling one of them its winner here contradicted the next screen. */
+    const dead = s.r === n - 1 && !!row?.dr?.finale?.doubleCrown;
+    return finaleCard({ id, ep, who: dead ? null : d.winner, cls: 'big', tag: `${label(s.r)} · ${d.song || ''}`,
+      text: `${d.a} ${sa.toFixed(1)} · ${d.b} ${sb.toFixed(1)}. ${dead ? 'Too close to separate: neither of them lost this song.'
+        : `${d.winner} ${s.r === n - 1 ? 'wins the lip sync for the crown' : 'goes through'}.`}` });
   }
   wireStage('fincrownls', stage, ep, _state);
 

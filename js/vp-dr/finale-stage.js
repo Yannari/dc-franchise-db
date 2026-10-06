@@ -73,6 +73,16 @@ export const FINALE_STAGE_CSS = `
   box-shadow:0 30px 80px -30px #000,inset 0 0 0 1px rgba(125,249,255,.16)}
 .fsx.th-lounge{--fx:#c9a2ff;--fx2:#ffd66b;background:radial-gradient(120% 85% at 50% 0,#2d1446 0,#150a24 52%,#07040d 100%);
   box-shadow:0 30px 80px -30px #000,inset 0 0 0 1px rgba(201,162,255,.16)}
+.fsx.th-exit{--fx:#ff7bc8;--fx2:#ffd66b;background:#08020a;box-shadow:0 30px 80px -30px #000,inset 0 0 0 1px rgba(255,123,200,.18)}
+/* THE SETS: each room is a render (tools/blender/dr-werkroom.py, dr-sets.py),
+   under a dark veil so the cards on top still read. The main stage is the
+   default: every unthemed frame (the finale, the crown) is on it too. */
+.fsx-bg::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(8,2,10,.38),rgba(8,2,10,.62) 55%,rgba(8,2,10,.86)),url(assets/sets/dr/mainstage.webp) center 30%/cover no-repeat}
+.fsx.th-werk .fsx-bg::before{background-image:linear-gradient(180deg,rgba(5,4,15,.38),rgba(5,4,15,.62) 55%,rgba(5,4,15,.86)),url(assets/sets/dr/werkroom.webp)}
+.fsx.th-lounge .fsx-bg::before{background-image:linear-gradient(180deg,rgba(7,4,13,.38),rgba(7,4,13,.62) 55%,rgba(7,4,13,.86)),url(assets/sets/dr/untucked.webp)}
+.fsx.th-exit .fsx-bg::before{background-image:linear-gradient(180deg,rgba(8,2,10,.25),rgba(8,2,10,.5) 55%,rgba(8,2,10,.8)),url(assets/sets/dr/exit.webp)}
+.fsx.th-exit .fsx-rays{display:none}
 .fsx.th-stage .fsx-rays{background:repeating-conic-gradient(from 180deg at 50% -12%,rgba(255,123,200,.07) 0 4deg,transparent 4deg 11deg)}
 .fsx.th-werk .fsx-rays{background:repeating-linear-gradient(90deg,rgba(125,249,255,.04) 0 1px,transparent 1px 38px),repeating-linear-gradient(0deg,rgba(125,249,255,.04) 0 1px,transparent 1px 38px);animation:none}
 .fsx.th-lounge .fsx-rays{background:radial-gradient(40% 30% at 20% 30%,rgba(201,162,255,.12),transparent 70%),radial-gradient(35% 30% at 80% 20%,rgba(255,214,107,.08),transparent 70%);animation:none}

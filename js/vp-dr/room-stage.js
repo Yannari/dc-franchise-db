@@ -82,7 +82,12 @@ export const ROOM_STAGE_CSS = `${FINALE_STAGE_CSS}
 .fsx.th-lounge .rmx-wall{background:linear-gradient(180deg,rgba(201,162,255,.06),rgba(0,0,0,.25));border-bottom-color:rgba(120,40,90,.6)}
 
 /* ══ THE WAY OUT ══ */
-.exx-hall{position:relative;height:210px;margin-top:8px;border-radius:14px;overflow:hidden;perspective:420px;background:#050205}
+.exx-hall{position:relative;height:210px;margin-top:8px;border-radius:14px;overflow:hidden;perspective:420px;
+  background:linear-gradient(180deg,rgba(5,2,5,.1),rgba(5,2,5,.45)),url(assets/sets/dr/exit.webp) center 50%/cover no-repeat,#050205}
+/* the render is the corridor: the drawn walls and floor step aside, and the
+   door that closes on her sits over the painted one */
+.exx-hall .exx-walls,.exx-hall .exx-floor{opacity:0}
+.exx-hall .exx-door{top:66px;width:38px;height:94px;margin-left:-19px}
 .exx-walls{position:absolute;inset:0;background:
   linear-gradient(90deg,#1a0612 0,#0a0308 18%,transparent 38%,transparent 62%,#0a0308 82%,#1a0612 100%)}
 .exx-floor{position:absolute;left:50%;bottom:-30px;width:260px;height:320px;margin-left:-130px;transform-origin:50% 100%;transform:rotateX(64deg);
@@ -210,7 +215,7 @@ export function exitStage(row, steps, { ep, gone, verb = 'Sashay away', message 
       <div class="exx-q" data-q>${face(gone, ep, 96)}<b>${esc(gone)}</b></div>
       <div class="exx-mirror" data-mirror><small>Written on the mirror</small>${esc(clip(message, 120))}</div>
       <div class="exx-stamp">${esc(verb)}</div></div>`;
-  const html = shell({ id: `exx-${uid}`, title: 'The way out', sub: gone, body, theme: 'stage', hostChip: false });
+  const html = shell({ id: `exx-${uid}`, title: 'The way out', sub: gone, body, theme: 'exit', hostChip: false });
   const apply = engine(`exx-${uid}`, states, (el, st, fresh) => {
     const q = el.querySelector('[data-q]');
     const w = st ? st.walk : 0;

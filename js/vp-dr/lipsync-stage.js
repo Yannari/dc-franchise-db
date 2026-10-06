@@ -55,6 +55,9 @@ export const LS_CSS = `
 .lsx-cards .dr-step{scroll-margin-top:540px}
 .lsx-bg,.lsx-bg i{position:absolute;inset:0;pointer-events:none}
 .lsx-bg{z-index:0;transition:filter .7s}
+/* the main stage lit for a lip sync: two spots on two marks (tools/blender/dr-sets.py) */
+.lsx-bg::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(8,2,10,.3),rgba(8,2,10,.55) 55%,rgba(8,2,10,.85)),url(assets/sets/dr/lipsync.webp) center 30%/cover no-repeat}
 .lsx > *:not(.lsx-bg){position:relative;z-index:1}
 .lsx > .lsx-conf,.lsx > .lsx-banner,.lsx > .lsx-stars{position:absolute}
 .lsx > .lsx-conf{z-index:6}.lsx > .lsx-banner{z-index:4}.lsx > .lsx-stars{z-index:3}

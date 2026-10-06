@@ -244,8 +244,15 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   // both rendered in Blender with this season's cast, both skippable.
   const sc = (typeof globalThis !== 'undefined' && globalThis.seasonConfig) || {};
   const key = seasonId('big-brother', sc.seasonNumber || row.seasonNumber || 1);
-  out.unshift(titleScreen('intro', key));
-  out.push(titleScreen('outro', key));
+  // the people who have been in the house by the start of this episode, evicted or not: never a
+  // Rivals latecomer before they walk in, never the twin nobody knows exists
+  const lateNow = new Set((row.acts || []).find(a => a?.type === 'rivals-open')?.arrived || []);
+  const been = [...new Set([...(priorEvicted || []), ...(row.houseAtStart || row.house || [])])].filter(n => !lateNow.has(n));
+  const castNow = (() => { try { return ((globalThis.players || []).map(p => p?.name).filter(Boolean)); } catch { return []; } })();
+  const cast = been.length ? been : castNow;
+  const seasonTitle = sc.seasonName || sc.title || '';
+  out.unshift(titleScreen('intro', key, cast, seasonTitle));
+  out.push(titleScreen('outro', key, cast, seasonTitle));
   // a classic screen kept inside the stepped week (a twist) still has the way to the classic viewer
   const SWITCH = `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" class="bbx-switch" onclick="bbxSwitchViewer('classic')" style="border:1px solid #22e1ff;background:#0d1220;color:#22e1ff;border-radius:8px;padding:7px 12px;font:600 11px monospace;letter-spacing:1px;cursor:pointer">CLASSIC VIEWER</button></div>`;
   return out.map(x => (x && typeof x.html === 'string' && !x.html.includes('class="bbx"') && !x.html.includes('bbxSwitchViewer') && !/^bb-(titles|closing)$/.test(x.id || '') ? { ...x, html: SWITCH + x.html } : x));

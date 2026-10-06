@@ -26,8 +26,18 @@ describe('the opening titles and the closing', () => {
     const out = bbStepScreens(ep, [], { host: 'Valeria' });
     expect(out[0].id).toBe('bb-titles');
     expect(out.at(-1).id).toBe('bb-closing');
-    expect(out[0].html).toContain('assets/bb/intro/bb-1-intro.mp4');
-    expect(out.at(-1).html).toContain('assets/bb/intro/bb-1-outro.mp4');
+    // this cast is not the one bb-1's render shows, so the titles are live, with these people
+    // in them (the user, 2026-10-06: "the opening titles don't update with the houseguests")
+    expect(out[0].html).toContain('class="bbt live"');
+    for (const p of CAST) expect(out[0].html, p.name).toContain(p.name.replace(/&/g, '&amp;'));
+    expect(out[0].html).not.toContain('bb-1-intro.mp4');
+  });
+
+  it('play the rendered titles only for the cast they were rendered with', () => {
+    const made = ['Aaron', 'Amberly', 'Dylon', 'Felipe', 'Gyselle', 'Harriett', 'Hasan', 'Ireland', 'Jane', 'Joel', 'Jules', 'Misha', 'Natasha', 'Nico', 'Stella', 'Tobias', 'Zella'];
+    expect(titleScreen('intro', 'bb-1', made).html).toContain('assets/bb/intro/bb-1-intro.mp4');
+    expect(titleScreen('outro', 'bb-1', made).html).toContain('assets/bb/intro/bb-1-outro.mp4');
+    expect(titleScreen('intro', 'bb-1', made.slice(1)).html).toContain('class="bbt live"');
   });
 
   it('stop the music bed, offer a skip, and fall back to the generic pair', () => {

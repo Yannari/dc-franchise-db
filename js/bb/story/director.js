@@ -117,6 +117,9 @@ export function airStorylines(week) {
       if (shown.has(key) || shown.has(String(beat.eventId))) continue;
       const sc = writeEngineScene(beat, { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) }, at);
       if (!sc || rejoins(sc)) continue;
+      // a fragment that moves nothing (a single spoken line, no setup) does not air; the moments that
+      // move the game (vote machinery, HOH, veto, house meetings) still do, however short
+      if (sc.lines.filter(l => l.kind !== 'beat').length < 2 && WEIGHT(String(beat.eventId)) < 4) continue;
       remember(sc);
       shown.add(key); shown.add(String(beat.eventId));
       beat.aired = true; engAired++;

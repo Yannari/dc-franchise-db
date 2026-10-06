@@ -95,11 +95,14 @@ function vetoWhy(act, holder, before, hoh) {
   return out.filter(Boolean);
 }
 
+// every room of the house has its own render now (the user, 2026-10-06: "we don't have all rooms
+// like the storage room, the washroom"): the storage room, the Have-Not room and the bathroom
 const ROOM_SET = { 'kitchen': 'kitchen', 'living-room': 'ceremony', 'bedroom': 'bedroom', 'hoh-room': 'hoh',
-  'backyard': 'yard', 'diary-room': 'dr', 'pantry': 'kitchen', 'washroom': 'bedroom', 'bathroom': 'bedroom', 'storage-room': 'kitchen' };
-const ROOM_NAME = { kitchen: 'Kitchen', ceremony: 'Living Room', bedroom: 'Bedroom', hoh: 'HOH Room', yard: 'Backyard',
-  dr: 'Diary Room', dining: 'Dining Room' };
-const CAM = { kitchen: 2, ceremony: 4, bedroom: 9, hoh: 14, yard: 5, dr: 1, dining: 3 };
+  'backyard': 'yard', 'diary-room': 'dr', 'pantry': 'storage', 'washroom': 'bathroom', 'bathroom': 'bathroom', 'storage-room': 'storage',
+  'have-not-room': 'havenot', 'havenot': 'havenot' };
+const ROOM_NAME = { kitchen: 'Kitchen', ceremony: 'Living Room', ceremony3: 'Living Room', bedroom: 'Bedroom', hoh: 'HOH Room', yard: 'Backyard',
+  dr: 'Diary Room', dining: 'Dining Room', storage: 'Storage Room', havenot: 'Have-Not Room', bathroom: 'Bathroom' };
+const CAM = { kitchen: 2, ceremony: 4, ceremony3: 4, bedroom: 9, hoh: 14, yard: 5, dr: 1, dining: 3, storage: 6, havenot: 11, bathroom: 8 };
 const ACT_TIME = { house: '10:40', hoh: '20:00', nominations: '13:30', veto: '14:10', 'veto-ceremony': '14:00', campaign: '17:20', eviction: 'LIVE' };
 const ACT_DAY = { house: 0, hoh: 0, nominations: 1, veto: 2, 'veto-ceremony': 4, campaign: 5, eviction: 6 };
 
@@ -2172,7 +2175,7 @@ function moveInScreen(act, ctx, host, row) {
   for (const al of act.kinAlone || []) {
     const sc = scriptSteps(al.lines);
     if (!sc.length) continue;
-    sc[0] = { ...sc[0], scene: inside(al.pair, 'kitchen', { room: 'Storage Room', kicker: 'Cam 06 · Storage room', time: '9:30 PM' }) };
+    sc[0] = { ...sc[0], scene: inside(al.pair, 'storage', { time: '9:30 PM' }) };
     steps.push(...sc);
   }
   // the house is full: the host on the living room screen
@@ -2814,6 +2817,12 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   for (const s of out) { s.wall = s.hidden?.size ? wall.filter(n => !s.hidden.has(n)) : wall; s.priorOut = priorEvicted.slice(); s.week = ctx.week; delete s.hidden; }
   if (out.length && !out.some(s => s.steps.some(st => st.hoh)) && ctx.hoh) out[0].steps[0] = { ...out[0].steps[0], hoh: ctx.hoh };
   for (const s of out) for (const st of s.steps || []) if (typeof st.t === 'string') st.t = countWords(st.t);
+  // a living room with a third nominee seated is the three-chair room (the user, 2026-10-06:
+  // "3 chairs when Block Buster is on, 2 when it's not"), not a third person standing between two
+  for (const s of out) {
+    const seats = [...Object.values(s.seated || {}), ...(s.steps || []).flatMap(st => Object.values(st.seat || {}))];
+    if (s.set === 'ceremony' && seats.includes('N0')) s.set = 'ceremony3';
+  }
   return out;
 }
 

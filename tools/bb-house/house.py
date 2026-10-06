@@ -716,9 +716,10 @@ def room_living(T):
     box('Graphic', (0.02, D + 2, H), (-W / 2 + 0.01, D / 2 - 0.5, H / 2), mat_graphic('graphic', T['graphic'], scale=0.3, angle=-35), bevel=0)
     two_way_mirrors(T, -W / 2 + 0.03, (2.0, 5.2), z0=0.6, h=1.9, w=1.5)
     memory_wall(T, 0, D - 0.06, 0.95)
-    # the nominees' chairs, side by side at the back, facing the room
-    for sx in (-1, 1):
-        armchair(f'NomChair{sx}', (sx * 0.6, LIVING_NOM_Y, 0), 0, T['pop'])
+    # the nominees' chairs, side by side at the back, facing the room: two, or three on a week
+    # with three nominees (room_living3; the user, 2026-10-06: "3 chairs when Block Buster is on")
+    for sx in LIVING_NOM_XS[LIVING_NOMS]:
+        armchair(f'NomChair{sx}', (sx, LIVING_NOM_Y, 0), 0, T['pop'])
     # the two long sofas, facing each other (a sofa faces its local -y; +90 turns it to face +x)
     sofa('LeftSofa', (-LIVING_SOFA_X, LIVING_SOFA_Y, 0), LIVING_SOFA_L, 90, T['fabric2'], pillows=(T['accent'], '#ffffff', T['pop'], T['accent']))
     sofa('RightSofa', (LIVING_SOFA_X, LIVING_SOFA_Y, 0), LIVING_SOFA_L, -90, T['fabric2'], pillows=(T['pop'], T['accent'], '#ffffff', T['pop']))
@@ -751,6 +752,8 @@ def room_living(T):
     camera((0, -1.5, 1.6), (85.5, 0, 0), lens=22, dof=(6.0, 4.0))
 
 LIVING_NOM_Y = 5.9
+LIVING_NOMS = 2
+LIVING_NOM_XS = {2: (-0.6, 0.6), 3: (-1.15, 0.0, 1.15)}
 LIVING_SOFA_X, LIVING_SOFA_Y, LIVING_SOFA_L = 2.75, 3.6, 3.8
 
 def bed(name, loc, T, width=1.1, length=2.0, headboard='#3f7cc1', duvet='#efe4c9', throw=None, pillows=('#ffffff', '#ffffff'), hb_h=1.4, tufts=True):
@@ -1199,11 +1202,13 @@ def anchors(room, theme='default', w=1920, h=1080):
         b_ = world_to_camera_view(sc, cam, ob.matrix_world @ Vector((max(xs), 0, max(zs))))
         return {'x': round(min(a_.x, b_.x) * 100, 2), 'y': round(min(a_.y, b_.y) * 100, 2),
                 'w': round(abs(b_.x - a_.x) * 100, 2), 'h': round(abs(b_.y - a_.y) * 100, 2)}
-    if room == 'living':
+    if room in ('living', 'living3'):
         # where everybody is on a live night, at chest height: the nominees' chairs at the back
-        # (N-1 left, N1 right), four places on each long sofa (L0..L3, R0..R3, front to back), and
-        # where the veto holder stands to speak
-        pts = {f'N{sx}': (sx * 0.6, LIVING_NOM_Y, 0.85) for sx in (-1, 1)}
+        # (N-1 left, N1 right, and N0 in the middle on a three-chair week), four places on each long
+        # sofa (L0..L3, R0..R3, front to back), and where the veto holder stands to speak
+        xs = LIVING_NOM_XS[3 if room == 'living3' else 2]
+        names = ('N-1', 'N0', 'N1') if room == 'living3' else ('N-1', 'N1')
+        pts = {nm: (x, LIVING_NOM_Y, 0.85) for nm, x in zip(names, xs)}
         for i, lx in enumerate((-1.35, -0.45, 0.45, 1.35)):
             pts[f'L{i}'] = (-LIVING_SOFA_X + 0.12, LIVING_SOFA_Y + lx, 0.8)
             pts[f'R{i}'] = (LIVING_SOFA_X - 0.12, LIVING_SOFA_Y + lx, 0.8)
@@ -1799,10 +1804,62 @@ def room_finale(T):
     world('#24324a', 0.5)
     camera((0, -2.4, 2.2), (79, 0, 0), lens=19)
 
+def room_bathroom(T):
+    """The bathroom: a long double vanity under the big mirror the cameras shoot through, a glass
+    shower at one end, two toilet stalls at the other, tiles to the ceiling, towels on a rail."""
+    W, D, H = 8.0, 4.6, 3.0
+    shell(T, W, D, H, wall_mat=mat_tiles('bathwall', '#e9eef2', '#dde4ea', grout='#b8c2cc', scale=1.0, rough=0.25),
+          floor_mat=mat_tiles('bathfloor', T['deep'], _darker(T['deep'], 0.85), grout='#20242b', scale=1.4, rough=0.3))
+    # the feature wall behind the vanity, in the season's colour
+    box('BathFeature', (4.2, 0.03, H), (-0.4, D - 0.02, H / 2), mat_tiles('bathfeat', T['accent2'], _darker(T['accent2'], 0.85), grout='#ffffff', scale=0.5, rough=0.2), bevel=0)
+    # the double vanity: a long counter, two basins, two taps
+    counter = mat('counter', '#f4f4f2', 0.15, coat=0.5)
+    box('Vanity', (3.4, 0.6, 0.85), (-0.4, D - 0.35, 0.425), mat('vanitybody', T['cabinet'], 0.5))
+    box('VanityTop', (3.5, 0.66, 0.06), (-0.4, D - 0.35, 0.88), counter, bevel=0.01)
+    for sx in (-1, 1):
+        cyl(f'Basin{sx}', 0.24, 0.12, (-0.4 + sx * 0.85, D - 0.38, 0.95), mat('basin', '#ffffff', 0.1), r2=0.18)
+        box(f'Tap{sx}', (0.04, 0.16, 0.2), (-0.4 + sx * 0.85, D - 0.6, 1.0), mat('chrome', '#d9dde3', 0.1, 1.0), bevel=0.01)
+    # the mirror is the two-way mirror: there is a camera behind it
+    box('BathMirror', (3.2, 0.03, 1.2), (-0.4, D - 0.06, 1.75), mat('bathmirror', '#a9c3d6', 0.02, 0.9), bevel=0)
+    box('MirrorLight', (3.2, 0.04, 0.05), (-0.4, D - 0.08, 2.42), mat('mirrorlight', '#ffffff', emit=T['light'], strength=16), bevel=0)
+    neon_eye((-0.4, D - 0.09, 2.1), 0.18, rot=(90, 0, 0))
+    # the shower, at the left end: a tiled stall behind a glass screen
+    box('ShowerTray', (1.5, 1.4, 0.06), (-W / 2 + 0.8, D - 0.75, 0.03), mat('tray', '#f4f4f2', 0.2), bevel=0)
+    box('ShowerGlass', (0.03, 1.4, 2.1), (-W / 2 + 1.55, D - 0.75, 1.1), mat('glass', '#cfe8f2', 0.02, 0.0, alpha=0.25, transmission=0.9), bevel=0)
+    cyl('ShowerHead', 0.12, 0.03, (-W / 2 + 0.8, D - 0.3, 2.2), mat('chrome', '#d9dde3', 0.1, 1.0), rot=(70, 0, 0))
+    cyl('ShowerPipe', 0.02, 0.6, (-W / 2 + 0.8, D - 0.08, 2.1), mat('chrome', '#d9dde3', 0.1, 1.0))
+    # two toilet stalls at the right end, doors shut
+    stall = mat('stall', T['accent'], 0.45)
+    for i in range(2):
+        x = W / 2 - 0.55 - i * 1.05
+        box(f'StallDoor{i}', (0.95, 0.04, 1.9), (x, D - 1.5, 1.05), stall, bevel=0.01)
+        box(f'StallHandle{i}', (0.04, 0.05, 0.12), (x - 0.35, D - 1.53, 1.05), mat('chrome', '#d9dde3', 0.1, 1.0), bevel=0)
+    for i in range(3):
+        box(f'StallWall{i}', (0.05, 1.5, 2.0), (W / 2 - 0.03 - i * 1.05, D - 0.75, 1.1), stall, bevel=0)
+    # towels on a rail, and a bench in the middle of the floor
+    # towels on a rail along the left wall, out of the way of the people in the room
+    box('TowelRail', (0.04, 1.7, 0.04), (-W / 2 + 0.08, 1.6, 1.4), mat('chrome', '#d9dde3', 0.1, 1.0), bevel=0)
+    for i, c in enumerate((T['pop'], '#ffffff', T['accent2'])):
+        box(f'Towel{i}', (0.06, 0.45, 0.75), (-W / 2 + 0.11, 1.0 + i * 0.58, 1.05), mat(f'towel{c}', c, 0.95), bevel=0.02)
+    plant('BathPlant', (-W / 2 + 2.0, D - 0.4, 0), height=1.1, pot='#ffffff')
+    downlights(T, (-2.4, 0.0, 2.4), (2.4,), H, power=55)
+    area('Fill', (5, 2), (0, -2.0, 2.0), 150, T['fill'], rot=(-80, 0, 0))
+    world(T['world'], 0.4)
+    camera((0, -1.4, 1.55), (86, 0, 0), lens=22, dof=(5.0, 4.0))
+
+def room_living3(T):
+    """The living room on a week with three nominees (the Block Buster): three chairs at the back."""
+    global LIVING_NOMS
+    LIVING_NOMS = 3
+    try:
+        room_living(T)
+    finally:
+        LIVING_NOMS = 2
+
 ROOMS = {'kitchen': room_kitchen, 'living': room_living, 'bedroom': room_bedroom, 'hoh': room_hoh, 'dr': room_dr,
          'yard': room_yard, 'storage': room_storage, 'havenot': room_havenot, 'dining': room_dining}
 ROOMS.update(ARENA_ROOMS)
-ROOMS.update({'studio': room_studio, 'studio-wide': room_studio_wide, 'finale': room_finale})
+ROOMS.update({'studio': room_studio, 'studio-wide': room_studio_wide, 'finale': room_finale, 'bathroom': room_bathroom, 'living3': room_living3})
 
 # ══════════════════════════════════════════════════════════════════════
 # Build and render

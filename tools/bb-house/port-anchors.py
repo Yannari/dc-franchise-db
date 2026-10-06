@@ -9,11 +9,13 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 d = os.path.join(ROOT, 'assets', 'bb', 'house', 'default')
 din = json.load(open(os.path.join(d, 'dining.json')))
 liv = json.load(open(os.path.join(d, 'living.json')))
+liv3 = json.load(open(os.path.join(d, 'living3.json')))
 stu = json.load(open(os.path.join(d, 'studio.json')))
 fin = json.load(open(os.path.join(d, 'finale.json')))
 anch = {
     'dining': {k: din[k] for k in ('seats', 'head', 'box', 'screen')},
     'ceremony': {'seats': liv['seats'], 'panels': liv['panels']},
+    'ceremony3': {'seats': liv3['seats'], 'panels': liv3['panels']},
     'studio': {'seats': stu['seats']},
     'finale': {'seats': fin['seats'], 'slot': fin['slot']},
 }

@@ -239,6 +239,30 @@ function shuffled(list, salt) {
   const rng = stableRng(gs.bb?.seasonSalt || 0, 'story-cast', salt);
   return list.map(n => [rng(), n]).sort((x, y) => x[0] - y[0]).map(x => x[1]);
 }
+// The room a scene's own words put it in (the user, 2026-10-06: "fit the conversation in the
+// necessary location"): a scene that opens "Storage room." or happens at the bathroom mirror,
+// over the slop, or while making breakfast is played in that room, whatever the event recorded.
+// The opening line naming a room wins; then what they are doing.
+const ROOM_WORDS = [
+  ['storage-room', /^(the )?(storage room|pantry)\b/i, /\b(storage room|the pantry|the shelves|restacking|cereal box)\b/i],
+  ['bathroom', /^(the )?(bathroom|washroom)\b/i, /\b(the mirror|brushing (?:their|his|her|my) teeth|the shower|bathroom|washroom|the sink in the bathroom)\b/i],
+  ['have-not-room', /^(the )?have-not room\b/i, /\b(have-not room|the slop|on slop)\b/i],
+  ['diary-room', /^(the )?diary room\b/i, null],
+  ['hoh-room', /^(the )?hoh room\b/i, /\b(up in the hoh room|on the hoh bed)\b/i],
+  ['bedroom', /^(the )?bedroom\b/i, /\b(after lights out|lights out|under the duvet|in bed)\b/i],
+  ['backyard', /^(the )?(backyard|yard|pool)\b/i, /\b(the hammock|the pool|the loungers?|the grass|laps of the (?:backyard|yard))\b/i],
+  ['kitchen', /^(the )?kitchen\b/i, /\b(breakfast|making (?:dinner|lunch|tea|coffee|toast)|the dishes|washing up|the fridge|the oven|the stove|cooking)\b/i],
+  ['living-room', /^(the )?living room\b/i, null],
+];
+export function roomFromText(lines) {
+  const ls = (lines || []).filter(l => l && l.text);
+  const first = ls.find(l => l.kind === 'beat');
+  if (first) for (const [room, opens] of ROOM_WORDS) if (opens.test(String(first.text).trim())) return room;
+  const all = ls.filter(l => l.kind !== 'dr').map(l => l.text).join(' ');
+  for (const [room, , doing] of ROOM_WORDS) if (doing && doing.test(all)) return room;
+  return null;
+}
+
 // Is this houseguest named in the text, as a whole name ("Raj's", not "Rajesh")?
 const nameIn = (n, text) => new RegExp(`(^|\\W)${String(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!\\w)`).test(String(text || ''));
 
@@ -332,7 +356,10 @@ export function writeStoryScene(line, step, ctx) {
   // Inside a set piece too: a scene that stages its own room ("Bedroom, after lights out") is not
   // folded into the kitchen around it; it is marked, and the director airs it as its own scene
   // (the user, 2026-10-06: "it didn't switch scenes, we were still in the kitchen")
-  if (entry.room) { room = entry.room; base.room = room; base.roomName = ROOM[room] || base.roomName; if (ctx.inSet) base.ownRoom = true; }
+  const named = entry.room ? null : roomFromText(entry.turns.filter(t => t.beat).slice(0, 1).map(t => ({ kind: 'beat', text: t.beat })));
+  if (entry.room || (named && named !== 'diary-room' && named !== room)) {
+    room = entry.room || named; base.room = room; base.roomName = ROOM[room] || base.roomName; if (ctx.inSet) base.ownRoom = true;
+  }
   // A scene that does not set its own room moves along if the last scene was in the same one
   // (five bedroom scenes in a row read as one long night). Decided here, BEFORE the background
   // is chosen, so "laps of the backyard" never plays in the living room.
@@ -357,7 +384,7 @@ export function writeStoryScene(line, step, ctx) {
   // (The event's third person is often only somebody the scene never needed.)
   const used = cast.filter(n => lines.some(l => l.by === n || (l.kind === 'beat' && l.text.includes(n))));
   const sc = { ...base, cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: recap.length > 0, lineId: entry.id };
-  if (!ctx.inSet) lines = background(lines, sc, ctx, sc.id, LOUD(line.type, step.step, step.outcome));
+  if (!ctx.inSet || base.ownRoom) lines = background(lines, sc, ctx, sc.id, LOUD(line.type, step.step, step.outcome));
   sc.lines = [...recap, ...lines];
   sc.why = whyOf(`${line.type}.${step.step}`, STEP_WHY, who, data, sc.cast);
   // an alliance with a name, formed on screen, gets its title (the user, 2026-10-06)
@@ -526,10 +553,10 @@ export function writeEngineScene(beat, ctx, at) {
   const id = String(beat.eventId || '');
   // a house meeting is the whole house in the living room, whoever speaks
   const meeting = /house-meeting|meeting-crash/.test(id) && !/meeting-crash/.test(id);
-  // what they are doing says where they are: breakfast is not made in the backyard
-  const allText = lines.map(l => l.text).join(' ');
-  const kitchen = /\b(breakfast|making (?:dinner|lunch|tea|coffee|toast)|the dishes|washing up|the fridge|the oven|the stove|cooking)\b/i.test(allText);
-  const room = meeting ? 'living-room' : kitchen ? 'kitchen' : ROOM[beat.location] ? beat.location : 'living-room';
+  // what they are doing says where they are: breakfast is not made in the backyard, and a scene
+  // that opens "Storage room." is in the storage room
+  const textRoom = roomFromText(lines);
+  const room = meeting ? 'living-room' : textRoom && textRoom !== 'diary-room' ? textRoom : ROOM[beat.location] ? beat.location : 'living-room';
   if (meeting) for (const n of present) if (!cast.includes(n)) cast.push(n);
   const fam = FAMILY_WHY.find(([re]) => re.test(id))?.[1];
   const badge = beat.badgeText ? `${String(beat.badgeText).charAt(0)}${String(beat.badgeText).slice(1).toLowerCase()}.` : null;

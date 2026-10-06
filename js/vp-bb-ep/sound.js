@@ -151,7 +151,7 @@ export function soundFor(screen, idx) {
   const t = st.t || '';
   // the live eviction: the vote, then the wait, then the name
   if (screen.kind === 'evict') {
-    if (/The votes are in/.test(t)) return { cue: null, bed: 'bb-live-wait' };
+    if (/[Tt]he votes are (locked )?in/.test(t)) return { cue: null, bed: 'bb-live-wait' };
     if (st.votes) return { cue: 'bb-result', bed: null };
     if (/you are evicted from the Big Brother house/.test(t)) return { cue: 'bb-evicted', bed: null };
     if (/walks to the front door/.test(t)) return { cue: 'bb-door', bed: null };

@@ -323,7 +323,24 @@ function evictionScreen(act, ctx, host) {
   const noms = (act.nominees || ctx.nominees).slice();
   const ballots = (act.ballots || []).filter(b => b && b.voter);
   const evicted = act.evicted;
-  const steps = [{ k: 'host', by: host, t: `Good evening, houseguests. In a few moments one of you will be evicted. First, our nominees have one last chance to plead their case. ${noms[0]}, you're first.` }];
+  // Run the way the real live show runs it (the user, 2026-10-06: "it doesn't act like a real
+  // live eviction"): the host greets the house, settles anything decided earlier tonight (the
+  // Block Buster), hears the nominees, calls each voter to the Diary Room in turn, and reads
+  // the result to a room holding its breath.
+  const pickH = (lines, salt) => pickBy(lines, `${ctx.week}|${salt}`);
+  const steps = [
+    { k: 'host', by: host, t: pickH([`Good evening, houseguests.`, `Hello, houseguests!`, `Good evening, everyone. Welcome to eviction night.`], 'hi') },
+    { k: 'beat', t: pickH([`The whole house, in a ragged chorus: "Hi, ${host}!"`, `"Hi, ${host}!" Somebody waves at the camera. Somebody else pulls their arm down.`, `The house shouts hello. The nominees are a beat behind everyone else.`], 'hi2') },
+  ];
+  const bb = ctx.safety;
+  if (bb && bb.winner) {
+    const up = (bb.participants || []).filter(n => n !== bb.winner);
+    steps.push({ k: 'host', by: host, t: `Earlier tonight, ${listOf(bb.participants || [])} battled in the Block Buster for their safety.` });
+    steps.push({ k: 'host', by: host, t: `${bb.winner}, you won the Block Buster. You are safe this week, and off the block.`, toast: ['BLOCK BUSTER', '#22e1ff'], safe: bb.winner });
+    steps.push({ k: 'beat', t: pickH([`${bb.winner} lets out a breath the whole room can hear.`, `${bb.winner} grins, then remembers who is still on the block, and stops.`, `A cheer goes up from one side of the room. The other side claps politely.`], 'bb-safe') });
+    if (up.length >= 2) steps.push({ k: 'host', by: host, t: `That means ${listOf(up)}, you remain on the block, and one of you is going home tonight.` });
+  }
+  steps.push({ k: 'host', by: host, t: `In a few moments one of you will be evicted. Nominees, this is your last chance to sway the votes. ${noms[0]}, you're first.` });
   const pleas = ctx.pleas || [];
   const said = new Set();
   for (const n of noms) {
@@ -340,13 +357,22 @@ function evictionScreen(act, ctx, host) {
     steps.push({ k: 'say', by: n, push: true, t: line });
   }
   if (ballots.length) {
-    steps.push({ k: 'host', by: host, t: `Thank you. It's time for the live vote. One by one, you'll go to the Diary Room and vote to evict. ${ctx.hoh}, as Head of Household, you only vote in the event of a tie.` });
-    for (const b of ballots) steps.push({ k: 'dr', by: b.voter, t: `I vote to evict ${b.evict}.`, ballot: [b.voter, b.evict] });
+    steps.push({ k: 'host', by: host, t: `Thank you both. It's time for the live vote. The nominees can't vote, and ${ctx.hoh}, as Head of Household, you only vote in the event of a tie. ${ballots[0].voter}, you're first. Please go to the Diary Room.` });
+    const voteLines = act.script?.votes || {};
+    ballots.forEach((b, i) => {
+      // the voter's own words (bb/script/lines/evictvote.js), the formula last
+      const said = (voteLines[b.voter] || []).map(l => l.text).join(' ') || `I vote to evict ${b.evict}.`;
+      if (i === 0) steps.push({ k: 'dr', by: b.voter, t: `Hi, ${host}.` });
+      steps.push({ k: 'dr', by: b.voter, t: said, ballot: [b.voter, b.evict] });
+      const next = ballots[i + 1]?.voter;
+      if (next) steps.push({ k: 'host', by: host, t: pickH([`Thank you, ${b.voter}. ${next}, you're next.`, `Thank you. ${next}, please go to the Diary Room.`, `Thank you, ${b.voter}. ${next}?`, `${next}, you're up.`], `next|${i}`) });
+    });
   }
   const tally = {};
   for (const b of ballots) tally[b.evict] = (tally[b.evict] || 0) + 1;
   const a = tally[evicted] || 0, others = ballots.length - a;
-  steps.push({ k: 'host', by: host, t: `The votes are in. When I reveal the result, the evicted houseguest will have a few moments to say their goodbyes.` });
+  steps.push({ k: 'host', by: host, t: `Thank you, everyone. Houseguests, the votes are locked in. When I reveal the result, the evicted houseguest will have just a few moments to say their goodbyes, grab their belongings, and walk out the front door. Are you ready?` });
+  steps.push({ k: 'beat', t: pickH([`${listOf(noms)} take each other's hands.`, `Nobody breathes. ${noms[0]} stares straight ahead.`, `A few people nod. ${noms[1] || noms[0]} closes both eyes.`, `The room is so quiet you can hear the cameras turning.`], 'ready') });
   if (act.tieBreak) {
     steps.push({ k: 'host', by: host, t: `We have a tie. ${ctx.hoh}, as Head of Household, you must cast the deciding vote, in front of everyone.` });
     steps.push({ k: 'say', by: ctx.hoh, push: true, t: `I vote to evict ${evicted}.` });
@@ -367,6 +393,8 @@ function evictionScreen(act, ctx, host) {
       const bye = scriptSteps(act.script?.goodbye);
       if (bye.length) steps.push({ k: 'beat', t: `${evicted} has a few seconds with the house.` }, ...bye, { k: 'beat', t: `${evicted} picks up a bag and walks to the front door.` });
       else steps.push({ k: 'beat', t: `${evicted} hugs the house goodbye, picks up a bag, and walks to the front door.` });
+      steps.push({ k: 'beat', t: pickH([`The front door opens. The roar of the crowd floods into the house.`, `The door opens on lights and noise and cheering. ${evicted} doesn't look back.`, `${evicted} takes one last look at the house. The door opens. The crowd erupts.`], 'door') });
+      steps.push({ k: 'host', by: host, t: pickH([`${evicted}, come on out!`, `Come on out, ${evicted}!`], 'out') });
       steps.push({ k: 'beat', t: `The front door closes. On the memory wall, ${evicted}'s portrait goes black and white.`, exit: evicted });
     }
   }
@@ -2048,6 +2076,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   const ctx = { week: row.num || 1, hoh: row.hoh, house, nominees: (row.initialNominees || []).slice(), vetoHolder: row.vetoWinner,
     // a Halting Hex or a Rewind is about to cancel tonight's eviction
     hexed: (row.acts || []).some(x => x.type === 'halting-hex' || x.type === 'rewind'),
+    // the week's Block Buster, announced at the top of eviction night
+    safety: (row.acts || []).find(x => x && x.type === 'safety' && x.winner) || null,
     pleas: row.finalPleas || [], plea, anchor: 'start', day: 1, jury: [...(row.jury || [])], finalTwo: [...(row.finalTwo || [])] };
   let finalPart = 0;
   // Houseguests who walk in later in the week (rivals) are not in the house until they do.

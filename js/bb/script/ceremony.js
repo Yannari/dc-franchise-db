@@ -176,6 +176,26 @@ export function writeCeremony(act, week, house, extra = {}) {
     const byBond = stay.slice().sort((x, y) => getBond(out, y) - getBond(out, x));
     const friend = byBond.find(n => !against.has(n)) || byBond[0];
     if (friend) script.goodbye = part('evict.goodbye', { a: out, b: friend }, ending, ctx, house, out);
+    // Each voter's Diary Room vote, said the way that voter would say it: what is true of
+    // them (they told the house otherwise, they are close to the one going, they cannot stand
+    // them, they are protecting the one staying, they nearly went the other way), then the
+    // formula. The user, 2026-10-06: "the vote is not really personalised".
+    const fresh = freshWriter(ctx, house);
+    script.votes = {};
+    for (const b of act.ballots || []) {
+      if (!b || !b.voter || !b.evict) continue;
+      const kept = (act.nominees || []).find(n => n !== b.evict) || null;
+      const told = b.stated && b.stated !== b.evict;
+      const kind = (b.changed || told) ? 'flip'
+        : getBond(b.voter, b.evict) >= 3 ? 'friend'
+          : getBond(b.voter, b.evict) <= -2 ? 'enemy'
+            : kept && getBond(b.voter, kept) >= 3.5 ? 'loyal'
+              : Math.abs(Number(b.margin) || 0) < 0.6 ? 'hard' : 'plain';
+      // c is always the nominee who stays (a three-way vote names the strongest of the others)
+      const who = { a: b.voter, b: b.evict, c: kept || b.evict };
+      const lines = fresh('evict.vote', who, { ending: kind }, `vote|${b.voter}`) || fresh('evict.vote', who, { ending: 'plain' }, `vote|${b.voter}|p`);
+      if (lines?.length) script.votes[b.voter] = lines;
+    }
   }
 
   // ── the Safety Suite: who swiped, who held, the clock, the Plus One ──

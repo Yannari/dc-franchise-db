@@ -6773,7 +6773,9 @@ export function generateBBSummaryText(ep) {
             ? `asked by ${b.assignment.recruiter || b.assignment.by}` : `${b.assignment.by} asked`} for ${b.assignment.target}`);
           if (b.stated && b.stated !== b.evict) chain.push(`told the house ${b.stated}`);
           if (b.pleaMove) chain.push(`moved by ${b.movedBy}'s plea`);
-          ln(`  ${b.voter}: "I vote to evict ${b.evict}."${chain.length ? `  (${chain.join(' · ')})` : ''}`);
+          // the voter's own Diary Room words (bb/script/lines/evictvote.js), as the live show airs them
+          const said = ((act.script?.votes || {})[b.voter] || []).map(l => l.text).join(' ') || `I vote to evict ${b.evict}.`;
+          ln(`  ${b.voter}: "${said}"${chain.length ? `  (${chain.join(' · ')})` : ''}`);
         });
         // AND THE PUBLIC'S, read with the rest of them. It is counted into the
         // totals below, so leaving it out of the list printed a room of eight

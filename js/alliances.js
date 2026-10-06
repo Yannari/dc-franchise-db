@@ -123,7 +123,13 @@ function _misattributeBlame(ep, alliance, realBetrayer, realTarget, loyalReaders
   const pool = (insiders.length && Math.random() < 0.6) ? insiders : (insiders.concat(outsiders));
   if (!pool.length) return null;
   const suspectScore = (p) => getBond(reactor, p) - (_VILLAINY.includes(_arch(p)) ? 2 : 0) + (Math.random() * 2 - 1);
-  const wrongSuspect = [...pool].sort((a, b) => suspectScore(a) - suspectScore(b))[0]; // lowest = most suspected
+  // Only somebody who voted at THAT council can have broken it. The pool is the whole game, so
+  // before the merge it held the other tribe: Sierra blamed Heather for a Gophers vote Heather
+  // was never at (seed 4242, read 2026-10-06). Ranked as before (same draws), then the first
+  // suspect who was actually in the room.
+  const _atCouncil = new Set((ep?.votingLog || []).map(v => v.voter));
+  const wrongSuspect = [...pool].sort((a, b) => suspectScore(a) - suspectScore(b))
+    .find(p => !_atCouncil.size || _atCouncil.has(p)); // lowest = most suspected
   if (!wrongSuspect) return null;
   addBond(reactor, wrongSuspect, -2.0); // a real grudge — drives targeting via perceived bond next vote
   if (!gs.blowupHeatNextEp) gs.blowupHeatNextEp = new Set();

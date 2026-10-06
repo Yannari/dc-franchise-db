@@ -8,7 +8,15 @@
 import deals from './deals.js';
 import gossip from './gossip.js';
 import plans from './plans.js';
+import fallout, { GUARANTEED as falloutG } from './fallout.js';
 
-const FILES = [deals, gossip, plans];
+const FILES = [deals, gossip, plans, fallout];
 
 export const POOLS = Object.assign({}, ...FILES);
+
+/**
+ * Names an ending always carries ('fallout.blame.swapped' always has {plan} and
+ * {boot}). A line may say a slot its ending guarantees without asking for it;
+ * any other optional name needs `when: { slot: true }` (tests/td-script.test.js).
+ */
+export const GUARANTEED = Object.assign({}, falloutG);

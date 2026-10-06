@@ -8,7 +8,7 @@
 // comes out.
 import { describe, expect, it } from 'vitest';
 import fs from 'fs';
-import { POOLS } from '../js/td/script/lines/index.js';
+import { POOLS, GUARANTEED } from '../js/td/script/lines/index.js';
 import { TD_FACT_KEYS, CONTEXT_SLOTS } from '../js/td/script/facts.js';
 import { makeScene, witness } from '../js/td/script/scene.js';
 import { fill } from '../js/td/script/write.js';
@@ -89,7 +89,7 @@ describe('the pools keep their contract', () => {
     // A line that says one must ask for it, or it prints a raw slot (or a name that is not true).
     for (const [key, pool] of all) for (const e of pool) {
       const used = CONTEXT_SLOTS.filter(k => texts(e).some(x => x.includes(`{${k}`)));
-      for (const k of used) expect(e.when?.[k], `${key} ${e.id} says {${k}} without when.${k}`).toBe(true);
+      for (const k of used) if (!(GUARANTEED[key] || []).includes(k)) expect(e.when?.[k], `${key} ${e.id} says {${k}} without when.${k}`).toBe(true);
     }
   });
 
@@ -209,4 +209,34 @@ describe('a played season', () => {
     const back = JSON.parse(JSON.stringify(scripted));
     expect(back.map(e => e.lines)).toEqual(scripted.map(e => e.lines));
   });
+});
+
+describe('the wrong suspect was at the vote', () => {
+  it('nobody is blamed for a council they were not at', () => {
+    // Seed 4242 ep 6: Sierra (Gophers) blamed Heather (Bass) for a Gophers vote.
+    const NAMES = ['Alejandro', 'Heather', 'Gwen', 'Duncan', 'Courtney', 'Owen', 'Izzy', 'Cody', 'Sierra',
+      'Lindsay', 'Harold', 'Leshawna', 'Noah', 'Bridgette', 'Geoff', 'Trent'];
+    const roster = JSON.parse(fs.readFileSync('franchise_roster.json', 'utf8')).players;
+    const bad = [];
+    let seen = 0;
+    for (const seed of [4242, 777, 31337]) {
+      seededRun(() => runOneSeason({ romance: 'enabled' }, 16,
+        NAMES.map((n, i) => ({ ...roster.find(r => r.name === n), tribe: i % 2 ? 'Bass' : 'Gophers' }))), seed);
+      const hist = core.gs.episodeHistory;
+      hist.forEach((ep, i) => {
+        const prev = hist[i - 1];
+        if (!prev) return;
+        const voters = new Set((prev.votingLog || []).map(v => v.voter));
+        for (const feed of Object.values(ep.campEvents || {})) {
+          for (const e of Array.isArray(feed) ? feed : [...(feed?.pre || []), ...(feed?.post || [])]) {
+            if (e.type !== 'misattribution') continue;
+            seen++;
+            if (voters.size && !voters.has(e.players[1])) bad.push(`s${seed} ep${ep.num}: ${e.players[0]} blames ${e.players[1]}`);
+          }
+        }
+      });
+    }
+    expect(seen).toBeGreaterThan(0);
+    expect(bad).toEqual([]);
+  }, 300000);
 });

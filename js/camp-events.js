@@ -7508,14 +7508,13 @@ export function generateCampEvents(ep, phase = 'both') {
       if (!_campKey || !ep.campEvents[_campKey]) return;
       const _aP = pronouns(ally);
       const voterList = voters.length === 1 ? voters[0] : voters.slice(0, -1).join(', ') + ' and ' + voters[voters.length - 1];
-      ep.campEvents[_campKey].pre.push({ type: 'doubt', players: [ally, ...voters], text: _rp([
-        `${ally} hasn't forgotten who voted out ${evElim}. ${voterList} — ${_aP.sub} ${_aP.sub === 'they' ? "know" : "knows"} every name. The resentment is building.`,
-        `Losing ${evElim} hit ${ally} hard. ${voterList} — ${ally} saw the votes. That's not something ${_aP.sub} ${_aP.sub === 'they' ? "are" : "is"} going to let go of easily.`,
-        `${evElim} is gone, and ${ally} knows exactly who did it. ${voterList}. ${ally} is keeping ${_aP.posAdj} mouth shut for now — but ${_aP.sub} ${_aP.sub === 'they' ? "haven't" : "hasn't"} forgiven anything.`,
-        `${ally} woke up still thinking about ${evElim}. The grief is real, but underneath it is something sharper — ${voterList} voted ${_aP.posAdj} ally out, and ${ally} isn't going to just let that go.`,
-        `${ally} isn't scrambling. ${_aP.Sub} ${_aP.sub === 'they' ? "are" : "is"} sitting with it — ${voterList} put ${evElim} on the jury. That kind of anger doesn't need to be loud to be dangerous.`,
-        `The vote is over but ${ally}'s not done with it. ${evElim} trusted this game and ${voterList} ended it. ${ally} files that away. It will come up again.`,
-      ]) });
+      // One draw, where the sentence used to be picked (the season must not move).
+      Math.random();
+      ep.campEvents[_campKey].pre.push(scriptEvent({ type: 'doubt', players: [ally, ...voters], badgeText: 'GRUDGE', badgeClass: 'red' },
+        makeScene('fallout.mourn', { a: ally, b: voters[0] },
+          { ending: voters.length === 1 ? 'one' : 'many', fallen: evElim, voters: voterList }, [],
+          voters.length === 1 ? spotOf(ep, ally, voters[0], 'pre').spot : { id: 'confessional', label: 'Confessional' }),
+        { ep: ep.num, phase: 'pre' }));
     });
     // Group vote-discovery events by target so one player's reaction is ONE consolidated event
     const _voteDiscGroups = {};
@@ -7529,14 +7528,12 @@ export function generateCampEvents(ep, phase = 'both') {
       if (!_campKey || !ep.campEvents[_campKey]) return;
       const _tP = pronouns(target);
       const voterList = voters.length === 1 ? voters[0] : voters.slice(0, -1).join(', ') + ' and ' + voters[voters.length - 1];
-      ep.campEvents[_campKey].pre.push({ type: 'doubt', players: [target, ...voters], text: _rp([
-        `${target} found out that ${voterList} wrote ${_tP.posAdj} name last tribal. ${_tP.Sub} ${_tP.sub === 'they' ? "aren't" : "isn't"} confronting anyone — yet. But the trust is gone.`,
-        `${target} knows. ${voterList} voted for ${_tP.obj}. Whether ${_tP.sub} worked it out or someone slipped, ${_tP.sub} ${_tP.sub === 'they' ? "know" : "knows"}. They don't.`,
-        `The vote is over, but ${target} hasn't moved on. ${voterList} wrote ${_tP.posAdj} name. That's not something ${_tP.sub} ${_tP.sub === 'they' ? "forget" : "forgets"}.`,
-        `Something shifted for ${target} overnight. ${_tP.Sub} worked out that ${voterList} wrote ${_tP.posAdj} name. The information landed quietly. But it landed.`,
-        `${target} found out. Maybe someone told ${_tP.obj}. Maybe ${_tP.sub} worked it out alone. Either way, ${voterList} ${voters.length === 1 ? 'is' : 'are'} no longer safe in ${_tP.posAdj} eyes.`,
-        `There are people at this camp ${target} trusts less this morning. ${voterList}. They wrote ${_tP.posAdj} name. That doesn't disappear.`,
-      ]) });
+      Math.random();
+      ep.campEvents[_campKey].pre.push(scriptEvent({ type: 'doubt', players: [target, ...voters], badgeText: 'KNOWS', badgeClass: 'red' },
+        makeScene('fallout.found', { a: target, b: voters[0] },
+          { ending: voters.length === 1 ? 'one' : 'many', voters: voterList }, [],
+          voters.length === 1 ? spotOf(ep, target, voters[0], 'pre').spot : { id: 'confessional', label: 'Confessional' }),
+        { ep: ep.num, phase: 'pre' }));
     });
     // ── MISATTRIBUTION: a flip went undetected and an impulsive player turned on the WRONG suspect. Its
     // own confrontation beat (the traitor's clean getaway is the separate "Got Away With It" event).
@@ -7554,13 +7551,15 @@ export function generateCampEvents(ep, phase = 'both') {
           ? `${plannedTarget} was supposed to go, and ${actualBoot} went instead`
           : plannedTarget ? `the vote on ${plannedTarget} came apart` : `the plan came apart`);
       const _planShort = plannedTarget ? `the plan to vote ${plannedTarget}` : `the plan`;
-      ep.campEvents[_campKey].pre.push({ type: 'misattribution', players: [reactor, wrongSuspect], badgeText: 'Wrong Suspect', badgeClass: 'red', text: _rp([
-        `${_allw} vote fell apart last tribal — ${_whatBroke} — and ${reactor} has decided ${wrongSuspect} was the one who broke ranks. ${_wP.Sub} didn't; ${_wP.sub === 'they' ? "they held" : _wP.sub + " held"} the line. But ${_rP.posAdj} certainty doesn't care, and ${wrongSuspect} is blindsided by the accusation.`,
-        `${reactor} corners ${wrongSuspect}: "You broke ${_planShort}. Don't lie to me." Except ${wrongSuspect} voted exactly where ${_wP.sub} said ${_wP.sub} would — ${_whatBroke}, and someone else did it. ${_rP.Sub} ${_rP.sub === 'they' ? "aren't" : "isn't"} listening. A rift opens along a line that isn't even real.`,
-        `Something went wrong with ${_allw} plan — ${_whatBroke} — and ${reactor} needs a name for it. ${_rP.Sub} ${_rP.sub === 'they' ? "land" : "lands"} on ${wrongSuspect}. Wrong read entirely: ${wrongSuspect} stayed loyal. But the cold shoulder is real now, and ${wrongSuspect} has no idea what ${_wP.sub} supposedly did.`,
-        `${wrongSuspect} wakes up to a colder camp. ${reactor} has pinned it on ${_wP.obj} — sure that ${wrongSuspect} sank ${_planShort} when ${_whatBroke}. ${_wP.Sub} ${_wP.sub === 'they' ? "did no such thing" : "did no such thing"}, and now ${_wP.sub} ${_wP.sub === 'they' ? "are" : "is"} defending a move ${_wP.sub} never made while the real flipper sits quiet.`,
-        `The paranoia found a target: ${wrongSuspect}. ${reactor} is convinced ${_wP.sub} torched ${_planShort} — ${_whatBroke}. ${_wP.Sub} ${_wP.sub === 'they' ? "protest" : "protests"}, honestly, but ${reactor} has already made up ${_rP.posAdj} mind. The one who actually flipped never even comes up.`,
-      ]) });
+      Math.random();
+      // What the reactor SAW go wrong, as a decided ending; the real flipper is never named (nobody here knows).
+      const _misEnding = votedAlly && actualBoot ? 'ally'
+        : plannedTarget && actualBoot && plannedTarget !== actualBoot ? 'swapped' : 'broke';
+      ep.campEvents[_campKey].pre.push(scriptEvent({ type: 'misattribution', players: [reactor, wrongSuspect], badgeText: 'Wrong Suspect', badgeClass: 'red' },
+        makeScene('fallout.blame', { a: reactor, b: wrongSuspect },
+          { ending: _misEnding, plan: plannedTarget || null, boot: actualBoot || null, group: alliance || null }, [],
+          spotOf(ep, reactor, wrongSuspect, 'pre').spot),
+        { ep: ep.num, phase: 'pre' }));
     });
   }
 
@@ -7584,12 +7583,16 @@ export function generateCampEvents(ep, phase = 'both') {
       const _wrote = (votedFor && consensusWas && votedFor !== consensusWas)
         ? `wrote ${votedFor}${votedAlly ? ', an ally,' : ''} instead of ${consensusWas}`
         : votedFor ? `quietly wrote ${votedFor}` : `flipped the vote`;
-      ep.campEvents[_campKey].pre.push({ type: 'secretFlip', players: votedAlly && gs.activePlayers.includes(votedFor) ? [traitor, votedFor] : [traitor], badgeText: 'Got Away With It', badgeClass: 'gold', text: _rp([
-        `The camp thinks that vote went exactly as planned. It didn't — ${traitor} broke from ${_allw} and ${_wrote}, and nobody noticed. ${_tPr.Sub} played it clean and walked away without a scratch.`,
-        `${traitor} turned on ${_allw} last tribal, ${_wrote}, and got away with it completely. No suspicion, no fallout, no cost. The best kind of betrayal is the one nobody knows happened.`,
-        `Little does the tribe know — ${traitor} was the one who moved the vote, breaking ${_allw} to ${_wrote}. The blame never landed anywhere. ${_tPr.Sub} ${_tPr.sub === 'they' ? "are" : "is"} still sitting inside the alliance ${_tPr.sub === 'they' ? "they" : _tPr.sub} just quietly gutted.`,
-        `${traitor} ${_wrote} against ${_allw}'s call last tribal — a move that should have cost ${_tPr.obj} everything. It cost nothing, because not a soul figured it out. Smooth. Dangerous. Unseen.`,
-      ]) });
+      Math.random();
+      // Only the camera knows. With an ally voted against who is still here, that ally is in the
+      // scene being friendly — the viewer knows, the ally does not.
+      const _withAlly = votedAlly && gs.activePlayers.includes(votedFor);
+      const _flipEnding = _withAlly ? 'ally' : (votedFor && consensusWas && votedFor !== consensusWas) ? 'swap' : 'plain';
+      ep.campEvents[_campKey].pre.push(scriptEvent({ type: 'secretFlip', players: _withAlly ? [traitor, votedFor] : [traitor], badgeText: 'Got Away With It', badgeClass: 'gold' },
+        makeScene('fallout.flip', _withAlly ? { a: traitor, b: votedFor } : { a: traitor },
+          { ending: _flipEnding, wrote: votedFor || null, plan: consensusWas || null, group: alliance || null }, [],
+          _withAlly ? spotOf(ep, traitor, votedFor, 'pre').spot : { id: 'confessional', label: 'Confessional' }),
+        { ep: ep.num, phase: 'pre' }));
     });
     // MINOR: a lighter "loose vote" aside — a stray vote that didn't change anything doesn't need a beat
     // every time, so it only fires ~35% of the time (the viewer occasionally catches the hairline crack).
@@ -7599,12 +7602,10 @@ export function generateCampEvents(ep, phase = 'both') {
       if (!_campKey || !ep.campEvents[_campKey]) return;
       const _tPr = pronouns(traitor);
       const _tgtActive = gs.activePlayers.includes(votedFor);
-      ep.campEvents[_campKey].pre.push({ type: 'secretFlip', players: _tgtActive ? [traitor, votedFor] : [traitor], badgeText: 'Loose Vote', badgeClass: 'gold', text: _rp([
-        `Something the tribe missed: ${traitor} didn't vote with ${alliance} last night — a stray name on the parchment${_tgtActive ? ` (${votedFor})` : ''} that didn't change a thing. It slipped by unnoticed, but it says ${_tPr.sub === 'they' ? "they aren't" : _tPr.sub + " isn't"} as locked in as ${_tPr.posAdj} allies think.`,
-        `${traitor} quietly broke from ${alliance}'s plan and threw a vote elsewhere. The boot went home anyway, so nobody blinked — but the crack is there, and only the cameras saw it.`,
-        `Nobody caught it, but ${traitor} went off-script last tribal${_tgtActive ? ` — a loose vote on ${votedFor}` : ''}. It cost nothing this time. Next time it might.`,
-        `A small thing the alliance never noticed: ${traitor}'s vote wasn't where it was supposed to be. ${_tPr.Sub} ${_tPr.sub === 'they' ? "are" : "is"} testing the leash — quietly, for now.`,
-      ]) });
+      Math.random();
+      ep.campEvents[_campKey].pre.push(scriptEvent({ type: 'secretFlip', players: _tgtActive ? [traitor, votedFor] : [traitor], badgeText: 'Loose Vote', badgeClass: 'gold' },
+        makeScene('fallout.loose', { a: traitor }, { wrote: votedFor || null, group: alliance || null }, [], { id: 'confessional', label: 'Confessional' }),
+        { ep: ep.num, phase: 'pre' }));
     });
   }
 

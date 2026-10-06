@@ -30,9 +30,14 @@ export const TD_FACT_KEYS = [
   // the real reasons a line may give (td/script/context.js): true when the
   // scene's data names one, and only then may a line say {rival}, {threat}...
   'rival', 'friend', 'threat', 'weak', 'lastBoot',
+  // optional names an event decides
+  'group', 'plan', 'boot', 'wrote',
 ];
 
-export const CONTEXT_SLOTS = ['rival', 'friend', 'threat', 'weak', 'lastBoot'];
+// Names a scene MAY carry: a line saying one must ask for it (when: { slot: true }).
+// The context reasons, plus the optional names an event decides (an alliance's
+// name is only there when the alliance has one; a plan may have had no target).
+export const CONTEXT_SLOTS = ['rival', 'friend', 'threat', 'weak', 'lastBoot', 'group', 'plan', 'boot', 'wrote'];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 const VILLAIN = new Set(['villain', 'mastermind', 'schemer']);

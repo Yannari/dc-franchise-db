@@ -108,6 +108,8 @@ const SCREEN = {
   prep: 'prep', booth: 'prep', rehearsal: 'prep', set: 'prep',
   maxi: 'chal', maxistage: 'chal',
   mainstage: 'mainstage', runway: 'runway', finrunway: 'runway', critiques: 'critiques',
+  // "Who should go home?" is still the critiques' stage, the same bed under it.
+  wsg: 'critiques',
   results: 'suspense',
   // Rate-a-Queen is the queens ranking each other: gossip, not a verdict. The
   // suspense cue made it ominous (the user); it takes the werk room's bed.

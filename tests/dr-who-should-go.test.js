@@ -17,6 +17,7 @@
 import { describe, expect, it } from 'vitest';
 import { playDragSeason } from '../js/dr/season.js';
 import { rpBuildCritiques } from '../js/vp-dr/stage.js';
+import { rpBuildWhoShouldGo, wsgSteps } from '../js/vp-dr/wsg-stage.js';
 import { rngFor } from '../js/dr/rng.js';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
@@ -39,7 +40,7 @@ const row = season.rows.find(r => r.dr?.critiqueTwist?.kind === 'who-should-go')
    week that never booked the twist — and `indexOf` finds the rule rather
    than the card. Three of the cases below passed or failed on that before
    this existed. */
-const body = r => rpBuildCritiques(r).replace(/<style[\s\S]*?<\/style>/g, '');
+const body = r => rpBuildWhoShouldGo(r).replace(/<style[\s\S]*?<\/style>/g, '');
 
 describe('who should go home', () => {
   it('happens at all when it is booked', () => {
@@ -48,7 +49,7 @@ describe('who should go home', () => {
       .toBeGreaterThan(3);
   });
 
-  it('reaches the critique screen', () => {
+  it('has a screen of its own, and the critiques no longer carry it', () => {
     const html = body(row);
     expect(html, 'the twist is still invisible').toMatch(/dr-wsg-board/);
     expect(html).toMatch(/Who should go home/i);
@@ -96,8 +97,8 @@ describe('who should go home', () => {
     /* The card is a step, so the deliberation after it shifts by one and the
        controls have to be told — an off-by-one here leaves a card that
        `_reapplyVisibility` never reveals. */
-    const html = rpBuildCritiques(row);
-    const ids = [...new Set((html.match(/id="dr-step-critiques-(\d+)"/g) || [])
+    const html = rpBuildWhoShouldGo(row);
+    const ids = [...new Set((html.match(/id="dr-step-wsg-(\d+)"/g) || [])
       .map(m => Number(m.match(/(\d+)"/)[1])))].sort((a, b) => a - b);
     expect(ids.length).toBeGreaterThan(3);
     expect(ids).toEqual(ids.map((_, i) => i));
@@ -110,6 +111,7 @@ describe('who should go home', () => {
       && r.dr?.critiqueTwist?.kind !== 'who-should-go');
     expect(plain, 'no ordinary week to compare').toBeTruthy();
     expect(body(plain)).not.toMatch(/dr-wsg-board/);
+    expect(rpBuildCritiques(row).replace(/<style[\s\S]*?<\/style>/g, ''), 'the critiques still draw the twist').not.toMatch(/dr-wsg-board/);
   });
 });
 
@@ -292,7 +294,7 @@ describe('the reasons queens give', () => {
   it('answers before it shows the board', () => {
     /* The suspense is the question, not the result. This was one finished
        tally revealed in a single click. */
-    const html = rpBuildCritiques(many[0]).replace(/<style[\s\S]*?<\/style>/g, '');
+    const html = rpBuildWhoShouldGo(many[0]).replace(/<style[\s\S]*?<\/style>/g, '');
     const answers = (html.match(/dr-wsgq-name/g) || []).length;
     expect(answers, 'nobody answers out loud').toBe(
       Object.keys(many[0].dr.critiqueTwist.votes).length);
@@ -302,7 +304,7 @@ describe('the reasons queens give', () => {
   });
 
   it('says what each answer was about, on the card and on the board', () => {
-    const html = rpBuildCritiques(many[0]).replace(/<style[\s\S]*?<\/style>/g, '');
+    const html = rpBuildWhoShouldGo(many[0]).replace(/<style[\s\S]*?<\/style>/g, '');
     expect((html.match(/dr-wsgq-why/g) || []).length,
       'an answer with no reason under it').toBeGreaterThan(0);
     expect(html).toMatch(/her performance in the challenge|her runway look|her track record|what the judges just said|biggest competition/);
@@ -330,12 +332,16 @@ describe('booked on more than one episode', () => {
     }
   });
 
-  it('asks a smaller room each time, and gets a different answer', () => {
-    /* The room shrinks between them, so the same twist three weeks apart is
-       three different nights rather than the same one replayed. */
+  it('asks the queens on that stage, and gets a different answer each week', () => {
+    /* The host asks the queens who were critiqued (the safe ones have left),
+       so the same twist three weeks apart is a different room each time. */
     const weeks = many.rows.filter(r => r.dr?.critiqueTwist?.kind === 'who-should-go');
-    const sizes = weeks.map(r => Object.keys(r.dr.critiqueTwist.votes).length);
-    expect(sizes[0]).toBeGreaterThan(sizes[sizes.length - 1]);
+    for (const r of weeks) {
+      const c = r.dr.call || {};
+      const stage = new Set([...(c.win || []), ...(c.high || []), ...(c.low || []), ...(c.atRisk || []), ...(c.bottom || [])]);
+      if (stage.size < 3) continue;
+      for (const v of Object.keys(r.dr.critiqueTwist.votes)) expect(stage.has(v), `${v} answered from backstage`).toBe(true);
+    }
     const tallies = weeks.map(r => JSON.stringify(r.dr.critiqueTwist.tally));
     expect(new Set(tallies).size, 'every week returned the same board').toBe(weeks.length);
   });
@@ -343,9 +349,44 @@ describe('booked on more than one episode', () => {
   it('draws a board on each of those critique screens', () => {
     for (const r of many.rows) {
       if (r.dr?.critiqueTwist?.kind !== 'who-should-go') continue;
-      const html = rpBuildCritiques(r).replace(/<style[\s\S]*?<\/style>/g, '');
+      const html = rpBuildWhoShouldGo(r).replace(/<style[\s\S]*?<\/style>/g, '');
       expect(html, `episode ${r.num} ran the twist and drew nothing`)
         .toMatch(/dr-wsg-board/);
     }
+  });
+});
+
+/* ── ITS OWN SCREEN, AND WHAT CARRIES INTO UNTUCKED ──
+   User, 2026-10-06: "the who should go home twist should have its own well
+   made screen, wow and dramatic, and the result should port in untucked". */
+import { wsgSaidBy } from '../js/dr/data/wsg-lines.js';
+describe('the screen of its own', () => {
+  it('asks, names and answers back for every queen, then shows the board', () => {
+    const steps = wsgSteps(row);
+    const n = Object.keys(row.dr.critiqueTwist.votes).length;
+    expect(steps.length).toBe(3 * n + 1);
+    expect(steps.at(-1).t).toBe('board');
+    for (let i = 0; i < n; i++) expect(steps.slice(3 * i, 3 * i + 3).map(s => s.t)).toEqual(['ask', 'name', 'react']);
+    // the name comes first and the reason in her own words after it
+    for (const s of steps.filter(x => x.t === 'name' && !x.self)) expect(s.text.startsWith(`${s.target}.`)).toBe(true);
+  });
+  it('writes the night into the text backlog', () => {
+    const sc = row.dr.scenes.find(s => s.kind === 'who-should-go');
+    expect(sc.text.length).toBeGreaterThan(100);
+    for (const s of wsgSteps(row).filter(x => x.t === 'name')) expect(sc.text).toContain(s.text);
+  });
+  it('opens Untucked on the words, said back to the queen who said them', () => {
+    const sc = row.dr.scenes.find(s => s.kind === 'untucked:the-words-back');
+    expect(sc, 'Untucked never mentions the stage').toBeTruthy();
+    const { voter, target } = sc.data.quoted;
+    const v = row.dr.critiqueTwist.votes[voter];
+    expect(v.target).toBe(target);
+    expect(sc.text).toContain(wsgSaidBy(row.dr.critiqueTwist.votes, row.num, voter));
+    // and it is the first thing said in there
+    expect(row.dr.scenes.find(s => s.step === 'untucked' && s.text)).toBe(sc);
+  });
+  it('never says the same sentence twice in one night', () => {
+    const lines = wsgSteps(row).filter(s => s.t !== 'board').map(s => s.t === 'name' ? s.said : s.text.replace(/Q\d+/g, ''));
+    expect(new Set(lines).size).toBe(lines.length);
   });
 });

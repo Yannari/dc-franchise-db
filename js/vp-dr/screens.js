@@ -34,6 +34,7 @@ import { rpBuildColdOpen, rpBuildWerkMorning, rpBuildWerkElimDay,
 import { rpBuildArrivals } from './arrivals.js';
 import { rpBuildMini, rpBuildMaxiAnnounce, rpBuildChoice, rpBuildPrep, rpBuildMaxi } from './challenge.js';
 import { rpBuildMainStage, rpBuildRunway, rpBuildCritiques, rpBuildUntucked } from './stage.js';
+import { rpBuildWhoShouldGo } from './wsg-stage.js';
 import { rpBuildResults, rpBuildLipSync, rpBuildExit, rpBuildFinaleOpen } from './results.js';
 import { rpBuildSmackdown } from './smackdown.js';
 import { rpBuildCrowning } from './crowning.js';
@@ -285,6 +286,12 @@ const SECTIONS = [
   { id: 'dr-critiques', icon: icon('speech'), label: 'Critiques', suffix: 'critiques', phase: 'stage', accent: 'dr-a-score',
     opens: ['critiques'],
     opensStep: ['critiques'], badge: null, title: 'The Critiques', subtitle: 'the panel speaks' },
+  /* "Who should go home tonight, and why?" — its own screen (wsg-stage.js).
+     Opened by the twist's scene kind; the deliberation after it is step
+     'critiques' again and goes back to that screen. */
+  { id: 'dr-wsg', icon: icon('speech'), label: 'Who Should Go Home?', suffix: 'wsg', phase: 'stage', accent: 'dr-a-score',
+    opens: ['who-should-go'], opensStep: [], badge: { text: 'WHO GOES HOME?', color: '#FF2D55' },
+    title: 'Who Should Go Home?', subtitle: 'the host asks the room' },
   { id: 'dr-untucked', icon: icon('couch'), label: 'Untucked', suffix: 'untucked', phase: 'untucked', accent: 'dr-a-bond',
     opens: ['untucked'],
     opensStep: ['untucked'], badge: { text: 'UNTUCKED', color: '#7B2FF7' },
@@ -851,6 +858,7 @@ const BUILDERS = {
   'dr-main-stage': rpBuildMainStage,
   'dr-runway': rpBuildRunway,
   'dr-critiques': rpBuildCritiques,
+  'dr-wsg': rpBuildWhoShouldGo,
   'dr-untucked': rpBuildUntucked,
   'dr-results': rpBuildResults,
   'dr-lipsync': rpBuildLipSync,

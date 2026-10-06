@@ -157,37 +157,7 @@ export const STAGE_CSS = `
 .dr-step{scroll-margin-top:210px}
 
 /* ── THE DISMISSAL ── the safe queens, sent to Untucked ── */
-/* ── WHO SHOULD GO HOME ──
-   The board the room gives back. Most-named first, with the queens who named
-   her under her own name, because who said it is the whole event -- a name
-   with three votes behind it and a name with one are different nights. */
-/* One queen's answer: who she said, and what she said it about. */
-.dr-wsgq{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
-  padding:12px 16px}
-.dr-wsgq-name{margin:4px 0 2px;font-family:'Playfair Display',Georgia,serif;
-  font-size:19px;color:#fff;line-height:1.2}
-.dr-wsgq-why{margin:0;font-size:13px;color:#C9A6BC;font-style:italic}
-.dr-wsg-who i{display:block;font-size:10.5px;font-style:italic;color:#9E86A8;margin-top:2px}
-.dr-wsg{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
-  padding:14px 16px}
-.dr-wsg-q{margin:6px 0 12px;font-family:'Playfair Display',Georgia,serif;
-  font-size:17px;font-style:italic;color:#FFD7EE;line-height:1.4}
-.dr-wsg-board{display:flex;flex-direction:column;gap:6px}
-.dr-wsg-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:11px;
-  align-items:center;padding:7px 11px;border-radius:8px;
-  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
-/* The name the room landed on. */
-.dr-wsg-top{background:linear-gradient(90deg,rgba(255,41,75,.16),rgba(255,41,75,.04));
-  border-color:rgba(255,41,75,.42)}
-.dr-wsg-who{min-width:0}
-.dr-wsg-who b{display:block;font-size:13.5px;color:#fff;letter-spacing:.02em}
-.dr-wsg-who span{display:block;font-size:11px;color:#C9A6BC;margin-top:2px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* The most sympathetic thing anybody does all night, and it is not a strategy. */
-.dr-wsg-self{font-size:9.5px;font-weight:700;letter-spacing:.08em;
-  text-transform:uppercase;color:#FFD23F;white-space:nowrap}
-.dr-wsg-n{font-family:'Space Mono',ui-monospace,monospace;font-size:15px;
-  font-weight:700;color:#fff;min-width:20px;text-align:right}
+
 .dr-delib{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
   padding:14px 16px 14px 20px}
 .dr-delib p{margin:4px 0 0;color:#f4e3ed;line-height:1.6;text-wrap:pretty}
@@ -770,109 +740,9 @@ export function rpBuildCritiques(row) {
      they all go to Untucked and the panel says what it actually thinks with
      the stage empty. The arguments name the judge on each side and the queen
      they are fighting over; the host's call is last, because she is. */
-  /* ── "WHO SHOULD GO HOME?" ──
-     The host asks the room to name somebody, on the stage, out loud, in front
-     of the queen they name.
-
-     IT RAN AND REACHED NO SCREEN. js/dr/critiques.js has computed the whole
-     thing since it was written -- who each queen names, why (a schemer names
-     the biggest threat, everybody else names whoever they like least, a loyal
-     queen standing in the bottom names herself), the bond each answer costs
-     and the tally it adds up to -- and puts it on the row as
-     `dr.critiqueTwist`. Its scene carries `text: ''`, so the sweep that
-     catches written-and-undrawn scenes never saw it either: there were no
-     words to go missing.
-     The twist is bookable from the catalogue, the engine is complete, and
-     until now pressing it changed nothing anybody could see.
-
-     Drawn here because here is when it happens: after the critiques, before
-     the panel deliberates. */
-  const wsg = row?.dr?.critiqueTwist?.kind === 'who-should-go'
-    ? row.dr.critiqueTwist : null;
-  /* `[voter, { target, reason }]`. The reason is the half the screen was
-     missing: a board of names with no why on it is a scoreboard, and the
-     question the host asked was "and why". */
-  const wsgVotes = wsg && wsg.votes
-    ? Object.entries(wsg.votes).map(([voter, v]) => [voter, v?.target, v?.reason])
-      .filter(([, t]) => t)
-    : [];
-  /* WHAT SHE SAID IT ABOUT. The real answers come from a small vocabulary --
-     129 of them read off the fandom's own Contestant/Choice/Reason table, see
-     tools/dr-real-who-should-go.py -- and "her performance in the challenge"
-     is the commonest thing anybody says. */
-  const WSG_REASON = {
-    challenge: 'her performance in the challenge',
-    runway: 'her runway look',
-    season: 'her track record',
-    critiques: 'what the judges just said',
-    leader: 'her role as team leader',
-    threat: 'she is my biggest competition',
-    immunity: 'she has immunity anyway',
-    herself: 'she named herself',
-  };
-
-  /* ── ONE ANSWER AT A TIME, THEN THE BOARD ──
-     This was a finished tally on a single card: every name, every count,
-     revealed at once. That is the RESULT of the question, and the question is
-     the suspense -- who she is about to say, and what she says about them.
-     Reported as "where is the drama, the speech, the suspense".
-     So the room answers in order, one click each, and the board only goes up
-     at the end. Every queen who was in the critiques answers; the safe ones
-     left the stage before the host asked. */
-  const wsgAnswers = wsgVotes.length ? wsgVotes.map(([voter, target, reason], i) => {
-    const self = voter === target;
-    return `<div class="dr-step" id="dr-step-critiques-${queens.length + dOff + i}">
-      <div class="dr-panel dr-a-room dr-wsgq">
-        ${_portrait(voter, ep, { size: 44 })}
-        <div>
-          <span class="dr-sub">${esc(voter)} answers</span>
-          <p class="dr-wsgq-name">${self ? 'Herself.' : `${esc(target)}.`}</p>
-          <p class="dr-wsgq-why">${esc(WSG_REASON[reason] || 'she did not say')}</p>
-        </div>
-        ${self ? '<span class="dr-wsg-self">named herself</span>' : ''}
-      </div></div>`;
-  }).join('') : '';
-
-  const wsgCards = wsgVotes.length ? (() => {
-    const tally = wsg.tally || {};
-    /* Most named first -- that is the answer the room gave, and it is the
-       thing the host reacts to. Ties keep the order the queens were called
-       in, so a rebuild draws the same board. */
-    const named = [...new Set(wsgVotes.map(([, t]) => t))]
-      .sort((a, b) => (tally[b] || 0) - (tally[a] || 0));
-    const most = named[0];
-    const board = named.map(n => {
-      const rows = wsgVotes.filter(([, t]) => t === n);
-      const by = rows.map(([who]) => who);
-      const self = by.includes(n);
-      /* The reason most often given about HER, so the board says what the room
-         actually held against her rather than only how many held it. */
-      const why = {};
-      for (const [, , r] of rows) why[r] = (why[r] || 0) + 1;
-      const top = Object.entries(why).sort((a, b) => b[1] - a[1])[0];
-      return `<div class="dr-wsg-row${n === most ? ' dr-wsg-top' : ''}">
-        ${_portrait(n, ep, { size: 38 })}
-        <div class="dr-wsg-who">
-          <b>${esc(n)}</b>
-          <span>${by.map(w => esc(w)).join(', ')}</span>
-          ${top ? `<i>${esc(WSG_REASON[top[0]] || '')}</i>` : ''}
-        </div>
-        ${self ? '<span class="dr-wsg-self">named herself</span>' : ''}
-        <span class="dr-wsg-n">${tally[n] || 0}</span>
-      </div>`;
-    }).join('');
-    return `<div class="dr-step" id="dr-step-critiques-${queens.length + dOff + wsgVotes.length}">
-      <div class="dr-panel dr-a-room dr-wsg">
-        ${_judgePortrait('rupaul', { stage: true, size: 44 })}
-        <div>
-          <span class="dr-sub">the room has answered</span>
-          <p class="dr-wsg-q">&ldquo;Who should go home tonight, and why?&rdquo;</p>
-          <div class="dr-wsg-board">${board}</div>
-        </div>
-      </div></div>`;
-  })() : '';
-  // Every answer is a step, and the board is one more.
-  const wsgOff = wsgCards ? wsgVotes.length + 1 : 0;
+  /* "WHO SHOULD GO HOME?" HAS ITS OWN SCREEN NOW (js/vp-dr/wsg-stage.js):
+     the host's question, every answer out loud and the board, between this
+     screen and Untucked. It was a run of small cards at the end of this one. */
 
   const delib = (row.dr.scenes || []).filter(sc =>
     /^stage:deliberation/.test(sc.kind || '') && sc.text);
@@ -881,7 +751,7 @@ export function rpBuildCritiques(row) {
     const arg = sc.kind === 'stage:deliberation-argument';
     const who = (sc.data?.players || [])[0];
     const jid = (row?.dr?.judges || []).find(id => judgeName(id) === sc.data?.judge);
-    return `<div class="dr-step" id="dr-step-critiques-${queens.length + dOff + wsgOff + i}">
+    return `<div class="dr-step" id="dr-step-critiques-${queens.length + dOff + i}">
       <div class="dr-panel ${isHost ? 'dr-a-score' : 'dr-a-room'} dr-delib">
         ${isHost ? _judgePortrait('rupaul', { stage: true, size: 44 })
     : jid ? _jpor(jid, { size: 44 }) : ''}
@@ -950,8 +820,6 @@ export function rpBuildCritiques(row) {
         reaction: reactions[name] || '',
       };
     }),
-    ...wsgVotes.map(([voter, target]) => ({ t: 'wsg', voter, target })),
-    ...(wsgCards ? [{ t: 'board', tally: wsg.tally || {} }] : []),
     ...delib.map(sc => ({
       t: 'delib', host: sc.kind === 'stage:deliberation-host',
       judge: (row?.dr?.judges || []).find(id => judgeName(id) === sc.data?.judge) || null,
@@ -964,11 +832,11 @@ export function rpBuildCritiques(row) {
   const stage = critiquesStage(row, stageList, { ep, judges: panelList, guest: guestObj, uid: `c${ep.num}` });
   wireStage('critiques', stage, ep, _state);
 
-  return `<style>${STAGE_CSS}${NIGHT_STAGE_CSS}${ROOM_RAIL_CSS}</style>${_shell(`${stage.html}<div class="nsx-cards">${steps + wsgAnswers + wsgCards + delibCards}</div>`, ep, {
+  return `<style>${STAGE_CSS}${NIGHT_STAGE_CSS}${ROOM_RAIL_CSS}</style>${_shell(`${stage.html}<div class="nsx-cards">${steps + delibCards}</div>`, ep, {
     phase: 'stage', title: 'The Critiques',
     subtitle: split ? 'the panel is split tonight' : 'the panel speaks',
     sidebar: _seedRail('critiques', `${_pairRail(row)}${_allianceRail(row)}<h4 class="dr-disp">The panel, so far</h4>`),
-  })}${_controls('critiques', queens.length + dOff + wsgOff + delib.length, ep.num)}`;
+  })}${_controls('critiques', queens.length + dOff + delib.length, ep.num)}`;
 }
 
 /** Untucked: a room, not a stage — and it can get loud. */
@@ -1098,6 +966,19 @@ export function rpBuildUntucked(row) {
   if (typeof window !== 'undefined') {
     window._drSidebar = window._drSidebar || {};
     let heat = 0;
+    /* ── WHAT WAS SAID ON THE MAIN STAGE ──
+       After "who should go home", the room walks in carrying it. The board
+       stays in the rail all night: who was named, how many times, and by
+       whom — so every fight below has its receipt beside it. */
+    const wsg = row?.dr?.critiqueTwist?.kind === 'who-should-go' ? row.dr.critiqueTwist : null;
+    const said = wsg?.tally && Object.keys(wsg.tally).length ? (() => {
+      const by = {};
+      for (const [v, x] of Object.entries(wsg.votes || {})) if (x?.target) (by[x.target] ||= []).push(v);
+      return `<h4 class="dr-disp" style="margin-top:14px">Named on the main stage</h4>${
+        Object.entries(wsg.tally).sort((a, b) => b[1] - a[1]).map(([n, k]) => `<div class="dr-slot">${_portrait(n, ep, { size: 30 })}
+          <div><div class="dr-nm">${esc(n)}</div><div style="font-size:10px;color:#C9A6BC">by ${esc((by[n] || []).join(', '))}</div></div>
+          <span class="dr-chip dr-c-btm">${k}</span></div>`).join('')}`;
+    })() : '';
     window._drSidebar.untucked = scenes.map(sc => {
       heat += Number(sc.effects?.bond) || 0;
       const pct = Math.max(0, Math.min(100, 50 + heat * 12));
@@ -1106,7 +987,7 @@ export function rpBuildUntucked(row) {
       return `<h4 class="dr-disp">The room</h4>
         <div class="dr-temp"><i style="left:${pct}%"></i></div>
         <div class="dr-temp-k"><span>apart</span><span>together</span></div>
-        <p class="dr-temp-v dr-disp">${esc(word)}</p>`;
+        <p class="dr-temp-v dr-disp">${esc(word)}</p>${said}`;
     });
   }
 

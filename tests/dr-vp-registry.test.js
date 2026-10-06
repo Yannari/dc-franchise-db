@@ -35,7 +35,9 @@ describe('the registry', () => {
      ranged so that adding a screen is a decision somebody made on purpose. */
   /* 38: the season's save added three (intro, hold, luck) — js/vp-dr/save.js.
      Its campaign lives on the Untucked screen. */
-  const COUNT = 41;
+  /* 42: "Who should go home?" got its own screen between the critiques and
+     Untucked (js/vp-dr/wsg-stage.js). */
+  const COUNT = 42;
   it('is every screen, in the running order', () => {
     expect(DRAG_SCREENS.length).toBe(COUNT);
     const ids = DRAG_SCREENS.map(s => s.id);

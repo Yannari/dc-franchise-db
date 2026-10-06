@@ -29,6 +29,7 @@
 // does to make queens say out loud what they would rather not, and both cost
 // the person who speaks.
 import { evt } from './rules.js';
+import { wsgToneOf, wsgTranscript } from './data/wsg-lines.js';
 
 const stat = (p, k) => {
   const n = Number(p?.stats?.[k]);
@@ -298,6 +299,8 @@ export function whoShouldGoHome({
   // challenge, how her runway went, and where the panel put her.
   perf = {}, runway = {}, ranking = [], teams = null, captains = {},
   immune = [],
+  // The episode: the words are picked by who, whom and the night (wsg-lines.js).
+  ep = 0,
 }) {
   const votes = {};
   const events = [];
@@ -364,8 +367,9 @@ export function whoShouldGoHome({
     const target = (pick && pick()) || worstBy(others, o => wins(o) - bads(o));
     if (!target) continue;
 
-    votes[n] = { target, reason };
     const closeness = bond(n, target);
+    // How the named queen takes it, decided now from where the two of them stood.
+    votes[n] = { target, reason, tone: wsgToneOf(closeness) };
     events.push(evt('named-her', {
       players: [n, target],
       bond: [[n, target, -1.5]],
@@ -382,7 +386,8 @@ export function whoShouldGoHome({
     votes,
     tally,
     events,
-    scenes: [{ step: 'critiques', kind: 'who-should-go', data: { votes, tally }, text: '' }],
+    // Its own screen now (js/vp-dr/wsg-stage.js); the text is the night's transcript.
+    scenes: [{ step: 'critiques', kind: 'who-should-go', data: { votes, tally }, text: wsgTranscript(votes, ep) }],
   };
 }
 

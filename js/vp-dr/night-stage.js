@@ -152,34 +152,16 @@ export const NIGHT_STAGE_CSS = `${FINALE_STAGE_CSS}
   100%{transform:translateX(26px);opacity:.62;filter:saturate(.7)}
 }
 .crx-safe.cur ~ .crx-sub,.crx-sub{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--fx)}
-.crx-wsg{display:none;align-items:center;gap:14px}
-.crx-wsg.cur{display:flex}
-.crx-wsg .fsx-face{width:70px;height:70px}
-.crx-wsg .arrow{width:70px;height:20px}
-.crx-wsg .arrow path{stroke-dasharray:80;stroke-dashoffset:80;animation:crx-draw .6s .3s forwards}
-@keyframes crx-draw{to{stroke-dashoffset:0}}
-.crx-wsg .tgt{opacity:0;animation:crx-pop .4s .8s forwards}
-@keyframes crx-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
-.crx-wsg small{display:block;text-align:center;font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-top:3px}
-.crx-board{display:none;flex-direction:column;gap:4px;min-width:min(340px,90%)}
-.crx-board.cur{display:flex}
-.crx-row{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center}
-.crx-row .fsx-face{width:28px;height:28px}
-.crx-row .bar{height:10px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
-.crx-row .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff7bc8,#ff294b);animation:crx-fill 1s forwards;animation-delay:var(--dl)}
-@keyframes crx-fill{to{width:var(--w)}}
-.crx-row b{font:700 13px/1 ui-monospace,Menlo,monospace}
 .fsx[data-phase=delib] .crx-floor::after{content:'the stage is empty';position:absolute;top:60px;font-size:11px;letter-spacing:.3em;
   text-transform:uppercase;color:rgba(255,255,255,.3)}
 
 @media (max-width:640px){
   .rwx-hall{height:190px}.rwx-q .fsx-face{width:80px;height:80px}.rwx-conf{position:static;max-width:none;margin:6px 8px 0;font-size:11px}
-  .crx-q .fsx-face{width:70px;height:70px}.crx-wsg .fsx-face{width:52px;height:52px}
+  .crx-q .fsx-face{width:70px;height:70px}
   .nsx-j b{display:none}
 }
 @media (prefers-reduced-motion: reduce){
-  .rwx-q.cur .rwx-num,.crx-q.cur .crx-react,.crx-wsg .tgt{opacity:1}
-  .crx-row .bar i{width:var(--w)}
+  .rwx-q.cur .rwx-num,.crx-q.cur .crx-react{opacity:1}
 }
 /* Last, so it wins over the base sizes above. */
 @media (max-height: 999px){
@@ -187,7 +169,7 @@ export const NIGHT_STAGE_CSS = `${FINALE_STAGE_CSS}
   .rwx-hall{height:170px;margin-top:6px}.rwx-q{top:6px}.rwx-q .fsx-face{width:76px;height:76px}.rwx-q b{font-size:15px}
   .rwx-marquee{padding:5px 10px}.rwx-marquee b{font-size:20px}
   .crx-floor{min-height:110px}.crx-q .fsx-face{width:66px;height:66px}.crx-q b{font-size:14px}
-  .crx-wsg .fsx-face{width:54px;height:54px}.crx-safe .fsx-face{width:42px;height:42px}
+  .crx-safe .fsx-face{width:42px;height:42px}
   .msx-q .fsx-face{width:30px;height:30px}
   .nsx-cards .dr-step{scroll-margin-top:340px}
 }
@@ -301,8 +283,6 @@ export function runwayStage(row, walkers, { ep, category = '', uid = 'x' } = {})
  * `list`, one per step:
  *   { t: 'safe', safe: [names] }
  *   { t: 'queen', who, reads: [{ judge, tone, spoke }], split, reaction }
- *   { t: 'wsg', voter, target }
- *   { t: 'board', tally: { name: n } }
  *   { t: 'delib', judge, host }
  */
 export function critiquesStage(row, list, { ep, judges, guest, uid = 'x' } = {}) {
@@ -326,12 +306,6 @@ export function critiquesStage(row, list, { ep, judges, guest, uid = 'x' } = {})
         stars: rave, shake: filth || s.split,
       };
     }
-    if (s.t === 'wsg') {
-      return { phase: 'wsg', cur: `w:${s.voter}`, on: [], tones: {}, hostOn: true, mood: 'red', shake: s.voter !== s.target };
-    }
-    if (s.t === 'board') {
-      return { phase: 'wsg', cur: 'board', on: [], tones: {}, hostOn: true, banner: { text: 'The room has answered', sub: 'who should go home', red: true } };
-    }
     return {
       phase: 'delib', cur: null, on: s.host ? ['rupaul'] : s.judge ? [s.judge] : [], tones: {}, hostOn: !!s.host,
       banner: s.host ? { text: 'The host decides', sub: 'the queens come back out' } : null,
@@ -340,20 +314,12 @@ export function critiquesStage(row, list, { ep, judges, guest, uid = 'x' } = {})
 
   const queens = list.filter(s => s.t === 'queen');
   const safe = list.find(s => s.t === 'safe');
-  const wsg = list.filter(s => s.t === 'wsg');
-  const board = list.find(s => s.t === 'board');
-  const arrow = `<svg class="arrow" viewBox="0 0 70 20"><path d="M2 10 H62 M52 3 L64 10 L52 17" fill="none" stroke="#ff5a6e" stroke-width="3" stroke-linecap="round"/></svg>`;
   const floor = `
     ${safe ? `<div class="crx-safe" data-c="safe">${safe.safe.map((q, j) => `<span style="--dl:${(0.3 + j * 0.12).toFixed(2)}s">${face(q, ep, 54)}</span>`).join('')}</div>` : ''}
     ${queens.map(s => `<div class="crx-q" data-c="q:${esc(s.who)}">${face(s.who, ep, 92)}<b>${esc(s.who)}</b>
       <span class="crx-tally">${s.reads.map(r => `<i class="${esc(r.tone)}"></i>`).join('')}</span>
       ${s.reaction ? `<span class="crx-react">She takes it: ${esc(reactionLabel(s.reaction))}</span>` : ''}</div>`).join('')}
-    ${wsg.map(s => `<div class="crx-wsg" data-c="w:${esc(s.voter)}"><div>${face(s.voter, ep, 70)}<small>${esc(s.voter)}</small></div>${arrow}
-      <div class="tgt">${face(s.target, ep, 70)}<small>${s.voter === s.target ? 'herself' : esc(s.target)}</small></div></div>`).join('')}
-    ${board ? `<div class="crx-board" data-c="board">${Object.entries(board.tally).sort((a, b) => b[1] - a[1]).map(([n, k], j) => {
-    const max = Math.max(1, ...Object.values(board.tally));
-    return `<div class="crx-row">${face(n, ep, 28)}<div class="bar"><i style="--w:${Math.round((k / max) * 100)}%;--dl:${(j * 0.15).toFixed(2)}s"></i></div><b>${k}</b></div>`;
-  }).join('')}</div>` : ''}`;
+`;
   const body = `${desk(judges, ep, guest)}<div class="crx-floor">${floor}</div>`;
   const html = shell({ id: `crx-${uid}`, title: 'The critiques', sub: `${queens.length} queens in front of the panel`, body, theme: 'stage', hostChip: false });
   const apply = engine(`crx-${uid}`, states, (el, st) => {

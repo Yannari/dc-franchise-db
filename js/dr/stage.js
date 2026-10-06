@@ -20,6 +20,7 @@
 // room it walked into.
 import { STAGE_BEATS } from './data/stage-beats.js';
 import { UNTUCKED_EVENTS, UNTUCKED_PHASES } from './data/untucked-events.js';
+import { WSG_QUOTE, wsgPick, wsgSaidBy } from './data/wsg-lines.js';
 import { CHALLENGE_BEATS } from './data/challenge-beats.js';
 import { ageOk } from './season-age.js';
 import { nameInSentence, capSentenceThe } from './data/challenges.js';
@@ -1091,6 +1092,10 @@ export function runUntucked({
      Untucked is where that costs something, and it costs differently
      depending on who said it. */
   namedBy = {}, selfNamed = [],
+  /* The answers themselves, `{ voter: { target, reason, tone } }`, so the
+     night can open on the words — said back, verbatim, to the queen who said
+     them (user: "the result should port in Untucked"). */
+  wsgVotes = null,
 }) {
   /* HOW MANY SCENES A PHASE GETS, and three was three regardless of whether
      there were twelve queens on the couch or four. Untucked is the one room
@@ -1128,6 +1133,32 @@ export function runUntucked({
     let roll = rng() * total;
     return (w.find(x => (roll -= x.w) <= 0) || w[0]).n;
   };
+
+  /* ── THE WORDS COME BACK THROUGH THE DOOR ──
+     After "who should go home", Untucked opens on it: the queen it cost most
+     says the answer back to the queen who gave it, word for word. Which pair:
+     a friend's name first (that is the one that leaves a mark), then the
+     queen named most, then anybody named. The words are the stage's own —
+     the same pick by who, whom and the night — so the screen and this line
+     can never disagree. No dice: it changes nothing else about the night. */
+  if (wsgVotes) {
+    const ep = ctx.episode ?? 0;
+    const pairs = Object.entries(wsgVotes).filter(([v, x]) => x?.target && x.target !== v && living.includes(v) && living.includes(x.target))
+      .map(([v, x]) => ({ voter: v, target: x.target, reason: x.reason, friend: x.tone === 'friend', named: namedByCount(x.target) }))
+      .sort((p, q) => (q.friend - p.friend) || (q.named - p.named) || (p.voter < q.voter ? -1 : 1));
+    const top = pairs[0];
+    if (top) {
+      const q = wsgSaidBy(wsgVotes, ep, top.voter);
+      scenes.push({
+        step: 'untucked', kind: 'untucked:the-words-back',
+        data: { event: 'the-words-back', phase: 'arrival', players: [top.target, top.voter],
+          note: `${top.target} heard what ${top.voter} said on the main stage, and so did everybody else.`, quoted: { voter: top.voter, target: top.target } },
+        text: fill(wsgPick(WSG_QUOTE, 'quote', top.voter, top.target, ep).replace(/\{q\}/g, q), { a: top.target, b: top.voter }),
+        effects: { bond: top.friend ? -2 : -1, pop: { a: 1 } },
+      });
+      seen[top.target] = 1; seen[top.voter] = 1;
+    }
+  }
 
   for (const phase of UNTUCKED_PHASES) {
     for (let i = 0; i < per; i++) {

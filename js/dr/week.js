@@ -1636,11 +1636,17 @@ export function runDragWeek(state, cfg, ctx) {
     /* THE NIGHT ITSELF, so an answer can be about tonight. The commonest real
        reason is "her performance in the challenge" and the second is "her
        runway look" -- neither is answerable from the season record alone. */
+    /* WHO IS STILL ON THAT STAGE. The host asks the queens who were
+       critiqued — the safe ones have already left — and they name one of
+       each other. Asking the whole cast made a thirty-click night of it. */
+    const onStageNow = [...new Set([...(call.win || []), ...(call.high || []),
+      ...(call.low || []), ...(call.atRisk || []), ...(call.bottom || [])])].filter(n => living.includes(n));
     twist = whoShouldGoHome({
-      living, players: ctx.players, bond: ctx.bond, state, rng,
+      living: onStageNow.length >= 3 ? onStageNow : living, players: ctx.players, bond: ctx.bond, state, rng,
       perf: performances, runway, ranking: bend, immune,
       teams: M.teamJudged ? assignment.teams : null,
       captains: assignment.captains || {},
+      ep: cfg.num,
     });
   } else if (cfg.critiqueTwist === 'rate-a-queen') {
     twist = rateAQueen({ living, players: ctx.players, bond: ctx.bond, state, rng });
@@ -2807,6 +2813,7 @@ export function runDragWeek(state, cfg, ctx) {
       selfNamed: wsgVotes
         ? Object.entries(wsgVotes).filter(([v, x]) => x && x.target === v).map(([v]) => v)
         : [],
+      wsgVotes: wsgVotes || null,
       rng, ctx: { bond: ctx.bond, episode: cfg.num },
     });
     for (const sc of untuckedScenes) {

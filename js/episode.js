@@ -6,7 +6,9 @@ import { pStats, pronouns, getPlayerState, updateChalRecord, isAllianceBottom, t
 import { getBond, getPerceivedBond, addBond, checkPerceivedBondTriggers, updateBonds, updatePerceivedBonds, recoverBonds, floorBondsInvolving } from './bonds.js';
 import { wRandom, computeHeat, formAlliances, detectBetrayals, applyPitchAllianceFallout, decayAllianceTrust } from './alliances.js';
 import { pruneIdolIntel, recordIdolIntel } from './advantage-intel.js';
-import { simulateVotes, resolveVotes, checkShotInDark, simulateRevote, summarizePitchReactions } from './voting.js';
+import { simulateVotes, resolveVotes, checkShotInDark, simulateRevote, summarizePitchReactions, describePitchReaction } from './voting.js';
+import { makeScene, spotOf } from './td/script/scene.js';
+import { scriptEventParts, numberWord } from './td/script/write.js';
 import { rollDeparture, departureText } from './departures.js';
 import { checkIdolPlays, checkIdolPreTribal, checkNonIdolAdvantageUse, findAdvantages, handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge, simulateTribeChallenge, pickChallenge, simulateLastChance } from './challenges-core.js';
@@ -7614,20 +7616,29 @@ function simulateJuryRoundtable(ep) {
             : _counter.type === 'deceptive-counter'
               ? ` ${_counter.actor} appeared calm in public while several private conversations took on a more deliberate tone.`
               : ` ${_counter.actor} began checking whether the people around them were willing to push back. Some appeared receptive.`;
-      if (p.success) {
-        ep.campEvents[_vpCampKey].post.push({
-          type: 'votePitch', players: [p.pitcher],
-          text: `${p.pitcher} proposed ${p.pitchTarget} and claimed as many as ${p.claimedSupport} possible votes. ${_reactionSummary}${_warningStory}${_counterStory}`,
-          badgeText: 'VOTE PITCH', badgeClass: 'gold'
-        });
-      } else {
-        const _conflictDissolved = p.resolution === 'dissolved-after-conflict-check';
-        ep.campEvents[_vpCampKey].post.push({
-          type: 'votePitchFailed', players: [p.pitcher],
-          text: `${p.pitcher} pushed ${p.pitchTarget}, but the conversations appeared to meet resistance${_conflictDissolved ? ' as competing plans crossed through camp' : ''}. ${_reactionSummary}${_warningStory}${_counterStory} Whether anyone quietly kept the idea alive remains unclear going into Tribal.`,
-          badgeText: 'PITCH STALLED', badgeClass: 'red'
-        });
+      // The pitch as a scene in parts (td/script, spec 2026-10-06): the pitcher works up to three
+      // people, each answering in their own reaction; the leak reaching the target; the target's
+      // counter-move; the pitcher's own read. Nobody commits a ballot on screen.
+      const _pPhase = { ep: ep.num, phase: 'post', tribal: true };
+      const _pData = { target: p.pitchTarget, claimed: numberWord(Math.max(2, p.claimedSupport || 0)) };
+      const _parts = (p.responses || []).filter(r => r.voter && r.voter !== p.pitcher && r.voter !== p.pitchTarget).slice(0, 3)
+        .map(r => makeScene('pitch.react', { a: p.pitcher, b: r.voter },
+          { ..._pData, ending: describePitchReaction(p, r, () => 0).tone }, [], spotOf(ep, p.pitcher, r.voter, 'post').spot));
+      if (_targetWarning && _targetWarning.source && _targetWarning.source !== p.pitchTarget) {
+        _parts.push(makeScene('pitch.warn', { a: _targetWarning.source, b: p.pitchTarget },
+          { ending: _targetWarning.believed ? 'believed' : 'doubted', pitcher: p.pitcher }, [],
+          spotOf(ep, _targetWarning.source, p.pitchTarget, 'post').spot));
       }
+      if (_counter?.actor) {
+        _parts.push(makeScene('pitch.counter', { a: _counter.actor },
+          { ending: _counter.type, pitcher: p.pitcher }, [], { id: 'confessional', label: 'Confessional' }));
+      }
+      _parts.push(makeScene('pitch.read', { a: p.pitcher },
+        { ending: p.success ? 'landed' : 'stalled', target: p.pitchTarget }, [], { id: 'confessional', label: 'Confessional' }));
+      ep.campEvents[_vpCampKey].post.push(scriptEventParts(p.success
+        ? { type: 'votePitch', players: [p.pitcher], badgeText: 'VOTE PITCH', badgeClass: 'gold' }
+        : { type: 'votePitchFailed', players: [p.pitcher], badgeText: 'PITCH STALLED', badgeClass: 'red' },
+        _parts, _pPhase));
     });
     // pitchAllianceFallout is resolved from the actual ballot. Keep that exact
     // result in the post-vote backlog/fallout screens; inserting it into this

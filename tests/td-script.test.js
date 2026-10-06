@@ -81,7 +81,7 @@ describe('the pools keep their contract', () => {
   it('only says "tonight" where the camp is voting tonight', () => {
     // Gossip airs after the challenge in BOTH camps; the winners have no vote tonight.
     for (const [key, pool] of all) for (const e of pool) {
-      if (e.when?.tribal === true) continue;
+      if (e.when?.tribal === true || (GUARANTEED[key] || []).includes('tribal')) continue;
       for (const x of texts(e)) expect(/tonight/i.test(x), `${key} ${e.id}: ${x}`).toBe(false);
     }
   });
@@ -197,7 +197,9 @@ describe('a played season', () => {
     for (const e of scripted) {
       for (const l of e.lines) {
         expect(l.text, `${e.type} ${e.scene.lineId}`).not.toMatch(/\{\w+(\.\w+)?\}/);
-        if (l.kind !== 'beat') expect(Object.values(e.scene.who), `${e.type} ${e.scene.lineId}: ${l.by}`).toContain(l.by);
+        // a scene in parts may bring new people in a later part (the leak who warns the target)
+        const cast = [e.scene, ...(e.scene.parts || [])].flatMap(p => Object.values(p.who || {}));
+        if (l.kind !== 'beat') expect(cast, `${e.type} ${e.scene.lineId}: ${l.by}`).toContain(l.by);
       }
       expect(e.text).toBeTruthy();
     }

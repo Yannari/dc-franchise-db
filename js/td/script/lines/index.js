@@ -11,8 +11,9 @@ import plans from './plans.js';
 import fallout, { GUARANTEED as falloutG } from './fallout.js';
 import caught from './caught.js';
 import alliance, { GUARANTEED as allianceG } from './alliance.js';
+import pitch, { GUARANTEED as pitchG } from './pitch.js';
 
-const FILES = [deals, gossip, plans, fallout, caught, alliance];
+const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch];
 
 export const POOLS = Object.assign({}, ...FILES);
 
@@ -21,4 +22,4 @@ export const POOLS = Object.assign({}, ...FILES);
  * {boot}). A line may say a slot its ending guarantees without asking for it;
  * any other optional name needs `when: { slot: true }` (tests/td-script.test.js).
  */
-export const GUARANTEED = Object.assign({}, falloutG, allianceG);
+export const GUARANTEED = Object.assign({}, falloutG, allianceG, pitchG);

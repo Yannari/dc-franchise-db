@@ -159,7 +159,7 @@ export function scriptEventParts(event, scenes, ctx = {}) {
   const parts = scenes.filter(Boolean).map(sc => ({ sc, w: writeScene(sc, ctx) }));
   const [first] = parts;
   event.scene = { kind: first.sc.kind, who: first.sc.who, data: first.sc.data, seenBy: first.sc.seenBy, spot: first.sc.spot,
-    lineId: first.w.lineId, ...(parts.length > 1 ? { parts: parts.map(p => ({ kind: p.sc.kind, data: p.sc.data, lineId: p.w.lineId })) } : {}) };
+    lineId: first.w.lineId, ...(parts.length > 1 ? { parts: parts.map(p => ({ kind: p.sc.kind, who: p.sc.who, data: p.sc.data, lineId: p.w.lineId })) } : {}) };
   event.lines = parts.flatMap(p => p.w.lines);
   event.text = transcript(event.lines);
   return event;

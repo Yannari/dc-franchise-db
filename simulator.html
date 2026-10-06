@@ -1156,6 +1156,15 @@
                 </span>
               </label>
             </div>
+            <div class="form-group">
+              <label class="form-label">The Seer</label>
+              <select id="cfg-tr-seer" onchange="saveConfig()" class="form-input">
+                <option value="draw">Won in a draw (sealed envelopes)</option>
+                <option value="auction">Auctioned from the prize fund</option>
+                <option value="off">No Seer</option>
+              </select>
+              <div class="hint hint-tight">Once per season, when the endgame begins, one player wins a private meeting in which another player must tell them the truth about what they are. Only the Seer hears the answer, and both of them may lie about it afterwards. In an auction the winning bid comes off the prize fund.</div>
+            </div>
             <div class="slider-control">
               <label>Finale Size: Final <strong id="finale-display">3</strong></label>
               <input type="range" min="2" max="4" value="3" id="cfg-finale" class="setup-slider" oninput="updateSlider('finale');saveConfig()">

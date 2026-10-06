@@ -354,6 +354,7 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .slate b{display:block;font:900 4.4cqw/1 Archivo;font-stretch:72%;letter-spacing:.15cqw;text-transform:uppercase;color:#fff;text-shadow:0 .4cqw 1.6cqw rgba(0,0,0,.75)}
 @keyframes bbx-slate{0%{opacity:0;transform:translateX(-3cqw)}12%{opacity:1;transform:none}72%{opacity:1}100%{opacity:0}}
 /* ── the live eviction ── */
+.bbx .ballots.fin{right:auto;left:50%;top:6.2cqw;transform:translateX(-50%);min-width:0;text-align:center}
 .bbx .ballots{position:absolute;right:3.4cqw;top:12cqw;z-index:9;padding:1.2cqw 1.6cqw;min-width:16cqw;background:rgba(5,9,18,.9);border:.12cqw solid rgba(34,225,255,.35);border-radius:.8cqw;backdrop-filter:blur(1cqw)}
 .bbx .ballots .k{font:800 .9cqw Archivo;font-stretch:78%;letter-spacing:.3cqw;text-transform:uppercase;color:#7fe9ff}
 .bbx .ballots .n{font:700 3.6cqw/1.1 'Chakra Petch';color:#fff}
@@ -365,7 +366,7 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 @keyframes bbx-pip{from{transform:translateY(-1.5cqw) scale(1.6);background:#fff}}
 .bbx .ballots.locked{border-color:#ff2e4d}
 .bbx .ballots.locked .k{color:#ff9db0}
-.bbx .bigrev{position:absolute;left:50%;top:27%;transform:translate(-50%,-50%);z-index:11;text-align:center;pointer-events:none}
+.bbx .bigrev{position:absolute;left:50%;top:27%;transform:translate(-50%,-50%);z-index:200;text-align:center;pointer-events:none}
 .bbx .bigrev::before{content:"";position:absolute;inset:-4cqw -10cqw;background:radial-gradient(closest-side,rgba(0,0,0,.88),rgba(0,0,0,.55) 60%,transparent);z-index:-1}
 .bbx .bigrev i{display:block;font:700 normal 1.6cqw 'Chakra Petch';letter-spacing:.6cqw;text-transform:uppercase;color:rgba(255,255,255,.78)}
 .bbx .bigrev b{display:block;font:900 9cqw/1 Archivo;font-stretch:72%;letter-spacing:.2cqw;white-space:nowrap;color:#fff;text-shadow:0 0 4cqw rgba(255,46,77,.65),0 .5cqw 2cqw rgba(0,0,0,.8)}
@@ -435,6 +436,25 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .stage.lodge .set{filter:sepia(.55) saturate(1.25) brightness(.72) hue-rotate(-8deg)}
 .bbx .stage.lodge .vign{background:radial-gradient(ellipse at 50% 40%,transparent 35%,rgba(30,16,4,.75))}
 /* ── finale night: the key board, confetti, sweeping spotlights ── */
+.bbx .gt.walk{animation:gtwalk 1s cubic-bezier(.45,0,.3,1) both}
+@keyframes gtwalk{0%{transform:translateX(-50%) translate(var(--wx),var(--wy))}30%{transform:translateX(-50%) translate(calc(var(--wx) * .75),calc(var(--wy) * .75 - .6cqw))}60%{transform:translateX(-50%) translate(calc(var(--wx) * .3),calc(var(--wy) * .3 - .6cqw))}100%{transform:translateX(-50%)}}
+.bbx .obj.keydrop{position:absolute;transform:translateX(-50%);z-index:30;animation:keydrop 1.1s cubic-bezier(.5,0,.8,.4) both;filter:drop-shadow(0 0 .8cqw #f5c542)}
+@keyframes keydrop{0%{transform:translateX(-50%) translateY(-9cqw) rotate(-40deg);opacity:0}25%{opacity:1}70%{transform:translateX(-50%) translateY(0) rotate(90deg);opacity:1}100%{transform:translateX(-50%) translateY(1.2cqw) rotate(90deg) scale(.4);opacity:0}}
+.bbx .obj.boxglow{position:absolute;transform:translateX(-50%);aspect-ratio:1.4;z-index:29;border-radius:50%;background:radial-gradient(closest-side,rgba(127,214,255,.85),rgba(127,214,255,0));opacity:0;animation:boxglow 1.4s .75s ease-out both}
+@keyframes boxglow{0%{opacity:0;transform:translateX(-50%) scale(.6)}30%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1.6)}}
+.bbx .suspense{position:absolute;inset:0;z-index:8;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 35%,rgba(0,0,0,.62) 100%)}
+.bbx .suspense.fresh{animation:suspense 1.6s ease-in-out infinite}
+@keyframes suspense{0%,100%{opacity:.75}50%{opacity:1}}
+.bbx .keyboard.fin{top:6.2cqw;padding:.5cqw 1.6cqw;z-index:190}
+.bbx .keyboard.fin .kh{display:none}
+.bbx .keyboard.fin .kr{gap:1.4cqw}
+.bbx .keyboard.fin .kcol{flex-direction:row;gap:.8cqw;min-width:0}
+.bbx .keyboard.fin .kcol:first-child{flex-direction:row-reverse}
+.bbx .keyboard.fin .kf{width:2.6cqw}
+.bbx .keyboard.fin b{font-size:1.2cqw}
+.bbx .keyboard.fin .kn{font-size:2.6cqw}
+.bbx .keyboard.fin .kp{min-height:0;min-width:2cqw}
+.bbx .keyboard.fin .kp i{width:1.3cqw;height:1.3cqw}
 .bbx .keyboard{position:absolute;left:50%;top:9cqw;transform:translateX(-50%);z-index:10;padding:1.2cqw 2cqw;background:rgba(10,8,2,.88);border:.15cqw solid #e8c98a;border-radius:1cqw;text-align:center;box-shadow:0 0 4cqw rgba(232,201,138,.25)}
 .bbx .keyboard .kh{display:block;font:700 .95cqw 'Chakra Petch';letter-spacing:.4cqw;color:#e8c98a;margin-bottom:.8cqw}
 .bbx .keyboard .kr{display:flex;align-items:center;gap:2.4cqw}

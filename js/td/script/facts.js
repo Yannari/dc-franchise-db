@@ -10,6 +10,8 @@ import { gs, players, kinshipBetween, REL_KINSHIP } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { pStats } from '../../players.js';
 
+const epOf = ctx => ctx.ep || (gs.episode || 0) + 1;
+
 export const TD_FACT_KEYS = [
   // what was decided (from the scene's data)
   'ending', 'result', 'intent', 'reason', 'again', 'size',
@@ -60,7 +62,7 @@ const inShowmance = (a, b) => (gs.showmances || []).some(s => s.phase !== 'broke
  */
 export function factsFor(scene, ctx = {}) {
   const { a, b, c } = scene.who || {};
-  const epNum = ctx.ep || gs.episode || 0;
+  const epNum = epOf(ctx);
   const f = {
     early: epNum <= 2,
     late: (gs.activePlayers?.length || 0) > 0 && gs.activePlayers.length <= 6,

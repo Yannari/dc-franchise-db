@@ -1314,6 +1314,17 @@ function _endgameRecord(e) {
     endEp: e.endEp ?? null,
     reveal: revealed,
     asks,
+    // THE SEER, copied out with the rest of the phase. It was left off this
+    // record, so the one private meeting of the season ran in every endgame and
+    // reached no screen (the user, 2026-10-06: "i never seen this twist").
+    // Plain data: who won it and how, whom they read, the forced answer, and
+    // the claims each made afterwards. The beliefs it wrote stay in the engine.
+    seer: e.seer ? JSON.parse(JSON.stringify({
+      ep: e.seer.ep, seer: e.seer.seer, subject: e.seer.subject, truth: e.seer.truth, seerTruth: e.seer.seerTruth,
+      recruited: !!e.seer.recruited, readKey: e.seer.readKey, award: e.seer.award || null, room: e.seer.room || [],
+      meetingLine: e.seer.meetingLine || '', readLine: e.seer.readLine || '',
+      claims: (e.seer.claims || []).map(c => ({ by: c.by, kind: c.kind, about: c.about, truthful: c.truthful, line: c.line })),
+    })) : null,
     // WHO WROTE WHOSE NAME, and the count it came to — the vote that actually
     // does the banishing, which the secret banish/end ballot above only DECIDES
     // TO HOLD. Without it the screen jumped from "somebody wanted another" to

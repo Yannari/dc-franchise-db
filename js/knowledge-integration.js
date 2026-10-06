@@ -4,6 +4,8 @@ import { pronouns, pStats } from './players.js';
 import { factId, learn, propagate, recordFact, believes } from './knowledge.js';
 import { pitchTrust } from './relationships.js';
 import { campKnowledgeContacts, currentCampAccessEpisode, findConversationAccess } from './camp-access.js';
+import { makeScene, spotFromAccess } from './td/script/scene.js';
+import { scriptEvent } from './td/script/write.js';
 const currentEp = () => (gs.episode || 0) + 1;
 
 export function recordVotingPlanKnowledge(tribalPlayers, alliances, ep = currentEp()) {
@@ -109,21 +111,16 @@ export function spreadKnowledgeForRound(tribalPlayers, ep = currentEp(), rng = M
     ...(hasSchedule ? { contacts:knower => campKnowledgeContacts(knower, 'post') } : {}) });
 }
 
-function knowledgeCardText(event) {
+// The talk itself, as a scene (td/script, spec 2026-10-06). The fact's subject
+// can BE the person being told — a heads-up, not a vote pitch — or the speaker
+// — confiding. Whether the listener trusts the speaker decides how they take it;
+// either way they promise nothing about the vote.
+function knowledgeScene(event, spot) {
   const { from, to, subject } = event;
-  const trusted = pitchTrust(to, from) >= 2;
-  const react = trusted
-    ? `${to} listens closely and asks questions, but makes no promise about Tribal.`
-    : `${to} takes it in, but the guarded response gives nothing away.`;
-  // The fact's subject can BE the person being told — that's a heads-up, not a
-  // vote pitch. And it can be the speaker themselves — that's confiding.
-  if (subject === to) {
-    return `${from} quietly warns ${to} that ${pronouns(to).posAdj} name is being floated for the next vote. ${react}`;
-  }
-  if (subject === from) {
-    return `${from} confides in ${to} that ${pronouns(from).posAdj} own name is in play. ${react}`;
-  }
-  return `${from} quietly brings ${subject}'s name to ${to}. ${react}`;
+  const ending = subject === to ? 'warn' : subject === from ? 'confide' : 'name';
+  return makeScene('flow.gossip', { a: from, b: to },
+    { ending, result: pitchTrust(to, from) >= 2 ? 'trusted' : 'guarded', ...(ending === 'name' ? { target: subject } : {}) },
+    [], spot);
 }
 
 // ── #5 Jury perception (foundation): who the jury BELIEVES controlled each vote ──
@@ -263,20 +260,21 @@ export function ftcCorrectBelief(finalist, juror, persuasion, epNum = currentEp(
   return corrected;
 }
 
-export function knowledgeCampCards(events) {
+// `tribal`: who goes to Tribal tonight — a line saying "tonight" airs only in that camp.
+export function knowledgeCampCards(events, { tribal = [] } = {}) {
   const accessEp = currentCampAccessEpisode();
   return (events || []).slice(0, 3).map(event => {
     const card = { type: 'informationFlow', players: [event.from, event.to],
       badgeText: event.sourceType === 'rumor' ? 'WORD TRAVELS' : 'PRIVATE WORD',
-      badgeClass: 'purple',
-      text: knowledgeCardText(event) };
+      badgeClass: 'purple' };
     // These cards are created during vote simulation, after the post-phase
     // access annotation ran, so attach the real conversation location here too.
     if (accessEp) {
       const access = findConversationAccess(accessEp, event.from, event.to, { phase: 'post', privacy: 0.45, slipAway: true });
       if (access.possible) card.access = access;
     }
-    return card;
+    return scriptEvent(card, knowledgeScene(event, spotFromAccess(card.access)),
+      { phase: 'post', tribal: tribal.includes(event.from) && tribal.includes(event.to) });
   });
 }
 

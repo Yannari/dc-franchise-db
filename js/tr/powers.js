@@ -82,7 +82,7 @@
 // filter on the candidate list for exactly this reason: `formPreference` draws
 // once per candidate, so removing a name would consume one draw fewer and
 // shift the whole stream from a gameplay edit.
-import { gs } from '../core.js';
+import { gs, seasonConfig } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { learn, ALIGNMENT_CRED_CEILING } from '../knowledge.js';
 import { alignmentFactId, alignmentAt } from './roles.js';
@@ -1053,6 +1053,12 @@ export function _setSeerWatch(fn = null) {
 let _seerOn = true;
 export function _setSeerEnabled(on) { _seerOn = on !== false; }
 
+/** 'off' | 'draw' | 'auction' — Season Setup's choice, the draw when unset. */
+export function seerMode() {
+  const m = seasonConfig && seasonConfig.trSeer;
+  return m === 'off' || m === 'auction' ? m : 'draw';
+}
+
 /** The season's Seer record, or null. There is at most one, ever. */
 export function seerRead() { return gs.tr?.seer || null; }
 
@@ -1074,6 +1080,12 @@ export function openSeer(ep) {
   };
   if (!gs?.tr) return null;
   if (!_seerOn) return deny('ablated');
+  // SEASON SETUP DECIDES WHETHER THERE IS ONE, AND HOW IT IS WON (the user,
+  // 2026-10-06: "i never seen this twist ... did we implement this?"). On the
+  // real show it is won — a game of chance, a challenge, an auction paid out
+  // of the prize fund (thetraitors.fandom.com/wiki/Seer). Off, there is none.
+  const mode = seerMode();
+  if (mode === 'off') return deny('off');
   // THE ENDGAME GATE, AND IT IS A PROPERTY OF SEASON STATE RATHER THAN AN
   // ARGUMENT. `gs.tr.endgameFrom` is written by runEndgame and by nothing
   // else, so the mandated loop cannot open a Seer by passing the right flag —
@@ -1099,7 +1111,31 @@ export function openSeer(ep) {
   // nothing. Hashing the ROOM and indexing into it gives every seat at a given
   // table the same chance and leaves no player a standing advantage.
   const seats = [...living].sort();
-  const holder = seats[Math.floor(hash01(`seer-holder|${ep}|${seats.join('|')}`) * seats.length)];
+  // HOW IT IS WON, AND BOTH WAYS STAY UNIFORM OVER THE ROOM.
+  //   draw    — sealed envelopes, one with the eye in it: the single room hash
+  //             above, unchanged, so a season with the draw plays exactly the
+  //             numbers it always did.
+  //   auction — everybody bids out of the prize fund, sealed, and the highest
+  //             bid buys it; the bid comes off the pot. Each bid is a hash over
+  //             the ROOM and the name (never a stat — see "WHO GETS IT" above),
+  //             so every seat is equally likely to bid highest, and nobody's
+  //             cloak moves a penny of it.
+  let holder, award;
+  if (mode === 'auction') {
+    const pot = Math.max(0, Number(gs.tr.pot) || 0);
+    const bids = seats.map(n => {
+      const u = hash01(`seer-bid|${ep}|${seats.join('|')}|${n}`);
+      // between 2% and 14% of the pot, to the nearest £250
+      return { name: n, amount: Math.max(250, Math.round((pot * (0.02 + 0.12 * u)) / 250) * 250), u };
+    }).sort((a, b) => (b.u - a.u) || (a.name < b.name ? -1 : 1));
+    holder = bids[0].name;
+    const paid = Math.min(pot, bids[0].amount);
+    gs.tr.pot = pot - paid;
+    award = { method: 'auction', bids: bids.map(b => ({ name: b.name, amount: b.amount })), paid, potBefore: pot, potAfter: gs.tr.pot };
+  } else {
+    holder = seats[Math.floor(hash01(`seer-holder|${ep}|${seats.join('|')}`) * seats.length)];
+    award = { method: 'draw', room: seats };
+  }
 
   // Belief-side, both clauses. `knowsAlignmentOf` is the turret test, so this
   // reads "the people I have not been shown" and never "the Faithfuls".
@@ -1131,7 +1167,7 @@ export function openSeer(ep) {
     ? (recruited ? 'traitor-recruited' : 'traitor-original')
     : (priorSuspicion > 0 ? 'faithful-suspected' : 'faithful-cold');
   const rec = {
-    ep, seer: holder, subject, truth, priorSuspicion, recruited, readKey,
+    ep, seer: holder, subject, truth, priorSuspicion, recruited, readKey, award,
     // WHAT THE SEER THEMSELVES IS, recorded at the read's own episode and never
     // recomputed. The subject's counter-accusation asserts a fact about the
     // Seer, so `truthful` on that claim can only be checked against this — and

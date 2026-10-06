@@ -125,13 +125,16 @@ export function ledgerAt(screens, si, idx) {
 // ── where people are ──────────────────────────────────────────────────
 function seatsAt(S, i) {
   const seated = { ...(S.seated || {}) };
-  for (let j = 0; j <= i; j++) Object.assign(seated, S.steps[j]?.seat || {});
+  const j0 = SCENE_KINDS.has(S.kind) ? sceneStartOf(S, i) : 0;
+  for (let j = Math.max(0, j0); j <= i; j++) Object.assign(seated, S.steps[j]?.seat || {});
   return seated;
 }
 function seatOf(S, seated, n) {
   const a = ANCH[S.set]; const id = seated[n];
   if (!a || !id) return null;
   if (id === 'head') return { at: a.head.at, w: a.head.w * 1.25 };
+  // the finale stage: the middle of the two places at the front of the platform
+  if (id === 'Dm' && a.seats?.D0) { const l = a.seats.D0, r = a.seats.D1; return { at: [50, l.at[1] + 0.6, l.at[2]], w: l.w }; }
   if (id === 'stand2') { const t = a.seats.stand; return { at: [100 - t.at[0], t.at[1], t.at[2]], w: t.w }; }
   // a third nominee's chair (the Block Buster, a third seat): the render has two, so the third
   // stands between them, a step behind (the user, 2026-10-06: "only 2 chairs even when there's 3")
@@ -140,6 +143,16 @@ function seatOf(S, seated, n) {
   return t ? { at: t.at, w: t.w * (S.set === 'dining' ? 0.72 : 1.0) } : null;
 }
 const zOf = a => Math.round(100 - a.at[2] * 10);
+// where a seated person was on the step before, as the offset a walk starts from
+function walkFrom(S, seated, n, idx) {
+  const before = seatsAt(S, idx - 1);
+  if (!before[n] || before[n] === seated[n]) return '';
+  const a = seatOf(S, seated, n), b = seatOf(S, before, n);
+  if (!a || !b) return '';
+  return `--wx:${(b.at[0] - a.at[0]).toFixed(2)}cqw;--wy:${(-(b.at[1] - a.at[1]) * 0.5625).toFixed(2)}cqw;`;
+}
+// finale night: nobody wears a week's badge (an Evicted chip on one juror of nine is noise)
+const NOCHIPS = { status: {}, out: [], leftover: [], nom: [], safe: [], spent: [], plus: null, veto: null };
 function castAt(S, i) {
   if (S.seated) {
     const gone = new Set(S.steps.slice(0, i + 1).filter(x => x.exit).map(x => x.exit));
@@ -164,7 +177,7 @@ function chipsFor(n, L) {
 function camOf(S, i) {
   const st = S.steps[i];
   if (!st || !st.push || !st.by || S.set === 'suite') return 'none';
-  if (st.k === 'host') return 'scale(1.18)|20% 30%';
+  if (st.k === 'host' && !(S.seated && seatsAt(S, i)[st.by])) return 'scale(1.18)|20% 30%';
   if (st.k === 'dr') return 'scale(1.18)|50% 42%';
   if (S.seated) { const seated = seatsAt(S, i); const a = seatOf(S, seated, st.by); if (a) return `scale(1.3)|${a.at[0]}% ${100 - a.at[1] - a.w * 1.1}%`; }
   const p = castAt(S, i).find(([n]) => n === st.by);
@@ -720,15 +733,21 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
     const entered = fresh && idx === 0;
     const tense = st && st.tense ? (st.tense.includes(n) ? 'tense' : 'out') : '';
     const cls = [tense || (n === speaker ? 'speak' : (st && st.push) ? 'out' : ''), entered ? 'in' : '', L.plus === n ? 'plus' : '', L.passed === n ? 'passed' : '', a2.cls].join(' ');
+    const walk = seated && fresh && idx > 0 && idx > sceneStartOf(S, idx) ? walkFrom(S, seated, n, idx) : '';
     if (seated && n === o.host) {
       const a = seatOf(S, seated, n);
-      if (a) h += `<div class="gt host ${speaker === o.host ? 'speak' : ''}" style="left:${a.at[0]}%;--c:#ff2e4d;bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}"><div class="tile">${img(o.host, true)}</div><div class="plate"><b>${esc(o.host)}</b><span class="hostlab">HOST</span></div></div>`;
+      if (a) h += `<div class="gt host ${speaker === o.host ? 'speak' : ''} ${walk ? 'walk' : ''}" style="${walk}left:${a.at[0]}%;--c:#ff2e4d;bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}"><div class="tile">${img(o.host, true)}</div><div class="plate"><b>${esc(o.host)}</b><span class="hostlab">HOST</span></div></div>`;
       continue;
     }
     if (seated) {
       const a = seatOf(S, seated, n);
-      h += tileHtml(n, x, cls, L, '', `bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}`, a2.fx);
+      h += tileHtml(n, x, `${cls} ${walk ? 'walk' : ''}`, S.set === 'finale' ? NOCHIPS : L, '', `${walk}bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}`, a2.fx);
     } else h += tileHtml(n, x, cls, L, '', '', a2.fx);
+  }
+  // the finale's key box: a key drops through the slot
+  if (S.set === 'finale' && fresh && st && st.drop && ANCH.finale?.slot) {
+    const sl = ANCH.finale.slot;
+    h += `<div class="obj keydrop" style="left:${sl.at[0]}%;bottom:${(sl.at[1] * 0.5625).toFixed(2)}cqw;width:${(sl.w * 0.42).toFixed(2)}cqw">${KEY_SVG}</div><div class="obj boxglow" style="left:${sl.at[0]}%;bottom:${(sl.at[1] * 0.5625 - sl.w * 0.3).toFixed(2)}cqw;width:${(sl.w * 1.3).toFixed(2)}cqw"></div>`;
   }
   if (S.set === 'dining') {
     h += `<img class="front" src="assets/bb/house/${o.season}/dining-td-b-nombox.webp?v=${V}" alt="" style="z-index:${zOf(ANCH.dining.box)}">`;
@@ -826,9 +845,9 @@ export function stageHtml(screens, si, idx, fresh, o) {
         const lastNow = fresh && st?.key?.[1] === n;
         return `<div class="kcol ${k >= (S.keysNeed || 99) ? 'won' : ''}"><span class="kf" style="--c:${col(n)}">${img(n)}</span><b>${esc(n)}</b><div class="kn ${lastNow ? 'bump' : ''}">${k}</div><div class="kp">${Array.from({ length: k }, (_, i) => `<i class="${lastNow && i === k - 1 ? 'new' : ''}">${KEY_SVG}</i>`).join('')}</div></div>`;
       }).join('<span class="kvs">VS</span>');
-      h += `<div class="keyboard"><span class="kh">THE JURY'S KEYS · ${S.keysNeed} TO WIN</span><div class="kr">${col2}</div></div>`;
+      h += `<div class="keyboard ${S.set === 'finale' ? 'fin' : ''}"><span class="kh">THE JURY'S KEYS · ${S.keysNeed} TO WIN</span><div class="kr">${col2}</div></div>`;
     } else if (inBox) {
-      h += `<div class="ballots"><div class="k">Keys in the box</div><div class="n">${inBox}</div></div>`;
+      h += `<div class="ballots ${S.set === 'finale' ? 'fin' : ''}"><div class="k">Keys in the box</div><div class="n">${inBox}</div></div>`;
     }
   }
   if (st && st.board) {
@@ -836,6 +855,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
     const rows = (B.rows || []).map(r => `<div class="fbr ${r.out ? 'out' : ''}"><span class="ff" style="--c:${col(r.n)}">${img(r.n)}</span><b>${esc(r.n)}</b>${r.v != null ? `<span class="fbar"><i style="width:${Math.round(r.v * 100)}%"></i></span>` : ''}${r.text != null ? `<span class="ft">${esc(r.text)}</span>` : ''}</div>`).join('');
     h += `<div class="fboard"><span class="fh">${esc(B.title || '')}</span>${rows}</div>`;
   }
+  if (st && st.suspense) h += `<div class="suspense ${fresh ? 'fresh' : ''}"></div>`;
   if (fresh && st && st.confetti) h += '<div class="goldflash"></div>';
   if (fresh && st && st.confetti) h += `<div class="confetti">${Array.from({ length: 120 }, (_, i) => `<i style="left:${(i * 37) % 100}%;--d:${((i * 13) % 34) / 10}s;--x:${((i * 29) % 40) - 20}cqw;--r:${(i * 47) % 360}deg;background:${['#f5c542', '#ff2e4d', '#22e1ff', '#7c5cff', '#fff', '#12b76a'][i % 6]}"></i>`).join('')}</div>`;
   if (S.finale && idx >= 0) h += '<div class="beams"><i></i><i></i><i></i></div>';

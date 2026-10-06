@@ -620,7 +620,7 @@ function finalPartScreen(act, ctx, n) {
     steps.push({ k: 'host', by: host, t: `${comp.winner}, you are the final Head of Household!`, hoh: comp.winner, confetti: true, big: [comp.winner, 'Final Head of Household', 'safe'], board: board() });
     steps.push({ k: 'say', by: comp.winner, push: true, t: pickBy(['Oh my god. I did it.', 'Yes! YES!', 'I can\'t believe it. I really can\'t.'], `${ctx.week}|p3`) });
     return finaleScreen(`bb-final-hoh-${n}-v`, 'final-part', 'Final HOH · Part Three', 'Live: the jury quiz', ctx,
-      steps.map((s, i) => (i === 0 ? { ...s, scene: onSet(players) } : s)), { legacy: new RegExp(`^bb-final-hoh-${n}$`), label: 'HOH Final Part' });
+      steps.map((s, i) => (i === 0 ? { ...s, scene: onSet({ finalists: players, jury: ctx.jury || [], host }) } : s)), { legacy: new RegExp(`^bb-final-hoh-${n}$`), label: 'HOH Final Part' });
   }
   const fake = { competition: comp, results: placements.map(name => ({ name })), winner: comp.winner };
   const S = compScreen(fake, ctx, 'final');
@@ -661,11 +661,21 @@ function finalPartScreen(act, ctx, n) {
 // show; same for the reunion on set; no vote counter; the finale isn't grandiose, it's lame".
 // The finale is one live show: the house and the studio set, cut between (scene markers), the host
 // in person on the set, the jury's keys on a board, and the winner under confetti.
-const onSet = (cast, extra = {}) => ({ set: 'studio-wide', arena: true, room: 'The Finale Stage', cam: 7, kicker: 'Live · The finale stage', hostOn: true,
-  cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'ceremony', ...extra });
+// The finale stage (tools/bb-house room_finale): the jury in their chairs on the risers, the
+// finalists in the two chairs on the platform, the host on the mark. Every place is a measured
+// anchor, so nobody floats or sinks into the floor (the user, 2026-10-06).
+const JSEAT = ['J0', 'J5', 'J1', 'J6', 'J2', 'J7', 'J3', 'J8', 'J4', 'J9'];
+const onSet = ({ jury = [], finalists = [], host = null } = {}, extra = {}) => {
+  const seated = {};
+  jury.filter(n => !finalists.includes(n)).slice(0, JSEAT.length).forEach((n, i) => { seated[n] = JSEAT[i]; });
+  const F = finalists.length >= 3 ? ['F0', 'Dm', 'F1'] : ['F0', 'F1'];
+  finalists.forEach((n, i) => { if (F[i]) seated[n] = F[i]; });
+  if (host) seated[host] = 'H';
+  return { set: 'finale', arena: true, room: 'The Finale Stage', cam: 7, kicker: 'Live · The finale stage', hostOn: !host, seated, cast: [], mood: 'ceremony', ...extra };
+};
 const inHouse = (cast, extra = {}) => ({ set: 'ceremony', arena: false, hostOn: false, room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · The living room',
   cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'ceremony', tvObj: true, ...extra });
-const finaleScreen = (id, kind, title, sub, ctx, steps, extra = {}) => ({ id, kind, anchor: 'finale', set: 'studio-wide', arena: true, room: 'The Finale Stage', cam: 7,
+const finaleScreen = (id, kind, title, sub, ctx, steps, extra = {}) => ({ id, kind, anchor: 'finale', set: 'finale', arena: true, room: 'The Finale Stage', cam: 7,
   title, kicker: 'Live · Finale night', sub, day: ctx.day, time: 'LIVE', cast: [], finale: true, steps, ...extra });
 
 function finalCutScreen(act, ctx) {
@@ -704,11 +714,11 @@ function juryQuestionsScreen(act, ctx) {
   const jury = act.jury || ctx.jury || [];
   const f2 = act.finalTwo || ctx.finalTwo || [];
   const steps = [];
-  steps.push({ k: 'host', by: host, scene: onSet(jury.slice(0, 9)), t: `The jury is here with me on the set: ${word(jury.length)} evicted houseguests, and every one of them has a vote. Jurors, the finalists can hear you.` });
+  steps.push({ k: 'host', by: host, scene: onSet({ jury, host }), t: `The jury is here with me on the set: ${word(jury.length)} evicted houseguests, and every one of them has a vote. Jurors, the finalists can hear you.` });
   steps.push({ k: 'beat', scene: inHouse(f2), t: `In the living room, ${listOf(f2)} sit side by side on the sofa, facing the screen. The jury appears on it.` });
   for (const ex of act.exchanges || []) {
     // the question from the set, the answer from the house
-    steps.push(...spoken(ex.juror, ex.question, { push: true, stance: [ex.juror, ex.stanceBefore || 'undecided', ex.asked] }).map((s, i) => (i === 0 ? { ...s, scene: onSet(jury.slice(0, 9)) } : s)));
+    steps.push(...spoken(ex.juror, ex.question, { push: true, stance: [ex.juror, ex.stanceBefore || 'undecided', ex.asked] }).map((s, i) => (i === 0 ? { ...s, scene: onSet({ jury, host }) } : s)));
     let cut = false;
     for (const a of ex.answers || []) {
       if (a.text) { const sp = spoken(a.finalist, a.text, { push: a.finalist === ex.asked }); if (!cut && sp[0]) { sp[0] = { ...sp[0], scene: inHouse(f2) }; cut = true; } steps.push(...sp); }
@@ -735,48 +745,78 @@ function juryVoteScreen(act, ctx, host, row) {
   const jury = act.jury || [];
   const f2 = row.finalTwo || ctx.finalTwo || Object.keys(act.votes || {});
   const winner = act.winner || row.winner;
+  const runner = f2.find(n => n !== winner);
   const need = Math.floor(jury.length / 2) + 1;
   const pick = (l, s) => pickBy(l, `${ctx.week}|jv|${s}`);
+  const home = Object.fromEntries(jury.slice(0, JSEAT.length).map((n, i) => [n, JSEAT[i]]));
   const steps = [];
-  steps.push({ k: 'host', by: host, scene: onSet(jury.slice(0, 9)), t: `Jurors, it's time to vote for the winner of Big Brother. One at a time, take the key with the name of the finalist you want to win, and place it in the box.` });
-  // each juror places a key and says a line that names nobody: the vote is secret until it is read
+  steps.push({ k: 'host', by: host, scene: onSet({ jury, host }), t: `Jurors, it's time to vote for the winner of Big Brother. One at a time, take the key with the name of the finalist you want to win, and place it in the box.` });
+  steps.push({ k: 'host', by: host, t: `Remember: tonight you are voting for the houseguest you want to WIN. Nobody will see your key until it comes out of that box.` });
+  // each juror walks to the box, says a line that names nobody, and drops the key in
+  let prev = null;
   for (const r of act.reasoning || []) {
-    steps.push({ k: 'beat', t: pick([`${r.juror} walks to the box.`, `${r.juror} stands, takes a key, and looks at the name on it for a long moment.`, `${r.juror} gets up and crosses the stage.`], r.juror), tense: [r.juror] });
+    steps.push({ k: 'beat', t: pick([`${r.juror} walks to the box.`, `${r.juror} stands, takes a key, and looks at the name on it for a long moment.`, `${r.juror} gets up and crosses the stage.`], r.juror),
+      tense: [r.juror], seat: { ...(prev && home[prev] ? { [prev]: home[prev] } : {}), [r.juror]: 'box' } });
     steps.push({ k: 'say', by: r.juror, keyIn: r.juror, juryVote: [r.juror, r.votedFor], t: pick(['This one is for the best game I saw.', 'I thought about this for a long time. This is my vote.', 'No hard feelings, whichever way this goes.',
       'I voted with my head tonight, not my heart.', 'Congratulations to you both. This is for the one who earned it.', 'This one is for the person who actually played.',
       'I hope you both understand.', 'I know exactly what I am doing with this key.'], `say|${r.juror}`) });
-    steps.push({ k: 'beat', t: `The key goes into the box.` });
+    steps.push({ k: 'beat', t: pick(['The key drops into the box.', 'The key goes in with a click.', 'In it goes.'], `drop|${r.juror}`), drop: r.juror });
+    prev = r.juror;
   }
-  steps.push({ k: 'host', by: host, t: `The votes are locked in.`, toast: ['THE VOTES ARE IN', '#e8c98a'] });
+  steps.push({ k: 'host', by: host, t: `The votes are locked in.`, toast: ['THE VOTES ARE IN', '#e8c98a'], seat: prev && home[prev] ? { [prev]: home[prev] } : {} });
+  // the finalists come out of the house, down onto the stage, and take their chairs
   steps.push({ k: 'host', by: host, scene: inHouse(f2), t: `${listOf(f2)}, it's time. Please make your way out of the house and join us on the stage.` });
   steps.push({ k: 'beat', t: `The front door opens on the studio, and the crowd is on its feet. ${listOf(f2)} walk out of the Big Brother house together.`, door: true });
-  steps.push({ k: 'host', by: host, scene: onSet([f2[0], ...jury.slice(0, 7), f2[1]].filter(Boolean)), t: `Welcome, both of you. The keys are in the box. I'll reveal them one at a time, and the first finalist to ${word(need)} votes wins Big Brother.` });
-  // the keys, one at a time, until somebody has the majority
+  const walkIn = onSet({ jury, host, finalists: f2 });
+  f2.forEach((n, i) => { walkIn.seated[n] = `D${i}`; });
+  steps.push({ k: 'beat', scene: walkIn, t: `${listOf(f2)} come down onto the stage, holding hands. The jury is on its feet, clapping.` });
+  steps.push({ k: 'host', by: host, t: `Welcome, both of you. Please, take a seat.`, seat: Object.fromEntries(f2.map((n, i) => [n, `F${i}`])) });
+  steps.push({ k: 'host', by: host, t: `The keys are in the box. I'll reveal them one at a time, and the first finalist to ${word(need)} votes wins Big Brother.` });
+  // the keys come out of the box in an order that keeps it close as long as it can be: the
+  // trailing finalist's keys alternate with the leader's, so the result is the same and the
+  // count is level for as long as the votes allow
+  const forW = (act.reasoning || []).filter(r => r.votedFor === winner);
+  const forL = (act.reasoning || []).filter(r => r.votedFor !== winner);
+  const order = [];
+  while (forW.length || forL.length) {
+    if (forL.length) order.push(forL.shift());
+    if (forW.length) order.push(forW.shift());
+  }
   const tally = {};
   let crowned = false;
-  for (const r of act.reasoning || []) {
+  const names = n => `${word(n)} vote${n === 1 ? '' : 's'}`;
+  order.forEach((r, i) => {
+    if (crowned) return;
+    const clinch = !act.tiebreak && r.votedFor === winner && (tally[winner] || 0) + 1 >= need;
+    steps.push({ k: 'host', by: host, tense: f2, suspense: true, t: i === 0 ? pick(['The first key...', 'Here is the first key.'], 'first')
+      : clinch ? pick(['The next key...', 'And the next key...'], `pre|${r.juror}`) : pick(['The next key...', 'Next key...', 'This key...', 'And the next one...'], `pre|${r.juror}`) });
     tally[r.votedFor] = (tally[r.votedFor] || 0) + 1;
-    const lead = Object.entries(tally).sort((a, b) => b[1] - a[1])[0];
-    steps.push({ k: 'host', by: host, push: true, t: pick([`The next key... ${r.votedFor}.`, `${r.votedFor}.`, `This key reads... ${r.votedFor}.`], `key|${r.juror}`), key: [r.juror, r.votedFor] });
-    if (!crowned && tally[winner] >= need && r.votedFor === winner) {
+    steps.push({ k: 'host', by: host, push: true, t: `${r.votedFor}.`, key: [r.juror, r.votedFor] });
+    if (clinch) {
       crowned = true;
       steps.push({ k: 'host', by: host, t: `That's ${word(need)} votes. ${winner}... you are the winner of Big Brother!`, winner, confetti: true, shake: true, big: [winner, 'Wins Big Brother', 'safe'],
         why: ['How the jury voted:', ...(act.reasoning || []).map(x => `${x.juror} → ${x.votedFor}: ${stripTags(x.reason || '').replace(/^["“]|["”]$/g, '')}`)] });
-      steps.push({ k: 'say', by: winner, push: true, t: pick([`I can't believe it. I really can't believe it.`, `Oh my god. OH MY GOD.`, `I did it. I actually did it.`], 'win') });
-      break;
+      return;
     }
-    if (act.tiebreak && Object.values(tally).reduce((a, b) => a + b, 0) === jury.length) break;
-    void lead;
-  }
+    const a = tally[f2[0]] || 0, b = tally[f2[1]] || 0;
+    const lead = a > b ? f2[0] : b > a ? f2[1] : null;
+    if (a === b && a === need - 1) steps.push({ k: 'host', by: host, tense: f2, t: `${names(a)} each. The next key decides the winner of Big Brother.` });
+    else if (a === b) steps.push({ k: 'host', by: host, t: `That's ${names(a)} each.` });
+    else if (lead && tally[lead] === need - 1) {
+      const other = f2.find(n => n !== lead);
+      steps.push({ k: 'host', by: host, tense: f2, t: `${lead} has ${names(tally[lead])}. One more key, and ${lead} wins Big Brother.` });
+      steps.push({ k: 'beat', t: pick([`${other} stares at the box and doesn't blink.`, `${lead} reaches over and squeezes ${other}'s hand.`, `${other} lets out a long breath. ${lead} can't look at anyone.`], `mp|${i}`) });
+    }
+  });
   if (act.tiebreak) steps.push({ k: 'host', by: host, t: stripTags(act.tiebreak.line), winner, confetti: true, big: [winner, 'Wins Big Brother', 'safe'] });
-  const runner = f2.find(n => n !== winner);
+  steps.push({ k: 'say', by: winner, push: true, t: pick([`I can't believe it. I really can't believe it.`, `Oh my god. OH MY GOD.`, `I did it. I actually did it.`], 'win') });
   if (runner) steps.push({ k: 'beat', t: `${runner} is the first to hug ${winner}. The jury rushes the stage.` });
   return finaleScreen('bb-jury-v', 'jury-vote', 'The Jury Votes', `${word(jury.length)} keys, ${word(need)} to win`, ctx, steps, { keysFor: f2, keysNeed: need });
 }
 
 function favouriteScreen(act, ctx, host) {
-  const everyone = [...new Set([act.winner, ...(ctx.jury || []), ...(ctx.finalTwo || [])])].filter(Boolean).slice(0, 10);
-  const steps = [{ k: 'host', by: host, scene: onSet(everyone), t: `All season, America has been voting for its favourite houseguest. The winner of ${act.prize ? `$${act.prize.toLocaleString('en-US')}` : 'the prize'} is...` },
+  const f2 = ctx.finalTwo || [];
+  const steps = [{ k: 'host', by: host, scene: onSet({ finalists: f2, jury: [...new Set([act.winner, ...(ctx.jury || [])])].filter(n => n && !f2.includes(n)), host }), t: `All season, America has been voting for its favourite houseguest. The winner of ${act.prize ? `$${act.prize.toLocaleString('en-US')}` : 'the prize'} is...` },
     { k: 'host', by: host, push: true, t: `...${act.winner}!`, big: [act.winner, "America's Favourite", 'safe'], confetti: true }];
   if (act.reason) steps.push({ k: 'beat', t: `${act.winner} won it for ${stripTags(act.reason)}.` });
   return finaleScreen('bb-afh-v', 'afp', "America's Favourite", act.winner, ctx, steps);
@@ -787,7 +827,8 @@ function reunionScreen(act, ctx) {
   const all = [...new Set([...(act.finalTwo || []), ...(act.jury || []), ...(act.prejury || [])])];
   const segs = act.segments || [];
   if (!segs.length) return null;
-  const steps = [{ k: 'host', by: host, scene: onSet(all.slice(0, 12)), t: `Please welcome back every houseguest from this season of Big Brother!`, confetti: true }];
+  const f2 = act.finalTwo || [];
+  const steps = [{ k: 'host', by: host, scene: onSet({ finalists: f2, jury: all.filter(n => !f2.includes(n)), host }), t: `Please welcome back every houseguest from this season of Big Brother!`, confetti: true }];
   steps.push({ k: 'beat', t: 'They come out two at a time. The crowd cheers for some of them a lot louder than others.' });
   for (const sg of segs) {
     const who = [sg.speaker, ...(sg.players || [])].filter(Boolean);

@@ -2150,6 +2150,8 @@ export function defaultConfig() {
     // the endgame plays like the modern show since 2024: a finale-banished
     // player's alignment stays hidden and the survivors go on nerve alone.
     trEndgameReveal: true,
+    // The Seer (js/tr/powers.js `openSeer`): 'draw', 'auction' or 'off'.
+    trSeer: 'draw',
     // WHERE A SHIELD COMES FROM, and it changes what the Traitors can know.
     //   'mission' (default) — the modern show: the Reliquary's searcher breaks
     //      away and wins it in the open, so who saw it decides what the pact

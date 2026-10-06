@@ -87,6 +87,28 @@ const HOST_WIN = [
   '{W}, take us back to that last fire. What was going through your head?',
   '{W}, you won. When did you first believe you could?',
 ];
+// MORE THAN ONE OF THEM CAN WIN (the user, 2026-10-06: "the reunion doesnt
+// seem to register that multiple people can win the game"). Everybody who
+// stopped at the last fire with no Traitor among them splits the pot.
+const HOST_WIN_MANY = [
+  '{Ws}, you walked out of that castle together and split {pot}. That is {each} each. How does it feel?',
+  '{Ws}. You trusted each other at the last fire, and it paid off. How does it feel now?',
+  '{Ws}, months later, you have had time to let it sink in. What is it like?',
+];
+const HOST_WIN_NEXT = [
+  '{W}, what about you?',
+  'And {W}?',
+  '{W}, how did it feel for you?',
+];
+// what a winner says that only makes sense when they shared it
+const SHARE_SAY = {
+  dramatic: ['When that fire burned green, I grabbed {O} and I didn’t let go.', 'We did it together, and I would not change that for anything.'],
+  calm: ['I knew I could trust {O}. That was the whole game at the end.', 'We earned it together. Splitting it felt right.'],
+  mean: ['Honestly? I’d have liked it all. But fine, {O} earned a bit.', 'I carried us, but I’m happy to share.'],
+  sad: ['I cried on {O}’s shoulder for about ten minutes.', 'Sharing it with {O} made it mean so much more.'],
+  idgaf: ['Money’s money. Half is still a lot.', 'We won. That’s the main thing.'],
+  idk: ['I still can’t believe we actually trusted each other.', 'I kept waiting for {O} to throw a red.'],
+};
 const WIN_SAY = {
   dramatic: ['I still dream about that fire. When it burned green, I screamed so loud I lost my voice.', 'Honestly? It still doesn’t feel real. I won The Traitors!'],
   calm: ['It feels good. I played the game I wanted to play, and it worked.', 'I always believed I could get there if I kept my head down and stayed calm.'],
@@ -255,6 +277,55 @@ const RIVAL_SAY = {
   idgaf: ['Don’t care, honestly.', 'Never think about {O}.'],
   idk: ['I’m not even sure what we fell out about.', 'Are we still fighting? I genuinely don’t know.'],
 };
+// ── THE WINNERS WALK IN (the user, 2026-10-06: "we dont have special
+// arrival of the winner(s) and congratulations and tape of their game") ──
+const ARRIVE_ONE = [
+  'The doors open one last time. {Ws} walks in, and the whole room is on its feet.',
+  'The lights drop. The doors open, and {Ws} walks in to the loudest cheer of the night.',
+];
+const ARRIVE_MANY = [
+  'The doors open one last time. {Ws} walk in together, and the whole room is on its feet.',
+  'The lights drop. The doors open, and {Ws} walk in side by side to the loudest cheer of the night.',
+];
+const HOST_CONGRATS_F = [
+  'Ladies and gentlemen, the winners of The Traitors: {Ws}! Congratulations.',
+  'There they are. {Ws}, congratulations. You found the Traitors, and you kept your nerve at the fire.',
+];
+const HOST_CONGRATS_F_ONE = [
+  'Ladies and gentlemen, the winner of The Traitors: {Ws}! Congratulations.',
+  'There {sub} is. {Ws}, congratulations. You kept your nerve right to the very end.',
+];
+const HOST_CONGRATS_T = [
+  'Ladies and gentlemen, the {winner} of The Traitors: {Ws}! You fooled every single person in this room.',
+  'There {they}. {Ws}, congratulations. You lied to all of them, and you got away with it.',
+];
+// the room's congratulations, in the voice of whoever says them
+const CONGRATS = {
+  dramatic: ['You deserve every penny! I am so proud of you!', 'I screamed at the television when I saw it. Congratulations!'],
+  calm: ['Well played. You earned it.', 'Congratulations. Nobody played it better.'],
+  mean: ['Congratulations. I suppose.', 'Enjoy it. You got lucky at that fire.'],
+  sad: ['I cried when I watched it. You deserve it so much.', 'I’m so happy for you. Honestly.'],
+  idgaf: ['Nice one. Spend it on something good.', 'Fair play. Drinks are on you.'],
+  idk: ['Wait, how much was it again? Congratulations!', 'I genuinely didn’t see that coming. Well done!'],
+};
+// a Traitor congratulating the Faithfuls who beat them
+const CONGRATS_BEATEN = {
+  dramatic: ['You beat me, and I hate it. Congratulations.', 'I am furious, and I am so proud of you. Both.'],
+  calm: ['Fair play. You beat me properly.', 'You caught us. Congratulations, genuinely.'],
+  mean: ['Don’t get used to it.', 'Fine. Well done. Happy now?'],
+  sad: ['I’m glad it was you, if it had to be anyone.', 'I’m so happy for you, even if it was at my expense.'],
+  idgaf: ['Good game. Well played.', 'Yeah, fair. Congratulations.'],
+  idk: ['Wait, you were the one who caught me? Well done.', 'I still don’t know how you did it. Congratulations.'],
+};
+const TAPE_HOST = [
+  'Before we talk to {Ws}, let us look back at how {they} won it.',
+  'Let us remind ourselves how {Ws} got here.',
+];
+const THROWBACK_HOST = {
+  traitors: ['Let us go back to the beginning, and the moment the Traitors were chosen.'],
+  murders: ['Let us go back to those breakfasts.'],
+};
+
 // ── CONFRONTATIONS: the second and third lines of an exchange ────────────
 // The murderer, after the murdered has answered. A friendship still warm at
 // the end of the season gets the softer line.
@@ -477,6 +548,13 @@ function _buildBeats(R, ep) {
   const card = (title, kind, inner, meta) => beats.push({ html: '<div class="ru-card" data-kind="' + kind + '">'
     + '<h3 class="ru-card-title">' + _esc(title) + '</h3>' + inner + '</div>', meta: { kind, ...(meta || {}) } });
   const pr = n => pronouns(n) || {};
+  const names = l => (l.length <= 1 ? l.join('') : l.length === 2 ? l.join(' and ') : l.slice(0, -1).join(', ') + ' and ' + l[l.length - 1]);
+  // A THROWBACK: the footage played before a segment, a heading and one line
+  // per moment, every line read off the season record
+  const tape = (head, lines) => (lines.length ? '<div class="ru-tape"><b>' + _esc(head) + '</b>'
+    + lines.map(l => '<span>' + _esc(l) + '</span>').join('') + '</div>' : '');
+  const roleAt = n => ((R.exits || []).find(x => x.name === n) || {}).role;
+  const recruitedIn = new Set((R.recruits || []).filter(x => x.accepted).map(x => x.target));
   // a stage direction: what the room sees happen, between the lines
   const dir = (pool, k, subs) => '<p class="ru-dir">' + _esc(_fill(pickFrom(pool, k), subs)) + '</p>';
   // someone who is nasty in the moment rarely makes peace on camera
@@ -487,19 +565,104 @@ function _buildBeats(R, ep) {
     + '<div class="ru-faces">' + R.cast.map(n => _av(n, 30)).join('') + '</div>'
     + host(pickFrom(HOST_OPEN, key + '|ho')));
 
+  // 1b. THE WINNERS WALK IN, THE ROOM CONGRATULATES THEM, AND THE TAPE OF HOW
+  // THEY WON IT (the user, 2026-10-06)
+  if (R.takers.length) {
+    const many = R.takers.length > 1, Ws = names(R.takers);
+    const traitorWon = R.takers.some(n => R.traitors.includes(n));
+    const p1 = pr(R.takers[0]);
+    let inner = '<p>' + _esc(_fill(pickFrom(many ? ARRIVE_MANY : ARRIVE_ONE, key + '|arr'), { Ws })) + '</p>'
+      + '<div class="ru-faces">' + R.takers.map(n => _av(n, 44)).join('') + '</div>'
+      + host(_fill(pickFrom(traitorWon ? HOST_CONGRATS_T : many ? HOST_CONGRATS_F : HOST_CONGRATS_F_ONE, key + '|hcg'),
+        { Ws, winner: many ? 'winners' : 'winner', they: many ? 'they are' : (p1.sub || 'they') + (p1.sub === 'they' ? ' are' : ' is'), sub: p1.sub || 'they' }));
+    // three of the room say it: a Traitor the winners beat, if there is one,
+    // then the warmest of the rest
+    const room = R.cast.filter(n => !R.takers.includes(n));
+    const beaten = traitorWon ? [] : room.filter(n => R.traitors.includes(n));
+    const warmFirst = room.filter(n => !beaten.includes(n))
+      .sort((a, b) => (_hash(key + '|cg|' + a) % 97) - (_hash(key + '|cg|' + b) % 97));
+    [...beaten.slice(0, 1), ...warmFirst].slice(0, 3).forEach(n => {
+      inner += voice(n, beaten.includes(n) ? CONGRATS_BEATEN : CONGRATS, key + '|cgs|' + n, {});
+    });
+    card(many ? 'The Winners Arrive' : 'The Winner Arrives', 'arrival', inner, { flourish: many ? 'The Winners' : 'The Winner' });
+
+    // THEIR GAME, on tape: the nights they survived the table, the Traitors
+    // they wrote down, the night the turret nearly took them, how it ended
+    // every moment carries its place in the season, so the tape runs in order
+    // (a night sits after the day of the same number)
+    const lines = [];
+    for (const W of R.takers.slice(0, 3)) {
+      const mine = [];
+      const at = (ep, night, text) => mine.push({ k: (Number(ep) || 0) * 2 + (night ? 1 : 0), text });
+      if (R.traitors.includes(W)) {
+        const rec = (R.recruits || []).find(x => x.accepted && x.target === W);
+        if (rec) at(rec.ep, true, `Night ${rec.ep}: ${W} says yes to ${rec.by}, and joins the Traitors.`);
+        else at(0, false, `Day 1: ${W} is chosen as a Traitor.`);
+      }
+      const close = R.tables.filter(t => t.chosen !== W && (t.tally || {})[W] >= 2).sort((a, b) => b.tally[W] - a.tally[W])[0];
+      if (close) at(close.ep, false, `Day ${close.ep}: ${close.tally[W]} names against ${W} at the Round Table. ${W} survives it.`);
+      const caught = R.tables.find(t => t.role === 'traitor' && (t.against || []).includes(W) && t.chosen !== W);
+      if (caught && !R.traitors.includes(W)) at(caught.ep, false, `Day ${caught.ep}: ${W} writes ${caught.chosen}’s name. ${caught.chosen} was a Traitor.`);
+      const near = (R.footage || []).find(x => x.target === W);
+      if (near) at(near.ep, true, `Night ${near.ep}: in the turret, ${near.by} puts ${W}’s name forward. ${W} wakes up the next morning.`);
+      if (!R.tables.some(t => (t.tally || {})[W])) at(999, false, `${W} never had a single name written against ${pr(W).obj || 'them'}.`);
+      lines.push(...mine.slice(0, 3));
+    }
+    lines.sort((a, b) => a.k - b.k);
+    for (let i = 0; i < lines.length; i++) lines[i] = lines[i].text;
+    lines.push(many ? `The last fire: it burns green, and ${Ws} split ${_money(R.pot)}.` : `The last fire: ${Ws} takes ${_money(R.pot)}.`);
+    card('How They Won It', 'tape', host(_fill(pickFrom(TAPE_HOST, key + '|tph'), { Ws, they: many ? 'they' : (p1.sub || 'they') }))
+      + tape(many ? 'Their Game' : R.takers[0] + '’s Game', lines), {});
+  }
+
   // 2. THE WINNERS
   if (R.takers.length) {
     const W = R.takers[_hash(key + '|w') % R.takers.length];
-    let inner = host(_fill(pickFrom(HOST_WIN, key + '|hw'), { W, pot: _money(R.pot) }))
-      + voice(W, WIN_SAY, key + '|ws|' + W);
+    let inner;
+    if (R.takers.length === 1) {
+      inner = host(_fill(pickFrom(HOST_WIN, key + '|hw'), { W, pot: _money(R.pot) }))
+        + voice(W, WIN_SAY, key + '|ws|' + W);
+    } else {
+      // every winner is on the card and every one of them answers (four at
+      // most, in the order they sat at the fire), each about the others
+      const Ws = R.takers.length === 2 ? R.takers.join(' and ')
+        : R.takers.slice(0, -1).join(', ') + ' and ' + R.takers[R.takers.length - 1];
+      const each = _money((Number(R.pot) || 0) / R.takers.length);
+      inner = '<div class="ru-faces">' + R.takers.map(n => _av(n, 38)).join('') + '</div>'
+        + host(_fill(pickFrom(HOST_WIN_MANY, key + '|hwm'), { Ws, pot: _money(R.pot), each }));
+      R.takers.slice(0, 4).forEach((n, i) => {
+        const O = R.takers[(i + 1) % R.takers.length];
+        if (i) inner += host(_fill(pickFrom(HOST_WIN_NEXT, key + '|hwn|' + n), { W: n }));
+        inner += voice(n, i % 2 ? SHARE_SAY : WIN_SAY, key + '|ws|' + n, { O });
+      });
+    }
     const L = R.losers.length ? R.losers[_hash(key + '|l') % R.losers.length] : null;
     if (L) inner += voice(L, LOSER_SAY, key + '|ls|' + L);
-    card(R.takers.length === 1 ? 'The Winner' : 'The Winners', 'winners', inner, { focus: W });
+    card(R.takers.length === 1 ? 'The Winner' : 'The Winners', 'winners', inner, { focus: R.takers.length === 1 ? W : null });
   }
 
   // 3. THE TRAITORS EXPLAIN THEMSELVES
   if (R.traitors.length) {
-    card('The Traitors', 'traitors-open', '<p>The cloaks are off. For the first time, the Traitors get to tell it their way.</p>'
+    // the throwback: who was chosen, who was brought in, and how each cloak ended
+    const chosen = R.traitors.filter(n => !recruitedIn.has(n));
+    const tl = [];
+    const tat = (k, text) => tl.push({ k, text });
+    if (chosen.length) tat(0, `Day 1: the Traitors are chosen. ${names(chosen)}.`);
+    for (const x of (R.recruits || []).filter(x => x.accepted)) tat(x.ep * 2 + 1, `Night ${x.ep}: ${x.by} brings ${x.target} into the turret.`);
+    for (const T of R.traitors) {
+      const ex = (R.exits || []).find(x => x.name === T);
+      // a vote at the fire is not on the castle's exit list, but it is a table
+      const atFire = !(ex && ex.ep != null) && R.tables.find(t => t.chosen === T);
+      if (ex && ex.ep != null) tat(ex.ep * 2 + (ex.channel === 'murder' ? 1 : 0), ex.channel === 'murder'
+        ? `Night ${ex.ep}: ${T} is taken in the night.` : `Day ${ex.ep}: ${T} is sent home from the Round Table.`);
+      else if (atFire) tat(atFire.ep * 2, `Day ${atFire.ep}: ${T} is sent home at the fire.`);
+      else tat(9999, R.takers.includes(T) ? `${T} makes it all the way to the end, and wins.` : `${T} makes it all the way to the last fire.`);
+    }
+    tl.sort((a, b) => a.k - b.k);
+    for (let i = 0; i < tl.length; i++) tl[i] = tl[i].text;
+    card('The Traitors', 'traitors-open', host(pickFrom(THROWBACK_HOST.traitors, key + '|tbt'))
+      + tape('Throwback · The Turret', tl.slice(0, 7))
+      + '<p>The cloaks are off. For the first time, the Traitors get to tell it their way.</p>'
       + '<div class="ru-faces">' + R.traitors.map(n => _av(n, 34)).join('') + '</div>'
       + host(pickFrom(HOST_TRAITORS, key + '|ht')));
     const answered = new Set();
@@ -522,6 +685,10 @@ function _buildBeats(R, ep) {
   }
 
   // 4. THE MURDERED ASK WHY
+  if (R.murders.length) {
+    card('The Breakfasts', 'murders-open', host(pickFrom(THROWBACK_HOST.murders, key + '|tbm'))
+      + tape('Throwback · Breakfast', R.murders.slice(0, 4).map(m => `Night ${m.ep}: the Traitors choose ${m.victim}. The next morning, ${m.victim} does not come down to breakfast.`)));
+  }
   R.murders.slice(0, 4).forEach(m => {
     const pool = KILLER_WHY[m.reason] || KILLER_WHY._;
     const warm = (m.bond || 0) > 2;
@@ -572,7 +739,11 @@ function _buildBeats(R, ep) {
       // harder to give to somebody whose answer was not an apology
       const apologised = _tone(L) !== 'mean';
       const forgives = warmTone(F) && ((t.leadBond || 0) > 0 || (apologised && (t.leadBond || 0) > -2 && ['calm', 'idgaf', 'sad'].includes(_tone(F))));
-      const inner = host(_fill(pickFrom(HOST_MISTAKE, key + '|hmi|' + F), { F, n: String(t.ep) }))
+      const inner = tape('Throwback · Day ' + t.ep, [
+          `${t.votes} name${t.votes === 1 ? '' : 's'} against ${F} at the Round Table. ${L} spoke first.`,
+          `${F} turns to the room: “I am a Faithful.”`,
+        ])
+        + host(_fill(pickFrom(HOST_MISTAKE, key + '|hmi|' + F), { F, n: String(t.ep) }))
         + voice(F, F_SAY, key + '|fs|' + F, { L })
         + voice(L, LEAD_SAY, key + '|lds|' + F, { F })
         + host(_fill(pickFrom(HOST_FORGIVE, key + '|hfg|' + F), { F, L }))
@@ -583,7 +754,8 @@ function _buildBeats(R, ep) {
 
   // 6. TRAITOR AGAINST TRAITOR
   R.turned.slice(0, 2).forEach(x => {
-    const inner = host(_fill(pickFrom(HOST_TURNED, key + '|htu|' + x.target), { A: x.by, B: x.target }))
+    const inner = tape('Throwback · Day ' + x.ep, [`${x.by} writes ${x.target}’s name. Both of them were Traitors.`])
+      + host(_fill(pickFrom(HOST_TURNED, key + '|htu|' + x.target), { A: x.by, B: x.target }))
       + voice(x.by, TURNED_SAY, key + '|tus|' + x.target, { B: x.target })
       + voice(x.target, TURNED_BACK, key + '|tub|' + x.target, {});
     card('Traitor Against Traitor', 'turned', inner, { focus: x.by });
@@ -610,7 +782,13 @@ function _buildBeats(R, ep) {
     const BAR = { calm: -8, sad: -8, idk: -8, idgaf: -6, dramatic: -4 };
     const willing = n => _tone(n) !== 'mean' && rv.bond > (BAR[_tone(n)] ?? -4);
     const ya = willing(rv.a), yb = willing(rv.b), shakes = ya && yb;
-    card('The Feud', 'rivals', host(_fill(pickFrom(HOST_RIVALS, key + '|hrv'), { A: rv.a, B: rv.b }))
+    const wrote = (x, y) => R.tables.flatMap(t => (t.ballots || []).filter(b => b.voter === x && b.target === y).map(() => t.ep));
+    const ab = wrote(rv.a, rv.b), ba = wrote(rv.b, rv.a);
+    const fl = [];
+    if (ab.length) fl.push(`${rv.a} writes ${rv.b}’s name ${ab.length === 1 ? 'on day ' + ab[0] : ab.length + ' times'}.`);
+    if (ba.length) fl.push(`${rv.b} writes ${rv.a}’s name ${ba.length === 1 ? 'on day ' + ba[0] : ba.length + ' times'}.`);
+    card('The Feud', 'rivals', tape('Throwback · The Round Table', fl)
+      + host(_fill(pickFrom(HOST_RIVALS, key + '|hrv'), { A: rv.a, B: rv.b }))
       + voice(rv.a, RIVAL_SAY, key + '|ra', { O: rv.b }) + voice(rv.b, RIVAL_SAY, key + '|rb', { O: rv.a })
       + voice(rv.a, RIVAL_BACK, key + '|rba', { O: rv.b })
       + host(pickFrom(HOST_SHAKE, key + '|hsh'))
@@ -668,6 +846,11 @@ const CSS = `
 .ru-host-line{font-style:italic;font-size:16px;line-height:1.45}
 .ru-said{display:flex;gap:12px;align-items:flex-start;margin:10px 0 2px}
 .ru-said-txt{font-family:var(--v-hand,Georgia),serif;font-style:italic;font-size:17px;line-height:1.45;color:#f3ead8}
+.ru-tape{position:relative;margin:12px 0;padding:14px 16px 12px;background:linear-gradient(180deg,rgba(60,48,30,.55),rgba(30,24,16,.55));
+  border:1px solid rgba(232,194,112,.3);filter:sepia(.25)}
+.ru-tape b{display:block;margin-bottom:6px;font-family:var(--v-display);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#e8c270}
+.ru-tape span{display:block;margin:4px 0;padding-left:14px;position:relative;line-height:1.45;color:#e9dcc0}
+.ru-tape span::before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;border-radius:50%;background:#c9a24a}
 .ru-dir{margin:10px 0 4px;padding-left:12px;border-left:2px solid rgba(232,194,112,.25);font-style:italic;color:#bfb293}
 .ru-clip{display:flex;gap:12px;align-items:flex-start;margin:12px 0;padding:12px 14px;background:rgba(120,20,30,.18);
   border:1px solid rgba(201,40,60,.4);box-shadow:inset 0 0 30px rgba(0,0,0,.5)}

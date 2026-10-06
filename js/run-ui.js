@@ -616,6 +616,12 @@ export function renderSeasonHub() {
   const _reunionRow = isTraitorsSeason() && gs?._trReunionAired
     ? (gs.episodeHistory || []).filter(e => e && e.tr && e.tr.reunion).pop() : null;
   const _reunionKey = _reunionRow ? 'reunion-' + _reunionRow.num : null;
+  // ONE EPISODE IS SELECTED AT A TIME (the user, 2026-10-06: "reunion get
+  // selected at the same time with another episode its forbidden"). The hub
+  // model knows only the season's rows, so a selected reunion falls back to the
+  // last row; every button and pill below asks this instead.
+  const _onReunion = !!_reunionKey && viewingEpNum === _reunionKey;
+  const _watchArg = n => (_onReunion ? `'${_reunionKey}'` : Number(n));
   if (_reunionDue && !model.isHistorical) { model.primaryLabel = 'Air The Reunion'; model.primaryAction = 'simulate'; }
   const primaryClick = model.primaryAction === 'results' ? "showTab('results')" : model.primaryAction === 'current' ? `viewEpisode(${model.liveEpisode})` : 'simulateNext()';
   // Season Controls default OPEN in every lifecycle; the user's manual
@@ -638,7 +644,7 @@ export function renderSeasonHub() {
       <div class="hub-rail-title"><span>Season tape</span><small>Select an episode</small></div>
       <div class="hub-rail-track">
         ${model.history.map(ep => {
-          const active = Number(ep.num) === Number(model.latest?.num);
+          const active = !_onReunion && Number(ep.num) === Number(model.latest?.num);
           const eliminatedNames = getEpisodeEliminations(ep);
           const eliminatedLabel = eliminatedNames.join(' + ');
           const outcome = _spoilerFree
@@ -651,10 +657,11 @@ export function renderSeasonHub() {
         }).join('')}
         ${_reunionKey ? (() => {
           // THE REUNION ON THE TAPE (the user, 2026-10-03: "when i close it i
-          // cant rewatch it cause its not in season tape"): selecting it plays it.
+          // cant rewatch it cause its not in season tape"). Like every other
+          // pill it selects; Watch plays whatever is selected.
           const on = viewingEpNum === _reunionKey;
           const label = `Episode ${_reunionRow.num + 1} — The Reunion`;
-          return `<button class="hub-rail-episode${on ? ' active' : ''}" type="button" aria-current="${on}" aria-label="${_hubEsc(label)}" title="${_hubEsc(label)}" onclick="viewEpisode('${_reunionKey}');openVisualPlayer('${_reunionKey}')"><span class="hub-rail-num">EP ${String(_reunionRow.num + 1).padStart(2, '0')}</span><span class="hub-rail-locked" style="color:#e8c270;font-size:10px;letter-spacing:.08em">REUNION</span></button>`;
+          return `<button class="hub-rail-episode${on ? ' active' : ''}" type="button" aria-current="${on}" aria-label="${_hubEsc(label)}" title="${_hubEsc(label)}" onclick="viewEpisode('${_reunionKey}')"><span class="hub-rail-num">EP ${String(_reunionRow.num + 1).padStart(2, '0')}</span><span class="hub-rail-locked" style="color:#e8c270;font-size:10px;letter-spacing:.08em">REUNION</span></button>`;
         })() : ''}
       </div>
       <div class="hub-rail-position">${model.isHistorical ? `Reviewing ${model.latest.num} / ${model.liveEpisode}` : `Current · ${model.liveEpisode}`}</div>
@@ -691,7 +698,7 @@ export function renderSeasonHub() {
     : model.lifecycle === 'complete' ? 'Finale complete'
       : model.latest ? `Episode ${model.latest.num} aftermath` : `Before Episode ${model.nextEpisode}`;
   const aftermathRows = (items, tone = '') => items.map(item => `<li class="${tone}">${_hubEsc(item)}</li>`).join('');
-  const aftermathHtml = !_spoilerFree && aftermath ? `<section class="hub-aftermath">
+  const aftermathHtml = !_onReunion && !_spoilerFree && aftermath ? `<section class="hub-aftermath">
     <header class="hub-aftermath-head"><div><span>Episode consequence report</span><strong>What changed tonight</strong></div><div class="hub-vote-shape"><small>${_hubEsc(showWords(seasonFormat(seasonConfig)).shapeLabel || 'Final vote shape')}</small><b>${_hubEsc(aftermath.voteShape)}</b></div></header>
     <div class="hub-aftermath-grid">
       <article class="hub-aftermath-card hub-aftermath-why"><span class="hub-aftermath-index">01</span><div><label>Why the result happened</label><p>${_hubEsc(aftermath.why)}</p>${aftermath.decidingVoters.length ? `<small>Deciding ballots: ${_hubEsc(aftermath.decidingVoters.join(', '))}</small>` : ''}</div></article>
@@ -700,12 +707,12 @@ export function renderSeasonHub() {
       ${aftermath.reputationChanges.length || aftermath.lessons.length ? `<article class="hub-aftermath-card"><span class="hub-aftermath-index">04</span><div><label>What lingers</label><ul>${aftermathRows([...aftermath.reputationChanges, ...aftermath.lessons].slice(0, 4), 'lesson')}</ul></div></article>` : ''}
       ${aftermath.editWatch?.length ? `<article class="hub-aftermath-card"><span class="hub-aftermath-index">05</span><div><label>Audience pulse</label><ul>${aftermathRows(aftermath.editWatch, 'edit')}</ul></div></article>` : ''}
     </div>
-    <footer><span>Public consequence summary</span><button type="button" onclick="openVisualPlayer(${Number(model.latest.num)})">Open the full episode breakdown →</button></footer>
+    <footer><span>Public consequence summary</span><button type="button" onclick="openVisualPlayer(${_watchArg(model.latest.num)})">Open the full episode breakdown →</button></footer>
   </section>` : '';
   const canBatch = !model.isHistorical && model.lifecycle !== 'complete' && model.phase !== 'finale';
   const canReplay = !!(model.latest && typeof gsCheckpoints !== 'undefined' && gsCheckpoints[model.latest.num]);
   const secondaryActions = model.lifecycle === 'setup' ? '' : `<nav class="hub-secondary-actions" aria-label="Secondary season actions">
-    <button type="button" onclick="openVisualPlayer(${_reunionKey && !model.isHistorical ? `'${_reunionKey}'` : Number(model.latest?.num || model.liveEpisode)})" ${model.latest ? '' : 'disabled'}>Watch latest</button>
+    <button type="button" onclick="openVisualPlayer(${_watchArg(model.latest?.num || model.liveEpisode)})" ${model.latest ? '' : 'disabled'}>Watch latest</button>
     <button type="button" onclick="simulateMultipleEpisodes(5)" ${canBatch ? '' : 'disabled'}>Sim 5</button>
     <button type="button" onclick="simulateMultipleEpisodes()" ${canBatch ? '' : 'disabled'}>Sim to finale</button>
     <button type="button" onclick="replayEpisode(${Number(model.latest?.num || 0)})" ${canReplay ? '' : 'disabled'}>Replay viewed</button>
@@ -716,7 +723,7 @@ export function renderSeasonHub() {
     <header class="hub-headline"><div><div class="hub-kicker">${model.setting.icon} ${_hubEsc(model.setting.label)} · ${_hubEsc(phaseLabel)}</div><div class="hub-state-badge">${_hubEsc(stateLabel)}</div><h1>${_hubEsc(model.title)}</h1><p>${_hubEsc(headlineStatus)}</p></div><div class="hub-headline-right"><button type="button" class="hub-sf${_spoilerFree ? ' is-on' : ''}" role="switch" aria-checked="${_spoilerFree}" onclick="toggleSpoilerFree(${!_spoilerFree})" title="${_spoilerFree ? 'Results are hidden until you watch the episode' : 'Results are shown on this screen as soon as an episode is simulated'}"><span class="hub-sf-track"><span class="hub-sf-knob"></span></span><span class="hub-sf-label">Spoiler-free<small>${_spoilerFree ? 'On · outcomes hidden' : 'Off · outcomes shown'}</small></span></button><button class="hub-primary" onclick="${primaryClick}">${_hubEsc(model.primaryLabel)}<span>→</span></button></div></header>
     ${secondaryActions}
     <div class="hub-progress${_spoilerFree && model.latest ? ' hub-progress-hidden' : ''}" role="progressbar" aria-label="${_spoilerFree && model.latest ? 'Season progress hidden' : 'Season progress'}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${_spoilerFree && model.latest ? 0 : model.progress}"><span style="width:${_spoilerFree && model.latest ? 100 : model.progress}%"></span></div>
-    ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : `<span class="hub-no-boot">${_hubEsc(showWords(seasonFormat(seasonConfig)).noExitLine || 'No elimination')}</span>`}</div><div class="hub-last-copy"><strong>${_spoilerFree ? 'Outcome hidden until you watch' : _hubEsc(model.latestOutcome)}</strong><span>Episode ${model.latest.num}${!_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_spoilerFree ? '<em>Votes hidden</em>' : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${Number(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>Nobody has voted yet. Opening bonds and first impressions will finally become consequences.</span></section>`}
+    ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_onReunion ? '' : _spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : `<span class="hub-no-boot">${_hubEsc(showWords(seasonFormat(seasonConfig)).noExitLine || 'No elimination')}</span>`}</div><div class="hub-last-copy"><strong>${_onReunion ? 'Everybody back, nothing left to hide' : _spoilerFree ? 'Outcome hidden until you watch' : _hubEsc(model.latestOutcome)}</strong><span>${_onReunion ? `Episode ${_reunionRow.num + 1} · The Reunion` : `Episode ${model.latest.num}`}${!_onReunion && !_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_onReunion ? '' : _spoilerFree ? '<em>Votes hidden</em>' : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${_watchArg(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>Nobody has voted yet. Opening bonds and first impressions will finally become consequences.</span></section>`}
     ${aftermathHtml}
     <div class="hub-grid"><div class="hub-main-column"><div class="hub-section-title"><span>${_spoilerFree && model.latest ? 'Cast after the episode' : 'Cast still in the game'}</span><small>${_spoilerFree && model.latest ? 'Hidden' : `${model.remaining} remaining`}</small></div><div class="hub-tribes">${castHtml}</div></div><aside class="hub-briefing"><div class="hub-section-title"><span>Going forward</span><small>Public context</small></div><div class="hub-next-card"><label>Next episode</label><strong>${_spoilerFree && model.latest ? 'Available after revealing the outcome' : _hubEsc(model.twistLabel)}</strong></div><div class="hub-story-list">${publicStorylines.map((line, index) => `<div><b>${String(index + 1).padStart(2, '0')}</b><span>${_hubEsc(line)}</span></div>`).join('')}</div></aside></div>
   </section>`;

@@ -1232,8 +1232,13 @@ function _reunionRecord(endgame, rows) {
     const votes = (t.votes || []).filter(b => b.channel === 'banishment' && (b.target || b.voted));
     const against = votes.filter(b => (b.target || b.voted) === t.chosen).map(b => b.voter);
     const lead = ((t.speeches || []).find(sp => sp.target === t.chosen) || {}).speaker || against[0] || null;
+    // every name written that night, not only the one that went: the reunion's
+    // throwbacks show the nights somebody survived the table
+    const tally = {};
+    for (const v of votes) { const n = v.target || v.voted; tally[n] = (tally[n] || 0) + 1; }
     tables.push({ ep, chosen: t.chosen, role: role || roleOf(t.chosen), votes: against.length, against, lead,
-      leadBond: lead ? _bondOr0(lead, t.chosen) : 0 });
+      leadBond: lead ? _bondOr0(lead, t.chosen) : 0, tally,
+      ballots: votes.map(v => ({ voter: v.voter, target: v.target || v.voted })) });
   };
   for (const r of rows) if (r.tr && r.tr.table) addTable(Number(r.num), r.tr.table, r.tr.table.chosenAlignment);
   for (const t of ((endgame && endgame.tables) || [])) if (t.record) addTable(Number(t.ep), t.record, null);

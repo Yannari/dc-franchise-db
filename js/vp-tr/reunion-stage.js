@@ -35,6 +35,11 @@ export function reunionStageScreen(ep, observer, pageHtml) {
     const steps = beatLines(data.beats, (n, part) => {
       if (part === 'faces') return [];
       // the turret footage: the Traitor's own words from the night, with their face
+      // a throwback: one step per moment, played as old footage
+      if (part === 'tape') {
+        const head = (n.querySelector('b') || {}).textContent || 'Throwback';
+        return [...n.querySelectorAll('span')].map(x => ({ t: 'narr', tag: head, text: x.textContent.trim(), tape: true }));
+      }
       if (part === 'clip') {
         const said = (n.querySelector('span') || {}).textContent || '';
         return [{ t: 'narr', who: n.dataset.who || null, react: true, tag: n.dataset.tag || 'Never seen',
@@ -86,20 +91,35 @@ function paint(root, S, fresh) {
   const speaker = st && st.t === 'say' ? st.who : null;
   const focus = speaker || (st && st.react && st.who) || m.focus || null;
   const traitors = new Set(R.traitors || []), takers = new Set(R.takers || []);
-  let h = '<div class="tru-world"><img class="tru-plate" src="' + PLATE + '" alt="" draggable="false"><div class="tru-shade"></div>';
+  // who the moment is about, brought forward with the speaker: the winners
+  // while they walk in and while their game plays, and on any throwback or
+  // footage line, everybody it names
+  const lit = new Set(focus ? [focus] : []);
+  if (st && ['arrival', 'tape', 'winners'].includes(m.kind)) for (const n of takers) lit.add(n);
+  if (st && (st.tape || st.react) && st.text) for (const n of R.cast) if (st.text.includes(n)) lit.add(n);
+  // A THROWBACK PLAYS AS OLD FOOTAGE: the room goes sepia and grainy under a
+  // THROWBACK bug for as long as the tape runs
+  let h = '<div class="tru-world' + (st && st.tape ? ' tru-throwback' : '') + '"><img class="tru-plate" src="' + PLATE + '" alt="" draggable="false"><div class="tru-shade"></div>';
   // the host, in the wingback
   { const b = box(W, H), w = b.dw * .05, hostSpeaking = st && st.t === 'host';
     h += `<div class="tru-p tru-host${hostSpeaking ? ' tru-speak' : (speaker ? ' tru-quiet' : '')}" style="left:${b.x(HOST[0])}px;top:${b.y(HOST[1]) - w * .2}px;width:${w}px;z-index:${hostSpeaking ? 50 : 12}">`
       + `<div class="tru-av">${S.data.host && S.data.host.slug ? face(S.data.host.name, S.data.host.slug) : ''}</div><div class="tru-nm">${esc((S.data.host || {}).name || 'The host')}</div></div>`; }
   R.cast.forEach((n, i) => {
     const p = seatOf(i, R.cast.length, W, H);
-    const cls = ['tru-p', n === speaker ? 'tru-speak' : (speaker ? 'tru-quiet' : ''), n === focus && !speaker ? 'tru-lit' : '',
+    const cls = ['tru-p', n === speaker ? 'tru-speak' : (speaker ? 'tru-quiet' : ''), lit.has(n) && n !== speaker ? 'tru-lit' : '',
       traitors.has(n) ? 'tru-t' : '', takers.has(n) ? 'tru-w' : ''].join(' ');
     h += `<div class="${cls}" style="left:${p.x}px;top:${p.y}px;width:${p.w}px;z-index:${n === speaker ? 50 : 10}">`
       + `<div class="tru-av">${face(n)}</div><div class="tru-nm">${esc(n)}</div></div>`;
   });
   h += '</div>';
   if (S.idx === 0 && fresh) h += '<div class="tru-title" data-a="The Reunion" data-b="Everybody is back"></div>';
+  // a segment that makes an entrance (the winners) gets its own title card,
+  // on its first line only
+  else if (fresh && st && m.flourish && (S.steps[S.idx - 1] || {}).beat !== st.beat) {
+    h += `<div class="tru-title" data-a="${esc(m.flourish)}" data-b="Congratulations"></div>`;
+    trPlay('tr-slate');
+  }
+  if (st && st.tape) h += '<div class="tru-vt"><b>Throwback</b></div>';
   if (!st) {
     el.innerHTML = h;
     start.innerHTML = `<b>The Reunion</b><span>${R.cast.length} back in the room · press Next, or click the room</span>`;
@@ -135,6 +155,13 @@ const CSS = `
 .tru-p.tru-speak{transform:translate(-50%,-62%) scale(1.6)}
 .tru-p.tru-speak .tru-av{box-shadow:0 0 0 2px #fff3d2,0 0 34px rgba(255,214,150,.6),0 8px 18px rgba(0,0,0,.85)}
 .tru-p.tru-lit{transform:translate(-50%,-55%) scale(1.25)}
+.tru-throwback{filter:sepia(.75) brightness(.62) contrast(1.15);transition:filter .6s}
+.tru-throwback::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;mix-blend-mode:overlay;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.08) 0 1px,transparent 1px 3px);animation:truGrain .25s steps(2) infinite}
+@keyframes truGrain{0%{transform:translateY(0)}100%{transform:translateY(2px)}}
+.tru-vt{position:absolute;top:16px;right:18px;z-index:60;padding:4px 10px;border:1px solid rgba(232,194,112,.6);background:rgba(10,8,4,.7);
+  font-family:var(--v-display);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#e8c270;animation:truBlink 1.2s steps(2) infinite}
+@keyframes truBlink{50%{opacity:.45}}
 .tru-title{position:absolute;inset:0;z-index:3500;display:grid;place-items:center;pointer-events:none;animation:truTitle 3s ease both}
 .tru-title::before{content:attr(data-a);grid-area:1/1;transform:translateY(-18%);font-family:var(--v-display);font-weight:900;font-size:clamp(40px,7vw,100px);
   letter-spacing:.16em;text-transform:uppercase;color:#f3e3c4;text-shadow:0 0 40px rgba(201,162,74,.6),0 8px 0 rgba(0,0,0,.6)}

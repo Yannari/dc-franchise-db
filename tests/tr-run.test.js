@@ -677,3 +677,48 @@ describe('the reunion throwbacks replay what was actually said', () => {
     for (const q of quoted) expect(unesc(aired).includes(q), `never said on screen: "${q}"`).toBe(true);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// THE SEER REACHES A SCREEN, AND IS WON THE WAY SETUP SAYS (the user,
+// 2026-10-06: "i never seen this twist ... did we implement this?" — it ran in
+// every endgame and its record never left the engine)
+// ══════════════════════════════════════════════════════════════════════
+describe('the Seer', () => {
+  const finale = () => gsRef.episodeHistory[gsRef.episodeHistory.length - 1];
+
+  it('is on the finale row, and airs as its own screen before the first fire', () => {
+    let seen = 0;
+    for (const seed of SEEDS) {
+      airWholeSeason(seed);
+      const fin = finale();
+      if (!fin.tr.endgame.seer) continue;
+      seen++;
+      const ids = TRAITORS_SCREENS.filter(s => s.when(fin)).map(s => s.id);
+      expect(ids, 'the Seer has no screen').toContain('tr-seer');
+      expect(ids.indexOf('tr-seer')).toBeLessThan(ids.indexOf('tr-endgame-fire-0'));
+    }
+    expect(seen, 'no season held a Seer, so this proves nothing').toBeGreaterThan(0);
+  });
+
+  it('in an auction, the highest bid wins it and comes off the prize fund', () => {
+    let seen = 0;
+    for (const seed of SEEDS) {
+      airWholeSeason(seed, { trSeer: 'auction' });
+      const s = finale().tr.endgame.seer;
+      if (!s) continue;
+      seen++;
+      expect(s.award.method).toBe('auction');
+      const top = [...s.award.bids].sort((a, b) => b.amount - a.amount)[0];
+      expect(s.award.bids.find(b => b.name === s.seer).amount, 'the Seer did not bid the most').toBe(top.amount);
+      expect(s.award.potAfter).toBe(s.award.potBefore - s.award.paid);
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+
+  it('switched off in setup, there is none', () => {
+    for (const seed of SEEDS.slice(0, 3)) {
+      airWholeSeason(seed, { trSeer: 'off' });
+      expect(finale().tr.endgame.seer, 'a Seer ran in a season set to have none').toBeNull();
+    }
+  });
+});

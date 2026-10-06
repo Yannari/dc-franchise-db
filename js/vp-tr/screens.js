@@ -44,6 +44,8 @@ import { armouryStageScreen } from './armoury-stage.js';
 import { endgameStageScreen } from './endgame-stage.js';
 import { rpBuildReunion } from './reunion.js';
 import { reunionStageScreen } from './reunion-stage.js';
+import { rpBuildSeer, seerRecordOf } from './seer.js';
+import { seerStageScreen } from './seer-stage.js';
 // The Alcove is folded into the night castle segment (Plan 11); only its gate
 // is needed here, for that segment's `when`.
 import { _hasConfessionals } from './confessionals.js';
@@ -292,6 +294,14 @@ export const TRAITORS_SCREENS = [
   // the table the fire forced, the fire again ... and the finale. Each forced
   // table is a full Round Table, built from the table record the engine kept
   // (`tables[n].record`), so it has everything the season's tables have.
+  // THE SEER (2026-10-06: "i never seen this twist ... did we implement
+  // this?"): run by the engine in every endgame since Plan 7 and never on a
+  // screen. It is offered at the first question the fire puts, so it airs
+  // before the first Fire of Truth: won, used, burned, and lied about.
+  { id: 'tr-seer', label: 'The Seer', suffix: 'seer',
+    badge: { text: 'The Seer', color: '#9ad1ff' },
+    when: r => !!seerRecordOf(r),
+    build: (r, o) => seerStageScreen(r, o, rpBuildSeer(r, o)) },
   ...Array.from({ length: 8 }, (_, n) => [
     // labels are UNIQUE on an episode: the transcript finds a screen's section by its heading
     { id: 'tr-endgame-fire-' + n, label: 'The Fire Of Truth' + (n ? ' · ' + (n + 1) : ''), suffix: 'endgame-' + n,

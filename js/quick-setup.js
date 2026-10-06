@@ -1225,6 +1225,7 @@ const CONFIG_SCOPE = {
     'cfg-tr-auto-double':    ['traitors'],
     'cfg-tr-auto-recruit':   ['traitors'],
     'cfg-tr-endgame-reveal': ['traitors'],
+    'cfg-tr-seer':           ['traitors'],
     // The castle's endgame size (final 2-5). Only js/tr/ reads it.
     'cfg-tr-endgame-size':   ['traitors'],
     // ── FIVE MORE CASTLE CONTROLS THAT WERE NEVER SCOPED ────────────

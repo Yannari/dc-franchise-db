@@ -54,6 +54,8 @@ const _money = n => '£' + Math.round(Number(n) || 0).toLocaleString('en-GB');
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 const VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
 const DRIFT = new Set(['floater', 'wildcard', 'chaos-agent']);
+// shared with the Seer screen (seer.js): the same six ways of talking
+export function reunionTone(name) { return _tone(name); }
 function _tone(name) {
   const st = (typeof pStats === 'function' && pStats(name)) || {};
   const g = k => (Number.isFinite(st[k]) ? st[k] : 5);

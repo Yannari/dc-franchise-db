@@ -1331,6 +1331,7 @@ export function saveConfig() {
     ciSurprises: g('cfg-ci-surprises') ? g('cfg-ci-surprises').checked : seasonConfig.ciSurprises !== false,
     trAutoDouble: g('cfg-tr-auto-double') ? g('cfg-tr-auto-double').checked : true,
     trEndgameReveal: g('cfg-tr-endgame-reveal') ? g('cfg-tr-endgame-reveal').checked : true,
+    trSeer: g('cfg-tr-seer') ? g('cfg-tr-seer').value : (seasonConfig.trSeer || 'draw'),
     trEndgameSize: parseInt(g('cfg-tr-endgame-size')?.value) || 3,
     trAutoRecruit: g('cfg-tr-auto-recruit') ? g('cfg-tr-auto-recruit').checked : true,
     trDensity: g('cfg-tr-density')?.value || TR_DENSITY_DEFAULT,
@@ -1538,6 +1539,7 @@ export function renderConfig() {
   set('cfg-tr-traitor-mode', seasonConfig.trTraitorMode || 'random');
   if (g('cfg-tr-auto-double')) g('cfg-tr-auto-double').checked = seasonConfig.trAutoDouble !== false;
   if (g('cfg-tr-endgame-reveal')) g('cfg-tr-endgame-reveal').checked = seasonConfig.trEndgameReveal !== false;
+  if (g('cfg-tr-seer')) g('cfg-tr-seer').value = ['off', 'auction'].includes(seasonConfig.trSeer) ? seasonConfig.trSeer : 'draw';
   set('cfg-tr-endgame-size', seasonConfig.trEndgameSize || 3);
   if (g('cfg-tr-auto-recruit')) g('cfg-tr-auto-recruit').checked = seasonConfig.trAutoRecruit !== false;
   try { updateDensityUI(); } catch (e) {}

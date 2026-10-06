@@ -64,6 +64,13 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .gt.in .tile{animation:bbx-tin .7s cubic-bezier(.2,.8,.2,1) both}
 @keyframes bbx-tin{from{opacity:0;transform:perspective(50cqw) rotateY(var(--ry,0deg)) translateY(3cqw) scale(.94)}}
 .bbx .gt.gone .tile img{filter:grayscale(1) brightness(.6)}
+/* House Life: the rest of the room, out of focus at the back */
+.bbx .gt.bgp{bottom:31.5cqw;width:5.2cqw;filter:brightness(.38) saturate(.55) blur(.16cqw);z-index:1}
+.bbx .gt.bgp .tile{-webkit-box-reflect:none;box-shadow:0 .8cqw 1.6cqw rgba(0,0,0,.4)}
+.bbx .gt.bgp .plate{display:none}
+/* somebody joining the conversation comes forward */
+.bbx .gt.step .tile{animation:bbx-step .55s cubic-bezier(.2,.8,.2,1) both}
+@keyframes bbx-step{from{opacity:.4;transform:perspective(50cqw) rotateY(var(--ry,0deg)) translateY(-7cqw) scale(.58)}}
 .bbx .trk{position:absolute;inset:-1.1cqw -1.1cqw;pointer-events:none;opacity:0;z-index:3}
 .bbx .gt.speak .trk{opacity:1}
 .bbx .trk i{position:absolute;width:2cqw;height:2cqw;border:.2cqw solid #22e1ff;filter:drop-shadow(0 0 .5cqw #22e1ff)}

@@ -533,6 +533,34 @@ function duoHtml(S, L, st, fresh, idx) {
   return `<div class="duoboard"><span class="dh">YOU GO, THEY GO · ${shown.length} ${shown.length === 1 ? 'PAIR' : 'PAIRS'}</span><div class="dr2">${pairs}${solo}</div></div>`;
 }
 
+// ── House Life: the camera follows the conversation ───────────────────
+// A whole-house scene has six or eight people in it, and putting every one of them up
+// front at full size, all the time, buried the two people actually talking (the user,
+// 2026-10-06). The focus is the current exchange: the last two or three people to speak
+// in this scene, or whoever the stage direction names; at the very top of a scene, the
+// first people about to speak. Everybody else in the room is background: further back,
+// smaller, dimmed, no name plate. Somebody who joins the exchange comes forward.
+function sceneStartOf(S, idx) {
+  for (let i = idx; i >= 0; i--) if (S.steps[i]?.scene) return i;
+  return 0;
+}
+export function focusAt(S, idx) {
+  const names = new Set((S.cast || []).map(([n]) => n));
+  if (idx < 0 || names.size <= 2) return [...names];
+  const from = sceneStartOf(S, idx);
+  const out = [];
+  const add = n => { if (n && names.has(n) && !out.includes(n)) out.push(n); };
+  const st = S.steps[idx];
+  if (st?.k === 'beat') for (const n of names) if (String(st.t).includes(n)) add(n);
+  // the speaker and whoever they are talking to; a third only if three people are trading
+  // lines right now (inside the last four spoken lines)
+  let said = 0;
+  for (let i = idx; i >= from && out.length < 3 && said < 4; i--) { const x = S.steps[i]; if (x?.k === 'say') { said++; add(x.by); } }
+  for (let i = idx + 1; i < S.steps.length && out.length < 2 && !S.steps[i]?.scene; i++) { const x = S.steps[i]; if (x?.k === 'say') add(x.by); }
+  return out.length ? out : [...names].slice(0, 2);
+}
+const FRONT = { 1: [50], 2: [36, 64], 3: [27, 50, 73] };
+
 function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   const isDr = st && st.k === 'dr';
   if (isDr) {
@@ -551,6 +579,22 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   const cast = castAt(S, idx);
   const speaker = st && (st.k === 'say' || st.k === 'host') ? st.by : null;
   const seated = S.seated ? seatsAt(S, idx) : null;
+  if (S.kind === 'houselife' && !seated && cast.length > 3) {
+    const focus = focusAt(S, idx);
+    const before = idx > sceneStartOf(S, idx) ? focusAt(S, idx - 1) : focus;
+    const back = cast.map(([n]) => n).filter(n => !focus.includes(n));
+    // the room first, far back and soft; then the conversation, up front
+    back.forEach((n, i) => {
+      const x = Math.round(10 + (80 * (i + 0.5)) / back.length);
+      h += tileHtml(n, x, 'bgp', L, '', 'z-index:1');
+    });
+    const xs = FRONT[Math.min(3, focus.length)] || FRONT[3];
+    focus.slice(0, 3).forEach((n, i) => {
+      const cls = [n === speaker ? 'speak' : '', fresh && !before.includes(n) ? 'step' : '', L.plus === n ? 'plus' : ''].join(' ');
+      h += tileHtml(n, xs[i], cls, L);
+    });
+    return h;
+  }
   for (const [n, x] of cast) {
     const entered = fresh && idx === 0;
     const cls = [n === speaker ? 'speak' : (st && st.push) ? 'out' : '', entered ? 'in' : '', L.plus === n ? 'plus' : '', L.passed === n ? 'passed' : ''].join(' ');

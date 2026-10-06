@@ -17,6 +17,7 @@ import { POOLS } from '../js/bb/script/lines/index.js';
 import { BB_FACT_KEYS } from '../js/bb/script/facts.js';
 import { classify, causeOf } from '../js/bb/story/storylines.js';
 import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
+import { stageHtml, focusAt } from '../js/vp-bb-ep/stage.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -143,6 +144,32 @@ describe('house life in real weeks', () => {
     for (const a of night) for (const sc of a.scenes || []) {
       expect(['argument', 'apology', 'betrayal', 'repair', 'caught', 'lobby', 'count', 'backdoor', 'pitch'], sc.id).not.toContain(sc.step);
     }
+  });
+
+  it('keeps the camera on the people talking, and the rest of the room in the background', () => {
+    // The user, 2026-10-06: six people next to the icons at all times, even when they do not talk,
+    // is confusing; they should be in the background and the conversation in focus.
+    const screens = bbWeekSteps(A.eps[0], { houseLife: 'segments' });
+    let checked = 0;
+    screens.forEach((S0, si) => {
+      if (S0.kind !== 'houselife') return;
+      S0.steps.forEach((st, i) => {
+        if (st.k !== 'say') return;
+        let sc = null; for (let j = i; j >= 0; j--) if (S0.steps[j].scene) { sc = S0.steps[j].scene; break; }
+        if (!sc || sc.cast.length <= 3) return;
+        const S = { ...S0, ...sc };
+        const focus = focusAt(S, i);
+        expect(focus, 'the speaker is in focus').toContain(st.by);
+        expect(focus.length).toBeLessThanOrEqual(3);
+        const html = stageHtml(screens, si, i, false, { season: 1, host: 'Valeria' }).html;
+        const front = (html.match(/class="gt (?!bgp)/g) || []).length;
+        const back = (html.match(/class="gt bgp/g) || []).length;
+        expect(front).toBeLessThanOrEqual(3);
+        expect(back).toBe(sc.cast.length - focus.length);
+        checked++;
+      });
+    });
+    expect(checked, 'no crowded scene was checked').toBeGreaterThan(5);
   });
 
   it('airs House Life from those scenes, in the order the week happened', () => {

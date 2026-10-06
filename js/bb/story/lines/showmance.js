@@ -61,7 +61,7 @@ export default {
       { by: 'b', say: "Little bit." },
       { by: 'b', dr: "There was nothing on my face. I checked. {a} just wanted an excuse. I'm choosing to be flattered." },
     ] },
-    { id: 'sm.s5', turns: [
+    { id: 'sm.s5', presumes: ['hoh'], turns: [
       { by: 'b', say: "Why do you always sit next to me?" },
       { by: 'a', say: "I don't always sit next to you." },
       { by: 'b', say: "You've sat next to me at every meal." },
@@ -179,7 +179,7 @@ export default {
 
   // ── kiss: a couple who came in together ─────────────────────────────
   'story.showmance.kiss.couple': [
-    { id: 'sk.c1', room: 'bedroom', turns: [
+    { id: 'sk.c1', presumes: ['hoh'], room: 'bedroom', turns: [
       { beat: 'The lights are off. {a} checks the door, then slips over to {b}’s bed.' },
       { by: 'b', say: "What are you doing? Somebody's going to see." },
       { by: 'a', say: "Everyone's asleep." },

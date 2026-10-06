@@ -68,7 +68,7 @@ export default {
       { by: 'a', say: "Tuesday-ish. Great. Very helpful." },
       { by: 'b', dr: "There's no clocks in here. No phones. You start measuring time in meals." },
     ] },
-    { id: 'lb.5', turns: [
+    { id: 'lb.5', presumes: ['hoh'], turns: [
       { by: 'b', say: "Teach me something." },
       { by: 'a', say: "What?" },
       { by: 'b', say: "Anything. I'm so bored my brain's melting. Teach me something." },
@@ -93,7 +93,7 @@ export default {
       { by: 'a', say: "They'll hear you from there too." },
       { by: 'c', dr: "I do not snore. I have never snored. These people are lying, and I'm going to prove it, somehow." },
     ] },
-    { id: 'lb.7', turns: [
+    { id: 'lb.7', presumes: ['hoh'], turns: [
       { by: 'a', say: "If they let us have one thing from home, what would you pick?" },
       { by: 'b', say: "My pillow. Easy." },
       { by: 'a', say: "Your pillow? Not like, something fun?" },
@@ -119,7 +119,7 @@ export default {
     ] },
   ],
   'story.life.prank.funny': [
-    { id: 'lp.f1', room: 'bedroom', turns: [
+    { id: 'lp.f1', presumes: ['hoh'], room: 'bedroom', turns: [
       { beat: '{a} is hiding behind the bedroom door, absolutely still.' },
       { by: 'a', dr: "{b} has been scaring me all week. Today, it ends." },
       { beat: '{b} walks in. {a} jumps out and screams.' },
@@ -189,7 +189,7 @@ export default {
     ] },
   ],
   'story.life.prank.misfire': [
-    { id: 'lp.m1', room: 'bathroom', turns: [
+    { id: 'lp.m1', presumes: ['hoh'], room: 'bathroom', turns: [
       { beat: '{a} balances a cup of water on top of the bathroom door.' },
       { by: 'a', dr: "{b} always goes to the bathroom at the same time. Every day. Like a clock." },
       { beat: 'The door opens. It is not {b}. Somebody else, soaked, looks up.' },
@@ -573,7 +573,7 @@ export default {
       { by: 'b', say: "That one's Gary." },
       { by: 'a', dr: "That camera is Gary now. I can never unsee it." },
     ] },
-    { id: 'lf.6', turns: [
+    { id: 'lf.6', presumes: ['hoh'], turns: [
       { by: 'a', say: "I saved you a seat." },
       { by: 'b', say: "You always save me a seat." },
       { by: 'a', say: "Because you always come." },

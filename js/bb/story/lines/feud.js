@@ -78,7 +78,7 @@ export default {
       { by: 'b', say: "We're all tired! That's what the coffee was for!" },
       { by: 'b', dr: "I'm not a morning person. Without coffee I'm not a person at all. {a} knows that now." },
     ] },
-    { id: 'sf.c6', turns: [
+    { id: 'sf.c6', presumes: ['hoh'], turns: [
       { by: 'b', say: "Can I ask you something without it being a thing?" },
       { by: 'a', say: "That's how every thing starts." },
       { by: 'b', say: "You've had my towel. For three days." },

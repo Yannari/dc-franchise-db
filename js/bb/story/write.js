@@ -27,6 +27,7 @@ import { factsFor } from '../script/facts.js';
 import { stableRng } from '../knowledge.js';
 import { causeOf } from './storylines.js';
 import { STORY_POOLS } from './lines/index.js';
+import { getBond } from '../../bonds.js';
 
 const ledger = () => ((gs.bb ||= {}).storyLedger ||= newLedger());
 const ROOM = { kitchen: 'Kitchen', 'living-room': 'Living Room', bedroom: 'Bedroom', 'hoh-room': 'HOH Room',
@@ -78,6 +79,8 @@ function pick(keys, who, data, ctx, room, salt) {
   const FRIEND = new RegExp(String.raw`(^|[^a-z])friends?([^a-z]|$)`, "i");
   const fits = e => !close || !FRIEND.test(JSON.stringify(e.turns));
   for (const k of keys) pools[k] = (STORY_POOLS[k] || []).filter(e => presumed(e, ctx) && can(e) && fits(e));
+  // inside a set piece the room is the set's: a scene that stages its own room waits, unless nothing else fits
+  if (ctx.inSet) for (const k of keys) { const free = pools[k].filter(e => !e.room); if (free.length) pools[k] = free; }
   if (!keys.some(k => pools[k].length)) return null;
   const facts = factsFor({ who, data, room }, { week: ctx.week, act: 'house', hoh: ctx.hoh, nominees: ctx.nominees });
   const rng = stableRng(gs.bb?.seasonSalt || 0, ctx.week?.num || 0, 'story', salt);
@@ -96,6 +99,42 @@ const render = (entry, who, ctx, data) => entry.turns.map(t => {
   return { kind, by, text: text.replace(/^(["'(…\.\s]*)([a-z])/, (m, p, ch) => p + ch.toUpperCase()) };
 });
 
+// A stable shuffle of the house (the words' own dice, never the engine's).
+function shuffled(list, salt) {
+  const rng = stableRng(gs.bb?.seasonSalt || 0, 'story-cast', salt);
+  return list.map(n => [rng(), n]).sort((x, y) => x[0] - y[0]).map(x => x[1]);
+}
+
+// The rest of the house is somewhere. A private conversation in a shared room shows who else
+// is around (the user, 2026-10-06: "all one-on-one with no one in the background"), and a row
+// in a shared room gets a reaction from them.
+const SHARED = new Set(['kitchen', 'living-room', 'backyard', 'bedroom']);
+function background(lines, sc, ctx, salt, loud) {
+  const others = shuffled((ctx.present || []).filter(n => !sc.cast.includes(n)), salt);
+  if (others.length < 2 || !SHARED.has(sc.room)) return lines;
+  const who = { x: others[0], y: others[1] };
+  const rng = stableRng(gs.bb?.seasonSalt || 0, 'story-bg', salt);
+  const out = lines.slice();
+  if (rng() < 0.7) {
+    const e = pick([`bg.${sc.room}`], who, {}, ctx, sc.room, `${salt}|bg`);
+    // after the scene's own opening stage direction, or at the very top
+    // marked, so the viewer still names the people talking before it shows who else is around
+    if (e) out.splice(out[0]?.kind === 'beat' ? 1 : 0, 0, ...render(e, who, ctx, {}).map(l => ({ ...l, bg: true })));
+  }
+  if (loud) {
+    const e = pick(['bg.react'], who, {}, ctx, sc.room, `${salt}|react`);
+    if (e) {
+      // before the Diary Room cuts that close the scene
+      let k = out.length; while (k > 0 && out[k - 1].kind === 'dr') k--;
+      out.splice(Math.max(1, k), 0, ...render(e, who, ctx, {}));
+      sc.cast = [...sc.cast, ...(e.turns.some(t => t.by === 'x') ? [who.x] : []), ...(e.turns.some(t => t.by === 'y') ? [who.y] : [])];
+    }
+  }
+  return out;
+}
+const LOUD = (type, step, outcome) => (type === 'feud' && (step === 'argument' || outcome === 'snap'))
+  || (type === 'showmance' && step === 'fight') || (type === 'scheme' && step === 'caught');
+
 /** The scene for one step of a storyline, or null when nothing fits. */
 export function writeStoryScene(line, step, ctx) {
   const prior = causeOf(line, step) || null;
@@ -111,17 +150,55 @@ export function writeStoryScene(line, step, ctx) {
   const data = { ...step.data, when: whenOf(prior, step) };
   for (const k of Object.keys(data)) if (data[k] != null && typeof data[k] !== 'string') delete data[k];
   let room = step.room || 'living-room';
-  const keys = keysFor(line.type, step.step, step.outcome);
+  let keys = keysFor(line.type, step.step, step.outcome);
   if (!keys.length) return null;
-  const cast = [who.a, who.b, who.c].filter(Boolean);
+  // An alliance of three or more meets as a group: everybody in it is in the room, talking.
+  if (line.type === 'alliance' && ['formed', 'checkin', 'leftout'].includes(step.step) && data.alliance && !ctx.inSet) {
+    const al = (gs.namedAlliances || []).find(x => x.name === data.alliance);
+    const members = (al?.members || []).filter(n => (ctx.present || []).includes(n));
+    const gk = `story.alliance.${step.step}.group`;
+    if (members.length >= 3 && STORY_POOLS[gk]?.length) {
+      const rest = members.filter(n => n !== who.a && n !== who.b);
+      who = { a: who.a, b: who.b, c: rest[0], d: rest[1], e: rest[2] };
+      keys = [gk];
+    }
+  }
+  // Most house talk has more than two people in it, especially in the first weeks (the user,
+  // 2026-10-06): gossip on a bed, banter, a late night, friends teasing a new couple, a week-one
+  // pitch to a room. When a group version exists, the speakers' closest people join in.
+  const GROUP = ['target.gossip', 'target.pitch', 'life.banter', 'life.latenight', 'life.friends', 'showmance.spark',
+    'target.lobby.lands', 'target.block', 'target.count', 'life.homesick.helped', 'life.prank', 'life.chores'];
+  const groupable = GROUP.includes(`${line.type}.${step.step}`) || GROUP.includes(`${line.type}.${step.step}.${step.outcome}`);
+  if (!ctx.inSet && keys[0] !== `story.alliance.${step.step}.group` && groupable && step.outcome !== 'couple') {
+    const gk = `story.${line.type}.${step.step}.group`;
+    const taken = new Set(Object.values(who).filter(Boolean));
+    const extras = (ctx.present || []).filter(n => !taken.has(n) && n !== data.target)
+      .map(n => [n, (who.a ? getBond(who.a, n) : 0) + (who.b ? getBond(who.b, n) : 0)])
+      .sort((x, y) => y[1] - x[1]).map(x => x[0]);
+    const roll = stableRng(gs.bb?.seasonSalt || 0, 'story-group', line.id, line.steps.indexOf(step))();
+    if (STORY_POOLS[gk]?.length && extras.length && roll < ((ctx.week?.num || 0) <= 2 ? 0.9 : 0.6)) {
+      const more = extras.slice(0, 3);
+      who = { a: who.a, b: who.b, c: who.c || more.shift(), d: more.shift(), e: more.shift() };
+      keys = [gk];
+    }
+  }
+  const cast = Object.values(who).filter(Boolean);
   const base = { id: `${line.id}#${line.steps.indexOf(step)}`, line: line.id, type: line.type, step: step.step,
     outcome: step.outcome, room, roomName: ROOM[room] || 'Living Room', cast, mood: moodOf(line.type, step.step), at: step.at };
   if (writing.muted) return { ...base, lines: [] };
   const entry = pick(keys, who, data, ctx, room, `${line.id}|${line.steps.indexOf(step)}`);
   if (!entry) return null;
   // A scene that is set somewhere ("the sink's right there") happens there.
-  if (entry.room) { room = entry.room; base.room = room; base.roomName = ROOM[room] || base.roomName; }
-  const lines = render(entry, who, ctx, data);
+  if (entry.room && !ctx.inSet) { room = entry.room; base.room = room; base.roomName = ROOM[room] || base.roomName; }
+  // A scene that does not set its own room moves along if the last scene was in the same one
+  // (five bedroom scenes in a row read as one long night). Decided here, BEFORE the background
+  // is chosen, so "laps of the backyard" never plays in the living room.
+  else if (!ctx.inSet && ctx.avoidRoom && room === ctx.avoidRoom) {
+    const ROTA = ['kitchen', 'living-room', 'backyard', 'bedroom'].filter(r => r !== ctx.avoidRoom);
+    const h = [...base.id].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    room = ROTA[h % ROTA.length]; base.room = room; base.roomName = ROOM[room] || base.roomName;
+  }
+  let lines = render(entry, who, ctx, data);
   // The cause, said plainly, when the viewer never saw it.
   let recap = [];
   if (prior && !prior.aired) {
@@ -136,5 +213,72 @@ export function writeStoryScene(line, step, ctx) {
   // On stage: the people the scene actually uses — who speaks, or who a stage direction names.
   // (The event's third person is often only somebody the scene never needed.)
   const used = cast.filter(n => lines.some(l => l.by === n || (l.kind === 'beat' && l.text.includes(n))));
-  return { ...base, cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: recap.length > 0, lineId: entry.id, lines: [...recap, ...lines] };
+  const sc = { ...base, cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: recap.length > 0, lineId: entry.id };
+  if (!ctx.inSet) lines = background(lines, sc, ctx, sc.id, LOUD(line.type, step.step, step.outcome));
+  sc.lines = [...recap, ...lines];
+  return sc;
+}
+
+// ── set pieces: the whole house in one room ─────────────────────────────
+const SET_ROOM = { firstnight: 'kitchen', firstbed: 'bedroom', hohroom: 'hoh-room', afternoms: 'living-room',
+  morningafter: 'kitchen', dinner: 'kitchen', backyard: 'backyard', gamenight: 'living-room' };
+const CUT = sc => (sc.type === 'feud' ? 'clash' : sc.type === 'showmance' ? 'flirt' : 'fun');
+
+/**
+ * A stretch's whole-house set piece (spec addendum, 2026-10-06): an ensemble opening with up
+ * to six people talking over each other, the public moments of the stretch played inside it
+ * (cut to, with the room still around them), and an ensemble close. Roles a..f; the HOH room
+ * reveal has the HOH as a, the house after nominations the two nominees as a and b.
+ */
+export function writeSetPiece(type, ctx, inside, { gone = null, at = 0 } = {}) {
+  let room = SET_ROOM[type] || 'living-room';
+  const present = ctx.present || [];
+  const salt = `${ctx.week?.num || 0}|${ctx.stretch}|${type}`;
+  const lead = [];
+  if (type === 'hohroom' && ctx.hoh) lead.push(ctx.hoh);
+  if (type === 'afternoms') lead.push(...(ctx.nominees || []).slice(0, 2), ...(ctx.hoh ? [ctx.hoh] : []));
+  const insiders = inside.flatMap(sc => sc.cast);
+  const order = [...new Set([...lead, ...insiders, ...shuffled(present, salt)])].filter(n => present.includes(n));
+  const who = Object.fromEntries(['a', 'b', 'c', 'd', 'e', 'f'].map((r, i) => [r, order[i]]).filter(([, n]) => n));
+  const data = gone ? { gone } : {};
+  const sctx = { ...ctx, inSet: true };
+  const open = pick([`set.${type}.open`], who, data, sctx, room, `${salt}|open`);
+  if (!open) return null;
+  // the set is wherever its opening scene stages it (the first night can start in the bedroom)
+  if (open.room) room = open.room;
+  const close = STORY_POOLS[`set.${type}.close`] ? pick([`set.${type}.close`], who, data, sctx, room, `${salt}|close`) : null;
+  const lines = [...render(open, who, ctx, data)];
+  const speaking = new Set(lines.filter(l => l.by).map(l => l.by));
+  for (const sc of inside) {
+    const cw = { a: sc.cast[0], b: sc.cast[1] || sc.cast[0] };
+    const cut = pick([`set.cut.${CUT(sc)}`], cw, {}, sctx, room, `${salt}|cut|${sc.id}`);
+    if (cut) lines.push(...render(cut, cw, ctx, {}));
+    // the rest of the room is still there: a row at dinner gets a reaction from the table
+    const body = sc.lines.slice();
+    if (sc.type === 'feud') {
+      const others = order.filter(n => !sc.cast.includes(n));
+      if (others.length >= 2) {
+        const rw = { x: others[0], y: others[1] };
+        const e = pick(['bg.react'], rw, {}, sctx, room, `${salt}|react|${sc.id}`);
+        if (e) {
+          let k = body.length; while (k > 0 && body[k - 1].kind === 'dr') k--;
+          const r = render(e, rw, ctx, {});
+          body.splice(Math.max(1, k), 0, ...r);
+          r.forEach(l => l.by && speaking.add(l.by));
+        }
+      }
+    }
+    lines.push(...body);
+    sc.cast.forEach(n => speaking.add(n));
+  }
+  if (close) lines.push(...render(close, who, ctx, data));
+  lines.forEach(l => l.by && speaking.add(l.by));
+  // on stage: everybody the scene uses, then the room filled out to eight
+  const named = order.filter(n => speaking.has(n) || lines.some(l => l.kind === 'beat' && l.text.includes(n)));
+  const cast = [...new Set([...named, ...order])].slice(0, Math.max(8, named.length));
+  const MOOD = { firstnight: 'house', firstbed: 'house', hohroom: 'deals', afternoms: 'ceremony', morningafter: 'house',
+    dinner: 'house', backyard: 'house', gamenight: 'house' };
+  return { id: `set:${ctx.week?.num || 0}:${ctx.stretch}:${type}`, line: null, type: 'set', step: type, outcome: 'any',
+    room, roomName: ROOM[room] || 'Living Room', cast, mood: inside.some(sc => sc.type === 'feud') ? 'drama' : MOOD[type] || 'house',
+    at, fixedRoom: true, recap: false, lineId: open.id, inside: inside.map(sc => sc.id), lines };
 }

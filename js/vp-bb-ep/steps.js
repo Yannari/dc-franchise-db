@@ -1972,15 +1972,18 @@ function storyLifeScreen(scenes, ctx, n) {
     const scene = { set, room: label, cam: CAM[set], kicker: `Cam ${String(CAM[set]).padStart(2, '0')} · ${label}`,
       cast: sc.cast.map((p, i) => [p, xs[i]]), mood: sc.mood || 'house' };
     if ((MOOD_RANK[scene.mood] || 0) > (MOOD_RANK[mood] || 0)) mood = scene.mood;
-    const lines = (sc.lines || []).map(l => ({ k: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, t: l.text }));
+    const lines = (sc.lines || []).map(l => ({ k: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, t: l.text, ...(l.bg ? { bg: true } : {}) }));
     // a scene that opens on its own staging line carries the cut; otherwise a caption names the room
     const firstSpoken = lines.findIndex(l => l.k !== 'dr');
-    if (firstSpoken >= 0 && lines[firstSpoken].k === 'beat' && firstSpoken === lines.findIndex(l => l.k !== 'dr')) {
+    if (firstSpoken >= 0 && lines[firstSpoken].k === 'beat' && !lines[firstSpoken].bg) {
       lines[firstSpoken] = { ...lines[firstSpoken], scene };
       // a recap before it (Diary Room) still has to cut somewhere first
       if (firstSpoken > 0) lines[0] = { ...lines[0], scene };
     } else {
-      lines.unshift({ k: 'beat', t: `${label}. ${listOf(sc.cast)}.`, scene, caption: true });
+      // the caption goes before the first line on the stage (after any Diary Room recap)
+      const at0 = Math.max(0, firstSpoken);
+      lines.splice(at0, 0, { k: 'beat', t: `${label}. ${listOf(sc.cast)}.`, scene, caption: true });
+      if (at0 > 0) lines[0] = { ...lines[0], scene };
     }
     steps.push(...lines);
   }

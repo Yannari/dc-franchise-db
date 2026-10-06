@@ -125,6 +125,8 @@ export function classify(beat) {
   if (kind === 'talk.comfort') roles = { a: b, b: a, c };                       // a is the nominee, b sits with them
   if ((kind === 'talk.gossip' || kind === 'social.rumour' || kind === 'power.backdoor' || kind === 'talk.campaign') && c && !data.target) data.target = c;
   if (rule.type === 'target' && data.target && [roles.a, roles.b].includes(data.target)) return null;
+  // the person being talked about is never in the room for it
+  if ((rule.type === 'target' || rule.type === 'scheme') && roles.c && roles.c === data.target) roles = { ...roles, c: null };
   if (!roles.a) return null;
   // Two-person storylines need two people; life may be one person alone.
   if (rule.type !== 'life' && !roles.b) return null;

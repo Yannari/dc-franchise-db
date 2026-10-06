@@ -10,12 +10,18 @@ import LIFE from './life.js';
 import MORE_ALLIANCE from './more-alliance.js';
 import MORE_HOUSE from './more-house.js';
 import MORE_COUPLE from './more-couple.js';
+import SET from './set.js';
+import GROUPS from './groups.js';
+import MORE_GROUPS from './more-groups.js';
+import MORE_SETS from './more-sets.js';
+import MORE_GROUPS2 from './more-groups2.js';
+import GROUPS3 from './groups3.js';
 
 // Ids are prefixed 'st:' so a story entry can never share an id (and so a usage ledger
 // entry) with an old house-event line.
 const RAW = {};
 // the 'more-*' files widen pools that already exist: their entries are added, never replace
-for (const part of [FEUD, ALLIANCE, SHOWMANCE, TARGET, SCHEME, LIFE, MORE_ALLIANCE, MORE_HOUSE, MORE_COUPLE]) {
+for (const part of [FEUD, ALLIANCE, SHOWMANCE, TARGET, SCHEME, LIFE, MORE_ALLIANCE, MORE_HOUSE, MORE_COUPLE, SET, GROUPS, MORE_GROUPS, MORE_SETS, MORE_GROUPS2, GROUPS3]) {
   for (const [k, pool] of Object.entries(part)) RAW[k] = [...(RAW[k] || []), ...pool];
 }
 export const STORY_POOLS = Object.fromEntries(Object.entries(RAW).map(([k, pool]) => [k, pool.map(e => ({ ...e, id: `st:${e.id}` }))]));

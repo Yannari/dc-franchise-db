@@ -105,7 +105,7 @@ export default {
       { by: 'b', say: "There's no nice way to say hedge." },
       { by: 'a', say: "A designer hedge." },
       { by: 'b', say: "Please stop talking to me until I've had coffee." },
-      { by: 'b', dr: "{a} thinks {a} is the funniest person in this house. {a} is the loudest. That's not the same thing." },
+      { by: 'b', dr: "{a} is convinced nobody in this house is funnier. {a} is just the loudest. That's not the same thing." },
     ] },
     { id: 'sf2.j3', turns: [
       { by: 'b', say: "Why did you tell everyone I snore?" },
@@ -385,7 +385,7 @@ export default {
       { by: 'a', say: "Now that I say it, you'll see it everywhere." },
       { by: 'b', dr: "I didn't think about {target} once this morning. Now I can't think about anything else." },
     ] },
-    { id: 'tg2.3', turns: [
+    { id: 'tg2.3', presumes: ['hoh'], turns: [
       { by: 'a', say: "Can I ask you something weird?" },
       { by: 'b', say: "Always." },
       { by: 'a', say: "Has {target} ever asked you who you trust? Like, straight out?" },
@@ -467,7 +467,7 @@ export default {
       { by: 'a', say: "Not that many. Not that much." },
       { by: 'b', dr: "{a} has a theory that someone is hoarding toilet paper. {a} has been checking bags. {a} might be losing it." },
     ] },
-    { id: 'lb2.6', turns: [
+    { id: 'lb2.6', presumes: ['hoh'], turns: [
       { by: 'b', say: "Do you think the cameras get bored of us?" },
       { by: 'a', say: "Today? Definitely." },
       { by: 'b', say: "We've been lying on this floor for an hour." },

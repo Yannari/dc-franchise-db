@@ -47,18 +47,20 @@ describe('the storyline pools', () => {
     for (const [key, pool] of all) for (const e of pool) {
       for (const t of e.turns) {
         expect(['say', 'dr', 'beat'].filter(k => t[k]).length, `${key} ${e.id}`).toBe(1);
-        if (t.say || t.dr) expect(['a', 'b', 'c'], `${key} ${e.id}`).toContain(t.by);
+        if (t.say || t.dr) expect(['a', 'b', 'c', 'd', 'e', 'f', 'x', 'y'], `${key} ${e.id}`).toContain(t.by);
       }
       for (const k of Object.keys(e.when || {})) expect(BB_FACT_KEYS, `${key} ${e.id} when.${k}`).toContain(k);
       for (const p of e.presumes || []) expect(['hoh', 'noms', 'vote'], `${key} ${e.id}`).toContain(p);
       if (e.room) expect(ROOMS.has(e.room), `${key} ${e.id} room ${e.room}`).toBe(true);
-      expect(e.turns.some(t => t.say || t.dr), `${key} ${e.id} has nobody speaking`).toBe(true);
+      // background lines and cutaways are stage directions by design
+      if (!/^(bg\.|set\.cut\.)/.test(key)) expect(e.turns.some(t => t.say || t.dr), `${key} ${e.id} has nobody speaking`).toBe(true);
     }
   });
 
   it('write scenes, not snippets: a scene is at least six lines (a Diary Room recap is one)', () => {
     for (const [key, pool] of all) {
-      if (key.startsWith('recap.')) continue;
+      // recaps, cutaways, background lines and set-piece closes are one or two lines by design
+      if (/^(recap\.|bg\.|set\.cut\.|set\.\w+\.close)/.test(key)) continue;
       // one person alone (a monologue to the Diary Room) or the cold war's silence can be shorter
       const solo = e => !JSON.stringify(e.turns).includes('{b}');
       for (const e of pool) expect(e.turns.length, `${key} ${e.id}`).toBeGreaterThanOrEqual(solo(e) || /^story\.feud\.cold/.test(key) ? 3 : 6);
@@ -80,6 +82,8 @@ describe('the storyline pools', () => {
     const bad = [];
     for (const [key, pool] of all) for (const e of pool) {
       const text = e.turns.map(t => t.say || t.dr || t.beat).join(' ');
+      // the first-night sets only air on night one; the morning after only after an eviction
+      if (/^set\.(firstnight|firstbed|morningafter)\./.test(key)) continue;
       if (PAST.test(text) && !e.presumes && !CAUSED.test(key) && e.when?.early !== false) bad.push(`${key} ${e.id}`);
     }
     expect(bad).toEqual([]);
@@ -99,6 +103,18 @@ describe('house life in real weeks', () => {
     expect(scenes.length).toBeGreaterThan(30);
     const mean = scenes.reduce((s, sc) => s + sc.lines.length, 0) / scenes.length;
     expect(mean).toBeGreaterThan(8);
+  });
+
+  it('fills the house: whole-house set pieces, and most scenes with three or more people', () => {
+    // The user, 2026-10-06: "we only have 2 person conversation", "no one in the background".
+    const sets = scenes.filter(sc => sc.type === 'set');
+    expect(sets.length, 'no whole-house set pieces').toBeGreaterThanOrEqual(A.eps.length * 3);
+    expect(Math.min(...sets.map(sc => sc.cast.length))).toBeGreaterThanOrEqual(4);
+    const crowded = scenes.filter(sc => sc.cast.length >= 3).length / scenes.length;
+    expect(crowded).toBeGreaterThan(0.5);
+    // and a private scene in a shared room usually shows somebody else around
+    const bg = scenes.filter(sc => sc.type !== 'set' && sc.lines.some(l => l.bg)).length;
+    expect(bg).toBeGreaterThan(scenes.length * 0.3);
   });
 
   it('prints no raw slot, and nobody speaks who is not on stage', () => {
@@ -141,7 +157,8 @@ describe('house life in real weeks', () => {
     // Measured against Big Brother 22 transcripts (docs/bb-dialogue-style.md): strategy talk is
     // mostly short turns, but a season is not all clipped — arguments and heart-to-hearts run long.
     const ids = scenes.map(sc => sc.lineId);
-    expect(ids.length - new Set(ids).size, 'a scene aired twice').toBe(0);
+    const dup = ids.filter((x, i) => ids.indexOf(x) !== i);
+    expect(dup, 'a scene aired twice').toEqual([]);
     const says = scenes.flatMap(sc => sc.lines.filter(l => l.kind === 'say').map(l => l.text.split(/\s+/).length));
     const mean = says.reduce((a, b) => a + b, 0) / says.length;
     const short = says.filter(n => n <= 4).length / says.length;

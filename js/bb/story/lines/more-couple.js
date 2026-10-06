@@ -134,7 +134,7 @@ export default {
       { by: 'b', say: "Perfect." },
       { by: 'b', dr: "Nobody has sat between us all afternoon. {a}'s grumpy face is honestly a weapon." },
     ] },
-    { id: 'kc.s6', turns: [
+    { id: 'kc.s6', presumes: ['hoh'], turns: [
       { by: 'b', say: "How are we doing?" },
       { by: 'a', say: "Out loud, or for real?" },
       { by: 'b', say: "For real." },

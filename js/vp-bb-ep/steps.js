@@ -2142,6 +2142,16 @@ function moveInScreen(act, ctx, host, row) {
       if (st?.length) steps.push(...scriptSteps(st));
       else steps.push({ k: 'say', by: n, t: pick(["I'm just going to be myself.", "I'm ready. I've been ready for years.", "Have fun, play hard, see what happens."], n) });
     }
+    // two people in this group knew each other before the show (bb/script/lines/moveinkin.js):
+    // a pair about to be a Dynamic Duo walked out together and the host asks; a secret pair
+    // who ended up side by side does not look at each other
+    const kin = (act.kinStage || {})[gi];
+    if (kin?.open) {
+      const [x, y] = kin.pair;
+      steps.push({ k: 'host', by: host, tense: [x, y], t: pick([`Hold on. ${x} and ${y}, you walked out here together. Do you two know each other?`, `${x}, ${y}, I couldn't help noticing you came out side by side. Is there something the house should know?`], `kin${gi}`) });
+      steps.push(...scriptSteps(kin.lines));
+      steps.push({ k: 'host', by: host, t: pick([`Well. The rest of the house is going to find that out very soon.`, `Then the two of you are in for a very interesting summer.`], `kin2${gi}`) });
+    } else if (kin?.lines?.length) steps.push(...scriptSteps(kin.lines));
     steps.push({ k: 'host', by: host, t: pick([`${listOf(g)}... the Big Brother house is waiting. Go on in!`, `Alright, ${g.length === 2 ? 'you two' : 'all of you'}. Through those doors. Good luck!`, `That's it. ${listOf(g)}, the house is yours.`], `go${gi}`) });
     // through the front door, together
     inHouse.push(...g);
@@ -2154,8 +2164,17 @@ function moveInScreen(act, ctx, host, row) {
     else steps.push({ k: 'beat', ...door, t: gi === 0 ? `The front door opens. ${listOf(g)} are the first ones in.` : `The front door opens again. ${listOf(g)} are in.` }, ...walk);
     // each arrival's own first words in the house (and the first impressions)
     for (const n of g) { const b = beatOf(n); if (b.lines?.length) steps.push(...scriptSteps(b.lines)); }
+    // a pair who came in together, and somebody inside noticing
+    if ((act.kinHouse || {})[gi]?.length) steps.push(...scriptSteps(act.kinHouse[gi]));
     if (gi < groups.length - 1) steps.push({ k: 'host', by: host, scene: stage([]), t: pick([`${titleCase(word(inHouse.length))} in. ${titleCase(word(arrivals.length - inHouse.length))} to go. Let's meet the next group.`, `That's ${word(inHouse.length)} in the house. Here comes group number ${word(gi + 2)}.`], `next${gi}`) });
   });
+  // a secret pair's first private minute, once everybody is in
+  for (const al of act.kinAlone || []) {
+    const sc = scriptSteps(al.lines);
+    if (!sc.length) continue;
+    sc[0] = { ...sc[0], scene: inside(al.pair, 'kitchen', { room: 'Storage Room', kicker: 'Cam 06 · Storage room', time: '9:30 PM' }) };
+    steps.push(...sc);
+  }
   // the house is full: the host on the living room screen
   const announced = (row?.acts || []).some(a => a?.type === 'twist-announcement');
   steps.push({ k: 'bb', scene: inside(arrivals.slice(0, 16), 'ceremony', { tvObj: true, time: '10:00 PM' }), t: 'Houseguests, please gather in the living room.', toast: ['THE HOUSE IS FULL', '#f5c542'] });

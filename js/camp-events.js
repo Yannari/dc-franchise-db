@@ -16,7 +16,7 @@ import { reputationModifier } from './reputation.js';
 import { campRoster, isCoach as isCoachName } from './coaches.js';
 import { recordIntimidation, recordProtection, recordBetrayal } from './relationship-events.js';
 import { attachCampAccessToEvents, buildCampAccessSchedule, findConversationAccess } from './camp-access.js';
-import { makeScene, spotOf } from './td/script/scene.js';
+import { makeScene, spotOf, spotFromAccess } from './td/script/scene.js';
 import { scriptEvent } from './td/script/write.js';
 import { ensureIntentions, evolveIntentions, getIntentions, evaluateEndgameBeatability } from './intentions.js';
 import { getRelationshipDimensions } from './relationships.js';
@@ -32,7 +32,9 @@ function generateIntentionStoryEvents(ep, phase) {
   if (phase !== 'pre' && phase !== 'both') return;
   // A confirmed deal cannot vanish because a number changed. When resentment
   // makes it untenable, the withdrawal itself is a camp event.
+  // Both still in the game: a deal with somebody already voted out is not withdrawn, it is over.
   const strained = (gs.sideDeals || []).find(d => d.active && d.genuine !== false && (d.players || []).length === 2 &&
+    d.players.every(p => (gs.activePlayers || []).includes(p)) &&
     d.players.some(a => (getRelationshipDimensions(a, d.players.find(b => b !== a))?.resentment || 0) >= 4));
   if (strained) {
     const [a,b] = strained.players;
@@ -45,11 +47,11 @@ function generateIntentionStoryEvents(ep, phase) {
       const access = findConversationAccess(ep, breaker, partner, { phase:'pre', privacy:.35, allowPublicPullAside:true });
       strained.active = false; strained.brokenEp = ep.num; strained.brokenBy = breaker;
       strained.brokenAgainst = partner; strained.breakReason = 'relationship deteriorated until the promise was withdrawn';
-      arr.push({ type:'endgameDealDissolved', players:[breaker, partner], access:access || undefined,
-        badgeText:'ENDGAME DEAL ENDS', badgeClass:'red',
-        text:access
-          ? `${breaker} pulls ${partner} aside and admits their ${strained.type === 'f3' ? 'Final Three' : 'Final Two'} promise no longer feels real. The deal ends here; what replaces it is not decided yet.`
-          : `${breaker} stops treating the ${strained.type === 'f3' ? 'Final Three' : 'Final Two'} promise with ${partner} as real. The distance is visible even before either says it aloud.` });
+      arr.push(scriptEvent({ type:'endgameDealDissolved', players:[breaker, partner], access:access || undefined,
+        badgeText:'ENDGAME DEAL ENDS', badgeClass:'red' },
+        makeScene('deal.end', { a: breaker, b: partner },
+          { ending: access?.possible ? 'face' : 'cold', size: strained.type === 'f3' ? 'three' : 'two' }, [], spotFromAccess(access)),
+        { ep: ep.num, phase: 'pre' }));
     }
   }
   const candidates = (gs.activePlayers || []).map(name => {
@@ -69,27 +71,33 @@ function generateIntentionStoryEvents(ep, phase) {
     const access = preferred && Math.random() < Math.min(.65, .18 + pStats(name).social * .04)
       ? findConversationAccess(ep, name, preferred, { phase:'pre', privacy:.55, allowPublicPullAside:true }) : null;
     if (access) {
-      arr.push({ type:'gamePlanProbe', players:[name, preferred], access,
-        badgeText:'TESTING THE WATER', badgeClass:'gold',
-        text:`${name} tests a future with ${preferred} without offering a pact. ${preferred} listens, but neither promises Final Two or Final Three. It is interest, not a deal.` });
+      arr.push(scriptEvent({ type:'gamePlanProbe', players:[name, preferred], access,
+        badgeText:'TESTING THE WATER', badgeClass:'gold' },
+        makeScene('plan.probe', { a: name, b: preferred }, {}, [], spotFromAccess(access)),
+        { ep: ep.num, phase: 'pre' }));
     } else {
-      const focus = preferred && target
-        ? `${name} privately wants to keep ${preferred} close while watching ${target} as a possible obstacle.`
-        : preferred ? `${name} privately sees ${preferred} as the safest person to keep close right now.`
-        : target ? `${name} has not built an endgame pact. For now, the plan is simply to survive ${target}.`
-        : `${name} is still thinking one vote at a time. There is no finished endgame plan yet.`;
-      arr.push({ type:'gamePlanConfessional', players:[name], badgeText:'PRIVATE GAME PLAN', badgeClass:'blue',
-        text:`${focus} This is a private intention, not something the other players automatically know.` });
+      // A confessional: nobody else hears it.
+      const ending = preferred && target ? 'both' : preferred ? 'ally' : target ? 'target' : 'open';
+      arr.push(scriptEvent({ type:'gamePlanConfessional', players:[name], badgeText:'PRIVATE GAME PLAN', badgeClass:'blue' },
+        makeScene('plan.private', { a: name }, { ending, ally: preferred || null, target: target || null }, [], { id: 'confessional', label: 'Confessional' }),
+        { ep: ep.num, phase: 'pre' }));
     }
     plan.narrated[key] = ep.num;
   });
 
   const broken = (gs._brokenDeals || []).splice(0);
-  broken.slice(0, 2).forEach(b => {
+  // The betrayed partner has to still be here to find out; the breaker may be gone.
+  broken.filter(b => (gs.activePlayers || []).includes(b.partner)).slice(0, 2).forEach(b => {
     const arr = ep.campEvents?.[_intentionCampKey(b.partner) || _intentionCampKey(b.breaker)]?.pre;
     if (!arr) return;
-    arr.push({ type:'endgameDealBroken', players:[b.partner, b.breaker], badgeText:'ENDGAME DEAL BROKEN', badgeClass:'red',
-      text:`${b.partner} learns that ${b.breaker} wrote ${b.partner}'s name despite their ${b.deal.type === 'f3' ? 'Final Three' : 'Final Two'} promise. The deal is over. Whether the hurt becomes revenge or a colder strategic target depends on what follows.` });
+    // Face to face when the breaker lives in the same camp; otherwise only the camera hears it.
+    const breakerHere = (gs.activePlayers || []).includes(b.breaker);
+    const together = breakerHere && _intentionCampKey(b.breaker) === _intentionCampKey(b.partner);
+    arr.push(scriptEvent({ type:'endgameDealBroken', players:[b.partner, b.breaker], badgeText:'ENDGAME DEAL BROKEN', badgeClass:'red' },
+      makeScene('deal.broken', { a: b.partner, b: b.breaker },
+        { ending: together ? 'confront' : breakerHere ? 'alone' : 'gone', size: b.deal.type === 'f3' ? 'three' : 'two' }, [],
+        together ? spotOf(ep, b.partner, b.breaker, 'pre').spot : { id: 'confessional', label: 'Confessional' }),
+      { ep: ep.num, phase: 'pre' }));
   });
 }
 

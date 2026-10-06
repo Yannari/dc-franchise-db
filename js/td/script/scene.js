@@ -37,6 +37,12 @@ export function spotOf(ep, a, b, phase = 'pre') {
   return { spot: { id: acc.locationId, label: acc.location, window: acc.windowId || null }, nearby: acc.nearby || [] };
 }
 
+/** A spot from a camp-access result an event already looked up. */
+export function spotFromAccess(access) {
+  return access?.possible && access.locationId
+    ? { id: access.locationId, label: access.location, window: access.windowId || null } : null;
+}
+
 /**
  * Knowledge has a witness (ADDING-A-SHOW §11.5 D). Anything a scene teaches a
  * player goes through here, and it refuses a learner who was not there.

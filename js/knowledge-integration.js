@@ -4,7 +4,7 @@ import { pronouns, pStats } from './players.js';
 import { factId, learn, propagate, recordFact, believes } from './knowledge.js';
 import { pitchTrust } from './relationships.js';
 import { campKnowledgeContacts, currentCampAccessEpisode, findConversationAccess } from './camp-access.js';
-import { makeScene } from './td/script/scene.js';
+import { makeScene, spotFromAccess } from './td/script/scene.js';
 import { scriptEvent } from './td/script/write.js';
 const currentEp = () => (gs.episode || 0) + 1;
 
@@ -273,8 +273,7 @@ export function knowledgeCampCards(events, { tribal = [] } = {}) {
       const access = findConversationAccess(accessEp, event.from, event.to, { phase: 'post', privacy: 0.45, slipAway: true });
       if (access.possible) card.access = access;
     }
-    const spot = card.access?.locationId ? { id: card.access.locationId, label: card.access.location, window: card.access.windowId || null } : null;
-    return scriptEvent(card, knowledgeScene(event, spot),
+    return scriptEvent(card, knowledgeScene(event, spotFromAccess(card.access)),
       { phase: 'post', tribal: tribal.includes(event.from) && tribal.includes(event.to) });
   });
 }

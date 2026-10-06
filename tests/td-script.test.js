@@ -84,6 +84,14 @@ describe('the pools keep their contract', () => {
     }
   });
 
+  it('never speaks a line with no words in it', () => {
+    // A spoken "..." is a silence the reader has to decode (feedback 2026-09-22 #7):
+    // write the beat instead ("{b} doesn't say anything.").
+    for (const [key, pool] of all) for (const e of pool) for (const t of e.turns) {
+      if (t.say || t.conf) expect(/[a-z]/i.test(t.say || t.conf), `${key} ${e.id}: "${t.say || t.conf}"`).toBe(true);
+    }
+  });
+
   it('never writes a cast member into a pool', () => {
     // {a} and {b} are filled at render time. A name in a pool is somebody else's line.
     const names = JSON.parse(fs.readFileSync('franchise_roster.json', 'utf8')).players.map(p => p.name).filter(n => n.length > 3);
@@ -159,6 +167,22 @@ describe('a played season', () => {
       }
       expect(e.text).toBeTruthy();
     }
+  });
+
+  it('nobody speaks in a scene after they have left the game', () => {
+    // Found reading seed 4242: Courtney "found out" about a broken deal the episode
+    // after she was voted out, and Alejandro withdrew a deal from Sierra a day after
+    // she left. The events never checked who was still there.
+    const gone = new Set(), ghosts = [];
+    for (const ep of core.gs.episodeHistory) {
+      for (const feed of Object.values(ep.campEvents || {})) {
+        for (const e of Array.isArray(feed) ? feed : [...(feed?.pre || []), ...(feed?.post || [])]) {
+          for (const l of e.lines || []) if (l.kind !== 'beat' && gone.has(l.by)) ghosts.push(`ep${ep.num} ${e.type}: ${l.by}`);
+        }
+      }
+      if (ep.eliminated) gone.add(ep.eliminated);
+    }
+    expect(ghosts).toEqual([]);
   });
 
   it('survives a save', () => {

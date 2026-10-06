@@ -247,9 +247,16 @@ Out of scope: challenge screens; a shared stepped-viewer kit with BB; voices.
 
 ## 9. Build checklist
 
-- [ ] P0 gossip-card fix + test
-- [ ] P1 `js/td/script/` (scene, facts, write, lines/index) + td-script test
-- [ ] P1 baseline harness; convert strategy families in batches; read each dump
+- [x] P0 gossip-card fix + test
+- [x] P1 `js/td/script/` (scene, facts, write, context, lines/index) + td-script test
+- [x] P1 baseline harness; convert strategy families in batches; read each dump
+  (done 2026-10-06: 53% of a season's camp events speak; every strategy family except the
+  merge announcements, which go with the Phase 6 merge set. Mechanisms added on the way:
+  `withSceneCtx` for the camp generator, `scriptEventParts` for scenes in parts, `pendingScene`
+  for modules below td/script (players.js, bonds.js), `afterVote` for beats the viewer must air
+  after Tribal, `GUARANTEED` per pool file. Engine bugs fixed: gossip cards, ghost deal events,
+  wrong-tribe suspect, recruit/refusal/dissolution/expulsion/reputation misfiled across tribes,
+  a dozen event types with no badge or no players.)
 - [ ] P2 Blender spots; mockups (camp, Tribal) approved
 - [ ] P2 `js/vp-td-ep/` steps/stage/screens/style/sound/titles; wiring + Classic switch
 - [ ] P2 Tribal script into the record; stepped Tribal

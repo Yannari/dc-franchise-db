@@ -92,6 +92,10 @@ const BED_BY_MOOD = { drama: 'bb-drama', scheming: 'bb-scheming', plan: 'bb-plan
 
 /** The bed a screen opens on (a track of it). */
 export function bedFor(screen) {
+  const base = baseBedFor(screen);
+  return base === 'none' ? 'none' : variantOf(base, screen);
+}
+function baseBedFor(screen) {
   // a House Life segment opens on its first scene's music (or silence); its scenes take it from there
   if (screen?.kind === 'houselife') return 'none';
   if (screen?.kind === 'scene' && !BED_BY_MOOD[screen.mood]) return 'none';
@@ -102,7 +106,7 @@ export function bedFor(screen) {
   if (/^bb-mysteryveto/.test(screen?.id || '')) base = 'bb-comp';
   if (/^bb-noevict/.test(screen?.id || '')) base = 'bb-house';
   if (/^bb-deadlast/.test(screen?.id || '')) base = 'bb-brewing';
-  return variantOf(base, screen);
+  return base;
 }
 
 // ── stings ─────────────────────────────────────────────────────────────
@@ -184,7 +188,34 @@ const isWin = st => st.hoh || st.capEnd === 'won' || st.whWin || st.wcWin || st.
   || (st.spOpen && st.spOpen[1]) || st.pwMark === 'relic';
 const isOut = st => st.bkOut || st.campOut || st.whMiss || st.capEnd === 'lost' || (st.wlRound && st.wlRound[1] === 'out');
 /** { cue, bed }: the sting for step `idx` of this screen, and a bed change if the music turns here. */
+// The music follows the moment, not the screen (the user, 2026-10-06: "the music is still per
+// screen, not per moment"). A track a moment set (the votes locked in, a win) holds until the
+// next cut; every cut to a new scene takes that scene's own music (or silence) on ANY screen with
+// scenes, not only House Life; a row breaking out brings the drama in for as long as it lasts;
+// a held breath (the tense faces, "the next key...") brings in the wait.
+const HEAT = st => !!st && ((st.k === 'say' && (((st.t || '').match(/!/g) || []).length >= 2 || /\b[A-Z]{4,}\b/.test(st.t || '')))
+  || (st.k === 'beat' && /\b(storms? (?:off|out)|slams|screams?|shouting|yells?|explodes|blows up|kicks|throws (?:a|the)|loses it at)\b/i.test(st.t || '')));
+function momentBed(screen, idx) {
+  const steps = screen.steps || [];
+  let cut = -1;
+  for (let i = idx; i >= 0; i--) if (steps[i]?.scene) { cut = i; break; }
+  // a track a moment set, since the last cut
+  let held = null;
+  for (let i = Math.max(0, cut); i <= idx; i++) { const b = rulesFor(screen, i).bed; if (b) held = b; }
+  const base = held || (cut >= 0 ? (BED_BY_MOOD[steps[cut].scene.mood] || 'none') : baseBedFor(screen));
+  if (base === 'bb-celebration' || base === 'bb-comp-win') return base;
+  // a row in progress: a heated line in the last three steps of this scene
+  for (let i = idx; i > Math.max(cut, idx - 3); i--) if (HEAT(steps[i])) return 'bb-drama';
+  const st = steps[idx];
+  if (st && (st.suspense || (st.tense && screen.kind !== 'houselife'))) return 'bb-live-wait';
+  return base;
+}
 export function soundFor(screen, idx) {
+  const r = rulesFor(screen, idx);
+  if (!screen?.steps?.[idx]) return r;
+  return { cue: r.cue, bed: momentBed(screen, idx) };
+}
+function rulesFor(screen, idx) {
   const st = screen?.steps?.[idx];
   if (!st) return { cue: null, bed: null };
   const prev = screen.steps[idx - 1];
@@ -247,7 +278,10 @@ export function playStep(screen, idx) {
   stopCrowd();
   try {
     // no music: the room is not silent, it sounds like the room (voices.js); music: the room steps back
-    if (bed === 'none' && typeof a.ambient === 'function') { a.ambient(null); startRoom(screen.steps[idx]?.scene?.set || 'ceremony'); }
+    // the room tone of the room we are in: the latest cut, or the screen's own set
+    let roomSet = screen.set || 'ceremony';
+    for (let i = idx; i >= 0; i--) if (screen.steps[i]?.scene?.set) { roomSet = screen.steps[i].scene.set; break; }
+    if (bed === 'none' && typeof a.ambient === 'function') { a.ambient(null); startRoom(roomSet); }
     else if (bed && typeof a.ambient === 'function') { stopRoom(); a.ambient(variantOf(bed, screen)); }
     if (cue) a.sfx(cue);
   } catch { /* sound must never break a screen */ }

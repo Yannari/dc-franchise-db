@@ -155,6 +155,8 @@ export function soundFor(screen, idx) {
     if (st.votes) return { cue: 'bb-result', bed: null };
     if (/you are evicted from the Big Brother house/.test(t)) return { cue: 'bb-evicted', bed: null };
     if (/walks to the front door/.test(t)) return { cue: 'bb-door', bed: null };
+    if (st.door) return { cue: 'bb-crowd', bed: null };
+    if (st.big && st.safe) return { cue: 'bb-hoh-crown', bed: null };
     if (st.exit) return { cue: 'bb-wall', bed: null };
     if (idx === 0) return { cue: 'bb-crowd', bed: null };
   }

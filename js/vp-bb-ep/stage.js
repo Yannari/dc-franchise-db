@@ -23,6 +23,20 @@ export const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&q
 /** For text between tags: a quotation mark needs no escaping there. */
 export const escT = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const PALETTE = ['#ec4899', '#6366f1', '#10b981', '#22c55e', '#f59e0b', '#3b82f6', '#eab308', '#f97316', '#ef4444', '#14b8a6', '#a855f7', '#84cc16', '#06b6d4', '#f43f5e', '#8b5cf6', '#0ea5e9'];
+// A line reads faster when what matters stands out: the people in it, and the words of the game
+// (the user, 2026-10-06: "the text… not stimulating enough"). Escapes, then marks.
+const KW = /(?<![\w-])(Block Buster|Head of Household|Power of Veto|HOH|veto|(?:on|off) the block|evict(?:ed|ion)?|jury|jurors?|final (?:two|three)|backdoor|nominat\w*|target|pawn|alliance)(?![\w-])/gi;
+export function emph(text, names = []) {
+  let h = escT(text);
+  const ns = [...new Set(names.filter(Boolean))].sort((a, b) => b.length - a.length);
+  if (ns.length) {
+    const re = new RegExp(`(?<![\\w])(${ns.map(n => escT(n).replace(/[.*+?^${}()|[\]\\]/g, '\\export const col = n =>')).join('|')})(?![\\w])`, 'g');
+    h = h.replace(re, '\u0001$1\u0002');
+  }
+  h = h.replace(KW, m => `<b class="kw">${m}</b>`);
+  return h.replace(/\u0001/g, '<b class="kn">').replace(/\u0002/g, '</b>');
+}
+const namesOf = S => [...(S.cast || []).map(c => (Array.isArray(c) ? c[0] : c)), ...Object.keys(S.seated || {})];
 export const col = n => { let h = 0; for (const c of String(n)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return PALETTE[h % PALETTE.length]; };
 const avatar = n => { try { return playerAvatarUrl(n) || ''; } catch { return ''; } };
 export const img = (n, host = false) => {
@@ -66,6 +80,8 @@ export function ledgerAt(screens, si, idx) {
       if (st.run) L.runs[st.run[0]] = st.run;
       if (st.stamp) L.stamps[st.stamp[0]] = st.stamp[1];
       if (st.safe && !L.safe.includes(st.safe)) L.safe.push(st.safe);
+      // safe off the block (the Block Buster, read out live): no longer a nominee
+      if (st.safe && L.nom.includes(st.safe) && st.big) { L.nom = L.nom.filter(n => n !== st.safe); if (L.status[st.safe] === 'nom') L.status[st.safe] = ''; }
       if (st.plus) { L.plus = st.plus; if (!L.safe.includes(st.plus)) L.safe.push(st.plus); }
       if (st.bill) L.bill = st.bill;
       if (st.passed) L.passed = st.passed;
@@ -560,12 +576,25 @@ export function focusAt(S, idx) {
   return out.length ? out : [...names].slice(0, 2);
 }
 const FRONT = { 1: [50], 2: [36, 64], 3: [27, 50, 73] };
+// what a line does to the rest of the room: 'laugh', 'wow', or nothing
+function reactionOf(st) {
+  if (!st || st.bg) return null;
+  const t = String(st.t || '');
+  if (/laugh|cracks up|giggl|snort|falls apart|in stitches|room loses it/i.test(t)) return 'laugh';
+  if (st.k === 'beat' && /gasp|shout|scream|slam|erupt|cheer|everybody (turns|looks|stops)|room (goes|falls) (quiet|silent)|storms|throws/i.test(t)) return 'wow';
+  // a shout, not any exclamation: two of them, a word in capitals, or a line that is all disbelief
+  if (st.k === 'say' && ((t.match(/!/g) || []).length >= 2 || /\b[A-Z]{4,}\b/.test(t)
+    || (/!/.test(t) && /^(what|oh my|no way|are you (serious|kidding)|shut up|excuse me)/i.test(t)))) return 'wow';
+  return null;
+}
+const REACT_WOW = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#ff2e4d"/><rect x="10.6" y="5" width="2.8" height="9" rx="1.4" fill="#fff"/><circle cx="12" cy="17.6" r="1.7" fill="#fff"/></svg>';
+const REACT_LAUGH = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#f5c542"/><path d="M7 13.5q5 5.5 10 0" fill="none" stroke="#3a2600" stroke-width="2.2" stroke-linecap="round"/><path d="M7.5 9.5l2 -1.5M16.5 9.5l-2 -1.5" stroke="#3a2600" stroke-width="2" stroke-linecap="round"/></svg>';
 
 function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   const isDr = st && st.k === 'dr';
   if (isDr) {
     const held = st.hold ? `<div class="drpass ${fresh ? 'fresh' : ''}">${passHtml(st.by, 'held')}<b>STILL IN MY POCKET</b></div>` : '';
-    return `${setDiv('dr', o.season)}<div class="drring">${DRRING}</div>${tileHtml(st.by, 50, 'speak', L, '', 'width:15cqw;bottom:17cqw')}${held}`;
+    return `${setDiv('dr', o.season)}<div class="drring">${DRRING}</div>${tileHtml(st.by, 40, 'speak', L, '', 'width:15cqw;bottom:17cqw')}${held}`;
   }
   const arena = S.arena;
   let h = arena ? `<div class="set photo" style="background-image:url('assets/bb/house/${o.season}/${S.set}-td-b.webp?v=${V}')"></div>`
@@ -599,9 +628,15 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
       for (let j = 0; j < k; j++) places.push(r[0] + Math.round(((j + 0.5) * r.length) / k));
     }
     places.sort((p, q) => Math.abs(50 - q) - Math.abs(50 - p));
+    // A loud line or a big moment turns the room: one or two of the people in the background
+    // react (a jump, a badge). Everybody else keeps breathing, so the room is never a photo.
+    const react = reactionOf(st);
+    const who = react ? new Set(back.filter((_, i) => (i + idx) % 3 !== 2).slice(0, 2)) : new Set();
     back.forEach((n, i) => {
       const x = places[i % Math.max(1, places.length)] ?? 50;
-      h += tileHtml(n, x, 'bgp', L, '', `z-index:1;bottom:${(21.5 + (i % 2) * 0.8).toFixed(1)}cqw`);
+      const r = who.has(n) ? `react ${react}` : '';
+      const badge = r ? `<i class="rb">${react === 'laugh' ? REACT_LAUGH : REACT_WOW}</i>` : '';
+      h += tileHtml(n, x, `bgp ${r}`, L, badge, `z-index:1;bottom:${(21.5 + (i % 2) * 0.8).toFixed(1)}cqw;--d:${(-(i * 0.9 + idx * 0.13) % 4).toFixed(2)}s`);
     });
     focus.slice(0, 3).forEach((n, i) => {
       const cls = [n === speaker ? 'speak' : '', fresh && !before.includes(n) ? 'step' : '', L.plus === n ? 'plus' : ''].join(' ');
@@ -611,7 +646,8 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   }
   for (const [n, x] of cast) {
     const entered = fresh && idx === 0;
-    const cls = [n === speaker ? 'speak' : (st && st.push) ? 'out' : '', entered ? 'in' : '', L.plus === n ? 'plus' : '', L.passed === n ? 'passed' : ''].join(' ');
+    const tense = st && st.tense ? (st.tense.includes(n) ? 'tense' : 'out') : '';
+    const cls = [tense || (n === speaker ? 'speak' : (st && st.push) ? 'out' : ''), entered ? 'in' : '', L.plus === n ? 'plus' : '', L.passed === n ? 'passed' : ''].join(' ');
     if (seated) {
       const a = seatOf(S, seated, n);
       h += tileHtml(n, x, cls, L, '', `bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}`);
@@ -651,7 +687,7 @@ function lineHtml(S, st, fresh, L) {
   const role = st.k === 'dr' ? 'Diary Room' : st.k === 'host' ? 'Host · Live' : L.status[st.by] === 'hoh' ? 'Head of Household'
     : L.nom.includes(st.by) && !L.out.includes(st.by) ? 'Nominated' : L.veto === st.by ? 'Veto holder' : 'Houseguest';
   return `<div class="l3 ${kind} ${fresh ? 'fresh' : ''}" style="--c:${col(st.by)}"><div class="tagr"><span class="nm">${esc(st.by)}</span><span class="role">${role}</span></div>
-    <div class="body"><div class="tx" data-full="${esc(st.t)}">${fresh ? '' : escT(st.t)}</div></div></div>`;
+    <div class="body"><div class="tx" data-full="${esc(st.t)}" data-emph="${esc(emph(st.t, [...namesOf(S), st.by]))}">${fresh ? '' : emph(st.t, [...namesOf(S), st.by])}</div></div></div>`;
 }
 
 /** The whole stage for step `idx` of screen `si`. `o` = { season, host }. */
@@ -691,7 +727,22 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.movein && !isDr && idx >= 0) h += moveInHtml(S, L, st, fresh, idx);
   if (S.team && idx >= 0 && !(st && st.rule != null)) h += teamHtml(S, L, st, fresh, idx);
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
-  if (L.votes && st && st.k === 'host') {
+  // the live vote: a count of ballots cast, never whose (the room does not know until the host says)
+  const totalBallots = S.kind === 'evict' ? S.steps.filter(x => x.ballot).length : 0;
+  if (totalBallots && L.ballots.length && !L.votes) {
+    const pips = Array.from({ length: totalBallots }, (_, i) => `<i class="${i < L.ballots.length ? 'on' : ''} ${fresh && i === L.ballots.length - 1 && st?.ballot ? 'new' : ''}"></i>`).join('');
+    h += `<div class="ballots ${L.ballots.length === totalBallots ? 'locked' : ''}"><div class="k">${L.ballots.length === totalBallots ? 'Votes locked' : 'Votes cast'}</div><div class="n">${L.ballots.length}<span>/ ${totalBallots}</span></div><div class="pips">${pips}</div></div>`;
+  }
+  if (st && st.big) {
+    const [a, b, tone] = st.big;
+    h += tone ? `<div class="bigrev name ${tone} ${fresh ? 'fresh' : ''}"><b>${esc(a)}</b><i>${esc(b)}</i></div>`
+      : `<div class="bigrev ${fresh ? 'fresh' : ''}"><i>${esc(a)}</i><b>${esc(b)}</b></div>`;
+  }
+  if (fresh && st && st.door) h += '<div class="doorflood"></div>';
+  if (fresh && st && st.scene && st.scene.slate && S0.kind === 'houselife') {
+    h += `<div class="slate"><span>DAY ${esc(S.day)} · ${esc(st.scene.time || S.time || '')}</span><b>${esc(st.scene.room || S.room || '')}</b></div>`;
+  }
+  if (L.votes && st && st.k === 'host' && !st.big) {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;
   }
   h += hudHtml(S, st, prevSt, fresh);

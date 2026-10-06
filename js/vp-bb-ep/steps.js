@@ -336,7 +336,7 @@ function evictionScreen(act, ctx, host) {
   if (bb && bb.winner) {
     const up = (bb.participants || []).filter(n => n !== bb.winner);
     steps.push({ k: 'host', by: host, t: `Earlier tonight, ${listOf(bb.participants || [])} battled in the Block Buster for their safety.` });
-    steps.push({ k: 'host', by: host, t: `${bb.winner}, you won the Block Buster. You are safe this week, and off the block.`, toast: ['BLOCK BUSTER', '#22e1ff'], safe: bb.winner });
+    steps.push({ k: 'host', by: host, t: `${bb.winner}, you won the Block Buster. You are safe this week, and off the block.`, safe: bb.winner, big: [bb.winner, 'Won the Block Buster', 'safe'] });
     steps.push({ k: 'beat', t: pickH([`${bb.winner} lets out a breath the whole room can hear.`, `${bb.winner} grins, then remembers who is still on the block, and stops.`, `A cheer goes up from one side of the room. The other side claps politely.`], 'bb-safe') });
     if (up.length >= 2) steps.push({ k: 'host', by: host, t: `That means ${listOf(up)}, you remain on the block, and one of you is going home tonight.` });
   }
@@ -372,7 +372,7 @@ function evictionScreen(act, ctx, host) {
   for (const b of ballots) tally[b.evict] = (tally[b.evict] || 0) + 1;
   const a = tally[evicted] || 0, others = ballots.length - a;
   steps.push({ k: 'host', by: host, t: `Thank you, everyone. Houseguests, the votes are locked in. When I reveal the result, the evicted houseguest will have just a few moments to say their goodbyes, grab their belongings, and walk out the front door. Are you ready?` });
-  steps.push({ k: 'beat', t: pickH([`${listOf(noms)} take each other's hands.`, `Nobody breathes. ${noms[0]} stares straight ahead.`, `A few people nod. ${noms[1] || noms[0]} closes both eyes.`, `The room is so quiet you can hear the cameras turning.`], 'ready') });
+  steps.push({ k: 'beat', t: pickH([`${listOf(noms)} take each other's hands.`, `Nobody breathes. ${noms[0]} stares straight ahead.`, `A few people nod. ${noms[1] || noms[0]} closes both eyes.`, `The room is so quiet you can hear the cameras turning.`], 'ready'), tense: noms });
   if (act.tieBreak) {
     steps.push({ k: 'host', by: host, t: `We have a tie. ${ctx.hoh}, as Head of Household, you must cast the deciding vote, in front of everyone.` });
     steps.push({ k: 'say', by: ctx.hoh, push: true, t: `I vote to evict ${evicted}.` });
@@ -384,8 +384,9 @@ function evictionScreen(act, ctx, host) {
     if (dv.evicted && dv.survivor) steps.push({ k: 'beat', t: `${(dv.losing || []).join(' and ')} lose the count, and it is ${dv.evicted} who goes. ${dv.survivor} stays.` });
   }
   if (evicted) {
-    if (ballots.length) steps.push({ k: 'host', by: host, push: true, t: a === ballots.length ? `By a unanimous vote...` : `By a vote of ${word(a)} to ${word(others)}...`, votes: [a, others] });
-    steps.push({ k: 'host', by: host, t: `...${evicted}, you are evicted from the Big Brother house.`, ...(ctx.hexed ? {} : { out: evicted }), toast: ['EVICTED', '#ff3355'], shake: true });
+    if (ballots.length) steps.push({ k: 'host', by: host, push: true, t: a === ballots.length ? `By a unanimous vote...` : `By a vote of ${word(a)} to ${word(others)}...`, votes: [a, others], tense: noms,
+      big: a === ballots.length ? ['By a', 'Unanimous vote'] : ['By a vote of', `${a} – ${others}`] });
+    steps.push({ k: 'host', by: host, t: `...${evicted}, you are evicted from the Big Brother house.`, ...(ctx.hexed ? {} : { out: evicted }), shake: true, big: [evicted, 'Evicted', 'out'] });
     if (ctx.hexed) {
       // A Halting Hex is about to cancel this: no goodbye, no door, no black-and-white portrait.
       steps.push({ k: 'beat', t: `${evicted} stands up to say goodbye.` });
@@ -393,7 +394,7 @@ function evictionScreen(act, ctx, host) {
       const bye = scriptSteps(act.script?.goodbye);
       if (bye.length) steps.push({ k: 'beat', t: `${evicted} has a few seconds with the house.` }, ...bye, { k: 'beat', t: `${evicted} picks up a bag and walks to the front door.` });
       else steps.push({ k: 'beat', t: `${evicted} hugs the house goodbye, picks up a bag, and walks to the front door.` });
-      steps.push({ k: 'beat', t: pickH([`The front door opens. The roar of the crowd floods into the house.`, `The door opens on lights and noise and cheering. ${evicted} doesn't look back.`, `${evicted} takes one last look at the house. The door opens. The crowd erupts.`], 'door') });
+      steps.push({ k: 'beat', t: pickH([`The front door opens. The roar of the crowd floods into the house.`, `The door opens on lights and noise and cheering. ${evicted} doesn't look back.`, `${evicted} takes one last look at the house. The door opens. The crowd erupts.`], 'door'), door: true });
       steps.push({ k: 'host', by: host, t: pickH([`${evicted}, come on out!`, `Come on out, ${evicted}!`], 'out') });
       steps.push({ k: 'beat', t: `The front door closes. On the memory wall, ${evicted}'s portrait goes black and white.`, exit: evicted });
     }
@@ -1989,16 +1990,39 @@ function houseLifeScreen(beats, ctx, n) {
  * and a Diary Room line cuts to the chair. Nothing is merged or reordered here.
  */
 const SET_OF_ROOM = r => { const s = ROOM_SET[r] || 'ceremony'; return s === 'dr' ? 'ceremony' : s; };
+// When in the day a scene is (the user, 2026-10-06: the "wow" list, a card at every cut). Set
+// pieces have their hour (dinner is the evening); a scene that stages itself late or early
+// keeps to it; the rest spread across the day in the order they aired, never going backwards.
+const AT_SET = { morningafter: 9.5, hohroom: 15, afternoms: 16, dinner: 19.5, gamenight: 21.5, backyard: 14, firstnight: 20, firstbed: 25.5 };
+function clockOf(sc, i, k, prev) {
+  const first = String((sc.lines || []).find(l => l.kind === 'beat')?.text || '');
+  let t = sc.type === 'set' && AT_SET[sc.step] != null ? AT_SET[sc.step]
+    : /lights out|lights low|late|night|in the dark|still up/i.test(first) ? 23
+      : /morning|breakfast|coffee|wakes/i.test(first) ? 9
+        : /dinner/i.test(first) ? 19.5
+          : 10 + (14 * (i + 0.5)) / Math.max(1, k);
+  const h = [...String(sc.id)].reduce((x, ch) => (x * 31 + ch.charCodeAt(0)) >>> 0, 7);
+  t += (h % 40) / 60;
+  return Math.max(t, prev + 0.2);
+}
+const clockText = t => {
+  const m = Math.round(t * 60) % (24 * 60);
+  const hh = Math.floor(m / 60), mm = m % 60;
+  return `${((hh + 11) % 12) + 1}:${String(mm).padStart(2, '0')} ${hh < 12 ? 'AM' : 'PM'}`;
+};
 function storyLifeScreen(scenes, ctx, n) {
   const steps = [];
   let mood = 'house';
+  let clock = 0;
+  scenes.forEach((sc, si) => { clock = clockOf(sc, si, scenes.length, clock); sc._clock = clockText(clock); });
   for (const sc of scenes) {
     const set = SET_OF_ROOM(sc.room);
     const xs = spread(sc.cast.length);
     // the set is the nearest one the stage has; the label is the room the scene is really in
     const label = sc.roomName || ROOM_NAME[set];
     const scene = { set, room: label, cam: CAM[set], kicker: `Cam ${String(CAM[set]).padStart(2, '0')} · ${label}`,
-      cast: sc.cast.map((p, i) => [p, xs[i]]), mood: sc.mood || 'house' };
+      cast: sc.cast.map((p, i) => [p, xs[i]]), mood: sc.mood || 'house', time: sc._clock, slate: true };
+    delete sc._clock;
     if ((MOOD_RANK[scene.mood] || 0) > (MOOD_RANK[mood] || 0)) mood = scene.mood;
     const lines = (sc.lines || []).map(l => ({ k: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, t: l.text, ...(l.bg ? { bg: true } : {}) }));
     // a scene that opens on its own staging line carries the cut; otherwise a caption names the room

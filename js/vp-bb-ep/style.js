@@ -317,4 +317,72 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .qf.nvq .lens2{filter:grayscale(1) sepia(1) hue-rotate(62deg) saturate(2.4) brightness(1.08)}
 .bbx .qf .lens2{position:absolute;inset:0}
 .bbx .qf .cc{bottom:3.2cqw;max-width:40cqw}
-.bbx .qf .cc span{font-size:1.25cqw}`;
+.bbx .qf .cc span{font-size:1.25cqw}
+/* ── the line: names and the words of the game light up; a short line lands with a punch ── */
+.bbx .l3 .tx b.kn{font-weight:800;color:#fff}
+.bbx .l3 .tx b.kw{font-weight:800;color:#7fe9ff}
+.bbx .l3.dr .tx b.kw{color:#ffe08a}
+.bbx .l3.host .tx b.kw{color:#ff9db0}
+.bbx .l3 .tx.lit b{animation:bbx-lit .7s ease-out both}
+@keyframes bbx-lit{from{text-shadow:0 0 1.2cqw currentColor}}
+.bbx .l3.snap .body{animation:bbx-snap .34s cubic-bezier(.2,1.6,.4,1) both}
+.bbx .l3.snap .tx{font-size:2.45cqw;font-weight:700}
+@keyframes bbx-snap{from{transform:scale(.9);opacity:.15}}
+/* ── the Diary Room is a pull quote: the houseguest on the left, the words large on the right ── */
+.bbx .l3.dr{left:53cqw;right:3.4cqw;bottom:auto;top:52%;transform:translateY(-50%)}
+.bbx .l3.dr .body{padding:2.4cqw 2.8cqw 2.5cqw 5.4cqw;min-height:0;background:linear-gradient(160deg,rgba(30,24,6,.88),rgba(6,6,10,.95))}
+.bbx .l3.dr .body::before{width:.5cqw}
+.bbx .l3.dr .tx{font:500 italic 2.3cqw/1.38 Archivo;color:#fffaf0}
+.bbx .l3.dr .tx::after{content:none}
+.bbx .l3.dr .tx::before{content:"\\201C";position:absolute;left:1.3cqw;top:.6cqw;font:900 normal 7.4cqw/1 Georgia,serif;color:#f5c542;opacity:.9}
+.bbx .l3.dr.snap .tx{font-size:3cqw}
+.bbx .drring{left:40%}
+/* ── the room around a conversation breathes, and reacts to a loud moment ── */
+.bbx .gt.bgp .tile{animation:bbx-idle 4.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+@keyframes bbx-idle{50%{translate:0 -.3cqw}}
+.bbx .gt.bgp.react{filter:brightness(.88) saturate(.9);z-index:2}
+.bbx .gt.bgp.react .tile{animation:bbx-jump .55s cubic-bezier(.2,1.6,.4,1) both}
+.bbx .gt.bgp.react.laugh .tile{animation:bbx-shake .8s ease-in-out both}
+@keyframes bbx-jump{40%{translate:0 -1.5cqw;scale:1.06}}
+@keyframes bbx-shake{20%,60%{rotate:-5deg}40%,80%{rotate:5deg}}
+.bbx .gt .rb{position:absolute;top:.3cqw;right:.3cqw;width:2.6cqw;height:2.6cqw;z-index:3;animation:bbx-pop .5s .1s cubic-bezier(.2,1.8,.4,1) both}
+.bbx .gt .rb svg{width:100%;height:100%;display:block;filter:drop-shadow(0 .2cqw .4cqw rgba(0,0,0,.5))}
+@keyframes bbx-pop{from{transform:scale(0)}}
+/* ── a card at every cut: the day, the time, the room ── */
+.bbx .slate{position:absolute;left:3.4cqw;top:9.4cqw;z-index:10;pointer-events:none;animation:bbx-slate 3.2s ease-out both}
+.bbx .slate span{display:block;font:700 1.15cqw 'Chakra Petch';letter-spacing:.35cqw;color:#7fe9ff;text-shadow:0 .2cqw .8cqw rgba(0,0,0,.8)}
+.bbx .slate b{display:block;font:900 4.4cqw/1 Archivo;font-stretch:72%;letter-spacing:.15cqw;text-transform:uppercase;color:#fff;text-shadow:0 .4cqw 1.6cqw rgba(0,0,0,.75)}
+@keyframes bbx-slate{0%{opacity:0;transform:translateX(-3cqw)}12%{opacity:1;transform:none}72%{opacity:1}100%{opacity:0}}
+/* ── the live eviction ── */
+.bbx .ballots{position:absolute;right:3.4cqw;top:12cqw;z-index:9;padding:1.2cqw 1.6cqw;min-width:16cqw;background:rgba(5,9,18,.9);border:.12cqw solid rgba(34,225,255,.35);border-radius:.8cqw;backdrop-filter:blur(1cqw)}
+.bbx .ballots .k{font:800 .9cqw Archivo;font-stretch:78%;letter-spacing:.3cqw;text-transform:uppercase;color:#7fe9ff}
+.bbx .ballots .n{font:700 3.6cqw/1.1 'Chakra Petch';color:#fff}
+.bbx .ballots .n span{font-size:1.6cqw;color:rgba(255,255,255,.5);margin-left:.5cqw}
+.bbx .ballots .pips{display:flex;flex-wrap:wrap;gap:.4cqw;margin-top:.6cqw;max-width:16cqw}
+.bbx .ballots .pips i{width:1.1cqw;height:1.5cqw;border-radius:.2cqw;background:rgba(255,255,255,.12)}
+.bbx .ballots .pips i.on{background:linear-gradient(180deg,#7fe9ff,#22a9ff)}
+.bbx .ballots .pips i.new{animation:bbx-pip .6s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes bbx-pip{from{transform:translateY(-1.5cqw) scale(1.6);background:#fff}}
+.bbx .ballots.locked{border-color:#ff2e4d}
+.bbx .ballots.locked .k{color:#ff9db0}
+.bbx .bigrev{position:absolute;left:50%;top:27%;transform:translate(-50%,-50%);z-index:11;text-align:center;pointer-events:none}
+.bbx .bigrev::before{content:"";position:absolute;inset:-4cqw -10cqw;background:radial-gradient(closest-side,rgba(0,0,0,.88),rgba(0,0,0,.55) 60%,transparent);z-index:-1}
+.bbx .bigrev i{display:block;font:700 normal 1.6cqw 'Chakra Petch';letter-spacing:.6cqw;text-transform:uppercase;color:rgba(255,255,255,.78)}
+.bbx .bigrev b{display:block;font:900 9cqw/1 Archivo;font-stretch:72%;letter-spacing:.2cqw;white-space:nowrap;color:#fff;text-shadow:0 0 4cqw rgba(255,46,77,.65),0 .5cqw 2cqw rgba(0,0,0,.8)}
+.bbx .bigrev.fresh i{animation:bbx-fadeup .8s ease-out both}
+.bbx .bigrev.fresh b{animation:bbx-slam 1.6s .55s cubic-bezier(.2,.9,.2,1) both}
+@keyframes bbx-slam{0%{opacity:0;transform:scale(1.8);filter:blur(1.4cqw)}60%{opacity:1;transform:scale(.98);filter:none}100%{transform:scale(1)}}
+@keyframes bbx-fadeup{from{opacity:0;transform:translateY(1cqw)}}
+.bbx .bigrev.name b{font-size:7.5cqw}
+.bbx .bigrev.name i{display:inline-block;margin-top:.9cqw;padding:.5cqw 1.6cqw;font:900 2.2cqw Archivo;font-stretch:78%;letter-spacing:.8cqw;color:#fff;background:#ff2e4d;transform:rotate(-3deg)}
+.bbx .bigrev.name.safe b{text-shadow:0 0 4cqw rgba(34,225,255,.7),0 .5cqw 2cqw rgba(0,0,0,.8)}
+.bbx .bigrev.name.safe i{background:#1f9fff}
+.bbx .bigrev.name.fresh b{animation:bbx-slam 1.2s .15s cubic-bezier(.2,.9,.2,1) both}
+.bbx .bigrev.name.fresh i{animation:bbx-stamp .5s 1.1s cubic-bezier(.2,1.8,.4,1) both}
+@keyframes bbx-stamp{from{opacity:0;transform:rotate(-3deg) scale(2.4)}}
+.bbx .gt.tense{z-index:4;filter:none}
+.bbx .gt.tense .tile{animation:bbx-tense 1.7s ease-in-out infinite;box-shadow:inset 0 0 0 .16cqw #ff2e4d,0 0 3.5cqw rgba(255,46,77,.55)}
+@keyframes bbx-tense{50%{scale:1.06}}
+.bbx .doorflood{position:absolute;inset:0;z-index:7;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(ellipse 30% 62% at 50% 55%,rgba(255,250,232,.96),rgba(255,214,140,.5) 42%,transparent 76%);animation:bbx-flood 2.8s ease-out both}
+@keyframes bbx-flood{0%{opacity:0;transform:scaleX(.08)}25%{opacity:1;transform:scaleX(1.15)}100%{opacity:0;transform:scaleX(1.7)}}
+@media (prefers-reduced-motion:reduce){.bbx .gt.bgp .tile,.bbx .gt.tense .tile{animation:none}}`;

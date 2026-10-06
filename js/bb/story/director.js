@@ -177,17 +177,19 @@ export function airStorylines(week) {
     // bond, warm or sour. They air in the middle of the stretch's private scenes. A stretch
     // that already holds the Block Buster has played it: nobody plans for it afterwards.
     const talks = [];
+    // the house as it was when the stretch began (a Rivals latecomer is not in it yet)
+    const tctx = { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) };
     if (!ctx.firstNight) {
-      const game = gameTalkFor(week, ctx, { ...clock, safety: clock.safety || pending.some(p => p.act.type === 'safety') }, talked, lastGone)[0];
+      const game = gameTalkFor(week, tctx, { ...clock, safety: clock.safety || pending.some(p => p.act.type === 'safety') }, talked, lastGone)[0];
       if (game) talks.push(game);
-      const bond = stretch % 2 === 1 || !game ? bondTalkFor(week, ctx, talkedPairs) : null;
+      const bond = stretch % 2 === 1 || !game ? bondTalkFor(week, tctx, talkedPairs) : null;
       if (bond && !talked.has(bond.kind)) talks.push(bond);
     }
     const ordered = picked.sort((x, y) => x.step.at - y.step.at);
     const mid = Math.max(1, Math.floor(ordered.length / 2));
     const airTalks = act => {
       for (const t of talks.splice(0)) {
-        const scene = writeGameTalk(t, { ...ctx, avoidRoom: lastRoom }, pending[0].step.at);
+        const scene = writeGameTalk(t, { ...tctx, avoidRoom: lastRoom }, pending[0].step.at);
         if (!scene) continue;
         talked.add(t.kind);
         lastRoom = scene.room;

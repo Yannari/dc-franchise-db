@@ -257,12 +257,28 @@ function paint(uid, fresh) {
   if (count) count.textContent = `${Math.max(0, R.idx + 1)} / ${S.steps.length}`;
   // the music turns and the stings land on a click, never on Reveal all or a repaint
   if (fresh && R.idx >= 0) playStep(S, R.idx);
-  // the line types itself out on a fresh step
+  // The line arrives at the pace it is said (the user, 2026-10-06: "not stimulating enough with
+  // the text"): a short line lands at once, with a punch; a long one types at speaking pace and
+  // breathes at its commas and full stops. When it is all there, the names and the words of
+  // the game light up (stage.js emph).
   const tx = el.querySelector('.tx[data-full]');
   if (fresh && tx && !tx.textContent) {
-    const full = tx.dataset.full.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-    let n = 0;
-    R.typing = setInterval(() => { n += 2; tx.textContent = full.slice(0, n); if (n >= full.length) clearInterval(R.typing); }, 15);
+    const un = v => v.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const full = un(tx.dataset.full);
+    const done = () => { tx.innerHTML = un(tx.dataset.emph || '') || tx.textContent; tx.classList.add('lit'); };
+    if (full.length <= 34) { el.querySelector('.l3')?.classList.add('snap'); done(); }
+    else {
+      let n = 0, wait = 0;
+      R.typing = setInterval(() => {
+        if (wait > 0) { wait--; return; }
+        n += full.length > 160 ? 3 : 2;
+        tx.textContent = full.slice(0, n);
+        const ch = full[Math.min(n, full.length) - 1];
+        if (/[.!?…]/.test(ch) && n < full.length) wait = 9;
+        else if (/[,;:—]/.test(ch) && n < full.length) wait = 4;
+        if (n >= full.length) { clearInterval(R.typing); done(); }
+      }, 16);
+    }
   }
 }
 export function bbxNext(uid) {
@@ -281,7 +297,8 @@ export function bbxNext(uid) {
 export function bbxBack(uid) { const R = sync(uid); if (!R || R.idx < 0) return; stopAuto(R); R.idx--; paint(uid, false); }
 export function bbxAll(uid) { const R = sync(uid); if (!R) return; stopAuto(R); R.idx = R.screens[R.si].steps.length - 1; paint(uid, false); }
 export function bbxReset(uid) { const R = sync(uid); if (!R) return; stopAuto(R); R.idx = -1; paint(uid, false); }
-const holdFor = st => Math.min(9000, 1600 + String(st?.t || '').length * 40);
+// a reveal holds the screen longer: the room needs a beat with the name
+const holdFor = st => Math.min(9000, 1600 + String(st?.t || '').length * 40) + (st?.big ? 2600 : 0) + (st?.tense ? 1200 : 0) + (st?.scene?.slate ? 600 : 0);
 function stopAuto(R) { R.auto = false; clearTimeout(R.timer); }
 export function bbxAuto(uid) {
   const R = sync(uid); if (!R) return;

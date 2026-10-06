@@ -133,11 +133,12 @@ export const hasPool = (type, step, outcome) => keysFor(type, step, outcome).len
 // The mood a scene sets for the music (BED_BY_MOOD in js/vp-bb-ep/sound.js).
 function moodOf(type, step) {
   if (type === 'feud') return step === 'apology' ? 'house' : 'drama';
-  if (type === 'alliance') return ['crack', 'exposed', 'betrayal'].includes(step) ? 'scheming' : 'deals';
+  // a plan coming together has music; a quiet word between two people does not
+  if (type === 'alliance') return ['crack', 'exposed', 'betrayal', 'formed', 'recruit', 'poach'].includes(step) ? 'scheming' : 'deals';
   if (type === 'showmance') return ['fight', 'breakup', 'jealous'].includes(step) ? 'drama' : step === 'hiding' ? 'secret' : 'house';
   if (type === 'target') return step === 'block' ? 'ceremony' : 'scheming';
   if (type === 'scheme') return step === 'caught' ? 'drama' : 'secret';
-  if (type === 'life') return step === 'breakdown' ? 'drama' : 'house';
+  if (type === 'life') return step === 'breakdown' ? 'drama' : ['banter', 'prank', 'friends'].includes(step) ? 'fun' : 'house';
   return 'house';
 }
 
@@ -345,6 +346,8 @@ export function writeStoryScene(line, step, ctx) {
   if (!ctx.inSet) lines = background(lines, sc, ctx, sc.id, LOUD(line.type, step.step, step.outcome));
   sc.lines = [...recap, ...lines];
   sc.why = whyOf(`${line.type}.${step.step}`, STEP_WHY, who, data, sc.cast);
+  // an alliance with a name, formed on screen, gets its title (the user, 2026-10-06)
+  if (line.type === 'alliance' && step.step === 'formed' && data.alliance) sc.title = titleOf(data.alliance, sc.cast);
   return sc;
 }
 
@@ -384,6 +387,14 @@ export function writeGameTalk(talk, ctx, at) {
 }
 
 // ── the campaign: a nominee gets a voter alone ─────────────────────────
+// The title card for an alliance formed on screen: its name and who is in it (as far as this
+// scene shows: the people in the scene who are in it).
+function titleOf(name, cast) {
+  const al = (gs.namedAlliances || []).find(x => x.name === name);
+  // who formed it in this scene (the alliance on record is as the week ENDS, with later recruits)
+  const members = cast.filter(n => !al || (al.members || []).includes(n)).slice(0, 6);
+  return { kind: 'alliance', name, members: members.length ? members : cast.slice(0, 6) };
+}
 const CASE_WHY = {
   deal: '{a} reminds {b} of a deal between them.',
   hunted: '{a} tells {b} that {target} is the one coming for {b}.',
@@ -435,7 +446,7 @@ export function writeCampaignScene(beat, ctx, at, salt) {
     ...(cw ? [fillWhy(cw, who, { target: c.target, partner: c.partner, alliance: c.alliance })] : []),
     fillWhy(OUTCOME_WHY[outcome] || OUTCOME_WHY.unmoved, who, {}), ...standings([a, b])];
   return { id: `camp:${ctx.week?.num || 0}:${salt}`, line: null, type: 'campaign', step: 'pitch', outcome, room, roomName: ROOM[room] || 'Bedroom',
-    cast: [a, ...along, b], mood: 'deals', at, fixedRoom: !!open?.room, recap: false, lineId: open?.id || null, why, lines };
+    cast: [a, ...along, b], mood: 'campaign', at, fixedRoom: !!open?.room, recap: false, lineId: open?.id || null, why, lines };
 }
 
 // ── the engine's own moments ───────────────────────────────────────────
@@ -480,9 +491,11 @@ export function writeEngineScene(beat, ctx, at) {
   const fam = FAMILY_WHY.find(([re]) => re.test(id))?.[1];
   const badge = beat.badgeText ? `${String(beat.badgeText).charAt(0)}${String(beat.badgeText).slice(1).toLowerCase()}.` : null;
   const why = [...(badge ? [badge] : []), ...(fam ? [fam] : []), ...standings(cast)];
-  return { id: `ev:${ctx.week?.num || 0}:${ctx.stretch}:${id}:${cast.join('>')}`, line: null, type: 'event', step: id, outcome: 'any',
-    room, roomName: ROOM[room] || 'Living Room', cast, mood: /blow|grudge|confront|fight/.test(id) ? 'drama' : 'deals', at, fixedRoom: true, recap: false,
+  const sc = { id: `ev:${ctx.week?.num || 0}:${ctx.stretch}:${id}:${cast.join('>')}`, line: null, type: 'event', step: id, outcome: 'any',
+    room, roomName: ROOM[room] || 'Living Room', cast, mood: /blow|grudge|confront|fight/.test(id) ? 'drama' : /^bloc-|^plan-|^scheme-/.test(id) ? 'scheming' : 'deals', at, fixedRoom: true, recap: false,
     lineId: beat.lineId || null, why, lines };
+  if (/alliance-formed|alliance-forms/.test(id) && beat.allianceName) sc.title = titleOf(beat.allianceName, cast);
+  return sc;
 }
 
 // ── set pieces: the whole house in one room ─────────────────────────────
@@ -542,8 +555,8 @@ export function writeSetPiece(type, ctx, inside, { gone = null, at = 0 } = {}) {
   // on stage: everybody the scene uses, then the room filled out to eight
   const named = order.filter(n => speaking.has(n) || lines.some(l => l.kind === 'beat' && l.text.includes(n)));
   const cast = [...new Set([...named, ...order])].slice(0, Math.max(8, named.length));
-  const MOOD = { firstnight: 'house', firstbed: 'house', hohroom: 'deals', afternoms: 'ceremony', morningafter: 'house',
-    dinner: 'house', backyard: 'house', gamenight: 'house' };
+  const MOOD = { firstnight: 'fun', firstbed: 'house', hohroom: 'fun', afternoms: 'ceremony', morningafter: 'house',
+    dinner: 'fun', backyard: 'fun', gamenight: 'fun' };
   return { id: `set:${ctx.week?.num || 0}:${ctx.stretch}:${type}`, line: null, type: 'set', step: type, outcome: 'any',
     room, roomName: ROOM[room] || 'Living Room', cast, mood: inside.some(sc => sc.type === 'feud') ? 'drama' : MOOD[type] || 'house',
     at, fixedRoom: true, recap: false, lineId: open.id, inside: inside.map(sc => sc.id), lines };

@@ -923,7 +923,9 @@ export function renderVPScreen() {
   const _screenRootEl = content.querySelector('.rp-page') || content.children[1] || content.firstElementChild;
   const _explicitBed = _screenRootEl && _screenRootEl.getAttribute && _screenRootEl.getAttribute('data-ambient');
   const _bed = bedForScreen(cur.id, _explicitBed);
-  if (_bed) audio.ambient(_bed);
+  // a screen can ask for silence ('none': the Big Brother house between its musical moments)
+  if (_explicitBed === 'none') audio.ambient(null);
+  else if (_bed) audio.ambient(_bed);
   audio.sfx('screen-swoosh');
   if (_VP_STING[cur.id]) audio.sfx(_VP_STING[cur.id]);
   // Any show's screens can hear a screen open (Perfect Match's cutaway music, vp-pm/sound.js).

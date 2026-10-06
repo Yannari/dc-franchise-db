@@ -388,4 +388,58 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .gt.host{z-index:3}
 .bbx .gt.host .tile{box-shadow:inset 0 0 0 .16cqw #ff2e4d,0 1.4cqw 3cqw rgba(0,0,0,.5)}
 .bbx .gt.host .hostlab{font:800 .75cqw 'Chakra Petch';letter-spacing:.2cqw;color:#fff;background:#ff2e4d;padding:.1cqw .5cqw;border-radius:.3cqw}
+/* ── what people do, animated (stage.js actionOf) ── */
+.bbx .gt .fx{position:absolute;left:50%;top:-2.6cqw;transform:translateX(-50%);z-index:5;pointer-events:none}
+.bbx .gt.act-shout .tile{animation:bbx-shout .5s cubic-bezier(.3,1.8,.5,1) both}
+@keyframes bbx-shout{0%{scale:1}30%{scale:1.12;rotate:-2deg}55%{rotate:2deg}100%{scale:1.08;rotate:0deg}}
+.bbx .fx-shout{width:12cqw;height:12cqw;top:1cqw}
+.bbx .fx-shout i{position:absolute;inset:0;border:.4cqw solid #fff;border-radius:50%;opacity:0;box-shadow:0 0 1.2cqw var(--c,#fff),inset 0 0 1.2cqw var(--c,#fff);animation:bbx-ring 1.1s ease-out both}
+.bbx .fx-shout i:nth-child(2){animation-delay:.15s}.bbx .fx-shout i:nth-child(3){animation-delay:.3s}
+@keyframes bbx-ring{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(1.6)}}
+.bbx .gt.act-hug.toR .tile,.bbx .gt.act-kiss.toR .tile{animation:bbx-lean-r .7s ease-out both}
+.bbx .gt.act-hug.toL .tile,.bbx .gt.act-kiss.toL .tile{animation:bbx-lean-l .7s ease-out both}
+@keyframes bbx-lean-r{to{translate:3.2cqw 0;rotate:4deg}}
+@keyframes bbx-lean-l{to{translate:-3.2cqw 0;rotate:-4deg}}
+.bbx .gt.act-kiss.toR .tile{animation-name:bbx-kiss-r}.bbx .gt.act-kiss.toL .tile{animation-name:bbx-kiss-l}
+@keyframes bbx-kiss-r{to{translate:5cqw 0;rotate:7deg}}
+@keyframes bbx-kiss-l{to{translate:-5cqw 0;rotate:-7deg}}
+.bbx .fx-heart{width:4cqw;left:auto;right:-4.4cqw;top:2cqw;transform:none;animation:bbx-heart 1.4s .45s cubic-bezier(.2,1.8,.4,1) both}
+.bbx .fx-heart svg{width:100%;display:block;filter:drop-shadow(0 0 1cqw #ff4d7d)}
+@keyframes bbx-heart{0%{opacity:0;transform:scale(0)}40%{opacity:1;transform:scale(1.25)}60%{transform:scale(1)}100%{opacity:1;transform:translateY(-2cqw)}}
+.bbx .gt.act-storm .tile{animation:bbx-storm-l .9s ease-in both}
+.bbx .gt.act-storm[style*="left:6"] .tile,.bbx .gt.act-storm[style*="left:7"] .tile,.bbx .gt.act-storm[style*="left:8"] .tile,.bbx .gt.act-storm[style*="left:9"] .tile{animation-name:bbx-storm-r}
+@keyframes bbx-storm-l{30%{translate:1cqw 0}100%{translate:-30cqw 0;opacity:0}}
+@keyframes bbx-storm-r{30%{translate:-1cqw 0}100%{translate:30cqw 0;opacity:0}}
+.bbx .gt.act-cry .tile{animation:bbx-cry 1.2s ease-out both}
+@keyframes bbx-cry{to{translate:0 .8cqw;filter:saturate(.6) brightness(.85)}}
+.bbx .fx-tears{width:2.4cqw;top:3cqw;animation:bbx-tears 1.6s ease-in infinite}
+.bbx .fx-tears svg{width:100%;display:block}
+@keyframes bbx-tears{0%{opacity:0;translate:0 0}20%{opacity:1}100%{opacity:0;translate:0 4cqw}}
+.bbx .gt.act-laugh .tile{animation:bbx-laugh .9s ease-in-out both}
+@keyframes bbx-laugh{20%,60%{translate:0 -.9cqw;rotate:-3deg}40%,80%{translate:0 0;rotate:3deg}}
+.bbx .gt.act-whisper.toR .tile{animation:bbx-whis-r .6s ease-out both}.bbx .gt.act-whisper.toL .tile{animation:bbx-whis-l .6s ease-out both}
+@keyframes bbx-whis-r{to{translate:2cqw .4cqw;rotate:6deg}}
+@keyframes bbx-whis-l{to{translate:-2cqw .4cqw;rotate:-6deg}}
+.bbx .fx-hush{width:3cqw;top:.5cqw;left:auto;right:-3cqw;transform:none;opacity:.85;animation:bbx-pop .4s .3s both}
+.bbx .fx-hush svg{width:100%;display:block}
+.bbx .gt.act-sit .tile{animation:bbx-sit .5s cubic-bezier(.3,1.4,.5,1) both}
+@keyframes bbx-sit{to{translate:0 1.6cqw;scale:.95}}
+.bbx .gt.act-cheer .tile{animation:bbx-cheer .8s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes bbx-cheer{25%{translate:0 -1.8cqw}50%{translate:0 0}75%{translate:0 -1.1cqw}100%{translate:0 0}}
+.bbx .fx-spark{width:3cqw;animation:bbx-spark 1s ease-out both}
+.bbx .fx-spark svg{width:100%;display:block}
+@keyframes bbx-spark{0%{opacity:0;transform:translateX(-50%) scale(0) rotate(0)}50%{opacity:1;transform:translateX(-50%) scale(1.3) rotate(90deg)}100%{opacity:0;transform:translateX(-50%) translateY(-2cqw) scale(1) rotate(180deg)}}
+.bbx .fx-impact{position:absolute;inset:0;z-index:7;pointer-events:none;background:radial-gradient(circle at 50% 60%,rgba(255,255,255,.35),transparent 45%);animation:bbx-impact .45s ease-out both}
+@keyframes bbx-impact{from{opacity:1;transform:scale(.6)}to{opacity:0;transform:scale(1.4)}}
+/* ── an alliance is born: its title ── */
+.bbx .alcard{position:absolute;left:50%;top:38%;z-index:12;transform:translate(-50%,-50%);text-align:center;pointer-events:none;animation:bbx-alcard 3.6s ease-out both}
+.bbx .alcard::before{content:"";position:absolute;inset:-3cqw -9cqw;z-index:-1;background:radial-gradient(closest-side,rgba(10,8,2,.92),rgba(10,8,2,.6) 60%,transparent)}
+.bbx .alcard i{display:block;font:700 normal 1.3cqw 'Chakra Petch';letter-spacing:.6cqw;color:#f5c542}
+.bbx .alcard b{display:block;font:900 6.4cqw/1.05 Archivo;font-stretch:72%;letter-spacing:.15cqw;color:#fff;text-transform:uppercase;white-space:nowrap;text-shadow:0 0 3cqw rgba(245,197,66,.6),0 .4cqw 1.6cqw rgba(0,0,0,.8)}
+.bbx .alcard .alfs{display:flex;justify-content:center;gap:.8cqw;margin-top:1.2cqw}
+.bbx .alcard .alf{width:5cqw;aspect-ratio:4/5;border-radius:.8cqw;overflow:hidden;background:var(--c);box-shadow:0 0 0 .2cqw #f5c542;animation:bbx-alf .5s calc(.6s + var(--i) * .12s) cubic-bezier(.2,1.6,.4,1) both}
+.bbx .alcard .alf img{width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+@keyframes bbx-alcard{0%{opacity:0;transform:translate(-50%,-50%) scale(1.6);filter:blur(1cqw)}12%{opacity:1;transform:translate(-50%,-50%) scale(.98);filter:none}18%{transform:translate(-50%,-50%) scale(1)}82%{opacity:1}100%{opacity:0}}
+@keyframes bbx-alf{from{opacity:0;transform:translateY(1.5cqw) scale(.6)}}
+@media (prefers-reduced-motion:reduce){.bbx .gt[class*="act-"] .tile,.bbx .gt .fx{animation:none}}
 @media (prefers-reduced-motion:reduce){.bbx .gt.bgp .tile,.bbx .gt.tense .tile{animation:none}}`;

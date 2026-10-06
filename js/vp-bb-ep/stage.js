@@ -165,9 +165,9 @@ function camOf(S, i) {
 }
 export const camStyle = c => c === 'none' ? 'transform:none' : `transform:${c.split('|')[0]};transform-origin:${c.split('|')[1]}`;
 
-function tileHtml(n, x, cls, L, extra = '', more = '') {
+function tileHtml(n, x, cls, L, extra = '', more = '', fx = '') {
   const ry = ((50 - x) * 0.28).toFixed(1);
-  return `<div class="gt ${cls}" style="left:${x}%;--c:${col(n)};--ry:${ry}deg;${more}">
+  return `<div class="gt ${cls}" style="left:${x}%;--c:${col(n)};--ry:${ry}deg;${more}">${fx}
     <div class="tile"><span class="i">${esc(String(n)[0])}</span>${img(n)}${extra}</div>
     <div class="plate"><b>${esc(n)}</b>${chipsFor(n, L)}</div></div>`;
 }
@@ -578,6 +578,59 @@ export function focusAt(S, idx) {
   return out.length ? out : [...names].slice(0, 2);
 }
 const FRONT = { 1: [50], 2: [36, 64], 3: [27, 50, 73] };
+
+// ── what people DO, animated ────────────────────────────────────────────
+// The user, 2026-10-06: "when they're shouting we should have an animation, an animation of every
+// action, that's how you make a viewer alive, like we did in Perfect Match". As there, the action
+// is read from what HAPPENS (a stage direction), never from what somebody says they did, except
+// a shout, which is how a line is said. Who: the people the direction names, or the speaker.
+const ACTIONS = [
+  ['kiss', /\bkiss(es|ed)?\b/i, 2],
+  ['hug', /\bhug(s|ged)?\b|\bembrace|into a hug|squeezes .{0,20}(shoulder|hand)/i, 2],
+  ['storm', /storms? (off|out)|walks (out|off|away)|leaves the room|heads (off|upstairs|out)|slams the door|goes upstairs/i, 1],
+  ['slam', /\bslams?\b|\bbangs?\b|\bthrows?\b|\bkicks?\b|\bpunches\b/i, 0],
+  ['cry', /\bcr(y|ies|ying)\b|in tears|tears up|wipes? .{0,15}eyes|\bsobs?\b/i, 1],
+  ['laugh', /\blaugh|cracks up|giggl|\bsnorts?\b|falls apart|in stitches/i, 3],
+  ['whisper', /whisper|leans? in|lowers? .{0,12}voice|under (his|her|their) breath/i, 2],
+  ['sit', /\bsits? down|\bflops\b|lies down|sinks into|collapses (on|onto|into)/i, 1],
+  ['cheer', /high[- ]fives?|\bcheers\b|\btoasts?\b|\bclinks?\b|fist[- ]bump|\bdances?\b|jumps up and down/i, 3],
+];
+export function actionOf(st, names) {
+  if (!st || st.bg) return null;
+  const t = String(st.t || '');
+  if (st.k === 'say' || st.k === 'host') {
+    const shout = (t.match(/!/g) || []).length >= 2 || /\b[A-Z]{4,}\b/.test(t)
+      || (/!/.test(t) && /^(what|oh my|no way|are you (serious|kidding)|shut up|excuse me|get out|enough)/i.test(t));
+    return shout && st.by ? { kind: 'shout', who: [st.by] } : null;
+  }
+  if (st.k !== 'beat') return null;
+  const named = names.filter(n => new RegExp(`(^|[^\\w])${n.replace(/[.*+?^${}()|[\]\\]/g, '\\const FRONT = { 1: [50], 2: [36, 64], 3: [27, 50, 73] };')}(?![\\w])`).test(t))
+    .sort((x, y) => t.indexOf(x) - t.indexOf(y));
+  for (const [kind, re, need] of ACTIONS) {
+    if (!re.test(t)) continue;
+    if (need === 2 && named.length < 2) continue;
+    if (need === 1 && !named.length) continue;
+    return { kind, who: need === 2 ? named.slice(0, 2) : need === 1 ? named.slice(0, 1) : named };
+  }
+  return null;
+}
+// the little things drawn with an action (inline SVG, never a CSS picture)
+const FX = {
+  shout: '<span class="fx fx-shout"><i></i><i></i><i></i></span>',
+  kiss: '<span class="fx fx-heart"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.8 8.2 3 4.5 6.6 4.5c2.2 0 3.6 1.3 4.4 2.6.8-1.3 2.2-2.6 4.4-2.6 3.6 0 5.8 3.7 4.2 7.3C19.5 16.4 12 21 12 21z" fill="#ff4d7d"/></svg></span>',
+  cry: '<span class="fx fx-tears"><svg viewBox="0 0 24 40"><path d="M6 4c2 4 4 7 4 10a4 4 0 0 1-8 0c0-3 2-6 4-10z" fill="#7fd3ff"/><path d="M18 14c2 4 4 7 4 10a4 4 0 0 1-8 0c0-3 2-6 4-10z" fill="#7fd3ff"/></svg></span>',
+  whisper: '<span class="fx fx-hush"><svg viewBox="0 0 40 24"><path d="M4 12h6M14 6l5 3M14 18l5-3" stroke="#fff" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg></span>',
+  cheer: '<span class="fx fx-spark"><svg viewBox="0 0 24 24"><path d="M12 2l2.2 6.6L21 9l-5.4 4.1L17.6 20 12 16.2 6.4 20l2-6.9L3 9l6.8-.4z" fill="#f5c542"/></svg></span>',
+};
+/** The classes and drawing an action puts on one tile: { cls, fx }. */
+function actOn(A, n, x, xs) {
+  if (!A || !A.who.includes(n) && !(A.kind === 'laugh' || A.kind === 'cheer' || A.kind === 'slam')) return { cls: '', fx: '' };
+  if (!A.who.includes(n)) return { cls: '', fx: '' };
+  const other = A.who.find(m => m !== n);
+  const ox = other != null ? xs[other] : null;
+  const side = ox == null ? '' : ox > x ? 'toR' : 'toL';
+  return { cls: `act-${A.kind} ${side}`, fx: FX[A.kind] && (A.kind !== 'kiss' || side === 'toR') ? FX[A.kind] : '' };
+}
 // what a line does to the rest of the room: 'laugh', 'wow', or nothing
 function reactionOf(st) {
   if (!st || st.bg) return null;
@@ -642,20 +695,27 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
       const badge = r ? `<i class="rb">${react === 'laugh' ? REACT_LAUGH : REACT_WOW}</i>` : '';
       h += tileHtml(n, x, `bgp ${r}`, L, badge, `z-index:1;bottom:${(21.5 + (i % 2) * 0.8).toFixed(1)}cqw;--d:${(-(i * 0.9 + idx * 0.13) % 4).toFixed(2)}s`);
     });
+    const A = fresh ? actionOf(st, cast.map(([n]) => n)) : null;
+    const at = Object.fromEntries(focus.slice(0, 3).map((n, i) => [n, xs[i]]));
     focus.slice(0, 3).forEach((n, i) => {
-      const cls = [n === speaker ? 'speak' : '', fresh && !before.includes(n) ? 'step' : '', L.plus === n ? 'plus' : ''].join(' ');
-      h += tileHtml(n, xs[i], cls, L);
+      const a = actOn(A, n, xs[i], at);
+      const cls = [n === speaker ? 'speak' : '', fresh && !before.includes(n) ? 'step' : '', L.plus === n ? 'plus' : '', a.cls].join(' ');
+      h += tileHtml(n, xs[i], cls, L, '', '', a.fx);
     });
+    if (A && A.kind === 'slam') h += '<div class="fx-impact"></div>';
     return h;
   }
+  const A2 = fresh ? actionOf(st, cast.map(([n]) => n)) : null;
+  const at2 = Object.fromEntries(cast);
   for (const [n, x] of cast) {
+    const a2 = actOn(A2, n, x, at2);
     const entered = fresh && idx === 0;
     const tense = st && st.tense ? (st.tense.includes(n) ? 'tense' : 'out') : '';
-    const cls = [tense || (n === speaker ? 'speak' : (st && st.push) ? 'out' : ''), entered ? 'in' : '', L.plus === n ? 'plus' : '', L.passed === n ? 'passed' : ''].join(' ');
+    const cls = [tense || (n === speaker ? 'speak' : (st && st.push) ? 'out' : ''), entered ? 'in' : '', L.plus === n ? 'plus' : '', L.passed === n ? 'passed' : '', a2.cls].join(' ');
     if (seated) {
       const a = seatOf(S, seated, n);
-      h += tileHtml(n, x, cls, L, '', `bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}`);
-    } else h += tileHtml(n, x, cls, L);
+      h += tileHtml(n, x, cls, L, '', `bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}`, a2.fx);
+    } else h += tileHtml(n, x, cls, L, '', '', a2.fx);
   }
   if (S.set === 'dining') {
     h += `<img class="front" src="assets/bb/house/${o.season}/dining-td-b-nombox.webp?v=${V}" alt="" style="z-index:${zOf(ANCH.dining.box)}">`;
@@ -743,6 +803,10 @@ export function stageHtml(screens, si, idx, fresh, o) {
       : `<div class="bigrev ${fresh ? 'fresh' : ''}"><i>${esc(a)}</i><b>${esc(b)}</b></div>`;
   }
   if (fresh && st && st.door) h += '<div class="doorflood"></div>';
+  if (fresh && st && st.card?.kind === 'alliance') {
+    const faces = (st.card.members || []).slice(0, 6).map((n, i) => `<span class="alf" style="--c:${col(n)};--i:${i}">${img(n)}</span>`).join('');
+    h += `<div class="alcard"><i>AN ALLIANCE IS BORN</i><b>${esc(st.card.name)}</b><div class="alfs">${faces}</div></div>`;
+  }
   if (fresh && st && st.scene && st.scene.slate && (S0.kind === 'houselife' || S0.kind === 'movein')) {
     h += `<div class="slate"><span>DAY ${esc(S.day)} · ${esc(st.scene.time || S.time || '')}</span><b>${esc(st.scene.room || S.room || '')}</b></div>`;
   }

@@ -1887,7 +1887,7 @@ function moveInScreen(act, ctx, host, row) {
   const pick = (list, salt) => pickBy(list, `${ctx.week}|movein|${salt}`);
   const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
   const stage = (cast, extra = {}) => ({ set: 'arena-stage', arena: true, room: 'The Stage', cam: 7, kicker: 'Live · The stage', cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'ceremony', hostOn: true, time: '8:00 PM', slate: true, ...extra });
-  const inside = (cast, room = 'ceremony', extra = {}) => ({ set: room, room: ROOM_NAME[room] || 'Living Room', cam: CAM[room] || 4, kicker: `Cam ${String(CAM[room] || 4).padStart(2, '0')} · ${ROOM_NAME[room] || 'Living room'}`, cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'house', time: '8:30 PM', slate: true, ...extra });
+  const inside = (cast, room = 'ceremony', extra = {}) => ({ set: room, arena: false, hostOn: false, room: ROOM_NAME[room] || 'Living Room', cam: CAM[room] || 4, kicker: `Cam ${String(CAM[room] || 4).padStart(2, '0')} · ${ROOM_NAME[room] || 'Living room'}`, cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'house', time: '8:30 PM', slate: true, ...extra });
   const steps = [];
   steps.push({ k: 'host', by: host, scene: stage([]), t: pick([`Good evening, and welcome to Big Brother! Tonight, ${word(arrivals.length)} strangers move into the Big Brother house, and only one of them will walk out with the prize.`,
     `Hello, and welcome to the premiere of Big Brother! ${titleCase(word(arrivals.length))} houseguests. One house. Cameras everywhere. And one winner at the end of it.`], 'open') });
@@ -2164,6 +2164,8 @@ function storyLifeScreen(scenes, ctx, n) {
     delete sc._clock;
     if ((MOOD_RANK[scene.mood] || 0) > (MOOD_RANK[mood] || 0)) mood = scene.mood;
     const lines = (sc.lines || []).map(l => ({ k: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, t: l.text, ...(l.bg ? { bg: true } : {}) }));
+    // an alliance named on screen gets its title card on the last line of the conversation
+    if (sc.title) { let k = lines.length - 1; while (k > 0 && lines[k].k === 'dr') k--; if (lines[k]) lines[k] = { ...lines[k], card: sc.title }; }
     // a scene that opens on its own staging line carries the cut; otherwise a caption names the room
     const firstSpoken = lines.findIndex(l => l.k !== 'dr');
     if (firstSpoken >= 0 && lines[firstSpoken].k === 'beat' && !lines[firstSpoken].bg) {

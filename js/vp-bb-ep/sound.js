@@ -70,14 +70,22 @@ const BED_BY_KIND = {
   whack: 'bb-comp', power: 'bb-confused', expired: 'bb-deals', coin: 'bb-secret', veto2: 'bb-veto-meeting',
   den: 'bb-secret', curse: 'bb-drama', nightmare: 'bb-confused', battleback: 'bb-comp', bonuslife: 'bb-comp',
   team: 'bb-scheming', mystery: 'bb-secret', premiere: 'bb-confused', hex: 'bb-confused', quiet: 'bb-house',
-  rewind: 'bb-confused', locust: 'bb-comp', movein: 'bb-post-hoh',
+  rewind: 'bb-confused', locust: 'bb-comp', movein: 'bb-post-hoh', twist: 'bb-confused',
 };
 // A house scene sounds like what it is: a fight, a deal, or just the house.
-const BED_BY_MOOD = { drama: 'bb-drama', deals: 'bb-deals', scheming: 'bb-scheming', ceremony: 'bb-brewing', secret: 'bb-secret', house: 'bb-house' };
+// The user, 2026-10-06: "all the music seems really sad, always… limit music to the moments
+// that really fit and leave it empty when it isn't necessary." The house is SILENT by default:
+// music under a fight, a plan coming together, a campaign, a secret and the fun moments, and
+// nothing under ordinary talk, a quiet word, a morning, a Diary Room.
+const BED_BY_MOOD = { drama: 'bb-drama', scheming: 'bb-scheming', campaign: 'bb-campaign', ceremony: 'bb-brewing', secret: 'bb-secret', fun: 'bb-post-hoh',
+  deals: null, house: null };
 
 /** The bed a screen opens on (a track of it). */
 export function bedFor(screen) {
-  let base = (screen?.kind === 'scene' || screen?.kind === 'houselife') ? (BED_BY_MOOD[screen.mood] || 'bb-house') : BED_BY_KIND[screen?.kind] || 'bb-house';
+  // a House Life segment opens on its first scene's music (or silence); its scenes take it from there
+  if (screen?.kind === 'houselife') return 'none';
+  if (screen?.kind === 'scene' && !BED_BY_MOOD[screen.mood]) return 'none';
+  let base = screen?.kind === 'scene' ? BED_BY_MOOD[screen.mood] : BED_BY_KIND[screen?.kind] || 'bb-house';
   // A few screens inside a kind are a different moment.
   if (/^bb-campdoor/.test(screen?.id || '')) base = 'bb-comp';
   if (/^bb-deepfake/.test(screen?.id || '')) base = 'bb-secret';
@@ -181,8 +189,13 @@ export function soundFor(screen, idx) {
   if (st.k === 'bb' && !(prev && prev.k === 'bb')) return { cue: 'bb-voice', bed: null };
   if (screen.kind === 'scene' && idx === 0) return { cue: 'bb-blink', bed: null };
   // House Life: each new conversation is a camera cut, and its music follows its mood
-  if (screen.kind === 'houselife' && st.scene && (!prev || prev.scene?.set !== st.scene.set || idx === 0)) {
-    return { cue: 'bb-blink', bed: BED_BY_MOOD[st.scene.mood] || 'bb-house' };
+  if (st.card) return { cue: 'bb-twist', bed: 'bb-scheming' };
+  if (screen.kind === 'houselife' && st.scene) {
+    // every scene sets its own music, silence included ('none'), so a fight's bed never runs on
+    // under the quiet conversation after it
+    const bed = BED_BY_MOOD[st.scene.mood] || 'none';
+    const cut = !prev || prev.scene?.set !== st.scene.set || idx === 0;
+    return { cue: cut ? 'bb-blink' : null, bed };
   }
   return { cue: null, bed: null };
 }
@@ -196,7 +209,8 @@ export function playStep(screen, idx) {
   if (vp && vp.style.display === 'none') return;
   const { cue, bed } = soundFor(screen, idx);
   try {
-    if (bed && typeof a.ambient === 'function') a.ambient(variantOf(bed, screen));
+    if (bed === 'none' && typeof a.ambient === 'function') a.ambient(null);
+    else if (bed && typeof a.ambient === 'function') a.ambient(variantOf(bed, screen));
     if (cue) a.sfx(cue);
   } catch { /* sound must never break a screen */ }
 }

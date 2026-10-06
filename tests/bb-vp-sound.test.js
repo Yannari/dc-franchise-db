@@ -39,7 +39,12 @@ describe('the Big Brother viewer’s sound', () => {
   });
 
   it('opens every screen of a real season on a bed in the catalogue', () => {
-    for (const S of SCREENS) expect(BED_CATALOG[bedFor(S)], `${S.id} -> ${bedFor(S)}`).toBeTruthy();
+    // House Life opens in silence and its scenes choose (the user, 2026-10-06: "leave it empty
+    // when it isn't necessary"); every other screen opens on a real track
+    for (const S of SCREENS) {
+      if (S.kind === 'houselife') { expect(bedFor(S), S.id).toBe('none'); continue; }
+      expect(BED_CATALOG[bedFor(S)], `${S.id} -> ${bedFor(S)}`).toBeTruthy();
+    }
   });
 
   it('asks only for cues that exist, and turns the eviction to the wait when the votes are in', () => {
@@ -48,7 +53,7 @@ describe('the Big Brother viewer’s sound', () => {
       S.steps.forEach((_, i) => {
         const { cue, bed } = soundFor(S, i);
         if (cue) expect(CUE_CATALOG[cue], cue).toBeTruthy();
-        if (bed) expect(BB_BEDS[bed], bed).toBeTruthy();
+        if (bed && bed !== 'none') expect(BB_BEDS[bed], bed).toBeTruthy();
         if (S.kind === 'evict' && bed === 'bb-live-wait') waited++;
       });
     }

@@ -23,6 +23,15 @@
 // bb/script/ceremony.js); a save from before that falls back to a plain line.
 import { arenaFor } from '../bb/comp-arenas.js';
 import { pronouns } from '../players.js';
+import { players as ROSTER } from '../core.js';
+
+// The engine's own moments that happen AT a ceremony (the user, 2026-10-06: "most of the time the
+// reactions are after, but sometimes it causes drama during the ceremony, same for veto"). They play
+// inside the ceremony screen, and House Life does not air them again (bb/story/director.js).
+export const NOM_MOMENT = /^(nom-stoic|nom-blindside|nom-pawn-reassured|power-ceremony-confrontation)$/;
+export const VETO_MOMENT = /^(veto-seated|veto-left-on-block|veto-saved-gratitude|veto-backdoor-lands|veto-replacement-shock|power-replacement-fallout|power-ceremony-confrontation)$/;
+const momentSteps = (act, re) => (act.socialBeats || []).filter(b => re.test(String(b.eventId || '')))
+  .flatMap(b => (b.lines?.length ? scriptSteps(b.lines) : [{ k: 'beat', t: stripTags(b.text) }]));
 
 // ── inside their heads: the side panel's lines for the ceremonies ───────
 // The user, 2026-10-06: "the nomination ceremony needs the same insight panel too", "and veto
@@ -119,7 +128,8 @@ const DINING_SEATS = ['S3', 'S4', 'S2', 'S5', 'S1', 'S6', 'S0', 'S7'];
 
 function seatLiving(nominees, others, standing = null) {
   const seated = {};
-  nominees.slice(0, 2).forEach((n, i) => { seated[n] = i ? 'N1' : 'N-1'; });
+  // two chairs in the render; a third nominee gets the place between them
+  nominees.slice(0, 3).forEach((n, i) => { seated[n] = i === 0 ? 'N-1' : i === 1 ? 'N1' : 'N0'; });
   if (standing && !seated[standing]) seated[standing] = 'stand';
   others.filter(n => !seated[n]).slice(0, LIVING_SEATS.length).forEach((n, i) => { seated[n] = LIVING_SEATS[i]; });
   return seated;
@@ -166,7 +176,13 @@ function compScreen(act, ctx, kind) {
   const desc = String(comp.desc || '').split(/(?<=\.)\s/)[0];
   if (comp.name) steps.push({ k: 'beat', t: `${comp.name}. ${desc}` });
   // the competition's own play-by-play, as the engine wrote it
-  for (const b of (comp.beats || []).slice(0, 6)) { const t = stripTags(b.text); if (t) steps.push({ k: 'beat', t }); }
+  for (const b of (comp.beats || []).slice(0, 10)) { const t = stripTags(b.text); if (t) steps.push({ k: 'beat', t }); }
+  // what happened between them during it (a collision, a taunt, somebody helping a rival): the
+  // engine wrote these and the screen never showed them (the user, 2026-10-06: "events related to comp")
+  for (const e of (comp.events || []).slice(0, 4)) {
+    if (e.lines?.length) steps.push(...scriptSteps(e.lines));
+    else { const t = stripTags(e.text); if (t) steps.push({ k: 'beat', t }); }
+  }
   const early = results.slice(4);
   if (early.length) steps.push({ k: 'beat', t: `${listOf(early)} ${early.length > 1 ? 'are' : 'is'} out of it.` });
   for (const n of finalists.slice(1).reverse()) steps.push({ k: 'beat', t: `${n} is out. ${finalists.indexOf(n) === 1 ? 'It comes down to the last one standing.' : ''}`.trim() });
@@ -228,12 +244,39 @@ function nomScreen(act, ctx) {
   steps.push({ k: 'say', by: hoh, push: true, t: `I have nominated ${named}.` });
   if (act.script?.noms?.length) {
     steps.push(...scriptSteps(act.script.noms));
+    // every nominee past the two the speech was about hears a reason too
+    for (const n of noms) steps.push(...scriptSteps(act.script?.nomThird?.[n]));
   } else if (act.target) {
     const why = act.target === act.backdoorTarget ? null
       : act.structure === 'expendables' ? `This isn't personal. I had to put two people up, and I went with the people I've connected with least.`
         : act.pawn ? `${act.pawn}, you're up there as a pawn, and you know that. ${act.target}, I think you know why you're sitting there.`
           : `${act.target}, I think you know why you're sitting there.`;
     if (why) steps.push({ k: 'say', by: hoh, t: why });
+  }
+  // at the table: the engine's own moments first, then everybody else's reaction, by where they
+  // stood with the HOH at the ceremony (act.bondsAt); somebody volatile who cannot stand the HOH
+  // does not wait for the Diary Room
+  const moments = momentSteps(act, NOM_MOMENT);
+  steps.push(...moments);
+  const reacted = new Set(moments.map(s => s.by).filter(Boolean));
+  const VOLATILE = new Set(['hothead', 'wildcard', 'chaos-agent', 'villain']);
+  for (const n of noms) {
+    if (reacted.has(n)) continue;
+    const bond = act.bondsAt?.[`${hoh}|${n}`] ?? 0;
+    const arch = (ROSTER || []).find(p => p.name === n)?.archetype;
+    const salt = `${ctx.week}|react|${n}`;
+    if (bond <= -3 && VOLATILE.has(arch)) {
+      steps.push({ k: 'say', by: n, t: pickBy(['You know what? Say it. Say why. Out loud.', 'Wow. You couldn\'t even look at me while you did that!', 'Of course it\'s me. OF COURSE it\'s me.'], salt) });
+      steps.push({ k: 'say', by: hoh, t: pickBy(['I said what I had to say.', 'It\'s a game. You know it\'s a game.', 'Not here. Not now.'], salt) });
+      steps.push({ k: 'say', by: n, t: pickBy(['Then I\'ll see you on the other side of the veto.', 'Fine. Enjoy your week.', 'Remember this. Because I will.'], salt) });
+      steps.push({ k: 'beat', t: pickBy([`Nobody at the table moves. Somebody very slowly puts a fork down.`, `The table goes silent. ${hoh} stares at the key box.`], salt) });
+    } else if (bond >= 3) {
+      steps.push({ k: 'beat', t: pickBy([`${n} stares at ${hoh}. ${hoh} can't hold the look.`, `${n} nods, very slowly, and doesn't say a word.`, `${n} lets out a breath that is almost a laugh.`], salt) });
+    } else if (bond <= -2) {
+      steps.push({ k: 'say', by: n, t: pickBy(['Saw that coming.', 'Of course.', 'Great. Thanks.'], salt) });
+    } else {
+      steps.push({ k: 'beat', t: pickBy([`${n} keeps a straight face. Just about.`, `${n} sits very still.`, `${n} looks down at the table.`], salt) });
+    }
   }
   steps.push({ k: 'bb', t: 'This nomination ceremony is adjourned.' });
   for (const n of noms) steps.push(...scriptSteps(act.script?.nomDr?.[n]));
@@ -317,6 +360,11 @@ function drawScreen(act, ctx) {
   }
   const players = new Set(steps.flatMap(s => s.vetoPlay || []));
   const others = ctx.house.filter(n => !players.has(n) && n !== hoh && !block.includes(n));
+  // the draw ends on the field, not on the last chip (the user, 2026-10-06: "the draw ends abruptly")
+  const field = [...players];
+  steps.push({ k: 'say', by: hoh, t: pickBy([`That's our ${word(field.length)}. Good luck, everybody.`, `So that's the field. ${listOf(field)}. Good luck.`, `${titleCase(word(field.length))} players. May the best one win.`], `${ctx.week}|drawend`) });
+  steps.push({ k: 'bb', t: `${listOf(field)}: the Power of Veto competition will begin shortly.` });
+  steps.push({ k: 'beat', t: pickBy([`The six of them look at each other and start sizing each other up.`, `Somebody is already stretching. Somebody else is very obviously not.`, `Everybody who isn't playing gets very interested in the kitchen.`], `${ctx.week}|drawbeat`).replace('The six', `The ${word(field.length)}`) });
   return { id: 'bb-vdraw-v', kind: 'vdraw', anchor: 'veto', label: 'The Draw', set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony,
     title: 'Veto Player Pick', kicker: 'Cam 04 · Living room', sub: 'Chips for the veto', day: ctx.day, time: '10:15',
     seated: seatLiving(block, [...players].filter(n => n !== hoh && !block.includes(n)).concat(others), hoh), steps };
@@ -372,6 +420,10 @@ function vetoMeetingScreen(act, ctx) {
   } else {
     steps.push({ k: 'say', by: holder, push: true, t: `...not to use the Power of Veto.`, toast: ['NOT USED', '#d99a10'], why: vetoWhy(act, holder, before, hoh) });
   }
+  // the room's reaction, at the meeting itself (the engine's moments: the replacement seated, a
+  // nominee left up, a confrontation in front of everybody)
+  // (the replacement already reacted in the renomination scene: the engine's own version would be a second, different reaction)
+  steps.push(...momentSteps(act, act.script?.renom?.length ? new RegExp(VETO_MOMENT.source.replace('|veto-replacement-shock', '').replace('|power-replacement-fallout', '')) : VETO_MOMENT));
   steps.push({ k: 'say', by: holder, t: 'This veto meeting is adjourned.' });
   const others = ctx.house.filter(n => !before.includes(n) && n !== holder);
   return { id: 'bb-cer-v', kind: 'cer', anchor: 'cer', set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony,
@@ -2165,7 +2217,8 @@ function storyLifeScreen(scenes, ctx, n) {
     if ((MOOD_RANK[scene.mood] || 0) > (MOOD_RANK[mood] || 0)) mood = scene.mood;
     const lines = (sc.lines || []).map(l => ({ k: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, t: l.text, ...(l.bg ? { bg: true } : {}) }));
     // an alliance named on screen gets its title card on the last line of the conversation
-    if (sc.title) { let k = lines.length - 1; while (k > 0 && lines[k].k === 'dr') k--; if (lines[k]) lines[k] = { ...lines[k], card: sc.title }; }
+    if (sc.title?.kind === 'meeting') { const k = lines.findIndex(l => l.k !== 'dr'); if (k >= 0) lines[k] = { ...lines[k], card: sc.title }; }
+    else if (sc.title) { let k = lines.length - 1; while (k > 0 && lines[k].k === 'dr') k--; if (lines[k]) lines[k] = { ...lines[k], card: sc.title }; }
     // a scene that opens on its own staging line carries the cut; otherwise a caption names the room
     const firstSpoken = lines.findIndex(l => l.k !== 'dr');
     if (firstSpoken >= 0 && lines[firstSpoken].k === 'beat' && !lines[firstSpoken].bg) {

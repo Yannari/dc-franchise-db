@@ -13,6 +13,7 @@
 // the medallion, the vote count, a door. Only a click plays a sting (never
 // Reveal all), and a step only ever sounds like something on screen.
 import { BED_CATALOG, CUE_CATALOG } from '../audio.js';
+import { startRoom, stopRoom } from './voices.js';
 
 const dir = 'assets/audio/bb/';
 const BASE_VOL = 0.4;
@@ -218,8 +219,9 @@ export function playStep(screen, idx) {
   if (vp && vp.style.display === 'none') return;
   const { cue, bed } = soundFor(screen, idx);
   try {
-    if (bed === 'none' && typeof a.ambient === 'function') a.ambient(null);
-    else if (bed && typeof a.ambient === 'function') a.ambient(variantOf(bed, screen));
+    // no music: the room is not silent, it sounds like the room (voices.js); music: the room steps back
+    if (bed === 'none' && typeof a.ambient === 'function') { a.ambient(null); startRoom(screen.steps[idx]?.scene?.set || 'ceremony'); }
+    else if (bed && typeof a.ambient === 'function') { stopRoom(); a.ambient(variantOf(bed, screen)); }
     if (cue) a.sfx(cue);
   } catch { /* sound must never break a screen */ }
 }

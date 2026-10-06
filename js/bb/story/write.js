@@ -487,8 +487,11 @@ export function writeEngineScene(beat, ctx, at) {
   }
   // nobody speaks who is not in the scene
   if (lines.some(l => l.by && !cast.includes(l.by))) return null;
-  const room = ROOM[beat.location] ? beat.location : 'living-room';
   const id = String(beat.eventId || '');
+  // a house meeting is the whole house in the living room, whoever speaks
+  const meeting = /house-meeting|meeting-crash/.test(id) && !/meeting-crash/.test(id);
+  const room = meeting ? 'living-room' : ROOM[beat.location] ? beat.location : 'living-room';
+  if (meeting) for (const n of present) if (!cast.includes(n)) cast.push(n);
   const fam = FAMILY_WHY.find(([re]) => re.test(id))?.[1];
   const badge = beat.badgeText ? `${String(beat.badgeText).charAt(0)}${String(beat.badgeText).slice(1).toLowerCase()}.` : null;
   const why = [...(badge ? [badge] : []), ...(fam ? [fam] : []), ...standings(cast)];
@@ -496,6 +499,7 @@ export function writeEngineScene(beat, ctx, at) {
     room, roomName: ROOM[room] || 'Living Room', cast, mood: /blow|grudge|confront|fight/.test(id) ? 'drama' : /^scheme-/.test(id) ? 'scheming' : /^bloc-|^plan-/.test(id) ? 'plan' : 'deals', at, fixedRoom: true, recap: false,
     lineId: beat.lineId || null, why, lines };
   if (/alliance-formed|alliance-forms/.test(id) && beat.allianceName) sc.title = titleOf(beat.allianceName, cast);
+  if (meeting) sc.title = { kind: 'meeting', name: 'House Meeting', members: cast.slice(0, 1) };
   return sc;
 }
 

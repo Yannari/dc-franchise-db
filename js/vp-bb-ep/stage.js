@@ -129,6 +129,9 @@ function seatOf(S, seated, n) {
   if (!a || !id) return null;
   if (id === 'head') return { at: a.head.at, w: a.head.w * 1.25 };
   if (id === 'stand2') { const t = a.seats.stand; return { at: [100 - t.at[0], t.at[1], t.at[2]], w: t.w }; }
+  // a third nominee's chair (the Block Buster, a third seat): the render has two, so the third
+  // stands between them, a step behind (the user, 2026-10-06: "only 2 chairs even when there's 3")
+  if (id === 'N0' && a.seats?.N1) { const t = a.seats.N1; return { at: [50, t.at[1] + 1.4, t.at[2] - 0.3], w: t.w * 0.96 }; }
   const t = a.seats[id];
   return t ? { at: t.at, w: t.w * (S.set === 'dining' ? 0.72 : 1.0) } : null;
 }
@@ -803,9 +806,10 @@ export function stageHtml(screens, si, idx, fresh, o) {
       : `<div class="bigrev ${fresh ? 'fresh' : ''}"><i>${esc(a)}</i><b>${esc(b)}</b></div>`;
   }
   if (fresh && st && st.door) h += '<div class="doorflood"></div>';
-  if (fresh && st && st.card?.kind === 'alliance') {
+  if (fresh && st && st.card && ['alliance', 'meeting'].includes(st.card.kind)) {
     const faces = (st.card.members || []).slice(0, 6).map((n, i) => `<span class="alf" style="--c:${col(n)};--i:${i}">${img(n)}</span>`).join('');
-    h += `<div class="alcard"><i>AN ALLIANCE IS BORN</i><b>${esc(st.card.name)}</b><div class="alfs">${faces}</div></div>`;
+    const over = st.card.kind === 'meeting' ? `CALLED BY ${esc(String((st.card.members || [])[0] || '').toUpperCase())}` : 'AN ALLIANCE IS BORN';
+    h += `<div class="alcard ${st.card.kind}"><i>${over}</i><b>${esc(st.card.name)}</b><div class="alfs">${faces}</div></div>`;
   }
   if (fresh && st && st.scene && st.scene.slate && (S0.kind === 'houselife' || S0.kind === 'movein')) {
     h += `<div class="slate"><span>DAY ${esc(S.day)} · ${esc(st.scene.time || S.time || '')}</span><b>${esc(st.scene.room || S.room || '')}</b></div>`;

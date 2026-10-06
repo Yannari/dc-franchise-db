@@ -11,6 +11,7 @@
 //
 // Switch back to the old screens: localStorage 'bb-classic-vp' = '1'.
 import { bbWeekSteps, REPLACED, ANCHOR_OF, houseLifeMode } from './steps.js';
+import { voiceTick, voiceSay, voicesOn, bbxVoices } from './voices.js';
 import { stageHtml, camStyle, esc, escT, col, img, eyeSvg, SEASON_DIR } from './stage.js';
 import { BBX_CSS, BBX_FONTS } from './style.js';
 import { BBX_SUITE_CSS } from './style-suite.js';
@@ -58,6 +59,7 @@ const SHELL_CSS = `
 .bbx .bbx-mini{width:26px;height:26px;border-radius:7px;overflow:hidden;flex:none;position:relative;background:var(--c)}
 .bbx .bbx-mini img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
 .bbx .bbx-pend{font-size:12px;color:#7d89a3;font-style:italic}
+.bbx .bbx-btn.bbx-voices:not(.on){opacity:.5;text-decoration:line-through}
 .bbx .bbx-tally{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
 .bbx .bbx-tal{font:600 12px Archivo,sans-serif;color:#c7d0e4;background:#151c2e;border-radius:6px;padding:3px 8px}
 .bbx .bbx-tal b{font:700 15px 'Chakra Petch',monospace;color:#ff6b82;margin-right:3px}
@@ -210,6 +212,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     <button type="button" class="bbx-btn" onclick="bbxReset('${uid}')">Restart</button>
     <button type="button" class="bbx-btn" id="bbx-auto-${uid}" onclick="bbxAuto('${uid}')">Auto</button>
     <button type="button" class="bbx-btn" onclick="bbxTv()">TV mode</button>
+    <button type="button" class="bbx-btn bbx-voices ${voicesOn() ? 'on' : ''}" onclick="bbxVoices()" title="The houseguests' voices, and the room sound when there is no music">Voices</button>
     <button type="button" class="bbx-btn" onclick="bbxSwitchViewer('classic')" title="Back to the classic screens">Classic</button>
     <button type="button" class="bbx-btn" onclick="bbxHouseLife()" title="House life as one segment per stretch, or one scene per screen">${houseLifeMode() === 'scenes' ? 'House Life view' : 'Scenes view'}</button>
     <span class="bbx-count" id="bbx-count-${uid}">0 / ${S.steps.length}</span>
@@ -287,13 +290,15 @@ function paint(uid, fresh) {
     const un = v => v.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
     const full = un(tx.dataset.full);
     const done = () => { tx.innerHTML = un(tx.dataset.emph || '') || tx.textContent; tx.classList.add('lit'); };
-    if (full.length <= 34) { el.querySelector('.l3')?.classList.add('snap'); done(); }
+    const cur = R.screens[R.si]?.steps?.[R.idx] || {};
+    if (full.length <= 34) { el.querySelector('.l3')?.classList.add('snap'); done(); voiceSay(cur.by, cur.k, full); }
     else {
       let n = 0, wait = 0;
       R.typing = setInterval(() => {
         if (wait > 0) { wait--; return; }
         n += full.length > 160 ? 3 : 2;
         tx.textContent = full.slice(0, n);
+        voiceTick(cur.by, cur.k, full, n - (n % 3 === 0 ? 0 : n % 3));
         const ch = full[Math.min(n, full.length) - 1];
         if (/[.!?…]/.test(ch) && n < full.length) wait = 9;
         else if (/[,;:—]/.test(ch) && n < full.length) wait = 4;
@@ -374,7 +379,7 @@ export function bbxSwitchViewer(which) {
     if (i > 0 && typeof window.vpGoTo === 'function') window.vpGoTo(i);
   } catch { location.reload(); }
 }
-if (typeof window !== 'undefined') Object.assign(window, { bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife });
+if (typeof window !== 'undefined') Object.assign(window, { bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices });
 // Closing the Viewing Party only hides it: stop every Auto run and the line typing out,
 // or Auto keeps clicking through the week (and its music) behind a closed window.
 if (typeof document !== 'undefined') document.addEventListener('vp:close', () => {

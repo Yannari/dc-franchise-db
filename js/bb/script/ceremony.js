@@ -113,7 +113,17 @@ export function writeCeremony(act, week, house, extra = {}) {
       script.nomDr = {};
       // A nominee the speech already cut to the Diary Room does not get a second one.
       const spoke = new Set((script.noms || []).filter(l => l.kind === 'dr').map(l => l.by));
-      for (const n of noms.slice(0, 2).filter(x => !spoke.has(x))) {
+      // every nominee past the two the speech is about gets a reason of their own
+      script.nomThird = {};
+      const named = new Set([b, c].filter(Boolean));
+      for (const n of noms.filter(x => !named.has(x))) {
+        const st = gs.bb?.stats?.[n] || {};
+        const wins = (st.hohWins || 0) + (st.vetoWins || 0) + (st.blockBusterWins || 0);
+        const end = week.safetyMode ? 'blockbuster' : close(n, hoh) ? 'close' : wins >= 2 ? 'threat' : getBond(hoh, n) <= -2 ? 'wary' : 'any';
+        const lines = part('noms.third', { a: hoh, b: n }, end, { ...ctx, nominees: noms }, house, `third|${n}`);
+        if (lines) script.nomThird[n] = lines;
+      }
+      for (const n of noms.filter(x => !spoke.has(x))) {
         const end = n === act.pawn && !backdoor ? 'pawn' : close(n, hoh) ? 'blindsided' : n === target ? 'target' : 'any';
         const lines = part('noms.dr', { a: n, b: hoh }, end, { ...ctx, nominees: noms }, house, n);
         if (lines) script.nomDr[n] = lines;

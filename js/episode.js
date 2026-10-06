@@ -7312,11 +7312,24 @@ function simulateJuryRoundtable(ep) {
   if (ep.reputationChanges?.length) {
     const _repKey = gs.isMerged ? (gs.mergeName || 'merge') : (ep.loser?.name || ep.tribalTribe || Object.keys(ep.campEvents || {})[0]);
     const _repBlock = ep.campEvents?.[_repKey]?.post;
-    const _earned = ep.reputationChanges.filter(c => c.earned.length).slice(0, 3);
+    // Only people who live in this camp (before the merge the other tribe was being listed here).
+    const _repTribe = gs.isMerged ? null : gs.tribes.find(t => t.name === _repKey);
+    const _campOfRep = n => !_repTribe || _repTribe.members.includes(n);
+    const _earned = ep.reputationChanges.filter(c => c.earned.length && gs.activePlayers.includes(c.player) && _campOfRep(c.player)).slice(0, 3);
     if (Array.isArray(_repBlock) && _earned.length) {
-      _repBlock.push({ type:'strategicReputation', players:_earned.map(c => c.player),
-        text:_earned.map(c => `${c.player}'s recent game is changing how the tribe reads them: ${c.earned.join(', ')}.`).join(' '),
-        badgeText:'REPUTATION SHIFT', badgeClass:'purple' });
+      // A camp-mate tells the camera what they have noticed: a friend notices the good labels,
+      // somebody with no love for them notices the bad ones. It happened at the vote, so the
+      // stepped viewer airs it after Tribal (afterVote), never before it.
+      const _GOOD = ['Dependable', 'Persuasive', 'Discreet'];
+      const _parts = _earned.map(c => {
+        const label = c.earned[0];
+        const mates = gs.activePlayers.filter(n => n !== c.player && _campOfRep(n));
+        const good = _GOOD.includes(label);
+        const observer = mates.sort((x, y) => (good ? getBond(y, c.player) - getBond(x, c.player) : getBond(x, c.player) - getBond(y, c.player)) || x.localeCompare(y))[0];
+        return observer ? makeScene('rep.label', { a: observer, b: c.player }, { ending: label.toLowerCase() }, [], { id: 'confessional', label: 'Confessional' }) : null;
+      }).filter(Boolean);
+      if (_parts.length) _repBlock.push(scriptEventParts({ type:'strategicReputation', players:_earned.map(c => c.player),
+        badgeText:'REPUTATION SHIFT', badgeClass:'purple', afterVote: true }, _parts, { ep: ep.num, phase: 'post' }));
     }
   }
   // ── PHASE CHECK ──

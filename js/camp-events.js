@@ -6256,18 +6256,16 @@ export function checkSocialPolitics(ep) {
           if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
           gs.knownIdolHoldersThisEp.add(infoDetail);
         }
-        const tPr = pronouns(trader);
-        const rPr = pronouns(target);
-        pre.push({
-          type: 'infoTrade', players: [trader, target],
-          text: _pick([
-            `${trader} sat down next to ${target} and said: "I'm going to tell you something. And then you're going to owe me." ${target} listened.`,
-            `${trader} traded information for trust. Whether the information was real is another question.`,
-            `A quiet exchange at the water well. ${trader} knows something ${target} didn't. Now ${target} knows too — or thinks ${rPr.sub} ${rPr.sub==='they'?'do':'does'}.`,
-            `${trader} whispered something to ${target} before the challenge. ${target}'s expression changed. The game just shifted for both of them.`,
-          ]),
-          badgeText: isFalse ? null : 'INFO TRADE', badgeClass: 'gold'
-        });
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        // What changed hands, as a scene. A false tip is admitted only in the trader's confessional,
+        // so the event no longer hides its badge to keep the secret (it had none at all).
+        const _tradeEnding = infoType === 'idol-holder' && infoDetail && infoDetail !== target ? 'idol'
+          : infoType === 'alliance-target' ? 'plans' : 'general';
+        pre.push(scriptEvent({ type: 'infoTrade', players: [trader, target], badgeText: 'INFO TRADE', badgeClass: 'gold' },
+          makeScene('trade.info', { a: trader, b: target },
+            { ending: _tradeEnding, result: isFalse ? 'false' : 'true', holder: _tradeEnding === 'idol' ? infoDetail : null,
+              group: _tradeEnding === 'plans' ? infoDetail : null }, [], spotOf(ep, trader, target, 'pre').spot),
+          { ep: curEp, phase: 'pre' }));
         ep._politicsLog.push(`TRADE: ${trader} → ${target} (${infoType}, false=${isFalse})`);
         budget--;
       });
@@ -7669,37 +7667,25 @@ export function generateCampEvents(ep, phase = 'both') {
       const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => activeMembers.some(m => t.members.includes(m)))?.name;
       if (!_campKey || !ep.campEvents?.[_campKey]) return;
 
-      let text;
-      if (reason === 'last-member') {
-        if (lastMember && gs.activePlayers.includes(lastMember)) {
-          text = _rp([
-            `${name} is over. ${lastMember} is the last one standing — but an alliance of one isn't an alliance. It's just a person with a memory.`,
-            `Everyone else from ${name} is gone. ${lastMember} carries the name alone now. It doesn't mean what it used to.`,
-          ]);
-        } else return;
-      } else if (reason === 'betrayal') {
-        const _betrayers = (betrayals || []).map(b => b.player).filter(Boolean);
-        text = _rp([
-          `${name} didn't survive the vote. ${_betrayers.length ? _betrayers.join(' and ') + ' broke rank' : 'Too many fractures'}. The alliance is done.`,
-          `One betrayal was enough to kill ${name}. The trust was never deep enough to absorb a hit like that.`,
-          `${name} is dissolved. The bonds were fragile and the vote proved it. Nobody is pretending otherwise this morning.`,
-        ]);
-      } else if (reason === 'bonds-collapsed') {
-        text = _rp([
-          `${name} is finished. The relationships inside it eroded past the point of repair. Average trust: ${avgBond || '?'}/10. That's not an alliance — that's a name on a list.`,
-          `Nobody in ${name} likes each other anymore. The alliance existed in name only — and now it doesn't even have that.`,
-          `The bonds inside ${name} collapsed. ${activeMembers.join(' and ')} aren't pretending to work together anymore.`,
-        ]);
-      } else if (reason === 'betrayals-and-low-trust') {
-        text = _rp([
-          `${name} is done. ${betrayalCount || '2+'} betrayals and an average bond of ${avgBond || '?'}. There's nothing left to hold together.`,
-          `Too many broken promises inside ${name}. The alliance dissolved — not with a fight, but with a silence that said everything.`,
-          `${name} fell apart. The betrayals stacked up and the trust ran out. ${activeMembers.join(' and ')} are on their own now.`,
-        ]);
-      }
-      if (text) {
-        ep.campEvents[_campKey].pre.push({ type: 'allianceDissolved', players: activeMembers, text, badgeText: 'Alliance Dissolved', badgeClass: 'red' });
-      }
+      // The members actually in this camp (before the merge the others are on another beach
+      // and were being listed in this camp's event).
+      const _campTribe = gs.isMerged ? null : gs.tribes.find(t => t.name === _campKey);
+      const _here = activeMembers.filter(m => !_campTribe || _campTribe.members.includes(m));
+      const _known = ['last-member', 'betrayal', 'bonds-collapsed', 'betrayals-and-low-trust'];
+      if (!_known.includes(reason)) return;
+      if (reason === 'last-member' && !(lastMember && gs.activePlayers.includes(lastMember))) return;
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      const _betrayers = (betrayals || []).map(b => b.player).filter(Boolean);
+      const _endKind = { 'last-member': 'last', betrayal: 'betrayal', 'bonds-collapsed': 'collapsed', 'betrayals-and-low-trust': 'both' }[reason];
+      const _endWho = reason === 'last-member' ? { a: lastMember }
+        : _here.length >= 2 ? { a: _here[0], b: _here[1] } : { a: _here[0] || lastMember };
+      const _endData = { ending: _endKind, group: name,
+        betrayer: _betrayers.length ? _betrayers.slice(0, 2).join(' and ') : null };
+      ep.campEvents[_campKey].pre.push(scriptEvent(
+        { type: 'allianceDissolved', players: reason === 'last-member' ? [lastMember] : _here, badgeText: 'Alliance Dissolved', badgeClass: 'red' },
+        makeScene(_endWho.b ? 'alliance.end' : 'alliance.endsolo', _endWho, _endData, [],
+          _endWho.b ? spotOf(ep, _endWho.a, _endWho.b, 'pre').spot : { id: 'confessional', label: 'Confessional' }),
+        { ep: ep.num, phase: 'pre' }));
     });
   }
 
@@ -7712,25 +7698,18 @@ export function generateCampEvents(ep, phase = 'both') {
       if (!gs.activePlayers.includes(player)) return;
       const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(player))?.name;
       if (!_campKey || !ep.campEvents?.[_campKey]) return;
-      const _pr = pronouns(player);
       const _remaining = (remainingMembers || []).filter(m => gs.activePlayers.includes(m));
-      const _rNames = _remaining.length <= 2 ? _remaining.join(' and ') : `${_remaining.slice(0,-1).join(', ')} and ${_remaining.at(-1)}`;
-      const text = reason === 'voted against an alliance member' ? _rp([
-        `${alliance} had a conversation this morning. ${player} wasn't invited. By the time ${_pr.sub} ${_pr.sub==='they'?'realized':'realized'} what was happening, ${_pr.posAdj} name was already off the list. ${_rNames} ${_remaining.length === 1 ? 'made' : 'made'} the call together.`,
-        `${player} voted against ${_pr.posAdj} own alliance. ${alliance} didn't forget. This morning, ${_rNames} pulled ${_pr.obj} aside and said what everyone was thinking: "You're out."`,
-        `After what ${player} did at tribal, ${alliance} cut ${_pr.obj} loose. No drama, no discussion. ${_rNames} ${_remaining.length === 1 ? 'decided' : 'decided'} — and ${player} found out after the fact.`,
-      ]) : _rp([
-        `${player} broke rank one too many times. ${alliance} isn't carrying that anymore. ${_rNames} closed the door.`,
-        `The trust inside ${alliance} was already thin. ${player} was the reason. This morning, the rest of the group made it official: ${_pr.sub} ${_pr.sub==='they'?'are':'is'} done.`,
-        `${alliance} survived — but without ${player}. The repeated betrayals forced ${_rNames} to cut ${_pr.obj} loose.`,
-      ]);
-      ep.campEvents[_campKey].pre.push({
-        type: 'allianceExpelled',
-        players: [player, ..._remaining],
-        text,
-        badgeText: 'EXPELLED',
-        badgeClass: 'red'
-      });
+      Math.random(); // the draw that picked the sentence
+      // Somebody from the alliance tells them, if anyone from it lives in this camp.
+      const _xTribe = gs.isMerged ? null : gs.tribes.find(t => t.name === _campKey);
+      const _remainingHere = _remaining.filter(m => !_xTribe || _xTribe.members.includes(m));
+      const _teller = [..._remainingHere].sort((x, y) => getBond(x, player) - getBond(y, player) || x.localeCompare(y))[0] || null;
+      const _xEnding = reason === 'voted against an alliance member' ? 'voted' : 'repeated';
+      ep.campEvents[_campKey].pre.push(scriptEvent({ type: 'allianceExpelled', players: [player, ..._remainingHere], badgeText: 'EXPELLED', badgeClass: 'red' },
+        _teller
+          ? makeScene('alliance.expel', { a: _teller, b: player }, { ending: _xEnding, group: alliance }, [], spotOf(ep, _teller, player, 'pre').spot)
+          : makeScene('alliance.expelsolo', { a: player }, { ending: _xEnding, group: alliance }, [], { id: 'confessional', label: 'Confessional' }),
+        { ep: ep.num, phase: 'pre' }));
     });
   }
 

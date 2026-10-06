@@ -85,6 +85,16 @@ const TALK_WHY = {
   'endgame': 'Six or fewer left. Every competition could end a game now.',
   'bond.vent': '{a} cannot stand {c}, and {b} is who {a} tells.',
   'bond.trust': '{a} and {b} are each other\'s closest person in the house.',
+  'style.floater': '{a} plays as a floater: no fixed side, always with the numbers.',
+  'style.beast': '{a} plays to win competitions, and the house is starting to notice.',
+  'style.manipulator': '{a} plays by planting doubts: this one is about {c}.',
+  'style.strategist': '{a} plays the numbers: who is with who, and who is the biggest threat ({c}).',
+  'style.social': '{a} plays socially: time with everyone, so nobody wants to write {a}\'s name down.',
+  'style.loyal': '{a} plays with loyalty: {c} is {a}\'s person, whatever it costs.',
+  'style.underdog': '{a} has been counted out from the start, and is still here.',
+  'style.provocateur': '{a} plays out loud: stirring the house and daring people to answer.',
+  'style.perceptive': '{a} plays by watching: reading the house before it says anything.',
+  'style.goat': '{a} is the one everybody wants to sit next to at the end, and knows it.',
 };
 const BONDWORD = v => v >= 6 ? 'very close' : v >= 3 ? 'friendly' : v > -2 ? 'neutral' : v > -5 ? 'wary of each other' : 'enemies';
 function standings(cast) {
@@ -352,7 +362,7 @@ export function writeGameTalk(talk, ctx, at) {
   let room = 'living-room';
   const cast = Object.values(who).filter(Boolean);
   const base = { id: `talk:${ctx.week?.num || 0}:${ctx.stretch}:${kind}`, line: null, type: 'talk', step: kind, outcome: talk.phase || 'any',
-    room, roomName: ROOM[room], cast, mood: kind.startsWith('bond.vent') ? 'drama' : 'deals', at };
+    room, roomName: ROOM[room], cast, mood: kind.startsWith('bond.vent') || kind === 'style.provocateur' ? 'drama' : kind.startsWith('style.') ? 'house' : 'deals', at };
   if (writing.muted) return { ...base, lines: [] };
   const entry = pick([key], who, data, { ...ctx, phase: talk.phase }, room, salt);
   if (!entry) return null;
@@ -371,6 +381,108 @@ export function writeGameTalk(talk, ctx, at) {
   sc.lines = shut ? lines : background(lines, sc, ctx, sc.id, false);
   sc.why = whyOf(kind, TALK_WHY, who, data, Object.values(who).filter(Boolean));
   return sc;
+}
+
+// ── the campaign: a nominee gets a voter alone ─────────────────────────
+const CASE_WHY = {
+  deal: '{a} reminds {b} of a deal between them.',
+  hunted: '{a} tells {b} that {target} is the one coming for {b}.',
+  pair: '{a} argues {target} and {partner} are a pair with no room for {b}.',
+  alliance: '{a} argues {target} is in {alliance}, and {b} is not.',
+  comps: '{a} argues {target} is the bigger competition threat.',
+  beatable: '{a} argues {b} could beat {a} at the end, but not {target}.',
+  clean: '{a} points out that {a} has never voted against {b}.',
+  friend: '{a} leans on their friendship.',
+  count: '{a} offers {b} a vote for the weeks ahead.',
+};
+const OUTCOME_WHY = {
+  receptive: 'It lands: {b} is thinking about keeping {a}.',
+  unmoved: 'It does not land: {b} has not moved.',
+  worn: 'Second try, and this time it lands.',
+};
+/**
+ * One pitch from the engine's campaign (the beat carries the nominee's case and the voter's
+ * reply, already written) aired as a whole private conversation: the nominee gets the voter
+ * alone, the case and the reply, a closing push that matches how it went, and a Diary Room.
+ */
+export function writeCampaignScene(beat, ctx, at, salt) {
+  // the nominee first, the voter last; anybody between came along to help make the case
+  const ps = beat.players || [];
+  const a = ps[0], b = ps.length > 1 ? ps[ps.length - 1] : null;
+  if (!a || !b) return null;
+  const along = ps.slice(1, -1);
+  const outcome = beat.pitchOutcome || (beat.badgeClass === 'green' ? 'receptive' : 'unmoved');
+  const who = { a, b };
+  const data = {};
+  const sctx = { ...ctx, inSet: false };
+  const open = pick(['camp.open'], who, data, sctx, 'bedroom', `${salt}|open`);
+  const close = pick([`camp.close.${outcome}`], who, data, sctx, 'bedroom', `${salt}|close`);
+  // the voter knows their own mind; now and then the nominee reads the room instead
+  const h = [...salt].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
+  const pdr = outcome !== 'worn' && h % 10 < 3;
+  const dr = pick([pdr ? `camp.pdr.${outcome}` : `camp.vdr.${outcome}`], who, data, sctx, 'bedroom', `${salt}|dr`);
+  const body = (beat.lines || []).filter(l => l && l.text).map(l => ({ kind: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, text: l.text }));
+  if (!body.length && beat.text) body.push({ kind: 'beat', by: null, text: String(beat.text).replace(/<[^>]+>/g, '') });
+  const room = open?.room || ['bedroom', 'backyard', 'kitchen', 'living-room'][h % 4];
+  // the engine's own Diary Room (if it wrote one) closes the scene in place of ours: a Diary
+  // Room cut in the middle of the conversation, then the conversation going on, read as two scenes
+  const talk = body.filter(l => l.kind !== 'dr');
+  const ownDr = body.filter(l => l.kind === 'dr');
+  const lines = [...(open ? render(open, who, ctx, data) : []), ...talk, ...(close ? render(close, who, ctx, data) : []), ...(ownDr.length ? ownDr : dr ? render(dr, who, ctx, data) : [])];
+  const c = beat.pitchCase || {};
+  const cw = CASE_WHY[c.kind];
+  const why = [`${a} is on the block, campaigning to ${b}.`,
+    ...(cw ? [fillWhy(cw, who, { target: c.target, partner: c.partner, alliance: c.alliance })] : []),
+    fillWhy(OUTCOME_WHY[outcome] || OUTCOME_WHY.unmoved, who, {}), ...standings([a, b])];
+  return { id: `camp:${ctx.week?.num || 0}:${salt}`, line: null, type: 'campaign', step: 'pitch', outcome, room, roomName: ROOM[room] || 'Bedroom',
+    cast: [a, ...along, b], mood: 'deals', at, fixedRoom: !!open?.room, recap: false, lineId: open?.id || null, why, lines };
+}
+
+// ── the engine's own moments ───────────────────────────────────────────
+// The user, 2026-10-06: "make sure the engine's really necessary events don't get ignored".
+// Measured over three seasons: an alliance picking its target, recruiting votes, a plan being
+// told, paranoia, a grudge hardening, a veto plea, a lie coming apart, the house taking sides,
+// blame after a vote — every one aired 0% of the time, because none of them is a storyline
+// step. They carry their own words (the engine wrote them), so they air as they are: a short
+// scene in the room it happened in, with the panel saying what it was.
+const FAMILY_WHY = [
+  [/campaign|vote-pitch|nom-eve/, 'Campaigning: somebody working a vote before Thursday.'],
+  [/^bloc-/, 'Alliance planning: who the group is voting for, and who it needs.'],
+  [/^plan-|^deals-numbers|count/, 'Counting votes.'],
+  [/^deals-/, 'A deal between them.'],
+  [/^alliance-/, 'Inside an alliance.'],
+  [/^scheme-/, 'A scheme.'],
+  [/^power-|^reign-/, 'Power: the HOH and what it does to the house.'],
+  [/^veto-|^phase-lobby-veto|^phase-replacement/, 'The veto, and who it could save or send up.'],
+  [/^fallout-/, 'The fallout from the last vote.'],
+  [/^arc-|^followup-/, 'Something earlier in the week, catching up with them.'],
+  [/^phase-/, 'Where the week has got to.'],
+  [/^social-paranoia|^social-grudge/, 'What one of them now believes about another.'],
+  [/^social-/, 'How they stand with each other.'],
+  [/^jury-/, 'The jury.'],
+];
+export function writeEngineScene(beat, ctx, at) {
+  const present = ctx.present || [];
+  const speakers = (beat.lines || []).map(l => l?.by).filter(Boolean);
+  // everybody the moment uses: its players, and anybody who speaks in it
+  const cast = [...new Set([...(beat.players || []), ...speakers])].filter(n => present.includes(n));
+  if (!cast.length) return null;
+  let lines = (beat.lines || []).filter(l => l && l.text).map(l => ({ kind: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, text: l.text }));
+  if (!lines.length) {
+    const t = String(beat.text || '').replace(/<[^>]+>/g, '').trim();
+    if (!t) return null;
+    lines = [{ kind: 'beat', by: null, text: t }];
+  }
+  // nobody speaks who is not in the scene
+  if (lines.some(l => l.by && !cast.includes(l.by))) return null;
+  const room = ROOM[beat.location] ? beat.location : 'living-room';
+  const id = String(beat.eventId || '');
+  const fam = FAMILY_WHY.find(([re]) => re.test(id))?.[1];
+  const badge = beat.badgeText ? `${String(beat.badgeText).charAt(0)}${String(beat.badgeText).slice(1).toLowerCase()}.` : null;
+  const why = [...(badge ? [badge] : []), ...(fam ? [fam] : []), ...standings(cast)];
+  return { id: `ev:${ctx.week?.num || 0}:${ctx.stretch}:${id}:${cast.join('>')}`, line: null, type: 'event', step: id, outcome: 'any',
+    room, roomName: ROOM[room] || 'Living Room', cast, mood: /blow|grudge|confront|fight/.test(id) ? 'drama' : 'deals', at, fixedRoom: true, recap: false,
+    lineId: beat.lineId || null, why, lines };
 }
 
 // ── set pieces: the whole house in one room ─────────────────────────────

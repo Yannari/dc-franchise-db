@@ -19,7 +19,7 @@
 //
 // Words only: it reads bonds and the week, and moves nothing.
 
-import { gs } from '../../core.js';
+import { gs, players } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { juryOpensAt, evictionSeatsAJuror } from '../jury.js';
 import { stableRng } from '../knowledge.js';
@@ -150,6 +150,53 @@ export function gameTalkFor(week, ctx, clock, talked, lastGone) {
     }
   }
   return out.map(x => ({ ...x, phase }));
+}
+
+// ── every houseguest plays their own game ──
+// The user, 2026-10-06: "there are a lot of types of game in Big Brother… from floater to
+// challenge beast to manipulator to strategist… I don't see that yet." Each archetype plays
+// one way (bb/story/lines/style.js). A mastermind is a strategist one week and a manipulator
+// the next. Only villain archetypes manipulate; the provocateur stirs things in the open.
+const STYLE_OF = {
+  schemer: 'manipulator', villain: 'manipulator', mastermind: ['strategist', 'manipulator'],
+  hothead: 'provocateur', 'chaos-agent': 'provocateur', wildcard: 'provocateur',
+  'challenge-beast': 'beast', 'social-butterfly': 'social', showmancer: 'social',
+  'loyal-soldier': 'loyal', hero: 'loyal', floater: 'floater', underdog: 'underdog', goat: 'goat',
+  'perceptive-player': 'perceptive',
+};
+/**
+ * One houseguest playing their own game this stretch, or null. Rotates through the house by
+ * who has been seen least this season (`aired`, kept with the storylines), so every player's
+ * game gets its turn on screen.
+ */
+export function styleTalkFor(week, ctx, aired) {
+  const house = ctx.present || [];
+  if (house.length < 4 || ((week.num || 0) === 1 && (ctx.stretch || 0) === 0)) return null;
+  const { phase } = phaseOf(week);
+  const rng = stableRng(gs.bb?.seasonSalt || 0, 'styletalk', week.num || 0, ctx.stretch || 0);
+  const archOf = n => (players || []).find(p => p.name === n)?.archetype;
+  const order = house.filter(n => STYLE_OF[archOf(n)])
+    .map(n => [n, (aired[`style:${n}`] || 0) + rng() * 0.5]).sort((x, y) => x[1] - y[1]).map(x => x[0]);
+  for (const a of order) {
+    let style = STYLE_OF[archOf(a)];
+    if (Array.isArray(style)) style = style[((week.num || 0) + (ctx.stretch || 0)) % style.length];
+    const others = house.filter(n => n !== a);
+    const byBond = others.slice().sort((x, y) => getBond(a, y) - getBond(a, x));
+    const wins = n => winsBefore(n, week);
+    let b = byBond[0];
+    let c = null;
+    if (style === 'floater') c = ctx.hoh && ctx.hoh !== a ? ctx.hoh : others.slice().sort((x, y) => avg(house.map(z => getBond(z, y))) - avg(house.map(z => getBond(z, x))))[0];
+    else if (style === 'beast' || style === 'strategist' || style === 'underdog') c = others.filter(n => n !== b).sort((x, y) => wins(y) - wins(x) || getBond(a, x) - getBond(a, y))[0];
+    // the provocateur goes after real power: the HOH, or failing that the strongest player
+    else if (style === 'provocateur') c = ctx.hoh && ctx.hoh !== a ? ctx.hoh : others.slice().sort((x, y) => wins(y) - wins(x) || getBond(a, x) - getBond(a, y))[0];
+    else if (style === 'manipulator' || style === 'perceptive' || style === 'social') c = byBond.at(-1);
+    else if (style === 'loyal') { c = byBond[0]; b = byBond[1]; }
+    else if (style === 'goat') c = byBond[Math.floor(byBond.length / 2)];
+    if (!b || !c || b === c) continue;
+    aired[`style:${a}`] = (aired[`style:${a}`] || 0) + 1;
+    return { kind: `style.${style}`, who: { a, b, c }, data: {}, phase };
+  }
+  return null;
 }
 
 /** A bond conversation for this stretch, or null: venting about an enemy, or the friend you trust. */

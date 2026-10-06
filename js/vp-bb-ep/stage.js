@@ -63,7 +63,7 @@ const MEDAL = `<svg viewBox="0 0 60 80"><defs><radialGradient id="bbxmg" cx=".4"
 // ── the week so far ────────────────────────────────────────────────────
 /** Everything settled by step `idx` of screen `si`: earlier screens count as watched in full. */
 // Screens that cut between rooms with `scene` markers on their steps.
-const SCENE_KINDS = new Set(['houselife', 'movein', 'final-cut', 'jury-q', 'closing', 'jury-vote', 'afp', 'reunion']);
+const SCENE_KINDS = new Set(['houselife', 'movein', 'final-cut', 'jury-q', 'closing', 'jury-vote', 'afp', 'reunion', 'final-part']);
 export function ledgerAt(screens, si, idx) {
   const S0 = screens[si] || screens[0] || {};
   const L = { status: {}, nom: [], veto: null, out: [], votes: null, vetoPlay: [], ballots: [], revealed: [], hoh: null, moves: [], stances: {},
@@ -826,7 +826,13 @@ export function stageHtml(screens, si, idx, fresh, o) {
       h += `<div class="ballots"><div class="k">Keys in the box</div><div class="n">${inBox}</div></div>`;
     }
   }
-  if (fresh && st && st.confetti) h += `<div class="confetti">${Array.from({ length: 60 }, (_, i) => `<i style="left:${(i * 37) % 100}%;--d:${((i * 13) % 20) / 10}s;--x:${((i * 29) % 40) - 20}cqw;--r:${(i * 47) % 360}deg;background:${['#f5c542', '#ff2e4d', '#22e1ff', '#7c5cff', '#fff', '#12b76a'][i % 6]}"></i>`).join('')}</div>`;
+  if (st && st.board) {
+    const B = st.board;
+    const rows = (B.rows || []).map(r => `<div class="fbr ${r.out ? 'out' : ''}"><span class="ff" style="--c:${col(r.n)}">${img(r.n)}</span><b>${esc(r.n)}</b>${r.v != null ? `<span class="fbar"><i style="width:${Math.round(r.v * 100)}%"></i></span>` : ''}${r.text != null ? `<span class="ft">${esc(r.text)}</span>` : ''}</div>`).join('');
+    h += `<div class="fboard"><span class="fh">${esc(B.title || '')}</span>${rows}</div>`;
+  }
+  if (fresh && st && st.confetti) h += '<div class="goldflash"></div>';
+  if (fresh && st && st.confetti) h += `<div class="confetti">${Array.from({ length: 120 }, (_, i) => `<i style="left:${(i * 37) % 100}%;--d:${((i * 13) % 34) / 10}s;--x:${((i * 29) % 40) - 20}cqw;--r:${(i * 47) % 360}deg;background:${['#f5c542', '#ff2e4d', '#22e1ff', '#7c5cff', '#fff', '#12b76a'][i % 6]}"></i>`).join('')}</div>`;
   if (S.finale && idx >= 0) h += '<div class="beams"><i></i><i></i><i></i></div>';
   if (fresh && st && st.card && ['alliance', 'meeting', 'joined', 'out', 'deal'].includes(st.card.kind)) {
     const faces = (st.card.members || []).slice(0, 6).map((n, i) => `<span class="alf" style="--c:${col(n)};--i:${i}">${img(n)}</span>`).join('');

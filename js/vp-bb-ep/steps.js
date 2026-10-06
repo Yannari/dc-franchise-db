@@ -592,20 +592,66 @@ function finaleBriefScreen(act, ctx, host) {
 function finalPartScreen(act, ctx, n) {
   const comp = act.competition || {};
   const placements = comp.placements || [];
+  const players = act.participants || comp.participants || placements;
+  const host = ctx.host || 'Valeria';
+  const detail = comp.detail || {};
+  // Part Three, the jury quiz, is LIVE on the stage: the host reads each juror's statement, both
+  // finalists reveal an answer, the right one is read out, and the score is on the board.
+  if (n === 3 && (detail.questions || []).length) {
+    const score = Object.fromEntries(players.map(p => [p, 0]));
+    const board = () => ({ title: 'THE JURY QUIZ', rows: players.map(p => ({ n: p, text: String(score[p]) })) });
+    const steps = [{ k: 'host', by: host, t: `Final Head of Household, Part Three. ${listOf(players)}, the jury has been asked about their own games. I'll read the start of each statement; you tell me how it ends.`, board: board() }];
+    for (const q of detail.questions) {
+      const stem = String(q.stem || '').replace(/^["“]|["”]$/g, '');
+      steps.push({ k: 'host', by: host, t: `${q.juror} said: "${stem}"`, board: board() });
+      steps.push({ k: 'host', by: host, t: (q.options || []).map((o, i) => `${'ABC'[i]}: ${o}`).join('. ') + '.', board: board() });
+      steps.push({ k: 'beat', t: 'Both finalists lock in an answer. The paddles come up.', board: board() });
+      for (const p of players) {
+        const a = q.answers?.[p];
+        if (!a) continue;
+        steps.push({ k: 'say', by: p, t: `${'ABC'[a.answer] || '?'}. ${q.options?.[a.answer] || ''}.`, board: board() });
+      }
+      for (const p of players) if (q.answers?.[p]?.right) score[p]++;
+      const right = players.filter(p => q.answers?.[p]?.right);
+      steps.push({ k: 'host', by: host, t: `The answer is ${'ABC'[q.truthIndex]}, ${q.options?.[q.truthIndex]}.${right.length === players.length ? ' You both get the point.' : right.length ? ` A point for ${listOf(right)}.` : ' Nobody scores.'}`, board: board() });
+    }
+    const tie = (comp.beats || []).find(b => /tied|tie-?break/i.test(String(b.text || '')));
+    if (tie) steps.push({ k: 'host', by: host, t: stripTags(tie.text), board: board() });
+    steps.push({ k: 'host', by: host, t: `${comp.winner}, you are the final Head of Household!`, hoh: comp.winner, confetti: true, big: [comp.winner, 'Final Head of Household', 'safe'], board: board() });
+    steps.push({ k: 'say', by: comp.winner, push: true, t: pickBy(['Oh my god. I did it.', 'Yes! YES!', 'I can\'t believe it. I really can\'t.'], `${ctx.week}|p3`) });
+    return finaleScreen(`bb-final-hoh-${n}-v`, 'final-part', 'Final HOH · Part Three', 'Live: the jury quiz', ctx,
+      steps.map((s, i) => (i === 0 ? { ...s, scene: onSet(players) } : s)), { legacy: new RegExp(`^bb-final-hoh-${n}$`), label: 'HOH Final Part' });
+  }
   const fake = { competition: comp, results: placements.map(name => ({ name })), winner: comp.winner };
   const S = compScreen(fake, ctx, 'final');
   S.id = `bb-final-hoh-${n}`;
-  S.legacy = new RegExp(`^bb-final-hoh-${n}$`); S.kind = 'final-part'; S.anchor = 'finale';
+  S.legacy = new RegExp(`^bb-final-hoh-${n}$`); S.kind = 'final-part'; S.anchor = 'finale'; S.finale = true;
   S.title = `Final HOH · ${act.part || `Part ${n}`}`;
   S.label = S.title;
   S.steps[0] = { k: 'bb', t: `Final Head of Household competition, ${String(act.part || `Part ${n}`).replace(/ —.*/, '')}.` };
-  const last = n === 3;
+  // a two-person race has no "X is out. It comes down to the last one standing."
+  if (players.length <= 2) S.steps = S.steps.filter(x => !/ is out.( It comes down to the last one standing.)?$/.test(String(x.t || '')));
   const win = S.steps.findIndex(s => s.toast);
-  if (win >= 0) {
-    S.steps[win] = last
-      ? { k: 'beat', t: `${comp.winner} is the final Head of Household!`, toast: ['FINAL HOH', '#d99a10'], hoh: comp.winner }
-      : { k: 'beat', t: `${comp.winner} wins ${act.part || `Part ${n}`} and moves on.`, toast: [`${String(act.part || 'Part').toUpperCase()}`.replace(/ —.*/, ''), '#d99a10'] };
-  }
+  if (win >= 0) S.steps[win] = { k: 'beat', t: `${comp.winner} wins ${act.part || `Part ${n}`} and goes through to Part Three!`, big: [comp.winner, `Wins ${String(act.part || `Part ${n}`).replace(/ —.*/, '')}`, 'safe'], confetti: true };
+  // a board that moves as the competition plays (the user, 2026-10-06: "the final HOH parts need
+  // the same treatment"): who is still standing on the wall, or how far each one has got
+  const playIdx = S.steps.map((s, i) => i).filter(i => i > 0 && (win < 0 || i < win));
+  const total = Math.max(1, playIdx.length);
+  const dsteps = detail.steps || [];
+  const max = Math.max(1e-9, ...Object.values(comp.scores || {}).map(Number));
+  playIdx.forEach((i, k) => {
+    const f = (k + 1) / total;
+    if (dsteps.length) {
+      // endurance: the standing list at this point of the night
+      const at = dsteps[Math.min(dsteps.length - 1, Math.round(f * (dsteps.length - 1)))];
+      const fell = Object.fromEntries(dsteps.filter(x => x.kind === 'fall' && dsteps.indexOf(x) <= dsteps.indexOf(at)).map(x => [x.who, x.hazard || 'OUT']));
+      S.steps[i] = { ...S.steps[i], board: { title: `STILL STANDING · ${at.hours ?? 0} HRS`, rows: players.map(p => ({ n: p, out: !!fell[p], text: fell[p] || 'HOLDING' })) } };
+    } else {
+      // anything else: how far each one has got, the winner reaching the end last
+      S.steps[i] = { ...S.steps[i], board: { title: 'PROGRESS', rows: players.map(p => ({ n: p, v: Math.min(1, ((Number(comp.scores?.[p]) || 0) / max) * Math.min(1, f * 1.08)) })) } };
+    }
+  });
+  if (win >= 0) S.steps[win] = { ...S.steps[win], board: { title: 'RESULT', rows: placements.map((p, r) => ({ n: p, v: r === 0 ? 1 : (Number(comp.scores?.[p]) || 0) / max, out: r > 0, text: r === 0 ? 'WINS' : `${r + 1}${r === 1 ? 'ND' : 'RD'}` })) } };
   return S;
 }
 

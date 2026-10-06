@@ -375,7 +375,7 @@ function patienceOf(name, mix) {
 const KNOT_FIRST = [
   (n, p) => `${n} has the first one open before most of the yard has finished reading the rope, and holds it up without saying anything.`,
   (n, p) => `The first knot in the yard goes to ${n}, who does not celebrate it and does not stop moving either.`,
-  (n, p) => `${n} gets one open early. Four people look over at the same time and then very deliberately look back down.`,
+  (n, p) => `${n} gets one open early. Everybody else looks over at the same time and then very deliberately looks back down.`,
 ];
 
 const KNOT_PROGRESS = [
@@ -551,15 +551,16 @@ export const feelingKnotty = {
       }
     }
 
+    // the winning knot first, then where the runner-up had got to (it read backwards the other way round)
+    revealAt[winner.name] = beats.length;
+    beats.push(beat(say(KNOT_GOOD)(winner.name, pronouns(winner.name)), [winner.name], 'IT OPENS', 'gold'));
     if (runnerUp) {
       revealAt[runnerUp.name] = beats.length;
       beats.push(beat(
-        `${runnerUp.name} is loosening the final knot when ${winner.name} finishes.`,
+        `${runnerUp.name} was still loosening the final knot when ${winner.name} finished.`,
         [runnerUp.name], 'ONE SHORT', 'blue'));
       api.popDelta(runnerUp.name, 1);
     }
-    revealAt[winner.name] = beats.length;
-    beats.push(beat(say(KNOT_GOOD)(winner.name, pronouns(winner.name)), [winner.name], 'IT OPENS', 'gold'));
     // Six knots each: how many opened, and how many were pulled tighter on
     // the way. The screen draws the rope, so it needs both.
     const KNOTS = 6;

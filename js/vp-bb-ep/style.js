@@ -458,6 +458,19 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .beams i{position:absolute;top:-10%;left:50%;width:12cqw;height:80cqw;transform-origin:50% 0;background:linear-gradient(180deg,rgba(255,236,190,.28),transparent 70%);filter:blur(1cqw);animation:bbx-beam 7s ease-in-out infinite}
 .bbx .beams i:nth-child(1){left:20%;animation-delay:-2s}.bbx .beams i:nth-child(3){left:80%;animation-delay:-4.5s}
 @keyframes bbx-beam{0%,100%{transform:rotate(-22deg)}50%{transform:rotate(22deg)}}
+/* ── the final HOH parts: a board that moves as they play; the crowning's gold flash ── */
+.bbx .fboard{position:absolute;right:3cqw;top:9cqw;z-index:10;min-width:24cqw;padding:1cqw 1.4cqw;background:rgba(5,9,18,.9);border:.12cqw solid rgba(245,197,66,.5);border-radius:.9cqw}
+.bbx .fboard .fh{display:block;font:700 .9cqw 'Chakra Petch';letter-spacing:.35cqw;color:#f5c542;margin-bottom:.6cqw}
+.bbx .fboard .fbr{display:flex;align-items:center;gap:.8cqw;padding:.35cqw 0;transition:opacity .4s}
+.bbx .fboard .fbr.out{opacity:.45;filter:grayscale(.8)}
+.bbx .fboard .ff{width:2.6cqw;aspect-ratio:4/5;border-radius:.4cqw;overflow:hidden;background:var(--c);flex:none}
+.bbx .fboard .ff img{width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.bbx .fboard b{font:800 1.1cqw Archivo;font-stretch:80%;color:#fff;text-transform:uppercase;min-width:8cqw}
+.bbx .fboard .fbar{flex:1;height:.9cqw;border-radius:.45cqw;background:rgba(255,255,255,.1);overflow:hidden;min-width:9cqw}
+.bbx .fboard .fbar i{display:block;height:100%;background:linear-gradient(90deg,#22e1ff,#f5c542);transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.bbx .fboard .ft{font:700 .95cqw 'Chakra Petch';letter-spacing:.15cqw;color:#c7d0e4;margin-left:auto}
+.bbx .goldflash{position:absolute;inset:0;z-index:12;pointer-events:none;background:radial-gradient(circle at 50% 45%,rgba(255,226,140,.85),rgba(255,200,80,.25) 40%,transparent 70%);mix-blend-mode:screen;animation:bbx-goldflash 1.6s ease-out both}
+@keyframes bbx-goldflash{0%{opacity:0;transform:scale(.4)}15%{opacity:1}100%{opacity:0;transform:scale(1.5)}}
 /* ── an alliance is born: its title ── */
 .bbx .alcard{position:absolute;left:50%;top:38%;z-index:12;transform:translate(-50%,-50%);text-align:center;pointer-events:none;animation:bbx-alcard 3.6s ease-out both}
 .bbx .alcard::before{content:"";position:absolute;inset:-3cqw -9cqw;z-index:-1;background:radial-gradient(closest-side,rgba(10,8,2,.92),rgba(10,8,2,.6) 60%,transparent)}

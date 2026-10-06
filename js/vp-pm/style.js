@@ -57,10 +57,8 @@ export const PMV_CSS = `/* ═════════════════�
   url(assets/sets/pm/firepit-night.webp) center 62%/cover no-repeat,
   radial-gradient(55% 45% at 50% 100%,#ff7a3a99,#ff2e8833 45%,#0000 70%),
   linear-gradient(180deg,#0c0620 0%,#26103f 50%,#4a1747 100%)}
-.pmv-sc-hut{background:#d9307a}
-.pmv-stage .pmv-hutset{position:absolute;inset:0;width:100%;height:100%}
-.pmv-stage .pmv-hutneon{animation:pmv-neon 5s steps(1) infinite}
-@keyframes pmv-neon{0%,100%{opacity:1}91%{opacity:1}92%{opacity:.35}93%{opacity:1}95%{opacity:.5}96%{opacity:1}}
+/* Zoomed so the chair's fan rises behind the islander's head and frames it. */
+.pmv-sc-hut{background:url(assets/sets/pm/hut.webp) 50% 92%/140% auto no-repeat,#f2727a}
 /* The hut is a close-up: one islander, bigger, sat in the chair's fan. */
 .pmv-sc-hut ~ .pmv-busts .pmv-bust{width:25%;bottom:30%}
 .pmv-sc-casa{background:

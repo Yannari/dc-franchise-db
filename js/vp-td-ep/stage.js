@@ -83,6 +83,10 @@ export function worldHtml(screen, L) {
   if (!indoor && night) for (let i = 0; i < 12; i++) h += `<i class="tdx-fly" style="left:${p(.05 + r() * .9)};top:${p(M.h + .05 + r() * .4)};--d:${(5 + r() * 6).toFixed(1)}s;--dl:-${(r() * 6).toFixed(1)}s"></i>`;
   if (indoor && spot !== 'confessional') for (let i = 0; i < 14; i++) h += `<i class="tdx-mote" style="left:${p(.1 + r() * .8)};top:${p(.15 + r() * .6)};--d:${(10 + r() * 8).toFixed(1)}s"></i>`;
   if (spot === 'confessional') for (let i = 0; i < 6; i++) h += `<i class="tdx-gnat" style="left:${30 + i * 8}%;top:${20 + (i % 3) * 12}%;--dl:-${(i * .45).toFixed(2)}s;--gd:${(2 + (i % 3) * .7).toFixed(1)}s"></i>`;
+  if (/^islands\/rescue-/.test(key)) {
+    for (let i = 0; i < 70; i++) h += `<i class="tdx-rain" style="left:${p(r() * 1.1 - .05)};--d:${(.45 + r() * .35).toFixed(2)}s;--dl:-${(r() * 1).toFixed(2)}s;opacity:${(.25 + r() * .4).toFixed(2)}"></i>`;
+    h += '<i class="tdx-flash"></i>';
+  }
   h += `</div>${night && !indoor ? '<div class="tdx-wash"></div>' : ''}`;
   return h;
 }
@@ -92,7 +96,7 @@ export function worldSound(screen, L) {
   const M = (key && TD_MARKS[key]) || { m: [] };
   const spot = String(key || '').split('/')[1]?.replace(/-(day|night)$/, '') || '';
   const indoor = /mess-hall|confessional|corridor|storage|economy|aisle|galley|cargo|first-class|theater|big-top/.test(spot) || (spot === 'ceremony' && screen.venue === 'world-tour') || (spot === 'shelter' && screen.venue === 'carnival');
-  return { fire: M.m.filter(m => m.kind === 'fire').length, water: M.m.some(m => m.kind === 'water'), outdoor: !indoor, night: /-night$/.test(key || ''), indoor, flies: spot === 'confessional', crowd: screen.venue === 'carnival' && /midway|entrance|big-top/.test(spot) };
+  return { rain: /^islands\/rescue-/.test(key || ''), fire: M.m.filter(m => m.kind === 'fire').length, water: M.m.some(m => m.kind === 'water'), outdoor: !indoor, night: /-night$/.test(key || ''), indoor, flies: spot === 'confessional', crowd: screen.venue === 'carnival' && /midway|entrance|big-top/.test(spot) };
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -121,9 +125,10 @@ export function castAt(screen, L) {
   for (const [n, pl] of Object.entries(sc.places || {})) {
     if (sc.exit && n !== sc.exit && !pl.host) continue;
     const bg = (sc.bg || []).find(b => b.n === n);
+    const busy = !bg && sc.acts?.[n] && !(focus || []).includes(n) && n !== speaker ? sc.acts[n] : null;
     const sit = !!pl.sit;
     const h = pl.host ? Math.max(Math.min(pl.s * 125, 30), 16) : sit ? Math.max(Math.min(pl.s * 95, 24), 13) : Math.max(Math.min(pl.s * 125, sc.exit ? 30 : 34), bg ? 11 : 16);
-    toks.push({ n, u: pl.u, v: pl.v, h, sit, host: !!pl.host, act: bg?.act || null,
+    toks.push({ n, u: pl.u, v: pl.v, h, sit, host: !!pl.host, act: bg?.act || busy || null,
       speak: n === speaker || (pl.host && s.host), dim: !!(focus && focus.length && !focus.includes(n) && !pl.host && n !== speaker),
       bg: !!bg, safe: L.safe.includes(n), out: L.out === n });
   }
@@ -150,7 +155,7 @@ const ICON = {
   star: '<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/>',
   exit: '<path d="M3 17h18l-3 4H6zM12 3v12M12 4l6 7h-6" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linejoin="round"/>',
 };
-const iconFor = spot => /dock|exit|shore|beach|lake|water|fishing/.test(spot) ? (spot === 'exit' ? ICON.exit : spot === 'dock' ? ICON.dock : ICON.water)
+const iconFor = spot => /crossroads/.test(spot) ? ICON.fire : /exile|rescue|redemption/.test(spot) ? ICON.water : /dock|exit|shore|beach|lake|water|fishing/.test(spot) ? (spot === 'exit' ? ICON.exit : spot === 'dock' ? ICON.dock : ICON.water)
   : /fire|ceremony|trial/.test(spot) ? ICON.fire : /mess|craft|galley|midway/.test(spot) ? ICON.food : /trail|forest|jungle|maze|edge/.test(spot) ? ICON.tree
   : /confessional/.test(spot) ? ICON.cam : /stage|lot|top|theater|carnival|first/.test(spot) ? ICON.star : ICON.home;
 
@@ -174,11 +179,25 @@ export function hudHtml(screen, L, fresh, o = {}) {
     }
   }
   if (L.tense) h += `<div class="tdx-chop">On the chopping block</div>`;
-  if (s.k === 'title') h += `<div class="tdx-title${fresh ? ' fresh' : ''}"><div class="band"></div><div class="inner"><div class="kicker">${esc(s.kicker)}</div><div class="big">${esc(s.name)}</div></div><div class="faces">${(s.faces || []).map(n => `<img src="${esc(avatar(n))}" alt="">`).join('')}</div></div>`;
+  if (s.k === 'title') h += `<div class="tdx-title${fresh ? ' fresh' : ''}${s.tone ? ' ' + esc(s.tone) : ''}${s.vs ? ' vs' : ''}"><div class="band"></div><div class="inner"><div class="kicker">${esc(s.kicker)}</div><div class="big">${esc(s.name)}</div></div><div class="faces">${(s.faces || []).map((n, i) => `${s.vs && i ? '<b class="vsx">VS</b>' : ''}<img src="${esc(avatar(n))}" alt="">`).join('')}</div></div>`;
+  if (s.k === 'found') h += foundHtml(s, fresh);
   if (s.k === 'ballots') h += `<div class="tdx-title tdx-ballots${fresh ? ' fresh' : ''}"><div class="band"></div><div class="inner"><div class="kicker">The vote</div><div class="big">${esc(s.text)}</div></div><div class="faces">${(s.who || []).map((n, i) => `<span style="--i:${i}"><img src="${esc(avatar(n))}" alt=""><b>✓</b></span>`).join('')}</div></div>`;
   if (s.k === 'idol') h += `<div class="tdx-idol${fresh ? ' fresh' : ''}"><div class="rays"></div><div class="totem"><svg viewBox="0 0 60 90"><path d="M18 10h24l4 18-6 8 6 10-4 34H18l-4-34 6-10-6-8z" fill="#c89a3a" stroke="#3a2210" stroke-width="3"/><circle cx="24" cy="24" r="4" fill="#3a2210"/><circle cx="36" cy="24" r="4" fill="#3a2210"/><path d="M22 34h16M24 56h12M22 66h16" stroke="#3a2210" stroke-width="3"/></svg></div><div class="lbl">Hidden Immunity Idol</div><div class="for"><img src="${esc(avatar(s.by))}" alt="">${s.for !== s.by ? `<span>→</span><img src="${esc(avatar(s.for))}" alt="">` : ''}</div></div>`;
-  if (s.k === 'out') h += `<div class="tdx-outcard${fresh ? ' fresh' : ''}"><img src="${esc(avatar(s.who))}" alt=""><div>${esc(s.who)}</div><span>Eliminated</span></div>`;
+  if (s.k === 'out') h += `<div class="tdx-outcard${fresh ? ' fresh' : ''}"><img src="${esc(avatar(s.who))}" alt=""><div>${esc(s.who)}</div><span>${s.island ? 'Voted out' : 'Eliminated'}</span></div>`;
   return h;
+}
+// what was found, held up to the camera: the idol a totem, an amulet a pendant, a vote a scroll
+const ITEM_ART = {
+  idol: '<path d="M18 10h24l4 18-6 8 6 10-4 34H18l-4-34 6-10-6-8z" fill="#c89a3a" stroke="#3a2210" stroke-width="3"/><circle cx="24" cy="24" r="4" fill="#3a2210"/><circle cx="36" cy="24" r="4" fill="#3a2210"/><path d="M22 34h16M24 56h12M22 66h16" stroke="#3a2210" stroke-width="3"/>',
+  amulet: '<path d="M14 8q16 22 32 0" stroke="#d8c890" stroke-width="3" fill="none"/><circle cx="30" cy="48" r="20" fill="#3ab0a0" stroke="#10302a" stroke-width="3"/><circle cx="30" cy="48" r="9" fill="#8af0e0" stroke="#10302a" stroke-width="2.5"/><path d="M30 20v8" stroke="#d8c890" stroke-width="3"/>',
+  scroll: '<rect x="12" y="16" width="36" height="56" rx="4" fill="#f2e2b0" stroke="#3a2a10" stroke-width="3"/><rect x="8" y="10" width="44" height="10" rx="5" fill="#c8a060" stroke="#3a2a10" stroke-width="3"/><rect x="8" y="68" width="44" height="10" rx="5" fill="#c8a060" stroke="#3a2a10" stroke-width="3"/><path d="M20 32h20M20 42h20M20 52h14" stroke="#7a5a30" stroke-width="3"/>',
+  clue: '<path d="M10 14h40v60H10z" fill="#e8dcc0" stroke="#3a2a10" stroke-width="3" transform="rotate(-6 30 44)"/><path d="M18 30h22M18 40h16M18 50h22" stroke="#7a5a30" stroke-width="3" transform="rotate(-6 30 44)"/><path d="M34 56l8 8M42 56l-8 8" stroke="#c8302a" stroke-width="4"/>',
+  none: '<circle cx="30" cy="46" r="22" fill="none" stroke="#9aa4b8" stroke-width="4" stroke-dasharray="6 6"/><path d="M22 38l16 16M38 38L22 54" stroke="#9aa4b8" stroke-width="4"/>',
+};
+const artFor = item => !item ? 'none' : /idol/.test(item) ? 'idol' : /amulet|secondLife/i.test(item) ? 'amulet' : item === 'clue' ? 'clue' : 'scroll';
+function foundHtml(s, fresh) {
+  const art = artFor(s.item);
+  return `<div class="tdx-idol tdx-found ${art}${fresh ? ' fresh' : ''}">${s.item ? '<div class="rays"></div>' : ''}<div class="totem"><svg viewBox="0 0 60 90">${ITEM_ART[art]}</svg></div><div class="lbl">${esc(s.item ? s.label + ' found' : 'Nothing found')}</div><div class="for"><img src="${esc(avatar(s.who))}" alt=""></div></div>`;
 }
 const VENUE_ITEM = { 'hosted-camp': 'Marshmallows', 'film-lot': 'Gilded Chrises', 'world-tour': 'Barf bags' };
 
@@ -191,7 +210,8 @@ export function dialogue(screen, L) {
   if (s.k === 'beat') return { name: '', cls: 'dir', text: s.text, badge: s.badge };
   if (s.k === 'safe') return { name: host, cls: 'host', text: s.immune ? `${s.who}, you won immunity.` : `${s.who}.`, hostCut: host };
   if (s.k === 'read') return { name: host, cls: 'host', text: s.dead ? `${s.vote}. Does not count.` : s.revote ? `${s.vote}.` : s.deciding ? `${s.vote}. That's enough.` : `${s.vote}.`, hostCut: host };
-  if (s.k === 'out') return { name: '', cls: 'dir', text: `${s.who} is eliminated.` };
+  if (s.k === 'out') return { name: '', cls: 'dir', text: `${s.who} is ${s.island ? 'voted out' : 'eliminated'}.` };
+  if (s.k === 'found') return s.text ? { name: '', cls: 'dir', text: s.text, badge: s.item ? { text: s.label.toUpperCase(), cls: 'gold' } : null } : { name: '', cls: 'dir hidden', text: '' };
   if (s.k === 'idol') return { name: '', cls: 'dir', text: `${s.by} stands up and plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${s.for}` : ''}.` };
   if (s.k === 'ballots' || s.k === 'title') return { name: '', cls: 'dir hidden', text: '' };
   return { name: '', cls: 'dir hidden', text: '' };
@@ -201,12 +221,13 @@ export function dialogue(screen, L) {
 const TABS = {
   camp: [['log', 'Camp log'], ['allies', 'Alliances'], ['secrets', 'Secrets']],
   tribal: [['room', 'The room'], ['tally', 'Tally'], ['why', 'Why']],
+  island: [['residents', 'Who is here'], ['log', 'Island log'], ['secrets', 'Secrets']],
 };
 export function intelHtml(screen, L, tab, fresh) {
   const tabs = TABS[screen.kind] || TABS.camp;
   if (!tabs.some(t => t[0] === tab)) tab = tabs[0][0];
   const items = L.side;
-  let h = `<div class="tdx-ihead"><b>Intel</b><span>${screen.kind === 'tribal' ? 'Only the viewer sees the votes.' : 'What the camp doesn’t know yet.'}</span></div><div class="tdx-itabs">`;
+  let h = `<div class="tdx-ihead"><b>Intel</b><span>${screen.kind === 'tribal' ? 'Only the viewer sees the votes.' : screen.kind === 'island' ? 'Out of sight of the game.' : 'What the camp doesn’t know yet.'}</span></div><div class="tdx-itabs">`;
   for (const [k, l] of tabs) h += `<button type="button" class="${k === tab ? 'on' : ''}" data-tab="${k}">${esc(l)}${items.some(x => x.tab === k && x.at === L.idx) && k !== tab ? '<i></i>' : ''}</button>`;
   h += '</div><div class="tdx-ilist">';
   const mine = items.filter(x => x.tab === tab), fr = x => (fresh && x.at === L.idx ? ' fresh' : '');

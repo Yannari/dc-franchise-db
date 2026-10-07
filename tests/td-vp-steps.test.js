@@ -11,6 +11,8 @@ import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 import { tdCampScreen, tdTribalScreen, tdTribalStepped, tdStepTranscript, VENUES } from '../js/vp-td-ep/steps.js';
 import { stageHtml, ledgerAt, castAt } from '../js/vp-td-ep/stage.js';
 import { buildVPScreens } from '../js/vp-screens.js';
+import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf } from '../js/vp-td-ep/twists.js';
+import { _textTdIslands } from '../js/text-backlog.js';
 
 const NAMES = ['Alejandro', 'Heather', 'Gwen', 'Duncan', 'Courtney', 'Owen', 'Izzy', 'Cody', 'Sierra', 'Lindsay', 'Harold', 'Leshawna', 'Noah', 'Bridgette', 'Geoff', 'Trent'];
 const roster = JSON.parse(fs.readFileSync('franchise_roster.json', 'utf8')).players;
@@ -22,7 +24,14 @@ beforeAll(() => {
     seededRun(() => runOneSeason({ romance: 'enabled', setting }, 16, cast()), 4242 + i * 101);
     seasons[setting] = core.gs.episodeHistory.map(e => JSON.parse(JSON.stringify(e)));
   }
+  // the islands: Redemption (a choice, a duel), Rescue (everyone lands), Exile both sides of the merge
+  for (const [i, fmt] of ['redemption', 'rescue'].entries()) {
+    seededRun(() => runOneSeason({ romance: 'enabled', setting: 'hosted-camp', ri: true, riFormat: fmt, riReentryAt: 8,
+      twistSchedule: [{ episode: 3, type: 'exile-island', id: 'x1' }, { episode: 11, type: 'exile-island', id: 'x2' }] }, 16, cast()), 777 + i);
+    islands[fmt] = core.gs.episodeHistory.map(e => JSON.parse(JSON.stringify(e)));
+  }
 }, 600000);
+const islands = {};
 
 const membersOf = (ep, camp) => ep.campAccess?.groups?.[camp]?.members || [];
 function screensOf(ep, setting) {
@@ -88,6 +97,7 @@ describe('TD stepped viewer on played seasons, every venue', () => {
         for (const t of out.toks) {
           expect(t.u, `${scr.id} ${t.n}`).toBeGreaterThan(0); expect(t.u).toBeLessThan(1);
           expect(t.v, `${scr.id} ${t.n}`).toBeGreaterThan(0); expect(t.v).toBeLessThanOrEqual(1);
+          if (!t.sit && !t.conf && !t.bg) expect(t.v, `${setting} ep${ep.num} ${scr.id} step ${i}: ${t.n} below the panel`).toBeLessThanOrEqual(.745);
         }
       });
     }
@@ -137,5 +147,72 @@ describe('TD stepped viewer on played seasons, every venue', () => {
     expect(ids).toContain('tribal');
     expect(ids).not.toContain('votes');
     expect(screens.find(s => s.id === 'tribal').stepped).toBe(true);
+  });
+});
+
+const P = n => ({ sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' });
+function islandScreens(ep) {
+  const o = { host: 'Chris', pronouns: P, stats: () => ({}) };
+  return [tdRiChoiceScreen(ep, o), tdIslandLifeScreen(ep, false, o), tdIslandLifeScreen(ep, true, o),
+    tdExileScreen(ep, exileOf(ep, false), o), tdExileScreen(ep, exileOf(ep, true), o)].filter(Boolean);
+}
+
+describe('TD stepped viewer: the islands', () => {
+  it('Redemption and Rescue seasons put a choice, island days and an exile on the stage', () => {
+    const red = islands.redemption.flatMap(islandScreens), res = islands.rescue.flatMap(islandScreens);
+    expect(red.filter(s => s.id === 'ri-choice').length).toBeGreaterThan(2);
+    expect(red.filter(s => s.id === 'ri-life').length).toBeGreaterThan(2);
+    expect(res.filter(s => s.id === 'rescue-life').length).toBeGreaterThan(2);
+    expect([...red, ...res].filter(s => s.id === 'exile-island').length).toBeGreaterThan(1);
+  });
+
+  it('every island scene is on a rendered plate, and everyone named in a moment is on it', () => {
+    const misses = [];
+    for (const eps of Object.values(islands)) for (const ep of eps) for (const scr of islandScreens(ep)) {
+      expect(scr.steps[0].k, scr.id).toBe('scene');
+      scr.steps.forEach((s, i) => {
+        if (s.k === 'scene') expect(fs.existsSync(`assets/sets/td/${s.plate}.webp`), `missing plate ${s.plate}`).toBe(true);
+        const toks = castAt(scr, ledgerAt(scr, i)).map(t => t.n);
+        const named = s.k === 'say' ? [s.by] : s.k === 'found' ? [s.who] : (s.focus || []);
+        for (const n of named) if (!toks.includes(n)) misses.push(`ep${ep.num} ${scr.id} step ${i} (${s.k}): ${n}`);
+        const out = stageHtml(scr, i, true);
+        for (const t of out.toks) { expect(t.u).toBeGreaterThan(0); expect(t.u).toBeLessThan(1); }
+        // nobody standing sinks behind the dialogue panel (their name tag hidden under it)
+        for (const t of out.toks) if (!t.sit && !t.conf && !t.bg) expect(t.v, `ep${ep.num} ${scr.id} step ${i}: ${t.n} below the panel`).toBeLessThanOrEqual(.745);
+      });
+      expect(tdStepTranscript(scr).length).toBe(scr.steps.length);
+    }
+    expect(misses.slice(0, 10), `${misses.length} people off stage`).toEqual([]);
+  });
+
+  it('the island days show what the engine wrote, before the duel only', () => {
+    for (const ep of islands.redemption) {
+      const scr = tdIslandLifeScreen(ep, false, {});
+      if (!scr) continue;
+      const beats = scr.steps.filter(s => s.k === 'beat').map(s => s.text);
+      expect(beats.length).toBe((ep.riLifeEvents || []).filter(e => !/^(winner|loser)-/.test(e.type) && e.text).length);
+      if (ep.riDuel) expect(scr.steps[scr.steps.length - 1].name).toBe('The Duel');
+    }
+  });
+
+  it('a boot bound for an island is voted out, not eliminated, and never walks the Dock of Shame', () => {
+    let n = 0;
+    for (const ep of islands.redemption) {
+      if (!ep.riChoice || !tdTribalStepped(ep)) continue;
+      const t = tdTribalScreen(ep, { host: 'Chris' });
+      expect(t.steps.some(s => s.exit)).toBe(false);
+      expect(t.steps.find(s => s.k === 'out').island).toBe(true);
+      n++;
+    }
+    expect(n).toBeGreaterThan(0);
+  });
+
+  it('the text backlog carries the choice and Exile Island as they air', () => {
+    const lines = [];
+    const ep = islands.redemption.find(e => e.riChoice === 'REDEMPTION ISLAND');
+    window.pronouns = window.pronouns || P; window.pStats = window.pStats || (() => ({}));
+    _textTdIslands(ep, l => lines.push(l), h => lines.push('## ' + h));
+    expect(lines.join(' | ')).toContain('ONE FINAL CHOICE');
+    expect(lines.join(' | ')).toContain(`${ep.eliminated} takes the path to the right.`);
   });
 });

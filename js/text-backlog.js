@@ -1,6 +1,7 @@
 // js/text-backlog.js - Text backlog generators for non-challenge episode sections
 import { bbStepTranscript } from './vp-bb-ep/steps.js';
-import { tdTribalStepped, tdTribalScreen } from './vp-td-ep/steps.js';
+import { tdTribalStepped, tdTribalScreen, tdStepTranscript } from './vp-td-ep/steps.js';
+import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, exileChooserReason } from './vp-td-ep/twists.js';
 import { bbHostName } from './bb-aftermath.js';
 import { transcriptHeaderLines } from './transcript-header.js';
 import { gs, seasonConfig, players, plainText } from './core.js';
@@ -1633,10 +1634,27 @@ export function _textTdCeremony(ep, ln, sec) {
     else if (s.k === 'title') ln(`[${s.kicker}: ${s.name}]`);
     else if (s.k === 'safe') ln(`${host}: "${s.who}${s.immune ? ', you won immunity' : ''}." (${s.who} is safe${s.last ? ' with the last one' : ''}.)`);
     else if (s.k === 'read') ln(`${host}: "${s.vote}.${s.dead ? ' Does not count.' : ''}"`);
-    else if (s.k === 'out') ln(`(${s.who} is eliminated.)`);
+    else if (s.k === 'out') ln(`(${s.who} is ${s.island ? 'voted out' : 'eliminated'}.)`);
     else if (s.k === 'scene' && s.exit) ln(`— ${s.place} —`);
     else if (s.k === 'beat' && s.walk) ln(`(${s.text})`);
   }
+}
+
+// The island twists as the stepped viewer plays them (vp-td-ep/twists.js): the choice and Exile
+// Island in full, the island days' moments (their events are already listed above, word for word).
+export function _textTdIslands(ep, ln, sec) {
+  if (ep.isBigBrother || (ep.format && ep.format !== 'total-drama')) return;
+  const o = { host: seasonConfig.host || 'Chris', setting: seasonConfig.setting, pronouns, stats: pStats,
+    chooserReason: (c, x) => exileChooserReason(c, x, getBond, threatScore) };
+  const full = (scr, title) => { if (!scr) return; sec(title); tdStepTranscript(scr).forEach(l => ln(l)); };
+  if (ep.riChoice) full(tdRiChoiceScreen(ep, o), ep.riChoice === 'RESCUE ISLAND' ? 'RESCUE ISLAND — THE ARRIVAL' : 'THE CROSSROADS — ONE FINAL CHOICE');
+  for (const rescue of [false, true]) {
+    const scr = tdIslandLifeScreen(ep, rescue, o);
+    const extra = scr ? scr.steps.filter(s => s.k === 'title') : [];
+    if (extra.length) { sec(`${scr.label.toUpperCase()} — AS IT AIRS`); tdStepTranscript({ ...scr, steps: extra }).forEach(l => ln(l)); }
+  }
+  full(tdExileScreen(ep, exileOf(ep, false), o), 'EXILE ISLAND — AS IT AIRS');
+  full(tdExileScreen(ep, exileOf(ep, true), o), 'EXILE ISLAND — AS IT AIRS');
 }
 
 export function _textTribalCouncil(ep, ln, sec) {
@@ -4146,6 +4164,7 @@ export function generateSummaryText(ep) {
   _textSeasonThreads(ep, ln, sec); // tracked story threads — worker beat-sheet spine + reader recap
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
+  _textTdIslands(ep, ln, sec);
   _textJuryLife(ep, ln, sec);
   _textCampOverview(ep, ln, sec);
   _textAftermath(ep, ln, sec);

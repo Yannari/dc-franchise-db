@@ -9,6 +9,7 @@
 // cover yet keeps its classic screen. A Classic switch on every stepped screen lands on the same
 // screen in the classic viewer (localStorage 'td-vp' = 'classic' to stay there).
 import { tdCampScreen, tdTribalScreen, tdTribalStepped, cleanText } from './steps.js';
+import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf } from './twists.js';
 import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar } from './stage.js';
 import { TDX_CSS, TDX_FONTS } from './style.js';
 import { ambience, stopAmbience, sfx } from './sound.js';
@@ -36,9 +37,23 @@ export function tdStepScreens(ep, classic = [], o = {}) {
     }
     if (tribal && (S.id === 'voting-plans' || S.id === 'votes')) continue;
     if (tribal && S.id === 'tribal' && !tribalDone) { tribalDone = true; out.push(shell(tribal, S, ep, o)); continue; }
+    const isl = islandScreen(ep, S, o);
+    if (isl) { out.push(shell(isl, S, ep, o)); continue; }
     out.push(S);
   }
   return out;
+}
+
+// The island twists (twists.js), in the classic screens' slots. 'rescue-life' is also the id some
+// episode paths give the Redemption Island life screen, so the record says which island it is.
+function islandScreen(ep, S, o) {
+  const id = S?.id || '';
+  if (id === 'ri-choice') return tdRiChoiceScreen(ep, o);
+  if (id === 'ri-life') return tdIslandLifeScreen(ep, false, o);
+  if (id === 'rescue-life') return tdIslandLifeScreen(ep, !!(ep.rescueIslandEvents || []).length, o);
+  if (id === 'exile-island') return tdExileScreen(ep, exileOf(ep, false), o);
+  if (id === 'exile-format') return tdExileScreen(ep, exileOf(ep, true), o);
+  return null;
 }
 
 // ── the shell around a stepped screen ─────────────────────────────────
@@ -54,7 +69,8 @@ function scriptHtml(scr) {
     else if (s.k === 'idol') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.by)} plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${esc(s.for)}` : ''}.)</div>`;
     else if (s.k === 'safe') t = `<div class="tdx-ln" data-s="${i}"><b>${esc(scr.host || 'Chris')}:</b> ${esc(s.who)}${s.immune ? ', you won immunity' : ''}.</div>`;
     else if (s.k === 'read') t = `<div class="tdx-ln" data-s="${i}"><b>${esc(scr.host || 'Chris')}:</b> ${esc(s.vote)}.${s.dead ? ' Does not count.' : ''}</div>`;
-    else if (s.k === 'out') t = `<div class="tdx-ln sc" data-s="${i}">${esc(s.who)} is eliminated</div>`;
+    else if (s.k === 'out') t = `<div class="tdx-ln sc" data-s="${i}">${esc(s.who)} is ${s.island ? 'voted out' : 'eliminated'}</div>`;
+    else if (s.k === 'found') t = `<div class="tdx-ln sc" data-s="${i}">${s.text ? esc(s.text) : `${esc(s.who)} finds the ${esc(s.label)}`}</div>`;
     return t.replace('class="tdx-ln', `onclick="tdxJump(this,${i})" class="tdx-ln`);
   }).join('');
 }
@@ -194,12 +210,21 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
   if (speaker) tokAt(castEl, speaker)?.classList.add('pop');
   if (s.loud && speaker) { const el = tokAt(castEl, speaker); if (el) { const c = centre(st, el); for (let k = 0; k < 3; k++) setTimeout(() => fxAt(fxEl, 'tdx-ring', c.x, c.y + c.h / 2), k * 140); sfx('boing'); } }
   const a = s.act;
+  if (s.gain) { const el = tokAt(castEl, s.gain.who); if (el) { const c = centre(st, el); setTimeout(() => fxAt(fxEl, `tdx-gain${s.gain.up ? '' : ' down'}`, c.x, Math.max(c.y - 2, 8), `${esc(s.gain.stat)} ${s.gain.up ? '▲' : '▼'}`, 2200), 500); setTimeout(() => sfx(s.gain.up ? 'pop' : 'slap'), 500); } }
   if (a) {
     const who = (a.who || []).filter(n => tokAt(castEl, n));
     if (a.kind === 'laugh') who.forEach(n => tokAt(castEl, n).classList.add('laugh'));
     if (a.kind === 'shake') { who.forEach(n => tokAt(castEl, n).classList.add('shake')); const el = tokAt(castEl, who[who.length - 1] || ''); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'WHAM!'); } sfx('slap'); }
     if (a.kind === 'storm' && who[0]) { tokAt(castEl, who[0]).classList.add('storm'); sfx('slam'); const c = centre(st, tokAt(castEl, who[0])); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'SLAM!'); }
     if (a.kind === 'shout' && who[0]) { const c = centre(st, tokAt(castEl, who[0])); for (let k = 0; k < 3; k++) setTimeout(() => fxAt(fxEl, 'tdx-ring', c.x, c.y + c.h / 2), k * 140); sfx('boing'); }
+    if (a.kind === 'arrive') who.forEach(n => { const el = tokAt(castEl, n); el.classList.remove('arrive'); void el.offsetWidth; el.classList.add('arrive'); sfx('whoosh'); });
+    if (a.kind === 'train') who.forEach(n => tokAt(castEl, n).classList.add('train'));
+    if (a.kind === 'hurt' && who[0]) { tokAt(castEl, who[0]).classList.add('shake'); const c = centre(st, tokAt(castEl, who[0])); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'OW!'); sfx('slap'); }
+    if (a.kind === 'cry') who.forEach(n => { const el = tokAt(castEl, n); el.classList.add('sad'); const c = centre(st, el); for (let k = 0; k < 4; k++) setTimeout(() => fxAt(fxEl, 'tdx-tear', c.x + (k % 2 ? 1.2 : -1.2), c.y + c.h * .25, '', 1400), k * 260); });
+    if (a.kind === 'fire') who.forEach(n => { const el = tokAt(castEl, n); el.classList.add('fired'); const c = centre(st, el); fxAt(fxEl, 'tdx-aura', c.x, c.y + c.h / 2, '', 2400); sfx('title'); });
+    if (a.kind === 'rest') who.forEach(n => tokAt(castEl, n).classList.add('act-nap'));
+    if (a.kind === 'search' && who[0]) { const el = tokAt(castEl, who[0]); el.classList.add('search'); for (let k = 0; k < 5; k++) setTimeout(() => { const c = centre(st, el); fxAt(fxEl, 'tdx-dust', c.x, c.y + c.h * .95, '', 900); sfx('slip'); }, 300 + k * 520); }
+    if (a.kind === 'path' && who[0]) { const el = tokAt(castEl, who[0]); setTimeout(() => el.classList.add(a.dir === 'L' ? 'pathL' : 'pathR'), 250); sfx(a.lit ? 'torch' : 'snuff'); }
     if ((a.kind === 'lean' || a.kind === 'hug' || a.kind === 'kiss') && who.length >= 1) {
       const pair = who.length >= 2 ? who.slice(0, 2) : [who[0], toks.find(t => t.n !== who[0] && !t.bg && !t.host)?.n].filter(Boolean);
       if (pair.length === 2) {
@@ -213,6 +238,8 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
   if (s.k === 'ballots') sfx('slip');
   if (s.k === 'idol') sfx('idol');
   if (s.k === 'out') sfx('out');
+  if (s.k === 'found') sfx(s.item ? 'idol' : 'empty');
+  if (s.k === 'title' && s.vs) sfx('thunder');
   if (s.k === 'read') { fxAt(fxEl, `tdx-voteslip${s.dead ? ' dead' : ''}`, 50, 30, esc(s.vote), 1800); sfx('slip'); }
   if (s.k === 'safe') {
     const host = toks.find(t => t.host); const to = tokAt(castEl, s.who);
@@ -253,7 +280,7 @@ export function tdxReset(uid) { const R = sync(uid); if (!R) return; stopAuto(R)
 export function tdxJump(el, i) { const root = el.closest('.tdx[data-uid]'); if (!root) return; const R = sync(root.dataset.uid); if (!R) return; stopAuto(R); R.idx = i; paint(root.dataset.uid, false); }
 export function tdxIntel(uid) { const st = document.getElementById(`tdx-st-${uid}`); if (!st) return; st.classList.toggle('intel-open'); st.querySelector('.tdx-ibtn')?.classList.remove('new'); }
 export function tdxTab(uid, e) { const b = e.target.closest('[data-tab]'); if (!b) return; const R = reg()[uid]; if (!R) return; R.tab = b.dataset.tab; const st = document.getElementById(`tdx-st-${uid}`); st.querySelector('.tdx-intel').innerHTML = intelHtml(R.scr, ledgerAt(R.scr, R.idx), R.tab, false); }
-const holdFor = s => Math.min(9000, 1700 + String(s?.text || '').length * 40) + (['title', 'idol', 'out'].includes(s?.k) ? 2400 : 0) + (s?.tense ? 1200 : 0) + (s?.k === 'scene' ? 900 : 0) + (s?.k === 'safe' && s.last ? 1800 : 0);
+const holdFor = s => Math.min(9000, 1700 + String(s?.text || '').length * 40) + (['title', 'idol', 'out', 'found'].includes(s?.k) ? 2400 : 0) + (s?.tense ? 1200 : 0) + (s?.k === 'scene' ? 900 : 0) + (s?.k === 'safe' && s.last ? 1800 : 0);
 function stopAuto(R) { R.auto = false; clearTimeout(R.timer); }
 export function tdxAuto(uid) {
   const R = sync(uid); if (!R) return;

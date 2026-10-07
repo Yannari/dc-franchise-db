@@ -97,7 +97,8 @@ export function placeScene(key, focus, bg = [], { sit = false, host = null } = {
   const behind = (c, u) => apart(c, u) || u.v - c.v > .07;
   const score = m => m.s - Math.abs(m.u - .5) * .3;
   const seats = marksOf(key, 'seat').filter(m => m.u > .1 && m.u < .9 && m.v > .38 && m.v < .78);
-  const stands = marksOf(key, 'stand').filter(m => m.u > .1 && m.u < .9 && m.v > .36 && m.v < .76);
+  // .72: a name tag under a standing person must clear the dialogue panel, camera push included
+  const stands = marksOf(key, 'stand').filter(m => m.u > .1 && m.u < .9 && m.v > .36 && m.v < .72);
   const front = [...(sit && seats.length >= Math.min(focus.length, 2) ? seats : stands)].sort((a, b) => score(b) - score(a));
   if (host) {
     const h = marksOf(key, 'host')[0];
@@ -110,7 +111,7 @@ export function placeScene(key, focus, bg = [], { sit = false, host = null } = {
     focus.forEach((name, i) => {
       const u = .14 + (.72 * i) / (n - 1);
       const near = pool.length ? pool.reduce((a, b) => (Math.abs(b.u - u) < Math.abs(a.u - u) ? b : a)) : null;
-      const v = (near ? near.v : .68) - (i % 2 ? .05 : 0);
+      const v = Math.min(near ? near.v : .68, .72) - (i % 2 ? .05 : 0);   // never down behind the dialogue panel
       out[name] = { u, v, s: (near ? near.s : .2) * (i % 2 ? .9 : 1), sit: false };
     });
   } else for (const n of focus) {
@@ -142,7 +143,7 @@ export function seatAll(key, names, host) {
   for (const m of seats) if (chosen.length < names.length && chosen.every(c => Math.abs(c.u - m.u) > .09 || Math.abs(c.v - m.v) > .06)) chosen.push(m);
   for (const m of seats) if (chosen.length < names.length && !chosen.includes(m)) chosen.push(m);
   if (chosen.length < names.length) {
-    const st = marksOf(key, 'stand').filter(m => m.v < .8).sort((a, b) => b.s - a.s);
+    const st = marksOf(key, 'stand').filter(m => m.v < .73).sort((a, b) => b.s - a.s);
     for (const m of st) if (chosen.length < names.length && chosen.every(c => Math.abs(c.u - m.u) > .08)) chosen.push({ ...m, stand: true });
   }
   chosen.sort((a, b) => a.u - b.u);
@@ -229,6 +230,7 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
         else if (l.kind === 'beat') steps.push({ k: 'beat', text, act: actOf(text, cast, lastBy) });
         else { steps.push({ k: 'say', by: l.by, text, loud: loud(text) }); lastBy = l.by; }
       }
+      if (ev.type === 'idolFound') foundStep(steps, ev);
       if (ev.type === 'allianceForm' && ev.alliance) {
         steps.push({ k: 'title', kicker: 'Alliance formed', name: cleanText(ev.alliance), faces: (ev.members || ev.players || []).slice(0, 4),
           side: [{ tab: 'allies', name: cleanText(ev.alliance), who: (ev.members || ev.players || []).slice() }] });
@@ -243,13 +245,25 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
       open(spot === 'confessional' ? V.public : spot, windowId, focus, { cut: true, why: badge });
       steps.push({ k: 'beat', text, badge, cut: true, act: actOf(text, cast, null),
         side: [{ tab: 'log', text: `${badge ? badge.text + ': ' : ''}${focus.join(', ')}` }] });
-      if (ev.type === 'idolFound' && focus[0]) steps[steps.length - 1].side.push({ tab: 'secrets', text: `${focus[0]} found a Hidden Immunity Idol.` });
+      if (ev.type === 'idolFound' && focus[0]) { steps[steps.length - 1].side.push({ tab: 'secrets', text: `${focus[0]} found a Hidden Immunity Idol.` }); foundStep(steps, ev); }
     }
   }
   if (!steps.length) return null;
   const isMerge = /^merge|merged$/i.test(camp) || camp === (o.mergeName || '');
   return { id: `camp-${phase}-${camp}`, kind: 'camp', venue, camp, phase, ep: ep.num,
     label: `${isMerge ? 'Camp' : camp} · ${phase === 'pre' ? 'Morning' : 'After the challenge'}`, team: isMerge ? null : camp, steps };
+}
+
+// A find (an idol, an advantage) as its own moment: the thing rises out of the ground. Only a
+// single finder's find; an activation of everyone's idols (Beware) stays a line.
+const FIND_NAME = { idol: 'Hidden Immunity Idol', extraVote: 'Extra Vote', voteSteal: 'Vote Steal', legacy: 'Legacy Advantage', kip: 'Knowledge is Power',
+  amulet: 'Amulet', secondLife: 'Second Life Amulet', 'idol-totem': 'Hidden Immunity Idol', beware: 'Beware Advantage' };
+function foundStep(steps, ev) {
+  const who = (ev.players || []).filter(Boolean);
+  if (who.length !== 1 || /ACTIVATED/i.test(ev.badgeText || '')) return;
+  const item = FIND_NAME[ev.advType] ? ev.advType : 'idol';
+  const prev = steps[steps.length - 1];
+  steps.push({ k: 'found', who: who[0], item, label: FIND_NAME[item], text: '', side: prev?.side?.some(x => x.tab === 'secrets') ? [] : [{ tab: 'secrets', text: `${who[0]} found the ${FIND_NAME[item]}.` }] });
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -343,6 +357,12 @@ export function tdTribalScreen(ep, o = {}) {
   ballots.forEach(v => side.push({ tab: 'tally', voter: v.voter, target: v.voted, void: protectedSet.has(v.voted) }));
   ballots.forEach(v => side.push({ tab: 'why', voter: v.voter, target: v.voted, text: cleanText(v.reason).replace(/\[[A-Z \-]+\]\s*/g, '') }));
   (steps[outStep] || steps[steps.length - 1]).side = [...((steps[outStep] || {}).side || []), ...side];
+  // voted out onto an island: nobody leaves the game tonight, the host says where they go next
+  if (ep.riChoice) {
+    steps.forEach(x => { if (x.k === 'out') x.island = true; });
+    say(ep.riChoice === 'RESCUE ISLAND' ? `${elim}, you're not going home. You're going to Rescue Island.` : `${elim}, grab your torch. You have one more choice to make.`, { focus: [elim] });
+    return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps, elim };
+  }
   // the walk out
   // the host walks them out (the Dock of Shame, the red carpet, the hatch): both on screen
   const exitPlate = plateKey(venue, 'exit', 'night');
@@ -428,7 +448,8 @@ export function tdStepTranscript(screen) {
     else if (s.k === 'idol') out.push(`(${s.by} plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${s.for}` : ''}.)`);
     else if (s.k === 'safe') out.push(`${screen.host || 'Chris'}: "${s.who}${s.immune ? ', you have immunity' : ''}." (${s.who} is safe${s.last ? ': the last ' + s.item : ''}.)`);
     else if (s.k === 'read') out.push(`${screen.host || 'Chris'}: "${s.vote}${s.dead ? '. Does not count' : ''}."`);
-    else if (s.k === 'out') out.push(`(${s.who} is eliminated.)`);
+    else if (s.k === 'out') out.push(`(${s.who} is ${s.island ? 'voted out' : 'eliminated'}.)`);
+    else if (s.k === 'found') out.push(s.text ? `[${s.label}] ${s.text}` : `[Found: ${s.label} — ${s.who}]`);
   }
   return out;
 }

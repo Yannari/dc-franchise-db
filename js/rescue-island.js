@@ -971,7 +971,7 @@ export function generateRILifeEvents(ep) {
       _setMentalState(name, 'hardened');
       _addTrainingBonus(name, 'boldness', 0.3);
       const hardenTexts = [
-        `${name} survived ${duelWins} duels. Something changed behind ${pr.pos} eyes. ${pr.Sub} ${pr.sub==='they'?'are':'is'} harder now.`,
+        `${name} survived ${duelWins} duels. Something changed behind ${pr.posAdj} eyes. ${pr.Sub} ${pr.sub==='they'?'are':'is'} harder now.`,
         `${name} doesn't flinch anymore. ${duelWins} duels. ${duelWins} wins. The fear is gone.`,
         `There's a coldness to ${name} now. Each duel burned away a little more softness.`,
         `${name} walks different. Talks different. ${duelWins} duels will do that to a person.`,
@@ -1008,7 +1008,7 @@ export function generateRILifeEvents(ep) {
     const pr = pronouns(name);
     const daysOnRI = (gs.riLifeEvents[name] || []).length + 1;
     const soloPool = [
-      { type: 'processing', text: `${name} replays tribal in ${pr.pos} head. The name ${pr.sub} trusted most wrote ${pr.pos} name.` },
+      { type: 'processing', text: `${name} replays tribal in ${pr.posAdj} head. The name ${pr.sub} trusted most wrote ${pr.posAdj} name.` },
       { type: 'reflection', text: `${name} sits alone watching the sunset. The game feels very far away — and very close.` },
       { type: 'motivation', text: `${name} carves a mark in the shelter wall. ${daysOnRI > 1 ? `${daysOnRI} marks now.` : 'One for each day survived.'} The marks are adding up.` },
       { type: 'processing', text: `${name} talks to ${pr.ref} — running through scenarios, playing both sides of the conversation.` },
@@ -1337,7 +1337,7 @@ function _edgeFarewell(name, daysOn, gaveUp) {
   ]);
   return _pick([
     `"That's the game," ${name} shrugs. "I fought my way back as far as I could."`,
-    `${name} nods once, picks up ${pr.pos} bag, and walks. No drama. Just done.`,
+    `${name} nods once, picks up ${pr.posAdj} bag, and walks. No drama. Just done.`,
   ]);
 }
 
@@ -1387,7 +1387,7 @@ function _resolveEdgeActions(ep, riList, epNum, pushEvt) {
       pushEvt({ ep: epNum, type: 'edge-rest', player: name, text: _pick([
         `${name} does nothing today but heal — sleeping in the shade, letting the body knit back together.`,
         `${name} rests. No drills, no drama. Just recovery. The return challenge needs a working body.`,
-        `${name} tends ${pr.pos} wounds and sleeps through the heat of the day. Tomorrow ${pr.sub} can push again.`,
+        `${name} tends ${pr.posAdj} wounds and sleeps through the heat of the day. Tomorrow ${pr.sub} can push again.`,
       ]) });
     } else {
       w.mh += 12; w.pw += 2;
@@ -1399,7 +1399,7 @@ function _resolveEdgeActions(ep, riList, epNum, pushEvt) {
         `${name} talks it out with ${friend}. No strategy — just two people keeping each other sane out here.`,
         `${name} leans on ${friend} today. The weight gets lighter when it's shared.`,
       ]) : _pick([
-        `${name} walks the shore and lets the rhythm of the waves do the work. The noise in ${pr.pos} head quiets.`,
+        `${name} walks the shore and lets the rhythm of the waves do the work. The noise in ${pr.posAdj} head quiets.`,
         `${name} carves a tally into driftwood, one mark per day survived. A small ritual. It helps.`,
       ]) });
     }
@@ -1482,7 +1482,7 @@ export function generateRescueIslandLife(ep) {
 
       if (daysOn <= 1 && !usedTypes.has('processing-' + name)) {
         pool.push({ weight: 3, type: 'processing', player: name,
-          text: `${name} replays the vote. ${pr.Sub} know${pr.sub==='they'?'':'s'} exactly who wrote ${pr.pos} name.` });
+          text: `${name} replays the vote. ${pr.Sub} know${pr.sub==='they'?'':'s'} exactly who wrote ${pr.posAdj} name.` });
       }
       if (daysOn >= 2 && daysOn <= 3 && !usedTypes.has('grief-' + name)) {
         pool.push({ weight: 2, type: 'processing', player: name,

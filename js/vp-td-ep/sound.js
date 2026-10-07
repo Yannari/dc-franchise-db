@@ -45,6 +45,14 @@ function build(ctx, dest, spec) {
     }
   }
   if (spec.flies) [182, 197, 214].forEach((f, k) => { const o = ctx.createOscillator(), lp = filt('lowpass', 1100), g = gain(0); o.type = 'sawtooth'; o.frequency.value = f; o.connect(lp); lp.connect(g); g.connect(dest); o.start(); lfo(o.frequency, 9 + k * 2, 14, f); lfo(g.gain, .3 + k * .17, .01, .011); });
+  if (spec.rain) {
+    // the rain on Rescue Island: a hiss, drops on leaves, a far roll of thunder now and then
+    const s = noise(), hp = filt('highpass', 1400), lp = filt('lowpass', 7000), g = gain(.07); s.connect(hp); hp.connect(lp); lp.connect(g); g.connect(dest); s.start();
+    every(() => { const t = ctx.currentTime, n = noise(), bp = filt('bandpass', 2500 + Math.random() * 2500, 4), e = gain(0); n.connect(bp); bp.connect(e); e.connect(dest);
+      e.gain.setValueAtTime(.05 + Math.random() * .06, t); e.gain.exponentialRampToValueAtTime(.001, t + .02); n.start(t); n.stop(t + .05); }, 30, 140);
+    every(() => { const t = ctx.currentTime, n = noise(), lp2 = filt('lowpass', 120), e = gain(0); n.connect(lp2); lp2.connect(e); e.connect(dest);
+      e.gain.linearRampToValueAtTime(.35, t + .4); e.gain.exponentialRampToValueAtTime(.001, t + 3.2); n.start(t); n.stop(t + 3.3); }, 9000, 20000);
+  }
   if (spec.indoor) { const s = noise(), lp = filt('lowpass', 180), g = gain(.045); s.connect(lp); lp.connect(g); g.connect(dest); s.start(); }
   if (spec.crowd) { const s = noise(), bp = filt('bandpass', 700, .8), g = gain(.018); s.connect(bp); bp.connect(g); g.connect(dest); s.start(); lfo(g.gain, .4, .006, .018); }
 }
@@ -82,5 +90,9 @@ export function sfx(kind) {
   else if (kind === 'out') { blast(220, 55, 1.1, 'sawtooth', .12); blast(110, 40, 1.2, 'sine', .3); }
   else if (kind === 'slip') { hiss(2400, .12, .14, 'bandpass'); }
   else if (kind === 'heart') blast(700, 1050, .18, 'sine', .14);
+  else if (kind === 'torch') { hiss(600, .7, .25, 'lowpass'); blast(80, 160, .5, 'sine', .2); }
+  else if (kind === 'snuff') { hiss(3200, .5, .18, 'highpass'); blast(300, 60, .6, 'sine', .14); }
+  else if (kind === 'empty') { blast(330, 220, .35, 'triangle', .16); setTimeout(() => blast(262, 165, .6, 'triangle', .16), 260); }
+  else if (kind === 'thunder') { hiss(90, 2.4, .5, 'lowpass'); blast(55, 30, 1.6, 'sine', .35); }
   else if (kind === 'blip') { const os = ctx.createOscillator(), e = gain(0); os.type = 'square'; os.frequency.value = 520 + Math.random() * 60; os.connect(e); e.connect(dest); e.gain.linearRampToValueAtTime(.02, t + .004); e.gain.exponentialRampToValueAtTime(.001, t + .035); os.start(t); os.stop(t + .05); }
 }

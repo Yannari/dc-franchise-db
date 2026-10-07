@@ -244,6 +244,50 @@ export const TDX_CSS = `
 .tdx details.tdx-script summary{cursor:pointer;padding:9px 14px;font:800 11px Nunito;letter-spacing:.14em;text-transform:uppercase;color:#8d93a6}
 .tdx .tdx-lines{max-height:240px;overflow:auto;padding:0 14px 12px}
 .tdx .tdx-ln{display:none;padding:3px 8px;border-radius:6px;cursor:pointer;font:700 13px/1.45 Nunito;color:#b9bfce}
+/* the islands (twists.js) */
+.tdx .tdx-tok.arrive{animation:tdxArrive 1.6s cubic-bezier(.25,.8,.3,1) backwards}
+@keyframes tdxArrive{from{margin-left:-40%;opacity:0}30%{opacity:1}to{margin-left:0}}
+.tdx .tdx-tok.arrive .body{animation:tdxStep .35s ease-in-out 4 alternate}
+.tdx .tdx-tok.train .body{animation:tdxTrain .38s ease-in-out 6 alternate}
+@keyframes tdxTrain{from{transform:translateY(0) scale(1,1)}to{transform:translateY(-10%) scale(.96,1.05)}}
+.tdx .tdx-tok.sad .body{animation:tdxSad 1.2s ease-out forwards}
+@keyframes tdxSad{to{transform:translateY(6%) rotate(-5deg) scaleY(.94)}}
+.tdx .tdx-tok.sad .face{filter:saturate(.5) brightness(.8)}
+.tdx .tdx-tear{position:absolute;width:.5cqw;height:.8cqw;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#9ad8ff;box-shadow:0 0 6px #9ad8ff;animation:tdxTear 1.4s ease-in forwards}
+@keyframes tdxTear{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,6cqw);opacity:0}}
+.tdx .tdx-tok.fired .face{box-shadow:0 0 0 3px var(--or),0 0 34px rgba(255,138,31,.85)}
+.tdx .tdx-aura{position:absolute;width:12cqw;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,170,60,.55),rgba(255,90,20,.15) 55%,transparent 70%);animation:tdxAura 2.4s ease-out forwards;mix-blend-mode:screen}
+@keyframes tdxAura{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}25%{opacity:1}100%{transform:translate(-50%,-50%) scale(1.6);opacity:0}}
+.tdx .tdx-tok.search{animation:tdxSearch 2.8s ease-in-out}
+@keyframes tdxSearch{0%,100%{margin-left:0}25%{margin-left:-22%}55%{margin-left:18%}80%{margin-left:-8%}}
+.tdx .tdx-tok.search .body{animation:tdxDig .3s ease-in-out 9 alternate}
+@keyframes tdxDig{from{transform:rotate(0)}to{transform:rotate(14deg) translateY(6%)}}
+.tdx .tdx-dust{position:absolute;width:3cqw;aspect-ratio:2;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(230,210,160,.8),transparent 70%);animation:tdxDust .9s ease-out forwards}
+@keyframes tdxDust{from{transform:translate(-50%,-50%) scale(.3);opacity:1}to{transform:translate(-50%,-90%) scale(1.8);opacity:0}}
+.tdx .tdx-tok.pathR{animation:tdxPathR 3.2s ease-in forwards}.tdx .tdx-tok.pathL{animation:tdxPathL 3.2s ease-in forwards}
+@keyframes tdxPathR{to{left:62%;top:56%;height:6%;width:3.4%;opacity:0}}
+@keyframes tdxPathL{to{left:36%;top:56%;height:6%;width:3.4%;opacity:0}}
+.tdx .tdx-tok.pathR .body,.tdx .tdx-tok.pathL .body{animation:tdxStep .4s ease-in-out infinite alternate}
+.tdx .tdx-gain{position:absolute;transform:translate(-50%,-50%);font:900 1.5cqw/1 Nunito;letter-spacing:.08em;text-transform:uppercase;color:#1a0e02;background:var(--gr);padding:.35em .7em;border-radius:99px;box-shadow:0 0 0 2px #fff,0 6px 14px rgba(0,0,0,.4);animation:tdxGain 2.2s ease-out forwards;white-space:nowrap}
+.tdx .tdx-gain.down{background:var(--rd);color:#fff}
+@keyframes tdxGain{0%{transform:translate(-50%,0) scale(.3);opacity:0}15%{transform:translate(-50%,-60%) scale(1.1);opacity:1}80%{opacity:1}100%{transform:translate(-50%,-160%) scale(1);opacity:0}}
+.tdx .tdx-rain{position:absolute;top:-10%;width:1px;height:7%;background:linear-gradient(transparent,rgba(200,215,255,.8));transform:rotate(12deg);animation:tdxRain var(--d) linear var(--dl) infinite}
+@keyframes tdxRain{to{transform:translate(-14cqw,62cqw) rotate(12deg)}}
+.tdx .tdx-flash{position:absolute;inset:0;background:#dfe6ff;opacity:0;mix-blend-mode:screen;animation:tdxFlash 14s linear infinite}
+@keyframes tdxFlash{0%,90.5%,92%,93.5%,100%{opacity:0}91%{opacity:.5}93%{opacity:.3}}
+.tdx .tdx-title.out .band{background:var(--rd)}.tdx .tdx-title.out .kicker{color:#fff}
+.tdx .tdx-title.fire .band{background:linear-gradient(90deg,var(--or),var(--am))}
+.tdx .tdx-title.vs .band{background:#1a1420;box-shadow:0 0 0 6px var(--or),0 0 0 9px #1a1420}.tdx .tdx-title.vs .kicker{color:var(--am)}
+.tdx .tdx-title .faces .vsx{align-self:center;font:400 4cqw/1 'Lilita One';color:var(--am);-webkit-text-stroke:1.5px #1a0e02;paint-order:stroke fill;text-shadow:0 4px 0 #1a0e02}
+.tdx .tdx-title.vs.fresh .faces .vsx{animation:tdxSlam .5s .5s cubic-bezier(.3,1.6,.5,1) backwards}
+.tdx .tdx-found .totem{top:30%}.tdx .tdx-found .lbl{top:52%}.tdx .tdx-found .for{top:58%}
+.tdx .tdx-found .for img{width:5.5cqw}
+.tdx .tdx-found.amulet .rays{background:repeating-conic-gradient(rgba(120,240,220,.26) 0 8deg,transparent 8deg 18deg)}.tdx .tdx-found.amulet .totem{filter:drop-shadow(0 0 20px rgba(120,240,220,.9))}
+.tdx .tdx-found.none{background:rgba(8,10,16,.6)}.tdx .tdx-found.none .totem{filter:none;opacity:.8}.tdx .tdx-found.none .lbl{color:#c8ccd8}
+.tdx .tdx-found.fresh .totem{animation:tdxDigUp 1.1s cubic-bezier(.3,1.4,.5,1)}
+@keyframes tdxDigUp{0%{transform:translate(-50%,60%) scale(.3) rotate(-30deg);opacity:0}60%{transform:translate(-50%,-60%) scale(1.15) rotate(6deg);opacity:1}100%{transform:translate(-50%,-50%) scale(1) rotate(0)}}
+.tdx .tdx-found.fresh .lbl{animation:tdxSlam .5s .5s cubic-bezier(.3,1.6,.5,1) backwards}
+
 .tdx .tdx-ln.vis{display:block}.tdx .tdx-ln.now{background:rgba(255,138,31,.16);color:#fff}
 .tdx .tdx-ln b{color:#fff}.tdx .tdx-ln.sc{font:900 11px Nunito;letter-spacing:.12em;text-transform:uppercase;color:var(--or);margin-top:6px}
 .tdx .tdx-ln.d{font-style:italic;color:#8d93a6}

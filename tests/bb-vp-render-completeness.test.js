@@ -17,6 +17,7 @@ import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, BB_TWIST_IDS } from '../js/bb-run.js';
 import { buildVPScreens, _tvState } from '../js/vp-screens.js';
+import { truthTime } from '../js/vp-bb-ep/steps.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -148,7 +149,8 @@ describe('the Big Brother viewing party as a whole', () => {
           // Room: ..."); a stepped screen shows the LINES, one per step. Probe
           // the longest of them, which is the one least likely to match by luck.
           const said = (b.lines || []).map(l => l?.text || '').sort((x, y) => y.length - x.length)[0];
-          const probe = flat(said || b.text).slice(0, 45);
+          // the viewer holds every line to the week it airs in (steps.js truthTime): compare with that
+          const probe = flat(truthTime(said || b.text, ep.num)).slice(0, 45);
           if (!html.includes(probe) && !missing.has(act.type)) {
             missing.set(act.type, `${twist} — "${probe}"`);
           }

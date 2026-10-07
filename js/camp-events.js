@@ -15,7 +15,7 @@ import { eventAllowedInSetting, settingWeightMod, settingProfile, fillVocab, cur
 import { reputationModifier } from './reputation.js';
 import { campRoster, isCoach as isCoachName } from './coaches.js';
 import { recordIntimidation, recordProtection, recordBetrayal } from './relationship-events.js';
-import { attachCampAccessToEvents, buildCampAccessSchedule, findConversationAccess, ACCESS_PROFILES } from './camp-access.js';
+import { attachCampAccessToEvents, buildCampAccessSchedule, findConversationAccess, ACCESS_PROFILES, campIsShared } from './camp-access.js';
 import { stableRng } from './script/rng.js';
 import { makeScene, spotOf, spotFromAccess } from './td/script/scene.js';
 import { scriptEvent, scriptEventParts, withSceneCtx, ambientCtx, transcript, writeScene } from './td/script/write.js';
@@ -124,6 +124,96 @@ function _chimeIns(ep, campKey, phase, events) {
     addBond(c, a, tone[2]); addBond(c, b, tone[2]);
   });
   return events;
+}
+
+// ── ACROSS THE LINE: two teams at one camp ────────────────────────────────
+// At a shared camp (camp-access.js CAMP_LAYOUT) the teams meet in the public places before the
+// merge, and Total Drama is full of what happens there: rivals trading shots over breakfast,
+// friends who don't care which side the other is on, a flirt across the line, somebody fishing the
+// other side for what it is planning. Cast from the record, staged at the public place in the
+// morning's work window, with consequences. Chosen without the engine's dice (stableRng).
+// Archetype rule: fishing is a scheme, so the nice archetypes never do it and the neutrals only
+// with strategic >= 6 and loyalty <= 4.
+const _NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const _VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
+function _crossScenes(ep) {
+  if (gs.isMerged || (gs.tribes || []).length < 2 || !campIsShared(seasonConfig?.setting)) return;
+  const venue = seasonConfig?.setting || 'hosted-camp';
+  const locs = ACCESS_PROFILES[venue] || ACCESS_PROFILES['hosted-camp'];
+  const pub = locs.find(l => l.public) || locs[0];
+  const r = stableRng('td-cross', String(ep.num));
+  const teamOf = {};
+  gs.tribes.forEach(t => (t.members || []).forEach(m => { if (gs.activePlayers.includes(m) && m !== gs.exileDuelPlayer) teamOf[m] = t.name; }));
+  const people = Object.keys(teamOf).sort();
+  const pairs = [];
+  for (let i = 0; i < people.length; i++) for (let j = i + 1; j < people.length; j++) {
+    if (teamOf[people[i]] !== teamOf[people[j]]) pairs.push([people[i], people[j]]);
+  }
+  if (!pairs.length) return;
+  const st = (n, k) => (pStats(n) || {})[k] ?? 5;
+  const arch = n => players.find(p => p.name === n)?.archetype || '';
+  const canScheme = n => _VILLAIN.has(arch(n)) || (!_NICE.has(arch(n)) && st(n, 'strategic') >= 6 && st(n, 'loyalty') <= 4);
+  const pop = (n, d) => { if (!gs.popularity) gs.popularity = {}; gs.popularity[n] = (gs.popularity[n] || 0) + d; };
+  // who met across the line lately: a pair does not get the same kind of scene again for three episodes
+  if (!gs._crossLog) gs._crossLog = [];
+  const recent = new Set(gs._crossLog.filter(x => ep.num - x.ep <= 3).map(x => [...x.pair].sort().join('|')));
+  const fresh = ([x, y]) => !recent.has([x, y].sort().join('|'));
+  const top3 = (list, score) => list.filter(fresh).map(p => [score(p), p]).sort((x, y) => y[0] - x[0] || x[1].join().localeCompare(y[1].join())).slice(0, 3).map(x => x[1]);
+  const cands = {
+    // rivals: someone with a short fuse and nerve, at the other side's person they get on with worst
+    rival: top3(pairs, ([x, y]) => -getBond(x, y) + (Math.max(st(x, 'boldness') + 10 - st(x, 'temperament'), st(y, 'boldness') + 10 - st(y, 'temperament'))) / 3),
+    // friends: two easy talkers who already like each other, or could
+    friend: top3(pairs, ([x, y]) => getBond(x, y) + (st(x, 'social') + st(y, 'social')) / 4),
+    // a flirt: a compatible pair with the nerve to start it
+    flirt: seasonConfig?.romance === 'disabled' ? [] : top3(pairs.filter(([x, y]) => romanticCompat(x, y)),
+      ([x, y]) => getBond(x, y) + (st(x, 'social') + st(y, 'social') + st(x, 'boldness') + st(y, 'boldness')) / 8),
+    // fishing: a schemer working the other side's most talkative, least perceptive person
+    spy: top3(pairs.flatMap(([x, y]) => [[x, y], [y, x]]).filter(([x]) => canScheme(x)),
+      ([x, y]) => st(x, 'strategic') + st(y, 'social') - st(y, 'intuition')),
+  };
+  const weights = { rival: 3, friend: 3, flirt: 2, spy: 2 };
+  const used = new Set();
+  const picked = [];
+  const n = 1 + (r() < 0.45 ? 1 : 0);
+  for (let k = 0; k < n; k++) {
+    const kinds = Object.keys(cands).filter(kd => cands[kd].some(p => p.every(q => !used.has(q))));
+    if (!kinds.length) break;
+    const total = kinds.reduce((t, kd) => t + weights[kd], 0);
+    let roll = r() * total, kind = kinds[kinds.length - 1];
+    for (const kd of kinds) { if ((roll -= weights[kd]) < 0) { kind = kd; break; } }
+    const open = cands[kind].filter(p => p.every(q => !used.has(q)));
+    const pair = open[Math.floor(r() * open.length)];
+    picked.push([kind, pair]); pair.forEach(q => used.add(q));
+    gs._crossLog.push({ ep: ep.num, kind, pair: [...pair] });
+  }
+  gs._crossLog = gs._crossLog.filter(x => ep.num - x.ep <= 3);
+  for (const [kind, pair] of picked) {
+    let [a, b] = pair;
+    if (kind === 'rival' && st(b, 'boldness') > st(a, 'boldness')) [a, b] = [b, a];
+    const data = { mine: teamOf[a], theirs: teamOf[b] };
+    let badge = 'ACROSS THE LINE', cls = 'blue';
+    if (kind === 'rival') { addBond(a, b, -0.4); pop(a, 0.3); badge = 'RIVALS'; cls = 'red'; }
+    if (kind === 'friend') {
+      addBond(a, b, 0.3);
+      // the most loyal of each side does not love seeing it
+      for (const who of [a, b]) {
+        const watcher = people.filter(x => teamOf[x] === teamOf[who] && x !== who).sort((x, y) => st(y, 'loyalty') - st(x, 'loyalty') || x.localeCompare(y))[0];
+        if (watcher && st(watcher, 'loyalty') >= 7) addBond(watcher, who, -0.15);
+      }
+    }
+    if (kind === 'flirt') { addBond(a, b, 0.35); pop(a, 0.5); pop(b, 0.5); badge = 'FLIRTING'; cls = 'gold'; }
+    if (kind === 'spy') {
+      const leak = st(a, 'strategic') + st(a, 'social') * 0.5 > st(b, 'intuition') * 1.5 + 2 * r();
+      data.ending = leak ? 'leak' : 'shut';
+      if (leak) { addBond(a, b, 0.2); pop(b, -0.3); } else { addBond(b, a, -0.3); }
+      badge = leak ? 'LOOSE LIPS' : 'NICE TRY'; cls = leak ? 'red' : 'blue';
+    }
+    const seen = people.filter(x => teamOf[x] === teamOf[a] || teamOf[x] === teamOf[b]);
+    const ev = { type: 'crossTeam', players: [a, b], badgeText: badge, badgeClass: cls };
+    scriptEvent(ev, makeScene(`cross.${kind}`, { a, b }, data, seen, { id: pub.id, label: pub.label, window: 'camp-work' }), { ep: ep.num, phase: 'pre' });
+    const block = ep.campEvents[teamOf[a]];
+    if (block?.pre) block.pre.splice(Math.min(block.pre.length, 1 + Math.floor(r() * Math.max(1, block.pre.length - 1))), 0, ev);
+  }
 }
 
 // ── GROUP SCENES ─────────────────────────────────────────────────────────
@@ -6424,6 +6514,7 @@ export function generateCampEvents(ep, phase = 'both') {
           }
         }
       });
+      _crossScenes(ep);
     } else {
       const total = totalForGroup(gs.activePlayers);
       const preCount = phase === 'both' ? total : Math.ceil(total / 2);

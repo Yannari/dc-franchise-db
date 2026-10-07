@@ -64,6 +64,15 @@ export const ACCESS_PROFILES = Object.freeze({
 
 const setting = () => ACCESS_PROFILES[seasonConfig?.setting] ? seasonConfig.setting : 'hosted-camp';
 
+// How the teams live at each venue. 'shared': one camp, the teams sleep apart but eat, work and
+// hang around in the same places, so two people from different teams standing in the same public
+// spot can talk (Total Drama: Wawanakwa, the film lot, the jet). 'apart': each team has its own
+// campsite and they never meet at camp (Disventure Camp 4 and 5, the Survivor-style island).
+export const CAMP_LAYOUT = Object.freeze({ 'hosted-camp':'shared', 'film-lot':'shared', 'world-tour':'shared', 'survival-island':'apart', carnival:'apart' });
+export const campIsShared = venue => CAMP_LAYOUT[venue || setting()] === 'shared';
+// The public places of a shared camp, where the teams mix: low privacy, open to everyone.
+const COMMONS_PRIVACY = 0.3;
+
 export function locationIsOpen(location, ep = {}, context = {}) {
   if (!location) return false;
   if (location.access === 'everyday') return true;
@@ -142,6 +151,22 @@ export function buildCampAccessSchedule(ep, phase = 'pre', rng = Math.random) {
     ep.campAccess.groups[group.key] = { members:[...group.members] };
     ep.campAccess.phases[`${phase}:${group.key}`] = records;
   });
+  // A shared camp before the merge: the teams' people in the same public place in the same window
+  // are together there. One more record holds those meetings ('<phase>:*commons'), so a pair from
+  // different teams standing at the mess hall can be found by findConversationAccess and pass
+  // knowledge on (campKnowledgeContacts), and nowhere private ever mixes teams.
+  delete ep.campAccess.phases[`${phase}:*commons`];
+  const keys = Object.keys(ep.campAccess.groups).filter(k => ep.campAccess.phases[`${phase}:${k}`]);
+  if (!gs.isMerged && keys.length > 1 && campIsShared(ep.campAccess.setting)) {
+    const profile = new Map(ACCESS_PROFILES[ep.campAccess.setting].map(l => [l.id, l]));
+    ep.campAccess.phases[`${phase}:*commons`] = windows.map(window => {
+      const at = {};
+      keys.forEach(k => (ep.campAccess.phases[`${phase}:${k}`].find(r => r.id === window.id)?.assignments || []).forEach(a => {
+        if ((profile.get(a.locationId)?.privacy ?? 1) <= COMMONS_PRIVACY) (at[a.locationId] ||= []).push(...a.players);
+      }));
+      return { ...window, assignments: Object.entries(at).map(([locationId, players]) => ({ locationId, players })) };
+    });
+  }
   // Voting and knowledge run later in the episode without receiving `ep`
   // directly. Keep a transient pointer to this episode's plain-data schedule,
   // stamped with the episode number so consumers can detect a stale schedule.

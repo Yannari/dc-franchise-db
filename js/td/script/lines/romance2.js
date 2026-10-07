@@ -584,7 +584,7 @@ const AFFAIR_FORM = [
     { by: 'b', say: "Then why are we whispering?" },
   ] },
   { id: 'r2.af3', turns: [
-    { beat: "A glance held a little too long. A conversation that goes quiet when {target} walks over." },
+    { beat: "{a} holds {b}'s eye a little too long. The two of them go quiet when {target} walks over." },
     { by: 'b', conf: "Nothing's happened. But nothing's going to stay nothing for long." },
   ] },
   { id: 'r2.af4', when: { register: 'schemer' }, turns: [

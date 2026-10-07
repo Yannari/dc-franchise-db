@@ -8,7 +8,7 @@
 // so everything that finds a screen by id still finds it. Anything the stepped stage does not
 // cover yet keeps its classic screen. A Classic switch on every stepped screen lands on the same
 // screen in the classic viewer (localStorage 'td-vp' = 'classic' to stay there).
-import { tdCampScreen, tdTribalScreen, tdTribalStepped, cleanText, placeScene, plateKey, placeName, venueOf } from './steps.js';
+import { tdCampScreen, tdTribalScreen, tdTribalStepped, cleanText, placeScene, plateKey, placeName, venueOf, teamSpot } from './steps.js';
 import { tdCampMap, hasMap, MAP_VENUES, openWindow, nextConv, PLACE_LABEL } from './map.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf } from './twists.js';
 import { tdTwistBlocksScreen, tdMergeScreen } from './twist-screens.js';
@@ -294,6 +294,7 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
 // conversation), 'talk' (one conversation, played by paint() exactly like a linear camp screen).
 // Next always walks the conversations in story order; the clock moves on when a time window's
 // key conversations have been watched.
+const VENUE_PUBLIC = { 'hosted-camp': 'communal-grounds', 'survival-island': 'campfire', 'film-lot': 'studio-backlot', 'world-tour': 'economy', carnival: 'campsite' };
 const VENUE_NAME = { 'hosted-camp': 'Camp Wawanakwa', 'survival-island': 'Soluna Island', 'film-lot': 'The Film Lot', 'world-tour': 'The Jumbo Jet', carnival: 'Stawaki' };
 const ICON_BUBBLE = '<svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-5 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" fill="currentColor"/></svg>';
 const ICON_STAR = '<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z" fill="currentColor"/></svg>';
@@ -358,7 +359,8 @@ function mapPaint(uid, fresh) {
   if (R.mode === 'zone') {
     const placesHere = [...new Set(here.map(c => c.place))];
     place = R.place && placesHere.includes(R.place) ? R.place : (placesHere[0] || R.zone);
-    plate = plateKey(M.venue, place === 'confessional' ? 'communal-grounds' : place, tod) || plateKey(M.venue, 'communal-grounds', tod);
+    const shown = place === 'confessional' ? (VENUE_PUBLIC[M.venue] || 'communal-grounds') : place;
+    plate = plateKey(M.venue, teamSpot(M.venue, shown, M.slot), tod) || plateKey(M.venue, shown, tod) || plateKey(M.venue, VENUE_PUBLIC[M.venue] || 'communal-grounds', tod);
     const inPlace = here.filter(c => c.place === place);
     const talking = [...new Set(inPlace.flatMap(c => c.who))];
     const idle = (W.idle[R.zone] || []).filter(n => !talking.includes(n));

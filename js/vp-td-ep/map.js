@@ -20,7 +20,7 @@
 // it (stageSpot); who is idle where is the engine's own schedule (ep.campAccess).
 import { TD_MARKS } from './marks.js';
 import { ACCESS_PROFILES } from '../camp-access.js';
-import { tdCampScreen, stageSpot, venueOf, VENUES, placeName } from './steps.js';
+import { tdCampScreen, stageSpot, venueOf, VENUES, placeName, campSlot } from './steps.js';
 
 // the venues with a painted map (tools/td-camp: '<venue>/map-day'), and how their teams live
 export const MAP_VENUES = { 'hosted-camp': { shared: true }, 'film-lot': { shared: true }, 'world-tour': { shared: true }, 'survival-island': { shared: false }, carnival: { shared: false } };
@@ -66,7 +66,7 @@ export function isKey(ev) {
 const KIND_TITLE = { alliance: 'An alliance', deal: 'A deal', pitch: 'A vote pitch', recruit: 'Recruiting', plot: 'A scheme', broker: 'Double agent', credit: 'Stolen credit',
   idol: 'An idol', adv: 'An advantage', fallout: 'Fallout', caught: 'Caught out', blind: 'A blind spot', goat: 'A read', save: 'The morning after', threat: 'A threat',
   romance: 'Romance', friend: 'Friends', drama: 'Drama', life: 'Camp life', hosted: 'Camp life', talk: 'A talk', flow: 'Gossip', read: 'A read', mind: 'Thinking', aside: 'After the challenge',
-  merge: 'The merge', morning: 'The last morning', crowd: 'Together', villain: 'The villain', spot: 'Noticed', throw: 'A thrown challenge', misvote: 'A wrong vote', last: 'Camp life', tail: 'Camp life' };
+  merge: 'The merge', morning: 'The last morning', crowd: 'Together', cross: 'Across the line', villain: 'The villain', spot: 'Noticed', throw: 'A thrown challenge', misvote: 'A wrong vote', last: 'Camp life', tail: 'Camp life' };
 const titleOf = ev => {
   const b = String(ev.badgeText || '').trim();
   if (b) return b.charAt(0) + b.slice(1).toLowerCase();
@@ -114,6 +114,7 @@ export function tdCampMap(ep, phase, camps, o = {}) {
   const teams = (ep.tribesAtStart || []).map(t => t.name).filter(Boolean);
   const own = !shared && camps.length === 1 ? teams.indexOf(camps[0]) : -1;
   const slot = own >= 0 ? own % 3 : null;
+  const plateSlot = !shared && camps.length === 1 ? campSlot(ep, camps[0], venue) : null;
   const zones = mapZones(venue, slot, slot == null ? [] : teams.map((t, i) => (i % 3 === slot ? null : t)));
   const order = WINDOW_ORDER[phase];
   const teamOf = {};
@@ -160,7 +161,7 @@ export function tdCampMap(ep, phase, camps, o = {}) {
     }
     return { id, label: WINDOW_LABEL[id], time: WINDOW_TIME[id], night: !!WINDOW_NIGHT[id], idle };
   }).filter(w => convs.some(c => c.window === w.id) || Object.keys(w.idle).length);
-  return { venue, phase, camps: [...camps], teamOf, windows, convs, zones };
+  return { venue, phase, camps: [...camps], teamOf, windows, convs, zones, slot: plateSlot };
 }
 
 /** Where the viewer is allowed to go next: the first window that still has an unwatched key talk. */

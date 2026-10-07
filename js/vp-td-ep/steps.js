@@ -162,6 +162,23 @@ export const cleanText = s => String(s || '').replace(/â€”/g, '—').replac
 // ══════════════════════════════════════════════════════════════════════
 // PLACING PEOPLE — once per scene, from the plate's marks
 // ══════════════════════════════════════════════════════════════════════
+// Venues where the teams live apart (DC5's Soluna, DC4's Stawaki): each team has its own campsite,
+// painted as '<spot>-t<slot>' plates (tools/td-camp/venues/*_teams.py), the merged camp as
+// '<spot>-merge'. A camp's slot is its team's place in the episode's team order, three campsites
+// round; the camp map (map.js) uses the same slots.
+export const APART = new Set(['survival-island', 'carnival']);
+export function campSlot(ep, camp, venue) {
+  if (!APART.has(venue)) return null;
+  if (camp === 'merge') return 'merge';
+  const i = (ep?.tribesAtStart || []).map(t => t.name).indexOf(camp);
+  return i < 0 ? null : i % 3;
+}
+/** The spot's plate for this team's campsite, where one is painted; otherwise the shared one. */
+export function teamSpot(venue, spot, slot) {
+  if (slot == null) return spot;
+  const s = `${spot}-${slot === 'merge' ? 'merge' : `t${slot}`}`;
+  return TD_MARKS[`${venue}/${s}-day`] || TD_MARKS[`${venue}/${s}-night`] ? s : spot;
+}
 export const plateKey = (venue, spot, tod) => {
   for (const t of [tod, tod === 'night' ? 'day' : 'night']) if (TD_MARKS[`${venue}/${spot}-${t}`]) return `${venue}/${spot}-${t}`;
   return null;
@@ -267,6 +284,7 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
   const venue = venueOf(ep, o);
   const V = VENUES[venue];
   const windows = ep.campAccess?.phases?.[`${phase}:${camp}`] || [];
+  const slot = o.slot !== undefined ? o.slot : campSlot(ep, camp, venue);
   const cast = [...new Set([...members, ...events.flatMap(e => e.players || [])])].filter(Boolean);
   const steps = [];
   let clock = phase === 'pre' ? 7 * 60 + 5 : 15 * 60 + 10;
@@ -285,7 +303,7 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
     clock = Math.max(clock + 6 + (hash(spot + clock) % 9), win ? win[0] : 0);
     const tod = clock >= 19 * 60 + 15 ? 'night' : 'day';
     const key = plateKey(venue, spot, tod) ? spot : V.public;
-    const plate = plateKey(venue, key, tod);
+    const plate = plateKey(venue, teamSpot(venue, key, slot), tod);
     const bg = busyAt(engineAt || key, windowId, focus, key);
     const sit = V.sit.includes(key);
     const places = placeScene(plate, focus, bg.map(b => b.n), { sit });

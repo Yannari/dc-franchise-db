@@ -10,6 +10,7 @@ import fs from 'fs';
 import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 import { tdCampMap, mapZones, openWindow, nextConv, hasMap, WINDOW_ORDER } from '../js/vp-td-ep/map.js';
 import { tdStepScreens } from '../js/vp-td-ep/screens.js';
+import { tdCampScreen, campSlot } from '../js/vp-td-ep/steps.js';
 
 const NAMES = ['Alejandro', 'Heather', 'Gwen', 'Duncan', 'Courtney', 'Owen', 'Izzy', 'Cody', 'Sierra', 'Lindsay', 'Harold', 'Leshawna', 'Noah', 'Bridgette', 'Geoff', 'Trent'];
 const roster = JSON.parse(fs.readFileSync('franchise_roster.json', 'utf8')).players;
@@ -132,5 +133,39 @@ describe('a venue where teams live apart', () => {
       expect(m.convs.every(x => !m.zones[x.zone]?.rival)).toBe(true);
     }
     expect(homes.size).toBe(3);
+    expect(veps.some(e => Object.keys(e.campAccess?.phases || {}).some(k => k.includes('*commons'))), 'teams apart never share a place').toBe(false);
+    expect(veps.some(e => Object.values(e.campEvents || {}).some(b => (b.pre || []).some(x => x.type === 'crossTeam')))).toBe(false);
+  });
+  it('shows each team its own campsite: a scene at the shelter or the fire uses that team\'s plate', () => {
+    let n = 0;
+    for (const ep of veps) for (const phase of ['pre', 'post']) for (const c of campsOf(ep, phase)) {
+      const scr = tdCampScreen(ep, c, phase, [], { setting: 'survival-island' });
+      const slot = campSlot(ep, c, 'survival-island');
+      for (const st of scr?.steps || []) {
+        if (st.k !== 'scene' || !['shelter', 'campfire'].includes(st.spot)) continue;
+        n++;
+        expect(st.plate, `${c} ${st.spot}`).toContain(slot === 'merge' ? `${st.spot}-` : `${st.spot}-t${slot}-`);
+      }
+    }
+    expect(n).toBeGreaterThan(10);
+  });
+});
+
+// who can meet whom (camp-access.js CAMP_LAYOUT): at a shared camp the teams mix in the public places
+// before the merge, never in a private one; at a camp where they live apart they never mix
+describe('teams at a shared camp and at separate camps', () => {
+  it('mixes the teams only in public places at a shared camp, and keeps them apart elsewhere', () => {
+    const pre = eps.filter(e => (e.tribesAtStart || []).length >= 2 && e.campAccess?.phases?.['pre:*commons']);
+    expect(pre.length).toBeGreaterThan(0);
+    let mixed = 0;
+    for (const ep of pre) for (const w of ep.campAccess.phases['pre:*commons']) for (const a of w.assignments) {
+      expect(a.locationId, 'a private place').toMatch(/^(communal-grounds|mess-hall|campfire|beach)$/);
+      const teams = new Set(a.players.map(n => ep.tribesAtStart.find(t => t.members.includes(n))?.name));
+      if (teams.size > 1) mixed++;
+    }
+    expect(mixed).toBeGreaterThan(0);
+    const cross = eps.flatMap(e => Object.values(e.campEvents || {}).flatMap(b => b.pre || [])).filter(x => x.type === 'crossTeam');
+    expect(cross.length).toBeGreaterThan(3);
+    expect(new Set(cross.map(x => x.scene.kind)).size).toBeGreaterThan(1);
   });
 });

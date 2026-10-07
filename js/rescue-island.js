@@ -3,6 +3,8 @@ import { gs, players, seasonConfig } from './core.js';
 import { pStats, pronouns, getPlayerState } from './players.js';
 import { getBond, addBond } from './bonds.js';
 import { wRandom } from './alliances.js';
+import { scriptIsland } from './td/script/island.js';
+import { stableRng } from './script/rng.js';
 import { CHALLENGE_BANK } from './ri-challenge-bank.js';
 import { CHALLENGE_BANK_2 } from './ri-challenge-bank-2.js';
 
@@ -876,14 +878,20 @@ export function generateRILifeEvents(ep) {
   if (!gs.riMentalState) gs.riMentalState = {};
   const epNum = ep.num || (gs.episode + 1);
   const riList = [...gs.riPlayers];
+  // who is here, and who just got here: the island scenes are written from this (td/script/island.js)
+  const isleCtx = { ep: epNum, residents: riList, arrivals: riList.filter(n => !(gs.riLifeEvents[n] || []).some(e => e.ep < epNum)), rescue: false };
 
   function pushEvt(evt) {
     ep.riLifeEvents.push(evt);
-    const names = [evt.player, evt.player2].filter(Boolean);
+    // each person's own log keeps the moment in one line (counts and history read it); the
+    // episode keeps the written scene, so the script is saved once, not once per person in it
+    const slim = { ep: evt.ep, type: evt.type, player: evt.player, player2: evt.player2 || null, ...(evt.player3 ? { player3: evt.player3 } : {}), text: evt.text };
+    const names = [evt.player, evt.player2, evt.player3].filter(Boolean);
     names.forEach(n => {
       if (!gs.riLifeEvents[n]) gs.riLifeEvents[n] = [];
-      gs.riLifeEvents[n].push(evt);
+      gs.riLifeEvents[n].push(slim);
     });
+    scriptIsland(evt, isleCtx);
   }
 
   // ── Training events (solo) ──
@@ -1202,6 +1210,50 @@ export function generateRILifeEvents(ep) {
       }
     }
   }
+
+  _islandGroupMoment(riList, epNum, pushEvt);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// GROUP MOMENTS — three or more people stuck on one island
+// ══════════════════════════════════════════════════════════════════════
+// Breakfast around the fire, a storm, stories in the dark, a fight over chores, an argument
+// about who deserves to go back (the Disventure Camp Rescue Island episode is built on these).
+// Its own stream, never the engine's dice: adding it moved no other decision's draw.
+// Every one changes how they feel about each other.
+const GROUP_TEXT = {
+  breakfast: (a, b, c) => `${a}, ${b} and ${c} argue over breakfast around the fire.`,
+  storm: (a, b, c) => `A storm hits the island. ${a}, ${b} and ${c} scramble to save the shelter.`,
+  fire: (a, b, c) => `${a}, ${b} and ${c} sit up by the fire after dark, swapping stories.`,
+  chores: (a, b, c) => `${a} and ${b} fight about who does the chores. ${c} gets dragged in.`,
+  comeback: (a, b, c) => `${a}, ${b} and ${c} argue about who deserves to get back in the game.`,
+};
+function _islandGroupMoment(riList, epNum, pushEvt) {
+  const here = riList.filter(n => (gs.riPlayers || []).includes(n));
+  if (here.length < 3) return;
+  const rng = stableRng('td-isle-group', String(epNum), here.join('|'));
+  if (rng() > 0.8) return;
+  const kinds = Object.keys(GROUP_TEXT);
+  const kind = kinds[Math.floor(rng() * kinds.length)];
+  const order = here.map(n => [n, rng()]).sort((x, y) => x[1] - y[1]).map(x => x[0]);
+  let [a, b, c] = order;
+  if (kind === 'chores') {
+    // the two who get on worst are the ones who fight about it
+    let worst = null;
+    for (let i = 0; i < here.length; i++) for (let j = i + 1; j < here.length; j++) {
+      const bd = getBond(here[i], here[j]);
+      if (!worst || bd < worst[2]) worst = [here[i], here[j], bd];
+    }
+    [a, b] = worst;
+    c = order.find(n => n !== a && n !== b);
+  }
+  const trio = [a, b, c];
+  if (kind === 'breakfast') { addBond(a, b, 0.3); addBond(a, c, 0.3); addBond(b, c, 0.3); }
+  else if (kind === 'fire') { addBond(a, b, 0.5); addBond(a, c, 0.5); addBond(b, c, 0.5); }
+  else if (kind === 'storm') { for (let i = 0; i < here.length; i++) for (let j = i + 1; j < here.length; j++) addBond(here[i], here[j], 0.3); }
+  else if (kind === 'chores') { addBond(a, b, -0.6); addBond(c, getBond(c, a) >= getBond(c, b) ? a : b, 0.3); }
+  else if (kind === 'comeback') { addBond(a, b, -0.4); addBond(a, c, 0.3); }
+  pushEvt({ ep: epNum, type: `group-${kind}`, player: a, player2: b, player3: c, players: trio, text: GROUP_TEXT[kind](a, b, c) });
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -1375,7 +1427,7 @@ function _resolveEdgeActions(ep, riList, epNum, pushEvt) {
       const accidentChance = 0.12 + (1 - w.pw / 100) * 0.30 + Math.max(0, s.boldness - 6) * 0.03;
       if (Math.random() < accidentChance) {
         w.pw -= 25; w.mh -= 4;
-        pushEvt({ ep: epNum, type: 'edge-injury', player: name,
+        pushEvt({ ep: epNum, type: 'edge-injury', player: name, stat: drill.stat,
           text: `${name} pushes too hard at ${drill.label}. Something gives — a wound, a wasted day. ${pr.Sub} limp${pr.sub==='they'?'':'s'} back to camp with nothing to show.` });
       } else {
         w.pw -= 8;
@@ -1439,14 +1491,19 @@ export function generateRescueIslandLife(ep) {
   if (!gs.riMentalState) gs.riMentalState = {};
   const epNum = ep.num || (gs.episode || 0) + 1;
   const riList = [...gs.riPlayers];
+  const isleCtx = { ep: epNum, residents: riList, arrivals: riList.filter(n => gs.riArrivalEp[n] === epNum), rescue: true };
 
   function pushEvt(evt) {
     ep.rescueIslandEvents.push(evt);
-    const names = [evt.player, evt.player2].filter(Boolean);
+    // each person's own log keeps the moment in one line (counts and history read it); the
+    // episode keeps the written scene, so the script is saved once, not once per person in it
+    const slim = { ep: evt.ep, type: evt.type, player: evt.player, player2: evt.player2 || null, ...(evt.player3 ? { player3: evt.player3 } : {}), text: evt.text };
+    const names = [evt.player, evt.player2, evt.player3].filter(Boolean);
     names.forEach(n => {
       if (!gs.riLifeEvents[n]) gs.riLifeEvents[n] = [];
-      gs.riLifeEvents[n].push(evt);
+      gs.riLifeEvents[n].push(slim);
     });
+    scriptIsland(evt, isleCtx);
   }
 
   // Survival drain — Rescue Island is brutal
@@ -1682,9 +1739,12 @@ export function generateRescueIslandLife(ep) {
       }
     }
 
-    const evt = { ep: epNum, text: picked.text, type: picked.type, player: picked.player, player2: picked.player2 || null };
+    const evt = { ep: epNum, text: picked.text, type: picked.type, player: picked.player, player2: picked.player2 || null,
+      ...(picked.revengeTarget ? { revengeTarget: picked.revengeTarget } : {}), ...(picked.sharedStat ? { sharedStat: picked.sharedStat } : {}) };
     pushEvt(evt);
   }
+
+  _islandGroupMoment(riList, epNum, pushEvt);
 }
 // ══════════════════════════════════════════════════════════════════════
 // INTERLUDE LIFE — a full non-elimination "check in on the out-of-game cast"

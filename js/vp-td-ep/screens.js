@@ -219,6 +219,7 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
     if (a.kind === 'shout' && who[0]) { const c = centre(st, tokAt(castEl, who[0])); for (let k = 0; k < 3; k++) setTimeout(() => fxAt(fxEl, 'tdx-ring', c.x, c.y + c.h / 2), k * 140); sfx('boing'); }
     if (a.kind === 'arrive') who.forEach(n => { const el = tokAt(castEl, n); el.classList.remove('arrive'); void el.offsetWidth; el.classList.add('arrive'); sfx('whoosh'); });
     if (a.kind === 'train') who.forEach(n => tokAt(castEl, n).classList.add('train'));
+    if (a.kind === 'gust') { who.forEach(n => tokAt(castEl, n).classList.add('shake')); sfx('thunder'); const fl = fxAt(fxEl, 'tdx-bolt', 50, 0, '', 900); fl.style.left = '0'; }
     if (a.kind === 'hurt' && who[0]) { tokAt(castEl, who[0]).classList.add('shake'); const c = centre(st, tokAt(castEl, who[0])); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'OW!'); sfx('slap'); }
     if (a.kind === 'cry') who.forEach(n => { const el = tokAt(castEl, n); el.classList.add('sad'); const c = centre(st, el); for (let k = 0; k < 4; k++) setTimeout(() => fxAt(fxEl, 'tdx-tear', c.x + (k % 2 ? 1.2 : -1.2), c.y + c.h * .25, '', 1400), k * 260); });
     if (a.kind === 'fire') who.forEach(n => { const el = tokAt(castEl, n); el.classList.add('fired'); const c = centre(st, el); fxAt(fxEl, 'tdx-aura', c.x, c.y + c.h / 2, '', 2400); sfx('title'); });

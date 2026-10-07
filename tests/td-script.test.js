@@ -68,7 +68,8 @@ describe('the pools keep their contract', () => {
   });
 
   it('only writes a third person into a scene that has one', () => {
-    const WITH_C = [];
+    // island trios and group moments always hold a third (td/script/island.js)
+    const WITH_C = [/^isle\.(trio|group)\./];
     for (const [key, pool] of all) {
       if (WITH_C.some(re => re.test(key))) continue;
       for (const e of pool) {
@@ -110,9 +111,12 @@ describe('the pools keep their contract', () => {
     // "a boat home", "{fallen}'s bunk" in entries that fit every setting. A setting's own
     // word belongs in an entry gated on the spot it is true in.
     const PLACE = /(cabins?|bunks?|lake|boat|chef|mess hall|dock|trays?|dish(es)?|plates?|island|shelter|trailers?|plane)/i;
+    // An island scene is always on an island: its shelter, its boat and its dishes (coconut shells) are true there.
+    const ISLE_PLACE = /(cabins?|bunks?|chef|mess hall|dock|trays?|trailers?|plane)/i;
     for (const [key, pool] of all) for (const e of pool) {
       if (e.when?.spot) continue;
-      for (const x of texts(e)) expect(PLACE.test(x) ? x.match(PLACE)[0] : null, `${key} ${e.id}: ${x}`).toBe(null);
+      const re = key.startsWith('isle.') ? ISLE_PLACE : PLACE;
+      for (const x of texts(e)) expect(re.test(x) ? x.match(re)[0] : null, `${key} ${e.id}: ${x}`).toBe(null);
     }
   });
 

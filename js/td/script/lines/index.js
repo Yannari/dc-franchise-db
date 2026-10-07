@@ -23,14 +23,20 @@ import adv, { GUARANTEED as advG } from './adv.js';
 import tail, { GUARANTEED as tailG } from './tail.js';
 import tests from './tests.js';
 import last, { GUARANTEED as lastG } from './last.js';
+import isle, { GUARANTEED as isleG } from './isle.js';
+import isleGroup from './isle-group.js';
+import isleTrain from './isle-train.js';
+import isleMore from './isle-more.js';
 
-const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind, reads, ends, threat, camp, quit, adv, tail, tests, last];
+const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind, reads, ends, threat, camp, quit, adv, tail, tests, last, isle, isleGroup, isleTrain, isleMore];
 
-export const POOLS = Object.assign({}, ...FILES);
+// A key may be written in more than one file (the island pools grow by file): its entries add up.
+export const POOLS = {};
+for (const f of FILES) for (const [k, v] of Object.entries(f)) POOLS[k] = POOLS[k] ? [...POOLS[k], ...v] : [...v];
 
 /**
  * Names an ending always carries ('fallout.blame.swapped' always has {plan} and
  * {boot}). A line may say a slot its ending guarantees without asking for it;
  * any other optional name needs `when: { slot: true }` (tests/td-script.test.js).
  */
-export const GUARANTEED = Object.assign({}, falloutG, allianceG, pitchG, recruitG, endsG, quitG, advG, tailG, lastG);
+export const GUARANTEED = Object.assign({}, falloutG, allianceG, pitchG, recruitG, endsG, quitG, advG, tailG, lastG, isleG);

@@ -55,6 +55,8 @@ const BADGE = {
   'mutual-respect': ['Respect', 'iron'], 'revenge-talk': ['Revenge pact', 'danger'], bonding: ['Bonding', 'green'], rivalry: ['Rivalry', 'danger'],
   'game-talk': ['Game talk', 'gold'], struggling: ['Struggling', 'danger'], thriving: ['Thriving', 'green'], 'quit-temptation': ['Wavering', 'fire'], quit: ['Quit', 'danger'],
   'edge-social': ['Leaning on each other', 'green'], 'edge-rest': ['Resting', 'iron'],
+  'group-breakfast': ['Breakfast', 'gold'], 'group-storm': ['Storm', 'danger'], 'group-fire': ['By the fire', 'green'],
+  'group-chores': ['Chore war', 'fire'], 'group-comeback': ['Who goes back', 'danger'],
 };
 const badgeOf = t => { const b = BADGE[t]; return b ? { text: b[0].toUpperCase(), cls: b[1] } : { text: 'ISLAND LIFE', cls: 'fire' }; };
 const ACT = [
@@ -68,6 +70,10 @@ const ACT = [
   ['fire', ['motivation', 'mental-hardened', 'mental-hardened-life', 'mental-obsessed', 'mental-obsessed-life', 'thriving']],
   ['rest', ['edge-rest']],
   ['storm', ['quit']],
+  ['gust', ['group-storm']],
+  ['laugh', ['group-breakfast']],
+  ['lean', ['group-fire']],
+  ['shout', ['group-chores', 'group-comeback']],
 ];
 const actKind = (t, text) => (t === 'processing' && /breaks? down/i.test(text) ? 'cry' : (ACT.find(([, ts]) => ts.includes(t)) || [null])[0]);
 // what a resident is doing while somebody else's moment plays
@@ -75,7 +81,12 @@ const BUSY_FOR = { train: 'stretch', hurt: 'nap', rest: 'nap', cry: 'nap', fire:
 // the time of day an event belongs to, by what its sentence says happened (narrative only)
 const nightOf = (t, text) => ['midnight-talk', 'mental-breakdown', 'mental-breakdown-life'].includes(t) || /\b(at night|3 AM|by the fire|the dark)\b/i.test(text);
 // morning: alone with it (training, processing); afternoon: with each other; night: the fire, the dark
-const rankOf = e => (nightOf(e.type, cleanText(e.text)) ? 2 : e.player2 ? 1 : 0);
+// a written scene says what it is (td/script/island.js): the late talks, a breakdown, the fire
+const NIGHT_SCENES = new Set(['isle.pair:late', 'isle.trio:late', 'isle.mind:broken', 'isle.group:fire']);
+const isNight = e => (e.scene ? NIGHT_SCENES.has(`${e.scene.kind}:${e.scene.data?.ending}`) : nightOf(e.type, cleanText(e.text)));
+// an arrival is met before anything else happens to the new arrival
+const isArrival = e => e.type === 'sizing-up' || (e.scene && e.scene.data?.ending === 'size');
+const rankOf = e => (isArrival(e) ? -1 : isNight(e) ? 2 : e.player2 ? 1 : 0);
 
 // The voted-out who are still out there, as the episode began: the record, never live state.
 function residentsOf(ep, rescue) {
@@ -145,30 +156,52 @@ export function tdIslandLifeScreen(ep, rescue, o = {}) {
   const roll = residents.map(n => ({ tab: 'residents', text: `${n}${arrived[n] ? ` · here since episode ${arrived[n]}` : ''}${streak[n] >= 1 ? ` · ${streak[n]} duel win${streak[n] > 1 ? 's' : ''}` : ''}` }));
   // each resident's own first activity this episode: what they are doing in the background
   const busy = {};
-  for (const e of events) for (const n of [e.player, e.player2].filter(Boolean)) if (!busy[n]) busy[n] = BUSY_FOR[actKind(e.type, e.text)] || 'whittle';
-  const TIME = ['Day', 'Later that day', 'Night'];
-  let rank = -1;
+  for (const e of events) for (const n of [e.player, e.player2, e.player3].filter(Boolean)) if (!busy[n]) busy[n] = BUSY_FOR[actKind(e.type, e.text)] || 'whittle';
+  const TIME = { '-1': 'Day', 0: 'Day', 1: 'Later that day', 2: 'Night' };
+  let rank = -9;
   const open = r => {
     const t = r === 2 ? 'night' : 'day';
     const key = plate(spot, t);
     const places = placeScene(key, residents.slice(0, 9), []);
     // morning to afternoon: the light moves on, nobody moves (no new card)
-    steps.push({ k: 'scene', spot, tod: t, plate: key, place: isle, time: TIME[r], card: rank < 0 || r === 2, focus: [], bg: [], places,
+    steps.push({ k: 'scene', spot, tod: t, plate: key, place: isle, time: TIME[r], card: rank === -9 || r === 2, focus: [], bg: [], places,
       acts: Object.fromEntries(residents.map(n => [n, busy[n] || 'whittle'])) });
     rank = r;
   };
   for (const e of events) {
     const text = cleanText(e.text);
-    const r = rankOf(e);
+    const r = Math.max(rankOf(e), 0);   // an arrival opens the day, on the same set
     if (r !== rank) { open(r); if (steps.length === 1) steps[0].side = roll; }
-    const who = [e.player, e.player2].filter(n => n && residents.includes(n));
+    const who = [e.player, e.player2, e.player3].filter(n => n && residents.includes(n));
     let kind = actKind(e.type, text);
     if ((kind === 'hug' || kind === 'lean') && who.length < 2) kind = null;   // nobody to hold on to
-    const step = { k: 'beat', text, badge: badgeOf(e.type), focus: who, act: kind ? { kind, who } : null,
-      side: [{ tab: 'log', text: `${badgeOf(e.type).text}: ${who.join(', ')}` }] };
-    if (e.stat && ['training', 'training-life', 'edge-train', 'shared-training', 'shared-training-life'].includes(e.type)) step.gain = { who: who[0], stat: e.stat, up: true };
-    if (e.stat && /injury/.test(e.type)) step.gain = { who: who[0], stat: e.stat, up: false };
-    if (e.type === 'quit') step.side.push({ tab: 'residents', text: `${who[0]} quits ${isle}.` });
+    const side = [{ tab: 'log', text: `${badgeOf(e.type).text}: ${who.join(', ')}` }];
+    if (e.type === 'quit') side.push({ tab: 'residents', text: `${who[0]} quits ${isle}.` });
+    const gain = e.stat && ['training', 'training-life', 'edge-train', 'shared-training', 'shared-training-life'].includes(e.type) ? { who: who[0], stat: e.stat, up: true }
+      : e.stat && /injury/.test(e.type) ? { who: who[0], stat: e.stat, up: false } : null;
+    if (Array.isArray(e.lines) && e.lines.length) {
+      // a written scene: one click per line, the moment's badge on its first stage direction
+      const first = steps.length;
+      let lastBy = null;
+      for (const l of e.lines) {
+        const t = cleanText(l.text);
+        if (!t) continue;
+        if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text: t });
+        else if (l.kind === 'beat') steps.push({ k: 'beat', text: t, focus: who });
+        else { steps.push({ k: 'say', by: l.by, text: t, focus: who, loud: /!/.test(t) && t.length < 70 }); lastBy = l.by; }
+      }
+      const lead = steps[first];
+      if (lead) {
+        lead.act = kind ? { kind, who } : null;
+        lead.side = side;
+        if (gain) lead.gain = gain;
+        const firstBeat = steps.slice(first).find(s => s.k === 'beat');
+        (firstBeat || lead).badge = badgeOf(e.type);
+      }
+      continue;
+    }
+    const step = { k: 'beat', text, badge: badgeOf(e.type), focus: who, act: kind ? { kind, who } : null, side };
+    if (gain) step.gain = gain;
     steps.push(step);
   }
   // what is coming: the duel tonight, or everyone still waiting for their way back

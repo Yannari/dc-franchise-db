@@ -275,6 +275,8 @@ export const TDX_CSS = `
 @keyframes tdxRain{to{transform:translate(-14cqw,62cqw) rotate(12deg)}}
 .tdx .tdx-flash{position:absolute;inset:0;background:#dfe6ff;opacity:0;mix-blend-mode:screen;animation:tdxFlash 14s linear infinite}
 @keyframes tdxFlash{0%,90.5%,92%,93.5%,100%{opacity:0}91%{opacity:.5}93%{opacity:.3}}
+.tdx .tdx-bolt{position:absolute;inset:0;background:#e8eeff;mix-blend-mode:screen;animation:tdxBolt .9s ease-out forwards;pointer-events:none}
+@keyframes tdxBolt{0%{opacity:0}8%{opacity:.85}20%{opacity:.1}30%{opacity:.6}100%{opacity:0}}
 .tdx .tdx-title.out .band{background:var(--rd)}.tdx .tdx-title.out .kicker{color:#fff}
 .tdx .tdx-title.fire .band{background:linear-gradient(90deg,var(--or),var(--am))}
 .tdx .tdx-title.vs .band{background:#1a1420;box-shadow:0 0 0 6px var(--or),0 0 0 9px #1a1420}.tdx .tdx-title.vs .kicker{color:var(--am)}

@@ -47,7 +47,8 @@ export function worldKey(screen, L) {
   return L.scene?.plate || `${screen.venue}/none`;
 }
 export function worldHtml(screen, L) {
-  const key = L.conf ? plateKey(screen.venue, 'confessional', 'day') : L.scene?.plate;
+  // the islands have no booth: a confessional there is shot on location
+  const key = L.conf ? (plateKey(screen.venue, 'confessional', 'day') || L.scene?.plate) : L.scene?.plate;
   if (!key) return `<div class="tdx-plate tdx-noplate"></div>`;
   const M = TD_MARKS[key] || { h: .5, m: [] };
   const spot = key.split('/')[1].replace(/-(day|night)$/, '');
@@ -92,7 +93,7 @@ export function worldHtml(screen, L) {
 }
 /** What the live layer is made of, for the ambience (sound.js). */
 export function worldSound(screen, L) {
-  const key = L.conf ? plateKey(screen.venue, 'confessional', 'day') : L.scene?.plate;
+  const key = L.conf ? (plateKey(screen.venue, 'confessional', 'day') || L.scene?.plate) : L.scene?.plate;
   const M = (key && TD_MARKS[key]) || { m: [] };
   const spot = String(key || '').split('/')[1]?.replace(/-(day|night)$/, '') || '';
   const indoor = /mess-hall|confessional|corridor|storage|economy|aisle|galley|cargo|first-class|theater|big-top/.test(spot) || (spot === 'ceremony' && screen.venue === 'world-tour') || (spot === 'shelter' && screen.venue === 'carnival');

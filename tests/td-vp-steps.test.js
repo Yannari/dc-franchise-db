@@ -185,13 +185,35 @@ describe('TD stepped viewer: the islands', () => {
     expect(misses.slice(0, 10), `${misses.length} people off stage`).toEqual([]);
   });
 
-  it('the island days show what the engine wrote, before the duel only', () => {
-    for (const ep of islands.redemption) {
-      const scr = tdIslandLifeScreen(ep, false, {});
+  it('the island days play every line the scenes wrote, and nothing after the duel', () => {
+    let lines = 0;
+    for (const [fmt, eps] of Object.entries(islands)) for (const ep of eps) {
+      const rescue = fmt === 'rescue';
+      const scr = tdIslandLifeScreen(ep, rescue, {});
       if (!scr) continue;
-      const beats = scr.steps.filter(s => s.k === 'beat').map(s => s.text);
-      expect(beats.length).toBe((ep.riLifeEvents || []).filter(e => !/^(winner|loser)-/.test(e.type) && e.text).length);
-      if (ep.riDuel) expect(scr.steps[scr.steps.length - 1].name).toBe('The Duel');
+      const shown = scr.steps.filter(s => ['say', 'conf', 'beat'].includes(s.k)).map(s => s.text);
+      const evs = (rescue ? ep.rescueIslandEvents : ep.riLifeEvents || []).filter(e => !/^(winner|loser)-/.test(e.type) && e.text);
+      for (const e of evs) {
+        expect(e.lines?.length, `ep${ep.num} ${e.type} was never written as a scene`).toBeGreaterThan(0);
+        for (const l of e.lines) { expect(shown, `ep${ep.num} ${e.type}`).toContain(l.text); lines++; }
+      }
+      for (const e of (ep.riLifeEvents || []).filter(x => /^(winner|loser)-/.test(x.type))) expect(shown).not.toContain(e.text);
+      if (!rescue && ep.riDuel) expect(scr.steps[scr.steps.length - 1].name).toBe('The Duel');
+    }
+    expect(lines).toBeGreaterThan(200);
+  });
+
+  it('an arrival is met before anything else happens to them', () => {
+    for (const eps of Object.values(islands)) for (const ep of eps) for (const rescue of [false, true]) {
+      const scr = tdIslandLifeScreen(ep, rescue, {});
+      if (!scr) continue;
+      const evs = rescue ? ep.rescueIslandEvents : ep.riLifeEvents || [];
+      for (const arr of evs.filter(e => e.scene?.data?.ending === 'size')) {
+        const newcomer = arr.scene.who.b;
+        const firstMeet = scr.steps.findIndex(s => s.text === arr.lines[0].text);
+        const before = scr.steps.slice(0, firstMeet).filter(s => s.k === 'say' && s.by === newcomer);
+        expect(before, `ep${ep.num}: ${newcomer} talks before arriving`).toEqual([]);
+      }
     }
   });
 

@@ -32,8 +32,9 @@ import drama2, { GUARANTEED as drama2G } from './drama2.js';
 import dramaMore from './drama-more.js';
 import romance from './romance.js';
 import romance2, { GUARANTEED as romance2G } from './romance2.js';
+import friend from './friend.js';
 
-const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind, reads, ends, threat, camp, quit, adv, tail, tests, last, isle, isleGroup, isleTrain, isleMore, drama, drama2, dramaMore, romance, romance2];
+const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind, reads, ends, threat, camp, quit, adv, tail, tests, last, isle, isleGroup, isleTrain, isleMore, drama, drama2, dramaMore, romance, romance2, friend];
 
 // A key may be written in more than one file (the island pools grow by file): its entries add up.
 export const POOLS = {};

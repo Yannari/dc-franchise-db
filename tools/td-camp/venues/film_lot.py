@@ -62,7 +62,10 @@ def hangar(x, y, tod, w=14, d=12, h=8, number='4', rot_z=0):
         add(pbox('DoorRib', (0.06, 0.06, h * 0.6), (-w * 0.1 - w * 0.16 + i * w * 0.065, -d / 2 - 0.12, h * 0.31), _mix_hex(P['hangar_sh'], '#000000', 0.2), 'day', ink=False))
     add(pbox('Awning', (w * 0.42, 1.2, 0.2), (-w * 0.1, -d / 2 - 0.6, h * 0.66), N('#7a2a3a', tod), 'day', rot=(-12, 0, 0)))
     add(pbox('NumPlate', (1.8, 0.08, 1.8), (w * 0.3, -d / 2 - 0.05, h * 0.55), _mix_hex(P['hangar'], '#ffffff', 0.25), 'day'))
-    t = ptext(number, (x + w * 0.3, y - d / 2 - 0.12, h * 0.55), 1.3, _mix_hex(P['hangar_sh'], '#1a1a2a', 0.3))
+    # the number turns with the hangar (a hangar set side-on along an alley shows it on its face)
+    rz = math.radians(rot_z); ox, oy = w * 0.3, -d / 2 - 0.12
+    t = ptext(number, (x + ox * math.cos(rz) - oy * math.sin(rz), y + ox * math.sin(rz) + oy * math.cos(rz), h * 0.55), 1.3,
+              _mix_hex(P['hangar_sh'], '#1a1a2a', 0.3), rot=(90, 0, rot_z))
     return g
 
 
@@ -427,7 +430,7 @@ def fl_map(tod):
     great fake mountain on its scaffold on the right, all on a concrete pier over the water). Each place a
     scene can be staged carries a 'zone' mark the map hangs its hotspot on."""
     paint_mode(); P = TDA[tod]; day = tod == 'day'
-    paint_sky(P['sky'], P['sky_low'])
+    paint_sky(P['sky'], P['sky_low'], span=0.1)
     # the far shore: a grass bank with the city standing on it, across the water behind the lot
     _prism('FarShore', [(-260, 62), (260, 62), (260, 220), (-260, 220)], -2.4, 0.3, '#6a8a4a', '#5a6a42', tod)
     skyline(tod, y=170, x0=-200, x1=170, seed=21)
@@ -496,7 +499,7 @@ def fl_map(tod):
     for (bx, by, bc) in ((-33, 6, '#c8a042'), (-16, 22, '#b88a3a'), (12, 16, '#c8a042'), (27, 22, '#a87a3a'), (-1, 12, '#b8902e')):
         crown_tree(bx, by, 5.0, N(bc, tod), seed=int(bx * 7), s=1.6, birch=True)
     for (px, py) in ((-36, 14), (-31, 22), (16, 24), (36, 18), (-20, 26)):
-        umbrella_pine(px, py, 8, col=N('#2f4a46', tod), trunk=N('#2a2440', tod), seed=int(px * 3), s=1.2)
+        tda_conifer(px, py, 10, tod, s=1.2)
     for (lx, ly) in ((-9, 6), (14, 3), (-28, -6)):
         film_lamp(lx, ly, tod, aim=20, h=2.6)
     for zid, loc in (('trailers', (-3.5, -1.5, 3.4)), ('craft-services', (6.0, 8.0, 3.0)), ('studio-backlot', (-10.2, 13.0, 5.0)),

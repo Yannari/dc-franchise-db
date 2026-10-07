@@ -69,7 +69,7 @@ describe('the pools keep their contract', () => {
 
   it('only writes a third person into a scene that has one', () => {
     // island trios and group moments always hold a third (td/script/island.js)
-    const WITH_C = [/^isle\.(trio|group)\./];
+    const WITH_C = [/^isle\.(trio|group)\./, /^drama\.stir\./];
     for (const [key, pool] of all) {
       if (WITH_C.some(re => re.test(key))) continue;
       for (const e of pool) {
@@ -115,6 +115,8 @@ describe('the pools keep their contract', () => {
     const ISLE_PLACE = /(cabins?|bunks?|chef|mess hall|dock|trays?|trailers?|plane)/i;
     for (const [key, pool] of all) for (const e of pool) {
       if (e.when?.spot) continue;
+      // the mess hall's own drama is only ever staged in the mess hall (settings.js: hosted-camp)
+      if (key.startsWith('drama.mess.')) continue;
       const re = key.startsWith('isle.') ? ISLE_PLACE : PLACE;
       for (const x of texts(e)) expect(re.test(x) ? x.match(re)[0] : null, `${key} ${e.id}: ${x}`).toBe(null);
     }

@@ -28,9 +28,14 @@ def trace(path, colors=40, min_area=60, cut=None, fill=None):
         img = cv2.cvtColor(np.array(Image.open(path).convert('RGB')), cv2.COLOR_RGB2BGR)
     img = cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA)
     if cut:
-        m = np.zeros((H, W), np.uint8)
-        for poly in cut:
-            cv2.fillPoly(m, [np.array(poly, np.int32)], 255)
+        if isinstance(cut, str):                      # a mask image (white = cut), e.g. from consensus.py
+            m = cv2.resize(cv2.imread(cut, cv2.IMREAD_GRAYSCALE), (W, H), interpolation=cv2.INTER_NEAREST)
+            m = (m > 127).astype(np.uint8) * 255
+            cut = []
+        else:
+            m = np.zeros((H, W), np.uint8)
+            for poly in cut:
+                cv2.fillPoly(m, [np.array(poly, np.int32)], 255)
         m = cv2.dilate(m, np.ones((9, 9), np.uint8))
         if fill:
             # what stood behind the character, drawn by hand (a render of the same frame), blended in
@@ -40,8 +45,11 @@ def trace(path, colors=40, min_area=60, cut=None, fill=None):
                 from PIL import Image
                 f = cv2.cvtColor(np.array(Image.open(fill).convert('RGB')), cv2.COLOR_RGB2BGR)
             f = cv2.resize(f, (W, H), interpolation=cv2.INTER_AREA)
-            a = cv2.GaussianBlur(m.astype(np.float32) / 255.0, (0, 0), 5)[..., None]
-            img = (img * (1 - a) + f * a).astype(np.uint8)
+            # where the fill layer drew nothing (pure black), fall back to filling in from the surroundings
+            drawn = (f.max(axis=2) > 8).astype(np.uint8)
+            base = cv2.inpaint(img, (m * (1 - drawn)).astype(np.uint8), 12, cv2.INPAINT_TELEA)
+            a = cv2.GaussianBlur(m.astype(np.float32) / 255.0 * drawn, (0, 0), 5)[..., None]
+            img = (base * (1 - a) + f * a).astype(np.uint8)
         else:
             img = cv2.inpaint(img, m, 12, cv2.INPAINT_TELEA)
     img = cv2.bilateralFilter(img, 7, 40, 7)
@@ -97,7 +105,7 @@ if __name__ == '__main__':
     src, out = sys.argv[1], sys.argv[2]
     colors = int(sys.argv[3]) if len(sys.argv) > 3 else 40
     min_area = int(sys.argv[4]) if len(sys.argv) > 4 else 60
-    cut = json.load(open(sys.argv[5])) if len(sys.argv) > 5 else None
+    cut = (sys.argv[5] if sys.argv[5].endswith('.png') else json.load(open(sys.argv[5]))) if len(sys.argv) > 5 else None
     fill = sys.argv[6] if len(sys.argv) > 6 else None
     d = trace(src, colors, min_area, cut, fill)
     json.dump(d, open(out, 'w'))

@@ -676,7 +676,10 @@ function evictionScreen(act, ctx, host) {
   const rest = ctx.house.filter(n => !noms.includes(n));
   return { id: 'bb-evict-v', kind: 'evict', anchor: 'evict', set: 'ceremony', room: ROOM_NAME.ceremony, cam: 1,
     title: 'Eviction Night', kicker: 'Live · Eviction night', sub: `${listOf(noms)} on the block`, day: ctx.day, time: 'LIVE',
-    seated: seatLiving(noms, [ctx.hoh, ...rest.filter(n => n !== ctx.hoh)]), tvObj: true, steps };
+    // everybody who speaks on the night gets a seat before anybody who stays silent: the sofas hold
+    // eight, and the people arguing after the parting shot were the ones left off (the user,
+    // 2026-10-07: "it doesn't show their icons when they talk")
+    seated: seatLiving(noms, [...new Set([ctx.hoh, ...steps.filter(st => st.k === 'say' && st.by && !noms.includes(st.by)).map(st => st.by), ...rest].filter(n => n && rest.concat(ctx.hoh).includes(n)))]), tvObj: true, steps };
 }
 
 

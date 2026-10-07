@@ -406,7 +406,7 @@ function speechFor(reveal, speaker, register, rng) {
   }
   if (reveal.type === 'flipper') {
     return register === 'explosion' ? pick(rng, [
-      `"${a}! You looked me in the face this morning! You SAID it! And you wrote my name anyway!"`,
+      `"${a}! You looked me in the face and SAID it! And you wrote my name anyway!"`,
       `"I want everyone to watch ${a}'s face right now. Go on. Watch it."`,
     ]) : pick(rng, [
       `"${a} promised me that vote to my face. Remember that the next time ${P(a).sub} promises you one."`,
@@ -414,9 +414,13 @@ function speechFor(reveal, speaker, register, rng) {
     ]);
   }
   if (reveal.type === 'alliance') {
-    const names = (reveal.members || [a]).join(', ');
+    // three names and a count, the way somebody says it out loud (eight names in a row was a list,
+    // not a sentence)
+    const all = reveal.members || [a];
+    const names = all.length <= 3 ? all.join(', ').replace(/, ([^,]*)$/, ' and $1')
+      : `${all.slice(0, 3).join(', ')} and ${['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'][all.length - 3] || all.length - 3} more`;
     return register === 'explosion' ? pick(rng, [
-      `"${names}. That's it. That's the whole house. You've been a group since week two and the rest of you are furniture!"`,
+      `"${names}. That's it. That's the group running this house, and the rest of you are furniture!"`,
       `"Count them! ${names}! How do you think the votes keep landing the same way?"`,
     ]) : (() => {
       // ── WHO IS ACTUALLY LEFT TO WARN ──
@@ -431,12 +435,12 @@ function speechFor(reveal, speaker, register, rng) {
       if (listeners.length === 1) {
         const you = listeners[0];
         return pick(rng, [
-          `"${you}. ${names} have had something for weeks. I know you know they work together — I don't think you know how far it goes."`,
+          `"${you}. ${names} have something going. I know you know they work together. I don't think you know how far it goes."`,
           `"This is for ${you}, because there's nobody else left to say it to: ${names} are a pair. Count the seats in the finale."`,
         ]);
       }
       return pick(rng, [
-        `"Look at who's left. ${names} have been working together for weeks. Whoever isn't in that list — you're next."`,
+        `"Look at who's left. ${names} work together. If your name isn't on that list, you're next."`,
         `"There's a group in this house: ${names}. I'd start counting if I were the rest of you."`,
       ]);
     })();
@@ -444,7 +448,7 @@ function speechFor(reveal, speaker, register, rng) {
   if (reveal.type === 'deal') {
     return register === 'explosion' ? pick(rng, [
       `"Ask ${a} about the final two with ${reveal.partner}! Go on, ASK ${P(a).obj}!"`,
-      `"${a} and ${reveal.partner} have been going to the end together this whole time and you're all fighting over the scraps!"`,
+      `"${a} and ${reveal.partner} are going to the end together, and you're all fighting over the scraps!"`,
     ]) : pick(rng, [
       `"One piece of information, free. ${a} and ${reveal.partner} have a final two. Everything either of them has told you was built on that."`,
       `"Before the door — ${a} and ${reveal.partner} are going to the end together. Do what you like with it."`,
@@ -574,8 +578,8 @@ function voiceLines(voice, label, listener, speaker, a) {
         `"The timings are wrong," ${L} says, and is the only person in the room who has bothered to check.`,
       ],
       confirmed: [
-        `${L} does not look surprised, because ${P(L).sub} worked it out on Tuesday and has been waiting for corroboration.`,
-        `${L} nods once. Another piece fits a shape ${P(L).sub} has been assembling quietly for a fortnight.`,
+        `${L} nods slowly, as if a piece has just fallen into place.`,
+        `${L} nods once, then starts quietly counting who else might be in it.`,
       ],
       conflicted: [
         `${L} can build a version of the week where either of them is telling the truth, and hates both.`,
@@ -692,11 +696,11 @@ function generalReaction(listener, speaker, reveal, reaction) {
       `${listener} was not listening properly and is now pretending very hard to have been.`,
       `${listener} takes it about as seriously as anything else said in that doorway, which is to say partly.`,
       `${listener} decides to see how ${a} behaves tomorrow before deciding anything at all.`,
-      `${listener} stacks it next to the other three things ${P(listener).sub} has been told about ${a} this month.`,
+      `${listener} puts it next to everything else ${P(listener).sub} has heard about ${a}, and does not like how well it fits.`,
       `${listener} would like some evidence, and knows perfectly well ${P(listener).sub} is never going to get any.`,
       `${listener} looks at the carpet for a second too long, then goes back to the conversation ${P(listener).sub} was having.`,
       `${listener} gives the doorway a long look and keeps ${P(listener).posAdj} face still.`,
-      `${listener} has heard four versions of this week already. This is the fifth.`,
+      `${listener} has heard a lot of stories in this house. ${P(listener).Sub} is not sure yet whether this is one of them.`,
       `${listener} claps politely, the way you do at a thing you have not decided about yet.`,
       `Nothing in ${listener}'s face moves, and nothing in ${P(listener).posAdj} head settles either.`,
     ]);
@@ -713,7 +717,7 @@ function responseFor(reveal, accused, kind, rng) {
     `${accused} shakes ${P(accused).posAdj} head slowly, sadly, at nobody in particular — a performance of being above it.`,
   ]);
   return pick(rng, [
-    `"That is not true," ${accused} says flatly, to everybody and nobody. "That is not what happened."`,
+    `${accused} shakes ${P(accused).posAdj} head and speaks to the whole room. "That is not true. That is not what happened."`,
     `${accused} is already talking before the door shuts. "I did not do that. I'm not letting that be the last thing anybody hears."`,
   ]);
 }
@@ -750,7 +754,7 @@ const CONFRONTS = {
  *
  * @returns {object|null} the scene, or null if the room stays civil
  */
-function checkConfrontation(week, reveal, reactions, rng, isTrue) {
+function checkConfrontation(week, reveal, reactions, rng, isTrue, said = null) {
   const accused = reveal.accused;
   if (reveal.type === 'personal' || !(gs.activePlayers || []).includes(accused)) return null;
 
@@ -793,13 +797,19 @@ function checkConfrontation(week, reveal, reactions, rng, isTrue) {
   // How the accused plays it, which is the same question the response card
   // asked but with the room now watching a fight rather than a speech.
   const ownIt = isTrue === true && rng() < clamp01((aS.boldness / 10) * 0.5);
-  const kind = ownIt ? 'owns' : rng() < clamp01(aS.social / 13) ? 'turns' : 'denies';
+  let kind = ownIt ? 'owns' : rng() < clamp01(aS.social / 13) ? 'turns' : 'denies';
+  // the same person, a minute later: whoever just admitted it does not now deny it, and whoever
+  // just denied it does not now admit it (the rolls above are still drawn, so nothing else moves)
+  if (said === 'own') kind = 'owns';
+  else if (said === 'deny' && kind === 'owns') kind = 'denies';
+  // how long they have actually known each other: the week number, not a figure from a script
+  const wn = Math.max(1, Number(week?.num ?? week) || 1);
 
   const opener = pick(rng, [
-    `"No — say it again." ${challenger} is on ${P(challenger).posAdj} feet before the door has finished closing. "Say it to my face, because I have spent this whole week defending you."`,
+    `${challenger} is on ${P(challenger).posAdj} feet before the door has finished closing. "Is it true? Say it to my face."`,
     `${challenger} does not wait for the room to settle. "Was that true? Look at me and tell me that was not true."`,
     `"I want to hear it from you," ${challenger} says, and the living room goes very quiet very fast.`,
-    `${challenger} puts a glass down harder than ${P(challenger).sub} means to. "That is twice now. Twice I've heard your name and told people they were wrong."`,
+    `${challenger} puts a glass down harder than ${P(challenger).sub} means to. "Is that true? Because if it is, I want to hear it from you, not from somebody walking out the door."`,
   ]);
   const answer = kind === 'owns' ? pick(rng, [
     `"Yes," says ${accused}. "It was me. You'd have done it if you'd had the numbers, and you know that."`,
@@ -809,7 +819,7 @@ function checkConfrontation(week, reveal, reactions, rng, isTrue) {
     `${accused} does not raise ${P(accused).posAdj} voice, which somehow makes it worse. "I think you wanted a reason. I think you've been waiting for one."`,
   ]) : pick(rng, [
     `"That is a LIE," ${accused} says, over the top of ${P(challenger).obj}. "That is a lie and you are letting somebody play you from the doorway."`,
-    `${accused} is shouting now too. "I did not do that! You've known me for six weeks — six weeks — and this is what it takes?"`,
+    `${accused} is shouting now too. "I did not do that! You've known me for ${wn <= 1 ? 'a week' : `${['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'][wn] || wn} weeks`}, and this is all it takes?"`,
   ]);
   // ── STAGED WITH THE PEOPLE WHO ARE ACTUALLY IN THE ROOM ──
   //
@@ -949,7 +959,7 @@ export function checkBBLastWords(week, rngIn) {
   // has heard by the time anybody squares up — and because a confrontation
   // moves the people still on the fence, which the response has just finished
   // adjusting.
-  const confrontation = checkConfrontation(week, reveal, reactions, rng, isTrue);
+  const confrontation = checkConfrontation(week, reveal, reactions, rng, isTrue, response?.kind || null);
 
   // ── the audience ──
   if (seasonConfig.popularityEnabled !== false) {

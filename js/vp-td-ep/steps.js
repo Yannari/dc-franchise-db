@@ -27,7 +27,7 @@ export const VENUES = {
     open: t => [`Welcome to the campfire ceremony, ${t}.`, `${t}. Back at the campfire again.`, `${t}, welcome back to the campfire.`],
     voted: `You've all cast your votes in the confession cam.`, sit: ['campfire', 'mess-hall'] },
   'survival-island': { public: 'campfire', ceremony: 'The Elimination Trial', style: 'read',
-    exitPlace: 'The Cannon of Shame', exitLine: n => `${n}, the Cannon of Shame awaits.`,
+    exitPlace: 'One Final Choice', exitLine: n => `${n}, it's time to go. Follow the path to the Motel.`,
     open: t => [`Welcome to the Elimination Trial, ${t}.`, `${t}. Take your seats.`, `${t}, back at the fire so soon.`],
     voted: `It's time to vote.`, sit: ['campfire'] },
   'film-lot': { public: 'studio-backlot', ceremony: 'The Gilded Chris Awards', style: 'handout', item: 'Gilded Chris', items: 'Gilded Chrises',
@@ -49,13 +49,13 @@ export const venueOf = (ep, o = {}) => (VENUES[ep?.campAccess?.setting] ? ep.cam
 const PLACE = {
   'communal-grounds': 'The Camp Grounds', cabins: 'The Cabins', 'mess-hall': 'The Mess Hall', dock: 'The Dock', campfire: 'The Campfire Pit',
   'forest-trail': 'The Forest Trail', confessional: 'The Confession Cam', shelter: 'The Shelter', beach: 'The Beach', shoreline: 'The Shoreline',
-  'water-source': 'The Water Source', 'jungle-trail': 'The Jungle Trail', 'fishing-area': 'The Fishing Spot', trailers: 'The Trailers',
+  'water-source': 'The Water Source', 'jungle-trail': 'The Bamboo Jungle', 'fishing-area': 'The Fishing Spot', trailers: 'The Trailers',
   'craft-services': 'Craft Services', 'studio-backlot': 'The Backlot', 'soundstage-corridor': 'The Soundstage', 'prop-storage': 'Prop Storage',
   economy: 'Economy Class', aisle: 'The Aisle', galley: 'The Galley', 'cargo-hold': 'The Cargo Hold', 'first-class': 'First Class',
   'destination-staging': 'The Landing Strip', campsite: 'The Campsite', 'forest-edge': 'The Forest', 'rocky-beach': 'The Rocky Beach',
   'lake-shore': 'The Lake Shore', 'carnival-entrance': 'The Carnival Gate', midway: 'The Midway', 'trial-area': 'The Trial Area',
   'haunted-mansion': 'The Haunted Mansion', 'corn-maze': 'The Corn Maze', 'theater-tent': 'The Theater Tent', 'big-top': 'The Big Top',
-  'voting-booth': 'The Voting Booth', ceremony: 'The Ceremony', exit: 'The Exit',
+  'voting-booth': 'The Voting Booth', ceremony: 'The Ceremony', exit: 'The Exit', ruins: 'The Ruins', cave: 'The Cave',
 };
 // the places a scene can be staged in beyond the engine's spots (camp-access.js): a cabin's inside,
 // the beach, the washrooms, the cliff (2026-10-07: "where is the rest… the interior
@@ -142,7 +142,7 @@ export const placeName = spot => PLACE[spot] || String(spot || '').replace(/-/g,
 const BUSY = {
   dock: ['fish', 'read', 'nap'], cabins: ['read', 'sweep', 'nap'], 'mess-hall': ['eat', 'eat', 'read'], campfire: ['stretch', 'read', 'whittle'],
   'communal-grounds': ['sweep', 'stretch', 'read'], 'forest-trail': ['stretch', 'read'], shelter: ['nap', 'whittle', 'sweep'], beach: ['nap', 'stretch', 'read'],
-  shoreline: ['fish', 'read'], 'water-source': ['fetch', 'stretch'], 'jungle-trail': ['stretch'], 'fishing-area': ['fish', 'fish'], trailers: ['read', 'nap'],
+  shoreline: ['fish', 'read'], 'water-source': ['fetch', 'stretch'], 'jungle-trail': ['stretch'], 'fishing-area': ['fish', 'fish'], ruins: ['stretch', 'read'], cave: ['read'], trailers: ['read', 'nap'],
   'craft-services': ['eat', 'eat'], 'studio-backlot': ['stretch', 'read'], 'soundstage-corridor': ['read'], 'prop-storage': ['read'],
   economy: ['nap', 'read'], aisle: ['read'], galley: ['eat'], 'cargo-hold': ['nap'], 'first-class': ['nap', 'read'], 'destination-staging': ['stretch'],
   campsite: ['whittle', 'read', 'nap'], 'forest-edge': ['stretch'], 'rocky-beach': ['fish', 'read'], 'lake-shore': ['fish', 'read'],
@@ -429,6 +429,26 @@ export function tdTribalScreen(ep, o = {}) {
   // the vote
   const voters = [...new Set((ep.votingLog || []).map(v => v.voter).filter(n => tribal.includes(n)))];
   say(V.voted);
+  // the voting booth: the show cuts to two or three of them casting (DC4's clown urn on its counter,
+  // DC5's tiki urn on the treehouse platform, the confessional where a venue has no booth), each
+  // naming their own pick, then back to the ceremony for the reading
+  const booth = plateKey(venue, 'voting-booth', 'night') || plateKey(venue, 'confessional', 'day');
+  const cast = (ep.votingLog || []).filter(v => tribal.includes(v.voter) && v.voted);
+  if (booth && cast.length >= 2) {
+    const shown = [];
+    const forElim = cast.filter(v => v.voted === elim), other = cast.filter(v => v.voted !== elim);
+    for (const pool of [forElim, other, forElim]) {
+      const left = pool.filter(v => !shown.some(s => s.voter === v.voter));
+      if (left.length && shown.length < 3) shown.push(left[Math.floor(rng() * left.length)]);
+    }
+    const LINES = [t => `${t}. Nothing personal.`, t => `I'm writing down ${t}.`, t => `${t}. It's just the game.`, t => `It has to be ${t}.`, t => `${t}. I've made up my mind.`];
+    shown.forEach((v, i) => {
+      steps.push({ k: 'scene', spot: 'voting-booth', tod: 'night', plate: booth, place: PLACE['voting-booth'], time: '8:50 PM', card: i === 0, cut: i > 0, focus: [v.voter], bg: [], places: placeScene(booth, [v.voter]) });
+      steps.push({ k: 'say', by: v.voter, text: LINES[Math.floor(rng() * LINES.length)](v.voted), focus: [v.voter] });
+      steps.push({ k: 'title', kicker: `${v.voter} votes`, name: v.voted, faces: [v.voted] });
+    });
+    steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '9:00 PM', card: false, cut: true, focus: [], bg: [], places, seated: tribal, host, ceremony: true });
+  }
   steps.push({ k: 'ballots', who: voters, text: `${voters.length} votes are in.` });
   // advantages played
   for (const p of ep.idolPlays || []) {

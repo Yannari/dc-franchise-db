@@ -27,6 +27,8 @@ export const ACCESS_PROFILES = Object.freeze({
     { id:'water-source', label:'Water source', access:'everyday', privacy:0.55, overhear:0.40, capacity:4 },
     { id:'jungle-trail', label:'Jungle trail', access:'everyday', privacy:0.80, overhear:0.18, capacity:3 },
     { id:'fishing-area', label:'Fishing area', access:'everyday', privacy:0.65, overhear:0.25, capacity:3 },
+    { id:'ruins', label:'The ruins', access:'everyday', privacy:0.75, overhear:0.2, capacity:4 },
+    { id:'cave', label:'The cave', access:'everyday', privacy:0.85, overhear:0.12, capacity:3 },
   ]),
   // Disventure Camp 4: Carnival of Chaos — Stawaki-specific safe locations.
   // Attractions exist but are not casual downtime spaces unless an episode

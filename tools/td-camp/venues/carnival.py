@@ -757,6 +757,7 @@ def cv_map(tod):
     circus_tent(10, 33, tod, r=7.0, h=4.5, roof=6.0)
     for (tx, ty, r, a) in ((-6, 22, 2.2, '#3a5aa8'), (17, 28, 2.0, '#c8303a'), (-12, 30, 2.4, '#c8303a'), (30, 28, 2.0, '#3a5aa8'), (-2, 28, 1.8, '#4a9a5a'), (20, 36, 2.2, '#7a5aa8'), (36, 26, 1.8, '#c8303a')):
         circus_tent(tx, ty, tod, r=r, h=1.8, roof=2.2, a=a)
+    carousel(19.5, 13.5, tod, s=0.8)
     # the rides: the clown ferris wheel, the looping coaster, the drop tower
     ferris(28, 38, 7.5, tod)
     # the hub: a grinning clown face on a burst of yellow rays (Stawaki_Carnival_-_Roller_Coaster)

@@ -34,7 +34,7 @@ const ZONE_OF = {
   'film-lot': { trailers: 'trailers', 'craft-services': 'craft-services', 'studio-backlot': 'studio-backlot',
     'soundstage-corridor': 'soundstage-corridor', 'prop-storage': 'prop-storage', confessional: 'confessional' },
   'survival-island': { shelter: 'shelter', campfire: 'campfire', beach: 'beach', shoreline: 'shoreline', 'water-source': 'water-source',
-    'jungle-trail': 'jungle-trail', 'fishing-area': 'fishing-area', confessional: 'confessional' },
+    'jungle-trail': 'jungle-trail', 'fishing-area': 'fishing-area', confessional: 'confessional', ruins: 'ruins', cave: 'cave' },
   carnival: { campsite: 'campsite', shelter: 'shelter', 'forest-edge': 'forest-edge', 'rocky-beach': 'rocky-beach', 'lake-shore': 'lake-shore',
     'carnival-entrance': 'carnival-entrance', midway: 'midway', 'haunted-mansion': 'haunted-mansion', 'corn-maze': 'corn-maze', 'theater-tent': 'theater-tent',
     confessional: 'confessional' },
@@ -42,7 +42,7 @@ const ZONE_OF = {
     'destination-staging': 'destination-staging', confessional: 'confessional' },
 };
 export const ZONE_LABEL = { campsite: 'The Campsite', 'forest-edge': 'The Forest Edge', 'rocky-beach': 'The Rocky Beach', 'lake-shore': 'The Lake Shore',
-  'carnival-entrance': 'The Carnival Gate', midway: 'The Midway', 'haunted-mansion': 'The Haunted Mansion', 'corn-maze': 'The Corn Maze', 'theater-tent': 'The Theater Tent', shelter: 'The Shelter', campfire: 'The Campfire', shoreline: 'The Shoreline', 'water-source': 'The Waterfall Pool', 'jungle-trail': 'The Jungle Trail', 'fishing-area': 'The Fishing Dock', cabins: 'The Cabins', 'mess-hall': 'The Mess Hall', washroom: 'The Washrooms', 'communal-grounds': 'The Camp Grounds',
+  'carnival-entrance': 'The Carnival Gate', midway: 'The Midway', 'haunted-mansion': 'The Haunted Mansion', 'corn-maze': 'The Corn Maze', 'theater-tent': 'The Theater Tent', shelter: 'The Shelter', campfire: 'The Campfire', shoreline: 'The Shoreline', 'water-source': 'The Waterfall Pool', 'jungle-trail': 'The Bamboo Jungle', ruins: 'The Ruins', cave: 'The Cave', 'fishing-area': 'The Fishing Dock', cabins: 'The Cabins', 'mess-hall': 'The Mess Hall', washroom: 'The Washrooms', 'communal-grounds': 'The Camp Grounds',
   trailers: 'The Trailers', 'craft-services': 'Craft Services', 'studio-backlot': 'The Backlot', 'soundstage-corridor': 'The Soundstages', 'prop-storage': 'Prop Storage',
   economy: 'Economy Class', aisle: 'The Aisle', galley: 'The Galley', 'cargo-hold': 'The Cargo Hold', 'first-class': 'First Class', 'destination-staging': 'Down on the Ground',
   confessional: 'The Confession Cam', campfire: 'The Campfire', dock: 'The Dock', beach: 'The Beach', 'forest-trail': 'The Forest Trail', cliff: 'The Cliff' };

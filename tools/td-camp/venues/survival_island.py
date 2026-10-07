@@ -506,7 +506,7 @@ def si_map(tod):
     for (sx, sy, sh, sr) in ((-15, 26, 10, 2.0), (15.5, 25, 9, 1.9), (-19.5, 21, 6.5, 1.6), (21, 21, 6, 1.6)):
         pcyl('Spire', sr, sh, (sx, sy, sh / 2), '#8a5a3a', tod, r2=0.25, verts=6, mottle=0.3)
     # the jungle: a canopy of round bushy crowns, lighter on top, with palms standing out of it
-    clear = [(-19, 1, 9), (23, -6, 8), (18, 11, 8), (-4, 15, 4), (2, 6, 3), (-2, -14, 10), (8, -4, 3), (34, -12, 4), (-30, -10, 5)]
+    clear = [(-19, 1, 9), (23, -6, 8), (18, 11, 8), (-4, 15, 4), (2, 6, 3), (-2, -14, 10), (8, -4, 3), (34, -12, 4), (-30, -10, 5), (-27, 13, 5), (8, 17, 3)]
     pts = []
     for i in range(900):
         x, y = rnd.uniform(-38, 38), rnd.uniform(-8, 27)
@@ -526,6 +526,17 @@ def si_map(tod):
         crown.data.materials.clear(); crown.data.materials.append(pmat('Canopy' + c + tod, N(c, tod), N(_mix_hex(c, '#0a2a1a', 0.45), tod), mottle=0.25, mscale=1.5)); crown['ink'] = 1
     for (x, y) in ((-34, -6), (-22, -16), (12, -18), (28, -18), (40, -4), (38, 8)):
         sol_palm(x, y, rnd.uniform(6, 8), tod, lean=rnd.uniform(-18, 18), seed=int(x * y), s=1.1)
+    # the ruins (Ruins_exterior): a stone wall and its tiki-face gate in a clearing in the west
+    _flat_poly('RuinsClear', _blob(-27, 13, 4.5, 3.2, seed=9, wob=0.1), 0.28, SOL['day']['path'], tod, mottle=0.3)
+    stone = pmat('MapRuin' + tod, N('#9a9a8a', tod), N('#6a6a62', tod), mottle=0.3)
+    for (x0, x1) in ((-31, -28.4), (-25.6, -23)):
+        ob = box(uid('MapRuinWall'), (x1 - x0, 0.9, 1.8), ((x0 + x1) / 2, 14.5, 0.9), stone, bevel=0); ob['ink'] = 1
+    pbox('MapGate', (2.2, 1.1, 3.0), (-27, 14.5, 1.5), '#8a5a32', tod)
+    card(uid('MapGateFace'), [(-0.8, 0), (0.8, 0), (0.6, -1.4), (-0.6, -1.4)], 13.9, pmat('MapGateMouth' + tod, N('#c84a2a', tod), unlit=True, mottle=0), x=-27, z=2.0)
+    for sd in (-1, 1):
+        card(uid('MapGateEye'), _blob_pts(0.3, 0.22, 12, 0, 0), 13.9, pmat('MapGateEye' + tod, N('#e8dcc0', tod), unlit=True, mottle=0), x=-27 + sd * 0.45, z=2.5)
+    # the cave: a dark mouth in the volcano's foot (Soluna_Cave)
+    card(uid('MapCave'), [(-1.6, 0), (1.6, 0), (1.2, 2.2), (0.3, 2.9), (-0.9, 2.4)], 16.4, pmat('MapCave' + tod, N('#1e1a16', tod), unlit=True, mottle=0), x=8.5, z=0.3)
     # the three campsites, the same buildings the camp plates show (survival_teams.py)
     a_frame(-21, 3, tod, s=1.3, rot_z=72)
     _sol_fire(-16, -1, tod)
@@ -552,7 +563,7 @@ def si_map(tod):
     pbox('OuthouseDoor', (0.8, 0.05, 1.8), (8, -4.82, 1.0), '#6a8a3a', tod)
     for zid, loc in (('shelter@0', (-21, 4, 4.5)), ('campfire@0', (-16, -1, 1.6)), ('shelter@1', (24, -4, 5.0)), ('campfire@1', (18, -9, 1.6)),
                      ('shelter@2', (18, 12, 4.0)), ('campfire@2', (22, 9, 1.6)), ('beach', (-2, -14, 0.6)), ('shoreline', (-30, -11, 1.4)),
-                     ('water-source', (-4.5, 15.5, 1.0)), ('jungle-trail', (2, 6, 1.0)), ('fishing-area', (35, -18, 0.8)), ('confessional', (8, -4, 3.2))):
+                     ('water-source', (-4.5, 15.5, 1.0)), ('jungle-trail', (2, 6, 1.0)), ('ruins', (-27, 14.5, 3.4)), ('cave', (8.5, 16.4, 2.6)), ('fishing-area', (35, -18, 0.8)), ('confessional', (8, -4, 3.2))):
         mark('zone', loc, id=zid)
     paint_sun(azimuth=-35, elevation=55 if day else 35, energy=3.6 if day else 1.6)
     tv_camera((0.0, -70.0, 34.0), (0.0, 8.0, 13.5), lens=30)

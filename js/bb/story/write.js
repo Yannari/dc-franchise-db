@@ -29,6 +29,7 @@ import { causeOf } from './storylines.js';
 import { STORY_POOLS } from './lines/index.js';
 import { getBond } from '../../bonds.js';
 import { addInsight } from './voice.js';
+import { pickTone, voiceLine } from './register.js';
 
 const ledger = () => ((gs.bb ||= {}).storyLedger ||= newLedger());
 const ROOM = { kitchen: 'Kitchen', 'living-room': 'Living Room', bedroom: 'Bedroom', 'hoh-room': 'HOH Room',
@@ -242,7 +243,13 @@ function pick(keys, who, data, ctx, room, salt) {
   const pairKey = [who.a, who.b].filter(Boolean).sort().join('|');
   const clock = (ctx.week?.num || 0) * 10 + (ctx.stretch || 0);
   const key = keys.length > 1 ? keys : keys[0];
-  const got = pickEntry(ledger(), pools, key, facts, pairKey, rng, speakers, clock);
+  // the version of the scene that fits the person leading it (register.js): a blunt fighter gets
+  // the heated row, an anxious player the awkward one
+  const full = Object.fromEntries(keys.map(k => [k, pools[k]]));
+  for (const k of keys) if (pools[k]?.length > 1) pools[k] = pickTone(pools[k], who);
+  // the tone is a preference: when the picker's own rules leave nothing in the fitted set, the
+  // whole set is tried (a recap went missing when it was narrowed away)
+  const got = pickEntry(ledger(), pools, key, facts, pairKey, rng, speakers, clock) || pickEntry(ledger(), full, key, facts, pairKey, rng, speakers, clock);
   if (got) noteAcross(got.id);
   return got;
 }
@@ -692,7 +699,12 @@ export function writeSetPiece(type, ctx, inside, { gone = null, at = 0 } = {}) {
 // closing confessional gains a sentence in the speaker's voice about the other person in it, from
 // their history together (a nomination, a saved veto, votes cast alike, a shared alliance or deal).
 // Words only; nothing in the game moves.
-const voiced = (sc, kind, ctx) => (sc && !writing.muted && sc.lines?.length ? addInsight(sc, kind, ctx?.week?.num) : sc);
+const voiced = (sc, kind, ctx) => {
+  if (!sc || writing.muted || !sc.lines?.length) return sc;
+  // every line in the speaker's register (register.js), then the closing confessional in their voice
+  sc.lines = sc.lines.map(l => voiceLine(l, sc.id));
+  return addInsight(sc, kind, ctx?.week?.num);
+};
 export function writeStoryScene(line, step, ctx) {
   return voiced(writeStoryScene0(line, step, ctx), `${line?.type}.${step?.step}`, ctx);
 }

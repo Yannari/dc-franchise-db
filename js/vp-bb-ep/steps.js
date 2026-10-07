@@ -23,6 +23,7 @@
 // bb/script/ceremony.js); a save from before that falls back to a plain line.
 import { arenaFor } from '../bb/comp-arenas.js';
 import { pronouns } from '../players.js';
+import { voiceLine } from '../bb/story/register.js';
 import { players as ROSTER } from '../core.js';
 
 // The engine's own moments that happen AT a ceremony (the user, 2026-10-06: "most of the time the
@@ -118,7 +119,10 @@ const pickBy = (list, key) => list[hash(key) % list.length];
 /** A written script (act.script.*) as steps. The camera moves in on its first spoken line. */
 function scriptSteps(lines, extra = {}) {
   let pushed = false;
-  return (lines || []).filter(l => l && l.text).map(l => {
+  // every scripted line in the speaker's register (bb/story/register.js): a silent houseguest
+  // writes on a notepad, the stock replies are said the way this person says them
+  return (lines || []).filter(l => l && l.text).map(l0 => {
+    const l = voiceLine(l0, 'script');
     const k = l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say';
     const push = k === 'say' && !pushed ? (pushed = true) : false;
     return { k, by: l.by || null, t: l.text, ...(push ? { push: true } : {}), ...extra };
@@ -595,7 +599,8 @@ function evictionScreen(act, ctx, host) {
       if (b.stated) chain.push(`told the house ${b.stated}`);
       if (b.pleaMove) chain.push(`moved by ${b.movedBy}'s plea`);
       chain.push(`casts ${b.evict}`);
-      steps.push({ k: 'dr', by: b.voter, t: said, ballot: [b.voter, b.evict, chain] });
+      const said1 = voiceLine({ kind: 'dr', by: b.voter, text: said }, 'vote').text;
+      steps.push({ k: 'dr', by: b.voter, t: said1, ballot: [b.voter, b.evict, chain] });
       const commit = (ctx.row?.voteCommitments || []).find(x => x.voter === b.voter);
       const why = voteReason(b, commit, noms, ctx.week, reasonsUsed);
       if (why) steps.push({ k: 'dr', by: b.voter, t: why });

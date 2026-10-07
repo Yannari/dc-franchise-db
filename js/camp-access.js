@@ -18,6 +18,12 @@ export const ACCESS_PROFILES = Object.freeze({
     { id:'dock', label:'Dock', access:'everyday', privacy:0.40, overhear:0.45, capacity:6 },
     { id:'campfire', label:'Campfire', access:'everyday', privacy:0.05, overhear:0.95, capacity:20 },
     { id:'forest-trail', label:'Forest trail', access:'everyday', privacy:0.75, overhear:0.20, capacity:3 },
+    // the rest of Wawanakwa the show used (Total Drama wiki, Category:Locations)
+    { id:'lake', label:'Lake shore', access:'everyday', privacy:0.50, overhear:0.35, capacity:5 },
+    { id:'boathouse', label:'Boathouse', access:'everyday', privacy:0.80, overhear:0.20, capacity:4 },
+    { id:'waterfall', label:'Waterfall', access:'everyday', privacy:0.70, overhear:0.25, capacity:4 },
+    { id:'caves', label:'Caves', access:'everyday', privacy:0.85, overhear:0.12, capacity:3 },
+    { id:'amphitheater', label:'Amphitheater', access:'everyday', privacy:0.30, overhear:0.60, capacity:15 },
   ]),
   'survival-island': freezeLocations([
     { id:'shelter', label:'Shelter', access:'everyday', privacy:0.25, overhear:0.70, capacity:12 },

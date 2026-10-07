@@ -61,6 +61,9 @@ const PLACE = {
 // the beach, the washrooms, the cliff (2026-10-07: "where is the rest… the interior
 // of the cabin, the canteen, the lake")
 Object.assign(PLACE, { 'cabin-inside': 'Inside the Cabin', washroom: 'The Washrooms', cliff: 'The Cliff' });
+// Wawanakwa's other places (the wiki's locations) and the islands beyond camp
+Object.assign(PLACE, { lake: 'The Lake', boathouse: 'The Boathouse', waterfall: 'The Waterfall', caves: 'The Caves', amphitheater: 'The Amphitheater',
+  'boney-island': 'Boney Island', 'playa-des-losers': 'Playa Des Losers' });
 
 // ── STAGING — where a scene plays, beyond where the engine says the people were ──────────
 // The engine knows six places at Wawanakwa, chosen for privacy (who can overhear). Television
@@ -79,8 +82,10 @@ const STAGE = {
       ['communal-grounds', 3, null, 'day'], ['mess-hall', 1, null, 'day'],
       ['communal-grounds', 2, null, 'return'], ['mess-hall', 2, null, 'return'],
       ['campfire', 3, null, 'evening'], ['mess-hall', 2, null, 'evening'], ['communal-grounds', 1, null, 'evening']],
-    'forest-trail': [['beach', 3, /^(romance\.|friend\.(walk|laugh))/], ['cliff', 2, /^(drama\.(meltdown|clash)|plot\.|broker\.)/], ['forest-trail', 3], ['beach', 1], ['cliff', 1]],
-    dock: [['dock', 3], ['beach', 2]],
+    'forest-trail': [['beach', 3, /^(romance\.|friend\.(walk|laugh))/], ['waterfall', 2, /^(romance\.|friend\.(walk|laugh|comfort))/], ['cliff', 2, /^(drama\.(meltdown|clash)|plot\.|broker\.)/],
+      ['caves', 1, /^(plot\.|broker\.|idol\.)/], ['forest-trail', 3], ['beach', 1], ['cliff', 1], ['waterfall', 1]],
+    dock: [['dock', 3], ['beach', 2], ['lake', 1]],
+    lake: [['lake', 3], ['dock', 1]],
   },
   // the lot's clock: meals at craft services, mornings at the trailers, the afternoon on the backlot
   'film-lot': {
@@ -120,7 +125,7 @@ const STAGE = {
       ['galley', 1, null, 'evening'], ['economy', 3, null, 'evening'], ['aisle', 1, null, 'evening']],
   },
 };
-const PLACE_WORDS = { dock: /\b(dock|lake)\b/i, 'forest-trail': /\b(woods|forest|trail)\b/i, cabins: /\b(cabins?|porch)\b/i, campfire: /\bfire\b/i, 'mess-hall': /\b(mess hall|slop|tray|Chef)\b/i, 'communal-grounds': /\b(grounds|yard)\b/i };
+const PLACE_WORDS = { lake: /\b(lake|canoe|shore)\b/i, dock: /\b(dock|lake)\b/i, 'forest-trail': /\b(woods|forest|trail)\b/i, cabins: /\b(cabins?|porch)\b/i, campfire: /\bfire\b/i, 'mess-hall': /\b(mess hall|slop|tray|Chef)\b/i, 'communal-grounds': /\b(grounds|yard)\b/i };
 export function stageSpot(venue, spot, ev, windowId) {
   const rules = STAGE[venue]?.[spot];
   if (!rules) return spot;
@@ -148,6 +153,7 @@ const BUSY = {
   campsite: ['whittle', 'read', 'nap'], 'forest-edge': ['stretch'], 'rocky-beach': ['fish', 'read'], 'lake-shore': ['fish', 'read'],
   'carnival-entrance': ['read'], midway: ['eat', 'stretch'],
   'cabin-inside': ['nap', 'read', 'nap'], beach: ['nap', 'stretch', 'fish'], washroom: ['sweep'], cliff: ['stretch'],
+  lake: ['fish', 'stretch', 'read'], boathouse: ['whittle', 'read'], waterfall: ['stretch', 'read'], caves: ['read'], amphitheater: ['stretch', 'read'],
 };
 
 // ── the clock ─────────────────────────────────────────────────────────
@@ -495,6 +501,12 @@ export function tdTribalScreen(ep, o = {}) {
   steps.push({ k: 'scene', spot: 'exit', tod: 'night', plate: exitPlate, place: V.exitPlace, time: '9:10 PM', card: true, focus: [elim], bg: [], places: exitPlaces, exit: elim });
   say(V.exitLine(elim));
   steps.push({ k: 'beat', text: `${elim} leaves the game.`, walk: elim });
+  // at Wawanakwa the Boat of Losers runs to Playa Des Losers, the resort the voted-out wait at (Total Drama Island)
+  const playa = venue === 'hosted-camp' ? plateKey('islands', 'playa-des-losers', 'day') : null;
+  if (playa) {
+    steps.push({ k: 'scene', spot: 'playa-des-losers', tod: 'day', plate: playa, place: 'Playa Des Losers', time: 'The next morning', card: true, focus: [elim], bg: [], places: placeScene(playa, [elim], []) });
+    steps.push({ k: 'beat', text: `The Boat of Losers drops ${elim} at Playa Des Losers.`, focus: [elim] });
+  }
   return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps, elim };
 }
 

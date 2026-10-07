@@ -280,8 +280,11 @@ export function tdExileScreen(ep, d, o = {}) {
   }
   steps.push({ k: 'title', kicker: 'Sent to Exile Island', name, faces: [name], tone: 'out' });
   // 2. the island: alone, the search, the find
-  const k2 = plate('exile-beach', 'day');
-  steps.push({ k: 'scene', spot: 'exile-beach', tod: 'day', plate: k2, place: 'Exile Island', time: '4:30 PM', card: true, focus: [name], bg: [], places: placeScene(k2, [name], []), act: { kind: 'arrive', who: [name] } });
+  // Wawanakwa sends its exiles to Boney Island (Total Drama Island); elsewhere the exile beach
+  const boney = venueOf(ep, o) === 'hosted-camp' && plate('boney-island', 'day');
+  const exileSpot = boney ? 'boney-island' : 'exile-beach', exilePlace = boney ? 'Boney Island' : 'Exile Island';
+  const k2 = plate(exileSpot, 'day');
+  steps.push({ k: 'scene', spot: exileSpot, tod: 'day', plate: k2, place: exilePlace, time: '4:30 PM', card: true, focus: [name], bg: [], places: placeScene(k2, [name], []), act: { kind: 'arrive', who: [name] } });
   steps.push({ k: 'beat', text: d.returns
     ? `${name} is sent to Exile Island. ${P.Sub} will search for advantages — but ${P.sub} ${P.sub === 'they' ? 'are' : 'is'} not safe. ${P.Sub} will return for Tribal Council.`
     : d.schoolyard ? `${name} is sent to Exile Island. ${P.Sub} will skip this episode's challenge and tribal — and return to the tribe that loses a member.`
@@ -291,8 +294,8 @@ export function tdExileScreen(ep, d, o = {}) {
   steps.push({ k: 'found', who: name, item: f?.type || null, label: f?.type ? itemName(f.type) : 'Nothing', text: foundText(name, f, P),
     side: f?.type ? [{ tab: 'secrets', text: `${name} found ${f.type === 'clue' ? 'a clue to an idol' : 'the ' + itemName(f.type)} on Exile Island.` }] : [] });
   if (!d.returns) {
-    const k3 = plate('exile-beach', 'night');
-    steps.push({ k: 'scene', spot: 'exile-beach', tod: 'night', plate: k3, place: 'Exile Island', time: 'That night', card: false, focus: [name], bg: [], places: placeScene(k3, [name], []), acts: {} });
+    const k3 = plate(exileSpot, 'night');
+    steps.push({ k: 'scene', spot: exileSpot, tod: 'night', plate: k3, place: exilePlace, time: 'That night', card: false, focus: [name], bg: [], places: placeScene(k3, [name], []), acts: {} });
     steps.push({ k: 'beat', text: `${name} spends the night alone while the others go to Tribal Council.`, focus: [name], act: { kind: 'rest', who: [name] } });
   }
   return { id: d.returns ? 'exile-format' : 'exile-island', kind: 'island', venue: ISL, ep: ep.num, label: 'Exile Island', host, steps };

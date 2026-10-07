@@ -30,7 +30,8 @@ export const hasMap = venue => !!(MAP_VENUES[venue] && TD_MARKS[`${venue}/map-da
 // (the cabins: the porch and the inside)
 const ZONE_OF = {
   'hosted-camp': { cabins: 'cabins', 'cabin-inside': 'cabins', 'mess-hall': 'mess-hall', washroom: 'washroom', 'communal-grounds': 'communal-grounds',
-    confessional: 'confessional', campfire: 'campfire', dock: 'dock', beach: 'beach', 'forest-trail': 'forest-trail', cliff: 'cliff' },
+    confessional: 'confessional', campfire: 'campfire', dock: 'dock', beach: 'beach', 'forest-trail': 'forest-trail', cliff: 'cliff',
+    lake: 'lake', boathouse: 'boathouse', waterfall: 'waterfall', caves: 'caves', amphitheater: 'amphitheater' },
   'film-lot': { trailers: 'trailers', 'craft-services': 'craft-services', 'studio-backlot': 'studio-backlot',
     'soundstage-corridor': 'soundstage-corridor', 'prop-storage': 'prop-storage', confessional: 'confessional' },
   'survival-island': { shelter: 'shelter', campfire: 'campfire', beach: 'beach', shoreline: 'shoreline', 'water-source': 'water-source',
@@ -45,7 +46,8 @@ export const ZONE_LABEL = { campsite: 'The Campsite', 'forest-edge': 'The Forest
   'carnival-entrance': 'The Carnival Gate', midway: 'The Midway', 'haunted-mansion': 'The Haunted Mansion', 'corn-maze': 'The Corn Maze', 'theater-tent': 'The Theater Tent', shelter: 'The Shelter', campfire: 'The Campfire', shoreline: 'The Shoreline', 'water-source': 'The Waterfall Pool', 'jungle-trail': 'The Bamboo Jungle', ruins: 'The Ruins', cave: 'The Cave', 'fishing-area': 'The Fishing Dock', cabins: 'The Cabins', 'mess-hall': 'The Mess Hall', washroom: 'The Washrooms', 'communal-grounds': 'The Camp Grounds',
   trailers: 'The Trailers', 'craft-services': 'Craft Services', 'studio-backlot': 'The Backlot', 'soundstage-corridor': 'The Soundstages', 'prop-storage': 'Prop Storage',
   economy: 'Economy Class', aisle: 'The Aisle', galley: 'The Galley', 'cargo-hold': 'The Cargo Hold', 'first-class': 'First Class', 'destination-staging': 'Down on the Ground',
-  confessional: 'The Confession Cam', campfire: 'The Campfire', dock: 'The Dock', beach: 'The Beach', 'forest-trail': 'The Forest Trail', cliff: 'The Cliff' };
+  confessional: 'The Confession Cam', campfire: 'The Campfire', dock: 'The Dock', beach: 'The Beach', 'forest-trail': 'The Forest Trail', cliff: 'The Cliff',
+  lake: 'The Lake', boathouse: 'The Boathouse', waterfall: 'The Waterfall', caves: 'The Caves', amphitheater: 'The Amphitheater' };
 export const PLACE_LABEL = { cabins: 'Porch', 'cabin-inside': 'Inside' };
 
 // the camp's day, in the order it happens (camp-access.js windows)

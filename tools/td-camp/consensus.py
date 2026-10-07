@@ -1,7 +1,10 @@
 """Rebuild a clean background from several frames of the same shot with different people in it.
 Every frame is aligned to the last one (ORB + RANSAC homography); then for every pixel the two frames
 whose colours agree best give the background there if they agree (Lab distance < thr). Pixels no pair
-agrees on, and caption polygons, are written as 'unknown' for a hand fill."""
+agrees on, and caption polygons, are written as 'unknown' for a hand fill.
+With many frames ("mode": "vote"), each pixel takes the colour the most frames agree on instead: two
+frames of the same person in the same seat cannot outvote the wall everyone else shows. Frames that
+will not align to the reference (a close-up, a different camera) are left out."""
 import sys, json, numpy as np, cv2
 from PIL import Image
 W, H = 1600, 900
@@ -14,6 +17,7 @@ def align(img, ref):
     A = np.float32([k1[x.queryIdx].pt for x in m]).reshape(-1, 1, 2); B = np.float32([k2[x.trainIdx].pt for x in m]).reshape(-1, 1, 2)
     Hm, inl = cv2.findHomography(A, B, cv2.RANSAC, 2.0)
     print('aligned', int(inl.sum()), 'inliers of', len(m))
+    align.last = int(inl.sum())
     return cv2.warpPerspective(img, Hm, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
 def consensus(paths, thr=6.0, caption=()):
     F0 = [load(p) for p in paths]
@@ -32,8 +36,35 @@ def consensus(paths, thr=6.0, caption=()):
     unknown = cv2.morphologyEx(unknown, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
     unknown = cv2.dilate(unknown, np.ones((5, 5), np.uint8))
     return cv2.cvtColor(np.clip(out, 0, 255).astype(np.uint8), cv2.COLOR_LAB2BGR), unknown
+def vote(paths, ref_path, thr=8.0, min_inliers=250):
+    ref = load(ref_path)
+    F = [cv2.cvtColor(ref, cv2.COLOR_BGR2LAB).astype(np.float32)]
+    for p in paths:
+        if p == ref_path:
+            continue
+        try:
+            a = align(load(p), ref)
+        except Exception:
+            continue
+        if align.last >= min_inliers:
+            F.append(cv2.cvtColor(a, cv2.COLOR_BGR2LAB).astype(np.float32))
+    print('voting with', len(F), 'frames')
+    n = len(F)
+    support = np.zeros((n, H, W), np.float32)
+    for i in range(n):
+        for j in range(i + 1, n):
+            agree = (np.linalg.norm(F[i] - F[j], axis=2) < thr).astype(np.float32)
+            support[i] += agree; support[j] += agree
+    win = support.argmax(axis=0)
+    out = np.take_along_axis(np.stack(F), win[None, ..., None].repeat(3, axis=3), axis=0)[0]
+    unknown = (support.max(axis=0) < 2).astype(np.uint8) * 255
+    unknown = cv2.dilate(cv2.morphologyEx(unknown, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)), np.ones((5, 5), np.uint8))
+    return cv2.cvtColor(np.clip(out, 0, 255).astype(np.uint8), cv2.COLOR_LAB2BGR), unknown
 if __name__ == '__main__':
     cfg = json.load(open(sys.argv[1]))
-    bgr, unk = consensus(cfg['frames'], cfg.get('thr', 6.0), cfg.get('caption', []))
+    if cfg.get('mode') == 'vote':
+        bgr, unk = vote(cfg['frames'], cfg['ref'], cfg.get('thr', 8.0), cfg.get('min_inliers', 250))
+    else:
+        bgr, unk = consensus(cfg['frames'], cfg.get('thr', 6.0), cfg.get('caption', []))
     cv2.imwrite(cfg['out'], bgr); cv2.imwrite(cfg['out'].replace('.png', '-unknown.png'), unk)
     print('unknown px', int((unk > 0).sum()))

@@ -1,50 +1,1391 @@
 {
-  "_doc": "Every place built from the show's own frame (tools/td-camp/clean.py). Coordinates are the 1600x900 reference pixels. src: the frame (traced/src). cut/fill: people removed. night: a night frame (its warm lights twinkle on their own). wind: how hard the wind blows here (0 indoors). fire [x, foot y, flame h]. fall [x0,y0,x1,y1] a waterfall. pool [x0,y0,x1,y1, fish, water sample x, y]. mist [y0,y1]. flutter [x0,y0,x1,y1] butterflies. sway [x0,y0,x1,y1, strength] everything not sky in the box sways (pines, bushes the leaf colour misses). cloth [x0,y0,x1,y1, strength] flags, banners, curtains. bob [[x,y],...] a polygon that rocks on the water. glow [x0,y0,x1,y1] lights that twinkle by day. still [x0,y0,x1,y1] never sways (a leaf mat on a floor). noleaf: no automatic foliage. lightning: a storm.",
-  "sol-ruins": {"src": "sol-ruins.webp", "wind": 1.0,
-    "fire": [[950, 652, 28], [1238, 662, 28]], "fall": [[372, 548, 404, 692]], "flutter": [[100, 600, 850, 720]]},
-  "sol-fans": {"src": "sol-fans.png", "wind": 1.0,
-    "fire": [[1240, 712, 46]], "fall": [[680, 424, 712, 560]], "flutter": [[100, 620, 900, 720]],
-    "cloth": [[1490, 515, 1552, 680, 1.0]]},
-  "sol-favs": {"src": "sol-favs.png", "wind": 1.0,
-    "fire": [[330, 698, 44], [858, 572, 30], [1202, 572, 30]], "pool": [[0, 594, 1600, 624, false, 400, 606]],
-    "cloth": [[1486, 452, 1580, 672, 1.0]], "still": [[0, 400, 700, 596]]},
-  "sol-bamboo": {"src": "sol-bamboo.webp", "wind": 1.0, "flutter": [[200, 560, 1400, 700]]},
-  "sol-favs-in": {"src": "sol-favs-in.png", "wind": 0.35,
-    "cloth": [[1262, 505, 1500, 665, 0.6]], "glow": [[0, 0, 1600, 240]], "still": [[200, 640, 1420, 900]]},
-  "sol-cave": {"src": "sol-cave.webp", "wind": 0.6},
-  "sol-trial": {"src": "sol-trial.webp", "night": true, "wind": 0.8,
-    "fire": [[782, 694, 130], [1512, 185, 180], [60, 382, 24], [290, 372, 24], [760, 372, 24], [994, 382, 24], [1234, 372, 24], [1466, 372, 24]]},
-  "sol-booth": {"src": "sol-booth.webp", "cut": "cuts/sol-booth.json", "fill": "cuts/sol-booth-fill.webp", "night": true, "wind": 0.7,
-    "fire": [[75, 300, 200], [1545, 400, 160], [352, 425, 95], [1200, 415, 85]],
-    "cloth": [[1232, 180, 1410, 560, 0.7]]},
-  "sol-conf-day": {"src": "sol-conf-day.png", "cut": "cuts/sol-conf-day-mask.png", "fill": "cuts/sol-conf-fill.webp", "wind": 0.8,
-    "fall": [[905, 280, 1170, 720]], "glow": [[0, 60, 1600, 230]]},
-  "cv-red": {"src": "cv-red.png", "wind": 0.9,
-    "fire": [[332, 696, 62]], "pool": [[0, 368, 900, 412, false, 120, 392]], "mist": [[760, 900]],
-    "sway": [[650, 430, 845, 600, 0.8, 760, 520], [0, 0, 80, 140, 0.8]]},
-  "cv-red-in": {"src": "cv-red-in.png", "wind": 0.3,
-    "cloth": [[180, 0, 800, 700, 0.35], [1200, 0, 1330, 600, 0.35]], "pool": [[812, 380, 1180, 505, false, 900, 480]], "noleaf": true},
-  "cv-blue": {"src": "cv-blue.png", "wind": 0.9,
-    "fire": [[1000, 768, 58]], "mist": [[700, 880]],
-    "cloth": [[240, 82, 436, 218, 1.0], [1382, 150, 1418, 186, 1.0]],
-    "sway": [[700, 0, 880, 260, 0.9], [900, 0, 1060, 200, 0.9], [1170, 0, 1340, 260, 0.9], [250, 0, 450, 110, 0.9], [1440, 130, 1560, 260, 0.9], [1160, 505, 1420, 668, 0.6, 1290, 590], [1360, 535, 1585, 660, 0.6, 1480, 600], [1010, 480, 1240, 535, 0.6, 1040, 520], [400, 170, 500, 270, 0.7]]},
-  "cv-blue-in": {"src": "cv-blue-in.png", "wind": 0.6, "sway": [[1470, 230, 1600, 470, 0.8]], "noleaf": true},
-  "cv-merge": {"src": "cv-merge.png", "wind": 0.9,
-    "fire": [[240, 648, 50]], "mist": [[680, 880]],
-    "cloth": [[1422, 88, 1546, 168, 1.0]],
-    "sway": [[130, 0, 310, 260, 0.9], [300, 0, 480, 130, 0.9], [1240, 0, 1430, 120, 0.9], [1480, 0, 1600, 230, 0.9], [400, 0, 520, 200, 0.6]]},
-  "cv-merge-in": {"src": "cv-merge-in.png", "wind": 0.3,
-    "fire": [[1098, 255, 60], [1306, 262, 60]], "pool": [[632, 328, 915, 430, false, 700, 380]], "noleaf": true},
-  "cv-theater": {"src": "cv-theater.webp", "night": true, "wind": 0.6, "mist": [[760, 880]],
-    "sway": [[80, 260, 230, 560, 0.7]]},
-  "cv-midway": {"src": "cv-midway.png", "night": true, "wind": 0.8, "mist": [[640, 800]],
-    "sway": [[0, 0, 1600, 330, 0.8]], "bob": [[[1430, 330], [1505, 330], [1505, 420], [1430, 420]]]},
-  "cv-entrance": {"src": "cv-entrance.png", "wind": 0.9, "mist": [[720, 880]],
-    "cloth": [[716, 178, 752, 212, 1.0], [420, 330, 620, 420, 0.5], [985, 330, 1185, 400, 0.5]],
-    "sway": [[0, 70, 135, 330, 0.8], [520, 140, 640, 330, 0.8], [850, 150, 970, 270, 0.8], [1170, 80, 1270, 210, 0.8], [1470, 90, 1600, 330, 0.8], [30, 640, 120, 730, 0.6, 70, 700]]},
-  "cv-mansion": {"src": "cv-mansion.png", "night": true, "wind": 0.7, "mist": [[680, 880]], "lightning": true, "noleaf": true},
-  "cv-boat": {"src": "cv-boat.png", "night": true, "wind": 0.9,
-    "fire": [[140, 420, 70], [292, 442, 56]], "pool": [[0, 590, 1600, 900, true, 100, 860]],
-    "cloth": [[455, 0, 700, 145, 1.0]],
-    "bob": [[[395, 642], [500, 796], [1292, 796], [1502, 388], [1266, 392], [1262, 206], [1192, 178], [1122, 150], [1100, 202], [838, 292], [828, 600], [560, 640]], [[698, 0], [736, 0], [736, 645], [698, 645]]], "noleaf": true}
+ "_doc": "Every place built from the show's own frame (tools/td-camp/clean.py). Coordinates are the 1600x900 reference pixels. src: the frame (traced/src). cut/fill: people removed. night: a night frame (its warm lights twinkle on their own). wind: how hard the wind blows here (0 indoors). fire [x, foot y, flame h]. fall [x0,y0,x1,y1] a waterfall. pool [x0,y0,x1,y1, fish, water sample x, y]. mist [y0,y1]. flutter [x0,y0,x1,y1] butterflies. sway [x0,y0,x1,y1, strength] everything not sky in the box sways (pines, bushes the leaf colour misses). cloth [x0,y0,x1,y1, strength] flags, banners, curtains. bob [[x,y],...] a polygon that rocks on the water. glow [x0,y0,x1,y1] lights that twinkle by day. still [x0,y0,x1,y1] never sways (a leaf mat on a floor). noleaf: no automatic foliage. lightning: a storm.",
+ "sol-ruins": {
+  "src": "sol-ruins.webp",
+  "wind": 1.0,
+  "fire": [
+   [
+    950,
+    652,
+    28
+   ],
+   [
+    1238,
+    662,
+    28
+   ]
+  ],
+  "fall": [
+   [
+    372,
+    548,
+    404,
+    692
+   ]
+  ],
+  "flutter": [
+   [
+    100,
+    600,
+    850,
+    720
+   ]
+  ]
+ },
+ "sol-fans": {
+  "src": "sol-fans.png",
+  "wind": 1.0,
+  "fire": [
+   [
+    1240,
+    712,
+    46
+   ]
+  ],
+  "fall": [
+   [
+    680,
+    424,
+    712,
+    560
+   ]
+  ],
+  "flutter": [
+   [
+    100,
+    620,
+    900,
+    720
+   ]
+  ],
+  "cloth": [
+   [
+    1490,
+    515,
+    1552,
+    680,
+    1.0
+   ]
+  ]
+ },
+ "sol-favs": {
+  "src": "sol-favs.png",
+  "wind": 1.0,
+  "fire": [
+   [
+    330,
+    698,
+    44
+   ],
+   [
+    858,
+    572,
+    30
+   ],
+   [
+    1202,
+    572,
+    30
+   ]
+  ],
+  "pool": [
+   [
+    0,
+    594,
+    1600,
+    624,
+    false,
+    400,
+    606
+   ]
+  ],
+  "cloth": [
+   [
+    1486,
+    452,
+    1580,
+    672,
+    1.0
+   ]
+  ],
+  "still": [
+   [
+    0,
+    400,
+    700,
+    596
+   ]
+  ]
+ },
+ "sol-bamboo": {
+  "src": "sol-bamboo.webp",
+  "wind": 1.0,
+  "flutter": [
+   [
+    200,
+    560,
+    1400,
+    700
+   ]
+  ]
+ },
+ "sol-favs-in": {
+  "src": "sol-favs-in.png",
+  "wind": 0.35,
+  "cloth": [
+   [
+    1262,
+    505,
+    1500,
+    665,
+    0.6
+   ]
+  ],
+  "glow": [
+   [
+    0,
+    0,
+    1600,
+    240
+   ]
+  ],
+  "still": [
+   [
+    200,
+    640,
+    1420,
+    900
+   ]
+  ],
+  "nosky": true
+ },
+ "sol-cave": {
+  "src": "sol-cave.webp",
+  "wind": 0.6,
+  "nosky": true
+ },
+ "sol-trial": {
+  "src": "sol-trial.webp",
+  "night": true,
+  "wind": 0.8,
+  "fire": [
+   [
+    782,
+    694,
+    130
+   ],
+   [
+    1512,
+    185,
+    180
+   ],
+   [
+    60,
+    382,
+    24
+   ],
+   [
+    290,
+    372,
+    24
+   ],
+   [
+    760,
+    372,
+    24
+   ],
+   [
+    994,
+    382,
+    24
+   ],
+   [
+    1234,
+    372,
+    24
+   ],
+   [
+    1466,
+    372,
+    24
+   ]
+  ]
+ },
+ "sol-booth": {
+  "src": "sol-booth.webp",
+  "cut": "cuts/sol-booth.json",
+  "fill": "cuts/sol-booth-fill.webp",
+  "night": true,
+  "wind": 0.7,
+  "fire": [
+   [
+    75,
+    300,
+    200
+   ],
+   [
+    1545,
+    400,
+    160
+   ],
+   [
+    352,
+    425,
+    95
+   ],
+   [
+    1200,
+    415,
+    85
+   ]
+  ],
+  "cloth": [
+   [
+    1232,
+    180,
+    1410,
+    560,
+    0.7
+   ]
+  ]
+ },
+ "sol-conf-day": {
+  "src": "sol-conf-day.png",
+  "cut": "cuts/sol-conf-day-mask.png",
+  "fill": "cuts/sol-conf-fill.webp",
+  "wind": 0.8,
+  "fall": [
+   [
+    905,
+    280,
+    1170,
+    720
+   ]
+  ],
+  "glow": [
+   [
+    0,
+    60,
+    1600,
+    230
+   ]
+  ]
+ },
+ "cv-red": {
+  "src": "cv-red.png",
+  "wind": 0.9,
+  "fire": [
+   [
+    332,
+    696,
+    62
+   ]
+  ],
+  "pool": [
+   [
+    0,
+    368,
+    900,
+    412,
+    false,
+    120,
+    392
+   ]
+  ],
+  "mist": [
+   [
+    760,
+    900
+   ]
+  ],
+  "sway": [
+   [
+    650,
+    430,
+    845,
+    600,
+    0.8,
+    760,
+    520
+   ],
+   [
+    0,
+    0,
+    80,
+    140,
+    0.8
+   ]
+  ]
+ },
+ "cv-red-in": {
+  "src": "cv-red-in.png",
+  "wind": 0.3,
+  "cloth": [
+   [
+    180,
+    0,
+    800,
+    700,
+    0.35
+   ],
+   [
+    1200,
+    0,
+    1330,
+    600,
+    0.35
+   ]
+  ],
+  "pool": [
+   [
+    812,
+    380,
+    1180,
+    505,
+    false,
+    900,
+    480
+   ]
+  ],
+  "noleaf": true,
+  "nosky": true
+ },
+ "cv-blue": {
+  "src": "cv-blue.png",
+  "wind": 0.9,
+  "fire": [
+   [
+    1000,
+    768,
+    58
+   ]
+  ],
+  "mist": [
+   [
+    700,
+    880
+   ]
+  ],
+  "cloth": [
+   [
+    240,
+    82,
+    436,
+    218,
+    1.0
+   ],
+   [
+    1382,
+    150,
+    1418,
+    186,
+    1.0
+   ]
+  ],
+  "sway": [
+   [
+    700,
+    0,
+    880,
+    260,
+    0.9
+   ],
+   [
+    900,
+    0,
+    1060,
+    200,
+    0.9
+   ],
+   [
+    1170,
+    0,
+    1340,
+    260,
+    0.9
+   ],
+   [
+    250,
+    0,
+    450,
+    110,
+    0.9
+   ],
+   [
+    1440,
+    130,
+    1560,
+    260,
+    0.9
+   ],
+   [
+    1160,
+    505,
+    1420,
+    668,
+    0.6,
+    1290,
+    590
+   ],
+   [
+    1360,
+    535,
+    1585,
+    660,
+    0.6,
+    1480,
+    600
+   ],
+   [
+    1010,
+    480,
+    1240,
+    535,
+    0.6,
+    1040,
+    520
+   ],
+   [
+    400,
+    170,
+    500,
+    270,
+    0.7
+   ]
+  ]
+ },
+ "cv-blue-in": {
+  "src": "cv-blue-in.png",
+  "wind": 0.6,
+  "sway": [
+   [
+    1470,
+    230,
+    1600,
+    470,
+    0.8
+   ]
+  ],
+  "noleaf": true,
+  "nosky": true
+ },
+ "cv-merge": {
+  "src": "cv-merge.png",
+  "wind": 0.9,
+  "fire": [
+   [
+    240,
+    648,
+    50
+   ]
+  ],
+  "mist": [
+   [
+    680,
+    880
+   ]
+  ],
+  "cloth": [
+   [
+    1422,
+    88,
+    1546,
+    168,
+    1.0
+   ]
+  ],
+  "sway": [
+   [
+    130,
+    0,
+    310,
+    260,
+    0.9
+   ],
+   [
+    300,
+    0,
+    480,
+    130,
+    0.9
+   ],
+   [
+    1240,
+    0,
+    1430,
+    120,
+    0.9
+   ],
+   [
+    1480,
+    0,
+    1600,
+    230,
+    0.9
+   ],
+   [
+    400,
+    0,
+    520,
+    200,
+    0.6
+   ]
+  ]
+ },
+ "cv-merge-in": {
+  "src": "cv-merge-in.png",
+  "wind": 0.3,
+  "fire": [
+   [
+    1098,
+    255,
+    60
+   ],
+   [
+    1306,
+    262,
+    60
+   ]
+  ],
+  "pool": [
+   [
+    632,
+    328,
+    915,
+    430,
+    false,
+    700,
+    380
+   ]
+  ],
+  "noleaf": true,
+  "nosky": true
+ },
+ "cv-theater": {
+  "src": "cv-theater.webp",
+  "night": true,
+  "wind": 0.6,
+  "mist": [
+   [
+    760,
+    880
+   ]
+  ],
+  "sway": [
+   [
+    80,
+    260,
+    230,
+    560,
+    0.7
+   ]
+  ]
+ },
+ "cv-midway": {
+  "src": "cv-midway.png",
+  "night": true,
+  "wind": 0.8,
+  "mist": [
+   [
+    640,
+    800
+   ]
+  ],
+  "sway": [
+   [
+    0,
+    0,
+    1600,
+    330,
+    0.8
+   ]
+  ],
+  "bob": [
+   [
+    [
+     1430,
+     330
+    ],
+    [
+     1505,
+     330
+    ],
+    [
+     1505,
+     420
+    ],
+    [
+     1430,
+     420
+    ]
+   ]
+  ]
+ },
+ "cv-entrance": {
+  "src": "cv-entrance.png",
+  "wind": 0.9,
+  "mist": [
+   [
+    720,
+    880
+   ]
+  ],
+  "cloth": [
+   [
+    716,
+    178,
+    752,
+    212,
+    1.0
+   ],
+   [
+    420,
+    330,
+    620,
+    420,
+    0.5
+   ],
+   [
+    985,
+    330,
+    1185,
+    400,
+    0.5
+   ]
+  ],
+  "sway": [
+   [
+    0,
+    70,
+    135,
+    330,
+    0.8
+   ],
+   [
+    520,
+    140,
+    640,
+    330,
+    0.8
+   ],
+   [
+    850,
+    150,
+    970,
+    270,
+    0.8
+   ],
+   [
+    1170,
+    80,
+    1270,
+    210,
+    0.8
+   ],
+   [
+    1470,
+    90,
+    1600,
+    330,
+    0.8
+   ],
+   [
+    30,
+    640,
+    120,
+    730,
+    0.6,
+    70,
+    700
+   ]
+  ]
+ },
+ "cv-mansion": {
+  "src": "cv-mansion.png",
+  "night": true,
+  "wind": 0.7,
+  "mist": [
+   [
+    680,
+    880
+   ]
+  ],
+  "lightning": true,
+  "noleaf": true
+ },
+ "cv-boat": {
+  "src": "cv-boat.png",
+  "night": true,
+  "wind": 0.9,
+  "fire": [
+   [
+    140,
+    420,
+    70
+   ],
+   [
+    292,
+    442,
+    56
+   ]
+  ],
+  "pool": [
+   [
+    0,
+    590,
+    1600,
+    900,
+    true,
+    100,
+    860
+   ]
+  ],
+  "cloth": [
+   [
+    455,
+    0,
+    700,
+    145,
+    1.0
+   ]
+  ],
+  "bob": [
+   [
+    [
+     395,
+     642
+    ],
+    [
+     500,
+     796
+    ],
+    [
+     1292,
+     796
+    ],
+    [
+     1502,
+     388
+    ],
+    [
+     1266,
+     392
+    ],
+    [
+     1262,
+     206
+    ],
+    [
+     1192,
+     178
+    ],
+    [
+     1122,
+     150
+    ],
+    [
+     1100,
+     202
+    ],
+    [
+     838,
+     292
+    ],
+    [
+     828,
+     600
+    ],
+    [
+     560,
+     640
+    ]
+   ],
+   [
+    [
+     698,
+     0
+    ],
+    [
+     736,
+     0
+    ],
+    [
+     736,
+     645
+    ],
+    [
+     698,
+     645
+    ]
+   ]
+  ],
+  "noleaf": true
+ },
+ "hc-cabins": {
+  "src": "hc-cabins.png",
+  "wind": 0.9,
+  "flutter": [
+   [
+    200,
+    620,
+    1400,
+    760
+   ]
+  ]
+ },
+ "hc-cabin-in": {
+  "src": "hc-cabin-in.jpg",
+  "wind": 0.25,
+  "cloth": [
+   [
+    682,
+    170,
+    912,
+    452,
+    0.35
+   ]
+  ],
+  "noleaf": true,
+  "nosky": true
+ },
+ "hc-lodge": {
+  "src": "hc-lodge.png",
+  "wind": 0.9
+ },
+ "hc-mess": {
+  "src": "hc-mess.png",
+  "wind": 0.0,
+  "noleaf": true,
+  "glow": [
+   [
+    380,
+    90,
+    1160,
+    290
+   ]
+  ],
+  "fire": [
+   [
+    790,
+    540,
+    40
+   ]
+  ],
+  "nosky": true
+ },
+ "hc-wash": {
+  "src": "hc-wash.png",
+  "wind": 0.25,
+  "noleaf": true,
+  "cloth": [
+   [
+    318,
+    270,
+    598,
+    790,
+    0.45
+   ],
+   [
+    848,
+    270,
+    940,
+    790,
+    0.45
+   ],
+   [
+    992,
+    270,
+    1276,
+    790,
+    0.45
+   ]
+  ],
+  "sway": [
+   [
+    185,
+    0,
+    285,
+    170,
+    0.9
+   ],
+   [
+    1385,
+    0,
+    1440,
+    225,
+    0.9
+   ]
+  ],
+  "nosky": true
+ },
+ "hc-conf": {
+  "src": "hc-conf.png",
+  "cut": "cuts/hc-conf-mask.png",
+  "wind": 0.2,
+  "noleaf": true,
+  "sway": [
+   [
+    1085,
+    0,
+    1160,
+    300,
+    0.9
+   ]
+  ],
+  "fill": "rows",
+  "nosky": true
+ },
+ "hc-dock": {
+  "src": "hc-dock.png",
+  "wind": 0.8,
+  "pool": [
+   [
+    0,
+    310,
+    1600,
+    900,
+    true,
+    1000,
+    620
+   ]
+  ]
+ },
+ "hc-dock-night": {
+  "src": "hc-dock-night.jpg",
+  "night": true,
+  "wind": 0.7,
+  "fire": [
+   [
+    250,
+    480,
+    80
+   ],
+   [
+    383,
+    505,
+    60
+   ],
+   [
+    627,
+    470,
+    85
+   ],
+   [
+    965,
+    475,
+    80
+   ],
+   [
+    1042,
+    505,
+    60
+   ],
+   [
+    1410,
+    495,
+    80
+   ]
+  ],
+  "pool": [
+   [
+    0,
+    480,
+    1600,
+    900,
+    false,
+    100,
+    640
+   ]
+  ]
+ },
+ "hc-campfire": {
+  "src": "hc-campfire.png",
+  "wind": 0.9,
+  "flutter": [
+   [
+    350,
+    450,
+    1100,
+    620
+   ]
+  ]
+ },
+ "hc-ceremony": {
+  "src": "hc-ceremony.jpg",
+  "night": true,
+  "wind": 0.6,
+  "fire": [
+   [
+    268,
+    375,
+    28
+   ],
+   [
+    500,
+    575,
+    32
+   ],
+   [
+    968,
+    500,
+    28
+   ],
+   [
+    1295,
+    725,
+    26
+   ],
+   [
+    1508,
+    350,
+    26
+   ],
+   [
+    1128,
+    280,
+    22
+   ],
+   [
+    872,
+    545,
+    55
+   ]
+  ],
+  "glow": [
+   [
+    100,
+    90,
+    1100,
+    330
+   ]
+  ]
+ },
+ "hc-cliff": {
+  "src": "hc-cliff.png",
+  "wind": 0.8,
+  "noleaf": true,
+  "cut": [
+   [
+    [
+     205,
+     140
+    ],
+    [
+     1210,
+     140
+    ],
+    [
+     1215,
+     487
+    ],
+    [
+     205,
+     487
+    ]
+   ],
+   [
+    [
+     205,
+     480
+    ],
+    [
+     1205,
+     480
+    ],
+    [
+     1205,
+     497
+    ],
+    [
+     205,
+     497
+    ]
+   ]
+  ],
+  "fill": "rows",
+  "noclouds": true
+ },
+ "hc-forest": {
+  "src": "hc-forest.jpg",
+  "wind": 0.9,
+  "pool": [
+   [
+    880,
+    550,
+    1600,
+    900,
+    false,
+    1100,
+    700
+   ]
+  ],
+  "sway": [
+   [
+    0,
+    250,
+    560,
+    900,
+    0.6,
+    300,
+    600
+   ],
+   [
+    1240,
+    170,
+    1600,
+    900,
+    0.6,
+    1380,
+    350
+   ]
+  ]
+ },
+ "hc-beach": {
+  "src": "hc-beach.png",
+  "anchor": 0.5,
+  "wind": 0.8,
+  "noleaf": true,
+  "sway": [
+   [
+    0,
+    0,
+    1600,
+    560,
+    0.6,
+    300,
+    350
+   ]
+  ],
+  "noclouds": true
+ },
+ "hc-map": {
+  "src": "hc-map.jpg",
+  "wind": 0.7,
+  "pool": [
+   [
+    0,
+    520,
+    1600,
+    900,
+    false,
+    900,
+    820
+   ]
+  ]
+ },
+ "hc-lake": {
+  "src": "hc-lake.png",
+  "wind": 0.5,
+  "noleaf": true,
+  "cut": [
+   [
+    [
+     525,
+     350
+    ],
+    [
+     1000,
+     350
+    ],
+    [
+     1000,
+     690
+    ],
+    [
+     525,
+     690
+    ]
+   ]
+  ],
+  "pool": [
+   [
+    0,
+    280,
+    1600,
+    900,
+    false,
+    100,
+    330
+   ]
+  ],
+  "fill": "rows",
+  "noclouds": true,
+  "keep": [
+   [
+    800,
+    450
+   ],
+   [
+    1200,
+    560
+   ],
+   [
+    400,
+    330
+   ],
+   [
+    200,
+    800
+   ]
+  ]
+ },
+ "hc-falls": {
+  "src": "hc-falls.png",
+  "wind": 0.9,
+  "fall": [
+   [
+    788,
+    115,
+    852,
+    880
+   ]
+  ],
+  "pool": [
+   [
+    580,
+    850,
+    1000,
+    900,
+    false,
+    760,
+    890
+   ]
+  ]
+ },
+ "hc-cave": {
+  "src": "hc-cave.jpg",
+  "wind": 0.8,
+  "flutter": [
+   [
+    100,
+    700,
+    900,
+    820
+   ]
+  ]
+ },
+ "hc-boathouse": {
+  "src": "hc-boathouse.png",
+  "wind": 0.15,
+  "noleaf": true,
+  "cut": [
+   [
+    [
+     738,
+     425
+    ],
+    [
+     925,
+     425
+    ],
+    [
+     925,
+     712
+    ],
+    [
+     738,
+     712
+    ]
+   ]
+  ],
+  "sway": [
+   [
+    820,
+    200,
+    920,
+    400,
+    0.4
+   ],
+   [
+    1000,
+    230,
+    1150,
+    410,
+    0.4
+   ]
+  ],
+  "fill": "rows",
+  "nosky": true
+ },
+ "hc-amph": {
+  "src": "hc-amph.jpg",
+  "night": true,
+  "wind": 0.5,
+  "cloth": [
+   [
+    600,
+    205,
+    712,
+    530,
+    0.5
+   ],
+   [
+    918,
+    205,
+    1032,
+    530,
+    0.5
+   ]
+  ]
+ },
+ "hc-boney-beach": {
+  "src": "hc-boney-beach.png",
+  "wind": 0.8,
+  "pool": [
+   [
+    0,
+    780,
+    1600,
+    900,
+    false,
+    800,
+    880
+   ]
+  ]
+ },
+ "hc-playa": {
+  "src": "hc-playa.png",
+  "wind": 0.9,
+  "cut": [
+   [
+    [
+     755,
+     560
+    ],
+    [
+     915,
+     560
+    ],
+    [
+     915,
+     645
+    ],
+    [
+     755,
+     645
+    ]
+   ]
+  ],
+  "pool": [
+   [
+    0,
+    680,
+    1600,
+    900,
+    false,
+    800,
+    820
+   ],
+   [
+    1010,
+    665,
+    1250,
+    715,
+    false,
+    1120,
+    690
+   ]
+  ],
+  "fill": "rows"
+ }
 }

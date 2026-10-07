@@ -37,8 +37,21 @@ def load_bgr(path):
     return img
 
 
-def sharpen_4k(path):
-    img = load_bgr(path)
+def crop_169(img, anchor=0.5):
+    """Cut a frame that is not 16:9 down to 16:9 (the official camp art is 16:10): the extra width
+    from the middle, the extra height at `anchor` (0 keeps the top, 1 the bottom)."""
+    h, w = img.shape[:2]
+    if abs(w / h - 16 / 9) < 0.01:
+        return img
+    if w / h > 16 / 9:
+        nw = int(round(h * 16 / 9)); x = (w - nw) // 2
+        return img[:, x:x + nw]
+    nh = int(round(w * 9 / 16)); y = int((h - nh) * anchor)
+    return img[y:y + nh]
+
+
+def sharpen_4k(path, anchor=0.5):
+    img = crop_169(load_bgr(path), anchor)
     if img.shape[1] < 3000:
         src = os.path.join(tempfile.gettempdir(), 'clean-src.png'); out = os.path.join(tempfile.gettempdir(), 'clean-up.png')
         cv2.imwrite(src, img)
@@ -48,7 +61,31 @@ def sharpen_4k(path):
     return cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA if img.shape[1] >= W else cv2.INTER_LANCZOS4)
 
 
-def apply_cut(img, cut, fill):
+def fill_rows(img, m):
+    """Fill the cut row by row: each run blends from the colour just left of it to the colour just
+    right of it. The show's backgrounds are flat colour, so a canoe, a bench, the sand or the sky
+    behind someone simply carries on across the gap."""
+    out = img.copy()
+    W_ = img.shape[1]
+    for y in np.nonzero(m.any(axis=1))[0]:
+        row = m[y] > 0; x = 0
+        while x < W_:
+            if not row[x]:
+                x += 1; continue
+            x0 = x
+            while x < W_ and row[x]:
+                x += 1
+            cl = img[y, max(x0 - 2, 0)].astype(np.float32); cr = img[y, min(x + 1, W_ - 1)].astype(np.float32)
+            if x0 < 2: cl = cr
+            if x >= W_ - 1: cr = cl
+            t = np.linspace(0, 1, x - x0)[:, None]
+            out[y, x0:x] = (cl * (1 - t) + cr * t).astype(np.uint8)
+    soft = cv2.GaussianBlur(out, (0, 0), 2)
+    out[m > 0] = soft[m > 0]
+    return out
+
+
+def apply_cut(img, cut, fill, keep=()):
     if isinstance(cut, str):
         m = cv2.resize(cv2.imread(cut, cv2.IMREAD_GRAYSCALE), (W, H), interpolation=cv2.INTER_NEAREST)
         m = (m > 127).astype(np.uint8) * 255
@@ -56,7 +93,17 @@ def apply_cut(img, cut, fill):
         m = np.zeros((H, W), np.uint8)
         for poly in cut:
             cv2.fillPoly(m, [(np.array(poly, np.float32) * S).astype(np.int32)], 255)
+    if keep:
+        # colours the cut must not take (the sand, the water round someone): only the person goes
+        lab = cv2.cvtColor(cv2.GaussianBlur(img, (5, 5), 0), cv2.COLOR_BGR2LAB).astype(np.int16)
+        for (kx, ky) in keep:
+            ref = lab[int(ky * S), int(kx * S)]
+            m[np.abs(lab - ref).sum(axis=2) < 26] = 0
+        # the person whole, ink outline included (a thin line is still theirs)
+        m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((25, 25), np.uint8))
     m = cv2.dilate(m, np.ones((21, 21), np.uint8))
+    if fill == 'rows':
+        return fill_rows(img, m)
     if not fill:
         return cv2.inpaint(img, m, 20, cv2.INPAINT_TELEA)
     f = sharpen_4k(fill)
@@ -66,28 +113,44 @@ def apply_cut(img, cut, fill):
     return (base * (1 - a) + f * a).astype(np.uint8)
 
 
-def sky_of(img):
-    """The open sky: flood-filled from the top edge (a smooth gradient spreads, a drawn edge stops
-    it), and the sky's colour on each row (its median there), for repainting."""
+def sky_of(img, tol=10.0):
+    """The open sky, grown down from the top edge one row at a time: on each row, a run of pixels
+    within `tol` (Lab) of the sky's colour on the row above is sky if it touches the sky there. The
+    colour follows the gradient down as it goes, so a smooth sky fills in, and a roof, a palm or a
+    hill (a different colour) stops it, however softly the frame was drawn. Returns the mask and the
+    sky's colour on every row (the last one carried down), for repainting."""
     H, W = img.shape[:2]
-    sky = np.zeros((H + 2, W + 2), np.uint8)
-    soft = cv2.GaussianBlur(img, (7, 7), 0)
-    for sx in range(6, W, 32):
-        if sky[1, sx + 1] == 0:
-            cv2.floodFill(soft.copy(), sky, (sx, 3), 0, (3, 3, 3), (3, 3, 3), 4 | cv2.FLOODFILL_MASK_ONLY | (255 << 8))
-    sky = sky[1:-1, 1:-1] > 0
+    lab = cv2.cvtColor(cv2.GaussianBlur(img, (5, 5), 0), cv2.COLOR_BGR2LAB).astype(np.float32)
+    sky = np.zeros((H, W), bool)
+    rowcol = np.zeros((H, 3), np.float32)
+    # the seed: the longest stretch of the top row that is one flat colour (the sky, not a branch
+    # or a cliff top cutting across it)
+    r0 = lab[2]
+    step = np.abs(np.diff(r0, axis=0)).sum(axis=1) > 3
+    lbl0 = np.concatenate([[0], np.cumsum(step)])
+    longest = np.bincount(lbl0).argmax()
+    ref = np.median(r0[lbl0 == longest], axis=0)
+    prev = np.abs(lab[0] - ref).sum(axis=1) < tol
+    sky[0] = prev
+    for y in range(H):
+        near = np.abs(lab[y] - ref).sum(axis=1) < tol
+        if y:
+            # keep the runs of near-sky pixels that touch the sky on the row above
+            lbl = np.cumsum(np.concatenate([[1], np.diff(near.astype(np.int8)) != 0]))
+            hit = np.unique(lbl[near & prev])
+            near = near & np.isin(lbl, hit)
+        sky[y] = near
+        if near.sum() > 8:
+            ref = ref * 0.6 + np.median(lab[y][near], axis=0) * 0.4
+            rowcol[y] = np.median(img[y][near], axis=0)
+        elif y:
+            rowcol[y] = rowcol[y - 1]
+        prev = near
+        if not near.any():
+            rowcol[y:] = rowcol[y - 1] if y else rowcol[y]
+            break
     if sky.mean() < 0.02:
         return sky, None
-    rowcol = np.zeros((H, 3), np.float32); have = np.zeros(H, bool)
-    for y in range(H):
-        s = sky[y]
-        if s.sum() > 20:
-            rowcol[y] = np.median(img[y][s], axis=0); have[y] = True
-    if not have.any():
-        return sky, None
-    ys = np.arange(H)
-    for c in range(3):
-        rowcol[:, c] = np.interp(ys, ys[have], rowcol[have, c])
     return sky, rowcol
 
 
@@ -163,15 +226,18 @@ def clean(name, P):
         if f.startswith(f'tr-{name}-'):
             os.remove(os.path.join(SPRITES, f))
     T = os.path.join(REPO, 'tools', 'td-camp', 'traced')
-    img = sharpen_4k(os.path.join(T, 'src', P['src']))
+    img = sharpen_4k(os.path.join(T, 'src', P['src']), P.get('anchor', 0.5))
     if P.get('cut'):
-        cut = os.path.join(T, P['cut'])
-        cut = cut if cut.endswith('.png') else json.load(open(cut))
-        img = apply_cut(img, cut, os.path.join(T, P['fill']) if P.get('fill') else None)
+        cut = P['cut']                    # polygons inline, or a file: a mask .png or a polygon .json
+        if isinstance(cut, str):
+            cut = os.path.join(T, cut)
+            cut = cut if cut.endswith('.png') else json.load(open(cut))
+        fill = P.get('fill')
+        img = apply_cut(img, cut, fill if fill in (None, 'rows') else os.path.join(T, fill), P.get('keep', ()))
     base = img.copy()
-    sky, rowcol = sky_of(img)
+    sky, rowcol = sky_of(img) if not P.get('nosky') else (np.zeros(img.shape[:2], bool), None)
     # a night sky's pale shapes are the moon and the stars: they stay where the artist put them
-    clouds = [] if P.get('night') else lift_clouds(img, base, sky, rowcol, name, 0)
+    clouds = [] if P.get('night') or P.get('noclouds') else lift_clouds(img, base, sky, rowcol, name, 0)
     os.makedirs(CUTS, exist_ok=True)
     cv2.imwrite(os.path.join(CUTS, f'{name}-clean.png'), base)
     cv2.imwrite(os.path.join(CUTS, f'{name}-clean-sd.png'), cv2.resize(base, (1920, 1080), interpolation=cv2.INTER_AREA))
@@ -196,7 +262,7 @@ def motion_map(base, P):
     img = cv2.resize(base, (1920, 1080), interpolation=cv2.INTER_AREA)
     h, w = 1080, 1920; k = 1920 / 1600.0
     R = lambda b: (int(b[0] * k), int(b[1] * k), int(b[2] * k), int(b[3] * k))
-    sky, _ = sky_of(img)
+    sky = sky_of(img)[0] if not P.get('nosky') else np.zeros((h, w), bool)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     hue, sat, val = (hsv[..., i].astype(int) for i in range(3))
     wind = np.zeros((h, w), np.float32)

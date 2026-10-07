@@ -328,7 +328,7 @@ const MALLOW = '<svg viewBox="0 0 46 40"><ellipse cx="23" cy="30" rx="20" ry="8"
 // One step = one line, one stage direction, or one reveal. `side` items enter
 // Chris's clipboard at the step they belong to and stay.
 const CAMP = [
-  { t: 'scene', spot: 'dock', tod: 'day', day: 'DAY 4', clock: '7:12 AM', place: 'The Dock', focus: ['Geoff', 'Alejandro'], bg: ['Harold'], bed: 'none',
+  { t: 'scene', spot: 'dock', tod: 'day', day: 'DAY 4', clock: '7:12 AM', place: 'The Dock', focus: ['Geoff', 'Alejandro'], bg: ['Harold'], bgAt: [[50, 30]], bed: 'none',
     side: [{ tab: 'bonds', pairs: [['Alejandro', 'Geoff', 4], ['Alejandro', 'Courtney', -2], ['Geoff', 'Courtney', 1]] }] },
   { t: 'dir', text: 'Geoff baits a hook. Alejandro holds the worm bucket at arm’s length.' },
   { t: 'line', who: 'Geoff', text: 'Dude, hold it closer. The worms aren’t gonna bite you.' },
@@ -537,7 +537,8 @@ function paint(fresh) {
   } else {
     const focus = L.focus.filter(n => !L.gone.has(n)).slice(0, 3);
     const bg = L.bg.filter(n => !L.gone.has(n));
-    bg.forEach((n, i) => show(n, i % 2 ? 88 - i * 6 : 10 + i * 6, 17, 9, 'bg'));
+    // a background camper stands where the set has floor for them (on the dock, not on the lake)
+    bg.forEach((n, i) => { const at = (sc.bgAt || [])[i]; show(n, at ? at[0] : (i % 2 ? 88 - i * 6 : 10 + i * 6), at ? at[1] : 17, at ? 7 : 9, 'bg'); });
     const xs = focus.length === 1 ? [50] : focus.length === 2 ? [32, 68] : [22, 50, 78];
     focus.forEach((n, i) => show(n, xs[i], 8, focus.length === 3 ? 20 : 23, n === speaker ? 'speak' : ''));
     // the storm-off plays on the step that has it

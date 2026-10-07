@@ -314,9 +314,12 @@ def wt_ceremony(tod):
         pbox('HutThatch', (2.9, 1.3, 0.25), (1.6 + sd * 1.25, D - 1.4, 2.3), '#c8a050', 'day', shade='#8a6a30', mottle=0.4, mscale=2.5, rot=(0, sd * 28, 0))
     for r in range(3):
         pbox('Bench', (4.0, 0.4, 0.4), (0.4, 2.0 + r * 1.5, 0.2), '#8a5a32', 'day')
+        for k in range(3):
+            seat(-0.9 + k * 1.3, 2.0 + r * 1.5, 0.42)
         for sx in (-1.4, 2.2):
             pbox('BenchLeg', (0.12, 0.35, 0.2), (sx, 2.0 + r * 1.5, 0.1), '#5a3a22', 'day', ink=False)
     pbox('Stand', (0.9, 0.6, 1.05), (-0.6, 6.6, 0.52), '#6b4a2e', 'day')
+    mark('host', (-0.6, 6.6, 1.1))
     for i in range(7):
         pbox('BarfBag', (0.16, 0.1, 0.24), (-0.9 + (i % 4) * 0.2, 6.5 + (i // 4) * 0.2, 1.17), '#f2ecd8', 'day')
     hanging_lamp(0.2, 4.0, 3.2, warm=True)

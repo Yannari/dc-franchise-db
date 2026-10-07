@@ -268,6 +268,11 @@ def si_ceremony(tod):
     pbox('FenceRail', (26, 0.12, 0.12), (0, 15.4, 1.1), '#a8843a', tod)
     for k in range(6):
         pbox('Bench', (1.0, 0.6, 0.45), (-9.5 + k * 1.3, 4.5 + (k % 2) * 0.2, 0.22), '#a87a3a', 'day')
+        seat(-9.5 + k * 1.3, 4.5 + (k % 2) * 0.2, 0.47)
+    for k in range(6):                                 # the other side of the fire
+        pbox('Bench', (1.0, 0.6, 0.45), (3.0 + k * 1.3, 4.5 + (k % 2) * 0.2, 0.22), '#a87a3a', 'day')
+        seat(3.0 + k * 1.3, 4.5 + (k % 2) * 0.2, 0.47)
+    mark('host', (-2.6, 11.0, 1.4))
     tiki_face(-4.5, 12.5, 3.6, 'day', col='#c8903a', s=1.2)
     tiki_face(5.5, 11.5, 2.2, 'day', col='#8a6a3a', s=0.9, angry=False)
     for (x, yy) in ((-7.5, 10), (7.5, 9.5), (-10.5, 3), (10.5, 3)):

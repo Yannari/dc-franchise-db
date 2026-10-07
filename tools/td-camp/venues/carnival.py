@@ -424,7 +424,9 @@ def trial_deck(tod):
         pbox('Fence', (0.8, 0.14, 1.8 + (x % 2) * 0.2), (x, 12.8, 0.9), '#8a6a42', tod, ink=False)
     pbox('FenceRail', (17, 0.1, 0.12), (0, 12.7, 1.3), '#6a4a2a', tod)
     clown_podium(3.6, 10.0, tod)
+    mark('host', (3.6, 10.0, 1.4))
     for (x, yy, kind) in ((-5.5, 5.0, 'drum'), (-3.8, 5.6, 'barrel'), (-2.0, 5.0, 'drum'), (-0.2, 5.6, 'crate'), (1.6, 5.0, 'barrel'), (-4.6, 3.4, 'crate'), (-2.6, 3.0, 'drum'), (-0.6, 3.4, 'barrel')):
+        seat(x, yy, 0.62 if kind != 'barrel' else 1.05)
         if kind == 'drum':
             drum_seat(x, yy, tod)
         elif kind == 'barrel':

@@ -349,6 +349,7 @@ def fl_ceremony(tod):
     pbox('StageLip', (14.2, 0.2, 1.05), (0, 11.0, 0.5), '#5a3a2a', 'day')
     pbox('Podium', (1.1, 0.7, 1.15), (2.4, 12.0, 1.58), '#2a2228', 'day')
     pbox('PodiumTop', (1.3, 0.85, 0.06), (2.4, 12.0, 2.18), '#e8b938', 'day', unlit=True)
+    mark('host', (2.4, 12.0, 2.2))
     for i in range(6):
         statuette(2.0 + (i % 3) * 0.25, 11.85 + (i // 3) * 0.3, 2.21, tod)
     for sx in (-1, 1):
@@ -361,6 +362,8 @@ def fl_ceremony(tod):
     for r in range(3):
         for sx in (-1, 1):
             pbox('Bleacher', (5.0, 0.9, 0.4 + r * 0.4), (sx * 5.0, 3.6 - r * 0.9, (0.4 + r * 0.4) / 2), '#4a5a6a', 'day')
+            for k in range(4):
+                seat(sx * 5.0 - 1.8 + k * 1.2, 3.6 - r * 0.9, 0.4 + r * 0.4)
     for sx in (-1, 1):
         film_lamp(sx * 11, 9, 'night', aim=-sx * 30, h=3.5)
         sh = card(uid('Beam'), [(-0.6, 0), (0.6, 0), (3.0, 30), (-3.0, 30)], 14, pmat('Beam', '#fff8d0', unlit=True, mottle=0, alpha=0.12), x=sx * 11, z=3.5)

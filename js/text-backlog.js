@@ -1,5 +1,6 @@
 // js/text-backlog.js - Text backlog generators for non-challenge episode sections
 import { bbStepTranscript } from './vp-bb-ep/steps.js';
+import { tdTribalStepped, tdTribalScreen } from './vp-td-ep/steps.js';
 import { bbHostName } from './bb-aftermath.js';
 import { transcriptHeaderLines } from './transcript-header.js';
 import { gs, seasonConfig, players, plainText } from './core.js';
@@ -1616,6 +1617,28 @@ export function _textRelationshipShifts(ep, ln, sec) {
 }
 
 // ── TRIBAL COUNCIL ──
+// The ceremony as the stepped viewer airs it (js/vp-td-ep): the host's calls, the setting's
+// handout or reading, the walk out. The Q&A above already holds the exchanges; these are the
+// words the screen adds, so the transcript equals the screen (spec 2026-10-06 §8).
+export function _textTdCeremony(ep, ln, sec) {
+  if (!tdTribalStepped(ep)) return;
+  const scr = tdTribalScreen(ep, { host: seasonConfig.host || 'Chris', setting: seasonConfig.setting });
+  if (!scr) return;
+  sec(scr.label.toUpperCase() + ' — AS IT AIRS');
+  const host = scr.host;
+  for (const s of scr.steps) {
+    if (s.k === 'say' && s.host) ln(`${host}: "${s.text}"`);
+    else if (s.k === 'ballots') ln(`(${s.text})`);
+    else if (s.k === 'idol') ln(`(${s.by} plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${s.for}` : ''}.)`);
+    else if (s.k === 'title') ln(`[${s.kicker}: ${s.name}]`);
+    else if (s.k === 'safe') ln(`${host}: "${s.who}${s.immune ? ', you won immunity' : ''}." (${s.who} is safe${s.last ? ' with the last one' : ''}.)`);
+    else if (s.k === 'read') ln(`${host}: "${s.vote}.${s.dead ? ' Does not count.' : ''}"`);
+    else if (s.k === 'out') ln(`(${s.who} is eliminated.)`);
+    else if (s.k === 'scene' && s.exit) ln(`— ${s.place} —`);
+    else if (s.k === 'beat' && s.walk) ln(`(${s.text})`);
+  }
+}
+
 export function _textTribalCouncil(ep, ln, sec) {
   if (!ep.votingLog?.length || ep.multiTribalResults?.length || ep.isSlasherNight || ep.isTripleDogDare) return;
   sec(ep.isFireMaking ? 'TRIBAL COUNCIL — FIRE-MAKING VOTE' : ep.firstEliminated ? 'TRIBAL COUNCIL — VOTE 1 OF 2' : 'TRIBAL COUNCIL');
@@ -4110,6 +4133,7 @@ export function generateSummaryText(ep) {
   _textSocialStatus(ep, ln, sec);
   _textTribalCouncil(ep, ln, sec);
   _textTheVotes(ep, ln, sec);
+  _textTdCeremony(ep, ln, sec);
   _textAdaptation(ep, ln, sec);
   _textMoleDisruption(ep, ln, sec);
   _textWhyVote(ep, ln, sec);

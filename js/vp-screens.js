@@ -35,6 +35,7 @@ import { dragScreens } from './vp-dr/screens.js';
 import { perfectMatchVpScreens } from './vp-pm/screens.js';
 import { circleVpScreens } from './vp-ci/screens.js';
 import { bbStepScreens } from './vp-bb-ep/screens.js';
+import { tdStepScreens, tdSteppedOn, TDX_SWITCH } from './vp-td-ep/screens.js';
 import { gs as _coreGs } from './core.js';
 import { momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { DRAG_FORMAT, HOSTS_BY_FORMAT, CIRCLE_FORMAT } from './shows.js';
@@ -14030,7 +14031,28 @@ export function rpBuildVotes2(ep) {
 // ─────────────────────────────────────────────────────────────────
 
 // ── Finale Camp Life: finalists reminisce, reflect on the season ──
+// Total Drama's stepped viewer (js/vp-td-ep, spec 2026-10-06 §6) sits on top of the classic
+// builder: the classic screens are built as always, then the camp and Tribal screens are swapped
+// for stepped ones IN THEIR SLOTS. If it cannot build, the classic screens play.
 export function buildVPScreens(epRecord) {
+  const r = _buildVPScreensClassic(epRecord);
+  const isTD = epRecord && !epRecord.isBigBrother && (!epRecord.format || epRecord.format === 'total-drama');
+  if (!isTD) return r;
+  try {
+    if (tdSteppedOn()) {
+      const tribal = epRecord.tribalPlayers || gs.activePlayers || [];
+      vpScreens = tdStepScreens(epRecord, vpScreens, {
+        host: seasonConfig.host || 'Chris', setting: seasonConfig.setting, mergeName: gs.mergeName,
+        colorOf: tribeColor, qa: (() => { try { return buildTribalQA(epRecord, tribal); } catch { return []; } })(),
+      });
+    } else {
+      vpScreens = vpScreens.map(S => (/^(camp-(pre|post)-|tribal$)/.test(S?.id || '') && typeof S.html === 'string' ? { ...S, html: TDX_SWITCH + S.html } : S));
+    }
+  } catch (err) { console.warn('TD stepped viewer fell back to the classic screens:', err); }
+  return vpScreens;
+}
+
+function _buildVPScreensClassic(epRecord) {
   vpScreens = [];
   vpEpNum = epRecord.num || 0;
 

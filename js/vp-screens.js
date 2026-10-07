@@ -14040,7 +14040,7 @@ export function buildVPScreens(epRecord) {
     if (tdSteppedOn()) {
       const tribal = epRecord.tribalPlayers || gs.activePlayers || [];
       vpScreens = tdStepScreens(epRecord, vpScreens, {
-        host: seasonConfig.host || 'Chris', setting: seasonConfig.setting, mergeName: gs.mergeName,
+        host: seasonConfig.host || 'Chris', setting: seasonConfig.setting, mergeName: gs.mergeName, seasonName: seasonConfig.name || '',
         colorOf: tribeColor, qa: (() => { try { return buildTribalQA(epRecord, tribal); } catch { return []; } })(),
         pronouns, stats: pStats, chooserReason: _exileChooserReason,
         twistBlocks: (() => { try { return preTwistBlocks(epRecord); } catch { return []; } })(),

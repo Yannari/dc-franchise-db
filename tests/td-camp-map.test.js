@@ -1,0 +1,87 @@
+// @vitest-environment jsdom
+// The camp map (vp-td-ep/map.js + screens.js), on played seasons.
+//
+// Guards: a conversation that lands in no zone or no time window; a conversation the map shows but
+// cannot play; a shared camp that shows one team and loses the other's talk; a venue without a
+// painted map losing its camp screens; the clock letting the viewer jump past a key conversation;
+// Next skipping a conversation or playing one twice.
+import { describe, it, expect, beforeAll } from 'vitest';
+import fs from 'fs';
+import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
+import { tdCampMap, mapZones, openWindow, nextConv, hasMap, WINDOW_ORDER } from '../js/vp-td-ep/map.js';
+import { tdStepScreens } from '../js/vp-td-ep/screens.js';
+
+const NAMES = ['Alejandro', 'Heather', 'Gwen', 'Duncan', 'Courtney', 'Owen', 'Izzy', 'Cody', 'Sierra', 'Lindsay', 'Harold', 'Leshawna', 'Noah', 'Bridgette', 'Geoff', 'Trent'];
+const roster = JSON.parse(fs.readFileSync('franchise_roster.json', 'utf8')).players;
+let eps = [];
+beforeAll(() => {
+  seededRun(() => runOneSeason({ romance: 'enabled', setting: 'hosted-camp' }, 16, NAMES.map((n, i) => ({ ...roster.find(r => r.name === n), tribe: i % 2 ? 'Bass' : 'Gophers' }))), 777);
+  eps = core.gs.episodeHistory.map(e => JSON.parse(JSON.stringify(e)));
+}, 600000);
+
+const campsOf = (ep, phase) => Object.keys(ep.campEvents || {}).filter(c => {
+  const b = ep.campEvents[c]; return (phase === 'pre' ? (Array.isArray(b) ? b : b?.pre || []) : (b?.post || [])).length;
+});
+
+describe('the camp map', () => {
+  it('Wawanakwa has a painted map with every place on it', () => {
+    expect(hasMap('hosted-camp')).toBe(true);
+    const z = mapZones('hosted-camp');
+    for (const id of ['cabins', 'mess-hall', 'washroom', 'communal-grounds', 'confessional', 'campfire', 'dock', 'beach', 'forest-trail', 'cliff']) {
+      expect(z[id], id).toBeTruthy();
+      expect(z[id].u).toBeGreaterThan(0); expect(z[id].u).toBeLessThan(1);
+    }
+  });
+
+  it('puts every conversation in a zone and a time window, and every one plays', () => {
+    let n = 0;
+    for (const ep of eps) for (const phase of ['pre', 'post']) {
+      const camps = campsOf(ep, phase); if (!camps.length) continue;
+      const m = tdCampMap(ep, phase, camps, { setting: 'hosted-camp' }); if (!m) continue;
+      const zones = mapZones('hosted-camp');
+      for (const c of m.convs) {
+        n++;
+        expect(zones[c.zone], `ep${ep.num} ${phase} zone ${c.zone}`).toBeTruthy();
+        expect(WINDOW_ORDER[phase]).toContain(c.window);
+        expect(c.screen.steps.length).toBeGreaterThan(1);
+        expect(c.screen.steps[0].k).toBe('scene');
+      }
+    }
+    expect(n).toBeGreaterThan(100);
+  });
+
+  it('holds every team of a shared camp on one map, and loses no conversation', () => {
+    const ep = eps.find(e => campsOf(e, 'pre').length >= 2);
+    const camps = campsOf(ep, 'pre');
+    const m = tdCampMap(ep, 'pre', camps, { setting: 'hosted-camp' });
+    const total = camps.reduce((a, c) => a + (Array.isArray(ep.campEvents[c]) ? ep.campEvents[c] : ep.campEvents[c].pre).filter(e => e && (e.lines?.length || String(e.text || '').trim())).length, 0);
+    expect(m.convs.length).toBe(total);
+    expect(new Set(m.convs.map(c => c.camp)).size).toBe(camps.length);
+    const out = tdStepScreens(ep, camps.map(c => ({ id: `camp-pre-${c}`, label: 'Camp' })), { setting: 'hosted-camp' });
+    expect(out.length).toBe(1);
+    expect(out[0].campMap).toBe(true);
+    expect(out[0].id).toBe(`camp-pre-${camps[0]}`);
+  });
+
+  it('keeps the linear camp screens at a venue with no painted map', () => {
+    const ep = { ...eps[0], campAccess: { ...eps[0].campAccess, setting: 'survival-island' } };
+    const camps = campsOf(ep, 'pre');
+    const out = tdStepScreens(ep, camps.map(c => ({ id: `camp-pre-${c}`, label: 'Camp' })), { setting: 'survival-island' });
+    expect(out.some(s => s.campMap)).toBe(false);
+    expect(out.length).toBe(camps.length);
+  });
+
+  it('opens a later window only once the earlier windows\' key conversations are watched, and Next walks the story once', () => {
+    const ep = eps.find(e => { const c = campsOf(e, 'post'); const m = c.length && tdCampMap(e, 'post', c, { setting: 'hosted-camp' }); return m && m.windows.length > 1 && m.convs.some(x => x.key && x.window === m.windows[0].id); });
+    const m = tdCampMap(ep, 'post', campsOf(ep, 'post'), { setting: 'hosted-camp' });
+    const seen = new Set();
+    expect(openWindow(m, seen)).toBe(0);
+    for (const c of m.convs.filter(x => x.window === m.windows[0].id && x.key)) seen.add(c.i);
+    expect(openWindow(m, seen)).toBeGreaterThan(0);
+    const walked = new Set(), all = new Set();
+    for (let c = nextConv(m, all); c; c = nextConv(m, all)) { expect(walked.has(c.i)).toBe(false); walked.add(c.i); all.add(c.i); }
+    expect(walked.size).toBe(m.convs.length);
+    const order = m.convs.map(c => WINDOW_ORDER.post.indexOf(c.window));
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+  });
+});

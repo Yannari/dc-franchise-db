@@ -8,7 +8,8 @@
 // so everything that finds a screen by id still finds it. Anything the stepped stage does not
 // cover yet keeps its classic screen. A Classic switch on every stepped screen lands on the same
 // screen in the classic viewer (localStorage 'td-vp' = 'classic' to stay there).
-import { tdCampScreen, tdTribalScreen, tdTribalStepped, cleanText } from './steps.js';
+import { tdCampScreen, tdTribalScreen, tdTribalStepped, cleanText, placeScene, plateKey, placeName, venueOf } from './steps.js';
+import { tdCampMap, hasMap, MAP_VENUES, openWindow, nextConv, PLACE_LABEL } from './map.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf } from './twists.js';
 import { tdTwistBlocksScreen, tdMergeScreen } from './twist-screens.js';
 import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf } from './stage.js';
@@ -30,8 +31,24 @@ export function tdStepScreens(ep, classic = [], o = {}) {
   const out = [];
   let tribalDone = false;
   const tribal = tdTribalStepped(ep) ? tdTribalScreen(ep, o) : null;
+  // the camp map (map.js) is the default camp view where the venue has one: a shared camp is one
+  // map for every team (the other teams' camp screens fold into it), a venue where teams live apart
+  // gets one map per team. Anything the map cannot hold plays the linear camp screen.
+  const venue = venueOf(ep, o);
+  const mapOn = o.campMap !== false && hasMap(venue);
+  const shared = !!MAP_VENUES[venue]?.shared;
+  const campIds = classic.map(x => /^camp-(pre|post)-(.+)$/.exec(x?.id || '')).filter(Boolean);
+  const mapped = new Map();
   for (const S of classic) {
     const m = /^camp-(pre|post)-(.+)$/.exec(S?.id || '');
+    if (m && mapOn) {
+      const key = shared ? m[1] : `${m[1]}:${m[2]}`;
+      if (!mapped.has(key)) {
+        const camps = shared ? campIds.filter(x => x[1] === m[1]).map(x => x[2]) : [m[2]];
+        mapped.set(key, tdCampMap(ep, m[1], camps, o));
+        if (mapped.get(key)) { out.push(mapShell(mapped.get(key), S, ep, o)); continue; }
+      } else if (mapped.get(key)) continue;
+    }
     if (m) {
       const scr = tdCampScreen(ep, m[2], m[1], membersOf(ep, m[2]), o);
       if (scr) { out.push(shell(scr, S, ep, o)); continue; }
@@ -121,7 +138,7 @@ const blip = { n: 0 };
 function sync(uid) {
   const R = reg()[uid];
   const root = typeof document !== 'undefined' ? document.querySelector(`.tdx[data-uid="${uid}"]`) : null;
-  if (R && root && root.dataset.idx == null) { R.idx = -1; stopAuto(R); R.wk = null; R.sceneAt = null; }
+  if (R && root && root.dataset.idx == null) { R.idx = -1; stopAuto(R); R.wk = null; R.sceneAt = null; if (R.isMap) { R.mode = 'map'; R.scr = null; } }
   return R;
 }
 function paint(uid, fresh) {
@@ -268,11 +285,314 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
   if (s.k === 'beat' && s.walk) { const el = tokAt(castEl, s.walk); if (el) setTimeout(() => el.classList.add('walk'), 300); }
 }
 
+
+// ══════════════════════════════════════════════════════════════════════
+// THE CAMP MAP — camp as a place you explore (map.js decides what is where; this draws it)
+// ══════════════════════════════════════════════════════════════════════
+// Three modes on one stage: 'map' (the whole camp from above, a pin on every place with who is
+// there and what is being said), 'zone' (inside one place: the people, a bubble over each
+// conversation), 'talk' (one conversation, played by paint() exactly like a linear camp screen).
+// Next always walks the conversations in story order; the clock moves on when a time window's
+// key conversations have been watched.
+const VENUE_NAME = { 'hosted-camp': 'Camp Wawanakwa', 'survival-island': 'Soluna Island', 'film-lot': 'The Film Lot', 'world-tour': 'The Jumbo Jet', carnival: 'Stawaki' };
+const ICON_BUBBLE = '<svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-5 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" fill="currentColor"/></svg>';
+const ICON_STAR = '<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z" fill="currentColor"/></svg>';
+const ICON_TICK = '<svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6" stroke="currentColor" stroke-width="3.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ICON_LOCK = '<svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2" fill="currentColor"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2.4" fill="none"/></svg>';
+
+function mapShell(map, S, ep, o) {
+  const uid = `tdm${esc(ep.num)}-${map.phase}-${map.camps.join('').replace(/[^\w-]/g, '').slice(0, 24)}`;
+  const colors = Object.fromEntries(map.camps.map(c => [c, o.colorOf ? o.colorOf(c) : '#4fb84a']));
+  const seenKey = `tdm:${o.seasonName || ''}:${ep.num}:${map.phase}:${map.camps.join(',')}`;
+  let seen = new Set();
+  try { seen = new Set(JSON.parse(globalThis.localStorage?.getItem(seenKey) || '[]')); } catch { /* per-viewer convenience */ }
+  reg()[uid] = { isMap: true, map, ep: ep.num, mode: 'map', win: 0, zone: null, place: null, seen, seenKey, colors, story: false,
+    scr: null, idx: -1, cur: null, auto: false, timer: null, typing: null, tab: null, wk: null, o: { teamColor: '#4fb84a' } };
+  const label = `${map.phase === 'pre' ? 'Camp · Morning' : 'Camp · After the challenge'}`;
+  const html = `<div class="tdx tdm-root" data-uid="${uid}" data-ambient="none">
+<style>${TDX_FONTS}${TDX_CSS}${TDM_CSS}</style>
+<div class="tdx-stage tdm-on" id="tdx-st-${uid}" onclick="tdmStage('${uid}')">
+  <div class="tdx-world"></div>
+  <div class="tdx-hud"><div class="tdx-title fresh"><div class="band"></div><div class="inner"><div class="kicker">Episode ${esc(ep.num)}</div><div class="big">${esc(label)}</div></div></div></div>
+  <div class="tdx-dlg hidden"><div class="panel"></div><div class="tdx-cut"></div><div class="name"></div><div class="say"></div><div class="nx"></div></div>
+  <div class="tdm" id="tdm-${uid}" onclick="event.stopPropagation()"></div>
+  <button type="button" class="tdx-ibtn" onclick="event.stopPropagation();tdxIntel('${uid}')"><i></i>Intel</button>
+  <div class="tdx-intel" onclick="event.stopPropagation();tdxTab('${uid}',event)"></div>
+  <div class="tdx-static"></div>
+</div>
+<div class="tdx-ctrl">
+  <button type="button" class="tdx-btn" onclick="tdmMap('${uid}')">Camp map</button>
+  <button type="button" class="tdx-btn" onclick="tdxBack('${uid}')">◀ Back <kbd>←</kbd></button>
+  <button type="button" class="tdx-btn go" onclick="tdxNext('${uid}')">Next ▶ <kbd>Space</kbd></button>
+  <button type="button" class="tdx-btn" id="tdx-auto-${uid}" onclick="tdxAuto('${uid}')">Auto</button>
+  <span class="tdx-count" id="tdm-count-${uid}">0 / ${map.convs.length} watched</span>
+  <button type="button" class="tdx-btn" onclick="tdxTv()">TV mode</button>
+  <button type="button" class="tdx-btn" onclick="tdxSwitchViewer('classic')" title="Back to the classic screens">Classic</button>
+</div>
+</div>`;
+  return { ...S, id: S.id, label: S.label, html, stepped: true, campMap: true };
+}
+
+const faceImg = (R, n, cls = '') => `<img class="${cls}" src="${esc(avatar(n))}" alt="${esc(n)}" title="${esc(n)}" style="--tc:${esc(R.colors[R.map.teamOf[n]] || '#c8c8c8')}">`;
+
+function mapPaint(uid, fresh) {
+  const R = reg()[uid];
+  if (!R || typeof document === 'undefined') return;
+  const root = document.querySelector(`.tdx[data-uid="${uid}"]`), st = document.getElementById(`tdx-st-${uid}`);
+  if (!root || !st) return;
+  root.dataset.idx = '0';
+  clearInterval(R.typing);
+  const M = R.map, open = openWindow(M, R.seen);
+  if (R.win > open) R.win = open;
+  const W = M.windows[R.win] || M.windows[0];
+  const tod = W.night ? 'night' : 'day';
+  const world = st.querySelector('.tdx-world'), layer = st.querySelector('.tdm');
+  st.classList.remove('push', 'intel-open'); world.style.transform = ''; world.style.transformOrigin = '';
+  st.classList.add('tdm-on'); layer.hidden = false;
+  st.querySelector('.tdx-dlg').className = 'tdx-dlg hidden';
+  const scr0 = { venue: M.venue, ep: R.ep, kind: 'camp', steps: [] };
+  let plate, place, people = [], toks = '';
+  const here = M.convs.filter(c => c.window === W.id && (R.mode !== 'zone' || c.zone === R.zone));
+  if (R.mode === 'zone') {
+    const placesHere = [...new Set(here.map(c => c.place))];
+    place = R.place && placesHere.includes(R.place) ? R.place : (placesHere[0] || R.zone);
+    plate = plateKey(M.venue, place === 'confessional' ? 'communal-grounds' : place, tod) || plateKey(M.venue, 'communal-grounds', tod);
+    const inPlace = here.filter(c => c.place === place);
+    const talking = [...new Set(inPlace.flatMap(c => c.who))];
+    const idle = (W.idle[R.zone] || []).filter(n => !talking.includes(n));
+    people = [...talking, ...idle].slice(0, 9);
+    const places = placeScene(plate, people.slice(0, 9), []);
+    toks = people.filter(n => places[n]).map(n => {
+      const pl = places[n];
+      return tokHtml({ n, u: pl.u, v: pl.v, h: Math.max(Math.min(pl.s * 125, 32), 15), bg: !talking.includes(n), dim: !talking.includes(n) }, fresh);
+    }).join('');
+    R.place = place;
+    R.places = places;
+  } else {
+    plate = plateKey(M.venue, 'map', tod);
+  }
+  const L = { scene: { plate, spot: R.mode === 'zone' ? place : 'map', place: R.mode === 'zone' ? (M.zones[R.zone]?.label || placeName(place)) : (VENUE_NAME[M.venue] || 'Camp'), time: W.time }, safe: [], side: [], step: {}, conf: null };
+  world.innerHTML = `${worldHtml(scr0, L)}<div class="tdx-cast">${toks}</div><div class="tdx-fx"></div>`;
+  st.querySelector('.tdx-hud').innerHTML = hudHtml(scr0, L, fresh, {});
+  layer.innerHTML = clockHtml(uid, R, open) + (R.mode === 'zone' ? zoneHtml(uid, R, here) : pinsHtml(uid, R, W)) + listHtml(uid, R, here);
+  const cnt = document.getElementById(`tdm-count-${uid}`); if (cnt) cnt.textContent = `${R.seen.size} / ${M.convs.length} watched`;
+  ambience(worldSound(scr0, L));
+}
+
+function clockHtml(uid, R, open) {
+  const M = R.map, W = M.windows[R.win];
+  const keyLeft = M.convs.filter(c => c.window === W.id && c.key && !R.seen.has(c.i)).length;
+  const tabs = M.windows.map((w, i) => {
+    const locked = i > open;
+    return `<button type="button" class="tdm-win${i === R.win ? ' on' : ''}${locked ? ' locked' : ''}" ${locked ? 'disabled title="Watch this window\'s key conversations first"' : `onclick="tdmWin('${uid}',${i})"`}>${locked ? `<i>${ICON_LOCK}</i>` : ''}<b>${esc(w.label)}</b><span>${esc(w.time)}</span></button>`;
+  }).join('');
+  const later = R.win < M.windows.length - 1 && !keyLeft
+    ? `<button type="button" class="tdm-later" onclick="tdmWin('${uid}',${R.win + 1})">Later ⏩</button>`
+    : keyLeft ? `<span class="tdm-left"><i>${ICON_STAR}</i>${keyLeft} key conversation${keyLeft > 1 ? 's' : ''} left</span>` : '';
+  return `<div class="tdm-clock">${tabs}${later}</div>`;
+}
+
+// Pins whose labels would overlap are lifted on taller stems, nearest (lowest on screen) first,
+// so every place stays readable however crowded the middle of camp is. Sizes in % of the stage.
+function pinLayout(items) {
+  const placed = [], H = 6.6;
+  for (const it of [...items].sort((a, b) => b.v - a.v)) {
+    let stem = 2.6;
+    const box = st => ({ x0: it.u - it.w / 2, x1: it.u + it.w / 2, y0: it.v - st - H, y1: it.v - st });
+    const hit = b => placed.some(p => b.x0 < p.x1 + 1.2 && b.x1 > p.x0 - 1.2 && b.y0 < p.y1 + 1.0 && b.y1 > p.y0 - 1.0);
+    while (hit(box(stem)) && stem < 40) stem += 1.6;
+    placed.push(box(stem)); it.stem = stem;
+  }
+  return items;
+}
+
+function pinsHtml(uid, R, W) {
+  const M = R.map;
+  const items = pinLayout(Object.entries(M.zones).map(([z, Z]) => {
+    const convs = M.convs.filter(c => c.window === W.id && c.zone === z);
+    const people = [...new Set([...convs.flatMap(c => c.who), ...(W.idle[z] || [])])];
+    const w = (people.length ? Math.min(people.length, 5) * 1.55 + 1.2 : 0) + Z.label.length * .62 + 3 + (convs.length ? 3 : 0);
+    return { z, u: Z.u * 100, v: Z.v * 100, w };
+  }));
+  const stemOf = Object.fromEntries(items.map(it => [it.z, it.stem]));
+  return Object.entries(M.zones).map(([z, Z]) => {
+    const convs = M.convs.filter(c => c.window === W.id && c.zone === z);
+    const people = [...new Set([...convs.flatMap(c => c.who), ...(W.idle[z] || [])])];
+    const left = convs.filter(c => !R.seen.has(c.i)), keyLeft = left.filter(c => c.key);
+    const state = !convs.length ? (people.length ? 'idle' : 'empty') : !left.length ? 'done' : keyLeft.length ? 'key' : 'talk';
+    const badge = !convs.length ? '' : !left.length ? `<span class="tdm-ct done"><i>${ICON_TICK}</i></span>`
+      : `<span class="tdm-ct"><i>${keyLeft.length ? ICON_STAR : ICON_BUBBLE}</i>${left.length}</span>`;
+    const faces = people.slice(0, 5).map(n => faceImg(R, n)).join('') + (people.length > 5 ? `<em>+${people.length - 5}</em>` : '');
+    return `<button type="button" class="tdm-pin ${state}" style="left:${(Z.u * 100).toFixed(2)}%;top:${(Z.v * 100).toFixed(2)}%;--stem:${(stemOf[z] * .5625).toFixed(2)}cqw" onclick="tdmZone('${uid}','${z}')" ${state === 'empty' ? 'tabindex="-1"' : ''}>
+      <span class="tdm-card">${faces ? `<span class="tdm-faces">${faces}</span>` : ''}<span class="tdm-lbl">${esc(Z.label)}</span>${badge}</span><i class="tdm-stem"></i><i class="tdm-dot"></i></button>`;
+  }).join('');
+}
+
+function zoneHtml(uid, R, here) {
+  const M = R.map;
+  const placesHere = [...new Set(here.map(c => c.place))];
+  const tabs = placesHere.length > 1 ? `<div class="tdm-places">${placesHere.map(p => `<button type="button" class="${p === R.place ? 'on' : ''}" onclick="tdmPlace('${uid}','${p}')">${esc(PLACE_LABEL[p] || placeName(p))}</button>`).join('')}</div>` : '';
+  const bubbles = here.filter(c => c.place === R.place).map(c => {
+    const anchor = c.who.find(n => R.places?.[n]);
+    const pl = anchor ? R.places[anchor] : { u: .5, v: .5, s: .2 };
+    const h = Math.max(Math.min(pl.s * 125, 32), 15) / 100;
+    const st = R.seen.has(c.i) ? 'done' : c.key ? 'key' : 'talk';
+    return `<button type="button" class="tdm-bub ${st}" style="left:${(pl.u * 100).toFixed(2)}%;top:${((pl.v - h - .035) * 100).toFixed(2)}%" onclick="tdmPlay('${uid}',${c.i})">
+      <i>${st === 'done' ? ICON_TICK : st === 'key' ? ICON_STAR : ICON_BUBBLE}</i><span>${esc(c.title)}</span></button>`;
+  }).join('');
+  return `<button type="button" class="tdm-back" onclick="tdmMap('${uid}')">◀ Camp map</button>${tabs}${bubbles}`;
+}
+
+function listHtml(uid, R, here) {
+  if (!here.length) return `<div class="tdm-list empty"><span>${R.mode === 'zone' ? 'Nobody is talking here right now.' : 'Nothing is happening at camp right now.'}</span></div>`;
+  const M = R.map;
+  return `<div class="tdm-list">${here.map(c => {
+    const st = R.seen.has(c.i) ? 'done' : c.key ? 'key' : 'talk';
+    return `<button type="button" class="tdm-item ${st}" onclick="tdmPlay('${uid}',${c.i})"><span class="tdm-faces">${c.who.slice(0, 3).map(n => faceImg(R, n)).join('')}</span>
+      <span class="tdm-txt"><b>${esc(c.title)}</b><span>${esc(M.zones[c.zone]?.label || placeName(c.place))}${c.place !== c.zone && PLACE_LABEL[c.place] ? ' · ' + esc(PLACE_LABEL[c.place]) : ''}</span></span><i>${st === 'done' ? ICON_TICK : st === 'key' ? ICON_STAR : ICON_BUBBLE}</i></button>`;
+  }).join('')}</div>`;
+}
+
+function markSeen(uid, R, i) {
+  R.seen.add(i);
+  try { globalThis.localStorage?.setItem(R.seenKey, JSON.stringify([...R.seen])); } catch { /* per-viewer convenience */ }
+}
+
+export function tdmZone(uid, zone) {
+  const R = reg()[uid]; if (!R) return;
+  const st = document.getElementById(`tdx-st-${uid}`), world = st?.querySelector('.tdx-world'), Z = R.map.zones[zone];
+  R.mode = 'zone'; R.zone = zone; R.place = null; R.story = false;
+  if (world && Z && world.animate) {
+    world.style.transformOrigin = `${(Z.u * 100).toFixed(1)}% ${(Z.v * 100).toFixed(1)}%`;
+    st.querySelector('.tdm').hidden = true;
+    sfx('whoosh');
+    const a = world.animate([{ transform: 'scale(1)', filter: 'blur(0)' }, { transform: 'scale(3.2)', filter: 'blur(3px)' }], { duration: 520, easing: 'cubic-bezier(.5,0,.75,.4)' });
+    a.onfinish = () => { mapPaint(uid, true); world.animate([{ opacity: .2, transform: 'scale(1.06)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 380, easing: 'ease-out' }); };
+  } else mapPaint(uid, true);
+}
+export function tdmPlace(uid, place) { const R = reg()[uid]; if (!R) return; R.place = place; mapPaint(uid, true); }
+export function tdmMap(uid) {
+  const R = reg()[uid]; if (!R) return; stopAuto(R);
+  R.mode = 'map'; R.zone = null; R.scr = null; R.story = false;
+  mapPaint(uid, true);
+}
+export function tdmWin(uid, i) {
+  const R = reg()[uid]; if (!R) return;
+  const open = openWindow(R.map, R.seen);
+  if (i > open) return;
+  R.win = Math.max(0, Math.min(i, R.map.windows.length - 1));
+  if (R.mode === 'talk') R.mode = 'map';
+  sfx('title');
+  mapPaint(uid, true);
+}
+export function tdmPlay(uid, i, story = false) {
+  const R = reg()[uid]; if (!R) return;
+  const c = R.map.convs[i]; if (!c) return;
+  const st = document.getElementById(`tdx-st-${uid}`);
+  R.mode = 'talk'; R.cur = i; R.zone = c.zone; R.place = c.place; R.story = story;
+  R.win = Math.max(R.win, R.map.windows.findIndex(w => w.id === c.window));
+  R.scr = c.screen; R.idx = 0; R.wk = null; R.o = { teamColor: R.colors[c.camp] || '#4fb84a' };
+  if (st) { st.classList.remove('tdm-on'); st.querySelector('.tdm').hidden = true; }
+  paint(uid, true);
+}
+export function tdmStage(uid) { const R = reg()[uid]; if (R?.mode === 'talk') tdxNext(uid); }
+
+// the end of a conversation: back to the place it happened, or on to the next one when walking the story
+function tdmDone(uid, R) {
+  markSeen(uid, R, R.cur);
+  const c = R.map.convs[R.cur];
+  if (R.story || R.auto) {
+    const nx = nextConv(R.map, R.seen);
+    if (nx) { tdmPlay(uid, nx.i, true); return; }
+    R.mode = 'map'; R.scr = null; mapPaint(uid, true); return;
+  }
+  R.mode = 'zone'; R.zone = c.zone; R.place = c.place; R.scr = null;
+  mapPaint(uid, true);
+}
+// Next on the map or in a place: the next conversation in story order; when all are watched, on to the next screen
+function tdmNext(uid, R) {
+  if (R.mode === 'talk') {
+    if (R.idx < R.scr.steps.length - 1) { R.idx++; paint(uid, true); return; }
+    tdmDone(uid, R); return;
+  }
+  const nx = nextConv(R.map, R.seen);
+  if (nx) { tdmPlay(uid, nx.i, true); return; }
+  if (typeof window !== 'undefined' && typeof window.vpNext === 'function') window.vpNext();
+}
+function tdmBack(uid, R) {
+  if (R.mode === 'talk') {
+    if (R.idx > 0) { R.idx--; paint(uid, false); return; }
+    R.mode = 'zone'; R.scr = null; mapPaint(uid, false); return;
+  }
+  if (R.mode === 'zone') { tdmMap(uid); return; }
+  if (typeof window !== 'undefined' && typeof window.vpPrev === 'function') window.vpPrev();
+}
+
+const TDM_CSS = `
+.tdx .tdm{position:absolute;inset:0;z-index:12;pointer-events:none;font-family:Nunito,system-ui,sans-serif}
+.tdx .tdm>*{pointer-events:auto}
+.tdx .tdx-stage.tdm-on{cursor:default}
+.tdx .tdx-stage.tdm-on .tdx-ibtn{display:none}
+.tdx .tdm-pin{position:absolute;transform:translate(-50%,-100%);border:0;background:none;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4));transition:transform .2s}
+.tdx .tdm-pin:hover,.tdx .tdm-pin:focus-visible{transform:translate(-50%,-104%) scale(1.06);outline:none}
+.tdx .tdm-pin.empty{opacity:.55;pointer-events:none}
+.tdx .tdm-card{display:flex;align-items:center;gap:.45cqw;background:rgba(14,16,26,.9);border-radius:99px;padding:.35cqw .7cqw .35cqw .35cqw;border:2px solid rgba(255,255,255,.12)}
+.tdx .tdm-pin.key .tdm-card{border-color:#ffc23a;animation:tdmPulse 1.6s ease-in-out infinite}
+.tdx .tdm-pin.done .tdm-card{border-color:#4fb84a}
+@keyframes tdmPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,194,58,.0)}50%{box-shadow:0 0 0 .5cqw rgba(255,194,58,.28)}}
+.tdx .tdm-faces{display:flex}
+.tdx .tdm-faces img{width:2.1cqw;height:2.1cqw;border-radius:50%;object-fit:cover;background:#fff;border:2px solid var(--tc);margin-left:-.6cqw}
+.tdx .tdm-faces img:first-child{margin-left:0}
+.tdx .tdm-faces em{font:800 .8cqw/1 Nunito;color:#fff;margin-left:.3cqw;font-style:normal}
+.tdx .tdm-lbl{font:400 1.1cqw/1 'Lilita One',sans-serif;letter-spacing:.03em;color:#fff;white-space:nowrap}
+.tdx .tdm-ct{display:flex;align-items:center;gap:.2cqw;font:900 .9cqw/1 Nunito;color:#1a1408;background:#ffc23a;border-radius:99px;padding:.2cqw .45cqw}
+.tdx .tdm-pin.talk .tdm-ct{background:#2ec4c4}
+.tdx .tdm-ct.done{background:#4fb84a;color:#fff}
+.tdx .tdm-ct i,.tdx .tdm-bub i,.tdx .tdm-item>i,.tdx .tdm-left i,.tdx .tdm-win i{display:inline-flex;width:1cqw;height:1cqw}
+.tdx .tdm-ct svg,.tdx .tdm-bub svg,.tdx .tdm-item>i svg,.tdx .tdm-left svg,.tdx .tdm-win svg{width:100%;height:100%}
+.tdx .tdm-stem{width:2px;height:var(--stem,1.4cqw);background:rgba(255,255,255,.85)}
+.tdx .tdm-pin:hover{z-index:5}
+.tdx .tdm-list{scrollbar-width:none}.tdx .tdm-list::-webkit-scrollbar{display:none}
+.tdx .tdm-dot{width:.8cqw;height:.8cqw;border-radius:50%;background:#fff;border:2px solid rgba(14,16,26,.9);margin-top:-.2cqw}
+.tdx .tdm-clock{position:absolute;left:50%;top:1.6cqw;transform:translateX(-50%);display:flex;gap:.4cqw;align-items:center;background:rgba(14,16,26,.86);border-radius:12px;padding:.4cqw;max-width:62%;flex-wrap:wrap;justify-content:center}
+.tdx .tdm-win{border:0;background:none;color:#a9adbd;border-radius:9px;padding:.4cqw .7cqw;display:flex;flex-direction:column;align-items:flex-start;gap:.15cqw;cursor:pointer;font:inherit}
+.tdx .tdm-win b{font:400 1cqw/1 'Lilita One',sans-serif;letter-spacing:.03em;color:inherit}
+.tdx .tdm-win span{font:800 .75cqw/1 Nunito;opacity:.8}
+.tdx .tdm-win.on{background:#ff8a1f;color:#1a1008}
+.tdx .tdm-win.locked{cursor:not-allowed;opacity:.45;flex-direction:row;align-items:center}
+.tdx .tdm-later{border:0;background:#2ec4c4;color:#08201f;border-radius:9px;padding:.55cqw .8cqw;font:900 .85cqw/1 Nunito;cursor:pointer}
+.tdx .tdm-left{display:flex;align-items:center;gap:.3cqw;color:#ffc23a;font:800 .85cqw/1 Nunito;padding:0 .5cqw}
+.tdx .tdm-list{position:absolute;left:2%;right:2%;bottom:2.2%;display:flex;gap:.6cqw;overflow-x:auto;padding:.3cqw;scrollbar-width:thin}
+.tdx .tdm-list.empty{justify-content:center}
+.tdx .tdm-list.empty span{background:rgba(14,16,26,.86);color:#a9adbd;border-radius:10px;padding:.7cqw 1.1cqw;font:700 .95cqw/1 Nunito}
+.tdx .tdm-item{flex:none;display:flex;align-items:center;gap:.6cqw;background:rgba(14,16,26,.9);border:2px solid rgba(255,255,255,.1);border-radius:12px;padding:.5cqw .8cqw .5cqw .5cqw;cursor:pointer;color:#f4f1ea;text-align:left;font:inherit}
+.tdx .tdm-item:hover,.tdx .tdm-item:focus-visible{border-color:#ff8a1f;outline:none}
+.tdx .tdm-item.key{border-color:rgba(255,194,58,.75)}
+.tdx .tdm-item.done{opacity:.6}
+.tdx .tdm-item .tdm-faces img{width:2.4cqw;height:2.4cqw}
+.tdx .tdm-txt{display:flex;flex-direction:column;gap:.2cqw}
+.tdx .tdm-txt b{font:400 1cqw/1.1 'Lilita One',sans-serif;letter-spacing:.02em}
+.tdx .tdm-txt span{font:700 .78cqw/1 Nunito;color:#a9adbd}
+.tdx .tdm-item>i{color:#2ec4c4}.tdx .tdm-item.key>i{color:#ffc23a}.tdx .tdm-item.done>i{color:#4fb84a}
+.tdx .tdm-back{position:absolute;left:2.2%;top:calc(4% + 5.6cqw);border:0;background:rgba(14,16,26,.9);color:#fff;border-radius:99px;padding:.55cqw 1cqw;font:900 .85cqw/1 Nunito;letter-spacing:.06em;cursor:pointer}
+.tdx .tdm-places{position:absolute;left:50%;top:6.8cqw;transform:translateX(-50%);display:flex;gap:.3cqw;background:rgba(14,16,26,.86);border-radius:99px;padding:.3cqw}
+.tdx .tdm-places button{border:0;background:none;color:#a9adbd;border-radius:99px;padding:.45cqw .9cqw;font:900 .85cqw/1 Nunito;cursor:pointer}
+.tdx .tdm-places button.on{background:#ffc23a;color:#1a1408}
+.tdx .tdm-bub{position:absolute;transform:translate(-50%,-100%);display:flex;align-items:center;gap:.35cqw;border:0;background:#fff;color:#141620;border-radius:12px;padding:.45cqw .75cqw;font:400 .95cqw/1 'Lilita One',sans-serif;letter-spacing:.02em;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.35);animation:tdmBob 2.4s ease-in-out infinite;white-space:nowrap}
+.tdx .tdm-bub::after{content:'';position:absolute;left:50%;bottom:-.55cqw;transform:translateX(-50%);border:.6cqw solid transparent;border-top-color:#fff;border-bottom:0}
+.tdx .tdm-bub.key{background:#ffc23a}.tdx .tdm-bub.key::after{border-top-color:#ffc23a}
+.tdx .tdm-bub.done{background:#cfe9c8;animation:none;opacity:.8}.tdx .tdm-bub.done::after{border-top-color:#cfe9c8}
+.tdx .tdm-bub:hover,.tdx .tdm-bub:focus-visible{outline:2px solid #ff8a1f;outline-offset:2px}
+@keyframes tdmBob{0%,100%{margin-top:0}50%{margin-top:-.4cqw}}
+@media (prefers-reduced-motion:reduce){.tdx .tdm-bub,.tdx .tdm-pin.key .tdm-card{animation:none}}
+`;
+
 // ══════════════════════════════════════════════════════════════════════
 // CONTROLS
 // ══════════════════════════════════════════════════════════════════════
 export function tdxNext(uid) {
   const R = sync(uid); if (!R) return;
+  if (R.isMap) { tdmNext(uid, R); return; }
   if (R.idx >= R.scr.steps.length - 1) {
     const wasAuto = R.auto; stopAuto(R);
     if (typeof window !== 'undefined' && typeof window.vpNext === 'function') {
@@ -285,12 +605,13 @@ export function tdxNext(uid) {
 }
 export function tdxBack(uid) {
   const R = sync(uid); if (!R) return; stopAuto(R);
+  if (R.isMap) { tdmBack(uid, R); return; }
   if (R.idx <= 0) { if (typeof window !== 'undefined' && typeof window.vpPrev === 'function') window.vpPrev(); return; }
   R.idx--; paint(uid, false);
 }
-export function tdxAll(uid) { const R = sync(uid); if (!R) return; stopAuto(R); R.idx = R.scr.steps.length - 1; paint(uid, false); }
-export function tdxReset(uid) { const R = sync(uid); if (!R) return; stopAuto(R); R.idx = 0; R.wk = null; paint(uid, true); }
-export function tdxJump(el, i) { const root = el.closest('.tdx[data-uid]'); if (!root) return; const R = sync(root.dataset.uid); if (!R) return; stopAuto(R); R.idx = i; paint(root.dataset.uid, false); }
+export function tdxAll(uid) { const R = sync(uid); if (!R || (R.isMap && R.mode !== 'talk')) return; stopAuto(R); R.idx = R.scr.steps.length - 1; paint(uid, false); }
+export function tdxReset(uid) { const R = sync(uid); if (!R) return; if (R.isMap) { tdmMap(uid); return; } stopAuto(R); R.idx = 0; R.wk = null; paint(uid, true); }
+export function tdxJump(el, i) { const root = el.closest('.tdx[data-uid]'); if (!root) return; const R = sync(root.dataset.uid); if (!R || (R.isMap && R.mode !== 'talk')) return; stopAuto(R); R.idx = i; paint(root.dataset.uid, false); }
 export function tdxIntel(uid) { const st = document.getElementById(`tdx-st-${uid}`); if (!st) return; st.classList.toggle('intel-open'); st.querySelector('.tdx-ibtn')?.classList.remove('new'); }
 export function tdxTab(uid, e) { const b = e.target.closest('[data-tab]'); if (!b) return; const R = reg()[uid]; if (!R) return; R.tab = b.dataset.tab; const st = document.getElementById(`tdx-st-${uid}`); st.querySelector('.tdx-intel').innerHTML = intelHtml(R.scr, ledgerAt(R.scr, R.idx), R.tab, false); }
 const holdFor = s => Math.min(9000, 1700 + String(s?.text || '').length * 40) + (['title', 'idol', 'out', 'found'].includes(s?.k) ? 2400 : 0) + (s?.tense ? 1200 : 0) + (s?.k === 'scene' ? 900 : 0) + (s?.k === 'safe' && s.last ? 1800 : 0);
@@ -299,7 +620,7 @@ export function tdxAuto(uid) {
   const R = sync(uid); if (!R) return;
   R.auto = !R.auto;
   document.getElementById(`tdx-auto-${uid}`)?.classList.toggle('on', R.auto);
-  const tick = () => { if (!R.auto) return; tdxNext(uid); if (R.auto) R.timer = setTimeout(tick, holdFor(R.scr.steps[R.idx])); };
+  const tick = () => { if (!R.auto) return; tdxNext(uid); if (R.auto) R.timer = setTimeout(tick, holdFor(R.scr?.steps?.[R.idx])); };
   if (R.auto) R.timer = setTimeout(tick, 400); else clearTimeout(R.timer);
 }
 export function tdxTv() {
@@ -328,7 +649,7 @@ export function tdxSwitchViewer(which) {
 /** The classic screens' way back to the stepped viewer. */
 export const TDX_SWITCH = `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" onclick="tdxSwitchViewer('stepped')" style="border:1px solid #ff8a1f;background:#171a24;color:#ff8a1f;border-radius:8px;padding:7px 12px;font:800 11px Nunito,system-ui,sans-serif;letter-spacing:1px;cursor:pointer">▶ STEPPED VIEWER</button></div>`;
 
-if (typeof window !== 'undefined') Object.assign(window, { tdxNext, tdxBack, tdxAll, tdxReset, tdxJump, tdxIntel, tdxTab, tdxAuto, tdxTv, tdxSwitchViewer });
+if (typeof window !== 'undefined') Object.assign(window, { tdxNext, tdxBack, tdxAll, tdxReset, tdxJump, tdxIntel, tdxTab, tdxAuto, tdxTv, tdxSwitchViewer, tdmZone, tdmPlace, tdmMap, tdmWin, tdmPlay, tdmStage });
 if (typeof document !== 'undefined') {
   // a stepped screen opens on its first scene; leaving it stops its sound and its Auto
   document.addEventListener('vp:screen', () => {
@@ -337,7 +658,7 @@ if (typeof document !== 'undefined') {
       for (const [uid, R] of Object.entries(reg())) if (R && (!root || root.dataset.uid !== uid)) { stopAuto(R); clearInterval(R.typing); }
       if (!root) { stopAmbience(); return; }
       const R = sync(root.dataset.uid);
-      if (R && R.idx < 0) { R.idx = 0; paint(root.dataset.uid, true); }
+      if (R && R.idx < 0) { R.idx = 0; if (R.isMap) mapPaint(root.dataset.uid, true); else paint(root.dataset.uid, true); }
     }, 0);
   });
   document.addEventListener('vp:close', () => { for (const R of Object.values(reg())) if (R) { stopAuto(R); clearInterval(R.typing); } stopAmbience(); });

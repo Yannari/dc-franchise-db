@@ -726,9 +726,131 @@ def pc_washroom(tod):
     tv_camera((-0.4, -1.4, 1.8), (-0.4, D, 1.6), lens=20)
 
 
+def _prism(name, pts, z0, z1, top, side, tod='day', mottle=0.3):
+    """A flat painted shape raised into a block: its top one colour, its sides another (a bank, a ledge, an island)."""
+    me = bpy.data.meshes.new(name); bm = bmesh.new()
+    lo = [bm.verts.new((x, y, z0)) for x, y in pts]
+    hi = [bm.verts.new((x, y, z1)) for x, y in pts]
+    ft = bm.faces.new(hi); ft.material_index = 0
+    n = len(pts)
+    for i in range(n):
+        j = (i + 1) % n
+        f = bm.faces.new((lo[i], lo[j], hi[j], hi[i])); f.material_index = 1
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(me); bm.free()
+    ob = _link(bpy.data.objects.new(uid(name), me))
+    me.materials.append(pmat(name + 'T' + top + tod, N(top, tod), mottle=mottle, mscale=0.25))
+    me.materials.append(pmat(name + 'S' + side + tod, N(side, tod), mottle=0.2, mscale=0.4))
+    ob['ink'] = 1
+    return ob
+
+
+def _blob(cx, cy, rx, ry, n=48, wob=0.12, seed=0):
+    rnd = random.Random(seed); ph = [rnd.random() * 6.28 for _ in range(3)]
+    out = []
+    for i in range(n):
+        a = i / n * 2 * math.pi
+        k = 1 + wob * (math.sin(a * 3 + ph[0]) * .5 + math.sin(a * 5 + ph[1]) * .3 + math.sin(a * 7 + ph[2]) * .2)
+        out.append((cx + math.cos(a) * rx * k, cy + math.sin(a) * ry * k))
+    return out
+
+
+def _mini_pine(x, y, z, h, col, tod, seed=0):
+    pine_card(x, y, h, h * 0.38, N(col, tod), seed=seed, teeth=3, z=z)
+
+
+def pc_map(tod):
+    """Camp Wawanakwa from above, laid out the way the show draws it (Camp_Wawanakwa_from_Above; the layout sheet
+    TDI_001_L001.1, view from the helicopter): a teal lake, the island's sand rim and sandstone banks, the dock
+    bottom left with the stairs up to the campfire ledge, the cabins in the clearing, the mess hall to the right,
+    the washrooms and the confession outhouse by the cabins, the forest and the trail behind, the beach along the
+    bottom, purple mountains, and the thousand-foot cliff rising at the back right. Every place a scene can be
+    staged carries a 'zone' mark the map hangs its hotspot on."""
+    paint_mode(); day = tod == 'day'
+    paint_sky('#2f9c98', '#2f9c98')
+    water = box('MapWater', (600, 600, 0.2), (0, 40, -1.6), pmat('MapWater' + tod, N('#2a9a96', tod), unlit=True, mottle=0.05, mscale=0.05), bevel=0)
+    # the shallows: lighter rings round the island and the islets
+    for k, (s, col) in enumerate(((1.28, '#3ab3ac'), (1.14, '#48c2b8'))):
+        _flat_poly('Shallow', _blob(0, 8.5, 40 * s, 19.5 * s, seed=3), -1.4 + k * 0.05, col, tod, mottle=0.05)
+    for (ix, iy, r) in ((-44, 30, 5), (-48, -8, 4), (44, -10, 3.5), (36, 34, 3)):
+        _flat_poly('IsletShallow', _blob(ix, iy, r * 1.6, r * 1.2, seed=int(ix)), -1.38, '#48c2b8', tod, mottle=0.05)
+        _prism('Islet', _blob(ix, iy, r, r * 0.75, seed=int(iy) + 7), -1.4, -0.9, '#ecd8a6', '#c8b080', tod)
+        card(uid('IsletRock'), _blob_pts(r * 0.6, r * 0.5, 30, 0.2, int(ix), flat_bottom=True), iy + 0.5, pmat('IsletRock' + tod, N('#7a6aa8', tod), unlit=True, mottle=0.2), x=ix, z=-0.9)
+    # the island: sand all round, then the grass on its sandstone banks
+    _prism('Sand', _blob(0, 8.5, 40, 19.5, seed=3), -1.4, -0.6, '#ecd8a6', '#cdb684', tod)
+    _prism('Land', _blob(-1, 11.5, 36.0, 15.5, seed=11, wob=0.07), -0.6, 0.6, '#a8963e', '#a89e80', tod)
+    # the clearing and the paths: worn ochre ground
+    _flat_poly('Clearing', _blob(-3, 1, 13, 5.5, seed=21, wob=0.1), 0.62, '#c49a4a', tod, mottle=0.3)
+    for (px, py, rx, ry) in ((4, 9, 1.0, 6), (-12, 5, 6, 1.0), (10, 2, 7, 1.0)):
+        _flat_poly('Path', _blob(px, py, rx, ry, seed=int(px * 3) + 5, wob=0.15), 0.63, '#c49a4a', tod, mottle=0.3)
+    # behind: purple mountains, olive hills, the pine forest
+    for (mx, my, mr, mh, col) in ((-14, 26, 9, 9, '#7a6aa8'), (-2, 28, 11, 12, '#6a5a98'), (10, 25, 7, 7, '#7a6aa8')):
+        pcyl('Mountain', mr, mh, (mx, my, 0.6 + mh / 2), col, tod, r2=1.2, verts=24)
+    for (hx, hy, hr, hh) in ((-20, 15, 7, 3.0), (-6, 17, 8, 3.6), (8, 16, 7, 3.2)):
+        pcyl('Hill', hr, hh, (hx, hy, 0.6 + hh / 2), '#8a8a3e', tod, r2=hr * 0.45, verts=24)
+    rnd = random.Random(31)
+    for i in range(320):
+        x, y = rnd.uniform(-32, 18), rnd.uniform(9.5, 27)
+        if -12 < x < 14 and y < 12.5: continue
+        _mini_pine(x, y, 0.6 + (1.6 if 13 < y < 20 else 0.2), rnd.uniform(1.8, 3.4), rnd.choice(('#2f4060', '#3a5272', '#2b5a5a', '#3a5a3a')), tod, seed=i)
+    for i in range(10):
+        x, y = rnd.uniform(-26, 12), rnd.uniform(8, 12)
+        umbrella_pine(x, y, rnd.uniform(4, 6), col=N('#3f5a46', tod), trunk=N('#2a2440', tod), seed=300 + i, s=0.7)
+    # the cliff at the back right (the aerial's great ridge): a green slope furred with pines climbing to a peak,
+    # its sheer sandstone face dropping to the lake on the right
+    card(uid('Ridge'), [(-14, 0), (-6, 4), (0, 9), (6, 16), (10, 23), (12.5, 27), (13.5, 27.5), (14.2, 26), (14.6, 0)], 26.0,
+         pmat('Ridge' + tod, N('#4f7a52', tod), unlit=True, mottle=0.25, mscale=0.3), x=17, z=0.0)
+    card(uid('RidgeFace'), [(12.4, 27.2), (13.5, 27.5), (14.2, 26), (14.6, 0), (16.8, 0), (16.0, 12), (15.0, 22)], 25.9,
+         pmat('RidgeFace' + tod, N('#b8a882', tod), unlit=True, mottle=0.25, mscale=0.3), x=17, z=0.0)
+    for k in range(5):
+        card(uid('RidgeStrata'), [(14.6 + k * 0.4, 2 + k * 4), (14.75 + k * 0.4, 2 + k * 4), (14.4 + k * 0.25, 8 + k * 4), (14.25 + k * 0.25, 8 + k * 4)], 25.85,
+             pmat('RidgeStr' + tod, N('#8a7a60', tod), unlit=True, mottle=0), x=17, z=0.0)
+    for i in range(60):
+        t = rnd.random(); rx = -12 + 25 * t; top = 27 * max(0.0, (t ** 1.4)) - 1.5
+        z = rnd.uniform(0.5, max(1.0, top))
+        if rx > 13.2 or z > top: continue
+        pine_card(17 + rx, 25.95, rnd.uniform(1.4, 2.4), 0.7, N(rnd.choice(('#2b5a5a', '#2f4060')), tod), seed=400 + i, teeth=3, z=z)
+    # the campfire ledge on the left, up the stairs from the dock: the pit, the rows of stumps
+    _prism('Ledge', _blob(-21, 2, 6, 4.2, seed=41, wob=0.06), 0.6, 2.4, '#8a8a3e', '#9a7a62', tod)
+    fire_pit(-21, 2.6, tod, r=0.7, lit=not day)
+    for j in range(2):
+        for i in range(4):
+            pcyl('Stump', 0.4, 0.5, (-23.0 + i * 1.3, 0.2 + j * 1.2, 2.65), '#7a4a32', tod, verts=10)
+    for k in range(6):
+        pbox('Stair', (1.6, 0.6, 0.18), (-20.0, -2.4 - k * 0.55, 2.2 - k * 0.42), '#8a6440', tod)
+    # the dock, bottom left, out into the lake
+    plank_floor('Dock', (3.0, 12, 0.3), (-19, -11.5, -0.9), '#9a7046', tod, axis='y', step=0.45, seam='#4a3424')
+    plank_floor('DockEnd', (11, 3.2, 0.3), (-19, -18.0, -0.9), '#8a6440', tod, axis='x', step=0.5, seam='#4a3424')
+    for (px, py) in ((-20.6, -9), (-17.4, -9), (-20.6, -14), (-17.4, -14), (-24, -19.3), (-14, -19.3)):
+        pcyl('Piling', 0.22, 1.6, (px, py, -1.2), '#6a4a2e', tod, verts=10)
+    wood_sign(-15.6, -13, 0.5, 2.6, 0.8, 'WAWANAKWA', tod, col='#c8b080', txt='#b83a2a', post_h=1.0)
+    # the cabins in the clearing, the washrooms beside them, the confession outhouse, the mess hall to the right
+    tdi_cabin((-7.5, 3.5, 0.6), tod, rot_z=-8, w=4.2, d=3.0, h=1.8, stairs_side=1)
+    tdi_cabin((-1.5, 4.0, 0.6), tod, rot_z=6, w=4.2, d=3.0, h=1.8, stairs_side=-1)
+    tdi_cabin((-12.5, 7.0, 0.6), tod, rot_z=-4, w=3.0, d=2.4, h=1.5, wall='#9ab0a0', roof='#6a7a7a', stairs_side=1)
+    tdi_outhouse(2.6, 1.2, tod, rot_z=-10, s=1.0)
+    tdi_cabin((8.5, 5.0, 0.6), tod, rot_z=-6, w=7.0, d=4.0, h=2.2, stairs_side=-1)
+    pbox('MessChimney', (0.7, 0.7, 3.8), (10.8, 6.2, 2.5), '#8a8a8a', tod)
+    # the beach along the bottom right: wider sand, a canoe drawn up, towels
+    _flat_poly('BeachSand', _blob(15, -6.5, 10, 2.6, seed=51), -0.58, '#f2dfb2', tod, mottle=0.15)
+    pbox('Canoe', (2.6, 0.6, 0.3), (18, -7.0, -0.4), '#c8502a', tod, rot=(0, 0, -15))
+    for (tx, tc) in ((12.0, '#e84a6a'), (14.0, '#4ac8c8')):
+        pbox('Towel', (1.2, 0.6, 0.02), (tx, -6.0, -0.56), tc, tod, mottle=0.1)
+    # the forest trail: a path winding up into the pines
+    _flat_poly('Trail', [(4.5, 10), (5.5, 10), (6.5, 14), (5.0, 18), (4.0, 18), (5.4, 14)], 3.45, '#c49a4a', tod, mottle=0.3)
+    # where each place is on the map (the hotspots hang on these)
+    for zid, loc in (('cabins', (-4.5, 3.5, 3.0)), ('mess-hall', (8.5, 5.0, 3.6)), ('washroom', (-12.5, 7.0, 2.6)),
+                     ('communal-grounds', (-3.0, -1.0, 0.8)), ('confessional', (2.4, 1.0, 2.6)), ('campfire', (-21.0, 2.0, 3.0)),
+                     ('dock', (-19.0, -16.0, -0.5)), ('beach', (15.0, -6.5, -0.4)), ('forest-trail', (5.2, 15.5, 4.0)),
+                     ('cliff', (23.0, 19.0, 18.5))):
+        mark('zone', loc, id=zid)
+    paint_sun(azimuth=-35, elevation=55 if day else 35, energy=4.0 if day else 1.8)
+    tv_camera((2.0, -68.0, 50.0), (3.0, 8.0, 6.5), lens=32)
+
+
 SCENES['hosted-camp'] = {'communal-grounds': pc_grounds, 'cabins': pc_cabins, 'mess-hall': pc_mess, 'dock': pc_dock,
                          'campfire': pc_campfire, 'forest-trail': pc_trail, 'confessional': pc_confessional,
                          'ceremony': pc_ceremony, 'exit': pc_shame,
-                         'cabin-inside': pc_cabin_inside, 'beach': pc_beach, 'washroom': pc_washroom, 'cliff': pc_cliff}
+                         'cabin-inside': pc_cabin_inside, 'beach': pc_beach, 'washroom': pc_washroom, 'cliff': pc_cliff, 'map': pc_map}
 # OUTDOOR = rendered by day and by night (the mess hall and the cabin inside too: dinner and bedtime happen after dark)
-OUTDOOR['hosted-camp'] = {'communal-grounds', 'cabins', 'dock', 'campfire', 'forest-trail', 'beach', 'cliff', 'mess-hall', 'cabin-inside'}
+OUTDOOR['hosted-camp'] = {'communal-grounds', 'cabins', 'dock', 'campfire', 'forest-trail', 'beach', 'cliff', 'mess-hall', 'cabin-inside', 'map'}

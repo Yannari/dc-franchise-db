@@ -69,7 +69,7 @@ describe('the pools keep their contract', () => {
 
   it('only writes a third person into a scene that has one', () => {
     // island trios and group moments always hold a third (td/script/island.js)
-    const WITH_C = [/^isle\.(trio|group)\./, /^drama\.stir\./, /^romance\.(noticed|target|jealous|sidelined|sabotage)\./];
+    const WITH_C = [/^isle\.(trio|group)\./, /^drama\.stir\./, /^romance\.(noticed|target|jealous|sidelined|sabotage)\./, /^romance\.(tri|affair)\./];
     for (const [key, pool] of all) {
       if (WITH_C.some(re => re.test(key))) continue;
       for (const e of pool) {
@@ -143,6 +143,23 @@ describe('the pools keep their contract', () => {
 });
 
 describe('the pools read for every camper', () => {
+  it('names everyone a drama or romance scene holds', () => {
+    // A scene with {b} or {c} in it places them on screen; a line that never names them leaves a
+    // person standing there for no reason (found writing the triangle pools, 2026-10-07: 52 lines).
+    const needC = /^romance\.(noticed|target|jealous|sidelined|sabotage|tri\.(dual|onesided|tension|confront|escalate|exploit|fight|ultimatum|reject|faded)|affair\.(noticed|rumor|caught|exposed|stays|leaves))|^drama\.stir/;
+    const soloB = /^(drama\.(meltdown|read|showboat)|romance\.tri\.lonely)/;
+    const bad = [];
+    for (const [key, pool] of all) {
+      if (!/^(drama|romance)\./.test(key)) continue;
+      for (const e of pool) {
+        const t = JSON.stringify(e.turns);
+        if (!soloB.test(key) && !/\{b[}.]|"by":"b"/.test(t)) bad.push(`${key} ${e.id}: no {b}`);
+        if (needC.test(key) && !/\{c[}.]|"by":"c"/.test(t)) bad.push(`${key} ${e.id}: no {c}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
   it('never puts a verb that only agrees with he or she after a pronoun slot', () => {
     // "{b.sub} has" prints "they has"; "{b.sub}'s" prints "they's".
     const bad = /\{[a-z]+\.[sS]ub\}('s\b|\s+(has|is|was|does|doesn't|isn't|wasn't|hasn't|[a-z]+[^s']s)\b)/;

@@ -31,8 +31,9 @@ import drama from './drama.js';
 import drama2, { GUARANTEED as drama2G } from './drama2.js';
 import dramaMore from './drama-more.js';
 import romance from './romance.js';
+import romance2, { GUARANTEED as romance2G } from './romance2.js';
 
-const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind, reads, ends, threat, camp, quit, adv, tail, tests, last, isle, isleGroup, isleTrain, isleMore, drama, drama2, dramaMore, romance];
+const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind, reads, ends, threat, camp, quit, adv, tail, tests, last, isle, isleGroup, isleTrain, isleMore, drama, drama2, dramaMore, romance, romance2];
 
 // A key may be written in more than one file (the island pools grow by file): its entries add up.
 export const POOLS = {};
@@ -43,4 +44,4 @@ for (const f of FILES) for (const [k, v] of Object.entries(f)) POOLS[k] = POOLS[
  * {boot}). A line may say a slot its ending guarantees without asking for it;
  * any other optional name needs `when: { slot: true }` (tests/td-script.test.js).
  */
-export const GUARANTEED = Object.assign({}, falloutG, allianceG, pitchG, recruitG, endsG, quitG, advG, tailG, lastG, isleG, drama2G);
+export const GUARANTEED = Object.assign({}, falloutG, allianceG, pitchG, recruitG, endsG, quitG, advG, tailG, lastG, isleG, drama2G, romance2G);

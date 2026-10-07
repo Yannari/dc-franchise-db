@@ -375,6 +375,7 @@ const SPARK = [
     { by: 'b', conf: "That's either the most romantic or the dumbest thing anyone has ever said to me. I'm in either way." },
   ] },
   { id: 'ro.s4', when: { arch: 'showmancer' }, turns: [
+    { beat: '{b} is across the fire, laughing at something.' },
     { by: 'a', conf: "I came here to win. And to fall in love. I'm halfway there." },
   ] },
   { id: 'ro.s5', turns: [
@@ -523,6 +524,7 @@ const FADE_SOURED = [
     { by: 'b', conf: "{a} didn't say no. That's worse than saying no." },
   ] },
   { id: 'ro.fs6', when: { register: 'schemer' }, turns: [
+    { beat: '{b} is on the far side of camp, not looking over.' },
     { by: 'a', conf: "It was useful while it lasted. Now it's not. Don't look at me like that. You'd do the same." },
   ] },
 ];
@@ -544,6 +546,7 @@ const RIDE_OR_DIE = [
     { by: 'a', say: "...Okay, that's a better answer." },
   ] },
   { id: 'ro.rd4', when: { register: 'schemer' }, turns: [
+    { beat: "{b} is asleep against {a}'s shoulder." },
     { by: 'a', conf: "Everybody says showmances lose. Everybody's never had one like ours. We go to the end together or not at all." },
   ] },
   { id: 'ro.rd5', when: { register: 'fiery' }, turns: [
@@ -652,6 +655,7 @@ const TARGET = [
     { by: 'a', conf: "{b} and {c} can't both stay. One of them goes. Which one, I don't care." },
   ] },
   { id: 'ro.t3', when: { register: 'schemer' }, turns: [
+    { beat: '{b} and {c} walk past, holding hands.' },
     { by: 'a', conf: "Love is beautiful. It's also a voting bloc. And voting blocs get broken." },
   ] },
   { id: 'ro.t4', turns: [
@@ -689,6 +693,7 @@ const JEALOUS = [
     { by: 'b', conf: "{a} and {c} hate each other now. Because of me. I don't know what to do with that." },
   ] },
   { id: 'ro.j5', when: { register: 'schemer' }, turns: [
+    { beat: '{b} is right there, sitting next to {c}.' },
     { by: 'a', say: "You two are so good together." },
     { by: 'c', say: "Thanks." },
     { by: 'a', conf: "They'll be even better apart. I'm going to make sure of it." },
@@ -712,9 +717,11 @@ const SIDELINED = [
     { by: 'b', conf: "That wasn't fair. Was it fair? Maybe it was a little fair." },
   ] },
   { id: 'ro.sd3', turns: [
+    { beat: '{b} and {c} are whispering on the other side of camp.' },
     { by: 'a', conf: "I don't hate {c}. I just hate that {c} took my best friend and nobody asked me." },
   ] },
   { id: 'ro.sd4', when: { register: 'fiery' }, turns: [
+    { beat: '{c} is right there beside {b}, as usual.' },
     { by: 'a', say: "Oh, look who remembered I exist." },
     { by: 'b', say: "Don't be like that." },
     { by: 'a', say: "Like what? Alone? Because that's what I am now." },
@@ -724,6 +731,7 @@ const SIDELINED = [
     { by: 'a', conf: "Nobody's talking about it. That's the part that hurts the most." },
   ] },
   { id: 'ro.sd6', when: { register: 'sweet' }, turns: [
+    { beat: '{c} has an arm around {b}.' },
     { by: 'a', say: "I'm really happy for you two." },
     { by: 'b', say: "Thank you! That means a lot." },
     { by: 'a', conf: "I am happy for them. I'm also really, really lonely. Both things are true." },

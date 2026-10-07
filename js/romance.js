@@ -1127,7 +1127,8 @@ export function checkLoveTriangleFormation(ep) {
         `Everyone on the tribe can feel it: ${center} is caught between ${suitors[0]} and ${suitors[1]}, and ${pc.sub} doesn't seem to realize ` +
         `how obvious it's become. The question isn't whether this blows up — it's when.`
       ];
-      evts.push({ type: 'triangleTension', sourceType: 'dual-showmance', text: variants[Math.random() < 0.5 ? 0 : 1], players: [center, suitors[0], suitors[1]] });
+      evts.push(_scene({ type: 'triangleTension', sourceType: 'dual-showmance', text: variants[Math.random() < 0.5 ? 0 : 1], players: [center, suitors[0], suitors[1]], badgeText: 'LOVE TRIANGLE', badgeClass: 'red' },
+        'romance.tri', { a: center, b: suitors[0], c: suitors[1] }, { ending: 'dual' }, { ep: epNum }));
     }
     ep.triangleEvents.push({ type: 'formation', sourceType: 'dual-showmance', center, suitors: [suitors[0], suitors[1]], ep: epNum });
     return; // max 1 triangle
@@ -1211,6 +1212,8 @@ export function checkLoveTriangleFormation(ep) {
               `${inShowmance} has been finding excuses to be alone with ${candidate}. ${partner} doesn't notice. The cameras do.`,
               `Something shifted between ${inShowmance} and ${candidate}. It's subtle — a glance held too long, a conversation that goes quiet when ${partner} walks over. The game just got complicated.`,
             ]), players: [inShowmance, candidate] });
+            const _afFormed = _afEvts[_afEvts.length - 1];
+            _afEvts[_afEvts.length - 1] = _scene(_afFormed, 'romance.affair', { a: inShowmance, b: candidate }, { ending: 'form', target: partner }, { ep: epNum });
           }
 
           ep.affairEvents = ep.affairEvents || [];
@@ -1249,7 +1252,8 @@ export function checkLoveTriangleFormation(ep) {
             `There's a new energy around ${inShowmance} that ${partner} can't quite name. ${candidate} lights up whenever ${pc.sub} walks over, ` +
             `laughs a half-second too long at ${pc.posAdj} jokes. It hasn't crossed any lines yet — but the line is getting thinner every day.`
           ];
-          evts.push({ type: 'triangleTension', sourceType: 'one-sided', text: variants[Math.random() < 0.5 ? 0 : 1], players: [inShowmance, partner, candidate] });
+          evts.push(_scene({ type: 'triangleTension', sourceType: 'one-sided', text: variants[Math.random() < 0.5 ? 0 : 1], players: [inShowmance, partner, candidate], badgeText: 'LOVE TRIANGLE', badgeClass: 'red' },
+            'romance.tri', { a: inShowmance, b: partner, c: candidate }, { ending: 'onesided' }, { ep: epNum }));
         }
         ep.triangleEvents.push({ type: 'formation', sourceType: 'one-sided', center: inShowmance, suitors: [partner, candidate], ep: epNum });
         return; // max 1 triangle
@@ -1338,8 +1342,9 @@ export function updateLoveTrianglePhases(ep) {
               `${gone} is gone, and the thing that was tearing ${center} in half was settled by nine other people in about four seconds.`,
               `Nobody chose. The house did. ${gone} walked out and ${center} and ${survivor} are suddenly a couple, decided by a vote neither of them controlled.`,
             ]);
-        _cutEvts.push({ type: 'triangleCut', kind, byTheirHand, text,
-          players: [centerAlive ? center : suitorA, survivor || suitorC, gone] });
+        const _cutPs = [centerAlive ? center : suitorA, survivor || suitorC, gone];
+        _cutEvts.push(_scene({ type: 'triangleCut', kind, byTheirHand, text, players: _cutPs, badgeText: 'TRIANGLE OVER', badgeClass: 'red' },
+          'romance.tri', { a: _cutPs[0], b: _cutPs[1] }, { ending: kind === 'center-gone' ? 'cut-center' : byTheirHand ? 'cut-hand' : 'cut-vote', target: gone }, { ep: epNum }));
       }
       ep.triangleEvents = ep.triangleEvents || [];
       ep.triangleEvents.push({ type: 'triangleCut', kind: !centerAlive ? 'center-gone' : 'suitor-gone',
@@ -1351,12 +1356,12 @@ export function updateLoveTrianglePhases(ep) {
         if (ep.campEvents?.[tribeName]) {
           const block = ep.campEvents[tribeName];
           const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
-          evts.push({
+          evts.push(_scene({
             type: 'triangleLonely',
             text: `${center} sits alone at camp, ${pc.posAdj} shelter suddenly too quiet. Both ${suitorA} and ${suitorC} are gone — ` +
                   `the triangle resolved itself in the cruelest way possible. ${pc.Sub} stares into the fire and says nothing.`,
             players: [center]
-          });
+          }, 'romance.tri', { a: center }, { ending: 'lonely' }, { ep: epNum }));
         }
         ep.triangleEvents = ep.triangleEvents || [];
         ep.triangleEvents.push({ type: 'triangleLonely', phase: tri.phase, center, suitors: [suitorA, suitorC] });
@@ -1388,6 +1393,7 @@ export function updateLoveTrianglePhases(ep) {
           `${center} and ${droppedSuitor} barely talk anymore. Whatever spark was there burned out on its own. ${survivingBond} won without having to fight for it.`,
           `The triangle resolved itself. ${center} drifted away from ${droppedSuitor} naturally — no dramatic confrontation, just the slow fade of something that was never going to last.`,
         ]), kind: 'faded', players: [center, survivingBond, droppedSuitor] });
+        _orgEvts[_orgEvts.length - 1] = _scene(_orgEvts[_orgEvts.length - 1], 'romance.tri', { a: center, b: survivingBond, c: droppedSuitor }, { ending: 'faded' }, { ep: epNum });
       }
       // Surviving bond becomes a showmance if compatible + bond high enough + cap allows
       const _orgBondVal = getBond(center, survivingBond);
@@ -1435,12 +1441,19 @@ export function updateLoveTrianglePhases(ep) {
     const pC = pronouns(suitorC);
     const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(center) || 'merge');
 
-    const pushEvt = (type, text, players, kind = null) => {
+    const TRI = { triangleTension: 'tension', triangleConfrontation: 'confront', triangleEscalation: 'escalate', trianglePublicFight: 'fight', triangleUltimatum: 'ultimatum' };
+    const pushEvt = (type, text, players, kind = null, ending = null) => {
       if (!ep.campEvents?.[tribeName]) return;
       const block = ep.campEvents[tribeName];
       const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
-      evts.push({ type, text, kind, sourceType: tri.sourceType || null,
-        players: players || [suitorA, center, suitorC] });
+      const ps = players || [suitorA, center, suitorC];
+      const evt = { type, text, kind, sourceType: tri.sourceType || null, players: ps };
+      // exploit: [schemer, A, center, C] — the schemer talks about the other three
+      const end = ending || (type === 'triangleEscalation' && ps.length === 4 ? 'exploit' : TRI[type]);
+      const who = end === 'exploit' ? { a: ps[0], b: ps[1], c: ps[3] }
+        : /^reject-/.test(end || '') ? { a: ps[2], b: ps[0], c: ps[1] }
+        : { a: ps[0], b: ps[1], c: ps[2] };
+      evts.push(end ? _scene(evt, 'romance.tri', who, { ending: end, ...(end === 'exploit' ? { target: ps[2] } : {}) }, { ep: epNum }) : evt);
       ep.triangleEvents = ep.triangleEvents || [];
       ep.triangleEvents.push({ type, phase: tri.phase, center, suitors: [suitorA, suitorC] });
     };
@@ -1644,7 +1657,8 @@ export function updateLoveTrianglePhases(ep) {
         ];
         reactionText = _pick(emotionalReactions);
       }
-      pushEvt('triangleResolved', reactionText, [center, chosen, rejected], 'chose');
+      pushEvt('triangleResolved', reactionText, [center, chosen, rejected], 'chose',
+        (arch === 'villain' || arch === 'schemer') ? 'reject-villain' : (sRej.strategic >= 7 && sRej.loyalty <= 4) ? 'reject-strategic' : 'reject-emotional');
 
       // Store on episode for VP
       ep.triangleResolution = { center, chosen, rejected, severity: rejSeverity, bondCrash, heatBoost };
@@ -1698,7 +1712,17 @@ export function updateAffairExposure(ep) {
       if (!ep.campEvents?.[tribeName]) return;
       const block = ep.campEvents[tribeName];
       const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
-      evts.push({ type, text, players });
+      const evt = { type, text, players };
+      // the scene each step of an affair is, and who plays which part (td/script/lines/romance2.js)
+      const p = players || [];
+      let sc = null;
+      if (type === 'affairSecret') sc = ['hidden', { a: cheater, b: secretPartner }, { target: partner }];
+      else if (type === 'affairRumor') sc = p[2] === partner ? ['rumor', { a: p[0], b: cheater, c: partner }] : ['noticed', { a: p[0], b: cheater, c: secretPartner }];
+      else if (type === 'affairCaught') sc = ['caught', { a: p[0], b: cheater, c: secretPartner }];
+      else if (type === 'affairSilent') sc = ['silent', { a: p[0], b: cheater }];
+      else if (type === 'affairExposed') sc = ['exposed', { a: p[0], b: partner, c: cheater }];
+      else if (type === 'affairChoice') sc = p[1] === partner ? ['stays', { a: cheater, b: partner, c: secretPartner }] : ['leaves', { a: cheater, b: partner, c: secretPartner }];
+      evts.push(sc ? _scene(evt, 'romance.affair', sc[1], { ending: sc[0], ...(sc[2] || {}) }, { ep: epNum }) : evt);
       ep.affairEvents.push({ type, cheater, secretPartner, exposure: af.exposure });
     };
 

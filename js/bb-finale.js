@@ -28,6 +28,7 @@ import { runBBCompetition } from './bb/comps.js';
 import { BB_COMPETITIONS } from './bb-comps/index.js';
 import { generateBBFinaleHouse } from './bb/finale-house.js';
 import { generateBBEvictionInterview, bbHostName } from './bb-aftermath.js';
+import { freshPick } from './bb/line-memory.js';
 
 // ── the last pitch ──────────────────────────────────────────────────────
 //
@@ -80,6 +81,7 @@ function finalPitches({ hoh, options, margins, honoured, betrayal, week }) {
   // these are two different cases. Whoever speaks second steps to the next
   // unused line in their own pool.
   const used = new Set();
+  const usedShapes = new Set();
   return options.map(name => {
     const p = pronouns(name);
     const hasDeal = honoured?.partner === name || betrayal?.partner === name;
@@ -94,8 +96,58 @@ function finalPitches({ hoh, options, margins, honoured, betrayal, week }) {
     }
     const line = pool[at];
     used.add(line);
-    return { name, kind, text: line(name, hoh, p) };
+    // the season's record, said by the person it belongs to (the user, 2026-10-07: "same for the
+    // final cut"): every pool line plus the grounded ones, preferring what this viewer has not heard
+    const st = gs.bb?.stats?.[name] || {};
+    const wins = (st.hohWins || 0) + (st.vetoWins || 0) + (st.blockBusterWins || 0);
+    const sent = (gs.bb?.weeks || []).filter(w => w.hoh === name && w.evicted && (gs.jury || []).includes(w.evicted)).map(w => w.evicted);
+    const W = n => ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][n] || String(n);
+    const grounded = hasDeal ? [
+      `${name} looks straight at ${hoh}. "We made that deal weeks ago, and I never gave you one reason to doubt it. I'm asking you to keep it."`,
+      `${name} keeps it short. "You know what we said. I kept my word every single week. Keep yours tonight."`,
+    ] : weaker ? [
+      `${name} doesn't dress it up. "I've won ${W(wins)} competition${wins === 1 ? '' : 's'}. Take me, and you walk into that jury with the better résumé."`,
+      `${name} turns to ${hoh}. "Nobody on that jury owes me anything. Sit next to me and the votes are yours to win."`,
+      `${name} makes the honest case. "You know you beat me. I know you beat me. Take me, and I'll still be proud to be sitting there."`,
+    ] : [
+      `${name} doesn't beg. "I've won ${W(wins)} competition${wins === 1 ? '' : 's'}${sent.length ? ` and sent ${sent.join(' and ')} to that jury` : ''}. If you take me, you're taking the hardest final two there is. The jury will respect that."`,
+      `${name} holds ${hoh}'s eye. "If you cut me, I'm a juror in five minutes, and I'll remember who didn't have the nerve to sit next to me."`,
+      `${name} gets straight to it. "You and me, at the end, is the final two people will talk about for years. Do you want to win the easy way, or the real way?"`,
+    ];
+    const text = freshPick([...pool.map(fn => fn(name, hoh, p)), ...grounded], `pitch|${week}|${name}|${hoh}`, usedShapes);
+    return { name, kind, text };
   });
+}
+
+/** The final HOH's reason for the cut, from what the house can see. */
+function finalCutReason({ hoh, kept, cut, honoured, betrayalPartner, week }) {
+  if (!cut) return null;
+  const st = n => gs.bb?.stats?.[n] || {};
+  const wins = n => (st(n).hohWins || 0) + (st(n).vetoWins || 0) + (st(n).blockBusterWins || 0);
+  const W = n => ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][n] || String(n);
+  const sentBy = n => (gs.bb?.weeks || []).filter(w => w.hoh === n && w.evicted && (gs.jury || []).includes(w.evicted)).map(w => w.evicted);
+  const pc = pronouns(cut), pk = pronouns(kept);
+  const lines = [];
+  if (betrayalPartner) lines.push(
+    `${betrayalPartner}, I made you a promise. I know I did. And I'm breaking it, because this is the only vote I get, and I have to use it to win.`,
+    `${betrayalPartner}, we had a deal, and I meant it when I made it. But I've counted that jury over and over, and I don't beat you.`,
+    `This is the hardest thing I'll do in this game. ${betrayalPartner}, I'm sorry. I can't take you, because I'd lose to you.`);
+  else if (honoured) lines.push(
+    `${kept} and I made a deal a long time ago. ${kept} never once made me doubt it, and I'm not going to be the one who breaks it tonight.`,
+    `I gave ${kept} my word in this house, and I'm not breaking it on the last night.`,
+    ...(honoured.costly ? [`Taking ${kept} might cost me the game. I know that. I promised anyway, and I'm keeping it.`] : []));
+  else {
+    if (wins(cut) >= wins(kept) + 2) lines.push(`${cut}, you've won ${W(wins(cut))} competitions. Sitting next to you, I don't think I win. I'm sorry.`,
+      `${cut}, you're the best competitor in this house. That's exactly why I can't sit beside you at the end.`);
+    if (sentBy(cut).length) lines.push(`${cut} sent ${sentBy(cut).join(' and ')} to that jury. They'll respect it. I can't let that résumé sit next to me.`);
+    if (getBond(hoh, kept) >= getBond(hoh, cut) + 3) lines.push(`${kept} has been with me since the beginning. I want to finish this with the person I started it with.`,
+      `I trust ${kept} more than anybody in this house. If I'm going to the end, I'm going with ${pk.obj}.`);
+    lines.push(`I've thought about this for days. In the end it comes down to one question: who can I beat in front of that jury?`,
+      `You've both played this game hard, and you both deserve to be here. But I can only take one of you.`,
+      `This isn't about who I like more. I love you both. It's about who I can beat.`,
+      `${cut}, I think the jury would give it to you. I can't take that risk.`);
+  }
+  return freshPick(lines, `cut|${week}|${hoh}|${cut}`);
 }
 
 /** Everyone still playing, in roster order. */
@@ -607,6 +659,10 @@ export function simulateBBFinale(rng = Math.random) {
         week: week?.num || 0 }),
       // How they got here, because a result with no reasoning is not a story.
       projected, honoured, betrayal: betrayal ? { partner: betrayal.victims[0], tier: tierOf(bound.deal) } : null,
+      // what the final HOH says before the vote, from the record (wins, who each sent to the jury,
+      // the deal), so it is the reason for THIS final three and not a line every finale shares
+      reason: finalCutReason({ hoh: finalHoh, kept: keep, cut: options.find(n => n !== keep) || null, honoured,
+        betrayalPartner: betrayal ? betrayal.victims[0] : null, week: week?.num || 0 }),
       hadPromise: !!bound,
       margins: Object.fromEntries(margins),
     });

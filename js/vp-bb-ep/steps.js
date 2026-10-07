@@ -721,7 +721,7 @@ function finalCutScreen(act, ctx) {
       : pick([`I've thought about this for days. In the end, it comes down to one question: who can I beat in front of that jury?`,
         `You've both played this game hard, and you both deserve to be here. But I can only take one of you.`,
         `This decision isn't about who I like more. It's about who I can beat.`], 'beat');
-  steps.push({ k: 'say', by: hoh, push: true, t: reason });
+  steps.push({ k: 'say', by: hoh, push: true, t: act.reason || reason });
   steps.push({ k: 'say', by: hoh, t: `I vote to evict ${act.cut}.`, out: act.cut, shake: true, big: [act.cut, 'Evicted', 'out'] });
   steps.push({ k: 'beat', t: pick([`${act.kept} lets out a scream and throws ${pronouns(act.kept).ref || 'themself'} at ${hoh}.`, `${act.kept} covers their face. ${hoh} pulls them into a hug.`, `${act.kept} drops to the floor, then gets straight back up and hugs ${hoh}.`], 'kept').replace('their face', `${pronouns(act.kept).posAdj || 'their'} face`).replace('pulls them', `pulls ${pronouns(act.kept).obj || 'them'}`), tense: [act.kept, hoh] });
   steps.push({ k: 'host', by: host, t: `${act.cut}, you are the final member of the jury. Please say your goodbyes, and head out through the front door.` });
@@ -2526,19 +2526,35 @@ function juryHouseScreen(act, ctx) {
   const after = ['Where the jury leans now:', ...juryBoard(act.reads, contenders)];
   const steps = [];
   const alone = residents.length === 1;
-  steps.push({ k: 'beat', t: act.newcomer ? (alone ? `The jury house. The lodge is empty. A car pulls up outside.` : `The jury house. A car pulls up outside, and the jurors inside go quiet.`) : `The jury house, at night. A lamp in the window, and nobody on a clock.`, why: before });
+  // the same night, different words: the bookends rotate with the week (the user, 2026-10-07:
+  // "the jury house is super repetitive, always the same sentence")
+  const wk = Number(act.week || ctx.week || 0);
+  const by = list => list[wk % list.length];
+  steps.push({ k: 'beat', t: act.newcomer ? (alone ? `The jury house. The lodge is empty. A car pulls up outside.` : by([
+    `The jury house. A car pulls up outside, and the jurors inside go quiet.`,
+    `Headlights sweep across the lodge window. Somebody says, "That's another one."`,
+    `The jury house, after dark. Gravel crunches in the driveway, and every head turns toward the door.`,
+    `The lodge. The jurors have been waiting all evening to find out who's next. A car door slams outside.`,
+    `The jury house. Somebody turns the music off. They can hear the car before they see it.`,
+  ])) : `The jury house, at night. A lamp in the window, and nobody on a clock.`, why: before });
   for (const a of act.acts || []) {
     if (a.roundtable) {
-      steps.push({ k: 'beat', t: 'The jurors pull their chairs into a circle. It is time for the roundtable.', toast: ['THE ROUNDTABLE', '#e8c98a'] });
+      steps.push({ k: 'beat', t: by([
+        'The jurors pull their chairs into a circle. It is time for the roundtable.',
+        'After dinner, the jurors gather around the table. Nobody needs to be told what happens next.',
+        'Somebody puts the kettle on and the chairs come round the table. Roundtable night.',
+        'The fire is low, the mugs are full, and every juror has something to say tonight.',
+        'The jurors sit down around the table. It is time to talk about who deserves to win.',
+      ]), toast: ['THE ROUNDTABLE', '#e8c98a'] });
       // the conversation the engine wrote (jury-house.js tableTalk): the case for, the case
       // against, the answer, the juror sent home on that player's week, a third juror's verdict
-      const OPEN = [n => `Okay. ${n}. Who wants to start?`, n => `What about ${n}?`, n => `${n} next.`, n => `And ${n}.`, n => `Let's do ${n}.`];
+      const OPEN = [n => `Okay. ${n}. Who wants to start?`, n => `What about ${n}?`, n => `${n} next.`, n => `And ${n}.`, n => `Let's do ${n}.`, n => `Let's talk about ${n}.`, n => `Who has something to say about ${n}?`, n => `${n}. Go.`, n => `Right. ${n}.`, n => `Can we do ${n} now?`];
       const chair = residents.slice().sort((x, y) => (pStatsSafe(y).social || 5) - (pStatsSafe(x).social || 5))[0];
       (a.roundtable.lines || []).forEach((l, i) => {
         if (l.talk?.length) {
           // whoever opens it is not the one about to make the case (they asked and answered themselves)
           const opener = residents.find(n => n === chair && !l.talk.some(t => t.by === n)) || residents.find(n => !l.talk.some(t => t.by === n) && n !== l.third) || null;
-          if (opener) steps.push({ k: 'say', by: opener, t: OPEN[Math.min(i, OPEN.length - 1)](l.player) });
+          if (opener) steps.push({ k: 'say', by: opener, t: OPEN[(i + wk * 3) % OPEN.length](l.player) });
           else steps.push({ k: 'beat', t: `On ${l.player}.` });
           for (const t of l.talk) steps.push({ k: 'say', by: t.by, t: t.t });
           if (l.third && l.thirdText) steps.push({ k: 'say', by: l.third, t: l.thirdText });
@@ -2560,11 +2576,19 @@ function juryHouseScreen(act, ctx) {
           ? `I came in tonight not sold on ${l.player}. Then ${l.backer} laid it all out, and I'm starting to think ${l.player} deserves this more than I wanted to admit.`
           : `I came in tonight leaning toward ${l.player}. Then ${l.doubter} said what ${l.doubter} said, and I can't stop thinking about it. I'm not sure anymore.` });
       }
-      steps.push({ k: 'beat', t: 'The circle breaks up. The arguments are over for tonight, and the votes are a little less certain than they were.', why: after });
+      steps.push({ k: 'beat', t: by([
+        'The circle breaks up. The arguments are over for tonight, and the votes are a little less certain than they were.',
+        'One by one, the jurors drift off to bed. Nobody has changed their vote out loud, but a few look less sure.',
+        'The roundtable ends the way it always does: with more questions than answers.',
+        'The mugs go cold. The jurors stay where they are for a while, thinking about everything that was said.',
+        'Somebody finally says goodnight, and the circle breaks. The argument will pick up again tomorrow.',
+      ]), why: after });
       continue;
     }
-    steps.push({ k: 'beat', t: a.title === 'The Door Opens' ? 'The door opens.' : `${a.title}.` });
+    // the act's title is a card on its first line, not a line of its own ('The Long Week.')
+    const first = steps.length;
     for (const b of a.beats || []) steps.push(...proseSteps(b.text, b.players || []));
+    if (a.title !== 'The Door Opens' && steps[first]) steps[first] = { ...steps[first], toast: [a.title.toUpperCase(), '#e8c98a'] };
   }
   if (!(act.acts || []).some(a => a.roundtable) && steps.length) steps[steps.length - 1] = { ...steps[steps.length - 1], why: after };
   return { id: `bb-jury-house-${act.week || ctx.week}-v`, kind: 'juryhouse', anchor: 'evict', label: act.full ? 'Jury House · Roundtable' : 'Jury House',

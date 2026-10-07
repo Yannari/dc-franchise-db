@@ -42,6 +42,7 @@ import { readOf, stanceOf, moveRead } from './jury-sentiment.js';
 import { dealBetween, tierOf } from './deals.js';
 import { saboteurState } from './saboteur.js';
 import { twinState } from './twin-twist.js';
+import { freshPick } from './line-memory.js';
 
 const round2 = v => Math.round(v * 100) / 100;
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
@@ -780,6 +781,95 @@ const TWIST_CODAS = {
   },
 };
 
+// ── a closing statement, told from the game that was played ──
+// The user, 2026-10-07: "closing statements are also repetitive". Five fixed speeches a style meant
+// the same paragraph every finale, and most of them read out counts ("0 correct eviction votes").
+// A real closing statement is short and personal: how they played, one or two real moments, a word
+// to somebody on that bench, the person beside them, and a last line. Each part is chosen from
+// what this finalist actually did, and from the versions this viewer has not heard (line-memory.js).
+function composeStatement(f, style, other, jury, salt, said = new Set()) {
+  const c = finalistCase(f);
+  const o = other ? finalistCase(other) : null;
+  const pf = pronouns(f);
+  // shared by both finalists tonight: two statements never use the same sentence
+  const pickOne = (list, k) => freshPick(list, `${salt}|${f}|${k}`, said);
+  const parts = [];
+  parts.push(pickOne([
+    `I've thought about what I'd say here every night for ${NUM(c.weeks)} weeks, and none of it sounds right now that I'm actually standing here.`,
+    `First, thank you. I know every one of you wanted to be sitting in this chair.`,
+    `I'll keep this short, because you already know most of it.`,
+    `I came into that house with one plan, and it lasted about four days. So let me tell you what I did instead.`,
+    `I'm not going to read you a list tonight. I just want to tell you what my game was.`,
+    `I'm nervous, so bear with me. This matters to me more than I can say.`,
+    `A lot of you came into that house as strangers. You're leaving as people who'll decide the rest of my life. No pressure.`,
+  ], 'open'));
+  const juryBoots = c.boots.filter(n => jury.includes(n));
+  const game = [];
+  if (style === 'own-it') {
+    if (c.wins >= 2) game.push(`When I needed to win, I won. ${NUM(c.hohs)} HOH${c.hohs === 1 ? '' : 's'} and ${NUM(c.vetos)} veto${c.vetos === 1 ? '' : 'es'}.`, `I didn't wait for other people to save me. I won ${NUM(c.wins)} competitions and made my own luck.`);
+    if (c.boots.length) game.push(`I put ${c.boots[0]} on the block and sent ${c.boots[0]} home. That was my decision. I'm not going to pretend somebody else made it.`, `Every big move this season, I was in the middle of it. ${c.boots.slice(0, 2).join(' and ')} went home because of plans I made.`);
+    if (c.broken) game.push(`I broke ${c.broken === 1 ? 'a promise' : 'promises'}. I did it because keeping ${c.broken === 1 ? 'it' : 'them'} meant going home, and I wasn't ready to go home.`);
+    game.push(`I played to win from the first day. Sometimes that meant hurting people I liked. I own every bit of it.`,
+      `I didn't come here to make friends and hope for the best. I came to play, and every week I played.`,
+      `I made the calls nobody else wanted to make. Some of you are on that bench because of them.`,
+      `When the house needed someone to make a decision, I made it. That's what I'm asking you to reward.`);
+  } else if (style === 'relationship') {
+    game.push(`My game was people. I talked to every single one of you, every day, and I meant most of what I said.`, `I didn't win the most competitions. I won people's trust, and I kept it longer than anybody else in that house.`,
+      `Every week, somebody came to me with a secret. I never gave anyone a reason to stop.`,
+      `I knew where every vote was going before it happened, because people told me. That's not luck. That's trust.`,
+      `I sat with you on your worst days in that house. Some of you might not remember. I do.`,
+      `I didn't need to win the key. I needed the person holding it to want me there, and every week, they did.`);
+    if (c.survived) game.push(c.survived === 1 ? `I sat on the block once and came back. That isn't luck. That's people deciding they wanted me there.` : `I sat on the block ${times(c.survived)} and came back every time. That isn't luck. That's people deciding they wanted me there.`);
+    if (c.honoured) game.push(`I made a promise in that house and I kept it, even when breaking it would have been easier.`);
+  } else if (style === 'honest') {
+    game.push(c.wins === 0 ? `I didn't win a single competition. I know that. I'm not going to pretend I ran that house.` : `I won ${NUM(c.wins)} competition${c.wins === 1 ? '' : 's'}. Not the most. I'm not going to pretend I ran that house.`);
+    game.push(`Some weeks I was scared, and I played scared. The other weeks I was brave, and those are the weeks that got me here.`, `I made mistakes. I trusted the wrong people for too long. But I learned, and I adjusted, and I'm still here.`,
+      `I'm not going to pretend I had a master plan. I had a lot of bad days and a few good decisions, and the good decisions came at the right time.`,
+      `I was underestimated all season, and I let people underestimate me. That was the closest thing I had to a strategy.`,
+      `I'm not the flashiest player here. But every week, I survived, and that was never an accident.`);
+    if (c.survived) game.push(c.survived === 1 ? `I was on the block once, and I fought my way off it. Nobody handed me this seat.` : `I was on the block ${times(c.survived)}, and every time I fought my way off it. Nobody handed me this seat.`);
+  } else {
+    game.push(`People will tell you I rode other people's games. Look at who's sitting here, and who isn't.`, `Every one of you made deals, and every one of you broke one. I just lasted longer.`, `I know the story some of you have about me. It's not the whole story. I'm asking you to look at the whole thing.`,
+      `It's easy to judge a game from the jury house. It was a lot harder from inside it.`,
+      `I know some of you are angry. I'd ask you to be angry at the game, not the person who played it.`);
+  }
+  parts.push(pickOne(game, 'game1'));
+  const second = game.filter(x => !parts.includes(x));
+  if (second.length > 1) parts.push(pickOne(second, 'game2'));
+  // a word to somebody on that bench
+  const close = jury.filter(j => getBond(f, j) >= 4).sort((a, b) => getBond(f, b) - getBond(f, a))[0];
+  if (juryBoots.length) parts.push(pickOne([
+    `${juryBoots[0]}, I know you're angry with me. I'd be angry too. It wasn't personal. You were the biggest threat to my game, and I'd do it again.`,
+    `${juryBoots[0]}, I owe you the truth: getting you out was the hardest thing I did in that house. It was also the right move.`,
+    `${juryBoots[0]}, I'm sorry it was you. I'm not sorry I did it. I hope you can understand the difference.`,
+  ], 'boot'));
+  else if (close) parts.push(pickOne([
+    `${close}, you kept me sane in there. Whatever you decide tonight, thank you.`,
+    `${close}, you were the first person I trusted in that house. I hope I made you proud.`,
+    `${close}, some days you were the only reason I wanted to stay. I won't forget that.`,
+  ], 'friend'));
+  // the person beside them
+  if (o) parts.push(pickOne(o.wins > c.wins + 1 ? [
+    `${other} won more than I did. I'm not going to take that away from ${pronouns(other).obj}. But winning isn't the only way to play this game.`,
+    `${other} is a competition monster. I had to survive ${pronouns(other).obj}, week after week, without the wins to protect me.`,
+  ] : c.wins > o.wins + 1 ? [
+    `${other} is a great player. But when it mattered, I was the one winning.`,
+    `${other} and I both got here. Only one of us won our way here.`,
+  ] : [
+    `${other} and I played very different games. I'm asking you to look at both of them, honestly.`,
+    `${other} deserves to be here. So do I. Pick the game you respect most.`,
+    `I love ${other}. But I think I played the better game, and I think some of you know it.`,
+  ], 'other'));
+  parts.push(pickOne([
+    `Whatever you decide, I'm proud of how I played. Thank you.`,
+    `I played the best game I could, and I'd play it the same way again. I'm asking for your vote.`,
+    `Thank you. I love you all, even the ones who can't stand me right now.`,
+    `That's my game. I hope it's enough. Thank you.`,
+    `I'm asking for your vote tonight. I think I earned it.`,
+  ], 'close'));
+  return `"${parts.join(' ')}"`;
+}
+
 /**
  * Closing statements.
  *
@@ -795,12 +885,16 @@ export function runClosingStatements({ finalTwo = [], jury = [], week = 0, rng =
   // up…", in the segment where the whole point is that these are two different
   // people making two different cases.
   const usedIntros = new Set();
+  const introShapes = new Set();
+  const tonight = new Set();
   const intro = name => {
     const fresh = STATEMENT_INTROS.filter(fn => !usedIntros.has(fn));
     const from = fresh.length ? fresh : STATEMENT_INTROS;
     const chosen = pick(rng, from);
     usedIntros.add(chosen);
-    return chosen(name);
+    // the season's dice are still drawn (no outcome moves); the words prefer what this viewer has
+    // not heard yet
+    return freshPick(from.map(fn => fn(name)), `intro|${week}|${name}`, introShapes);
   };
   const spoke = new Set();
   for (const finalist of finalTwo) {
@@ -833,7 +927,9 @@ export function runClosingStatements({ finalTwo = [], jury = [], week = 0, rng =
       finalist, style,
       intro: intro(finalist),
       // never the speech the other finalist just gave (two 'relationship' players drew the same one)
-      text: (() => { const left = STATEMENTS[style].filter(fn => !spoke.has(fn)); const fn = pick(rng, left.length ? left : STATEMENTS[style]); spoke.add(fn); return fn(finalist); })(),
+      // the dice the old pool drew are still drawn, so the season's later rolls do not move
+      text: (() => { const left = STATEMENTS[style].filter(fn => !spoke.has(fn)); const fn = pick(rng, left.length ? left : STATEMENTS[style]); spoke.add(fn);
+        return composeStatement(finalist, style, finalTwo.find(n => n !== finalist), jury, `${week}|${finalTwo.join('|')}`, tonight); })(),
       // The last line, when there is something the room already knows and is
       // waiting to hear said.
       coda, twist: twist ? twist.kind : null,

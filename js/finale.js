@@ -16,6 +16,8 @@ import { simulateIndividualChallenge } from './challenges-core.js';
 import { generateCampEvents } from './camp-events.js';
 import { reputationModifier } from './reputation.js';
 import { finalizeEditSeason } from './edit-layer.js';
+import { makeScene } from './td/script/scene.js';
+import { scriptEvent } from './td/script/write.js';
 import { rpBuildWinnerCeremony, rpBuildReunion } from './vp-finale.js';
 import { rpBuildHPChallenge, rpBuildHPTiebreaker, rpBuildHPJoust, rpBuildHPVolcanoRace, rpBuildHPSummit, rpBuildHPEndings } from './chal/hawaiian-punch.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
@@ -45,7 +47,11 @@ export function generateFinaleCampOverride(ep, finalists) {
     `Morning. The last one. The sounds are the same \u2014 birds, waves, wind through the shelter. But everything feels heavier.`,
     `There are ${finalists.length} torches left. ${finalists.length} people. After today, there will be one.`,
   ];
-  events.push({ type: 'atmosphere', text: _pick(openers, 'open' + finalists.join('')), players: finalists, badge: null });
+  // the sentence is still picked (it keeps the season's draws); the scene is what airs (td/script/lines/morning.js)
+  const _say = (evt, kind, who, data = {}) => (who.a && (who.b !== undefined ? who.b : true)
+    ? scriptEvent(evt, makeScene(kind, who, data), { ep: ep.num, phase: 'pre' }) : evt);
+  events.push(_say({ type: 'atmosphere', text: _pick(openers, 'open' + finalists.join('')), players: finalists, badge: null },
+    'morning.open', { a: finalists[0], b: finalists[1] || null }));
 
   // 2. Per-finalist reflection — looking back on the game
   finalists.forEach(f => {
@@ -58,6 +64,8 @@ export function generateFinaleCampOverride(ep, finalists) {
     const daysPlayed = ep.num > 1 ? (ep.num - 1) * 3 : 1;
 
     const reflections = [];
+    // why this finalist is looking back the way they are (the same order the sentences use)
+    let _why = s.strategic >= 8 ? 'plotter' : s.social >= 8 ? 'people' : wins >= 2 ? 'champ' : votesAgainst >= 5 ? 'survivor' : s.loyalty >= 8 ? 'loyal' : 'plain';
     if (s.strategic >= 8)
       reflections.push(`${f} sits alone, running the numbers one last time. Every vote, every alliance, every move that led here. "I made this happen. Today I finish it."`);
     else if (s.social >= 8)
@@ -76,7 +84,9 @@ export function generateFinaleCampOverride(ep, finalists) {
     else if (s.boldness >= 8)
       reflections.push(`${f} looks at the other finalists and grins. "I outplayed all of you. The only question is whether you\u2019re honest enough to admit it tonight."`);
 
-    events.push({ type: 'reflection', text: _pick(reflections, f + 'reflect'), players: [f], badge: null });
+    const _line = _pick(reflections, f + 'reflect');
+    if (_line !== reflections[0]) _why = s.temperament <= 3 ? 'restless' : 'cocky';
+    events.push(_say({ type: 'reflection', text: _line, players: [f], badge: null }, 'morning.reflect', { a: f }, { reason: _why }));
   });
 
   // 3. Relationship moment — the strongest bond among finalists
@@ -95,7 +105,8 @@ export function generateFinaleCampOverride(ep, finalists) {
     ] : [
       `${a} and ${b} share a quiet moment by the fire. Not allies, not enemies \u2014 just two people who survived the same game. "Good luck tonight." "You too."`,
     ];
-    events.push({ type: 'bond', text: _pick(bondTexts, a + b + 'finalbond'), players: bestPair, badge: null });
+    events.push(_say({ type: 'bond', text: _pick(bondTexts, a + b + 'finalbond'), players: bestPair, badge: null },
+      'morning.bond', { a, b }, { reason: bestBond >= 3 ? 'close' : 'truce' }));
   }
 
   // 4. Rivalry moment — the lowest bond among finalists
@@ -112,7 +123,7 @@ export function generateFinaleCampOverride(ep, finalists) {
       `${a} and ${b} don\u2019t speak this morning. They haven\u2019t spoken in days. The game put them on opposite sides and nothing about the finale will fix that.`,
       `${a} catches ${b}\u2019s eye across camp. No words. Just the understanding that one of them is about to end the other\u2019s game. For good.`,
     ];
-    events.push({ type: 'rivalry', text: _pick(rivalTexts, a + b + 'rival'), players: worstPair, badge: null });
+    events.push(_say({ type: 'rivalry', text: _pick(rivalTexts, a + b + 'rival'), players: worstPair, badge: null }, 'morning.rival', { a, b }));
   }
 
   // 5. Closing — burning the shelter / saying goodbye to camp
@@ -122,7 +133,8 @@ export function generateFinaleCampOverride(ep, finalists) {
     `${finalists[0]} douses the fire. The smoke rises and disappears. "That\u2019s it. That\u2019s the last camp." They grab their torches and leave.`,
     `The last meal. The last conversation. The last time this camp will hold all of them. Then they leave \u2014 and the game takes over.`,
   ];
-  events.push({ type: 'closing', text: _pick(closers, 'close' + finalists.join('')), players: finalists, badge: null });
+  events.push(_say({ type: 'closing', text: _pick(closers, 'close' + finalists.join('')), players: finalists, badge: null },
+    'morning.close', { a: finalists[0], b: finalists[1] || null }));
 
   // Override the camp events — replace whatever was generated
   const override = { pre: events };

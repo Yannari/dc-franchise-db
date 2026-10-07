@@ -3521,10 +3521,13 @@ export function simulateEpisode() {
               `${detector} to confessional: "I think ${ct.thrower} threw that challenge. I can't prove it, but my gut says ${tPr.sub} didn't want to win today. And that tells me ${tPr.sub} ${tPr.sub==='they'?'are':'is'} playing a different game than the rest of us."`,
             ]);
           if (!ep.campEvents[_throwCampKey].post) ep.campEvents[_throwCampKey].post = [];
-          ep.campEvents[_throwCampKey].post.push({
+          ep.campEvents[_throwCampKey].post.push(scriptEvent({
             type: 'challengeThrowCaught', players: [detector, ct.thrower], text: evtText,
             badgeText: 'THREW THE CHALLENGE', badgeClass: 'red',
-          });
+          }, dS.boldness >= 7
+            ? makeScene('throw.caught', { a: detector, b: ct.thrower }, { ending: 'bold' }, [], spotOf(ep, detector, ct.thrower, 'post').spot)
+            : makeScene('throw.caught', { a: detector }, { ending: 'quiet', target: ct.thrower }, [], { id: 'confessional', label: 'Confessional' }),
+          { ep: ep.num, phase: 'post' }));
         }
       }
     });

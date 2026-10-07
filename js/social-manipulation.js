@@ -128,7 +128,7 @@ export function _generateForgeNote(schemer, target, group, ep, _rp) {
     ];
     const exposeEvt = _generateExposeSchemer(reader, schemer, null, group, ep, _rp);
     results.push({
-      type: 'forgeNote', players: [schemer, reader],
+      type: 'forgeNote', players: [schemer, reader], about: alleged,
       text: _rp(detectedTexts),
       consequences: `${schemer} caught — heat +2.0 for 3 eps.`,
       badgeText: 'EXPOSED', badgeClass: 'gold'
@@ -201,7 +201,7 @@ export function _generateSpreadLies(schemer, target, group, ep, _rp) {
         // Reaction sub-event: the LISTENER confronts the accused. Not a scheme
         // initiation — the listener was deceived, not scheming (propagated flag
         // lets consumers distinguish the two).
-        type: 'spreadLies', players: [listener, accused], propagated: true,
+        type: 'spreadLies', players: [listener, accused], propagated: true, about: schemer,
         text: _rp(confrontTexts),
         consequences: `${listener} publicly confronts ${accused} — bond drop -0.5 each.`,
         badgeText: 'CONFRONTATION', badgeClass: 'red'
@@ -221,7 +221,7 @@ export function _generateSpreadLies(schemer, target, group, ep, _rp) {
       `${schemer}'s pitch to ${listener} backfires. ${_lP.Sub} can see through the framing — and ${_lP.sub} like${_lP.sub==='they'?'':'s'} ${accused} too much to believe it without more.`,
     ];
     results.push({
-      type: 'spreadLies', players: [schemer, listener],
+      type: 'spreadLies', players: [schemer, listener], about: accused,
       text: _rp(notBelievedTexts),
       consequences: `Lie rejected — bond ${listener}↔${schemer} -0.5.`,
       badgeText: 'LIED TO', badgeClass: 'red'
@@ -230,7 +230,7 @@ export function _generateSpreadLies(schemer, target, group, ep, _rp) {
       addBond(listener, accused, 0.3);
       const _acc2P = pronouns(accused);
       results.push({
-        type: 'spreadLies', players: [listener, accused],
+        type: 'spreadLies', players: [listener, accused], about: schemer,
         text: `${listener} pulls ${accused} aside and tells ${_acc2P.obj} what ${schemer} said. ${accused} looks rattled — not by the content, but by the move.`,
         consequences: `${listener} warns ${accused} — bond +0.3.`,
         badgeText: 'WARNED', badgeClass: 'blue'
@@ -298,7 +298,7 @@ export function _generateKissTrap(schemer, target, group, ep, _rp) {
     `${schemer} has arranged this — ${accomplice} distracting ${witness}, the private moment with ${kissTarget}. It plays out exactly as planned. Except ${witness} returns early. Nothing is the same after that.`,
   ];
   results.push({
-    type: 'kissTrap', players: [schemer, accomplice, kissTarget, witness],
+    type: 'kissTrap', players: [schemer, accomplice, kissTarget, witness], about: schemer,
     text: _rp(trapTexts),
     consequences: `Bond ${witness}↔${kissTarget} ${bondDrop.toFixed(1)}. ${kissTarget} bond with ${schemer} -1.0.`,
     badgeText: 'KISS TRAP', badgeClass: 'red'
@@ -312,7 +312,7 @@ export function _generateKissTrap(schemer, target, group, ep, _rp) {
     : [`${witness} confronts ${kissTarget} immediately. The argument is loud enough for the whole camp to hear. By the end they're not speaking.`,
        `${witness} explodes — at ${kissTarget}, at ${accomplice}, at the situation. The showmance is over in real time and everyone witnesses it.`];
   results.push({
-    type: 'kissTrap', players: [witness, kissTarget],
+    type: 'kissTrap', players: [witness, kissTarget], about: schemer,
     text: _rp(witnessTexts),
     consequences: `Showmance under threat.`,
     badgeText: 'HEARTBROKEN', badgeClass: 'red'
@@ -336,7 +336,7 @@ export function _generateKissTrap(schemer, target, group, ep, _rp) {
     }
     gs.popularity[schemer] = (gs.popularity[schemer] || 0) - 1;
     results.push({
-      type: 'kissTrap', players: [witness, kissTarget],
+      type: 'kissTrap', players: [witness, kissTarget], about: schemer,
       text: `The showmance between ${witness} and ${kissTarget} is over. What ${schemer} started, the trust collapse finished.`,
       consequences: `Showmance phase set to 'broken-up'.`,
       badgeText: 'SHOWMANCE DESTROYED', badgeClass: 'red'
@@ -445,7 +445,7 @@ export function _generateFalseMajority(schemer, victim, decoy, group, ep, _rp) {
   if (credibility > resistance) {
     gs._falseMajorityPlot = { schemer, victim, decoy, ep: (gs.episode || 0) + 1 };
     results.push({
-      type: 'falseMajority', players: [schemer, victim],
+      type: 'falseMajority', players: [schemer, victim], about: decoy,
       text: _rp([
         `${schemer} finds ${victim} alone and lowers ${_sP.pos} voice. "It's ${decoy} tonight. Everyone's already locked in — I just didn't want you blindsided." ${victim} nods slowly. It sounds exactly like the truth.`,
         `${schemer} sketches the vote in the sand for ${victim}: names, numbers, arrows all pointing at ${decoy}. The math is clean. The math is also fiction.`,
@@ -462,7 +462,7 @@ export function _generateFalseMajority(schemer, victim, decoy, group, ep, _rp) {
     if (!gs.popularity) gs.popularity = {};
     gs.popularity[schemer] = (gs.popularity[schemer] || 0) - 1;
     results.push({
-      type: 'falseMajorityResisted', players: [schemer, victim],
+      type: 'falseMajorityResisted', players: [schemer, victim], about: decoy,
       text: _rp([
         `${schemer} pitches ${victim} a vote that doesn't smell right. ${victim} asks one question — "who told YOU?" — and watches ${schemer} improvise. Badly.`,
         `${victim} listens to ${schemer}'s "plan," then checks it with one other person. It checks out with no one. ${victim} files that away.`,
@@ -562,7 +562,7 @@ function _resolveFalseMajorityFallout(group, ep, _rp, results) {
     // gotcha) — the comfort/rally reaction hookup is best-effort only.
     if (ep) { ep._socialVictim = plot.victim; ep._socialSchemer = plot.schemer; }
     results.push({
-      type: 'falseMajorityExposed', players: [plot.victim, plot.schemer],
+      type: 'falseMajorityExposed', players: [plot.victim, plot.schemer], about: plot.decoy,
       text: _rp([
         `${plot.victim} replays the vote all night. Only one person pushed the ${plot.decoy} plan. Only one ballot followed it. By morning, ${plot.victim} says it to ${plot.schemer}'s face: "You wasted my vote."`,
         `${plot.victim} compares notes at breakfast and discovers the "unanimous plan" existed in exactly one conversation — the one with ${plot.schemer}. The camp watches the confrontation from a safe distance.`,

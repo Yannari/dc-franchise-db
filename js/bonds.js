@@ -488,7 +488,8 @@ export function checkPerceivedBondTriggers(ep) {
               `The plan is set. ${target} is the only one who doesn't know.`,
               `${target} goes to bed feeling safe. ${pr.Sub} shouldn't.`,
             ]),
-            badgeText: 'ONE-SIDED', badgeClass: 'gold'
+            badgeText: 'ONE-SIDED', badgeClass: 'gold',
+            pendingScene: { kind: 'blind.ally', who: { a: target }, data: {}, phase: 'pre' },
           });
         }
       }
@@ -527,7 +528,8 @@ export function checkPerceivedBondTriggers(ep) {
             `${victim} makes excuses for ${betrayer}. "Maybe ${betrayer} had no choice." The tribe doesn't argue. They know.`,
             `${victim} won't hear it. ${betrayer} is still ${pr.pos} ally. That's the story ${pr.sub} ${pr.sub==='they'?'are':'is'} telling ${pr.ref}.`,
           ]),
-          badgeText: 'ONE-SIDED', badgeClass: 'gold'
+          badgeText: 'ONE-SIDED', badgeClass: 'gold',
+          pendingScene: { kind: 'blind.denial', who: { a: victim, b: betrayer }, data: {}, phase: 'pre' },
         });
       }
     }
@@ -569,7 +571,8 @@ export function checkPerceivedBondTriggers(ep) {
               `The showmance is real for ${loyal}. For ${drifter}, it's a strategy.`,
               `${loyal} trusts ${drifter} completely. ${drifter} trusts the game more.`,
             ]),
-            badgeText: 'ONE-SIDED', badgeClass: 'gold'
+            badgeText: 'ONE-SIDED', badgeClass: 'gold',
+            pendingScene: { kind: 'blind.showmance', who: { a: loyal, b: drifter }, data: {}, phase: 'pre' },
           });
         }
       }

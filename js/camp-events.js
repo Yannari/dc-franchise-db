@@ -30,6 +30,54 @@ function _venueScene(evt, line, kind, who, data = {}) {
   if (line) { ev.lines = [{ kind: 'beat', by: null, text: line }, ...ev.lines]; ev.text = transcript(ev.lines); }
   return ev;
 }
+// A scheme social-manipulation.js decided (it is shared with Big Brother, which words its own
+// results): the generator keeps the consequences, this writes what was said (td/script/lines/plot.js).
+// A result it has no words for, or one missing a name its scene needs, keeps the old sentence.
+function _plotScene(r, group) {
+  const p = r.players || [];
+  const has = t => String(r.consequences || '').includes(t);
+  const near = (a, not) => _twoOthers(group.filter(x => x !== not), a)[0];
+  let kind = null, who = {}, data = {};
+  switch (r.type) {
+    case 'forgeNote':
+      kind = 'plot.note'; who = { a: p[0], b: p[1] };
+      data = r.badgeText === 'EXPOSED' ? { ending: 'exposed', target: r.about } : { ending: has('seed of doubt') ? 'doubt' : 'believed', target: p[2] };
+      break;
+    case 'spreadLies':
+      kind = 'plot.lie'; who = { a: p[0], b: p[1] };
+      data = r.badgeText === 'CONFRONTATION' ? { ending: 'confront', target: r.about }
+        : r.badgeText === 'WARNED' ? { ending: 'warned', target: r.about }
+          : p[2] ? { ending: 'believed', target: p[2] } : { ending: 'rejected', target: r.about };
+      break;
+    case 'comfortVictim': kind = 'plot.comfort'; who = { a: p[0], b: p[1] }; data = { target: '' }; break;
+    case 'exposeSchemer': kind = 'plot.exposed'; who = { a: p[0], b: p[1] }; data = { target: '' }; break;
+    case 'whisperCampaignExposed': kind = 'plot.whisper'; who = { a: p[0], b: p[1] }; data = { ending: 'exposed', target: '' }; break;
+    case 'whisperCampaign': kind = 'plot.whisper'; who = { a: p[0], b: near(p[0], p[1]) }; data = { ending: 'spread', target: p[1] }; break;
+    case 'campaignRally': kind = 'plot.rally'; who = { a: p[0], b: near(p[0], p[1]) }; data = { target: p[1] }; break;
+    case 'falseMajority': kind = 'plot.majority'; who = { a: p[0], b: p[1] }; data = { ending: 'fooled', target: r.about }; break;
+    case 'falseMajorityResisted': kind = 'plot.majority'; who = { a: p[0], b: p[1] }; data = { ending: 'refused', target: r.about }; break;
+    case 'falseMajorityExposed': kind = 'plot.majority'; who = { a: p[0], b: p[1] }; data = { ending: 'traced', target: r.about }; break;
+    case 'falseMajorityConfusion': kind = 'plot.majority'; who = { a: p[0] }; data = { ending: 'confused', target: '' }; break;
+    case 'throwAccusation': kind = 'plot.accuse'; who = { a: p[0], b: near(p[0], p[1]) }; data = { ending: 'sold', target: p[1] }; break;
+    case 'throwAccusationBackfire': kind = 'plot.accuse'; who = { a: p[0], b: p[1] }; data = { ending: 'backfire', target: '' }; break;
+    case 'kissTrap':
+      kind = 'plot.kiss';
+      if (has('failed')) { who = { a: p[0], b: p[1] }; data = { ending: 'failed', target: '' }; }
+      else if (p.length >= 4) { who = { a: p[0], b: p[2], c: p[3] }; data = { ending: 'setup', other: p[1], target: '' }; }
+      else { who = { a: p[0], b: p[1] }; data = { ending: r.badgeText === 'SHOWMANCE DESTROYED' ? 'over' : 'heartbroken', target: r.about }; }
+      break;
+    default: return r;
+  }
+  if (Object.values(who).some(x => !x) || data.target === undefined || (data.ending === 'setup' && !data.other)) return r;
+  if (data.target === '') delete data.target;
+  return scriptEvent(r, makeScene(kind, who, data, [], _spotNow(who.a, who.b || null)));
+}
+// A scene in a module-level check that has the episode: written now, staged where these two talk.
+function _sceneOf(evt, kind, who, data, ep) {
+  if (!Object.values(who).every(Boolean)) return evt;
+  if (!evt.players) evt.players = Object.values(who);
+  return scriptEvent(evt, makeScene(kind, who, data, [], _spotNow(who.a, who.b || null)), ep ? { ep: ep.num } : {});
+}
 import { ensureIntentions, evolveIntentions, getIntentions, evaluateEndgameBeatability } from './intentions.js';
 import { getRelationshipDimensions } from './relationships.js';
 
@@ -2879,7 +2927,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
   // outnumber scheming. Elevated, but not spammy, during Lucky Hunt.
   const _schemeBoost = ep?.isLuckyHunt ? 0.28 : 0.09;
   const socialEvents = generateSocialManipulationEvents(group, ep, _schemeBoost);
-  socialEvents.forEach(evt => events.push(evt));
+  socialEvents.forEach(evt => events.push(_plotScene(evt, group)));
 
   return events;
 }
@@ -3291,11 +3339,11 @@ export function checkInformationBroker(ep) {
         const block = ep.campEvents[campKey];
         const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
         const _pr = pronouns(player);
-        evts.push({ type: 'brokerConfidence', text: _pick([
+        evts.push(_sceneOf({ type: 'brokerConfidence', text: _pick([
           `${player} has ${_pr.posAdj} hands in two pots and nobody knows it yet. ${_pr.Sub} ${_pr.sub==='they'?'sit':'sits'} between two alliances, hearing everything, saying exactly what each side needs to hear. It's working. For now.`,
           `${player} knows what ${gs.broker.alliances[0]} is planning. ${player} also knows what ${gs.broker.alliances[1]} is planning. Neither group knows ${_pr.sub} ${_pr.sub==='they'?'know':'knows'} the other side's plan. That's the game ${_pr.sub}'s playing.`,
           `There's a version of this game where ${player} gets caught. But right now? Right now ${_pr.sub} ${_pr.sub==='they'?'have':'has'} more information than anyone else on this island. That's power.`,
-        ]), players: [player] });
+        ]), players: [player] }, 'broker.start', { a: player }, { group: gs.broker.alliances[0], other: gs.broker.alliances[1] }, ep));
       }
       ep.brokerEvents = ep.brokerEvents || [];
       ep.brokerEvents.push({ type: 'activation', player });
@@ -3384,25 +3432,26 @@ export function checkInformationBroker(ep) {
       const isBoldDetector = pStats(bestDetector).boldness >= 6;
 
       // Event 1: The confrontation
-      evts.push({ type: 'brokerExposed', text: _pick(isBoldDetector ? [
+      const _brkG = { group: gs.broker.alliances[0], other: gs.broker.alliances[1] };
+      evts.push(_sceneOf({ type: 'brokerExposed', text: _pick(isBoldDetector ? [
         `${bestDetector} stood up at camp and said it in front of everyone. "${player} has been playing both sides. ${gs.broker.alliances[0]} and ${gs.broker.alliances[1]}. Ask ${_pr.obj}." The silence that followed was worse than any argument.`,
         `${bestDetector} didn't wait for the right moment. ${_dPr.Sub} walked up to ${player} and laid it out: "You've been feeding ${gs.broker.alliances[0]} our plans and feeding us theirs. It's done." ${player} didn't deny it fast enough.`,
       ] : [
         `${bestDetector} pulled three people aside before ${player} woke up. By breakfast, everyone knew. ${player} walked into a camp that had already made up its mind.`,
         `It started with a question ${bestDetector} asked ${player} that didn't add up. Then another. Then ${bestDetector} went to ${gs.broker.alliances[0]} and asked what ${player} had told them. The story didn't match. It was over.`,
-      ]), players: [bestDetector, player] });
+      ]), players: [bestDetector, player] }, 'broker.exposed', { a: bestDetector, b: player }, { ..._brkG, reason: isBoldDetector ? 'bold' : 'quiet' }, ep));
 
       // Event 2: Fallout
-      evts.push({ type: 'brokerFallout', text: _pick([
+      evts.push(_sceneOf({ type: 'brokerFallout', text: _pick([
         `The camp split open. Not into new alliances — into silence. Nobody trusted anyone. ${player} did that. Even the people who weren't involved are recalculating.`,
         `${gs.broker.alliances[0]} and ${gs.broker.alliances[1]} spent the afternoon comparing notes. Every conversation ${player} had with either side — exposed. The betrayal wasn't the worst part. The worst part was how long it worked.`,
         `People are angry. Not screaming angry — the quiet kind. The kind where you don't talk to someone at camp and everybody notices.`,
-      ]), players: [player] });
+      ]), players: [player] }, 'broker.fallout', { a: player }, _brkG, ep));
 
       // Event 3: Broker's defense
       const isBoldBroker = s.boldness >= 6;
       const isLowTemp = s.temperament <= 4;
-      evts.push({ type: 'brokerDefense', text: _pick(isBoldBroker ? [
+      evts.push(_sceneOf({ type: 'brokerDefense', text: _pick(isBoldBroker ? [
         `${player} didn't apologize. "I played the game. Both of you were using me too — you just didn't know I was using you back." The audacity almost earned respect. Almost.`,
         `"You can be mad," ${player} said. "But I had more information than anyone in this game for ${broker.episodesActive} episodes. That's not betrayal — that's strategy." Nobody agreed, but nobody could argue the math.`,
       ] : isLowTemp ? [
@@ -3411,7 +3460,7 @@ export function checkInformationBroker(ep) {
       ] : [
         `${player} tried to reframe it. "I was keeping options open for all of us." The room didn't buy it. ${_pr.Sub} knew ${_pr.sub} ${_pr.sub==='they'?'were':'was'} done the moment ${bestDetector} opened ${pronouns(bestDetector).posAdj} mouth.`,
         `${player} went quiet after the confrontation. Not defeated — calculating. But the math has changed. The numbers aren't there anymore.`,
-      ]), players: [player] });
+      ]), players: [player, bestDetector] }, 'broker.defense', { a: player, b: bestDetector }, { reason: isBoldBroker ? 'bold' : isLowTemp ? 'broken' : 'spin' }, ep));
     }
 
     ep.brokerExposure = { player, exposer: bestDetector, episodesActive: broker.episodesActive, bondHit, alliances: [...broker.alliances] };
@@ -3428,29 +3477,29 @@ export function checkInformationBroker(ep) {
 
     const eventRoll = Math.random();
     if (eventRoll < 0.25) {
-      evts.push({ type: 'brokerWhisper', text: _pick([
+      evts.push(_sceneOf({ type: 'brokerWhisper', text: _pick([
         `${player} caught ${randomAlly} alone and dropped a name. "Watch out for that one. I've been hearing things." ${randomAlly} didn't question where the intel came from. That's the trick.`,
         `${player} slipped ${randomAlly} a piece of information that nobody else had. It was true. That's what makes ${player} dangerous — the lies are mixed in with just enough truth.`,
-      ]), players: [player, randomAlly] });
+      ]), players: [player, randomAlly] }, 'broker.whisper', { a: player, b: randomAlly }, {}, ep));
       ep.brokerEvents.push({ type: 'whisper', player, target: randomAlly });
     } else if (eventRoll < 0.50) {
       const scapegoat = active.filter(p => p !== player && !allianceMembers.has(p))[0] || randomAlly;
-      evts.push({ type: 'brokerManipulate', text: _pick([
+      evts.push(_sceneOf({ type: 'brokerManipulate', text: _pick([
         `${player} mentioned ${scapegoat}'s name in two separate conversations today — casually, but deliberately. By sunset, ${scapegoat} was a topic. ${player} wasn't.`,
         `Somebody asked who was running things. ${player} said nothing — but glanced at ${scapegoat}. The redirect was so smooth nobody noticed it was a redirect.`,
-      ]), players: [player, scapegoat] });
+      ]), players: [player, scapegoat] }, 'broker.steer', { a: player, b: randomAlly !== scapegoat ? randomAlly : null }, { target: scapegoat }, ep));
       ep.brokerEvents.push({ type: 'manipulate', player, scapegoat });
     } else if (eventRoll < 0.75) {
-      evts.push({ type: 'brokerConfidence', text: _pick([
+      evts.push(_sceneOf({ type: 'brokerConfidence', text: _pick([
         `${player} is ${broker.episodesActive} episodes into the double game and it's still holding. ${_pr.Sub} ${_pr.sub==='they'?'know':'knows'} what both sides are planning before they plan it. The question isn't whether it works — it's how long.`,
         `Confessional: "${_pr.Sub === 'They' ? 'I have' : 'I have'} two alliances. Two sets of plans. Two sets of trust. And neither one knows about the other. This is the best position in the game." — ${player}`,
-      ]), players: [player] });
+      ]), players: [player] }, 'broker.confidence', { a: player }, { group: broker.alliances[0], other: broker.alliances[1] }, ep));
       ep.brokerEvents.push({ type: 'confidence', player });
     } else {
-      evts.push({ type: 'brokerClose', text: _pick([
+      evts.push(_sceneOf({ type: 'brokerClose', text: _pick([
         `${randomAlly} asked ${player} a question today that came a little too close. "Who told you that?" ${player} deflected. ${randomAlly} let it go. But ${_pr.sub} won't forget the question.`,
         `There was a moment at camp where ${player}'s story didn't quite line up. ${randomAlly} noticed. ${player} noticed that ${randomAlly} noticed. Neither said anything. The clock is ticking.`,
-      ]), players: [player, randomAlly] });
+      ]), players: [player, randomAlly] }, 'broker.close', { a: randomAlly, b: player }, {}, ep));
       ep.brokerEvents.push({ type: 'close', player, suspector: randomAlly });
     }
   }
@@ -3479,6 +3528,7 @@ export function checkStolenCredit(ep) {
 
         // Beat 1: The Callout (architect speaks)
         let calloutText;
+        const _callWhy = aS.temperament <= 4 ? 'hot' : aS.boldness >= 7 ? 'bold' : 'cracked';
         if (aS.temperament <= 4) {
           // Hothead — explosive
           calloutText = _pick([
@@ -3550,13 +3600,15 @@ export function checkStolenCredit(ep) {
         if (ep.campEvents?.[_campKey]) {
           const phase = ep.campEvents[_campKey].pre ? 'pre' : null;
           if (phase) {
-            ep.campEvents[_campKey].pre.push({
+            const _who = { a: architect, b: stealer }, _spot = _spotNow(architect, stealer);
+            ep.campEvents[_campKey].pre.push(scriptEventParts({
               type: 'stolenCreditConfrontation',
               players: [architect, stealer],
               text: calloutText + ' ' + responseText,
               badgeText: architectWins ? 'CREDIT RECLAIMED' : 'CONFRONTATION FAILED',
               badgeClass: architectWins ? 'gold' : 'red',
-            });
+            }, [makeScene('credit.callout', _who, { reason: _callWhy }, [], _spot),
+              makeScene('credit.answer', _who, { ending: architectWins ? 'won' : 'lost' }, [], _spot)], { ep: currentEp, phase: 'pre' }));
           }
         }
         // Save to episode history
@@ -3676,13 +3728,16 @@ export function checkStolenCredit(ep) {
     if (ep.campEvents?.[_campKey]) {
       const phase = ep.campEvents[_campKey].pre ? 'pre' : null;
       if (phase) {
-        ep.campEvents[_campKey].pre.push({
+        const _spot = _spotNow(stealer, architect);
+        ep.campEvents[_campKey].pre.push(scriptEventParts({
           type: 'stolenCredit',
           players: [stealer, architect],
           text: theftText + ' ' + reactionText,
           badgeText: 'STOLEN CREDIT',
           badgeClass: 'gold',
-        });
+        }, [makeScene('credit.steal', { a: stealer, b: architect }, { reason: sS.boldness >= 8 ? 'loud' : 'quiet' }, [], _spot),
+          makeScene('credit.sting', { a: architect, b: stealer }, { reason: aS.temperament >= 7 ? 'calm' : aS.temperament <= 4 ? 'hot' : 'mid' }, [], _spot)],
+        { ep: currentEp, phase: 'pre' }));
       }
     }
 
@@ -3853,8 +3908,11 @@ export function checkGoatTargeting(ep) {
     const ftcText  = ftcLines[(hashBase + epSeed * 3) % ftcLines.length];
     const stratText = strategistLines[(hashBase2 + epSeed * 11) % strategistLines.length];
 
-    arr.push({ type: 'ftcThreatAlert',   text: ftcText,  players: [goat] });
-    arr.push({ type: 'ftcThreatStrategist', text: stratText, players: [strategist, goat] });
+    // the read, said to the strategist's closest ally, then the strategist sounding the goat out
+    const _confidant = _twoOthers(gs.activePlayers.filter(p => p !== goat), strategist)[0];
+    arr.push(_confidant ? _sceneOf({ type: 'ftcThreatAlert', text: ftcText, players: [goat, strategist, _confidant] }, 'goat.read', { a: strategist, b: _confidant }, { target: goat }, ep)
+      : { type: 'ftcThreatAlert', text: ftcText, players: [goat] });
+    arr.push(_sceneOf({ type: 'ftcThreatStrategist', text: stratText, players: [strategist, goat] }, 'goat.probe', { a: strategist, b: goat }, {}, ep));
 
     // Bump vote heat for next tribal — strategist is now mentally targeting this goat
     if (!gs.blowupHeatNextEp) gs.blowupHeatNextEp = new Set();
@@ -4225,7 +4283,8 @@ export function checkIdolConfessions(ep) {
       `${holder} needed to tell someone. ${confidant} was the one ${_pr.sub} trusted most out here. That trust might have a price.`,
       `In the dark, ${holder} leaned close and told ${confidant} what was in ${_pr.posAdj} bag. It felt like the right call at the time.`,
     ];
-    const confEvt = { type: 'idolConfession', text: confLines[Math.floor(Math.random() * confLines.length)] };
+    const confEvt = _sceneOf({ type: 'idolConfession', players: [holder, confidant], text: confLines[Math.floor(Math.random() * confLines.length)] },
+      'idol.confide', { a: holder, b: confidant }, {}, ep);
 
     const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(holder))?.name);
     if (tribeName && ep.campEvents?.[tribeName]) {
@@ -4253,7 +4312,8 @@ export function checkIdolConfessions(ep) {
       `${confidant} thought about it for hours. By the time the sun came up, a decision had been made — one that ${holder} doesn't know about yet.`,
       `The secret lasted until ${confidant} found someone who needed to hear it.`,
     ];
-    const betrayEvt = { type: 'idolBetrayal', text: betrayLines[Math.floor(Math.random() * betrayLines.length)] };
+    const betrayEvt = _sceneOf({ type: 'idolBetrayal', players: [confidant], text: betrayLines[Math.floor(Math.random() * betrayLines.length)] },
+      'idol.leak', { a: confidant }, { target: holder }, ep);
     if (tribeName && ep.campEvents?.[tribeName]) {
       const campBlock = ep.campEvents[tribeName];
       (Array.isArray(campBlock) ? campBlock : (campBlock.pre || [])).push(betrayEvt);
@@ -4711,10 +4771,10 @@ export function checkTacticalAdvantageSnoop(ep) {
       ];
 
       const campBlock = ep.campEvents[tribeName];
-      (Array.isArray(campBlock) ? campBlock : (campBlock.pre || [])).push({
+      (Array.isArray(campBlock) ? campBlock : (campBlock.pre || [])).push(_sceneOf({
         type: evtType, players: [_sSnooper, _sHolder],
         text: _sSnoopLines[Math.floor(Math.random() * _sSnoopLines.length)]
-      });
+      }, 'spot.power', { a: _sSnooper }, { target: _sHolder, power: label }, ep));
     });
   });
 }
@@ -4748,18 +4808,19 @@ export function checkHeroVillainEvents(ep) {
       // Intimidation — villain asserts dominance
       const _target = tribeMembers.sort((a, b) => getBond(v, a) - getBond(v, b))[0]; // worst enemy
       addBond(_target, v, -0.4);
-      pushEvt({ type: 'villainIntimidate', players: [v, _target], text: _rp([
+      pushEvt(_sceneOf({ type: 'villainIntimidate', players: [v, _target], text: _rp([
         `${v} walks past ${_target} at the fire and doesn't sit down. Just stands there. Looking. The message is clear.`,
         `"You know it's coming, right?" ${v} says it to ${_target} like ${_vPr.sub} ${_vPr.sub==='they'?'are':'is'} discussing the weather. ${_target} doesn't respond.`,
         `${v} positions ${_vPr.ref} between ${_target} and the rest of the tribe. It's not accidental. Everyone notices.`,
-      ]), badgeText: 'Intimidation', badgeClass: 'red' });
+      ]), badgeText: 'Intimidation', badgeClass: 'red' }, 'villain.loom', { a: v, b: _target }, {}, ep));
     } else if (_roll < 0.50) {
       // Power declaration — villain announces control
-      pushEvt({ type: 'villainPower', players: [v], text: _rp([
+      const _heard = _twoOthers(tribeMembers, v)[0];
+      pushEvt(_sceneOf({ type: 'villainPower', players: [v, ...(_heard ? [_heard] : [])], text: _rp([
         `"I'm running this game and everyone knows it." ${v} says it at camp. Out loud. The tribe goes quiet.`,
         `${v} doesn't whisper strategy. ${_vPr.Sub} announce${_vPr.sub==='they'?'':'s'} it. The tribe can accept it or fight it — but ${_vPr.sub} ${_vPr.sub==='they'?'aren\'t':'isn\'t'} hiding.`,
         `${v} lays out exactly what's going to happen tonight. No deception. No spin. Just power.`,
-      ]), badgeText: 'Power Play', badgeClass: 'red' });
+      ]), badgeText: 'Power Play', badgeClass: 'red' }, 'villain.power', { a: v, b: _heard }, {}, ep));
     } else if (_roll < 0.70 && ep.eliminated) {
       // Gloating — villain celebrates an enemy's departure
       const _elimBond = getBond(v, ep.eliminated);
@@ -6167,12 +6228,13 @@ export function generateCampEvents(ep, phase = 'both') {
                 if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
                 gs.knownIdolHoldersThisEp.add(_otherIdolHolder.holder);
               }
-              pre.push({ type: 'eavesdrop', players: [_intelSource], text: _rp([
+              const _asker = _twoOthers(_originals, _intelSource)[0];
+              pre.push(_sceneOf({ type: 'eavesdrop', players: [_intelSource], text: _rp([
                 `${_intelSource} has information about the other tribe that ${tribe.name} didn't have before. Whether ${_iP.sub} ${_iP.sub==='they'?'share':'shares'} it — and how much — is ${_iP.posAdj} first strategic decision.`,
                 `The tribe wants to know what was happening at ${_intelSource}'s old camp. ${_intelSource} gives them enough to seem useful. Not enough to seem dangerous.`,
                 `${_intelSource} knows who has idols, who's on the bottom, and who's been lying on the other side. That knowledge is currency.`,
                 `${_intelSource} drops a piece of information at camp — casually, like it doesn't matter. It does.`,
-              ]) });
+              ]) }, 'idol.intel', { a: _intelSource, b: _asker }, {}, ep));
             }
           } else {
             // 1-2 newcomers into existing group: individual integration with real bond consequences
@@ -6309,17 +6371,17 @@ export function generateCampEvents(ep, phase = 'both') {
           if (caught) {
             addBond(target.holder, snooper, -2.5);
             tribeMembers.filter(m => m !== snooper && m !== target.holder).forEach(m => addBond(m, snooper, -0.5));
-            pre.push({ type: 'idolBetrayal', players: [snooper, target.holder], text: _rp([
+            pre.push(_sceneOf({ type: 'idolBetrayal', players: [snooper, target.holder], text: _rp([
               `${snooper} goes through ${target.holder}'s bag while the tribe is at the water well. ${_spP.Sub} find${_spP.sub==='they'?'':'s'} it — the idol. But ${target.holder} walks back early and catches ${_spP.obj} red-handed. The camp goes silent.`,
               `${snooper} searches ${target.holder}'s belongings and discovers a hidden idol. ${_spP.Sub} barely ${_spP.sub==='they'?'get':'gets'} it back in the bag before someone sees. Someone did see.`,
               `${target.holder} finds ${snooper} rummaging through ${pronouns(target.holder).pos} things. The excuse is bad. The damage is real. Everyone at camp heard what happened.`,
-            ]) });
+            ]) }, 'idol.snoop', { a: snooper, b: target.holder }, { ending: 'caught' }, ep));
           } else {
-            pre.push({ type: 'eavesdrop', players: [snooper, target.holder], text: _rp([
+            pre.push(_sceneOf({ type: 'eavesdrop', players: [snooper, target.holder], text: _rp([
               `${snooper} searches ${target.holder}'s bag while nobody is looking. ${_spP.Sub} find${_spP.sub==='they'?'':'s'} what ${_spP.sub} ${_spP.sub==='they'?'were':'was'} looking for. Nobody knows. Not yet.`,
               `${snooper} waits until ${target.holder} is gone and checks ${pronouns(target.holder).pos} things. There it is — the idol. ${snooper} puts everything back exactly as it was. The secret is ${_spP.posAdj} now.`,
               `${snooper} discovers ${target.holder}'s idol during a quiet moment at camp. ${_spP.Sub} ${_spP.sub==='they'?'don\'t':'doesn\'t'} take it — ${_spP.sub} just ${_spP.sub==='they'?'need':'needs'} to know it's there. And now ${_spP.sub} ${_spP.sub==='they'?'do':'does'}.`,
-            ]) });
+            ]) }, 'idol.snoop', { a: snooper }, { ending: 'clean', target: target.holder }, ep));
           }
         }
       }
@@ -6342,12 +6404,12 @@ export function generateCampEvents(ep, phase = 'both') {
               const sourceIntel = idolIntelFor(holder, [informer])[0];
               recordIdolIntel(recipient, holder, { source:`told by ${informer}`, confidence:Math.max(0.55, (sourceIntel?.effectiveConfidence || 0.7) * 0.9), truth:sourceIntel?.truth || 'unknown' });
               const _infP = pronouns(informer);
-              pre.push({ type: 'eavesdrop', players: [informer, recipient], text: _rp([
+              pre.push(_sceneOf({ type: 'eavesdrop', players: [informer, recipient], text: _rp([
                 `${informer} pulls ${recipient} aside. "${holder} has an idol." Two words that change everything. ${recipient} nods. The plan adjusts.`,
                 `${informer} tells ${recipient} about ${holder}'s idol — quietly, away from camp. It's the kind of information that bonds people. And targets others.`,
                 `${informer} shares what ${_infP.sub} know${_infP.sub==='they'?'':'s'} about ${holder}'s idol with ${recipient}. Trust has a price. This is how you pay it.`,
                 `${informer} whispers to ${recipient}: "${holder} is holding something." ${recipient} doesn't need to ask what. The look on ${informer}'s face says it all.`,
-              ]) });
+              ]) }, 'idol.tip', { a: informer, b: recipient }, { target: holder }, ep));
             }
           }
         }
@@ -6361,28 +6423,35 @@ export function generateCampEvents(ep, phase = 'both') {
     const pre = ep.campEvents.merge.pre;
     const _n = gs.activePlayers.length;
     // Big announcement — always first
-    pre.unshift({ type: 'mergeAnnounce', text: _rp([
+    // the merge's first hours, as two pairs and a confessional: the most social player with the
+    // person closest to them, then the most strategic left with theirs (no dice: the draws below
+    // are the ones that picked the sentences)
+    const _byStat = k => [...gs.activePlayers].sort((x, y) => (pStats(y)[k] || 0) - (pStats(x)[k] || 0) || x.localeCompare(y));
+    const _newsA = _byStat('social')[0], _newsB = _twoOthers(gs.activePlayers, _newsA)[0];
+    const _scrA = _byStat('strategic').find(n => n !== _newsA && n !== _newsB) || null;
+    const _scrB = _scrA ? _twoOthers(gs.activePlayers.filter(n => n !== _newsA && n !== _newsB), _scrA)[0] : null;
+    pre.unshift(_sceneOf({ type: 'mergeAnnounce', players: [_newsA, _newsB].filter(Boolean), text: _rp([
       `It's official. The tribes are done. ${_n} players, one camp, one game from here. Everybody is acting like they're fine. Nobody is fine.`,
       `The merge is here. The flag drops, the buffs come off, and ${_n} people who've been trying to outlast each other suddenly have to share a fire. The game just started for real.`,
       `${_n} left. One tribe. The old lines don't disappear — they just go underground. Everyone is smiling and everyone is counting.`,
       `The moment the merge is announced, something shifts in the air. Pre-merge alliances are already obsolete. ${_n} players are doing the math on who they actually trust.`,
-    ]) });
+    ]) }, 'merge.news', { a: _newsA, b: _newsB }, {}, ep));
     // Scramble/recalibration — always second
-    pre.splice(1, 0, { type: 'mergeScramble', text: _rp([
+    pre.splice(1, 0, _sceneOf({ type: 'mergeScramble', players: [_scrA, _scrB].filter(Boolean), text: _rp([
       `The first hours of the merge are a scramble. Everyone is pulling people aside, reconnecting with old allies, testing new ones. The game is moving fast.`,
       `Old tribal lines mean nothing and everything at the same time. Everyone is pretending to start fresh. Nobody actually is.`,
       `The conversations are nonstop. Everyone wants to know where everyone else stands. Nobody is giving a straight answer.`,
       `Cross-tribal relationships that were built over weeks are being stress-tested in a single afternoon. Some of them hold. Some of them don't.`,
-    ]) });
+    ]) }, 'merge.scramble', { a: _scrA, b: _scrB }, {}, ep));
     // Confessional-style individual reads — pick a random player
     const _pivot = gs.activePlayers[Math.floor(Math.random() * gs.activePlayers.length)];
     const _pP = pronouns(_pivot);
-    pre.splice(2, 0, { type: 'mergeConfessional', players: [_pivot], text: _rp([
+    pre.splice(2, 0, _sceneOf({ type: 'mergeConfessional', players: [_pivot], text: _rp([
       `${_pivot} is watching. Watching how people group up, who walks with who, who gets quiet. ${_pP.Sub} ${_pP.sub === 'they' ? "have" : "has"} been waiting for this. Now it's time to play.`,
       `${_pivot} already has a number in ${_pP.posAdj} head. ${_pP.Sub} ${_pP.sub === 'they' ? "know" : "knows"} exactly who ${_pP.sub} need${_pP.sub === 'they' ? '' : 's'} to go next. The merge is just when the plan starts.`,
       `${_pivot} walked into merge camp and immediately started counting allies. ${_pP.Sub} ${_pP.sub === 'they' ? "aren't" : "isn't"} celebrating. ${_pP.Sub} ${_pP.sub === 'they' ? "are" : "is"} calculating.`,
       `The merge is a reset for most people. Not for ${_pivot}. ${_pP.Sub} ${_pP.sub === 'they' ? "have" : "has"} been preparing for this since day one.`,
-    ]) });
+    ]) }, 'merge.plan', { a: _pivot }, {}, ep));
     // ── Pre-merge challenge dominance — inject threat narrative at merge for standout performers ──
     const _chalDom = gs.activePlayers
       .map(n => ({ name: n, rec: gs.chalRecord?.[n] }))
@@ -6443,6 +6512,17 @@ export function generateCampEvents(ep, phase = 'both') {
         : []),
     ];
     _prevSaves.forEach(save => {
+      // who is in the morning-after scene: the saved player with someone who wrote their name if
+      // there is one, else the person closest to them (td/script/lines/save.js)
+      const _svCamp = (gs.isMerged ? gs.activePlayers : (gs.tribes.find(t => t.members.includes(save.player))?.members
+        || (prevEp.tribalPlayers || []))).filter(n => gs.activePlayers.includes(n));
+      const _svVoters = [...new Set((prevEp.votingLog || []).filter(v => v.voted === (save.playedFor || save.player)
+        && v.voter !== 'THE GAME' && v.voter !== save.player && _svCamp.includes(v.voter)).map(v => v.voter))];
+      const _svClose = n => _twoOthers(_svCamp, n)[0];
+      const _sv = (spec, evt) => (spec ? _sceneOf(evt, spec[0], spec[1], spec[2] || {}, ep) : evt);
+      const _svMe = save.playedFor || save.player;
+      const _svScr = _svVoters.length >= 2 && gs.activePlayers.includes(_svMe)
+        ? ['save.scramble', { a: _svVoters[0], b: _svVoters[1] }, { target: _svMe }] : null;
       // Camp is the tribe the player belonged to last episode (may be on exile/eliminated now)
       const campKey = gs.isMerged ? 'merge'
         : gs.tribes.find(t => t.members.includes(save.player))?.name
@@ -6456,63 +6536,63 @@ export function generateCampEvents(ep, phase = 'both') {
 
       if (save.type === 'sitd') {
         if (save.safe) {
-          pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
+          pre.push(_sv(['save.lucky', { a: save.player, b: _svVoters[0] || _svClose(save.player) }, { ending: _svVoters[0] ? 'voter' : 'friend' }], { type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
             `The morning after is quiet — not the comfortable kind. ${save.player} rolled the Shot in the Dark and it landed safe. ${vn > 0 ? `${vn} ${voteWord} just gone.` : ''} Nobody has processed it yet.`,
             `${save.player} is still here. That's the fact everyone woke up to. The Shot in the Dark isn't supposed to work. It did. The people who voted are recalibrating.`,
             `Camp feels different this morning. ${save.player} survived on a 1-in-6 chance. ${_p.Sub} ${_p.sub==='they'?'know':'knows'} ${_p.sub} ${_p.sub==='they'?'are':'is'} still a target — and so does everyone else.`,
-          ]) });
-          pre.push({ type: 'saveScramble', badgeText: 'SCRAMBLE', badgeClass: 'red', text: _rp([
+          ]) }));
+          pre.push(_sv(_svScr, { type: 'saveScramble', badgeText: 'SCRAMBLE', badgeClass: 'red', text: _rp([
             `The plan from last night is dead. Whatever comes next has to account for the fact that ${save.player} is still in the game and now knows exactly who voted for ${_p.obj}.`,
             `Someone needs to rebuild the numbers. The vote failed, the target survived, and the game has a new variable: ${save.player} playing with nothing left to lose.`,
-          ]) });
+          ]) }));
         } else {
           // SITD played but didn't save them — check if they actually went home or survived
           const _sitdWentHome = prevEp.eliminated === save.player || (Array.isArray(prevEp.eliminated) && prevEp.eliminated.includes(save.player));
           if (_sitdWentHome) {
-            pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
+            pre.push(_sv((() => { const [x, y] = _twoOthers(_svCamp, save.player); return x && y ? ['save.gamble', { a: x, b: y }, { target: save.player }] : null; })(), { type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
               `${save.player} rolled the Shot in the Dark last night. It didn't land. ${_p.Sub} ${_p.sub==='they'?'are':'is'} gone — but the fact that ${_p.sub} tried it is all anyone is talking about this morning.`,
               `The Shot in the Dark failed. ${save.player} sacrificed their vote and still went home. The move didn't work, but it told everyone something about how ${_p.sub} ${_p.sub==='they'?'play':'plays'} this game.`,
               `${save.player} gambled last night. The dice came up wrong. The camp is quiet about it — not because they don't care, but because it could have been any of them reaching for that slip of paper.`,
-          ]) });
+          ]) }));
           } else {
             // SITD failed but they survived anyway (someone else went home)
-            pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
+            pre.push(_sv(['save.miss', { a: save.player, b: _svClose(save.player) }], { type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
               `${save.player} rolled the Shot in the Dark last night and it didn't land. ${_p.Sub} survived anyway — but ${_p.sub} wasted ${_p.pos} vote for nothing. The tribe knows ${_p.sub} panicked.`,
               `The Shot in the Dark failed, but ${save.player} is still here. Someone else went home instead. The desperation move didn't matter — but the tribe saw ${_p.obj} reach for it.`,
               `${save.player} sacrificed ${_p.pos} vote on a 1-in-6 gamble. It missed. ${_p.Sub} ${_p.sub==='they'?'are':'is'} still in the game, but everyone knows ${_p.sub} felt cornered enough to try.`,
-            ]) });
+            ]) }));
           }
         }
       } else if (save.type === 'kip') {
         const stolenLine = save.stolenFrom ? `${save.stolenFrom} woke up without the idol they had. ` : '';
-        pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
+        pre.push(_sv((() => { const _st = save.stolenFrom && _svCamp.includes(save.stolenFrom) ? save.stolenFrom : null; return ['save.kip', { a: save.player, b: _st || _svClose(save.player) }, { ending: _st ? 'stolen' : 'other' }]; })(), { type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
           `${stolenLine}${save.player} has an idol that wasn't ${_p.posAdj} 24 hours ago. The camp is still absorbing what happened last night.`,
           `The Knowledge Is Power play worked. ${save.player} comes to camp this morning with leverage nobody saw coming. The people who thought they understood the game are starting over.`,
           `${save.player} made a move at tribal that changed the board entirely. ${stolenLine}This morning, the math is different.`,
-        ]) });
-        pre.push({ type: 'saveScramble', badgeText: 'SCRAMBLE', badgeClass: 'red', text: _rp([
+        ]) }));
+        pre.push(_sv(_svScr, { type: 'saveScramble', badgeText: 'SCRAMBLE', badgeClass: 'red', text: _rp([
           `${save.stolenFrom ? save.stolenFrom + ' needs a new plan' : 'Someone lost their insurance last night'}. The idol is gone, and the person who has it is a threat in a different way now.`,
           `Everyone knows what ${save.player} did. The question is what ${_p.sub} ${_p.sub==='they'?'do':'does'} next — and who ${_p.sub} ${_p.sub==='they'?'use':'uses'} it on.`,
-        ]) });
+        ]) }));
       } else if (save.type === 'super-idol') {
         // Super Idol: played AFTER votes — the most dramatic play possible
         if (save.playedFor) {
-          pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
+          pre.push(_sv(['save.super', { a: save.player, b: save.playedFor }, { ending: 'ally' }], { type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
             `Nobody can stop talking about it. The votes were read. ${save.playedFor} was done. Then ${save.player} stood up with the Super Idol. ${vn} ${voteWord} — erased. After the read. That's never happened before.`,
             `${save.player} waited until the host read every single vote. Then pulled out the Super Idol for ${save.playedFor}. The camp hasn't recovered. You don't see that kind of loyalty — or that kind of nerve.`,
-          ]) });
+          ]) }));
           addBond(save.player, save.playedFor, 1.5); // lingering gratitude on top of the engine's +3
         } else {
-          pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
+          pre.push(_sv(_svVoters[0] ? ['save.super', { a: save.player, b: _svVoters[0] }, { ending: 'self' }] : null, { type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
             `The Super Idol play is all anyone is talking about this morning. ${save.player} sat through every vote being read — ${_p.posAdj} name, over and over — and then pulled it out. ${vn} ${voteWord} gone. After the read.`,
             `${save.player} let the votes happen. Watched ${_p.posAdj} own name pile up. Then played the Super Idol. The camp woke up to a different game. That wasn't just an advantage play — that was a statement.`,
             `Nobody sleeps well after a Super Idol play. ${save.player} is still here, the idol is gone, and everyone who voted for ${_p.obj} knows they were outplayed in a way they couldn't have predicted.`,
-          ]) });
+          ]) }));
         }
-        pre.push({ type: 'saveScramble', badgeText: 'SCRAMBLE', badgeClass: 'red', text: _rp([
+        pre.push(_sv(_svScr, { type: 'saveScramble', badgeText: 'SCRAMBLE', badgeClass: 'red', text: _rp([
           `The coalition that put ${vn} ${voteWord} on ${save.playedFor || save.player}? Still exists. Still wants them gone. But now they know what they're up against — someone who waits, watches, and strikes at the last possible moment.`,
           `The Super Idol is gone. That's the consolation. But the player who held it just proved they're willing to play the most dangerous game possible. That changes how everyone plans from here.`,
-        ]) });
+        ]) }));
       } else if (save.type === 'idol-for-ally') {
         const _a = pronouns(save.playedFor);
         // Consolidated idol-for-ally event — reaction + bond + scramble in one
@@ -6526,7 +6606,7 @@ export function generateCampEvents(ep, phase = 'both') {
           `${save.player} spent their protection. Whether it was the right move depends on how loyal ${save.playedFor} turns out to be from here.`,
           `The idol is gone. But a proven ally willing to sacrifice? That's a different kind of threat.`,
         ]);
-        pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', players: [save.player, save.playedFor], text: `${_allyReact} ${_allyAfter}` });
+        pre.push(_sv(['save.ally', { a: save.player, b: save.playedFor }], { type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', players: [save.player, save.playedFor], text: `${_allyReact} ${_allyAfter}` }));
       } else {
         // Consolidated self-idol event — one event covering reaction + empowerment + scramble
         const _selfIdolReact = _rp([
@@ -6539,7 +6619,7 @@ export function generateCampEvents(ep, phase = 'both') {
           `${vn} ${voteWord} went nowhere. That coalition still exists. It just needs a new shot. ${save.player} bought one episode — everybody knows it.`,
           `There's something different about ${save.player} this morning. ${_p.Sub} ${_p.sub==='they'?'survive':'survives'} with ${_p.posAdj} own hand. But ${_p.sub} ${_p.sub==='they'?'are':'is'} still the target.`,
         ]);
-        pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: `${_selfIdolReact} ${_selfIdolAfter}` });
+        pre.push(_sv(['save.self', { a: save.player, b: _svVoters[0] || _svClose(save.player) }, { ending: _svVoters[0] ? 'voter' : 'friend' }], { type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: `${_selfIdolReact} ${_selfIdolAfter}` }));
       }
     });
   }
@@ -6558,7 +6638,7 @@ export function generateCampEvents(ep, phase = 'both') {
       if (!ep.campEvents[campKey]) return;
       const pre = ep.campEvents[campKey].pre;
       // General open vote aftermath
-      pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
+      pre.push({ type: 'saveReaction', badgeText: 'OPEN VOTE', badgeClass: 'gold', text: _rp([
         `The open vote is all anyone is talking about. Every name that was called last night is still hanging in the air this morning. There's no way to pretend it didn't happen.`,
         `Last night's public declarations changed the camp. People were named out loud, and the ones who heard it woke up in a different position than they went to sleep in.`,
         `An open vote leaves marks. You can't take back a name you said out loud — and the people who heard it haven't forgotten.`,
@@ -6923,28 +7003,34 @@ export function generateCampEvents(ep, phase = 'both') {
       if (!_campKey || !ep.campEvents?.[_campKey]) return;
       const _mcPr = pronouns(mc.voter);
       const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+      // who hears about it: someone from the voter's own alliance, else the person closest to them
+      const _mcCamp = (gs.isMerged ? gs.activePlayers : (gs.tribes.find(t => t.name === _campKey)?.members || [])).filter(n => n !== mc.voter && gs.activePlayers.includes(n));
+      const _mcAl = (gs.namedAlliances || []).find(a => a.name === mc.alliance);
+      const _mcB = (_mcAl?.members || []).find(n => _mcCamp.includes(n)) || _twoOthers(_mcCamp, mc.voter)[0];
+      const _mc = (ending, evt) => (mc.eliminated && mc.intended
+        ? _sceneOf(evt, 'misvote.fall', { a: mc.voter, b: _mcB }, { ending, boot: mc.eliminated, plan: mc.intended }, ep) : evt);
       if (mc.wasAlly && mc.changedOutcome) {
         // Worst case: ally went home because of the miscommunication
-        ep.campEvents[_campKey].pre.push({ type: 'miscommunicationFallout', players: [mc.voter],
+        ep.campEvents[_campKey].pre.push(_mc('cost', { type: 'miscommunicationFallout', players: [mc.voter],
           text: _rp([
             `${mc.voter} hasn't spoken since last night. ${_mcPr.Sub} voted ${mc.eliminated} by accident — meant to write ${mc.intended}. And ${mc.eliminated} went home because of it. Everyone at camp knows. Nobody's saying it out loud.`,
             `The miscommunication cost ${mc.eliminated} the game. ${mc.voter} knows it. The rest of ${mc.alliance} knows it. ${_mcPr.Sub} can't take it back, and ${_mcPr.sub} can't explain it away. That's the kind of mistake that defines the rest of your game.`,
             `${mc.voter} was supposed to vote ${mc.intended}. Instead ${_mcPr.sub} wrote ${mc.eliminated}'s name. ${mc.eliminated} is gone now — and ${mc.voter}'s alliance is looking at ${_mcPr.obj} differently this morning.`,
-          ]), badgeText: 'COSTLY MISTAKE', badgeClass: 'red' });
+          ]), badgeText: 'COSTLY MISTAKE', badgeClass: 'red' }));
       } else if (mc.wasAlly) {
         // Voted ally but didn't change the outcome — still embarrassing
-        ep.campEvents[_campKey].pre.push({ type: 'miscommunicationFallout', players: [mc.voter],
+        ep.campEvents[_campKey].pre.push(_mc('ally', { type: 'miscommunicationFallout', players: [mc.voter],
           text: _rp([
             `${mc.voter} voted for ${mc.eliminated} last night — ${_mcPr.posAdj} own ally. It didn't change the result, but ${mc.alliance} noticed. Trust takes time to build. One wrong name can undo it.`,
             `The tribe figured out that ${mc.voter} wrote the wrong name. ${mc.eliminated} would have gone home anyway, but that's not the point. ${mc.alliance} is questioning ${_mcPr.posAdj} focus.`,
-          ]), badgeText: 'MISFIRE', badgeClass: 'red' });
+          ]), badgeText: 'MISFIRE', badgeClass: 'red' }));
       } else if (mc.changedOutcome) {
         // Not an ally but the misfire changed who went home
-        ep.campEvents[_campKey].pre.push({ type: 'miscommunicationFallout', players: [mc.voter],
+        ep.campEvents[_campKey].pre.push(_mc('stray', { type: 'miscommunicationFallout', players: [mc.voter],
           text: _rp([
             `${mc.voter}'s stray vote landed on ${mc.eliminated}. It wasn't supposed to. And it might have been the vote that sent ${mc.eliminated} home. The tribe is still processing what happened.`,
             `${mc.voter} wrote the wrong name — and it mattered. ${mc.eliminated} went home on a margin that thin. One misfire, one exit. That's the game.`,
-          ]), badgeText: 'COSTLY MISTAKE', badgeClass: 'red' });
+          ]), badgeText: 'COSTLY MISTAKE', badgeClass: 'red' }));
       }
     });
   }

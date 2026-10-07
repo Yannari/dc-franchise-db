@@ -36,8 +36,18 @@ import friend from './friend.js';
 import life from './life.js';
 import lifeMore from './life-more.js';
 import twist from './twist.js';
+import plot, { GUARANTEED as plotG } from './plot.js';
+import morning from './morning.js';
+import blind from './blind.js';
+import broker, { GUARANTEED as brokerG } from './broker.js';
+import credit from './credit.js';
+import goat, { GUARANTEED as goatG } from './goat.js';
+import idol, { GUARANTEED as idolG } from './idol.js';
+import villain from './villain.js';
+import save, { GUARANTEED as saveG } from './save.js';
+import slips, { GUARANTEED as slipsG } from './slips.js';
 
-const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind, reads, ends, threat, camp, quit, adv, tail, tests, last, isle, isleGroup, isleTrain, isleMore, drama, drama2, dramaMore, romance, romance2, friend, life, lifeMore, twist];
+const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind, reads, ends, threat, camp, quit, adv, tail, tests, last, isle, isleGroup, isleTrain, isleMore, drama, drama2, dramaMore, romance, romance2, friend, life, lifeMore, twist, plot, morning, blind, broker, credit, goat, idol, villain, save, slips];
 
 // A key may be written in more than one file (the island pools grow by file): its entries add up.
 export const POOLS = {};
@@ -48,4 +58,4 @@ for (const f of FILES) for (const [k, v] of Object.entries(f)) POOLS[k] = POOLS[
  * {boot}). A line may say a slot its ending guarantees without asking for it;
  * any other optional name needs `when: { slot: true }` (tests/td-script.test.js).
  */
-export const GUARANTEED = Object.assign({}, falloutG, allianceG, pitchG, recruitG, endsG, quitG, advG, tailG, lastG, isleG, drama2G, romance2G);
+export const GUARANTEED = Object.assign({}, falloutG, allianceG, pitchG, recruitG, endsG, quitG, advG, tailG, lastG, isleG, drama2G, romance2G, plotG, brokerG, goatG, idolG, saveG, slipsG);

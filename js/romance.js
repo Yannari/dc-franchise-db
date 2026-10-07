@@ -153,6 +153,11 @@ export function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScore
 export function updateRomanticSparks(ep) {
   if (seasonConfig.romance === 'disabled') return;
   if (!gs.romanticSparks) gs.romanticSparks = [];
+  // The growth below is per Total Drama episode (about three days). A Big Brother week is seven
+  // days run once, so a spark took five weeks to reach a first move that real houses make in the
+  // first fortnight: the same growth, scaled to the days that passed. Not more couples (the caps
+  // and the first-move threshold decide that), the same couples sooner.
+  const days = seasonConfig.format === 'big-brother' ? 7 / 3 : 1;
 
   // Grow or decay each spark
   gs.romanticSparks.forEach(spark => {
@@ -168,18 +173,18 @@ export function updateRomanticSparks(ep) {
     const bArch = players.find(p => p.name === b)?.archetype || '';
     const isShowmancer = aArch === 'showmancer' || bArch === 'showmancer';
     const bondThreshold = isShowmancer ? 3.0 : 4.0;
-    if (bond > bondThreshold) spark.intensity += 0.1;
+    if (bond > bondThreshold) spark.intensity += 0.1 * days;
 
     // Bond grew this episode → boost
     // (Approximation: if bond is high, assume positive interactions happened)
-    if (bond >= 3) spark.intensity += 0.05;
+    if (bond >= 3) spark.intensity += 0.05 * days;
 
     // Negative decay: if bond dropped or they voted against each other
-    if (bond < 2.0) spark.intensity -= 0.3;
+    if (bond < 2.0) spark.intensity -= 0.3 * days;
 
     // Same tribe camp event boost (proportional to bond)
     const sameTribe = gs.tribes.some(t => t.members.includes(a) && t.members.includes(b));
-    if (sameTribe && bond >= 3) spark.intensity += 0.1;
+    if (sameTribe && bond >= 3) spark.intensity += 0.1 * days;
   });
 
   // Remove dead sparks (bond too low or intensity gone negative)
@@ -263,7 +268,9 @@ export function checkFirstMove(ep) {
        is a different clock. */
     const houseRules = seasonConfig.format === 'big-brother';
     const pace = arch => (houseRules
-      ? (arch === 'showmancer' ? 1.0 : ['chaos-agent', 'social-butterfly', 'wildcard'].includes(arch) ? 1.15 : 1.35)
+      // (one step lower across the board, 2026-10-06: with the weekly clock fixed, real houses make
+      // the first move in the first fortnight; the order showmancer < social < everybody holds)
+      ? (arch === 'showmancer' ? 0.85 : ['chaos-agent', 'social-butterfly', 'wildcard'].includes(arch) ? 1.0 : 1.15)
       : 1);
     const threshold = Math.max(aThresh * pace(aArch), bThresh * pace(bArch));
 
@@ -782,7 +789,10 @@ export function updateShowmancePhases(ep) {
     const _fromHome = sh.origin === 'arrived-together';
     const _tooNew = (sh.episodesActive || 0) < 2;
     const _floor = _fromHome ? 1.5 : 3;
-    if (!_tooNew && _preBond < _floor && sh.phase !== 'spark') {
+    // A couple that keeps fighting carries it (sh.strain, one point a fight, set by Big Brother's
+    // couple fight): the bond drifts back toward neutral between weeks, the fights do not
+    const _strained = _preBond - (Number(sh.strain) || 0) * 0.9;
+    if (!_tooNew && _strained < _floor && sh.phase !== 'spark') {
       sh.phase = 'broken-up';
       sh.breakupEp = epNum;
       sh.breakupType = 'faded'; // neither voted the other out — just fell apart

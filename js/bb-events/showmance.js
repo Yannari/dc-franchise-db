@@ -231,9 +231,12 @@ const theirFight = {
     return _fit(ctx, 3 + heat * 6 + age * 0.6);
   },
   fire(house, ctx, api) {
-    const { a, b } = _couple(house);
+    const { a, b, sh } = _couple(house);
     _spend(this.id, ctx);
     const audience = _quiet(_others(house, a, b)).slice(0, 2);
+    // the fight stays with them after the bond has drifted back (romance.js reads it at the
+    // weekly check: a couple that keeps fighting comes apart)
+    sh.strain = (Number(sh.strain) || 0) + 1;
 
     const scene = makeScene('couple.fight', { a, b, c: audience[0] || null }, { ending: 'scene' }, [], 'bedroom');
 

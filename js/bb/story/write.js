@@ -28,6 +28,7 @@ import { stableRng } from '../knowledge.js';
 import { causeOf } from './storylines.js';
 import { STORY_POOLS } from './lines/index.js';
 import { getBond } from '../../bonds.js';
+import { addInsight } from './voice.js';
 
 const ledger = () => ((gs.bb ||= {}).storyLedger ||= newLedger());
 const ROOM = { kitchen: 'Kitchen', 'living-room': 'Living Room', bedroom: 'Bedroom', 'hoh-room': 'HOH Room',
@@ -343,7 +344,7 @@ const LOUD = (type, step, outcome) => (type === 'feud' && (step === 'argument' |
   || (type === 'showmance' && step === 'fight') || (type === 'scheme' && step === 'caught');
 
 /** The scene for one step of a storyline, or null when nothing fits. */
-export function writeStoryScene(line, step, ctx) {
+function writeStoryScene0(line, step, ctx) {
   const prior = causeOf(line, step) || null;
   let who = { a: step.roles.a, b: step.roles.b, c: step.roles.c };
   // The roles follow the cause. In a feud, the one who starts the argument is the one who
@@ -449,7 +450,7 @@ export function writeStoryScene(line, step, ctx) {
  * a nominee's hope for the veto, who has to go before jury, a juror's bitterness, final-two
  * talk, venting or trust. Shaped like a storyline scene, with the room around it.
  */
-export function writeGameTalk(talk, ctx, at) {
+function writeGameTalk0(talk, ctx, at) {
   const { kind, who, data } = talk;
   const key = `talk.${kind}`;
   if (!STORY_POOLS[key]?.length) return null;
@@ -568,7 +569,7 @@ const FAMILY_WHY = [
   [/^social-/, 'How they stand with each other.'],
   [/^jury-/, 'The jury.'],
 ];
-export function writeEngineScene(beat, ctx, at) {
+function writeEngineScene0(beat, ctx, at) {
   const present = ctx.present || [];
   const speakers = (beat.lines || []).map(l => l?.by).filter(Boolean);
   // everybody the moment uses: its players, and anybody who speaks in it
@@ -684,4 +685,20 @@ export function writeSetPiece(type, ctx, inside, { gone = null, at = 0 } = {}) {
   return { id: `set:${ctx.week?.num || 0}:${ctx.stretch}:${type}`, line: null, type: 'set', step: type, outcome: 'any',
     room, roomName: ROOM[room] || 'Living Room', cast, mood: inside.some(sc => sc.type === 'feud') ? 'drama' : MOOD[type] || 'house',
     at, fixedRoom: true, recap: false, lineId: open.id, inside: inside.map(sc => sc.id), lines };
+}
+
+// ── every scene ends in the speaker's own voice (voice.js) ──
+// The user, 2026-10-07: "the house life dialogue is generic too, fix it the same way". The scene's
+// closing confessional gains a sentence in the speaker's voice about the other person in it, from
+// their history together (a nomination, a saved veto, votes cast alike, a shared alliance or deal).
+// Words only; nothing in the game moves.
+const voiced = (sc, kind, ctx) => (sc && !writing.muted && sc.lines?.length ? addInsight(sc, kind, ctx?.week?.num) : sc);
+export function writeStoryScene(line, step, ctx) {
+  return voiced(writeStoryScene0(line, step, ctx), `${line?.type}.${step?.step}`, ctx);
+}
+export function writeGameTalk(talk, ctx, at) {
+  return voiced(writeGameTalk0(talk, ctx, at), String(talk?.kind || ''), ctx);
+}
+export function writeEngineScene(beat, ctx, at) {
+  return voiced(writeEngineScene0(beat, ctx, at), String(beat?.eventId || ''), ctx);
 }

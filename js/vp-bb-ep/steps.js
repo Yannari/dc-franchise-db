@@ -2435,6 +2435,10 @@ function interviewScreen(iv, ctx, host, row) {
   if (iv.parting) steps.push({ k: 'say', by: ev, t: T(iv.parting) });
   steps.push({ k: 'beat', t: iv.joinsJury ? `${ev} is going to the jury house${iv.juryNumber ? `, juror number ${word(iv.juryNumber)}` : ''}.` : `${ev} is going home.`,
     big: [ev, iv.joinsJury ? 'To the jury' : 'Going home', iv.joinsJury ? 'safe' : 'out'] });
+  // the first juror is the night the season changes: the host says so (the user, 2026-10-07)
+  if (iv.joinsJury && iv.juryNumber === 1) steps.push({ k: 'host', by: h, t: `${ev} is the first member of the jury. From tonight, every houseguest who leaves the house will help decide who wins Big Brother.`, toast: ['THE JURY BEGINS', '#e8c98a'] });
+  // the final four's eviction leaves three, and the finale is next: the host says it
+  if ((row?.houseAtStart || []).length === 4) steps.push({ k: 'host', by: h, t: `Three houseguests remain. Next comes the three-part final Head of Household competition, and then finale night, when the jury decides who wins Big Brother.`, toast: ['FINALE NIGHT IS NEXT', '#e8c98a'] });
   return { id: 'bb-interview-v', kind: 'interview', anchor: 'evict', label: 'Evictee Interview',
     set: 'studio', arena: true, room: 'The Studio', cam: 7, kicker: 'Live · The studio', title: 'The Exit Interview', sub: `${h} and ${ev}`,
     day: ctx.day, time: 'LIVE', cast: [[ev, 36], [h, 64]], seated: { [ev]: 'G', [h]: 'H' }, steps };
@@ -2807,7 +2811,7 @@ function storyLifeScreen(scenes, ctx, n) {
     if ((MOOD_RANK[scene.mood] || 0) > (MOOD_RANK[mood] || 0)) mood = scene.mood;
     const lines = (sc.lines || []).map(l => ({ k: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, t: l.text, ...(l.bg ? { bg: true } : {}) }));
     // an alliance named on screen gets its title card on the last line of the conversation
-    if (sc.title?.kind === 'meeting') { const k = lines.findIndex(l => l.k !== 'dr'); if (k >= 0) lines[k] = { ...lines[k], card: sc.title }; }
+    if (sc.title?.kind === 'meeting' || sc.title?.kind === 'milestone') { const k = lines.findIndex(l => l.k !== 'dr'); if (k >= 0) lines[k] = { ...lines[k], card: sc.title }; }
     else if (sc.title) { let k = lines.length - 1; while (k > 0 && lines[k].k === 'dr') k--; if (lines[k]) lines[k] = { ...lines[k], card: sc.title }; }
     // a scene that opens on its own staging line carries the cut; otherwise a caption names the room
     const firstSpoken = lines.findIndex(l => l.k !== 'dr');

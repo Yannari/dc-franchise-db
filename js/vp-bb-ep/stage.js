@@ -886,10 +886,10 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (fresh && st && st.confetti) h += '<div class="goldflash"></div>';
   if (fresh && st && st.confetti) h += `<div class="confetti">${Array.from({ length: 120 }, (_, i) => `<i style="left:${(i * 37) % 100}%;--d:${((i * 13) % 34) / 10}s;--x:${((i * 29) % 40) - 20}cqw;--r:${(i * 47) % 360}deg;background:${['#f5c542', '#ff2e4d', '#22e1ff', '#7c5cff', '#fff', '#12b76a'][i % 6]}"></i>`).join('')}</div>`;
   if (S.finale && idx >= 0) h += '<div class="beams"><i></i><i></i><i></i></div>';
-  if (fresh && st && st.card && ['alliance', 'meeting', 'joined', 'out', 'deal'].includes(st.card.kind)) {
+  if (fresh && st && st.card && ['alliance', 'meeting', 'joined', 'out', 'deal', 'milestone'].includes(st.card.kind)) {
     const faces = (st.card.members || []).slice(0, 6).map((n, i) => `<span class="alf" style="--c:${col(n)};--i:${i}">${img(n)}</span>`).join('');
     const who = esc(String((st.card.members || [])[0] || '').toUpperCase());
-    const over = st.card.kind === 'meeting' ? `CALLED BY ${who}` : st.card.kind === 'joined' ? `${who} JOINS` : st.card.kind === 'out' ? `${who} IS NO LONGER IN` : st.card.kind === 'deal' ? 'A DEAL IS MADE' : 'AN ALLIANCE IS BORN';
+    const over = st.card.kind === 'meeting' ? `CALLED BY ${who}` : st.card.kind === 'joined' ? `${who} JOINS` : st.card.kind === 'out' ? `${who} IS NO LONGER IN` : st.card.kind === 'deal' ? 'A DEAL IS MADE' : st.card.kind === 'milestone' ? esc(st.card.over || '') : 'AN ALLIANCE IS BORN';
     h += `<div class="alcard ${st.card.kind}"><i>${over}</i><b>${esc(st.card.name)}</b><div class="alfs">${faces}</div></div>`;
   }
   if (fresh && st && st.scene && st.scene.slate && (S0.kind === 'houselife' || S0.kind === 'movein')) {

@@ -17,6 +17,7 @@ import { gs } from '../../core.js';
 import { classify, file, causeOf } from './storylines.js';
 import { writeStoryScene, writeSetPiece, writeGameTalk, writeCampaignScene, writeEngineScene, hasPool, roomName } from './write.js';
 import { gameTalkFor, bondTalkFor, styleTalkFor, phaseOf, hohWeekFor } from './gametalk.js';
+import { writeMilestone } from './milestone.js';
 
 const CEREMONY = new Set(['hoh', 'nominations', 'veto', 'veto-ceremony', 'eviction']);
 // the ceremonies' own moments (kept in step with vp-bb-ep/steps.js NOM_MOMENT / VETO_MOMENT)
@@ -61,6 +62,22 @@ export function airStorylines(week) {
   // the game talk this week has aired (gametalk.js): one of each kind a week, one talk per pair
   const talked = new Set();
   const talkedPairs = new Set();
+  // a week the season turns a corner (milestone.js) opens on the house noticing it: the jury
+  // begins, five left, four, the last three (the user, 2026-10-07: "they don't acknowledge the
+  // important moments... it seems monotone")
+  try {
+    const ms = writeMilestone(week, { present: (week.houseAtStart || []).slice() });
+    const first = week.acts.find(a => a && a.type !== 'jury-house');
+    if (ms && first) (first.scenes ||= []).unshift(ms);
+    // the final four's eviction leaves three, and the next thing is finale night: the last three,
+    // alone in the house, close the week
+    if ((week.houseAtStart || []).length === 4 && week.evicted) {
+      const three = (week.houseAtStart || []).filter(n => n !== week.evicted);
+      const f3 = writeMilestone(week, { present: three }, 'f3');
+      const last = [...week.acts].reverse().find(a => a && a.type !== 'jury-house');
+      if (f3 && last) { f3.id = `milestone:${week.num || 0}:f3`; (last.scenes ||= []).push(f3); }
+    }
+  } catch { /* the week airs without it */ }
   const season = phaseOf(week);
   // Who is in the house: everybody who started the week, less whoever has gone out of the
   // front door, less latecomers (Rivals) until they walk in.

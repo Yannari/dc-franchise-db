@@ -1067,21 +1067,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.4 + pStats(n).social * 0.3 + 1));
       addBond(a, b, 1.2);
       const _fA = pronouns(a), _fB = pronouns(b);
-      const flirtLines = [
-        `${a} and ${b} keep ending up next to each other. Neither seems to mind. Everyone else has already noticed.`,
-        `Something is happening between ${a} and ${b}. It started as nothing. It's not nothing anymore.`,
-        `${a} and ${b} talk by the water long after the work is done. It's not about the game.`,
-        `${a} laughs at everything ${b} says — and ${b} keeps finding new things to say. The rest of the tribe exchanges a look.`,
-        `${a} does something small for ${b} — brings food, fixes something, remembers a detail. ${b} doesn't say anything. But ${_fB.sub} ${_fB.sub==='they'?'are':'is'} smiling.`,
-        `The tribe watches ${a} and ${b} be completely unaware they're being watched. This is fine. Totally fine.`,
-        `${a} teases ${b} about something small. ${b} teases back. It goes on longer than it should. Nobody at camp is fooled.`,
-        `${a} finds an excuse to sit next to ${b} at every meal. Nobody has said anything yet. But they've all noticed.`,
-        `${b} catches ${a} looking. ${a} doesn't look away. ${b} doesn't either. The tribe pretends to be busy.`,
-        `${a} and ${b} have some kind of inside joke that nobody else is in on. The laughing is getting louder.`,
-        `${a} reaches for the same thing as ${b} and their hands brush. Neither of them moves away immediately. The tribe files this away for later.`,
-        `${b} passes ${a} something without being asked. ${a} holds it a beat longer than necessary before saying thank you. Everyone saw that.`,
-      ];
-      events.push({ type: 'flirtation', text: flirtLines[Math.floor(Math.random() * flirtLines.length)], players: [a, b], badgeText: 'SPARKS', badgeClass: 'green' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      events.push(scriptEvent({ type: 'flirtation', players: [a, b], badgeText: 'SPARKS', badgeClass: 'green' },
+        makeScene('romance.flirt', { a, b }, {}, [], _spotNow(a, b))));
 
     } else if (eventType === 'showmancerMoment') {
       // Showmancer deepens their most important relationship — bigger bond boost than flirtation
@@ -1103,26 +1091,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       addBond(a, b, 1.5);
       const _sA = pronouns(a), _sB = pronouns(b);
       const isCouple = gs.showmances?.some(sh => sh.players.includes(a) && sh.players.includes(b) && sh.phase !== 'broken-up');
-      const smLines = isCouple ? [
-        `${a} and ${b} aren't hiding it anymore. They slip away together holding hands and nobody says a word.`,
-        `${b} leans in and ${a} meets them halfway. The kiss is quick, easy — like they've done it before. The tribe tactfully looks elsewhere.`,
-        `${a} falls asleep on ${b}'s shoulder by the fire. Nobody wakes them up. Nobody dares.`,
-        `${a} and ${b} are spotted kissing where they thought no one could see. They don't seem particularly embarrassed. The tribe is a different story.`,
-        `${b} fixes ${a}'s hair without thinking about it. ${a} lets ${_sA.sub==='they'?'them':_sA.sub==='she'?'her':'him'}. It's the kind of small thing that makes everyone else feel like they're intruding.`,
-        `${a} wraps an arm around ${b} at the fire and ${b} doesn't move away. The tribe watches with a mix of warmth and mild strategic dread.`,
-        `They whisper to each other until the fire goes down to embers. Whatever they're saying, it's not about the game.`,
-        `${a} pulls ${b} aside before the rest of camp is up. When they rejoin the group twenty minutes later, both of them are smiling in a way that answers everyone's question.`,
-      ] : [
-        `${a} gravitates toward ${b} in a way the tribe has stopped pretending not to notice. Whatever is between them is real — and everyone can see it.`,
-        `${a} and ${b} disappear for an hour. When they come back, the energy between them has shifted in a way that makes the rest of the tribe quietly recalculate.`,
-        `${b} says something small. ${a} remembers it for the rest of the day. That's the thing about ${a} — ${_sA.sub} ${_sA.sub==='they'?'feel':'feels'} everything out loud.`,
-        `${a} sits next to ${b} and the whole camp gets smaller. Everyone gives them space. Nobody knows if that's instinct or strategy.`,
-        `There's a moment between ${a} and ${b} that nobody can put into words. The tribe just looks away.`,
-        `${a} catches ${b}'s eye from across the camp. It's a second too long to be nothing.`,
-        `${b} reaches over and moves something out of ${a}'s way — barely a gesture. ${a} doesn't say anything. But the tribe notices every single time.`,
-        `${a} says something that makes ${b} laugh and then immediately looks around to see if anyone else caught it. Everyone did.`,
-      ];
-      events.push({ type: 'showmancerMoment', text: smLines[Math.floor(Math.random() * smLines.length)], players: [a, b], badgeText: 'SHOWMANCE', badgeClass: 'green' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      events.push(scriptEvent({ type: 'showmancerMoment', players: [a, b], badgeText: 'SHOWMANCE', badgeClass: 'green' },
+        makeScene('romance.moment', { a, b }, { ending: isCouple ? 'couple' : 'crush' }, [], _spotNow(a, b))));
 
     } else if (eventType === 'prank') {
       // Prank — goes well or badly depending on target's temperament
@@ -2297,24 +2268,17 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         if (compat.length) {
           const b = wRandom(compat, n => Math.max(0.1, getBond(a, n) * 0.4 + pStats(n).social * 0.3 + 1));
           addBond(a, b, 1.0);
-          const lines = [
-            `Someone starts a game of spin-the-bottle after lights-out and it escalates fast. The bottle stops on ${a} and ${b}. The kiss is quick — but the way neither of them looks away after is the real story.`,
-            `Spin-the-bottle by firelight. ${a} spins; it points dead at ${b}. The camp whoops, the two of them go red, and something that wasn't there this morning is there now.`,
-            `The bottle picks ${a} and ${b}. It's "just a game" right up until the kiss lands a beat too long and the whole circle goes quiet.`,
-            `${a} swears they'll keep it casual. Then the bottle names ${b}, and casual goes out the window. The tribe has a new thing to gossip about.`,
-          ];
-          events.push({ type: 'nightGame', players: [a, b], badgeText: 'SPIN THE BOTTLE', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+          Math.random(); // the draw that picked the sentence (the season must not move)
+          events.push(scriptEvent({ type: 'nightGame', players: [a, b], badgeText: 'SPIN THE BOTTLE', badgeClass: 'green' },
+            makeScene('romance.night', { a, b }, { ending: 'kiss' }, [], _spotNow(a, b))));
         } else {
           const others = group.filter(p => p !== a);
           if (!others.length) continue;
           const b = others[Math.floor(Math.random() * others.length)];
           addBond(a, b, 0.3);
-          const lines = [
-            `The bottle lands on ${a} and ${b} — no spark there, just a mortified high-five and a lot of laughing. Camp morale, weirdly, goes up.`,
-            `${a} and ${b} get picked by the bottle, declare it "a bro thing," shake hands, and the whole circle roasts them for an hour. Good night, all told.`,
-            `The bottle points at ${a} and ${b}. They dodge the kiss, invent an elaborate secret handshake instead, and it becomes the tribe's thing for days.`,
-          ];
-          events.push({ type: 'nightGame', players: [a, b], badgeText: 'SPIN THE BOTTLE', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+          Math.random(); // the draw that picked the sentence (the season must not move)
+          events.push(scriptEvent({ type: 'nightGame', players: [a, b], badgeText: 'SPIN THE BOTTLE', badgeClass: 'green' },
+            makeScene('romance.night', { a, b }, { ending: 'friends' }, [], _spotNow(a, b))));
         }
       } else if (mode === 'never') {
         const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.3 + 1));
@@ -2323,13 +2287,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + 2));
         addBond(a, b, 0.5);
         const pA = pronouns(a);
-        const lines = [
-          `Never-Have-I-Ever gets out of hand. ${a} loses a round and has to explain a story ${pA.sub} clearly never meant to tell. ${b} will absolutely be bringing it up again.`,
-          `The game peels back a layer nobody expected. ${a} admits something real, ${b} matches it, and the two of them end the night closer than the game intended.`,
-          `"Never have I ever lied to someone in this camp." Half the fingers go down. ${a} and ${b} catch each other's eye and start laughing before anyone can ask.`,
-          `${a} loses badly and spills a genuinely embarrassing secret. ${b} promises to keep it. Whether ${b} does is a different game entirely.`,
-        ];
-        events.push({ type: 'nightGame', players: [a, b], badgeText: 'NEVER HAVE I EVER', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        events.push(scriptEvent({ type: 'nightGame', players: [a, b], badgeText: 'NEVER HAVE I EVER', badgeClass: 'green' },
+          makeScene('romance.night', { a, b }, { ending: 'never' }, [], _spotNow(a, b))));
       } else {
         const a = _pick(group, n => Math.max(0.1, pStats(n).boldness * 0.4 + 1));
         const others = group.filter(p => p !== a);
@@ -2340,13 +2300,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           if (!gs.popularity) gs.popularity = {};
           gs.popularity[a] = (gs.popularity[a] || 0) + 0.5;
         }
-        const lines = [
-          `Truth-or-dare, no stakes, all chaos. ${b} dares ${a} to run a full lap of camp at midnight in nothing but ${_pron(a).posAdj} underwear. ${a} does it without blinking. Legend status.`,
-          `${b} dares ${a} to serenade everyone. ${a} commits so hard to the bit that the whole camp is wheezing. Nobody's sleeping now, and nobody minds.`,
-          `The dare is to eat the single most disgusting thing anyone can scrounge up. ${a} takes it on for ${b}'s amusement, gags theatrically, and earns a standing ovation.`,
-          `${b} dares ${a} to do an impression of every single camper. ${a} nails ${b}'s last, and the circle can't breathe from laughing.`,
-        ];
-        events.push({ type: 'nightGame', players: [a, b], badgeText: 'TRUTH OR DARE', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        events.push(scriptEvent({ type: 'nightGame', players: [a, b], badgeText: 'TRUTH OR DARE', badgeClass: 'green' },
+          makeScene('romance.night', { a, b }, { ending: 'dare' }, [], _spotNow(a, b))));
       }
 
     // ═══════════════ SETTING ATMOSPHERE (per-venue scene flavor) ═══════════════

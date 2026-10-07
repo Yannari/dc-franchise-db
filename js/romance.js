@@ -1,5 +1,8 @@
 // js/romance.js - Romance sparks, showmances, love triangles, affairs
 import { gs, players, seasonConfig } from './core.js';
+import { scriptEvent } from './td/script/write.js';
+import { makeScene } from './td/script/scene.js';
+
 import { pStats, pronouns, romanticCompat, threatScore } from './players.js';
 import { getBond, addBond, feelsFor } from './bonds.js';
 
@@ -17,6 +20,12 @@ const bothWant = (a, b) => Math.min(feelsFor(a, b), feelsFor(b, a));
 const mutualPull = (a, b) => (feelsFor(a, b) + feelsFor(b, a)) / 2;
 import { SHOWMANCE_ARCHETYPE_MULT } from './camp-events.js';
 import { recordAttractionSpark } from './relationship-events.js';
+
+// A Total Drama season writes its romance as scenes (td/script/lines/romance.js); a Big Brother
+// house keeps the engine's own sentence (its viewer has its own words). Either way the sentence
+// is still picked first, so the dice never move.
+const _isTD = () => !seasonConfig.format || seasonConfig.format === 'total-drama';
+const _scene = (evt, kind, who, data = {}, ctx = {}) => (_isTD() ? scriptEvent(evt, makeScene(kind, who, data, [], null), ctx) : evt);
 
 /**
  * How much less likely somebody is to start something, for having somebody at
@@ -430,11 +439,11 @@ export function checkShowmanceSabotage(ep) {
     if (!ep.campEvents) ep.campEvents = {};
     if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
     if (!ep.campEvents[campKey].post) ep.campEvents[campKey].post = [];
-    ep.campEvents[campKey].post.push({
+    ep.campEvents[campKey].post.push(_scene({
       type: 'showmanceSabotage', players: [saboteur, partner, target],
       text: _sabTexts[Math.floor(Math.random() * _sabTexts.length)],
       badgeText: 'SHOWMANCE SABOTAGE', badgeClass: 'red'
-    });
+    }, 'romance.sabotage', { a: saboteur, b: partner, c: target }, {}, { ep: (gs.episode || 0) + 1 }));
     // the breakup it caused is its own moment: a Big Brother week only ever saw the sabotage, and a
     // couple that split on screen never had the scene where it happened
     if (targetShowmance.phase === 'broken-up' && seasonConfig.format === 'big-brother') {
@@ -696,11 +705,11 @@ export function checkShowmanceFormation(ep) {
       if (tribeName && ep.campEvents?.[tribeName]) {
         const block = ep.campEvents[tribeName];
         const evts = Array.isArray(block) ? block : (block.pre || []);
-        evts.push({ type: 'showmanceSpark', text:
+        evts.push(_scene({ type: 'showmanceSpark', text:
           `At some point between the first day and now, whatever ${a} and ${b} have stopped being a question. ` +
           `The tribe has a word for it. Nobody says it out loud — but they all think it every time ${a} and ${b} are in the same frame.`,
-          players: [a, b]
-        });
+          players: [a, b], badgeText: 'SHOWMANCE', badgeClass: 'green'
+        }, 'romance.spark', { a, b }, {}, { ep: ep.num }));
       }
       return; // one showmance per episode check is enough
     }
@@ -758,7 +767,8 @@ export function updateShowmancePhases(ep) {
             `${a} and ${b} have unfinished business. The betrayal is still there — but so is whatever made them a showmance in the first place.`,
             `The tribe expected fireworks when ${b} returned. Instead, ${a} and ${b} had a quiet conversation on the beach. When they came back, something had shifted.`,
           ];
-          evts.push({ type: 'showmanceRekindle', text: _pick(rekindleTexts), players: [a, b] });
+          evts.push(_scene({ type: 'showmanceRekindle', text: _pick(rekindleTexts), players: [a, b], badgeText: 'REKINDLED', badgeClass: 'green' },
+            'romance.rekindle', { a, b }, { ending: wasSeparated ? 'apart' : 'betrayed' }, { ep: epNum }));
           ep.showmanceEvents.push({ type: 'showmanceRekindle', players: [a, b], phase: 'rekindle' });
         }
       }
@@ -820,7 +830,8 @@ export function updateShowmancePhases(ep) {
           `${a} and ${b} ended the way a fire dies after rain — no drama, just cold ash. Whatever pulled them together stopped pulling. Now they avoid each other's eyes.`,
           `${a} and ${b} haven't spoken in days. The showmance that started in episode ${sh.sparkEp} ended somewhere between the silence and the distance — nobody marked the exact moment.`,
         ];
-        evts.push({ type: 'showmanceBreakup', text: _pick(_preBond >= 0 ? _fadeAmicable : _fadeSoured), players: [a, b] });
+        evts.push(_scene({ type: 'showmanceBreakup', text: _pick(_preBond >= 0 ? _fadeAmicable : _fadeSoured), players: [a, b], badgeText: 'BREAKUP', badgeClass: 'red' },
+          'romance.fade', { a, b }, { ending: _preBond >= 0 ? 'amicable' : 'soured' }, { ep: epNum }));
         ep.showmanceEvents = ep.showmanceEvents || [];
         ep.showmanceEvents.push({ type: 'showmanceBreakup', players: [a, b], phase: 'faded' });
       }
@@ -832,11 +843,16 @@ export function updateShowmancePhases(ep) {
     const _pA = pronouns(a), _pB = pronouns(b);
 
     const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(a) || 'merge');
+    // which scene each of these moments is, and who plays it (td/script/lines/romance.js)
+    const SCENE = { showmanceRideOrDie: 'romance.rideordie', showmanceHoneymoon: 'romance.honeymoon', showmanceNoticed: 'romance.noticed',
+      showmanceTarget: 'romance.target', showmanceJealousy: 'romance.jealous', friendshipJealousy: 'romance.sidelined' };
     const pushEvt = (type, text, players) => {
       if (!ep.campEvents?.[tribeName]) return;
       const block = ep.campEvents[tribeName];
       const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
-      evts.push({ type, text, players: players || [a, b] });
+      const ps = players || [a, b];
+      const who = ps.length === 3 ? { a: ps[0], b: ps[1], c: ps[2] } : { a: ps[0], b: ps[1] };
+      evts.push(SCENE[type] ? _scene({ type, text, players: ps }, SCENE[type], who, {}, { ep: epNum }) : { type, text, players: ps });
       ep.showmanceEvents.push({ type, players: players || [a, b], phase: sh.phase });
     };
 

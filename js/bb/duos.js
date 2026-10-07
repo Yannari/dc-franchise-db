@@ -513,7 +513,7 @@ export function grantGoldenKey({ week, evicted, house = gs.activePlayers || [] }
       beat(line, [survivor], 'GOLDEN KEY', 'gold'),
       beat(`${p.Sub} ${p.sub === 'they' ? 'keep' : 'keeps'} a vote and ${p.sub === 'they' ? 'lose' : 'loses'} `
         + `everything else: no competitions, no nominations, no way to move the game. `
-        + `And a seat at the end if ${p.sub} last that long.`, [survivor], 'SAFE, AND SIDELINED', 'blue'),
+        + `And a seat at the end if ${p.sub} ${p.sub === 'they' ? 'last' : 'lasts'} that long.`, [survivor], 'SAFE, AND SIDELINED', 'blue'),
     ],
   };
 }
@@ -561,7 +561,7 @@ export function expireKeys({ week, house = gs.activePlayers || [] } = {}) {
     holders: held, keyAt: st.keyAt,
     beats: [
       beat(`There are ${house.length} of you left, and the keys are done. `
-        + `${held.join(', ')} ${held.length === 1 ? 'is' : 'are'} back in the game — nominatable, `
+        + `${held.length > 1 ? `${held.slice(0, -1).join(', ')} and ${held.at(-1)}` : held[0]} ${held.length === 1 ? 'is' : 'are'} back in the game — nominatable, `
         + `and competing for the first time in weeks.`, held, 'KEYS EXPIRE', 'red'),
       beat(`Everybody who has been carried this far now has to play, against people who have been `
         + `playing the whole time.`, [], 'BACK IN IT', 'blue'),

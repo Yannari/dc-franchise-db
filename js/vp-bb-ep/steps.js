@@ -2312,6 +2312,89 @@ function twinScreens(act, ctx) {
   return out;
 }
 
+
+// ── Dynamic Duos (bb/duos.js): the house in pairs, the Golden Key, the chain ──
+// The user, 2026-10-06: "build that" (the Dynamic Duos were classic screens dropped into the
+// stepped week). The night the pairs are read out, one at a time, with what they are to each
+// other; the key handed to whoever's partner just walked out; the keys running out; an orphan
+// chained to another; and the pairs living with it.
+const DUO_REACT = {
+  Together: [`Of course they put us together. We're going to be nominated as a couple, aren't we?`, `Good. If I'm going up, I'd rather go up with you.`],
+  Family: [`Family. Great. If one of us goes, the other one has to watch.`, `I've spent my whole life sharing things with you. Now I'm sharing a nomination.`],
+  Friends: [`At least it's somebody I actually like.`, `We've survived worse than this. Probably.`],
+  History: [`Out of everybody in this house. Of course.`, `We're going to have to talk to each other now. Properly.`],
+  '': [`Okay. Partner. Let's not get each other evicted.`, `I didn't choose this. But fine. We play it together.`],
+};
+const REL_GROUP = { married: 'Together', engaged: 'Together', partners: 'Together', dating: 'Together',
+  twins: 'Family', siblings: 'Family', 'step-siblings': 'Family', 'parent-child': 'Family', grandparent: 'Family', 'aunt-uncle': 'Family', cousins: 'Family', 'in-laws': 'Family',
+  'best-friends': 'Friends', 'childhood-friends': 'Friends', 'old-friends': 'Friends', roommates: 'Friends', colleagues: 'Friends', teammates: 'Friends',
+  estranged: 'History', exes: 'History' };
+function duosScreens(act, ctx) {
+  const out = [];
+  const host = ctx.host || 'Valeria';
+  const screen = (id, set, title, sub, cast, steps, extra = {}) => ({
+    id, kind: 'duos', anchor: ctx.anchor, set, room: ROOM_NAME[set] || 'Living Room', cam: CAM[set] || 4,
+    kicker: `Cam ${String(CAM[set] || 4).padStart(2, '0')} · ${ROOM_NAME[set] || 'Living room'}`, title, sub, day: ctx.day, time: ACT_TIME.house,
+    cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'ceremony', tvObj: true, steps, ...extra });
+  const prose = (beats, people) => (beats || []).flatMap(b => proseSteps(b.text || b, people));
+  const house = ctx.house || [];
+  if (act.type === 'duos-open') {
+    const pairs = act.pairs || [];
+    const keyed = act.goldenKey !== false;
+    const steps = [
+      { k: 'bb', t: 'Houseguests, please gather in the living room.' },
+      { k: 'bb', t: 'Nobody walked into this house alone. From tonight, you play in pairs, and the Head of Household nominates a PAIR, not two houseguests.', rule: 1, toast: ['DYNAMIC DUOS', '#d99a10'] },
+      keyed ? { k: 'bb', t: `If your partner is evicted, you are handed a Golden Key: safe from nomination and eviction until ${word(act.keyAt || 10)} of you are left.`, rule: 2 }
+        : { k: 'bb', t: 'There are no Golden Keys. Lose your partner, and you can be put on that block on your own.', rule: 2 },
+      keyed ? { k: 'bb', t: 'A key holder does not compete. You still vote, and you can still win this game.', rule: 3 }
+        : { k: 'bb', t: 'And you will not be on your own for long. The next person who loses a partner will be chained to you.', rule: 3 },
+    ];
+    pairs.forEach(([a, b], i) => {
+      const label = (act.kin || [])[i] || 'A pair';
+      const group = (REL_GROUP[(act.kinKeys || [])[i]] || '');
+      steps.push({ k: 'bb', t: `${a} and ${b}. ${label}.`, big: [`${a} & ${b}`, label, 'safe'] });
+      const r = DUO_REACT[group] || DUO_REACT[''];
+      steps.push({ k: 'say', by: i % 2 ? b : a, t: pickBy(r, `${ctx.week}|duo|${a}|${b}`) });
+    });
+    for (const n of act.singles || []) {
+      steps.push({ k: 'bb', t: `${n}. You came in alone.`, big: [n, 'Came in alone', 'out'] });
+      steps.push({ k: 'dr', by: n, t: pickBy(keyed
+        ? [`No partner means no key. Everybody else has somebody to lose. I've got nobody to protect me.`, `Everybody's paired off and I'm standing here on my own. Fine. Nobody can drag me down with them, either.`, `Alone. No key coming, ever. So I'd better make myself useful to every pair in this house.`, `I came in alone and I'll play alone. At least I only have to keep myself alive.`]
+        : [`On my own. Which means I'm the cheapest nomination in the house. Every Head of Household knows it.`, `Alone means one name on the block instead of two. I'm the easy option, and everybody just found that out.`, `Everybody else has a partner to hide behind. I've got nobody.`], `${ctx.week}|alone|${n}`) });
+    }
+    const cast = [...pairs.flat(), ...(act.singles || [])];
+    out.push(screen('bb-duos-open-v', 'ceremony', 'Dynamic Duos', `${word(pairs.length)} pairs${(act.singles || []).length ? `, ${word(act.singles.length)} alone` : ''}`, cast.slice(0, 8), steps,
+      { rulesTitle: 'DYNAMIC DUOS', rules: keyed ? [['IN PAIRS', 'nominated two at a time, as a pair'], ['THE GOLDEN KEY', `lose your partner: safe until ${word(act.keyAt || 10)} are left`], ['SIDELINED', 'a key holder votes, but never competes']]
+        : [['IN PAIRS', 'nominated two at a time, as a pair'], ['ALONE', 'lose your partner and you can go up on your own'], ['CHAINED', 'the next one alone is chained to you']] }));
+  }
+  if (act.type === 'duos-key' && act.holder) {
+    const steps = [
+      { k: 'bb', t: `${act.holder}. ${act.partner} has been evicted. You are now holding a Golden Key.`, big: [act.holder, 'Golden Key', 'safe'], toast: ['GOLDEN KEY', '#f5c542'] },
+      ...prose(act.beats, [act.holder, act.partner]),
+      { k: 'dr', by: act.holder, t: pickBy([`I'm safe, and I've never felt less like I'm playing. ${act.partner} is gone and I'm just... watching now.`, `A key. Safe until ${word(act.keyAt || 10)}. And no way to do anything with it but vote.`, `I'd give this key back in a second to have ${act.partner} back in this house.`], `${ctx.week}|key|${act.holder}`) },
+    ];
+    out.push(screen('bb-duos-key-v', 'dr', 'The Golden Key', `${act.holder}, without ${act.partner}`, [act.holder], steps));
+  }
+  if (act.type === 'duos-keys-expire') {
+    const steps = [
+      { k: 'bb', t: `Houseguests. There are ${word(act.keyAt || 10)} of you left. The Golden Keys are done.`, toast: ['KEYS EXPIRE', '#ff2e4d'] },
+      ...(act.holders || []).map(n => ({ k: 'beat', t: `${n} is back in the game.`, big: [n, 'Back in the game', 'out'] })),
+      ...prose(act.beats, act.holders || []),
+    ];
+    out.push(screen('bb-duos-expire-v', 'ceremony', 'The Keys Expire', listOf(act.holders || []), act.holders || [], steps));
+  }
+  if (act.type === 'duos-repair') {
+    const steps = [{ k: 'bb', t: 'Houseguests, please gather in the living room. Some of you have lost your partner. You will not stay alone.', toast: ['RE-PAIRED', '#d99a10'] }];
+    for (const [a, b] of act.pairs || []) {
+      steps.push({ k: 'bb', t: `${a}. ${b}. From now on, you are a pair.`, big: [`${a} & ${b}`, 'Chained by Big Brother', 'out'] });
+      steps.push({ k: 'dr', by: a, t: pickBy([`I didn't choose ${b}. Nobody asked me. And now ${b} going up means I go up.`, `${b} and I barely speak. Now we're a pair. That's going to be a fun conversation.`, `Of all the people they could chain me to. Fine. ${b}, let's not get each other killed.`], `${ctx.week}|rep|${a}`) });
+    }
+    steps.push(...prose(act.beats, [...(act.pairs || []).flat(), ...(act.waiting ? [act.waiting] : [])]));
+    out.push(screen('bb-duos-repair-v', 'ceremony', 'Re-Paired', (act.pairs || []).map(p => p.join(' & ')).join(', '), (act.pairs || []).flat().slice(0, 6), steps));
+  }
+  return out;
+}
+
 // ── the evictee's interview ────────────────────────────────────────────
 // Out of the front door and into the studio: the walk to the crowd, the host's questions, what
 // they never saw (who organised it, who lied), the goodbye messages the house recorded, their
@@ -2898,6 +2981,14 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         if (act.type === 'second-veto-ceremony') ctx.nominees = [...(act.nominees || ctx.nominees)];
         beatsOf(act); break;
       case 'team-america': flush(); for (const scr of teamAmericaScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
+      // the pairs' week-to-week life stays in House Life with the rest of it (tests/bb-duos-screens:
+      // a separate stop for three lines fragmented the week); everything else gets its scene
+      case 'duos-week': beatsOf(act); break;
+      case 'duos-open': case 'duos-key': case 'duos-keys-expire': case 'duos-repair': {
+        const du = duosScreens(act, { ...ctx, host });
+        flush(); if (du.length) for (const scr of du) ceremony(scr); else out.push({ slot: act.type });
+        beatsOf(act); break;
+      }
       case 'twin-open': case 'twin-brief': case 'twin-week': case 'twin-caught': case 'twin-entry': case 'twin-out': {
         const tw = twinScreens(act, ctx);
         flush(); if (tw.length) for (const scr of tw) ceremony(scr); else out.push({ slot: act.type });
@@ -2968,7 +3059,7 @@ function countWords(t) {
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|twist|twist-2|interview|interview-2|jury-house(-\d+)*|final-interview|cold|twins|twins-open|twins-job|twins-caught|twins-in|twins-out)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|twist|twist-2|interview|interview-2|jury-house(-\d+)*|final-interview|cold|twins|twins-open|twins-job|twins-caught|twins-in|twins-out|duos-open|duos-key|duos-week|duos-repair|duos-expire)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

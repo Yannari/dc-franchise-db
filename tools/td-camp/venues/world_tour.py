@@ -1,304 +1,357 @@
 # ══════════════════════════════════════════════════════════════════════
-# venues/world_tour.py — the jet: a battered old plane, plus wherever it lands
+# venues/world_tour.py — the jet, painted the way Total Drama World Tour paints it
 # ══════════════════════════════════════════════════════════════════════
 # js/camp-access.js 'world-tour': economy, aisle, galley, cargo-hold, first-class,
-# destination-staging. From Total Drama World Tour (Total Drama Wiki): the confessional is
-# the plane's lavatory; the elimination is the Barf Bag Ceremony in a compartment at the back
-# of the plane, the passports stamped to vote and the safe ones handed bags of peanuts; the
-# loser leaves by the Drop of Shame, out of the open hatch with a parachute. No real country
-# is ever named or shown — the destination is a dusty airstrip anywhere.
+# destination-staging. Reference: the Total Drama Wiki's "Total Drama Jumbo Jet" plates
+# (Tdwteconomyclass: a dark ribbed steel hull, wooden benches, laundry on a line; Tdwtdiningarea:
+# the galley's arched doors and stools; Tdwtcargohold: crates, suitcases, a striped door;
+# Tdwtfirstclass: cream walls, a yellow sofa, purple seats, a retro carpet; Tdwtelimination: the
+# rear compartment with tiki masks and a thatch hut where the Barf Bag Ceremony happens). The
+# loser leaves by the Drop of Shame, through the open hatch with a parachute. No real country
+# is ever named or shown: the destination is a dusty airstrip anywhere.
+
+HULL = '#3e4c54'
+HULL_SH = '#2a363e'
+RIB = '#56666e'
 
 
-def window_row(x, y0, y1, step, z, tod, side=1, glow=None):
-    """Oval plane windows down one wall: a dark frame, sky in the pane."""
-    pane = mat('Pane' + tod, '#bfe6f5' if tod == 'day' else '#2a3a6a', emit='#bfe6f5' if tod == 'day' else None, strength=0.6 if tod == 'day' else 0)
-    frame = mat('PaneFrame', '#d8d2c4')
+def jet_hull(D, R, tod, zc=0.6, col=HULL, rib=RIB, ribs=True, step=1.6, y0=0.0):
+    """The inside of the fuselage: a big tube seen from within, ribs arching over every few feet, a flat floor."""
+    # an open tube (no end caps: the camera stands inside it, and the far end may open on the sky)
+    me = bpy.data.meshes.new('Hull'); bm = bmesh.new()
+    bmesh.ops.create_cone(bm, cap_ends=False, segments=40, radius1=R, radius2=R, depth=D + 6)
+    bm.to_mesh(me); bm.free()
+    h = _link(bpy.data.objects.new(uid('Hull'), me)); h.location = (0, y0 + D / 2 - 3, zc); h.rotation_euler = (math.radians(90), 0, 0)
+    me.materials.append(pmat('Hull' + col, col, HULL_SH, mottle=0.3, mscale=0.5))
+    h.visible_shadow = False
+    if ribs:
+        rm = pmat('Rib' + rib, rib, _mix_hex(rib, '#1a1a2a', 0.3), mottle=0.15)
+        y = y0 + 0.6
+        while y < y0 + D:
+            for k in range(18):
+                a = math.radians(-12 + k * (204 / 17))
+                x, z = math.cos(a) * (R - 0.08), zc + math.sin(a) * (R - 0.08)
+                ob = box(uid('Rib'), (0.14, 0.16, 2 * math.pi * R / 34 * 1.35), (x, y, z), rm, bevel=0)
+                ob.rotation_euler = (0, -a, 0)       # along the tangent, so the segments join into one arch
+            y += step
+    return h
+
+
+def rivets(x, y0, y1, z, step=0.35, col='#6e7e86', side=-1):
+    m = pmat('Rivet' + col, col, unlit=True, mottle=0)
     y = y0
-    while y <= y1:
-        f = cyl(uid('WinFrame'), 0.26, 0.04, (x - side * 0.01, y, z), frame, verts=20, rot=(0, 90, 0), bevel=0)
-        f.scale = (1.0, 0.8, 1.0)
-        p = cyl(uid('WinPane'), 0.2, 0.05, (x - side * 0.02, y, z), pane, verts=20, rot=(0, 90, 0), bevel=0)
-        p.scale = (1.0, 0.8, 1.0)
+    while y < y1:
+        card(uid('Rivet'), _blob_pts(0.03, 0.03, 8, 0, 0), y, m, x=x, z=z).rotation_euler = (0, 0, math.radians(90 * side))
         y += step
 
 
-def fuselage(W, D, H, wall='#d8d2c4', floor='#5a6a7a', ceiling='#e6e0d4', carpet=True):
-    """A cabin box with a curved feel: the upper walls lean in, a strip of ceiling between them."""
-    interior(W, D, H, wall, floor, ceiling, floor_kind='flat', wall_kind='flat')
-    for side in (-1, 1):
-        box(uid('Cove'), (0.2, D, 1.1), (side * (W / 2 - 0.35), D / 2, H - 0.35), mat('Cove', _mix(wall, '#000000', 0.06)), bevel=0, rot=(0, side * 35, 0))
-    if carpet:
-        box('AisleCarpet', (0.8, D, 0.02), (0, D / 2, 0.01), mat('AisleCarpet', '#3a4a7a'), bevel=0)
+def porthole(x, y, z, side, tod, r=0.32):
+    pane = '#9ad8e8' if tod == 'day' else '#2a3a6a'
+    g = cyl(uid('PortFrame'), r, 0.1, (x, y, z), pmat('PortFrame', '#7a8a92', mottle=0.1), verts=24, rot=(0, 90, 0), bevel=0); g['ink'] = 1
+    cyl(uid('PortPane'), r * 0.78, 0.12, (x - side * 0.01, y, z), pmat('PortPane' + tod, pane, unlit=True, mottle=0), verts=24, rot=(0, 90, 0), bevel=0)
 
 
-def plane_seat(loc, color='#5a6a8a', rot_z=0, worn=False, wide=False):
-    g = _group(uid('Seat'), loc, rot_z)
-    w = 0.75 if wide else 0.5
-    c = mat('SeatFab' + color, color)
-    _child(g, box(uid('SeatCush'), (w, 0.5, 0.15), (0, 0, 0.45), c, bevel=0.03))
-    _child(g, box(uid('SeatBack'), (w, 0.14, 0.85), (0, 0.24, 0.9), c, bevel=0.03, rot=(-8, 0, 0)))
-    _child(g, box(uid('Headrest'), (w * 0.8, 0.12, 0.18), (0, 0.27, 1.32), mat('Headrest', '#e8e2d4'), bevel=0.02))
-    _child(g, box(uid('SeatLeg'), (w * 0.8, 0.4, 0.38), (0, 0, 0.19), mat('SeatLeg', '#4a4a52'), bevel=0))
-    if worn:
-        _child(g, box(uid('Patch'), (0.18, 0.02, 0.16), (0.1, 0.16, 0.95), mat('Duct', '#9aa0a6'), bevel=0, rot=(-8, 0, 20)))
-    return g
+def floor_plates(W, D, tod, col='#5a6a66', y0=0.0):
+    plank_floor('Floor', (W, D, 0.2), (0, y0 + D / 2, -0.1), col, 'day', axis='x', step=1.2, seam='#3a4644', mottle=0.25)
 
 
-def bins(W, D, H, y0=0.4):
-    for side in (-1, 1):
-        box(uid('Bins'), (0.65, D - y0, 0.45), (side * (W / 2 - 0.42), (D + y0) / 2, H - 0.55), mat('Bins', '#ece6da'), bevel=0)
-        y = y0 + 0.9
-        while y < D:
-            box(uid('BinSeam'), (0.66, 0.02, 0.46), (side * (W / 2 - 0.42), y, H - 0.55), mat('BinSeam', '#b8b2a6'), bevel=0)
-            y += 1.6
+def hanging_lamp(x, y, z, warm=True):
+    pcyl('LampCord', 0.015, 0.8, (x, y, z + 0.4), '#1a1a1a', 'day', ink=False)
+    pcyl('LampShade', 0.5, 0.35, (x, y, z), '#c8a48a' if warm else '#7a8a92', 'day', r2=0.12, verts=18)
+    card(uid('LampGlow'), _blob_pts(0.42, 0.08, 16, 0, 0), y - 0.02, pmat('LampGlowW', '#fff2c0', unlit=True, mottle=0), x=x, z=z - 0.2)
+    brush_patch('LightPool', 1.4, (x, y + 0.2), '#7a8a7a', sx=1.2, sy=0.9, seed=int(y * 10), mottle=0.1, z=0.014)
 
 
 def wt_economy(tod):
-    """Economy class: two-and-two rows of tired seats, duct tape, an overhead bin that won't shut."""
-    W, D, H = 3.6, 12.0, 2.5
-    fuselage(W, D, H)
-    bins(W, D, H)
-    for r in range(8):
-        y = 2.2 + r * 1.15
-        for x in (-1.3, -0.78, 0.78, 1.3):
-            plane_seat((x, y, 0), color=('#4a5a8a', '#5a4a6a')[r % 2], rot_z=180, worn=(r + int(x * 10)) % 3 == 0)
-    box('OpenBin', (0.6, 0.06, 0.4), (-1.18, 5.0, H - 0.98), mat('Bins', '#ece6da'), bevel=0, rot=(-50, 0, 0))
-    box('Suitcase', (0.4, 0.25, 0.3), (-1.2, 5.1, H - 0.72), mat('Suitcase', '#bf3f5a'), bevel=0)
-    for side in (-1, 1):
-        window_row(side * (W / 2 - 0.1), 2.0, 11.0, 1.15, 1.25, tod, side)
-    for y in range(2, 12, 3):
-        box(uid('CabinLight'), (0.4, 1.0, 0.03), (0, y, H - 0.02), mat('CabinLight', '#fff6e8', emit='#fff6e8', strength=2.5), bevel=0)
-    indoor_light(W, D, H, power=500, x=0.3, amb=0.66)
-    tv_camera((0.25, 0.3, 1.6), (0, D, 1.15), lens=20)
+    """Economy class (Tdwteconomyclass): a dark ribbed steel hull, long wooden benches down both walls, laundry on a line, a hole in the wall."""
+    paint_mode()
+    W, D, R = 5.6, 16, 3.2
+    floor_plates(W, D, tod)
+    jet_hull(D, R, tod)
+    for sx in (-1, 1):
+        pbox('Bench', (0.7, D - 2, 0.1), (sx * (W / 2 - 0.6), D / 2, 0.55), '#8a5a32', 'day')
+        for yy in range(2, int(D), 3):
+            pbox('BenchLeg', (0.6, 0.1, 0.5), (sx * (W / 2 - 0.6), yy, 0.27), '#5a3a22', 'day')
+        for yy in (3.5, 7.0, 10.5, 14.0):
+            porthole(sx * (W / 2 - 0.35), yy, 1.7, sx, tod)
+        pbox('Bin', (0.9, D - 2, 0.5), (sx * (W / 2 - 0.9), D / 2, 2.85), '#34424a', 'day')
+    pbox('Line', (0.03, 9, 0.03), (0.4, 7, 2.7), '#d8d0b8', 'day', ink=False)
+    for k, c in enumerate(('#a8786a', '#d8c8a8', '#6a8aa8', '#c8a050')):
+        pbox('Laundry', (0.04, 0.6, 0.7), (0.4, 4.5 + k * 1.7, 2.3), c, 'day', mottle=0.2)
+    card(uid('Hole'), [(-0.4, -0.3), (-0.1, -0.15), (0.0, -0.4), (0.15, -0.1), (0.45, -0.2), (0.3, 0.1), (0.4, 0.35), (0.0, 0.2), (-0.3, 0.35)],
+         D - 0.6, pmat('Hole', '#0e1418', unlit=True, mottle=0), x=0.8, z=0.8)
+    pbox('BackWall', (W + 1, 0.2, R * 2), (0, D - 0.4, 0.6), '#36444c', 'day', mottle=0.3, ink=False)
+    pbox('Door', (1.4, 0.1, 2.4), (0, D - 0.55, 1.2), '#4a5a62', 'day')
+    hanging_lamp(0, 8, 3.0, warm=False)
+    room_light(azimuth=-30, elevation=70, energy=2.2)
+    paint_sky('#1e2428', '#1e2428')
+    tv_camera((0.4, 0.4, 1.75), (0, D, 1.3), lens=22)
 
 
 def wt_aisle(tod):
-    """The aisle: standing between the rows, a drinks cart parked halfway, the curtain to first class at the end."""
-    W, D, H = 3.6, 14.0, 2.5
-    fuselage(W, D, H)
-    bins(W, D, H)
-    for r in range(9):
-        y = 1.6 + r * 1.15
-        for x in (-1.3, -0.78, 0.78, 1.3):
-            plane_seat((x, y, 0), color=('#4a5a8a', '#5a4a6a')[r % 2], rot_z=0)
-    box('Cart', (0.5, 0.8, 1.0), (0.05, 6.5, 0.5), mat('Cart', '#c9ccd2', metal=0.3, rough=0.4), bevel=0.02)
-    for k in range(4):
-        cyl(uid('CartCup'), 0.04, 0.1, (-0.1 + (k % 2) * 0.2, 6.3 + (k // 2) * 0.3, 1.05), mat('Cup', '#f6f3ea'), verts=10, bevel=0)
-    box('Curtain', (W - 0.4, 0.06, H - 0.1), (0, D - 0.3, (H - 0.1) / 2), mat('FCCurtain', '#8a1e2e'), bevel=0)
-    for i in range(8):
-        box(uid('Fold'), (0.06, 0.1, H - 0.1), (-1.4 + i * 0.4, D - 0.36, (H - 0.1) / 2), mat('FCFold', '#6a1422'), bevel=0)
-    for side in (-1, 1):
-        window_row(side * (W / 2 - 0.1), 1.5, 12.0, 1.15, 1.25, tod, side)
-    for y in range(2, 14, 3):
-        box(uid('CabinLight'), (0.4, 1.0, 0.03), (0, y, H - 0.02), mat('CabinLight', '#fff6e8', emit='#fff6e8', strength=2.5), bevel=0)
-    indoor_light(W, D, H, power=500, x=0.3, amb=0.66)
-    tv_camera((0.0, 0.2, 1.7), (0, D, 1.3), lens=22)
+    """The aisle: standing between rows of tired seats, a drinks cart halfway, the curtain to first class at the end."""
+    paint_mode()
+    W, D, R = 5.0, 16, 3.0
+    floor_plates(W, D, tod)
+    pbox('AisleRunner', (0.9, D, 0.02), (0, D / 2, 0.01), '#7a3a3a', 'day', ink=False)
+    jet_hull(D, R, tod, ribs=True, step=2.0)
+    for r in range(8):
+        y = 2.0 + r * 1.6
+        for x in (-1.6, -0.95, 0.95, 1.6):
+            pbox('SeatBack', (0.58, 0.16, 0.95), (x, y + 0.25, 0.95), ('#6a5a8a', '#5a6a8a')[r % 2], 'day', rot=(-8, 0, 0))
+            pbox('SeatCush', (0.58, 0.55, 0.16), (x, y, 0.5), ('#6a5a8a', '#5a6a8a')[r % 2], 'day')
+            pbox('Headrest', (0.48, 0.12, 0.2), (x, y + 0.29, 1.38), '#d8d0b8', 'day', ink=False)
+    pbox('Cart', (0.55, 0.85, 1.0), (0.05, 7.0, 0.5), '#b8bcc4', 'day')
+    pbox('CartTop', (0.6, 0.9, 0.05), (0.05, 7.0, 1.02), '#d8dce2', 'day', ink=False)
+    pbox('Curtain', (W - 0.6, 0.08, 2.6), (0, D - 0.4, 1.3), '#a82a3a', 'day', shade='#7a1a2a', mottle=0.15)
+    for i in range(9):
+        pbox('Fold', (0.06, 0.1, 2.6), (-1.8 + i * 0.45, D - 0.46, 1.3), '#7a1a2a', 'day', ink=False)
+    for sx in (-1, 1):
+        for yy in (3, 6.5, 10, 13.5):
+            porthole(sx * (W / 2 - 0.3), yy, 1.55, sx, tod, r=0.26)
+    hanging_lamp(0, 5, 2.9, warm=True); hanging_lamp(0, 11, 2.9, warm=True)
+    room_light(azimuth=-30, elevation=70, energy=2.4)
+    paint_sky('#1e2428', '#1e2428')
+    tv_camera((0.0, 0.2, 1.75), (0, D, 1.3), lens=22)
 
 
 def wt_galley(tod):
-    """The galley: steel cupboards, an oven door, a hot plate of something grey, a little window."""
-    W, D, H = 3.4, 2.6, 2.4
-    fuselage(W, D, H, wall='#cfcac0', floor='#6f7a84', carpet=False)
-    steel = mat('Steel', '#b8bcc4', metal=0.4, rough=0.35)
-    box('Counter', (3.0, 0.6, 0.95), (0, D - 0.35, 0.47), steel, bevel=0.01)
-    for i in range(5):
-        box(uid('Cupboard'), (0.55, 0.06, 0.55), (-1.2 + i * 0.6, D - 0.08, 1.9), mat('Cupboard', '#a8acb4', metal=0.3), bevel=0.01)
-        cyl(uid('Latch'), 0.03, 0.04, (-1.2 + i * 0.6, D - 0.13, 1.72), mat('Latch', '#e2ab3a'), verts=10, rot=(90, 0, 0), bevel=0)
-    for i in range(3):
-        box(uid('Drawer'), (0.85, 0.06, 0.25), (-0.9 + i * 0.9, D - 0.67, 0.65), mat('Drawer', '#9aa0a8', metal=0.3), bevel=0)
-    box('Oven', (0.7, 0.06, 0.5), (1.0, D - 0.08, 1.25), mat('OvenDoor', '#3a3a40'), bevel=0)
-    cyl('HotPlate', 0.2, 0.03, (-0.6, D - 0.35, 0.97), mat('HotPlate', '#3a3a40'), verts=20, bevel=0)
-    sphere('Slop', 0.15, (-0.6, D - 0.35, 1.02), mat('Slop', '#9a9a7a'))
-    cyl('Kettle', 0.12, 0.25, (0.3, D - 0.35, 1.07), steel, verts=16, r2=0.08, bevel=0)
-    window_row(-(W / 2 - 0.1), 1.2, 1.2, 1.0, 1.35, tod, -1)
-    box('Sign', (0.6, 0.04, 0.2), (0.6, D - 0.12, 2.2), mat('GalleySign', '#3a3a40'), bevel=0)
-    text_obj('GalleyTxt', 'GALLEY', (0.6, D - 0.15, 2.2), 0.11, '#f6f0de')
-    indoor_light(W, D, H, power=420, x=0.0, amb=0.66)
-    tv_camera((0.0, 0.05, 1.6), (0, D, 1.15), lens=18)
+    """The galley (Tdwtdiningarea): the arched double doors in the hull, a steel counter, a table with stools, a fire extinguisher."""
+    paint_mode()
+    W, D, R = 6.0, 6.0, 3.0
+    floor_plates(W, D, tod, col='#6a5a4a')
+    jet_hull(D + 1, R, tod, step=2.2)
+    pbox('Bulkhead', (W + 1, 0.2, 4.0), (0, D, 1.6), '#4a5a62', 'day', shade='#36444c', mottle=0.3, ink=False)
+    pbox('DoorL', (0.9, 0.1, 2.3), (-0.48, D - 0.12, 1.15), '#4f6a70', 'day')
+    pbox('DoorR', (0.9, 0.1, 2.3), (0.48, D - 0.12, 1.15), '#4f6a70', 'day')
+    for sx in (-0.48, 0.48):
+        pbox('DoorWin', (0.5, 0.11, 0.7), (sx, D - 0.13, 1.6), '#7ab0b8', 'day', unlit=True, ink=False)
+    pbox('Counter', (2.4, 0.7, 0.95), (2.0, D - 0.6, 0.47), '#8a9098', 'day')
+    pbox('CounterTop', (2.5, 0.8, 0.06), (2.0, D - 0.6, 0.97), '#b8bcc4', 'day', ink=False)
+    pcyl('Pot', 0.22, 0.35, (1.6, D - 0.6, 1.17), '#7a7a82', 'day', verts=14)
+    card(uid('Slop'), _blob_pts(0.18, 0.06, 12, 0.2, 2), D - 0.85, pmat('Slop', '#9a9a6a', unlit=True, mottle=0.3), x=1.6, z=1.36)
+    pbox('Table', (2.0, 1.1, 0.08), (-0.8, 2.8, 0.8), '#9a8a5a', 'day')
+    pbox('TableLeg', (0.12, 0.12, 0.8), (-0.8, 2.8, 0.4), '#4a4a52', 'day')
+    for x in (-1.8, 0.2):
+        pcyl('Stool', 0.25, 0.55, (x, 2.0, 0.27), '#5a7a6a', 'day', verts=14)
+    pcyl('Extinguisher', 0.11, 0.55, (-2.3, D - 0.5, 1.1), '#c8302a', 'day', verts=12)
+    pbox('Grate', (1.4, 0.8, 0.02), (-0.6, 4.3, 0.005), '#3a4442', 'day', ink=False)
+    hanging_lamp(-0.6, 3.2, 2.8, warm=True)
+    room_light(azimuth=-30, elevation=70, energy=2.4)
+    paint_sky('#1e2428', '#1e2428')
+    tv_camera((0.4, -1.4, 1.75), (0, D, 1.3), lens=22)
 
 
 def wt_cargo(tod):
-    """The cargo hold: a dim ribbed belly, nets over crates and luggage, a single caged bulb."""
-    W, D, H = 5.0, 9.0, 3.2
-    interior(W, D, H, '#6f6a62', '#4f4c48', '#3f3c38', floor_kind='flat', wall_kind='flat')
-    for y in range(1, 9, 1):
-        for side in (-1, 1):
-            box(uid('Rib'), (0.12, 0.18, H), (side * (W / 2 - 0.1), y, H / 2), mat('Rib', '#5a5650'), bevel=0)
-        box(uid('RibTop'), (W, 0.18, 0.12), (0, y, H - 0.06), mat('Rib', '#5a5650'), bevel=0)
+    """The cargo hold (Tdwtcargohold): stacked crates and suitcases, a duffel, a striped hatch, one dim lamp."""
+    paint_mode()
+    W, D, R = 7.0, 10, 3.6
+    floor_plates(W, D, tod, col='#3e4846')
+    jet_hull(D, R, tod, col='#323e44', step=2.4)
+    pbox('Hatch', (2.6, 0.14, 2.6), (-1.8, D - 0.5, 1.3), '#4a585e', 'day')
+    for k in range(7):
+        pbox('Hazard', (0.22, 0.16, 2.8), (-3.0 + k * 0.4, D - 0.58, 1.35), '#e8c23a' if k % 2 == 0 else '#22262a', 'day', rot=(0, 30, 0), ink=False)
     rnd = random.Random(4)
-    cols = ('#a8834f', '#8a6a3a', '#bf3f5a', '#3f7fbf', '#3fae6a', '#6a6a72')
-    for i, (x, y, s) in enumerate(((-1.6, 5.5, 1.0), (-1.5, 6.6, 0.9), (-1.7, 5.9, 0.7), (1.5, 6.0, 1.1), (1.4, 4.4, 0.6), (0.2, 7.6, 0.8), (1.6, 7.4, 0.8))):
-        z = 0.5 * s + (0.9 if i == 2 else 0)
-        box(uid('Cargo'), (s, s * 0.9, s), (x, y, z), mat('Cargo' + str(i % 6), cols[i % 6]), bevel=0.02)
-    netm = mat('CargoNet', '#c9b48a')
-    for i in range(9):
-        box(uid('Net'), (0.03, 2.4, 0.03), (-1.6 + (i - 4) * 0.12, 6.0, 0.2 + i * 0.22), netm, bevel=0)
-    box('Cage', (0.6, 0.6, 0.5), (1.2, 3.0, 0.25), mat('CageBars', '#9aa0a6', metal=0.4), bevel=0)
-    box('Hatch', (2.4, 0.1, 2.0), (0, D - 0.06, 1.2), mat('Hatch', '#7a766e'), bevel=0)
-    for x in (-1.0, 1.0):
-        box(uid('HatchBolt'), (0.12, 0.06, 1.8), (x, D - 0.12, 1.2), mat('HatchBolt', '#e2ab3a'), bevel=0)
-    cyl('Bulb', 0.1, 0.18, (0, 4.5, H - 0.3), mat('BulbGlow', '#ffe2a8', emit='#ffe2a8', strength=6), verts=12, bevel=0)
-    point('HoldBulb', (0, 4.5, H - 0.5), 380, '#ffd9a0', radius=0.1)
-    indoor_light(W, D, H, color='#ffe2a8', power=220, amb=0.3, fill='#a8b0c8')
-    tv_camera((0.4, 0.3, 1.6), (0, D, 1.1), lens=21)
+    cols = ('#a8834f', '#8a6a3a', '#b8935f', '#7a5a32')
+    for i, (x, y, s, z) in enumerate(((1.6, 7.5, 1.2, 0), (2.9, 7.0, 1.0, 0), (2.2, 7.4, 0.9, 1.2), (1.2, 5.5, 0.8, 0), (-2.2, 5.0, 0.9, 0), (-1.4, 6.6, 0.7, 0))):
+        pbox('Crate', (s, s * 0.9, s), (x, y, z + s / 2), cols[i % 4], 'day', mottle=0.3)
+    for i, (x, y, c) in enumerate(((-0.4, 4.0, '#7a2a2a'), (0.5, 4.2, '#2a4a6a'), (-2.6, 3.4, '#3a5a3a'))):
+        pbox('Suitcase', (0.8, 0.35, 0.55), (x, y, 0.28), c, 'day')
+    pcyl('Duffel', 0.32, 1.1, (-1.6, 2.4, 0.3), '#4a5a3a', 'day', verts=14, rot=(0, 90, 15))
+    brush_patch('Puddle', 0.6, (1.0, 2.4), '#4a8ab0', sx=1.4, sy=0.6, seed=5, mottle=0)
+    hanging_lamp(0.6, 5.0, 3.0, warm=False)
+    room_light(azimuth=-30, elevation=70, energy=1.6)
+    paint_sky('#161a1e', '#161a1e')
+    tv_camera((0.3, -0.6, 1.8), (0, D, 1.2), lens=22)
 
 
 def wt_first(tod):
-    """First class: wide cream recliners, a little table with fruit and a glass, gold trim, the best windows."""
-    W, D, H = 4.0, 8.0, 2.6
-    fuselage(W, D, H, wall='#efe6d4', floor='#7a2a3a', ceiling='#f4ecdc')
-    box('GoldStrip', (0.3, D, 0.04), (0, D / 2, H - 0.04), mat('GoldTrim', '#e8b938', metal=0.5, rough=0.35), bevel=0)
-    for r in range(3):
-        y = 2.0 + r * 2.0
-        for x in (-1.2, 1.2):
-            plane_seat((x, y, 0), color='#e8dcc4', rot_z=180, wide=True)
-            box(uid('SideTable'), (0.3, 0.5, 0.06), (x + (0.6 if x < 0 else -0.6), y - 0.3, 0.7), mat('SideTable', '#6b4a2e'), bevel=0)
-    for x in (-0.6, 0.6):
-        cyl(uid('Glass'), 0.04, 0.15, (x, 1.7, 0.8), mat('GlassFizz', '#f2d27a'), verts=10, bevel=0)
-    sphere('Grapes', 0.08, (-0.65, 1.8, 0.78), mat('Grape', '#8a4ab4'))
-    for side in (-1, 1):
-        window_row(side * (W / 2 - 0.1), 1.5, 7.0, 1.0, 1.3, tod, side)
-    box('Divider', (W, 0.08, 0.8), (0, D - 0.06, 1.8), mat('Divider', '#8a1e2e'), bevel=0)
-    text_obj('FCTxt', 'FIRST CLASS', (0, D - 0.12, 1.85), 0.18, '#e8b938')
-    for y in (2, 5):
-        cyl(uid('Chandelier'), 0.25, 0.15, (0, y, H - 0.1), mat('Chandelier', '#fff1c8', emit='#fff1c8', strength=3), verts=16, r2=0.12, bevel=0)
-    indoor_light(W, D, H, color='#ffe8c8', power=520, x=0.2, amb=0.68)
-    tv_camera((0.0, 0.2, 1.6), (0, D, 1.1), lens=20)
+    """First class (Tdwtfirstclass): cream walls, a long yellow sofa, purple seats, a retro carpet, a curtained window."""
+    paint_mode()
+    W, D, H = 8.0, 6.0, 3.2
+    plank_floor('Floor', (W, D, 0.2), (0, D / 2, -0.1), '#c8503a', 'day', axis='x', step=10, seam='#c8503a', mottle=0.1)
+    rnd = random.Random(7)
+    for i in range(26):
+        pbox('Retro', (rnd.uniform(0.5, 1.0), rnd.uniform(0.3, 0.6), 0.01), (rnd.uniform(-3.5, 3.5), rnd.uniform(0.4, D - 0.8), 0.005), rnd.choice(('#e8904a', '#f2c87a', '#a83a2a')), 'day', ink=False)
+    for nm, size, loc in (('BackWall', (W, 0.2, H), (0, D, H / 2)), ('LeftWall', (0.2, D, H), (-W / 2, D / 2, H / 2)), ('RightWall', (0.2, D, H), (W / 2, D / 2, H / 2))):
+        pbox(nm, size, loc, '#d8cca8', 'day', shade='#b8ac8a', mottle=0.2, ink=False)
+    c = pbox('Ceiling', (W, D, 0.2), (0, D / 2, H + 0.1), '#c8bc98', 'day', ink=False); c.visible_shadow = False
+    pbox('Vent', (1.4, 0.06, 0.3), (0, D - 0.12, H - 0.25), '#9a9078', 'day')
+    pbox('Sofa', (4.4, 1.0, 0.5), (-1.0, D - 0.7, 0.45), '#d8a83a', 'day', shade='#a87a1a')
+    pbox('SofaBack', (4.4, 0.3, 0.7), (-1.0, D - 0.3, 0.95), '#d8a83a', 'day', shade='#a87a1a')
+    for sx in (-3.3, 1.3):
+        pbox('SofaArm', (0.3, 1.0, 0.75), (sx, D - 0.7, 0.55), '#c8982a', 'day')
+    for x in (-2.4, 0.4):
+        pbox('Pillow', (0.55, 0.2, 0.5), (x, D - 0.45, 0.9), '#f2e2a0', 'day', rot=(0, 10, 0))
+    for k in range(3):
+        pbox('PSeatBack', (0.6, 0.15, 1.1), (2.4 + k * 0.7, D - 0.7, 0.95), '#6a3a8a', 'day')
+        pbox('PSeat', (0.6, 0.6, 0.15), (2.4 + k * 0.7, D - 1.0, 0.5), '#6a3a8a', 'day')
+        pcyl('PStem', 0.05, 0.45, (2.4 + k * 0.7, D - 1.0, 0.22), '#2a2a2a', 'day', verts=8)
+    pbox('Window', (0.8, 0.06, 1.0), (-1.0, D - 0.12, 2.3), '#9ad8e8' if tod == 'day' else '#2a3a6a', 'day', unlit=True)
+    for sx in (-1.55, -0.45):
+        pbox('WCurtain', (0.4, 0.08, 1.4), (sx, D - 0.14, 2.3), '#a82a2a', 'day')
+    pbox('Speaker', (0.8, 0.4, 1.1), (W / 2 - 0.6, D - 0.4, 2.0), '#5a4a3a', 'day')
+    for z in (1.75, 2.25):
+        pcyl('Cone', 0.22, 0.05, (W / 2 - 0.6, D - 0.62, z), '#2a2a2a', 'day', verts=16, rot=(90, 0, 0))
+    card(uid('Sconce'), [(-0.12, 0), (0.12, 0), (0.05, 0.25), (0.12, 0.5), (-0.12, 0.5), (-0.05, 0.25)], D - 0.15, pmat('Sconce', '#f2e8c8', unlit=True, mottle=0), x=1.6, z=1.9)
+    room_light(azimuth=-30, elevation=60, energy=3.2)
+    paint_sky('#c8b890', '#c8b890')
+    tv_camera((0.0, -1.6, 1.6), (0, D, 1.3), lens=24)
 
 
-def jet(loc, tod, rot_z=0, scale=1.0):
-    """The old jet itself: a long white body, a tail fin, two wings, a stripe, round windows."""
-    g = _group(uid('Jet'), loc, rot_z)
-    body = mat('JetBody' + tod, C('#ece8de', tod))
-    s = scale
-    b = cyl(uid('Fuselage'), 1.6 * s, 22 * s, (0, 0, 2.6 * s), body, verts=32, rot=(90, 0, 0), bevel=0)
-    _child(g, b)
-    _child(g, sphere(uid('Nose'), 1.6 * s, (0, -11 * s, 2.6 * s), body, scale=(1, 1.6, 1)))
-    _child(g, cyl(uid('Tailcone'), 1.6 * s, 4 * s, (0, 13 * s, 2.9 * s), body, verts=32, rot=(90, 0, 0), r2=0.5 * s, bevel=0))
-    _child(g, box(uid('Fin'), (0.25 * s, 3.0 * s, 3.2 * s), (0, 12.6 * s, 4.4 * s), mat('Fin' + tod, C('#c8463c', tod)), bevel=0, rot=(-20, 0, 0)))
-    _child(g, box(uid('Wing'), (18 * s, 3.2 * s, 0.25 * s), (0, 1.5 * s, 1.8 * s), body, bevel=0))
-    _child(g, box(uid('Stripe'), (3.24 * s, 22 * s, 0.25 * s), (0, 0, 2.4 * s), mat('JetStripe' + tod, C('#3f7fbf', tod)), bevel=0))
-    for x in (-5 * s, 5 * s):
-        _child(g, cyl(uid('Engine'), 0.6 * s, 2.2 * s, (x, 0.6 * s, 1.2 * s), mat('Engine' + tod, C('#9aa0a8', tod)), verts=20, rot=(90, 0, 0), bevel=0))
-    win = mat('JetWin' + tod, C('#3a4a6a', tod) if tod == 'day' else '#ffd27a', emit=None if tod == 'day' else '#ffd27a', strength=0 if tod == 'day' else 1.5)
+def jet_outside(x, y, tod, rot_z=-70, s=1.0):
+    """The old jet outside: a long pale body with a stripe, a red fin, wings, round windows."""
+    g = _group(uid('Jet'), (x, y, 0), rot_z)
+    def add(ob):
+        _child(g, ob)
+        return ob
+    add(pcyl('Fuselage', 1.6 * s, 22 * s, (0, 0, 2.6 * s), '#e8e2d4', tod, verts=32, rot=(90, 0, 0)))
+    nose = icorock(uid('Nose'), (1.6 * s, 2.6 * s, 1.6 * s), (0, -11 * s, 2.6 * s), '#e8e2d4', seed=1); nose.data.materials.clear()
+    nose.data.materials.append(pmat('JetBody' + tod, N('#e8e2d4', tod), mottle=0.2)); nose['ink'] = 1; add(nose)
+    add(pcyl('Tailcone', 1.6 * s, 4 * s, (0, 13 * s, 2.9 * s), '#e8e2d4', tod, verts=32, rot=(90, 0, 0), r2=0.5 * s))
+    add(pbox('Fin', (0.25 * s, 3.0 * s, 3.2 * s), (0, 12.6 * s, 4.4 * s), '#c8463c', tod, rot=(-20, 0, 0)))
+    add(pbox('Wing', (18 * s, 3.2 * s, 0.25 * s), (0, 1.5 * s, 1.8 * s), '#d8d2c4', tod))
+    add(pbox('JetStripe', (3.24 * s, 22 * s, 0.25 * s), (0, 0, 2.4 * s), '#3f7fbf', tod, ink=False))
+    for xx in (-5 * s, 5 * s):
+        add(pcyl('Engine', 0.6 * s, 2.2 * s, (xx, 0.6 * s, 1.2 * s), '#9aa0a8', tod, verts=20, rot=(90, 0, 0)))
     for i in range(14):
-        _child(g, cyl(uid('JetWin'), 0.18 * s, 0.05 * s, (-1.58 * s, -8 * s + i * 1.3 * s, 3.1 * s), win, verts=12, rot=(0, 90, 0), bevel=0))
-    for y in (-8 * s, 2 * s):
-        for x in ((0,) if y < 0 else (-1.4 * s, 1.4 * s)):
-            _child(g, cyl(uid('Gear'), 0.4 * s, 0.3 * s, (x, y, 0.4 * s), mat('Tyre' + tod, C('#1e1e22', tod)), verts=16, rot=(0, 90, 0), bevel=0))
-            _child(g, box(uid('Strut'), (0.12 * s, 0.12 * s, 1.0 * s), (x, y, 1.0 * s), mat('GearStrut' + tod, C('#6a6a72', tod)), bevel=0))
+        add(pcyl('JetWin', 0.18 * s, 0.05 * s, (-1.58 * s, -8 * s + i * 1.3 * s, 3.1 * s), '#3a4a6a' if tod == 'day' else '#ffd27a', 'day', verts=12, rot=(0, 90, 0), ink=False, unlit=tod == 'night'))
     return g
 
 
 def wt_destination(tod):
-    """The landing spot: a dusty airstrip with the jet parked behind, a stair truck, crates of gear for the challenge."""
-    ground(C('#d2b07a', tod), size=(200, 160), loc=(0, 40, 0))
-    box('Runway', (12, 120, 0.02), (0, 50, 0.01), mat('Runway' + tod, C('#6f6a64', tod)), bevel=0)
-    y = 10
-    while y < 110:
-        box(uid('RunwayDash'), (0.3, 3.0, 0.01), (0, y, 0.025), mat('RunwayDash' + tod, C('#f0e6c0', tod)), bevel=0)
-        y += 7
-    hills(120, '#b88a5a', tod, n=7, h=22, seed=9, x0=-150, x1=150)
-    hills(95, '#c9a06a', tod, n=6, h=12, seed=14, x0=-130, x1=130)
-    jet((-7.5, 24, 0), tod, rot_z=-70, scale=1.0)
+    """Wherever it lands: a dusty airstrip with the jet parked behind, a stair truck, crates of gear, red hills."""
+    paint_mode()
+    if tod == 'day':
+        paint_sky('#86c8e8', '#f2dca0')
+        swirl_sun(-26, 160, 40, 4.0, tod)
+        for (cx, cz, cs) in ((-46, 40, 5.0), (18, 48, 4.0), (60, 36, 3.4)):
+            curly_cloud(cx, 150, cz, cs, '#eef3fb', '#b9c6e0')
+    else:
+        paint_sky('#222a4a', '#3a4068')
+        swirl_sun(-30, 160, 40, 3.2, tod)
+    ground_plane(N('#d2b07a', tod), N('#a8885a', tod), mottle=0.35)
+    pbox('Runway', (12, 140, 0.02), (0, 60, 0.01), '#6f6a64', tod, mottle=0.25, ink=False)
+    yy = 10
+    while yy < 120:
+        pbox('Dash', (0.3, 3.0, 0.01), (0, yy, 0.025), '#f0e6c0', tod, ink=False); yy += 7
+    for k, col in enumerate(('#b8743a', '#d0985a')):
+        ridge_card(140 - k * 25, -150, 150, 0, 16 - k * 6, N(col, tod), seed=9 + k, humps=5)
+    jet_outside(-7.5, 26, tod)
     g = _group('StairTruck', (-2.0, 17.5, 0), 20)
-    _child(g, box(uid('TruckBed'), (1.8, 4.0, 0.8), (0, 0, 0.8), mat('Truck' + tod, C('#e2ab3a', tod)), bevel=0))
-    _child(g, box(uid('Stairs'), (1.2, 4.2, 0.2), (0, 0.2, 2.2), mat('Stairs' + tod, C('#9aa0a8', tod)), bevel=0, rot=(32, 0, 0)))
+    _child(g, pbox('TruckBed', (1.8, 4.0, 0.8), (0, 0, 0.8), '#e2ab3a', tod))
+    _child(g, pbox('Stairs', (1.2, 4.2, 0.2), (0, 0.2, 2.2), '#9aa0a8', tod, rot=(32, 0, 0)))
     for i, (x, y, s) in enumerate(((3.5, 9.0, 1.0), (4.6, 9.4, 0.8), (3.9, 10.4, 0.9), (-4.0, 7.0, 0.7))):
-        box(uid('GearCrate'), (s, s, s), (x, y, s / 2), mat('GearCrate' + tod, C('#a8834f', tod)), bevel=0.02)
-    text_obj('CrateStamp', 'FRAGILE', (3.5, 8.48, 0.55), 0.14, C('#8a2a1c', tod))
-    for x in (-8.0, 8.0):
-        cyl(uid('Cone'), 0.25, 0.6, (x * 0.5, 4.0, 0.3), mat('Cone' + tod, C('#ff7a2a', tod)), verts=12, r2=0.03, bevel=0)
-    windsock = cyl('Windsock', 0.25, 1.4, (9.0, 14.0, 4.2), mat('Windsock' + tod, C('#ff7a2a', tod)), verts=12, r2=0.12, rot=(0, 80, 0), bevel=0)
-    post((8.3, 14.0, 0), 4.3, tod, r=0.06, color='#9aa0a8')
+        pbox('GearCrate', (s, s, s), (x, y, s / 2), '#a8834f', tod)
+    for x in (-4.0, 4.0):
+        pcyl('Cone', 0.25, 0.6, (x, 4.0, 0.3), '#ff7a2a', tod, r2=0.03, verts=12)
+    pcyl('Windsock', 0.25, 1.4, (9.0, 14.0, 4.2), '#ff7a2a', tod, r2=0.12, verts=12, rot=(0, 80, 0))
+    pcyl('SockPole', 0.06, 4.3, (8.3, 14.0, 2.15), '#9aa0a8', tod, verts=8)
     for i, (x, y) in enumerate(((-14, 8), (13, 6), (16, 12))):
-        icorock(uid('Boulder'), (1.2, 1.0, 0.8), (x, y, 0.3), C('#b89a6a', tod), seed=i + 60)
+        r = icorock(uid('Boulder'), (1.2, 1.0, 0.8), (x, y, 0.3), N('#b89a6a', tod), seed=i + 60)
+        r.data.materials.clear(); r.data.materials.append(pmat('Boulder' + tod, N('#b89a6a', tod), mottle=0.3)); r['ink'] = 1
     if tod == 'night':
         for x in (-6.5, 6.5):
             for yy in (8, 20, 32):
-                sphere(uid('Bulb'), 0.15, (x, yy, 0.15), mat('RunwayLight', '#8ad0ff', emit='#8ad0ff', strength=6))
+                card(uid('RunwayLight'), _blob_pts(0.15, 0.15, 10, 0, 0), yy, pmat('RunwayLight', '#8ad0ff', unlit=True, mottle=0), x=x, z=0.15)
         point(uid('FloodLight'), (0, 12, 6), 2200, '#fff0d0', radius=1.0)
-    sky(tod); sun(tod, azimuth=-45, elevation=55 if tod == 'day' else 30)
-    tv_camera((1.5, -5.5, 1.75), (-1.0, 16, 2.2), lens=24)
+    paint_sun(azimuth=-45, elevation=55 if tod == 'day' else 30, energy=4.0 if tod == 'day' else 1.8)
+    tv_camera((1.5, -5.5, 1.9), (-1.0, 16, 2.4), lens=24)
 
 
 def wt_confessional(tod):
-    """The plane's lavatory: a steel toilet, a tiny sink and mirror, a fold-out sign, no room to turn round."""
-    W, D, H = 1.8, 2.0, 2.3
-    interior(W, D, H, '#d8d2c4', '#7a8490', '#e6e0d4', floor_kind='flat', wall_kind='flat')
-    steel = mat('Steel', '#b8bcc4', metal=0.4, rough=0.35)
-    cyl('Toilet', 0.25, 0.45, (0, D - 0.4, 0.22), steel, verts=20, r2=0.2, bevel=0)
-    cyl('ToiletSeat', 0.26, 0.04, (0, D - 0.42, 0.46), mat('ToiletSeat', '#3a3a40'), verts=20, bevel=0)
-    box('Tank', (0.5, 0.2, 0.45), (0, D - 0.12, 0.7), steel, bevel=0.01)
-    box('Sink', (0.45, 0.4, 0.12), (0.6, D - 0.3, 0.9), steel, bevel=0.01)
-    box('SinkStand', (0.4, 0.35, 0.85), (0.6, D - 0.28, 0.42), mat('SinkStand', '#cfcac0'), bevel=0)
-    box('Mirror', (0.45, 0.04, 0.55), (0.6, D - 0.08, 1.45), mat('Mirror', '#cfe0ea', rough=0.1), bevel=0)
-    box('NoSmoke', (0.32, 0.04, 0.32), (-0.55, D - 0.08, 1.55), mat('NoSmoke', '#f6f3ea'), bevel=0)
-    cyl('NoSmokeRing', 0.13, 0.02, (-0.55, D - 0.11, 1.55), mat('NoSmokeRed', '#c8463c'), verts=20, rot=(90, 0, 0), bevel=0)
-    box('NoSmokeBar', (0.24, 0.02, 0.03), (-0.55, D - 0.12, 1.55), mat('NoSmokeRed', '#c8463c'), bevel=0, rot=(0, 45, 0))
-    window_row(-(W / 2 - 0.1), 1.3, 1.3, 1.0, 1.55, tod, -1)
-    box('Light', (0.6, 0.3, 0.03), (0, D / 2, H - 0.02), mat('LavLight', '#fff6e8', emit='#fff6e8', strength=2.5), bevel=0)
-    box('Handrail', (0.04, 0.6, 0.04), (W / 2 - 0.12, D - 0.7, 1.0), steel, bevel=0)
-    indoor_light(W, D, H, power=320, x=0.0, amb=0.66)
-    tv_camera((0.0, 0.05, 1.55), (0, D, 1.0), lens=15)
+    """The plane's lavatory: a steel toilet, a tiny sink and mirror, a porthole, the ribbed wall."""
+    paint_mode()
+    W, D, H = 2.0, 2.0, 2.6
+    plank_floor('Floor', (W, D, 0.2), (0, D / 2, -0.1), '#5a6a66', 'day', axis='x', step=0.5, seam='#3a4644')
+    for nm, size, loc in (('BackWall', (W, 0.2, H), (0, D, H / 2)), ('LeftWall', (0.2, D, H), (-W / 2, D / 2, H / 2)), ('RightWall', (0.2, D, H), (W / 2, D / 2, H / 2))):
+        pbox(nm, size, loc, '#5a6a72', 'day', shade='#44525a', mottle=0.3, ink=False)
+    c = pbox('Ceiling', (W, D, 0.2), (0, D / 2, H + 0.1), '#3a464e', 'day', ink=False); c.visible_shadow = False
+    for k in range(3):
+        pbox('WallRib', (0.12, 0.08, H), (-0.6 + k * 0.6, D - 0.12, H / 2), '#6e7e86', 'day', ink=False)
+    pcyl('Toilet', 0.26, 0.45, (0, D - 0.45, 0.22), '#b8bcc4', 'day', r2=0.2, verts=20)
+    pcyl('ToiletSeat', 0.27, 0.04, (0, D - 0.45, 0.46), '#3a3a40', 'day', verts=20)
+    pbox('Tank', (0.5, 0.2, 0.45), (0, D - 0.14, 0.72), '#b8bcc4', 'day')
+    pbox('Sink', (0.45, 0.4, 0.12), (0.62, D - 0.3, 0.9), '#b8bcc4', 'day')
+    pbox('Mirror', (0.45, 0.04, 0.55), (0.62, D - 0.12, 1.45), '#a8c8d0', 'day', mottle=0.05)
+    porthole(-W / 2 + 0.12, 1.2, 1.55, -1, tod, r=0.22)
+    pbox('NoSmoke', (0.32, 0.04, 0.32), (-0.55, D - 0.12, 1.6), '#f6f3ea', 'day', ink=False)
+    card(uid('NoSmokeRing'), _blob_pts(0.12, 0.12, 20, 0, 0), D - 0.15, pmat('NoSmokeRed', '#c8463c', unlit=True, mottle=0), x=-0.55, z=1.6)
+    card(uid('NoSmokeIn'), _blob_pts(0.09, 0.09, 20, 0, 0), D - 0.16, pmat('NoSmokeW', '#f6f3ea', unlit=True, mottle=0), x=-0.55, z=1.6)
+    pbox('Barf', (0.18, 0.08, 0.26), (0.62, D - 0.2, 1.08), '#f2ecd8', 'day')
+    room_light(azimuth=-20, elevation=65, energy=2.6)
+    paint_sky('#1e2428', '#1e2428')
+    tv_camera((0.0, -0.3, 1.5), (0, D, 1.05), lens=17)
+
+
+def tiki_mask(x, y, z, h, tod, col='#b8743a', eye='#e8b03a'):
+    """The rear compartment's tall tiki masks: a carved panel, a brow, big lidded eyes."""
+    pbox('Mask', (1.2, 0.2, h), (x, y, z + h / 2), col, 'day', shade=_mix_hex(col, '#2a1a1a', 0.35), mottle=0.35, mscale=1.5)
+    pbox('MaskBrow', (1.3, 0.1, 0.22), (x, y - 0.12, z + h * 0.7), _mix_hex(col, '#2a1a1a', 0.3), 'day')
+    for sx in (-0.3, 0.3):
+        card(uid('MaskEye'), _blob_pts(0.2, 0.12, 14, 0, 0), y - 0.13, pmat('MaskEye' + eye, eye, unlit=True, mottle=0), x=x + sx, z=z + h * 0.58)
+        card(uid('MaskPupil'), _blob_pts(0.07, 0.07, 10, 0, 0), y - 0.14, pmat('MaskPupil', '#1a1a1a', unlit=True, mottle=0), x=x + sx, z=z + h * 0.57)
+    card(uid('MaskMouth'), [(-0.4, 0), (0.4, 0), (0.3, -0.25), (-0.3, -0.25)], y - 0.13, pmat('MaskMouth', '#3a1a1a', unlit=True, mottle=0), x=x, z=z + h * 0.32)
 
 
 def wt_ceremony(tod):
-    """The Barf Bag Ceremony: the rear compartment, rows of seats facing a stand with the stamp and the peanut bags."""
-    W, D, H = 4.2, 7.0, 2.6
-    fuselage(W, D, H, wall='#c9c2b4', floor='#4f5a66', ceiling='#d8d2c4')
-    for r in range(2):
-        for x in (-1.4, -0.85, 0.85, 1.4):
-            plane_seat((x, 1.4 + r * 1.1, 0), color='#4a5a8a', rot_z=180)
-    box('Stand', (1.0, 0.6, 1.05), (0.9, D - 1.0, 0.52), mat('BagStand', '#6b4a2e'), bevel=0)
-    tray = mat('BagTray', '#c9ccd2', metal=0.3)
-    box('Tray', (0.8, 0.5, 0.04), (0.9, D - 1.0, 1.07), tray, bevel=0)
+    """The Barf Bag Ceremony (Tdwtelimination): the rear compartment's ribbed hull, the tiki masks, a thatch hut with a flowered curtain,
+    rows of benches, the stand with the barf bags."""
+    paint_mode()
+    W, D, R = 7.0, 9.0, 3.8
+    floor_plates(W, D, tod, col='#4a4440')
+    jet_hull(D + 1, R, tod, col='#2e383e', step=1.4)
+    pbox('Bulkhead', (W + 2, 0.2, R * 2), (0, D, 0.6), '#262e34', 'day', ink=False)
+    tiki_mask(-2.8, D - 2.2, 0.0, 3.4, tod)
+    tiki_mask(-1.5, D - 1.6, 0.0, 2.8, tod, col='#9a6a3a', eye='#d8c050')
+    # the thatch hut with its flowered curtain
+    pbox('HutWall', (2.6, 1.6, 2.0), (1.6, D - 1.4, 1.0), '#c8902a', 'day')
+    rnd = random.Random(3)
+    for k in range(10):
+        card(uid('Flower'), _blob_pts(0.18, 0.18, 10, 0.3, k), D - 2.22, pmat('HutFlower' + str(k % 3), ('#e85a8a', '#f2c84a', '#e86a3a')[k % 3], unlit=True, mottle=0),
+             x=0.6 + rnd.random() * 2.0, z=0.3 + rnd.random() * 1.4)
+    for sd in (-1, 1):
+        pbox('HutThatch', (2.9, 1.3, 0.25), (1.6 + sd * 1.25, D - 1.4, 2.3), '#c8a050', 'day', shade='#8a6a30', mottle=0.4, mscale=2.5, rot=(0, sd * 28, 0))
+    for r in range(3):
+        pbox('Bench', (4.0, 0.4, 0.4), (0.4, 2.0 + r * 1.5, 0.2), '#8a5a32', 'day')
+        for sx in (-1.4, 2.2):
+            pbox('BenchLeg', (0.12, 0.35, 0.2), (sx, 2.0 + r * 1.5, 0.1), '#5a3a22', 'day', ink=False)
+    pbox('Stand', (0.9, 0.6, 1.05), (-0.6, 6.6, 0.52), '#6b4a2e', 'day')
     for i in range(7):
-        box(uid('BarfBag'), (0.14, 0.08, 0.22), (0.62 + (i % 4) * 0.18, D - 1.1 + (i // 4) * 0.2, 1.2), mat('BarfBag', '#f2ecd8'), bevel=0.01)
-    box('Stamp', (0.12, 0.12, 0.15), (-0.2, D - 1.0, 1.12), mat('Stamp', '#3a3a40'), bevel=0)
-    box('StampTable', (0.7, 0.5, 0.9), (-0.25, D - 1.0, 0.45), mat('StampTable', '#7a5232'), bevel=0)
-    box('Passports', (0.2, 0.28, 0.06), (-0.45, D - 1.0, 0.93), mat('Passport', '#2a3a6a'), bevel=0)
-    box('Hatch', (1.6, 0.08, 2.1), (-1.0, D - 0.06, 1.05), mat('ExitHatch', '#9aa0a8'), bevel=0)
-    box('HatchSign', (0.7, 0.04, 0.22), (-1.0, D - 0.12, 2.3), mat('ExitSign', '#c8463c', emit='#c8463c', strength=2), bevel=0)
-    text_obj('HatchTxt', 'EXIT', (-1.0, D - 0.15, 2.3), 0.14, '#fff6f0')
-    for side in (-1, 1):
-        window_row(side * (W / 2 - 0.1), 1.0, 5.5, 1.1, 1.3, tod, side)
-    for y in (2.5, 5.0):
-        box(uid('CabinLight'), (0.4, 1.0, 0.03), (0, y, H - 0.02), mat('CabinLight', '#ffe8c8', emit='#ffe8c8', strength=2.0), bevel=0)
-    indoor_light(W, D, H, color='#ffe2c0', power=420, x=0.3, amb=0.5)
-    tv_camera((0.0, -0.1, 1.85), (0.2, D, 1.0), lens=20)
+        pbox('BarfBag', (0.16, 0.1, 0.24), (-0.9 + (i % 4) * 0.2, 6.5 + (i // 4) * 0.2, 1.17), '#f2ecd8', 'day')
+    hanging_lamp(0.2, 4.0, 3.2, warm=True)
+    point('CeremonyWarm', (0.5, 3.0, 2.6), 900, '#ffcf8a', radius=0.8)
+    room_light(azimuth=-30, elevation=70, energy=1.8)
+    paint_sky('#161a1e', '#161a1e')
+    tv_camera((0.2, -2.6, 2.3), (0.2, D, 1.2), lens=22)
 
 
 def wt_exit(tod):
-    """The Drop of Shame: the hatch open on the night sky, the wind pulling at the straps, a parachute pack on the hook."""
-    tod = 'night'
-    W, D, H = 4.0, 3.6, 2.6
-    interior(W, D, H, '#9aa0a8', '#5a6068', '#7a8088', floor_kind='flat', wall_kind='flat')
-    # cut the open hatch: replace the back wall with a frame around a hole onto the sky
-    bpy.data.objects.remove(bpy.data.objects['BackWall'], do_unlink=True)
-    wall = mat('HatchWall', '#9aa0a8')
-    box('BWLeft', (1.1, 0.2, H), (-W / 2 + 0.55, D, H / 2), wall, bevel=0)
-    box('BWRight', (1.1, 0.2, H), (W / 2 - 0.55, D, H / 2), wall, bevel=0)
-    box('BWTop', (W, 0.2, 0.5), (0, D, H - 0.25), wall, bevel=0)
-    box('BWSill', (W, 0.2, 0.25), (0, D, 0.12), wall, bevel=0)
-    stripe = mat('Hazard', '#e8c23a')
-    for i in range(8):
-        box(uid('HazStripe'), (0.16, 0.22, 0.25), (-0.9 + i * 0.26, D, 0.13), stripe if i % 2 == 0 else mat('HazDark', '#2a2a30'), bevel=0)
-    box('HatchDoor', (1.8, 0.1, 1.9), (1.2, D - 0.6, 1.1), mat('HatchDoor', '#7a8088'), bevel=0, rot=(0, 0, -70))
+    """The Drop of Shame: the hatch open on the night sky, clouds far below, a parachute pack on the hook."""
+    paint_mode()
+    W, D, R = 5.0, 4.0, 3.0
+    floor_plates(W, D, tod, col='#4a5654')
+    jet_hull(D, R, tod, col='#3a464e', step=1.2, ribs=True)
+    for nm, size, loc in (('BWLeft', (1.6, 0.3, 4.0), (-W / 2 + 0.6, D, 1.6)), ('BWRight', (1.6, 0.3, 4.0), (W / 2 - 0.6, D, 1.6)),
+                          ('BWTop', (W, 0.3, 1.2), (0, D, 3.2)), ('BWSill', (W, 0.3, 0.3), (0, D, 0.05))):
+        pbox(nm, size, loc, '#4a5a62', 'day', shade='#36444c')
+    for k in range(9):
+        pbox('Hazard', (0.22, 0.32, 0.3), (-1.0 + k * 0.25, D - 0.02, 0.06), '#e8c23a' if k % 2 == 0 else '#22262a', 'day', ink=False)
+    pbox('HatchDoor', (1.8, 0.12, 2.0), (1.5, D - 0.7, 1.2), '#5a6a72', 'day', rot=(0, 0, -70))
     for i, x in enumerate((-1.2, -0.7)):
-        box(uid('Strap'), (0.05, 0.03, 1.0), (x, D - 0.4, 1.9 - i * 0.1), mat('Strap', '#c8463c'), bevel=0, rot=(0, 0, 20 + i * 10))
-    box('Pack', (0.45, 0.25, 0.6), (-1.6, D - 0.6, 1.4), mat('Pack', '#3f7a3a'), bevel=0.04)
-    box('PackHook', (0.05, 0.05, 0.2), (-1.6, D - 0.6, 1.8), mat('Hook', '#c9ccd2', metal=0.4), bevel=0)
-    box('JumpSign', (0.8, 0.04, 0.25), (W / 2 - 0.55, D - 0.12, 2.0), mat('JumpSign', '#c8463c', emit='#c8463c', strength=2), bevel=0)
-    text_obj('JumpTxt', 'JUMP', (W / 2 - 0.55, D - 0.15, 2.0), 0.15, '#fff6f0')
-    # the outside: clouds below the hatch, far lights of somewhere unnamed
-    cloud = mat('Cloud', '#7a88b8')
+        pbox('Strap', (0.05, 0.03, 1.0), (x, D - 0.4, 1.9 - i * 0.1), '#c8463c', 'day', rot=(0, 0, 20 + i * 10), ink=False)
+    pbox('Pack', (0.45, 0.25, 0.6), (-1.8, D - 0.6, 1.4), '#4a7a3a', 'day')
+    pbox('JumpSign', (0.8, 0.04, 0.25), (W / 2 - 0.6, D - 0.18, 2.1), '#c8463c', 'day', unlit=True)
+    ptext('JUMP', (W / 2 - 0.6, D - 0.22, 2.1), 0.15, '#fff6f0')
+    paint_sky('#1e2a50', '#3a4a7a')
     rnd = random.Random(3)
-    for i in range(18):
-        sphere(uid('Cloud'), 1.0, (rnd.uniform(-40, 40), rnd.uniform(40, 120), rnd.uniform(-30, -12)), cloud, scale=(rnd.uniform(6, 14), rnd.uniform(4, 8), rnd.uniform(1.5, 3)))
+    for i in range(16):
+        curly_cloud(rnd.uniform(-40, 40), rnd.uniform(40, 120), rnd.uniform(-22, -6), rnd.uniform(3, 6), '#5a6a98', '#3a4a78')
+    for i in range(50):
+        card(uid('Star'), _blob_pts(0.18, 0.18, 8, 0, 0), 160, pmat('StarW', '#f4f0d8', unlit=True, mottle=0), x=rnd.uniform(-90, 90), z=rnd.uniform(0, 60))
+    swirl_sun(20, 170, 30, 4.0, 'night')
     point('RedBeacon', (-1.6, D - 0.2, 2.35), 120, '#ff4a4a', radius=0.05)
-    indoor_light(W, D, H, color='#c8d4ff', power=220, x=0.0, amb=0.35, fill='#8a98c8')
-    sky('night')
+    room_light(azimuth=-30, elevation=60, energy=1.4)
     tv_camera((0.2, 0.1, 1.6), (0, D + 4, 0.9), lens=18)
 
 

@@ -116,7 +116,7 @@ describe('the pools keep their contract', () => {
     for (const [key, pool] of all) for (const e of pool) {
       if (e.when?.spot) continue;
       // the mess hall's own drama is only ever staged in the mess hall (settings.js: hosted-camp)
-      if (key.startsWith('drama.mess.')) continue;
+      if (key.startsWith('drama.mess.') || key.startsWith('hosted.')) continue;   // hosted-camp only (settings.js SETTING_EXCLUSIVE)
       const re = key.startsWith('isle.') ? ISLE_PLACE : PLACE;
       for (const x of texts(e)) expect(re.test(x) ? x.match(re)[0] : null, `${key} ${e.id}: ${x}`).toBe(null);
     }
@@ -146,11 +146,11 @@ describe('the pools read for every camper', () => {
   it('names everyone a drama or romance scene holds', () => {
     // A scene with {b} or {c} in it places them on screen; a line that never names them leaves a
     // person standing there for no reason (found writing the triangle pools, 2026-10-07: 52 lines).
-    const needC = /^romance\.(noticed|target|jealous|sidelined|sabotage|tri\.(dual|onesided|tension|confront|escalate|exploit|fight|ultimatum|reject|faded)|affair\.(noticed|rumor|caught|exposed|stays|leaves))|^drama\.stir/;
+    const needC = /^friend\.(laugh|celebrate|rally|lift)|^romance\.(noticed|target|jealous|sidelined|sabotage|tri\.(dual|onesided|tension|confront|escalate|exploit|fight|ultimatum|reject|faded)|affair\.(noticed|rumor|caught|exposed|stays|leaves))|^drama\.stir/;
     const soloB = /^(drama\.(meltdown|read|showboat)|romance\.tri\.lonely)/;
     const bad = [];
     for (const [key, pool] of all) {
-      if (!/^(drama|romance)\./.test(key)) continue;
+      if (!/^(drama|romance|friend|life|hosted)\./.test(key)) continue;
       for (const e of pool) {
         const t = JSON.stringify(e.turns);
         if (!soloB.test(key) && !/\{b[}.]|"by":"b"/.test(t)) bad.push(`${key} ${e.id}: no {b}`);

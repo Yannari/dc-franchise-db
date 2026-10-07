@@ -17,12 +17,19 @@ import { campRoster, isCoach as isCoachName } from './coaches.js';
 import { recordIntimidation, recordProtection, recordBetrayal } from './relationship-events.js';
 import { attachCampAccessToEvents, buildCampAccessSchedule, findConversationAccess } from './camp-access.js';
 import { makeScene, spotOf, spotFromAccess } from './td/script/scene.js';
-import { scriptEvent, scriptEventParts, withSceneCtx, ambientCtx } from './td/script/write.js';
+import { scriptEvent, scriptEventParts, withSceneCtx, ambientCtx, transcript } from './td/script/write.js';
 
 // Where two people talk, in the phase the camp generator is writing (its callers set it).
 const _spotNow = (a, b) => spotOf(null, a, b, ambientCtx().phase === 'post' ? 'post' : 'pre').spot;
 // The two tribemates closest to {a}: the other voices in a camp-wide moment (no dice).
 const _twoOthers = (group, a) => group.filter(x => x !== a).sort((x, y) => getBond(a, y) - getBond(a, x) || x.localeCompare(y)).slice(0, 2);
+// A moment the venue wrote (settings.js: this set's weather, this camp's animal, this place's
+// afternoon): its sentence opens the scene as the stage direction, then the people in it talk.
+function _venueScene(evt, line, kind, who, data = {}) {
+  const ev = scriptEvent(evt, makeScene(kind, who, data, [], _spotNow(who.a, who.b || null)));
+  if (line) { ev.lines = [{ kind: 'beat', by: null, text: line }, ...ev.lines]; ev.text = transcript(ev.lines); }
+  return ev;
+}
 import { ensureIntentions, evolveIntentions, getIntentions, evaluateEndgameBeatability } from './intentions.js';
 import { getRelationshipDimensions } from './relationships.js';
 
@@ -633,17 +640,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const p = _pick(group, n => Math.max(0.1, pStats(n).loyalty + pStats(n).endurance * 0.2 + 1));
       group.filter(x => x !== p).forEach(other => addBond(p, other, 0.08)); // was 0.15 — hardWork to ALL tribe is too much
       const _hwP = pronouns(p);
-      const hwLines = [
-        `${p} is up before everyone else, handling the worst chores without a word. Nobody asked. Everyone noticed.`,
-        `${p} handles the grunt work entirely while others rest. It earns quiet respect from the group.`,
-        `${p} refuses to sit still — always working, always useful. ${_hwP.Sub} ${_hwP.sub==='they'?'are':'is'} making ${_hwP.ref} indispensable.`,
-        `${p} works harder than anyone else today. It does not go unnoticed.`,
-        `${p} quietly fixes the thing everyone else keeps complaining about. By the time the group notices, it's already done.`,
-        `${p} takes on the thankless jobs nobody else will touch. ${_hwP.Sub} ${_hwP.sub==='they'?'do':'does'} it anyway, no complaints.`,
-        `${p} gets more done before breakfast than most manage all day. ${_hwP.Sub} ${_hwP.sub==='they'?'don\'t':'doesn\'t'} brag about it. The work speaks for itself.`,
-        `${p} covers a chore for the whole group today. Twice. Nobody else offered. The gesture isn't lost on anyone.`,
-      ];
-      events.push({ type: 'hardWork', text: hwLines[Math.floor(Math.random() * hwLines.length)], player: p, players: [p], badgeText: 'HARD WORK', badgeClass: 'green' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      const _wit = _twoOthers(group, p)[0];   // who sees it (closest by bond; no dice)
+      events.push(scriptEvent({ type: 'hardWork', player: p, players: [p], badgeText: 'HARD WORK', badgeClass: 'green' },
+        makeScene('life.work', { a: p, b: _wit }, {}, [], _spotNow(p, _wit))));
 
     } else if (eventType === 'strategicTalk') {
       const a = _pick(group, n => Math.max(0.1, pStats(n).strategic * pStats(n).strategic * 0.1));
@@ -684,24 +684,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         return Math.max(0.1, ((10 - pStats(n).endurance) * 0.5 + 1) * _survMult);
       });
       const _ijP = pronouns(p);
-      const injuryLines = [
-        `${p} rolls ${_ijP.posAdj} ankle on the way back from the water well. ${_ijP.Sub} play${_ijP.sub==='they'?'':'s'} it down, but ${_ijP.sub} ${_ijP.sub==='they'?'are':'is'} clearly in pain.`,
-        `${p} cuts ${_ijP.posAdj} hand badly at camp. Medical checks on ${_ijP.obj}. The tribe watches nervously.`,
-        `${p} collapses briefly after a long day in the sun. The tribe rallies — but questions start.`,
-        `${p} wakes up sick. ${_ijP.Sub} push${_ijP.sub==='they'?'':'es'} through the day, but ${_ijP.posAdj} tribemates are keeping a close eye.`,
-        `${p} burns ${_ijP.posAdj} hand on the fire. Nothing serious — but the grimace lingers all day.`,
-        `${p} barely sleeps. The bags under ${_ijP.posAdj} eyes tell a story. The tribe sees a liability forming.`,
-        `${p} twists ${_ijP.posAdj} knee during a camp task. ${_ijP.Sub} ${_ijP.sub==='they'?'don\'t':'doesn\'t'} sit out, but the limp is obvious.`,
-        `${p} throws up in the bushes. Nobody says "weak" out loud — but someone is thinking it.`,
-      ];
-      // Liability effect: tribe quietly reassesses the injured player as a challenge risk
-      group.filter(x => x !== p).forEach(other => addBond(other, p, -0.3));
-      if (!gs.injuredThisEp) gs.injuredThisEp = new Set();
-      gs.injuredThisEp.add(p);
-      // Lingering injury: challenge penalty for 2-3 episodes
-      if (!gs.lingeringInjuries) gs.lingeringInjuries = {};
-      gs.lingeringInjuries[p] = { ep: (gs.episode || 0) + 1, duration: 2 + Math.floor(Math.random() * 2), penalty: 1.5 + Math.random() };
-      events.push({ type: 'injury', text: injuryLines[Math.floor(Math.random() * injuryLines.length)], player: p, players: [p], badgeText: 'INJURY', badgeClass: 'red' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      const _wit = _twoOthers(group, p)[0];   // who sees it (closest by bond; no dice)
+      events.push(scriptEvent({ type: 'injury', player: p, players: [p], badgeText: 'INJURY', badgeClass: 'red' },
+        makeScene('life.hurt', { a: p, b: _wit }, {}, [], _spotNow(p, _wit))));
 
     } else if (eventType === 'allianceForm') {
       // Skip if this group already has an allianceForm this episode
@@ -1054,29 +1040,19 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const p = _pick(group, n => Math.max(0.1, ((10 - pStats(n).physical) * 0.3 + (10 - pStats(n).social) * 0.2) + 1));
       group.filter(x => x !== p).forEach(other => addBond(p, other, 0.12)); // was 0.25
       const _ucP = pronouns(p);
-      const ucLines = [
-        `${p} fixes the thing everyone else was arguing about how to fix. Nobody expected that.`,
-        `${p} gets more done before breakfast than the group has managed all week. Everyone does a quiet recount of who they thought ${p} was.`,
-        `${p} solves a problem nobody else could crack. The looks around the group shift.`,
-        `${p} hauls more than their body weight without a word. ${_ucP.Sub} ${_ucP.sub==='they'?'drop':'drops'} it and go${_ucP.sub==='they'?'':'es'} back for more.`,
-        `${p} navigates something the tribe's been struggling with all day in about thirty seconds. The silence after is respectful.`,
-        `Everyone underestimated ${p}. That was a mistake. The tribe is starting to figure that out.`,
-      ];
-      events.push({ type: 'unexpectedCompetence', text: ucLines[Math.floor(Math.random() * ucLines.length)], player: p, players: [p], badgeText: 'SURPRISE', badgeClass: 'green' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      const _wit = _twoOthers(group, p)[0];   // who sees it (closest by bond; no dice)
+      events.push(scriptEvent({ type: 'unexpectedCompetence', player: p, players: [p], badgeText: 'SURPRISE', badgeClass: 'green' },
+        makeScene('life.surprise', { a: p, b: _wit }, {}, [], _spotNow(p, _wit))));
 
     } else if (eventType === 'homesick') {
       // Emotional exhaustion — doesn't want sympathy, but the tribe sees it
       const p = _pick(group, n => Math.max(0.1, (10 - pStats(n).boldness) * 0.3 + pStats(n).loyalty * 0.25 + (10 - pStats(n).endurance) * 0.15 + 1));
       const _hkP = pronouns(p);
-      const hkLines = [
-        `${p} goes quiet at camp. Not angry — just somewhere else. The tribe gives ${_hkP.obj} space.`,
-        `${p} has a rough night. By morning ${_hkP.sub} ${_hkP.sub==='they'?'are':'is'} composed again, but the tribe saw it.`,
-        `${p} stares at the fire for a long time without saying anything. Nobody pushes it.`,
-        `${p} doesn't eat much. Doesn't say why. The camp just carries on around ${_hkP.obj}.`,
-        `${p} mentions home — just once, just briefly. Then changes the subject. The moment hangs.`,
-        `${p} is fine. ${_hkP.Sub} keep${_hkP.sub==='they'?'':'s'} saying ${_hkP.sub} ${_hkP.sub==='they'?'are':'is'} fine. The tribe isn't sure.`,
-      ];
-      events.push({ type: 'homesick', text: hkLines[Math.floor(Math.random() * hkLines.length)], player: p, players: [p], badgeText: 'HOMESICK', badgeClass: '' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      const _wit = _twoOthers(group, p)[0];   // who sees it (closest by bond; no dice)
+      events.push(scriptEvent({ type: 'homesick', player: p, players: [p], badgeText: 'HOMESICK', badgeClass: '' },
+        makeScene('life.homesick', { a: p, b: _wit }, {}, [], _spotNow(p, _wit))));
 
     // ══════════════════════════════════════════════════════════
     // TOTAL DRAMA — CONFLICT & DRAMA
@@ -1230,13 +1206,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
             addBond(bystander, p, -0.3);
           }
         });
-        const argLines = [
-          `${p} and ${b} get into a passionate argument about something completely irrelevant to the game. The tribe takes sides.`,
-          `${p} and ${b} clash over something nobody expected to be a thing. It escalates fast. Camp splits.`,
-          `${p} says something. ${b} takes it wrong. Within minutes the whole camp is involved in an argument that has nothing to do with strategy.`,
-          `What started as ${p} making a comment turned into a full confrontation with ${b}. The tribe watched — and quietly chose sides.`,
-        ];
-        events.push({ type: 'weirdMoment', text: argLines[Math.floor(Math.random() * argLines.length)], players: [p, b], badgeText: 'WEIRD', badgeClass: '' });
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        events.push(scriptEvent({ type: 'weirdMoment', players: [p, b], badgeText: 'WEIRD', badgeClass: '' },
+          makeScene('life.weird', { a: p, b }, { ending: 'argue' }, [], _spotNow(p, b))));
 
       } else if (b && _wmRoll < 0.60) {
         // ── Bonding: shared absurdity builds connection ──
@@ -1246,13 +1218,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           addBond(bystander, p, 0.1);
           addBond(bystander, b, 0.1);
         });
-        const bondLines = [
-          `${p} and ${b} start a camp tradition that makes no sense to anyone else. They commit to it fully.`,
-          `${p} challenges ${b} to a staring contest. It goes on for an uncomfortable length of time. The tribe can't stop watching.`,
-          `${p} and ${b} overhear the host say something they weren't meant to hear. Neither of them brings it up. It haunts them both — and brings them closer.`,
-          `${p} and ${b} spend an hour building something out of whatever junk is lying around. It's terrible. They're proud of it. The tribe lets them have this.`,
-        ];
-        events.push({ type: 'weirdMoment', text: bondLines[Math.floor(Math.random() * bondLines.length)], players: [p, b], badgeText: 'WEIRD', badgeClass: '' });
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        events.push(scriptEvent({ type: 'weirdMoment', players: [p, b], badgeText: 'WEIRD', badgeClass: '' },
+          makeScene('life.weird', { a: p, b }, { ending: 'bond' }, [], _spotNow(p, b))));
 
       } else {
         // ── Solo chaos: embarrassment or endearing moment depending on how they handle it ──
@@ -1260,23 +1228,15 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         if (_pS.boldness >= 6) {
           // Bold players lean into the chaos — tribe finds it endearing
           others.forEach(o => addBond(o, p, 0.2));
-          const boldLines = [
-            `${p} attempts to do something impressive and fails in a way that is genuinely spectacular. ${_pPr.Sub} own${_pPr.sub==='they'?'':'s'} it completely. The tribe respects that.`,
-            `${p} invents a camp rule that only applies to ${_pPr.obj}. The tribe allows it. Somehow it works.`,
-            `It rains for exactly four minutes. ${p} stands in it deliberately. Nobody asks why. Nobody needs to.`,
-            `${p} does something so inexplicable at camp that the tribe just agrees not to address it. But everyone's smiling.`,
-          ];
-          events.push({ type: 'weirdMoment', text: boldLines[Math.floor(Math.random() * boldLines.length)], players: [p], badgeText: 'WEIRD', badgeClass: '' });
+          Math.random(); // the draw that picked the sentence (the season must not move)
+          events.push(scriptEvent({ type: 'weirdMoment', players: [p], badgeText: 'WEIRD', badgeClass: '' },
+            makeScene('life.weird', { a: p, b }, { ending: 'bold' }, [], _spotNow(p, b))));
         } else {
           // Shy/low-temperament players get embarrassed — slight social friction
           others.slice(0, 2).forEach(o => addBond(o, p, -0.2));
-          const shyLines = [
-            `Something around camp breaks. ${p} is somehow to blame. This is disputed — but not loudly enough.`,
-            `A raccoon walks into camp and takes ${p}'s shoes. No one helps. Everyone watches. ${p} does not recover socially.`,
-            `${p} gets into a one-sided argument with a seagull. The seagull wins. The tribe pretends not to notice.`,
-            `${p} talks to the camera for ten minutes when no one is filming. Someone catches ${_pPr.obj}. It's awkward.`,
-          ];
-          events.push({ type: 'weirdMoment', text: shyLines[Math.floor(Math.random() * shyLines.length)], players: [p], badgeText: 'WEIRD', badgeClass: '' });
+          Math.random(); // the draw that picked the sentence (the season must not move)
+          events.push(scriptEvent({ type: 'weirdMoment', players: [p], badgeText: 'WEIRD', badgeClass: '' },
+            makeScene('life.weird', { a: p, b }, { ending: 'shy' }, [], _spotNow(p, b))));
         }
       }
 
@@ -1409,7 +1369,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `There's a moment at sunset where the game disappears — for everyone, briefly. Then it comes back.`,
         `The tribe laughs together at something dumb. For thirty seconds it doesn't feel like a competition.`,
       ];
-      events.push({ type: 'tribeMood', text: moodLines[Math.floor(Math.random() * moodLines.length)], badgeText: 'TRIBE MOOD', badgeClass: '' });
+      const _moodLine = moodLines[Math.floor(Math.random() * moodLines.length)];
+      events.push(tmB ? scriptEvent({ type: 'tribeMood', players: [tmP, tmB], badgeText: 'TRIBE MOOD', badgeClass: '' },
+          makeScene('life.mood', { a: tmP, b: tmB }, {}, [], _spotNow(tmP, tmB)))
+        : { type: 'tribeMood', text: _moodLine, badgeText: 'TRIBE MOOD', badgeClass: '' });
 
     // ══════════════════════════════════════════════════════════
     // ARCHETYPE-SPECIFIC EVENTS
@@ -1461,19 +1424,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       group.filter(x => x !== a).forEach(other => addBond(other, a, -0.2));
       const phA = pStats(a).physical, enA = pStats(a).endurance;
       const _bdA = pronouns(a);
-      const bdLines = (phA >= 9 && enA >= 8)
-        ? [`${a} is up at dawn running the perimeter. Twice. Then comes back and does camp chores. The tribe watches with unease.`,
-           `${a} doesn't stop moving. Drills, physical tasks, hauling, lifting. ${_bdA.Sub} ${_bdA.sub==='they'?'are':'is'} preparing for something. The tribe can feel it.`,
-           `The tribe quietly counts how many challenges ${a} would have won so far. It's all of them. This is a problem.`]
-        : (phA >= 7 || enA >= 7)
-        ? [`${a} pushes through camp tasks like they're warmups. The rest of the tribe can't keep up and tries not to show it.`,
-           `${a} works longer than everyone else and shows zero fatigue. The others exchange a look.`,
-           `${a} is still going when everyone else has stopped. The tribe files it away: challenge threat. Real one.`]
-        : [`${a} takes on the hardest physical camp task without hesitation. It's done in half the time anyone expected.`,
-           `${a} doesn't train — ${_bdA.sub} just ${_bdA.sub==='they'?'work':'works'}. The output is the same. The tribe takes note.`];
-      if (!gs.beastDrillsThisEp) gs.beastDrillsThisEp = new Set();
-      gs.beastDrillsThisEp.add(a);
-      events.push({ type: 'beastDrills', text: bdLines[Math.floor(Math.random() * bdLines.length)], player: a, players: [a], badgeText: 'TRAINING', badgeClass: 'green' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      const _wit = _twoOthers(group, a)[0];   // who sees it (closest by bond; no dice)
+      events.push(scriptEvent({ type: 'beastDrills', player: a, players: [a], badgeText: 'TRAINING', badgeClass: 'green' },
+        makeScene('life.beast', { a, b: _wit }, { ending: (phA >= 9 && enA >= 8) ? 'machine' : (phA >= 7 || enA >= 7) ? 'strong' : 'worker' }, [], _spotNow(a, _wit))));
 
     } else if (eventType === 'socialBoost') {
       // Social butterfly lifts the whole tribe's mood
@@ -1532,17 +1486,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       // Floater successfully goes unnoticed — no bond change, pure flavor
       const a = _pick(group, n => Math.max(0.1, (10 - pStats(n).boldness) * 0.4 + pStats(n).social * 0.2 + 1));
       const _flA = pronouns(a);
-      const fiLines = [
-        `${a} is at every conversation and central to none of them. ${_flA.Sub} ${_flA.sub==='they'?'are':'is'} exactly where ${_flA.sub} want${_flA.sub==='they'?'':'s'} to be.`,
-        `The tribe plans around ${a} rather than against ${_flA.obj}. That's not an accident.`,
-        `${a} does not come up in any strategic conversation today. ${_flA.Sub} ${_flA.sub==='they'?'have':'has'} worked very hard to ensure that.`,
-        `${a} is present at every meal, every task, every fireside chat — and nobody considers ${_flA.obj} a threat. The perfect position.`,
-        `Nobody names ${a} as a target today. To the untrained eye that means ${_flA.sub} ${_flA.sub==='they'?'are':'is'} safe. It means more than that.`,
-        `${a} agrees with whoever is speaking. Always. The tribe thinks ${_flA.sub} ${_flA.sub==='they'?'have':'has'} no opinion. ${_flA.Sub} ${_flA.sub==='they'?'have':'has'} plenty — ${_flA.sub} just ${_flA.sub==='they'?'keep':'keeps'} them quiet.`,
-        `${a} moves through camp like wallpaper. People talk freely around ${_flA.obj} because they forget ${_flA.sub} ${_flA.sub==='they'?'are':'is'} there. That's the whole strategy.`,
-        `${a} hasn't been on anyone's radar for three episodes. In this game, invisibility is a superpower — until it isn't.`,
-      ];
-      events.push({ type: 'floaterInvisible', text: fiLines[Math.floor(Math.random() * fiLines.length)], player: a, players: [a], badgeText: 'INVISIBLE', badgeClass: 'gold' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      const _wit = _twoOthers(group, a)[0];   // who sees it (closest by bond; no dice)
+      events.push(scriptEvent({ type: 'floaterInvisible', player: a, players: [a], badgeText: 'INVISIBLE', badgeClass: 'gold' },
+        makeScene('life.floater', { a, b: _wit }, {}, [], _spotNow(a, _wit))));
 
     } else if (eventType === 'underdogMoment') {
       // Underdog shows quiet resilience — small bond boost with tribe
@@ -1550,14 +1497,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       group.filter(x => x !== a).forEach(other => addBond(a, other, 0.2));
       const loA = pStats(a).loyalty, phA = pStats(a).physical;
       const _udA = pronouns(a);
-      const udLines = (loA >= 8 && phA <= 5)
-        ? [`${a} has no business still being here — and knows it. That knowledge drives ${_udA.obj} harder than talent ever could.`,
-           `${a} does more at camp than anyone expected. Not because ${_udA.sub} ${_udA.sub==='they'?'are':'is'} the best at any of it. Because ${_udA.sub} won't stop trying.`,
-           `The tribe looks at ${a} and sees a non-threat. ${a} looks at the tribe and sees an opportunity.`]
-        : [`${a} doesn't fit the profile of someone who makes it far. ${_udA.Sub} ${_udA.sub==='they'?'are':'is'} still here, still contributing, still invisible on the threat board.`,
-           `${a} earns something from the tribe today — not respect exactly, but something adjacent to it.`,
-           `Nobody expected ${a} to matter this much. ${_udA.Sub} ${_udA.sub==='they'?'are':'is'} quietly compiling a case for why ${_udA.sub} belongs here.`];
-      events.push({ type: 'underdogMoment', text: udLines[Math.floor(Math.random() * udLines.length)], player: a, players: [a], badgeText: 'UNDERDOG', badgeClass: 'green' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      const _wit = _twoOthers(group, a)[0];   // who sees it (closest by bond; no dice)
+      events.push(scriptEvent({ type: 'underdogMoment', player: a, players: [a], badgeText: 'UNDERDOG', badgeClass: 'green' },
+        makeScene('life.underdog', { a, b: _wit }, { ending: (loA >= 8 && phA <= 5) ? 'driven' : 'unseen' }, [], _spotNow(a, _wit))));
 
     } else if (eventType === 'goatOblivious') {
       // Goat is unaware of how the tribe actually sees them, gets actively used
@@ -1967,7 +1910,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           ? `${a} spends the whole afternoon quietly making the place livable. By evening it feels less like a dump and more like a home.`
           : `${a} figures out a small fix that makes daily life easier. Not flashy — but everyone notices they're a little less miserable now.`,
       ];
-      events.push({ type: 'campImprovement', text: _improveLines[Math.floor(Math.random() * _improveLines.length)], player: a, players: [a], badgeText: 'CAMP BUILD', badgeClass: 'green' });
+      const _venueLine = _improveLines[Math.floor(Math.random() * _improveLines.length)];
+      const _wit = _twoOthers(group, a)[0];   // who sees it (closest by bond; no dice)
+      events.push(_venueScene({ type: 'campImprovement', player: a, players: [a], badgeText: 'CAMP BUILD', badgeClass: 'green' }, _venueLine, 'life.build', { a, b: _wit }, {}));
 
     // ═══════════════════════════════════════════════════════════
     // NEW NEUTRAL EVENTS
@@ -1976,16 +1921,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
     } else if (eventType === 'superstition') {
       const a = _pick(group, n => Math.max(0.1, pStats(n).intuition * 0.3 + pStats(n).boldness * 0.2 + Math.random() * 2 + 1));
       const pA = pronouns(a);
-      const _superLines = [
-        `${a} has a pre-challenge ritual now. Nobody questions it. Questioning it would be worse.`,
-        `${a} refuses to sit in the same spot at tribal two episodes in a row. The tribe thinks it's weird. ${a} thinks it's survival.`,
-        `${a} finds a rock ${pA.sub} like${pA.sub==='they'?'':'s'} and keeps it in ${pA.posAdj} pocket for every challenge. Nobody asks. The rock stays.`,
-        `${a} wakes up on the wrong side. Literally — ${pA.sub} slept facing the other direction and is convinced the whole day is cursed now.`,
-        `${a} won't eat before a challenge. ${pA.Sub} say${pA.sub==='they'?'':'s'} it threw off ${pA.posAdj} rhythm last time. The tribe humors it.`,
-        `${a} touches the same tree every morning on the way to the water well. ${pA.Sub} started doing it on Day 3 and now ${pA.sub} can't stop.`,
-        `${a} has been counting things. Steps to the door. Cracks in the ceiling. Votes at tribal. ${pA.Sub} won't say why. The tribe has stopped asking.`,
-      ];
-      events.push({ type: 'superstition', text: _superLines[Math.floor(Math.random() * _superLines.length)], player: a, players: [a], badgeText: 'SUPERSTITION', badgeClass: '' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      const _wit = _twoOthers(group, a)[0];   // who sees it (closest by bond; no dice)
+      events.push(scriptEvent({ type: 'superstition', player: a, players: [a], badgeText: 'SUPERSTITION', badgeClass: '' },
+        makeScene('life.charm', { a, b: _wit }, {}, [], _spotNow(a, _wit))));
 
     } else if (eventType === 'animalEncounter') {
       const a = _pick(group, n => Math.max(0.1, Math.random() * 3 + 1));
@@ -1999,21 +1938,17 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `A bird lands on ${a}'s shoulder out of nowhere. ${pA.Sub} freeze${pA.sub==='they'?'':'s'}. Everyone watches in disbelief. It stays ten seconds, then flies off. ${a} takes it as a sign.`,
         `${a} befriends a stray animal that's been hanging around and spends twenty minutes just sitting with it. Everyone lets ${pA.obj} have the moment. Everyone needs one.`,
       ];
-      events.push({ type: 'animalEncounter', text: _animalLines[Math.floor(Math.random() * _animalLines.length)], player: a, players: [a], badgeText: 'WILDLIFE', badgeClass: '' });
+      const _venueLine = _animalLines[Math.floor(Math.random() * _animalLines.length)];
+      events.push(_venueScene({ type: 'animalEncounter', player: a, players: [a], badgeText: 'WILDLIFE', badgeClass: '' }, _venueLine, 'life.critter', { a, b: b2 }, {}));
 
     } else if (eventType === 'dreaming') {
       const a = _pick(group, n => Math.max(0.1, pStats(n).intuition * 0.3 + (10 - pStats(n).temperament) * 0.2 + 1));
       const pA = pronouns(a);
       const intA = pStats(a).intuition;
-      const _dreamLines = (intA >= 7)
-        ? [`${a} tells the tribe about a dream where ${pA.sub} knew who was going home next. Nobody laughs. ${pA.posAdj} reads have been too accurate for that.`,
-           `${a} dreamed about the challenge before it happened — or at least ${pA.sub} claim${pA.sub==='they'?'':'s'} ${pA.sub} did. The tribe files it under "unsettling."`,
-           `${a} wakes up certain about something. Won't say what. Won't say why. Just — certain. The tribe notices the confidence shift.`]
-        : [`${a} had a dream about home last night and tells the whole story over breakfast. Half the tribe tears up. The other half pretends not to.`,
-           `${a} woke up laughing from a dream ${pA.sub} can't fully explain. Something about the host and a llama. The tribe demands details.`,
-           `${a} tells ${pA.posAdj} dream at the fire and it makes no sense. Absolutely none. The tribe loves it anyway.`,
-           `${a} dreamed ${pA.sub} won. ${pA.Sub} tell${pA.sub==='they'?'':'s'} one person. That person tells three. By noon the whole tribe knows.`];
-      events.push({ type: 'dreaming', text: _dreamLines[Math.floor(Math.random() * _dreamLines.length)], player: a, players: [a], badgeText: 'DREAM', badgeClass: '' });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      const _wit = _twoOthers(group, a)[0];   // who sees it (closest by bond; no dice)
+      events.push(scriptEvent({ type: 'dreaming', player: a, players: [a], badgeText: 'DREAM', badgeClass: '' },
+        makeScene('life.dream', { a, b: _wit }, { ending: intA >= 7 ? 'seer' : 'home' }, [], _spotNow(a, _wit))));
 
     } else if (eventType === 'weatherShift') {
       const shuffled = [...group].sort(() => Math.random() - 0.5);
@@ -2029,7 +1964,8 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `Thunder rumbles in the distance all afternoon. It never quite arrives — but the tension from waiting changes every conversation.`,
         `The temperature drops sharply after dark and everyone clusters closer than they have all season. Proximity creates conversation creates connection.`,
       ];
-      events.push({ type: 'weatherShift', text: _weatherLines[Math.floor(Math.random() * _weatherLines.length)], player: featured, players: [featured], badgeText: 'WEATHER', badgeClass: '' });
+      const _venueLine = _weatherLines[Math.floor(Math.random() * _weatherLines.length)];
+      events.push(_venueScene({ type: 'weatherShift', player: featured, players: [featured], badgeText: 'WEATHER', badgeClass: '' }, _venueLine, 'life.weather', { a: featured, b: b2 }, {}));
 
     // ═══════════════ HOST & CHEF MEDDLING ═══════════════
     } else if (eventType === 'chefSlop') {
@@ -2041,22 +1977,14 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const pA = pronouns(a), pB = pronouns(b);
       if (Math.min(pStats(a).temperament, pStats(b).temperament) <= 4 && getBond(a, b) < 3) {
         addBond(a, b, -0.6);
-        const lines = [
-          `Chef ladles out something gray and faintly moving. ${a} gags; ${b} laughs at ${pA.obj} — and it curdles into a real fight about who's being dramatic.`,
-          `Dinner is Chef's "protein surprise." ${a} won't touch it and ${b} calls ${pA.obj} spoiled and precious. The slop wins; neither of them is speaking after.`,
-          `${a} swears ${b} took the only edible scoop of Chef's stew. ${pB.Sub} ${pB.sub==='they'?'deny':'denies'} it. The pot's empty either way, and now so is the goodwill.`,
-          `Chef bangs the ladle and says "eat or starve." ${a} pushes the bowl at ${b}; ${b} shoves it back. A dumb argument over inedible food becomes a real one.`,
-        ];
-        events.push({ type: 'chefSlop', players: [a, b], badgeText: "CHEF'S SLOP", badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        events.push(scriptEvent({ type: 'chefSlop', players: [a, b], badgeText: "CHEF'S SLOP", badgeClass: 'red' },
+          makeScene('hosted.slop', { a, b }, { ending: 'bad' }, [], _spotNow(a, b))));
       } else {
         addBond(a, b, 0.5);
-        const lines = [
-          `Chef's slop is genuinely inedible. ${a} and ${b} choke it down shoulder to shoulder, crying-laughing, united by pure suffering.`,
-          `${a} dares ${b} to eat a second bowl of Chef's mystery stew. ${pB.Sub} actually ${pB.sub==='they'?'do':'does'} it. A friendship is forged in nausea.`,
-          `Nobody can identify what Chef served tonight. ${a} and ${b} rank it against every bad meal of their lives until the fire burns down. Misery, it turns out, is good company.`,
-          `${a} and ${b} split the one ration Chef didn't ruin, half each, no argument. Small thing. It sticks.`,
-        ];
-        events.push({ type: 'chefSlop', players: [a, b], badgeText: 'SHARED MISERY', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        events.push(scriptEvent({ type: 'chefSlop', players: [a, b], badgeText: 'SHARED MISERY', badgeClass: 'green' },
+          makeScene('hosted.slop', { a, b }, { ending: 'good' }, [], _spotNow(a, b))));
       }
 
     } else if (eventType === 'rudeWakeup') {
@@ -2067,25 +1995,18 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         if (!gs.popularity) gs.popularity = {};
         gs.popularity[clapper] = (gs.popularity[clapper] || 0) + 1;
         group.filter(p => p !== clapper).forEach(p => addBond(clapper, p, 0.2));
-        const lines = [
-          `The host blasts an airhorn through ${fillVocab('{shelter}')} at 5 a.m. "just because." ${clapper} rolls out and fires back a roast so clean the whole camp is howling. The host retreats.`,
-          `A pointless 6 a.m. chore, courtesy of the host. ${clapper} does it in a dead-on impression of ${pC.posAdj} tormentor, and camp loses it. Even the host almost cracks.`,
-          `The host kicks camp awake with a bucket of cold water. ${clapper} stands up dripping, deadpans one perfect line, and turns the humiliation into the funniest moment of the week.`,
-          `The host announces "mandatory sunrise calisthenics." ${clapper} leads them — sarcastically, gloriously — and the tribe follows along cackling. The bit's better than the punishment.`,
-        ];
-        events.push({ type: 'rudeWakeup', players: [clapper], player: clapper, badgeText: 'CLAPPED BACK', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        const _wit = _twoOthers(group, clapper)[0];
+        events.push(scriptEvent({ type: 'rudeWakeup', players: [clapper], player: clapper, badgeText: 'CLAPPED BACK', badgeClass: 'green' },
+          makeScene('life.wakeup', { a: clapper, b: _wit }, { ending: 'clap' }, [], _spotNow(clapper, _wit))));
       } else {
         const others = group.filter(p => p !== clapper);
         if (!others.length) continue;
         const b = others[Math.floor(Math.random() * others.length)];
         addBond(clapper, b, -0.3);
-        const lines = [
-          `The host's dawn airhorn leaves the whole camp raw and sleepless. ${clapper} snaps at ${b} over nothing before the sun's even up. Neither means it; both remember it.`,
-          `A 5 a.m. "surprise inspection" from the host frays everyone. ${clapper} and ${b} bicker through breakfast about whose turn it was to deal with the mess.`,
-          `Robbed of sleep by the host's antics, ${clapper} is short with ${b} all morning. It's exhaustion, not malice — but the edge is real.`,
-          `The host makes them break camp and rebuild it "for time." ${clapper} and ${b} grind through it snapping at each other, too tired to be kind.`,
-        ];
-        events.push({ type: 'rudeWakeup', players: [clapper, b], badgeText: 'RUDE AWAKENING', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
+        Math.random(); // the draw that picked the sentence (the season must not move)
+        events.push(scriptEvent({ type: 'rudeWakeup', players: [clapper, b], badgeText: 'RUDE AWAKENING', badgeClass: 'red' },
+          makeScene('life.wakeup', { a: clapper, b }, { ending: 'snap' }, [], _spotNow(clapper, b))));
       }
 
     } else if (eventType === 'hostFavoritism') {
@@ -2098,12 +2019,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       if (!gs.popularity) gs.popularity = {};
       gs.popularity[fav] = (gs.popularity[fav] || 0) + 0.5;
       const pF = pronouns(fav), pJ = pronouns(jealous);
-      const lines = [
-        `The host keeps singling ${fav} out for praise — "now THAT'S a competitor" — and slips ${pF.obj} an extra snack on camera. ${jealous} watches the whole thing and files it away.`,
-        `${fav} gets the host's laugh, the host's nod, the host's "you get it." ${jealous} gets ignored, and the resentment sets in fast.`,
-        `The host jokes with ${fav} like they're old friends and barely learns ${jealous}'s name. ${pJ.Sub} ${pJ.sub==='they'?'notice':'notices'}. ${pJ.Sub} ${pJ.sub==='they'?"don't":"doesn't"} forget.`,
-      ];
-      events.push({ type: 'hostFavoritism', players: [jealous, fav], badgeText: 'PLAYING FAVORITES', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
+      Math.random(); // the draw that picked the sentence (the season must not move)
+      events.push(scriptEvent({ type: 'hostFavoritism', players: [jealous, fav], badgeText: 'PLAYING FAVORITES', badgeClass: 'red' },
+        makeScene('life.favorite', { a: jealous, b: fav }, {}, [], _spotNow(jealous, fav))));
 
     } else if (eventType === 'fakeReward') {
       // A "reward" that turns out to be a punishment — camp bonds over the shared gotcha
@@ -2173,7 +2091,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       let line = pool.length ? pool[Math.floor(Math.random() * pool.length)] : `${a} and ${b} pass a quiet hour together at camp.`;
       line = fillVocab(line).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
       const _atmosBadge = { 'hosted-camp': 'CAMP LIFE', 'survival-island': 'ISLAND LIFE', 'carnival': 'CARNIVAL', 'film-lot': 'ON SET', 'world-tour': 'IN FLIGHT' }[currentSetting()] || 'ATMOSPHERE';
-      events.push({ type: 'settingAtmosphere', players: [a, b], badgeText: _atmosBadge, badgeClass: 'gold', text: line });
+      events.push(_venueScene({ type: 'settingAtmosphere', players: [a, b], badgeText: _atmosBadge, badgeClass: 'gold' }, line, 'life.atmos', { a, b }, {}));
 
     // ═══════════════ SURVIVAL ISLAND ═══════════════
     } else if (eventType === 'forage') {
@@ -2508,18 +2426,14 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         addBond(a, b, -0.8);
         if (!gs.popularity) gs.popularity = {};
         gs.popularity[a] = (gs.popularity[a] || 0) - 0.4;
-        events.push({ type: 'cabinRaid', players: [a, b], badgeText: 'CABIN RAID', badgeClass: 'red', text: _rp([
-          `${a} slips into the cabin while ${b} is out and pockets ${b}'s stashed snacks. ${b} finds the empty wrappers later and knows exactly who.`,
-          `${a} short-sheets ${b}'s bunk and hides ${b}'s stuff across camp "as a joke." ${b} doesn't find it funny at all.`,
-          `${a} rifles through ${b}'s bag looking for an idol or a clue. Comes up empty — but ${b} notices the mess.`,
-        ]) });
+        _rp([0]); // the draw that picked the sentence (the season must not move)
+        events.push(scriptEvent({ type: 'cabinRaid', players: [a, b], badgeText: 'CABIN RAID', badgeClass: 'red' },
+          makeScene('hosted.raid', { a, b }, { ending: 'mean' }, [], _spotNow(a, b))));
       } else {
         addBond(a, b, 0.5);
-        events.push({ type: 'cabinRaid', players: [a, b], badgeText: 'MIDNIGHT RUN', badgeClass: 'green', text: _rp([
-          `${a} and ${b} sneak to the mess hall after lights-out for a midnight snack raid. They get away clean and giggling.`,
-          `${a} dares ${b} into a harmless cabin prank on the neighbors. They pull it off together and swear each other to secrecy.`,
-          `${a} and ${b} stay up whispering across the bunks long after lights-out. The kind of talk that makes an alliance feel real.`,
-        ]) });
+        _rp([0]); // the draw that picked the sentence (the season must not move)
+        events.push(scriptEvent({ type: 'cabinRaid', players: [a, b], badgeText: 'MIDNIGHT RUN', badgeClass: 'green' },
+          makeScene('hosted.raid', { a, b }, { ending: 'fun' }, [], _spotNow(a, b))));
       }
 
     } else if (eventType === 'campfireStory') {
@@ -2529,12 +2443,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       addBond(a, b, 0.5);
       if (!gs.popularity) gs.popularity = {};
       if (pStats(a).social >= 6) gs.popularity[a] = (gs.popularity[a] || 0) + 0.4;
-      events.push({ type: 'campfireStory', players: [a, b], badgeText: 'CAMPFIRE', badgeClass: 'green', text: _rp([
-        `${a} spins a ghost story by the fire so good that ${b} refuses to walk to the washroom alone after. The whole camp is hooked.`,
-        `Around the campfire ${a} gets everyone telling secrets they'd never share in daylight. ${b} shares one that changes how the camp sees ${_pron(b).obj}.`,
-        `${a} and ${b} stay at the dying campfire after everyone turns in, talking about home. The fire's almost out before either moves.`,
-        `${a} leads a dumb campfire singalong and ${b} is the first to join. By the end the whole camp is howling. Best night in a while.`,
-      ]) });
+      _rp([0]); // the draw that picked the sentence (the season must not move)
+      events.push(scriptEvent({ type: 'campfireStory', players: [a, b], badgeText: 'CAMPFIRE', badgeClass: 'green' },
+        makeScene('hosted.story', { a, b }, {}, [], _spotNow(a, b))));
 
     // ═══════════════ SURVIVAL-ISLAND (more) ═══════════════
     } else if (eventType === 'waterRun') {
@@ -2760,18 +2671,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       if (_eb <= -9 && Math.random() < 0.55) {
         addBond(a, b, -0.8);
         group.filter(p => p !== a && p !== b).forEach(p => { addBond(p, a, -0.3); addBond(p, b, -0.3); });
-        events.push({ type: 'pureHatred', players: [a, b], badgeText: 'HATRED', badgeClass: 'red', text: _rp2([
-          `${a} and ${b} can't be in the same space. The tribe has stopped trying to fix it. They just keep them apart now.`,
-          `${a} moves ${pA.pos} things to the other side of camp. Nobody asks why. Everyone already knows — ${b} is the reason.`,
-          `${a} refuses to eat if ${b} is at the fire. It's not strategy. It's not a move. It's personal in a way this game rarely sees.`,
-          `The hatred between ${a} and ${b} is so visible that the rest of the tribe routes around it. Nobody sits between them. Nobody mediates. They just survive it.`,
-          `${b} says something and ${a} stands up and walks off without a word. ${pA.Sub} ${pA.sub==='they'?'don\'t':'doesn\'t'} come back for an hour.`,
-          `${a} talks about ${b} to the confessional like ${pB.sub} ${pB.sub==='they'?'aren\'t':'isn\'t'} even a person anymore. Just a problem to solve. The contempt is total.`,
-          `The tribe tried to have a group conversation. ${a} walked away the moment ${b} sat down. Nobody even pretended to be surprised.`,
-          `${a} won't say ${b}'s name. Not at tribal, not at camp, not in confessional. ${pA.Sub} just ${pA.sub==='they'?'say':'says'} "that person." The tribe knows exactly who ${pA.sub} ${pA.sub==='they'?'mean':'means'}.`,
-          `${b} accidentally brushes past ${a} in passing. ${a} recoils like ${pA.sub} ${pA.sub==='they'?'were':'was'} burned. The rest of the tribe freezes.`,
-          `Someone makes the mistake of sitting between ${a} and ${b} at the fire. The temperature on both sides drops. They don't make that mistake again.`,
-        ]) });
+        _rp2([0]); // the draw that picked the sentence (the season must not move)
+        events.push(scriptEvent({ type: 'pureHatred', players: [a, b], badgeText: 'HATRED', badgeClass: 'red' },
+          makeScene('drama.nemesis', { a, b }, {}, [], _spotNow(a, b))));
       }
 
       // ── NEMESIS (-7 to -9) ──
@@ -2791,18 +2693,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           if (getBond(p, a) < 3) addBond(p, a, -0.2);
           if (getBond(p, b) < 3) addBond(p, b, -0.2);
         });
-        events.push({ type: 'unbreakableBond', players: [a, b], badgeText: 'UNBREAKABLE', badgeClass: 'green', text: _rp2([
-          `${a} and ${b} don't need to talk strategy anymore. A look across the fire is enough. The tribe has noticed — and some of them are afraid of it.`,
-          `${a} and ${b} have a conversation late at night that has nothing to do with the game. The kind that makes everyone else feel like outsiders.`,
-          `The bond between ${a} and ${b} is so obvious it's become a liability. Everyone can see it. Neither of them cares.`,
-          `${a} tells the confessional: "I came into this game alone. I'm not alone anymore. Whatever happens, ${b} changed that."`,
-          `${a} gives ${b} the last of the rice without being asked. ${b} doesn't say thank you — ${pB.sub} just ${pB.sub==='they'?'nod':'nods'}. They're past words.`,
-          `${a} falls asleep at the fire. ${b} stays up and keeps it going. In the morning, neither mentions it. They don't have to.`,
-          `Someone tries to pull ${a} into a side conversation about ${b}. ${a} shuts it down so fast the other person apologizes. The loyalty isn't strategic — it's reflexive.`,
-          `${a} and ${b} get a job done together in silence. It takes half the time it took the rest of the tribe. They've been in sync since the beginning and everyone knows it.`,
-          `The tribe debates the plan. ${a} looks at ${b}. ${b} nods. That's the vote. Nobody questions it because nobody can compete with what those two have.`,
-          `${a} gets emotional at the fire tonight. ${b} doesn't say "it's okay" or "stay strong." ${pB.Sub} just ${pB.sub==='they'?'sit':'sits'} closer. That's enough.`,
-        ]) });
+        _rp2([0]); // the draw that picked the sentence (the season must not move)
+        events.push(scriptEvent({ type: 'unbreakableBond', players: [a, b], badgeText: 'UNBREAKABLE', badgeClass: 'green' },
+          makeScene('friend.unbreakable', { a, b }, {}, [], _spotNow(a, b))));
       }
 
       // ── RIDE OR DIE (+7 to +9) ──
@@ -2810,16 +2703,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         addBond(a, b, 0.5);
         const protector = pStats(a).loyalty >= pStats(b).loyalty ? a : b;
         group.filter(p => p !== a && p !== b).forEach(p => { if (Math.random() < 0.3) addBond(p, protector, 0.3); });
-        events.push({ type: 'rideOrDie', players: [a, b], badgeText: 'RIDE OR DIE', badgeClass: 'green', text: _rp2([
-          `${a} and ${b} sit together at every meal, every challenge, every tribal. The tribe has started referring to them as a single unit.`,
-          `${a} catches wind that ${b}'s name was mentioned. ${pA.Sub} shut${pA.sub==='they'?'':'s'} it down immediately — not with strategy, with loyalty.`,
-          `${a} and ${b} finish each other's sentences in a way that makes other players uncomfortable. Because it's clearly not fake.`,
-          `Someone asks ${a} who ${pA.sub}'d take to the end. ${a} doesn't hesitate. The answer is ${b}. It's been ${b} since day one.`,
-          `${b} has a rough day. ${a} doesn't fix it or talk about it. ${pA.Sub} just ${pA.sub==='they'?'stay':'stays'} nearby. That's what loyalty looks like out here.`,
-          `${a} volunteers for the hardest camp task so ${b} doesn't have to. ${b} notices. The tribe notices ${b} noticing.`,
-          `${a} and ${b} have a way of communicating across the camp with just eye contact. The tribe has caught on but can't decode it.`,
-          `${a} tells the confessional: "${b} is the only person in this game I trust completely. That's either going to save me or get me killed. I'm okay with both."`,
-        ]) });
+        _rp2([0]); // the draw that picked the sentence (the season must not move)
+        events.push(scriptEvent({ type: 'rideOrDie', players: [a, b], badgeText: 'RIDE OR DIE', badgeClass: 'green' },
+          makeScene('friend.rideordie', { a, b }, {}, [], _spotNow(a, b))));
       }
 
       // ── REKINDLE: damaged bond (-4 to -7) starts to heal ──
@@ -2830,18 +2716,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           const receiver = initiator === a ? b : a;
           const pI = pronouns(initiator), pR = pronouns(receiver);
           addBond(a, b, 2.5);
-          events.push({ type: 'rekindle', players: [initiator, receiver], badgeText: 'REKINDLE', badgeClass: 'green', text: _rp2([
-            `${initiator} sits down next to ${receiver} for the first time in days. Neither says anything for a while. Then ${initiator} speaks — about home. ${receiver} listens. Something cracks open.`,
-            `${initiator} catches ${receiver} alone at the water well. "I know we've had our issues. I'm just saying — we don't have to keep doing this." ${receiver} doesn't walk away.`,
-            `The game stripped everything back today. ${initiator} and ${receiver} had a conversation that was raw, uncomfortable, and longer than either expected. Not forgiveness. But something.`,
-            `It starts with a shared task — hauling, fetching, something neither can do alone. By the end, ${initiator} and ${receiver} have talked more than they have in a week.`,
-            `${initiator} apologizes. Not for everything — just for one specific thing. ${receiver} wasn't expecting it. The silence that follows isn't awkward for the first time.`,
-            `${receiver} is struggling with a task. ${initiator} helps without being asked, without making it a thing. ${receiver} looks up, surprised. The wall between them feels thinner.`,
-            `Rain drives everyone under the same tarp. ${initiator} and ${receiver} end up side by side. Neither moves. By morning, the coldness has thawed — just slightly.`,
-            `${initiator} makes a joke at the fire. ${receiver} laughs before ${pR.sub} can stop ${pR.ref}. It's the first real laugh between them in a long time. The tribe notices.`,
-            `${initiator} passes ${receiver} during a challenge and mutters "nice move." Two words. But from ${initiator} to ${receiver}, after everything? That's a lot.`,
-            `${receiver} defends ${initiator} in a group conversation — not warmly, but factually. "That's not what happened." ${initiator} hears about it later. Doesn't say anything. But remembers.`,
-          ]) });
+          _rp2([0]); // the draw that picked the sentence (the season must not move)
+          events.push(scriptEvent({ type: 'rekindle', players: [initiator, receiver], badgeText: 'REKINDLE', badgeClass: 'green' },
+            makeScene('friend.rekindle', { a: initiator, b: receiver }, {}, [], _spotNow(initiator, receiver))));
         }
       }
 
@@ -2856,18 +2733,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           const damage = -1.5 - Math.random() * 1.5;
           addBond(a, b, damage);
           if (gs.playerStates?.[hurt]) gs.playerStates[hurt].emotional = 'uneasy';
-          events.push({ type: 'breakup', players: [instigator, hurt], badgeText: 'BREAKUP', badgeClass: 'red', text: _rp2([
-            `${instigator} pulls back from ${hurt} today. Not a fight — something quieter. The conversations get shorter. The eye contact disappears.`,
-            `${instigator} is seen having long strategy talks with other players — talks that used to include ${hurt}. When ${hurt} asks, ${instigator} deflects.`,
-            `${hurt} overhears something ${instigator} said about ${pH.obj}. Not cruel — worse. Dismissive. Like the bond was a phase ${instigator} has moved past.`,
-            `It's not dramatic. ${instigator} just starts treating ${hurt} like everyone else — and that's the part that hurts.`,
-            `${instigator} makes a strategic calculation that doesn't include ${hurt}. ${hurt} finds out through someone else. The betrayal is in not being told.`,
-            `${hurt} reaches for the usual check-in before tribal. ${instigator} is already talking to someone else. The moment passes. It keeps passing.`,
-            `${instigator} doesn't save ${hurt} a seat at the fire tonight. Small thing. Huge signal. ${hurt} sits somewhere else and pretends not to care.`,
-            `${hurt} asks ${instigator} directly: "Are we good?" ${instigator} says yes too quickly. ${hurt} knows what too-quickly means by now.`,
-            `The tribe watches ${instigator} build a new inner circle that doesn't include ${hurt}. Everyone sees it except — no, ${hurt} sees it too. ${pH.Sub} just ${pH.sub==='they'?'haven\'t':'hasn\'t'} decided what to do about it yet.`,
-            `${instigator} tells the confessional: "I love ${hurt}. But I can't win sitting next to ${pH.obj}." It's the most honest and most devastating thing ${pIn.sub}'ve said all season.`,
-          ]) });
+          _rp2([0]); // the draw that picked the sentence (the season must not move)
+          events.push(scriptEvent({ type: 'breakup', players: [instigator, hurt], badgeText: 'BREAKUP', badgeClass: 'red' },
+            makeScene('friend.drift', { a: instigator, b: hurt }, {}, [], _spotNow(instigator, hurt))));
         }
       }
     }
@@ -3985,7 +3853,7 @@ export function checkGoatTargeting(ep) {
     const ftcText  = ftcLines[(hashBase + epSeed * 3) % ftcLines.length];
     const stratText = strategistLines[(hashBase2 + epSeed * 11) % strategistLines.length];
 
-    arr.push({ type: 'ftcThreatAlert',    text: ftcText,  players: [goat] });
+    arr.push({ type: 'ftcThreatAlert',   text: ftcText,  players: [goat] });
     arr.push({ type: 'ftcThreatStrategist', text: stratText, players: [strategist, goat] });
 
     // Bump vote heat for next tribal — strategist is now mentally targeting this goat

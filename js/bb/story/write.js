@@ -77,6 +77,21 @@ const TALK_WHY = {
   'bb.hoh': '{a} is Head of Household and put {c} up as the real target. If {c} wins the Block Buster, the plan falls apart.',
   'bb.nominee': '{a} is one of three on the block. The Block Buster is the only way off that does not need anyone\'s vote.',
   'veto.hope': '{a} is on the block. Winning the veto is the surest way off it.',
+  'hohweek.plan.pawn': '{a} is Head of Household. The plan: {c} is the real target, and {d} goes up beside {c} as a pawn, someone the house should not vote out.',
+  'hohweek.plan.backdoor': '{a} is Head of Household. The plan is a backdoor: {c} and {d} go up, the veto takes one of them down, and {e} goes up in the empty chair with no veto left to play for.',
+  'hohweek.plan.two': '{a} is Head of Household. The plan: no pawn. {c} and {d} both go up as real targets, and either one leaving is a win.',
+  'hohweek.plan.pair': '{a} is Head of Household. The plan: split a pair. {c} and {d} go up together so neither can save the other, and one of them leaves.',
+  'hohweek.plan.ally': '{a} is Head of Household. The plan: {c} is the target, and {d}, {c}\'s closest ally, goes up too so nobody is free to campaign for {c}.',
+  'hohweek.plan.quiet': '{a} is Head of Household. The plan: the safe week. {c} and {d} are names the house agrees on, so nobody comes after {a} for it.',
+  'hohweek.pawn.agree': '{a} asks {b} to be the pawn next to {c}, the real target. {b} says yes, on {a}\'s promise.',
+  'hohweek.pawn.refuse': '{a} asks {b} to be the pawn next to {c}. {b} says no.',
+  'hohweek.fish.honest': '{b} is {a}\'s real target, and goes to the HOH room to ask. {a} tells the truth.',
+  'hohweek.fish.deflect': '{b} is {a}\'s real target, and goes to the HOH room to ask. {a} will not say.',
+  'hohweek.fish.lie': '{b} is {a}\'s real target, and goes to the HOH room to ask. {a} lies, so {b} does not spend the week campaigning.',
+  'hohweek.float.any': '{a} is playing the floater\'s game: stay off the HOH\'s radar, ask for nothing, and let the bigger players be the targets.',
+  'hohweek.verdict.done': '{a}\'s HOH worked: {c} was the target, and {c} was evicted.',
+  'hohweek.verdict.missed': '{a}\'s HOH failed: {c} was the target and is still in the house.',
+  'hohweek.verdict.pawn': '{a}\'s HOH backfired: {d}, the pawn, was evicted, and {c}, the real target, is still here.',
   'nexthoh': 'An HOH is coming. {c} has won the most so far, and {a} and {b} are afraid of {c} holding power.',
   'prejury': 'Jury is close. Whoever leaves before it starts gets no vote for the winner: {a} and {b} want {c} out first.',
   'jury.bitter': '{gone} has just gone to the jury. {b} voted {gone} out.',
@@ -434,7 +449,7 @@ export function writeGameTalk(talk, ctx, at) {
   let room = 'living-room';
   const cast = Object.values(who).filter(Boolean);
   const base = { id: `talk:${ctx.week?.num || 0}:${ctx.stretch}:${kind}`, line: null, type: 'talk', step: kind, outcome: talk.phase || 'any',
-    room, roomName: ROOM[room], cast, mood: kind.startsWith('bond.vent') || kind === 'style.provocateur' ? 'drama' : kind === 'style.manipulator' ? 'scheming'
+    room, roomName: ROOM[room], cast, mood: kind.startsWith('hohweek.') ? (/fish.lie|backdoor/.test(kind) ? 'scheming' : /verdict.(missed|pawn)|refuse/.test(kind) ? 'drama' : 'plan') : kind.startsWith('bond.vent') || kind === 'style.provocateur' ? 'drama' : kind === 'style.manipulator' ? 'scheming'
       : kind === 'style.strategist' || kind === 'prejury' || kind === 'jury.manage' || kind === 'bb.hoh' ? 'plan' : kind === 'style.social' ? 'fun' : 'deals', at };
   if (writing.muted) return { ...base, lines: [] };
   const entry = pick([key], who, data, { ...ctx, phase: talk.phase }, room, salt);
@@ -594,6 +609,8 @@ export function writeEngineScene(beat, ctx, at) {
   const pact = /final-two/.test(id) ? 'Final Two' : /final-three/.test(id) ? 'Final Three' : /jury-pact/.test(id) ? 'To the Jury, Together' : null;
   if (pact && !/compared|exposed|broken|collapse/.test(id)) sc.title = { kind: 'deal', name: pact, members: (beat.players || []).slice(0, pact === 'Final Three' ? 3 : 2) };
   if (meeting) sc.title = { kind: 'meeting', name: 'House Meeting', members: cast.slice(0, 1) };
+  // the rest of the house is around for it, the way it is for any conversation in a shared room
+  if (!meeting && cast.length <= 3) sc.lines = background(sc.lines, sc, ctx, sc.id, /blow|fight|confront|grudge|snap/.test(id));
   return sc;
 }
 

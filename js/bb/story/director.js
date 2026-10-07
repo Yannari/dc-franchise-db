@@ -16,7 +16,7 @@
 import { gs } from '../../core.js';
 import { classify, file, causeOf } from './storylines.js';
 import { writeStoryScene, writeSetPiece, writeGameTalk, writeCampaignScene, writeEngineScene, hasPool, roomName } from './write.js';
-import { gameTalkFor, bondTalkFor, styleTalkFor, phaseOf } from './gametalk.js';
+import { gameTalkFor, bondTalkFor, styleTalkFor, phaseOf, hohWeekFor } from './gametalk.js';
 
 const CEREMONY = new Set(['hoh', 'nominations', 'veto', 'veto-ceremony', 'eviction']);
 // the ceremonies' own moments (kept in step with vp-bb-ep/steps.js NOM_MOMENT / VETO_MOMENT)
@@ -100,7 +100,16 @@ export function airStorylines(week) {
     // 4: the machinery of the vote (who the group is voting for, recruiting, pleading, blame)
     // (and, the user 2026-10-06: "do they ask to be picked for veto, ask that the veto is used on
     // them, try to play the HOH… house meetings?" — every one of those at 0% before this)
-    const WEIGHT = id => /^(bloc-|plan-|fallout-blame|fallout-word|phase-lobby-veto|phase-targets|veto-left|scheme-campaign|power-nom-campaign|deals-vote|power-pick-me|power-veto-promise|power-hoh-pitch|power-hoh-promise|power-hoh-deciding|power-hoh-refuses|phase-veto-holder-weighs|phase-hoh-pressures|life-house-meeting|reign-house-meeting|veto-overruled|veto-debt)/.test(id) ? 4
+    // The airing audit, 2026-10-07 (the user: "the pawn pitch, is it in the viewer? did you forget
+    // other things like this?"): two seasons, every kind of engine moment counted against how often
+    // it aired. About seventy kinds never did, because the tiers below gave them nothing and a
+    // weight under 2 is never considered. The game moments always air now; the relationship and
+    // house-pressure moments when there is room; the texture fills a quiet stretch.
+    // (power-pawn-ask is the HOH-week pawn scene now: gametalk.js hohWeekFor, every ask)
+    const MUST = /^(power-pawn-resents|power-block-pressure|power-fears-backdoor|campaign-declined|alliance-shaped-block|alliance-wrong-blame|scheme-false-majority|deals-hedged|target-survives-regroup|arc-promise-exposed-by-count|arc-endgame-|jury-written-off|jury-bubble-nerves|jury-told-to-their-face|jury-seat-as-payment|reign-loyalty-test|reign-announces-target|reign-house-decides|showmance-two-votes|showmance-block-pressure|romance-showmanceTarget|alliance-betrayal-unseen|editorial-vote-flip-room|pawn-in-danger-panic|arc-rogue-vote-denial|phase-replacement-fear)/;
+    const ROOM = /^(social-grudge-hardens|power-hoh-room-spy|power-hoh-traffic|power-hoh-weight|alliance-inner-circle|showmance-leak-channel|showmance-game-vs-heart|showmance-blind-spot|showmance-hiding-it|followup-overheard-confrontation|arc-blindside-rewatch|arc-threatened-remembers|jury-counting-down|jury-line-crossed|phase-power-changes-people|social-drifting-out|upkeep-|drinks-|romance-triangle|reign-apologises|alliance-unauthorized-vote-fear|power-hoh-room-queue)/;
+    const TEXTURE = /^(venue-|bond-quiet-night|life-diary-room|texture-diary-room-rant|phase-safe-relief|power-hoh-room-last-night)/;
+    const WEIGHT = id => MUST.test(id) ? 4 : ROOM.test(id) ? 3 : TEXTURE.test(id) ? 2 : /^(bloc-|plan-|fallout-blame|fallout-word|phase-lobby-veto|phase-targets|veto-left|scheme-campaign|power-nom-campaign|deals-vote|power-pick-me|power-veto-promise|power-hoh-pitch|power-hoh-promise|power-hoh-deciding|power-hoh-refuses|phase-veto-holder-weighs|phase-hoh-pressures|life-house-meeting|reign-house-meeting|veto-overruled|veto-debt)/.test(id) ? 4
       : /^(power-hoh-|phase-hoh-room|texture-hoh-letter|editorial-hoh-orbit|editorial-meeting-crash|veto-shrug|deals-competing)/.test(id) ? 3 : /^(bloc-|plan-|fallout-|scheme-|power-nom|power-ceremony|phase-lobby-veto|phase-replacement|phase-targets|phase-house-takes-sides|arc-lie|followup-lie|veto-left|alliance-name-slips|alliance-overlap|social-paranoia|social-grudge|deals-exposed|deals-defection|deals-vote-flip|deals-safety|deals-jury|arc-comfort-becomes|arc-fight-splits|reign-reckoning|phase-scramble|phase-hoh-pressures|phase-block-isolation|phase-outgoing|power-veto-promise|power-veto-draw|alliance-side-deal|campaign-declined|texture-pantry-name|editorial-secret|editorial-interrupted|editorial-meeting-crash)/.test(id) ? 3
       : /^(deals-|alliance-|power-|reign-|arc-|followup-|phase-|social-info|social-blow|jury-)/.test(id) ? 2 : 0;
     const shown = new Set();
@@ -110,21 +119,37 @@ export function airStorylines(week) {
       .sort((x, y) => WEIGHT(String(y.beat.eventId)) - WEIGHT(String(x.beat.eventId))
         || (seasonAired[`ev:${x.beat.eventId}`] || 0) - (seasonAired[`ev:${y.beat.eventId}`] || 0));
     let engAired = 0;
+    // A moment that is only a confessional or two is not a scene on its own: the stretch's are
+    // cut together into one Diary Room run, the way the show strings confessionals between scenes
+    // (2026-10-07: the airing audit unlocked dozens of game moments, many a single Diary Room line).
+    const round = [];
     for (const { act: ea, beat } of eng) {
       // three a stretch; a busy stretch makes room for two more that move the game
-      if (engAired >= 8 || (engAired >= 6 && WEIGHT(String(beat.eventId)) < 4) || (engAired >= 4 && WEIGHT(String(beat.eventId)) < 3)) break;
+      const wt = WEIGHT(String(beat.eventId));
+      if (engAired >= 10 || (engAired >= 6 && wt < 4) || (engAired >= 4 && wt < 3)) { if (wt < 4) continue; break; }
       const key = [...beat.players].sort().join('|');
       if (shown.has(key) || shown.has(String(beat.eventId))) continue;
       const sc = writeEngineScene(beat, { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) }, at);
       if (!sc || rejoins(sc)) continue;
       // a fragment that moves nothing (a single spoken line, no setup) does not air; the moments that
       // move the game (vote machinery, HOH, veto, house meetings) still do, however short
-      if (sc.lines.filter(l => l.kind !== 'beat').length < 2 && WEIGHT(String(beat.eventId)) < 4) continue;
+      if (sc.lines.filter(l => l.kind === 'say').length === 1 && !sc.lines.some(l => l.kind === 'dr') && WEIGHT(String(beat.eventId)) < 4) continue;
       remember(sc);
       shown.add(key); shown.add(String(beat.eventId));
       beat.aired = true; engAired++;
       seasonAired[`ev:${beat.eventId}`] = (seasonAired[`ev:${beat.eventId}`] || 0) + 1;
-      (ea.scenes ||= []).push(sc);
+      const confessional = sc.lines.length <= 2 && sc.lines.some(l => l.kind === 'dr') && !sc.lines.some(l => l.kind === 'say');
+      if (confessional) round.push({ ea, sc });
+      else (ea.scenes ||= []).push(sc);
+    }
+    if (round.length === 1) (round[0].ea.scenes ||= []).push(round[0].sc);
+    else if (round.length > 1) {
+      // only the confessionals: a stage direction belongs to the room it was written for
+      const lines = round.flatMap(({ sc }) => sc.lines.filter(l => l.kind === 'dr'));
+      const cast = [...new Set(lines.map(l => l.by).filter(Boolean))];
+      const first = round[0].sc;
+      (round.at(-1).ea.scenes ||= []).push({ ...first, id: `drround:${week.num || 0}:${stretch}`, step: 'dr-round', room: 'diary-room', roomName: 'Diary Room',
+        cast, lines, why: round.map(({ sc }) => sc.why).filter(Boolean).flat(), title: null, ownRoom: false });
     }
 
   };
@@ -241,7 +266,11 @@ export function airStorylines(week) {
     const before = arriveAt >= 0 && week.acts.indexOf(pending[0].act) < arriveAt;
     const tctx = { ...ctx, present: ctx.present.filter(n => atStart.includes(n) && !(before && lateNames.has(n))) };
     if (!ctx.firstNight) {
-      const game = gameTalkFor(week, tctx, { ...clock, safety: clock.safety || pending.some(p => p.act.type === 'safety') }, talked, lastGone)[0];
+      // the HOH's week first (gametalk.js hohWeekFor): the plan, the pawn ask, the target
+      // fishing, a floater, or the morning-after verdict on how the week went
+      const hw = hohWeekFor(week, tctx, clock, talked, lastGone).slice(0, 4);
+      talks.push(...hw);
+      const game = hw.length >= 3 ? null : gameTalkFor(week, tctx, { ...clock, safety: clock.safety || pending.some(p => p.act.type === 'safety') }, talked, lastGone)[0];
       if (game) talks.push(game);
       const bond = stretch % 2 === 1 || !game ? bondTalkFor(week, tctx, talkedPairs) : null;
       if (bond && !talked.has(bond.kind)) talks.push(bond);

@@ -23,6 +23,7 @@ import { gs, players } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { juryOpensAt, evictionSeatsAJuror } from '../jury.js';
 import { stableRng } from '../knowledge.js';
+import { pStats } from '../../players.js';
 
 /** Where the season is: 'early', 'prejury', 'jury' or 'endgame', and how many jurors sit. */
 export function phaseOf(week) {
@@ -233,4 +234,86 @@ export function bondTalkFor(week, ctx, talkedPairs) {
     return { kind: 'bond.trust', who: rng() < 0.5 ? { a: x, b: y } : { a: y, b: x }, data: {}, phase };
   }
   return null;
+}
+
+// ── the Head of Household's week ──
+// The user, 2026-10-07: "one-on-ones with the HOH are important for strategy and we barely get
+// any... the viewer needs to feel and see the actual strategy", and "did they get that target
+// out, how do we know?" Between the HOH and the ceremony: the plan said out loud to the HOH's
+// closest person, the pawn being asked (each ask the engine made, yes or no), the real target
+// climbing the stairs to fish, and somebody floating it out downstairs. The morning after the
+// eviction: whether the week worked. All of it read from the engine's plan (bb/strategy.js,
+// week.plan) and pawn negotiation (week.pawnAsk); nothing here decides anything.
+const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const PLAN_KIND = { 'target-pawn': 'pawn', 'double-target': 'two', 'two-targets': 'two', 'pair-split': 'pair', 'target-ally': 'ally', expendables: 'quiet' };
+
+export function hohWeekFor(week, ctx, clock, talked, lastGone) {
+  const house = ctx.present || [];
+  if (house.length < 4) return [];
+  const out = [];
+  // `gone`: a role who has already left the house and is only talked about (the verdict)
+  const want = (kind, who, data = {}, gone = []) => {
+    if (talked.has(kind) || !Object.entries(who).every(([r, n]) => n && (house.includes(n) || gone.includes(r)))) return;
+    if (new Set(Object.values(who)).size !== Object.values(who).length) return;
+    out.push({ kind, who, data });
+  };
+  const rng = stableRng(gs.bb?.seasonSalt || 0, 'hohweek', week.num || 0, ctx.stretch || 0);
+  const closest = (n, not = []) => house.filter(x => x !== n && !not.includes(x))
+    .sort((x, y) => getBond(n, y) - getBond(n, x))[0] || null;
+  const archOf = n => (players || []).find(p => p.name === n)?.archetype;
+
+  // ── the morning after: was it a good HOH? ──
+  if (!clock.hoh && lastGone) {
+    const prev = [...(gs.bb?.weeks || [])].reverse().find(w => w !== week && w.evicted === lastGone);
+    const plan = prev?.plan;
+    const hoh = prev?.hoh;
+    const real = plan?.backdoorTarget || plan?.target;
+    if (plan && hoh && real && house.includes(hoh)) {
+      const b = closest(hoh, [real]);
+      // two targets, a split pair, two easy names: either nominee leaving is the plan working
+      const either = ['double-target', 'two-targets', 'pair-split', 'expendables'].includes(plan.structure) && !plan.backdoorTarget
+        && (plan.nominees || []).includes(lastGone);
+      if (lastGone === real || either) want('hohweek.verdict.done', { a: hoh, b: closest(hoh, [lastGone]), c: lastGone }, {}, ['c']);
+      else if (lastGone === plan.pawn) want('hohweek.verdict.pawn', { a: hoh, b, c: real, d: lastGone }, {}, ['d']);
+      else if (house.includes(real)) want('hohweek.verdict.missed', { a: hoh, b, c: real });
+    }
+    return out.filter(t => t.kind.startsWith('hohweek.verdict'));
+  }
+
+  // ── between the HOH and the ceremony ──
+  if (!clock.hoh || clock.noms) return [];
+  const hoh = ctx.hoh;
+  const plan = week.plan;
+  if (!hoh || !house.includes(hoh) || !plan) return [];
+  const b = closest(hoh, [plan.target, plan.pawn, plan.backdoorTarget, ...(plan.nominees || [])].filter(Boolean));
+  const [n0, n1] = plan.nominees || [];
+  if (plan.backdoorTarget) want('hohweek.plan.backdoor', { a: hoh, b, c: n0, d: n1, e: plan.backdoorTarget });
+  else {
+    const kind = PLAN_KIND[plan.structure] || 'pawn';
+    const other = (plan.nominees || []).find(n => n !== plan.target);
+    want(`hohweek.plan.${kind}`, { a: hoh, b, c: plan.target, d: kind === 'pawn' ? (plan.pawn || other) : other });
+  }
+  // every ask the engine made, in order: a refusal, then the one who said yes
+  for (const ask of (week.pawnAsk?.asked || []).slice(0, 2)) {
+    // on a backdoor the pawn sits beside the decoy, and the HOH keeps the real target to themselves
+    want(ask.accepted ? 'hohweek.pawn.agree' : 'hohweek.pawn.refuse', { a: hoh, b: ask.name, c: plan.backdoorTarget ? n0 : plan.target });
+  }
+  // the real target fishes. What the HOH says is who they are: a nice archetype never lies; a
+  // backdoor target can never be told the truth.
+  const fisher = plan.backdoorTarget || plan.target;
+  if (fisher && fisher !== hoh) {
+    const s = pStats(hoh) || {};
+    const canLie = !NICE.has(archOf(hoh));
+    const lie = canLie ? ((s.strategic || 5) / 10) * (1 - (s.loyalty || 5) / 20) : 0;
+    const honest = plan.backdoorTarget ? 0 : ((s.boldness || 5) / 10) * ((s.loyalty || 5) / 10);
+    const roll = rng() * (lie + honest + 0.35);
+    const how = roll < lie ? 'lie' : roll < lie + honest ? 'honest' : 'deflect';
+    want(`hohweek.fish.${how}`, { a: hoh, b: fisher });
+  }
+  // and somebody floating it out downstairs: a floater or goat, or whoever has won least
+  const floaters = house.filter(n => n !== hoh && !(plan.nominees || []).includes(n) && n !== plan.backdoorTarget
+    && ['floater', 'goat'].includes(archOf(n)));
+  const fl = floaters[Math.floor(rng() * floaters.length)];
+  if (fl) want('hohweek.float.any', { a: fl, b: closest(fl, [hoh]), c: hoh });
+  return out;
 }

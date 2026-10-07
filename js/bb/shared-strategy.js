@@ -18,6 +18,7 @@ import {
   resolveCompetingPitches, resolvePitchCounterplay,
 } from '../voting.js';
 import { describeBBCampaignReaction, summarizeBBCampaignReactions } from '../bb-writing.js';
+import { passMemo } from './pass-memo.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const currentRound = week => Number(week?.num || (gs.episode || 0) + 1);
@@ -238,7 +239,12 @@ export function knownPowerWeight(name, week = 0) {
   return Math.min(3.2, weight);
 }
 
+// remembered for one scoring pass (pass-memo.js): the scheduler asks it for every event
+let _threatMemo = null;
 export function bbThreatProfile(name) {
+  return (_threatMemo ||= passMemo(_bbThreatProfile, n => n))(name);
+}
+function _bbThreatProfile(name) {
   const stats = pStats(name);
   const others = (gs.activePlayers || players.map(player => player.name)).filter(other => other !== name);
   const record = gs.bb?.stats?.[name] || {};

@@ -27,7 +27,8 @@ function store() {
   return gs.relationshipDimensions;
 }
 function legacyBond(a, b) {
-  return gs?.bonds?.[[a, b].sort().join('||')] ?? 0;
+  const k = typeof a === 'string' && typeof b === 'string' ? (a <= b ? a + '||' + b : b + '||' + a) : [a, b].sort().join('||');
+  return gs?.bonds?.[k] ?? 0;
 }
 export const hasRelationshipDimensions = (a, b) =>
   Boolean(gs?.relationshipDimensions?.[relationshipKey(a, b)]);

@@ -29,6 +29,7 @@ import {
   sharesAlliance, resentmentOf, grudge, isVillainous, isNice, spotlightOrder,
 } from './_read.js';
 import { makeScene } from '../bb/script/scene.js';
+import { passMemo } from '../bb/pass-memo.js';
 
 /** Which room a scene happens in: by hash, never a die. */
 function _room(rooms, ctx, ...people) {
@@ -77,7 +78,12 @@ function _irritation(a, b) {
 }
 
 /** Two people who live together and are starting to notice it. */
+// remembered for one scoring pass (bb/pass-memo.js): it does not read ctx
+let _gratingMemo = null;
 function _grating(house, ctx) {
+  return (_gratingMemo ||= passMemo(_gratingRaw, h => h.filter(Boolean).join('\u0001'), v => (v ? { ...v } : v)))(house);
+}
+function _gratingRaw(house) {
   const pool = _live(house);
   if (pool.length < 4) return null;
   let best = null;

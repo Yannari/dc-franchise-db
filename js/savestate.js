@@ -572,7 +572,13 @@ export function snapshotGameState() {
     // bb); they stay on the live state and out of every episode record.
     bb:           gs.bb ? JSON.parse(JSON.stringify({
       ...gs.bb,
-      weeks: (gs.bb.weeks || []).map(({ acts, openingState, closingState, ...lean }) => lean),
+      // juryHouse is the same record as one of the week's acts, which are left out above
+      weeks: (gs.bb.weeks || []).map(({ acts, openingState, closingState, juryHouse, ...lean }) => lean),
+      // The story layer's season-long logs (which lines and scenes have aired, the storylines and
+      // their steps) are read only from the live state, like the memories below; a copy in every
+      // episode record grew the history quadratically (a profile, 2026-10-07: 28 MB by week 13,
+      // a quarter-second clone on every save). The live state keeps and saves them.
+      lineLedger: undefined, storyLedger: undefined, storylines: undefined, storyAired: undefined,
       house: gs.bb.house
         ? { ...gs.bb.house, memories: undefined, eventHistory: undefined }
         : gs.bb.house,

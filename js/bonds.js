@@ -4,7 +4,10 @@ import { pStats, pronouns, threatScore } from './players.js';
 import { applyLegacyBondDelta, seedRelationshipFromLegacyBond } from './relationships.js';
 import { addMutualRelationshipDimension, addRelationshipDimension, decayRelationshipDimensions } from './relationships.js';
 
-export function bKey(a, b)         { return [a,b].sort().join('||'); }
+// The most-called function in a season (a profile, 2026-10-07: 14% of a played season was this
+// line building and sorting a two-item array). Two strings compare exactly as Array#sort orders
+// them, so the key is the same; anything else takes the old path.
+export function bKey(a, b)         { return typeof a === 'string' && typeof b === 'string' ? (a <= b ? a + '||' + b : b + '||' + a) : [a,b].sort().join('||'); }
 
 export function getBond(a, b)      { return gs?.bonds?.[bKey(a,b)] ?? 0; }
 

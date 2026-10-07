@@ -171,8 +171,21 @@ export function miniAvatar(name, size = 28) {
   </div>`;
 }
 
+// name -> position in the cast, rebuilt whenever the cast array is replaced or changes length (a
+// profile, 2026-10-07: a linear search of the cast on every stat read). The player at that
+// position is read fresh every call, and its stats copied, so nothing stale is ever returned.
+let _pIndex = null, _pIndexOf = null, _pIndexLen = -1;
+function _playerNamed(name) {
+  if (_pIndexOf !== players || _pIndexLen !== players.length) {
+    _pIndex = new Map(); players.forEach((q, i) => { if (q && !_pIndex.has(q.name)) _pIndex.set(q.name, i); });
+    _pIndexOf = players; _pIndexLen = players.length;
+  }
+  const i = _pIndex.get(name);
+  const hit = i == null ? null : players[i];
+  return hit && hit.name === name ? hit : players.find(q => q?.name === name);
+}
 export function pStats(name) {
-  const p = players.find(p=>p.name===name);
+  const p = _playerNamed(name);
   if (p?.stats) return { ...DEFAULT_STATS, ...p.stats };
   // ── somebody who is not in this cast but IS in this franchise ──
   //

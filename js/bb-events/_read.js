@@ -42,6 +42,7 @@ import { strategicReputation } from '../reputation.js';
 import { getIntentions } from '../intentions.js';
 import { believesDeal } from '../bb/knowledge.js';
 import { dealBetween } from '../bb/deals.js';
+import { passMemo } from '../bb/pass-memo.js';
 
 // ── what actually happened in this act ────────────────────────────────
 //
@@ -146,18 +147,22 @@ const FAIR_WEIGHT = 1.5;
  * ended up in 142 beats of a week against another's 35 — the feed read as a
  * show about one person.
  */
+// Each option's share is worked out once per call, not inside the comparator (a profile,
+// 2026-10-07: the sort asked for it O(n log n) times, each an O(n) count). Same numbers, same order.
 export function closestTo(name, pool) {
   const options = [...(pool || [])].filter(n => n && n !== name);
+  const share = new Map(options.map(n => [n, screenShare(n, options)]));
   return options
-    .sort((x, y) => (bond(name, y) - FAIR_WEIGHT * screenShare(y, options))
-                  - (bond(name, x) - FAIR_WEIGHT * screenShare(x, options)))[0] || null;
+    .sort((x, y) => (bond(name, y) - FAIR_WEIGHT * share.get(y))
+                  - (bond(name, x) - FAIR_WEIGHT * share.get(x)))[0] || null;
 }
 
 export function furthestFrom(name, pool) {
   const options = [...(pool || [])].filter(n => n && n !== name);
+  const share = new Map(options.map(n => [n, screenShare(n, options)]));
   return options
-    .sort((x, y) => (bond(name, x) + FAIR_WEIGHT * screenShare(x, options))
-                  - (bond(name, y) + FAIR_WEIGHT * screenShare(y, options)))[0] || null;
+    .sort((x, y) => (bond(name, x) + FAIR_WEIGHT * share.get(x))
+                  - (bond(name, y) + FAIR_WEIGHT * share.get(y)))[0] || null;
 }
 
 /** Trusted enough that a betrayal would actually register as one. */
@@ -201,7 +206,12 @@ export const isAligned = (a, b, pool) => sharesAlliance(a, b) || deFactoAllies(a
 // manufactures fear. Reading the right dimension is what stops every Big Brother
 // beat feeling like the same beat at different volumes.
 
+// remembered for one scoring pass (bb/pass-memo.js); every caller only reads it
+let _profileMemo = null;
 export function profile(a, b) {
+  return (_profileMemo ||= passMemo(_profile, (x, y) => `${x}\u2192${y}`))(a, b);
+}
+function _profile(a, b) {
   if (!a || !b || a === b) return null;
   try { return relationshipDecisionProfile(a, b); } catch { return null; }
 }
@@ -385,10 +395,21 @@ export const couldRomance = (a, b) =>
 
 export const history = () => houseEventState().eventHistory || [];
 
-export const hasFired = eventId => history().some(h => h.eventId === eventId);
+// Indexed like beatCounts below: event id -> the weeks it fired, rebuilt whenever the history has
+// grown (it scanned the whole season's history on every call from inside weight()).
+let _firedIdx = null, _firedAt = -1, _firedOf = null;
+function firedIndex() {
+  const hist = history();
+  if (_firedOf !== hist || _firedAt !== hist.length) {
+    _firedIdx = new Map();
+    for (const h of hist) { if (!_firedIdx.has(h.eventId)) _firedIdx.set(h.eventId, new Set()); _firedIdx.get(h.eventId).add(h.week); }
+    _firedOf = hist; _firedAt = hist.length;
+  }
+  return _firedIdx;
+}
+export const hasFired = eventId => firedIndex().has(eventId);
 
-export const firedThisWeek = (eventId, weekNum) =>
-  history().some(h => h.eventId === eventId && h.week === weekNum);
+export const firedThisWeek = (eventId, weekNum) => !!firedIndex().get(eventId)?.has(weekNum);
 
 /**
  * How many times this player has already been at the centre of a beat.
@@ -550,7 +571,12 @@ export function storyPull(name) {
  * hundred and forty, which is the whole point late in the game when everybody's
  * totals are large.
  */
+// remembered for one scoring pass; each caller gets its own copy of the order
+let _spotMemo = null;
 export function spotlightOrder(pool) {
+  return (_spotMemo ||= passMemo(_spotlightOrder, p => p.join('\u0001'), v => [...v]))(pool);
+}
+function _spotlightOrder(pool) {
   // Decorate once, then sort on lookups — the comparator itself must not be
   // the place the weights get computed.
   const keyed = new Map();

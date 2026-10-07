@@ -9,6 +9,7 @@ import { isDrinksNight, nightModifier } from '../bb-events/drinks-night.js';
 import { scheduleWeightedEvents } from '../event-scheduler.js';
 import { writeScene } from './script/write.js';
 import { stableRng } from './knowledge.js';
+import { scoringPass } from './pass-memo.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -468,7 +469,10 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
   // Big Brother's real `fire(house, beatCtx, api, rng)` shape and does
   // everything a firing beat has always done: drain the ledger, diff the
   // world, validate the returned beat, and record it.
-  const results = scheduleWeightedEvents(events, ctx, {
+  scoringPass(true);
+  let results;
+  try {
+  results = scheduleWeightedEvents(events, ctx, {
     rng, min: options.min, max: options.max, maxUses: 2,
     scoreEvent: (event, _context, meta) => {
       const beatCtx = _beatCtxFor(ctx, meta.index);
@@ -493,6 +497,9 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
       return Math.max(0, Number(event.weight(house, beatCtx)) || 0) * _nightFactor(beatCtx, event) * repeat;
     },
     fireEvent: (event, _context, meta, rngArg) => {
+      // nothing remembered from scoring is trusted once the world can change
+      scoringPass(false);
+      try {
       const beatCtx = _beatCtxFor(ctx, meta.index);
       // Events are handed the seeded rng as a fourth argument. Without it they had
       // to derive any text variety from a hash of the context, because reaching
@@ -519,8 +526,10 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
       result.effects = [...api._drainLedger(), ..._worldMoved(worldBefore)];
       recordBeat({ week: ctx.week?.num || 0, act: ctx.act, eventId: event.id, players: [...result.players] });
       return result;
+      } finally { scoringPass(true); }
     },
   });
+  } finally { scoringPass(false); }
   return results.map(pick => pick.result);
 }
 

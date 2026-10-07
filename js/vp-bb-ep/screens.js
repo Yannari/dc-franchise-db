@@ -251,8 +251,14 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   const castNow = (() => { try { return ((globalThis.players || []).map(p => p?.name).filter(Boolean)); } catch { return []; } })();
   const cast = been.length ? been : castNow;
   const seasonTitle = sc.seasonName || sc.title || '';
-  out.unshift(titleScreen('intro', key, cast, seasonTitle));
-  out.push(titleScreen('outro', key, cast, seasonTitle));
+  // the opening greys out whoever had already gone before this episode; the closing, whoever has
+  // gone by the end of it (the user, 2026-10-06: "closing should grey out the eliminated")
+  const goneBefore = [...(priorEvicted || [])];
+  const goneAfter = [...new Set([...goneBefore, row.evicted, row.secondEvicted, ...(row.evictedAll || [])].filter(Boolean))];
+  out.unshift(titleScreen('intro', key, cast, seasonTitle, goneBefore));
+  out.push(titleScreen('outro', key, cast, seasonTitle, goneAfter));
+  // the Debug screen is not part of the episode: it goes after the closing, never before it
+  for (let i = out.length - 2; i >= 0; i--) if (/debug/.test(out[i]?.id || '')) out.push(...out.splice(i, 1));
   // a classic screen kept inside the stepped week (a twist) still has the way to the classic viewer
   const SWITCH = `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" class="bbx-switch" onclick="bbxSwitchViewer('classic')" style="border:1px solid #22e1ff;background:#0d1220;color:#22e1ff;border-radius:8px;padding:7px 12px;font:600 11px monospace;letter-spacing:1px;cursor:pointer">CLASSIC VIEWER</button></div>`;
   return out.map(x => (x && typeof x.html === 'string' && !x.html.includes('class="bbx"') && !x.html.includes('bbxSwitchViewer') && !/^bb-(titles|closing)$/.test(x.id || '') ? { ...x, html: SWITCH + x.html } : x));

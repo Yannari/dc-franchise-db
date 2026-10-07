@@ -26,6 +26,7 @@ import { POOLS } from './lines/index.js';
 import { factsFor } from './facts.js';
 import { campContext } from './context.js';
 import { makeScene } from './scene.js';
+import { getBond } from '../../bonds.js';
 
 // The episode being played. gs.episode still holds the last one until it ends.
 export const epOf = ctx => ctx.ep || (gs.episode || 0) + 1;
@@ -164,6 +165,63 @@ export function scriptPendingScenes(ep) {
       if (!p) continue;
       delete ev.pendingScene;
       scriptEvent(ev, makeScene(p.kind, p.who, p.data || {}, [], p.spot || null), { ep: ep.num, phase: p.phase || 'post' });
+    }
+  }
+  scriptLooseEvents(ep);
+}
+
+// ── A MOMENT THE ENGINE ONLY NARRATED ────────────────────────────────
+// Challenges and twists leave camp events that are one narrator's sentence. The sentence stays,
+// as the viewer's insight; the people in it then talk about it (lines/aside.js). Nobody new
+// learns anything here: the talk is between the people the sentence names, or the one it names
+// and the person closest to them, who was there to see it.
+const TONES = [
+  ['romance', /kiss|romanc|flirt|firstmove|showmance|crush|spark|date/],
+  ['tense', /blame|sabotag|ruthless|whip|confront|theft|rival|frame|culprit|throw|steal|fight|clash|grudge|betray|accus|taunt|feud|argument/],
+  ['shame', /weak|shame|fail|disaster|breakdown|comedy|bathroom|punish|gobbler|humiliat|chicken|coward|choke|embarrass|wipeout|flop|fumble/],
+  ['scheme', /alliance|plan|strateg|manipulat|scheme|captain|deal|council|leverage|discover|intel|spy/],
+  ['warm', /rescue|mvp|help|gratitude|bond|team ?player|hero|save|carr|win|clutch|leader|proud|praise|cheer|comfort|thank/],
+];
+// what the sentence itself says comes first: a gold badge on "bends over, hands on his knees" is
+// still somebody who is spent, not somebody to thank
+const TEXT_TONES = [
+  ['romance', /\bkiss|holds? hands|reaches for .{0,20}hand/i],
+  ['strain', /exhaust|hands on (his|her|their) knees|sweat|limp(s|ing)?\b|injur|hurt|pain|can't breathe|throw(s|ing) up|vomit|sick|shiver|freez|bleed|collapse|taking more out of/i],
+  ['rally', /gathers (his|her|their) (tribe|team)|lays it out|listen to me|pep talk|fires (the|everyone) up|stands a little taller|rallies|speech/i],
+  ['tense', /ruthless|confront|blame|sabotag|shove|snaps at|glare|furious|accus|argu/i],
+  ['shame', /laugh(s|ing)? at|in stitches|humiliat|embarrass|face-?plant|wipes? out|falls? flat/i],
+  ['scheme', /strategiz|plan|angle|war council|hushed|leverage|on the list/i],
+];
+function toneOf(ev) {
+  const k = `${ev.type || ''} ${ev.badgeText || ''}`.toLowerCase();
+  for (const [tone, re] of TEXT_TONES) if (re.test(String(ev.text || ''))) return tone;
+  for (const [tone, re] of TONES) if (re.test(k)) return tone;
+  if (/\bkiss/i.test(ev.text || '')) return 'romance';
+  const c = String(ev.badgeClass || '');
+  return /red|bad/.test(c) ? 'tense' : /green|gold|good/.test(c) ? 'warm' : 'plain';
+}
+const CHAL_WORD = /challenge|race|round|course|phase|relay|lasso|sled|finish line|the break|halftime|score|points|leg of/i;
+export function scriptLooseEvents(ep) {
+  for (const [camp, block] of Object.entries(ep?.campEvents || {})) {
+    const members = (ep.tribesAtStart || []).find(t => t.name === camp)?.members
+      || (ep.gsSnapshot?.tribes || []).find(t => t.name === camp)?.members || ep.gsSnapshot?.activePlayers || gs.activePlayers || [];
+    for (const [phase, events] of Array.isArray(block) ? [['pre', block]] : [['pre', block?.pre || []], ['post', block?.post || []]]) {
+      for (const ev of events) {
+        if (!ev || ev.lines?.length || ev.pendingScene || !String(ev.text || '').trim()) continue;
+        const named = [...new Set((ev.players || []).filter(n => typeof n === 'string' && n))];
+        if (!named.length) continue;
+        const a = named[0];
+        const pair = named.find(n => n !== a);
+        const b = pair || members.filter(n => n !== a && !named.includes(n))
+          .sort((x, y) => getBond(a, y) - getBond(a, x) || x.localeCompare(y))[0];
+        if (!b) continue;
+        const insight = String(ev.text).replace(/\s+/g, ' ').trim();
+        const data = { reason: pair ? 'pair' : 'watch', ending: ev.tag === 'challenge' || CHAL_WORD.test(insight) ? 'chal' : 'camp' };
+        scriptEvent(ev, makeScene(`aside.${toneOf(ev)}`, { a, b }, data, [], null), { ep: ep.num, phase });
+        ev.lines = [{ kind: 'beat', by: null, text: insight }, ...ev.lines];
+        ev.text = transcript(ev.lines);
+        if (!pair && !ev.players.includes(b)) ev.players = [...ev.players, b];
+      }
     }
   }
 }

@@ -153,7 +153,7 @@ const ORCH_UNSEEN = [
     { by: 'a', say: "Can you do me a favour? If anyone asks, just say I'm not interested in the vote." },
     { by: 'b', say: "Are you? Not interested?" },
     { by: 'a', say: "Of course not. Just say it." },
-    { by: 'a', conf: "By tonight, three people will hear that from {b}. And all three will relax. Perfect." },
+    { by: 'a', conf: "By dinner, three people will hear that from {b}. And all three will relax. Perfect." },
   ] },
   { id: 'rd.o2', turns: [
     { by: 'a', say: "If you happen to see the others, mention that you heard the vote's split." },
@@ -163,7 +163,7 @@ const ORCH_UNSEEN = [
   ] },
   { id: 'rd.o3', turns: [
     { by: 'a', conf: "Nobody saw me do anything today. That's how I like it." },
-    { by: 'a', conf: "Everything that happens tonight, I set up this morning, through {b}." },
+    { by: 'a', conf: "Everything that happens next, I set up this morning, through {b}." },
   ] },
   { id: 'rd.o4', turns: [
     { by: 'b', say: "Why do you want me to talk to them? You could just do it." },

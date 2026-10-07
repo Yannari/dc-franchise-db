@@ -596,7 +596,7 @@ const AFFAIR_FORM = [
     { by: 'a', say: "{target} will be asleep." },
   ] },
   { id: 'r2.af6', turns: [
-    { by: 'b', conf: "I know {a} is with {target}. I know. I'm still going to the water tonight." },
+    { by: 'b', conf: "I know {a} is with {target}. I know. I'm still going to the water after dark." },
   ] },
 ];
 const AFFAIR_HIDDEN = [

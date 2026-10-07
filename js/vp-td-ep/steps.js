@@ -57,6 +57,48 @@ const PLACE = {
   'haunted-mansion': 'The Haunted Mansion', 'corn-maze': 'The Corn Maze', 'theater-tent': 'The Theater Tent', 'big-top': 'The Big Top',
   'voting-booth': 'The Voting Booth', ceremony: 'The Ceremony', exit: 'The Exit',
 };
+// the places a scene can be staged in beyond the engine's spots (camp-access.js): a cabin's inside,
+// the beach, the washrooms, the cliff (2026-10-07: "where is the rest… the interior
+// of the cabin, the canteen, the lake")
+Object.assign(PLACE, { 'cabin-inside': 'Inside the Cabin', washroom: 'The Washrooms', cliff: 'The Cliff' });
+
+// ── STAGING — where a scene plays, beyond where the engine says the people were ──────────
+// The engine knows six places at Wawanakwa, chosen for privacy (who can overhear). Television
+// uses every corner of camp: a private word at the cabins is shot on the porch or between the
+// bunks; a public breakfast is the mess hall; an evening gathering is the campfire. A scene is
+// moved only to a place of the same kind (public stays public, private stays private), only
+// when its lines do not name the place it was written for, and never by dice: the same scene
+// is always staged in the same place.
+const STAGE = {
+  'hosted-camp': {
+    cabins: [['washroom', 2, null, 'morning'], ['cabin-inside', 3, /^(life\.(wakeup|mood|sleep)|romance\.(night|honeymoon)|friend\.(comfort|secret|bond)|blind\.|idol\.confide|drama\.paranoia)/], ['cabin-inside', 2], ['cabins', 2]],
+    'communal-grounds': [['mess-hall', 4, /^(hosted\.slop|life\.(food|meal|hunger)|drama\.mess)/], ['mess-hall', 3, /^(life\.(work|chore)|hosted\.chore)/], ['washroom', 3, /^(life\.wakeup|drama\.(vanity|primp))/],
+      // the camp clock: breakfast and dinner are the mess hall, mornings the washrooms, chores the mess hall,
+      // the evening the campfire; the afternoon is the yard
+      ['mess-hall', 3, null, 'morning'], ['washroom', 2, null, 'morning'], ['communal-grounds', 1, null, 'morning'],
+      ['communal-grounds', 3, null, 'day'], ['mess-hall', 1, null, 'day'],
+      ['communal-grounds', 2, null, 'return'], ['mess-hall', 2, null, 'return'],
+      ['campfire', 3, null, 'evening'], ['mess-hall', 2, null, 'evening'], ['communal-grounds', 1, null, 'evening']],
+    'forest-trail': [['beach', 3, /^(romance\.|friend\.(walk|laugh))/], ['cliff', 2, /^(drama\.(meltdown|clash)|plot\.|broker\.)/], ['forest-trail', 3], ['beach', 1], ['cliff', 1]],
+    dock: [['dock', 3], ['beach', 2]],
+  },
+};
+const PLACE_WORDS = { dock: /\b(dock|lake)\b/i, 'forest-trail': /\b(woods|forest|trail)\b/i, cabins: /\b(cabins?|porch)\b/i, campfire: /\bfire\b/i, 'mess-hall': /\b(mess hall|slop|tray|Chef)\b/i, 'communal-grounds': /\b(grounds|yard)\b/i };
+export function stageSpot(venue, spot, ev, windowId) {
+  const rules = STAGE[venue]?.[spot];
+  if (!rules) return spot;
+  const text = (ev.lines || []).map(l => l.text).join(' ') || String(ev.text || '');
+  if (PLACE_WORDS[spot]?.test(text)) return spot;
+  const kind = ev.scene?.kind || ev.type || '';
+  const time = windowId === 'morning' ? 'morning' : windowId === 'before-tribal' || windowId === 'scramble' ? 'evening' : windowId === 'return' ? 'return' : 'day';
+  const fit = rules.filter(([, , re, when]) => (!re || re.test(kind)) && (!when || when === time));
+  const pick = fit.find(([, , re]) => re) ? fit.filter(([, , re]) => re) : fit.filter(([, , re]) => !re);
+  const total = pick.reduce((a, [, w]) => a + w, 0);
+  let roll = hash(`${kind}|${(ev.players || []).join(',')}|${text.slice(0, 40)}`) % Math.max(total, 1);
+  for (const [to, w] of pick) { if ((roll -= w) < 0) return to; }
+  return spot;
+}
+
 export const placeName = spot => PLACE[spot] || String(spot || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
 // what someone does when they are at a spot and not in the conversation
@@ -68,6 +110,7 @@ const BUSY = {
   economy: ['nap', 'read'], aisle: ['read'], galley: ['eat'], 'cargo-hold': ['nap'], 'first-class': ['nap', 'read'], 'destination-staging': ['stretch'],
   campsite: ['whittle', 'read', 'nap'], 'forest-edge': ['stretch'], 'rocky-beach': ['fish', 'read'], 'lake-shore': ['fish', 'read'],
   'carnival-entrance': ['read'], midway: ['eat', 'stretch'],
+  'cabin-inside': ['nap', 'read', 'nap'], beach: ['nap', 'stretch', 'fish'], washroom: ['sweep'], cliff: ['stretch'],
 };
 
 // ── the clock ─────────────────────────────────────────────────────────
@@ -191,19 +234,22 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
   const steps = [];
   let clock = phase === 'pre' ? 7 * 60 + 5 : 15 * 60 + 10;
   let cur = null;                       // the scene on screen: { spot, tod, people }
-  const busyAt = (spot, windowId, focus) => {
+  // who else is around: whoever the engine put at that spot in that window, busy with something
+  // that fits the place the scene is shown in
+  const busyAt = (spot, windowId, focus, shown = spot) => {
     const w = windows.find(x => x.id === windowId) || windows[windows.length - 1];
     const here = (w?.assignments || []).find(a => a.locationId === spot)?.players || [];
     return here.filter(n => !focus.includes(n) && cast.includes(n)).slice(0, 3)
-      .map(n => ({ n, act: (BUSY[spot] || ['read'])[hash(n + spot) % (BUSY[spot] || ['read']).length] }));
+      .map(n => ({ n, act: (BUSY[shown] || ['read'])[hash(n + shown) % (BUSY[shown] || ['read']).length] }));
   };
+  let engineAt = null;
   const open = (spot, windowId, focus, { cut = false, why = null } = {}) => {
     const win = WINDOWS[windowId];
     clock = Math.max(clock + 6 + (hash(spot + clock) % 9), win ? win[0] : 0);
     const tod = clock >= 19 * 60 + 15 ? 'night' : 'day';
     const key = plateKey(venue, spot, tod) ? spot : V.public;
     const plate = plateKey(venue, key, tod);
-    const bg = busyAt(key, windowId, focus);
+    const bg = busyAt(engineAt || key, windowId, focus, key);
     const sit = V.sit.includes(key);
     const places = placeScene(plate, focus, bg.map(b => b.n), { sit });
     const same = cur && cur.spot === key && cur.tod === tod;
@@ -211,9 +257,11 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
     steps.push({ k: 'scene', spot: key, tod, plate, place: placeName(key), time: clockText(clock), card: !same, cut, focus, bg, places, why });
   };
   for (const ev of events) {
-    const spot = ev.scene?.spot?.id || ev.access?.locationId || V.public;
+    const engineSpot = ev.scene?.spot?.id || ev.access?.locationId || V.public;
     const windowId = ev.scene?.spot?.window || ev.access?.windowId || (phase === 'pre' ? 'camp-work' : 'scramble');
+    const spot = engineSpot === 'confessional' ? engineSpot : stageSpot(venue, engineSpot, ev, windowId);
     const badge = ev.badgeText ? { text: cleanText(ev.badgeText), cls: ev.badgeClass || '' } : null;
+    engineAt = engineSpot === 'confessional' ? null : engineSpot;
     if (Array.isArray(ev.lines) && ev.lines.length) {
       // everyone who speaks is on stage, always (a speaker without a place is a person who blinks out)
       const said = [...new Set(ev.lines.filter(l => l.kind === 'say').map(l => l.by).filter(Boolean))];

@@ -355,7 +355,7 @@ const HELP_FISH = [
   { id: 'is.hf2', turns: [
     { beat: "{a} has been standing in the water with a sharp stick for an hour. Then, finally, there's a splash." },
     { by: 'a', say: "Got one! I got one!" },
-    { by: 'a', conf: "Four hours for six fish. Worth it. Everyone's eating tonight because of me." },
+    { by: 'a', conf: "Four hours for six fish. Worth it. Everyone's eating today because of me." },
   ] },
   { id: 'is.hf3', when: { register: 'sweet' }, turns: [
     { beat: '{a} is cooking fish over the fire, handing out pieces to everyone.' },

@@ -11,10 +11,13 @@ export const TDX_CSS = `
 .tdx .tdx-stage{position:relative;aspect-ratio:16/9;container-type:inline-size;overflow:hidden;border-radius:10px;background:#0a0b10;isolation:isolate;cursor:pointer;user-select:none;
   box-shadow:0 18px 50px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.05)}
 .tdx .tdx-world{position:absolute;inset:0;transform-origin:50% 60%;animation:tdxDrift 26s ease-in-out infinite alternate;transition:transform 1s cubic-bezier(.3,.7,.2,1)}
-.tdx .tdx-stage.push .tdx-world{animation:none}
+.tdx .tdx-stage.push .tdx-world{animation:none;transform-origin:0 0;transition:transform .9s cubic-bezier(.25,.75,.2,1)}
+.tdx .tdx-tok.offshot{filter:blur(1.6px) saturate(.6) brightness(.62)}
 @keyframes tdxDrift{from{transform:scale(1.035) translate(-.6%,.2%)}to{transform:scale(1.06) translate(.6%,-.4%)}}
 .tdx .tdx-plate{position:absolute;inset:0;background-size:100% 100%;animation:tdxFade .5s ease-out}
 .tdx .tdx-noplate{background:linear-gradient(#26304f,#3d4a72)}
+.tdx .tdx-plate.hd{opacity:0;transition:opacity .5s;animation:none}
+.tdx .tdx-stage.push .tdx-plate.hd{opacity:1}
 @keyframes tdxFade{from{opacity:.25}to{opacity:1}}
 .tdx .tdx-live,.tdx .tdx-cast,.tdx .tdx-fx{position:absolute;inset:0;pointer-events:none}
 .tdx .tdx-wash{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 75%,transparent 40%,rgba(8,10,30,.33))}

@@ -168,7 +168,7 @@ def pc_mess(tod):
                 seat(bx, sy, 0.52)
     pbox('Door', (0.08, 1.3, 2.4), (-W / 2 + 0.12, 3.0, 1.2), '#e8c040', mottle=0.2)
     for yy in (6.0, 8.5):
-        pbox('Window', (0.08, 1.8, 1.4), (-W / 2 + 0.12, yy, 2.4), '#d8d870', mottle=0, unlit=True)
+        pbox('Window', (0.08, 1.8, 1.4), (-W / 2 + 0.12, yy, 2.4), '#d8d870' if tod == 'day' else '#1f2a4a', mottle=0, unlit=True)
         pbox('WinBar', (0.1, 0.08, 1.4), (-W / 2 + 0.14, yy, 2.4), '#4f321e', ink=False)
     pbox('Counter', (1.4, 5.0, 1.1), (W / 2 - 0.9, 7.0, 0.55), '#7a5a3a')
     pbox('CounterTop', (1.6, 5.2, 0.1), (W / 2 - 0.9, 7.0, 1.12), '#c8c0a8', mottle=0.1)
@@ -181,7 +181,7 @@ def pc_mess(tod):
         card(uid('LampGlow'), _blob_pts(0.36, 0.08, 16, 0, 0), y - 0.01, pmat('LampGlow', '#fff2c0', unlit=True, mottle=0), x=x, z=H - 1.58)
     for sy in (1.5, 3.0, 4.5, 7.0):
         stand(0, sy)
-    room_light(azimuth=-60, elevation=50, energy=3.5)
+    room_light(azimuth=-60, elevation=50, energy=3.5 if tod == 'day' else 2.0)
     paint_sky('#c8b890', '#c8b890')
     tv_camera((0.0, -1.0, 2.0), (0, D, 1.8), lens=22)
 
@@ -356,7 +356,283 @@ def pc_confessional(tod):
     tv_camera((0.0, -0.4, 1.6), (0, D, 1.4), lens=18)
 
 
+# ── the rest of Camp Wawanakwa (2026-10-07: "where is the rest… the interior of the cabin, the
+# canteen, the lake": every place the show films goes on a plate) ──────────────────────────────
+
+# ── TDI references for the places added 2026-10-07 (the user: "the camp bedroom doesn't look at all like
+# Total Drama… always copy the one from TD"). Each is built against the show's own frames on the Total Drama
+# Wiki: TDI_Ep08_Bridgette_Courtney_Cabin / TD09 / Cabininsidedoor (the cabin), Bathroom_Sketch (TDI-005 BG
+# sc.117) / Bathroomstalls (the washrooms), BeachFullHD / Lake_Wawanakwa (the beach), Cliffhilledge (the cliff).
+
+def _tdi_bunk(x, y, tod, flip=False):
+    """A TDI bunk: square dark-brown posts, thick rails, khaki mattresses with a brown end band, the yellow pillow with its green stripe."""
+    post, rail = '#5a3a22', '#7a4e2c'
+    for dx in (-1.05, 1.05):
+        for dy in (-0.48, 0.48):
+            pbox('BunkPost', (0.14, 0.14, 2.3), (x + dx, y + dy, 1.15), post, tod)
+    for z in (0.5, 1.65):
+        pbox('BunkRail', (2.2, 1.04, 0.16), (x, y, z), rail, tod)
+        pbox('Mattress', (2.0, 0.92, 0.2), (x, y, z + 0.18), '#b8a878', tod, mottle=0.25)
+        pbox('MatBand', (0.5, 0.94, 0.21), (x + (0.62 if flip else -0.62), y, z + 0.185), '#9a6a3a', tod, mottle=0.2)
+        px = x + (-0.72 if flip else 0.72)
+        pbox('Pillow', (0.5, 0.7, 0.2), (px, y, z + 0.38), '#f0d870', tod, mottle=0.15)
+        pbox('PillowStripe', (0.08, 0.72, 0.21), (px + 0.12, y, z + 0.385), '#8aa860', tod, mottle=0, ink=False)
+    pbox('Twine', (0.06, 0.06, 0.3), (x + 1.05, y - 0.48, 1.2), '#c8a060', tod, ink=False)
+
+
+def pc_cabin_inside(tod):
+    """Inside a cabin (TDI ep. 8, Bridgette and Courtney): olive plank walls under the sloped roof, bunks on the left,
+    the black wood stove and its pipe at the back, the yellow dresser, the coat hooks, the fly strip, the round
+    rug with the green sunburst, the window with the torn red curtain, the screen door with the yellow lattice."""
+    paint_mode()
+    W, D, H = 10.0, 8.0, 3.6
+    night = tod == 'night'
+    painted_room(W, D, H, tod, wall='#7a6e48', floor='#8a6a4e', ceil='#3e3626', plank=0.42, wall_seam='#4f4630', floor_seam='#5e4632')
+    # the roof slopes in over both side walls, its rafters showing
+    for sx in (-1, 1):
+        pbox('RoofSlope', (2.6, D, 0.2), (sx * (W / 2 - 1.1), D / 2, H - 0.45), '#4f4630', tod, rot=(0, sx * 32, 0), ink=False)
+        for y in (1.5, 3.5, 5.5, 7.5):
+            pbox('Rafter', (2.8, 0.16, 0.18), (sx * (W / 2 - 1.1), y, H - 0.35), '#3a3020', tod, rot=(0, sx * 32, 0))
+    for y in (2.5, 6.0):
+        pbox('TieBeam', (W, 0.2, 0.22), (0, y, H - 0.2), '#3a3020', tod)
+    # grain patches, the show's darker blotches on the boards
+    for (bx, bz, s) in ((-3.2, 2.4, 1.0), (2.4, 1.5, 1.3), (3.8, 2.6, 0.8), (-1.2, 0.9, 0.7)):
+        card(uid('Grain'), _blob_pts(0.7 * s, 0.45 * s, 24, 0.3, int(bx * 10)), D - 0.12, pmat('GrainP' + tod, N('#665a3a', tod), unlit=True, mottle=0.3), x=bx, z=bz)
+    # the bunks, two along the left wall, one along the right
+    _tdi_bunk(-W / 2 + 1.2, 2.4, tod); _tdi_bunk(-W / 2 + 1.2, 5.4, tod)
+    _tdi_bunk(W / 2 - 1.2, 2.6, tod, flip=True)
+    for (sx, sy) in ((-W / 2 + 1.0, 2.3), (-W / 2 + 1.0, 5.3), (W / 2 - 1.0, 2.5)):
+        seat(sx, sy, 0.75)
+    # the wood stove and its pipe up through the roof
+    pbox('Stove', (1.1, 0.8, 1.15), (0.0, D - 0.7, 0.62), '#3a3a40', tod)
+    pbox('StoveTop', (1.2, 0.9, 0.1), (0.0, D - 0.7, 1.24), '#2a2a30', tod)
+    pbox('StoveGrill', (0.7, 0.04, 0.22), (0.0, D - 1.11, 0.95), '#55555e', tod, ink=False)
+    pbox('StoveDoor', (0.6, 0.04, 0.32), (0.0, D - 1.11, 0.4), '#4a4a52', tod)
+    for dx in (-0.45, 0.45):
+        pbox('StoveLeg', (0.1, 0.1, 0.12), (dx, D - 0.7, 0.06), '#2a2a30', tod)
+    pcyl('StovePipe', 0.14, H - 1.3, (0.0, D - 0.75, 1.3 + (H - 1.3) / 2), '#55555e', tod, verts=12)
+    pcyl('Kettle', 0.16, 0.22, (-0.9, D - 0.9, 0.11), '#4a4a52', tod, verts=12)
+    # the yellow dresser and the picture over it; the coat hooks
+    pbox('Dresser', (1.6, 0.6, 1.1), (2.2, D - 0.45, 0.55), '#e8c43a', tod, mottle=0.2)
+    for z in (0.3, 0.6, 0.9):
+        pbox('Drawer', (1.5, 0.04, 0.02), (2.2, D - 0.76, z + 0.12), '#b8902a', tod, ink=False)
+    pbox('Picture', (1.0, 0.05, 1.3), (2.2, D - 0.14, 2.1), '#9ad0d0', tod, mottle=0.2, rot=(0, -6, 0))
+    pbox('Hooks', (1.4, 0.08, 0.12), (3.9, D - 0.14, 1.8), '#9a6a3a', tod)
+    for k in range(4):
+        pbox('Hook', (0.05, 0.12, 0.2), (3.4 + k * 0.33, D - 0.2, 1.65), '#3a3a40', tod, ink=False)
+    pbox('FlyStrip', (0.1, 0.03, 0.9), (-1.6, D - 1.4, H - 0.75), '#e8a83a', tod, mottle=0)
+    # the window with the torn red curtain; the screen door with the yellow lattice
+    win = '#f8e0a8' if not night else '#26304f'
+    pbox('Window', (1.1, 0.06, 1.1), (-2.4, D - 0.12, 2.0), win, 'day', mottle=0, unlit=True)
+    pbox('WinSill', (1.4, 0.2, 0.1), (-2.4, D - 0.2, 1.42), '#b8a878', tod)
+    pbox('WinBar', (1.1, 0.08, 0.06), (-2.4, D - 0.14, 2.0), '#4f4630', tod, ink=False)
+    card(uid('Curtain'), [(-0.7, 0.55), (0.7, 0.55), (0.7, 0.1), (0.45, -0.15), (0.2, 0.2), (0.0, -0.45), (-0.25, 0.05), (-0.55, -0.1), (-0.7, 0.2)], D - 0.18,
+         pmat('CurtainP' + tod, N('#b8584a', tod), unlit=True, mottle=0.2), x=-2.4, z=2.2)
+    pbox('Door', (1.0, 0.06, 2.2), (W / 2 - 0.12, 5.6, 1.1), '#7a4e2c', tod, rot=(0, 0, 90))
+    for z in (0.65, 1.55):
+        pbox('Lattice', (0.7, 0.04, 0.7 if z > 1 else 0.6), (W / 2 - 0.15, 5.6, z), '#e8c050' if not night else '#5a4a30', 'day', mottle=0.1, unlit=True, rot=(0, 0, 90))
+    # the round rug with the green sunburst
+    pcyl('Rug', 1.9, 0.02, (0.4, 3.4, 0.01), '#c89a4a', tod, verts=40, ink=False)
+    pcyl('RugMid', 1.6, 0.02, (0.4, 3.4, 0.02), '#e8cc78', tod, verts=40, ink=False)
+    for k in range(16):
+        a = k / 16 * 2 * math.pi
+        pcyl('RugRay', 0.24, 0.02, (0.4 + math.cos(a) * 1.22, 3.4 + math.sin(a) * 1.22, 0.03), '#8aa860', tod, verts=3, ink=False, rot=(0, 0, math.degrees(a)))
+    pcyl('RugCentre', 0.95, 0.02, (0.4, 3.4, 0.035), '#a8b468', tod, verts=40, ink=False)
+    # the lamp, and the shaft of light it throws on the back wall
+    pcyl('LampCord', 0.015, 0.7, (0.6, 4.2, H - 0.35), '#2a2a2a', ink=False)
+    pcyl('Lamp', 0.4, 0.28, (0.6, 4.2, H - 0.85), '#4a5a4a', tod, r2=0.1, verts=16)
+    card(uid('LampGlow'), _blob_pts(0.36, 0.07, 16, 0, 0), 4.19, pmat('LampGlow', '#fff2c0', unlit=True, mottle=0), x=0.6, z=H - 1.0)
+    card(uid('Shaft'), [(-0.6, H - 1.0), (1.4, H - 1.0), (4.8, 0.0), (-3.0, 0.0)], D - 0.13,
+         pmat('ShaftP' + tod, N('#a89a68', tod), unlit=True, mottle=0.15, alpha=0.55), x=0.6, z=0)
+    for (sx, sy) in ((-1.0, 1.6), (0.8, 1.8), (-0.4, 3.4), (1.6, 3.2), (-1.4, 5.0), (0.6, 5.2)):
+        stand(sx, sy)
+    room_light(azimuth=-40, elevation=55, energy=3.2 if not night else 1.6)
+    paint_sky('#3e3626', '#3e3626')
+    tv_camera((0.0, -1.6, 1.8), (0.0, D, 1.6), lens=20)
+
+
+def _sandstone(x, y, w, h, tod, seed=0, grass=True):
+    """The show's sandstone shelf: a slab with diagonal cleavage lines, olive grass lying over its top."""
+    P = TDI[tod]
+    rnd = random.Random(seed)
+    face = [(-w / 2, 0), (w / 2, 0), (w / 2 - w * 0.08, h * 0.85), (w * 0.1, h), (-w / 2 + w * 0.05, h * 0.92)]
+    card(uid('Slab'), face, y, pmat('SlabP' + tod, N('#a89e80', tod), unlit=True, mottle=0.2, mscale=0.6), x=x)
+    for k in range(5):
+        lx = -w / 2 + w * (k + 0.5 + rnd.uniform(-0.2, 0.2)) / 5
+        card(uid('Cleave'), [(lx, 0.05), (lx + 0.08, 0.05), (lx + h * 0.55 + 0.08, h * 0.9), (lx + h * 0.55, h * 0.9)], y - 0.02,
+             pmat('CleaveP' + tod, N('#7e7660', tod), unlit=True, mottle=0), x=x)
+    if grass:
+        top = [(-w / 2 - 0.5, h * 0.86), (w * 0.15, h * 1.02), (w / 2 + 0.6, h * 0.82), (w / 2 + 0.6, h * 1.5), (-w / 2 - 0.5, h * 1.7)]
+        card(uid('GrassLid'), top, y - 0.04, pmat('GrassLidP' + tod, P['grass'], unlit=True, mottle=0.35, mscale=1.0), x=x)
+
+
+def _disc_tree(x, y, h, tod, seed=0, s=1.0):
+    """The tall blue-trunked tree of the TDI shoreline: a thin trunk with flat green discs of leaves."""
+    rnd = random.Random(seed)
+    tm = pmat('BlueTrunk' + tod, N('#3a4a8a', tod), unlit=True, mottle=0)
+    card(uid('Trunk'), [(-0.1 * s, 0), (0.1 * s, 0), (0.06 * s, h), (-0.06 * s, h)], y, tm, x=x)
+    for k in range(rnd.randint(2, 3)):
+        zz = h * (0.62 + k * 0.14); dx = rnd.uniform(-0.6, 0.6) * s
+        card(uid('Disc'), _blob_pts((1.0 + rnd.random() * 0.5) * s, 0.28 * s, 28, 0.15, seed + k), y - 0.02 - k * 0.01,
+             pmat('GreenDisc' + tod, N('#7ab07a', tod), mottle=0.4, mscale=3, unlit=True), x=x + dx, z=zz)
+
+
+def pc_beach(tod):
+    """The beach (BeachFullHD; Lake_Wawanakwa): pale sand, behind it the sandstone shelf with olive grass on top,
+    tall blue-trunked trees with flat green discs, rust bushes, a birch; to the right the open lake, its far
+    islands round navy hills furred with pines over sandstone ledges."""
+    paint_mode(); P = TDI[tod]
+    paint_sky(P['sky'], P['sky_low'])
+    for (cx, cz, cs) in ((-30, 34, 3.2), (24, 40, 2.6), (60, 30, 2.4)):
+        curly_cloud(cx, 140, cz, cs, P['cloud'], P['rim'])
+    # the far islands across the lake
+    for (ix, iw, ih, seed) in ((26, 34, 9, 3), (70, 28, 7, 5), (-8, 18, 5, 7)):
+        card(uid('Isle'), _blob_pts(iw / 2, ih, 40, 0.05, seed, flat_bottom=True), 130, pmat('IsleP' + tod, N('#4a5a92', tod), unlit=True, mottle=0.1), x=ix, z=0)
+        for k in range(int(iw * 1.2)):
+            t = k / (iw * 1.2); px = ix - iw / 2 + iw * t
+            pz = ih * math.sqrt(max(0.0, 1 - ((t - 0.5) * 2) ** 2)) - 0.6
+            pine_card(px, 129.9, 3.0, 1.0, N('#38487a', tod), seed=seed * 50 + k, teeth=2, z=pz)
+        card(uid('IsleLedge'), [(-iw * 0.28, 0), (iw * 0.05, 0), (-iw * 0.02, ih * 0.45), (-iw * 0.25, ih * 0.35)], 129.8,
+             pmat('LedgeP' + tod, N('#a89e80', tod), unlit=True, mottle=0.2), x=ix + iw * 0.2, z=0)
+    water_plane(tod, y0=6, col='#2aa8a4' if tod == 'day' else '#1f4a5a', far='#3cc0b8' if tod == 'day' else '#2a5a6a')
+    ground_plane('#f6e0b6' if tod == 'day' else '#7a7468', N('#e0c898', tod), size=(200, 40), loc=(0, -14, 0), mottle=0.15)
+    brush_patch('WetSand', 30, (6, 5.6), N('#e8cfa0', tod), sx=2.5, sy=0.1, seed=3, mottle=0.1)
+    # the shoreline on the left: the sandstone shelf, the grass hill over it, the trees and bushes
+    _sandstone(-11.0, 12.0, 14, 2.6, tod, seed=1)
+    _sandstone(-3.5, 14.0, 6, 1.6, tod, seed=2)
+    card(uid('Hill'), _blob_pts(12, 4.5, 40, 0.06, 9, flat_bottom=True), 16, pmat('HillP' + tod, N('#8a8a3e', tod), unlit=True, mottle=0.3, mscale=0.8), x=-12, z=2.0)
+    for k, (tx, ty, th) in enumerate(((-10.5, 14, 9), (-9.0, 14.6, 10.5), (-7.4, 15, 8.5), (-12, 15.5, 10))):
+        _disc_tree(tx, ty, th, tod, seed=40 + k, s=1.0)
+    for k in range(9):
+        pine_card(-20 + k * 2.4, 22 + (k % 2) * 3, 7 + (k % 3) * 1.5, 4.2, N('#7a86c0', tod), seed=60 + k, teeth=4)
+    for (bx, by, bc) in ((-8.0, 13.5, '#a8582e'), (-1.5, 14.6, '#9a7a32'), (3.0, 14.0, '#c87a3a')):
+        card(uid('Bush'), _blob_pts(1.4, 0.9, 30, 0.2, int(bx * 3), flat_bottom=True), by, pmat('Bush' + bc + tod, N(bc, tod), unlit=True, mottle=0.5, mscale=2.5), x=bx, z=0.2)
+    crown_tree(12.0, 13.0, 6.0, N('#b8902e', tod), seed=71, s=1.8, birch=True)
+    # what is on the sand: a driftwood log, a canoe drawn up, two towels
+    pcyl('Driftwood', 0.28, 4.2, (-3.6, 3.2, 0.26), '#a08a6a', tod, verts=10, rot=(0, 90, 12))
+    for dx in (-5.0, -3.8, -2.6):
+        seat(dx, 3.0, 0.52)
+    pbox('Canoe', (3.6, 0.8, 0.4), (4.6, 4.6, 0.22), '#c8502a', tod, rot=(0, 0, -18))
+    pbox('CanoeIn', (3.2, 0.6, 0.06), (4.6, 4.6, 0.42), '#7a3a22', tod, rot=(0, 0, -18), ink=False)
+    for (tx, ty, tc) in ((0.6, 1.2, '#e84a6a'), (2.2, 0.6, '#4ac8c8')):
+        pbox('Towel', (1.6, 0.8, 0.02), (tx, ty, 0.01), tc, tod, mottle=0.1, rot=(0, 0, 8))
+    for (rx, ry) in ((7.0, 3.0), (-6.5, 6.0)):
+        pbox('Pebble', (0.5, 0.4, 0.3), (rx, ry, 0.15), '#8a8270', tod, rot=(0, 0, 20))
+    for (sx, sy) in ((-1.4, 1.0), (1.2, 1.4), (-0.4, 3.0), (2.4, 3.2), (-2.6, 5.0), (0.8, 5.2)):
+        stand(sx, sy)
+    if tod == 'night':
+        fire_pit(-1.2, 6.0, tod, r=0.45, lit=True)
+        rnd = random.Random(9)
+        for i in range(50):
+            card(uid('Star'), _blob_pts(0.18, 0.18, 8, 0, 0), 140, pmat('StarP', '#f4f0d8', unlit=True, mottle=0), x=rnd.uniform(-90, 90), z=rnd.uniform(16, 60))
+    paint_sun(azimuth=-30, elevation=40 if tod == 'day' else 26, energy=4.0 if tod == 'day' else 1.8)
+    tv_camera((0.0, -6.5, 2.0), (0, 30, 1.6), lens=26)
+
+
+def pc_cliff(tod):
+    """The cliff (Cliffhilledge): seen from beside the drop, the olive grass top on the left runs out to a sandstone
+    face cut by slanting cleavage lines; drooping navy pines stand on it; to the right, far below, a valley of
+    blue-violet pines under pale hills."""
+    paint_mode(); P = TDI[tod]
+    day = tod == 'day'
+    paint_sky('#8ac8e8' if day else P['sky'], '#c8e4ee' if day else P['sky_low'])
+    # the valley: rows of pine-furred ridges far below the lip, the farthest palest
+    for k, (yy, col) in enumerate(((170, '#a8b4e0'), (135, '#8a98d0'), (105, '#6e7cbc'), (80, '#56649e'))):
+        ridge_card(yy, -120, 160, -46 + k * 3, 30 - k * 4, N(col, tod), seed=80 + k, humps=3, teeth=70, tooth_col=N(_mix_hex(col, '#2a2a5a', 0.15), tod))
+    pbox('ValleyFloor', (400, 300, 1.0), (40, 130, -48), '#56649e', tod, mottle=0.2, mscale=0.2, ink=False)
+    # the cliff: a body of sandstone, grass on top, its right side the face
+    pbox('CliffBody', (34, 40, 40), (-13, 10, -20), '#b8ac88', tod, mottle=0.25, mscale=0.5)
+    ground_plane(P['grass'], P['grass_sh'], size=(34, 40), loc=(-13, 10, 0.02))
+    pbox('Lip', (0.8, 40, 0.5), (3.7, 10, -0.15), '#8a8a3a', tod, mottle=0.3)
+    rnd = random.Random(7)
+    for k in range(9):
+        yy = -6 + k * 3.4 + rnd.uniform(-0.6, 0.6)
+        pbox('Cleave', (0.03, 0.12, 16), (4.02, yy, -7), '#8a8066', tod, ink=False, rot=(rnd.uniform(18, 32), 0, 0))
+    for k in range(5):
+        pbox('Ledge', (0.06, 6.0, 0.18), (4.04, -2 + k * 5, -3 - k * 3.5), '#9a9070', tod, ink=False, rot=(8, 0, 0))
+    # on the top: rocks, a tumbleweed, the drooping pines, one leaning out over the edge
+    for (rx, ry) in ((-5.0, 4.0), (-1.0, 6.5), (1.5, 2.5)):
+        pbox('Rock', (1.0, 0.7, 0.45), (rx, ry, 0.22), '#8a7a6a', tod, rot=(0, 0, 15))
+    pcyl('Tumbleweed', 0.35, 0.1, (0.6, 1.2, 0.36), '#c8a050', tod, verts=14, rot=(90, 0, 90))
+    for k, (px, py, ph) in enumerate(((-9.5, 16, 12), (-6.0, 18, 14), (-2.5, 14, 10), (-12, 20, 13))):
+        pine_card(px, py, ph, ph * 0.42, N('#2f4060', tod), seed=95 + k, teeth=6)
+    for k, (px, py, ph) in enumerate(((-14, 24, 12), (-8, 26, 14))):
+        pine_card(px, py, ph, ph * 0.45, N('#6a78b8', tod), seed=120 + k, teeth=5)
+    twisted_pine(2.4, 9.0, 10, N('#26324a', tod), seed=99, s=1.7, flip=True)
+    for (sx, sy) in ((-3.0, 0.6), (-0.8, 1.6), (-4.6, 2.6), (-2.0, 3.6), (0.4, 4.4)):
+        stand(sx, sy)
+    if not day:
+        for i in range(50):
+            card(uid('Star'), _blob_pts(0.18, 0.18, 8, 0, 0), 180, pmat('StarP', '#f4f0d8', unlit=True, mottle=0), x=rnd.uniform(-90, 150), z=rnd.uniform(14, 60))
+    paint_sun(azimuth=-30, elevation=40 if day else 26, energy=4.0 if day else 1.8)
+    tv_camera((7.5, -10.0, 3.2), (-0.5, 14, 0.2), lens=26)
+
+
+def pc_washroom(tod):
+    """The communal washrooms (TDI-005 BG sc.117, the concept sketch; Bathroomstalls, the stalls): grey-green plank
+    walls under open beams, a long speckled counter with three sinks on S-bend pipes, the cracked mirror under a
+    bare bulb, fly strips, the paper-towel box, the bin, big scattered floor tiles round a drain, and along the
+    right the olive plank stall doors in their grey metal frames."""
+    paint_mode()
+    W, D, H = 9.0, 7.0, 3.6
+    painted_room(W, D, H, 'day', wall='#9aa88a', floor='#c8ccb4', ceil='#6a7462', plank=0.5, wall_seam='#7a8a6a', floor_seam='#b4b89e')
+    for y in (2.0, 4.5):
+        pbox('Beam', (W, 0.22, 0.24), (0, y, H - 0.25), '#6a5a3e')
+    for x in (-2.5, 0.0, 2.5):
+        pbox('Rafter', (0.2, D, 0.2), (x, D / 2, H - 0.05), '#6a5a3e')
+    # the counter, three sinks, the pipes under it
+    pbox('Counter', (5.2, 0.9, 0.16), (-0.6, D - 0.6, 1.0), '#b8bcaa', mottle=0.5, mscale=3.0)
+    pbox('CounterLip', (5.3, 0.08, 0.22), (-0.6, D - 1.06, 0.95), '#9aa08a')
+    for k, x in enumerate((-2.2, -0.6, 1.0)):
+        pbox('Sink', (0.9, 0.6, 0.06), (x, D - 0.6, 1.09), '#e8ece4', mottle=0.05)
+        pbox('SinkBowl', (0.7, 0.42, 0.04), (x, D - 0.62, 1.1), '#a8b0b0', mottle=0, ink=False)
+        pcyl('Tap', 0.04, 0.22, (x, D - 0.25, 1.2), '#a8b0b8', ink=False)
+        pcyl('Pipe', 0.05, 0.75, (x, D - 0.6, 0.55), '#8a9090')
+        pcyl('PipeBend', 0.07, 0.12, (x + 0.1, D - 0.6, 0.35), '#8a9090', rot=(0, 90, 0))
+    for sx in (-3.1, 1.9):
+        pbox('Bracket', (0.1, 0.8, 0.5), (sx, D - 0.6, 0.7), '#7a7a6a', rot=(0, 0, 0))
+    # the cracked mirror and the bare bulb; the shelf with the toothbrush cup
+    pbox('Mirror', (1.6, 0.05, 1.5), (-0.6, D - 0.13, 2.1), '#cfe0e0', mottle=0.05, unlit=True)
+    pbox('MirrorRim', (1.7, 0.04, 1.6), (-0.6, D - 0.11, 2.1), '#5a5a4a', ink=False)
+    card(uid('Crack'), [(-0.5, 0.6), (-0.1, 0.1), (0.25, 0.3), (0.55, -0.6), (0.5, -0.62), (0.2, 0.25), (-0.12, 0.05), (-0.52, 0.58)], D - 0.16,
+         pmat('CrackP', '#7a8888', unlit=True, mottle=0), x=-0.6, z=2.1)
+    pcyl('Bulb', 0.1, 0.16, (-0.6, D - 0.18, 3.0), '#fff2c0', unlit=True, verts=12)
+    pbox('Shelf', (0.9, 0.3, 0.06), (1.6, D - 0.2, 1.6), '#9a8a6a')
+    pcyl('Cup', 0.08, 0.2, (1.5, D - 0.2, 1.73), '#9ac8c8', verts=10)
+    # fly strips, the paper-towel box on the left wall, the bin under it
+    for (fx, fy) in ((-3.6, 1.5), (1.4, D - 0.8)):
+        pbox('FlyStrip', (0.08, 0.03, 1.0), (fx, fy, H - 0.75), '#e8a83a', mottle=0)
+    pbox('Towels', (0.12, 0.6, 0.6), (-W / 2 + 0.16, 3.4, 1.7), '#e4e4d8')
+    pbox('Bin', (0.6, 0.6, 0.8), (-W / 2 + 0.6, 3.4, 0.4), '#6a7a5a')
+    pbox('BinLid', (0.7, 0.7, 0.12), (-W / 2 + 0.6, 3.4, 0.86), '#5a6a4a', rot=(0, 8, 0))
+    # the stalls along the right wall: olive plank doors, grey frames, one door ajar
+    for k, y in enumerate((1.6, 3.0, 4.4)):
+        pbox('StallFrame', (0.12, 0.12, 2.3), (W / 2 - 2.1, y - 0.7, 1.15), '#8a948a')
+        ajar = k == 1
+        pbox('StallDoor', (0.08, 1.2, 1.8), (W / 2 - 2.1 - (0.45 if ajar else 0), y - (0.1 if ajar else 0), 1.0), '#6a7442', mottle=0.35,
+             rot=(0, 0, 35 if ajar else 0))
+        pbox('Latch', (0.04, 0.06, 0.2), (W / 2 - 2.16, y - 0.55, 1.05), '#9aa0a8', ink=False)
+    pbox('StallFrame', (0.12, 0.12, 2.3), (W / 2 - 2.1, 5.1, 1.15), '#8a948a')
+    pbox('StallTop', (0.12, 4.3, 0.12), (W / 2 - 2.1, 3.0, 2.3), '#8a948a')
+    pcyl('Roll', 0.12, 0.2, (W / 2 - 1.7, 3.0, 0.9), '#f2eee4', rot=(90, 0, 0), verts=12)
+    # the floor: big scattered tiles, the drain and its puddle
+    import random as _r
+    rnd = _r.Random(81)
+    for k in range(16):
+        tx, ty, ts = rnd.uniform(-3.8, 2.4), rnd.uniform(0.4, 5.6), rnd.uniform(0.35, 0.6)
+        pbox('Tile', (ts, ts, 0.01), (tx, ty, 0.012), '#b4b89e', mottle=0, ink=True, rot=(0, 0, rnd.uniform(-6, 6)))
+    pcyl('Drain', 0.22, 0.02, (-0.4, 2.0, 0.02), '#7a7a6a', verts=20)
+    brush_patch('Puddle', 0.6, (0.4, 2.4), '#b8d8e0', sx=1.6, sy=0.6, seed=61, mottle=0.1, z=0.02)
+    for (sx, sy) in ((-1.4, 1.4), (0.4, 1.4), (-0.6, 3.2), (1.2, 3.6), (-2.2, 4.4)):
+        stand(sx, sy)
+    room_light(azimuth=-30, elevation=60, energy=3.4)
+    paint_sky('#6a7462', '#6a7462')
+    tv_camera((-0.4, -1.4, 1.8), (-0.4, D, 1.6), lens=20)
+
+
 SCENES['hosted-camp'] = {'communal-grounds': pc_grounds, 'cabins': pc_cabins, 'mess-hall': pc_mess, 'dock': pc_dock,
                          'campfire': pc_campfire, 'forest-trail': pc_trail, 'confessional': pc_confessional,
-                         'ceremony': pc_ceremony, 'exit': pc_shame}
-OUTDOOR['hosted-camp'] = {'communal-grounds', 'cabins', 'dock', 'campfire', 'forest-trail'}
+                         'ceremony': pc_ceremony, 'exit': pc_shame,
+                         'cabin-inside': pc_cabin_inside, 'beach': pc_beach, 'washroom': pc_washroom, 'cliff': pc_cliff}
+# OUTDOOR = rendered by day and by night (the mess hall and the cabin inside too: dinner and bedtime happen after dark)
+OUTDOOR['hosted-camp'] = {'communal-grounds', 'cabins', 'dock', 'campfire', 'forest-trail', 'beach', 'cliff', 'mess-hall', 'cabin-inside'}

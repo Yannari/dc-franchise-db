@@ -83,7 +83,7 @@ describe('the pools keep their contract', () => {
     // Gossip airs after the challenge in BOTH camps; the winners have no vote tonight.
     for (const [key, pool] of all) for (const e of pool) {
       if (e.when?.tribal === true || (GUARANTEED[key] || []).includes('tribal')) continue;
-      for (const x of texts(e)) expect(/tonight/i.test(x), `${key} ${e.id}: ${x}`).toBe(false);
+      for (const x of texts(e)) expect(/\btonight\b/i.test(x), `${key} ${e.id}: ${x}`).toBe(false);
     }
   });
 
@@ -98,9 +98,10 @@ describe('the pools keep their contract', () => {
 
   it('only talks about the team before the merge', () => {
     // Seed 4242: "If we lose again, it's going to be Cody" aired at the merge, when nobody has a team.
-    const TEAM = /(if we lose|we lose again|our team|my team|your team|the team|won us|lost us|team challenge)/i;
+    const TEAM = /\b(if we lose|we lose again|our team|my team|your team|the team|won us|lost us|team challenge)\b/i;
     for (const [key, pool] of all) for (const e of pool) {
-      if (e.when?.merged === false) continue;
+      // the merge's own reflection is about the teams that were (threat.self.merge: "I was great in the team challenges")
+      if (e.when?.merged === false || /\.merge$/.test(key)) continue;
       for (const x of texts(e)) expect(TEAM.test(x), `${key} ${e.id}: ${x}`).toBe(false);
     }
   });
@@ -110,7 +111,7 @@ describe('the pools keep their contract', () => {
     // shelter and a beach; a film lot has trailers). Found writing pools: "dish duty",
     // "a boat home", "{fallen}'s bunk" in entries that fit every setting. A setting's own
     // word belongs in an entry gated on the spot it is true in.
-    const PLACE = /(cabins?|bunks?|lake|boat|chef|mess hall|dock|trays?|dish(es)?|plates?|island|shelter|trailers?|plane)/i;
+    const PLACE = /\b(cabins?|bunks?|lake|boat|chef|mess hall|dock|trays?|dish(es)?|plates?|island|shelter|trailers?|plane)\b/i;
     // An island scene is always on an island: its shelter, its boat and its dishes (coconut shells) are true there.
     const ISLE_PLACE = /(cabins?|bunks?|chef|mess hall|dock|trays?|trailers?|plane)/i;
     for (const [key, pool] of all) for (const e of pool) {

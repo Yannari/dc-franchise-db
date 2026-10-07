@@ -122,7 +122,7 @@ const INTEL_CRACK = [
 ];
 const SIT_HEAT = [
   C('qt.h1', "I sat out, and we lost. Everyone's looking at me like it's my fault. It isn't. Is it?"),
-  C('qt.h2', "Sitting on the bench while your team loses is the worst. Now I get to be the reason. Great."),
+  C('qt.h2', "Sitting out while everyone else competes is the worst. If this goes wrong, guess who gets blamed."),
   C('qt.h3', "I didn't even compete today, and somehow I'm the one in trouble."),
   Cw('qt.h4', { register: 'fiery' }, "Don't look at me! I wasn't even out there!"),
   C('qt.h5', "We lost, and I was sitting on the sidelines. That's going to come up tonight. I just know it."),

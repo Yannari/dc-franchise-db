@@ -419,7 +419,7 @@ const HEARD_FILES = [
 ];
 const HEARD_POKER = [
   { id: 'md.k1', turns: [
-    { by: 'b', say: "...{a} is next, if we lose." },
+    { by: 'b', say: "...{a} is next. After that, we'll see." },
     { beat: '{a} walks right past, smiling, as if {a.sub} heard nothing at all.' },
     { by: 'a', conf: "I heard every word. I just made sure {b} didn't know I heard it." },
   ] },

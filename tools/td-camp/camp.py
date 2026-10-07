@@ -72,7 +72,7 @@ def tv_camera(loc=(0, -11, 1.7), look=(0, 6, 1.2), lens=28):
     cam.rotation_euler = d.to_track_quat('-Z', 'Y').to_euler()
     return cam
 
-def render_spot(venue, spot, tod, preview=False, w=1920, h=1080):
+def render_spot(venue, spot, tod, preview=False, w=1920, h=1080, hd=False):
     sc = bpy.context.scene
     for ob in sc.objects:
         for md in list(ob.modifiers):
@@ -107,16 +107,18 @@ def render_spot(venue, spot, tod, preview=False, w=1920, h=1080):
     cm = st.color_modifiers.new('fromMaterial', 'MATERIAL'); cm.material_attribute = 'LINE'; cm.blend = 'MIX'; cm.influence = 1.0
     sc.render.engine = 'BLENDER_EEVEE'
     sc.eevee.taa_render_samples = 24 if preview else 80
-    sc.render.resolution_x, sc.render.resolution_y = (w // 2, h // 2) if preview else (w, h)
+    # hd: the same frame at 4K, the plate the viewer cuts in to when the camera closes on a conversation
+    sc.render.resolution_x, sc.render.resolution_y = (w // 2, h // 2) if preview else ((w * 2, h * 2) if hd else (w, h))
     sc.render.resolution_percentage = 100
     sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'None'; sc.view_settings.exposure = 0.0
     sc.render.image_settings.file_format = 'WEBP'; sc.render.image_settings.quality = 88
     d = os.path.join(OUT_TD, venue); os.makedirs(d, exist_ok=True)
-    path = os.path.join(d, f'{spot}-{tod}{"-preview" if preview else ""}.webp')
+    path = os.path.join(d, f'{spot}-{tod}{"-preview" if preview else "-hd" if hd else ""}.webp')
     sc.render.filepath = path
     if not MARKS_ONLY[0]:
         bpy.ops.render.render(write_still=True)
-    write_marks(path, sc)
+    if not hd:
+        write_marks(path, sc)
     return path
 
 
@@ -219,7 +221,7 @@ import glob as _glob
 for _vf in sorted(_glob.glob(os.path.join(REPO, 'tools', 'td-camp', 'venues', '*.py'))):
     exec(open(_vf, encoding='utf-8').read(), globals())
 
-def run(venue, spot='all', tods='all', preview=False):
+def run(venue, spot='all', tods='all', preview=False, hd=False):
     out = []
     venues = SCENES if venue == 'all' else {venue: SCENES[venue]}
     for v, spots in venues.items():
@@ -230,7 +232,7 @@ def run(venue, spot='all', tods='all', preview=False):
                 clear(); _MATS.clear(); _n[0] = 0; PAINT['on'] = False; MARKS.clear()
                 for c in list(bpy.data.collections): bpy.data.collections.remove(c)
                 fn(tod)
-                out.append(render_spot(v, s, tod, preview=preview))
+                out.append(render_spot(v, s, tod, preview=preview, hd=hd))
                 print('RENDERED', out[-1])
     render_sprites()
     write_marks_bundle()
@@ -261,4 +263,4 @@ def write_marks_bundle():
 if __name__ == '__main__':
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
     MARKS_ONLY[0] = 'marks' in argv
-    run(argv[0] if argv else 'hosted-camp', argv[1] if len(argv) > 1 else 'all', argv[2] if len(argv) > 2 else 'all', 'preview' in argv)
+    run(argv[0] if argv else 'hosted-camp', argv[1] if len(argv) > 1 else 'all', argv[2] if len(argv) > 2 else 'all', 'preview' in argv, 'hd' in argv)

@@ -72,7 +72,7 @@ const GAME = [
   { id: 'al.g9', when: { register: 'cool' }, turns: [
     { by: 'a', say: "Have you noticed who sits with who at dinner?" },
     { by: 'b', say: "Not really. Should I have?" },
-    { by: 'a', say: "Watch it tonight. That's the real vote, right there." },
+    { by: 'a', say: "Watch where the votes go. That's the real alliance, right there." },
     { by: 'b', say: "You're kind of scary, you know that?" },
   ] },
   { id: 'al.g10', turns: [
@@ -379,7 +379,7 @@ const FORM_PITCH = [
     { by: 'a', say: "I've been watching you two. You're the only ones here who make sense to me." },
     { by: 'b', say: "Is that a compliment?" },
     { by: 'c', say: "I think it's a compliment." },
-    { by: 'a', say: "It's an offer. The three of us, voting together. Starting tonight." },
+    { by: 'a', say: "It's an offer. The three of us, voting together. Starting now." },
     { by: 'b', say: "Okay, I'm in. Does it have a name?" },
     { by: 'a', say: "{group}." },
     { by: 'c', say: "{group}. Love it." },

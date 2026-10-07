@@ -46,8 +46,9 @@ import idol, { GUARANTEED as idolG } from './idol.js';
 import villain from './villain.js';
 import save, { GUARANTEED as saveG } from './save.js';
 import slips, { GUARANTEED as slipsG } from './slips.js';
+import aside from './aside.js';
 
-const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind, reads, ends, threat, camp, quit, adv, tail, tests, last, isle, isleGroup, isleTrain, isleMore, drama, drama2, dramaMore, romance, romance2, friend, life, lifeMore, twist, plot, morning, blind, broker, credit, goat, idol, villain, save, slips];
+const FILES = [deals, gossip, plans, fallout, caught, alliance, pitch, recruit, mind, reads, ends, threat, camp, quit, adv, tail, tests, last, isle, isleGroup, isleTrain, isleMore, drama, drama2, dramaMore, romance, romance2, friend, life, lifeMore, twist, plot, morning, blind, broker, credit, goat, idol, villain, save, slips, aside];
 
 // A key may be written in more than one file (the island pools grow by file): its entries add up.
 export const POOLS = {};

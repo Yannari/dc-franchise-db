@@ -577,7 +577,7 @@ const FOOD = [
     { by: 'a', say: "I need more food. I'm the one carrying everything in challenges." },
     { by: 'b', say: "We're all doing the challenges." },
     { by: 'a', say: "Not like I am." },
-    { by: 'b', conf: "{a} thinks muscles come with a bigger plate. They don't." },
+    { by: 'b', conf: "{a} thinks muscles come with a bigger portion. They don't." },
   ] },
   { id: 'dr.fo5', turns: [
     { by: 'a', say: "Let's ration. Small portions. Everybody." },

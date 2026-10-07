@@ -206,7 +206,7 @@ const T_LATE = [
     { by: 'b', say: "Same." },
     { by: 'c', say: "Same. Literally everyone here. Same." },
     { by: 'a', say: "Okay. That's weirdly comforting." },
-    { by: 'b', conf: "Only one of us gets out of here. Tonight that didn't matter." },
+    { by: 'b', conf: "Only one of us gets out of here. For one night, that didn't matter." },
   ] },
   { id: 'ig.l6', when: { register: 'schemer' }, turns: [
     { beat: '{a} and {b} are whispering late at night. {c} sits down right between them.' },

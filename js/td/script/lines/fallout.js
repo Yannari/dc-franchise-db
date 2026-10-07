@@ -151,7 +151,7 @@ const FOUND_ONE = [
     { by: 'a', say: "Thanks for being honest, at least." },
   ] },
   { id: 'fo.f8', turns: [
-    { beat: '{a} drops {a.posAdj} plate on the table right across from {b}.' },
+    { beat: '{a} drops into the seat right across from {b}.' },
     { by: 'b', say: "Oh. Hi." },
     { by: 'a', say: "Hi. Enjoying breakfast? You must be hungry after all that voting." },
     { by: 'b', say: "I don't know what you mean." },

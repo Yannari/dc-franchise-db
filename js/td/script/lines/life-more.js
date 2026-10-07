@@ -22,7 +22,7 @@ const RIDE_OR_DIE = [
     { by: 'b', say: "Doesn't matter. I said no before they finished the sentence." },
   ] },
   { id: 'lm.rd4', turns: [
-    { by: 'a', say: "If I go home tonight, promise me you'll win it." },
+    { by: 'a', say: "If I go home next, promise me you'll win it." },
     { by: 'b', say: "You're not going home." },
     { by: 'a', say: "Promise anyway." },
     { by: 'b', say: "I promise. You're still not going home." },
@@ -38,7 +38,7 @@ const RIDE_OR_DIE = [
     { by: 'b', say: "Every day." },
   ] },
   { id: 'lm.rd7', when: { register: 'schemer' }, turns: [
-    { by: 'a', say: "Here's tonight's plan. Your part, my part." },
+    { by: 'a', say: "Here's the plan. Your part, my part." },
     { by: 'b', say: "Same as always?" },
     { by: 'a', say: "Same as always. It keeps working." },
     { by: 'a', conf: "{b} never asks why. {b} trusts me. That's terrifying and wonderful." },
@@ -97,7 +97,7 @@ const RIDE_OR_DIE = [
     { by: 'b', conf: "{a} didn't say a word. Didn't need to. Everybody got the message." },
   ] },
   { id: 'lm.rd19', turns: [
-    { by: 'a', say: "Whatever happens tonight, look at me when they read the votes." },
+    { by: 'a', say: "Whatever happens at the vote, look at me when they read the names." },
     { by: 'b', say: "Why?" },
     { by: 'a', say: "So you know I'm still with you. Every single vote." },
   ] },

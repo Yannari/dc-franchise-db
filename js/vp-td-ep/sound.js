@@ -18,12 +18,110 @@ function noiseBuf(ctx) {
   return (_noise = b);
 }
 
+// ── THE VENUE'S SOUNDSCAPE ────────────────────────────────────────────
+// Camp plays no music (the user, 2026-10-07: "change the music of camp every day to something more
+// ambience like forest sound… depending of what venue we are"): each venue has its own world of
+// sound, and each day its own weather in it. sc: { venue, night, weather, open (outdoors),
+// shore (water in shot) }. Weather: calm | breezy | birdsong | hot | overcast.
+function scape(ctx, dest, sc, { noise, filt, gain, every, lfo }) {
+  const W = sc.weather || 'calm';
+  const at = (f, t) => f.setValueAtTime ? f : f;
+  // a voice that sweeps: one bird note, one loon, one gull
+  const tone = (f0, f1, dur, v, type = 'sine', when = 0) => {
+    const t = ctx.currentTime + when, o = ctx.createOscillator(), e = gain(0); o.type = type; o.connect(e); e.connect(dest);
+    o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(f1, 20), t + dur);
+    e.gain.linearRampToValueAtTime(v, t + Math.min(.03, dur / 4)); e.gain.setValueAtTime(v, t + dur * .7); e.gain.exponentialRampToValueAtTime(.0008, t + dur);
+    o.start(t); o.stop(t + dur + .05);
+  };
+  const burst = (f, q, dur, v, type = 'bandpass', when = 0) => {
+    const t = ctx.currentTime + when, n = noise(), fl = filt(type, f, q), e = gain(0); n.connect(fl); fl.connect(e); e.connect(dest);
+    e.gain.linearRampToValueAtTime(v, t + .005); e.gain.exponentialRampToValueAtTime(.0008, t + dur); n.start(t); n.stop(t + dur + .05);
+  };
+  // wind: a low swell, stronger on a breezy day, in the treetops (higher) in a forest
+  const wind = (f, v) => { const s = noise(), bp = filt('bandpass', f, .35), g = gain(0); s.connect(bp); bp.connect(g); g.connect(dest); s.start(); lfo(g.gain, .05 + Math.random() * .04, v * .6, v); };
+  // songbirds: a chickadee's two notes, a trill, a warbler run
+  const songbird = () => {
+    const k = Math.random();
+    if (k < .35) { tone(3950, 3900, .22, .02); tone(3300, 3250, .3, .02, 'sine', .28); }
+    else if (k < .7) { const f = 3000 + Math.random() * 1500; for (let i = 0; i < 7; i++) tone(f, f * 1.15, .05, .016, 'sine', i * .065); }
+    else { const f = 2400 + Math.random() * 800; for (let i = 0; i < 4; i++) tone(f + i * 260, f + i * 260 + 400, .09, .017, 'sine', i * .11); }
+  };
+  const crickets = (v = .009) => [4300, 4720].forEach((f, k) => {
+    const o = ctx.createOscillator(), am = gain(0), g2 = gain(0); o.frequency.value = f; o.connect(am); am.connect(g2); g2.connect(dest); o.start();
+    const p = ctx.createOscillator(); p.type = 'square'; p.frequency.value = 28 + k * 3; const pg = gain(.5); p.connect(pg); pg.connect(am.gain); p.start();
+    every(() => { const t = ctx.currentTime; g2.gain.setValueAtTime(v, t); g2.gain.setValueAtTime(0, t + .35 + Math.random() * .3); }, 700 + k * 230, 1300 + k * 300);
+  });
+  const cicadas = v => { const s = noise(), bp = filt('bandpass', 5200, 6), g = gain(0); s.connect(bp); bp.connect(g); g.connect(dest); s.start(); lfo(g.gain, .12, v * .8, v); };
+  const lapping = v => every(() => burst(380 + Math.random() * 200, 1.2, .5 + Math.random() * .5, v, 'lowpass'), 900, 2600);
+  const surf = v => { const s = noise(), lp = filt('lowpass', 700), g = gain(0); s.connect(lp); lp.connect(g); g.connect(dest); s.start(); lfo(g.gain, .09, v * .9, v); };
+  const thunderFar = () => every(() => burst(90, .7, 3.5, .14, 'lowpass'), 25000, 60000);
+  const busy = { calm: 1, breezy: 1, birdsong: 2.2, hot: .6, overcast: .35 }[W] || 1;
+  const windy = { calm: .012, breezy: .04, birdsong: .012, hot: .008, overcast: .026 }[W] || .015;
+
+  if (!sc.open) {
+    // indoors: the room tone, and the weather faintly through the walls
+    if (W === 'breezy' || W === 'overcast') wind(300, .008);
+    if (!sc.night && sc.venue !== 'world-tour' && W !== 'overcast') every(songbird, 6000 / busy, 15000 / busy);
+    if (sc.night) crickets(.003);
+    if (sc.venue === 'world-tour') { const s = noise(), lp = filt('lowpass', 140), g = gain(.07); s.connect(lp); lp.connect(g); g.connect(dest); s.start(); const s2 = noise(), bp = filt('bandpass', 1200, .4), g2 = gain(.012); s2.connect(bp); bp.connect(g2); g2.connect(dest); s2.start();
+      every(() => { tone(880, 880, .5, .03); tone(660, 660, .7, .03, 'sine', .45); }, 40000, 90000); }
+    return;
+  }
+  if (sc.venue === 'hosted-camp') {
+    // a lake in the northern woods: wind in the pines, songbirds, a woodpecker, the loon at dusk
+    wind(sc.night ? 260 : 420, windy);
+    if (sc.shore) lapping(.03);
+    if (sc.night) {
+      crickets(); every(() => { tone(420, 400, .35, .03, 'sine'); tone(380, 360, .6, .03, 'sine', .45); }, 9000, 22000);   // the owl
+      every(() => { for (let i = 0; i < 2 + Math.floor(Math.random() * 3); i++) burst(600, 3, .08, .03, 'bandpass', i * .12); }, 2500, 6000);   // frogs
+    } else {
+      every(songbird, 1400 / busy, 4800 / busy);
+      every(() => { for (let i = 0; i < 9; i++) burst(1800, 2, .03, .05, 'bandpass', i * .055); }, 14000, 32000);   // woodpecker
+      if (W !== 'hot') every(() => { tone(700, 1050, .9, .025, 'triangle'); tone(1050, 900, 1.1, .022, 'triangle', .9); }, 26000, 60000);   // the loon
+    }
+  } else if (sc.venue === 'survival-island') {
+    // Soluna: surf, tropical birds, cicadas in the heat, palm fronds
+    surf(sc.shore ? .07 : .04); wind(900, windy * .7);
+    if (sc.night) { crickets(.012); every(() => burst(2400, 8, .25, .02), 3000, 9000); }
+    else {
+      every(() => { const f = 1200 + Math.random() * 600; tone(f, f * 1.8, .18, .03, 'sawtooth'); tone(f * 1.6, f, .2, .025, 'sawtooth', .2); }, 5000 / busy, 14000 / busy);   // parrots
+      every(() => tone(1600, 1300, .5, .02, 'triangle'), 7000, 18000);   // gulls
+      cicadas(W === 'hot' ? .02 : .006);
+    }
+  } else if (sc.venue === 'film-lot') {
+    // the backlot: the city beyond the fence, a generator, a far plane, sprinklers by day, a dog at night
+    { const s = noise(), lp = filt('lowpass', 220), g = gain(.035); s.connect(lp); lp.connect(g); g.connect(dest); s.start(); }
+    { const o = ctx.createOscillator(), g = gain(.006); o.type = 'sawtooth'; o.frequency.value = 60; const lp = filt('lowpass', 200); o.connect(lp); lp.connect(g); g.connect(dest); o.start(); }
+    every(() => burst(400, .5, 6, .05, 'lowpass'), 30000, 70000);   // a plane over the lot
+    if (sc.night) { crickets(.006); every(() => { tone(520, 380, .12, .03, 'square'); tone(520, 380, .12, .03, 'square', .25); }, 20000, 50000); }
+    else { every(() => { for (let i = 0; i < 12; i++) burst(3500, 3, .04, .02, 'bandpass', i * .09); }, 12000, 30000); every(songbird, 6000 / busy, 16000 / busy); }
+  } else if (sc.venue === 'world-tour') {
+    // on the ground at a destination the plane's drone is still there, far off
+    { const s = noise(), lp = filt('lowpass', 160), g = gain(.03); s.connect(lp); lp.connect(g); g.connect(dest); s.start(); }
+    wind(700, windy);
+    if (sc.night) crickets(.006); else every(songbird, 4000 / busy, 12000 / busy);
+  } else if (sc.venue === 'carnival') {
+    // Stawaki: the woods round an empty carnival: wind, crows, a creaking ride, the midway's far hum
+    wind(sc.night ? 240 : 380, windy * 1.2);
+    { const s = noise(), bp = filt('bandpass', 650, .8), g = gain(0); s.connect(bp); bp.connect(g); g.connect(dest); s.start(); lfo(g.gain, .3, .004, .008); }
+    every(() => { const t = 220 + Math.random() * 120; tone(t, t * .8, 1.2, .015, 'sawtooth'); }, 9000, 22000);   // a ride creaks
+    if (sc.night) { crickets(.008); every(() => tone(380, 360, .6, .025), 12000, 30000); }
+    else every(() => { for (let i = 0; i < 3; i++) tone(560, 420, .22, .03, 'sawtooth', i * .3); }, 8000 / busy, 20000 / busy);   // crows
+    if (sc.shore) lapping(.025);
+  } else {
+    wind(400, windy);
+    if (sc.night) crickets(); else every(songbird, 2000 / busy, 6000 / busy);
+  }
+  if (W === 'overcast') thunderFar();
+}
+
 function build(ctx, dest, spec) {
   const noise = () => { const s = ctx.createBufferSource(); s.buffer = noiseBuf(ctx); s.loop = true; s.loopStart = Math.random(); return s; };
   const filt = (type, f, q = .7) => { const n = ctx.createBiquadFilter(); n.type = type; n.frequency.value = f; n.Q.value = q; return n; };
   const gain = v => { const g = ctx.createGain(); g.gain.value = v; return g; };
   const every = (fn, lo, hi) => { const tick = () => { fn(); timers.push(setTimeout(tick, lo + Math.random() * (hi - lo))); }; timers.push(setTimeout(tick, Math.random() * hi)); };
   const lfo = (param, rate, depth, base) => { const o = ctx.createOscillator(); o.frequency.value = rate; const g = gain(depth); o.connect(g); g.connect(param); param.value = base; o.start(); };
+  if (spec.scape) scape(ctx, dest, spec.scape, { noise, filt, gain, every, lfo });
   if (spec.fire) {
     const s = noise(), bp = filt('bandpass', 900, .5), g = gain(.04 + .015 * Math.min(spec.fire, 4)); s.connect(bp); bp.connect(g); g.connect(dest); s.start();
     every(() => { const t = ctx.currentTime, n = noise(), hp = filt('highpass', 2200), e = gain(0); n.connect(hp); hp.connect(e); e.connect(dest);

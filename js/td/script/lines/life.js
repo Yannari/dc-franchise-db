@@ -1082,7 +1082,7 @@ const DRIFT = [
     { by: 'b', conf: "{a} said yes too fast. I know what too fast means by now." },
   ] },
   { id: 'lf.dr2', turns: [
-    { beat: "{a} doesn't save {b} a seat at the fire tonight. Small thing. Huge signal." },
+    { beat: "{a} doesn't save {b} a seat at the fire. Small thing. Huge signal." },
     { by: 'b', conf: "I sat somewhere else and pretended not to care. I cared." },
   ] },
   { id: 'lf.dr3', turns: [

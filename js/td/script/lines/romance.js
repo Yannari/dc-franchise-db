@@ -727,7 +727,7 @@ const SIDELINED = [
     { by: 'a', say: "Like what? Alone? Because that's what I am now." },
   ] },
   { id: 'ro.sd5', turns: [
-    { beat: '{a} sleeps facing the wall tonight. {b} and {c} are whispering on the other side.' },
+    { beat: '{a} sleeps facing the wall. {b} and {c} are whispering on the other side.' },
     { by: 'a', conf: "Nobody's talking about it. That's the part that hurts the most." },
   ] },
   { id: 'ro.sd6', when: { register: 'sweet' }, turns: [

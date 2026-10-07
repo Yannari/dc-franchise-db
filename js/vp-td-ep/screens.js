@@ -11,7 +11,7 @@
 import { tdCampScreen, tdTribalScreen, tdTribalStepped, cleanText } from './steps.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf } from './twists.js';
 import { tdTwistBlocksScreen, tdMergeScreen } from './twist-screens.js';
-import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar } from './stage.js';
+import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf } from './stage.js';
 import { TDX_CSS, TDX_FONTS } from './style.js';
 import { ambience, stopAmbience, sfx } from './sound.js';
 
@@ -86,7 +86,9 @@ function shell(scr, classicScreen, ep, o) {
   const first = scr.steps.findIndex(s => s.k === 'scene');
   const peek = first >= 0 ? ledgerAt(scr, first) : null;
   const chap = scr.steps.filter(s => s.k === 'scene').length;
-  const html = `<div class="tdx" data-uid="${uid}">
+  // camp and the islands play the place's own sound, not the music bed (vp-ui.js reads data-ambient)
+  const quiet = scr.kind === 'camp' || /^(ri-|rescue|exile)/.test(scr.id) ? ' data-ambient="none"' : '';
+  const html = `<div class="tdx" data-uid="${uid}"${quiet}>
 <style>${TDX_FONTS}${TDX_CSS}</style>
 <div class="tdx-stage" id="tdx-st-${uid}" onclick="tdxNext('${uid}')" title="Click for the next line">
   <div class="tdx-world">${peek ? worldHtml(scr, peek) : ''}<div class="tdx-cast"></div><div class="tdx-fx"></div></div>
@@ -153,11 +155,16 @@ function paint(uid, fresh) {
     else castEl.appendChild(el);
   }
   for (const el of have.values()) el.remove();
-  // the camera leans toward whoever speaks
-  const speaker = (s.k === 'say' || s.k === 'safe') ? (s.k === 'safe' ? s.who : s.by) : null;
-  const sTok = speaker && toks.find(t => t.n === speaker);
-  if (sTok && !L.conf && !L.scene?.ceremony) { st.classList.add('push'); world.style.transform = `scale(1.08) translate(${((.5 - sTok.u) * 7).toFixed(2)}%, ${((.55 - sTok.v) * 4).toFixed(2)}%)`; }
-  else { st.classList.remove('push'); world.style.transform = ''; }
+  // the camera: in on the conversation, leaning toward whoever talks; wide for the set itself
+  const shot = shotOf(scr, L, toks);
+  if (shot.k > 1) {
+    st.classList.add('push');
+    world.style.transform = `translate(${(shot.x * 100).toFixed(2)}%, ${(shot.y * 100).toFixed(2)}%) scale(${shot.k})`;
+    for (const el of castEl.children) el.classList.toggle('offshot', !shot.who.includes(el.dataset.n));
+  } else {
+    st.classList.remove('push'); world.style.transform = '';
+    for (const el of castEl.children) el.classList.remove('offshot');
+  }
   st.classList.toggle('tense', L.tense);
   // the HUD
   st.querySelector('.tdx-hud').innerHTML = hudHtml(scr, L, fresh, R.o);

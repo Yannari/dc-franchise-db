@@ -42,6 +42,8 @@ function seeded(key) { let h = 2166136261; for (const c of key) h = Math.imul(h 
 // ══════════════════════════════════════════════════════════════════════
 // THE WORLD
 // ══════════════════════════════════════════════════════════════════════
+// venues whose plates have a 4K render (tools/td-camp/camp.py ... hd)
+const HD_VENUES = new Set(['hosted-camp']);
 export function worldKey(screen, L) {
   if (L.conf) return `${screen.venue}/confessional`;
   return L.scene?.plate || `${screen.venue}/none`;
@@ -53,11 +55,13 @@ export function worldHtml(screen, L) {
   const M = TD_MARKS[key] || { h: .5, m: [] };
   const spot = key.split('/')[1].replace(/-(day|night)$/, '');
   const night = /-night$/.test(key);
-  const indoor = ['mess-hall', 'confessional', 'soundstage-corridor', 'prop-storage', 'economy', 'aisle', 'galley', 'cargo-hold', 'first-class', 'shelter', 'theater-tent', 'big-top', 'ceremony'].includes(spot)
+  const indoor = ['mess-hall', 'cabin-inside', 'washroom', 'confessional', 'soundstage-corridor', 'prop-storage', 'economy', 'aisle', 'galley', 'cargo-hold', 'first-class', 'shelter', 'theater-tent', 'big-top', 'ceremony'].includes(spot)
     && !(spot === 'ceremony' && ['hosted-camp', 'survival-island', 'carnival', 'film-lot'].includes(screen.venue)) && !(spot === 'shelter' && screen.venue === 'survival-island');
   const r = seeded(key);
   const p = (x, n = 2) => `${(x * 100).toFixed(n)}%`;
-  let h = `<div class="tdx-plate" style="background-image:url('${SETS}/${key}.webp')"></div><div class="tdx-live">`;
+  // the 4K render of the same frame, faded in when the camera closes on a conversation
+  const hd = HD_VENUES.has(screen.venue) && !L.conf ? `<div class="tdx-plate hd" style="background-image:url('${SETS}/${key}-hd.webp')"></div>` : '';
+  let h = `<div class="tdx-plate" style="background-image:url('${SETS}/${key}.webp')"></div>${hd}<div class="tdx-live">`;
   const of = k => M.m.filter(m => m.kind === k);
   of('cloud').forEach((m, i) => {
     const hh = m.s * m.size * 2.0, w = hh * 2.2 * 9 / 16;
@@ -91,13 +95,21 @@ export function worldHtml(screen, L) {
   h += `</div>${night && !indoor ? '<div class="tdx-wash"></div>' : ''}`;
   return h;
 }
+const WEATHER = ['calm', 'breezy', 'birdsong', 'hot', 'overcast', 'calm', 'birdsong'];
+/** The day's weather at a venue: one per episode, the same on every replay. */
+export function weatherOf(venue, ep) { let h = 2166136261; for (const c of `${venue}|${ep}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return WEATHER[(h >>> 0) % WEATHER.length]; }
 /** What the live layer is made of, for the ambience (sound.js). */
 export function worldSound(screen, L) {
   const key = L.conf ? (plateKey(screen.venue, 'confessional', 'day') || L.scene?.plate) : L.scene?.plate;
   const M = (key && TD_MARKS[key]) || { m: [] };
   const spot = String(key || '').split('/')[1]?.replace(/-(day|night)$/, '') || '';
-  const indoor = /mess-hall|confessional|corridor|storage|economy|aisle|galley|cargo|first-class|theater|big-top/.test(spot) || (spot === 'ceremony' && screen.venue === 'world-tour') || (spot === 'shelter' && screen.venue === 'carnival');
-  return { rain: /^islands\/rescue-/.test(key || ''), fire: M.m.filter(m => m.kind === 'fire').length, water: M.m.some(m => m.kind === 'water'), outdoor: !indoor, night: /-night$/.test(key || ''), indoor, flies: spot === 'confessional', crowd: screen.venue === 'carnival' && /midway|entrance|big-top/.test(spot) };
+  const indoor = /mess-hall|cabin-inside|washroom|confessional|corridor|storage|economy|aisle|galley|cargo|first-class|theater|big-top/.test(spot) || (spot === 'ceremony' && screen.venue === 'world-tour') || (spot === 'shelter' && screen.venue === 'carnival');
+  const night = /-night$/.test(key || ''), island = /^islands\//.test(key || '');
+  // the venue's own soundscape, and the day's weather in it (the same day, the same weather)
+  const scape = island || spot === 'confessional' ? null
+    : { venue: screen.venue, night, open: !indoor, shore: M.m.some(m => m.kind === 'water'), weather: weatherOf(screen.venue, screen.ep) };
+  return { rain: /^islands\/rescue-/.test(key || ''), fire: M.m.filter(m => m.kind === 'fire').length, water: M.m.some(m => m.kind === 'water') && !scape,
+    outdoor: !indoor && !scape, night, indoor, flies: spot === 'confessional', crowd: screen.venue === 'carnival' && /midway|entrance|big-top/.test(spot), scape };
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -135,6 +147,43 @@ export function castAt(screen, L) {
   }
   return toks;
 }
+/**
+ * The camera (the user, 2026-10-07: "zoom like in the traitors when someone talks"). Who is in
+ * the shot: the people in this conversation (the scene's focus), leaning toward whoever is
+ * talking. A scene's opening, a stage direction with nobody in it, the host at a ceremony and
+ * the confessional stay wide. Returns { k, x, y, who }: scale, and the world's offset as a
+ * fraction of the frame (transform-origin 0 0), clamped so the set always fills the frame.
+ */
+export function shotOf(screen, L, toks) {
+  const s = L.step || {};
+  const wide = { k: 1, x: 0, y: 0, who: [] };
+  if (L.conf || !L.scene || s.k === 'scene' || s.k === 'title' || s.k === 'found' || s.k === 'ballots') return wide;
+  const speaker = s.k === 'say' ? s.by : s.k === 'safe' ? s.who : s.k === 'read' ? null : null;
+  const ceremony = !!L.scene.ceremony;
+  if (s.host && ceremony) return wide;
+  if (ceremony && !speaker && !(s.focus || []).length) return wide;
+  const near = toks.filter(t => !t.bg && !t.host);
+  let group = ceremony ? [speaker, ...(s.focus || [])] : [...(L.scene.focus || []), speaker, ...(s.focus || [])];
+  group = [...new Set(group.filter(Boolean))].filter(n => near.some(t => t.n === n));
+  if (s.host && !ceremony) group = [...new Set([...group, ...toks.filter(t => t.host).map(t => t.n)])];
+  if (!group.length || group.length > 4) return wide;
+  const box = n => { const t = toks.find(x => x.n === n); const w = t.h * 9 / 16 / 100, h = t.h / 100; return { x0: t.u - w / 2, x1: t.u + w / 2, y0: t.v - h, y1: t.v + h * 0.12, cx: t.u, cy: t.v - h / 2 }; };
+  const bs = group.map(box);
+  const x0 = Math.min(...bs.map(b => b.x0)), x1 = Math.max(...bs.map(b => b.x1)), y0 = Math.min(...bs.map(b => b.y0)), y1 = Math.max(...bs.map(b => b.y1));
+  // a stage direction frames everyone in it a little looser than a line
+  const fill = s.k === 'beat' ? 0.78 : 0.66;
+  let k = Math.min(fill / Math.max(x1 - x0, 0.05), (fill * 0.95) / Math.max(y1 - y0, 0.05));
+  k = Math.max(1, Math.min(k, group.length === 1 ? 2.1 : 1.9));
+  if (k < 1.12) return wide;
+  let cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  const sp = speaker && group.includes(speaker) && group.length > 1 ? box(speaker) : null;
+  if (sp) { cx = cx * 0.55 + sp.cx * 0.45; }
+  // the people sit above the dialogue panel
+  let x = 0.5 - k * cx, y = 0.4 - k * cy;
+  x = Math.min(0, Math.max(1 - k, x)); y = Math.min(0, Math.max(1 - k, y));
+  return { k: +k.toFixed(3), x: +x.toFixed(4), y: +y.toFixed(4), who: group };
+}
+
 export function tokHtml(t, fresh) {
   const w = t.h * 9 / 16;
   const busy = t.act ? `${t.act === 'fish' ? '<div class="tdx-rod"><i></i></div>' : ''}${t.act === 'nap' ? '<b class="tdx-zzz">z</b>' : ''}<div class="tdx-busy" title="${esc(BUSY_LABEL[t.act] || '')}"><svg viewBox="0 0 24 24">${BUSY_ICON[t.act] || ''}</svg></div>` : '';

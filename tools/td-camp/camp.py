@@ -227,6 +227,7 @@ def run(venue, spot='all', tods='all', preview=False, hd=False):
     for v, spots in venues.items():
         for s, fn in spots.items():
             if spot != 'all' and s != spot: continue
+            if spot == 'all' and s.startswith('_'): continue      # fill layers for trace.py, rendered on request
             both = ('day', 'night') if s in OUTDOOR.get(v, set()) else (('night',) if s in NIGHT_ONLY else ('day',))
             for tod in both if tods == 'all' else (tods,):
                 clear(); _MATS.clear(); _n[0] = 0; PAINT['on'] = False; MARKS.clear()

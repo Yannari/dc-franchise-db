@@ -57,6 +57,7 @@ T = [
     ('carnival', 'midway', 'cv-midway.json', [(500, 700), (800, 710), (1100, 700)], True),
     ('carnival', 'carnival-entrance', 'cv-entrance.json', [(560, 720), (800, 730), (1040, 720)], False),
     ('carnival', 'haunted-mansion', 'cv-mansion.json', [(500, 740), (800, 750), (1100, 740)], True),
+    ('carnival', 'exit', 'cv-boat.json', [(420, 640), (300, 630), (900, 640)], True),     # Boat_of_Losers: the dock on the left
 ]
 
 for (venue, spot, js, stands, night) in T:

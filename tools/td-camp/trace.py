@@ -18,12 +18,32 @@ import cv2
 W, H = 1600, 900
 
 
-def trace(path, colors=40, min_area=60):
+def trace(path, colors=40, min_area=60, cut=None, fill=None):
+    """cut: polygons (in 1600x900 px) around characters in the frame; that area is filled in from its
+    surroundings (OpenCV inpainting) before tracing, and the polygons are passed on so the plate can
+    redraw what stood behind the character by hand."""
     img = cv2.imread(path, cv2.IMREAD_COLOR)
     if img is None:
         from PIL import Image
         img = cv2.cvtColor(np.array(Image.open(path).convert('RGB')), cv2.COLOR_RGB2BGR)
     img = cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA)
+    if cut:
+        m = np.zeros((H, W), np.uint8)
+        for poly in cut:
+            cv2.fillPoly(m, [np.array(poly, np.int32)], 255)
+        m = cv2.dilate(m, np.ones((9, 9), np.uint8))
+        if fill:
+            # what stood behind the character, drawn by hand (a render of the same frame), blended in
+            # with a soft edge so the seam disappears
+            f = cv2.imread(fill, cv2.IMREAD_COLOR)
+            if f is None:
+                from PIL import Image
+                f = cv2.cvtColor(np.array(Image.open(fill).convert('RGB')), cv2.COLOR_RGB2BGR)
+            f = cv2.resize(f, (W, H), interpolation=cv2.INTER_AREA)
+            a = cv2.GaussianBlur(m.astype(np.float32) / 255.0, (0, 0), 5)[..., None]
+            img = (img * (1 - a) + f * a).astype(np.uint8)
+        else:
+            img = cv2.inpaint(img, m, 12, cv2.INPAINT_TELEA)
     img = cv2.bilateralFilter(img, 7, 40, 7)
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB).reshape(-1, 3).astype(np.float32)
     crit = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.5)
@@ -70,13 +90,15 @@ def trace(path, colors=40, min_area=60):
             if len(outer) >= 3:
                 shapes.append({'c': col, 'pts': outer, 'holes': holes, 'a': a})
     shapes.sort(key=lambda s: -s['a'])
-    return {'w': W, 'h': H, 'shapes': shapes}
+    return {'w': W, 'h': H, 'shapes': shapes, 'cut': cut or []}
 
 
 if __name__ == '__main__':
     src, out = sys.argv[1], sys.argv[2]
     colors = int(sys.argv[3]) if len(sys.argv) > 3 else 40
     min_area = int(sys.argv[4]) if len(sys.argv) > 4 else 60
-    d = trace(src, colors, min_area)
+    cut = json.load(open(sys.argv[5])) if len(sys.argv) > 5 else None
+    fill = sys.argv[6] if len(sys.argv) > 6 else None
+    d = trace(src, colors, min_area, cut, fill)
     json.dump(d, open(out, 'w'))
     print(out, len(d['shapes']), 'shapes')

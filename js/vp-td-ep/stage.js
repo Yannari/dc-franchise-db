@@ -64,20 +64,38 @@ export function worldHtml(screen, L) {
   let h = `<div class="tdx-plate" style="background-image:url('${SETS}/${key}.webp')"></div>${hd}<div class="tdx-live">`;
   const of = k => M.m.filter(m => m.kind === k);
   of('cloud').forEach((m, i) => {
-    const hh = m.s * m.size * 2.0, w = hh * 2.2 * 9 / 16;
+    // a cloud lifted out of a traced frame (tools/td-camp/live.py) carries its own width
+    const w = m.w != null ? m.w : m.s * m.size * 2.0 * 2.2 * 9 / 16;
     h += `<div class="tdx-cloud" style="left:${p(m.u)};top:${p(m.v)};width:${p(w)};--d:${60 + i * 17}s;--dx:${3 + i * 1.5}%"><img src="${SETS}/sprites/${m.sprite}.webp" alt=""></div>`;
   });
   of('fire').forEach((m, i) => {
-    const hh = Math.max(m.s * m.size * 1.25, .012), w = hh * 9 / 16;
-    h += `<div class="tdx-glow" style="left:${p(m.u)};top:${p(m.v - m.s * m.size * .4)};width:${p(w * 4.5)}"></div>`;
+    const hh = m.hh != null ? m.hh : Math.max(m.s * m.size * 1.25, .012), w = hh * 9 / 16;
+    h += `<div class="tdx-glow" style="left:${p(m.u)};top:${p(m.v - (m.hh != null ? m.hh * .35 : m.s * m.size * .4))};width:${p(w * 4.5)}"></div>`;
     h += `<div class="tdx-flame" style="left:${p(m.u)};top:${p(m.v)};width:${p(w)};height:${p(hh)}"><img src="${SETS}/sprites/flame.webp" alt="" style="animation-delay:-${(i * .37).toFixed(2)}s"><img src="${SETS}/sprites/flame.webp" alt="" style="animation-delay:-${(i * .21).toFixed(2)}s"></div>`;
-    if (m.size > .6) {
+    if (m.hh != null ? m.hh > .08 : m.size > .6) {
       for (let e = 0; e < 7; e++) h += `<i class="tdx-ember" style="left:${p(m.u + (r() - .5) * w * .6)};top:${p(m.v - m.s * .5)};--d:${(1.8 + r() * 1.6).toFixed(2)}s;--dl:${(r() * 2).toFixed(2)}s;--ex:${((r() - .5) * 60).toFixed(0)}px"></i>`;
       for (let q = 0; q < 3; q++) h += `<i class="tdx-puff" style="left:${p(m.u)};top:${p(m.v - m.s * 1.4)};width:${p(w * .7)};--d:${4 + q}s;--dl:${q * 1.3}s;--ex:${20 + q * 10}px"></i>`;
     }
   });
   of('smoke').forEach((m, i) => { for (let q = 0; q < 4; q++) h += `<i class="tdx-puff" style="left:${p(m.u)};top:${p(m.v)};width:3%;--d:${5 + q}s;--dl:${q * 1.4 + i}s;--ex:${30 + q * 8}px"></i>`; });
   of('bulb').forEach((m, i) => { h += `<i class="tdx-bulb" style="left:${p(m.u)};top:${p(m.v)};--c:${esc(m.col || '#ffd27a')};--d:${(1.2 + (i % 5) * .4).toFixed(1)}s;--dl:${(i * .17).toFixed(2)}s"></i>`; });
+  // traced plates (tools/td-camp/traced): the moving parts of the show's own frame, as regions
+  // given in the frame's fractions. A waterfall: streaks running down it, mist at its foot.
+  of('fall').forEach((m, i) => {
+    const w = m.u1 - m.u0, hgt = m.v1 - m.v0;
+    h += `<div class="tdx-fall" style="left:${p(m.u0)};top:${p(m.v0)};width:${p(w)};height:${p(hgt)};--d:${(1.4 + i * .3).toFixed(1)}s"></div>`;
+    for (let q = 0; q < 5; q++) h += `<i class="tdx-puff" style="left:${p(m.u0 + w * (.15 + q * .17))};top:${p(m.v1 - .02)};width:${p(Math.max(w * .5, .03))};--d:${(3 + q * .6).toFixed(1)}s;--dl:${(q * .7).toFixed(1)}s;--ex:${(12 + q * 6)}px"></i>`;
+  });
+  // still water (a lagoon, a lake, the sea): glints sliding across it, the odd fish
+  of('pool').forEach((m, i) => {
+    const w = m.u1 - m.u0, hgt = m.v1 - m.v0;
+    for (let q = 0; q < Math.round(6 + w * 30); q++) h += `<i class="tdx-shimmer" style="left:${p(m.u0 + r() * w * .9)};top:${p(m.v0 + r() * hgt)};width:${p(.015 + r() * .04)};--d:${(3 + r() * 4).toFixed(1)}s;--dl:${(r() * 5).toFixed(1)}s;--ex:${(15 + r() * 40).toFixed(0)}px"></i>`;
+    if (m.fish && !night) h += `<i class="tdx-fish" style="left:${p(m.u0 + w * (.2 + r() * .6))};top:${p(m.v0 + hgt * .5)};--d:${(7 + r() * 5).toFixed(1)}s;--dl:${(r() * 6).toFixed(1)}s"></i>`;
+  });
+  // a band of low fog lying across part of the set
+  of('mist').forEach((m, i) => { for (let q = 0; q < 3; q++) h += `<i class="tdx-mist band" style="top:${p(m.v0 + q * (m.v1 - m.v0) / 3)};--d:${50 + q * 17 + i * 9}s;--dl:-${q * 11}s"></i>`; });
+  // butterflies over a sunny jungle clearing
+  of('flutter').forEach((m) => { if (!night) for (let q = 0; q < (m.n || 3); q++) h += `<i class="tdx-butterfly" style="left:${p(m.u0 + r() * (m.u1 - m.u0))};top:${p(m.v0 + r() * (m.v1 - m.v0))};--c:${['#f2c83a', '#e84a8a', '#4ab8e8', '#f28a3a'][q % 4]};--d:${(6 + r() * 4).toFixed(1)}s;--dl:-${(r() * 6).toFixed(1)}s"></i>`; });
   const water = of('water')[0];
   if (water) { const top = M.h + .01, bot = Math.min(water.v, 1); for (let i = 0; i < 16; i++) h += `<i class="tdx-shimmer" style="left:${p(.05 + r() * .85)};top:${p(top + r() * Math.max(bot - top, .04))};width:${p(.02 + r() * .05)};--d:${(3 + r() * 4).toFixed(1)}s;--dl:${(r() * 5).toFixed(1)}s;--ex:${(20 + r() * 50).toFixed(0)}px"></i>`; }
   // the day's weather, painted over the set (the islands keep their own rain)

@@ -1,3 +1,4 @@
+import json
 # ══════════════════════════════════════════════════════════════════════
 # venues/survival_ztraced.py — Soluna and Stawaki plates traced from the shows' own clean frames
 # ══════════════════════════════════════════════════════════════════════
@@ -17,11 +18,60 @@ def vmark_seat(pxp, depth):
     seat(x, depth, z)
 
 
+# The moving parts of each frame, placed in its own pixels (tools/td-camp/live.py lifts the clouds
+# out automatically; the rest is read off the frame by hand):
+#   fire (x, y foot, h)   a torch or a campfire: the viewer's animated flame over the drawn one
+#   fall (x0, y0, x1, y1) a waterfall: streaks running down, mist at its foot
+#   pool (x0, y0, x1, y1, fish?)  still water: glints, now and then a fish
+#   mist (y0, y1)         low fog drifting across that band
+#   flutter (x0, y0, x1, y1)  butterflies over a sunny clearing
+LIVE = {
+    'sol-ruins.json': {'fire': [(950, 652, 28), (1236, 662, 28)], 'fall': [(370, 556, 400, 690)], 'flutter': [(100, 600, 850, 720)]},
+    'sol-fans.json': {'fire': [(1225, 708, 42)], 'fall': [(1116, 410, 1142, 560)], 'flutter': [(100, 620, 900, 720)]},
+    'sol-favs.json': {'fire': [(322, 692, 40), (860, 578, 30), (1200, 578, 30)], 'pool': [(0, 596, 1600, 622, False)]},
+    'sol-bamboo.json': {'flutter': [(200, 560, 1400, 700)]},
+    'sol-trial.json': {'fire': [(392, 704, 150), (1512, 185, 180), (60, 382, 24), (290, 372, 24), (760, 372, 24), (994, 382, 24), (1234, 372, 24), (1466, 372, 24)]},
+    'cv-red.json': {'fire': [(962, 792, 50)], 'mist': [(760, 900)]},
+    'cv-blue.json': {'fire': [(1290, 722, 50)], 'mist': [(700, 880)]},
+    'cv-merge.json': {'fire': [(300, 668, 40)], 'mist': [(680, 880)]},
+    'cv-theater.json': {'mist': [(760, 880)]},
+    'cv-midway.json': {'mist': [(640, 800)]},
+    'cv-entrance.json': {'mist': [(720, 880)]},
+    'cv-mansion.json': {'mist': [(680, 880)]},
+    'cv-boat.json': {'fire': [(140, 402, 40), (292, 426, 36)], 'pool': [(0, 590, 1600, 900, True)]},
+}
+
+
+def _live_marks(json_name, depth):
+    """The live layer of a traced plate: lifted clouds (from <name>-live.json) and the parts above."""
+    base = json_name[:-5]
+    lj = os.path.join(REPO, 'tools', 'td-camp', 'traced', base + '-live.json')
+    if os.path.exists(lj):
+        for c in json.load(open(lj)).get('clouds', []):
+            x, z = px((c['x'], c['y']), depth)
+            mark('cloud', (x, depth, z), size=1.0, sprite=c['sprite'], w=round(c['w'] / 1600, 4))
+    L = LIVE.get(json_name, {})
+    for (fx, fy, fh) in L.get('fire', []):
+        x, z = px((fx, fy), depth)
+        mark('fire', (x, depth, z), size=1.0, hh=round(fh / 900, 4))
+    for kind in ('fall', 'flutter'):
+        for (x0, y0, x1, y1) in L.get(kind, []):
+            x, z = px(((x0 + x1) / 2, (y0 + y1) / 2), depth)
+            mark(kind, (x, depth, z), u0=x0 / 1600, v0=y0 / 900, u1=x1 / 1600, v1=y1 / 900)
+    for (x0, y0, x1, y1, fish) in L.get('pool', []):
+        x, z = px(((x0 + x1) / 2, (y0 + y1) / 2), depth)
+        mark('pool', (x, depth, z), u0=x0 / 1600, v0=y0 / 900, u1=x1 / 1600, v1=y1 / 900, fish=bool(fish))
+    for (y0, y1) in L.get('mist', []):
+        x, z = px((800, (y0 + y1) / 2), depth)
+        mark('mist', (x, depth, z), v0=y0 / 900, v1=y1 / 900)
+
+
 def _traced_plate(json_name, stands, seats=(), host=None, depth=20.0):
     def build(tod):
         paint_mode()
         paint_sky('#000000', '#000000')
         vtraced('Traced', json_name, depth)
+        _live_marks(json_name, depth)
         for p in stands:
             # the viewer stands people with their feet above the dialogue panel (v <= .72)
             vmark_stand((p[0], min(p[1], 640)), PEOPLE_DEPTH)

@@ -38,6 +38,16 @@ export const TDX_CSS = `
 @keyframes tdxPuff{0%{transform:translate(-50%,0) scale(.4);opacity:0}15%{opacity:.6}100%{transform:translate(calc(-50% + var(--ex)),-15cqw) scale(2.4);opacity:0}}
 .tdx .tdx-bulb{position:absolute;width:1.6%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,var(--c),transparent 70%);animation:tdxTw var(--d) ease-in-out var(--dl) infinite alternate}
 @keyframes tdxTw{from{opacity:.45}to{opacity:1}}
+.tdx .tdx-fall{position:absolute;overflow:hidden;opacity:.55;mix-blend-mode:screen;background:repeating-linear-gradient(90deg,transparent 0 9%,rgba(255,255,255,.55) 9% 11%,transparent 11% 23%,rgba(220,250,255,.35) 23% 24%,transparent 24% 37%);-webkit-mask-image:repeating-linear-gradient(180deg,#000 0 18%,transparent 18% 30%);mask-image:repeating-linear-gradient(180deg,#000 0 18%,transparent 18% 30%);-webkit-mask-size:100% 40%;mask-size:100% 40%;animation:tdxFall var(--d,1.6s) linear infinite}
+@keyframes tdxFall{from{-webkit-mask-position:0 0;mask-position:0 0}to{-webkit-mask-position:0 100%;mask-position:0 100%}}
+.tdx .tdx-fish{position:absolute;width:1.4%;aspect-ratio:2.2;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#e8843a;opacity:0;animation:tdxFish var(--d) ease-in-out var(--dl) infinite}
+@keyframes tdxFish{0%,82%{opacity:0;transform:translate(0,0) rotate(-40deg)}86%{opacity:1;transform:translate(14px,-26px) rotate(0deg)}92%{opacity:1;transform:translate(28px,-6px) rotate(40deg)}95%,100%{opacity:0;transform:translate(32px,6px) rotate(60deg)}}
+.tdx .tdx-mist.band{left:-60%;width:220%;height:10%;opacity:.5}
+.tdx .tdx-butterfly{position:absolute;width:1.1%;aspect-ratio:1.4;animation:tdxBfly var(--d) ease-in-out var(--dl) infinite alternate}
+.tdx .tdx-butterfly::before,.tdx .tdx-butterfly::after{content:'';position:absolute;top:0;width:50%;height:100%;background:var(--c);border-radius:60% 60% 40% 40%;animation:tdxWing .22s ease-in-out infinite alternate}
+.tdx .tdx-butterfly::before{left:0;transform-origin:100% 50%}.tdx .tdx-butterfly::after{right:0;transform-origin:0 50%}
+@keyframes tdxWing{from{transform:scaleX(1)}to{transform:scaleX(.25)}}
+@keyframes tdxBfly{0%{transform:translate(0,0)}25%{transform:translate(40px,-22px)}50%{transform:translate(90px,8px)}75%{transform:translate(50px,30px)}100%{transform:translate(-20px,10px)}}
 .tdx .tdx-shimmer{position:absolute;height:.25%;border-radius:4px;background:rgba(230,250,255,.55);opacity:0;animation:tdxSh var(--d) ease-in-out var(--dl) infinite}
 @keyframes tdxSh{0%{transform:translateX(0) scaleX(.3);opacity:0}40%{opacity:.9}100%{transform:translateX(var(--ex)) scaleX(1);opacity:0}}
 .tdx .tdx-bird{position:absolute;left:0;width:1.6%;animation:tdxBird var(--d) linear var(--dl) infinite}

@@ -497,16 +497,15 @@ def pc_beach(tod):
     water_plane(tod, y0=6, col='#2aa8a4' if tod == 'day' else '#1f4a5a', far='#3cc0b8' if tod == 'day' else '#2a5a6a')
     ground_plane('#f6e0b6' if tod == 'day' else '#7a7468', N('#e0c898', tod), size=(200, 40), loc=(0, -14, 0), mottle=0.15)
     brush_patch('WetSand', 30, (6, 5.6), N('#e8cfa0', tod), sx=2.5, sy=0.1, seed=3, mottle=0.1)
-    # the shoreline on the left: the sandstone shelf, the grass hill over it, the trees and bushes
-    _sandstone(-11.0, 12.0, 14, 2.6, tod, seed=1)
-    _sandstone(-3.5, 14.0, 6, 1.6, tod, seed=2)
-    card(uid('Hill'), _blob_pts(12, 4.5, 40, 0.06, 9, flat_bottom=True), 16, pmat('HillP' + tod, N('#8a8a3e', tod), unlit=True, mottle=0.3, mscale=0.8), x=-12, z=2.0)
-    for k, (tx, ty, th) in enumerate(((-10.5, 14, 9), (-9.0, 14.6, 10.5), (-7.4, 15, 8.5), (-12, 15.5, 10))):
+    # the shoreline on the left (BeachFullHD): the long sandstone bank, the hill rising gently over it toward the
+    # woods, rows of the show's flat pines behind, the tall blue-trunked trees and the rust bushes on the grass
+    _tdi_pines(-34, 4, 22, 10, 4.4, '#8a94cc', tod, seed=61, gap=0.6)
+    _tdi_pines(-30, 0, 16, 8.5, 3.8, '#6c7ab8', tod, seed=62, gap=0.6)
+    _bank(-26, 2.5, 5.6, 1.6, 2.6, tod, seed=4, rise=0.5)
+    for k, (tx, ty, th) in enumerate(((-12.0, 9.5, 10), (-10.2, 10.2, 11.5), (-8.6, 10.8, 9.5), (-14, 11.4, 11))):
         _disc_tree(tx, ty, th, tod, seed=40 + k, s=1.0)
-    for k in range(9):
-        pine_card(-20 + k * 2.4, 22 + (k % 2) * 3, 7 + (k % 3) * 1.5, 4.2, N('#7a86c0', tod), seed=60 + k, teeth=4)
-    for (bx, by, bc) in ((-8.0, 13.5, '#a8582e'), (-1.5, 14.6, '#9a7a32'), (3.0, 14.0, '#c87a3a')):
-        card(uid('Bush'), _blob_pts(1.4, 0.9, 30, 0.2, int(bx * 3), flat_bottom=True), by, pmat('Bush' + bc + tod, N(bc, tod), unlit=True, mottle=0.5, mscale=2.5), x=bx, z=0.2)
+    for (bx, by, bc, bs) in ((-6.5, 7.6, '#a8582e', 1.1), (-17.0, 8.6, '#9a7a32', 1.3), (2.6, 5.0, '#c87a3a', 0.8)):
+        card(uid('Bush'), _blob_pts(bs, bs * 0.62, 30, 0.2, int(bx * 3), flat_bottom=True), by, pmat('Bush' + bc + tod, N(bc, tod), unlit=True, mottle=0.5, mscale=2.5), x=bx, z=0.15 if bx > 0 else 2.6)
     crown_tree(12.0, 13.0, 6.0, N('#b8902e', tod), seed=71, s=1.8, birch=True)
     # what is on the sand: a driftwood log, a canoe drawn up, two towels
     pcyl('Driftwood', 0.28, 4.2, (-3.6, 3.2, 0.26), '#a08a6a', tod, verts=10, rot=(0, 90, 12))
@@ -529,43 +528,140 @@ def pc_beach(tod):
     tv_camera((0.0, -6.5, 2.0), (0, 30, 1.6), lens=26)
 
 
+def _fringe(xs, zs, y, col, tod, depth=0.35, seed=0, name='Fringe'):
+    """A grass fringe hanging over an edge: a row of small sharp teeth under a line of points."""
+    rnd = random.Random(seed)
+    m = pmat(name + col + tod, N(col, tod), unlit=True, mottle=0.25, mscale=2.0)
+    pts = list(zip(xs, zs))
+    under = []
+    for i in range(len(xs) - 1, -1, -1):
+        under.append((xs[i], zs[i] - depth * (0.35 + 0.65 * rnd.random()) * (1 if i % 2 else 0.25)))
+    card(uid(name), pts + under, y, m)
+
+
+def _bank(x0, x1, y, rock_h, hill_h, tod, seed=0, rise='left'):
+    """The TDI shoreline bank (BeachFullHD): a long low band of sandstone cut by slanting cleavage lines, its top
+    edge broken into facets, and over it a smooth olive hill that rises gently away, its front edge a grass fringe."""
+    P = TDI[tod]; rnd = random.Random(seed)
+    n = 18
+    xs = [x0 + (x1 - x0) * i / n for i in range(n + 1)]
+    # the rock's top: facets, each a short straight run at its own small slope
+    rt = []
+    z = rock_h
+    for i, x in enumerate(xs):
+        if i % 3 == 0: z = rock_h * (0.75 + 0.35 * rnd.random())
+        rt.append(z + (rnd.random() - 0.5) * 0.08)
+    # the bank runs out into the sand at its right end in two slanting facets
+    rt[-1] = 0.0; rt[-2] = rock_h * 0.35; rt[-3] = min(rt[-3], rock_h * 0.75)
+    card(uid('BankRock'), [(x0, -0.3)] + list(zip(xs, rt)) + [(x1, -0.3)], y, pmat('BankRock' + tod, N('#aaa082', tod), unlit=True, mottle=0.18, mscale=0.6))
+    for k in range(int((x1 - x0) / 1.6)):
+        lx = x0 + 0.8 + k * 1.6 + rnd.uniform(-0.3, 0.3)
+        top = rock_h * 0.9
+        card(uid('Cleave'), [(lx, 0.0), (lx + 0.07, 0.0), (lx + top * 0.75 + 0.07, top), (lx + top * 0.75, top)], y - 0.02,
+             pmat('Cleave' + tod, N('#837a60', tod), unlit=True, mottle=0))
+    # a lighter top bevel along the facets, the show's sunlit rock edge
+    card(uid('Bevel'), list(zip(xs, rt)) + [(x, z - 0.18) for x, z in reversed(list(zip(xs, rt)))], y - 0.03,
+         pmat('Bevel' + tod, N('#c6bc9a', tod), unlit=True, mottle=0))
+    # the hill: rises smoothly away, its front edge just over the rock top, a fringe hanging over the rock
+    # a mound that crests where `rise` says (a fraction along the bank) and slopes down to the rock both ways
+    crest = 0.62 if rise == 'left' else rise
+    def hz(u): return (hill_h * math.exp(-((u - crest) / 0.3) ** 2) + 0.3) * min(1.0, (1 - u) / 0.18) ** 0.7
+    ht = [rt[i] + 0.15 + hz(i / n) for i in range(n + 1)]
+    card(uid('Hill'), list(zip(xs, [r + 0.1 for r in rt])) + list(reversed(list(zip(xs, ht)))), y + 0.4,
+         pmat('BankHill' + tod, P['grass'], unlit=True, mottle=0.35, mscale=0.9))
+    _fringe(xs, [r + 0.16 for r in rt], y - 0.05, '#8a8a36', tod, depth=0.32, seed=seed + 3)
+    return list(zip(xs, ht))
+
+
+def _tdi_pines(x0, x1, y, h, w, col, tod, seed=0, gap=0.8):
+    """A row of the show's background pines: wide flat triangles with a few saw teeth, standing shoulder to shoulder."""
+    rnd = random.Random(seed); x = x0
+    while x < x1:
+        hh = h * rnd.uniform(0.75, 1.15)
+        pine_card(x, y + rnd.uniform(-0.4, 0.4), hh, w * rnd.uniform(0.85, 1.1), N(col, tod), seed=int(x * 13) + seed, teeth=4)
+        x += w * gap * rnd.uniform(0.8, 1.1)
+
+
+def _hemlock(x, y, h, col, tod, seed=0, s=1.0, lean=0.0):
+    """The drooping pine of the TDI cliffs (Cliffhilledge): a thin trunk and tiers of crescent-shaped branches
+    whose tips hang down, the tiers narrowing toward the top."""
+    rnd = random.Random(seed)
+    m = pmat('Hemlock' + col + tod, N(col, tod), unlit=True, mottle=0.2, mscale=2.0)
+    card(uid('HemTrunk'), [(-0.09 * s, 0), (0.09 * s, 0), (lean + 0.03 * s, h), (lean - 0.03 * s, h)], y, m, x=x)
+    tiers = 7
+    for k in range(tiers):
+        t = k / (tiers - 1)
+        zz = h * (0.22 + 0.74 * t); w = (2.6 - 2.1 * t) * s; cx = x + lean * (zz / h)
+        sag = (0.35 + 0.25 * (1 - t)) * s; thick = 0.22 * s
+        n = 24; top, bot = [], []
+        for i in range(n + 1):
+            u = i / n; xx = -w / 2 + w * u
+            arch = math.sin(u * math.pi)
+            top.append((xx, thick * arch - sag * (1 - arch) ** 2))
+            bot.append((xx, -thick * 0.4 * arch - sag * (1 - arch) ** 2 - 0.12 * s * (1 - arch)))
+        card(uid('HemTier'), top + list(reversed(bot)), y - 0.01 - k * 0.002, m, x=cx, z=zz)
+
+
+def _flat_poly(name, pts, z, col, tod, mottle=0.3, mscale=0.6):
+    """A flat painted shape lying on the ground (x, y points)."""
+    me = bpy.data.meshes.new(name); bm = bmesh.new()
+    vs = [bm.verts.new((px, py, 0)) for px, py in pts]
+    bm.faces.new(vs); bm.to_mesh(me); bm.free()
+    ob = _link(bpy.data.objects.new(uid(name), me)); ob.location = (0, 0, z)
+    me.materials.append(pmat(name + col + tod, N(col, tod), mottle=mottle, mscale=mscale))
+    return ob
+
+
 def pc_cliff(tod):
-    """The cliff (Cliffhilledge): seen from beside the drop, the olive grass top on the left runs out to a sandstone
-    face cut by slanting cleavage lines; drooping navy pines stand on it; to the right, far below, a valley of
-    blue-violet pines under pale hills."""
-    paint_mode(); P = TDI[tod]
-    day = tod == 'day'
-    paint_sky('#8ac8e8' if day else P['sky'], '#c8e4ee' if day else P['sky_low'])
-    # the valley: rows of pine-furred ridges far below the lip, the farthest palest
-    for k, (yy, col) in enumerate(((170, '#a8b4e0'), (135, '#8a98d0'), (105, '#6e7cbc'), (80, '#56649e'))):
-        ridge_card(yy, -120, 160, -46 + k * 3, 30 - k * 4, N(col, tod), seed=80 + k, humps=3, teeth=70, tooth_col=N(_mix_hex(col, '#2a2a5a', 0.15), tod))
-    pbox('ValleyFloor', (400, 300, 1.0), (40, 130, -48), '#56649e', tod, mottle=0.2, mscale=0.2, ink=False)
-    # the cliff: a body of sandstone, grass on top, its right side the face
-    pbox('CliffBody', (34, 40, 40), (-13, 10, -20), '#b8ac88', tod, mottle=0.25, mscale=0.5)
-    ground_plane(P['grass'], P['grass_sh'], size=(34, 40), loc=(-13, 10, 0.02))
-    pbox('Lip', (0.8, 40, 0.5), (3.7, 10, -0.15), '#8a8a3a', tod, mottle=0.3)
-    rnd = random.Random(7)
-    for k in range(9):
-        yy = -6 + k * 3.4 + rnd.uniform(-0.6, 0.6)
-        pbox('Cleave', (0.03, 0.12, 16), (4.02, yy, -7), '#8a8066', tod, ink=False, rot=(rnd.uniform(18, 32), 0, 0))
-    for k in range(5):
-        pbox('Ledge', (0.06, 6.0, 0.18), (4.04, -2 + k * 5, -3 - k * 3.5), '#9a9070', tod, ink=False, rot=(8, 0, 0))
-    # on the top: rocks, a tumbleweed, the drooping pines, one leaning out over the edge
-    for (rx, ry) in ((-5.0, 4.0), (-1.0, 6.5), (1.5, 2.5)):
-        pbox('Rock', (1.0, 0.7, 0.45), (rx, ry, 0.22), '#8a7a6a', tod, rot=(0, 0, 15))
-    pcyl('Tumbleweed', 0.35, 0.1, (0.6, 1.2, 0.36), '#c8a050', tod, verts=14, rot=(90, 0, 90))
-    for k, (px, py, ph) in enumerate(((-9.5, 16, 12), (-6.0, 18, 14), (-2.5, 14, 10), (-12, 20, 13))):
-        pine_card(px, py, ph, ph * 0.42, N('#2f4060', tod), seed=95 + k, teeth=6)
-    for k, (px, py, ph) in enumerate(((-14, 24, 12), (-8, 26, 14))):
+    """The cliff (Cliffhilledge), painted the way the show paints it: the olive top in front running out to a curved
+    lip on the right; under the lip the sandstone face hangs away, cut by slanting strata; drooping hemlocks on the
+    top; past the edge and far below, rows of blue-violet pines under soft round hills."""
+    paint_mode(); P = TDI[tod]; day = tod == 'day'
+    paint_sky('#8ec8ea' if day else P['sky'], '#cfe6f0' if day else P['sky_low'])
+    ridge_card(300, -300, 300, 10, 30, N('#b8b4dc', tod), seed=71, humps=2)
+    for k, (yy, col, base) in enumerate(((220, '#a4acd8', -4), (165, '#8e9ad0', -12), (120, '#7480c2', -20), (85, '#5c68aa', -27))):
+        ridge_card(yy, -260, 300, base, 10, N(col, tod), seed=80 + k, humps=2 + k, teeth=90, tooth_col=N(_mix_hex(col, '#2a2a5a', 0.14), tod))
+    pbox('ValleyFloor', (700, 500, 1.0), (40, 200, -40), '#4e5a98', tod, mottle=0.1, mscale=0.2, ink=False)
+    # the lip: a curve from the near right, receding to the left into the distance
+    lip = [(4.2 - 0.18 * i + 0.35 * math.sin(i * 0.9), -4.0 + i * 2.2) for i in range(21)]
+    top = [(-60, -6)] + [(-60, 60)] + list(reversed(lip))
+    _flat_poly('CliffTop', [(-60, -6.0), (lip[0][0], -6.0)] + lip + [(-60, lip[-1][1])], 0.0, P['grass'], tod, mottle=0.35, mscale=0.7)
+    # the face, hanging under the lip: one painted wall following the lip, its own sandstone strata on it
+    rnd = random.Random(5)
+    for i in range(len(lip) - 1):
+        (x0, y0), (x1, y1) = lip[i], lip[i + 1]
+        dx, dy = x1 - x0, y1 - y0; L = math.hypot(dx, dy); ang = math.degrees(math.atan2(dy, dx))
+        drop = 24 + 2 * math.sin(i)
+        face = [(0, 0.0), (L, 0.0), (L + 0.6, -drop * 0.35), (L + 1.2, -drop), (-0.2, -drop), (0.4, -drop * 0.35)]
+        card(uid('Face'), face, 0, pmat('FaceP' + tod, N('#b6aa86' if i % 3 else '#a99d7c', tod), unlit=True, mottle=0.2, mscale=0.5), x=x0, z=-0.05, rot_z=ang)
+        if i % 2 == 0:
+            s = rnd.uniform(5, 12)
+            card(uid('Strata'), [(0.3, -0.5), (0.45, -0.5), (0.45 + s * 0.3, -0.5 - s), (0.3 + s * 0.3, -0.5 - s)], 0, pmat('Strata' + tod, N('#7c7258', tod), unlit=True, mottle=0),
+                 x=x0 + 0.02, z=-0.04, rot_z=ang)
+        # the sunlit band right under the lip and the grass fringe hanging over it
+        card(uid('Bevel'), [(0, -0.05), (L, -0.05), (L, -0.42), (0, -0.42)], 0, pmat('FBevel' + tod, N('#d2c8a6', tod), unlit=True, mottle=0), x=x0 + 0.01, z=0, rot_z=ang)
+        for t in range(4):
+            u = (t + 0.5) * L / 4; d = 0.3 + 0.35 * rnd.random()
+            card(uid('Tuft'), [(u - 0.28, 0.02), (u + 0.28, 0.02), (u + 0.04, -d)], 0, pmat('Tuft' + tod, N('#8a8a36', tod), unlit=True, mottle=0), x=x0 + 0.02, z=0, rot_z=ang)
+    # on the top: round rocks, rust bushes, the hemlocks, one leaning out toward the lip
+    for (rx, ry, rs) in ((-4.5, 5.0, 0.7), (-0.8, 8.0, 0.55), (1.2, 2.0, 0.45)):
+        icorock(uid('Rock'), (rs * 1.3, rs, rs * 0.7), (rx, ry, rs * 0.3), N('#8a7a6a', tod), seed=int(rx * 7) + 3)
+    for (bx, by, bc) in ((-7.5, 11.0, '#a8582e'), (-2.4, 14.0, '#9a7a32')):
+        card(uid('Bush'), _blob_pts(1.3, 0.8, 30, 0.2, int(bx * 3), flat_bottom=True), by, pmat('Bush' + bc + tod, N(bc, tod), unlit=True, mottle=0.5, mscale=2.5), x=bx, z=0.2)
+    for k, (px, py, ph, ln) in enumerate(((-9.0, 16, 12, 0.0), (-5.6, 19, 14, 0.3), (-1.8, 15, 10.5, 0.0), (2.4, 11, 9, 0.9))):
+        _hemlock(px, py, ph, '#2c3d5c', tod, seed=95 + k, s=1.15, lean=ln)
+    for k, (px, py, ph) in enumerate(((-13.0, 26, 12), (-7.5, 28, 13), (-17, 24, 11))):
         pine_card(px, py, ph, ph * 0.45, N('#6a78b8', tod), seed=120 + k, teeth=5)
-    twisted_pine(2.4, 9.0, 10, N('#26324a', tod), seed=99, s=1.7, flip=True)
-    for (sx, sy) in ((-3.0, 0.6), (-0.8, 1.6), (-4.6, 2.6), (-2.0, 3.6), (0.4, 4.4)):
+    for (sx, sy) in ((-3.0, 0.8), (-0.8, 2.0), (-4.6, 2.8), (-2.0, 4.0), (0.8, 4.4)):
         stand(sx, sy)
     if not day:
-        for i in range(50):
-            card(uid('Star'), _blob_pts(0.18, 0.18, 8, 0, 0), 180, pmat('StarP', '#f4f0d8', unlit=True, mottle=0), x=rnd.uniform(-90, 150), z=rnd.uniform(14, 60))
+        for i in range(60):
+            card(uid('Star'), _blob_pts(0.18, 0.18, 8, 0, 0), 320, pmat('StarP', '#f4f0d8', unlit=True, mottle=0), x=rnd.uniform(-160, 220), z=rnd.uniform(30, 120))
+    else:
+        for (cx2, cz, cs) in ((-30, 70, 4.0), (70, 80, 3.2)):
+            curly_cloud(cx2, 290, cz, cs, P['cloud'], P['rim'])
     paint_sun(azimuth=-30, elevation=40 if day else 26, energy=4.0 if day else 1.8)
-    tv_camera((7.5, -10.0, 3.2), (-0.5, 14, 0.2), lens=26)
+    tv_camera((7.5, -9.0, 2.2), (0.0, 20, -0.8), lens=26)
 
 
 def pc_washroom(tod):

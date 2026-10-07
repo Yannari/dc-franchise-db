@@ -80,7 +80,22 @@ export function worldHtml(screen, L) {
   of('bulb').forEach((m, i) => { h += `<i class="tdx-bulb" style="left:${p(m.u)};top:${p(m.v)};--c:${esc(m.col || '#ffd27a')};--d:${(1.2 + (i % 5) * .4).toFixed(1)}s;--dl:${(i * .17).toFixed(2)}s"></i>`; });
   const water = of('water')[0];
   if (water) { const top = M.h + .01, bot = Math.min(water.v, 1); for (let i = 0; i < 16; i++) h += `<i class="tdx-shimmer" style="left:${p(.05 + r() * .85)};top:${p(top + r() * Math.max(bot - top, .04))};width:${p(.02 + r() * .05)};--d:${(3 + r() * 4).toFixed(1)}s;--dl:${(r() * 5).toFixed(1)}s;--ex:${(20 + r() * 50).toFixed(0)}px"></i>`; }
-  if (!indoor && !night) {
+  // the day's weather, painted over the set (the islands keep their own rain)
+  const island = /^islands\//.test(key);
+  const wx = island || spot === 'confessional' ? null : weatherOf(screen.venue, screen.ep);
+  const wet = wx === 'rain' || wx === 'storm';
+  if (wx && !indoor) {
+    if ((wx === 'sunny' || wx === 'hot') && !night) h += `<i class="tdx-rays${wx === 'hot' ? ' hot' : ''}"></i>`;
+    if (wx === 'hot' && !night) h += '<i class="tdx-haze"></i>';
+    if (wx === 'overcast' || wet) h += `<i class="tdx-grey${wx === 'storm' ? ' storm' : ''}${night ? ' night' : ''}"></i>`;
+    if (wet) for (let i = 0; i < (wx === 'storm' ? 110 : 60); i++) h += `<i class="tdx-rain${wx === 'storm' ? ' hard' : ''}" style="left:${p(r() * 1.15 - .1)};--d:${((wx === 'storm' ? .35 : .55) + r() * .3).toFixed(2)}s;--dl:-${(r() * 1).toFixed(2)}s;opacity:${(.25 + r() * .45).toFixed(2)}"></i>`;
+    if (wet) for (let i = 0; i < 10; i++) h += `<i class="tdx-splash" style="left:${p(.05 + r() * .9)};top:${p(Math.max(M.h + .1, .62) + r() * .3)};--dl:-${(r() * 1.2).toFixed(2)}s"></i>`;
+    if (wx === 'storm') h += '<i class="tdx-flash"></i>';
+    if (wx === 'fog') for (let i = 0; i < 4; i++) h += `<i class="tdx-mist" style="top:${p(M.h - .08 + i * .12)};--d:${40 + i * 13}s;--dl:-${i * 9}s"></i>`;
+    if (wx === 'breezy' || wx === 'storm') for (let i = 0; i < 10; i++) h += `<i class="tdx-leaf gust" style="left:${p(.05 + r() * .9)};top:${p(.05 + r() * .5)};--d:${(4 + r() * 3).toFixed(1)}s;--dl:${(r() * 6).toFixed(1)}s;--ex:${(-260 + r() * 80).toFixed(0)}px;--c:${['#c8902e', '#d8a83a', '#7a9a4a'][i % 3]}"></i>`;
+  }
+  if (wx && indoor && wet) h += `<i class="tdx-grey indoor"></i>${wx === 'storm' ? '<i class="tdx-flash soft"></i>' : ''}`;
+  if (!indoor && !night && !wet && wx !== 'fog' && wx !== 'overcast') {
     for (let i = 0; i < 3; i++) h += `<div class="tdx-bird" style="top:${8 + i * 6}%;--d:${16 + i * 7}s;--dl:${i * 6 - 4}s"><svg viewBox="0 0 20 8"><path d="M1 6c3-4 6-4 9 0 3-4 6-4 9 0" stroke="#2a2a3a" stroke-width="1.6" fill="none"/></svg></div>`;
     if (['cabins', 'campfire', 'forest-trail', 'communal-grounds', 'forest-edge', 'campsite', 'corn-maze'].includes(spot))
       for (let i = 0; i < 6; i++) h += `<i class="tdx-leaf" style="left:${p(.1 + r() * .8)};top:${p(.05 + r() * .2)};--d:${(8 + r() * 6).toFixed(1)}s;--dl:${(r() * 10).toFixed(1)}s;--ex:${(-80 + r() * 60).toFixed(0)}px;--c:${['#c8902e', '#d8a83a', '#b8742a'][i % 3]}"></i>`;
@@ -95,9 +110,23 @@ export function worldHtml(screen, L) {
   h += `</div>${night && !indoor ? '<div class="tdx-wash"></div>' : ''}`;
   return h;
 }
-const WEATHER = ['calm', 'breezy', 'birdsong', 'hot', 'overcast', 'calm', 'birdsong'];
+// Each venue's climate: the weathers its days are drawn from, the commoner ones listed more than once.
+// A northern lake camp gets sun, wind, cloud, rain, a storm and morning fog; a tropical island is hot,
+// with sudden storms; a film lot in the sun; a carnival in the autumn woods, grey and foggy.
+const CLIMATE = {
+  'hosted-camp': ['sunny', 'sunny', 'calm', 'calm', 'breezy', 'overcast', 'rain', 'storm', 'fog'],
+  'survival-island': ['sunny', 'hot', 'hot', 'calm', 'breezy', 'rain', 'storm', 'sunny'],
+  'film-lot': ['sunny', 'sunny', 'hot', 'calm', 'overcast', 'breezy', 'fog'],
+  'world-tour': ['sunny', 'calm', 'breezy', 'overcast', 'rain', 'fog', 'hot'],
+  carnival: ['overcast', 'overcast', 'fog', 'breezy', 'calm', 'rain', 'storm', 'sunny'],
+};
+export const WEATHER_LABEL = { sunny: 'Sunny', calm: 'Clear', breezy: 'Windy', overcast: 'Overcast', rain: 'Rain', storm: 'Storm', fog: 'Fog', hot: 'Heatwave' };
 /** The day's weather at a venue: one per episode, the same on every replay. */
-export function weatherOf(venue, ep) { let h = 2166136261; for (const c of `${venue}|${ep}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return WEATHER[(h >>> 0) % WEATHER.length]; }
+export function weatherOf(venue, ep) {
+  const c = CLIMATE[venue] || CLIMATE['hosted-camp'];
+  let h = 2166136261; for (const ch of `${venue}|${ep}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  return c[(h >>> 0) % c.length];
+}
 /** What the live layer is made of, for the ambience (sound.js). */
 export function worldSound(screen, L) {
   const key = L.conf ? (plateKey(screen.venue, 'confessional', 'day') || L.scene?.plate) : L.scene?.plate;
@@ -108,7 +137,9 @@ export function worldSound(screen, L) {
   // the venue's own soundscape, and the day's weather in it (the same day, the same weather)
   const scape = island || spot === 'confessional' ? null
     : { venue: screen.venue, night, open: !indoor, shore: M.m.some(m => m.kind === 'water'), weather: weatherOf(screen.venue, screen.ep) };
-  return { rain: /^islands\/rescue-/.test(key || ''), fire: M.m.filter(m => m.kind === 'fire').length, water: M.m.some(m => m.kind === 'water') && !scape,
+  const wx = scape?.weather, wet = wx === 'rain' || wx === 'storm';
+  const isleRain = /^islands\/rescue-/.test(key || '');
+  return { rain: isleRain || (wet && !indoor), storm: isleRain || (wx === 'storm' && !indoor), fire: M.m.filter(m => m.kind === 'fire').length, water: M.m.some(m => m.kind === 'water') && !scape,
     outdoor: !indoor && !scape, night, indoor, flies: spot === 'confessional', crowd: screen.venue === 'carnival' && /midway|entrance|big-top/.test(spot), scape };
 }
 
@@ -217,6 +248,9 @@ export function hudHtml(screen, L, fresh, o = {}) {
   const place = L.conf ? 'The Confession Cam' : (sc.place || '');
   const freshLoc = fresh && (s.k === 'scene' || (s.k === 'conf' && L.idx > 0 && screen.steps[L.idx - 1]?.k !== 'conf'));
   h += `<div class="tdx-loc${freshLoc ? ' fresh' : ''}"><div class="ic"><svg viewBox="0 0 24 24">${iconFor(L.conf ? 'confessional' : (sc.spot || ''))}</svg></div><div class="txt"><div class="place">${esc(place)}</div><div class="when"><b>Episode ${esc(screen.ep)}</b>${sc.time && !L.conf ? ' · ' + esc(sc.time) : ''}${sc.cut && !L.conf ? ' · meanwhile' : ''}</div></div></div>`;
+  // the day's weather, as a chip: the same weather the set shows and the sound plays
+  const wx = !L.conf && sc.plate && !/^islands\//.test(sc.plate) ? weatherOf(screen.venue, screen.ep) : null;
+  if (wx) h += `<div class="tdx-wx"><svg viewBox="0 0 24 24">${WX_ICON[wx === 'calm' && /-night$/.test(sc.plate) ? 'night' : wx] || ''}</svg>${esc(wx === 'calm' && /-night$/.test(sc.plate) ? 'Clear night' : WEATHER_LABEL[wx])}</div>`;
   if (screen.team && !L.conf) h += `<div class="tdx-team" style="--tc:${esc(o.teamColor || '#4fb84a')}">${esc(screen.team)}</div>`;
   if (screen.kind === 'tribal' && !sc.exit) {
     if (VENUE_ITEM[screen.venue]) {
@@ -236,6 +270,17 @@ export function hudHtml(screen, L, fresh, o = {}) {
   if (s.k === 'out') h += `<div class="tdx-outcard${fresh ? ' fresh' : ''}"><img src="${esc(avatar(s.who))}" alt=""><div>${esc(s.who)}</div><span>${s.island ? 'Voted out' : 'Eliminated'}</span></div>`;
   return h;
 }
+const WX_ICON = {
+  sunny: '<circle cx="12" cy="12" r="5" fill="#ffc23a"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4M4 4l3 3M17 17l3 3M4 20l3-3M17 7l3-3" stroke="#ffc23a" stroke-width="2" stroke-linecap="round"/>',
+  hot: '<circle cx="12" cy="10" r="5" fill="#ff8a1f"/><path d="M4 19c2-2 4 2 6 0s4 2 6 0 4 2 4 0" stroke="#ff8a1f" stroke-width="2" fill="none"/>',
+  calm: '<circle cx="9" cy="9" r="4" fill="#ffd27a"/><path d="M8 18a4 4 0 0 1 0-8 5 5 0 0 1 9.5 1.5A3.5 3.5 0 0 1 17 18z" fill="#eef3fb"/>',
+  night: '<path d="M15 3a8 8 0 1 0 6 13A7 7 0 0 1 15 3z" fill="#f4f0d8"/>',
+  breezy: '<path d="M3 8h11a3 3 0 1 0-3-3M3 13h16a3 3 0 1 1-3 3M3 18h8" stroke="#bfe6ff" stroke-width="2" fill="none" stroke-linecap="round"/>',
+  overcast: '<path d="M6 19a5 5 0 0 1 0-10 7 7 0 0 1 13 2 4 4 0 0 1 0 8z" fill="#b8c0d0"/>',
+  rain: '<path d="M6 14a4 4 0 0 1 0-8 6 6 0 0 1 11 1.5A3.5 3.5 0 0 1 17 14z" fill="#b8c0d0"/><path d="M8 17l-1 4M12 17l-1 4M16 17l-1 4" stroke="#8ac8ff" stroke-width="2" stroke-linecap="round"/>',
+  storm: '<path d="M6 13a4 4 0 0 1 0-8 6 6 0 0 1 11 1.5A3.5 3.5 0 0 1 17 13z" fill="#8a92a8"/><path d="M12 13l-3 5h3l-2 5 5-7h-3l2-3z" fill="#ffd23a"/>',
+  fog: '<path d="M3 8h18M5 12h14M3 16h18M7 20h10" stroke="#d8dde6" stroke-width="2.2" stroke-linecap="round"/>',
+};
 // what was found, held up to the camera: the idol a totem, an amulet a pendant, a vote a scroll
 const ITEM_ART = {
   idol: '<path d="M18 10h24l4 18-6 8 6 10-4 34H18l-4-34 6-10-6-8z" fill="#c89a3a" stroke="#3a2210" stroke-width="3"/><circle cx="24" cy="24" r="4" fill="#3a2210"/><circle cx="36" cy="24" r="4" fill="#3a2210"/><path d="M22 34h16M24 56h12M22 66h16" stroke="#3a2210" stroke-width="3"/>',

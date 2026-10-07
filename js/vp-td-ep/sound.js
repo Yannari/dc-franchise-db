@@ -55,11 +55,14 @@ function scape(ctx, dest, sc, { noise, filt, gain, every, lfo }) {
   const lapping = v => every(() => burst(380 + Math.random() * 200, 1.2, .5 + Math.random() * .5, v, 'lowpass'), 900, 2600);
   const surf = v => { const s = noise(), lp = filt('lowpass', 700), g = gain(0); s.connect(lp); lp.connect(g); g.connect(dest); s.start(); lfo(g.gain, .09, v * .9, v); };
   const thunderFar = () => every(() => burst(90, .7, 3.5, .14, 'lowpass'), 25000, 60000);
-  const busy = { calm: 1, breezy: 1, birdsong: 2.2, hot: .6, overcast: .35 }[W] || 1;
-  const windy = { calm: .012, breezy: .04, birdsong: .012, hot: .008, overcast: .026 }[W] || .015;
+  const busy = { sunny: 1.7, calm: 1, breezy: 1, birdsong: 2.2, hot: .6, overcast: .35, rain: .05, storm: 0, fog: .3 }[W] ?? 1;
+  const windy = { sunny: .01, calm: .012, breezy: .04, birdsong: .012, hot: .008, overcast: .026, rain: .02, storm: .07, fog: .005 }[W] ?? .015;
 
   if (!sc.open) {
-    // indoors: the room tone, and the weather faintly through the walls
+    // indoors: the room tone, and the weather faintly through the walls; rain drums on the roof
+    if (W === 'rain' || W === 'storm') { const s = noise(), lp = filt('lowpass', 900), g = gain(W === 'storm' ? .06 : .04); s.connect(lp); lp.connect(g); g.connect(dest); s.start();
+      every(() => burst(1400 + Math.random() * 900, 3, .03, .02, 'bandpass'), 40, 160);
+      if (W === 'storm') every(() => burst(80, .7, 3.0, .2, 'lowpass'), 12000, 26000); }
     if (W === 'breezy' || W === 'overcast') wind(300, .008);
     if (!sc.night && sc.venue !== 'world-tour' && W !== 'overcast') every(songbird, 6000 / busy, 15000 / busy);
     if (sc.night) crickets(.003);
@@ -112,7 +115,7 @@ function scape(ctx, dest, sc, { noise, filt, gain, every, lfo }) {
     wind(400, windy);
     if (sc.night) crickets(); else every(songbird, 2000 / busy, 6000 / busy);
   }
-  if (W === 'overcast') thunderFar();
+  if (W === 'overcast' || W === 'rain') thunderFar();
 }
 
 function build(ctx, dest, spec) {
@@ -148,7 +151,7 @@ function build(ctx, dest, spec) {
     const s = noise(), hp = filt('highpass', 1400), lp = filt('lowpass', 7000), g = gain(.07); s.connect(hp); hp.connect(lp); lp.connect(g); g.connect(dest); s.start();
     every(() => { const t = ctx.currentTime, n = noise(), bp = filt('bandpass', 2500 + Math.random() * 2500, 4), e = gain(0); n.connect(bp); bp.connect(e); e.connect(dest);
       e.gain.setValueAtTime(.05 + Math.random() * .06, t); e.gain.exponentialRampToValueAtTime(.001, t + .02); n.start(t); n.stop(t + .05); }, 30, 140);
-    every(() => { const t = ctx.currentTime, n = noise(), lp2 = filt('lowpass', 120), e = gain(0); n.connect(lp2); lp2.connect(e); e.connect(dest);
+    if (spec.storm) every(() => { const t = ctx.currentTime, n = noise(), lp2 = filt('lowpass', 120), e = gain(0); n.connect(lp2); lp2.connect(e); e.connect(dest);
       e.gain.linearRampToValueAtTime(.35, t + .4); e.gain.exponentialRampToValueAtTime(.001, t + 3.2); n.start(t); n.stop(t + 3.3); }, 9000, 20000);
   }
   if (spec.indoor) { const s = noise(), lp = filt('lowpass', 180), g = gain(.045); s.connect(lp); lp.connect(g); g.connect(dest); s.start(); }

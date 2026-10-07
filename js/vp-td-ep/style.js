@@ -278,6 +278,30 @@ export const TDX_CSS = `
 @keyframes tdxRain{to{transform:translate(-14cqw,62cqw) rotate(12deg)}}
 .tdx .tdx-flash{position:absolute;inset:0;background:#dfe6ff;opacity:0;mix-blend-mode:screen;animation:tdxFlash 14s linear infinite}
 @keyframes tdxFlash{0%,90.5%,92%,93.5%,100%{opacity:0}91%{opacity:.5}93%{opacity:.3}}
+.tdx .tdx-rays{position:absolute;inset:-30% -10% 10% -30%;pointer-events:none;mix-blend-mode:screen;opacity:.85;
+  background:repeating-conic-gradient(from 200deg at 12% 0%,rgba(255,236,170,.0) 0deg 6deg,rgba(255,236,170,.55) 8deg 12deg,rgba(255,236,170,0) 14deg 21deg),radial-gradient(ellipse at 12% 0%,rgba(255,214,120,.55),rgba(255,214,120,0) 55%);
+  -webkit-mask:radial-gradient(ellipse at 12% 0%,#000 30%,transparent 80%);mask:radial-gradient(ellipse at 12% 0%,#000 30%,transparent 80%);animation:tdxRays 18s ease-in-out infinite alternate}
+.tdx .tdx-rays.hot{opacity:.8;filter:sepia(.4) saturate(1.6)}
+@keyframes tdxRays{from{transform:rotate(-2deg)}to{transform:rotate(3deg)}}
+.tdx .tdx-haze{position:absolute;left:0;right:0;top:45%;height:22%;pointer-events:none;background:linear-gradient(transparent,rgba(255,200,120,.16),transparent);animation:tdxHaze 3.2s ease-in-out infinite alternate}
+@keyframes tdxHaze{from{transform:scaleY(1) translateY(0)}to{transform:scaleY(1.15) translateY(-1.5%)}}
+.tdx .tdx-grey{position:absolute;inset:0;pointer-events:none;background:linear-gradient(rgba(70,80,100,.42),rgba(60,66,80,.22));mix-blend-mode:multiply;-webkit-backdrop-filter:saturate(.6);backdrop-filter:saturate(.6)}
+.tdx .tdx-grey.storm{background:linear-gradient(rgba(36,40,60,.62),rgba(40,44,60,.4))}
+.tdx .tdx-grey.night{background:linear-gradient(rgba(20,24,40,.35),rgba(20,24,40,.2))}
+.tdx .tdx-grey.indoor{background:rgba(40,46,62,.28)}
+.tdx .tdx-rain.hard{width:1.5px;height:10%;transform:rotate(22deg);animation-name:tdxRainHard}
+@keyframes tdxRainHard{to{transform:translate(-26cqw,62cqw) rotate(22deg)}}
+.tdx .tdx-splash{position:absolute;width:1.2%;height:.5%;border:1px solid rgba(220,230,255,.7);border-radius:50%;opacity:0;animation:tdxSplash 1.2s ease-out var(--dl) infinite}
+@keyframes tdxSplash{0%{transform:scale(.2);opacity:.9}100%{transform:scale(1.8);opacity:0}}
+.tdx .tdx-flash.soft{animation-duration:19s;opacity:0;background:#cfd8ff}
+.tdx .tdx-mist{position:absolute;left:-40%;width:180%;height:16%;pointer-events:none;border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(235,240,245,.55),rgba(235,240,245,0) 70%);filter:blur(6px);animation:tdxMist var(--d) ease-in-out var(--dl) infinite alternate}
+@keyframes tdxMist{from{transform:translateX(-8%)}to{transform:translateX(12%)}}
+.tdx .tdx-leaf.gust{animation-timing-function:cubic-bezier(.3,.2,.6,1)}
+.tdx .tdx-wx{position:absolute;right:1.6cqw;top:1.6cqw;display:flex;align-items:center;gap:.5cqw;font:400 1.15cqw/1 'Lilita One',sans-serif;letter-spacing:.04em;color:#fff;
+  background:rgba(14,16,26,.82);padding:.55cqw .9cqw .5cqw .7cqw;border-radius:99px}
+.tdx .tdx-wx svg{width:1.6cqw;height:1.6cqw}
+@media (prefers-reduced-motion:reduce){.tdx .tdx-rays,.tdx .tdx-haze,.tdx .tdx-mist,.tdx .tdx-rain,.tdx .tdx-splash,.tdx .tdx-flash{animation:none}}
 .tdx .tdx-bolt{position:absolute;inset:0;background:#e8eeff;mix-blend-mode:screen;animation:tdxBolt .9s ease-out forwards;pointer-events:none}
 @keyframes tdxBolt{0%{opacity:0}8%{opacity:.85}20%{opacity:.1}30%{opacity:.6}100%{opacity:0}}
 .tdx .tdx-title.out .band{background:var(--rd)}.tdx .tdx-title.out .kicker{color:#fff}

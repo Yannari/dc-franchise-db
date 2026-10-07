@@ -87,7 +87,7 @@ describe('the camp map', () => {
 });
 
 // each venue's own map: every conversation of a season played there lands on one of that map's zones
-describe.each([['film-lot', ['trailers', 'craft-services', 'studio-backlot', 'soundstage-corridor', 'prop-storage', 'confessional']]])('the %s map', (venue, places) => {
+describe.each([['film-lot', ['trailers', 'craft-services', 'studio-backlot', 'soundstage-corridor', 'prop-storage', 'confessional']], ['world-tour', ['economy', 'aisle', 'galley', 'cargo-hold', 'first-class', 'destination-staging', 'confessional']]])('the %s map', (venue, places) => {
   let veps = [];
   beforeAll(() => {
     seededRun(() => runOneSeason({ romance: 'enabled', setting: venue }, 12, NAMES.slice(0, 12).map((n, i) => ({ ...roster.find(r => r.name === n), tribe: i % 2 ? 'Bass' : 'Gophers' }))), 778);

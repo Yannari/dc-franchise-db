@@ -91,6 +91,14 @@ const STAGE = {
       ['craft-services', 2, null, 'evening'], ['studio-backlot', 2, null, 'evening'], ['trailers', 1, null, 'evening']],
     trailers: [['trailers', 3], ['soundstage-corridor', 1, null, 'evening']],
   },
+  // the jet's clock: meals in the galley, the morning queue in the aisle, economy the rest of the time
+  'world-tour': {
+    economy: [['galley', 4, /^(crowd\.(meal|dinner)|hosted\.slop|life\.(food|meal|hunger)|drama\.mess)/],
+      ['galley', 2, null, 'morning'], ['aisle', 2, null, 'morning'], ['economy', 2, null, 'morning'],
+      ['economy', 3, null, 'day'], ['aisle', 2, null, 'day'],
+      ['economy', 3, null, 'return'], ['aisle', 1, null, 'return'],
+      ['galley', 1, null, 'evening'], ['economy', 3, null, 'evening'], ['aisle', 1, null, 'evening']],
+  },
 };
 const PLACE_WORDS = { dock: /\b(dock|lake)\b/i, 'forest-trail': /\b(woods|forest|trail)\b/i, cabins: /\b(cabins?|porch)\b/i, campfire: /\bfire\b/i, 'mess-hall': /\b(mess hall|slop|tray|Chef)\b/i, 'communal-grounds': /\b(grounds|yard)\b/i };
 export function stageSpot(venue, spot, ev, windowId) {

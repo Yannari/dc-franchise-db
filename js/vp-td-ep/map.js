@@ -19,10 +19,11 @@
 // Nothing here decides anything. Where a conversation is drawn is where the stepped stage stages
 // it (stageSpot); who is idle where is the engine's own schedule (ep.campAccess).
 import { TD_MARKS } from './marks.js';
+import { ACCESS_PROFILES } from '../camp-access.js';
 import { tdCampScreen, stageSpot, venueOf, VENUES, placeName } from './steps.js';
 
 // the venues with a painted map (tools/td-camp: '<venue>/map-day'), and how their teams live
-export const MAP_VENUES = { 'hosted-camp': { shared: true }, 'film-lot': { shared: true } };
+export const MAP_VENUES = { 'hosted-camp': { shared: true }, 'film-lot': { shared: true }, 'world-tour': { shared: true } };
 export const hasMap = venue => !!(MAP_VENUES[venue] && TD_MARKS[`${venue}/map-day`]);
 
 // which zone on the map each staged place belongs to; a zone may hold more than one place
@@ -32,9 +33,12 @@ const ZONE_OF = {
     confessional: 'confessional', campfire: 'campfire', dock: 'dock', beach: 'beach', 'forest-trail': 'forest-trail', cliff: 'cliff' },
   'film-lot': { trailers: 'trailers', 'craft-services': 'craft-services', 'studio-backlot': 'studio-backlot',
     'soundstage-corridor': 'soundstage-corridor', 'prop-storage': 'prop-storage', confessional: 'confessional' },
+  'world-tour': { economy: 'economy', aisle: 'aisle', galley: 'galley', 'cargo-hold': 'cargo-hold', 'first-class': 'first-class',
+    'destination-staging': 'destination-staging', confessional: 'confessional' },
 };
 export const ZONE_LABEL = { cabins: 'The Cabins', 'mess-hall': 'The Mess Hall', washroom: 'The Washrooms', 'communal-grounds': 'The Camp Grounds',
   trailers: 'The Trailers', 'craft-services': 'Craft Services', 'studio-backlot': 'The Backlot', 'soundstage-corridor': 'The Soundstages', 'prop-storage': 'Prop Storage',
+  economy: 'Economy Class', aisle: 'The Aisle', galley: 'The Galley', 'cargo-hold': 'The Cargo Hold', 'first-class': 'First Class', 'destination-staging': 'Down on the Ground',
   confessional: 'The Confession Cam', campfire: 'The Campfire', dock: 'The Dock', beach: 'The Beach', 'forest-trail': 'The Forest Trail', cliff: 'The Cliff' };
 export const PLACE_LABEL = { cabins: 'Porch', 'cabin-inside': 'Inside' };
 
@@ -101,7 +105,11 @@ export function tdCampMap(ep, phase, camps, o = {}) {
       const engineSpot = ev.scene?.spot?.id || ev.access?.locationId || VENUES[venue].public;
       let win = ev.scene?.spot?.window || ev.access?.windowId || order[Math.min(order.length - 1, Math.floor(k / Math.max(1, Math.ceil(events.length / order.length))))];
       if (!order.includes(win)) win = order[order.length - 1];
-      const place = confOnly || engineSpot === 'confessional' ? 'confessional' : stageSpot(venue, engineSpot, ev, win);
+      let place = confOnly || engineSpot === 'confessional' ? 'confessional' : stageSpot(venue, engineSpot, ev, win);
+      // the viewer's restaging never packs a small room: past a third of its capacity in one window
+      // (two talks in the jet's galley), a talk stays where the engine put it
+      const cap = (ACCESS_PROFILES[venue] || []).find(l => l.id === place)?.capacity;
+      if (place !== engineSpot && cap && convs.filter(c => c.window === win && c.place === place).length >= Math.max(2, Math.ceil(cap / 3))) place = engineSpot;
       const zone = zoneOf[place] || (zones[place] ? place : zoneOf[VENUES[venue].public] || VENUES[venue].public);
       // the conversation, played on its own: the same steps the linear camp screen gives it
       const screen = tdCampScreen({ ...ep, campEvents: { [camp]: phase === 'pre' ? { pre: [ev], post: [] } : { pre: [], post: [ev] } } }, camp, phase, [], o);

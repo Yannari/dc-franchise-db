@@ -364,9 +364,12 @@ function mapPaint(uid, fresh) {
     const idle = (W.idle[R.zone] || []).filter(n => !talking.includes(n));
     people = [...talking, ...idle].slice(0, 9);
     const places = placeScene(plate, people.slice(0, 9), []);
+    // a crowded room (a small galley at breakfast) draws everyone smaller, so faces do not stack
+    const crowd = people.length > 6 ? 0.72 : people.length > 4 ? 0.86 : 1;
+    R.crowd = crowd;
     toks = people.filter(n => places[n]).map(n => {
       const pl = places[n];
-      return tokHtml({ n, u: pl.u, v: pl.v, h: Math.max(Math.min(pl.s * 125, 32), 15), bg: !talking.includes(n), dim: !talking.includes(n) }, fresh);
+      return tokHtml({ n, u: pl.u, v: pl.v, h: Math.max(Math.min(pl.s * 125, 32), 15) * crowd, bg: !talking.includes(n), dim: !talking.includes(n) }, fresh);
     }).join('');
     R.place = place;
     R.places = places;
@@ -440,12 +443,21 @@ function zoneHtml(uid, R, here) {
   const M = R.map;
   const placesHere = [...new Set(here.map(c => c.place))];
   const tabs = placesHere.length > 1 ? `<div class="tdm-places">${placesHere.map(p => `<button type="button" class="${p === R.place ? 'on' : ''}" onclick="tdmPlace('${uid}','${p}')">${esc(PLACE_LABEL[p] || placeName(p))}</button>`).join('')}</div>` : '';
+  // each bubble over one of its own speakers, a speaker no other bubble has taken when there is one;
+  // a bubble that would overlap another is lifted until it clears, nearest first (as the map pins are)
+  const taken = new Set(), boxes = [];
   const bubbles = here.filter(c => c.place === R.place).map(c => {
-    const anchor = c.who.find(n => R.places?.[n]);
+    const anchor = c.who.find(n => R.places?.[n] && !taken.has(n)) || c.who.find(n => R.places?.[n]);
+    if (anchor) taken.add(anchor);
     const pl = anchor ? R.places[anchor] : { u: .5, v: .5, s: .2 };
-    const h = Math.max(Math.min(pl.s * 125, 32), 15) / 100;
+    const h = Math.max(Math.min(pl.s * 125, 32), 15) * (R.crowd || 1) / 100;
+    const u = pl.u * 100, w = c.title.length * .62 + 4.2;
+    let top = (pl.v - h - .035) * 100;
+    const hit = t => boxes.some(b => u - w / 2 < b.x1 + .6 && u + w / 2 > b.x0 - .6 && t - 4.2 < b.y1 + .4 && t > b.y0 - .4);
+    while (hit(top) && top > 8) top -= 2.2;
+    boxes.push({ x0: u - w / 2, x1: u + w / 2, y0: top - 4.2, y1: top });
     const st = R.seen.has(c.i) ? 'done' : c.key ? 'key' : 'talk';
-    return `<button type="button" class="tdm-bub ${st}" style="left:${(pl.u * 100).toFixed(2)}%;top:${((pl.v - h - .035) * 100).toFixed(2)}%" onclick="tdmPlay('${uid}',${c.i})">
+    return `<button type="button" class="tdm-bub ${st}" style="left:${u.toFixed(2)}%;top:${top.toFixed(2)}%" onclick="tdmPlay('${uid}',${c.i})">
       <i>${st === 'done' ? ICON_TICK : st === 'key' ? ICON_STAR : ICON_BUBBLE}</i><span>${esc(c.title)}</span></button>`;
   }).join('');
   return `<button type="button" class="tdm-back" onclick="tdmMap('${uid}')">◀ Camp map</button>${tabs}${bubbles}`;

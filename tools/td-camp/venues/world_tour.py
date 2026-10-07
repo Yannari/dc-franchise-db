@@ -358,9 +358,152 @@ def wt_exit(tod):
     tv_camera((0.2, 0.1, 1.6), (0, D + 4, 0.9), lens=18)
 
 
+def wt_map(tod):
+    """The jet in cross-section, flying: the World Tour plane (TotalDramaJumboJet001: a dark grey
+    flying boat, a high wing, a tall fin with the show's round crest) with its near side cut away so
+    every compartment is a lit room: first class's cream walls, yellow sofa and purple seats; economy's
+    dark ribs, benches and laundry line; the aisle with its red curtain and drinks cart; the
+    confessional's restroom door; the galley's arched doors and stools; the rear compartment's tiki
+    masks; the cargo hold under the deck. Far below, through the clouds, the dusty airstrip wherever
+    it lands next (no country is ever named or drawn). Each place carries a 'zone' mark."""
+    paint_mode(); day = tod == 'day'
+
+    def fc(nm, pts, y, col, x=0.0, z=0.0, night=True):
+        return card(uid(nm), pts, y, pmat('WM' + nm + col + tod, N(col, tod) if night else col, unlit=True, mottle=0.18, mscale=0.6), x=x, z=z)
+
+    def rect(nm, x0, x1, z0, z1, y, col, night=False):
+        return fc(nm, [(x0, z0), (x1, z0), (x1, z1), (x0, z1)], y, col, night=night)
+
+    if day:
+        paint_sky('#7cc4e4', '#d8eef2'); swirl_sun(-30, 60, 24, 5.0, tod)
+    else:
+        paint_sky('#1e2446', '#384070'); swirl_sun(-30, 60, 24, 3.4, tod)
+    # far below: the land it is about to drop onto, a river through dusty hills and the airstrip
+    fc('Land', [(-140, -90)] + [(-140 + i * 7, -14 + 2.2 * math.sin(i * 0.9) + 1.5 * math.sin(i * 0.37)) for i in range(41)] + [(140, -90)], 30, '#c8a46a')
+    fc('LandBand', [(-140, -90)] + [(-140 + i * 7, -20 + 1.8 * math.sin(i * 0.6)) for i in range(41)] + [(140, -90)], 29.8, '#a8885a')
+    fc('River', [(-140, -18), (-60, -16.6), (-20, -20), (30, -17.4), (140, -19), (140, -20.2), (30, -18.6), (-20, -21.4), (-60, -17.8), (-140, -19.2)], 29.6, '#3aa8b0')
+    rect('Airstrip', 12, 46, -24.4, -22.8, 29.4, N('#6f6a64', tod))
+    for k in range(6):
+        rect('StripDash', 15 + k * 5.4, 17 + k * 5.4, -23.75, -23.45, 29.3, N('#f0e6c0', tod))
+    # the air between: a pale haze over the land, so it reads as far below
+    card(uid('Haze'), [(-160, -90), (160, -90), (160, -8), (-160, -8)], 24, pmat('WMHaze' + tod, '#d8eef2' if day else '#384070', unlit=True, mottle=0, alpha=0.38))
+    for (cx, cz, cs) in ((-60, -6, 7.0), (-24, -9, 6.0), (6, -5, 5.0), (40, -8, 6.5), (70, -4, 5.0), (-48, 22, 4.0), (48, 26, 3.6)):
+        curly_cloud(cx, 18, cz, cs, '#eef3fb' if day else '#8a94b8', '#b9c6e0' if day else '#5a6490')
+    # the airframe: hull, fin, wing root, tailplane
+    HULLC = '#4a5258'
+    fc('Hull', [(-27, 16.4), (21, 16.4), (25, 17.2), (31, 20.0), (32, 18.6), (32, 13.2), (27, 10.6), (17, 1.6), (-24, 1.6), (-29.2, 3.4), (-32.4, 6.8), (-32.6, 10.2), (-30.6, 13.8)], 5.0, HULLC)
+    fc('Keel', [(-24, 1.6), (17, 1.6), (15, 0.6), (-21, 0.6)], 4.9, '#3a4046')
+    fc('Fin', [(23, 16.8), (27.4, 27.0), (30.6, 27.6), (31.6, 19.4)], 5.2, HULLC)
+    fc('Crest', _blob_pts(1.2, 1.2, 28, 0, 0), 4.6, '#e0922a', x=28.8, z=23.4)
+    fc('CrestIn', _blob_pts(0.7, 0.7, 20, 0, 0), 4.5, '#8a3a1a', x=28.8, z=23.4)
+    fc('Tailplane', [(25, 18.6), (34.5, 19.4), (34.5, 20.0), (25, 19.6)], 4.4, '#3a4046')
+    fc('WingRoot', [(-9, 16.2), (9, 16.2), (7, 17.6), (-7, 17.6)], 5.4, '#3a4046')
+    for ex in (-6.0, 2.5):
+        fc('Nacelle', [(ex - 2.4, 17.0), (ex + 2.6, 17.0), (ex + 2.2, 18.4), (ex - 2.0, 18.4)], 5.3, '#5a6268')
+        rect('Prop', ex - 2.9, ex - 2.6, 15.6, 19.8, 5.25, N('#2a2e32', tod))
+    fc('Windshield', [(-31.2, 11.0), (-28.8, 11.2), (-28.6, 13.6), (-30.0, 13.6)], -0.6, '#9ad8e8' if day else '#2a3a6a')
+    # the cut: the rooms, behind the hull's rim (lit from inside, so they keep their colours at night)
+    TOP, DECK, LOW = 15.2, 8.2, 2.8
+    rect('CargoWall', -14, 15.5, LOW, DECK - 0.5, 3.0, '#323e44')
+    rect('Bilge', -26.5, -14, LOW + 0.4, DECK - 0.5, 3.0, '#262e34')
+    rect('FirstWall', -26.5, -13, DECK, TOP, 3.0, '#d8cca8')
+    rect('EconWall', -13, 1.8, DECK, TOP, 3.0, '#36444c')
+    rect('AisleWall', 1.8, 6.6, DECK, TOP, 3.0, '#46545c')
+    rect('ConfWall', 6.6, 8.8, DECK, TOP, 3.0, '#6a7a82')
+    rect('GalleyWall', 8.8, 16.0, DECK, TOP, 3.0, '#4a5a62')
+    rect('RearWall', 16.0, 23.2, DECK, TOP, 3.0, '#3a3028')
+    # floors and the deck between them
+    rect('Deck', -26.6, 23.4, DECK - 0.5, DECK, -0.4, '#1e262c')
+    rect('Carpet', -26.5, -13, DECK, DECK + 0.25, -0.3, '#c8503a')
+    rect('Runner', 1.8, 6.6, DECK, DECK + 0.18, -0.3, '#7a3a3a')
+    rect('HoldFloor', -14, 15.5, LOW, LOW + 0.3, -0.3, '#1e262c')
+    for x in (-13.15, 1.65, 6.45, 8.65, 15.85):
+        rect('Bulkhead', x, x + 0.32, DECK, TOP, -0.35, '#1e262c')
+    # the rim around the cut
+    rect('RimTop', -27.0, 23.6, TOP, TOP + 0.4, -0.5, '#2a3036')
+    rect('RimBot', -24.0, 16.8, LOW - 0.4, LOW, -0.5, '#2a3036')
+    rect('RimNose', -27.0, -26.5, LOW + 0.9, TOP + 0.4, -0.5, '#2a3036')
+    rect('RimTail', 23.2, 23.6, DECK - 0.5, TOP + 0.4, -0.5, '#2a3036')
+    rect('RimHold', 15.5, 15.9, LOW, DECK, -0.5, '#2a3036')
+    # first class: the long yellow sofa, purple seats, a curtained window
+    rect('Sofa', -25.4, -20.4, DECK + 0.25, DECK + 1.3, 1.0, '#d8a83a')
+    rect('SofaBack', -25.4, -20.4, DECK + 1.3, DECK + 2.4, 1.6, '#c8982a')
+    for x in (-24.4, -22.2):
+        fc('Pillow', _blob_pts(0.6, 0.5, 16, 0, 0), 0.9, '#f2e2a0', x=x, z=DECK + 1.6, night=False)
+    for k in range(3):
+        rect('PSeat', -19.2 + k * 1.9, -17.8 + k * 1.9, DECK + 0.9, DECK + 1.3, 0.9, '#6a3a8a')
+        rect('PSeatBack', -17.9 + k * 1.9, -17.5 + k * 1.9, DECK + 0.9, DECK + 3.2, 0.95, '#5a2a7a')
+    rect('FWin', -23.6, -21.6, DECK + 3.6, DECK + 5.6, 2.6, '#9ad8e8' if day else '#2a3a6a')
+    for x in (-24.2, -21.6):
+        rect('FCurtain', x, x + 0.6, DECK + 3.2, DECK + 6.0, 2.5, '#a82a2a')
+    # economy: dark ribs, the bench down the wall, portholes, the laundry line
+    for k in range(7):
+        rect('Rib', -12.4 + k * 2.1, -12.1 + k * 2.1, DECK, TOP, 2.9, '#56666e')
+    rect('Bench', -12.6, 1.4, DECK + 1.1, DECK + 1.4, 1.0, '#8a5a32')
+    for x in (-12.0, -7.0, -2.0, 1.0):
+        rect('BenchLeg', x, x + 0.3, DECK, DECK + 1.1, 1.05, '#5a3a22')
+    for k in range(5):
+        fc('EPort', _blob_pts(0.42, 0.42, 16, 0, 0), 2.8, '#9ad8e8' if day else '#2a3a6a', x=-11.0 + k * 2.8, z=DECK + 3.4, night=False)
+    fc('Line', [(-11.5, DECK + 5.4), (0.5, DECK + 5.0), (0.5, DECK + 5.08), (-11.5, DECK + 5.48)], 1.2, '#d8d0b8', night=False)
+    for k, c in enumerate(('#a8786a', '#d8c8a8', '#6a8aa8', '#c8a050')):
+        rect('Laundry', -10.0 + k * 2.6, -9.0 + k * 2.6, DECK + 3.9, DECK + 5.3, 1.1, c)
+    rect('Bin', -12.6, 1.4, TOP - 1.2, TOP - 0.3, 1.2, '#2a363e')
+    # the aisle: the red curtain, the drinks cart
+    rect('Curtain', 1.95, 3.0, DECK + 0.2, TOP - 0.3, 1.0, '#a82a3a')
+    rect('Cart', 4.0, 5.6, DECK + 0.2, DECK + 2.3, 1.0, '#b8bcc4')
+    rect('CartTop', 3.9, 5.7, DECK + 2.3, DECK + 2.5, 0.95, '#d8dce2')
+    # the confessional: the restroom door with its little sign
+    rect('ConfDoor', 7.0, 8.4, DECK + 0.2, DECK + 4.6, 1.0, '#8a9aa2')
+    rect('ConfSign', 7.3, 8.1, DECK + 3.4, DECK + 4.1, 0.9, '#e8c23a')
+    fc('ConfKnob', _blob_pts(0.12, 0.12, 10, 0, 0), 0.9, '#2a2a2a', x=8.1, z=DECK + 2.3, night=False)
+    # the galley: arched double doors, the steel counter and its pot, the table and stools, the extinguisher
+    for x0 in (9.4, 10.6):
+        fc('GDoor', [(x0, DECK + 0.2), (x0 + 1.1, DECK + 0.2), (x0 + 1.1, DECK + 3.8), (x0 + 0.55, DECK + 4.3), (x0, DECK + 3.8)], 2.6, '#4f6a70', night=False)
+        rect('GDoorWin', x0 + 0.3, x0 + 0.8, DECK + 2.4, DECK + 3.3, 2.5, '#7ab0b8')
+    rect('Counter', 12.4, 15.6, DECK + 0.2, DECK + 2.0, 1.0, '#8a9098')
+    rect('CounterTop', 12.3, 15.7, DECK + 2.0, DECK + 2.25, 0.95, '#b8bcc4')
+    fc('Pot', [(13.0, DECK + 2.25), (14.0, DECK + 2.25), (14.1, DECK + 3.2), (12.9, DECK + 3.2)], 0.9, '#7a7a82', night=False)
+    rect('Table', 9.0, 11.8, DECK + 1.5, DECK + 1.75, 0.9, '#9a8a5a')
+    rect('TableLeg', 10.3, 10.5, DECK + 0.2, DECK + 1.5, 0.95, '#4a4a52')
+    for x in (9.0, 11.4):
+        rect('Stool', x, x + 0.7, DECK + 0.2, DECK + 1.1, 0.8, '#5a7a6a')
+    rect('Extinguisher', 15.2, 15.6, DECK + 2.6, DECK + 3.8, 0.9, '#c8302a')
+    # the rear compartment: thatch hut, tiki masks, the hatch the losers leave by
+    fc('Thatch', [(16.6, DECK + 4.6), (22.6, DECK + 4.6), (21.4, DECK + 6.2), (17.8, DECK + 6.2)], 1.6, '#c8a050', night=False)
+    rect('HutPost', 17.0, 17.3, DECK + 0.2, DECK + 4.6, 1.7, '#6a4a2a')
+    rect('HutPost', 22.0, 22.3, DECK + 0.2, DECK + 4.6, 1.7, '#6a4a2a')
+    for k, (x, h) in enumerate(((18.2, 3.4), (19.8, 4.0), (21.4, 3.2))):
+        rect('Tiki', x - 0.55, x + 0.55, DECK + 0.2, DECK + 0.2 + h, 1.0, ('#b8743a', '#a8643a', '#c8844a')[k])
+        for sx in (-0.25, 0.25):
+            fc('TikiEye', _blob_pts(0.18, 0.11, 12, 0, 0), 0.9, '#e8b03a', x=x + sx, z=DECK + 0.2 + h * 0.62, night=False)
+        rect('TikiMouth', x - 0.35, x + 0.35, DECK + 0.2 + h * 0.25, DECK + 0.2 + h * 0.36, 0.9, '#3a1a1a')
+    for k in range(6):
+        rect('Hazard', 16.4 + k * 0.5, 16.65 + k * 0.5, DECK - 0.5, DECK, -0.45, '#e8c23a')
+    # the cargo hold: crates, suitcases, a duffel, the striped hatch
+    for (x, w, h, c, z0) in ((-12.6, 2.2, 2.2, '#a8834f', 0), (-10.2, 1.8, 1.8, '#8a6a3a', 0), (-12.2, 1.6, 1.6, '#b8935f', 2.2),
+                             (-2.0, 2.0, 2.0, '#7a5a32', 0), (0.2, 1.6, 1.5, '#a8834f', 0), (9.5, 2.4, 2.4, '#8a6a3a', 0)):
+        zz = LOW + 0.3 + z0
+        rect('Crate', x, x + w, zz, zz + h, 1.0, c)
+        rect('CrateSlat', x, x + w, zz + h * 0.45, zz + h * 0.55, 0.95, '#5a4228')
+    for (x, c) in ((-6.6, '#7a2a2a'), (-5.0, '#2a4a6a'), (4.0, '#3a5a3a'), (5.6, '#7a6a2a')):
+        rect('Suitcase', x, x + 1.4, LOW + 0.3, LOW + 1.3, 1.0, c)
+        rect('Handle', x + 0.45, x + 0.95, LOW + 1.3, LOW + 1.55, 1.0, '#2a2a2a')
+    fc('Duffel', _blob_pts(1.3, 0.6, 18, 0.05, 3), 1.0, '#4a5a3a', x=7.5, z=LOW + 0.9, night=False)
+    for k in range(7):
+        rect('HoldHazard', 12.4 + k * 0.42, 12.62 + k * 0.42, LOW + 0.3, DECK - 0.6, 2.8, '#e8c23a' if k % 2 == 0 else '#22262a')
+    for (lx, lz) in ((-5.0, TOP - 0.5), (4.2, TOP - 0.5), (12.0, TOP - 0.5), (-19.0, TOP - 0.5), (19.6, TOP - 0.5), (-3.0, DECK - 0.7)):
+        fc('Lamp', [(lx - 0.6, lz - 0.6), (lx + 0.6, lz - 0.6), (lx + 0.3, lz), (lx - 0.3, lz)], 0.6, '#c8a48a', night=False)
+        fc('Glow', _blob_pts(0.5, 0.12, 16, 0, 0), 0.55, '#fff2c0', x=lx, z=lz - 0.65, night=False)
+    for zid, loc in (('first-class', (-19.5, 0, 12.6)), ('economy', (-5.5, 0, 12.6)), ('aisle', (4.2, 0, 12.6)), ('confessional', (7.7, 0, 13.4)),
+                     ('galley', (12.4, 0, 12.6)), ('cargo-hold', (1.0, 0, 6.6)), ('destination-staging', (31.0, 30, -23.6))):
+        mark('zone', loc, id=zid)
+    paint_sun(azimuth=-35, elevation=55 if day else 35, energy=3.0 if day else 1.6)
+    tv_camera((0.5, -72.0, 8.5), (0.5, 0.0, 4.5), lens=33)
+
+
 SCENES['world-tour'] = {
     'economy': wt_economy, 'aisle': wt_aisle, 'galley': wt_galley, 'cargo-hold': wt_cargo,
     'first-class': wt_first, 'destination-staging': wt_destination,
-    'confessional': wt_confessional, 'ceremony': wt_ceremony, 'exit': wt_exit,
+    'confessional': wt_confessional, 'ceremony': wt_ceremony, 'exit': wt_exit, 'map': wt_map,
 }
-OUTDOOR['world-tour'] = {'destination-staging'}
+OUTDOOR['world-tour'] = {'destination-staging', 'map'}

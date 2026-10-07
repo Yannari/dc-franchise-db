@@ -195,3 +195,31 @@ def vmark_stand(pxp, depth, **kw):
     """A place to stand at this pixel on the plane at this depth."""
     x, z = px(pxp, depth)
     stand(x, depth, z, **kw)
+
+
+def vtraced(name, path, depth, step=0.00002):
+    """Draw a traced frame (tools/td-camp/trace.py) as one mesh: every shape a flat face in the frame's
+    pixel space on the plane at `depth`, a material per colour, the biggest shapes furthest back and
+    each smaller one a hair in front, so details sit on top the way the artist layered them."""
+    import json
+    d = json.load(open(os.path.join(REPO, 'tools', 'td-camp', 'traced', path), encoding='utf-8'))
+    me = bpy.data.meshes.new(name); bm = bmesh.new()
+    mats = {}
+    for i, sh in enumerate(d['shapes']):
+        y = depth - i * step
+        vs = []
+        for p in sh['pts']:
+            x, z = px(p, depth)
+            vs.append(bm.verts.new((x, y, z)))
+        try:
+            f = bm.faces.new(vs)
+        except ValueError:
+            continue
+        if sh['c'] not in mats:
+            mats[sh['c']] = len(mats)
+            me.materials.append(vmat(sh['c']))
+        f.material_index = mats[sh['c']]
+    bm.to_mesh(me); bm.free()
+    ob = _link(bpy.data.objects.new(uid(name), me))
+    ob.visible_shadow = False
+    return ob

@@ -189,4 +189,4 @@ def carousel(x, y, tod, s=1.0):
 SCENES['carnival'].update({
     'confessional': cv_confessional_dc4, 'voting-booth': cv_voting_booth_dc4, 'theater-tent': cv_theater_ext, 'exit': cv_exit_dc4,
 })
-OUTDOOR['carnival'] |= {'confessional'}
+OUTDOOR['carnival'] |= {'confessional', 'theater-tent'}

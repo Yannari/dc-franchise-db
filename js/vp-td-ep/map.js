@@ -23,7 +23,7 @@ import { ACCESS_PROFILES } from '../camp-access.js';
 import { tdCampScreen, stageSpot, venueOf, VENUES, placeName } from './steps.js';
 
 // the venues with a painted map (tools/td-camp: '<venue>/map-day'), and how their teams live
-export const MAP_VENUES = { 'hosted-camp': { shared: true }, 'film-lot': { shared: true }, 'world-tour': { shared: true } };
+export const MAP_VENUES = { 'hosted-camp': { shared: true }, 'film-lot': { shared: true }, 'world-tour': { shared: true }, 'survival-island': { shared: false } };
 export const hasMap = venue => !!(MAP_VENUES[venue] && TD_MARKS[`${venue}/map-day`]);
 
 // which zone on the map each staged place belongs to; a zone may hold more than one place
@@ -33,10 +33,12 @@ const ZONE_OF = {
     confessional: 'confessional', campfire: 'campfire', dock: 'dock', beach: 'beach', 'forest-trail': 'forest-trail', cliff: 'cliff' },
   'film-lot': { trailers: 'trailers', 'craft-services': 'craft-services', 'studio-backlot': 'studio-backlot',
     'soundstage-corridor': 'soundstage-corridor', 'prop-storage': 'prop-storage', confessional: 'confessional' },
+  'survival-island': { shelter: 'shelter', campfire: 'campfire', beach: 'beach', shoreline: 'shoreline', 'water-source': 'water-source',
+    'jungle-trail': 'jungle-trail', 'fishing-area': 'fishing-area', confessional: 'confessional' },
   'world-tour': { economy: 'economy', aisle: 'aisle', galley: 'galley', 'cargo-hold': 'cargo-hold', 'first-class': 'first-class',
     'destination-staging': 'destination-staging', confessional: 'confessional' },
 };
-export const ZONE_LABEL = { cabins: 'The Cabins', 'mess-hall': 'The Mess Hall', washroom: 'The Washrooms', 'communal-grounds': 'The Camp Grounds',
+export const ZONE_LABEL = { shelter: 'The Shelter', campfire: 'The Campfire', shoreline: 'The Shoreline', 'water-source': 'The Waterfall Pool', 'jungle-trail': 'The Jungle Trail', 'fishing-area': 'The Fishing Dock', cabins: 'The Cabins', 'mess-hall': 'The Mess Hall', washroom: 'The Washrooms', 'communal-grounds': 'The Camp Grounds',
   trailers: 'The Trailers', 'craft-services': 'Craft Services', 'studio-backlot': 'The Backlot', 'soundstage-corridor': 'The Soundstages', 'prop-storage': 'Prop Storage',
   economy: 'Economy Class', aisle: 'The Aisle', galley: 'The Galley', 'cargo-hold': 'The Cargo Hold', 'first-class': 'First Class', 'destination-staging': 'Down on the Ground',
   confessional: 'The Confession Cam', campfire: 'The Campfire', dock: 'The Dock', beach: 'The Beach', 'forest-trail': 'The Forest Trail', cliff: 'The Cliff' };
@@ -68,11 +70,24 @@ const titleOf = ev => {
   return KIND_TITLE[fam] || 'At camp';
 };
 
-/** The zone hotspots of a venue's map: { id: { u, v, label } } from the render's marks. */
-export function mapZones(venue) {
+/**
+ * The zone hotspots of a venue's map: { id: { u, v, label } } from the render's marks.
+ * A venue where teams live apart marks each campsite's places with a slot ('shelter@1'). Given the
+ * camp's own slot, those become its plain places ('shelter'); every other team's campsite is one
+ * locked pin ({ rival: true }) named for that team — seen on the map, never entered. With no teams
+ * (the merged camp) the first campsite is home and the others are left empty.
+ */
+export function mapZones(venue, slot = null, teams = []) {
   const M = TD_MARKS[`${venue}/map-day`];
   const out = {};
-  for (const m of M?.m || []) if (m.kind === 'zone' && m.id) out[m.id] = { u: m.u, v: m.v, label: ZONE_LABEL[m.id] || placeName(m.id) };
+  for (const m of M?.m || []) {
+    if (m.kind !== 'zone' || !m.id) continue;
+    const [base, at] = String(m.id).split('@');
+    if (at == null) { out[m.id] = { u: m.u, v: m.v, label: ZONE_LABEL[m.id] || placeName(m.id) }; continue; }
+    const k = Number(at), home = slot ?? 0;
+    if (k === home) out[base] = { u: m.u, v: m.v, label: ZONE_LABEL[base] || placeName(base) };
+    else if (slot != null && teams[k] && base === 'shelter') out[m.id] = { u: m.u, v: m.v, label: `${teams[k]} camp`, rival: true };
+  }
   return out;
 }
 
@@ -90,7 +105,12 @@ export function tdCampMap(ep, phase, camps, o = {}) {
   const venue = venueOf(ep, o);
   if (!hasMap(venue)) return null;
   const zoneOf = ZONE_OF[venue] || {};
-  const zones = mapZones(venue);
+  // teams that live apart: this camp's slot among the episode's teams (the map has three campsites)
+  const shared = !!MAP_VENUES[venue]?.shared;
+  const teams = (ep.tribesAtStart || []).map(t => t.name).filter(Boolean);
+  const own = !shared && camps.length === 1 ? teams.indexOf(camps[0]) : -1;
+  const slot = own >= 0 ? own % 3 : null;
+  const zones = mapZones(venue, slot, slot == null ? [] : teams.map((t, i) => (i % 3 === slot ? null : t)));
   const order = WINDOW_ORDER[phase];
   const teamOf = {};
   const convs = [];

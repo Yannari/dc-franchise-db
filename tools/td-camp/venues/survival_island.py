@@ -426,9 +426,124 @@ def si_confessional(tod):
     tv_camera((0.0, -0.4, 1.6), (0, D, 1.4), lens=18)
 
 
+def _sol_fire(x, y, tod):
+    """A camp's fire ring: stones, two log benches, the flame (live: the viewer animates the fire mark)."""
+    for k in range(7):
+        a = k / 7 * 6.28
+        si_rock('FireStone', (0.35, 0.3, 0.25), (x + math.cos(a) * 0.9, y + math.sin(a) * 0.7, 0.15), tod, col='#7a7068', seed=k + int(x))
+    for sd in (-1, 1):
+        pcyl('LogSeat', 0.3, 2.4, (x + sd * 2.0, y + 0.3, 0.3), '#7a5232', tod, verts=10, rot=(90, 0, 90 + sd * 15))
+    if LIVE['on']:
+        mark('fire', (x, y, 0.4), size=1.0)
+    else:
+        card(uid('Flame'), _blob_pts(0.5, 0.8, 16, 0.2, 1), y, pmat('FlameS', '#ffb02a', unlit=True, mottle=0), x=x, z=0.6)
+
+
+def _sol_banner(x, y, col, tod):
+    """A team's banner on a crossbar pole, as each DC5 campsite flies its own."""
+    pcyl('BannerPole', 0.1, 5.2, (x, y, 2.6), '#5a3a22', tod, verts=8)
+    pbox('BannerBar', (2.0, 0.12, 0.12), (x, y, 5.0), '#5a3a22', tod)
+    card(uid('Banner'), [(-0.8, 0), (0.8, 0), (0.8, -2.8), (0, -3.2), (-0.8, -2.8)], y - 0.1, pmat('Banner' + col + tod, N(col, tod), unlit=True, mottle=0.1), x=x, z=4.9)
+    card(uid('BannerSun'), _blob_pts(0.42, 0.42, 16, 0, 0), y - 0.12, pmat('BannerSun' + tod, N('#f6eec8', tod), unlit=True, mottle=0), x=x, z=3.4)
+
+
+def si_map(tod):
+    """Soluna from above (Soluna_Island: the brown volcano with its waterfalls and rock spires, a ring of
+    jungle and sand on a turquoise sea, the lime sky). DC5 houses each team in its own campsite, so the
+    map has three: the Fans' A-frame lean-to in a jungle clearing, the Favorites' hut on stilts on the
+    beach by the lagoon, a third lean-to in the bamboo grove under the volcano; each has its fire and
+    its banner. Shared ground between them: the beach, the rocky shoreline, the waterfall pool, the
+    jungle trail, the fishing dock, the bamboo outhouse confessional. A camp's zones are marked
+    'shelter@<slot>' and 'campfire@<slot>': the viewer gives each team its own slot."""
+    P = SOL[tod]; day = tod == 'day'
+    paint_sky(P['sky'], P['sky_low'])
+    if day:
+        for (cx, cz, cs) in ((-60, 30, 4.5), (-18, 38, 3.4), (30, 34, 4.0), (70, 40, 3.0)):
+            puffy_cloud(cx, 160, cz, cs, P['cloud'], P['rim'])
+    box('MapSea', (700, 500, 0.2), (0, 40, -0.6), pmat('SolSea' + tod, P['sea'], unlit=True, mottle=0.05, mscale=0.05), bevel=0)
+    rnd = random.Random(11)
+    for k in range(5):
+        x = -140 + k * 62 + rnd.uniform(-10, 10)
+        card(uid('FarIsle'), [(-14, 0), (-6, 9), (0, 12), (7, 8), (16, 0)], 150, pmat('FarIsle' + tod, P['mtn'][k % 2], unlit=True, mottle=0), x=x, z=-0.5)
+    # the island: a sand rim, the grass inside it, the lagoon on the Favorites' side
+    _prism('SolSand', _blob(0, 6, 46, 30, seed=3, wob=0.08), -0.5, 0.25, P['sand'], _mix_hex(P['sand'], '#8a6a5a', 0.3), tod)
+    _flat_poly('SolFoam', _blob(0, 6, 47.5, 31.2, seed=3, wob=0.08), -0.38, '#f2fbfb', tod, mottle=0)
+    _flat_poly('SolGrass', _blob(-2, 7, 37, 23, seed=5, wob=0.1), 0.27, P['grass'], tod, mottle=0.3)
+    _flat_poly('Lagoon', _blob(33, 2, 6, 4, seed=8, wob=0.12), 0.29, '#3ad8e0', tod, mottle=0.05)
+    for (cx, cy, r) in ((-19, 1, 7.5), (22, -6, 6.5), (18, 11, 6.0)):
+        _flat_poly('Clearing', _blob(cx, cy, r, r * 0.75, seed=int(cx), wob=0.12), 0.28, P['path'], tod, mottle=0.3)
+    for (px, py, rx, ry) in ((-10, -2, 14, 1.4), (6, 2, 12, 1.2), (2, 8, 1.4, 8)):
+        _flat_poly('SolPath', _blob(px, py, rx, ry, seed=int(px * 3 + py), wob=0.08), 0.29, P['path'], tod, mottle=0.25)
+    # the volcano, its crater, its waterfalls, the rock spires around it
+    VX, VY, R0, R1, H = 0.0, 30.0, 14.0, 3.0, 20.0
+    pcyl('Volcano', R0, H, (VX, VY, H / 2), '#7a4a32', tod, r2=R1, verts=28, mottle=0.35)
+    pcyl('Crater', R1 * 0.8, 0.4, (VX, VY, H + 0.1), '#3a2218', tod, verts=20)
+    for lz in (6.5, 12.5):
+        lr = R0 - (R0 - R1) * lz / H
+        pcyl('Ledge', lr + 0.5, 0.7, (VX, VY, lz), '#5a3422', tod, r2=lr + 0.2, verts=28, mottle=0.25)
+    for (fx, top, bot) in ((-4.0, 17.0, 3.0), (3.5, 14.0, 1.0)):
+        for i in range(8):
+            z0 = bot + (top - bot) * i / 8; z1 = bot + (top - bot) * (i + 1) / 8
+            r = R0 - (R0 - R1) * ((z0 + z1) / 2) / H
+            dy = math.sqrt(max(r * r - fx * fx, 0.0))
+            card(uid('Fall'), [(-0.5, -0.3), (0.5, -0.3), (0.46, z1 - z0 + 0.3), (-0.46, z1 - z0 + 0.3)], VY - dy - 0.6, pmat('FallS' + tod, N('#4ad0f0', tod), unlit=True, mottle=0), x=VX + fx, z=z0)
+    _flat_poly('FallPool', _blob(-4.5, 15.5, 3.4, 1.8, seed=4, wob=0.1), 0.3, '#3ad8e0', tod, mottle=0.05)
+    for (sx, sy, sh, sr) in ((-16, 28, 11, 2.6), (15, 27, 10, 2.4), (-10, 36, 13, 2.2), (11, 36, 12, 2.4), (-20, 22, 7, 1.8), (21, 22, 6.5, 1.8)):
+        pcyl('Spire', sr, sh, (sx, sy, sh / 2), '#8a5a3a', tod, r2=0.3, verts=7, mottle=0.3)
+    # the jungle: round trees and palms everywhere the camps and the shared places leave clear
+    clear = [(-19, 1, 9), (23, -6, 8), (18, 11, 8), (-5, 16, 4), (2, 6, 3), (-2, -14, 10), (8, -4, 3), (34, -12, 4), (-30, -10, 5)]
+    pts = []
+    for i in range(500):
+        x, y = rnd.uniform(-38, 38), rnd.uniform(-8, 26)
+        if ((x + 2) / 36) ** 2 + ((y - 10) / 20) ** 2 > 1 or ((x - VX) / R0) ** 2 + ((y - VY) / R0) ** 2 < 1.05:
+            continue
+        if any((x - cx) ** 2 + (y - cy) ** 2 < r * r for cx, cy, r in clear) or any((x - a) ** 2 + (y - b) ** 2 < 6.2 for a, b in pts):
+            continue
+        pts.append((x, y))
+    for k, (x, y) in enumerate(sorted(pts, key=lambda p: -p[1])):
+        if rnd.random() < 0.3:
+            sol_palm(x, y, rnd.uniform(5, 7), tod, lean=rnd.uniform(-14, 14), seed=k, s=1.0)
+        else:
+            lolly_tree(x, y, rnd.uniform(3, 5), tod, col=P['jungle'][k % 2], seed=k, s=rnd.uniform(1.0, 1.4))
+    for (x, y) in ((-34, -6), (-22, -16), (12, -18), (28, -18), (40, -4), (38, 8)):
+        sol_palm(x, y, rnd.uniform(6, 8), tod, lean=rnd.uniform(-18, 18), seed=int(x * y), s=1.1)
+    # camp 0: the Fans' jungle clearing
+    lean_to(-21, 3, tod, rot_z=-12, s=1.5)
+    _sol_fire(-16, -1, tod)
+    tiki_face(-25.5, -1.5, 3.0, tod, s=1.0)
+    _sol_banner(-13, 3, '#e8c23a', tod)
+    # camp 1: the Favorites' beach hut by the lagoon
+    stilt_hut(24, -4, tod, rot_z=8, s=1.3)
+    _sol_fire(18, -9, tod)
+    tiki_face(29.5, -9, 3.0, tod, s=1.0)
+    _sol_banner(30, -6, '#8a4ab8', tod)
+    # camp 2: the third team's lean-to in the bamboo grove
+    for k in range(26):
+        bamboo(18 + rnd.uniform(-8, 8), 16.5 + rnd.uniform(0, 4), rnd.uniform(5, 8), tod, seed=k, s=1.2)
+    lean_to(18, 12, tod, rot_z=10, s=1.3)
+    _sol_fire(22, 9, tod)
+    _sol_banner(13.5, 9.5, '#d84a3a', tod)
+    # shared places: the shoreline rocks, the fishing dock, the outhouse confessional
+    for k, (x, y, s) in enumerate(((-31, -11, 1.6), (-29, -13, 1.1), (-33, -9, 1.2), (-27, -12.5, 0.8))):
+        si_rock('ShoreRock', (s, s * 0.8, s * 0.6), (x, y, 0.3), tod, seed=30 + k)
+    pbox('Dock', (2.0, 10.0, 0.3), (35, -17, 0.35), '#8a643a', tod)
+    for k in range(4):
+        for sx in (-0.9, 0.9):
+            pcyl('DockPost', 0.15, 1.6, (35 + sx, -13 - k * 2.6, -0.2), '#6a4a2a', tod, verts=8)
+    pbox('Outhouse', (1.8, 1.6, 2.6), (8, -4, 1.3), '#a8c85a', tod, shade='#7a9a3a', mottle=0.3)
+    thatch('OuthouseRoof', (2.4, 2.2, 0.4), (8, -4, 2.8), tod)
+    pbox('OuthouseDoor', (0.8, 0.05, 1.8), (8, -4.82, 1.0), '#6a8a3a', tod)
+    for zid, loc in (('shelter@0', (-21, 4, 4.5)), ('campfire@0', (-16, -1, 1.6)), ('shelter@1', (24, -4, 5.0)), ('campfire@1', (18, -9, 1.6)),
+                     ('shelter@2', (18, 12, 4.0)), ('campfire@2', (22, 9, 1.6)), ('beach', (-2, -14, 0.6)), ('shoreline', (-30, -11, 1.4)),
+                     ('water-source', (-4.5, 15.5, 1.0)), ('jungle-trail', (2, 6, 1.0)), ('fishing-area', (35, -18, 0.8)), ('confessional', (8, -4, 3.2))):
+        mark('zone', loc, id=zid)
+    paint_sun(azimuth=-35, elevation=55 if day else 35, energy=3.6 if day else 1.6)
+    tv_camera((0.0, -70.0, 36.0), (0.0, 8.0, 9.0), lens=30)
+
+
 SCENES['survival-island'] = {
     'shelter': si_shelter, 'campfire': si_campfire, 'beach': si_beach, 'shoreline': si_shoreline,
     'water-source': si_water, 'jungle-trail': si_jungle, 'fishing-area': si_fishing,
-    'confessional': si_confessional, 'ceremony': si_ceremony, 'exit': si_exit,
+    'confessional': si_confessional, 'ceremony': si_ceremony, 'exit': si_exit, 'map': si_map,
 }
-OUTDOOR['survival-island'] = {'shelter', 'campfire', 'beach', 'shoreline', 'water-source', 'jungle-trail', 'fishing-area'}
+OUTDOOR['survival-island'] = {'shelter', 'campfire', 'beach', 'shoreline', 'water-source', 'jungle-trail', 'fishing-area', 'map'}

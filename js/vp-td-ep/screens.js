@@ -376,7 +376,7 @@ function mapPaint(uid, fresh) {
   } else {
     plate = plateKey(M.venue, 'map', tod);
   }
-  const L = { scene: { plate, spot: R.mode === 'zone' ? place : 'map', place: R.mode === 'zone' ? (M.zones[R.zone]?.label || placeName(place)) : (VENUE_NAME[M.venue] || 'Camp'), time: W.time }, safe: [], side: [], step: {}, conf: null };
+  const L = { scene: { plate, spot: R.mode === 'zone' ? place : 'map', place: R.mode === 'zone' ? (M.zones[R.zone]?.label || placeName(place)) : (MAP_VENUES[M.venue]?.shared || M.camps.length !== 1 || M.camps[0] === 'merge' ? (VENUE_NAME[M.venue] || 'Camp') : `${M.camps[0]} Camp`), time: W.time }, safe: [], side: [], step: {}, conf: null };
   world.innerHTML = `${worldHtml(scr0, L)}<div class="tdx-cast">${toks}</div><div class="tdx-fx"></div>`;
   st.querySelector('.tdx-hud').innerHTML = hudHtml(scr0, L, fresh, {});
   layer.innerHTML = clockHtml(uid, R, open) + (R.mode === 'zone' ? zoneHtml(uid, R, here) : pinsHtml(uid, R, W)) + listHtml(uid, R, here);
@@ -420,6 +420,8 @@ function pinsHtml(uid, R, W) {
     return { z, u: Z.u * 100, v: Z.v * 100, w };
   }));
   const stemOf = Object.fromEntries(items.map(it => [it.z, it.stem]));
+  // a card near the edge of the frame slides inward over its stem, so its label is never cut off
+  const leftOf = Object.fromEntries(items.map(it => [it.z, Math.min(Math.max(it.u, it.w / 2 + 0.6), 99.4 - it.w / 2)]));
   // two layers: every stem and dot first, every card over them, so a stem never runs across a card
   // and a click on a card always reaches that card's place
   const stems = [], cards = [];
@@ -427,13 +429,13 @@ function pinsHtml(uid, R, W) {
     const convs = M.convs.filter(c => c.window === W.id && c.zone === z);
     const people = [...new Set([...convs.flatMap(c => c.who), ...(W.idle[z] || [])])];
     const left = convs.filter(c => !R.seen.has(c.i)), keyLeft = left.filter(c => c.key);
-    const state = !convs.length ? (people.length ? 'idle' : 'empty') : !left.length ? 'done' : keyLeft.length ? 'key' : 'talk';
-    const badge = !convs.length ? '' : !left.length ? `<span class="tdm-ct done"><i>${ICON_TICK}</i></span>`
+    const state = Z.rival ? 'rival' : !convs.length ? (people.length ? 'idle' : 'empty') : !left.length ? 'done' : keyLeft.length ? 'key' : 'talk';
+    const badge = Z.rival ? `<span class="tdm-ct done"><i>${ICON_LOCK}</i></span>` : !convs.length ? '' : !left.length ? `<span class="tdm-ct done"><i>${ICON_TICK}</i></span>`
       : `<span class="tdm-ct"><i>${keyLeft.length ? ICON_STAR : ICON_BUBBLE}</i>${left.length}</span>`;
     const faces = people.slice(0, 5).map(n => faceImg(R, n)).join('') + (people.length > 5 ? `<em>+${people.length - 5}</em>` : '');
     const u = (Z.u * 100).toFixed(2), v = Z.v * 100, top = (v - stemOf[z]).toFixed(2);
     stems.push(`<i class="tdm-stem ${state}" style="left:${u}%;top:${top}%;height:${stemOf[z].toFixed(2)}%"></i><i class="tdm-dot ${state}" style="left:${u}%;top:${v.toFixed(2)}%"></i>`);
-    cards.push(`<button type="button" class="tdm-pin ${state}" style="left:${u}%;top:${top}%" onclick="tdmZone('${uid}','${z}')" ${state === 'empty' ? 'tabindex="-1"' : ''} aria-label="${esc(Z.label)}">
+    cards.push(`<button type="button" class="tdm-pin ${state}" style="left:${leftOf[z].toFixed(2)}%;top:${top}%" ${Z.rival ? `disabled title="Another team's camp: they live apart"` : `onclick="tdmZone('${uid}','${z}')"`} ${state === 'empty' ? 'tabindex="-1"' : ''} aria-label="${esc(Z.label)}">
       <span class="tdm-card">${faces ? `<span class="tdm-faces">${faces}</span>` : ''}<span class="tdm-lbl">${esc(Z.label)}</span>${badge}</span></button>`);
   });
   return `<div class="tdm-stems">${stems.join('')}</div>${cards.join('')}`;
@@ -556,6 +558,7 @@ const TDM_CSS = `
 .tdx .tdm-pin{position:absolute;transform:translate(-50%,-100%);border:0;background:none;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4));transition:transform .2s}
 .tdx .tdm-pin:hover,.tdx .tdm-pin:focus-visible{transform:translate(-50%,-104%) scale(1.06);outline:none;z-index:5}
 .tdx .tdm-pin.empty{opacity:.55;pointer-events:none}
+.tdx .tdm-pin.rival{opacity:.72;cursor:default;filter:grayscale(.5) drop-shadow(0 4px 8px rgba(0,0,0,.4))}.tdx .tdm-pin.rival:hover{transform:translate(-50%,-100%)}
 .tdx .tdm-card{display:flex;align-items:center;gap:.45cqw;background:rgba(14,16,26,.9);border-radius:99px;padding:.35cqw .7cqw .35cqw .35cqw;border:2px solid rgba(255,255,255,.12)}
 .tdx .tdm-pin.key .tdm-card{border-color:#ffc23a;animation:tdmPulse 1.6s ease-in-out infinite}
 .tdx .tdm-pin.done .tdm-card{border-color:#4fb84a}

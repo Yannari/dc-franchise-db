@@ -91,6 +91,16 @@ const STAGE = {
       ['craft-services', 2, null, 'evening'], ['studio-backlot', 2, null, 'evening'], ['trailers', 1, null, 'evening']],
     trailers: [['trailers', 3], ['soundstage-corridor', 1, null, 'evening']],
   },
+  // the island's clock: mornings and the night's private talk at the shelter, the afternoon on the beach,
+  // the fire in the evening; a walk or a flirt on the shoreline goes down to the beach
+  'survival-island': {
+    campfire: [['shelter', 3, /^(life\.(wakeup|mood|sleep)|romance\.(night|honeymoon)|friend\.(comfort|secret)|blind\.|drama\.paranoia)/],
+      ['shelter', 2, null, 'morning'], ['campfire', 2, null, 'morning'],
+      ['beach', 2, null, 'day'], ['campfire', 2, null, 'day'], ['shelter', 1, null, 'day'],
+      ['beach', 1, null, 'return'], ['campfire', 2, null, 'return'],
+      ['campfire', 3, null, 'evening'], ['shelter', 1, null, 'evening']],
+    shoreline: [['beach', 3, /^(romance\.|friend\.(walk|laugh))/], ['shoreline', 2], ['beach', 1]],
+  },
   // the jet's clock: meals in the galley, the morning queue in the aisle, economy the rest of the time
   'world-tour': {
     economy: [['galley', 4, /^(crowd\.(meal|dinner)|hosted\.slop|life\.(food|meal|hunger)|drama\.mess)/],

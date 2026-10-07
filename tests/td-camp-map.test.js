@@ -64,9 +64,9 @@ describe('the camp map', () => {
   });
 
   it('keeps the linear camp screens at a venue with no painted map', () => {
-    const ep = { ...eps[0], campAccess: { ...eps[0].campAccess, setting: 'survival-island' } };
+    const ep = { ...eps[0], campAccess: { ...eps[0].campAccess, setting: 'carnival' } };
     const camps = campsOf(ep, 'pre');
-    const out = tdStepScreens(ep, camps.map(c => ({ id: `camp-pre-${c}`, label: 'Camp' })), { setting: 'survival-island' });
+    const out = tdStepScreens(ep, camps.map(c => ({ id: `camp-pre-${c}`, label: 'Camp' })), { setting: 'carnival' });
     expect(out.some(s => s.campMap)).toBe(false);
     expect(out.length).toBe(camps.length);
   });
@@ -87,7 +87,8 @@ describe('the camp map', () => {
 });
 
 // each venue's own map: every conversation of a season played there lands on one of that map's zones
-describe.each([['film-lot', ['trailers', 'craft-services', 'studio-backlot', 'soundstage-corridor', 'prop-storage', 'confessional']], ['world-tour', ['economy', 'aisle', 'galley', 'cargo-hold', 'first-class', 'destination-staging', 'confessional']]])('the %s map', (venue, places) => {
+describe.each([['film-lot', ['trailers', 'craft-services', 'studio-backlot', 'soundstage-corridor', 'prop-storage', 'confessional']], ['world-tour', ['economy', 'aisle', 'galley', 'cargo-hold', 'first-class', 'destination-staging', 'confessional']],
+  ['survival-island', ['shelter', 'campfire', 'beach', 'shoreline', 'water-source', 'jungle-trail', 'fishing-area', 'confessional']]])('the %s map', (venue, places) => {
   let veps = [];
   beforeAll(() => {
     seededRun(() => runOneSeason({ romance: 'enabled', setting: venue }, 12, NAMES.slice(0, 12).map((n, i) => ({ ...roster.find(r => r.name === n), tribe: i % 2 ? 'Bass' : 'Gophers' }))), 778);
@@ -104,5 +105,31 @@ describe.each([['film-lot', ['trailers', 'craft-services', 'studio-backlot', 'so
       for (const c of m.convs) { n++; expect(zones[c.zone], `ep${ep.num} ${phase} ${c.place} -> ${c.zone}`).toBeTruthy(); expect(c.screen.steps.length).toBeGreaterThan(1); }
     }
     expect(n).toBeGreaterThan(40);
+  });
+});
+
+// teams that live apart (Soluna): one map per team, its own campsite home, every other team's camp locked
+describe('a venue where teams live apart', () => {
+  let veps = [];
+  beforeAll(() => {
+    seededRun(() => runOneSeason({ romance: 'enabled', setting: 'survival-island', teams: 3 }, 12, NAMES.slice(0, 12).map((n, i) => ({ ...roster.find(r => r.name === n), tribe: ['Bass', 'Gophers', 'Rats'][i % 3] }))), 779);
+    veps = core.gs.episodeHistory.map(e => JSON.parse(JSON.stringify(e)));
+  }, 600000);
+  it('gives each team its own map, with its own campsite and the other teams camps locked', () => {
+    const ep = veps.find(e => campsOf(e, 'pre').length === 3);
+    expect(ep).toBeTruthy();
+    const camps = campsOf(ep, 'pre');
+    const out = tdStepScreens(ep, camps.map(c => ({ id: `camp-pre-${c}`, label: 'Camp' })), { setting: 'survival-island' });
+    expect(out.filter(s => s.campMap).length).toBe(3);
+    const homes = new Set();
+    for (const c of camps) {
+      const m = tdCampMap(ep, 'pre', [c], { setting: 'survival-island' });
+      expect(m.zones.shelter && m.zones.campfire).toBeTruthy();
+      homes.add(`${m.zones.shelter.u},${m.zones.shelter.v}`);
+      const rivals = Object.values(m.zones).filter(z => z.rival);
+      expect(rivals.map(z => z.label).sort()).toEqual(camps.filter(x => x !== c).map(x => `${x} camp`).sort());
+      expect(m.convs.every(x => !m.zones[x.zone]?.rival)).toBe(true);
+    }
+    expect(homes.size).toBe(3);
   });
 });

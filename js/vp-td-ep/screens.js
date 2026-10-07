@@ -10,6 +10,7 @@
 // screen in the classic viewer (localStorage 'td-vp' = 'classic' to stay there).
 import { tdCampScreen, tdTribalScreen, tdTribalStepped, cleanText } from './steps.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf } from './twists.js';
+import { tdTwistBlocksScreen, tdMergeScreen } from './twist-screens.js';
 import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar } from './stage.js';
 import { TDX_CSS, TDX_FONTS } from './style.js';
 import { ambience, stopAmbience, sfx } from './sound.js';
@@ -53,6 +54,10 @@ function islandScreen(ep, S, o) {
   if (id === 'rescue-life') return tdIslandLifeScreen(ep, !!(ep.rescueIslandEvents || []).length, o);
   if (id === 'exile-island') return tdExileScreen(ep, exileOf(ep, false), o);
   if (id === 'exile-format') return tdExileScreen(ep, exileOf(ep, true), o);
+  if (id === 'twist' && o.twistBlocks?.length) return tdTwistBlocksScreen(ep, o.twistBlocks, o);
+  // the post-vote screen also carries an elimination card for a duel or a second life: classic there
+  if (id === 'post-twist' && o.postBlocks?.length && !ep.exileDuelResult && !ep.fireMaking) return tdTwistBlocksScreen(ep, o.postBlocks, o, { post: true });
+  if (id === 'merge' && o.merge) return tdMergeScreen(ep, o.merge, o);
   return null;
 }
 

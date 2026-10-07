@@ -1857,7 +1857,8 @@ export function rpBuildAmbassadors(ep) {
 }
 
 // ── Merge Announcement Screen (NEW — inserted on isMerge episodes) ──
-export function rpBuildMergeAnnouncement(ep) {
+/** Who merged, the strongest alliances going in, and who is on the bottom (both viewers read this). */
+export function mergeData(ep) {
   const snap = ep.gsSnapshot || {};
   const mergedTribe = snap.tribes?.[0] || { name: gs.mergeName || 'Merged', members: snap.activePlayers || [] };
   const tc = tribeColor(mergedTribe.name);
@@ -1882,6 +1883,14 @@ export function rpBuildMergeAnnouncement(ep) {
   };
   const onBottom = [...unallied].sort((a,b) => avgBond(a) - avgBond(b)).slice(0, 3);
 
+  return { name: mergedTribe.name, participants: _mergeParticipants,
+    alliances: topAlliances.map(a => ({ name: a.name, members: a.members.filter(n => _mergeParticipants.includes(n)) })), bottom: onBottom, tc, mergedTribe };
+}
+
+export function rpBuildMergeAnnouncement(ep) {
+  const { participants: _mergeParticipants, mergedTribe, tc, bottom: onBottom } = mergeData(ep);
+  const alliances = ep.gsSnapshot?.namedAlliances || [];
+  const topAlliances = [...alliances].sort((a,b) => b.members.length - a.members.length).slice(0, 2);
   let html = `<div class="rp-page tod-merge-am">
     <div class="rp-eyebrow">Episode ${ep.num}</div>
     <div style="font-family:var(--font-display);font-size:48px;letter-spacing:2px;text-align:center;color:${tc};margin-bottom:8px;animation:bannerUnfurl 0.6s var(--ease-broadcast) both;transform-origin:center">${mergedTribe.name.toUpperCase()}</div>
@@ -4210,12 +4219,17 @@ export function rpBuildLateArrival(ep) {
   </div>`;
 }
 
-export function rpBuildPreTwist(ep) {
+/** The twist blocks the pre-challenge twist screen shows (both viewers read this). */
+export function preTwistBlocks(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek' && t.type !== 'paintball-hunt' && t.type !== 'hells-kitchen' && t.type !== 'trust-challenge' && t.type !== 'hide-and-be-sneaky' && t.type !== 'off-the-chain' && t.type !== 'auction'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek' && t.type !== 'paintball-hunt' && t.type !== 'hells-kitchen' && t.type !== 'trust-challenge' && t.type !== 'hide-and-be-sneaky' && t.type !== 'off-the-chain' && t.type !== 'auction');
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
-  const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
+  return _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
+}
+
+export function rpBuildPreTwist(ep) {
+  const twistData = preTwistBlocks(ep);
   if (!twistData.length) {
     // Text-only fallback for older saves — exclude exile island lines (shown in its own screen)
     const parsed = parseSummaryText(ep.summaryText || '');
@@ -14029,6 +14043,9 @@ export function buildVPScreens(epRecord) {
         host: seasonConfig.host || 'Chris', setting: seasonConfig.setting, mergeName: gs.mergeName,
         colorOf: tribeColor, qa: (() => { try { return buildTribalQA(epRecord, tribal); } catch { return []; } })(),
         pronouns, stats: pStats, chooserReason: _exileChooserReason,
+        twistBlocks: (() => { try { return preTwistBlocks(epRecord); } catch { return []; } })(),
+        postBlocks: (() => { try { return _buildPostTwistBlocks(epRecord); } catch { return []; } })(),
+        merge: epRecord.isMerge ? (() => { try { return mergeData(epRecord); } catch { return null; } })() : null,
       });
     } else {
       vpScreens = vpScreens.map(S => (/^(camp-(pre|post)-|tribal$)/.test(S?.id || '') && typeof S.html === 'string' ? { ...S, html: TDX_SWITCH + S.html } : S));

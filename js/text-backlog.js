@@ -2,6 +2,8 @@
 import { bbStepTranscript } from './vp-bb-ep/steps.js';
 import { tdTribalStepped, tdTribalScreen, tdStepTranscript } from './vp-td-ep/steps.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, exileChooserReason } from './vp-td-ep/twists.js';
+import { tdTwistBlocksScreen, tdMergeScreen } from './vp-td-ep/twist-screens.js';
+import { preTwistBlocks, mergeData, _buildPostTwistBlocks } from './vp-screens.js';
 import { bbHostName } from './bb-aftermath.js';
 import { transcriptHeaderLines } from './transcript-header.js';
 import { gs, seasonConfig, players, plainText } from './core.js';
@@ -1655,6 +1657,11 @@ export function _textTdIslands(ep, ln, sec) {
   }
   full(tdExileScreen(ep, exileOf(ep, false), o), 'EXILE ISLAND — AS IT AIRS');
   full(tdExileScreen(ep, exileOf(ep, true), o), 'EXILE ISLAND — AS IT AIRS');
+  // the other twists and the merge, as the stepped viewer plays them (vp-td-ep/twist-screens.js)
+  const safe = fn => { try { return fn(); } catch { return null; } };
+  full(safe(() => tdTwistBlocksScreen(ep, preTwistBlocks(ep), o)), 'TWISTS — AS THEY AIR');
+  if (!ep.exileDuelResult && !ep.fireMaking) full(safe(() => tdTwistBlocksScreen(ep, _buildPostTwistBlocks(ep), o, { post: true })), 'AFTER THE VOTE — AS IT AIRS');
+  if (ep.isMerge) full(safe(() => tdMergeScreen(ep, mergeData(ep), o)), 'THE MERGE — AS IT AIRS');
 }
 
 export function _textTribalCouncil(ep, ln, sec) {

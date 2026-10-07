@@ -2513,6 +2513,7 @@ function juryBoard(reads, contenders) {
   }
   return out;
 }
+const pStatsSafe = n => (ROSTER || []).find(p => p.name === n)?.stats || {};
 function juryHouseScreen(act, ctx) {
   const residents = act.residents || [];
   if (!residents.length) return null;
@@ -2525,12 +2526,37 @@ function juryHouseScreen(act, ctx) {
   for (const a of act.acts || []) {
     if (a.roundtable) {
       steps.push({ k: 'beat', t: 'The jurors pull their chairs into a circle. It is time for the roundtable.', toast: ['THE ROUNDTABLE', '#e8c98a'] });
-      for (const l of a.roundtable.lines || []) {
-        steps.push({ k: 'beat', t: `On ${l.player}.` });
-        steps.push(...proseSteps(l.backText, [l.backer, l.player]));
-        steps.push(...proseSteps(l.doubtText, [l.doubter, l.player]));
+      // the conversation the engine wrote (jury-house.js tableTalk): the case for, the case
+      // against, the answer, the juror sent home on that player's week, a third juror's verdict
+      const OPEN = [n => `Okay. ${n}. Who wants to start?`, n => `What about ${n}?`, n => `${n} next.`, n => `And ${n}.`, n => `Let's do ${n}.`];
+      const chair = residents.slice().sort((x, y) => (pStatsSafe(y).social || 5) - (pStatsSafe(x).social || 5))[0];
+      (a.roundtable.lines || []).forEach((l, i) => {
+        if (l.talk?.length) {
+          // whoever opens it is not the one about to make the case (they asked and answered themselves)
+          const opener = residents.find(n => n === chair && !l.talk.some(t => t.by === n)) || residents.find(n => !l.talk.some(t => t.by === n) && n !== l.third) || null;
+          if (opener) steps.push({ k: 'say', by: opener, t: OPEN[Math.min(i, OPEN.length - 1)](l.player) });
+          else steps.push({ k: 'beat', t: `On ${l.player}.` });
+          for (const t of l.talk) steps.push({ k: 'say', by: t.by, t: t.t });
+          if (l.third && l.thirdText) steps.push({ k: 'say', by: l.third, t: l.thirdText });
+        } else {
+          steps.push({ k: 'beat', t: `On ${l.player}.` });
+          steps.push(...proseSteps(l.backText, [l.backer, l.player]));
+          steps.push(...proseSteps(l.doubtText, [l.doubter, l.player]));
+        }
+      });
+      // the juror the table moved most says so, and who moved them
+      let moved = null;
+      for (const l of a.roundtable.lines || []) for (const j of residents) {
+        const d = (act.reads?.[j]?.[l.player] ?? 0) - (act.readsBefore?.[j]?.[l.player] ?? 0);
+        if (j !== l.backer && j !== l.doubter && (!moved || Math.abs(d) > Math.abs(moved.d))) moved = { j, d, l };
       }
-      steps.push({ k: 'beat', t: 'The circle breaks up. Nobody has changed their mind out loud. A few have changed it quietly.', why: after });
+      if (moved && Math.abs(moved.d) > 0.15) {
+        const { j, d, l } = moved;
+        steps.push({ k: 'dr', by: j, t: d > 0
+          ? `I came in tonight not sold on ${l.player}. Then ${l.backer} laid it all out, and I'm starting to think ${l.player} deserves this more than I wanted to admit.`
+          : `I came in tonight leaning toward ${l.player}. Then ${l.doubter} said what ${l.doubter} said, and I can't stop thinking about it. I'm not sure anymore.` });
+      }
+      steps.push({ k: 'beat', t: 'The circle breaks up. The arguments are over for tonight, and the votes are a little less certain than they were.', why: after });
       continue;
     }
     steps.push({ k: 'beat', t: a.title === 'The Door Opens' ? 'The door opens.' : `${a.title}.` });
@@ -2538,7 +2564,7 @@ function juryHouseScreen(act, ctx) {
   }
   if (!(act.acts || []).some(a => a.roundtable) && steps.length) steps[steps.length - 1] = { ...steps[steps.length - 1], why: after };
   return { id: `bb-jury-house-${act.week || ctx.week}-v`, kind: 'juryhouse', anchor: 'evict', label: act.full ? 'Jury House · Roundtable' : 'Jury House',
-    set: 'hoh', room: 'The Jury House', cam: 12, kicker: 'Elsewhere · The jury house', title: 'The Jury House', sub: `${listOf(residents)}`,
+    set: 'juryhouse', room: 'The Jury House', cam: 12, kicker: 'Elsewhere · The jury house', title: 'The Jury House', sub: `${listOf(residents)}`,
     day: ctx.day, time: 'NIGHT', lodge: true, cast: residents.slice(0, 8).map((n, i, a) => [n, spread(a.length)[i]]), steps };
 }
 

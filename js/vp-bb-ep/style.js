@@ -441,7 +441,7 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .fx-impact{position:absolute;inset:0;z-index:7;pointer-events:none;background:radial-gradient(circle at 50% 60%,rgba(255,255,255,.35),transparent 45%);animation:bbx-impact .45s ease-out both}
 @keyframes bbx-impact{from{opacity:1;transform:scale(.6)}to{opacity:0;transform:scale(1.4)}}
 /* ── the jury house: the same building's warmth, lamplit, slow ── */
-.bbx .stage.lodge .set{filter:sepia(.55) saturate(1.25) brightness(.72) hue-rotate(-8deg)}
+/* the jury house is its own lodge now (assets juryhouse-td-b); no filter over a borrowed room */
 .bbx .stage.lodge .vign{background:radial-gradient(ellipse at 50% 40%,transparent 35%,rgba(30,16,4,.75))}
 /* ── finale night: the key board, confetti, sweeping spotlights ── */
 .bbx .gt.walk{animation:gtwalk 1s cubic-bezier(.45,0,.3,1) both}

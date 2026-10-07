@@ -14,7 +14,7 @@ import { ANCH } from './anchors.js';
 import { HUNT_SPOTS } from './steps.js';
 
 const ROOM_FILE = { kitchen: 'kitchen', ceremony: 'living', ceremony3: 'living3', bedroom: 'bedroom', hoh: 'hoh', dr: 'dr', yard: 'yard', dining: 'dining',
-  storage: 'storage', havenot: 'havenot', bathroom: 'bathroom' };
+  storage: 'storage', havenot: 'havenot', bathroom: 'bathroom', juryhouse: 'juryhouse' };
 export const SEASON_DIR = { 'summer-of-temptation': 'temptation', 'machine-summer': 'machine', 'summer-of-mystery': 'mystery',
   'high-rollers': 'high-rollers', 'summer-camp': 'summer-camp', 'summer-school': 'summer-school' };
 const V = 7;   // bump when the renders change, so a browser never shows a stale room

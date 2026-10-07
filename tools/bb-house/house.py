@@ -1847,6 +1847,89 @@ def room_bathroom(T):
     world(T['world'], 0.4)
     camera((0, -1.4, 1.55), (86, 0, 0), lens=22, dof=(5.0, 4.0))
 
+def room_juryhouse(T):
+    """The jury house: not the Big Brother house at all. A rented lodge somewhere quiet, timber walls,
+    a stone fireplace, a window onto the dark, and the round table the jurors argue around (the user,
+    2026-10-07: "why is the jury house using the HOH room?"). The same lodge every season: the
+    season's colours belong to the house the jurors were evicted from."""
+    import math as _m
+    L = dict(T)
+    L.update({'light': '#ffcf8a', 'fill': '#ffb870', 'deep': '#3a2616', 'world': '#0b1424', 'ceiling': '#6a4426'})
+    W, D, H = 10.0, 7.5, 3.4
+    planks = mat_planks('lodgewall', '#8a5a34', '#74492a', seam='#4a2e18', scale=0.7, rough=0.7)
+    shell(L, W, D, H, floor_mat=mat_planks('lodgefloor', '#6e4628', '#5a3820', seam='#3a2412', scale=0.9, rough=0.6),
+          wall_mat=planks, roof=False)
+    beam = mat_wood('beam', '#5a3820', '#462a16', rough=0.7)
+    box('Ceiling', (W + 2, D + 6, 0.1), (0, D / 2 - 1, H + 0.05), mat('lodgeceil', '#6a4426', 0.85), bevel=0)
+    for i, y in enumerate((1.2, 3.4, 5.6)):
+        box(f'Beam{i}', (W, 0.24, 0.3), (0, y, H - 0.15), beam, bevel=0.02)
+    # the stone fireplace, centre back, with a fire in it
+    stone = mat_tiles('stone', '#8d8478', '#776e63', grout='#4c463f', scale=2.2, rough=0.9)
+    box('Chimney', (2.4, 0.6, H), (0, D - 0.3, H / 2), stone, bevel=0.02)
+    box('Hearth', (2.8, 0.9, 0.8), (0, D - 0.55, 0.4), stone, bevel=0.02)
+    box('Firebox', (1.3, 0.04, 0.75), (0, D - 0.62, 1.2), mat('firebox', '#120a06', 0.9), bevel=0)
+    box('Mantel', (2.7, 0.35, 0.12), (0, D - 0.72, 1.75), beam, bevel=0.02)
+    fire = mat('fire', '#ff8a2a', emit='#ff7a1a', strength=40)
+    for i, (dx, h) in enumerate(((-0.25, 0.32), (0.0, 0.45), (0.22, 0.3))):
+        cyl(f'Flame{i}', 0.1, h, (dx, D - 0.78, 0.84 + h / 2), fire, r2=0.01)
+    for i in range(3):
+        cyl(f'Log{i}', 0.07, 0.8, ((i - 1) * 0.12, D - 0.78, 0.86), mat('log', '#3a2414', 0.9), rot=(0, 90, 20 * (i - 1)))
+    point('FireL', (0, D - 1.1, 1.1), 320, '#ff8a3a', 0.2)
+    for i, dx in enumerate((-1.0, -0.8, 0.85)):
+        cyl(f'MantelCandle{i}', 0.04, 0.22 - i * 0.03, (dx, D - 0.72, 1.92), mat('candle', '#f4ead6', 0.5))
+        sphere(f'Bulbmc{i}', 0.02, (dx, D - 0.72, 2.06 - i * 0.03), mat('flame', '#ffffff', emit='#ffc070', strength=40))
+    # a big window to the left of the fireplace: the night outside
+    box('WinFrame', (2.6, 0.1, 1.9), (-3.2, D - 0.02, 1.55), beam, bevel=0.01)
+    box('WinGlass', (2.4, 0.04, 1.7), (-3.2, D - 0.06, 1.55), mat('night', '#1a2c4a', emit='#21385e', strength=0.6), bevel=0)
+    box('WinMullion', (0.06, 0.06, 1.7), (-3.2, D - 0.09, 1.55), beam, bevel=0)
+    box('WinRail', (2.4, 0.06, 0.06), (-3.2, D - 0.09, 1.55), beam, bevel=0)
+    for i, (dx, dz) in enumerate(((-0.8, 0.5), (0.5, 0.7), (0.9, 0.2), (-0.2, 0.8))):
+        sphere(f'Star{i}', 0.012, (-3.2 + dx, D - 0.08, 1.55 + dz), mat('star', '#ffffff', emit='#ffffff', strength=20))
+    # a bookcase to the right
+    shelf = mat_wood('shelf', '#5e3c22', '#4a2e18')
+    box('Bookcase', (1.8, 0.4, 2.3), (3.3, D - 0.22, 1.15), shelf, bevel=0.01)
+    cols = ('#7a2e2e', '#2e4a6e', '#c8a24a', '#3e6a3e', '#e6dcc4', '#5a2e5a')
+    for r_, z in enumerate((0.45, 1.05, 1.65)):
+        x = 2.55
+        k = 0
+        while x < 4.0:
+            w = 0.06 + (k * 7 % 5) * 0.012
+            c = cols[(k + r_) % len(cols)]
+            box(f'Book{r_}_{k}', (w, 0.26, 0.42 - (k % 3) * 0.05), (x, D - 0.3, z + 0.2), mat(f'bk{c}', c, 0.7), bevel=0.003)
+            x += w + 0.015
+            k += 1
+    # the round table, where the jury argues it out
+    oak = mat_wood('oak', '#9a6a3e', '#7c5230')
+    cyl('RoundTop', 1.15, 0.07, (0, 3.6, 0.76), oak, verts=96)
+    cyl('RoundPedestal', 0.16, 0.7, (0, 3.6, 0.36), mat('pedestal', '#3a2616', 0.5))
+    cyl('RoundFoot', 0.55, 0.05, (0, 3.6, 0.025), mat('pedestal', '#3a2616', 0.5))
+    for i in range(7):
+        deg = 90 + i * 360 / 7
+        if abs(deg % 360 - 270) < 40:
+            continue  # the camera side stays open
+        a = _m.radians(deg)
+        dining_chair(f'RChair{i}', (_m.cos(a) * 1.55, 3.6 + _m.sin(a) * 1.55, 0), deg - 90, '#6e3a2a', wood=oak)
+    cyl('Lantern', 0.1, 0.28, (0.15, 3.6, 0.94), mat('lanternglass', '#ffe2a8', emit='#ffc070', strength=6), r2=0.08)
+    point('LanternL', (0.15, 3.6, 1.0), 45, '#ffc070', 0.05)
+    for i, (dx, dy) in enumerate(((-0.55, -0.3), (0.5, 0.35), (-0.3, 0.55))):
+        cyl(f'Mug{i}', 0.05, 0.1, (dx, 3.6 + dy, 0.85), mat(f'mug{i}', ('#e8e0d0', '#7a2e2e', '#2e4a6e')[i], 0.5))
+    box('Notepad', (0.3, 0.22, 0.02), (-0.2, 3.25, 0.81), mat('paper', '#f4efe2', 0.9), bevel=0)
+    # a rug under the table, a leather sofa to each side, lamps
+    box('LodgeRug', (4.6, 3.6, 0.012), (0, 3.6, 0.006), mat('lodgerug', '#7a3424', 0.95), bevel=0)
+    box('LodgeRugIn', (4.2, 3.2, 0.014), (0, 3.6, 0.008), mat('lodgerugin', '#a8643a', 0.95), bevel=0)
+    sofa('LodgeSofaL', (-4.0, 3.2, 0), 2.6, 90, '#5a3220', pillows=('#c8a24a', '#7a2e2e'))
+    sofa('LodgeSofaR', (4.0, 3.0, 0), 2.6, -90, '#5a3220', pillows=('#2e4a6e', '#c8a24a'))
+    floor_lamp('LodgeLampL', (-4.3, 5.4, 0), L, shade='#e8c890')
+    floor_lamp('LodgeLampR', (4.4, 1.0, 0), L, shade='#e8c890')
+    plant('LodgePlant', (-1.9, D - 0.4, 0), height=1.2, pot='#5a3820')
+    box('Painting', (1.3, 0.04, 0.7), (0, D - 0.62, 2.55), mat('canvas', '#4a6a5a', 0.8), bevel=0.01)
+    box('PaintingFrame', (1.42, 0.03, 0.82), (0, D - 0.6, 2.55), beam, bevel=0.01)
+    cyl('PendantShade', 0.35, 0.25, (0, 3.6, H - 0.5), mat('pshade', '#3a2616', 0.6), r2=0.12)
+    point('Pendant', (0, 3.6, H - 0.75), 180, '#ffc98a', 0.3)
+    area('Fill', (5, 2), (0, -2.0, 2.0), 70, '#ffb070', rot=(-80, 0, 0))
+    world('#0b1424', 0.2)
+    camera((0, -1.5, 1.6), (85.5, 0, 0), lens=22, dof=(6.0, 4.0))
+
 def room_living3(T):
     """The living room on a week with three nominees (the Block Buster): three chairs at the back."""
     global LIVING_NOMS
@@ -1859,7 +1942,7 @@ def room_living3(T):
 ROOMS = {'kitchen': room_kitchen, 'living': room_living, 'bedroom': room_bedroom, 'hoh': room_hoh, 'dr': room_dr,
          'yard': room_yard, 'storage': room_storage, 'havenot': room_havenot, 'dining': room_dining}
 ROOMS.update(ARENA_ROOMS)
-ROOMS.update({'studio': room_studio, 'studio-wide': room_studio_wide, 'finale': room_finale, 'bathroom': room_bathroom, 'living3': room_living3})
+ROOMS.update({'studio': room_studio, 'studio-wide': room_studio_wide, 'finale': room_finale, 'bathroom': room_bathroom, 'living3': room_living3, 'juryhouse': room_juryhouse})
 
 # ══════════════════════════════════════════════════════════════════════
 # Build and render

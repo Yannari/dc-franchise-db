@@ -3047,7 +3047,10 @@ export function truthTime(text, week) {
   const cap = (m, r) => (/^[A-Z]/.test(m) ? r.charAt(0).toUpperCase() + r.slice(1) : r);
   let t = String(text);
   if (w <= 2) {
-    t = t.replace(/\b(?:for|in) (?:several |a few |many )?weeks\b/gi, m => cap(m, 'since day one'))
+    // only a duration that has already passed ("I've lived with X for weeks"); "for weeks" ahead of
+    // them ("we'll live with this bed for weeks") is not a claim about the past
+    t = t.replace(/[^.!?]+/g, sent => (/\b(have|has|had|'ve|'d|been)\b/i.test(sent) && !/\b(will|'ll|going to|gonna)\b/i.test(sent)
+      ? sent.replace(/\b(?:for|in) (?:several |a few |many )?weeks\b/gi, m => cap(m, 'since day one')) : sent))
       .replace(/\ball season(?: long)?\b/gi, m => cap(m, 'since day one'))
       .replace(/\b(?:from day one|since the first week)\b/gi, m => cap(m, 'since day one'));
   }

@@ -15,10 +15,10 @@ export default {
       { by: 'c', say: "Totally normal laundry." },
       { by: 'a', say: "Anyway. {target}." },
       { by: 'b', say: "I knew it wasn't laundry." },
-      { by: 'a', say: "{target} asked me who I'd put up if I won HOH. Straight out. At breakfast." },
-      { by: 'c', say: "Who asks that at breakfast?" },
+      { by: 'a', say: "Have you noticed {target} never tells you anything? Just asks questions." },
+      { by: 'c', say: "Who's close to who. Who'd put who up." },
       { by: 'b', say: "Somebody making a list." },
-      { by: 'a', say: "That's what I thought." },
+      { by: 'a', say: "That's what I think, anyway. I can't prove it." },
       { by: 'c', dr: "We folded one towel in twenty minutes. Best gossip session of the week, worst laundry." },
     ] },
     { id: 'gg2.2', turns: [

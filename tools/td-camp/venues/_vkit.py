@@ -232,7 +232,7 @@ def vplate(name, json_name, depth):
     c = os.path.join(REPO, 'tools', 'td-camp', 'traced', 'cuts', json_name[:-5] + '-clean.png')
     if not os.path.exists(c):
         return vtraced(name, json_name, depth)
-    DIRECT[0] = {'hd': c, 'sd': c[:-4] + '-sd.png', 'motion': c[:-10] + '-motion.png'}
+    DIRECT[0] = {'hd': c, 'sd': c[:-4] + '-sd.png', 'motion': c[:-10] + '-motion.png', 'water': c[:-10] + '-water.png'}
     x, z = px((800, 450), depth)
-    mark('motion', (x, depth, z))
+    mark('motion', (x, depth, z), **({'water': 1} if os.path.exists(DIRECT[0]['water']) else {}))
     return None

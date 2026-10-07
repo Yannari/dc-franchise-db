@@ -54,7 +54,7 @@ export function worldHtml(screen, L) {
   if (!key) return `<div class="tdx-plate tdx-noplate"></div>`;
   const M = TD_MARKS[key] || { h: .5, m: [] };
   const spot = key.split('/')[1].replace(/-(day|night)$/, '');
-  const night = /-night$/.test(key);
+  const nightFrame = /-night$/.test(key);
   const indoor = ['mess-hall', 'cabin-inside', 'washroom', 'confessional', 'soundstage-corridor', 'prop-storage', 'economy', 'aisle', 'galley', 'cargo-hold', 'first-class', 'shelter', 'theater-tent', 'big-top', 'ceremony'].includes(spot)
     && !(spot === 'ceremony' && ['hosted-camp', 'survival-island', 'carnival', 'film-lot'].includes(screen.venue)) && !(spot === 'shelter' && screen.venue === 'survival-island');
   const r = seeded(key);
@@ -62,8 +62,19 @@ export function worldHtml(screen, L) {
   // the 4K render of the same frame, faded in when the camera closes on a conversation
   const hd = HD_VENUES.has(screen.venue) && !L.conf ? `<div class="tdx-plate hd" style="background-image:url('${SETS}/${key}-hd.webp')"></div>` : '';
   const of = k => M.m.filter(m => m.kind === k);
-  // a plate built from the show's own frame moves by its motion map (glplate.js): wind, water, heat
-  const gl = of('motion').length ? `<canvas class="tdx-gl" data-src="${SETS}/${key}"${HD_VENUES.has(screen.venue) && !L.conf ? ' data-hd="1"' : ''}></canvas>` : '';
+  // the day's weather (the islands keep their own rain)
+  const island = /^islands\//.test(key);
+  const wx = island || spot === 'confessional' ? null : wxOf(screen, L);
+  const wet = wx === 'rain' || wx === 'storm';
+  // a plate built from the show's own frame moves by its motion map (glplate.js): wind, water, heat.
+  // It is drawn once, by day, and graded for the hour and the weather: a night scene at a day frame
+  // is that frame by moonlight, its painted fires and lights still burning.
+  const motion = of('motion')[0];
+  const night = nightFrame || (!!motion && L.scene?.tod === 'night');
+  const grade = !motion ? null : night ? (nightFrame ? (wet ? 'nightrain' : 'none') : 'night') : indoor ? (wet ? 'dim' : 'day')
+    : wx === 'storm' ? 'storm' : wx === 'rain' ? 'rain' : wx === 'overcast' ? 'overcast' : wx === 'fog' ? 'fog' : wx === 'hot' ? 'hot'
+    : ['morning', 'day', 'dusk'][partOfDay(L.scene?.time)];
+  const gl = motion ? `<canvas class="tdx-gl" data-src="${SETS}/${key}" data-grade="${grade}"${HD_VENUES.has(screen.venue) && !L.conf ? ' data-hd="1"' : ''}></canvas>` : '';
   // under a living plate, the sky is a layer of its own: clouds and birds pass behind every tree and roof
   // (the shader leaves the plate see-through only where the frame shows open sky)
   let h = `<div class="tdx-plate" style="background-image:url('${SETS}/${key}.webp')"></div>${hd}<!--sky-->${gl}<div class="tdx-live">`, sky = '';
@@ -87,32 +98,32 @@ export function worldHtml(screen, L) {
   of('bulb').forEach((m, i) => { h += `<i class="tdx-bulb" style="left:${p(m.u)};top:${p(m.v)};--c:${esc(m.col || '#ffd27a')};--d:${(1.2 + (i % 5) * .4).toFixed(1)}s;--dl:${(i * .17).toFixed(2)}s"></i>`; });
   // traced plates (tools/td-camp/traced): the moving parts of the show's own frame, as regions
   // given in the frame's fractions. A waterfall: streaks running down it, mist at its foot.
-  of('fall').forEach((m, i) => {
+  if (!gl) of('fall').forEach((m, i) => {         // (a living plate's waterfall runs in the shader)
     const w = m.u1 - m.u0, hgt = m.v1 - m.v0;
     h += `<div class="tdx-fall" style="left:${p(m.u0)};top:${p(m.v0)};width:${p(w)};height:${p(hgt)};--d:${(1.4 + i * .3).toFixed(1)}s"></div>`;
     for (let q = 0; q < 5; q++) h += `<i class="tdx-puff" style="left:${p(m.u0 + w * (.15 + q * .17))};top:${p(m.v1 - .02)};width:${p(Math.max(w * .5, .03))};--d:${(3 + q * .6).toFixed(1)}s;--dl:${(q * .7).toFixed(1)}s;--ex:${(12 + q * 6)}px"></i>`;
   });
-  // still water (a lagoon, a lake, the sea): glints sliding across it, the odd fish
+  // still water (a lagoon, a lake, the sea): glints sliding across it, the odd fish. On a living plate
+  // they are held to the water's own pixels, so a glint never crosses the hut standing in the sea.
+  if (motion?.water) h += `<div class="tdx-water" style="-webkit-mask-image:url('${SETS}/${key}-water.webp');mask-image:url('${SETS}/${key}-water.webp')">`;
   of('pool').forEach((m, i) => {
     const w = m.u1 - m.u0, hgt = m.v1 - m.v0;
     for (let q = 0; q < Math.round(6 + w * 30); q++) h += `<i class="tdx-shimmer" style="left:${p(m.u0 + r() * w * .9)};top:${p(m.v0 + r() * hgt)};width:${p(.015 + r() * .04)};--d:${(3 + r() * 4).toFixed(1)}s;--dl:${(r() * 5).toFixed(1)}s;--ex:${(15 + r() * 40).toFixed(0)}px"></i>`;
     if (m.fish && !night) h += `<i class="tdx-fish" style="left:${p(m.u0 + w * (.2 + r() * .6))};top:${p(m.v0 + hgt * .5)};--d:${(7 + r() * 5).toFixed(1)}s;--dl:${(r() * 6).toFixed(1)}s"></i>`;
   });
+  if (motion?.water) h += '</div>';
   // a band of low fog lying across part of the set
   of('mist').forEach((m, i) => { for (let q = 0; q < 3; q++) h += `<i class="tdx-mist band" style="top:${p(m.v0 + q * (m.v1 - m.v0) / 3)};--d:${50 + q * 17 + i * 9}s;--dl:-${q * 11}s"></i>`; });
   // butterflies over a sunny jungle clearing
   of('flutter').forEach((m) => { if (!night) for (let q = 0; q < (m.n || 3); q++) h += `<i class="tdx-butterfly" style="left:${p(m.u0 + r() * (m.u1 - m.u0))};top:${p(m.v0 + r() * (m.v1 - m.v0))};--c:${['#f2c83a', '#e84a8a', '#4ab8e8', '#f28a3a'][q % 4]};--d:${(6 + r() * 4).toFixed(1)}s;--dl:-${(r() * 6).toFixed(1)}s"></i>`; });
   const water = of('water')[0];
   if (water) { const top = M.h + .01, bot = Math.min(water.v, 1); for (let i = 0; i < 16; i++) h += `<i class="tdx-shimmer" style="left:${p(.05 + r() * .85)};top:${p(top + r() * Math.max(bot - top, .04))};width:${p(.02 + r() * .05)};--d:${(3 + r() * 4).toFixed(1)}s;--dl:${(r() * 5).toFixed(1)}s;--ex:${(20 + r() * 50).toFixed(0)}px"></i>`; }
-  // the day's weather, painted over the set (the islands keep their own rain)
-  const island = /^islands\//.test(key);
-  const wx = island || spot === 'confessional' ? null : wxOf(screen, L);
-  const wet = wx === 'rain' || wx === 'storm';
+  // the day's weather, painted over the set (a living plate is graded in its shader instead of greyed)
   if (wx && !indoor) {
     const aerial = spot === 'map';
     if ((wx === 'sunny' || wx === 'hot') && !night && !aerial) h += `<i class="tdx-rays${wx === 'hot' ? ' hot' : ''}"></i>`;
     if (wx === 'hot' && !night && !aerial) h += '<i class="tdx-haze"></i>';
-    if (wx === 'overcast' || wet) h += `<i class="tdx-grey${wx === 'storm' ? ' storm' : ''}${night ? ' night' : ''}"></i>`;
+    if ((wx === 'overcast' || wet) && !gl) h += `<i class="tdx-grey${wx === 'storm' ? ' storm' : ''}${night ? ' night' : ''}"></i>`;
     if (wet) for (let i = 0; i < (wx === 'storm' ? 110 : 60); i++) h += `<i class="tdx-rain${wx === 'storm' ? ' hard' : ''}" style="left:${p(r() * 1.15 - .1)};--d:${((wx === 'storm' ? .35 : .55) + r() * .3).toFixed(2)}s;--dl:-${(r() * 1).toFixed(2)}s;opacity:${(.25 + r() * .45).toFixed(2)}"></i>`;
     if (wet) for (let i = 0; i < 10; i++) h += `<i class="tdx-splash" style="left:${p(.05 + r() * .9)};top:${p(Math.max(M.h + .1, .62) + r() * .3)};--dl:-${(r() * 1.2).toFixed(2)}s"></i>`;
     if (wx === 'storm') h += '<i class="tdx-flash"></i>';
@@ -132,8 +143,10 @@ export function worldHtml(screen, L) {
     for (let i = 0; i < 70; i++) h += `<i class="tdx-rain" style="left:${p(r() * 1.1 - .05)};--d:${(.45 + r() * .35).toFixed(2)}s;--dl:-${(r() * 1).toFixed(2)}s;opacity:${(.25 + r() * .4).toFixed(2)}"></i>`;
     h += '<i class="tdx-flash"></i>';
   }
-  h += `</div>${night && !indoor ? '<div class="tdx-wash"></div>' : ''}`;
-  return h.replace('<!--sky-->', gl ? `<div class="tdx-sky">${sky}</div>` : '');
+  h += `</div>${night && !indoor && !gl ? '<div class="tdx-wash"></div>' : ''}`;
+  // the sky behind a living plate takes the hour and the weather: stars and a moon, storm cloud, dusk
+  const moon = grade === 'night' ? '<i class="tdx-moon"></i>' : '';
+  return h.replace('<!--sky-->', gl ? `<div class="tdx-sky g-${grade}">${moon}${sky}</div>` : '');
 }
 // Each venue's climate: the weathers its days are drawn from, the commoner ones listed more than once.
 // A northern lake camp gets sun, wind, cloud, rain, a storm and morning fog; a tropical island is hot,

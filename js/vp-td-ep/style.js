@@ -20,6 +20,23 @@ export const TDX_CSS = `
 .tdx .tdx-stage.push .tdx-plate.hd{opacity:1}
 .tdx .tdx-gl{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .4s}
 .tdx .tdx-gl.on{opacity:1}
+.tdx .tdx-water{position:absolute;inset:0;-webkit-mask-size:100% 100%;mask-size:100% 100%}
+.tdx .tdx-sky::before{content:'';position:absolute;inset:0;opacity:0}
+.tdx .tdx-sky.g-night::before{opacity:1;background:radial-gradient(1.5px 1.5px at 12% 18%,#fff 60%,transparent),radial-gradient(1px 1px at 33% 8%,#fff 60%,transparent),radial-gradient(1.5px 1.5px at 51% 26%,#fff 60%,transparent),radial-gradient(1px 1px at 68% 12%,#fff 60%,transparent),radial-gradient(1px 1px at 84% 30%,#fff 60%,transparent),radial-gradient(1.5px 1.5px at 93% 6%,#fff 60%,transparent),radial-gradient(1px 1px at 24% 38%,#dfe6ff 60%,transparent),radial-gradient(1px 1px at 44% 44%,#dfe6ff 60%,transparent),linear-gradient(#060c22,#14204a 45%,#29356a 75%,#3a4478);background-size:31% 41%,27% 37%,33% 43%,29% 39%,35% 47%,41% 33%,23% 49%,37% 51%,100% 100%}
+.tdx .tdx-sky.g-night .tdx-cloud{filter:brightness(.3) saturate(.5)}
+.tdx .tdx-sky.g-storm::before{opacity:.95;background:linear-gradient(#22262e,#3c424c 55%,#545a62)}
+.tdx .tdx-sky.g-storm .tdx-cloud{filter:brightness(.42) saturate(.15)}
+.tdx .tdx-sky.g-rain::before{opacity:.9;background:linear-gradient(#4e555e,#6e757e 60%,#80868c)}
+.tdx .tdx-sky.g-rain .tdx-cloud{filter:brightness(.66) saturate(.25)}
+.tdx .tdx-sky.g-overcast::before{opacity:.82;background:linear-gradient(#8a929c,#a9afb6 60%,#b8bdc2)}
+.tdx .tdx-sky.g-overcast .tdx-cloud{filter:brightness(.9) saturate(.3)}
+.tdx .tdx-sky.g-fog::before{opacity:.78;background:linear-gradient(#bcc2c8,#d8dcdf 60%,#e6e8ea)}
+.tdx .tdx-sky.g-fog .tdx-cloud{opacity:.55;filter:saturate(.3)}
+.tdx .tdx-sky.g-dusk::before{opacity:.72;background:linear-gradient(#5a4a8a,#e8786a 40%,#ffb06a 70%,#ffd88a)}
+.tdx .tdx-sky.g-dusk .tdx-cloud{filter:sepia(.55) saturate(1.6) hue-rotate(-18deg) brightness(.95)}
+.tdx .tdx-sky.g-morning::before{opacity:.35;background:linear-gradient(#a8d8ff,#fff0d6)}
+.tdx .tdx-sky.g-hot::before{opacity:.45;background:linear-gradient(#fffbe0,#fff3b0 40%,transparent 80%)}
+.tdx .tdx-moon{position:absolute;left:80%;top:8%;width:3.6%;aspect-ratio:1;border-radius:50%;box-shadow:inset -11px 5px 0 0 #f6eed2;filter:drop-shadow(0 0 14px rgba(255,240,200,.55))}
 .tdx .tdx-lightning{position:absolute;inset:0;background:#dfe6ff;mix-blend-mode:screen;opacity:0;pointer-events:none;animation:tdxSkyFlash 11s linear infinite}
 @keyframes tdxSkyFlash{0%,86%{opacity:0}87%{opacity:.6}88%{opacity:.05}89.5%{opacity:.4}92%,100%{opacity:0}}
 @keyframes tdxFade{from{opacity:.25}to{opacity:1}}

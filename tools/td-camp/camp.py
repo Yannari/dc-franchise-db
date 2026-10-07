@@ -122,6 +122,10 @@ def render_spot(venue, spot, tod, preview=False, w=1920, h=1080, hd=False):
         if not hd and os.path.exists(DIRECT[0]['motion']):
             sc.render.image_settings.quality = 90
             bpy.data.images.load(DIRECT[0]['motion']).save_render(path[:-5] + '-motion.webp', scene=sc)
+        if not hd and os.path.exists(DIRECT[0].get('water', '')):
+            sc.render.image_settings.color_mode = 'RGBA'
+            bpy.data.images.load(DIRECT[0]['water']).save_render(path[:-5] + '-water.webp', scene=sc)
+            sc.render.image_settings.color_mode = 'RGB'
     elif not MARKS_ONLY[0]:
         bpy.ops.render.render(write_still=True)
     if not hd:

@@ -175,7 +175,15 @@ def clean(name, P):
     os.makedirs(CUTS, exist_ok=True)
     cv2.imwrite(os.path.join(CUTS, f'{name}-clean.png'), base)
     cv2.imwrite(os.path.join(CUTS, f'{name}-clean-sd.png'), cv2.resize(base, (1920, 1080), interpolation=cv2.INTER_AREA))
-    cv2.imwrite(os.path.join(CUTS, f'{name}-motion.png'), motion_map(base, P))
+    mo = motion_map(base, P)
+    cv2.imwrite(os.path.join(CUTS, f'{name}-motion.png'), mo)
+    # the water's own pixels, as an alpha mask the viewer clips its glints and fish to
+    wpath = os.path.join(CUTS, f'{name}-water.png')
+    if P.get('pool'):
+        a = cv2.threshold(mo[:540, :, 1], 40, 255, cv2.THRESH_BINARY)[1]
+        cv2.imwrite(wpath, np.dstack([np.full_like(a, 255)] * 3 + [cv2.GaussianBlur(a, (0, 0), 1)]))
+    elif os.path.exists(wpath):
+        os.remove(wpath)
     json.dump({'clouds': clouds}, open(os.path.join(T, f'{name}-live.json'), 'w'))
     return clouds
 

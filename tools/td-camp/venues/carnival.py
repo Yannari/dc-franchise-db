@@ -675,11 +675,137 @@ def cv_exit(tod):
     tv_camera((-1.2, -6.0, 2.6), (0.6, 24, 0.9), lens=26)
 
 
+def clown_tent(x, y, tod, s=1.0, a='#efe6d6', b='#2a2a32'):
+    """The Red team's tent (Red_Campsite): a striped cone whose front is a grinning clown face, the door its mouth."""
+    striped('ClownWall', 2.8 * s, 2.4 * s, (x, y, 1.2 * s), a, b, tod, n=7)
+    striped('ClownRoof', 3.0 * s, 3.0 * s, (x, y, 2.4 * s + 1.5 * s), a, b, tod, n=7, r2=0.08)
+    fy = y - 2.9 * s
+    card(uid('ClownFace'), _blob_pts(1.9 * s, 1.7 * s, 32, 0.04, 2), fy, pmat('ClownFace' + tod, N('#f2ece0', tod), unlit=True, mottle=0.1), x=x, z=3.0 * s)
+    for sx in (-0.7, 0.7):
+        card(uid('ClownEye'), _blob_pts(0.36 * s, 0.42 * s, 16, 0, 0), fy - 0.02, pmat('ClownEye' + tod, N('#1a1a22', tod), unlit=True, mottle=0), x=x + sx * s, z=3.6 * s)
+    card(uid('ClownNose'), _blob_pts(0.32 * s, 0.3 * s, 16, 0, 0), fy - 0.03, pmat('ClownNose' + tod, N('#c8303a', tod), unlit=True, mottle=0), x=x, z=3.0 * s)
+    card(uid('ClownMouth'), [(-1.3 * s, 2.4 * s), (1.3 * s, 2.4 * s), (0.9 * s, 0.0), (-0.9 * s, 0.0)], fy - 0.02, pmat('ClownMouth' + tod, N('#3a1a22', tod), unlit=True, mottle=0), x=x)
+    card(uid('ClownLip'), [(-1.45 * s, 2.55 * s), (1.45 * s, 2.55 * s), (1.3 * s, 2.35 * s), (-1.3 * s, 2.35 * s)], fy - 0.025, pmat('ClownLip' + tod, N('#3a5aa8', tod), unlit=True, mottle=0), x=x)
+
+
+def drop_tower(x, y, h, tod):
+    striped('DropTower', 0.7, h, (x, y, h / 2), '#c8303a', '#efe6d6', tod, n=6)
+    pcyl('DropRing', 1.6, 0.8, (x, y, h * 0.55), '#e8b03a', tod, verts=20)
+    pcyl('DropCap', 1.0, 1.2, (x, y, h + 0.6), '#7a5aa8', tod, r2=0.1, verts=16)
+
+
+def haunted_house(x, y, tod):
+    """Stawaki's Haunted Mansion from outside: a crooked purple house, a tower, boarded windows."""
+    pbox('MansionBody', (7.0, 5.0, 5.0), (x, y, 2.5), '#4a3a5a', tod, shade='#2e2440', mottle=0.35)
+    for sd in (-1, 1):
+        pbox('MansionRoof', (7.6, 3.4, 0.3), (x, y + sd * 1.3, 5.9), '#2a2236', tod, rot=(sd * -38, 0, 0))
+    pcyl('MansionTower', 1.4, 7.5, (x + 2.8, y - 0.6, 3.75), '#4a3a5a', tod, verts=8)
+    pcyl('MansionSpire', 1.7, 3.0, (x + 2.8, y - 0.6, 9.0), '#2a2236', tod, r2=0.05, verts=8)
+    for k, wx in enumerate((-2.2, -0.4)):
+        pbox('MansionWin', (1.0, 0.1, 1.2), (x + wx, y - 2.55, 3.4), '#e8c23a' if tod == 'night' else '#1e1a26', tod, ink=False)
+        pbox('Board', (1.3, 0.12, 0.18), (x + wx, y - 2.6, 3.4), '#7a5a3a', tod, rot=(0, 20 - k * 40, 0))
+
+
+def corn_maze(x, y, tod, w=12, d=8):
+    _flat_poly('MazeField', [(x - w / 2, y - d / 2), (x + w / 2, y - d / 2), (x + w / 2, y + d / 2), (x - w / 2, y + d / 2)], 0.03, '#8a7a3a', tod, mottle=0.3)
+    rnd = random.Random(7)
+    for i in range(7):
+        yy = y - d / 2 + 0.6 + i * (d - 1.2) / 6
+        gap = rnd.uniform(x - w / 2 + 1.5, x + w / 2 - 1.5)
+        for (a0, a1) in ((x - w / 2 + 0.3, gap - 0.7), (gap + 0.7, x + w / 2 - 0.3)):
+            if a1 - a0 > 0.3:
+                pbox('CornRow', (a1 - a0, 0.45, 1.3), ((a0 + a1) / 2, yy, 0.65), '#c8b04a', tod, shade='#8a7a2a', mottle=0.4, mscale=2)
+
+
+def cv_map(tod):
+    """Stawaki from above, the way Disventure Camp 4 paints it (Stawaki_Carnival_-_Further_view: the
+    abandoned carnival on its lakeside, striped tents, the looping coaster, the drop tower, the
+    clown-faced ferris wheel, lavender hills and dark drooping pines). The teams live apart outside
+    the fence, each camp built from carnival junk: the Red team's clown-mouth tent (Red_Campsite),
+    the Blue team's scalloped cone (Blue_Campsite), a third tent for a three-team season, each with
+    its fire and banner. Shared ground: the forest edge, the rocky beach, the lake shore, the gate,
+    the midway, and the attractions an episode can open (the mansion, the corn maze, the theater
+    tent); the photo booth is the confessional. A camp's places are 'campsite@<slot>' and
+    'shelter@<slot>': the viewer gives each team its own slot."""
+    paint_mode(); P = CV[tod]; day = tod == 'day'; rnd = random.Random(31)
+    cv_sky(tod, far_y=120)
+    ground_plane(P['ground'], P['ground_sh'], size=(400, 300), loc=(0, 80, 0), mottle=0.35)
+    # the lake on the right, its rocky near shore, the trial deck on the far shore
+    _flat_poly('LakeRim', _blob(24, -4, 20, 11.5, seed=6, wob=0.1), 0.02, '#9a9070', tod, mottle=0.3)
+    _flat_poly('Lake', _blob(24, -4, 18.5, 10, seed=6, wob=0.1), 0.04, CV['day']['lake'], tod, mottle=0.08)
+    for k, (rx, ry, s) in enumerate(((9.5, -9, 1.2), (8, -6.5, 0.8), (11, -12, 0.9), (12.5, -8, 0.6), (30, -15, 0.8))):
+        r = icorock(uid('LakeRock'), (s, s * 0.8, s * 0.6), (rx, ry, 0.2), N('#8a8a8a', tod), seed=40 + k)
+        r.data.materials.clear(); r.data.materials.append(pmat('LRock' + tod, N('#8a8a8a', tod), mottle=0.3)); r['ink'] = 1
+    pbox('TrialDeck', (8.0, 5.0, 0.4), (36, 6, 0.3), '#7a5232', tod)
+    for (tx, ty) in ((32.5, 4), (39.5, 4), (32.5, 8.2), (39.5, 8.2)):
+        stripe_torch(tx, ty, tod, h=2.6)
+    # the fence between the camps and the carnival, the gate with its neon arrow
+    for k in range(26):
+        fx = -30 + k * 1.6
+        if abs(fx - 2) > 2.6:
+            pbox('Fence', (0.18, 0.18, 1.6), (fx, 14, 0.8), '#7a5a3a', tod)
+    pbox('FenceRail', (42, 0.12, 0.14), (-9, 14, 1.3), '#7a5a3a', tod)
+    for sd in (-1, 1):
+        striped('GatePost', 0.45, 6.0, (2 + sd * 2.4, 14, 3.0), '#c8303a', '#efe6d6', tod, n=5)
+    pbox('GateSign', (6.0, 0.3, 1.4), (2, 14, 6.4), '#7a5aa8', tod)
+    neon_arrow(-3.5, 13.5, 7.6, tod, s=1.0)
+    # the midway: a row of stalls, bunting, the theater tent and the Big Top behind
+    for k, (col, sign) in enumerate((('#c8303a', 'GAMES'), ('#3a5aa8', 'FOOD'), ('#e8b03a', 'PRIZES'), ('#4a9a5a', 'TOSS'))):
+        midway_stall(6 + k * 3.6, 21, tod, col, sign)
+    bunting((5, 19, 3.6), (19, 19, 3.6), tod, n=16, sag=0.5)
+    circus_tent(24, 22, tod, r=3.4, h=2.6, roof=2.8, a='#7a5aa8', b='#efe6d6', flag='#7a5aa8')
+    circus_tent(10, 33, tod, r=7.0, h=4.5, roof=6.0)
+    for (tx, ty, r, a) in ((-6, 22, 2.2, '#3a5aa8'), (17, 28, 2.0, '#c8303a'), (-12, 30, 2.4, '#c8303a'), (30, 28, 2.0, '#3a5aa8'), (-2, 28, 1.8, '#4a9a5a'), (20, 36, 2.2, '#7a5aa8'), (36, 26, 1.8, '#c8303a')):
+        circus_tent(tx, ty, tod, r=r, h=1.8, roof=2.2, a=a)
+    # the rides: the clown ferris wheel, the looping coaster, the drop tower
+    ferris(28, 38, 7.5, tod)
+    card(uid('FerrisClown'), _blob_pts(2.2, 2.2, 24, 0, 0), 37.9, pmat('FClown' + tod, N('#e8b03a', tod), unlit=True, mottle=0), x=28, z=7.5 * 1.15)
+    card(uid('FerrisFace'), _blob_pts(1.4, 1.5, 20, 0, 0), 37.85, pmat('FFace' + tod, N('#f2ece0', tod), unlit=True, mottle=0), x=28, z=7.5 * 1.15)
+    card(uid('FerrisNose'), _blob_pts(0.35, 0.35, 12, 0, 0), 37.8, pmat('FNose' + tod, N('#c8303a', tod), unlit=True, mottle=0), x=28, z=7.5 * 1.15)
+    coaster(-24, 6, 42, tod, seed=3)
+    drop_tower(-3, 36, 15, tod)
+    # the attractions an episode can open: the mansion, the corn maze
+    haunted_house(-20, 24, tod)
+    corn_maze(-28, 36, tod)
+    # the photo booth by the gate: the confessional
+    striped('PhotoBooth', 0.9, 2.4, (-1.5, 11.5, 1.2), '#7a5aa8', '#d8c8e8', tod, n=5)
+    striped('PhotoRoof', 1.05, 1.0, (-1.5, 11.5, 2.9), '#7a5aa8', '#d8c8e8', tod, n=5, r2=0.04)
+    # the woods: pines behind the carnival and along the left, around the camps
+    pine_wall(tod, 50, -90, 90, seed=8, h=(14, 20), gap=(2.6, 4.4), s=1.6)
+    for (x, y) in ((-44, 20), (-40, 6), (-46, -6), (-38, 18), (-36, -12), (-16, 6), (40, 20), (44, -6), (46, 10)):
+        dc_pine(x + rnd.uniform(-1, 1), y, rnd.uniform(10, 14), tod, seed=int(x * 3 + y), s=1.4)
+    for (x, y, c) in ((-30, 2, '#c88a2a'), (-14, -6, '#3a7a5a'), (-2, -14, '#c88a2a'), (4, 2, '#3a7a5a')):
+        cv_bush(x, y, tod, s=1.4, col=c)
+    # camp 0: the Red team's clown tent
+    _flat_poly('CampClear0', _blob(-24, -4, 6.5, 4.5, seed=1, wob=0.12), 0.03, CV['day']['patch'], tod, mottle=0.3)
+    clown_tent(-26, -2, tod, s=0.95)
+    fire_pit(-20.5, -6.5, tod, r=0.55, lit=True)
+    _sol_banner(-21, -1, '#c8303a', tod)
+    # camp 1: the Blue team's junk tent
+    _flat_poly('CampClear1', _blob(-7, -10, 6.5, 4.5, seed=2, wob=0.12), 0.03, CV['day']['patch'], tod, mottle=0.3)
+    junk_tent(-9, -8, tod, s=0.95)
+    ticket_booth(-4.5, -7, tod, rot_z=-10, s=0.9)
+    fire_pit(-4.0, -12.0, tod, r=0.55, lit=True)
+    _sol_banner(-12.5, -10.5, '#3a5aa8', tod)
+    # camp 2: a third team's tent in the pines
+    _flat_poly('CampClear2', _blob(-30, 11, 6.0, 4.2, seed=3, wob=0.12), 0.03, CV['day']['patch'], tod, mottle=0.3)
+    circus_tent(-31, 12, tod, r=2.6, h=2.0, roof=2.6, a='#4a9a5a', b='#efe6d6', flag='#4a9a5a')
+    fire_pit(-26.5, 8.5, tod, r=0.5, lit=True)
+    _sol_banner(-34.5, 9, '#4a9a5a', tod)
+    for zid, loc in (('shelter@0', (-26, -2, 6.0)), ('campsite@0', (-20.5, -6.5, 1.2)), ('shelter@1', (-9, -8, 6.0)), ('campsite@1', (-4.0, -12.0, 1.2)),
+                     ('shelter@2', (-31, 12, 5.0)), ('campsite@2', (-26.5, 8.5, 1.2)), ('forest-edge', (-38, 0, 2.0)), ('rocky-beach', (10, -9, 1.0)),
+                     ('lake-shore', (26, 8, 0.6)), ('carnival-entrance', (2, 14, 7.0)), ('midway', (12, 21, 3.0)), ('haunted-mansion', (-20, 24, 6.0)),
+                     ('corn-maze', (-28, 36, 1.4)), ('theater-tent', (24, 22, 5.5)), ('confessional', (-1.5, 11.5, 3.4))):
+        mark('zone', loc, id=zid)
+    paint_sun(azimuth=-35, elevation=55 if day else 35, energy=3.6 if day else 1.6)
+    tv_camera((1.0, -58.0, 34.0), (1.0, 12.0, 6.0), lens=31)
+
+
 SCENES['carnival'] = {
     'campsite': cv_campsite, 'shelter': cv_shelter, 'forest-edge': cv_forest, 'rocky-beach': cv_rocky_beach,
     'lake-shore': cv_lake_shore, 'carnival-entrance': cv_entrance, 'midway': cv_midway, 'trial-area': cv_trial_area,
     'haunted-mansion': cv_haunted, 'corn-maze': cv_corn_maze, 'theater-tent': cv_theater, 'big-top': cv_big_top,
-    'voting-booth': cv_voting_booth, 'confessional': cv_confessional, 'ceremony': cv_ceremony, 'exit': cv_exit,
+    'voting-booth': cv_voting_booth, 'confessional': cv_confessional, 'ceremony': cv_ceremony, 'exit': cv_exit, 'map': cv_map,
 }
 OUTDOOR['carnival'] = {'campsite', 'forest-edge', 'rocky-beach', 'lake-shore', 'carnival-entrance', 'midway',
-                       'trial-area', 'haunted-mansion', 'corn-maze', 'voting-booth'}
+                       'trial-area', 'haunted-mansion', 'corn-maze', 'voting-booth', 'map'}

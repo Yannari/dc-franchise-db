@@ -23,7 +23,7 @@ import { ACCESS_PROFILES } from '../camp-access.js';
 import { tdCampScreen, stageSpot, venueOf, VENUES, placeName } from './steps.js';
 
 // the venues with a painted map (tools/td-camp: '<venue>/map-day'), and how their teams live
-export const MAP_VENUES = { 'hosted-camp': { shared: true }, 'film-lot': { shared: true }, 'world-tour': { shared: true }, 'survival-island': { shared: false } };
+export const MAP_VENUES = { 'hosted-camp': { shared: true }, 'film-lot': { shared: true }, 'world-tour': { shared: true }, 'survival-island': { shared: false }, carnival: { shared: false } };
 export const hasMap = venue => !!(MAP_VENUES[venue] && TD_MARKS[`${venue}/map-day`]);
 
 // which zone on the map each staged place belongs to; a zone may hold more than one place
@@ -35,10 +35,14 @@ const ZONE_OF = {
     'soundstage-corridor': 'soundstage-corridor', 'prop-storage': 'prop-storage', confessional: 'confessional' },
   'survival-island': { shelter: 'shelter', campfire: 'campfire', beach: 'beach', shoreline: 'shoreline', 'water-source': 'water-source',
     'jungle-trail': 'jungle-trail', 'fishing-area': 'fishing-area', confessional: 'confessional' },
+  carnival: { campsite: 'campsite', shelter: 'shelter', 'forest-edge': 'forest-edge', 'rocky-beach': 'rocky-beach', 'lake-shore': 'lake-shore',
+    'carnival-entrance': 'carnival-entrance', midway: 'midway', 'haunted-mansion': 'haunted-mansion', 'corn-maze': 'corn-maze', 'theater-tent': 'theater-tent',
+    confessional: 'confessional' },
   'world-tour': { economy: 'economy', aisle: 'aisle', galley: 'galley', 'cargo-hold': 'cargo-hold', 'first-class': 'first-class',
     'destination-staging': 'destination-staging', confessional: 'confessional' },
 };
-export const ZONE_LABEL = { shelter: 'The Shelter', campfire: 'The Campfire', shoreline: 'The Shoreline', 'water-source': 'The Waterfall Pool', 'jungle-trail': 'The Jungle Trail', 'fishing-area': 'The Fishing Dock', cabins: 'The Cabins', 'mess-hall': 'The Mess Hall', washroom: 'The Washrooms', 'communal-grounds': 'The Camp Grounds',
+export const ZONE_LABEL = { campsite: 'The Campsite', 'forest-edge': 'The Forest Edge', 'rocky-beach': 'The Rocky Beach', 'lake-shore': 'The Lake Shore',
+  'carnival-entrance': 'The Carnival Gate', midway: 'The Midway', 'haunted-mansion': 'The Haunted Mansion', 'corn-maze': 'The Corn Maze', 'theater-tent': 'The Theater Tent', shelter: 'The Shelter', campfire: 'The Campfire', shoreline: 'The Shoreline', 'water-source': 'The Waterfall Pool', 'jungle-trail': 'The Jungle Trail', 'fishing-area': 'The Fishing Dock', cabins: 'The Cabins', 'mess-hall': 'The Mess Hall', washroom: 'The Washrooms', 'communal-grounds': 'The Camp Grounds',
   trailers: 'The Trailers', 'craft-services': 'Craft Services', 'studio-backlot': 'The Backlot', 'soundstage-corridor': 'The Soundstages', 'prop-storage': 'Prop Storage',
   economy: 'Economy Class', aisle: 'The Aisle', galley: 'The Galley', 'cargo-hold': 'The Cargo Hold', 'first-class': 'First Class', 'destination-staging': 'Down on the Ground',
   confessional: 'The Confession Cam', campfire: 'The Campfire', dock: 'The Dock', beach: 'The Beach', 'forest-trail': 'The Forest Trail', cliff: 'The Cliff' };

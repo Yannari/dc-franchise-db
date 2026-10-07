@@ -433,7 +433,7 @@ def fl_map(tod):
     skyline(tod, y=170, x0=-200, x1=170, seed=21)
     box('MapWater', (600, 400, 0.2), (0, -60, -2.6), pmat('FLWater' + tod, N('#3aa8b0', tod), unlit=True, mottle=0.05, mscale=0.05), bevel=0)
     # the pier: the lot's concrete deck, its wall down to the water, a wooden rail along the edge
-    _prism('Pier', [(-46, -16), (46, -16), (48, 40), (-48, 40)], -2.4, 0.0, P['ground'], '#9a958a', tod)
+    _prism('Pier', [(-46, -16), (46, -16), (48, 40), (-48, 40)], -2.4, 0.0, TDA['day']['ground'], '#9a958a', tod)
     pbox('PierRail', (92, 0.5, 0.5), (0, -15.9, 0.25), '#6a4a32', tod)
     for k in range(9):
         pbox('Bollard', (0.5, 0.5, 0.8), (-40 + k * 10, -15.6, 0.4), '#3a3a42', tod)

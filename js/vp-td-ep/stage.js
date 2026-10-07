@@ -43,7 +43,7 @@ function seeded(key) { let h = 2166136261; for (const c of key) h = Math.imul(h 
 // THE WORLD
 // ══════════════════════════════════════════════════════════════════════
 // venues whose plates have a 4K render (tools/td-camp/camp.py ... hd)
-const HD_VENUES = new Set(['hosted-camp', 'film-lot', 'world-tour']);
+const HD_VENUES = new Set(['hosted-camp', 'film-lot', 'world-tour', 'survival-island', 'carnival']);
 export function worldKey(screen, L) {
   if (L.conf) return `${screen.venue}/confessional`;
   return L.scene?.plate || `${screen.venue}/none`;

@@ -63,10 +63,10 @@ describe('the camp map', () => {
     expect(out[0].id).toBe(`camp-pre-${camps[0]}`);
   });
 
-  it('keeps the linear camp screens at a venue with no painted map', () => {
-    const ep = { ...eps[0], campAccess: { ...eps[0].campAccess, setting: 'carnival' } };
+  it('keeps the linear camp screens when the map is switched off', () => {
+    const ep = eps[0];
     const camps = campsOf(ep, 'pre');
-    const out = tdStepScreens(ep, camps.map(c => ({ id: `camp-pre-${c}`, label: 'Camp' })), { setting: 'carnival' });
+    const out = tdStepScreens(ep, camps.map(c => ({ id: `camp-pre-${c}`, label: 'Camp' })), { setting: 'hosted-camp', campMap: false });
     expect(out.some(s => s.campMap)).toBe(false);
     expect(out.length).toBe(camps.length);
   });
@@ -88,7 +88,8 @@ describe('the camp map', () => {
 
 // each venue's own map: every conversation of a season played there lands on one of that map's zones
 describe.each([['film-lot', ['trailers', 'craft-services', 'studio-backlot', 'soundstage-corridor', 'prop-storage', 'confessional']], ['world-tour', ['economy', 'aisle', 'galley', 'cargo-hold', 'first-class', 'destination-staging', 'confessional']],
-  ['survival-island', ['shelter', 'campfire', 'beach', 'shoreline', 'water-source', 'jungle-trail', 'fishing-area', 'confessional']]])('the %s map', (venue, places) => {
+  ['survival-island', ['shelter', 'campfire', 'beach', 'shoreline', 'water-source', 'jungle-trail', 'fishing-area', 'confessional']],
+  ['carnival', ['campsite', 'shelter', 'forest-edge', 'rocky-beach', 'lake-shore', 'carnival-entrance', 'midway', 'haunted-mansion', 'corn-maze', 'theater-tent', 'confessional']]])('the %s map', (venue, places) => {
   let veps = [];
   beforeAll(() => {
     seededRun(() => runOneSeason({ romance: 'enabled', setting: venue }, 12, NAMES.slice(0, 12).map((n, i) => ({ ...roster.find(r => r.name === n), tribe: i % 2 ? 'Bass' : 'Gophers' }))), 778);

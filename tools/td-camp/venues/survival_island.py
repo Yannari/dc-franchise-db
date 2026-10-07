@@ -466,14 +466,14 @@ def si_map(tod):
         x = -140 + k * 62 + rnd.uniform(-10, 10)
         card(uid('FarIsle'), [(-14, 0), (-6, 9), (0, 12), (7, 8), (16, 0)], 150, pmat('FarIsle' + tod, P['mtn'][k % 2], unlit=True, mottle=0), x=x, z=-0.5)
     # the island: a sand rim, the grass inside it, the lagoon on the Favorites' side
-    _prism('SolSand', _blob(0, 6, 46, 30, seed=3, wob=0.08), -0.5, 0.25, P['sand'], _mix_hex(P['sand'], '#8a6a5a', 0.3), tod)
+    _prism('SolSand', _blob(0, 6, 46, 30, seed=3, wob=0.08), -0.5, 0.25, SOL['day']['sand'], _mix_hex(SOL['day']['sand'], '#8a6a5a', 0.3), tod)
     _flat_poly('SolFoam', _blob(0, 6, 47.5, 31.2, seed=3, wob=0.08), -0.38, '#f2fbfb', tod, mottle=0)
-    _flat_poly('SolGrass', _blob(-2, 7, 37, 23, seed=5, wob=0.1), 0.27, P['grass'], tod, mottle=0.3)
+    _flat_poly('SolGrass', _blob(-2, 7, 37, 23, seed=5, wob=0.1), 0.27, SOL['day']['grass'], tod, mottle=0.3)
     _flat_poly('Lagoon', _blob(33, 2, 6, 4, seed=8, wob=0.12), 0.29, '#3ad8e0', tod, mottle=0.05)
     for (cx, cy, r) in ((-19, 1, 7.5), (22, -6, 6.5), (18, 11, 6.0)):
-        _flat_poly('Clearing', _blob(cx, cy, r, r * 0.75, seed=int(cx), wob=0.12), 0.28, P['path'], tod, mottle=0.3)
+        _flat_poly('Clearing', _blob(cx, cy, r, r * 0.75, seed=int(cx), wob=0.12), 0.28, SOL['day']['path'], tod, mottle=0.3)
     for (px, py, rx, ry) in ((-10, -2, 14, 1.4), (6, 2, 12, 1.2), (2, 8, 1.4, 8)):
-        _flat_poly('SolPath', _blob(px, py, rx, ry, seed=int(px * 3 + py), wob=0.08), 0.29, P['path'], tod, mottle=0.25)
+        _flat_poly('SolPath', _blob(px, py, rx, ry, seed=int(px * 3 + py), wob=0.08), 0.29, SOL['day']['path'], tod, mottle=0.25)
     # the volcano, its crater, its waterfalls, the rock spires around it
     VX, VY, R0, R1, H = 0.0, 30.0, 14.0, 3.0, 20.0
     pcyl('Volcano', R0, H, (VX, VY, H / 2), '#7a4a32', tod, r2=R1, verts=28, mottle=0.35)

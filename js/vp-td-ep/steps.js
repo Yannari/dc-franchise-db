@@ -101,6 +101,16 @@ const STAGE = {
       ['campfire', 3, null, 'evening'], ['shelter', 1, null, 'evening']],
     shoreline: [['beach', 3, /^(romance\.|friend\.(walk|laugh))/], ['shoreline', 2], ['beach', 1]],
   },
+  // Stawaki's clock: mornings and night talk in the team's tent, afternoons wandering the midway,
+  // coming back through the gate; a walk in the woods turns down to the lake
+  carnival: {
+    campsite: [['shelter', 3, /^(life\.(wakeup|mood|sleep)|romance\.(night|honeymoon)|friend\.(comfort|secret)|blind\.|drama\.paranoia)/],
+      ['shelter', 2, null, 'morning'], ['campsite', 2, null, 'morning'],
+      ['midway', 2, null, 'day'], ['campsite', 2, null, 'day'],
+      ['carnival-entrance', 2, null, 'return'], ['campsite', 2, null, 'return'], ['carnival-entrance', 1, null, 'day'],
+      ['campsite', 3, null, 'evening'], ['midway', 1, null, 'evening']],
+    'forest-edge': [['lake-shore', 3, /^(romance\.|friend\.(walk|laugh))/], ['forest-edge', 3], ['rocky-beach', 1]],
+  },
   // the jet's clock: meals in the galley, the morning queue in the aisle, economy the rest of the time
   'world-tour': {
     economy: [['galley', 4, /^(crowd\.(meal|dinner)|hosted\.slop|life\.(food|meal|hunger)|drama\.mess)/],

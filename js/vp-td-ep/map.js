@@ -46,7 +46,7 @@ export const WINDOW_NIGHT = { 'before-tribal': true };
 const KEY_KIND = /^(alliance\.|deal\.|pitch\.|recruit\.|plot\.|broker\.|credit\.|idol\.(confide|leak|snoop|tip)|adv\.|fallout\.|caught\.|blind\.|goat\.|save\.|threat\.notice|romance\.(showmance|first|tri|affair|breakup|cut)|drama\.(bomb|nemesis|clash))/;
 const KEY_TYPE = /^(allianceForm|allianceBetrayal|idolFound|idolConfession|idolBetrayal|betrayal|showmance|firstMove|secretFlip|stolenCredit|brokerExposed)/;
 export function isKey(ev) {
-  return KEY_KIND.test(ev?.scene?.kind || '') || KEY_TYPE.test(ev?.type || '') || /^(red|gold)$/.test(ev?.badgeClass || '') && (ev.players || []).length >= 2;
+  return KEY_KIND.test(ev?.scene?.kind || '') || KEY_TYPE.test(ev?.type || '');
 }
 
 // a short name for a conversation on its bubble: the badge the engine gave it, else its kind

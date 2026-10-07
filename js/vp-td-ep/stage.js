@@ -82,11 +82,12 @@ export function worldHtml(screen, L) {
   if (water) { const top = M.h + .01, bot = Math.min(water.v, 1); for (let i = 0; i < 16; i++) h += `<i class="tdx-shimmer" style="left:${p(.05 + r() * .85)};top:${p(top + r() * Math.max(bot - top, .04))};width:${p(.02 + r() * .05)};--d:${(3 + r() * 4).toFixed(1)}s;--dl:${(r() * 5).toFixed(1)}s;--ex:${(20 + r() * 50).toFixed(0)}px"></i>`; }
   // the day's weather, painted over the set (the islands keep their own rain)
   const island = /^islands\//.test(key);
-  const wx = island || spot === 'confessional' ? null : weatherOf(screen.venue, screen.ep);
+  const wx = island || spot === 'confessional' ? null : wxOf(screen, L);
   const wet = wx === 'rain' || wx === 'storm';
   if (wx && !indoor) {
-    if ((wx === 'sunny' || wx === 'hot') && !night) h += `<i class="tdx-rays${wx === 'hot' ? ' hot' : ''}"></i>`;
-    if (wx === 'hot' && !night) h += '<i class="tdx-haze"></i>';
+    const aerial = spot === 'map';
+    if ((wx === 'sunny' || wx === 'hot') && !night && !aerial) h += `<i class="tdx-rays${wx === 'hot' ? ' hot' : ''}"></i>`;
+    if (wx === 'hot' && !night && !aerial) h += '<i class="tdx-haze"></i>';
     if (wx === 'overcast' || wet) h += `<i class="tdx-grey${wx === 'storm' ? ' storm' : ''}${night ? ' night' : ''}"></i>`;
     if (wet) for (let i = 0; i < (wx === 'storm' ? 110 : 60); i++) h += `<i class="tdx-rain${wx === 'storm' ? ' hard' : ''}" style="left:${p(r() * 1.15 - .1)};--d:${((wx === 'storm' ? .35 : .55) + r() * .3).toFixed(2)}s;--dl:-${(r() * 1).toFixed(2)}s;opacity:${(.25 + r() * .45).toFixed(2)}"></i>`;
     if (wet) for (let i = 0; i < 10; i++) h += `<i class="tdx-splash" style="left:${p(.05 + r() * .9)};top:${p(Math.max(M.h + .1, .62) + r() * .3)};--dl:-${(r() * 1.2).toFixed(2)}s"></i>`;
@@ -122,6 +123,25 @@ const CLIMATE = {
 };
 export const WEATHER_LABEL = { sunny: 'Sunny', calm: 'Clear', breezy: 'Windy', overcast: 'Overcast', rain: 'Rain', storm: 'Storm', fog: 'Fog', hot: 'Heatwave' };
 /** The day's weather at a venue: one per episode, the same on every replay. */
+// The day's weather has an arc (the user: "make sure the weather moves too"): the morning fog
+// burns off by midday, a grey morning turns to rain by the evening, a storm builds through the
+// afternoon and breaks before the vote, a hot day starts merely sunny. Keyed to the clock on the
+// scene, so the same scene always has the same sky.
+const ARC = {
+  sunny: ['calm', 'sunny', 'sunny'], hot: ['sunny', 'hot', 'calm'], calm: ['calm', 'calm', 'calm'], breezy: ['breezy', 'breezy', 'calm'],
+  overcast: ['overcast', 'overcast', 'rain'], rain: ['overcast', 'rain', 'rain'], storm: ['overcast', 'breezy', 'storm'], fog: ['fog', 'calm', 'overcast'],
+};
+/** Which part of the day a scene's clock is in: 0 morning (before 9), 1 the day, 2 the evening (from 4:30). */
+export function partOfDay(time) {
+  const m = /(\d{1,2}):(\d{2})\s*(AM|PM)/i.exec(String(time || ''));
+  if (!m) return 1;
+  let h = +m[1] % 12; if (/pm/i.test(m[3])) h += 12;
+  const mins = h * 60 + +m[2];
+  return mins < 9 * 60 ? 0 : mins < 16 * 60 + 30 ? 1 : 2;
+}
+/** The weather at one scene: the day's weather, where its arc has got to by the scene's clock. */
+export function weatherAt(venue, ep, time) { const day = weatherOf(venue, ep); return (ARC[day] || [day, day, day])[partOfDay(time)]; }
+const wxOf = (screen, L) => weatherAt(screen.venue, screen.ep, L?.scene?.time || (/-night$/.test(L?.scene?.plate || '') ? '9:00 PM' : ''));
 export function weatherOf(venue, ep) {
   const c = CLIMATE[venue] || CLIMATE['hosted-camp'];
   let h = 2166136261; for (const ch of `${venue}|${ep}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
@@ -136,7 +156,7 @@ export function worldSound(screen, L) {
   const night = /-night$/.test(key || ''), island = /^islands\//.test(key || '');
   // the venue's own soundscape, and the day's weather in it (the same day, the same weather)
   const scape = island || spot === 'confessional' ? null
-    : { venue: screen.venue, night, open: !indoor, shore: M.m.some(m => m.kind === 'water'), weather: weatherOf(screen.venue, screen.ep) };
+    : { venue: screen.venue, night, open: !indoor, shore: M.m.some(m => m.kind === 'water'), weather: wxOf(screen, L) };
   const wx = scape?.weather, wet = wx === 'rain' || wx === 'storm';
   const isleRain = /^islands\/rescue-/.test(key || '');
   return { rain: isleRain || (wet && !indoor), storm: isleRain || (wx === 'storm' && !indoor), fire: M.m.filter(m => m.kind === 'fire').length, water: M.m.some(m => m.kind === 'water') && !scape,
@@ -249,8 +269,9 @@ export function hudHtml(screen, L, fresh, o = {}) {
   const freshLoc = fresh && (s.k === 'scene' || (s.k === 'conf' && L.idx > 0 && screen.steps[L.idx - 1]?.k !== 'conf'));
   h += `<div class="tdx-loc${freshLoc ? ' fresh' : ''}"><div class="ic"><svg viewBox="0 0 24 24">${iconFor(L.conf ? 'confessional' : (sc.spot || ''))}</svg></div><div class="txt"><div class="place">${esc(place)}</div><div class="when"><b>Episode ${esc(screen.ep)}</b>${sc.time && !L.conf ? ' · ' + esc(sc.time) : ''}${sc.cut && !L.conf ? ' · meanwhile' : ''}</div></div></div>`;
   // the day's weather, as a chip: the same weather the set shows and the sound plays
-  const wx = !L.conf && sc.plate && !/^islands\//.test(sc.plate) ? weatherOf(screen.venue, screen.ep) : null;
-  if (wx) h += `<div class="tdx-wx"><svg viewBox="0 0 24 24">${WX_ICON[wx === 'calm' && /-night$/.test(sc.plate) ? 'night' : wx] || ''}</svg>${esc(wx === 'calm' && /-night$/.test(sc.plate) ? 'Clear night' : WEATHER_LABEL[wx])}</div>`;
+  const wx = !L.conf && sc.plate && !/^islands\//.test(sc.plate) ? wxOf(screen, L) : null;
+  const clearNight = /-night$/.test(sc.plate || '') && ['calm', 'sunny', 'hot'].includes(wx);
+  if (wx) h += `<div class="tdx-wx"><svg viewBox="0 0 24 24">${WX_ICON[clearNight ? 'night' : wx] || ''}</svg>${esc(clearNight ? 'Clear night' : WEATHER_LABEL[wx])}</div>`;
   if (screen.team && !L.conf) h += `<div class="tdx-team" style="--tc:${esc(o.teamColor || '#4fb84a')}">${esc(screen.team)}</div>`;
   if (screen.kind === 'tribal' && !sc.exit) {
     if (VENUE_ITEM[screen.venue]) {

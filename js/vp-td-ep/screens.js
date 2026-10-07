@@ -330,7 +330,9 @@ function mapShell(map, S, ep, o) {
   <button type="button" class="tdx-btn" onclick="tdxSwitchViewer('classic')" title="Back to the classic screens">Classic</button>
 </div>
 </div>`;
-  return { ...S, id: S.id, label: S.label, html, stepped: true, campMap: true };
+  // the sidebar names the screen: a shared camp's map is every team's, so it carries no team name
+  const named = map.camps.length > 1 ? (map.phase === 'pre' ? 'Camp' : 'Camp — After the challenge') : S.label;
+  return { ...S, id: S.id, label: named, title: named, html, stepped: true, campMap: true };
 }
 
 const faceImg = (R, n, cls = '') => `<img class="${cls}" src="${esc(avatar(n))}" alt="${esc(n)}" title="${esc(n)}" style="--tc:${esc(R.colors[R.map.teamOf[n]] || '#c8c8c8')}">`;
@@ -415,7 +417,10 @@ function pinsHtml(uid, R, W) {
     return { z, u: Z.u * 100, v: Z.v * 100, w };
   }));
   const stemOf = Object.fromEntries(items.map(it => [it.z, it.stem]));
-  return Object.entries(M.zones).map(([z, Z]) => {
+  // two layers: every stem and dot first, every card over them, so a stem never runs across a card
+  // and a click on a card always reaches that card's place
+  const stems = [], cards = [];
+  Object.entries(M.zones).forEach(([z, Z]) => {
     const convs = M.convs.filter(c => c.window === W.id && c.zone === z);
     const people = [...new Set([...convs.flatMap(c => c.who), ...(W.idle[z] || [])])];
     const left = convs.filter(c => !R.seen.has(c.i)), keyLeft = left.filter(c => c.key);
@@ -423,9 +428,12 @@ function pinsHtml(uid, R, W) {
     const badge = !convs.length ? '' : !left.length ? `<span class="tdm-ct done"><i>${ICON_TICK}</i></span>`
       : `<span class="tdm-ct"><i>${keyLeft.length ? ICON_STAR : ICON_BUBBLE}</i>${left.length}</span>`;
     const faces = people.slice(0, 5).map(n => faceImg(R, n)).join('') + (people.length > 5 ? `<em>+${people.length - 5}</em>` : '');
-    return `<button type="button" class="tdm-pin ${state}" style="left:${(Z.u * 100).toFixed(2)}%;top:${(Z.v * 100).toFixed(2)}%;--stem:${(stemOf[z] * .5625).toFixed(2)}cqw" onclick="tdmZone('${uid}','${z}')" ${state === 'empty' ? 'tabindex="-1"' : ''}>
-      <span class="tdm-card">${faces ? `<span class="tdm-faces">${faces}</span>` : ''}<span class="tdm-lbl">${esc(Z.label)}</span>${badge}</span><i class="tdm-stem"></i><i class="tdm-dot"></i></button>`;
-  }).join('');
+    const u = (Z.u * 100).toFixed(2), v = Z.v * 100, top = (v - stemOf[z]).toFixed(2);
+    stems.push(`<i class="tdm-stem ${state}" style="left:${u}%;top:${top}%;height:${stemOf[z].toFixed(2)}%"></i><i class="tdm-dot ${state}" style="left:${u}%;top:${v.toFixed(2)}%"></i>`);
+    cards.push(`<button type="button" class="tdm-pin ${state}" style="left:${u}%;top:${top}%" onclick="tdmZone('${uid}','${z}')" ${state === 'empty' ? 'tabindex="-1"' : ''} aria-label="${esc(Z.label)}">
+      <span class="tdm-card">${faces ? `<span class="tdm-faces">${faces}</span>` : ''}<span class="tdm-lbl">${esc(Z.label)}</span>${badge}</span></button>`);
+  });
+  return `<div class="tdm-stems">${stems.join('')}</div>${cards.join('')}`;
 }
 
 function zoneHtml(uid, R, here) {
@@ -534,7 +542,7 @@ const TDM_CSS = `
 .tdx .tdx-stage.tdm-on{cursor:default}
 .tdx .tdx-stage.tdm-on .tdx-ibtn{display:none}
 .tdx .tdm-pin{position:absolute;transform:translate(-50%,-100%);border:0;background:none;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4));transition:transform .2s}
-.tdx .tdm-pin:hover,.tdx .tdm-pin:focus-visible{transform:translate(-50%,-104%) scale(1.06);outline:none}
+.tdx .tdm-pin:hover,.tdx .tdm-pin:focus-visible{transform:translate(-50%,-104%) scale(1.06);outline:none;z-index:5}
 .tdx .tdm-pin.empty{opacity:.55;pointer-events:none}
 .tdx .tdm-card{display:flex;align-items:center;gap:.45cqw;background:rgba(14,16,26,.9);border-radius:99px;padding:.35cqw .7cqw .35cqw .35cqw;border:2px solid rgba(255,255,255,.12)}
 .tdx .tdm-pin.key .tdm-card{border-color:#ffc23a;animation:tdmPulse 1.6s ease-in-out infinite}
@@ -550,10 +558,12 @@ const TDM_CSS = `
 .tdx .tdm-ct.done{background:#4fb84a;color:#fff}
 .tdx .tdm-ct i,.tdx .tdm-bub i,.tdx .tdm-item>i,.tdx .tdm-left i,.tdx .tdm-win i{display:inline-flex;width:1cqw;height:1cqw}
 .tdx .tdm-ct svg,.tdx .tdm-bub svg,.tdx .tdm-item>i svg,.tdx .tdm-left svg,.tdx .tdm-win svg{width:100%;height:100%}
-.tdx .tdm-stem{width:2px;height:var(--stem,1.4cqw);background:rgba(255,255,255,.85)}
+.tdx .tdm-stems{position:absolute;inset:0;pointer-events:none}
+.tdx .tdm-stem{position:absolute;width:2px;transform:translateX(-50%);background:rgba(255,255,255,.85)}
+.tdx .tdm-stem.empty,.tdx .tdm-dot.empty{opacity:.5}
 .tdx .tdm-pin:hover{z-index:5}
 .tdx .tdm-list{scrollbar-width:none}.tdx .tdm-list::-webkit-scrollbar{display:none}
-.tdx .tdm-dot{width:.8cqw;height:.8cqw;border-radius:50%;background:#fff;border:2px solid rgba(14,16,26,.9);margin-top:-.2cqw}
+.tdx .tdm-dot{position:absolute;width:.8cqw;height:.8cqw;transform:translate(-50%,-50%);border-radius:50%;background:#fff;border:2px solid rgba(14,16,26,.9)}
 .tdx .tdm-clock{position:absolute;left:50%;top:1.6cqw;transform:translateX(-50%);display:flex;gap:.4cqw;align-items:center;background:rgba(14,16,26,.86);border-radius:12px;padding:.4cqw;max-width:62%;flex-wrap:wrap;justify-content:center}
 .tdx .tdm-win{border:0;background:none;color:#a9adbd;border-radius:9px;padding:.4cqw .7cqw;display:flex;flex-direction:column;align-items:flex-start;gap:.15cqw;cursor:pointer;font:inherit}
 .tdx .tdm-win b{font:400 1cqw/1 'Lilita One',sans-serif;letter-spacing:.03em;color:inherit}
@@ -562,7 +572,7 @@ const TDM_CSS = `
 .tdx .tdm-win.locked{cursor:not-allowed;opacity:.45;flex-direction:row;align-items:center}
 .tdx .tdm-later{border:0;background:#2ec4c4;color:#08201f;border-radius:9px;padding:.55cqw .8cqw;font:900 .85cqw/1 Nunito;cursor:pointer}
 .tdx .tdm-left{display:flex;align-items:center;gap:.3cqw;color:#ffc23a;font:800 .85cqw/1 Nunito;padding:0 .5cqw}
-.tdx .tdm-list{position:absolute;left:2%;right:2%;bottom:2.2%;display:flex;gap:.6cqw;overflow-x:auto;padding:.3cqw;scrollbar-width:thin}
+.tdx .tdm-list{position:absolute;left:2%;right:2%;bottom:2.2%;display:flex;gap:.6cqw;overflow-x:auto;padding:.3cqw;scrollbar-width:none}
 .tdx .tdm-list.empty{justify-content:center}
 .tdx .tdm-list.empty span{background:rgba(14,16,26,.86);color:#a9adbd;border-radius:10px;padding:.7cqw 1.1cqw;font:700 .95cqw/1 Nunito}
 .tdx .tdm-item{flex:none;display:flex;align-items:center;gap:.6cqw;background:rgba(14,16,26,.9);border:2px solid rgba(255,255,255,.1);border-radius:12px;padding:.5cqw .8cqw .5cqw .5cqw;cursor:pointer;color:#f4f1ea;text-align:left;font:inherit}

@@ -613,55 +613,75 @@ def _flat_poly(name, pts, z, col, tod, mottle=0.3, mscale=0.6):
 
 
 def pc_cliff(tod):
-    """The cliff (Cliffhilledge), painted the way the show paints it: the olive top in front running out to a curved
-    lip on the right; under the lip the sandstone face hangs away, cut by slanting strata; drooping hemlocks on the
-    top; past the edge and far below, rows of blue-violet pines under soft round hills."""
+    """The cliff top (ReachCliff, the cast at the top of the thousand-foot cliff; Cliffhilledge): seen from out in
+    front of the face, the green grass lip runs across the frame with its fringe hanging over the edge and yellow
+    flowers in it; below it the face is a wall of tall sandstone slabs, cracked between, a pale diagonal band of
+    lighter rock crossing them; above, the open sky with the show's curly clouds. People stand along the lip."""
     paint_mode(); P = TDI[tod]; day = tod == 'day'
-    paint_sky('#8ec8ea' if day else P['sky'], '#cfe6f0' if day else P['sky_low'])
-    ridge_card(300, -300, 300, 10, 30, N('#b8b4dc', tod), seed=71, humps=2)
-    for k, (yy, col, base) in enumerate(((220, '#a4acd8', -4), (165, '#8e9ad0', -12), (120, '#7480c2', -20), (85, '#5c68aa', -27))):
-        ridge_card(yy, -260, 300, base, 10, N(col, tod), seed=80 + k, humps=2 + k, teeth=90, tooth_col=N(_mix_hex(col, '#2a2a5a', 0.14), tod))
-    pbox('ValleyFloor', (700, 500, 1.0), (40, 200, -40), '#4e5a98', tod, mottle=0.1, mscale=0.2, ink=False)
-    # the lip: a curve from the near right, receding to the left into the distance
-    lip = [(4.2 - 0.18 * i + 0.35 * math.sin(i * 0.9), -4.0 + i * 2.2) for i in range(21)]
-    top = [(-60, -6)] + [(-60, 60)] + list(reversed(lip))
-    _flat_poly('CliffTop', [(-60, -6.0), (lip[0][0], -6.0)] + lip + [(-60, lip[-1][1])], 0.0, P['grass'], tod, mottle=0.35, mscale=0.7)
-    # the face, hanging under the lip: one painted wall following the lip, its own sandstone strata on it
-    rnd = random.Random(5)
-    for i in range(len(lip) - 1):
-        (x0, y0), (x1, y1) = lip[i], lip[i + 1]
-        dx, dy = x1 - x0, y1 - y0; L = math.hypot(dx, dy); ang = math.degrees(math.atan2(dy, dx))
-        drop = 24 + 2 * math.sin(i)
-        face = [(0, 0.0), (L, 0.0), (L + 0.6, -drop * 0.35), (L + 1.2, -drop), (-0.2, -drop), (0.4, -drop * 0.35)]
-        card(uid('Face'), face, 0, pmat('FaceP' + tod, N('#b6aa86' if i % 3 else '#a99d7c', tod), unlit=True, mottle=0.2, mscale=0.5), x=x0, z=-0.05, rot_z=ang)
-        if i % 2 == 0:
-            s = rnd.uniform(5, 12)
-            card(uid('Strata'), [(0.3, -0.5), (0.45, -0.5), (0.45 + s * 0.3, -0.5 - s), (0.3 + s * 0.3, -0.5 - s)], 0, pmat('Strata' + tod, N('#7c7258', tod), unlit=True, mottle=0),
-                 x=x0 + 0.02, z=-0.04, rot_z=ang)
-        # the sunlit band right under the lip and the grass fringe hanging over it
-        card(uid('Bevel'), [(0, -0.05), (L, -0.05), (L, -0.42), (0, -0.42)], 0, pmat('FBevel' + tod, N('#d2c8a6', tod), unlit=True, mottle=0), x=x0 + 0.01, z=0, rot_z=ang)
-        for t in range(4):
-            u = (t + 0.5) * L / 4; d = 0.3 + 0.35 * rnd.random()
-            card(uid('Tuft'), [(u - 0.28, 0.02), (u + 0.28, 0.02), (u + 0.04, -d)], 0, pmat('Tuft' + tod, N('#8a8a36', tod), unlit=True, mottle=0), x=x0 + 0.02, z=0, rot_z=ang)
-    # on the top: round rocks, rust bushes, the hemlocks, one leaning out toward the lip
-    for (rx, ry, rs) in ((-4.5, 5.0, 0.7), (-0.8, 8.0, 0.55), (1.2, 2.0, 0.45)):
-        icorock(uid('Rock'), (rs * 1.3, rs, rs * 0.7), (rx, ry, rs * 0.3), N('#8a7a6a', tod), seed=int(rx * 7) + 3)
-    for (bx, by, bc) in ((-7.5, 11.0, '#a8582e'), (-2.4, 14.0, '#9a7a32')):
-        card(uid('Bush'), _blob_pts(1.3, 0.8, 30, 0.2, int(bx * 3), flat_bottom=True), by, pmat('Bush' + bc + tod, N(bc, tod), unlit=True, mottle=0.5, mscale=2.5), x=bx, z=0.2)
-    for k, (px, py, ph, ln) in enumerate(((-9.0, 16, 12, 0.0), (-5.6, 19, 14, 0.3), (-1.8, 15, 10.5, 0.0), (2.4, 11, 9, 0.9))):
-        _hemlock(px, py, ph, '#2c3d5c', tod, seed=95 + k, s=1.15, lean=ln)
-    for k, (px, py, ph) in enumerate(((-13.0, 26, 12), (-7.5, 28, 13), (-17, 24, 11))):
-        pine_card(px, py, ph, ph * 0.45, N('#6a78b8', tod), seed=120 + k, teeth=5)
-    for (sx, sy) in ((-3.0, 0.8), (-0.8, 2.0), (-4.6, 2.8), (-2.0, 4.0), (0.8, 4.4)):
-        stand(sx, sy)
-    if not day:
-        for i in range(60):
-            card(uid('Star'), _blob_pts(0.18, 0.18, 8, 0, 0), 320, pmat('StarP', '#f4f0d8', unlit=True, mottle=0), x=rnd.uniform(-160, 220), z=rnd.uniform(30, 120))
+    rnd = random.Random(12)
+    grass, grass_dk = N('#7f8f38', tod), N('#5c6a2a', tod)
+    paint_sky('#86ccef' if day else P['sky'], '#c4e6f4' if day else P['sky_low'])
+    # far behind the top: pale hills just over the horizon, a few hemlocks on the top for depth
+    ridge_card(160, -200, 200, -2, 6, N('#a6b6d6', tod), seed=31, humps=3)
+    ridge_card(120, -180, 180, -2, 4, N('#8fa6c6', tod), seed=32, humps=4, teeth=60, tooth_col=N('#7890b6', tod))
+    ground_plane(N('#7f8f38', tod), N('#6f7e30', tod), size=(140, 120), loc=(0, 60, 0), mottle=0.25)
+    for k, (px, py, ph) in enumerate(((-15.0, 22, 9), (-11.5, 30, 11), (13.0, 26, 10), (17.0, 34, 12))):
+        _hemlock(px, py, ph, '#2c3d5c', tod, seed=150 + k, s=1.05)
+    card(uid('Bush'), _blob_pts(1.6, 0.9, 30, 0.2, 7, flat_bottom=True), 9.0, pmat('BushC' + tod, N('#a8582e', tod), unlit=True, mottle=0.5, mscale=2.5), x=-8.5, z=0.1)
+    # the lip line: the edge of the top, gently sloping like the show's frame
+    xs = [-34 + i * 1.0 for i in range(69)]
+    lip = [0.25 * math.sin(x * 0.09) - 0.012 * x for x in xs]
+    # the face: a base wall, then tall slabs of sandstone in three tones, a crack between each
+    face_y = 0.4
+    card(uid('FaceBase'), [(-36, -40)] + list(zip(xs, [z - 0.2 for z in lip])) + [(36, -40)], face_y, pmat('FaceBase' + tod, N('#9a9078', tod), unlit=True, mottle=0.12, mscale=0.6))
+    x = -36.0; k = 0
+    tones = ('#ada48a', '#9f967d', '#b6ad93', '#a59c83')
+    while x < 36:
+        w = rnd.uniform(2.2, 4.8); top = 0.25 * math.sin(x * 0.09) - 0.012 * x - 0.25
+        notch = rnd.random() < 0.35
+        pts = [(x, -40), (x + w, -40), (x + w, top - 0.1)]
+        if notch:   # a stepped crack, the show's zig-zag
+            zc = rnd.uniform(-14, -4)
+            pts = [(x, -40), (x + w, -40), (x + w, zc), (x + w - 0.5, zc + 0.8), (x + w - 0.5, top - 0.1)]
+        pts += [(x, top)]
+        card(uid('Slab'), pts, face_y - 0.02 - (k % 3) * 0.004, pmat('Slab' + tones[k % 4] + tod, N(tones[k % 4], tod), unlit=True, mottle=0.1, mscale=0.7))
+        card(uid('Crack'), [(x - 0.05, -40), (x + 0.05, -40), (x + 0.05, top), (x - 0.05, top)], face_y - 0.03, pmat('CrackC' + tod, N('#7a7260', tod), unlit=True, mottle=0))
+        for d in range(rnd.randint(1, 3)):     # little dash marks on the rock
+            dx, dz = x + rnd.uniform(0.4, w - 0.4), rnd.uniform(-16, -2.5)
+            card(uid('Dash'), [(dx, dz), (dx + 0.07, dz), (dx + 0.07, dz + 0.45), (dx, dz + 0.45)], face_y - 0.035, pmat('DashC' + tod, N('#7a7260', tod), unlit=True, mottle=0))
+        x += w; k += 1
+    # the pale band of lighter rock crossing the face on a slant
+    # (in front of every slab, behind the cracks, so the cracks cut it the way they cut the show's)
+    card(uid('Band'), [(-36, -8.6), (-10, -6.8), (12, -5.0), (36, -3.4), (36, -2.9), (12, -4.4), (-10, -6.3), (-36, -8.1)], 0.3705,
+         pmat('BandC' + tod, N('#c2b99c', tod), unlit=True, mottle=0.12))
+    # the grass lip: the dark underside where it overhangs, the green band, its fringe of hanging blades
+    under = [lip[i] - 0.9 - 0.35 * math.sin(xs[i] * 0.7) for i in range(len(xs))]
+    card(uid('LipShadow'), list(zip(xs, lip)) + list(reversed(list(zip(xs, [u - 0.35 for u in under])))), face_y - 0.06, pmat('LipSh' + tod, grass_dk, unlit=True, mottle=0.15))
+    card(uid('Lip'), list(zip(xs, [z + 0.06 for z in lip])) + list(reversed(list(zip(xs, under)))), face_y - 0.07, pmat('LipG' + tod, grass, unlit=True, mottle=0.3, mscale=1.5))
+    blades = []
+    for i in range(len(xs) - 1):
+        for t in range(3):
+            bx = xs[i] + t / 3 + rnd.uniform(0, 0.2); bz = under[i] + 0.05
+            card(uid('Blade'), [(bx - 0.12, bz + 0.1), (bx + 0.12, bz + 0.1), (bx + rnd.uniform(-0.1, 0.1), bz - rnd.uniform(0.25, 0.6))], face_y - 0.075,
+                 pmat('BladeC' + tod, grass, unlit=True, mottle=0))
+    # yellow flowers in the grass along the lip
+    for i in range(16):
+        fx = rnd.uniform(-30, 30); fz = 0.25 * math.sin(fx * 0.09) - 0.012 * fx - rnd.uniform(0.15, 0.6)
+        pts = [(fx + math.cos(a / 10 * 2 * math.pi) * (0.16 if a % 2 == 0 else 0.07), fz + math.sin(a / 10 * 2 * math.pi) * (0.16 if a % 2 == 0 else 0.07)) for a in range(10)]
+        card(uid('Flower'), pts, face_y - 0.08, pmat('FlowerC' + tod, N('#e8b83a', tod), unlit=True, mottle=0))
+    # where people stand: along the lip, a second row a step back
+    for sx in (-7.5, -4.5, -1.5, 1.5, 4.5, 7.5):
+        stand(sx, 1.4, 0.0)
+    for sx in (-6.0, -3.0, 0.0, 3.0, 6.0):
+        stand(sx, 3.6, 0.0)
+    if day:
+        for (cx2, cz, cs) in ((-24, 17, 5.0), (6, 21, 5.6), (30, 15, 4.0)):
+            curly_cloud(cx2, 90, cz, cs, P['cloud'], P['rim'])
     else:
-        for (cx2, cz, cs) in ((-30, 70, 4.0), (70, 80, 3.2)):
-            curly_cloud(cx2, 290, cz, cs, P['cloud'], P['rim'])
-    paint_sun(azimuth=-30, elevation=40 if day else 26, energy=4.0 if day else 1.8)
-    tv_camera((7.5, -9.0, 2.2), (0.0, 20, -0.8), lens=26)
+        for i in range(70):
+            card(uid('Star'), _blob_pts(0.18, 0.18, 8, 0, 0), 170, pmat('StarP', '#f4f0d8', unlit=True, mottle=0), x=rnd.uniform(-120, 120), z=rnd.uniform(6, 80))
+    paint_sun(azimuth=-30, elevation=45 if day else 26, energy=4.0 if day else 1.8)
+    tv_camera((0.0, -17.0, 1.2), (0.0, 12.0, -1.6), lens=28)
 
 
 def pc_washroom(tod):

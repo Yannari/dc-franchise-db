@@ -529,7 +529,7 @@ export default {
       { by: 'a', say: "...I don't know. Start again." },
     ] },
     { id: 'tn.k2', turns: [
-      { by: 'a', say: "We've definitely got the votes. Definitely. Probably." },
+      { by: 'a', say: "We've definitely got the votes. Well, probably." },
       { by: 'b', say: "Which is it?" },
       { by: 'a', say: "Definitely probably." },
       { by: 'b', dr: "That doesn't make me feel safe at all." },

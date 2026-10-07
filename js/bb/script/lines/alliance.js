@@ -416,7 +416,7 @@ export default {
       { by: 'a', say: "Is {alliance} having another meeting tonight?" },
       { by: 'b', say: "Is who having what?" },
       { by: 'a', say: "Come on. Everyone knows." },
-      { by: 'b', dr: "Everyone knows. Brilliant. Absolutely brilliant." },
+      { by: 'b', dr: "Now everyone knows about us. That was the one thing we had going for us, and it's gone." },
     ] },
     { id: 'an.n3', turns: [
       { by: 'a', say: "What do you lot call yourselves? {alliance}, right?" },

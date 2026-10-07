@@ -111,7 +111,7 @@ export default {
     { id: 'msh.c1', room: 'hoh-room', turns: [{ beat: 'The house leaves in a slow trickle. {a} watches who goes first, and who hangs back.' }, { by: 'a', dr: "The first ones out don't need anything from me. The last ones out do." }] },
     { id: 'msh.c2', room: 'hoh-room', turns: [{ beat: 'Downstairs, the house splits into little huddles. Upstairs, {a} locks the door and lies on the bed.' }, { by: 'a', dr: "One week. One room. One decision. It feels a lot heavier than a key." }] },
     { id: 'msh.c3', room: 'hoh-room', turns: [{ beat: 'The chocolates are gone. So is the house. Just {a} and the camera screen now.' }, { by: 'a', dr: "I'm going to watch that screen for an hour. Don't judge me. Everybody would." }] },
-    { id: 'msh.c4', room: 'hoh-room', turns: [{ beat: 'Somebody is already knocking. {a} hasn’t even sat down.' }, { by: 'a', dr: "Three minutes. That's how long it took for the first pitch. I'm timing them now." }] },
+    { id: 'msh.c4', room: 'hoh-room', turns: [{ beat: 'Somebody is already knocking. {a} hasn’t even sat down.' }, { by: 'a', dr: "Somebody knocked before I'd even sat down on the bed. I know it comes with the room, but it's a bit sad: everybody who's nice to me this week wants something." }] },
   ],
   'set.afternoms.open': [
     { id: 'msa.1', room: 'kitchen', turns: [

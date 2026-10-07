@@ -308,7 +308,7 @@ export default {
       { by: 'a', say: "So we stick together. Because nobody else is going to stick with us." },
       { by: 'b', say: "That's bleak." },
       { by: 'a', say: "It's true, though." },
-      { by: 'b', say: "It's bleak and it's true. Fine. Together." },
+      { by: 'b', say: "It's bleak, but it's true. Fine. We do it together." },
       { by: 'a', say: "{alliance}. That's us." },
       { by: 'b', say: "Of course it is." },
       { by: 'a', dr: "Nobody wants to be in an alliance with the people at the bottom. That's exactly why the people at the bottom need one." },
@@ -971,7 +971,7 @@ export default {
       { by: 'b', dr: "{a} counted. Seven times. I'm going to need {c} to start leaving rooms a lot more randomly." },
     ] },
     { id: 'ax2.5', when: { third: true }, turns: [
-      { by: 'a', say: "Both of you. Here. Now." },
+      { by: 'a', say: "Both of you, come here. Right now." },
       { by: 'c', say: "Uh oh." },
       { by: 'a', say: "Final two. You two. Yes or no." },
       { by: 'b', say: "What? Where's—" },
@@ -1057,7 +1057,7 @@ export default {
       { by: 'b', dr: "I could have lied. I think lying would've been easier. I don't think it would've been better." },
     ] },
     { id: 'ab2.a5', presumes: ['vote'], turns: [
-      { by: 'a', say: "Hey. So. Fun fact." },
+      { by: 'a', say: "Hey. So, there's something you should probably know." },
       { by: 'b', say: "Okay?" },
       { by: 'a', say: "{alliance} doesn't exist any more." },
       { by: 'b', say: "What are you talking about?" },
@@ -1268,7 +1268,7 @@ export default {
   // ── recaps ──────────────────────────────────────────────────────────
   'recap.alliance.formed.a': [
     { id: 'raf.a1', turns: [{ by: 'a', dr: "{b} and I made a deal {when}. Shook on it, named it, the whole thing." }] },
-    { id: 'raf.a2', turns: [{ by: 'a', dr: "{when}, {b} and I agreed to work together. Properly. Nobody else knows." }] },
+    { id: 'raf.a2', turns: [{ by: 'a', dr: "{when}, {b} and I agreed to work together properly. Nobody else knows yet, and I'd like to keep it that way for as long as I can." }] },
     { id: 'raf.a3', turns: [{ by: 'a', dr: "{b}'s my person in here. We made it official {when}." }] },
   ],
   'recap.alliance.formed.b': [

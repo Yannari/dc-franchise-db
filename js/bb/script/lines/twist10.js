@@ -14,7 +14,7 @@
 
 export default {
   'split.picked.scene': [
-    { id: 'sp10.p1', turns: [{ by: 'a', say: "Doesn't matter that I went last." }, { beat: 'Nobody had asked.' }, { by: 'a', dr: "It matters." }] },
+    { id: 'sp10.p1', turns: [{ by: 'a', say: "Doesn't matter that I went last." }, { beat: 'Nobody had asked.' }, { by: 'a', dr: "I said it doesn't matter that I went last. It matters. It tells me exactly where I stand with everybody." }] },
     { id: 'sp10.p2', turns: [{ by: 'a', dr: "{b} picked everybody else first. Now we're stuck in a very small house together." }] },
     { id: 'sp10.p3', turns: [{ by: 'a', say: "Last pick! Saving the best for last, right?" }, { beat: '{a} laughs, then looks at {b}.' }] },
     { id: 'sp10.p4', turns: [{ by: 'a', dr: "Nobody's mentioned the picking order. That's how I know everyone remembers it." }] },
@@ -49,7 +49,7 @@ export default {
     { id: 'sp10.w1', turns: [{ beat: 'A horn sounds through the wall. Then shouting. Then nothing.' }, { by: 'a', dr: "I stood under the vent for ten minutes. I learned nothing." }] },
     { id: 'sp10.w2', turns: [{ by: 'a', dr: "I can hear the other side's doors. I've started timing them. Doors aren't information. I listen anyway." }] },
     { id: 'sp10.w3', turns: [{ beat: 'A cheer comes through the wall.' }, { by: 'a', say: "Was that {named}?" }, { beat: 'Nobody knows.' }] },
-    { id: 'sp10.w4', turns: [{ by: 'a', say: "I think that was a competition." }, { beat: 'The room takes it as fact.' }, { by: 'a', dr: "It was a guess." }] },
+    { id: 'sp10.w4', turns: [{ by: 'a', say: "I think that was a competition." }, { beat: 'The room takes it as fact.' }, { by: 'a', dr: "That was a complete guess, and now the whole room treats it as a fact. That's a little bit scary." }] },
     { id: 'sp10.w5', turns: [{ by: 'a', dr: "Whatever's going on over there, it's loud. I wish I knew what it was." }] },
     { id: 'sp10.w6', turns: [{ by: 'a', dr: "Half the house is behind that wall. I'm going mad not knowing what they're saying." }] },
     { id: 'sp10.w7', turns: [{ beat: 'Laughter comes through the wall.' }, { by: 'a', say: "What are they laughing at?" }, { beat: 'Nobody on this side knows.' }] },

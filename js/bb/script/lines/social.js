@@ -248,9 +248,9 @@ export default {
     ] },
     { id: 'st.w7', turns: [
       { by: 'b', say: "What were you like at school?" },
-      { by: 'a', say: "Loud. Annoying. Always in trouble." },
+      { by: 'a', say: "Loud, annoying, and always in trouble." },
       { by: 'b', say: "So, exactly the same." },
-      { by: 'a', say: "Rude. Accurate. But rude." },
+      { by: 'a', say: "That's rude. Accurate, but rude." },
     ] },
     { id: 'st.w8', when: { room: ['backyard'] }, turns: [
       { beat: '{a} and {b} lie in the backyard looking up at the sky.' },

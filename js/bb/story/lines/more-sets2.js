@@ -41,7 +41,7 @@ export default {
       { by: 'd', say: "Somebody check {e}'s pockets." },
       { by: 'e', say: "Why me?!" },
       { by: 'd', say: "You've gone very quiet." },
-      { by: 'e', dr: "I did not take the crisps. I ate them. In the bathroom. That's different." },
+      { by: 'e', dr: "Fine. It was me. I took the crisps into the bathroom and ate the whole bag in there, because it's the only room in this house with a lock. I'd do it again." },
     ] },
     { id: 'xh.4', room: 'hoh-room', turns: [
       { beat: 'HOH room. {a} lies down on the big bed and immediately falls asleep. The house watches, unsure what to do.' },
@@ -259,7 +259,7 @@ export default {
       { by: 'd', say: "I need a nap." },
       { by: 'e', say: "Ten more squats for {gone}!" },
       { beat: 'Ten more squats, for {gone}. Nobody actually finishes them.' },
-      { by: 'c', dr: "We grieve with squats in this house. Badly. Very badly." },
+      { by: 'c', dr: "Somebody leaves, and this house deals with it by doing squats in the backyard. Badly. It helped, a bit." },
     ] },
   ],
   'set.morningafter.close': [
@@ -286,7 +286,7 @@ export default {
       { by: 'b', say: "Spicier is always better." },
       { by: 'd', say: "Can we vote?" },
       { by: 'e', say: "Nobody is voting on dinner. We vote enough." },
-      { by: 'f', say: "I'm eating both. Together. On one plate." },
+      { by: 'f', say: "I'm eating both of them, on one plate, together." },
       { beat: '{f} mixes them. Both cooks look personally betrayed.' },
       { by: 'f', dr: "I found a way to stay neutral in the dinner war. Also it was delicious. Don't tell either of them." },
     ] },

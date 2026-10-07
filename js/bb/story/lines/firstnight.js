@@ -23,7 +23,7 @@ export default {
       { by: 'e', say: "Rule two: whoever cooks doesn't wash up." },
       { by: 'b', say: "Seconded." },
       { by: 'a', say: "...Fine. Those are good rules." },
-      { by: 'd', dr: "First night, and somebody's already trying to run the house. Noted. Very noted." },
+      { by: 'd', dr: "It's the first night and somebody's already trying to run the house. That makes me nervous, and I'm going to remember who it was." },
     ] },
     { id: 'fn.2', room: 'backyard', turns: [
       { beat: 'Backyard, first night. The lights are on round the pool. Everybody is out there, nobody quite knows why.' },
@@ -180,7 +180,7 @@ export default {
       { beat: 'Lights out, first night. Somebody is whispering a list of everyone’s names, trying to remember them.' },
       { by: 'a', say: "{b}, {c}, {d}... who's next to {d}?" },
       { by: 'e', say: "Me. It's {e}." },
-      { by: 'a', say: "{e}. Sorry. Long day." },
+      { by: 'a', say: "{e}. Sorry, it's been a long day." },
       { by: 'b', say: "Are you doing a roll call in the dark?" },
       { by: 'a', say: "I'm memorising. Tomorrow I'm going to know everyone." },
       { by: 'c', say: "Tomorrow you're going to forget everyone again." },

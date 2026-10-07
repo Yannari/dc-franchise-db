@@ -132,7 +132,7 @@ export default {
     { id: 'qf.8', when: { intent: 'counted' }, turns: [{ by: 'a', dr: "I thought I had {had} votes. I had {real}. I'm never living that down." }] },
   ],
   'arc.denial.lying': [
-    { id: 'qg.l1', turns: [{ by: 'a', say: "It wasn't me, and I'm tired of the question." }, { by: 'b', say: "Nobody asked you." }, { by: 'b', dr: "Exactly." }] },
+    { id: 'qg.l1', turns: [{ by: 'a', say: "It wasn't me, and I'm tired of the question." }, { by: 'b', say: "Nobody asked you." }, { by: 'b', dr: "Nobody even asked {a}. You only deny something that loudly when it's true." }] },
     { id: 'qg.l2', turns: [{ by: 'a', say: "Just so everyone knows, I voted with the house." }, { by: 'b', say: "Of course you did." }, { by: 'b', dr: "Nobody had even asked." }] },
     { id: 'qg.l3', turns: [{ by: 'a', dr: "I explained my vote to everyone. In detail. I think they believed me." }] },
     { id: 'qg.l4', turns: [{ by: 'b', dr: "{a} explained {a.posAdj} vote in way too much detail. The truth is easier to explain than that." }] },
@@ -160,7 +160,7 @@ export default {
   'arc.wronged.refuses': [
     { id: 'qh.f1', turns: [{ by: 'a', say: "Name one thing that made it me." }, { by: 'b', say: "It was... a feeling." }, { by: 'a', say: "A feeling." }] },
     { id: 'qh.f2', turns: [{ by: 'a', say: "You were wrong about me and you haven't said so once." }, { by: 'b', say: "I never actually accused anyone." }, { by: 'a', say: "That's not what everyone heard." }] },
-    { id: 'qh.f3', turns: [{ by: 'a', say: "People still look at me like it was me." }, { by: 'b', say: "You're being dramatic." }, { by: 'a', dr: "Dramatic. That word did it." }] },
+    { id: 'qh.f3', turns: [{ by: 'a', say: "People still look at me like it was me." }, { by: 'b', say: "You're being dramatic." }, { by: 'a', dr: "{b} called me dramatic. That one word hurt more than anything else this week." }] },
     { id: 'qh.f4', turns: [{ by: 'b', say: "Can we talk about something else?" }, { by: 'a', say: "No. Let's talk about what you said about me." }] },
     { id: 'qh.f5', turns: [{ by: 'a', dr: "{b} never took it back. I won't forget that." }] },
     { id: 'qh.f6', turns: [{ by: 'b', dr: "{a} won't let it go. I never said it was definitely {a}." }] },

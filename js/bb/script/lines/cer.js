@@ -38,7 +38,7 @@ export default {
     { id: 'zn.p6', turns: [{ by: 'c', dr: "That speech changed how I see {a}. If {a} can do that to {b}, {a} can do it to anyone." }] },
   ],
   'cer.pawn.trusted': [
-    { id: 'zp.t1', turns: [{ by: 'a', say: "You're not the one going. I just need you up there until the vote." }, { by: 'b', say: "Okay. I trust you." }, { by: 'b', dr: "Mostly." }] },
+    { id: 'zp.t1', turns: [{ by: 'a', say: "You're not the one going. I just need you up there until the vote." }, { by: 'b', say: "Okay. I trust you." }, { by: 'b', dr: "I trust {a}. Mostly. But pawns go home in this game, and everybody knows it." }] },
     { id: 'zp.t2', turns: [{ by: 'b', say: "Say it to my face." }, { by: 'a', say: "You're a pawn. You're safe. If that changes, you'll hear it from me first." }, { by: 'b', dr: "Every pawn in this house has heard that exact sentence." }] },
     { id: 'zp.t3', turns: [{ by: 'a', say: "Stay calm, and you're off the block after the vote." }, { by: 'b', say: "Are the votes really there?" }, { by: 'a', say: "They're there." }] },
     { id: 'zp.t4', turns: [{ by: 'b', dr: "{a} talked fast and quietly. I nodded. Later I realised I never got an actual number." }] },

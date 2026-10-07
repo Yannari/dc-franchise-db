@@ -209,7 +209,7 @@ export default {
     { id: 'cw7.v2', turns: [{ by: 'a', dr: "{b} and I are being nice to each other. We're never nice to anyone." }] },
     { id: 'cw7.v3', turns: [{ by: 'b', say: "How are you?" }, { by: 'a', say: "Fine, thank you. You?" }, { by: 'b', say: "Fine." }] },
     { id: 'cw7.v4', turns: [{ by: 'b', dr: "{a} is being so polite to me. It's terrifying." }] },
-    { id: 'cw7.v5', turns: [{ by: 'a', say: "No hard feelings about earlier." }, { by: 'b', say: "None at all." }, { by: 'a', dr: "Some hard feelings." }] },
+    { id: 'cw7.v5', turns: [{ by: 'a', say: "No hard feelings about earlier." }, { by: 'b', say: "None at all." }, { by: 'a', dr: "I said no hard feelings. I lied. I'm still angry about it, and I'm going to be for a while." }] },
     { id: 'cw7.v6', turns: [{ by: 'a', dr: "I'm smiling at {b} all evening. It's the only way I can stand being in the room." }] },
   ],
   'chainfall.nominee.scene': [

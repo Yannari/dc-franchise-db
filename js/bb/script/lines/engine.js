@@ -19,7 +19,7 @@ export default {
     { id: 'ea2.3', turns: [{ by: 'a', dr: "{group} came out of that vote one short. I know exactly which chair it came from. Nobody else does." }] },
     { id: 'ea2.4', turns: [{ by: 'a', say: "Let's count it again." }, { beat: 'The count still does not work.' }] },
     { id: 'ea2.5', turns: [{ by: 'a', dr: "That was the best move I've made all season, and nobody can ever know it was me." }] },
-    { id: 'ea2.6', turns: [{ by: 'a', say: "Somebody in this room is a liar." }, { by: 'a', dr: "Yes. Me." }] },
+    { id: 'ea2.6', turns: [{ by: 'a', say: "Somebody in this room is a liar." }, { by: 'a', dr: "Somebody in this room is a liar, and it's me. Saying it first is the best cover I've got." }] },
   ],
   'engine.blame.blamed': [
     { id: 'eb2.b1', turns: [{ by: 'a', dr: "It was {b}. It has to be. {b} was always the one I wasn't sure about." }] },

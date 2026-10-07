@@ -125,7 +125,7 @@ export default {
     { id: 'tq.r2', turns: [{ by: 'a', say: "Ten grand should make a person nervous." }, { beat: '{b} hums while washing up.' }, { by: 'a', dr: "It doesn't add up." }] },
     { id: 'tq.r3', turns: [{ by: 'a', dr: "When people win money in here, they get more careful. {b} got less careful. Why?" }] },
     { id: 'tq.r4', turns: [{ by: 'a', dr: "I'm not watching the money. I'm watching how calm {b} is about it." }] },
-    { id: 'tq.r5', turns: [{ by: 'a', say: "Aren't you worried that money makes you a target?" }, { by: 'b', say: "Not really." }, { by: 'a', dr: "Interesting." }] },
+    { id: 'tq.r5', turns: [{ by: 'a', say: "Aren't you worried that money makes you a target?" }, { by: 'b', say: "Not really." }, { by: 'a', dr: "{b} isn't worried about being a target with all that money. That's either very brave or very naive." }] },
     { id: 'tq.r6', turns: [{ by: 'a', dr: "Something about {b}'s mood doesn't make sense. I'm going to work it out." }] },
   ],
   'premiere.rich.priced': [

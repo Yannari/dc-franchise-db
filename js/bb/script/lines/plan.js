@@ -61,7 +61,7 @@ export default {
     { id: 'kd.l3', turns: [{ by: 'a', say: "You're definitely voting {target} out?" }, { by: 'b', say: "Definitely." }, { by: 'a', dr: "Same answer. Same speed. That's what bothers me." }] },
     { id: 'kd.l4', turns: [{ by: 'a', dr: "I'm sure {b} is lying to me. I can't say why. So I'm saying nothing." }] },
     { id: 'kd.l5', turns: [{ by: 'a', dr: "{b} said yes about {target} straight away. Real decisions take longer than that." }] },
-    { id: 'kd.l6', turns: [{ by: 'b', say: "We're good, right?" }, { by: 'a', say: "We're good." }, { by: 'a', dr: "Are we?" }] },
+    { id: 'kd.l6', turns: [{ by: 'b', say: "We're good, right?" }, { by: 'a', say: "We're good." }, { by: 'a', dr: "We said we're good. I'm not sure I believe it, and I don't think {b} does either." }] },
   ],
   'plan.doubt.undecided': [
     { id: 'kd.u1', turns: [{ by: 'a', dr: "{b} still hasn't actually said yes about {target}. I've started noticing what {b} says instead." }] },
@@ -92,7 +92,7 @@ export default {
     { id: 'kf.b2', turns: [{ by: 'a', dr: "Two different people have brought me coffee today. I didn't ask for either." }] },
     { id: 'kf.b3', turns: [{ by: 'a', dr: "They both need me. Saying that out loud feels very good." }] },
     { id: 'kf.b4', turns: [{ by: 'a', dr: "All season I've been told what the house is doing. This week the house needs me to tell it." }] },
-    { id: 'kf.b5', turns: [{ by: 'a', dr: "{org1} and {org2} are counting the same vote. Mine. I'm going to enjoy this." }] },
+    { id: 'kf.b5', turns: [{ by: 'a', dr: "{org1} and {org2} are both counting on the same vote, and it's mine. For once, I'm the one everybody needs." }] },
     { id: 'kf.b6', turns: [{ by: 'a', dr: "I don't have to pick a side yet. Both sides are still trying to win me over." }] },
   ],
   'plan.swing.one': [
@@ -219,7 +219,7 @@ export default {
     { id: 'ko.p1', turns: [{ by: 'b', dr: "{a} has been polite to me all morning. That's the scariest thing that's happened all week." }] },
     { id: 'ko.p2', turns: [{ by: 'a', dr: "Nobody told me, but I know the push came from {b}. I'm keeping that to myself. For now." }] },
     { id: 'ko.p3', turns: [{ by: 'b', dr: "I keep going wherever {a} isn't. {a} has noticed." }] },
-    { id: 'ko.p4', turns: [{ by: 'a', say: "No hard feelings." }, { by: 'b', say: "No hard feelings." }, { by: 'a', dr: "Some hard feelings." }] },
+    { id: 'ko.p4', turns: [{ by: 'a', say: "No hard feelings." }, { by: 'b', say: "No hard feelings." }, { by: 'a', dr: "No hard feelings, I said. I've got plenty. I'm just not letting {b} see them yet." }] },
     { id: 'ko.p5', turns: [{ by: 'a', dr: "I'm going to be nice to {b}. That way {b} never knows what I know." }] },
     { id: 'ko.p6', turns: [{ by: 'a', say: "Good morning, {b}." }, { by: 'b', say: "...Morning." }, { by: 'a', dr: "I'm watching {b}. {b} knows it." }] },
   ],

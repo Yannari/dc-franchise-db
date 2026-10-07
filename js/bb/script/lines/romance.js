@@ -118,7 +118,7 @@ export default {
     { id: 'wk.o2', turns: [{ by: 'b', dr: "{c} laughs a bit too long at {a}'s jokes. Nothing's happened. I'm still counting." }] },
     { id: 'wk.o3', turns: [{ beat: '{b} finds {a} and {c} talking quietly in a doorway.' }, { by: 'b', dr: "I turned around before they saw me." }] },
     { id: 'wk.o4', turns: [{ by: 'b', dr: "{a} told {c} something I thought was just ours. I heard it from someone else." }] },
-    { id: 'wk.o5', turns: [{ by: 'c', say: "You two seem close." }, { by: 'a', say: "We are." }, { by: 'c', dr: "For now." }] },
+    { id: 'wk.o5', turns: [{ by: 'c', say: "You two seem close." }, { by: 'a', say: "We are." }, { by: 'c', dr: "Close for now. In this house that never lasts, and I'll be right there when it breaks." }] },
     { id: 'wk.o6', turns: [{ by: 'b', say: "Is something going on with {c}?" }, { by: 'a', say: "No! We're friends." }, { by: 'b', dr: "That's what worries me." }] },
   ],
   'romance.triangleEscalation.three': [
@@ -182,7 +182,7 @@ export default {
     { id: 'wp.c2', turns: [{ by: 'c', say: "Game respects game." }, { beat: '{c} goes off to have a very different conversation with someone else.' }] },
     { id: 'wp.c3', turns: [{ beat: '{c} shakes {a}\'s hand.' }, { by: 'a', dr: "That was the most strategic handshake I've ever had." }] },
     { id: 'wp.c4', turns: [{ by: 'c', dr: "{a} chose {b}. Okay. Now I'm free to play." }] },
-    { id: 'wp.c5', turns: [{ by: 'c', say: "No hard feelings." }, { by: 'a', say: "Really?" }, { by: 'c', say: "Really." }, { by: 'c', dr: "Some feelings." }] },
+    { id: 'wp.c5', turns: [{ by: 'c', say: "No hard feelings." }, { by: 'a', say: "Really?" }, { by: 'c', say: "Really." }, { by: 'c', dr: "I said no hard feelings. Honestly, I'm hurt. I'm just not going to let anybody in this house see it." }] },
     { id: 'wp.c6', turns: [{ by: 'c', dr: "Feelings later. Votes now." }] },
   ],
   'romance.triangleResolved.hurt': [

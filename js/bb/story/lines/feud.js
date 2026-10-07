@@ -58,7 +58,7 @@ export default {
     { id: 'sf.c4', room: 'bathroom', turns: [
       { by: 'b', say: "Hey, so, the bathroom." },
       { by: 'a', say: "What about it?" },
-      { by: 'b', say: "There's hair. Everywhere. On everything." },
+      { by: 'b', say: "There's hair everywhere. In the sink, on the floor, on my towel." },
       { by: 'a', say: "And you think it's mine." },
       { by: 'b', say: "It's long and it's your color." },
       { by: 'a', say: "Wow. Okay. Detective {b}." },
@@ -72,7 +72,7 @@ export default {
       { by: 'b', say: "Who finished the coffee and put the empty tin back?" },
       { by: 'a', say: "I was going to tell someone." },
       { by: 'b', say: "You were going to tell someone. When?" },
-      { by: 'a', say: "When they asked. Which you just did. So. It was me." },
+      { by: 'a', say: "When somebody asked. You've just asked. So yes, it was me." },
       { by: 'b', say: "You know we don't get more until shopping." },
       { by: 'a', say: "I know. I'm sorry. I was tired." },
       { by: 'b', say: "We're all tired! That's what the coffee was for!" },
@@ -230,7 +230,7 @@ export default {
       { by: 'a', say: "I said no. I don't want to play cards. I don't want to play anything." },
       { by: 'b', say: "Alright. Sorry I asked." },
       { by: 'a', say: "Yeah, me too." },
-      { by: 'b', dr: "That's the last time I invite {a} to anything. Cards. It was cards." },
+      { by: 'b', dr: "That's the last time I invite {a} to anything. It was a game of cards. I was trying to be nice." },
     ] },
     { id: 'sf.s6', room: 'bedroom', when: { late: false }, turns: [
       { beat: '{b} sits down on the end of a bed.' },
@@ -523,7 +523,7 @@ export default {
       { by: 'b', say: "It works like this. You stay over there, I stay over here, and we see who's still in the house in a month." },
       { by: 'a', say: "That's really how you want to play it." },
       { by: 'b', say: "That's really how I want to play it." },
-      { by: 'a', dr: "I tried. Write that down somewhere. I tried." },
+      { by: 'a', dr: "I tried to make peace and {b} said no to my face. Whatever happens now, I want people to remember that I tried." },
     ] },
     { id: 'sp.r5', room: 'living-room', turns: [
       { beat: '{a} sits down next to {b} on the sofa. {b} moves along to the end.' },
@@ -546,7 +546,7 @@ export default {
       { by: 'b', say: "People say what they mean when they're angry. The rest of the time they're just being polite." },
       { by: 'a', say: "...Okay. I'm still sorry." },
       { by: 'b', say: "Noted." },
-      { by: 'a', dr: "'Noted.' Like I'm a memo. Fine. Noted right back." },
+      { by: 'a', dr: "I said sorry and got 'noted', like I was a note stuck on the fridge. It stung more than I expected." },
     ] },
   ],
 
@@ -651,7 +651,7 @@ export default {
     { id: 'rg.a3', turns: [{ by: 'a', dr: "You might've heard {b} and me {when}. The whole house heard us." }] },
   ],
   'recap.feud.argument.b': [
-    { id: 'rg.b1', turns: [{ by: 'b', dr: "{a} came at me {when}. Screaming. In front of everyone." }] },
+    { id: 'rg.b1', turns: [{ by: 'b', dr: "{a} came at me {when}, screaming, in front of everyone. I'm still shaking, and I don't even know what I did." }] },
     { id: 'rg.b2', turns: [{ by: 'b', dr: "{when}, {a} decided to tell me exactly what {a.sub} thinks of me. Loudly." }] },
     { id: 'rg.b3', turns: [{ by: 'b', dr: "We had a fight {when}. A big one. I'm still not over it." }] },
   ],

@@ -65,7 +65,7 @@ export default {
       { by: 'b', say: "Who do you think wins the Block Buster?" },
       { by: 'a', say: "Not {c}. Please, not {c}." },
       { by: 'b', say: "{d} wants it more than anyone. You can see it." },
-      { by: 'a', say: "Then I'm rooting for {d}. Loudly. From the sidelines." },
+      { by: 'a', say: "Then I'm cheering for {d} from the sidelines, as loudly as I can." },
       { by: 'b', say: "You can't root for anyone. You put them all up." },
       { by: 'a', say: "Silently, then. Very silently." },
       { by: 'a', dr: "I'm the Head of Household and I've never been more nervous. My week comes down to a game I'm not even playing." },

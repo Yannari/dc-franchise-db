@@ -26,7 +26,7 @@ export default {
   'hunt.search.scene': [
     { id: 'hq.s1', turns: [{ by: 'a', dr: "I checked {place}. Nothing. Twenty minutes of my life, and I had to make up a reason for being there." }] },
     { id: 'hq.s2', turns: [{ by: 'a', say: "I'm just looking for my phone charger." }, { by: 'a', dr: "I don't have a phone. Nobody in here has a phone." }] },
-    { id: 'hq.s3', turns: [{ by: 'a', dr: "Checked {place}. Nothing. Again." }] },
+    { id: 'hq.s3', turns: [{ by: 'a', dr: "I checked {place}. Nothing there either, and I'm running out of places to look." }] },
     { id: 'hq.s4', turns: [{ by: 'a', dr: "I waited until everyone was asleep and went through {place}. Not a thing." }] },
     { id: 'hq.s5', turns: [{ by: 'a', dr: "Third time in {place} today. I've stopped pretending I have a reason." }] },
     { id: 'hq.s6', turns: [{ by: 'a', say: "Where are you?" }, { by: 'a', dr: "I'm talking to a power now. That's where I'm at." }] },

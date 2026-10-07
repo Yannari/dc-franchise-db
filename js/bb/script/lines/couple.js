@@ -103,7 +103,7 @@ export default {
   'couple.apart.scene': [
     { id: 'cp.1', turns: [{ by: 'a', say: "If we walk in together, we're one conversation." }, { by: 'b', say: "So we split up." }, { by: 'a', say: "You take after dinner. I'll take before." }] },
     { id: 'cp.2', turns: [{ by: 'a', dr: "{b} and I split the house in half this week. Two campaigns. Nobody sees us together." }] },
-    { id: 'cp.3', when: { third: true }, turns: [{ by: 'c', dr: "{a} asked me about the vote. An hour later {b} asked me the same thing. Separately. Interesting." }] },
+    { id: 'cp.3', when: { third: true }, turns: [{ by: 'c', dr: "{a} asked me about the vote, and an hour later {b} asked me the exact same thing, on their own. Those two are working together, and they think nobody's noticed." }] },
     { id: 'cp.4', turns: [{ by: 'b', dr: "I disagreed with {a} about the vote in front of everyone. It was all for show. I think it worked." }] },
     { id: 'cp.5', turns: [{ by: 'a', say: "Remember, don't finish my sentences." }, { by: 'b', say: "I don't do that." }, { by: 'a', say: "You're doing it now." }] },
     { id: 'cp.6', turns: [{ by: 'b', dr: "Playing apart from {a} is harder than I thought. But people are taking us seriously as two players." }] },

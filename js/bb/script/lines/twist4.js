@@ -31,7 +31,7 @@ export default {
     { id: 'pn4.h2', turns: [{ by: 'b', dr: "I know exactly how long {a} gets between horns. I save the hard questions for when {a} is gone." }] },
     { id: 'pn4.h3', turns: [{ by: 'a', say: "What did I miss?" }, { by: 'b', say: "Nothing much." }, { by: 'a', dr: "That's the fourth time today I've missed nothing much." }] },
     { id: 'pn4.h4', turns: [{ by: 'a', dr: "Every plan I'm part of this week has a hole in it. The hole is me, running off when the horn goes." }] },
-    { id: 'pn4.h5', turns: [{ beat: 'The horn goes again.' }, { by: 'a', say: "You're joking." }, { by: 'b', say: "Go on. We'll wait." }, { by: 'a', dr: "They won't." }] },
+    { id: 'pn4.h5', turns: [{ beat: 'The horn goes again.' }, { by: 'a', say: "You're joking." }, { by: 'b', say: "Go on. We'll wait." }, { by: 'a', dr: "They said they'd wait. They won't. By the time I'm back, that conversation will have finished without me." }] },
     { id: 'pn4.h6', turns: [{ by: 'a', dr: "I keep coming back to rooms that have already moved on without me." }] },
   ],
   'punish.tether.scene': [

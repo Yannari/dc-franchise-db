@@ -215,7 +215,7 @@ export default {
       { by: 'a', say: "So {target}'s hiding something." },
       { by: 'b', say: "Or {target}'s scared of being blamed for something." },
       { by: 'a', say: "Same thing, in here." },
-      { by: 'a', dr: "I'm going to ask {target} for a name tonight. Directly. Let's see what happens." },
+      { by: 'a', dr: "Tonight I'm going to ask {target} straight out for a name. I'm nervous, because whatever the answer is, I'll know where I stand." },
     ] },
     { id: 'tg.7', turns: [
       { by: 'a', say: "Did you see {target} at dinner?" },
@@ -582,7 +582,7 @@ export default {
       { by: 'b', say: "Or like they're about to vote {target} out and they feel guilty." },
       { by: 'a', say: "Guilty goes both ways. That's the problem with guilty." },
       { by: 'b', say: "So what do we do?" },
-      { by: 'a', say: "We stop guessing and start asking. Directly. Tonight." },
+      { by: 'a', say: "We stop guessing and start asking, straight out, tonight." },
       { by: 'a', dr: "When the house goes quiet before a vote, somebody's flipping. I just need to know who before Thursday does." },
     ] },
     { id: 'tc.s4', presumes: ['noms'], turns: [

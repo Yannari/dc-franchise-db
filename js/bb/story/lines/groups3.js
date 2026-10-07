@@ -204,7 +204,7 @@ export default {
     { id: 'gh3.3', presumes: ['hoh'], turns: [
       { by: 'b', say: "Okay. Distraction time. Everyone tell {a} the most embarrassing thing that's happened to them in here." },
       { by: 'c', say: "I walked into the Diary Room and forgot what I went in for." },
-      { by: 'd', say: "I fell off the hammock. Twice. In one day." },
+      { by: 'd', say: "I fell off the hammock twice in one day." },
       { by: 'b', say: "I said 'thank you' to the fridge." },
       { by: 'a', say: "You did not." },
       { by: 'b', say: "Out loud. It had been a long day." },

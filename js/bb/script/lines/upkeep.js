@@ -42,7 +42,7 @@ export default {
   ],
   'upkeep.betrayalDenial.scene': [
     { id: 'ud.1', turns: [{ by: 'a', dr: "{b} didn't choose to turn on me. The numbers forced it. I'm sure of it." }] },
-    { id: 'ud.2', turns: [{ by: 'a', say: "You didn't have a choice, did you?" }, { by: 'b', say: "...No. I didn't." }, { by: 'b', dr: "I did." }] },
+    { id: 'ud.2', turns: [{ by: 'a', say: "You didn't have a choice, did you?" }, { by: 'b', say: "...No. I didn't." }, { by: 'b', dr: "I told {a} I didn't have a choice. I did. I just couldn't say that to {a}'s face." }] },
     { id: 'ud.3', turns: [{ by: 'a', dr: "Everyone says {b} betrayed me on purpose. They don't know {b} like I do." }] },
     { id: 'ud.4', turns: [{ by: 'b', dr: "{a} has decided I was forced. I'm not going to correct {a}." }] },
     { id: 'ud.5', turns: [{ by: 'a', say: "I know it wasn't really you." }, { by: 'b', say: "Thanks." }] },
@@ -70,7 +70,7 @@ export default {
     { id: 'ug.3', turns: [{ by: 'a', say: "We're good, aren't we?" }, { beat: 'The other person smiles politely.' }] },
     { id: 'ug.4', turns: [{ by: 'a', dr: "I think people really like me in here. I'll be fine." }] },
     { id: 'ug.5', turns: [{ by: 'a', dr: "I've decided I'm safe. Nobody's told me otherwise." }] },
-    { id: 'ug.6', when: { intent: 'pair' }, turns: [{ by: 'a', say: "So we're working together now?" }, { by: 'b', say: "We're friends." }, { by: 'a', dr: "Same thing." }] },
+    { id: 'ug.6', when: { intent: 'pair' }, turns: [{ by: 'a', say: "So we're working together now?" }, { by: 'b', say: "We're friends." }, { by: 'a', dr: "{b} says we're friends. In this house that's the same thing as an alliance, whether {b} admits it or not." }] },
   ],
   'upkeep.perceptionRealization.scene': [
     { id: 'uh.1', when: { intent: 'pair' }, turns: [{ by: 'a', dr: "I compared what {b} said with how {b} voted. They don't match. They never did." }] },
@@ -78,6 +78,6 @@ export default {
     { id: 'uh.3', turns: [{ by: 'a', dr: "I went back over the week. I had it all wrong." }] },
     { id: 'uh.4', turns: [{ by: 'a', dr: "I misread everything. Where I stood. Who I trusted. All of it." }] },
     { id: 'uh.5', turns: [{ by: 'a', dr: "It's a horrible feeling, realising you were the only one who believed it." }] },
-    { id: 'uh.6', when: { intent: 'pair' }, turns: [{ by: 'a', say: "Was any of it real, {b}?" }, { by: 'b', say: "Some of it." }, { by: 'a', dr: "Some of it." }] },
+    { id: 'uh.6', when: { intent: 'pair' }, turns: [{ by: 'a', say: "Was any of it real, {b}?" }, { by: 'b', say: "Some of it." }, { by: 'a', dr: "'Some of it.' That's worse than if {b} had said none of it." }] },
   ],
 };

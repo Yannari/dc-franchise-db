@@ -262,7 +262,7 @@ export default {
       { by: 'b', say: "What did the cupboard do?" },
       { by: 'a', say: "Nothing. {c} did." },
       { by: 'b', say: "What did {c} do?" },
-      { by: 'a', say: "Existed. Loudly. In my direction." },
+      { by: 'a', say: "Nothing, really. {c} has just been loud at me all day, and I've had enough." },
       { by: 'b', say: "That's not a crime." },
       { by: 'a', say: "It should be." },
       { by: 'b', dr: "{a} and {c} can't be in the same room any more. In a house this small, that's a problem for everyone." },
@@ -297,7 +297,7 @@ export default {
       { by: 'b', say: "Then don't keep {c} past this week if you get the chance." },
       { by: 'a', say: "If I get the chance, I won't." },
       { by: 'b', say: "Just don't say it to anyone else." },
-      { by: 'a', dr: "{c} is the first name I'd write down if I could. I don't care who knows. Well. I care a bit." },
+      { by: 'a', dr: "{c} is the first name I'd write down if I could. I don't care who knows. Actually, I care a little bit." },
     ] },
     { id: 'gt2.bv5', turns: [
       { beat: 'The backyard. {a} is pacing up and down by the wall. {b} is trying to keep up.' },

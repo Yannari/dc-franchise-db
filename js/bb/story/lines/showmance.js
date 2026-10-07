@@ -71,7 +71,7 @@ export default {
       { by: 'b', say: "No. I just wanted you to admit it." },
       { by: 'a', say: "Fine. I sit next to you on purpose." },
       { by: 'b', say: "Good." },
-      { by: 'a', dr: "Busted. Busted completely. Still sitting there tomorrow, though." },
+      { by: 'a', dr: "I got caught sitting next to {b} on purpose, and I don't even care. I'll be sitting there again tomorrow." },
     ] },
     { id: 'sm.s6', turns: [
       { by: 'a', say: "Okay, honest question. What's your type?" },
@@ -84,7 +84,7 @@ export default {
       { by: 'b', say: "I know everyone in this house." },
       { by: 'a', say: "Then you know exactly which friend." },
       { beat: '{b} laughs and throws a cushion at {a}.' },
-      { by: 'b', dr: "So that's happening. Okay. That's happening." },
+      { by: 'b', dr: "Nobody asks what your type is for a friend. I think {a} likes me, and I think I'm happy about that." },
     ] },
     { id: 'sm.s7', when: { third: true }, turns: [
       { by: 'c', say: "Are you two going to share that blanket all night, or…" },
@@ -173,7 +173,7 @@ export default {
       { by: 'a', say: "I wasn't really hungry." },
       { by: 'b', say: "Me neither." },
       { beat: '{a} kisses {b} next to the toaster.' },
-      { by: 'b', dr: "Best toast I never ate." },
+      { by: 'b', dr: "Neither of us ate the toast. I haven't been this happy since I walked in here." },
     ] },
   ],
 
@@ -291,7 +291,7 @@ export default {
       { by: 'a', say: "You're not saying anything." },
       { by: 'b', say: "You told me to let you say it!" },
       { by: 'a', say: "I'm done saying it! Now you say something!" },
-      { by: 'b', say: "I like you too. Really. Actually." },
+      { by: 'b', say: "I like you too. I really do." },
       { by: 'a', say: "Okay. Good. Great. I'm going to go lie down." },
       { by: 'b', dr: "{a} said it and then basically ran away. I've never liked anybody more." },
     ] },
@@ -505,7 +505,7 @@ export default {
       { by: 'b', say: "I'm sorry I made you shout." },
       { by: 'a', say: "Is that a real apology?" },
       { by: 'b', say: "It's half a real apology. Go to sleep." },
-      { by: 'a', dr: "Half an apology. In here, that's basically a wedding." },
+      { by: 'a', dr: "It was only half an apology. But from {b}, in this house, half an apology means a lot." },
     ] },
     { id: 'sg.4', turns: [
       { by: 'a', say: "Do you even want this anymore?" },

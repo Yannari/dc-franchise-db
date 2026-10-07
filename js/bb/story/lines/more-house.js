@@ -507,7 +507,7 @@ export default {
       { by: 'a', say: "I'm just saying—" },
       { by: 'b', say: "Nope. We're not doing the goodbye speech early." },
       { by: 'a', say: "Fine. But if we do—" },
-      { by: 'b', say: "If we do, I'll miss you like crazy. Done. Speech over." },
+      { by: 'b', say: "If we do, I'll miss you like crazy. Okay, that's my whole speech." },
       { by: 'a', say: "...That was a good speech." },
       { by: 'b', dr: "I'm not doing goodbyes before I have to. That's how you jinx it." },
     ] },

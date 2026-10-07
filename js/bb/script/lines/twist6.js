@@ -41,7 +41,7 @@ export default {
     { id: 'vv6.r2', turns: [{ by: 'a', dr: "Somebody looked at me on that block and decided I could stay there." }] },
     { id: 'vv6.r3', turns: [{ by: 'a', say: "Somebody chose this." }, { beat: '{b} is in the room the second time {a} says it.' }] },
     { id: 'vv6.r4', turns: [{ by: 'b', dr: "{a} has worked out it was me. I'm not going to confirm it." }] },
-    { id: 'vv6.r5', turns: [{ by: 'a', say: "Did you have the other veto?" }, { by: 'b', say: "What other veto?" }, { by: 'b', dr: "Yes. I did." }] },
+    { id: 'vv6.r5', turns: [{ by: 'a', say: "Did you have the other veto?" }, { by: 'b', say: "What other veto?" }, { by: 'b', dr: "Yes, I had the other veto. And I'm not telling anybody, because it's the only insurance I've got." }] },
     { id: 'vv6.r6', turns: [{ by: 'a', dr: "The veto that wasn't used is the loudest thing that happened at that meeting." }] },
   ],
   'vv.box.wrong': [
@@ -55,7 +55,7 @@ export default {
   'vv.forced.scene': [
     { id: 'vv6.f1', turns: [{ by: 'a', dr: "The rule said {b} had to use it and name someone. I know that. It's still {b}'s mouth my name came out of." }] },
     { id: 'vv6.f2', when: { third: true }, turns: [{ by: 'c', say: "You could have picked me, you know." }, { by: 'b', say: "Don't." }, { by: 'a', dr: "It's a joke for {c}. Not for me." }] },
-    { id: 'vv6.f3', turns: [{ by: 'b', say: "I had to use it. Those were the rules." }, { by: 'a', say: "I know." }, { by: 'a', dr: "Doesn't help." }] },
+    { id: 'vv6.f3', turns: [{ by: 'b', say: "I had to use it. Those were the rules." }, { by: 'a', say: "I know." }, { by: 'a', dr: "I know {b} had to. It doesn't help. I'm still the one sitting on the block." }] },
     { id: 'vv6.f4', turns: [{ by: 'b', dr: "I'm the only person who didn't get a choice this week, and everyone's angry with me." }] },
     { id: 'vv6.f5', turns: [{ by: 'a', say: "You named me." }, { by: 'b', say: "I had to name someone." }, { by: 'a', say: "You picked me." }] },
     { id: 'vv6.f6', when: { third: true }, turns: [{ by: 'c', say: "Thank you." }, { by: 'b', say: "Don't thank me where {a} can hear." }] },

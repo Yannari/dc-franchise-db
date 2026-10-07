@@ -115,7 +115,7 @@ export default {
       { by: 'a', dr: "Four seconds in a cupboard. That's our whole relationship in here. I'll take it." },
     ] },
     { id: 'kc.s4', turns: [
-      { by: 'a', say: "Somebody said you're cute. Today. In the kitchen." },
+      { by: 'a', say: "Somebody said you were cute today, in the kitchen." },
       { by: 'b', say: "Who?" },
       { by: 'a', say: "Doesn't matter who. I had to stand there and agree like it was news." },
       { by: 'b', say: "What did you say?" },

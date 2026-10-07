@@ -345,7 +345,7 @@ export default {
       { by: 'c', say: "Okay, that's a long congratulations." },
       { by: 'b', say: "That's a congratulations with a deal in it." },
       { by: 'a', say: "Exactly. So we get there before {target} does it again." },
-      { by: 'b', dr: "Whoever gets to the HOH first, wins the week. We're about to run up the stairs. Metaphorically. Mostly." },
+      { by: 'b', dr: "Whoever gets to the HOH first wins the week, so we're all about to race each other up those stairs. I'm nervous we're already too late." },
     ] },
   ],
 

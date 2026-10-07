@@ -402,7 +402,7 @@ export default {
     { id: 'lo.6', turns: [{ by: 'a', say: "Tell me about where you grew up." }, { by: 'b', say: "Honestly? Nowhere special." }, { by: 'a', say: "Tell me anyway." }, { by: 'b', say: "Okay. But it's a boring story." }] },
     { id: 'lo.7', turns: [{ by: 'a', say: "Do you think about what everyone's doing outside?" }, { by: 'b', say: "Every day." }, { by: 'a', say: "Me too." }] },
     { id: 'lo.8', turns: [{ by: 'a', say: "My friends are going to be screaming at the TV right now." }, { by: 'b', say: "Mine too. Probably at me." }] },
-    { id: 'lo.9', turns: [{ by: 'b', say: "What do you miss most?" }, { by: 'a', say: "Walking somewhere. Anywhere. Just walking." }, { by: 'b', say: "I never thought I'd miss walking." }] },
+    { id: 'lo.9', turns: [{ by: 'b', say: "What do you miss most?" }, { by: 'a', say: "Just walking. Anywhere, as long as it's away from everybody for five minutes." }, { by: 'b', say: "I never thought I'd miss walking." }] },
     { id: 'lo.10', turns: [{ by: 'a', dr: "{b} and I talked about home for ages. I'd forgotten there's a whole world out there." }] },
   ],
   // ── boredom ── a and b

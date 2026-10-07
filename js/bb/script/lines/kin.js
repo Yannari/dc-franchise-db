@@ -29,7 +29,7 @@ export default {
   ],
   'kin.unrequited.scene': [
     { id: 'kz.u1', turns: [{ by: 'b', dr: "{a} keeps turning up in whatever room I'm in. I've started leaving." }] },
-    { id: 'kz.u2', when: { third: true }, turns: [{ by: 'a', say: "{b} didn't mean it like that." }, { by: 'c', say: "I think {b} did." }, { by: 'c', dr: "Third time this week." }] },
+    { id: 'kz.u2', when: { third: true }, turns: [{ by: 'a', say: "{b} didn't mean it like that." }, { by: 'c', say: "I think {b} did." }, { by: 'c', dr: "That's the third time this week {a} has covered for {b}. Family always does, and the house is starting to notice." }] },
     { id: 'kz.u3', turns: [{ by: 'a', dr: "{b} is being so nice to me. I'd rather {b} argued with me." }] },
     { id: 'kz.u4', turns: [{ beat: '{b} walks out of the room without looking back.' }, { by: 'a', dr: "I watched the door for a second too long. Again." }] },
     { id: 'kz.u5', turns: [{ by: 'a', say: "Want to sit with me?" }, { by: 'b', say: "I'm okay here, thanks." }] },

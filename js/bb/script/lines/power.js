@@ -497,7 +497,7 @@ export default {
     { id: 'pu.f2', turns: [{ by: 'a', dr: "Nothing changed at the veto meeting. Everyone expected that. Nobody said it, in case it sounded like gloating." }] },
     { id: 'pu.f3', turns: [{ by: 'b', say: "What happened at the ceremony?" }, { by: 'a', say: "Nothing." }, { by: 'b', say: "Right." }, { beat: '{b} goes straight back to what {b} was doing.' }] },
     { id: 'pu.f4', turns: [{ by: 'a', dr: "Same two names this morning, same two names tonight. This week was decided days ago." }] },
-    { id: 'pu.f5', turns: [{ beat: 'Two people go straight back to bed after the ceremony.' }, { by: 'a', dr: "Even I was bored." }] },
+    { id: 'pu.f5', turns: [{ beat: 'Two people go straight back to bed after the ceremony.' }, { by: 'a', dr: "Nothing changed at that ceremony. Even I was bored, and it's my week on the line." }] },
     { id: 'pu.f6', turns: [{ by: 'a', say: "Well, that was predictable." }, { by: 'b', say: "Predictable is good. Predictable means nobody's coming for us." }] },
   ],
 

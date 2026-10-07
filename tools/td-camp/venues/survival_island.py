@@ -456,7 +456,7 @@ def si_map(tod):
     jungle trail, the fishing dock, the bamboo outhouse confessional. A camp's zones are marked
     'shelter@<slot>' and 'campfire@<slot>': the viewer gives each team its own slot."""
     P = SOL[tod]; day = tod == 'day'
-    paint_sky(P['sky'], P['sky_low'])
+    paint_sky(P['sky'], P['sky_low'], span=0.09)
     if day:
         for (cx, cz, cs) in ((-60, 30, 4.5), (-18, 38, 3.4), (30, 34, 4.0), (70, 40, 3.0)):
             puffy_cloud(cx, 160, cz, cs, P['cloud'], P['rim'])
@@ -464,7 +464,9 @@ def si_map(tod):
     rnd = random.Random(11)
     for k in range(5):
         x = -140 + k * 62 + rnd.uniform(-10, 10)
-        card(uid('FarIsle'), [(-14, 0), (-6, 9), (0, 12), (7, 8), (16, 0)], 150, pmat('FarIsle' + tod, P['mtn'][k % 2], unlit=True, mottle=0), x=x, z=-0.5)
+        hump = [(-16 + 32 * i / 24, 4 + 7 * math.sin(math.pi * i / 24) + 1.6 * math.sin(i * 1.3 + k)) for i in range(25)]
+        card(uid('FarIsle'), [(-16, 0)] + hump + [(16, 0)], 150, pmat('FarIsle' + tod, P['mtn'][k % 2], unlit=True, mottle=0), x=x, z=-0.5)
+        card(uid('FarIsleSh'), [(2, 0)] + [h for h in hump if h[0] > 2] + [(16, 0)], 149.9, pmat('FarIsleSh' + tod, _mix_hex(P['mtn'][k % 2], '#1a3a4a', 0.2), unlit=True, mottle=0), x=x, z=-0.5)
     # the island: a sand rim, the grass inside it, the lagoon on the Favorites' side
     _prism('SolSand', _blob(0, 6, 46, 30, seed=3, wob=0.08), -0.5, 0.25, SOL['day']['sand'], _mix_hex(SOL['day']['sand'], '#8a6a5a', 0.3), tod)
     _flat_poly('SolFoam', _blob(0, 6, 47.5, 31.2, seed=3, wob=0.08), -0.38, '#f2fbfb', tod, mottle=0)
@@ -474,55 +476,70 @@ def si_map(tod):
         _flat_poly('Clearing', _blob(cx, cy, r, r * 0.75, seed=int(cx), wob=0.12), 0.28, SOL['day']['path'], tod, mottle=0.3)
     for (px, py, rx, ry) in ((-10, -2, 14, 1.4), (6, 2, 12, 1.2), (2, 8, 1.4, 8)):
         _flat_poly('SolPath', _blob(px, py, rx, ry, seed=int(px * 3 + py), wob=0.08), 0.29, SOL['day']['path'], tod, mottle=0.25)
-    # the volcano, its crater, its waterfalls, the rock spires around it
-    VX, VY, R0, R1, H = 0.0, 30.0, 14.0, 3.0, 20.0
-    pcyl('Volcano', R0, H, (VX, VY, H / 2), '#7a4a32', tod, r2=R1, verts=28, mottle=0.35)
-    pcyl('Crater', R1 * 0.8, 0.4, (VX, VY, H + 0.1), '#3a2218', tod, verts=20)
-    for lz in (6.5, 12.5):
-        lr = R0 - (R0 - R1) * lz / H
-        pcyl('Ledge', lr + 0.5, 0.7, (VX, VY, lz), '#5a3422', tod, r2=lr + 0.2, verts=28, mottle=0.25)
-    for (fx, top, bot) in ((-4.0, 17.0, 3.0), (3.5, 14.0, 1.0)):
-        for i in range(8):
-            z0 = bot + (top - bot) * i / 8; z1 = bot + (top - bot) * (i + 1) / 8
-            r = R0 - (R0 - R1) * ((z0 + z1) / 2) / H
-            dy = math.sqrt(max(r * r - fx * fx, 0.0))
-            card(uid('Fall'), [(-0.5, -0.3), (0.5, -0.3), (0.46, z1 - z0 + 0.3), (-0.46, z1 - z0 + 0.3)], VY - dy - 0.6, pmat('FallS' + tod, N('#4ad0f0', tod), unlit=True, mottle=0), x=VX + fx, z=z0)
-    _flat_poly('FallPool', _blob(-4.5, 15.5, 3.4, 1.8, seed=4, wob=0.1), 0.3, '#3ad8e0', tod, mottle=0.05)
-    for (sx, sy, sh, sr) in ((-16, 28, 11, 2.6), (15, 27, 10, 2.4), (-10, 36, 13, 2.2), (11, 36, 12, 2.4), (-20, 22, 7, 1.8), (21, 22, 6.5, 1.8)):
-        pcyl('Spire', sr, sh, (sx, sy, sh / 2), '#8a5a3a', tod, r2=0.3, verts=7, mottle=0.3)
-    # the jungle: round trees and palms everywhere the camps and the shared places leave clear
-    clear = [(-19, 1, 9), (23, -6, 8), (18, 11, 8), (-5, 16, 4), (2, 6, 3), (-2, -14, 10), (8, -4, 3), (34, -12, 4), (-30, -10, 5)]
+    # the volcano (Soluna_Island): stepped brown tiers, each with a pale ledge and dark cracks, a crater,
+    # two falls cascading down from tier to tier; blue-grey spires crowding behind it, brown spires in front
+    VX, VY = 0.0, 30.0
+    tiers = ((15.0, 12.0, 0.0, 6.0, '#7a4a32'), (12.2, 9.0, 6.0, 5.5, '#84503a'), (9.2, 6.0, 11.5, 5.0, '#7a4a32'), (6.2, 3.6, 16.5, 4.5, '#8a5640'))
+    for k, (r0, r1, z0, h, col) in enumerate(tiers):
+        pcyl('VolTier', r0, h, (VX + (k % 2) * 0.6, VY + k * 0.8, z0 + h / 2), col, tod, r2=r1, verts=11 + k, mottle=0.35)
+        pcyl('VolLedge', r1 + 0.6, 0.5, (VX + (k % 2) * 0.6, VY + k * 0.8, z0 + h), '#a8704a', tod, r2=r1 + 0.1, verts=11 + k, mottle=0.2)
+        for c in range(4):
+            cx = -r0 * 0.6 + c * r0 * 0.4
+            dy = math.sqrt(max(((r0 + r1) / 2) ** 2 - cx * cx, 0.0))
+            card(uid('Crack'), [(-0.06, 0), (0.06, 0), (0.18, h * 0.5), (0.02, h * 0.85), (-0.1, h * 0.5)], VY + k * 0.8 - dy - 0.4,
+                 pmat('Crack' + tod, N('#3a2218', tod), unlit=True, mottle=0), x=VX + cx, z=z0 + 0.4)
+    pcyl('Crater', 3.0, 0.5, (VX + 0.6, VY + 2.4, 21.2), '#3a2218', tod, verts=14)
+    fall = pmat('FallS' + tod, N('#5ad8f6', tod), unlit=True, mottle=0)
+    foam = pmat('FallFoamS' + tod, N('#e8faff', tod), unlit=True, mottle=0)
+    for (fx, steps) in ((-3.6, (3, 2, 1, 0)), (4.0, (2, 1, 0))):
+        for k in steps:
+            r0, r1, z0, h, _ = tiers[k]
+            rm = (r0 + r1) / 2
+            dy = math.sqrt(max(rm * rm - fx * fx, 0.0))
+            x = VX + fx + (k % 2) * 0.5
+            card(uid('Fall'), [(-0.55, -0.3), (0.55, -0.3), (0.5, h + 0.4), (-0.5, h + 0.4)], VY + k * 0.8 - dy - 0.7, fall, x=x, z=z0)
+            card(uid('FallFoam'), _blob_pts(0.9, 0.25, 12, 0.2, k), VY + k * 0.8 - dy - 0.75, foam, x=x, z=z0 + 0.1)
+    _flat_poly('FallPool', _blob(-3.8, 14.0, 3.8, 1.9, seed=4, wob=0.1), 0.3, '#3ad8e0', tod, mottle=0.05)
+    for (sx, sy, sh, sr, col) in ((-13, 36, 17, 2.6, '#7a8ab8'), (-7, 41, 21, 2.4, '#8a9ac8'), (8, 41, 20, 2.6, '#7a8ab8'), (14, 36, 16, 2.4, '#8a9ac8'),
+                                  (-19, 32, 12, 2.2, '#7a8ab8'), (20, 32, 12, 2.2, '#8a9ac8'), (2, 44, 23, 2.0, '#9aaad0')):
+        pcyl('BlueSpire', sr, sh, (sx, sy, sh / 2), col, tod, r2=0.2, verts=5, mottle=0.2)
+    for (sx, sy, sh, sr) in ((-15, 26, 10, 2.0), (15.5, 25, 9, 1.9), (-19.5, 21, 6.5, 1.6), (21, 21, 6, 1.6)):
+        pcyl('Spire', sr, sh, (sx, sy, sh / 2), '#8a5a3a', tod, r2=0.25, verts=6, mottle=0.3)
+    # the jungle: a canopy of round bushy crowns, lighter on top, with palms standing out of it
+    clear = [(-19, 1, 9), (23, -6, 8), (18, 11, 8), (-4, 15, 4), (2, 6, 3), (-2, -14, 10), (8, -4, 3), (34, -12, 4), (-30, -10, 5)]
     pts = []
-    for i in range(500):
-        x, y = rnd.uniform(-38, 38), rnd.uniform(-8, 26)
-        if ((x + 2) / 36) ** 2 + ((y - 10) / 20) ** 2 > 1 or ((x - VX) / R0) ** 2 + ((y - VY) / R0) ** 2 < 1.05:
+    for i in range(900):
+        x, y = rnd.uniform(-38, 38), rnd.uniform(-8, 27)
+        if ((x + 2) / 36) ** 2 + ((y - 10) / 20) ** 2 > 1 or ((x - VX) / 15.5) ** 2 + ((y - VY) / 15.5) ** 2 < 1.0:
             continue
-        if any((x - cx) ** 2 + (y - cy) ** 2 < r * r for cx, cy, r in clear) or any((x - a) ** 2 + (y - b) ** 2 < 6.2 for a, b in pts):
+        if any((x - cx) ** 2 + (y - cy) ** 2 < r * r for cx, cy, r in clear) or any((x - a) ** 2 + (y - b) ** 2 < 4.4 for a, b in pts):
             continue
         pts.append((x, y))
+    greens = ('#5a9a2e', '#4a8a2a', '#6aaa36', '#3f7a2a')
     for k, (x, y) in enumerate(sorted(pts, key=lambda p: -p[1])):
-        if rnd.random() < 0.3:
+        if rnd.random() < 0.18:
             sol_palm(x, y, rnd.uniform(5, 7), tod, lean=rnd.uniform(-14, 14), seed=k, s=1.0)
-        else:
-            lolly_tree(x, y, rnd.uniform(3, 5), tod, col=P['jungle'][k % 2], seed=k, s=rnd.uniform(1.0, 1.4))
+            continue
+        rr = rnd.uniform(1.4, 2.1)
+        c = greens[k % 4]
+        crown = icorock(uid('Canopy'), (rr, rr, rr * 0.8), (x, y, rr * 0.7), N(c, tod), seed=k)
+        crown.data.materials.clear(); crown.data.materials.append(pmat('Canopy' + c + tod, N(c, tod), N(_mix_hex(c, '#0a2a1a', 0.45), tod), mottle=0.25, mscale=1.5)); crown['ink'] = 1
     for (x, y) in ((-34, -6), (-22, -16), (12, -18), (28, -18), (40, -4), (38, 8)):
         sol_palm(x, y, rnd.uniform(6, 8), tod, lean=rnd.uniform(-18, 18), seed=int(x * y), s=1.1)
-    # camp 0: the Fans' jungle clearing
-    lean_to(-21, 3, tod, rot_z=-12, s=1.5)
+    # the three campsites, the same buildings the camp plates show (survival_teams.py)
+    a_frame(-21, 3, tod, s=1.3, rot_z=72)
     _sol_fire(-16, -1, tod)
-    tiki_face(-25.5, -1.5, 3.0, tod, s=1.0)
-    _sol_banner(-13, 3, '#e8c23a', tod)
-    # camp 1: the Favorites' beach hut by the lagoon
-    stilt_hut(24, -4, tod, rot_z=8, s=1.3)
+    tall_tiki(-25.5, -1.5, 3.0, tod, s=1.0)
+    team_banner(-13, 3, '#e8c23a', 'sun', tod)
+    beach_hut(24, -4, tod, s=1.0)
     _sol_fire(18, -9, tod)
-    tiki_face(29.5, -9, 3.0, tod, s=1.0)
-    _sol_banner(30, -6, '#8a4ab8', tod)
-    # camp 2: the third team's lean-to in the bamboo grove
+    tall_tiki(29.5, -9, 3.2, tod, s=1.0)
+    team_banner(31, -6, '#8a4ab8', 'moon', tod)
     for k in range(26):
         bamboo(18 + rnd.uniform(-8, 8), 16.5 + rnd.uniform(0, 4), rnd.uniform(5, 8), tod, seed=k, s=1.2)
-    lean_to(18, 12, tod, rot_z=10, s=1.3)
-    _sol_fire(22, 9, tod)
-    _sol_banner(13.5, 9.5, '#d84a3a', tod)
+    bamboo_lean_to(18, 11, tod, s=1.0)
+    _sol_fire(22, 8.5, tod)
+    team_banner(13.5, 9.5, '#d84a3a', 'leaf', tod)
     # shared places: the shoreline rocks, the fishing dock, the outhouse confessional
     for k, (x, y, s) in enumerate(((-31, -11, 1.6), (-29, -13, 1.1), (-33, -9, 1.2), (-27, -12.5, 0.8))):
         si_rock('ShoreRock', (s, s * 0.8, s * 0.6), (x, y, 0.3), tod, seed=30 + k)
@@ -538,7 +555,7 @@ def si_map(tod):
                      ('water-source', (-4.5, 15.5, 1.0)), ('jungle-trail', (2, 6, 1.0)), ('fishing-area', (35, -18, 0.8)), ('confessional', (8, -4, 3.2))):
         mark('zone', loc, id=zid)
     paint_sun(azimuth=-35, elevation=55 if day else 35, energy=3.6 if day else 1.6)
-    tv_camera((0.0, -70.0, 36.0), (0.0, 8.0, 9.0), lens=30)
+    tv_camera((0.0, -70.0, 34.0), (0.0, 8.0, 13.5), lens=30)
 
 
 SCENES['survival-island'] = {

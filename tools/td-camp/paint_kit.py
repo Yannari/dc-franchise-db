@@ -247,14 +247,16 @@ def swirl_sun(x, y, z, s, tod='day'):
         sh.rotation_euler = (0, math.radians(rot), 0)
 
 
-def paint_sky(top, low, horizon_z=0.0):
-    """A plain two-colour sky gradient for the camera; flat light for everything else."""
+def paint_sky(top, low, horizon_z=0.0, span=0.3):
+    """A plain two-colour sky gradient for the camera; flat light for everything else. `span`: how high
+    up the sky (0..1 of straight up) the low colour has turned to the top one; a map shot looking down
+    sees only the bottom of the sky, so it wants a short span."""
     w = bpy.context.scene.world or bpy.data.worlds.new('World')
     bpy.context.scene.world = w; w.use_nodes = True
     nt = w.node_tree; nt.nodes.clear(); L = nt.links
     out = nt.nodes.new('ShaderNodeOutputWorld')
     tc = nt.nodes.new('ShaderNodeTexCoord'); sep = nt.nodes.new('ShaderNodeSeparateXYZ')
-    grad = _ramp(nt, [(0.0, low), (0.3, top), (1.0, top)])
+    grad = _ramp(nt, [(0.0, low), (span, top), (1.0, top)])
     bg = nt.nodes.new('ShaderNodeBackground')
     L.new(tc.outputs['Generated'], sep.inputs[0]); L.new(sep.outputs['Z'], grad.inputs['Fac'])
     L.new(grad.outputs['Color'], bg.inputs['Color'])

@@ -728,7 +728,7 @@ def cv_map(tod):
     tent); the photo booth is the confessional. A camp's places are 'campsite@<slot>' and
     'shelter@<slot>': the viewer gives each team its own slot."""
     paint_mode(); P = CV[tod]; day = tod == 'day'; rnd = random.Random(31)
-    cv_sky(tod, far_y=120)
+    dusk_sky(tod, far_y=120, span=0.1)
     ground_plane(P['ground'], P['ground_sh'], size=(400, 300), loc=(0, 80, 0), mottle=0.35)
     # the lake on the right, its rocky near shore, the trial deck on the far shore
     _flat_poly('LakeRim', _blob(24, -4, 20, 11.5, seed=6, wob=0.1), 0.02, '#9a9070', tod, mottle=0.3)
@@ -759,10 +759,28 @@ def cv_map(tod):
         circus_tent(tx, ty, tod, r=r, h=1.8, roof=2.2, a=a)
     # the rides: the clown ferris wheel, the looping coaster, the drop tower
     ferris(28, 38, 7.5, tod)
-    card(uid('FerrisClown'), _blob_pts(2.2, 2.2, 24, 0, 0), 37.9, pmat('FClown' + tod, N('#e8b03a', tod), unlit=True, mottle=0), x=28, z=7.5 * 1.15)
-    card(uid('FerrisFace'), _blob_pts(1.4, 1.5, 20, 0, 0), 37.85, pmat('FFace' + tod, N('#f2ece0', tod), unlit=True, mottle=0), x=28, z=7.5 * 1.15)
-    card(uid('FerrisNose'), _blob_pts(0.35, 0.35, 12, 0, 0), 37.8, pmat('FNose' + tod, N('#c8303a', tod), unlit=True, mottle=0), x=28, z=7.5 * 1.15)
+    # the hub: a grinning clown face on a burst of yellow rays (Stawaki_Carnival_-_Roller_Coaster)
+    cz = 7.5 * 1.15
+    rays = []
+    for k2 in range(32):
+        rr = 3.4 if k2 % 2 == 0 else 2.2; aa = k2 / 32 * 2 * math.pi
+        rays.append((math.cos(aa) * rr, math.sin(aa) * rr))
+    card(uid('FerrisRays'), rays, 37.9, pmat('FRays' + tod, N('#e8b03a', tod), unlit=True, mottle=0), x=28, z=cz)
+    card(uid('FerrisRing'), _blob_pts(2.1, 2.1, 24, 0, 0), 37.88, pmat('FRing' + tod, N('#2a3a6a', tod), unlit=True, mottle=0), x=28, z=cz)
+    card(uid('FerrisFace'), _blob_pts(1.8, 1.8, 24, 0, 0), 37.86, pmat('FFace' + tod, N('#f2d27a', tod), unlit=True, mottle=0), x=28, z=cz)
+    card(uid('FerrisClownFace'), _blob_pts(1.0, 1.3, 20, 0, 0), 37.84, pmat('FClownW' + tod, N('#f2ece0', tod), unlit=True, mottle=0), x=28, z=cz)
+    for sd in (-1, 1):
+        card(uid('FerrisHair'), _blob_pts(0.6, 0.7, 14, 0.2, sd + 2), 37.85, pmat('FHair' + tod, N('#3a6ab8', tod), unlit=True, mottle=0), x=28 + sd * 1.1, z=cz + 0.4)
+    card(uid('FerrisNose'), _blob_pts(0.32, 0.32, 12, 0, 0), 37.8, pmat('FNose' + tod, N('#c8303a', tod), unlit=True, mottle=0), x=28, z=cz - 0.1)
+    card(uid('FerrisSmile'), [(-0.6, 0), (0.6, 0), (0.4, -0.45), (-0.4, -0.45)], 37.81, pmat('FSmile' + tod, N('#a82a2a', tod), unlit=True, mottle=0), x=28, z=cz - 0.45)
     coaster(-24, 6, 42, tod, seed=3)
+    # the coaster's loop (Further_view: the big loop beside the drop tower)
+    lm = pmat('Coaster' + tod, N('#d8cfc4', tod), unlit=True, mottle=0)
+    for k2 in range(36):
+        a0 = k2 / 36 * 2 * math.pi; a1 = (k2 + 1) / 36 * 2 * math.pi
+        card(uid('Loop'), [(math.cos(a0) * 4.2, math.sin(a0) * 4.2), (math.cos(a1) * 4.2, math.sin(a1) * 4.2), (math.cos(a1) * 3.85, math.sin(a1) * 3.85), (math.cos(a0) * 3.85, math.sin(a0) * 3.85)], 41.9, lm, x=-8, z=6.0)
+    for sd in (-1, 1):
+        card(uid('LoopLeg'), [(-0.1, 0), (0.1, 0), (0.1, 6.0), (-0.1, 6.0)], 41.95, lm, x=-8 + sd * 2.6).rotation_euler = (0, math.radians(sd * 18), 0)
     drop_tower(-3, 36, 15, tod)
     # the attractions an episode can open: the mansion, the corn maze
     haunted_house(-20, 24, tod)
@@ -770,28 +788,39 @@ def cv_map(tod):
     # the photo booth by the gate: the confessional
     striped('PhotoBooth', 0.9, 2.4, (-1.5, 11.5, 1.2), '#7a5aa8', '#d8c8e8', tod, n=5)
     striped('PhotoRoof', 1.05, 1.0, (-1.5, 11.5, 2.9), '#7a5aa8', '#d8c8e8', tod, n=5, r2=0.04)
+    # worn paths from each camp to the gate, and from the gate down to the lake
+    for (pts, w) in ((((-24, -4), (-14, 3), (-4, 9), (2, 13)), 1.3), (((-7, -9), (-3, 2), (2, 13)), 1.3), (((-28, 9), (-16, 11), (-6, 12.5), (2, 13)), 1.1), (((2, 13), (9, 6), (14, 0)), 1.2)):
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            L = math.hypot(x1 - x0, y1 - y0); ang = math.atan2(y1 - y0, x1 - x0)
+            seg = [(x0 + math.cos(ang + sd * math.pi / 2) * w, y0 + math.sin(ang + sd * math.pi / 2) * w) for sd in (1, -1)]
+            seg += [(x1 + math.cos(ang - math.pi / 2) * w, y1 + math.sin(ang - math.pi / 2) * w), (x1 + math.cos(ang + math.pi / 2) * w, y1 + math.sin(ang + math.pi / 2) * w)]
+            _flat_poly('Path', seg, 0.025, CV['day']['patch'], tod, mottle=0.3)
+            _flat_poly('PathJoint', _blob(x1, y1, w, w, seed=int(x1 * 7), wob=0.05), 0.026, CV['day']['patch'], tod, mottle=0.3)
+    for k, (x, y) in enumerate(((-17, 5), (6, 3), (-2, -2), (12, 13))):
+        pbox('JunkCrate', (1.0, 1.0, 0.8), (x, y, 0.4), '#8a6a4a', tod, rot=(0, 0, k * 23))
+        pbox('JunkPlank', (2.0, 0.3, 0.08), (x + 1.0, y - 0.8, 0.05), '#6a3a2a', tod, rot=(0, 0, k * 40))
     # the woods: pines behind the carnival and along the left, around the camps
     pine_wall(tod, 50, -90, 90, seed=8, h=(14, 20), gap=(2.6, 4.4), s=1.6)
     for (x, y) in ((-44, 20), (-40, 6), (-46, -6), (-38, 18), (-36, -12), (-16, 6), (40, 20), (44, -6), (46, 10)):
-        dc_pine(x + rnd.uniform(-1, 1), y, rnd.uniform(10, 14), tod, seed=int(x * 3 + y), s=1.4)
+        mossy_pine(x + rnd.uniform(-1, 1), y, rnd.uniform(10, 14), tod, seed=int(x * 3 + y), s=1.4)
     for (x, y, c) in ((-30, 2, '#c88a2a'), (-14, -6, '#3a7a5a'), (-2, -14, '#c88a2a'), (4, 2, '#3a7a5a')):
         cv_bush(x, y, tod, s=1.4, col=c)
     # camp 0: the Red team's clown tent
     _flat_poly('CampClear0', _blob(-24, -4, 6.5, 4.5, seed=1, wob=0.12), 0.03, CV['day']['patch'], tod, mottle=0.3)
-    clown_tent(-26, -2, tod, s=0.95)
+    clown_face_tent(-26, -1, tod, s=0.8)
     fire_pit(-20.5, -6.5, tod, r=0.55, lit=True)
-    _sol_banner(-21, -1, '#c8303a', tod)
+    team_banner(-20.5, -1, '#c8303a', 'sun', tod)
     # camp 1: the Blue team's junk tent
     _flat_poly('CampClear1', _blob(-7, -10, 6.5, 4.5, seed=2, wob=0.12), 0.03, CV['day']['patch'], tod, mottle=0.3)
-    junk_tent(-9, -8, tod, s=0.95)
+    scallop_tent(-9, -8, tod, s=0.8)
     ticket_booth(-4.5, -7, tod, rot_z=-10, s=0.9)
     fire_pit(-4.0, -12.0, tod, r=0.55, lit=True)
-    _sol_banner(-12.5, -10.5, '#3a5aa8', tod)
+    team_banner(-13, -10.5, '#3a5aa8', 'moon', tod)
     # camp 2: a third team's tent in the pines
     _flat_poly('CampClear2', _blob(-30, 11, 6.0, 4.2, seed=3, wob=0.12), 0.03, CV['day']['patch'], tod, mottle=0.3)
     circus_tent(-31, 12, tod, r=2.6, h=2.0, roof=2.6, a='#4a9a5a', b='#efe6d6', flag='#4a9a5a')
     fire_pit(-26.5, 8.5, tod, r=0.5, lit=True)
-    _sol_banner(-34.5, 9, '#4a9a5a', tod)
+    team_banner(-34.5, 9, '#4a9a5a', 'leaf', tod)
     for zid, loc in (('shelter@0', (-26, -2, 6.0)), ('campsite@0', (-20.5, -6.5, 1.2)), ('shelter@1', (-9, -8, 6.0)), ('campsite@1', (-4.0, -12.0, 1.2)),
                      ('shelter@2', (-31, 12, 5.0)), ('campsite@2', (-26.5, 8.5, 1.2)), ('forest-edge', (-38, 0, 2.0)), ('rocky-beach', (10, -9, 1.0)),
                      ('lake-shore', (26, 8, 0.6)), ('carnival-entrance', (2, 14, 7.0)), ('midway', (12, 21, 3.0)), ('haunted-mansion', (-20, 24, 6.0)),

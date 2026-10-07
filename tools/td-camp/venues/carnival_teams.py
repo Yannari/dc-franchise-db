@@ -20,8 +20,8 @@
 DUSK = {'day': ('#e8925a', '#f6c87a'), 'night': ('#1c2452', '#33407a')}
 
 
-def dusk_sky(tod, far_y=90, hills=('#8a6aa8', '#6a5a90')):
-    paint_sky(*DUSK[tod])
+def dusk_sky(tod, far_y=90, hills=('#8a6aa8', '#6a5a90'), span=0.3):
+    paint_sky(*DUSK[tod], span=span)
     for k, col in enumerate(hills):
         ridge_card(far_y + 30 - k * 20, -160, 160, 2 + k * 2, 18 - k * 6, N(col, tod), seed=21 + k, humps=4 + k * 2, teeth=60 + k * 20,
                    tooth_col=N(_mix_hex(col, '#1a1a3a', 0.12), tod))

@@ -3035,6 +3035,34 @@ export function chooseAired(beats, cap, seen = new Set()) {
  * Returns screens in the order the week happened; each carries `anchor`, the
  * part of the week a legacy twist screen belongs after.
  */
+// ── nothing claims more time than the game has had ──
+// The user, 2026-10-07: "it's the first week… they're inventing things, that's forbidden; always
+// base yourself on the truth". Lines written for the middle of a season ("for weeks", "all
+// season", "six weeks", "a fortnight") aired in week one. Every line the viewer shows is held to
+// the week it airs in: a duration the game has not had yet is said as what it has had.
+const TW = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen'];
+export function truthTime(text, week) {
+  const w = Math.max(1, Number(week) || 1);
+  // the replacement keeps the capital of what it replaces
+  const cap = (m, r) => (/^[A-Z]/.test(m) ? r.charAt(0).toUpperCase() + r.slice(1) : r);
+  let t = String(text);
+  if (w <= 2) {
+    t = t.replace(/\b(?:for|in) (?:several |a few |many )?weeks\b/gi, m => cap(m, 'since day one'))
+      .replace(/\ball season(?: long)?\b/gi, m => cap(m, 'since day one'))
+      .replace(/\b(?:from day one|since the first week)\b/gi, m => cap(m, 'since day one'));
+  }
+  if (w < 2) t = t.replace(/\ba fortnight\b/gi, m => cap(m, 'a week')).replace(/\bevery (single )?week\b/gi, (m, x) => cap(m, `every ${x || ''}day`));
+  // a stated number of weeks larger than the game has had, unless it is in the future ("in two weeks")
+  t = t.replace(/(\b(?:in|next|another|for the next)\s+)?\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)( whole)? weeks\b/gi, (m, fut, n) => {
+    if (fut) return m;
+    const k = TW.indexOf(n.toLowerCase());
+    if (k <= w) return m;
+    return cap(m, w === 1 ? 'a week' : `${TW[w]} weeks`);
+  });
+  t = t.replace(/\bsince week (\w+)/gi, (m, n) => { const i = TW.indexOf(String(n).toLowerCase()); const k = i > 0 ? i : Number(n); return k && k >= w ? cap(m, 'since day one') : m; });
+  return t;
+}
+
 export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = null, houseLife = houseLifeMode() } = {}) {
   const house = (row.houseAtStart || []).slice();
   const ctx = { host, week: row.num || 1, hoh: row.hoh, house, nominees: (row.initialNominees || []).slice(), vetoHolder: row.vetoWinner,
@@ -3205,7 +3233,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   out.leadingSlots = leading;
   for (const s of out) { s.wall = s.hidden?.size ? wall.filter(n => !s.hidden.has(n)) : wall; s.priorOut = priorEvicted.slice(); s.week = ctx.week; delete s.hidden; }
   if (out.length && !out.some(s => s.steps.some(st => st.hoh)) && ctx.hoh) out[0].steps[0] = { ...out[0].steps[0], hoh: ctx.hoh };
-  for (const s of out) for (const st of s.steps || []) if (typeof st.t === 'string') st.t = countWords(st.t);
+  for (const s of out) for (const st of s.steps || []) if (typeof st.t === 'string') st.t = truthTime(countWords(st.t), ctx.week);
   // a living room with a third nominee seated is the three-chair room (the user, 2026-10-06:
   // "3 chairs when Block Buster is on, 2 when it's not"), not a third person standing between two
   for (const s of out) {

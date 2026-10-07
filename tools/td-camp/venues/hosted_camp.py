@@ -61,6 +61,8 @@ def pc_cabins(tod):
     brush_patch('FgShade', 14, (0, -11.5), P['fg'], sx=1.6, sy=0.6, seed=5, mottle=0.2, z=0.016)
     tdi_backdrop(tod, far_y=60)
     pine_rows(tod, 20, 48, -70, 70, seed=4)
+    for (sx, sy) in ((-3.5, 2.0), (-1.2, 1.2), (1.2, 1.4), (3.5, 2.2), (-2.0, 4.5), (0.4, 4.0), (2.8, 5.0), (-5.0, 5.5), (5.6, 6.5), (0.0, 7.0)):
+        stand(sx, sy)
     tdi_cabin((-6.0, 10.0, 0), tod, rot_z=-14, stairs_side=1)
     tdi_cabin((6.4, 13.0, 0), tod, rot_z=16, w=6.4, stairs_side=-1)
     crown_tree(-10.5, 13, 6.5, P['crown'], seed=2, s=2.2)
@@ -120,6 +122,8 @@ def pc_grounds(tod):
     tdi_cabin((-2.5, 12.0, 0), tod, rot_z=-12, w=10.0, d=6.0, h=3.0, stairs_side=-1)
     pbox('Chimney', (1.0, 1.0, 6.2), (2.6, 13.6, 3.1), '#8a8a8a', tod, mottle=0.4, mscale=1.6)
     tdi_outhouse(7.6, 6.5, tod, rot_z=-18)
+    for (sx, sy) in ((-3.5, 2.0), (-1.2, 1.4), (1.2, 1.6), (3.5, 2.4), (-2.4, 5.0), (0.6, 4.6), (3.0, 6.0), (-5.5, 4.0), (5.2, 3.6)):
+        stand(sx, sy)
     crown_tree(10.2, 10, 5.5, P['birch'], seed=21, s=1.8, birch=True)
     crown_tree(-11.0, 15, 6.0, P['crown'], seed=22, s=2.2)
     umbrella_pine(12.5, 16, 12, col='#3f5a46', trunk='#3a2018', seed=23, s=1.8)
@@ -160,6 +164,8 @@ def pc_mess(tod):
             pbox('TLeg', (1.0, 0.12, 0.72), (x, yy, 0.38), '#6a3e22')
         for bx in (x - 0.95, x + 0.95):
             pbox('Bench', (0.4, 5.8, 0.1), (bx, 6.0, 0.46), '#6a3e22')
+            for sy in (3.6, 5.0, 6.4, 7.8):
+                seat(bx, sy, 0.52)
     pbox('Door', (0.08, 1.3, 2.4), (-W / 2 + 0.12, 3.0, 1.2), '#e8c040', mottle=0.2)
     for yy in (6.0, 8.5):
         pbox('Window', (0.08, 1.8, 1.4), (-W / 2 + 0.12, yy, 2.4), '#d8d870', mottle=0, unlit=True)
@@ -173,6 +179,8 @@ def pc_mess(tod):
         pcyl('LampCord', 0.015, 1.2, (x, y, H - 0.7), '#2a2a2a', ink=False)
         pcyl('LampShade', 0.42, 0.3, (x, y, H - 1.4), '#5a6a5a', r2=0.12, verts=16)
         card(uid('LampGlow'), _blob_pts(0.36, 0.08, 16, 0, 0), y - 0.01, pmat('LampGlow', '#fff2c0', unlit=True, mottle=0), x=x, z=H - 1.58)
+    for sy in (1.5, 3.0, 4.5, 7.0):
+        stand(0, sy)
     room_light(azimuth=-60, elevation=50, energy=3.5)
     paint_sky('#c8b890', '#c8b890')
     tv_camera((0.0, -1.0, 2.0), (0, D, 1.8), lens=22)
@@ -218,10 +226,16 @@ def pc_dock(tod, shame=False):
         pcyl('Piling', 0.18, 1.6, (xx, 25.4, 0.6), '#6a4a2e', tod, verts=10)
     pbox('Broken', (1.0, 0.4, 0.08), (-4.5, 22.0, 0.52), '#8a6440', tod, rot=(0, 14, 20))
     wood_sign(7.0, 3.0, 1.9, 3.0, 0.8, 'WAWANAKWA', tod, col='#c8b080', txt='#b83a2a', post_h=1.6)
-    for x, y, h in ((-14, 30, 12), (-11, 28, 9), (14, 32, 13)):
-        pine_card(x, y, h, h * 0.36, N('#2f4072', tod), seed=x, teeth=4)
-    twisted_pine(-9.5, 6, 11, P['dark'], seed=7, s=2.0)
-    umbrella_pine(11.0, 10, 11, col=N('#3f5a46', tod), trunk=N('#3a2018', tod), seed=8, s=1.6)
+    for sd in (-1, 1):                               # the shore bends round both sides of the dock
+        brush_patch('Bank', 7.0, (sd * 12.5, 1.0), P['grass'], sx=1.0, sy=1.1, seed=11 + sd, mottle=0.3, z=0.02)
+        brush_patch('BankSand', 7.6, (sd * 12.0, 0.4), P['sand'], sx=1.0, sy=1.1, seed=13 + sd, mottle=0.2, z=0.01)
+        rock_shelf(sd * 6.8, 2.5, 1.6, 1.0, 0.35, P['rock'], seed=20 + sd)
+    twisted_pine(-10.5, 3.0, 11, P['dark'], seed=7, s=2.0)
+    umbrella_pine(11.0, 4.5, 11, col=N('#3f5a46', tod), trunk=N('#3a2018', tod), seed=8, s=1.6)
+    crown_tree(-13.5, 6.5, 5.0, P['crown'], seed=9, s=1.8)
+    for yy in (0.5, 2.5, 4.5, 7.0, 10.0):
+        for xx in (-0.9, 0.9):
+            stand(xx, yy, 0.5)
     if tod == 'night' or shame:
         for yy in (4, 10, 16, 22):
             for xx in (-2.2, 2.2):
@@ -250,9 +264,12 @@ def pc_campfire(tod, ceremony=False):
         pbox('Ledge', (40, 1.4, 1.2), (0, yy, -0.6 - k * 0.9), col, tod, mottle=0.3, mscale=0.8)
     rock_shelf(-11.5, 8, 6, 5, 4.5, N('#8a5a5a', tod), seed=31, layers=4)
     rock_shelf(-13.5, 14, 6, 5, 7.0, N('#7a4e56', tod), seed=32, layers=5)
-    stump_row(-3.0, 4.8, 4, 3, 1.25, 1.3, tod, seed=5)
+    stump_row(-4.2, 4.2, 4, 3, 2.1, 1.6, tod, seed=5)       # room between stumps for a camper on each
     fire_pit(0.0, 9.6, tod, r=0.65, lit=(tod == 'night'))
     oil_drum(3.6, 10.6, tod)
+    mark('host', (3.6, 10.6, 1.12))
+    for (sx, sy) in ((-5.5, 4.0), (5.0, 4.0), (-5.0, 8.5), (5.8, 8.0), (2.0, 11.8), (-2.0, 11.8)):
+        stand(sx, sy)
     if ceremony:
         pcyl('Plate', 0.36, 0.04, (3.6, 10.6, 1.12), '#ece4d6', tod, verts=24)
         for i in range(7):
@@ -270,7 +287,7 @@ def pc_campfire(tod, ceremony=False):
         for x, y in ((-6.5, 3.5), (6.5, 3.5), (-6.0, 12.0)):
             tiki(x, y, tod, 2.2)
     paint_sun(azimuth=-35, elevation=40 if tod == 'day' else 28, energy=4.0 if tod == 'day' else 1.6)
-    tv_camera((0.0, -5.5, 4.2), (0.3, 12, 0.8), lens=26)
+    tv_camera((0.0, -3.0, 3.6), (0.3, 12, -0.4), lens=26)
 
 
 def pc_ceremony(tod):
@@ -284,6 +301,8 @@ def pc_trail(tod):
     ground_plane(P['grass'], P['grass_sh'])
     brush_patch('Path', 3.0, (0.3, 4.0), P['path'], sx=0.9, sy=2.4, seed=41)
     brush_patch('Path', 1.6, (1.5, 13.0), P['path'], sx=0.8, sy=1.8, seed=42)
+    for (sx, sy) in ((-1.2, 1.5), (1.2, 1.8), (-0.6, 4.0), (1.0, 4.5), (0.2, 7.0), (1.6, 11.0)):
+        stand(sx, sy)
     brush_patch('FgShade', 14, (0, -10.5), P['fg'], sx=1.6, sy=0.6, seed=43, mottle=0.2, z=0.016)
     rnd = random.Random(44)
     for r in range(3):
@@ -318,6 +337,7 @@ def pc_confessional(tod):
     painted_room(W, D, H, 'day', wall='#8a7a4a', floor='#6a5a3a', ceil='#4a4028', plank=0.36, wall_seam='#5a4e30', floor_seam='#4a3e28')
     pbox('Bench', (W - 0.2, 0.9, 0.75), (0, D - 0.5, 0.38), '#7a6a42')
     pbox('BenchTop', (W - 0.1, 1.0, 0.08), (0, D - 0.5, 0.78), '#9a8a5a')
+    seat(0, D - 0.5, 0.82)
     card(uid('Lid'), _blob_pts(0.48, 0.5, 36, 0, 0), D - 0.12, pmat('Lid', '#b8945a', unlit=True, mottle=0.4, mscale=3), x=0, z=1.3)
     card(uid('LidRing'), _blob_pts(0.52, 0.54, 36, 0, 0), D - 0.11, pmat('LidRing', '#7a5a32', unlit=True, mottle=0), x=0, z=1.3)
     pbox('Shelf', (W - 0.3, 0.3, 0.06), (0, D - 0.25, 1.95), '#9a8a5a')
@@ -339,3 +359,4 @@ def pc_confessional(tod):
 SCENES['hosted-camp'] = {'communal-grounds': pc_grounds, 'cabins': pc_cabins, 'mess-hall': pc_mess, 'dock': pc_dock,
                          'campfire': pc_campfire, 'forest-trail': pc_trail, 'confessional': pc_confessional,
                          'ceremony': pc_ceremony, 'exit': pc_shame}
+OUTDOOR['hosted-camp'] = {'communal-grounds', 'cabins', 'dock', 'campfire', 'forest-trail'}

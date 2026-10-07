@@ -13,6 +13,26 @@
 
 PAINT = {'on': False}
 
+# ── The live layer. What moves in a scene (fire, clouds, smoke, bulbs, water) is not baked into
+# the plate: each is recorded as a MARK, projected to the frame and written beside the image as
+# <spot>-<tod>.json, and the viewer animates a painted sprite there. Marks also say where people
+# can be: 'seat' (a stump, a bench, a log) and 'stand' (open floor in shot).
+MARKS = []
+LIVE = {'on': True}        # False only while rendering the sprites themselves
+NEED_SPRITES = set()
+
+
+def mark(kind, loc, parent=None, **kw):
+    MARKS.append(dict(kind=kind, loc=tuple(loc), parent=parent, **kw))
+
+
+def stand(x, y, z=0.0, **kw):
+    mark('stand', (x, y, z), **kw)
+
+
+def seat(x, y, z, **kw):
+    mark('seat', (x, y, z), **kw)
+
 def paint_mode():
     PAINT['on'] = True
 
@@ -199,13 +219,18 @@ def twisted_pine(x, y, h, col='#26324a', seed=0, s=1.0, flip=False):
 
 
 def curly_cloud(x, y, z, s, col='#eef3fb', rim='#b9c6e0'):
-    """A cartoon cloud: a few puffs on a flat base, a rim of a darker blue behind, a curl at one end."""
+    """A cartoon cloud: a few puffs on a flat base, a rim of a darker blue behind, a curl at one end.
+    Live: the viewer drifts the cloud sprite across the sky from the mark."""
+    if LIVE['on']:
+        mark('cloud', (x, y, z), size=s, sprite='cloud-curly-%s-%s' % (col[1:], rim[1:]))
+        NEED_SPRITES.add(('cloud', 'curly', col, rim))
+        return
     base = pmat('Cloud' + col, col, unlit=True, mottle=0); rm = pmat('CloudRim' + rim, rim, unlit=True, mottle=0)
     puffs = ((-1.2, 0, 0.7), (-0.3, 0.35, 0.95), (0.7, 0.15, 0.8), (1.5, -0.05, 0.55))
     for (px, pz, r) in puffs:
         card(uid('CloudPuff'), _blob_pts(r * s, r * s * 0.8, 24, 0.0, 0), y, base, x=x + px * s, z=z + pz * s)
         card(uid('CloudPuff'), _blob_pts(r * s * 1.1, r * s * 0.9, 24, 0.0, 0), y + 0.05, rm, x=x + px * s, z=z + pz * s - 0.06 * s)
-    card(uid('CloudBase'), [(-2.0 * s, -0.4 * s), (2.1 * s, -0.4 * s), (2.1 * s, 0.1 * s), (-2.0 * s, 0.1 * s)], y - 0.01, base, x=x, z=z)
+    card(uid('CloudBase'), [(-1.55 * s, -0.42 * s), (1.75 * s, -0.42 * s), (1.75 * s, 0.1 * s), (-1.55 * s, 0.1 * s)], y - 0.01, base, x=x, z=z)
 
 
 def swirl_sun(x, y, z, s, tod='day'):
@@ -356,6 +381,7 @@ def tdi_cabin(loc, tod, rot_z=0, w=7.0, d=4.6, h=2.6, wall='#9a9a84', roof='#a85
     add(box(uid('ScreenDoor'), (0.85, 0.06, 1.9), (1.2, -d / 2 - 0.035, lift + 0.95), scr, bevel=0))
     add(box(uid('Vent'), (0.4, 0.06, 0.3), (-w / 2 - 0.03, 0, lift + h + 0.75), T, bevel=0, rot=(0, 0, 90)))
     add(cyl(uid('Stovepipe'), 0.13, 1.4, (-w * 0.2, d * 0.15, lift + h + 1.6), pmat('Pipe' + tod, N('#7a7a80'), N('#55556a'), mottle=0.1), verts=12, bevel=0))
+    mark('smoke', (-w * 0.2, d * 0.15, lift + h + 2.5), parent=g)
     add(cyl(uid('PipeCap'), 0.26, 0.15, (-w * 0.2, d * 0.15, lift + h + 2.35), pmat('Pipe' + tod, N('#7a7a80'), N('#55556a'), mottle=0.1), verts=12, r2=0.05, bevel=0))
     return g
 
@@ -397,6 +423,7 @@ def seams(name, length, axis, start, count, step, loc_fn, thick, col):
 
 
 def water_plane(tod, y0=-20, y1=240, col='#3fb0b0', far='#5ac0bc', z=-0.12, streaks=40, seed=1, x0=-160, x1=160):
+    mark('water', (0, max(y0, 0.5), z))
     ob = box('Water', (x1 - x0, y1 - y0, 0.1), ((x0 + x1) / 2, (y0 + y1) / 2, z - 0.05), pmat('WaterP' + col, N(col, tod), unlit=True, mottle=0.18, mscale=0.08), bevel=0)
     rnd = random.Random(seed)
     lm = pmat('Streak' + far + tod, N(far, tod), unlit=True, mottle=0)
@@ -422,10 +449,21 @@ def plank_floor(name, size, loc, col, tod, axis='x', step=0.32, seam='#4a3424', 
 
 
 def flame(x, y, z, s=1.0, name='Flame'):
-    """A painted flame: three tongues, orange, yellow, a pale heart. Cards that face the camera."""
-    for col, w, h, dz in (('#ff7a1f', 0.55, 1.2, 0), ('#ffc23a', 0.36, 0.85, 0.02), ('#fff1a8', 0.18, 0.45, 0.04)):
-        pts = [(-w * s, 0), (-w * 0.55 * s, h * 0.45 * s), (-w * 0.2 * s, h * 0.62 * s), (0, h * s), (w * 0.25 * s, h * 0.7 * s), (w * 0.6 * s, h * 0.5 * s), (w * s, 0)]
-        card(uid(name), pts, y - dz, pmat('Flame' + col, col, unlit=True, mottle=0), x=x, z=z)
+    """A painted flame: three tongues, orange, yellow, a pale heart. Cards that face the camera.
+    Live: the plate keeps a bed of embers and the viewer animates the flame sprite on the mark."""
+    if LIVE['on']:
+        mark('fire', (x, y, z), size=s)
+        NEED_SPRITES.add(('flame',))
+        card(uid('Embers'), _blob_pts(0.5 * s, 0.12 * s, 16, 0.2, 1), y + 0.02, pmat('Embers', '#c8521f', unlit=True, mottle=0.3), x=x, z=z + 0.05 * s)
+        return
+    # tongues of flame: three orange, two yellow, a pale heart, each a leaning point
+    for col, tongues, dz in (('#ff7a1f', ((-0.28, 0.85, -0.18), (0.0, 1.2, 0.02), (0.3, 0.9, 0.16)), 0),
+                             ('#ffc23a', ((-0.14, 0.62, -0.08), (0.12, 0.78, 0.08)), 0.02),
+                             ('#fff1a8', ((0.0, 0.42, 0.0),), 0.04)):
+        for (cx, h, lean) in tongues:
+            w = 0.34 if col == '#ff7a1f' else (0.24 if col == '#ffc23a' else 0.14)
+            pts = [(cx - w, 0), (cx - w * 0.55, h * 0.4), (cx + lean * 0.5 - w * 0.15, h * 0.72), (cx + lean, h), (cx + lean * 0.4 + w * 0.2, h * 0.65), (cx + w * 0.6, h * 0.35), (cx + w, 0)]
+            card(uid(name), [(px * s, pz * s) for px, pz in pts], y - dz, pmat('Flame' + col, col, unlit=True, mottle=0), x=x, z=z)
 
 
 def tiki(x, y, tod, h=2.2, lit=None):
@@ -475,6 +513,7 @@ def stump_row(x0, y0, cols, rows, dx, dy, tod, r=0.3, h=0.42, jitter=0.15, seed=
             hh = h * rnd.uniform(0.85, 1.15)
             pcyl('Stump', r, hh, (x, y, hh / 2), '#7a4a32', tod, verts=10)
             pcyl('StumpTop', r * 0.96, 0.02, (x, y, hh + 0.01), '#c89a62', tod, verts=10, ink=False)
+            seat(x, y, hh + 0.02)
 
 
 def painted_room(W, D, H, tod, wall='#8a6a42', floor='#b08a4a', ceil='#5a4028', plank=0.32, wall_seam='#5a4228', floor_seam='#6a5028'):

@@ -18,6 +18,10 @@ SOL = {
 
 
 def puffy_cloud(x, y, z, s, col, rim):
+    if LIVE['on']:
+        mark('cloud', (x, y, z), size=s, sprite='cloud-puffy-%s-%s' % (col[1:], rim[1:]))
+        NEED_SPRITES.add(('cloud', 'puffy', col, rim))
+        return
     base = pmat('SCloud' + col, col, unlit=True, mottle=0); rm = pmat('SCloudRim' + rim, rim, unlit=True, mottle=0)
     for (px, pz, r) in ((-1.3, 0.1, 0.7), (-0.4, 0.5, 1.0), (0.6, 0.35, 0.85), (1.4, 0.05, 0.6)):
         card(uid('CloudPuff'), _blob_pts(r * s, r * s * 0.85, 24, 0, 0), y, base, x=x + px * s, z=z + pz * s)

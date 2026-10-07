@@ -54,6 +54,7 @@ def string_lights(p0, p1, n=14, sag=0.6, tod='night', colors=('#ffd27a', '#ff8a6
         x = p0[0] + (p1[0] - p0[0]) * t; y = p0[1] + (p1[1] - p0[1]) * t
         zz = p0[2] + (p1[2] - p0[2]) * t - sag * 4 * t * (1 - t)
         col = colors[i % len(colors)]
+        mark('bulb', (x, y, zz), col=col)
         sphere(uid('Bulb'), 0.07, (x, y, zz), mat('Bulb' + col, col, emit=col if tod == 'night' else None, strength=4.0 if tod == 'night' else 0))
 
 def post(loc, h=3.0, tod='day', r=0.08, color='#7a5232'):
@@ -114,7 +115,73 @@ def render_spot(venue, spot, tod, preview=False, w=1920, h=1080):
     path = os.path.join(d, f'{spot}-{tod}{"-preview" if preview else ""}.webp')
     sc.render.filepath = path
     bpy.ops.render.render(write_still=True)
+    write_marks(path, sc)
     return path
+
+
+def write_marks(path, sc):
+    """Project every mark into the frame and write them beside the image: u, v from the top left
+    (0..1), s = how much of the frame's height one metre is at that depth, plus the horizon."""
+    import json
+    from bpy_extras.object_utils import world_to_camera_view
+    cam = sc.camera
+    bpy.context.view_layer.update()
+    def proj(p):
+        co = world_to_camera_view(sc, cam, Vector(p))
+        return co.x, 1 - co.y, co.z
+    fwd = cam.matrix_world.to_quaternion() @ Vector((0, 0, -1))
+    far = cam.location + Vector((fwd.x, fwd.y, 0)).normalized() * 5000
+    hu, hv, _ = proj((far.x, far.y, 0))
+    out = {'horizon': round(hv, 4), 'marks': []}
+    for m in MARKS:
+        p = Vector(m['loc'])
+        if m.get('parent') is not None:
+            p = m['parent'].matrix_world @ p
+        u, v, z = proj(p)
+        if z <= 0 or not (-0.15 <= u <= 1.15 and -0.3 <= v <= 1.2):
+            continue
+        _, v2, _ = proj(p + Vector((0, 0, 1)))
+        rec = {k: v_ for k, v_ in m.items() if k not in ('loc', 'parent')}
+        rec.update(u=round(u, 4), v=round(v, 4), s=round(abs(v - v2), 4))
+        out['marks'].append(rec)
+    with open(os.path.splitext(path)[0] + '.json', 'w', encoding='utf-8') as f:
+        json.dump(out, f)
+
+
+def render_sprites(force=False):
+    """The live layer's sprites, painted like the plates: each built alone at the origin, framed by an
+    orthographic camera, rendered on a transparent background."""
+    d = os.path.join(OUT_TD, 'sprites'); os.makedirs(d, exist_ok=True)
+    LIVE['on'] = False
+    for spec in sorted(NEED_SPRITES):
+        if spec[0] == 'flame':
+            name, build, box_ = 'flame', (lambda: flame(0, 0, 0, 1.0)), (-0.62, 0.0, 0.62, 1.25)
+        else:
+            _, style, col, rim = spec
+            name = 'cloud-%s-%s-%s' % (style, col[1:], rim[1:])
+            build = (lambda st=style, c=col, r=rim: (curly_cloud if st == 'curly' else puffy_cloud)(0, 0, 0, 1.0, c, r))
+            box_ = (-2.3, -0.75, 2.4, 1.4)
+        path = os.path.join(d, name + '.webp')
+        if os.path.exists(path) and not force:
+            continue
+        clear(); _MATS.clear(); _n[0] = 0
+        for cl in list(bpy.data.collections): bpy.data.collections.remove(cl)
+        build()
+        x0, z0, x1, z1 = box_
+        cd = bpy.data.cameras.new('SpriteCam'); cd.type = 'ORTHO'; cd.ortho_scale = max(x1 - x0, z1 - z0)
+        cam = _link(bpy.data.objects.new('SpriteCam', cd)); cam.location = ((x0 + x1) / 2, -10, (z0 + z1) / 2)
+        cam.rotation_euler = (math.radians(90), 0, 0); bpy.context.scene.camera = cam
+        sc = bpy.context.scene
+        sc.render.engine = 'BLENDER_EEVEE'; sc.render.film_transparent = True; sc.render.use_freestyle = False
+        aspect = (x1 - x0) / (z1 - z0)
+        sc.render.resolution_x, sc.render.resolution_y = (512, int(512 / aspect)) if aspect >= 1 else (int(512 * aspect), 512)
+        sc.view_settings.view_transform = 'Standard'
+        sc.render.image_settings.file_format = 'WEBP'; sc.render.image_settings.color_mode = 'RGBA'; sc.render.image_settings.quality = 90
+        sc.render.filepath = path
+        bpy.ops.render.render(write_still=True)
+        sc.render.film_transparent = False; sc.render.image_settings.color_mode = 'RGB'
+        print('SPRITE', path)
+    LIVE['on'] = True
 
 # Spots seen by day and by night. Indoor spots render once; the ceremony and the exit are always at night.
 SCENES = {}
@@ -137,11 +204,12 @@ def run(venue, spot='all', tods='all', preview=False):
             if spot != 'all' and s != spot: continue
             both = ('day', 'night') if s in OUTDOOR.get(v, set()) else (('night',) if s in NIGHT_ONLY else ('day',))
             for tod in both if tods == 'all' else (tods,):
-                clear(); _MATS.clear(); _n[0] = 0; PAINT['on'] = False
+                clear(); _MATS.clear(); _n[0] = 0; PAINT['on'] = False; MARKS.clear()
                 for c in list(bpy.data.collections): bpy.data.collections.remove(c)
                 fn(tod)
                 out.append(render_spot(v, s, tod, preview=preview))
                 print('RENDERED', out[-1])
+    render_sprites()
     return out
 
 if __name__ == '__main__':

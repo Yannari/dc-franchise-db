@@ -61,17 +61,23 @@ export function worldHtml(screen, L) {
   const p = (x, n = 2) => `${(x * 100).toFixed(n)}%`;
   // the 4K render of the same frame, faded in when the camera closes on a conversation
   const hd = HD_VENUES.has(screen.venue) && !L.conf ? `<div class="tdx-plate hd" style="background-image:url('${SETS}/${key}-hd.webp')"></div>` : '';
-  let h = `<div class="tdx-plate" style="background-image:url('${SETS}/${key}.webp')"></div>${hd}<div class="tdx-live">`;
   const of = k => M.m.filter(m => m.kind === k);
+  // a plate built from the show's own frame moves by its motion map (glplate.js): wind, water, heat
+  const gl = of('motion').length ? `<canvas class="tdx-gl" data-src="${SETS}/${key}"${HD_VENUES.has(screen.venue) && !L.conf ? ' data-hd="1"' : ''}></canvas>` : '';
+  // under a living plate, the sky is a layer of its own: clouds and birds pass behind every tree and roof
+  // (the shader leaves the plate see-through only where the frame shows open sky)
+  let h = `<div class="tdx-plate" style="background-image:url('${SETS}/${key}.webp')"></div>${hd}<!--sky-->${gl}<div class="tdx-live">`, sky = '';
+  const skyward = x => { if (gl) sky += x; else h += x; };
+  if (of('lightning').length) h += `<i class="tdx-lightning"></i>`;
   of('cloud').forEach((m, i) => {
     // a cloud lifted out of a traced frame (tools/td-camp/live.py) carries its own width
     const w = m.w != null ? m.w : m.s * m.size * 2.0 * 2.2 * 9 / 16;
-    h += `<div class="tdx-cloud" style="left:${p(m.u)};top:${p(m.v)};width:${p(w)};--d:${60 + i * 17}s;--dx:${3 + i * 1.5}%"><img src="${SETS}/sprites/${m.sprite}.webp" alt=""></div>`;
+    skyward(`<div class="tdx-cloud" style="left:${p(m.u)};top:${p(m.v)};width:${p(w)};--d:${60 + i * 17}s;--dx:${3 + i * 1.5}%"><img src="${SETS}/sprites/${m.sprite}.webp" alt=""></div>`);
   });
   of('fire').forEach((m, i) => {
     const hh = m.hh != null ? m.hh : Math.max(m.s * m.size * 1.25, .012), w = hh * 9 / 16;
     h += `<div class="tdx-glow" style="left:${p(m.u)};top:${p(m.v - (m.hh != null ? m.hh * .35 : m.s * m.size * .4))};width:${p(w * 4.5)}"></div>`;
-    h += `<div class="tdx-flame" style="left:${p(m.u)};top:${p(m.v)};width:${p(w)};height:${p(hh)}"><img src="${SETS}/sprites/flame.webp" alt="" style="animation-delay:-${(i * .37).toFixed(2)}s"><img src="${SETS}/sprites/flame.webp" alt="" style="animation-delay:-${(i * .21).toFixed(2)}s"></div>`;
+    if (!m.painted) h += `<div class="tdx-flame" style="left:${p(m.u)};top:${p(m.v)};width:${p(w)};height:${p(hh)}"><img src="${SETS}/sprites/flame.webp" alt="" style="animation-delay:-${(i * .37).toFixed(2)}s"><img src="${SETS}/sprites/flame.webp" alt="" style="animation-delay:-${(i * .21).toFixed(2)}s"></div>`;
     if (m.hh != null ? m.hh > .08 : m.size > .6) {
       for (let e = 0; e < 7; e++) h += `<i class="tdx-ember" style="left:${p(m.u + (r() - .5) * w * .6)};top:${p(m.v - m.s * .5)};--d:${(1.8 + r() * 1.6).toFixed(2)}s;--dl:${(r() * 2).toFixed(2)}s;--ex:${((r() - .5) * 60).toFixed(0)}px"></i>`;
       for (let q = 0; q < 3; q++) h += `<i class="tdx-puff" style="left:${p(m.u)};top:${p(m.v - m.s * 1.4)};width:${p(w * .7)};--d:${4 + q}s;--dl:${q * 1.3}s;--ex:${20 + q * 10}px"></i>`;
@@ -115,7 +121,7 @@ export function worldHtml(screen, L) {
   }
   if (wx && indoor && wet) h += `<i class="tdx-grey indoor"></i>${wx === 'storm' ? '<i class="tdx-flash soft"></i>' : ''}`;
   if (!indoor && !night && !wet && wx !== 'fog' && wx !== 'overcast') {
-    for (let i = 0; i < 3; i++) h += `<div class="tdx-bird" style="top:${8 + i * 6}%;--d:${16 + i * 7}s;--dl:${i * 6 - 4}s"><svg viewBox="0 0 20 8"><path d="M1 6c3-4 6-4 9 0 3-4 6-4 9 0" stroke="#2a2a3a" stroke-width="1.6" fill="none"/></svg></div>`;
+    for (let i = 0; i < 3; i++) skyward(`<div class="tdx-bird" style="top:${8 + i * 6}%;--d:${16 + i * 7}s;--dl:${i * 6 - 4}s"><svg viewBox="0 0 20 8"><path d="M1 6c3-4 6-4 9 0 3-4 6-4 9 0" stroke="#2a2a3a" stroke-width="1.6" fill="none"/></svg></div>`);
     if (['cabins', 'campfire', 'forest-trail', 'communal-grounds', 'forest-edge', 'campsite', 'corn-maze'].includes(spot))
       for (let i = 0; i < 6; i++) h += `<i class="tdx-leaf" style="left:${p(.1 + r() * .8)};top:${p(.05 + r() * .2)};--d:${(8 + r() * 6).toFixed(1)}s;--dl:${(r() * 10).toFixed(1)}s;--ex:${(-80 + r() * 60).toFixed(0)}px;--c:${['#c8902e', '#d8a83a', '#b8742a'][i % 3]}"></i>`;
   }
@@ -127,7 +133,7 @@ export function worldHtml(screen, L) {
     h += '<i class="tdx-flash"></i>';
   }
   h += `</div>${night && !indoor ? '<div class="tdx-wash"></div>' : ''}`;
-  return h;
+  return h.replace('<!--sky-->', gl ? `<div class="tdx-sky">${sky}</div>` : '');
 }
 // Each venue's climate: the weathers its days are drawn from, the commoner ones listed more than once.
 // A northern lake camp gets sun, wind, cloud, rain, a storm and morning fog; a tropical island is hot,

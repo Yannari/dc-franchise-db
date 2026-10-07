@@ -115,7 +115,14 @@ def render_spot(venue, spot, tod, preview=False, w=1920, h=1080, hd=False):
     d = os.path.join(OUT_TD, venue); os.makedirs(d, exist_ok=True)
     path = os.path.join(d, f'{spot}-{tod}{"-preview" if preview else "-hd" if hd else ""}.webp')
     sc.render.filepath = path
-    if not MARKS_ONLY[0]:
+    if DIRECT[0] and not MARKS_ONLY[0]:
+        # a plate that IS the show's frame (clean.py): copied in as it is, never re-rendered soft
+        sc.render.image_settings.quality = 92
+        bpy.data.images.load(DIRECT[0]['hd' if hd else 'sd']).save_render(path, scene=sc)
+        if not hd and os.path.exists(DIRECT[0]['motion']):
+            sc.render.image_settings.quality = 90
+            bpy.data.images.load(DIRECT[0]['motion']).save_render(path[:-5] + '-motion.webp', scene=sc)
+    elif not MARKS_ONLY[0]:
         bpy.ops.render.render(write_still=True)
     if not hd:
         write_marks(path, sc)
@@ -123,6 +130,7 @@ def render_spot(venue, spot, tod, preview=False, w=1920, h=1080, hd=False):
 
 
 MARKS_ONLY = [False]   # `-- ... marks`: build each scene and write its marks without rendering
+DIRECT = [None]        # set by a scene whose plate is a cleaned frame: {'sd', 'hd', 'motion'} image paths
 
 
 def write_marks(path, sc):
@@ -230,7 +238,7 @@ def run(venue, spot='all', tods='all', preview=False, hd=False):
             if spot == 'all' and s.startswith('_'): continue      # fill layers for trace.py, rendered on request
             both = ('day', 'night') if s in OUTDOOR.get(v, set()) else (('night',) if s in NIGHT_ONLY else ('day',))
             for tod in both if tods == 'all' else (tods,):
-                clear(); _MATS.clear(); _n[0] = 0; PAINT['on'] = False; MARKS.clear()
+                clear(); _MATS.clear(); _n[0] = 0; PAINT['on'] = False; MARKS.clear(); DIRECT[0] = None
                 for c in list(bpy.data.collections): bpy.data.collections.remove(c)
                 fn(tod)
                 out.append(render_spot(v, s, tod, preview=preview, hd=hd))

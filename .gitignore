@@ -56,3 +56,8 @@ transcripts/
 
 # Show music the user owns a copy of: played locally, never published.
 assets/audio/drag/private/
+
+# tools/td-camp/clean.py output: rebuilt from traced/src (the plates themselves live in assets/sets/td)
+tools/td-camp/traced/cuts/*-clean.png
+tools/td-camp/traced/cuts/*-clean-sd.png
+tools/td-camp/traced/cuts/*-motion.png

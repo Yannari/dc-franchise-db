@@ -28,7 +28,8 @@ def si_conf_fill(tod):
 def si_conf_traced(tod):
     paint_mode()
     paint_sky('#000000', '#000000')
-    vtraced('Traced', 'sol-conf-day.json', 20.0)
+    vplate('Traced', 'sol-conf-day.json', 20.0)
+    _live_marks('sol-conf-day.json', 20.0)
     vmark_stand((640, 640), PEOPLE_DEPTH)
     vmark_stand((900, 640), PEOPLE_DEPTH)
     vcam()

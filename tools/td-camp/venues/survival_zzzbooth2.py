@@ -4,7 +4,8 @@
 def si_voting_booth_traced(tod):
     paint_mode()
     paint_sky('#000000', '#000000')
-    vtraced('Traced', 'sol-booth.json', 20.0)
+    vplate('Traced', 'sol-booth.json', 20.0)
+    _live_marks('sol-booth.json', 20.0)
     vmark_stand((900, 640), PEOPLE_DEPTH)
     vmark_stand((1040, 640), PEOPLE_DEPTH)
     vcam()

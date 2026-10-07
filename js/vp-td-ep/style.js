@@ -18,8 +18,12 @@ export const TDX_CSS = `
 .tdx .tdx-noplate{background:linear-gradient(#26304f,#3d4a72)}
 .tdx .tdx-plate.hd{opacity:0;transition:opacity .5s;animation:none}
 .tdx .tdx-stage.push .tdx-plate.hd{opacity:1}
+.tdx .tdx-gl{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .4s}
+.tdx .tdx-gl.on{opacity:1}
+.tdx .tdx-lightning{position:absolute;inset:0;background:#dfe6ff;mix-blend-mode:screen;opacity:0;pointer-events:none;animation:tdxSkyFlash 11s linear infinite}
+@keyframes tdxSkyFlash{0%,86%{opacity:0}87%{opacity:.6}88%{opacity:.05}89.5%{opacity:.4}92%,100%{opacity:0}}
 @keyframes tdxFade{from{opacity:.25}to{opacity:1}}
-.tdx .tdx-live,.tdx .tdx-cast,.tdx .tdx-fx{position:absolute;inset:0;pointer-events:none}
+.tdx .tdx-live,.tdx .tdx-sky,.tdx .tdx-cast,.tdx .tdx-fx{position:absolute;inset:0;pointer-events:none}
 .tdx .tdx-wash{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 75%,transparent 40%,rgba(8,10,30,.33))}
 .tdx .tdx-cloud{position:absolute;transform:translate(-50%,-50%);animation:tdxCloud var(--d,70s) ease-in-out infinite alternate}
 .tdx .tdx-cloud img{width:100%;display:block}

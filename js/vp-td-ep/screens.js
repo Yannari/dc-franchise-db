@@ -14,6 +14,7 @@ import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf } from './
 import { tdTwistBlocksScreen, tdMergeScreen } from './twist-screens.js';
 import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf } from './stage.js';
 import { TDX_CSS, TDX_FONTS } from './style.js';
+import { liveGL } from './glplate.js';
 import { ambience, stopAmbience, sfx } from './sound.js';
 
 const reg = () => (typeof window !== 'undefined' ? (window._tdx ||= {}) : (globalThis._tdx ||= {}));
@@ -158,6 +159,7 @@ function paint(uid, fresh) {
     const wasConf = R.wk && R.wk.includes('/confessional');
     R.wk = wk;
     world.innerHTML = `${worldHtml(scr, L)}<div class="tdx-cast"></div><div class="tdx-fx"></div>`;
+    liveGL(world);
     if (fresh && (L.conf || wasConf)) { const bz = st.querySelector('.tdx-static'); bz.classList.remove('burst'); void bz.offsetWidth; bz.classList.add('burst'); sfx('static'); }
     else if (fresh && L.scene?.cut) sfx('whoosh');
   }

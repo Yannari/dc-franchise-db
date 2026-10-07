@@ -223,3 +223,16 @@ def vtraced(name, path, depth, step=0.00002):
     ob = _link(bpy.data.objects.new(uid(name), me))
     ob.visible_shadow = False
     return ob
+
+
+def vplate(name, json_name, depth):
+    """The plate as the show's own frame: the cleaned frame (tools/td-camp/clean.py) is copied
+    straight in by camp.py (DIRECT) with its motion map beside it; a place not yet cleaned falls
+    back to its traced shapes."""
+    c = os.path.join(REPO, 'tools', 'td-camp', 'traced', 'cuts', json_name[:-5] + '-clean.png')
+    if not os.path.exists(c):
+        return vtraced(name, json_name, depth)
+    DIRECT[0] = {'hd': c, 'sd': c[:-4] + '-sd.png', 'motion': c[:-10] + '-motion.png'}
+    x, z = px((800, 450), depth)
+    mark('motion', (x, depth, z))
+    return None

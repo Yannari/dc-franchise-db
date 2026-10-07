@@ -36,6 +36,7 @@ import { perfectMatchVpScreens } from './vp-pm/screens.js';
 import { circleVpScreens } from './vp-ci/screens.js';
 import { bbStepScreens } from './vp-bb-ep/screens.js';
 import { tdStepScreens, tdSteppedOn, TDX_SWITCH } from './vp-td-ep/screens.js';
+import { riChoiceQuote, exileChooserReason } from './vp-td-ep/twists.js';
 import { gs as _coreGs } from './core.js';
 import { momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { DRAG_FORMAT, HOSTS_BY_FORMAT, CIRCLE_FORMAT } from './shows.js';
@@ -5627,25 +5628,8 @@ export function rpBuildRIChoice(ep) {
   const s = pStats(name);
   const arch = players.find(p => p.name === name)?.archetype || '';
 
-  const acceptQuotes = [
-    `"I didn't come this far to quit. Light the torch — I'm staying."`,
-    `"They think they got rid of me? I'll claw my way back into this game."`,
-    `"I'm not done. Not even close."`,
-    `"Every person who wrote my name is going to regret it."`,
-    `"This isn't over. I've got unfinished business."`,
-    `"You want me out? You'll have to beat me yourself."`,
-  ];
-  const declineQuotes = [
-    `"I've said what I needed to say. I'm at peace with this."`,
-    `"I gave it everything. Time to go home."`,
-    `"There's nothing left for me here. I'm done."`,
-    `"I'd rather leave with my dignity than fight in some gladiator pit."`,
-    `"My torch is snuffed. That's the game."`,
-  ];
-
-  const quote = accepted
-    ? acceptQuotes[Math.floor(Math.random() * acceptQuotes.length)]
-    : declineQuotes[Math.floor(Math.random() * declineQuotes.length)];
+  // one line per boot, the same in both viewers (and the same on every replay)
+  const quote = `"${riChoiceQuote(ep, accepted)}"`;
 
   const destLabel = isRescue ? 'RESCUE ISLAND' : accepted ? 'REDEMPTION ISLAND' : 'HOME';
   const destIcon = accepted ? 'flame' : 'x-mark';
@@ -14044,6 +14028,7 @@ export function buildVPScreens(epRecord) {
       vpScreens = tdStepScreens(epRecord, vpScreens, {
         host: seasonConfig.host || 'Chris', setting: seasonConfig.setting, mergeName: gs.mergeName,
         colorOf: tribeColor, qa: (() => { try { return buildTribalQA(epRecord, tribal); } catch { return []; } })(),
+        pronouns, stats: pStats, chooserReason: _exileChooserReason,
       });
     } else {
       vpScreens = vpScreens.map(S => (/^(camp-(pre|post)-|tribal$)/.test(S?.id || '') && typeof S.html === 'string' ? { ...S, html: TDX_SWITCH + S.html } : S));
@@ -14051,6 +14036,8 @@ export function buildVPScreens(epRecord) {
   } catch (err) { console.warn('TD stepped viewer fell back to the classic screens:', err); }
   return vpScreens;
 }
+
+const _exileChooserReason = (chooser, exiled) => exileChooserReason(chooser, exiled, getBond, threatScore);
 
 function _buildVPScreensClassic(epRecord) {
   vpScreens = [];
@@ -14079,7 +14066,7 @@ function _buildVPScreensClassic(epRecord) {
           const _g = _coreGs || (typeof window !== 'undefined' ? window.gs : null);
           const priorEvicted = (_g?.episodeHistory || [])
             .filter(r => r && r.format === 'big-brother' && r.num < epRecord.num)
-            .flatMap(r => [r.evicted, r.secondEvicted]).filter(Boolean);
+            .flatMap(r => [r.eliminated, r.alsoEliminated, r.evicted, r.secondEvicted, ...(r.extraEvictions || []).map(x => x?.evicted)]).filter(Boolean);
           vpScreens = bbStepScreens(epRecord, vpScreens, { host: _bbHost(), priorEvicted, plea: name => _bbFinalPleaSpeech(epRecord, name) });
         } catch (err) { console.warn('BB stepped viewer fell back to the classic screens:', err); }
       }

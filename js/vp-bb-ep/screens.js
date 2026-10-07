@@ -254,7 +254,11 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   // the opening greys out whoever had already gone before this episode; the closing, whoever has
   // gone by the end of it (the user, 2026-10-06: "closing should grey out the eliminated")
   const goneBefore = [...(priorEvicted || [])];
-  const goneAfter = [...new Set([...goneBefore, row.evicted, row.secondEvicted, ...(row.evictedAll || [])].filter(Boolean))];
+  // the record names them 'eliminated' (and 'alsoEliminated', 'extraEvictions' on a double); the
+  // eviction act carries them too
+  const goneNow = [row.eliminated, row.alsoEliminated, row.evicted, row.secondEvicted, ...(row.extraEvictions || []).map(x => x?.evicted),
+    ...(row.acts || []).filter(a => a && /evict/.test(a.type || '')).map(a => a.evicted)];
+  const goneAfter = [...new Set([...goneBefore, ...goneNow].filter(x => typeof x === 'string'))];
   out.unshift(titleScreen('intro', key, cast, seasonTitle, goneBefore));
   out.push(titleScreen('outro', key, cast, seasonTitle, goneAfter));
   // the Debug screen is not part of the episode: it goes after the closing, never before it

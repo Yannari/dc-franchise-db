@@ -428,6 +428,12 @@ export function checkShowmanceSabotage(ep) {
       text: _sabTexts[Math.floor(Math.random() * _sabTexts.length)],
       badgeText: 'SHOWMANCE SABOTAGE', badgeClass: 'red'
     });
+    // the breakup it caused is its own moment: a Big Brother week only ever saw the sabotage, and a
+    // couple that split on screen never had the scene where it happened
+    if (targetShowmance.phase === 'broken-up' && seasonConfig.format === 'big-brother') {
+      ep.campEvents[campKey].post.push({ type: 'showmanceBreakup', players: [target, partner],
+        text: `${target} and ${partner} are over. What ${saboteur} did was enough.`, badgeText: 'BREAKUP', badgeClass: 'red' });
+    }
   });
 }
 

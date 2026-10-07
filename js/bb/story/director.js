@@ -166,8 +166,12 @@ export function airStorylines(week) {
       const cast = [p.step.roles.a, p.step.roles.b, p.step.roles.c].filter(Boolean);
       if (cast.some(n => (onScreen[n] || 0) >= 3)) return false;
       if (p.line.type === 'life' && life >= (ctx.firstNight ? 3 : 2)) return false;
-      if ([...picked, ...embedded].some(q => q.line === p.line)) return false;   // one step per storyline a stretch
-      if (airedIn(p, s => s.week === (week.num || 0)) >= 2) return false;
+      // the end of a showmance is the payoff of its whole story: it airs even in a week (or a
+      // stretch) its fight already aired in; a breakup the viewer never saw was a couple who just
+      // stopped sitting together
+      const ending = p.line.type === 'showmance' && p.step.step === 'breakup';
+      if (!ending && [...picked, ...embedded].some(q => q.line === p.line)) return false;   // one step per storyline a stretch
+      if (!ending && airedIn(p, s => s.week === (week.num || 0)) >= 2) return false;
       // the same kind of scene in the same storyline rests a fortnight: being left out of a
       // meeting every single week stops being news the second time
       if (p.line.type !== 'life' && airedIn(p, s => s.step === p.step.step && (week.num || 0) - s.week < 2)) return false;

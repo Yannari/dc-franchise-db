@@ -66,6 +66,8 @@ function kindRule(kind, ending, beat) {
   if (/^couple\.(hiding|underground|apart)$/.test(kind)) return R('showmance', 'hiding');
   if (/^couple\.(jealous|third)$/.test(kind) || /^romance\.(showmanceJealousy|triangle\w+)$/.test(kind)) return R('showmance', 'jealous');
   if (kind === 'couple.fight' || kind === 'life.couple' && e === 'strained') return R('showmance', 'fight');
+  // the couple just being a couple (breakfast together, asleep on a shoulder): the showmance is real now
+  if (kind === 'life.couple') return R('showmance', 'declare', 'couple');
   if (kind === 'romance.showmanceBreakup') return R('showmance', 'breakup');
 
   // ── target: who somebody wants gone, and the people on the block ──

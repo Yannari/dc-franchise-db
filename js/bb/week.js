@@ -1019,6 +1019,9 @@ function runHouseRomance(week, rng) {
       badgeText: hit ? 'A NAME, NOT A COMPLAINT' : (e.badgeText || 'SHOWMANCE'),
       badgeClass: hit ? 'red' : (e.badgeClass || 'gold'),
       eventId: `romance-${e.type || 'beat'}`, category: 'social', location: 'bedroom',
+      // the kind the storylines read (bb/story/storylines.js): without it no romance beat was ever
+      // classified, so a showmance's kiss, going public and breakup never aired as scenes
+      scene: { kind: `romance.${e.type || 'beat'}`, who, data },
     };
   }).filter(b => b.text);
 }

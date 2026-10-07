@@ -2587,7 +2587,10 @@ function juryHouseScreen(act, ctx) {
     }
     // the act's title is a card on its first line, not a line of its own ('The Long Week.')
     const first = steps.length;
-    for (const b of a.beats || []) steps.push(...proseSteps(b.text, b.players || []));
+    for (const b of a.beats || []) {
+      if (b.dr) { steps.push({ k: 'dr', by: (b.players || [])[0] || null, t: b.text }); continue; }
+      steps.push(...proseSteps(b.text, b.players || []));
+    }
     if (a.title !== 'The Door Opens' && steps[first]) steps[first] = { ...steps[first], toast: [a.title.toUpperCase(), '#e8c98a'] };
   }
   if (!(act.acts || []).some(a => a.roundtable) && steps.length) steps[steps.length - 1] = { ...steps[steps.length - 1], why: after };

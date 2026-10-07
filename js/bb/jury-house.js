@@ -34,6 +34,7 @@ import { getBond, getPerceivedBond, addBond } from '../bonds.js';
 import { seatedJurors, juryOpensAt, evictionSeatsAJuror } from './jury.js';
 import { reconcileBBJury, believedVoters, stableRng, knowsVote } from './knowledge.js';
 import { seedJurorReads, moveRead, readOf, stanceOf } from './jury-sentiment.js';
+import { entranceOf, newsByLens, chooseNight, lensCase, reasonLine } from './jury-house-scenes.js';
 
 const clamp01 = v => Math.max(0, Math.min(1, v));
 const archetypeOf = name => players.find(p => p.name === name)?.archetype || 'floater';
@@ -134,6 +135,8 @@ function arrivalBeats(newcomer, residents, week, rng, out, lastWords = null) {
   const against = ballots.filter(b => b.evict === newcomer).length;
   const tie = ballots.length && against * 2 === ballots.length;
   const count = tie ? `It was a tie${wk?.hoh ? `, and ${wk.hoh} broke it` : ''}` : ballots.length && against < ballots.length ? `${Cap(NUM(against))} to ${NUM(ballots.length - against)}` : ballots.length ? 'Every single vote went against me' : null;
+  // who they are, walking in (jury-house-scenes.js): its own dice, so nothing else moves
+  beats.push(beat('ENTRANCE', [newcomer], entranceOf(newcomer, stableRng('jhentrance', week, newcomer))));
   if (greeter) {
     beats.push(beat('THE DOOR', [greeter, newcomer], pick(rng, [
       `${greeter} hears the car first and is on the porch before ${newcomer} has the door open. "Get in here. Are you okay?"`,
@@ -313,10 +316,8 @@ function newsBeats(newcomer, residents, week, rng) {
   for (const a of alive) for (const b of alive) if (a < b && (!pair || getBond(a, b) > getBond(pair[0], pair[1]))) pair = [a, b];
   const fav = favourite(newcomer), least = leastFavourite(newcomer);
   const asker = residents.slice().sort((a, b) => getBond(newcomer, b) - getBond(newcomer, a))[0];
-  const why = n => wins(n) >= 3 ? `${n} has won ${NUM(wins(n))} competitions. Nobody's played harder.`
-    : getBond(newcomer, n) >= 4 ? `${n} never lied to me. Not once. In that house, that means everything.`
-      : wins(n) === 0 ? `${n} hasn't won a thing, but ${n} is still there, and everybody likes ${P(n).obj}. That's a game too.`
-        : `${n} is playing the smartest game left in there. You can see it if you watch closely.`;
+  // the reason is the newcomer's own: what THEY value (jury-house-scenes.js lensOf)
+  const why = n => reasonLine(newcomer, n);
   if (asker) {
     beats.push(beat('THE NEWS', [asker, newcomer, top], rot([
       `${asker} drags a chair over. "Okay. Catch us up. Who's on top?" ${newcomer} doesn't have to think about it. "${top}. ${NUM(wins(top)).replace(/^./, c => c.toUpperCase())} competitions, and everybody's scared of ${P(top).obj}."`,
@@ -457,6 +458,29 @@ function resumeOf(player, residents) {
  * that player's week saying so; and a third juror saying where they stand.
  */
 function tableTalk(player, backer, doubter, residents, draw) {
+  const out = tableTalkBase(player, backer, doubter, residents, draw);
+  // what each speaker values decides their argument (the user, 2026-10-07: "they always keep the
+  // one with the most comp wins as the one winning"); the record's version stays when the
+  // speaker's lens has nothing true to say about this player
+  const forL = lensCase(backer, player, 'for'), agL = lensCase(doubter, player, 'against');
+  const bi = out.findIndex(t => t.by === backer), di = out.findIndex(t => t.by === doubter);
+  if (forL && bi >= 0) {
+    out[bi] = { by: backer, t: forL };
+    // the juror sent home on that week only answers the move it was about
+    const vi = out.findIndex((t, i) => i > bi && i < (di < 0 ? out.length : di) && t.by !== backer && t.by !== doubter);
+    if (vi >= 0 && !forL.includes(out[vi].by)) out.splice(vi, 1);
+  }
+  const di2 = out.findIndex(t => t.by === doubter);
+  if (agL && di2 >= 0) {
+    out[di2] = { by: doubter, t: agL };
+    const ri = out.findIndex((t, i) => i > di2 && t.by === backer);
+    const R = [`Then tell me who played better. Because I don't see it.`, `That's one way to look at it. It isn't the only one.`, `You're judging the game you wanted to see, not the one ${player} played.`, `Fair. I still think you're wrong.`, `I hear you. I just don't think the rest of the jury will.`];
+    const h = [...(player + doubter + backer)].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    if (ri >= 0) out[ri] = { by: backer, t: R[h % R.length].replace('${player}', player) };
+  }
+  return out;
+}
+function tableTalkBase(player, backer, doubter, residents, draw) {
   const r = resumeOf(player, residents);
   const pp = P(player);
   const out = [];
@@ -775,7 +799,15 @@ export function generateBBJuryHouse(week, rngIn) {
     ? arrivalBeats(newcomer, residents.filter(n => n !== newcomer), num, rng, out,
       week.lastWords || null)
     : [];
-  if (arrivals.length && newcomer) arrivals.push(...reunionBeats(newcomer, residents.filter(n => n !== newcomer), rng), ...newsBeats(newcomer, residents.filter(n => n !== newcomer), num, rng));
+  if (arrivals.length && newcomer) {
+    const rest = residents.filter(n => n !== newcomer);
+    const asker = rest.slice().sort((a, b) => getBond(newcomer, b) - getBond(newcomer, a))[0] || null;
+    const news = newsBeats(newcomer, rest, num, rng);
+    const lens = newsByLens(newcomer, asker, (gs.activePlayers || []).filter(n => n !== newcomer), stableRng('jhnews', num, newcomer));
+    const at = news.findIndex(b => b.tag === 'THE NEWS' || b.tag === 'ALONE');
+    if (at >= 0 && lens.length) news.splice(at, news[at].tag === 'THE NEWS' ? 1 : 0, ...(news[at].tag === 'THE NEWS' ? lens : []));
+    arrivals.push(...reunionBeats(newcomer, rest, rng), ...news);
+  }
   if (arrivals.length) acts.push({ title: 'The Door Opens', beats: arrivals });
 
   // What the room passes between itself, whether or not tonight is a big one.
@@ -786,6 +818,16 @@ export function generateBBJuryHouse(week, rngIn) {
   // The roundtable is the room's real business, so it sits every week there are three to argue
   // (the user, 2026-10-07: "where's the round table?"); off the full weeks it is a shorter sitting
   // and moves the room less, so a season of them weighs about what the old every-third-week did.
+  // The night itself: two to four scenes chosen from what is live this week, never the same shape
+  // twice running (jury-house-scenes.js chooseNight). The grudges the long week rolls (which move
+  // bonds) are still rolled on a full night, and air only when the night picks them.
+  const lastKinds = gs.bb?.juryNightKinds || [];
+  let grudgeBeats = [];
+  const others0 = residents.filter(n => n !== newcomer);
+  if (full) grudgeBeats = longWeekBeats(others0.length ? others0 : residents, num, rng);
+  const night = chooseNight({ week, residents, newcomer, full, lastKinds, grudgeBeats });
+  acts.push(...night.acts);
+  if (gs.bb) gs.bb.juryNightKinds = night.kinds;
   if (!full && residents.length >= 3) {
     // A short sitting is about the week's news, not everybody again (the same five arguments every
     // week): the HOH and the veto winner, whoever the newcomer blames, and the most divisive player.
@@ -797,9 +839,6 @@ export function generateBBJuryHouse(week, rngIn) {
     if (table) acts.push({ title: 'The Roundtable', beats: [], roundtable: table });
   }
   if (full) {
-    const others = residents.filter(n => n !== newcomer);
-    const long = longWeekBeats(others.length ? others : residents, num, rng);
-    if (long.length) acts.push({ title: 'The Long Week', beats: long });
 
     const table = roundtable(residents, num, rng);
     if (table) acts.push({ title: 'The Roundtable', beats: [], roundtable: table });

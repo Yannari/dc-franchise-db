@@ -2,7 +2,7 @@
 export const BBX_FONTS = "@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Chakra+Petch:wght@500;600;700&display=swap');";
 export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;container-type:inline-size;overflow:hidden;border-radius:14px;background:#03050a;cursor:pointer;user-select:none;isolation:isolate;
   box-shadow:0 0 0 1px rgba(34,225,255,.18),0 30px 70px -20px rgba(0,20,60,.55)}
-.bbx .cam{position:absolute;inset:0;transition:transform 1s cubic-bezier(.2,.75,.15,1)}
+.bbx .cam{position:absolute;inset:0;z-index:1;isolation:isolate;transition:transform 1s cubic-bezier(.2,.75,.15,1)}
 .bbx .lens{position:absolute;inset:0}
 .bbx .lens.cut{animation:bbx-cut .32s steps(4,end)}
 @keyframes bbx-cut{0%{transform:translateX(1.4cqw);filter:hue-rotate(40deg) saturate(2)}50%{transform:translateX(-.8cqw)}100%{transform:none;filter:none}}

@@ -263,6 +263,29 @@ export function roomFromText(lines) {
   return null;
 }
 
+// The places people go so they are not overheard (the user, 2026-10-06: "the bathroom, the
+// storage room... the places where people are not easily bothered: the potential isn't used
+// enough, not that I want it everywhere"). A conversation that needs privacy goes to one of them
+// some of the time: a deal with the Head of Household in the HOH room, plotting and alliance talk
+// in the storage room, a quick whispered deal or somebody falling apart in the bathroom, a late
+// secret in the Have-Not room. Never a crowd, never every time, never twice in a row.
+const PRIVATE_SHARE = 4;   // in ten
+export function privateRoomFor(kind, cast, ctx, salt) {
+  const k = String(kind || '');
+  const n = (cast || []).length;
+  if (!n || n > 4) return null;
+  const h = [...String(salt)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
+  if (h % 10 >= PRIVATE_SHARE) return null;
+  const withHoh = ctx?.hoh && cast.includes(ctx.hoh);
+  let room = null;
+  if (/deal|pact|plan|bloc|target\.(pitch|lobby|count)|power-hoh|campaign/.test(k) && withHoh) room = 'hoh-room';
+  else if (/^(alliance|scheme)|bloc-|plan-|scheme-|deals-|target\.(gossip|pitch|lobby|count)|recruit|poach/.test(k)) room = (h >> 4) % 3 === 0 && n <= 2 ? 'bathroom' : 'storage-room';
+  else if (/homesick|breakdown|cry|apology|cold/.test(k) && n <= 2) room = 'bathroom';
+  else if (/showmance|couple|secret|latenight/.test(k) && n <= 2) room = (h >> 4) % 2 ? 'have-not-room' : 'storage-room';
+  if (!room || room === ctx?.avoidRoom) return null;
+  return room;
+}
+
 // Is this houseguest named in the text, as a whole name ("Raj's", not "Rajesh")?
 const nameIn = (n, text) => new RegExp(`(^|\\W)${String(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!\\w)`).test(String(text || ''));
 
@@ -357,8 +380,9 @@ export function writeStoryScene(line, step, ctx) {
   // folded into the kitchen around it; it is marked, and the director airs it as its own scene
   // (the user, 2026-10-06: "it didn't switch scenes, we were still in the kitchen")
   const named = entry.room ? null : roomFromText(entry.turns.filter(t => t.beat).slice(0, 1).map(t => ({ kind: 'beat', text: t.beat })));
-  if (entry.room || (named && named !== 'diary-room' && named !== room)) {
-    room = entry.room || named; base.room = room; base.roomName = ROOM[room] || base.roomName; if (ctx.inSet) base.ownRoom = true;
+  const hidden = !entry.room && !named && !ctx.inSet ? privateRoomFor(`${line.type}.${step.step}.${step.outcome}`, base.cast, ctx, base.id) : null;
+  if (entry.room || (named && named !== 'diary-room' && named !== room) || hidden) {
+    room = entry.room || named || hidden; base.room = room; base.roomName = ROOM[room] || base.roomName; if (ctx.inSet) base.ownRoom = true;
   }
   // A scene that does not set its own room moves along if the last scene was in the same one
   // (five bedroom scenes in a row read as one long night). Decided here, BEFORE the background
@@ -556,7 +580,8 @@ export function writeEngineScene(beat, ctx, at) {
   // what they are doing says where they are: breakfast is not made in the backyard, and a scene
   // that opens "Storage room." is in the storage room
   const textRoom = roomFromText(lines);
-  const room = meeting ? 'living-room' : textRoom && textRoom !== 'diary-room' ? textRoom : ROOM[beat.location] ? beat.location : 'living-room';
+  const hiddenRoom = !meeting && !textRoom ? privateRoomFor(id, cast, ctx, `${ctx.week?.num || 0}|${ctx.stretch}|${id}|${cast.join('>')}`) : null;
+  const room = meeting ? 'living-room' : textRoom && textRoom !== 'diary-room' ? textRoom : hiddenRoom || (ROOM[beat.location] ? beat.location : 'living-room');
   if (meeting) for (const n of present) if (!cast.includes(n)) cast.push(n);
   const fam = FAMILY_WHY.find(([re]) => re.test(id))?.[1];
   const badge = beat.badgeText ? `${String(beat.badgeText).charAt(0)}${String(beat.badgeText).slice(1).toLowerCase()}.` : null;

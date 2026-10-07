@@ -15,9 +15,10 @@ import { eventAllowedInSetting, settingWeightMod, settingProfile, fillVocab, cur
 import { reputationModifier } from './reputation.js';
 import { campRoster, isCoach as isCoachName } from './coaches.js';
 import { recordIntimidation, recordProtection, recordBetrayal } from './relationship-events.js';
-import { attachCampAccessToEvents, buildCampAccessSchedule, findConversationAccess } from './camp-access.js';
+import { attachCampAccessToEvents, buildCampAccessSchedule, findConversationAccess, ACCESS_PROFILES } from './camp-access.js';
+import { stableRng } from './script/rng.js';
 import { makeScene, spotOf, spotFromAccess } from './td/script/scene.js';
-import { scriptEvent, scriptEventParts, withSceneCtx, ambientCtx, transcript } from './td/script/write.js';
+import { scriptEvent, scriptEventParts, withSceneCtx, ambientCtx, transcript, writeScene } from './td/script/write.js';
 
 // Where two people talk, in the phase the camp generator is writing (its callers set it).
 const _spotNow = (a, b) => spotOf(null, a, b, ambientCtx().phase === 'post' ? 'post' : 'pre').spot;
@@ -77,6 +78,158 @@ function _sceneOf(evt, kind, who, data, ep) {
   if (!Object.values(who).every(Boolean)) return evt;
   if (!evt.players) evt.players = Object.values(who);
   return scriptEvent(evt, makeScene(kind, who, data, [], _spotNow(who.a, who.b || null)), ep ? { ep: ep.num } : {});
+}
+// ── CHIME-INS: someone else is there ────────────────────────────────────
+// A two-person talk in a public place has an audience. When the camp schedule (ep.campAccess)
+// puts a third person at the same place in the same window, they may join the end of it: they
+// react to what anyone standing there could see, never to anything said in secret (deals, plans,
+// schemes and confessions are never joined). Their bond with the two moves with the tone.
+// only moments anyone may walk in on: a fight in the open, a flirt in public, the light side of camp
+// life. A hurt, a homesick night, a comfort or a secret stays between the two.
+const CHIME_TONE = [
+  ['fight', /^(drama\.(clash|fight|dispute|food|mess|prank|showboat|intimidate|explode)|aside\.tense)/, -0.05],
+  ['romance', /^romance\.(flirt|honeymoon)/, 0.05],
+  ['banter', /^(life\.(work|build|charm|critter|weather|surprise|weird|favorite|beast)|hosted\.(slop|raid|story)|friend\.(joke|goof|laugh|meal|teach)|aside\.(plain|shame|warm))/, 0.15],
+];
+function _chimeIns(ep, campKey, phase, events) {
+  const venue = seasonConfig?.setting || 'hosted-camp';
+  const locs = ACCESS_PROFILES[venue] || ACCESS_PROFILES['hosted-camp'];
+  const windows = ep.campAccess?.phases?.[`${phase}:${campKey}`] || [];
+  events.forEach((ev, k) => {
+    if (!ev?.lines?.length || !ev.scene || ev.scene.chime) return;
+    const tone = CHIME_TONE.find(([, re]) => re.test(ev.scene.kind || ''));
+    if (!tone) return;
+    const said = [...new Set(ev.lines.filter(l => l.kind === 'say').map(l => l.by))];
+    if (said.length !== 2) return;
+    const spotId = ev.scene.spot?.id, win = ev.scene.spot?.window;
+    const loc = locs.find(l => l.id === spotId);
+    if (!loc || (loc.privacy ?? 0) > 0.45) return;
+    // who could be there: anyone at that spot, or in the camp's common area at the time (a small camp:
+    // the grounds are a few steps from the dock, the fire and the mess hall)
+    const asg = windows.find(w => w.id === win)?.assignments || [];
+    const pubId = (locs.find(l => l.public) || locs[0]).id;
+    const here = [...new Set(asg.filter(x => x.locationId === spotId || x.locationId === pubId).flatMap(x => x.players))];
+    const [a, b] = said;
+    const c = here.filter(n => n !== a && n !== b && gs.activePlayers.includes(n)).sort((x, y) => (getBond(y, a) + getBond(y, b)) - (getBond(x, a) + getBond(x, b)) || x.localeCompare(y))[0];
+    if (!c || stableRng('td-chime', String(ep.num), campKey, phase, String(k))() > 0.55) return;
+    const w = writeScene(makeScene(`crowd.chime-${tone[0]}`, { a, b, c }, {}, [], ev.scene.spot), { ep: ep.num, phase });
+    ev.lines = [...ev.lines, ...w.lines];
+    ev.text = transcript(ev.lines);
+    ev.scene.chime = { by: c, kind: `crowd.chime-${tone[0]}`, lineId: w.lineId };
+    // the scene is now in two parts, the second bringing c in (as scriptEventParts records them)
+    ev.scene.parts = [...(ev.scene.parts || [{ kind: ev.scene.kind, who: ev.scene.who, data: ev.scene.data, lineId: ev.scene.lineId }]),
+      { kind: `crowd.chime-${tone[0]}`, who: { a, b, c }, data: {}, lineId: w.lineId }];
+    if (!ev.players.includes(c)) ev.players = [...ev.players, c];
+    if (Array.isArray(ev.scene.seenBy) && !ev.scene.seenBy.includes(c)) ev.scene.seenBy = [...ev.scene.seenBy, c];   // c was there
+    addBond(c, a, tone[2]); addBond(c, b, tone[2]);
+  });
+  return events;
+}
+
+// ── GROUP SCENES ─────────────────────────────────────────────────────────
+// Camp was nearly all two-person talks (the user, 2026-10-07: "make sure we have more than just
+// 1 on 1 conversation"; measured: 4% of camp scenes had three people speaking). Each phase of a
+// camp day now has its group moments, cast from the record: breakfast together; back from a win,
+// the team's top scorer cheered; back from a loss, the lowest scorer blamed, defended, a third
+// calming it down; after the merge, the immunity winner congratulated and resented; an alliance of
+// three or more closing ranks before the vote; the team going to the vote at the fire; two enemies
+// clashing in public. Every one moves bonds. Chosen without the engine's dice (stableRng), so they
+// never shift what the rest of the season draws.
+function _crowdScenes(ep, campKey, present, phase, { tribal = false } = {}) {
+  const people = [...new Set(present)].filter(n => gs.activePlayers.includes(n));
+  if (people.length < 3) return [];
+  const out = [];
+  const r = stableRng('td-crowd', String(ep.num), campKey, phase);
+  const st = (n, k) => (pStats(n) || {})[k] ?? 5;
+  const top = (arr, f) => [...arr].sort((x, y) => f(y) - f(x) || x.localeCompare(y));
+  const closest = (a, pool) => top(pool.filter(n => n !== a), n => getBond(a, n));
+  const venue = seasonConfig?.setting || 'hosted-camp';
+  const locs = ACCESS_PROFILES[venue] || ACCESS_PROFILES['hosted-camp'];
+  const has = id => locs.some(l => l.id === id);
+  const pub = (locs.find(l => l.public) || locs[0]).id;
+  const priv = (locs.find(l => !l.public && (l.privacy ?? 0) >= 0.6) || locs.find(l => !l.public) || locs[0]).id;
+  const at = (id, window) => ({ id: has(id) ? id : pub, label: (locs.find(l => l.id === (has(id) ? id : pub)) || {}).label || '', window });
+  const pairBond = (who, d) => { const n = Object.values(who); for (let i = 0; i < n.length; i++) for (let j = i + 1; j < n.length; j++) addBond(n[i], n[j], d); };
+  const scene = (kind, who, data, spot, badge, cls, seen) => {
+    const ev = { type: 'groupScene', players: Object.values(who), badgeText: badge, badgeClass: cls };
+    scriptEvent(ev, makeScene(kind, who, data, seen || people, spot), { ep: ep.num, phase, tribal });
+    out.push(ev);
+    return ev;
+  };
+  const scores = ep.chalMemberScores || {};
+  const scored = people.filter(n => typeof scores[n] === 'number');
+  if (phase === 'pre') {
+    // breakfast: the most sociable, with the two people closest to them
+    const a = top(people, n => st(n, 'social'))[0];
+    const [b, c] = closest(a, people);
+    if (b && c) { scene('crowd.meal', { a, b, c }, {}, at('mess-hall', 'morning'), 'BREAKFAST', 'blue'); pairBond({ a, b, c }, 0.15); }
+    // the morning's work, led by the strongest of the people breakfast did not hold
+    const rest = people.filter(n => ![a, b, c].includes(n));
+    if (rest.length >= 3) {
+      const k = top(rest, n => st(n, 'physical') + st(n, 'endurance'))[0];
+      const [k2, k3] = closest(k, rest);
+      if (k2 && k3) { scene('crowd.chores', { a: k, b: k2, c: k3 }, {}, at(pub, 'camp-work'), 'CHORES', 'blue'); pairBond({ a: k, b: k2, c: k3 }, 0.1); }
+    }
+    // two enemies in front of everyone, someone stepping between them (when there are enemies)
+    let worst = null, wb = -3;
+    for (let i = 0; i < people.length; i++) for (let j = i + 1; j < people.length; j++) {
+      const bd = getBond(people[i], people[j]); if (bd <= wb) { wb = bd; worst = [people[i], people[j]]; }
+    }
+    if (worst && r() < 0.6) {
+      const [x, y] = top(worst, n => st(n, 'boldness') + (10 - st(n, 'temperament')));
+      const c2 = top(people.filter(n => n !== x && n !== y), n => getBond(n, x) + getBond(n, y) + st(n, 'social'))[0];
+      if (c2) {
+        scene('crowd.clash', { a: x, b: y, c: c2 }, {}, at(pub, 'camp-work'), 'PUBLIC CLASH', 'red');
+        addBond(x, y, -0.4); addBond(c2, x, 0.1); addBond(c2, y, 0.1);
+      }
+    }
+    return out;
+  }
+  // after the challenge: back at camp
+  const merged = !!gs.isMerged;
+  const lost = !merged && ep.loser?.name === campKey;
+  if (merged) {
+    const winners = [].concat(ep.immunityWinner || []).filter(n => people.includes(n));
+    if (winners.length) {
+      const a = winners[0];
+      const b = closest(a, people)[0];
+      const c = top(people.filter(n => n !== a && n !== b), n => -getBond(a, n))[0];
+      if (b && c) { scene('crowd.immune', { a, b, c }, {}, at(pub, 'return'), 'IMMUNITY', 'gold'); addBond(a, b, 0.2); addBond(a, c, -0.1); }
+    }
+  } else if (scored.length >= 3) {
+    if (lost) {
+      const b = top(scored, n => -scores[n])[0];
+      const a = top(people.filter(n => n !== b), n => st(n, 'boldness') + (10 - st(n, 'temperament')) - getBond(n, b))[0];
+      const c = top(people.filter(n => n !== a && n !== b), n => st(n, 'social') + st(n, 'loyalty') * 0.5)[0];
+      if (a && c) { scene('crowd.lost', { a, b, c }, {}, at(pub, 'return'), 'BLAME GAME', 'red'); addBond(a, b, -0.5); addBond(c, b, 0.25); addBond(c, a, 0.1); }
+    } else {
+      const a = top(scored, n => scores[n])[0];
+      const [b, c] = closest(a, people);
+      if (b && c) { scene('crowd.won', { a, b, c }, {}, at(pub, 'return'), 'VICTORY', 'gold'); pairBond({ a, b, c }, 0.2); }
+    }
+  }
+  // dinner: three people the regroup did not hold, at the evening meal
+  const used = new Set(out.flatMap(e => e.players));
+  const free = people.filter(n => !used.has(n));
+  if (free.length >= 3) {
+    const a = top(free, n => st(n, 'social'))[0];
+    const [b, c] = closest(a, free);
+    if (b && c) { scene('crowd.dinner', { a, b, c }, {}, at('mess-hall', 'scramble'), 'DINNER', 'blue'); pairBond({ a, b, c }, 0.1); }
+  }
+  // an alliance of three or more closing ranks, out of sight
+  const al = (gs.namedAlliances || []).find(x => x.active !== false && (x.members || []).filter(m => people.includes(m)).length >= 3);
+  if (al) {
+    const [a, b, c] = (al.members || []).filter(m => people.includes(m)).slice(0, 3);
+    scene('crowd.huddle', { a, b, c }, { group: al.name }, at(priv, 'scramble'), 'ALLIANCE HUDDLE', 'gold', [a, b, c]);
+    pairBond({ a, b, c }, 0.25);
+  }
+  // the team going to the vote, at the fire: the three with the fewest friends in camp
+  if (tribal) {
+    const avg = n => people.filter(x => x !== n).reduce((s, x) => s + getBond(n, x), 0) / Math.max(1, people.length - 1);
+    const [a, b, c] = top(people, n => -avg(n));
+    if (a && b && c) { scene('crowd.nerves', { a, b, c }, { tribal: true }, at('campfire', 'before-tribal'), 'NERVES', 'blue'); pairBond({ a, b, c }, 0.1); }
+  }
+  return out;
 }
 import { ensureIntentions, evolveIntentions, getIntentions, evaluateEndgameBeatability } from './intentions.js';
 import { getRelationshipDimensions } from './relationships.js';
@@ -6130,7 +6283,8 @@ export function generateCampEvents(ep, phase = 'both') {
         if (ep.twistNarrativeEvents?.[tribe.name]) preEvents.unshift(ep.twistNarrativeEvents[tribe.name]);
         const _existingPre = ep.campEvents[tribe.name]?.pre || [];
         const _existingPost = ep.campEvents[tribe.name]?.post || [];
-        ep.campEvents[tribe.name] = { pre: [..._existingPre, ...preEvents], post: [..._existingPost] };
+        const _crowdPre = _crowdScenes(ep, tribe.name, present, 'pre');
+        ep.campEvents[tribe.name] = { pre: _chimeIns(ep, tribe.name, 'pre', [..._existingPre, ..._crowdPre.slice(0, 1), ...preEvents, ..._crowdPre.slice(1)]), post: [..._existingPost] };
 
         // ── PRE-MERGE SPECIFIC EVENTS: drama unique to small tribal camps ──
         const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -6278,7 +6432,8 @@ export function generateCampEvents(ep, phase = 'both') {
       if (ep.twistNarrativeEvents?.['merge']) mergePreEvents.unshift(ep.twistNarrativeEvents['merge']);
       if (!ep.campEvents) ep.campEvents = {};
       const _existingMergePre = ep.campEvents.merge?.pre || [];
-      ep.campEvents.merge = { pre: [..._existingMergePre, ...mergePreEvents], post: [] };
+      const _crowdMergePre = _crowdScenes(ep, 'merge', _campActivePlayers, 'pre');
+      ep.campEvents.merge = { pre: _chimeIns(ep, 'merge', 'pre', [..._existingMergePre, ..._crowdMergePre.slice(0, 1), ...mergePreEvents, ..._crowdMergePre.slice(1)]), post: [] };
     }
   }
 
@@ -7288,8 +7443,13 @@ export function generateCampEvents(ep, phase = 'both') {
           : Math.floor(Math.random() * 3) + Math.max(5, Math.ceil(total * 0.7));
         if (!ep.campEvents[tribe.name]) ep.campEvents[tribe.name] = { pre: [], post: [] };
         const _existingPostEvts = ep.campEvents[tribe.name].post || [];
-        ep.campEvents[tribe.name].post = [..._existingPostEvts, ...withSceneCtx({ ep: ep.num, phase: 'post', tribal: ep.loser?.name === tribe.name },
-          () => generateCampEventsForGroup(present, [], tribeBoosts, postCount))];
+        const _postGen = withSceneCtx({ ep: ep.num, phase: 'post', tribal: ep.loser?.name === tribe.name },
+          () => generateCampEventsForGroup(present, [], tribeBoosts, postCount));
+        const _crowdPost = _crowdScenes(ep, tribe.name, present, 'post', { tribal: ep.loser?.name === tribe.name });
+        const _cpMid = Math.ceil(_postGen.length / 2);
+        const _regroup = _crowdPost.filter(e => /^crowd\.(won|lost|immune)/.test(e.scene?.kind || '')), _huddle = _crowdPost.filter(e => e.scene?.kind === 'crowd.huddle'), _nerves = _crowdPost.filter(e => e.scene?.kind === 'crowd.nerves');
+        const _dinner = _crowdPost.filter(e => e.scene?.kind === 'crowd.dinner');
+        ep.campEvents[tribe.name].post = _chimeIns(ep, tribe.name, 'post', [..._existingPostEvts, ..._regroup, ..._postGen.slice(0, _cpMid), ..._huddle, ..._dinner, ..._postGen.slice(_cpMid), ..._nerves]);
       });
       // ── Sit-out narrative events ──
       if (ep.chalSitOuts) {
@@ -7339,8 +7499,13 @@ export function generateCampEvents(ep, phase = 'both') {
       const postCount = Math.floor(Math.random() * 3) + Math.max(5, Math.ceil(total * 0.72));
       if (!ep.campEvents.merge) ep.campEvents.merge = { pre: [], post: [] };
       const _existingMergePost = ep.campEvents.merge.post || [];
-      ep.campEvents.merge.post = [..._existingMergePost, ...withSceneCtx({ ep: ep.num, phase: 'post', tribal: true },
-        () => generateCampEventsForGroup(gs.activePlayers.filter(p => p !== gs.exileDuelPlayer), [], postBoostsMerge, postCount))];
+      const _mPresent = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
+      const _mGen = withSceneCtx({ ep: ep.num, phase: 'post', tribal: true },
+        () => generateCampEventsForGroup(_mPresent, [], postBoostsMerge, postCount));
+      const _mCrowd = _crowdScenes(ep, 'merge', _mPresent, 'post', { tribal: true });
+      const _mMid = Math.ceil(_mGen.length / 2);
+      ep.campEvents.merge.post = _chimeIns(ep, 'merge', 'post', [..._existingMergePost, ..._mCrowd.filter(e => e.scene?.kind === 'crowd.immune'), ..._mGen.slice(0, _mMid),
+        ..._mCrowd.filter(e => e.scene?.kind === 'crowd.huddle'), ..._mCrowd.filter(e => e.scene?.kind === 'crowd.dinner'), ..._mGen.slice(_mMid), ..._mCrowd.filter(e => e.scene?.kind === 'crowd.nerves')]);
     }
 
     // ── Temporary bloc alignment events (non-named alliances forming for this vote) ──

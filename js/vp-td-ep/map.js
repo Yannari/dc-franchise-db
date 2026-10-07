@@ -43,7 +43,7 @@ export const WINDOW_NIGHT = { 'before-tribal': true };
 
 // The conversations the story turns on: a deal, an alliance, a lie, a betrayal, an idol, a
 // showmance beginning or breaking, a blow-up. The clock waits for these; the rest are optional.
-const KEY_KIND = /^(alliance\.|deal\.|pitch\.|recruit\.|plot\.|broker\.|credit\.|idol\.(confide|leak|snoop|tip)|adv\.|fallout\.|caught\.|blind\.|goat\.|save\.|threat\.notice|romance\.(showmance|first|tri|affair|breakup|cut)|drama\.(bomb|nemesis|clash))/;
+const KEY_KIND = /^(crowd\.(huddle|lost|clash)|alliance\.|deal\.|pitch\.|recruit\.|plot\.|broker\.|credit\.|idol\.(confide|leak|snoop|tip)|adv\.|fallout\.|caught\.|blind\.|goat\.|save\.|threat\.notice|romance\.(showmance|first|tri|affair|breakup|cut)|drama\.(bomb|nemesis|clash))/;
 const KEY_TYPE = /^(allianceForm|allianceBetrayal|idolFound|idolConfession|idolBetrayal|betrayal|showmance|firstMove|secretFlip|stolenCredit|brokerExposed)/;
 export function isKey(ev) {
   return KEY_KIND.test(ev?.scene?.kind || '') || KEY_TYPE.test(ev?.type || '');
@@ -53,7 +53,7 @@ export function isKey(ev) {
 const KIND_TITLE = { alliance: 'An alliance', deal: 'A deal', pitch: 'A vote pitch', recruit: 'Recruiting', plot: 'A scheme', broker: 'Double agent', credit: 'Stolen credit',
   idol: 'An idol', adv: 'An advantage', fallout: 'Fallout', caught: 'Caught out', blind: 'A blind spot', goat: 'A read', save: 'The morning after', threat: 'A threat',
   romance: 'Romance', friend: 'Friends', drama: 'Drama', life: 'Camp life', hosted: 'Camp life', talk: 'A talk', flow: 'Gossip', read: 'A read', mind: 'Thinking', aside: 'After the challenge',
-  merge: 'The merge', morning: 'The last morning', villain: 'The villain', spot: 'Noticed', throw: 'A thrown challenge', misvote: 'A wrong vote', last: 'Camp life', tail: 'Camp life' };
+  merge: 'The merge', morning: 'The last morning', crowd: 'Together', villain: 'The villain', spot: 'Noticed', throw: 'A thrown challenge', misvote: 'A wrong vote', last: 'Camp life', tail: 'Camp life' };
 const titleOf = ev => {
   const b = String(ev.badgeText || '').trim();
   if (b) return b.charAt(0) + b.slice(1).toLowerCase();

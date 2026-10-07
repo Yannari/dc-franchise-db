@@ -315,11 +315,15 @@ def render_spot(venue, spot, tod, preview=False, w=1920, h=1080):
         if m.use_nodes and m.users: _td_material(m, L)
     noink = bpy.data.collections.get('NoInk') or bpy.data.collections.new('NoInk')
     if noink.name not in sc.collection.children: sc.collection.children.link(noink)
+    painted = PAINT['on']
     for ob in list(sc.collection.objects):
+        if painted:
+            if not ob.get('ink'): noink.objects.link(ob)
+            continue
         if ob.name.startswith(NOINK + ('Star', 'Moon', 'Flame', 'Hill', 'Ground', 'Water', 'PineTier', 'Frond', 'Bush', 'Ember', 'Fly', 'Bulb', 'Leaf')) \
                 or (ob.name.startswith('Pine') and 'far' in (ob.active_material.name if ob.active_material else '')):
             noink.objects.link(ob)
-    thick = L['thick'] * (0.55 if preview else 1.0)
+    thick = L['thick'] * (0.55 if preview else 1.0) * (0.7 if painted else 1.0)
     sc.render.use_freestyle = True
     sc.render.line_thickness_mode = 'ABSOLUTE'; sc.render.line_thickness = thick
     vl = bpy.context.view_layer; vl.use_freestyle = True
@@ -576,6 +580,9 @@ SCENES = {
 OUTDOOR = {'hosted-camp': {'communal-grounds', 'cabins', 'dock', 'campfire', 'forest-trail'}}
 NIGHT_ONLY = {'ceremony', 'exit'}
 
+# The painted look (the show's backgrounds): materials, cut-outs, sky. See paint_kit.py.
+exec(open(os.path.join(REPO, 'tools', 'td-camp', 'paint_kit.py'), encoding='utf-8').read(), globals())
+
 # Every other venue lives in its own file (venues/<venue>.py) and adds itself to SCENES / OUTDOOR.
 import glob as _glob
 for _vf in sorted(_glob.glob(os.path.join(REPO, 'tools', 'td-camp', 'venues', '*.py'))):
@@ -589,7 +596,7 @@ def run(venue, spot='all', tods='all', preview=False):
             if spot != 'all' and s != spot: continue
             both = ('day', 'night') if s in OUTDOOR.get(v, set()) else (('night',) if s in NIGHT_ONLY else ('day',))
             for tod in both if tods == 'all' else (tods,):
-                clear(); _MATS.clear(); _n[0] = 0
+                clear(); _MATS.clear(); _n[0] = 0; PAINT['on'] = False
                 for c in list(bpy.data.collections): bpy.data.collections.remove(c)
                 fn(tod)
                 out.append(render_spot(v, s, tod, preview=preview))

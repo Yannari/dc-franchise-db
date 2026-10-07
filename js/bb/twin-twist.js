@@ -64,7 +64,9 @@ const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const round2 = v => Math.round(v * 100) / 100;
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
 const P = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', pos: 'theirs', Sub: 'They' }; } };
-const has = (name, verb) => `${P(name).sub} ${P(name).sub === 'they' ? verb : `${verb}s`}`;
+// the verb only, agreeing with the person ("goes", "has", "watches"); the caller writes the pronoun.
+// It used to include the pronoun too, and most callers wrote one as well: "she she gos".
+const has = (name, verb) => (P(name).sub === 'they' ? verb : verb === 'have' ? 'has' : verb === 'go' ? 'goes' : verb === 'do' ? 'does' : /(s|sh|ch|x|z)$/.test(verb) ? `${verb}es` : `${verb}s`);
 
 const STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
   'loyalty', 'boldness', 'intuition', 'temperament'];
@@ -849,13 +851,13 @@ const MISSIONS = [
       return {
         touched: [witness],
         text: `The one in the house this week is ${Math.abs(weakest.d)} points down on ${weakest.k}, `
-          + `and instead of hiding it ${has(ctx.front, 'make')} a performance of it — visibly, `
+          + `and instead of hiding it ${P(ctx.front).sub} ${has(ctx.front, 'make')} a performance of it — visibly, `
           + `cheerfully hopeless, in front of everybody.`,
         houseSees: `${ctx.front} is written off as a threat by most of that room inside a week. `
           + `${witness} is the one who says out loud that ${P(ctx.front).sub} used to be better at this.`,
         seesBadge: 'NOT A THREAT ANY MORE',
         botched: `${witness} does not laugh. ${P(witness).Sub} ${has(witness, 'watch')} it happen and `
-          + `${has(witness, 'go')} quiet, which is worse.`,
+          + `${P(witness).sub} ${has(witness, 'go')} quiet, which is worse.`,
       };
     },
   },
@@ -866,8 +868,8 @@ const MISSIONS = [
 const MEMORY_SLIPS = [
   (n, o) => `${o} picks up a conversation from two days ago and ${n} does not know what it is about. `
     + `${n} covers it, badly, by agreeing with all of it.`,
-  (n, o) => `"You told me that already." ${n} says it to ${o} about something ${o} has never said, `
-    + `and watches ${o} decide whether to argue.`,
+  (n, o) => `"You told me that already," ${n} says to ${o}, about something ${o} has never said. `
+    + `${n} watches ${o} decide whether to argue.`,
   (n, o) => `${o} asks ${n} to finish a sentence they started together on Sunday. ${n} cannot, `
     + `and laughs it off in a way that ${o} will remember.`,
   (n, o) => `${n} calls ${o} by the wrong shortening of ${P(o).posAdj} name — the one nobody in this house uses `
@@ -886,7 +888,7 @@ const FORM_SLIPS = [
     + `and then spends the evening thinking about it.`,
   (n, o) => `${o} has been sitting across from ${n} at that table for three weeks. `
     + `Tonight ${P(o).sub} ${has(o, 'look')} up mid-sentence, for no reason ${P(o).sub} could name, `
-    + `and ${has(o, 'lose')} the thread of ${P(o).posAdj} own story.`,
+    + `and ${P(o).sub} ${has(o, 'lose')} the thread of ${P(o).posAdj} own story.`,
 ];
 
 /**
@@ -1362,7 +1364,7 @@ export function twinDiscovery(week, { rng = Math.random } = {}) {
       text: st.completed
         ? `${st.completed} job${st.completed === 1 ? '' : 's'} finished and ${st.quota - st.completed} to go, `
           + `and it ends here. ${st.other} does not get to play. `
-          + `$${lost.toLocaleString()} goes back in the box on the way out of the room.`
+          + `$${lost.toLocaleString('en-US')} goes back in the box on the way out of the room.`
         : `Not one job finished, and it ends here anyway. ${st.other} came all this way `
           + `to stand in a living room for ninety seconds and be looked at.`,
       players: [st.front, st.other], badgeText: 'THE JOBS STOP', badgeClass: 'grey',
@@ -1513,7 +1515,7 @@ export function checkTwinEntry(week) {
     }, {
       text: `${st.quota} job${st.quota === 1 ? '' : 's'} across ${st.swaps.length} `
         + `swap${st.swaps.length === 1 ? '' : 's'}, and not one of them was ever meant to be possible `
-        + `for one person. $${st.banked.toLocaleString()} and a second vote, in one afternoon.`,
+        + `for one person. $${st.banked.toLocaleString('en-US')} and a second vote, in one afternoon.`,
       players: [st.front, st.other], badgeText: 'THE QUOTA, MET', badgeClass: 'gold',
     }, {
       text: `Nobody in that room has to be told what it means. Every conversation any of them has had `
@@ -1553,7 +1555,7 @@ export function twinEvicted(name, week) {
         + `and one vote too few. They go home as one houseguest, which is what they have been all along.`,
       players: [name, st.other], badgeText: 'ONE EVICTION, TWO PEOPLE', badgeClass: 'grey',
     }, {
-      text: `$${lost.toLocaleString()} banked and gone in the same sentence. `
+      text: `$${lost.toLocaleString('en-US')} banked and gone in the same sentence. `
         + `Every argument this house has had about whether ${name} was being strange turns out `
         + `to have been the only accurate thing anybody said all season.`,
       players: [name], badgeText: 'NOTHING PAID', badgeClass: 'grey',
@@ -1593,7 +1595,7 @@ export function twinUnfinished(week) {
     }, {
       text: `${st.swaps.length} swap${st.swaps.length === 1 ? '' : 's'} and nobody ever said it out loud. `
         + `${st.completed} job${st.completed === 1 ? '' : 's'} out of ${st.quota}, which is not enough, `
-        + `so ${st.other} never got to play and $${lost.toLocaleString()} never got paid.`,
+        + `so ${st.other} never got to play and $${lost.toLocaleString('en-US')} never got paid.`,
       players: [st.front, st.other], badgeText: 'NOT ENOUGH', badgeClass: 'grey',
     }, {
       text: closest

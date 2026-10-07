@@ -2192,6 +2192,126 @@ function moveInScreen(act, ctx, host, row) {
   };
 }
 
+
+// ── the Twin Twist (bb/twin-twist.js): two people playing as one, and only the audience knows ──
+// The user, 2026-10-06: "the twin twist, how does that work, do we have it in the viewer?" It
+// had six classic screens. Now each part is a scene: the night they decide who goes first, every
+// swap in the hidden room with the handoff note, the week's job in the Diary Room, the house
+// noticing something is off, and the endings (found out, both walk in, both walk out).
+function twinScreens(act, ctx) {
+  const front = act.front;
+  const other = act.other || act.twins?.other || null;
+  if (!front) return [];
+  const both = [front, other].filter(Boolean);
+  const inside = (act.twins?.active || 'a') === 'a' ? front : (other || front);
+  const house = (ctx.house || []).filter(n => n !== front);
+  const ONLY = ['ONLY YOU KNOW', '#7c5cff'];
+  const meter = () => {
+    const w = [];
+    if (act.exposureLevel != null || act.exposure != null) w.push(`How close the house is to working it out: ${act.exposureLevel ?? Math.round((act.exposure || 0) * 100) + '%'}.`);
+    if (act.quota) w.push(`Jobs done: ${act.completed || 0} of ${act.quota}.${act.banked ? ` Banked: $${Number(act.banked).toLocaleString('en-US')}.` : ''}`);
+    w.push(`${front} is two people: ${listOf(both)}. The house does not know.`);
+    return w;
+  };
+  const screen = (id, set, title, sub, cast, steps, extra = {}) => ({
+    id, kind: 'twin', anchor: ctx.anchor, set, room: ROOM_NAME[set] || 'Storage Room', cam: CAM[set] || 6,
+    kicker: `Cam ${String(CAM[set] || 6).padStart(2, '0')} · ${ROOM_NAME[set] || 'Storage room'}`, title, sub, day: ctx.day, time: ACT_TIME.house,
+    cast: cast.map((p, i, a) => [p, spread(a.length)[i]]), mood: 'secret', steps, ...extra });
+  const prose = (beats, people) => (beats || []).flatMap(b => proseSteps(b.text || b, people));
+  const out = [];
+  if (act.type === 'twin-open') {
+    const weeks = (String((act.rules || [])[2] || '').match(/Last (\d+) weeks/) || [])[1];
+    const steps = [
+      { k: 'beat', t: `A room the house has never seen. ${listOf(both)} sit facing each other, and they look exactly alike.`, toast: ONLY },
+      { k: 'bb', t: `${listOf(both)}. From tonight, the two of you are one houseguest, and that houseguest is called ${front}.`, rule: 1 },
+      { k: 'bb', t: 'Nobody in the house will be told. Nobody will be warned. If they work it out, they work it out on their own.', rule: 2 },
+      { k: 'bb', t: weeks ? `Last ${word(+weeks)} weeks without being found out, and without ${front} being evicted, and both of you join the game as yourselves.` : `Last long enough without being found out, and both of you join the game as yourselves.`, rule: 3 },
+      { k: 'bb', t: 'Every week I will offer you a job that only two people sharing one name could do. The jobs pay. Every one you take is another chance to be seen.', rule: 4 },
+      { k: 'bb', t: `Get found out, or get ${front} evicted, and it ends there. The second one of you never plays.`, rule: 5 },
+      ...prose(act.beats, both),
+      ...(act.goesFirst ? [{ k: 'dr', by: act.goesFirst, t: `I go in first. Whatever I say to people this week, ${act.waits || 'my twin'} has to remember next week. Every single word.` }] : []),
+      ...(act.waits ? [{ k: 'dr', by: act.waits, t: `I'm in a room with no windows until it's my turn. I'll be learning that house from a notebook.` }] : []),
+    ];
+    out.push(screen('bb-twin-open-v', 'storage', 'The Twin Twist', `Two people, one name: ${front}`, both, steps,
+      { rulesTitle: 'THE TWIN TWIST · ONLY YOU KNOW', rules: [['ONE NAME', `two people play as ${front}`], ['NOBODY IS TOLD', 'the house has to work it out'],
+        ['LAST', weeks ? `${word(+weeks)} weeks unfound, and both enter` : 'long enough unfound, and both enter'], ['THE JOBS', 'a secret job a week, for money'], ['CAUGHT OR EVICTED', 'and it ends there']], why: meter() }));
+  }
+  if (act.type === 'twin-brief' && act.mission) {
+    const m = act.mission;
+    const steps = [
+      { k: 'bb', t: `${front}. This week's job: ${m.name}.`, toast: ONLY },
+      { k: 'bb', t: m.brief },
+      ...(m.pay ? [{ k: 'bb', t: `Pull it off, and it pays $${Number(m.pay).toLocaleString('en-US')}.` }] : []),
+      act.accepted
+        ? { k: 'say', by: inside, t: pickBy(["I'll do it.", "Deal. Give us the week.", "We can do that. Two of us, remember."], `${ctx.week}|twj|${m.id}`) }
+        : { k: 'say', by: inside, t: pickBy(["Not this week. It's too risky.", "No. Somebody is already watching me too closely.", "We'll pass. Staying hidden matters more than the money."], `${ctx.week}|twn|${m.id}`) },
+      ...prose(act.beats, [...both, ...house]),
+    ];
+    out.push(screen('bb-twin-brief-v', 'dr', `The Twins' Job · ${m.name}`, act.accepted ? 'Taken' : 'Turned down', [inside], steps, { why: meter() }));
+  }
+  if (act.type === 'twin-week') {
+    if (act.swap) {
+      const outgoing = inside === front ? other : front;
+      const steps = [
+        { k: 'beat', t: `Late at night. The door at the back of ${act.swap.room || 'the storeroom'} opens for exactly as long as it takes two people to change places.`, toast: ONLY },
+        ...proseSteps(act.swap.text || '', both),
+        ...(act.handoff?.text ? [{ k: 'beat', t: 'The note handed over on the way past:' }, ...proseSteps(act.handoff.text, both)] : []),
+        ...(act.handoff && act.handoff.quality != null ? [{ k: 'dr', by: inside, t: act.handoff.quality >= 0.55 ? `That note's good. I know who's angry with who, and who I'm supposed to be friends with. I can do this.` : `Three names and a doodle. I'm walking into that house half blind.` }] : []),
+        { k: 'beat', t: inside === front ? `${front} walks back out into the house. Nobody noticed anybody was gone.` : `${inside} walks out into the house as ${front}. Nobody looks up.` },
+      ];
+      out.push(screen('bb-twin-swap-v', 'storage', 'The Swap', `${outgoing || 'One twin'} out, ${inside} in`, both, steps, { why: meter() }));
+    }
+    const d = act.debrief;
+    if (d?.mission) {
+      const steps = [
+        { k: 'bb', t: `${front}. The job: ${d.mission.name}.`, toast: ONLY },
+        d.worked ? { k: 'bb', t: `It worked.${d.paid ? ` $${Number(d.paid).toLocaleString('en-US')} goes in the bank.` : ''}`, toast: ['JOB DONE', '#12b76a'] } : { k: 'bb', t: 'It did not come off.', toast: ['JOB FAILED', '#ff2e4d'] },
+        ...prose(d.beats, [...both, ...house]),
+      ];
+      out.push(screen('bb-twin-debrief-v', 'dr', "The Twins' Job · How It Went", d.worked ? 'It worked' : 'It did not come off', [inside], steps, { why: meter() }));
+    }
+    const tells = act.tells;
+    if (tells?.beats?.length) {
+      const noticers = (tells.notices || []).map(x => x.observer).filter(Boolean);
+      const steps = [
+        { k: 'beat', t: `${front} has been ${front} all week. Except for the moments ${front} hasn't.`, toast: ONLY },
+        ...prose(tells.beats, [...both, ...house]),
+        ...(noticers[0] ? [{ k: 'dr', by: noticers[0], t: pickBy([`Something about ${front} is off this week. Same face. Different person. I can't explain it.`, `${front} didn't remember a conversation we had three days ago. Not a detail. The whole thing.`, `I'm not crazy. ${front} laughs differently this week. I'm not saying it out loud yet.`, `${front} was good at that on Monday. Today ${front} wasn't. People don't change that fast.`, `I keep catching ${front} looking at people like they're meeting them for the first time.`, `If I say what I'm thinking about ${front}, everybody will think I've lost it. So I'm writing it down instead.`], `${ctx.week}|twt|${noticers[0]}|${(act.tells?.beats || []).length}`) }] : []),
+      ];
+      out.push(screen('bb-twin-tells-v', 'kitchen', 'Something Is Off', `${front}, and the people starting to notice`, [front, ...noticers.slice(0, 2)], steps, { why: meter() }));
+    }
+  }
+  if (act.type === 'twin-caught') {
+    const teller = act.teller || null;
+    const steps = [
+      ...(teller ? [{ k: 'beat', t: `${teller} has been watching ${front} for days. Tonight, ${teller} says it out loud.` }] : []),
+      ...prose(act.beats, [...both, ...house]),
+      { k: 'beat', t: `There are two of them. There have always been two of them.`, big: [front, 'Found out', 'out'], shake: true },
+      ...(other ? [{ k: 'dr', by: other, t: `I never even got to walk in. I was one door away, the whole time, and now I never will.` }] : []),
+    ];
+    out.push(screen('bb-twin-caught-v', 'ceremony', 'Found Out', `The house works out ${front}`, [front, ...(teller ? [teller] : [])], steps, { why: meter() }));
+  }
+  if (act.type === 'twin-entry' && other) {
+    const steps = [
+      { k: 'bb', t: 'Houseguests, please gather in the living room.', toast: ['THE TWIN TWIST', '#7c5cff'] },
+      ...prose(act.beats, [...both, ...house]),
+      { k: 'say', by: front, t: `Hi, everyone. Yeah. There's two of us. This is ${other}.` },
+      { k: 'say', by: other, t: `Hi. We've met. Most of you, about four times.` },
+      { k: 'beat', t: `${other} joins the game as a houseguest.`, big: [other, 'Joins the game', 'safe'], confetti: true },
+    ];
+    out.push(screen('bb-twin-entry-v', 'ceremony', 'Both Of Them', `${front} and ${other} join the game`, both, steps, { why: meter() }));
+  }
+  if (act.type === 'twin-out' && other) {
+    const steps = [
+      { k: 'beat', t: `${front} walks out of the front door. Waiting outside, in the same clothes, is ${other}.`, door: true },
+      { k: 'beat', t: `The house will find out tonight that it evicted two people.`, big: [front, 'Both go home', 'out'] },
+      ...prose(act.beats, [...both, ...house]),
+    ];
+    out.push(screen('bb-twin-out-v', 'ceremony', 'Two Go Home', `${front} and ${other}`, both, steps, { why: meter() }));
+  }
+  return out;
+}
+
 // ── the evictee's interview ────────────────────────────────────────────
 // Out of the front door and into the studio: the walk to the crowd, the host's questions, what
 // they never saw (who organised it, who lied), the goodbye messages the house recorded, their
@@ -2778,6 +2898,11 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         if (act.type === 'second-veto-ceremony') ctx.nominees = [...(act.nominees || ctx.nominees)];
         beatsOf(act); break;
       case 'team-america': flush(); for (const scr of teamAmericaScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
+      case 'twin-open': case 'twin-brief': case 'twin-week': case 'twin-caught': case 'twin-entry': case 'twin-out': {
+        const tw = twinScreens(act, ctx);
+        flush(); if (tw.length) for (const scr of tw) ceremony(scr); else out.push({ slot: act.type });
+        beatsOf(act); break;
+      }
       case 'bonus-life': flush(); for (const scr of bonusLifeScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'battle-back': flush(); for (const scr of battleBackScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'nightmare-power': flush(); for (const scr of nightmareScreens(act, ctx)) ceremony(scr); ctx.nominees = [...(act.nominees || ctx.nominees)]; beatsOf(act); break;
@@ -2832,7 +2957,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
 // over twenty stay as digits.
 const COUNT_WORD = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
   'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
-const COUNTED = 'of them|of us|of you|correct|votes?|weeks?|days?|people|times|houseguests|jurors|keys|trips|eggs|more|pictures|faces|competitions?|wins?|HOHs?|vetoes|promises|nights?';
+const COUNTED = 'of them|of us|of you|correct|votes?|weeks?|days?|people|times|houseguests|jurors|keys|trips|eggs|more|pictures|faces|competitions?|wins?|HOHs?|vetoes|promises|nights?|things|points|swaps?|jobs?';
 function countWords(t) {
   const w = n => COUNT_WORD[+n] ?? n;
   return t
@@ -2843,7 +2968,7 @@ function countWords(t) {
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|twist|twist-2|interview|interview-2|jury-house(-\d+)*|final-interview|cold)(-\d+)?$/;
+export const REPLACED = /^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|twist|twist-2|interview|interview-2|jury-house(-\d+)*|final-interview|cold|twins|twins-open|twins-job|twins-caught|twins-in|twins-out)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

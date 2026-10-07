@@ -376,4 +376,4 @@ SCENES['survival-island'].update({
     'jungle-trail': si_bamboo_jungle, 'confessional': si_confessional_dc5, 'ceremony': si_ceremony_dc5,
     'voting-booth': si_voting_booth, 'exit': si_exit_dc5, 'ruins': si_ruins, 'cave': si_cave,
 })
-OUTDOOR['survival-island'] |= {'confessional', 'ruins'}
+OUTDOOR['survival-island'] |= {'confessional', 'ruins', 'voting-booth'}

@@ -48,8 +48,8 @@ const COUNT_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven'
 // now prefers the version this SEASON has used least (a line is known by its shape: names,
 // pronouns and counts blanked), so the pools are walked through before anything comes back. Each
 // pick still draws exactly one number from the dice, so no outcome of the season moves.
-const PRONOUN = /(he|she|they|him|her|them|his|hers|their|theirs|himself|herself|themselves)/gi;
-const NUMBER = /(no|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twice)/gi;
+const PRONOUN = /\b(he|she|they|him|her|them|his|hers|their|theirs|himself|herself|themselves)\b/gi;
+const NUMBER = /\b(no|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twice)\b/gi;
 let _nameRe = null, _nameKey = '';
 function shapeOf(text) {
   const names = (players || []).map(p => p.name).filter(Boolean);

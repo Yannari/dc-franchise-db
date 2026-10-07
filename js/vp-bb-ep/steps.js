@@ -473,6 +473,75 @@ const PLEA = {
     `There's a plan being finished in this house tonight, and I'm not the end of it.`],
   'loyalty': [`I've kept every promise I made in here. I'm asking you to keep yours.`],
 };
+// ── why they voted the way they did, in the voter's own words ──
+// The user, 2026-10-07: the classic eviction "had people saying meaningful things with personality";
+// the stepped one read a formula. The ballot records why (the plea that moved it, a bloc, a promise
+// kept or broken, an endgame partner on the block, a recruiter, the room's count), and the voter
+// says it in the Diary Room.
+function voteReason(b, c, noms, salt, used = new Set()) {
+  const other = noms.find(n => n !== b.evict);
+  // two voters never give the same reason in the same words (four said the same line on one night)
+  const pick = list => { const fresh = list.filter(x => !used.has(x)); const t = pickBy(fresh.length ? fresh : list, `${salt}|${b.voter}`); used.add(t); return t; };
+  if (b.pleaMove && b.movedBy) return pick([
+    `I walked in here ready to vote out ${b.movedBy}. Then ${b.movedBy} stood up and said that. I can't ignore it.`,
+    `I'm changing my vote, and I didn't think I would. What ${b.movedBy} just said got to me.`,
+  ]);
+  if (b.stated && b.stated !== b.evict && (c?.promised || b.lied)) return pick([
+    `I told people I'd vote out ${b.stated}. I'm not going to. Nobody in that room will ever know.`,
+    `I said one name out there, and I'm writing another one in here. That's the game.`,
+    `If ${b.stated} finds out I said one thing and did another, I'm in trouble. But ${b.evict} has to go.`,
+  ]);
+  if (c?.cuttingPartner === b.evict) return pick([
+    `${b.evict} and I had a deal. I know. It still has to be ${b.evict}. I can't win with ${b.evict} next to me.`,
+    `This one hurts. ${b.evict} trusted me. But I've got a better path to the end without ${b.evict}.`,
+  ]);
+  if (c?.endgameDeal?.with === other) return pick([
+    `${other} is the person I'm taking to the end. I'm not losing that for anything ${b.evict} said this week.`,
+    `This is easy. ${other} is in my final two. ${b.evict} isn't.`,
+  ]);
+  if (b.blocMove) return pick([
+    `${b.blocMove} decided this one, and I'm with them. That's what an alliance is.`,
+    `It's not completely my call. My people want ${b.evict} out, and I'm not breaking from them now.`,
+    `${b.blocMove} needs every vote this week. Mine is one of them.`,
+    `If I break from ${b.blocMove} now, I'm next. So, ${b.evict}.`,
+  ]);
+  if (c?.allied && other) return pick([
+    `${other} is with me. That's all there is to it. Sorry, ${b.evict}.`,
+    `I'm protecting ${other}. If that means ${b.evict} goes, ${b.evict} goes.`,
+    `${other} would do the same for me. I know it.`,
+  ]);
+  if (c?.promised) return pick([
+    `I gave my word this week, and I keep my word. It's the only thing I've got in here.`,
+    `I promised this vote. Nobody can check what I write in here, and I'm keeping it anyway.`,
+    `My word is worth something in this house. I'm not going to waste it tonight.`,
+  ]);
+  if (b.recruitedBy) return pick([
+    `${b.recruitedBy} came to me this week and asked. I said yes, and I meant it.`,
+    `A week ago I didn't care about this vote. ${b.recruitedBy} changed that.`,
+  ]);
+  if (b.bandwagon) return pick([
+    `Everybody's voting ${b.evict}. I'm not going to be the one vote on the wrong side.`,
+    `I'm not sticking my neck out tonight. The house wants ${b.evict} gone, so do I.`,
+  ]);
+  if (b.assignment?.by && b.assignment.target === b.evict) return pick([
+    `We counted the votes this afternoon. ${b.evict} is the plan, and I'm sticking to it.`,
+    `${b.assignment.by} asked for ${b.evict}. I said yes. Here it is.`,
+    `The numbers were set days ago. I'm one of them.`,
+    `I'm not going rogue tonight. ${b.evict} is the vote.`,
+    `Everyone I trust is voting ${b.evict}. I'm not going to be the surprise.`,
+  ]);
+  // a vote with no story of its own: only a couple of these air (voteReason returns plain: true)
+  if (used.plainCount === undefined) used.plainCount = 0;
+  if (used.plainCount++ >= 2) return null;
+  return pick([
+    `${b.evict} is the bigger threat to my game. It's that simple.`,
+    `${b.evict} has been coming after me for weeks. Not any more.`,
+    `If ${b.evict} stays, ${b.evict} wins the next HOH. I'm not taking that risk.`,
+    `Between the two of them, I'd rather face ${other || 'the other one'} next week.`,
+    `I like ${b.evict}. I just like my chances better without ${b.evict} in the house.`,
+  ]);
+}
+
 function evictionScreen(act, ctx, host) {
   const noms = (act.nominees || ctx.nominees).slice();
   const ballots = (act.ballots || []).filter(b => b && b.voter);
@@ -513,6 +582,7 @@ function evictionScreen(act, ctx, host) {
   if (ballots.length) {
     steps.push({ k: 'host', by: host, t: `Thank you both. It's time for the live vote. The nominees can't vote, and ${ctx.hoh}, as Head of Household, you only vote in the event of a tie. ${ballots[0].voter}, you're first. Please go to the Diary Room.` });
     const voteLines = act.script?.votes || {};
+    const reasonsUsed = new Set();
     ballots.forEach((b, i) => {
       // the voter's own words (bb/script/lines/evictvote.js), the formula last
       const said = (voteLines[b.voter] || []).map(l => l.text).join(' ') || `I vote to evict ${b.evict}.`;
@@ -526,6 +596,9 @@ function evictionScreen(act, ctx, host) {
       if (b.pleaMove) chain.push(`moved by ${b.movedBy}'s plea`);
       chain.push(`casts ${b.evict}`);
       steps.push({ k: 'dr', by: b.voter, t: said, ballot: [b.voter, b.evict, chain] });
+      const commit = (ctx.row?.voteCommitments || []).find(x => x.voter === b.voter);
+      const why = voteReason(b, commit, noms, ctx.week, reasonsUsed);
+      if (why) steps.push({ k: 'dr', by: b.voter, t: why });
       const next = ballots[i + 1]?.voter;
       if (next) steps.push({ k: 'host', by: host, t: pickH([`Thank you, ${b.voter}. ${next}, you're next.`, `Thank you. ${next}, please go to the Diary Room.`, `Thank you, ${b.voter}. ${next}?`, `${next}, you're up.`], `next|${i}`) });
     });
@@ -556,9 +629,43 @@ function evictionScreen(act, ctx, host) {
       const bye = scriptSteps(act.script?.goodbye);
       if (bye.length) steps.push({ k: 'beat', t: `${evicted} has a few seconds with the house.` }, ...bye, { k: 'beat', t: `${evicted} picks up a bag and walks to the front door.` });
       else steps.push({ k: 'beat', t: `${evicted} hugs the house goodbye, picks up a bag, and walks to the front door.` });
+      // ── one last thing: the parting shot, the room, the answer, the fight ──
+      const lw = act.lastWords;
+      if (lw?.speech) {
+        const acc = lw.reveal?.accused;
+        const truth = lw.isTrue === true ? ['Only you know: every word of it is true.'] : lw.isTrue === false ? [`Only you know: none of it is true. ${acc} did not do it, and nobody in that room can know that.`] : [];
+        const open = pickH([`${lw.speaker} gets as far as the door, and stops.`, `The bag is already on ${pronouns(lw.speaker).posAdj || 'their'} shoulder when ${lw.speaker} turns around.`, `The hugs are done. ${lw.speaker} does not go through the door.`], 'lw');
+        steps.push({ k: 'beat', t: open, toast: [lw.register === 'explosion' ? 'THEY LOSE IT' : 'ONE LAST THING', '#ff3355'], tense: [lw.speaker, acc].filter(Boolean) });
+        const sp = proseSteps(lw.speech, [lw.speaker, acc].filter(Boolean));
+        if (sp.length) sp[sp.length - 1] = { ...sp[sp.length - 1], ...(truth.length ? { why: truth } : {}) };
+        steps.push(...sp);
+        // the room divides: the strongest believer, the torn, the one who waves it off
+        const rs = [...(lw.reactions || [])].sort((x, y) => y.belief - x.belief);
+        const pickR = [rs.find(r => r.belief > 0.55 && !r.conflicted), rs.find(r => r.conflicted), [...rs].reverse().find(r => r.belief < -0.25 && !r.conflicted)].filter(Boolean);
+        for (const r of pickR) if (r.text) steps.push(...proseSteps(r.text, [r.listener, acc, lw.speaker].filter(Boolean)));
+        if (lw.response?.text) {
+          const ans = proseSteps(lw.response.text, [acc].filter(Boolean));
+          if (ans.length) ans[0] = { ...ans[0], toast: [lw.response.kind === 'own' ? 'OWNS IT' : lw.response.kind === 'deflect' ? 'RISES ABOVE IT' : 'DENIES IT', '#e8c98a'] };
+          steps.push(...ans);
+        }
+        const cf = lw.confrontation;
+        if (cf) {
+          const op = proseSteps(cf.opener, [cf.challenger, cf.accused]);
+          if (op.length) op[0] = { ...op[0], toast: ['IT BOILS OVER', '#ff3355'], shake: true, tense: [cf.challenger, cf.accused] };
+          steps.push(...op, ...proseSteps(cf.answer, [cf.accused, cf.challenger]), ...proseSteps(cf.close, [cf.challenger, cf.accused]));
+        }
+      }
       steps.push({ k: 'beat', t: pickH([`The front door opens. The roar of the crowd floods into the house.`, `The door opens on lights and noise and cheering. ${evicted} doesn't look back.`, `${evicted} takes one last look at the house. The door opens. The crowd erupts.`], 'door'), door: true });
       steps.push({ k: 'host', by: host, t: pickH([`${evicted}, come on out!`, `Come on out, ${evicted}!`], 'out') });
       steps.push({ k: 'beat', t: `The front door closes. On the memory wall, ${evicted}'s portrait goes black and white.`, exit: evicted });
+      // a final-two or final-three promise broken tonight, for the audience (the house cannot know)
+      for (const d of ctx.row?.dealBreaks || []) {
+        if (!d?.breaker || !d.victim) continue;
+        steps.push({ k: 'dr', by: d.breaker, t: pickH([
+          `I promised ${d.victim} ${d.tier === 'final-two' ? 'the final two' : 'a spot in the final three'}. Tonight I wrote ${d.victim}'s name. I'll have to answer for that in front of the jury.`,
+          `${d.victim} trusted me with the end of this game. I chose a different end.`,
+        ], `deal|${d.breaker}`), toast: [d.tier === 'final-two' ? 'BROKE A FINAL TWO' : 'BROKE A FINAL THREE', '#ff3355'] });
+      }
     }
   }
   const rest = ctx.house.filter(n => !noms.includes(n));
@@ -2487,7 +2594,8 @@ function proseSteps(text, players = []) {
       const n0 = x.narr.replace(ATTR, '').replace(/^[\s,.;:—-]+/, '').trim();
       const n = n0.replace(/^and\s+/i, '').replace(/^[a-z]/, c => c.toUpperCase());
       // "the wall says," / "slowly," / "she adds quietly," between quotations is not a line of its own
-      const manner = n0.length < 28 && !/[.!?]$/.test(n0.replace(/,$/, '')) && /,$|^(?:[a-z]|the |and )/.test(n0);
+      const leftover = n0.length < 30 && /^(to|at|toward|towards|into|across)\b/i.test(n0);
+      const manner = leftover || n0.length < 28 && !/[.!?]$/.test(n0.replace(/,$/, '')) && /,$|^(?:[a-z]|the |and )/.test(n0);
       const said = /\b(says|asks|adds|replies|snaps|mutters|whispers)\b[,.]?$/i.test(n);
       // a beat that led into the quotation ends on a full stop, not ",." ("tells the dark monitor,.")
       if (n.length > 2 && !manner && !said) out.push({ k: 'beat', t: /[.!?]$/.test(n) ? n : n.replace(/[\s,;:—-]+$/, '') + '.' });

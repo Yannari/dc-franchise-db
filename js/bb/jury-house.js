@@ -121,7 +121,7 @@ function arrivalBeats(newcomer, residents, week, rng, out, lastWords = null) {
     ])));
     beats.push(beat('THE NEWS', [newcomer, hohOf].filter(Boolean), hohOf
       ? pick(rng, [
-        `${newcomer} sits down heavily. "${hohOf} won HOH and put me up.${count ? ` ${count}. It wasn't even close.` : ''}"`,
+        `${newcomer} sits down heavily. "${hohOf} won HOH and put me up.${count ? ` ${count}.${against - (ballots.length - against) >= 3 || against === ballots.length ? " It wasn't even close." : against - (ballots.length - against) <= 1 && !tie ? ' One vote. One.' : ''}` : ''}"`,
         `"${hohOf} had the key," ${newcomer} says. "${hohOf} put me on the block, and the house went along with it.${count ? ` ${count}.` : ''}"`,
       ])
       : `"I don't even know where to start," ${newcomer} says. "${count ? `${count}. ` : ''}I thought I had the numbers."`));
@@ -176,7 +176,7 @@ function arrivalBeats(newcomer, residents, week, rng, out, lastWords = null) {
         ])
         : pick(rng, [
           `${corrector} tries. "It wasn't ${story}. ${story} was on your side." ${newcomer} shakes ${P(newcomer).posAdj} head. "You weren't there at the end. I was."`,
-          `"I don't think it was ${story}," ${corrector} says. ${newcomer} isn't having it. "Then who? Because I know what ${story} told me, and I know how I left."`,
+          `${corrector} shakes ${P(corrector).posAdj} head. "I don't think it was ${story}." ${newcomer} isn't having it. "Then who? Because I know what ${story} told me, and I know how I left."`,
         ])));
     }
   }
@@ -185,6 +185,125 @@ function arrivalBeats(newcomer, residents, week, rng, out, lastWords = null) {
   // happened arrive later carrying their own opinion of it.
   if (lastWords) {
     out.blowupsRelitigated.push({ juror: newcomer, accused: lastWords.reveal.accused, isTrue: lastWords.isTrue });
+  }
+  return beats;
+}
+
+// ── the room meets the newcomer ───────────────────────────────────────
+// The user, 2026-10-07: "they don't really talk about each other in the jury house. Are they happy
+// or sad to see the new one? Arguments, hugs, sadness... 'what was your strategy exactly, you were
+// floating and you got rid of me, your only ally'." Every resident with history with the newcomer
+// says so, from the record: who nominated whom (said out loud at every ceremony), the alliances
+// they shared (both were in it), how close they were, and who each believes wrote their name.
+function reunionBeats(newcomer, residents, rng) {
+  const draw = drawer(rng);
+  const weeks = gs.bb?.weeks || [];
+  const nominated = (by, who) => weeks.some(w => w.hoh === by && (w.acts || []).some(a => a?.type === 'nominations' && (a.nominees || []).includes(who)));
+  const shared = (a, b) => (gs.namedAlliances || []).filter(al => (al.members || []).includes(a) && (al.members || []).includes(b)).map(al => al.name);
+  const believes = (j, n) => { try { return believedVoters(j, j).includes(n); } catch { return false; } };
+  const wins = n => { const st = gs.bb?.stats?.[n] || {}; return (st.hohWins || 0) + (st.vetoWins || 0) + (st.blockBusterWins || 0); };
+  const pn = P(newcomer);
+  const rows = residents.map(j => {
+    const put = nominated(newcomer, j), wrote = believes(j, newcomer), al = shared(j, newcomer), bond = getBond(j, newcomer);
+    let kind = null;
+    if ((put || wrote) && al.length) kind = 'ally-betrayed';
+    else if (put) kind = 'nominated-me';
+    else if (wrote) kind = 'voted-me';
+    else if (bond >= 4) kind = 'friend';
+    else if (bond <= -3) kind = 'cold';
+    else if (wins(newcomer) === 0 && (gs.bb?.stats?.[newcomer]?.timesNominated || 0) <= 1) kind = 'floater';
+    const heat = { 'ally-betrayed': 5, 'nominated-me': 4, 'voted-me': 3, friend: 2, cold: 2, floater: 1 }[kind] || 0;
+    return { j, kind, al: al[0], heat };
+  }).filter(r => r.kind).sort((a, b) => b.heat - a.heat).slice(0, 3);
+  const beats = [];
+  for (const { j, kind, al } of rows) {
+    const pj = P(j);
+    if (kind === 'ally-betrayed') beats.push(beat('BETRAYED', [j, newcomer], draw('re139', [
+      `${j} hasn't moved from the couch. "I was in ${al} with you. I was your only real ally in that house, and you got rid of me. So I'm not getting up to hug you."`,
+      `${j} waits until the hugs are over. "${al}. Remember that? We made it together. Then you turned on me the second it suited you." ${newcomer} doesn't look away. "It wasn't personal. It was the numbers." "It was personal to me," ${j} says.`,
+    ])));
+    else if (kind === 'nominated-me') beats.push(beat('THE KEY', [j, newcomer], draw('re656', [
+      `${j} folds ${pj.posAdj} arms. "You put me on the block. Now you're here too. Funny how that works." ${newcomer} sits across from ${pj.obj}. "I know. I'd do it again, and I'm still sorry it was you."`,
+      `${j} gives ${newcomer} a long look. "You nominated me. You looked me in the eye at that ceremony." ${newcomer} nods. "I did. You were coming for me, and you know it." ${j} almost smiles. "I was."`,
+    ])));
+    else if (kind === 'voted-me') beats.push(beat('THE BALLOT', [j, newcomer], draw('re1170', [
+      `${j} doesn't stand up. "You wrote my name. I know you did." ${newcomer} sighs. "Can we at least wait until I've put my bag down?"`,
+      `${j} has been waiting for this. "So. Did you vote me out?" ${newcomer} takes a long time to answer. "Does it matter now?" "It matters to me," ${j} says.`,
+    ])));
+    else if (kind === 'friend') beats.push(beat('FRIEND', [j, newcomer], draw('re1566', [
+      `${j} hugs ${newcomer} and doesn't let go. "I'm so sorry. I really wanted it to be you at the end. I was rooting for you every week."`,
+      `${j} has tears in ${pj.posAdj} eyes. "I'm happy to see you, and I hate that I'm seeing you here. You deserved to go further."`,
+    ])));
+    else if (kind === 'cold') beats.push(beat('COLD', [j, newcomer], draw('re1934', [
+      `${j} barely looks up. "Of course it's you." ${newcomer} drops the bag. "Nice to see you too."`,
+      `${j} stays by the window. "Welcome to the jury. Don't expect me to make room on the couch."`,
+    ])));
+    else if (kind === 'floater') beats.push(beat('THE STRATEGY', [j, newcomer], draw('re2240', [
+      `${j} gets straight to it. "Okay, honest question. What was your strategy, exactly? Because from out here it looked like you were floating." ${newcomer} bristles. "Staying off the block is a strategy. I was there longer than you were."`,
+      `${j} doesn't hold back. "What were you actually doing in there? You never won anything. You never put anyone up." ${newcomer} shrugs. "I kept everybody happy, and it kept me there for weeks. Right up until it didn't."`,
+    ])));
+  }
+  return beats;
+}
+
+// ── the news from the house ───────────────────────────────────────────
+// The user, 2026-10-07: "it's rather quick". An arrival was a hug and one sentence. The newcomer
+// is the only news the jury gets, so they are asked for it: who is running the house now, who is
+// close to whom, and who they would give the money to today. Public facts only (wins, who is
+// still there, who is visibly close); the favourite is the newcomer's own read.
+function newsBeats(newcomer, residents, week, rng) {
+  const beats = [];
+  // the same night, different words: a season of arrivals rotates through every version
+  const rot = list => list[((week || 0) + Math.floor(rng() * 2)) % list.length];
+  const alive = (gs.activePlayers || []).filter(n => n !== newcomer);
+  if (!alive.length) return beats;
+  const wins = n => { const st = gs.bb?.stats?.[n] || {}; return (st.hohWins || 0) + (st.vetoWins || 0) + (st.blockBusterWins || 0); };
+  const top = alive.slice().sort((a, b) => wins(b) - wins(a))[0];
+  let pair = null;
+  for (const a of alive) for (const b of alive) if (a < b && (!pair || getBond(a, b) > getBond(pair[0], pair[1]))) pair = [a, b];
+  const fav = favourite(newcomer), least = leastFavourite(newcomer);
+  const asker = residents.slice().sort((a, b) => getBond(newcomer, b) - getBond(newcomer, a))[0];
+  const why = n => wins(n) >= 3 ? `${n} has won ${NUM(wins(n))} competitions. Nobody's played harder.`
+    : getBond(newcomer, n) >= 4 ? `${n} never lied to me. Not once. In that house, that means everything.`
+      : wins(n) === 0 ? `${n} hasn't won a thing, but ${n} is still there, and everybody likes ${P(n).obj}. That's a game too.`
+        : `${n} is playing the smartest game left in there. You can see it if you watch closely.`;
+  if (asker) {
+    beats.push(beat('THE NEWS', [asker, newcomer, top], rot([
+      `${asker} pulls a chair close. "Tell us about the house. Who's in charge?" ${newcomer} laughs, without much in it. "${top}. ${top} has won ${NUM(wins(top))} competitions, and the rest of us are just trying to stay out of the way."`,
+      `${asker} can't wait any longer. "Okay. Who's the threat now?" ${newcomer} answers before the question is finished. "${top}. Obviously ${top}. ${NUM(wins(top)).replace(/^./, c => c.toUpperCase())} competitions."`,
+      `${asker} leans in. "So who's running the house now?" ${newcomer} doesn't need to think. "${top}. ${top} has won ${NUM(wins(top))} competitions. Every week it's ${top}'s house."`,
+      `${asker} wants to know everything. "Who's winning in there?" ${newcomer} doesn't hesitate. "${top}. ${NUM(wins(top)).replace(/^./, c => c.toUpperCase())} competitions. Nobody can beat ${P(top).obj} at anything."`,
+    ])));
+    if (pair && getBond(pair[0], pair[1]) >= 4 && !pair.includes(top)) beats.push(beat('THE PAIR', [newcomer, ...pair],
+      rot([
+        `${newcomer} keeps going. "And ${pair[0]} and ${pair[1]} are joined at the hip. Everybody knows it. Nobody's done anything about it yet."`,
+        `${newcomer} has more. "Watch ${pair[0]} and ${pair[1]}. They've been working together for weeks, and they're going to take each other to the end if nobody splits them."`,
+        `${newcomer} lowers ${P(newcomer).posAdj} voice. "${pair[0]} and ${pair[1]} are a pair. If you're voting for one of them, you're basically voting for both."`,
+      ])));
+    beats.push(beat('THE QUESTION', [asker, newcomer, fav], rot([
+      `${asker} turns to ${newcomer}. "If it ended tonight, who gets your vote?" ${newcomer} takes a breath. "${fav}. ${why(fav)}"`,
+      `${asker} waits for the room to go quiet. "So who's your winner?" ${newcomer} doesn't need long. "${fav}. ${why(fav)}"`,
+      `"Okay, real question," ${asker} says. "Who do you want to win?" ${newcomer} answers straight away. "Right now? ${fav}. ${why(fav)}"`,
+    ])));
+    // somebody in the room disagrees, with their own favourite
+    const other = residents.find(j => j !== asker && favourite(j) && favourite(j) !== fav);
+    if (other) beats.push(beat('DISAGREE', [other, fav, favourite(other)],
+      rot([
+        `${other} shakes ${P(other).posAdj} head. "Not for me. I'd give it to ${favourite(other)} before ${fav}. You haven't been out here long enough to see it yet."`,
+        `${other} disagrees straight away. "${fav}? Really? ${favourite(other)} has played a much better game, and you know it."`,
+        `${other} has a different answer. "It's ${favourite(other)} for me. We can argue about it at the roundtable."`,
+      ])));
+    if (least && least !== fav) beats.push(beat('THE GRUDGE', [newcomer, least],
+      rot([
+        `${newcomer} looks at the fire. "The one I won't vote for is ${least}. Whatever ${least} says at the end, I'll remember how ${P(least).sub} played me."`,
+        `${newcomer} adds one more thing, very calmly. "${least} isn't getting my vote. I watched how ${least} treated people in there."`,
+        `${newcomer} isn't finished. "And ${least}? Never. ${least} could make the best speech in history and I'd still say no."`,
+      ])));
+  } else {
+    // the first juror, alone: the same news, said to an empty room
+    beats.push(beat('ALONE', [newcomer, fav], `${newcomer} sits by the fire with nobody to talk to. "If I had to vote tonight, it would be ${fav}. ${why(fav)}"`));
+    if (least && least !== fav) beats.push(beat('ALONE', [newcomer, least], `${newcomer} goes quiet for a moment, then says one more name. "And not ${least}. Never ${least}. Not after how ${P(least).sub} played me."`));
+    beats.push(beat('ALONE', [newcomer], `${newcomer} stays up late, looking at the door. "I hope the next one through it is somebody I like. It's going to be a long few weeks."`));
   }
   return beats;
 }
@@ -222,7 +341,7 @@ function longWeekBeats(residents, week, rng) {
         `${enemy} has tried all week to get a word out of ${juror}. At dinner, one more try. "Can you pass the salt?" ${juror} passes it without looking up.`,
         `${enemy} tries to start a conversation. "I'm not ready," ${juror} says. "You sent me here. Give me a few more days before you want to be friends."`,
         `${juror} leaves the room every time ${enemy} walks in. "It's not about the game," ${juror} tells the others. "It's about how ${enemy} lied to my face."`,
-        `"You could at least look at me," ${enemy} says. "I could," ${juror} says, "but I'd rather not. You know what you did."`,
+        `${enemy} sits down next to ${juror}. "You could at least look at me." ${juror} keeps staring at the fire. "I could. I'd rather not. You know what you did."`,
       ])));
   }
 
@@ -233,7 +352,7 @@ function longWeekBeats(residents, week, rng) {
     beats.push(beat('THE LONG DAYS', [juror], draw('long2', [
       `${juror} keeps replaying the week ${P(juror).sub} went home. "I keep thinking, if I'd talked to one more person, I'd still be in there."`,
       `${juror} sits by the fire with the others. "The worst part isn't losing. It's not knowing what's happening in there right now."`,
-      `"I miss it," ${juror} admits at dinner. "Even the bad days. Out here there's nothing to do but think about what I got wrong."`,
+      `At dinner, ${juror} finally admits it. "I miss it. Even the bad days. Out here there's nothing to do but think about what I got wrong."`,
       `${juror} is up early again, out on the porch. "I still wake up waiting for the house alarm," ${P(juror).sub} says. "Then I remember I'm done."`,
       `${juror} has been quiet all evening. "I've stopped being angry. Now I'm just trying to work out who actually deserves to win. It's harder than I thought."`,
       `${juror} reads the same page of a book for an hour. "I can't concentrate. All I can think about is who's going to be sitting in those two chairs."`,
@@ -539,6 +658,7 @@ export function generateBBJuryHouse(week, rngIn) {
     ? arrivalBeats(newcomer, residents.filter(n => n !== newcomer), num, rng, out,
       week.lastWords || null)
     : [];
+  if (arrivals.length && newcomer) arrivals.push(...reunionBeats(newcomer, residents.filter(n => n !== newcomer), rng), ...newsBeats(newcomer, residents.filter(n => n !== newcomer), num, rng));
   if (arrivals.length) acts.push({ title: 'The Door Opens', beats: arrivals });
 
   // What the room passes between itself, whether or not tonight is a big one.

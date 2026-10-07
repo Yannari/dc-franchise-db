@@ -9,7 +9,7 @@
 
 export default {
   'story.alliance.formed.pact': [
-    { id: 'af3.f1', turns: [
+    { id: 'af3.f1', deal: 'Final Two', turns: [
       { by: 'b', say: "Can I say something weird?" },
       { by: 'a', say: "You always do." },
       { by: 'b', say: "I don't want to get to the end of this and have nobody." },
@@ -20,9 +20,9 @@ export default {
       { by: 'a', say: "Are you asking me out? Game-wise?" },
       { by: 'b', say: "Game-wise, yes. Don't make it weird." },
       { by: 'a', say: "...Yes. Okay. Final two." },
-      { by: 'b', dr: "Asking someone to be your final two is somehow scarier than asking someone on a date. And I've been turned down for dates." },
+      { by: 'b', dr: "I asked {a} to be my final two, and {a} said yes. It was scarier than asking someone on a date, but now I'm not going to the end alone." },
     ] },
-    { id: 'af3.f2', when: { early: true }, turns: [
+    { id: 'af3.f2', deal: 'Final Two', when: { early: true }, turns: [
       { by: 'a', say: "Okay, hear me out." },
       { by: 'b', say: "I'm hearing." },
       { by: 'a', say: "You look like you could win a competition. I can talk to anyone. Nobody's looking at either of us properly yet." },
@@ -33,9 +33,9 @@ export default {
       { by: 'b', say: "That's a compliment, right?" },
       { by: 'a', say: "It's the biggest compliment in this house." },
       { by: 'b', say: "Okay. Deal." },
-      { by: 'a', dr: "Keep your biggest threat closest. Specifically, keep them in a final two with you." },
+      { by: 'a', dr: "{b} is my final two now. {b} is also the person I'd least want to face at the end, so I'd rather have {b} with me than against me." },
     ] },
-    { id: 'af3.f3', room: 'living-room', turns: [
+    { id: 'af3.f3', deal: 'Final Two', room: 'living-room', turns: [
       { beat: 'Late. {a} and {b} are the last two awake on the sofas.' },
       { by: 'a', say: "Can I ask you something and you tell me the truth?" },
       { by: 'b', say: "Depends on the question." },
@@ -49,9 +49,9 @@ export default {
       { by: 'b', say: "No, good 'oh'. Me too. You." },
       { by: 'a', say: "So that's a thing now." },
       { by: 'b', say: "That's a thing now." },
-      { by: 'b', dr: "Two people admitting they'd never vote each other out. In this house that's a marriage proposal." },
+      { by: 'b', dr: "{a} and I just admitted we'd never vote each other out. That's a final two, whether we call it one or not." },
     ] },
-    { id: 'af3.f4', turns: [
+    { id: 'af3.f4', deal: 'Final Two', turns: [
       { by: 'a', say: "I keep thinking about the end." },
       { by: 'b', say: "Already?" },
       { by: 'a', say: "Already. Who's sitting there. Who I'd want next to me." },
@@ -61,9 +61,9 @@ export default {
       { by: 'a', say: "It can be both." },
       { by: 'b', say: "It can. Okay. Then let's say it. You and me at the end." },
       { by: 'a', say: "You and me." },
-      { by: 'a', dr: "I've said 'final two' to one person in here. Just one. I want that on the record, because nobody believes it." },
+      { by: 'a', dr: "{b} and I are a final two now. I've only said 'final two' to one person in this house, and it's {b}. Nobody will believe that, but it's true." },
     ] },
-    { id: 'af3.f5', turns: [
+    { id: 'af3.f5', deal: 'Final Two', turns: [
       { by: 'b', say: "Promise me something." },
       { by: 'a', say: "Anything. Within reason." },
       { by: 'b', say: "If you ever have to put me up, you tell me first. Before the ceremony. To my face." },
@@ -75,9 +75,9 @@ export default {
       { by: 'b', say: "Look at you, sneaking that in." },
       { by: 'a', say: "Is that a yes?" },
       { by: 'b', say: "That's a yes." },
-      { by: 'b', dr: "{a} slipped a final two in at the end of a completely different promise. It was so smooth I almost missed it, and that worries me a bit." },
+      { by: 'b', dr: "{a} and I have a final two now. {a} slipped it in at the end of a completely different promise, and it was so smooth that it worries me a little." },
     ] },
-    { id: 'af3.f6', when: { late: false, third: true }, turns: [
+    { id: 'af3.f6', deal: 'Final Three', when: { late: false, third: true }, turns: [
       { by: 'c', say: "Can I just say, we three never fight." },
       { by: 'a', say: "We don't, do we?" },
       { by: 'b', say: "We really don't. Everybody else is screaming at each other." },
@@ -89,9 +89,9 @@ export default {
       { by: 'a', say: "Grown-ups in this house. Okay." },
       { by: 'b', say: "I'm in." },
       { by: 'a', say: "Fine. In." },
-      { by: 'a', dr: "The three of us never fight. That's great until there's only one chair left at the end." },
+      { by: 'a', dr: "{b}, {c} and I just made a final three. We never fight, which is great, until there are only two chairs left at the end." },
     ] },
-    { id: 'af3.f7', turns: [
+    { id: 'af3.f7', deal: 'Final Two', turns: [
       { by: 'a', say: "Can we make a deal that's actually real? Not like everyone else's deals." },
       { by: 'b', say: "What's the difference?" },
       { by: 'a', say: "Everyone else's are just words. I want one with rules." },
@@ -101,9 +101,9 @@ export default {
       { by: 'a', say: "Especially then." },
       { by: 'b', say: "...Okay. I like rules. Shake on it." },
       { beat: 'They shake hands, then add a fist bump, then argue about whether the fist bump counts.' },
-      { by: 'b', dr: "We have rules now. Real ones. Nobody else in this house has rules. I feel very organised." },
+      { by: 'b', dr: "{a} and I have a deal with rules: we never vote against each other, and we talk before every vote, all the way to the end. Nobody else in here has rules. That's why I think ours will last." },
     ] },
-    { id: 'af3.f8', turns: [
+    { id: 'af3.f8', deal: 'Final Two', turns: [
       { by: 'b', say: "Why are you smiling like that?" },
       { by: 'a', say: "I've decided something." },
       { by: 'b', say: "That's terrifying. What?" },
@@ -114,9 +114,9 @@ export default {
       { by: 'a', say: "You get a say. Say yes." },
       { by: 'b', say: "...Yes. Fine. But I'm deciding the next thing." },
       { by: 'a', say: "Deal." },
-      { by: 'a', dr: "Best decision I've made in the shower in my life. Second best was the shampoo." },
+      { by: 'a', dr: "{b} is my final two. I decided it in the shower, {b} said yes, and now it's real." },
     ] },
-    { id: 'af3.f9', turns: [
+    { id: 'af3.f9', deal: 'Final Two', turns: [
       { by: 'a', say: "You know what I like about you?" },
       { by: 'b', say: "My good looks?" },
       { by: 'a', say: "You never pretend. Everybody in here pretends. You just say stuff." },
@@ -126,9 +126,9 @@ export default {
       { by: 'a', say: "Like final two." },
       { by: 'b', say: "Okay. I'm going to say yes, and I'm not going to pretend I'm not thrilled." },
       { by: 'a', say: "See? That. That's why." },
-      { by: 'b', dr: "{a} likes that I don't pretend. So I'm definitely not going to pretend I didn't already want this." },
+      { by: 'b', dr: "{a} wants me in the final two because I don't pretend. So I won't pretend now: I wanted this deal before {a} even asked." },
     ] },
-    { id: 'af3.f10', room: 'bedroom', when: { third: true }, turns: [
+    { id: 'af3.f10', deal: 'Final Three', room: 'bedroom', when: { third: true }, turns: [
       { beat: 'Bedroom. {a}, {b} and {c} are squeezed onto one bed.' },
       { by: 'b', say: "Is this an alliance meeting or a sleepover?" },
       { by: 'a', say: "Both. It's a sleeping alliance." },
@@ -138,9 +138,9 @@ export default {
       { by: 'c', say: "Yes. Can I have more of the pillow now?" },
       { by: 'a', say: "Members of the alliance share the pillow equally." },
       { by: 'c', say: "That's not equal, you've got all of it!" },
-      { by: 'c', dr: "Final three. Made on a single bed with one pillow between three people. Very official." },
+      { by: 'c', dr: "{a}, {b} and I are a final three now. We made it squeezed onto one bed with one pillow, but it counts." },
     ] },
-    { id: 'af3.f11', turns: [
+    { id: 'af3.f11', deal: 'Final Two', turns: [
       { by: 'b', say: "If it comes down to it, who are you taking to the end?" },
       { by: 'a', say: "Honestly?" },
       { by: 'b', say: "Honestly." },
@@ -150,7 +150,7 @@ export default {
       { by: 'b', say: "That's kind of beautiful and kind of stupid." },
       { by: 'a', say: "That's me. Final two?" },
       { by: 'b', say: "Final two." },
-      { by: 'b', dr: "{a} chose me over a better strategy. I'm going to make sure that wasn't a mistake." },
+      { by: 'b', dr: "{a} could have picked somebody easy to beat as a final two, and picked me instead. I'm going to make sure that wasn't a mistake." },
     ] },
   ],
 
@@ -165,7 +165,7 @@ export default {
       { by: 'a', say: "Friends talk. Final twos tell each other what other people say in private." },
       { by: 'b', say: "That's a big jump." },
       { by: 'a', say: "It's a small jump. I just jumped it." },
-      { by: 'a', dr: "If you want to know who's in a deal, tell one person a secret and see who else knows by dinner." },
+      { by: 'a', dr: "Something I only ever said to {b} came back to me from {c}. That means {b} and {c} have a deal, and {b} has been telling {c} everything I say." },
     ] },
     { id: 'ax3.2', turns: [
       { by: 'a', say: "Can I give you some advice?" },

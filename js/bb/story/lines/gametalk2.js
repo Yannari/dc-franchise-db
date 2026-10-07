@@ -281,13 +281,13 @@ export default {
     { id: 'gt2.bv3', room: 'living-room', turns: [
       { beat: 'Living room. {a} is sitting very straight on the sofa. {b} sits down slowly, like approaching a wild animal.' },
       { by: 'b', say: "Do I want to know?" },
-      { by: 'a', say: "{c} just told me to calm down." },
+      { by: 'a', say: "I said in the kitchen that I keep getting left out when people talk game. That's all I said. And {c} looked right at me and told me to calm down. In front of everybody." },
       { by: 'b', say: "Oh no." },
-      { by: 'a', say: "I was calm. I was completely calm. Until {c} told me to calm down." },
+      { by: 'a', say: "I wasn't shouting. I wasn't even upset. I was calm until {c} said that." },
       { by: 'b', say: "Are you calm now?" },
       { by: 'a', say: "I'm very calm." },
       { by: 'b', say: "You're gripping a cushion." },
-      { by: 'a', dr: "Nobody in the history of the world has calmed down because somebody told them to. {c} should know that." },
+      { by: 'a', dr: "I said one honest thing, and {c} made me look hysterical in front of the whole house. That's what I'm angry about, and I won't forget it." },
     ] },
     { id: 'gt2.bv4', phase: ['prejury', 'jury', 'endgame'], room: 'bedroom', turns: [
       { beat: 'Bedroom, door shut. {a} is lying on the floor. {b} is lying on the bed above.' },

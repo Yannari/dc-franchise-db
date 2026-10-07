@@ -443,7 +443,7 @@ export default {
 
   // ── formed: an unnamed final two / final three / jury pact ───────────
   'story.alliance.formed.pact': [
-    { id: 'af2.f1', turns: [
+    { id: 'af2.f1', deal: 'Final Two', turns: [
       { by: 'a', say: "I need to say something, and I need you to not laugh." },
       { by: 'b', say: "I'm not laughing." },
       { by: 'a', say: "You're already smiling." },
@@ -454,10 +454,10 @@ export default {
       { by: 'b', say: "...Okay. Final two." },
       { by: 'a', say: "Say it like you mean it." },
       { by: 'b', say: "Final two. I mean it." },
-      { by: 'a', dr: "We didn't write it down. We didn't need to. I'll remember." },
-      { by: 'b', dr: "Do I mean it? Right now? Yes. Ask me again in a month." },
+      { by: 'a', dr: "{b} and I just made a final two. No paper, no handshake, just our word, and I'll remember it." },
+      { by: 'b', dr: "I said final two to {a} and I meant it today. Whether I still mean it in a month depends on how {a} plays." },
     ] },
-    { id: 'af2.f2', when: { third: true }, presumes: ['vote'], turns: [
+    { id: 'af2.f2', deal: 'Final Three', when: { third: true }, presumes: ['vote'], turns: [
       { by: 'a', say: "Okay. The three of us. Can we talk about the three of us?" },
       { by: 'c', say: "Here it comes." },
       { by: 'a', say: "I'm serious. We've been voting together. We've been talking every day. I want it to be us three at the end." },
@@ -468,9 +468,9 @@ export default {
       { by: 'b', say: "I'm in." },
       { by: 'c', say: "...Yeah. Me too. Final three." },
       { beat: 'Three hands go in. Nobody says anything about who wins after that.' },
-      { by: 'c', dr: "A final three is a great deal. Right up until it's time to make it a final two." },
+      { by: 'c', dr: "{a}, {b} and I are a final three now. It's a great deal, right up until the three of us have to become two." },
     ] },
-    { id: 'af2.f3', turns: [
+    { id: 'af2.f3', deal: 'Final Two', turns: [
       { by: 'b', say: "Can I ask you something serious?" },
       { by: 'a', say: "Sure." },
       { by: 'b', say: "If you won HOH, would you ever put me up?" },
@@ -482,9 +482,9 @@ export default {
       { by: 'b', say: "Did we?" },
       { by: 'a', say: "We did. You and me, we don't put each other up. All the way to the end." },
       { by: 'b', say: "All the way to the end." },
-      { by: 'b', dr: "I wasn't planning to make a deal today. I was just asking a question. That's how the good ones happen." },
+      { by: 'b', dr: "{a} and I just agreed never to put each other up, all the way to the end. I only came over to ask a question, and I walked away with a final two." },
     ] },
-    { id: 'af2.f4', turns: [
+    { id: 'af2.f4', deal: 'To the Jury, Together', turns: [
       { by: 'a', say: "Can we just agree on something?" },
       { by: 'b', say: "Depends what it is." },
       { by: 'a', say: "Whatever happens, we make jury. Both of us. We don't go home before then." },
@@ -493,9 +493,29 @@ export default {
       { by: 'b', say: "...That's actually really smart." },
       { by: 'a', say: "Thank you, I have moments." },
       { by: 'b', say: "Okay. Jury. Both of us." },
-      { by: 'a', dr: "Everybody promises final two. Nobody means it. I promised something smaller, so I can actually keep it." },
+      { by: 'a', dr: "{b} and I promised to get each other to jury. Everybody promises final two and nobody means it. This is smaller, so I can actually keep it." },
     ] },
-    { id: 'af2.f5', turns: [
+    { id: 'af2.j2', deal: 'To the Jury, Together', turns: [
+      { by: 'a', say: "I'm not going to promise you the end. Nobody can promise that." },
+      { by: 'b', say: "Okay. So what are you promising?" },
+      { by: 'a', say: "That neither of us goes home before jury. I vote to keep you every week until then, and you do the same for me." },
+      { by: 'b', say: "And after that?" },
+      { by: 'a', say: "After that we talk again. But we both get a vote at the end." },
+      { by: 'b', say: "That's oddly honest." },
+      { by: 'b', say: "Okay. Jury, together." },
+      { by: 'a', dr: "{b} and I promised to keep each other safe until jury. It's not a final two, but it's a promise I know I can keep." },
+    ] },
+    { id: 'af2.j3', deal: 'To the Jury, Together', turns: [
+      { by: 'b', say: "Can I ask what you actually want from me?" },
+      { by: 'a', say: "Your vote, every week, until we're both on the jury. Mine too." },
+      { by: 'b', say: "Just until jury?" },
+      { by: 'a', say: "Just until jury. Anything past that is a lie in this house." },
+      { by: 'b', say: "Then I'll take the honest version." },
+      { by: 'a', say: "Shake on it?" },
+      { by: 'b', say: "Shake on it." },
+      { by: 'b', dr: "{a} and I made a deal to get each other to jury. {a} wouldn't promise me the end, and that's exactly why I believe the rest of it." },
+    ] },
+    { id: 'af2.f5', deal: 'Final Two', turns: [
       { by: 'a', say: "Okay. Real question." },
       { by: 'b', say: "Go." },
       { by: 'a', say: "Who do you want to sit next to at the end?" },
@@ -508,7 +528,7 @@ export default {
       { by: 'b', say: "I guess that's a final two." },
       { by: 'a', say: "Don't tell anyone." },
       { by: 'b', say: "Who would I tell? You're the only one I talk to." },
-      { by: 'b', dr: "{a} asked me straight out. Nobody asks straight out in here. That's why I said yes." },
+      { by: 'b', dr: "{a} asked me straight out to be a final two, and I said yes. Nobody asks straight out in here, and that's exactly why I trust it." },
     ] },
   ],
 

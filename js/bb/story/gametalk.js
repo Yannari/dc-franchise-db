@@ -273,7 +273,10 @@ export function hohWeekFor(week, ctx, clock, talked, lastGone) {
       // two targets, a split pair, two easy names: either nominee leaving is the plan working
       const either = ['double-target', 'two-targets', 'pair-split', 'expendables'].includes(plan.structure) && !plan.backdoorTarget
         && (plan.nominees || []).includes(lastGone);
-      if (lastGone === real || either) want('hohweek.verdict.done', { a: hoh, b: closest(hoh, [lastGone]), c: lastGone }, {}, ['c']);
+      // a three-chair week is built so any of the HOH's names leaving works (the pawn aside)
+      const block3 = ((prev.acts || []).find(x => x?.type === 'nominations' && !x.byCoHoh)?.nominees || []);
+      const anyOf3 = block3.length >= 3 && block3.includes(lastGone) && lastGone !== plan.pawn;
+      if (lastGone === real || either || anyOf3) want('hohweek.verdict.done', { a: hoh, b: closest(hoh, [lastGone]), c: lastGone }, {}, ['c']);
       else if (lastGone === plan.pawn) want('hohweek.verdict.pawn', { a: hoh, b, c: real, d: lastGone }, {}, ['d']);
       else if (house.includes(real)) want('hohweek.verdict.missed', { a: hoh, b, c: real });
     }
@@ -285,33 +288,49 @@ export function hohWeekFor(week, ctx, clock, talked, lastGone) {
   const hoh = ctx.hoh;
   const plan = week.plan;
   if (!hoh || !house.includes(hoh) || !plan) return [];
-  const b = closest(hoh, [plan.target, plan.pawn, plan.backdoorTarget, ...(plan.nominees || [])].filter(Boolean));
-  const [n0, n1] = plan.nominees || [];
-  if (plan.backdoorTarget) want('hohweek.plan.backdoor', { a: hoh, b, c: n0, d: n1, e: plan.backdoorTarget });
+  // The block as the ceremony actually set it, not the plan's first draft: a Block Buster week
+  // seats three, and the third chair is filled by the same read that names a replacement, so a
+  // backdoor target can end up nominated at the ceremony and the backdoor never happens (the
+  // user, 2026-10-07: "it doesn't take into account that with the Block Buster there are three").
+  const nomAct = (week.acts || []).find(x => x?.type === 'nominations' && !x.byCoHoh);
+  const block = (nomAct?.nominees?.length ? nomAct.nominees : plan.nominees || []).filter(Boolean);
+  const bd = plan.backdoorTarget && !block.includes(plan.backdoorTarget) ? plan.backdoorTarget : null;
+  const real = bd || (block.includes(plan.backdoorTarget) ? plan.backdoorTarget : block.includes(plan.target) ? plan.target : block[0]);
+  const b = closest(hoh, [real, plan.pawn, bd, ...block].filter(Boolean));
+  const [n0, n1] = block;
+  if (block.length >= 3) {
+    if (bd) want('hohweek.plan3.backdoor', { a: hoh, b, c: block[0], d: block[1], f: block[2], e: bd });
+    else {
+      const pawn = plan.pawn && block.includes(plan.pawn) && plan.pawn !== real ? plan.pawn : null;
+      const rest = block.filter(n => n !== real && n !== pawn);
+      if (pawn) want('hohweek.plan3.pawn', { a: hoh, b, c: real, d: pawn, f: rest[0] });
+      else want('hohweek.plan3.targets', { a: hoh, b, c: real, d: rest[0], f: rest[1] });
+    }
+  } else if (bd) want('hohweek.plan.backdoor', { a: hoh, b, c: n0, d: n1, e: bd });
   else {
     const kind = PLAN_KIND[plan.structure] || 'pawn';
-    const other = (plan.nominees || []).find(n => n !== plan.target);
-    want(`hohweek.plan.${kind}`, { a: hoh, b, c: plan.target, d: kind === 'pawn' ? (plan.pawn || other) : other });
+    const other = block.find(n => n !== real);
+    want(`hohweek.plan.${kind}`, { a: hoh, b, c: real, d: kind === 'pawn' ? (plan.pawn || other) : other });
   }
   // every ask the engine made, in order: a refusal, then the one who said yes
   for (const ask of (week.pawnAsk?.asked || []).slice(0, 2)) {
     // on a backdoor the pawn sits beside the decoy, and the HOH keeps the real target to themselves
-    want(ask.accepted ? 'hohweek.pawn.agree' : 'hohweek.pawn.refuse', { a: hoh, b: ask.name, c: plan.backdoorTarget ? n0 : plan.target });
+    want(ask.accepted ? 'hohweek.pawn.agree' : 'hohweek.pawn.refuse', { a: hoh, b: ask.name, c: bd ? n0 : real });
   }
   // the real target fishes. What the HOH says is who they are: a nice archetype never lies; a
   // backdoor target can never be told the truth.
-  const fisher = plan.backdoorTarget || plan.target;
+  const fisher = real;
   if (fisher && fisher !== hoh) {
     const s = pStats(hoh) || {};
     const canLie = !NICE.has(archOf(hoh));
     const lie = canLie ? ((s.strategic || 5) / 10) * (1 - (s.loyalty || 5) / 20) : 0;
-    const honest = plan.backdoorTarget ? 0 : ((s.boldness || 5) / 10) * ((s.loyalty || 5) / 10);
+    const honest = bd ? 0 : ((s.boldness || 5) / 10) * ((s.loyalty || 5) / 10);
     const roll = rng() * (lie + honest + 0.35);
     const how = roll < lie ? 'lie' : roll < lie + honest ? 'honest' : 'deflect';
     want(`hohweek.fish.${how}`, { a: hoh, b: fisher });
   }
   // and somebody floating it out downstairs: a floater or goat, or whoever has won least
-  const floaters = house.filter(n => n !== hoh && !(plan.nominees || []).includes(n) && n !== plan.backdoorTarget
+  const floaters = house.filter(n => n !== hoh && !block.includes(n) && n !== bd
     && ['floater', 'goat'].includes(archOf(n)));
   const fl = floaters[Math.floor(rng() * floaters.length)];
   if (fl) want('hohweek.float.any', { a: fl, b: closest(fl, [hoh]), c: hoh });

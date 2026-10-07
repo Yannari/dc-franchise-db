@@ -291,11 +291,13 @@ export default {
     ] },
     { id: 'gy-sl.2', room: 'kitchen', turns: [
       { beat: 'The kitchen. {b} is trying to talk {a} into a move against {c}.' },
-      { by: 'b', say: "It's the smart play." },
-      { by: 'a', say: "It's the smart play for you." },
-      { by: 'b', say: "It's the smart play for you too." },
-      { by: 'a', say: "Then I'll make the dumb play and sleep at night." },
-      { by: 'b', dr: "{a} is the most loyal person in this house. It's beautiful. It's also going to get {a} evicted." },
+      { by: 'b', say: "Hear me out. If {c} goes up next, the whole house goes along with it, and you're safe for a long time." },
+      { by: 'a', say: "You want me to turn on {c}." },
+      { by: 'b', say: "I want you to make the smart play. It's smart for you too." },
+      { by: 'a', say: "I told {c} I'd never come after {c}. I meant it." },
+      { by: 'b', say: "Even if it costs you the game?" },
+      { by: 'a', say: "Then it costs me the game. I'd rather lose keeping my word than win breaking it." },
+      { by: 'b', dr: "{a} won't turn on {c}, even when it's the best move in the house. That kind of loyalty is rare in here, and it's going to get {a} evicted." },
     ] },
     { id: 'gy-sl.3', turns: [
       { beat: 'The backyard. {a} and {c} are side by side on the loungers.' },

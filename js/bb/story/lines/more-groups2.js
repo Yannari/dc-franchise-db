@@ -239,7 +239,7 @@ export default {
     ] },
   ],
   'story.alliance.formed.pact': [
-    { id: 'af4.1', turns: [
+    { id: 'af4.1', deal: 'Final Two', turns: [
       { by: 'a', say: "Can I make a weird offer?" },
       { by: 'b', say: "I love a weird offer." },
       { by: 'a', say: "I protect you this week. You protect me next week. And we keep doing that until there's nobody left but us." },
@@ -248,9 +248,9 @@ export default {
       { by: 'b', say: "I like a schedule." },
       { by: 'a', say: "So yes?" },
       { by: 'b', say: "Yes. On a schedule." },
-      { by: 'b', dr: "{a} made a final two sound like a timetable. Weirdly, that's the most trustworthy pitch I've heard in here." },
+      { by: 'b', dr: "{a} and I have a final two, and it comes with a schedule: we take turns protecting each other. That's the most trustworthy pitch I've heard in here." },
     ] },
-    { id: 'af4.2', turns: [
+    { id: 'af4.2', deal: 'Final Two', turns: [
       { by: 'b', say: "I keep thinking about who I could actually trust at the end." },
       { by: 'a', say: "And?" },
       { by: 'b', say: "And it's a really short list." },
@@ -260,9 +260,9 @@ export default {
       { by: 'b', say: "That's the whole list." },
       { by: 'a', say: "...Then let's not waste it. Final two." },
       { by: 'b', say: "Final two." },
-      { by: 'a', dr: "A list with one name on it. That's the best compliment this house has given me." },
+      { by: 'a', dr: "{b} said I'm the only name on the list of people {b} trusts, so we made it a final two. That's the best compliment this house has given me." },
     ] },
-    { id: 'af4.3', room: 'backyard', turns: [
+    { id: 'af4.3', deal: 'Final Two', room: 'backyard', turns: [
       { beat: 'Backyard. {a} and {b} are lying on the grass, side by side, not looking at each other.' },
       { by: 'a', say: "Say it first." },
       { by: 'b', say: "Say what?" },
@@ -272,7 +272,7 @@ export default {
       { by: 'b', say: "Why did I have to say it first?" },
       { by: 'a', say: "So if it goes wrong, it was your idea." },
       { by: 'b', say: "...That's evil. Fine. Final two." },
-      { by: 'b', dr: "{a} made me say it first so it's my idea. That's the most {a} thing that's ever happened. I love it." },
+      { by: 'b', dr: "{a} and I have a final two, and {a} made me say it first so it's my idea if it goes wrong. That's so typical of {a}, and I love it." },
     ] },
   ],
   'story.alliance.checkin.solid': [

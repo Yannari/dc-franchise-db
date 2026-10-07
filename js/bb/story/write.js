@@ -89,6 +89,9 @@ const TALK_WHY = {
   'hohweek.fish.deflect': '{b} is {a}\'s real target, and goes to the HOH room to ask. {a} will not say.',
   'hohweek.fish.lie': '{b} is {a}\'s real target, and goes to the HOH room to ask. {a} lies, so {b} does not spend the week campaigning.',
   'hohweek.float.any': '{a} is playing the floater\'s game: stay off the HOH\'s radar, ask for nothing, and let the bigger players be the targets.',
+  'hohweek.plan3.pawn': '{a} is Head of Household, and it is a Block Buster week: three go up and one wins their way off. The plan: {c} is the target, {d} a pawn, and {f} the second name in case {c} wins the Block Buster.',
+  'hohweek.plan3.targets': '{a} is Head of Household, and it is a Block Buster week: three go up and one wins their way off. The plan: {c}, {d} and {f} all go up, so whoever wins, somebody {a} wants gone is still on the block.',
+  'hohweek.plan3.backdoor': '{a} is Head of Household, and it is a Block Buster week. The plan is a backdoor: {c}, {d} and {f} go up, the Block Buster and the veto take two of them off, and {e} goes up in the empty chair with nothing left to play for.',
   'hohweek.verdict.done': '{a}\'s HOH worked: {c} was the target, and {c} was evicted.',
   'hohweek.verdict.missed': '{a}\'s HOH failed: {c} was the target and is still in the house.',
   'hohweek.verdict.pawn': '{a}\'s HOH backfired: {d}, the pawn, was evicted, and {c}, the real target, is still here.',
@@ -220,7 +223,9 @@ function pick(keys, who, data, ctx, room, salt) {
   const PLEDGE = /keep you|we've talked about it|three votes|our votes|vote to keep|votes for one promise/i;
   const noVote = new Set([...(ctx.nominees || []), ...(ctx.hoh ? [ctx.hoh] : [])]);
   const voters = e => !PLEDGE.test(JSON.stringify(e.turns)) || (e.turns || []).every(t => !t.by || t.by === 'a' || !noVote.has(who[t.by]));
-  for (const k of keys) pools[k] = (STORY_POOLS[k] || []).filter(e => presumed(e, ctx) && can(e) && fits(e) && voters(e));
+  // a pact the engine named (a final two, a jury pact) is only told by a scene that makes that deal
+  const sameDeal = e => !e.deal || !data.pact || e.deal === data.pact;
+  for (const k of keys) pools[k] = (STORY_POOLS[k] || []).filter(e => presumed(e, ctx) && can(e) && fits(e) && voters(e) && sameDeal(e));
   // inside a set piece the room is the set's: a scene that stages its own room waits, unless nothing else fits
   if (ctx.inSet) for (const k of keys) { const free = pools[k].filter(e => !e.room); if (free.length) pools[k] = free; }
   if (!keys.some(k => pools[k].length)) return null;
@@ -431,7 +436,10 @@ export function writeStoryScene(line, step, ctx) {
   // somebody brought in gets theirs (the user, 2026-10-06: "recruitment and removal from an alliance have a title too")
   if (line.type === 'alliance' && step.step === 'recruit' && data.alliance && data.joined && step.outcome !== 'refused') sc.title = { kind: 'joined', name: data.alliance, members: [data.joined] };
   // a final two, a final three: the deal gets its card (the user, 2026-10-06: "same for final 2/3")
-  if (line.type === 'alliance' && step.step === 'formed' && data.pact && !data.alliance) sc.title = { kind: 'deal', name: data.pact, members: sc.cast.slice(0, data.pact === 'Final Three' ? 3 : 2) };
+  // (the user, 2026-10-07: 'some final 2 don't get the screen title': a pact scene the engine did not
+  // name still makes a deal, and says which one; the card follows the scene)
+  const deal = data.pact || entry.deal;
+  if (line.type === 'alliance' && step.step === 'formed' && deal && !data.alliance) sc.title = { kind: 'deal', name: deal, members: sc.cast.slice(0, deal === 'Final Three' ? 3 : 2) };
   return sc;
 }
 

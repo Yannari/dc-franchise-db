@@ -82,6 +82,15 @@ const STAGE = {
     'forest-trail': [['beach', 3, /^(romance\.|friend\.(walk|laugh))/], ['cliff', 2, /^(drama\.(meltdown|clash)|plot\.|broker\.)/], ['forest-trail', 3], ['beach', 1], ['cliff', 1]],
     dock: [['dock', 3], ['beach', 2]],
   },
+  // the lot's clock: meals at craft services, mornings at the trailers, the afternoon on the backlot
+  'film-lot': {
+    'studio-backlot': [['craft-services', 4, /^(crowd\.(meal|dinner)|hosted\.slop|life\.(food|meal|hunger)|drama\.mess)/],
+      ['craft-services', 3, null, 'morning'], ['trailers', 2, null, 'morning'], ['studio-backlot', 1, null, 'morning'],
+      ['studio-backlot', 3, null, 'day'], ['craft-services', 1, null, 'day'],
+      ['studio-backlot', 2, null, 'return'], ['craft-services', 2, null, 'return'],
+      ['craft-services', 2, null, 'evening'], ['studio-backlot', 2, null, 'evening'], ['trailers', 1, null, 'evening']],
+    trailers: [['trailers', 3], ['soundstage-corridor', 1, null, 'evening']],
+  },
 };
 const PLACE_WORDS = { dock: /\b(dock|lake)\b/i, 'forest-trail': /\b(woods|forest|trail)\b/i, cabins: /\b(cabins?|porch)\b/i, campfire: /\bfire\b/i, 'mess-hall': /\b(mess hall|slop|tray|Chef)\b/i, 'communal-grounds': /\b(grounds|yard)\b/i };
 export function stageSpot(venue, spot, ev, windowId) {

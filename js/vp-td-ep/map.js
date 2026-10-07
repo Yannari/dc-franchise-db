@@ -22,7 +22,7 @@ import { TD_MARKS } from './marks.js';
 import { tdCampScreen, stageSpot, venueOf, VENUES, placeName } from './steps.js';
 
 // the venues with a painted map (tools/td-camp: '<venue>/map-day'), and how their teams live
-export const MAP_VENUES = { 'hosted-camp': { shared: true } };
+export const MAP_VENUES = { 'hosted-camp': { shared: true }, 'film-lot': { shared: true } };
 export const hasMap = venue => !!(MAP_VENUES[venue] && TD_MARKS[`${venue}/map-day`]);
 
 // which zone on the map each staged place belongs to; a zone may hold more than one place
@@ -30,8 +30,11 @@ export const hasMap = venue => !!(MAP_VENUES[venue] && TD_MARKS[`${venue}/map-da
 const ZONE_OF = {
   'hosted-camp': { cabins: 'cabins', 'cabin-inside': 'cabins', 'mess-hall': 'mess-hall', washroom: 'washroom', 'communal-grounds': 'communal-grounds',
     confessional: 'confessional', campfire: 'campfire', dock: 'dock', beach: 'beach', 'forest-trail': 'forest-trail', cliff: 'cliff' },
+  'film-lot': { trailers: 'trailers', 'craft-services': 'craft-services', 'studio-backlot': 'studio-backlot',
+    'soundstage-corridor': 'soundstage-corridor', 'prop-storage': 'prop-storage', confessional: 'confessional' },
 };
 export const ZONE_LABEL = { cabins: 'The Cabins', 'mess-hall': 'The Mess Hall', washroom: 'The Washrooms', 'communal-grounds': 'The Camp Grounds',
+  trailers: 'The Trailers', 'craft-services': 'Craft Services', 'studio-backlot': 'The Backlot', 'soundstage-corridor': 'The Soundstages', 'prop-storage': 'Prop Storage',
   confessional: 'The Confession Cam', campfire: 'The Campfire', dock: 'The Dock', beach: 'The Beach', 'forest-trail': 'The Forest Trail', cliff: 'The Cliff' };
 export const PLACE_LABEL = { cabins: 'Porch', 'cabin-inside': 'Inside' };
 
@@ -99,7 +102,7 @@ export function tdCampMap(ep, phase, camps, o = {}) {
       let win = ev.scene?.spot?.window || ev.access?.windowId || order[Math.min(order.length - 1, Math.floor(k / Math.max(1, Math.ceil(events.length / order.length))))];
       if (!order.includes(win)) win = order[order.length - 1];
       const place = confOnly || engineSpot === 'confessional' ? 'confessional' : stageSpot(venue, engineSpot, ev, win);
-      const zone = zoneOf[place] || (zones[place] ? place : 'communal-grounds');
+      const zone = zoneOf[place] || (zones[place] ? place : zoneOf[VENUES[venue].public] || VENUES[venue].public);
       // the conversation, played on its own: the same steps the linear camp screen gives it
       const screen = tdCampScreen({ ...ep, campEvents: { [camp]: phase === 'pre' ? { pre: [ev], post: [] } : { pre: [], post: [ev] } } }, camp, phase, [], o);
       if (!screen) return;
@@ -119,7 +122,7 @@ export function tdCampMap(ep, phase, camps, o = {}) {
     for (const camp of camps) {
       const rec = (ep.campAccess?.phases?.[`${phase}:${camp}`] || []).find(r => r.id === id);
       for (const a of rec?.assignments || []) {
-        const z = zoneOf[a.locationId] || (zones[a.locationId] ? a.locationId : 'communal-grounds');
+        const z = zoneOf[a.locationId] || (zones[a.locationId] ? a.locationId : zoneOf[VENUES[venue].public] || VENUES[venue].public);
         (idle[z] ||= []).push(...a.players);
       }
     }

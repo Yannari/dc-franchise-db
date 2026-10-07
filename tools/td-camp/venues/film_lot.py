@@ -420,9 +420,95 @@ def fl_shame(tod):
     tv_camera((0.0, -4.5, 1.9), (0.8, 18, 1.2), lens=26)
 
 
+def fl_map(tod):
+    """The film lot from above, laid out the way Action's establishing shot shows it (The_Movie_M: the
+    amphitheater with its gold statues and the red carpet on the left, the city behind, the star trailers
+    and the craft-services house in the middle under the water tower, the barrel-roofed soundstages and the
+    great fake mountain on its scaffold on the right, all on a concrete pier over the water). Each place a
+    scene can be staged carries a 'zone' mark the map hangs its hotspot on."""
+    paint_mode(); P = TDA[tod]; day = tod == 'day'
+    paint_sky(P['sky'], P['sky_low'])
+    # the far shore: a grass bank with the city standing on it, across the water behind the lot
+    _prism('FarShore', [(-260, 62), (260, 62), (260, 220), (-260, 220)], -2.4, 0.3, '#6a8a4a', '#5a6a42', tod)
+    skyline(tod, y=170, x0=-200, x1=170, seed=21)
+    box('MapWater', (600, 400, 0.2), (0, -60, -2.6), pmat('FLWater' + tod, N('#3aa8b0', tod), unlit=True, mottle=0.05, mscale=0.05), bevel=0)
+    # the pier: the lot's concrete deck, its wall down to the water, a wooden rail along the edge
+    _prism('Pier', [(-46, -16), (46, -16), (48, 40), (-48, 40)], -2.4, 0.0, P['ground'], '#9a958a', tod)
+    pbox('PierRail', (92, 0.5, 0.5), (0, -15.9, 0.25), '#6a4a32', tod)
+    for k in range(9):
+        pbox('Bollard', (0.5, 0.5, 0.8), (-40 + k * 10, -15.6, 0.4), '#3a3a42', tod)
+    # grass verges and the painted lines of the lot's parking bays
+    for (gx, gy, grx, gry) in ((-36, 4, 7, 9), (14, 20, 8, 4), (-6, 22, 9, 3), (36, -8, 7, 5), (-38, -10, 5, 4)):
+        _flat_poly('Verge', _blob(gx, gy, grx, gry, seed=int(gx + gy * 5), wob=0.1), 0.03, '#7a9a4a', tod, mottle=0.35)
+    for k in range(6):
+        pbox('BayLine', (0.15, 3.0, 0.02), (28 + k * 2.6, -11.5, 0.03), '#e8e2d0', tod, ink=False)
+    # worn paths across the lot
+    for (px, py, rx, ry) in ((-6, -6, 30, 1.6), (6, 4, 1.4, 12), (-18, 2, 1.4, 9)):
+        _flat_poly('LotPath', _blob(px, py, rx, ry, seed=int(px * 3 + py), wob=0.06), 0.02, '#8a8478', tod, mottle=0.25)
+    # the amphitheater: the Awards Ceremony's shell, the two gold statues, the red carpet out to the front
+    for k, (r, c) in enumerate(((7.4, '#7a3a2a'), (6.6, '#c8642a'), (5.6, '#e8843a'), (4.4, '#f2a24a'), (3.0, '#f8c86a'))):
+        pts = [(math.cos(i / 40 * math.pi) * r, math.sin(i / 40 * math.pi) * r * 0.85) for i in range(41)]
+        card(uid('Shell'), pts, 20 - k * 0.02, pmat('MShell' + c + tod, N(c, tod), unlit=True, mottle=0), x=-26, z=0.6)
+    pbox('Stage', (15, 5, 1.2), (-26, 17.5, 0.6), '#3a2a2a', tod)
+    g = pmat('GildedBigM', '#d8a83a', '#8a6a1a', mottle=0.2)
+    for sx in (-1, 1):
+        pbox('Pedestal', (1.6, 1.6, 2.6), (-26 + sx * 9.5, 16.0, 1.3), '#5a5a62', tod)
+        card(uid('BigStatue'), [(-0.6, 0), (0.6, 0), (0.55, 1.9), (0.9, 2.7), (0.5, 2.9), (0.35, 3.6), (0.5, 4.2), (0, 4.6), (-0.5, 4.2), (-0.35, 3.6), (-0.5, 2.9), (-0.9, 2.7), (-0.55, 1.9)],
+             15.1, g, x=-26 + sx * 9.5, z=2.6)
+    pbox('Carpet', (2.4, 24, 0.04), (-26, 3.0, 0.03), '#a82a2e', tod, ink=False)
+    lameosine(-21.5, -10.5, tod, rot_z=-10)
+    # the backlot: the Western street's false fronts, behind the trailers on the left
+    for k, (wx, col) in enumerate(((-14, '#b87a4a'), (-10.2, '#8a9a6a'), (-6.4, '#c8a058'))):
+        western_front(wx, 13.0, 3.6, 4.0 + (k % 2), tod, col, '#5a3a22', sign=None, porch=True)
+    # the trailers in a row, the makeup trailer (the confessional) off to one side
+    for k, (tx, ty, st) in enumerate(((-12, -1.0, '#3f7fbf'), (-3.5, -1.5, '#c8463c'), (5.0, -1.0, '#4f9f5a'))):
+        star_trailer(tx, ty, tod, rot_z=4 - k * 4, stripe=st)
+    star_trailer(12.0, -7.0, tod, rot_z=-20, stripe='#d8a83a')
+    # craft services: the little house with its orange roof and picnic tables, the water tower behind it
+    tdi_cabin((6.0, 8.0, 0), tod, rot_z=-6, w=6.0, d=4.2, h=2.4, wall='#d8c8a8', roof='#c8642a', stairs_side=-1)
+    for (tx, ty) in ((1.5, 4.5), (10.5, 4.0)):
+        pbox('Picnic', (2.6, 1.0, 0.12), (tx, ty, 0.8), '#9a6a3a', tod)
+        for sy in (-0.7, 0.7):
+            pbox('PicnicBench', (2.6, 0.35, 0.1), (tx, ty + sy, 0.45), '#8a5a32', tod)
+    for (lx, ly) in ((0.6, 19.0), (3.4, 19.0), (0.6, 21.6), (3.4, 21.6)):
+        pcyl('TowerLeg', 0.15, 10, (lx, ly, 5), '#4a4a52', tod, verts=8)
+    pcyl('Tank', 2.4, 3.6, (2.0, 20.3, 11.8), '#6a6e78', tod, verts=24)
+    pcyl('TankRoof', 2.6, 1.6, (2.0, 20.3, 14.4), '#5a5e68', tod, r2=0.2, verts=24)
+    # the soundstages: two barrel-roofed hangars on the right, prop storage in front of them
+    hangar(19, 14, tod, w=12, d=10, h=7, number='4', rot_z=-4)
+    hangar(32, 9, tod, w=11, d=9, h=6.5, number='7', rot_z=-12)
+    pbox('PropShed', (6.5, 5.0, 3.6), (22, -2.0, 1.8), '#8a7a6a', tod, mottle=0.3)
+    pbox('PropShedRoof', (7.0, 5.4, 0.3), (22, -2.0, 3.75), '#5a4a42', tod)
+    for k in range(5):
+        pbox('Crate', (1.0, 1.0, 1.0), (18.0 + k * 1.3, -6.0 + (k % 2) * 0.6, 0.5 + (k % 3 == 2) * 1.0), '#b88a52', tod)
+    # the great fake mountain on its scaffold, far right (Action's backdrop for the climbing challenges)
+    # a painted rock face in three tones, its plywood back held up by a lattice of scaffold
+    for k in range(10):
+        for sx in (-1, 1):
+            pbox('Scaffold', (0.25, 0.25, 2.8), (40 + sx * 4.5, 32.5, 1.4 + k * 2.8), '#3a3a42', tod)
+        pbox('ScaffoldX', (9.0, 0.18, 0.18), (40, 32.5, 1.4 + k * 2.8), '#3a3a42', tod)
+    for (pts, col, dy) in (([(-9, 0), (-6, 8), (-4, 15), (-1, 23), (1, 28), (3, 26), (5, 19), (8, 11), (10, 0)], '#8a7a66', 0.0),
+                           ([(-7, 0), (-5, 9), (-2, 14), (0, 22), (1, 28), (2, 20), (4, 12), (5, 0)], '#a8957a', -0.05),
+                           ([(1, 0), (2, 9), (3, 15), (5, 19), (8, 11), (10, 0)], '#6a5e52', -0.1)):
+        card(uid('Mountain'), pts, 31 + dy, pmat('FakeMtn' + col + tod, N(col, tod), unlit=True, mottle=0.25, mscale=0.3), x=40, z=0)
+    card(uid('MtnSnow'), [(-0.6, 25), (1, 28), (2.6, 26.2), (1.6, 25.4), (0.8, 26.2)], 30.8, pmat('FakeSnow' + tod, N('#f2f2ea', tod), unlit=True, mottle=0), x=40, z=0)
+    # trees: autumn birches and dark pines between the buildings
+    for (bx, by, bc) in ((-33, 6, '#c8a042'), (-16, 22, '#b88a3a'), (12, 16, '#c8a042'), (27, 22, '#a87a3a'), (-1, 12, '#b8902e')):
+        crown_tree(bx, by, 5.0, N(bc, tod), seed=int(bx * 7), s=1.6, birch=True)
+    for (px, py) in ((-36, 14), (-31, 22), (16, 24), (36, 18), (-20, 26)):
+        umbrella_pine(px, py, 8, col=N('#2f4a46', tod), trunk=N('#2a2440', tod), seed=int(px * 3), s=1.2)
+    for (lx, ly) in ((-9, 6), (14, 3), (-28, -6)):
+        film_lamp(lx, ly, tod, aim=20, h=2.6)
+    for zid, loc in (('trailers', (-3.5, -1.5, 3.4)), ('craft-services', (6.0, 8.0, 3.0)), ('studio-backlot', (-10.2, 13.0, 5.0)),
+                     ('soundstage-corridor', (19.0, 14.0, 8.0)), ('prop-storage', (22.0, -2.0, 4.0)), ('confessional', (12.0, -7.0, 3.4))):
+        mark('zone', loc, id=zid)
+    paint_sun(azimuth=-35, elevation=55 if day else 35, energy=4.0 if day else 1.8)
+    tv_camera((2.0, -64.0, 38.0), (2.0, 12.0, 10.5), lens=30)
+
+
 SCENES['film-lot'] = {
     'trailers': fl_trailers, 'craft-services': fl_craft, 'studio-backlot': fl_backlot,
     'soundstage-corridor': fl_corridor, 'prop-storage': fl_props,
-    'confessional': fl_confessional, 'ceremony': fl_ceremony, 'exit': fl_shame,
+    'confessional': fl_confessional, 'ceremony': fl_ceremony, 'exit': fl_shame, 'map': fl_map,
 }
-OUTDOOR['film-lot'] = {'trailers', 'craft-services', 'studio-backlot'}
+OUTDOOR['film-lot'] = {'trailers', 'craft-services', 'studio-backlot', 'map'}

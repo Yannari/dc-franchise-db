@@ -85,3 +85,24 @@ describe('the camp map', () => {
     expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
 });
+
+// each venue's own map: every conversation of a season played there lands on one of that map's zones
+describe.each([['film-lot', ['trailers', 'craft-services', 'studio-backlot', 'soundstage-corridor', 'prop-storage', 'confessional']]])('the %s map', (venue, places) => {
+  let veps = [];
+  beforeAll(() => {
+    seededRun(() => runOneSeason({ romance: 'enabled', setting: venue }, 12, NAMES.slice(0, 12).map((n, i) => ({ ...roster.find(r => r.name === n), tribe: i % 2 ? 'Bass' : 'Gophers' }))), 778);
+    veps = core.gs.episodeHistory.map(e => JSON.parse(JSON.stringify(e)));
+  }, 600000);
+  it('has every place on the painted map, and every conversation lands on one', () => {
+    expect(hasMap(venue)).toBe(true);
+    const zones = mapZones(venue);
+    for (const id of places) expect(zones[id], id).toBeTruthy();
+    let n = 0;
+    for (const ep of veps) for (const phase of ['pre', 'post']) {
+      const camps = campsOf(ep, phase); if (!camps.length) continue;
+      const m = tdCampMap(ep, phase, camps, { setting: venue }); if (!m) continue;
+      for (const c of m.convs) { n++; expect(zones[c.zone], `ep${ep.num} ${phase} ${c.place} -> ${c.zone}`).toBeTruthy(); expect(c.screen.steps.length).toBeGreaterThan(1); }
+    }
+    expect(n).toBeGreaterThan(40);
+  });
+});

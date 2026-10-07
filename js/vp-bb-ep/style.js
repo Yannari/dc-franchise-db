@@ -4,7 +4,7 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
   box-shadow:0 0 0 1px rgba(34,225,255,.18),0 30px 70px -20px rgba(0,20,60,.55)}
 .bbx .cam{position:absolute;inset:0;z-index:1;isolation:isolate;transition:transform 1s cubic-bezier(.2,.75,.15,1)}
 .bbx .lens{position:absolute;inset:0}
-.bbx .lens.cut{animation:bbx-cut .32s steps(4,end)}
+.bbx .lens.cut{animation:bbx-cut .32s steps(4,end),bbx-handheld 19s ease-in-out infinite alternate}
 @keyframes bbx-cut{0%{transform:translateX(1.4cqw);filter:hue-rotate(40deg) saturate(2)}50%{transform:translateX(-.8cqw)}100%{transform:none;filter:none}}
 .bbx .stage.bbspeaks .cam{filter:brightness(.25) saturate(.4) blur(.25cqw);transition:filter .6s}
 .bbx .set{position:absolute;inset:0;overflow:hidden}
@@ -245,6 +245,14 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .rest .go{margin-top:2.4cqw;font:700 1cqw 'Chakra Petch';letter-spacing:.4cqw;color:#001018;background:#22e1ff;padding:.6cqw 1.6cqw;border-radius:.3cqw}
 .bbx .set.photo{background-size:cover!important;background-position:center!important}
 .bbx .set.photo::before,.bbx .set.photo::after,.bbx .set.photo .floor{display:none}
+/* The room is alive (the user, 2026-10-06: "the background isn't moving at all"): the whole shot,
+   room and people together, drifts like a handheld camera that never quite settles, so the
+   chairs stay under the people sitting in them; a soft band of light crosses the room. */
+.bbx .lens{animation:bbx-handheld 19s ease-in-out infinite alternate;transform-origin:50% 55%}
+@keyframes bbx-handheld{0%{scale:1.018;translate:0 0}33%{scale:1.024;translate:-.35% .2%}66%{scale:1.02;translate:.3% -.15%}100%{scale:1.026;translate:-.15% .25%}}
+.bbx .set.photo::after{display:block;background:linear-gradient(105deg,transparent 30%,rgba(255,250,235,.07) 47%,rgba(255,250,235,.11) 50%,rgba(255,250,235,.07) 53%,transparent 70%);background-size:260% 100%;mix-blend-mode:screen;animation:bbx-roomlight 16s ease-in-out infinite alternate}
+@keyframes bbx-roomlight{from{background-position:100% 0}to{background-position:0% 0}}
+@media (prefers-reduced-motion:reduce){.bbx .lens,.bbx .set.photo::after{animation:none}}
 .bbx .front{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .bbx .nomscreen{position:absolute;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4%;
   background:radial-gradient(ellipse at 50% 20%,#ff5fb4,#d02c7a 55%,#7a1048);box-shadow:inset 0 0 0 .2cqw rgba(255,255,255,.25);overflow:hidden}

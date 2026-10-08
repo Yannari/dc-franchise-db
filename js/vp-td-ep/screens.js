@@ -321,6 +321,17 @@ function paint(uid, fresh) {
   ambience(worldSound(scr, L));
 }
 
+// the mark over a face at the reading: drawn, not typed (shock, a sweat drop, an anger vein, the side-eye of a betrayal)
+const FEEL_MARK = {
+  shock: '<svg viewBox="0 0 24 24"><path d="M9 2h6l-1.4 13h-3.2z" fill="#ff5a4f" stroke="#1a0e02" stroke-width="1.4"/><circle cx="12" cy="20" r="2.3" fill="#ff5a4f" stroke="#1a0e02" stroke-width="1.4"/></svg>',
+  surprised: '<svg viewBox="0 0 24 24"><path d="M10.2 3h3.6l-.9 11h-1.8z" fill="#ffd34d" stroke="#1a0e02" stroke-width="1.3"/><circle cx="12" cy="19" r="2" fill="#ffd34d" stroke="#1a0e02" stroke-width="1.3"/></svg>',
+  scared: '<svg viewBox="0 0 24 24"><path d="M12 2C9 8 6.5 11 6.5 15a5.5 5.5 0 0 0 11 0C17.5 11 15 8 12 2z" fill="#9ad8ff" stroke="#1a0e02" stroke-width="1.4"/><path d="M9.5 15.5a2.6 2.6 0 0 0 2 2.3" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg>',
+  angry: '<svg viewBox="0 0 24 24"><g fill="none" stroke="#e0473f" stroke-width="2.8" stroke-linecap="round"><path d="M4 9c3 0 5-2 5-5"/><path d="M20 9c-3 0-5-2-5-5"/><path d="M4 15c3 0 5 2 5 5"/><path d="M20 15c-3 0-5 2-5 5"/></g></svg>',
+  betray: '<svg viewBox="0 0 24 24"><path d="M4 12c3-5 13-5 16 0-3 5-13 5-16 0z" fill="#fff" stroke="#1a0e02" stroke-width="1.4"/><circle cx="9" cy="12" r="2.6" fill="#b56cff" stroke="#1a0e02" stroke-width="1"/></svg>',
+  guilty: '<svg viewBox="0 0 24 24"><path d="M5 9h14M7 14c3 2 7 2 10 0" fill="none" stroke="#c8ccd8" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  relief: '<svg viewBox="0 0 24 24"><g fill="none" stroke="#bfe8ff" stroke-width="2.2" stroke-linecap="round"><path d="M3 10c4-2 7 2 11 0s5-1 7 0"/><path d="M5 15c3-1.5 6 1.5 9 0s4-1 5 0"/></g></svg>',
+};
+const FEEL_SFX = { shock: 'shock', betray: 'shock', angry: 'slap', surprised: 'pop' };
 const tokAt = (castEl, n) => [...castEl.children].find(el => el.dataset.n === n);
 const centre = (st, el) => { const f = st.querySelector('.tdx-world').getBoundingClientRect(), r = el.getBoundingClientRect(); return { x: (r.left + r.width / 2 - f.left) / f.width * 100, y: (r.top - f.top) / f.height * 100, h: r.height / f.height * 100 }; };
 function fxAt(fxEl, cls, x, y, html = '', life = 2400) { const d = document.createElement('div'); d.className = cls; d.style.left = x + '%'; d.style.top = y + '%'; d.innerHTML = html; fxEl.appendChild(d); setTimeout(() => d.remove(), life); return d; }
@@ -331,6 +342,14 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
   // a shock: the line lands like a reveal ("What? No."): the speaker jolts, "!?" over them, the stab
   if (s.shock && speaker) { const el = tokAt(castEl, speaker); if (el) { el.classList.add('shake'); const c = centre(st, el); fxAt(fxEl, 'tdx-pop shock', c.x, Math.max(c.y - 4, 10), '!?'); } const w = st.querySelector('.tdx-world'); if (w) { w.classList.remove('jolt'); void w.offsetWidth; w.classList.add('jolt'); } sfx('shock'); }
   else if (s.loud && speaker) { const el = tokAt(castEl, speaker); if (el) { const c = centre(st, el); for (let k = 0; k < 3; k++) setTimeout(() => fxAt(fxEl, 'tdx-ring', c.x, c.y + c.h / 2), k * 140); sfx('boing'); } }
+  // the faces at the reading (steps.js voteReaction): a mark over each face that feels something
+  if (s.feel) for (const [n, f] of Object.entries(s.feel)) {
+    const el = tokAt(castEl, n); if (!el || !FEEL_MARK[f]) continue;
+    const c = centre(st, el);
+    fxAt(fxEl, 'tdx-mark', c.x + c.h * 0.18, Math.max(c.y - 2, 8), FEEL_MARK[f], 1700);
+    if (f === 'sad' || f === 'guilty') for (let k = 0; k < (f === 'sad' ? 3 : 1); k++) setTimeout(() => fxAt(fxEl, 'tdx-tear', c.x + (k % 2 ? 1.2 : -1.2), c.y + c.h * .25, '', 1400), 300 + k * 280);
+    if (FEEL_SFX[f]) sfx(FEEL_SFX[f]);
+  }
   const a = s.act;
   if (s.gain) { const el = tokAt(castEl, s.gain.who); if (el) { const c = centre(st, el); setTimeout(() => fxAt(fxEl, `tdx-gain${s.gain.up ? '' : ' down'}`, c.x, Math.max(c.y - 2, 8), `${esc(s.gain.stat)} ${s.gain.up ? '▲' : '▼'}`, 2200), 500); setTimeout(() => sfx(s.gain.up ? 'pop' : 'slap'), 500); } }
   if (a) {

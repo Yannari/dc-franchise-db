@@ -495,6 +495,26 @@ export const TDX_CSS = `
 .tdx .tdx-tok.sad .face{filter:saturate(.5) brightness(.8)}
 .tdx .tdx-tear{position:absolute;width:.5cqw;height:.8cqw;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#9ad8ff;box-shadow:0 0 6px #9ad8ff;animation:tdxTear 1.4s ease-in forwards}
 @keyframes tdxTear{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,6cqw);opacity:0}}
+/* the faces at the reading (steps.js voteReaction): a feel per person, held for the step */
+.tdx .tdx-tok.feel-shock .body{animation:tdxJolt .5s cubic-bezier(.3,1.8,.5,1)}
+@keyframes tdxJolt{0%{transform:scale(1)}30%{transform:translateY(-9%) scale(1.06,.94)}100%{transform:scale(1)}}
+.tdx .tdx-tok.feel-surprised .body{animation:tdxJolt .45s cubic-bezier(.3,1.6,.5,1)}
+.tdx .tdx-tok.feel-scared .body{animation:tdxTremble .12s linear 10}
+@keyframes tdxTremble{0%,100%{transform:translateX(0)}50%{transform:translateX(1.6%)}}
+.tdx .tdx-tok.feel-scared .face{filter:saturate(.8) brightness(.92) hue-rotate(-8deg)}
+.tdx .tdx-tok.feel-angry .body{animation:tdxShake .45s linear 2}
+.tdx .tdx-tok.feel-angry .face{box-shadow:0 0 0 3px #e0473f,0 0 24px rgba(224,71,63,.55)}
+.tdx .tdx-tok.feel-betray .face{transform:rotate(-8deg) translateX(-6%);box-shadow:0 0 0 3px #b56cff,0 0 22px rgba(181,108,255,.55);transition:transform .5s}
+.tdx .tdx-tok.feel-guilty .body{animation:tdxSad 1s ease-out forwards}
+.tdx .tdx-tok.feel-guilty .face{filter:brightness(.82)}
+.tdx .tdx-tok.feel-sad .body{animation:tdxSad 1.2s ease-out forwards}
+.tdx .tdx-tok.feel-sad .face{filter:saturate(.5) brightness(.8)}
+.tdx .tdx-tok.feel-steady .body{animation:tdxNod .7s ease-in-out}
+@keyframes tdxNod{0%,100%{transform:translateY(0)}40%{transform:translateY(3%)}}
+.tdx .tdx-tok.feel-relief .body{animation:tdxExhale 1.1s ease-in-out}
+@keyframes tdxExhale{0%{transform:scale(1)}35%{transform:scale(1.04,1.03)}100%{transform:scale(.99,1)}}
+.tdx .tdx-mark{position:absolute;transform:translate(-50%,-50%);width:3.2cqw;height:3.2cqw;pointer-events:none;animation:tdxPopW 1.6s cubic-bezier(.3,1.7,.5,1) forwards;filter:drop-shadow(0 2px 0 #1a0e02)}
+.tdx .tdx-mark svg{width:100%;height:100%;display:block}
 .tdx .tdx-tok.fired .face{box-shadow:0 0 0 3px var(--or),0 0 34px rgba(255,138,31,.85)}
 .tdx .tdx-aura{position:absolute;width:12cqw;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,170,60,.55),rgba(255,90,20,.15) 55%,transparent 70%);animation:tdxAura 2.4s ease-out forwards;mix-blend-mode:screen}
 @keyframes tdxAura{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}25%{opacity:1}100%{transform:translate(-50%,-50%) scale(1.6);opacity:0}}

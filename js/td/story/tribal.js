@@ -126,8 +126,11 @@ function tribalQA(ep, { tribal, ballots, elim, ch, camp, base, ctx, nextN }) {
   { const r = [...tribal].filter(p => p !== elim).sort((p, q) => (pStatsOf(q)?.social || 0) - (pStatsOf(p)?.social || 0) || p.localeCompare(q));
     const openWho = { a: ch?.carried && tribal.includes(ch.carried) && ch.carried !== elim ? ch.carried : r[0], b: r.find(x => x !== (ch?.carried || r[0])) };
     if (openWho.a && openWho.b) {
-      const facts = { ...factsFor({ who: openWho, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(openWho.a), pair: true, sank: !!ch?.sank };
-      const w = writeStory(`tqa.open.${ch && !(ep.isMerge || gs.isMerged) ? 'lost' : 'merged'}`, 'any', { ...openWho, h: host }, ch?.sank ? { sank: ch.sank } : {}, facts, ctx(nextN(), 'tribal', 'soft'));
+      // what the day had in it, for the host to ask about: who won immunity, who went home last time
+      const imm = [].concat(ep.immunityWinner || []).find(x => tribal.includes(x) && !Object.values(openWho).includes(x)) || null;
+      const lastBoot = (gs.episodeHistory || []).find(h => h.num === ep.num - 1)?.eliminated || null;
+      const facts = { ...factsFor({ who: openWho, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(openWho.a), pair: true, sank: !!ch?.sank, imm: !!imm, lastBoot: !!lastBoot };
+      const w = writeStory(`tqa.open.${ch && !(ep.isMerge || gs.isMerged) ? 'lost' : 'merged'}`, 'any', { ...openWho, h: host }, { ...(ch?.sank ? { sank: ch.sank } : {}), ...(imm ? { imm } : {}), ...(lastBoot ? { lastBoot } : {}) }, facts, ctx(nextN(), 'tribal', 'soft'));
       if (w) out.push({ topic: 'open', players: Object.values(openWho), lines: w.lines });
     }
   }
@@ -238,7 +241,11 @@ export function writeTribal(ep) {
   const rc = others.find(x => x !== rb) || null;
   // b only says sorry for a vote b cast (the user: Owen apologising for a vote he never wrote)
   const revealFacts = { ...factsFor({ who: { a: ra, b: rb }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(ra), third: !!rc, bVoted: forBoot.includes(rb) ? 'boot' : 'other' };
-  const rv = rb ? writeStory('reveal', blindside ? 'blindside' : 'expected', { a: ra, b: rb, c: rc }, data, revealFacts, ctx(n++)) : null;
+  // a boot who was never warned (no word reached them, no counter-move of their own) did not see it
+  // coming: 'surprised', unless a friend's vote makes it a blindside
+  const knewBoot = (ep.pitchIntel || []).some(i => i.knower === elim && i.target === elim && i.believed !== false) || (ep.pitchCounterplay || []).some(c => c.actor === elim);
+  const revealKind = blindside ? 'blindside' : knewBoot ? 'expected' : 'surprised';
+  const rv = rb ? (writeStory('reveal', revealKind, { a: ra, b: rb, c: rc }, data, revealFacts, ctx(n++)) || (revealKind === 'surprised' ? writeStory('reveal', 'expected', { a: ra, b: rb, c: rc }, data, revealFacts, ctx(n++)) : null)) : null;
 
   // ── last words: their person, or the person they blame ──
   const friend = closest.find(x => getBond(elim, x) >= 2) || null;
@@ -312,5 +319,5 @@ export function writeTribal(ep) {
   // the host's questions, from what happened today
   const qa = tribalQA(ep, { tribal, ballots, elim, ch, camp: camp || gs.mergeName || 'merge', base, ctx, nextN: () => n++ });
   const plays = playReactions(ep, { tribal, ballots, base, ctx, nextN: () => n++ });
-  return { qa, plays, booth, reveal: rv?.lines || [], room, blindside, shocking, exit: ex?.lines || [], exitWith, exitKind, after: after.slice(0, roomBlind ? 4 : 2) };
+  return { qa, plays, booth, reveal: rv?.lines || [], revealKind, room, blindside, shocking, exit: ex?.lines || [], exitWith, exitKind, after: after.slice(0, roomBlind ? 4 : 2) };
 }

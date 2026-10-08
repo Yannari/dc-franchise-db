@@ -260,7 +260,7 @@ export function castAt(screen, L) {
     const h = pl.h || (pl.host ? Math.max(Math.min(pl.s * 125, 30), 16) : sit ? Math.max(Math.min(pl.s * 95, 24), 13) : Math.max(Math.min(pl.s * 125, sc.exit ? 30 : 34), bg ? 11 : 16));
     toks.push({ n, u: pl.u, v: pl.v, h, sit, host: !!pl.host, act: bg?.act || busy || null,
       speak: n === speaker || (pl.host && s.host), dim: !!(focus && focus.length && !focus.includes(n) && !pl.host && n !== speaker),
-      bg: !!bg, safe: L.safe.includes(n), out: L.out === n, conf: !!pl.close, aboard: !!pl.aboard, glow: glow[n] || null, crowd: !!pl.crowd });
+      bg: !!bg, safe: L.safe.includes(n), out: L.out === n, conf: !!pl.close, aboard: !!pl.aboard, glow: glow[n] || null, crowd: !!pl.crowd, feel: s.feel?.[n] || null });
   }
   return toks;
 }
@@ -313,7 +313,7 @@ export function shotOf(screen, L, toks) {
 export function tokHtml(t, fresh) {
   const w = t.h * 9 / 16;
   const busy = t.act ? `${t.act === 'fish' ? '<div class="tdx-rod"><i></i></div>' : ''}${t.act === 'nap' ? '<b class="tdx-zzz">z</b>' : ''}<div class="tdx-busy" title="${esc(BUSY_LABEL[t.act] || '')}"><svg viewBox="0 0 24 24">${BUSY_ICON[t.act] || ''}</svg></div>` : '';
-  const cls = ['tdx-tok', t.speak && 'speak', t.dim && 'dim', t.bg && 'bg', t.sit && 'sit', t.host && 'host', t.conf && 'conf', t.aboard && 'aboard', t.glow && `glow-${t.glow}`, t.out && 'out', t.act && `act-${t.act}`].filter(Boolean).join(' ');
+  const cls = ['tdx-tok', t.speak && 'speak', t.dim && 'dim', t.bg && 'bg', t.sit && 'sit', t.host && 'host', t.conf && 'conf', t.aboard && 'aboard', t.glow && `glow-${t.glow}`, t.out && 'out', t.act && `act-${t.act}`, t.feel && `feel-${t.feel}`].filter(Boolean).join(' ');
   return `<div class="${cls}" data-n="${esc(t.n)}" style="left:${t.u * 100}%;top:${t.v * 100}%;height:${t.h}%;width:${w}%;z-index:${Math.round(t.v * 100) + (t.speak ? 50 : 0)}"><div class="body"><div class="shadow"></div><div class="face"><img src="${esc(avatar(t.n, t.host))}" alt="" onerror="this.style.visibility='hidden'"></div><div class="tag">${esc(t.host ? t.n + ' · host' : t.n)}</div>${t.safe ? '<i class="tdx-got"></i>' : ''}${busy}</div></div>`;
 }
 

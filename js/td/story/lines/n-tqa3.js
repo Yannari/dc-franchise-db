@@ -4,7 +4,8 @@
 // td/story/tribal.js tribalQA's opener, before the sharp questions. h the host; a answers first
 // (who carried the challenge, else the most social), b adds to it.
 //   tqa.open.lost.any    a team that just lost the challenge ({sank}: who struggled, when sank)
-//   tqa.open.merged.any  the merged tribe: how camp feels today
+//   tqa.open.merged.any  the merged tribe: how camp feels today ({imm}: tonight's immunity, when imm;
+//                        {lastBoot}: who went home last time, when lastBoot)
 // Ids: 'nto.'.
 
 export default {
@@ -32,6 +33,49 @@ export default {
     ] },
   ],
   'tqa.open.merged.any': [
+    { id: 'nto.m4', when: { imm: true }, turns: [
+      { by: 'h', say: "{imm} has immunity tonight, which means everybody else is fair game. {a}, how does that feel?" },
+      { by: 'a', say: "Like the safest person in the room is the one I'd most like to vote for, and I can't." },
+      { by: 'h', say: "{b}?" },
+      { by: 'b', say: "Honestly, I'm just glad it narrows it down. Narrows it down to everybody but {imm}, but still." },
+    ] },
+    { id: 'nto.m5', when: { imm: true }, turns: [
+      { by: 'h', say: "{a}, did it hurt watching {imm} win today?" },
+      { by: 'a', say: "A little. I wanted that win more than I've wanted anything out here." },
+      { by: 'h', say: "And now?" },
+      { by: 'a', say: "Now I'm hoping I don't need it." },
+    ] },
+    { id: 'nto.m6', when: { lastBoot: true }, turns: [
+      { by: 'h', say: "Last time we were here, {lastBoot} walked out. {a}, did camp change after that?" },
+      { by: 'a', say: "It got quieter. {lastBoot} was loud, and now the quiet is where all the whispering happens." },
+      { by: 'h', say: "{b}, do you agree?" },
+      { by: 'b', say: "I think it changed who people talk to. Everybody had to find a new person." },
+    ] },
+    { id: 'nto.m7', when: { lastBoot: true }, turns: [
+      { by: 'h', say: "{b}, anybody miss {lastBoot}?" },
+      { by: 'b', say: "Some of us do. Some of us are doing a very good job of pretending." },
+      { by: 'h', say: "Which one are you?" },
+      { by: 'b', say: "I'm not answering that." },
+    ] },
+    { id: 'nto.m8', turns: [
+      { by: 'h', say: "{a}, at this point in the game, do you sleep?" },
+      { by: 'a', say: "Barely. Every time somebody gets up in the night, I wonder where they're going." },
+      { by: 'h', say: "{b}, do you get up in the night?" },
+      { by: 'b', say: "Only to go to the bathroom. Probably." },
+    ] },
+    { id: 'nto.m9', turns: [
+      { by: 'h', say: "Let's start easy. {b}, is there anybody here you'd trust with your vote?" },
+      { by: 'b', say: "With my vote? Maybe one person. With my food, nobody." },
+      { by: 'h', say: "{a}, same?" },
+      { by: 'a', say: "I trust people with my vote. I just double-check afterwards." },
+    ] },
+    { id: 'nto.m10', turns: [
+      { by: 'h', say: "{a}, I hear there was some walking around camp this afternoon." },
+      { by: 'a', say: "There's always walking around camp." },
+      { by: 'h', say: "This walking was in pairs. Very quiet pairs." },
+      { by: 'a', say: "Then it sounds like you know more than I do." },
+      { by: 'b', say: "Nobody knows more than anybody tonight. That's kind of the problem." },
+    ] },
     { id: 'nto.m1', turns: [
       { by: 'h', say: "{a}, there are fewer of you every time I see you. What's camp like now?" },
       { by: 'a', say: "Smaller. Meaner. Everybody's nice to your face and then goes off for a walk.", v: { warm: "Strange. You can be laughing with somebody at lunch and wondering about them by dinner." } },
@@ -43,13 +87,6 @@ export default {
       { by: 'b', say: "It's felt personal for days.", v: { tough: "It's always been personal. Some people are just finally admitting it." } },
       { by: 'h', say: "{a}?" },
       { by: 'a', say: "It feels like everybody's counting. All the time. Even when we're just eating." },
-    ] },
-    { id: 'nto.m3', turns: [
-      { by: 'h', say: "So, how was today? Give me one word, {a}." },
-      { by: 'a', say: "Busy.", v: { dry: "Suspicious.", loud: "Chaos!", anxious: "Scary." } },
-      { by: 'h', say: "How so?" },
-      { by: 'a', say: "Like everybody had somewhere to be, and none of it was chores." },
-      { by: 'b', say: "That's the nicest way I've ever heard anybody describe a scramble." },
     ] },
   ],
 };

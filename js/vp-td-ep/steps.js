@@ -914,7 +914,7 @@ const RX = {
   ending: ['{x} closes {pos} eyes and nods.', '{x} lets out a long breath. {x} knew.', '{x} smiles, sadly, and reaches for {pos} bag.'],
   fury: ['{x} is on {pos} feet before the name is even finished.', '{x} slams a hand down on the seat.', "{x}'s face goes red, and {x} doesn't say a word."],
   friend: ['Next to {x}, {y} covers {ypos} face with both hands.', "{y} reaches over and squeezes {x}'s arm.", "{y}'s eyes are already wet."],
-  friendShock: ['{y} gasps out loud.', "{y}'s head whips round to the urn. That wasn't the plan {y} knew about."],
+  friendShock: ['{y} gasps out loud.', "{y}'s head whips round to the urn.", '{y} grabs {x} by the sleeve, like that could keep {x} here.'],
   relief: ['Across the fire, {y} lets out a breath {ysub} has been holding all night.', '{y} keeps a perfectly straight face. Barely.'],
 };
 const BETRAY_SAY = { x: ['Seriously?', 'Wow. Okay.', 'Really?', "You're kidding me."], yNo: ["Don't look at me. It wasn't me.", "It wasn't me, I swear.", "That's not mine. I promise."] };
@@ -924,12 +924,16 @@ function voteReaction(steps, V, { v, tally, deciding, tribal, elim, ballots, i, 
   const X = v.voted;
   if (!tribal.includes(X)) return;
   const hash = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
-  const pick = (k, salt) => RX[k][hash(`${ep.num}|${X}|${salt}|${k}`) % RX[k].length];
+  // the same face is never pulled twice in one reading
+  const used = (V._used ||= new Set());
+  const pick = (k, salt) => { const L = RX[k], h = hash(`${ep.num}|${X}|${salt}|${k}`); for (let j = 0; j < L.length; j++) { const t = L[(h + j) % L.length]; if (!used.has(X + t)) { used.add(X + t); return t; } } return L[h % L.length]; };
   const P = n0 => (typeof globalThis.pronouns === 'function' && globalThis.pronouns(n0)) || { posAdj: 'their', sub: 'they' };
   const fill = (t, y) => t.replace(/\{x\}/g, X).replace(/\{y\}/g, y || '').replace(/\{pos\}/g, P(X).posAdj).replace(/\{ypos\}/g, y ? P(y).posAdj : '').replace(/\{ysub\}/g, y ? P(y).sub : '');
   const wrote = x => ballots.find(b => b.voter === x)?.voted || null;
   // what X knows: word that it's X tonight, and who X counts on
-  const knew = (ep.pitchIntel || []).some(k => k.knower === X && k.target === X && k.believed !== false) || (ep.pitchCounterplay || []).some(c => c.actor === X);
+  // the one going home takes it the way the words after it say (td/story/tribal.js revealKind)
+  const rk = X === elim ? ep.tribalStory?.revealKind : null;
+  const knew = rk ? rk === 'expected' : (ep.pitchIntel || []).some(k => k.knower === X && k.target === X && k.believed !== false) || (ep.pitchCounterplay || []).some(c => c.actor === X);
   const named = ((typeof window !== 'undefined' && window.gs?.namedAlliances) || []).filter(a => (a.members || []).includes(X) && (a.formed ?? 0) <= ep.num);
   const side = [...new Set([...(ep.alliances || []).filter(a => (a.members || []).includes(X)).flatMap(a => a.members), ...named.flatMap(a => a.members)])]
     .filter(y => y !== X && tribal.includes(y));
@@ -976,11 +980,36 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
   dead.forEach(v => order.push({ v, dead: true }));
   // interleave so the count stays close as long as it can
   const a = [...forElim], b = [...rest];
-  while (a.length > 1 || b.length) {
-    if (b.length) order.push({ v: b.shift() });
-    if (a.length > 1) order.push({ v: a.shift() });
+  if (tie) {
+    while (a.length > 1 || b.length) {
+      if (b.length) order.push({ v: b.shift() });
+      if (a.length > 1) order.push({ v: a.shift() });
+    }
+    if (a.length) order.push({ v: a.shift() });
+  } else {
+    // The suspense is the vote that sends them home, wherever it falls (the user, 2026-10-08): the
+    // other names first, a vote at a time against the boot's, until nobody else can catch up. That
+    // vote is the one the host calls; whatever is left is read after it, for the record.
+    while (a.length || b.length) {
+      if (b.length) order.push({ v: b.shift() });
+      if (a.length) order.push({ v: a.shift() });
+    }
+    // it is over when the boot has a majority of the votes cast, what the room can count for itself;
+    // a plurality with no majority is only over at its last vote
+    const need = Math.floor((forElim.length + rest.length) / 2) + 1;
+    let c = 0, clinched = false;
+    order.forEach(o => {
+      if (o.dead) return;
+      if (clinched) { o.after = true; return; }
+      if (o.v.voted !== elim) return;
+      if (++c >= need) { o.deciding = true; clinched = true; }
+    });
+    if (!clinched) {
+      // no majority: the boot's last vote goes to the end, and that one decides it
+      const k = order.map(o => !o.dead && o.v.voted === elim).lastIndexOf(true);
+      if (k >= 0) { const [o] = order.splice(k, 1); o.deciding = true; order.push(o); }
+    }
   }
-  if (a.length) order.push({ v: a.shift(), deciding: !tie });
   const tally = {};
   // the read is the show's suspense: Chris holds the paper, keeps the count, and the closer it gets the
   // longer he takes (the user, 2026-10-08: "Chris just reads the paper, no suspense")
@@ -988,7 +1017,16 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
   const lead = (t) => { const e = Object.entries(t).sort((a, b) => b[1] - a[1]); return e; };
   const OPEN = [`First vote...`, `Here we go. First vote...`];
   const HOLD = [`Next vote...`, `Okay. Next vote...`];
-  order.forEach(({ v, dead: d, deciding }, i) => {
+  const REST = [`The rest of the votes, for the record.`, `I'll read the rest, but it doesn't change anything.`, `For the record, here's the rest.`];
+  let restSaid = false;
+  order.forEach(({ v, dead: d, deciding, after: late }, i) => {
+    // after the vote that decides it: the rest, read straight through for the record
+    if (late) {
+      if (!restSaid) { restSaid = true; steps.push({ k: 'say', by: V._host, host: true, text: REST[(ballots.length + i) % REST.length] }); }
+      tally[v.voted] = (tally[v.voted] || 0) + 1;
+      steps.push({ k: 'read', vote: v.voted, dead: false, deciding: false, tally: { ...tally }, focus: [v.voted], line: `${v.voted}.`, quick: true });
+      return;
+    }
     const before = lead(tally);
     const close = before.length >= 2 && before[0][1] - before[1][1] <= 1 && before[0][1] >= 1;
     // a pause before a vote that could swing it, longer before the one that ends it
@@ -1000,7 +1038,7 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
     const after = lead(tally);
     let line;
     if (d) line = `${v.voted}. Does not count.`;
-    else if (deciding) line = `The ${V._nth || 'next'} person voted out ${V._of}... ${v.voted}.`;
+    else if (deciding) line = `The ${V._nth || 'next'} person voted out ${V._of}... ${v.voted}.${order.some(o => o.after) ? ` That's ${word(tally[v.voted])} votes. That's enough.` : ''}`;
     else if (after.length >= 2 && i >= 1) line = `${v.voted}. That's ${word(after[0][1])} vote${after[0][1] === 1 ? '' : 's'} ${after[0][0]}, ${word(after[1][1])} vote${after[1][1] === 1 ? '' : 's'} ${after[1][0]}.`;
     else if (after.length === 1 && tally[v.voted] > 1) line = `${v.voted}. That's ${word(tally[v.voted])} votes ${v.voted}.`;
     else line = `${v.voted}.`;

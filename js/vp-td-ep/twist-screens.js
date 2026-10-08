@@ -399,3 +399,17 @@ export function tdAuctionScreen(ep, o = {}) {
   steps.push(...talkSteps(A.close, host));
   return { id: 'auction', kind: 'twist', venue, ep: ep.num, label: 'The Auction', host, steps };
 }
+
+/** "Previously on...": the host recaps last episode on the venue's set (td/story/previously.js). */
+export function tdPreviouslyScreen(ep, o = {}) {
+  const lines = ep.tdPreviously || [];
+  if (!lines.length) return null;
+  const host = o.host || 'Chris';
+  const venue = venueOf(ep, o);
+  const V = VENUES[venue];
+  const { key, places } = gather(venue, V.public, 'day', [], host);
+  const steps = [{ k: 'scene', spot: V.public, tod: 'day', plate: key, place: placeName(V.public), time: `Episode ${ep.num}`, card: true, focus: [], bg: [], places, host }];
+  steps.push({ k: 'title', kicker: `Episode ${ep.num}`, name: 'Previously on...', faces: [] });
+  for (const l of lines) { const text = cleanText(l.text); if (text) steps.push({ k: 'say', by: host, host: true, text }); }
+  return { id: 'previously', kind: 'twist', venue, ep: ep.num, label: 'Previously On', host, steps };
+}

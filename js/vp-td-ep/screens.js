@@ -11,7 +11,7 @@
 import { tdCampScreen, tdTribalScreen, tdTribalStepped, tdDoubleTribalScreen, cleanText, placeScene, plateKey, placeName, venueOf, teamSpot } from './steps.js';
 import { tdCampMap, hasMap, MAP_VENUES, openWindow, nextConv, lockedConv, PLACE_LABEL } from './map.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf } from './twists.js';
-import { tdTwistBlocksScreen, tdMergeScreen, tdMiscTwistScreen } from './twist-screens.js';
+import { tdTwistBlocksScreen, tdMergeScreen, tdMiscTwistScreen, tdPreviouslyScreen } from './twist-screens.js';
 import { tdArrivalScreen, hasArrivals } from './arrival.js';
 import { tdAftermathScreen, hasAftermath } from './aftermath.js';
 import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf } from './stage.js';
@@ -89,6 +89,8 @@ export function tdStepScreens(ep, classic = [], o = {}) {
 function islandScreen(ep, S, o) {
   const id = S?.id || '';
   if (id === 'cold-open' && hasArrivals(ep)) return tdArrivalScreen(ep, o);
+  // every other episode opens on the host's recap of the last one (td/story/previously.js)
+  if (id === 'cold-open' && ep.tdPreviously?.length) return tdPreviouslyScreen(ep, o);
   if (id === 'ri-choice') return tdRiChoiceScreen(ep, o);
   if (id === 'ri-life') return tdIslandLifeScreen(ep, false, o);
   if (id === 'rescue-life') return tdIslandLifeScreen(ep, !!(ep.rescueIslandEvents || []).length, o);

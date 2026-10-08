@@ -37,6 +37,7 @@ import { writeTwistStory, writeExile, writeFirstImpressions, writeAuctionScript 
 import { needOf, psycheCast } from './psyche.js';
 import { runnerDue } from './runners.js';
 import { recordThreads, threadDue } from './threads.js';
+import { writePreviously } from './previously.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf } from './places.js';
 
@@ -1279,6 +1280,8 @@ export function airTdEpisode(ep) {
   ep.campStory = story;
   // the night's words: every voter in the booth, the reading, last words, after (tribal.js)
   if (!ep.tribalStory) ep.tribalStory = writeTribal(ep);
+  // last episode, as the host recaps it before this one (previously.js)
+  if (ep.tdPreviously === undefined) ep.tdPreviously = writePreviously(ep);
   // what this episode leaves between people, for the episodes after it (threads.js)
   recordThreads(ep, Object.values(story).flatMap(c => [...(c.pre || []), ...(c.post || [])]).filter(it => it?.kind === 'arc.warn.told').map(it => ({ teller: it.scene?.who?.a, knower: it.scene?.who?.b })));
   // the Exile Duel's two nights: the one sent to Exile, and the face-off (twist.js writeExile)

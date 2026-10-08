@@ -334,6 +334,8 @@ export function _textColdOpen(ep, ln, sec) {
   const prev = gs.episodeHistory.filter(h => h.num < ep.num).slice(-1)[0];
   if (!prev) return;
   sec('COLD OPEN');
+  // the host's recap, as the stepped viewer opens on it (td/story/previously.js)
+  if (ep.tdPreviously?.length) { for (const l of ep.tdPreviously) ln(`${l.by}: ${l.text}`); ln(''); }
   if (prev.eliminated) {
     // Pre-merge: name the boot's tribe so the worker only has THAT tribe react.
     // The other tribe doesn't know yet — they find out at the next challenge.

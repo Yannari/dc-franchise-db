@@ -685,10 +685,27 @@ export function airTdEpisode(ep) {
         if (opener?.kind === 'story.morning' && /^fallout\.mourn/.test(k)) return true;
         return false;
       };
+      // Group scenes have a slot of their own (the real shows: 41% of Total Drama's camp scenes and
+      // 51% of Disventure Camp's have three or more people talking, spec §1b): each half-day airs the
+      // team's biggest group moment, with the most people the episode hasn't heard from yet, before
+      // the quick cuts, and takes one quick cut's place
+      let groupN = 0;
+      {
+        const seenNow = new Set(list.flatMap(x => x.item.players || speaksIn(events[x.item.ref])));
+        const groupEvs = events.map((ev, i) => ({ ev, i })).filter(({ ev }) => ev && !ev.aired && ev.type === 'groupScene' && !dup(ev) && rawFits(ev, ep, phase)
+          && (ev.players || []).filter(p => !seenNow.has(p)).length >= 2)
+          .sort((x, y) => (y.ev.players || []).filter(p => !seenNow.has(p)).length - (x.ev.players || []).filter(p => !seenNow.has(p)).length || x.i - y.i);
+        for (const { ev, i } of groupEvs.slice(0, 1)) {
+          const item = longScene(ev, i);
+          ev.aired = true;
+          groupN++;
+          list.push({ at: i, item: item || { ref: i } });
+        }
+      }
       const shown = new Set(list.flatMap(x => x.item.players || speaksIn(events[x.item.ref])));
       const cuts = events.map((ev, i) => ({ ev, i })).filter(({ ev }) => ev && !ev.aired && !dup(ev) && saysIn(ev).length && (ev.lines || []).length <= 7 && rawFits(ev, ep, phase))
         .sort((x, y) => saysIn(y.ev).filter(p => !shown.has(p)).length - saysIn(x.ev).filter(p => !shown.has(p)).length || x.i - y.i);
-      const cutCap = phase === 'pre' ? 3 : votes.length >= 3 ? 1 : 2;
+      const cutCap = Math.max(0, (phase === 'pre' ? 3 : votes.length >= 3 ? 1 : 2) - groupN);
       let cutN = 0;
       // the same kind of moment between the same people (a threat confessional about the same rival)
       // rests three episodes: the same thought aired again reads as a loop

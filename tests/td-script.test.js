@@ -14,7 +14,7 @@ import { makeScene, witness } from '../js/td/script/scene.js';
 import { fill } from '../js/td/script/write.js';
 import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 
-const ROLES = new Set(['a', 'b', 'c']);
+const ROLES = new Set(['a', 'b', 'c', 'd', 'e', 'f']);
 const FLOOR = 6;
 // Keys that only say WHAT was decided — an entry gated on these alone still fits every scene of its kind.
 // 'third' and 'more' are structural (how many people the scene holds), so each case needs its own floor:

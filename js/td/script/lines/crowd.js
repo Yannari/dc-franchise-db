@@ -6,6 +6,8 @@
 // moment of the camp day the engine decided, with three speakers and the others around them.
 //
 //   crowd.meal.any    breakfast: a (the most sociable), b and c (a's closest) over the food
+//   crowd.project.any a team job: a takes charge, b pushes back, c and d pitch in
+//   crowd.banter.any  a team safe tonight unwinds: a, b, c and d talk about nothing much
 //   crowd.won.any     back from a win: a scored the most for the team; b and c say so
 //   crowd.lost.any    back from a loss: a blames b, who scored the least; c tries to calm it down
 //   crowd.immune.any  after the merge: a just won immunity; b is glad, c is not
@@ -19,6 +21,88 @@
 //
 // Ids: 'cw.'.
 
+const PROJECT = [
+  { id: 'cw.pj1', turns: [
+    { by: 'a', say: "Okay. {b}, you're on the roof. {c}, you're with me." },
+    { by: 'b', say: "Who made you the boss?" },
+    { by: 'a', say: "Nobody else was going to do it." },
+    { by: 'c', say: "Can we just fix the roof before it rains?" },
+    { by: 'd', say: "I'll take the roof. {b} can watch." },
+  ] },
+  { id: 'cw.pj2', turns: [
+    { by: 'a', say: "If we all pull together, this is done by lunch." },
+    { by: 'b', say: "If YOU pull, maybe." },
+    { by: 'c', say: "I'll pull. Somebody hand me that rope." },
+    { by: 'd', say: "Here. Don't let go this time." },
+  ] },
+  { id: 'cw.pj3', turns: [
+    { by: 'a', say: "Branches over there, rocks over here. Let's go, people." },
+    { by: 'b', say: "Since when do you give the orders?" },
+    { by: 'a', say: "Since nobody else did." },
+    { by: 'c', say: "I'll do branches. Just stop arguing." },
+    { by: 'd', say: "I'll do rocks. Rocks don't argue." },
+  ] },
+  { id: 'cw.pj4', turns: [
+    { by: 'a', say: "We need a real fire pit. Not that sad little circle." },
+    { by: 'b', say: "That sad little circle was mine." },
+    { by: 'c', say: "It was very sad, though." },
+    { by: 'b', say: "Wow. Fine. Build a better one." },
+    { by: 'd', say: "I'll help. Mostly to stop this conversation." },
+  ] },
+  { id: 'cw.pj5', turns: [
+    { by: 'b', say: "Why are we doing it your way?" },
+    { by: 'a', say: "Because my way has a plan." },
+    { by: 'c', say: "Your way does have a plan. I'll give you that." },
+    { by: 'b', say: "Great. Two of you now." },
+    { by: 'd', say: "Make it three. Hand me the hammer." },
+  ] },
+  { id: 'cw.pj6', turns: [
+    { by: 'a', say: "Okay, everyone. Ten minutes and this is done. Go." },
+    { by: 'c', say: "Ten minutes? Really?" },
+    { by: 'b', say: "It's going to take an hour and you know it." },
+    { by: 'a', say: "Then let's stop talking and start the hour." },
+    { by: 'd', say: "I'm starting the hour. Somebody join me." },
+  ] },
+];
+const BANTER = [
+  { id: 'cw.bt1', turns: [
+    { by: 'a', say: "Okay. Worst thing you've eaten here. Go." },
+    { by: 'b', say: "Whatever that was on day two." },
+    { by: 'c', say: "Day two moved." },
+    { by: 'd', say: "Day two is still moving. Inside me." },
+  ] },
+  { id: 'cw.bt2', turns: [
+    { by: 'b', say: "What's the first thing you're doing when you get home?" },
+    { by: 'a', say: "Shower. For an hour." },
+    { by: 'c', say: "Sleep in a bed." },
+    { by: 'd', say: "Eat food I can recognise." },
+  ] },
+  { id: 'cw.bt3', turns: [
+    { by: 'c', say: "No vote for us. I don't know what to do with myself." },
+    { by: 'a', say: "Relax. Remember relaxing?" },
+    { by: 'b', say: "Vaguely. It was before I got here." },
+    { by: 'd', say: "I'm going to lie here and look at the sky." },
+  ] },
+  { id: 'cw.bt4', turns: [
+    { by: 'a', say: "If {host} had to do one of our challenges, which one?" },
+    { by: 'b', say: "The worst one." },
+    { by: 'c', say: "And we'd get to watch." },
+    { by: 'd', say: "And make fun of the hair." },
+  ] },
+  { id: 'cw.bt5', turns: [
+    { by: 'b', say: "Best moment so far. Go." },
+    { by: 'c', say: "Right now, honestly." },
+    { by: 'a', say: "Aw. That's so cheesy." },
+    { by: 'c', say: "You're smiling, though." },
+    { by: 'd', say: "Okay, I'm smiling too. Shut up." },
+  ] },
+  { id: 'cw.bt6', turns: [
+    { by: 'a', say: "Would you rather eat the food here for a year, or sleep next to {b}'s feet for a month?" },
+    { by: 'b', say: "Hey!" },
+    { by: 'c', say: "...Can I think about it?" },
+    { by: 'd', say: "I'd take the food. Sorry, {b}." },
+  ] },
+];
 const MEAL = [
   { id: 'cw.m1', turns: [
     { by: 'a', say: "Is this oatmeal or glue?" },
@@ -406,6 +490,7 @@ export default {
   'crowd.meal.any': MEAL, 'crowd.won.any': WON, 'crowd.lost.any': LOST, 'crowd.immune.any': IMMUNE,
   'crowd.huddle.any': HUDDLE, 'crowd.nerves.any': NERVES, 'crowd.clash.any': CLASH,
   'crowd.chores.any': CHORES, 'crowd.dinner.any': DINNER,
+  'crowd.project.any': PROJECT, 'crowd.banter.any': BANTER,
   'crowd.chime-fight.any': CH_FIGHT, 'crowd.chime-banter.any': CH_BANTER, 'crowd.chime-romance.any': CH_ROMANCE,
 };
 

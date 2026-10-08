@@ -255,7 +255,22 @@ function _crowdScenes(ep, campKey, present, phase, { tribal = false } = {}) {
     if (b && c) { scene('crowd.meal', { a, b, c }, {}, at('mess-hall', 'morning'), 'BREAKFAST', 'blue'); pairBond({ a, b, c }, 0.15); }
     // the morning's work, led by the strongest of the people breakfast did not hold
     const rest = people.filter(n => ![a, b, c].includes(n));
-    if (rest.length >= 3) {
+    // A team project (the real shows' most common group scene: the shelter, the fire, fixing up
+    // camp): the boldest planner takes charge, whoever least likes being told what to do pushes
+    // back, and two more pitch in. Before the merge, on a team big enough to spare four, about
+    // half the mornings, in place of the plain chores.
+    let projectDone = false;
+    if (!gs.isMerged && rest.length >= 4 && r() < 0.5) {
+      const lead = top(rest, n => st(n, 'boldness') + st(n, 'strategic') + st(n, 'social') * 0.5)[0];
+      const push = top(rest.filter(n => n !== lead), n => st(n, 'boldness') + (10 - st(n, 'temperament')) * 0.5 - getBond(n, lead))[0];
+      const [h1, h2] = closest(lead, rest.filter(n => n !== push));
+      if (push && h1 && h2) {
+        scene('crowd.project', { a: lead, b: push, c: h1, d: h2 }, {}, at(pub, 'camp-work'), 'TEAM PROJECT', 'blue');
+        addBond(lead, push, -0.3); addBond(lead, h1, 0.1); addBond(lead, h2, 0.1); addBond(h1, h2, 0.1);
+        projectDone = true;
+      }
+    }
+    if (!projectDone && rest.length >= 3) {
       const k = top(rest, n => st(n, 'physical') + st(n, 'endurance'))[0];
       const [k2, k3] = closest(k, rest);
       if (k2 && k3) { scene('crowd.chores', { a: k, b: k2, c: k3 }, {}, at(pub, 'camp-work'), 'CHORES', 'blue'); pairBond({ a: k, b: k2, c: k3 }, 0.1); }
@@ -297,6 +312,13 @@ function _crowdScenes(ep, campKey, present, phase, { tribal = false } = {}) {
       const [b, c] = closest(a, people);
       if (b && c) { scene('crowd.won', { a, b, c }, {}, at(pub, 'return'), 'VICTORY', 'gold'); pairBond({ a, b, c }, 0.2); }
     }
+  }
+  // A team that is safe tonight unwinds together: the most sociable and the three people closest to
+  // them, talking about nothing in particular (home, the food, the host). Everyone in it +0.1.
+  if (!tribal && people.length >= 4) {
+    const a = top(people, n => st(n, 'social') + st(n, 'boldness') * 0.3)[0];
+    const [b, c, d] = closest(a, people);
+    if (b && c && d) { scene('crowd.banter', { a, b, c, d }, {}, at('campfire', 'scramble'), 'DOWNTIME', 'blue'); pairBond({ a, b, c, d }, 0.1); }
   }
   // dinner: three people the regroup did not hold, at the evening meal
   const used = new Set(out.flatMap(e => e.players));

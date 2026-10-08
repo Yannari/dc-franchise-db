@@ -20,8 +20,9 @@ import nCamp from './n-camp.js';
 import nGroup from './n-group.js';
 import nGroup2 from './n-group2.js';
 import nArrival from './n-arrival.js';
+import nGroup3 from './n-group3.js';
 
-const FILES = [firstday, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival];
+const FILES = [firstday, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival, nGroup3];
 
 export const STORY_POOLS = {};
 for (const f of FILES) for (const [k, v] of Object.entries(f)) STORY_POOLS[k] = STORY_POOLS[k] ? [...STORY_POOLS[k], ...v] : [...v];

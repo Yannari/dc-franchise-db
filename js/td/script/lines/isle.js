@@ -378,6 +378,20 @@ const HELP_FISH = [
   ] },
 ];
 const HELP_SHELTER = [
+  { id: 'is.hs7', turns: [
+    { beat: '{a} props the sagging roof back up with a forked branch and ties it off.' },
+    { by: 'a', say: "That should hold. Probably." },
+    { by: 'a', conf: "I'm not winning anything sitting here. At least the roof isn't on my face anymore." },
+  ] },
+  { id: 'is.hs8', turns: [
+    { beat: '{a} digs a little trench around the shelter so the rain runs off instead of in.' },
+    { by: 'a', conf: "Last night the floor was a puddle. Not anymore. Small wins." },
+  ] },
+  { id: 'is.hs9', turns: [
+    { beat: '{a} spends an hour stuffing dry leaves into the gaps in the walls.' },
+    { by: 'a', say: "Warmer already. You're welcome." },
+    { by: 'a', conf: "Keeping busy keeps me from thinking about how I got here." },
+  ] },
   { id: 'is.hs1', turns: [
     { beat: '{a} spends the morning weaving palm fronds into a wall against the wind.' },
     { by: 'a', say: "There. Now we won't freeze." },

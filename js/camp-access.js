@@ -59,6 +59,9 @@ export const ACCESS_PROFILES = Object.freeze({
     { id:'studio-backlot', label:'Studio backlot', access:'everyday', privacy:0.25, overhear:0.65, capacity:15, public:true },
     { id:'soundstage-corridor', label:'Soundstage corridor', access:'everyday', privacy:0.55, overhear:0.40, capacity:5 },
     { id:'prop-storage', label:'Prop storage', access:'restricted', privacy:0.80, overhear:0.15, capacity:4 },
+    // the lot's standing sets (Total Drama Action)
+    { id:'western-set', label:'Western set', access:'everyday', privacy:0.60, overhear:0.30, capacity:6 },
+    { id:'city-set', label:'City street set', access:'everyday', privacy:0.45, overhear:0.45, capacity:8 },
   ]),
   'world-tour': freezeLocations([
     { id:'economy', label:'Economy class', access:'everyday', privacy:0.05, overhear:0.95, capacity:20, public:true },

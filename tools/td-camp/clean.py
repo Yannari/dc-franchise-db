@@ -50,8 +50,13 @@ def crop_169(img, anchor=0.5):
     return img[y:y + nh]
 
 
-def sharpen_4k(path, anchor=0.5):
-    img = crop_169(load_bgr(path), anchor)
+def sharpen_4k(path, anchor=0.5, box=None):
+    img = load_bgr(path)
+    if box:
+        # a letterboxed frame: keep only the picture (box in the frame's own 1600x900 reference px)
+        h, w = img.shape[:2]; kx, ky = w / 1600.0, h / 900.0
+        img = img[int(box[1] * ky):int(box[3] * ky), int(box[0] * kx):int(box[2] * kx)]
+    img = crop_169(img, anchor)
     if img.shape[1] < 3000:
         src = os.path.join(tempfile.gettempdir(), 'clean-src.png'); out = os.path.join(tempfile.gettempdir(), 'clean-up.png')
         cv2.imwrite(src, img)
@@ -226,7 +231,7 @@ def clean(name, P):
         if f.startswith(f'tr-{name}-'):
             os.remove(os.path.join(SPRITES, f))
     T = os.path.join(REPO, 'tools', 'td-camp', 'traced')
-    img = sharpen_4k(os.path.join(T, 'src', P['src']), P.get('anchor', 0.5))
+    img = sharpen_4k(os.path.join(T, 'src', P['src']), P.get('anchor', 0.5), P.get('box'))
     if P.get('cut'):
         cut = P['cut']                    # polygons inline, or a file: a mask .png or a polygon .json
         if isinstance(cut, str):

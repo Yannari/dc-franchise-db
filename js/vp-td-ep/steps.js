@@ -63,7 +63,8 @@ const PLACE = {
 Object.assign(PLACE, { 'cabin-inside': 'Inside the Cabin', washroom: 'The Washrooms', cliff: 'The Cliff' });
 // Wawanakwa's other places (the wiki's locations) and the islands beyond camp
 Object.assign(PLACE, { lake: 'The Lake', boathouse: 'The Boathouse', waterfall: 'The Waterfall', caves: 'The Caves', amphitheater: 'The Amphitheater',
-  'boney-island': 'Boney Island', 'playa-des-losers': 'Playa Des Losers' });
+  'boney-island': 'Boney Island', 'playa-des-losers': 'Playa Des Losers',
+  'trailer-inside': 'Inside the Trailer', 'western-set': 'The Western Set', 'city-set': 'The City Set' });
 
 // ── STAGING — where a scene plays, beyond where the engine says the people were ──────────
 // The engine knows six places at Wawanakwa, chosen for privacy (who can overhear). Television
@@ -94,7 +95,8 @@ const STAGE = {
       ['studio-backlot', 3, null, 'day'], ['craft-services', 1, null, 'day'],
       ['studio-backlot', 2, null, 'return'], ['craft-services', 2, null, 'return'],
       ['craft-services', 2, null, 'evening'], ['studio-backlot', 2, null, 'evening'], ['trailers', 1, null, 'evening']],
-    trailers: [['trailers', 3], ['soundstage-corridor', 1, null, 'evening']],
+    trailers: [['trailer-inside', 3, /^(life\.(wakeup|mood|sleep)|romance\.(night|honeymoon)|friend\.(comfort|secret|bond)|blind\.|idol\.confide|drama\.paranoia)/],
+      ['trailers', 3], ['trailer-inside', 2, null, 'morning'], ['trailer-inside', 1, null, 'evening'], ['soundstage-corridor', 1, null, 'evening']],
   },
   // the island's clock: mornings and the night's private talk at the shelter, the afternoon on the beach,
   // the fire in the evening; a walk or a flirt on the shoreline goes down to the beach
@@ -153,6 +155,7 @@ const BUSY = {
   campsite: ['whittle', 'read', 'nap'], 'forest-edge': ['stretch'], 'rocky-beach': ['fish', 'read'], 'lake-shore': ['fish', 'read'],
   'carnival-entrance': ['read'], midway: ['eat', 'stretch'],
   'cabin-inside': ['nap', 'read', 'nap'], beach: ['nap', 'stretch', 'fish'], washroom: ['sweep'], cliff: ['stretch'],
+  'trailer-inside': ['nap', 'read'], 'western-set': ['stretch', 'read'], 'city-set': ['stretch', 'read'],
   lake: ['fish', 'stretch', 'read'], boathouse: ['whittle', 'read'], waterfall: ['stretch', 'read'], caves: ['read'], amphitheater: ['stretch', 'read'],
 };
 

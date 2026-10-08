@@ -920,7 +920,6 @@
  },
  "hc-conf": {
   "src": "hc-conf.png",
-  "cut": "cuts/hc-conf-mask.png",
   "wind": 0.2,
   "noleaf": true,
   "sway": [
@@ -932,7 +931,6 @@
     0.9
    ]
   ],
-  "fill": "rows",
   "nosky": true
  },
  "hc-dock": {
@@ -1387,5 +1385,248 @@
    ]
   ],
   "fill": "rows"
+ },
+ "lot-map": {
+  "src": "lot-map.png",
+  "wind": 0.7,
+  "pool": [
+   [
+    0,
+    840,
+    1600,
+    900,
+    false,
+    800,
+    870
+   ]
+  ]
+ },
+ "lot-backlot": {
+  "src": "lot-backlot.png",
+  "wind": 0.6,
+  "noleaf": true,
+  "sway": [
+   [
+    940,
+    560,
+    1060,
+    700,
+    0.5,
+    990,
+    640
+   ]
+  ]
+ },
+ "lot-trailers": {
+  "src": "lot-trailers.png",
+  "wind": 0.8
+ },
+ "lot-trailer-in": {
+  "src": "lot-trailer-in.png",
+  "wind": 0.15,
+  "nosky": true,
+  "noleaf": true,
+  "glow": [
+   [
+    630,
+    150,
+    700,
+    190
+   ]
+  ]
+ },
+ "lot-craft": {
+  "src": "lot-craft.png",
+  "wind": 0.4,
+  "nosky": true,
+  "noleaf": true,
+  "cloth": [
+   [
+    0,
+    0,
+    1600,
+    300,
+    0.25
+   ],
+   [
+    560,
+    350,
+    690,
+    600,
+    0.45
+   ]
+  ]
+ },
+ "lot-awards": {
+  "src": "lot-awards.png",
+  "night": true,
+  "wind": 0.6,
+  "glow": [
+   [
+    0,
+    0,
+    110,
+    80
+   ],
+   [
+    1000,
+    210,
+    1080,
+    290
+   ],
+   [
+    1250,
+    100,
+    1350,
+    190
+   ],
+   [
+    250,
+    140,
+    750,
+    500
+   ]
+  ]
+ },
+ "lot-sound": {
+  "src": "lot-sound.png",
+  "box": [
+   165,
+   95,
+   1435,
+   810
+  ],
+  "wind": 0.0,
+  "nosky": true,
+  "noleaf": true
+ },
+ "lot-props": {
+  "src": "lot-props.png",
+  "wind": 0.15,
+  "nosky": true,
+  "noleaf": true,
+  "cloth": [
+   [
+    270,
+    50,
+    1260,
+    700,
+    0.2
+   ]
+  ]
+ },
+ "lot-walk": {
+  "src": "lot-walk.png",
+  "night": true,
+  "wind": 0.6,
+  "glow": [
+   [
+    330,
+    40,
+    450,
+    130
+   ],
+   [
+    830,
+    0,
+    960,
+    50
+   ]
+  ]
+ },
+ "lot-conf": {
+  "src": "lot-conf.png",
+  "wind": 0.2,
+  "nosky": true,
+  "noleaf": true,
+  "cloth": [
+   [
+    0,
+    0,
+    290,
+    900,
+    0.35
+   ],
+   [
+    1220,
+    0,
+    1600,
+    900,
+    0.35
+   ]
+  ],
+  "glow": [
+   [
+    0,
+    40,
+    95,
+    880
+   ],
+   [
+    1510,
+    40,
+    1600,
+    880
+   ]
+  ]
+ },
+ "lot-western": {
+  "src": "lot-western.png",
+  "wind": 0.8,
+  "noleaf": true,
+  "sway": [
+   [
+    100,
+    610,
+    140,
+    720,
+    0.4,
+    120,
+    660
+   ],
+   [
+    1270,
+    590,
+    1420,
+    690,
+    0.4,
+    1280,
+    640
+   ]
+  ]
+ },
+ "lot-city": {
+  "src": "lot-city.png",
+  "wind": 0.6
+ },
+ "aftermath-studio": {
+  "src": "aftermath-studio.png",
+  "wind": 0.0,
+  "nosky": true,
+  "noleaf": true,
+  "glow": [
+   [
+    540,
+    280,
+    1060,
+    420
+   ]
+  ],
+  "cloth": [
+   [
+    0,
+    0,
+    330,
+    700,
+    0.25
+   ],
+   [
+    1240,
+    0,
+    1600,
+    700,
+    0.25
+   ]
+  ]
  }
 }

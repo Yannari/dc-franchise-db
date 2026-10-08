@@ -66,7 +66,8 @@ Object.assign(PLACE, { 'cabin-inside': 'Inside the Cabin', washroom: 'The Washro
 Object.assign(PLACE, { lake: 'The Lake', boathouse: 'The Boathouse', waterfall: 'The Waterfall', caves: 'The Caves', amphitheater: 'The Amphitheater',
   'boney-island': 'Boney Island', 'playa-des-losers': 'Playa Des Losers',
   'trailer-inside': 'Inside the Trailer', 'western-set': 'The Western Set', 'city-set': 'The City Set',
-  'chris-quarters': "Chris's Quarters", cockpit: 'The Cockpit', river: 'The River', kitchen: "Chef's Kitchen" });
+  'chris-quarters': "Chris's Quarters", cockpit: 'The Cockpit', river: 'The River', kitchen: "Chef's Kitchen",
+  carousel: 'The Carousel', 'corn-maze-inside': 'Inside the Corn Maze', 'soluna-exile': 'Exile Island' });
 
 // ── STAGING — where a scene plays, beyond where the engine says the people were ──────────
 // The engine knows six places at Wawanakwa, chosen for privacy (who can overhear). Television
@@ -119,6 +120,8 @@ const STAGE = {
       ['carnival-entrance', 2, null, 'return'], ['campsite', 2, null, 'return'], ['carnival-entrance', 1, null, 'day'],
       ['campsite', 3, null, 'evening'], ['midway', 1, null, 'evening']],
     'forest-edge': [['lake-shore', 3, /^(romance\.|friend\.(walk|laugh))/], ['forest-edge', 3], ['rocky-beach', 1]],
+    'corn-maze': [['corn-maze-inside', 3], ['corn-maze', 2]],
+    midway: [['midway', 3], ['carousel', 2, /^(romance\.|friend\.(walk|laugh|bond))/], ['carousel', 1]],
   },
   // the jet's clock: meals in the galley, the morning queue in the aisle, economy the rest of the time
   'world-tour': {
@@ -130,14 +133,34 @@ const STAGE = {
   },
 };
 const PLACE_WORDS = { lake: /\b(lake|canoe|shore)\b/i, dock: /\b(dock|lake)\b/i, 'forest-trail': /\b(woods|forest|trail)\b/i, cabins: /\b(cabins?|porch)\b/i, campfire: /\bfire\b/i, 'mess-hall': /\b(mess hall|slop|tray|Chef)\b/i, 'communal-grounds': /\b(grounds|yard)\b/i };
+// What a scene is doing, from its lines and its kind, and the places that can hold it.
+const ACT_WASH = /\b(teeth|toothbrush|shower|wash(es|ing)? (up|my|your|his|her|their)|mirror|toilet|bathroom|washroom|sink)\b/i;
+const ACT_OUTDOOR = /\b(leaves|firewood|wood|logs?|bucket|haul(ing)?|sweep(ing)?|dig(ging)?|fetch(ing)? water|chores|rake|fishing|fish|stones?|sticks?|branch(es)?|sand|swim(ming)?)\b/i;
+const ACT_FOOD = /\b(breakfast|lunch|dinner|eat(ing)?|food|tray|slop|bowl|plate|spoon|snack|meal)\b/i;
+const ACT_SLEEP = /\b(bunk|bed|asleep|sleeping|pillow|woke|wake up|snor(e|ing))\b/i;
+const INDOOR = new Set(['washroom', 'cabin-inside', 'mess-hall', 'kitchen', 'trailer-inside', 'craft-services', 'galley', 'economy', 'aisle', 'cargo-hold', 'shelter', 'caves', 'cave', 'boathouse']);
+const EATS = new Set(['mess-hall', 'kitchen', 'craft-services', 'galley', 'campfire', 'campsite']);
+function fitsPlace(to, text, kind) {
+  if (to === 'washroom') return ACT_WASH.test(text) || /^(life\.wakeup|drama\.(vanity|primp))/.test(kind);
+  if (ACT_WASH.test(text) && !['washroom', 'cabin-inside', 'trailer-inside', 'water-source', 'lake-shore', 'aisle'].includes(to)) return false;
+  if (ACT_OUTDOOR.test(text) && INDOOR.has(to) && !(to === 'mess-hall' && ACT_FOOD.test(text))) return false;
+  if (ACT_FOOD.test(text) && !EATS.has(to) && !ACT_OUTDOOR.test(text) && /\b(breakfast|dinner|lunch|tray|slop|bowl|spoon)\b/i.test(text)) return false;
+  if (ACT_SLEEP.test(text) && !INDOOR.has(to) && /\b(bunk|bed|pillow)\b/i.test(text)) return false;
+  return true;
+}
+
 export function stageSpot(venue, spot, ev, windowId) {
+  // a scene the story layer placed on purpose stays where it was put (td/story/places.js)
+  if (ev?.scene?.spot?.fixed) return spot;
   const rules = STAGE[venue]?.[spot];
   if (!rules) return spot;
   const text = (ev.lines || []).map(l => l.text).join(' ') || String(ev.text || '');
   if (PLACE_WORDS[spot]?.test(text)) return spot;
   const kind = ev.scene?.kind || ev.type || '';
   const time = windowId === 'morning' ? 'morning' : windowId === 'before-tribal' || windowId === 'scramble' ? 'evening' : windowId === 'return' ? 'return' : 'day';
-  const fit = rules.filter(([, , re, when]) => (!re || re.test(kind)) && (!when || when === time));
+  // the move must make sense for what they are doing (the user, 2026-10-08: "carrying leaves in the
+  // bathroom"): the washrooms only for washing up, never outdoor work indoors, food where they eat
+  const fit = rules.filter(([to, , re, when]) => (!re || re.test(kind)) && (!when || when === time) && fitsPlace(to, text, kind));
   const pick = fit.find(([, , re]) => re) ? fit.filter(([, , re]) => re) : fit.filter(([, , re]) => !re);
   const total = pick.reduce((a, [, w]) => a + w, 0);
   let roll = hash(`${kind}|${(ev.players || []).join(',')}|${text.slice(0, 40)}`) % Math.max(total, 1);
@@ -157,7 +180,7 @@ const BUSY = {
   campsite: ['whittle', 'read', 'nap'], 'forest-edge': ['stretch'], 'rocky-beach': ['fish', 'read'], 'lake-shore': ['fish', 'read'],
   'carnival-entrance': ['read'], midway: ['eat', 'stretch'],
   'cabin-inside': ['nap', 'read', 'nap'], beach: ['nap', 'stretch', 'fish'], washroom: ['sweep'], cliff: ['stretch'],
-  'chris-quarters': ['read'], cockpit: ['read'], river: ['fish', 'stretch'], kitchen: ['eat'], 'trailer-inside': ['nap', 'read'], 'western-set': ['stretch', 'read'], 'city-set': ['stretch', 'read'],
+  'chris-quarters': ['read'], cockpit: ['read'], carousel: ['stretch', 'read'], 'corn-maze-inside': ['stretch'], river: ['fish', 'stretch'], kitchen: ['eat'], 'trailer-inside': ['nap', 'read'], 'western-set': ['stretch', 'read'], 'city-set': ['stretch', 'read'],
   lake: ['fish', 'stretch', 'read'], boathouse: ['whittle', 'read'], waterfall: ['stretch', 'read'], caves: ['read'], amphitheater: ['stretch', 'read'],
 };
 

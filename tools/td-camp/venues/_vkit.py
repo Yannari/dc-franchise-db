@@ -232,7 +232,16 @@ def vplate(name, json_name, depth):
     c = os.path.join(REPO, 'tools', 'td-camp', 'traced', 'cuts', json_name[:-5] + '-clean.png')
     if not os.path.exists(c):
         return vtraced(name, json_name, depth)
-    DIRECT[0] = {'hd': c, 'sd': c[:-4] + '-sd.png', 'motion': c[:-10] + '-motion.png', 'water': c[:-10] + '-water.png'}
+    import glob as _g
+    stem = c[:-10]
+    var = {os.path.basename(f)[len(os.path.basename(stem)) + 1:-10]: f for f in _g.glob(stem + '~*-clean.png')}
+    DIRECT[0] = {'hd': c, 'sd': c[:-4] + '-sd.png', 'motion': stem + '-motion.png', 'water': stem + '-water.png',
+                 'variants': {v: (f, f[:-4] + '-sd.png') for v, f in var.items()}}
     x, z = px((800, 450), depth)
-    mark('motion', (x, depth, z), **({'water': 1} if os.path.exists(DIRECT[0]['water']) else {}))
+    extra = {}
+    if os.path.exists(DIRECT[0]['water']): extra['water'] = 1
+    if var: extra['variants'] = ','.join(sorted(var))
+    DIRECT[0]['sky'] = stem + '-sky.png'
+    if os.path.exists(DIRECT[0]['sky']): extra['flow'] = 1
+    mark('motion', (x, depth, z), **extra)
     return None

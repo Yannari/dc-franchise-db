@@ -660,6 +660,28 @@ const CLOSE = [
     { by: 'a', say: "Good. Keep it that way." },
     { by: 'b', conf: "{a} acts tough, but would do anything for a friend. I'm lucky to be one of them." },
   ] },
+  { id: 'is.cl7', turns: [
+    { beat: '{a} and {b} are washing their only shirts in the surf.' },
+    { by: 'a', say: "Remember when we thought camp food was the worst part?" },
+    { by: 'b', say: "I'd kill for camp food right now. Actually kill." },
+    { by: 'a', say: "Please don't. They'll make it a challenge." },
+    { by: 'b', conf: "I didn't know {a} that well before. Now I'd pick {a} over anyone still in the game." },
+  ] },
+  { id: 'is.cl8', turns: [
+    { by: 'b', say: "Can I tell you something embarrassing?" },
+    { by: 'a', say: "You've seen me cry over a crab. Go ahead." },
+    { by: 'b', say: "I miss my mom. Like, a lot." },
+    { by: 'a', say: "...Yeah. Me too. Mine, I mean. Not yours." },
+    { beat: 'They both laugh harder than the joke deserves.' },
+    { by: 'a', conf: "Out here, nobody pretends to be cool. Honestly? It's kind of nice." },
+  ] },
+  { id: 'is.cl9', turns: [
+    { beat: '{a} has scratched a little calendar into a rock. {b} adds a doodle next to every day.' },
+    { by: 'a', say: "Why is today a frowny face?" },
+    { by: 'b', say: "Because you ate the last banana." },
+    { by: 'a', say: "Fair." },
+    { by: 'b', conf: "We keep each other sane. Mostly by being annoying." },
+  ] },
 ];
 const DREAD = [
   { id: 'is.dr1', when: DUEL, turns: [

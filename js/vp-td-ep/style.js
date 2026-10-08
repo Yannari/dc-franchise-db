@@ -43,6 +43,8 @@ export const TDX_CSS = `
 .tdx .tdx-live,.tdx .tdx-sky,.tdx .tdx-cast,.tdx .tdx-fx{position:absolute;inset:0;pointer-events:none}
 .tdx .tdx-wash{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 75%,transparent 40%,rgba(8,10,30,.33))}
 .tdx .tdx-cloud{position:absolute;transform:translate(-50%,-50%);animation:tdxCloud var(--d,70s) ease-in-out infinite alternate}
+.tdx .tdx-cloud.flow{animation:tdxFlow var(--d) linear var(--dl,0s) infinite}
+@keyframes tdxFlow{from{transform:translate(-50%,-50%) translateX(-30cqw)}to{transform:translate(-50%,-50%) translateX(110cqw)}}
 .tdx .tdx-cloud img{width:100%;display:block}
 @keyframes tdxCloud{from{margin-left:calc(var(--dx,4%)*-1)}to{margin-left:var(--dx,4%)}}
 .tdx .tdx-flame{position:absolute;transform:translate(-50%,-100%)}

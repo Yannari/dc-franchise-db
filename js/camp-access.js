@@ -49,6 +49,7 @@ export const ACCESS_PROFILES = Object.freeze({
     { id:'lake-shore', label:'Lake shore', access:'everyday', privacy:0.60, overhear:0.30, capacity:4 },
     { id:'carnival-entrance', label:'Carnival entrance', access:'everyday', privacy:0.15, overhear:0.75, capacity:12 },
     { id:'midway', label:'The midway', access:'everyday', privacy:0.25, overhear:0.65, capacity:10 },
+    { id:'carousel', label:'The carousel', access:'everyday', privacy:0.45, overhear:0.45, capacity:8 },
     { id:'trial-area', label:'Elimination Trial area', access:'restricted', privacy:0.05, overhear:1, capacity:20 },
     { id:'haunted-mansion', label:'Stawaki Haunted Mansion', access:'episode-opened', privacy:0.75, overhear:0.30, capacity:10, opensWith:['isHauntedHouse'] },
     { id:'corn-maze', label:'Corn maze', access:'episode-opened', privacy:0.85, overhear:0.15, capacity:10, opensWith:['isMazeOfTheFallen'] },

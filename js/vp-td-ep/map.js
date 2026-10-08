@@ -39,7 +39,7 @@ const ZONE_OF = {
   'survival-island': { shelter: 'shelter', campfire: 'campfire', beach: 'beach', shoreline: 'shoreline', 'water-source': 'water-source',
     'jungle-trail': 'jungle-trail', 'fishing-area': 'fishing-area', confessional: 'confessional', ruins: 'ruins', cave: 'cave' },
   carnival: { campsite: 'campsite', shelter: 'shelter', 'forest-edge': 'forest-edge', 'rocky-beach': 'rocky-beach', 'lake-shore': 'lake-shore',
-    'carnival-entrance': 'carnival-entrance', midway: 'midway', 'haunted-mansion': 'haunted-mansion', 'corn-maze': 'corn-maze', 'theater-tent': 'theater-tent',
+    'carnival-entrance': 'carnival-entrance', midway: 'midway', carousel: 'carousel', 'corn-maze-inside': 'corn-maze', 'haunted-mansion': 'haunted-mansion', 'corn-maze': 'corn-maze', 'theater-tent': 'theater-tent',
     confessional: 'confessional' },
   'world-tour': { economy: 'economy', aisle: 'aisle', galley: 'galley', 'cargo-hold': 'cargo-hold', 'first-class': 'first-class',
     'destination-staging': 'destination-staging', confessional: 'confessional', 'chris-quarters': 'chris-quarters', cockpit: 'cockpit' },
@@ -49,8 +49,8 @@ export const ZONE_LABEL = { campsite: 'The Campsite', 'forest-edge': 'The Forest
   trailers: 'The Trailers', 'craft-services': 'Craft Services', 'studio-backlot': 'The Backlot', 'soundstage-corridor': 'The Soundstages', 'prop-storage': 'Prop Storage',
   economy: 'Economy Class', aisle: 'The Aisle', galley: 'The Galley', 'cargo-hold': 'The Cargo Hold', 'first-class': 'First Class', 'destination-staging': 'Down on the Ground',
   confessional: 'The Confession Cam', campfire: 'The Campfire', dock: 'The Dock', beach: 'The Beach', 'forest-trail': 'The Forest Trail', cliff: 'The Cliff',
-  'chris-quarters': "Chris's Quarters", cockpit: 'The Cockpit', 'western-set': 'The Western Set', 'city-set': 'The City Set', lake: 'The Lake', boathouse: 'The Boathouse', waterfall: 'The Waterfall', caves: 'The Caves', amphitheater: 'The Amphitheater', river: 'The River' };
-export const PLACE_LABEL = { cabins: 'Porch', 'cabin-inside': 'Inside', trailers: 'Outside', 'trailer-inside': 'Inside', 'mess-hall': 'Dining hall', kitchen: 'Kitchen' };
+  'chris-quarters': "Chris's Quarters", cockpit: 'The Cockpit', carousel: 'The Carousel', 'western-set': 'The Western Set', 'city-set': 'The City Set', lake: 'The Lake', boathouse: 'The Boathouse', waterfall: 'The Waterfall', caves: 'The Caves', amphitheater: 'The Amphitheater', river: 'The River' };
+export const PLACE_LABEL = { cabins: 'Porch', 'cabin-inside': 'Inside', trailers: 'Outside', 'trailer-inside': 'Inside', 'mess-hall': 'Dining hall', kitchen: 'Kitchen', 'corn-maze': 'Entrance', 'corn-maze-inside': 'Inside' };
 
 // the camp's day, in the order it happens (camp-access.js windows)
 export const WINDOW_ORDER = { pre: ['morning', 'camp-work'], post: ['return', 'scramble', 'before-tribal'] };

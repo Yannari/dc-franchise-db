@@ -122,6 +122,14 @@ def render_spot(venue, spot, tod, preview=False, w=1920, h=1080, hd=False):
         if not hd and os.path.exists(DIRECT[0]['motion']):
             sc.render.image_settings.quality = 90
             bpy.data.images.load(DIRECT[0]['motion']).save_render(path[:-5] + '-motion.webp', scene=sc)
+        # the same place at other hours: <spot>-day~<hour>.webp (and -hd)
+        for v, (vhd, vsd) in (DIRECT[0].get('variants') or {}).items():
+            stem = path[:-5][:-3] if hd else path[:-5]
+            sc.render.image_settings.quality = 92
+            bpy.data.images.load(vhd if hd else vsd).save_render(f'{stem}~{v}{"-hd" if hd else ""}.webp', scene=sc)
+        if not hd and os.path.exists(DIRECT[0].get('sky', '')):
+            sc.render.image_settings.quality = 90
+            bpy.data.images.load(DIRECT[0]['sky']).save_render(path[:-5] + '-sky.webp', scene=sc)
         if not hd and os.path.exists(DIRECT[0].get('water', '')):
             sc.render.image_settings.color_mode = 'RGBA'
             bpy.data.images.load(DIRECT[0]['water']).save_render(path[:-5] + '-water.webp', scene=sc)

@@ -12,7 +12,7 @@
 
 const VERT = `attribute vec2 p; varying vec2 v; void main(){ v = vec2(p.x * .5 + .5, .5 - p.y * .5); gl_Position = vec4(p, 0., 1.); }`;
 const FRAG = `precision mediump float;
-varying vec2 v; uniform sampler2D img, mot; uniform float t;
+varying vec2 v; uniform sampler2D img, mot, sky; uniform float t, flows;
 uniform vec3 gMul, gAdd, gFog; uniform float gSat, gHaze, gHot, gKeep;
 float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 void main(){
@@ -50,6 +50,9 @@ void main(){
   float warm = smoothstep(.55, .8, o0.r) * smoothstep(.3, .55, o0.g) * (1. - smoothstep(.5, .75, o0.b));
   float keep = gKeep * clamp(max(b.g * warm * 1.6, b.r * 1.4), 0., 1.);
   c.rgb = mix(g, o0 * 1.08, keep);
+  // flying: past the craft the sky streams by (mirrored so it never shows a seam)
+  float fl = flows * texture2D(mot, vec2(uv.x, (2. + uv.y) / 3.)).g;
+  if (fl > .01) { float x = uv.x - t * .045; x = abs(mod(x, 2.) - 1.); x = 1. - x; c.rgb = mix(c.rgb, texture2D(sky, vec2(x, uv.y + sin(t * 1.1) * .004)).rgb, fl); }
   // the open sky is left see-through: the clouds and birds below show there, and only there
   float o = 1. - texture2D(mot, vec2(uv.x - d.x, (2. + uv.y - d.y) / 3.)).r;
   gl_FragColor = vec4(c.rgb * o, o);
@@ -106,7 +109,8 @@ export function liveGL(root) {
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    gl.uniform1i(gl.getUniformLocation(pr, 'img'), 0); gl.uniform1i(gl.getUniformLocation(pr, 'mot'), 1);
+    gl.uniform1i(gl.getUniformLocation(pr, 'img'), 0); gl.uniform1i(gl.getUniformLocation(pr, 'mot'), 1); gl.uniform1i(gl.getUniformLocation(pr, 'sky'), 2);
+    gl.uniform1f(gl.getUniformLocation(pr, 'flows'), cv.dataset.flow ? 1 : 0);
     const G = GRADES[cv.dataset.grade] || {}, u = n => gl.getUniformLocation(pr, n);
     gl.uniform3fv(u('gMul'), G.mul || [1, 1, 1]); gl.uniform3fv(u('gAdd'), G.add || [0, 0, 0]); gl.uniform3fv(u('gFog'), G.fog || [.85, .87, .9]);
     gl.uniform1f(u('gSat'), G.sat ?? 1); gl.uniform1f(u('gHaze'), G.haze || 0); gl.uniform1f(u('gHot'), G.hot || 0); gl.uniform1f(u('gKeep'), G.keep || 0);
@@ -114,7 +118,8 @@ export function liveGL(root) {
     cv._gl = s; live.add(s);
     const src = cv.dataset.src;
     const go = () => { if (++s.ready === 2) { cv.classList.add('on'); frame(s); } };
-    texture(gl, 1, `${src}-motion.webp`, go);
+    if (cv.dataset.flow) { s.ready--; texture(gl, 2, `${cv.dataset.mot || src}-sky.webp`, go); }
+    texture(gl, 1, `${cv.dataset.mot || src}-motion.webp`, go);
     // the plate at screen size first, the 4K one swapped in as soon as it arrives (for the close-ups)
     texture(gl, 0, `${src}.webp`, () => { go(); if (cv.dataset.hd) texture(gl, 0, `${src}-hd.webp`); });
   }

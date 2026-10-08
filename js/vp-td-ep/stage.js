@@ -75,17 +75,22 @@ export function worldHtml(screen, L) {
   const night = nightFrame || (!!motion && L.scene?.tod === 'night');
   const grade = !motion ? null : night ? (nightFrame ? (wet ? 'nightrain' : 'none') : indoor ? 'dim' : 'night') : indoor ? (wet ? 'dim' : 'day')
     : wx === 'storm' ? 'storm' : wx === 'rain' ? 'rain' : wx === 'overcast' ? 'overcast' : wx === 'fog' ? 'fog' : wx === 'hot' ? 'hot'
-    : ['morning', 'day', 'dusk'][partOfDay(L.scene?.time)];
-  const gl = motion ? `<canvas class="tdx-gl" data-src="${SETS}/${key}" data-grade="${grade}"${HD_VENUES.has(screen.venue) && !L.conf ? ' data-hd="1"' : ''}></canvas>` : '';
+    : ['day', 'day', 'dusk'][partOfDay(L.scene?.time)];   // (the user: no morning haze; day, sunset, night)
+  // a place the show painted at this hour (sunrise, sunset, a hot afternoon) shows that painting, ungraded
+  const painted = motion?.variants && !night ? String(motion.variants).split(',').find(v => v === grade) : null;
+  const vkey = painted ? `${key}~${painted}` : key;
+  const gl = motion ? `<canvas class="tdx-gl" data-src="${SETS}/${vkey}" data-mot="${SETS}/${key}"${motion?.flow ? ' data-flow="1"' : ''} data-grade="${painted ? 'day' : grade}"${HD_VENUES.has(screen.venue) && !L.conf ? ' data-hd="1"' : ''}></canvas>` : '';
   // under a living plate, the sky is a layer of its own: clouds and birds pass behind every tree and roof
   // (the shader leaves the plate see-through only where the frame shows open sky)
-  let h = `<div class="tdx-plate" style="background-image:url('${SETS}/${key}.webp')"></div>${hd}<!--sky-->${gl}<div class="tdx-live">`, sky = '';
+  let h = `<div class="tdx-plate" style="background-image:url('${SETS}/${vkey}.webp')"></div>${hd.replace(`${key}-hd`, `${vkey}-hd`)}<!--sky-->${gl}<div class="tdx-live">`, sky = '';
   const skyward = x => { if (gl) sky += x; else h += x; };
   if (of('lightning').length) h += `<i class="tdx-lightning"></i>`;
   of('cloud').forEach((m, i) => {
     // a cloud lifted out of a traced frame (tools/td-camp/live.py) carries its own width
     const w = m.w != null ? m.w : m.s * m.size * 2.0 * 2.2 * 9 / 16;
-    skyward(`<div class="tdx-cloud" style="left:${p(m.u)};top:${p(m.v)};width:${p(w)};--d:${60 + i * 17}s;--dx:${3 + i * 1.5}%"><img src="${SETS}/sprites/${m.sprite}.webp" alt=""></div>`);
+    // a flowing cloud (the jet in flight) sails past and round again, from where the artist drew it
+    const flow = m.flow ? ` flow" style="left:0;top:${p(m.v)};width:${p(w)};--d:${(26 + (i % 4) * 7)}s;--dl:-${(((m.u * 100 + 30) / 140) * (26 + (i % 4) * 7)).toFixed(1)}s` : `" style="left:${p(m.u)};top:${p(m.v)};width:${p(w)};--d:${60 + i * 17}s;--dx:${3 + i * 1.5}%`;
+    skyward(`<div class="tdx-cloud${flow}"><img src="${SETS}/sprites/${m.sprite}.webp" alt=""></div>`);
   });
   of('fire').forEach((m, i) => {
     const hh = m.hh != null ? m.hh : Math.max(m.s * m.size * 1.25, .012), w = hh * 9 / 16;
@@ -123,8 +128,8 @@ export function worldHtml(screen, L) {
   // the day's weather, painted over the set (a living plate is graded in its shader instead of greyed)
   if (wx && !indoor) {
     const aerial = spot === 'map';
-    if ((wx === 'sunny' || wx === 'hot') && !night && !aerial) h += `<i class="tdx-rays${wx === 'hot' ? ' hot' : ''}"></i>`;
-    if (wx === 'hot' && !night && !aerial) h += '<i class="tdx-haze"></i>';
+    if ((wx === 'sunny' || wx === 'hot') && !night && !aerial && !gl) h += `<i class="tdx-rays${wx === 'hot' ? ' hot' : ''}"></i>`;
+    if (wx === 'hot' && !night && !aerial && !gl) h += '<i class="tdx-haze"></i>';
     if ((wx === 'overcast' || wet) && !gl) h += `<i class="tdx-grey${wx === 'storm' ? ' storm' : ''}${night ? ' night' : ''}"></i>`;
     if (wet) for (let i = 0; i < (wx === 'storm' ? 110 : 60); i++) h += `<i class="tdx-rain${wx === 'storm' ? ' hard' : ''}" style="left:${p(r() * 1.15 - .1)};--d:${((wx === 'storm' ? .35 : .55) + r() * .3).toFixed(2)}s;--dl:-${(r() * 1).toFixed(2)}s;opacity:${(.25 + r() * .45).toFixed(2)}"></i>`;
     if (wet) for (let i = 0; i < 10; i++) h += `<i class="tdx-splash" style="left:${p(.05 + r() * .9)};top:${p(Math.max(M.h + .1, .62) + r() * .3)};--dl:-${(r() * 1.2).toFixed(2)}s"></i>`;

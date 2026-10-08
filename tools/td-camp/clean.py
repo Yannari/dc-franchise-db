@@ -17,7 +17,7 @@ Writes tools/td-camp/traced/cuts/<name>-clean.png (3840x2160), -clean-sd.png (19
 -motion.png, which the plate builder copies into the plate (camp.py DIRECT), and <name>-live.json
 (the clouds, in the 1600x900 reference pixels every plate mark uses).
 """
-import sys, os, json, subprocess, tempfile
+import sys, os, json, subprocess, tempfile, glob
 import numpy as np
 import cv2
 from PIL import Image
@@ -159,6 +159,7 @@ def sky_of(img, tol=10.0):
     return sky, rowcol
 
 
+P_RING = [0.93]
 def lift_clouds(img, base, sky, rowcol, name, start):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV); lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     cloudish = (lab[..., 0] > 150) & (hsv[..., 1] < 110)
@@ -183,7 +184,7 @@ def lift_clouds(img, base, sky, rowcol, name, start):
         cm = np.isin(bc, np.unique(bc[core > 0])).astype(np.uint8) * 255
         cm = cv2.morphologyEx(cm, cv2.MORPH_CLOSE, np.ones((11, 11), np.uint8))
         ring = (cv2.dilate(cm, np.ones((49, 49), np.uint8)) - cv2.dilate(cm, np.ones((17, 17), np.uint8))) > 0
-        if ring.any() and sky[ring].mean() < 0.93:
+        if ring.any() and sky[ring].mean() < P_RING[0]:
             continue                                  # tucked behind a palm: stays painted
         ys, xs = np.nonzero(cm)
         x0, x1, y0, y1 = max(xs.min() - 8, 0), min(xs.max() + 9, W), max(ys.min() - 8, 0), min(ys.max() + 9, H)
@@ -242,12 +243,23 @@ def clean(name, P):
     base = img.copy()
     sky, rowcol = sky_of(img) if not P.get('nosky') else (np.zeros(img.shape[:2], bool), None)
     # a night sky's pale shapes are the moon and the stars: they stay where the artist put them
-    clouds = [] if P.get('night') or P.get('noclouds') else lift_clouds(img, base, sky, rowcol, name, 0)
+    # (a place painted at several hours keeps its clouds painted: a lifted cloud would not match the others)
+    P_RING[0] = P.get('cloudring', 0.93)
+    clouds = [] if P.get('night') or P.get('noclouds') or P.get('variants') else lift_clouds(img, base, sky, rowcol, name, 0)
+    if P.get('flow'):
+        for c in clouds: c['flow'] = 1
     os.makedirs(CUTS, exist_ok=True)
     cv2.imwrite(os.path.join(CUTS, f'{name}-clean.png'), base)
     cv2.imwrite(os.path.join(CUTS, f'{name}-clean-sd.png'), cv2.resize(base, (1920, 1080), interpolation=cv2.INTER_AREA))
     mo = motion_map(base, P)
     cv2.imwrite(os.path.join(CUTS, f'{name}-motion.png'), mo)
+    # the sky behind a flying craft, the craft painted out row by row, for the viewer to stream past
+    if P.get('flow'):
+        craft = np.zeros(base.shape[:2], np.uint8)
+        for poly in P.get('bob', []):
+            cv2.fillPoly(craft, [(np.array(poly, np.float32) * S).astype(np.int32)], 255)
+        skyimg = fill_rows(base, cv2.dilate(craft, np.ones((31, 31), np.uint8)))
+        cv2.imwrite(os.path.join(CUTS, f'{name}-sky.png'), cv2.resize(skyimg, (1920, 1080), interpolation=cv2.INTER_AREA))
     # the water's own pixels, as an alpha mask the viewer clips its glints and fish to
     wpath = os.path.join(CUTS, f'{name}-water.png')
     if P.get('pool'):
@@ -255,6 +267,13 @@ def clean(name, P):
         cv2.imwrite(wpath, np.dstack([np.full_like(a, 255)] * 3 + [cv2.GaussianBlur(a, (0, 0), 1)]))
     elif os.path.exists(wpath):
         os.remove(wpath)
+    # the same place painted at other hours (sunrise, sunset, a hot afternoon): same frame, same motion map
+    for f in glob.glob(os.path.join(CUTS, f'{name}~*-clean*.png')):
+        os.remove(f)
+    for v, vsrc in (P.get('variants') or {}).items():
+        vi = sharpen_4k(os.path.join(T, 'src', vsrc), P.get('anchor', 0.5), P.get('box'))
+        cv2.imwrite(os.path.join(CUTS, f'{name}~{v}-clean.png'), vi)
+        cv2.imwrite(os.path.join(CUTS, f'{name}~{v}-clean-sd.png'), cv2.resize(vi, (1920, 1080), interpolation=cv2.INTER_AREA))
     json.dump({'clouds': clouds}, open(os.path.join(T, f'{name}-live.json'), 'w'))
     return clouds
 
@@ -340,9 +359,16 @@ def motion_map(base, P):
     lit = cv2.GaussianBlur(lit, (0, 0), 1.5)
     # the open sky, where the viewer's clouds and birds show through the plate (they fly behind
     # every tree and roof); a night frame keeps its painted sky whole
-    open_sky = np.zeros((h, w), np.float32) if P.get('night') else cv2.GaussianBlur(sky.astype(np.float32), (0, 0), 1)
+    open_sky = np.zeros((h, w), np.float32) if P.get('night') or P.get('flow') else cv2.GaussianBlur(sky.astype(np.float32), (0, 0), 1)
     z = np.zeros((h, w), np.float32)
-    top = np.dstack([fall, water, wind]); bot = np.dstack([lit, heat, bob]); air = np.dstack([z, z, open_sky])   # BGR order
+    # a flying plate: everything but the craft streams past (the sky behind it is <name>-sky)
+    flow = np.zeros((h, w), np.float32)
+    if P.get('flow'):
+        craft = np.zeros((h, w), np.uint8)
+        for poly in P.get('bob', []):
+            cv2.fillPoly(craft, [(np.array(poly, np.float32) * k).astype(np.int32)], 1)
+        flow = 1 - cv2.GaussianBlur(cv2.dilate(craft, np.ones((5, 5), np.uint8)).astype(np.float32), (0, 0), 1.5)
+    top = np.dstack([fall, water, wind]); bot = np.dstack([lit, heat, bob]); air = np.dstack([z, flow, open_sky])   # BGR order
     panels = [cv2.resize(np.clip(x, 0, 1), (960, 540), interpolation=cv2.INTER_AREA) for x in (top, bot, air)]
     return (np.vstack(panels) * 255).astype(np.uint8)
 

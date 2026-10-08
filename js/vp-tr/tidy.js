@@ -41,7 +41,10 @@ const VERBS = new Set(['is', 'was', 'has', 'had', 'did', 'does', 'can', 'could',
   'decided', 'decides', 'believes', 'believed', 'trusts', 'trusted', 'suspects',
   'suspected', 'realised', 'realises', 'noticed', 'notices', 'remembers',
   'remembered', 'goes', 'wrote', 'writes', 'voted', 'votes', 'really', 'never',
-  'still', 'already', 'just', 'also']);
+  'still', 'already', 'just', 'also',
+  // the TD story lines (tidySpoken)
+  'found', 'finds', 'talks', 'talked', 'loves', 'loved', 'hates', 'hated', 'likes', 'liked', 'makes', 'made',
+  'takes', 'took', 'plays', 'played', 'lies', 'lied', "doesn't", "didn't", "isn't", "wasn't", "won't", "can't"]);
 const ADVERBS = new Set(['really', 'never', 'still', 'already', 'just', 'also']);
 // A plural subject pronoun takes a different verb ("they was"), so a player
 // whose pronoun is they keeps their name in subject position.
@@ -49,7 +52,8 @@ const PLURAL_UNSAFE = new Set(['is', 'was', 'has', 'does', 'says', 'knows', 'thi
   'gets', 'comes', 'wants', 'needs', 'feels', 'means', 'appears', 'seems', 'looks',
   'keeps', 'tries', 'fails', 'sees', 'hears', 'tells', 'asks', 'answers', 'stands',
   'sits', 'leaves', 'decides', 'believes', 'trusts', 'suspects', 'realises',
-  'notices', 'remembers', 'goes', 'writes', 'votes']);
+  'notices', 'remembers', 'goes', 'writes', 'votes', 'finds', 'talks', 'loves', 'hates', 'likes', 'makes', 'takes',
+  'plays', 'lies', "doesn't", "isn't", "wasn't"]);
 
 function _esc(s) { return String(s).replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'); }
 
@@ -102,13 +106,14 @@ function _ownTheir(sent, hits) {
   return sent.slice(0, at) + word + sent.slice(at + m[1].length);
 }
 
-/** One sentence, repeats replaced where the position is unambiguous. */
-function _tidySentence(sent, re) {
+/** One sentence, repeats replaced where the position is unambiguous. speech: a spoken line (no
+ *  'their'-ownership rule, and a they-subject is allowed because theyAgree fixes its verb after). */
+function _tidySentence(sent, re, speech = false) {
   const hits = [];
   re.lastIndex = 0;
   let m;
   while ((m = re.exec(sent))) hits.push({ name: m[1], poss: !!m[2], at: m.index, end: re.lastIndex });
-  if (hits.length && hits[0].at <= 2) {
+  if (!speech && hits.length && hits[0].at <= 2) {
     const fixed = _ownTheir(sent, hits);
     if (fixed !== sent) return _tidySentence(fixed, re);
   }
@@ -135,7 +140,7 @@ function _tidySentence(sent, re) {
         // "after Gerry said" is a clause, not an object: a real verb after
         // the name wins over the preposition before it.
         else if (PREPOSITIONS.has(prev) && !trueVerb) rep = p.obj;
-        else if (VERBS.has(next) && !(p.sub === 'they' && PLURAL_UNSAFE.has(next))) rep = p.sub;
+        else if (VERBS.has(next) && !(p.sub === 'they' && PLURAL_UNSAFE.has(next) && !(speech && THEY_VERB[next]))) rep = p.sub;
       }
     }
     seen.add(h.name);
@@ -177,7 +182,9 @@ const THEY_VERB = { is: 'are', was: 'were', has: 'have', does: 'do', says: 'say'
   "isn’t": "aren’t", "wasn’t": "weren’t", "doesn’t": "don’t", "hasn’t": "haven’t",
   "isn't": "aren't", "wasn't": "weren't", "doesn't": "don't", "hasn't": "haven't",
   seems: 'seem', goes: 'go', knows: 'know', wants: 'want', thinks: 'think', keeps: 'keep',
-  makes: 'make', needs: 'need', likes: 'like', tries: 'try', gets: 'get', sounds: 'sound' };
+  makes: 'make', needs: 'need', likes: 'like', tries: 'try', gets: 'get', sounds: 'sound',
+  finds: 'find', talks: 'talk', loves: 'love', hates: 'hate', takes: 'take', plays: 'play', lies: 'lie', feels: 'feel', comes: 'come',
+  tells: 'tell', asks: 'ask', votes: 'vote', writes: 'write', trusts: 'trust', means: 'mean' };
 const THEY_RE = new RegExp('\\b(they|They)\\s+(' + Object.keys(THEY_VERB)
   .map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')(?![\\w’\'])', 'g');
 export function theyAgree(text) {
@@ -202,6 +209,16 @@ function splitSpeechTails(s) {
 // it lowercase.
 function capLines(s) {
   return s.split('\n').map(l => l.replace(/^(\s*)([a-z])/, (m, sp, c) => sp + c.toUpperCase())).join('\n');
+}
+
+/** A spoken line (td/story): a name said again in the same sentence becomes a pronoun ("the way
+ *  Mike is smiling, I think Mike found it" -> "the way he is smiling, I think he found it"), and a
+ *  "they" takes its verb. Only the unambiguous positions, as tidyNames. */
+export function tidySpoken(text) {
+  const s = String(text == null ? '' : text);
+  const re = _castPattern();
+  if (!re || !s) return s;
+  return theyAgree(s.split(/(?<=[.!?]["”’]?)(\s+)/).map(part => /^\s+$/.test(part) ? part : _tidySentence(part, re, true)).join(''));
 }
 
 export function tidyNames(text) {

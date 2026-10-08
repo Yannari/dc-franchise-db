@@ -19,6 +19,7 @@ import { hasPlace, placeOf, placeById, kindOf } from './places.js';
 import { foodOk } from '../script/food.js';
 import { voiceOf, voiced } from './voice.js';
 import { phrase } from './phrase.js';
+import { tidySpoken, tidyNames } from '../../vp-tr/tidy.js';
 
 const OUTDOOR = /\b(fire( pit)?|firewood|campfire|fishing|fish|lake|water's edge|the water|sand|beach|dock|log|shore|tent|shelter|woods?|forest|stones?|pebbles?|bush(es)?|sun)\b/i;
 // Time logic (the user, 2026-10-08: day one had "it's always a joke with you", a challenge brag
@@ -151,7 +152,10 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
       raw = raw.replace(/\{to(\.\w+)?\}/g, (m, part) => `{${toRole}${part || ''}}`).replace(/\{by(\.\w+)?\}/g, (m, part) => `{${t.by}${part || ''}}`);
     }
     if (t.by && !t.conf) lastBy = t.by;
-    const text = fill(raw, who, data);
+    // a name said again in the same sentence becomes a pronoun, "they" takes its verb (the user:
+    // "repeating Mike too many times"): spoken lines and confessionals by tidySpoken, beats by tidyNames
+    const filled = fill(raw, who, data);
+    const text = kind === 'beat' ? tidyNames(filled) : tidySpoken(filled);
     return { kind, by: t.by ? who[t.by] : null, text: text.charAt(0).toUpperCase() + text.slice(1) };
   });
   if (lines.some(l => /\{\w+(\.\w+)?\}/.test(l.text))) throw new Error(`td story ${entry.id}: unfilled slot in "${lines.find(l => /\{\w+/.test(l.text)).text}"`);

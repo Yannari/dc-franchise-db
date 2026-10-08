@@ -12,7 +12,7 @@
 // Words only, written once the episode has been played (director.js airTdEpisode). The
 // steps (vp-td-ep/steps.js tdTribalScreen) play them; the ballots, the tally and each
 // ballot's engine reason in the side panel stay exactly as they were.
-import { gs } from '../../core.js';
+import { gs, seasonConfig } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { pStats as pStatsOf } from '../../players.js';
 import { registerOf, factsFor } from '../script/facts.js';
@@ -39,6 +39,73 @@ const ITEM = { 'hosted-camp': 'marshmallow', 'film-lot': 'Gilded Chris', 'world-
 const bandOf = (a, b) => { const x = getBond(a, b); return x <= -3 ? 'enemies' : x < 0 ? 'cold' : x < 3 ? 'neutral' : 'friends'; };
 
 /** The words of the night: { booth, reveal, exit, exitWith, after } or null. */
+// ── the questions: the host asks about what happened, not a script ──────────────────────────
+// The user, 2026-10-08: "the elimination trial is generic and not human, robotic and repetitive".
+// The host knows what the cameras saw today, so the questions come from that, three at most, in
+// the order a host would go for them:
+//   fight      a public blowup at camp today: the one who started it answers, the other cuts in
+//   scramble   the one going home knows it: they plead, or go after the name they want instead
+//   confident  the one going home doesn't know: sure of themselves; a voter of theirs can't look up
+//   sank       they cost the team the challenge (pre-merge): a defender or a critic cuts in
+//   leader     the one running tonight's plan is asked who's running things, and deflects; someone
+//              on the losing side says it out loud
+//   burned     their plan failed at the last vote: are they on the right side this time?
+//   pair       two people who always vote together: is it a bloc?
+// Each topic is a short exchange (tqa.<topic>.any): h is the host, a the one asked, b who cuts in.
+function tribalQA(ep, { tribal, ballots, elim, ch, camp, base, ctx, nextN }) {
+  const out = [];
+  const used = new Set();
+  const ballotOf = x => ballots.find(v => v.voter === x)?.voted || null;
+  const forBoot = ballots.filter(v => v.voted === elim && v.voter !== elim).map(v => v.voter);
+  const host = seasonConfig?.host || 'Chris';
+  const ask = (topic, who, data = {}, extra = {}) => {
+    if (out.length >= 3) return;
+    const cast = Object.values(who).filter(Boolean);
+    if (cast.some(p => used.has(p))) return;
+    const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(who.a), third: !!who.c, ...extra };
+    const w = writeStory(`tqa.${topic}`, 'any', { ...who, h: host }, data, facts, ctx(nextN(), 'tribal', 'soft'));
+    if (!w) return;
+    cast.forEach(p => used.add(p));
+    out.push({ topic, players: cast, lines: w.lines });
+  };
+  // a public blowup today (the story layer aired it)
+  const story = ep.campStory?.[camp] || ep.campStory?.[gs.mergeName || 'merge'] || {};
+  const aired = [...(story.pre || []), ...(story.post || [])];
+  const fight = aired.find(it => /^long\.(drama\.(bomb|fight|dispute|clash|explode|meltdown|dig)|blame\.loss)/.test(it?.kind || '')
+    && it.scene?.who?.a && it.scene?.who?.b && tribal.includes(it.scene.who.a) && tribal.includes(it.scene.who.b));
+  if (fight) ask('fight', { a: fight.scene.who.a, b: fight.scene.who.b }, {}, { aVoted: ballotOf(fight.scene.who.a) === fight.scene.who.b ? 'b' : 'other' });
+  // the one going home
+  const mine = ballotOf(elim);
+  const knows = (ep.pitchIntel || []).some(i => i.knower === elim && i.target === elim && i.believed !== false)
+    || (ep.pitchCounterplay || []).some(c => c.actor === elim);
+  if (knows && mine && mine !== elim && tribal.includes(mine)) ask('scramble', { a: elim, b: mine }, { target: mine });
+  else if (forBoot.length) {
+    const shifty = [...forBoot].sort((x, y) => getBond(elim, y) - getBond(elim, x) || x.localeCompare(y))[0];
+    ask('confident', { a: elim, b: shifty }, {}, { close: getBond(elim, shifty) >= 3 });
+  }
+  // the challenge
+  if (ch?.sank && tribal.includes(ch.sank) && ch.sank !== elim) {
+    const side = tribal.filter(x => x !== ch.sank).sort((x, y) => Math.abs(getBond(ch.sank, y)) - Math.abs(getBond(ch.sank, x)) || x.localeCompare(y))[0];
+    if (side) ask('sank', { a: ch.sank, b: side }, {}, { defends: getBond(ch.sank, side) >= 1 });
+  }
+  // who is running tonight
+  const pitch = (ep.votePitches || []).find(p => p.pitchTarget === elim && forBoot.includes(p.pitcher));
+  const strat = x => pStatsOf(x)?.strategic || 0;
+  const leader = pitch?.pitcher || [...forBoot].sort((x, y) => strat(y) - strat(x) || x.localeCompare(y))[0];
+  const loser = tribal.find(x => x !== elim && x !== leader && ballotOf(x) && ballotOf(x) !== elim);
+  if (leader && loser) ask('leader', { a: leader, b: loser });
+  // burned last time: their ballot at the last vote did not go on the one who left
+  const last = [...(gs.episodeHistory || [])].reverse().find(h => h.num < ep.num && h.eliminated && (h.votingLog || []).some(v => tribal.includes(v.voter)));
+  const burned = last ? tribal.find(x => { const v = (last.votingLog || []).find(b => b.voter === x)?.voted; return !!v && v !== last.eliminated; }) : null;
+  if (burned) ask('burned', { a: burned }, { lastBoot: last.eliminated }, { lastBoot: true });
+  // a pair
+  const pairs = [];
+  for (const x of tribal) for (const y of tribal) if (x < y && getBond(x, y) >= 6) pairs.push([x, y]);
+  if (pairs.length) ask('pair', { a: pairs[0][0], b: pairs[0][1] });
+  return out;
+}
+
+/** The words of the night (see the header). */
 export function writeTribal(ep) {
   const elim = ep?.eliminated;
   const tribal = ep?.tribalPlayers || [];
@@ -152,5 +219,7 @@ export function writeTribal(ep) {
     camConf('burned', burned, { target: plan?.target });
     if (relieved !== architect) camConf('relieved', relieved);
   }
-  return { booth, reveal: rv?.lines || [], room, blindside, shocking, exit: ex?.lines || [], exitWith, exitKind, after: after.slice(0, roomBlind ? 4 : 2) };
+  // the host's questions, from what happened today
+  const qa = tribalQA(ep, { tribal, ballots, elim, ch, camp: camp || gs.mergeName || 'merge', base, ctx, nextN: () => n++ });
+  return { qa, booth, reveal: rv?.lines || [], room, blindside, shocking, exit: ex?.lines || [], exitWith, exitKind, after: after.slice(0, roomBlind ? 4 : 2) };
 }

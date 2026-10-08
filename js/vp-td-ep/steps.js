@@ -479,8 +479,18 @@ export function tdTribalScreen(ep, o = {}) {
   const been = (window.gs?.episodeHistory || []).some(h => h.num < ep.num && h.eliminated && (team ? h.tribalTribe === team : (h.isMerge || h.gsSnapshot?.isMerged)));
   const opens = V.open(callName);
   say(been ? pick(opens.slice(1)) : opens[0]);
-  // the questions (the same exchanges the classic screen asks: buildTribalQA)
-  for (const item of (o.qa || [])) {
+  // the questions: the host asks about what happened today (td/story/tribal.js tribalQA); an episode
+  // written before that keeps the classic screen's exchanges (buildTribalQA)
+  const storyQA = ep.tribalStory?.qa || [];
+  for (const ex of storyQA) for (const l of ex.lines || []) {
+    const text = cleanText(l.text);
+    if (!text) continue;
+    if (l.kind === 'beat') steps.push({ k: 'beat', text, focus: ex.players.filter(p => places[p]) });
+    else if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text });
+    else if (l.by === host) say(text, { focus: ex.players.filter(p => places[p]).slice(0, 1) });
+    else steps.push({ k: 'say', by: l.by, text, focus: [l.by], loud: loud(text) });
+  }
+  for (const item of (storyQA.length ? [] : o.qa || [])) {
     const ask = q => { const m = String(q).match(/^(.*?)"(.+)"\s*$/s); return m ? { lead: cleanText(m[1]), quote: cleanText(m[2]) } : { lead: '', quote: cleanText(q) }; };
     if (item.type === 'group') {
       const { lead, quote } = ask(item.question);

@@ -616,7 +616,7 @@ const POOLS = {
   'arrive.meet.dread': [
     { id: 'np.cd1', turns: [
       { by: 'a', say: "Hey! Want to see a trick?" },
-      { by: 'b', say: "No." },
+      { by: 'b', move: 'refuse' },
       { by: 'a', say: "I'll show you anyway." },
       { by: 'b', say: "Please don't." },
       { by: 'b', conf: "{a} has been here two minutes and I already have a headache. This is going to be a very long season." },

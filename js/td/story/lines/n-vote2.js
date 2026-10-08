@@ -409,7 +409,7 @@ export default {
   'story.vote.swing.no': [
     { id: 'nw.n1', place: 'aside', turns: [
       { by: 'a', say: "{target}. Tonight. I need you." },
-      { by: 'b', say: "No." },
+      { by: 'b', move: 'refuse' },
       { by: 'a', say: "You didn't even let me finish." },
       { by: 'b', say: "I don't need you to finish. I'm not voting {target}." },
       { by: 'a', say: "Then who are you voting?" },

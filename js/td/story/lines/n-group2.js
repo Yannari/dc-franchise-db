@@ -131,7 +131,7 @@ export default {
       { by: 'a', say: "You've been slacking all day and everybody knows it!" },
       { by: 'b', say: "I've been working as hard as anybody!" },
       { by: 'a', say: "Then why does it look like you're on vacation?" },
-      { by: 'c', say: "Hey. Back off." },
+      { by: 'c', move: 'defend' },
       { by: 'a', say: "Or what?" },
       { by: 'c', say: "Or you can do {b}'s chores AND yours tomorrow. Since you're so worried about it." },
       { beat: "A couple of people laugh. {a} doesn't." },

@@ -94,8 +94,8 @@ export default {
     { id: 'ny.c1', place: 'work', turns: [
       { beat: "Morning chores {here}. {a} has made a list." },
       { by: 'a', say: "Okay. {b}, you're on water. {c}, you're with me." },
-      { by: 'c', say: "Who made you the boss?" },
-      { by: 'a', say: "Nobody. But nobody else made a list." },
+      { by: 'c', move: 'pushback.lead' },
+      { by: 'a', say: "Somebody has to be. Nobody else made a list." },
       { by: 'b', say: "That's fair, actually." },
       { by: 'c', say: "Fine. But I'm making tomorrow's list." },
       { by: 'c', conf: "Being in charge of chores is how people end up in charge of other things. I'm keeping an eye on {a}." },

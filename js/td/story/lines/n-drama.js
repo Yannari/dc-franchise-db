@@ -431,7 +431,7 @@ export default {
       { by: 'a', say: "I shouldn't have said what I said. I was angry, and you were there." },
       { by: 'b', say: "That's not really an apology." },
       { by: 'a', say: "...I'm sorry. That's the apology. I'm sorry." },
-      { by: 'b', say: "Okay. Thank you." },
+      { by: 'b', move: 'thanks' },
       { by: 'a', say: "Are we okay?" },
       { by: 'b', say: "We're getting there." },
       { by: 'a', conf: "Saying sorry is the worst. I'd rather do another challenge.", v: { proud: "I don't apologise. I just did. Nobody make a big deal about it.", warm: "I felt sick about it all night. I'm so glad I said something." } },

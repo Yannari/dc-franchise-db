@@ -18,6 +18,7 @@ import { STORY_POOLS } from './lines/index.js';
 import { hasPlace, placeOf, placeById, kindOf } from './places.js';
 import { foodOk } from '../script/food.js';
 import { voiceOf, voiced } from './voice.js';
+import { phrase } from './phrase.js';
 
 const OUTDOOR = /\b(fire( pit)?|firewood|campfire|fishing|fish|lake|water's edge|the water|sand|beach|dock|log|shore|tent|shelter|woods?|forest|stones?|pebbles?|bush(es)?|sun)\b/i;
 // Time logic (the user, 2026-10-08: day one had "it's always a joke with you", a challenge brag
@@ -136,10 +137,20 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   // a turn for a part nobody plays (no {c} in this scene) is dropped, never left blank
   // an optional turn (opt: true) plays only when everyone it names is in the scene
   const named = t => [...[t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' ').matchAll(/\{([a-f])(?:\.\w+)?\}/g)].map(m => m[1]);
+  let lastBy = null;
   const lines = entry.turns.filter(t => (!t.by || who[t.by]) && !(t.opt && named(t).some(r => !who[r]))).map(t => {
     const kind = t.conf ? 'conf' : t.beat ? 'beat' : 'say';
-    // the speaker's own variant of the line, when it has one for how they talk (voice.js)
-    const text = fill(t.beat || voiced(t, t.by ? who[t.by] : null), who, data);
+    // A move (`move: 'pushback'`) is said in the speaker's own words, from the phrasebook
+    // (td/story/phrase.js): their voice, their age. {to} is whoever they answer (the turn's `to`,
+    // else the last other speaker), {by} the speaker.
+    let raw = t.beat || (t.move ? null : voiced(t, t.by ? who[t.by] : null));
+    if (t.move) {
+      const toRole = t.to || (lastBy && lastBy !== t.by ? lastBy : Object.keys(who).find(r => r !== t.by && r !== 'h' && who[r]));
+      raw = phrase(t.move, who[t.by], rng, { to: !!(toRole && who[toRole]) }) || '...';
+      raw = raw.replace(/\{to(\.\w+)?\}/g, (m, part) => `{${toRole}${part || ''}}`).replace(/\{by(\.\w+)?\}/g, (m, part) => `{${t.by}${part || ''}}`);
+    }
+    if (t.by && !t.conf) lastBy = t.by;
+    const text = fill(raw, who, data);
     return { kind, by: t.by ? who[t.by] : null, text: text.charAt(0).toUpperCase() + text.slice(1) };
   });
   if (lines.some(l => /\{\w+(\.\w+)?\}/.test(l.text))) throw new Error(`td story ${entry.id}: unfilled slot in "${lines.find(l => /\{\w+/.test(l.text)).text}"`);

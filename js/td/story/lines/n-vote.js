@@ -280,7 +280,7 @@ export default {
       { by: 'a', say: "{target}." },
       { by: 'b', say: "Why {target}?" },
       { by: 'a', say: "Because {target} is the name everyone will actually write. I asked around. Nobody's going to fight for {target}." },
-      { by: 'b', say: "That's not a great reason." },
+      { by: 'b', move: 'pushback' },
       { by: 'a', say: "It's the best reason there is tonight. The vote that happens is better than the vote you want." },
       { by: 'b', say: "...Okay. {target}." },
       { by: 'a', conf: "It's not about who I want gone. It's about which name gets {votes} votes. Tonight that's {target}." },
@@ -389,7 +389,7 @@ export default {
   'story.vote.swing.no': [
     { id: 'nv.n1', when: { swing: 'protect' }, turns: [
       { by: 'a', say: "We're doing {target} tonight. I need you." },
-      { by: 'b', say: "No." },
+      { by: 'b', move: 'refuse' },
       { by: 'a', say: "No? Just no?" },
       { by: 'b', say: "{target} is my friend. I'm not writing that name." },
       { by: 'a', say: "Even if it means you're on the wrong side?" },

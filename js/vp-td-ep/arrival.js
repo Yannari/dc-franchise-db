@@ -12,14 +12,16 @@ import { placeScene, plateKey, venueOf, cleanText } from './steps.js';
 
 // where each venue's cast arrives, and on what
 const ARRIVE = {
-  // Total Drama Island: one boat per camper to the dock (returnees come in style: a yacht)
-  'hosted-camp': { spot: 'dock', place: 'The Dock of Shame', ride: 'boat', back: 'yacht', hello: s => `Welcome to Camp Wawanakwa! I'm your host, and this is ${s}!` },
-  // Total Drama Action: one bus drops the whole cast at the lot, then Chris rolls up in a tram
-  'film-lot': { spot: 'studio-backlot', place: 'The Backlot', ride: 'bus', group: true, close: 'tram', hello: s => `Welcome to the film lot! Lights, camera... ${s}!` },
-  // World Tour: everyone gathers on the runway, then the Jumbo Jet taxis in
-  'world-tour': { spot: 'destination-staging', place: 'The Runway', ride: 'walk', close: 'jet', hello: s => `Welcome to the airport! Next stop: everywhere. This is ${s}!` },
-  // Disventure Camp 5: the new players by boat, the returning Favorites by helicopter
-  'survival-island': { spot: 'beach', place: 'Soluna Beach', ride: 'boat', group: true, back: 'helicopter', hello: s => `Welcome to Soluna! Sun, sand, and nowhere to hide. This is ${s}!` },
+  // Wawanakwa: the yacht brings the campers to the dock a few at a time (the user, 2026-10-08), the
+  // first load seen out at sea on the way in
+  'hosted-camp': { spot: 'dock', place: 'The Dock of Shame', ride: 'yacht', group: true, load: 4, sea: true, hello: s => `Welcome to Camp Wawanakwa! I'm your host, and this is ${s}!` },
+  // Total Drama Action: one bus drops the whole cast at the lot (each one seen stepping out of its door),
+  // then Chris rolls up in a tram
+  'film-lot': { spot: 'studio-backlot', place: 'The Backlot', ride: 'bus', group: true, door: true, close: 'tram', hello: s => `Welcome to the film lot! Lights, camera... ${s}!` },
+  // World Tour: a bus to the landing strip, then the Jumbo Jet taxis in
+  'world-tour': { spot: 'destination-staging', place: 'The Landing Strip', ride: 'bus', group: true, door: true, close: 'jet', hello: s => `Welcome to the airport! Next stop: everywhere. This is ${s}!` },
+  // Disventure Camp 5: the cast lands on the beach by helicopter, the returning Favorites in a second one
+  'survival-island': { spot: 'beach', place: 'Soluna Beach', ride: 'helicopter', group: true, back: 'helicopter', hello: s => `Welcome to Soluna! Sun, sand, and nowhere to hide. This is ${s}!` },
   // Disventure Camp 4: a helicopter per team lands at the fairground
   carnival: { spot: 'carnival-entrance', place: 'The Carnival Gate', ride: 'helicopter', group: true, byTeam: true, hello: s => `Welcome to the Stawaki Carnival! Step right up... this is ${s}!` },
 };
@@ -31,6 +33,8 @@ const TAG = {
   'perceptive-player': 'The Observer', showmancer: 'The Romantic',
 };
 const STAT = { physical: 'Strength', endurance: 'Endurance', mental: 'Brains', social: 'Charm', strategic: 'Strategy', loyalty: 'Loyalty', boldness: 'Guts', intuition: 'Instinct', temperament: 'Cool' };
+
+const listOf = ns => ns.length < 2 ? ns.join('') : `${ns.slice(0, -1).join(', ')} and ${ns[ns.length - 1]}`;
 
 export function hasArrivals(ep) { return ep?.num === 1 && (ep.dockArrivals || []).length > 0; }
 
@@ -54,28 +58,63 @@ export function tdArrivalScreen(ep, o = {}) {
   steps.push({ k: 'title', kicker: 'Episode one', name: season, faces: [] });
   steps.push({ k: 'say', by: host, host: true, text: `Let's meet our ${ep.dockArrivals.length} contestants!` });
   const teamOf = n => (ep.tribesAtStart || []).find(t => (t.members || []).includes(n))?.name || null;
-  let lastRide = null, lastTeam = null;
+  let lastRide = null, lastTeam = null, lastRet = null, inLoad = 0;
   // a team arrives together (one helicopter each at Stawaki); at Soluna the new players come first, the
   // returning Favorites after (their helicopter lands on the beach the new players are already on)
   const order = [...ep.dockArrivals];
   if (A.byTeam) order.sort((x, y) => String(teamOf(x.name)).localeCompare(String(teamOf(y.name))) || x.order - y.order);
   else if (A.back) order.sort((x, y) => (x.isReturnee ? 1 : 0) - (y.isReturnee ? 1 : 0) || x.order - y.order);
+  // who rides together: a team, the returnees, or the next few off the yacht
+  const loads = [];
   for (const a of order) {
-    // what brings them: the venue's ride, a returnee's own, a group vehicle only once per load
     const ride = a.isReturnee && A.back ? A.back : A.ride;
     const team = A.byTeam ? teamOf(a.name) : null;
-    const newLoad = ride !== lastRide || (A.byTeam && team !== lastTeam);
+    const fresh = !loads.length || ride !== lastRide || (A.byTeam && team !== lastTeam) || (A.back && !!a.isReturnee !== lastRet) || inLoad >= (A.load || 99);
+    if (fresh) { loads.push([]); inLoad = 0; }
+    loads[loads.length - 1].push(a.name); inLoad++;
+    lastRide = ride; lastTeam = team; lastRet = !!a.isReturnee;
+  }
+  const loadOf = n => loads.find(l => l.includes(n)) || [n];
+  const door = A.door ? plateKey(venue, 'bus-door', 'day') : null;
+  // the first load out at sea, on the yacht's deck, before it reaches the dock
+  const sea = A.sea ? plateKey(venue, 'yacht', 'day') : null;
+  if (sea && loads[0]) {
+    const DECK = [[.27, .383], [.33, .38], [.385, .383], [.655, .45]];
+    const first = loads[0].slice(0, DECK.length);
+    steps.push({ k: 'scene', spot: 'yacht', tod: 'day', plate: sea, place: 'On the way in', time: 'Day one', focus: first, bg: [],
+      places: Object.fromEntries(first.map((n, i) => [n, { u: DECK[i][0], v: DECK[i][1], s: .06, h: 7.5 }])) });
+    steps.push({ k: 'beat', text: `The yacht cuts across the lake toward camp, ${listOf(first)} out on the deck.`, focus: first });
+  }
+  for (const a of order) {
+    // what brings them: the venue's ride, a returnee's own; a group vehicle shows once per load
+    const ride = a.isReturnee && A.back ? A.back : A.ride;
+    const team = A.byTeam ? teamOf(a.name) : null;
+    const load = loadOf(a.name);
+    const newLoad = load[0] === a.name;
     const groupRide = (A.group || ride === 'helicopter') && ride !== 'walk';
     const showRide = groupRide ? newLoad : ride !== 'walk';
-    lastRide = ride; lastTeam = team;
     const p = players.find(x => x.name === a.name) || {};
     const stats = Object.entries(p.stats || {}).filter(([k]) => STAT[k]).sort((x, y) => y[1] - x[1]).slice(0, 3).map(([k, v]) => ({ k: STAT[k], v }));
     const reactor = a.dockReaction?.reactor && here.includes(a.dockReaction.reactor) ? a.dockReaction.reactor : null;
-    if (showRide && groupRide) steps.push({ k: 'beat', text: ride === 'helicopter' ? (team ? `A helicopter comes in low over the fairground: the ${team} team.` : `A helicopter drops out of the sky onto the sand.`) : ride === 'bus' ? `A battered bus wheezes to a stop. The doors fold open.` : `A boat noses up to the shore, packed with new faces.`,
-      act: { kind: 'ride', ride }, tense: false });
+    if (showRide && groupRide) {
+      // back to the arrival place first: the ride pulls in where the others are waiting
+      const lastScene = [...steps].reverse().find(x => x.k === 'scene');
+      if (lastScene && lastScene.spot !== A.spot) scene([]);
+      const second = a.isReturnee && loads.indexOf(load) > 0;
+      steps.push({ k: 'beat', text: ride === 'helicopter' ? (team ? `A helicopter comes in low over the fairground: the ${team} team.` : second ? `A second helicopter comes in over the trees with the returning players.` : `A helicopter drops out of the sky onto the sand.`)
+        : ride === 'bus' ? `A battered bus wheezes to a stop. The doors fold open.` : ride === 'yacht' ? `The yacht pulls up to the dock with ${listOf(load)} on deck.` : `A boat noses up to the shore, packed with new faces.`,
+        act: { kind: 'ride', ride, riders: ride === 'yacht' ? load : [] }, tense: false });
+    }
+    const intro = { k: 'intro', who: a.name, tag: TAG[a.archetype] || '', age: p.age || null, job: p.occupation || null, home: p.hometown || null,
+      returnee: !!a.isReturnee, stats, n: here.length + 1, of: ep.dockArrivals.length, ride: A.ride };
+    // off the bus: a close-up in its doorway, the card, then down onto the lot with everyone else
+    if (door) {
+      steps.push({ k: 'scene', spot: 'bus-door', tod: 'day', plate: door, place: A.place, time: 'Day one', focus: [a.name], bg: [], wide: true,
+        places: { [a.name]: { u: .665, v: .99, s: .5, h: 76, close: true } }, act: { kind: 'step', who: [a.name] } });
+      steps.push(intro);
+    }
     scene([a.name, ...(reactor ? [reactor] : [])], { act: { kind: 'arrive', who: [a.name], ride: showRide && !groupRide ? ride : 'walk' } });
-    steps.push({ k: 'intro', who: a.name, tag: TAG[a.archetype] || '', age: p.age || null, job: p.occupation || null, home: p.hometown || null,
-      returnee: !!a.isReturnee, stats, n: here.length + 1, of: ep.dockArrivals.length, ride: A.ride });
+    if (!door) steps.push(intro);
     if (a.lines?.length) {
       // the arrival as a scene (td/story/arrival.js): the host, the newcomer, and whoever on the dock
       // has a reason to say something, each line its own beat

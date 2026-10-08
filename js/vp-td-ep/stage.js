@@ -244,10 +244,10 @@ export function castAt(screen, L) {
     const bg = (sc.bg || []).find(b => b.n === n);
     const busy = !bg && sc.acts?.[n] && !(focus || []).includes(n) && n !== speaker ? sc.acts[n] : null;
     const sit = !!pl.sit;
-    const h = pl.host ? Math.max(Math.min(pl.s * 125, 30), 16) : sit ? Math.max(Math.min(pl.s * 95, 24), 13) : Math.max(Math.min(pl.s * 125, sc.exit ? 30 : 34), bg ? 11 : 16);
+    const h = pl.h || (pl.host ? Math.max(Math.min(pl.s * 125, 30), 16) : sit ? Math.max(Math.min(pl.s * 95, 24), 13) : Math.max(Math.min(pl.s * 125, sc.exit ? 30 : 34), bg ? 11 : 16));
     toks.push({ n, u: pl.u, v: pl.v, h, sit, host: !!pl.host, act: bg?.act || busy || null,
       speak: n === speaker || (pl.host && s.host), dim: !!(focus && focus.length && !focus.includes(n) && !pl.host && n !== speaker),
-      bg: !!bg, safe: L.safe.includes(n), out: L.out === n });
+      bg: !!bg, safe: L.safe.includes(n), out: L.out === n, conf: !!pl.close });
   }
   return toks;
 }
@@ -262,7 +262,7 @@ export function shotOf(screen, L, toks) {
   const s = L.step || {};
   const wide = { k: 1, x: 0, y: 0, who: [] };
   // the walk to the torch is shot wide: the sign, the torch and the walk all in frame
-  if (s.act?.kind === 'torch') return wide;
+  if (['torch', 'park', 'depart', 'hop', 'jump'].includes(s.act?.kind) || L.scene?.wide) return wide;
   if (L.conf || !L.scene || s.k === 'scene' || s.k === 'title' || s.k === 'ballot' || s.k === 'intro' || s.k === 'found' || s.k === 'ballots') return wide;
   const speaker = s.k === 'say' ? s.by : s.k === 'safe' ? s.who : s.k === 'read' ? null : null;
   const ceremony = !!L.scene.ceremony;
@@ -415,7 +415,7 @@ export function intelHtml(screen, L, tab, fresh) {
   else if (tab === 'tally') {
     const by = {}; mine.forEach(x => (by[x.target] ||= []).push(x));
     Object.entries(by).sort((a, b) => b[1].filter(v => !v.void).length - a[1].filter(v => !v.void).length).forEach(([t, vs]) => {
-      h += `<div class="tdx-ic tally${vs.some(v => v.at === L.idx) && fresh ? ' fresh' : ''}"><img src="${esc(avatar(t))}" alt=""><div><b>${esc(t)}</b><br><small>${vs.map(v => esc(v.voter) + (v.void ? ' (void)' : '')).join(', ')}</small></div><span>${vs.filter(v => !v.void).length}</span></div>`;
+      h += `<div class="tdx-ic tally${vs.some(v => v.at === L.idx) && fresh ? ' fresh' : ''}"><img src="${esc(avatar(t))}" alt=""><div><b>${esc(t)}</b><div class="minis">${vs.map(v => `<img src="${esc(avatar(v.voter))}" alt="" title="${esc(v.voter)}${v.void ? ' (void)' : ''}"${v.void ? ' style="opacity:.35"' : ''}>`).join('')}</div></div><span>${vs.filter(v => !v.void).length}</span></div>`;
     });
   } else if (tab === 'bonds') {
     // the latest change for each pair, newest first: what the conversation just did
@@ -427,7 +427,7 @@ export function intelHtml(screen, L, tab, fresh) {
     });
   } else if (tab === 'why') mine.forEach(x => { h += `<div class="tdx-ic${fr(x)}"><b>${esc(x.voter)}</b> <span class="k">→ ${esc(x.target)}</span><br><small>${esc(x.text)}</small></div>`; });
   else mine.forEach(x => { h += `<div class="tdx-ic${fr(x)}">${esc(x.text)}</div>`; });
-  if (!mine.length) h += `<div class="tdx-iempty">${screen.kind === 'tribal' && tab !== 'room' ? 'After the result.' : 'Nothing yet.'}</div>`;
+  if (!mine.length) h += `<div class="tdx-iempty">${screen.kind === 'tribal' && tab === 'tally' ? 'As the votes are read.' : screen.kind === 'tribal' && tab === 'why' ? 'Once the votes are in.' : 'Nothing yet.'}</div>`;
   return h + '</div>';
 }
 

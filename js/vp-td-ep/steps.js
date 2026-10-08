@@ -67,7 +67,7 @@ Object.assign(PLACE, { lake: 'The Lake', boathouse: 'The Boathouse', waterfall: 
   'boney-island': 'Boney Island', 'playa-des-losers': 'Playa Des Losers',
   'trailer-inside': 'Inside the Trailer', 'western-set': 'The Western Set', 'city-set': 'The City Set',
   'chris-quarters': "Chris's Quarters", cockpit: 'The Cockpit', river: 'The River', kitchen: "Chef's Kitchen",
-  carousel: 'The Carousel', 'corn-maze-inside': 'Inside the Corn Maze', 'soluna-exile': 'Exile Island', 'stawaki-exile': 'Exile Beach', motel: 'The Motel', sign: 'One Final Choice' });
+  carousel: 'The Carousel', 'corn-maze-inside': 'Inside the Corn Maze', 'soluna-exile': 'Exile Island', 'stawaki-exile': 'Exile Beach', motel: 'The Motel', sign: 'One Final Choice', 'boat-side': 'The Boat of Losers', yacht: 'On the way in', 'bus-door': 'The Bus', drop: 'The Drop of Shame', 'limo-park': 'The Red Carpet', 'limo-back': 'The Lame-o-sine', 'limo-in': 'The Lame-o-sine', pier: 'The Pier', 'boat-deck': 'The Boat' });
 
 // ── STAGING — where a scene plays, beyond where the engine says the people were ──────────
 // The engine knows six places at Wawanakwa, chosen for privacy (who can overhear). Television
@@ -574,11 +574,20 @@ export function tdTribalScreen(ep, o = {}) {
   }
   if (moment.length) steps.splice(outAt >= 0 ? outAt : steps.length, 0, ...moment);
   // what the viewer may now see: the tally and each ballot's reason
+  // what the viewer may see, and when (the user, 2026-10-08): every ballot's reason as soon as the votes
+  // are in, before the read; the tally live, a vote at a time as the host reads them
   const outStep = steps.findIndex(s => s.k === 'out');
-  const side = [];
-  ballots.forEach(v => side.push({ tab: 'tally', voter: v.voter, target: v.voted, void: protectedSet.has(v.voted) }));
-  ballots.forEach(v => side.push({ tab: 'why', voter: v.voter, target: v.voted, text: cleanText(v.reason).replace(/\[[A-Z \-]+\]\s*/g, '') }));
-  (steps[outStep] || steps[steps.length - 1]).side = [...((steps[outStep] || {}).side || []), ...side];
+  const atBallots = steps.findIndex(s => s.k === 'ballots');
+  const why = ballots.map(v => ({ tab: 'why', voter: v.voter, target: v.voted, text: cleanText(v.reason).replace(/\[[A-Z \-]+\]\s*/g, '') }));
+  const whyStep = steps[atBallots >= 0 ? atBallots : outStep] || steps[steps.length - 1];
+  whyStep.side = [...(whyStep.side || []), ...why];
+  const left = ballots.map(v => ({ tab: 'tally', voter: v.voter, target: v.voted, void: protectedSet.has(v.voted) }));
+  for (const s of steps) {
+    if (s.k !== 'read' || s.revote) continue;
+    const i = left.findIndex(x => x.target === s.vote);
+    if (i >= 0) s.side = [...(s.side || []), left.splice(i, 1)[0]];
+  }
+  if (left.length) { const t = steps[outStep] || steps[steps.length - 1]; t.side = [...(t.side || []), ...left]; }
   // voted out onto an island: nobody leaves the game tonight, the host says where they go next
   if (ep.riChoice) {
     steps.forEach(x => { if (x.k === 'out') x.island = true; });
@@ -594,12 +603,62 @@ export function tdTribalScreen(ep, o = {}) {
   // last words: their person walks them down, or they turn round for one more shot (tribal.js)
   const exitWith = story?.exit?.length && story.exitWith && story.exitKind !== 'alone' ? story.exitWith : null;
   if (exitWith) exitPlaces[exitWith] = { u: .78, v: .74, s: .22 };
+  // the Jumbo Jet's hatch (Tdwtelimination): close on the three of them, the open door on the left
+  const hatch = venue === 'world-tour' && plateKey(venue, 'drop', 'night');
+  if (hatch) {
+    exitPlaces[elim] = { u: .42, v: .97, s: .35, h: 46, close: true };
+    exitPlaces[host] = { u: .76, v: .97, s: .35, h: 46, host: true, close: true };
+    if (exitWith) exitPlaces[exitWith] = { u: .58, v: .97, s: .33, h: 44, close: true };
+  }
   steps.push({ k: 'scene', spot: 'exit', tod: 'night', plate: exitPlate, place: V.exitPlace, time: '9:10 PM', card: true, focus: [elim, exitWith].filter(Boolean), bg: [], places: exitPlaces, exit: elim, exitWith });
+  // the film lot: the Lame-o-sine pulls up at the end of the red carpet (the user's frames), then the
+  // same frame with the car painted in for the goodbyes
+  const limo = venue === 'film-lot' && plateKey(venue, 'limo-in', 'night');
+  const clown = venue === 'carnival' && plateKey(venue, 'boat-deck', 'night');
+  if (limo) {
+    // either side of the carpet, so the car pulling up between them stays in view
+    exitPlaces[host] = { u: .14, v: .74, s: .18, host: true };
+    exitPlaces[elim] = { u: .8, v: .74, s: .19 };
+    if (exitWith) exitPlaces[exitWith] = { u: .91, v: .73, s: .18 };
+    steps.push({ k: 'beat', text: `The Lame-o-sine pulls up at the end of the red carpet, coughing exhaust.`, act: { kind: 'park', ride: 'limo' } });
+    steps.push({ k: 'scene', spot: 'limo-park', tod: 'night', plate: plateKey(venue, 'limo-park', 'night'), place: V.exitPlace, time: '9:10 PM', focus: [elim, exitWith].filter(Boolean), bg: [], places: exitPlaces, exit: elim, exitWith });
+  }
   // whoever walks them out is introduced, not just standing there (the user: "why is Nick there")
   if (exitWith) steps.push({ k: 'beat', text: `${exitWith} walks ${elim} down to say goodbye.`, focus: [exitWith, elim] });
   say(V.exitLine(elim));
-  for (const l of story?.exit || []) steps.push(lineStep(l));
-  steps.push({ k: 'beat', text: `${elim} leaves the game.`, walk: elim });
+  // where the goodbye ends in a close-up (inside the car, on the boat's deck), their own last line waits for it
+  const exitLines = [...(story?.exit || [])];
+  const lastWords = (limo || clown) && exitLines.length && exitLines[exitLines.length - 1].by === elim ? exitLines.pop() : null;
+  for (const l of exitLines) steps.push(lineStep(l));
+  const side = venue === 'hosted-camp' ? plateKey(venue, 'boat-side', 'night') : null;
+  if (hatch) {
+    // World Tour: no boat, no carpet. They run at the open hatch and jump (the Drop of Shame)
+    steps.push({ k: 'beat', text: `${elim} takes a run at the open hatch and jumps. Out of the plane, out of the game.`, act: { kind: 'jump', who: [elim], tu: .22 }, focus: [elim] });
+    steps.push({ k: 'scene', spot: 'drop', tod: 'night', plate: hatch, place: V.exitPlace, time: '9:12 PM', focus: [elim], bg: [], wide: true, places: { [elim]: { u: .5, v: .5, s: .2, h: 24 } } });
+    steps.push({ k: 'beat', text: `The parachute opens. ${elim} drifts down toward the ground below.`, act: { kind: 'chute', who: [elim] }, focus: [elim] });
+  } else if (side) {
+    // Wawanakwa: alongside the Boat of Losers for the last step aboard, the horn, the motor
+    steps.push({ k: 'scene', spot: 'boat-side', tod: 'night', plate: side, place: 'The Boat of Losers', time: '9:12 PM', focus: [elim], bg: [], wide: true, places: { [elim]: { u: .36, v: .99, s: .5, h: 64, close: true } } });
+    steps.push({ k: 'beat', text: `${elim} steps aboard the Boat of Losers and leaves the game.`, act: { kind: 'board', who: [elim] }, focus: [elim] });
+  } else if (limo) {
+    // from behind the car, the walk to its door; inside, the last words; then it drives off in a cloud of smoke
+    steps.push({ k: 'scene', spot: 'limo-back', tod: 'night', plate: plateKey(venue, 'limo-back', 'night'), place: 'The Lame-o-sine', time: '9:12 PM', focus: [elim], bg: [], wide: true, places: { [elim]: { u: .84, v: .99, s: .5, h: 58, close: true } } });
+    steps.push({ k: 'beat', text: `${elim} walks the last of the red carpet to the car.`, act: { kind: 'approach', who: [elim], tu: .6, tv: .7, th: 15 }, focus: [elim] });
+    steps.push({ k: 'scene', spot: 'limo-in', tod: 'night', plate: limo, place: 'The Lame-o-sine', time: '9:13 PM', focus: [elim], bg: [], wide: true, places: { [elim]: { u: .66, v: .99, s: .5, h: 66, close: true } } });
+    steps.push(lastWords ? lineStep(lastWords) : { k: 'beat', text: `${elim} sinks into the torn back seat.`, focus: [elim] });
+    steps.push({ k: 'scene', spot: 'exit', tod: 'night', plate: exitPlate, place: V.exitPlace, time: '9:14 PM', focus: [], bg: [], wide: true, places: { [host]: exitPlaces[host] } });
+    steps.push({ k: 'beat', text: `The Lame-o-sine pulls away in a cloud of smoke. ${elim} leaves the game.`, act: { kind: 'depart', ride: 'limo' } });
+  } else if (clown) {
+    // Stawaki: the clown boat pulls up to the end of the pier, a jump down into it, the last words on its deck, and away
+    const pier = plateKey(venue, 'pier', 'night');
+    steps.push({ k: 'scene', spot: 'pier', tod: 'night', plate: pier, place: 'The Pier', time: '9:12 PM', focus: [elim], bg: [], wide: true, places: { [elim]: { u: .12, v: .745, s: .2, h: 22 } } });
+    steps.push({ k: 'beat', text: `A boat strung with lights chugs out of the dark and pulls up to the end of the pier.`, act: { kind: 'park', ride: 'clownboat' } });
+    steps.push({ k: 'beat', text: `${elim} jumps down into the boat.`, act: { kind: 'hop', who: [elim], tu: .45, tv: .7 }, focus: [elim] });
+    steps.push({ k: 'scene', spot: 'boat-deck', tod: 'night', plate: clown, place: 'The Boat', time: '9:13 PM', focus: [elim], bg: [], wide: true, places: { [elim]: { u: .5, v: .99, s: .5, h: 66, close: true } } });
+    steps.push(lastWords ? lineStep(lastWords) : { k: 'beat', text: `${elim} looks back at the carnival lights.`, focus: [elim] });
+    steps.push({ k: 'scene', spot: 'pier', tod: 'night', plate: pier, place: 'The Pier', time: '9:14 PM', focus: [], bg: [], wide: true, places: {} });
+    steps.push({ k: 'beat', text: `The boat pulls away from Stawaki. ${elim} leaves the game.`, act: { kind: 'depart', ride: 'clownboat' } });
+  } else steps.push({ k: 'beat', text: `${elim} leaves the game.`, walk: elim });
   // after: the people who did it, or the one who lost their person, to the camera
   const confPlate = plateKey(venue, 'confessional', 'night') || plateKey(venue, 'confessional', 'day');
   const afterLines = (story?.after || []).filter(l => l.kind === 'conf' && l.by);

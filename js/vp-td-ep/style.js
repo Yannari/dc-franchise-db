@@ -68,19 +68,19 @@ export const TDX_CSS = `
 .tdx .tdx-mist.band{left:-60%;width:220%;height:10%;opacity:.5}
 .tdx .tdx-tok.carry .body::after{content:'';position:absolute;right:-22%;top:-38%;width:42%;height:55%;background:no-repeat center/contain url(assets/sets/td/sprites/flame.webp);filter:drop-shadow(0 0 12px #ffb040);animation:tdxFlick .25s ease-in-out infinite alternate}
 @keyframes tdxFlick{from{transform:scale(1,1)}to{transform:scale(.92,1.08)}}
-.tdx .tdx-critter{position:absolute;width:2.2%;display:block;animation:tdxWalk var(--d) ease-in-out var(--dl) infinite}
-.tdx .tdx-critter svg{width:100%;display:block;animation:tdxStep .32s ease-in-out infinite alternate}
-.tdx .tdx-critter.frog svg{animation:tdxHop 1.6s ease-in-out infinite}
-.tdx .tdx-critter.fly{width:2.6%;animation:tdxFly var(--d) linear var(--dl) infinite}
+.tdx .tdx-critter{position:absolute;width:2.2%;display:block;animation:tdxCrWalk var(--d) ease-in-out var(--dl) infinite}
+.tdx .tdx-critter svg{width:100%;display:block;animation:tdxCrStep .32s ease-in-out infinite alternate}
+.tdx .tdx-critter.frog svg{animation:tdxCrHop 1.6s ease-in-out infinite}
+.tdx .tdx-critter.fly{width:2.6%;animation:tdxCrFly var(--d) linear var(--dl) infinite}
 .tdx .tdx-critter.fly svg{animation:tdxFlap .35s ease-in-out infinite alternate}
-@keyframes tdxWalk{0%{transform:translateX(0) scaleX(1)}46%{transform:translateX(calc(var(--w) * 10))  scaleX(1)}50%{transform:translateX(calc(var(--w) * 10)) scaleX(-1)}96%{transform:translateX(0) scaleX(-1)}100%{transform:translateX(0) scaleX(1)}}
-@keyframes tdxFly{from{transform:translate(-20cqw,0)}50%{transform:translate(calc(var(--w) * 5),-3cqw)}to{transform:translate(120cqw,1cqw)}}
-@keyframes tdxStep{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-8%) rotate(3deg)}}
-@keyframes tdxHop{0%,60%,100%{transform:translateY(0)}75%{transform:translateY(-60%)}}
+@keyframes tdxCrWalk{0%{transform:translateX(0) scaleX(1)}46%{transform:translateX(calc(var(--w) * 10))  scaleX(1)}50%{transform:translateX(calc(var(--w) * 10)) scaleX(-1)}96%{transform:translateX(0) scaleX(-1)}100%{transform:translateX(0) scaleX(1)}}
+@keyframes tdxCrFly{from{transform:translate(-20cqw,0)}50%{transform:translate(calc(var(--w) * 5),-3cqw)}to{transform:translate(120cqw,1cqw)}}
+@keyframes tdxCrStep{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-8%) rotate(3deg)}}
+@keyframes tdxCrHop{0%,60%,100%{transform:translateY(0)}75%{transform:translateY(-60%)}}
 .tdx .tdx-butterfly{position:absolute;width:1.1%;aspect-ratio:1.4;animation:tdxBfly var(--d) ease-in-out var(--dl) infinite alternate}
-.tdx .tdx-butterfly::before,.tdx .tdx-butterfly::after{content:'';position:absolute;top:0;width:50%;height:100%;background:var(--c);border-radius:60% 60% 40% 40%;animation:tdxWing .22s ease-in-out infinite alternate}
+.tdx .tdx-butterfly::before,.tdx .tdx-butterfly::after{content:'';position:absolute;top:0;width:50%;height:100%;background:var(--c);border-radius:60% 60% 40% 40%;animation:tdxWingB .22s ease-in-out infinite alternate}
 .tdx .tdx-butterfly::before{left:0;transform-origin:100% 50%}.tdx .tdx-butterfly::after{right:0;transform-origin:0 50%}
-@keyframes tdxWing{from{transform:scaleX(1)}to{transform:scaleX(.25)}}
+@keyframes tdxWingB{from{transform:scaleX(1)}to{transform:scaleX(.25)}}
 @keyframes tdxBfly{0%{transform:translate(0,0)}25%{transform:translate(40px,-22px)}50%{transform:translate(90px,8px)}75%{transform:translate(50px,30px)}100%{transform:translate(-20px,10px)}}
 .tdx .tdx-shimmer{position:absolute;height:.25%;border-radius:4px;background:rgba(230,250,255,.55);opacity:0;animation:tdxSh var(--d) ease-in-out var(--dl) infinite}
 .tdx .tdx-shimmer.night{background:rgba(170,200,225,.2);filter:blur(.6px)}
@@ -214,7 +214,7 @@ export const TDX_CSS = `
 .tdx .tdx-ballot:not(.fresh) .urn{opacity:1}
 .tdx .tdx-ballot .stampx{position:absolute;right:6%;top:22%;padding:.3cqw 1.2cqw;border:.35cqw solid #c8282c;border-radius:8px;color:#c8282c;font:900 3.2cqw/1 'Special Elite',monospace;letter-spacing:.12em;transform:rotate(14deg);opacity:.85}
 .tdx .tdx-ballot.fresh .stampx{opacity:0;animation:tdxStamp .3s cubic-bezier(.2,1.6,.4,1) 1.1s forwards}
-.tdx .tdx-ballot.passport.fresh .card{animation:tdxBalIn .55s cubic-bezier(.2,1.4,.4,1) both,tdxShake .3s ease-out 1.15s}
+.tdx .tdx-ballot.passport.fresh .card{animation:tdxBalIn .55s cubic-bezier(.2,1.4,.4,1) both,tdxStampShake .3s ease-out 1.15s}
 .tdx .tdx-ballot .pp{display:flex;gap:2.5%;margin-top:3%;height:62%}
 .tdx .tdx-ballot .pp img{width:24%;aspect-ratio:.8;height:auto;object-fit:cover;border:.25cqw solid #1d3a6b;border-radius:4px;filter:sepia(.25)}
 .tdx .tdx-ballot .pf{display:flex;flex-direction:column;justify-content:center;gap:.3cqw}
@@ -223,7 +223,7 @@ export const TDX_CSS = `
 .tdx .tdx-ballot .stampx small{display:block;font-size:.55em;text-align:center;letter-spacing:.4em}
 @keyframes tdxBalIn{from{transform:translateY(-140%) rotate(-14deg);opacity:0}to{transform:translateY(0) rotate(-3deg);opacity:1}}
 @keyframes tdxBalDrop{0%{transform:rotate(-3deg)}35%{transform:translateY(-4%) rotate(1deg) scale(1.03)}100%{transform:translateY(70%) rotate(10deg) scale(.6);opacity:0}}
-@keyframes tdxShake{0%,100%{transform:rotate(-3deg)}30%{transform:translate(-1%,1%) rotate(-4deg)}60%{transform:translate(1%,-1%) rotate(-2deg)}}
+@keyframes tdxStampShake{0%,100%{transform:rotate(-3deg)}30%{transform:translate(-1%,1%) rotate(-4deg)}60%{transform:translate(1%,-1%) rotate(-2deg)}}
 @keyframes tdxWrite{to{stroke-dashoffset:0}}
 @keyframes tdxInkFill{to{fill:var(--ink)}}
 @keyframes tdxUrnIn{from{opacity:0;transform:translateY(60%)}to{opacity:1;transform:none}}
@@ -262,11 +262,11 @@ export const TDX_CSS = `
 @keyframes tdxStreak{to{background-position:9cqw 0}}
 .tdx .tdx-ride{position:absolute;width:16%;transform:translate(-50%,-70%);animation:tdxRide 2.6s cubic-bezier(.3,.7,.4,1) forwards;pointer-events:none;z-index:3}
 .tdx .tdx-ride svg{width:100%;display:block}
-.tdx .tdx-ride.boat svg,.tdx .tdx-ride.canoe svg{animation:tdxBob 1s ease-in-out infinite alternate}
+.tdx .tdx-ride.boat svg,.tdx .tdx-ride.canoe svg{animation:tdxRideBob 1s ease-in-out infinite alternate}
 .tdx .tdx-ride.bus{width:20%;animation-name:tdxBus}
 @keyframes tdxRide{0%{margin-left:-70cqw;opacity:1}38%{margin-left:0}62%{margin-left:0;opacity:1}100%{margin-left:70cqw;opacity:0}}
 @keyframes tdxBus{0%{margin-left:80cqw}40%{margin-left:0}64%{margin-left:0;opacity:1}100%{margin-left:-80cqw;opacity:0}}
-@keyframes tdxBob{from{transform:translateY(0) rotate(-1.5deg)}to{transform:translateY(-6%) rotate(1.5deg)}}
+@keyframes tdxRideBob{from{transform:translateY(0) rotate(-1.5deg)}to{transform:translateY(-6%) rotate(1.5deg)}}
 .tdx .tdx-ride.big{width:34%;z-index:4}
 .tdx .tdx-ride.big.helicopter{width:26%;animation:tdxHeli 4.2s cubic-bezier(.3,.7,.4,1) forwards}
 .tdx .tdx-ride.big.helicopter .rot{transform-origin:120px 11px;animation:tdxRotor .12s linear infinite}
@@ -276,6 +276,51 @@ export const TDX_CSS = `
 @keyframes tdxHeli{0%{margin-left:70cqw;margin-top:-30cqw;transform:translate(-50%,-70%) rotate(-12deg)}40%{margin-left:0;margin-top:0;transform:translate(-50%,-70%) rotate(-4deg)}50%,70%{margin-top:3cqw;transform:translate(-50%,-70%) rotate(0)}100%{margin-left:-80cqw;margin-top:-34cqw;transform:translate(-50%,-70%) rotate(10deg)}}
 @keyframes tdxRotor{from{transform:scaleX(1)}50%{transform:scaleX(.15)}to{transform:scaleX(1)}}
 @keyframes tdxTaxi{0%{margin-left:80cqw}55%{margin-left:6cqw}100%{margin-left:0}}
+.tdx .tdx-ride .veh{position:relative;width:100%}
+.tdx .tdx-ride .veh>img:first-child{width:100%;display:block;filter:drop-shadow(0 1cqw 1.2cqw rgba(0,0,0,.35))}
+.tdx .tdx-ride .rider{position:absolute;width:9%;aspect-ratio:1;border-radius:50%;object-fit:cover;object-position:50% 12%;background:#fff;border:.18cqw solid #111;transform:translate(-50%,-100%);animation:tdxWave .7s ease-in-out calc(var(--i) * .15s) infinite alternate}
+@keyframes tdxWave{from{transform:translate(-50%,-100%) rotate(-6deg)}to{transform:translate(-50%,-112%) rotate(6deg)}}
+.tdx .tdx-ride.boat .veh,.tdx .tdx-ride.yacht .veh{animation:tdxRideBob 1.3s ease-in-out infinite alternate}
+.tdx .tdx-ride.bus .veh,.tdx .tdx-ride.tram svg{animation:tdxIdle .11s linear infinite alternate}
+@keyframes tdxIdle{from{transform:translateY(0)}to{transform:translateY(.6%)}}
+.tdx .tdx-ride.helicopter .veh{animation:tdxHover 1.1s ease-in-out infinite alternate}
+@keyframes tdxHover{from{transform:translateY(0) rotate(-1deg)}to{transform:translateY(-4%) rotate(1deg)}}
+.tdx .tdx-ride .rotor{position:absolute;left:3%;top:1.5%;width:63%;height:8%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(190,230,255,0) 0 18%,rgba(140,200,240,.55) 45%,rgba(140,200,240,0) 72%);animation:tdxBlade .09s linear infinite}
+.tdx .tdx-ride .rotor.tail{left:21%;top:4%;width:12%;height:28%;animation-duration:.06s}
+@keyframes tdxBlade{0%{transform:scaleX(1);opacity:.9}50%{transform:scaleX(.35);opacity:.5}100%{transform:scaleX(1);opacity:.9}}
+.tdx .tdx-ride.yacht{width:22%}
+.tdx .tdx-ride.big.yacht{width:44%;animation:tdxDriveL 4.6s cubic-bezier(.3,.7,.4,1) forwards}
+.tdx .tdx-ride.big.boat{width:36%;animation:tdxDriveR 4.6s cubic-bezier(.3,.7,.4,1) forwards}
+.tdx .tdx-ride.big.bus{width:46%;animation:tdxDriveR 4.6s cubic-bezier(.3,.7,.4,1) forwards}
+.tdx .tdx-ride.big.helicopter{width:34%;animation:tdxHeliR 4.6s cubic-bezier(.3,.7,.4,1) forwards}
+.tdx .tdx-ride.boat{animation-name:tdxRide}.tdx .tdx-ride.yacht:not(.big){animation-name:tdxBus}
+@keyframes tdxDriveR{0%{margin-left:-85cqw}42%{margin-left:0}66%{margin-left:0;opacity:1}100%{margin-left:85cqw;opacity:1}}
+@keyframes tdxDriveL{0%{margin-left:85cqw}42%{margin-left:0}66%{margin-left:0;opacity:1}100%{margin-left:-85cqw;opacity:1}}
+@keyframes tdxHeliR{0%{margin-left:-75cqw;margin-top:-34cqw;transform:translate(-50%,-70%) rotate(9deg)}40%{margin-left:0;margin-top:0;transform:translate(-50%,-70%) rotate(3deg)}48%,70%{margin-top:4cqw;transform:translate(-50%,-70%) rotate(0)}100%{margin-left:80cqw;margin-top:-36cqw;transform:translate(-50%,-70%) rotate(12deg)}}
+.tdx .tdx-tok.stepoff{animation:tdxStepOff .7s cubic-bezier(.3,1.4,.5,1) both}
+@keyframes tdxStepOff{from{transform:translate(-50%,-100%) translateY(-7%) scale(.94);filter:brightness(.6)}to{}}
+.tdx .tdx-tok.board{transition:left 2.6s ease-in,opacity 2.6s ease-in;left:118%!important;opacity:0}
+.tdx .tdx-tok.board .body{animation:tdxStep .4s ease-in-out infinite alternate}
+.tdx .tdx-tok.jump{animation:tdxJump 1.1s cubic-bezier(.5,0,.8,.6) forwards}
+@keyframes tdxJump{0%{}30%{transform:translate(-50%,-100%) translateY(4%) scale(1.02,.94)}55%{transform:translate(-50%,-100%) translate(-30%,-30%) rotate(-14deg) scale(.8)}100%{transform:translate(-50%,-100%) translate(-80%,-20%) rotate(-40deg) scale(.25);opacity:0}}
+.tdx .tdx-tok.chute{animation:tdxChute 6s ease-out forwards}
+.tdx .tdx-tok.chute::before{content:'';position:absolute;left:50%;bottom:92%;width:150%;aspect-ratio:2;transform:translateX(-50%);background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 130'%3E%3Cpath d='M10 60Q100-40 190 60Q172 50 155 60Q138 50 118 60Q100 50 82 60Q62 50 45 60Q28 50 10 60z' fill='%23e8433f' stroke='%23111' stroke-width='5'/%3E%3Cpath d='M82 60Q100 0 118 60' fill='%23fff' stroke='%23111' stroke-width='4'/%3E%3Cpath d='M12 60L92 128M188 60L108 128M82 60L96 128M118 60L104 128' stroke='%23111' stroke-width='2.5' fill='none'/%3E%3C/svg%3E");animation:tdxChuteOpen .5s cubic-bezier(.2,1.6,.4,1) .5s both}
+@keyframes tdxChute{0%{margin-top:-30cqw}12%{margin-top:-6cqw}100%{margin-top:18cqw}}
+@keyframes tdxChuteOpen{from{transform:translateX(-50%) scale(.1,.1)}to{transform:translateX(-50%)}}
+.tdx .tdx-tok.chute .body{animation:tdxSwing 1.6s ease-in-out infinite alternate;transform-origin:50% -40%}
+@keyframes tdxSwing{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+.tdx .tdx-park{position:absolute;pointer-events:none}
+.tdx .tdx-park img{width:100%;display:block}
+.tdx .tdx-park.limo img{animation:tdxIdle .11s linear infinite alternate}
+.tdx .tdx-park.clownboat img{animation:tdxRideBob 1.6s ease-in-out infinite alternate}
+.tdx .tdx-park.inL{animation:tdxParkL 3.4s cubic-bezier(.2,.7,.3,1) both}.tdx .tdx-park.inR{animation:tdxParkR 4s cubic-bezier(.2,.7,.3,1) both}
+.tdx .tdx-park.out{animation:tdxLeave 4.2s cubic-bezier(.55,0,.8,.5) .4s forwards}
+@keyframes tdxParkL{from{transform:translateX(-130cqw)}to{transform:none}}
+@keyframes tdxParkR{from{transform:translateX(110cqw)}to{transform:none}}
+@keyframes tdxLeave{to{transform:translateX(140cqw)}}
+.tdx .tdx-puff{position:absolute;width:3.2%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(205,205,215,.8),rgba(150,150,165,0) 70%);transform:translate(-50%,-50%);animation:tdxPuff 1.8s ease-out forwards;pointer-events:none}
+@keyframes tdxPuff{from{transform:translate(-50%,-50%) scale(.4);opacity:.9}to{transform:translate(-170%,-150%) scale(2.8);opacity:0}}
+.tdx .tdx-tok.going .body{animation:tdxStep .4s ease-in-out infinite alternate}
 .tdx .tdx-tok.walkin{animation:tdxWalkIn 1.2s cubic-bezier(.3,.8,.3,1) both}
 @keyframes tdxWalkIn{from{margin-left:-40cqw;opacity:0}to{margin-left:0;opacity:1}}
 .tdx .tdx-title{position:absolute;inset:0;z-index:15;display:grid;place-items:center;overflow:hidden;background:rgba(8,10,18,.4)}

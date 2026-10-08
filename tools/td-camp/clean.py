@@ -262,6 +262,13 @@ def clean(name, P):
             cv2.fillPoly(craft, [(np.array(poly, np.float32) * S).astype(np.int32)], 255)
         skyimg = fill_rows(base, cv2.dilate(craft, np.ones((31, 31), np.uint8)))
         cv2.imwrite(os.path.join(CUTS, f'{name}-sky.png'), cv2.resize(skyimg, (1920, 1080), interpolation=cv2.INTER_AREA))
+    # an open door in flight (the jet's hatch): only the sky inside it streams, the cabin holds still
+    if P.get('flowin'):
+        hole = np.zeros(base.shape[:2], np.uint8)
+        for poly in P['flowin']:
+            cv2.fillPoly(hole, [(np.array(poly, np.float32) * S).astype(np.int32)], 255)
+        skyimg = fill_rows(base, 255 - cv2.erode(hole, np.ones((9, 9), np.uint8)))
+        cv2.imwrite(os.path.join(CUTS, f'{name}-sky.png'), cv2.resize(skyimg, (1920, 1080), interpolation=cv2.INTER_AREA))
     # the water's own pixels, as an alpha mask the viewer clips its glints and fish to
     wpath = os.path.join(CUTS, f'{name}-water.png')
     if P.get('pool'):
@@ -370,6 +377,8 @@ def motion_map(base, P):
         for poly in P.get('bob', []):
             cv2.fillPoly(craft, [(np.array(poly, np.float32) * k).astype(np.int32)], 1)
         flow = 1 - cv2.GaussianBlur(cv2.dilate(craft, np.ones((5, 5), np.uint8)).astype(np.float32), (0, 0), 1.5)
+    for poly in P.get('flowin', []):
+        cv2.fillPoly(flow, [(np.array(poly, np.float32) * k).astype(np.int32)], 1.0)
     top = np.dstack([fall, water, wind]); bot = np.dstack([lit, heat, bob]); air = np.dstack([z, flow, open_sky])   # BGR order
     panels = [cv2.resize(np.clip(x, 0, 1), (960, 540), interpolation=cv2.INTER_AREA) for x in (top, bot, air)]
     return (np.vstack(panels) * 255).astype(np.uint8)

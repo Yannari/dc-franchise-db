@@ -146,15 +146,40 @@ function sync(uid) {
   if (R && root && root.dataset.idx == null) { R.idx = -1; stopAuto(R); R.wk = null; R.sceneAt = null; if (R.isMap) { R.mode = 'map'; R.scr = null; } }
   return R;
 }
-// the rides into an arrival (SVG, drawn in the shows' flat style)
+// the rides into an arrival: the show's own vehicles (the user's cut-outs, 2026-10-08) and, for the
+// jet, the tram and the canoe, a flat drawing. A ride can carry people (the yacht's deck).
+const SPRITE = { bus: 1, helicopter: 1, boat: 1, yacht: 1 };
+const DECK = { yacht: [[.2, .3], [.3, .29], [.4, .3], [.62, .17], [.7, .17]], boat: [[.22, .47], [.32, .47], [.75, .5]], bus: [], helicopter: [] };
+function rideHtml(kind, riders = []) {
+  if (!SPRITE[kind]) return RIDE[kind] || '';
+  const deck = (DECK[kind] || []).slice(0, riders.length);
+  return `<div class="veh"><img src="assets/sets/td/sprites/rides/${kind}.webp" alt="">${kind === 'helicopter' ? '<i class="rotor"></i><i class="rotor tail"></i>' : ''}`
+    + deck.map(([x, y], i) => `<img class="rider" style="left:${x * 100}%;top:${y * 100}%;--i:${i}" src="${esc(avatar(riders[i]))}" alt="">`).join('') + '</div>';
+}
+// a vehicle that pulls up and stops exactly where the user's frame paints it (the Lame-o-sine at the
+// end of the red carpet, Stawaki's clown boat at the end of the pier), in % of the frame; it stands
+// among the people (behind whoever is nearer the camera) and smokes from its exhaust
+const PARK = { limo: { l: 28.5, t: 49, w: 47.25, z: 60, from: 'L', smoke: [.03, .8] }, clownboat: { l: 24.75, t: -1.6, w: 75.7, z: 70, from: 'R', smoke: null } };
+function parked(castEl, kind, cls) {
+  const P = PARK[kind], d = document.createElement('div');
+  d.className = `tdx-park ${kind} ${cls}`; d.style.cssText = `left:${P.l}%;top:${P.t}%;width:${P.w}%;z-index:${P.z}`;
+  d.innerHTML = `<img src="assets/sets/td/sprites/rides/${kind}.webp" alt="">`;
+  castEl.querySelectorAll(`.tdx-park.${kind}`).forEach(x => x.remove());
+  castEl.appendChild(d); return d;
+}
+function smoke(fxEl, d, P, ms) {
+  if (!P.smoke) return;
+  const end = Date.now() + ms;
+  const tick = () => { if (!d.isConnected || Date.now() > end) return; const f = fxEl.getBoundingClientRect(), r = d.getBoundingClientRect();
+    if (f.width) fxAt(fxEl, 'tdx-puff', (r.left + r.width * P.smoke[0] - f.left) / f.width * 100, (r.top + r.height * P.smoke[1] - f.top) / f.height * 100, '', 1800);
+    setTimeout(tick, 120); };
+  tick();
+}
+const RIDE_SFX = { limo: 'engine', clownboat: 'motor', bus: 'engine', helicopter: 'rotor', boat: 'motor', yacht: 'motor', jet: 'jetroar', tram: 'engine', canoe: 'splash' };
 const RIDE = {
-  yacht: '<svg viewBox="0 0 240 90"><path d="M8 50h220l-26 32H40z" fill="#fff" stroke="#2a2a3a" stroke-width="4"/><path d="M8 50h220" stroke="#1d5fa8" stroke-width="6"/><path d="M60 50l14-22h96l22 22z" fill="#f4f6fa" stroke="#2a2a3a" stroke-width="4"/><path d="M84 28l10-14h56l12 14z" fill="#e8ecf2" stroke="#2a2a3a" stroke-width="4"/><rect x="82" y="34" width="20" height="10" fill="#26364e"/><rect x="110" y="34" width="20" height="10" fill="#26364e"/><rect x="138" y="34" width="20" height="10" fill="#26364e"/></svg>',
-  helicopter: '<svg viewBox="0 0 240 120"><g class="rot"><rect x="10" y="8" width="220" height="7" rx="3" fill="#2a2a3a"/></g><rect x="114" y="14" width="10" height="16" fill="#2a2a3a"/><path d="M60 40q0-12 30-12h60q34 0 44 26l6 14q2 10-10 10H70q-10 0-10-12z" fill="#e23b3b" stroke="#2a2a3a" stroke-width="4"/><path d="M150 32h20q14 4 18 24h-38z" fill="#9ad8f2" stroke="#2a2a3a" stroke-width="3"/><path d="M62 52H10l-6-16h10l10 10h38" fill="#e23b3b" stroke="#2a2a3a" stroke-width="4"/><path d="M80 80v14M160 80v14M66 96h110" stroke="#2a2a3a" stroke-width="5" fill="none"/></svg>',
   jet: '<svg viewBox="0 0 320 120"><path d="M20 62q0-20 30-22h220q30 2 44 22-14 20-44 22H50q-30-2-30-22z" fill="#2c2c34" stroke="#111" stroke-width="4"/><path d="M60 40l-26-34h28l40 34z" fill="#2c2c34" stroke="#111" stroke-width="4"/><path d="M150 70l-30 40h40l40-40z" fill="#1c1c22" stroke="#111" stroke-width="4"/><circle cx="64" cy="22" r="10" fill="#e8a23a"/>' + Array.from({ length: 8 }, (_, i) => `<rect x="${110 + i * 22}" y="54" width="12" height="9" rx="2" fill="#7ac8e8"/>`).join('') + '<circle cx="110" cy="96" r="9" fill="#222"/><circle cx="230" cy="96" r="9" fill="#222"/></svg>',
   tram: '<svg viewBox="0 0 260 110"><rect x="10" y="20" width="110" height="56" rx="10" fill="#f2c83a" stroke="#2a2a3a" stroke-width="4"/><rect x="130" y="30" width="120" height="46" rx="8" fill="#f2c83a" stroke="#2a2a3a" stroke-width="4"/><path d="M14 20h102M134 30h112" stroke="#d33a3a" stroke-width="8"/><circle cx="40" cy="86" r="11" fill="#222"/><circle cx="96" cy="86" r="11" fill="#222"/><circle cx="160" cy="86" r="11" fill="#222"/><circle cx="222" cy="86" r="11" fill="#222"/></svg>',
-  boat: '<svg viewBox="0 0 200 80"><path d="M10 40h170l-22 30H32z" fill="#e8e2d0" stroke="#2a2a3a" stroke-width="4"/><path d="M10 40h170" stroke="#c8302a" stroke-width="7"/><rect x="70" y="12" width="62" height="28" rx="4" fill="#f4f0e6" stroke="#2a2a3a" stroke-width="4"/><rect x="80" y="18" width="16" height="12" fill="#7ac8e8"/><rect x="104" y="18" width="16" height="12" fill="#7ac8e8"/><path d="M150 40v-22" stroke="#2a2a3a" stroke-width="4"/></svg>',
   canoe: '<svg viewBox="0 0 200 60"><path d="M6 24q94 34 188 0q-10 26-94 28Q16 50 6 24z" fill="#a8622e" stroke="#3a1e0a" stroke-width="4"/><path d="M30 30h140" stroke="#e8c070" stroke-width="5"/><path d="M150 6l-34 44" stroke="#6a3a18" stroke-width="5"/></svg>',
-  bus: '<svg viewBox="0 0 220 110"><rect x="8" y="10" width="200" height="74" rx="12" fill="#f2c83a" stroke="#2a2a3a" stroke-width="5"/><rect x="22" y="22" width="34" height="26" rx="4" fill="#7ac8e8" stroke="#2a2a3a" stroke-width="3"/><rect x="64" y="22" width="34" height="26" rx="4" fill="#7ac8e8" stroke="#2a2a3a" stroke-width="3"/><rect x="106" y="22" width="34" height="26" rx="4" fill="#7ac8e8" stroke="#2a2a3a" stroke-width="3"/><rect x="152" y="22" width="40" height="52" rx="4" fill="#3a3a4a"/><circle cx="52" cy="88" r="14" fill="#222"/><circle cx="168" cy="88" r="14" fill="#222"/></svg>',
 };
 // the speaker's team as it stood that episode (merged: the merged tribe), and its colour
 function teamOfSpeaker(epNum, name) {
@@ -196,7 +221,7 @@ function paint(uid, fresh) {
     if (old) { old.className = el.className; old.setAttribute('style', el.getAttribute('style')); old.querySelector('.body').innerHTML = el.querySelector('.body').innerHTML; have.delete(t.n); }
     else castEl.appendChild(el);
   }
-  for (const el of have.values()) el.remove();
+  for (const el of have.values()) if (!el.classList.contains('tdx-park')) el.remove();
   // the camera: in on the conversation, leaning toward whoever talks; wide for the set itself
   const shot = shotOf(scr, L, toks);
   if (shot.k > 1) {
@@ -285,10 +310,11 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
     if (a.kind === 'storm' && who[0]) { tokAt(castEl, who[0]).classList.add('storm'); sfx('slam'); const c = centre(st, tokAt(castEl, who[0])); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'SLAM!'); }
     if (a.kind === 'shout' && who[0]) { const c = centre(st, tokAt(castEl, who[0])); for (let k = 0; k < 3; k++) setTimeout(() => fxAt(fxEl, 'tdx-ring', c.x, c.y + c.h / 2), k * 140); sfx('boing'); }
     // a group ride: the bus, the helicopters, the jet, the tram crosses the set (arrival.js)
-    if (a.kind === 'ride') { const R = RIDE[a.ride]; if (R) { fxAt(fxEl, `tdx-ride big ${a.ride}`, 50, a.ride === 'helicopter' ? 34 : 70, R, 4200); sfx(a.ride === 'helicopter' ? 'thunder' : 'whoosh'); } }
+    if (a.kind === 'ride') { const R = rideHtml(a.ride, a.riders || []); if (R) { fxAt(fxEl, `tdx-ride big ${a.ride}`, 50, a.ride === 'helicopter' ? 40 : a.y || 72, R, 4600);
+      sfx(RIDE_SFX[a.ride] || 'whoosh'); if (a.ride === 'yacht' || a.ride === 'boat') setTimeout(() => sfx('horn'), 1500); } }
     if (a.kind === 'arrive') who.forEach(n => { const el = tokAt(castEl, n); el.classList.remove('arrive'); void el.offsetWidth; el.classList.add('arrive'); sfx('whoosh');
       // what brought them: a boat or canoe glides in and pulls away, a bus pulls up, or they just walk in
-      if (a.ride && a.ride !== 'walk' && el) { const c = centre(st, el); fxAt(fxEl, `tdx-ride ${a.ride}`, c.x, c.y + c.h * .9, RIDE[a.ride] || '', 2600); } else if (el) el.classList.add('walkin'); });
+      if (a.ride && a.ride !== 'walk' && el) { const c = centre(st, el); fxAt(fxEl, `tdx-ride ${a.ride}`, c.x, c.y + c.h * .9, rideHtml(a.ride), 2600); sfx(RIDE_SFX[a.ride] || 'whoosh'); } else if (el) el.classList.add('walkin'); });
     if (a.kind === 'train') who.forEach(n => tokAt(castEl, n).classList.add('train'));
     if (a.kind === 'gust') { who.forEach(n => tokAt(castEl, n).classList.add('shake')); sfx('thunder'); const fl = fxAt(fxEl, 'tdx-bolt', 50, 0, '', 900); fl.style.left = '0'; }
     if (a.kind === 'hurt' && who[0]) { tokAt(castEl, who[0]).classList.add('shake'); const c = centre(st, tokAt(castEl, who[0])); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'OW!'); sfx('slap'); }
@@ -300,6 +326,27 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
     if (a.kind === 'torch' && who[0]) { const el = tokAt(castEl, who[0]); if (el) {
       if (a.take) { el.style.left = `${a.tu * 100}%`; setTimeout(() => { el.classList.add('carry'); sfx('torch'); }, 1100); setTimeout(() => el.classList.add('pathR'), 2200); }
       else { el.style.left = `${(a.tu - .12) * 100}%`; setTimeout(() => { el.classList.add('pathL'); sfx('empty'); }, 1500); } } }
+    // the exit car or boat pulls up to its painted spot, or pulls away from it
+    if ((a.kind === 'park' || a.kind === 'depart') && PARK[a.ride]) { const P = PARK[a.ride], go = a.kind === 'depart';
+      const d = parked(castEl, a.ride, go ? 'out' : `in${P.from}`); smoke(fxEl, d, P, go ? 4600 : 3800);
+      sfx(RIDE_SFX[a.ride]); if (a.ride === 'clownboat') setTimeout(() => sfx('horn'), go ? 100 : 2600); }
+    // the walk to the car, seen from behind it: smaller with every step, then in through the door
+    if (a.kind === 'approach' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const h0 = parseFloat(el.style.height), w0 = parseFloat(el.style.width);
+      el.classList.add('going'); el.style.transition = 'left 3s linear,top 3s linear,height 3s linear,width 3s linear,opacity .6s linear 2.7s';
+      requestAnimationFrame(() => requestAnimationFrame(() => { el.style.left = `${a.tu * 100}%`; el.style.top = `${a.tv * 100}%`; el.style.height = `${a.th}%`; el.style.width = `${(w0 * a.th / h0).toFixed(2)}%`; el.style.opacity = '0'; }));
+      setTimeout(() => sfx('slam'), 3200); } }
+    // a jump off the pier down into the boat
+    if (a.kind === 'hop' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.style.transition = 'left .9s ease-out,top .9s cubic-bezier(.3,-1.4,.6,1),opacity .4s linear .9s';
+      requestAnimationFrame(() => requestAnimationFrame(() => { el.style.left = `${a.tu * 100}%`; el.style.top = `${a.tv * 100}%`; el.style.opacity = '0'; }));
+      sfx('boing'); setTimeout(() => sfx('drop'), 900); } }
+    // stepping down off the bus: a little drop and settle, the door's hiss
+    if (a.kind === 'step' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.classList.remove('stepoff'); void el.offsetWidth; el.classList.add('stepoff'); } sfx('hiss'); }
+    // the last step aboard the Boat of Losers: walk off toward the boat, the horn, the motor
+    if (a.kind === 'board' && who[0]) { const el = tokAt(castEl, who[0]); if (el) setTimeout(() => el.classList.add('board'), 600); setTimeout(() => sfx('horn'), 1400); setTimeout(() => sfx('motor'), 2200); }
+    // the Drop of Shame (World Tour): to the hatch, a run, and out into the sky
+    if (a.kind === 'jump' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.style.left = `${a.tu * 100}%`; setTimeout(() => { el.classList.add('jump'); sfx('whoosh'); sfx('wind'); }, 1300); } }
+    // and the parachute opens
+    if (a.kind === 'chute' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.classList.add('chute'); setTimeout(() => sfx('pop'), 700); } sfx('wind'); }
     if (a.kind === 'path' && who[0]) { const el = tokAt(castEl, who[0]); setTimeout(() => el.classList.add(a.dir === 'L' ? 'pathL' : 'pathR'), 250); sfx(a.lit ? 'torch' : 'snuff'); }
     if ((a.kind === 'lean' || a.kind === 'hug' || a.kind === 'kiss') && who.length >= 1) {
       const pair = who.length >= 2 ? who.slice(0, 2) : [who[0], toks.find(t => t.n !== who[0] && !t.bg && !t.host)?.n].filter(Boolean);
@@ -352,7 +399,11 @@ const ICON_LOCK = '<svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height
 function mapShell(map, S, ep, o) {
   const uid = `tdm${esc(ep.num)}-${map.phase}-${map.camps.join('').replace(/[^\w-]/g, '').slice(0, 24)}`;
   const colors = Object.fromEntries(map.camps.map(c => [c, o.colorOf ? o.colorOf(c) : '#4fb84a']));
-  const seenKey = `tdm:${o.seasonName || ''}:${ep.num}:${map.phase}:${map.camps.join(',')}`;
+  // which conversations this viewer has watched, keyed by what the conversations ARE: a season run
+  // again under the same name (a replay, a re-simulation) never inherits the last run's ticks
+  // (the user, 2026-10-08: "some conversations appeared to be already read before I opened them")
+  let fp = 0; for (const ch of map.convs.map(c => `${c.title}|${c.camp}|${c.place}|${(c.who || []).join(",")}`).join('~')) fp = (fp * 31 + ch.charCodeAt(0)) | 0;
+  const seenKey = `tdm:${o.seasonName || ''}:${ep.num}:${map.phase}:${map.camps.join(',')}:${(fp >>> 0).toString(36)}`;
   let seen = new Set();
   try { seen = new Set(JSON.parse(globalThis.localStorage?.getItem(seenKey) || '[]')); } catch { /* per-viewer convenience */ }
   reg()[uid] = { isMap: true, map, ep: ep.num, mode: 'map', win: 0, zone: null, place: null, seen, seenKey, colors, story: false,

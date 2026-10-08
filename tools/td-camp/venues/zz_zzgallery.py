@@ -85,3 +85,29 @@ SCENES['islands']['sign-soluna'] = _wk('sol-sign.json', [(800, 640), (300, 640)]
 SCENES['islands']['sign-stawaki'] = _wk('cv-sign.json', [(800, 640), (300, 640)])
 for _s in ('sign-soluna', 'sign-stawaki'):
     OUTDOOR['islands'].discard(_s); NIGHT_ONLY.add(_s)
+
+# the user's frames, 2026-10-08: the Boat of Losers from the dock (wide, then alongside it for the
+# last step aboard), the yacht that brings the campers in, the bus doorway everyone steps out of,
+# and the Jumbo Jet's open hatch at the Barf Bag Ceremony (the Drop of Shame sky after the jump)
+SCENES['hosted-camp']['exit'] = _wk('hc-boat-wide.json', [(780, 650), (620, 640), (950, 640)])
+SCENES['hosted-camp']['boat-side'] = _wk('hc-boat-side.json', [(800, 640)])
+SCENES['hosted-camp']['yacht'] = _wk('yacht-sea.json', [(450, 342)])
+SCENES['film-lot']['bus-door'] = _wk('bus-door.json', [(1060, 640)])
+SCENES['world-tour']['bus-door'] = _wk('bus-door.json', [(1060, 640)])
+SCENES['world-tour']['drop'] = SCENES['world-tour']['exit']
+SCENES['world-tour']['exit'] = _wk('jet-barf-door.json', [(600, 640), (800, 640)])
+for _v, _s in (('hosted-camp', 'yacht'), ('film-lot', 'bus-door'), ('world-tour', 'bus-door')):
+    OUTDOOR[_v].discard(_s)
+NIGHT_ONLY.update({'boat-side', 'drop'})
+
+# the user's frames, 2026-10-08 (2): the Lame-o-sine at the end of the film lot's red carpet (pulls
+# up, the walk to it from behind, the seat inside), and Stawaki's clown boat at the carnival dock
+# (the dock under the gate, the end of the pier it pulls up to, and its own deck for the last words)
+SCENES['film-lot']['exit'] = _wk('lot-carpet-night.json', [(700, 660), (900, 660), (1100, 660)])
+SCENES['film-lot']['limo-park'] = _wk('lot-carpet-limo-night.json', [(700, 660), (900, 660), (1100, 660)])
+SCENES['film-lot']['limo-back'] = _wk('lot-limo-back.json', [(1200, 640)])
+SCENES['film-lot']['limo-in'] = _wk('lot-limo-in.json', [(1000, 640)])
+SCENES['carnival']['exit'] = _wk('cv-gate-dock.json', [(700, 650), (1000, 650), (1300, 650)])
+SCENES['carnival']['pier'] = _wk('cv-deck2.json', [(220, 668)])
+SCENES['carnival']['boat-deck'] = _wk('cv-deck.json', [(800, 640)])
+NIGHT_ONLY.update({'limo-park', 'limo-back', 'limo-in', 'pier', 'boat-deck'})

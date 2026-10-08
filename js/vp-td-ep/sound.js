@@ -191,6 +191,28 @@ export function sfx(kind) {
   else if (kind === 'out') { blast(220, 55, 1.1, 'sawtooth', .12); blast(110, 40, 1.2, 'sine', .3); }
   else if (kind === 'slip') { hiss(2400, .12, .14, 'bandpass'); }
   // a pen on paper: short scratchy strokes for as long as the name takes to write
+  // the rides (about 4s, louder as it comes, fading as it goes): a voice through a filter, shaken by a pulse
+  else if (['engine', 'motor', 'rotor', 'jetroar', 'wind'].includes(kind)) {
+    const dur = kind === 'wind' ? 1.8 : 4.2;
+    const e = gain(0), am = gain(.6), lf = ctx.createBiquadFilter(); lf.type = 'lowpass';
+    am.connect(lf); lf.connect(e); e.connect(dest);
+    const pulse = (hz, depth, type = 'sine') => { const o = ctx.createOscillator(), d = gain(depth); o.type = type; o.frequency.value = hz; o.connect(d); d.connect(am.gain); o.start(t); o.stop(t + dur); };
+    const tone = (f0, f1, type) => { const o = ctx.createOscillator(); o.type = type; o.connect(am); o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f1, t + dur * .45); o.frequency.linearRampToValueAtTime(f0 * .8, t + dur); o.start(t); o.stop(t + dur); };
+    const air = () => { const n = ctx.createBufferSource(); n.buffer = noiseBuf(ctx); n.loop = true; n.connect(am); n.start(t); n.stop(t + dur); };
+    let v = .22;
+    if (kind === 'engine') { tone(46, 58, 'sawtooth'); tone(92, 116, 'square'); pulse(17, .35); lf.frequency.value = 360; }
+    if (kind === 'motor') { tone(88, 104, 'sawtooth'); pulse(28, .4, 'square'); air(); lf.frequency.value = 700; v = .16; }
+    if (kind === 'rotor') { air(); pulse(11, .6, 'square'); tone(60, 66, 'triangle'); lf.frequency.value = 600; v = .3; }
+    if (kind === 'jetroar') { air(); tone(70, 90, 'sawtooth'); lf.frequency.setValueAtTime(300, t); lf.frequency.linearRampToValueAtTime(1800, t + dur * .5); lf.frequency.linearRampToValueAtTime(500, t + dur); v = .26; }
+    if (kind === 'wind') { air(); pulse(.7, .4); lf.frequency.setValueAtTime(400, t); lf.frequency.linearRampToValueAtTime(1600, t + .6); lf.frequency.linearRampToValueAtTime(300, t + dur); v = .2; }
+    e.gain.linearRampToValueAtTime(v, t + dur * .35); e.gain.linearRampToValueAtTime(v * .9, t + dur * .6); e.gain.linearRampToValueAtTime(.0001, t + dur);
+  }
+  // a ship's horn: two low notes together, one long blast
+  else if (kind === 'horn') { [138, 174].forEach(f => { const o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), e = gain(0); o.type = 'sawtooth'; o.frequency.value = f; lp.type = 'lowpass'; lp.frequency.value = 900; o.connect(lp); lp.connect(e); e.connect(dest);
+    e.gain.linearRampToValueAtTime(.09, t + .08); e.gain.setValueAtTime(.09, t + 1.1); e.gain.exponentialRampToValueAtTime(.001, t + 1.5); o.start(t); o.stop(t + 1.55); }); }
+  // a bus door folding open
+  else if (kind === 'hiss') { hiss(4200, .5, .14, 'highpass'); setTimeout(() => blast(220, 160, .12, 'square', .05), 380); }
+  else if (kind === 'splash') { hiss(900, .5, .16, 'bandpass'); }
   else if (kind === 'scribble') { for (let i = 0; i < 11; i++) setTimeout(() => hiss(3600 + Math.random() * 1800, .06 + Math.random() * .07, .07, 'bandpass'), 500 + i * 140 + Math.random() * 60); }
   // a folded ballot dropping into the urn
   else if (kind === 'drop') { hiss(1200, .12, .12, 'bandpass'); setTimeout(() => blast(180, 70, .25, 'sine', .3), 120); }

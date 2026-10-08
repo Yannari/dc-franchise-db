@@ -461,6 +461,8 @@ const closeTo = (name, pool) => [...pool].filter(x => x !== name && getBond(name
 
 // the moments that can grow past two people, and how ('shared': friends of both, when a works in
 // groups; 'side': b's closest friend steps into a public fight)
+// moments that happen in front of the camp: somebody else is always there to see it
+const PUBLIC = /^(drama\.(bomb|fight|dispute|clash|explode|meltdown|dig|stir)|blame\.loss)/;
 const PULL = [
   // [kind, who joins, how many at most, only when a works in groups]
   [/^talk\.(plan|game|checkin|scramble)/, 'shared', 2, true],
@@ -874,9 +876,27 @@ export function airTdEpisode(ep) {
           registerC: who.c ? registerOf(who.c) : null, ...allianceFacts(ev, who, data), hist: hist.facts.hist };
         const w = writeStory(pool, ending, who, data, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', spotId: ev.scene?.spot?.id || ev.access?.locationId || null, avoid: ctxAvoid(ev.scene?.spot?.window || ev.access?.windowId) });
         if (!w) return null;
+        // a public moment has an audience (the user: "a social bomb, but no one in the background and
+        // no one reacted"): when nobody but a and b spoke, the people around them react, the one
+        // closer to b first (defending b, or just mortified), then one closer to a
+        let lines = w.lines;
+        const watched = [];
+        if (PUBLIC.test(kind) && who.a && who.b && !lines.some(l => l.by && l.by !== who.a && l.by !== who.b)) {
+          const lean = x => (getBond(x, who.b) - getBond(x, who.a));
+          const around = members.filter(m => !Object.values(who).includes(m));
+          const forB = [...around].sort((x, y) => lean(y) - lean(x) || x.localeCompare(y))[0] || null;
+          const forA = around.filter(x => x !== forB).sort((x, y) => lean(x) - lean(y) || x.localeCompare(y))[0] || null;
+          if (forB) {
+            const ww = { a: who.a, b: who.b, c: forB, ...(forA ? { d: forA } : {}) };
+            const tone = lean(forB) >= 1 ? 'defend' : getBond(forB, who.a) >= 3 ? 'excuse' : 'awkward';
+            const r = writeStory('public.react', tone, ww, data, { ...facts, third: true, fourth: !!forA, registerC: registerOf(forB) },
+              { ep: ep.num, camp, phase, n: n++, place: 'aside', unique: 'soft' });
+            if (r) { lines = [...lines, ...r.lines]; watched.push(forB, ...(forA && r.lines.some(l => l.by === forA) ? [forA] : [])); }
+          }
+        }
         return { story: true, kind: pool, storyType: line?.type || 'cut', step: step?.step || 'cut', ...(line ? { storyline: line.id } : { cut: true }), ref: i, type: ev.type,
-          players: [...new Set([...Object.values(who).filter(Boolean), ...(ev.players || [])])],
-          lines: w.lines, text: w.text, lineId: w.lineId, scene: { kind, who, data, spot: w.spot ? { window: ev.scene?.spot?.window || ev.access?.windowId || null, ...w.spot } : (ev.scene?.spot || null) }, access: ev.access || null,
+          players: [...new Set([...Object.values(who).filter(Boolean), ...(ev.players || []), ...watched])],
+          lines, text: lines.map(l => l.text).join(' '), lineId: w.lineId, scene: { kind, who, data, spot: w.spot ? { window: ev.scene?.spot?.window || ev.access?.windowId || null, ...w.spot } : (ev.scene?.spot || null) }, access: ev.access || null,
           alliance: ev.alliance, members: ev.members, advType: ev.advType, badgeText: ev.badgeText || '', badgeClass: ev.badgeClass || '',
           why: whyOf(kind, ending, line ? `${line.type}.${step.step}` : '', who, data, facts), bondDelta: ev.bondDelta || null };
       };

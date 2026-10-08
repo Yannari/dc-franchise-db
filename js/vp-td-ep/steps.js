@@ -582,7 +582,7 @@ export function tdTribalScreen(ep, o = {}) {
   const tie = !!ep.isTie;
   const revote = (ep.revoteLog || []).filter(v => v.voted);
   // the result, as the setting gives it
-  if (V.style === 'handout') handout(steps, say, V, { tribal, elim, counts, immune: [].concat(ep.immunityWinner || []).filter(n => tribal.includes(n)), tie, revote, rocks: !!ep.isRockDraw, host });
+  if (V.style === 'handout') handout(steps, say, V, { tribal, elim, counts, immune: [].concat(ep.immunityWinner || []).filter(n => tribal.includes(n)), tie, revote, rocks: !!ep.isRockDraw, host, alsoOut: ep._alsoOut || null });
   else {
     // who has gone before this one: the boot is the nth voted out of the game
     const gone = (window.gs?.episodeHistory || []).filter(e => e.num < ep.num && e.eliminated).length;
@@ -747,7 +747,7 @@ export function tdTribalScreen(ep, o = {}) {
   return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps, elim };
 }
 
-function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, rocks, host }) {
+function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, rocks, host, alsoOut = null }) {
   const n = tribal.length;
   // a tie: the revote happens before anyone is called
   if (tie) {
@@ -756,19 +756,25 @@ function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, roc
     if (revote.length) steps.push({ k: 'ballots', who: [...new Set(revote.map(v => v.voter))], text: 'The revote is in.' });
     if (rocks) { steps.push({ k: 'title', kicker: 'Still deadlocked', name: 'Rocks', faces: [] }); say(`Still tied. It comes down to the rocks.`); }
   }
-  say(`There are ${n} of you and only ${n - 1} ${n - 1 === 1 ? V.item : V.items} on this plate. When I call your name, come and get one.`);
+  const left = n - (alsoOut ? 2 : 1);
+  say(`There are ${n} of you and only ${left} ${left === 1 ? V.item : V.items} on this plate. When I call your name, come and get one.`);
   // safe order: immunity first, then the fewest votes; the last two are the boot and the closest call
-  const others = tribal.filter(x => x !== elim && !immune.includes(x));
+  const others = tribal.filter(x => x !== elim && x !== alsoOut && !immune.includes(x));
   const order = others.sort((a, b) => (counts[a] || 0) - (counts[b] || 0) || a.localeCompare(b));
-  const runnerUp = order.length ? order[order.length - 1] : null;
+  // a double elimination announced in advance: the last two both go, nobody gets the final one
+  const runnerUp = alsoOut ? null : order.length ? order[order.length - 1] : null;
   for (const im of immune) if (im !== elim) { steps.push({ k: 'safe', who: im, item: V.item, immune: true }); }
-  const early = order.slice(0, Math.max(0, order.length - 1));
+  const early = alsoOut ? order : order.slice(0, Math.max(0, order.length - 1));
   for (const w of early) steps.push({ k: 'safe', who: w, item: V.item });
   if (runnerUp) {
     say(`${elim}. ${runnerUp}.`, { tense: true, focus: [elim, runnerUp] });
     say(`This is the final ${V.item} of the evening.`, { tense: true, focus: [elim, runnerUp] });
     steps.push({ k: 'beat', text: `${elim} and ${runnerUp} wait.`, tense: true, focus: [elim, runnerUp] });
     steps.push({ k: 'safe', who: runnerUp, item: V.item, last: true });
+  }
+  if (alsoOut) {
+    say(`${elim}. ${alsoOut}.`, { tense: true, focus: [elim, alsoOut] });
+    say(`The plate is empty. No more ${V.items} tonight.`, { tense: true, focus: [elim, alsoOut] });
   }
   steps.push({ k: 'out', who: elim, focus: [elim] });
 }
@@ -847,4 +853,71 @@ export function tdStepTranscript(screen) {
     else if (s.k === 'found') out.push(s.text ? `[${s.label}] ${s.text}` : `[Found: ${s.label} — ${s.who}]`);
   }
   return out;
+}
+
+/**
+ * A double elimination (ep.firstEliminated): two votes in one ceremony. The engine keeps the first
+ * vote on votingLog/votes/idolPlays1 and the second on votingLog2/votes2/idolPlays, so each plays
+ * as the ordinary stepped Tribal, the first boot walked out, then the second vote among who is left.
+ */
+export function tdDoubleTribalScreen(ep, o = {}) {
+  if (ep?.firstEliminated && ep.announcedDoubleElim && !(ep.votingLog2 || []).length) return announcedDouble(ep, o);
+  if (!ep?.firstEliminated || !(ep.votingLog2 || []).length) return null;
+  const first = ep.firstEliminated;
+  const key = p => `${p.player}:${p.type || 'idol'}:${p.stolenFrom || ''}`;
+  const once = new Set((ep.idolPlays1 || []).map(key));
+  const v1 = { ...ep, eliminated: first, firstEliminated: null, idolPlays: ep.idolPlays1 || [], tribalStory: null, riChoice: ep.firstRIChoice || null,
+    isTie: false, revoteLog: [], shotInDark: ep.shotInDark1 || null, tiebreakerResult: ep.tiebreakerResult1 || null };
+  const v2 = { ...ep, firstEliminated: null, votingLog: ep.votingLog2, votes: ep.votes2, idolPlays: (ep.idolPlays || []).filter(p => !once.has(key(p))),
+    tribalPlayers: (ep.tribalPlayers || []).filter(n => n !== first), alliances: ep.alliances2 || [], defections: [] };
+  if (!tdTribalStepped(v1) || !tdTribalStepped(v2)) return null;
+  const a = tdTribalScreen(v1, o), b = tdTribalScreen(v2, { ...o, qa: [] });
+  if (!a || !b) return null;
+  const host = a.host;
+  const tag = (steps, round) => steps.forEach(s => { if (s.side) s.side = s.side.map(x => (['tally', 'why', 'plans'].includes(x.tab) ? { ...x, round } : x)); });
+  tag(a.steps, 1); tag(b.steps, 2);
+  // back at the ceremony for the second vote: no second welcome, the host springs it (or says it, if it was announced)
+  b.steps[0] = { ...b.steps[0], card: false, cut: false };
+  const left = v2.tribalPlayers.length;
+  const turn = ep.announcedDoubleElim
+    ? [{ k: 'say', by: host, host: true, text: `As promised, we're not done. ${left} of you left, and one more of you is going home tonight.` }]
+    : [{ k: 'say', by: host, host: true, text: `Before anybody gets comfortable... we're not done tonight.` },
+      { k: 'title', kicker: 'Surprise', name: 'Double elimination', faces: v2.tribalPlayers.slice(0, 8), tone: 'fire' },
+      { k: 'say', by: host, host: true, text: `There's a second vote. Right now. ${left} of you, and one more is going home.` }];
+  if (b.steps[1]?.k === 'say' && b.steps[1].host) b.steps.splice(1, 1, ...turn); else b.steps.splice(1, 0, ...turn);
+  const { keep, later } = afterlife(a.steps);
+  return { ...b, id: 'tribal', label: `${b.label} · Double elimination`, steps: [...keep, ...b.steps, ...later], elim: ep.eliminated, first };
+}
+
+// the first boot of a double night arrives at Playa / the Motel after the second, not in the middle of the ceremony
+function afterlife(steps) {
+  const keep = [], later = [];
+  let away = false;
+  for (const s of steps) { if (s.k === 'scene') away = ['playa-des-losers', 'motel'].includes(s.spot); (away ? later : keep).push(s); }
+  return { keep, later };
+}
+// announced in advance: one vote, and the two with the most votes both go home
+function announcedDouble(ep, o) {
+  const first = ep.firstEliminated, second = ep.eliminated;
+  const v1 = { ...ep, eliminated: first, firstEliminated: null, tribalStory: null, announcedDoubleElim: false, _alsoOut: second, isTie: false, revoteLog: [] };
+  const v2 = { ...ep, firstEliminated: null, announcedDoubleElim: false };
+  if (!tdTribalStepped(v1) || !tdTribalStepped(v2)) return null;
+  const a = tdTribalScreen(v1, o), c = tdTribalScreen(v2, { ...o, qa: [] });
+  if (!a || !c) return null;
+  const host = a.host;
+  a.steps.splice(2, 0, { k: 'say', by: host, host: true, text: `Remember: tonight is a double elimination. The two of you with the most votes are both going home.` });
+  const out2 = c.steps.findIndex(s => s.k === 'out');
+  if (out2 < 0) return a;
+  const tail = c.steps.slice(out2).map(s => ({ ...s, side: (s.side || []).filter(x => !['tally', 'why', 'plans'].includes(x.tab)) }));
+  const back = c.steps.find(s => s.k === 'scene' && s.ceremony);
+  const n2 = (ep.votes || {})[second] || 0;
+  const named = a.steps.some(s => s.k === 'say' && /plate is empty/.test(s.text || ''));
+  const { keep, later } = afterlife(a.steps);
+  return { ...a, label: `${a.label} · Double elimination`, elim: second, first, steps: [...keep,
+    ...(back ? [{ ...back, card: false, cut: false, time: '9:20 PM' }] : []),
+    ...(named ? [{ k: 'say', by: host, host: true, text: `${second}. You're going home tonight too.`, focus: [second] }]
+      : [{ k: 'say', by: host, host: true, text: `But we're not done. Two of you are going home tonight.` },
+        { k: 'beat', text: `Everyone looks at the ones still holding their breath.`, focus: [], tense: true },
+        { k: 'say', by: host, host: true, text: `With ${n2} vote${n2 === 1 ? '' : 's'}, the second person leaving tonight... ${second}.`, focus: [second] }]),
+    ...tail, ...later] };
 }

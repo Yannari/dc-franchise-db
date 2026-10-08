@@ -443,7 +443,9 @@ export function intelHtml(screen, L, tab, fresh, who = null) {
   let h = `<div class="tdx-ihead"><button type="button" class="tdx-iclose" data-close aria-label="Close Intel" title="Close">&times;</button><b>Intel</b><span>${screen.kind === 'tribal' ? 'Only the viewer sees the votes.' : screen.kind === 'island' ? 'Out of sight of the game.' : 'What the camp doesn’t know yet.'}</span></div><div class="tdx-itabs">`;
   for (const [k, l] of tabs) h += `<button type="button" class="${k === tab ? 'on' : ''}" data-tab="${k}">${esc(l)}${items.some(x => x.tab === k && x.at === L.idx) && k !== tab ? '<i></i>' : ''}</button>`;
   h += '</div><div class="tdx-ilist">';
-  const mine = items.filter(x => x.tab === tab), fr = x => (fresh && x.at === L.idx ? ' fresh' : '');
+  // a night with two votes: the tally, the reasons and the plans are the vote being read now
+  const round = Math.max(0, ...items.filter(x => x.tab === tab && x.round).map(x => x.round));
+  const mine = items.filter(x => x.tab === tab && (!round || (x.round || 0) === round)), fr = x => (fresh && x.at === L.idx ? ' fresh' : '');
   if (tab === 'allies') mine.forEach(x => { h += `<div class="tdx-ic${fr(x)}"><b>${esc(x.name)}</b><div class="minis">${(x.who || []).map(n => `<img src="${esc(avatar(n))}" alt="" title="${esc(n)}">`).join('')}</div></div>`; });
   else if (tab === 'tally') {
     const by = {}; mine.forEach(x => (by[x.target] ||= []).push(x));

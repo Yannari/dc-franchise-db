@@ -8,7 +8,7 @@
 // so everything that finds a screen by id still finds it. Anything the stepped stage does not
 // cover yet keeps its classic screen. A Classic switch on every stepped screen lands on the same
 // screen in the classic viewer (localStorage 'td-vp' = 'classic' to stay there).
-import { tdCampScreen, tdTribalScreen, tdTribalStepped, cleanText, placeScene, plateKey, placeName, venueOf, teamSpot } from './steps.js';
+import { tdCampScreen, tdTribalScreen, tdTribalStepped, tdDoubleTribalScreen, cleanText, placeScene, plateKey, placeName, venueOf, teamSpot } from './steps.js';
 import { tdCampMap, hasMap, MAP_VENUES, openWindow, nextConv, lockedConv, PLACE_LABEL } from './map.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf } from './twists.js';
 import { tdTwistBlocksScreen, tdMergeScreen } from './twist-screens.js';
@@ -33,7 +33,7 @@ function membersOf(ep, camp) {
 export function tdStepScreens(ep, classic = [], o = {}) {
   const out = [];
   let tribalDone = false, aftermathDone = false;
-  const tribal = tdTribalStepped(ep) ? tdTribalScreen(ep, o) : null;
+  const tribal = tdTribalStepped(ep) ? tdTribalScreen(ep, o) : tdDoubleTribalScreen(ep, o);
   // the camp map (map.js) is the default camp view where the venue has one, one map per team at
   // every venue (the user, 2026-10-08: "I set up 2 teams" - folding a shared camp's teams into one
   // map read as the teams being gone). A shared camp is still drawn whole, with the other team in
@@ -63,7 +63,7 @@ export function tdStepScreens(ep, classic = [], o = {}) {
       const am = tdAftermathScreen(ep, o);
       if (am) { aftermathDone = true; out.push(shell(am, { ...S, id: 'aftermath-show', label: am.label }, ep, o)); continue; }
     }
-    if (tribal && (S.id === 'voting-plans' || S.id === 'votes')) continue;
+    if (tribal && ['voting-plans', 'votes', 'surprise', 'voting-plans-2', 'votes-2'].includes(S.id)) continue;
     if (tribal && S.id === 'tribal' && !tribalDone) { tribalDone = true; out.push(shell(tribal, S, ep, o)); continue; }
     const isl = islandScreen(ep, S, o);
     if (isl) { out.push(shell(isl, S, ep, o)); continue; }

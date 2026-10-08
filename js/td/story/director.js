@@ -886,7 +886,7 @@ function voteTalk(ep, camp, t, next) {
       const tip = tipFor(rivalT);
       const who = { a: rivalT, b: friend };
       const it = item('decoy', 'vt2', 'decoy', who, { wrote: dWrote, ...(tip ? { teller: tip.teller } : {}) },
-        base(who, { told: !!tip, bVoted: ballotOf(friend) === rivalT ? 'boot' : 'other', wroteIsBoot: dWrote === boot }), 'aside', 'before-tribal', ['On Edge', 'red'],
+        base(who, { told: !!tip, bVoted: ballotOf(friend) === rivalT ? 'boot' : 'other', bWrote: ballotOf(friend) === dWrote, wroteIsBoot: dWrote === boot }), 'aside', 'before-tribal', ['On Edge', 'red'],
         [`${rivalT} is sure the votes are coming for ${pronouns(rivalT).obj}.`, `${rivalT} is pushing ${dWrote}.`]);
       if (it) out.push(it);
     }
@@ -901,7 +901,8 @@ function voteTalk(ep, camp, t, next) {
         const who = { a: boot, b };
         const tip = tipFor(boot);
         const data = { wrote: mine, pitcher: heard.pitcher || leader, ...(tip && tip.teller !== b ? { teller: tip.teller } : {}) };
-        const facts = base(who, { bVoted: ballotOf(b) === boot ? 'boot' : 'other', pitcher: !!heard.pitcher, told: !!data.teller });
+        // what b actually writes: b only promises the name b really writes (the user: Owen promising Mike a vote he never cast)
+        const facts = base(who, { bVoted: ballotOf(b) === boot ? 'boot' : 'other', bWrote: ballotOf(b) === mine, pitcher: !!heard.pitcher, told: !!data.teller });
         const why = [`${boot} heard the votes were coming for ${pronouns(boot).obj}.`, `${boot} is pushing ${mine} instead. ${b} ${ballotOf(b) === boot ? 'is voting ' + boot : 'is not on ' + boot}.`];
         const it = item('target', 'vt2', 'scramble', who, data, facts, 'aside', 'before-tribal', ['Scramble', 'red'], why)
           || item('target', 'story.vote.target', 'scramble', who, data, facts, 'aside', 'before-tribal', ['Scramble', 'red'], why);

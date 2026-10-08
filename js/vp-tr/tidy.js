@@ -46,6 +46,10 @@ const VERBS = new Set(['is', 'was', 'has', 'had', 'did', 'does', 'can', 'could',
   'found', 'finds', 'talks', 'talked', 'loves', 'loved', 'hates', 'hated', 'likes', 'liked', 'makes', 'made',
   'takes', 'took', 'plays', 'played', 'lies', 'lied', "doesn't", "didn't", "isn't", "wasn't", "won't", "can't"]);
 const ADVERBS = new Set(['really', 'never', 'still', 'already', 'just', 'also']);
+// a repeat right after one of these is its object: "keep Jake safe" -> "keep him safe" (spoken lines only)
+const OBJ_AFTER = new Set(['keep', 'keeping', 'kept', 'tell', 'told', 'trust', 'trusted', 'help', 'helped', 'save', 'saved', 'protect',
+  'protected', 'love', 'loved', 'miss', 'missed', 'hate', 'hated', 'beat', 'see', 'saw', 'ask', 'asked', 'meet', 'met', 'watch', 'watched',
+  'leave', 'let', 'make', 'made', 'warn', 'warned', 'thank', 'thanked', 'blame', 'blamed', 'forgive', 'forgave', 'need', 'needed']);
 // A plural subject pronoun takes a different verb ("they was"), so a player
 // whose pronoun is they keeps their name in subject position.
 const PLURAL_UNSAFE = new Set(['is', 'was', 'has', 'does', 'says', 'knows', 'thinks',
@@ -139,7 +143,7 @@ function _tidySentence(sent, re, speech = false) {
         if (h.poss) rep = p.posAdj;
         // "after Gerry said" is a clause, not an object: a real verb after
         // the name wins over the preposition before it.
-        else if (PREPOSITIONS.has(prev) && !trueVerb) rep = p.obj;
+        else if ((PREPOSITIONS.has(prev) || (speech && OBJ_AFTER.has(prev))) && !trueVerb) rep = p.obj;
         else if (VERBS.has(next) && !(p.sub === 'they' && PLURAL_UNSAFE.has(next) && !(speech && THEY_VERB[next]))) rep = p.sub;
       }
     }

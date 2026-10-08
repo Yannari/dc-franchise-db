@@ -36,6 +36,7 @@ import { writeTribal, whyOf as ballotWhy } from './tribal.js';
 import { writeTwistStory, writeExile, writeFirstImpressions, writeAuctionScript } from './twist.js';
 import { needOf, psycheCast } from './psyche.js';
 import { runnerDue } from './runners.js';
+import { recordThreads, threadDue } from './threads.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf } from './places.js';
 
@@ -971,6 +972,22 @@ export function airTdEpisode(ep) {
       // the vote story's own beats first, so the plan scenes can call back to them
       const editOn = (seasonConfig?.tdEdit || 'full') !== 'off';
       if (editOn && talk) list.push(...arcBeats(ep, camp, members, phase, talk, () => n++, list, [], 'vote'));
+      // a thread carried from an earlier episode (threads.js): one scene when one is due
+      if (editOn && phase === 'pre' && ep.num > 1) {
+        const td = threadDue(ep, members);
+        if (td) {
+          const who = { a: td.t.a, b: td.t.b };
+          const prevBoot = (gs.episodeHistory || []).find(h => h.num === td.t.ep)?.eliminated || null;
+          const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), pair: true, how: td.t.how || 'vote', lastBoot: !!prevBoot, ago: ep.num - td.t.ep <= 1 ? 'recent' : 'while' };
+          const w = writeStory(`thr.${td.t.kind}`, td.stage, who, prevBoot ? { lastBoot: prevBoot } : {}, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('morning'), unique: 'soft' });
+          if (w) {
+            td.commit();
+            list.push({ at: 0.45, item: { story: true, kind: `thr.${td.t.kind}.${td.stage}`, storyType: 'thread', step: td.stage, players: [td.t.a, td.t.b], lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'thr', who, data: {}, spot: w.spot ? { ...w.spot, window: 'morning' } : null }, badgeText: td.t.kind === 'grievance' ? 'Unfinished Business' : 'A Debt', badgeClass: td.t.kind === 'grievance' ? 'red' : 'teal',
+              why: [td.t.kind === 'grievance' ? `${td.t.b} wrote ${td.t.a}'s name at episode ${td.t.ep}'s vote.` : `${td.t.b} ${td.t.how === 'idol' ? 'played an idol for' : 'warned'} ${td.t.a} at episode ${td.t.ep}.`] } });
+          }
+        }
+      }
       // a running gag (runners.js): one beat when it's due, before the challenge
       if (editOn && phase === 'pre') {
         const rd = runnerDue(ep, members);
@@ -1246,6 +1263,8 @@ export function airTdEpisode(ep) {
   ep.campStory = story;
   // the night's words: every voter in the booth, the reading, last words, after (tribal.js)
   if (!ep.tribalStory) ep.tribalStory = writeTribal(ep);
+  // what this episode leaves between people, for the episodes after it (threads.js)
+  recordThreads(ep, Object.values(story).flatMap(c => [...(c.pre || []), ...(c.post || [])]).filter(it => it?.kind === 'arc.warn.told').map(it => ({ teller: it.scene?.who?.a, knower: it.scene?.who?.b })));
   // the Exile Duel's two nights: the one sent to Exile, and the face-off (twist.js writeExile)
   if (ep.exileStory === undefined) ep.exileStory = writeExile(ep);
   // First Impressions and the auction play as dialogue on their own stepped screens (twist.js)

@@ -444,6 +444,12 @@ export function tdTribalStepped(ep) {
   return true;
 }
 
+// the powers, as a card names them (the classic Votes screen's advantage plays)
+const POWER = {
+  idol: { name: 'a Hidden Immunity Idol' }, extraVote: { name: 'Extra Vote' }, voteSteal: { name: 'Steal a Vote' }, voteBlock: { name: 'Block a Vote' },
+  kip: { name: 'Knowledge is Power' }, soleVote: { name: 'the Sole Vote' }, safetyNoPower: { name: 'Safety Without Power' }, teamSwap: { name: 'Team Swap' },
+  legacy: { name: 'the Legacy Advantage' }, amulet: { name: 'an Amulet' },
+};
 const IDOL_SAY = p => p.type === 'voteBlock' ? `${p.player} blocks ${p.blockedPlayer}'s vote. ${p.blockedPlayer} cannot vote tonight.`
   : p.type === 'voteSteal' ? `${p.player} steals ${p.stolenFrom ? `${p.stolenFrom}'s vote` : 'a vote'}.`
   : p.type === 'extraVote' ? `${p.player} plays an Extra Vote.`
@@ -485,6 +491,28 @@ export function tdTribalScreen(ep, o = {}) {
     }
     if (item.consequence) steps[steps.length - 1].side = [{ tab: 'room', text: cleanText(item.consequence) }];
   }
+  // advantages: who holds what tonight (the viewer sees them glow), and the powers played before the vote
+  // (an Extra Vote, a stolen vote, a blocked vote...) each revealed on its own card (the user, 2026-10-08:
+  // "they just said Ellie used an extra vote, they didn't show it")
+  const plays = ep.idolPlays || [];
+  const PRE = new Set(['extraVote', 'voteSteal', 'voteBlock', 'kip', 'soleVote', 'safetyNoPower', 'teamSwap', 'legacy']);
+  const prePlays = plays.filter(p => PRE.has(p.type));
+  const held = {};
+  for (const a of ep.gsSnapshot?.advantages || []) if (tribal.includes(a.holder)) (held[a.holder] ||= new Set()).add(a.type === 'superIdol' ? 'idol' : a.type);
+  for (const p of plays) if (tribal.includes(p.player)) (held[p.player] ||= new Set()).add(p.type || 'idol');
+  const holdList = Object.entries(held).map(([n, t]) => [n, [...t]]);
+  if (holdList.length) steps[0].side = [...(steps[0].side || []), ...holdList.map(([n, t]) => ({ tab: 'room', text: `${n} is holding ${t.map(x => POWER[x]?.name || x).join(' and ')}.` }))];
+  steps[0].glow = Object.fromEntries(holdList.map(([n, t]) => [n, t.includes('idol') ? 'idol' : 'power']));
+  if (prePlays.length) {
+    say(`Before we vote: if anybody has an advantage they want to play, now is the time.`);
+    for (const p of prePlays) {
+      const P = POWER[p.type] || { name: p.type };
+      steps.push({ k: 'power', by: p.player, type: p.type, name: P.name, on: p.blockedPlayer || p.stolenFrom || p.swappedPlayer || null,
+        focus: [p.player, p.blockedPlayer || p.stolenFrom].filter(n => n && tribal.includes(n)) });
+      const t = IDOL_SAY(p);
+      if (t) say(t, { focus: [p.player].filter(n => tribal.includes(n)) });
+    }
+  }
   // the vote
   const voters = [...new Set((ep.votingLog || []).map(v => v.voter).filter(n => tribal.includes(n)))];
   say(V.voted);
@@ -492,7 +520,9 @@ export function tdTribalScreen(ep, o = {}) {
   // DC5's tiki urn on the treehouse platform, the confessional where a venue has no booth), each
   // naming their own pick, then back to the ceremony for the reading
   const booth = plateKey(venue, 'voting-booth', 'night') || plateKey(venue, 'confessional', 'day');
-  const cast = (ep.votingLog || []).filter(v => tribal.includes(v.voter) && v.voted);
+  const extraOf = v => plays.filter(p => p.player === v.voter && (p.type === 'extraVote' || p.type === 'voteSteal') && p.target)
+    .map(p => ({ voter: p.player, voted: p.target, venue, extra: p.type === 'extraVote' ? 'Extra Vote' : `${p.stolenFrom}'s vote` }));
+  const cast = (ep.votingLog || []).filter(v => tribal.includes(v.voter) && v.voted && !v.voteStolen && !v.voteBlocked);
   // Every voter, in their own words (td/story/tribal.js; the user, 2026-10-07: "we need to see all
   // the votes, not just 2 or 3"): the votes for somebody else first, the ones that send the boot
   // home last. An episode written before the story layer keeps the old three-voter cut.
@@ -504,6 +534,7 @@ export function tdTribalScreen(ep, o = {}) {
       steps.push({ k: 'scene', spot: 'voting-booth', tod: 'night', plate: booth, place: PLACE['voting-booth'], time: '8:50 PM', card: i === 0, cut: i > 0, focus: [v.voter], bg: [], places: placeScene(booth, [v.voter]) });
       steps.push({ k: 'say', by: v.voter, text: cleanText(said.get(v.voter) || `${v.voted}.`), focus: [v.voter] });
       steps.push({ k: 'ballot', voter: v.voter, voted: v.voted, venue });
+      for (const x of extraOf(v)) { steps.push({ k: 'beat', text: `${v.voter} writes a second name: the ${x.extra}.`, focus: [v.voter] }); steps.push({ k: 'ballot', ...x }); }
     });
     steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '9:00 PM', card: false, cut: true, focus: [], bg: [], places, seated: tribal, host, ceremony: true });
   } else if (booth && cast.length >= 2) {
@@ -518,12 +549,16 @@ export function tdTribalScreen(ep, o = {}) {
       steps.push({ k: 'scene', spot: 'voting-booth', tod: 'night', plate: booth, place: PLACE['voting-booth'], time: '8:50 PM', card: i === 0, cut: i > 0, focus: [v.voter], bg: [], places: placeScene(booth, [v.voter]) });
       steps.push({ k: 'say', by: v.voter, text: LINES[Math.floor(rng() * LINES.length)](v.voted), focus: [v.voter] });
       steps.push({ k: 'ballot', voter: v.voter, voted: v.voted, venue });
+      for (const x of extraOf(v)) { steps.push({ k: 'beat', text: `${v.voter} writes a second name: the ${x.extra}.`, focus: [v.voter] }); steps.push({ k: 'ballot', ...x }); }
     });
     steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '9:00 PM', card: false, cut: true, focus: [], bg: [], places, seated: tribal, host, ceremony: true });
   }
   steps.push({ k: 'ballots', who: voters, text: `${voters.length} votes are in.` });
-  // advantages played
-  for (const p of ep.idolPlays || []) {
+  // Chris asks, every time; then whoever stands up
+  say(`If anybody has a Hidden Immunity Idol and you want to play it, now would be the time to do so.`);
+  const idolPlays = plays.filter(p => !PRE.has(p.type));
+  if (!idolPlays.length) steps.push({ k: 'beat', text: Object.values(steps[0].glow || {}).includes('idol') ? `Nobody moves. Whoever has one is keeping it.` : `Nobody moves.`, focus: [], tense: true });
+  for (const p of idolPlays) {
     const t = IDOL_SAY(p);
     if (t) { steps.push({ k: 'beat', text: t, focus: [p.player].filter(n => tribal.includes(n)) }); continue; }
     const forWho = p.playedFor || p.player;
@@ -538,7 +573,9 @@ export function tdTribalScreen(ep, o = {}) {
   // the counted votes, for the reading and the Intel tally afterwards
   const protectedSet = new Set((ep.idolPlays || []).filter(p => !p.type && !p.misplay).map(p => p.playedFor || p.player));
   if (ep.shotInDark?.safe) protectedSet.add(ep.shotInDark.player);
-  const ballots = (ep.votingLog || []).filter(v => tribal.includes(v.voter) && v.voted);
+  const ballots = [...(ep.votingLog || []).filter(v => tribal.includes(v.voter) && v.voted && !v.voteStolen && !v.voteBlocked),
+    ...plays.filter(p => (p.type === 'extraVote' || p.type === 'voteSteal') && p.target && tribal.includes(p.player))
+      .map(p => ({ voter: p.player, voted: p.target, reason: p.type === 'extraVote' ? `[EXTRA VOTE] ${p.player}'s second vote${p.forAlly ? `, cast for ${p.forAlly}` : ''}.` : `[STOLEN VOTE] taken from ${p.stolenFrom}.`, extra: true }))];
   const counts = {};
   ballots.forEach(v => { if (!protectedSet.has(v.voted)) counts[v.voted] = (counts[v.voted] || 0) + 1; });
   const tie = !!ep.isTie;
@@ -801,6 +838,7 @@ export function tdStepTranscript(screen) {
     else if (s.k === 'title') out.push(`[${s.kicker}: ${s.name}]`);
     else if (s.k === 'ballot') out.push(`[${s.voter} votes: ${s.voted}]`);
     else if (s.k === 'ballots') out.push(`(${s.text})`);
+    else if (s.k === 'power') out.push(`(${s.by} plays ${s.name}${s.on ? ` on ${s.on}` : ''}.)`);
     else if (s.k === 'idol') out.push(`(${s.by} plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${s.for}` : ''}.)`);
     else if (s.k === 'safe') out.push(`${screen.host || 'Chris'}: "${s.who}${s.immune ? ', you have immunity' : ''}." (${s.who} is safe${s.last ? ': the last ' + s.item : ''}.)`);
     else if (s.k === 'read') out.push(`${screen.host || 'Chris'}: "${s.line || `${s.vote}${s.dead ? '. Does not count' : ''}.`}"`);

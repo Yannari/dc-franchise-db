@@ -93,6 +93,7 @@ function scriptHtml(scr) {
     else if (s.k === 'ballot') t = `<div class="tdx-ln sc" data-s="${i}">${esc(s.voter)} votes: ${esc(s.voted)}</div>`;
     else if (s.k === 'intro') t = `<div class="tdx-ln sc" data-s="${i}">Contestant ${s.n}: ${esc(s.who)}${s.tag ? ' · ' + esc(s.tag) : ''}</div>`;
     else if (s.k === 'ballots') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.text)})</div>`;
+    else if (s.k === 'power') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.by)} plays ${esc(s.name)}${s.on ? ` on ${esc(s.on)}` : ''}.)</div>`;
     else if (s.k === 'idol') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.by)} plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${esc(s.for)}` : ''}.)</div>`;
     else if (s.k === 'safe') t = `<div class="tdx-ln" data-s="${i}"><b>${esc(scr.host || 'Chris')}:</b> ${esc(s.who)}${s.immune ? ', you won immunity' : ''}.</div>`;
     else if (s.k === 'read') t = `<div class="tdx-ln" data-s="${i}"><b>${esc(scr.host || 'Chris')}:</b> ${esc(s.line || `${s.vote}.${s.dead ? ' Does not count.' : ''}`)}</div>`;
@@ -283,7 +284,7 @@ function paint(uid, fresh) {
   if (fresh) act(st, castEl, fxEl, scr, L, s, toks);
   // Intel
   const intel = st.querySelector('.tdx-intel');
-  intel.innerHTML = intelHtml(scr, L, R.tab, fresh);
+  intel.innerHTML = intelHtml(scr, L, R.tab, fresh, R.relWho);
   st.querySelector('.tdx-ibtn').classList.toggle('new', fresh && L.side.some(x => x.at === R.idx) && !st.classList.contains('intel-open'));
   // the script, the counter, the chapters
   document.getElementById(`tdx-lines-${uid}`)?.querySelectorAll('[data-s]').forEach(ln => { const i = +ln.dataset.s; ln.classList.toggle('vis', i <= R.idx); ln.classList.toggle('now', i === R.idx); });
@@ -369,7 +370,7 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
   if (s.k === 'title') { sfx(s.shock ? 'shock' : s.sting ? 'sting' : 'title'); if (s.shock) { const w = st.querySelector('.tdx-world'); if (w) { w.classList.remove('jolt'); void w.offsetWidth; w.classList.add('jolt'); } } }
   if (s.k === 'ballot') { sfx('slip'); if (s.venue === 'world-tour') setTimeout(() => sfx('slam'), 1150); else { sfx('scribble'); setTimeout(() => sfx('drop'), 2700); } }
   if (s.k === 'ballots') sfx('slip');
-  if (s.k === 'idol') sfx('idol');
+  if (s.k === 'idol' || s.k === 'power') sfx('idol');
   if (s.k === 'out') sfx('out');
   if (s.k === 'found') sfx(s.item ? 'idol' : 'empty');
   if (s.k === 'title' && s.vs) sfx('thunder');
@@ -438,6 +439,7 @@ function mapShell(map, S, ep, o) {
   <button type="button" class="tdx-btn" onclick="tdxTv()">TV mode</button>
   <button type="button" class="tdx-btn" onclick="tdxSwitchViewer('classic')" title="Back to the classic screens">Classic</button>
 </div>
+<details class="tdx-script"><summary>Script</summary><div class="tdx-lines" id="tdx-lines-${uid}"><div class="tdx-ln d">Open a conversation on the map to read its script.</div></div></details>
 </div>`;
   // the sidebar names the screen: a shared camp's map is every team's, so it carries no team name
   const named = map.camps.length > 1 ? (map.phase === 'pre' ? 'Camp' : 'Camp — After the challenge') : S.label;
@@ -627,6 +629,7 @@ export function tdmPlay(uid, i, story = false) {
   R.mode = 'talk'; R.cur = i; R.zone = c.zone; R.place = c.place; R.story = story;
   R.win = Math.max(R.win, R.map.windows.findIndex(w => w.id === c.window));
   R.scr = c.screen; R.idx = 0; R.wk = null; R.o = { teamColor: R.colors[c.camp] || '#4fb84a' };
+  const lines = document.getElementById(`tdx-lines-${uid}`); if (lines) lines.innerHTML = scriptHtml(R.scr);
   if (st) { st.classList.remove('tdm-on'); st.querySelector('.tdm').hidden = true; }
   paint(uid, true);
 }
@@ -776,7 +779,7 @@ export function tdxSeek(uid, e) {
   window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
 }
 export function tdxIntel(uid) { const st = document.getElementById(`tdx-st-${uid}`); if (!st) return; st.classList.toggle('intel-open'); st.querySelector('.tdx-ibtn')?.classList.remove('new'); }
-export function tdxTab(uid, e) { if (e.target.closest('[data-close]')) { tdxIntel(uid); return; } const b = e.target.closest('[data-tab]'); if (!b) return; const R = reg()[uid]; if (!R) return; R.tab = b.dataset.tab; const st = document.getElementById(`tdx-st-${uid}`); st.querySelector('.tdx-intel').innerHTML = intelHtml(R.scr, ledgerAt(R.scr, R.idx), R.tab, false); }
+export function tdxTab(uid, e) { if (e.target.closest('[data-close]')) { tdxIntel(uid); return; } const pick = e.target.closest('[data-rel]'); const b = pick || e.target.closest('[data-tab]'); if (!b) return; const R = reg()[uid]; if (!R) return; if (pick) R.relWho = pick.dataset.rel; else R.tab = b.dataset.tab; const st = document.getElementById(`tdx-st-${uid}`); st.querySelector('.tdx-intel').innerHTML = intelHtml(R.scr, ledgerAt(R.scr, R.idx), R.tab, false, R.relWho); }
 const holdFor = s => Math.min(9000, 1700 + String(s?.text || '').length * 40) + (['title', 'idol', 'out', 'found', 'intro'].includes(s?.k) ? 2400 : 0) + (s?.k === 'ballot' ? 2600 : 0) + (s?.tense ? 1200 : 0) + (s?.k === 'scene' ? 900 : 0) + (s?.k === 'safe' && s.last ? 1800 : 0);
 function stopAuto(R) { R.auto = false; clearTimeout(R.timer); }
 export function tdxAuto(uid) {

@@ -396,10 +396,39 @@ export const TDX_CSS = `
 .tdx .tdx-intel{position:absolute;top:0;right:0;bottom:0;width:min(34%,340px);background:var(--glass2);z-index:16;transform:translateX(100%);transition:transform .35s cubic-bezier(.3,.8,.3,1);color:var(--ht);padding:14px 14px 0;display:flex;flex-direction:column;border-left:2px solid var(--or);cursor:default}
 .tdx .tdx-stage.intel-open .tdx-intel{transform:none}
 .tdx .tdx-ihead{position:relative}
+.tdx .tdx-itabs{flex-wrap:wrap}
+.tdx .tdx-rpick{display:grid;gap:6px;margin-bottom:8px}
+.tdx .tdx-rpick small{font:800 9px Nunito;letter-spacing:.12em;text-transform:uppercase;color:var(--hd)}
+.tdx .tdx-rpick div div{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.tdx .tdx-rpick button{padding:0;border:2px solid transparent;border-radius:50%;background:none;cursor:pointer;width:32px;height:32px;opacity:.7}
+.tdx .tdx-rpick button img{width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:50% 15%;display:block}
+.tdx .tdx-rpick button.on{border-color:var(--or);opacity:1;transform:scale(1.08)}
+.tdx .tdx-rpick button:hover,.tdx .tdx-rpick button:focus-visible{opacity:1;outline:none;border-color:rgba(255,255,255,.5)}
+.tdx .tdx-rhead{display:flex;align-items:center;gap:8px;margin:2px 0 6px;font:400 16px 'Lilita One'}
+.tdx .tdx-rhead img{width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:50% 15%;border:2px solid var(--or)}
+.tdx .tdx-rrow{display:grid;grid-template-columns:24px 1fr auto;grid-template-areas:"f n c" "f b k";column-gap:7px;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.tdx .tdx-rrow img{grid-area:f;width:24px;height:24px;border-radius:50%;object-fit:cover;object-position:50% 15%}
+.tdx .tdx-rrow .nm{grid-area:n;font:800 12px Nunito}
+.tdx .tdx-rrow .chip{grid-area:c}
+.tdx .tdx-rrow .bar{grid-area:b;position:relative;height:5px;border-radius:3px;background:rgba(255,255,255,.08)}
+.tdx .tdx-rrow .bar::after{content:'';position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:rgba(255,255,255,.3)}
+.tdx .tdx-rrow .bar i{position:absolute;top:0;bottom:0;border-radius:3px}
+.tdx .tdx-rrow .k{grid-area:k;font:700 10px Nunito;color:var(--hd);white-space:nowrap}
+.tdx .chip.love{background:rgba(255,105,150,.18);color:#ff9fbe}.tdx .chip.love.off{background:rgba(255,255,255,.06);color:#aaa}
+.tdx .chip.bad{background:rgba(248,81,73,.16);color:#ff8a80}.tdx .chip.pw{background:rgba(255,200,80,.16);color:#ffd27a}
+.tdx .tdx-ic .prow{display:flex;align-items:center;gap:6px;margin-top:5px;font:700 12px Nunito}
+.tdx .tdx-ic .prow img{width:22px;height:22px;border-radius:50%;object-fit:cover;object-position:50% 15%}
+.tdx .tdx-ic.dim{opacity:.6}
+.tdx .tdx-tok.glow-idol .body{animation:tdxGlowIdol 1.6s ease-in-out infinite alternate}
+.tdx .tdx-tok.glow-power .body{animation:tdxGlowPow 1.6s ease-in-out infinite alternate}
+@keyframes tdxGlowIdol{from{filter:drop-shadow(0 0 .3cqw rgba(255,200,80,.55))}to{filter:drop-shadow(0 0 1.3cqw rgba(255,190,60,.95)) drop-shadow(0 0 .4cqw #fff3c4)}}
+@keyframes tdxGlowPow{from{filter:drop-shadow(0 0 .3cqw rgba(110,190,255,.5))}to{filter:drop-shadow(0 0 1.1cqw rgba(110,190,255,.95))}}
+.tdx .tdx-idol.power .rays{background:repeating-conic-gradient(rgba(110,190,255,.26) 0 8deg,transparent 8deg 18deg)}
+.tdx .tdx-idol.power .totem{filter:drop-shadow(0 0 20px rgba(110,190,255,.9))}
 .tdx .tdx-ic.why .vrow{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .tdx .tdx-ic.why .vrow img{width:22px;height:22px;border-radius:50%;object-fit:cover;object-position:50% 15%;border:1px solid rgba(255,255,255,.25)}
 .tdx .tdx-ic .chips{display:flex;gap:4px;flex-wrap:wrap;margin:5px 0 3px}
-.tdx .tdx-ic .chip{font:800 10px/1 Nunito;letter-spacing:.04em;padding:3px 7px;border-radius:9px;background:rgba(255,255,255,.08);color:#cfd6e4}
+.tdx .chip,.tdx .tdx-ic .chip{font:800 10px/1 Nunito;letter-spacing:.04em;padding:3px 7px;border-radius:9px;background:rgba(255,255,255,.08);color:#cfd6e4}
 .tdx .tdx-ic .chip.ally{background:rgba(122,200,255,.16);color:#9fd8ff}
 .tdx .tdx-ic .chip.tag{background:rgba(255,190,80,.14);color:#ffcf7a;text-transform:uppercase}
 .tdx .tdx-ic.betray{border-left:3px solid #f85149}

@@ -49,6 +49,7 @@ export function worldKey(screen, L) {
   return L.scene?.plate || `${screen.venue}/none`;
 }
 const CRITTER = {"crab": "<svg viewBox=\"0 0 40 24\"><g stroke=\"#5a1a0a\" stroke-width=\"1.6\" fill=\"#e8552e\"><ellipse cx=\"20\" cy=\"15\" rx=\"10\" ry=\"6\"/><path d=\"M10 13l-6-6 3 8M30 13l6-6-3 8\" fill=\"none\"/><path d=\"M12 19l-5 4M15 20l-3 4M25 20l3 4M28 19l5 4\" fill=\"none\"/></g><circle cx=\"17\" cy=\"10\" r=\"1.6\" fill=\"#111\"/><circle cx=\"23\" cy=\"10\" r=\"1.6\" fill=\"#111\"/></svg>", "duck": "<svg viewBox=\"0 0 44 30\"><path d=\"M6 20c0-7 8-10 16-8 3-8 13-8 14-1 1 4-2 6-5 7 5 3 3 10-8 10H14C9 28 6 25 6 20z\" fill=\"#f4f0e6\" stroke=\"#2a2a3a\" stroke-width=\"1.6\"/><path d=\"M36 13l7 1-6 3z\" fill=\"#f2a43a\" stroke=\"#2a2a3a\" stroke-width=\"1.2\"/><circle cx=\"31\" cy=\"11\" r=\"1.6\" fill=\"#111\"/></svg>", "squirrel": "<svg viewBox=\"0 0 44 34\"><path d=\"M6 30c-6-10 0-24 10-22 6 1 5 9 0 10 8 0 12 4 12 12z\" fill=\"#b8742a\" stroke=\"#4a2a10\" stroke-width=\"1.6\"/><path d=\"M24 30c0-8 4-12 9-12 4-6 10-4 10 1 0 4-3 5-5 6 0 3-1 5-4 5z\" fill=\"#c9843a\" stroke=\"#4a2a10\" stroke-width=\"1.6\"/><circle cx=\"38\" cy=\"17\" r=\"1.4\" fill=\"#111\"/></svg>", "parrot": "<svg viewBox=\"0 0 44 30\"><path d=\"M4 16c8-10 22-12 30-6l8-2-5 6c-6 9-22 12-33 2z\" fill=\"#e23b3b\" stroke=\"#3a1010\" stroke-width=\"1.5\"/><path d=\"M14 14l10-10 6 8z\" fill=\"#2a8ad8\" stroke=\"#3a1010\" stroke-width=\"1.4\"/><path d=\"M8 18l-6 8 10-4z\" fill=\"#f2c83a\" stroke=\"#3a1010\" stroke-width=\"1.2\"/><circle cx=\"33\" cy=\"12\" r=\"1.5\" fill=\"#111\"/></svg>", "frog": "<svg viewBox=\"0 0 40 26\"><path d=\"M4 22c0-8 7-14 16-14s16 6 16 14z\" fill=\"#4fb84a\" stroke=\"#1a4a1a\" stroke-width=\"1.6\"/><circle cx=\"13\" cy=\"9\" r=\"5\" fill=\"#4fb84a\" stroke=\"#1a4a1a\" stroke-width=\"1.6\"/><circle cx=\"27\" cy=\"9\" r=\"5\" fill=\"#4fb84a\" stroke=\"#1a4a1a\" stroke-width=\"1.6\"/><circle cx=\"13\" cy=\"9\" r=\"2\" fill=\"#111\"/><circle cx=\"27\" cy=\"9\" r=\"2\" fill=\"#111\"/></svg>", "seagull": "<svg viewBox=\"0 0 44 26\"><path d=\"M8 18c4-6 14-8 22-6l8-3-3 6c-2 6-14 9-27 3z\" fill=\"#f4f4f4\" stroke=\"#2a2a3a\" stroke-width=\"1.5\"/><path d=\"M14 13l6-9 6 7z\" fill=\"#c8ccd4\" stroke=\"#2a2a3a\" stroke-width=\"1.3\"/><path d=\"M38 9l5 1-4 2z\" fill=\"#f2a43a\"/><circle cx=\"34\" cy=\"10\" r=\"1.4\" fill=\"#111\"/><path d=\"M18 21v4M24 21v4\" stroke=\"#f2a43a\" stroke-width=\"1.6\"/></svg>", "raccoon": "<svg viewBox=\"0 0 48 32\"><path d=\"M8 26c0-9 8-14 18-14s14 4 14 10v4z\" fill=\"#8a8a92\" stroke=\"#2a2a32\" stroke-width=\"1.6\"/><path d=\"M2 20c2-4 6-5 8-3l-2 8c-4 0-6-2-6-5z\" fill=\"#6a6a72\" stroke=\"#2a2a32\" stroke-width=\"1.4\"/><path d=\"M36 14c3-6 11-5 11 2 0 5-4 7-9 6z\" fill=\"#9a9aa2\" stroke=\"#2a2a32\" stroke-width=\"1.6\"/><path d=\"M37 15h9\" stroke=\"#222\" stroke-width=\"3\"/><circle cx=\"40\" cy=\"15\" r=\"1.2\" fill=\"#fff\"/><circle cx=\"44\" cy=\"15\" r=\"1.2\" fill=\"#fff\"/></svg>"};
+const POWER_ICON = {"extraVote": "<rect x=\"10\" y=\"22\" width=\"34\" height=\"44\" rx=\"4\" fill=\"#f4ecd8\" stroke=\"#3a2210\" stroke-width=\"3\"/><rect x=\"20\" y=\"12\" width=\"34\" height=\"44\" rx=\"4\" fill=\"#fff8e6\" stroke=\"#3a2210\" stroke-width=\"3\"/><path d=\"M27 28h20M27 36h20M27 44h12\" stroke=\"#3a2210\" stroke-width=\"3\"/><circle cx=\"50\" cy=\"62\" r=\"12\" fill=\"#2fbf71\" stroke=\"#3a2210\" stroke-width=\"3\"/><path d=\"M50 55v14M43 62h14\" stroke=\"#fff\" stroke-width=\"4\"/>", "voteSteal": "<rect x=\"14\" y=\"14\" width=\"34\" height=\"44\" rx=\"4\" fill=\"#fff8e6\" stroke=\"#3a2210\" stroke-width=\"3\"/><path d=\"M21 28h20M21 36h20\" stroke=\"#3a2210\" stroke-width=\"3\"/><path d=\"M30 58c6-8 18-10 26-4l4 10c-6 8-18 10-26 4z\" fill=\"#e8b48a\" stroke=\"#3a2210\" stroke-width=\"3\"/>", "voteBlock": "<rect x=\"14\" y=\"12\" width=\"34\" height=\"46\" rx=\"4\" fill=\"#fff8e6\" stroke=\"#3a2210\" stroke-width=\"3\"/><path d=\"M21 26h20M21 34h20\" stroke=\"#3a2210\" stroke-width=\"3\"/><circle cx=\"31\" cy=\"44\" r=\"20\" fill=\"none\" stroke=\"#e23b3b\" stroke-width=\"6\"/><path d=\"M17 58l28-28\" stroke=\"#e23b3b\" stroke-width=\"6\"/>", "kip": "<path d=\"M4 40q28-30 56 0q-28 30-56 0z\" fill=\"#fff8e6\" stroke=\"#3a2210\" stroke-width=\"3\"/><circle cx=\"32\" cy=\"40\" r=\"11\" fill=\"#5b7bd8\" stroke=\"#3a2210\" stroke-width=\"3\"/><circle cx=\"32\" cy=\"40\" r=\"4\" fill=\"#111\"/>", "soleVote": "<rect x=\"15\" y=\"12\" width=\"34\" height=\"46\" rx=\"4\" fill=\"#fff8e6\" stroke=\"#3a2210\" stroke-width=\"3\"/><path d=\"M32 22l4 9 10 1-8 7 3 10-9-5-9 5 3-10-8-7 10-1z\" fill=\"#f2c83a\" stroke=\"#3a2210\" stroke-width=\"2\"/>", "safetyNoPower": "<rect x=\"16\" y=\"8\" width=\"32\" height=\"56\" rx=\"3\" fill=\"#a8622e\" stroke=\"#3a2210\" stroke-width=\"3\"/><rect x=\"22\" y=\"14\" width=\"20\" height=\"44\" fill=\"#1a1a22\"/><circle cx=\"38\" cy=\"38\" r=\"2.5\" fill=\"#f2c83a\"/>", "teamSwap": "<path d=\"M12 28h34l-8-8M52 44H18l8 8\" fill=\"none\" stroke=\"#3a2210\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "legacy": "<path d=\"M32 8l20 10v18c0 14-10 22-20 26-10-4-20-12-20-26V18z\" fill=\"#c89a3a\" stroke=\"#3a2210\" stroke-width=\"3\"/><path d=\"M32 22v24M22 32h20\" stroke=\"#3a2210\" stroke-width=\"4\"/>"};
 export function worldHtml(screen, L) {
   // the islands have no booth: a confessional there is shot on location
   const key = L.conf ? (plateKey(screen.venue, 'confessional', /-night$/.test(L.scene?.plate || '') ? 'night' : 'day') || L.scene?.plate) : L.scene?.plate;
@@ -241,6 +242,10 @@ export function castAt(screen, L) {
   // where someone has walked to in this scene (the Summit: up to the gift they take) they stay
   const moved = {};
   for (let i = L.idx; i >= 0; i--) { const x = screen.steps[i]; if (!x || x.k === 'scene') break; if (x.act?.kind === 'pick' && i < L.idx) for (const n of x.act.who || []) if (!(n in moved)) moved[n] = x.act.tu; }
+  // who holds an idol or a power tonight glows (only the viewer can see it), until they play it
+  let glow = {};
+  for (let i = L.idx; i >= 0; i--) { const x = screen.steps[i]; if (x?.glow) { glow = { ...x.glow }; break; } }
+  for (let i = 0; i < L.idx; i++) { const x = screen.steps[i]; if ((x.k === 'idol' || x.k === 'power') && x.by && glow[x.by] && (x.k === 'idol' || glow[x.by] !== 'idol')) delete glow[x.by]; }
   for (const [n, pl0] of Object.entries(sc.places || {})) {
     const pl = n in moved ? { ...pl0, u: moved[n] } : pl0;
     // the walk out: the one leaving and the host, and whoever came to say goodbye (sc.exitWith)
@@ -251,7 +256,7 @@ export function castAt(screen, L) {
     const h = pl.h || (pl.host ? Math.max(Math.min(pl.s * 125, 30), 16) : sit ? Math.max(Math.min(pl.s * 95, 24), 13) : Math.max(Math.min(pl.s * 125, sc.exit ? 30 : 34), bg ? 11 : 16));
     toks.push({ n, u: pl.u, v: pl.v, h, sit, host: !!pl.host, act: bg?.act || busy || null,
       speak: n === speaker || (pl.host && s.host), dim: !!(focus && focus.length && !focus.includes(n) && !pl.host && n !== speaker),
-      bg: !!bg, safe: L.safe.includes(n), out: L.out === n, conf: !!pl.close, aboard: !!pl.aboard });
+      bg: !!bg, safe: L.safe.includes(n), out: L.out === n, conf: !!pl.close, aboard: !!pl.aboard, glow: glow[n] || null });
   }
   return toks;
 }
@@ -304,7 +309,7 @@ export function shotOf(screen, L, toks) {
 export function tokHtml(t, fresh) {
   const w = t.h * 9 / 16;
   const busy = t.act ? `${t.act === 'fish' ? '<div class="tdx-rod"><i></i></div>' : ''}${t.act === 'nap' ? '<b class="tdx-zzz">z</b>' : ''}<div class="tdx-busy" title="${esc(BUSY_LABEL[t.act] || '')}"><svg viewBox="0 0 24 24">${BUSY_ICON[t.act] || ''}</svg></div>` : '';
-  const cls = ['tdx-tok', t.speak && 'speak', t.dim && 'dim', t.bg && 'bg', t.sit && 'sit', t.host && 'host', t.conf && 'conf', t.aboard && 'aboard', t.out && 'out', t.act && `act-${t.act}`].filter(Boolean).join(' ');
+  const cls = ['tdx-tok', t.speak && 'speak', t.dim && 'dim', t.bg && 'bg', t.sit && 'sit', t.host && 'host', t.conf && 'conf', t.aboard && 'aboard', t.glow && `glow-${t.glow}`, t.out && 'out', t.act && `act-${t.act}`].filter(Boolean).join(' ');
   return `<div class="${cls}" data-n="${esc(t.n)}" style="left:${t.u * 100}%;top:${t.v * 100}%;height:${t.h}%;width:${w}%;z-index:${Math.round(t.v * 100) + (t.speak ? 50 : 0)}"><div class="body"><div class="shadow"></div><div class="face"><img src="${esc(avatar(t.n, t.host))}" alt="" onerror="this.style.visibility='hidden'"></div><div class="tag">${esc(t.host ? t.n + ' · host' : t.n)}</div>${t.safe ? '<i class="tdx-got"></i>' : ''}${busy}</div></div>`;
 }
 
@@ -355,6 +360,8 @@ export function hudHtml(screen, L, fresh, o = {}) {
   if (s.k === 'title') h += `<div class="tdx-title${fresh ? ' fresh' : ''}${s.tone ? ' ' + esc(s.tone) : ''}${s.vs ? ' vs' : ''}"><div class="band"></div><div class="inner"><div class="kicker">${esc(s.kicker)}</div><div class="big">${esc(s.name)}</div></div><div class="faces">${(s.faces || []).map((n, i) => `${s.vs && i ? '<b class="vsx">VS</b>' : ''}<img src="${esc(avatar(n))}" alt="">`).join('')}</div></div>`;
   if (s.k === 'found') h += foundHtml(s, fresh);
   if (s.k === 'ballots') h += `<div class="tdx-title tdx-ballots${fresh ? ' fresh' : ''}"><div class="band"></div><div class="inner"><div class="kicker">The vote</div><div class="big">${esc(s.text)}</div></div><div class="faces">${(s.who || []).map((n, i) => `<span style="--i:${i}"><img src="${esc(avatar(n))}" alt=""><b>✓</b></span>`).join('')}</div></div>`;
+  // a power played before the vote: its card, the player, and whoever it lands on
+  if (s.k === 'power') h += `<div class="tdx-idol power${fresh ? ' fresh' : ''}"><div class="rays"></div><div class="totem"><svg viewBox="0 0 64 80">${POWER_ICON[s.type] || POWER_ICON.legacy}</svg></div><div class="lbl">${esc(s.name)}</div><div class="for"><img src="${esc(avatar(s.by))}" alt="">${s.on ? `<span>→</span><img src="${esc(avatar(s.on))}" alt="">` : ''}</div></div>`;
   if (s.k === 'idol') h += `<div class="tdx-idol${fresh ? ' fresh' : ''}"><div class="rays"></div><div class="totem"><svg viewBox="0 0 60 90"><path d="M18 10h24l4 18-6 8 6 10-4 34H18l-4-34 6-10-6-8z" fill="#c89a3a" stroke="#3a2210" stroke-width="3"/><circle cx="24" cy="24" r="4" fill="#3a2210"/><circle cx="36" cy="24" r="4" fill="#3a2210"/><path d="M22 34h16M24 56h12M22 66h16" stroke="#3a2210" stroke-width="3"/></svg></div><div class="lbl">Hidden Immunity Idol</div><div class="for"><img src="${esc(avatar(s.by))}" alt="">${s.for !== s.by ? `<span>→</span><img src="${esc(avatar(s.for))}" alt="">` : ''}</div></div>`;
   if (s.k === 'out') h += `<div class="tdx-outcard${fresh ? ' fresh' : ''}"><img src="${esc(avatar(s.who))}" alt=""><div>${esc(s.who)}</div><span>${s.island ? 'Voted out' : 'Eliminated'}</span></div>`;
   return h;
@@ -396,6 +403,7 @@ export function dialogue(screen, L) {
   if (s.k === 'read') return { name: host, cls: 'host', text: s.line || (s.dead ? `${s.vote}. Does not count.` : s.revote ? `${s.vote}.` : s.deciding ? `${s.vote}. That's enough.` : `${s.vote}.`), hostCut: host };
   if (s.k === 'out') return { name: '', cls: 'dir', text: `${s.who} is ${s.island ? 'voted out' : 'eliminated'}.` };
   if (s.k === 'found') return s.text ? { name: '', cls: 'dir', text: s.text, badge: s.item ? { text: s.label.toUpperCase(), cls: 'gold' } : null } : { name: '', cls: 'dir hidden', text: '' };
+  if (s.k === 'power') return { name: '', cls: 'dir', text: `${s.by} stands up and plays ${s.name}${s.on ? ` on ${s.on}` : ''}.` };
   if (s.k === 'idol') return { name: '', cls: 'dir', text: `${s.by} stands up and plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${s.for}` : ''}.` };
   if (s.k === 'ballots' || s.k === 'title' || s.k === 'ballot' || s.k === 'intro') return { name: '', cls: 'dir hidden', text: '' };
   return { name: '', cls: 'dir hidden', text: '' };
@@ -403,11 +411,31 @@ export function dialogue(screen, L) {
 
 // ── the Intel drawer ──────────────────────────────────────────────────
 const TABS = {
-  camp: [['mind', 'In their heads'], ['bonds', 'Relationships'], ['log', 'Camp log'], ['allies', 'Alliances'], ['secrets', 'Secrets']],
-  tribal: [['room', 'The room'], ['plans', 'Plans'], ['tally', 'Tally'], ['why', 'Why']],
-  island: [['residents', 'Who is here'], ['log', 'Island log'], ['secrets', 'Secrets']],
+  camp: [['mind', 'In their heads'], ['bonds', 'Just now'], ['log', 'Camp log'], ['people', 'Relationships'], ['allies', 'Alliances'], ['powers', 'Powers'], ['secrets', 'Secrets']],
+  tribal: [['room', 'The room'], ['plans', 'Plans'], ['tally', 'Tally'], ['why', 'Why'], ['people', 'Relationships'], ['allies', 'Alliances'], ['powers', 'Powers']],
+  island: [['residents', 'Who is here'], ['log', 'Island log'], ['secrets', 'Secrets'], ['people', 'Relationships'], ['powers', 'Powers']],
 };
-export function intelHtml(screen, L, tab, fresh) {
+// the season as it stood after this episode (its snapshot): who is still playing, by team, every bond,
+// the romances, the alliances, the powers. The tabs a viewer keeps open to read the game.
+const BOND_WORD = v => v >= 6 ? 'Close' : v >= 3 ? 'Friends' : v > -2 ? 'Neutral' : v > -5 ? 'Tension' : 'Enemies';
+const POWER_NAME = { idol: 'Idol', superIdol: 'Super Idol', extraVote: 'Extra Vote', voteSteal: 'Steal a Vote', voteBlock: 'Block a Vote', kip: 'Knowledge is Power',
+  soleVote: 'Sole Vote', safetyNoPower: 'Safety Without Power', teamSwap: 'Team Swap', legacy: 'Legacy Advantage', amulet: 'Amulet', idolNullifier: 'Idol Nullifier' };
+function seasonAt(screen) {
+  const E = (globalThis.gs?.episodeHistory || []).find(e => e.num === +screen.ep);
+  const S = E?.gsSnapshot; if (!S) return null;
+  const players = [...new Set([...(S.activePlayers || []), ...(E.eliminated && E.eliminated !== 'No elimination' ? [E.eliminated] : [])])];
+  const tribes = (E.tribesAtStart?.length ? E.tribesAtStart : S.tribes || []).map(t => ({ name: t.name, members: (t.members || []).filter(n => players.includes(n)) })).filter(t => t.members.length);
+  const teams = tribes.length ? tribes : [{ name: S.mergeName || 'Everyone', members: players }];
+  const bond = (a, b) => S.bonds?.[a <= b ? `${a}||${b}` : `${b}||${a}`] ?? 0;
+  const love = (a, b) => {
+    const sh = (S.showmances || []).find(x => x.players?.includes(a) && x.players?.includes(b));
+    if (sh) return sh.breakupEp ? 'Broke up' : 'Showmance';
+    const sp = (S.romanticSparks || []).find(x => x.players?.includes(a) && x.players?.includes(b));
+    return sp ? 'Spark' : null;
+  };
+  return { players, teams, bond, love, alliances: S.namedAlliances || [], gone: S.dissolvedAlliances || [], powers: (S.advantages || []).filter(a => players.includes(a.holder)), num: E.num };
+}
+export function intelHtml(screen, L, tab, fresh, who = null) {
   const tabs = TABS[screen.kind] || TABS.camp;
   if (!tabs.some(t => t[0] === tab)) tab = tabs[0][0];
   const items = L.side;
@@ -437,7 +465,33 @@ export function intelHtml(screen, L, tab, fresh) {
       + `<small>${esc(x.text)}</small></div>`; });
   else if (tab === 'plans') mine.forEach(x => { h += `<div class="tdx-ic${fr(x)}"><b>${esc(x.name)}</b> <span class="k">plans to vote</span> <b>${esc(x.target || '?')}</b><div class="minis">${(x.who || []).map(n => `<img src="${esc(avatar(n))}" alt="" title="${esc(n)}">`).join('')}</div></div>`; });
   else mine.forEach(x => { h += `<div class="tdx-ic${fr(x)}">${esc(x.text)}</div>`; });
-  if (!mine.length) h += `<div class="tdx-iempty">${screen.kind === 'tribal' && tab === 'tally' ? 'As the votes are read.' : screen.kind === 'tribal' && tab === 'why' ? 'Once the votes are in.' : 'Nothing yet.'}</div>`;
+  const W = ['people', 'allies', 'powers'].includes(tab) ? seasonAt(screen) : null;
+  const face = n => `<img src="${esc(avatar(n))}" alt="" title="${esc(n)}">`;
+  if (tab === 'people' && W) {
+    const sel = W.players.includes(who) ? who : ((L.step?.focus || []).find(n => W.players.includes(n)) || W.players[0]);
+    h += `<div class="tdx-rpick">${W.teams.map(t => `<div class="team"><small>${esc(t.name)}</small><div>${t.members.map(n => `<button type="button" data-rel="${esc(n)}" class="${n === sel ? 'on' : ''}" title="${esc(n)}">${face(n)}</button>`).join('')}</div></div>`).join('')}</div>`;
+    h += `<div class="tdx-rhead">${face(sel)}<b>${esc(sel)}</b></div>`;
+    W.players.filter(n => n !== sel).map(n => [n, W.bond(sel, n), W.love(sel, n)]).sort((a, b) => (b[2] ? 1 : 0) - (a[2] ? 1 : 0) || b[1] - a[1]).forEach(([n, v, l]) => {
+      const pct = Math.round(Math.abs(v) * 5), col = v >= 0 ? '#3fb950' : '#f85149';
+      h += `<div class="tdx-rrow">${face(n)}<span class="nm">${esc(n)}</span>${l ? `<span class="chip love${l === 'Broke up' ? ' off' : ''}">${esc(l)}</span>` : ''}<span class="bar"><i style="${v >= 0 ? 'left:50%' : `right:50%`};width:${pct}%;background:${col}"></i></span><span class="k">${esc(BOND_WORD(v))} ${v > 0 ? '+' : ''}${(+v).toFixed(1)}</span></div>`;
+    });
+    return h + '</div>';
+  }
+  if (tab === 'allies' && W) {
+    // no named alliance yet: tonight's voting blocs are the alliances that exist
+    if (!W.alliances.length) for (const a of (globalThis.gs?.episodeHistory || []).find(e => e.num === W.num)?.alliances || []) if (a.type !== 'solo' && (a.members || []).length >= 2)
+      h += `<div class="tdx-ic"><b>${esc(a.label || 'A voting bloc')}</b> <span class="chip">voting bloc</span><div class="minis">${a.members.map(face).join('')}</div>${a.target ? `<small>Aiming at ${esc(a.target)}</small>` : ''}</div>`;
+    for (const a of W.alliances) h += `<div class="tdx-ic"><b>${esc(a.name)}</b>${(a.betrayals || []).length ? ` <span class="chip bad">${a.betrayals.length} betrayal${a.betrayals.length > 1 ? 's' : ''}</span>` : ''}<div class="minis">${(a.members || []).filter(n => W.players.includes(n)).map(face).join('')}</div><small>Since episode ${esc(a.formed ?? '?')}</small></div>`;
+    for (const a of W.gone.filter(x => (x.members || []).some(n => W.players.includes(n)))) h += `<div class="tdx-ic dim"><b>${esc(a.name)}</b> <span class="chip">broken up</span><div class="minis">${(a.members || []).map(face).join('')}</div></div>`;
+  }
+  if (tab === 'powers' && W) {
+    for (const t of W.teams) {
+      const ps = W.powers.filter(a => t.members.includes(a.holder));
+      h += `<div class="tdx-ic"><b style="display:block">${esc(t.name)}</b>${ps.length ? ps.map(a => `<div class="prow">${face(a.holder)}<span>${esc(a.holder)}</span><span class="chip pw">${esc(POWER_NAME[a.type] || a.type)}</span>${a.foundEp === W.num ? '<span class="chip">new</span>' : ''}</div>`).join('') : '<small>Nothing known.</small>'}</div>`;
+    }
+    return h + '</div>';
+  }
+  if (!mine.length && !(tab === 'allies' && W && (W.alliances.length || W.gone.length || h.includes('voting bloc')))) h += `<div class="tdx-iempty">${screen.kind === 'tribal' && tab === 'tally' ? 'As the votes are read.' : screen.kind === 'tribal' && tab === 'why' ? 'Once the votes are in.' : 'Nothing yet.'}</div>`;
   return h + '</div>';
 }
 

@@ -727,7 +727,7 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const recall = lines => {
     if (!cause || lines.some(l => l.recall) || (em.recalled ||= new Set()).has(a + '|' + boot)) return;
     const r = writeStory('vp.recall', cause.kind, { a }, { target: boot, moment: cause.moment.replace('{target}', boot), ...(cause.fallen ? { fallen: cause.fallen } : {}) }, { ...facts }, { ep: ep.num, camp, phase: 'post', n: next(), place: 'confessional', unique: 'soft' });
-    if (r) { em.recalled.add(a + '|' + boot); lines.push(...r.lines.map(l => ({ ...l, recall: true }))); }
+    if (r) { em.recalled.add(a + '|' + boot); lines.push(...r.lines.map(l => ({ ...l, recall: `${cause.phase}:${cause.i}` }))); }
   };
   // a whole scene, written start to finish (the user: "they're not talking to each other, it's cut
   // short"); the beats below only when no whole scene fits this cast
@@ -777,7 +777,9 @@ const CAUSE = [
   ['caught', /sabotag|caught|lie\b|backstab|betray/i, 'what {target} pulled', 'boot'],
   ['fight', /fight|clash|dispute|argument|confront|explo|blow/i, 'that fight', null],
   ['blame', /blame|slack/i, 'the way {target} let us down', 'leader'],
-  ['rival', /grudge|hatred|nemesis|passive|rival|tension|cold war|trust ?crack/i, 'what happened between us', null],
+  ['rival', /triangle|jealous/i, 'that whole love triangle mess', null],
+  ['rival', /hatred|nemesis|cold war|passive/i, 'another {half} stuck next to {target}', null],
+  ['rival', /grudge|rival|tension|trust ?crack/i, 'what happened between us', null],
 ];
 // the other plan's people tonight, and who runs it (a member writing the boot's name is with the other side)
 function rivalLead(t, rv) {
@@ -826,7 +828,8 @@ function causeFor(ep, camp, leader, boot) {
       }
       const k = CAUSE.findIndex(([, re, , by]) => re.test(s) && (!by || ev.players[0] === (by === 'boot' ? boot : leader)));
       if (k < 0) return null;
-      return { i, k, phase, kind: CAUSE[k][0], moment: `${CAUSE[k][2]} ${when}` };
+      const half = phase === 'pre' ? 'morning' : 'afternoon';
+      return { i, k, phase, kind: CAUSE[k][0], moment: CAUSE[k][2].includes('{half}') ? CAUSE[k][2].replace('{half}', half) : `${CAUSE[k][2]} ${when}` };
     }).filter(Boolean).sort((x, y) => x.k - y.k || x.i - y.i);
     if (found[0]) out.push(found[0]);
   }

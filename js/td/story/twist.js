@@ -77,12 +77,13 @@ function summit(ep, tw) {
 }
 
 // ── shared helpers for the twists below ──
-function writer(ep) {
+// opts.voteYet: a twist that is itself a vote (First Impressions) may talk about being voted out on day one
+function writer(ep, opts = {}) {
   const venue = seasonConfig?.setting || 'hosted-camp';
-  const voteYet = (gs.episodeHistory || []).some(h => h.num < ep.num && h.eliminated);
+  const voteYet = opts.voteYet || (gs.episodeHistory || []).some(h => h.num < ep.num && h.eliminated);
   let n = 700;
-  return (pool, ending, who, data = {}) => writeStory(pool, ending, who, data,
-    { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'pre' }), venue, voteYet, thing: !!data.thing, lot: !!data.lot }, { ep: ep.num, camp: 'twist', phase: 'pre', n: n++, place: 'secret', unique: 'soft' });
+  return (pool, ending, who, data = {}, unique = 'soft') => writeStory(pool, ending, who, data,
+    { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'pre' }), venue, voteYet, thing: !!data.thing, lot: !!data.lot }, { ep: ep.num, camp: 'twist', phase: 'pre', n: n++, place: 'secret', unique });
 }
 const sceneOf = (w, at, players, camp = null) => (w ? { at, camp, lines: w.lines, players } : null);
 
@@ -227,7 +228,7 @@ function loved(ep, tw) {
 // the new camp (its most social member does the welcome), and one voter to the camera after.
 // ep.tdFirstImp = [{ tribe, sentTo, boot, votes, huddle, booth: [{ voter, voted, lines }], read, twist, welcome, after }].
 export function writeFirstImpressions(ep, tw) {
-  const write = writer(ep);
+  const write = writer(ep, { voteYet: true });
   const host = seasonConfig?.host || 'Chris';
   const st = n => { try { return pStats(n) || {}; } catch { return {}; } };
   const by = k => (x, y) => (st(y)[k] || 0) - (st(x)[k] || 0) || x.localeCompare(y);
@@ -241,8 +242,9 @@ export function writeFirstImpressions(ep, tw) {
     const doubt = [...doubters].sort((x, y) => getBond(boot, y) - getBond(boot, x) || x.localeCompare(y))[0] || null;
     const why = (r.log || []).find(l => l.voter === lead)?.why || 'nothing';
     const huddle = lead ? lines(write('fi.huddle', why, { a: lead, ...(second ? { b: second } : {}), ...(doubt ? { c: doubt } : {}) }, { target: boot })) : [];
-    const booth = (r.log || []).map(l => ({ voter: l.voter, voted: l.voted,
-      lines: lines(write('fi.booth', l.why || 'nothing', { a: l.voter }, { target: l.voted })) }));
+    // every booth line its own: a fresh one for that read, else a fresh general one, else the least used
+    const booth = (r.log || []).map(l => { const w = { a: l.voter }, d = { target: l.voted };
+      return { voter: l.voter, voted: l.voted, lines: lines(write('fi.booth', l.why || 'nothing', w, d, true) || write('fi.booth', 'nothing', w, d, true) || write('fi.booth', l.why || 'nothing', w, d)) }; });
     const meanest = [...voters].sort((x, y) => getBond(boot, x) - getBond(boot, y) || x.localeCompare(y))[0] || null;
     const read = lines(write('fi.read', 'any', { a: boot, ...(meanest ? { b: meanest } : {}), h: host }, { tribe: r.tribe }));
     const twist = lines(write('fi.twist', 'any', { a: boot, ...(meanest ? { b: meanest } : {}), h: host }, { tribe: r.tribe, theirs: r.sentTo }));
@@ -288,11 +290,14 @@ export function writeAuctionScript(ep, A) {
     const log = r.bidLog || [];
     const good = log.filter(b => !b.failed);
     const fighters = [...new Set(good.map(b => b.bidder))];
-    out.push(...L(write('auc.bid', 'open', { a: log[0].bidder }, { amount: money(log[0].amount) })));
-    if (fighters.length === 2 && good.length >= 5) {
+    // a real bidding war (two people, a long climb to a big price) plays as one exchange from the
+    // first bid; anything else is the bids worth hearing, one line each
+    const war = fighters.length === 2 && good.length >= 6 && r.finalBid >= 160;
+    if (!war) out.push(...L(write('auc.bid', 'open', { a: log[0].bidder }, { amount: money(log[0].amount) })));
+    if (war) {
       const loser = fighters.find(x => x !== r.winner);
       const mid = good[Math.floor(good.length / 2)];
-      out.push(...L(write('auc.bid', 'war', { a: loser, b: r.winner }, { amount: money(mid.amount), top: money(r.finalBid) })));
+      out.push(...L(write('auc.bid', 'war', { a: loser, b: r.winner, h: host }, { amount: money(mid.amount), top: money(r.finalBid) })));
     } else {
       // the bids worth hearing: each new bidder's first, a jump, a loan, a refusal, and the last one
       let prev = log[0].bidder, said = 0;
@@ -304,7 +309,7 @@ export function writeAuctionScript(ep, A) {
           said++; continue;
         }
         const last = log.slice(i + 1).every(x => x.failed);
-        if (b.jump) { out.push(...L(write('auc.bid', 'jump', { a: b.bidder, b: prev }, { amount: money(b.amount) }))); said++; }
+        if (b.jump) { out.push(...L(write('auc.bid', 'jump', { a: b.bidder, b: prev, h: host }, { amount: money(b.amount) }))); said++; }
         else if (b.lent) { out.push(...L(write('auc.bid', 'loan', { a: b.bidder, b: b.lent.from }, { amount: money(b.amount) }))); said++; }
         else if (!heard.has(b.bidder) || last) { out.push(...L(write('auc.bid', 'raise', { a: b.bidder, b: prev }, { amount: money(b.amount) }))); said++; }
         heard.add(b.bidder); prev = b.bidder;
@@ -316,7 +321,7 @@ export function writeAuctionScript(ep, A) {
       ? roster.filter(m => m !== r.winner).sort((x, y) => (st(y).intuition || 0) - (st(x).intuition || 0) || x.localeCompare(y))[0] : null;
     const shown = r.switchOffer?.took ? r.switchOffer.keptLabel : r.revealedLabel;
     const what = String(shown || r.label || '').replace(/\s*\(.*\)\s*$/, '').replace(/ — .*$/, '').toLowerCase();
-    out.push(...L(write('auc.win', kind, { a: r.winner, ...(watcher ? { b: watcher } : {}) }, { lot: what, amount: money(r.finalBid) })));
+    out.push(...L(write('auc.win', kind, { a: r.winner, h: host, ...(watcher ? { b: watcher } : {}) }, { lot: what, amount: money(r.finalBid) })));
     if (r.switchOffer) {
       const other = String(r.switchOffer.otherLabel || '').toLowerCase();
       const how = r.switchOffer.took ? (r.switchOutcome === 'downgrade' ? 'dud' : 'upgrade') : 'kept';

@@ -54,6 +54,11 @@ const GUARANTEED = [
   [/^vp\./, ['target', 'votes']],
   [/^fi\.(read|twist|welcome)\./, ['tribe', 'theirs']],
   [/^fi\.after\./, ['theirs']],
+  [/^auc\.lot\.(food|comfort|letter)$/, ['lot', 'amount']],
+  [/^auc\.(lot|bid|sold|saver)\./, ['amount']],
+  [/^auc\.bid\.war$/, ['amount', 'top']],
+  [/^auc\.win\./, ['lot', 'amount']],
+  [/^auc\.switch\./, ['lot', 'thing']],
   [/^fi\.(huddle|booth|after)\./, ['target']],
   [/^(room|after)\.burned$/, ['lastBoot', 'item', 'target']],
   [/^room\./, ['lastBoot', 'item']],
@@ -133,8 +138,8 @@ describe('td story pools', () => {
       if (choppy(x)) { byFile[f][1]++; bad++; }
     }
     expect(bad / n, `${bad} of ${n} lines are choppy`).toBeLessThan(0.04);
-    // the reading (nr: 'What? No. No, that's not right.') is shock, where short bursts are the point
-    for (const [f, [m, b]] of Object.entries(byFile)) if (m >= 40 && f !== 'nr') expect(b / m, `${f}: ${b} of ${m} choppy`).toBeLessThan(0.12);
+    // the reading (nr: 'What? No. No, that's not right.') is shock and the auction floor (naf: 'Higher.') is shouting, where short bursts are the point
+    for (const [f, [m, b]] of Object.entries(byFile)) if (m >= 40 && !['nr', 'naf'].includes(f)) expect(b / m, `${f}: ${b} of ${m} choppy`).toBeLessThan(0.12);
   });
 
   // The rewrite's voice (docs/td-dialogue-style.md): plain, reactive speech. These are the tics the

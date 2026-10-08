@@ -772,6 +772,21 @@ export function _textRosterSwaps(ep, ln, sec) {
 // The twists as the people in them talk (td/story/twist.js ep.twistStory): every scene the twist
 // screen plays after the host's announcement, line for line.
 export function _textTwistStory(ep, ln, sec) {
+  const say = l => ln(l.kind === 'beat' ? `  (${l.text})` : l.kind === 'conf' ? `  ${l.by} [conf]: ${l.text}` : `  ${l.by}: ${l.text}`);
+  // First Impressions and the auction, as their stepped screens play them
+  for (const r of ep.tdFirstImp || []) {
+    sec(`FIRST IMPRESSIONS — ${r.tribe.toUpperCase()}`);
+    (r.huddle || []).forEach(say);
+    for (const b of r.booth || []) { ln(`  [${b.voter} votes ${b.voted}]`); (b.lines || []).forEach(say); }
+    ln(`  ${r.boot} is voted out — and joins ${r.sentTo}.`);
+    [...(r.read || []), ...(r.twist || []), ...(r.welcome || []), ...(r.after || [])].forEach(say);
+  }
+  if (ep.tdAuction?.lots?.length) {
+    sec('THE AUCTION');
+    (ep.tdAuction.open || []).forEach(say);
+    for (const lot of ep.tdAuction.lots) { ln(`  [Lot ${lot.order}: ${lot.title}${lot.winner ? ` — ${lot.winner}, $${lot.finalBid}` : ' — unsold'}]`); lot.lines.forEach(say); }
+    (ep.tdAuction.close || []).forEach(say);
+  }
   const told = ep.twistStory;
   if (!told || !Object.keys(told).length) return;
   sec('THE TWIST, AS THEY TALK IT THROUGH');

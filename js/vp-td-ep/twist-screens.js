@@ -243,6 +243,11 @@ export function tdMiscTwistScreen(ep, id, o = {}) {
   const V = VENUES[venue];
   const block = (type, label, scenes, opts) => tdTwistBlocksScreen(ep, [{ type, label, scenes }], o, opts);
   const active = ep.gsSnapshot?.activePlayers || [];
+  // First Impressions and the auction play as dialogue (td/story/twist.js); the auction's three classic
+  // pages become one stepped screen
+  if (id === 'first-impressions' && ep.tdFirstImp?.length) return tdFirstImpressionsScreen(ep, o);
+  if (id === 'auction-title' && ep.tdAuction?.lots?.length) return tdAuctionScreen(ep, o);
+  if (/^auction-(floor|results)$/.test(id) && ep.tdAuction?.lots?.length) return 'skip';
   if (id === 'feast' && (ep.feastEvents || []).length) {
     const merge = (ep.twists || []).some(t => t.type === 'merge-reward' || t.catalogId === 'merge-reward');
     return block('the-feast', merge ? 'The Merge Feast' : 'The Feast', ep.feastEvents.map(e => ({ text: e.text, players: e.players || [], badge: e.badgeText, badgeClass: e.badgeClass })));
@@ -299,4 +304,79 @@ export function tdMiscTwistScreen(ep, id, o = {}) {
     return { id: 'coc', kind: 'tribal', venue, ep: ep.num, label: 'Chain of Command', host, steps };
   }
   return null;
+}
+
+// ── First Impressions and the auction, as dialogue (td/story/twist.js writes them at sim time) ──
+// Lines are { kind: 'say' | 'conf' | 'beat', by, text }; the host's lines are by the host's name.
+function talkSteps(lines, host, focus = []) {
+  const out = [];
+  for (const l of lines || []) {
+    const text = cleanText(l.text);
+    if (!text) continue;
+    if (l.kind === 'beat') out.push({ k: 'beat', text, focus });
+    else if (l.kind === 'conf') out.push({ k: 'conf', by: l.by, text });
+    else if (l.by === host) out.push({ k: 'say', by: host, host: true, text });
+    else out.push({ k: 'say', by: l.by, text, focus: [l.by] });
+  }
+  return out;
+}
+
+/** First Impressions: each tribe's gut vote, as the people in it talk it through. */
+export function tdFirstImpressionsScreen(ep, o = {}) {
+  const fi = ep.tdFirstImp;
+  if (!fi?.length) return null;
+  const host = o.host || 'Chris';
+  const venue = venueOf(ep, o);
+  const V = VENUES[venue];
+  const steps = [];
+  fi.forEach((r, i) => {
+    const people = [...new Set([...r.booth.map(b => b.voter), r.boot])];
+    const pub = gather(venue, V.public, 'day', people, host);
+    steps.push({ k: 'scene', spot: V.public, tod: 'day', plate: pub.key, place: `${r.tribe} camp`, time: 'Day 1, 4:00 PM', card: i === 0, focus: [], bg: [], places: pub.places, host });
+    if (i === 0) steps.push({ k: 'title', kicker: 'Twist', name: 'First Impressions', faces: people.slice(0, 8) });
+    steps.push(...talkSteps(r.huddle, host, people.slice(0, 4)));
+    const cer = gather(venue, 'ceremony', 'night', people, host);
+    steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate: cer.key, place: V.ceremony, time: 'Day 1, 9:00 PM', card: true, focus: [], bg: [], places: cer.places, host, ceremony: true });
+    steps.push({ k: 'say', by: host, host: true, text: `${r.tribe}, you've known each other for one day. No alliances, no history, nothing to go on but your gut. Vote out the person you trust the least.` });
+    for (const b of r.booth) {
+      const s = talkSteps(b.lines, host);
+      if (!s.length) s.push({ k: 'conf', by: b.voter, text: `${b.voted}.` });
+      s[0] = { ...s[0], side: [{ tab: 'tally', voter: b.voter, target: b.voted }] };
+      steps.push(...s);
+    }
+    steps.push({ k: 'title', kicker: `${r.tribe} votes out`, name: r.boot, faces: [r.boot], tone: 'out' });
+    steps.push(...talkSteps(r.read, host, [r.boot]));
+    steps.push({ k: 'title', kicker: 'Twist', name: `${r.boot} joins ${r.sentTo}`, faces: [r.boot], tone: 'fire' });
+    steps.push(...talkSteps(r.twist, host, [r.boot]));
+    if (r.welcome?.length) {
+      const them = [...new Set([r.boot, ...r.welcome.map(l => l.by).filter(Boolean)])];
+      const camp = gather(venue, V.public, 'night', them, host);
+      steps.push({ k: 'scene', spot: V.public, tod: 'night', plate: camp.key, place: `${r.sentTo} camp`, time: 'Later that night', card: false, focus: [r.boot], bg: [], places: camp.places, host });
+      steps.push(...talkSteps(r.welcome, host, them.slice(0, 3)));
+    }
+    steps.push(...talkSteps(r.after, host));
+  });
+  return { id: 'first-impressions', kind: 'twist', venue, ep: ep.num, label: 'First Impressions', host, steps };
+}
+
+/** The auction: every lot put up, bid on, sold and opened, in the bidders' own words. */
+export function tdAuctionScreen(ep, o = {}) {
+  const A = ep.tdAuction;
+  if (!A?.lots?.length) return null;
+  const host = o.host || 'Chris';
+  const venue = venueOf(ep, o);
+  const V = VENUES[venue];
+  const people = [...new Set([...A.lots.flatMap(l => l.lines.map(x => x.by)), ...A.open.map(x => x.by)].filter(n => n && n !== host))];
+  const { key, places } = gather(venue, V.public, 'day', people, host);
+  const steps = [{ k: 'scene', spot: V.public, tod: 'day', plate: key, place: 'The Auction', time: '10:00 AM', card: true, focus: [], bg: [], places, host }];
+  steps.push({ k: 'title', kicker: 'Twist', name: 'The Auction', faces: people.slice(0, 8) });
+  steps.push(...talkSteps(A.open, host, people.slice(0, 2)));
+  for (const lot of A.lots) {
+    steps.push({ k: 'title', kicker: `Lot ${lot.order}`, name: lot.title, faces: lot.winner ? [lot.winner] : [] });
+    const s = talkSteps(lot.lines, host);
+    if (s.length && lot.winner) s[s.length - 1] = { ...s[s.length - 1], side: [{ tab: 'log', text: `Lot ${lot.order}: ${lot.winner}, $${lot.finalBid}` }] };
+    steps.push(...s);
+  }
+  steps.push(...talkSteps(A.close, host));
+  return { id: 'auction', kind: 'twist', venue, ep: ep.num, label: 'The Auction', host, steps };
 }

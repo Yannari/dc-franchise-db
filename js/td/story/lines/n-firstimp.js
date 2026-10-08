@@ -24,7 +24,7 @@ export default {
       { by: 'a', say: "Honestly, I keep coming back to {target}." },
       { by: 'b', say: "Yeah, I could see that." },
       { by: 'c', opt: true, say: "Really? We've known {target} for like an hour.", v: { warm: "Aw, come on, {target} seems nice. We don't even know {target} yet.", dry: "Based on what, exactly? The way {target} carried a suitcase?" } },
-      { by: 'a', opt: true, say: "That's kind of the point, though. An hour is all we've got." },
+      { by: 'a', opt: true, say: "That's kind of the point, {c}. An hour is all we've got." },
     ] },
     { id: 'nfi.h2', turns: [
       { beat: "A few of them drift over to the edge of the clearing, away from the rest." },
@@ -32,7 +32,7 @@ export default {
       { by: 'b', say: "Oh thank god, I thought it was just me." },
       { by: 'a', say: "It's not just you." },
       { by: 'c', opt: true, say: "I don't know, guys. I don't want my first move here to be ganging up on somebody." },
-      { by: 'b', opt: true, say: "It's not ganging up, it's a vote. Somebody has to get it." },
+      { by: 'b', opt: true, say: "It's not ganging up, {c}, it's a vote, and somebody has to get it." },
     ] },
   ],
   'fi.huddle.enemy': [
@@ -42,7 +42,7 @@ export default {
       { by: 'a', say: "Nothing happened, that's the thing. It's just a feeling, and it's a bad one." },
       { by: 'b', say: "Okay. I'll write {target} too." },
       { by: 'c', opt: true, say: "So we're voting on vibes now? That's the plan?" },
-      { by: 'a', opt: true, say: "Vibes are all anybody has today." },
+      { by: 'a', opt: true, say: "Vibes are all anybody has today, {c}." },
     ] },
   ],
   'fi.huddle.calculated': [
@@ -52,7 +52,7 @@ export default {
       { by: 'a', say: "You're not. {target} has been asking everybody questions since the dock, and none of them were about us." },
       { by: 'b', say: "That's a player. We should get rid of {target} now, while we still can." },
       { by: 'c', opt: true, say: "Or {target} is just friendly. Some people ask questions because they're curious." },
-      { by: 'a', opt: true, say: "Nobody's that curious on day one." },
+      { by: 'a', opt: true, say: "Nobody's that curious on day one, {c}." },
     ] },
   ],
   'fi.huddle.threat': [
@@ -62,7 +62,7 @@ export default {
       { by: 'a', say: "Exactly. If {target} is on our side, great, but if {target} isn't, we're in trouble." },
       { by: 'b', say: "Then it's {target}." },
       { by: 'c', opt: true, say: "Wait, but don't we want strong people for challenges? We're on the same team right now." },
-      { by: 'a', opt: true, say: "Right now, sure. It won't stay that way forever." },
+      { by: 'a', opt: true, say: "Right now, sure, {c}, but it won't stay that way forever." },
     ] },
   ],
   'fi.huddle.outsider': [
@@ -72,7 +72,7 @@ export default {
       { by: 'a', say: "Same, and that's kind of why I'm thinking {target}. Nobody's going to be upset." },
       { by: 'b', say: "That's harsh, but you're not wrong." },
       { by: 'c', opt: true, say: "Maybe {target} is just shy. We could go and talk to {target}, you know." },
-      { by: 'a', opt: true, say: "We could. Or we could not, and vote." },
+      { by: 'a', opt: true, say: "We could, {c}. Or we could just vote." },
     ] },
   ],
   'fi.huddle.loud': [
@@ -82,7 +82,7 @@ export default {
       { by: 'a', say: "And if {target} is this loud on day one, imagine day twenty." },
       { by: 'b', say: "I don't want to imagine day twenty." },
       { by: 'c', opt: true, say: "I kind of like {target}, though. At least {target} isn't boring." },
-      { by: 'b', opt: true, say: "Boring doesn't keep me up at night." },
+      { by: 'b', opt: true, say: "Boring doesn't keep me up at night, {c}." },
     ] },
   ],
   'fi.huddle.gut': [
@@ -92,7 +92,7 @@ export default {
       { by: 'a', say: "The story keeps changing. Little stuff, but it changes." },
       { by: 'b', say: "Huh. Okay, I'll take your word for it." },
       { by: 'c', opt: true, say: "That's a lot to decide off a couple of conversations." },
-      { by: 'a', opt: true, say: "A couple of conversations is all we've had." },
+      { by: 'a', opt: true, say: "A couple of conversations is all we've had, {c}." },
     ] },
   ],
 

@@ -21,8 +21,10 @@ import nGroup from './n-group.js';
 import nGroup2 from './n-group2.js';
 import nArrival from './n-arrival.js';
 import nGroup3 from './n-group3.js';
+import nGroup4 from './n-group4.js';
+import nGroup5 from './n-group5.js';
 
-const FILES = [firstday, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival, nGroup3];
+const FILES = [firstday, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival, nGroup3, nGroup4, nGroup5];
 
 export const STORY_POOLS = {};
 for (const f of FILES) for (const [k, v] of Object.entries(f)) STORY_POOLS[k] = STORY_POOLS[k] ? [...STORY_POOLS[k], ...v] : [...v];
@@ -32,11 +34,18 @@ for (const f of FILES) for (const [k, v] of Object.entries(f)) STORY_POOLS[k] = 
 // c says so with `cOptional: true`.
 for (const pool of Object.values(STORY_POOLS)) {
   for (const e of pool) {
-    const usesC = (e.turns || []).some(t => t.by === 'c' || /\{c(\.\w+)?\}/.test([t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' ')));
+    const usesC = (e.turns || []).some(t => !t.opt && (t.by === 'c' || /\{c(\.\w+)?\}/.test([t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' '))));
     if (usesC && !e.cOptional && e.when?.third === undefined) e.when = { ...(e.when || {}), third: true };
     // ...and a fourth person the same way
-    const usesD = (e.turns || []).some(t => t.by === 'd' || /\{d(\.\w+)?\}/.test([t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' ')));
+    const usesD = (e.turns || []).some(t => !t.opt && (t.by === 'd' || /\{d(\.\w+)?\}/.test([t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' '))));
     if (usesD && e.when?.fourth === undefined) e.when = { ...(e.when || {}), fourth: true };
+    // ...and a fifth and sixth, unless their lines are optional (`opt: true` on the turn): a group
+    // scene can give them lines when they are there and play without them when they are not
+    for (const [r, f] of [['e', 'fifth'], ['f', 'sixth']]) {
+      const re = new RegExp(`\\{${r}(\\.\\w+)?\\}`);
+      const needs = (e.turns || []).some(t => !t.opt && (t.by === r || re.test([t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' '))));
+      if (needs && e.when?.[f] === undefined) e.when = { ...(e.when || {}), [f]: true };
+    }
     // ...and a second: a scene a person plays alone (a confessional, a solo decision) never
     // pulls in a b who is not there
     const usesB = (e.turns || []).some(t => t.by === 'b' || /\{b(\.\w+)?\}/.test([t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' ')));

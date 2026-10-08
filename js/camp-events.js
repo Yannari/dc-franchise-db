@@ -240,7 +240,12 @@ function _crowdScenes(ep, campKey, present, phase, { tribal = false } = {}) {
   const priv = (locs.find(l => !l.public && (l.privacy ?? 0) >= 0.6) || locs.find(l => !l.public) || locs[0]).id;
   const at = (id, window) => ({ id: has(id) ? id : pub, label: (locs.find(l => l.id === (has(id) ? id : pub)) || {}).label || '', window });
   const pairBond = (who, d) => { const n = Object.values(who); for (let i = 0; i < n.length; i++) for (let j = i + 1; j < n.length; j++) addBond(n[i], n[j], d); };
-  const scene = (kind, who, data, spot, badge, cls, seen) => {
+  // Who else joins (the user, 2026-10-08: group size varies with the moment, up to six talking):
+  // the lead's closest people who are not already in it, up to `max` in all. They go in the scene's
+  // data (data.with); the story layer gives them lines, and each comes a little closer to the lead.
+  const joiners = (lead, inScene, pool, max) => closest(lead, pool.filter(n => !inScene.includes(n) && getBond(lead, n) >= 0)).slice(0, Math.max(0, max - inScene.length));
+  const scene = (kind, who, data, spot, badge, cls, seen, extra = []) => {
+    if (extra.length) { data = { ...data, with: extra }; for (const x of extra) addBond(who.a, x, 0.05); }
     const ev = { type: 'groupScene', players: Object.values(who), badgeText: badge, badgeClass: cls };
     scriptEvent(ev, makeScene(kind, who, data, seen || people, spot), { ep: ep.num, phase, tribal });
     out.push(ev);
@@ -252,7 +257,7 @@ function _crowdScenes(ep, campKey, present, phase, { tribal = false } = {}) {
     // breakfast: the most sociable, with the two people closest to them
     const a = top(people, n => st(n, 'social'))[0];
     const [b, c] = closest(a, people);
-    if (b && c) { scene('crowd.meal', { a, b, c }, {}, at('mess-hall', 'morning'), 'BREAKFAST', 'blue'); pairBond({ a, b, c }, 0.15); }
+    if (b && c) { scene('crowd.meal', { a, b, c }, {}, at('mess-hall', 'morning'), 'BREAKFAST', 'blue', null, joiners(a, [a, b, c], people, 6)); pairBond({ a, b, c }, 0.15); }
     // the morning's work, led by the strongest of the people breakfast did not hold
     const rest = people.filter(n => ![a, b, c].includes(n));
     // A team project (the real shows' most common group scene: the shelter, the fire, fixing up
@@ -265,7 +270,7 @@ function _crowdScenes(ep, campKey, present, phase, { tribal = false } = {}) {
       const push = top(rest.filter(n => n !== lead), n => st(n, 'boldness') + (10 - st(n, 'temperament')) * 0.5 - getBond(n, lead))[0];
       const [h1, h2] = closest(lead, rest.filter(n => n !== push));
       if (push && h1 && h2) {
-        scene('crowd.project', { a: lead, b: push, c: h1, d: h2 }, {}, at(pub, 'camp-work'), 'TEAM PROJECT', 'blue');
+        scene('crowd.project', { a: lead, b: push, c: h1, d: h2 }, {}, at(pub, 'camp-work'), 'TEAM PROJECT', 'blue', null, joiners(lead, [lead, push, h1, h2], rest, 6));
         addBond(lead, push, -0.3); addBond(lead, h1, 0.1); addBond(lead, h2, 0.1); addBond(h1, h2, 0.1);
         projectDone = true;
       }
@@ -273,7 +278,7 @@ function _crowdScenes(ep, campKey, present, phase, { tribal = false } = {}) {
     if (!projectDone && rest.length >= 3) {
       const k = top(rest, n => st(n, 'physical') + st(n, 'endurance'))[0];
       const [k2, k3] = closest(k, rest);
-      if (k2 && k3) { scene('crowd.chores', { a: k, b: k2, c: k3 }, {}, at(pub, 'camp-work'), 'CHORES', 'blue'); pairBond({ a: k, b: k2, c: k3 }, 0.1); }
+      if (k2 && k3) { scene('crowd.chores', { a: k, b: k2, c: k3 }, {}, at(pub, 'camp-work'), 'CHORES', 'blue', null, joiners(k, [k, k2, k3], rest, 5)); pairBond({ a: k, b: k2, c: k3 }, 0.1); }
     }
     // two enemies in front of everyone, someone stepping between them (when there are enemies)
     let worst = null, wb = -3;
@@ -306,11 +311,11 @@ function _crowdScenes(ep, campKey, present, phase, { tribal = false } = {}) {
       const b = top(scored, n => -scores[n])[0];
       const a = top(people.filter(n => n !== b), n => st(n, 'boldness') + (10 - st(n, 'temperament')) - getBond(n, b))[0];
       const c = top(people.filter(n => n !== a && n !== b), n => st(n, 'social') + st(n, 'loyalty') * 0.5)[0];
-      if (a && c) { scene('crowd.lost', { a, b, c }, {}, at(pub, 'return'), 'BLAME GAME', 'red'); addBond(a, b, -0.5); addBond(c, b, 0.25); addBond(c, a, 0.1); }
+      if (a && c) { scene('crowd.lost', { a, b, c }, {}, at(pub, 'return'), 'BLAME GAME', 'red', null, joiners(c, [a, b, c], people, 5)); addBond(a, b, -0.5); addBond(c, b, 0.25); addBond(c, a, 0.1); }
     } else {
       const a = top(scored, n => scores[n])[0];
       const [b, c] = closest(a, people);
-      if (b && c) { scene('crowd.won', { a, b, c }, {}, at(pub, 'return'), 'VICTORY', 'gold'); pairBond({ a, b, c }, 0.2); }
+      if (b && c) { scene('crowd.won', { a, b, c }, {}, at(pub, 'return'), 'VICTORY', 'gold', null, joiners(a, [a, b, c], people, 6)); pairBond({ a, b, c }, 0.2); }
     }
   }
   // A team that is safe tonight unwinds together: the most sociable and the three people closest to
@@ -318,7 +323,7 @@ function _crowdScenes(ep, campKey, present, phase, { tribal = false } = {}) {
   if (!tribal && people.length >= 4) {
     const a = top(people, n => st(n, 'social') + st(n, 'boldness') * 0.3)[0];
     const [b, c, d] = closest(a, people);
-    if (b && c && d) { scene('crowd.banter', { a, b, c, d }, {}, at('campfire', 'scramble'), 'DOWNTIME', 'blue'); pairBond({ a, b, c, d }, 0.1); }
+    if (b && c && d) { scene('crowd.banter', { a, b, c, d }, {}, at('campfire', 'scramble'), 'DOWNTIME', 'blue', null, joiners(a, [a, b, c, d], people, 6)); pairBond({ a, b, c, d }, 0.1); }
   }
   // dinner: three people the regroup did not hold, at the evening meal
   const used = new Set(out.flatMap(e => e.players));
@@ -326,20 +331,22 @@ function _crowdScenes(ep, campKey, present, phase, { tribal = false } = {}) {
   if (free.length >= 3) {
     const a = top(free, n => st(n, 'social'))[0];
     const [b, c] = closest(a, free);
-    if (b && c) { scene('crowd.dinner', { a, b, c }, {}, at('mess-hall', 'scramble'), 'DINNER', 'blue'); pairBond({ a, b, c }, 0.1); }
+    if (b && c) { scene('crowd.dinner', { a, b, c }, {}, at('mess-hall', 'scramble'), 'DINNER', 'blue', null, joiners(a, [a, b, c], free, 6)); pairBond({ a, b, c }, 0.1); }
   }
   // an alliance of three or more closing ranks, out of sight
   const al = (gs.namedAlliances || []).find(x => x.active !== false && (x.members || []).filter(m => people.includes(m)).length >= 3);
   if (al) {
-    const [a, b, c] = (al.members || []).filter(m => people.includes(m)).slice(0, 3);
-    scene('crowd.huddle', { a, b, c }, { group: al.name }, at(priv, 'scramble'), 'ALLIANCE HUDDLE', 'gold', [a, b, c]);
+    const here = (al.members || []).filter(m => people.includes(m));
+    const [a, b, c] = here.slice(0, 3);
+    // the whole alliance comes, up to six of them
+    scene('crowd.huddle', { a, b, c }, { group: al.name }, at(priv, 'scramble'), 'ALLIANCE HUDDLE', 'gold', here.slice(0, 6), here.slice(3, 6));
     pairBond({ a, b, c }, 0.25);
   }
   // the team going to the vote, at the fire: the three with the fewest friends in camp
   if (tribal) {
     const avg = n => people.filter(x => x !== n).reduce((s, x) => s + getBond(n, x), 0) / Math.max(1, people.length - 1);
     const [a, b, c] = top(people, n => -avg(n));
-    if (a && b && c) { scene('crowd.nerves', { a, b, c }, { tribal: true }, at('campfire', 'before-tribal'), 'NERVES', 'blue'); pairBond({ a, b, c }, 0.1); }
+    if (a && b && c) { scene('crowd.nerves', { a, b, c }, { tribal: true }, at('campfire', 'before-tribal'), 'NERVES', 'blue', null, joiners(a, [a, b, c], people, 5)); pairBond({ a, b, c }, 0.1); }
   }
   return out;
 }

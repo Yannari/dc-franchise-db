@@ -41,7 +41,7 @@ const keysFor = (pool, outcome) => [`${pool}.${outcome || 'any'}`, `${pool}.any`
  */
 export function writeStory(pool, outcome, who, data, facts, ctx) {
   // who is in the scene: b present or not ('pair'), checked like third/fourth (lines/index.js)
-  facts = { ...facts, pair: !!who.b, third: facts.third ?? !!who.c, fourth: facts.fourth ?? !!who.d };
+  facts = { ...facts, pair: !!who.b, third: facts.third ?? !!who.c, fourth: facts.fourth ?? !!who.d, fifth: !!who.e, sixth: !!who.f };
   const keys = keysFor(pool, outcome);
   if (!keys.length) return null;
   const rng = stableRng('td-story', salt(), ctx.ep, ctx.camp || '', ctx.phase || '', pool, who.a || '', who.b || '', ctx.n || 0);
@@ -96,9 +96,11 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   // are not furniture (the user: "it's a whole conversation"). The outcome's own pool first, then
   // '.any' for a full-cast scene, and only then a pair scene with the others standing by.
   const listed = keys.map(k => [k, fitsFor(k)]);
-  const fullOf = f => (facts.fourth && f.some(e => e.when?.fourth === true) ? f.filter(e => e.when?.fourth === true)
-    : facts.third && f.some(e => e.when?.third === true) ? f.filter(e => e.when?.third === true) : null);
-  const order = [...listed.filter(([, f]) => fullOf(f)).map(([k, f]) => [k, fullOf(f)]), ...listed];
+  // ...measured by how many of the people in it get lines (a group scene may have optional parts,
+  // `opt: true`, for a fifth or sixth person: they speak when they are there)
+  const voices = e => new Set((e.turns || []).filter(t => t.by && who[t.by]).map(t => t.by)).size;
+  const best = Math.max(0, ...listed.flatMap(([, f]) => f.map(voices)));
+  const order = [...listed.map(([k, f]) => [k, f.filter(e => voices(e) === best)]).filter(([, f]) => f.length && best >= 3), ...listed];
   for (const [k, fits] of order) {
     if (!fits.length) continue;
     // pickEntry checks `when` again against the facts, and the facts hold no voices: the voice gates
@@ -124,7 +126,9 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   if (spot && avoid && spot.id !== 'confessional') avoid.add(spot.id);
   data = { ...data, here: spot?.here || 'around camp', place: spot?.said || 'camp' };
   // a turn for a part nobody plays (no {c} in this scene) is dropped, never left blank
-  const lines = entry.turns.filter(t => !t.by || who[t.by]).map(t => {
+  // an optional turn (opt: true) plays only when everyone it names is in the scene
+  const named = t => [...[t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' ').matchAll(/\{([a-f])(?:\.\w+)?\}/g)].map(m => m[1]);
+  const lines = entry.turns.filter(t => (!t.by || who[t.by]) && !(t.opt && named(t).some(r => !who[r]))).map(t => {
     const kind = t.conf ? 'conf' : t.beat ? 'beat' : 'say';
     // the speaker's own variant of the line, when it has one for how they talk (voice.js)
     const text = fill(t.beat || voiced(t, t.by ? who[t.by] : null), who, data);

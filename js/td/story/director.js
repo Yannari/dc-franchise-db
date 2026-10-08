@@ -396,10 +396,12 @@ const closeTo = (name, pool) => [...pool].filter(x => x !== name && getBond(name
 // the moments that can grow past two people, and how ('shared': friends of both, when a works in
 // groups; 'side': b's closest friend steps into a public fight)
 const PULL = [
-  [/^talk\.(plan|game|checkin|scramble)/, 'shared'],
-  [/^friend\.(bond|goof|joke|sunrise|struggle)/, 'shared'],
-  [/^alliance\.crack/, 'shared'],
-  [/^drama\.(fight|bomb|dig|clash|explode)/, 'side'],
+  // [kind, who joins, how many at most, only when a works in groups]
+  [/^talk\.(plan|game|checkin|scramble)/, 'shared', 2, true],
+  [/^friend\.(bond|goof|joke|sunrise|struggle|laugh|rally|lift)/, 'shared', 3, false],
+  [/^alliance\.crack/, 'shared', 1, true],
+  [/^drama\.(fight|bomb|dig|clash|explode)/, 'side', 2, false],
+  [/^recruit\.join/, 'members', 3, false],
 ];
 function votePlan(ep, camp, members) {
   const gone = ep.eliminated;
@@ -501,8 +503,9 @@ function voteTalk(ep, camp, t, next) {
     const b = shape === 'group' ? close[0] : shape === 'duo' ? closest(leader, pool) : null;
     const c = shape === 'group' ? close[1] || null : null;
     const d = shape === 'group' ? close[2] || null : null;
+    const e = shape === 'group' ? close[3] || null : null;
     {
-      const who = { a: leader, b, c, d };
+      const who = { a: leader, b, c, d, e };
       const g = b ? groupOf(leader, b) : null;
       const data = { target: boot, votes: numberWord(voters.length), ...(other ? { other } : {}), ...(g ? { group: g } : {}), ...(ch?.sank === boot ? { sank: boot } : {}) };
       const facts = base(who, { cast: shape, other: !!other, group: !!g, sank: ch?.sank === boot, sankT: ch?.sank === boot, unanimous: voters.length === ballots.filter(v => v.voter !== boot).length,
@@ -628,6 +631,14 @@ export function airTdEpisode(ep) {
         if (!pool || !hasStoryPool(pool)) return null;
         const ending = ev.scene?.data?.ending || 'any';
         const who = { ...(ev.scene?.who || (step ? { a: step.roles.a, b: step.roles.b, c: step.roles.c } : { a: ev.players?.[0], b: ev.players?.[1], c: ev.players?.[2] })) };
+        // the people a group moment invited (camp-events.js _crowdScenes data.with) take the next
+        // parts, up to six in all
+        for (const x of [].concat(ev.scene?.data?.with || [])) {
+          if (Object.values(who).includes(x)) continue;
+          const slot = ['c', 'd', 'e', 'f'].find(r => !who[r]);
+          if (!slot) break;
+          who[slot] = x;
+        }
         // Who else is in it (the user: "group, duo and solo versions... it depends on the person's
         // strategy, personality and relationships"). A strategy talk or a friendship moment started
         // by someone who works in groups (shapeFor) pulls in the friends a and b share; a fight in
@@ -637,14 +648,17 @@ export function airTdEpisode(ep) {
         if (who.a && who.b && !who.c && !['use', 'charm', 'tense'].includes(ev.scene?.data?.ending)) {
           const rule = PULL.find(([re]) => re.test(kind));
           if (rule) {
-            const [, how] = rule;
+            const [, how, most, needsGroup] = rule;
             const rest = members.filter(m => m !== who.a && m !== who.b);
             const both = m => getBond(who.a, m) + getBond(who.b, m);
+            // 'members': the rest of the alliance b is joining, there to welcome b
+            const al = how === 'members' ? (gs.namedAlliances || []).find(x => x.name === ev.scene?.data?.group) : null;
             const mates = how === 'side'
               ? rest.filter(m => getBond(who.b, m) >= 3).sort((x, y) => getBond(who.b, y) - getBond(who.b, x) || x.localeCompare(y))
+              : how === 'members' ? rest.filter(m => al?.members?.includes(m)).sort((x, y) => getBond(who.a, y) - getBond(who.a, x) || x.localeCompare(y))
               : rest.filter(m => getBond(who.a, m) >= 1 && getBond(who.b, m) >= 1).sort((x, y) => both(y) - both(x) || x.localeCompare(y));
-            const joins = how === 'side' ? mates.length > 0 : mates.length > 0 && shapeFor(who.a, closeTo(who.a, rest)) === 'group';
-            if (joins) { who.c = mates[0]; if (how === 'shared' && mates[1]) who.d = mates[1]; }
+            const joins = mates.length > 0 && (!needsGroup || shapeFor(who.a, closeTo(who.a, rest)) === 'group');
+            if (joins) mates.slice(0, most).forEach((m, k) => { who[['c', 'd', 'e'][k]] = m; });
           }
         }
         const prev = line && step ? prevAired(line, step) : null;
@@ -678,10 +692,26 @@ export function airTdEpisode(ep) {
       }
       // quick cuts: short moments between the long scenes, new faces first. A moment the opener
       // already covered (the team's own "who lost it", the morning's mourning) does not air twice.
+      // Back from the challenge, the whole team reacts together when the engine staged it (crowd.won
+      // / crowd.lost: the top scorer cheered, the lowest scorer blamed and defended): that group
+      // scene opens the afternoon in place of the two-person "who lost it", with the same facts
+      let openerNow = opener;
+      if (phase === 'post' && opener && /^story\.chal/.test(opener.kind || '')) {
+        const gi = events.findIndex(ev => ev && ev.aired == null && ev.type === 'groupScene' && /^crowd\.(won|lost)$/.test(ev.scene?.kind || ''));
+        const g = gi >= 0 ? longScene(events[gi], gi) : null;
+        if (g) {
+          events[gi].aired = true;
+          const k = list.findIndex(x => x.item === opener);
+          const item = { ...g, why: opener.why || g.why };
+          if (k >= 0) list[k] = { at: -1, item }; else list.push({ at: -1, item });
+          openerNow = item;
+        }
+      }
       const dup = ev => {
         const k = ev.scene?.kind || '';
-        if (opener?.kind === 'story.chal.lost' && (/^crowd\.lost/.test(k) || ev.type === 'blame')) return true;
-        if (opener?.kind === 'story.chal.won' && /^crowd\.won/.test(k)) return true;
+        const ok = openerNow?.kind || '';
+        if (/^(story\.chal\.lost|long\.crowd\.lost)/.test(ok) && (/^crowd\.lost/.test(k) || ev.type === 'blame')) return true;
+        if (/^(story\.chal\.won|long\.crowd\.won)/.test(ok) && /^crowd\.won/.test(k)) return true;
         if (opener?.kind === 'story.morning' && /^fallout\.mourn/.test(k)) return true;
         return false;
       };
@@ -693,9 +723,9 @@ export function airTdEpisode(ep) {
       {
         const seenNow = new Set(list.flatMap(x => x.item.players || speaksIn(events[x.item.ref])));
         const groupEvs = events.map((ev, i) => ({ ev, i })).filter(({ ev }) => ev && !ev.aired && ev.type === 'groupScene' && !dup(ev) && rawFits(ev, ep, phase)
-          && (ev.players || []).filter(p => !seenNow.has(p)).length >= 2)
+          && (ev.players || []).filter(p => !seenNow.has(p)).length >= 1)
           .sort((x, y) => (y.ev.players || []).filter(p => !seenNow.has(p)).length - (x.ev.players || []).filter(p => !seenNow.has(p)).length || x.i - y.i);
-        for (const { ev, i } of groupEvs.slice(0, 1)) {
+        for (const { ev, i } of groupEvs.slice(0, members.length >= 7 ? 2 : 1)) {
           const item = longScene(ev, i);
           ev.aired = true;
           groupN++;
@@ -769,7 +799,7 @@ export function airTdEpisode(ep) {
     // the refs that were added late go back into the camp's own order
     for (const phase of ['pre', 'post']) {
       const VOTE_AT = { other: 2e6, plan: 2.1e6, swing: 2.2e6, target: 2.3e6 };
-      const at = it => (/^story\.(firstday|morning|chal)/.test(it.kind || '') ? -1 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5) : it.storyType === 'vote' ? VOTE_AT[it.step] : it.ref != null ? it.ref : 1e6);
+      const at = it => (/^(story\.(firstday|morning|chal)|long\.crowd\.(won|lost))/.test(it.kind || '') ? -1 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5) : it.storyType === 'vote' ? VOTE_AT[it.step] : it.ref != null ? it.ref : 1e6);
       out[phase].sort((x, y) => at(x) - at(y));
     }
     story[camp] = out;

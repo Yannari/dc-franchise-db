@@ -64,7 +64,8 @@ Object.assign(PLACE, { 'cabin-inside': 'Inside the Cabin', washroom: 'The Washro
 // Wawanakwa's other places (the wiki's locations) and the islands beyond camp
 Object.assign(PLACE, { lake: 'The Lake', boathouse: 'The Boathouse', waterfall: 'The Waterfall', caves: 'The Caves', amphitheater: 'The Amphitheater',
   'boney-island': 'Boney Island', 'playa-des-losers': 'Playa Des Losers',
-  'trailer-inside': 'Inside the Trailer', 'western-set': 'The Western Set', 'city-set': 'The City Set' });
+  'trailer-inside': 'Inside the Trailer', 'western-set': 'The Western Set', 'city-set': 'The City Set',
+  'chris-quarters': "Chris's Quarters", cockpit: 'The Cockpit' });
 
 // ── STAGING — where a scene plays, beyond where the engine says the people were ──────────
 // The engine knows six places at Wawanakwa, chosen for privacy (who can overhear). Television
@@ -155,7 +156,7 @@ const BUSY = {
   campsite: ['whittle', 'read', 'nap'], 'forest-edge': ['stretch'], 'rocky-beach': ['fish', 'read'], 'lake-shore': ['fish', 'read'],
   'carnival-entrance': ['read'], midway: ['eat', 'stretch'],
   'cabin-inside': ['nap', 'read', 'nap'], beach: ['nap', 'stretch', 'fish'], washroom: ['sweep'], cliff: ['stretch'],
-  'trailer-inside': ['nap', 'read'], 'western-set': ['stretch', 'read'], 'city-set': ['stretch', 'read'],
+  'chris-quarters': ['read'], cockpit: ['read'], 'trailer-inside': ['nap', 'read'], 'western-set': ['stretch', 'read'], 'city-set': ['stretch', 'read'],
   lake: ['fish', 'stretch', 'read'], boathouse: ['whittle', 'read'], waterfall: ['stretch', 'read'], caves: ['read'], amphitheater: ['stretch', 'read'],
 };
 

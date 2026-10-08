@@ -55,7 +55,7 @@ export function worldHtml(screen, L) {
   const M = TD_MARKS[key] || { h: .5, m: [] };
   const spot = key.split('/')[1].replace(/-(day|night)$/, '');
   const nightFrame = /-night$/.test(key);
-  const indoor = ['mess-hall', 'cabin-inside', 'washroom', 'confessional', 'soundstage-corridor', 'prop-storage', 'economy', 'aisle', 'galley', 'cargo-hold', 'first-class', 'shelter', 'theater-tent', 'big-top', 'ceremony', 'trailer-inside', 'boathouse', 'aftermath-studio', 'craft-services'].includes(spot)
+  const indoor = ['mess-hall', 'cabin-inside', 'washroom', 'confessional', 'soundstage-corridor', 'prop-storage', 'economy', 'aisle', 'galley', 'cargo-hold', 'first-class', 'shelter', 'theater-tent', 'big-top', 'ceremony', 'trailer-inside', 'boathouse', 'aftermath-studio', 'craft-services', 'chris-quarters', 'cockpit'].includes(spot)
     && !(spot === 'ceremony' && ['hosted-camp', 'survival-island', 'carnival', 'film-lot'].includes(screen.venue)) && !(spot === 'shelter' && screen.venue === 'survival-island');
   const r = seeded(key);
   const p = (x, n = 2) => `${(x * 100).toFixed(n)}%`;
@@ -136,7 +136,7 @@ export function worldHtml(screen, L) {
     if (['cabins', 'campfire', 'forest-trail', 'communal-grounds', 'forest-edge', 'campsite', 'corn-maze'].includes(spot))
       for (let i = 0; i < 6; i++) h += `<i class="tdx-leaf" style="left:${p(.1 + r() * .8)};top:${p(.05 + r() * .2)};--d:${(8 + r() * 6).toFixed(1)}s;--dl:${(r() * 10).toFixed(1)}s;--ex:${(-80 + r() * 60).toFixed(0)}px;--c:${['#c8902e', '#d8a83a', '#b8742a'][i % 3]}"></i>`;
   }
-  if (!indoor && night) for (let i = 0; i < 12; i++) h += `<i class="tdx-fly" style="left:${p(.05 + r() * .9)};top:${p(M.h + .05 + r() * .4)};--d:${(5 + r() * 6).toFixed(1)}s;--dl:-${(r() * 6).toFixed(1)}s"></i>`;
+  if (!indoor && night && !(spot === 'exit' && screen.venue === 'world-tour')) for (let i = 0; i < 12; i++) h += `<i class="tdx-fly" style="left:${p(.05 + r() * .9)};top:${p(M.h + .05 + r() * .4)};--d:${(5 + r() * 6).toFixed(1)}s;--dl:-${(r() * 6).toFixed(1)}s"></i>`;
   if (indoor && spot !== 'confessional') for (let i = 0; i < 14; i++) h += `<i class="tdx-mote" style="left:${p(.1 + r() * .8)};top:${p(.15 + r() * .6)};--d:${(10 + r() * 8).toFixed(1)}s"></i>`;
   if (spot === 'confessional') for (let i = 0; i < 6; i++) h += `<i class="tdx-gnat" style="left:${30 + i * 8}%;top:${20 + (i % 3) * 12}%;--dl:-${(i * .45).toFixed(2)}s;--gd:${(2 + (i % 3) * .7).toFixed(1)}s"></i>`;
   if (/^islands\/rescue-/.test(key)) {
@@ -189,7 +189,7 @@ export function worldSound(screen, L) {
   const key = L.conf ? (plateKey(screen.venue, 'confessional', /-night$/.test(L.scene?.plate || '') ? 'night' : 'day') || L.scene?.plate) : L.scene?.plate;
   const M = (key && TD_MARKS[key]) || { m: [] };
   const spot = String(key || '').split('/')[1]?.replace(/-(day|night)$/, '') || '';
-  const indoor = /mess-hall|cabin-inside|washroom|confessional|corridor|storage|economy|aisle|galley|cargo|first-class|theater|big-top|trailer-inside|boathouse|aftermath|craft-services/.test(spot) || (spot === 'ceremony' && screen.venue === 'world-tour') || (spot === 'shelter' && screen.venue === 'carnival');
+  const indoor = /mess-hall|cabin-inside|washroom|confessional|corridor|storage|economy|aisle|galley|cargo|first-class|theater|big-top|trailer-inside|boathouse|aftermath|craft-services|chris-quarters|cockpit/.test(spot) || (spot === 'ceremony' && screen.venue === 'world-tour') || (spot === 'shelter' && screen.venue === 'carnival');
   const night = /-night$/.test(key || ''), island = /^islands\//.test(key || '');
   // the venue's own soundscape, and the day's weather in it (the same day, the same weather)
   const scape = island || spot === 'confessional' ? null

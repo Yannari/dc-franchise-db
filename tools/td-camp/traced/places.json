@@ -1628,5 +1628,256 @@
     0.25
    ]
   ]
+ },
+ "jet-economy": {
+  "src": "jet-economy.png",
+  "wind": 0.25,
+  "nosky": true,
+  "noleaf": true,
+  "sway": [
+   [
+    480,
+    90,
+    1060,
+    330,
+    0.5,
+    920,
+    300
+   ]
+  ]
+ },
+ "jet-dining": {
+  "src": "jet-dining.png",
+  "wind": 0.0,
+  "nosky": true,
+  "noleaf": true,
+  "cut": [
+   [
+    [
+     0,
+     680
+    ],
+    [
+     110,
+     680
+    ],
+    [
+     110,
+     840
+    ],
+    [
+     0,
+     840
+    ]
+   ]
+  ],
+  "fill": "rows",
+  "glow": [
+   [
+    180,
+    20,
+    520,
+    90
+   ]
+  ]
+ },
+ "jet-cargo": {
+  "src": "jet-cargo.png",
+  "wind": 0.0,
+  "nosky": true,
+  "noleaf": true,
+  "pool": [
+   [
+    930,
+    860,
+    1240,
+    900,
+    false,
+    1080,
+    885
+   ]
+  ]
+ },
+ "jet-first": {
+  "src": "jet-first.png",
+  "wind": 0.15,
+  "nosky": true,
+  "noleaf": true
+ },
+ "jet-barf": {
+  "src": "jet-barf.png",
+  "wind": 0.4,
+  "nosky": true,
+  "noleaf": true,
+  "sway": [
+   [
+    1010,
+    170,
+    1600,
+    560,
+    0.5,
+    1300,
+    350
+   ]
+  ],
+  "glow": [
+   [
+    760,
+    500,
+    1200,
+    740
+   ]
+  ]
+ },
+ "jet-chris": {
+  "src": "jet-chris.png",
+  "wind": 0.0,
+  "nosky": true,
+  "noleaf": true,
+  "fire": [
+   [
+    1330,
+    690,
+    60
+   ]
+  ],
+  "pool": [
+   [
+    290,
+    580,
+    1030,
+    640,
+    false,
+    600,
+    610
+   ]
+  ],
+  "glow": [
+   [
+    30,
+    180,
+    860,
+    280
+   ]
+  ]
+ },
+ "jet-cockpit": {
+  "src": "jet-cockpit.png",
+  "wind": 0.0,
+  "nosky": true,
+  "noleaf": true,
+  "glow": [
+   [
+    0,
+    0,
+    1600,
+    330
+   ]
+  ]
+ },
+ "jet-conf": {
+  "src": "jet-conf.png",
+  "wind": 0.0,
+  "nosky": true,
+  "noleaf": true
+ },
+ "jet-drop": {
+  "src": "jet-drop.png",
+  "wind": 0.6,
+  "noleaf": true,
+  "noclouds": true,
+  "cut": [
+   [
+    [
+     100,
+     0
+    ],
+    [
+     210,
+     0
+    ],
+    [
+     210,
+     90
+    ],
+    [
+     100,
+     90
+    ]
+   ],
+   [
+    [
+     420,
+     0
+    ],
+    [
+     1110,
+     0
+    ],
+    [
+     1110,
+     335
+    ],
+    [
+     420,
+     335
+    ]
+   ],
+   [
+    [
+     985,
+     395
+    ],
+    [
+     1400,
+     395
+    ],
+    [
+     1400,
+     680
+    ],
+    [
+     985,
+     680
+    ]
+   ],
+   [
+    [
+     0,
+     650
+    ],
+    [
+     370,
+     650
+    ],
+    [
+     370,
+     900
+    ],
+    [
+     0,
+     900
+    ]
+   ],
+   [
+    [
+     1370,
+     0
+    ],
+    [
+     1540,
+     0
+    ],
+    [
+     1540,
+     150
+    ],
+    [
+     1370,
+     150
+    ]
+   ]
+  ],
+  "fill": "rows"
  }
 }

@@ -69,6 +69,9 @@ export const ACCESS_PROFILES = Object.freeze({
     { id:'galley', label:'Plane galley', access:'everyday', privacy:0.40, overhear:0.50, capacity:4 },
     { id:'cargo-hold', label:'Cargo hold', access:'restricted', privacy:0.80, overhear:0.20, capacity:5 },
     { id:'first-class', label:'First class', access:'reward-only', privacy:0.45, overhear:0.40, capacity:8 },
+    // the rest of the jet (Total Drama World Tour): the host's quarters and the cockpit, off limits
+    { id:'chris-quarters', label:"Chris's quarters", access:'restricted', privacy:0.85, overhear:0.10, capacity:3 },
+    { id:'cockpit', label:'Cockpit', access:'restricted', privacy:0.80, overhear:0.15, capacity:3 },
     { id:'destination-staging', label:'Challenge destination', access:'episode-opened', privacy:0.20, overhear:0.65, capacity:20, opensWith:['worldTourDestination'] },
   ]),
 });

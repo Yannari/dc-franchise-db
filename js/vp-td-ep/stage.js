@@ -403,7 +403,7 @@ export function dialogue(screen, L) {
   if (s.k === 'read') return { name: host, cls: 'host', text: s.line || (s.dead ? `${s.vote}. Does not count.` : s.revote ? `${s.vote}.` : s.deciding ? `${s.vote}. That's enough.` : `${s.vote}.`), hostCut: host };
   if (s.k === 'out') return { name: '', cls: 'dir', text: `${s.who} is ${s.island ? 'voted out' : 'eliminated'}.` };
   if (s.k === 'found') return s.text ? { name: '', cls: 'dir', text: s.text, badge: s.item ? { text: s.label.toUpperCase(), cls: 'gold' } : null } : { name: '', cls: 'dir hidden', text: '' };
-  if (s.k === 'power') return { name: '', cls: 'dir', text: `${s.by} stands up and plays ${s.name}${s.on ? ` on ${s.on}` : ''}.` };
+  if (s.k === 'power') return { name: '', cls: 'dir', text: `${s.by} stands up and plays ${s.the || s.name}${s.on ? ` on ${s.on}` : ''}.` };
   if (s.k === 'idol') return { name: '', cls: 'dir', text: `${s.by} stands up and plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${s.for}` : ''}.` };
   if (s.k === 'ballots' || s.k === 'title' || s.k === 'ballot' || s.k === 'intro') return { name: '', cls: 'dir hidden', text: '' };
   return { name: '', cls: 'dir hidden', text: '' };

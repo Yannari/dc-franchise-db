@@ -93,7 +93,7 @@ function scriptHtml(scr) {
     else if (s.k === 'ballot') t = `<div class="tdx-ln sc" data-s="${i}">${esc(s.voter)} votes: ${esc(s.voted)}</div>`;
     else if (s.k === 'intro') t = `<div class="tdx-ln sc" data-s="${i}">Contestant ${s.n}: ${esc(s.who)}${s.tag ? ' · ' + esc(s.tag) : ''}</div>`;
     else if (s.k === 'ballots') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.text)})</div>`;
-    else if (s.k === 'power') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.by)} plays ${esc(s.name)}${s.on ? ` on ${esc(s.on)}` : ''}.)</div>`;
+    else if (s.k === 'power') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.by)} plays ${esc(s.the || s.name)}${s.on ? ` on ${esc(s.on)}` : ''}.)</div>`;
     else if (s.k === 'idol') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.by)} plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${esc(s.for)}` : ''}.)</div>`;
     else if (s.k === 'safe') t = `<div class="tdx-ln" data-s="${i}"><b>${esc(scr.host || 'Chris')}:</b> ${esc(s.who)}${s.immune ? ', you won immunity' : ''}.</div>`;
     else if (s.k === 'read') t = `<div class="tdx-ln" data-s="${i}"><b>${esc(scr.host || 'Chris')}:</b> ${esc(s.line || `${s.vote}.${s.dead ? ' Does not count.' : ''}`)}</div>`;

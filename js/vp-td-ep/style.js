@@ -346,9 +346,9 @@ export const TDX_CSS = `
 .tdx .tdx-idol{position:absolute;inset:0;z-index:15;display:grid;place-items:center;background:rgba(10,8,4,.55);overflow:hidden}
 .tdx .tdx-idol .rays{position:absolute;left:50%;top:45%;width:160%;aspect-ratio:1;transform:translate(-50%,-50%);background:repeating-conic-gradient(rgba(255,200,90,.28) 0 8deg,transparent 8deg 18deg);animation:tdxSpin 18s linear infinite;border-radius:50%}
 @keyframes tdxSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
-.tdx .tdx-idol .totem{position:absolute;left:50%;top:38%;width:9cqw;transform:translate(-50%,-50%);filter:drop-shadow(0 0 20px rgba(255,200,90,.9))}
-.tdx .tdx-idol .lbl{position:absolute;left:50%;top:64%;transform:translateX(-50%);font:400 3cqw/1 'Lilita One';color:var(--am);-webkit-text-stroke:1.5px #1a0e02;paint-order:stroke fill;text-transform:uppercase;white-space:nowrap}
-.tdx .tdx-idol .for{position:absolute;left:50%;top:73%;transform:translateX(-50%);display:flex;gap:1cqw;align-items:center;color:#fff;font:400 3cqw 'Lilita One'}
+.tdx .tdx-idol .totem{position:absolute;left:50%;top:24%;width:9cqw;transform:translate(-50%,-50%);filter:drop-shadow(0 0 20px rgba(255,200,90,.9))}
+.tdx .tdx-idol .lbl{position:absolute;left:50%;top:41%;transform:translateX(-50%);font:400 3cqw/1 'Lilita One';color:var(--am);-webkit-text-stroke:1.5px #1a0e02;paint-order:stroke fill;text-transform:uppercase;white-space:nowrap}
+.tdx .tdx-idol .for{position:absolute;left:50%;top:50%;transform:translateX(-50%);display:flex;gap:1cqw;align-items:center;color:#fff;font:400 3cqw 'Lilita One'}
 .tdx .tdx-idol .for img{width:7cqw;aspect-ratio:1;object-fit:cover;border-radius:10px;border:3px solid var(--am)}
 .tdx .tdx-idol.fresh .totem{animation:tdxRaise .8s cubic-bezier(.3,1.5,.5,1)}
 @keyframes tdxRaise{from{transform:translate(-50%,40%) scale(.4);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
@@ -419,10 +419,9 @@ export const TDX_CSS = `
 .tdx .tdx-ic .prow{display:flex;align-items:center;gap:6px;margin-top:5px;font:700 12px Nunito}
 .tdx .tdx-ic .prow img{width:22px;height:22px;border-radius:50%;object-fit:cover;object-position:50% 15%}
 .tdx .tdx-ic.dim{opacity:.6}
-.tdx .tdx-tok.glow-idol .body{animation:tdxGlowIdol 1.6s ease-in-out infinite alternate}
-.tdx .tdx-tok.glow-power .body{animation:tdxGlowPow 1.6s ease-in-out infinite alternate}
-@keyframes tdxGlowIdol{from{filter:drop-shadow(0 0 .3cqw rgba(255,200,80,.55))}to{filter:drop-shadow(0 0 1.3cqw rgba(255,190,60,.95)) drop-shadow(0 0 .4cqw #fff3c4)}}
-@keyframes tdxGlowPow{from{filter:drop-shadow(0 0 .3cqw rgba(110,190,255,.5))}to{filter:drop-shadow(0 0 1.1cqw rgba(110,190,255,.95))}}
+.tdx .tdx-tok.glow-idol::before,.tdx .tdx-tok.glow-power::before{content:'';position:absolute;left:-7%;right:-7%;top:-4%;bottom:10%;border-radius:18%;pointer-events:none;z-index:-1;animation:tdxGlowRing 1.4s ease-in-out infinite alternate}
+.tdx .tdx-tok.glow-idol::before{--gc:255,196,64}.tdx .tdx-tok.glow-power::before{--gc:110,190,255}
+@keyframes tdxGlowRing{from{box-shadow:0 0 .6cqw .15cqw rgba(var(--gc),.55),inset 0 0 .4cqw rgba(var(--gc),.4)}to{box-shadow:0 0 2.2cqw .6cqw rgba(var(--gc),.95),inset 0 0 .8cqw rgba(var(--gc),.7)}}
 .tdx .tdx-idol.power .rays{background:repeating-conic-gradient(rgba(110,190,255,.26) 0 8deg,transparent 8deg 18deg)}
 .tdx .tdx-idol.power .totem{filter:drop-shadow(0 0 20px rgba(110,190,255,.9))}
 .tdx .tdx-ic.why .vrow{display:flex;align-items:center;gap:5px;flex-wrap:wrap}

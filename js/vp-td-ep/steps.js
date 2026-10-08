@@ -351,6 +351,8 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
       }
       const last = steps[steps.length - 1];
       (last.side ||= []).push({ tab: 'log', text: `${badge ? badge.text + ': ' : ''}${(ev.players || []).join(', ')}` });
+      // what the dialogue doesn't say: why this is happening now, and what only the viewer knows (td/story)
+      for (const t of ev.why || []) last.side.push({ tab: 'mind', text: cleanText(t) });
     } else {
       // An event the script layer has not reached yet: a cutaway, in the engine's own sentence.
       const text = cleanText(ev.text);

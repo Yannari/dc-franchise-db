@@ -144,7 +144,7 @@ export function tdCampMap(ep, phase, camps, o = {}) {
       // the conversation, played on its own: the same steps the linear camp screen gives it
       const screen = tdCampScreen({ ...ep, campStory: null, campEvents: { [camp]: phase === 'pre' ? { pre: [ev], post: [] } : { pre: [], post: [ev] } } }, camp, phase, [], o);
       if (!screen) return;
-      convs.push({ i: convs.length, window: win, zone, place, key: isKey(ev), title: titleOf(ev), camp,
+      convs.push({ i: convs.length, window: win, zone, place, key: isKey(ev), title: titleOf(ev), camp, storyline: ev.storyline || null,
         who: [...new Set([...(ev.lines || []).map(l => l.by).filter(Boolean), ...(ev.players || [])])].filter(n => typeof n === 'string').slice(0, 4),
         screen: { ...screen, id: `${screen.id}-c${convs.length}`, label: `${zones[zone]?.label || placeName(place)} · ${WINDOW_LABEL[win]}` } });
     });
@@ -154,6 +154,9 @@ export function tdCampMap(ep, phase, camps, o = {}) {
   const rank = w => order.indexOf(w);
   convs.sort((a, b) => rank(a.window) - rank(b.window) || a.i - b.i);
   convs.forEach((c, i) => { c.i = i; });
+  // cause before effect: a storyline's scene waits for the one before it in the same storyline
+  const lastOf = {};
+  convs.forEach(c => { if (!c.storyline) return; if (lastOf[c.storyline] != null) c.after = lastOf[c.storyline]; lastOf[c.storyline] = c.i; });
   // who is idle where in each window: the engine's schedule, drawn in the zone of that place
   const windows = order.map(id => {
     const idle = {};
@@ -177,5 +180,8 @@ export function openWindow(map, seen) {
   }
   return map.windows.length - 1;
 }
+/** Whether a conversation waits for an earlier scene of its storyline the viewer has not watched. */
+export const lockedConv = (map, seen, c) => c?.after != null && !seen.has(c.after);
+
 /** The next conversation in story order the viewer has not watched yet (the Next button). */
 export function nextConv(map, seen) { return map.convs.find(c => !seen.has(c.i)) || null; }

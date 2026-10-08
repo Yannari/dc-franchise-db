@@ -17,7 +17,7 @@ import { fill, transcript, salt } from '../script/write.js';
 import { STORY_POOLS } from './lines/index.js';
 import { hasPlace, placeOf, placeById, kindOf } from './places.js';
 
-const OUTDOOR = /\b(fire( pit)?|firewood|campfire|fishing|fish|lake|water's edge|the water|sand|beach|dock|log|shore|tent|shelter|woods|forest|stones?|pebbles?)\b/i;
+const OUTDOOR = /\b(fire( pit)?|firewood|campfire|fishing|fish|lake|water's edge|the water|sand|beach|dock|log|shore|tent|shelter|woods?|forest|stones?|pebbles?|bush(es)?|sun)\b/i;
 const ledger = () => ((gs.tdStory ||= {}).ledger ||= newLedger());
 
 export const hasStoryPool = pool => !!(STORY_POOLS[`${pool}.any`]?.length || Object.keys(STORY_POOLS).some(k => k.startsWith(pool + '.')));
@@ -52,6 +52,9 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // by one of these people, the moment airs in its own short words instead (director.js)
     const saidBy = ledger().by || {};
     for (let i = fits.length - 1; i >= 0; i--) if (speakers.some(sp => (saidBy[fits[i].id] || []).includes(sp))) fits.splice(i, 1);
+    // ...and a whole scene airs once a season, whoever is in it (the user: "no repetitiveness across
+    // the season"); the booth, where every voter needs a line every vote, only keeps the rule above
+    if (ctx.unique !== false) for (let i = fits.length - 1; i >= 0; i--) if ((ledger().uses || {})[fits[i].id]) fits.splice(i, 1);
     if (!fits.length) continue;
     entry = pickEntry(ledger(), { [k]: fits }, k, facts, pairKey, rng, speakers, ctx.ep * 10 + (ctx.phase === 'post' ? 2 : 0));
     if (entry) break;

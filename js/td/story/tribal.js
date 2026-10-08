@@ -50,7 +50,7 @@ export function writeTribal(ep) {
   const camp = ep.tribalTribe || null;
   const ch = camp && !merged ? challengeOf(ep, camp) : null;
   const base = { venue, count, merged, late: merged && tribal.length <= 6 };
-  const ctx = (n, phase = 'tribal') => ({ ep: ep.num, camp: camp || 'merge', phase, n, place: 'confessional' });
+  const ctx = (n, phase = 'tribal', unique = true) => ({ ep: ep.num, camp: camp || 'merge', phase, n, place: 'confessional', unique });
   const data = { lastBoot: elim, item: ITEM[venue] || 'vote' };
   let n = 1000;
 
@@ -65,8 +65,8 @@ export function writeTribal(ep) {
     const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(v.voter),
       band: bandOf(v.voter, v.voted), group: !!plan?.label, sankT: !!ch && ch.sank === v.voted };
     const d = { target: v.voted, group: plan?.label || null };
-    let w = writeStory('booth', why, who, d, facts, ctx(n++));
-    if (!w && why !== 'plan') w = writeStory('booth', 'plan', who, d, facts, ctx(n++));
+    let w = writeStory('booth', why, who, d, facts, ctx(n++, 'tribal', false));
+    if (!w && why !== 'plan') w = writeStory('booth', 'plan', who, d, facts, ctx(n++, 'tribal', false));
     booth.push({ voter: v.voter, voted: v.voted, why, line: w ? w.lines.map(l => l.text).join(' ') : `${v.voted}.` });
   }
 

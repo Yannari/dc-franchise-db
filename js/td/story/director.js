@@ -124,6 +124,37 @@ function allianceFacts(ev, who, data) {
   return { members: size >= 4 ? 'many' : size || null, aOther: !!who.a && others(who.a), bOther: !!who.b && others(who.b) };
 }
 
+
+// ── what the viewer may know that the dialogue does not say (the side panel, 'In their heads') ──
+const BANDWORD = { friends: 'close', neutral: 'on neutral terms', cold: 'cool with each other', enemies: 'at each other\'s throats' };
+const STEP_WHY = {
+  'alliance.formed': '{a} and {b} start an alliance{al}.', 'alliance.recruit': '{a} brings {b} into {alx}.', 'alliance.refused': '{b} turns down {a}\'s alliance.',
+  'alliance.checkin': '{alx} checks its numbers.', 'alliance.crack': '{a} is starting to doubt {b}.', 'alliance.end': '{alx} is finished.',
+  'alliance.betrayal': 'A vote went against the plan, and it shows.', 'alliance.deal': '{a} and {b} make a deal about the end.',
+  'rivalry.friction': '{a} and {b} rub each other the wrong way.', 'rivalry.blowup': 'It boils over between {a} and {b}.', 'rivalry.truce': '{a} tries to make peace with {b}.', 'rivalry.cold': '{a} and {b} have stopped pretending.',
+  'showmance.spark': '{a} and {b} are into each other.', 'showmance.kiss': '{a} and {b} kiss.', 'showmance.official': '{a} and {b} are a couple.', 'showmance.jealous': 'Jealousy: {a} doesn\'t like what {a} sees.',
+  'showmance.breakup': '{a} and {b} are over.', 'showmance.targeted': '{a} wants the couple split up.',
+  'bottom.noticed': '{a} feels the camp turning.', 'bottom.scramble': '{a} is scrambling to stay.', 'bottom.targeted': '{a} has picked a target.',
+  'scheme.move': '{a} is working an angle on {b}.', 'scheme.caught': 'A scheme comes out.', 'friendship.bond': '{a} and {b} get closer.', 'friendship.drift': '{a} is pulling away from {b}.',
+  'underdog.rise': '{a} is proving people wrong.', 'idol.found': '{a} has found something.', 'idol.shared': '{a} lets {b} in on a secret advantage.', 'idol.search': '{a} goes looking for an idol.', 'idol.known': 'Somebody knows about an idol.',
+};
+const HIDDEN = { 'deal.side.hollow': '{a} doesn\'t mean a word of it.', 'plot.lie.believed': '{a} made that up, and {b} believed it.', 'plot.lie.rejected': '{a} made that up. {b} didn\'t buy it.',
+  'plot.majority.fooled': 'There is no majority. {a} invented it.', 'read.played.deep': '{a} is playing {b}.', 'read.played.plain': '{a} is playing {b}.',
+  'fallout.flip.ally': '{a} voted against {b} last night. {b} has no idea.', 'fallout.flip.swap': '{a} flipped last night. Nobody knows.', 'talk.lie.about': '{a} is lying about {target}.' };
+function whyOf(kind, ending, storyKey, who, data, facts) {
+  const fill = t => t.replace(/\{(\w+)\}/g, (m, k) => k === 'al' ? (data.group || data.alliance ? ` (${data.group || data.alliance})` : '')
+    : k === 'alx' ? (data.group || data.alliance || 'their alliance') : (who[k] || data[k] || m));
+  const out = [];
+  if (STEP_WHY[storyKey]) out.push(fill(STEP_WHY[storyKey]));
+  const hid = HIDDEN[`${kind}.${ending}`];
+  if (hid) out.push(fill(hid));
+  if (facts.voted === 'other' && data.lastBoot) out.push(fill(`{a} was on the wrong side of the last vote: {a} didn't write {lastBoot}.`));
+  if (facts.gotVotes) out.push(fill('{a} had votes cast against {a} at the last vote.'));
+  if (data.sank && facts.lost) out.push(fill('{sank} had the team\'s lowest score today.'));
+  if (who.a && who.b && facts.band) out.push(`${who.a} & ${who.b}: ${BANDWORD[facts.band] || facts.band}${facts.alliance ? ', in the same alliance' : ''}.`);
+  return out.filter(t => !/\{\w+\}/.test(t));
+}
+
 // ── the new scenes ─────────────────────────────────────────────────────
 
 // The morning after a vote: whoever was closest to the person who left, and somebody who wrote
@@ -196,7 +227,7 @@ function coverScene(ep, camp, phase, name, n, tribal = false) {
   const who = { a: name };
   const data = lt && lt.gap === 1 ? { lastBoot: lt.boot } : {};
   const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), outcome: state, lastBoot: !!data.lastBoot, phase, tribal };
-  const w = writeStory('story.cover', state, who, data, facts, { ep: ep.num, camp, phase, n, place: 'confessional' });
+  const w = writeStory('story.cover', state, who, data, facts, { ep: ep.num, camp, phase, n, place: 'confessional', unique: false });
   return w ? { story: true, kind: 'story.cover', storyType: 'cover', step: state, players: [name], lines: w.lines, text: w.text, lineId: w.lineId,
     scene: { kind: 'story.cover', who, data, spot: { id: 'confessional' } }, badgeText: '', badgeClass: '' } : null;
 }
@@ -260,49 +291,67 @@ export function airTdEpisode(ep) {
         usedLines.add(f.line);
         cast.forEach(p => { onScreen[p] = (onScreen[p] || 0) + 1; });
       }
-      for (const f of chosen) {
-        const { ev, i, line, step } = f;
-        const prev = prevAired(line, step);
-        // The long scene is a fuller version of the engine's OWN moment: its kind and ending say
-        // exactly what happened (lines/*.js headers in td/script), so the long pool is keyed on
-        // them, and it plays the same people in the same parts. The storyline adds what came before.
+      // The long scene is a fuller version of the engine's OWN moment: its kind and ending say
+      // exactly what happened (lines/*.js headers in td/script), so the long pool is keyed on
+      // them, and it plays the same people in the same parts. A storyline step adds what came
+      // before; a quick cut (no storyline) is written from the same pools when one exists.
+      const longScene = (ev, i, line = null, step = null) => {
         const kind = ev.scene?.kind || '';
+        const pool = kind ? `long.${kind}` : null;
+        if (!pool || !hasStoryPool(pool)) return null;
         const ending = ev.scene?.data?.ending || 'any';
-        const who = { ...(ev.scene?.who || { a: step.roles.a, b: step.roles.b, c: step.roles.c }) };
+        const who = { ...(ev.scene?.who || (step ? { a: step.roles.a, b: step.roles.b, c: step.roles.c } : { a: ev.players?.[0], b: ev.players?.[1], c: ev.players?.[2] })) };
+        const prev = line && step ? prevAired(line, step) : null;
         const rec = recordSlots(ep, who.a, who.b, camp, phase);
         const data = { ...rec.data, ...(ev.scene?.data || {}) };
         const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), ...(ev.scene?.facts || {}), ...rec.facts,
           ...Object.fromEntries(['ending', 'result', 'intent', 'reason', 'again', 'size'].filter(k => ev.scene?.data?.[k] != null).map(k => [k, ev.scene.data[k]])),
-          ...Object.fromEntries(['rival', 'friend', 'threat', 'weak', 'group', 'plan', 'boot', 'wrote', 'fallen', 'more', 'betrayer', 'holder', 'wins', 'other', 'target'].map(k => [k, !!data[k]])),
-          story: line.type, step: step.step, prev: prev ? prev.step : 'none', chapter: Math.min(3, line.steps.filter(s => s.aired).length + 1),
+          ...Object.fromEntries(['rival', 'friend', 'threat', 'weak', 'group', 'plan', 'boot', 'wrote', 'fallen', 'more', 'betrayer', 'holder', 'wins', 'other', 'target', 'mine', 'theirs'].map(k => [k, !!data[k]])),
+          story: line?.type || 'cut', step: step?.step || 'cut', prev: prev ? prev.step : 'none', chapter: line ? Math.min(3, line.steps.filter(s => s.aired).length + 1) : 1,
           prevGap: prev ? (ep.num - prev.ep >= 3 ? 'long' : ep.num === prev.ep ? 'same' : 'recent') : 'none',
           tribal: knowsTribal(phase), phase, third: !!who.c, known: !!data.target && !Object.values(who).includes(data.target),
-          ...allianceFacts(ev, who, data) };
-        const pool = kind ? `long.${kind}` : null;
-        const w = pool && hasStoryPool(pool) ? writeStory(pool, ending, who, data, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', spotId: ev.scene?.spot?.id || ev.access?.locationId || null, avoid: ctxAvoid(ev.scene?.spot?.window || ev.access?.windowId) }) : null;
+          registerC: who.c ? registerOf(who.c) : null, ...allianceFacts(ev, who, data) };
+        const w = writeStory(pool, ending, who, data, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', spotId: ev.scene?.spot?.id || ev.access?.locationId || null, avoid: ctxAvoid(ev.scene?.spot?.window || ev.access?.windowId) });
+        if (!w) return null;
+        return { story: true, kind: pool, storyType: line?.type || 'cut', step: step?.step || 'cut', ...(line ? { storyline: line.id } : { cut: true }), ref: i, type: ev.type,
+          players: [...new Set([...Object.values(who).filter(Boolean), ...(ev.players || [])])],
+          lines: w.lines, text: w.text, lineId: w.lineId, scene: { kind, who, data, spot: w.spot ? { ...w.spot, window: ev.scene?.spot?.window || ev.access?.windowId || null } : (ev.scene?.spot || null) }, access: ev.access || null,
+          alliance: ev.alliance, members: ev.members, advType: ev.advType, badgeText: ev.badgeText || '', badgeClass: ev.badgeClass || '',
+          why: whyOf(kind, ending, line ? `${line.type}.${step.step}` : '', who, data, facts) };
+      };
+      for (const f of chosen) {
+        const { ev, i, line, step } = f;
+        const item = longScene(ev, i, line, step);
         step.aired = true;
         ev.aired = true;
         seasonAired[`${line.type}.${step.step}`] = (seasonAired[`${line.type}.${step.step}`] || 0) + 1;
-        if (w) {
-          list.push({ at: i, item: { story: true, kind: pool, storyType: line.type, step: step.step, storyline: line.id, ref: i, type: ev.type,
-            players: [...new Set([...Object.values(who).filter(Boolean), ...(ev.players || [])])],
-            lines: w.lines, text: w.text, lineId: w.lineId, scene: { kind, who, data, spot: w.spot ? { ...w.spot, window: ev.scene?.spot?.window || ev.access?.windowId || null } : (ev.scene?.spot || null) }, access: ev.access || null,
-            alliance: ev.alliance, members: ev.members, advType: ev.advType,
-            badgeText: ev.badgeText || '', badgeClass: ev.badgeClass || '' } });
-        } else list.push({ at: i, item: { ref: i, storyline: line.id } });
+        list.push({ at: i, item: item || { ref: i, storyline: line.id } });
       }
-      // quick cuts: short moments between the long scenes, new faces first
+      // quick cuts: short moments between the long scenes, new faces first. A moment the opener
+      // already covered (the team's own "who lost it", the morning's mourning) does not air twice.
+      const dup = ev => {
+        const k = ev.scene?.kind || '';
+        if (opener?.kind === 'story.chal.lost' && (/^crowd\.lost/.test(k) || ev.type === 'blame')) return true;
+        if (opener?.kind === 'story.chal.won' && /^crowd\.won/.test(k)) return true;
+        if (opener?.kind === 'story.morning' && /^fallout\.mourn/.test(k)) return true;
+        return false;
+      };
       const shown = new Set(list.flatMap(x => x.item.players || speaksIn(events[x.item.ref])));
-      const cuts = events.map((ev, i) => ({ ev, i })).filter(({ ev }) => ev && !ev.aired && saysIn(ev).length && (ev.lines || []).length <= 7)
+      const cuts = events.map((ev, i) => ({ ev, i })).filter(({ ev }) => ev && !ev.aired && !dup(ev) && saysIn(ev).length && (ev.lines || []).length <= 7)
         .sort((x, y) => saysIn(y.ev).filter(p => !shown.has(p)).length - saysIn(x.ev).filter(p => !shown.has(p)).length || x.i - y.i);
       const cutCap = phase === 'pre' ? 3 : 2;
+      let cutN = 0;
       for (const { ev, i } of cuts) {
-        if (list.filter(x => !x.item.story && !x.item.storyline).length >= cutCap) break;
+        if (cutN >= cutCap) break;
         if (!saysIn(ev).some(p => !shown.has(p))) continue;
         ev.aired = true;
-        saysIn(ev).forEach(p => shown.add(p));
-        list.push({ at: i, item: { ref: i } });
+        cutN++;
+        const item = longScene(ev, i);
+        (item ? item.players : saysIn(ev)).forEach(p => shown.add(p));
+        list.push({ at: i, item: item || { ref: i } });
       }
+      // ...and the coverage pass below does not bring the duplicate back
+      events.forEach(ev => { if (ev && !ev.aired && dup(ev)) ev.aired = 'covered'; });
       list.sort((x, y) => x.at - y.at);
       for (const x of list) {
         const ev = x.item.lines ? x.item : events[x.item.ref];

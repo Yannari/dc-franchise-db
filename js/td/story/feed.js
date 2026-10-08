@@ -17,7 +17,9 @@ export function campFeed(ep, camp, phase) {
   const raw = rawEvents(ep, camp, phase);
   const plan = ep?.campStory?.[camp]?.[phase];
   if (!Array.isArray(plan)) return raw;
-  return plan.map(it => (it.story ? it : raw[it.ref])).filter(Boolean);
+  // an engine moment that airs as itself keeps its storyline tag (the map locks a scene until the
+  // earlier scene of the same storyline has been watched)
+  return plan.map(it => (it.story ? it : raw[it.ref] && (it.storyline ? { ...raw[it.ref], storyline: it.storyline } : raw[it.ref]))).filter(Boolean);
 }
 
 /** The engine's moments that did not air (the text backlog lists them under "Off camera"). */

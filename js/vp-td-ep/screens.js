@@ -9,7 +9,7 @@
 // cover yet keeps its classic screen. A Classic switch on every stepped screen lands on the same
 // screen in the classic viewer (localStorage 'td-vp' = 'classic' to stay there).
 import { tdCampScreen, tdTribalScreen, tdTribalStepped, cleanText, placeScene, plateKey, placeName, venueOf, teamSpot } from './steps.js';
-import { tdCampMap, hasMap, MAP_VENUES, openWindow, nextConv, PLACE_LABEL } from './map.js';
+import { tdCampMap, hasMap, MAP_VENUES, openWindow, nextConv, lockedConv, PLACE_LABEL } from './map.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf } from './twists.js';
 import { tdTwistBlocksScreen, tdMergeScreen } from './twist-screens.js';
 import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf } from './stage.js';
@@ -465,8 +465,9 @@ function zoneHtml(uid, R, here) {
     while (hit(top) && top > 8) top -= 2.2;
     boxes.push({ x0: u - w / 2, x1: u + w / 2, y0: top - 4.2, y1: top });
     const st = R.seen.has(c.i) ? 'done' : c.key ? 'key' : 'talk';
-    return `<button type="button" class="tdm-bub ${st}" style="left:${u.toFixed(2)}%;top:${top.toFixed(2)}%" onclick="tdmPlay('${uid}',${c.i})">
-      <i>${st === 'done' ? ICON_TICK : st === 'key' ? ICON_STAR : ICON_BUBBLE}</i><span>${esc(c.title)}</span></button>`;
+    const lock = lockedConv(M, R.seen, c);
+    return `<button type="button" class="tdm-bub ${st}${lock ? ' locked' : ''}" style="left:${u.toFixed(2)}%;top:${top.toFixed(2)}%" ${lock ? 'disabled title="Watch the earlier part of this story first"' : `onclick="tdmPlay('${uid}',${c.i})"`}>
+      <i>${lock ? ICON_LOCK : st === 'done' ? ICON_TICK : st === 'key' ? ICON_STAR : ICON_BUBBLE}</i><span>${esc(c.title)}</span></button>`;
   }).join('');
   return `<button type="button" class="tdm-back" onclick="tdmMap('${uid}')">◀ Camp map</button>${tabs}${bubbles}`;
 }
@@ -476,7 +477,8 @@ function listHtml(uid, R, here) {
   const M = R.map;
   return `<div class="tdm-list">${here.map(c => {
     const st = R.seen.has(c.i) ? 'done' : c.key ? 'key' : 'talk';
-    return `<button type="button" class="tdm-item ${st}" onclick="tdmPlay('${uid}',${c.i})"><span class="tdm-faces">${c.who.slice(0, 3).map(n => faceImg(R, n)).join('')}</span>
+    const lock = lockedConv(M, R.seen, c);
+    return `<button type="button" class="tdm-item ${st}${lock ? ' locked' : ''}" ${lock ? 'disabled title="Watch the earlier part of this story first"' : `onclick="tdmPlay('${uid}',${c.i})"`}><span class="tdm-faces">${c.who.slice(0, 3).map(n => faceImg(R, n)).join('')}</span>
       <span class="tdm-txt"><b>${esc(c.title)}</b><span>${esc(M.zones[c.zone]?.label || placeName(c.place))}${c.place !== c.zone && PLACE_LABEL[c.place] ? ' · ' + esc(PLACE_LABEL[c.place]) : ''}</span></span><i>${st === 'done' ? ICON_TICK : st === 'key' ? ICON_STAR : ICON_BUBBLE}</i></button>`;
   }).join('')}</div>`;
 }
@@ -516,6 +518,7 @@ export function tdmWin(uid, i) {
 export function tdmPlay(uid, i, story = false) {
   const R = reg()[uid]; if (!R) return;
   const c = R.map.convs[i]; if (!c) return;
+  if (!story && lockedConv(R.map, R.seen, c)) return;
   const st = document.getElementById(`tdx-st-${uid}`);
   R.mode = 'talk'; R.cur = i; R.zone = c.zone; R.place = c.place; R.story = story;
   R.win = Math.max(R.win, R.map.windows.findIndex(w => w.id === c.window));
@@ -591,6 +594,7 @@ const TDM_CSS = `
 .tdx .tdm-win span{font:800 .75cqw/1 Nunito;opacity:.8}
 .tdx .tdm-win.on{background:#ff8a1f;color:#1a1008}
 .tdx .tdm-win.locked{cursor:not-allowed;opacity:.45;flex-direction:row;align-items:center}
+.tdx .tdm-bub.locked,.tdx .tdm-item.locked{cursor:not-allowed;opacity:.5;filter:grayscale(.6)}
 .tdx .tdm-later{border:0;background:#2ec4c4;color:#08201f;border-radius:9px;padding:.55cqw .8cqw;font:900 .85cqw/1 Nunito;cursor:pointer}
 .tdx .tdm-left{display:flex;align-items:center;gap:.3cqw;color:#ffc23a;font:800 .85cqw/1 Nunito;padding:0 .5cqw}
 .tdx .tdm-list{position:absolute;left:2%;right:2%;bottom:2.2%;display:flex;gap:.6cqw;overflow-x:auto;padding:.3cqw;scrollbar-width:none}

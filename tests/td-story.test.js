@@ -6,12 +6,13 @@ import { STORY_POOLS } from '../js/td/story/lines/index.js';
 import { PLACES } from '../js/td/story/places.js';
 import { TD_FACT_KEYS } from '../js/td/script/facts.js';
 import { campFeed } from '../js/td/story/feed.js';
+import { GUARANTEED as ENGINE_G } from '../js/td/script/lines/index.js';
 import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 
 // what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
 const STORY_FACTS = new Set([...TD_FACT_KEYS,
   'venue', 'count', 'outcome', 'story', 'step', 'prev', 'prevGap', 'chapter', 'members', 'aOther', 'bOther', 'target', 'group',
-  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT']);
+  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC']);
 // names a line may say, and the fact that must be asked for unless the pool always has it
 const ALWAYS = new Set(['a', 'b', 'c', 'd', 'quarters', 'bed', 'item', 'here', 'place', 'host', 'count']);
 const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
@@ -26,11 +27,19 @@ const GUARANTEED = [
   [/^long\.fallout\.flip\.swap/, ['wrote', 'plan']],
   [/^long\.deal\.side/, ['size']],
   [/^booth\./, ['target', 'lastBoot']],
+  [/^long\.cross\./, ['mine', 'theirs']],
+  [/^long\.crowd\.huddle/, ['group']],
   [/^booth\.plan/, []],
   [/^(reveal|exit|after)\./, ['lastBoot', 'item']],
   [/^long\.(talk\.lie\.about|drama\.paranoia\.quiet|romance\.tri\.(exploit|cut-))/, ['target']],
 ];
-const guaranteed = key => GUARANTEED.filter(([re]) => re.test(key)).flatMap(([, n]) => n);
+// a long scene carries what its engine moment always carries (td/script/lines GUARANTEED)
+const engineG = key => {
+  if (!key.startsWith('long.')) return [];
+  const k = key.slice(5), fam = k.split('.').slice(0, 2).join('.');
+  return [...(ENGINE_G[k] || []), ...(k.endsWith('.any') ? Object.entries(ENGINE_G).filter(([g]) => g.startsWith(fam + '.')).flatMap(([, v]) => v).filter((v, i, a) => Object.keys(ENGINE_G).filter(g => g.startsWith(fam + '.')).every(g => (ENGINE_G[g] || []).includes(v))) : [])];
+};
+const guaranteed = key => [...GUARANTEED.filter(([re]) => re.test(key)).flatMap(([, n]) => n), ...engineG(key)];
 
 describe('td story pools', () => {
   const all = Object.entries(STORY_POOLS).flatMap(([k, pool]) => pool.map(e => [k, e]));

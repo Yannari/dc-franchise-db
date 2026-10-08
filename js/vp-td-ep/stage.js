@@ -386,7 +386,7 @@ export function dialogue(screen, L) {
 
 // ── the Intel drawer ──────────────────────────────────────────────────
 const TABS = {
-  camp: [['log', 'Camp log'], ['allies', 'Alliances'], ['secrets', 'Secrets']],
+  camp: [['mind', 'In their heads'], ['log', 'Camp log'], ['allies', 'Alliances'], ['secrets', 'Secrets']],
   tribal: [['room', 'The room'], ['tally', 'Tally'], ['why', 'Why']],
   island: [['residents', 'Who is here'], ['log', 'Island log'], ['secrets', 'Secrets']],
 };

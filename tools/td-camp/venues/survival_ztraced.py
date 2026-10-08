@@ -48,6 +48,10 @@ def _live_marks(json_name, depth):
     for (y0, y1) in L.get('mist', []):
         x, z = px((800, (y0 + y1) / 2), depth)
         mark('mist', (x, depth, z), v0=y0 / 900, v1=y1 / 900)
+    # wildlife passing through: (kind, x0, y0, x1, y1) a band it moves along (crab, duck, squirrel, parrot, frog, seagull, raccoon)
+    for (kind, x0, y0, x1, y1) in L.get('critters', []):
+        x, z = px(((x0 + x1) / 2, (y0 + y1) / 2), depth)
+        mark('critter', (x, depth, z), what=kind, u0=x0 / 1600, v0=y0 / 900, u1=x1 / 1600, v1=y1 / 900)
     if L.get('lightning'):
         x, z = px((800, 200), depth)
         mark('lightning', (x, depth, z))
@@ -121,6 +125,8 @@ for (venue, spot, js, stands, night) in T:
 # DC5's Elimination Trial: the wide clean frame. The tiki-pot seats run along the left of the deck,
 # the rest sit on the deck around the fire; the host stands by the angry tiki podium on the right.
 if os.path.exists(os.path.join(REPO, 'tools', 'td-camp', 'traced', 'sol-trial.json')):
-    _pots = [(75 + i * 34, 585) for i in range(9)]
-    _deck = [(200, 690), (300, 720), (1000, 700), (1120, 730), (1240, 700), (1360, 680)]
-    SCENES['survival-island']['ceremony'] = _traced_plate('sol-trial.json', [(820, 760), (1060, 770)], seats=_pots + _deck, host=(1170, 600))
+    # the frame cropped in on the deck (clean.py box): a row behind the fire pit, two on each side,
+    # the called ones standing front left, Chris front right
+    _back = [(650 + i * 125, 395, 13) for i in range(5)]
+    _sides = [(110, 520, 16), (1260, 520, 16), (170, 630, 19), (1440, 560, 17)]
+    SCENES['survival-island']['ceremony'] = _traced_plate('sol-trial.json', [(1250, 640), (1080, 640)], seats=_back + _sides, host=(420, 600))

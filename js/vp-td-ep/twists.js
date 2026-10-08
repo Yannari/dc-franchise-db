@@ -283,7 +283,8 @@ export function tdExileScreen(ep, d, o = {}) {
   // Wawanakwa sends its exiles to Boney Island (Total Drama Island); elsewhere the exile beach
   const boney = venueOf(ep, o) === 'hosted-camp' && plate('boney-island', 'day');
   const solx = venueOf(ep, o) === 'survival-island' && plate('soluna-exile', 'day');
-  const exileSpot = boney ? 'boney-island' : solx ? 'soluna-exile' : 'exile-beach', exilePlace = boney ? 'Boney Island' : 'Exile Island';
+  const stwx = venueOf(ep, o) === 'carnival' && plate('stawaki-exile', 'night');
+  const exileSpot = boney ? 'boney-island' : solx ? 'soluna-exile' : stwx ? 'stawaki-exile' : 'exile-beach', exilePlace = boney ? 'Boney Island' : 'Exile Island';
   const k2 = plate(exileSpot, 'day');
   steps.push({ k: 'scene', spot: exileSpot, tod: 'day', plate: k2, place: exilePlace, time: '4:30 PM', card: true, focus: [name], bg: [], places: placeScene(k2, [name], []), act: { kind: 'arrive', who: [name] } });
   steps.push({ k: 'beat', text: d.returns

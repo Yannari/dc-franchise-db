@@ -55,3 +55,29 @@ SCENES['islands']['soluna-exile'] = _wk('sol-shore.json', [(500, 640), (800, 640
 
 SCENES['world-tour']['map'] = _wk('jet-map.json', [], zones=_JTZ)
 OUTDOOR['world-tour'].discard('map')
+
+# ── the rest (2026-10-08) ──
+# a third team's camp: the first team's frames, mirrored (another clearing, the same island)
+SCENES['carnival'].update({'campsite-t2': _wk('cv-red-flip.json', [(720, 645), (960, 645), (1200, 645)]),
+                           'shelter-t2': _wk('cv-red-in-flip.json', [(560, 645), (800, 645), (1040, 645)]),
+                           'trial-area': SCENES['carnival']['ceremony']})
+SCENES['survival-island'].update({'campfire-t2': _wk('sol-fans-flip.json', [(100, 650), (300, 660), (520, 650)]),
+                                  'shelter-t2': _wk('sol-favs-in-flip.json', [(560, 645), (800, 645), (1040, 645)])})
+for v, ss in (('carnival', ('campsite-t2', 'shelter-t2', 'trial-area')), ('survival-island', ('campfire-t2', 'shelter-t2'))):
+    for s in ss: OUTDOOR[v].discard(s)
+NIGHT_ONLY.add('trial-area')
+# Soluna's night: the "One Final Choice" signpost (the night confessional and the way out)
+_SIGN = _wk('sol-sign.json', [(180, 648), (1320, 648)])
+SCENES['survival-island']['exit'] = _SIGN
+_CONF_DAY = SCENES['survival-island']['confessional']
+SCENES['survival-island']['confessional'] = _by_tod(_CONF_DAY, _SIGN)
+OUTDOOR['survival-island'].add('confessional')
+# the eliminated go to the Motel (DC4 and DC5)
+SCENES['islands']['motel'] = _wk('motel.json', [(500, 648), (800, 648), (1100, 648)])
+OUTDOOR['islands'].discard('motel'); NIGHT_ONLY.add('motel')
+# Stawaki's exile: DC4's Exile Beach, the wreck on the skull rock across the water
+SCENES['islands']['stawaki-exile'] = _wk('exile-night.json', [(700, 590)])
+OUTDOOR['islands'].discard('stawaki-exile'); NIGHT_ONLY.add('stawaki-exile')
+# the jet on the ground: the landing strip
+SCENES['world-tour']['destination-staging'] = _wk('jet-runway.json', [(300, 648), (650, 648), (1350, 648)])
+OUTDOOR['world-tour'].discard('destination-staging')

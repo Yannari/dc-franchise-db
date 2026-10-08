@@ -92,7 +92,7 @@ function scriptHtml(scr) {
     else if (s.k === 'ballots') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.text)})</div>`;
     else if (s.k === 'idol') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.by)} plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${esc(s.for)}` : ''}.)</div>`;
     else if (s.k === 'safe') t = `<div class="tdx-ln" data-s="${i}"><b>${esc(scr.host || 'Chris')}:</b> ${esc(s.who)}${s.immune ? ', you won immunity' : ''}.</div>`;
-    else if (s.k === 'read') t = `<div class="tdx-ln" data-s="${i}"><b>${esc(scr.host || 'Chris')}:</b> ${esc(s.vote)}.${s.dead ? ' Does not count.' : ''}</div>`;
+    else if (s.k === 'read') t = `<div class="tdx-ln" data-s="${i}"><b>${esc(scr.host || 'Chris')}:</b> ${esc(s.line || `${s.vote}.${s.dead ? ' Does not count.' : ''}`)}</div>`;
     else if (s.k === 'out') t = `<div class="tdx-ln sc" data-s="${i}">${esc(s.who)} is ${s.island ? 'voted out' : 'eliminated'}</div>`;
     else if (s.k === 'found') t = `<div class="tdx-ln sc" data-s="${i}">${s.text ? esc(s.text) : `${esc(s.who)} finds the ${esc(s.label)}`}</div>`;
     return t.replace('class="tdx-ln', `onclick="tdxJump(this,${i})" class="tdx-ln`);
@@ -112,7 +112,7 @@ function shell(scr, classicScreen, ep, o) {
 <div class="tdx-stage" id="tdx-st-${uid}" onclick="tdxNext('${uid}')" title="Click for the next line">
   <div class="tdx-world">${peek ? worldHtml(scr, peek) : ''}<div class="tdx-cast"></div><div class="tdx-fx"></div></div>
   <div class="tdx-hud"><div class="tdx-title fresh"><div class="band"></div><div class="inner"><div class="kicker">Episode ${esc(ep.num)}</div><div class="big">${esc(scr.label)}</div></div></div></div>
-  <div class="tdx-dlg hidden"><div class="panel"></div><div class="tdx-cut"></div><div class="name"></div><div class="say"></div><div class="nx"></div></div>
+  <div class="tdx-dlg hidden"><div class="panel"></div><div class="tdx-cut"></div><div class="sub"></div><div class="name"></div><div class="say"></div><div class="nx"></div></div>
   <button type="button" class="tdx-ibtn" onclick="event.stopPropagation();tdxIntel('${uid}')"><i></i>Intel</button>
   <div class="tdx-intel" onclick="event.stopPropagation();tdxTab('${uid}',event)"></div>
   <div class="tdx-static"></div>
@@ -142,6 +142,15 @@ function sync(uid) {
   const root = typeof document !== 'undefined' ? document.querySelector(`.tdx[data-uid="${uid}"]`) : null;
   if (R && root && root.dataset.idx == null) { R.idx = -1; stopAuto(R); R.wk = null; R.sceneAt = null; if (R.isMap) { R.mode = 'map'; R.scr = null; } }
   return R;
+}
+// the speaker's team as it stood that episode (merged: the merged tribe), and its colour
+function teamOfSpeaker(epNum, name) {
+  const ep = (window.gs?.episodeHistory || []).find(e => e.num === +epNum);
+  const t = (ep?.tribesAtStart || []).find(x => (x.members || []).includes(name));
+  const tname = t?.name || (window.players || []).find(x => x.name === name)?.tribe;
+  if (!tname) return null;
+  let color = '#4fb84a'; try { color = window.tribeColor ? window.tribeColor(tname) : color; } catch { /* default */ }
+  return { name: tname, color };
 }
 function paint(uid, fresh) {
   const R = reg()[uid];
@@ -199,6 +208,16 @@ function paint(uid, fresh) {
   if (cutWho) { const src = avatar(cutWho, !!d.hostCut); if (cut.dataset.who !== cutWho) { cut.innerHTML = `<img src="${esc(src)}" alt="">`; cut.dataset.who = cutWho; if (fresh) { cut.classList.remove('fresh'); void cut.offsetWidth; cut.classList.add('fresh'); } } cut.style.display = ''; }
   else { cut.style.display = 'none'; cut.dataset.who = ''; }
   const nm = dlg.querySelector('.name'); nm.className = `name ${d.cls.replace('hidden', '')}`; nm.textContent = d.name || '';
+  // who is talking: their team (in its colour) on every line; in a confessional, the lower third, with
+  // age and job the first episode they are introduced
+  const sub = dlg.querySelector('.sub'), who = (s.k === 'say' || s.k === 'conf') && !s.host ? s.by : null;
+  const team = who ? teamOfSpeaker(scr.ep, who) : null;
+  if (team) { dlg.style.setProperty('--tc', team.color); dlg.style.setProperty('--stc', team.color); }
+  if (who && L.conf && team) {
+    const p = (window.players || []).find(x => x.name === who) || {};
+    const intro = +scr.ep === 1 ? [p.age ? `${p.age}` : '', p.occupation || ''].filter(Boolean) : [];
+    sub.innerHTML = `<b>${esc(team.name)}</b>${intro.map(t => `<span>${esc(t)}</span>`).join('')}`; sub.classList.add('on');
+  } else { sub.classList.remove('on'); sub.innerHTML = ''; }
   const say = dlg.querySelector('.say'); say.className = `say${d.cls.includes('dir') ? ' dir' : ''}${d.quote ? ' quote' : ''}`;
   const names = Object.keys(L.scene?.places || {});
   const lit = text => esc(text).replace(names.length ? new RegExp(`\\b(${names.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`, 'g') : /^\b$/, '<span class="hn">$1</span>')

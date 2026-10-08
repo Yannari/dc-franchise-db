@@ -48,6 +48,7 @@ export function worldKey(screen, L) {
   if (L.conf) return `${screen.venue}/confessional`;
   return L.scene?.plate || `${screen.venue}/none`;
 }
+const CRITTER = {"crab": "<svg viewBox=\"0 0 40 24\"><g stroke=\"#5a1a0a\" stroke-width=\"1.6\" fill=\"#e8552e\"><ellipse cx=\"20\" cy=\"15\" rx=\"10\" ry=\"6\"/><path d=\"M10 13l-6-6 3 8M30 13l6-6-3 8\" fill=\"none\"/><path d=\"M12 19l-5 4M15 20l-3 4M25 20l3 4M28 19l5 4\" fill=\"none\"/></g><circle cx=\"17\" cy=\"10\" r=\"1.6\" fill=\"#111\"/><circle cx=\"23\" cy=\"10\" r=\"1.6\" fill=\"#111\"/></svg>", "duck": "<svg viewBox=\"0 0 44 30\"><path d=\"M6 20c0-7 8-10 16-8 3-8 13-8 14-1 1 4-2 6-5 7 5 3 3 10-8 10H14C9 28 6 25 6 20z\" fill=\"#f4f0e6\" stroke=\"#2a2a3a\" stroke-width=\"1.6\"/><path d=\"M36 13l7 1-6 3z\" fill=\"#f2a43a\" stroke=\"#2a2a3a\" stroke-width=\"1.2\"/><circle cx=\"31\" cy=\"11\" r=\"1.6\" fill=\"#111\"/></svg>", "squirrel": "<svg viewBox=\"0 0 44 34\"><path d=\"M6 30c-6-10 0-24 10-22 6 1 5 9 0 10 8 0 12 4 12 12z\" fill=\"#b8742a\" stroke=\"#4a2a10\" stroke-width=\"1.6\"/><path d=\"M24 30c0-8 4-12 9-12 4-6 10-4 10 1 0 4-3 5-5 6 0 3-1 5-4 5z\" fill=\"#c9843a\" stroke=\"#4a2a10\" stroke-width=\"1.6\"/><circle cx=\"38\" cy=\"17\" r=\"1.4\" fill=\"#111\"/></svg>", "parrot": "<svg viewBox=\"0 0 44 30\"><path d=\"M4 16c8-10 22-12 30-6l8-2-5 6c-6 9-22 12-33 2z\" fill=\"#e23b3b\" stroke=\"#3a1010\" stroke-width=\"1.5\"/><path d=\"M14 14l10-10 6 8z\" fill=\"#2a8ad8\" stroke=\"#3a1010\" stroke-width=\"1.4\"/><path d=\"M8 18l-6 8 10-4z\" fill=\"#f2c83a\" stroke=\"#3a1010\" stroke-width=\"1.2\"/><circle cx=\"33\" cy=\"12\" r=\"1.5\" fill=\"#111\"/></svg>", "frog": "<svg viewBox=\"0 0 40 26\"><path d=\"M4 22c0-8 7-14 16-14s16 6 16 14z\" fill=\"#4fb84a\" stroke=\"#1a4a1a\" stroke-width=\"1.6\"/><circle cx=\"13\" cy=\"9\" r=\"5\" fill=\"#4fb84a\" stroke=\"#1a4a1a\" stroke-width=\"1.6\"/><circle cx=\"27\" cy=\"9\" r=\"5\" fill=\"#4fb84a\" stroke=\"#1a4a1a\" stroke-width=\"1.6\"/><circle cx=\"13\" cy=\"9\" r=\"2\" fill=\"#111\"/><circle cx=\"27\" cy=\"9\" r=\"2\" fill=\"#111\"/></svg>", "seagull": "<svg viewBox=\"0 0 44 26\"><path d=\"M8 18c4-6 14-8 22-6l8-3-3 6c-2 6-14 9-27 3z\" fill=\"#f4f4f4\" stroke=\"#2a2a3a\" stroke-width=\"1.5\"/><path d=\"M14 13l6-9 6 7z\" fill=\"#c8ccd4\" stroke=\"#2a2a3a\" stroke-width=\"1.3\"/><path d=\"M38 9l5 1-4 2z\" fill=\"#f2a43a\"/><circle cx=\"34\" cy=\"10\" r=\"1.4\" fill=\"#111\"/><path d=\"M18 21v4M24 21v4\" stroke=\"#f2a43a\" stroke-width=\"1.6\"/></svg>", "raccoon": "<svg viewBox=\"0 0 48 32\"><path d=\"M8 26c0-9 8-14 18-14s14 4 14 10v4z\" fill=\"#8a8a92\" stroke=\"#2a2a32\" stroke-width=\"1.6\"/><path d=\"M2 20c2-4 6-5 8-3l-2 8c-4 0-6-2-6-5z\" fill=\"#6a6a72\" stroke=\"#2a2a32\" stroke-width=\"1.4\"/><path d=\"M36 14c3-6 11-5 11 2 0 5-4 7-9 6z\" fill=\"#9a9aa2\" stroke=\"#2a2a32\" stroke-width=\"1.6\"/><path d=\"M37 15h9\" stroke=\"#222\" stroke-width=\"3\"/><circle cx=\"40\" cy=\"15\" r=\"1.2\" fill=\"#fff\"/><circle cx=\"44\" cy=\"15\" r=\"1.2\" fill=\"#fff\"/></svg>"};
 export function worldHtml(screen, L) {
   // the islands have no booth: a confessional there is shot on location
   const key = L.conf ? (plateKey(screen.venue, 'confessional', /-night$/.test(L.scene?.plate || '') ? 'night' : 'day') || L.scene?.plate) : L.scene?.plate;
@@ -122,6 +123,9 @@ export function worldHtml(screen, L) {
   // a band of low fog lying across part of the set
   of('mist').forEach((m, i) => { for (let q = 0; q < 3; q++) h += `<i class="tdx-mist band" style="top:${p(m.v0 + q * (m.v1 - m.v0) / 3)};--d:${50 + q * 17 + i * 9}s;--dl:-${q * 11}s"></i>`; });
   // butterflies over a sunny jungle clearing
+  // wildlife passing through the place: it walks (or flies, or hops) across its band, then comes back
+  of('critter').forEach((m, i) => { if (night && !['frog', 'raccoon'].includes(m.what)) return; const fly = ['parrot', 'seagull'].includes(m.what) && (i % 2 === 0);
+    h += `<i class="tdx-critter ${esc(m.what)}${fly ? ' fly' : ''}" style="left:${p(m.u0)};top:${p(m.v0 + r() * (m.v1 - m.v0))};--w:${p(m.u1 - m.u0)};--d:${(16 + r() * 14).toFixed(1)}s;--dl:-${(r() * 20).toFixed(1)}s">${CRITTER[m.what] || ''}</i>`; });
   of('flutter').forEach((m) => { if (!night) for (let q = 0; q < (m.n || 3); q++) h += `<i class="tdx-butterfly" style="left:${p(m.u0 + r() * (m.u1 - m.u0))};top:${p(m.v0 + r() * (m.v1 - m.v0))};--c:${['#f2c83a', '#e84a8a', '#4ab8e8', '#f28a3a'][q % 4]};--d:${(6 + r() * 4).toFixed(1)}s;--dl:-${(r() * 6).toFixed(1)}s"></i>`; });
   const water = of('water')[0];
   if (water) { const top = M.h + .01, bot = Math.min(water.v, 1); for (let i = 0; i < 16; i++) h += `<i class="tdx-shimmer" style="left:${p(.05 + r() * .85)};top:${p(top + r() * Math.max(bot - top, .04))};width:${p(.02 + r() * .05)};--d:${(3 + r() * 4).toFixed(1)}s;--dl:${(r() * 5).toFixed(1)}s;--ex:${(20 + r() * 50).toFixed(0)}px"></i>`; }
@@ -226,7 +230,8 @@ export const BUSY_LABEL = { fish: 'fishing', read: 'reading', eat: 'eating', str
 /** Who is on stage at step N, and how: a list of tokens. Never loses a person mid-scene. */
 export function castAt(screen, L) {
   const s = L.step || {};
-  if (L.conf) return [{ n: L.conf.by, u: .5, v: .8, h: 50, speak: true, conf: true }];
+  // the confessional: the camper sits low in the frame, the text bar in front of them
+  if (L.conf) return [{ n: L.conf.by, u: .5, v: .9, h: 62, speak: true, conf: true }];
   const sc = L.scene; if (!sc) return [];
   // the voting booth is shot like a confessional: the voter alone, close, square to the camera
   if (sc.spot === 'voting-booth' && !sc.ceremony && (sc.focus || [])[0]) return [{ n: sc.focus[0], u: .5, v: .84, h: 46, speak: s.k === 'say', conf: true }];
@@ -381,7 +386,7 @@ export function dialogue(screen, L) {
   if (s.k === 'conf') return { name: s.by, cls: 'conf', text: s.text, quote: true };
   if (s.k === 'beat') return { name: '', cls: 'dir', text: s.text, badge: s.badge };
   if (s.k === 'safe') return { name: host, cls: 'host', text: s.immune ? `${s.who}, you won immunity.` : `${s.who}.`, hostCut: host };
-  if (s.k === 'read') return { name: host, cls: 'host', text: s.dead ? `${s.vote}. Does not count.` : s.revote ? `${s.vote}.` : s.deciding ? `${s.vote}. That's enough.` : `${s.vote}.`, hostCut: host };
+  if (s.k === 'read') return { name: host, cls: 'host', text: s.line || (s.dead ? `${s.vote}. Does not count.` : s.revote ? `${s.vote}.` : s.deciding ? `${s.vote}. That's enough.` : `${s.vote}.`), hostCut: host };
   if (s.k === 'out') return { name: '', cls: 'dir', text: `${s.who} is ${s.island ? 'voted out' : 'eliminated'}.` };
   if (s.k === 'found') return s.text ? { name: '', cls: 'dir', text: s.text, badge: s.item ? { text: s.label.toUpperCase(), cls: 'gold' } : null } : { name: '', cls: 'dir hidden', text: '' };
   if (s.k === 'idol') return { name: '', cls: 'dir', text: `${s.by} stands up and plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${s.for}` : ''}.` };

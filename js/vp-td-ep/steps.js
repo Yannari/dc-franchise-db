@@ -67,7 +67,7 @@ Object.assign(PLACE, { lake: 'The Lake', boathouse: 'The Boathouse', waterfall: 
   'boney-island': 'Boney Island', 'playa-des-losers': 'Playa Des Losers',
   'trailer-inside': 'Inside the Trailer', 'western-set': 'The Western Set', 'city-set': 'The City Set',
   'chris-quarters': "Chris's Quarters", cockpit: 'The Cockpit', river: 'The River', kitchen: "Chef's Kitchen",
-  carousel: 'The Carousel', 'corn-maze-inside': 'Inside the Corn Maze', 'soluna-exile': 'Exile Island' });
+  carousel: 'The Carousel', 'corn-maze-inside': 'Inside the Corn Maze', 'soluna-exile': 'Exile Island', 'stawaki-exile': 'Exile Beach', motel: 'The Motel' });
 
 // ── STAGING — where a scene plays, beyond where the engine says the people were ──────────
 // The engine knows six places at Wawanakwa, chosen for privacy (who can overhear). Television
@@ -545,7 +545,12 @@ export function tdTribalScreen(ep, o = {}) {
   const revote = (ep.revoteLog || []).filter(v => v.voted);
   // the result, as the setting gives it
   if (V.style === 'handout') handout(steps, say, V, { tribal, elim, counts, immune: [].concat(ep.immunityWinner || []).filter(n => tribal.includes(n)), tie, revote, rocks: !!ep.isRockDraw, host });
-  else readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, revote, rocks: !!ep.isRockDraw });
+  else {
+    // who has gone before this one: the boot is the nth voted out of the game
+    const gone = (window.gs?.episodeHistory || []).filter(e => e.num < ep.num && e.eliminated).length;
+    const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth'];
+    readVotes(steps, say, { ...V, _host: host, _nth: ORD[gone] || null, _of: 'of the game' }, { tribal, elim, ballots, protectedSet, tie, revote, rocks: !!ep.isRockDraw });
+  }
   // the reading lands: how the one going home takes it, and who answers (td/story/tribal.js)
   const lineStep = l => (l.kind === 'beat' ? { k: 'beat', text: cleanText(l.text), focus: [] }
     : l.kind === 'conf' ? { k: 'conf', by: l.by, text: cleanText(l.text) }
@@ -606,6 +611,12 @@ export function tdTribalScreen(ep, o = {}) {
     steps.push({ k: 'scene', spot: 'playa-des-losers', tod: 'day', plate: playa, place: 'Playa Des Losers', time: 'The next morning', card: true, focus: [elim], bg: [], places: placeScene(playa, [elim], []) });
     steps.push({ k: 'beat', text: `The Boat of Losers drops ${elim} at Playa Des Losers.`, focus: [elim] });
   }
+  // Disventure Camp's voted-out check in at the Motel
+  const motel = (venue === 'carnival' || venue === 'survival-island') ? plateKey('islands', 'motel', 'night') : null;
+  if (motel) {
+    steps.push({ k: 'scene', spot: 'motel', tod: 'night', plate: motel, place: 'The Motel', time: 'Later that night', card: true, focus: [elim], bg: [], places: placeScene(motel, [elim], []) });
+    steps.push({ k: 'beat', text: `${elim} checks in at the Motel.`, focus: [elim] });
+  }
   return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps, elim };
 }
 
@@ -652,10 +663,31 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
   }
   if (a.length) order.push({ v: a.shift(), deciding: !tie });
   const tally = {};
-  for (const { v, dead: d, deciding } of order) {
+  // the read is the show's suspense: Chris holds the paper, keeps the count, and the closer it gets the
+  // longer he takes (the user, 2026-10-08: "Chris just reads the paper, no suspense")
+  const word = n => ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][n] || String(n);
+  const lead = (t) => { const e = Object.entries(t).sort((a, b) => b[1] - a[1]); return e; };
+  const OPEN = [`First vote...`, `Here we go. First vote...`];
+  const HOLD = [`Next vote...`, `Okay. Next vote...`];
+  order.forEach(({ v, dead: d, deciding }, i) => {
+    const before = lead(tally);
+    const close = before.length >= 2 && before[0][1] - before[1][1] <= 1 && before[0][1] >= 1;
+    // a pause before a vote that could swing it, longer before the one that ends it
+    if (deciding || (close && i >= 2)) {
+      steps.push({ k: 'say', by: V._host, host: true, text: HOLD[i % HOLD.length], focus: before.slice(0, 2).map(x => x[0]), tense: true, hold: true });
+      if (deciding) steps.push({ k: 'beat', text: `${V._host} unfolds the paper and takes a long look at it before turning it around.`, focus: before.slice(0, 2).map(x => x[0]), tense: true });
+    } else if (i === 0) steps.push({ k: 'say', by: V._host, host: true, text: OPEN[(ballots.length + i) % OPEN.length] });
     if (!d) tally[v.voted] = (tally[v.voted] || 0) + 1;
-    steps.push({ k: 'read', vote: v.voted, dead: !!d, deciding: !!deciding, tally: { ...tally }, focus: [v.voted] });
-  }
+    const after = lead(tally);
+    let line;
+    if (d) line = `${v.voted}. Does not count.`;
+    else if (deciding) line = `The ${V._nth || 'next'} person voted out ${V._of}... ${v.voted}.`;
+    else if (after.length >= 2 && i >= 1) line = `${v.voted}. That's ${word(after[0][1])} vote${after[0][1] === 1 ? '' : 's'} ${after[0][0]}, ${word(after[1][1])} vote${after[1][1] === 1 ? '' : 's'} ${after[1][0]}.`;
+    else if (after.length === 1 && tally[v.voted] > 1) line = `${v.voted}. That's ${word(tally[v.voted])} votes ${v.voted}.`;
+    else line = `${v.voted}.`;
+    steps.push({ k: 'read', vote: v.voted, dead: !!d, deciding: !!deciding, tally: { ...tally }, focus: [v.voted], line, tense: !!deciding || close });
+    if (d) steps.push({ k: 'beat', text: `A vote for ${v.voted}, and it doesn't count. ${v.voted} lets out a breath.`, focus: [v.voted] });
+  });
   if (tie) {
     steps.push({ k: 'title', kicker: 'Deadlock', name: 'A tie', faces: Object.entries(tally).filter(([, c]) => c === Math.max(...Object.values(tally))).map(([n]) => n) });
     say(`We have a tie. We vote again.`);
@@ -682,7 +714,7 @@ export function tdStepTranscript(screen) {
     else if (s.k === 'ballots') out.push(`(${s.text})`);
     else if (s.k === 'idol') out.push(`(${s.by} plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${s.for}` : ''}.)`);
     else if (s.k === 'safe') out.push(`${screen.host || 'Chris'}: "${s.who}${s.immune ? ', you have immunity' : ''}." (${s.who} is safe${s.last ? ': the last ' + s.item : ''}.)`);
-    else if (s.k === 'read') out.push(`${screen.host || 'Chris'}: "${s.vote}${s.dead ? '. Does not count' : ''}."`);
+    else if (s.k === 'read') out.push(`${screen.host || 'Chris'}: "${s.line || `${s.vote}${s.dead ? '. Does not count' : ''}.`}"`);
     else if (s.k === 'out') out.push(`(${s.who} is ${s.island ? 'voted out' : 'eliminated'}.)`);
     else if (s.k === 'found') out.push(s.text ? `[${s.label}] ${s.text}` : `[Found: ${s.label} — ${s.who}]`);
   }

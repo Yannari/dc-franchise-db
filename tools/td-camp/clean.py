@@ -233,6 +233,8 @@ def clean(name, P):
             os.remove(os.path.join(SPRITES, f))
     T = os.path.join(REPO, 'tools', 'td-camp', 'traced')
     img = sharpen_4k(os.path.join(T, 'src', P['src']), P.get('anchor', 0.5), P.get('box'))
+    if P.get('flip'):
+        img = img[:, ::-1].copy()            # a mirrored frame: another team's camp, another stretch of shore
     if P.get('cut'):
         cut = P['cut']                    # polygons inline, or a file: a mask .png or a polygon .json
         if isinstance(cut, str):

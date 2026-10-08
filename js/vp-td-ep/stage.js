@@ -263,7 +263,7 @@ export function shotOf(screen, L, toks) {
   const wide = { k: 1, x: 0, y: 0, who: [] };
   // the walk to the torch is shot wide: the sign, the torch and the walk all in frame
   if (s.act?.kind === 'torch') return wide;
-  if (L.conf || !L.scene || s.k === 'scene' || s.k === 'title' || s.k === 'ballot' || s.k === 'found' || s.k === 'ballots') return wide;
+  if (L.conf || !L.scene || s.k === 'scene' || s.k === 'title' || s.k === 'ballot' || s.k === 'intro' || s.k === 'found' || s.k === 'ballots') return wide;
   const speaker = s.k === 'say' ? s.by : s.k === 'safe' ? s.who : s.k === 'read' ? null : null;
   const ceremony = !!L.scene.ceremony;
   if (s.host && ceremony) return wide;
@@ -347,6 +347,7 @@ export function hudHtml(screen, L, fresh, o = {}) {
   }
   if (L.tense) h += `<div class="tdx-chop">On the chopping block</div>`;
   if (s.k === 'ballot') h += ballotHtml(s, fresh);
+  if (s.k === 'intro') h += introHtml(s, fresh);
   if (s.k === 'title') h += `<div class="tdx-title${fresh ? ' fresh' : ''}${s.tone ? ' ' + esc(s.tone) : ''}${s.vs ? ' vs' : ''}"><div class="band"></div><div class="inner"><div class="kicker">${esc(s.kicker)}</div><div class="big">${esc(s.name)}</div></div><div class="faces">${(s.faces || []).map((n, i) => `${s.vs && i ? '<b class="vsx">VS</b>' : ''}<img src="${esc(avatar(n))}" alt="">`).join('')}</div></div>`;
   if (s.k === 'found') h += foundHtml(s, fresh);
   if (s.k === 'ballots') h += `<div class="tdx-title tdx-ballots${fresh ? ' fresh' : ''}"><div class="band"></div><div class="inner"><div class="kicker">The vote</div><div class="big">${esc(s.text)}</div></div><div class="faces">${(s.who || []).map((n, i) => `<span style="--i:${i}"><img src="${esc(avatar(n))}" alt=""><b>✓</b></span>`).join('')}</div></div>`;
@@ -392,7 +393,7 @@ export function dialogue(screen, L) {
   if (s.k === 'out') return { name: '', cls: 'dir', text: `${s.who} is ${s.island ? 'voted out' : 'eliminated'}.` };
   if (s.k === 'found') return s.text ? { name: '', cls: 'dir', text: s.text, badge: s.item ? { text: s.label.toUpperCase(), cls: 'gold' } : null } : { name: '', cls: 'dir hidden', text: '' };
   if (s.k === 'idol') return { name: '', cls: 'dir', text: `${s.by} stands up and plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${s.for}` : ''}.` };
-  if (s.k === 'ballots' || s.k === 'title' || s.k === 'ballot') return { name: '', cls: 'dir hidden', text: '' };
+  if (s.k === 'ballots' || s.k === 'title' || s.k === 'ballot' || s.k === 'intro') return { name: '', cls: 'dir hidden', text: '' };
   return { name: '', cls: 'dir hidden', text: '' };
 }
 
@@ -487,4 +488,22 @@ export function ballotHtml(s, fresh) {
       <svg class="ink" viewBox="0 0 1000 220"><text x="500" y="${Math.round(150 + (120 - fs) / 3)}" text-anchor="middle" font-size="${fs}" style="font-family:${H.f};font-weight:${H.w || 400};stroke-width:${weight}" transform="rotate(${slant} 500 120) skewX(${-slant})">${letters}</text><path class="ul" d="M${500 - half} 185 q ${half} 16 ${half * 2} -6"/></svg>
       <div class="by"><img src="${esc(avatar(s.voter))}" alt=""><span>${esc(s.voter)} votes</span></div></div>
   </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE INTRO CARD — a newcomer's character-select card on arrival day (arrival.js)
+// ══════════════════════════════════════════════════════════════════════
+export function introHtml(s, fresh) {
+  const facts = [s.age ? `${s.age}` : '', s.job || '', s.home || ''].filter(Boolean);
+  const bars = (s.stats || []).map((x, i) => `<div class="st" style="--i:${i}"><span>${esc(x.k)}</span><i><b style="width:${Math.max(8, Math.min(100, x.v * 10))}%"></b></i></div>`).join('');
+  return `<div class="tdx-intro${fresh ? ' fresh' : ''}">
+    <div class="sweep"></div><div class="streaks"></div>
+    <div class="port"><img src="${esc(avatar(s.who))}" alt=""></div>
+    <div class="info">
+      <div class="num">Contestant ${s.n} / ${s.of}${s.returnee ? ' · Returning' : ''}</div>
+      <div class="nm">${esc(s.who)}</div>
+      ${s.tag ? `<div class="tag">${esc(s.tag)}</div>` : ''}
+      ${facts.length ? `<div class="facts">${facts.map(f => `<span>${esc(f)}</span>`).join('')}</div>` : ''}
+      <div class="stats">${bars}</div>
+    </div></div>`;
 }

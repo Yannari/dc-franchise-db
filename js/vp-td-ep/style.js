@@ -234,6 +234,50 @@ export const TDX_CSS = `
 .tdx .tdx-ballot.passport .card{--ink:#1d3a6b;color:#1d3a6b;background:radial-gradient(circle at 80% 30%,rgba(200,40,44,.08),transparent 40%),repeating-linear-gradient(45deg,#e9f1e6 0 6px,#e1ebdd 6px 12px);border:2px solid #9bb59a}
 .tdx .tdx-ballot.bamboo .card{--ink:#2a1a0e;color:#4a2e14;background:repeating-linear-gradient(90deg,#d9b56e 0 18%,#c9a25a 18% 19%,#d9b56e 19% 37%),#d9b56e;border-radius:18px}
 .tdx .tdx-ballot.ticket .card{--ink:#b3121b;color:#7a1016;background:#f6e7c8;border-radius:4px;outline:.25cqw dashed rgba(122,16,22,.45);outline-offset:-1cqw}
+.tdx .tdx-intro{position:absolute;inset:0;z-index:15;pointer-events:none;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:3%;background:linear-gradient(100deg,rgba(8,10,20,.0) 0%,rgba(8,10,20,.72) 30%,rgba(8,10,20,.72) 70%,rgba(8,10,20,0) 100%)}
+.tdx .tdx-intro .sweep{position:absolute;left:-10%;right:-10%;top:28%;height:44%;background:linear-gradient(90deg,var(--or),#ffd23a);transform:skewY(-6deg);box-shadow:0 0 0 .4cqw #111,0 0 40px rgba(255,170,40,.5)}
+.tdx .tdx-intro .streaks{position:absolute;inset:0;background:repeating-linear-gradient(-6deg,transparent 0 3cqw,rgba(255,255,255,.07) 3cqw 3.3cqw)}
+.tdx .tdx-intro .port{position:relative;width:24%;aspect-ratio:1;border-radius:14%;overflow:hidden;border:.45cqw solid #111;box-shadow:0 0 0 .3cqw #fff,0 14px 40px rgba(0,0,0,.6);background:#fff;transform:rotate(-4deg)}
+.tdx .tdx-intro .port img{width:100%;height:100%;object-fit:cover}
+.tdx .tdx-intro .info{position:relative;color:#fff;max-width:44%;text-shadow:0 3px 0 #111}
+.tdx .tdx-intro .num{font:900 1.05cqw/1 Nunito;letter-spacing:.3em;text-transform:uppercase;color:#111;text-shadow:none;margin-bottom:.6cqw}
+.tdx .tdx-intro .nm{font:400 6.4cqw/1 'Lilita One';letter-spacing:.02em;-webkit-text-stroke:.25cqw #111;paint-order:stroke}
+.tdx .tdx-intro .tag{display:inline-block;margin-top:.6cqw;padding:.35cqw 1.1cqw;background:#111;color:#ffd23a;font:400 1.7cqw/1 'Lilita One';letter-spacing:.06em;transform:skewX(-8deg);text-shadow:none}
+.tdx .tdx-intro .facts{display:flex;gap:.6cqw;margin-top:.8cqw;flex-wrap:wrap}
+.tdx .tdx-intro .facts span{padding:.3cqw .8cqw;background:rgba(255,255,255,.92);color:#111;font:800 1.05cqw/1 Nunito;text-transform:uppercase;letter-spacing:.08em;border-radius:3px;text-shadow:none}
+.tdx .tdx-intro .stats{margin-top:1cqw;display:grid;gap:.45cqw;width:24cqw}
+.tdx .tdx-intro .st{display:grid;grid-template-columns:7cqw 1fr;align-items:center;gap:.6cqw;font:900 .95cqw/1 Nunito;text-transform:uppercase;letter-spacing:.1em;color:#111;text-shadow:none}
+.tdx .tdx-intro .st i{height:1cqw;background:rgba(0,0,0,.35);border-radius:9px;overflow:hidden;border:2px solid #111}
+.tdx .tdx-intro .st b{display:block;height:100%;background:linear-gradient(90deg,#fff,#7af0ff)}
+.tdx .tdx-intro.fresh .sweep{animation:tdxSweep .45s cubic-bezier(.2,1,.3,1) both}
+.tdx .tdx-intro.fresh .port{animation:tdxPortIn .55s cubic-bezier(.2,1.5,.4,1) .1s both}
+.tdx .tdx-intro.fresh .info>*{animation:tdxInfoIn .45s cubic-bezier(.2,1.3,.4,1) both}
+.tdx .tdx-intro.fresh .nm{animation-delay:.25s}.tdx .tdx-intro.fresh .tag{animation-delay:.4s}.tdx .tdx-intro.fresh .facts{animation-delay:.5s}.tdx .tdx-intro.fresh .stats{animation-delay:.6s}
+.tdx .tdx-intro.fresh .st b{animation:tdxBar .7s cubic-bezier(.2,1,.3,1) calc(.7s + var(--i) * .12s) both}
+.tdx .tdx-intro.fresh .streaks{animation:tdxStreak .6s linear infinite}
+@keyframes tdxSweep{from{transform:skewY(-6deg) translateX(-110%)}to{transform:skewY(-6deg) translateX(0)}}
+@keyframes tdxPortIn{from{transform:translateX(-60cqw) rotate(-30deg) scale(.6)}to{transform:rotate(-4deg)}}
+@keyframes tdxInfoIn{from{opacity:0;transform:translateX(18cqw)}to{opacity:1;transform:none}}
+@keyframes tdxBar{from{width:0}}
+@keyframes tdxStreak{to{background-position:9cqw 0}}
+.tdx .tdx-ride{position:absolute;width:16%;transform:translate(-50%,-70%);animation:tdxRide 2.6s cubic-bezier(.3,.7,.4,1) forwards;pointer-events:none;z-index:3}
+.tdx .tdx-ride svg{width:100%;display:block}
+.tdx .tdx-ride.boat svg,.tdx .tdx-ride.canoe svg{animation:tdxBob 1s ease-in-out infinite alternate}
+.tdx .tdx-ride.bus{width:20%;animation-name:tdxBus}
+@keyframes tdxRide{0%{margin-left:-70cqw;opacity:1}38%{margin-left:0}62%{margin-left:0;opacity:1}100%{margin-left:70cqw;opacity:0}}
+@keyframes tdxBus{0%{margin-left:80cqw}40%{margin-left:0}64%{margin-left:0;opacity:1}100%{margin-left:-80cqw;opacity:0}}
+@keyframes tdxBob{from{transform:translateY(0) rotate(-1.5deg)}to{transform:translateY(-6%) rotate(1.5deg)}}
+.tdx .tdx-ride.big{width:34%;z-index:4}
+.tdx .tdx-ride.big.helicopter{width:26%;animation:tdxHeli 4.2s cubic-bezier(.3,.7,.4,1) forwards}
+.tdx .tdx-ride.big.helicopter .rot{transform-origin:120px 11px;animation:tdxRotor .12s linear infinite}
+.tdx .tdx-ride.big.jet{width:52%;animation:tdxTaxi 4.2s cubic-bezier(.25,.8,.35,1) forwards}
+.tdx .tdx-ride.big.bus,.tdx .tdx-ride.big.tram{animation:tdxBus 4.2s cubic-bezier(.3,.7,.4,1) forwards}
+.tdx .tdx-ride.big.boat{animation:tdxRide 4.2s cubic-bezier(.3,.7,.4,1) forwards}
+@keyframes tdxHeli{0%{margin-left:70cqw;margin-top:-30cqw;transform:translate(-50%,-70%) rotate(-12deg)}40%{margin-left:0;margin-top:0;transform:translate(-50%,-70%) rotate(-4deg)}50%,70%{margin-top:3cqw;transform:translate(-50%,-70%) rotate(0)}100%{margin-left:-80cqw;margin-top:-34cqw;transform:translate(-50%,-70%) rotate(10deg)}}
+@keyframes tdxRotor{from{transform:scaleX(1)}50%{transform:scaleX(.15)}to{transform:scaleX(1)}}
+@keyframes tdxTaxi{0%{margin-left:80cqw}55%{margin-left:6cqw}100%{margin-left:0}}
+.tdx .tdx-tok.walkin{animation:tdxWalkIn 1.2s cubic-bezier(.3,.8,.3,1) both}
+@keyframes tdxWalkIn{from{margin-left:-40cqw;opacity:0}to{margin-left:0;opacity:1}}
 .tdx .tdx-title{position:absolute;inset:0;z-index:15;display:grid;place-items:center;overflow:hidden;background:rgba(8,10,18,.4)}
 .tdx .tdx-title .band{position:absolute;left:-10%;right:-10%;top:30%;height:40%;background:var(--or);transform:rotate(-6deg);box-shadow:0 0 0 6px #12141c,0 0 0 9px var(--am)}
 .tdx .tdx-title.tdx-ballots .band{background:var(--cf)}

@@ -12,6 +12,7 @@ import { tdCampScreen, tdTribalScreen, tdTribalStepped, cleanText, placeScene, p
 import { tdCampMap, hasMap, MAP_VENUES, openWindow, nextConv, lockedConv, PLACE_LABEL } from './map.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf } from './twists.js';
 import { tdTwistBlocksScreen, tdMergeScreen } from './twist-screens.js';
+import { tdArrivalScreen, hasArrivals } from './arrival.js';
 import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf } from './stage.js';
 import { TDX_CSS, TDX_FONTS } from './style.js';
 import { liveGL } from './glplate.js';
@@ -67,6 +68,7 @@ export function tdStepScreens(ep, classic = [], o = {}) {
 // episode paths give the Redemption Island life screen, so the record says which island it is.
 function islandScreen(ep, S, o) {
   const id = S?.id || '';
+  if (id === 'cold-open' && hasArrivals(ep)) return tdArrivalScreen(ep, o);
   if (id === 'ri-choice') return tdRiChoiceScreen(ep, o);
   if (id === 'ri-life') return tdIslandLifeScreen(ep, false, o);
   if (id === 'rescue-life') return tdIslandLifeScreen(ep, !!(ep.rescueIslandEvents || []).length, o);
@@ -89,6 +91,7 @@ function scriptHtml(scr) {
     else if (s.k === 'beat') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.text)})</div>`;
     else if (s.k === 'title') t = `<div class="tdx-ln sc" data-s="${i}">${esc(s.kicker)}: ${esc(s.name)}</div>`;
     else if (s.k === 'ballot') t = `<div class="tdx-ln sc" data-s="${i}">${esc(s.voter)} votes: ${esc(s.voted)}</div>`;
+    else if (s.k === 'intro') t = `<div class="tdx-ln sc" data-s="${i}">Contestant ${s.n}: ${esc(s.who)}${s.tag ? ' · ' + esc(s.tag) : ''}</div>`;
     else if (s.k === 'ballots') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.text)})</div>`;
     else if (s.k === 'idol') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.by)} plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${esc(s.for)}` : ''}.)</div>`;
     else if (s.k === 'safe') t = `<div class="tdx-ln" data-s="${i}"><b>${esc(scr.host || 'Chris')}:</b> ${esc(s.who)}${s.immune ? ', you won immunity' : ''}.</div>`;
@@ -143,6 +146,16 @@ function sync(uid) {
   if (R && root && root.dataset.idx == null) { R.idx = -1; stopAuto(R); R.wk = null; R.sceneAt = null; if (R.isMap) { R.mode = 'map'; R.scr = null; } }
   return R;
 }
+// the rides into an arrival (SVG, drawn in the shows' flat style)
+const RIDE = {
+  yacht: '<svg viewBox="0 0 240 90"><path d="M8 50h220l-26 32H40z" fill="#fff" stroke="#2a2a3a" stroke-width="4"/><path d="M8 50h220" stroke="#1d5fa8" stroke-width="6"/><path d="M60 50l14-22h96l22 22z" fill="#f4f6fa" stroke="#2a2a3a" stroke-width="4"/><path d="M84 28l10-14h56l12 14z" fill="#e8ecf2" stroke="#2a2a3a" stroke-width="4"/><rect x="82" y="34" width="20" height="10" fill="#26364e"/><rect x="110" y="34" width="20" height="10" fill="#26364e"/><rect x="138" y="34" width="20" height="10" fill="#26364e"/></svg>',
+  helicopter: '<svg viewBox="0 0 240 120"><g class="rot"><rect x="10" y="8" width="220" height="7" rx="3" fill="#2a2a3a"/></g><rect x="114" y="14" width="10" height="16" fill="#2a2a3a"/><path d="M60 40q0-12 30-12h60q34 0 44 26l6 14q2 10-10 10H70q-10 0-10-12z" fill="#e23b3b" stroke="#2a2a3a" stroke-width="4"/><path d="M150 32h20q14 4 18 24h-38z" fill="#9ad8f2" stroke="#2a2a3a" stroke-width="3"/><path d="M62 52H10l-6-16h10l10 10h38" fill="#e23b3b" stroke="#2a2a3a" stroke-width="4"/><path d="M80 80v14M160 80v14M66 96h110" stroke="#2a2a3a" stroke-width="5" fill="none"/></svg>',
+  jet: '<svg viewBox="0 0 320 120"><path d="M20 62q0-20 30-22h220q30 2 44 22-14 20-44 22H50q-30-2-30-22z" fill="#2c2c34" stroke="#111" stroke-width="4"/><path d="M60 40l-26-34h28l40 34z" fill="#2c2c34" stroke="#111" stroke-width="4"/><path d="M150 70l-30 40h40l40-40z" fill="#1c1c22" stroke="#111" stroke-width="4"/><circle cx="64" cy="22" r="10" fill="#e8a23a"/>' + Array.from({ length: 8 }, (_, i) => `<rect x="${110 + i * 22}" y="54" width="12" height="9" rx="2" fill="#7ac8e8"/>`).join('') + '<circle cx="110" cy="96" r="9" fill="#222"/><circle cx="230" cy="96" r="9" fill="#222"/></svg>',
+  tram: '<svg viewBox="0 0 260 110"><rect x="10" y="20" width="110" height="56" rx="10" fill="#f2c83a" stroke="#2a2a3a" stroke-width="4"/><rect x="130" y="30" width="120" height="46" rx="8" fill="#f2c83a" stroke="#2a2a3a" stroke-width="4"/><path d="M14 20h102M134 30h112" stroke="#d33a3a" stroke-width="8"/><circle cx="40" cy="86" r="11" fill="#222"/><circle cx="96" cy="86" r="11" fill="#222"/><circle cx="160" cy="86" r="11" fill="#222"/><circle cx="222" cy="86" r="11" fill="#222"/></svg>',
+  boat: '<svg viewBox="0 0 200 80"><path d="M10 40h170l-22 30H32z" fill="#e8e2d0" stroke="#2a2a3a" stroke-width="4"/><path d="M10 40h170" stroke="#c8302a" stroke-width="7"/><rect x="70" y="12" width="62" height="28" rx="4" fill="#f4f0e6" stroke="#2a2a3a" stroke-width="4"/><rect x="80" y="18" width="16" height="12" fill="#7ac8e8"/><rect x="104" y="18" width="16" height="12" fill="#7ac8e8"/><path d="M150 40v-22" stroke="#2a2a3a" stroke-width="4"/></svg>',
+  canoe: '<svg viewBox="0 0 200 60"><path d="M6 24q94 34 188 0q-10 26-94 28Q16 50 6 24z" fill="#a8622e" stroke="#3a1e0a" stroke-width="4"/><path d="M30 30h140" stroke="#e8c070" stroke-width="5"/><path d="M150 6l-34 44" stroke="#6a3a18" stroke-width="5"/></svg>',
+  bus: '<svg viewBox="0 0 220 110"><rect x="8" y="10" width="200" height="74" rx="12" fill="#f2c83a" stroke="#2a2a3a" stroke-width="5"/><rect x="22" y="22" width="34" height="26" rx="4" fill="#7ac8e8" stroke="#2a2a3a" stroke-width="3"/><rect x="64" y="22" width="34" height="26" rx="4" fill="#7ac8e8" stroke="#2a2a3a" stroke-width="3"/><rect x="106" y="22" width="34" height="26" rx="4" fill="#7ac8e8" stroke="#2a2a3a" stroke-width="3"/><rect x="152" y="22" width="40" height="52" rx="4" fill="#3a3a4a"/><circle cx="52" cy="88" r="14" fill="#222"/><circle cx="168" cy="88" r="14" fill="#222"/></svg>',
+};
 // the speaker's team as it stood that episode (merged: the merged tribe), and its colour
 function teamOfSpeaker(epNum, name) {
   const ep = (window.gs?.episodeHistory || []).find(e => e.num === +epNum);
@@ -271,7 +284,11 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
     if (a.kind === 'shake') { who.forEach(n => tokAt(castEl, n).classList.add('shake')); const el = tokAt(castEl, who[who.length - 1] || ''); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'WHAM!'); } sfx('slap'); }
     if (a.kind === 'storm' && who[0]) { tokAt(castEl, who[0]).classList.add('storm'); sfx('slam'); const c = centre(st, tokAt(castEl, who[0])); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'SLAM!'); }
     if (a.kind === 'shout' && who[0]) { const c = centre(st, tokAt(castEl, who[0])); for (let k = 0; k < 3; k++) setTimeout(() => fxAt(fxEl, 'tdx-ring', c.x, c.y + c.h / 2), k * 140); sfx('boing'); }
-    if (a.kind === 'arrive') who.forEach(n => { const el = tokAt(castEl, n); el.classList.remove('arrive'); void el.offsetWidth; el.classList.add('arrive'); sfx('whoosh'); });
+    // a group ride: the bus, the helicopters, the jet, the tram crosses the set (arrival.js)
+    if (a.kind === 'ride') { const R = RIDE[a.ride]; if (R) { fxAt(fxEl, `tdx-ride big ${a.ride}`, 50, a.ride === 'helicopter' ? 34 : 70, R, 4200); sfx(a.ride === 'helicopter' ? 'thunder' : 'whoosh'); } }
+    if (a.kind === 'arrive') who.forEach(n => { const el = tokAt(castEl, n); el.classList.remove('arrive'); void el.offsetWidth; el.classList.add('arrive'); sfx('whoosh');
+      // what brought them: a boat or canoe glides in and pulls away, a bus pulls up, or they just walk in
+      if (a.ride && a.ride !== 'walk' && el) { const c = centre(st, el); fxAt(fxEl, `tdx-ride ${a.ride}`, c.x, c.y + c.h * .9, RIDE[a.ride] || '', 2600); } else if (el) el.classList.add('walkin'); });
     if (a.kind === 'train') who.forEach(n => tokAt(castEl, n).classList.add('train'));
     if (a.kind === 'gust') { who.forEach(n => tokAt(castEl, n).classList.add('shake')); sfx('thunder'); const fl = fxAt(fxEl, 'tdx-bolt', 50, 0, '', 900); fl.style.left = '0'; }
     if (a.kind === 'hurt' && who[0]) { tokAt(castEl, who[0]).classList.add('shake'); const c = centre(st, tokAt(castEl, who[0])); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'OW!'); sfx('slap'); }
@@ -300,6 +317,7 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
   if (s.k === 'out') sfx('out');
   if (s.k === 'found') sfx(s.item ? 'idol' : 'empty');
   if (s.k === 'title' && s.vs) sfx('thunder');
+  if (s.k === 'intro') { sfx('title'); setTimeout(() => sfx('pop'), 450); }
   if (s.k === 'read') { fxAt(fxEl, `tdx-voteslip${s.dead ? ' dead' : ''}`, 50, 30, esc(s.vote), 1800); sfx('slip'); }
   if (s.k === 'safe') {
     const host = toks.find(t => t.host); const to = tokAt(castEl, s.who);
@@ -675,7 +693,7 @@ export function tdxReset(uid) { const R = sync(uid); if (!R) return; if (R.isMap
 export function tdxJump(el, i) { const root = el.closest('.tdx[data-uid]'); if (!root) return; const R = sync(root.dataset.uid); if (!R || (R.isMap && R.mode !== 'talk')) return; stopAuto(R); R.idx = i; paint(root.dataset.uid, false); }
 export function tdxIntel(uid) { const st = document.getElementById(`tdx-st-${uid}`); if (!st) return; st.classList.toggle('intel-open'); st.querySelector('.tdx-ibtn')?.classList.remove('new'); }
 export function tdxTab(uid, e) { const b = e.target.closest('[data-tab]'); if (!b) return; const R = reg()[uid]; if (!R) return; R.tab = b.dataset.tab; const st = document.getElementById(`tdx-st-${uid}`); st.querySelector('.tdx-intel').innerHTML = intelHtml(R.scr, ledgerAt(R.scr, R.idx), R.tab, false); }
-const holdFor = s => Math.min(9000, 1700 + String(s?.text || '').length * 40) + (['title', 'idol', 'out', 'found'].includes(s?.k) ? 2400 : 0) + (s?.k === 'ballot' ? 2600 : 0) + (s?.tense ? 1200 : 0) + (s?.k === 'scene' ? 900 : 0) + (s?.k === 'safe' && s.last ? 1800 : 0);
+const holdFor = s => Math.min(9000, 1700 + String(s?.text || '').length * 40) + (['title', 'idol', 'out', 'found', 'intro'].includes(s?.k) ? 2400 : 0) + (s?.k === 'ballot' ? 2600 : 0) + (s?.tense ? 1200 : 0) + (s?.k === 'scene' ? 900 : 0) + (s?.k === 'safe' && s.last ? 1800 : 0);
 function stopAuto(R) { R.auto = false; clearTimeout(R.timer); }
 export function tdxAuto(uid) {
   const R = sync(uid); if (!R) return;

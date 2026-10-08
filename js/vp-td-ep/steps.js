@@ -628,9 +628,9 @@ export function tdTribalScreen(ep, o = {}) {
   say(V.exitLine(elim));
   // where the goodbye ends in a close-up (inside the car, on the boat's deck), their own last line waits for it
   const exitLines = [...(story?.exit || [])];
-  const lastWords = (limo || clown) && exitLines.length && exitLines[exitLines.length - 1].by === elim ? exitLines.pop() : null;
-  for (const l of exitLines) steps.push(lineStep(l));
   const side = venue === 'hosted-camp' ? plateKey(venue, 'boat-side', 'night') : null;
+  const lastWords = (limo || clown || side) && exitLines.length && exitLines[exitLines.length - 1].by === elim ? exitLines.pop() : null;
+  for (const l of exitLines) steps.push(lineStep(l));
   if (hatch) {
     // World Tour: no boat, no carpet. They run at the open hatch and jump (the Drop of Shame)
     steps.push({ k: 'beat', text: `${elim} takes a run at the open hatch and jumps. Out of the plane, out of the game.`, act: { kind: 'jump', who: [elim], tu: .22 }, focus: [elim] });
@@ -639,6 +639,7 @@ export function tdTribalScreen(ep, o = {}) {
   } else if (side) {
     // Wawanakwa: alongside the Boat of Losers for the last step aboard, the horn, the motor
     steps.push({ k: 'scene', spot: 'boat-side', tod: 'night', plate: side, place: 'The Boat of Losers', time: '9:12 PM', focus: [elim], bg: [], wide: true, places: { [elim]: { u: .36, v: .99, s: .5, h: 64, close: true } } });
+    if (lastWords) steps.push(lineStep(lastWords));
     steps.push({ k: 'beat', text: `${elim} steps aboard the Boat of Losers and leaves the game.`, act: { kind: 'board', who: [elim] }, focus: [elim] });
   } else if (limo) {
     // from behind the car, the walk to its door; inside, the last words; then it drives off in a cloud of smoke

@@ -53,8 +53,10 @@ import nPsy from './n-psy.js';
 import nRun from './n-run.js';
 import nThr from './n-thr.js';
 import nPrev from './n-prev.js';
+import nLong2 from './n-long2.js';
+import nLong3 from './n-long3.js';
 
-const FILES = [firstday, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival, nGroup3, nGroup4, nGroup5, nArrival2, nTwist, nTribal2, nTwist2, nVote4, nVote5, nRoom, nAuction, nExile, nFeast, nPlan, nPlan2, nFirstImp, nAucFloor, nFirstImp2, nPublic, nTqa, nAdvPlay, nTqa2, nArc, nVp2, nVt2, nTqa3, nMorning3, nVp3, nVt3, nPsy, nRun, nThr, nPrev];
+const FILES = [firstday, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival, nGroup3, nGroup4, nGroup5, nArrival2, nTwist, nTribal2, nTwist2, nVote4, nVote5, nRoom, nAuction, nExile, nFeast, nPlan, nPlan2, nFirstImp, nAucFloor, nFirstImp2, nPublic, nTqa, nAdvPlay, nTqa2, nArc, nVp2, nVt2, nTqa3, nMorning3, nVp3, nVt3, nPsy, nRun, nThr, nPrev, nLong2, nLong3];
 
 export const STORY_POOLS = {};
 for (const f of FILES) for (const [k, v] of Object.entries(f)) STORY_POOLS[k] = STORY_POOLS[k] ? [...STORY_POOLS[k], ...v] : [...v];

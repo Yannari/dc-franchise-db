@@ -75,6 +75,8 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     const voiceFit = (want, name) => [].concat(want).some(t => voiceOf(name).includes(t));
     const fits = (STORY_POOLS[k] || []).filter(e => placeOk(e) && Object.entries(e.when || {}).every(([f, v]) =>
       f === 'voice' ? voiceFit(v, who.a) : f === 'voiceB' ? voiceFit(v, who.b) : f === 'voiceC' ? voiceFit(v, who.c)
+        // `notVoice`: a line that is wrong in this mouth (a meek line for a loud speaker)
+        : f === 'notVoice' ? !voiceFit(v, who.a) : f === 'notVoiceB' ? !voiceFit(v, who.b)
         : (Array.isArray(v) ? v.includes(facts[f]) : facts[f] === v)));
     // nobody plays the same scene twice in a season: once everything that fits has been said
     // by one of these people, the moment airs in its own short words instead (director.js)
@@ -90,6 +92,12 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
       const least = Math.min(...fits.map(e => uses[e.id]));
       for (let i = fits.length - 1; i >= 0; i--) if (uses[fits[i].id] > least) fits.splice(i, 1);
     } else if (ctx.unique !== false) for (let i = fits.length - 1; i >= 0; i--) if (uses[fits[i].id]) fits.splice(i, 1);
+    // the speaker's own voice first: a scene written for one of a's strongest tags (their first three)
+    // wins over one that only fits the archetype or the stats (the user: an underdog with a temper
+    // should not sound like a doormat)
+    const top = voiceOf(who.a).slice(0, 3);
+    const mine = fits.filter(e => [].concat(e.when?.voice || []).some(t => top.includes(t)));
+    if (mine.length) fits.splice(0, fits.length, ...mine);
     return fits;
   };
   // A scene cast with three or four people plays a scene written for all of them: the extra people
@@ -105,7 +113,7 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     if (!fits.length) continue;
     // pickEntry checks `when` again against the facts, and the facts hold no voices: the voice gates
     // were checked above, so it sees each entry without them (else no voiced entry ever aired)
-    const VOICE_KEYS = ['voice', 'voiceB', 'voiceC'];
+    const VOICE_KEYS = ['voice', 'voiceB', 'voiceC', 'notVoice', 'notVoiceB'];
     const bare = fits.map(e => (e.when && VOICE_KEYS.some(x => x in e.when)
       ? { ...e, when: Object.fromEntries(Object.entries(e.when).filter(([x]) => !VOICE_KEYS.includes(x))) } : e));
     const picked = pickEntry(ledger(), { [k]: bare }, k, facts, pairKey, rng, speakers, ctx.ep * 10 + (ctx.phase === 'post' ? 2 : 0));

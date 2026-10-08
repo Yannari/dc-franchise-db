@@ -13,11 +13,11 @@ import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 // what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
 const STORY_FACTS = new Set([...TD_FACT_KEYS,
   'venue', 'count', 'outcome', 'story', 'step', 'prev', 'prevGap', 'chapter', 'members', 'aOther', 'bOther', 'target', 'group',
-  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'fifth', 'sixth']);
+  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'fifth', 'sixth', 'notVoice', 'notVoiceB', 'home', 'job']);
 // names a line may say, and the fact that must be asked for unless the pool always has it
 const ALWAYS = new Set(['a', 'b', 'c', 'd', 'e', 'f', 'h', 'quarters', 'bed', 'item', 'here', 'place', 'host']);
 const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
-  threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder', other: 'other', pitcher: 'pitcher' };
+  threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder', other: 'other', pitcher: 'pitcher', home: 'home', job: 'job' };
 // a pool's guarantees: names its moment always carries
 const GUARANTEED = [
   [/^story\.morning\./, ['lastBoot', 'target', 'bootVotes']],
@@ -35,6 +35,7 @@ const GUARANTEED = [
   [/^long\.crowd\.huddle/, ['group']],
   [/^booth\.plan/, []],
   [/^arrive\./, ['landing']],
+  [/^arrive\.wait\./, ['latest']],
   [/^arrive\.meet\.history\.(siblings|family|cousins|couple|friends|knew|estranged|exes|exfriends)$/, ['kinWord']],
   [/^arrive\.meet\.history\.(wronged|wronger|oldflame|oldcouple|oldrivals|oldallies)$/, ['where']],
   [/^story\.vote\.(plan|swing)\./, ['target', 'votes']],
@@ -115,7 +116,8 @@ describe('td story pools', () => {
 
   it('lets a third person into a scene only when there is one', () => {
     for (const [, e] of all) {
-      const usesC = e.turns.some(t => t.by === 'c' || /\{c(\.\w+)?\}/.test(t.say || t.conf || t.beat || ''));
+      // an optional turn (opt: true) plays only when c is there, so it needs no gate
+      const usesC = e.turns.some(t => !t.opt && (t.by === 'c' || /\{c(\.\w+)?\}/.test(t.say || t.conf || t.beat || '')));
       if (usesC && !e.cOptional) expect(e.when?.third, `${e.id} uses c`).toBe(true);
     }
   });

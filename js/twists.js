@@ -575,6 +575,7 @@ export function generateDockArrivals(ep) {
   const usedPlayerLines = new Set();   // dedup player lines across season
   const usedStatFlavors = new Set();   // max 2 stat flavor overrides per stat type
   const reactedPlayers = new Set();    // each player reacts at most once
+  const arrivalState = { spoke: {} };  // who has talked on the dock so far (td/story/arrival.js)
 
   ordered.forEach((p, i) => {
     const arch = p.archetype || 'floater';
@@ -634,7 +635,7 @@ export function generateDockArrivals(ep) {
     let scene = null;
     try {
       scene = writeArrival({ ep, p: { ...p, isReturnee }, n: i, host, venue: seasonConfig.setting || 'hosted-camp',
-        onDock: onDock.map(d => ({ name: d.name, isReturnee: !!d.isReturnee })), chem: dockReaction ? { reactor: dockReaction.reactor, chemType: dockReaction.chemType } : null });
+        onDock: onDock.map(d => ({ name: d.name, isReturnee: !!d.isReturnee })), chem: dockReaction ? { reactor: dockReaction.reactor, chemType: dockReaction.chemType } : null, state: arrivalState });
     } catch (e) { if (typeof process !== 'undefined' && process.env?.VITEST) throw e; }
     if (scene) {
       hostLine = scene.hostLine || hostLine;

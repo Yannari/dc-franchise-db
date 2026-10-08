@@ -32,6 +32,7 @@ import { writerEndpoint } from './social/writer.js';
 // Studio runs in, and reading it there left the portrait panel's show dropdown
 // with nothing in it but "All shows".
 import { SHOWS } from './shows.js';
+import { readVoiceText, WORD_TAGS } from './td/story/voice-words.js';
 
 const ARCHETYPES = ['mastermind','schemer','hothead','challenge-beast','social-butterfly','loyal-soldier','wildcard','chaos-agent','floater','underdog','hero','villain','goat','perceptive-player','showmancer'];
 
@@ -1263,6 +1264,16 @@ async function _existingVoice(name) {
 // two operations are needed by the backfill script and by anything reading a
 // published profile. A second copy here would be the third prefix map this
 // project has had to reconcile.
+// What the Total Drama simulator hears in this voice (td/story/voice-words.js): the tags it reads
+// from the words, and any set outright with a hashtag ("#loud #dry"). Archetype, stats and age add
+// more in the sim; this shows the part the author controls.
+function _voiceReadHtml(text) {
+  const { hash, words } = readVoiceText(text || '');
+  const chip = (t, own) => `<b style="padding:1px 6px;border-radius:8px;background:${own ? 'rgba(255,170,60,.25)' : 'rgba(120,160,255,.18)'}">${own ? '#' : ''}${t}</b>`;
+  const got = [...hash.map(t => chip(t, true)), ...words.map(t => chip(t, false))].join(' ') || '<i>nothing yet</i>';
+  return `Simulator reads: ${got}<br>Set one outright with a hashtag in the text: ${WORD_TAGS.map(t => '#' + t).join(' ')}`;
+}
+
 function _composeVoice(d) {
   return composeVoice(d, stripBioLead(d.voice));
 }
@@ -1831,6 +1842,7 @@ function _renderEditor() {
       <label class="st-l">Voice profile <span class="st-hint">how they TALK + personality — the bio line below is added automatically</span>
         <textarea class="st-input st-area" id="st-f-voice" rows="3" placeholder="e.g. Minimal, calm and dry; lets people underestimate the pretty one…">${_esc(d.voice)}</textarea>
       </label>
+      <div class="st-hint" id="st-voice-read" style="margin:-4px 0 10px;line-height:1.5">${_voiceReadHtml(d.voice)}</div>
       <div class="st-row3">
         <label class="st-l">Ethnicity <span class="st-hint">queryable</span>
           <input class="st-input" id="st-f-ethnicity" value="${_esc(d.ethnicity)}" placeholder="e.g. Asian">
@@ -1935,7 +1947,7 @@ function _renderEditor() {
   ed.querySelector('#st-f-age').addEventListener('input', e => d.age = e.target.value.replace(/[^0-9]/g, ''));
   ed.querySelector('#st-f-sex').addEventListener('change', e => d.sexuality = e.target.value);
   ed.querySelector('#st-f-arch').addEventListener('change', e => { d.archetype = e.target.value; _updateRead(); });
-  ed.querySelector('#st-f-voice').addEventListener('input', e => d.voice = e.target.value);
+  ed.querySelector('#st-f-voice').addEventListener('input', e => { d.voice = e.target.value; const r = ed.querySelector('#st-voice-read'); if (r) r.innerHTML = _voiceReadHtml(d.voice); });
   ed.querySelector('#st-f-ethnicity').addEventListener('input', e => d.ethnicity = e.target.value);
   ed.querySelector('#st-f-nationality').addEventListener('input', e => d.nationality = e.target.value);
   ed.querySelector('#st-f-descriptor').addEventListener('input', e => d.descriptor = e.target.value);

@@ -17,7 +17,7 @@
 
 const H = (id, when, line, v) => ({ id, ...(when ? { when } : {}), turns: [{ by: 'h', say: line, ...(v ? { v } : {}) }] });
 
-export default {
+const POOLS = {
   // ── the host's introduction ──
   'arrive.host.villain': [
     H('np.hv1', null, "Watch your backs, everybody. {a} just arrived."),
@@ -670,3 +670,21 @@ export default {
     ] },
   ],
 };
+
+// One pool per part, not one per archetype (the user: arrivals "only use their archetype, not their
+// voices, ages, stats"): an archetype's lines join '.any' gated on the archetype, beside the lines
+// gated on a voice, an age band, a stat, a hometown or a job, so any of them can win (write.js puts
+// the speaker's own voice first, then the more specific match)
+const MEEK = ['loud', 'tough', 'blunt', 'cruel', 'proud', 'bossy', 'competitive'];
+const meekIds = new Set(['np.nu1', 'np.nu2', 'np.ng1', 'np.ng2', 'np.nl2', 'np.nf2']);
+const merged = {};
+for (const [k, pool] of Object.entries(POOLS)) {
+  const m = /^(arrive\.(?:host|new))\.([a-z-]+)$/.exec(k);
+  const key = m && m[2] !== 'any' ? `${m[1]}.any` : k;
+  const out = pool.map(e => {
+    const when = { ...(e.when || {}), ...(m && m[2] !== 'any' ? { arch: m[2] } : {}), ...(meekIds.has(e.id) ? { notVoice: MEEK } : {}) };
+    return Object.keys(when).length ? { ...e, when } : e;
+  });
+  merged[key] = [...(merged[key] || []), ...out];
+}
+export default merged;

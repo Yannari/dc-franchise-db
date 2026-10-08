@@ -62,9 +62,21 @@ export const WINDOW_NIGHT = { 'before-tribal': true };
 // showmance beginning or breaking, a blow-up. The clock waits for these; the rest are optional.
 const KEY_KIND = /^(crowd\.(huddle|lost|clash)|alliance\.|deal\.|pitch\.|recruit\.|plot\.|broker\.|credit\.|idol\.(confide|leak|snoop|tip)|adv\.|fallout\.|caught\.|blind\.|goat\.|save\.|threat\.notice|romance\.(showmance|first|tri|affair|breakup|cut)|drama\.(bomb|nemesis|clash))/;
 const KEY_TYPE = /^(allianceForm|allianceBetrayal|idolFound|idolConfession|idolBetrayal|betrayal|showmance|firstMove|secretFlip|stolenCredit|brokerExposed)/;
+// how much a key conversation matters: a turning point the engine named, then a storyline's step or
+// the vote plan, then a pitch or a deal
+function keyRank(ev) {
+  if (KEY_TYPE.test(ev?.type || '')) return 3;
+  if (ev?.story && (ev.storyline || ev.storyType === 'vote')) return 2;
+  return KEY_KIND.test(ev?.scene?.kind || '') ? 1 : 0;
+}
 export function isKey(ev) {
-  // a storyline's scene (td/story/director.js) is what the episode turns on
-  return !!ev?.story || KEY_KIND.test(ev?.scene?.kind || '') || KEY_TYPE.test(ev?.type || '');
+  // a step of a running storyline (td/story/director.js) or the talk before a vote is what the episode
+  // turns on; the director's other scenes (first-day small talk, the morning, a challenge's aftermath,
+  // a joke) are optional colour (the user, 2026-10-08: "why do we only have key conversations")
+  const minor = /^(friendship\.|rivalry\.(friction|cold)|showmance\.spark|alliance\.checkin|underdog\.rise)/.test(`${ev?.storyType}.${ev?.step}`);
+  // the talk before a vote: the plan and the warning are key, the first idea and the lining-up are colour
+  const storyKey = !!ev?.story && ((ev.storyType === 'vote' && !['spark', 'ally'].includes(ev.step)) || (ev.storyType !== 'vote' && !!ev.storyline && !minor));
+  return storyKey || KEY_KIND.test(ev?.scene?.kind || '') || KEY_TYPE.test(ev?.type || '');
 }
 
 // a short name for a conversation on its bubble: the badge the engine gave it, else its kind
@@ -142,14 +154,18 @@ export function tdCampMap(ep, phase, camps, o = {}) {
       if (place !== engineSpot && cap && convs.filter(c => c.window === win && c.place === place).length >= Math.max(2, Math.ceil(cap / 3))) place = engineSpot;
       const zone = zoneOf[place] || (zones[place] ? place : zoneOf[VENUES[venue].public] || VENUES[venue].public);
       // the conversation, played on its own: the same steps the linear camp screen gives it
-      const screen = tdCampScreen({ ...ep, campStory: null, campEvents: { [camp]: phase === 'pre' ? { pre: [ev], post: [] } : { pre: [], post: [ev] } } }, camp, phase, [], o);
+      const members = ep.campAccess?.groups?.[camp]?.members || (ep.tribesAtStart || []).find(t => t.name === camp)?.members || (ep.gsSnapshot?.tribes || []).find(t => t.name === camp)?.members || [];
+      const screen = tdCampScreen({ ...ep, campStory: null, campEvents: { [camp]: phase === 'pre' ? { pre: [ev], post: [] } : { pre: [], post: [ev] } } }, camp, phase, members, o);
       if (!screen) return;
-      convs.push({ i: convs.length, window: win, zone, place, key: isKey(ev), title: titleOf(ev), camp, storyline: ev.storyline || null,
+      convs.push({ i: convs.length, window: win, zone, place, key: isKey(ev), rank: keyRank(ev), title: titleOf(ev), camp, storyline: ev.storyline || null,
         who: [...new Set([...(ev.lines || []).map(l => l.by).filter(Boolean), ...(ev.players || [])])].filter(n => typeof n === 'string').slice(0, 4),
         screen: { ...screen, id: `${screen.id}-c${convs.length}`, label: `${zones[zone]?.label || placeName(place)} · ${WINDOW_LABEL[win]}` } });
     });
   }
   if (!convs.length) return null;
+  // at most three key conversations in a part of the day: the ones the episode turns on most; the
+  // rest stay on the map to watch or skip
+  for (const w of order) convs.filter(c => c.window === w && c.key).sort((a, b) => b.rank - a.rank || a.i - b.i).slice(3).forEach(c => { c.key = false; });
   // story order: the camp's day first, the engine's own order inside a window
   const rank = w => order.indexOf(w);
   convs.sort((a, b) => rank(a.window) - rank(b.window) || a.i - b.i);

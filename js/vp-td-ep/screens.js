@@ -522,7 +522,10 @@ function mapPaint(uid, fresh) {
   world.innerHTML = `${worldHtml(scr0, L)}<div class="tdx-cast">${toks}</div><div class="tdx-fx"></div>`;
   st.querySelector('.tdx-hud').innerHTML = hudHtml(scr0, L, fresh, {});
   layer.innerHTML = clockHtml(uid, R, open) + (R.mode === 'zone' ? zoneHtml(uid, R, here) : pinsHtml(uid, R, W)) + listHtml(uid, R, here);
-  const cnt = document.getElementById(`tdm-count-${uid}`); if (cnt) cnt.textContent = `${R.seen.size} / ${M.convs.length} watched`;
+  // the whole day's count, and how many of those are still to come in later windows (the user, 2026-10-08:
+  // "it says 5 to watch but I only get key conversations": the rest open later in the day)
+  const later = M.convs.filter(c => M.windows.findIndex(w => w.id === c.window) > R.win && !R.seen.has(c.i)).length;
+  const cnt = document.getElementById(`tdm-count-${uid}`); if (cnt) cnt.textContent = `${R.seen.size} / ${M.convs.length} watched today${later ? ` · ${later} later in the day` : ''}`;
   ambience(worldSound(scr0, L));
 }
 
@@ -535,7 +538,7 @@ function clockHtml(uid, R, open) {
   }).join('');
   const later = R.win < M.windows.length - 1 && !keyLeft
     ? `<button type="button" class="tdm-later" onclick="tdmWin('${uid}',${R.win + 1})">Later ⏩</button>`
-    : keyLeft ? `<span class="tdm-left"><i>${ICON_STAR}</i>${keyLeft} key conversation${keyLeft > 1 ? 's' : ''} left</span>` : '';
+    : keyLeft ? `<span class="tdm-left" title="Watch these to unlock the next part of the day"><i>${ICON_STAR}</i>${keyLeft} key conversation${keyLeft > 1 ? 's' : ''} left to unlock ${M.windows[R.win + 1]?.label || 'the rest of the day'}</span>` : '';
   return `<div class="tdm-clock">${tabs}${later}</div>`;
 }
 

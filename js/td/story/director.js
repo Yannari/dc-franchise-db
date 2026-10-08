@@ -33,6 +33,7 @@ import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './rec
 import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
 import { writeTribal, whyOf as ballotWhy, writeCrashReplies, writeExit } from './tribal.js';
+import { relationalReason } from '../../alliances.js';
 import { writeTwistStory, writeExile, writeFirstImpressions, writeAuctionScript } from './twist.js';
 import { needOf, psycheCast } from './psyche.js';
 import { runnerDue } from './runners.js';
@@ -686,9 +687,13 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const ts = x => threatScore(x) || 0;
   const rank = [...tribal].sort((x, y) => ts(y) - ts(x) || x.localeCompare(y)).indexOf(boot);
   const fromBallot = { weak: 'sank', strike: 'coming', grudge: 'grudge', threat: 'threat' }[t.why];
-  const caseOf = fromBallot === 'coming' && !coming ? 'grudge' : fromBallot
+  // a reason about somebody else (alliances.js relationalTargetMod, the same conditions): cut {keep}'s
+  // ride-or-die so {keep} has nobody but us; or {target} said out loud they'd never vote {protects}
+  const rel = !fromBallot && !coming ? relationalReason([a, ...voters.filter(x => x !== a)], boot) : null;
+  const relCase = rel?.kind === 'isolate' && tribal.includes(rel.partner) ? 'isolate' : rel?.kind === 'pledge' && tribal.includes(rel.protects) ? 'pledge' : null;
+  const caseOf = relCase || (fromBallot === 'coming' && !coming ? 'grudge' : fromBallot
     || (coming ? 'coming' : t.ch?.sank === boot ? 'sank' : idol ? 'idol' : pair ? 'pair' : theirs ? 'group'
-      : getBond(a, boot) <= -2 ? 'grudge' : rank >= 0 && rank <= 1 && tribal.length >= 4 ? 'threat' : best <= 1 ? 'outsider' : 'numbers');
+      : getBond(a, boot) <= -2 ? 'grudge' : rank >= 0 && rank <= 1 && tribal.length >= 4 ? 'threat' : best <= 1 ? 'outsider' : 'numbers'));
   if (t.why === 'shield') return null;   // saving an ally has its own scenes
   const mark = coming ? coming.target : null;
   // the pushback: b's own position
@@ -708,7 +713,7 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   // not here if possible), the name they tell camp, and why b is really in
   const shaky = [...rest].sort((x, y) => getBond(a, x) - getBond(a, y) || x.localeCompare(y))[0] || null;
   const cover = alt || (rival?.target && rival.target !== a ? rival.target : null) || outside.find(x => x !== a) || null;
-  const data = { target: boot, votes: numberWord(voters.length), ...(shaky ? { shaky } : {}), ...(cover ? { cover } : {}), them: numberWord(them || 1), ...(mark ? { mark } : {}), ...(pair ? { partner: pair } : {}),
+  const data = { target: boot, votes: numberWord(voters.length), ...(relCase === 'isolate' ? { keep: rel.partner } : {}), ...(relCase === 'pledge' ? { protects: rel.protects } : {}), ...(shaky ? { shaky } : {}), ...(cover ? { cover } : {}), them: numberWord(them || 1), ...(mark ? { mark } : {}), ...(pair ? { partner: pair } : {}),
     ...(theirs ? { theirs } : {}), ...(alt ? { alt } : {}), ...(rest.length ? { others: list(rest) } : {}), ...(rival?.target ? { other: rival.target } : {}) };
   const facts = { ...baseFacts, shaky: !!shaky, cover: !!cover, close: !!b && getBond(a, b) >= 4, others: !!rest.length, other: !!rival?.target, markMe: mark === a, markB: !!mark && mark === b, otherMe: rival?.target === a, otherB: !!b && rival?.target === b, cast: shape };
   // what this camp's day has already shown (arcBeats, t.em): the plan can call back to it

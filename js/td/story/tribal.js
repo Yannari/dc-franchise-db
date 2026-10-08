@@ -239,7 +239,7 @@ export function writeTribal(ep) {
     if (dt) return { role: 'doubt', scene: dt, held: /holds$/.test(dt.kind || '') };
     return null;
   };
-  const CASES = new Set(['coming', 'sank', 'idol', 'pair', 'group', 'grudge', 'threat', 'outsider', 'numbers']);
+  const CASES = new Set(['coming', 'sank', 'idol', 'pair', 'group', 'grudge', 'threat', 'outsider', 'numbers', 'isolate', 'pledge']);
   for (const v of ballots) {
     const why = whyOf(v, ep);
     const r = v.voter === elim ? null : roleOf(v);
@@ -248,7 +248,7 @@ export function writeTribal(ep) {
       const cs = CASES.has(r.cs) ? r.cs : 'numbers';
       const who = { a: v.voter };
       const d = { target: v.voted, ...(r.leader && r.leader !== v.voter ? { leader: r.leader } : {}), ...(r.pitcher ? { pitcher: r.pitcher } : {}),
-        ...(sd.partner ? { partner: sd.partner } : {}), ...(sd.theirs ? { theirs: sd.theirs } : {}), ...(sd.mark ? { mark: sd.mark } : {}) };
+        ...(sd.partner ? { partner: sd.partner } : {}), ...(sd.theirs ? { theirs: sd.theirs } : {}), ...(sd.mark ? { mark: sd.mark } : {}), ...(sd.keep ? { keep: sd.keep } : {}), ...(sd.protects ? { protects: sd.protects } : {}) };
       const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(v.voter), band: bandOf(v.voter, v.voted),
         sankT: !!ch && ch.sank === v.voted, leader: !!d.leader, mark: !!d.mark, markMe: d.mark === v.voter, markLeader: !!d.mark && d.mark === d.leader,
         ally: (gs.namedAlliances || []).some(al => (al.members || []).includes(v.voter) && (al.members || []).includes(v.voted)) };

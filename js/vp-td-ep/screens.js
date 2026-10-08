@@ -213,7 +213,8 @@ function paint(uid, fresh) {
   const sub = dlg.querySelector('.sub'), who = (s.k === 'say' || s.k === 'conf') && !s.host ? s.by : null;
   const team = who ? teamOfSpeaker(scr.ep, who) : null;
   if (team) { dlg.style.setProperty('--tc', team.color); dlg.style.setProperty('--stc', team.color); }
-  if (who && L.conf && team) {
+  if (!sub) { /* a box built without the lower third: nothing to show */ }
+  else if (who && L.conf && team) {
     const p = (window.players || []).find(x => x.name === who) || {};
     const intro = +scr.ep === 1 ? [p.age ? `${p.age}` : '', p.occupation || ''].filter(Boolean) : [];
     sub.innerHTML = `<b>${esc(team.name)}</b>${intro.map(t => `<span>${esc(t)}</span>`).join('')}`; sub.classList.add('on');
@@ -344,7 +345,7 @@ function mapShell(map, S, ep, o) {
 <div class="tdx-stage tdm-on" id="tdx-st-${uid}" onclick="tdmStage('${uid}')">
   <div class="tdx-world"></div>
   <div class="tdx-hud"><div class="tdx-title fresh"><div class="band"></div><div class="inner"><div class="kicker">Episode ${esc(ep.num)}</div><div class="big">${esc(label)}</div></div></div></div>
-  <div class="tdx-dlg hidden"><div class="panel"></div><div class="tdx-cut"></div><div class="name"></div><div class="say"></div><div class="nx"></div></div>
+  <div class="tdx-dlg hidden"><div class="panel"></div><div class="tdx-cut"></div><div class="sub"></div><div class="name"></div><div class="say"></div><div class="nx"></div></div>
   <div class="tdm" id="tdm-${uid}" onclick="event.stopPropagation()"></div>
   <button type="button" class="tdx-ibtn" onclick="event.stopPropagation();tdxIntel('${uid}')"><i></i>Intel</button>
   <div class="tdx-intel" onclick="event.stopPropagation();tdxTab('${uid}',event)"></div>

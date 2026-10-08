@@ -31,7 +31,7 @@ export default {
     { id: 'nar.g1', turns: [
       { beat: "{a} and {b} reach for the last of the water at the same time." },
       { by: 'b', say: "I had it first." },
-      { by: 'a', say: "You always have it first, {b}. That's kind of the problem.", v: { tough: "Of course you did. You always do.", warm: "Okay. Take it. It's fine. It's totally fine." } },
+      { by: 'a', say: "You always have it first, {b}. That's kind of the problem.", v: { tough: "Of course you did. You always do.", warm: "Okay, take it. It's fine, it's totally fine." } },
       { by: 'b', say: "What's that supposed to mean?" },
       { by: 'a', conf: "It's not about the water. It's never about the water. {b} has been getting under my skin since the first day, and I'm done pretending it isn't." },
     ] },
@@ -80,7 +80,7 @@ export default {
       { beat: "{b} hovers at the edge of the group while everybody laughs at a story {b} didn't hear." },
       { by: 'b', say: "What's funny?" },
       { by: 'a', say: "Oh, you had to be there." },
-      { by: 'b', conf: "I always have to be there. I'm never there. I don't know how everybody got so close so fast.", v: { tough: "Fine. I didn't come here to make friends anyway.", warm: "I'm trying. I really am. I just keep missing the moment." } },
+      { by: 'b', conf: "I always have to be there. I'm never there. I don't know how everybody got so close so fast.", v: { tough: "Fine. I didn't come here to make friends anyway.", warm: "I'm trying, I really am, I just keep missing the moment." } },
     ] },
     { id: 'nar.o4', turns: [
       { by: 'a', conf: "{b} goes off on {b.posAdj} own every chance {b} gets. I get it, some people need space. But space is how you end up with nobody in your corner." },
@@ -178,7 +178,7 @@ export default {
   'arc.adv.idol.tipped': [
     { id: 'nar.a3', when: { found: true }, turns: [
       { by: 'a', conf: "Somebody I trust pulled me aside today and told me to be careful tonight. That's all they said, and that's all they needed to say." },
-      { by: 'a', conf: "I've got an idol. I've had it {found}. It's coming out tonight.", v: { calm: "I'll play it. Quietly. Then we'll see who looks surprised." } },
+      { by: 'a', conf: "I've got an idol. I found it {found}, and it's coming out tonight.", v: { calm: "I'll play it quietly, and then we'll see who looks surprised." } },
     ] },
     { id: 'nar.a4', when: { found: false }, turns: [
       { by: 'a', conf: "I got a warning today. Not much of one, but enough. I'm not taking any chances with the idol in my pocket." },
@@ -198,7 +198,7 @@ export default {
       { by: 'a', conf: "{b} says I'm fine. Everybody says I'm fine. I've heard that before, from people who went home the same night." },
     ] },
     { id: 'nar.a7', turns: [
-      { by: 'a', conf: "Everybody's being too nice to me today. Way too nice. I've seen how that ends." },
+      { by: 'a', conf: "Everybody's being way too nice to me today, and I've seen how that ends." },
       { by: 'a', conf: "I don't care if it's paranoid. I'm playing my idol tonight.", v: { dry: "Is it paranoid if they really are all out to get me? Asking for me." } },
     ] },
   ],
@@ -270,7 +270,7 @@ export default {
   'arc.ally.formed': [
     { id: 'nar.l1', turns: [
       { beat: "{a} pulls {b} away from the others for a minute." },
-      { by: 'a', say: "Okay, I'm just going to say it. I think we should stick together. Properly." },
+      { by: 'a', say: "Okay, I'm just going to say it. I think we should stick together, properly." },
       { by: 'b', say: "Like an alliance?" },
       { by: 'a', say: "Like an alliance. We vote together, we tell each other everything, and nobody goes behind anybody's back." },
       { by: 'c', opt: true, say: "I'm in. Do we get a name?" },
@@ -288,7 +288,7 @@ export default {
       { beat: "{a}, {b} and {c} end up on the same log after dinner, and nobody leaves." },
       { by: 'c', say: "Is it weird that you two are the only people here I actually like?" },
       { by: 'b', say: "Not weird. Same." },
-      { by: 'a', say: "Then let's stop pretending we're not a team. We vote together from now on. {group}." },
+      { by: 'a', say: "Then let's stop pretending we're not a team. We vote together from now on, and we call it {group}." },
       { by: 'c', say: "{group}. Okay. I like it.", v: { goofy: "{group}! We need a handshake. I'm making a handshake." } },
       { by: 'a', conf: "Three people who trust each other. Out here that's not a friendship, that's a majority waiting to happen." },
     ] },
@@ -302,7 +302,7 @@ export default {
       { by: 'a', say: "Everybody else already has a group. If we don't make one, we're the leftovers." },
       { by: 'b', say: "So we make one." },
       { by: 'c', say: "Out of us? We barely know each other." },
-      { by: 'a', say: "We know we're the ones nobody asked. That's enough to start with. {group}." },
+      { by: 'a', say: "We know we're the ones nobody asked, and that's enough to start with. {group}." },
       { by: 'b', conf: "{group} is three people who got left out, which isn't much, but it's three votes, and that's more than any of us had this morning." },
     ] },
   ],

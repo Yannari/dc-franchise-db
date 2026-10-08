@@ -870,7 +870,24 @@ function voteTalk(ep, camp, t, next) {
     }
   }
 
-  // 4. the target: scrambling if word reached them, sure of their own name if it did not
+  // 4. the target: scrambling if word reached them, sure of their own name if it did not. And the
+  // suspense (the user: "don't focus on one person on the chopping block"): the other plan's target,
+  // who will survive, is just as sure it's them, and goes after the name they want instead.
+  const em = t.em || { warned: [] };
+  const tipFor = x => em.warned.find(w => w.knower === x && w.teller) || null;
+  const rivalT = (t.rivals || []).map(al => al.target).find(x => x && x !== boot && tribal.includes(x) && !out.some(o => o.step === 'decoy'));
+  if (rivalT && boot === t.gone) {
+    const dWrote = ballotOf(rivalT);
+    const friend = closest(rivalT, tribal.filter(x => x !== rivalT && x !== boot && getBond(rivalT, x) >= 1));
+    if (friend && dWrote && dWrote !== rivalT) {
+      const tip = tipFor(rivalT);
+      const who = { a: rivalT, b: friend };
+      const it = item('decoy', 'vt2', 'decoy', who, { wrote: dWrote, ...(tip ? { teller: tip.teller } : {}) },
+        base(who, { told: !!tip, bVoted: ballotOf(friend) === rivalT ? 'boot' : 'other', wroteIsBoot: dWrote === boot }), 'aside', 'before-tribal', ['On Edge', 'red'],
+        [`${rivalT} is sure the votes are coming for ${pronouns(rivalT).obj}.`, `${rivalT} is pushing ${dWrote}.`]);
+      if (it) out.push(it);
+    }
+  }
   const mine = ballotOf(boot);
   if (mine && mine !== boot && boot === t.gone) {
     const heard = (ep.pitchIntel || []).find(i => i.knower === boot && i.target === boot && i.believed !== false)
@@ -879,14 +896,21 @@ function voteTalk(ep, camp, t, next) {
       const b = closest(boot, tribal.filter(x => x !== boot && x !== mine));
       if (b) {
         const who = { a: boot, b };
-        const it = item('target', 'story.vote.target', 'scramble', who, { wrote: mine, pitcher: heard.pitcher || leader }, base(who, { bVoted: ballotOf(b) === boot ? 'boot' : 'other', pitcher: !!heard.pitcher }),
-          'aside', 'before-tribal', ['Scramble', 'red'], [`${boot} heard the votes were coming for ${pronouns(boot).obj}.`, `${boot} is pushing ${mine} instead. ${b} ${ballotOf(b) === boot ? 'is voting ' + boot : 'is not on ' + boot}.`]);
+        const tip = tipFor(boot);
+        const data = { wrote: mine, pitcher: heard.pitcher || leader, ...(tip && tip.teller !== b ? { teller: tip.teller } : {}) };
+        const facts = base(who, { bVoted: ballotOf(b) === boot ? 'boot' : 'other', pitcher: !!heard.pitcher, told: !!data.teller });
+        const why = [`${boot} heard the votes were coming for ${pronouns(boot).obj}.`, `${boot} is pushing ${mine} instead. ${b} ${ballotOf(b) === boot ? 'is voting ' + boot : 'is not on ' + boot}.`];
+        const it = item('target', 'vt2', 'scramble', who, data, facts, 'aside', 'before-tribal', ['Scramble', 'red'], why)
+          || item('target', 'story.vote.target', 'scramble', who, data, facts, 'aside', 'before-tribal', ['Scramble', 'red'], why);
         if (it) out.push(it);
       }
     } else {
-      const who = { a: boot };
-      const it = item('target', 'story.vote.target', 'safe', who, { wrote: mine }, base(who, { why: ballotWhy(ballots.find(v => v.voter === boot), ep) }), 'confessional', 'before-tribal', ['Feels Safe', 'blue'],
-        [`${boot} thinks it's ${mine} tonight.`, `${pronouns(boot).Sub} ${pronouns(boot).sub === 'they' ? "haven't" : "hasn't"} heard ${pronouns(boot).posAdj} own name.`]);
+      // no idea: a friend who is writing their name sits with them, and keeps it from them
+      const liar = closest(boot, voters.filter(v => v !== leader && getBond(boot, v) >= 1 && !out.some(o => o.players.includes(v) && o.step === 'plan')));
+      const why = [`${boot} thinks it's ${mine} tonight.`, `${pronouns(boot).Sub} ${pronouns(boot).sub === 'they' ? "haven't" : "hasn't"} heard ${pronouns(boot).posAdj} own name.`];
+      const two = liar ? item('target', 'vt2', 'safe', { a: boot, b: liar }, { wrote: mine }, base({ a: boot, b: liar }, {}), 'aside', 'before-tribal', ['Feels Safe', 'blue'],
+        [...why, `${liar} is writing ${boot}'s name.`]) : null;
+      const it = two || item('target', 'story.vote.target', 'safe', { a: boot }, { wrote: mine }, base({ a: boot }, { why: ballotWhy(ballots.find(v => v.voter === boot), ep) }), 'confessional', 'before-tribal', ['Feels Safe', 'blue'], why);
       if (it) out.push(it);
     }
   }
@@ -1174,7 +1198,7 @@ export function airTdEpisode(ep) {
     }
     // the refs that were added late go back into the camp's own order
     for (const phase of ['pre', 'post']) {
-      const VOTE_AT = { other: 2e6, plan: 2.1e6, swing: 2.2e6, doubt: 2.25e6, target: 2.3e6 };
+      const VOTE_AT = { other: 2e6, plan: 2.1e6, swing: 2.2e6, doubt: 2.25e6, decoy: 2.28e6, target: 2.3e6 };
       const at = it => (/^(story\.(firstday|morning|chal)|long\.crowd\.(won|lost))/.test(it.kind || '') ? -1 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5) : it.storyType === 'vote' ? VOTE_AT[it.step] : it.ref != null ? it.ref : 1e6);
       out[phase].sort((x, y) => at(x) - at(y));
     }

@@ -28,7 +28,7 @@ export default {
       { by: 'a', say: "I'm playing this for myself. Better safe than sorry, right?", v: { anxious: "I can't risk it. I'm sorry. I'm playing it.", schemer: "Just in case." } },
       { beat: "A few people look at each other. Nobody looks worried." },
       { by: 'c', opt: true, say: "Huh. Okay.", v: { dry: "Bold choice." } },
-      { by: 'a', conf: "Maybe I wasted it. Maybe I didn't. I'd rather waste an idol than go home holding one." },
+      { by: 'a', conf: "Maybe I wasted it, maybe I didn't, but I'd rather waste an idol than go home holding one." },
     ] },
   ],
   'adv.idolfor.saved': [
@@ -57,7 +57,7 @@ export default {
     { id: 'nap.m1', turns: [
       { by: 'a', say: "I'm going to play this. I have a really bad feeling about tonight." },
       { beat: "Somebody across the fire quietly lets out a breath." },
-      { by: 'a', conf: "Was that the right move? I don't know. My gut said play it, so I played it." },
+      { by: 'a', conf: "Was that the right move? I don't know, my gut said play it, so I played it." },
     ] },
   ],
   'adv.fake.any': [

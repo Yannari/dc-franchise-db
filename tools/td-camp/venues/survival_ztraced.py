@@ -121,6 +121,6 @@ for (venue, spot, js, stands, night) in T:
 # DC5's Elimination Trial: the wide clean frame. The tiki-pot seats run along the left of the deck,
 # the rest sit on the deck around the fire; the host stands by the angry tiki podium on the right.
 if os.path.exists(os.path.join(REPO, 'tools', 'td-camp', 'traced', 'sol-trial.json')):
-    _pots = [(30 + i * 34, 585) for i in range(9)]
+    _pots = [(75 + i * 34, 585) for i in range(9)]
     _deck = [(200, 690), (300, 720), (1000, 700), (1120, 730), (1240, 700), (1360, 680)]
     SCENES['survival-island']['ceremony'] = _traced_plate('sol-trial.json', [(820, 760), (1060, 770)], seats=_pots + _deck, host=(1170, 600))

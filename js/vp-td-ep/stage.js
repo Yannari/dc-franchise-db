@@ -269,6 +269,9 @@ export function shotOf(screen, L, toks) {
   // "the avatar often don't fit well with the bg, sometimes too big")
   const tallest = Math.max(...group.map(n => toks.find(x => x.n === n).h));
   k = Math.max(1, Math.min(k, 44 / Math.max(tallest, 1)));
+  // a ceremony is a crowd on its seats: the camera leans in, it never fills the frame with the front row
+  // (the user, 2026-10-07: "the ceremony is too cluttered")
+  if (ceremony) k = Math.min(k, 1.3);
   if (k < 1.12) return wide;
   let cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
   const sp = speaker && group.includes(speaker) && group.length > 1 ? box(speaker) : null;

@@ -17,7 +17,7 @@ _JET = {
     'cockpit': _wk('jet-cockpit.json', [(700, 640, 34), (900, 640, 34)]),
     'confessional': _wk('jet-conf.json', [(700, 640), (900, 640)]),
     # the Barf Bag Ceremony: the benches on the right, Chris at the tiki stand
-    'ceremony': _wk('jet-barf.json', [(520, 640), (700, 640)], seats=[(1100 + i * 85, 655) for i in range(6)] + [(1140 + i * 85, 690) for i in range(5)], host=(880, 640)),
+    'ceremony': _wk('jet-barf.json', [(520, 640), (700, 640)], seats=[(960 + i * 100, 650) for i in range(6)] + [(1010 + i * 100, 695) for i in range(5)], host=(880, 640)),
     'exit': _wk('jet-drop.json', [(800, 640), (640, 640), (960, 640)]),
 }
 SCENES['world-tour'].update(_JET)

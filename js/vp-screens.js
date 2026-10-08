@@ -1561,7 +1561,11 @@ export function buildTwistDesc(tw) {
 }
 
 // ── Shared scene renderer for twist screens ──
+// Every twist card a classic page draws is also kept (by its page) so Total Drama's stepped viewer can
+// play the same cards on the venue's stage (vp-td-ep/screens.js reads S.tdScenes)
+const _twistRec = [];
 export function _renderTwistScene(scene) {
+  if (scene && (scene.text || scene.players?.length)) _twistRec.push({ ...scene });
   if (scene.faceOff && scene.players?.length === 2) {
     return `<div style="display:flex;justify-content:center;align-items:flex-start;gap:32px;margin:16px 0">
       <div style="text-align:center">${rpPortrait(scene.players[0],'xl')}<div style="font-family:var(--font-display);font-size:12px;margin-top:6px">${scene.players[0]}</div></div>
@@ -14058,6 +14062,9 @@ const _exileChooserReason = (chooser, exiled) => exileChooserReason(chooser, exi
 
 function _buildVPScreensClassic(epRecord) {
   vpScreens = [];
+  _twistRec.length = 0;
+  { const push = vpScreens.push.bind(vpScreens);
+    vpScreens.push = (...xs) => { for (const x of xs) if (x && _twistRec.length) x.tdScenes = _twistRec.splice(0); return push(...xs); }; }
   vpEpNum = epRecord.num || 0;
 
   if (epRecord.format === 'big-brother' || epRecord.isBigBrother) {

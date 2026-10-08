@@ -11,7 +11,7 @@
 import { tdCampScreen, tdTribalScreen, tdTribalStepped, tdDoubleTribalScreen, cleanText, placeScene, plateKey, placeName, venueOf, teamSpot } from './steps.js';
 import { tdCampMap, hasMap, MAP_VENUES, openWindow, nextConv, lockedConv, PLACE_LABEL } from './map.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf } from './twists.js';
-import { tdTwistBlocksScreen, tdMergeScreen } from './twist-screens.js';
+import { tdTwistBlocksScreen, tdMergeScreen, tdMiscTwistScreen } from './twist-screens.js';
 import { tdArrivalScreen, hasArrivals } from './arrival.js';
 import { tdAftermathScreen, hasAftermath } from './aftermath.js';
 import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf } from './stage.js';
@@ -67,6 +67,17 @@ export function tdStepScreens(ep, classic = [], o = {}) {
     if (tribal && S.id === 'tribal' && !tribalDone) { tribalDone = true; out.push(shell(tribal, S, ep, o)); continue; }
     const isl = islandScreen(ep, S, o);
     if (isl) { out.push(shell(isl, S, ep, o)); continue; }
+    // the twists with hand-built classic pages, each on the stage from its own record
+    const misc = (() => { try { return tdMiscTwistScreen(ep, S?.id || '', o); } catch (err) { console.warn('TD twist screen fell back:', S?.id, err); return null; } })();
+    if (misc === 'skip') continue;
+    if (misc) { out.push(shell(misc, S, ep, o)); continue; }
+    // any other twist page drawn from twist cards (Hero Duel, Kidnapping, Shared Immunity, The Feast...):
+    // the same cards, played on the venue's stage
+    if (S?.tdScenes?.length && !/^(camp-|tribal$|votes|voting-plans|challenge|relationships|aftermath|ratings|cold-open)/.test(S.id || '')) {
+      const label = String(S.label || S.id).replace(/<[^>]+>/g, '').replace(/[^\p{L}\p{N} '’:&-]/gu, '').trim();
+      const scr = tdTwistBlocksScreen(ep, [{ type: S.id, label, scenes: S.tdScenes }], o, { post: /^(post-|no-tribal)/.test(S.id) });
+      if (scr) { out.push(shell({ ...scr, id: `tw-${S.id}` }, S, ep, o)); continue; }
+    }
     out.push(S);
   }
   return out;

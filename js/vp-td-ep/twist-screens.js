@@ -222,3 +222,72 @@ export function tdMergeScreen(ep, m, o = {}) {
   if (pairLow.length === 2) steps.push(...toSteps(reactionLines('twist.react.bottom', pairLow[0], pairLow[1], `${ep.num}|bottom`), pairLow));
   return { id: 'merge', kind: 'twist', venue, ep: ep.num, label: 'The Merge', host, steps };
 }
+
+/**
+ * The twists whose classic pages are hand-built rather than drawn from twist cards: each played on
+ * the venue's stage from the record the engine wrote. Returns a stepped screen, 'skip' for a classic
+ * page this one already covers, or null (the classic page plays).
+ */
+export function tdMiscTwistScreen(ep, id, o = {}) {
+  const host = o.host || 'Chris';
+  const venue = venueOf(ep, o);
+  const V = VENUES[venue];
+  const block = (type, label, scenes, opts) => tdTwistBlocksScreen(ep, [{ type, label, scenes }], o, opts);
+  const active = ep.gsSnapshot?.activePlayers || [];
+  if (id === 'feast' && (ep.feastEvents || []).length) {
+    const merge = (ep.twists || []).some(t => t.type === 'merge-reward' || t.catalogId === 'merge-reward');
+    return block('the-feast', merge ? 'The Merge Feast' : 'The Feast', ep.feastEvents.map(e => ({ text: e.text, players: e.players || [], badge: e.badgeText, badgeClass: e.badgeClass })));
+  }
+  if (id === 'no-tribal' && ep.noTribal) return block('no-tribal', 'No Tribal Council', [{ text: `No votes, no blindsides, no torches. Everyone is safe tonight. For now.`, players: active }]);
+  if (id === 'fan-vote-return' && ep.fanVoteReturnee) {
+    const r = ep.fanVoteReturnee;
+    return block('returning-player', 'The Fans Have Spoken', [{ text: `Last night the fans voted. One eliminated player has earned the right to come back.`, players: [] },
+      { text: `${r} walks back into the game.`, players: [r], badge: 'RETURNING', badgeClass: 'gold' }]);
+  }
+  if (id === 'schoolyard-pick' && ep.schoolyardPick?.picks?.length) {
+    const sp = ep.schoolyardPick;
+    const scenes = [{ text: `The captains: ${(sp.captains || []).join(' and ')}. They pick their tribes one name at a time.`, players: sp.captains || [] }];
+    for (const p of sp.picks) scenes.push({ text: `${p.captain} picks ${p.picked}.`, players: [p.captain, p.picked] });
+    if (sp.lastPicked) scenes.push({ text: `${sp.lastPicked} is the last one standing. Nobody picked ${sp.lastPicked}.`, players: [sp.lastPicked], badge: 'LAST PICK', badgeClass: 'bad' });
+    if (sp.exiled) scenes.push({ text: `${sp.exiled} is sent to Exile.`, players: [sp.exiled], badge: 'EXILED', badgeClass: 'bad' });
+    for (const t of sp.newTribes || []) if (t?.members?.length) scenes.push({ tribeLabel: t.name, players: t.members });
+    return block('schoolyard-pick', 'Schoolyard Pick', scenes);
+  }
+  if (id === 'disadvantage-trial') {
+    const tw = (ep.twists || []).find(t => t.type === 'disadvantage-vote');
+    const tr = tw?.trial || ep.disadvantageTrial;
+    if (!tr) return null;
+    const people = [...new Set([...(tr.order || []), ...Object.keys(tr.votes || {})])];
+    const { key, places } = gather(venue, 'ceremony', 'night', people, host);
+    const steps = [{ k: 'scene', spot: 'ceremony', tod: 'night', plate: key, place: 'The Disadvantage Trial', time: 'Before the challenge', card: true, focus: [], bg: [], places, host, ceremony: true }];
+    steps.push({ k: 'say', by: host, host: true, text: `Before the challenge, you're voting one of you a handicap. Make your case: why it shouldn't be you, or who it should be.` });
+    steps.push({ k: 'title', kicker: 'Twist', name: 'The Disadvantage Trial', faces: people.slice(0, 8) });
+    for (const b of tr.debate || []) steps.push({ k: 'say', by: b.speaker, text: cleanText(b.text), focus: [b.speaker, b.target].filter((n, i, a) => n && places[n] && a.indexOf(n) === i), loud: b.type === 'accuse' || b.type === 'dispute' });
+    steps.push({ k: 'say', by: host, host: true, text: `Time to vote.` });
+    for (const [v, t] of Object.entries(tr.votes || {})) steps.push({ k: 'beat', text: `${v} votes ${t}.`, focus: [v].filter(n => places[n]), side: [{ tab: 'tally', voter: v, target: t }] });
+    steps.push({ k: 'title', kicker: 'The handicap goes to', name: tr.target, faces: [tr.target], tone: 'out' });
+    if (tr.flipped) steps.push({ k: 'beat', text: `The handicap turned the challenge: ${tr.flipped.from} lost immunity to ${tr.flipped.to}.`, focus: [tr.flipped.from, tr.flipped.to].filter(n => places[n]) });
+    else steps.push({ k: 'beat', text: `${tr.target} runs the challenge with a handicap.`, focus: [tr.target].filter(n => places[n]) });
+    return { id: 'disadvantage-trial', kind: 'tribal', venue, ep: ep.num, label: 'Disadvantage Trial', host, steps };
+  }
+  if (/^coc-(chain|summary)$/.test(id) && ep.chainOfCommand) return 'skip';
+  if (id === 'coc-briefing' && ep.chainOfCommand?.chain?.length) {
+    const coc = ep.chainOfCommand;
+    const people = [...new Set([coc.immunityWinner, ...coc.chain.map(l => l.player)].filter(Boolean))];
+    const { key, places } = gather(venue, 'ceremony', 'night', people, host);
+    const steps = [{ k: 'scene', spot: 'ceremony', tod: 'night', plate: key, place: V.ceremony, time: '9:00 PM', card: true, focus: [], bg: [], places, host, ceremony: true }];
+    steps.push({ k: 'say', by: host, host: true, text: `Tonight there's no vote. ${coc.immunityWinner} won immunity, so ${coc.immunityWinner} picks who is safe next. Whoever is picked picks the next one. The last one standing goes home.`, focus: [coc.immunityWinner] });
+    steps.push({ k: 'title', kicker: 'Twist', name: 'Chain of Command', faces: people.slice(0, 8), tone: 'fire' });
+    for (const l of coc.chain) {
+      if (l.type === 'pick') {
+        if (l.hesitation && l.hesitationText) steps.push({ k: 'beat', text: cleanText(l.hesitationText), focus: [l.pickedBy].filter(n => places[n]), tense: true });
+        steps.push({ k: 'beat', text: `${l.pickedBy} picks ${l.player}. ${l.player} is safe.`, focus: [l.pickedBy, l.player].filter(n => places[n]), side: [{ tab: 'room', text: `#${l.position}: ${l.pickedBy} picks ${l.player}` }] });
+      } else if (l.type === 'eliminated') {
+        steps.push({ k: 'say', by: host, host: true, text: `${l.player}. Nobody picked you. You're going home.`, focus: [l.player], tense: true });
+        steps.push({ k: 'out', who: l.player, focus: [l.player] });
+      }
+    }
+    return { id: 'coc', kind: 'tribal', venue, ep: ep.num, label: 'Chain of Command', host, steps };
+  }
+  return null;
+}

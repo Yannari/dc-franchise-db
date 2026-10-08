@@ -261,6 +261,8 @@ export function castAt(screen, L) {
 export function shotOf(screen, L, toks) {
   const s = L.step || {};
   const wide = { k: 1, x: 0, y: 0, who: [] };
+  // the walk to the torch is shot wide: the sign, the torch and the walk all in frame
+  if (s.act?.kind === 'torch') return wide;
   if (L.conf || !L.scene || s.k === 'scene' || s.k === 'title' || s.k === 'ballot' || s.k === 'found' || s.k === 'ballots') return wide;
   const speaker = s.k === 'say' ? s.by : s.k === 'safe' ? s.who : s.k === 'read' ? null : null;
   const ceremony = !!L.scene.ceremony;

@@ -3426,24 +3426,16 @@
  "sol-sign": {
   "src": "sol-sign.webp",
   "night": true,
-  "wind": 0.6,
-  "ppl": 30,
+  "wind": 0.9,
+  "ppl": 26,
   "fire": [
    [
-    1270,
-    330,
-    170
+    1236,
+    250,
+    120
    ]
   ],
-  "sway": [
-   [
-    0,
-    0,
-    1600,
-    900,
-    0.4
-   ]
-  ]
+  "flutter": []
  },
  "motel": {
   "src": "motel.webp",
@@ -3508,5 +3500,27 @@
   "wind": 0.3,
   "noleaf": true,
   "ppl": 22
+ },
+ "cv-sign": {
+  "src": "cv-sign.webp",
+  "night": true,
+  "wind": 0.9,
+  "ppl": 26,
+  "fire": [
+   [
+    1220,
+    290,
+    120
+   ]
+  ],
+  "cloth": [
+   [
+    1170,
+    560,
+    1220,
+    720,
+    0.8
+   ]
+  ]
  }
 }

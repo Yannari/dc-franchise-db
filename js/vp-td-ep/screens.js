@@ -278,6 +278,10 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
     if (a.kind === 'fire') who.forEach(n => { const el = tokAt(castEl, n); el.classList.add('fired'); const c = centre(st, el); fxAt(fxEl, 'tdx-aura', c.x, c.y + c.h / 2, '', 2400); sfx('title'); });
     if (a.kind === 'rest') who.forEach(n => tokAt(castEl, n).classList.add('act-nap'));
     if (a.kind === 'search' && who[0]) { const el = tokAt(castEl, who[0]); el.classList.add('search'); for (let k = 0; k < 5; k++) setTimeout(() => { const c = centre(st, el); fxAt(fxEl, 'tdx-dust', c.x, c.y + c.h * .95, '', 900); sfx('slip'); }, 300 + k * 520); }
+    // One Final Choice: walk to the torch and lift it (the flame comes along), or turn away from it
+    if (a.kind === 'torch' && who[0]) { const el = tokAt(castEl, who[0]); if (el) {
+      if (a.take) { el.style.left = `${a.tu * 100}%`; setTimeout(() => { el.classList.add('carry'); sfx('torch'); }, 1100); setTimeout(() => el.classList.add('pathR'), 2200); }
+      else { el.style.left = `${(a.tu - .12) * 100}%`; setTimeout(() => { el.classList.add('pathL'); sfx('empty'); }, 1500); } } }
     if (a.kind === 'path' && who[0]) { const el = tokAt(castEl, who[0]); setTimeout(() => el.classList.add(a.dir === 'L' ? 'pathL' : 'pathR'), 250); sfx(a.lit ? 'torch' : 'snuff'); }
     if ((a.kind === 'lean' || a.kind === 'hug' || a.kind === 'kiss') && who.length >= 1) {
       const pair = who.length >= 2 ? who.slice(0, 2) : [who[0], toks.find(t => t.n !== who[0] && !t.bg && !t.host)?.n].filter(Boolean);

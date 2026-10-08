@@ -104,11 +104,28 @@ export function tdRiChoiceScreen(ep, o = {}) {
   const host = o.host || 'Chris';
   const steps = [];
   const say = (text, extra = {}) => steps.push({ k: 'say', by: host, host: true, text, ...extra });
+  // Disventure Camp's crossroads: the sign, the torch, and the voted-out's walk (the user's frames)
+  const venue = venueOf(ep, o);
+  const sign = venue === 'survival-island' ? plate('sign-soluna', 'night') : venue === 'carnival' ? plate('sign-stawaki', 'night') : null;
+  if (sign) {
+    const take = choice === 'RESCUE ISLAND' || choice === 'REDEMPTION ISLAND';
+    const torch = venue === 'survival-island' ? { u: .77, v: .7 } : { u: .76, v: .7 };
+    const places = { [elim]: { u: .5, v: .71, s: .2 }, [host]: { u: .19, v: .71, s: .2, host: true } };
+    steps.push({ k: 'scene', spot: 'sign', tod: 'night', plate: sign, place: 'One Final Choice', time: '9:15 PM', card: true, focus: [elim], bg: [], places });
+    say(`${elim}, this is where it ends... or doesn't.`, { focus: [elim] });
+    steps.push({ k: 'beat', text: `${elim} reads the sign. Left: the path to the Motel. Right: take the torch and fight your way back from Rescue Island.`, focus: [elim], tense: true });
+    steps.push({ k: 'title', kicker: 'One final choice', name: elim, faces: [elim] });
+    steps.push({ k: 'say', by: elim, text: riChoiceQuote(ep, take), focus: [elim], loud: take });
+    steps.push({ k: 'beat', text: take ? `${elim} pulls the torch out of the ground and heads right, into the dark.` : `${elim} looks at the torch for a long moment... then turns and takes the left path to the Motel.`,
+      focus: [elim], act: { kind: 'torch', who: [elim], take, tu: torch.u, tv: torch.v }, side: [{ tab: 'residents', text: take ? `${elim} takes the torch.` : `${elim} goes to the Motel.` }] });
+    steps.push({ k: 'title', kicker: take ? 'Torch taken' : 'Leaving the game', name: take ? 'Rescue Island' : 'The Motel', faces: [elim], tone: take ? 'fire' : 'out' });
+    if (!take) return { id: 'ri-choice', kind: 'island', venue: ISL, ep: ep.num, label: 'One Final Choice', host, steps };
+  }
   if (choice === 'RESCUE ISLAND') {
     const already = (ep.riArrival?.existingResidents || []).filter(n => n !== elim);
     const key = plate('rescue-camp', 'night');
     const places = placeScene(key, [elim, ...already].slice(0, 9), []);
-    steps.push({ k: 'scene', spot: 'rescue-camp', tod: 'night', plate: key, place: 'Rescue Island', time: 'That night', card: true, focus: [elim], bg: [], places,
+    steps.push({ k: 'scene', spot: 'rescue-camp', tod: 'night', plate: key, place: 'Rescue Island', time: 'That night', card: !sign, cut: !!sign, focus: [elim], bg: [], places,
       acts: Object.fromEntries(already.map(n => [n, pickBy(['whittle', 'nap', 'fish'], n, ep.num)])), act: { kind: 'arrive', who: [elim] } });
     steps.push({ k: 'beat', text: `A boat drops ${elim} on the shore of Rescue Island. The game isn't over.`, focus: [elim], side: [{ tab: 'residents', text: `${elim} arrives (episode ${ep.num}).` }] });
     steps.push({ k: 'say', by: elim, text: riChoiceQuote(ep, true), focus: [elim], loud: true });

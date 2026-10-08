@@ -66,6 +66,8 @@ export const TDX_CSS = `
 .tdx .tdx-fish{position:absolute;width:1.4%;aspect-ratio:2.2;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#e8843a;opacity:0;animation:tdxFish var(--d) ease-in-out var(--dl) infinite}
 @keyframes tdxFish{0%,82%{opacity:0;transform:translate(0,0) rotate(-40deg)}86%{opacity:1;transform:translate(14px,-26px) rotate(0deg)}92%{opacity:1;transform:translate(28px,-6px) rotate(40deg)}95%,100%{opacity:0;transform:translate(32px,6px) rotate(60deg)}}
 .tdx .tdx-mist.band{left:-60%;width:220%;height:10%;opacity:.5}
+.tdx .tdx-tok.carry .body::after{content:'';position:absolute;right:-22%;top:-38%;width:42%;height:55%;background:no-repeat center/contain url(assets/sets/td/sprites/flame.webp);filter:drop-shadow(0 0 12px #ffb040);animation:tdxFlick .25s ease-in-out infinite alternate}
+@keyframes tdxFlick{from{transform:scale(1,1)}to{transform:scale(.92,1.08)}}
 .tdx .tdx-critter{position:absolute;width:2.2%;display:block;animation:tdxWalk var(--d) ease-in-out var(--dl) infinite}
 .tdx .tdx-critter svg{width:100%;display:block;animation:tdxStep .32s ease-in-out infinite alternate}
 .tdx .tdx-critter.frog svg{animation:tdxHop 1.6s ease-in-out infinite}
@@ -271,7 +273,7 @@ export const TDX_CSS = `
 .tdx .tdx-dlg.hidden{display:none}
 .tdx .tdx-dlg .panel{position:absolute;inset:0;background:var(--glass);clip-path:polygon(1.4% 0,100% 0,98.6% 100%,0 100%);border-top:3px solid var(--or);box-shadow:0 8px 30px rgba(0,0,0,.45)}
 .tdx .tdx-dlg.conf .panel{border-top-color:var(--cf)}
-.tdx .tdx-dlg .sub{position:absolute;left:calc(var(--cut,0%) + 3%);top:-2.75em;display:none;gap:.5em;align-items:center;font:900 .95cqw/1 Nunito;letter-spacing:.14em;text-transform:uppercase;color:#fff}
+.tdx .tdx-dlg .sub{position:absolute;left:calc(var(--cut,0%) + 3%);top:-5.2cqw;display:none;gap:.5em;align-items:center;font:900 .95cqw/1 Nunito;letter-spacing:.14em;text-transform:uppercase;color:#fff}
 .tdx .tdx-dlg .sub.on{display:flex}
 .tdx .tdx-dlg .sub b{padding:.35em .8em;background:var(--stc,#555);clip-path:polygon(0 0,100% 0,94% 100%,0 100%);color:#0c0c12}
 .tdx .tdx-dlg .sub span{padding:.35em .7em;background:rgba(12,12,20,.82);border-radius:3px}

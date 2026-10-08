@@ -67,7 +67,7 @@ Object.assign(PLACE, { lake: 'The Lake', boathouse: 'The Boathouse', waterfall: 
   'boney-island': 'Boney Island', 'playa-des-losers': 'Playa Des Losers',
   'trailer-inside': 'Inside the Trailer', 'western-set': 'The Western Set', 'city-set': 'The City Set',
   'chris-quarters': "Chris's Quarters", cockpit: 'The Cockpit', river: 'The River', kitchen: "Chef's Kitchen",
-  carousel: 'The Carousel', 'corn-maze-inside': 'Inside the Corn Maze', 'soluna-exile': 'Exile Island', 'stawaki-exile': 'Exile Beach', motel: 'The Motel' });
+  carousel: 'The Carousel', 'corn-maze-inside': 'Inside the Corn Maze', 'soluna-exile': 'Exile Island', 'stawaki-exile': 'Exile Beach', motel: 'The Motel', sign: 'One Final Choice' });
 
 // ── STAGING — where a scene plays, beyond where the engine says the people were ──────────
 // The engine knows six places at Wawanakwa, chosen for privacy (who can overhear). Television

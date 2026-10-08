@@ -67,7 +67,7 @@ for v, ss in (('carnival', ('campsite-t2', 'shelter-t2', 'trial-area')), ('survi
     for s in ss: OUTDOOR[v].discard(s)
 NIGHT_ONLY.add('trial-area')
 # Soluna's night: the "One Final Choice" signpost (the night confessional and the way out)
-_SIGN = _wk('sol-sign.json', [(180, 648), (1320, 648)])
+_SIGN = _wk('sol-sign.json', [(800, 640), (300, 640)])
 SCENES['survival-island']['exit'] = _SIGN
 _CONF_DAY = SCENES['survival-island']['confessional']
 SCENES['survival-island']['confessional'] = _by_tod(_CONF_DAY, _SIGN)
@@ -81,3 +81,9 @@ OUTDOOR['islands'].discard('stawaki-exile'); NIGHT_ONLY.add('stawaki-exile')
 # the jet on the ground: the landing strip
 SCENES['world-tour']['destination-staging'] = _wk('jet-runway.json', [(300, 648), (650, 648), (1350, 648)])
 OUTDOOR['world-tour'].discard('destination-staging')
+
+# the crossroads: One Final Choice, each show's own sign and torch (the user's frames, 2026-10-08)
+SCENES['islands']['sign-soluna'] = _wk('sol-sign.json', [(800, 640), (300, 640)])
+SCENES['islands']['sign-stawaki'] = _wk('cv-sign.json', [(800, 640), (300, 640)])
+for _s in ('sign-soluna', 'sign-stawaki'):
+    OUTDOOR['islands'].discard(_s); NIGHT_ONLY.add(_s)

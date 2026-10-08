@@ -1,6 +1,6 @@
 # Total Drama camp life as storylines — design
 
-Status: draft for review (2026-10-07). Nothing here is built yet.
+Status: approved direction (2026-10-07); real shows measured (§1b); building.
 
 ## 1. The problem, measured
 
@@ -19,6 +19,48 @@ The user (2026-10-07): "a full-on experience with drama, suspense, strategy… a
 storylines, not random events not connected… thoughtful, sometimes impactful… all different based on
 stats, archetype, age, personality, team… personalised so I know it's deep enough to know what it's really
 talking about."
+
+## 1b. The real shows, measured (2026-10-07)
+
+The user asked to "check with real episodes and measure what's really necessary — I don't want to feel like
+some character gets totally forgotten". Source: 44 Disventure Camp transcripts (disventurecamp.fandom.com,
+all of DC4 and DC5) and 38 Total Drama transcripts (TDI complete plus 11 TDA episodes, from
+totaldramaislandtranscript.wordpress.com). A camp scene is a stretch between scene breaks with no host speaking
+(so challenges and ceremonies don't count). The sim figures come from 3 played seeded seasons
+(`tests/zz-td-story-measure.test.js`, scratch).
+
+| | Total Drama | Disventure Camp | Sim today |
+|---|---|---|---|
+| Camp scenes per episode (both camps) | 9.5 | 7.5 | ~60 (31 per camp) |
+| Spoken lines per camp scene: median | 4 | 8 | 3 |
+| p75 / p90 | 8 / 13 | 13 / 18 | 4 / 4 |
+| Scenes with 10+ lines | 18% | 44% | 1% |
+| Scenes with 3+ speakers | 41% | 51% | 19% |
+| Scenes with no spoken line | n/a | n/a | 27% |
+| Confessionals per episode | 8.5 | 10 | (per event) |
+| Living campers with no camp scene in an episode | 61% (TDI) | 45–50% | 0% |
+| Living campers who say nothing all episode | 42% (TDI) | 20–22% | 0% |
+| Longest run of episodes with no camp scene | 15–21 (Ezekiel, Tyler) | 9–12 (Alessio, Ernesto) | 0 |
+
+**What it means.** The sim's total volume is close to the real shows'. What's wrong is the shape: it has about
+six times as many scenes, each a third as long, and it gives everybody a little every week. The real shows
+spend their time on a few long, connected scenes. They also forget people, and forgetting people is the one
+thing the user does not want copied. Targets:
+
+- **10–16 camp scenes per episode** across both camps, with lengths spread as in §2.2.
+- **Nobody forgotten.** Every living camper gets at least one spoken line every episode (in a group scene, a
+  reaction or a confessional). Nobody goes more than one episode without a real scene of their own, so
+  quiet players get a storyline step, such as *On the bottom* or *Underdog*, instead of being dropped.
+- **Group scenes.** About half of scenes have 3 or more people.
+
+**The elimination segment, measured.** In a DC elimination, 3 of 7 voters are shown in the booth, and each
+gives a reason in their own voice ("I hate to do this to a teammate, but I need to keep the heat off
+myself."). Then comes the reading, a confrontation when it's a blindside ("You know what you did." / "What the
+hell are you talking about?!"), last words, and 2 confessionals afterwards from the people who did it. Each
+DC elimination has 16–33 camper lines; a TDI marshmallow ceremony plus the Dock of Shame has 10–15. Today the
+sim's booth uses five stock lines ("Nothing personal.", "It's just the game."), and it has no reactions, no
+last words and nothing after the boot (`js/vp-td-ep/steps.js` `tdTribalScreen`), even though every ballot
+already carries the engine's reason (`v.reason`).
 
 ## 2. What we build
 
@@ -43,7 +85,9 @@ texture between story scenes, not the whole show.
 
 ### 2.2 Scenes, not snippets
 
-A story scene is **12–30 lines** in beats:
+Lengths follow §1b (the real shows), not a flat 12–30: about a third short (2–4 lines), a third
+medium (5–9), a third long (10–19), and a few big ones (20+) per season for the turning points. A
+long story scene has these beats:
 
 1. **Activity**: what they are doing (chores, fishing, getting ready, the challenge aftermath).
 2. **Setup**: the reason this conversation happens now, from the game (the vote, the challenge, last episode).
@@ -77,9 +121,11 @@ read, short honest confessionals. No narration about a conversation. No surreal 
 
 - **Name and team on every speaker**: the dialogue panel and the confessional show name and a team
   tag in the team's colour.
-- **"State of the Game" screen**, openable at any point in an episode:
-  relationships web, alliances (members, how solid), active storylines with their last step,
-  a "previously on" list of the key events so far. Only what has aired so far (no spoilers).
+- **No separate "State of the Game" screen**: the camp overview already covers it (user, 2026-10-07).
+  Instead, a **live side panel**: relationship and alliance figures that move the moment a
+  conversation ends, so you can see what a scene changed, and a **"what they're thinking"** line
+  per speaker for what the dialogue doesn't say outright (the engine's real reason: who they're
+  targeting, whether they believed the pitch). Only what has aired so far.
 
 ## 3. A worked example (illustrative names: a schemer, a sweet goat, a perceptive loner)
 
@@ -128,20 +174,33 @@ Three episodes, one storyline, with each line traceable to a stat, an archetype,
 
 ## 4. Build order
 
-1. **Name + team tags** on speakers and confessionals (small, visible).
-2. **State of the Game screen** (reads data the engine already has).
-3. **Storylines + director for TD**: port js/bb/story/storylines.js and director.js to TD's camp events
+The user chose dialogue first (2026-10-07).
+
+1. **Storylines + director for TD**: port js/bb/story/storylines.js and director.js to TD's camp events
    (js/camp-events.js already emits alliance, romance, rivalry, threat, idol events), measured by
    "share of camp scenes that belong to a storyline" and "storylines with 3+ steps per season".
-4. **Story-scene pools**: alliance, rivalry, showmance and bottom first (the highest-stakes), written
-   per register with game-fact slots, against transcripts; each scene 12–30 lines.
+2. **Story-scene pools**: alliance, rivalry, showmance and bottom first (the highest-stakes), written
+   per register with game-fact slots, against transcripts; lengths as in §2.2.
+3. **The elimination segment** (§7.1).
+4. **Name + team tags**, then the **live panel** (§2.5).
 5. **Measure and read**: lines per scene, repeats (<1% per season), and printed full seasons read
    end to end before calling it done.
 
-## 5. Open questions for the user
+## 5. Answered (2026-10-07)
 
-- Scene count: fewer, fuller scenes (about 6–10 per camp per episode) instead of many tiny ones. OK?
-- Should the "State of the Game" screen be a tab beside the camp map, or a button on every screen?
+- Scene count: measure the real shows (done, §1b). Fewer, longer scenes, and nobody forgotten.
+- State of the Game: dropped; a live panel instead (§2.5).
+- Order: dialogue first.
+
+## 7. The user's issue list (2026-10-07; outside this spec's first build unless noted)
+
+1. **The elimination segment is bland** (built here, step 3). The voting booth says nothing worth hearing,
+   there are no last words, and nobody reacts after an elimination. "It's just bland, and it's like that in
+   so many places. That's why it feels amateurish and not 1:1 realistic with the source material." Target:
+   §1b, what a DC or TDI elimination contains.
+2. **Bland in many other places**: the same complaint covers every screen that is not camp life. Audit
+   each one against the transcripts the way §1b does, one screen at a time.
+3. **Live relationship and alliance panel and "what they're thinking"** (§2.5).
 
 ## 6. Handoff notes (for whoever builds this)
 
@@ -176,7 +235,7 @@ marks.js) and `tools/td-camp/`. Stay out of those except where §2.5 needs the d
 - A season harness: `tests/helpers/season-harness.js` (`runOneSeason`, `seededRun`). The measurement in
   §1 came from a 14-episode seeded season counting `ep.campEvents` lines per event, words, and scene
   families; repeat it after each step and print a whole season's camp transcript and read it.
-- Targets: story scenes 12–30 lines; share of camp scenes in a storyline > 60%; at least 4 storylines
+- Targets: scene lengths and coverage as in §1b (10–16 camp scenes an episode, every living camper speaks every episode); share of camp scenes in a storyline > 60%; at least 4 storylines
   with 3+ steps per season; same-exchange repeats < 1% per season.
 - Existing tests to keep green: `tests/td-vp-steps.test.js`, `td-camp-map`, `td-camera-staging`,
   `td-twist-screens`, `td-island-script`, `camp-access`, and the picker's own tests

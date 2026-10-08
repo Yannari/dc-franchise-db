@@ -33,20 +33,20 @@ export function tdStepScreens(ep, classic = [], o = {}) {
   const out = [];
   let tribalDone = false;
   const tribal = tdTribalStepped(ep) ? tdTribalScreen(ep, o) : null;
-  // the camp map (map.js) is the default camp view where the venue has one: a shared camp is one
-  // map for every team (the other teams' camp screens fold into it), a venue where teams live apart
-  // gets one map per team. Anything the map cannot hold plays the linear camp screen.
+  // the camp map (map.js) is the default camp view where the venue has one, one map per team at
+  // every venue (the user, 2026-10-08: "I set up 2 teams" - folding a shared camp's teams into one
+  // map read as the teams being gone). A shared camp is still drawn whole, with the other team in
+  // it; a venue where teams live apart shows each team its own campsite. Anything the map cannot
+  // hold plays the linear camp screen.
   const venue = venueOf(ep, o);
   const mapOn = o.campMap !== false && hasMap(venue);
-  const shared = !!MAP_VENUES[venue]?.shared;
-  const campIds = classic.map(x => /^camp-(pre|post)-(.+)$/.exec(x?.id || '')).filter(Boolean);
   const mapped = new Map();
   for (const S of classic) {
     const m = /^camp-(pre|post)-(.+)$/.exec(S?.id || '');
     if (m && mapOn) {
-      const key = shared ? m[1] : `${m[1]}:${m[2]}`;
+      const key = `${m[1]}:${m[2]}`;
       if (!mapped.has(key)) {
-        const camps = shared ? campIds.filter(x => x[1] === m[1]).map(x => x[2]) : [m[2]];
+        const camps = [m[2]];
         mapped.set(key, tdCampMap(ep, m[1], camps, o));
         if (mapped.get(key)) { out.push(mapShell(mapped.get(key), S, ep, o)); continue; }
       } else if (mapped.get(key)) continue;
@@ -486,7 +486,7 @@ function mapPaint(uid, fresh) {
   } else {
     plate = plateKey(M.venue, 'map', tod);
   }
-  const L = { scene: { plate, spot: R.mode === 'zone' ? place : 'map', place: R.mode === 'zone' ? (M.zones[R.zone]?.label || placeName(place)) : (MAP_VENUES[M.venue]?.shared || M.camps.length !== 1 || M.camps[0] === 'merge' ? (VENUE_NAME[M.venue] || 'Camp') : `${M.camps[0]} Camp`), time: W.time }, safe: [], side: [], step: {}, conf: null };
+  const L = { scene: { plate, spot: R.mode === 'zone' ? place : 'map', place: R.mode === 'zone' ? (M.zones[R.zone]?.label || placeName(place)) : (M.camps.length !== 1 || M.camps[0] === 'merge' ? (VENUE_NAME[M.venue] || 'Camp') : MAP_VENUES[M.venue]?.shared ? `${VENUE_NAME[M.venue] || 'Camp'} — ${M.camps[0]}` : `${M.camps[0]} Camp`), time: W.time }, safe: [], side: [], step: {}, conf: null };
   world.innerHTML = `${worldHtml(scr0, L)}<div class="tdx-cast">${toks}</div><div class="tdx-fx"></div>`;
   st.querySelector('.tdx-hud').innerHTML = hudHtml(scr0, L, fresh, {});
   layer.innerHTML = clockHtml(uid, R, open) + (R.mode === 'zone' ? zoneHtml(uid, R, here) : pinsHtml(uid, R, W)) + listHtml(uid, R, here);
@@ -776,7 +776,7 @@ export function tdxSeek(uid, e) {
   window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
 }
 export function tdxIntel(uid) { const st = document.getElementById(`tdx-st-${uid}`); if (!st) return; st.classList.toggle('intel-open'); st.querySelector('.tdx-ibtn')?.classList.remove('new'); }
-export function tdxTab(uid, e) { const b = e.target.closest('[data-tab]'); if (!b) return; const R = reg()[uid]; if (!R) return; R.tab = b.dataset.tab; const st = document.getElementById(`tdx-st-${uid}`); st.querySelector('.tdx-intel').innerHTML = intelHtml(R.scr, ledgerAt(R.scr, R.idx), R.tab, false); }
+export function tdxTab(uid, e) { if (e.target.closest('[data-close]')) { tdxIntel(uid); return; } const b = e.target.closest('[data-tab]'); if (!b) return; const R = reg()[uid]; if (!R) return; R.tab = b.dataset.tab; const st = document.getElementById(`tdx-st-${uid}`); st.querySelector('.tdx-intel').innerHTML = intelHtml(R.scr, ledgerAt(R.scr, R.idx), R.tab, false); }
 const holdFor = s => Math.min(9000, 1700 + String(s?.text || '').length * 40) + (['title', 'idol', 'out', 'found', 'intro'].includes(s?.k) ? 2400 : 0) + (s?.k === 'ballot' ? 2600 : 0) + (s?.tense ? 1200 : 0) + (s?.k === 'scene' ? 900 : 0) + (s?.k === 'safe' && s.last ? 1800 : 0);
 function stopAuto(R) { R.auto = false; clearTimeout(R.timer); }
 export function tdxAuto(uid) {

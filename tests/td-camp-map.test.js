@@ -52,7 +52,7 @@ describe('the camp map', () => {
     expect(n).toBeGreaterThan(100);
   });
 
-  it('holds every team of a shared camp on one map, and loses no conversation', () => {
+  it('holds every team of a shared camp, one map each, and loses no conversation', () => {
     const ep = eps.find(e => campsOf(e, 'pre').length >= 2);
     const camps = campsOf(ep, 'pre');
     const m = tdCampMap(ep, 'pre', camps, { setting: 'hosted-camp' });
@@ -60,10 +60,14 @@ describe('the camp map', () => {
     const total = camps.reduce((a, c) => a + campFeed(ep, c, 'pre').filter(e => e && (e.lines?.length || String(e.text || '').trim())).length, 0);
     expect(m.convs.length).toBe(total);
     expect(new Set(m.convs.map(c => c.camp)).size).toBe(camps.length);
-    const out = tdStepScreens(ep, camps.map(c => ({ id: `camp-pre-${c}`, label: 'Camp' })), { setting: 'hosted-camp' });
-    expect(out.length).toBe(1);
-    expect(out[0].campMap).toBe(true);
-    expect(out[0].id).toBe(`camp-pre-${camps[0]}`);
+    // ...and the viewer gives each team its own map of that camp (the user, 2026-10-08: one map for
+    // every team read as the teams being gone): one screen per team, every conversation on one of them
+    const out = tdStepScreens(ep, camps.map(c => ({ id: `camp-pre-${c}`, label: `${c} Camp` })), { setting: 'hosted-camp' });
+    expect(out.length).toBe(camps.length);
+    expect(out.every(o => o.campMap)).toBe(true);
+    expect(out.map(o => o.id)).toEqual(camps.map(c => `camp-pre-${c}`));
+    const perTeam = camps.reduce((a, c) => a + tdCampMap(ep, 'pre', [c], { setting: 'hosted-camp' }).convs.length, 0);
+    expect(perTeam).toBe(total);
   });
 
   it('keeps the linear camp screens when the map is switched off', () => {

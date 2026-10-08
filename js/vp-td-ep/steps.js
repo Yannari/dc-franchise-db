@@ -418,7 +418,9 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
   const open = (spot, windowId, focus, { cut = false, why = null } = {}) => {
     const win = WINDOWS[windowId];
     clock = Math.max(clock + 6 + (hash(spot + clock) % 9), win ? win[0] : 0);
-    const tod = clock >= 19 * 60 + 15 ? 'night' : 'day';
+    // the window the map draws at night is night in every scene in it (the user, 2026-10-08: "the fishing
+    // spot doesn't use the night version": a 6:45 PM talk played in daylight on a night map)
+    const tod = windowId === 'before-tribal' || clock >= 19 * 60 + 15 ? 'night' : 'day';
     const key = plateKey(venue, spot, tod) ? spot : V.public;
     const plate = plateKey(venue, teamSpot(venue, key, slot), tod);
     const bg = busyAt(engineAt || key, windowId, focus, key);

@@ -306,6 +306,49 @@ function morningAfter(ep, camp, members, n) {
     scene: { kind: 'story.morning', who, data, spot: w.spot ? { ...w.spot, window: 'morning' } : null }, badgeText: 'The Morning After', badgeClass: outcome === 'blindside' ? 'red' : '', why: [`${boot} went home last night, ${data.bootVotes} votes.`] } : null;
 }
 
+// The auction (auction.js), back at camp: what it did between people. A refused loan is a grudge (a
+// asked, b said no); a bidding war leaves a sore loser (a, outbid by b); an advantage bought in front
+// of the whole table gets clocked (a, a strategic player, tells an ally b about {target}, who bought
+// it); a loan is a debt (a won with b's money); a letter from home gets shared (a with a friend b).
+// Two scenes at most, the game-changing ones first (the big buy, a refusal, a loan), nobody in both.
+function auctionTalk(ep, camp, members, next) {
+  const A = (ep.twists || []).find(t => t.type === 'auction')?.auction;
+  if (!A) return [];
+  const here = x => !!x && members.includes(x);
+  const sold = (A.items || []).filter(r => r.sold && here(r.winner));
+  const out = [];
+  const seen = new Set();
+  const add = (ending, who, data, badge, why) => {
+    const cast = Object.values(who).filter(Boolean);
+    if (out.length >= 2 || cast.some(p => seen.has(p) || !here(p))) return;
+    const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'post' }), third: !!who.c, lot: !!data.lot, eats: !!data.eats };
+    const w = writeStory('story.auction', ending, who, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place: 'secret', avoid: ctxAvoid('evening'), unique: 'soft' });
+    if (!w) return;
+    cast.forEach(p => seen.add(p));
+    out.push({ story: true, kind: `story.auction.${ending}`, storyType: 'auction', step: ending, players: cast, lines: w.lines, text: w.text, lineId: w.lineId,
+      scene: { kind: 'story.auction', who, data, spot: w.spot ? { ...w.spot, window: 'evening' } : null }, badgeText: badge[0], badgeClass: badge[1], why });
+  };
+  const itemOf = r => (!r.blind && r.label ? { lot: r.label, ...(['food', 'snack'].includes(r.role) ? { eats: true } : {}) } : {});
+  // one big buy on screen: immunity first (it changes tonight), then the advantage
+  for (const r of sold.filter(x => x.isPower || x.effect === 'immunity').sort((x, y) => (y.effect === 'immunity') - (x.effect === 'immunity')).slice(0, 1)) {
+    const watcher = members.filter(m => m !== r.winner).sort((x, y) => (pStatsOf(y)?.strategic || 0) - (pStatsOf(x)?.strategic || 0) || x.localeCompare(y))[0];
+    const ally = watcher ? members.filter(m => m !== watcher && m !== r.winner && getBond(watcher, m) >= 2).sort((x, y) => getBond(watcher, y) - getBond(watcher, x) || x.localeCompare(y))[0] : null;
+    if (watcher && ally) add(r.effect === 'immunity' ? 'immunity' : 'power', { a: watcher, b: ally }, { target: r.winner }, ['The Big Buy', 'purple'], [`${r.winner} bought ${r.effect === 'immunity' ? 'immunity' : 'something powerful'} at the auction, in front of everybody.`]);
+  }
+  for (const r of sold) for (const f of r.refusals || []) add('refused', { a: f.asker, b: f.refuser }, itemOf(r), ['Turned Down', 'red'], [`${f.refuser} wouldn't lend ${f.asker} the money at the auction.`]);
+  for (const r of sold) for (const l of r.loans || []) add('loan', { a: r.winner, b: l.from }, itemOf(r), ['A Loan', 'teal'], [`${l.from} lent ${r.winner} $${l.amount} at the auction.`]);
+  for (const r of sold.filter(x => x.emotional && !x.gotDud)) {
+    const friend = members.filter(m => m !== r.winner).sort((x, y) => getBond(r.winner, y) - getBond(r.winner, x) || x.localeCompare(y))[0];
+    if (friend && getBond(r.winner, friend) >= 1) add('letter', { a: r.winner, b: friend }, itemOf(r), ['A Piece of Home', 'teal'], [`${r.winner} spent the money on ${r.label}.`]);
+  }
+  for (const r of sold) {
+    const fighters = [...new Set((r.bidLog || []).filter(b => !b.failed).map(b => b.bidder))];
+    const loser = (r.bidLog || []).length >= 5 && fighters.length === 2 ? fighters.find(x => x !== r.winner) : null;
+    if (loser) add('outbid', { a: loser, b: r.winner }, itemOf(r), ['Outbid', 'red'], [`${r.winner} outbid ${loser} at the auction.`]);
+  }
+  return out;
+}
+
 // After a team challenge: the losers find someone to blame; the winners exhale.
 function afterChallenge(ep, camp, members, n) {
   if (ep.isMerge || gs.isMerged) return null;
@@ -625,6 +668,8 @@ export function airTdEpisode(ep) {
       const opener = phase === 'pre' ? (dayOne ? firstDay(ep, camp, members, n++) : swapped ? firstDay(ep, camp, members, n++, 'swap') : morningAfter(ep, camp, members, n++))
         : afterChallenge(ep, camp, members, n++);
       if (opener) list.push({ at: -1, item: opener });
+      // the auction's fallout, early in the evening
+      if (phase === 'post') auctionTalk(ep, camp, members, () => n++).forEach((it, k) => list.push({ at: 0.2 + k * 0.01, item: it }));
       // day one: by the afternoon two of them have hit it off, and by the evening two of them have not
       if (dayOne) { const fp = firstPair(ep, camp, members, n++, phase === 'pre' ? 'clicked' : 'clashed'); if (fp) list.push({ at: phase === 'pre' ? 0.5 : 1e5, item: fp }); }
       // the storyline steps worth a scene

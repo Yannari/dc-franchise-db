@@ -285,7 +285,12 @@ function awayIn(lines, said) {
   const names = [...new Set(lines.flatMap(l => String(l.text || '').match(/\b[A-Z][a-z]+\b/g) || []))].filter(n => !said.includes(n));
   return names.filter(n => { const e = reEsc(n); return lines.some(l => new RegExp(`\\b${e}\\b('s)? (isn't|is not|wasn't|was not|ain't) (even )?(here|there|around)|behind ${e}'s back|while ${e} (was|is) (gone|away|off)|${e} (left|walked off|is off|went off) `, 'i').test(l.text || '')); });
 }
-const crowdIn = lines => lines.some(l => l.kind === 'beat' && /\b(the group|everyone|everybody|the whole (team|camp|tribe)|around the fire|the others|the circle)\b/i.test(l.text || ''));
+const CROWD_BEAT = /\b(the group|everyone|everybody|the whole (team|camp|tribe)|around the fire|the others|the circle|hands? (go|goes|went) up|nobody else|the rest of (them|the team|the camp|the tribe)|the tribe (lies|takes|watches|stares|laughs|cheers|goes|sits|gathers|looks|is|turns|debates|claps)|the camp (watches|debates|stares|laughs|goes|turns|saw|is)|camp (saw|watches|remembers)|half the (camp|tribe)|in front of the (camp|tribe|group|others)|people (nod|laugh|stare|watch|clap|cheer|look)|nobody (can|is sure|says|moves|speaks|laughs)|heads turn)\b/i;
+const crowdIn = lines => lines.some(l => (l.kind === 'beat' && CROWD_BEAT.test(l.text || ''))
+  || (l.kind === 'say' && /\b(put it to a vote|hands up if|all of you|everybody listen|listen up)\b/i.test(l.text || '')));
+// events the engine plays out in front of the whole group (two people fighting over who leads it, a
+// group scene, a laugh the whole camp shares)
+const CROWD_TYPES = new Set(['leadershipClash', 'groupArgument', 'campMeeting', 'teamMeeting', 'publicCallout', 'exclusion', 'groupScene', 'groupLaugh']);
 
 // Teams gathered apart (the user, 2026-10-08: "two circles with their colour flag"): each team in a
 // ring around its own flag, side by side across the floor, the host between them. Returns the places
@@ -429,7 +434,7 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
       const absent = awayIn(ev.lines, said);
       const who = Object.values(ev.scene?.who || {}).filter(n => n && !absent.includes(n));
       let focus = [...said, ...who.filter(n => !said.includes(n))].slice(0, Math.max(4, said.length));
-      if (crowdIn(ev.lines)) focus = [...focus, ...(members || []).filter(n => !focus.includes(n) && !absent.includes(n))].slice(0, 8);
+      if (CROWD_TYPES.has(ev.type) || /^crowd\./.test(ev.scene?.kind || '') || crowdIn(ev.lines)) focus = [...focus, ...(members || []).filter(n => !focus.includes(n) && !absent.includes(n))].slice(0, 8);
       const onlyConf = ev.lines.every(l => l.kind === 'conf' || l.kind === 'beat') && !said.length;
       if (!onlyConf) open(spot === 'confessional' ? V.public : spot, windowId, focus.length ? focus : (ev.players || []).slice(0, 3), { why: badge });
       else if (!cur) open(V.public, windowId, (ev.players || []).slice(0, 3), { why: badge });

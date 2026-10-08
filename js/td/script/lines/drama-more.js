@@ -215,8 +215,10 @@ const CLASH = [
     { by: 'a', say: "Then show me. From over there." },
   ] },
   { id: 'dm.cl3', when: { register: 'schemer' }, turns: [
-    { by: 'a', say: "Let's put it to a vote. Who wants to follow my plan?" },
-    { beat: 'Two hands go up. {b} raises a different plan. Two hands go up for that too.' },
+    { by: 'a', say: "Okay. Firewood. Two crews: one gathers, one chops, and we swap at noon. Hands up if you're with me." },
+    { beat: "Two hands go up around the group." },
+    { by: 'b', say: "Or we all gather now, while it's light, and chop together once it's piled up. Hands?" },
+    { beat: "Two hands go up for that too. Everyone looks at the one person who hasn't voted." },
     { by: 'a', conf: "A tie. Over firewood. This is what democracy looks like out here." },
   ] },
   { id: 'dm.cl4', turns: [

@@ -27,7 +27,8 @@ def _by_tod(day, night):
 
 _ROW = [(560, 640), (800, 640), (1040, 640)]
 # the campfire ceremony's stumps, front row and back, and Chris by the oil-drum podium
-_STUMPS = [(440, 485), (520, 482), (600, 468), (680, 445), (742, 432), (430, 425), (530, 398), (605, 388), (680, 386), (750, 376), (812, 425)]
+# (the ceremony frame is cropped in on the stumps: clean.py box)
+_STUMPS = [(183, 508), (317, 503), (450, 480), (583, 442), (687, 420), (167, 408), (333, 363), (458, 347), (583, 343), (700, 327), (803, 408)]
 _ZONES = {'dock': (720, 640), 'beach': (1380, 575), 'communal-grounds': (900, 540), 'cabins': (840, 500), 'washroom': (965, 505),
           'confessional': (1010, 505), 'mess-hall': (1075, 490), 'campfire': (530, 482), 'forest-trail': (700, 430), 'cliff': (1270, 270),
           'lake': (260, 680), 'waterfall': (1180, 420), 'caves': (470, 515), 'boathouse': (1170, 555), 'amphitheater': (770, 465)}
@@ -42,7 +43,7 @@ _HC = {
     'dock': _by_tod(_wk('hc-dock.json', [(250, 640, 26), (520, 590, 22), (780, 545, 19)]), _wk('hc-dock-night.json', [(640, 648), (800, 648), (960, 648)])),
     'exit': _wk('hc-dock-night.json', [(800, 648), (640, 648), (960, 648)]),
     'campfire': _wk('hc-campfire.json', [(650, 560), (850, 590), (1050, 560)]),
-    'ceremony': _wk('hc-ceremony.json', [(820, 640), (1060, 640)], seats=_STUMPS, host=(1210, 470)),
+    'ceremony': _wk('hc-ceremony.json', [(1080, 648), (1260, 648)], seats=_STUMPS, host=(1467, 483)),
     'cliff': _wk('hc-cliff.json', [(380, 530), (680, 530), (980, 530)]),
     'forest-trail': _wk('hc-cave.json', [(380, 648), (640, 648), (900, 648)]),
     'beach': _wk('hc-beach.json', [(500, 640), (800, 640), (1100, 640)]),

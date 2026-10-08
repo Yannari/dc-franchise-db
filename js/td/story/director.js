@@ -35,6 +35,7 @@ import { registerOf, factsFor } from '../script/facts.js';
 import { writeTribal, whyOf as ballotWhy } from './tribal.js';
 import { writeTwistStory, writeExile, writeFirstImpressions, writeAuctionScript } from './twist.js';
 import { needOf, psycheCast } from './psyche.js';
+import { runnerDue } from './runners.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf } from './places.js';
 
@@ -970,6 +971,21 @@ export function airTdEpisode(ep) {
       // the vote story's own beats first, so the plan scenes can call back to them
       const editOn = (seasonConfig?.tdEdit || 'full') !== 'off';
       if (editOn && talk) list.push(...arcBeats(ep, camp, members, phase, talk, () => n++, list, [], 'vote'));
+      // a running gag (runners.js): one beat when it's due, before the challenge
+      if (editOn && phase === 'pre') {
+        const rd = runnerDue(ep, members);
+        if (rd) {
+          const foil = members.filter(m => m !== rd.name).sort((x, y) => getBond(rd.name, y) - getBond(rd.name, x) || x.localeCompare(y));
+          const who = { a: rd.name, ...(foil[0] ? { b: foil[0] } : {}), ...(foil[1] ? { c: foil[1] } : {}) };
+          const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), third: !!who.c, pair: !!who.b };
+          const w = writeStory(`run.${rd.kind}`, String(rd.stage), who, {}, facts, { ep: ep.num, camp, phase, n: n++, place: 'public', avoid: ctxAvoid('afternoon'), unique: 'soft' });
+          if (w) {
+            rd.commit();
+            list.push({ at: 0.8, item: { story: true, kind: `run.${rd.kind}.${rd.stage}`, storyType: 'comedy', step: String(rd.stage), players: Object.values(who), lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'run', who, data: {}, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: 'Meanwhile', badgeClass: '', why: [`${rd.name}'s running gag.`] } });
+          }
+        }
+      }
       // the C-story: one person's inner life, before the challenge (psyche.js)
       if (editOn && phase === 'pre' && ep.num > 1) {
         const pc = psycheCast(ep, members);

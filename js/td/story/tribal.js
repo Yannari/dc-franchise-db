@@ -14,6 +14,7 @@
 // ballot's engine reason in the side panel stay exactly as they were.
 import { gs } from '../../core.js';
 import { getBond } from '../../bonds.js';
+import { pStats as pStatsOf } from '../../players.js';
 import { registerOf, factsFor } from '../script/facts.js';
 import { writeStory } from './write.js';
 import { challengeOf } from './record.js';
@@ -110,5 +111,46 @@ export function writeTribal(ep) {
   else if (guilty) conf('guilty', guilty);
   // the shock card is for a real one: somebody close to the boot wrote the name
   const shocking = blindside && getBond(elim, betrayer) >= 3;
-  return { booth, reveal: rv?.lines || [], blindside, shocking, exit: ex?.lines || [], exitWith, exitKind, after: after.slice(0, 2) };
+
+  // ── the room: a blindside lands on everybody it touches, not only the one leaving (the user) ──
+  // A plan that did not happen means somebody walked in sure of another name. Who reacts, and how,
+  // is what they did: 'hurt' wrote another name and just lost their person; 'burned' was on a plan
+  // that failed (their name for it is {target}); 'relieved' was that plan's target and is still here;
+  // 'pleased' made it happen. One line each, at the reading, then the burned and the relieved to camera.
+  const ballotOf = x => ballots.find(v => v.voter === x)?.voted || null;
+  const failed = (ep.alliances || []).filter(al => al.target && al.target !== elim && tribal.includes(al.target)
+    && (al.members || []).some(m => m !== elim && tribal.includes(m) && ballotOf(m) === al.target));
+  const room = [];
+  const roomBlind = blindside || failed.length > 0;
+  let burned = null, relieved = null;
+  if (roomBlind) {
+    const used = new Set([ra, rb].filter(Boolean));
+    const react = (kind, x, d = {}) => {
+      if (!x || used.has(x)) return false;
+      const f = { ...factsFor({ who: { a: x, b: elim }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(x), lastBoot: true };
+      const w = writeStory('room', kind, { a: x, b: elim }, { ...data, ...d }, f, ctx(n++, 'tribal', 'soft'));
+      if (!w) return false;
+      used.add(x); room.push(...w.lines);
+      return true;
+    };
+    const hurt = others.filter(x => ballotOf(x) && ballotOf(x) !== elim && getBond(x, elim) >= 2)
+      .sort((x, y) => getBond(elim, y) - getBond(elim, x) || x.localeCompare(y))[0] || null;
+    const plan = failed.sort((x, y) => (y.members || []).length - (x.members || []).length)[0] || null;
+    const onPlan = plan ? (plan.members || []).filter(m => others.includes(m) && ballotOf(m) === plan.target && m !== hurt)
+      .sort((x, y) => (pStatsOf(y)?.strategic || 0) - (pStatsOf(x)?.strategic || 0) || x.localeCompare(y)) : [];
+    relieved = plan && others.includes(plan.target) ? plan.target : null;
+    react('hurt', hurt);
+    if (react('burned', onPlan[0], { target: plan?.target })) burned = onPlan[0];
+    if (!react('relieved', relieved)) relieved = null;
+    react('pleased', architect);
+    const camConf = (kind, who, d = {}) => {
+      if (!who) return;
+      const f = { ...factsFor({ who: { a: who }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(who), lastBoot: true };
+      const w = writeStory('after', kind, { a: who }, { ...data, ...d }, f, ctx(n++, 'tribal', 'soft'));
+      if (w) after.push(...w.lines);
+    };
+    camConf('burned', burned, { target: plan?.target });
+    if (relieved !== architect) camConf('relieved', relieved);
+  }
+  return { booth, reveal: rv?.lines || [], room, blindside, shocking, exit: ex?.lines || [], exitWith, exitKind, after: after.slice(0, roomBlind ? 4 : 2) };
 }

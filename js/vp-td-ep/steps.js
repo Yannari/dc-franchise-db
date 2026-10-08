@@ -602,6 +602,8 @@ export function tdTribalScreen(ep, o = {}) {
   // a blindside lands as one: the show's shock card before the boot finds words
   if (story?.shocking && story.reveal?.length) moment.push({ k: 'title', kicker: 'Blindside', name: elim, faces: [elim], shock: true });
   for (const l of story?.reveal || []) moment.push(lineStep(l));
+  // ...and the room: a plan that did not happen lands on everybody it touched (td/story/tribal.js room)
+  for (const l of story?.room || []) moment.push(lineStep(l));
   // ...and the classic screen's Tribal Blowup or Crashout: the boot goes out swinging, and what
   // they say changes the game (episode.js checkTribalBlowup; vp-screens.js buildCrashout)
   const swing = ep.tribalBlowup?.player === elim ? { ...ep.tribalBlowup, kind: 'Tribal Blowup' }
@@ -865,6 +867,8 @@ export function tdStepTranscript(screen) {
  */
 export function tdDoubleTribalScreen(ep, o = {}) {
   if (ep?.swapResult?.swapper && !ep.eliminated) return elimSwap(ep, o);
+  if (ep?.exileDuelVotedOut && ep.exileDuelResult) return duelNight(ep, o);
+  if (ep?.exilePlayer && !ep.eliminated && (ep.tribalPlayers || []).includes(ep.exilePlayer)) return exileSetup(ep, o);
   if (ep?.firstEliminated && ep.announcedDoubleElim && !(ep.votingLog2 || []).length) return announcedDouble(ep, o);
   if (!ep?.firstEliminated || !(ep.votingLog2 || []).length) return null;
   const first = ep.firstEliminated;
@@ -945,4 +949,41 @@ function elimSwap(ep, o) {
   if (pickedPlayer) steps.push({ k: 'beat', text: `${swapper} picks ${pickedPlayer}. ${pickedPlayer} is going to ${fromTribe}.`, focus: [swapper], tense: true,
     side: [{ tab: 'room', text: `${swapper} moves to ${toTribe}; ${pickedPlayer} moves to ${fromTribe}. Nobody goes home.` }] });
   return { ...a, label: `${a.label} · Elimination Swap`, steps, elim: null };
+}
+
+// voted out into an Exile Duel: the vote is read, but the one voted out goes to face the exiled player
+// (the duel itself plays after the vote, on the post-vote screen)
+function duelNight(ep, o) {
+  const boot = ep.exileDuelVotedOut, R = ep.exileDuelResult;
+  const v = { ...ep, eliminated: boot, exileDuelVotedOut: null, tribalStory: null, riChoice: null };
+  if (!tdTribalStepped(v)) return null;
+  const a = tdTribalScreen(v, o);
+  if (!a) return null;
+  const out = a.steps.findIndex(s => s.k === 'out');
+  if (out < 0) return null;
+  const host = a.host;
+  const steps = a.steps.slice(0, out + 1);
+  steps[out] = { ...steps[out], island: true };
+  steps.push({ k: 'say', by: host, host: true, text: `${boot}, you're not out of the game yet. ${R.exilePlayer} has been waiting on Exile for a rematch.`, focus: [boot] },
+    { k: 'title', kicker: 'Exile Duel', name: `${boot} vs ${R.exilePlayer}`, faces: [boot, R.exilePlayer], vs: true },
+    { k: 'say', by: host, host: true, text: `The two of you duel${R.challengeLabel ? ` in ${R.challengeLabel}` : ''}. The winner stays in the game. The loser is gone for good.` });
+  return { ...a, label: `${a.label} · Exile Duel`, steps, elim: null };
+}
+
+// the night the Exile Duel begins: the one voted out goes to Exile, to wait for the next boot
+function exileSetup(ep, o) {
+  const boot = ep.exilePlayer;
+  const v = { ...ep, eliminated: boot, exileDuelVotedOut: null, tribalStory: null, riChoice: null };
+  if (!tdTribalStepped(v)) return null;
+  const a = tdTribalScreen(v, o);
+  if (!a) return null;
+  const out = a.steps.findIndex(s => s.k === 'out');
+  if (out < 0) return null;
+  const host = a.host;
+  const steps = a.steps.slice(0, out + 1);
+  steps[out] = { ...steps[out], island: true };
+  steps.push({ k: 'say', by: host, host: true, text: `${boot}, you're not going home. You're going to Exile.`, focus: [boot] },
+    { k: 'title', kicker: 'Exile Duel', name: `${boot} goes to Exile`, faces: [boot], tone: 'fire' },
+    { k: 'say', by: host, host: true, text: `You'll wait there for the next person voted out. Beat them in a duel and you're back in the game.`, focus: [boot] });
+  return { ...a, label: `${a.label} · Exile Duel`, steps, elim: null };
 }

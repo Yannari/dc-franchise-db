@@ -1963,6 +1963,19 @@ export function _textTheVotes(ep, ln, sec) {
       }
     }
   }
+  // ── THE READING, AS AIRED (td/story/tribal.js): the boot, the room, last words, the confessionals ──
+  {
+    const st = ep.tribalStory;
+    const say = l => ln(l.kind === 'beat' ? `  (${l.text})` : l.kind === 'conf' ? `  ${l.by} [conf]: ${l.text}` : `  ${l.by}: ${l.text}`);
+    if (st && (st.reveal?.length || st.room?.length || st.exit?.length || st.after?.length)) {
+      ln('');
+      ln(st.blindside || st.room?.length ? 'THE READING — BLINDSIDE:' : 'THE READING:');
+      (st.reveal || []).forEach(say);
+      (st.room || []).forEach(say);
+      if (st.exit?.length) { ln('  Last words:'); st.exit.forEach(say); }
+      if (st.after?.length) { ln('  Later:'); st.after.forEach(say); }
+    }
+  }
 }
 
 // ── COACH VOTED OUT ──

@@ -19,7 +19,7 @@ export default {
     {
       id: 'nu.gp1', place: 'secret', when: { fourth: true }, turns: [
         { beat: "{a} gets {b}, {c} and {d} together at {place}, away from everyone else." },
-        { by: 'a', say: "Okay, everybody's here, so let's do this fast." },
+        { by: 'a', say: "Okay, everybody's here, so let's do this fast.", v: { anxious: "Okay, everybody's here, so let's be quick, before somebody sees us.", bossy: "Everybody's here, good, let's make this quick." } },
         { by: 'd', say: "Do what fast?" },
         { by: 'a', say: "Tonight. I think it should be {target}." },
         { by: 'b', say: "Why {target}?" },
@@ -30,13 +30,13 @@ export default {
         { by: 'd', say: "Okay, then it's {target}. All four of us?" },
         { by: 'b', say: "All four." },
         { by: 'a', say: "Good. Nobody says anything to anybody, and we walk back separately." },
-        { by: 'd', conf: "Four people behind a tree, deciding somebody's whole game in two minutes. That's this place." },
+        { by: 'd', conf: "Four people behind a tree, deciding somebody's whole game in two minutes. That's this place.", v: { warm: "It felt kind of awful, deciding somebody's whole game behind a tree like that.", schemer: "Four of us made the call in two minutes, and that's exactly how I like it." } },
       ],
     },
     {
       id: 'nu.gp2', place: 'sleep', when: { fourth: true }, turns: [
         { beat: "The {quarters}, while the others are out. {a}, {b}, {c} and {d} sit on the {bed}s." },
-        { by: 'b', say: "We have maybe ten minutes before somebody walks in." },
+        { by: 'b', say: "We have maybe ten minutes before somebody walks in.", v: { anxious: "We've got like ten minutes before somebody walks in, so we need to hurry.", dry: "We've got about ten minutes before someone wanders in looking for a sock." } },
         { by: 'a', say: "Then I'll be quick. Who's everyone thinking?" },
         { by: 'c', say: "I've heard {target}." },
         { by: 'd', say: "Me too." },
@@ -81,7 +81,7 @@ export default {
     {
       id: 'nu.gw1', place: 'work', when: { fourth: true }, turns: [
         { beat: "{a}, {b}, {c} and {d} are stacking wood {here}, voices low." },
-        { by: 'a', say: "So, tonight... we all know who it is." },
+        { by: 'a', say: "So, tonight... we all know who it is.", v: { blunt: "Tonight's obvious, we all know who it is.", warm: "So, tonight... I think we all know who it is, and I hate it." } },
         { by: 'c', say: "Do we?" },
         { by: 'b', say: "{target}." },
         { by: 'a', say: "{target}. We need to win, and we're not winning with {target}." },
@@ -111,7 +111,7 @@ export default {
     {
       id: 'nu.gt1', place: 'secret', when: { fourth: true }, turns: [
         { beat: "{a} has waited until {target} went to the water. {b}, {c} and {d} are {here}." },
-        { by: 'a', say: "Can I say a name, and nobody freaks out?" },
+        { by: 'a', say: "Can I say a name, and nobody freaks out?", v: { anxious: "Can I say a name? Just please don't freak out.", schemer: "I'm going to say a name, and I need everybody to stay calm." } },
         { by: 'd', say: "That's a great start." },
         { by: 'a', say: "{target}." },
         { by: 'b', say: "{target}? {target} hasn't done anything." },
@@ -140,7 +140,7 @@ export default {
     S('nu.sg1', null, ["I'm not going to pretend this one's about strategy.", "{target} has been awful to me since day one. Tonight I get to write that down."], { warm: "I'm not proud of this one. I want to say that first." }),
     {
       id: 'nu.gg1', place: 'aside', when: { fourth: true }, turns: [
-        { by: 'a', say: "Is it just me, or is everyone done with {target}?" },
+        { by: 'a', say: "Is it just me, or is everyone done with {target}?", v: { loud: "Is it just me, or is EVERYONE done with {target}?", cruel: "Can we all admit we're sick of {target}?" } },
         { by: 'b', say: "It's not just you." },
         { by: 'c', say: "I've been done since day two." },
         { by: 'd', say: "Day one." },
@@ -155,7 +155,7 @@ export default {
     S('nu.ss1', null, ["Somebody told me {target} has been saying my name.", "I didn't go running to anyone. I just quietly made sure my name isn't the one that comes out tonight. {target}'s is."]),
     {
       id: 'nu.gs1', place: 'secret', when: { fourth: true }, turns: [
-        { by: 'a', say: "Okay, everybody listen, {target} is trying to flip the vote onto one of us." },
+        { by: 'a', say: "Okay, everybody listen, {target} is trying to flip the vote onto one of us.", v: { anxious: "Okay, nobody panic, but {target} is trying to flip the vote onto one of us.", tough: "Listen up, {target} is coming after one of us tonight." } },
         { by: 'c', say: "Which one?" },
         { by: 'a', say: "Does it matter? If {target} gets the numbers, one of us four is gone." },
         { by: 'd', say: "So we get there first." },
@@ -176,7 +176,7 @@ export default {
     S('nu.so2', null, ["Everybody's been running around whispering. Not me.", "I already know how tonight goes. {target}."]),
     {
       id: 'nu.go1', place: 'fire', when: { third: true }, turns: [
-        { by: 'a', say: "So we're all on {target}, right?" },
+        { by: 'a', say: "So we're all on {target}, right?", v: { anxious: "We're all still on {target}, right? Nothing changed?", bossy: "We're all on {target}. Right?" } },
         { by: 'b', say: "That's what we said." },
         { by: 'c', say: "Has anybody actually checked with the others?" },
         { by: 'a', say: "I don't need to, just look at {target}, {target} knows." },
@@ -202,7 +202,7 @@ export default {
     S('nu.sl1', null, ["I'm writing {target}. I know I'm probably on my own.", "I'd rather lose the vote than write a name I don't believe in."]),
     {
       id: 'nu.gl1', place: 'aside', when: { third: true }, turns: [
-        { by: 'a', say: "Count it with me. Who's on {target}?" },
+        { by: 'a', say: "Count it with me. Who's on {target}?", v: { nerdy: "Okay, let's actually count it, who's on {target}?", anxious: "Can we count it? I need to know who's on {target}." } },
         { by: 'b', say: "Us three." },
         { by: 'c', say: "And maybe one more." },
         { by: 'a', say: "Maybe isn't a vote." },

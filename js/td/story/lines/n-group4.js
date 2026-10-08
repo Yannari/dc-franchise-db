@@ -20,7 +20,7 @@ export default {
   'long.crowd.meal.any': [
     { id: 'nl.m1', place: 'eat', turns: [
       { beat: "Breakfast {here}. The team squeezes in around the table." },
-      { by: 'a', say: "Morning, everybody! How did we sleep?" },
+      { by: 'a', say: "Morning, everybody! How did we sleep?", v: { dry: "Morning, everybody. So, on a scale of bad to terrible, how did we sleep?", quiet: "...Morning.", anxious: "Morning! Did everybody sleep okay? I didn't, but did you?", teen: "Morning! Okay, real question, did anybody actually sleep?" } },
       { by: 'b', say: "I didn't." },
       { by: 'c', say: "Something was crawling on me all night." },
       O('d', "That was me, sorry, the floor is really lumpy."),
@@ -29,11 +29,11 @@ export default {
       { by: 'b', say: "Take it. I've lost my appetite." },
       O('f', "What do we think today's challenge is?"),
       { by: 'c', say: "Something with mud. It's always something with mud." },
-      { by: 'a', conf: "Breakfast is the one time we're all just people. Then the challenge starts and we're not." },
+      { by: 'a', conf: "Breakfast is the one time we're all just people. Then the challenge starts and we're not.", v: { warm: "I love breakfast here, because for a little while we're just people, and then the challenge starts.", schemer: "Everybody lets their guard down at breakfast, so that's when I pay the most attention." } },
     ] },
     { id: 'nl.m2', place: 'eat', when: { lastBoot: true }, turns: [
       { beat: "Breakfast {here}. Nobody sits in the spot where {lastBoot} used to." },
-      { by: 'b', say: "It's weird without {lastBoot}." },
+      { by: 'b', say: "It's weird without {lastBoot}.", v: { emotional: "It's so weird without {lastBoot}, I keep looking at the spot.", dry: "Huh, it's quiet without {lastBoot}, I'll give {lastBoot} that.", blunt: "{lastBoot}'s gone. It's weird." } },
       { by: 'a', say: "It's quieter." },
       O('d', "Too quiet."),
       { by: 'c', say: "Are we going to talk about it?" },
@@ -57,17 +57,17 @@ export default {
   'long.crowd.dinner.any': [
     { id: 'nl.d1', place: 'eat', turns: [
       { beat: "Dinner {here}. Everyone is too tired to talk much." },
-      { by: 'a', say: "What a day." },
+      { by: 'a', say: "What a day.", v: { loud: "What a DAY, oh my god!", dry: "Well, that was a day, I'll say that much.", grown: "What a day. My back is going to tell me all about it tomorrow." } },
       { by: 'b', say: "What a terrible day." },
       O('d', "I can't feel my legs."),
       { by: 'c', say: "Is it over? Please tell me it's over." },
       { by: 'a', say: "It's over. We just have to eat this." },
       O('e', "Then it's not over."),
       O('f', "Hey, at least it's warm. Ish."),
-      { by: 'b', conf: "Nights like this, I actually like these people. Then breakfast comes and we're back to plotting." },
+      { by: 'b', conf: "Nights like this, I actually like these people. Then breakfast comes and we're back to plotting.", v: { warm: "On nights like this I really love these people, and I wish it could stay like this.", cruel: "They're tolerable when they're too tired to talk, which is the best version of them." } },
     ] },
     { id: 'nl.d2', place: 'eat', when: { tribal: true }, turns: [
-      { by: 'b', say: "So nobody's going to say it?" },
+      { by: 'b', say: "So nobody's going to say it?", v: { blunt: "Are we really not going to talk about tonight?", anxious: "So is anybody else freaking out about tonight, or is it just me?", loud: "Is NOBODY going to say it?!" } },
       { by: 'a', say: "Say what?" },
       { by: 'b', say: "That one of us is going home tonight, and we're all just eating like it's fine." },
       O('d', "What do you want us to do? Not eat?"),
@@ -81,7 +81,7 @@ export default {
   'long.crowd.chores.any': [
     { id: 'nl.c1', place: 'work', turns: [
       { beat: "Morning chores {here}. {a} hands out the jobs." },
-      { by: 'a', say: "{b}, water. {c}, firewood." },
+      { by: 'a', say: "{b}, water. {c}, firewood.", v: { bossy: "Okay, {b}, you're on water, {c}, you're on firewood, let's move.", warm: "Okay, {b}, would you mind doing water? And {c}, could you grab some firewood?" } },
       O('d', "What about me?"),
       O('d', "Don't say latrine. Please don't say latrine."),
       { by: 'a', say: "Everybody else, help where it's needed." },
@@ -103,7 +103,7 @@ export default {
       O('f', "And I'll stay out of the way. That's my job."),
       { by: 'b', say: "Fine. But I'm holding it my way." },
       { beat: "Two hours later, it's standing. Mostly." },
-      { by: 'b', conf: "{a} bosses everybody around and it drives me crazy, and the worst part is it worked." },
+      { by: 'b', conf: "{a} bosses everybody around and it drives me crazy, and the worst part is it worked.", v: { proud: "I could've done it better than {a}, I just didn't feel like it, and now {a} gets the credit.", warm: "{a} was kind of bossy, but honestly we needed somebody to step up." } },
     ] },
     { id: 'nl.p2', place: 'work', when: { voice: ['bossy', 'loud', 'competitive', 'tough'] }, turns: [
       { by: 'a', say: "Team meeting, right now, everybody!" },
@@ -122,7 +122,7 @@ export default {
   'long.crowd.banter.any': [
     { id: 'nl.b1', place: 'fire', turns: [
       { beat: "No vote tonight. The team sits around the fire with nothing to plot." },
-      { by: 'a', say: "Okay, one thing you miss from home. Go." },
+      { by: 'a', say: "Okay, one thing you miss from home. Go.", v: { warm: "Okay, tell me one thing you miss from home, I'll go first if you want.", loud: "Okay, everybody, one thing you miss from home, GO!", teen: "Okay, what's the one thing you miss most? Besides your phone." } },
       { by: 'b', say: "My bed. My actual bed." },
       { by: 'c', say: "Food that doesn't move." },
       { by: 'd', say: "My dog. My dog would hate it here." },
@@ -131,10 +131,10 @@ export default {
       O('e', "He's a very brave dog."),
       O('f', "I miss being clean. Just, generally."),
       { beat: "Everybody laughs. Nobody wants to go to bed." },
-      { by: 'c', conf: "I didn't come here for friends. I've got a whole fire full of them now. That's going to make voting really hard." },
+      { by: 'c', conf: "I didn't come here for friends. I've got a whole fire full of them now. That's going to make voting really hard.", v: { schemer: "I've got a whole fire full of friends now, which is a whole fire full of people I'm going to have to vote out.", emotional: "I didn't come here for friends, and now I've got all of them, and I don't want to vote any of them out." } },
     ] },
     { id: 'nl.b2', place: 'fire', turns: [
-      { by: 'c', say: "Real question. If {host} had to do one of our challenges, which one?" },
+      { by: 'c', say: "Real question. If {host} had to do one of our challenges, which one?", v: { goofy: "Okay, okay, if {host} had to do one of our challenges, which one would be the funniest?", dry: "Hypothetically, if {host} had to suffer through one of our challenges, which one do we pick?" } },
       { by: 'a', say: "The worst one. Obviously." },
       { by: 'd', say: "And we get to watch." },
       { by: 'b', say: "And make fun of the hair." },
@@ -147,14 +147,14 @@ export default {
   'long.crowd.won.any': [
     { id: 'nl.w1', place: 'public', turns: [
       { beat: "The team comes back {here} cheering. {a} is the one everybody wants to high-five." },
-      { by: 'b', say: "Did you see {a} out there?" },
+      { by: 'b', say: "Did you see {a} out there?", v: { loud: "Did you SEE {a} out there?!", warm: "Oh my gosh, {a} was amazing out there, did you see?", teen: "Okay, did you see {a} out there? That was insane." } },
       { by: 'c', say: "Everybody saw {a} out there!" },
       { by: 'd', move: 'excited', opt: true },
       { by: 'a', say: "Stop. It was all of us." },
       O('e', "It was mostly you." ),
       { by: 'b', say: "No vote tonight! Nobody goes home!" },
       O('f', "I'm going to sleep for twelve hours."),
-      { by: 'a', conf: "Winning feels amazing. Being the reason we won is better. It's also exactly how you become a target later." },
+      { by: 'a', conf: "Winning feels amazing. Being the reason we won is better. It's also exactly how you become a target later.", v: { anxious: "Everyone's cheering for me, which is great, but it also means I'm a target now, which is less great.", proud: "I won us that challenge, and everybody knows it, and honestly they should." } },
     ] },
     { id: 'nl.w2', place: 'public', when: { voice: ['loud', 'proud', 'competitive', 'theatrical'] }, turns: [
       { by: 'a', say: "Who won it? WE won it!" },
@@ -174,13 +174,13 @@ export default {
       O('e', "Lucky still counts."),
       { by: 'a', say: "Lucky absolutely counts." },
       O('f', "Can we just be happy for one night?"),
-      { by: 'c', conf: "The other team is picking someone to send home right now. We're sitting by the fire. That feeling never gets old." },
+      { by: 'c', conf: "The other team is picking someone to send home right now. We're sitting by the fire. That feeling never gets old.", v: { warm: "I feel kind of bad for the other team tonight, but I'm also really, really happy we're sitting here.", cruel: "The other team is turning on each other right now and I'm just sitting here by the fire. I love it." } },
     ] },
   ],
   'long.crowd.lost.any': [
     { id: 'nl.l1', place: 'public', turns: [
       { beat: "The team drags itself back {here}. Nobody looks at anybody." },
-      { by: 'a', say: "Well, I'm just going to say it. We lost that because of {b}." },
+      { by: 'a', say: "Well, I'm just going to say it. We lost that because of {b}.", v: { cruel: "Let's not pretend, we lost because {b} was useless out there.", blunt: "We lost because of {b}, that's just what happened." } },
       { by: 'b', move: 'deflect' },
       { by: 'c', move: 'defend' },
       { by: 'c', say: "We all lost it." },
@@ -189,7 +189,7 @@ export default {
       O('e', "Can we not do this right now?"),
       { by: 'a', say: "When should we do it? After the vote?" },
       O('f', "Maybe, yeah, after the vote sounds good."),
-      { by: 'b', conf: "{a} needed somebody to blame and I was right there. At least {c} stood up for me." },
+      { by: 'b', conf: "{a} needed somebody to blame and I was right there. At least {c} stood up for me.", v: { emotional: "{a} blamed me in front of everybody, and I almost cried, but {c} stood up for me.", tough: "{a} wants to blame me, fine, but {c} had my back and I won't forget that." } },
       { by: 'c', conf: "{b} had a bad day and {a} had a bad attitude, and I know which one I'd rather keep." },
     ] },
     { id: 'nl.l2', place: 'public', when: { voice: ['loud', 'tough', 'blunt', 'cruel'] }, turns: [
@@ -204,20 +204,20 @@ export default {
       { by: 'a', conf: "Somebody has to say it or we keep losing, so fine, I'll be the bad guy." },
     ] },
     { id: 'nl.l3', place: 'aside', turns: [
-      { by: 'c', say: "Okay. Everybody take a breath." },
+      { by: 'c', say: "Okay. Everybody take a breath.", v: { calm: "Okay, everybody just take a breath for a second.", bossy: "Okay, stop, everybody breathe, now." } },
       { by: 'a', say: "I'm breathing. I'm also annoyed." },
       { by: 'b', say: "I know it was me. You don't have to say it." },
       O('d', "It wasn't only you."),
       { by: 'c', say: "It was all of us. And whoever goes tonight, it's going to be because of a vote, not one mistake." },
       O('e', "That's very wise. I hate it."),
       O('f', "Can we talk about it later? I just want to sit down."),
-      { by: 'b', conf: "Everyone knows I lost it for us. {c} is the only one making it feel survivable." },
+      { by: 'b', conf: "Everyone knows I lost it for us. {c} is the only one making it feel survivable.", v: { anxious: "Everybody knows I'm the reason we lost, and I'm so scared it's me tonight, and {c} is the only one being nice about it." } },
     ] },
   ],
   'long.crowd.huddle.any': [
     { id: 'nl.h1', place: 'secret', turns: [
       { beat: "{group} meets at {place}. Everybody who's in it shows up." },
-      { by: 'a', say: "Okay. Is everybody here?" },
+      { by: 'a', say: "Okay. Is everybody here?", v: { anxious: "Okay, is everybody here? Nobody followed us, right?", bossy: "Okay, roll call, is everybody here?" } },
       { by: 'b', say: "Everybody's here." },
       O('d', "Where's... oh, sorry, you're there."),
       { by: 'a', say: "Same name tonight. Nobody goes off on their own." },
@@ -225,7 +225,7 @@ export default {
       { by: 'a', say: "Then you bring it here. To all of us." },
       O('e', "No side deals."),
       O('f', "No side deals. Agreed."),
-      { by: 'c', conf: "Being in a group this big feels safe. It also means there are a lot of people who could break it." },
+      { by: 'c', conf: "Being in a group this big feels safe. It also means there are a lot of people who could break it.", v: { schemer: "A group this big feels safe until somebody gets greedy, and somebody always gets greedy." } },
     ] },
     { id: 'nl.h2', place: 'secret', when: { voice: ['warm', 'earnest', 'emotional'] }, turns: [
       { beat: "{group} sits in a circle at {place}." },
@@ -253,7 +253,7 @@ export default {
   'long.crowd.nerves.any': [
     { id: 'nl.n1', place: 'fire', turns: [
       { beat: "The team waits by the fire to go to the vote. Nobody says much." },
-      { by: 'b', say: "I hate this part." },
+      { by: 'b', say: "I hate this part.", v: { anxious: "I hate this part so much, the waiting is the worst.", dry: "Ah, the waiting. My favourite part of the day, truly.", tough: "Let's just get this over with." } },
       { by: 'a', say: "The waiting?" },
       { by: 'b', say: "The waiting, and the pretending we're all fine." },
       { by: 'c', say: "I'm fine." },

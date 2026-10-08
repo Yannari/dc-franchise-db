@@ -50,11 +50,11 @@ export default {
         v: { competitive: "Eat it. All of it. If the other team's eating this too, we're not losing to them on an empty stomach." } },
       { by: 'c', say: "You first." },
       { beat: "{b} takes a bite, chews, and keeps a straight face for about three seconds." },
-      { by: 'd', conf: "Day one and I'd already trade my whole bag for a sandwich." },
+      { by: 'd', conf: "Day one and I'd already trade my whole bag for a sandwich.", v: { food: "It's day one and I'd already trade everything I own for one decent sandwich.", grown: "Day one, and I already miss my kitchen more than I can say." } },
     ] },
     { id: 'fd.l1', place: 'sleep', when: { venue: 'film-lot' }, turns: [
       { beat: "The {tribe} get their trailer. It has two beds that fold out of the wall, and one of them is broken." },
-      { by: 'a', say: "Okay, which one's broken?" },
+      { by: 'a', say: "Okay, which one's broken?", v: { dry: "So which one of these is the broken one? There's always a broken one.", bossy: "Okay, which one's broken? Somebody check." } },
       { by: 'b', say: "That one. The spring's sticking out." },
       { by: 'c', say: "So who gets the floor?", v: { dry: "Great, a trailer. Very glamorous, very Hollywood." } },
       { by: 'a', say: "Whoever loses the next challenge, obviously.", v: { bossy: "We'll rotate, and I'll make a schedule. I'm going first, but there'll be a schedule." } },
@@ -85,17 +85,17 @@ export default {
     ] },
     { id: 'fd.k1', place: 'sleep', when: { venue: 'carnival' }, turns: [
       { beat: "The {tribe} reach their campsite. There's a tent, still in its bag, and no instructions." },
-      { by: 'a', say: "Okay. Who knows how to put up a tent?" },
+      { by: 'a', say: "Okay. Who knows how to put up a tent?", v: { anxious: "Does anybody know how to put up a tent? Because I don't, at all.", bossy: "Okay, who's done a tent before? Step up." } },
       { by: 'b', say: "How hard can it be?", v: { dry: "It's a tent, people have been doing this for thousands of years, so how hard can it be?" } },
       { beat: "Twenty minutes later, the tent is up. Sort of. It leans." },
       { by: 'c', say: "Is it supposed to lean like that?" },
       { by: 'd', say: "It's leaning because somebody put that pole in upside down." },
       { by: 'b', say: "Somebody? You mean me, you can just say me." },
-      { by: 'a', conf: "I don't know anybody on this team yet, but I already know who can't put up a tent." },
+      { by: 'a', conf: "I don't know anybody on this team yet, but I already know who can't put up a tent.", v: { warm: "I don't really know anybody yet, but they're all trying, and that's sweet.", dry: "I don't know anybody here yet, but I already know who's useless with a tent." } },
     ] },
     { id: 'fd.g1', place: 'public', when: { fourth: true }, turns: [
       { beat: "The {tribe}'s first afternoon together. Everybody's being a little too polite." },
-      { by: 'a', say: "Okay, so what does everybody do? Like, back home?" },
+      { by: 'a', say: "Okay, so what does everybody do? Like, back home?", v: { warm: "So what does everybody do back home? I want to know everybody!", teen: "Okay, so what do you guys do? Like, are you all in school or what?", grown: "So what does everybody do for a living? I'm curious." } },
       { by: 'b', say: "Does it matter?", v: { warm: "Oh, I love this. Okay, you first.", dry: "I'm going to lie, so it doesn't really matter." } },
       { by: 'a', say: "It's called getting to know each other." },
       { by: 'c', say: "Honestly? Nothing that interesting.", v: { goofy: "I'm a professional napper. It's unpaid, but it's my passion.", nerdy: "Ask me something specific. I know a lot of facts about a lot of things." } },
@@ -106,21 +106,21 @@ export default {
     ] },
     { id: 'fd.g2', place: 'fire', when: { fourth: true }, turns: [
       { beat: "The first night. The {tribe} sit around the fire, still mostly strangers." },
-      { by: 'c', say: "So what's everyone's game plan?" },
+      { by: 'c', say: "So what's everyone's game plan?", v: { schemer: "So, just out of curiosity, what's everybody's game plan?", loud: "Okay, game plans, everybody, go!", dry: "So, what's everyone's brilliant game plan?" } },
       { by: 'd', say: "We've been here like eight hours." },
       { by: 'c', say: "So? Some people have a plan the second they get off the boat." },
       { by: 'a', say: "My plan is to not go home first.", v: { schemer: "My plan is to be really nice to everybody until I know who I don't need.", earnest: "My plan is just to be myself and see what happens." } },
       { by: 'b', say: "That's not a plan, that's a hope." },
       { by: 'a', say: "Fine. What's yours?" },
       { by: 'b', say: "Not telling you on day one." },
-      { by: 'd', conf: "Nobody here trusts anybody yet, which is smart, because I don't trust any of them either." },
+      { by: 'd', conf: "Nobody here trusts anybody yet, which is smart, because I don't trust any of them either.", v: { warm: "Nobody trusts each other yet, which makes sense, but I really hope that changes.", anxious: "Nobody trusts anybody here, and honestly it's kind of making me nervous." } },
     ] },
   ],
 
   'story.firstday.swap': [
     { id: 'fd.sw1', place: 'public', turns: [
       { beat: "The new {tribe} stand around their camp. Half of them have never lived together." },
-      { by: 'a', say: "So. This is weird." },
+      { by: 'a', say: "So. This is weird.", v: { dry: "So, this is weird and I hate it.", anxious: "So, um, this is really weird, right?", loud: "Okay, this is SO weird!" } },
       { by: 'b', say: "Yeah. Yesterday you were the enemy.", v: { dry: "Welcome to the team. We have a pot and a lot of opinions." } },
       { by: 'a', say: "I'm still the enemy. I'm just the enemy who sleeps here now." },
       { by: 'c', say: "Can we not do this? We're a team now, like it or not." },
@@ -130,7 +130,7 @@ export default {
     ] },
     { id: 'fd.sw2', place: 'sleep', turns: [
       { beat: "{a} drops a bag on an empty {bed}. Everyone already there watches." },
-      { by: 'a', say: "Is this one taken?" },
+      { by: 'a', say: "Is this one taken?", v: { anxious: "Sorry, is this one taken? I can sit somewhere else.", tough: "This one taken? No? Good." } },
       { by: 'c', say: "It was my friend's. Before the swap.", v: { warm: "No, go ahead. Sorry, we're just still getting used to it." } },
       { by: 'a', say: "Oh. Sorry." },
       { by: 'b', say: "It's fine. Take it." },
@@ -141,7 +141,7 @@ export default {
   'story.firstday.history.siblings': [
     { id: 'fd.h1', place: 'public', turns: [
       { beat: "The {tribe} are doing introductions when {a} spots who else is on the team." },
-      { by: 'a', say: "Oh, you have got to be kidding me." },
+      { by: 'a', say: "Oh, you have got to be kidding me.", v: { loud: "Oh, you have GOT to be kidding me!", dry: "Oh, wonderful, just wonderful.", warm: "Oh my gosh, no way!" } },
       { by: 'b', say: "Hi to you too." },
       { by: 'c', say: "Wait, do you two know each other?" },
       { by: 'a', say: "Yeah. That's my {kinWord}." },

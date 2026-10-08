@@ -1189,6 +1189,14 @@
     1400,
     630
    ]
+  ],
+  "nightsky": [
+   [
+    1200,
+    0,
+    1600,
+    120
+   ]
   ]
  },
  "hc-ceremony": {
@@ -3585,7 +3593,12 @@
   "src": "jet-runway.webp",
   "wind": 0.3,
   "noleaf": true,
-  "ppl": 22
+  "ppl": 22,
+  "sun": [
+   300,
+   170,
+   230
+  ]
  },
  "cv-sign": {
   "src": "cv-sign.webp",
@@ -4171,5 +4184,1208 @@
     0.6
    ]
   ]
+ },
+ "sol-ruins-night": {
+  "src": "sol-ruins-night.webp",
+  "wind": 1.0,
+  "fire": [
+   [
+    950,
+    652,
+    28
+   ],
+   [
+    1238,
+    662,
+    28
+   ]
+  ],
+  "fall": [
+   [
+    372,
+    548,
+    404,
+    692
+   ]
+  ],
+  "flutter": [
+   [
+    100,
+    600,
+    850,
+    720
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "sol-fans-night": {
+  "src": "sol-fans-night.webp",
+  "wind": 1.0,
+  "fire": [
+   [
+    1240,
+    712,
+    46
+   ]
+  ],
+  "fall": [
+   [
+    680,
+    424,
+    712,
+    560
+   ]
+  ],
+  "flutter": [
+   [
+    100,
+    620,
+    900,
+    720
+   ]
+  ],
+  "cloth": [
+   [
+    1490,
+    515,
+    1552,
+    680,
+    1.0
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "sol-favs-night": {
+  "src": "sol-favs-night.webp",
+  "wind": 1.0,
+  "fire": [
+   [
+    330,
+    698,
+    44
+   ],
+   [
+    858,
+    572,
+    30
+   ],
+   [
+    1202,
+    572,
+    30
+   ]
+  ],
+  "pool": [
+   [
+    0,
+    594,
+    1600,
+    624,
+    false,
+    400,
+    606
+   ]
+  ],
+  "cloth": [
+   [
+    1486,
+    452,
+    1580,
+    672,
+    1.0
+   ]
+  ],
+  "still": [
+   [
+    0,
+    400,
+    700,
+    596
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "sol-bamboo-night": {
+  "src": "sol-bamboo-night.webp",
+  "wind": 1.0,
+  "flutter": [
+   [
+    200,
+    560,
+    1400,
+    700
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "cv-red-night": {
+  "src": "cv-red-night.webp",
+  "wind": 0.9,
+  "fire": [
+   [
+    332,
+    696,
+    62
+   ]
+  ],
+  "pool": [
+   [
+    0,
+    368,
+    900,
+    412,
+    false,
+    120,
+    392
+   ]
+  ],
+  "mist": [
+   [
+    760,
+    900
+   ]
+  ],
+  "sway": [
+   [
+    650,
+    430,
+    845,
+    600,
+    0.8,
+    760,
+    520
+   ],
+   [
+    0,
+    0,
+    80,
+    140,
+    0.8
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "cv-blue-night": {
+  "src": "cv-blue-night.webp",
+  "wind": 0.9,
+  "fire": [
+   [
+    1000,
+    768,
+    58
+   ]
+  ],
+  "mist": [
+   [
+    700,
+    880
+   ]
+  ],
+  "cloth": [
+   [
+    240,
+    82,
+    436,
+    218,
+    1.0
+   ],
+   [
+    1382,
+    150,
+    1418,
+    186,
+    1.0
+   ]
+  ],
+  "sway": [
+   [
+    700,
+    0,
+    880,
+    260,
+    0.9
+   ],
+   [
+    900,
+    0,
+    1060,
+    200,
+    0.9
+   ],
+   [
+    1170,
+    0,
+    1340,
+    260,
+    0.9
+   ],
+   [
+    250,
+    0,
+    450,
+    110,
+    0.9
+   ],
+   [
+    1440,
+    130,
+    1560,
+    260,
+    0.9
+   ],
+   [
+    1160,
+    505,
+    1420,
+    668,
+    0.6,
+    1290,
+    590
+   ],
+   [
+    1360,
+    535,
+    1585,
+    660,
+    0.6,
+    1480,
+    600
+   ],
+   [
+    1010,
+    480,
+    1240,
+    535,
+    0.6,
+    1040,
+    520
+   ],
+   [
+    400,
+    170,
+    500,
+    270,
+    0.7
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "cv-merge-night": {
+  "src": "cv-merge-night.webp",
+  "wind": 0.9,
+  "fire": [
+   [
+    240,
+    648,
+    50
+   ]
+  ],
+  "mist": [
+   [
+    680,
+    880
+   ]
+  ],
+  "cloth": [
+   [
+    1422,
+    88,
+    1546,
+    168,
+    1.0
+   ]
+  ],
+  "sway": [
+   [
+    130,
+    0,
+    310,
+    260,
+    0.9
+   ],
+   [
+    300,
+    0,
+    480,
+    130,
+    0.9
+   ],
+   [
+    1240,
+    0,
+    1430,
+    120,
+    0.9
+   ],
+   [
+    1480,
+    0,
+    1600,
+    230,
+    0.9
+   ],
+   [
+    400,
+    0,
+    520,
+    200,
+    0.6
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "cv-entrance-night": {
+  "src": "cv-entrance-night.webp",
+  "wind": 0.9,
+  "mist": [
+   [
+    720,
+    880
+   ]
+  ],
+  "cloth": [
+   [
+    716,
+    178,
+    752,
+    212,
+    1.0
+   ],
+   [
+    420,
+    330,
+    620,
+    420,
+    0.5
+   ],
+   [
+    985,
+    330,
+    1185,
+    400,
+    0.5
+   ]
+  ],
+  "sway": [
+   [
+    0,
+    70,
+    135,
+    330,
+    0.8
+   ],
+   [
+    520,
+    140,
+    640,
+    330,
+    0.8
+   ],
+   [
+    850,
+    150,
+    970,
+    270,
+    0.8
+   ],
+   [
+    1170,
+    80,
+    1270,
+    210,
+    0.8
+   ],
+   [
+    1470,
+    90,
+    1600,
+    330,
+    0.8
+   ],
+   [
+    30,
+    640,
+    120,
+    730,
+    0.6,
+    70,
+    700
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "hc-cabins-night": {
+  "src": "hc-cabins-night.webp",
+  "wind": 0.9,
+  "flutter": [
+   [
+    200,
+    620,
+    1400,
+    760
+   ]
+  ],
+  "ppl": 16,
+  "night": true,
+  "noclouds": true
+ },
+ "hc-lodge-night": {
+  "src": "hc-lodge-night.webp",
+  "wind": 0.9,
+  "ppl": 19,
+  "night": true,
+  "noclouds": true
+ },
+ "hc-campfire-night": {
+  "src": "hc-campfire-night.webp",
+  "wind": 0.9,
+  "flutter": [
+   [
+    350,
+    450,
+    1100,
+    620
+   ]
+  ],
+  "ppl": 20,
+  "night": true,
+  "noclouds": true
+ },
+ "hc-cliff-night": {
+  "src": "hc-cliff-night.webp",
+  "wind": 0.8,
+  "cut": [
+   [
+    [
+     205,
+     140
+    ],
+    [
+     1210,
+     140
+    ],
+    [
+     1215,
+     487
+    ],
+    [
+     205,
+     487
+    ]
+   ],
+   [
+    [
+     205,
+     480
+    ],
+    [
+     1205,
+     480
+    ],
+    [
+     1205,
+     497
+    ],
+    [
+     205,
+     497
+    ]
+   ]
+  ],
+  "fill": "rows",
+  "ppl": 20,
+  "sway": [
+   [
+    0,
+    460,
+    1260,
+    545,
+    0.8
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "hc-beach-night": {
+  "src": "hc-beach-night.webp",
+  "anchor": 0.5,
+  "wind": 0.8,
+  "noleaf": true,
+  "sway": [
+   [
+    0,
+    0,
+    1600,
+    560,
+    0.6,
+    300,
+    350
+   ]
+  ],
+  "noclouds": true,
+  "ppl": 25,
+  "night": true
+ },
+ "hc-map-night": {
+  "src": "hc-map-night.webp",
+  "wind": 0.7,
+  "pool": [
+   [
+    0,
+    520,
+    1600,
+    900,
+    false,
+    900,
+    820
+   ]
+  ],
+  "ppl": 16,
+  "night": true,
+  "noclouds": true
+ },
+ "hc-lake-night": {
+  "src": "hc-lake-night.webp",
+  "wind": 0.5,
+  "cut": [
+   [
+    [
+     525,
+     350
+    ],
+    [
+     1000,
+     350
+    ],
+    [
+     1000,
+     690
+    ],
+    [
+     525,
+     690
+    ]
+   ]
+  ],
+  "pool": [
+   [
+    0,
+    280,
+    1600,
+    900,
+    false,
+    100,
+    330
+   ]
+  ],
+  "fill": "rows",
+  "noclouds": true,
+  "keep": [
+   [
+    800,
+    450
+   ],
+   [
+    1200,
+    560
+   ],
+   [
+    400,
+    330
+   ],
+   [
+    200,
+    800
+   ]
+  ],
+  "ppl": 26,
+  "night": true
+ },
+ "hc-falls-night": {
+  "src": "hc-falls-night.webp",
+  "wind": 0.9,
+  "fall": [
+   [
+    788,
+    115,
+    852,
+    880
+   ]
+  ],
+  "pool": [
+   [
+    580,
+    850,
+    1000,
+    900,
+    false,
+    760,
+    890
+   ]
+  ],
+  "ppl": 19,
+  "night": true,
+  "noclouds": true
+ },
+ "hc-cave-night": {
+  "src": "hc-cave-night.webp",
+  "wind": 0.8,
+  "flutter": [
+   [
+    100,
+    700,
+    900,
+    820
+   ]
+  ],
+  "ppl": 24,
+  "box": [
+   220,
+   225,
+   1420,
+   900
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "hc-boney-beach-night": {
+  "src": "hc-boney-beach-night.webp",
+  "wind": 0.8,
+  "pool": [
+   [
+    0,
+    780,
+    1600,
+    900,
+    false,
+    800,
+    880
+   ]
+  ],
+  "ppl": 22,
+  "night": true,
+  "noclouds": true
+ },
+ "hc-playa-night": {
+  "src": "hc-playa-night.webp",
+  "wind": 0.9,
+  "cut": [
+   [
+    [
+     755,
+     560
+    ],
+    [
+     915,
+     560
+    ],
+    [
+     915,
+     645
+    ],
+    [
+     755,
+     645
+    ]
+   ]
+  ],
+  "pool": [
+   [
+    0,
+    680,
+    1600,
+    900,
+    false,
+    800,
+    820
+   ],
+   [
+    1010,
+    665,
+    1250,
+    715,
+    false,
+    1120,
+    690
+   ]
+  ],
+  "fill": "rows",
+  "ppl": 20,
+  "night": true,
+  "noclouds": true
+ },
+ "lot-map-night": {
+  "src": "lot-map-night.webp",
+  "wind": 0.7,
+  "pool": [
+   [
+    0,
+    840,
+    1600,
+    900,
+    false,
+    800,
+    870
+   ]
+  ],
+  "ppl": 16,
+  "night": true,
+  "noclouds": true
+ },
+ "lot-backlot-night": {
+  "src": "lot-backlot-night.webp",
+  "wind": 0.6,
+  "sway": [
+   [
+    940,
+    560,
+    1060,
+    700,
+    0.5,
+    990,
+    640
+   ]
+  ],
+  "ppl": 24,
+  "night": true,
+  "noclouds": true
+ },
+ "lot-trailers-night": {
+  "src": "lot-trailers-night.webp",
+  "wind": 0.8,
+  "ppl": 26,
+  "night": true,
+  "noclouds": true
+ },
+ "lot-western-night": {
+  "src": "lot-western-night.webp",
+  "wind": 0.8,
+  "sway": [
+   [
+    100,
+    610,
+    140,
+    720,
+    0.4,
+    120,
+    660
+   ],
+   [
+    1270,
+    590,
+    1420,
+    690,
+    0.4,
+    1280,
+    640
+   ],
+   [
+    200,
+    800,
+    1600,
+    900,
+    0.7
+   ]
+  ],
+  "ppl": 16,
+  "night": true,
+  "noclouds": true
+ },
+ "lot-city-night": {
+  "src": "lot-city-night.webp",
+  "wind": 0.6,
+  "ppl": 18,
+  "night": true,
+  "noclouds": true
+ },
+ "hc-river-night": {
+  "src": "hc-river-night.webp",
+  "wind": 0.9,
+  "pool": [
+   [
+    0,
+    700,
+    1600,
+    820,
+    true,
+    800,
+    760
+   ]
+  ],
+  "ppl": 22,
+  "night": true,
+  "noclouds": true
+ },
+ "cv-lake-night": {
+  "src": "cv-lake-night.webp",
+  "wind": 0.8,
+  "pool": [
+   [
+    730,
+    640,
+    1600,
+    900,
+    true,
+    1200,
+    800
+   ]
+  ],
+  "ppl": 24,
+  "night": true,
+  "noclouds": true
+ },
+ "cv-forest-night": {
+  "src": "cv-forest-night.webp",
+  "wind": 0.9,
+  "ppl": 26,
+  "night": true,
+  "noclouds": true
+ },
+ "cv-beach-night": {
+  "src": "cv-beach-night.webp",
+  "wind": 0.9,
+  "ppl": 22,
+  "pool": [
+   [
+    150,
+    395,
+    1600,
+    600,
+    false,
+    900,
+    450
+   ]
+  ],
+  "bob": [
+   [
+    [
+     1290,
+     300
+    ],
+    [
+     1430,
+     300
+    ],
+    [
+     1430,
+     410
+    ],
+    [
+     1290,
+     410
+    ]
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "cv-maze-night": {
+  "src": "cv-maze-night.webp",
+  "wind": 1.0,
+  "ppl": 22,
+  "sway": [
+   [
+    0,
+    500,
+    1600,
+    900,
+    0.7
+   ]
+  ],
+  "cloth": [
+   [
+    230,
+    180,
+    1370,
+    380,
+    0.6
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "cv-maze-in-night": {
+  "src": "cv-maze-in-night.webp",
+  "wind": 1.0,
+  "ppl": 26,
+  "night": true,
+  "noclouds": true
+ },
+ "cv-carousel-night": {
+  "src": "cv-carousel-night.webp",
+  "wind": 0.8,
+  "ppl": 20,
+  "bob": [
+   [
+    [
+     490,
+     515
+    ],
+    [
+     1110,
+     515
+    ],
+    [
+     1110,
+     600
+    ],
+    [
+     490,
+     600
+    ]
+   ]
+  ],
+  "glow": [
+   [
+    480,
+    340,
+    1140,
+    400
+   ]
+  ],
+  "cloth": [
+   [
+    780,
+    80,
+    860,
+    140,
+    1.0
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "cv-droptower-night": {
+  "src": "cv-droptower-night.webp",
+  "wind": 0.8,
+  "ppl": 16,
+  "bob": [
+   [
+    [
+     690,
+     380
+    ],
+    [
+     800,
+     380
+    ],
+    [
+     800,
+     420
+    ],
+    [
+     690,
+     420
+    ]
+   ]
+  ],
+  "cloth": [
+   [
+    0,
+    560,
+    1600,
+    640,
+    0.5
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "sol-beach-night": {
+  "src": "sol-beach-night.webp",
+  "wind": 1.0,
+  "ppl": 20,
+  "pool": [
+   [
+    0,
+    595,
+    1600,
+    900,
+    false,
+    800,
+    700
+   ]
+  ],
+  "fire": [
+   [
+    555,
+    365,
+    40
+   ],
+   [
+    902,
+    345,
+    40
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "sol-shore2-night": {
+  "src": "sol-shore2-night.webp",
+  "wind": 1.0,
+  "ppl": 22,
+  "pool": [
+   [
+    0,
+    610,
+    1100,
+    900,
+    true,
+    300,
+    700
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "sol-shore-night": {
+  "src": "sol-shore-night.webp",
+  "wind": 1.0,
+  "ppl": 22,
+  "pool": [
+   [
+    0,
+    590,
+    1300,
+    900,
+    true,
+    300,
+    680
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "sol-fishing-night": {
+  "src": "sol-fishing-night.webp",
+  "wind": 1.0,
+  "ppl": 22,
+  "pool": [
+   [
+    0,
+    610,
+    1100,
+    900,
+    true,
+    300,
+    700
+   ]
+  ],
+  "cloth": [
+   [
+    820,
+    520,
+    960,
+    640,
+    0.6
+   ]
+  ],
+  "night": true,
+  "noclouds": true
+ },
+ "sol-fans-flip-night": {
+  "src": "sol-fans-flip-night.webp",
+  "wind": 1.0,
+  "fire": [
+   [
+    360,
+    712,
+    46
+   ]
+  ],
+  "fall": [
+   [
+    888,
+    424,
+    920,
+    560
+   ]
+  ],
+  "flutter": [
+   [
+    700,
+    620,
+    1500,
+    720
+   ]
+  ],
+  "cloth": [
+   [
+    48,
+    515,
+    110,
+    680,
+    1.0
+   ]
+  ],
+  "flip": true,
+  "night": true,
+  "noclouds": true
+ },
+ "cv-red-flip-night": {
+  "src": "cv-red-flip-night.webp",
+  "wind": 0.9,
+  "fire": [
+   [
+    1268,
+    696,
+    62
+   ]
+  ],
+  "pool": [
+   [
+    700,
+    368,
+    1600,
+    412,
+    false,
+    1480,
+    392
+   ]
+  ],
+  "mist": [
+   [
+    760,
+    900
+   ]
+  ],
+  "sway": [
+   [
+    755,
+    430,
+    950,
+    600,
+    0.8,
+    840,
+    520
+   ],
+   [
+    1520,
+    0,
+    1600,
+    140,
+    0.8
+   ]
+  ],
+  "flip": true,
+  "night": true,
+  "noclouds": true
+ },
+ "jet-runway-night": {
+  "src": "jet-runway-night.webp",
+  "wind": 0.3,
+  "noleaf": true,
+  "ppl": 22,
+  "night": true,
+  "noclouds": true
  }
 }

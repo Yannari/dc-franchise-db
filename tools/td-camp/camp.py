@@ -248,7 +248,9 @@ def run(venue, spot='all', tods='all', preview=False, hd=False):
         for s, fn in spots.items():
             if spot != 'all' and s != spot: continue
             if spot == 'all' and s.startswith('_'): continue      # fill layers for trace.py, rendered on request
-            both = ('day', 'night') if s in OUTDOOR.get(v, set()) else (('night',) if s in NIGHT_ONLY else ('day',))
+            # a traced place with its own night frame (nightify.py) is rendered at both hours
+            nightable = s in OUTDOOR.get(v, set()) or getattr(spots[s] if isinstance(spots, dict) else None, 'has_night', False)
+            both = ('day', 'night') if nightable and s not in NIGHT_ONLY else (('night',) if s in NIGHT_ONLY else ('day',))
             for tod in both if tods == 'all' else (tods,):
                 clear(); _MATS.clear(); _n[0] = 0; PAINT['on'] = False; MARKS.clear(); DIRECT[0] = None
                 for c in list(bpy.data.collections): bpy.data.collections.remove(c)

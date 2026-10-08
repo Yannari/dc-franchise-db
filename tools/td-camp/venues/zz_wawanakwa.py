@@ -18,6 +18,7 @@ def _wk(json_name, stands, seats=(), host=None, zones=None):
         for zid, (x, y) in zones.items():
             X, Z = px((x, y), 20.0)
             mark('zone', (X, 20.0, Z), id=zid)
+    build.has_night = getattr(base, 'has_night', False)
     return build
 
 

@@ -69,11 +69,15 @@ def _traced_plate(json_name, stands, seats=(), host=None, depth=20.0):
     frame, read off the frame itself (a door, a bench, a stump). The place's own 'ppl' (places.json)
     is the default; a seat's is 'seat', the host's 'host'."""
     P = PLACES.get(json_name[:-5], {})
+    # a place painted again for the night (tools/td-camp/nightify.py: '<place>-night') plays it at night
+    nj = json_name[:-5] + '-night.json'
+    has_night = not P.get('night') and (json_name[:-5] + '-night') in PLACES
     def build(tod):
+        jn = nj if tod == 'night' and has_night else json_name
         paint_mode()
         paint_sky('#000000', '#000000')
-        vplate('Traced', json_name, depth)
-        _live_marks(json_name, depth)
+        vplate('Traced', jn, depth)
+        _live_marks(jn, depth)
         for p in stands:
             pct = p[2] if len(p) > 2 else P.get('ppl', 25)
             # the viewer stands people with their feet above the dialogue panel (v <= .72)
@@ -85,6 +89,7 @@ def _traced_plate(json_name, stands, seats=(), host=None, depth=20.0):
             x, z = px(host[:2], d)
             mark('host', (x, d, z))
         vcam()
+    build.has_night = has_night
     return build
 
 

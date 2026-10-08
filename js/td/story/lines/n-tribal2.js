@@ -57,7 +57,7 @@ export default {
   'exit.friend': [
     { id: 'nn.f1', turns: [
       { beat: "{a} stops at {b} on the way out." },
-      { by: 'b', say: "I really thought I'd make it further than this.", v: {tough: "Whatever. It's fine. I'm fine.",emotional: "I don't want to go. I really don't want to go.",dry: "Well. That's that, then.",teen: "This is so unfair. I was having so much fun."} },
+      { by: 'a', say: "I really thought I'd make it further than this.", v: {tough: "Whatever. It's fine. I'm fine.",emotional: "I don't want to go. I really don't want to go.",dry: "Well. That's that, then.",teen: "This is so unfair. I was having so much fun."} },
       { by: 'a', move: 'goodbye' },
       { by: 'b', say: "I will. I promise." },
       { by: 'a', move: 'parting', asConf: true },

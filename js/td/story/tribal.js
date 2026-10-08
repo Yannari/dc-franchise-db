@@ -292,11 +292,11 @@ export function writeTribal(ep) {
   const friend = closest.find(x => getBond(elim, x) >= 2) || null;
   const enemy = [...others].filter(x => forBoot.includes(x)).sort((x, y) => getBond(elim, x) - getBond(elim, y))[0];
   const shot = !friend && enemy && getBond(elim, enemy) <= -2 ? enemy : null;
-  const exitKind = friend ? 'friend' : shot ? 'shot' : 'alone';
-  const exitWith = friend || shot || null;
-  const exFacts = { ...factsFor({ who: { a: elim, b: exitWith }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(elim),
-    bVoted: exitWith ? (forBoot.includes(exitWith) ? 'boot' : 'other') : 'none' };
-  const ex = writeStory('exit', exitKind, { a: elim, b: exitWith }, data, exFacts, ctx(n++));
+  let exitKind = friend ? 'friend' : shot ? 'shot' : 'alone';
+  let exitWith = friend || shot || null;
+  const knewBoot0 = (ep.pitchIntel || []).some(i => i.knower === elim && i.target === elim && i.believed !== false) || (ep.pitchCounterplay || []).some(c => c.actor === elim);
+  const revealKind0 = blindside ? 'blindside' : knewBoot0 ? 'expected' : 'surprised';
+  const ex = writeExit(ep, { elim, kind: exitKind, b: exitWith, revealKind: revealKind0, base, data, n: n++ });
 
   // ── after: who did it, and who lost their person ──
   const after = [];
@@ -360,5 +360,90 @@ export function writeTribal(ep) {
   // the host's questions, from what happened today
   const qa = tribalQA(ep, { tribal, ballots, elim, ch, camp: camp || gs.mergeName || 'merge', base, ctx, nextN: () => n++ });
   const plays = playReactions(ep, { tribal, ballots, base, ctx, nextN: () => n++ });
-  return { qa, plays, booth, reveal: rv?.lines || [], revealKind, room, blindside, shocking, exit: ex?.lines || [], exitWith, exitKind, after: after.slice(0, roomBlind ? 4 : 2) };
+  return { qa, plays, booth, reveal: rv?.lines || [], revealKind, exitBase: base, room, blindside, shocking, exit: ex?.lines || [], exitWith, exitKind, after: after.slice(0, roomBlind ? 4 : 2) };
+}
+
+// ── the walk out (the user, 2026-10-08: "where's the story here, it's just empty") ──
+// The goodbye carries the night: how the reading landed (revealKind: blindside / surprised /
+// expected), whether the friend walking them down wrote their name (bVoted), who they blame when
+// they have a reason to know ({blame}: the pitcher word reached them about, or the person their
+// crashout named), and the crashout itself (crash). A whole scene first (exit2.<kind>), the old
+// short goodbye when none fits.
+//   exit2.friend.<revealKind>  b, a's person, walks a down
+//   exit2.shot.any            b is who a blames, and a turns round for one more go (crash: they
+//                             just had it out at the fire)
+//   exit2.alone.<revealKind>  nobody comes; a and the host
+export function writeExit(ep, { elim, kind, b, revealKind, base = {}, data = {}, n = 1900, blame = null, crash = false }) {
+  const wrote = x => (ep.votingLog || []).find(v => v.voter === x)?.voted;
+  const told = (ep.pitchIntel || []).find(i => i.knower === elim && i.target === elim && i.believed !== false && i.pitcher && i.pitcher !== b)?.pitcher || null;
+  const who = { a: elim, ...(b ? { b } : {}), h: seasonConfig?.host || 'Chris' };
+  const bl = blame && blame !== b ? blame : told;
+  const facts = { ...factsFor({ who: { a: elim, ...(b ? { b } : {}) }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(elim),
+    bVoted: b ? (wrote(b) === elim ? 'boot' : 'other') : 'none', blame: !!bl, crash: !!crash, pair: !!b };
+  const d = { ...data, ...(bl ? { blame: bl } : {}) };
+  const ctx0 = { ep: ep.num, camp: ep.tribalTribe || 'merge', phase: 'tribal', n, place: 'confessional', unique: 'soft' };
+  return (kind === 'shot' ? writeStory('exit2.shot', 'any', who, d, facts, ctx0)
+    : (crash && writeStory(`exit2.${kind}`, 'any', who, d, facts, ctx0)) || writeStory(`exit2.${kind}`, revealKind, who, d, facts, ctx0) || writeStory(`exit2.${kind}`, 'any', who, d, facts, ctx0))
+    || writeStory('exit', kind, { a: elim, ...(b ? { b } : {}) }, data, facts, ctx0);
+}
+
+// ── the crashout, answered (the user, 2026-10-08: "the crashout doesn't go anywhere: no escalation,
+// no dispute, no shouting match"; "no reaction from the concerned and the people around") ──
+// The engine's blowup or crashout (episode.js checkTribalBlowup, vp-screens.js buildCrashout) says
+// its lines; each one gets answered by the people it names, in their own voice, and the room reacts:
+//   crash.callout.<right|part|wrong>  a (going home) names b as the one behind it: right (b ran it),
+//       part (b wrote the name but somebody else ran it: {real}), wrong (b didn't even write it;
+//       {real}, when known, ran it); c someone watching
+//   crash.alliance.any  a outs b's alliance; c is in it too; d is not, and is hearing it now
+//   crash.idol.any      a says b has an advantage; c is watching b
+//   crash.exit.any      a's parting shot at the room; b is a's closest, c anyone
+// h is the host, who ends it. One scene per line of the crashout, two at most.
+export function writeCrashReplies(ep, swing) {
+  if (!swing?.reveals?.length) return null;
+  const elim = swing.player || ep.eliminated;
+  const tribal = (ep.tribalPlayers || []).filter(x => x !== elim);
+  const host = seasonConfig?.host || 'Chris';
+  // the people a line names, in the order it names them (a whole name: Al is not in Alec)
+  const at = (t, x) => { const s = String(t || ''); let i = s.indexOf(x); while (i >= 0) { const pre = s[i - 1], post = s[i + x.length]; if (!/\w/.test(pre || '') && !/\w/.test(post || '')) return i; i = s.indexOf(x, i + 1); } return -1; };
+  const named = t => tribal.filter(x => at(t, x) >= 0).sort((p, q) => at(t, p) - at(t, q));
+  const wrote = x => (ep.votingLog || []).find(v => v.voter === x)?.voted;
+  const pitcher = (ep.votePitches || []).find(p => p.pitchTarget === elim && tribal.includes(p.pitcher) && wrote(p.pitcher) === elim)?.pitcher || null;
+  const closest = x => [...tribal].filter(y => y !== x).sort((p, q) => getBond(x, q) - getBond(x, p) || p.localeCompare(q))[0] || null;
+  const watcher = (...not) => [...tribal].filter(y => !not.includes(y)).sort((p, q) => (pStatsOf(q)?.boldness || 0) - (pStatsOf(p)?.boldness || 0) || p.localeCompare(q))[0] || null;
+  const out = [];
+  let n = 1700;
+  swing.reveals.slice(0, 2).forEach((r, k) => {
+    const names = named(r.text);
+    let pool, ending = 'any', who = null, data = {}, extra = {};
+    if (r.type === 'callout' && names[0]) {
+      const b = names[0];
+      const real = pitcher && pitcher !== b ? pitcher : null;
+      ending = wrote(b) !== elim ? 'wrong' : real ? 'part' : 'right';
+      pool = 'crash.callout';
+      who = { a: elim, b, c: watcher(b, real) };
+      if (real) data.real = real;
+      extra = { real: !!real };
+    } else if (r.type === 'alliance' && names.length >= 1) {
+      pool = 'crash.alliance';
+      const [b, c] = names;
+      const d = tribal.find(x => !names.includes(x)) || null;
+      who = { a: elim, b, ...(c ? { c } : {}), ...(d ? { d } : {}) };
+    } else if (r.type === 'idol' && names[0]) {
+      pool = 'crash.idol';
+      who = { a: elim, b: names[0], c: watcher(names[0]) };
+    } else {
+      pool = 'crash.exit';
+      const b = closest(elim);
+      who = { a: elim, ...(b ? { b } : {}), c: watcher(b) };
+    }
+    who = Object.fromEntries(Object.entries(who).filter(([, v]) => v));
+    if (!who.b) return;
+    const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'tribal' }), third: !!who.c, fourth: !!who.d, bVoted: wrote(who.b) === elim ? 'boot' : 'other',
+      bLikesA: getBond(who.b, elim) >= 2, bHatesA: getBond(who.b, elim) <= -2, ...extra };
+    const w = writeStory(pool, ending, { ...who, h: host }, data, facts, { ep: ep.num, camp: ep.tribalTribe || 'merge', phase: 'tribal', n: n++, place: 'confessional', unique: 'soft' });
+    if (w) out.push({ after: k, lines: w.lines, type: r.type, b: who.b });
+  });
+  // the host ends it once, after the last of it
+  out.forEach((o, k) => { if (k < out.length - 1) o.lines = o.lines.filter(l => l.by !== host); });
+  return out.length ? out : null;
 }

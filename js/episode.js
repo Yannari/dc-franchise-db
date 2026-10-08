@@ -757,6 +757,25 @@ export function generateSurvivalEvents(ep) {
 // who received >= 60% of votes blows up the game on the way out. Fires deterministically.
 // Boldness = controlled aggression ("I have something to say before I go");
 // Low temperament = emotional explosion (can't hold it in, goes off).
+// Who the one going home blames on the way out: the person they believe ran the vote. Word that
+// reached them names the pitcher; failing that, the person who pitched the name and wrote it; only
+// then the bloc's own leader. (It used to be the bloc's first-listed member, whoever that was: the
+// user, 2026-10-08, "Alec spent the whole episode getting rid of him, why is Sterling the one
+// being accused".) Shared by the blowup, the crashout's effects and its words (vp-screens.js).
+export function crashoutTarget(ep) {
+  const elim = ep?.eliminated;
+  if (!elim) return null;
+  const here = x => !!x && x !== elim && (ep.tribalPlayers || []).includes(x);
+  const wrote = x => (ep.votingLog || []).find(v => v.voter === x)?.voted;
+  const told = (ep.pitchIntel || []).find(i => i.knower === elim && i.target === elim && i.believed !== false && here(i.pitcher));
+  if (told) return told.pitcher;
+  const pitch = (ep.votePitches || []).find(p => p.pitchTarget === elim && here(p.pitcher) && wrote(p.pitcher) === elim);
+  if (pitch) return pitch.pitcher;
+  const bloc = (ep.alliances || []).find(a => a.target === elim && a.type !== 'solo' && a.members?.length);
+  const lead = bloc?.leader && here(bloc.leader) ? bloc.leader : (bloc?.members || []).find(m => here(m) && wrote(m) === elim);
+  return lead || null;
+}
+
 export function checkTribalBlowup(ep) {
   const elim = ep.eliminated;
   if (!elim || elim === 'No elimination') return;
@@ -781,8 +800,7 @@ export function checkTribalBlowup(ep) {
   const revHash = ([...elim].reduce((a,c)=>a+c.charCodeAt(0),0) + ep.num * 7) % 3;
 
   // Callout: expose the orchestrator (always fires if one exists)
-  const spearAlliance = (ep.alliances||[]).find(a => a.target === elim && a.type !== 'solo');
-  const spearhead = spearAlliance?.leader || spearAlliance?.members?.[0];
+  const spearhead = crashoutTarget(ep);
   if (spearhead) {
     const calloutLines = isHothead ? [
       `Are you KIDDING me?! ${spearhead}! Every vote — EVERY vote — has been ${spearhead}'s call! And you all just go along with it like that's okay!`,
@@ -875,9 +893,8 @@ export function applyCrashoutEffects(ep) {
   if (!gs.blowupHeatNextEp) gs.blowupHeatNextEp = new Set();
 
   // Callout: expose the orchestrator — bond hit + heat for the named player
-  const againstBloc = alliances.find(a => a.target === elim && a.type !== 'solo' && a.members?.length);
-  if (againstBloc) {
-    const spearhead = againstBloc.members[0];
+  const spearhead = crashoutTarget(ep);
+  if (spearhead) {
     gs.publicKnowledge[`${spearhead}_organizer_ep${ep.num}`] = { type: 'organizer', player: spearhead, ep: ep.num };
     tribalPlayers.filter(p => p !== elim && p !== spearhead).forEach(m => addBond(spearhead, m, -0.5));
     gs.blowupHeatNextEp.add(spearhead);

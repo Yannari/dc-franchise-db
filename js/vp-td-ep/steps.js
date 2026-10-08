@@ -721,10 +721,16 @@ export function tdTribalScreen(ep, o = {}) {
     : story?.crashout?.player === elim || (story?.crashout && !story.crashout.player) ? { ...story.crashout, player: elim, kind: 'Crashout' } : null;
   if (swing?.reveals?.length) {
     moment.push({ k: 'title', kicker: swing.kind, name: swing.trigger === 'temperament' ? `${elim} can't hold it in` : `${elim} goes out swinging`, faces: [elim], shock: true });
-    for (const r of swing.reveals) {
+    swing.reveals.forEach((r, k) => {
       moment.push({ k: 'say', by: elim, text: cleanText(r.text), focus: [elim], loud: true,
         side: r.consequence ? [{ tab: 'room', text: cleanText(r.consequence) }] : [] });
-    }
+      // ...and whoever it named answers back, the room with them, until the host ends it (td/story/tribal.js writeCrashReplies)
+      for (const rep of (story?.crashReplies || []).filter(x => x.after === k)) for (const l of rep.lines) {
+        const st = lineStep(l);
+        if (st.k === 'say' && l.by === host) { st.host = true; st.focus = [elim]; }
+        moment.push(st);
+      }
+    });
   }
   if (moment.length) steps.splice(outAt >= 0 ? outAt : steps.length, 0, ...moment);
   // what the viewer may now see: the tally and each ballot's reason
@@ -805,7 +811,7 @@ export function tdTribalScreen(ep, o = {}) {
     steps.push({ k: 'scene', spot: 'limo-park', tod: 'night', plate: plateKey(venue, 'limo-park', 'night'), place: V.exitPlace, time: '9:10 PM', focus: [elim, exitWith].filter(Boolean), bg: [], places: exitPlaces, exit: elim, exitWith });
   }
   // whoever walks them out is introduced, not just standing there (the user: "why is Nick there")
-  if (exitWith) steps.push({ k: 'beat', text: `${exitWith} walks ${elim} down to say goodbye.`, focus: [exitWith, elim] });
+  if (exitWith) steps.push({ k: 'beat', text: story?.exitKind === 'shot' ? `${exitWith} follows ${elim} down to the end of the path. ${elim} hears the footsteps and turns round.` : `${exitWith} walks ${elim} down to say goodbye.`, focus: [exitWith, elim] });
   say(V.exitLine(elim));
   // where the goodbye ends in a close-up (inside the car, on the boat's deck), their own last line waits for it
   const exitLines = [...(story?.exit || [])];

@@ -11016,8 +11016,9 @@ export function buildCrashout(ep) {
   const alliances = ep.alliances || [];
 
   const againstBloc = alliances.find(a => a.target === elim && a.type !== 'solo' && a.members?.length);
-  if (againstBloc) {
-    const spearheader = againstBloc.members[0];
+  // the same person the engine put the heat on (episode.js crashoutTarget)
+  const spearheader = typeof window !== 'undefined' && typeof window.crashoutTarget === 'function' ? window.crashoutTarget(ep) : againstBloc?.members?.[0];
+  if (againstBloc && spearheader) {
     const h = ([...(spearheader+elim)].reduce((a,c) => a+c.charCodeAt(0), 0)) % 3;
     const quotes = [
       `${spearheader}, you built this vote and smiled in my face every single day. I want the jury to remember that.`,

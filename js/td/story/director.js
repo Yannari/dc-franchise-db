@@ -32,7 +32,7 @@ import { writeStory as writeRaw, hasStoryPool } from './write.js';
 import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './record.js';
 import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
-import { writeTribal, whyOf as ballotWhy } from './tribal.js';
+import { writeTribal, whyOf as ballotWhy, writeCrashReplies, writeExit } from './tribal.js';
 import { writeTwistStory, writeExile, writeFirstImpressions, writeAuctionScript } from './twist.js';
 import { needOf, psycheCast } from './psyche.js';
 import { runnerDue } from './runners.js';
@@ -1429,5 +1429,21 @@ export function airTdEpisode(ep) {
   // while the game is still at this episode, so a replay shows that night and not today
   if (ep.tribalStory && !ep.tribalBlowup && ep.tribalStory.crashout === undefined) {
     try { ep.tribalStory.crashout = typeof window !== 'undefined' && typeof window.buildCrashout === 'function' ? (window.buildCrashout(ep) || null) : null; } catch { ep.tribalStory.crashout = null; }
+  }
+  // ...and whoever it names answers back (tribal.js writeCrashReplies)
+  if (ep.tribalStory && ep.tribalStory.crashReplies === undefined) {
+    const swing = ep.tribalBlowup?.player === ep.eliminated ? ep.tribalBlowup : ep.tribalStory.crashout ? { ...ep.tribalStory.crashout, player: ep.eliminated } : null;
+    ep.tribalStory.crashReplies = swing ? writeCrashReplies(ep, swing) : null;
+  }
+  // ...and the walk out remembers it: the one they just accused is who they turn round to, or their
+  // friend walks them down knowing who they blame (tribal.js writeExit)
+  const ts = ep.tribalStory;
+  if (ts?.crashReplies?.length && !ts.exitRedone) {
+    ts.exitRedone = true;
+    const acc = ts.crashReplies.find(r => r.type === 'callout')?.b || null;
+    let kind = ts.exitKind, b = ts.exitWith;
+    if (acc && (b === acc || kind !== 'friend')) { kind = 'shot'; b = acc; }
+    const ex = writeExit(ep, { elim: ep.eliminated, kind, b, revealKind: ts.revealKind, base: ts.exitBase || {}, data: { lastBoot: ep.eliminated }, blame: acc, crash: true });
+    if (ex) { ts.exit = ex.lines; ts.exitWith = b; ts.exitKind = kind; }
   }
 }

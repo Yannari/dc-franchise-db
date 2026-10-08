@@ -140,7 +140,11 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   // an optional turn (opt: true) plays only when everyone it names is in the scene
   const named = t => [...[t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' ').matchAll(/\{([a-f])(?:\.\w+)?\}/g)].map(m => m[1]);
   let lastBy = null;
-  const lines = entry.turns.filter(t => (!t.by || who[t.by]) && !(t.opt && named(t).some(r => !who[r]))).map(t => {
+  // a turn may have its own condition (when: { tally: 'close' }, { shaky: true }): it plays only when the
+  // facts say so, so one whole scene carries the line that only some nights have
+  const turnOk = t => !t.when || Object.entries(t.when).every(([k, v]) => v === true ? !!facts[k] : v === false ? !facts[k]
+    : Array.isArray(v) ? v.includes(facts[k]) : facts[k] === v);
+  const lines = entry.turns.filter(t => (!t.by || who[t.by]) && !(t.opt && named(t).some(r => !who[r])) && turnOk(t)).map(t => {
     const kind = t.conf || t.asConf ? 'conf' : t.beat ? 'beat' : 'say';
     // A move (`move: 'pushback'`) is said in the speaker's own words, from the phrasebook
     // (td/story/phrase.js): their voice, their age. {to} is whoever they answer (the turn's `to`,

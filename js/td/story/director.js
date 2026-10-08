@@ -479,7 +479,9 @@ const PUBLIC = /^(drama\.(bomb|fight|dispute|clash|explode|meltdown|dig|stir)|bl
 //   arc.ally.formed    an alliance the engine formed today that no scene showed
 // Off with seasonConfig.tdEdit === 'off'. The engine decided all of it; these only show it.
 const SPARK_PRE = new Set(['threat', 'grudge', 'pair', 'group', 'outsider', 'idol']);
-function arcBeats(ep, camp, members, phase, t, next, list, earlier = []) {
+// mode 'vote': the spark, the warnings, the advantage decisions (written before the plan scenes, so
+// those can call back to them through t.em, the episode's memory); 'ally': an unseen alliance, last
+function arcBeats(ep, camp, members, phase, t, next, list, earlier = [], mode = 'all') {
   const out = [];
   const facts = (who, extra = {}) => ({ ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: phase === 'post' || !!(ep.isMerge || gs.isMerged) }), third: !!who.c, pair: !!who.b, ...extra });
   // each beat has its own stretch of the day, so it never shares a spot with the vote talk
@@ -489,6 +491,7 @@ function arcBeats(ep, camp, members, phase, t, next, list, earlier = []) {
     const w = writeStory(pool, ending, who, data, facts(who, extra), { ep: ep.num, camp, phase, n: next(), place: 'secret', avoid: ctxAvoid(win), unique: 'soft' });
     if (!w) return;
     const players = [...new Set(Object.values(who).filter(Boolean))];
+    if (t?.em) t.em.aired.push({ step, pool, ending, who, data });
     out.push({ at, item: { story: true, kind: `${pool}.${ending}`, storyType: 'vote', step, players, lines: w.lines, text: w.text, lineId: w.lineId,
       scene: { kind: pool, who, data, spot: w.spot ? { ...w.spot, window: win } : null }, badgeText: badge[0], badgeClass: badge[1], why } });
   };
@@ -503,7 +506,7 @@ function arcBeats(ep, camp, members, phase, t, next, list, earlier = []) {
       say('arc.ally', 'formed', { a, b, ...(c ? { c } : {}), ...(d ? { d } : {}) }, { group: al.name }, 4e5, 'ally', ['New Alliance', 'gold'], [`${mem.join(', ')} form ${al.name}.`], { group: true });
     }
   };
-  if (!t) { allyBeats(); return out; }
+  if (mode === 'ally' || !t) { if (mode !== 'vote') allyBeats(); return out; }
   const { boot, leader, tribal } = t;
   // 1. the spark
   const caseNow = sparkCase(ep, t);
@@ -515,10 +518,11 @@ function arcBeats(ep, camp, members, phase, t, next, list, earlier = []) {
       if (!(caseNow.kind === 'sank' && seenWith))
         say('arc.spark', caseNow.kind, { a: leader, b: boot, ...(caseNow.partner ? { c: caseNow.partner } : {}) }, caseNow.data, pre ? 0.4 : 0.3, 'spark', ['The Spark', 'gold'],
           [`This is where ${boot} becomes a target: ${caseNow.words}.`]);
+      if (t.em && out.some(x => x.item.step === 'spark')) t.em.spark = { by: leader, of: boot, kind: caseNow.kind };
     }
   }
   if (phase !== 'post') return out;
-  allyBeats();
+  if (mode === 'all') allyBeats();
   // 2. word gets around
   // only word that turned out true: the pitcher really wrote that name (an earlier pitch that changed would contradict the plan scene)
   const wrote = x => (ep.votingLog || []).find(v => v.voter === x)?.voted;
@@ -530,6 +534,7 @@ function arcBeats(ep, camp, members, phase, t, next, list, earlier = []) {
     const who = told ? { a: i.source, b: i.knower } : { a: i.knower };
     const data = { pitcher: i.pitcher, target: i.target };
     seen.add(i.knower);
+    if (t.em) t.em.warned.push({ teller: told ? i.source : null, knower: i.knower, pitcher: i.pitcher, target: i.target });
     say('arc.warn', told ? 'told' : 'overheard', who, data, 5e5 + seen.size, 'warn', ['Word Gets Around', 'blue'],
       [`${i.knower} finds out ${i.pitcher} is pushing ${i.target === i.knower ? 'their name' : i.target}.`], { self: i.target === i.knower, pitcher: true, target: true });
   }
@@ -694,6 +699,24 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const data = { target: boot, votes: numberWord(voters.length), ...(shaky ? { shaky } : {}), ...(cover ? { cover } : {}), them: numberWord(them || 1), ...(mark ? { mark } : {}), ...(pair ? { partner: pair } : {}),
     ...(theirs ? { theirs } : {}), ...(alt ? { alt } : {}), ...(rest.length ? { others: list(rest) } : {}), ...(rival?.target ? { other: rival.target } : {}) };
   const facts = { ...baseFacts, shaky: !!shaky, cover: !!cover, close: !!b && getBond(a, b) >= 4, others: !!rest.length, other: !!rival?.target, markMe: mark === a, markB: !!mark && mark === b, otherMe: rival?.target === a, otherB: !!b && rival?.target === b, cast: shape };
+  // what this camp's day has already shown (arcBeats, t.em): the plan can call back to it
+  const em = t.em || { spark: null, warned: [] };
+  const sparkSeen = !!em.spark && em.spark.by === a && em.spark.of === boot;
+  const tip = em.warned.find(w => w.knower === a && w.teller && w.teller !== b) || null;
+  if (tip) data.teller = tip.teller;
+  // warned by the very person this plan is going after: the scene has to say so
+  const fromTarget = em.warned.find(w => w.knower === a && w.teller === boot) || null;
+  if (fromTarget) data.warnedAbout = fromTarget.pitcher;
+  Object.assign(facts, { sparkSeen, told: !!tip, tally: count, alt: !!alt, fromTarget: !!fromTarget, sparkKind: sparkSeen ? em.spark.kind : 'none' });
+  // a whole scene, written start to finish (the user: "they're not talking to each other, it's cut
+  // short"); the beats below only when no whole scene fits this cast
+  if (b) {
+    // a scene nobody has seen this season first, then the least-aired one
+    const ws = u => writeStory('vp2', caseOf, who, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place: 'secret', avoid: ctxAvoid('scramble'), unique: u });
+    const whole = ws(true) || ws('soft');
+    if (whole) return { story: true, kind: `story.vote.${as.step}.${caseOf}`, storyType: 'vote', step: as.step, players: [...new Set(Object.values(who).filter(Boolean))], lines: whole.lines,
+      text: whole.text, lineId: whole.lineId, scene: { kind: 'story.vote', who, data, spot: whole.spot ? { ...whole.spot, window: 'scramble' } : null }, badgeText: as.badge[0], badgeClass: as.badge[1], why };
+  }
   const lines = [];
   let spot = null, lineId = null;
   const beat = (pool, ending, w = who) => {
@@ -886,6 +909,8 @@ export function airTdEpisode(ep) {
     const spoke = new Set();
     const out = { pre: [], post: [] };
     const talk = tribalTonight ? votePlan(ep, camp, members) : null;
+    // the episode's memory for this camp: what the vote story has shown so far (arcBeats fills it)
+    if (talk) talk.em = { spark: null, warned: [], aired: [] };
     if (talk) for (const ev of eventsOf(ep, camp, 'post')) if (ev && ev.aired == null && /^votePitch/.test(ev.type || '') && talk.covers.has(ev.players?.[0])) ev.aired = 'covered';
     for (const phase of ['pre', 'post']) {
       const events = eventsOf(ep, camp, phase);
@@ -917,6 +942,9 @@ export function airTdEpisode(ep) {
       if (dayOne) { const fp = firstPair(ep, camp, members, n++, phase === 'pre' ? 'clicked' : 'clashed'); if (fp) list.push({ at: phase === 'pre' ? 0.5 : 1e5, item: fp }); }
       // the storyline steps worth a scene
       const merged = ep.isMerge || gs.isMerged;
+      // the vote story's own beats first, so the plan scenes can call back to them
+      const editOn = (seasonConfig?.tdEdit || 'full') !== 'off';
+      if (editOn && talk) list.push(...arcBeats(ep, camp, members, phase, talk, () => n++, list, [], 'vote'));
       const votes = phase === 'post' && talk ? voteTalk(ep, camp, talk, () => n++) : [];
       votes.forEach((it, k) => list.push({ at: 8e5 + k, item: it }));
       const cap = (phase === 'pre' ? (merged ? 4 : 3) : tribalTonight ? (merged ? 5 : 4) : 2) - Math.min(2, Math.max(0, votes.length - 1));
@@ -1099,7 +1127,7 @@ export function airTdEpisode(ep) {
         // the story beats are added on top: the free scenes keep their room (the user, 2026-10-08)
         // what already aired this morning, quick cuts read from their engine event
         const morning = phase === 'post' ? (out.pre || []).map(it => it.lines ? it : { kind: eventsOf(ep, camp, 'pre')[it.ref]?.type || '', players: eventsOf(ep, camp, 'pre')[it.ref]?.players || [] }) : [];
-        list.push(...arcBeats(ep, camp, members, phase, talk, () => n++, list, morning));
+        list.push(...arcBeats(ep, camp, members, phase, talk, () => n++, list, morning, 'ally'));
       }
       list.sort((x, y) => x.at - y.at);
       for (const x of list) {

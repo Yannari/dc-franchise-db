@@ -13,11 +13,11 @@ import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 // what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
 const STORY_FACTS = new Set([...TD_FACT_KEYS,
   'venue', 'count', 'outcome', 'story', 'step', 'prev', 'prevGap', 'chapter', 'members', 'aOther', 'bOther', 'target', 'group',
-  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'fifth', 'sixth', 'notVoice', 'notVoiceB', 'home', 'job', 'lot', 'eats', 'thing', 'others', 'markMe', 'markB', 'otherMe', 'otherB', 'shaky', 'cover', 'close', 'aVoted', 'defends', 'cWasted', 'self', 'found']);
+  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'fifth', 'sixth', 'notVoice', 'notVoiceB', 'home', 'job', 'lot', 'eats', 'thing', 'others', 'markMe', 'markB', 'otherMe', 'otherB', 'shaky', 'cover', 'close', 'aVoted', 'defends', 'cWasted', 'self', 'found', 'sparkSeen', 'told', 'tally', 'alt', 'fromTarget', 'sparkKind']);
 // names a line may say, and the fact that must be asked for unless the pool always has it
 const ALWAYS = new Set(['a', 'b', 'c', 'd', 'e', 'f', 'h', 'quarters', 'bed', 'item', 'here', 'place', 'host']);
 const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
-  threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder', other: 'other', pitcher: 'pitcher', home: 'home', job: 'job', lot: 'lot', thing: 'thing', others: 'others', shaky: 'shaky', cover: 'cover', found: 'found' };
+  threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder', other: 'other', pitcher: 'pitcher', home: 'home', job: 'job', lot: 'lot', thing: 'thing', others: 'others', shaky: 'shaky', cover: 'cover', found: 'found', alt: 'alt', teller: 'told', warnedAbout: 'fromTarget' };
 // a pool's guarantees: names its moment always carries
 const GUARANTEED = [
   [/^story\.morning\./, ['lastBoot', 'target', 'bootVotes']],
@@ -52,6 +52,10 @@ const GUARANTEED = [
   [/^vp\.(push|answer)\.pair$/, ['target', 'partner']],
   [/^vp\.(solo\.)?count\.(close|tight)$/, ['target', 'other', 'them', 'votes']],
   [/^vp\./, ['target', 'votes']],
+  [/^vp2\.coming$/, ['target', 'votes', 'them', 'mark']],
+  [/^vp2\.pair$/, ['target', 'votes', 'partner']],
+  [/^vp2\.group$/, ['target', 'votes', 'theirs']],
+  [/^vp2\./, ['target', 'votes', 'them']],
   [/^tqa\.scramble\./, ['target']],
   [/^arc\.warn\./, ['pitcher', 'target']],
   [/^arc\.adv\.idol\.warned$/, ['pitcher', 'source']],
@@ -90,6 +94,7 @@ describe('td story pools', () => {
 
   it('asks only for facts that exist', () => {
     for (const [k, e] of all) for (const f of Object.keys(e.when || {})) expect(STORY_FACTS.has(f), `${e.id} (${k}) asks for "${f}"`).toBe(true);
+    for (const [k, e] of all) for (const t of e.turns) for (const f of Object.keys(t.when || {})) expect(STORY_FACTS.has(f), `${e.id} (${k}) line asks for "${f}"`).toBe(true);
   });
 
   it('says an optional name only when the entry asks for it', () => {
@@ -102,7 +107,7 @@ describe('td story pools', () => {
         if (name === 'bootVotes') { expect(e.when?.count, `${e.id} says {bootVotes} where nobody hears the count`).toBe(true); continue; }
         const need = NEEDS[name];
         expect(need, `${e.id} says {${name}}, which no story scene carries`).toBeTruthy();
-        expect(e.when?.[need], `${e.id} says {${name}} without asking for "${need}"`).toBeTruthy();
+        expect(e.when?.[need] || t.when?.[need], `${e.id} says {${name}} without asking for "${need}"`).toBeTruthy();
       }
     }
   });

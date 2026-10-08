@@ -97,7 +97,8 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // wins over one that only fits the archetype or the stats (the user: an underdog with a temper
     // should not sound like a doormat)
     const top = voiceOf(who.a).slice(0, 3);
-    const mine = fits.filter(e => [].concat(e.when?.voice || []).some(t => top.includes(t)));
+    // (a scene whose lines for a are moves is in a's voice by construction: phrase.js says them)
+    const mine = fits.filter(e => [].concat(e.when?.voice || []).some(t => top.includes(t)) || (e.turns || []).some(t => t.by === 'a' && t.move));
     if (mine.length) fits.splice(0, fits.length, ...mine);
     return fits;
   };
@@ -139,7 +140,7 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   const named = t => [...[t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' ').matchAll(/\{([a-f])(?:\.\w+)?\}/g)].map(m => m[1]);
   let lastBy = null;
   const lines = entry.turns.filter(t => (!t.by || who[t.by]) && !(t.opt && named(t).some(r => !who[r]))).map(t => {
-    const kind = t.conf ? 'conf' : t.beat ? 'beat' : 'say';
+    const kind = t.conf || t.asConf ? 'conf' : t.beat ? 'beat' : 'say';
     // A move (`move: 'pushback'`) is said in the speaker's own words, from the phrasebook
     // (td/story/phrase.js): their voice, their age. {to} is whoever they answer (the turn's `to`,
     // else the last other speaker), {by} the speaker.

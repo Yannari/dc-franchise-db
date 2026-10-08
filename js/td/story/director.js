@@ -33,6 +33,7 @@ import { lastTribalOf, challengeOf, lossStreak, bootsBefore } from './record.js'
 import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
 import { writeTribal, whyOf as ballotWhy } from './tribal.js';
+import { writeTwistStory } from './twist.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf } from './places.js';
 
@@ -807,6 +808,10 @@ export function airTdEpisode(ep) {
   ep.campStory = story;
   // the night's words: every voter in the booth, the reading, last words, after (tribal.js)
   if (!ep.tribalStory) ep.tribalStory = writeTribal(ep);
+  // the twists, as the people in them talk (twist.js; the twist screen plays them)
+  if (ep.twistStory === undefined) {
+    try { ep.twistStory = writeTwistStory(ep); } catch (e) { if (typeof process !== 'undefined' && process.env?.VITEST) throw e; ep.twistStory = null; }
+  }
   // the classic screen's Crashout (vp-screens.js buildCrashout) reads the live game: taken now,
   // while the game is still at this episode, so a replay shows that night and not today
   if (ep.tribalStory && !ep.tribalBlowup && ep.tribalStory.crashout === undefined) {

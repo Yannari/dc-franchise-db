@@ -45,7 +45,7 @@ export default {
     loud: ["FINE. But I'm not happy!", "Ugh! Okay! Fine!"],
     warm: ["Okay. I'll do it. I just hope it's the right thing.", "Fine. For you, okay."],
     blunt: ["Fine. It's a bad idea, but fine.", "I don't like it. I'll do it."],
-    theatrical: ["Fine! But history will remember that I objected!", "Ugh. The things I do for this team."],
+    theatrical: ["Fine! But history will remember that I objected!", "Ugh. The things I do for you people."],
     anxious: ["Okay... I just really hope this doesn't backfire.", "I mean, okay. If everyone else is."],
     calm: ["Not my first choice. But okay.", "Sure. We'll see how it goes."],
     competitive: ["Fine. But if we lose, I'm saying I told you so.", "Okay. It better work."],

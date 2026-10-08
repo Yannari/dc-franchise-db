@@ -8,8 +8,9 @@ import core1 from './core1.js';
 import core2 from './core2.js';
 import core3 from './core3.js';
 import core4 from './core4.js';
+import core5 from './core5.js';
 
-const FILES = [core1, core2, core3, core4];
+const FILES = [core1, core2, core3, core4, core5];
 
 export const PHRASES = {};
 for (const f of FILES) for (const [move, book] of Object.entries(f)) {

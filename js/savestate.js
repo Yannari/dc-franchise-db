@@ -163,6 +163,7 @@ export function patchEpisodeHistory(ep) {
   if (!h.tipOffCampEvents && ep.tipOffCampEvents) h.tipOffCampEvents = ep.tipOffCampEvents;
   // which camp scenes air, in order (td/story/director.js)
   if (!h.campStory && ep.campStory) h.campStory = ep.campStory;
+  if (!h.twistStory && ep.twistStory) h.twistStory = ep.twistStory;
   if (!h.tribalStory && ep.tribalStory) h.tribalStory = ep.tribalStory;
   // Tribal data
   if (!h.tribalPlayers && ep.tribalPlayers) h.tribalPlayers = [...ep.tribalPlayers];

@@ -37,11 +37,11 @@ export default {
     theatrical: ["I can feel it. Doom. Approaching doom.", "My nerves cannot take this!"],
     anxious: ["Okay, I'm freaking out. I'm freaking out a little.", "What if they're all lying? What if everyone's lying?", "I'm going to throw up."],
     calm: ["I'm a little worried. Not a lot.", "Something feels off. Can't place it."],
-    competitive: ["If we lose again, we're done.", "I hate not knowing where I stand."],
+    competitive: ["If this goes wrong, I'm done.", "I hate not knowing where I stand."],
     schemer: ["Somebody's talking. I can feel it.", "It's too quiet. Quiet means plans."],
     nerdy: ["The odds are not great. I ran them.", "There's too many variables."],
     tough: ["Something's up.", "I don't like it."],
-    emotional: ["I can't do this. I can't lose now.", "I'm so scared. Is that stupid?"],
+    emotional: ["I can't do this. Not now.", "I'm so scared. Is that stupid?"],
     goofy: ["I'm nervous. When I'm nervous I eat. And there's no food. Big problem."],
     quiet: ["...I don't like this.", "Something's wrong."],
     teen: ["Okay this is actually scary.", "I'm lowkey freaking out.", "What if it's me? Like, actually?"],
@@ -128,7 +128,7 @@ export default {
   },
   // you were good
   impressed: {
-    any: ["That was amazing.", "Okay, I'm impressed.", "Nice work.", "Where did that come from?", "You were great out there."],
+    any: ["That was amazing.", "Okay, I'm impressed.", "Nice work.", "Where did that come from?", "You were great."],
     dry: ["Huh. You're not useless after all.", "Fine. That was good. Don't let it go to your head."],
     loud: ["You were INCREDIBLE!", "Did you SEE that?!"],
     warm: ["I'm so proud of you!", "You were so good! Seriously!"],

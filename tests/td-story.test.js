@@ -21,7 +21,7 @@ const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: '
 // a pool's guarantees: names its moment always carries
 const GUARANTEED = [
   [/^story\.morning\./, ['lastBoot', 'target', 'bootVotes']],
-  [/^story\.chal\.lost/, ['sank', 'streak', 'tribe']],
+  [/^story\.chal\.(lost|regroup)/, ['sank', 'streak', 'tribe']],
   [/^story\.chal\.won/, ['carried', 'tribe']],
   [/^long\.(alliance|recruit)\./, ['group']],
   [/^long\.alliance\.form\.enemy/, ['target']],
@@ -53,6 +53,9 @@ const GUARANTEED = [
   [/^vp\.(solo\.)?count\.(close|tight)$/, ['target', 'other', 'them', 'votes']],
   [/^vp\./, ['target', 'votes']],
   [/^chm\./, ['chal']],
+  [/^prev\.chal\./, ['show', 'chal', 'win', 'lose', 'x', 'y']],
+  [/^prev\.chalInd\./, ['show', 'chal', 'x']],
+  [/^prev\.(blame|spark|fight)\./, ['show', 'x', 'y']],
   [/^prev\.(flip|adv|runner)\./, ['show', 'x']],
   [/^prev\.warn\./, ['show', 'x', 'y', 'pitcher']],
   [/^prev\.ally\./, ['show', 'group']],

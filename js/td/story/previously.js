@@ -7,17 +7,16 @@
 // episode has played (director.js), from the PREVIOUS episode's record: its boot (or blindside),
 // the flip, the warning, the new alliance, the advantage, a running gag; then a tease that knows
 // only what kind of night is coming, never who goes. prev.<beat>: h is the host.
-import { gs, seasonConfig } from '../../core.js';
+import { gs, seasonConfig, formatName, TWIST_CATALOG } from '../../core.js';
 import { writeStory } from './write.js';
-
-const SHOW = { 'survival-island': 'Disventure Camp', carnival: 'Disventure Camp' };
 
 export function writePreviously(ep) {
   if (!ep || ep.num <= 1) return null;
   const prev = (gs.episodeHistory || []).find(h => h.num === ep.num - 1);
   if (!prev) return null;
   const host = seasonConfig?.host || 'Chris';
-  const show = SHOW[prev.campAccess?.setting || seasonConfig?.setting] || 'Total Drama';
+  // the show's own name (shows.js), never the series this camp borrowed its look from
+  const show = formatName() || 'Total Drama';
   const aired = Object.values(prev.campStory || {}).flatMap(c => [...(c.pre || []), ...(c.post || [])]).filter(x => x && x.kind);
   const find = re => aired.find(x => re.test(x.kind));
   const out = [];
@@ -28,8 +27,27 @@ export function writePreviously(ep) {
     return !!w;
   };
   say('open');
-  // what moved the game last time, two beats at most, then how it ended
+  // the challenge first: who won it, who carried it, who sank it
+  const tw = (prev.twists || []).find(x => TWIST_CATALOG.some(c => c.id === (x.catalogId || x.type) && c.chalStyle));
+  const chal = (tw && TWIST_CATALOG.find(c => c.id === (tw.catalogId || tw.type))?.name) || prev.challengeLabel || null;
+  const scores = prev.chalMemberScores || {};
+  const ranked = Object.keys(scores).sort((p, q) => (scores[q] || 0) - (scores[p] || 0));
+  const win = prev.winner?.name, lose = prev.loser?.name;
+  if (chal && win && lose) {
+    const loseM = new Set(prev.loser.members || []);
+    const sank = [...ranked].reverse().find(p => loseM.has(p));
+    const star = ranked.find(p => (prev.winner.members || []).includes(p));
+    say('chal', { chal, win, lose, x: star || win, y: sank || lose }, { sank: !!sank, carried: !!star });
+  } else if (chal && prev.immunityWinner) say('chalInd', { chal, x: prev.immunityWinner });
+  // what moved the game last time, four beats at most, then how it ended
   const beats = [];
+  const pair = re => { const x = find(re); return x?.players?.length >= 2 ? x.players : null; };
+  const blame = pair(/story.chal.lost|crowd.lost|blame./);
+  if (blame) beats.push(['blame', { x: blame[0], y: blame[1] }]);
+  const spark = pair(/romance|spark|showmance|flirt/);
+  if (spark) beats.push(['spark', { x: spark[0], y: spark[1] }]);
+  const fight = pair(/clash|fight|feud|confront|grudge|caught/);
+  if (fight && !(blame && fight.slice(0, 2).every(p => blame.includes(p)))) beats.push(['fight', { x: fight[0], y: fight[1] }]);
   const flip = find(/vote\.doubt\.breaks/);
   if (flip) beats.push(['flip', { x: flip.players?.[0] }]);
   const warn = find(/arc\.warn\.told/);
@@ -40,7 +58,10 @@ export function writePreviously(ep) {
   if (adv?.player) beats.push(['adv', { x: adv.player }]);
   const run = find(/^run\./);
   if (run) beats.push(['runner', { x: run.players?.[0] }]);
-  for (const [beat, d] of beats.slice(0, 2)) if (Object.values(d).every(Boolean)) say(beat, d);
+  // the game beats outrank the camp ones when there are too many; they still air in story order
+  const RANK = ['flip', 'adv', 'warn', 'blame', 'ally', 'spark', 'fight', 'runner'];
+  const keep = new Set(beats.filter(([, d]) => Object.values(d).every(Boolean)).sort((p, q) => RANK.indexOf(p[0]) - RANK.indexOf(q[0])).slice(0, 4));
+  for (const b of beats) if (keep.has(b)) say(b[0], b[1]);
   if (prev.eliminated) {
     const blind = !!prev.tribalStory?.blindside;
     say(blind ? 'blindside' : 'boot', { boot: prev.eliminated });

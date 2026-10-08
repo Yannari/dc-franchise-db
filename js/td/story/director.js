@@ -395,8 +395,15 @@ function afterChallenge(ep, camp, members, n) {
     if (!data.carried) delete data.carried;
     const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'post' }), outcome: 'blame', third: !!c, carriedA: ch.carried === a,
       carried: !!data.carried, streak: streak >= 3 ? 'many' : streak === 2 ? 'two' : 'one', registerB: registerOf(b) };
-    const w = writeStory('story.chal', 'lost', who, data, facts, { ep: ep.num, camp, phase: 'post', n, place: 'public', avoid: ctxAvoid('return') });
-    return w ? { story: true, kind: 'story.chal.lost', storyType: 'chal', step: 'lost', players: [a, b, c].filter(Boolean), lines: w.lines, text: w.text, lineId: w.lineId,
+    // not the blame game every time (the user: "it always appears and is super repetitive"): a team
+    // that turned on somebody at a recent loss picks itself up this time, around whoever carried it
+    const blamed = ((gs.tdStory ||= {}).blamed ||= {});
+    const lately = ep.num - (blamed[camp] ?? -99) <= 2;
+    const ending = lately ? 'regroup' : 'lost';
+    if (!lately) blamed[camp] = ep.num;
+    const w = writeStory('story.chal', ending, who, data, { ...facts, outcome: lately ? 'regroup' : 'blame' }, { ep: ep.num, camp, phase: 'post', n, place: 'public', avoid: ctxAvoid('return') })
+      || (lately ? writeStory('story.chal', 'lost', who, data, facts, { ep: ep.num, camp, phase: 'post', n, place: 'public', avoid: ctxAvoid('return') }) : null);
+    return w ? { story: true, kind: `story.chal.${ending}`, storyType: 'chal', step: ending, players: [a, b, c].filter(Boolean), lines: w.lines, text: w.text, lineId: w.lineId,
       scene: { kind: 'story.chal', who, data, spot: w.spot ? { ...w.spot, window: 'return' } : null }, badgeText: 'Who Lost It', badgeClass: 'red',
       why: [`${camp} lost${streak > 1 ? ` (${numberWord(streak)} in a row)` : ''}. ${b} had the team's lowest score; ${ch.carried} the highest.`] } : null;
   }
@@ -1191,7 +1198,9 @@ export function airTdEpisode(ep) {
       let openerNow = opener;
       if (phase === 'post' && opener && /^story\.chal/.test(opener.kind || '')) {
         const gi = events.findIndex(ev => ev && ev.aired == null && ev.type === 'groupScene' && /^crowd\.(won|lost)$/.test(ev.scene?.kind || ''));
-        const g = gi >= 0 ? longScene(events[gi], gi) : null;
+        // a regrouping team doesn't then air the shouting match too
+        if (gi >= 0 && opener.step === 'regroup' && events[gi].scene?.kind === 'crowd.lost') events[gi].aired = 'covered';
+        const g = gi >= 0 && events[gi].aired == null ? longScene(events[gi], gi) : null;
         if (g) {
           events[gi].aired = true;
           const k = list.findIndex(x => x.item === opener);

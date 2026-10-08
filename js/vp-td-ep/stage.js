@@ -55,7 +55,7 @@ export function worldHtml(screen, L) {
   const M = TD_MARKS[key] || { h: .5, m: [] };
   const spot = key.split('/')[1].replace(/-(day|night)$/, '');
   const nightFrame = /-night$/.test(key);
-  const indoor = ['mess-hall', 'cabin-inside', 'washroom', 'confessional', 'soundstage-corridor', 'prop-storage', 'economy', 'aisle', 'galley', 'cargo-hold', 'first-class', 'shelter', 'theater-tent', 'big-top', 'ceremony', 'trailer-inside', 'boathouse', 'aftermath-studio', 'craft-services', 'chris-quarters', 'cockpit'].includes(spot)
+  const indoor = ['mess-hall', 'cabin-inside', 'washroom', 'confessional', 'soundstage-corridor', 'prop-storage', 'economy', 'aisle', 'galley', 'cargo-hold', 'first-class', 'shelter', 'theater-tent', 'big-top', 'ceremony', 'trailer-inside', 'boathouse', 'aftermath-studio', 'craft-services', 'chris-quarters', 'cockpit', 'kitchen'].includes(spot)
     && !(spot === 'ceremony' && ['hosted-camp', 'survival-island', 'carnival', 'film-lot'].includes(screen.venue)) && !(spot === 'shelter' && screen.venue === 'survival-island');
   const r = seeded(key);
   const p = (x, n = 2) => `${(x * 100).toFixed(n)}%`;
@@ -192,7 +192,7 @@ export function worldSound(screen, L) {
   const key = L.conf ? (plateKey(screen.venue, 'confessional', /-night$/.test(L.scene?.plate || '') ? 'night' : 'day') || L.scene?.plate) : L.scene?.plate;
   const M = (key && TD_MARKS[key]) || { m: [] };
   const spot = String(key || '').split('/')[1]?.replace(/-(day|night)$/, '') || '';
-  const indoor = /mess-hall|cabin-inside|washroom|confessional|corridor|storage|economy|aisle|galley|cargo|first-class|theater|big-top|trailer-inside|boathouse|aftermath|craft-services|chris-quarters|cockpit/.test(spot) || (spot === 'ceremony' && screen.venue === 'world-tour') || (spot === 'shelter' && screen.venue === 'carnival');
+  const indoor = /mess-hall|cabin-inside|washroom|confessional|corridor|storage|economy|aisle|galley|cargo|first-class|theater|big-top|trailer-inside|boathouse|aftermath|craft-services|chris-quarters|cockpit|kitchen/.test(spot) || (spot === 'ceremony' && screen.venue === 'world-tour') || (spot === 'shelter' && screen.venue === 'carnival');
   const night = /-night$/.test(key || ''), island = /^islands\//.test(key || '');
   // the venue's own soundscape, and the day's weather in it (the same day, the same weather)
   const scape = island || spot === 'confessional' ? null

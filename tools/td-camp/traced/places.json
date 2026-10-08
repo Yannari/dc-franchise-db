@@ -1980,5 +1980,146 @@
   "nosky": true,
   "noleaf": true,
   "ppl": 26
+ },
+ "cv-trial": {
+  "src": "cv-trial.png",
+  "night": true,
+  "wind": 0.6,
+  "noleaf": true,
+  "fire": [
+   [
+    430,
+    215,
+    95
+   ],
+   [
+    780,
+    215,
+    95
+   ],
+   [
+    1325,
+    215,
+    95
+   ],
+   [
+    1150,
+    900,
+    320
+   ]
+  ],
+  "glow": [
+   [
+    100,
+    0,
+    1500,
+    140
+   ]
+  ],
+  "cloth": [
+   [
+    600,
+    40,
+    1330,
+    215,
+    0.6
+   ]
+  ],
+  "ppl": 30,
+  "seat": 22,
+  "host": 30
+ },
+ "hc-ceremony2": {
+  "src": "hc-ceremony2.png",
+  "night": true,
+  "wind": 0.5,
+  "fire": [
+   [
+    1270,
+    840,
+    150
+   ]
+  ],
+  "glow": [
+   [
+    0,
+    0,
+    1600,
+    140
+   ]
+  ],
+  "sway": [
+   [
+    0,
+    0,
+    1600,
+    280,
+    0.5
+   ]
+  ],
+  "ppl": 30,
+  "seat": 21,
+  "host": 30
+ },
+ "hc-beach2": {
+  "src": "hc-beach2.png",
+  "wind": 0.7,
+  "pool": [
+   [
+    0,
+    740,
+    1600,
+    900,
+    false,
+    800,
+    860
+   ]
+  ],
+  "ppl": 24
+ },
+ "hc-forest2": {
+  "src": "hc-forest2.png",
+  "wind": 1.0,
+  "ppl": 26
+ },
+ "hc-river": {
+  "src": "hc-river.png",
+  "wind": 0.9,
+  "pool": [
+   [
+    0,
+    700,
+    1600,
+    820,
+    true,
+    800,
+    760
+   ]
+  ],
+  "ppl": 22
+ },
+ "hc-kitchen": {
+  "src": "hc-kitchen.png",
+  "wind": 0.0,
+  "nosky": true,
+  "noleaf": true,
+  "glow": [
+   [
+    150,
+    60,
+    1010,
+    355
+   ]
+  ],
+  "cloth": [
+   [
+    1260,
+    105,
+    1560,
+    290,
+    0.25
+   ]
+  ],
+  "ppl": 34
  }
 }

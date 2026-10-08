@@ -399,6 +399,39 @@ const T_NOTES = [
     { by: 'c', say: "So we all agree. Find the bottom." },
     { by: 'b', conf: "We're not even in the game and we're running it better than the people inside." },
   ] },
+  { id: 'ig.n7', turns: [
+    { beat: '{b} scratches three columns into a flat rock with a shell: SAFE, MAYBE, DONE.' },
+    { by: 'b', say: "Everyone still in the game goes in one of these. Go." },
+    { by: 'a', say: "Put the loudest one under DONE. Nobody keeps a loudmouth past the merge." },
+    { by: 'c', say: "Funny. That's exactly what they said about you." },
+    { by: 'a', say: "And look where I am. So I was right." },
+    { by: 'b', say: "That's... not the win you think it is." },
+    { by: 'c', conf: "Out here the scoreboard is a rock. Somehow it's still more honest than the game." },
+  ] },
+  { id: 'ig.n8', turns: [
+    { by: 'c', say: "Be honest. What was the moment you knew you were going home?" },
+    { by: 'a', say: "When they stopped arguing with me. Nobody fights with a dead person." },
+    { by: 'b', say: "Mine was breakfast. Everybody was suddenly really nice to me." },
+    { by: 'c', say: "Ugh. The breakfast. They did the breakfast to me too." },
+    { beat: 'All three of them go quiet, remembering a very friendly breakfast.' },
+    { by: 'b', conf: "If anybody back there is ever nice to me at breakfast again, I'm playing an idol." },
+  ] },
+  { id: 'ig.n9', turns: [
+    { by: 'a', say: "Okay. If one of us gets back in, what's the first move?" },
+    { by: 'b', say: "Apologise to nobody. Act like you never left." },
+    { by: 'c', say: "No, apologise to everybody. Then they think you're harmless." },
+    { by: 'a', say: "So we disagree on step one. Great plan." },
+    { by: 'b', say: "We agree on step two. Never get sent here again." },
+    { by: 'a', conf: "We've spent two days on a plan with one step we agree on. That's still more than my old alliance had." },
+  ] },
+  { id: 'ig.n10', when: { register: 'sweet' }, turns: [
+    { by: 'a', say: "Can I say something? I don't think any of us played badly." },
+    { by: 'c', say: "I got voted out holding a fish." },
+    { by: 'a', say: "Okay, one of us played badly." },
+    { by: 'b', say: "It was a really good fish, though." },
+    { by: 'c', say: "Thank you. Nobody in there ever said that." },
+    { by: 'c', conf: "Everybody here got voted out by people who were scared of them. That's sort of a compliment." },
+  ] },
 ];
 const T_NEWFRIENDS = [
   { id: 'ig.nf1', turns: [

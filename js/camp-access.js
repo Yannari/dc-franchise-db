@@ -24,6 +24,8 @@ export const ACCESS_PROFILES = Object.freeze({
     { id:'waterfall', label:'Waterfall', access:'everyday', privacy:0.70, overhear:0.25, capacity:4 },
     { id:'caves', label:'Caves', access:'everyday', privacy:0.85, overhear:0.12, capacity:3 },
     { id:'amphitheater', label:'Amphitheater', access:'everyday', privacy:0.30, overhear:0.60, capacity:15 },
+    { id:'river', label:'River', access:'everyday', privacy:0.65, overhear:0.25, capacity:4 },
+    { id:'kitchen', label:"Chef's kitchen", access:'restricted', privacy:0.70, overhear:0.20, capacity:3 },
   ]),
   'survival-island': freezeLocations([
     { id:'shelter', label:'Shelter', access:'everyday', privacy:0.25, overhear:0.70, capacity:12 },

@@ -28,10 +28,10 @@ def _by_tod(day, night):
 _ROW = [(560, 640), (800, 640), (1040, 640)]
 # the campfire ceremony's stumps, front row and back, and Chris by the oil-drum podium
 # (the ceremony frame is cropped in on the stumps: clean.py box)
-_STUMPS = [(183, 508), (317, 503), (450, 480), (583, 442), (687, 420), (167, 408), (333, 363), (458, 347), (583, 343), (700, 327), (803, 408)]
+_STUMPS = [(140, 525), (380, 485), (570, 470), (730, 445), (935, 430), (560, 640), (750, 600), (920, 570), (1095, 545), (150, 720), (340, 680)]
 _ZONES = {'dock': (720, 640), 'beach': (1380, 575), 'communal-grounds': (900, 540), 'cabins': (840, 500), 'washroom': (965, 505),
           'confessional': (1010, 505), 'mess-hall': (1075, 490), 'campfire': (530, 482), 'forest-trail': (700, 430), 'cliff': (1270, 270),
-          'lake': (260, 680), 'waterfall': (1180, 420), 'caves': (470, 515), 'boathouse': (1170, 555), 'amphitheater': (770, 465)}
+          'lake': (260, 680), 'waterfall': (1180, 420), 'caves': (470, 515), 'boathouse': (1170, 555), 'amphitheater': (770, 465), 'river': (1080, 440)}
 
 _HC = {
     'communal-grounds': _wk('hc-lodge.json', [(380, 648), (720, 648), (1000, 648)]),
@@ -43,16 +43,18 @@ _HC = {
     'dock': _by_tod(_wk('hc-dock.json', [(250, 640, 26), (520, 590, 22), (780, 545, 19)]), _wk('hc-dock-night.json', [(640, 648), (800, 648), (960, 648)])),
     'exit': _wk('hc-dock-night.json', [(800, 648), (640, 648), (960, 648)]),
     'campfire': _wk('hc-campfire.json', [(650, 560), (850, 590), (1050, 560)]),
-    'ceremony': _wk('hc-ceremony.json', [(1080, 648), (1260, 648)], seats=_STUMPS, host=(1467, 483)),
+    'ceremony': _wk('hc-ceremony2.json', [(1260, 640), (1440, 640)], seats=_STUMPS, host=(1530, 560)),
     'cliff': _wk('hc-cliff.json', [(380, 530), (680, 530), (980, 530)]),
-    'forest-trail': _wk('hc-cave.json', [(380, 648), (640, 648), (900, 648)]),
-    'beach': _wk('hc-beach.json', [(500, 640), (800, 640), (1100, 640)]),
+    'forest-trail': _wk('hc-forest2.json', [(500, 648), (800, 648), (1100, 648)]),
+    'beach': _wk('hc-beach2.json', [(700, 648), (980, 648), (1240, 648)]),
     'map': _wk('hc-map.json', [], zones=_ZONES),
     # the places the show had beyond the camp's daily round (2026-10-07: "add all of them")
     'lake': _wk('hc-lake.json', [(480, 640), (760, 640), (1040, 640)]),
     'waterfall': _wk('hc-falls.json', [(300, 648, 15), (560, 648, 15), (1180, 648, 15)]),
     'caves': _wk('hc-cave-in.json', [(520, 648), (800, 648), (1080, 648)]),
     'boathouse': _wk('hc-boathouse.json', _ROW),
+    'river': _wk('hc-river.json', [(300, 640), (700, 600), (1100, 640)]),
+    'kitchen': _wk('hc-kitchen.json', [(380, 648), (800, 648), (1150, 648)]),
     'amphitheater': _wk('hc-amph.json', [(620, 560, 18), (800, 560, 18), (980, 560, 18)]),
 }
 SCENES['hosted-camp'].update(_HC)

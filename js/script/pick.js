@@ -75,12 +75,17 @@ export function pickEntry(ledger, pools, key, facts, pairKey, rng, speaker = nul
   // Held back means held back: a worn pool's decay is as steep as RECENT, so
   // while a fresh-enough line has any weight, the recent ones get none.
   if (scored.some(([e, w]) => w > 0 && !recent.includes(e.id))) for (const x of scored) if (recent.includes(x[0].id)) x[1] = 0;
+  // ...and a line one of these speakers has already said is out while anything they have not said fits
+  // (SAID_AGAIN alone lost to a small pool: a resident said the same notes scene twice on Rescue Island)
+  const saidBy = e => speakers.some(sp => (u.by?.[e.id] || []).includes(sp));
+  if (scored.some(([e, w]) => w > 0 && !saidBy(e))) for (const x of scored) if (saidBy(x[0])) x[1] = 0;
   let total = scored.reduce((s, [, w]) => s + w, 0);
   // Everything that fits has been used on this pair: take the least-used fit.
   if (!total) {
     // ...not heard today first (by its words too), then the least used.
     const heardToday = x => ((u.day || {})[x.id] === clock || wordsOf(x).some(w => (u.words || {})[w] === clock)) ? 1 : 0;
-    const e = fits.sort((x, y) => heardToday(x) - heardToday(y) || (u.uses[x.id] || 0) - (u.uses[y.id] || 0))[0] || pool.find(p => !p.when);
+    const said = x => (speakers.some(sp => (u.by?.[x.id] || []).includes(sp)) ? 1 : 0);
+    const e = fits.sort((x, y) => said(x) - said(y) || heardToday(x) - heardToday(y) || (u.uses[x.id] || 0) - (u.uses[y.id] || 0))[0] || pool.find(p => !p.when);
     return note(u, e, pairKey, speaker, key, pool.length, clock);
   }
   let r = rng() * total;

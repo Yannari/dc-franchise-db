@@ -22,14 +22,14 @@
 // Everything the engine wrote stays in ep.campEvents, unchanged: consequences,
 // badges and every other reader are untouched. Viewers read the list through
 // feed.js campFeed().
-import { gs, players } from '../../core.js';
+import { gs, players, seasonConfig } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { kinshipBetween } from '../../core.js';
 import { pronouns, pStats as pStatsOf, threatScore } from '../../players.js';
 import { voiceOf } from './voice.js';
 import { classify, file, prevAired } from './storylines.js';
 import { writeStory as writeRaw, hasStoryPool } from './write.js';
-import { lastTribalOf, challengeOf, lossStreak, bootsBefore } from './record.js';
+import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './record.js';
 import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
 import { writeTribal, whyOf as ballotWhy } from './tribal.js';
@@ -463,6 +463,127 @@ const closeTo = (name, pool) => [...pool].filter(x => x !== name && getBond(name
 // groups; 'side': b's closest friend steps into a public fight)
 // moments that happen in front of the camp: somebody else is always there to see it
 const PUBLIC = /^(drama\.(bomb|fight|dispute|clash|explode|meltdown|dig|stir)|blame\.loss)/;
+// ── the vote, told across the day (the user: "I don't understand why people target x or y, I
+// don't understand where this is going") ──────────────────────────────────────────────────────
+// The plan scenes say the name and the reason at the end of the afternoon; these are the beats
+// before them, each from what the engine did, so the vote has a start and a middle:
+//   arc.spark.<case>   the moment the target becomes a target, seen by the one who runs the plan
+//                      (a; b is the target): pre-challenge for a threat, a grudge, a pair, a group,
+//                      an outsider or an idol; just after the challenge for a loss (sank)
+//   arc.warn.<how>     word reaches somebody (voting.js pitchIntel): told (a tells b that {pitcher}
+//                      is pushing {target}; self when that's b) or overheard (b hears {pitcher})
+//   arc.adv.<why>      why an advantage comes out tonight, before the vote (advantages.js): an idol
+//                      after a warning, a tip-off, a leak, paranoia, desperation or a read; an idol
+//                      for an ally; an Extra Vote or a Vote Steal and on whom. {found} is when they
+//                      found it, when an earlier episode aired it
+//   arc.ally.formed    an alliance the engine formed today that no scene showed
+// Off with seasonConfig.tdEdit === 'off'. The engine decided all of it; these only show it.
+const SPARK_PRE = new Set(['threat', 'grudge', 'pair', 'group', 'outsider', 'idol']);
+function arcBeats(ep, camp, members, phase, t, next, list, earlier = []) {
+  const out = [];
+  const facts = (who, extra = {}) => ({ ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: phase === 'post' || !!(ep.isMerge || gs.isMerged) }), third: !!who.c, pair: !!who.b, ...extra });
+  // each beat has its own stretch of the day, so it never shares a spot with the vote talk
+  const windowOf = step => step === 'spark' ? (phase === 'pre' ? 'morning' : 'afternoon') : step === 'warn' || step === 'ally' ? 'evening' : 'before-tribal';
+  const say = (pool, ending, who, data, at, step, badge, why, extra) => {
+    const win = windowOf(step);
+    const w = writeStory(pool, ending, who, data, facts(who, extra), { ep: ep.num, camp, phase, n: next(), place: 'secret', avoid: ctxAvoid(win), unique: 'soft' });
+    if (!w) return;
+    const players = [...new Set(Object.values(who).filter(Boolean))];
+    out.push({ at, item: { story: true, kind: `${pool}.${ending}`, storyType: 'vote', step, players, lines: w.lines, text: w.text, lineId: w.lineId,
+      scene: { kind: pool, who, data, spot: w.spot ? { ...w.spot, window: win } : null }, badgeText: badge[0], badgeClass: badge[1], why } });
+  };
+  const here = x => !!x && members.includes(x);
+  // an alliance forms whether or not this camp votes tonight
+  const allyBeats = () => {
+    for (const al of (gs.namedAlliances || []).filter(x => x.formed === ep.num && (x.members || []).filter(here).length >= 2)) {
+      const mem = (al.members || []).filter(here);
+      const shown = [...earlier.map(item => ({ item })), ...list, ...out].some(x => /alliance|ally|recruit|pact|deal/i.test(x.item?.kind || '') && mem.filter(m => x.item?.players?.includes?.(m)).length >= 2);
+      if (shown || phase !== 'post') continue;
+      const [a, b, c, d] = mem;
+      say('arc.ally', 'formed', { a, b, ...(c ? { c } : {}), ...(d ? { d } : {}) }, { group: al.name }, 4e5, 'ally', ['New Alliance', 'gold'], [`${mem.join(', ')} form ${al.name}.`], { group: true });
+    }
+  };
+  if (!t) { allyBeats(); return out; }
+  const { boot, leader, tribal } = t;
+  // 1. the spark
+  const caseNow = sparkCase(ep, t);
+  if (boot && leader && here(boot) && here(leader) && leader !== boot) {
+    const pre = SPARK_PRE.has(caseNow.kind);
+    if (caseNow.kind === 'coming' || caseNow.kind === 'numbers') { /* the warning, or the plan itself, is the start */ } else
+    if ((phase === 'pre') === pre && (caseNow.kind !== 'sank' || phase === 'post')) {
+      const seenWith = list.some(x => x.item?.players?.includes?.(boot) && x.item?.players?.includes?.(leader) && /drama|blame|crowd\.lost/.test(x.item?.kind || ''));
+      if (!(caseNow.kind === 'sank' && seenWith))
+        say('arc.spark', caseNow.kind, { a: leader, b: boot, ...(caseNow.partner ? { c: caseNow.partner } : {}) }, caseNow.data, pre ? 0.4 : 0.3, 'spark', ['The Spark', 'gold'],
+          [`This is where ${boot} becomes a target: ${caseNow.words}.`]);
+    }
+  }
+  if (phase !== 'post') return out;
+  allyBeats();
+  // 2. word gets around
+  // only word that turned out true: the pitcher really wrote that name (an earlier pitch that changed would contradict the plan scene)
+  const wrote = x => (ep.votingLog || []).find(v => v.voter === x)?.voted;
+  const warned = (ep.pitchIntel || []).filter(i => i.believed !== false && here(i.knower) && tribal.includes(i.knower) && i.target && tribal.includes(i.target) && i.pitcher && i.pitcher !== i.knower && wrote(i.pitcher) === i.target);
+  const seen = new Set();
+  for (const i of warned) {
+    if (seen.size >= 2 || seen.has(i.knower)) continue;
+    const told = i.sourceType !== 'overheard' && i.source && i.source !== i.pitcher && here(i.source) && i.source !== i.knower;
+    const who = told ? { a: i.source, b: i.knower } : { a: i.knower };
+    const data = { pitcher: i.pitcher, target: i.target };
+    seen.add(i.knower);
+    say('arc.warn', told ? 'told' : 'overheard', who, data, 5e5 + seen.size, 'warn', ['Word Gets Around', 'blue'],
+      [`${i.knower} finds out ${i.pitcher} is pushing ${i.target === i.knower ? 'their name' : i.target}.`], { self: i.target === i.knower, pitcher: true, target: true });
+  }
+  // 3. why an advantage comes out tonight
+  (ep.idolPlays || []).forEach((p, k) => {
+    if (!here(p.player) || !tribal.includes(p.player)) return;
+    const a = p.player;
+    const r = String(p.playReason || '');
+    let why;
+    if (!p.type || p.type === 'legacy') {
+      if (p.fake || p.misplay) why = 'idol.paranoid';
+      else if (p.playedFor && p.playedFor !== a) why = 'idolfor';
+      else why = /^warned by .+ that .+ was organizing/.test(r) ? 'idol.warned' : /^warned by/.test(r) ? 'idol.tipped' : /idol leak|idol was exposed/.test(r) ? 'idol.exposed'
+        : /paranoia/.test(r) ? 'idol.paranoid' : /desperation/.test(r) ? 'idol.desperate' : 'idol.read';
+    } else why = { extraVote: p.forAlly ? 'extrafor' : 'extra', voteSteal: 'steal', voteBlock: 'block', soleVote: 'sole', safetyNoPower: 'safety' }[p.type];
+    if (!why) return;
+    const m = /^warned by (.+?) that (.+?) was organizing/.exec(r);
+    const ally = p.playedFor && p.playedFor !== a ? p.playedFor : p.forAlly || null;
+    const target = p.target && tribal.includes(p.target) ? p.target : null;
+    const confidant = members.filter(x => x !== a && x !== target && tribal.includes(x) && getBond(a, x) >= 3).sort((x, y) => getBond(a, y) - getBond(a, x) || x.localeCompare(y))[0] || null;
+    const foundAt = (gs.episodeHistory || []).filter(h => h.num <= ep.num).find(h => (h.idolFinds || []).some(f => f.finder === a));
+    const found = foundAt ? (foundAt.num === ep.num ? 'today' : foundAt.num === ep.num - 1 ? 'a couple of days ago' : `back on day ${dayOf(foundAt.num)}`) : null;
+    const who = { a, ...(confidant && why !== 'idolfor' ? { b: confidant } : {}), ...(ally && why === 'idolfor' ? { b: ally } : {}) };
+    const data = { ...(target ? { target } : {}), ...(m ? { pitcher: m[2], source: m[1] } : {}), ...(found ? { found } : {}), ...(p.stolenFrom ? { other: p.stolenFrom } : {}) };
+    say('arc.adv', why, who, data, 7e5 + k, 'advwhy', ['The Decision', 'purple'], [`${a} decides to play it tonight.`],
+      { target: !!target, pitcher: !!m, found: !!found, other: !!p.stolenFrom });
+  });
+  return out;
+}
+
+// what made the target a target, from what the plan scene will say (planTalk's case, read the same way)
+function sparkCase(ep, t) {
+  const { boot, tribal, voters, leader } = t;
+  const has = s => !!s && (typeof s.has === 'function' ? s.has(boot) : Array.isArray(s) ? s.includes(boot) : false);
+  const coming = (t.rivals || []).find(al => (al.members || []).includes(boot) && al.target && (al.target === leader || voters.includes(al.target)));
+  const partner = tribal.filter(x => x !== boot && x !== leader && !voters.includes(x)).sort((x, y) => getBond(boot, y) - getBond(boot, x) || x.localeCompare(y))[0];
+  const pair = partner && getBond(boot, partner) >= 5 ? partner : null;
+  const theirs = (gs.namedAlliances || []).find(al => al.active !== false && (al.members || []).includes(boot) && !(al.members || []).includes(leader))?.name || null;
+  const ts = x => threatScore(x) || 0;
+  const rank = [...tribal].sort((x, y) => ts(y) - ts(x) || x.localeCompare(y)).indexOf(boot);
+  const best = Math.max(-10, ...tribal.filter(x => x !== boot).map(x => getBond(boot, x)));
+  const fromBallot = { weak: 'sank', grudge: 'grudge', threat: 'threat' }[t.why];
+  void best;
+  if (coming) return { kind: 'coming', data: {}, words: `${boot}'s side is going after ${coming.target}` };
+  if ((fromBallot === 'sank' || t.ch?.sank === boot)) return { kind: 'sank', data: {}, words: `${boot} cost them the challenge` };
+  if (has(gs.knownIdolHoldersPersistent) || has(gs.knownIdolHoldersThisEp)) return { kind: 'idol', data: {}, words: `${leader} suspects ${boot} has an idol` };
+  if (pair) return { kind: 'pair', partner: pair, data: { partner: pair }, words: `${boot} and ${pair} vote as one` };
+  if (theirs) return { kind: 'group', data: { theirs }, words: `${boot} is with ${theirs}` };
+  if (fromBallot === 'grudge' || getBond(leader, boot) <= -2) return { kind: 'grudge', data: {}, words: `${leader} and ${boot} can't stand each other` };
+  if (fromBallot === 'threat' || (rank >= 0 && rank <= 1 && tribal.length >= 4)) return { kind: 'threat', data: {}, words: `${boot} is the one everybody will have to beat` };
+  if (Math.max(-10, ...tribal.filter(x => x !== boot).map(x => getBond(boot, x))) <= 0) return { kind: 'outsider', data: {}, words: `nobody is close to ${boot}` };
+  return { kind: 'numbers', data: {}, words: `${boot} is the easy name` };
+}
+
 const PULL = [
   // [kind, who joins, how many at most, only when a works in groups]
   [/^talk\.(plan|game|checkin|scramble)/, 'shared', 2, true],
@@ -972,6 +1093,14 @@ export function airTdEpisode(ep) {
       }
       // ...and the coverage pass below does not bring the duplicate back
       events.forEach(ev => { if (ev && !ev.aired && dup(ev)) ev.aired = 'covered'; });
+      // the vote told across the day: its spark, the warnings, the advantage decisions, an unseen
+      // alliance (arcBeats); seasonConfig.tdEdit 'off' leaves the day as the engine's moments alone
+      if ((seasonConfig?.tdEdit || 'full') !== 'off') {
+        // the story beats are added on top: the free scenes keep their room (the user, 2026-10-08)
+        // what already aired this morning, quick cuts read from their engine event
+        const morning = phase === 'post' ? (out.pre || []).map(it => it.lines ? it : { kind: eventsOf(ep, camp, 'pre')[it.ref]?.type || '', players: eventsOf(ep, camp, 'pre')[it.ref]?.players || [] }) : [];
+        list.push(...arcBeats(ep, camp, members, phase, talk, () => n++, list, morning));
+      }
       list.sort((x, y) => x.at - y.at);
       for (const x of list) {
         const ev = x.item.lines ? x.item : events[x.item.ref];

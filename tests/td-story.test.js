@@ -13,11 +13,11 @@ import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 // what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
 const STORY_FACTS = new Set([...TD_FACT_KEYS,
   'venue', 'count', 'outcome', 'story', 'step', 'prev', 'prevGap', 'chapter', 'members', 'aOther', 'bOther', 'target', 'group',
-  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'fifth', 'sixth', 'notVoice', 'notVoiceB', 'home', 'job', 'lot', 'eats', 'thing', 'others', 'markMe', 'markB', 'otherMe', 'otherB', 'shaky', 'cover', 'close', 'aVoted', 'defends', 'cWasted']);
+  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'fifth', 'sixth', 'notVoice', 'notVoiceB', 'home', 'job', 'lot', 'eats', 'thing', 'others', 'markMe', 'markB', 'otherMe', 'otherB', 'shaky', 'cover', 'close', 'aVoted', 'defends', 'cWasted', 'self', 'found']);
 // names a line may say, and the fact that must be asked for unless the pool always has it
 const ALWAYS = new Set(['a', 'b', 'c', 'd', 'e', 'f', 'h', 'quarters', 'bed', 'item', 'here', 'place', 'host']);
 const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
-  threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder', other: 'other', pitcher: 'pitcher', home: 'home', job: 'job', lot: 'lot', thing: 'thing', others: 'others', shaky: 'shaky', cover: 'cover' };
+  threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder', other: 'other', pitcher: 'pitcher', home: 'home', job: 'job', lot: 'lot', thing: 'thing', others: 'others', shaky: 'shaky', cover: 'cover', found: 'found' };
 // a pool's guarantees: names its moment always carries
 const GUARANTEED = [
   [/^story\.morning\./, ['lastBoot', 'target', 'bootVotes']],
@@ -53,6 +53,11 @@ const GUARANTEED = [
   [/^vp\.(solo\.)?count\.(close|tight)$/, ['target', 'other', 'them', 'votes']],
   [/^vp\./, ['target', 'votes']],
   [/^tqa\.scramble\./, ['target']],
+  [/^arc\.warn\./, ['pitcher', 'target']],
+  [/^arc\.adv\.idol\.warned$/, ['pitcher', 'source']],
+  [/^arc\.spark\.pair$/, ['partner']],
+  [/^arc\.spark\.group$/, ['theirs']],
+  [/^arc\.ally\./, ['group']],
   [/^tqa\.burned\./, ['lastBoot']],
   [/^fi\.(read|twist|welcome)\./, ['tribe', 'theirs']],
   [/^fi\.after\./, ['theirs']],
@@ -192,7 +197,9 @@ describe('a season through the director', () => {
   it('airs a show-sized episode, not forty sketches', () => {
     for (const ep of eps) for (const camp of Object.keys(ep.campStory)) {
       const n = campFeed(ep, camp, 'pre').length + campFeed(ep, camp, 'post').length;
-      expect(n, `ep ${ep.num} ${camp}`).toBeLessThanOrEqual(18);
+      // 18 was the camp-only edit; the vote told across the day (director.js arcBeats) adds its spark,
+      // warnings and advantage decisions on top of the free scenes, so a big night runs a little longer
+      expect(n, `ep ${ep.num} ${camp}`).toBeLessThanOrEqual(22);
     }
   });
 

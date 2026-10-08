@@ -22,7 +22,7 @@ export default {
   'long.alliance.form.pitch': [
     { id: 'na.p1', place: 'water', when: { third: false, lost: true, sank: true }, turns: [
       { beat: "After the challenge. {a} finds {b} {here}, rinsing off." },
-      { by: 'a', say: "Hey. Can I talk to you before everyone starts talking to everyone?" },
+      { by: 'a', say: "Hey. Can I talk to you before everyone starts talking to everyone?", v: { anxious: "Hey, um. Can I talk to you? Before everyone else does?", schemer: "Got a second? I'd like to talk before the whole camp starts whispering.", loud: "Hey! You! Before everyone starts plotting, come here!", teen: "Hey, can I talk to you real quick? Before everybody starts scheming?" } },
       { by: 'b', say: "About tonight?" },
       { by: 'a', say: "Yeah. People are going to say {sank}, because {sank} had a really bad day." },
       { by: 'b', say: "That's what I was thinking too." },
@@ -34,11 +34,11 @@ export default {
       { by: 'b', say: "...Okay. Tonight. And if it works, we keep going." },
       { by: 'a', say: "We should call it something. {group}." },
       { by: 'b', say: "{group}. Sure.", v: { dry: "{group}. Very dramatic. Fine." } },
-      { by: 'b', conf: "{a} needs a vote. I need one too. So this works for both of us." },
+      { by: 'b', conf: "{a} needs a vote. I need one too. So this works for both of us.", v: { warm: "I actually like {a}. That helps. That helps a lot.", dry: "We're both desperate. It's the foundation of every great partnership." } },
     ] },
     { id: 'na.p2', place: 'eat', when: { third: false, voted: 'other', myVote: true, lastBoot: true }, turns: [
       { beat: "Breakfast {here}. {a} sits down across from {b}." },
-      { by: 'a', say: "Can I ask you something kind of personal? Who did you vote for last night?" },
+      { by: 'a', say: "Can I ask you something kind of personal? Who did you vote for last night?", v: { blunt: "Who'd you vote for last night? I need to know.", anxious: "Can I ask who you voted for? You don't have to say. I'd just really like to know." } },
       { by: 'b', say: "That's not personal, that's nosy." },
       { by: 'a', say: "I wrote {myVote}. Everybody else wrote {lastBoot}. I found out when {lastBoot} did." },
       { by: 'b', say: "Ouch." },
@@ -49,7 +49,7 @@ export default {
       { by: 'a', say: "Same thing. Someone who tells you. Before the vote, not after." },
       { by: 'b', say: "...Okay. But if you lie to me once, we're done." },
       { by: 'a', say: "Fair. Let's call it {group}." },
-      { by: 'a', conf: "Last time I was on the wrong side of the vote. Next time I'm going to have someone on the right side with me." },
+      { by: 'a', conf: "Last time I was on the wrong side of the vote. Next time I'm going to have someone on the right side with me.", v: { competitive: "I lost that vote. I don't lose twice.", tough: "Never again on the wrong side. Never." } },
     ] },
     { id: 'na.p3', place: 'fire', when: { third: false, voice: ['schemer', 'cruel', 'proud'] }, turns: [
       { beat: "{a} sits down next to {b} {here}. {b} is trying to get the fire going." },
@@ -114,7 +114,7 @@ export default {
       { by: 'a', conf: "It's early. Early is when you get to pick. Later, people pick for you." },
     ] },
     { id: 'na.p7', place: 'aside', when: { third: false, merged: true }, turns: [
-      { by: 'a', say: "Everyone's acting like the old teams still matter. They don't." },
+      { by: 'a', say: "Everyone's acting like the old teams still matter. They don't.", v: { schemer: "Everyone's clinging to their old team. That's their mistake.", blunt: "The old teams are dead. Get over it." } },
       { by: 'b', say: "Easy for you to say. Your old team's half gone." },
       { by: 'a', say: "So is yours. There's more of them than there is of either of us." },
       { by: 'b', say: "So you want to cross over." },
@@ -123,11 +123,11 @@ export default {
       { by: 'a', say: "Then we're just friends. People will believe that." },
       { by: 'b', say: "...Okay. What's it called?" },
       { by: 'a', say: "{group}." },
-      { by: 'b', conf: "My old team thinks I'm theirs. That's useful. {a} thinks I'm {a.posAdj}. That's useful too." },
+      { by: 'b', conf: "My old team thinks I'm theirs. That's useful. {a} thinks I'm {a.posAdj}. That's useful too.", v: { warm: "I feel bad playing both sides. A little. Not enough to stop." } },
     ] },
     { id: 'na.p8', place: 'secret', when: { third: true, members: 3 }, turns: [
       { beat: "{a} gets {b}, then {c}, and takes them out to {place}." },
-      { by: 'c', say: "If this is a prank, I'm leaving." },
+      { by: 'c', say: "If this is a prank, I'm leaving.", v: { dry: "If this is an intervention, I'm not ready.", anxious: "Is this a prank? Please tell me this isn't a prank." } },
       { by: 'a', say: "It's not a prank. Sit down." },
       { by: 'b', say: "Okay. Why us?" },
       { by: 'a', say: "Because you two are the only ones I haven't caught talking about me." },
@@ -141,11 +141,11 @@ export default {
       { by: 'a', say: "Then don't be the third." },
       { by: 'c', say: "...Fine. I'm in. {group}?" },
       { by: 'a', say: "{group}." },
-      { by: 'c', conf: "Three people in an alliance means somebody's eventually the odd one out. I need to make sure that's not me." },
+      { by: 'c', conf: "Three people in an alliance means somebody's eventually the odd one out. I need to make sure that's not me.", v: { nerdy: "Three-person alliance. Simple maths: one of us is the spare. Not me." } },
     ] },
     { id: 'na.p9', place: 'public', when: { third: true, members: 3, lost: true }, turns: [
       { beat: "Everybody splits up after the loss. {a} grabs {b} and {c} before they can go." },
-      { by: 'a', say: "Don't go anywhere. We need to talk before tonight." },
+      { by: 'a', say: "Don't go anywhere. We need to talk before tonight.", v: { bossy: "Stay. Both of you. We're talking now.", anxious: "Wait, don't go. Please. We need to talk before tonight." } },
       { by: 'b', say: "About who's going home?" },
       { by: 'a', say: "About who's not going home. Us three." },
       { by: 'c', say: "We don't even get along that well." },
@@ -155,7 +155,7 @@ export default {
       { by: 'b', say: "...Okay. That actually makes sense." },
       { by: 'c', say: "Fine. What do we call it?" },
       { by: 'a', say: "{group}." },
-      { by: 'b', conf: "We lost the challenge and I came out of it with two allies. Best bad day I've had here." },
+      { by: 'b', conf: "We lost the challenge and I came out of it with two allies. Best bad day I've had here.", v: { dry: "Lost a challenge, gained two allies. I'll call it a draw." } },
     ] },
     { id: 'na.p10', place: 'wash', when: { third: true, members: 3, voice: ['warm', 'anxious', 'earnest', 'ditzy'] }, turns: [
       { beat: "{a}, {b} and {c} are washing up {here}. {a} keeps looking at the other two." },
@@ -173,7 +173,7 @@ export default {
     ] },
     { id: 'na.p11', place: 'secret', when: { third: true, members: 'many' }, turns: [
       { beat: "{a} has called a meeting at {place}. {b} and {c} are the last ones there." },
-      { by: 'b', say: "Is everybody here?" },
+      { by: 'b', say: "Is everybody here?", v: { anxious: "Is everyone here? Is somebody watching us?", bossy: "Roll call. Everybody here? Good." } },
       { by: 'a', say: "Everybody who matters." },
       { by: 'c', say: "That's a creepy thing to say." },
       { by: 'a', say: "Look around. If we all vote together, nobody here goes home until everybody else has." },
@@ -191,7 +191,7 @@ export default {
   'long.alliance.form.couple': [
     { id: 'na.c1', place: 'aside', when: { third: false }, turns: [
       { beat: "Late. {a} and {b} are still up after everybody else has gone to bed." },
-      { by: 'b', say: "You know everybody thinks we're working together, right?" },
+      { by: 'b', say: "You know everybody thinks we're working together, right?", v: { dry: "So, fun fact. Everybody thinks we're a couple. Of votes.", flirty: "Everybody thinks we're a thing, you know. In the game. Probably." } },
       { by: 'a', say: "We've been together pretty much since we got here. Of course they do." },
       { by: 'b', say: "So should we actually be?" },
       { by: 'a', say: "Make it official, you mean." },
@@ -200,7 +200,7 @@ export default {
       { by: 'b', say: "Especially the stuff about us." },
       { by: 'a', say: "{group}." },
       { by: 'b', say: "That's a terrible name. I love it." },
-      { by: 'a', conf: "I didn't plan on having a partner this early. I also didn't plan on liking {b} this much." },
+      { by: 'a', conf: "I didn't plan on having a partner this early. I also didn't plan on liking {b} this much.", v: { schemer: "A partner this early is risky. {b} is worth the risk.", warm: "I really like {b}. Like, really. Making it official feels right." } },
     ] },
     { id: 'na.c2', place: 'aside', when: { third: true, members: 3 }, turns: [
       { beat: "{a}, {b} and {c} are hanging around {here} after chores, like most afternoons." },
@@ -218,7 +218,7 @@ export default {
   'long.alliance.form.enemy': [
     { id: 'na.e1', place: 'eat', when: { third: false }, turns: [
       { beat: "{a} and {b} are cleaning up {here}. Somewhere behind them, {target} is laughing too loud." },
-      { by: 'a', say: "Listen to that." },
+      { by: 'a', say: "Listen to that.", v: { dry: "Ah. The sweet sound of {target}.", cruel: "Hear that? That's the sound of the next person going home." } },
       { by: 'b', say: "I've been listening to it all day." },
       { by: 'a', say: "I can't stand {target}. I'm just going to say it." },
       { by: 'b', say: "Oh, thank god. I thought it was just me." },
@@ -227,7 +227,7 @@ export default {
       { by: 'a', say: "We vote {target} out. Together. And we start getting other people to come with us." },
       { by: 'b', say: "...Okay. I'm in." },
       { by: 'a', say: "{group}. And {target} is first." },
-      { by: 'b', conf: "Do I want to be in an alliance with {a}? I don't know. Do I want {target} gone? Yes. That's enough for now." },
+      { by: 'b', conf: "Do I want to be in an alliance with {a}? I don't know. Do I want {target} gone? Yes. That's enough for now.", v: { blunt: "I don't love {a}. I hate {target} more. Done." } },
     ] },
     { id: 'na.e2', place: 'aside', when: { third: false, voice: ['schemer', 'calm', 'dry'] }, turns: [
       { by: 'a', say: "You and {target} don't get along." },
@@ -259,7 +259,7 @@ export default {
   'long.alliance.form.survival': [
     { id: 'na.s1', place: 'aside', when: { third: false }, turns: [
       { beat: "Everybody else is together. {a} and {b} are sitting {here}, a long way from them." },
-      { by: 'a', say: "Have you noticed nobody tells us anything?" },
+      { by: 'a', say: "Have you noticed nobody tells us anything?", v: { anxious: "Is it just me, or does nobody tell us anything? Like ever?", dry: "Have you noticed we're the last two people to hear anything?" } },
       { by: 'b', say: "I noticed. I thought it was just me." },
       { by: 'a', say: "It's both of us. They stop talking when we walk over. Every time." },
       { by: 'b', say: "So we're next." },
@@ -268,10 +268,10 @@ export default {
       { by: 'a', say: "Two people is a swing vote. If they ever need to break a tie, they need us." },
       { by: 'b', say: "...Okay. That's actually a good point." },
       { by: 'a', say: "So we stick together, we listen, and we wait for them to need us. {group}." },
-      { by: 'b', conf: "I didn't come here to be on the bottom. But if I'm down here, at least I'm not down here alone." },
+      { by: 'b', conf: "I didn't come here to be on the bottom. But if I'm down here, at least I'm not down here alone.", v: { tough: "Bottom isn't where I'm staying. But I'll take company for now." } },
     ] },
     { id: 'na.s2', place: 'aside', when: { third: false, gotVotes: true }, turns: [
-      { by: 'b', say: "My name came up at the vote." },
+      { by: 'b', say: "My name came up at the vote.", v: { emotional: "My name came up. People actually wrote my name.", blunt: "People voted for me." } },
       { by: 'a', say: "Mine too." },
       { by: 'b', say: "Seriously? Nobody told me that." },
       { by: 'a', say: "Nobody tells us anything. That's the problem." },
@@ -299,7 +299,7 @@ export default {
   ],
   'long.alliance.form.struggle': [
     { id: 'na.t1', place: 'aside', when: { third: false }, turns: [
-      { by: 'a', say: "That vote was way too close." },
+      { by: 'a', say: "That vote was way too close.", v: { anxious: "That was so close. Way too close. I'm still shaking.", dry: "Well. That was cosy. Too cosy." } },
       { by: 'b', say: "For you too?" },
       { by: 'a', say: "My name came up. Enough times to scare me." },
       { by: 'b', say: "Mine too. I honestly thought I was going home." },
@@ -317,7 +317,7 @@ export default {
   'long.recruit.join.any': [
     { id: 'na.j1', place: 'aside', turns: [
       { beat: "{a} catches {b} alone {here}." },
-      { by: 'a', say: "Got a minute?" },
+      { by: 'a', say: "Got a minute?", v: { schemer: "Got a minute? I think you'll like what I have to say.", warm: "Hey! Got a minute? I've got good news.", quiet: "Hey. Minute?" } },
       { by: 'b', say: "Depends who's asking. You, or your alliance?" },
       { by: 'a', say: "Both, honestly. {group} wants you in." },
       { by: 'b', say: "Why? So I can be the extra vote you throw away when you need to?" },
@@ -328,10 +328,10 @@ export default {
       { by: 'a', say: "It's all I can tell you until you're in." },
       { by: 'b', say: "...Fine. I'm in." },
       { by: 'a', say: "Welcome to {group}." },
-      { by: 'b', conf: "Everybody wants the swing vote. Until there's only one vote left to swing. I'm going to enjoy this while it lasts." },
+      { by: 'b', conf: "Everybody wants the swing vote. Until there's only one vote left to swing. I'm going to enjoy this while it lasts.", v: { anxious: "Being wanted is nice. Being wanted by everyone is scary." } },
     ] },
     { id: 'na.j2', place: 'aside', when: { lastBoot: true }, turns: [
-      { by: 'a', say: "You saw what happened to {lastBoot}." },
+      { by: 'a', say: "You saw what happened to {lastBoot}.", v: { cruel: "You saw what happened to {lastBoot}. Want to be next?", calm: "Think about {lastBoot} for a second." } },
       { by: 'b', say: "Everybody saw." },
       { by: 'a', say: "{lastBoot} didn't have anybody. That's what happens to people with nobody." },
       { by: 'b', say: "Is that a threat?" },
@@ -368,7 +368,7 @@ export default {
       { by: 'a', conf: "Nobody joins an alliance because they like you. They join because they're scared of being left out. I just made sure {b} was scared first." },
     ] },
     { id: 'na.j5', place: 'aside', when: { bOther: false }, turns: [
-      { by: 'a', say: "Can I sit? You're always on your own." },
+      { by: 'a', say: "Can I sit? You're always on your own.", v: { warm: "Hey, mind if I sit? You always look a little lonely.", blunt: "You're always alone. I'm sitting." } },
       { by: 'b', say: "Because nobody ever asks to sit." },
       { by: 'a', say: "I'm asking. And I've got something else to ask. {group} wants you." },
       { by: 'b', say: "Me? Nobody wants me in anything." },
@@ -392,7 +392,7 @@ export default {
   ],
   'long.recruit.refuse.any': [
     { id: 'na.r1', place: 'aside', turns: [
-      { by: 'a', say: "So. {group} has a spot open. For you." },
+      { by: 'a', say: "So. {group} has a spot open. For you.", v: { schemer: "So. There's a spot in {group}. I told them it should be you.", loud: "Good news! {group} wants you!" } },
       { by: 'b', say: "That's nice. But no." },
       { by: 'a', say: "You didn't even think about it." },
       { by: 'b', say: "I thought about it while you were walking over. You've been looking at me all morning." },
@@ -402,7 +402,7 @@ export default {
       { by: 'b', say: "Nobody ever says it." },
       { by: 'a', say: "Fine. Your loss." },
       { by: 'a', conf: "{b} said no. That's fine. People who say no make really easy names to write down." },
-      { by: 'b', conf: "Joining {group} means voting how they tell me. I didn't come here to take orders." },
+      { by: 'b', conf: "Joining {group} means voting how they tell me. I didn't come here to take orders.", v: { proud: "I don't join other people's things. They join mine.", calm: "I'd rather keep my options open. That's all." } },
     ] },
     { id: 'na.r2', place: 'public', when: { band: ['enemies', 'cold'] }, turns: [
       { by: 'a', say: "Look, I know we're not exactly friends, but..." },
@@ -413,10 +413,10 @@ export default {
       { by: 'b', say: "It's always about you. That's your whole thing." },
       { by: 'a', say: "Wow. Forget it." },
       { by: 'b', say: "Already forgotten." },
-      { by: 'b', conf: "{a} asking me to join {a.posAdj} alliance is the funniest thing that's happened all week." },
+      { by: 'b', conf: "{a} asking me to join {a.posAdj} alliance is the funniest thing that's happened all week.", v: { cruel: "{a} wanted me in {a.posAdj} alliance. I laughed. Out loud." } },
     ] },
     { id: 'na.r3', place: 'aside', when: { voiceB: ['warm', 'anxious', 'earnest'] }, turns: [
-      { by: 'a', say: "{group} really wants you with us." },
+      { by: 'a', say: "{group} really wants you with us.", v: { warm: "We'd really love to have you with us. In {group}." } },
       { by: 'b', say: "That's so nice. I'm just... not ready to pick a side." },
       { by: 'a', say: "Everybody picks a side eventually." },
       { by: 'b', say: "I know. Not yet, though." },
@@ -428,7 +428,7 @@ export default {
   'long.alliance.crack.any': [
     { id: 'na.k1', place: 'water', turns: [
       { beat: "{a} and {b} are supposed to be fishing {here}. Neither of them is watching the line." },
-      { by: 'a', say: "Where were you last night? After dinner?" },
+      { by: 'a', say: "Where were you last night? After dinner?", v: { blunt: "Where were you after dinner? Don't lie.", anxious: "Hey, um, where'd you go last night? You were gone for ages." } },
       { by: 'b', say: "Walking. Why?" },
       { by: 'a', say: "Walking. With who?" },
       { by: 'b', say: "Is this an interrogation?" },
@@ -437,10 +437,10 @@ export default {
       { by: 'a', say: "I do. I just want to keep trusting you." },
       { by: 'b', say: "Then stop following me around." },
       { by: 'a', conf: "{b} didn't answer the question. People with nothing to hide answer the question." },
-      { by: 'b', conf: "Every alliance ends up with one paranoid person. Ours is {a}." },
+      { by: 'b', conf: "Every alliance ends up with one paranoid person. Ours is {a}.", v: { dry: "{a} is our alliance's smoke alarm. It goes off for toast." } },
     ] },
     { id: 'na.k2', place: 'secret', when: { lastBoot: true, votedB: 'boot' }, turns: [
-      { by: 'a', say: "Can I ask you about the vote?" },
+      { by: 'a', say: "Can I ask you about the vote?", v: { blunt: "We need to talk about the vote.", calm: "Quick question about last night." } },
       { by: 'b', say: "Go ahead." },
       { by: 'a', say: "Did you write {lastBoot}?" },
       { by: 'b', say: "Yes. We all did. Why?" },
@@ -478,7 +478,7 @@ export default {
     ] },
     { id: 'na.k5', place: 'secret', when: { third: true }, turns: [
       { beat: "{group} is supposed to be meeting. {c} is late." },
-      { by: 'a', say: "Where's {c}?" },
+      { by: 'a', say: "Where's {c}?", v: { loud: "Where IS {c}?!", schemer: "And where would {c} be right now? Interesting." } },
       { by: 'b', say: "{c} said {c} would be here." },
       { by: 'a', say: "An hour ago." },
       { beat: "{c} walks up, a little out of breath." },
@@ -516,7 +516,7 @@ export default {
   ],
   'long.alliance.end.any': [
     { id: 'na.n1', place: 'aside', turns: [
-      { by: 'a', say: "So that's it." },
+      { by: 'a', say: "So that's it.", v: { dry: "So. That's the end of that.", emotional: "So it's over. Just like that.", quiet: "...That's it, then." } },
       { by: 'b', say: "What's it?" },
       { by: 'a', say: "{group}. It's done. We both know it." },
       { by: 'b', say: "Nobody's said anything." },
@@ -525,10 +525,10 @@ export default {
       { by: 'a', say: "Me neither." },
       { by: 'b', say: "So now what?" },
       { by: 'a', say: "Now we're two people who used to be in an alliance. Who know exactly how the other one plays." },
-      { by: 'b', conf: "Alliances here don't end with a big fight. They just stop. One day you look up and you're on your own." },
+      { by: 'b', conf: "Alliances here don't end with a big fight. They just stop. One day you look up and you're on your own.", v: { teen: "We didn't even fight. We just stopped talking. That's worse.", grown: "Seen it a hundred times. Things don't end. They fade." } },
     ] },
     { id: 'na.n2', place: 'aside', when: { betrayer: true }, turns: [
-      { by: 'b', say: "You heard about {betrayer}?" },
+      { by: 'b', say: "You heard about {betrayer}?", v: { loud: "Did you HEAR what {betrayer} did?!", dry: "So. {betrayer}. Fun news." } },
       { by: 'a', say: "Everybody's heard about {betrayer}." },
       { by: 'b', say: "{group} was supposed to mean something." },
       { by: 'a', say: "It did. Until {betrayer} decided {betrayer.posAdj} vote mattered more." },
@@ -550,7 +550,7 @@ export default {
   'long.alliance.expel.any': [
     { id: 'na.x1', place: 'secret', turns: [
       { beat: "{a} waits for {b} to come back alone." },
-      { by: 'a', say: "We need to talk." },
+      { by: 'a', say: "We need to talk.", v: { quiet: "Talk. Now.", anxious: "Um. We need to talk. It's not good." } },
       { by: 'b', say: "If this is about the vote..." },
       { by: 'a', say: "It's about the vote." },
       { by: 'b', say: "I had my reasons." },
@@ -559,7 +559,7 @@ export default {
       { by: 'a', say: "One vote against one of us. Yeah." },
       { by: 'b', say: "You'd have done the same thing." },
       { by: 'a', say: "Maybe. But I'd have told you first." },
-      { by: 'b', conf: "Fine. I'm not in {group} anymore. Which means I don't owe them anything." },
+      { by: 'b', conf: "Fine. I'm not in {group} anymore. Which means I don't owe them anything.", v: { emotional: "They kicked me out. I thought they were my friends.", schemer: "Out of {group}. Free to do whatever I want. They'll regret that." } },
     ] },
     { id: 'na.x2', place: 'aside', when: { voice: ['warm', 'anxious', 'earnest'] }, turns: [
       { by: 'a', say: "I'm sorry. I wanted to be the one to tell you." },
@@ -571,7 +571,7 @@ export default {
       { by: 'b', conf: "{a} looked about ready to cry. {a} still did it, though." },
     ] },
     { id: 'na.x3', place: 'aside', when: { ending: 'repeated' }, turns: [
-      { by: 'a', say: "How many times is that now?" },
+      { by: 'a', say: "How many times is that now?", v: { cruel: "How many times are you going to do this?", dry: "Remind me. How many times have you gone off script?" } },
       { by: 'b', say: "How many times is what?" },
       { by: 'a', say: "That you went your own way when {group} had a plan." },
       { by: 'b', say: "I vote how I think is best." },
@@ -585,18 +585,18 @@ export default {
   'long.fallout.flip.ally': [
     { id: 'na.f1', place: 'aside', when: { count: true }, turns: [
       { beat: "Morning. {b} sits down next to {a} and hands {a.obj} some water." },
-      { by: 'b', say: "Here. You look like you didn't sleep." },
+      { by: 'b', say: "Here. You look like you didn't sleep.", v: { warm: "Here, take this. You look exhausted.", dry: "Here. You look like a zombie." } },
       { by: 'a', say: "Thanks. Not really." },
       { by: 'b', say: "I still can't believe somebody wrote my name last night." },
       { by: 'a', say: "Yeah. Crazy." },
       { by: 'b', say: "If you hear anything about who it was, you'll tell me, right?" },
       { by: 'a', say: "Of course." },
       { by: 'b', say: "This is why I trust you." },
-      { by: 'a', conf: "I wrote {b}'s name. And {b} just told me {b} trusts me. I need a minute." },
+      { by: 'a', conf: "I wrote {b}'s name. And {b} just told me {b} trusts me. I need a minute.", v: { schemer: "I voted against {b}. {b} trusts me more today than yesterday. Interesting.", emotional: "I feel horrible. I really feel horrible." } },
     ] },
     { id: 'na.f2', place: 'aside', when: { count: false }, turns: [
       { beat: "Morning. {b} sits down next to {a}." },
-      { by: 'b', say: "Did you sleep? I didn't sleep." },
+      { by: 'b', say: "Did you sleep? I didn't sleep.", v: { anxious: "Did you sleep? Because I didn't. Not for one second." } },
       { by: 'a', say: "Not really." },
       { by: 'b', say: "Every time it comes down to the last {item}, I'm sure it's going to be me." },
       { by: 'a', say: "It wasn't you, though." },
@@ -631,7 +631,7 @@ export default {
   'long.deal.side.genuine': [
     { id: 'na.d1', place: 'secret', when: { size: 'two' }, turns: [
       { beat: "{a} and {b} have walked out to {place}, where it's quiet." },
-      { by: 'b', say: "Why do I feel like you brought me out here to break up with me?" },
+      { by: 'b', say: "Why do I feel like you brought me out here to break up with me?", v: { dry: "Is this a breakup? Because it feels like a breakup.", anxious: "Is something wrong? Why did you bring me all the way out here?" } },
       { by: 'a', say: "Ha. The opposite." },
       { by: 'b', say: "Okay, now I'm nervous." },
       { by: 'a', say: "I want to go to the end with you. Final two. I've thought about everybody, and it's you." },
@@ -640,10 +640,10 @@ export default {
       { by: 'b', say: "...Yeah. Same. Okay. Final two." },
       { by: 'a', say: "And if it ever comes to it, we tell each other first." },
       { by: 'b', say: "First. Before anyone." },
-      { by: 'a', conf: "Everybody makes these deals here. Most of them are worth nothing. I want this one to be worth something." },
+      { by: 'a', conf: "Everybody makes these deals here. Most of them are worth nothing. I want this one to be worth something.", v: { earnest: "I mean every word of it. That's the only kind of deal I make.", schemer: "Deals are cheap. This one, I might actually keep." } },
     ] },
     { id: 'na.d2', place: 'aside', when: { size: 'three' }, turns: [
-      { by: 'a', say: "Can I ask you something about the end?" },
+      { by: 'a', say: "Can I ask you something about the end?", v: { nerdy: "Hypothetically, the endgame. Can we talk about it?", blunt: "Let's talk about the end." } },
       { by: 'b', say: "The end? We're nowhere near the end." },
       { by: 'a', say: "That's why I'm asking now. Once it's close, everybody's already picked." },
       { by: 'b', say: "Okay. Go." },
@@ -685,7 +685,7 @@ export default {
     ] },
     { id: 'na.d6', place: 'water', turns: [
       { beat: "{a} and {b} are {here}, throwing rocks into the water." },
-      { by: 'b', say: "Okay, what's going on? You've been weird all morning." },
+      { by: 'b', say: "Okay, what's going on? You've been weird all morning.", v: { blunt: "Spit it out. You've been weird all day.", warm: "Hey, are you okay? You've been quiet all morning." } },
       { by: 'a', say: "Have I?" },
       { by: 'b', say: "You've thrown about forty rocks and haven't said anything." },
       { by: 'a', say: "...I've been thinking about who I'd want next to me at the end." },
@@ -698,7 +698,7 @@ export default {
     ] },
     { id: 'na.d7', place: 'sleep', when: { merged: true }, turns: [
       { beat: "Late, in the {quarters}. Everyone else is asleep except {a} and {b}." },
-      { by: 'a', say: "You awake?" },
+      { by: 'a', say: "You awake?", v: { quiet: "...Awake?", anxious: "Psst. Are you awake? Please be awake." } },
       { by: 'b', say: "No." },
       { by: 'a', say: "Funny. Listen. Now that it's everybody for themselves, I want one person I don't have to worry about." },
       { by: 'b', say: "And you're picking me at two in the morning." },
@@ -708,7 +708,7 @@ export default {
     ] },
     { id: 'na.d8', place: 'work', when: { gap: ['older', 'younger'] }, turns: [
       { beat: "{a} and {b} are doing chores together {here}, like they usually do." },
-      { by: 'b', say: "People think it's funny that we're friends." },
+      { by: 'b', say: "People think it's funny that we're friends.", v: { teen: "Everybody thinks it's weird we hang out.", grown: "People find it amusing that I spend time with someone your age." } },
       { by: 'a', say: "Because of the age thing?" },
       { by: 'b', say: "Because of the age thing." },
       { by: 'a', say: "Good. Let them. They'll never see it coming." },
@@ -722,14 +722,14 @@ export default {
   ],
   'long.deal.side.hollow': [
     { id: 'na.h1', place: 'aside', when: { size: 'two' }, turns: [
-      { by: 'a', say: "You know you're the person I trust most here, right?" },
+      { by: 'a', say: "You know you're the person I trust most here, right?", v: { schemer: "You know, out of everyone, you're the only one I really trust.", flirty: "You know you're my favourite person here, right?" } },
       { by: 'b', say: "Really?" },
       { by: 'a', say: "Really. I want it to be us at the end. Final two." },
       { by: 'b', say: "Oh my gosh. Yes. I was hoping you'd say that." },
       { by: 'a', say: "But we keep it quiet. Nobody can know." },
       { by: 'b', say: "Nobody. I swear." },
       { by: 'a', conf: "I'll say whatever keeps {b} voting with me. Today, that's final two." },
-      { by: 'b', conf: "Final two with {a}! I can finally stop stressing about every single vote." },
+      { by: 'b', conf: "Final two with {a}! I can finally stop stressing about every single vote.", v: { anxious: "A final two! I can actually sleep tonight!", ditzy: "Final two! That's like, the best number!" } },
     ] },
     { id: 'na.h2', place: 'secret', when: { voice: ['schemer', 'calm', 'cruel', 'proud'] }, turns: [
       { beat: "{a} has made sure the two of them are alone {here}." },
@@ -752,7 +752,7 @@ export default {
     ] },
     { id: 'na.h4', place: 'eat', turns: [
       { beat: "{a} slides {a.posAdj} food across the table to {b}." },
-      { by: 'b', say: "What's this for?" },
+      { by: 'b', say: "What's this for?", v: { dry: "Food. From you. What's the catch?", blunt: "Why are you giving me food?" } },
       { by: 'a', say: "Can't I just be nice?" },
       { by: 'b', say: "Not here." },
       { by: 'a', say: "Fine. It's a thank-you. For being the one person I'd want at the end. Final {size}, if you want it." },
@@ -764,12 +764,12 @@ export default {
   ],
   'long.deal.broken.confront': [
     { id: 'na.db1', place: 'aside', turns: [
-      { by: 'a', say: "We had a deal. To the end. That's what you said." },
+      { by: 'a', say: "We had a deal. To the end. That's what you said.", v: { loud: "We had a DEAL! You promised!", quiet: "We had a deal.", emotional: "You promised me. You looked me in the eye and promised." } },
       { by: 'b', say: "I know what I said." },
       { by: 'a', say: "And then you wrote my name." },
       { by: 'b', say: "I had to. You'd have done the same." },
       { by: 'a', say: "No. I wouldn't have. That's the difference between us." },
-      { by: 'a', conf: "I believed {b}. That's on me. It won't happen again." },
+      { by: 'a', conf: "I believed {b}. That's on me. It won't happen again.", v: { tough: "Fool me once. Never again." } },
     ] },
   ],
 };

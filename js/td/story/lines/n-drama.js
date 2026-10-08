@@ -21,7 +21,7 @@ export default {
   'long.drama.bomb.hothead': [
     { id: 'nd.bh1', place: 'public', turns: [
       { beat: "Everyone is {here}. {a} has been in a bad mood since breakfast." },
-      { by: 'b', say: "Can somebody pass the water?" },
+      { by: 'b', say: "Can somebody pass the water?", v: { warm: "Hey, could somebody pass the water, please?", dry: "Water. Anyone. I'll pay in compliments.", teen: "Can someone pass the water real quick?" } },
       { by: 'a', say: "Get it yourself. You've got legs.", v: { cruel: "Get it yourself. Or is walking too hard for you too?" } },
       { by: 'b', say: "What is your problem today?" },
       { by: 'a', say: "My problem is I'm doing all the work around here and everybody else is sitting around!" },
@@ -30,11 +30,11 @@ export default {
       { by: 'b', say: "I'm sitting because I just carried firewood for an hour. You'd know if you'd looked up." },
       { beat: "Nobody says anything. Somebody suddenly gets very interested in the fire." },
       { by: 'a', conf: "Okay. Maybe the firewood thing was true. I'm still not apologising.", v: { loud: "Did I yell? Yes. Was I wrong? ...Partly. Don't put that in.", emotional: "I don't even know why I said that. I'm so tired. Everything makes me want to scream." } },
-      { by: 'b', conf: "{a} just yelled at me in front of everybody for helping. Okay. I'll remember that at the vote." },
+      { by: 'b', conf: "{a} just yelled at me in front of everybody for helping. Okay. I'll remember that at the vote.", v: { emotional: "I was helping! I was literally helping! And {a} screamed at me.", tough: "{a} wants to yell? Fine. I'll answer at the vote.", quiet: "{a} yelled. I didn't. I'll remember it." } },
     ] },
     { id: 'nd.bh2', place: 'work', when: { lost: true }, turns: [
       { beat: "After the challenge, {here}. Nobody is talking about the loss, which is worse than talking about it." },
-      { by: 'b', say: "Should we split up the chores before it gets dark?" },
+      { by: 'b', say: "Should we split up the chores before it gets dark?", v: { bossy: "We need to split the chores before dark. Now.", anxious: "Um, should we maybe do the chores? Before it's dark? If that's okay?" } },
       { by: 'a', say: "Oh, NOW you want to work hard? Where was that this afternoon?" },
       { by: 'b', say: "Wow. Are we really doing this?" },
       { by: 'a', say: "Somebody has to. We lost, and everybody's acting like it just happened to us." },
@@ -42,7 +42,7 @@ export default {
       { by: 'a', say: "I didn't come in last!" },
       { by: 'b', say: "No, you came in loud. Every single time." },
       { by: 'a', conf: "I'm angry because we lost. I'm allowed to be angry when we lose. Somebody needs to care." },
-      { by: 'b', conf: "We lose, and {a} blows up at whoever's closest. Tonight that was me. Tomorrow it'll be somebody else." },
+      { by: 'b', conf: "We lose, and {a} blows up at whoever's closest. Tonight that was me. Tomorrow it'll be somebody else.", v: { schemer: "{a} explodes every time we lose. That's a vote waiting to happen.", dry: "{a} has two settings: angry and asleep." } },
     ] },
     { id: 'nd.bh3', place: 'eat', when: { voiceB: ['warm', 'anxious', 'earnest', 'emotional', 'ditzy'] }, turns: [
       { beat: "Dinner {here}. {b} is telling a story about home. {a} cuts in." },
@@ -51,12 +51,12 @@ export default {
       { by: 'a', say: "You talk all the time. All the time! It's like being stuck in a room with a radio." },
       { beat: "{b}'s face drops. {b} puts down {b.posAdj} bowl and walks off." },
       { by: 'a', say: "What? I'm just being honest." },
-      { by: 'b', conf: "I was just trying to make everybody feel better. I didn't know I was that annoying." },
+      { by: 'b', conf: "I was just trying to make everybody feel better. I didn't know I was that annoying.", v: { anxious: "Am I that annoying? Is that what everyone thinks? Oh no.", proud: "I am not annoying. I'm delightful. {a} is just rude." } },
       { by: 'a', conf: "Okay, that one was too far. I'll say sorry. Later. When I'm less hungry." },
     ] },
     { id: 'nd.bh4', place: 'fire', when: { prev: ['friction', 'blowup'] }, turns: [
       { beat: "{a} and {b} have been circling each other all day. At the fire {here}, it finally goes." },
-      { by: 'b', say: "Are you going to keep staring at me or are you going to say it?" },
+      { by: 'b', say: "Are you going to keep staring at me or are you going to say it?", v: { tough: "You've been staring all day. Say it or stop.", dry: "Are we doing this, or is the staring the whole show?" } },
       { by: 'a', say: "Fine. You've been talking about me. Behind my back. Again." },
       { by: 'b', say: "I've been talking about you to your face. You just don't listen." },
       { by: 'a', say: "I listen fine! I just don't like what you say!" },
@@ -64,7 +64,7 @@ export default {
       { beat: "Both of them are standing now. Everyone else leans back from the fire." },
       { by: 'a', say: "You know what? I'm done. I'm done with you." },
       { by: 'b', say: "You were done with me on day one." },
-      { by: 'a', conf: "{b} knows exactly how to get to me. And {b} does it every single day." },
+      { by: 'a', conf: "{b} knows exactly how to get to me. And {b} does it every single day.", v: { calm: "{b} knows my buttons. I need to stop letting {b} press them." } },
     ] },
   ],
   'long.drama.bomb.arrogant': [
@@ -77,18 +77,18 @@ export default {
       { by: 'a', say: "Sure. Some of us just did more of the team part." },
       { by: 'b', say: "You know people can hear you, right?" },
       { by: 'a', say: "Good. Maybe they'll try harder.", v: { schemer: "I know. I'm saying it so they do.", proud: "That's kind of the point." } },
-      { by: 'b', conf: "{a} just told the whole team they're useless. To their faces. I didn't even have to do anything." },
+      { by: 'b', conf: "{a} just told the whole team they're useless. To their faces. I didn't even have to do anything.", v: { schemer: "{a} just handed me five votes. You're welcome, me.", warm: "That was so mean. Everybody tried really hard." } },
     ] },
     { id: 'nd.ba2', place: 'eat', when: { carriedA: true }, turns: [
       { beat: "{a} carried today's challenge, and {a} wants everyone {here} to know it." },
-      { by: 'a', say: "You're welcome, by the way." },
+      { by: 'a', say: "You're welcome, by the way.", v: { proud: "You're all welcome, by the way. Truly.", dry: "Oh, and you're welcome. In case anyone was wondering." } },
       { by: 'b', say: "For what?" },
       { by: 'a', say: "For today. You'd all be voting somebody out tonight if it wasn't for me." },
       { by: 'b', say: "We said thank you. Like, four times." },
       { by: 'a', say: "Five would be nice." },
       { by: 'b', say: "You know what would be nice? If you let somebody else talk for once." },
       { by: 'a', conf: "I won us the challenge. I'm allowed to be a little bit proud of that." },
-      { by: 'b', conf: "{a} was great today. {a} also made sure every single one of us felt terrible about it." },
+      { by: 'b', conf: "{a} was great today. {a} also made sure every single one of us felt terrible about it.", v: { blunt: "Great challenge. Terrible person.", competitive: "{a} won it. Fine. I'll win the next one and be nicer about it." } },
     ] },
     { id: 'nd.ba3', place: 'aside', when: { merged: true }, turns: [
       { by: 'a', say: "Can I be real with you? Most of the people left don't deserve to be here." },
@@ -98,13 +98,13 @@ export default {
       { by: 'a', say: "I'm the biggest one. Everybody knows it." },
       { by: 'b', say: "You know that's exactly what people say right before they get voted out." },
       { by: 'a', say: "Not me." },
-      { by: 'b', conf: "{a} just told me {a} is the biggest threat here. I agree. I'm going to tell everybody else too." },
+      { by: 'b', conf: "{a} just told me {a} is the biggest threat here. I agree. I'm going to tell everybody else too.", v: { dry: "{a} told me {a} is the biggest threat here. Thank you for the free information." } },
     ] },
   ],
   'long.drama.fight.erupt': [
     { id: 'nd.fe1', place: 'public', turns: [
       { beat: "It starts over nothing. {b} sits in {a}'s spot {here}." },
-      { by: 'a', say: "Move." },
+      { by: 'a', say: "Move.", v: { loud: "MOVE.", cruel: "Move. Now. Before I move you.", quiet: "...Move." } },
       { by: 'b', say: "There's a whole log. Sit somewhere else." },
       { by: 'a', say: "I said MOVE!" },
       { by: 'b', say: "Don't yell at me!" },
@@ -113,11 +113,11 @@ export default {
       { by: 'b', say: "Are you okay?" },
       { by: 'a', say: "DON'T talk to me!" },
       { by: 'a', conf: "Was it about the log? No. It was about everything. The log just happened to be there." },
-      { by: 'b', conf: "{a} has a temper like a firework. You don't know when it's going off, but you know it's going off." },
+      { by: 'b', conf: "{a} has a temper like a firework. You don't know when it's going off, but you know it's going off.", v: { anxious: "I'm scared of {a}. I'm going to stay on the other side of camp.", dry: "{a} is a smoke alarm. It goes off for toast." } },
     ] },
     { id: 'nd.fe2', place: 'work', turns: [
       { beat: "{a} and {b} are supposed to be fixing the {quarters} together {here}." },
-      { by: 'b', say: "You're holding it wrong." },
+      { by: 'b', say: "You're holding it wrong.", v: { bossy: "No. You're holding it wrong. Give it.", nerdy: "Technically, you're holding it at the wrong angle.", dry: "Interesting technique. Wrong, but interesting." } },
       { by: 'a', say: "I'm holding it fine." },
       { by: 'b', say: "It's falling down. While you hold it." },
       { by: 'a', say: "Then YOU hold it!" },
@@ -131,14 +131,14 @@ export default {
   'long.drama.fight.snap': [
     { id: 'nd.fs1', place: 'eat', turns: [
       { beat: "{b} has been tapping {b.posAdj} spoon on the table for ten minutes {here}." },
-      { by: 'a', say: "Can you stop that?" },
+      { by: 'a', say: "Can you stop that?", v: { loud: "Can you STOP that?!", dry: "Is the tapping part of a song? Because I hate the song." } },
       { by: 'b', say: "Stop what?" },
       { by: 'a', say: "The tapping. The tapping! You've been doing it all morning!" },
       { by: 'b', say: "Okay, wow, it's just a spoon." },
       { by: 'a', say: "It's not just a spoon. It's the spoon and the humming and the way you chew." },
       { by: 'b', say: "The way I CHEW?" },
       { by: 'a', conf: "I was fine. I was totally fine. And then the spoon happened." },
-      { by: 'b', conf: "I've been here for days, and today is the day my chewing became a problem. Okay." },
+      { by: 'b', conf: "I've been here for days, and today is the day my chewing became a problem. Okay.", v: { emotional: "My chewing? Seriously? That really hurt my feelings.", cruel: "{a} wants to fight about chewing. {a} is losing it." } },
     ] },
     { id: 'nd.fs2', place: 'sleep', turns: [
       { beat: "Late in the {quarters}. Somebody's snoring. {a} sits up." },
@@ -148,10 +148,10 @@ export default {
       { by: 'b', say: "Don't tell me how to sleep." },
       { by: 'a', say: "Somebody has to! I haven't slept since we got here!" },
       { beat: "Someone else in the {quarters} throws a pillow at both of them." },
-      { by: 'a', conf: "It's not about the snoring. Okay, it's a little bit about the snoring." },
+      { by: 'a', conf: "It's not about the snoring. Okay, it's a little bit about the snoring.", v: { grown: "I haven't slept properly in a week. Something had to give." } },
     ] },
     { id: 'nd.fs3', place: 'work', when: { lost: true }, turns: [
-      { by: 'b', say: "We're not going to talk about what happened today?" },
+      { by: 'b', say: "We're not going to talk about what happened today?", v: { blunt: "We're talking about today. Now.", anxious: "Can we maybe talk about today? Calmly?" } },
       { by: 'a', say: "What is there to talk about? We lost." },
       { by: 'b', say: "You could start with why you didn't pass me the rope." },
       { by: 'a', say: "You weren't ready!" },
@@ -164,7 +164,7 @@ export default {
   'long.drama.fight.tense': [
     { id: 'nd.ft1', place: 'aside', turns: [
       { beat: "{a} finds {b} away from everybody. {a} keeps {a.posAdj} voice very low." },
-      { by: 'a', say: "I need you to stop talking about me." },
+      { by: 'a', say: "I need you to stop talking about me.", v: { calm: "I'd like you to stop talking about me. Politely asking.", cruel: "Keep my name out of your mouth." } },
       { by: 'b', say: "I don't know what you mean." },
       { by: 'a', say: "Yes, you do. You said I can't be trusted. Somebody told me word for word." },
       { by: 'b', say: "Then they got it wrong." },
@@ -186,7 +186,7 @@ export default {
   'long.drama.fight.rare': [
     { id: 'nd.fr1', place: 'public', turns: [
       { beat: "{a} is the calmest person in camp. Until {here}, this afternoon." },
-      { by: 'b', say: "Come on, it was a joke." },
+      { by: 'b', say: "Come on, it was a joke.", v: { goofy: "Come on, it was a joke! A funny one! I thought!", dry: "It was a joke. Comedy. You've heard of it." } },
       { by: 'a', say: "It wasn't funny. It hasn't been funny for days." },
       { by: 'b', say: "Whoa. Okay." },
       { by: 'a', say: "No. Don't 'okay' me. I've let it go every time. I'm not letting it go today." },
@@ -194,7 +194,7 @@ export default {
       { by: 'b', say: "I'm sorry. I didn't know it bothered you." },
       { by: 'a', say: "That's because I never said. I'm saying it now." },
       { by: 'a', conf: "I don't yell. I really don't. But everyone's got a limit, and I found mine.", v: { warm: "I hate fighting. I really do. I just couldn't smile through it anymore." } },
-      { by: 'b', conf: "{a} snapped at me. {a}. I didn't know that was possible. I guess I earned it." },
+      { by: 'b', conf: "{a} snapped at me. {a}. I didn't know that was possible. I guess I earned it.", v: { emotional: "{a} has never been mad at anyone. And it was me. I feel awful." } },
     ] },
   ],
   'long.drama.fight.any': [
@@ -207,13 +207,13 @@ export default {
       { by: 'b', say: "You started it." },
       { by: 'a', say: "I asked a question!" },
       { beat: "They glare at each other until somebody calls them both to help with dinner." },
-      { by: 'a', conf: "{b} and I can't be in the same place for five minutes. Everybody's noticed. Everybody's tired of it. So am I." },
+      { by: 'a', conf: "{b} and I can't be in the same place for five minutes. Everybody's noticed. Everybody's tired of it. So am I.", v: { cruel: "{b} is unbearable. Everybody knows it. I just say it out loud.", calm: "{b} and I don't mix. And it's getting worse." } },
     ] },
   ],
 
   'long.drama.dispute.any': [
     { id: 'nd.dp1', place: 'aside', turns: [
-      { by: 'a', say: "Can I say something about the way you're playing?" },
+      { by: 'a', say: "Can I say something about the way you're playing?", v: { blunt: "Your strategy is terrible. Let's talk.", warm: "Can I give you some advice? As a friend?", schemer: "A word about your game. For your own good." } },
       { by: 'b', say: "Can I stop you?" },
       { by: 'a', say: "You're telling everybody different things. People talk. They compare." },
       { by: 'b', say: "I'm keeping my options open." },
@@ -221,7 +221,7 @@ export default {
       { by: 'b', say: "If they're confused, they're not voting for me." },
       { by: 'a', say: "Or they're voting for you because they don't know where you are." },
       { by: 'b', conf: "{a} thinks there's one right way to play this. There isn't. There's my way and there's {a}'s way." },
-      { by: 'a', conf: "{b} is going to get both of us voted out. I need to decide how close I want to be standing when it happens." },
+      { by: 'a', conf: "{b} is going to get both of us voted out. I need to decide how close I want to be standing when it happens.", v: { anxious: "{b} is going to get us both voted out. I can feel it." } },
     ] },
     { id: 'nd.dp2', place: 'secret', when: { lost: true, sank: true }, turns: [
       { by: 'a', say: "We have to talk about tonight. It has to be {sank}." },
@@ -231,7 +231,7 @@ export default {
       { by: 'a', say: "I'd throw it away to win the next challenge." },
       { by: 'b', say: "And when it's you having the bad day?" },
       { by: 'a', say: "Then I hope I've been useful the rest of the time." },
-      { by: 'b', conf: "{a} wants to keep the strong ones. I want to keep the ones who'll actually vote with us. We can't both be right." },
+      { by: 'b', conf: "{a} wants to keep the strong ones. I want to keep the ones who'll actually vote with us. We can't both be right.", v: { competitive: "Strong or loyal? I want both. We can't have both.", nerdy: "It's a classic trade-off: strength versus loyalty. {a} is weighting it wrong." } },
     ] },
     { id: 'nd.dp3', place: 'aside', when: { voice: ['loud', 'blunt', 'tough'] }, turns: [
       { by: 'a', say: "Your plan is bad." },
@@ -247,7 +247,7 @@ export default {
   'long.drama.clash.any': [
     { id: 'nd.cl1', place: 'work', turns: [
       { beat: "Morning chores {here}. {a} has a plan. So does {b}." },
-      { by: 'a', say: "Okay. Two people on water, two on wood, and I'll do food." },
+      { by: 'a', say: "Okay. Two people on water, two on wood, and I'll do food.", v: { bossy: "Here's the plan. Two on water, two on wood. I'm on food. Go.", warm: "How about two of us on water, two on wood, and I'll do food?" } },
       { by: 'b', say: "Actually, I already told everybody: wood first, then water." },
       { by: 'a', say: "Why would you do wood first?" },
       { by: 'b', say: "Because it takes longer and it's cooler in the morning." },
@@ -255,17 +255,17 @@ export default {
       { by: 'b', say: "It makes perfect sense. You just didn't think of it." },
       { beat: "The rest of the team stands there holding buckets, waiting." },
       { by: 'a', conf: "Nobody voted {b} in charge. Nobody voted me in charge either. But at least I'm good at it.", v: { bossy: "Somebody has to run this place. It should be the person who's actually organised. Me." } },
-      { by: 'b', conf: "{a} wants to be the leader so badly. The team doesn't need a leader. It needs people to stop arguing about buckets." },
+      { by: 'b', conf: "{a} wants to be the leader so badly. The team doesn't need a leader. It needs people to stop arguing about buckets.", v: { dry: "We had a leadership crisis over buckets. This is the show now." } },
     ] },
     { id: 'nd.cl2', place: 'public', when: { lost: true }, turns: [
-      { by: 'a', say: "Okay, everybody. That can't happen again. Next time we listen to one person." },
+      { by: 'a', say: "Okay, everybody. That can't happen again. Next time we listen to one person.", v: { bossy: "Never again. Next time, everyone listens to me.", competitive: "We don't lose like that again. Ever." } },
       { by: 'b', say: "And let me guess. That person is you." },
       { by: 'a', say: "Do you have a better idea?" },
       { by: 'b', say: "I had a better idea during the challenge. Nobody could hear it over you." },
       { by: 'a', say: "Because I was trying to get us organised!" },
       { by: 'b', say: "You were trying to be in charge. There's a difference." },
       { by: 'a', conf: "If I don't lead, nobody does. And then we lose." },
-      { by: 'b', conf: "We lost with {a} leading. I'm just pointing that out." },
+      { by: 'b', conf: "We lost with {a} leading. I'm just pointing that out.", v: { dry: "{a} led us to a loss. Great leadership. Very inspiring.", cruel: "{a} led. We lost. Do the maths." } },
     ] },
   ],
   'long.drama.explode.any': [
@@ -279,10 +279,10 @@ export default {
       { beat: "{a} walks off. A long silence." },
       { by: 'b', say: "...I helped with dinner yesterday." },
       { by: 'a', conf: "I've been holding that in since we got here. It felt amazing. Now I feel kind of sick." },
-      { by: 'b', conf: "I didn't know {a} hated me that much. Now everybody knows. Great." },
+      { by: 'b', conf: "I didn't know {a} hated me that much. Now everybody knows. Great.", v: { emotional: "I'm shaking. I didn't know {a} hated me that much.", tough: "{a} wants to scream at me? Fine. I've been screamed at by worse." } },
     ] },
     { id: 'nd.ex2', place: 'aside', when: { voiceB: ['tough', 'loud', 'blunt', 'cruel'] }, turns: [
-      { by: 'a', say: "I'm going to say this once." },
+      { by: 'a', say: "I'm going to say this once.", v: { quiet: "I'm saying this once.", loud: "I'm only going to say this ONCE!", anxious: "Okay. I'm going to say something. Please let me finish." } },
       { by: 'b', say: "Here we go." },
       { by: 'a', say: "You've been pushing people around since we got here. Me. Everybody. And nobody says anything because they're scared of you." },
       { by: 'b', say: "And you're not scared?" },
@@ -309,20 +309,20 @@ export default {
       { by: 'a', say: "No! I can do it! I can do ONE thing!" },
       { beat: "It goes out again. {a} throws the stick into the bushes and screams." },
       { by: 'b', say: "Okay. Okay. I'm just going to sit here." },
-      { by: 'a', conf: "It wasn't the fire. It was the fire and the challenge and the vote and the food. The fire was just the last thing." },
+      { by: 'a', conf: "It wasn't the fire. It was the fire and the challenge and the vote and the food. The fire was just the last thing.", v: { tough: "I don't lose it. I lost it. Don't put that on TV." } },
     ] },
   ],
   'long.drama.intimidate.any': [
     { id: 'nd.in1', place: 'aside', turns: [
       { beat: "{a} sits down right next to {b} {here}. Too close." },
-      { by: 'b', say: "Can I help you?" },
+      { by: 'b', say: "Can I help you?", v: { dry: "Can I help you? Or are you just here to loom?", anxious: "Um. Hi. Can I... help you?" } },
       { by: 'a', say: "Just saying hi." },
       { by: 'b', say: "You've never said hi to me." },
       { by: 'a', say: "I'm saying it now. I'm also saying I know you were talking about me last night." },
       { by: 'b', say: "I wasn't..." },
       { by: 'a', say: "Sure. Have a nice day." },
       { beat: "{a} gets up and walks off. {b} doesn't move for a while." },
-      { by: 'b', conf: "{a} didn't threaten me. Not exactly. But I'm not going to sleep tonight." },
+      { by: 'b', conf: "{a} didn't threaten me. Not exactly. But I'm not going to sleep tonight.", v: { tough: "{a} tried to scare me. Cute.", dry: "{a} sat too close and said nothing. Very scary. I'm terrified. I'm a little terrified." } },
       { by: 'a', conf: "I didn't say anything mean. I just wanted {b} to know I'm paying attention." },
     ] },
     { id: 'nd.in2', place: 'work', when: { voice: ['tough', 'competitive', 'loud'] }, turns: [
@@ -339,13 +339,13 @@ export default {
   'long.drama.prank.well': [
     { id: 'nd.pw1', place: 'sleep', turns: [
       { beat: "Early morning in the {quarters}. {b} reaches for {b.posAdj} shoes." },
-      { by: 'b', say: "Why are my shoes full of sand?" },
+      { by: 'b', say: "Why are my shoes full of sand?", v: { loud: "WHY are my shoes full of SAND?!", dry: "Ah. Sand. In my shoes. How original." } },
       { by: 'a', say: "I have no idea what you're talking about." },
       { by: 'b', say: "You're laughing." },
       { by: 'a', say: "I'm laughing about something else." },
       { by: 'b', say: "...Okay, that's actually pretty good. Where's the rest of my stuff?" },
       { by: 'a', say: "Check the roof." },
-      { by: 'b', conf: "I'm going to get {a} back. Not today. But I'm going to get {a} back." },
+      { by: 'b', conf: "I'm going to get {a} back. Not today. But I'm going to get {a} back.", v: { schemer: "Revenge is a long game. {a} has no idea what's coming.", goofy: "I'm planning a prank so big {a} won't see it coming. Neither will I." } },
       { by: 'a', conf: "Everybody laughed. Even {b}. That's a good prank. Nobody got hurt and the camp needed something funny." },
     ] },
     { id: 'nd.pw2', place: 'public', when: { voice: ['goofy', 'chaotic', 'theatrical'] }, turns: [
@@ -362,7 +362,7 @@ export default {
   'long.drama.prank.badly': [
     { id: 'nd.pb1', place: 'public', turns: [
       { beat: "{a} hid a frog in {b}'s bag. {b} did not think it was funny." },
-      { by: 'b', say: "WHAT IS WRONG WITH YOU?" },
+      { by: 'b', say: "WHAT IS WRONG WITH YOU?", v: { cruel: "Are you an idiot? What is WRONG with you?", anxious: "Why would you do that?! I'm shaking!" } },
       { by: 'a', say: "It was a joke! It's a frog!" },
       { by: 'b', say: "I told you on the first day I'm scared of frogs!" },
       { by: 'a', say: "...Did you?" },
@@ -380,7 +380,7 @@ export default {
       { by: 'a', say: "From all that standing around. It really takes it out of you." },
       { by: 'b', move: 'pushback' },
       { by: 'a', say: "What? I said you must be tired." },
-      { by: 'b', conf: "{a} won't ever say it straight. It's always a little joke with a knife in it." },
+      { by: 'b', conf: "{a} won't ever say it straight. It's always a little joke with a knife in it.", v: { blunt: "{a} is passive-aggressive. I'd prefer just aggressive.", emotional: "Every little comment {a} makes hurts. Every single one." } },
       { by: 'a', conf: "I didn't say anything mean. Everyone just knew what I meant. That's different.", v: { dry: "I said one sentence. {b} heard the whole speech. That's {b}'s problem." } },
     ] },
     { id: 'nd.dg2', place: 'public', when: { voice: ['cruel', 'schemer', 'proud', 'dry'] }, turns: [
@@ -392,7 +392,7 @@ export default {
       { by: 'b', conf: "I try to do one nice thing and {a} turns it into a joke about me. Every time." },
     ] },
     { id: 'nd.dg3', place: 'public', when: { lost: true }, turns: [
-      { by: 'b', say: "We'll get them next time." },
+      { by: 'b', say: "We'll get them next time.", v: { warm: "Hey, we'll get them next time. Promise.", competitive: "Next time we crush them." } },
       { by: 'a', say: "We will. Especially if some of us figure out which way the finish line is." },
       { by: 'b', say: "That was one time." },
       { by: 'a', say: "I didn't say who." },
@@ -403,7 +403,7 @@ export default {
   'long.drama.nemesis.any': [
     { id: 'nd.nm1', place: 'public', turns: [
       { beat: "{a} and {b} end up at the same spot {here}. Again." },
-      { by: 'a', say: "Oh, great." },
+      { by: 'a', say: "Oh, great.", v: { dry: "Oh, wonderful. My favourite person.", loud: "Oh, GREAT. It's you.", cruel: "Ugh. You." } },
       { by: 'b', say: "I was here first." },
       { by: 'a', say: "You're always here first. You do it on purpose." },
       { by: 'b', say: "Yes. I wake up every morning and think, how can I ruin your day." },
@@ -411,7 +411,7 @@ export default {
       { by: 'c', say: "Can you two please not do this today?" },
       { by: 'a', say: "Tell {b}!" },
       { by: 'b', say: "Tell {a}!" },
-      { by: 'c', conf: "{a} and {b} have been at war since the first day. I don't even think they remember why. I just want to eat in peace." },
+      { by: 'c', conf: "{a} and {b} have been at war since the first day. I don't even think they remember why. I just want to eat in peace.", v: { goofy: "I'm selling tickets to the {a} and {b} show. Front row seats." } },
     ] },
     { id: 'nd.nm2', place: 'public', when: { third: false }, turns: [
       { by: 'a', say: "I just want you to know, the day you go home is going to be the best day of my life." },
@@ -419,14 +419,14 @@ export default {
       { by: 'a', say: "Great. Something we agree on." },
       { by: 'b', say: "The only thing." },
       { by: 'a', conf: "Everyone here knows I can't stand {b}. I don't hide it. Hiding it would be fake." },
-      { by: 'b', conf: "{a} isn't my rival. A rival is someone you respect. {a} is just loud." },
+      { by: 'b', conf: "{a} isn't my rival. A rival is someone you respect. {a} is just loud.", v: { calm: "{a} wants a rivalry. I'm not interested." } },
     ] },
   ],
 
   'long.drama.sorry.fight': [
     { id: 'nd.sf1', place: 'aside', turns: [
       { beat: "{a} finds {b} alone {here}. {a} doesn't sit down." },
-      { by: 'a', say: "Hey. About yesterday." },
+      { by: 'a', say: "Hey. About yesterday.", v: { anxious: "Um, hey. Can we talk? About yesterday?", tough: "Yesterday. We need to talk about it.", proud: "About yesterday. I'm going to say something I don't say often." } },
       { by: 'b', say: "What about it?" },
       { by: 'a', say: "I shouldn't have said what I said. I was angry, and you were there." },
       { by: 'b', say: "That's not really an apology." },
@@ -435,7 +435,7 @@ export default {
       { by: 'a', say: "Are we okay?" },
       { by: 'b', say: "We're getting there." },
       { by: 'a', conf: "Saying sorry is the worst. I'd rather do another challenge.", v: { proud: "I don't apologise. I just did. Nobody make a big deal about it.", warm: "I felt sick about it all night. I'm so glad I said something." } },
-      { by: 'b', conf: "{a} said sorry. I believe it. I'm also not going to forget it happened." },
+      { by: 'b', conf: "{a} said sorry. I believe it. I'm also not going to forget it happened.", v: { warm: "{a} apologised. I'm going to let it go. Mostly.", schemer: "An apology is nice. A vote is nicer. We'll see which one {a} gives me." } },
     ] },
     { id: 'nd.sf2', place: 'water', when: { voice: ['loud', 'tough', 'blunt', 'competitive'] }, turns: [
       { beat: "{a} sits down next to {b} {here} and doesn't say anything for a while." },
@@ -450,7 +450,7 @@ export default {
   ],
   'long.drama.sorry.meltdown': [
     { id: 'nd.sm1', place: 'aside', turns: [
-      { by: 'a', say: "So. You saw all that yesterday." },
+      { by: 'a', say: "So. You saw all that yesterday.", v: { dry: "So. My big performance yesterday. Reviews?", emotional: "I'm so embarrassed about yesterday. You saw everything." } },
       { by: 'b', say: "Everybody saw all that yesterday." },
       { by: 'a', say: "Yeah. I'm sorry. I wasn't okay, and I took it out on everybody." },
       { by: 'b', say: "You don't have to apologise for having a bad day." },
@@ -461,7 +461,7 @@ export default {
   ],
   'long.drama.sorry.bomb': [
     { id: 'nd.sb1', place: 'aside', turns: [
-      { by: 'a', say: "Can I talk to you? I said some things yesterday." },
+      { by: 'a', say: "Can I talk to you? I said some things yesterday.", v: { blunt: "I said some stuff yesterday. I was out of line.", proud: "I may have said some regrettable things yesterday." } },
       { by: 'b', say: "You did." },
       { by: 'a', say: "I didn't mean them. Well, I meant some of them. But not like that. Not in front of everyone." },
       { by: 'b', say: "That's a strange apology." },
@@ -473,13 +473,13 @@ export default {
   'long.drama.sorry.any': [
     { id: 'nd.sa1', place: 'water', turns: [
       { beat: "{a} walks down to {b} {here}." },
-      { by: 'a', say: "Do you have a minute?" },
+      { by: 'a', say: "Do you have a minute?", v: { warm: "Hey. Can we talk for a sec? I want to fix something.", dry: "Got a minute? I'm about to be mature. It's rare." } },
       { by: 'b', say: "I've got nothing but minutes." },
       { by: 'a', say: "Things have been weird between us. I think it's partly my fault." },
       { by: 'b', say: "Partly?" },
       { by: 'a', say: "Mostly. I'm sorry. I want to fix it." },
       { by: 'b', say: "Okay. Me too." },
-      { by: 'a', conf: "I don't need {b} to be my best friend. I just don't want {b} as an enemy." },
+      { by: 'a', conf: "I don't need {b} to be my best friend. I just don't want {b} as an enemy.", v: { schemer: "Peace with {b} costs me nothing. War with {b} costs me votes." } },
     ] },
     { id: 'nd.sa2', place: 'aside', when: { voice: ['warm', 'anxious', 'earnest', 'emotional'] }, turns: [
       { by: 'a', say: "I made you something." },
@@ -503,14 +503,14 @@ export default {
   'long.drama.thaw.any': [
     { id: 'nd.th1', place: 'work', turns: [
       { beat: "{a} and {b} get stuck on water duty together {here}. Neither of them chose it." },
-      { by: 'a', say: "I'll carry this one." },
+      { by: 'a', say: "I'll carry this one.", v: { tough: "Give me that one. I've got it.", warm: "Here, let me take that one." } },
       { by: 'b', say: "I can carry it." },
       { by: 'a', say: "I know you can. I'm just offering." },
       { by: 'b', say: "...Thanks." },
       { beat: "They walk for a bit." },
       { by: 'b', say: "You're less annoying when you're not talking." },
       { by: 'a', say: "You're less annoying when you're carrying the other bucket." },
-      { by: 'b', conf: "{a} and I aren't friends. But I don't want to throw something at {a} every time I see {a.obj} anymore. That's progress." },
+      { by: 'b', conf: "{a} and I aren't friends. But I don't want to throw something at {a} every time I see {a.obj} anymore. That's progress.", v: { dry: "{a} and I are now at 'tolerate'. Huge step." } },
     ] },
     { id: 'nd.th2', place: 'fire', when: { lastBoot: true }, turns: [
       { by: 'b', say: "Weird with {lastBoot} gone." },
@@ -523,7 +523,7 @@ export default {
       { by: 'a', conf: "{lastBoot} going home changed a lot. Turns out a lot of my problem with {b} was coming from {lastBoot}." },
     ] },
     { id: 'nd.th3', place: 'fire', when: { merged: true }, turns: [
-      { by: 'a', say: "Can I say something without you getting mad?" },
+      { by: 'a', say: "Can I say something without you getting mad?", v: { anxious: "Can I say something? Please don't get mad.", blunt: "I'm going to say something. Don't get mad." } },
       { by: 'b', say: "Probably not, but go ahead." },
       { by: 'a', say: "We're the last two from our side who still fight. Everybody else gave up. Maybe we should too." },
       { by: 'b', say: "...You want a truce?" },
@@ -534,7 +534,7 @@ export default {
   ],
   'long.drama.truce.any': [
     { id: 'nd.tr1', place: 'aside', turns: [
-      { by: 'a', say: "Can we stop this?" },
+      { by: 'a', say: "Can we stop this?", v: { calm: "Can we just stop? This isn't helping either of us.", dry: "Can we call a ceasefire? I'm exhausted." } },
       { by: 'b', say: "Stop what?" },
       { by: 'a', say: "Whatever this is between us. It's not getting either of us anywhere." },
       { by: 'b', say: "You started it." },
@@ -560,12 +560,12 @@ export default {
       { by: 'a', say: "I heard it twice." },
       { by: 'b', say: "{c} lost us that challenge!" },
       { beat: "{b} storms off to find {c}." },
-      { by: 'a', conf: "{c} never said it. But {b} was already thinking it. I just helped." },
+      { by: 'a', conf: "{c} never said it. But {b} was already thinking it. I just helped.", v: { chaotic: "Was that mean? Yes. Was it fun? Also yes." } },
     ] },
   ],
   'long.drama.paranoia.bold': [
     { id: 'nd.pa1', place: 'aside', turns: [
-      { by: 'a', say: "Are you working with somebody else?" },
+      { by: 'a', say: "Are you working with somebody else?", v: { loud: "Are you working with someone else?! Be honest!", anxious: "Are you... working with someone else? Please say no.", blunt: "Who else are you working with?" } },
       { by: 'b', say: "What? No. Where's this coming from?" },
       { by: 'a', say: "You were gone for an hour this morning." },
       { by: 'b', say: "I was getting water! You saw me get water!" },
@@ -573,12 +573,12 @@ export default {
       { by: 'b', say: "The well is far! I can't believe you're doing this." },
       { by: 'a', say: "I just need to know where you are." },
       { by: 'b', conf: "I've done nothing. Nothing! And now {a} thinks I'm a traitor. This is how alliances end." },
-      { by: 'a', conf: "{b} sounded honest. That's what worries me. Liars always sound honest." },
+      { by: 'a', conf: "{b} sounded honest. That's what worries me. Liars always sound honest.", v: { nerdy: "{b}'s story was consistent. Too consistent." } },
     ] },
   ],
   'long.drama.paranoia.quiet': [
     { id: 'nd.pq1', place: 'secret', turns: [
-      { by: 'a', say: "Can I tell you something and you don't freak out?" },
+      { by: 'a', say: "Can I tell you something and you don't freak out?", v: { anxious: "Can I tell you something? Don't freak out. I'm freaking out." } },
       { by: 'b', say: "That's a terrible way to start." },
       { by: 'a', say: "I think {target} is playing both sides." },
       { by: 'b', say: "{target}? Based on what?" },

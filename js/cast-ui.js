@@ -1432,6 +1432,7 @@ export function saveConfig() {
       return [a.key, { enabled, sources: sources.length ? sources : ['camp'] }];
     })),
     romance:     g('cfg-romance')?.value || 'enabled',
+    tdEdit:      g('cfg-td-edit')?.value || 'full',
     autoRewardChallenges: g('cfg-auto-reward')?.checked ?? false,
     replacementOnMedevac: g('cfg-replacement')?.checked ?? false,
     rewardSharing: g('cfg-reward-sharing')?.checked ?? false,
@@ -1690,6 +1691,7 @@ export function renderConfig() {
   updateCoachesUI();
   // Romance
   set('cfg-romance', seasonConfig.romance || 'enabled');
+  set('cfg-td-edit', seasonConfig.tdEdit || 'full');
   // Sync slider displays
   ['teams','merge','finale','jury','adv-expire'].forEach(name => updateSlider(name));
   renderTribeBuilder(); renderTribeSelect();

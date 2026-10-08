@@ -122,7 +122,8 @@ export function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScore
   gs.popularity[a] = (gs.popularity[a] || 0) + 2;
   gs.popularity[b] = (gs.popularity[b] || 0) + 2;
   if (phases && phaseKey) {
-    phases[phaseKey].push({
+    // a caller may hand over a fresh phases object (x-treme-torture.js): the phase list is made on first use
+    (phases[phaseKey] ||= []).push({
       type: 'soShowmance', phase: phaseKey, players: [a, b],
       text: sparkText, personalScores: { [a]: 0.5, [b]: 0.5 },
       badge: 'ROMANCE SPARK', badgeClass: 'gold'

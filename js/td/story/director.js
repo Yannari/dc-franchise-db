@@ -22,7 +22,7 @@
 // Everything the engine wrote stays in ep.campEvents, unchanged: consequences,
 // badges and every other reader are untouched. Viewers read the list through
 // feed.js campFeed().
-import { gs, players, seasonConfig } from '../../core.js';
+import { gs, players, seasonConfig, TWIST_CATALOG } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { kinshipBetween } from '../../core.js';
 import { pronouns, pStats as pStatsOf, threatScore } from '../../players.js';
@@ -38,6 +38,7 @@ import { needOf, psycheCast } from './psyche.js';
 import { runnerDue } from './runners.js';
 import { recordThreads, threadDue } from './threads.js';
 import { writePreviously } from './previously.js';
+import { chalMoments } from './chalmoments.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf } from './places.js';
 
@@ -974,6 +975,34 @@ export function airTdEpisode(ep) {
       // the vote story's own beats first, so the plan scenes can call back to them
       const editOn = (seasonConfig?.tdEdit || 'full') !== 'off';
       if (editOn && talk) list.push(...arcBeats(ep, camp, members, phase, talk, () => n++, list, [], 'vote'));
+      // the challenge, brought back to camp (chalmoments.js): its biggest moments between people here
+      if (editOn && phase === 'post') {
+        const W = { betray: 5, sabotage: 5, saved: 4, spark: 4, clash: 4, quit: 3, taunt: 3, comeback: 3, hurt: 3, pact: 3, panic: 2, wipeout: 2, comedy: 2, bond: 2 };
+        const tw = (ep.twists || []).find(x => TWIST_CATALOG.some(c => c.id === (x.catalogId || x.type) && c.chalStyle));
+        const chal = (tw && TWIST_CATALOG.find(c => c.id === (tw.catalogId || tw.type))?.name) || ep.challengeLabel || 'the challenge';
+        const seenPair = new Set();
+        const picks = chalMoments(ep).filter(m => m.players.every(p => members.includes(p)))
+          .sort((x, y) => (W[y.kind] + (y.players.length >= 2 ? 1 : 0)) - (W[x.kind] + (x.players.length >= 2 ? 1 : 0)));
+        let took = 0;
+        for (const m of picks) {
+          if (took >= (members.length >= 8 ? 3 : 2)) break;
+          const a = m.players[0];
+          const b = m.players[1] || members.filter(x => x !== a).sort((x, y) => getBond(a, y) - getBond(a, x) || x.localeCompare(y))[0];
+          if (!b) continue;
+          const key = [a, b].sort().join('|');
+          if (seenPair.has(key) || seenPair.has(m.kind + a)) continue;
+          const who = { a, b };
+          // a physical line (a hand held over a drop, a bandaged ankle) only after a physical challenge
+          const style = (tw && TWIST_CATALOG.find(c => c.id === (tw.catalogId || tw.type))?.chalStyle) || 'physical';
+          const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), pair: true, two: m.players.length >= 2, bLikesA: getBond(b, a) >= 2, bHatesA: getBond(b, a) <= -2,
+            physical: ['physical', 'endurance', 'adventure', 'hunt', 'chaos'].includes(style) };
+          const w = writeStory(`chm.${m.kind}`, 'any', who, { chal }, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('afternoon'), unique: 'soft' });
+          if (!w) continue;
+          seenPair.add(key); seenPair.add(m.kind + a); took++;
+          list.push({ at: 0.25 + took * 0.01, item: { story: true, kind: `chm.${m.kind}`, storyType: 'challenge', step: m.kind, players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
+            scene: { kind: 'chm', who, data: { chal }, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: m.badge, badgeClass: '', why: [`At ${chal}: ${m.badge} (${m.players.join(', ')}).`] } });
+        }
+      }
       // a thread carried from an earlier episode (threads.js): one scene when one is due
       if (editOn && phase === 'pre' && ep.num > 1) {
         const td = threadDue(ep, members);

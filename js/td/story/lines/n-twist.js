@@ -26,7 +26,7 @@ export default {
       O('d', "Mine haven't stopped talking about the vote."),
       { by: 'a', say: "So what's the catch?" },
       { by: 'b', say: "There's always a catch." },
-      { by: 'b', conf: "{a} is nice. Nice is dangerous here. You don't know what nice is hiding." },
+      { by: 'b', conf: "{a} is nice, and nice is dangerous here, because you never know what nice is hiding." },
     ] },
     { id: 'nz.m2', turns: [
       { beat: "Three boxes on a table. {a} and {b} stare at them, not at each other." },
@@ -35,17 +35,17 @@ export default {
       { by: 'b', say: "Because I'll tell you mine." },
       { by: 'a', move: 'suspicious' },
       O('c', "Nobody's telling anybody anything. Let's be honest."),
-      { by: 'b', say: "Fine. Then let's just say we all took the kit. For our teams." },
+      { by: 'b', say: "Fine, then let's just say we all took the kit, for our teams." },
       { by: 'a', say: "Sure. We all took the kit." },
-      { by: 'a', conf: "Everybody here is going to say they took the kit. Somebody here is lying. Maybe me." },
+      { by: 'a', conf: "Everybody here is going to say they took the kit, and somebody here is lying. Maybe me." },
     ] },
     { id: 'nz.m3', when: { third: true }, turns: [
       { beat: "{a}, {b} and {c} meet at the summit. Each of them came from a different camp." },
       { by: 'c', say: "This is weird, right? Talking to the enemy." },
       { by: 'a', say: "You're not the enemy. Yet." },
-      { by: 'b', say: "We could make a deal. Right here. Nobody would know." },
+      { by: 'b', say: "We could make a deal right here, and nobody would know." },
       { by: 'c', move: 'stall' },
-      O('d', "A deal between four people from four teams? That's insane. I love it."),
+      O('d', "A deal between four people from four teams? That's insane, I love it."),
       { by: 'a', say: "Let's just say if we're ever on the same side, we remember today." },
       { by: 'b', move: 'agree' },
       { by: 'c', conf: "We just made the vaguest deal in history. I still think it might matter at the merge." },
@@ -56,14 +56,14 @@ export default {
       { by: 'a', conf: "Everybody back at camp is hungry and cold. I'm not walking back in there with something in my pocket and nothing in my hands. Kit." },
     ] },
     { id: 'nz.k5', when: { voice: ['tough', 'blunt', 'earnest', 'bossy'] }, turns: [
-      { by: 'a', conf: "Team first. That's it. That's the whole reason. Kit." },
+      { by: 'a', conf: "Team first, that's the whole reason. I took the kit." },
     ] },
     { id: 'nz.k1', turns: [
-      { by: 'a', conf: "The totem was right there. For me. Just for me." },
+      { by: 'a', conf: "The totem was right there, just for me." },
       { by: 'a', conf: "But my team's been sleeping in the rain. I'm taking the kit. I want to walk back into camp a hero, not a liar." },
     ] },
     { id: 'nz.k2', when: { voice: ['warm', 'earnest', 'emotional'] }, turns: [
-      { by: 'a', conf: "I didn't even think about it, honestly. The kit. For the team. That's who I am." },
+      { by: 'a', conf: "I didn't even think about it, honestly, I took the kit for the team, because that's who I am." },
     ] },
     { id: 'nz.k3', when: { voice: ['schemer', 'calm', 'competitive'] }, turns: [
       { by: 'a', conf: "The totem helps me tonight. The kit helps me every night after, because the team owes me. Easy choice." },
@@ -71,7 +71,7 @@ export default {
   ],
   'twist.summit.choose.clue': [
     { id: 'nz.c3', turns: [
-      { by: 'a', conf: "The totem is too obvious. Everybody would know. A clue? A clue is quiet." },
+      { by: 'a', conf: "The totem is too obvious, everybody would know, but a clue is quiet." },
       { by: 'a', conf: "Now I just have to find the thing before anybody notices I'm looking." },
     ] },
     { id: 'nz.c4', when: { voice: ['anxious', 'warm', 'earnest'] }, turns: [
@@ -85,26 +85,26 @@ export default {
       { by: 'a', conf: "If it leads to an idol, I'm the most dangerous person on my team. If it doesn't, nothing happened." },
     ] },
     { id: 'nz.c2', when: { voice: ['nerdy', 'schemer', 'calm', 'dry'] }, turns: [
-      { by: 'a', conf: "The kit is a nice gesture. The totem is a target on your back. The clue is information. I'll always take information." },
+      { by: 'a', conf: "The kit is a nice gesture and the totem puts a target on your back, so I took the clue, because I'll always take information." },
     ] },
   ],
   'twist.summit.choose.totem': [
     { id: 'nz.t4', turns: [
-      { by: 'a', conf: "I keep hearing my name at camp. So the totem it is. My team can be mad at me in person. Next week." },
+      { by: 'a', conf: "I keep hearing my name at camp, so the totem it is, and my team can be mad at me in person next week." },
     ] },
     { id: 'nz.t5', when: { voice: ['schemer', 'calm', 'dry'] }, turns: [
-      { by: 'a', conf: "Nobody will ever know what I took. That's the beauty of it. Totem." },
+      { by: 'a', conf: "Nobody will ever know I took the totem, and that's the beauty of it." },
     ] },
     { id: 'nz.t1', turns: [
       { by: 'a', conf: "I took the totem. I'm not going to apologise for it." },
       { by: 'a', conf: "My team is going to be annoyed. My team can be annoyed. I'm still going to be here next week." },
     ] },
     { id: 'nz.t2', when: { voice: ['anxious', 'warm', 'emotional', 'earnest'] }, turns: [
-      { by: 'a', conf: "I feel sick. I took the totem. I don't even know why. I panicked." },
+      { by: 'a', conf: "I feel sick, I took the totem and I don't even know why, I just panicked." },
       { by: 'a', conf: "Now I have to go back there and look everyone in the eye." },
     ] },
     { id: 'nz.t3', when: { voice: ['cruel', 'proud', 'competitive', 'loud'] }, turns: [
-      { by: 'a', conf: "The totem. Obviously. I didn't come here to bring my team a cooking pot." },
+      { by: 'a', conf: "The totem, obviously, I didn't come here to bring my team a cooking pot." },
     ] },
   ],
 
@@ -124,7 +124,7 @@ export default {
       { by: 'a', say: "Of course I did. What did you think I'd bring?" },
       O('d', "Honestly? Nothing."),
       { by: 'b', move: 'impressed' },
-      { by: 'c', conf: "{a} could have taken something just for {a.ref}. {a} didn't. I'm not going to forget that." },
+      { by: 'c', conf: "{a} could have taken something just for {a.ref}, and {a} didn't, and I'm not going to forget that." },
     ] },
   ],
   'twist.summit.back.found': [
@@ -138,7 +138,7 @@ export default {
     ] },
     { id: 'nz.bf1', turns: [
       { by: 'b', say: "So? What did you get?" },
-      { by: 'a', say: "Nothing. It was a trick. Just a talk and a long walk." },
+      { by: 'a', say: "Nothing, it was a trick, just a talk and a really long walk." },
       { by: 'c', move: 'suspicious' },
       { by: 'a', say: "I swear. Nothing." },
       O('d', "That's weird. Why send someone just to talk?"),
@@ -148,7 +148,7 @@ export default {
   'twist.summit.back.empty': [
     { id: 'nz.be2', turns: [
       { by: 'b', say: "So? What was it?" },
-      { by: 'a', say: "Honestly? Nothing. I picked wrong." },
+      { by: 'a', say: "Honestly? Nothing, I picked wrong." },
       { by: 'c', move: 'sad' },
       O('d', "So no supplies?"),
       { by: 'a', say: "No supplies. I'm sorry." },
@@ -157,7 +157,7 @@ export default {
     ] },
     { id: 'nz.be1', turns: [
       { by: 'b', say: "Well? What happened?" },
-      { by: 'a', say: "I took a clue. I looked. I didn't find anything." },
+      { by: 'a', say: "I took a clue and I looked, but I didn't find anything." },
       { by: 'c', say: "A clue? Not the kit?" },
       { by: 'a', say: "I thought I could find us something better." },
       { by: 'c', move: 'agree.reluctant' },
@@ -176,7 +176,7 @@ export default {
     ] },
     { id: 'nz.bt1', turns: [
       { by: 'b', say: "Hey! How'd it go?" },
-      { by: 'a', say: "It was nothing. A bunch of boxes. They were all empty." },
+      { by: 'a', say: "It was nothing, just a bunch of boxes, and they were all empty." },
       { by: 'c', say: "All of them?" },
       { by: 'a', say: "All of them." },
       { by: 'c', move: 'suspicious' },
@@ -187,7 +187,7 @@ export default {
   'twist.summit.back.totem-brag': [
     { id: 'nz.bb1', turns: [
       { by: 'b', say: "So what did you bring us?" },
-      { by: 'a', say: "Me. I brought you me, safe. I took the totem." },
+      { by: 'a', say: "Me. I brought you me, safe, because I took the totem." },
       { by: 'c', move: 'angry' },
       { by: 'a', say: "Oh, come on. Any of you would have done the same thing." },
       { by: 'b', move: 'pushback' },
@@ -208,9 +208,9 @@ export default {
   'twist.summit.back.totem-slip': [
     { id: 'nz.bs1', turns: [
       { by: 'b', say: "What did you get? Be honest." },
-      { by: 'a', say: "I... nothing. Okay. Not nothing." },
+      { by: 'a', say: "I... nothing. Okay, not nothing." },
       { by: 'c', say: "What does that mean?" },
-      { by: 'a', say: "I took the totem. I'm sorry. I panicked." },
+      { by: 'a', say: "I took the totem. I'm sorry, I panicked." },
       { by: 'b', move: 'angry' },
       { by: 'a', move: 'apologize' },
       O('d', "Wow."),

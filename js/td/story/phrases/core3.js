@@ -61,7 +61,7 @@ export default {
   // hello
   greet: {
     any: ["Hey!", "Hi.", "Hey there.", "Morning.", "Oh, hey.", "Hi, I'm {by}."],
-    dry: ["Hello. I'm thrilled. Can't you tell?", "Oh. It's you. Hi."],
+    dry: ["Hello. I'm thrilled to be here, can't you tell?", "Oh, it's you. Hi."],
     loud: ["HEY! What's up?!", "There they are!"],
     warm: ["Hi! It's so nice to meet you!", "Hey you! How are you doing?"],
     blunt: ["Hey.", "Hi. {by}."],
@@ -77,14 +77,14 @@ export default {
   },
   thanks: {
     any: ["Thanks.", "Thank you. Really.", "I owe you one.", "Thanks for that.", "You didn't have to do that."],
-    dry: ["Thank you. I'm touched. Visibly.", "Wow. A nice thing. Thanks."],
+    dry: ["Thank you, I'm actually touched.", "Wow, somebody did something nice. Thanks."],
     loud: ["THANK YOU! You're the best!", "You legend!"],
     warm: ["Thank you so much. You have no idea.", "That means everything to me."],
     blunt: ["Thanks.", "Appreciate it."],
     theatrical: ["My hero!", "I'll never forget this!"],
     anxious: ["Oh! Thank you. Sorry. Thank you.", "You didn't have to. Thanks."],
     competitive: ["Thanks. I'll pay you back.", "Good. I needed that."],
-    schemer: ["I won't forget this.", "Thank you. Really. I mean it."],
+    schemer: ["I won't forget this.", "Thank you, really, I mean it."],
     tough: ["Thanks.", "...Thanks."],
     emotional: ["You're going to make me cry! Thank you!"],
     proud: ["I suppose I appreciate it.", "Thank you. That was the right thing to do."],
@@ -95,7 +95,7 @@ export default {
   // sorry
   apologize: {
     any: ["I'm sorry.", "My bad.", "I shouldn't have said that.", "I messed up.", "That was out of line.", "I didn't mean it like that."],
-    dry: ["I'm sorry. Write it down, it won't happen often.", "Fine. I was wrong. Once."],
+    dry: ["I'm sorry. Write it down, it won't happen often.", "Fine, I was wrong. Once."],
     loud: ["I'm SORRY, okay? I'm sorry!", "Okay! I'm sorry! I get it!"],
     warm: ["I'm so sorry. I feel terrible.", "I never wanted to hurt you."],
     blunt: ["I was wrong. Sorry.", "That was on me."],
@@ -130,7 +130,7 @@ export default {
   // snapping
   angry: {
     any: ["I'm done.", "Unbelievable.", "Are you serious right now?", "Don't talk to me.", "I can't believe this."],
-    dry: ["Wonderful. Just wonderful.", "I'm calm. I'm extremely calm. Can't you tell?"],
+    dry: ["Wonderful. Just wonderful.", "I'm calm, I'm extremely calm, can't you tell?"],
     loud: ["I am SO sick of this!", "UGH!", "That's IT!"],
     warm: ["I'm usually patient. I'm not feeling patient.", "That really hurt my feelings."],
     blunt: ["You're making me angry.", "Stop. Now."],

@@ -113,7 +113,7 @@ export default {
       { by: 'b', say: "Are you okay?" },
       { by: 'a', say: "DON'T talk to me!" },
       { by: 'a', conf: "Was it about the log? No, it was about everything, and the log just happened to be there." },
-      { by: 'b', conf: "{a} has a temper like a firework. You don't know when it's going off, but you know it's going off.", v: { anxious: "I'm scared of {a}. I'm going to stay on the other side of camp.", dry: "{a} is a smoke alarm. It goes off for toast." } },
+      { by: 'b', conf: "{a} has a temper like a firework. You don't know when it's going off, but you know it's going off.", v: { anxious: "I'm scared of {a}. I'm going to stay on the other side of camp.", dry: "{a} blows up over literally anything, so you never know what's going to set {a.obj} off." } },
     ] },
     { id: 'nd.fe2', place: 'work', turns: [
       { beat: "{a} and {b} are supposed to be fixing the {quarters} together {here}." },
@@ -213,7 +213,7 @@ export default {
 
   'long.drama.dispute.any': [
     { id: 'nd.dp1', place: 'aside', turns: [
-      { by: 'a', say: "Can I say something about the way you're playing?", v: { blunt: "Your strategy is terrible. Let's talk.", warm: "Can I give you some advice? As a friend?", schemer: "A word about your game. For your own good." } },
+      { by: 'a', say: "Can I say something about the way you're playing?", v: { blunt: "Your strategy is terrible. Let's talk.", warm: "Can I give you some advice? As a friend?", schemer: "Can I tell you something about how you're playing? I'm saying it because I like you." } },
       { by: 'b', say: "Can I stop you?" },
       { by: 'a', say: "You're telling everybody different things, and people talk, you know. They compare notes." },
       { by: 'b', say: "I'm keeping my options open." },
@@ -345,7 +345,7 @@ export default {
       { by: 'a', say: "I'm laughing about something else." },
       { by: 'b', say: "...Okay, that's actually pretty good. Where's the rest of my stuff?" },
       { by: 'a', say: "Check the roof." },
-      { by: 'b', conf: "I'm going to get {a} back. Maybe not today, but I'm going to get {a} back.", v: { schemer: "Revenge is a long game. {a} has no idea what's coming.", goofy: "I'm planning a prank so big {a} won't see it coming. Neither will I." } },
+      { by: 'b', conf: "I'm going to get {a} back. Maybe not today, but I'm going to get {a} back.", v: { schemer: "I'm getting {a} back for this, and {a} has no idea it's coming.", goofy: "I'm planning a prank so big {a} won't see it coming. Neither will I." } },
       { by: 'a', conf: "Everybody laughed, even {b}, so that's a good prank, because nobody got hurt and the camp really needed something funny." },
     ] },
     { id: 'nd.pw2', place: 'public', when: { voice: ['goofy', 'chaotic', 'theatrical'] }, turns: [

@@ -147,7 +147,7 @@ export default {
       { by: 'a', say: "That's the whole trick. Look calm, vote with the group, go to bed." },
       { by: 'b', say: "And if the group changes its mind?" },
       { by: 'a', say: "Then I find out first. That's why I'm talking to you." },
-      { by: 'a', conf: "I don't need to run the vote. I just need to know where it's going before it gets there.", v: { schemer: "I don't need to lead the vote. I need to know it first.", nerdy: "Information beats leadership. Always." } },
+      { by: 'a', conf: "I don't need to run the vote. I just need to know where it's going before it gets there.", v: { schemer: "I don't need to lead the vote. I need to know it first.", nerdy: "I'd rather know what's going on than be the one running it." } },
     ] },
   ],
   'long.talk.approach.outside': [
@@ -445,7 +445,7 @@ export default {
       { by: 'a', say: "Don't. I know." },
       { by: 'b', say: "...It wasn't personal." },
       { by: 'a', say: "It's my name. It's always personal." },
-      { by: 'a', conf: "Now I know. And {b} knows I know. Every conversation we have from now on is going to be very interesting.", v: { schemer: "{b} owes me now. Guilt is a great currency.", tough: "{b} made a choice. Now {b} gets to live with it." } },
+      { by: 'a', conf: "Now I know. And {b} knows I know. Every conversation we have from now on is going to be very interesting.", v: { schemer: "{b} feels guilty now, and that means {b} owes me.", tough: "{b} made a choice. Now {b} gets to live with it." } },
     ] },
     { id: 'nk.ff2', place: 'aside', when: { voice: ['loud', 'tough', 'blunt'] }, turns: [
       { by: 'a', say: "Hey. I know it was you." },

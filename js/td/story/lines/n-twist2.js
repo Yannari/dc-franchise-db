@@ -34,27 +34,27 @@ export default {
   ],
   'twist.journey.meet.deal': [
     { id: 'ni.jd1', turns: [
-      { by: 'a', say: "Okay. What if we both just pick the safe option? Neither of us loses anything." },
+      { by: 'a', say: "Okay, what if we both just pick the safe option, so neither of us loses anything?" },
       { by: 'b', move: 'suspicious' },
-      { by: 'a', say: "I'm serious. We both go back safe. Nobody risks a thing." },
+      { by: 'a', say: "I'm serious, we both go back safe and nobody risks a thing." },
       { by: 'c', move: 'agree', opt: true },
       { by: 'b', move: 'agree.reluctant' },
       { by: 'b', conf: "We made a deal on the journey. Neither of us went for anything. Now I owe {a}, and {a} owes me." },
     ] },
   ],
   'twist.journey.result.safe': [
-    { id: 'ni.r1', turns: [{ by: 'a', conf: "I came back with nothing. No advantage, nothing lost. Honestly? Nothing is fine." }] },
+    { id: 'ni.r1', turns: [{ by: 'a', conf: "I came back with nothing, no advantage and nothing lost, and honestly? Nothing is fine." }] },
     { id: 'ni.r2', turns: [{ by: 'a', conf: "I played it safe on the journey. Some people will call that boring. I call it still being here." }] },
   ],
   'twist.journey.result.deal': [
     { id: 'ni.r3', turns: [{ by: 'a', conf: "We made a deal out there. We both played safe. That's a promise I'm going to remember at the merge." }] },
   ],
   'twist.journey.result.advantage': [
-    { id: 'ni.r4', turns: [{ by: 'a', conf: "I came back with an advantage. Nobody at camp gets to know that. Nobody." }] },
-    { id: 'ni.r5', when: { voice: ['loud', 'theatrical', 'proud', 'competitive'] }, turns: [{ by: 'a', conf: "I took the risk and it paid off. I want to scream. I'm going to whisper instead." }] },
+    { id: 'ni.r4', turns: [{ by: 'a', conf: "I came back with an advantage, and nobody at camp gets to know that, nobody." }] },
+    { id: 'ni.r5', when: { voice: ['loud', 'theatrical', 'proud', 'competitive'] }, turns: [{ by: 'a', conf: "I took the risk and it paid off, and I want to scream, but I'm going to whisper instead." }] },
   ],
   'twist.journey.result.lostvote': [
-    { id: 'ni.r6', turns: [{ by: 'a', conf: "I lost my vote. My vote. On a journey I didn't even ask to go on." }, { by: 'a', move: 'angry', asConf: true }] },
+    { id: 'ni.r6', turns: [{ by: 'a', conf: "I lost my vote, my actual vote, on a journey I didn't even ask to go on." }, { by: 'a', move: 'angry', asConf: true }] },
     { id: 'ni.r7', when: { voice: ['anxious', 'emotional', 'warm'] }, turns: [{ by: 'a', conf: "I gambled and I lost my vote. If they come for me now, I can't even vote back." }, { by: 'a', move: 'worry', asConf: true }] },
   ],
 
@@ -104,20 +104,20 @@ export default {
     { id: 'ni.s2', turns: [
       { by: 'b', say: "Well. That's not good." },
       { by: 'a', say: "It's terrible. Who do I even talk to over there?" },
-      { by: 'b', say: "Make friends. Fast. And don't trust any of them." },
+      { by: 'b', say: "Make friends fast, and don't trust any of them." },
       { by: 'a', move: 'agree.reluctant' },
       { by: 'b', conf: "{a} and I had a plan. The plan just got split down the middle." },
     ] },
   ],
 
   'twist.wager.declined': [
-    { id: 'ni.w1', turns: [{ by: 'a', conf: "Bet my idol on a challenge? No thank you. I'm keeping what I've got." }] },
+    { id: 'ni.w1', turns: [{ by: 'a', conf: "Bet my idol on a challenge? No thank you, I'm keeping what I've got." }] },
     { id: 'ni.w2', when: { voice: ['loud', 'competitive', 'proud'] }, turns: [{ by: 'a', conf: "I wanted to take it. I really did. But an idol in my pocket is worth more than a maybe." }] },
   ],
   'twist.wager.won': [
     { id: 'ni.w3', turns: [{ by: 'a', conf: "I bet my idol and I won. It's stronger now. Somebody is going to have a very bad night." }, { by: 'a', move: 'excited', asConf: true }] },
   ],
   'twist.wager.lost': [
-    { id: 'ni.w4', turns: [{ by: 'a', conf: "I bet my idol. I lost it. I lost my idol." }, { by: 'a', move: 'sad', asConf: true }] },
+    { id: 'ni.w4', turns: [{ by: 'a', conf: "I bet my idol and I lost it. I actually lost my idol." }, { by: 'a', move: 'sad', asConf: true }] },
   ],
 };

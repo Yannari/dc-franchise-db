@@ -267,7 +267,7 @@ export default {
     { id: 'nw.o4', place: 'aside', when: { voice: ['schemer', 'calm', 'dry', 'competitive', 'proud'] }, turns: [
       { by: 'a', say: "{target} has been running around all afternoon." },
       { by: 'b', say: "Scrambling?" },
-      { by: 'a', say: "Scrambling. Which is how you know {target} is going home." },
+      { by: 'a', say: "Yeah, scrambling, which pretty much tells you {target} is going home." },
       { by: 'b', say: "What if {target} is scrambling against somebody else?" },
       { by: 'a', say: "Then that somebody else should be worried. Not me." },
       { by: 'a', conf: "Everybody's on {target}. I'm going to sleep great tonight." },

@@ -66,3 +66,20 @@ almost." A confessional can contradict what the speaker just said in the scene. 
 TD camp scenes run median 4 spoken lines (p90 13); DC median 8 (p90 18). The long scenes are the turning
 points: a betrayal confronted, a plan made, an alliance cracking. A quick cut of 1–3 lines between them is
 normal and good.
+
+## Speech flows (the user, 2026-10-08)
+
+People don't talk in strings of short sentences. "I'm not supposed to like anyone here. I like {a}.
+This is bad. This is very bad." reads like a robot; the person says "I know... I promised myself I
+wouldn't fall for anyone here, but I really like {a}. Oh, this is very bad."
+
+- Join thoughts with *but*, *and*, *so*, *because*; let people trail off ("I know..."), restart, hedge
+  ("I mean", "honestly"; "like" for teens).
+- No punchline sentence after every thought, no aphorism to close a line ("Information beats
+  leadership. Always."), no clever metaphor nobody says out loud ("a smoke alarm that goes off for toast").
+- Nothing written-sounding: "I'd like to talk before...", "A word about your game", "worth your while".
+- Short bursts are right where people really talk that way: shock at the reading, a host's patter, an
+  anxious stammer, a shout mid-fight.
+
+tests/td-story.test.js checks it: a line of three or more sentences averaging under six words is choppy;
+fewer than 4% of all lines may be, and no file over 12% (the reading excepted).

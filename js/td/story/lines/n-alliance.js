@@ -22,7 +22,7 @@ export default {
   'long.alliance.form.pitch': [
     { id: 'na.p1', place: 'water', when: { third: false, lost: true, sank: true }, turns: [
       { beat: "After the challenge. {a} finds {b} {here}, rinsing off." },
-      { by: 'a', say: "Hey. Can I talk to you before everyone starts talking to everyone?", v: { anxious: "Hey, um, can I talk to you before everyone else does?", schemer: "Got a second? I'd like to talk before the whole camp starts whispering.", loud: "Hey, you! Come here before everyone starts plotting!", teen: "Hey, can I talk to you real quick? Before everybody starts scheming?" } },
+      { by: 'a', say: "Hey. Can I talk to you before everyone starts talking to everyone?", v: { anxious: "Hey, um, can I talk to you before everyone else does?", schemer: "Hey, got a sec? I want to talk to you before everybody starts whispering.", loud: "Hey, you! Come here before everyone starts plotting!", teen: "Hey, can I talk to you real quick? Before everybody starts scheming?" } },
       { by: 'b', say: "About tonight?" },
       { by: 'a', say: "Yeah. People are going to say {sank}, because {sank} had a really bad day." },
       { by: 'b', say: "That's what I was thinking too." },
@@ -437,7 +437,7 @@ export default {
       { by: 'a', say: "I do. I just want to keep trusting you." },
       { by: 'b', say: "Then stop following me around." },
       { by: 'a', conf: "{b} didn't answer the question. People with nothing to hide answer the question." },
-      { by: 'b', conf: "Every alliance ends up with one paranoid person. Ours is {a}.", v: { dry: "{a} is our alliance's smoke alarm. It goes off for toast." } },
+      { by: 'b', conf: "Every alliance ends up with one paranoid person. Ours is {a}.", v: { dry: "Every alliance has one person who panics over nothing, and ours is {a}." } },
     ] },
     { id: 'na.k2', place: 'secret', when: { lastBoot: true, votedB: 'boot' }, turns: [
       { by: 'a', say: "Can I ask you about the vote?", v: { blunt: "We need to talk about the vote.", calm: "Quick question about last night." } },

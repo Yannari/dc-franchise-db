@@ -104,11 +104,31 @@ describe('td story pools', () => {
     for (const [, e] of all) for (const t of e.turns) for (const re of banned) expect(re.test(t.say || t.conf || ''), `${e.id}: ${t.say || t.conf}`).toBe(false);
   });
 
+  // The user, 2026-10-08: "I'm not supposed to like anyone here. I like {a}. This is bad." reads like a
+  // robot; real speech joins its thoughts ("I know... I promised myself I wouldn't fall for anyone here,
+  // but I really like {a}"). A line of 3+ sentences averaging under six words is choppy; shock, a host's
+  // patter and a stammer can be, so the cap is a share, not a ban.
+  it('talks in connected sentences, not strings of short ones', () => {
+    const choppy = x => { const t = x.split(/(?<=[.!?])\s+/).filter(Boolean); return t.length >= 3 && x.split(/\s+/).length / t.length < 6; };
+    const byFile = {};
+    let n = 0, bad = 0;
+    for (const [, e] of all) for (const t of e.turns) for (const x of [t.say, t.conf, ...Object.values(t.v || {})].filter(Boolean)) {
+      const f = e.id.split('.')[0];
+      (byFile[f] ||= [0, 0])[0]++; n++;
+      if (choppy(x)) { byFile[f][1]++; bad++; }
+    }
+    expect(bad / n, `${bad} of ${n} lines are choppy`).toBeLessThan(0.04);
+    // the reading (nr: 'What? No. No, that's not right.') is shock, where short bursts are the point
+    for (const [f, [m, b]] of Object.entries(byFile)) if (m >= 40 && f !== 'nr') expect(b / m, `${f}: ${b} of ${m} choppy`).toBeLessThan(0.12);
+  });
+
   // The rewrite's voice (docs/td-dialogue-style.md): plain, reactive speech. These are the tics the
   // first pass was full of — aphorisms, epigram ping-pong, the narrator being clever in a beat.
   it('writes the rewritten pools without the old tics', () => {
     const TICS = [/\bout here,/i, /why not both/i, /that'?s the game\b/i, /\bnot an? [a-z]+\. it'?s an? /i, /it is not going well/i,
-      /neither of them moves/i, /that'?s an answer too/i, /\bthe thing about\b/i, /\bin this game, you\b/i, /some people .{0,20}, some people/i];
+      /neither of them moves/i, /that'?s an answer too/i, /\bthe thing about\b/i, /\bin this game, you\b/i, /some people .{0,20}, some people/i,
+      // written, not spoken (the user, 2026-10-08: "nobody talks like that")
+      /\bI'd like to talk\b/i, /\ba (quick )?word about\b/i, /\bworth your while\b/i, /\bfor toast\b/i, /\bpopulation: /i];
     const fresh = all.filter(([, e]) => /^n[a-z]\./.test(e.id));
     expect(fresh.length).toBeGreaterThan(300);
     for (const [, e] of fresh) for (const t of e.turns) for (const text of [t.say, t.conf, t.beat, ...Object.values(t.v || {})].filter(Boolean))

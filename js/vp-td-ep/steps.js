@@ -935,6 +935,7 @@ function voteReaction(steps, V, { v, tally, deciding, tribal, elim, ballots, i, 
   const pick = (k, salt) => { const L = RX[k], h = hash(`${ep.num}|${X}|${salt}|${k}`); for (let j = 0; j < L.length; j++) { const t = L[(h + j) % L.length]; if (!used.has(X + t)) { used.add(X + t); return t; } } return L[h % L.length]; };
   const P = n0 => (typeof globalThis.pronouns === 'function' && globalThis.pronouns(n0)) || { posAdj: 'their', sub: 'they' };
   const fill = (t, y) => t.replace(/\{x\}/g, X).replace(/\{y\}/g, y || '').replace(/\{pos\}/g, P(X).posAdj).replace(/\{ypos\}/g, y ? P(y).posAdj : '').replace(/\{ysub\}/g, y ? P(y).sub : '');
+  const bond = (p, q) => (typeof globalThis.getBond === 'function' ? globalThis.getBond(p, q) : 0) || 0;
   const wrote = x => ballots.find(b => b.voter === x)?.voted || null;
   // what X knows: word that it's X tonight, and who X counts on
   // the one going home takes it the way the words after it say (td/story/tribal.js revealKind)
@@ -942,9 +943,11 @@ function voteReaction(steps, V, { v, tally, deciding, tribal, elim, ballots, i, 
   const knew = rk ? rk === 'expected' : (ep.pitchIntel || []).some(k => k.knower === X && k.target === X && k.believed !== false) || (ep.pitchCounterplay || []).some(c => c.actor === X);
   const named = ((typeof window !== 'undefined' && window.gs?.namedAlliances) || []).filter(a => (a.members || []).includes(X) && (a.formed ?? 0) <= ep.num);
   const side = [...new Set([...(ep.alliances || []).filter(a => (a.members || []).includes(X)).flatMap(a => a.members), ...named.flatMap(a => a.members)])]
-    .filter(y => y !== X && tribal.includes(y));
-  // the friend X trusts most: in the most alliances with X
-  const ally = side.length ? [...side].sort((p, q) => (named.filter(a => a.members.includes(q)).length - named.filter(a => a.members.includes(p)).length) || p.localeCompare(q))[0] : null;
+    // a bloc is who votes together tonight, not who X likes: only the ones X is warm with count as X's side
+    .filter(y => y !== X && tribal.includes(y) && bond(X, y) >= 1);
+  // the friend X trusts most: in the most alliances with X, then the warmest
+  const inNamed = y => named.filter(al => al.members.includes(y)).length;
+  const ally = side.length ? [...side].sort((p, q) => inNamed(q) - inNamed(p) || bond(X, q) - bond(X, p) || p.localeCompare(q))[0] : null;
   const could = tribal.filter(y => y !== X && !side.includes(y)).length;
   const cnt = tally[X] || 0;
   const temper = (typeof globalThis.pStats === 'function' && globalThis.pStats(X)?.temperament) || 5;
@@ -954,7 +957,12 @@ function voteReaction(steps, V, { v, tally, deciding, tribal, elim, ballots, i, 
     if (!knew) push('blind', ally, { [X]: 'shock' }, { tense: true });
     else if (temper <= 3) push('fury', null, { [X]: 'angry' });
     else push('ending', null, { [X]: 'sad' });
-    if (ally) push(wrote(ally) === X ? 'friend' : (knew ? 'friend' : 'friendShock'), ally, { [ally]: wrote(ally) === X || knew ? 'sad' : 'shock' });
+    // their friend: guilty if they wrote it, sad if X saw it coming, shocked if nobody did
+    if (ally) push(wrote(ally) === X ? 'guilty' : (knew ? 'friend' : 'friendShock'), ally, { [ally]: wrote(ally) === X ? 'guilty' : knew ? 'sad' : 'shock' });
+    // somebody was given a cover name tonight (alliances.js planCoverVotes): they just found out
+    const cvp = (ep.coverPlans || []).find(p => p.real === X && tribal.includes(p.leader));
+    for (const m of (cvp?.told || []).filter(x => tribal.includes(x) && wrote(x) === cvp.cover).slice(0, 1))
+      steps.push({ k: 'beat', text: `${m} looks down at ${P(m).posAdj} own vote, then across the fire at ${cvp.leader}. ${m} wrote ${cvp.cover}. ${m} was told it was ${cvp.cover}.`, focus: [m, cvp.leader], feel: { [m]: 'betray' }, tense: true });
     const lead = ballots.filter(b => b.voted === X && b.voter !== ally && tribal.includes(b.voter)).map(b => b.voter)
       .sort((p, q) => ((globalThis.pStats?.(q)?.strategic) || 0) - ((globalThis.pStats?.(p)?.strategic) || 0) || p.localeCompare(q))[0];
     if (lead) steps.push({ k: 'beat', text: fill(pick('relief', 'lead'), lead), focus: [lead], feel: { [lead]: 'relief' } });

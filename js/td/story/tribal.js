@@ -232,6 +232,9 @@ export function writeTribal(ep) {
     if (sat) return { role: 'with', scene: sat, cs: caseOfKind(sat.kind), leader: sat.scene.who?.a };
     const sw = voteScenes.find(x => x.step === 'swing' && x.scene.who?.b === v.voter && x.scene.data?.target === v.voted);
     if (sw) return { role: 'swing', scene: sw, pitcher: sw.scene.who?.a };
+    // given a cover name by their own leader (alliances.js planCoverVotes), and wrote it
+    const cvr = (ep.coverPlans || []).find(p => (p.told || []).includes(v.voter) && v.voted === p.cover && p.real === ep.eliminated);
+    if (cvr) return { role: 'misled', scene: { scene: { data: {} } }, leader: cvr.leader };
     const dt = voteScenes.find(x => x.step === 'doubt' && x.scene.who?.a === v.voter);
     if (dt) return { role: 'doubt', scene: dt, held: /holds$/.test(dt.kind || '') };
     return null;
@@ -240,7 +243,7 @@ export function writeTribal(ep) {
   for (const v of ballots) {
     const why = whyOf(v, ep);
     const r = v.voter === elim ? null : roleOf(v);
-    if (r && whyOf(v, ep) !== 'flip') {
+    if (r && (r.role === 'misled' || whyOf(v, ep) !== 'flip')) {
       const sd = r.scene.scene.data || {};
       const cs = CASES.has(r.cs) ? r.cs : 'numbers';
       const who = { a: v.voter };
@@ -250,7 +253,7 @@ export function writeTribal(ep) {
         sankT: !!ch && ch.sank === v.voted, leader: !!d.leader, mark: !!d.mark, markMe: d.mark === v.voter, markLeader: !!d.mark && d.mark === d.leader,
         ally: (gs.namedAlliances || []).some(al => (al.members || []).includes(v.voter) && (al.members || []).includes(v.voted)) };
       const pool = `booth2.${r.role}`;
-      const ending = r.role === 'lead' || r.role === 'with' ? cs : r.role === 'doubt' ? (r.held ? 'holds' : 'breaks') : 'yes';
+      const ending = r.role === 'lead' || r.role === 'with' ? cs : r.role === 'doubt' ? (r.held ? 'holds' : 'breaks') : r.role === 'misled' ? 'any' : 'yes';
       // nobody in the booth says what the voter before them said: a fresh line first, then the case's least used, then .any
       const wr = (e, u) => writeStory(pool, e, who, d, facts, ctx(n++, 'tribal', u));
       const two = r.role === 'lead' || r.role === 'with';
@@ -284,7 +287,10 @@ export function writeTribal(ep) {
   const revealFacts = { ...factsFor({ who: { a: ra, b: rb }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(ra), third: !!rc, bVoted: forBoot.includes(rb) ? 'boot' : 'other' };
   // a boot who was never warned (no word reached them, no counter-move of their own) did not see it
   // coming: 'surprised', unless a friend's vote makes it a blindside
-  const knewBoot = (ep.pitchIntel || []).some(i => i.knower === elim && i.target === elim && i.believed !== false) || (ep.pitchCounterplay || []).some(c => c.actor === elim);
+  // ...or they ran a plan of their own against the people they knew were coming for them (director.js 'coming')
+  const ownComing = Object.values(ep.campStory || {}).flatMap(c => [...(c.pre || []), ...(c.post || [])])
+    .find(x => x?.storyType === 'vote' && ['plan', 'other'].includes(x.step) && x.scene?.who?.a === elim && /\.coming$/.test(x.kind || '') && x.scene?.data?.mark === elim);
+  const knewBoot = (ep.pitchIntel || []).some(i => i.knower === elim && i.target === elim && i.believed !== false) || (ep.pitchCounterplay || []).some(c => c.actor === elim) || !!ownComing;
   const revealKind = blindside ? 'blindside' : knewBoot ? 'expected' : 'surprised';
   const rv = rb ? (writeStory('reveal', revealKind, { a: ra, b: rb, c: rc }, data, revealFacts, ctx(n++)) || (revealKind === 'surprised' ? writeStory('reveal', 'expected', { a: ra, b: rb, c: rc }, data, revealFacts, ctx(n++)) : null)) : null;
 
@@ -294,9 +300,12 @@ export function writeTribal(ep) {
   const shot = !friend && enemy && getBond(elim, enemy) <= -2 ? enemy : null;
   let exitKind = friend ? 'friend' : shot ? 'shot' : 'alone';
   let exitWith = friend || shot || null;
-  const knewBoot0 = (ep.pitchIntel || []).some(i => i.knower === elim && i.target === elim && i.believed !== false) || (ep.pitchCounterplay || []).some(c => c.actor === elim);
+  const ownComing0 = Object.values(ep.campStory || {}).flatMap(c => [...(c.pre || []), ...(c.post || [])])
+    .find(x => x?.storyType === 'vote' && ['plan', 'other'].includes(x.step) && x.scene?.who?.a === elim && /\.coming$/.test(x.kind || '') && x.scene?.data?.mark === elim);
+  const knewBoot0 = (ep.pitchIntel || []).some(i => i.knower === elim && i.target === elim && i.believed !== false) || (ep.pitchCounterplay || []).some(c => c.actor === elim) || !!ownComing0;
   const revealKind0 = blindside ? 'blindside' : knewBoot0 ? 'expected' : 'surprised';
-  const ex = writeExit(ep, { elim, kind: exitKind, b: exitWith, revealKind: revealKind0, base, data, n: n++ });
+  // who they blame, when they knew: the person their own plan was on, because that side was coming for them
+  const ex = writeExit(ep, { elim, kind: exitKind, b: exitWith, revealKind: revealKind0, base, data, n: n++, blame: ownComing0?.scene?.data?.target || null });
 
   // ── after: who did it, and who lost their person ──
   const after = [];
@@ -311,7 +320,22 @@ export function writeTribal(ep) {
     const w = writeStory('after', kind, { a: who }, data, f, ctx(n++));
     if (w) after.push(...w.lines);
   };
-  if (blindside || !mourner) conf('architect', architect);
+  // a cover plan that worked: the leader says what the plan really was, and the one who was lied to knows
+  const cv0 = (ep.coverPlans || []).find(p => p.real === elim && tribal.includes(p.leader));
+  const cv = cv0 ? { ...cv0, misled: (cv0.told || []).filter(m => ballots.find(v => v.voter === m)?.voted === cv0.cover) } : null;
+  if (cv && !cv.misled.length) cv.misled = null;
+  if (cv) {
+    const f = { ...factsFor({ who: { a: cv.leader }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(cv.leader), lastBoot: true };
+    const w = writeStory('after.cover', 'any', { a: cv.leader }, { ...data, cover: cv.cover, told: (cv.misled || cv.told).join(' and ') }, f, ctx(n++, 'tribal', 'soft'));
+    if (w) after.push(...w.lines);
+    const m = (cv.misled || []).find(x => tribal.includes(x));
+    if (m) {
+      const fm = { ...factsFor({ who: { a: m, b: cv.leader }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(m), lastBoot: true, pair: true };
+      const w2 = writeStory('after.misled', 'any', { a: m, b: cv.leader }, { ...data, cover: cv.cover }, fm, ctx(n++, 'tribal', 'soft'));
+      if (w2) after.push(...w2.lines);
+    }
+  }
+  if ((blindside || !mourner) && !cv) conf('architect', architect);
   if (mourner) conf('friend', mourner);
   else if (guilty) conf('guilty', guilty);
   // the shock card is for a real one: somebody close to the boot wrote the name

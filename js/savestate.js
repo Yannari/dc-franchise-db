@@ -328,6 +328,7 @@ export function patchEpisodeHistory(ep) {
   h.providerSlackerData = ep.providerSlackerData || null;
   h.medevac = ep.medevac || null;
   if (ep.splitVotePlans?.length) h.splitVotePlans = ep.splitVotePlans;
+  if (ep.coverPlans?.length) h.coverPlans = ep.coverPlans;
   if (ep.rejectedSplitPlans?.length) h.rejectedSplitPlans = ep.rejectedSplitPlans;
   if (ep.voteMiscommunications?.length) h.voteMiscommunications = ep.voteMiscommunications;
   if (ep.brokerEvents?.length) h.brokerEvents = ep.brokerEvents;

@@ -71,9 +71,9 @@ export default {
   'exit2.friend.expected': [
     { id: 'nx2.e1', turns: [
       { by: 'a', say: "Well. I knew it was coming." },
-      { by: 'b', say: "I tried. I really tried to move it.", when: { bVoted: 'other' } },
+      { by: 'b', say: "I'm so sorry. I didn't know what they were planning, I swear.", when: { bVoted: 'other' } },
       { by: 'b', say: "I'm sorry. The numbers were never going to change.", when: { bVoted: 'boot' } },
-      { by: 'a', say: "I know you did. You were the only one." },
+      { by: 'a', say: "I know you didn't. You were the only one I never worried about." },
       { by: 'b', say: "What do I do now?" },
       { by: 'a', say: "You find a new person, fast. Don't be alone in there, not even for one day." },
       { by: 'h', say: "Five more seconds of feelings, and then the boat leaves with or without you." },

@@ -1183,6 +1183,40 @@ const PACT = [
   ] },
 ];
 const NOTES = [
+  { id: 'is.n16', turns: [
+    { beat: '{a} and {b} sit on a log with a stick each, scratching names into the dirt.' },
+    { by: 'a', say: "Okay, start from the beginning. Who were you closest to before they got you?" },
+    { by: 'b', say: "Honestly? The people who voted me out." },
+    { by: 'a', say: "Same. So the people being nice to us were the ones counting us." },
+    { by: 'b', say: "Then the person who looked like they were on the outside..." },
+    { by: 'a', say: "...wasn't on the outside at all." },
+    { by: 'b', conf: "Out here, with nothing to do but think, the whole game finally makes sense. I just need a way back in to use it." },
+  ] },
+  { id: 'is.n17', turns: [
+    { by: 'b', say: "Can I ask you something? Did anybody warn you, the night you went?" },
+    { by: 'a', say: "Nobody. Not one person." },
+    { by: 'b', say: "Me neither. Which means whoever ran it ran it tight." },
+    { by: 'a', say: "Then that's who we need to worry about if we get back in." },
+    { by: 'b', say: "And the people who didn't warn us?" },
+    { by: 'a', say: "Them too. A little less." },
+    { by: 'a', conf: "{b} and I both got blindsided by the same quiet vote. That's not a coincidence. That's a pattern." },
+  ] },
+  { id: 'is.n18', when: { register: 'cool' }, turns: [
+    { by: 'a', say: "Let's be methodical about this. Every vote, who wrote what." },
+    { by: 'b', say: "You remember all of them?" },
+    { by: 'a', say: "Most of them. I've had a lot of time to go over it." },
+    { by: 'b', say: "Go on, then." },
+    { by: 'a', say: "Every vote that went the way it went had one person in it who never wrote a losing name." },
+    { by: 'b', conf: "{a} has been out here doing math. I've been out here crying into my rice. One of us is going back in prepared." },
+  ] },
+  { id: 'is.n19', turns: [
+    { by: 'a', say: "If one of us gets back in, the other one's notes come too." },
+    { by: 'b', say: "Deal. Who do we tell first?" },
+    { by: 'a', say: "Nobody. We find out who's still loyal to who, and then we decide." },
+    { by: 'b', say: "That's very sneaky." },
+    { by: 'a', say: "We lost being nice. Let's try something else." },
+    { by: 'b', conf: "{a} and I are going back in with a list. I'd hate to be on it." },
+  ] },
   { id: 'is.n1', turns: [
     { by: 'a', say: "Who do you think is really running things in there?" },
     { by: 'b', say: "Not the person everyone thinks." },

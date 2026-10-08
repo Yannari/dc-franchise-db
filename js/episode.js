@@ -4,7 +4,7 @@ import { showWords } from './shows.js';
 import { arrivalLine, soloLine } from './life-cast.js';
 import { pStats, pronouns, getPlayerState, updateChalRecord, isAllianceBottom, threatScore } from './players.js';
 import { getBond, getPerceivedBond, addBond, checkPerceivedBondTriggers, updateBonds, updatePerceivedBonds, recoverBonds, floorBondsInvolving } from './bonds.js';
-import { wRandom, computeHeat, formAlliances, detectBetrayals, applyPitchAllianceFallout, decayAllianceTrust } from './alliances.js';
+import { wRandom, computeHeat, formAlliances, detectBetrayals, applyPitchAllianceFallout, decayAllianceTrust, planCoverVotes } from './alliances.js';
 import { pruneIdolIntel, recordIdolIntel } from './advantage-intel.js';
 import { simulateVotes, resolveVotes, checkShotInDark, simulateRevote, summarizePitchReactions, describePitchReaction } from './voting.js';
 import { makeScene, spotOf } from './td/script/scene.js';
@@ -4257,6 +4257,8 @@ export function simulateEpisode() {
     }
   }
   ep.alliances = alliances;
+  // the cover plans: who in each bloc is given a different name tonight (alliances.js)
+  ep.coverPlans = planCoverVotes(alliances, ep.tribalPlayers);
   gs._socialVotePlans = alliances.map(a => ({ members:[...(a.members || [])], target:a.target, label:a.label }));
   // Save split vote plans for betrayal exemption + VP display
   ep.splitVotePlans = alliances.filter(a => a.splitTarget).map(a => ({

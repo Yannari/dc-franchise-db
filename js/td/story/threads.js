@@ -10,6 +10,8 @@
 //   rescue     at a challenge ({chal}), b saved a: a owes b                       (chalmoments.js)
 //   wronged    at a challenge, b sabotaged or ditched a, and a saw it
 //   rivals     at a challenge, a and b went at each other
+//   misled     b gave a a cover name at a vote, and a found out at the reading (alliances.js
+//              planCoverVotes): a was lied to by their own side
 // The challenge ones start only from a moment that aired at camp (director.js chm scenes).
 // Each later episode, one open thread at a camp gets a scene (thr.<kind>.<stage>): 1 it's brought
 // up, 2 it's still there, 3 it ends, as the bond says: 'mend' (bond back to 2+), 'war' (-2 or
@@ -44,6 +46,8 @@ export function recordThreads(ep, warned = [], chm = []) {
     if ((it.step === 'sabotage' || it.step === 'betray') && open('wronged', y, x)) T.push({ kind: 'wronged', a: y, b: x, ep: ep.num, stage: 0, known: true, last: ep.num, how: it.step, chal });
     if ((it.step === 'clash' || it.step === 'taunt') && open('rivals', x, y)) T.push({ kind: 'rivals', a: x, b: y, ep: ep.num, stage: 0, known: true, last: ep.num, how: it.step, chal });
   }
+  for (const cv of ep.coverPlans || []) if (cv.real === ep.eliminated) for (const m of (cv.told || []).filter(x => log.find(v => v.voter === x)?.voted === cv.cover)) if (!T.some(t => t.kind === 'misled' && t.a === m && t.b === cv.leader && !t.done))
+    T.push({ kind: 'misled', a: m, b: cv.leader, ep: ep.num, stage: 0, known: true, last: ep.num, how: 'cover', lastBoot: ep.eliminated });
   for (const p of ep.idolPlays || []) if (p.playedFor && p.playedFor !== p.player && !T.some(t => t.kind === 'debt' && t.a === p.playedFor && t.b === p.player && !t.done))
     T.push({ kind: 'debt', a: p.playedFor, b: p.player, ep: ep.num, stage: 0, known: true, last: ep.num, how: 'idol' });
 }

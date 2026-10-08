@@ -947,6 +947,12 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
           leakMod:reputationModifier(voter, 'leak') + ((access.overhearRisk || 0.5) - 0.5) * 0.18,
           majority:_voterRead?.majority || Math.floor(_pitchCandidates.length / 2) + 1 });
         _responses.push({ voter, ...response, access });
+        // said out loud: "I won't vote them" (alliances.js relationalTargetMod reads it at later votes)
+        if (!response.accepted && response.reason === 'protecting-target') {
+          gs.pledges ||= {};
+          const prior = gs.pledges[voter];
+          gs.pledges[voter] = { for: pitchTarget, ep: (gs.episode || 0) + 1, knownBy: [...new Set([...(prior?.for === pitchTarget ? prior.knownBy || [] : []), pitcher])] };
+        }
         if (response.accepted) _flipped.push(voter);
         if (response.leaked) _leaks.push(voter);
         const nearby = (access.nearby || []).filter(person => person !== pitchTarget && person !== pitcher && person !== voter);
@@ -1119,6 +1125,12 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
     if (_fmPlot && voter === _fmPlot.victim && tribalPlayers.includes(_fmPlot.decoy)
         && !isImmune(_fmPlot.decoy) && _fmPlot.decoy !== voter) {
       allianceTarget = _fmPlot.decoy;
+    }
+
+    // COVER PLAN (alliances.js planCoverVotes): the leader gave this member a different name
+    if (myAlliance?.coverTold?.includes(voter) && !myAlliance.coverSaw?.includes(voter)
+        && tribalPlayers.includes(myAlliance.coverTarget) && !isImmune(myAlliance.coverTarget) && myAlliance.coverTarget !== voter) {
+      allianceTarget = myAlliance.coverTarget;
     }
 
     // All real alliances this player belongs to (they may be in multiple)

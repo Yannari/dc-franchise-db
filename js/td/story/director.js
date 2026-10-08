@@ -837,6 +837,43 @@ function causeFor(ep, camp, leader, boot) {
   return out.slice(0, 1);
 }
 
+// The cover plan on screen (alliances.js planCoverVotes; the user, from Disventure Camp's "Luckily,
+// I have a plan"):
+//   cover.meet   a (the leader) gives b (and c), the members a doesn't trust with the name, the cover:
+//                {cover}. a is lying; b believes it (or, saw: b senses something's off)
+//   cover.tease  a and d, one of the core: the plan exists, the name doesn't get said ({told}: who's
+//                being kept out of it)
+//   cover.doubt  e, another of the core, close to someone being lied to ({told1}), has second thoughts
+// Nothing here says {target}: the name comes out at the reading.
+function coverTalk(ep, camp, t, cv, item, base, closest) {
+  const { tribal } = t;
+  const told = (cv.told || []).filter(m => tribal.includes(m));
+  const core = (cv.core || []).filter(m => tribal.includes(m) && m !== cv.leader);
+  if (!told.length || !core.length) return [];
+  const out = [];
+  const a = cv.leader;
+  const list = n => n.length <= 1 ? n.join('') : `${n.slice(0, -1).join(', ')} and ${n[n.length - 1]}`;
+  const meetWho = { a, b: told[0], ...(told[1] ? { c: told[1] } : {}) };
+  const meet = item('plan', 'cover', 'meet', meetWho, { cover: cv.cover }, base(meetWho, { saw: (cv.saw || []).includes(told[0]), third: !!told[1] }), 'secret', 'scramble', ['The Plan', 'gold'],
+    [`${a} tells ${list(told)} the vote is ${cv.cover}.`, `It isn't.`]);
+  if (meet) out.push(meet);
+  const d0 = closest(a, core);
+  if (d0) {
+    const w = { a, b: d0 };
+    const tease = item('cover', 'cover', 'tease', w, { told: list(told) }, base(w, { two: told.length >= 2 }), 'secret', 'scramble', ['Need to Know', 'purple'],
+      [`${a} and ${d0} are on the real plan.`, `${list(told)} ${told.length > 1 ? 'have' : 'has'} been told something else.`]);
+    if (tease) out.push(tease);
+  }
+  const doubter = core.find(m => m !== d0 && told.some(x => getBond(m, x) >= 3)) || null;
+  if (doubter) {
+    const friend = told.find(x => getBond(doubter, x) >= 3);
+    const w = { a: doubter, b: a };
+    const dt = item('doubt', 'cover', 'doubt', w, { told1: friend }, base(w, {}), 'aside', 'scramble', ['Second Thoughts', 'blue'], [`${doubter} doesn't like lying to ${friend}.`]);
+    if (dt) out.push(dt);
+  }
+  return out;
+}
+
 function voteTalk(ep, camp, t, next) {
   const out = [];
   const { boot, tribal, ballots, voters, pitch, leader, why, other, ch } = t;
@@ -908,9 +945,16 @@ function voteTalk(ep, camp, t, next) {
       const whyLine = [`The plan is ${boot}: ${WHY_WORDS[why]}.`, reason, `${numberWord(voters.length)} votes: ${voters.join(', ')}.`];
       // the strategy talk, built beat by beat from what is true tonight (planTalk); the old
       // single-entry scene only when a beat pool has nothing for this cast
-      const it = planTalk(ep, camp, t, who, shape, facts, next, whyLine)
+      // a cover plan that worked (alliances.js planCoverVotes): the viewer is told what the room was
+      // told. The leader gives the people they don't trust a cover name, teases the real plan to one
+      // of the core without saying it, and the name only comes out at the reading. The real reason
+      // is the leader's confessional after the vote (tribal.js).
+      const cv = (ep.coverPlans || []).find(p => p.real === boot && tribal.includes(p.leader) && voters.includes(p.leader) && (p.misled || p.told || []).some(m => tribal.includes(m)));
+      const coverScenes = cv ? coverTalk(ep, camp, t, cv, item, base, closest) : [];
+      const it = coverScenes.length ? null : planTalk(ep, camp, t, who, shape, facts, next, whyLine)
         || item('plan', 'story.vote.plan', why, who, data, facts, 'secret', 'scramble', ['The Plan', 'gold'], whyLine);
-      if (it) out.push(it);
+      if (coverScenes.length) out.push(...coverScenes);
+      else if (it) out.push(it);
     }
   }
 
@@ -969,7 +1013,9 @@ function voteTalk(ep, camp, t, next) {
   // who will survive, is just as sure it's them, and goes after the name they want instead.
   const em = t.em || { warned: [] };
   const tipFor = x => em.warned.find(w => w.knower === x && w.teller) || null;
-  const rivalT = (t.rivals || []).map(al => al.target).find(x => x && x !== boot && tribal.includes(x) && !out.some(o => o.step === 'decoy'));
+  // (somebody running a plan tonight isn't sitting there sure it's them: the plan's leader, a cover's leader)
+  const leads = new Set([t.leader, ...out.filter(o => ['plan', 'other'].includes(o.step)).map(o => o.scene?.who?.a), ...(ep.coverPlans || []).map(p => p.leader)].filter(Boolean));
+  const rivalT = (t.rivals || []).map(al => al.target).find(x => x && x !== boot && tribal.includes(x) && !leads.has(x) && !out.some(o => o.step === 'decoy'));
   if (rivalT && boot === t.gone) {
     const dWrote = ballotOf(rivalT);
     const friend = closest(rivalT, tribal.filter(x => x !== rivalT && x !== boot && getBond(rivalT, x) >= 1));
@@ -1017,13 +1063,14 @@ function voteTalk(ep, camp, t, next) {
   return out;
 }
 
-const THREAD_BADGE = { grievance: ['Unfinished Business', 'red'], debt: ['A Debt', 'teal'], rescue: ['A Debt', 'teal'], wronged: ['Unfinished Business', 'red'], rivals: ['Rivals', 'red'] };
+const THREAD_BADGE = { misled: ['Lied To', 'red'], grievance: ['Unfinished Business', 'red'], debt: ['A Debt', 'teal'], rescue: ['A Debt', 'teal'], wronged: ['Unfinished Business', 'red'], rivals: ['Rivals', 'red'] };
 const THREAD_WHY = {
   grievance: t => `${t.b} wrote ${t.a}'s name at episode ${t.ep}'s vote.`,
   debt: t => `${t.b} ${t.how === 'idol' ? 'played an idol for' : 'warned'} ${t.a} at episode ${t.ep}.`,
   rescue: t => `${t.b} saved ${t.a} at ${t.chal}.`,
   wronged: t => `${t.b} ${t.how === 'betray' ? 'left' : 'sabotaged'} ${t.a} at ${t.chal}.`,
   rivals: t => `${t.a} and ${t.b} went at each other at ${t.chal}.`,
+  misled: t => `${t.b} gave ${t.a} a fake name at episode ${t.ep}'s vote.`,
 };
 
 export function airTdEpisode(ep) {
@@ -1436,7 +1483,7 @@ export function airTdEpisode(ep) {
     }
     // the refs that were added late go back into the camp's own order
     for (const phase of ['pre', 'post']) {
-      const VOTE_AT = { other: 2e6, plan: 2.1e6, swing: 2.2e6, doubt: 2.25e6, decoy: 2.28e6, target: 2.3e6 };
+      const VOTE_AT = { other: 2e6, plan: 2.1e6, cover: 2.15e6, swing: 2.2e6, doubt: 2.25e6, decoy: 2.28e6, target: 2.3e6 };
       const at = it => (/^(story\.(firstday|morning|chal)|long\.crowd\.(won|lost))/.test(it.kind || '') ? -1 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5) : it.storyType === 'vote' ? VOTE_AT[it.step] : it.ref != null ? it.ref : 1e6);
       out[phase].sort((x, y) => at(x) - at(y));
     }

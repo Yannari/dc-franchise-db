@@ -709,6 +709,7 @@ export function wRandom(pool, weightFn) {
 }
 
 export function detectBetrayals(ep) {
+  applyCoverFallout(ep);
   if (!gs.namedAlliances?.length || !ep.votingLog?.length || !ep.eliminated) return;
   gs.namedAlliances.forEach(alliance => {
     if (!alliance.active) return;
@@ -744,6 +745,8 @@ export function detectBetrayals(ep) {
       if (!e || e.voted === consensusVote) return false;
       const sp = (ep.splitVotePlans || []).find(s => s.alliance === alliance.name);
       if (sp && e.voted === sp.secondary && sp.secondaryVoters.includes(v)) return false;
+      const cp = (ep.coverPlans || []).find(c => c.alliance === alliance.name);
+      if (cp && e.voted === cp.cover && cp.told.includes(v)) return false;
       return true;
     });
     // FIELD SIZE = the suspect pool at THIS tribal (who actually cast a vote), NOT the whole season.
@@ -763,6 +766,9 @@ export function detectBetrayals(ep) {
       // Split vote exemption: if voter was assigned to vote the split target, that's the plan, not betrayal
       const _splitPlan = (ep.splitVotePlans || []).find(sp => sp.alliance === alliance.name);
       if (_splitPlan && entry.voted === _splitPlan.secondary && _splitPlan.secondaryVoters.includes(voter)) return;
+      // Cover plan: they wrote the name their leader gave them (planCoverVotes)
+      const _cover = (ep.coverPlans || []).find(c => c.alliance === alliance.name);
+      if (_cover && entry.voted === _cover.cover && _cover.told.includes(voter)) return;
       // This player voted against the alliance consensus — betrayal
       const betrayerVotedFor = entry.voted;
       const consensusTargetEliminated = ep.eliminated === consensusVote;
@@ -1405,6 +1411,90 @@ export function socialStatusTargetMod(attackers, v) {
   return mod;
 }
 
+// ── Targeting by relationships (the user, 2026-10-08: "cut Benji to isolate Hannah", "Benji said he
+// won't vote Hannah no matter what") ──
+// Two reasons a group goes after someone that are about somebody ELSE:
+//   isolate  v is the ride-or-die of someone in the attacking group (bond 5+) whom the lead attacker
+//            wants to keep: cut v, and that person has nobody left but the group. Scales with the
+//            lead attacker's strategic stat.
+//   pledge   v said out loud, when somebody pitched it, that they would not vote a person (voting.js
+//            gs.pledges): a known shield for someone the group doesn't protect. Only a pledge one of
+//            the attackers heard counts.
+// Small and proportional, below threat and bonds.
+export function relationalTargetMod(attackers, v) {
+  const hub = attackers?.[0];
+  if (!hub || hub === v) return 0;
+  const hs = pStats(hub);
+  let mod = 0;
+  const partner = attackers.find(x => x !== hub && x !== v && getBond(x, v) >= 5 && getBond(hub, x) >= 2);
+  if (partner) mod += hs.strategic * 0.07;
+  const pl = gs.pledges?.[v];
+  if (pl && pl.ep >= (gs.episode || 0) - 2 && !attackers.includes(pl.for) && (pl.knownBy || []).some(k => attackers.includes(k))) mod += 0.5;
+  return mod;
+}
+/** The relationship reason behind a target, for the story to say (the same conditions as above). */
+export function relationalReason(attackers, v) {
+  const hub = attackers?.[0];
+  if (!hub || hub === v) return null;
+  const partner = attackers.find(x => x !== hub && x !== v && getBond(x, v) >= 5 && getBond(hub, x) >= 2);
+  if (partner && pStats(hub).strategic >= 5) return { kind: 'isolate', partner };
+  const pl = gs.pledges?.[v];
+  if (pl && pl.ep >= (gs.episode || 0) - 2 && !attackers.includes(pl.for) && (pl.knownBy || []).some(k => attackers.includes(k))) return { kind: 'pledge', protects: pl.for };
+  return null;
+}
+
+// ── THE COVER PLAN (the user, 2026-10-08, from Disventure Camp: the group is told one name, the
+// people running it write another) ──
+// A leader who schemes (villain, mastermind, schemer; a neutral with strategic 6+ and loyalty 4 or
+// less; never a nice archetype) doesn't trust the members close to tonight's target with the name:
+// they could warn the target or refuse. Those members are told a cover name instead, somebody they'll
+// write happily, while the core writes the real one. Only when the core outnumbers the people told,
+// and only as often as the leader's strategy and disloyalty say. A sharp member (intuition) may sense
+// it and not buy the cover. The told members' ballots are steered in voting.js; betrayal detection
+// exempts them; if the real name goes home, they find out and it costs the leader (applyCoverFallout).
+const _SCHEMER = new Set(['villain', 'mastermind', 'schemer']);
+const _NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const _canScheme = n => { const a = _arch(n), s = pStats(n); if (_NICE.has(a)) return false; return _SCHEMER.has(a) || (s.strategic >= 6 && s.loyalty <= 4); };
+export function planCoverVotes(alliances, tribalPlayers) {
+  const imm = new Set(gs._currentImmuneNames || []);
+  const out = [];
+  for (const a of alliances || []) {
+    if (a.type !== 'alliance' || !a.target || a.splitTarget || !tribalPlayers.includes(a.target)) continue;
+    const mem = (a.members || []).filter(m => tribalPlayers.includes(m) && m !== a.target);
+    if (mem.length < 3) continue;
+    // whoever in the bloc schemes and thinks hardest runs it: the leader if they can, else the sharpest schemer
+    const schemers = mem.filter(_canScheme).sort((x, y) => pStats(y).strategic - pStats(x).strategic || x.localeCompare(y));
+    const leader = a.leader && schemers.includes(a.leader) ? a.leader : schemers[0];
+    if (!leader || pStats(leader).strategic < 5) continue;
+    const told = mem.filter(m => m !== leader && getPerceivedBond(m, a.target) >= 2);
+    const core = mem.filter(m => !told.includes(m));
+    if (!told.length || core.length < 2 || core.length <= told.length) continue;
+    const ls = pStats(leader);
+    const chance = Math.max(0, Math.min(0.6, ls.strategic * 0.05 + (10 - ls.loyalty) * 0.02 + told.length * 0.05 - 0.05));
+    if (Math.random() >= chance) continue;
+    const pool = tribalPlayers.filter(v => v !== a.target && !imm.has(v) && !(a.members || []).includes(v));
+    if (!pool.length) continue;
+    const warmth = x => told.reduce((s, m) => s + getPerceivedBond(m, x), 0);
+    const cover = [...pool].sort((x, y) => warmth(x) - warmth(y) || x.localeCompare(y))[0];
+    const saw = told.filter(m => Math.random() < pStats(m).intuition * 0.035);
+    Object.assign(a, { coverTarget: cover, coverTold: told, coverSaw: saw, coverLeader: leader });
+    out.push({ alliance: a.label, leader, real: a.target, cover, told, saw, core });
+  }
+  return out;
+}
+/** After the vote: the people given the cover find out, if the real name went home. */
+export function applyCoverFallout(ep) {
+  if (!ep || ep._coverDone || !(ep.coverPlans || []).length) return;
+  ep._coverDone = true;
+  const wrote = x => (ep.votingLog || []).find(v => v.voter === x)?.voted;
+  for (const p of ep.coverPlans) {
+    p.worked = ep.eliminated === p.real;
+    p.misled = (p.told || []).filter(m => wrote(m) === p.cover && (gs.activePlayers || []).includes(m));
+    if (!p.worked) continue;
+    for (const m of p.misled) recordBetrayal(m, p.leader, { severity: 0.5 + Math.max(0, getBond(m, p.real)) * 0.06, ep: ep.num });
+  }
+}
+
 export function pickTarget(attackers, victims, challengeLabel) {
   // Filter out immune players — can't target someone with immunity
   const _immune = new Set([
@@ -1442,7 +1532,7 @@ export function pickTarget(attackers, victims, challengeLabel) {
       // Neither of them has a ballot, so this is the only lever that makes
       // the bargain real rather than a line of dialogue.
       const _coachFallMod = (isCoach(v) && gs._coachFallHeat?.[v] === ((gs.episode || 0) + 1)) ? 5.0 : 0;
-      return Math.max(0.1, _cwScore * 0.35 + (-avgBond) * 0.35 + _threatMod + dramaRisk + _soloMod + _volunteerModPre + _coachDangerMod + _coachFallMod + Math.random() * 0.5);
+      return Math.max(0.1, _cwScore * 0.35 + (-avgBond) * 0.35 + _threatMod + dramaRisk + _soloMod + _volunteerModPre + _coachDangerMod + _coachFallMod + relationalTargetMod(attackers, v) + Math.random() * 0.5);
     } else {
       const allAtTribal = [...attackers, v];
       const maxBond = allAtTribal.filter(p => p !== v).reduce((m, p) => Math.max(m, getPerceivedBond(p, v)), 0);
@@ -1490,7 +1580,7 @@ export function pickTarget(attackers, victims, challengeLabel) {
       const _beliefMod = beliefTargetMod(attackers, v);
       const _intentMod = intentionTargetMod(attackers, v);
       const _statusMod = socialStatusTargetMod(attackers, v);
-      return Math.max(0.1, threatScore(v) * 0.6 + (-avgBond) * 0.4 + pairThreat + standoutMod + personalityMod + _amuletMod + _heatMod + _volunteerMod + _beliefMod + _intentMod + _statusMod + Math.random() * 0.5);
+      return Math.max(0.1, threatScore(v) * 0.6 + (-avgBond) * 0.4 + pairThreat + standoutMod + personalityMod + _amuletMod + _heatMod + _volunteerMod + _beliefMod + _intentMod + _statusMod + relationalTargetMod(attackers, v) + Math.random() * 0.5);
     }
   });
 }

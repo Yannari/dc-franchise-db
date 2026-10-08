@@ -440,7 +440,6 @@ export function tdTribalStepped(ep) {
   if ((ep.multiTribalResults || []).length || ep.openVote || ep.exileDuelVotedOut || ep.firstEliminated || ep.isFireMaking) return false;
   if (ep.isSlasherNight || ep.isTripleDogDare || ep.isSuddenDeath || ep.emissary || ep.blackVoteApplied || ep.isFinale) return false;
   if (Object.keys(ep.coachData || {}).length) return false;
-  if ((ep.votingLog || []).some(v => v.isBlackVote || v.voter === 'THE GAME')) return false;
   return true;
 }
 
@@ -496,6 +495,7 @@ export function tdTribalScreen(ep, o = {}) {
   // (an Extra Vote, a stolen vote, a blocked vote...) each revealed on its own card (the user, 2026-10-08:
   // "they just said Ellie used an extra vote, they didn't show it")
   const plays = ep.idolPlays || [];
+  const precast = (ep.votingLog || []).filter(v => (v.voter === 'THE GAME' || v.isBlackVote) && v.voted && tribal.includes(v.voted) && !tribal.includes(v.voter));
   const PRE = new Set(['extraVote', 'voteSteal', 'voteBlock', 'kip', 'soleVote', 'safetyNoPower', 'teamSwap', 'legacy']);
   const prePlays = plays.filter(p => PRE.has(p.type));
   const held = {};
@@ -555,6 +555,9 @@ export function tdTribalScreen(ep, o = {}) {
     steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '9:00 PM', card: false, cut: true, focus: [], bg: [], places, seated: tribal, host, ceremony: true });
   }
   steps.push({ k: 'ballots', who: voters, text: `${voters.length} votes are in.` });
+  // a vote cast before anybody wrote a name: the challenge's penalty, or a Black Vote left by an earlier boot
+  for (const v of precast) say(v.isBlackVote ? `Before we read: ${v.voter} left us a parting gift on the way out. A Black Vote, against ${v.voted}.` : `Before we read: there's already one vote against ${v.voted}. The penalty from today's challenge.`,
+    { focus: [v.voted].filter(n => tribal.includes(n)), side: [{ tab: 'room', text: v.isBlackVote ? `${v.voter}'s Black Vote: ${v.voted}.` : `Penalty vote: ${v.voted}.` }] });
   // Chris asks, every time; then whoever stands up
   say(`If anybody has a Hidden Immunity Idol and you want to play it, now would be the time to do so.`);
   const idolPlays = plays.filter(p => !PRE.has(p.type));
@@ -574,7 +577,7 @@ export function tdTribalScreen(ep, o = {}) {
   // the counted votes, for the reading and the Intel tally afterwards
   const protectedSet = new Set((ep.idolPlays || []).filter(p => !p.type && !p.misplay).map(p => p.playedFor || p.player));
   if (ep.shotInDark?.safe) protectedSet.add(ep.shotInDark.player);
-  const ballots = [...(ep.votingLog || []).filter(v => tribal.includes(v.voter) && v.voted && !v.voteStolen && !v.voteBlocked),
+  const ballots = [...(ep.votingLog || []).filter(v => tribal.includes(v.voter) && v.voted && !v.voteStolen && !v.voteBlocked), ...precast.map(v => ({ ...v, voter: v.isBlackVote ? `${v.voter} (Black Vote)` : 'Penalty' })),
     ...plays.filter(p => (p.type === 'extraVote' || p.type === 'voteSteal') && p.target && tribal.includes(p.player))
       .map(p => ({ voter: p.player, voted: p.target, reason: p.type === 'extraVote' ? `[EXTRA VOTE] ${p.player}'s second vote${p.forAlly ? `, cast for ${p.forAlly}` : ''}.` : `[STOLEN VOTE] taken from ${p.stolenFrom}.`, extra: true }))];
   const counts = {};
@@ -861,6 +864,7 @@ export function tdStepTranscript(screen) {
  * as the ordinary stepped Tribal, the first boot walked out, then the second vote among who is left.
  */
 export function tdDoubleTribalScreen(ep, o = {}) {
+  if (ep?.swapResult?.swapper && !ep.eliminated) return elimSwap(ep, o);
   if (ep?.firstEliminated && ep.announcedDoubleElim && !(ep.votingLog2 || []).length) return announcedDouble(ep, o);
   if (!ep?.firstEliminated || !(ep.votingLog2 || []).length) return null;
   const first = ep.firstEliminated;
@@ -920,4 +924,25 @@ function announcedDouble(ep, o) {
         { k: 'beat', text: `Everyone looks at the ones still holding their breath.`, focus: [], tense: true },
         { k: 'say', by: host, host: true, text: `With ${n2} vote${n2 === 1 ? '' : 's'}, the second person leaving tonight... ${second}.`, focus: [second] }]),
     ...tail, ...later] };
+}
+
+// an Elimination Swap: the one voted out is not going home; they join the other tribe, and pick
+// somebody from it to send back the other way
+function elimSwap(ep, o) {
+  const { swapper, fromTribe, toTribe, pickedPlayer } = ep.swapResult;
+  const v = { ...ep, eliminated: swapper, tribalStory: null, riChoice: null };
+  if (!tdTribalStepped(v)) return null;
+  const a = tdTribalScreen(v, o);
+  if (!a) return null;
+  const out = a.steps.findIndex(s => s.k === 'out');
+  if (out < 0) return null;
+  const host = a.host;
+  const steps = a.steps.slice(0, out + 1);
+  steps[out] = { ...steps[out], island: true };
+  steps.push({ k: 'say', by: host, host: true, text: `${swapper}, you're not going home. Tonight is an Elimination Swap.`, focus: [swapper] },
+    { k: 'title', kicker: 'Elimination Swap', name: `${swapper} joins ${toTribe}`, faces: [swapper, pickedPlayer].filter(Boolean), tone: 'fire' },
+    { k: 'say', by: host, host: true, text: `You're joining ${toTribe}. And you get to pick one of them to take your place on ${fromTribe}.`, focus: [swapper] });
+  if (pickedPlayer) steps.push({ k: 'beat', text: `${swapper} picks ${pickedPlayer}. ${pickedPlayer} is going to ${fromTribe}.`, focus: [swapper], tense: true,
+    side: [{ tab: 'room', text: `${swapper} moves to ${toTribe}; ${pickedPlayer} moves to ${fromTribe}. Nobody goes home.` }] });
+  return { ...a, label: `${a.label} · Elimination Swap`, steps, elim: null };
 }

@@ -129,7 +129,7 @@ export default {
   ],
   'vp.close.group': [
     { id: 'npm.xg1', when: { cover: true }, turns: [
-      { by: 'd', opt: true, say: "What if it's close and somebody plays an idol?" },
+      { by: 'b', say: "What if it's close and somebody plays an idol?" },
       { by: 'a', say: "Then we've got {cover} as the backup, and we stick together on that." },
       { by: 'b', conf: "{a} has a plan for everything tonight, which is great, but it means everybody here knows {a} is running it, including {target}'s friends." },
     ] },

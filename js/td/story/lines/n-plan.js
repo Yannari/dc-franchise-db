@@ -121,7 +121,7 @@ export default {
     { id: 'npl.pi1', turns: [{ by: 'b', say: "What if {target} has an idol, though? Then we just wasted our votes.", v: { anxious: "What if {target} has an idol? Then it bounces onto one of us, and I'm not ready for that." } }] },
   ],
   'vp.answer.idol': [
-    { id: 'npl.ai1', turns: [{ by: 'a', say: "Then we don't all put it on {target}. A couple of us write somebody else, just in case.", v: { schemer: "Then we split. Some on {target}, some on a backup. If an idol comes out, the backup goes home.", dry: "If {target} has an idol, I'll eat my shoe. Then we'll figure it out." } }] },
+    { id: 'npl.ai1', turns: [{ by: 'a', say: "Then we don't all put it on {target}. A couple of us write somebody else, just in case.", v: { schemer: "Then we split. Some on {target}, some on a backup. If an idol comes out, the backup goes home.", dry: "If {target} has one, then {target} has one. A split covers it, and we're not betting the night on a guess." } }] },
   ],
   'vp.push.pair': [
     { id: 'npl.pp1', turns: [{ by: 'b', say: "{partner} is going to lose it if we do this." }] },

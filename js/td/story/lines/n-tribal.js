@@ -179,7 +179,7 @@ export default {
   'reveal.expected': [
     { id: 'nr.e1', turns: [
       { by: 'a', say: "Yeah. I figured.", v: { dry: "Yeah. Saw that one coming from the dock." } },
-      { by: 'b', move: 'apologize' },
+      { by: 'b', say: "I'm sorry. It wasn't personal, I swear.", v: {warm: "I'm so sorry. I hated doing it, I really did.",cruel: "Don't look at me like that. You'd have done the same thing.",quiet: "...I'm sorry.",anxious: "I'm sorry, I'm so sorry, I didn't know what else to do."} },
       { by: 'a', say: "Don't be. I'd have done the same thing." },
     ] },
     { id: 'nr.e2', when: { voice: ['loud', 'tough', 'blunt'] }, turns: [
@@ -246,7 +246,7 @@ export default {
       { by: 'a', say: "Yeah. It does." },
       { by: 'b', say: "I don't know what I'm going to do without you." },
       { by: 'a', say: "You're going to keep going. And when you win, you're splitting the money with me." },
-      { by: 'b', move: 'agree' },
+      { by: 'b', say: "Deal. Half of it's yours, I promise.", v: { dry: "Deal. A third. Maybe a quarter.", emotional: "Deal. Oh my god, I'm going to miss you so much." } },
     ] },
     { id: 'nx.f6', when: { bVoted: 'other' }, turns: [
       { by: 'b', say: "I didn't write your name. I need you to know that." },

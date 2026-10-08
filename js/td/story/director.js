@@ -689,7 +689,7 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const list = n => n.length <= 1 ? n.join('') : `${n.slice(0, -1).join(', ')} and ${n[n.length - 1]}`;
   // the close is work, not a quip: the shakiest vote (the plan's voter least close to a, someone who is
   // not here if possible), the name they tell camp, and why b is really in
-  const shaky = [...rest, ...voters.filter(v => inScene.has(v) && v !== a && v !== b)].sort((x, y) => getBond(a, x) - getBond(a, y) || x.localeCompare(y))[0] || null;
+  const shaky = [...rest].sort((x, y) => getBond(a, x) - getBond(a, y) || x.localeCompare(y))[0] || null;
   const cover = alt || (rival?.target && rival.target !== a ? rival.target : null) || outside.find(x => x !== a) || null;
   const data = { target: boot, votes: numberWord(voters.length), ...(shaky ? { shaky } : {}), ...(cover ? { cover } : {}), them: numberWord(them || 1), ...(mark ? { mark } : {}), ...(pair ? { partner: pair } : {}),
     ...(theirs ? { theirs } : {}), ...(alt ? { alt } : {}), ...(rest.length ? { others: list(rest) } : {}), ...(rival?.target ? { other: rival.target } : {}) };

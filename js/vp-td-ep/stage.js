@@ -404,7 +404,7 @@ export function dialogue(screen, L) {
 // ── the Intel drawer ──────────────────────────────────────────────────
 const TABS = {
   camp: [['mind', 'In their heads'], ['bonds', 'Relationships'], ['log', 'Camp log'], ['allies', 'Alliances'], ['secrets', 'Secrets']],
-  tribal: [['room', 'The room'], ['tally', 'Tally'], ['why', 'Why']],
+  tribal: [['room', 'The room'], ['plans', 'Plans'], ['tally', 'Tally'], ['why', 'Why']],
   island: [['residents', 'Who is here'], ['log', 'Island log'], ['secrets', 'Secrets']],
 };
 export function intelHtml(screen, L, tab, fresh) {
@@ -429,7 +429,13 @@ export function intelHtml(screen, L, tab, fresh) {
       const up = x.d > 0;
       h += `<div class="tdx-ic bond${fr(x)}"><span class="minis"><img src="${esc(avatar(x.a))}" alt="" title="${esc(x.a)}"><img src="${esc(avatar(x.b))}" alt="" title="${esc(x.b)}"></span><b>${esc(x.a)} &amp; ${esc(x.b)}</b> <span class="k" style="color:${up ? '#4fb84a' : '#f85149'}">${up ? '▲' : '▼'} ${up ? '+' : ''}${x.d}</span><br><small>${esc(x.word)} (${x.now > 0 ? '+' : ''}${x.now})</small></div>`;
     });
-  } else if (tab === 'why') mine.forEach(x => { h += `<div class="tdx-ic${fr(x)}"><b>${esc(x.voter)}</b> <span class="k">→ ${esc(x.target)}</span><br><small>${esc(x.text)}</small></div>`; });
+  } else if (tab === 'why') mine.forEach(x => {
+    h += `<div class="tdx-ic why${fr(x)}${x.betray ? ' betray' : ''}"><div class="vrow"><img src="${esc(avatar(x.voter))}" alt=""><b>${esc(x.voter)}</b> <span class="k">→</span> <img src="${esc(avatar(x.target))}" alt=""><b>${esc(x.target)}</b></div>`
+      + (x.bloc ? `<div class="chips"><span class="chip ally">${esc(x.bloc)}</span>${(x.with || []).length ? `<span class="chip">with ${esc(x.with.join(', '))}</span>` : `<span class="chip">alone in it</span>`}</div>` : '<div class="chips"><span class="chip">no alliance vote</span></div>')
+      + (x.betray ? `<div class="bet">BETRAYAL · ${esc(x.betray)}</div>` : '')
+      + ((x.tags || []).length ? `<div class="chips">${x.tags.map(t => `<span class="chip tag">${esc(t)}</span>`).join('')}</div>` : '')
+      + `<small>${esc(x.text)}</small></div>`; });
+  else if (tab === 'plans') mine.forEach(x => { h += `<div class="tdx-ic${fr(x)}"><b>${esc(x.name)}</b> <span class="k">plans to vote</span> <b>${esc(x.target || '?')}</b><div class="minis">${(x.who || []).map(n => `<img src="${esc(avatar(n))}" alt="" title="${esc(n)}">`).join('')}</div></div>`; });
   else mine.forEach(x => { h += `<div class="tdx-ic${fr(x)}">${esc(x.text)}</div>`; });
   if (!mine.length) h += `<div class="tdx-iempty">${screen.kind === 'tribal' && tab === 'tally' ? 'As the votes are read.' : screen.kind === 'tribal' && tab === 'why' ? 'Once the votes are in.' : 'Nothing yet.'}</div>`;
   return h + '</div>';

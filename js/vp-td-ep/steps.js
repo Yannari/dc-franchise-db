@@ -578,7 +578,27 @@ export function tdTribalScreen(ep, o = {}) {
   // are in, before the read; the tally live, a vote at a time as the host reads them
   const outStep = steps.findIndex(s => s.k === 'out');
   const atBallots = steps.findIndex(s => s.k === 'ballots');
-  const why = ballots.map(v => ({ tab: 'why', voter: v.voter, target: v.voted, text: cleanText(v.reason).replace(/\[[A-Z \-]+\]\s*/g, '') }));
+  // Why reads the classic Votes screen: the reason, the alliance the vote went with (and who in it voted
+  // the same way), a broken plan or a vote against an alliance-mate called a betrayal, the engine's tags
+  const blocs = (ep.alliances || []).filter(a => a.type !== 'solo' && (a.members || []).length >= 2);
+  const namedAll = (typeof window !== 'undefined' && window.gs?.namedAlliances) || [];
+  const why = ballots.map(v => {
+    const raw = String(v.reason || '');
+    const tags = [...new Set([...raw.matchAll(/\[([A-Z][A-Z \-]+)\]/g)].map(m => m[1].trim().toLowerCase()))];
+    const bloc = blocs.find(a => a.members.includes(v.voter));
+    const withThem = bloc ? ballots.filter(x => x.voter !== v.voter && bloc.members.includes(x.voter) && x.voted === v.voted).map(x => x.voter) : [];
+    const def = (ep.defections || []).find(d => d.player === v.voter);
+    const mate = namedAll.find(a => a.active !== false && (a.members || []).includes(v.voter) && (a.members || []).includes(v.voted));
+    const betray = def ? `Broke from ${def.alliance || 'the alliance'}: the plan was ${def.consensusWas}.`
+      : bloc && bloc.target && bloc.target !== v.voted ? `Went against ${bloc.label || 'the alliance'}'s plan to vote ${bloc.target}.`
+      : mate ? `Voted against ${mate.name}, an alliance-mate.`
+      : v.planBreak?.label ? `${v.planBreak.label}${v.planBreak.explanation ? `: ${v.planBreak.explanation}` : ''}` : null;
+    return { tab: 'why', voter: v.voter, target: v.voted, text: cleanText(raw.replace(/\s*—\s*\[[^\]]+\].*$/, '')).replace(/\[[A-Z \-]+\]\s*/g, ''),
+      bloc: bloc ? (bloc.label || 'Alliance') : null, with: withThem, betray, tags: tags.filter(t => !/betray/.test(t)) };
+  });
+  // the plans, as the alliances made them before anyone voted (the classic Voting Plans screen)
+  const plans = blocs.map(a => ({ tab: 'plans', name: a.label || 'Alliance', who: a.members, target: a.target }));
+  if (plans.length) steps[0].side = [...(steps[0].side || []), ...plans];
   const left = ballots.map(v => ({ tab: 'tally', voter: v.voter, target: v.voted, void: protectedSet.has(v.voted) }));
   // in the booth (the user, 2026-10-08: "as the votes are written"): each ballot, as it is written,
   // puts its vote on the tally and its reason under Why

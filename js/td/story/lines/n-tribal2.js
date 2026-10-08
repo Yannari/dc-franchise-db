@@ -37,7 +37,8 @@ export default {
   'reveal.expected': [
     { id: 'nn.e1', turns: [
       { by: 'a', say: "Yeah. I kind of saw it coming.", v: {calm: "That's fair. I'd probably have done the same.",loud: "Yeah, yeah, okay, I get it!",dry: "Can't say I'm shocked."} },
-      { by: 'b', say: "I'm sorry. It wasn't personal, I swear.", v: {warm: "I'm so sorry. I hated doing it, I really did.",cruel: "Don't look at me like that. You'd have done the same thing.",quiet: "...I'm sorry.",anxious: "I'm sorry, I'm so sorry, I didn't know what else to do."} },
+      { by: 'b', say: "I'm sorry. It wasn't personal, I swear.", v: {warm: "I'm so sorry. I hated doing it, I really did.",cruel: "Don't look at me like that. You'd have done the same thing.",quiet: "...I'm sorry.",anxious: "I'm sorry, I'm so sorry, I didn't know what else to do."} , when: { bVoted: 'boot' } },
+      { by: 'b', say: "For what it's worth, I didn't write your name. I want you to know that.", v: { quiet: "...It wasn't me.", tough: "Wasn't me. Just so you know." }, when: { bVoted: 'other' } },
       { by: 'a', say: "It's fine. It's the game.", v: {cruel: "Whatever. Go.",warm: "It's okay. Really. I'm not angry."} },
     ] },
     { id: 'nn.e2', turns: [
@@ -48,7 +49,7 @@ export default {
     ] },
     { id: 'nn.e3', turns: [
       { by: 'a', say: "I really thought I'd make it further than this.", v: {tough: "Whatever. It's fine. I'm fine.",emotional: "I don't want to go. I really don't want to go.",dry: "Well. That's that, then.",teen: "This is so unfair. I was having so much fun."} },
-      { by: 'c', say: "I'm sorry. It wasn't personal, I swear.", v: {warm: "I'm so sorry. I hated doing it, I really did.",cruel: "Don't look at me like that. You'd have done the same thing.",quiet: "...I'm sorry.",anxious: "I'm sorry, I'm so sorry, I didn't know what else to do."}, opt: true },
+      { by: 'c', say: "Oh no. I really didn't want it to be you.", v: { quiet: "...No.", emotional: "No! No, no, no." }, opt: true },
       { by: 'b', say: "You played a good game." },
       { by: 'a', say: "Thank you. I needed to hear that from you.", v: {tough: "Thanks. Don't make it weird.",emotional: "Thank you. I'm going to cry. I'm already crying."} },
     ] },

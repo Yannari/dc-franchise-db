@@ -47,8 +47,8 @@ export default {
     { id: 'nto.m3', turns: [
       { by: 'h', say: "So, how was today? Give me one word, {a}." },
       { by: 'a', say: "Busy.", v: { dry: "Suspicious.", loud: "Chaos!", anxious: "Scary." } },
-      { by: 'h', say: "Busy how?" },
-      { by: 'a', say: "Busy like everybody had somewhere to be, and none of it was chores." },
+      { by: 'h', say: "How so?" },
+      { by: 'a', say: "Like everybody had somewhere to be, and none of it was chores." },
       { by: 'b', say: "That's the nicest way I've ever heard anybody describe a scramble." },
     ] },
   ],

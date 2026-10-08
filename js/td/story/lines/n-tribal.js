@@ -179,7 +179,8 @@ export default {
   'reveal.expected': [
     { id: 'nr.e1', turns: [
       { by: 'a', say: "Yeah. I figured.", v: { dry: "Yeah. Saw that one coming from the dock." } },
-      { by: 'b', say: "I'm sorry. It wasn't personal, I swear.", v: {warm: "I'm so sorry. I hated doing it, I really did.",cruel: "Don't look at me like that. You'd have done the same thing.",quiet: "...I'm sorry.",anxious: "I'm sorry, I'm so sorry, I didn't know what else to do."} },
+      { by: 'b', say: "I'm sorry. It wasn't personal, I swear.", v: {warm: "I'm so sorry. I hated doing it, I really did.",cruel: "Don't look at me like that. You'd have done the same thing.",quiet: "...I'm sorry.",anxious: "I'm sorry, I'm so sorry, I didn't know what else to do."} , when: { bVoted: 'boot' } },
+      { by: 'b', say: "For what it's worth, I didn't write your name. I want you to know that.", v: { quiet: "...It wasn't me.", tough: "Wasn't me. Just so you know." }, when: { bVoted: 'other' } },
       { by: 'a', say: "Don't be. I'd have done the same thing." },
     ] },
     { id: 'nr.e2', when: { voice: ['loud', 'tough', 'blunt'] }, turns: [

@@ -236,7 +236,8 @@ export function writeTribal(ep) {
   const blindside = !!bootVote && bootVote !== elim && !!betrayer;
   const ra = elim, rb = blindside ? betrayer : closest[0];
   const rc = others.find(x => x !== rb) || null;
-  const revealFacts = { ...factsFor({ who: { a: ra, b: rb }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(ra), third: !!rc };
+  // b only says sorry for a vote b cast (the user: Owen apologising for a vote he never wrote)
+  const revealFacts = { ...factsFor({ who: { a: ra, b: rb }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(ra), third: !!rc, bVoted: forBoot.includes(rb) ? 'boot' : 'other' };
   const rv = rb ? writeStory('reveal', blindside ? 'blindside' : 'expected', { a: ra, b: rb, c: rc }, data, revealFacts, ctx(n++)) : null;
 
   // ── last words: their person, or the person they blame ──

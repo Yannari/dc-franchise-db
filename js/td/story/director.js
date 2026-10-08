@@ -34,6 +34,7 @@ import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
 import { writeTribal, whyOf as ballotWhy } from './tribal.js';
 import { writeTwistStory, writeExile, writeFirstImpressions, writeAuctionScript } from './twist.js';
+import { needOf, psycheCast } from './psyche.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf } from './places.js';
 
@@ -969,6 +970,22 @@ export function airTdEpisode(ep) {
       // the vote story's own beats first, so the plan scenes can call back to them
       const editOn = (seasonConfig?.tdEdit || 'full') !== 'off';
       if (editOn && talk) list.push(...arcBeats(ep, camp, members, phase, talk, () => n++, list, [], 'vote'));
+      // the C-story: one person's inner life, before the challenge (psyche.js)
+      if (editOn && phase === 'pre' && ep.num > 1) {
+        const pc = psycheCast(ep, members);
+        if (pc) {
+          const need = needOf(pc.name);
+          const conf = members.filter(m => m !== pc.name && getBond(pc.name, m) >= 3).sort((x, y) => getBond(pc.name, y) - getBond(pc.name, x) || x.localeCompare(y))[0] || null;
+          const who = { a: pc.name, ...(conf ? { b: conf } : {}) };
+          const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), moment: pc.moment, lastBoot: !!pc.lastBoot, pair: !!conf };
+          const w = writeStory('psy', need, who, pc.lastBoot ? { lastBoot: pc.lastBoot } : {}, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('afternoon'), unique: 'soft' });
+          if (w) {
+            ((gs.tdStory ||= {}).psySeen ||= {})[pc.name] = ep.num;
+            list.push({ at: 0.6, item: { story: true, kind: `psy.${need}`, storyType: 'psyche', step: pc.moment, players: Object.values(who), lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'psy', who, data: {}, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: 'In Their Head', badgeClass: 'teal', why: [`${pc.name}: ${need}.`] } });
+          }
+        }
+      }
       const votes = phase === 'post' && talk ? voteTalk(ep, camp, talk, () => n++) : [];
       votes.forEach((it, k) => list.push({ at: 8e5 + k, item: it }));
       const cap = (phase === 'pre' ? (merged ? 4 : 3) : tribalTonight ? (merged ? 5 : 4) : 2) - Math.min(2, Math.max(0, votes.length - 1));

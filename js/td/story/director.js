@@ -1043,8 +1043,22 @@ export function airTdEpisode(ep) {
       const LIFE = /^(friendship|showmance|underdog)$/;
       const lifeTake = editOn ? ranked.filter(f => LIFE.test(f.line.type)).slice(0, phase === 'pre' ? 2 : 1) : [];
       const order = [...lifeTake, ...ranked.filter(f => !lifeTake.includes(f))];
+      // one day, one story per person (the user: Duncan panicking, then calmly running the winning plan):
+      // tonight's leader doesn't come apart on camera, and the one going home unaware doesn't scramble
+      const DISTRESS = { 'friend.mentor': 'b', 'friend.comfort': 'b', 'friend.lift': 'b', 'talk.scramble': 'a', 'conf.paranoia': 'a', 'drama.paranoia': 'a',
+        'conf.excluded': 'a', 'drama.meltdown': 'a', 'sitout.heat': 'a' };
+      const bootKnows = !!talk && ((ep.pitchIntel || []).some(i => i.knower === talk.boot && i.target === talk.boot) || (ep.pitchCounterplay || []).some(c => c.actor === talk.boot));
+      const clashes = f => {
+        const k = (f.ev.scene?.kind || '').replace(/^long\./, '');
+        const fam = k.split('.').slice(0, 2).join('.');
+        const role = DISTRESS[fam];
+        if (!role || !talk) return false;
+        const who = f.ev.scene?.who?.[role] || f.step.roles?.[role];
+        return who === talk.leader || (who === talk.boot && !bootKnows);
+      };
       for (const f of order) {
         if (chosen.length >= cap + lifeTake.length) break;
+        if (editOn && clashes(f)) continue;
         if (usedLines.has(f.line)) continue;
         const cast = [f.step.roles.a, f.step.roles.b, f.step.roles.c].filter(Boolean);
         if (cast.some(p => (onScreen[p] || 0) >= 2)) continue;
@@ -1193,6 +1207,7 @@ export function airTdEpisode(ep) {
       for (const { ev, i } of cuts) {
         if (cutN >= cutCap) break;
         if (!saysIn(ev).some(p => !shown.has(p)) || rested(ev)) continue;
+        if (editOn && clashes({ ev, step: { roles: {} } })) continue;
         const item = longScene(ev, i);
         seasonAired['cut:' + topic(ev)] = ep.num;
         ev.aired = true;

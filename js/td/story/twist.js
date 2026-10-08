@@ -34,6 +34,8 @@ export function writeTwistStory(ep) {
     if (tw.type === 'returning-player' && (tw.returnees || []).length) put('returning-player', returning(ep, tw));
     if (tw.newTribes?.length) put(tw.type, split(ep, tw));
     if (tw.type === 'idol-wager' && (tw.idolWagerResults || []).some(r => r.holder)) put('idol-wager', wager(ep, tw));
+    if ((tw.type === 'the-feast' || tw.type === 'merge-reward') && (ep.feastEvents || tw.feastEvents || []).length) put(tw.type, feast(ep, tw));
+    if (tw.type === 'loved-ones' && tw.lovedOnesStandout) put('loved-ones', loved(ep, tw));
   }
   return Object.keys(out).length ? out : null;
 }
@@ -80,7 +82,7 @@ function writer(ep) {
   const voteYet = (gs.episodeHistory || []).some(h => h.num < ep.num && h.eliminated);
   let n = 700;
   return (pool, ending, who, data = {}) => writeStory(pool, ending, who, data,
-    { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'pre' }), venue, voteYet }, { ep: ep.num, camp: 'twist', phase: 'pre', n: n++, place: 'secret', unique: 'soft' });
+    { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'pre' }), venue, voteYet, thing: !!data.thing }, { ep: ep.num, camp: 'twist', phase: 'pre', n: n++, place: 'secret', unique: 'soft' });
 }
 const sceneOf = (w, at, players, camp = null) => (w ? { at, camp, lines: w.lines, players } : null);
 
@@ -176,4 +178,42 @@ export function writeExile(ep) {
     if (w) out.faceoff = w.lines;
   }
   return Object.keys(out).length ? out : null;
+}
+
+// The feast (twists.js 'the-feast' / 'merge-reward'): everybody at one table, then what the engine
+// says happened at it, one scene each (three at most): a deal across tribes, two people connecting,
+// two clashing, a slip (a let something out, b heard it: an advantage when {thing} is set), and
+// somebody sizing up the biggest threat at the table.
+const FEAST = { 'strategic-deal': 'deal', 'emotional-positive': 'connect', 'emotional-negative': 'clash', 'intel-leak': 'leak', 'sizing-up': 'sizeup', 'power-revealed': 'sizeup' };
+function feast(ep, tw) {
+  const write = writer(ep);
+  const evs = (ep.feastEvents || tw.feastEvents || []).filter(e => FEAST[e.type] && (e.players || []).length === 2);
+  const out = [];
+  // the table: the loudest, most social people there do the talking
+  const all = [...new Set([...(gs.activePlayers || [])])];
+  const st = n => { try { return pStats(n) || {}; } catch { return {}; } };
+  const talkers = [...all].sort((x, y) => (st(y).social || 0) + (st(y).boldness || 0) - (st(x).social || 0) - (st(x).boldness || 0) || x.localeCompare(y)).slice(0, 4);
+  if (talkers.length >= 3) {
+    const [a, b, c, d] = talkers;
+    out.push(sceneOf(write('twist.feast', 'table', { a, b, c, ...(d ? { d } : {}) }), 'set', talkers));
+  }
+  const seen = new Set();
+  for (const e of evs) {
+    if (out.length >= 4) break;
+    const [a, b] = e.players;
+    if (seen.has(a) || seen.has(b)) continue;
+    const thing = e.type === 'intel-leak' && / Exposed$/.test(e.badgeText || '') ? e.badgeText.replace(/ Exposed$/, '') : null;
+    const sc = sceneOf(write('twist.feast', FEAST[e.type], { a, b }, thing ? { thing } : {}), 'set', [a, b]);
+    if (sc) { out.push(sc); seen.add(a); seen.add(b); }
+  }
+  return out.filter(Boolean);
+}
+
+// Loved ones (twists.js 'loved-ones'): the one it hit hardest (the engine's standout: loyal, not
+// bold) with the closest person they have here, who it brought them nearer to.
+function loved(ep, tw) {
+  const write = writer(ep);
+  const a = tw.lovedOnesStandout;
+  const b = closestOf(a, (gs.activePlayers || []).filter(x => x !== a))[0] || null;
+  return [sceneOf(write('twist.loved', 'standout', { a, ...(b ? { b } : {}) }), 'set', [a, b].filter(Boolean))].filter(Boolean);
 }

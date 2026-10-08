@@ -769,6 +769,20 @@ export function _textRosterSwaps(ep, ln, sec) {
   });
 }
 
+// The twists as the people in them talk (td/story/twist.js ep.twistStory): every scene the twist
+// screen plays after the host's announcement, line for line.
+export function _textTwistStory(ep, ln, sec) {
+  const told = ep.twistStory;
+  if (!told || !Object.keys(told).length) return;
+  sec('THE TWIST, AS THEY TALK IT THROUGH');
+  for (const [type, scenes] of Object.entries(told)) {
+    for (const sc of scenes || []) {
+      ln(`[${type}${sc.at === 'camp' && sc.camp ? ` — back at ${sc.camp}` : ''}]`);
+      for (const l of sc.lines || []) ln(l.kind === 'beat' ? `  (${l.text})` : l.kind === 'conf' ? `  ${l.by} [conf]: ${l.text}` : `  ${l.by}: ${l.text}`);
+    }
+  }
+}
+
 export function _textTwists(ep, ln, sec) {
   const allTwists = ep.twists?.length ? ep.twists : (ep.twist ? [ep.twist] : []);
   // Filter out types handled by other sections (roster swaps render early via _textRosterSwaps)
@@ -3906,6 +3920,7 @@ export function generateSummaryText(ep) {
   _textRewardChallenge(ep, ln, sec);
   _textImmunityChallenge(ep, ln, sec);
   _textTwists(ep, ln, sec);
+  _textTwistStory(ep, ln, sec);
   _textExile(ep, ln, sec);
 
   // ── TWIST CHALLENGES — before camp post since they ARE the immunity challenge ──

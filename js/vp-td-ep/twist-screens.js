@@ -220,6 +220,15 @@ export function tdMergeScreen(ep, m, o = {}) {
   if (pairTop.length === 2) steps.push(...toSteps(reactionLines('twist.react.merge', pairTop[0], pairTop[1], `${ep.num}|merge`), pairTop));
   const pairLow = (m.bottom || []).filter(n => places[n] && !pairTop.includes(n)).slice(0, 2);
   if (pairLow.length === 2) steps.push(...toSteps(reactionLines('twist.react.bottom', pairLow[0], pairLow[1], `${ep.num}|bottom`), pairLow));
+  // the merge feast, as the people at it talk (td/story/twist.js feast)
+  for (const sc of ep.twistStory?.['merge-reward'] || []) {
+    steps.push({ k: 'scene', spot: V.public, tod: 'night', plate: gather(venue, V.public, 'night', sc.players, host).key || key, place: 'The Merge Feast', time: '7:00 PM', card: false, focus: sc.players.slice(0, 4), bg: [], places, host });
+    for (const l of sc.lines) {
+      const text = cleanText(l.text);
+      if (!text) continue;
+      steps.push(l.kind === 'beat' ? { k: 'beat', text, focus: sc.players.slice(0, 4) } : l.kind === 'conf' ? { k: 'conf', by: l.by, text } : { k: 'say', by: l.by, text, focus: sc.players.slice(0, 4) });
+    }
+  }
   return { id: 'merge', kind: 'twist', venue, ep: ep.num, label: 'The Merge', host, steps };
 }
 

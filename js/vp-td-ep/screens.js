@@ -833,5 +833,7 @@ if (typeof document !== 'undefined') {
     if (e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); e.stopImmediatePropagation(); tdxNext(root.dataset.uid); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); e.stopImmediatePropagation(); tdxBack(root.dataset.uid); }
     else if (e.key === 'i') tdxIntel(root.dataset.uid);
+    // Esc closes Intel first (a second Esc leaves TV mode)
+    else if (e.key === 'Escape' && document.getElementById(`tdx-st-${root.dataset.uid}`)?.classList.contains('intel-open')) { e.preventDefault(); e.stopImmediatePropagation(); tdxIntel(root.dataset.uid); }
   }, true);
 }

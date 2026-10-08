@@ -395,6 +395,9 @@ export const TDX_CSS = `
 .tdx .tdx-ibtn.new i{display:inline-block}
 .tdx .tdx-intel{position:absolute;top:0;right:0;bottom:0;width:min(34%,340px);background:var(--glass2);z-index:16;transform:translateX(100%);transition:transform .35s cubic-bezier(.3,.8,.3,1);color:var(--ht);padding:14px 14px 0;display:flex;flex-direction:column;border-left:2px solid var(--or);cursor:default}
 .tdx .tdx-stage.intel-open .tdx-intel{transform:none}
+.tdx .tdx-ihead{position:relative}
+.tdx .tdx-iclose{position:absolute;top:-2px;right:-2px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font:700 20px/1 Nunito;cursor:pointer;display:grid;place-items:center}
+.tdx .tdx-iclose:hover,.tdx .tdx-iclose:focus-visible{background:var(--or);border-color:var(--or);outline:none}
 .tdx .tdx-ihead b{display:block;font:400 18px 'Lilita One';letter-spacing:.05em;text-transform:uppercase}
 .tdx .tdx-ihead span{font:700 11px Nunito;color:var(--hd)}
 .tdx .tdx-itabs{display:flex;gap:4px;margin:10px 0;flex-wrap:wrap}

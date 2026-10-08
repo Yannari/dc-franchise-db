@@ -411,7 +411,7 @@ export function intelHtml(screen, L, tab, fresh) {
   const tabs = TABS[screen.kind] || TABS.camp;
   if (!tabs.some(t => t[0] === tab)) tab = tabs[0][0];
   const items = L.side;
-  let h = `<div class="tdx-ihead"><b>Intel</b><span>${screen.kind === 'tribal' ? 'Only the viewer sees the votes.' : screen.kind === 'island' ? 'Out of sight of the game.' : 'What the camp doesn’t know yet.'}</span></div><div class="tdx-itabs">`;
+  let h = `<div class="tdx-ihead"><button type="button" class="tdx-iclose" data-close aria-label="Close Intel" title="Close">&times;</button><b>Intel</b><span>${screen.kind === 'tribal' ? 'Only the viewer sees the votes.' : screen.kind === 'island' ? 'Out of sight of the game.' : 'What the camp doesn’t know yet.'}</span></div><div class="tdx-itabs">`;
   for (const [k, l] of tabs) h += `<button type="button" class="${k === tab ? 'on' : ''}" data-tab="${k}">${esc(l)}${items.some(x => x.tab === k && x.at === L.idx) && k !== tab ? '<i></i>' : ''}</button>`;
   h += '</div><div class="tdx-ilist">';
   const mine = items.filter(x => x.tab === tab), fr = x => (fresh && x.at === L.idx ? ' fresh' : '');

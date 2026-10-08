@@ -26,6 +26,7 @@ import { POOLS } from './lines/index.js';
 import { factsFor } from './facts.js';
 import { campContext } from './context.js';
 import { makeScene } from './scene.js';
+import { foodOk, entryText } from './food.js';
 import { getBond, bondJournal } from '../../bonds.js';
 
 // The episode being played. gs.episode still holds the last one until it ends.
@@ -131,7 +132,12 @@ export function writeScene(scene, ctx = {}) {
   const who = scene.who || {};
   const pairKey = [who.a, who.b].filter(Boolean).sort().join('|');
   const speakers = Object.values(who).filter(Boolean);
-  const entry = pickEntry(ledger(), firstDay(ctx) ? noPast(key) : POOLS, key, facts, pairKey, rng, speakers, clockOf(ctx));
+  // food that fits the venue: nobody rations rice where Chef serves breakfast (td/script/food.js)
+  const venue = seasonConfig?.setting || 'hosted-camp';
+  const base = firstDay(ctx) ? noPast(key) : POOLS;
+  const pools = {};
+  for (const k of [].concat(key)) { const kept = (base[k] || []).filter(e => foodOk(venue, entryText(e))); pools[k] = kept.length ? kept : (base[k] || []); }
+  const entry = pickEntry(ledger(), pools, key, facts, pairKey, rng, speakers, clockOf(ctx));
   if (!entry) throw new Error(`no lines for ${[].concat(key).join(' + ')}`);
   const lines = entry.turns.map(t => {
     const kind = t.conf ? 'conf' : t.beat ? 'beat' : 'say';

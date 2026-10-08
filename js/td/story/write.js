@@ -16,8 +16,18 @@ import { stableRng } from '../../script/rng.js';
 import { fill, transcript, salt } from '../script/write.js';
 import { STORY_POOLS } from './lines/index.js';
 import { hasPlace, placeOf, placeById, kindOf } from './places.js';
+import { foodOk } from '../script/food.js';
+import { voiceOf, voiced } from './voice.js';
 
 const OUTDOOR = /\b(fire( pit)?|firewood|campfire|fishing|fish|lake|water's edge|the water|sand|beach|dock|log|shore|tent|shelter|woods?|forest|stones?|pebbles?|bush(es)?|sun)\b/i;
+// Time logic (the user, 2026-10-08: day one had "it's always a joke with you", a challenge brag
+// before the challenge, a five a.m. airhorn in the afternoon).
+// A line that leans on shared history, in the first two episodes, between two people with none.
+const HISTORY = /\b(always|you never|never once|every time|every single time|again|anymore|any more|lately|like before|used to|last time|the other day|yesterday|since day one|all week|for days)\b/i;
+// After the challenge it is not the morning; before it, nobody can talk about how it went.
+const MORNING = /\b(breakfast|good morning|morning,|this morning\.|sunrise|wakes? up|woke up|before everyone's up|first thing)\b/i;
+const EVENING = /\b(dinner|lights-out|lights out|goodnight|good night|after the challenge)\b/i;
+const CHAL_DONE = /\b(we lost|we won|lost it for us|lost us|carried us|dead last|lowest score|best score|the challenge today|today's challenge was|out there today|the worst one out there)\b/i;
 const ledger = () => ((gs.tdStory ||= {}).ledger ||= newLedger());
 
 export const hasStoryPool = pool => !!(STORY_POOLS[`${pool}.any`]?.length || Object.keys(STORY_POOLS).some(k => k.startsWith(pool + '.')));
@@ -41,13 +51,28 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     const text = (e.turns || []).map(t => t.beat || t.say || t.conf || '').join(' ');
     if (facts.venue === 'world-tour' && OUTDOOR.test(text)) return false;
     if (facts.venue !== 'survival-island' && /coconut/i.test(text)) return false;
+    if (!foodOk(facts.venue, text)) return false;
+    // strangers don't share a past: no "always" or "again" early on unless they really have one
+    const strangers = (ctx.ep || 0) <= 2 && (facts.hist || 'none') === 'none' && (facts.prev || 'none') === 'none';
+    if (strangers && HISTORY.test(text)) return false;
+    // before the season's first vote nobody has been voted for, or nearly
+    if (!facts.voteYet && /\b(voted|last vote|the vote last|wrote (my|your|his|her|their) name|on the edge of a vote|been on the edge|last night)\b/i.test(text)) return false;
+    // the time of day and the order of the day
+    if (ctx.phase === 'post' && MORNING.test(text)) return false;
+    if (ctx.phase === 'pre' && EVENING.test(text)) return false;
+    if (ctx.phase === 'pre' && !facts.merged && CHAL_DONE.test(text)) return false;
+    if (ctx.phase === 'pre' && facts.merged && CHAL_DONE.test(text) && !/immunity/.test(text)) return false;
     // the kind of place the scene needs (places.js): the venue must have one
     return hasPlace(facts.venue, e.place || (ctx.spotId ? null : ctx.place));
   };
   // the outcome's own pool first; '.any' only when nothing in it fits
   let entry = null;
   for (const k of keys) {
-    const fits = (STORY_POOLS[k] || []).filter(e => placeOk(e) && Object.entries(e.when || {}).every(([f, v]) => (Array.isArray(v) ? v.includes(facts[f]) : facts[f] === v)));
+    // `voice` / `voiceB` ask for one of a or b's voice tags (voice.js); everything else is a fact
+    const voiceFit = (want, name) => [].concat(want).some(t => voiceOf(name).includes(t));
+    const fits = (STORY_POOLS[k] || []).filter(e => placeOk(e) && Object.entries(e.when || {}).every(([f, v]) =>
+      f === 'voice' ? voiceFit(v, who.a) : f === 'voiceB' ? voiceFit(v, who.b) : f === 'voiceC' ? voiceFit(v, who.c)
+        : (Array.isArray(v) ? v.includes(facts[f]) : facts[f] === v)));
     // nobody plays the same scene twice in a season: once everything that fits has been said
     // by one of these people, the moment airs in its own short words instead (director.js)
     const saidBy = ledger().by || {};
@@ -62,9 +87,12 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   if (!entry) return null;
   // Where it is staged: the entry's own kind of place, else where the engine put the moment,
   // else the pool's default kind. The lines say it as {here} ("on the dock") or {place}.
-  const avoid = ctx.avoid || null;
+  // a meal is where the camp eats, all of it together, at mealtime: it never makes way for another talk
+  const meal = entry.place === 'eat' || ctx.place === 'eat' && !entry.place;
+  const avoid = meal ? null : (ctx.avoid || null);
   const engineKind = ctx.spotId ? kindOf(facts.venue, ctx.spotId) : null;
-  const spot = entry.place ? placeOf(facts.venue, entry.place, rng(), avoid)
+  const spot = meal ? placeOf(facts.venue, 'eat', 0)
+    : entry.place ? placeOf(facts.venue, entry.place, rng(), avoid)
     : ctx.spotId && !(avoid?.has(ctx.spotId) && engineKind) ? placeById(ctx.spotId)
       : placeOf(facts.venue, engineKind || ctx.place || 'public', rng(), avoid);
   if (spot && avoid && spot.id !== 'confessional') avoid.add(spot.id);
@@ -72,9 +100,12 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   // a turn for a part nobody plays (no {c} in this scene) is dropped, never left blank
   const lines = entry.turns.filter(t => !t.by || who[t.by]).map(t => {
     const kind = t.conf ? 'conf' : t.beat ? 'beat' : 'say';
-    const text = fill(t.conf || t.beat || t.say, who, data);
+    // the speaker's own variant of the line, when it has one for how they talk (voice.js)
+    const text = fill(t.beat || voiced(t, t.by ? who[t.by] : null), who, data);
     return { kind, by: t.by ? who[t.by] : null, text: text.charAt(0).toUpperCase() + text.slice(1) };
   });
   if (lines.some(l => /\{\w+(\.\w+)?\}/.test(l.text))) throw new Error(`td story ${entry.id}: unfilled slot in "${lines.find(l => /\{\w+/.test(l.text)).text}"`);
-  return { lines, text: transcript(lines), lineId: entry.id, spot: spot ? { id: spot.id, label: spot.label } : null };
+  // breakfast is the morning; dinner is the evening (camp-access.js windows)
+  const window = meal ? (ctx.phase === 'pre' ? 'morning' : 'before-tribal') : null;
+  return { lines, text: transcript(lines), lineId: entry.id, spot: spot ? { id: spot.id, label: spot.label, fixed: true, ...(window ? { window } : {}) } : null };
 }

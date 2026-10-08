@@ -60,7 +60,7 @@ export const SAID = {
 
 // ...and with its preposition ({here}: "on the dock", "in the galley", "at the fire pit")
 const IN = new Set(['cabin-inside', 'washroom', 'mess-hall', 'caves', 'boathouse', 'shelter', 'cave', 'corn-maze', 'trailer-inside', 'galley', 'aisle', 'economy',
-  'cargo-hold', 'kitchen', 'prop-storage', 'soundstage-corridor', 'ruins', 'craft-services', 'river', 'lake', 'communal-grounds']);
+  'cargo-hold', 'kitchen', 'prop-storage', 'soundstage-corridor', 'ruins', 'craft-services', 'communal-grounds']);
 const ON = new Set(['dock', 'beach', 'forest-trail', 'cabins', 'shoreline', 'jungle-path', 'jungle-trail', 'fishing-area', 'rocky-beach', 'lake-shore', 'studio-backlot',
   'western-set', 'city-set', 'cliff']);
 const prep = id => (IN.has(id) ? 'in' : ON.has(id) ? 'on' : 'at');

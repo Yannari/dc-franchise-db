@@ -24,12 +24,17 @@
 // feed.js campFeed().
 import { gs } from '../../core.js';
 import { getBond } from '../../bonds.js';
+import { kinshipBetween } from '../../core.js';
+import { pronouns, pStats as pStatsOf } from '../../players.js';
+import { voiceOf } from './voice.js';
 import { classify, file, prevAired } from './storylines.js';
 import { writeStory as writeRaw, hasStoryPool } from './write.js';
 import { lastTribalOf, challengeOf, lossStreak, bootsBefore } from './record.js';
 import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
 import { writeTribal } from './tribal.js';
+import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
+import { placeOf } from './places.js';
 
 // Where the season lives decides a few words ({quarters}, {bed}) and what campers can know:
 // at a venue that reads the votes aloud (the Elimination Trial) everyone hears the count; at a
@@ -45,7 +50,8 @@ let venueNow = 'hosted-camp';
 let ctxAvoid = () => null;
 function writeStory(pool, outcome, who, data, facts, ctx) {
   const v = VENUE_WORDS[venueNow] || VENUE_WORDS['hosted-camp'];
-  return writeRaw(pool, outcome, who, { quarters: v.quarters, bed: v.bed, item: v.item, ...data }, { venue: venueNow, count: v.count, ...facts }, ctx);
+  const voteYet = (gs.episodeHistory || []).some(h => (h.num || 0) < (ctx.ep || 0) && h.eliminated) || ctx.phase === 'tribal';
+  return writeRaw(pool, outcome, who, { quarters: v.quarters, bed: v.bed, item: v.item, ...data }, { venue: venueNow, count: v.count, voteYet, ...facts }, ctx);
 }
 
 // How much each step is worth on screen (narrative weighting only).
@@ -154,6 +160,120 @@ function whyOf(kind, ending, storyKey, who, data, facts) {
   if (data.sank && facts.lost) out.push(fill('{sank} had the team\'s lowest score today.'));
   if (who.a && who.b && facts.band) out.push(`${who.a} & ${who.b}: ${BANDWORD[facts.band] || facts.band}${facts.alliance ? ', in the same alliance' : ''}.`);
   return out.filter(t => !/\{\w+\}/.test(t));
+}
+
+// What may air in the engine's own short words (no long pool for it, or the pool is spent for
+// the season). The user, 2026-10-08: "I still get 3-line conversations that mean nothing". Banter
+// with nothing behind it stays off camera (the backlog still lists it); what airs as-is is game
+// information: a confessional, an idol, a pitch, a flip, a deal, a catch, or a real scene.
+const GAME_TYPE = /^(idol|voteSteal|votePitch|scramble|secretFlip|betrayal|loyaltyTest|conflictingDeals|challengeThrow|stolenCredit|dealOverheard|showmance|affair|triangle|eavesdrop|infoTrade|allianceForm|allianceCrack|allianceDissolved|allianceExpelled|allianceRecruit|sideDeal|endgameDeal|spreadLies|forgeNote|whisperCampaign|falseMajority|chalThreat|sitOut|bigMoveThoughts|mergeScramble|mergeConfessional|goat|ftc|perceptionRealization|wildcardPivot)/;
+function worthAiring(ev) {
+  if (!ev) return false;
+  const kind = ev.scene?.kind || '';
+  // a challenge's leftover sentence with three generic lines glued on: the challenge screen has it
+  if (/^aside\./.test(kind)) return false;
+  const lines = ev.lines || [];
+  if (lines.length && lines.every(l => l.kind !== 'say')) return true;
+  if (GAME_TYPE.test(ev.type || '')) return true;
+  return lines.filter(l => l.kind === 'say').length >= 4;
+}
+
+// ── who they were to each other before this season ───────────────────────
+// The user, 2026-10-08: "if there are prior relationships, from other shows, or siblings,
+// acknowledge that". Two sources: the cast's declared relationships (cast setup: siblings, a
+// couple, old friends, exes) and the franchise ledger (gs.franchiseMeta: allies, a betrayal, a
+// blindside, rivals, a showmance, on a named season). Returns facts and the words for them.
+const KIN = { twins: 'siblings', siblings: 'siblings', 'step-siblings': 'siblings', 'parent-child': 'family', grandparent: 'family', 'aunt-uncle': 'family',
+  cousins: 'cousins', 'in-laws': 'family', married: 'couple', engaged: 'couple', partners: 'couple', dating: 'couple', 'best-friends': 'friends',
+  'childhood-friends': 'friends', 'old-friends': 'friends', roommates: 'friends', colleagues: 'knew', teammates: 'knew', estranged: 'estranged', exes: 'exes', 'ex-friends': 'exfriends' };
+function kinWord(kin, b) {
+  const p = pronouns(b) || {}, she = p.sub === 'she', he = p.sub === 'he';
+  if (kin === 'twins') return she ? 'twin sister' : he ? 'twin brother' : 'twin';
+  if (kin === 'siblings' || kin === 'step-siblings') return she ? 'sister' : he ? 'brother' : 'sibling';
+  if (kin === 'cousins') return 'cousin';
+  if (kin === 'married') return she ? 'wife' : he ? 'husband' : 'spouse';
+  if (kin === 'engaged') return she ? 'fiancée' : 'fiancé';
+  if (kin === 'dating' || kin === 'partners') return she ? 'girlfriend' : he ? 'boyfriend' : 'partner';
+  if (kin === 'exes') return 'ex';
+  if (/friends|roommates/.test(kin)) return 'friend';
+  return 'family';
+}
+export function historyOf(a, b) {
+  if (!a || !b) return { facts: { hist: 'none' }, data: {} };
+  let kin = 'none'; try { kin = kinshipBetween(a, b); } catch { kin = 'none'; }
+  if (KIN[kin]) return { facts: { hist: KIN[kin] }, data: { kinWord: kinWord(kin, b) } };
+  const sp = (gs.franchiseMeta?.seededPairs || []).filter(x => (x.a === a && x.b === b) || (x.a === b && x.b === a));
+  const where = x => (/\(([^)]+)\)\s*$/.exec(x?.reason || '') || [])[1] || 'last time';
+  const bet = sp.find(x => x.kind === 'betrayal' || x.kind === 'blindside');
+  if (bet) return { facts: { hist: bet.a === a && bet.wronged !== false ? 'wronged' : 'wronger' }, data: { where: where(bet) } };
+  for (const [k, h] of [['showmance-broken', 'oldflame'], ['showmance-intact', 'oldcouple'], ['rivals', 'oldrivals'], ['allies', 'oldallies']]) {
+    const x = sp.find(y => y.kind === k); if (x) return { facts: { hist: h }, data: { where: where(x) } };
+  }
+  return { facts: { hist: 'none' }, data: {} };
+}
+const statsOf = m => { try { return pStatsOf(m) || {}; } catch { return {}; } };
+
+// The first day: the team meets (episode one, or a team that has just been shuffled together).
+function firstDay(ep, camp, members, n, fresh = 'start') {
+  if (members.length < 3) return null;
+  // the loudest takes charge: authored voice first, then boldness and social
+  const loudness = m => { const t = voiceOf(m), s = statsOf(m);
+    return (t.includes('loud') ? 3 : 0) + (t.includes('bossy') ? 3 : 0) + (t.includes('competitive') ? 1 : 0) + (s.boldness ?? 5) * 0.3 + (s.social ?? 5) * 0.2; };
+  // somebody here already knows somebody: that is the first thing anybody notices
+  let pair = null;
+  for (let i = 0; i < members.length && !pair; i++) for (let j = i + 1; j < members.length && !pair; j++) {
+    const h = historyOf(members[i], members[j]);
+    if (h.facts.hist !== 'none') pair = { a: members[i], b: members[j], h };
+  }
+  const order = [...members].sort((x, y) => loudness(y) - loudness(x) || x.localeCompare(y));
+  const a = pair ? pair.a : order[0];
+  const b = pair ? pair.b : order[1];
+  const rest = order.filter(m => m !== a && m !== b);
+  const who = { a, b, c: rest[0] || null, d: rest[1] || null };
+  const data = { tribe: camp, ...(pair ? pair.h.data : {}) };
+  const outcome = pair ? pair.h.facts.hist : fresh;
+  const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'pre' }), outcome, third: !!who.c, fourth: !!who.d,
+    hist: pair ? pair.h.facts.hist : 'none', fresh, merged: !!(ep.isMerge || gs.isMerged) };
+  const pool = pair ? 'story.firstday.history' : 'story.firstday';
+  const w = writeStory(pool, pair ? outcome : fresh, who, data, facts, { ep: ep.num, camp, phase: 'pre', n, place: 'public', avoid: ctxAvoid('morning') });
+  return w ? { story: true, kind: pool, storyType: 'firstday', step: fresh, players: Object.values(who).filter(Boolean), lines: w.lines, text: w.text, lineId: w.lineId,
+    scene: { kind: pool, who, data, spot: w.spot ? { window: 'morning', ...w.spot } : null }, badgeText: fresh === 'swap' ? 'New Team' : 'Day One', badgeClass: 'gold',
+    why: [pair ? `${a} and ${b} knew each other before this season.` : `${camp}'s first day together.`] } : null;
+}
+// ...and by the end of it, the first two who clicked and the first two who didn't
+function firstPair(ep, camp, members, n, kind) {
+  let best = null;
+  for (let i = 0; i < members.length; i++) for (let j = i + 1; j < members.length; j++) {
+    const v = getBond(members[i], members[j]);
+    if (!best || (kind === 'clicked' ? v > best.v : v < best.v)) best = { a: members[i], b: members[j], v };
+  }
+  if (!best || (kind === 'clicked' ? best.v < 1 : best.v > -0.5)) return null;
+  if (historyOf(best.a, best.b).facts.hist !== 'none') return null;
+  const who = { a: best.a, b: best.b };
+  const phase = kind === 'clicked' ? 'pre' : 'post';
+  const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), outcome: kind };
+  const w = writeStory('story.firstpair', kind, who, { tribe: camp }, facts, { ep: ep.num, camp, phase, n, place: 'aside', avoid: ctxAvoid(phase === 'pre' ? 'camp-work' : 'scramble') });
+  return w ? { story: true, kind: 'story.firstpair', storyType: 'firstday', step: kind, players: [best.a, best.b], lines: w.lines, text: w.text, lineId: w.lineId,
+    scene: { kind: 'story.firstpair', who, data: {}, spot: w.spot ? { window: phase === 'pre' ? 'camp-work' : 'scramble', ...w.spot } : null },
+    badgeText: kind === 'clicked' ? 'First Impressions' : 'Off on the Wrong Foot', badgeClass: kind === 'clicked' ? 'green' : 'red' } : null;
+}
+
+// A moment that airs in the engine's own words passes the same time logic the written scenes do
+// (write.js): no shared past between strangers, nothing about a vote before the first one, the
+// time of day, nothing about a challenge before it happens. A challenge's leftover sentence with
+// three generic lines glued on (aside.*) stays off camera: the challenge screen has the moment.
+const RAW_PAST = /\b(always|you never|every time|again|anymore|lately|like before|used to|last time|the other day|yesterday|days ago|since day one|all week|for days)\b/i;
+const RAW_VOTE = /\b(voted|last vote|the vote last|wrote (my|your|his|her|their) name|on the edge of a vote)\b/i;
+const RAW_MORNING = /\b(breakfast|good morning|sunrise|wakes? up|woke up|five in the morning|airhorn)\b/i;
+const RAW_CHAL = /\b(we lost|we won|lost it for us|carried us|dead last|flew up that wall|right at the end)\b/i;
+function rawFits(ev, ep, phase) {
+  if (/^aside\./.test(ev?.scene?.kind || '')) return false;
+  const text = (ev?.lines || []).map(l => l.text).join(' ') || String(ev?.text || '');
+  if (ep.num <= 2 && RAW_PAST.test(text)) return false;
+  if (!(gs.episodeHistory || []).some(h => (h.num || 0) < ep.num && h.eliminated) && RAW_VOTE.test(text)) return false;
+  if (phase === 'post' && RAW_MORNING.test(text)) return false;
+  if (phase === 'pre' && RAW_CHAL.test(text)) return false;
+  return true;
 }
 
 // ── the new scenes ─────────────────────────────────────────────────────
@@ -268,8 +388,13 @@ export function airTdEpisode(ep) {
       const avoidIn = win => (taken[win || 'any'] ||= new Set());
       ctxAvoid = avoidIn;
       // the opener
-      const opener = phase === 'pre' ? (ep.num > 1 ? morningAfter(ep, camp, members, n++) : null) : afterChallenge(ep, camp, members, n++);
+      const swapped = (ep.twists || []).some(t => /swap|shuffle|dissolve|new-tribes|mutiny/.test(t.type || '')) && !(ep.isMerge || gs.isMerged);
+      const dayOne = ep.num === 1;
+      const opener = phase === 'pre' ? (dayOne ? firstDay(ep, camp, members, n++) : swapped ? firstDay(ep, camp, members, n++, 'swap') : morningAfter(ep, camp, members, n++))
+        : afterChallenge(ep, camp, members, n++);
       if (opener) list.push({ at: -1, item: opener });
+      // day one: by the afternoon two of them have hit it off, and by the evening two of them have not
+      if (dayOne) { const fp = firstPair(ep, camp, members, n++, phase === 'pre' ? 'clicked' : 'clashed'); if (fp) list.push({ at: phase === 'pre' ? 0.5 : 1e5, item: fp }); }
       // the storyline steps worth a scene
       const merged = ep.isMerge || gs.isMerged;
       const cap = phase === 'pre' ? (merged ? 4 : 3) : tribalTonight ? (merged ? 5 : 4) : 2;
@@ -280,7 +405,11 @@ export function airTdEpisode(ep) {
         + (phase === 'post' && tribalTonight && ['bottom', 'alliance', 'scheme'].includes(f.line.type) ? 2 : 0)
         - 0.6 * (seasonAired[`${f.line.type}.${f.step.step}`] || 0)
         + (f.ev.scene?.kind && hasStoryPool(`long.${f.ev.scene.kind}`) ? 1.5 : 0);
-      const ranked = filed.slice().sort((x, y) => score(y) - score(x) || x.i - y.i);
+      // The first day is strangers: no vote has happened, no alliance has history, nobody has
+      // betrayed anybody. Only what can happen between people who just met airs on it.
+      const STRANGERS = /^(friendship\.bond|showmance\.spark|rivalry\.friction|idol\.(search|found)|underdog\.rise|alliance\.formed|alliance\.recruit|alliance\.refused)$/;
+      const fitsDay = f => ep.num > 1 || STRANGERS.test(`${f.line.type}.${f.step.step}`);
+      const ranked = filed.filter(fitsDay).sort((x, y) => score(y) - score(x) || x.i - y.i);
       const usedLines = new Set();
       const chosen = [];
       for (const f of ranked) {
@@ -304,25 +433,28 @@ export function airTdEpisode(ep) {
         const who = { ...(ev.scene?.who || (step ? { a: step.roles.a, b: step.roles.b, c: step.roles.c } : { a: ev.players?.[0], b: ev.players?.[1], c: ev.players?.[2] })) };
         const prev = line && step ? prevAired(line, step) : null;
         const rec = recordSlots(ep, who.a, who.b, camp, phase);
-        const data = { ...rec.data, ...(ev.scene?.data || {}) };
+        // who they were to each other before the season (siblings, exes, an old betrayal)
+        const hist = historyOf(who.a, who.b);
+        const data = { ...rec.data, ...hist.data, ...(ev.scene?.data || {}) };
         const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), ...(ev.scene?.facts || {}), ...rec.facts,
           ...Object.fromEntries(['ending', 'result', 'intent', 'reason', 'again', 'size'].filter(k => ev.scene?.data?.[k] != null).map(k => [k, ev.scene.data[k]])),
           ...Object.fromEntries(['rival', 'friend', 'threat', 'weak', 'group', 'plan', 'boot', 'wrote', 'fallen', 'more', 'betrayer', 'holder', 'wins', 'other', 'target', 'mine', 'theirs'].map(k => [k, !!data[k]])),
           story: line?.type || 'cut', step: step?.step || 'cut', prev: prev ? prev.step : 'none', chapter: line ? Math.min(3, line.steps.filter(s => s.aired).length + 1) : 1,
           prevGap: prev ? (ep.num - prev.ep >= 3 ? 'long' : ep.num === prev.ep ? 'same' : 'recent') : 'none',
           tribal: knowsTribal(phase), phase, third: !!who.c, known: !!data.target && !Object.values(who).includes(data.target),
-          registerC: who.c ? registerOf(who.c) : null, ...allianceFacts(ev, who, data) };
+          registerC: who.c ? registerOf(who.c) : null, ...allianceFacts(ev, who, data), hist: hist.facts.hist };
         const w = writeStory(pool, ending, who, data, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', spotId: ev.scene?.spot?.id || ev.access?.locationId || null, avoid: ctxAvoid(ev.scene?.spot?.window || ev.access?.windowId) });
         if (!w) return null;
         return { story: true, kind: pool, storyType: line?.type || 'cut', step: step?.step || 'cut', ...(line ? { storyline: line.id } : { cut: true }), ref: i, type: ev.type,
           players: [...new Set([...Object.values(who).filter(Boolean), ...(ev.players || [])])],
-          lines: w.lines, text: w.text, lineId: w.lineId, scene: { kind, who, data, spot: w.spot ? { ...w.spot, window: ev.scene?.spot?.window || ev.access?.windowId || null } : (ev.scene?.spot || null) }, access: ev.access || null,
+          lines: w.lines, text: w.text, lineId: w.lineId, scene: { kind, who, data, spot: w.spot ? { window: ev.scene?.spot?.window || ev.access?.windowId || null, ...w.spot } : (ev.scene?.spot || null) }, access: ev.access || null,
           alliance: ev.alliance, members: ev.members, advType: ev.advType, badgeText: ev.badgeText || '', badgeClass: ev.badgeClass || '',
           why: whyOf(kind, ending, line ? `${line.type}.${step.step}` : '', who, data, facts), bondDelta: ev.bondDelta || null };
       };
       for (const f of chosen) {
         const { ev, i, line, step } = f;
         const item = longScene(ev, i, line, step);
+        if (!item && !rawFits(ev, ep, phase)) continue;
         step.aired = true;
         ev.aired = true;
         seasonAired[`${line.type}.${step.step}`] = (seasonAired[`${line.type}.${step.step}`] || 0) + 1;
@@ -338,7 +470,7 @@ export function airTdEpisode(ep) {
         return false;
       };
       const shown = new Set(list.flatMap(x => x.item.players || speaksIn(events[x.item.ref])));
-      const cuts = events.map((ev, i) => ({ ev, i })).filter(({ ev }) => ev && !ev.aired && !dup(ev) && saysIn(ev).length && (ev.lines || []).length <= 7)
+      const cuts = events.map((ev, i) => ({ ev, i })).filter(({ ev }) => ev && !ev.aired && !dup(ev) && saysIn(ev).length && (ev.lines || []).length <= 7 && rawFits(ev, ep, phase))
         .sort((x, y) => saysIn(y.ev).filter(p => !shown.has(p)).length - saysIn(x.ev).filter(p => !shown.has(p)).length || x.i - y.i);
       const cutCap = phase === 'pre' ? 3 : 2;
       let cutN = 0;
@@ -349,10 +481,10 @@ export function airTdEpisode(ep) {
       for (const { ev, i } of cuts) {
         if (cutN >= cutCap) break;
         if (!saysIn(ev).some(p => !shown.has(p)) || rested(ev)) continue;
+        const item = longScene(ev, i);
         seasonAired['cut:' + topic(ev)] = ep.num;
         ev.aired = true;
         cutN++;
-        const item = longScene(ev, i);
         (item ? item.players : saysIn(ev)).forEach(p => shown.add(p));
         list.push({ at: i, item: item || { ref: i } });
       }
@@ -373,7 +505,7 @@ export function airTdEpisode(ep) {
       let placed = false;
       for (const phase of ['post', 'pre']) {
         const events = eventsOf(ep, camp, phase);
-        const i = events.findIndex(ev => ev && !ev.aired && speaksIn(ev).includes(name) && (ev.lines || []).length <= 8);
+        const i = events.findIndex(ev => ev && !ev.aired && speaksIn(ev).includes(name) && (ev.lines || []).length <= 8 && rawFits(ev, ep, phase));
         if (i >= 0) {
           events[i].aired = true;
           out[phase].push({ ref: i });
@@ -387,9 +519,23 @@ export function airTdEpisode(ep) {
       const sc = coverScene(ep, camp, phase, name, n++, knowsTribal(phase));
       if (sc) { out[phase].push(sc); spoke.add(name); }
     }
+    // a meal is a meal: whatever airs in the engine's own words about food is staged where the camp
+    // eats, at breakfast (the morning) or dinner (the evening), with everybody else eating too
+    for (const phase of ['pre', 'post']) {
+      const events = eventsOf(ep, camp, phase);
+      out[phase] = out[phase].map(it => {
+        if (it.story || it.ref == null) return it;
+        const ev = events[it.ref];
+        if (!ev || !(MEAL_TYPE.test(ev.type || '') || MEAL_KIND.test(ev.scene?.kind || ''))) return it;
+        const eat = placeOf(venueNow, 'eat', 0);
+        if (!eat) return it;
+        return { ...ev, story: true, ref: it.ref, ...(it.storyline ? { storyline: it.storyline } : {}),
+          scene: { ...(ev.scene || {}), spot: { id: eat.id, label: eat.label, fixed: true, window: phase === 'pre' ? 'morning' : 'before-tribal' } } };
+      });
+    }
     // the refs that were added late go back into the camp's own order
     for (const phase of ['pre', 'post']) {
-      const at = it => (it.ref != null ? it.ref : it.kind === 'story.morning' || it.kind?.startsWith('story.chal') ? -1 : 1e6);
+      const at = it => (/^story\.(firstday|morning|chal)/.test(it.kind || '') ? -1 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5) : it.ref != null ? it.ref : 1e6);
       out[phase].sort((x, y) => at(x) - at(y));
     }
     story[camp] = out;

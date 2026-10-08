@@ -7,14 +7,15 @@ import { PLACES } from '../js/td/story/places.js';
 import { TD_FACT_KEYS } from '../js/td/script/facts.js';
 import { campFeed } from '../js/td/story/feed.js';
 import { GUARANTEED as ENGINE_G } from '../js/td/script/lines/index.js';
+import { VOICE_TAGS } from '../js/td/story/voice.js';
 import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 
 // what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
 const STORY_FACTS = new Set([...TD_FACT_KEYS,
   'venue', 'count', 'outcome', 'story', 'step', 'prev', 'prevGap', 'chapter', 'members', 'aOther', 'bOther', 'target', 'group',
-  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC']);
+  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth']);
 // names a line may say, and the fact that must be asked for unless the pool always has it
-const ALWAYS = new Set(['a', 'b', 'c', 'd', 'quarters', 'bed', 'item', 'here', 'place', 'host', 'count']);
+const ALWAYS = new Set(['a', 'b', 'c', 'd', 'quarters', 'bed', 'item', 'here', 'place', 'host']);
 const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
   threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder' };
 // a pool's guarantees: names its moment always carries
@@ -27,6 +28,9 @@ const GUARANTEED = [
   [/^long\.fallout\.flip\.swap/, ['wrote', 'plan']],
   [/^long\.deal\.side/, ['size']],
   [/^booth\./, ['target', 'lastBoot']],
+  [/^story\.firstday\.history\.(siblings|family|cousins|couple|friends|knew|estranged|exes|exfriends)$/, ['kinWord']],
+  [/^story\.firstday\.history\.(wronged|wronger|oldflame|oldcouple|oldrivals|oldallies)$/, ['where']],
+  [/^story\.(firstday|firstpair)/, ['tribe']],
   [/^long\.cross\./, ['mine', 'theirs']],
   [/^long\.crowd\.huddle/, ['group']],
   [/^booth\.plan/, []],
@@ -56,7 +60,7 @@ describe('td story pools', () => {
   it('says an optional name only when the entry asks for it', () => {
     for (const [k, e] of all) {
       const g = guaranteed(k);
-      for (const t of e.turns) for (const m of String(t.say || t.conf || t.beat || '').matchAll(/\{(\w+)(?:\.\w+)?\}/g)) {
+      for (const t of e.turns) for (const m of [t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' ').matchAll(/\{(\w+)(?:\.\w+)?\}/g)) {
         const name = m[1];
         if (ALWAYS.has(name) || g.includes(name)) continue;
         if (name === 'lastBoot') { expect(e.when?.lastBoot === true || g.includes('lastBoot'), `${e.id} says {lastBoot}`).toBe(true); continue; }
@@ -66,6 +70,15 @@ describe('td story pools', () => {
         expect(e.when?.[need], `${e.id} says {${name}} without asking for "${need}"`).toBeTruthy();
       }
     }
+  });
+
+  it('keys every voice variant on a tag voice.js gives people', () => {
+    for (const [, e] of all) for (const t of e.turns) for (const k of Object.keys(t.v || {})) expect(VOICE_TAGS.includes(k), `${e.id}: variant '${k}'`).toBe(true);
+    for (const [, e] of all) for (const f of ['voice', 'voiceB', 'voiceC']) for (const t of [].concat(e.when?.[f] || [])) expect(VOICE_TAGS.includes(t), `${e.id}: ${f} '${t}'`).toBe(true);
+  });
+
+  it("never uses {count} (it is the number of players left, not a record)", () => {
+    for (const [, e] of all) for (const t of e.turns) expect(/\{count\}/.test([t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' ')), e.id).toBe(false);
   });
 
   it('stages every entry in a kind of place the venues know', () => {
@@ -124,7 +137,9 @@ describe('a season through the director', () => {
   it('never stages two written scenes on the same spot at the same time', () => {
     for (const ep of eps) for (const camp of Object.keys(ep.campStory)) for (const ph of ['pre', 'post']) {
       const seen = new Set();
-      for (const it of ep.campStory[camp][ph].filter(x => x.story && x.scene?.spot?.id && x.scene.spot.id !== 'confessional')) {
+      // a meal is the one place the whole camp shares (td/story/write.js): it is exempt
+      const eats = new Set(Object.values(PLACES).flatMap(v => v.eat || []));
+      for (const it of ep.campStory[camp][ph].filter(x => x.story && x.scene?.spot?.id && x.scene.spot.id !== 'confessional' && !eats.has(x.scene.spot.id))) {
         const k = `${it.scene.spot.window || ''}|${it.scene.spot.id}`;
         expect(seen.has(k), `ep ${ep.num} ${camp}/${ph} ${k}`).toBe(false);
         seen.add(k);

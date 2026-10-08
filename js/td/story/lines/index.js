@@ -22,8 +22,11 @@ import tribal from './tribal.js';
 import crowd from './crowd.js';
 import life from './life.js';
 import tribal2 from './tribal2.js';
+import firstday from './firstday.js';
+import rewrite1 from './rewrite1.js';
+import rewrite2 from './rewrite2.js';
 
-const FILES = [morning, chal, cover, alliance, alliance2, morning2, chal2, deals, rivalry, showmance, strategy, more, booth, tribal, crowd, life, tribal2];
+const FILES = [morning, chal, cover, alliance, alliance2, morning2, chal2, deals, rivalry, showmance, strategy, more, booth, tribal, crowd, life, tribal2, rewrite1, rewrite2, firstday];
 
 export const STORY_POOLS = {};
 for (const f of FILES) for (const [k, v] of Object.entries(f)) STORY_POOLS[k] = STORY_POOLS[k] ? [...STORY_POOLS[k], ...v] : [...v];
@@ -33,7 +36,10 @@ for (const f of FILES) for (const [k, v] of Object.entries(f)) STORY_POOLS[k] = 
 // c says so with `cOptional: true`.
 for (const pool of Object.values(STORY_POOLS)) {
   for (const e of pool) {
-    const usesC = (e.turns || []).some(t => t.by === 'c' || /\{c(\.\w+)?\}/.test(t.say || t.conf || t.beat || ''));
+    const usesC = (e.turns || []).some(t => t.by === 'c' || /\{c(\.\w+)?\}/.test([t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' ')));
     if (usesC && !e.cOptional && e.when?.third === undefined) e.when = { ...(e.when || {}), third: true };
+    // ...and a fourth person the same way
+    const usesD = (e.turns || []).some(t => t.by === 'd' || /\{d(\.\w+)?\}/.test([t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' ')));
+    if (usesD && e.when?.fourth === undefined) e.when = { ...(e.when || {}), fourth: true };
   }
 }

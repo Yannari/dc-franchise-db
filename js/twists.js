@@ -5,6 +5,7 @@ import { getBond, addBond, floorBondsInvolving } from './bonds.js';
 import { reassignCoaches } from './coaches.js';
 import { wRandom, computeHeat, formAlliances, nameNewAlliance } from './alliances.js';
 import { runAuction } from './auction.js';
+import { writeArrival } from './td/story/arrival.js';
 import { simulateDisadvantageVote } from './disadvantage-vote.js';
 
 export const JOURNEY_CHALLENGES = [
@@ -601,7 +602,7 @@ export function generateDockArrivals(ep) {
     const playerPool = isReturnee
       ? (DOCK_RETURNEE_LINES[arch] || DOCK_RETURNEE_LINES.floater)
       : (DOCK_PLAYER_LINES[arch] || DOCK_PLAYER_LINES.floater);
-    const playerLine = _pickUnique(playerPool, usedPlayerLines);
+    let playerLine = _pickUnique(playerPool, usedPlayerLines);
 
     // Dock reaction: each reactor can only react once
     let dockReaction = null;
@@ -626,9 +627,24 @@ export function generateDockArrivals(ep) {
       }
     }
 
+    // The arrival as a small scene in the camp's voice system (td/story/arrival.js): the host's
+    // introduction, their entrance, and a moment with somebody already there who has a reason
+    // (a shared past, a fan of a returnee, the archetypes' chemistry chosen above). The one-liners
+    // above stay as the fallback and for older readers.
+    let scene = null;
+    try {
+      scene = writeArrival({ ep, p: { ...p, isReturnee }, n: i, host, venue: seasonConfig.setting || 'hosted-camp',
+        onDock: onDock.map(d => ({ name: d.name, isReturnee: !!d.isReturnee })), chem: dockReaction ? { reactor: dockReaction.reactor, chemType: dockReaction.chemType } : null });
+    } catch (e) { if (typeof process !== 'undefined' && process.env?.VITEST) throw e; }
+    if (scene) {
+      hostLine = scene.hostLine || hostLine;
+      playerLine = scene.playerLine || playerLine;
+      dockReaction = scene.dockReaction || null;
+      if (dockReaction?.reactor) reactedPlayers.add(dockReaction.reactor);
+    }
     arrivals.push({
       name: p.name, order: i, archetype: arch, isReturnee,
-      hostLine, playerLine, dockReaction, statFlavor,
+      hostLine, playerLine, dockReaction, statFlavor, lines: scene?.lines || null,
     });
 
     onDock.push(p);

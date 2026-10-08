@@ -13,7 +13,7 @@ import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 // what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
 const STORY_FACTS = new Set([...TD_FACT_KEYS,
   'venue', 'count', 'outcome', 'story', 'step', 'prev', 'prevGap', 'chapter', 'members', 'aOther', 'bOther', 'target', 'group',
-  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair']);
+  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB']);
 // names a line may say, and the fact that must be asked for unless the pool always has it
 const ALWAYS = new Set(['a', 'b', 'c', 'd', 'quarters', 'bed', 'item', 'here', 'place', 'host']);
 const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
@@ -34,6 +34,9 @@ const GUARANTEED = [
   [/^long\.cross\./, ['mine', 'theirs']],
   [/^long\.crowd\.huddle/, ['group']],
   [/^booth\.plan/, []],
+  [/^arrive\./, ['landing']],
+  [/^arrive\.meet\.history\.(siblings|family|cousins|couple|friends|knew|estranged|exes|exfriends)$/, ['kinWord']],
+  [/^arrive\.meet\.history\.(wronged|wronger|oldflame|oldcouple|oldrivals|oldallies)$/, ['where']],
   [/^story\.vote\.(plan|swing)\./, ['target', 'votes']],
   [/^story\.vote\.other\./, ['target']],
   [/^story\.vote\.target\./, ['wrote']],

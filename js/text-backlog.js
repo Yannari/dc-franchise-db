@@ -3497,6 +3497,11 @@ export function _textDockArrivals(ep, ln, sec) {
   const _arr = (typeof settingArrival === 'function') ? settingArrival() : null;
   if (_arr) ln(`The ${ep.dockArrivals.length} players arrive by ${_arr.vehicle} ${_arr.onPoint}. ${_arr.headline}`);
   ep.dockArrivals.forEach(a => {
+    // the arrival as a scene (td/story/arrival.js), every line the viewer plays
+    if (a.lines?.length) {
+      for (const l of a.lines) ln(l.kind === 'beat' ? `  (${l.text})` : l.kind === 'conf' ? `[${l.by} - confessional] ${l.text}` : `[${l.by}] ${l.text}`);
+      return;
+    }
     ln(`[${host}] ${a.hostLine}`);
     ln(`[${a.name}] ${a.playerLine}`);
     if (a.dockReaction) ln(`  ${a.dockReaction.text}`);

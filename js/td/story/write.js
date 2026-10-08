@@ -55,7 +55,8 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     if (facts.venue !== 'survival-island' && /coconut/i.test(text)) return false;
     if (!foodOk(facts.venue, text)) return false;
     // strangers don't share a past: no "always" or "again" early on unless they really have one
-    const strangers = (ctx.ep || 0) <= 2 && (facts.hist || 'none') === 'none' && (facts.prev || 'none') === 'none';
+    // (a returnee's own entrance may talk about their last season: that past is theirs, not shared)
+    const strangers = (ctx.ep || 0) <= 2 && (facts.hist || 'none') === 'none' && (facts.prev || 'none') === 'none' && !(facts.returnee && !who.b);
     if (strangers && HISTORY.test(text)) return false;
     // before the season's first vote nobody has been voted for, or nearly
     if (!facts.voteYet && /\b(voted|last vote|the vote last|wrote (my|your|his|her|their) name|on the edge of a vote|been on the edge|last night)\b/i.test(text)) return false;

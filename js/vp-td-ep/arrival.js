@@ -76,9 +76,23 @@ export function tdArrivalScreen(ep, o = {}) {
     scene([a.name, ...(reactor ? [reactor] : [])], { act: { kind: 'arrive', who: [a.name], ride: showRide && !groupRide ? ride : 'walk' } });
     steps.push({ k: 'intro', who: a.name, tag: TAG[a.archetype] || '', age: p.age || null, job: p.occupation || null, home: p.hometown || null,
       returnee: !!a.isReturnee, stats, n: here.length + 1, of: ep.dockArrivals.length, ride: A.ride });
-    if (a.hostLine) steps.push({ k: 'say', by: host, host: true, text: cleanText(a.hostLine), focus: [a.name] });
-    if (a.playerLine) steps.push({ k: 'say', by: a.name, text: cleanText(a.playerLine), focus: [a.name], loud: /!/.test(a.playerLine) });
-    if (reactor && a.dockReaction.text) steps.push({ k: 'say', by: reactor, text: cleanText(a.dockReaction.text), focus: [reactor, a.name], act: { kind: 'lean', who: [reactor, a.name] } });
+    if (a.lines?.length) {
+      // the arrival as a scene (td/story/arrival.js): the host, the newcomer, and whoever on the dock
+      // has a reason to say something, each line its own beat
+      for (const l of a.lines) {
+        const text = cleanText(l.text);
+        if (!text) continue;
+        if (l.kind === 'beat') steps.push({ k: 'beat', text, focus: [a.name, ...(reactor ? [reactor] : [])] });
+        else if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text });
+        else if (l.by === host) steps.push({ k: 'say', by: host, host: true, text, focus: [a.name] });
+        else steps.push({ k: 'say', by: l.by, text, focus: l.by === a.name ? [a.name, ...(reactor ? [reactor] : [])] : [l.by, a.name], loud: /!/.test(text),
+          ...(l.by === reactor ? { act: { kind: 'lean', who: [reactor, a.name] } } : {}) });
+      }
+    } else {
+      if (a.hostLine) steps.push({ k: 'say', by: host, host: true, text: cleanText(a.hostLine), focus: [a.name] });
+      if (a.playerLine) steps.push({ k: 'say', by: a.name, text: cleanText(a.playerLine), focus: [a.name], loud: /!/.test(a.playerLine) });
+      if (reactor && a.dockReaction.text) steps.push({ k: 'say', by: reactor, text: cleanText(a.dockReaction.text), focus: [reactor, a.name], act: { kind: 'lean', who: [reactor, a.name] } });
+    }
     here.push(a.name);
   }
   if (A.close === 'jet') { steps.push({ k: 'beat', text: `Chef rolls the Total Drama Jumbo Jet up the runway. It does not look safe.`, act: { kind: 'ride', ride: 'jet' } });

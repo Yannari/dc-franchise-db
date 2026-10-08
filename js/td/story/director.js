@@ -188,13 +188,13 @@ function afterChallenge(ep, camp, members, n) {
 }
 
 // Somebody the episode has not heard from: a confessional about where they stand.
-function coverScene(ep, camp, phase, name, n) {
+function coverScene(ep, camp, phase, name, n, tribal = false) {
   const lt = lastTribalOf(name, ep.num);
   const lines = (gs.tdStory?.lines || []).filter(l => l.people.includes(name) && l.steps.some(s => s.aired));
   const state = lt && lt.gap === 1 && lt.against > 0 ? 'votes' : lines.some(l => l.type === 'alliance') ? 'allied' : lines.length ? 'thread' : 'quiet';
   const who = { a: name };
   const data = lt && lt.gap === 1 ? { lastBoot: lt.boot } : {};
-  const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), outcome: state, lastBoot: !!data.lastBoot, phase };
+  const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), outcome: state, lastBoot: !!data.lastBoot, phase, tribal };
   const w = writeStory('story.cover', state, who, data, facts, { ep: ep.num, camp, phase, n, place: 'confessional' });
   return w ? { story: true, kind: 'story.cover', storyType: 'cover', step: state, players: [name], lines: w.lines, text: w.text, lineId: w.lineId,
     scene: { kind: 'story.cover', who, data, spot: { id: 'confessional' } }, badgeText: '', badgeClass: '' } : null;
@@ -213,6 +213,9 @@ export function airTdEpisode(ep) {
   for (const camp of Object.keys(ep.campEvents)) {
     const members = membersOf(ep, camp);
     const tribalTonight = !!(ep.tribalPlayers || []).some(p => members.includes(p)) && (ep.isMerge || gs.isMerged || ep.tribalTribe === camp || ep.loser?.name === camp);
+    // ...which a team only knows once it has lost the challenge: before it, a line may not say
+    // "tonight" unless everybody votes (the merge)
+    const knowsTribal = phase => (phase === 'post' || ep.isMerge || gs.isMerged ? tribalTonight : false);
     const spoke = new Set();
     const out = { pre: [], post: [] };
     for (const phase of ['pre', 'post']) {
@@ -267,12 +270,12 @@ export function airTdEpisode(ep) {
         const who = { ...(ev.scene?.who || { a: step.roles.a, b: step.roles.b, c: step.roles.c }) };
         const rec = recordSlots(ep, who.a, who.b, camp, phase);
         const data = { ...rec.data, ...(ev.scene?.data || {}) };
-        const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: tribalTonight }), ...(ev.scene?.facts || {}), ...rec.facts,
+        const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), ...(ev.scene?.facts || {}), ...rec.facts,
           ...Object.fromEntries(['ending', 'result', 'intent', 'reason', 'again', 'size'].filter(k => ev.scene?.data?.[k] != null).map(k => [k, ev.scene.data[k]])),
           ...Object.fromEntries(['rival', 'friend', 'threat', 'weak', 'group', 'plan', 'boot', 'wrote', 'fallen', 'more', 'betrayer', 'holder', 'wins', 'other', 'target'].map(k => [k, !!data[k]])),
           story: line.type, step: step.step, prev: prev ? prev.step : 'none', chapter: Math.min(3, line.steps.filter(s => s.aired).length + 1),
           prevGap: prev ? (ep.num - prev.ep >= 3 ? 'long' : ep.num === prev.ep ? 'same' : 'recent') : 'none',
-          tribal: tribalTonight, phase, third: !!who.c, known: !!data.target && !Object.values(who).includes(data.target),
+          tribal: knowsTribal(phase), phase, third: !!who.c, known: !!data.target && !Object.values(who).includes(data.target),
           ...allianceFacts(ev, who, data) };
         const pool = kind ? `long.${kind}` : null;
         const w = pool && hasStoryPool(pool) ? writeStory(pool, ending, who, data, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', spotId: ev.scene?.spot?.id || ev.access?.locationId || null, avoid: ctxAvoid(ev.scene?.spot?.window || ev.access?.windowId) }) : null;
@@ -325,7 +328,7 @@ export function airTdEpisode(ep) {
       }
       if (placed) continue;
       const phase = out.post.length ? 'post' : 'pre';
-      const sc = coverScene(ep, camp, phase, name, n++);
+      const sc = coverScene(ep, camp, phase, name, n++, knowsTribal(phase));
       if (sc) { out[phase].push(sc); spoke.add(name); }
     }
     // the refs that were added late go back into the camp's own order

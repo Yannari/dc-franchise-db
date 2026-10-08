@@ -48,6 +48,10 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   let entry = null;
   for (const k of keys) {
     const fits = (STORY_POOLS[k] || []).filter(e => placeOk(e) && Object.entries(e.when || {}).every(([f, v]) => (Array.isArray(v) ? v.includes(facts[f]) : facts[f] === v)));
+    // nobody plays the same scene twice in a season: once everything that fits has been said
+    // by one of these people, the moment airs in its own short words instead (director.js)
+    const saidBy = ledger().by || {};
+    for (let i = fits.length - 1; i >= 0; i--) if (speakers.some(sp => (saidBy[fits[i].id] || []).includes(sp))) fits.splice(i, 1);
     if (!fits.length) continue;
     entry = pickEntry(ledger(), { [k]: fits }, k, facts, pairKey, rng, speakers, ctx.ep * 10 + (ctx.phase === 'post' ? 2 : 0));
     if (entry) break;
@@ -65,7 +69,8 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   // a turn for a part nobody plays (no {c} in this scene) is dropped, never left blank
   const lines = entry.turns.filter(t => !t.by || who[t.by]).map(t => {
     const kind = t.conf ? 'conf' : t.beat ? 'beat' : 'say';
-    return { kind, by: t.by ? who[t.by] : null, text: fill(t.conf || t.beat || t.say, who, data) };
+    const text = fill(t.conf || t.beat || t.say, who, data);
+    return { kind, by: t.by ? who[t.by] : null, text: text.charAt(0).toUpperCase() + text.slice(1) };
   });
   if (lines.some(l => /\{\w+(\.\w+)?\}/.test(l.text))) throw new Error(`td story ${entry.id}: unfilled slot in "${lines.find(l => /\{\w+/.test(l.text)).text}"`);
   return { lines, text: transcript(lines), lineId: entry.id, spot: spot ? { id: spot.id, label: spot.label } : null };

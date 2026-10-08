@@ -15,7 +15,7 @@ const STORY_FACTS = new Set([...TD_FACT_KEYS,
 // names a line may say, and the fact that must be asked for unless the pool always has it
 const ALWAYS = new Set(['a', 'b', 'c', 'd', 'quarters', 'bed', 'item', 'here', 'place', 'host', 'count']);
 const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
-  threat: 'threat', weak: 'weak', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder' };
+  threat: 'threat', weak: 'weak', target: 'target', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder' };
 // a pool's guarantees: names its moment always carries
 const GUARANTEED = [
   [/^story\.morning\./, ['lastBoot', 'target', 'bootVotes']],
@@ -25,6 +25,7 @@ const GUARANTEED = [
   [/^long\.alliance\.form\.enemy/, ['target']],
   [/^long\.fallout\.flip\.swap/, ['wrote', 'plan']],
   [/^long\.deal\.side/, ['size']],
+  [/^long\.(talk\.lie\.about|drama\.paranoia\.quiet|romance\.tri\.(exploit|cut-))/, ['target']],
 ];
 const guaranteed = key => GUARANTEED.filter(([re]) => re.test(key)).flatMap(([, n]) => n);
 
@@ -63,6 +64,11 @@ describe('td story pools', () => {
   it('never puts a present-tense verb after a pronoun ("they was", "they thinks")', () => {
     const bad = /\{\w+\.(sub|Sub)\}('s\b|\s+(was|is|has|sits|trusts|thinks|runs|wants|does|talks|likes|knows|goes|says|gets|needs|keeps|looks|seems|means|makes|takes|gives|feels|plays)\b)/;
     for (const [, e] of all) for (const t of e.turns) expect(bad.test(t.say || t.conf || t.beat || ''), `${e.id}: ${t.say || t.conf || t.beat}`).toBe(false);
+  });
+
+  it('says none of the things the user has struck out (a spoken "...", therapy-speak)', () => {
+    const banned = [/^\s*\.\.\.\s*$/, /that means a lot/i, /thank you\. i mean it/i, /i hear you/i, /hold space/i, /it is what it is/i];
+    for (const [, e] of all) for (const t of e.turns) for (const re of banned) expect(re.test(t.say || t.conf || ''), `${e.id}: ${t.say || t.conf}`).toBe(false);
   });
 
   it('lets a third person into a scene only when there is one', () => {

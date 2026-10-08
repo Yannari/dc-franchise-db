@@ -1,0 +1,321 @@
+// ══════════════════════════════════════════════════════════════════════
+// td/story/lines/n-tribal.js — the booth, the reading, the last words, after
+// ══════════════════════════════════════════════════════════════════════
+//
+// td/story/tribal.js. booth.<why>: a = the voter, {target} = who they wrote; one line, their
+// own words. why: plan, weak, threat, grudge, flip, strike, shield, self. Facts: band (a with
+// {target}), group / {group} (a real named alliance), sankT ({target} had the team's lowest
+// score), merged, late.
+//   reveal.<blindside|expected>  a = the one going home; b = closest voter for a (blindside)
+//     or a's closest; c = another. count: true where the votes are read out.
+//   exit.<friend|shot|alone>  a = the one going home; b = their person / the one they blame.
+//   after.<architect|friend|guilty>  a's confessional after {lastBoot} goes.
+
+const B = (id, conf, when, v) => ({ id, ...(when ? { when } : {}), turns: [{ by: 'a', conf, ...(v ? { v } : {}) }] });
+
+export default {
+  'booth.plan': [
+    B('nb.p1', "{target}. That's the plan.", null, { dry: "{target}. Not exciting. Just the plan.", warm: "Sorry, {target}. It's the plan. I hope you know it's not personal.", loud: "{target}! Let's go!" }),
+    B('nb.p2', "Everybody I trust is writing {target}, so I'm writing {target}.", null, { anxious: "Everybody said {target}. I really hope everybody meant it.", schemer: "Everyone's on {target}. I made sure of that." }),
+    B('nb.p3', "{group} said {target}. So it's {target}.", { group: true }, { bossy: "{group} decided. {target}. We don't break.", earnest: "I promised {group}. So it's {target}." }),
+    B('nb.p4', "I don't love this one. But the numbers are on {target}, and I'm not going to be the person who messes it up."),
+    B('nb.p5', "Sorry, {target}. It's nothing personal. It's just where the votes are.", { band: ['friends', 'neutral'] }),
+    B('nb.p6', "We agreed on {target}. If I change my vote now, I'm the one going next."),
+    B('nb.p7', "{target}. Easy.", null, { cruel: "{target}. Bye.", competitive: "{target}. Let's keep it moving." }),
+    B('nb.p8', "I'm writing {target} because my people are writing {target}. That's the reason.", null, { tough: "My people said {target}. That's all I need." }),
+    B('nb.p9', "I really hope this is the right call. {target}.", null, { ditzy: "Is it {target}? It's {target}. Okay. I'm pretty sure it's {target}." }),
+    B('nb.p10', "{target}, you're a good person. It just has to be you tonight.", { band: 'friends' }),
+    B('nb.p11', "Honestly, I don't have a problem with {target}. I just don't want to go home."),
+    B('nb.p12', "{group} has stuck together this far. I'm not the one who breaks it. {target}.", { group: true }),
+    B('nb.p13', "The plan was set this afternoon. I'm sticking with it. {target}."),
+    B('nb.p14', "Everyone said {target}, so here I am, writing {target}.", null, { goofy: "Everybody said {target}, and I'm a people person. {target}." }),
+    B('nb.p15', "I said I'd vote {target}. I keep my word. {target}.", null, { earnest: "I gave my word. {target}." }),
+    B('nb.p16', "Not my favourite vote. Still my vote. {target}."),
+    B('nb.p17', "If I'm wrong, at least I'm wrong with everybody else. {target}."),
+    B('nb.p18', "This late in the game, you don't go off on your own. {target}.", { late: true }),
+    B('nb.p19', "{target}, I'm sorry. I really am.", { band: ['friends', 'neutral'] }, { emotional: "{target}, I'm so sorry. I'm going to cry. I'm not going to cry. Okay. {target}." }),
+    B('nb.p20', "We counted. Twice. {target}.", null, { nerdy: "I ran the numbers three times. {target}." }),
+    B('nb.p21', "{target}. I just want tonight to go the way we planned it."),
+    B('nb.p22', "{target}. We need to win challenges, and this is what the team wants.", { merged: false }),
+    B('nb.p23', "I'm voting {target}, and tomorrow I find out if I picked the right side."),
+    B('nb.p24', "{target}. Majority. Moving on."),
+    B('nb.p25', "It's {target} tonight. Tomorrow, who knows.", null, { calm: "{target}. Tomorrow's tomorrow's problem." }),
+    B('nb.p26', "{target}. I trust the people I'm voting with. That's all I've got."),
+    B('nb.p27', "{target}. I'll say sorry later."),
+    B('nb.p28', "{target}. I hope I don't regret this.", null, { anxious: "{target}. Oh, I hope I don't regret this." }),
+  ],
+  'booth.weak': [
+    B('nb.w1', "{target}. We keep losing, and you were last today.", { sankT: true }),
+    B('nb.w2', "Team comes first. {target} is the weakest one we've got.", { merged: false }, { cruel: "{target}. You're the weakest one here and everybody knows it." }),
+    B('nb.w3', "{target}, you tried. It's just not enough."),
+    B('nb.w4', "I want to win challenges. {target} doesn't help us win challenges.", null, { competitive: "I came here to win. {target} isn't helping us win. Simple." }),
+    B('nb.w5', "Nothing personal, {target}. We need people who can pull their weight."),
+    B('nb.w6', "{target}. Everybody saw what happened today.", { sankT: true }),
+    B('nb.w7', "We lost because of {target}. I'm not going to pretend we didn't.", { sankT: true }),
+    B('nb.w8', "If we want to make it to the merge, {target} has to go.", { merged: false }),
+    B('nb.w9', "Sorry, {target}. If we lose again, it's my name. I'd rather it was yours tonight."),
+    B('nb.w10', "I feel bad, I do. {target} tries really hard. But we have to start winning.", null, { warm: "I feel awful. {target} is so sweet. But we have to start winning." }),
+    B('nb.w11', "Weakest player, easiest vote. {target}."),
+  ],
+  'booth.threat': [
+    B('nb.t1', "{target}. You're too good at this. That's a compliment."),
+    B('nb.t2', "If {target} makes it to the end, {target} wins. So {target} doesn't make it to the end."),
+    B('nb.t3', "Everybody likes {target}. Everybody. That's exactly the problem."),
+    B('nb.t4', "{target}, I see what you've been doing. You've been running this whole thing. Bye.", null, { dry: "{target} thinks nobody noticed. I noticed." }),
+    B('nb.t5', "I'd rather go after {target} now than watch {target} pick us off later."),
+    B('nb.t6', "{target} keeps winning. I'm tired of watching {target} win.", null, { competitive: "{target} keeps beating me. Can't beat {target} out there, so I'll beat {target} here." }),
+    B('nb.t7', "Big threat. Big move. {target}.", { merged: true }),
+    B('nb.t8', "{target} has a lot of friends. A lot of friends turns into a lot of jury votes.", { late: true }),
+    B('nb.t9', "I like {target}. I'd hate losing to {target} at the end way more.", { band: 'friends' }),
+    B('nb.t10', "Sorry, {target}. You're really good at this game. That's why.", null, { warm: "Sorry, {target}. You're amazing at this game. That's why it has to be you." }),
+    B('nb.t11', "If we don't get {target} tonight, we might never get another chance."),
+    B('nb.t12', "{target} is the smartest person here. Which makes {target} the most dangerous.", null, { nerdy: "{target} is the smartest person here. Second smartest. Either way, dangerous." }),
+  ],
+  'booth.grudge': [
+    B('nb.g1', "{target}. You know what you did.", null, { loud: "{target}! You KNOW what you did!", dry: "{target}. I think you know why." }),
+    B('nb.g2', "I've wanted to write this name for a while. {target}. Finally.", { band: ['enemies', 'cold'] }),
+    B('nb.g3', "{target}, you've been getting on my nerves since we got here. Enjoy the trip home.", null, { cruel: "{target}. Nobody's going to miss you. Least of all me." }),
+    B('nb.g4', "Something about {target} has felt off since day one. I'm done ignoring it."),
+    B('nb.g5', "{target}. This one's for me.", { band: ['enemies', 'cold'] }),
+    B('nb.g6', "I don't trust {target}. I never have. Tonight I don't have to."),
+    B('nb.g7', "{target}. It was never going to be anybody else.", { band: 'enemies' }),
+    B('nb.g8', "I'm not proud of it, but this one's personal. {target}.", null, { warm: "I'm not proud of it. But {target} has been awful to me, and I'm done." }),
+    B('nb.g9', "{target}, this is for everything you said to me.", { band: ['enemies', 'cold'] }),
+    B('nb.g10', "I could say it's strategy. It's not. I just really don't like {target}.", null, { blunt: "Strategy? No. I can't stand {target}. That's it." }),
+  ],
+  'booth.flip': [
+    B('nb.f1', "Everybody thinks I'm voting with them tonight. I'm writing {target}."),
+    B('nb.f2', "My group's going one way. I'm going another. {target}."),
+    B('nb.f3', "I know what I said this afternoon. I changed my mind. {target}."),
+    B('nb.f4', "{target}. If this works, everybody's going to be talking about it. If it doesn't, I'm going home.", null, { loud: "{target}! Let's shake this whole thing up!" }),
+    B('nb.f5', "I can't believe I'm doing this. {target}. Oh my gosh.", null, { anxious: "Oh no. Oh no. {target}. I did it. Oh no." }),
+    B('nb.f6', "Time to make a move. {target}."),
+    B('nb.f7', "Sorry, everybody. I've got my own plan. {target}.", null, { schemer: "They think I'm their vote. I'm my vote. {target}." }),
+    B('nb.f8', "The name they gave me was one I couldn't write. So I'm writing {target}."),
+  ],
+  'booth.strike': [
+    B('nb.s1', "{target} was coming after me. I found out. So I'm going after {target} first."),
+    B('nb.s2', "You can't come after me and expect me to just sit there. {target}.", null, { tough: "You came for me, {target}. Now I'm coming for you." }),
+    B('nb.s3', "I heard my name came out of {target}'s mouth. So {target}'s name is going on my paper."),
+    B('nb.s4', "{target}, you should have been quieter.", null, { dry: "{target}. Next time, whisper." }),
+    B('nb.s5', "I didn't want it to be like this. But {target} started it.", null, { warm: "I didn't want to do this. {target} made it this way." }),
+    B('nb.s6', "Somebody told me {target} wants me gone. I believe them. {target}."),
+  ],
+  'booth.shield': [
+    B('nb.sh1', "If I write {target}, my person stays safe. That's what matters tonight."),
+    B('nb.sh2', "{target} goes so somebody I care about doesn't. That's the trade."),
+    B('nb.sh3', "Better {target} than the person I'm protecting."),
+    B('nb.sh4', "I'm not really voting against {target}. I'm voting for my friend to stay.", null, { warm: "I'm doing this for my friend. Sorry, {target}." }),
+    B('nb.sh5', "Everybody wanted my ally gone. I'm putting {target} down instead and praying enough people do too."),
+  ],
+  'booth.self': [
+    B('nb.x1', "{target}. If I'm going home, at least I'm not going quietly."),
+    B('nb.x2', "I think it might be me tonight. If it is, my last vote says {target}.", null, { anxious: "I think it's me. I really think it's me. {target}, I guess." }),
+    B('nb.x3', "I'm still here. I'm still fighting. {target}.", null, { tough: "They want me gone? They're going to have to work for it. {target}." }),
+    B('nb.x4', "Please, please let this be enough. {target}.", null, { emotional: "Please let this be enough. Please. {target}." }),
+    B('nb.x5', "{target}. I did everything I could today. The rest isn't up to me."),
+    B('nb.x6', "Everybody thinks I'm the easy vote. {target}. We'll see.", null, { schemer: "They think they have the numbers. {target}. We'll see who's right." }),
+    B('nb.x7', "{target}. And if it's me tonight, it's been a good run.", null, { goofy: "{target}. And if it's me, at least the food at home is better." }),
+    B('nb.x8', "I talked to everybody I could. {target}."),
+  ],
+
+  'reveal.blindside': [
+    { id: 'nr.b1', when: { count: true }, turns: [
+      { by: 'a', say: "What? No. No, that's not right.", v: { loud: "WHAT?! No way. No WAY!", dry: "Huh. Well. That's not how I thought that would go." } },
+      { by: 'a', say: "{b}? Did you write my name?" },
+      { by: 'b', say: "I hope you can respect a game move.", v: { cruel: "Did you really think you were safe?", warm: "I'm sorry. I'm really sorry." } },
+      { by: 'a', say: "A game move? I trusted you!" },
+      { by: 'b', say: "I know. That's why it worked." },
+    ] },
+    { id: 'nr.b2', when: { count: true, voice: ['loud', 'tough', 'blunt'] }, turns: [
+      { by: 'a', say: "Are you kidding me?!" },
+      { by: 'a', say: "Who was it? Say it to my face!" },
+      { by: 'b', say: "Nobody owes you that." },
+      { by: 'a', say: "Oh, it was you. Of course it was you." },
+      { by: 'c', say: "Just go. Please." },
+    ] },
+    { id: 'nr.b3', when: { count: true, voice: ['warm', 'anxious', 'emotional', 'earnest'] }, turns: [
+      { by: 'a', say: "Oh." },
+      { by: 'a', say: "Oh. Okay. I didn't... okay." },
+      { by: 'b', say: "I'm sorry." },
+      { by: 'a', say: "I thought we were okay. I really thought we were okay." },
+      { beat: "{b} looks at the ground." },
+    ] },
+    { id: 'nr.b4', when: { count: true, voice: ['schemer', 'calm', 'dry', 'proud'] }, turns: [
+      { by: 'a', say: "Well. That's impressive." },
+      { by: 'a', say: "{b}. I didn't think you had it in you." },
+      { by: 'b', say: "Neither did you. That's kind of the point." },
+      { by: 'a', say: "Enjoy it. It won't last." },
+    ] },
+    { id: 'nr.b5', when: { count: false }, turns: [
+      { by: 'a', say: "Wait. Me? It's me?" },
+      { by: 'a', say: "{b}, did you know about this?" },
+      { by: 'b', say: "{a}, I..." },
+      { by: 'a', say: "You knew. Wow." },
+    ] },
+    { id: 'nr.b6', when: { count: false, voice: ['loud', 'theatrical', 'chaotic'] }, turns: [
+      { by: 'a', say: "This is a joke, right? Tell me this is a joke!" },
+      { by: 'a', say: "Fine. Whoever did this, you'd better win, because I'm going to be cheering for literally anybody else." },
+      { by: 'b', say: "Bye, {a}." },
+    ] },
+    { id: 'nr.b7', when: { count: false, voice: ['warm', 'anxious', 'ditzy', 'earnest'] }, turns: [
+      { by: 'a', say: "Oh. That's me. Okay." },
+      { by: 'c', say: "I'm so sorry." },
+      { by: 'a', say: "It's fine. It's not fine. But it's fine." },
+    ] },
+    { id: 'nr.b8', when: { count: false, voice: ['schemer', 'calm', 'dry', 'competitive'] }, turns: [
+      { by: 'a', say: "Huh." },
+      { by: 'a', say: "Well played. Whoever you are. And I've got a pretty good guess." },
+      { beat: "{a} looks right at {b}. {b} doesn't look back." },
+    ] },
+    { id: 'nr.b9', when: { count: true }, turns: [
+      { by: 'a', say: "Hold on. Hold on. That can't be right." },
+      { by: 'a', say: "{b}, look at me. Did you do this?" },
+      { by: 'b', say: "It was the numbers." },
+      { by: 'a', say: "The numbers? Are you serious?" },
+      { by: 'c', say: "Oh, this is bad." },
+    ] },
+  ],
+  'reveal.expected': [
+    { id: 'nr.e1', turns: [
+      { by: 'a', say: "Yeah. I figured.", v: { dry: "Yeah. Saw that one coming from the dock." } },
+      { by: 'b', say: "I'm sorry." },
+      { by: 'a', say: "Don't be. I'd have done the same thing." },
+    ] },
+    { id: 'nr.e2', when: { voice: ['loud', 'tough', 'blunt'] }, turns: [
+      { by: 'a', say: "Wow. Okay. Cowards. Every single one of you." },
+      { by: 'b', say: "Nobody's a coward for voting." },
+      { by: 'a', say: "Then say it to my face. Who wrote it?" },
+      { beat: "Nobody says anything." },
+      { by: 'a', say: "Yeah. That's what I thought." },
+    ] },
+    { id: 'nr.e3', when: { voice: ['warm', 'anxious', 'emotional', 'earnest'] }, turns: [
+      { by: 'a', say: "I knew it. I knew it was going to be me." },
+      { by: 'b', say: "You did so well, though." },
+      { by: 'a', say: "Then why am I the one leaving?" },
+      { beat: "{b} doesn't have an answer for that." },
+    ] },
+    { id: 'nr.e4', when: { voice: ['schemer', 'cruel', 'proud'] }, turns: [
+      { by: 'a', say: "Fine. But you should all know you just voted out the only person who knew what was going on here." },
+      { by: 'c', say: "Sure you did." },
+      { by: 'a', say: "Ask {b} what {b}'s been up to. I'll wait." },
+      { by: 'b', say: "Don't drag me into this." },
+      { by: 'a', say: "Too late." },
+    ] },
+    { id: 'nr.e5', when: { voice: ['competitive', 'calm', 'dry'] }, turns: [
+      { by: 'a', say: "Yeah. I saw it coming." },
+      { by: 'a', say: "Good luck, everybody. You're going to need it in the next challenge." },
+    ] },
+    { id: 'nr.e6', when: { voice: ['goofy', 'food', 'ditzy', 'chaotic'] }, turns: [
+      { by: 'a', say: "Oh! Me? Oh. Okay." },
+      { by: 'a', say: "Okay. Bye, everybody. It was fun. Mostly.", v: { chaotic: "Okay! Okay. I'm going to go do something extremely weird with this information." } },
+      { by: 'c', say: "Bye, {a}." },
+    ] },
+  ],
+
+  'exit.friend': [
+    { id: 'nx.f1', when: { bVoted: 'other' }, turns: [
+      { by: 'b', say: "{a}! Wait!" },
+      { by: 'a', say: "Hey. It's okay." },
+      { by: 'b', say: "It's not okay. I didn't know. I swear I didn't know." },
+      { by: 'a', say: "I believe you. Now go win this. For both of us." },
+      { by: 'b', say: "I will. I promise." },
+    ] },
+    { id: 'nx.f2', when: { voice: ['warm', 'emotional', 'anxious', 'earnest'] }, turns: [
+      { by: 'a', say: "Hug. Now. Before I cry." },
+      { by: 'b', say: "You're already crying." },
+      { by: 'a', say: "Then hug faster." },
+      { beat: "They hug for a long time." },
+      { by: 'a', say: "Don't let them push you around, okay? Promise me." },
+      { by: 'b', say: "I promise." },
+    ] },
+    { id: 'nx.f3', when: { voice: ['loud', 'tough', 'blunt'] }, turns: [
+      { by: 'a', say: "Listen to me. Whoever did this, you make them pay." },
+      { by: 'b', say: "I will." },
+      { by: 'a', say: "And win. Win so big they never stop talking about it." },
+      { by: 'b', say: "That's the plan." },
+    ] },
+    { id: 'nx.f4', when: { voice: ['schemer', 'calm', 'dry', 'competitive'] }, turns: [
+      { by: 'a', say: "You're on your own now. Be smarter than I was." },
+      { by: 'b', say: "You were smart." },
+      { by: 'a', say: "Not smart enough to still be here. Don't trust anybody who's nice to you at breakfast." },
+      { by: 'b', say: "Got it." },
+    ] },
+    { id: 'nx.f5', turns: [
+      { by: 'b', say: "This sucks. This really sucks." },
+      { by: 'a', say: "Yeah. It does." },
+      { by: 'b', say: "I don't know what I'm going to do without you." },
+      { by: 'a', say: "You're going to keep going. And when you win, you're splitting the money with me." },
+      { by: 'b', say: "Deal." },
+    ] },
+    { id: 'nx.f6', when: { bVoted: 'other' }, turns: [
+      { by: 'b', say: "I didn't write your name. I need you to know that." },
+      { by: 'a', say: "I know you didn't." },
+      { by: 'b', say: "I'm going to find out who did." },
+      { by: 'a', say: "Don't waste your time on revenge. Just beat them." },
+      { by: 'b', say: "Can't I do both?" },
+      { by: 'a', say: "...Okay. Both." },
+    ] },
+    { id: 'nx.f7', when: { bVoted: 'boot' }, turns: [
+      { by: 'b', say: "{a}, wait. I'm sorry." },
+      { by: 'a', say: "Sorry for what?" },
+      { by: 'b', say: "For tonight." },
+      { by: 'a', say: "...You voted for me." },
+      { by: 'b', say: "I didn't have a choice." },
+      { by: 'a', say: "Everybody has a choice. You made yours." },
+      { beat: "{a} walks off. {b} doesn't follow." },
+    ] },
+  ],
+  'exit.shot': [
+    { id: 'nx.s1', turns: [
+      { by: 'a', say: "Hey, {b}! Enjoy it while it lasts. Everybody knows what you are now." },
+    ] },
+    { id: 'nx.s2', when: { voice: ['loud', 'tough', 'blunt', 'chaotic'] }, turns: [
+      { by: 'a', say: "And {b}? I hope you're next! I hope you're next and I get to watch!" },
+      { by: 'b', say: "Bye!" },
+    ] },
+    { id: 'nx.s3', when: { voice: ['schemer', 'cruel', 'dry', 'calm'] }, turns: [
+      { by: 'a', say: "{b}. You're next. You just don't know it yet." },
+      { by: 'b', say: "Is that a threat?" },
+      { by: 'a', say: "It's a prediction." },
+    ] },
+    { id: 'nx.s4', when: { voice: ['warm', 'anxious', 'earnest', 'competitive'] }, turns: [
+      { by: 'a', say: "I hope it was worth it, {b}." },
+      { beat: "{b} doesn't answer." },
+    ] },
+    { id: 'nx.s5', turns: [
+      { by: 'a', say: "Oh, and {b}? Everybody knows it was you. Good luck getting anybody to trust you now." },
+      { by: 'b', say: "I'll be fine." },
+      { by: 'a', say: "We'll see." },
+    ] },
+  ],
+  'exit.alone': [
+    { id: 'nx.a1', turns: [{ by: 'a', conf: "I came here to win, and I didn't. But I'm not leaving with my head down.", v: { goofy: "I didn't win. But I ate a lot of terrible food and made some friends. That's kind of winning." } }] },
+    { id: 'nx.a2', when: { voice: ['loud', 'tough', 'blunt'] }, turns: [{ by: 'a', conf: "They got me. Fine. They're going to be sorry when they start losing without me." }] },
+    { id: 'nx.a3', when: { voice: ['warm', 'anxious', 'earnest', 'emotional'] }, turns: [{ by: 'a', conf: "I'm sad. But I'm kind of proud of myself too. I didn't think I'd last this long." }] },
+    { id: 'nx.a4', when: { voice: ['schemer', 'cruel', 'proud'] }, turns: [{ by: 'a', conf: "I played them. Then they played me. Honestly? Fair enough." }] },
+    { id: 'nx.a5', when: { voice: ['competitive', 'calm', 'dry'] }, turns: [{ by: 'a', conf: "I gave it everything. It just wasn't enough tonight." }] },
+  ],
+
+  'after.architect': [
+    { id: 'nt.a1', turns: [{ by: 'a', conf: "{lastBoot} never saw it coming. That's the best kind of vote." }] },
+    { id: 'nt.a2', when: { voice: ['schemer', 'calm', 'dry'] }, turns: [{ by: 'a', conf: "Everybody thinks that vote just happened. It didn't just happen. I made it happen." }] },
+    { id: 'nt.a3', when: { voice: ['warm', 'anxious', 'earnest'] }, turns: [{ by: 'a', conf: "I feel bad about {lastBoot}. I really do. But I'm still here, and that's what I came for." }] },
+    { id: 'nt.a4', when: { voice: ['loud', 'tough', 'competitive'] }, turns: [{ by: 'a', conf: "One down. And I'm just getting started." }] },
+    { id: 'nt.a5', turns: [{ by: 'a', conf: "Tonight went exactly how we planned. That almost never happens." }] },
+    { id: 'nt.a6', when: { merged: true }, turns: [{ by: 'a', conf: "{lastBoot} was a threat. Now {lastBoot} is gone and I'm still here. I'll take that every time." }] },
+    { id: 'nt.a7', when: { voice: ['cruel', 'proud'] }, turns: [{ by: 'a', conf: "Bye, {lastBoot}. I won't miss you." }] },
+  ],
+  'after.friend': [
+    { id: 'nt.f1', turns: [{ by: 'a', conf: "They voted out {lastBoot} without even telling me. Okay. Now I know who I'm up against." }] },
+    { id: 'nt.f2', when: { voice: ['loud', 'tough', 'blunt'] }, turns: [{ by: 'a', conf: "Whoever did this just made the biggest mistake of their game. I'm coming for every single one of them." }] },
+    { id: 'nt.f3', when: { voice: ['warm', 'anxious', 'emotional', 'earnest'] }, turns: [{ by: 'a', conf: "I don't have {lastBoot} anymore. I don't really have anybody. I'm scared. But I'm not giving up." }] },
+    { id: 'nt.f4', when: { voice: ['schemer', 'calm', 'dry'] }, turns: [{ by: 'a', conf: "I'm not going to cry about {lastBoot}. I'm going to find out who did this, and I'm going to be very patient." }] },
+    { id: 'nt.f5', when: { voice: ['competitive', 'bossy'] }, turns: [{ by: 'a', conf: "{lastBoot} going home is on me. I should have seen it coming. I won't miss the next one." }] },
+  ],
+  'after.guilty': [
+    { id: 'nt.g1', turns: [{ by: 'a', conf: "I looked {lastBoot} in the eye tonight and wrote {lastBoot.posAdj} name down. I'm going to be thinking about that for a while." }] },
+    { id: 'nt.g2', when: { voice: ['schemer', 'cruel', 'calm'] }, turns: [{ by: 'a', conf: "{lastBoot} was my friend. {lastBoot} was also in my way. I had to pick one." }] },
+    { id: 'nt.g3', when: { voice: ['warm', 'anxious', 'earnest', 'emotional'] }, turns: [{ by: 'a', conf: "I voted for {lastBoot}. I had to. I keep telling myself I had to." }] },
+  ],
+};

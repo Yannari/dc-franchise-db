@@ -65,6 +65,8 @@ const ON = new Set(['dock', 'beach', 'forest-trail', 'cabins', 'shoreline', 'jun
   'western-set', 'city-set', 'cliff']);
 const prep = id => (IN.has(id) ? 'in' : ON.has(id) ? 'on' : 'at');
 
+const NEAR = { work: ['public', 'aside'], public: ['aside', 'work'], aside: ['secret', 'water', 'public'], secret: ['aside'], water: ['aside', 'public'], fire: ['public', 'aside'], sleep: ['aside', 'public'], wash: ['aside', 'sleep'], eat: ['public'] };
+
 const LABEL = id => (SAID[id] || id.replace(/-/g, ' ')).replace(/^the /, '').replace(/\b\w/g, c => c.toUpperCase());
 
 /** Whether a venue has a place of this kind. */
@@ -82,7 +84,11 @@ export function placeOf(venue, kind, roll = 0, avoid = null) {
   // the first free one from the roll on, else the roll's own
   const start = Math.floor(roll * list.length) % list.length;
   const order = list.map((_, i) => list[(start + i) % list.length]);
-  const id = order.find(x => !avoid?.has(x)) || order[0];
+  let id = order.find(x => !avoid?.has(x));
+  // every place of this kind is taken in this stretch of the day: a related kind, so two talks
+  // never share a spot (chores move to another public spot, a private word to another quiet one)
+  if (!id && avoid) for (const k of NEAR[kind] || []) { const alt = ((PLACES[venue] || PLACES['hosted-camp'])[k] || []).find(x => !avoid.has(x)); if (alt) { id = alt; break; } }
+  id ||= order[0];
   const said = SAID[id] || id.replace(/-/g, ' ');
   return { id, label: LABEL(id), said, here: id === 'trailers' ? said : `${prep(id)} ${said}` };
 }

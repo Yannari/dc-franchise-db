@@ -13,11 +13,11 @@ import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 // what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
 const STORY_FACTS = new Set([...TD_FACT_KEYS,
   'venue', 'count', 'outcome', 'story', 'step', 'prev', 'prevGap', 'chapter', 'members', 'aOther', 'bOther', 'target', 'group',
-  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth']);
+  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late']);
 // names a line may say, and the fact that must be asked for unless the pool always has it
 const ALWAYS = new Set(['a', 'b', 'c', 'd', 'quarters', 'bed', 'item', 'here', 'place', 'host']);
 const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
-  threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder' };
+  threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder', other: 'other', pitcher: 'pitcher' };
 // a pool's guarantees: names its moment always carries
 const GUARANTEED = [
   [/^story\.morning\./, ['lastBoot', 'target', 'bootVotes']],
@@ -34,6 +34,9 @@ const GUARANTEED = [
   [/^long\.cross\./, ['mine', 'theirs']],
   [/^long\.crowd\.huddle/, ['group']],
   [/^booth\.plan/, []],
+  [/^story\.vote\.(plan|swing)\./, ['target', 'votes']],
+  [/^story\.vote\.other\./, ['target']],
+  [/^story\.vote\.target\./, ['wrote']],
   [/^(reveal|exit|after)\./, ['lastBoot', 'item']],
   [/^long\.(talk\.lie\.about|drama\.paranoia\.quiet|romance\.tri\.(exploit|cut-))/, ['target']],
 ];
@@ -94,6 +97,17 @@ describe('td story pools', () => {
   it('says none of the things the user has struck out (a spoken "...", therapy-speak)', () => {
     const banned = [/^\s*\.\.\.\s*$/, /that means a lot/i, /thank you\. i mean it/i, /i hear you/i, /hold space/i, /it is what it is/i];
     for (const [, e] of all) for (const t of e.turns) for (const re of banned) expect(re.test(t.say || t.conf || ''), `${e.id}: ${t.say || t.conf}`).toBe(false);
+  });
+
+  // The rewrite's voice (docs/td-dialogue-style.md): plain, reactive speech. These are the tics the
+  // first pass was full of — aphorisms, epigram ping-pong, the narrator being clever in a beat.
+  it('writes the rewritten pools without the old tics', () => {
+    const TICS = [/\bout here,/i, /why not both/i, /that'?s the game\b/i, /\bnot an? [a-z]+\. it'?s an? /i, /it is not going well/i,
+      /neither of them moves/i, /that'?s an answer too/i, /\bthe thing about\b/i, /\bin this game, you\b/i, /some people .{0,20}, some people/i];
+    const fresh = all.filter(([, e]) => /^n[a-z]\./.test(e.id));
+    expect(fresh.length).toBeGreaterThan(300);
+    for (const [, e] of fresh) for (const t of e.turns) for (const text of [t.say, t.conf, t.beat, ...Object.values(t.v || {})].filter(Boolean))
+      for (const re of TICS) expect(re.test(text), `${e.id}: ${text}`).toBe(false);
   });
 
   it('lets a third person into a scene only when there is one', () => {

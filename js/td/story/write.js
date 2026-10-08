@@ -76,12 +76,25 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // nobody plays the same scene twice in a season: once everything that fits has been said
     // by one of these people, the moment airs in its own short words instead (director.js)
     const saidBy = ledger().by || {};
-    for (let i = fits.length - 1; i >= 0; i--) if (speakers.some(sp => (saidBy[fits[i].id] || []).includes(sp))) fits.splice(i, 1);
+    const fresh = fits.filter(e => !speakers.some(sp => (saidBy[e.id] || []).includes(sp)));
+    if (fresh.length || ctx.unique !== 'soft') fits.splice(0, fits.length, ...fresh);
     // ...and a whole scene airs once a season, whoever is in it (the user: "no repetitiveness across
     // the season"); the booth, where every voter needs a line every vote, only keeps the rule above
-    if (ctx.unique !== false) for (let i = fits.length - 1; i >= 0; i--) if ((ledger().uses || {})[fits[i].id]) fits.splice(i, 1);
+    // A scene every vote needs (the vote talked through, director.js voteTalk) is 'soft': once every
+    // fresh one has aired, the least-aired comes back rather than the vote going unexplained
+    const uses = ledger().uses || {};
+    if (ctx.unique === 'soft' && fits.length && fits.every(e => uses[e.id])) {
+      const least = Math.min(...fits.map(e => uses[e.id]));
+      for (let i = fits.length - 1; i >= 0; i--) if (uses[fits[i].id] > least) fits.splice(i, 1);
+    } else if (ctx.unique !== false) for (let i = fits.length - 1; i >= 0; i--) if (uses[fits[i].id]) fits.splice(i, 1);
     if (!fits.length) continue;
-    entry = pickEntry(ledger(), { [k]: fits }, k, facts, pairKey, rng, speakers, ctx.ep * 10 + (ctx.phase === 'post' ? 2 : 0));
+    // pickEntry checks `when` again against the facts, and the facts hold no voices: the voice gates
+    // were checked above, so it sees each entry without them (else no voiced entry ever aired)
+    const VOICE_KEYS = ['voice', 'voiceB', 'voiceC'];
+    const bare = fits.map(e => (e.when && VOICE_KEYS.some(x => x in e.when)
+      ? { ...e, when: Object.fromEntries(Object.entries(e.when).filter(([x]) => !VOICE_KEYS.includes(x))) } : e));
+    const picked = pickEntry(ledger(), { [k]: bare }, k, facts, pairKey, rng, speakers, ctx.ep * 10 + (ctx.phase === 'post' ? 2 : 0));
+    entry = picked ? fits[bare.indexOf(picked)] || picked : null;
     if (entry) break;
   }
   if (!entry) return null;

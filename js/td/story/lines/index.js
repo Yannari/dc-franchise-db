@@ -5,28 +5,24 @@
 // Keys are '<pool>.<outcome>' (write.js falls back to '<pool>.any'). Entry ids
 // are unique across files (tests/td-story.test.js). Written against
 // docs/td-dialogue-style.md.
-import morning from './morning.js';
-import chal from './chal.js';
 import cover from './cover.js';
-import alliance from './alliance.js';
-import alliance2 from './alliance2.js';
-import morning2 from './morning2.js';
-import chal2 from './chal2.js';
-import deals from './deals.js';
 import rivalry from './rivalry.js';
 import showmance from './showmance.js';
 import strategy from './strategy.js';
 import more from './more.js';
-import booth from './booth.js';
-import tribal from './tribal.js';
 import crowd from './crowd.js';
 import life from './life.js';
-import tribal2 from './tribal2.js';
 import firstday from './firstday.js';
+import nMorning from './n-morning.js';
+import nChal from './n-chal.js';
+import nTribal from './n-tribal.js';
+import nAlliance from './n-alliance.js';
+import nVote from './n-vote.js';
+import nVote2 from './n-vote2.js';
 import rewrite1 from './rewrite1.js';
 import rewrite2 from './rewrite2.js';
 
-const FILES = [morning, chal, cover, alliance, alliance2, morning2, chal2, deals, rivalry, showmance, strategy, more, booth, tribal, crowd, life, tribal2, rewrite1, rewrite2, firstday];
+const FILES = [cover, rivalry, showmance, strategy, more, crowd, life, rewrite1, rewrite2, firstday, nMorning, nChal, nTribal, nAlliance, nVote, nVote2];
 
 export const STORY_POOLS = {};
 for (const f of FILES) for (const [k, v] of Object.entries(f)) STORY_POOLS[k] = STORY_POOLS[k] ? [...STORY_POOLS[k], ...v] : [...v];

@@ -40,6 +40,8 @@ const keysFor = (pool, outcome) => [`${pool}.${outcome || 'any'}`, `${pool}.any`
  * Returns { lines, text, lineId } or null when no pool fits.
  */
 export function writeStory(pool, outcome, who, data, facts, ctx) {
+  // who is in the scene: b present or not ('pair'), checked like third/fourth (lines/index.js)
+  facts = { ...facts, pair: !!who.b, third: facts.third ?? !!who.c, fourth: facts.fourth ?? !!who.d };
   const keys = keysFor(pool, outcome);
   if (!keys.length) return null;
   const rng = stableRng('td-story', salt(), ctx.ep, ctx.camp || '', ctx.phase || '', pool, who.a || '', who.b || '', ctx.n || 0);
@@ -67,7 +69,7 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   };
   // the outcome's own pool first; '.any' only when nothing in it fits
   let entry = null;
-  for (const k of keys) {
+  const fitsFor = k => {
     // `voice` / `voiceB` ask for one of a or b's voice tags (voice.js); everything else is a fact
     const voiceFit = (want, name) => [].concat(want).some(t => voiceOf(name).includes(t));
     const fits = (STORY_POOLS[k] || []).filter(e => placeOk(e) && Object.entries(e.when || {}).every(([f, v]) =>
@@ -87,6 +89,16 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
       const least = Math.min(...fits.map(e => uses[e.id]));
       for (let i = fits.length - 1; i >= 0; i--) if (uses[fits[i].id] > least) fits.splice(i, 1);
     } else if (ctx.unique !== false) for (let i = fits.length - 1; i >= 0; i--) if (uses[fits[i].id]) fits.splice(i, 1);
+    return fits;
+  };
+  // A scene cast with three or four people plays a scene written for all of them: the extra people
+  // are not furniture (the user: "it's a whole conversation"). The outcome's own pool first, then
+  // '.any' for a full-cast scene, and only then a pair scene with the others standing by.
+  const listed = keys.map(k => [k, fitsFor(k)]);
+  const fullOf = f => (facts.fourth && f.some(e => e.when?.fourth === true) ? f.filter(e => e.when?.fourth === true)
+    : facts.third && f.some(e => e.when?.third === true) ? f.filter(e => e.when?.third === true) : null);
+  const order = [...listed.filter(([, f]) => fullOf(f)).map(([k, f]) => [k, fullOf(f)]), ...listed];
+  for (const [k, fits] of order) {
     if (!fits.length) continue;
     // pickEntry checks `when` again against the facts, and the facts hold no voices: the voice gates
     // were checked above, so it sees each entry without them (else no voiced entry ever aired)

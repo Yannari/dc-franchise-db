@@ -1,0 +1,610 @@
+// ══════════════════════════════════════════════════════════════════════
+// td/story/lines/n-talk.js — strategy talk, schemes, idols, reads
+// ══════════════════════════════════════════════════════════════════════
+//
+// Long versions of the engine's game moments (td/script/lines headers: mind.js, plans.js,
+// tests.js, plot.js, reads.js, adv.js, idol.js, blind.js, credit.js, goat.js, fallout.js,
+// threat.js). What a line may know follows those headers: a lie, a test, a play or a use is
+// admitted only in a's own confessional; blind.denial's a never knows b voted against a.
+//   talk.scramble  a, in trouble, works on b          talk.plan.<map|use|charm>  a talks strategy with b
+//   talk.approach.<outside|inside>  a offers b a way out of a's group / a pair inside it
+//   plan.probe     a sounds b out about the long game  talk.game  a and b compare notes
+//   talk.lie.about a feeds b a lie about {target}      talk.checkin  a checks b is still with a
+//   trade.info.<idol|any>  a trades b what a knows ({holder} has an idol)
+//   threat.notice  a, to camera, about b the threat    conf.<bigmove|excluded|paranoia>  a alone
+//   sitout.heat    a sat out and the team lost         blind.denial  b voted a; a still trusts b
+//   adv.exposed    a holds an idol on the way to vote  test.caught  a sees through b's test
+//   throw.caught.<bold|quiet>  a saw b (or {target}) throw the challenge
+//   credit.steal / credit.callout  the last vote's move, claimed / called out
+//   goat.kept      a thinks a is doing well; b knows why   blame.loss  a blames b for the loss
+//   fallout.found.one  a found out b wrote a's name    plot.lie / plot.whisper / plot.majority
+//   read.played / read.orchestrate  a works b without b knowing
+//   adv.search / adv.found.<idol|extravote|votesteal> / adv.share.close / idol.confide
+// Ids: 'nk.'.
+
+const C = (id, when, lines, v) => ({ id, place: 'confessional', ...(when ? { when } : {}), turns: lines.map((conf, i) => ({ by: 'a', conf, ...(i === 0 && v ? { v } : {}) })) });
+
+export default {
+  'long.talk.scramble.any': [
+    { id: 'nk.sc1', place: 'aside', when: { tribal: true, phase: 'post' }, turns: [
+      { beat: "{a} catches {b} {here} before {b} can get back to the others." },
+      { by: 'a', say: "Please just give me two minutes." },
+      { by: 'b', say: "Two minutes." },
+      { by: 'a', say: "I know my name's out there. I'm not stupid. I just need one more vote to make it close." },
+      { by: 'b', say: "And what happens if it's close?" },
+      { by: 'a', say: "Then people start second-guessing. And when people second-guess, things change." },
+      { by: 'b', say: "That's not a reason for me to vote with you." },
+      { by: 'a', say: "Okay. Here's a reason. Keep me, and I owe you. For the rest of the game." },
+      { by: 'b', conf: "{a} is desperate. Desperate people make big promises. I just don't know if {a} will be around long enough to keep this one." },
+      { by: 'a', conf: "I've talked to everyone I can. If I go tonight, at least I went down swinging." },
+    ] },
+    { id: 'nk.sc2', place: 'secret', when: { sankA: true }, turns: [
+      { by: 'a', say: "I know I was bad today. You don't have to tell me." },
+      { by: 'b', say: "I wasn't going to." },
+      { by: 'a', say: "Everyone else will. Tonight." },
+      { by: 'b', say: "Probably." },
+      { by: 'a', say: "So help me. Who else is weak? Who else could they go for?" },
+      { by: 'b', say: "You want me to throw someone under the bus for you?" },
+      { by: 'a', say: "I want you to help me find a bus that isn't going to hit me." },
+      { by: 'b', conf: "{a} came last today, and now {a} is shopping for a replacement. I respect it. I just don't want to be the replacement." },
+    ] },
+    { id: 'nk.sc3', place: 'aside', when: { voice: ['loud', 'tough', 'blunt', 'competitive'] }, turns: [
+      { by: 'a', say: "Who's saying my name?" },
+      { by: 'b', say: "Hi to you too." },
+      { by: 'a', say: "I'm serious. Somebody is. I can feel it. Everyone went quiet when I walked over." },
+      { by: 'b', say: "Maybe they were just quiet." },
+      { by: 'a', say: "Nobody here is just quiet! Tell me who it is." },
+      { by: 'b', say: "I don't know who it is." },
+      { by: 'a', conf: "{b} knows. Everybody knows. And nobody's telling me. Fine. I'll figure it out myself." },
+    ] },
+    { id: 'nk.sc4', place: 'aside', when: { voice: ['warm', 'anxious', 'earnest', 'emotional', 'ditzy'] }, turns: [
+      { by: 'a', say: "Can I ask you for something? It's big." },
+      { by: 'b', say: "What is it?" },
+      { by: 'a', say: "Can you not vote for me? I know that's a weird thing to ask. I just... I really want to stay." },
+      { by: 'b', say: "Who said I was going to vote for you?" },
+      { by: 'a', say: "Nobody. Everybody. I don't know. I'm just asking everyone." },
+      { by: 'b', say: "Okay. I'll think about it." },
+      { by: 'a', conf: "I don't know how to do strategy. I just know how to ask people nicely. I hope that's enough." },
+    ] },
+    { id: 'nk.sc5', place: 'secret', when: { merged: true }, turns: [
+      { by: 'a', say: "My old team's gone. It's basically just me now." },
+      { by: 'b', say: "I noticed." },
+      { by: 'a', say: "So I'm a free agent. I'll vote with whoever keeps me around." },
+      { by: 'b', say: "That's not exactly loyal." },
+      { by: 'a', say: "Loyal to who? Everyone I was loyal to is gone." },
+      { by: 'b', conf: "A person with no team will do anything for a vote. That makes {a} useful. It also makes {a} dangerous." },
+    ] },
+  ],
+  'long.talk.plan.map': [
+    { id: 'nk.pm1', place: 'secret', turns: [
+      { beat: "{a} draws lines in the dirt with a stick {here}. {b} watches." },
+      { by: 'a', say: "Okay. These are the people we have. These are the people we don't." },
+      { by: 'b', say: "That's a lot more people we don't." },
+      { by: 'a', say: "For now. Next vote, we take one from here. The one after, one from here." },
+      { by: 'b', say: "And who's after that?" },
+      { by: 'a', say: "After that, we'll see." },
+      { by: 'b', say: "That means one of us." },
+      { by: 'a', say: "That means we'll see." },
+      { beat: "{a} scuffs out the lines with {a.posAdj} foot." },
+      { by: 'b', conf: "{a} has the whole game planned out three votes ahead. I really hope I'm still on the map after vote three." },
+    ] },
+    { id: 'nk.pm2', place: 'aside', when: { tribal: true }, turns: [
+      { by: 'a', say: "Tonight's easy. It's after tonight I'm worried about." },
+      { by: 'b', say: "Why? We have the numbers." },
+      { by: 'a', say: "We have the numbers tonight. Once we use them, everybody knows who we are." },
+      { by: 'b', say: "So what do we do?" },
+      { by: 'a', say: "Tonight we vote with the majority. We stay quiet. We save the big moves for when nobody's watching us." },
+      { by: 'a', conf: "The person who makes the plan gets voted out next. I'd like someone else to look like they made the plan." },
+    ] },
+  ],
+  'long.talk.plan.use': [
+    { id: 'nk.pu1', place: 'aside', turns: [
+      { by: 'a', say: "You've been great, you know that? Seriously. You're the only one I trust." },
+      { by: 'b', say: "Really?" },
+      { by: 'a', say: "Really. So if anybody asks you what we're doing, you just send them to me. I'll handle it." },
+      { by: 'b', say: "Okay. Sure." },
+      { by: 'a', say: "And let me know who comes asking." },
+      { by: 'b', say: "I can do that." },
+      { by: 'a', conf: "{b} is my eyes and ears. {b} thinks we're partners. We are. I'm just the partner who decides things." },
+      { by: 'b', conf: "{a} trusts me. Finally, somebody does." },
+    ] },
+  ],
+  'long.talk.plan.charm': [
+    { id: 'nk.pc1', place: 'water', turns: [
+      { beat: "{a} and {b} are sitting {here}, feet in the water." },
+      { by: 'a', say: "Can I just say? You're so easy to talk to." },
+      { by: 'b', say: "Thanks. You too." },
+      { by: 'a', say: "Everyone else here is so intense. Not you. With you I can just be normal." },
+      { by: 'b', say: "That's really nice." },
+      { by: 'a', say: "We should stick together. I mean, we basically already are." },
+      { by: 'b', say: "Yeah. We should." },
+      { by: 'a', conf: "I didn't ask {b} for a vote. I didn't have to. {b} offered it without even noticing." },
+    ] },
+  ],
+  'long.talk.plan.any': [
+    { id: 'nk.pa1', place: 'work', when: { lastBoot: true }, turns: [
+      { beat: "{a} and {b} are hauling wood {here}. It's the first time they've been alone since {lastBoot} left." },
+      { by: 'b', say: "So that went how we wanted." },
+      { by: 'a', say: "It did. Now we have to pick the next one before somebody else picks for us." },
+      { by: 'b', say: "That fast?" },
+      { by: 'a', say: "It's always that fast. If we don't have a name, someone gives us one. Usually ours." },
+      { by: 'b', say: "Okay. Who are you thinking?" },
+      { by: 'a', say: "I'm thinking we listen today. See who's nervous. Nervous people make mistakes." },
+      { by: 'b', conf: "{lastBoot} has been gone one night and {a} is already on the next vote. I'm glad I'm on {a}'s side. I think I'm on {a}'s side." },
+    ] },
+    { id: 'nk.pa2', place: 'secret', turns: [
+      { by: 'a', say: "Where's your head at?" },
+      { by: 'b', say: "Honestly? All over the place. Yours?" },
+      { by: 'a', say: "Same. I just wanted to check I'm not the only one who doesn't know what's happening." },
+      { by: 'b', say: "You're definitely not." },
+      { by: 'a', say: "Good. Then let's not know what's happening together. Quietly." },
+      { by: 'b', conf: "{a} and I don't have a big plan. We just tell each other what we hear. That's worth more than most of the deals here." },
+    ] },
+    { id: 'nk.pa3', place: 'fire', when: { tribal: true }, turns: [
+      { by: 'b', say: "Are you nervous about tonight?" },
+      { by: 'a', say: "I'm always nervous about tonight." },
+      { by: 'b', say: "You don't look it." },
+      { by: 'a', say: "That's the whole trick. Look calm, vote with the group, go to bed." },
+      { by: 'b', say: "And if the group changes its mind?" },
+      { by: 'a', say: "Then I find out first. That's why I'm talking to you." },
+      { by: 'a', conf: "I don't need to run the vote. I just need to know where it's going before it gets there." },
+    ] },
+  ],
+  'long.talk.approach.outside': [
+    { id: 'nk.ao1', place: 'aside', turns: [
+      { beat: "{a} picks a moment when {b} is alone {here}." },
+      { by: 'a', say: "Can I ask you something and it doesn't go anywhere?" },
+      { by: 'b', say: "Depends what it is." },
+      { by: 'a', say: "Are you happy with where you are? With your people?" },
+      { by: 'b', say: "Why?" },
+      { by: 'a', say: "Because I'm not happy with mine. They talk about me like I'm the spare. And I don't think you're anybody's first pick either." },
+      { by: 'b', say: "Wow. Thanks." },
+      { by: 'a', say: "I'm not being mean. I'm saying we're in the same spot. Two people in the same spot can do a lot." },
+      { by: 'b', conf: "{a} wants out of {a.posAdj} group. That's either a huge chance or a trap. I don't know which yet." },
+      { by: 'a', conf: "I'm not jumping yet. I'm just looking to see how far down it is." },
+    ] },
+    { id: 'nk.ao2', place: 'work', when: { gotVotes: true }, turns: [
+      { beat: "{a} offers to help {b} with the water {here}. {b} knows it isn't about the water." },
+      { by: 'b', say: "Okay. What do you want?" },
+      { by: 'a', say: "My name came up last time. Some of those votes came from my own people." },
+      { by: 'b', say: "That's rough." },
+      { by: 'a', say: "So I'm looking for new people. You've never written my name. I checked." },
+      { by: 'b', say: "You checked?" },
+      { by: 'a', say: "I've been doing a lot of checking." },
+      { by: 'b', conf: "{a} is about to jump ship. Whether I'm the lifeboat is up to me." },
+    ] },
+    { id: 'nk.ao3', place: 'secret', when: { merged: true }, turns: [
+      { by: 'a', say: "Can we talk? Not as old teams. Just us." },
+      { by: 'b', say: "My old team would kill me if they saw this." },
+      { by: 'a', say: "Mine too. That's why we're out here." },
+      { by: 'b', say: "What are you offering?" },
+      { by: 'a', say: "Information. I tell you what my side is planning. You tell me what yours is." },
+      { by: 'b', say: "And then what?" },
+      { by: 'a', say: "And then, when it matters, we both know more than everybody else." },
+      { by: 'b', conf: "{a} just offered to spy on {a.posAdj} own people for me. I'm going to take it. I'm also going to remember {a} does that." },
+    ] },
+  ],
+  'long.talk.approach.inside': [
+    { id: 'nk.ai1', place: 'secret', turns: [
+      { by: 'a', say: "Can I say something about our group? Just to you?" },
+      { by: 'b', say: "That sounds bad." },
+      { by: 'a', say: "It's not bad. Not yet. But it's not going to last forever. You know that, right?" },
+      { by: 'b', say: "I know." },
+      { by: 'a', say: "So when it falls apart, I want it to still be you and me." },
+      { by: 'b', say: "An alliance inside the alliance." },
+      { by: 'a', say: "A back-up plan. That's all." },
+      { by: 'b', say: "And if the others find out?" },
+      { by: 'a', say: "They won't. Because neither of us is going to tell them." },
+      { by: 'b', conf: "I didn't think our group would have a group inside it this fast. At least I'm in the inside one." },
+    ] },
+  ],
+  'long.plan.probe.any': [
+    { id: 'nk.pr1', place: 'aside', turns: [
+      { by: 'a', say: "Random question. Who do you see at the end?" },
+      { by: 'b', say: "The end? Like, the final?" },
+      { by: 'a', say: "Yeah. If you had to pick." },
+      { by: 'b', say: "That's not a random question." },
+      { by: 'a', say: "It's a little bit random." },
+      { by: 'b', say: "I don't know. Maybe you. Maybe not. Why, who do you see?" },
+      { by: 'a', say: "I asked first." },
+      { by: 'a', conf: "{b} said maybe me. Maybe is a lot better than no. I'm not promising {b} anything yet, though." },
+    ] },
+    { id: 'nk.pr2', place: 'water', when: { voice: ['schemer', 'calm', 'dry', 'competitive'] }, turns: [
+      { by: 'a', say: "If you were going to the end with one person, what would they need to have?" },
+      { by: 'b', say: "Loyalty. And no chance of beating me." },
+      { by: 'a', say: "Honest." },
+      { by: 'b', say: "Why? What would yours need?" },
+      { by: 'a', say: "Pretty much the same." },
+      { by: 'b', conf: "{a} wanted to know if I'd take {a} to the end. I didn't say yes. I didn't say no. That's the right answer this early." },
+    ] },
+  ],
+  'long.talk.game.any': [
+    { id: 'nk.ga1', place: 'aside', turns: [
+      { beat: "{a} and {b} are {here}, comparing notes." },
+      { by: 'a', say: "Okay. Real talk. Who's running this place?" },
+      { by: 'b', say: "Honestly? Nobody. Everybody thinks they are." },
+      { by: 'a', say: "That's worse." },
+      { by: 'b', say: "That's so much worse. When it goes wrong, nobody knows who to blame." },
+      { by: 'a', say: "So who would they blame?" },
+      { by: 'b', say: "Whoever's been talking the most." },
+      { by: 'a', say: "Then let's make sure that isn't us." },
+      { by: 'b', conf: "{a} and I just talk. No deal. No name. Weirdly, I trust that more than most of the deals here." },
+    ] },
+    { id: 'nk.ga2', place: 'aside', when: { threat: true }, turns: [
+      { by: 'a', say: "Have you noticed {threat} is winning everything?" },
+      { by: 'b', say: "Everybody's noticed." },
+      { by: 'a', say: "And nobody's doing anything about it." },
+      { by: 'b', say: "Because we need {threat} for challenges." },
+      { by: 'a', say: "For now. After the merge, {threat} wins immunity every week and we just watch." },
+      { by: 'b', say: "So we do it before." },
+      { by: 'a', say: "We do it right before. Not a day earlier." },
+      { by: 'b', conf: "{a} has been thinking about {threat} a lot. Good. So have I." },
+    ] },
+    { id: 'nk.ga3', place: 'secret', when: { rival: true }, turns: [
+      { by: 'b', say: "What's going on with you and {rival}?" },
+      { by: 'a', say: "Nothing's going on." },
+      { by: 'b', say: "You haven't looked at each other in two days." },
+      { by: 'a', say: "Fine. I don't trust {rival}. I think {rival} is working on people against me." },
+      { by: 'b', say: "Do you have proof?" },
+      { by: 'a', say: "I have a feeling. A really strong feeling." },
+      { by: 'b', conf: "{a} wants me to pick a side between {a} and {rival}. I'd really rather not. I don't think I'm going to get a choice." },
+    ] },
+  ],
+  'long.talk.lie.about': [
+    { id: 'nk.la1', place: 'secret', turns: [
+      { by: 'a', say: "I wasn't going to say anything, but I think you should know." },
+      { by: 'b', say: "Know what?" },
+      { by: 'a', say: "{target} said your name last night. As the next vote." },
+      { by: 'b', say: "{target}? Are you sure?" },
+      { by: 'a', say: "I heard it. I'm sorry. I thought you'd want to know." },
+      { by: 'b', say: "...Yeah. Thanks." },
+      { by: 'a', conf: "{target} never said that. But now {b} will never trust {target}, and {b} will trust me a little more. Two for one." },
+      { by: 'b', conf: "I thought {target} was on my side. I guess I thought wrong." },
+    ] },
+    { id: 'nk.la2', place: 'aside', when: { voice: ['schemer', 'cruel', 'calm', 'proud'] }, turns: [
+      { by: 'a', say: "Be careful around {target}." },
+      { by: 'b', say: "Why?" },
+      { by: 'a', say: "Let's just say {target} is very friendly with everybody. And says very different things to everybody." },
+      { by: 'b', say: "Like what?" },
+      { by: 'a', say: "I'd rather not repeat it. Just watch {target}." },
+      { by: 'a', conf: "I didn't even tell a lie. I just told {b} there was one. {b} will fill in the rest." },
+    ] },
+  ],
+  'long.talk.checkin.any': [
+    { id: 'nk.ci1', place: 'secret', turns: [
+      { by: 'a', say: "Quick check. Are we still good?" },
+      { by: 'b', say: "We're still good." },
+      { by: 'a', say: "Nobody's been in your ear?" },
+      { by: 'b', say: "Everybody's been in my ear. Nobody's gotten through." },
+      { by: 'a', say: "That's what I wanted to hear." },
+      { by: 'b', conf: "{a} checks on me every day. Some people would find that annoying. I like knowing {a} cares where my vote goes." },
+    ] },
+    { id: 'nk.ci2', place: 'aside', when: { voice: ['anxious', 'emotional', 'warm'] }, turns: [
+      { by: 'a', say: "Sorry. I know I asked yesterday. Are we still okay?" },
+      { by: 'b', say: "We're okay. We were okay yesterday too." },
+      { by: 'a', say: "I know. I just get scared when things are quiet." },
+      { by: 'b', say: "Quiet is good. Quiet means nobody's coming for us." },
+      { by: 'a', say: "Or it means they're being really quiet about it." },
+      { by: 'b', conf: "{a} worries a lot. But {a} has never lied to me. I'll take worried and honest." },
+    ] },
+  ],
+  'long.trade.info.idol': [
+    { id: 'nk.ti1', place: 'secret', turns: [
+      { by: 'a', say: "I'm going to tell you something. And then you owe me one." },
+      { by: 'b', say: "That's a weird way to start." },
+      { by: 'a', say: "{holder} has an idol." },
+      { by: 'b', say: "...How do you know?" },
+      { by: 'a', say: "I know. That's all that matters. Now you know too." },
+      { by: 'b', say: "And what do you want for it?" },
+      { by: 'a', say: "Your vote, next time I need it." },
+      { by: 'b', conf: "Now I know {holder} has an idol. That changes who I'd vote for. And {a} knows it changes it." },
+      { by: 'a', conf: "If everyone knows about {holder}'s idol, then {holder} can't surprise anybody with it. And {b} owes me." },
+    ] },
+  ],
+  'long.trade.info.any': [
+    { id: 'nk.ta1', place: 'secret', turns: [
+      { by: 'a', say: "Want to know something? Just between us." },
+      { by: 'b', say: "Always." },
+      { by: 'a', say: "I'll tell you what I've heard if you tell me what you've heard." },
+      { by: 'b', say: "Fair. You go first." },
+      { by: 'a', say: "Nice try. At the same time. On three." },
+      { beat: "They swap what they know {here}, low and fast." },
+      { by: 'a', conf: "Half of what I told {b} was true. Everything {b} told me was true. Good trade." },
+    ] },
+  ],
+  'long.threat.notice.any': [
+    C('nk.tn1', null, ["{b} keeps winning. Every challenge, it's {b} at the front.", "Right now that's great for the team. After the merge, {b} is the one person none of us can beat."]),
+    C('nk.tn2', { merged: true }, ["Now that it's every person for themselves, everyone is going to look at {b}.", "{b} has won more than anyone. I'd rather it was my idea to go after {b} than somebody else's."]),
+    C('nk.tn3', { voice: ['competitive', 'proud', 'tough'] }, ["{b} beat me again today. I'm not used to being second.", "If I can't beat {b} in a challenge, I'll have to beat {b} at a vote."]),
+    C('nk.tn4', { voice: ['warm', 'anxious', 'earnest'] }, ["I really like {b}. But {b} is winning everything, and people are starting to notice.", "If I stay close to {b}, maybe I'm safe. Or maybe I'm standing right next to the biggest target in the game."]),
+  ],
+  'long.conf.bigmove.any': [
+    C('nk.bm1', null, ["I've been playing safe for too long. Everybody thinks I'm just a vote.", "I want to do something that makes them all stop and look at me. Soon."]),
+    C('nk.bm2', { late: true }, ["There aren't many of us left. If I don't make a big move soon, I'm walking into the final as the person who did nothing.", "Nobody hands the money to the person who did nothing."]),
+    C('nk.bm3', { voice: ['loud', 'chaotic', 'theatrical'] }, ["I'm bored. Everyone is voting with the majority every time. It's so boring!", "I want to blow it all up. I just need to figure out how to blow it up without blowing up myself."]),
+    C('nk.bm4', { voice: ['schemer', 'calm', 'dry'] }, ["Everyone's comfortable. Comfortable people stop paying attention.", "That's when you move."]),
+  ],
+  'long.conf.excluded.any': [
+    C('nk.ex1', null, ["There was a meeting today. I found out afterwards. From somebody who was in it.", "So now I know exactly where I stand. Outside."]),
+    C('nk.ex2', { voice: ['warm', 'anxious', 'emotional', 'earnest'] }, ["I walked up and everybody stopped talking. Everybody.", "I said hi. They said hi. Then nobody said anything. I'm not stupid. I know what that means."]),
+    C('nk.ex3', { voice: ['loud', 'tough', 'blunt'] }, ["They had a whole meeting without me. Behind the {quarters}. I saw them come back.", "Fine. If they don't want me in the plan, I'll make my own plan. They're going to hate my plan."]),
+  ],
+  'long.conf.paranoia.any': [
+    C('nk.pp1', null, ["I keep watching everybody. Who talks to who. Who stops talking when I walk up.", "Maybe I'm being crazy. But I'd rather be crazy than blindsided."]),
+    C('nk.pp2', { voice: ['schemer', 'calm', 'dry'] }, ["Two people I trust were whispering this morning. They stopped when they saw me.", "Could be nothing. It's never nothing."]),
+  ],
+  'long.sitout.heat.any': [
+    C('nk.so1', null, ["I sat out today. I didn't ask to. They told me to.", "And now we lost, and everyone's looking at the person who wasn't even out there. Me."]),
+    C('nk.so2', { voice: ['loud', 'tough', 'competitive'] }, ["They benched me and then they lost. And somehow it's my fault?", "Next time, put me in. I can't lose a challenge from the bench."]),
+    C('nk.so3', { voice: ['warm', 'anxious', 'earnest'] }, ["I tried to cheer as loud as I could from the side. It didn't help.", "Now I'm scared people think I'm the one they can do without."]),
+  ],
+  'long.blind.denial.any': [
+    { id: 'nk.bd1', place: 'aside', turns: [
+      { beat: "{a} sits down next to {b} {here} like nothing has changed." },
+      { by: 'a', say: "Can you believe someone voted for me last night?" },
+      { by: 'b', say: "Crazy." },
+      { by: 'a', say: "I know it wasn't you, at least. That's something." },
+      { by: 'b', say: "...Yeah." },
+      { by: 'a', say: "You and me are good. That's all I need to know." },
+      { by: 'b', conf: "I wrote {a}'s name last night. {a} just thanked me for not writing {a}'s name. I don't know what to do with that." },
+    ] },
+    { id: 'nk.bd2', place: 'work', turns: [
+      { by: 'a', say: "I'm making a list of who I think voted for me." },
+      { by: 'b', say: "Oh yeah?" },
+      { by: 'a', say: "Want to help? You know these people better than me." },
+      { by: 'b', say: "Sure. Who's on it?" },
+      { beat: "{a} lists names. {b}'s isn't one of them." },
+      { by: 'b', say: "Those all sound right." },
+      { by: 'b', conf: "{a} trusts me completely. That's either the luckiest thing that's ever happened to me or the worst." },
+    ] },
+  ],
+  'long.adv.exposed.any': [
+    C('nk.ae1', null, ["I've got an idol in my pocket and I can feel everybody looking at it.", "Nobody's said anything. Nobody has to. I just have to decide if tonight's the night."]),
+    C('nk.ae2', { voice: ['schemer', 'calm', 'dry', 'proud'] }, ["Somebody knows about my idol. I don't know who. I know it from how polite everyone's being.", "That's fine. Knowing I have it and knowing when I'll play it aren't the same thing."]),
+    C('nk.ae3', { voice: ['anxious', 'emotional', 'warm', 'ditzy'] }, ["I keep touching my pocket to make sure it's still there. People are going to notice. I need to stop.", "I'm not good at secrets. I'm really not good at secrets."]),
+  ],
+  'long.test.caught.any': [
+    { id: 'nk.tc1', place: 'aside', turns: [
+      { by: 'b', say: "So, between us, I heard your name is coming up tonight." },
+      { by: 'a', say: "Did you?" },
+      { by: 'b', say: "Yeah. Just thought you should know." },
+      { by: 'a', say: "Who said it?" },
+      { by: 'b', say: "I can't say." },
+      { by: 'a', say: "Mm. Of course you can't." },
+      { by: 'a', conf: "{b} wanted to see if I'd run around camp panicking and telling everybody. I'm not telling anybody. That was a test, and I passed." },
+    ] },
+  ],
+  'long.throw.caught.bold': [
+    { id: 'nk.tb1', place: 'aside', turns: [
+      { by: 'a', say: "You threw it." },
+      { by: 'b', say: "Excuse me?" },
+      { by: 'a', say: "Today. You threw it. I watched you slow down at the end." },
+      { by: 'b', say: "I was tired." },
+      { by: 'a', say: "You were fine until right when it mattered. Then you weren't." },
+      { by: 'b', say: "That's a big thing to accuse somebody of." },
+      { by: 'a', say: "It's a big thing to do to your own team." },
+      { by: 'b', conf: "{a} saw. I need to deal with that before {a} tells everybody." },
+      { by: 'a', conf: "I don't care why {b} did it. I care that {b} did it. And soon I won't be the only one who knows." },
+    ] },
+  ],
+  'long.throw.caught.quiet': [
+    C('nk.tq1', null, ["Everyone thinks {target} just had a bad day. I don't.", "I watched the whole thing. {target} slowed down on purpose. I'm not saying anything yet. I'm saving it."]),
+  ],
+  'long.credit.steal.any': [
+    { id: 'nk.cs1', place: 'public', turns: [
+      { beat: "{a} is telling a group {here} about last night's vote." },
+      { by: 'a', say: "Honestly, I just knew it had to happen, so I made it happen." },
+      { by: 'b', say: "You made it happen?" },
+      { by: 'a', say: "Somebody had to get everyone on the same page." },
+      { by: 'b', say: "I got everyone on the same page. I talked to every single person." },
+      { by: 'a', say: "And I talked to you. So." },
+      { by: 'b', conf: "That was my move. Mine. And {a} is standing there telling everyone it was {a.posAdj}." },
+      { by: 'a', conf: "If people think I made the big move, they'll think I'm in charge. That's worth more than who actually did it." },
+    ] },
+  ],
+  'long.credit.callout.any': [
+    { id: 'nk.cc1', place: 'public', turns: [
+      { by: 'a', say: "Can everybody hear me? Good. That vote last night was my plan." },
+      { by: 'b', say: "Here we go." },
+      { by: 'a', say: "No. I'm not letting you take this. I talked to everyone. You just showed up and wrote the name." },
+      { by: 'b', say: "Does it really matter who planned it?" },
+      { by: 'a', say: "It matters to me!" },
+      { by: 'a', conf: "Maybe that was a dumb thing to say out loud. Now everyone knows I run votes. But I'm not letting {b} have it." },
+    ] },
+  ],
+  'long.goat.kept.any': [
+    { id: 'nk.gk1', place: 'aside', turns: [
+      { by: 'a', say: "Everyone's being so nice to me lately." },
+      { by: 'b', say: "Yeah? That's good." },
+      { by: 'a', say: "I think it means I'm doing really well." },
+      { by: 'b', say: "...Sure." },
+      { by: 'b', conf: "Everyone's nice to {a} because everyone wants to sit next to {a} at the end. {a} thinks it's friendship. It isn't." },
+    ] },
+    { id: 'nk.gk2', place: 'aside', when: { voice: ['goofy', 'ditzy', 'food', 'warm'] }, turns: [
+      { by: 'a', say: "Somebody gave me their extra food again. That's three days in a row." },
+      { by: 'b', say: "Wow. Lucky." },
+      { by: 'a', say: "I think people really like me here." },
+      { by: 'b', say: "I think they do." },
+      { by: 'b', conf: "Nobody's voting {a} out because everybody thinks {a} is the easiest person to beat at the end. They might be wrong. {a} is very likable." },
+    ] },
+  ],
+  'long.blame.loss.any': [
+    { id: 'nk.bl1', place: 'public', turns: [
+      { by: 'a', say: "I'm just going to say it. That loss was on you." },
+      { by: 'b', say: "On me? Everyone messed up!" },
+      { by: 'a', say: "Some people messed up more." },
+      { by: 'b', say: "You weren't exactly amazing either." },
+      { by: 'a', say: "At least I wasn't the reason." },
+      { by: 'b', conf: "Every time we lose, somebody needs to be the reason. Today {a} picked me." },
+    ] },
+  ],
+  'long.fallout.found.one': [
+    { id: 'nk.ff1', place: 'aside', turns: [
+      { by: 'a', say: "You wrote my name." },
+      { by: 'b', say: "What? No." },
+      { by: 'a', say: "Don't. I know." },
+      { by: 'b', say: "...It wasn't personal." },
+      { by: 'a', say: "It's my name. It's always personal." },
+      { by: 'a', conf: "Now I know. And {b} knows I know. Every conversation we have from now on is going to be very interesting." },
+    ] },
+    { id: 'nk.ff2', place: 'aside', when: { voice: ['loud', 'tough', 'blunt'] }, turns: [
+      { by: 'a', say: "Hey. I know it was you." },
+      { by: 'b', say: "Know what was me?" },
+      { by: 'a', say: "My name. Last night. Don't even try." },
+      { by: 'b', say: "Okay. It was me. I had my reasons." },
+      { by: 'a', say: "Great. I've got my reasons now too." },
+      { by: 'b', conf: "{a} is going to come after me now. I knew this could happen. I just hoped it wouldn't happen this fast." },
+    ] },
+  ],
+  'long.plot.lie.believed': [
+    { id: 'nk.lb1', place: 'secret', turns: [
+      { by: 'a', say: "I need to tell you something. You're not going to like it." },
+      { by: 'b', say: "What?" },
+      { by: 'a', say: "{target} has been telling people you're the next to go." },
+      { by: 'b', say: "{target}? But {target} told me we were fine!" },
+      { by: 'a', say: "That's what {target} tells everybody." },
+      { by: 'b', say: "...I can't believe this." },
+      { by: 'a', conf: "{target} never said anything about {b}. But {b} believed me straight away. That tells me {b} already had doubts." },
+    ] },
+  ],
+  'long.plot.lie.rejected': [
+    { id: 'nk.lr1', place: 'aside', turns: [
+      { by: 'b', say: "{target} has been saying your name, you know." },
+      { by: 'a', say: "No, {target} hasn't." },
+      { by: 'b', say: "I heard it." },
+      { by: 'a', say: "I was with {target} all morning. {target} talked about fishing. For an hour." },
+      { by: 'b', say: "Maybe before that, then." },
+      { by: 'a', say: "Maybe. Or maybe you want me to stop trusting {target}." },
+      { by: 'a', conf: "{b} just tried to turn me against {target}. Badly. Now I trust {target} more and {b} a lot less." },
+    ] },
+  ],
+  'long.plot.whisper.spread': [
+    { id: 'nk.ws1', place: 'aside', turns: [
+      { by: 'a', say: "Have you noticed {target} always knows things before everybody else?" },
+      { by: 'b', say: "I guess?" },
+      { by: 'a', say: "Like, always. How do you think that happens?" },
+      { by: 'b', say: "People tell {target} things." },
+      { by: 'a', say: "Or {target} is listening in on all of us." },
+      { by: 'b', say: "...Huh." },
+      { by: 'a', conf: "I didn't accuse {target} of anything. I just asked a question. {b} is going to keep asking it for me." },
+    ] },
+  ],
+  'long.plot.majority.fooled': [
+    { id: 'nk.mf1', place: 'secret', turns: [
+      { by: 'a', say: "It's all set. Everyone's voting {target} tonight." },
+      { by: 'b', say: "Everyone?" },
+      { by: 'a', say: "I counted. You're the last one I needed." },
+      { by: 'b', say: "Okay. If everyone's on it, I'm on it." },
+      { by: 'a', conf: "Everyone is not on it. But now {b} is, and {b} is going to tell the next person that everyone's on it. That's how you make a majority." },
+    ] },
+  ],
+  'long.plot.majority.refused': [
+    { id: 'nk.mr1', place: 'aside', turns: [
+      { by: 'b', say: "Everyone's on {target} tonight. You coming?" },
+      { by: 'a', say: "Who's everyone?" },
+      { by: 'b', say: "You know. Everyone." },
+      { by: 'a', say: "Name three people." },
+      { by: 'b', say: "...I don't have to name anyone." },
+      { by: 'a', say: "Then I don't have to vote {target}." },
+      { by: 'a', conf: "{b} said everyone and couldn't name one person. That's not a majority. That's {b} trying to make one." },
+    ] },
+  ],
+  'long.read.played.any': [
+    { id: 'nk.rp1', place: 'aside', turns: [
+      { by: 'a', say: "Can I tell you something? I really admire how you handle this place." },
+      { by: 'b', say: "Really?" },
+      { by: 'a', say: "Everyone else panics. You never do. I'd like to learn from that." },
+      { by: 'b', say: "That's... really nice. Thank you." },
+      { by: 'a', say: "So if you ever need someone, I'm here." },
+      { by: 'b', conf: "I didn't think {a} even noticed me. Turns out {a} is actually a really good person." },
+      { by: 'a', conf: "Everyone wants to be noticed. Notice them, and they'll vote however you need." },
+    ] },
+    { id: 'nk.rp2', place: 'work', when: { voice: ['schemer', 'calm', 'dry', 'cruel'] }, turns: [
+      { beat: "{a} helps {b} with the chores {here}, without being asked." },
+      { by: 'b', say: "You don't have to do that." },
+      { by: 'a', say: "I want to. You've been doing more than everyone else." },
+      { by: 'b', say: "I have, actually. Thanks for noticing." },
+      { by: 'a', conf: "Twenty minutes of chores. That's all it took to get {b} on my side. Cheapest vote in the game." },
+    ] },
+  ],
+  'long.read.orchestrate.any': [
+    { id: 'nk.ro1', place: 'secret', turns: [
+      { by: 'a', say: "Can you do me a favour? Just mention to the others that you're worried about how close things are." },
+      { by: 'b', say: "Worried about who?" },
+      { by: 'a', say: "Nobody in particular. Just say it out loud. See what they say back." },
+      { by: 'b', say: "Why?" },
+      { by: 'a', say: "I just want to know where everyone's head is." },
+      { by: 'b', say: "Okay. Sure." },
+      { by: 'a', conf: "{b} has no idea what that's for. That's the point. If it goes wrong, it was {b} talking, not me." },
+    ] },
+  ],
+  'long.adv.search.any': [
+    { id: 'nk.as1', place: 'secret', turns: [
+      { beat: "{a} slips away to {place} while everyone else is busy." },
+      { by: 'a', conf: "I don't care how this looks. I'm getting a little insurance." },
+      { beat: "{a} digs through roots and under rocks for half an hour. Nothing." },
+      { by: 'a', conf: "Nothing. Great. I'm covered in dirt and I have nothing. If anybody asks, I was going to the bathroom." },
+    ] },
+  ],
+  'long.adv.found.idol': [
+    { id: 'nk.af1', place: 'secret', turns: [
+      { beat: "{a} is alone at {place}. {a} reaches into a hollow and pulls something out." },
+      { by: 'a', conf: "Is that... it is. It's an idol. I actually found an idol." },
+      { by: 'a', conf: "Nobody can know. Nobody. Not even the people I trust. Especially not the people I trust.", v: { warm: "I want to tell somebody so bad. I'm not going to. I'm really, really not going to.", loud: "I want to scream. I'm not going to scream. I'm screaming on the inside.", schemer: "Now I get to decide who goes home without anyone knowing I'm deciding." } },
+    ] },
+    { id: 'nk.af2', place: 'secret', when: { voice: ['anxious', 'ditzy', 'goofy'] }, turns: [
+      { beat: "{a} trips over a root at {place} and lands face first next to something carved." },
+      { by: 'a', conf: "I fell over and found an idol. That's how I found it. Please don't tell anyone that's how I found it." },
+      { by: 'a', conf: "Where do I even hide this? My pocket has a hole in it." },
+    ] },
+  ],
+  'long.adv.found.extravote': [
+    C('nk.ev1', null, ["An extra vote. One vote nobody's counting on but me.", "At the right vote, one name can decide everything. And I get to write it twice."]),
+  ],
+  'long.adv.found.votesteal': [
+    C('nk.vs1', null, ["I can steal somebody's vote. Take it right off them and use it myself.", "I already know whose. I just have to wait for the night it hurts the most."]),
+  ],
+  'long.adv.share.close': [
+    { id: 'nk.sh1', place: 'secret', turns: [
+      { by: 'a', say: "Take this. Don't argue." },
+      { by: 'b', say: "Is that... are you serious?" },
+      { by: 'a', say: "Your name's coming up tonight. Mine isn't. If they go for you, you play it." },
+      { by: 'b', say: "I can't take your idol." },
+      { by: 'a', say: "You're not taking it. I'm giving it to you. That's different." },
+      { by: 'b', conf: "{a} just gave me the most valuable thing in the game. I don't know how I'll ever pay that back." },
+      { by: 'a', conf: "An idol in my pocket doesn't help me if my best friend here goes home tonight." },
+    ] },
+  ],
+  'long.deal.double.confront': [
+    { id: 'nk.dd1', place: 'aside', turns: [
+      { by: 'a', say: "So I'm not the only one, am I?" },
+      { by: 'b', say: "The only one what?" },
+      { by: 'a', say: "The only person you promised the end to." },
+      { by: 'b', say: "...Who told you that?" },
+      { by: 'a', say: "Does it matter? You're not saying no." },
+      { by: 'b', say: "It's complicated." },
+      { by: 'a', say: "It's really not. We don't have a deal anymore." },
+      { by: 'a', conf: "{b} made the same promise to two people. Now {b} has nobody. That's how that works." },
+    ] },
+    { id: 'nk.dd2', place: 'aside', when: { other: true }, turns: [
+      { by: 'a', say: "You told {other} final two." },
+      { by: 'b', say: "I..." },
+      { by: 'a', say: "Don't. {other} told me. Same words you said to me. Exactly the same." },
+      { by: 'b', say: "I was going to tell you." },
+      { by: 'a', say: "When? At the final?" },
+      { by: 'a', conf: "{b} has been using the same line on everybody. At least now I know what {b}'s promises are worth." },
+    ] },
+  ],
+  'long.idol.confide.any': [
+    { id: 'nk.ic1', place: 'secret', turns: [
+      { by: 'a', say: "If I tell you something, you can't tell anyone. Ever." },
+      { by: 'b', say: "Okay. I promise." },
+      { beat: "{a} opens {a.posAdj} hand. There's an idol in it." },
+      { by: 'b', say: "No way. Where did you find that?" },
+      { by: 'a', say: "Doesn't matter. What matters is now you know, and I trust you." },
+      { by: 'b', say: "Why are you telling me?" },
+      { by: 'a', say: "Because if somebody comes for me, I want one person who knows I've got a plan." },
+      { by: 'b', conf: "{a} trusts me with an idol. That's huge. It also means if anybody else finds out, {a} is going to think it was me." },
+    ] },
+  ],
+};

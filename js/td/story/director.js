@@ -22,7 +22,7 @@
 // Everything the engine wrote stays in ep.campEvents, unchanged: consequences,
 // badges and every other reader are untouched. Viewers read the list through
 // feed.js campFeed().
-import { gs } from '../../core.js';
+import { gs, players } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { kinshipBetween } from '../../core.js';
 import { pronouns, pStats as pStatsOf, threatScore } from '../../players.js';
@@ -368,6 +368,39 @@ const SWING_WHY = { 'trusted-pitcher': 'trust', 'numbers-confirmed': 'numbers', 
 const WHY_WORDS = { weak: 'the weakest link', threat: 'too big a threat', grudge: 'personal', strike: 'coming after them first', shield: 'protecting someone else', plan: 'where the numbers are' };
 const SWING_WORDS = { trust: 'trusts the pitcher', numbers: 'the numbers checked out', self: "it doesn't save them", protect: 'protecting the target', doubt: "didn't believe the numbers", plan: 'already had a plan', plain: 'went with it' };
 
+// ── how a person talks strategy: alone, to one person, or with the group ──
+// The user, 2026-10-08: "it really depends on the person: strategy, personality and
+// relationship". A social leader calls the people they trust together; a schemer takes one
+// person aside; a loner decides on their own and tells the camera. Narrative selection only
+// (it chooses who is in the scene, never what anybody votes), read from the stats, the
+// archetype and the authored voice; who joins is who they are close to.
+const GROUP_ARCH = new Set(['social-butterfly', 'hero', 'loyal-soldier', 'showmancer', 'underdog']);
+const DUO_ARCH = new Set(['mastermind', 'schemer', 'villain', 'perceptive-player', 'chaos-agent']);
+const SOLO_ARCH = new Set(['floater', 'goat', 'wildcard']);
+function shapeFor(name, close) {
+  // people in a named alliance with a meet as one: each close ally in it pulls toward the huddle
+  const allied = close.filter(x => (gs.namedAlliances || []).some(al => al.active !== false && al.members?.includes(name) && al.members?.includes(x))).length;
+  const s = pStatsOf(name) || {};
+  const arch = (players || []).find(p => p.name === name)?.archetype || '';
+  const v = voiceOf(name);
+  const group = (s.social || 5) * 0.6 + (GROUP_ARCH.has(arch) ? 2 : 0) + (v.some(t => ['bossy', 'loud', 'warm', 'theatrical'].includes(t)) ? 1.5 : 0) + Math.min(3, close.length) * 0.5 + Math.min(3, allied) * 1.2;
+  const duo = (s.strategic || 5) * 0.6 + (DUO_ARCH.has(arch) ? 2 : 0) + (v.some(t => ['schemer', 'calm', 'dry'].includes(t)) ? 1.5 : 0);
+  const solo = (10 - (s.social || 5)) * 0.45 + (SOLO_ARCH.has(arch) ? 2 : 0) + (close.length ? 0 : 2);
+  if (group >= duo && group >= solo && close.length >= 2) return 'group';
+  if (solo > duo && solo > group) return 'solo';
+  return 'duo';
+}
+// the people a would bring to the huddle: on the same side, and people a gets on with
+const closeTo = (name, pool) => [...pool].filter(x => x !== name && getBond(name, x) >= 1).sort((x, y) => getBond(name, y) - getBond(name, x) || x.localeCompare(y));
+
+// the moments that can grow past two people, and how ('shared': friends of both, when a works in
+// groups; 'side': b's closest friend steps into a public fight)
+const PULL = [
+  [/^talk\.(plan|game|checkin|scramble)/, 'shared'],
+  [/^friend\.(bond|goof|joke|sunrise|struggle)/, 'shared'],
+  [/^alliance\.crack/, 'shared'],
+  [/^drama\.(fight|bomb|dig|clash|explode)/, 'side'],
+];
 function votePlan(ep, camp, members) {
   const gone = ep.eliminated;
   const tribal = (ep.tribalPlayers || []).filter(p => members.includes(p));
@@ -415,7 +448,7 @@ function voteTalk(ep, camp, t, next) {
   const out = [];
   const { boot, tribal, ballots, voters, pitch, leader, why, other, ch } = t;
   const merged = !!(ep.isMerge || gs.isMerged);
-  const base = (who, extra = {}) => ({ ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'post', tribal: true }), tribal: true, merged, late: merged && tribal.length <= 6, third: !!who.c, ...extra });
+  const base = (who, extra = {}) => ({ ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'post', tribal: true }), tribal: true, merged, late: merged && tribal.length <= 6, third: !!who.c, fourth: !!who.d, ...extra });
   const ballotOf = x => ballots.find(v => v.voter === x)?.voted || null;
   const named = new Set((gs.namedAlliances || []).filter(al => al.active !== false).map(al => al.name));
   const groupOf = (a, b) => (gs.namedAlliances || []).find(al => named.has(al.name) && al.members?.includes(a) && al.members?.includes(b))?.name || null;
@@ -433,11 +466,15 @@ function voteTalk(ep, camp, t, next) {
     // the people actually on that plan tonight: a member writing the boot's name is with the other side
     const mem = rv.members.filter(m => tribal.includes(m) && m !== rv.target && (m === boot || ballotOf(m) !== boot));
     const a = mem.includes(boot) ? boot : [...mem].sort((x, y) => (pStatsOf(y)?.strategic || 0) - (pStatsOf(x)?.strategic || 0) || x.localeCompare(y))[0];
-    const b = closest(a, mem.filter(m => m !== a));
-    if (a && b) {
-      const g = groupOf(a, b);
+    // the same three ways of working as the plan below (shapeFor)
+    const oShape = shapeFor(a, closeTo(a, mem));
+    const b = oShape === 'solo' ? null : oShape === 'group' ? closeTo(a, mem)[0] : closest(a, mem.filter(m => m !== a));
+    const c = oShape === 'group' ? closeTo(a, mem)[1] || null : null;
+    if (a) {
+      const g = b ? groupOf(a, b) : null;
       const data = { target: rv.target, ...(g ? { group: g } : {}) };
-      const it = item('other', 'story.vote.other', a === boot ? 'boot' : 'losing', { a, b }, data, base({ a, b }, { group: !!g }), 'secret', 'scramble', ['Other Plan', 'blue'],
+      const who = { a, b, c };
+      const it = item('other', 'story.vote.other', a === boot ? 'boot' : 'losing', who, data, base(who, { group: !!g, cast: oShape }), 'secret', 'scramble', ['Other Plan', 'blue'],
         [`${mem.join(', ')} planned to vote ${rv.target}.`, a === boot ? `${boot} has no idea the numbers are on ${pronouns(boot).obj}.` : `They don't have the numbers.`]);
       if (it) out.push(it);
     }
@@ -457,13 +494,18 @@ function voteTalk(ep, camp, t, next) {
   // 2. the plan: the person running it and the people with them agree on the name and the reason
   {
     const pool = voters.filter(v => v !== leader && v !== r?.voter);
-    const b = closest(leader, pool);
-    const c = b ? closest(leader, pool.filter(v => v !== b)) : null;
-    if (b) {
-      const who = { a: leader, b, c };
-      const g = groupOf(leader, b);
+    // how the person running it works (shapeFor): the trusted people together, one person aside,
+    // or nobody (a solo decision, to the camera)
+    const close = closeTo(leader, pool);
+    const shape = pool.length ? shapeFor(leader, close) : 'solo';
+    const b = shape === 'group' ? close[0] : shape === 'duo' ? closest(leader, pool) : null;
+    const c = shape === 'group' ? close[1] || null : null;
+    const d = shape === 'group' ? close[2] || null : null;
+    {
+      const who = { a: leader, b, c, d };
+      const g = b ? groupOf(leader, b) : null;
       const data = { target: boot, votes: numberWord(voters.length), ...(other ? { other } : {}), ...(g ? { group: g } : {}), ...(ch?.sank === boot ? { sank: boot } : {}) };
-      const facts = base(who, { other: !!other, group: !!g, sank: ch?.sank === boot, sankT: ch?.sank === boot, unanimous: voters.length === ballots.filter(v => v.voter !== boot).length,
+      const facts = base(who, { cast: shape, other: !!other, group: !!g, sank: ch?.sank === boot, sankT: ch?.sank === boot, unanimous: voters.length === ballots.filter(v => v.voter !== boot).length,
         votes: voters.length >= 5 ? 'many' : voters.length === tribal.length - 1 ? 'all' : 'some' });
       const reason = pitch ? `${leader} organised it${other ? `, moving off ${other}` : ''}.` : `${leader} is running it.`;
       const it = item('plan', 'story.vote.plan', why, who, data, facts, 'secret', 'scramble', ['The Plan', 'gold'],
@@ -586,6 +628,25 @@ export function airTdEpisode(ep) {
         if (!pool || !hasStoryPool(pool)) return null;
         const ending = ev.scene?.data?.ending || 'any';
         const who = { ...(ev.scene?.who || (step ? { a: step.roles.a, b: step.roles.b, c: step.roles.c } : { a: ev.players?.[0], b: ev.players?.[1], c: ev.players?.[2] })) };
+        // Who else is in it (the user: "group, duo and solo versions... it depends on the person's
+        // strategy, personality and relationships"). A strategy talk or a friendship moment started
+        // by someone who works in groups (shapeFor) pulls in the friends a and b share; a fight in
+        // front of camp pulls in b's closest friend, who takes b's side; an alliance wobbling pulls
+        // in an ally of both. Nobody is added who would learn something they should not: they are
+        // on the same side, or the moment is public.
+        if (who.a && who.b && !who.c && !['use', 'charm', 'tense'].includes(ev.scene?.data?.ending)) {
+          const rule = PULL.find(([re]) => re.test(kind));
+          if (rule) {
+            const [, how] = rule;
+            const rest = members.filter(m => m !== who.a && m !== who.b);
+            const both = m => getBond(who.a, m) + getBond(who.b, m);
+            const mates = how === 'side'
+              ? rest.filter(m => getBond(who.b, m) >= 3).sort((x, y) => getBond(who.b, y) - getBond(who.b, x) || x.localeCompare(y))
+              : rest.filter(m => getBond(who.a, m) >= 1 && getBond(who.b, m) >= 1).sort((x, y) => both(y) - both(x) || x.localeCompare(y));
+            const joins = how === 'side' ? mates.length > 0 : mates.length > 0 && shapeFor(who.a, closeTo(who.a, rest)) === 'group';
+            if (joins) { who.c = mates[0]; if (how === 'shared' && mates[1]) who.d = mates[1]; }
+          }
+        }
         const prev = line && step ? prevAired(line, step) : null;
         const rec = recordSlots(ep, who.a, who.b, camp, phase);
         // who they were to each other before the season (siblings, exes, an old betrayal)

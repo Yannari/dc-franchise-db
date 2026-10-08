@@ -1,0 +1,327 @@
+// ══════════════════════════════════════════════════════════════════════
+// td/story/lines/n-romance.js — romance, as whole scenes
+// ══════════════════════════════════════════════════════════════════════
+//
+// Long versions of the engine's romance moments (td/script/lines/romance.js, romance2.js
+// headers). Every pair passed romanticCompat before the engine fired the moment.
+//   romance.flirt  a and b flirt, not a couple yet     romance.spark  a and b are a thing now
+//   romance.moment.<couple|crush>  a's moment with b   romance.honeymoon  the glow (c watching)
+//   romance.night.<kiss|never>  after-dark games      romance.jealous  a used to be b's person; now c is
+//   romance.fade.<amicable|soured>  it ends            romance.rideordie  to the end together
+//   romance.noticed  a watches couple b and c, counting votes
+//   romance.target  a decides couple b and c must be split
+//   romance.tri.tension  a watches b drift toward c    romance.tri.confront  a confronts b about c
+//   romance.affair.form  a (with {target}) and b start something secret
+//   cross.flirt  a (team {mine}) and b (team {theirs}) flirt across the line
+// Ids: 'ns.'.
+
+export default {
+  'long.romance.flirt.any': [
+    { id: 'ns.f1', place: 'water', turns: [
+      { beat: "{a} and {b} are supposed to be getting water {here}. They've been gone a while." },
+      { by: 'b', say: "You're splashing me on purpose." },
+      { by: 'a', say: "That's a big accusation." },
+      { by: 'b', say: "You've done it four times." },
+      { by: 'a', say: "Five. You missed one." },
+      { by: 'b', say: "You're so annoying." },
+      { by: 'a', say: "You're smiling, though.", v: { flirty: "You keep saying that. You keep standing next to me, though.", anxious: "Is that a good annoying? Please say it's a good annoying." } },
+      { by: 'b', say: "...Shut up." },
+      { by: 'b', conf: "I am not here to fall for somebody. I'm here to win. I need {a} to stop being cute for like one day." },
+      { by: 'a', conf: "{b} laughed at all my jokes today. Even the bad ones. Especially the bad ones." },
+    ] },
+    { id: 'ns.f2', place: 'fire', turns: [
+      { beat: "Everyone else has gone to bed. {a} and {b} are still at the fire {here}." },
+      { by: 'a', say: "You're shivering." },
+      { by: 'b', say: "I'm fine." },
+      { by: 'a', say: "Here. Take my jacket." },
+      { by: 'b', say: "Then you'll be cold." },
+      { by: 'a', say: "I'll sit closer to the fire. And to you, if that's okay." },
+      { by: 'b', say: "...It's okay." },
+      { beat: "They sit there for a long time without saying much." },
+      { by: 'b', conf: "Nothing happened. We just sat there. It was the best night I've had since I got here." },
+    ] },
+    { id: 'ns.f3', place: 'work', when: { voice: ['flirty', 'theatrical', 'proud', 'loud'] }, turns: [
+      { beat: "{b} is trying to chop wood {here}. {a} leans against a tree and watches." },
+      { by: 'b', say: "Are you going to help or just stand there?" },
+      { by: 'a', say: "I'm helping. I'm supervising." },
+      { by: 'b', say: "You're staring." },
+      { by: 'a', say: "Can you blame me?" },
+      { by: 'b', say: "Oh my gosh. Pick up an axe." },
+      { by: 'a', say: "Only if you show me how. Up close." },
+      { by: 'b', conf: "{a} is so obvious. It's working, though. I hate that it's working." },
+    ] },
+    { id: 'ns.f4', place: 'aside', when: { voice: ['anxious', 'nerdy', 'earnest', 'ditzy'] }, turns: [
+      { by: 'a', say: "Hi. Um. I saved you some of the good berries. The ones that aren't sour." },
+      { by: 'b', say: "Aw. You didn't have to do that." },
+      { by: 'a', say: "I wanted to. I mean, I just had extra. I mean, I didn't have extra, I picked them for you. Is that weird?" },
+      { by: 'b', say: "It's a little weird. It's also really sweet." },
+      { by: 'a', say: "Okay. Good. Sweet is good. I'm going to go now before I say something else." },
+      { by: 'b', say: "You can stay." },
+      { by: 'a', say: "...Oh. Okay. I'll stay." },
+      { by: 'a', conf: "I've never been good at talking to people I like. Today I was okay. Medium. Medium is a big step for me." },
+    ] },
+    { id: 'ns.f5', place: 'public', when: { merged: true }, turns: [
+      { by: 'b', say: "We were on different teams for so long. I never really talked to you." },
+      { by: 'a', say: "You were busy trying to beat me." },
+      { by: 'b', say: "And you were busy being annoyingly good at challenges." },
+      { by: 'a', say: "Was that a compliment?" },
+      { by: 'b', say: "Don't let it go to your head." },
+      { by: 'a', say: "Too late." },
+      { by: 'b', conf: "I spent weeks thinking {a} was my enemy. Turns out {a} is just really, really fun to talk to. That's a problem." },
+    ] },
+  ],
+  'long.romance.spark.any': [
+    { id: 'ns.s1', place: 'secret', turns: [
+      { beat: "{a} and {b} have snuck away to {place}." },
+      { by: 'b', say: "Everyone's going to wonder where we are." },
+      { by: 'a', say: "Let them wonder." },
+      { by: 'b', say: "So what is this? You and me?" },
+      { by: 'a', say: "I don't know. I just know I want to be wherever you are." },
+      { by: 'b', say: "That's a lot." },
+      { by: 'a', say: "Too much?" },
+      { by: 'b', say: "No. Not too much." },
+      { beat: "{b} kisses {a}." },
+      { by: 'a', conf: "I didn't come here to fall for anybody. That plan lasted about a week." },
+      { by: 'b', conf: "Everybody's going to say a showmance is a target. They're right. I don't care right now." },
+    ] },
+    { id: 'ns.s2', place: 'sleep', turns: [
+      { beat: "The {quarters} at night. {a} and {b} are the only ones still awake, whispering." },
+      { by: 'a', say: "Can I ask you something?" },
+      { by: 'b', say: "You're going to anyway." },
+      { by: 'a', say: "Is this a thing? You and me? Because I want it to be a thing." },
+      { by: 'b', say: "It's been a thing since the dock." },
+      { by: 'a', say: "Then why didn't you say?" },
+      { by: 'b', say: "I wanted you to say it first." },
+      { by: 'a', conf: "It's official. Kind of. As official as you can get whispering in the dark." },
+    ] },
+    { id: 'ns.s3', place: 'water', when: { merged: true }, turns: [
+      { beat: "{a} and {b} are sitting {here}, shoulders touching." },
+      { by: 'b', say: "People are going to target us. You know that." },
+      { by: 'a', say: "I know." },
+      { by: 'b', say: "So should we stop?" },
+      { by: 'a', say: "Do you want to?" },
+      { by: 'b', say: "No." },
+      { by: 'a', say: "Then we don't stop. We just get really good at this game." },
+      { by: 'b', conf: "Being in a couple at the merge is stupid. Every strategy book would say so. I'm doing it anyway." },
+    ] },
+  ],
+  'long.romance.moment.couple': [
+    { id: 'ns.mc1', place: 'water', turns: [
+      { beat: "Early. {a} and {b} have been sitting {here} since before anyone woke up." },
+      { by: 'b', say: "We should go back. They'll say we're plotting." },
+      { by: 'a', say: "We are plotting. We're plotting how long we can stay here." },
+      { by: 'b', say: "That's not plotting, that's skipping chores." },
+      { by: 'a', say: "Same thing." },
+      { beat: "{a} kisses {b}'s cheek." },
+      { by: 'b', say: "Okay. Five more minutes." },
+      { by: 'b', conf: "Being with {a} is the only part of this place that doesn't feel like a fight." },
+    ] },
+    { id: 'ns.mc2', place: 'eat', when: { third: true }, turns: [
+      { beat: "{a} gives {b} the last of the food {here}. {c} watches." },
+      { by: 'c', say: "Oh, come ON. That was mine." },
+      { by: 'a', say: "Was it?" },
+      { by: 'c', say: "I've been waiting for twenty minutes!" },
+      { by: 'b', say: "I'll share." },
+      { by: 'c', say: "You two are disgusting. I mean that in the nicest way. Mostly." },
+      { by: 'c', conf: "I'm happy for them. I'd be happier if they weren't so happy in front of my breakfast." },
+    ] },
+    { id: 'ns.mc3', place: 'aside', when: { lost: true }, turns: [
+      { by: 'b', say: "Today was bad." },
+      { by: 'a', say: "Today was really bad." },
+      { by: 'b', say: "If it's one of us tonight..." },
+      { by: 'a', say: "It's not going to be one of us." },
+      { by: 'b', say: "You don't know that." },
+      { by: 'a', say: "Then we work for it. Together. Right now." },
+      { by: 'a', conf: "Being in a showmance means when one of us is in danger, both of us are. I knew that. I didn't know it'd feel this bad." },
+    ] },
+  ],
+  'long.romance.moment.crush': [
+    { id: 'ns.mr1', place: 'aside', turns: [
+      { beat: "{a} has been sneaking looks at {b} all morning. {b} finally notices." },
+      { by: 'b', say: "Do I have something on my face?" },
+      { by: 'a', say: "What? No! No. Your face is fine. Your face is great. I mean..." },
+      { by: 'b', say: "My face is great?" },
+      { by: 'a', say: "I'm going to go stand in the lake now." },
+      { by: 'a', conf: "I've liked {b} for days. I think everybody knows except {b}. And now maybe {b} knows too." },
+    ] },
+    { id: 'ns.mr2', place: 'work', turns: [
+      { beat: "{a} has volunteered for every chore {b} has done today." },
+      { by: 'b', say: "You know you don't have to help with everything." },
+      { by: 'a', say: "I like helping." },
+      { by: 'b', say: "You hate helping. You said so on the first day." },
+      { by: 'a', say: "...People change." },
+      { by: 'b', say: "In three days?" },
+      { by: 'a', conf: "Okay. Fine. I don't like chores. I like doing chores next to {b}. That's different." },
+    ] },
+  ],
+  'long.romance.honeymoon.any': [
+    { id: 'ns.h1', place: 'public', when: { third: true }, turns: [
+      { beat: "{a} and {b} are sitting together {here}, laughing at something only they get." },
+      { by: 'c', say: "You know everyone can see you, right?" },
+      { by: 'a', say: "So?" },
+      { by: 'c', say: "So it's like watching a commercial. For being in love." },
+      { by: 'b', say: "You're just jealous." },
+      { by: 'c', say: "I'm just eating." },
+      { by: 'c', conf: "They're cute. They're also the easiest vote at the merge. I'm not going to be the one to tell them." },
+    ] },
+    { id: 'ns.h2', place: 'aside', turns: [
+      { by: 'a', say: "Can I tell you something embarrassing?" },
+      { by: 'b', say: "Always." },
+      { by: 'a', say: "This is the best part of my day. Every day. Just this." },
+      { by: 'b', say: "Sitting on a log?" },
+      { by: 'a', say: "Sitting on a log with you." },
+      { by: 'b', say: "That's so cheesy." },
+      { by: 'a', say: "You love it." },
+      { by: 'b', say: "I love it." },
+      { by: 'b', conf: "Out of everything that's happened here, {a} is what I'm going to remember." },
+    ] },
+  ],
+  'long.romance.night.kiss': [
+    { id: 'ns.k1', place: 'fire', turns: [
+      { beat: "Late, {here}. Someone found an empty bottle. It spins, and stops on {a}. Then again, on {b}." },
+      { by: 'b', say: "No. No way." },
+      { by: 'a', say: "Rules are rules." },
+      { by: 'b', say: "There are no rules! We made this up ten minutes ago!" },
+      { by: 'a', say: "Then I'm making a new rule." },
+      { beat: "{a} leans over and kisses {b}. Everyone at the fire screams." },
+      { by: 'b', say: "...Okay. Spin it again." },
+      { by: 'b', conf: "It was a game. It was just a game. I'm going to be thinking about it all night." },
+    ] },
+  ],
+  'long.romance.night.never': [
+    { id: 'ns.n1', place: 'fire', turns: [
+      { beat: "Never have I ever, {here}. It's {a}'s turn." },
+      { by: 'a', say: "Never have I ever... had a crush on someone in this camp." },
+      { beat: "Nobody moves. Then {b} slowly puts a finger down." },
+      { by: 'b', say: "Shut up. Everybody shut up." },
+      { by: 'a', say: "Who is it?" },
+      { by: 'b', say: "It's not a question game. It's a never-have-I-ever game. Next!" },
+      { by: 'a', conf: "{b} looked right at me when {b} put that finger down. I'm almost sure. Ninety percent sure." },
+    ] },
+  ],
+  'long.romance.jealous.any': [
+    { id: 'ns.j1', place: 'aside', when: { third: true }, turns: [
+      { beat: "{b} and {c} are laughing together {here}. {a} watches from across camp." },
+      { by: 'a', say: "You two look like you're having fun." },
+      { by: 'b', say: "We are. Want to join?" },
+      { by: 'a', say: "No. I'm good. I'm great. Have fun." },
+      { beat: "{a} walks off. {c} looks at {b}." },
+      { by: 'c', say: "What was that?" },
+      { by: 'b', say: "I have no idea." },
+      { by: 'a', conf: "{b} used to sit with me. Every meal, every night. Now it's {c}. Fine. Totally fine.", v: { loud: "I'm not jealous. I'm just mad. It's different!", cruel: "{c} can have {b}. {b} is going to find out what {c} is really like soon enough." } },
+    ] },
+    { id: 'ns.j2', place: 'public', when: { third: true, voice: ['loud', 'tough', 'blunt', 'chaotic'] }, turns: [
+      { by: 'a', say: "Hey, {c}. That's my spot." },
+      { by: 'c', say: "It's a log." },
+      { by: 'a', say: "It's my spot on the log. Next to {b}." },
+      { by: 'b', say: "{a}, come on. There's room." },
+      { by: 'a', say: "There used to be room. Now there's {c}." },
+      { by: 'c', conf: "I didn't know I'd stolen anything. Apparently I stole a whole person." },
+    ] },
+  ],
+  'long.romance.fade.any': [
+    { id: 'ns.d1', place: 'aside', turns: [
+      { by: 'a', say: "Can we talk?" },
+      { by: 'b', say: "That's never good." },
+      { by: 'a', say: "I don't think this is working. Us." },
+      { by: 'b', say: "...Yeah. I've been feeling it too." },
+      { by: 'a', say: "I still like you. I just need to think about the game." },
+      { by: 'b', say: "It's okay. Friends?" },
+      { by: 'a', say: "Friends." },
+      { by: 'b', conf: "It's over. It didn't explode or anything. It just ran out. I don't know if that's better or worse." },
+    ] },
+  ],
+  'long.romance.fade.soured': [
+    { id: 'ns.d2', place: 'public', turns: [
+      { beat: "{a} and {b} walk past each other {here} without saying a word." },
+      { by: 'c', say: "Are you two okay?" },
+      { by: 'a', say: "Ask {b}." },
+      { by: 'b', say: "There's nothing to ask. We're done." },
+      { by: 'c', say: "Since when?" },
+      { by: 'b', say: "Since about an hour ago." },
+      { by: 'a', conf: "I thought {b} actually cared about me. {b} cared about having a vote. Lesson learned." },
+      { by: 'b', conf: "{a} wants me to feel bad. I don't. Okay, I do. A little." },
+    ] },
+  ],
+  'long.romance.rideordie.any': [
+    { id: 'ns.r1', place: 'secret', turns: [
+      { beat: "{a} and {b} are lying on the ground {here}, looking up." },
+      { by: 'b', say: "If it comes down to me or you, what do you do?" },
+      { by: 'a', say: "It's not going to come down to me or you." },
+      { by: 'b', say: "But if it does." },
+      { by: 'a', say: "Then I make sure it's both of us. Final two. I don't care who else is left." },
+      { by: 'b', say: "Promise?" },
+      { by: 'a', say: "Promise." },
+      { by: 'a', conf: "Everybody thinks the showmance is the weakness. We're going to show them it's the strongest alliance in the game." },
+    ] },
+  ],
+  'long.romance.noticed.any': [
+    { id: 'ns.o1', place: 'aside', turns: [
+      { beat: "{a} watches {b} and {c} share a plate {here}." },
+      { by: 'a', conf: "{b} and {c}. Two votes that will never, ever split. That's not cute. That's a problem." },
+      { by: 'a', conf: "If I'm not in with one of them, I'm against both of them. I need to pick soon." },
+    ] },
+    { id: 'ns.o2', place: 'aside', when: { voice: ['schemer', 'calm', 'dry', 'competitive'] }, turns: [
+      { by: 'a', conf: "Look at them. {b} and {c} haven't been more than three feet apart all day." },
+      { by: 'a', conf: "Everyone thinks it's sweet. I'm counting. That's two votes, right there, holding hands." },
+    ] },
+  ],
+  'long.romance.target.any': [
+    { id: 'ns.t1', place: 'aside', turns: [
+      { beat: "{a} watches {b} and {c} {here}, whispering to each other again." },
+      { by: 'a', conf: "{b} and {c} are a couple. A couple is two votes that go together every time." },
+      { by: 'a', conf: "If we don't split them now, they walk to the end holding hands. So one of them goes. Soon." },
+    ] },
+    { id: 'ns.t2', place: 'aside', when: { voice: ['loud', 'tough', 'blunt'] }, turns: [
+      { by: 'a', conf: "I'm sick of {b} and {c}. They act like the rest of us don't matter. Like we're the background to their love story." },
+      { by: 'a', conf: "One of them is going home. I don't even care which one. Just one." },
+    ] },
+  ],
+  'long.romance.tri.tension': [
+    { id: 'ns.x1', place: 'aside', when: { third: true }, turns: [
+      { beat: "{b} and {c} are talking {here}. Close. {a} watches." },
+      { by: 'a', say: "{b}. Got a second?" },
+      { by: 'b', say: "Sure. What's up?" },
+      { by: 'a', say: "You and {c} have been talking a lot." },
+      { by: 'b', say: "We're friends." },
+      { by: 'a', say: "We were friends too. Before." },
+      { by: 'b', say: "It's not like that." },
+      { by: 'a', conf: "{b} says it's not like that. That's exactly what people say when it's like that." },
+    ] },
+  ],
+  'long.romance.tri.confront': [
+    { id: 'ns.x2', place: 'secret', when: { third: true }, turns: [
+      { by: 'a', say: "I need you to be honest with me. Is something going on with you and {c}?" },
+      { by: 'b', say: "Why are you asking me this?" },
+      { by: 'a', say: "Because everyone's seen it. Everyone's seen how you look at {c}." },
+      { by: 'b', say: "I don't know. Maybe. I don't know." },
+      { by: 'a', say: "That's a yes." },
+      { by: 'b', say: "It's an I don't know!" },
+      { by: 'a', say: "Then figure it out. Because I'm not waiting around while you decide." },
+      { by: 'b', conf: "I like {a}. I like {c}. This is the worst thing that could have happened to me in this game." },
+    ] },
+  ],
+  'long.romance.affair.form': [
+    { id: 'ns.a1', place: 'secret', turns: [
+      { beat: "{a} and {b} are alone at {place}. They shouldn't be." },
+      { by: 'b', say: "What about {target}?" },
+      { by: 'a', say: "I don't want to talk about {target} right now." },
+      { by: 'b', say: "You have to, though. Eventually." },
+      { by: 'a', say: "Eventually. Not now." },
+      { beat: "{a} kisses {b}. {b} doesn't pull away." },
+      { by: 'b', conf: "This is the worst idea I've ever had. And I've had a lot of bad ideas here." },
+      { by: 'a', conf: "{target} can never find out. Never. That's all I've got for a plan." },
+    ] },
+  ],
+  'long.cross.flirt.any': [
+    { id: 'ns.cf1', place: 'public', turns: [
+      { beat: "The {mine} and the {theirs} pass each other {here}. {a} slows down. So does {b}." },
+      { by: 'b', say: "Shouldn't you be with your team?" },
+      { by: 'a', say: "Shouldn't you?" },
+      { by: 'b', say: "I'm being a spy." },
+      { by: 'a', say: "You're a terrible spy. You're smiling." },
+      { by: 'b', say: "So are you." },
+      { by: 'b', conf: "The {mine} are the enemy. {a} is on the {mine}. My brain knows that. The rest of me hasn't caught up." },
+    ] },
+  ],
+};

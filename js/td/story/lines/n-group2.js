@@ -1,0 +1,202 @@
+// ══════════════════════════════════════════════════════════════════════
+// td/story/lines/n-group2.js — camp moments that grow past two people
+// ══════════════════════════════════════════════════════════════════════
+//
+// director.js PULL: a friendship moment started by someone who works in groups takes in the
+// friends a and b share (c, and d); a fight in front of camp takes in c, b's closest friend, who
+// is on b's side; an alliance wobbling takes in c, an ally of both. Same meaning as the pair
+// versions (n-drama.js, n-camp.js). Ids: 'nh.'.
+
+export default {
+  'long.friend.bond.any': [
+    { id: 'nh.b1', place: 'water', when: { third: true }, turns: [
+      { beat: "{a}, {b} and {c} are supposed to be fishing {here}. Nobody has caught anything." },
+      { by: 'c', say: "I think the fish are avoiding us specifically." },
+      { by: 'a', say: "They heard about {b}'s singing." },
+      { by: 'b', say: "My singing is great." },
+      { by: 'c', say: "Your singing is why there are no fish." },
+      { by: 'b', say: "Fine. No singing. We'll just sit here. In silence. Catching nothing." },
+      { by: 'a', say: "Honestly? Best afternoon I've had here." },
+      { by: 'c', say: "Same." },
+      { by: 'b', conf: "We didn't catch a single fish. I've got two friends I'd go to the end with. Fair trade." },
+    ] },
+    { id: 'nh.b2', place: 'fire', when: { fourth: true }, turns: [
+      { beat: "Late, {here}. {a}, {b}, {c} and {d} are the last ones still up." },
+      { by: 'd', say: "Okay. Everybody says one thing they miss from home. Go." },
+      { by: 'a', say: "My bed. My actual bed." },
+      { by: 'b', say: "Food that doesn't move." },
+      { by: 'c', say: "My dog. My dog would hate it here." },
+      { by: 'd', say: "My dog would love it here. He'd eat the food." },
+      { by: 'a', say: "That's disgusting." },
+      { by: 'd', say: "He's a very brave dog." },
+      { beat: "Everybody laughs. Nobody wants to go to bed." },
+      { by: 'c', conf: "I didn't come here for friends. I've got three now. That's going to make voting really hard." },
+    ] },
+    { id: 'nh.b3', place: 'work', when: { third: true }, turns: [
+      { beat: "{a}, {b} and {c} are doing the chores nobody else wanted {here}." },
+      { by: 'a', say: "How did we end up on this again?" },
+      { by: 'b', say: "We're the only ones who didn't run when we saw the bucket." },
+      { by: 'c', say: "I didn't run because I didn't see the bucket." },
+      { by: 'a', say: "So you're here by accident." },
+      { by: 'c', say: "I'm always here by accident. That's my whole game." },
+      { by: 'b', conf: "Every time there's a bad job, it's the three of us. I'm starting to think that's not a coincidence. I'm starting to think we just like each other." },
+    ] },
+  ],
+  'long.friend.goof.any': [
+    { id: 'nh.g1', place: 'public', when: { third: true }, turns: [
+      { beat: "{a} has found a stick {here} and declared it a microphone." },
+      { by: 'a', say: "Welcome back to the show! I'm here with two of our contestants. How are you feeling?" },
+      { by: 'b', say: "Hungry. Tired. Smelly." },
+      { by: 'c', say: "Mostly smelly." },
+      { by: 'a', say: "Incredible answers. And who do you think is going home next?" },
+      { by: 'b', say: "The microphone." },
+      { by: 'c', say: "Definitely the microphone." },
+      { by: 'a', conf: "We do a fake talk show every afternoon now. It's the stupidest thing ever. It's my favourite part of the day." },
+    ] },
+    { id: 'nh.g2', place: 'sleep', when: { fourth: true }, turns: [
+      { beat: "Lights out in the {quarters}. Somebody giggles. Then all four of them are giggling." },
+      { by: 'a', say: "Stop. Stop. People are trying to sleep." },
+      { by: 'b', say: "You started it!" },
+      { by: 'c', say: "Who made that noise?" },
+      { by: 'd', say: "...Me. Sorry. It was my stomach." },
+      { beat: "It gets much worse." },
+      { by: 'b', conf: "We got told to shut up by the entire {quarters}. Worth it." },
+    ] },
+  ],
+  'long.friend.joke.any': [
+    { id: 'nh.j1', place: 'public', when: { third: true }, turns: [
+      { by: 'a', say: "Good morning, your majesty." },
+      { by: 'b', say: "Good morning, peasant." },
+      { by: 'c', say: "Can I be a duke yet?" },
+      { by: 'b', say: "You have to earn duke." },
+      { by: 'c', say: "I carried the water for three days!" },
+      { by: 'a', say: "Fine. Duke of water." },
+      { by: 'c', say: "I'll take it." },
+      { by: 'c', conf: "I don't remember how this started. Now we have a whole royal family. I'm the Duke of Water. It's the best title I've ever had." },
+    ] },
+  ],
+  'long.friend.sunrise.any': [
+    { id: 'nh.s1', place: 'water', when: { third: true }, turns: [
+      { beat: "Early. {a}, {b} and {c} are the only ones awake, sitting {here}." },
+      { by: 'c', say: "Did either of you sleep?" },
+      { by: 'a', say: "Not really." },
+      { by: 'b', say: "Something was crawling on me all night." },
+      { by: 'c', say: "That was me. Sorry. The ground is lumpy." },
+      { beat: "They watch the light come up. Nobody says anything for a while." },
+      { by: 'a', conf: "Twenty minutes every morning where nobody's playing the game. I'm going to miss that more than anything." },
+    ] },
+  ],
+  'long.friend.struggle.any': [
+    { id: 'nh.t1', place: 'work', when: { third: true }, turns: [
+      { beat: "{a}, {b} and {c} are the last three still working {here}. All of them are exhausted." },
+      { by: 'b', say: "I can't feel my arms." },
+      { by: 'c', say: "I can't feel anything below my neck." },
+      { by: 'a', say: "Five more minutes." },
+      { by: 'b', say: "You said that twenty minutes ago." },
+      { by: 'a', say: "And it worked, didn't it?" },
+      { by: 'c', say: "Okay. Five more. Then we lie down in the dirt." },
+      { by: 'c', conf: "Nobody else stayed to finish. Just us three. People remember who stays." },
+    ] },
+  ],
+  'long.alliance.crack.any': [
+    { id: 'nh.k1', place: 'secret', when: { third: true }, turns: [
+      { beat: "{a} has asked {b} and {c} to meet at {place}. {a} gets straight to it." },
+      { by: 'a', say: "Somebody in {group} has been talking to the other side." },
+      { by: 'b', say: "That's a big thing to say." },
+      { by: 'a', say: "It's a big thing to do." },
+      { by: 'c', say: "Who?" },
+      { by: 'a', say: "I don't know yet. That's why I'm asking you two first." },
+      { by: 'b', say: "Wait. You think it's one of us?" },
+      { by: 'a', say: "I think it's somebody. I'm starting with the people I trust most and working down." },
+      { by: 'c', say: "That's a horrible way to say it." },
+      { by: 'c', conf: "{a} just told us we're the most trusted people in {group}, and also suspects. I don't know how to feel about that." },
+    ] },
+  ],
+
+  'long.drama.fight.any': [
+    { id: 'nh.f1', place: 'public', when: { third: true }, turns: [
+      { beat: "It starts small {here}. It doesn't stay small." },
+      { by: 'a', say: "Why do you always do that?" },
+      { by: 'b', say: "Do what?" },
+      { by: 'a', say: "Act like you're better than everybody. You did it all morning." },
+      { by: 'c', say: "Whoa. Where is this coming from?" },
+      { by: 'a', say: "Stay out of it, {c}." },
+      { by: 'c', say: "No. You're yelling at my friend in front of everyone. I'm in it." },
+      { by: 'b', say: "It's fine, {c}." },
+      { by: 'c', say: "It's not fine." },
+      { by: 'a', conf: "Now it's two against one. Great. I'm still right, though." },
+      { by: 'c', conf: "{b} wasn't going to say anything back. So I did. That's what friends are for." },
+    ] },
+    { id: 'nh.f2', place: 'public', when: { third: true, voice: ['loud', 'tough', 'blunt', 'cruel'] }, turns: [
+      { by: 'a', say: "You've been slacking all day and everybody knows it!" },
+      { by: 'b', say: "I've been working as hard as anybody!" },
+      { by: 'a', say: "Then why does it look like you're on vacation?" },
+      { by: 'c', say: "Hey. Back off." },
+      { by: 'a', say: "Or what?" },
+      { by: 'c', say: "Or you can do {b}'s chores AND yours tomorrow. Since you're so worried about it." },
+      { beat: "A couple of people laugh. {a} doesn't." },
+      { by: 'b', conf: "{c} had my back without even thinking about it. I'm not going to forget that." },
+      { by: 'a', conf: "{b} hides behind {c}. Fine. Two names to remember." },
+    ] },
+    { id: 'nh.f3', place: 'eat', when: { third: true }, turns: [
+      { beat: "Dinner {here}. {a} and {b} have been snapping at each other since they sat down." },
+      { by: 'b', say: "Can you pass the water? Or is that too much to ask?" },
+      { by: 'a', say: "Everything's too much to ask with you." },
+      { by: 'b', say: "Wow." },
+      { by: 'c', say: "Can you two not, while we're eating?" },
+      { by: 'a', say: "Tell {b}. {b} started it." },
+      { by: 'c', say: "I'm telling both of you. I'm telling you more, though." },
+      { by: 'c', conf: "I'm on {b}'s side. Everyone knows I'm on {b}'s side. I'm not going to pretend I'm not." },
+    ] },
+  ],
+  'long.drama.bomb.any': [
+    { id: 'nh.m1', place: 'public', when: { third: true }, turns: [
+      { beat: "Everyone is {here} when {a} says it." },
+      { by: 'a', say: "Let's be honest. Half the people here are only here because somebody's carrying them." },
+      { by: 'b', say: "Are you talking about me?" },
+      { by: 'a', say: "If it fits." },
+      { by: 'c', say: "Are you kidding? {b} won us the last challenge." },
+      { by: 'a', say: "Once." },
+      { by: 'c', say: "Once is more than you." },
+      { beat: "Somebody actually goes 'oooh'." },
+      { by: 'b', conf: "I didn't even have to answer. {c} did it for me. Better than I would have." },
+      { by: 'a', conf: "I said what everybody was thinking. Nobody else was brave enough. Or dumb enough. One of those." },
+    ] },
+  ],
+  'long.drama.dig.any': [
+    { id: 'nh.d1', place: 'eat', when: { third: true }, turns: [
+      { by: 'b', say: "I'll do the dishes tonight." },
+      { by: 'a', say: "Wow. Big day for you. First chore this week." },
+      { by: 'c', say: "That's not true. {b} did breakfast." },
+      { by: 'a', say: "Did {b}? I must have missed it." },
+      { by: 'c', say: "You were asleep." },
+      { by: 'a', conf: "One little comment and {c} comes running. Interesting. {b} and {c} are closer than I thought." },
+      { by: 'b', conf: "{a} takes shots at me every single day. Today somebody shot back. It felt amazing." },
+    ] },
+  ],
+  'long.drama.clash.any': [
+    { id: 'nh.c1', place: 'work', when: { third: true }, turns: [
+      { beat: "Chores {here}. {a} and {b} both have a plan." },
+      { by: 'a', say: "Okay, everybody. Water first, then wood." },
+      { by: 'b', say: "Actually, I already told people wood first." },
+      { by: 'a', say: "Why would you do wood first?" },
+      { by: 'b', say: "Because it takes longer and it's cooler in the morning." },
+      { by: 'c', say: "{b}'s right. I'm doing wood." },
+      { by: 'a', say: "Great. Fine. Do whatever you want." },
+      { by: 'a', conf: "{c} always sides with {b}. Always. That's two people I have to deal with now, not one." },
+      { by: 'c', conf: "It's not about sides. Wood first just makes more sense. Okay, and it's a little about sides." },
+    ] },
+  ],
+  'long.drama.explode.any': [
+    { id: 'nh.e1', place: 'public', when: { third: true }, turns: [
+      { by: 'a', say: "Do you ever stop? Seriously, do you ever stop?" },
+      { by: 'b', say: "What did I even say?" },
+      { by: 'a', say: "It's not what you said! It's everything! The correcting, the complaining, all of it!" },
+      { by: 'c', say: "Okay, that's enough." },
+      { by: 'a', say: "Oh, here we go. {b}'s bodyguard." },
+      { by: 'c', say: "Somebody has to be. You just screamed at {b} for asking where the rope was." },
+      { beat: "{a} storms off. {c} puts a hand on {b}'s shoulder." },
+      { by: 'b', conf: "{a} has been waiting to explode at somebody for days. I just happened to be standing there. Thank god {c} was too." },
+    ] },
+  ],
+};

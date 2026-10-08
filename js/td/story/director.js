@@ -29,6 +29,7 @@ import { writeStory as writeRaw, hasStoryPool } from './write.js';
 import { lastTribalOf, challengeOf, lossStreak, bootsBefore } from './record.js';
 import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
+import { writeTribal } from './tribal.js';
 
 // Where the season lives decides a few words ({quarters}, {bed}) and what campers can know:
 // at a venue that reads the votes aloud (the Elimination Trial) everyone hears the count; at a
@@ -339,4 +340,11 @@ export function airTdEpisode(ep) {
     story[camp] = out;
   }
   ep.campStory = story;
+  // the night's words: every voter in the booth, the reading, last words, after (tribal.js)
+  if (!ep.tribalStory) ep.tribalStory = writeTribal(ep);
+  // the classic screen's Crashout (vp-screens.js buildCrashout) reads the live game: taken now,
+  // while the game is still at this episode, so a replay shows that night and not today
+  if (ep.tribalStory && !ep.tribalBlowup && ep.tribalStory.crashout === undefined) {
+    try { ep.tribalStory.crashout = typeof window !== 'undefined' && typeof window.buildCrashout === 'function' ? (window.buildCrashout(ep) || null) : null; } catch { ep.tribalStory.crashout = null; }
+  }
 }

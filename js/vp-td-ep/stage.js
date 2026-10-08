@@ -229,7 +229,8 @@ export function castAt(screen, L) {
   const focus = s.focus || null;
   const toks = [];
   for (const [n, pl] of Object.entries(sc.places || {})) {
-    if (sc.exit && n !== sc.exit && !pl.host) continue;
+    // the walk out: the one leaving and the host, and whoever came to say goodbye (sc.exitWith)
+    if (sc.exit && n !== sc.exit && !pl.host && n !== sc.exitWith) continue;
     const bg = (sc.bg || []).find(b => b.n === n);
     const busy = !bg && sc.acts?.[n] && !(focus || []).includes(n) && n !== speaker ? sc.acts[n] : null;
     const sit = !!pl.sit;

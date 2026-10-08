@@ -1643,7 +1643,17 @@ export function _textTdCeremony(ep, ln, sec) {
   if (!scr) return;
   sec(scr.label.toUpperCase() + ' — AS IT AIRS');
   const host = scr.host;
+  // from the vote on, the players' words are the screen's own (td/story/tribal.js: every voter in
+  // the booth, the reading, last words, after); the Q&A before it is already in the transcript above
+  let voted = false, boothShown = false;
   for (const s of scr.steps) {
+    if (s.k === 'scene' && s.spot === 'voting-booth') { voted = true; if (!boothShown) { ln('— The Voting Booth —'); boothShown = true; } continue; }
+    if (s.k === 'ballots') voted = true;
+    if (voted && s.k === 'say' && !s.host) { ln(`${s.by}: "${s.text}"`); continue; }
+    if (voted && s.k === 'conf') { ln(`${s.by} (confessional): "${s.text}"`); continue; }
+    if (s.k === 'ballot') { ln(`  [${s.voter} votes ${s.voted}]`); continue; }
+    if (voted && s.k === 'beat' && !s.walk && s.text) { ln(`(${s.text})`); continue; }
+    if (s.k === 'scene' && s.spot === 'confessional') { ln('— Later, in the confessional —'); continue; }
     if (s.k === 'say' && s.host) ln(`${host}: "${s.text}"`);
     else if (s.k === 'ballots') ln(`(${s.text})`);
     else if (s.k === 'idol') ln(`(${s.by} plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${s.for}` : ''}.)`);

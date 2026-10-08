@@ -11,11 +11,11 @@ import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 // what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
 const STORY_FACTS = new Set([...TD_FACT_KEYS,
   'venue', 'count', 'outcome', 'story', 'step', 'prev', 'prevGap', 'chapter', 'members', 'aOther', 'bOther', 'target', 'group',
-  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak']);
+  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT']);
 // names a line may say, and the fact that must be asked for unless the pool always has it
 const ALWAYS = new Set(['a', 'b', 'c', 'd', 'quarters', 'bed', 'item', 'here', 'place', 'host', 'count']);
 const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
-  threat: 'threat', weak: 'weak', target: 'target', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder' };
+  threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder' };
 // a pool's guarantees: names its moment always carries
 const GUARANTEED = [
   [/^story\.morning\./, ['lastBoot', 'target', 'bootVotes']],
@@ -25,6 +25,9 @@ const GUARANTEED = [
   [/^long\.alliance\.form\.enemy/, ['target']],
   [/^long\.fallout\.flip\.swap/, ['wrote', 'plan']],
   [/^long\.deal\.side/, ['size']],
+  [/^booth\./, ['target', 'lastBoot']],
+  [/^booth\.plan/, []],
+  [/^(reveal|exit|after)\./, ['lastBoot', 'item']],
   [/^long\.(talk\.lie\.about|drama\.paranoia\.quiet|romance\.tri\.(exploit|cut-))/, ['target']],
 ];
 const guaranteed = key => GUARANTEED.filter(([re]) => re.test(key)).flatMap(([, n]) => n);

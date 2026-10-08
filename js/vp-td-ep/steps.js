@@ -445,7 +445,20 @@ export function tdTribalScreen(ep, o = {}) {
   // naming their own pick, then back to the ceremony for the reading
   const booth = plateKey(venue, 'voting-booth', 'night') || plateKey(venue, 'confessional', 'day');
   const cast = (ep.votingLog || []).filter(v => tribal.includes(v.voter) && v.voted);
-  if (booth && cast.length >= 2) {
+  // Every voter, in their own words (td/story/tribal.js; the user, 2026-10-07: "we need to see all
+  // the votes, not just 2 or 3"): the votes for somebody else first, the ones that send the boot
+  // home last. An episode written before the story layer keeps the old three-voter cut.
+  const story = ep.tribalStory || null;
+  if (booth && cast.length >= 2 && story?.booth?.length) {
+    const said = new Map(story.booth.map(b => [b.voter, b.line]));
+    const order = [...cast.filter(v => v.voted !== elim), ...cast.filter(v => v.voted === elim)];
+    order.forEach((v, i) => {
+      steps.push({ k: 'scene', spot: 'voting-booth', tod: 'night', plate: booth, place: PLACE['voting-booth'], time: '8:50 PM', card: i === 0, cut: i > 0, focus: [v.voter], bg: [], places: placeScene(booth, [v.voter]) });
+      steps.push({ k: 'say', by: v.voter, text: cleanText(said.get(v.voter) || `${v.voted}.`), focus: [v.voter] });
+      steps.push({ k: 'ballot', voter: v.voter, voted: v.voted, venue });
+    });
+    steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '9:00 PM', card: false, cut: true, focus: [], bg: [], places, seated: tribal, host, ceremony: true });
+  } else if (booth && cast.length >= 2) {
     const shown = [];
     const forElim = cast.filter(v => v.voted === elim), other = cast.filter(v => v.voted !== elim);
     for (const pool of [forElim, other, forElim]) {
@@ -485,6 +498,26 @@ export function tdTribalScreen(ep, o = {}) {
   // the result, as the setting gives it
   if (V.style === 'handout') handout(steps, say, V, { tribal, elim, counts, immune: [].concat(ep.immunityWinner || []).filter(n => tribal.includes(n)), tie, revote, rocks: !!ep.isRockDraw, host });
   else readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, revote, rocks: !!ep.isRockDraw });
+  // the reading lands: how the one going home takes it, and who answers (td/story/tribal.js)
+  const lineStep = l => (l.kind === 'beat' ? { k: 'beat', text: cleanText(l.text), focus: [] }
+    : l.kind === 'conf' ? { k: 'conf', by: l.by, text: cleanText(l.text) }
+      : { k: 'say', by: l.by, text: cleanText(l.text), focus: [l.by], loud: loud(l.text) });
+  // (played before the 'out' step: the boot is still in their seat when the last vote is read)
+  const outAt = steps.map(x => x.k).lastIndexOf('out');
+  const moment = [];
+  for (const l of story?.reveal || []) moment.push(lineStep(l));
+  // ...and the classic screen's Tribal Blowup or Crashout: the boot goes out swinging, and what
+  // they say changes the game (episode.js checkTribalBlowup; vp-screens.js buildCrashout)
+  const swing = ep.tribalBlowup?.player === elim ? { ...ep.tribalBlowup, kind: 'Tribal Blowup' }
+    : story?.crashout?.player === elim || (story?.crashout && !story.crashout.player) ? { ...story.crashout, player: elim, kind: 'Crashout' } : null;
+  if (swing?.reveals?.length) {
+    moment.push({ k: 'title', kicker: swing.kind, name: swing.trigger === 'temperament' ? `${elim} can't hold it in` : `${elim} goes out swinging`, faces: [elim] });
+    for (const r of swing.reveals) {
+      moment.push({ k: 'say', by: elim, text: cleanText(r.text), focus: [elim], loud: true,
+        side: r.consequence ? [{ tab: 'room', text: cleanText(r.consequence) }] : [] });
+    }
+  }
+  if (moment.length) steps.splice(outAt >= 0 ? outAt : steps.length, 0, ...moment);
   // what the viewer may now see: the tally and each ballot's reason
   const outStep = steps.findIndex(s => s.k === 'out');
   const side = [];
@@ -503,9 +536,20 @@ export function tdTribalScreen(ep, o = {}) {
   const exitPlaces = { [elim]: { u: .6, v: .74, s: .24 } };
   const hs = ((TD_MARKS[exitPlate] || {}).m || []).filter(m => m.kind === 'stand' && m.u < .36 && m.u > .12 && m.v > .45 && m.v < .78).sort((a, b) => b.s - a.s)[0];
   exitPlaces[host] = hs ? { u: hs.u, v: hs.v, s: Math.min(hs.s, .24), host: true } : { u: .26, v: .72, s: .22, host: true };
-  steps.push({ k: 'scene', spot: 'exit', tod: 'night', plate: exitPlate, place: V.exitPlace, time: '9:10 PM', card: true, focus: [elim], bg: [], places: exitPlaces, exit: elim });
+  // last words: their person walks them down, or they turn round for one more shot (tribal.js)
+  const exitWith = story?.exit?.length && story.exitWith && story.exitKind !== 'alone' ? story.exitWith : null;
+  if (exitWith) exitPlaces[exitWith] = { u: .78, v: .74, s: .22 };
+  steps.push({ k: 'scene', spot: 'exit', tod: 'night', plate: exitPlate, place: V.exitPlace, time: '9:10 PM', card: true, focus: [elim, exitWith].filter(Boolean), bg: [], places: exitPlaces, exit: elim, exitWith });
   say(V.exitLine(elim));
+  for (const l of story?.exit || []) steps.push(lineStep(l));
   steps.push({ k: 'beat', text: `${elim} leaves the game.`, walk: elim });
+  // after: the people who did it, or the one who lost their person, to the camera
+  const confPlate = plateKey(venue, 'confessional', 'night') || plateKey(venue, 'confessional', 'day');
+  const afterLines = (story?.after || []).filter(l => l.kind === 'conf' && l.by);
+  if (afterLines.length && confPlate) {
+    steps.push({ k: 'scene', spot: 'confessional', tod: 'night', plate: confPlate, place: PLACE.confessional || 'Confessional', time: 'Later', card: true, focus: [afterLines[0].by], bg: [], places: placeScene(confPlate, [afterLines[0].by]) });
+    afterLines.forEach(l => steps.push(lineStep(l)));
+  }
   // at Wawanakwa the Boat of Losers runs to Playa Des Losers, the resort the voted-out wait at (Total Drama Island)
   const playa = venue === 'hosted-camp' ? plateKey('islands', 'playa-des-losers', 'day') : null;
   if (playa) {

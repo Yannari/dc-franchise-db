@@ -17,8 +17,10 @@ import rivalry from './rivalry.js';
 import showmance from './showmance.js';
 import strategy from './strategy.js';
 import more from './more.js';
+import booth from './booth.js';
+import tribal from './tribal.js';
 
-const FILES = [morning, chal, cover, alliance, alliance2, morning2, chal2, deals, rivalry, showmance, strategy, more];
+const FILES = [morning, chal, cover, alliance, alliance2, morning2, chal2, deals, rivalry, showmance, strategy, more, booth, tribal];
 
 export const STORY_POOLS = {};
 for (const f of FILES) for (const [k, v] of Object.entries(f)) STORY_POOLS[k] = STORY_POOLS[k] ? [...STORY_POOLS[k], ...v] : [...v];

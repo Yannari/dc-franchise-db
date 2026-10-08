@@ -18,7 +18,7 @@ import { matches } from '../script/pick.js';
 import { stableRng } from '../script/rng.js';
 import { pStats } from '../players.js';
 import { players as _players } from '../core.js';
-import { placeScene, plateKey, placeName, venueOf, VENUES, cleanText } from './steps.js';
+import { placeScene, plateKey, placeName, venueOf, VENUES, cleanText, campSlot, teamSpot } from './steps.js';
 
 export const ANNOUNCE = {
   'tribe-swap': `Drop your buffs. We're switching tribes.`,
@@ -321,23 +321,41 @@ function talkSteps(lines, host, focus = []) {
   return out;
 }
 
-/** First Impressions: each tribe's gut vote, as the people in it talk it through. */
+/**
+ * First Impressions: each tribe's gut vote, as the people in it talk it through. Played as a rules
+ * screen (the whole cast, the host explaining what is about to happen) and then one screen per team,
+ * each at its own camp and its own vote (the user, 2026-10-08: "someone explaining the rules, and
+ * different screens with each team for each vote"). The swap stays a surprise until each vote is read.
+ * Returns one screen (every step, for the transcript) whose .parts are the screens the viewer plays.
+ */
 export function tdFirstImpressionsScreen(ep, o = {}) {
   const fi = ep.tdFirstImp;
   if (!fi?.length) return null;
   const host = o.host || 'Chris';
   const venue = venueOf(ep, o);
   const V = VENUES[venue];
-  const steps = [];
+  const everyone = [...new Set(fi.flatMap(r => [...r.booth.map(b => b.voter), r.boot]))];
+  const teams = fi.map(r => r.tribe);
+  // the rules, to everyone, before the teams split up
+  const all = gather(venue, V.public, 'day', everyone, host);
+  const rules = [{ k: 'scene', spot: V.public, tod: 'day', plate: all.key, place: placeName(V.public), time: 'Day 1, 2:00 PM', card: true, focus: [], bg: [], places: all.places, host }];
+  rules.push({ k: 'say', by: host, host: true, text: `Before anybody gets comfortable: nobody gets a free night here.` });
+  rules.push({ k: 'title', kicker: 'Twist', name: 'First Impressions', faces: everyone.slice(0, 8) });
+  rules.push({ k: 'say', by: host, host: true, text: `Tonight, before a single challenge, ${teams.length === 2 ? `${teams[0]} and ${teams[1]}` : 'every team'} each vote somebody out.` });
+  rules.push({ k: 'say', by: host, host: true, text: `You've known each other for a few hours. No alliances, no history, no challenge to point at. Just your first impression. Vote out the person you trust the least.` });
+  rules.push({ k: 'beat', text: `Nobody says anything. A few of them are already looking around the circle.`, focus: [], tense: true });
+  rules.push({ k: 'say', by: host, host: true, text: `Head back to your camps. Talk it over. I'll see each team tonight.` });
+  const parts = [{ id: 'first-impressions-rules', kind: 'twist', venue, ep: ep.num, label: 'First Impressions: the rules', host, steps: rules }];
   fi.forEach((r, i) => {
     const people = [...new Set([...r.booth.map(b => b.voter), r.boot])];
-    const pub = gather(venue, V.public, 'day', people, host);
-    steps.push({ k: 'scene', spot: V.public, tod: 'day', plate: pub.key, place: `${r.tribe} camp`, time: 'Day 1, 4:00 PM', card: i === 0, focus: [], bg: [], places: pub.places, host });
-    if (i === 0) steps.push({ k: 'title', kicker: 'Twist', name: 'First Impressions', faces: people.slice(0, 8) });
+    const slot = campSlot(ep, r.tribe, venue);
+    const pub = gather(venue, teamSpot(venue, V.public, slot), 'day', people, host);
+    const steps = [{ k: 'scene', spot: V.public, tod: 'day', plate: pub.key, place: `${r.tribe} camp`, time: 'Day 1, 4:00 PM', card: true, focus: [], bg: [], places: pub.places, host }];
+    steps.push({ k: 'title', kicker: 'First Impressions', name: r.tribe, faces: people.slice(0, 8) });
     steps.push(...talkSteps(r.huddle, host, people.slice(0, 4)));
     const cer = gather(venue, 'ceremony', 'night', people, host);
-    steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate: cer.key, place: V.ceremony, time: 'Day 1, 9:00 PM', card: true, focus: [], bg: [], places: cer.places, host, ceremony: true });
-    steps.push({ k: 'say', by: host, host: true, text: `${r.tribe}, you've known each other for one day. No alliances, no history, nothing to go on but your gut. Vote out the person you trust the least.` });
+    steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate: cer.key, place: V.ceremony, time: `Day 1, ${9 + i}:00 PM`, card: true, focus: [], bg: [], places: cer.places, host, ceremony: true });
+    steps.push({ k: 'say', by: host, host: true, text: `${r.tribe}, you've known each other for one day. Nothing to go on but your gut. Vote out the person you trust the least.` });
     for (const b of r.booth) {
       const s = talkSteps(b.lines, host);
       if (!s.length) s.push({ k: 'conf', by: b.voter, text: `${b.voted}.` });
@@ -350,13 +368,14 @@ export function tdFirstImpressionsScreen(ep, o = {}) {
     steps.push(...talkSteps(r.twist, host, [r.boot]));
     if (r.welcome?.length) {
       const them = [...new Set([r.boot, ...r.welcome.map(l => l.by).filter(Boolean)])];
-      const camp = gather(venue, V.public, 'night', them, host);
+      const camp = gather(venue, teamSpot(venue, V.public, campSlot(ep, r.sentTo, venue)), 'night', them, host);
       steps.push({ k: 'scene', spot: V.public, tod: 'night', plate: camp.key, place: `${r.sentTo} camp`, time: 'Later that night', card: false, focus: [r.boot], bg: [], places: camp.places, host });
       steps.push(...talkSteps(r.welcome, host, them.slice(0, 3)));
     }
     steps.push(...talkSteps(r.after, host));
+    parts.push({ id: `first-impressions-${i}`, kind: 'twist', venue, ep: ep.num, label: `First Impressions: ${r.tribe}`, team: r.tribe, host, steps });
   });
-  return { id: 'first-impressions', kind: 'twist', venue, ep: ep.num, label: 'First Impressions', host, steps };
+  return { id: 'first-impressions', kind: 'twist', venue, ep: ep.num, label: 'First Impressions', host, steps: parts.flatMap(p => p.steps), parts };
 }
 
 /** The auction: every lot put up, bid on, sold and opened, in the bidders' own words. */

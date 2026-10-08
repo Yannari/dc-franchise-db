@@ -70,6 +70,7 @@ export function tdStepScreens(ep, classic = [], o = {}) {
     // the twists with hand-built classic pages, each on the stage from its own record
     const misc = (() => { try { return tdMiscTwistScreen(ep, S?.id || '', o); } catch (err) { console.warn('TD twist screen fell back:', S?.id, err); return null; } })();
     if (misc === 'skip') continue;
+    if (misc?.parts?.length) { misc.parts.forEach(m => out.push(shell(m, { ...S, id: m.id, label: m.label }, ep, o))); continue; }
     if (misc) { out.push(shell(misc, S, ep, o)); continue; }
     // any other twist page drawn from twist cards (Hero Duel, Kidnapping, Shared Immunity, The Feast...):
     // the same cards, played on the venue's stage

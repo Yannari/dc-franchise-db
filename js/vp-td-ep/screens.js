@@ -659,6 +659,8 @@ export function tdxTv() {
   if (!p) return;
   const on = p.classList.toggle('tdx-tv');
   try { if (on && p.requestFullscreen && !document.fullscreenElement) p.requestFullscreen().catch(() => {}); if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch { /* fullscreen refused */ }
+  // leaving fullscreen (Esc) leaves TV mode too
+  if (on && !p._tvExit) { p._tvExit = true; document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) p.classList.remove('tdx-tv'); }); }
 }
 /** Switch between the stepped viewer and the classic screens, staying on the same screen. */
 export function tdxSwitchViewer(which) {

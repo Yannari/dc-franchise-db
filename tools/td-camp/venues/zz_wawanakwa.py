@@ -46,7 +46,7 @@ _HC = {
     'ceremony': _wk('hc-ceremony2.json', [(1260, 640), (1440, 640)], seats=_STUMPS, host=(1530, 560)),
     'cliff': _wk('hc-cliff.json', [(380, 530), (680, 530), (980, 530)]),
     'forest-trail': _wk('hc-cave.json', [(330, 645), (700, 645), (1060, 645)]),
-    'beach': _wk('hc-beach2.json', [(700, 648), (980, 648), (1240, 648)]),
+    'beach': _wk('hc-beach.json', [(500, 640), (800, 640), (1100, 640)]),
     'map': _wk('hc-map.json', [], zones=_ZONES),
     # the places the show had beyond the camp's daily round (2026-10-07: "add all of them")
     'lake': _wk('hc-lake.json', [(480, 640), (760, 640), (1040, 640)]),

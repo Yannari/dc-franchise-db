@@ -12,3 +12,8 @@ NIGHT_ONLY.add('ceremony')
 SCENES['carnival']['lake-shore'] = _wk('cv-lake.json', [(420, 640), (680, 640), (900, 640)])
 SCENES['carnival']['forest-edge'] = _wk('cv-forest.json', [(420, 600), (760, 610), (1100, 600)])
 OUTDOOR['carnival'].discard('lake-shore'); OUTDOOR['carnival'].discard('forest-edge')
+
+# the voting booth: DC4's own frame (the clown urn on the counter, torches, the fair behind), rebuilt
+# empty from six booth shots with a different contestant in each
+SCENES['carnival']['voting-booth'] = _wk('cv-booth.json', [(800, 640)])
+NIGHT_ONLY.add('voting-booth'); OUTDOOR['carnival'].discard('voting-booth')

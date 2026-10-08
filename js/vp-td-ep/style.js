@@ -206,7 +206,7 @@ export const TDX_CSS = `
 .tdx .tdx-ballot .pf b{font:400 2.6cqw/1.1 'Special Elite',monospace;margin-bottom:.6cqw}
 .tdx .tdx-ballot .stampx small{display:block;font-size:.55em;text-align:center;letter-spacing:.4em}
 @keyframes tdxBalIn{from{transform:translateY(-140%) rotate(-14deg);opacity:0}to{transform:translateY(0) rotate(-3deg);opacity:1}}
-@keyframes tdxBalDrop{0%{transform:rotate(-3deg)}40%{transform:translateY(-6%) rotate(2deg) scale(.95)}100%{transform:translateY(120%) rotate(8deg) scale(.18);opacity:0}}
+@keyframes tdxBalDrop{0%{transform:rotate(-3deg)}35%{transform:translateY(-4%) rotate(1deg) scale(1.03)}100%{transform:translateY(70%) rotate(10deg) scale(.6);opacity:0}}
 @keyframes tdxShake{0%,100%{transform:rotate(-3deg)}30%{transform:translate(-1%,1%) rotate(-4deg)}60%{transform:translate(1%,-1%) rotate(-2deg)}}
 @keyframes tdxWrite{to{stroke-dashoffset:0}}
 @keyframes tdxInkFill{to{fill:var(--ink)}}
@@ -390,4 +390,10 @@ export const TDX_CSS = `
 .tdx .tdx-ln b{color:#fff}.tdx .tdx-ln.sc{font:900 11px Nunito;letter-spacing:.12em;text-transform:uppercase;color:var(--or);margin-top:6px}
 .tdx .tdx-ln.d{font-style:italic;color:#8d93a6}
 #visual-player.tdx-tv .tdx .tdx-script,#visual-player.tdx-tv .tdx .tdx-ctrl .tdx-chap{display:none}
+#visual-player.tdx-tv{position:fixed!important;inset:0;z-index:9999;background:#000;display:flex!important;align-items:center;justify-content:center;overflow:hidden;padding:0;margin:0}
+#visual-player.tdx-tv .rp-sidebar,#visual-player.tdx-tv .rp-nav,#visual-player.tdx-tv .rp-main>*:not(:has(.tdx)){display:none!important}
+#visual-player.tdx-tv .rp-main{width:100%;height:100%;max-width:none;margin:0;padding:0;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden}
+#visual-player.tdx-tv .rp-main *:has(>.tdx),#visual-player.tdx-tv .rp-main *:has(.tdx){max-width:none!important;width:100%;margin:0!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important}
+#visual-player.tdx-tv .tdx{width:min(100vw,calc((100vh - 52px) * 16 / 9));max-width:none;margin:0 auto}
+#visual-player.tdx-tv .tdx .tdx-stage{border-radius:0}
 `;

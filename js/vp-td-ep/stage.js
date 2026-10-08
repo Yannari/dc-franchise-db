@@ -465,6 +465,5 @@ export function ballotHtml(s, fresh) {
     <div class="card"><div class="hd">${esc(B.head)}</div>
       <svg class="ink" viewBox="0 0 1000 220"><text x="500" y="${Math.round(150 + (120 - fs) / 3)}" text-anchor="middle" font-size="${fs}" style="font-family:${H.f};font-weight:${H.w || 400};stroke-width:${weight}" transform="rotate(${slant} 500 120) skewX(${-slant})">${letters}</text><path class="ul" d="M${500 - half} 185 q ${half} 16 ${half * 2} -6"/></svg>
       <div class="by"><img src="${esc(avatar(s.voter))}" alt=""><span>${esc(s.voter)} votes</span></div></div>
-    <div class="urn">${URN[B.urn] || ''}</div>
   </div>`;
 }

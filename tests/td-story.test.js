@@ -13,13 +13,19 @@ import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 // what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
 const STORY_FACTS = new Set([...TD_FACT_KEYS,
   'venue', 'count', 'outcome', 'story', 'step', 'prev', 'prevGap', 'chapter', 'members', 'aOther', 'bOther', 'target', 'group',
-  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'fifth', 'sixth', 'notVoice', 'notVoiceB', 'home', 'job', 'lot', 'eats', 'thing', 'others', 'markMe', 'markB', 'otherMe', 'otherB', 'shaky', 'cover', 'close', 'aVoted', 'defends', 'cWasted', 'self', 'found', 'sparkSeen', 'told', 'tally', 'alt', 'fromTarget', 'sparkKind', 'wroteIsBoot', 'moment', 'how', 'ago', 'bWrote', 'tease', 'two', 'bLikesA', 'bHatesA', 'physical', 'imm']);
+  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'fifth', 'sixth', 'notVoice', 'notVoiceB', 'home', 'job', 'lot', 'eats', 'thing', 'others', 'markMe', 'markB', 'otherMe', 'otherB', 'shaky', 'cover', 'close', 'aVoted', 'defends', 'cWasted', 'self', 'found', 'sparkSeen', 'told', 'tally', 'alt', 'fromTarget', 'sparkKind', 'wroteIsBoot', 'moment', 'how', 'ago', 'bWrote', 'tease', 'two', 'bLikesA', 'bHatesA', 'physical', 'imm', 'ally', 'markLeader']);
 // names a line may say, and the fact that must be asked for unless the pool always has it
 const ALWAYS = new Set(['a', 'b', 'c', 'd', 'e', 'f', 'h', 'quarters', 'bed', 'item', 'here', 'place', 'host']);
 const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
   threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder', other: 'other', pitcher: 'pitcher', home: 'home', job: 'job', lot: 'lot', thing: 'thing', others: 'others', shaky: 'shaky', cover: 'cover', found: 'found', alt: 'alt', teller: 'told', warnedAbout: 'fromTarget', imm: 'imm', lastBoot: 'lastBoot' };
 // a pool's guarantees: names its moment always carries
 const GUARANTEED = [
+  [/^booth2\.(lead|with)\.coming$/, ['target', 'mark']],
+  [/^booth2\.(lead|with)\.pair$/, ['target', 'partner']],
+  [/^booth2\.(lead|with)\.group$/, ['target', 'theirs']],
+  [/^booth2\.with\./, ['target', 'leader']],
+  [/^booth2\.swing\./, ['target', 'pitcher']],
+  [/^booth2\./, ['target']],
   [/^story\.morning\./, ['lastBoot', 'target', 'bootVotes']],
   [/^story\.chal\.(lost|regroup)/, ['sank', 'streak', 'tribe']],
   [/^story\.chal\.won/, ['carried', 'tribe']],

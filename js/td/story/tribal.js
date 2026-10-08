@@ -216,8 +216,49 @@ export function writeTribal(ep) {
 
   // ── the booth: every voter, their reason, their voice ──
   const booth = [];
+  // what each voter's day was, from the vote scenes that aired (director.js voteTalk): who ran a plan
+  // and the case they made, who was in on it, who got pitched, who had doubts. The booth says that, so
+  // the reason under each name is the one the viewer watched (the user, 2026-10-08: "the reasoning in
+  // the voting booth doesn't represent the real reasoning; someone spearheading a vote should be more
+  // confident"). A voter none of it touched falls back to the engine's own reason (whyOf).
+  const voteScenes = Object.values(ep.campStory || {}).flatMap(c => [...(c.pre || []), ...(c.post || [])]).filter(x => x?.storyType === 'vote' && x.scene);
+  const CASE = { weak: 'sank', plan: 'numbers' };
+  const caseOfKind = k => { const c = String(k || '').split('.').pop(); return CASE[c] || c; };
+  const roleOf = v => {
+    const plans = voteScenes.filter(x => ['plan', 'other'].includes(x.step) && x.scene.data?.target === v.voted);
+    const led = plans.find(x => x.scene.who?.a === v.voter);
+    if (led) return { role: 'lead', scene: led, cs: caseOfKind(led.kind) };
+    const sat = plans.find(x => (x.players || []).includes(v.voter));
+    if (sat) return { role: 'with', scene: sat, cs: caseOfKind(sat.kind), leader: sat.scene.who?.a };
+    const sw = voteScenes.find(x => x.step === 'swing' && x.scene.who?.b === v.voter && x.scene.data?.target === v.voted);
+    if (sw) return { role: 'swing', scene: sw, pitcher: sw.scene.who?.a };
+    const dt = voteScenes.find(x => x.step === 'doubt' && x.scene.who?.a === v.voter);
+    if (dt) return { role: 'doubt', scene: dt, held: /holds$/.test(dt.kind || '') };
+    return null;
+  };
+  const CASES = new Set(['coming', 'sank', 'idol', 'pair', 'group', 'grudge', 'threat', 'outsider', 'numbers']);
   for (const v of ballots) {
     const why = whyOf(v, ep);
+    const r = v.voter === elim ? null : roleOf(v);
+    if (r && whyOf(v, ep) !== 'flip') {
+      const sd = r.scene.scene.data || {};
+      const cs = CASES.has(r.cs) ? r.cs : 'numbers';
+      const who = { a: v.voter };
+      const d = { target: v.voted, ...(r.leader && r.leader !== v.voter ? { leader: r.leader } : {}), ...(r.pitcher ? { pitcher: r.pitcher } : {}),
+        ...(sd.partner ? { partner: sd.partner } : {}), ...(sd.theirs ? { theirs: sd.theirs } : {}), ...(sd.mark ? { mark: sd.mark } : {}) };
+      const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(v.voter), band: bandOf(v.voter, v.voted),
+        sankT: !!ch && ch.sank === v.voted, leader: !!d.leader, mark: !!d.mark, markMe: d.mark === v.voter, markLeader: !!d.mark && d.mark === d.leader,
+        ally: (gs.namedAlliances || []).some(al => (al.members || []).includes(v.voter) && (al.members || []).includes(v.voted)) };
+      const pool = `booth2.${r.role}`;
+      const ending = r.role === 'lead' || r.role === 'with' ? cs : r.role === 'doubt' ? (r.held ? 'holds' : 'breaks') : 'yes';
+      // nobody in the booth says what the voter before them said: a fresh line first, then the case's least used, then .any
+      const wr = (e, u) => writeStory(pool, e, who, d, facts, ctx(n++, 'tribal', u));
+      const two = r.role === 'lead' || r.role === 'with';
+      const said = new Set(booth.map(b => b.line));
+      const fresh = x => (x && !said.has(x.lines.map(l => l.text).join(' ')) ? x : null);
+      const w = fresh(wr(ending, true)) || (two ? fresh(wr('any', true)) : null) || fresh(wr(ending, 'soft')) || (two ? fresh(wr('any', 'soft')) : null);
+      if (w) { booth.push({ voter: v.voter, voted: v.voted, why, role: r.role, line: w.lines.map(l => l.text).join(' ') }); continue; }
+    }
     // the voter's group by name, only when it is a real alliance (not tonight's 'Anti-X Bloc')
     const named = new Set((gs.namedAlliances || []).map(al => al.name));
     const plan = (ep.alliances || []).find(al => (al.members || []).includes(v.voter) && al.target === v.voted && named.has(al.label));

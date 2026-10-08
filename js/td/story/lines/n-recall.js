@@ -40,4 +40,19 @@ export default {
     { id: 'nrc.r2', turns: [{ by: 'a', conf: "I've been trying to keep the peace with {target} for days, but after {moment}, I'm not trying anymore." }] },
     { id: 'nrc.r3', when: { voice: ['cruel', 'proud', 'schemer'] }, turns: [{ by: 'a', conf: "Some people you vote out because it's smart. {target} I'm voting out because of {moment}, and I'm going to enjoy it." }] },
   ],
+  // a grieves {fallen}, whom {target} helped vote out last night, and runs tonight's plan on {target}
+  'vp.recall.revenge': [
+    { id: 'nrc.v1', turns: [{ by: 'a', conf: "{target} wrote {fallen}'s name last night. I sat with that all morning, and now it's {target}'s turn." }] },
+    { id: 'nrc.v2', turns: [{ by: 'a', conf: "Everybody keeps telling me it's just a game. Fine, then it's just a game when I vote {target} out tonight." }] },
+    { id: 'nrc.v3', when: { voice: ['warm','earnest','goofy'] }, turns: [{ by: 'a', conf: "I'm not doing this because I'm angry about {fallen}. Okay, I'm doing it a little bit because I'm angry about {fallen}." }] },
+    { id: 'nrc.v4', when: { voice: ['calm','dry','schemer'] }, turns: [{ by: 'a', conf: "{fallen} would want me to stay calm and play smart. Playing smart tonight means {target} goes home." }] },
+    { id: 'nrc.v5', when: { voice: ['loud','tough','cruel','emotional'] }, turns: [{ by: 'a', conf: "{target} took {fallen} from me, and I've been counting the hours until I could write that name." }] },
+  ],
+  // a helped vote {fallen} out; {target}, {fallen}'s friend, was grieving this morning, and a gets there first
+  'vp.recall.fallout': [
+    { id: 'nrc.o1', turns: [{ by: 'a', conf: "{target} hasn't looked at me once since {fallen} left. I know exactly what that means, so I'm going first." }] },
+    { id: 'nrc.o2', turns: [{ by: 'a', conf: "I saw {target} {moment}, sitting where {fallen} used to sleep. {target} is going to come for whoever did it, and that's me." }] },
+    { id: 'nrc.o3', when: { voice: ['warm','anxious','earnest'] }, turns: [{ by: 'a', conf: "I feel bad about {fallen}, I really do. But {target} is never going to forgive me, so I can't keep {target} around." }] },
+    { id: 'nrc.o4', when: { voice: ['calm','dry','schemer'] }, turns: [{ by: 'a', conf: "Grief makes people dangerous. {target} has a lot of it right now, and I'm the one it's pointed at." }] },
+  ],
 };

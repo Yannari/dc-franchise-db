@@ -12,7 +12,7 @@
 
 const VERT = `attribute vec2 p; varying vec2 v; void main(){ v = vec2(p.x * .5 + .5, .5 - p.y * .5); gl_Position = vec4(p, 0., 1.); }`;
 const FRAG = `precision mediump float;
-varying vec2 v; uniform sampler2D img, mot, sky; uniform float t, flows;
+varying vec2 v; uniform sampler2D img, mot, sky; uniform float t, flows, bobA;
 uniform vec3 gMul, gAdd, gFog; uniform float gSat, gHaze, gHot, gKeep;
 float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 void main(){
@@ -29,7 +29,7 @@ void main(){
   // a waterfall: streaks running down, each column at its own pace
   d.y -= a.r * (fract(uv.y * 26. - t * 1.6 + h(vec2(floor(uv.x * 320.), 0.))) - .5) * .006;
   // rocking on the water
-  d += b.b * vec2(sin(t * .7) * .0012, sin(t * 1.1) * .0028);
+  d += b.b * bobA * vec2(sin(t * .7) * .0012, sin(t * 1.1) * .0028);
   // a heatwave: the air over the whole ground wavers
   d.x += gHot * sin(uv.y * 220. - t * 5.) * .0007 * smoothstep(.35, 1., uv.y);
   // a fire: the painted flame licks upward, the air above it shimmers
@@ -111,10 +111,11 @@ export function liveGL(root) {
     const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     gl.uniform1i(gl.getUniformLocation(pr, 'img'), 0); gl.uniform1i(gl.getUniformLocation(pr, 'mot'), 1); gl.uniform1i(gl.getUniformLocation(pr, 'sky'), 2);
     gl.uniform1f(gl.getUniformLocation(pr, 'flows'), cv.dataset.flow ? 1 : 0);
+    const bobA = +cv.dataset.bobamp || 1; gl.uniform1f(gl.getUniformLocation(pr, 'bobA'), bobA);
     const G = GRADES[cv.dataset.grade] || {}, u = n => gl.getUniformLocation(pr, n);
     gl.uniform3fv(u('gMul'), G.mul || [1, 1, 1]); gl.uniform3fv(u('gAdd'), G.add || [0, 0, 0]); gl.uniform3fv(u('gFog'), G.fog || [.85, .87, .9]);
     gl.uniform1f(u('gSat'), G.sat ?? 1); gl.uniform1f(u('gHaze'), G.haze || 0); gl.uniform1f(u('gHot'), G.hot || 0); gl.uniform1f(u('gKeep'), G.keep || 0);
-    const s = { cv, gl, ut: gl.getUniformLocation(pr, 't'), ready: 0, raf: 0, t0: performance.now() };
+    const s = { cv, gl, ut: gl.getUniformLocation(pr, 't'), ready: 0, raf: 0, t0: performance.now(), bobA };
     cv._gl = s; live.add(s);
     const src = cv.dataset.src;
     const go = () => { if (++s.ready === 2) { cv.classList.add('on'); frame(s); } };
@@ -132,7 +133,10 @@ function frame(s) {
   const dpr = Math.min(window.devicePixelRatio || 1, 2), k = cv.closest('.push') ? 2 : 1;
   const w = Math.min(Math.round(cv.clientWidth * dpr * k), 3840), h = Math.round(w * 9 / 16);
   if (w > 0 && (cv.width !== w || cv.height !== h)) { cv.width = w; cv.height = h; gl.viewport(0, 0, w, h); }
-  gl.uniform1f(s.ut, (performance.now() - s.t0) / 1000);
+  const t = (performance.now() - s.t0) / 1000;
+  gl.uniform1f(s.ut, t);
+  // whoever is aboard a rocking boat rocks with it: the same swell, handed to the people as px
+  if (s.bobA > 1) { const wd = cv.closest('.tdx-world'); if (wd) { wd.style.setProperty('--bx', `${(Math.sin(t * .7) * .0012 * s.bobA * cv.clientWidth).toFixed(2)}px`); wd.style.setProperty('--by', `${(Math.sin(t * 1.1) * .0028 * s.bobA * cv.clientHeight).toFixed(2)}px`); } }
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   s.raf = requestAnimationFrame(() => frame(s));
 }

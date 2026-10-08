@@ -321,6 +321,7 @@ export const TDX_CSS = `
 .tdx .tdx-puff{position:absolute;width:3.2%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(205,205,215,.8),rgba(150,150,165,0) 70%);transform:translate(-50%,-50%);animation:tdxPuff 1.8s ease-out forwards;pointer-events:none}
 @keyframes tdxPuff{from{transform:translate(-50%,-50%) scale(.4);opacity:.9}to{transform:translate(-170%,-150%) scale(2.8);opacity:0}}
 .tdx .tdx-tok.going .body{animation:tdxStep .4s ease-in-out infinite alternate}
+.tdx .tdx-tok.aboard{translate:var(--bx,0) var(--by,0)}
 .tdx .tdx-tok.walkin{animation:tdxWalkIn 1.2s cubic-bezier(.3,.8,.3,1) both}
 @keyframes tdxWalkIn{from{margin-left:-40cqw;opacity:0}to{margin-left:0;opacity:1}}
 .tdx .tdx-title{position:absolute;inset:0;z-index:15;display:grid;place-items:center;overflow:hidden;background:rgba(8,10,18,.4)}

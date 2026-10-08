@@ -79,10 +79,10 @@ export function tdArrivalScreen(ep, o = {}) {
   // the first load out at sea, on the yacht's deck, before it reaches the dock
   const sea = A.sea ? plateKey(venue, 'yacht', 'day') : null;
   if (sea && loads[0]) {
-    const DECK = [[.27, .383], [.33, .38], [.385, .383], [.655, .45]];
+    const DECK = [[.235, .47], [.29, .468], [.345, .47], [.66, .445]];
     const first = loads[0].slice(0, DECK.length);
     steps.push({ k: 'scene', spot: 'yacht', tod: 'day', plate: sea, place: 'On the way in', time: 'Day one', focus: first, bg: [],
-      places: Object.fromEntries(first.map((n, i) => [n, { u: DECK[i][0], v: DECK[i][1], s: .06, h: 7.5 }])) });
+      places: Object.fromEntries(first.map((n, i) => [n, { u: DECK[i][0], v: DECK[i][1], s: .06, h: 7.5, aboard: true }])), bobAmp: 6 });
     steps.push({ k: 'beat', text: `The yacht cuts across the lake toward camp, ${listOf(first)} out on the deck.`, focus: first });
   }
   for (const a of order) {

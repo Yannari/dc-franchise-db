@@ -417,8 +417,10 @@ export const TDX_CSS = `
 .tdx .tdx-btn.go{background:var(--or);color:#1a0e02;border-color:var(--or);padding:8px 20px}
 .tdx .tdx-btn.on{background:var(--te);color:#04201f;border-color:var(--te)}
 .tdx .tdx-btn kbd{font:900 10px Nunito;padding:1px 5px;border-radius:4px;background:rgba(0,0,0,.2)}
-.tdx .tdx-chap{flex:1;min-width:140px;display:flex;gap:3px}
-.tdx .tdx-chap i{flex:1;height:6px;border-radius:3px;background:#2a2f3e;position:relative;overflow:hidden}
+.tdx .tdx-chap{flex:1;min-width:140px;display:flex;gap:3px;position:relative;padding:9px 0;cursor:pointer;touch-action:none;user-select:none}
+.tdx .tdx-chap i{flex:1;height:6px;border-radius:3px;background:#2a2f3e;position:relative;overflow:hidden;transition:height .15s}
+.tdx .tdx-chap:hover i{height:10px}.tdx .tdx-chap i:hover{background:#3a4156}
+.tdx .tdx-chap .head{position:absolute;top:50%;left:0;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--or);transform:translate(-50%,-50%);box-shadow:0 1px 4px rgba(0,0,0,.5);pointer-events:none;transition:left .3s}
 .tdx .tdx-chap i b{position:absolute;inset:0;width:0;background:var(--or);transition:width .3s}
 .tdx .tdx-count{font:800 11px Nunito;color:#8d93a6;letter-spacing:.08em}
 .tdx details.tdx-script{margin-top:10px;background:#141720;border-radius:10px;border:1px solid rgba(255,255,255,.08)}
@@ -498,7 +500,7 @@ export const TDX_CSS = `
 .tdx .tdx-ln.vis{display:block}.tdx .tdx-ln.now{background:rgba(255,138,31,.16);color:#fff}
 .tdx .tdx-ln b{color:#fff}.tdx .tdx-ln.sc{font:900 11px Nunito;letter-spacing:.12em;text-transform:uppercase;color:var(--or);margin-top:6px}
 .tdx .tdx-ln.d{font-style:italic;color:#8d93a6}
-#visual-player.tdx-tv .tdx .tdx-script,#visual-player.tdx-tv .tdx .tdx-ctrl .tdx-chap{display:none}
+#visual-player.tdx-tv .tdx .tdx-script{display:none}
 #visual-player.tdx-tv{position:fixed!important;inset:0;z-index:9999;background:#000;display:flex!important;align-items:center;justify-content:center;overflow:hidden;padding:0;margin:0}
 #visual-player.tdx-tv .rp-sidebar,#visual-player.tdx-tv .rp-nav,#visual-player.tdx-tv .rp-main>*:not(:has(.tdx)){display:none!important}
 #visual-player.tdx-tv .rp-main{width:100%;height:100%;max-width:none;margin:0;padding:0;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden}

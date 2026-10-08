@@ -111,3 +111,7 @@ SCENES['carnival']['exit'] = _wk('cv-gate-dock.json', [(700, 650), (1000, 650), 
 SCENES['carnival']['pier'] = _wk('cv-deck2.json', [(220, 668)])
 SCENES['carnival']['boat-deck'] = _wk('cv-deck.json', [(800, 640)])
 NIGHT_ONLY.update({'limo-park', 'limo-back', 'limo-in', 'pier', 'boat-deck'})
+
+# the Summit's tent (the user's frame, 2026-10-08): three pedestals, the gift lettered on each plank
+SCENES['carnival']['summit'] = _wk('cv-gift-tent.json', [(616, 668), (1048, 668)], host=(170, 668))
+NIGHT_ONLY.discard('summit')

@@ -112,6 +112,9 @@ function gather(venue, spot, tod, people, host) {
   return { key, places };
 }
 
+// the Summit's gifts, and where each pedestal stands in the tent's frame
+const GIFT = { 1: { name: 'Survival Kit', u: .515 }, 2: { name: 'Idol Clue', u: .255 }, 3: { name: 'Immunity Totem', u: .79 } };
+
 /** The twist screen: 'twist' (before the challenge) or 'post-twist' (after the vote). o: { host, setting }. */
 export function tdTwistBlocksScreen(ep, blocks, o = {}, { post = false } = {}) {
   const list = (blocks || []).filter(b => b && (b.scenes || []).length);
@@ -126,12 +129,33 @@ export function tdTwistBlocksScreen(ep, blocks, o = {}, { post = false } = {}) {
     // the set, and the pair who react are one from each of the first two tribes
     const tribes = (ep.gsSnapshot?.tribes || []).map(t => (t.members || []).filter(Boolean)).filter(t => t.length);
     if (!named.length) named = [...new Set(tribes.length > 1 ? tribes.flat() : (ep.gsSnapshot?.activePlayers || tribes.flat()))];
+    // the Summit has its own tent at Stawaki (the user's frame): the three gifts on their pedestals, each
+    // nominee walking up to the one they take, before the camp hears about it
+    const gifts = blk.type === 'three-gifts' ? ((ep.twists || []).find(t => t?.type === 'three-gifts')?.giftResults || []) : [];
+    const tent = gifts.length && plateKey(venue, 'summit', 'day');
+    if (tent) {
+      const who = gifts.map(g => g.player);
+      // on the ring between the pedestals, sized to them; the host off to the side
+      const gaps = [.385, .655, .13, .9];
+      const tp = Object.fromEntries(who.map((n, i) => [n, { u: gaps[i % gaps.length], v: .745, s: .18, h: 22 }]));
+      tp[host] = { u: .07, v: .745, s: .18, h: 22, host: true };
+      steps.push({ k: 'scene', spot: 'summit', tod: 'day', plate: tent, place: 'The Summit', time: '9:00 AM', card: bi === 0, focus: who, bg: [], places: tp, host, wide: true });
+      steps.push({ k: 'say', by: host, host: true, text: `Welcome to the Summit. One of you from each tribe, and three gifts. You each take one back to camp.` });
+      steps.push({ k: 'say', by: host, host: true, text: `Gift one: a survival kit for your whole tribe. Gift two: a clue to a hidden immunity idol. Gift three: an Immunity Totem, for you and nobody else.` });
+      steps.push({ k: 'title', kicker: 'Twist', name: blk.label || 'The Summit', faces: who });
+      const taken = {};
+      gifts.forEach(g => {
+        const G = GIFT[g.gift] || GIFT[1], k = (taken[g.gift] = (taken[g.gift] || 0) + 1) - 1;
+        steps.push({ k: 'beat', text: `${g.player} walks up to gift ${g.gift} and takes the ${G.name}.`, focus: [g.player],
+          act: { kind: 'pick', who: [g.player], tu: G.u + (k % 2 ? -1 : 1) * Math.ceil(k / 2) * .07, label: G.name }, side: [{ tab: 'log', text: `${g.player} (${g.tribe}): ${G.name}` }] });
+      });
+    }
     const spot = post ? 'ceremony' : V.public, tod = post ? 'night' : 'day';
     const { key, places } = gather(venue, spot, tod, named, host);
     steps.push({ k: 'scene', spot, tod, plate: key, place: post ? V.ceremony : placeName(V.public),
-      time: post ? '9:00 PM' : '10:00 AM', card: bi === 0, focus: [], bg: [], places, host });
-    if (!post) steps.push({ k: 'say', by: host, host: true, text: ANNOUNCE[blk.type] || `Listen up, everybody. Things are about to change.` });
-    steps.push({ k: 'title', kicker: post ? 'After the vote' : 'Twist', name: blk.label || 'Twist', faces: named.slice(0, 6) });
+      time: post ? '9:00 PM' : tent ? '11:00 AM' : '10:00 AM', card: bi === 0 && !tent, focus: [], bg: [], places, host });
+    if (!post && !tent) steps.push({ k: 'say', by: host, host: true, text: ANNOUNCE[blk.type] || `Listen up, everybody. Things are about to change.` });
+    if (!tent) steps.push({ k: 'title', kicker: post ? 'After the vote' : 'Twist', name: blk.label || 'Twist', faces: named.slice(0, 6) });
     for (const s of blk.scenes) {
       const who = (s.players || []).filter(n => places[n]);
       if (s.tribeLabel) {
@@ -146,8 +170,21 @@ export function tdTwistBlocksScreen(ep, blocks, o = {}, { post = false } = {}) {
           badge: s.badge ? { text: String(s.badge).toUpperCase(), cls: ['bad', 'red'].includes(s.badgeClass) ? 'danger' : 'gold' } : null });
       }
     }
+    // the twist as the people in it talk it through (td/story/twist.js): where they are (the twist's
+    // own set, or back at their camp), then every line
+    const told = !post ? ep.twistStory?.[blk.type] : null;
+    for (const sc of told || []) {
+      const g = gather(venue, V.public, 'day', sc.players, host);
+      steps.push({ k: 'scene', spot: V.public, tod: 'day', plate: g.key, place: sc.at === 'camp' ? `${sc.camp || 'Back'} camp` : (blk.label || 'The twist'),
+        time: sc.at === 'camp' ? '2:00 PM' : '11:00 AM', card: false, focus: sc.players.slice(0, 4), bg: [], places: g.places, host });
+      for (const l of sc.lines) {
+        const text = cleanText(l.text);
+        if (!text) continue;
+        steps.push(l.kind === 'beat' ? { k: 'beat', text, focus: sc.players.slice(0, 4) } : l.kind === 'conf' ? { k: 'conf', by: l.by, text } : { k: 'say', by: l.by, text, focus: sc.players.slice(0, 4) });
+      }
+    }
     // the two it hit hardest: anyone named alone on a card first, then the first two named
-    if (!post) {
+    if (!post && !(told || []).length) {
       const solo = blk.scenes.filter(s => !s.tribeLabel && (s.players || []).length === 1).map(s => s.players[0]);
       const nobody = !blk.scenes.some(s => (s.players || []).length);
       const r = stableRng('td-react-pair', ep.num, blk.type);

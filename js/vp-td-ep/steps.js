@@ -579,9 +579,16 @@ export function tdTribalScreen(ep, o = {}) {
   const outStep = steps.findIndex(s => s.k === 'out');
   const atBallots = steps.findIndex(s => s.k === 'ballots');
   const why = ballots.map(v => ({ tab: 'why', voter: v.voter, target: v.voted, text: cleanText(v.reason).replace(/\[[A-Z \-]+\]\s*/g, '') }));
+  const left = ballots.map(v => ({ tab: 'tally', voter: v.voter, target: v.voted, void: protectedSet.has(v.voted) }));
+  // in the booth (the user, 2026-10-08: "as the votes are written"): each ballot, as it is written,
+  // puts its vote on the tally and its reason under Why
+  for (const s of steps) {
+    if (s.k !== 'ballot') continue;
+    const i = left.findIndex(x => x.voter === s.voter), j = why.findIndex(x => x.voter === s.voter);
+    s.side = [...(s.side || []), ...(i >= 0 ? left.splice(i, 1) : []), ...(j >= 0 ? why.splice(j, 1) : [])];
+  }
   const whyStep = steps[atBallots >= 0 ? atBallots : outStep] || steps[steps.length - 1];
   whyStep.side = [...(whyStep.side || []), ...why];
-  const left = ballots.map(v => ({ tab: 'tally', voter: v.voter, target: v.voted, void: protectedSet.has(v.voted) }));
   for (const s of steps) {
     if (s.k !== 'read' || s.revote) continue;
     const i = left.findIndex(x => x.target === s.vote);
@@ -645,19 +652,19 @@ export function tdTribalScreen(ep, o = {}) {
     // from behind the car, the walk to its door; inside, the last words; then it drives off in a cloud of smoke
     steps.push({ k: 'scene', spot: 'limo-back', tod: 'night', plate: plateKey(venue, 'limo-back', 'night'), place: 'The Lame-o-sine', time: '9:12 PM', focus: [elim], bg: [], wide: true, places: { [elim]: { u: .84, v: .99, s: .5, h: 58, close: true } } });
     steps.push({ k: 'beat', text: `${elim} walks the last of the red carpet to the car.`, act: { kind: 'approach', who: [elim], tu: .6, tv: .7, th: 15 }, focus: [elim] });
-    steps.push({ k: 'scene', spot: 'limo-in', tod: 'night', plate: limo, place: 'The Lame-o-sine', time: '9:13 PM', focus: [elim], bg: [], wide: true, places: { [elim]: { u: .66, v: .99, s: .5, h: 66, close: true } } });
+    steps.push({ k: 'scene', spot: 'limo-in', tod: 'night', plate: limo, place: 'The Lame-o-sine', time: '9:13 PM', focus: [elim], bg: [], wide: true, places: { [elim]: { u: .78, v: .75, s: .34, h: 30, sit: true } } });
     steps.push(lastWords ? lineStep(lastWords) : { k: 'beat', text: `${elim} sinks into the torn back seat.`, focus: [elim] });
-    steps.push({ k: 'scene', spot: 'exit', tod: 'night', plate: exitPlate, place: V.exitPlace, time: '9:14 PM', focus: [], bg: [], wide: true, places: { [host]: exitPlaces[host] } });
+    steps.push({ k: 'scene', spot: 'exit', tod: 'night', plate: exitPlate, place: V.exitPlace, time: '9:14 PM', focus: [], bg: [], wide: true, places: { [host]: exitPlaces[host] }, parked: 'limo' });
     steps.push({ k: 'beat', text: `The Lame-o-sine pulls away in a cloud of smoke. ${elim} leaves the game.`, act: { kind: 'depart', ride: 'limo' } });
   } else if (clown) {
     // Stawaki: the clown boat pulls up to the end of the pier, a jump down into it, the last words on its deck, and away
     const pier = plateKey(venue, 'pier', 'night');
     steps.push({ k: 'scene', spot: 'pier', tod: 'night', plate: pier, place: 'The Pier', time: '9:12 PM', focus: [elim], bg: [], wide: true, places: { [elim]: { u: .12, v: .745, s: .2, h: 22 } } });
     steps.push({ k: 'beat', text: `A boat strung with lights chugs out of the dark and pulls up to the end of the pier.`, act: { kind: 'park', ride: 'clownboat' } });
-    steps.push({ k: 'beat', text: `${elim} jumps down into the boat.`, act: { kind: 'hop', who: [elim], tu: .45, tv: .7 }, focus: [elim] });
+    steps.push({ k: 'beat', text: `${elim} jumps down into the boat.`, act: { kind: 'hop', who: [elim], tu: .45, tv: .7 }, focus: [elim], parked: 'clownboat' });
     steps.push({ k: 'scene', spot: 'boat-deck', tod: 'night', plate: clown, place: 'The Boat', time: '9:13 PM', focus: [elim], bg: [], wide: true, places: { [elim]: { u: .5, v: .99, s: .5, h: 66, close: true } } });
     steps.push(lastWords ? lineStep(lastWords) : { k: 'beat', text: `${elim} looks back at the carnival lights.`, focus: [elim] });
-    steps.push({ k: 'scene', spot: 'pier', tod: 'night', plate: pier, place: 'The Pier', time: '9:14 PM', focus: [], bg: [], wide: true, places: {} });
+    steps.push({ k: 'scene', spot: 'pier', tod: 'night', plate: pier, place: 'The Pier', time: '9:14 PM', focus: [], bg: [], wide: true, places: {}, parked: 'clownboat' });
     steps.push({ k: 'beat', text: `The boat pulls away from Stawaki. ${elim} leaves the game.`, act: { kind: 'depart', ride: 'clownboat' } });
   } else steps.push({ k: 'beat', text: `${elim} leaves the game.`, walk: elim });
   // after: the people who did it, or the one who lost their person, to the camera

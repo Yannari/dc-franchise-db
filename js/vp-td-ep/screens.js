@@ -126,7 +126,7 @@ function shell(scr, classicScreen, ep, o) {
   <button type="button" class="tdx-btn go" onclick="tdxNext('${uid}')">Next ▶ <kbd>Space</kbd></button>
   <button type="button" class="tdx-btn" id="tdx-auto-${uid}" onclick="tdxAuto('${uid}')">Auto</button>
   <button type="button" class="tdx-btn" onclick="tdxAll('${uid}')">Skip ⏭</button>
-  <div class="tdx-chap" id="tdx-chap-${uid}">${'<i><b></b></i>'.repeat(Math.max(chap, 1))}</div>
+  <div class="tdx-chap" id="tdx-chap-${uid}" onpointerdown="tdxSeek('${uid}',event)" title="Click or drag to go anywhere in the episode">${chapHtml(scr)}<span class="head"></span></div>
   <span class="tdx-count" id="tdx-count-${uid}">0 / ${scr.steps.length}</span>
   <button type="button" class="tdx-btn" onclick="tdxTv()">TV mode</button>
   <button type="button" class="tdx-btn" onclick="tdxSwitchViewer('classic')" title="Back to the classic screens">Classic</button>
@@ -222,6 +222,9 @@ function paint(uid, fresh) {
     else castEl.appendChild(el);
   }
   for (const el of have.values()) if (!el.classList.contains('tdx-park')) el.remove();
+  // a vehicle already standing in the shot (the Lame-o-sine before it pulls away, the boat at the pier)
+  const pk = L.step?.parked || L.scene?.parked;
+  if (pk && PARK[pk] && !castEl.querySelector(`.tdx-park.${pk}`)) parked(castEl, pk, '');
   // the camera: in on the conversation, leaning toward whoever talks; wide for the set itself
   const shot = shotOf(scr, L, toks);
   if (shot.k > 1) {
@@ -286,7 +289,9 @@ function paint(uid, fresh) {
   document.getElementById(`tdx-lines-${uid}`)?.querySelectorAll('[data-s]').forEach(ln => { const i = +ln.dataset.s; ln.classList.toggle('vis', i <= R.idx); ln.classList.toggle('now', i === R.idx); });
   const cnt = document.getElementById(`tdx-count-${uid}`); if (cnt) cnt.textContent = `${Math.max(0, R.idx + 1)} / ${scr.steps.length}`;
   const starts = scr.steps.map((x, i) => (x.k === 'scene' ? i : -1)).filter(i => i >= 0); starts.push(scr.steps.length);
-  document.getElementById(`tdx-chap-${uid}`)?.querySelectorAll('i b').forEach((b, k) => { const a = starts[k], z = starts[k + 1]; b.style.width = (R.idx >= z ? 100 : R.idx < a ? 0 : ((R.idx - a + 1) / (z - a)) * 100) + '%'; });
+  const chEl = document.getElementById(`tdx-chap-${uid}`);
+  chEl?.querySelectorAll('i').forEach(seg => { const b = seg.firstElementChild, a = +seg.dataset.a, z = +seg.dataset.z; b.style.width = (R.idx >= z ? 100 : R.idx < a ? 0 : ((R.idx - a + 1) / (z - a)) * 100) + '%'; });
+  const head = chEl?.querySelector('.head'); if (head) head.style.left = `${(Math.max(0, R.idx + 1) / scr.steps.length) * 100}%`;
   // the place's sound
   ambience(worldSound(scr, L));
 }
@@ -328,7 +333,8 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
       else { el.style.left = `${(a.tu - .12) * 100}%`; setTimeout(() => { el.classList.add('pathL'); sfx('empty'); }, 1500); } } }
     // the exit car or boat pulls up to its painted spot, or pulls away from it
     if ((a.kind === 'park' || a.kind === 'depart') && PARK[a.ride]) { const P = PARK[a.ride], go = a.kind === 'depart';
-      const d = parked(castEl, a.ride, go ? 'out' : `in${P.from}`); smoke(fxEl, d, P, go ? 4600 : 3800);
+      const was = go ? castEl.querySelector(`.tdx-park.${a.ride}`) : null;
+      const d = was ? (was.classList.add('out'), was) : parked(castEl, a.ride, go ? 'out' : `in${P.from}`); smoke(fxEl, d, P, go ? 4600 : 3800);
       sfx(RIDE_SFX[a.ride]); if (a.ride === 'clownboat') setTimeout(() => sfx('horn'), go ? 100 : 2600); }
     // the walk to the car, seen from behind it: smaller with every step, then in through the door
     if (a.kind === 'approach' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const h0 = parseFloat(el.style.height), w0 = parseFloat(el.style.width);
@@ -339,6 +345,9 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
     if (a.kind === 'hop' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.style.transition = 'left .9s ease-out,top .9s cubic-bezier(.3,-1.4,.6,1),opacity .4s linear .9s';
       requestAnimationFrame(() => requestAnimationFrame(() => { el.style.left = `${a.tu * 100}%`; el.style.top = `${a.tv * 100}%`; el.style.opacity = '0'; }));
       sfx('boing'); setTimeout(() => sfx('drop'), 900); } }
+    // the Summit: up to the pedestal, and the gift's name over it
+    if (a.kind === 'pick' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.style.left = `${a.tu * 100}%`;
+      setTimeout(() => { const c = centre(st, el); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), esc(a.label || ''), 2600); sfx('title'); }, 900); } }
     // stepping down off the bus: a little drop and settle, the door's hiss
     if (a.kind === 'step' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.classList.remove('stepoff'); void el.offsetWidth; el.classList.add('stepoff'); } sfx('hiss'); }
     // the last step aboard the Boat of Losers: walk off toward the boat, the horn, the motor
@@ -742,6 +751,30 @@ export function tdxBack(uid) {
 export function tdxAll(uid) { const R = sync(uid); if (!R || (R.isMap && R.mode !== 'talk')) return; stopAuto(R); R.idx = R.scr.steps.length - 1; paint(uid, false); }
 export function tdxReset(uid) { const R = sync(uid); if (!R) return; if (R.isMap) { tdmMap(uid); return; } stopAuto(R); R.idx = 0; R.wk = null; paint(uid, true); }
 export function tdxJump(el, i) { const root = el.closest('.tdx[data-uid]'); if (!root) return; const R = sync(root.dataset.uid); if (!R || (R.isMap && R.mode !== 'talk')) return; stopAuto(R); R.idx = i; paint(root.dataset.uid, false); }
+// the play bar: one segment per scene, as long as the scene is; press anywhere (or drag) to go there
+function chapHtml(scr) {
+  const starts = scr.steps.map((x, i) => (x.k === 'scene' ? i : -1)).filter(i => i >= 0);
+  if (!starts.length || starts[0] !== 0) starts.unshift(0);
+  return starts.map((a, k) => { const z = starts[k + 1] ?? scr.steps.length, s = scr.steps[a];
+    return `<i data-a="${a}" data-z="${z}" style="flex:${z - a}" title="${esc(s?.place || s?.label || '')}"><b></b></i>`; }).join('');
+}
+export function tdxSeek(uid, e) {
+  const R = sync(uid); if (!R || (R.isMap && R.mode !== 'talk')) return;
+  const bar = e.currentTarget; e.preventDefault(); stopAuto(R);
+  const to = ev => {
+    const segs = [...bar.querySelectorAll('i')]; if (!segs.length) return;
+    const x = ev.clientX;
+    let seg = segs.find(s => { const r = s.getBoundingClientRect(); return x >= r.left && x <= r.right + 3; });
+    if (!seg) seg = x < segs[0].getBoundingClientRect().left ? segs[0] : segs[segs.length - 1];
+    const r = seg.getBoundingClientRect(), a = +seg.dataset.a, z = +seg.dataset.z;
+    const f = Math.min(1, Math.max(0, (x - r.left) / Math.max(r.width, 1)));
+    const i = Math.min(R.scr.steps.length - 1, a + Math.floor(f * (z - a)));
+    if (i !== R.idx) { R.idx = i; paint(uid, false); }
+  };
+  to(e);
+  const move = ev => to(ev), up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+  window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+}
 export function tdxIntel(uid) { const st = document.getElementById(`tdx-st-${uid}`); if (!st) return; st.classList.toggle('intel-open'); st.querySelector('.tdx-ibtn')?.classList.remove('new'); }
 export function tdxTab(uid, e) { const b = e.target.closest('[data-tab]'); if (!b) return; const R = reg()[uid]; if (!R) return; R.tab = b.dataset.tab; const st = document.getElementById(`tdx-st-${uid}`); st.querySelector('.tdx-intel').innerHTML = intelHtml(R.scr, ledgerAt(R.scr, R.idx), R.tab, false); }
 const holdFor = s => Math.min(9000, 1700 + String(s?.text || '').length * 40) + (['title', 'idol', 'out', 'found', 'intro'].includes(s?.k) ? 2400 : 0) + (s?.k === 'ballot' ? 2600 : 0) + (s?.tense ? 1200 : 0) + (s?.k === 'scene' ? 900 : 0) + (s?.k === 'safe' && s.last ? 1800 : 0);
@@ -781,7 +814,7 @@ export function tdxSwitchViewer(which) {
 /** The classic screens' way back to the stepped viewer. */
 export const TDX_SWITCH = `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" onclick="tdxSwitchViewer('stepped')" style="border:1px solid #ff8a1f;background:#171a24;color:#ff8a1f;border-radius:8px;padding:7px 12px;font:800 11px Nunito,system-ui,sans-serif;letter-spacing:1px;cursor:pointer">▶ STEPPED VIEWER</button></div>`;
 
-if (typeof window !== 'undefined') Object.assign(window, { tdxNext, tdxBack, tdxAll, tdxReset, tdxJump, tdxIntel, tdxTab, tdxAuto, tdxTv, tdxSwitchViewer, tdmZone, tdmPlace, tdmMap, tdmWin, tdmPlay, tdmStage });
+if (typeof window !== 'undefined') Object.assign(window, { tdxNext, tdxBack, tdxAll, tdxReset, tdxJump, tdxSeek, tdxIntel, tdxTab, tdxAuto, tdxTv, tdxSwitchViewer, tdmZone, tdmPlace, tdmMap, tdmWin, tdmPlay, tdmStage });
 if (typeof document !== 'undefined') {
   // a stepped screen opens on its first scene; leaving it stops its sound and its Auto
   document.addEventListener('vp:screen', () => {

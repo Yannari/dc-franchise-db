@@ -595,6 +595,8 @@ export function tdTribalScreen(ep, o = {}) {
   const exitWith = story?.exit?.length && story.exitWith && story.exitKind !== 'alone' ? story.exitWith : null;
   if (exitWith) exitPlaces[exitWith] = { u: .78, v: .74, s: .22 };
   steps.push({ k: 'scene', spot: 'exit', tod: 'night', plate: exitPlate, place: V.exitPlace, time: '9:10 PM', card: true, focus: [elim, exitWith].filter(Boolean), bg: [], places: exitPlaces, exit: elim, exitWith });
+  // whoever walks them out is introduced, not just standing there (the user: "why is Nick there")
+  if (exitWith) steps.push({ k: 'beat', text: `${exitWith} walks ${elim} down to say goodbye.`, focus: [exitWith, elim] });
   say(V.exitLine(elim));
   for (const l of story?.exit || []) steps.push(lineStep(l));
   steps.push({ k: 'beat', text: `${elim} leaves the game.`, walk: elim });

@@ -4,8 +4,9 @@
 # The trial is the show's own frame (Stawaki Carnival - Campfire): two circus drums, two barrels
 # and three crates round the fire under the bulbs and bunting, torches behind (clean.py 'cv-trial').
 # One contestant on each prop; the rest along the boards behind. Runs after zz_wawanakwa.py.
-_CV_SEATS = [(340, 590), (525, 520), (715, 575), (910, 515), (1100, 560), (1320, 540), (1515, 570)]
-SCENES['carnival']['ceremony'] = _wk('cv-trial.json', [(880, 640), (1040, 640)], seats=_CV_SEATS, host=(170, 640))
+# the user's empty trial (2026-10-08): one contestant on every drum, barrel and crate, back to front
+_CV_SEATS = [(453, 552), (647, 552), (310, 555), (387, 580), (547, 578), (737, 575), (207, 579), (283, 603), (813, 612), (547, 622)]
+SCENES['carnival']['ceremony'] = _wk('cv-trial.json', [(860, 640), (1450, 640)], seats=_CV_SEATS, host=(1150, 635))
 NIGHT_ONLY.add('ceremony')
 
 # from the user's empty-background gallery (2026-10-07): the lake shore and the forest by the tents

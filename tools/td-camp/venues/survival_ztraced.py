@@ -125,8 +125,8 @@ for (venue, spot, js, stands, night) in T:
 # DC5's Elimination Trial: the wide clean frame. The tiki-pot seats run along the left of the deck,
 # the rest sit on the deck around the fire; the host stands by the angry tiki podium on the right.
 if os.path.exists(os.path.join(REPO, 'tools', 'td-camp', 'traced', 'sol-trial.json')):
-    # the frame cropped in on the deck (clean.py box): a row behind the fire pit, two on each side,
-    # the called ones standing front left, Chris front right
-    _back = [(650 + i * 125, 395, 13) for i in range(5)]
-    _sides = [(110, 520, 16), (1260, 520, 16), (170, 630, 19), (1440, 560, 17)]
-    SCENES['survival-island']['ceremony'] = _traced_plate('sol-trial.json', [(1250, 640), (1080, 640)], seats=_back + _sides, host=(420, 600))
+    # the user's empty trial (2026-10-08): one camper on each of the twelve tiki pots (two staggered
+    # rows, the back row first so the front row sits in front), Chris behind the tiki podium on the right
+    _back = [(x, 575) for x in (243, 320, 400, 477, 563, 643)]
+    _front = [(x, 592) for x in (293, 373, 450, 530, 617, 693)]
+    SCENES['survival-island']['ceremony'] = _traced_plate('sol-trial.json', [(760, 640), (1180, 640)], seats=_back + _front, host=(1300, 625))

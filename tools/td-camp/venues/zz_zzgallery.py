@@ -69,9 +69,7 @@ NIGHT_ONLY.add('trial-area')
 # Soluna's night: the "One Final Choice" signpost (the night confessional and the way out)
 _SIGN = _wk('sol-sign.json', [(800, 640), (300, 640)])
 SCENES['survival-island']['exit'] = _SIGN
-_CONF_DAY = SCENES['survival-island']['confessional']
-SCENES['survival-island']['confessional'] = _by_tod(_CONF_DAY, _SIGN)
-OUTDOOR['survival-island'].add('confessional')
+# (the confessional stays the confessional at night: the day frame, graded for the hour)
 # the eliminated go to the Motel (DC4 and DC5)
 SCENES['islands']['motel'] = _wk('motel.json', [(500, 648), (800, 648), (1100, 648)])
 OUTDOOR['islands'].discard('motel'); NIGHT_ONLY.add('motel')

@@ -97,7 +97,7 @@ export default {
     { id: 'ntq.l2', turns: [
       { by: 'h', say: "{b}, who's the most dangerous person sitting here?" },
       { by: 'b', say: "{a}. And I think {a} knows it." },
-      { by: 'a', say: "Dangerous? I'm sitting here eating a marshmallow.", v: { calm: "I'll take that as a compliment, {b}.", anxious: "Me? I'm the least dangerous person here, look at me!" } },
+      { by: 'a', say: "Dangerous? I'm just sitting here.", v: { calm: "I'll take that as a compliment, {b}.", anxious: "Me? I'm the least dangerous person here, look at me!" } },
       { by: 'h', say: "You didn't deny it." },
       { by: 'a', say: "I didn't think I had to." },
     ] },

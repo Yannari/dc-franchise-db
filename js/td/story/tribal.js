@@ -58,50 +58,129 @@ function tribalQA(ep, { tribal, ballots, elim, ch, camp, base, ctx, nextN }) {
   const ballotOf = x => ballots.find(v => v.voter === x)?.voted || null;
   const forBoot = ballots.filter(v => v.voted === elim && v.voter !== elim).map(v => v.voter);
   const host = seasonConfig?.host || 'Chris';
-  const ask = (topic, who, data = {}, extra = {}) => {
-    if (out.length >= 3) return;
-    const cast = Object.values(who).filter(Boolean);
-    if (cast.some(p => used.has(p))) return;
-    const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(who.a), third: !!who.c, ...extra };
-    const w = writeStory(`tqa.${topic}`, 'any', { ...who, h: host }, data, facts, ctx(nextN(), 'tribal', 'soft'));
-    if (!w) return;
-    cast.forEach(p => used.add(p));
-    out.push({ topic, players: cast, lines: w.lines });
-  };
+  const strat = x => pStatsOf(x)?.strategic || 0;
+  const best = x => Math.max(-10, ...tribal.filter(y => y !== x).map(y => getBond(x, y)));
+  // every question that fits tonight: [topic, priority, who, data, facts]
+  const cand = [];
+  const add = (topic, pri, who, data = {}, extra = {}) => cand.push({ topic, pri, who, data, extra });
   // a public blowup today (the story layer aired it)
-  const story = ep.campStory?.[camp] || ep.campStory?.[gs.mergeName || 'merge'] || {};
+  const story = ep.campStory?.[camp] || {};
   const aired = [...(story.pre || []), ...(story.post || [])];
   const fight = aired.find(it => /^long\.(drama\.(bomb|fight|dispute|clash|explode|meltdown|dig)|blame\.loss)/.test(it?.kind || '')
     && it.scene?.who?.a && it.scene?.who?.b && tribal.includes(it.scene.who.a) && tribal.includes(it.scene.who.b));
-  if (fight) ask('fight', { a: fight.scene.who.a, b: fight.scene.who.b }, {}, { aVoted: ballotOf(fight.scene.who.a) === fight.scene.who.b ? 'b' : 'other' });
+  if (fight) add('fight', 9, { a: fight.scene.who.a, b: fight.scene.who.b }, {}, { aVoted: ballotOf(fight.scene.who.a) === fight.scene.who.b ? 'b' : 'other' });
   // the one going home
   const mine = ballotOf(elim);
   const knows = (ep.pitchIntel || []).some(i => i.knower === elim && i.target === elim && i.believed !== false)
     || (ep.pitchCounterplay || []).some(c => c.actor === elim);
-  if (knows && mine && mine !== elim && tribal.includes(mine)) ask('scramble', { a: elim, b: mine }, { target: mine });
+  if (knows && mine && mine !== elim && tribal.includes(mine)) add('scramble', 8, { a: elim, b: mine }, { target: mine });
   else if (forBoot.length) {
     const shifty = [...forBoot].sort((x, y) => getBond(elim, y) - getBond(elim, x) || x.localeCompare(y))[0];
-    ask('confident', { a: elim, b: shifty }, {}, { close: getBond(elim, shifty) >= 3 });
+    add('confident', 6, { a: elim, b: shifty }, {}, { close: getBond(elim, shifty) >= 3 });
   }
   // the challenge
   if (ch?.sank && tribal.includes(ch.sank) && ch.sank !== elim) {
     const side = tribal.filter(x => x !== ch.sank).sort((x, y) => Math.abs(getBond(ch.sank, y)) - Math.abs(getBond(ch.sank, x)) || x.localeCompare(y))[0];
-    if (side) ask('sank', { a: ch.sank, b: side }, {}, { defends: getBond(ch.sank, side) >= 1 });
+    if (side) add('sank', 7, { a: ch.sank, b: side }, {}, { defends: getBond(ch.sank, side) >= 1 });
   }
   // who is running tonight
   const pitch = (ep.votePitches || []).find(p => p.pitchTarget === elim && forBoot.includes(p.pitcher));
-  const strat = x => pStatsOf(x)?.strategic || 0;
   const leader = pitch?.pitcher || [...forBoot].sort((x, y) => strat(y) - strat(x) || x.localeCompare(y))[0];
   const loser = tribal.find(x => x !== elim && x !== leader && ballotOf(x) && ballotOf(x) !== elim);
-  if (leader && loser) ask('leader', { a: leader, b: loser });
-  // burned last time: their ballot at the last vote did not go on the one who left
+  if (leader && loser) add('leader', 5, { a: leader, b: loser });
+  // burned last time
   const last = [...(gs.episodeHistory || [])].reverse().find(h => h.num < ep.num && h.eliminated && (h.votingLog || []).some(v => tribal.includes(v.voter)));
   const burned = last ? tribal.find(x => { const v = (last.votingLog || []).find(b => b.voter === x)?.voted; return !!v && v !== last.eliminated; }) : null;
-  if (burned) ask('burned', { a: burned }, { lastBoot: last.eliminated }, { lastBoot: true });
+  if (burned) add('burned', 5, { a: burned }, { lastBoot: last.eliminated }, { lastBoot: true });
   // a pair
   const pairs = [];
   for (const x of tribal) for (const y of tribal) if (x < y && getBond(x, y) >= 6) pairs.push([x, y]);
-  if (pairs.length) ask('pair', { a: pairs[0][0], b: pairs[0][1] });
+  if (pairs.length) add('pair', 4, { a: pairs[0][0], b: pairs[0][1] });
+  // immunity
+  const imm = [ep.immunityWinner, ...(ep.extraImmune || [])].find(x => x && tribal.includes(x));
+  if (imm) add('immune', 5, { a: imm, b: tribal.find(x => x !== imm && x !== elim) || null });
+  // the outsider: nobody here is close to them
+  const lone = tribal.filter(x => x !== elim && best(x) <= 1).sort((x, y) => best(x) - best(y) || x.localeCompare(y))[0];
+  if (lone) add('outsider', 5, { a: lone, b: tribal.filter(x => x !== lone).sort((x, y) => getBond(lone, y) - getBond(lone, x) || x.localeCompare(y))[0] });
+  // a suspected idol holder
+  const has = (s, x) => !!s && (typeof s.has === 'function' ? s.has(x) : Array.isArray(s) && s.includes(x));
+  const idolMan = tribal.find(x => has(gs.knownIdolHoldersPersistent, x) || has(gs.knownIdolHoldersThisEp, x));
+  if (idolMan) add('idol', 7, { a: idolMan, b: tribal.filter(x => x !== idolMan).sort((x, y) => strat(y) - strat(x) || x.localeCompare(y))[0] });
+  // the first merged vote: old lines or new ones
+  if (ep.isMerge) {
+    const old = ep.tribesAtStart || [];
+    const tribeOf = x => old.find(t => (t.members || []).includes(x))?.name;
+    const x = tribal.find(p => p !== elim), y = x ? tribal.find(p => p !== elim && tribeOf(p) && tribeOf(p) !== tribeOf(x)) : null;
+    if (x && y) add('merge', 8, { a: x, b: y });
+  }
+  // the end of the game is close
+  if ((ep.isMerge || gs.isMerged) && tribal.length <= 6) {
+    const x = [...tribal].filter(p => p !== elim).sort((p, q) => strat(q) - strat(p) || p.localeCompare(q))[0];
+    if (x) add('endgame', 6, { a: x, b: tribal.filter(p => p !== x && p !== elim).sort((p, q) => getBond(x, q) - getBond(x, p) || p.localeCompare(q))[0] });
+  }
+  // a question to the room, when nothing else is sharp enough
+  { const r = [...tribal].filter(p => p !== elim).sort((p, q) => (pStatsOf(q)?.boldness || 0) - (pStatsOf(p)?.boldness || 0) || p.localeCompare(q));
+    if (r.length >= 3) add('room', 2, { a: r[0], b: r[1], c: r[2] }); }
+  // rotation: a question the host asked at the last two votes waits its turn
+  const mem = ((gs.tdStory ||= {}).qaUse ||= {});
+  const score = c => c.pri - ((ep.num - (mem[c.topic] ?? -99)) <= 2 ? 4 : 0) + ((ep.num * 7 + c.topic.length * 3) % 5) * 0.2;
+  cand.sort((x, y) => score(y) - score(x) || x.topic.localeCompare(y.topic));
+  for (const c of cand) {
+    if (out.length >= 3) break;
+    const cast = Object.values(c.who).filter(Boolean);
+    if (cast.some(p => used.has(p))) continue;
+    const facts = { ...factsFor({ who: c.who, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(c.who.a), third: !!c.who.c, pair: !!c.who.b, ...c.extra };
+    const w = writeStory(`tqa.${c.topic}`, 'any', { ...c.who, h: host }, c.data, facts, ctx(nextN(), 'tribal', 'soft'));
+    if (!w) continue;
+    cast.forEach(p => used.add(p));
+    mem[c.topic] = ep.num;
+    out.push({ topic: c.topic, players: cast, lines: w.lines });
+  }
+  return out;
+}
+
+// ── the advantages played tonight: the room reacts (the user: "there's no reaction when someone
+// plays an advantage") ──────────────────────────────────────────────────────────────────────
+// One exchange per play, right after it lands (vp-td-ep/steps.js plays it after the play's card).
+// a plays it. b is who it's on (the one it protects, the stolen or blocked voter, the vote's target);
+// c is somebody in the room it hits hardest: a voter whose votes it cancels, or b's closest friend.
+//   adv.idol.<saved|nothing>   a plays an idol for a.self; saved: votes on a will be cancelled
+//   adv.idolfor.<saved|nothing> a plays it for b
+//   adv.misplay / adv.fake    it does nothing; fake: it was never real
+//   adv.extra   a casts a second vote (on {target} when known)
+//   adv.steal   a takes b's vote
+//   adv.block   a blocks b's vote
+//   adv.sole    a is the only vote tonight
+//   adv.safety  a walks out, safe, without voting
+//   adv.kip     a steals b's advantage
+// ep.tribalStory.plays = [{ idx (into ep.idolPlays), player, lines }].
+function playReactions(ep, { tribal, ballots, base, ctx, nextN }) {
+  const host = seasonConfig?.host || 'Chris';
+  const out = [];
+  (ep.idolPlays || []).forEach((p, idx) => {
+    if (!tribal.includes(p.player)) return;
+    const a = p.player;
+    const on = p.playedFor || p.stolenFrom || p.blockedPlayer || null;
+    const protects = !p.type || p.type === 'legacy' ? (p.playedFor || a) : null;
+    // c: a voter who wrote the protected name (their vote just died), else b's (or a's) closest friend
+    const wasted = protects ? ballots.filter(v => v.voted === protects && v.voter !== a && v.voter !== protects).map(v => v.voter) : [];
+    const friendOf = x => tribal.filter(y => y !== a && y !== on && y !== x).sort((m, n) => getBond(x, n) - getBond(x, m) || m.localeCompare(n))[0] || null;
+    let pool, ending = 'any';
+    if (!p.type || p.type === 'legacy') {
+      if (p.fake) pool = 'adv.fake';
+      else if (p.misplay) pool = 'adv.misplay';
+      else pool = p.playedFor && p.playedFor !== a ? 'adv.idolfor' : 'adv.idol';
+      if (!p.fake && !p.misplay) ending = (p.votesNegated || 0) > 0 ? 'saved' : 'nothing';
+    } else pool = { extraVote: 'adv.extra', voteSteal: 'adv.steal', voteBlock: 'adv.block', soleVote: 'adv.sole', safetyNoPower: 'adv.safety', kip: 'adv.kip' }[p.type];
+    if (!pool) return;
+    const b = on && tribal.includes(on) && on !== a ? on : null;
+    const c = wasted[0] || (p.type === 'soleVote' ? (p.silencedPlayers || []).find(x => tribal.includes(x)) : null) || friendOf(b || a);
+    const target = p.target && tribal.includes(p.target) ? p.target : null;
+    const who = { a, ...(b ? { b } : {}), ...(c ? { c } : {}), h: host };
+    const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(a), third: !!c, pair: !!b, target: !!target, cWasted: !!wasted[0] };
+    const w = writeStory(pool, ending, who, target ? { target } : {}, facts, ctx(nextN(), 'tribal', 'soft'));
+    if (w) out.push({ idx, player: a, lines: w.lines });
+  });
   return out;
 }
 
@@ -221,5 +300,6 @@ export function writeTribal(ep) {
   }
   // the host's questions, from what happened today
   const qa = tribalQA(ep, { tribal, ballots, elim, ch, camp: camp || gs.mergeName || 'merge', base, ctx, nextN: () => n++ });
-  return { qa, booth, reveal: rv?.lines || [], room, blindside, shocking, exit: ex?.lines || [], exitWith, exitKind, after: after.slice(0, roomBlind ? 4 : 2) };
+  const plays = playReactions(ep, { tribal, ballots, base, ctx, nextN: () => n++ });
+  return { qa, plays, booth, reveal: rv?.lines || [], room, blindside, shocking, exit: ex?.lines || [], exitWith, exitKind, after: after.slice(0, roomBlind ? 4 : 2) };
 }

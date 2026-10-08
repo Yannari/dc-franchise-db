@@ -518,6 +518,18 @@ export function tdTribalScreen(ep, o = {}) {
   const holdList = Object.entries(held).map(([n, t]) => [n, [...t]]);
   if (holdList.length) steps[0].side = [...(steps[0].side || []), ...holdList.map(([n, t]) => ({ tab: 'room', text: `${n} is holding ${t.map(x => POWER[x]?.the || x).join(' and ')}.` }))];
   steps[0].glow = Object.fromEntries(holdList.map(([n, t]) => [n, t.includes('idol') ? 'idol' : 'power']));
+  // the room reacting to a play (td/story/tribal.js playReactions), right after its card
+  const reacted = p => {
+    const r = (ep.tribalStory?.plays || []).find(x => x.idx === (ep.idolPlays || []).indexOf(p));
+    for (const l of r?.lines || []) {
+      const text = cleanText(l.text);
+      if (!text) continue;
+      if (l.kind === 'beat') steps.push({ k: 'beat', text, focus: [p.player].filter(n => tribal.includes(n)) });
+      else if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text });
+      else if (l.by === host) say(text);
+      else steps.push({ k: 'say', by: l.by, text, focus: [l.by], loud: loud(text), shock: shock(text) });
+    }
+  };
   if (prePlays.length) {
     say(`Before we vote: if anybody has an advantage they want to play, now is the time.`);
     for (const p of prePlays) {
@@ -526,6 +538,7 @@ export function tdTribalScreen(ep, o = {}) {
         focus: [p.player, p.blockedPlayer || p.stolenFrom].filter(n => n && tribal.includes(n)) });
       const t = IDOL_SAY(p);
       if (t) say(t, { focus: [p.player].filter(n => tribal.includes(n)) });
+      reacted(p);
     }
   }
   // the vote
@@ -578,10 +591,11 @@ export function tdTribalScreen(ep, o = {}) {
   if (!idolPlays.length) steps.push({ k: 'beat', text: Object.values(steps[0].glow || {}).includes('idol') ? `Nobody moves. Whoever has one is keeping it.` : `Nobody moves.`, focus: [], tense: true });
   for (const p of idolPlays) {
     const t = IDOL_SAY(p);
-    if (t) { steps.push({ k: 'beat', text: t, focus: [p.player].filter(n => tribal.includes(n)) }); continue; }
+    if (t) { steps.push({ k: 'beat', text: t, focus: [p.player].filter(n => tribal.includes(n)) }); reacted(p); continue; }
     const forWho = p.playedFor || p.player;
     steps.push({ k: 'idol', by: p.player, for: forWho, misplay: !!p.misplay, super: !!p.superIdol, focus: [p.player, forWho].filter((n, i, a) => tribal.includes(n) && a.indexOf(n) === i) });
     say(`This is a Hidden Immunity Idol. Any votes cast for ${forWho} will not count.`, { focus: [forWho] });
+    reacted(p);
   }
   if (ep.shotInDark?.player) {
     const s = ep.shotInDark;

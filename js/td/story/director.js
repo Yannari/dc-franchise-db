@@ -522,7 +522,7 @@ function arcBeats(ep, camp, members, phase, t, next, list, earlier = [], mode = 
   const { boot, leader, tribal } = t;
   // 1. the spark
   const caseNow = sparkCase(ep, t);
-  if (boot && leader && here(boot) && here(leader) && leader !== boot) {
+  if (boot && leader && here(boot) && here(leader) && leader !== boot && !t.cause?.length) {
     const pre = SPARK_PRE.has(caseNow.kind);
     if (caseNow.kind === 'coming' || caseNow.kind === 'numbers') { /* the warning, or the plan itself, is the start */ } else
     if ((phase === 'pre') === pre && (caseNow.kind !== 'sank' || phase === 'post')) {
@@ -720,12 +720,20 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const fromTarget = em.warned.find(w => w.knower === a && w.teller === boot) || null;
   if (fromTarget) data.warnedAbout = fromTarget.pitcher;
   Object.assign(facts, { sparkSeen, told: !!tip, tally: count, alt: !!alt, fromTarget: !!fromTarget, sparkKind: sparkSeen ? em.spark.kind : 'none' });
+  // the moment it started (causeOf), said to the camera at the end of the plan
+  const cause = em.cause && em.cause.by === a && em.cause.of === boot && as.step === 'plan' ? em.cause : null;
+  const recall = lines => {
+    if (!cause || lines.some(l => l.recall)) return;
+    const r = writeStory('vp.recall', cause.kind, { a }, { target: boot, moment: cause.moment.replace('{target}', boot) }, { ...facts }, { ep: ep.num, camp, phase: 'post', n: next(), place: 'confessional', unique: 'soft' });
+    if (r) lines.push(...r.lines.map(l => ({ ...l, recall: true })));
+  };
   // a whole scene, written start to finish (the user: "they're not talking to each other, it's cut
   // short"); the beats below only when no whole scene fits this cast
   if (b) {
     // a scene nobody has seen this season first, then the least-aired one
     const ws = u => writeStory('vp2', caseOf, who, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place: 'secret', avoid: ctxAvoid('scramble'), unique: u });
     const whole = ws(true) || ws('soft');
+    if (whole) recall(whole.lines);
     if (whole) return { story: true, kind: `story.vote.${as.step}.${caseOf}`, storyType: 'vote', step: as.step, players: [...new Set(Object.values(who).filter(Boolean))], lines: whole.lines,
       text: whole.text, lineId: whole.lineId, scene: { kind: 'story.vote', who, data, spot: whole.spot ? { ...whole.spot, window: 'scramble' } : null }, badgeText: as.badge[0], badgeClass: as.badge[1], why };
   }
@@ -749,9 +757,47 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
     beat('vp.count', count);
     beat('vp.close', shape === 'group' ? 'group' : 'duo');
   }
+  recall(lines);
   const players = [...inScene];
   return { story: true, kind: `story.vote.${as.step}.${caseOf}`, storyType: 'vote', step: as.step, players, lines, text: lines.map(l => l.text).join(' '), lineId,
     scene: { kind: 'story.vote', who, data, spot: spot ? { ...spot, window: 'scramble' } : null }, badgeText: as.badge[0], badgeClass: as.badge[1], why };
+}
+
+// ── the cause (the user, 2026-10-08, pointing at the Strategy Timeline: "it gives you big hindsight
+// on how to build an episode") ──
+// The timeline lists the engine's day in order, and the vote's cause is in it: a fight, a slacker
+// called out, a lie caught, between the person who runs tonight's plan and the person it's on. That
+// moment airs (on top of the caps), the generic spark steps aside, and the plan calls back to it.
+// Only moments between the two of them, worst first; one per half of the day, two in all.
+// [kind, what it matches, how the leader names it, who has to have started it (the
+// event's first player): the target caught out, or the leader doing the blaming]
+const CAUSE = [
+  ['caught', /sabotag|caught|lie\b|backstab|betray/i, 'what {target} pulled', 'boot'],
+  ['fight', /fight|clash|dispute|argument|confront|explo|blow/i, 'that fight', null],
+  ['blame', /blame|slack/i, 'the way {target} let us down', 'leader'],
+  ['rival', /grudge|hatred|nemesis|passive|rival|tension|cold war|trust ?crack/i, 'what happened between us', null],
+];
+function causeOf(ep, camp, t) {
+  const { leader, boot } = t;
+  if (!leader || !boot || leader === boot) return [];
+  const out = [];
+  for (const phase of ['pre', 'post']) {
+    const evs = eventsOf(ep, camp, phase);
+    const found = evs.map((ev, i) => {
+      if (!ev || ev.aired != null || !(ev.players || []).includes(leader) || !(ev.players || []).includes(boot)) return null;
+      const s = `${ev.type || ''} ${ev.badgeText || ''} ${ev.scene?.kind || ''}`;
+      // back from a loss the team's own blame scene opens the afternoon already
+      if (phase === 'post' && (ev.type === 'blame' || /^crowd\.lost/.test(ev.scene?.kind || ''))) return null;
+      if (/idol/i.test(s)) return null;   // an idol read is the idol case's own scene
+      const k = CAUSE.findIndex(([, re, , by]) => re.test(s) && (!by || ev.players[0] === (by === 'boot' ? boot : leader)));
+      if (k < 0) return null;
+      const kind = ev.scene?.kind || '';
+      if (!(kind && hasStoryPool(`long.${kind}`)) && !rawFits(ev, ep, phase)) return null;
+      return { i, k, phase, kind: CAUSE[k][0], moment: `${CAUSE[k][2]} ${phase === 'pre' ? 'this morning' : 'this afternoon'}` };
+    }).filter(Boolean).sort((x, y) => x.k - y.k || x.i - y.i);
+    if (found[0]) out.push(found[0]);
+  }
+  return out.slice(0, 2);
 }
 
 function voteTalk(ep, camp, t, next) {
@@ -947,7 +993,9 @@ export function airTdEpisode(ep) {
     const out = { pre: [], post: [] };
     const talk = tribalTonight ? votePlan(ep, camp, members) : null;
     // the episode's memory for this camp: what the vote story has shown so far (arcBeats fills it)
-    if (talk) talk.em = { spark: null, warned: [], aired: [] };
+    if (talk) talk.em = { spark: null, warned: [], aired: [], cause: null };
+    if (talk && (seasonConfig?.tdEdit || 'full') !== 'off') talk.cause = causeOf(ep, camp, talk);
+    if (talk?.cause?.length) talk.em.cause = { by: talk.leader, of: talk.boot, kind: talk.cause[0].kind, moment: talk.cause[0].moment };
     if (talk) for (const ev of eventsOf(ep, camp, 'post')) if (ev && ev.aired == null && /^votePitch/.test(ev.type || '') && talk.covers.has(ev.players?.[0])) ev.aired = 'covered';
     for (const phase of ['pre', 'post']) {
       const events = eventsOf(ep, camp, phase);
@@ -1189,6 +1237,14 @@ export function airTdEpisode(ep) {
         ev.aired = true;
         seasonAired[`${line.type}.${step.step}`] = (seasonAired[`${line.type}.${step.step}`] || 0) + 1;
         list.push({ at: i, item: item || { ref: i, storyline: line.id } });
+      }
+      // what tonight's plan comes from (causeOf) airs on top of the caps: the plan calls back to it
+      for (const c of (talk?.cause || []).filter(c => c.phase === phase)) {
+        const ev = events[c.i];
+        if (!ev || ev.aired != null) continue;
+        const item = longScene(ev, c.i);
+        ev.aired = true;
+        list.push({ at: c.i, item: item ? { ...item, why: [...(item.why || []), `This is where ${talk.boot} becomes ${talk.leader}'s target.`] } : { ref: c.i } });
       }
       // quick cuts: short moments between the long scenes, new faces first. A moment the opener
       // already covered (the team's own "who lost it", the morning's mourning) does not air twice.

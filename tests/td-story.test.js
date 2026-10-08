@@ -61,6 +61,7 @@ const GUARANTEED = [
   [/^prev\.ally\./, ['show', 'group']],
   [/^prev\.(boot|blindside)\./, ['show', 'boot']],
   [/^prev\./, ['show']],
+  [/^vp\.recall\./, ['target', 'moment']],
   [/^vp2\.coming$/, ['target', 'votes', 'them', 'mark']],
   [/^vp2\.pair$/, ['target', 'votes', 'partner']],
   [/^vp2\.group$/, ['target', 'votes', 'theirs']],

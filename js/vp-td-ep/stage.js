@@ -260,7 +260,7 @@ export function castAt(screen, L) {
     const h = pl.h || (pl.host ? Math.max(Math.min(pl.s * 125, 30), 16) : sit ? Math.max(Math.min(pl.s * 95, 24), 13) : Math.max(Math.min(pl.s * 125, sc.exit ? 30 : 34), bg ? 11 : 16));
     toks.push({ n, u: pl.u, v: pl.v, h, sit, host: !!pl.host, act: bg?.act || busy || null,
       speak: n === speaker || (pl.host && s.host), dim: !!(focus && focus.length && !focus.includes(n) && !pl.host && n !== speaker),
-      bg: !!bg, safe: L.safe.includes(n), out: L.out === n, conf: !!pl.close, aboard: !!pl.aboard, glow: glow[n] || null });
+      bg: !!bg, safe: L.safe.includes(n), out: L.out === n, conf: !!pl.close, aboard: !!pl.aboard, glow: glow[n] || null, crowd: !!pl.crowd });
   }
   return toks;
 }

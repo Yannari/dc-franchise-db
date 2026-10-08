@@ -247,16 +247,11 @@ export function placeScene(key, focus, bg = [], { sit = false, host = null } = {
       const gap = Math.min(...chosen.slice(1).map((m, i) => (Math.abs(m.v - chosen[i].v) > .06 ? 1 : m.u - chosen[i].u)), .2);
       focus.forEach((name, i) => { const m = chosen[i]; out[name] = { u: m.u, v: m.v, s: m.s, sit: true, h: Math.max(8, Math.min(m.s * 95, 24, (gap * 1.05) / W * 100)) }; });
     } else {
-      const pool = front.length ? front : stands;
-      // spread evenly across the floor; more than seven alternate a front and a back row
-      const rows = n > 7 ? 2 : 1, du = .8 / Math.max(n - 1, 1);
-      focus.forEach((name, i) => {
-        const row = rows === 2 ? i % 2 : 0, u = n > 1 ? .1 + du * i : .5;
-        const near = pool.length ? pool.reduce((a, b) => (Math.abs(b.u - u) < Math.abs(a.u - u) ? b : a)) : null;
-        const v = Math.min(near ? near.v : .68, .72) - (row ? .06 : 0);   // never down behind the dialogue panel
-        const h = Math.max(8, Math.min((near ? near.s : .2) * 125, 30, (du * (rows === 2 ? 1.6 : 1)) / W * 100) * (row ? .9 : 1));
-        out[name] = { u, v, s: (near ? near.s : .2), h, sit: false };
-      });
+      // on the ground (the user, 2026-10-08: "they're floating... everyone there without overlapping"):
+      // the crowd stands on the floor in front of the set, two rows past six, each back-row person
+      // between two in front with no more than the lower third behind them
+      const placed = floorRows(focus, .1, .9, 22);
+      for (const [name, p] of Object.entries(placed)) out[name] = p;
     }
   } else for (const n of focus) {
     const m = front.find(c => !used.includes(c) && used.every(u => apart(c, u)) && (!out[host] || apart(c, out[host])));
@@ -292,32 +287,46 @@ const crowdIn = lines => lines.some(l => (l.kind === 'beat' && CROWD_BEAT.test(l
 // group scene, a laugh the whole camp shares)
 const CROWD_TYPES = new Set(['leadershipClash', 'groupArgument', 'campMeeting', 'teamMeeting', 'publicCallout', 'exclusion', 'groupScene', 'groupLaugh']);
 
+// A crowd standing on the ground between u0 and u1: one row up to six, else a front row on the floor
+// line and a back row a step behind, each back-row person in the gap between two in front, sized
+// so no portrait is wider than its share and no more than a third of a back-row one is covered.
+const FLOOR_FRONT = .81, FLOOR_BACK_MIN = .69;
+function floorRows(names, u0, u1, hMax) {
+  const n = names.length, W = .5625, out = {};
+  const rows = n > 6 ? 2 : 1, nf = Math.ceil(n / rows), nb = n - nf;
+  const slot = (u1 - u0) / Math.max(nf, 1);
+  let h = Math.min(hMax, (slot * .92) / W * 100);
+  if (rows === 2) h = Math.min(h, (FLOOR_FRONT - FLOOR_BACK_MIN) / .7 * 100);
+  const vb = Math.max(FLOOR_BACK_MIN, FLOOR_FRONT - .7 * h / 100);
+  // the front row centred in its slots, the back row in the gaps between them
+  names.forEach((name, i) => {
+    const back = rows === 2 && i % 2 === 1, k = rows === 2 ? Math.floor(i / 2) : i;
+    // the gaps between the front row, and with as many behind as in front, the last one at the left edge
+    const u = back ? u0 + slot * ((k + 1) % (nb === nf ? nf : nf + 1)) + (nb === nf && k === nf - 1 ? slot * .1 : 0) : u0 + slot * (k + .5);
+    out[name] = { u: Math.min(.95, Math.max(.05, u)), v: back ? vb : (rows === 1 ? FLOOR_FRONT - .03 : FLOOR_FRONT), s: .2, h: back ? h * .96 : h, sit: false, crowd: true };
+  });
+  return out;
+}
+
 // Teams gathered apart (the user, 2026-10-08: "two circles with their colour flag"): each team in a
 // ring around its own flag, side by side across the floor, the host between them. Returns the places
 // and the flags for the scene (scene.flags, drawn by stage.js under the people).
 export function placeTeams(key, teams, host, colorOf = null) {
   const stands = marksOf(key, 'stand').filter(m => m.u > .08 && m.u < .92 && m.v > .36 && m.v < .74);
   const k = teams.length, out = {}, flags = [];
+  let hostH = 12;
   const PAL = ['#e8433f', '#3b7dd8', '#2fbf71', '#f2c83a', '#9b59d0'];
+  const half = k === 1 ? .36 : Math.min(.2, .42 / k);
   teams.forEach((t, ti) => {
-    const cu = .08 + (.84 * (ti + .5)) / k;
-    const near = stands.length ? stands.reduce((a, b) => (Math.abs(b.u - cu) < Math.abs(a.u - cu) ? b : a)) : null;
-    const vc = Math.min(near ? near.v : .68, .7);
-    const m = t.members.length, rx = Math.min(.14, .38 / k), ry = .055;
-    const h = Math.max(8, Math.min((near ? near.s : .2) * 110, 24, (((2 * rx) / Math.max(Math.ceil(m / 2), 1)) * 1.35) / .5625 * 100));
-    t.members.forEach((n, i) => {
-      // around the ring from the back left, the front row lowest (nearest the camera)
-      const a = Math.PI + (2 * Math.PI * (i + .5)) / m;
-      const v = Math.min(vc - ry + ry * Math.sin(a), .72);
-      out[n] = { u: cu + rx * Math.cos(a), v, s: near ? near.s : .2, h: h * (.9 + .1 * (Math.sin(a) + 1) / 2), sit: false };
-    });
+    const cu = k === 1 ? .5 : .08 + (.84 * (ti + .5)) / k;
+    const placed = floorRows(t.members, cu - half + .02, cu + half - .02, 16);
+    Object.assign(out, placed);
+    const h = Math.max(...Object.values(placed).map(p => p.h), 8), backV = Math.min(...Object.values(placed).map(p => p.v));
     let color = PAL[ti % PAL.length]; try { color = (colorOf && colorOf(t.name)) || color; } catch { /* default */ }
-    flags.push({ u: cu, v: vc - ry - .01, name: t.name, color, h: h * 1.5 });
+    flags.push({ u: cu, v: backV - .006, name: t.name, color, h: h * 1.8 });
+    hostH = Math.max(hostH, h * 1.12);
   });
-  if (host) {
-    const hm = marksOf(key, 'host')[0];
-    out[host] = hm ? { u: hm.u, v: hm.v, s: hm.s, host: true } : { u: .5, v: .7, s: .2, host: true, h: 20 };
-  }
+  if (host) out[host] = { u: .5, v: FLOOR_FRONT, s: .2, host: true, h: hostH, crowd: true };
   return { places: out, flags };
 }
 

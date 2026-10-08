@@ -102,7 +102,8 @@ describe('TD stepped viewer on played seasons, every venue', () => {
         for (const t of out.toks) {
           expect(t.u, `${scr.id} ${t.n}`).toBeGreaterThan(0); expect(t.u).toBeLessThan(1);
           expect(t.v, `${scr.id} ${t.n}`).toBeGreaterThan(0); expect(t.v).toBeLessThanOrEqual(1);
-          if (!t.sit && !t.conf && !t.bg) expect(t.v, `${setting} ep${ep.num} ${scr.id} step ${i}: ${t.n} below the panel`).toBeLessThanOrEqual(.745);
+          // a crowd stands on the ground in front of the set, the panel over its feet (2026-10-08)
+          if (!t.sit && !t.conf && !t.bg && !t.crowd) expect(t.v, `${setting} ep${ep.num} ${scr.id} step ${i}: ${t.n} below the panel`).toBeLessThanOrEqual(.745);
         }
       });
     }
@@ -183,7 +184,7 @@ describe('TD stepped viewer: the islands', () => {
         const out = stageHtml(scr, i, true);
         for (const t of out.toks) { expect(t.u).toBeGreaterThan(0); expect(t.u).toBeLessThan(1); }
         // nobody standing sinks behind the dialogue panel (their name tag hidden under it)
-        for (const t of out.toks) if (!t.sit && !t.conf && !t.bg) expect(t.v, `ep${ep.num} ${scr.id} step ${i}: ${t.n} below the panel`).toBeLessThanOrEqual(.745);
+        for (const t of out.toks) if (!t.sit && !t.conf && !t.bg && !t.crowd) expect(t.v, `ep${ep.num} ${scr.id} step ${i}: ${t.n} below the panel`).toBeLessThanOrEqual(.745);
       });
       expect(tdStepTranscript(scr).length).toBe(scr.steps.length);
     }

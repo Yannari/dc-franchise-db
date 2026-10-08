@@ -53,7 +53,7 @@ const BOMB_HOTHEAD = [
     { by: 'b', conf: "We had a whole fight over a banana. In front of everyone. I let {a} have it. I'm still mad." },
   ] },
   { id: 'dm.bh8', when: { register: 'competitor' }, turns: [
-    { by: 'a', say: "We lost because some of you didn't even TRY!" },
+    { by: 'a', say: "Some of you didn't even TRY out there today!" },
     { by: 'b', say: "We all tried." },
     { by: 'a', say: "Then try HARDER!" },
     { by: 'b', conf: "{a} wanted to win so badly that {a} yelled at the people who'd have to vote for {a.obj}." },

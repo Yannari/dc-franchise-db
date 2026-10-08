@@ -718,7 +718,7 @@ const ACCUSE_SOLD = [
     { by: 'b', conf: "I can lose. I can't stand losing because somebody didn't try." },
   ] },
   { id: 'plt.as6', turns: [
-    { by: 'a', say: "Doesn't it bug you how calm {target} was after we lost?" },
+    { by: 'a', say: "Doesn't it bug you how calm {target} always is? Even when everything goes wrong?" },
     { by: 'b', say: "Yeah, actually. It does." },
   ] },
 ];

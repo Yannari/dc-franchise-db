@@ -33,7 +33,7 @@ import { lastTribalOf, challengeOf, lossStreak, bootsBefore } from './record.js'
 import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
 import { writeTribal, whyOf as ballotWhy } from './tribal.js';
-import { writeTwistStory, writeExile } from './twist.js';
+import { writeTwistStory, writeExile, writeFirstImpressions, writeAuctionScript } from './twist.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf } from './places.js';
 
@@ -604,9 +604,14 @@ function voteTalk(ep, camp, t, next) {
   {
     const unsure = al => new Set([...(al.reliability?.tentative || []), ...(al.reliability?.drifting || []), ...(al.reliability?.initialReservations || [])]);
     // the one who breaks first (that is why a plan fails); one who holds, now and then, when nobody breaks
+    // only a plan the viewer saw made (its scene aired), and only somebody who was in that scene: a
+    // doubt about a meeting nobody watched reads as a meeting that never happened (the user)
+    const aired = al => out.find(o => ['other', 'plan'].includes(o.step) && o.scene?.data?.target === al.target);
     const cand = [];
     for (const al of [t.bloc, ...(t.rivals || []).slice(0, 2)].filter(Boolean)) {
-      const pool = (al.members || []).filter(m => tribal.includes(m) && m !== al.target && m !== boot && unsure(al).has(m));
+      const sc = aired(al);
+      if (!sc) continue;
+      const pool = (al.members || []).filter(m => tribal.includes(m) && m !== al.target && m !== boot && unsure(al).has(m) && sc.players.includes(m));
       for (const m of pool) cand.push({ al, m, breaks: !!ballotOf(m) && ballotOf(m) !== al.target });
     }
     cand.sort((p, q) => (q.breaks ? 1 : 0) - (p.breaks ? 1 : 0) || p.m.localeCompare(q.m));
@@ -617,7 +622,9 @@ function voteTalk(ep, camp, t, next) {
       const breaker = breaks ? x : null;
       seenDoubt.add(x);
       const mates = (al.members || []).filter(m => tribal.includes(m) && m !== x && m !== al.target);
-      const conf = closest(x, mates.filter(m => getBond(x, m) >= 1)) || null;
+      // the one who checks on them was in the same scene, so they both know the plan
+      const was = aired(al)?.players || [];
+      const conf = closest(x, mates.filter(m => getBond(x, m) >= 1 && was.includes(m))) || null;
       const shape = conf ? shapeFor(x, closeTo(x, mates)) : 'solo';
       const who = shape === 'solo' || !conf ? { a: x } : { a: x, b: conf };
       const data = { target: al.target, ...(breaker && ballotOf(x) !== al.target ? { wrote: ballotOf(x) } : {}) };
@@ -912,6 +919,9 @@ export function airTdEpisode(ep) {
   if (!ep.tribalStory) ep.tribalStory = writeTribal(ep);
   // the Exile Duel's two nights: the one sent to Exile, and the face-off (twist.js writeExile)
   if (ep.exileStory === undefined) ep.exileStory = writeExile(ep);
+  // First Impressions and the auction play as dialogue on their own stepped screens (twist.js)
+  if (ep.tdFirstImp === undefined) { const fi = (ep.twists || []).find(t => t.type === 'first-impressions' && t.firstImpressions?.length); ep.tdFirstImp = fi ? writeFirstImpressions(ep, fi) : null; }
+  if (ep.tdAuction === undefined) { const A = (ep.twists || []).find(t => t.type === 'auction')?.auction; ep.tdAuction = A ? writeAuctionScript(ep, A) : null; }
   // the twists, as the people in them talk (twist.js; the twist screen plays them)
   if (ep.twistStory === undefined) {
     try { ep.twistStory = writeTwistStory(ep); } catch (e) { if (typeof process !== 'undefined' && process.env?.VITEST) throw e; ep.twistStory = null; }

@@ -51,7 +51,7 @@ const GAME = [
     { by: 'a', say: "No. We talk to the right people. Like each other." },
   ] },
   { id: 'al.g6', when: { weak: true, merged: false }, turns: [
-    { by: 'a', say: "If we lose again, it's {weak}. Right?" },
+    { by: 'a', say: "If we lose the next one, it's {weak}, right?" },
     { by: 'b', say: "Probably. Unless somebody does something stupid." },
     { by: 'a', say: "Somebody always does something stupid." },
     { by: 'b', say: "Then let's make sure it's not us." },

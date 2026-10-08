@@ -178,8 +178,8 @@ const CHARM = [
     { beat: '{a} taps a smooth rock three times before every challenge.' },
     { by: 'b', say: "What's with the rock?" },
     { by: 'a', say: "It's lucky." },
-    { by: 'b', say: "We lost last time." },
-    { by: 'a', say: "Not as badly as we could have." },
+    { by: 'b', say: "Has it ever actually worked?" },
+    { by: 'a', say: "I'm still here, aren't I?" },
   ] },
   { id: 'lf.c2', turns: [
     { by: 'b', say: "Why won't you eat before a challenge?" },
@@ -205,8 +205,8 @@ const CHARM = [
   ] },
   { id: 'lf.c6', turns: [
     { by: 'b', say: "You've been wearing that shirt for five days." },
-    { by: 'a', say: "We haven't lost in five days." },
-    { by: 'b', say: "Wash it after we lose, then." },
+    { by: 'a', say: "It's my lucky shirt. I'm not risking it." },
+    { by: 'b', say: "Everyone who sleeps next to you is risking it. Every night." },
   ] },
   { id: 'lf.c7', when: { register: 'sweet' }, turns: [
     { by: 'a', say: "I wished on a shell this morning. For all of us." },

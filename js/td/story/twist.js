@@ -82,7 +82,7 @@ function writer(ep) {
   const voteYet = (gs.episodeHistory || []).some(h => h.num < ep.num && h.eliminated);
   let n = 700;
   return (pool, ending, who, data = {}) => writeStory(pool, ending, who, data,
-    { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'pre' }), venue, voteYet, thing: !!data.thing }, { ep: ep.num, camp: 'twist', phase: 'pre', n: n++, place: 'secret', unique: 'soft' });
+    { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'pre' }), venue, voteYet, thing: !!data.thing, lot: !!data.lot }, { ep: ep.num, camp: 'twist', phase: 'pre', n: n++, place: 'secret', unique: 'soft' });
 }
 const sceneOf = (w, at, players, camp = null) => (w ? { at, camp, lines: w.lines, players } : null);
 
@@ -216,4 +216,120 @@ function loved(ep, tw) {
   const a = tw.lovedOnesStandout;
   const b = closestOf(a, (gs.activePlayers || []).filter(x => x !== a))[0] || null;
   return [sceneOf(write('twist.loved', 'standout', { a, ...(b ? { b } : {}) }), 'set', [a, b].filter(Boolean))].filter(Boolean);
+}
+
+// ── First Impressions (twists.js executeFirstImpressions) ────────────────────────────────────
+// Day one: each tribe votes somebody out on gut alone, and the one voted out joins the other
+// tribe instead of going home. Per tribe: the huddle before it (the boldest voter of the boot
+// says the name, a second agrees, somebody who will not vote that way hesitates), every voter's
+// booth line in their voice and for their own read of {target} (log.why: enemy, calculated,
+// threat, outsider, gut, loud, nothing), the boot hearing it, the twist landing, the walk into
+// the new camp (its most social member does the welcome), and one voter to the camera after.
+// ep.tdFirstImp = [{ tribe, sentTo, boot, votes, huddle, booth: [{ voter, voted, lines }], read, twist, welcome, after }].
+export function writeFirstImpressions(ep, tw) {
+  const write = writer(ep);
+  const host = seasonConfig?.host || 'Chris';
+  const st = n => { try { return pStats(n) || {}; } catch { return {}; } };
+  const by = k => (x, y) => (st(y)[k] || 0) - (st(x)[k] || 0) || x.localeCompare(y);
+  const lines = w => w?.lines || [];
+  return (tw.firstImpressions || []).map(r => {
+    const boot = r.votedOut;
+    const voters = [...(r.voters || [])];
+    const doubters = (r.nonVoters || []).filter(x => x !== boot);
+    const lead = [...voters].sort(by('boldness'))[0];
+    const second = voters.filter(v => v !== lead).sort((x, y) => getBond(lead, y) - getBond(lead, x) || x.localeCompare(y))[0] || null;
+    const doubt = [...doubters].sort((x, y) => getBond(boot, y) - getBond(boot, x) || x.localeCompare(y))[0] || null;
+    const why = (r.log || []).find(l => l.voter === lead)?.why || 'nothing';
+    const huddle = lead ? lines(write('fi.huddle', why, { a: lead, ...(second ? { b: second } : {}), ...(doubt ? { c: doubt } : {}) }, { target: boot })) : [];
+    const booth = (r.log || []).map(l => ({ voter: l.voter, voted: l.voted,
+      lines: lines(write('fi.booth', l.why || 'nothing', { a: l.voter }, { target: l.voted })) }));
+    const meanest = [...voters].sort((x, y) => getBond(boot, x) - getBond(boot, y) || x.localeCompare(y))[0] || null;
+    const read = lines(write('fi.read', 'any', { a: boot, ...(meanest ? { b: meanest } : {}), h: host }, { tribe: r.tribe }));
+    const twist = lines(write('fi.twist', 'any', { a: boot, ...(meanest ? { b: meanest } : {}), h: host }, { tribe: r.tribe, theirs: r.sentTo }));
+    const dest = ((tw.newTribes || []).find(t => t.name === r.sentTo)?.members || []).filter(m => m !== boot);
+    const [wa, wb] = [...dest].sort(by('social'));
+    const welcome = wa ? lines(write('fi.welcome', 'any', { a: boot, b: wa, ...(wb ? { c: wb } : {}) }, { tribe: r.tribe, theirs: r.sentTo })) : [];
+    const sorry = voters.filter(v => v !== lead).sort((x, y) => getBond(boot, y) - getBond(boot, x) || x.localeCompare(y))[0] || lead;
+    const after = sorry ? lines(write('fi.after', 'any', { a: sorry }, { target: boot, theirs: r.sentTo })) : [];
+    return { tribe: r.tribe, sentTo: r.sentTo, boot, votes: r.votes, huddle, booth, read, twist, welcome, after };
+  });
+}
+
+// ── The auction (auction.js), lot by lot ─────────────────────────────────────────────────────
+// The host puts each lot up; the people bidding say their bids (the opener, the raises, a bidding
+// war between two of them as an exchange, a jump, a loan given, a loan refused); the host sells
+// it; the winner reacts to what is under the cover (somebody sharp reacts to a power or immunity
+// bought in the open); a switch offer is the host's dare. Then the close, and who kept their
+// money. Every bid line is the bidLog's: who, how much, against whom.
+// ep.tdAuction = { open, lots: [{ order, title, blind, winner, finalBid, bank, lines }], close }.
+const AUC_KIND = r => (!r.sold ? null : r.effect === 'immunity' ? 'immunity' : r.effect === 'idol' ? 'idol' : r.isPower ? 'power'
+  : r.effect === 'idolClue' ? 'clue' : r.effect === 'intel' ? 'intel' : r.emotional ? 'letter' : r.role === 'comfort' ? 'comfort'
+  : r.blind ? 'blindfood' : 'food');
+const money = n => `$${n}`;
+export function writeAuctionScript(ep, A) {
+  const write = writer(ep);
+  const host = A.host || seasonConfig?.host || 'Chris';
+  const st = n => { try { return pStats(n) || {}; } catch { return {}; } };
+  const L = w => w?.lines || [];
+  const roster = A.roster || [];
+  const bold = [...roster].sort((x, y) => (st(y).boldness || 0) - (st(x).boldness || 0) || x.localeCompare(y));
+  const open = L(write('auc.open', 'any', { h: host, a: bold[0], b: bold[1] }, {}));
+  const lots = [];
+  for (const r of (A.items || []).filter(x => x.offered !== false)) {
+    const out = [];
+    const lot = r.blind ? null : r.label;
+    const lotKind = r.blind ? (r.role === 'immunity' ? 'immunity' : 'covered') : r.emotional ? 'letter' : r.role === 'comfort' ? 'comfort' : 'food';
+    out.push(...L(write('auc.lot', lotKind, { h: host }, { ...(lot ? { lot } : {}), amount: money(r.start || 20) })));
+    if (!r.sold) {
+      out.push(...L(write('auc.nobid', 'any', { h: host }, {})));
+      lots.push({ order: r.order, title: lot || 'A covered lot', blind: r.blind, winner: null, finalBid: 0, bank: null, lines: out });
+      continue;
+    }
+    const log = r.bidLog || [];
+    const good = log.filter(b => !b.failed);
+    const fighters = [...new Set(good.map(b => b.bidder))];
+    out.push(...L(write('auc.bid', 'open', { a: log[0].bidder }, { amount: money(log[0].amount) })));
+    if (fighters.length === 2 && good.length >= 5) {
+      const loser = fighters.find(x => x !== r.winner);
+      const mid = good[Math.floor(good.length / 2)];
+      out.push(...L(write('auc.bid', 'war', { a: loser, b: r.winner }, { amount: money(mid.amount), top: money(r.finalBid) })));
+    } else {
+      // the bids worth hearing: each new bidder's first, a jump, a loan, a refusal, and the last one
+      let prev = log[0].bidder, said = 0;
+      const heard = new Set([log[0].bidder]);
+      for (let i = 1; i < log.length && said < 3; i++) {
+        const b = log[i];
+        if (b.failed) {
+          out.push(...L(write('auc.bid', b.refusedBy ? 'refused' : 'broke', { a: b.bidder, ...(b.refusedBy ? { b: b.refusedBy } : {}) }, { amount: money(b.amount) })));
+          said++; continue;
+        }
+        const last = log.slice(i + 1).every(x => x.failed);
+        if (b.jump) { out.push(...L(write('auc.bid', 'jump', { a: b.bidder, b: prev }, { amount: money(b.amount) }))); said++; }
+        else if (b.lent) { out.push(...L(write('auc.bid', 'loan', { a: b.bidder, b: b.lent.from }, { amount: money(b.amount) }))); said++; }
+        else if (!heard.has(b.bidder) || last) { out.push(...L(write('auc.bid', 'raise', { a: b.bidder, b: prev }, { amount: money(b.amount) }))); said++; }
+        heard.add(b.bidder); prev = b.bidder;
+      }
+    }
+    out.push(...L(write('auc.sold', 'any', { a: r.winner, h: host }, { amount: money(r.finalBid) })));
+    const kind = AUC_KIND(r);
+    const watcher = ['power', 'immunity', 'idol'].includes(kind)
+      ? roster.filter(m => m !== r.winner).sort((x, y) => (st(y).intuition || 0) - (st(x).intuition || 0) || x.localeCompare(y))[0] : null;
+    const shown = r.switchOffer?.took ? r.switchOffer.keptLabel : r.revealedLabel;
+    const what = String(shown || r.label || '').replace(/\s*\(.*\)\s*$/, '').replace(/ — .*$/, '').toLowerCase();
+    out.push(...L(write('auc.win', kind, { a: r.winner, ...(watcher ? { b: watcher } : {}) }, { lot: what, amount: money(r.finalBid) })));
+    if (r.switchOffer) {
+      const other = String(r.switchOffer.otherLabel || '').toLowerCase();
+      const how = r.switchOffer.took ? (r.switchOutcome === 'downgrade' ? 'dud' : 'upgrade') : 'kept';
+      out.push(...L(write('auc.switch', how, { a: r.winner, h: host }, { lot: what, thing: other })));
+    }
+    lots.push({ order: r.order, title: r.blind ? 'A covered lot' : r.label, blind: r.blind, winner: r.winner, finalBid: r.finalBid, bank: r.budgetsAfter || null, lines: out });
+  }
+  const left = A.budgetsRemaining || {};
+  const names = Object.keys(left);
+  const saver = [...names].sort((x, y) => (left[y] || 0) - (left[x] || 0) || x.localeCompare(y))[0];
+  const spender = [...names].sort((x, y) => (left[x] || 0) - (left[y] || 0) || x.localeCompare(y))[0];
+  const close = [...L(write('auc.close', A.immunityMode && !A.immuneWinner ? 'noimmunity' : 'any', { h: host }, {})),
+    ...(saver && (left[saver] || 0) >= 200 ? L(write('auc.saver', 'any', { a: saver }, { amount: money(left[saver]) })) : []),
+    ...(spender && spender !== saver ? L(write('auc.spender', 'any', { a: spender }, {})) : [])];
+  return { open, lots, close };
 }

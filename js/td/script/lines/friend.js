@@ -1048,7 +1048,7 @@ const RALLY = [
     { by: 'c', say: "...Fair." },
   ] },
   { id: 'fr.ra4', when: { register: 'competitor' }, turns: [
-    { by: 'a', say: "We lost. So what? We come back harder." },
+    { by: 'a', say: "Whatever happened today, it's done. Tomorrow we come back harder." },
     { by: 'b', say: "That's the spirit." },
     { by: 'c', say: "Can the spirit include a nap first?" },
     { by: 'a', say: "Fine. One nap. Then we come back harder." },

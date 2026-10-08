@@ -761,7 +761,11 @@ export function executeFirstImpressions(ep, twistObj) {
         ]);
       }
 
-      log.push({ voter, voted: target, reason });
+      // the same read as a word, for the dialogue (td/story/twist.js writeFirstImpressions)
+      const why = bond <= -2 ? 'enemy' : (targetS.archetype === 'villain' || targetS.archetype === 'schemer') ? 'calculated'
+        : (targetS.archetype === 'challenge-beast' || threatScore(target) >= 7) ? 'threat' : targetS.social <= 4 ? 'outsider'
+        : voterS.intuition >= 7 ? 'gut' : targetS.boldness >= 7 ? 'loud' : 'nothing';
+      log.push({ voter, voted: target, reason, why });
     });
 
     const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);

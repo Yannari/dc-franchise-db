@@ -792,9 +792,9 @@ const SHOWBOAT = [
   ] },
   { id: 'dr.sb7', when: { strong: true }, turns: [
     { beat: '{a} flexes in front of the camp, slowly, while explaining the last challenge.' },
-    { by: 'a', say: "See this? This is why we won." },
-    { by: 'b', say: "We lost." },
-    { by: 'a', say: "This is why we almost won." },
+    { by: 'a', say: "See this? This is why we're going to win." },
+    { by: 'b', say: "You fell off the balance beam twice." },
+    { by: 'a', say: "Gracefully. I fell off gracefully." },
   ] },
 ];
 const DIG = [

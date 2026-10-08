@@ -66,9 +66,9 @@ const MELT_CRACK = [
     { by: 'a', conf: "Everybody saw me lose it. I hate that they saw it." },
   ] },
   { id: 'd2.mc4', when: { register: 'competitor' }, turns: [
-    { by: 'a', say: "We lost. Again. Because nobody here takes anything seriously!" },
+    { by: 'a', say: "Nobody here takes anything seriously, and I'm sick of it!" },
     { beat: '{a} punches a tree. Then holds {a.posAdj} hand, wincing.' },
-    { by: 'a', conf: "The tree won. Add it to the list of things that beat us this week." },
+    { by: 'a', conf: "The tree won. Of course the tree won." },
   ] },
   { id: 'd2.mc5', turns: [
     { beat: "{a}'s voice keeps getting higher until it cracks completely." },

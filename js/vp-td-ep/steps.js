@@ -474,7 +474,11 @@ export function tdTribalScreen(ep, o = {}) {
   const steps = [];
   const say = (text, extra = {}) => steps.push({ k: 'say', by: host, host: true, text, ...extra });
   steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '8:30 PM', card: true, focus: [], bg: [], places, seated: tribal, host, ceremony: true });
-  say(pick(V.open(callName)));
+  // the first opener welcomes; the others say they have been here before, so they need a vote behind
+  // them (the user: "back at the fire so soon" on a team's first vote). The merge counts from the merge.
+  const been = (window.gs?.episodeHistory || []).some(h => h.num < ep.num && h.eliminated && (team ? h.tribalTribe === team : (h.isMerge || h.gsSnapshot?.isMerged)));
+  const opens = V.open(callName);
+  say(been ? pick(opens.slice(1)) : opens[0]);
   // the questions (the same exchanges the classic screen asks: buildTribalQA)
   for (const item of (o.qa || [])) {
     const ask = q => { const m = String(q).match(/^(.*?)"(.+)"\s*$/s); return m ? { lead: cleanText(m[1]), quote: cleanText(m[2]) } : { lead: '', quote: cleanText(q) }; };

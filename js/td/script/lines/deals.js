@@ -134,7 +134,7 @@ const GENUINE = [
     { by: 'b', say: "I'm in. But I get a say on the third." },
   ] },
   { id: 'sd.a15', when: { weak: true, merged: false }, turns: [
-    { by: 'a', say: "If we lose again, it's going to be {weak}, right?" },
+    { by: 'a', say: "If we lose the next one, it's going to be {weak}, right?" },
     { by: 'b', say: "Probably. {weak} hasn't won us a single thing." },
     { by: 'a', say: "Right. But after {weak}, it gets messy. I don't want to be on the wrong side of messy." },
     { by: 'b', say: "So what do you want?" },

@@ -45,7 +45,7 @@ _HC = {
     'campfire': _wk('hc-campfire.json', [(650, 560), (850, 590), (1050, 560)]),
     'ceremony': _wk('hc-ceremony2.json', [(1260, 640), (1440, 640)], seats=_STUMPS, host=(1530, 560)),
     'cliff': _wk('hc-cliff.json', [(380, 530), (680, 530), (980, 530)]),
-    'forest-trail': _wk('hc-forest2.json', [(500, 648), (800, 648), (1100, 648)]),
+    'forest-trail': _wk('hc-cave.json', [(330, 645), (700, 645), (1060, 645)]),
     'beach': _wk('hc-beach2.json', [(700, 648), (980, 648), (1240, 648)]),
     'map': _wk('hc-map.json', [], zones=_ZONES),
     # the places the show had beyond the camp's daily round (2026-10-07: "add all of them")
@@ -54,7 +54,7 @@ _HC = {
     'caves': _wk('hc-cave-in.json', [(520, 648), (800, 648), (1080, 648)]),
     'boathouse': _wk('hc-boathouse.json', _ROW),
     'river': _wk('hc-river.json', [(300, 640), (700, 600), (1100, 640)]),
-    'kitchen': _wk('hc-kitchen.json', [(380, 648), (800, 648), (1150, 648)]),
+    'kitchen': _wk('hc-kitchen.json', [(380, 645), (800, 645), (1200, 645)]),
     'amphitheater': _wk('hc-amph.json', [(620, 560, 18), (800, 560, 18), (980, 560, 18)]),
 }
 SCENES['hosted-camp'].update(_HC)

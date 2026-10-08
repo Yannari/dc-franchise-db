@@ -142,3 +142,47 @@ Three episodes, one storyline, with each line traceable to a stat, an archetype,
 
 - Scene count: fewer, fuller scenes (about 6–10 per camp per episode) instead of many tiny ones. OK?
 - Should the "State of the Game" screen be a tab beside the camp map, or a button on every screen?
+
+## 6. Handoff notes (for whoever builds this)
+
+The backgrounds/viewer work continues in parallel in `js/vp-td-ep/` (stage.js, glplate.js, style.js,
+marks.js) and `tools/td-camp/`. Stay out of those except where §2.5 needs the dialogue panel
+(`js/vp-td-ep/screens.js` `.tdx-dlg`, `stage.js` `dialogue()`), and pull before touching them.
+
+### Where things live
+- **Camp events (what happens)**: `js/camp-events.js` (`generateCampEventsForGroup`), social politics
+  and schemes in `js/social-manipulation.js`, alliances `js/alliances.js`, romance `js/romance.js`.
+  Every camp event must keep its gameplay consequence (CLAUDE.md "Camp Events Must Have Consequences").
+- **How a scene is written**: `js/td/script/scene.js` (a decided scene: kind, who, data),
+  `js/td/script/write.js` (`writeScene`: picks an entry and fills `{a}` `{b}` `{c}` and data slots),
+  `js/td/script/facts.js` (`factsFor`: what a line's `when` may filter on; `registerOf`),
+  `js/td/script/context.js`, line pools in `js/td/script/lines/*.js` (index.js maps scene kinds to pools).
+- **The picker**: `js/script/pick.js` (shared with Big Brother and The Circle; its repetition rules are
+  hard-won, read the comments; a speaker never says the same line twice in a season).
+- **Big Brother's storyline system to port**: `js/bb/story/storylines.js` (classify a beat into a
+  storyline step), `director.js` (choose what airs), `write.js`, `register.js`, `voice.js`; its spec is
+  `docs/superpowers/specs/2026-10-05-bb-house-storylines-design.md`.
+- **The viewer that shows camp scenes**: `js/vp-td-ep/steps.js` (`tdCampScreen`, staging),
+  `js/vp-td-ep/map.js` (camp map, conversation bubbles), `js/vp-td-ep/screens.js`.
+
+### Rules that bite (from CLAUDE.md and the user's feedback)
+- Valid stats and archetypes only (CLAUDE.md lists them). Nice archetypes never scheme.
+- The text never decides an outcome: a scene renders what the engine already did.
+- A line only says what its speaker could know. Never write a name into a pool; use slots.
+- Plain, fluent spoken English; jokes land on the first read; no narration about a conversation.
+- Pronouns via `pronouns(name)`; never guess a gender in a line.
+
+### How to measure (do this before calling anything done)
+- A season harness: `tests/helpers/season-harness.js` (`runOneSeason`, `seededRun`). The measurement in
+  §1 came from a 14-episode seeded season counting `ep.campEvents` lines per event, words, and scene
+  families; repeat it after each step and print a whole season's camp transcript and read it.
+- Targets: story scenes 12–30 lines; share of camp scenes in a storyline > 60%; at least 4 storylines
+  with 3+ steps per season; same-exchange repeats < 1% per season.
+- Existing tests to keep green: `tests/td-vp-steps.test.js`, `td-camp-map`, `td-camera-staging`,
+  `td-twist-screens`, `td-island-script`, `camp-access`, and the picker's own tests
+  (`grep -l "script/pick" tests/*.test.js`).
+
+### Sources for voice
+- Disventure Camp transcripts: disventurecamp.fandom.com `Category:Disventure Camp 4: Carnival of Chaos
+  transcripts` (and DC5), via api.php with header `User-Agent: curl/8.0`.
+- Total Drama: totaldrama.fandom.com episode pages, same API trick.

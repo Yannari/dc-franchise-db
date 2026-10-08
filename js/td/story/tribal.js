@@ -121,12 +121,22 @@ function tribalQA(ep, { tribal, ballots, elim, ch, camp, base, ctx, nextN }) {
   // a question to the room, when nothing else is sharp enough
   { const r = [...tribal].filter(p => p !== elim).sort((p, q) => (pStatsOf(q)?.boldness || 0) - (pStatsOf(p)?.boldness || 0) || p.localeCompare(q));
     if (r.length >= 3) add('room', 2, { a: r[0], b: r[1], c: r[2] }); }
+  // the opener: the host warms the room up on the day before the sharp questions (the user: "who
+  // starts a tribal like this"): a lost challenge, or for the merged tribe how camp feels
+  { const r = [...tribal].filter(p => p !== elim).sort((p, q) => (pStatsOf(q)?.social || 0) - (pStatsOf(p)?.social || 0) || p.localeCompare(q));
+    const openWho = { a: ch?.carried && tribal.includes(ch.carried) && ch.carried !== elim ? ch.carried : r[0], b: r.find(x => x !== (ch?.carried || r[0])) };
+    if (openWho.a && openWho.b) {
+      const facts = { ...factsFor({ who: openWho, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(openWho.a), pair: true, sank: !!ch?.sank };
+      const w = writeStory(`tqa.open.${ch && !(ep.isMerge || gs.isMerged) ? 'lost' : 'merged'}`, 'any', { ...openWho, h: host }, ch?.sank ? { sank: ch.sank } : {}, facts, ctx(nextN(), 'tribal', 'soft'));
+      if (w) out.push({ topic: 'open', players: Object.values(openWho), lines: w.lines });
+    }
+  }
   // rotation: a question the host asked at the last two votes waits its turn
   const mem = ((gs.tdStory ||= {}).qaUse ||= {});
   const score = c => c.pri - ((ep.num - (mem[c.topic] ?? -99)) <= 2 ? 4 : 0) + ((ep.num * 7 + c.topic.length * 3) % 5) * 0.2;
   cand.sort((x, y) => score(y) - score(x) || x.topic.localeCompare(y.topic));
   for (const c of cand) {
-    if (out.length >= 3) break;
+    if (out.filter(x => x.topic !== 'open').length >= 3) break;
     const cast = Object.values(c.who).filter(Boolean);
     if (cast.some(p => used.has(p))) continue;
     const facts = { ...factsFor({ who: c.who, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(c.who.a), third: !!c.who.c, pair: !!c.who.b, ...c.extra };

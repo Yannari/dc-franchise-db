@@ -986,8 +986,14 @@ export function airTdEpisode(ep) {
       const ranked = filed.filter(fitsDay).sort((x, y) => score(y) - score(x) || x.i - y.i);
       const usedLines = new Set();
       const chosen = [];
-      for (const f of ranked) {
-        if (chosen.length >= cap) break;
+      // camp life keeps its room (the user: "aside from strategy there's literally nothing, nothing
+      // from camp life"): the day's best friendship, showmance and underdog moments go first, on top
+      // of the cap, two in the morning and one after the challenge
+      const LIFE = /^(friendship|showmance|underdog)$/;
+      const lifeTake = editOn ? ranked.filter(f => LIFE.test(f.line.type)).slice(0, phase === 'pre' ? 2 : 1) : [];
+      const order = [...lifeTake, ...ranked.filter(f => !lifeTake.includes(f))];
+      for (const f of order) {
+        if (chosen.length >= cap + lifeTake.length) break;
         if (usedLines.has(f.line)) continue;
         const cast = [f.step.roles.a, f.step.roles.b, f.step.roles.c].filter(Boolean);
         if (cast.some(p => (onScreen[p] || 0) >= 2)) continue;

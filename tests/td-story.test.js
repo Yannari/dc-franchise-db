@@ -13,11 +13,11 @@ import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 // what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
 const STORY_FACTS = new Set([...TD_FACT_KEYS,
   'venue', 'count', 'outcome', 'story', 'step', 'prev', 'prevGap', 'chapter', 'members', 'aOther', 'bOther', 'target', 'group',
-  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'fifth', 'sixth', 'notVoice', 'notVoiceB', 'home', 'job', 'lot', 'eats', 'thing']);
+  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'fifth', 'sixth', 'notVoice', 'notVoiceB', 'home', 'job', 'lot', 'eats', 'thing', 'others', 'markMe', 'markB', 'otherMe', 'otherB']);
 // names a line may say, and the fact that must be asked for unless the pool always has it
 const ALWAYS = new Set(['a', 'b', 'c', 'd', 'e', 'f', 'h', 'quarters', 'bed', 'item', 'here', 'place', 'host']);
 const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
-  threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder', other: 'other', pitcher: 'pitcher', home: 'home', job: 'job', lot: 'lot', thing: 'thing' };
+  threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder', other: 'other', pitcher: 'pitcher', home: 'home', job: 'job', lot: 'lot', thing: 'thing', others: 'others' };
 // a pool's guarantees: names its moment always carries
 const GUARANTEED = [
   [/^story\.morning\./, ['lastBoot', 'target', 'bootVotes']],
@@ -45,6 +45,16 @@ const GUARANTEED = [
   [/^story\.vote\.doubt\./, ['target']],
   [/^story\.auction\.(power|immunity)$/, ['target']],
   [/^exile\.back\./, ['other']],
+  [/^vp\.(solo\.)?case\.coming$/, ['target', 'mark']],
+  [/^vp\.(solo\.)?case\.pair$/, ['target', 'partner']],
+  [/^vp\.(solo\.)?case\.group$/, ['target', 'theirs']],
+  [/^vp\.(push|answer)\.alt$/, ['target', 'alt']],
+  [/^vp\.(push|answer)\.pair$/, ['target', 'partner']],
+  [/^vp\.(solo\.)?count\.(close|tight)$/, ['target', 'other', 'them', 'votes']],
+  [/^vp\./, ['target', 'votes']],
+  [/^fi\.(read|twist|welcome)\./, ['tribe', 'theirs']],
+  [/^fi\.after\./, ['theirs']],
+  [/^fi\.(huddle|booth|after)\./, ['target']],
   [/^(room|after)\.burned$/, ['lastBoot', 'item', 'target']],
   [/^room\./, ['lastBoot', 'item']],
   [/^(reveal|exit|after)\./, ['lastBoot', 'item']],

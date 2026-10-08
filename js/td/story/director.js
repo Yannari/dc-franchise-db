@@ -514,6 +514,84 @@ function votePlan(ep, camp, members) {
   return { boot, gone, tribal, ballots, onBoot, voters, pitch, bloc, leader, why, other, ch, rival, rivals, counter, covers };
 }
 
+// The plan, as a strategy talk (the user: "lacking in context, strategy, drama, comedy"). Built in
+// beats, each from what is true tonight, so the reason, the pushback and the count are always this
+// vote's own and never repeat as a block:
+//   vp.open.<shape>    pulling people aside (group / duo)
+//   vp.case.<case>     a says the name and the real reason: coming ({target} is on a plan against
+//                      {mark}), sank (cost them the challenge), idol (suspected of holding one), pair
+//                      ({target} and {partner} vote together), group ({target} is with {theirs}),
+//                      grudge, threat, outsider (nobody here is close to {target}), numbers (the
+//                      only name that can get enough votes)
+//   vp.push.<kind>     b answers with their own position: like (b likes {target}), idol, pair, alt
+//                      (b would rather write {alt}), sure (no objection)
+//   vp.answer.<kind>   a answers it
+//   vp.count.<kind>    a counts: close ({count} of us against {them} on another name), all
+//                      (everybody but {target}), enough
+//   vp.close.<shape>   the button, and somebody's read to the camera
+//   vp.solo.case.<case> / vp.solo.count.<kind>   nobody to tell: a to the camera
+function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'plan', badge: ['The Plan', 'gold'] }) {
+  const { boot, tribal, voters, leader } = t;
+  const a = who.a;
+  if (!a) return null;
+  const has = s => !!s && (typeof s.has === 'function' ? s.has(boot) : Array.isArray(s) ? s.includes(boot) : false);
+  const outside = tribal.filter(x => x !== boot && !voters.includes(x));
+  // the case: the ballots' own reason first, then the truest specific one
+  const coming = (t.rivals || []).find(al => (al.members || []).includes(boot) && al.target && (al.target === leader || voters.includes(al.target)));
+  const partner = tribal.filter(x => x !== boot && x !== a && !voters.includes(x)).sort((x, y) => getBond(boot, y) - getBond(boot, x) || x.localeCompare(y))[0];
+  const pair = partner && getBond(boot, partner) >= 5 ? partner : null;
+  const theirs = (gs.namedAlliances || []).find(al => al.active !== false && (al.members || []).includes(boot) && !(al.members || []).includes(a))?.name || null;
+  const idol = has(gs.knownIdolHoldersPersistent) || has(gs.knownIdolHoldersThisEp);
+  const best = Math.max(-10, ...tribal.filter(x => x !== boot).map(x => getBond(boot, x)));
+  const ts = x => threatScore(x) || 0;
+  const rank = [...tribal].sort((x, y) => ts(y) - ts(x) || x.localeCompare(y)).indexOf(boot);
+  const fromBallot = { weak: 'sank', strike: 'coming', grudge: 'grudge', threat: 'threat' }[t.why];
+  const caseOf = fromBallot === 'coming' && !coming ? 'grudge' : fromBallot
+    || (coming ? 'coming' : t.ch?.sank === boot ? 'sank' : idol ? 'idol' : pair ? 'pair' : theirs ? 'group'
+      : getBond(a, boot) <= -2 ? 'grudge' : rank >= 0 && rank <= 1 && tribal.length >= 4 ? 'threat' : best <= 1 ? 'outsider' : 'numbers');
+  if (t.why === 'shield') return null;   // saving an ally has its own scenes
+  const mark = coming ? coming.target : null;
+  // the pushback: b's own position
+  const b = who.b;
+  const alt = b ? outside.filter(x => x !== b && x !== a).sort((x, y) => getBond(b, x) - getBond(b, y) || x.localeCompare(y))[0] : null;
+  const push = !b ? null : getBond(b, boot) >= 2 ? 'like' : idol && caseOf !== 'idol' ? 'idol' : pair && caseOf !== 'pair' ? 'pair'
+    : alt && getBond(b, alt) <= 0 ? 'alt' : 'sure';
+  // the count
+  const rival = (t.rivals || [])[0];
+  const them = rival ? (rival.members || []).filter(m => tribal.includes(m) && m !== rival.target && !voters.includes(m)).length : 0;
+  // what a can know: their own number, and roughly the other side's (never more than a winning plan faced)
+  const count = them >= 2 ? (them >= voters.length ? 'tight' : 'close') : voters.length >= tribal.length - 1 ? 'all' : 'enough';
+  const inScene = new Set(Object.values(who).filter(Boolean));
+  const rest = voters.filter(v => !inScene.has(v));
+  const list = n => n.length <= 1 ? n.join('') : `${n.slice(0, -1).join(', ')} and ${n[n.length - 1]}`;
+  const data = { target: boot, votes: numberWord(voters.length), them: numberWord(them || 1), ...(mark ? { mark } : {}), ...(pair ? { partner: pair } : {}),
+    ...(theirs ? { theirs } : {}), ...(alt ? { alt } : {}), ...(rest.length ? { others: list(rest) } : {}), ...(rival?.target ? { other: rival.target } : {}) };
+  const facts = { ...baseFacts, others: !!rest.length, other: !!rival?.target, markMe: mark === a, markB: !!mark && mark === b, otherMe: rival?.target === a, otherB: !!b && rival?.target === b, cast: shape };
+  const lines = [];
+  let spot = null, lineId = null;
+  const beat = (pool, ending, w = who) => {
+    const r = writeStory(pool, ending, w, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place: 'secret', avoid: ctxAvoid('scramble'), unique: 'soft' });
+    if (!r) return false;
+    if (!spot && r.spot) spot = r.spot;
+    lineId = lineId || r.lineId;
+    lines.push(...r.lines);
+    return true;
+  };
+  if (shape === 'solo' || !b) {
+    if (!beat('vp.solo.case', caseOf)) return null;
+    beat('vp.solo.count', count);
+  } else {
+    beat('vp.open', shape === 'group' ? 'group' : 'duo');
+    if (!beat('vp.case', caseOf)) return null;
+    if (push && beat('vp.push', push)) beat('vp.answer', push);
+    beat('vp.count', count);
+    beat('vp.close', shape === 'group' ? 'group' : 'duo');
+  }
+  const players = [...inScene];
+  return { story: true, kind: `story.vote.${as.step}.${caseOf}`, storyType: 'vote', step: as.step, players, lines, text: lines.map(l => l.text).join(' '), lineId,
+    scene: { kind: 'story.vote', who, data, spot: spot ? { ...spot, window: 'scramble' } : null }, badgeText: as.badge[0], badgeClass: as.badge[1], why };
+}
+
 function voteTalk(ep, camp, t, next) {
   const out = [];
   const { boot, tribal, ballots, voters, pitch, leader, why, other, ch } = t;
@@ -544,8 +622,12 @@ function voteTalk(ep, camp, t, next) {
       const g = b ? groupOf(a, b) : null;
       const data = { target: rv.target, ...(g ? { group: g } : {}) };
       const who = { a, b, c };
-      const it = item('other', 'story.vote.other', a === boot ? 'boot' : 'losing', who, data, base(who, { group: !!g, cast: oShape }), 'secret', 'scramble', ['Other Plan', 'blue'],
-        [`${mem.join(', ')} planned to vote ${rv.target}.`, a === boot ? `${boot} has no idea the numbers are on ${pronouns(boot).obj}.` : `They don't have the numbers.`]);
+      const whyO = [`${mem.join(', ')} planned to vote ${rv.target}.`, a === boot ? `${boot} has no idea the numbers are on ${pronouns(boot).obj}.` : `They don't have the numbers.`];
+      // the same strategy talk as the plan that happens, from their side: their name, their reason,
+      // their count; the one going home may be the one running it
+      const theirT = { ...t, boot: rv.target, voters: mem, leader: a, why: 'plan', ch, rivals: [{ members: voters, target: boot }] };
+      const it = planTalk(ep, camp, theirT, who, oShape, base(who, { group: !!g, cast: oShape }), next, whyO, { step: 'other', badge: ['Other Plan', 'blue'] })
+        || item('other', 'story.vote.other', a === boot ? 'boot' : 'losing', who, data, base(who, { group: !!g, cast: oShape }), 'secret', 'scramble', ['Other Plan', 'blue'], whyO);
       if (it) out.push(it);
     }
   }
@@ -579,8 +661,11 @@ function voteTalk(ep, camp, t, next) {
       const facts = base(who, { cast: shape, other: !!other, group: !!g, sank: ch?.sank === boot, sankT: ch?.sank === boot, unanimous: voters.length === ballots.filter(v => v.voter !== boot).length,
         votes: voters.length >= 5 ? 'many' : voters.length === tribal.length - 1 ? 'all' : 'some' });
       const reason = pitch ? `${leader} organised it${other ? `, moving off ${other}` : ''}.` : `${leader} is running it.`;
-      const it = item('plan', 'story.vote.plan', why, who, data, facts, 'secret', 'scramble', ['The Plan', 'gold'],
-        [`The plan is ${boot}: ${WHY_WORDS[why]}.`, reason, `${numberWord(voters.length)} votes: ${voters.join(', ')}.`]);
+      const whyLine = [`The plan is ${boot}: ${WHY_WORDS[why]}.`, reason, `${numberWord(voters.length)} votes: ${voters.join(', ')}.`];
+      // the strategy talk, built beat by beat from what is true tonight (planTalk); the old
+      // single-entry scene only when a beat pool has nothing for this cast
+      const it = planTalk(ep, camp, t, who, shape, facts, next, whyLine)
+        || item('plan', 'story.vote.plan', why, who, data, facts, 'secret', 'scramble', ['The Plan', 'gold'], whyLine);
       if (it) out.push(it);
     }
   }
@@ -611,7 +696,7 @@ function voteTalk(ep, camp, t, next) {
     for (const al of [t.bloc, ...(t.rivals || []).slice(0, 2)].filter(Boolean)) {
       const sc = aired(al);
       if (!sc) continue;
-      const pool = (al.members || []).filter(m => tribal.includes(m) && m !== al.target && m !== boot && unsure(al).has(m) && sc.players.includes(m));
+      const pool = (al.members || []).filter(m => tribal.includes(m) && m !== al.target && m !== boot && unsure(al).has(m) && sc.players.includes(m) && m !== sc.scene?.who?.a);
       for (const m of pool) cand.push({ al, m, breaks: !!ballotOf(m) && ballotOf(m) !== al.target });
     }
     cand.sort((p, q) => (q.breaks ? 1 : 0) - (p.breaks ? 1 : 0) || p.m.localeCompare(q.m));

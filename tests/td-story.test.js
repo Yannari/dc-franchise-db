@@ -20,6 +20,7 @@ const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: '
   threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder', other: 'other', pitcher: 'pitcher', home: 'home', job: 'job', lot: 'lot', thing: 'thing', others: 'others', shaky: 'shaky', cover: 'cover', found: 'found', alt: 'alt', teller: 'told', warnedAbout: 'fromTarget', imm: 'imm', lastBoot: 'lastBoot', real: 'real', blame: 'blame' };
 // a pool's guarantees: names its moment always carries
 const GUARANTEED = [
+  [/^thr\.(rescue|wronged|rivals)\./, ['chal']],
   [/^crash\.callout\.part$/, ['real']],
   [/^booth2\.(lead|with)\.coming$/, ['target', 'mark']],
   [/^booth2\.(lead|with)\.pair$/, ['target', 'partner']],

@@ -722,7 +722,7 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   Object.assign(facts, { sparkSeen, told: !!tip, tally: count, alt: !!alt, fromTarget: !!fromTarget, sparkKind: sparkSeen ? em.spark.kind : 'none' });
   // the moment it started (causeOf), said to the camera at the end of the plan
   // only a moment that aired: the morning's must have made it on screen; the afternoon's airs after this (airTdEpisode)
-  const causeAired = c => { const ev = eventsOf(ep, camp, c.phase)[c.i]; return c.phase === 'pre' ? ev?.aired === true : ev?.aired == null || ev?.aired === true; };
+  const causeAired = c => { if (c.aired) return true; const ev = eventsOf(ep, camp, c.phase)[c.i]; return c.phase === 'pre' ? ev?.aired === true : ev?.aired == null || ev?.aired === true; };
   const cause = (em.causes || []).find(c => c.by === a && c.of === boot && causeAired(c)) || null;
   const recall = lines => {
     if (!cause || lines.some(l => l.recall) || (em.recalled ||= new Set()).has(a + '|' + boot)) return;
@@ -1005,12 +1005,26 @@ function voteTalk(ep, camp, t, next) {
       const why = [`${boot} thinks it's ${mine} tonight.`, `${pronouns(boot).Sub} ${pronouns(boot).sub === 'they' ? "haven't" : "hasn't"} heard ${pronouns(boot).posAdj} own name.`];
       const two = liar ? item('target', 'vt2', 'safe', { a: boot, b: liar }, { wrote: mine }, base({ a: boot, b: liar }, {}), 'aside', 'before-tribal', ['Feels Safe', 'blue'],
         [...why, `${liar} is writing ${boot}'s name.`]) : null;
-      const it = two || item('target', 'story.vote.target', 'safe', { a: boot }, { wrote: mine }, base({ a: boot }, { why: ballotWhy(ballots.find(v => v.voter === boot), ep) }), 'confessional', 'before-tribal', ['Feels Safe', 'blue'], why);
+      // nobody close is lying to them: they talk it over with a friend who isn't writing their name and
+      // doesn't know either (the user: one-line scenes that tell nothing)
+      const pal = !two ? closest(boot, tribal.filter(x => x !== boot && ballotOf(x) !== boot && !voters.includes(x) && getBond(boot, x) >= 1)) : null;
+      const sure = pal ? item('target', 'vt2', 'sure', { a: boot, b: pal }, { wrote: mine, ...(ballotOf(pal) && ballotOf(pal) !== mine ? { other: ballotOf(pal) } : {}) },
+        base({ a: boot, b: pal }, { bWrote: ballotOf(pal) === mine, other: !!(ballotOf(pal) && ballotOf(pal) !== mine) }), 'aside', 'before-tribal', ['Feels Safe', 'blue'], [...why, `${pal} isn't writing ${boot}'s name, and doesn't know either.`]) : null;
+      const it = two || sure || item('target', 'story.vote.target', 'safe', { a: boot }, { wrote: mine }, base({ a: boot }, { why: ballotWhy(ballots.find(v => v.voter === boot), ep) }), 'confessional', 'before-tribal', ['Feels Safe', 'blue'], why);
       if (it) out.push(it);
     }
   }
   return out;
 }
+
+const THREAD_BADGE = { grievance: ['Unfinished Business', 'red'], debt: ['A Debt', 'teal'], rescue: ['A Debt', 'teal'], wronged: ['Unfinished Business', 'red'], rivals: ['Rivals', 'red'] };
+const THREAD_WHY = {
+  grievance: t => `${t.b} wrote ${t.a}'s name at episode ${t.ep}'s vote.`,
+  debt: t => `${t.b} ${t.how === 'idol' ? 'played an idol for' : 'warned'} ${t.a} at episode ${t.ep}.`,
+  rescue: t => `${t.b} saved ${t.a} at ${t.chal}.`,
+  wronged: t => `${t.b} ${t.how === 'betray' ? 'left' : 'sabotaged'} ${t.a} at ${t.chal}.`,
+  rivals: t => `${t.a} and ${t.b} went at each other at ${t.chal}.`,
+};
 
 export function airTdEpisode(ep) {
   if (!ep || ep.campStory || !ep.campEvents || !Object.keys(ep.campEvents).length) return;
@@ -1032,6 +1046,13 @@ export function airTdEpisode(ep) {
     if (talk) talk.em = { spark: null, warned: [], aired: [], causes: [] };
     if (talk && (seasonConfig?.tdEdit || 'full') !== 'off') talk.cause = causeOf(ep, camp, talk);
     if (talk?.cause?.length) talk.em.causes = talk.cause;
+    // ...or an old wound between them (threads.js): the plan's leader has been carrying it since
+    if (talk && !talk.cause?.length) {
+      const old = ((gs.tdStory ||= {}).threads || []).find(t => !t.done && t.ep < ep.num && t.a === talk.leader && t.b === talk.boot && ['wronged', 'rivals', 'grievance'].includes(t.kind))
+        || ((gs.tdStory ||= {}).threads || []).find(t => !t.done && t.ep < ep.num && t.kind === 'rivals' && t.a === talk.boot && t.b === talk.leader);
+      if (old) talk.em.causes = [{ by: talk.leader, of: talk.boot, kind: 'history', aired: true,
+        moment: old.kind === 'grievance' ? 'the night {target} wrote my name' : old.kind === 'wronged' ? `what {target} did to me at ${old.chal}` : `everything that happened at ${old.chal}` }];
+    }
     if (talk) for (const ev of eventsOf(ep, camp, 'post')) if (ev && ev.aired == null && /^votePitch/.test(ev.type || '') && talk.covers.has(ev.players?.[0])) ev.aired = 'covered';
     for (const phase of ['pre', 'post']) {
       const events = eventsOf(ep, camp, phase);
@@ -1072,8 +1093,11 @@ export function airTdEpisode(ep) {
         const tw = (ep.twists || []).find(x => TWIST_CATALOG.some(c => c.id === (x.catalogId || x.type) && c.chalStyle));
         const chal = (tw && TWIST_CATALOG.find(c => c.id === (tw.catalogId || tw.type))?.name) || ep.challengeLabel || 'the challenge';
         const seenPair = new Set();
+        // what happened between tonight's plan leader and its target at the challenge comes first: it
+        // is where the vote starts (the user: "the twist already has the events, you just don't use them")
+        const planPair = m => talk && m.players.length >= 2 && m.players.includes(talk.leader) && m.players.includes(talk.boot);
         const picks = chalMoments(ep).filter(m => m.players.every(p => members.includes(p)))
-          .sort((x, y) => (W[y.kind] + (y.players.length >= 2 ? 1 : 0)) - (W[x.kind] + (x.players.length >= 2 ? 1 : 0)));
+          .sort((x, y) => (W[y.kind] + (y.players.length >= 2 ? 1 : 0) + (planPair(y) ? 10 : 0)) - (W[x.kind] + (x.players.length >= 2 ? 1 : 0) + (planPair(x) ? 10 : 0)));
         let took = 0;
         for (const m of picks) {
           if (took >= (members.length >= 8 ? 3 : 2)) break;
@@ -1090,8 +1114,17 @@ export function airTdEpisode(ep) {
           const w = writeStory(`chm.${m.kind}`, 'any', who, { chal }, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('afternoon'), unique: 'soft' });
           if (!w) continue;
           seenPair.add(key); seenPair.add(m.kind + a); took++;
+          // tonight's plan calls back to it (planTalk's recall): what the target did, or the fight between them
+          if (planPair(m) && talk.em) {
+            const did = m.players[0];
+            const CK = { sabotage: 'caught', betray: 'caught', clash: 'fight', taunt: 'fight', quit: 'blame', panic: 'blame', wipeout: 'blame' }[m.kind];
+            const ok = CK && (CK !== 'caught' || did === talk.boot) && (CK !== 'blame' || did === talk.boot);
+            const MOM = { caught: `what {target} pulled at ${chal}`, fight: `that fight at ${chal}`, blame: `the way {target} let us down at ${chal}` };
+            if (ok && !(talk.em.causes || []).some(c => c.by === talk.leader && c.of === talk.boot))
+              (talk.em.causes ||= []).push({ by: talk.leader, of: talk.boot, kind: CK, moment: MOM[CK], phase: 'post', aired: true, chm: true });
+          }
           list.push({ at: 0.25 + took * 0.01, item: { story: true, kind: `chm.${m.kind}`, storyType: 'challenge', step: m.kind, players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
-            scene: { kind: 'chm', who, data: { chal }, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: m.badge, badgeClass: '', why: [`At ${chal}: ${m.badge} (${m.players.join(', ')}).`] } });
+            scene: { kind: 'chm', who, data: { chal, two: m.players.length >= 2 }, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: m.badge, badgeClass: '', why: [`At ${chal}: ${m.badge} (${m.players.join(', ')}).`] } });
         }
       }
       // a thread carried from an earlier episode (threads.js): one scene when one is due
@@ -1101,12 +1134,12 @@ export function airTdEpisode(ep) {
           const who = { a: td.t.a, b: td.t.b };
           const prevBoot = (gs.episodeHistory || []).find(h => h.num === td.t.ep)?.eliminated || null;
           const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), pair: true, how: td.t.how || 'vote', lastBoot: !!prevBoot, ago: ep.num - td.t.ep <= 1 ? 'recent' : 'while' };
-          const w = writeStory(`thr.${td.t.kind}`, td.stage, who, prevBoot ? { lastBoot: prevBoot } : {}, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('morning'), unique: 'soft' });
+          const w = writeStory(`thr.${td.t.kind}`, td.stage, who, { ...(prevBoot ? { lastBoot: prevBoot } : {}), ...(td.t.chal ? { chal: td.t.chal } : {}) }, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('morning'), unique: 'soft' });
           if (w) {
             td.commit();
             list.push({ at: 0.45, item: { story: true, kind: `thr.${td.t.kind}.${td.stage}`, storyType: 'thread', step: td.stage, players: [td.t.a, td.t.b], lines: w.lines, text: w.text, lineId: w.lineId,
-              scene: { kind: 'thr', who, data: {}, spot: w.spot ? { ...w.spot, window: 'morning' } : null }, badgeText: td.t.kind === 'grievance' ? 'Unfinished Business' : 'A Debt', badgeClass: td.t.kind === 'grievance' ? 'red' : 'teal',
-              why: [td.t.kind === 'grievance' ? `${td.t.b} wrote ${td.t.a}'s name at episode ${td.t.ep}'s vote.` : `${td.t.b} ${td.t.how === 'idol' ? 'played an idol for' : 'warned'} ${td.t.a} at episode ${td.t.ep}.`] } });
+              scene: { kind: 'thr', who, data: {}, spot: w.spot ? { ...w.spot, window: 'morning' } : null }, badgeText: THREAD_BADGE[td.t.kind][0], badgeClass: THREAD_BADGE[td.t.kind][1],
+              why: [THREAD_WHY[td.t.kind](td.t)] } });
           }
         }
       }
@@ -1415,7 +1448,8 @@ export function airTdEpisode(ep) {
   // last episode, as the host recaps it before this one (previously.js)
   if (ep.tdPreviously === undefined) ep.tdPreviously = writePreviously(ep);
   // what this episode leaves between people, for the episodes after it (threads.js)
-  recordThreads(ep, Object.values(story).flatMap(c => [...(c.pre || []), ...(c.post || [])]).filter(it => it?.kind === 'arc.warn.told').map(it => ({ teller: it.scene?.who?.a, knower: it.scene?.who?.b })));
+  { const all = Object.values(story).flatMap(c => [...(c.pre || []), ...(c.post || [])]);
+    recordThreads(ep, all.filter(it => it?.kind === 'arc.warn.told').map(it => ({ teller: it.scene?.who?.a, knower: it.scene?.who?.b })), all.filter(it => it?.storyType === 'challenge')); }
   // the Exile Duel's two nights: the one sent to Exile, and the face-off (twist.js writeExile)
   if (ep.exileStory === undefined) ep.exileStory = writeExile(ep);
   // First Impressions and the auction play as dialogue on their own stepped screens (twist.js)

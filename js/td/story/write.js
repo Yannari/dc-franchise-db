@@ -100,7 +100,13 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     const top = voiceOf(who.a).slice(0, 3);
     // (a scene whose lines for a are moves is in a's voice by construction: phrase.js says them)
     const mine = fits.filter(e => [].concat(e.when?.voice || []).some(t => top.includes(t)) || (e.turns || []).some(t => t.by === 'a' && t.move));
-    if (mine.length) fits.splice(0, fits.length, ...mine);
+    // ...and a whole conversation over a sketch (the user, 2026-10-08: "I'm tired of 4/5 line events that
+    // tell nothing"): when a pool has a version of six spoken lines or more for these people, a short one
+    // only airs when no long one fits. A pool of one-liners (the booth, a recall) is left as it is.
+    const said = e => (e.turns || []).filter(t => t.by && who[t.by] && (t.say || t.conf || t.move || t.v)).length;
+    const longOf = list => list.filter(e => said(e) >= 6);
+    const pool = longOf(mine).length ? longOf(mine) : longOf(fits).length ? longOf(fits) : mine.length ? mine : fits;
+    fits.splice(0, fits.length, ...pool);
     return fits;
   };
   // A scene cast with three or four people plays a scene written for all of them: the extra people

@@ -236,15 +236,28 @@ export function placeScene(key, focus, bg = [], { sit = false, host = null } = {
     if (h) out[host] = { u: h.u, v: h.v, s: h.s, host: true };
   }
   if (focus.length > 3) {
-    // a group: everyone in a row across the floor, staggered in two depths, each on the nearest
-    // floor mark's depth so nobody floats
-    const n = focus.length, pool = front.length ? front : stands;
-    focus.forEach((name, i) => {
-      const u = .14 + (.72 * i) / (n - 1);
-      const near = pool.length ? pool.reduce((a, b) => (Math.abs(b.u - u) < Math.abs(a.u - u) ? b : a)) : null;
-      const v = Math.min(near ? near.v : .68, .72) - (i % 2 ? .05 : 0);   // never down behind the dialogue panel
-      out[name] = { u, v, s: (near ? near.s : .2) * (i % 2 ? .9 : 1), sit: false };
-    });
+    // a group (the user, 2026-10-08: "size them so we see everyone, no overlap, and if they have to
+    // sit on a stump they sit on it"): on the set's seats when there are enough of them, otherwise in
+    // one or two rows across the floor; each person sized to the gap they have, never wider than it
+    const n = focus.length, W = .5625;   // a token's width is its height x 9/16 of the frame
+    const seatsApart = [];
+    for (const m of [...seats].sort((a, b) => score(b) - score(a))) if (seatsApart.every(x => Math.abs(x.u - m.u) > .045 || Math.abs(x.v - m.v) > .06)) seatsApart.push(m);
+    if (seatsApart.length >= n) {
+      const chosen = seatsApart.slice(0, n).sort((a, b) => a.u - b.u);
+      const gap = Math.min(...chosen.slice(1).map((m, i) => (Math.abs(m.v - chosen[i].v) > .06 ? 1 : m.u - chosen[i].u)), .2);
+      focus.forEach((name, i) => { const m = chosen[i]; out[name] = { u: m.u, v: m.v, s: m.s, sit: true, h: Math.max(8, Math.min(m.s * 95, 24, (gap * 1.05) / W * 100)) }; });
+    } else {
+      const pool = front.length ? front : stands;
+      // spread evenly across the floor; more than seven alternate a front and a back row
+      const rows = n > 7 ? 2 : 1, du = .8 / Math.max(n - 1, 1);
+      focus.forEach((name, i) => {
+        const row = rows === 2 ? i % 2 : 0, u = n > 1 ? .1 + du * i : .5;
+        const near = pool.length ? pool.reduce((a, b) => (Math.abs(b.u - u) < Math.abs(a.u - u) ? b : a)) : null;
+        const v = Math.min(near ? near.v : .68, .72) - (row ? .06 : 0);   // never down behind the dialogue panel
+        const h = Math.max(8, Math.min((near ? near.s : .2) * 125, 30, (du * (rows === 2 ? 1.6 : 1)) / W * 100) * (row ? .9 : 1));
+        out[name] = { u, v, s: (near ? near.s : .2), h, sit: false };
+      });
+    }
   } else for (const n of focus) {
     const m = front.find(c => !used.includes(c) && used.every(u => apart(c, u)) && (!out[host] || apart(c, out[host])));
     if (m) { used.push(m); out[n] = { u: m.u, v: m.v, s: m.s, sit: sit && seats.includes(m) }; }
@@ -263,6 +276,44 @@ export function placeScene(key, focus, bg = [], { sit = false, host = null } = {
     if (m) { used.push(m); out[b] = { u: m.u, v: m.v, s: m.s, sit: false, bg: true }; }
   }
   return out;
+}
+
+// A name talked about as not there ("Eureka isn't even here", "behind her back", "while he was gone"),
+// who never speaks in the scene: off the stage. And a scene whose stage directions put a group there.
+const reEsc = x => String(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function awayIn(lines, said) {
+  const names = [...new Set(lines.flatMap(l => String(l.text || '').match(/\b[A-Z][a-z]+\b/g) || []))].filter(n => !said.includes(n));
+  return names.filter(n => { const e = reEsc(n); return lines.some(l => new RegExp(`\\b${e}\\b('s)? (isn't|is not|wasn't|was not|ain't) (even )?(here|there|around)|behind ${e}'s back|while ${e} (was|is) (gone|away|off)|${e} (left|walked off|is off|went off) `, 'i').test(l.text || '')); });
+}
+const crowdIn = lines => lines.some(l => l.kind === 'beat' && /\b(the group|everyone|everybody|the whole (team|camp|tribe)|around the fire|the others|the circle)\b/i.test(l.text || ''));
+
+// Teams gathered apart (the user, 2026-10-08: "two circles with their colour flag"): each team in a
+// ring around its own flag, side by side across the floor, the host between them. Returns the places
+// and the flags for the scene (scene.flags, drawn by stage.js under the people).
+export function placeTeams(key, teams, host, colorOf = null) {
+  const stands = marksOf(key, 'stand').filter(m => m.u > .08 && m.u < .92 && m.v > .36 && m.v < .74);
+  const k = teams.length, out = {}, flags = [];
+  const PAL = ['#e8433f', '#3b7dd8', '#2fbf71', '#f2c83a', '#9b59d0'];
+  teams.forEach((t, ti) => {
+    const cu = .08 + (.84 * (ti + .5)) / k;
+    const near = stands.length ? stands.reduce((a, b) => (Math.abs(b.u - cu) < Math.abs(a.u - cu) ? b : a)) : null;
+    const vc = Math.min(near ? near.v : .68, .7);
+    const m = t.members.length, rx = Math.min(.14, .38 / k), ry = .055;
+    const h = Math.max(8, Math.min((near ? near.s : .2) * 110, 24, (((2 * rx) / Math.max(Math.ceil(m / 2), 1)) * 1.35) / .5625 * 100));
+    t.members.forEach((n, i) => {
+      // around the ring from the back left, the front row lowest (nearest the camera)
+      const a = Math.PI + (2 * Math.PI * (i + .5)) / m;
+      const v = Math.min(vc - ry + ry * Math.sin(a), .72);
+      out[n] = { u: cu + rx * Math.cos(a), v, s: near ? near.s : .2, h: h * (.9 + .1 * (Math.sin(a) + 1) / 2), sit: false };
+    });
+    let color = PAL[ti % PAL.length]; try { color = (colorOf && colorOf(t.name)) || color; } catch { /* default */ }
+    flags.push({ u: cu, v: vc - ry - .01, name: t.name, color, h: h * 1.5 });
+  });
+  if (host) {
+    const hm = marksOf(key, 'host')[0];
+    out[host] = hm ? { u: hm.u, v: hm.v, s: hm.s, host: true } : { u: .5, v: .7, s: .2, host: true, h: 20 };
+  }
+  return { places: out, flags };
 }
 
 // A whole room seated (the ceremony): every seat in the band, front row first, kept apart.
@@ -372,8 +423,13 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
     if (Array.isArray(ev.lines) && ev.lines.length) {
       // everyone who speaks is on stage, always (a speaker without a place is a person who blinks out)
       const said = [...new Set(ev.lines.filter(l => l.kind === 'say').map(l => l.by).filter(Boolean))];
-      const who = Object.values(ev.scene?.who || {}).filter(Boolean);
-      const focus = [...said, ...who.filter(n => !said.includes(n))].slice(0, Math.max(4, said.length));
+      // who is really there (the user, 2026-10-08: "why is she even here... where is everyone you talk
+      // about"): somebody the scene talks about as away is not put on stage, and a scene set among
+      // the group brings the group on
+      const absent = awayIn(ev.lines, said);
+      const who = Object.values(ev.scene?.who || {}).filter(n => n && !absent.includes(n));
+      let focus = [...said, ...who.filter(n => !said.includes(n))].slice(0, Math.max(4, said.length));
+      if (crowdIn(ev.lines)) focus = [...focus, ...(members || []).filter(n => !focus.includes(n) && !absent.includes(n))].slice(0, 8);
       const onlyConf = ev.lines.every(l => l.kind === 'conf' || l.kind === 'beat') && !said.length;
       if (!onlyConf) open(spot === 'confessional' ? V.public : spot, windowId, focus.length ? focus : (ev.players || []).slice(0, 3), { why: badge });
       else if (!cur) open(V.public, windowId, (ev.players || []).slice(0, 3), { why: badge });
@@ -704,9 +760,9 @@ export function tdTribalScreen(ep, o = {}) {
   // the Jumbo Jet's hatch (Tdwtelimination): close on the three of them, the open door on the left
   const hatch = venue === 'world-tour' && plateKey(venue, 'drop', 'night');
   if (hatch) {
-    exitPlaces[elim] = { u: .42, v: .97, s: .35, h: 46, close: true };
-    exitPlaces[host] = { u: .76, v: .97, s: .35, h: 46, host: true, close: true };
-    if (exitWith) exitPlaces[exitWith] = { u: .58, v: .97, s: .33, h: 44, close: true };
+    exitPlaces[elim] = { u: .36, v: .97, s: .35, h: 42, close: true };
+    exitPlaces[host] = { u: .84, v: .97, s: .35, h: 42, host: true, close: true };
+    if (exitWith) exitPlaces[exitWith] = { u: .6, v: .97, s: .33, h: 40, close: true };
   }
   steps.push({ k: 'scene', spot: 'exit', tod: 'night', plate: exitPlate, place: V.exitPlace, time: '9:10 PM', card: true, focus: [elim, exitWith].filter(Boolean), bg: [], places: exitPlaces, exit: elim, exitWith });
   // the film lot: the Lame-o-sine pulls up at the end of the red carpet (the user's frames), then the

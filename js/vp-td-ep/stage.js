@@ -158,7 +158,7 @@ export function worldHtml(screen, L) {
   h += `</div>${night && !indoor && !gl ? '<div class="tdx-wash"></div>' : ''}`;
   // the sky behind a living plate takes the hour and the weather: stars and a moon, storm cloud, dusk
   const moon = grade === 'night' ? '<i class="tdx-moon"></i>' : '';
-  return h.replace('<!--sky-->', gl ? `<div class="tdx-sky g-${grade}">${moon}${sky}</div>` : '');
+  return h.replace('<!--sky-->', gl ? `<div class="tdx-sky g-${grade}">${moon}${sky}</div>` : '') + flagsHtml(L);
 }
 // Each venue's climate: the weathers its days are drawn from, the commoner ones listed more than once.
 // A northern lake camp gets sun, wind, cloud, rain, a storm and morning fog; a tropical island is hot,
@@ -229,6 +229,10 @@ const BUSY_ICON = {
 export const BUSY_LABEL = { fish: 'fishing', read: 'reading', eat: 'eating', stretch: 'warming up', nap: 'napping', sweep: 'sweeping up', whittle: 'whittling', fetch: 'fetching water' };
 
 /** Who is on stage at step N, and how: a list of tokens. Never loses a person mid-scene. */
+/** A scene's team flags (placeTeams): a pole, the team's colour waving, the name on a plate. */
+export function flagsHtml(L) {
+  return (L.scene?.flags || []).map(f => `<div class="tdx-flag" style="left:${(f.u * 100).toFixed(2)}%;top:${(f.v * 100).toFixed(2)}%;height:${(f.h || 24).toFixed(1)}%;--fc:${esc(f.color || '#e8433f')}"><svg viewBox="0 0 60 100" preserveAspectRatio="xMidYMax meet"><rect x="8" y="4" width="5" height="96" rx="2" fill="#6b4a2a" stroke="#2a1a0a" stroke-width="1.5"/><circle cx="10.5" cy="5" r="4" fill="#f2c83a" stroke="#2a1a0a" stroke-width="1.5"/><path class="cloth" d="M13 10 Q30 4 44 11 T58 12 L58 40 Q44 34 30 40 T13 38 Z" fill="var(--fc)" stroke="#111" stroke-width="2"/></svg><b>${esc(f.name)}</b></div>`).join('');
+}
 export function castAt(screen, L) {
   const s = L.step || {};
   // the confessional: the camper sits low in the frame, the text bar in front of them

@@ -18,7 +18,7 @@ import { matches } from '../script/pick.js';
 import { stableRng } from '../script/rng.js';
 import { pStats } from '../players.js';
 import { players as _players } from '../core.js';
-import { placeScene, plateKey, placeName, venueOf, VENUES, cleanText, campSlot, teamSpot } from './steps.js';
+import { placeScene, placeTeams, plateKey, placeName, venueOf, VENUES, cleanText, campSlot, teamSpot } from './steps.js';
 
 export const ANNOUNCE = {
   'tribe-swap': `Drop your buffs. We're switching tribes.`,
@@ -151,9 +151,13 @@ export function tdTwistBlocksScreen(ep, blocks, o = {}, { post = false } = {}) {
       });
     }
     const spot = post ? 'ceremony' : V.public, tod = post ? 'night' : 'day';
-    const { key, places } = gather(venue, spot, tod, named, host);
+    let { key, places } = gather(venue, spot, tod, named, host);
+    let flags = null;
+    // a crowd from more than one tribe stands with its own tribe, around its flag
+    const byTribe = (ep.tribesAtStart?.length ? ep.tribesAtStart : ep.gsSnapshot?.tribes || []).map(t => ({ name: t.name, members: (t.members || []).filter(n => named.includes(n)) })).filter(t => t.members.length);
+    if (!post && named.length > 3 && byTribe.length >= 2 && byTribe.length <= 4) { const c = placeTeams(key, byTribe, host, o.colorOf); places = c.places; flags = c.flags; }
     steps.push({ k: 'scene', spot, tod, plate: key, place: post ? V.ceremony : placeName(V.public),
-      time: post ? '9:00 PM' : tent ? '11:00 AM' : '10:00 AM', card: bi === 0 && !tent, focus: [], bg: [], places, host });
+      time: post ? '9:00 PM' : tent ? '11:00 AM' : '10:00 AM', card: bi === 0 && !tent, focus: [], bg: [], places, host, ...(flags ? { flags } : {}) });
     if (!post && !tent) steps.push({ k: 'say', by: host, host: true, text: ANNOUNCE[blk.type] || `Listen up, everybody. Things are about to change.` });
     if (!tent) steps.push({ k: 'title', kicker: post ? 'After the vote' : 'Twist', name: blk.label || 'Twist', faces: named.slice(0, 6) });
     for (const s of blk.scenes) {
@@ -337,8 +341,9 @@ export function tdFirstImpressionsScreen(ep, o = {}) {
   const everyone = [...new Set(fi.flatMap(r => [...r.booth.map(b => b.voter), r.boot]))];
   const teams = fi.map(r => r.tribe);
   // the rules, to everyone, before the teams split up
-  const all = gather(venue, V.public, 'day', everyone, host);
-  const rules = [{ k: 'scene', spot: V.public, tod: 'day', plate: all.key, place: placeName(V.public), time: 'Day 1, 2:00 PM', card: true, focus: [], bg: [], places: all.places, host }];
+  const allKey = plateKey(venue, V.public, 'day');
+  const circles = placeTeams(allKey, fi.map(r => ({ name: r.tribe, members: [...new Set([...r.booth.map(b => b.voter), r.boot])] })), host, o.colorOf);
+  const rules = [{ k: 'scene', spot: V.public, tod: 'day', plate: allKey, place: placeName(V.public), time: 'Day 1, 2:00 PM', card: true, focus: [], bg: [], places: circles.places, flags: circles.flags, host }];
   rules.push({ k: 'say', by: host, host: true, text: `Before anybody gets comfortable: nobody gets a free night here.` });
   rules.push({ k: 'title', kicker: 'Twist', name: 'First Impressions', faces: everyone.slice(0, 8) });
   rules.push({ k: 'say', by: host, host: true, text: `Tonight, before a single challenge, ${teams.length === 2 ? `${teams[0]} and ${teams[1]}` : 'every team'} each vote somebody out.` });

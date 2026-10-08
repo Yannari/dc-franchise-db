@@ -396,6 +396,11 @@ export const TDX_CSS = `
 .tdx .tdx-intel{position:absolute;top:0;right:0;bottom:0;width:min(34%,340px);background:var(--glass2);z-index:16;transform:translateX(100%);transition:transform .35s cubic-bezier(.3,.8,.3,1);color:var(--ht);padding:14px 14px 0;display:flex;flex-direction:column;border-left:2px solid var(--or);cursor:default}
 .tdx .tdx-stage.intel-open .tdx-intel{transform:none}
 .tdx .tdx-ihead{position:relative}
+.tdx .tdx-flag{position:absolute;transform:translate(-18%,-100%);aspect-ratio:.6;pointer-events:none;z-index:0}
+.tdx .tdx-flag svg{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 .3cqw .4cqw rgba(0,0,0,.35))}
+.tdx .tdx-flag .cloth{transform-origin:13px 24px;animation:tdxFlagWave 1.6s ease-in-out infinite alternate}
+@keyframes tdxFlagWave{from{transform:skewY(-4deg) scaleX(.94)}to{transform:skewY(5deg) scaleX(1.04)}}
+.tdx .tdx-flag b{position:absolute;left:18%;top:101%;transform:translateX(-50%);white-space:nowrap;padding:.15cqw .7cqw;border-radius:.4cqw;background:var(--fc);color:#fff;font:400 1.1cqw/1.2 'Lilita One';letter-spacing:.04em;text-shadow:0 1px 0 rgba(0,0,0,.5);border:2px solid #111}
 .tdx .tdx-anvil{position:absolute;width:9%;transform:translate(-50%,-100%);animation:tdxAnvil .55s cubic-bezier(.6,0,1,.6) both;z-index:6;pointer-events:none}
 .tdx .tdx-anvil svg{width:100%;display:block}
 @keyframes tdxAnvil{from{margin-top:-60cqw}to{margin-top:0}}

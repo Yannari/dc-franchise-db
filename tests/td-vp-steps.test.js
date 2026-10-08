@@ -80,11 +80,16 @@ describe('TD stepped viewer on played seasons, every venue', () => {
   it('people in a conversation never stand on top of each other', () => {
     const clash = [];
     for (const [setting, eps] of Object.entries(seasons)) for (const ep of eps) for (const scr of screensOf(ep, setting)) {
-      for (const sc of scr.steps.filter(x => x.k === 'scene' && !x.ceremony)) {
-        const f = (sc.focus || []).map(n => sc.places[n]).filter(Boolean);
-        for (let i = 0; i < f.length; i++) for (let j = i + 1; j < f.length; j++)
-          if (Math.abs(f[i].u - f[j].u) < .09 && Math.abs(f[i].v - f[j].v) < .12) clash.push(`${setting} ep${ep.num} ${scr.id} ${sc.place}: ${sc.focus.join('/')}`);
-      }
+      // measured on the people as drawn (a crowd is sized to fit, 2026-10-08): two of them clash when
+      // their portraits cover most of each other, not when they merely stand near
+      scr.steps.forEach((sc, idx) => {
+        if (sc.k !== 'scene' || sc.ceremony) return;
+        const toks = castAt(scr, ledgerAt(scr, idx)).filter(t => (sc.focus || []).includes(t.n));
+        for (let i = 0; i < toks.length; i++) for (let j = i + 1; j < toks.length; j++) {
+          const a = toks[i], b = toks[j], w = (a.h + b.h) / 2 * .5625 / 100, h = (a.h + b.h) / 2 / 100;
+          if (Math.abs(a.u - b.u) < w * .7 && Math.abs(a.v - b.v) < h * .5) clash.push(`${setting} ep${ep.num} ${scr.id} ${sc.place}: ${a.n}/${b.n}`);
+        }
+      });
     }
     expect(clash.slice(0, 8), `${clash.length} overlaps`).toEqual([]);
   });

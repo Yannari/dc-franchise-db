@@ -112,12 +112,29 @@ export default {
     { id: 'npm.k2', turns: [{ by: 'a', say: "Everybody's on it. Literally everybody except {target}." }, { by: 'b', say: "That's going to be a quiet tribal.", v: { dry: "Poor {target}. That's going to be a long walk." } }] },
   ],
   'vp.close.duo': [
-    { id: 'npm.x1', turns: [{ by: 'a', conf: "{b} said yes without thinking twice, and I like that. I'm going to remember who said yes tonight." }] },
-    { id: 'npm.x2', turns: [{ by: 'b', conf: "{a} came to me first. Not the others, me. That tells me where I stand, at least for now." }] },
-    { id: 'npm.x3', turns: [{ by: 'b', say: "Do you ever get tired of this?" }, { by: 'a', say: "Every day. Then I remember there's money at the end." }] },
+    { id: 'npm.x1', when: { shaky: true }, turns: [
+      { by: 'b', say: "What about {shaky}? {shaky} was weird with me this morning." },
+      { by: 'a', say: "I'll handle {shaky}. You just make sure you don't look nervous at dinner." },
+    ] },
+    { id: 'npm.x2', when: { cover: true }, turns: [
+      { by: 'a', say: "Go and tell a couple of people you're thinking about {cover}. Not too hard, just enough." },
+      { by: 'b', say: "So everybody thinks it's {cover}." },
+      { by: 'a', say: "So {target} thinks it's {cover}." },
+    ] },
+    { id: 'npm.x3', turns: [
+      { by: 'b', say: "And after tonight? What happens with us?" },
+      { by: 'a', say: "After tonight we're two people who did this together. That counts for something." },
+      { by: 'b', conf: "{a} talks about us like we're a team, and maybe we are. But I noticed {a} didn't promise me anything." },
+    ] },
   ],
   'vp.close.group': [
-    { id: 'npm.xg1', turns: [{ by: 'd', opt: true, say: "Do we need a group name?" }, { by: 'a', say: "No." }, { by: 'b', conf: "Every group here thinks it's the one running the game. I guess tonight we find out if ours actually is." }] },
-    { id: 'npm.xg2', turns: [{ by: 'c', conf: "{a} has all the answers tonight. I'm just going to make sure {a} doesn't have all the power next week too." }] },
+    { id: 'npm.xg1', when: { cover: true }, turns: [
+      { by: 'd', opt: true, say: "What if it's close and somebody plays an idol?" },
+      { by: 'a', say: "Then we've got {cover} as the backup, and we stick together on that." },
+      { by: 'b', conf: "{a} has a plan for everything tonight, which is great, but it means everybody here knows {a} is running it, including {target}'s friends." },
+    ] },
+    { id: 'npm.xg2', when: { shaky: true }, turns: [
+      { by: 'c', conf: "{a} keeps saying it's {votes} votes, but I've seen {shaky} talking to the other side twice today. I'm not saying anything yet, but I'm watching." },
+    ] },
   ],
 };

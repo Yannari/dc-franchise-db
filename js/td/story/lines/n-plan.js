@@ -20,7 +20,7 @@ export default {
   'vp.open.group': [
     { id: 'npl.og1', turns: [{ beat: "{a} rounds up {b}, {c} and the others and walks them away from camp." }, { by: 'a', say: "Okay, everybody close. We don't have long.", v: { bossy: "Circle up. Five minutes, then we split up so nobody notices.", anxious: "Okay, okay, everybody come closer, I don't want anybody hearing this.", loud: "HUDDLE! I mean, huddle, but quietly." } }] },
     { id: 'npl.og2', turns: [{ by: 'c', say: "Why are we all hiding behind the shed?", v: { dry: "Love that we're having our big secret meeting in the most obvious spot here." } }, { by: 'a', say: "Because we're picking a name, and I'd rather the name didn't hear it." }] },
-    { id: 'npl.og3', turns: [{ by: 'a', say: "Is everybody here? Good, then nobody say anything until I'm done.", v: { warm: "Okay, thanks for coming, everybody. I'll be quick, I promise." } }, { by: 'b', say: "That never happens.", v: { goofy: "You've never been done with anything in your life." } }] },
+    { id: 'npl.og3', turns: [{ by: 'a', say: "Is everybody here? Good, then nobody say anything until I'm done.", v: { warm: "Okay, thanks for coming, everybody. I'll be quick, I promise." } }, { by: 'b', say: "Okay, but make it quick, people are going to notice we're gone." }] },
   ],
 
   // ── the case: the name and the real reason ──
@@ -158,7 +158,7 @@ export default {
       { by: 'a', say: "Then I find out who, and they're next." },
     ] },
     { id: 'npl.k6', when: { otherMe: true }, turns: [
-      { by: 'a', say: "And yes, they're coming for me too. They've got {them} on my name, and we've got {votes} on {target}.", v: { tough: "They've got {them} votes on me. We've got {votes} on {target}. Let them try.", anxious: "They've got {them} people on my name. {votes} on {target}. Please let that be enough." } },
+      { by: 'a', say: "And yes, they're coming for me too. They've got {them} on my name, and we've got {votes} on {target}.", v: { tough: "They've got {them} votes on me and we've got {votes} on {target}, so let them try.", anxious: "They've got {them} people on my name, and we've got {votes} on {target}, so please, please let that be enough." } },
       { by: 'b', say: "So if anybody flips, you're gone." },
       { by: 'a', say: "So nobody flips." },
     ] },
@@ -198,19 +198,38 @@ export default {
 
   // ── the button ──
   'vp.close.duo': [
-    { id: 'npl.x1', turns: [{ by: 'b', conf: "{a} has a reason for everything, and that's either really reassuring or really scary. I'll know which one after tonight." }] },
-    { id: 'npl.x2', turns: [{ by: 'a', conf: "{b} is in. I trust {b} about as much as I trust anybody here, which is a lot more than most." }] },
-    { id: 'npl.x3', turns: [{ beat: "{a} and {b} split up and walk back to camp from different directions." }, { by: 'b', conf: "We went back separately so nobody would notice, which, honestly, is probably exactly how people notice." }] },
+    { id: 'npl.x1', when: { shaky: true }, turns: [
+      { by: 'a', say: "The one I'm worried about is {shaky}. Can you sit with {shaky} at dinner and make sure {shaky} is still with us?", v: { bossy: "You're on {shaky}. Stick to {shaky} until we sit down, I don't care how.", anxious: "I'm really worried about {shaky}. Could you maybe check on {shaky}? Casually?" } },
+      { by: 'b', say: "I'll talk to {shaky}. What if {shaky} is wobbling?" },
+      { by: 'a', say: "Then come and get me, and don't make a big deal of it in front of anybody." },
+    ] },
+    { id: 'npl.x2', when: { cover: true }, turns: [
+      { by: 'a', say: "If anybody asks you, we're voting {cover}. Say {cover}, nothing else." },
+      { by: 'b', say: "And if {target} asks me straight out?" },
+      { by: 'a', say: "Especially if {target} asks. Look {target} in the eye and say {cover}.", v: { warm: "I know, it's horrible. Just say {cover} and walk away.", schemer: "Then you smile and say {cover}. You'll be surprised how easy it is." } },
+    ] },
+    { id: 'npl.x3', when: { close: true }, turns: [
+      { by: 'b', conf: "{a} could have gone to anybody with this, and {a} came to me, so I'm doing it. If {a} goes down, I go down with {a}, and I'm okay with that." },
+    ] },
+    { id: 'npl.x4', when: { close: false }, turns: [
+      { by: 'b', conf: "I'm not doing this for {a}. I'm doing it because {target} is a bigger problem for me than {a} is, at least for now." },
+    ] },
   ],
   'vp.close.group': [
-    { id: 'npl.xg1', turns: [
-      { by: 'c', say: "So we're all good? Nobody's going to change their mind halfway through dinner?", v: { goofy: "Can we have a secret handshake? No? Okay, fine." } },
-      { by: 'a', say: "Nobody's changing anything." },
-      { by: 'c', conf: "Four of us all agreeing behind a shed. Either we're the smartest people here, or we're about to find out we're not." },
+    { id: 'npl.xg1', when: { shaky: true }, turns: [
+      { by: 'a', say: "{c}, you go find {shaky} and stay with {shaky} until we leave. {b}, you're with me. Nobody walks back together." },
+      { by: 'c', say: "Why me?", v: { goofy: "Why do I always get the babysitting job?" } },
+      { by: 'a', say: "Because {shaky} likes you, and right now {shaky} is the one who could change their mind." },
     ] },
-    { id: 'npl.xg2', turns: [
-      { beat: "The group breaks up one at a time, a minute apart, as if that fools anybody." },
-      { by: 'b', conf: "{a} ran that meeting like a general, and I'll go along with it tonight, but I'm watching how much {a} likes being in charge." },
+    { id: 'npl.xg2', when: { cover: true }, turns: [
+      { by: 'c', say: "What do we say if {target} asks what's going on?" },
+      { by: 'a', say: "{cover}. Every one of us says {cover}, and we all say it the same way." },
+      { by: 'b', say: "{target} isn't stupid, though." },
+      { by: 'a', say: "No, but {target} wants to believe it isn't {target}. Everybody does." },
+    ] },
+    { id: 'npl.xg3', turns: [
+      { beat: "The group splits up one at a time, a minute apart." },
+      { by: 'c', conf: "That was the first time the {votes} of us actually sat down together and planned something. If it works tonight, we're a real group. If it doesn't, we're just people who got caught behind a shed." },
     ] },
   ],
 

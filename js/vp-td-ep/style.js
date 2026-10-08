@@ -396,6 +396,18 @@ export const TDX_CSS = `
 .tdx .tdx-intel{position:absolute;top:0;right:0;bottom:0;width:min(34%,340px);background:var(--glass2);z-index:16;transform:translateX(100%);transition:transform .35s cubic-bezier(.3,.8,.3,1);color:var(--ht);padding:14px 14px 0;display:flex;flex-direction:column;border-left:2px solid var(--or);cursor:default}
 .tdx .tdx-stage.intel-open .tdx-intel{transform:none}
 .tdx .tdx-ihead{position:relative}
+.tdx .tdx-anvil{position:absolute;width:9%;transform:translate(-50%,-100%);animation:tdxAnvil .55s cubic-bezier(.6,0,1,.6) both;z-index:6;pointer-events:none}
+.tdx .tdx-anvil svg{width:100%;display:block}
+@keyframes tdxAnvil{from{margin-top:-60cqw}to{margin-top:0}}
+.tdx .tdx-stamp{position:absolute;transform:translate(-50%,-50%) rotate(-12deg);font:400 4cqw/1 'Lilita One';color:#2fbf71;border:.4cqw solid #2fbf71;border-radius:.6cqw;padding:.3cqw 1.2cqw;background:rgba(10,20,14,.5);animation:tdxStamp .45s cubic-bezier(.2,1.6,.4,1) both;z-index:6;pointer-events:none}
+@keyframes tdxStamp{from{transform:translate(-50%,-50%) rotate(-12deg) scale(2.6);opacity:0}to{transform:translate(-50%,-50%) rotate(-12deg) scale(1);opacity:1}}
+.tdx .tdx-tape{position:absolute;inset:0;z-index:7;pointer-events:none;animation:tdxTape 2.6s linear both}
+.tdx .tdx-tape i{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.08) 0 2px,transparent 2px 5px),radial-gradient(ellipse,transparent 55%,rgba(0,0,0,.55));mix-blend-mode:screen}
+.tdx .tdx-tape b{position:absolute;left:4%;top:12%;font:800 2.2cqw/1 Nunito;color:#fff;letter-spacing:.12em;text-shadow:0 0 6px #000}
+@keyframes tdxTape{0%{background:rgba(255,255,255,.6)}6%{background:transparent}90%{opacity:1}100%{opacity:0}}
+.tdx .tdx-phone{position:absolute;width:5%;transform:translate(-50%,-50%);animation:tdxRing .18s ease-in-out 8 alternate;z-index:6;pointer-events:none}
+.tdx .tdx-phone svg{width:100%;display:block}
+@keyframes tdxRing{from{transform:translate(-50%,-50%) rotate(-14deg)}to{transform:translate(-50%,-50%) rotate(14deg)}}
 .tdx .tdx-itabs{flex-wrap:wrap}
 .tdx .tdx-rpick{display:grid;gap:6px;margin-bottom:8px}
 .tdx .tdx-rpick small{font:800 9px Nunito;letter-spacing:.12em;text-transform:uppercase;color:var(--hd)}

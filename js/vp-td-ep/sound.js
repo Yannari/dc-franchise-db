@@ -213,6 +213,11 @@ export function sfx(kind) {
   // a bus door folding open
   else if (kind === 'hiss') { hiss(4200, .5, .14, 'highpass'); setTimeout(() => blast(220, 160, .12, 'square', .05), 380); }
   else if (kind === 'splash') { hiss(900, .5, .16, 'bandpass'); }
+  // the studio audience: a smatter of claps, a roar, or a few boos
+  else if (kind === 'applause' || kind === 'cheer') { const n = kind === 'cheer' ? 46 : 22, len = kind === 'cheer' ? 2200 : 1300;
+    for (let i = 0; i < n; i++) setTimeout(() => hiss(1500 + Math.random() * 2500, .03 + Math.random() * .03, .05 + Math.random() * .05, 'bandpass'), Math.random() * len);
+    if (kind === 'cheer') hiss(900, 1.6, .06, 'bandpass'); }
+  else if (kind === 'boo') { [110, 138, 165].forEach((f, i) => setTimeout(() => blast(f, f * .8, 1.1, 'sawtooth', .05), i * 120)); }
   else if (kind === 'scribble') { for (let i = 0; i < 11; i++) setTimeout(() => hiss(3600 + Math.random() * 1800, .06 + Math.random() * .07, .07, 'bandpass'), 500 + i * 140 + Math.random() * 60); }
   // a folded ballot dropping into the urn
   else if (kind === 'drop') { hiss(1200, .12, .12, 'bandpass'); setTimeout(() => blast(180, 70, .25, 'sine', .3), 120); }

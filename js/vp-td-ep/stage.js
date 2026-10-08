@@ -210,7 +210,7 @@ export function worldSound(screen, L) {
   const wx = scape?.weather, wet = wx === 'rain' || wx === 'storm';
   const isleRain = /^islands\/rescue-/.test(key || '');
   return { rain: isleRain || (wet && !indoor), storm: isleRain || (wx === 'storm' && !indoor), fire: M.m.filter(m => m.kind === 'fire').length, water: M.m.some(m => m.kind === 'water') && !scape,
-    outdoor: !indoor && !scape, night, indoor, flies: spot === 'confessional', crowd: screen.venue === 'carnival' && /midway|entrance|big-top/.test(spot), scape };
+    outdoor: !indoor && !scape, night, indoor, flies: spot === 'confessional', crowd: (screen.venue === 'carnival' && /midway|entrance|big-top/.test(spot)) || spot === 'aftermath-studio', scape };
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -414,6 +414,7 @@ const TABS = {
   camp: [['mind', 'In their heads'], ['bonds', 'Just now'], ['log', 'Camp log'], ['people', 'Relationships'], ['allies', 'Alliances'], ['powers', 'Powers'], ['secrets', 'Secrets']],
   tribal: [['room', 'The room'], ['plans', 'Plans'], ['tally', 'Tally'], ['why', 'Why'], ['people', 'Relationships'], ['allies', 'Alliances'], ['powers', 'Powers']],
   island: [['residents', 'Who is here'], ['log', 'Island log'], ['secrets', 'Secrets'], ['people', 'Relationships'], ['powers', 'Powers']],
+  aftermath: [['log', 'Show notes'], ['secrets', 'Receipts'], ['people', 'Relationships'], ['allies', 'Alliances'], ['powers', 'Powers']],
 };
 // the season as it stood after this episode (its snapshot): who is still playing, by team, every bond,
 // the romances, the alliances, the powers. The tabs a viewer keeps open to read the game.

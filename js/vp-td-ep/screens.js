@@ -13,6 +13,7 @@ import { tdCampMap, hasMap, MAP_VENUES, openWindow, nextConv, lockedConv, PLACE_
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf } from './twists.js';
 import { tdTwistBlocksScreen, tdMergeScreen } from './twist-screens.js';
 import { tdArrivalScreen, hasArrivals } from './arrival.js';
+import { tdAftermathScreen, hasAftermath } from './aftermath.js';
 import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf } from './stage.js';
 import { TDX_CSS, TDX_FONTS } from './style.js';
 import { liveGL } from './glplate.js';
@@ -31,7 +32,7 @@ function membersOf(ep, camp) {
 
 export function tdStepScreens(ep, classic = [], o = {}) {
   const out = [];
-  let tribalDone = false;
+  let tribalDone = false, aftermathDone = false;
   const tribal = tdTribalStepped(ep) ? tdTribalScreen(ep, o) : null;
   // the camp map (map.js) is the default camp view where the venue has one, one map per team at
   // every venue (the user, 2026-10-08: "I set up 2 teams" - folding a shared camp's teams into one
@@ -54,6 +55,13 @@ export function tdStepScreens(ep, classic = [], o = {}) {
     if (m) {
       const scr = tdCampScreen(ep, m[2], m[1], membersOf(ep, m[2]), o);
       if (scr) { out.push(shell(scr, S, ep, o)); continue; }
+    }
+    // the Aftermath talk show: every classic segment screen becomes one show on the studio stage
+    // (the Aftermayhem minigames keep their own screens)
+    if (/^aftermath-(opening|iv-|truth|moment-|footage|fancall|fanvote|finalist-|discussion-|awards)/.test(S?.id || '') && hasAftermath(ep)) {
+      if (aftermathDone) continue;
+      const am = tdAftermathScreen(ep, o);
+      if (am) { aftermathDone = true; out.push(shell(am, { ...S, id: 'aftermath-show', label: am.label }, ep, o)); continue; }
     }
     if (tribal && (S.id === 'voting-plans' || S.id === 'votes')) continue;
     if (tribal && S.id === 'tribal' && !tribalDone) { tribalDone = true; out.push(shell(tribal, S, ep, o)); continue; }
@@ -176,6 +184,8 @@ function smoke(fxEl, d, P, ms) {
     setTimeout(tick, 120); };
   tick();
 }
+const ANVIL = '<svg viewBox="0 0 120 80"><path d="M14 10h92v14c-14 2-22 8-24 18h-44c-2-10-10-16-24-18z" fill="#4a4f5c" stroke="#111" stroke-width="5"/><path d="M38 42h44l8 26H30z" fill="#3a3e48" stroke="#111" stroke-width="5"/><path d="M22 70h76v8H22z" fill="#2a2d35" stroke="#111" stroke-width="4"/><path d="M20 14h70" stroke="#8a90a0" stroke-width="4"/></svg>';
+const PHONE = '<svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="27" fill="#2fbf71" stroke="#111" stroke-width="4"/><path d="M19 17c3-3 6-3 8 0l3 5c1 2 0 4-2 5l-2 1c2 5 5 8 10 10l1-2c1-2 3-3 5-2l5 3c3 2 3 5 0 8-3 3-7 4-11 2-9-4-16-11-20-20-2-4-1-7 3-10z" fill="#fff"/></svg>';
 const RIDE_SFX = { limo: 'engine', clownboat: 'motor', bus: 'engine', helicopter: 'rotor', boat: 'motor', yacht: 'motor', jet: 'jetroar', tram: 'engine', canoe: 'splash' };
 const RIDE = {
   jet: '<svg viewBox="0 0 320 120"><path d="M20 62q0-20 30-22h220q30 2 44 22-14 20-44 22H50q-30-2-30-22z" fill="#2c2c34" stroke="#111" stroke-width="4"/><path d="M60 40l-26-34h28l40 34z" fill="#2c2c34" stroke="#111" stroke-width="4"/><path d="M150 70l-30 40h40l40-40z" fill="#1c1c22" stroke="#111" stroke-width="4"/><circle cx="64" cy="22" r="10" fill="#e8a23a"/>' + Array.from({ length: 8 }, (_, i) => `<rect x="${110 + i * 22}" y="54" width="12" height="9" rx="2" fill="#7ac8e8"/>`).join('') + '<circle cx="110" cy="96" r="9" fill="#222"/><circle cx="230" cy="96" r="9" fill="#222"/></svg>',
@@ -349,6 +359,11 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
     // the Summit: up to the pedestal, and the gift's name over it
     if (a.kind === 'pick' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.style.left = `${a.tu * 100}%`;
       setTimeout(() => { const c = centre(st, el); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), esc(a.label || ''), 2600); sfx('title'); }, 900); } }
+    // the Aftermath: an anvil for a lie, a stamp for the truth, the tape rolling, the phone ringing
+    if (a.kind === 'anvil' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-anvil', c.x, c.y, ANVIL, 2200); setTimeout(() => { el.classList.add('shake'); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 2, 8), 'CLANG!'); sfx('slam'); }, 520); } }
+    if (a.kind === 'truth' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-stamp', c.x, c.y + c.h * .45, 'TRUTH', 2400); sfx('safe'); } }
+    if (a.kind === 'tape') { fxAt(fxEl, 'tdx-tape', 0, 0, '<i></i><b>PLAY ▶</b>', 2600); sfx('static'); }
+    if (a.kind === 'phone') { fxAt(fxEl, 'tdx-phone', 86, 18, PHONE, 1800); sfx('blip'); setTimeout(() => sfx('blip'), 220); }
     // stepping down off the bus: a little drop and settle, the door's hiss
     if (a.kind === 'step' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.classList.remove('stepoff'); void el.offsetWidth; el.classList.add('stepoff'); } sfx('hiss'); }
     // the last step aboard the Boat of Losers: walk off toward the boat, the horn, the motor
@@ -371,6 +386,7 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
   if (s.k === 'ballot') { sfx('slip'); if (s.venue === 'world-tour') setTimeout(() => sfx('slam'), 1150); else { sfx('scribble'); setTimeout(() => sfx('drop'), 2700); } }
   if (s.k === 'ballots') sfx('slip');
   if (s.k === 'idol' || s.k === 'power') sfx('idol');
+  if (s.applause) sfx(s.applause === 'boo' ? 'boo' : s.applause === 'big' ? 'cheer' : 'applause');
   if (s.k === 'out') sfx('out');
   if (s.k === 'found') sfx(s.item ? 'idol' : 'empty');
   if (s.k === 'title' && s.vs) sfx('thunder');

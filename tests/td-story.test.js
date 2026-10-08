@@ -1,0 +1,121 @@
+// @vitest-environment jsdom
+// Total Drama camp life as storylines (docs/superpowers/specs/2026-10-07-td-storylines-design.md):
+// the story pools' contract, and a played season read through the director.
+import { describe, it, expect, beforeAll } from 'vitest';
+import { STORY_POOLS } from '../js/td/story/lines/index.js';
+import { PLACES } from '../js/td/story/places.js';
+import { TD_FACT_KEYS } from '../js/td/script/facts.js';
+import { campFeed } from '../js/td/story/feed.js';
+import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
+
+// what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
+const STORY_FACTS = new Set([...TD_FACT_KEYS,
+  'venue', 'count', 'outcome', 'story', 'step', 'prev', 'prevGap', 'chapter', 'members', 'aOther', 'bOther', 'target', 'group',
+  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak']);
+// names a line may say, and the fact that must be asked for unless the pool always has it
+const ALWAYS = new Set(['a', 'b', 'c', 'd', 'quarters', 'bed', 'item', 'here', 'place', 'host', 'count']);
+const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
+  threat: 'threat', weak: 'weak', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder' };
+// a pool's guarantees: names its moment always carries
+const GUARANTEED = [
+  [/^story\.morning\./, ['lastBoot', 'target', 'bootVotes']],
+  [/^story\.chal\.lost/, ['sank', 'streak', 'tribe']],
+  [/^story\.chal\.won/, ['carried', 'tribe']],
+  [/^long\.(alliance|recruit)\./, ['group']],
+  [/^long\.alliance\.form\.enemy/, ['target']],
+  [/^long\.fallout\.flip\.swap/, ['wrote', 'plan']],
+  [/^long\.deal\.side/, ['size']],
+];
+const guaranteed = key => GUARANTEED.filter(([re]) => re.test(key)).flatMap(([, n]) => n);
+
+describe('td story pools', () => {
+  const all = Object.entries(STORY_POOLS).flatMap(([k, pool]) => pool.map(e => [k, e]));
+
+  it('has unique ids', () => {
+    const ids = all.map(([, e]) => e.id);
+    expect(ids.length).toBe(new Set(ids).size);
+  });
+
+  it('asks only for facts that exist', () => {
+    for (const [k, e] of all) for (const f of Object.keys(e.when || {})) expect(STORY_FACTS.has(f), `${e.id} (${k}) asks for "${f}"`).toBe(true);
+  });
+
+  it('says an optional name only when the entry asks for it', () => {
+    for (const [k, e] of all) {
+      const g = guaranteed(k);
+      for (const t of e.turns) for (const m of String(t.say || t.conf || t.beat || '').matchAll(/\{(\w+)(?:\.\w+)?\}/g)) {
+        const name = m[1];
+        if (ALWAYS.has(name) || g.includes(name)) continue;
+        if (name === 'lastBoot') { expect(e.when?.lastBoot === true || g.includes('lastBoot'), `${e.id} says {lastBoot}`).toBe(true); continue; }
+        if (name === 'bootVotes') { expect(e.when?.count, `${e.id} says {bootVotes} where nobody hears the count`).toBe(true); continue; }
+        const need = NEEDS[name];
+        expect(need, `${e.id} says {${name}}, which no story scene carries`).toBeTruthy();
+        expect(e.when?.[need], `${e.id} says {${name}} without asking for "${need}"`).toBeTruthy();
+      }
+    }
+  });
+
+  it('stages every entry in a kind of place the venues know', () => {
+    const kinds = new Set([...Object.values(PLACES).flatMap(v => Object.keys(v)), 'confessional']);
+    for (const [, e] of all) if (e.place) expect(kinds.has(e.place), `${e.id} place "${e.place}"`).toBe(true);
+  });
+
+  it('never puts a present-tense verb after a pronoun ("they was", "they thinks")', () => {
+    const bad = /\{\w+\.(sub|Sub)\}('s\b|\s+(was|is|has|sits|trusts|thinks|runs|wants|does|talks|likes|knows|goes|says|gets|needs|keeps|looks|seems|means|makes|takes|gives|feels|plays)\b)/;
+    for (const [, e] of all) for (const t of e.turns) expect(bad.test(t.say || t.conf || t.beat || ''), `${e.id}: ${t.say || t.conf || t.beat}`).toBe(false);
+  });
+
+  it('lets a third person into a scene only when there is one', () => {
+    for (const [, e] of all) {
+      const usesC = e.turns.some(t => t.by === 'c' || /\{c(\.\w+)?\}/.test(t.say || t.conf || t.beat || ''));
+      if (usesC && !e.cOptional) expect(e.when?.third, `${e.id} uses c`).toBe(true);
+    }
+  });
+});
+
+describe('a season through the director', () => {
+  let eps;
+  beforeAll(() => {
+    seededRun(() => runOneSeason({ romance: 'enabled' }, 16), 4242);
+    eps = core.gs.episodeHistory.filter(e => !e.isFinale && e.campStory);
+  }, 300000);
+
+  it('builds a story for every camp episode', () => {
+    expect(eps.length).toBeGreaterThan(8);
+  });
+
+  it('lets nobody go a whole episode without a word at camp', () => {
+    let slots = 0, silent = 0;
+    for (const ep of eps) {
+      for (const camp of Object.keys(ep.campStory)) {
+        const members = (ep.tribesAtStart || []).find(t => t.name === camp)?.members || (ep.tribesAtStart || []).flatMap(t => t.members);
+        const spoke = new Set(['pre', 'post'].flatMap(ph => campFeed(ep, camp, ph)).flatMap(e => (e.lines || []).filter(l => l.kind !== 'beat').map(l => l.by)));
+        for (const m of members) { slots++; if (!spoke.has(m)) silent++; }
+      }
+    }
+    expect(silent / slots).toBeLessThan(0.03);
+  });
+
+  it('airs a show-sized episode, not forty sketches', () => {
+    for (const ep of eps) for (const camp of Object.keys(ep.campStory)) {
+      const n = campFeed(ep, camp, 'pre').length + campFeed(ep, camp, 'post').length;
+      expect(n, `ep ${ep.num} ${camp}`).toBeLessThanOrEqual(18);
+    }
+  });
+
+  it('never stages two written scenes on the same spot at the same time', () => {
+    for (const ep of eps) for (const camp of Object.keys(ep.campStory)) for (const ph of ['pre', 'post']) {
+      const seen = new Set();
+      for (const it of ep.campStory[camp][ph].filter(x => x.story && x.scene?.spot?.id && x.scene.spot.id !== 'confessional')) {
+        const k = `${it.scene.spot.window || ''}|${it.scene.spot.id}`;
+        expect(seen.has(k), `ep ${ep.num} ${camp}/${ph} ${k}`).toBe(false);
+        seen.add(k);
+      }
+    }
+  });
+
+  it('leaves no slot unfilled', () => {
+    for (const ep of eps) for (const camp of Object.keys(ep.campStory)) for (const ph of ['pre', 'post'])
+      for (const it of ep.campStory[camp][ph].filter(x => x.story)) for (const l of it.lines) expect(/\{\w+/.test(l.text), `${it.lineId}: ${l.text}`).toBe(false);
+  });
+});

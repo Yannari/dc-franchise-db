@@ -17,6 +17,7 @@
 // window), and they are busy with something of their own.
 import { TD_MARKS } from './marks.js';
 import { stableRng } from '../script/rng.js';
+import { campFeed } from '../td/story/feed.js';
 
 // ── the venues ────────────────────────────────────────────────────────
 // The spots each venue has a plate for, and how its ceremony goes. Each checked against the
@@ -288,8 +289,8 @@ const loud = text => /!/.test(text) && (text.length < 80 || /\b[A-Z]{3,}\b/.test
 // CAMP — one screen per camp and phase, cutting spot to spot
 // ══════════════════════════════════════════════════════════════════════
 export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
-  const block = ep?.campEvents?.[camp];
-  const events = phase === 'pre' ? (Array.isArray(block) ? block : (block?.pre || [])) : (block?.post || []);
+  // the scenes that air, in story order (td/story/director.js); an episode without one plays every event
+  const events = campFeed(ep, camp, phase);
   if (!events.length) return null;
   const venue = venueOf(ep, o);
   const V = VENUES[venue];

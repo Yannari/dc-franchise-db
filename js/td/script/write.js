@@ -35,7 +35,7 @@ export const clockOf = ctx => (epOf(ctx)) * 10 + (PHASE_CLOCK[ctx.phase] ?? 0);
 const ledger = () => (gs.tdLineLedger ||= newLedger());
 
 /** The season's word salt: who is in it and what it is called. No dice. */
-function salt() {
+export function salt() {
   if (!gs.tdSalt) {
     const key = [seasonConfig?.name || '', ...(players || []).map(p => p.name).sort()].join('|');
     let h = 2166136261;
@@ -90,6 +90,13 @@ export function withSceneCtx(ctx, fn) {
   try { return fn(); } finally { ambient = prev; }
 }
 
+// What the story layer (td/story) reads back later: the scene's facts as they stood when it
+// fired (bonds, alliances, who talks how), so a scene re-written at the end of the episode
+// never knows what happened after it.
+const KEEP = ['band', 'alliance', 'showmance', 'kin', 'allied', 'alliedB', 'register', 'registerB', 'nice', 'villain', 'arch', 'archB', 'age', 'ageB', 'gap',
+  'strong', 'brainy', 'tough', 'bold', 'charm', 'sly', 'loyal', 'sharp', 'hot', 'calm', 'tribal', 'merged', 'early', 'late'];
+const keepFacts = f => { if (!f) return null; const o = {}; for (const k of KEEP) if (f[k] !== undefined && f[k] !== null && f[k] !== false) o[k] = f[k]; return o; };
+
 /** For tests only: muted, a scene is not written (no pick, no ledger). */
 export const writing = { muted: false };
 
@@ -131,7 +138,7 @@ export function writeScene(scene, ctx = {}) {
     const by = t.by ? who[t.by] || null : null;
     return { kind, by, text: fill(t.conf || t.beat || t.say, who, scene.data || {}) };
   });
-  return { lines, text: transcript(lines), lineId: entry.id };
+  return { lines, text: transcript(lines), lineId: entry.id, facts };
 }
 
 /** The script as one paragraph, for the classic camp cards and the text backlog. */
@@ -237,7 +244,7 @@ export function scriptEventParts(event, scenes, ctx = {}) {
   const parts = scenes.filter(Boolean).map(sc => ({ sc, w: writeScene(sc, ctx) }));
   const [first] = parts;
   event.scene = { kind: first.sc.kind, who: first.sc.who, data: first.sc.data, seenBy: first.sc.seenBy, spot: first.sc.spot,
-    lineId: first.w.lineId, ...(parts.length > 1 ? { parts: parts.map(p => ({ kind: p.sc.kind, who: p.sc.who, data: p.sc.data, lineId: p.w.lineId })) } : {}) };
+    lineId: first.w.lineId, facts: keepFacts(first.w.facts), ...(parts.length > 1 ? { parts: parts.map(p => ({ kind: p.sc.kind, who: p.sc.who, data: p.sc.data, lineId: p.w.lineId })) } : {}) };
   event.lines = parts.flatMap(p => p.w.lines);
   event.text = transcript(event.lines);
   return event;

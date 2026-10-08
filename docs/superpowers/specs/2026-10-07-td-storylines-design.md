@@ -198,6 +198,11 @@ The user chose dialogue first (2026-10-07).
    there are no last words, and nobody reacts after an elimination. "It's just bland, and it's like that in
    so many places. That's why it feels amateurish and not 1:1 realistic with the source material." Target:
    §1b, what a DC or TDI elimination contains.
+   **Every vote, not a sample** (user): "we need to understand the reasoning of their votes, so we need to
+   see all the votes, not just 2 or 3." DC shows three; the sim shows every voter in the booth, each giving
+   their engine reason in their own voice. Rule: "The classic version has hindsight and data. The goal
+   wasn't to lose it but to add even more." Port every record the classic Tribal screen shows (ballot
+   reasons, vote chain, consequences), then add.
 2. **Bland in many other places**: the same complaint covers every screen that is not camp life. Audit
    each one against the transcripts the way §1b does, one screen at a time.
 3. **Live relationship and alliance panel and "what they're thinking"** (§2.5).

@@ -17,6 +17,8 @@ import { buildInfoFlowLog } from './knowledge-integration.js';
 import { standingFromSnapshot, standingMovement, roleLabel } from './social-status.js';
 import { pStats, pronouns, challengeWeakness } from './players.js';
 import { scriptPendingScenes } from './td/script/write.js';
+import { airTdEpisode } from './td/story/director.js';
+import { campFeed, offCamera } from './td/story/feed.js';
 import { getBond, bondLabel } from './bonds.js';
 import { EDIT_LABELS } from './edit-layer.js';
 import { buildCrashout, vpGenerateQuote, _riLastWords, _bbFinalPleaSpeech,
@@ -445,13 +447,15 @@ export function _textCampPre(ep, ln, sec) {
       ln('');
       ln('CAMP EVENTS:');
       Object.entries(ep.campEvents).forEach(([campName, phaseData]) => {
-        const preEvs = Array.isArray(phaseData) ? phaseData : (phaseData?.pre || []);
+        // the scenes that aired, in story order (td/story/director.js), then the rest off camera
+        const preEvs = campFeed(ep, campName, 'pre');
         if (!preEvs.length) return;
         if (campName !== 'merge') ln(`${campName.toUpperCase()} CAMP:`);
         preEvs.forEach(e => {
           const badge = e.badgeText ? `[${e.badgeText}] ` : '';
           ln(`- ${badge}${e.text}`);
         });
+        _textOffCamera(ep, campName, 'pre', ln);
       });
     }
   }
@@ -1006,6 +1010,15 @@ export function _textExile(ep, ln, sec) {
 
 // ── LUCKY HUNT ──
 
+// The camp moments that happened but did not air (td/story/director.js): listed, so the record
+// holds everything the engine did.
+function _textOffCamera(ep, campName, phase, ln, skipTagged = false) {
+  const off = offCamera(ep, campName, phase).filter(e => !(skipTagged && e.tag) && String(e.text || '').trim());
+  if (!off.length) return;
+  ln('  Off camera:');
+  off.forEach(e => ln(`  · ${e.badgeText ? `[${e.badgeText}] ` : ''}${e.text}`));
+}
+
 // ── CAMP — POST-CHALLENGE ──
 export function _textCampPost(ep, ln, sec) {
   if (!ep.campEvents || !Object.keys(ep.campEvents).length) return;
@@ -1019,7 +1032,7 @@ export function _textCampPost(ep, ln, sec) {
   sec('CAMP — POST-CHALLENGE');
   Object.entries(ep.campEvents).forEach(([campName, phaseData]) => {
     if (Array.isArray(phaseData)) return;
-    let postEvs = phaseData?.post || [];
+    let postEvs = campFeed(ep, campName, 'post');
     if (hasTwistChallenge) postEvs = postEvs.filter(e => !e.tag);
     if (!postEvs.length) return;
     if (campName !== 'merge') ln(`${campName.toUpperCase()} CAMP:`);
@@ -1027,6 +1040,7 @@ export function _textCampPost(ep, ln, sec) {
       const badge = e.badgeText ? `[${e.badgeText}] ` : '';
       ln(`- ${badge}${e.text}`);
     });
+    _textOffCamera(ep, campName, 'post', ln, hasTwistChallenge);
     if (ep.tipOffCampEvents?.[campName]) ln(`- ${ep.tipOffCampEvents[campName].text}`);
   });
   if (ep.tipOffCampEvents?.['merge'] && !Object.keys(ep.campEvents).includes('merge')) ln(`- ${ep.tipOffCampEvents['merge'].text}`);
@@ -3790,6 +3804,10 @@ export function generateTraitorsSummaryText(ep, observer = 'audience') {
 export function generateSummaryText(ep) {
   // Camp scenes a lower module left unwritten (td/script/write.js scriptPendingScenes).
   scriptPendingScenes(ep);
+  // ...then which of them air, as storylines (td/story/director.js). Words only.
+  if (!(ep.format === 'big-brother' || ep.isBigBrother)) {
+    try { airTdEpisode(ep); } catch (e) { console.error('td story director', e); if (typeof process !== 'undefined' && process.env?.VITEST) throw e; }
+  }
   // A Big Brother week is a different show and shares none of the structure
   // below — no tribes, no challenge, no Tribal Council. It gets its own
   // transcript, built from the same acts the visual player renders, so the two

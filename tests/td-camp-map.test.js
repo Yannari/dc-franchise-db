@@ -5,6 +5,7 @@
 // cannot play; a shared camp that shows one team and loses the other's talk; a venue without a
 // painted map losing its camp screens; the clock letting the viewer jump past a key conversation;
 // Next skipping a conversation or playing one twice.
+import { campFeed } from '../js/td/story/feed.js';
 import { describe, it, expect, beforeAll } from 'vitest';
 import fs from 'fs';
 import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
@@ -55,7 +56,8 @@ describe('the camp map', () => {
     const ep = eps.find(e => campsOf(e, 'pre').length >= 2);
     const camps = campsOf(ep, 'pre');
     const m = tdCampMap(ep, 'pre', camps, { setting: 'hosted-camp' });
-    const total = camps.reduce((a, c) => a + (Array.isArray(ep.campEvents[c]) ? ep.campEvents[c] : ep.campEvents[c].pre).filter(e => e && (e.lines?.length || String(e.text || '').trim())).length, 0);
+    // every scene that airs (td/story/feed.js campFeed: the director's choice, or every event on an old save)
+    const total = camps.reduce((a, c) => a + campFeed(ep, c, 'pre').filter(e => e && (e.lines?.length || String(e.text || '').trim())).length, 0);
     expect(m.convs.length).toBe(total);
     expect(new Set(m.convs.map(c => c.camp)).size).toBe(camps.length);
     const out = tdStepScreens(ep, camps.map(c => ({ id: `camp-pre-${c}`, label: 'Camp' })), { setting: 'hosted-camp' });

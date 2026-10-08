@@ -17,9 +17,9 @@ describe('text backlog — camp event coverage', () => {
         (core.gs.episodeHistory || []).forEach((h, i) => {
           const txt = (h.summaryText || '').replace(/\s+/g, ' ');
           const isTwist = ![undefined, '', 'tribe', 'team', 'individual', 'mixed'].includes(h.challengeType);
-          Object.values(h.campEvents || {}).forEach(phase => {
+          Object.entries(h.campEvents || {}).forEach(([camp, phase]) => {
             if (Array.isArray(phase)) return;
-            ['pre', 'post'].forEach(ph => (phase[ph] || []).forEach(ev => {
+            ['pre', 'post'].forEach(ph => (phase[ph] || []).forEach((ev, idx) => {
               if (!ev || !ev.text || (isTwist && ev.tag)) return;
               if (ev.type === 'pitchAllianceFallout' ||
                   /ultimately stayed off that ballot|supported by the ballot evidence|left out of the next strategy conversation/i.test(ev.text)) {
@@ -27,7 +27,9 @@ describe('text backlog — camp event coverage', () => {
               }
               if (ev.type === 'votePitch' || ev.type === 'votePitchFailed') sawVotePitch = true;
               totalEvents++;
-              const needle = ev.text.replace(/\s+/g, ' ').trim().slice(0, 40);
+              // an event the story director rewrote as a whole scene (td/story) is in the backlog as that scene
+              const story = (h.campStory?.[camp]?.[ph] || []).find(it => it.story && it.ref === idx);
+              const needle = (story ? story.text : ev.text).replace(/\s+/g, ' ').trim().slice(0, 40);
               if (needle && txt.includes(needle)) rendered++;
               else missing.push(`s${s} ep${i + 1} ${ev.type || '?'}: "${needle}"`);
             }));

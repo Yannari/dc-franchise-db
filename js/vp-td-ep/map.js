@@ -20,6 +20,7 @@
 // it (stageSpot); who is idle where is the engine's own schedule (ep.campAccess).
 import { TD_MARKS } from './marks.js';
 import { ACCESS_PROFILES } from '../camp-access.js';
+import { campFeed } from '../td/story/feed.js';
 import { tdCampScreen, stageSpot, venueOf, VENUES, placeName, campSlot } from './steps.js';
 
 // the venues with a painted map (tools/td-camp: '<venue>/map-day'), and how their teams live
@@ -62,7 +63,8 @@ export const WINDOW_NIGHT = { 'before-tribal': true };
 const KEY_KIND = /^(crowd\.(huddle|lost|clash)|alliance\.|deal\.|pitch\.|recruit\.|plot\.|broker\.|credit\.|idol\.(confide|leak|snoop|tip)|adv\.|fallout\.|caught\.|blind\.|goat\.|save\.|threat\.notice|romance\.(showmance|first|tri|affair|breakup|cut)|drama\.(bomb|nemesis|clash))/;
 const KEY_TYPE = /^(allianceForm|allianceBetrayal|idolFound|idolConfession|idolBetrayal|betrayal|showmance|firstMove|secretFlip|stolenCredit|brokerExposed)/;
 export function isKey(ev) {
-  return KEY_KIND.test(ev?.scene?.kind || '') || KEY_TYPE.test(ev?.type || '');
+  // a storyline's scene (td/story/director.js) is what the episode turns on
+  return !!ev?.story || KEY_KIND.test(ev?.scene?.kind || '') || KEY_TYPE.test(ev?.type || '');
 }
 
 // a short name for a conversation on its bubble: the badge the engine gave it, else its kind
@@ -123,8 +125,8 @@ export function tdCampMap(ep, phase, camps, o = {}) {
   const teamOf = {};
   const convs = [];
   for (const camp of camps) {
-    const block = ep?.campEvents?.[camp];
-    const events = phase === 'pre' ? (Array.isArray(block) ? block : (block?.pre || [])) : (block?.post || []);
+    // the scenes that air, in story order (td/story/director.js)
+    const events = campFeed(ep, camp, phase);
     const members = ep.campAccess?.groups?.[camp]?.members || (ep.tribesAtStart || []).find(t => t.name === camp)?.members || [];
     for (const n of members) teamOf[n] = camp;
     events.forEach((ev, k) => {
@@ -140,7 +142,7 @@ export function tdCampMap(ep, phase, camps, o = {}) {
       if (place !== engineSpot && cap && convs.filter(c => c.window === win && c.place === place).length >= Math.max(2, Math.ceil(cap / 3))) place = engineSpot;
       const zone = zoneOf[place] || (zones[place] ? place : zoneOf[VENUES[venue].public] || VENUES[venue].public);
       // the conversation, played on its own: the same steps the linear camp screen gives it
-      const screen = tdCampScreen({ ...ep, campEvents: { [camp]: phase === 'pre' ? { pre: [ev], post: [] } : { pre: [], post: [ev] } } }, camp, phase, [], o);
+      const screen = tdCampScreen({ ...ep, campStory: null, campEvents: { [camp]: phase === 'pre' ? { pre: [ev], post: [] } : { pre: [], post: [ev] } } }, camp, phase, [], o);
       if (!screen) return;
       convs.push({ i: convs.length, window: win, zone, place, key: isKey(ev), title: titleOf(ev), camp,
         who: [...new Set([...(ev.lines || []).map(l => l.by).filter(Boolean), ...(ev.players || [])])].filter(n => typeof n === 'string').slice(0, 4),

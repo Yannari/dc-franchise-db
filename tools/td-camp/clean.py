@@ -276,12 +276,16 @@ def motion_map(base, P):
         # in the same colour stay put
         edges = cv2.Canny(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 40, 110).astype(np.float32) / 255
         busy = cv2.GaussianBlur(edges, (0, 0), 11) > 0.03
-        leaf = (((hue >= 27) & (hue <= 95) & (sat > 60) & (val > 35) & (val < 205)) & ~sky & busy).astype(np.uint8)
-        # a frond's flat middle moves with its edges: close the small gaps, then drop the specks
-        leaf = cv2.morphologyEx(leaf, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))       # ink lines on the ground: not leaves
-        leaf = cv2.morphologyEx(leaf, cv2.MORPH_CLOSE, np.ones((13, 13), np.uint8))
-        leaf = cv2.morphologyEx(leaf, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8)).astype(np.float32) * ~sky
-        wind = leaf * (0.55 + 0.45 * (1 - np.arange(h)[:, None] / h))
+        # Disventure Camp's palms are bright and busy; Total Drama paints its pines and bushes as flat
+        # teal, blue-green and olive shapes, so the colour range is wide and a flat shape still counts
+        # (at half strength: a whole hillside should breathe, not flap)
+        green = ((hue >= 22) & (hue <= 118) & (sat > 40) & (val > 28) & (val < 215)) & ~sky
+        leaf = cv2.morphologyEx(green.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)).astype(np.float32)
+        leaf *= np.where(busy, 1.0, 0.5)
+        leaf = cv2.GaussianBlur(leaf, (0, 0), 1.5) * ~sky
+        # the treetops move most; the ground and the grass at the feet hardly at all
+        yy = np.arange(h)[:, None] / h
+        wind = leaf * (0.35 + 0.65 * (1 - yy)) * np.clip((0.86 - yy) / 0.12, 0, 1)
     lab = cv2.cvtColor(cv2.GaussianBlur(img, (5, 5), 0), cv2.COLOR_BGR2LAB).astype(np.int16)
     for b in P.get('sway', []):
         x0, y0, x1, y1 = R(b)
@@ -325,6 +329,11 @@ def motion_map(base, P):
         n, cc, st, _ = cv2.connectedComponentsWithStats(warm.astype(np.uint8), 8)
         small = (st[:, 4] <= 2500); small[0] = False
         lit = small[cc].astype(np.float32)
+    if P.get('nosky') or P.get('night'):
+        bright = ((val > 225) & (sat < 150)).astype(np.uint8)
+        n2, cc2, st2, _ = cv2.connectedComponentsWithStats(bright, 8)
+        small2 = (st2[:, 4] >= 20) & (st2[:, 4] <= 6000); small2[0] = False
+        lit = np.maximum(lit, small2[cc2].astype(np.float32) * 0.7)
     for b in P.get('glow', []):
         x0, y0, x1, y1 = R(b)
         lit[y0:y1, x0:x1] = np.maximum(lit[y0:y1, x0:x1], (val[y0:y1, x0:x1] > 200).astype(np.float32))

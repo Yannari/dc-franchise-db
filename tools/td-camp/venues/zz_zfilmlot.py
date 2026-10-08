@@ -14,17 +14,17 @@ _BLEACH = [(880 + i * 46, 488) for i in range(7)] + [(905 + i * 46, 458) for i i
 
 _LOT = {
     'map': _wk('lot-map.json', [], zones=_LZONES),
-    'studio-backlot': _wk('lot-backlot.json', [(620, 640), (900, 640), (1150, 640)]),
-    'trailers': _wk('lot-trailers.json', [(330, 640), (560, 640), (1150, 640)]),
+    'studio-backlot': _wk('lot-backlot.json', [(620, 640, 20), (900, 640, 20), (1150, 640, 20)]),
+    'trailers': _wk('lot-trailers.json', [(180, 648), (1380, 648), (1540, 648)]),
     'trailer-inside': _wk('lot-trailer-in.json', [(420, 640), (800, 640), (1150, 640)]),
     'craft-services': _wk('lot-craft.json', [(250, 640), (470, 640), (700, 640)]),
     'soundstage-corridor': _wk('lot-sound.json', [(520, 640), (800, 640), (1080, 640)]),
-    'prop-storage': _wk('lot-props.json', [(330, 640), (560, 640), (1050, 640)]),
+    'prop-storage': _wk('lot-props.json', [(330, 640, 28), (560, 640, 28), (1050, 640, 28)]),
     'confessional': _wk('lot-conf.json', [(700, 640), (900, 640)]),
     'ceremony': _wk('lot-awards.json', [(420, 640), (640, 640)], seats=_BLEACH, host=(575, 470)),
-    'exit': _wk('lot-walk.json', [(800, 640), (640, 640), (980, 640)]),
-    'western-set': _wk('lot-western.json', [(500, 640), (800, 640), (1100, 640)]),
-    'city-set': _wk('lot-city.json', [(500, 640), (800, 640), (1100, 640)]),
+    'exit': _wk('lot-walk.json', [(800, 648), (640, 648), (980, 648)]),
+    'western-set': _wk('lot-western.json', [(160, 648, 13), (820, 648, 13), (1450, 648, 13)]),
+    'city-set': _wk('lot-city.json', [(500, 640, 15), (800, 640, 15), (1100, 640, 15)]),
 }
 SCENES['film-lot'].update(_LOT)
 OUTDOOR['film-lot'] = set()

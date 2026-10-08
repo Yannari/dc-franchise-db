@@ -53,20 +53,33 @@ def _live_marks(json_name, depth):
         mark('lightning', (x, depth, z))
 
 
+def _depth_for(pct, seat=False):
+    """The depth whose scale makes a person `pct` percent of the frame tall in the viewer (a standing
+    token is s*125 % of the frame high, a seated one s*95 %; s = 1 / (0.675 * distance) for vcam)."""
+    s = pct / (95.0 if seat else 125.0)
+    return 1.0 / (0.675 * s) - 10.0
+
+
 def _traced_plate(json_name, stands, seats=(), host=None, depth=20.0):
+    """Stands are (x, feet y) or (x, feet y, height %): how tall a person standing there is in this
+    frame, read off the frame itself (a door, a bench, a stump). The place's own 'ppl' (places.json)
+    is the default; a seat's is 'seat', the host's 'host'."""
+    P = PLACES.get(json_name[:-5], {})
     def build(tod):
         paint_mode()
         paint_sky('#000000', '#000000')
         vplate('Traced', json_name, depth)
         _live_marks(json_name, depth)
         for p in stands:
+            pct = p[2] if len(p) > 2 else P.get('ppl', 25)
             # the viewer stands people with their feet above the dialogue panel (v <= .72)
-            vmark_stand((p[0], min(p[1], 640)), PEOPLE_DEPTH)
+            vmark_stand((p[0], min(p[1], 640)), _depth_for(pct))
         for p in seats:
-            vmark_seat(p, SEAT_DEPTH)
+            vmark_seat(p[:2], _depth_for(p[2] if len(p) > 2 else P.get('seat', 16), seat=True))
         if host:
-            x, z = px(host, SEAT_DEPTH)
-            mark('host', (x, SEAT_DEPTH, z))
+            d = _depth_for(P.get('host', P.get('ppl', 25)))
+            x, z = px(host[:2], d)
+            mark('host', (x, d, z))
         vcam()
     return build
 

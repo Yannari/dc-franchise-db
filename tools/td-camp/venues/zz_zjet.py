@@ -8,13 +8,13 @@
 # their painted plates. Runs after zz_wawanakwa.py (its helpers).
 
 _JET = {
-    'economy': _wk('jet-economy.json', [(420, 640), (800, 640), (1180, 640)]),
-    'aisle': _wk('jet-economy.json', [(640, 640), (800, 640), (960, 640)]),
+    'economy': _wk('jet-economy.json', [(420, 648), (800, 648), (1180, 648)]),
+    'aisle': _wk('jet-economy.json', [(640, 648), (800, 648), (960, 648)]),
     'first-class': _wk('jet-first.json', [(380, 640), (700, 640), (1000, 640)]),
     'galley': _wk('jet-dining.json', [(450, 640), (750, 640), (1000, 640)]),
     'cargo-hold': _wk('jet-cargo.json', [(560, 640), (800, 640), (1040, 640)]),
-    'chris-quarters': _wk('jet-chris.json', [(250, 640), (1100, 640), (1400, 640)]),
-    'cockpit': _wk('jet-cockpit.json', [(700, 640), (900, 640)]),
+    'chris-quarters': _wk('jet-chris.json', [(150, 648), (1100, 648), (1500, 648)]),
+    'cockpit': _wk('jet-cockpit.json', [(700, 640, 34), (900, 640, 34)]),
     'confessional': _wk('jet-conf.json', [(700, 640), (900, 640)]),
     # the Barf Bag Ceremony: the benches on the right, Chris at the tiki stand
     'ceremony': _wk('jet-barf.json', [(520, 640), (700, 640)], seats=[(1100 + i * 85, 655) for i in range(6)] + [(1140 + i * 85, 690) for i in range(5)], host=(880, 640)),

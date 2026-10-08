@@ -711,7 +711,15 @@
    ]
   ],
   "lightning": true,
-  "noleaf": true
+  "sway": [
+   [
+    0,
+    0,
+    1600,
+    450,
+    0.6
+   ]
+  ]
  },
  "cv-boat": {
   "src": "cv-boat.png",
@@ -831,7 +839,8 @@
     1400,
     760
    ]
-  ]
+  ],
+  "ppl": 16
  },
  "hc-cabin-in": {
   "src": "hc-cabin-in.jpg",
@@ -846,11 +855,13 @@
    ]
   ],
   "noleaf": true,
-  "nosky": true
+  "nosky": true,
+  "ppl": 30
  },
  "hc-lodge": {
   "src": "hc-lodge.png",
-  "wind": 0.9
+  "wind": 0.9,
+  "ppl": 19
  },
  "hc-mess": {
   "src": "hc-mess.png",
@@ -871,7 +882,8 @@
     40
    ]
   ],
-  "nosky": true
+  "nosky": true,
+  "ppl": 24
  },
  "hc-wash": {
   "src": "hc-wash.png",
@@ -916,7 +928,8 @@
     0.9
    ]
   ],
-  "nosky": true
+  "nosky": true,
+  "ppl": 33
  },
  "hc-conf": {
   "src": "hc-conf.png",
@@ -946,7 +959,8 @@
     1000,
     620
    ]
-  ]
+  ],
+  "ppl": 24
  },
  "hc-dock-night": {
   "src": "hc-dock-night.jpg",
@@ -994,7 +1008,8 @@
     100,
     640
    ]
-  ]
+  ],
+  "ppl": 27
  },
  "hc-campfire": {
   "src": "hc-campfire.png",
@@ -1006,7 +1021,8 @@
     1100,
     620
    ]
-  ]
+  ],
+  "ppl": 20
  },
  "hc-ceremony": {
   "src": "hc-ceremony.jpg",
@@ -1056,12 +1072,32 @@
     1100,
     330
    ]
+  ],
+  "ppl": 20,
+  "seat": 13,
+  "host": 21,
+  "sway": [
+   [
+    0,
+    0,
+    1600,
+    330,
+    0.6
+   ]
+  ],
+  "cloth": [
+   [
+    640,
+    40,
+    1260,
+    250,
+    0.5
+   ]
   ]
  },
  "hc-cliff": {
   "src": "hc-cliff.png",
   "wind": 0.8,
-  "noleaf": true,
   "cut": [
    [
     [
@@ -1101,7 +1137,16 @@
    ]
   ],
   "fill": "rows",
-  "noclouds": true
+  "ppl": 20,
+  "sway": [
+   [
+    0,
+    460,
+    1260,
+    545,
+    0.8
+   ]
+  ]
  },
  "hc-forest": {
   "src": "hc-forest.jpg",
@@ -1136,7 +1181,8 @@
     1380,
     350
    ]
-  ]
+  ],
+  "ppl": 22
  },
  "hc-beach": {
   "src": "hc-beach.png",
@@ -1154,7 +1200,8 @@
     350
    ]
   ],
-  "noclouds": true
+  "noclouds": true,
+  "ppl": 25
  },
  "hc-map": {
   "src": "hc-map.jpg",
@@ -1169,12 +1216,12 @@
     900,
     820
    ]
-  ]
+  ],
+  "ppl": 16
  },
  "hc-lake": {
   "src": "hc-lake.png",
   "wind": 0.5,
-  "noleaf": true,
   "cut": [
    [
     [
@@ -1225,7 +1272,8 @@
     200,
     800
    ]
-  ]
+  ],
+  "ppl": 26
  },
  "hc-falls": {
   "src": "hc-falls.png",
@@ -1248,7 +1296,8 @@
     760,
     890
    ]
-  ]
+  ],
+  "ppl": 19
  },
  "hc-cave": {
   "src": "hc-cave.jpg",
@@ -1260,7 +1309,8 @@
     900,
     820
    ]
-  ]
+  ],
+  "ppl": 18
  },
  "hc-boathouse": {
   "src": "hc-boathouse.png",
@@ -1303,7 +1353,8 @@
    ]
   ],
   "fill": "rows",
-  "nosky": true
+  "nosky": true,
+  "ppl": 30
  },
  "hc-amph": {
   "src": "hc-amph.jpg",
@@ -1324,7 +1375,8 @@
     530,
     0.5
    ]
-  ]
+  ],
+  "ppl": 22
  },
  "hc-boney-beach": {
   "src": "hc-boney-beach.png",
@@ -1339,7 +1391,8 @@
     800,
     880
    ]
-  ]
+  ],
+  "ppl": 22
  },
  "hc-playa": {
   "src": "hc-playa.png",
@@ -1384,7 +1437,8 @@
     690
    ]
   ],
-  "fill": "rows"
+  "fill": "rows",
+  "ppl": 20
  },
  "lot-map": {
   "src": "lot-map.png",
@@ -1399,12 +1453,12 @@
     800,
     870
    ]
-  ]
+  ],
+  "ppl": 16
  },
  "lot-backlot": {
   "src": "lot-backlot.png",
   "wind": 0.6,
-  "noleaf": true,
   "sway": [
    [
     940,
@@ -1415,11 +1469,13 @@
     990,
     640
    ]
-  ]
+  ],
+  "ppl": 24
  },
  "lot-trailers": {
   "src": "lot-trailers.png",
-  "wind": 0.8
+  "wind": 0.8,
+  "ppl": 26
  },
  "lot-trailer-in": {
   "src": "lot-trailer-in.png",
@@ -1433,7 +1489,8 @@
     700,
     190
    ]
-  ]
+  ],
+  "ppl": 30
  },
  "lot-craft": {
   "src": "lot-craft.png",
@@ -1455,7 +1512,8 @@
     600,
     0.45
    ]
-  ]
+  ],
+  "ppl": 26
  },
  "lot-awards": {
   "src": "lot-awards.png",
@@ -1486,7 +1544,10 @@
     750,
     500
    ]
-  ]
+  ],
+  "ppl": 17,
+  "seat": 14,
+  "host": 17
  },
  "lot-sound": {
   "src": "lot-sound.png",
@@ -1498,7 +1559,8 @@
   ],
   "wind": 0.0,
   "nosky": true,
-  "noleaf": true
+  "noleaf": true,
+  "ppl": 18
  },
  "lot-props": {
   "src": "lot-props.png",
@@ -1513,7 +1575,8 @@
     700,
     0.2
    ]
-  ]
+  ],
+  "ppl": 22
  },
  "lot-walk": {
   "src": "lot-walk.png",
@@ -1532,7 +1595,8 @@
     960,
     50
    ]
-  ]
+  ],
+  "ppl": 27
  },
  "lot-conf": {
   "src": "lot-conf.png",
@@ -1573,7 +1637,6 @@
  "lot-western": {
   "src": "lot-western.png",
   "wind": 0.8,
-  "noleaf": true,
   "sway": [
    [
     100,
@@ -1592,12 +1655,21 @@
     0.4,
     1280,
     640
+   ],
+   [
+    200,
+    800,
+    1600,
+    900,
+    0.7
    ]
-  ]
+  ],
+  "ppl": 16
  },
  "lot-city": {
   "src": "lot-city.png",
-  "wind": 0.6
+  "wind": 0.6,
+  "ppl": 18
  },
  "aftermath-studio": {
   "src": "aftermath-studio.png",
@@ -1627,7 +1699,8 @@
     700,
     0.25
    ]
-  ]
+  ],
+  "ppl": 18
  },
  "jet-economy": {
   "src": "jet-economy.png",
@@ -1644,7 +1717,8 @@
     920,
     300
    ]
-  ]
+  ],
+  "ppl": 30
  },
  "jet-dining": {
   "src": "jet-dining.png",
@@ -1679,7 +1753,8 @@
     520,
     90
    ]
-  ]
+  ],
+  "ppl": 30
  },
  "jet-cargo": {
   "src": "jet-cargo.png",
@@ -1696,13 +1771,15 @@
     1080,
     885
    ]
-  ]
+  ],
+  "ppl": 27
  },
  "jet-first": {
   "src": "jet-first.png",
   "wind": 0.15,
   "nosky": true,
-  "noleaf": true
+  "noleaf": true,
+  "ppl": 30
  },
  "jet-barf": {
   "src": "jet-barf.png",
@@ -1727,7 +1804,10 @@
     1200,
     740
    ]
-  ]
+  ],
+  "ppl": 26,
+  "seat": 20,
+  "host": 27
  },
  "jet-chris": {
   "src": "jet-chris.png",
@@ -1759,7 +1839,8 @@
     860,
     280
    ]
-  ]
+  ],
+  "ppl": 28
  },
  "jet-cockpit": {
   "src": "jet-cockpit.png",
@@ -1773,7 +1854,8 @@
     1600,
     330
    ]
-  ]
+  ],
+  "ppl": 30
  },
  "jet-conf": {
   "src": "jet-conf.png",
@@ -1878,6 +1960,33 @@
     ]
    ]
   ],
-  "fill": "rows"
+  "fill": "rows",
+  "ppl": 24,
+  "mist": [
+   [
+    120,
+    330
+   ],
+   [
+    520,
+    760
+   ]
+  ],
+  "sway": [
+   [
+    0,
+    0,
+    1600,
+    900,
+    0.5
+   ]
+  ]
+ },
+ "hc-cave-in": {
+  "src": "hc-cave-in.png",
+  "wind": 0.1,
+  "nosky": true,
+  "noleaf": true,
+  "ppl": 26
  }
 }

@@ -64,14 +64,16 @@ export function worldHtml(screen, L) {
   const of = k => M.m.filter(m => m.kind === k);
   // the day's weather (the islands keep their own rain)
   const island = /^islands\//.test(key);
-  const wx = island || spot === 'confessional' ? null : wxOf(screen, L);
+  // no weather on board the jet: only on the ground outside it
+  const aboard = screen.venue === 'world-tour' && !['destination-staging', 'map'].includes(spot);
+  const wx = island || aboard || spot === 'confessional' ? null : wxOf(screen, L);
   const wet = wx === 'rain' || wx === 'storm';
   // a plate built from the show's own frame moves by its motion map (glplate.js): wind, water, heat.
   // It is drawn once, by day, and graded for the hour and the weather: a night scene at a day frame
   // is that frame by moonlight, its painted fires and lights still burning.
   const motion = of('motion')[0];
   const night = nightFrame || (!!motion && L.scene?.tod === 'night');
-  const grade = !motion ? null : night ? (nightFrame ? (wet ? 'nightrain' : 'none') : 'night') : indoor ? (wet ? 'dim' : 'day')
+  const grade = !motion ? null : night ? (nightFrame ? (wet ? 'nightrain' : 'none') : indoor ? 'dim' : 'night') : indoor ? (wet ? 'dim' : 'day')
     : wx === 'storm' ? 'storm' : wx === 'rain' ? 'rain' : wx === 'overcast' ? 'overcast' : wx === 'fog' ? 'fog' : wx === 'hot' ? 'hot'
     : ['morning', 'day', 'dusk'][partOfDay(L.scene?.time)];
   const gl = motion ? `<canvas class="tdx-gl" data-src="${SETS}/${key}" data-grade="${grade}"${HD_VENUES.has(screen.venue) && !L.conf ? ' data-hd="1"' : ''}></canvas>` : '';
@@ -152,11 +154,12 @@ export function worldHtml(screen, L) {
 // A northern lake camp gets sun, wind, cloud, rain, a storm and morning fog; a tropical island is hot,
 // with sudden storms; a film lot in the sun; a carnival in the autumn woods, grey and foggy.
 const CLIMATE = {
-  'hosted-camp': ['sunny', 'sunny', 'calm', 'calm', 'breezy', 'overcast', 'rain', 'storm', 'fog'],
-  'survival-island': ['sunny', 'hot', 'hot', 'calm', 'breezy', 'rain', 'storm', 'sunny'],
-  'film-lot': ['sunny', 'sunny', 'hot', 'calm', 'overcast', 'breezy', 'fog'],
-  'world-tour': ['sunny', 'calm', 'breezy', 'overcast', 'rain', 'fog', 'hot'],
-  carnival: ['overcast', 'overcast', 'fog', 'breezy', 'calm', 'rain', 'storm', 'sunny'],
+  // (the user, 2026-10-07: "some weather should be rarer like fog, the normal weather is more common")
+  'hosted-camp': [...Array(7).fill('sunny'), ...Array(6).fill('calm'), 'breezy', 'breezy', 'overcast', 'overcast', 'rain', 'storm', 'fog'],
+  'survival-island': [...Array(7).fill('sunny'), ...Array(5).fill('calm'), 'hot', 'hot', 'hot', 'breezy', 'breezy', 'rain', 'storm'],
+  'film-lot': [...Array(8).fill('sunny'), ...Array(6).fill('calm'), 'hot', 'hot', 'breezy', 'overcast', 'overcast', 'fog'],
+  'world-tour': [...Array(8).fill('sunny'), ...Array(6).fill('calm'), 'breezy', 'breezy', 'hot', 'overcast', 'rain', 'fog'],
+  carnival: [...Array(6).fill('calm'), ...Array(5).fill('sunny'), 'overcast', 'overcast', 'overcast', 'breezy', 'breezy', 'rain', 'storm', 'fog'],
 };
 export const WEATHER_LABEL = { sunny: 'Sunny', calm: 'Clear', breezy: 'Windy', overcast: 'Overcast', rain: 'Rain', storm: 'Storm', fog: 'Fog', hot: 'Heatwave' };
 /** The day's weather at a venue: one per episode, the same on every replay. */
@@ -262,6 +265,10 @@ export function shotOf(screen, L, toks) {
   const fill = s.k === 'beat' ? 0.78 : 0.66;
   let k = Math.min(fill / Math.max(x1 - x0, 0.05), (fill * 0.95) / Math.max(y1 - y0, 0.05));
   k = Math.max(1, Math.min(k, group.length === 1 ? 2.1 : 1.9));
+  // the camera closes in, but a person never grows past the size the set can hold (the user, 2026-10-07:
+  // "the avatar often don't fit well with the bg, sometimes too big")
+  const tallest = Math.max(...group.map(n => toks.find(x => x.n === n).h));
+  k = Math.max(1, Math.min(k, 44 / Math.max(tallest, 1)));
   if (k < 1.12) return wide;
   let cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
   const sp = speaker && group.includes(speaker) && group.length > 1 ? box(speaker) : null;

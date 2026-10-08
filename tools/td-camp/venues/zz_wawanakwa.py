@@ -33,26 +33,26 @@ _ZONES = {'dock': (720, 640), 'beach': (1380, 575), 'communal-grounds': (900, 54
           'lake': (260, 680), 'waterfall': (1180, 420), 'caves': (470, 515), 'boathouse': (1170, 555), 'amphitheater': (770, 465)}
 
 _HC = {
-    'communal-grounds': _wk('hc-lodge.json', [(480, 640), (760, 640), (1000, 640)]),
-    'cabins': _wk('hc-cabins.json', [(480, 640), (760, 640), (1000, 640)]),
+    'communal-grounds': _wk('hc-lodge.json', [(380, 648), (720, 648), (1000, 648)]),
+    'cabins': _wk('hc-cabins.json', [(450, 648), (770, 648), (1120, 648)]),
     'cabin-inside': _wk('hc-cabin-in.json', _ROW),
     'mess-hall': _wk('hc-mess.json', _ROW),
     'washroom': _wk('hc-wash.json', [(420, 640), (760, 640), (1100, 640)]),
     'confessional': _wk('hc-conf.json', [(700, 640), (900, 640)]),
-    'dock': _by_tod(_wk('hc-dock.json', [(250, 600), (560, 545), (860, 485)]), _wk('hc-dock-night.json', [(640, 640), (800, 640), (960, 640)])),
-    'exit': _wk('hc-dock-night.json', [(800, 640), (640, 640), (960, 640)]),
+    'dock': _by_tod(_wk('hc-dock.json', [(250, 640, 26), (520, 590, 22), (780, 545, 19)]), _wk('hc-dock-night.json', [(640, 648), (800, 648), (960, 648)])),
+    'exit': _wk('hc-dock-night.json', [(800, 648), (640, 648), (960, 648)]),
     'campfire': _wk('hc-campfire.json', [(650, 560), (850, 590), (1050, 560)]),
     'ceremony': _wk('hc-ceremony.json', [(820, 640), (1060, 640)], seats=_STUMPS, host=(1210, 470)),
-    'cliff': _wk('hc-cliff.json', [(380, 485), (680, 485), (980, 485)]),
-    'forest-trail': _wk('hc-forest.json', [(640, 640), (790, 640), (960, 640)]),
+    'cliff': _wk('hc-cliff.json', [(380, 530), (680, 530), (980, 530)]),
+    'forest-trail': _wk('hc-cave.json', [(380, 648), (640, 648), (900, 648)]),
     'beach': _wk('hc-beach.json', [(500, 640), (800, 640), (1100, 640)]),
     'map': _wk('hc-map.json', [], zones=_ZONES),
     # the places the show had beyond the camp's daily round (2026-10-07: "add all of them")
     'lake': _wk('hc-lake.json', [(480, 640), (760, 640), (1040, 640)]),
-    'waterfall': _wk('hc-falls.json', [(330, 640), (560, 640), (1120, 640)]),
-    'caves': _wk('hc-cave.json', [(420, 640), (660, 640), (900, 640)]),
+    'waterfall': _wk('hc-falls.json', [(300, 648, 15), (560, 648, 15), (1180, 648, 15)]),
+    'caves': _wk('hc-cave-in.json', [(520, 648), (800, 648), (1080, 648)]),
     'boathouse': _wk('hc-boathouse.json', _ROW),
-    'amphitheater': _wk('hc-amph.json', _ROW),
+    'amphitheater': _wk('hc-amph.json', [(620, 560, 18), (800, 560, 18), (980, 560, 18)]),
 }
 SCENES['hosted-camp'].update(_HC)
 # one frame per place, graded for the hour by the viewer; the dock has both of the show's
@@ -61,5 +61,5 @@ NIGHT_ONLY.update({'ceremony', 'exit', 'amphitheater'})
 
 # beyond camp: Boney Island is where an exiled camper is sent, Playa Des Losers where the voted-out wait
 SCENES['islands']['boney-island'] = _wk('hc-boney-beach.json', [(500, 640), (800, 640), (1100, 640)])
-SCENES['islands']['playa-des-losers'] = _wk('hc-playa.json', [(420, 640), (700, 640), (950, 640)])
+SCENES['islands']['playa-des-losers'] = _wk('hc-playa.json', [(420, 612, 14), (700, 612, 14), (950, 612, 14)])
 OUTDOOR['islands'].discard('boney-island'); OUTDOOR['islands'].discard('playa-des-losers')

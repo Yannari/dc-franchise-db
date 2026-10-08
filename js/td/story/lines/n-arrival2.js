@@ -72,7 +72,7 @@ export default {
     { id: 'nx.n2', when: { voice: 'dry' }, turns: [
       { by: 'h', say: "Excited, {a}?" },
       { by: 'a', say: "Can't you tell? This is my excited face." },
-      { by: 'a', conf: "I'm here for the money. And because I lost a bet. Mostly the money." },
+      { by: 'a', conf: "I'm here for the money, and also because I lost a bet, but mostly the money." },
     ] },
     { id: 'nx.n3', when: { voice: 'loud' }, turns: [
       { by: 'a', say: "LET'S GOOOO! Hi everybody!" },
@@ -82,10 +82,10 @@ export default {
     { id: 'nx.n4', when: { voice: 'loud' }, turns: [
       { by: 'a', say: "Okay, who's ready to lose? Because it's not gonna be me!" },
       { by: 'h', say: "Great energy. Terrible strategy." },
-      { by: 'a', conf: "I don't do quiet. Quiet gets forgotten. Nobody's forgetting me." },
+      { by: 'a', conf: "I don't do quiet, because quiet gets forgotten, and nobody's forgetting me." },
     ] },
     { id: 'nx.n5', when: { voice: 'warm' }, turns: [
-      { by: 'a', say: "Hi! Oh my gosh, hi. Is everybody okay? That boat was so bumpy." },
+      { by: 'a', say: "Hi! Oh my gosh, hi, is everybody okay? That ride was so bumpy." },
       { by: 'h', say: "They're fine. Probably." },
       { by: 'a', say: "I brought snacks if anybody's feeling sick." },
       { by: 'a', conf: "I want everybody here to feel okay. Even the people I'm going to have to beat." },
@@ -109,7 +109,7 @@ export default {
       { by: 'a', conf: "I've been nervous about this for six months. Now I'm here, and I'm nervous about different things." },
     ] },
     { id: 'nx.n9', when: { voice: 'anxious' }, turns: [
-      { by: 'a', say: "Hi. Sorry. Hi. Where do I stand?" },
+      { by: 'a', say: "Hi, sorry, hi... where do I stand?" },
       { by: 'h', say: "Anywhere." },
       { by: 'a', say: "That's the worst answer." },
     ] },
@@ -118,7 +118,7 @@ export default {
       { by: 'h', say: "You're not freaked out at all?" },
       { by: 'a', say: "Should I be?" },
       { by: 'h', say: "Yes." },
-      { by: 'a', conf: "People panic in places like this. Then they make bad decisions. I don't plan on panicking." },
+      { by: 'a', conf: "People panic in places like this and then they make bad decisions, and I don't plan on panicking." },
     ] },
     { id: 'nx.n11', when: { voice: 'competitive' }, turns: [
       { by: 'a', say: "How many challenges are there? Ballpark." },
@@ -188,7 +188,7 @@ export default {
       { by: 'a', conf: "Everybody here is going to complain about the cold and the food. I'm not. That's how I win." },
     ] },
     { id: 'nx.n22', when: { voice: 'bossy' }, turns: [
-      { by: 'a', say: "Okay. Who's in charge of the teams? Because I have notes." },
+      { by: 'a', say: "Okay, who's in charge of the teams? Because I have notes." },
       { by: 'h', say: "I'm in charge." },
       { by: 'a', say: "Then I have notes for you." },
     ] },
@@ -222,17 +222,17 @@ export default {
     { id: 'nx.n28', when: { age: 'older' }, turns: [
       { by: 'a', say: "Hello, everyone. I think I've got a few years on most of you." },
       { by: 'h', say: "Just a few." },
-      { by: 'a', say: "Don't worry. I'll keep up. And I'll be in bed by nine." },
-      { by: 'a', conf: "They're all looking at me like I'm somebody's parent. Good. Parents always know when you're lying." },
+      { by: 'a', say: "Don't worry, I'll keep up. And I'll be in bed by nine." },
+      { by: 'a', conf: "They're all looking at me like I'm somebody's parent, which is good, because parents always know when you're lying." },
     ] },
     { id: 'nx.n29', when: { age: 'thirties' }, turns: [
-      { by: 'a', say: "Hi. Okay. Where's the coffee?" },
+      { by: 'a', say: "Hi, okay, where's the coffee?" },
       { by: 'h', say: "There's no coffee." },
       { by: 'a', say: "Then I'm going home." },
       { by: 'h', say: "Not until somebody votes you out." },
     ] },
     { id: 'nx.n30', when: { home: true }, turns: [
-      { by: 'h', say: "So, {a}. {home}. Ready for something a little different?" },
+      { by: 'h', say: "So, {a}, all the way from {home}. Ready for something a little different?" },
       { by: 'a', say: "Different is one word for it." },
       { by: 'a', conf: "Back in {home}, nobody thought I'd make it on a show like this. I'm going to prove every one of them wrong." },
     ] },
@@ -262,7 +262,7 @@ export default {
       { by: 'a', conf: "I said I'd never come back. Then they offered me another shot at the money. I'm not proud." },
     ] },
     { id: 'nx.b2', when: { voice: 'cruel' }, turns: [
-      { by: 'a', say: "Oh, good. New people. I love it when they don't know what I'm capable of." },
+      { by: 'a', say: "Oh good, new people, I love it when they don't know what I'm capable of." },
       { by: 'h', say: "They will soon." },
       { by: 'a', say: "Not soon enough." },
     ] },
@@ -272,7 +272,7 @@ export default {
       { by: 'a', say: "So that's a no?" },
     ] },
     { id: 'nx.b4', when: { voice: 'anxious' }, turns: [
-      { by: 'a', say: "Oh no. It's exactly the same. Why did I say yes?" },
+      { by: 'a', say: "Oh no, it's exactly the same. Why did I say yes?" },
       { by: 'h', say: "Because we paid you." },
       { by: 'a', say: "Right. That's why." },
       { by: 'a', conf: "Last time I was so scared I couldn't think. This time I'm still scared. But I can think." },
@@ -283,7 +283,7 @@ export default {
       { by: 'a', say: "That's the point." },
     ] },
     { id: 'nx.b6', when: { voice: 'warm' }, turns: [
-      { by: 'a', say: "Oh, I missed this place. Is that weird? That's weird." },
+      { by: 'a', say: "Oh, I missed this place, is that weird? That's weird." },
       { by: 'h', say: "It's very weird." },
       { by: 'a', conf: "I made real friends here last time. I want to do that again. And maybe, this time, also win." },
     ] },
@@ -293,11 +293,11 @@ export default {
       { by: 'a', say: "Legends are misunderstood!" },
     ] },
     { id: 'nx.b8', when: { voice: 'schemer' }, turns: [
-      { by: 'a', say: "Hi, everyone. Don't worry about me. I'm just happy to be back." },
+      { by: 'a', say: "Hi, everyone, don't worry about me, I'm just happy to be back." },
       { by: 'a', conf: "The new people have seen me play. They think they know how I'll play this time. That's my favourite kind of mistake." },
     ] },
     { id: 'nx.b9', when: { age: 'older' }, turns: [
-      { by: 'h', say: "{a}! Look at you. Still standing." },
+      { by: 'h', say: "{a}! Look at you, still standing." },
       { by: 'a', say: "Barely. My knees have opinions about this." },
       { by: 'a', conf: "These kids think the old one is the easy vote. They thought that last time too." },
     ] },
@@ -322,8 +322,8 @@ export default {
   ],
   'arrive.meet.greet.snark': [
     { id: 'nx.gs1', turns: [
-      { by: 'b', say: "Nice bag. Very... practical." },
-      { by: 'a', say: "Nice face. Very... there." },
+      { by: 'b', say: "Nice bag. It's very... practical." },
+      { by: 'a', say: "Nice face. It's very... there." },
       O('c', "Okay, okay. It's not even lunch."),
       { by: 'b', say: "I think we're going to get along." },
       { by: 'a', say: "I really doubt it." },
@@ -338,20 +338,20 @@ export default {
       { by: 'b', say: "Let me guess. You're here to 'make friends'." },
       { by: 'a', say: "Let me guess. You're here to make enemies." },
       { by: 'b', say: "I'm here to make money." },
-      { by: 'a', say: "Same. Great. Don't talk to me." },
+      { by: 'a', say: "Same. Great. So don't talk to me." },
     ] },
   ],
   'arrive.meet.greet.awkward': [
     { id: 'nx.ga1', turns: [
-      { by: 'a', say: "Hi. Um. Is this where we... stand?" },
+      { by: 'a', say: "Hi, um... is this where we stand?" },
       { by: 'b', say: "I think so? Nobody told me either." },
-      { by: 'a', say: "Okay. Cool. I'll stand here, then." },
+      { by: 'a', say: "Okay, cool, I'll just stand here then." },
       O('c', "You can stand by me. I don't bite."),
-      { by: 'a', conf: "First conversation, and I asked where to stand. Great. Very cool." },
+      { by: 'a', conf: "My first conversation here and I asked where to stand. Great, very cool." },
     ] },
     { id: 'nx.ga2', turns: [
       { beat: "{a} puts out a hand to shake. {b} goes in for a hug. It's a mess." },
-      { by: 'b', say: "Sorry! Sorry. I'm a hugger." },
+      { by: 'b', say: "Sorry, sorry, I'm a hugger!" },
       { by: 'a', say: "I'm a... hand person." },
       O('c', "That was painful to watch."),
     ] },
@@ -378,7 +378,7 @@ export default {
       { by: 'b', say: "We'll see." },
       { by: 'a', say: "We will." },
       O('c', "Can you two maybe not do this before the teams are even picked?"),
-      { by: 'b', conf: "{a} looks strong. Strong people go home early here. Just saying." },
+      { by: 'b', conf: "{a} looks strong, and strong people go home early here, just saying." },
     ] },
     { id: 'nx.gz2', turns: [
       { beat: "{a} and {b} end up standing side by side, arms folded, both pretending not to look." },
@@ -390,11 +390,11 @@ export default {
   ],
   'arrive.meet.greet.friendly': [
     { id: 'nx.gr1', turns: [
-      { by: 'b', say: "Hey! I'm {b}. Welcome to the worst place on Earth." },
-      { by: 'a', say: "Ha! I'm {a}. It can't be that bad." },
+      { by: 'b', say: "Hey, I'm {b}! Welcome to the worst place on Earth." },
+      { by: 'a', say: "Ha! I'm {a}, and come on, it can't be that bad." },
       { by: 'b', say: "Oh, it's that bad." },
       O('c', "It's worse. I've been here twenty minutes."),
-      { by: 'a', conf: "{b} seems nice. Real nice, not fake nice. I'll take it." },
+      { by: 'a', conf: "{b} seems nice, like actually nice, not fake nice, so I'll take it." },
     ] },
     { id: 'nx.gr2', turns: [
       { by: 'b', say: "Need a hand with that?" },
@@ -426,7 +426,7 @@ export default {
     ] },
     { id: 'nx.gp3', turns: [
       { by: 'b', say: "How was the ride?" },
-      { by: 'a', say: "Long. Bumpy. Smelly." },
+      { by: 'a', say: "Long, bumpy, and smelly." },
       { by: 'b', say: "Same. Welcome." },
     ] },
   ],
@@ -456,7 +456,7 @@ export default {
       { by: 'b', say: "Or maybe {latest} is already playing." },
       O('d', "It's day one. Nobody's playing yet."),
       { by: 'c', say: "Somebody's always playing." },
-      { by: 'b', conf: "Everybody here is watching everybody. Including me. Especially me." },
+      { by: 'b', conf: "Everybody here is watching everybody, including me. Especially me." },
     ] },
     { id: 'nx.w4', turns: [
       { by: 'a', say: "Quick. Who do we think wins this whole thing?" },
@@ -464,7 +464,7 @@ export default {
       { by: 'c', say: "Why not?" },
       { by: 'b', say: "Just a feeling." },
       O('d', "My money's on whoever hasn't shown up yet."),
-      { by: 'a', conf: "First rule of this place: never say who you think wins. Everybody just did. Good to know." },
+      { by: 'a', conf: "The first rule of this place is never say who you think wins, and everybody just did, so that's good to know." },
     ] },
     { id: 'nx.w5', turns: [
       { by: 'b', say: "I'm going to forget everybody's names." },
@@ -480,7 +480,7 @@ export default {
       { by: 'c', say: "Mostly there." },
       O('d', "That's not an answer."),
       { by: 'b', say: "It's a day-one answer." },
-      { by: 'c', conf: "Nobody's giving away anything yet. Not even where they're from. This group is going to be fun." },
+      { by: 'c', conf: "Nobody's giving anything away yet, not even where they're from, so this group is going to be fun." },
     ] },
   ],
 };

@@ -96,7 +96,7 @@ const POOLS = {
   // ── a first-timer's entrance ──
   'arrive.new.villain': [
     { id: 'np.nv1', turns: [
-      { by: 'a', say: "Cute place. Very... rustic.", v: { cruel: "So this is it? I've seen nicer garbage dumps." } },
+      { by: 'a', say: "Cute place. It's very... rustic.", v: { cruel: "So this is it? I've seen nicer garbage dumps." } },
       { by: 'h', say: "Glad you like it!" },
       { by: 'a', say: "I didn't say I liked it." },
       { by: 'a', conf: "I'm going to be honest, because nobody else here will be. I'm here to win. And I'll do whatever it takes." },
@@ -104,7 +104,7 @@ const POOLS = {
     { id: 'np.nv2', turns: [
       { by: 'a', say: "So these are the other players?" },
       { by: 'h', say: "Your competition, yep." },
-      { by: 'a', say: "Huh. Okay. I was worried for nothing." },
+      { by: 'a', say: "Huh, okay, I was worried for nothing then." },
     ] },
   ],
   'arrive.new.mastermind': [
@@ -115,7 +115,7 @@ const POOLS = {
     ] },
     { id: 'np.nm2', turns: [
       { by: 'h', say: "Any big strategy, {a}?" },
-      { by: 'a', say: "Strategy? Me? I'm just happy to be here." },
+      { by: 'a', say: "Strategy? Me? No, I'm just happy to be here." },
       { by: 'a', conf: "Rule one: never tell the host your strategy. The host tells everybody." },
     ] },
   ],
@@ -123,7 +123,7 @@ const POOLS = {
     { id: 'np.ns1', turns: [
       { by: 'a', say: "Oh my gosh, hi everybody! I'm so excited!" },
       { by: 'h', say: "That's the spirit!" },
-      { by: 'a', conf: "First impressions are everything. Be nice, be fun, be nobody's problem. Then, later, be everybody's problem." },
+      { by: 'a', conf: "First impressions are everything, so I'm going to be nice and fun and nobody's problem, and then later I'll be everybody's problem." },
     ] },
     { id: 'np.ns2', turns: [
       { by: 'a', say: "Is it okay if I just stand at the back? I'm a little shy." },
@@ -143,7 +143,7 @@ const POOLS = {
       { by: 'a', say: "Let's go! Where's the first challenge?" },
       { by: 'h', say: "Slow down. You just got here." },
       { by: 'a', say: "I don't do slow." },
-      { by: 'a', conf: "People say I've got a temper. I say I've got energy. Same thing, different attitude." },
+      { by: 'a', conf: "People say I've got a temper, but I just call it energy." },
     ] },
   ],
   'arrive.new.challenge-beast': [
@@ -161,13 +161,13 @@ const POOLS = {
   ],
   'arrive.new.social-butterfly': [
     { id: 'np.nb1', turns: [
-      { by: 'a', say: "Hi! Hi! Hi everybody! Oh my gosh, I love your shoes." },
+      { by: 'a', say: "Hi, hi, hi everybody! Oh my gosh, I love your shoes!" },
       { by: 'h', say: "Okay, okay. Save some for the others." },
       { by: 'a', say: "There's plenty to go around!" },
       { by: 'a', conf: "I'm going to know everybody's name by dinner. Everybody's name, and their favourite food, and their biggest fear. Just, you know, as friends." },
     ] },
     { id: 'np.nb2', turns: [
-      { by: 'a', say: "Hey! I'm {a}. I'm a hugger. Is everybody okay with hugs?" },
+      { by: 'a', say: "Hey, I'm {a}, and I'm a hugger, so is everybody okay with hugs?" },
       { by: 'h', say: "I'm not." },
       { by: 'a', say: "That's okay. I'll hug you later." },
     ] },
@@ -175,14 +175,14 @@ const POOLS = {
   'arrive.new.loyal-soldier': [
     { id: 'np.nl1', turns: [
       { by: 'a', say: "Hey. Thanks for having me." },
-      { by: 'h', say: "Polite! I like that. It won't last." },
+      { by: 'h', say: "Polite! I like that. It won't last, but I like it." },
       { by: 'a', say: "We'll see." },
       { by: 'a', conf: "My plan is simple. Find good people, stick with them, and never be the one who lets them down." },
     ] },
     { id: 'np.nl2', turns: [
-      { by: 'a', say: "Need help with anything? Bags? Anything?" },
+      { by: 'a', say: "Does anybody need help with anything? Bags, anything?" },
       { by: 'h', say: "You're a contestant. You don't carry bags." },
-      { by: 'a', say: "Oh. Right. Sorry. Habit." },
+      { by: 'a', say: "Oh, right, sorry, it's a habit." },
     ] },
   ],
   'arrive.new.wildcard': [
@@ -193,7 +193,7 @@ const POOLS = {
       { by: 'a', conf: "People keep asking what my strategy is. My strategy is Gerald." },
     ] },
     { id: 'np.nw2', turns: [
-      { by: 'a', say: "Hello! I'm {a}! I'm going to win, or I'm going to lose spectacularly. No in between." },
+      { by: 'a', say: "Hello! I'm {a}, and I'm either going to win or lose spectacularly, there's no in between." },
       { by: 'h', say: "That's... a plan." },
       { by: 'a', say: "Is it? Great!" },
     ] },
@@ -205,7 +205,7 @@ const POOLS = {
       { by: 'h', say: "It was a sign." },
       { by: 'a', say: "A sign of what?" },
       { by: 'h', say: "That we're in trouble." },
-      { by: 'a', conf: "I'm going to make this season unforgettable. For good reasons, for bad reasons. Mostly bad. They're more fun." },
+      { by: 'a', conf: "I'm going to make this season unforgettable, for good reasons and bad reasons, but mostly bad ones, because those are more fun." },
     ] },
     { id: 'np.nx2', turns: [
       { by: 'a', say: "Quick question. Are there any rules about fire?" },
@@ -218,7 +218,7 @@ const POOLS = {
       { by: 'a', say: "Hey. Cool place." },
       { by: 'h', say: "That's it? 'Cool place'?" },
       { by: 'a', say: "Yeah. Cool place." },
-      { by: 'a', conf: "The loud ones go home first. The scary ones go home second. I'm going to be neither." },
+      { by: 'a', conf: "The loud ones go home first and the scary ones go home second, so I'm just going to be neither." },
     ] },
     { id: 'np.nf2', turns: [
       { beat: "{a} steps off and quietly finds a spot at the back of the group." },
@@ -229,10 +229,10 @@ const POOLS = {
   ],
   'arrive.new.underdog': [
     { id: 'np.nu1', turns: [
-      { by: 'a', say: "Wow. I'm actually here. I'm actually on the show." },
+      { by: 'a', say: "Wow, I'm actually here, I'm actually on the show." },
       { by: 'h', say: "You actually are." },
       { by: 'a', say: "My friends back home are never going to believe this." },
-      { by: 'a', conf: "Everybody here looks stronger and cooler than me. Good. Let them think that." },
+      { by: 'a', conf: "Everybody here looks stronger and cooler than me, which is good, because I want them to think that." },
     ] },
     { id: 'np.nu2', turns: [
       { beat: "{a} trips stepping onto {landing} and catches {a.ref} just in time." },
@@ -259,12 +259,12 @@ const POOLS = {
     { id: 'np.ng1', turns: [
       { by: 'a', say: "Oh my gosh, it's YOU! From the TV!" },
       { by: 'h', say: "It is me. From the TV." },
-      { by: 'a', say: "Can I get a picture? Wait. I don't have my phone. Can I get a picture later?" },
+      { by: 'a', say: "Can I get a picture? Wait, I don't have my phone... can I get a picture later?" },
       { by: 'h', say: "No." },
-      { by: 'a', conf: "I'm going to make so many friends here. Everybody seems so nice. Especially the scary ones." },
+      { by: 'a', conf: "I'm going to make so many friends here, because everybody seems so nice, especially the scary ones." },
     ] },
     { id: 'np.ng2', turns: [
-      { by: 'a', say: "Is this where we sleep? Outside? That's so fun!" },
+      { by: 'a', say: "Is this where we sleep, outside? That's so fun!" },
       { by: 'h', say: "You'll change your mind tonight." },
       { by: 'a', say: "No way!" },
     ] },
@@ -287,9 +287,9 @@ const POOLS = {
   ],
   'arrive.new.any': [
     { id: 'np.na1', turns: [
-      { by: 'a', say: "Hi! Wow. Okay. This is real." },
+      { by: 'a', say: "Hi! Wow, okay, this is real." },
       { by: 'h', say: "Very real. Welcome!" },
-      { by: 'a', conf: "I've watched this show for years. Being here is weird. Good weird. Mostly." },
+      { by: 'a', conf: "I've watched this show for years, so being here is weird. Good weird, mostly." },
     ] },
     { id: 'np.na2', turns: [
       { by: 'a', say: "So where do we sleep?" },
@@ -301,14 +301,14 @@ const POOLS = {
       { by: 'a', say: "Where do you want this?" },
       { beat: "{a} is carrying {a.posAdj} bag and somebody else's. Easily." },
       { by: 'h', say: "Anywhere. Show-off." },
-      { by: 'a', conf: "I'm strong. Everybody can see that. That's good for challenges and bad for votes. I need to make friends fast." },
+      { by: 'a', conf: "I'm strong and everybody can see that, which is good for challenges but bad for votes, so I need to make friends fast." },
     ] },
     { id: 'np.na4', when: { brainy: true }, turns: [
       { by: 'a', say: "Interesting. How many of us are there?" },
       { by: 'h', say: "You'll find out." },
       { by: 'a', say: "Even or odd matters for the teams, you know." },
       { by: 'h', say: "I didn't know, and I don't care." },
-      { by: 'a', conf: "Everybody's looking at the scenery. I'm looking at the people. The scenery isn't voting." },
+      { by: 'a', conf: "Everybody's looking at the scenery and I'm looking at the people, because the scenery isn't going to vote me out." },
     ] },
     { id: 'np.na5', when: { hot: true }, turns: [
       { by: 'a', say: "Who's in charge here? You?" },
@@ -321,18 +321,18 @@ const POOLS = {
       { by: 'h', say: "You're not nervous at all, are you?" },
       { by: 'a', say: "Should I be?" },
       { by: 'h', say: "Very." },
-      { by: 'a', conf: "Everybody else is freaking out. Someone has to stay calm. Might as well be me." },
+      { by: 'a', conf: "Everybody else is freaking out, and someone has to stay calm, so it might as well be me." },
     ] },
     { id: 'np.na7', when: { age: 'teen' }, turns: [
-      { by: 'a', say: "This is so sick. Is that the camp? That's the camp?" },
+      { by: 'a', say: "This is so sick! Wait, is that the camp? That's the camp?" },
       { by: 'h', say: "That's the camp." },
       { by: 'a', say: "My mom is going to freak out when she sees this." },
     ] },
     { id: 'np.na8', when: { age: 'older' }, turns: [
-      { by: 'a', say: "Hello, everyone. I'm {a}. I think I'm a little older than most of you." },
+      { by: 'a', say: "Hello, everyone, I'm {a}, and I think I'm a little older than most of you." },
       { by: 'h', say: "Just a little." },
       { by: 'a', say: "Don't worry. I'll keep up." },
-      { by: 'a', conf: "They're all looking at me like I'm somebody's parent. Fine. Parents know when you're lying." },
+      { by: 'a', conf: "They're all looking at me like I'm somebody's parent, which is fine, because parents always know when you're lying." },
     ] },
     { id: 'np.na9', when: { charm: true }, turns: [
       { by: 'a', say: "Hey! You must be the famous host." },
@@ -352,7 +352,7 @@ const POOLS = {
   'arrive.back.any': [
     { id: 'np.ba1', turns: [
       { by: 'h', say: "Look who's back! {a}, how does it feel?" },
-      { by: 'a', say: "Weird. Good weird. I swore I'd never do this again." },
+      { by: 'a', say: "Weird, but good weird, because I swore I'd never do this again." },
       { by: 'h', say: "They all say that." },
       { by: 'a', conf: "Last time I learned how this place works. This time I'm going to use it." },
     ] },
@@ -360,7 +360,7 @@ const POOLS = {
       { by: 'a', say: "Back on {landing}. Same smell." },
       { by: 'h', say: "Missed it?" },
       { by: 'a', say: "Not even a little." },
-      { by: 'a', conf: "Everybody new is looking at me like I'm famous. I'm not famous. I'm a target." },
+      { by: 'a', conf: "Everybody new is looking at me like I'm famous, but I'm not famous, I'm a target." },
     ] },
     { id: 'np.ba3', when: { arch: ['villain', 'schemer', 'mastermind'] }, turns: [
       { by: 'h', say: "The audience did not want you back, {a}. Just so you know." },
@@ -372,7 +372,7 @@ const POOLS = {
       { by: 'a', say: "Hey, everybody! I'm back!" },
       { by: 'h', say: "And the fans love {a}. Don't they?" },
       { by: 'a', say: "I hope so. I've got unfinished business." },
-      { by: 'a', conf: "Last time I trusted the wrong people. I'm still going to trust people. Just better ones." },
+      { by: 'a', conf: "Last time I trusted the wrong people, and I'm still going to trust people, just better ones this time." },
     ] },
     { id: 'np.ba5', when: { arch: ['hothead', 'challenge-beast', 'chaos-agent'] }, turns: [
       { by: 'a', say: "I'm back, and I'm not going home early this time." },
@@ -396,10 +396,10 @@ const POOLS = {
       { by: 'a', say: "Hi. It's been a while." },
       { by: 'h', say: "Ready to do it all again?" },
       { by: 'a', say: "Ready to do it better." },
-      { by: 'a', conf: "The new players don't know me. The old ones do. The old ones are my real problem." },
+      { by: 'a', conf: "The new players don't know me, but the old ones do, and they're my real problem." },
     ] },
     { id: 'np.ba9', when: { voice: ['warm', 'anxious', 'emotional', 'earnest'] }, turns: [
-      { by: 'a', say: "Oh wow. I'm shaking. Is that normal?" },
+      { by: 'a', say: "Oh wow, I'm shaking, is that normal?" },
       { by: 'h', say: "For you? Yes." },
       { by: 'a', say: "I can't believe they asked me back." },
       { by: 'a', conf: "I cried for a week after I went home last time. This time I want to cry because I won." },
@@ -415,10 +415,10 @@ const POOLS = {
   'arrive.meet.history.siblings': [
     { id: 'np.ms1', turns: [
       { beat: "{a} steps off and sees {b} already waiting." },
-      { by: 'a', say: "No. No way. Are you serious?" },
+      { by: 'a', say: "No, no way, are you serious?" },
       { by: 'b', say: "Surprise." },
       { by: 'a', say: "You told me you weren't applying!" },
-      { by: 'b', say: "I lied. I'm your {kinWord}. I'm allowed to lie to you." },
+      { by: 'b', say: "I lied, but I'm your {kinWord}, so I'm allowed to lie to you." },
       { by: 'a', conf: "I came here to get away from my family for a few weeks. My family came too." },
     ] },
   ],
@@ -426,8 +426,8 @@ const POOLS = {
     { id: 'np.mf1', turns: [
       { by: 'a', say: "{b}? What are you doing here?" },
       { by: 'b', say: "Same thing as you, apparently." },
-      { by: 'a', say: "My {kinWord}. On the same show. This is going to be so weird." },
-      { by: 'b', conf: "Everybody's going to think we're a team. We might be. We'll see." },
+      { by: 'a', say: "My {kinWord}, on the same show as me. This is going to be so weird." },
+      { by: 'b', conf: "Everybody's going to think we're a team, and maybe we are, we'll see." },
     ] },
   ],
   'arrive.meet.history.cousins': [
@@ -459,7 +459,7 @@ const POOLS = {
   'arrive.meet.history.knew': [
     { id: 'np.mn1', turns: [
       { by: 'b', say: "Wait. Don't I know you?" },
-      { by: 'a', say: "Oh my gosh. Yes. Hi." },
+      { by: 'a', say: "Oh my gosh, yes, hi!" },
       { by: 'b', say: "Small world." },
       { by: 'a', say: "Very small. Smaller than I'd like." },
       { by: 'a', conf: "I know {b} a little from back home. Not well. Well enough that it's going to be weird." },
@@ -480,7 +480,7 @@ const POOLS = {
       { by: 'b', say: "Nice to see you too." },
       { by: 'a', say: "Of all the people. Of all the shows." },
       { by: 'b', say: "I could say the same thing." },
-      { by: 'a', conf: "{b} and I used to date. It ended badly. Now we're stuck here together for weeks. Fantastic." },
+      { by: 'a', conf: "{b} and I used to date, and it ended badly, and now we're stuck here together for weeks. Fantastic." },
     ] },
   ],
   'arrive.meet.history.exfriends': [
@@ -489,7 +489,7 @@ const POOLS = {
       { by: 'a', say: "{b}." },
       { by: 'b', say: "That's all I get? After everything?" },
       { by: 'a', say: "After everything, that's all you get." },
-      { by: 'a', conf: "We used to be best friends. Then we weren't. I'm not getting into it on day one." },
+      { by: 'a', conf: "We used to be best friends, and then we weren't, and I'm not getting into it on day one." },
     ] },
   ],
   'arrive.meet.history.wronged': [
@@ -508,7 +508,7 @@ const POOLS = {
       { by: 'b', say: "Don't 'hi' me." },
       { by: 'a', say: "Still upset about {where}?" },
       { by: 'b', say: "What do you think?" },
-      { by: 'a', conf: "I voted {b} out {where}. It was the right move. {b} doesn't see it that way. I'll have to watch {b} very closely." },
+      { by: 'a', conf: "I voted {b} out {where}, and it was the right move, but {b} doesn't see it that way, so I'm going to have to watch {b} really closely." },
     ] },
   ],
   'arrive.meet.history.oldflame': [
@@ -527,7 +527,7 @@ const POOLS = {
       { by: 'a', say: "Miss me?" },
       { by: 'b', say: "Every day." },
       { beat: "They kiss. Somebody new on {landing} goes, 'Wait, they're together?'" },
-      { by: 'b', conf: "Everybody watched us {where}. Everybody knows we're a couple. That's two targets, one heart. It's fine." },
+      { by: 'b', conf: "Everybody watched us {where}, so everybody knows we're a couple, and that makes us two targets. It's fine." },
     ] },
   ],
   'arrive.meet.history.oldrivals': [
@@ -536,7 +536,7 @@ const POOLS = {
       { by: 'a', say: "Of course it's you." },
       { by: 'b', say: "Round two?" },
       { by: 'a', say: "Round two. I'm winning this one." },
-      { by: 'b', conf: "{a} and I went at it {where}. It never got settled. It's getting settled now." },
+      { by: 'b', conf: "{a} and I went at it {where} and it never got settled, so it's getting settled now." },
     ] },
   ],
   'arrive.meet.history.oldallies': [
@@ -545,14 +545,14 @@ const POOLS = {
       { by: 'b', say: "Shh! Not so loud!" },
       { by: 'a', say: "Why?" },
       { by: 'b', say: "Because everyone saw us working together {where}. They're going to split us up before lunch." },
-      { by: 'a', conf: "{b} is right. We were a team {where}, and everybody knows it. We need to look like strangers. That's going to be hard." },
+      { by: 'a', conf: "{b} is right, we were a team {where} and everybody knows it, so we need to look like strangers, which is going to be really hard." },
     ] },
   ],
 
   // ── a first-timer meets a returnee ──
   'arrive.meet.fan-of-them': [
     { id: 'np.fa1', turns: [
-      { by: 'a', say: "Wait. You're {b}. You were on the show before!" },
+      { by: 'a', say: "Wait, you're {b}! You were on the show before!" },
       { by: 'b', say: "Hi. Yes." },
       { by: 'a', say: "I watched every episode. You were so good!" },
       { by: 'b', say: "I went home." },
@@ -565,7 +565,7 @@ const POOLS = {
       { by: 'a', say: "I've seen what you do to people." },
       { by: 'b', say: "That was a different season." },
       { by: 'a', say: "That's what people who do it again say." },
-      { by: 'a', conf: "I'm not going to trust {b}. I've seen the tapes. Everybody's seen the tapes." },
+      { by: 'a', conf: "I'm not going to trust {b}, because I've seen the tapes, and everybody's seen the tapes." },
     ] },
   ],
   'arrive.meet.fan': [
@@ -573,8 +573,8 @@ const POOLS = {
       { beat: "{b}, already on {landing}, goes very still as {a} steps off." },
       { by: 'b', say: "That's {a}. That's actually {a}." },
       { by: 'a', say: "Hey. Have we met?" },
-      { by: 'b', say: "No. Yes. I watched you. On TV. Sorry. Hi." },
-      { by: 'a', conf: "The new ones all know who I am. Good for my ego. Terrible for my game." },
+      { by: 'b', say: "No... yes. I watched you, on TV. Sorry. Hi." },
+      { by: 'a', conf: "The new ones all know who I am, which is great for my ego and terrible for my game." },
     ] },
   ],
 
@@ -585,7 +585,7 @@ const POOLS = {
       { by: 'a', say: "Something wrong?" },
       { by: 'b', say: "Nope. Just looking." },
       { by: 'a', say: "Look somewhere else." },
-      { by: 'b', conf: "I don't know {a}. I already don't trust {a}. My gut is usually right." },
+      { by: 'b', conf: "I don't know {a} at all, and I already don't trust {a}, and my gut is usually right." },
     ] },
   ],
   'arrive.meet.sizing-up': [
@@ -600,7 +600,7 @@ const POOLS = {
     { id: 'np.ci1', turns: [
       { beat: "{a} drops {a.posAdj} bag on {landing} with a thud. {b} jumps." },
       { by: 'a', say: "What?" },
-      { by: 'b', say: "Nothing! Nothing. Hi. Welcome." },
+      { by: 'b', say: "Nothing! Nothing, hi, welcome." },
       { by: 'b', conf: "I'm going to stand on the other side of camp from {a}. Just for a while. Just until I know {a} won't throw me off {landing}." },
     ] },
   ],
@@ -633,7 +633,7 @@ const POOLS = {
   ],
   'arrive.meet.predatory': [
     { id: 'np.cp1', turns: [
-      { by: 'b', say: "Hi! You seem great. Really great." },
+      { by: 'b', say: "Hi! You seem great, like really great." },
       { by: 'a', say: "Thanks! You seem great too!" },
       { by: 'b', say: "We should stick together." },
       { by: 'a', say: "I'd love that!" },
@@ -644,7 +644,7 @@ const POOLS = {
     { id: 'np.ce1', turns: [
       { by: 'b', say: "Hey. First time on something like this?" },
       { by: 'a', say: "Is it that obvious?" },
-      { by: 'b', say: "A little. Don't worry. Stick with me and you'll be fine." },
+      { by: 'b', say: "A little, but don't worry, just stick with me and you'll be fine." },
       { by: 'a', say: "Really?" },
       { by: 'b', say: "Really." },
       { by: 'a', conf: "{b} was the first person here to be nice to me. I'm not going to forget that." },
@@ -657,16 +657,16 @@ const POOLS = {
       { by: 'a', say: "What thing?" },
       { by: 'b', say: "Counting everybody. I'm doing it too." },
       { by: 'a', say: "...Then let's not do it at each other." },
-      { by: 'b', conf: "{a} is smart. Really smart. Either we work together, or one of us goes home very early." },
+      { by: 'b', conf: "{a} is really smart, so either we work together, or one of us goes home very early." },
     ] },
   ],
   'arrive.meet.curiosity': [
     { id: 'np.cc1', turns: [
       { by: 'b', say: "What's your deal?" },
       { by: 'a', say: "My deal?" },
-      { by: 'b', say: "Everybody's got a deal. I can usually tell in a minute. I can't tell with you." },
+      { by: 'b', say: "Everybody's got a deal, and I can usually tell in a minute, but I can't tell with you." },
       { by: 'a', say: "Good." },
-      { by: 'b', conf: "I can read almost anybody. I can't read {a} at all. That bugs me. I'm going to figure {a} out." },
+      { by: 'b', conf: "I can read almost anybody, but I can't read {a} at all, and that bugs me, so I'm going to figure {a} out." },
     ] },
   ],
 };

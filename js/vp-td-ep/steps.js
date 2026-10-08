@@ -191,6 +191,14 @@ const clockText = m => { const h = Math.floor(m / 60), mm = m % 60; return `${((
 
 // ── names ─────────────────────────────────────────────────────────────
 const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
+// a badge that gives the vote away before it happens (the user, 2026-10-08: "naming the conversations
+// The Plan and Other Plan spoiled the one that worked", "Feels Safe also spoiled it"): the same neutral
+// label and colour for every side's talk
+const SPOILS = { 'the plan': 'Vote Talk', 'other plan': 'Vote Talk', 'feels safe': 'Before the Vote' };
+export function unspoil(text, cls = '') {
+  const t = SPOILS[String(text || '').trim().toLowerCase()];
+  return t ? { text: t, cls: '' } : { text, cls };
+}
 export const cleanText = s => String(s || '').replace(/â€”/g, '—').replace(/â€“/g, '–').replace(/â€™/g, '’').replace(/â€œ|â€\u009d/g, '"').replace(/\s+/g, ' ').trim();
 
 // ══════════════════════════════════════════════════════════════════════
@@ -280,8 +288,11 @@ function awayIn(lines, said) {
   const names = [...new Set(lines.flatMap(l => String(l.text || '').match(/\b[A-Z][a-z]+\b/g) || []))].filter(n => !said.includes(n));
   return names.filter(n => { const e = reEsc(n); return lines.some(l => new RegExp(`\\b${e}\\b('s)? (isn't|is not|wasn't|was not|ain't) (even )?(here|there|around)|behind ${e}'s back|while ${e} (was|is) (gone|away|off)|${e} (left|walked off|is off|went off) `, 'i').test(l.text || '')); });
 }
-const CROWD_BEAT = /\b(the group|everyone|everybody|the whole (team|camp|tribe)|around the fire|the others|the circle|hands? (go|goes|went) up|nobody else|the rest of (them|the team|the camp|the tribe)|the tribe (lies|takes|watches|stares|laughs|cheers|goes|sits|gathers|looks|is|turns|debates|claps)|the camp (watches|debates|stares|laughs|goes|turns|saw|is)|camp (saw|watches|remembers)|half the (camp|tribe)|in front of the (camp|tribe|group|others)|people (nod|laugh|stare|watch|clap|cheer|look)|nobody (can|is sure|says|moves|speaks|laughs)|heads turn)\b/i;
-const crowdIn = lines => lines.some(l => (l.kind === 'beat' && CROWD_BEAT.test(l.text || ''))
+const CROWD_BEAT = /\b(the group|everyone|everybody|the whole (team|camp|tribe)|around the fire|the others|the circle|hands? (go|goes|went) up|the rest of (them|the team|the camp|the tribe)|the tribe (lies|takes|watches|stares|laughs|cheers|goes|sits|gathers|looks|is|turns|debates|claps)|the camp (watches|debates|stares|laughs|goes|turns|saw|is)|camp (saw|watches|remembers)|half the (camp|tribe)|in front of the (camp|tribe|group|others)|people (nod|laugh|stare|watch|clap|cheer|look)|nobody (can|is sure|says|moves|speaks|laughs)|heads turn)\b/i;
+// a scene that sends the others away is private, whatever group words it uses ("waits until the others
+// go off to clean up", "away from the group", "pulls her aside")
+const PRIVATE_BEAT = /\b(until (the others|everyone|everybody)|(the others|everyone|everybody) (go|goes|went|wander|wanders|head|heads|drift|drifts|leave|leaves|left|is gone|are gone|is asleep|are asleep|falls asleep)|out of earshot|away from (the )?(group|others|camp|everyone|the fire)|alone|aside|just the two of them|by themselves|nobody around|no one around|in private|quietly, so)\b/i;
+const crowdIn = lines => !lines.some(l => l.kind === 'beat' && PRIVATE_BEAT.test(l.text || '')) && lines.some(l => (l.kind === 'beat' && CROWD_BEAT.test(l.text || ''))
   || (l.kind === 'say' && /\b(put it to a vote|hands up if|all of you|everybody listen|listen up)\b/i.test(l.text || '')));
 // events the engine plays out in front of the whole group (two people fighting over who leads it, a
 // group scene, a laugh the whole camp shares)
@@ -434,7 +445,7 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
     const engineSpot = ev.scene?.spot?.id || ev.access?.locationId || V.public;
     const windowId = ev.scene?.spot?.window || ev.access?.windowId || (phase === 'pre' ? 'camp-work' : 'scramble');
     const spot = engineSpot === 'confessional' ? engineSpot : stageSpot(venue, engineSpot, ev, windowId);
-    const badge = ev.badgeText ? { text: cleanText(ev.badgeText), cls: ev.badgeClass || '' } : null;
+    const badge = ev.badgeText ? unspoil(cleanText(ev.badgeText), ev.badgeClass || '') : null;
     engineAt = engineSpot === 'confessional' ? null : engineSpot;
     if (Array.isArray(ev.lines) && ev.lines.length) {
       // everyone who speaks is on stage, always (a speaker without a place is a person who blinks out)
@@ -445,7 +456,7 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
       const absent = awayIn(ev.lines, said);
       const who = Object.values(ev.scene?.who || {}).filter(n => n && !absent.includes(n));
       let focus = [...said, ...who.filter(n => !said.includes(n))].slice(0, Math.max(4, said.length));
-      if (CROWD_TYPES.has(ev.type) || /^crowd\./.test(ev.scene?.kind || '') || crowdIn(ev.lines)) focus = [...focus, ...(members || []).filter(n => !focus.includes(n) && !absent.includes(n))].slice(0, 8);
+      if ((CROWD_TYPES.has(ev.type) || /^crowd\./.test(ev.scene?.kind || '') || crowdIn(ev.lines)) && !ev.lines.some(l => l.kind === 'beat' && PRIVATE_BEAT.test(l.text || ''))) focus = [...focus, ...(members || []).filter(n => !focus.includes(n) && !absent.includes(n))].slice(0, 8);
       const onlyConf = ev.lines.every(l => l.kind === 'conf' || l.kind === 'beat') && !said.length;
       if (!onlyConf) open(spot === 'confessional' ? V.public : spot, windowId, focus.length ? focus : (ev.players || []).slice(0, 3), { why: badge });
       else if (!cur) open(V.public, windowId, (ev.players || []).slice(0, 3), { why: badge });
@@ -690,7 +701,7 @@ export function tdTribalScreen(ep, o = {}) {
     // who has gone before this one: the boot is the nth voted out of the game
     const gone = (window.gs?.episodeHistory || []).filter(e => e.num < ep.num && e.eliminated).length;
     const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth'];
-    readVotes(steps, say, { ...V, _host: host, _nth: ORD[gone] || null, _of: 'of the game' }, { tribal, elim, ballots, protectedSet, tie, revote, rocks: !!ep.isRockDraw });
+    readVotes(steps, say, { ...V, _host: host, _nth: ORD[gone] || null, _of: 'of the game', _ep: ep }, { tribal, elim, ballots, protectedSet, tie, revote, rocks: !!ep.isRockDraw });
   }
   // the reading lands: how the one going home takes it, and who answers (td/story/tribal.js)
   const lineStep = l => (l.kind === 'beat' ? { k: 'beat', text: cleanText(l.text), focus: [] }
@@ -884,6 +895,76 @@ function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, roc
   steps.push({ k: 'out', who: elim, focus: [elim] });
 }
 
+// ── the faces at the reading (the user, 2026-10-08: "no suspense and no reactions from the people
+// hearing their name: surprise, sadness, anger, scared, shocked, betrayal") ──
+// Each name read gets a face, and the face only knows what that person knows: whether word reached
+// them that it was them tonight (pitchIntel, a counter-move), who they think is on their side (their
+// blocs and alliances), and the count. One vote more than the people outside their side could have
+// written means a friend wrote it, and they turn on the friend they trust most; that friend answers
+// from their own ballot. The last name lands as a blindside or as the end they saw coming, on them,
+// on their closest friend, and on the person whose plan it was. Narrative only: every vote is cast.
+const RX = {
+  steady: ['{x} nods. {x} saw that one coming.', "{x} doesn't even blink.", '{x} glances at {y} and gives the smallest nod.', '{x} just keeps looking straight ahead.'],
+  surprised: ["{x}'s head snaps up.", '{x} blinks, then looks along the row.', '{x} frowns at the urn like it made a mistake.', '{x} sits up a little straighter.', "{x}'s eyebrows go up. Just a little."],
+  scared: ['{x} has stopped smiling.', '{x} starts counting the faces around the fire.', '{x} grips the edge of the seat.', '{x} swallows hard.', "{x}'s knee starts bouncing."],
+  angry: ['{x} shakes {pos} head and mutters something under {pos} breath.', "{x}'s jaw tightens.", '{x} folds {pos} arms and glares into the fire.', '{x} lets out a short, hard laugh.'],
+  betrayed: ['{x} turns, slowly, and stares at {y}.', '{x} counts on {pos} fingers, then looks straight at {y}.', "{x}'s eyes go straight to {y}."],
+  guilty: ['{y} looks down at the sand.', "{y} won't meet {x}'s eyes.", '{y} suddenly finds the fire very interesting.'],
+  blind: ["{x}'s mouth falls open.", '{x} just stares at the urn.', '{x} laughs, once, like it has to be a joke.', '{x} looks at {y}, then at the urn, then back at {y}.'],
+  ending: ['{x} closes {pos} eyes and nods.', '{x} lets out a long breath. {x} knew.', '{x} smiles, sadly, and reaches for {pos} bag.'],
+  fury: ['{x} is on {pos} feet before the name is even finished.', '{x} slams a hand down on the seat.', "{x}'s face goes red, and {x} doesn't say a word."],
+  friend: ['Next to {x}, {y} covers {ypos} face with both hands.', "{y} reaches over and squeezes {x}'s arm.", "{y}'s eyes are already wet."],
+  friendShock: ['{y} gasps out loud.', "{y}'s head whips round to the urn. That wasn't the plan {y} knew about."],
+  relief: ['Across the fire, {y} lets out a breath {ysub} has been holding all night.', '{y} keeps a perfectly straight face. Barely.'],
+};
+const BETRAY_SAY = { x: ['Seriously?', 'Wow. Okay.', 'Really?', "You're kidding me."], yNo: ["Don't look at me. It wasn't me.", "It wasn't me, I swear.", "That's not mine. I promise."] };
+const HOST_STING = ['Ooh. Somebody has been busy.', 'Interesting. Very interesting.', 'Oh, this is getting good.'];
+function voteReaction(steps, V, { v, tally, deciding, tribal, elim, ballots, i, n }) {
+  const ep = V._ep;
+  const X = v.voted;
+  if (!tribal.includes(X)) return;
+  const hash = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+  const pick = (k, salt) => RX[k][hash(`${ep.num}|${X}|${salt}|${k}`) % RX[k].length];
+  const P = n0 => (typeof globalThis.pronouns === 'function' && globalThis.pronouns(n0)) || { posAdj: 'their', sub: 'they' };
+  const fill = (t, y) => t.replace(/\{x\}/g, X).replace(/\{y\}/g, y || '').replace(/\{pos\}/g, P(X).posAdj).replace(/\{ypos\}/g, y ? P(y).posAdj : '').replace(/\{ysub\}/g, y ? P(y).sub : '');
+  const wrote = x => ballots.find(b => b.voter === x)?.voted || null;
+  // what X knows: word that it's X tonight, and who X counts on
+  const knew = (ep.pitchIntel || []).some(k => k.knower === X && k.target === X && k.believed !== false) || (ep.pitchCounterplay || []).some(c => c.actor === X);
+  const named = ((typeof window !== 'undefined' && window.gs?.namedAlliances) || []).filter(a => (a.members || []).includes(X) && (a.formed ?? 0) <= ep.num);
+  const side = [...new Set([...(ep.alliances || []).filter(a => (a.members || []).includes(X)).flatMap(a => a.members), ...named.flatMap(a => a.members)])]
+    .filter(y => y !== X && tribal.includes(y));
+  // the friend X trusts most: in the most alliances with X
+  const ally = side.length ? [...side].sort((p, q) => (named.filter(a => a.members.includes(q)).length - named.filter(a => a.members.includes(p)).length) || p.localeCompare(q))[0] : null;
+  const could = tribal.filter(y => y !== X && !side.includes(y)).length;
+  const cnt = tally[X] || 0;
+  const temper = (typeof globalThis.pStats === 'function' && globalThis.pStats(X)?.temperament) || 5;
+  const push = (k, y, feel, extra = {}) => steps.push({ k: 'beat', text: fill(pick(k, i), y), focus: [X, y].filter(z => z && tribal.includes(z)), feel, ...extra });
+  if (deciding) {
+    // the last name: a blindside, or the end they saw coming
+    if (!knew) push('blind', ally, { [X]: 'shock' }, { tense: true });
+    else if (temper <= 3) push('fury', null, { [X]: 'angry' });
+    else push('ending', null, { [X]: 'sad' });
+    if (ally) push(wrote(ally) === X ? 'friend' : (knew ? 'friend' : 'friendShock'), ally, { [ally]: wrote(ally) === X || knew ? 'sad' : 'shock' });
+    const lead = ballots.filter(b => b.voted === X && b.voter !== ally && tribal.includes(b.voter)).map(b => b.voter)
+      .sort((p, q) => ((globalThis.pStats?.(q)?.strategic) || 0) - ((globalThis.pStats?.(p)?.strategic) || 0) || p.localeCompare(q))[0];
+    if (lead) steps.push({ k: 'beat', text: fill(pick('relief', 'lead'), lead), focus: [lead], feel: { [lead]: 'relief' } });
+    return;
+  }
+  // a friend wrote it: the first vote more than the people outside X's side could have cast
+  if (ally && cnt === could + 1 && cnt >= 2) {
+    push('betrayed', ally, { [X]: 'betray' }, { tense: true });
+    steps.push({ k: 'say', by: X, text: BETRAY_SAY.x[hash(X + ep.num) % BETRAY_SAY.x.length], focus: [X, ally], shock: true });
+    if (wrote(ally) === X) steps.push({ k: 'beat', text: fill(pick('guilty', 'g'), ally), focus: [ally, X], feel: { [ally]: 'guilty' } });
+    else steps.push({ k: 'say', by: ally, text: BETRAY_SAY.yNo[hash(ally + ep.num) % BETRAY_SAY.yNo.length], focus: [ally, X] });
+    if (hash(`${ep.num}${X}sting`) % 3 === 0) steps.push({ k: 'say', by: V._host, host: true, text: HOST_STING[hash(X) % HOST_STING.length] });
+    return;
+  }
+  const leads = Object.entries(tally).sort((p, q) => q[1] - p[1])[0]?.[0] === X;
+  // not every name gets a cut: the first of each person's votes, and the climb when it turns
+  if (cnt === 1) push(knew ? 'steady' : 'surprised', ally, { [X]: knew ? 'steady' : 'surprised' });
+  else if (leads && cnt >= 2 && i >= n - 4) push(knew ? (temper <= 4 ? 'angry' : 'steady') : 'scared', ally, { [X]: knew ? (temper <= 4 ? 'angry' : 'steady') : 'scared' });
+}
+
 function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, revote, rocks }) {
   say(`I'll read the votes.`);
   // the deciding vote last: everyone else's first, the boot's held back until the end
@@ -924,7 +1005,8 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
     else if (after.length === 1 && tally[v.voted] > 1) line = `${v.voted}. That's ${word(tally[v.voted])} votes ${v.voted}.`;
     else line = `${v.voted}.`;
     steps.push({ k: 'read', vote: v.voted, dead: !!d, deciding: !!deciding, tally: { ...tally }, focus: [v.voted], line, tense: !!deciding || close });
-    if (d) steps.push({ k: 'beat', text: `A vote for ${v.voted}, and it doesn't count. ${v.voted} lets out a breath.`, focus: [v.voted] });
+    if (d) steps.push({ k: 'beat', text: `A vote for ${v.voted}, and it doesn't count. ${v.voted} lets out a breath.`, focus: [v.voted], feel: { [v.voted]: 'relief' } });
+    else if (V._ep) voteReaction(steps, V, { v, tally, deciding: !!deciding, tribal, elim, ballots, i, n: order.length });
   });
   if (tie) {
     steps.push({ k: 'title', kicker: 'Deadlock', name: 'A tie', faces: Object.entries(tally).filter(([, c]) => c === Math.max(...Object.values(tally))).map(([n]) => n) });

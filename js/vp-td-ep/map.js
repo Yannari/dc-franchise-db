@@ -21,7 +21,7 @@
 import { TD_MARKS } from './marks.js';
 import { ACCESS_PROFILES } from '../camp-access.js';
 import { campFeed } from '../td/story/feed.js';
-import { tdCampScreen, stageSpot, venueOf, VENUES, placeName, campSlot } from './steps.js';
+import { tdCampScreen, stageSpot, venueOf, VENUES, placeName, campSlot, unspoil } from './steps.js';
 
 // the venues with a painted map (tools/td-camp: '<venue>/map-day'), and how their teams live
 export const MAP_VENUES = { 'hosted-camp': { shared: true }, 'film-lot': { shared: true }, 'world-tour': { shared: true }, 'survival-island': { shared: false }, carnival: { shared: false } };
@@ -85,7 +85,7 @@ const KIND_TITLE = { alliance: 'An alliance', deal: 'A deal', pitch: 'A vote pit
   romance: 'Romance', friend: 'Friends', drama: 'Drama', life: 'Camp life', hosted: 'Camp life', talk: 'A talk', flow: 'Gossip', read: 'A read', mind: 'Thinking', aside: 'After the challenge',
   merge: 'The merge', morning: 'The last morning', crowd: 'Together', cross: 'Across the line', villain: 'The villain', spot: 'Noticed', throw: 'A thrown challenge', misvote: 'A wrong vote', last: 'Camp life', tail: 'Camp life' };
 const titleOf = ev => {
-  const b = String(ev.badgeText || '').trim();
+  const b = unspoil(String(ev.badgeText || '').trim()).text;
   if (b) return b.charAt(0) + b.slice(1).toLowerCase();
   const fam = String(ev.scene?.kind || ev.type || '').split('.')[0];
   return KIND_TITLE[fam] || 'At camp';

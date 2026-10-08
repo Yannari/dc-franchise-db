@@ -302,7 +302,7 @@ export default {
       { by: 'a', say: "Nobody does. That's why it works. Nobody's going to try to save {target}." },
       { by: 'c', say: "That's kind of sad." },
       { by: 'a', say: "It's very sad. Are you in?" },
-      { by: 'c', say: "...I'm in." },
+      { by: 'c', move: 'agree.reluctant' },
       { by: 'c', conf: "{target} didn't do anything wrong. {target} just doesn't have anyone. That's what does it." },
     ] },
     { id: 'nv.p4', when: { group: true }, turns: [
@@ -382,7 +382,7 @@ export default {
       { by: 'b', say: "That's not a quick question." },
       { by: 'a', say: "It's a quick answer if it's yes." },
       { by: 'b', say: "...Yes." },
-      { by: 'a', say: "Thank you." },
+      { by: 'a', move: 'thanks' },
       { by: 'a', conf: "That's {votes}. {target} goes home tonight." },
     ] },
   ],
@@ -425,7 +425,7 @@ export default {
     ] },
     { id: 'nv.n5', turns: [
       { by: 'a', say: "{target} tonight. You in?" },
-      { by: 'b', say: "I don't think so." },
+      { by: 'b', move: 'refuse' },
       { by: 'a', say: "Why not?" },
       { by: 'b', say: "Because it doesn't help me. {target} going home doesn't change anything for me." },
       { by: 'a', say: "It keeps you safe." },

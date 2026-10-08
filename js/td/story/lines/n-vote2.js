@@ -147,7 +147,7 @@ export default {
       { by: 'a', say: "So if we don't do it tonight, {target} wins immunity next time, and the time after that, and then {target} wins the whole thing." },
       { by: 'b', say: "And you've got the votes?" },
       { by: 'a', say: "{votes}. If you're in." },
-      { by: 'b', say: "...I'm in." },
+      { by: 'b', move: 'agree.reluctant' },
       { by: 'b', conf: "{target} is the best player here. That's a compliment {target} is going to hear tonight." },
     ] },
     { id: 'nw.t2', place: 'aside', when: { voice: ['schemer', 'calm', 'dry', 'cruel'] }, turns: [

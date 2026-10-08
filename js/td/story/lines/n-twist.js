@@ -201,7 +201,7 @@ export default {
       { by: 'a', say: "I took something for me. I'm not going to pretend I didn't." },
       { by: 'c', move: 'blame' },
       { by: 'a', move: 'dismiss' },
-      O('d', "Unbelievable."),
+      { by: 'd', move: 'angry', opt: true },
       { by: 'b', conf: "{a} didn't even pretend to care. Honestly, that's worse than lying." },
     ] },
   ],

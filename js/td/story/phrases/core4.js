@@ -21,7 +21,7 @@ export default {
     competitive: ["At least somebody here is having a worse day than me. Probably."],
     schemer: ["Don't worry. If this goes badly, I'll blame someone else."],
     ditzy: ["Wait, is this the part where we laugh? Ha!"],
-    earnest: ["Okay, I'm going to try a joke. Why did the camper cross the road? To get to the other cabin. ...I tried."],
+    earnest: ["Okay, I'm going to try a joke. Why did the camper cross the road? To get away from this conversation. ...I tried."],
     tough: ["You call this rough? My little brother's tougher."],
     bossy: ["New rule: no more sad faces. That's an order. Ha."],
     emotional: ["I'm laughing so I don't cry. It's working. Mostly."],

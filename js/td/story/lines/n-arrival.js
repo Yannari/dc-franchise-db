@@ -137,7 +137,7 @@ const POOLS = {
       { by: 'h', say: "Welcome home!" },
       { by: 'a', say: "You said there'd be cabins! Real ones!", v: { tough: "That's not a cabin. That's a shed with feelings." } },
       { by: 'h', say: "I said there'd be shelter. That's shelter." },
-      { by: 'a', say: "Unbelievable." },
+      { by: 'a', move: 'angry' },
     ] },
     { id: 'np.nh2', turns: [
       { by: 'a', say: "Let's go! Where's the first challenge?" },

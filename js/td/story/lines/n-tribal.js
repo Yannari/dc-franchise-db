@@ -179,7 +179,7 @@ export default {
   'reveal.expected': [
     { id: 'nr.e1', turns: [
       { by: 'a', say: "Yeah. I figured.", v: { dry: "Yeah. Saw that one coming from the dock." } },
-      { by: 'b', say: "I'm sorry." },
+      { by: 'b', move: 'apologize' },
       { by: 'a', say: "Don't be. I'd have done the same thing." },
     ] },
     { id: 'nr.e2', when: { voice: ['loud', 'tough', 'blunt'] }, turns: [
@@ -246,7 +246,7 @@ export default {
       { by: 'a', say: "Yeah. It does." },
       { by: 'b', say: "I don't know what I'm going to do without you." },
       { by: 'a', say: "You're going to keep going. And when you win, you're splitting the money with me." },
-      { by: 'b', say: "Deal." },
+      { by: 'b', move: 'agree' },
     ] },
     { id: 'nx.f6', when: { bVoted: 'other' }, turns: [
       { by: 'b', say: "I didn't write your name. I need you to know that." },

@@ -377,7 +377,7 @@ export default {
   'long.throw.caught.bold': [
     { id: 'nk.tb1', place: 'aside', turns: [
       { by: 'a', say: "You threw it." },
-      { by: 'b', say: "Excuse me?" },
+      { by: 'b', move: 'pushback' },
       { by: 'a', say: "Today. You threw it. I watched you slow down at the end." },
       { by: 'b', say: "I was tired." },
       { by: 'a', say: "You were fine until right when it mattered. Then you weren't." },

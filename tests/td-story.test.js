@@ -36,6 +36,7 @@ const GUARANTEED = [
   [/^booth\.plan/, []],
   [/^arrive\./, ['landing']],
   [/^arrive\.wait\./, ['latest']],
+  [/^twist\.swap\.split\./, ['mine', 'theirs']],
   [/^arrive\.meet\.history\.(siblings|family|cousins|couple|friends|knew|estranged|exes|exfriends)$/, ['kinWord']],
   [/^arrive\.meet\.history\.(wronged|wronger|oldflame|oldcouple|oldrivals|oldallies)$/, ['where']],
   [/^story\.vote\.(plan|swing)\./, ['target', 'votes']],

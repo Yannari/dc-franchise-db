@@ -480,7 +480,7 @@ export default {
       { by: 'b', say: "Why are we still doing this?" },
       { by: 'a', say: "Because if we stop, it doesn't get done." },
       { by: 'b', say: "Okay. Five more minutes. Then we collapse." },
-      { by: 'a', say: "Deal." },
+      { by: 'a', move: 'agree' },
       { by: 'a', conf: "{b} and I don't really get along. But nobody else stayed to finish. That counts for something." },
     ] },
     { id: 'ny.st2', place: 'aside', when: { band: ['cold', 'enemies'] }, turns: [

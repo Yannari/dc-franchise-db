@@ -441,10 +441,12 @@ function votePlan(ep, camp, members) {
   const other = pitch?.originalTarget && pitch.originalTarget !== boot && tribal.includes(pitch.originalTarget) && !voters.includes(pitch.originalTarget) ? pitch.originalTarget : null;
   // the other side: a bloc of two or more with a different name, the boot's own if there is one
   const rivals = (ep.alliances || []).filter(al => al.target && al.target !== boot && tribal.includes(al.target) && (al.members || []).filter(m => tribal.includes(m) && m !== al.target).length >= 2);
+  // the boot's own side first (they're sure it's someone else), then the biggest
+  rivals.sort((x, y) => (y.members.includes(boot) ? 1 : 0) - (x.members.includes(boot) ? 1 : 0) || (y.members || []).length - (x.members || []).length);
   const rival = rivals.find(al => al.members.includes(boot)) || rivals[0] || null;
   const counter = (ep.votePitches || []).find(p => p !== pitch && p.pitchTarget !== boot && tribal.includes(p.pitcher) && tribal.includes(p.pitchTarget));
   const covers = new Set([pitch?.pitcher, counter?.pitcher].filter(Boolean));
-  return { boot, gone, tribal, ballots, onBoot, voters, pitch, bloc, leader, why, other, ch, rival, counter, covers };
+  return { boot, gone, tribal, ballots, onBoot, voters, pitch, bloc, leader, why, other, ch, rival, rivals, counter, covers };
 }
 
 function voteTalk(ep, camp, t, next) {
@@ -463,9 +465,9 @@ function voteTalk(ep, camp, t, next) {
       scene: { kind: 'story.vote', who, data, spot: w.spot ? { ...w.spot, window: win } : null }, badgeText: badge[0], badgeClass: badge[1], why };
   };
 
-  // 1. the other side's plan, first: it is the one that does not happen
-  const rv = t.rival;
-  if (rv) {
+  // 1. every other plan, first (the user: "I'm seeing a betrayal of the majority's plan, but when did they
+  // make that plan?"): each bloc that meant to write another name, up to two of them
+  for (const rv of (t.rivals || []).slice(0, 2)) {
     // the people actually on that plan tonight: a member writing the boot's name is with the other side
     const mem = rv.members.filter(m => tribal.includes(m) && m !== rv.target && (m === boot || ballotOf(m) !== boot));
     const a = mem.includes(boot) ? boot : [...mem].sort((x, y) => (pStatsOf(y)?.strategic || 0) - (pStatsOf(x)?.strategic || 0) || x.localeCompare(y))[0];
@@ -528,6 +530,37 @@ function voteTalk(ep, camp, t, next) {
     const it = item('swing', 'story.vote.swing', yes ? 'yes' : 'no', who, data, base(who, { swing: reason, bVoted: ballotOf(r.voter) === boot ? 'boot' : 'other' }), 'aside', 'scramble',
       [yes ? 'Locked In' : 'Not Sold', yes ? 'gold' : 'red'], [`${asker} pitched ${boot} to ${r.voter}.`, `${r.voter} ${yes ? 'said yes' : 'said no'}: ${SWING_WORDS[reason]}.`]);
     if (it) out.push(it);
+  }
+
+  // 3b. the doubts (the user: "spearheader, pitch, target, people hesitating"): a member the engine
+  // marked unsure of their bloc's plan (voting.js reliability: tentative, drifting, reservations from the
+  // start) tells somebody close, or the camera. 'holds': they go along anyway. 'breaks': they are about
+  // to write another name (their ballot says so), and this is the moment the viewer sees it coming.
+  {
+    const unsure = al => new Set([...(al.reliability?.tentative || []), ...(al.reliability?.drifting || []), ...(al.reliability?.initialReservations || [])]);
+    // the one who breaks first (that is why a plan fails); one who holds, now and then, when nobody breaks
+    const cand = [];
+    for (const al of [t.bloc, ...(t.rivals || []).slice(0, 2)].filter(Boolean)) {
+      const pool = (al.members || []).filter(m => tribal.includes(m) && m !== al.target && m !== boot && unsure(al).has(m));
+      for (const m of pool) cand.push({ al, m, breaks: !!ballotOf(m) && ballotOf(m) !== al.target });
+    }
+    cand.sort((p, q) => (q.breaks ? 1 : 0) - (p.breaks ? 1 : 0) || p.m.localeCompare(q.m));
+    const picked = cand.some(c => c.breaks) ? cand.filter(c => c.breaks).slice(0, 1) : cand.slice(0, next() % 2 ? 1 : 0);
+    const seenDoubt = new Set();
+    for (const { al, m: x, breaks } of picked) {
+      if (seenDoubt.has(x)) continue;
+      const breaker = breaks ? x : null;
+      seenDoubt.add(x);
+      const mates = (al.members || []).filter(m => tribal.includes(m) && m !== x && m !== al.target);
+      const conf = closest(x, mates.filter(m => getBond(x, m) >= 1)) || null;
+      const shape = conf ? shapeFor(x, closeTo(x, mates)) : 'solo';
+      const who = shape === 'solo' || !conf ? { a: x } : { a: x, b: conf };
+      const data = { target: al.target, ...(breaker && ballotOf(x) !== al.target ? { wrote: ballotOf(x) } : {}) };
+      const it = item('doubt', 'story.vote.doubt', breaker ? 'breaks' : 'holds', who, data, base(who, { cast: who.b ? shape : 'solo', wrote: !!data.wrote }), who.b ? 'aside' : 'confessional', 'scramble',
+        [breaker ? 'Second Thoughts' : 'Doubts', breaker ? 'red' : 'blue'],
+        [`${x} isn't sure about the plan to vote ${al.target}.`, breaker ? `${x} is going to write ${ballotOf(x)} instead.` : `${x} goes along with it anyway.`]);
+      if (it) out.push(it);
+    }
   }
 
   // 4. the target: scrambling if word reached them, sure of their own name if it did not
@@ -799,7 +832,7 @@ export function airTdEpisode(ep) {
     }
     // the refs that were added late go back into the camp's own order
     for (const phase of ['pre', 'post']) {
-      const VOTE_AT = { other: 2e6, plan: 2.1e6, swing: 2.2e6, target: 2.3e6 };
+      const VOTE_AT = { other: 2e6, plan: 2.1e6, swing: 2.2e6, doubt: 2.25e6, target: 2.3e6 };
       const at = it => (/^(story\.(firstday|morning|chal)|long\.crowd\.(won|lost))/.test(it.kind || '') ? -1 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5) : it.storyType === 'vote' ? VOTE_AT[it.step] : it.ref != null ? it.ref : 1e6);
       out[phase].sort((x, y) => at(x) - at(y));
     }

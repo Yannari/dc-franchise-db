@@ -42,6 +42,7 @@ const GUARANTEED = [
   [/^story\.vote\.(plan|swing)\./, ['target', 'votes']],
   [/^story\.vote\.other\./, ['target']],
   [/^story\.vote\.target\./, ['wrote']],
+  [/^story\.vote\.doubt\./, ['target']],
   [/^(reveal|exit|after)\./, ['lastBoot', 'item']],
   [/^long\.(talk\.lie\.about|drama\.paranoia\.quiet|romance\.tri\.(exploit|cut-))/, ['target']],
 ];

@@ -424,6 +424,8 @@ export function computeHeat(name, tribalPlayers, alliances) {
   if (gs._trustHeat?.[name] && ((gs.episode || 0) + 1) < gs._trustHeat[name].expiresEp) heat += gs._trustHeat[name].amount;
   // Social Manipulation: exposed schemer heat / campaign rally target heat
   if (gs._schemeHeat?.[name] && ((gs.episode || 0) + 1) < gs._schemeHeat[name].expiresEp) heat += gs._schemeHeat[name].amount;
+  // a deal or alliance talk somebody overheard (camp-events.js _leakPass)
+  if (gs._leakHeat?.[name] && ((gs.episode || 0) + 1) < gs._leakHeat[name].expiresEp) heat += gs._leakHeat[name].amount;
   // Franchise meta: someone publicly named this returnee's résumé as THE threat (THREAT NAMED camp event)
   if (gs._metaThreatHeat?.[name] && ((gs.episode || 0) + 1) < gs._metaThreatHeat[name].expiresEp) heat += gs._metaThreatHeat[name].amount;
   // Hung Out to Dry: the lie detector forced a real secret into the open (ran a vote, outed a strong

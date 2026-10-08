@@ -284,6 +284,24 @@ function actOf(text, cast, lastBy) {
   return null;
 }
 const loud = text => /!/.test(text) && (text.length < 80 || /\b[A-Z]{3,}\b/.test(text));
+// a line that lands as a shock: disbelief at a reveal ("What? No.", "Are you kidding me?!", "You WHAT?")
+const SHOCK = /^(what\?|wait\. ?(what|no|me)|no\. no|oh my (god|gosh)|are you (kidding|serious)|you what\?|me\? it's me|seriously\?|unbelievable|hold on\. hold on)/i;
+const shock = text => SHOCK.test(String(text || '').trim());
+// the big moments of camp get the show's title card (an alliance forming already has its own)
+const STORY_TITLE = [
+  [/^(long\.)?deal\.side/, ev => ({ kicker: 'The deal', name: `Final ${ev.scene?.data?.size || 'two'}` })],
+  [/^(long\.)?fallout\.flip/, () => ({ kicker: 'Secret flip', name: 'Nobody knows', shock: true })],
+  [/^(long\.)?romance\.spark/, () => ({ kicker: 'Showmance', name: "It's official" })],
+  [/^(long\.)?romance\.(fade|tri\.ultimatum|affair\.(exposed|leaves))/, () => ({ kicker: 'Heartbreak', name: "It's over", shock: true })],
+  [/^(long\.)?drama\.(fight|explode)/, () => ({ kicker: 'Blow-up', name: 'Camp erupts', shock: true })],
+  [/^(long\.)?drama\.bomb/, () => ({ kicker: 'Said it', name: 'Out loud, in front of everyone' })],
+  [/^(long\.)?leak\.heard/, () => ({ kicker: 'Overheard', name: 'Somebody was listening', shock: true })],
+  [/^(long\.)?alliance\.expel/, ev => ({ kicker: 'Kicked out', name: ev.scene?.data?.group || 'Out of the alliance', shock: true })],
+  [/^(long\.)?alliance\.end/, ev => ({ kicker: 'Alliance over', name: ev.scene?.data?.group || "It's finished" })],
+  [/^(long\.)?recruit\.join/, ev => ({ kicker: 'New member', name: ev.scene?.data?.group || 'The alliance grows' })],
+  [/^(long\.)?(plot\.lie|talk\.lie)/, () => ({ kicker: 'A lie', name: 'Planted' })],
+  [/^story\.morning$/, ev => (ev.step === 'blindside' ? { kicker: 'The morning after', name: 'Blindside', shock: true } : null)],
+];
 
 // ══════════════════════════════════════════════════════════════════════
 // CAMP — one screen per camp and phase, cutting spot to spot
@@ -342,9 +360,11 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
         if (!text) continue;
         if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text });
         else if (l.kind === 'beat') steps.push({ k: 'beat', text, act: actOf(text, cast, lastBy) });
-        else { steps.push({ k: 'say', by: l.by, text, loud: loud(text) }); lastBy = l.by; }
+        else { steps.push({ k: 'say', by: l.by, text, loud: loud(text), shock: shock(text) }); lastBy = l.by; }
       }
       if (ev.type === 'idolFound') foundStep(steps, ev);
+      const tt = ev.type !== 'allianceForm' ? STORY_TITLE.find(([re]) => re.test(ev.kind || ev.scene?.kind || ''))?.[1](ev) : null;
+      if (tt) steps.push({ k: 'title', kicker: tt.kicker, name: cleanText(tt.name), faces: [...new Set((ev.players || []).filter(Boolean))].slice(0, 4), shock: !!tt.shock, sting: !tt.shock });
       if (ev.type === 'allianceForm' && ev.alliance) {
         steps.push({ k: 'title', kicker: 'Alliance formed', name: cleanText(ev.alliance), faces: (ev.members || ev.players || []).slice(0, 4),
           side: [{ tab: 'allies', name: cleanText(ev.alliance), who: (ev.members || ev.players || []).slice() }] });
@@ -353,6 +373,9 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
       (last.side ||= []).push({ tab: 'log', text: `${badge ? badge.text + ': ' : ''}${(ev.players || []).join(', ')}` });
       // what the dialogue doesn't say: why this is happening now, and what only the viewer knows (td/story)
       for (const t of ev.why || []) last.side.push({ tab: 'mind', text: cleanText(t) });
+      // ...and what it did to the relationships of the people in it (bonds.js journal, td/script/write.js)
+      const BW = v => v >= 6 ? 'very close' : v >= 3 ? 'friends' : v > -2 ? 'neutral' : v > -5 ? 'wary of each other' : 'enemies';
+      for (const x of ev.bondDelta || []) last.side.push({ tab: 'bonds', a: x.a, b: x.b, d: x.d, now: x.now, word: BW(x.now) });
     } else {
       // An event the script layer has not reached yet: a cutaway, in the engine's own sentence.
       const text = cleanText(ev.text);
@@ -503,17 +526,19 @@ export function tdTribalScreen(ep, o = {}) {
   // the reading lands: how the one going home takes it, and who answers (td/story/tribal.js)
   const lineStep = l => (l.kind === 'beat' ? { k: 'beat', text: cleanText(l.text), focus: [] }
     : l.kind === 'conf' ? { k: 'conf', by: l.by, text: cleanText(l.text) }
-      : { k: 'say', by: l.by, text: cleanText(l.text), focus: [l.by], loud: loud(l.text) });
+      : { k: 'say', by: l.by, text: cleanText(l.text), focus: [l.by], loud: loud(l.text), shock: shock(l.text) });
   // (played before the 'out' step: the boot is still in their seat when the last vote is read)
   const outAt = steps.map(x => x.k).lastIndexOf('out');
   const moment = [];
+  // a blindside lands as one: the show's shock card before the boot finds words
+  if (story?.shocking && story.reveal?.length) moment.push({ k: 'title', kicker: 'Blindside', name: elim, faces: [elim], shock: true });
   for (const l of story?.reveal || []) moment.push(lineStep(l));
   // ...and the classic screen's Tribal Blowup or Crashout: the boot goes out swinging, and what
   // they say changes the game (episode.js checkTribalBlowup; vp-screens.js buildCrashout)
   const swing = ep.tribalBlowup?.player === elim ? { ...ep.tribalBlowup, kind: 'Tribal Blowup' }
     : story?.crashout?.player === elim || (story?.crashout && !story.crashout.player) ? { ...story.crashout, player: elim, kind: 'Crashout' } : null;
   if (swing?.reveals?.length) {
-    moment.push({ k: 'title', kicker: swing.kind, name: swing.trigger === 'temperament' ? `${elim} can't hold it in` : `${elim} goes out swinging`, faces: [elim] });
+    moment.push({ k: 'title', kicker: swing.kind, name: swing.trigger === 'temperament' ? `${elim} can't hold it in` : `${elim} goes out swinging`, faces: [elim], shock: true });
     for (const r of swing.reveals) {
       moment.push({ k: 'say', by: elim, text: cleanText(r.text), focus: [elim], loud: true,
         side: r.consequence ? [{ tab: 'room', text: cleanText(r.consequence) }] : [] });

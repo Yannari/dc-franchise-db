@@ -386,7 +386,7 @@ export function dialogue(screen, L) {
 
 // ── the Intel drawer ──────────────────────────────────────────────────
 const TABS = {
-  camp: [['mind', 'In their heads'], ['log', 'Camp log'], ['allies', 'Alliances'], ['secrets', 'Secrets']],
+  camp: [['mind', 'In their heads'], ['bonds', 'Relationships'], ['log', 'Camp log'], ['allies', 'Alliances'], ['secrets', 'Secrets']],
   tribal: [['room', 'The room'], ['tally', 'Tally'], ['why', 'Why']],
   island: [['residents', 'Who is here'], ['log', 'Island log'], ['secrets', 'Secrets']],
 };
@@ -403,6 +403,14 @@ export function intelHtml(screen, L, tab, fresh) {
     const by = {}; mine.forEach(x => (by[x.target] ||= []).push(x));
     Object.entries(by).sort((a, b) => b[1].filter(v => !v.void).length - a[1].filter(v => !v.void).length).forEach(([t, vs]) => {
       h += `<div class="tdx-ic tally${vs.some(v => v.at === L.idx) && fresh ? ' fresh' : ''}"><img src="${esc(avatar(t))}" alt=""><div><b>${esc(t)}</b><br><small>${vs.map(v => esc(v.voter) + (v.void ? ' (void)' : '')).join(', ')}</small></div><span>${vs.filter(v => !v.void).length}</span></div>`;
+    });
+  } else if (tab === 'bonds') {
+    // the latest change for each pair, newest first: what the conversation just did
+    const seen = new Set();
+    [...mine].reverse().forEach(x => {
+      const k = [x.a, x.b].sort().join('|'); if (seen.has(k)) return; seen.add(k);
+      const up = x.d > 0;
+      h += `<div class="tdx-ic bond${fr(x)}"><span class="minis"><img src="${esc(avatar(x.a))}" alt="" title="${esc(x.a)}"><img src="${esc(avatar(x.b))}" alt="" title="${esc(x.b)}"></span><b>${esc(x.a)} &amp; ${esc(x.b)}</b> <span class="k" style="color:${up ? '#4fb84a' : '#f85149'}">${up ? '▲' : '▼'} ${up ? '+' : ''}${x.d}</span><br><small>${esc(x.word)} (${x.now > 0 ? '+' : ''}${x.now})</small></div>`;
     });
   } else if (tab === 'why') mine.forEach(x => { h += `<div class="tdx-ic${fr(x)}"><b>${esc(x.voter)}</b> <span class="k">→ ${esc(x.target)}</span><br><small>${esc(x.text)}</small></div>`; });
   else mine.forEach(x => { h += `<div class="tdx-ic${fr(x)}">${esc(x.text)}</div>`; });

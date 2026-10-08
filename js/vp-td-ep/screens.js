@@ -240,7 +240,9 @@ function fxAt(fxEl, cls, x, y, html = '', life = 2400) { const d = document.crea
 function act(st, castEl, fxEl, scr, L, s, toks) {
   const speaker = s.k === 'say' ? s.by : null;
   if (speaker) tokAt(castEl, speaker)?.classList.add('pop');
-  if (s.loud && speaker) { const el = tokAt(castEl, speaker); if (el) { const c = centre(st, el); for (let k = 0; k < 3; k++) setTimeout(() => fxAt(fxEl, 'tdx-ring', c.x, c.y + c.h / 2), k * 140); sfx('boing'); } }
+  // a shock: the line lands like a reveal ("What? No."): the speaker jolts, "!?" over them, the stab
+  if (s.shock && speaker) { const el = tokAt(castEl, speaker); if (el) { el.classList.add('shake'); const c = centre(st, el); fxAt(fxEl, 'tdx-pop shock', c.x, Math.max(c.y - 4, 10), '!?'); } const w = st.querySelector('.tdx-world'); if (w) { w.classList.remove('jolt'); void w.offsetWidth; w.classList.add('jolt'); } sfx('shock'); }
+  else if (s.loud && speaker) { const el = tokAt(castEl, speaker); if (el) { const c = centre(st, el); for (let k = 0; k < 3; k++) setTimeout(() => fxAt(fxEl, 'tdx-ring', c.x, c.y + c.h / 2), k * 140); sfx('boing'); } }
   const a = s.act;
   if (s.gain) { const el = tokAt(castEl, s.gain.who); if (el) { const c = centre(st, el); setTimeout(() => fxAt(fxEl, `tdx-gain${s.gain.up ? '' : ' down'}`, c.x, Math.max(c.y - 2, 8), `${esc(s.gain.stat)} ${s.gain.up ? '▲' : '▼'}`, 2200), 500); setTimeout(() => sfx(s.gain.up ? 'pop' : 'slap'), 500); } }
   if (a) {
@@ -267,7 +269,7 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
       }
     }
   }
-  if (s.k === 'title') sfx('title');
+  if (s.k === 'title') { sfx(s.shock ? 'shock' : s.sting ? 'sting' : 'title'); if (s.shock) { const w = st.querySelector('.tdx-world'); if (w) { w.classList.remove('jolt'); void w.offsetWidth; w.classList.add('jolt'); } } }
   if (s.k === 'ballot') { sfx('slip'); if (s.venue === 'world-tour') setTimeout(() => sfx('slam'), 1150); else { sfx('scribble'); setTimeout(() => sfx('drop'), 2700); } }
   if (s.k === 'ballots') sfx('slip');
   if (s.k === 'idol') sfx('idol');

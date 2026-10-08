@@ -26,7 +26,7 @@ import { POOLS } from './lines/index.js';
 import { factsFor } from './facts.js';
 import { campContext } from './context.js';
 import { makeScene } from './scene.js';
-import { getBond } from '../../bonds.js';
+import { getBond, bondJournal } from '../../bonds.js';
 
 // The episode being played. gs.episode still holds the last one until it ends.
 export const epOf = ctx => ctx.ep || (gs.episode || 0) + 1;
@@ -136,7 +136,9 @@ export function writeScene(scene, ctx = {}) {
   const lines = entry.turns.map(t => {
     const kind = t.conf ? 'conf' : t.beat ? 'beat' : 'say';
     const by = t.by ? who[t.by] || null : null;
-    return { kind, by, text: fill(t.conf || t.beat || t.say, who, scene.data || {}) };
+    const text = fill(t.conf || t.beat || t.say, who, scene.data || {});
+    // a line that opens on a filled-in word ({count}: "eleven top finishes...") still starts with a capital
+    return { kind, by, text: text.charAt(0).toUpperCase() + text.slice(1) };
   });
   return { lines, text: transcript(lines), lineId: entry.id, facts };
 }
@@ -247,5 +249,17 @@ export function scriptEventParts(event, scenes, ctx = {}) {
     lineId: first.w.lineId, facts: keepFacts(first.w.facts), ...(parts.length > 1 ? { parts: parts.map(p => ({ kind: p.sc.kind, who: p.sc.who, data: p.sc.data, lineId: p.w.lineId })) } : {}) };
   event.lines = parts.flatMap(p => p.w.lines);
   event.text = transcript(event.lines);
+  // what this moment did to the relationships of the people in it: the bond changes since the
+  // last scene was written, between two of its people (the engine applies a scene's consequences
+  // just before it hands the scene over). The viewer's side panel shows them.
+  const cast = new Set([...Object.values(first.sc.who || {}), ...(event.players || [])].filter(Boolean));
+  const moved = {};
+  for (const j of bondJournal.splice(0)) {
+    if (!cast.has(j.a) || !cast.has(j.b)) continue;
+    const k = [j.a, j.b].sort().join('|');
+    moved[k] = (moved[k] || 0) + j.d;
+  }
+  const deltas = Object.entries(moved).filter(([, d]) => Math.abs(d) >= 0.05).map(([k, d]) => { const [a, b] = k.split('|'); return { a, b, d: Math.round(d * 10) / 10, now: Math.round(getBond(a, b) * 10) / 10 }; });
+  if (deltas.length) event.bondDelta = deltas;
   return event;
 }

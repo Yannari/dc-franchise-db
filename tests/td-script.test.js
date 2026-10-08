@@ -69,7 +69,7 @@ describe('the pools keep their contract', () => {
 
   it('only writes a third person into a scene that has one', () => {
     // island trios and group moments always hold a third (td/script/island.js)
-    const WITH_C = [/^isle\.(trio|group)\./, /^drama\.stir\./, /^romance\.(noticed|target|jealous|sidelined|sabotage)\./, /^romance\.(tri|affair)\./, /^friend\.(laugh|celebrate|rally|lift)\./, /^plot\.kiss\.setup$/, /^crowd\./];
+    const WITH_C = [/^isle\.(trio|group)\./, /^drama\.stir\./, /^romance\.(noticed|target|jealous|sidelined|sabotage)\./, /^romance\.(tri|affair)\./, /^friend\.(laugh|celebrate|rally|lift)\./, /^plot\.kiss\.setup$/, /^crowd\./, /^leak\./];
     for (const [key, pool] of all) {
       if (WITH_C.some(re => re.test(key))) continue;
       for (const e of pool) {

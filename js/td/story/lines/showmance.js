@@ -279,7 +279,7 @@ export default {
   ],
   'long.romance.target.any': [
     { id: 'sm.t1', place: 'aside', turns: [
-      { beat: "{a} watches {b} and {c} from {here}." },
+      { beat: "{a} is {here}, watching {b} and {c}." },
       { by: 'a', conf: "{b} and {c} are a pair. They vote together, they sleep next to each other, and they'll take each other to the end." },
       { by: 'a', conf: "So one of them has to go. Soon. Before the rest of the camp starts thinking about it. Then I get to look like the one who saw it first." },
     ] },

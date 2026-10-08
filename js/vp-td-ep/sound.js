@@ -195,6 +195,10 @@ export function sfx(kind) {
   // a folded ballot dropping into the urn
   else if (kind === 'drop') { hiss(1200, .12, .12, 'bandpass'); setTimeout(() => blast(180, 70, .25, 'sine', .3), 120); }
   else if (kind === 'heart') blast(700, 1050, .18, 'sine', .14);
+  // a shock: the orchestra stab of a reality show reveal (a low hit under a falling high note)
+  else if (kind === 'shock') { blast(1400, 380, .55, 'sawtooth', .07); blast(95, 38, .7, 'sine', .42); hiss(900, .3, .2); setTimeout(() => blast(60, 40, .5, 'sine', .25), 180); }
+  // a dun-dun for a big moment landing (a deal, a betrayal, a showmance going official)
+  else if (kind === 'sting') { blast(160, 150, .28, 'square', .08); setTimeout(() => blast(120, 110, .5, 'square', .09), 260); blast(70, 50, .9, 'sine', .3); }
   else if (kind === 'torch') { hiss(600, .7, .25, 'lowpass'); blast(80, 160, .5, 'sine', .2); }
   else if (kind === 'snuff') { hiss(3200, .5, .18, 'highpass'); blast(300, 60, .6, 'sine', .14); }
   else if (kind === 'empty') { blast(330, 220, .35, 'triangle', .16); setTimeout(() => blast(262, 165, .6, 'triangle', .16), 260); }

@@ -30,6 +30,7 @@ function ruleOf(ev) {
   if (t === 'allianceCrack') return R('alliance', 'crack', /quit/.test(kind) ? 'quit' : 'doubt');
   if (t === 'allianceDissolved' || t === 'allianceExpelled') return R('alliance', 'end', t === 'allianceExpelled' ? 'expelled' : 'collapsed');
   if (t === 'secretFlip' || t === 'betrayalReckoning' || t === 'betrayalDenial') return R('alliance', 'betrayal', t === 'betrayalReckoning' ? 'faced' : t === 'betrayalDenial' ? 'hidden' : 'flip');
+  if (t === 'dealOverheard') return R('alliance', 'exposed');
   if (t === 'sideDeal' || t === 'endgameDealBroken' || t === 'endgameDealDissolved' || t === 'conflictingDeals') return R('alliance', 'deal', t === 'conflictingDeals' ? 'double' : /broken|Dissolved/.test(t) ? 'broken' : 'made');
   // ── rivalries ──
   if (/^(socialBomb|dispute|leadershipClash|foodConflict|messHallDrama|passiveAggressive|showboat|intimidation|jealousy)$/.test(t)) return R('rivalry', 'friction');

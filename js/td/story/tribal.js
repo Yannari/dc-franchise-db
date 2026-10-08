@@ -108,5 +108,7 @@ export function writeTribal(ep) {
   if (blindside || !mourner) conf('architect', architect);
   if (mourner) conf('friend', mourner);
   else if (guilty) conf('guilty', guilty);
-  return { booth, reveal: rv?.lines || [], blindside, exit: ex?.lines || [], exitWith, exitKind, after: after.slice(0, 2) };
+  // the shock card is for a real one: somebody close to the boot wrote the name
+  const shocking = blindside && getBond(elim, betrayer) >= 3;
+  return { booth, reveal: rv?.lines || [], blindside, shocking, exit: ex?.lines || [], exitWith, exitKind, after: after.slice(0, 2) };
 }

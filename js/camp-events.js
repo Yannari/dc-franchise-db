@@ -3172,7 +3172,53 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
   const socialEvents = generateSocialManipulationEvents(group, ep, _schemeBoost);
   socialEvents.forEach(evt => events.push(_plotScene(evt, group)));
 
+  _leakPass(events, group, ep);
   return events;
+}
+
+// ── A DEAL IN THE WRONG PLACE ──────────────────────────────────────────
+// The user, 2026-10-07: "they can use multiple places for a deal; there's more risk of a leak
+// if it's too public, but don't let it stop people strategizing". Every private game talk
+// happened somewhere (camp-access.js): a spot with an overhear rating and the people idle there.
+// Somebody nearby may catch it: proportional to how exposed the spot is and how sharp the
+// listener is (a campfire talk is overheard about a third of the time by an average listener,
+// a forest-trail talk about one time in sixteen). What they heard costs the pair trust with the
+// listener and puts them on the radar for the next votes. Rolled on its own stream
+// (stableRng): the rest of the season's dice are untouched.
+const _LEAKY = { allianceForm: 'alliance', allianceRecruit: 'alliance', strategicApproach: 'deal', sideDeal: 'deal', tdStrategy: 'plan', gamePlanProbe: 'plan', soldierCheckin: 'alliance' };
+function _leakPass(events, group, ep) {
+  const venue = currentSetting();
+  const places = ACCESS_PROFILES[venue] || [];
+  let leaks = 0;
+  for (const ev of [...events]) {
+    if (leaks >= 2) break;
+    const kind = _LEAKY[ev?.type];
+    const a = ev?.scene?.who?.a, b = ev?.scene?.who?.b;
+    if (!kind || !a || !b) continue;
+    const { spot, nearby } = spotOf(null, a, b, ambientCtx().phase === 'post' ? 'post' : 'pre');
+    const overhear = places.find(l => l.id === spot?.id)?.overhear ?? 0.3;
+    const inIt = new Set([a, b, ...(ev.members || [])]);
+    const listeners = (nearby || []).filter(n => group.includes(n) && !inIt.has(n) && gs.activePlayers.includes(n));
+    // nobody idle right there (camp-access steers private talk to empty spots): somebody walking past
+    // can still catch it, at a lower chance — again in proportion to how exposed the spot is
+    const passing = listeners.length ? [] : group.filter(n => !inIt.has(n) && gs.activePlayers.includes(n));
+    const rng = stableRng('td-leak', gs.episode || 0, ev.type, a, b);
+    let heard = listeners.find(n => rng() < overhear * (0.15 + pStats(n).intuition * 0.035));
+    if (!heard && passing.length) {
+      const by = passing[Math.floor(rng() * passing.length)];
+      if (rng() < overhear * (0.15 + pStats(by).intuition * 0.035) * 0.35) heard = by;
+    }
+    if (!heard) continue;
+    leaks++;
+    addBond(heard, a, -0.4);
+    addBond(heard, b, -0.3);
+    if (!gs._leakHeat) gs._leakHeat = {};
+    const amt = 0.5 + overhear * 0.8;
+    for (const n of [a, b]) gs._leakHeat[n] = { amount: Math.max(gs._leakHeat[n]?.amount || 0, amt), expiresEp: (gs.episode || 0) + 1 + 2 };
+    events.push(scriptEvent({ type: 'dealOverheard', players: [heard, a, b], badgeText: 'OVERHEARD', badgeClass: 'red',
+      consequences: `${heard} overheard ${a} and ${b} (${kind}). Trust with both drops; ${a} and ${b} carry heat into the next votes.` },
+      makeScene('leak.heard', { a: heard, b: a, c: b }, { ending: kind }, [], spot)));
+  }
 }
 
 export function checkAllianceRecruitment(ep) {

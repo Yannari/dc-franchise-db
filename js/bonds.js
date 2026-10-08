@@ -91,6 +91,9 @@ export function floorBondsInvolving(name, floor = -1) {
   });
 }
 
+/** Recent bond changes, oldest first: [{ a, b, d }] (td/script/write.js takes them). */
+export const bondJournal = [];
+
 export function addBond(a, b, d) {
   // ── nobody has a relationship with themselves ──
   //
@@ -158,6 +161,9 @@ export function addBond(a, b, d) {
   // defaults derive from the current legacy bond, so updating the bond first
   // would double-count the delta on a pair's first interaction.
   applyLegacyBondDelta(a, b, next - before);
+  // the camp scene this change belongs to reads it back (td/script/write.js scriptEvent): the viewer
+  // shows what a conversation did to a relationship. A record only; nothing reads it for gameplay.
+  if (next !== before) { bondJournal.push({ a, b, d: next - before }); if (bondJournal.length > 400) bondJournal.splice(0, bondJournal.length - 400); }
   gs.bonds[bKey(a,b)] = next;
 }
 

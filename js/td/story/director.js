@@ -51,7 +51,7 @@ function writeStory(pool, outcome, who, data, facts, ctx) {
 // How much each step is worth on screen (narrative weighting only).
 const DRAMA = {
   'alliance.formed': 7, 'alliance.recruit': 5, 'alliance.refused': 5, 'alliance.checkin': 4, 'alliance.crack': 7, 'alliance.end': 8,
-  'alliance.betrayal': 9, 'alliance.deal': 6,
+  'alliance.betrayal': 9, 'alliance.deal': 6, 'alliance.exposed': 8,
   'rivalry.friction': 5, 'rivalry.blowup': 8, 'rivalry.truce': 6, 'rivalry.cold': 4,
   'showmance.spark': 5, 'showmance.kiss': 7, 'showmance.official': 6, 'showmance.jealous': 7, 'showmance.breakup': 9, 'showmance.targeted': 6,
   'bottom.noticed': 4, 'bottom.scramble': 6, 'bottom.targeted': 6,
@@ -131,6 +131,7 @@ const STEP_WHY = {
   'alliance.formed': '{a} and {b} start an alliance{al}.', 'alliance.recruit': '{a} brings {b} into {alx}.', 'alliance.refused': '{b} turns down {a}\'s alliance.',
   'alliance.checkin': '{alx} checks its numbers.', 'alliance.crack': '{a} is starting to doubt {b}.', 'alliance.end': '{alx} is finished.',
   'alliance.betrayal': 'A vote went against the plan, and it shows.', 'alliance.deal': '{a} and {b} make a deal about the end.',
+  'alliance.exposed': '{a} overheard {b} and {c}. They have no idea.',
   'rivalry.friction': '{a} and {b} rub each other the wrong way.', 'rivalry.blowup': 'It boils over between {a} and {b}.', 'rivalry.truce': '{a} tries to make peace with {b}.', 'rivalry.cold': '{a} and {b} have stopped pretending.',
   'showmance.spark': '{a} and {b} are into each other.', 'showmance.kiss': '{a} and {b} kiss.', 'showmance.official': '{a} and {b} are a couple.', 'showmance.jealous': 'Jealousy: {a} doesn\'t like what {a} sees.',
   'showmance.breakup': '{a} and {b} are over.', 'showmance.targeted': '{a} wants the couple split up.',
@@ -317,7 +318,7 @@ export function airTdEpisode(ep) {
           players: [...new Set([...Object.values(who).filter(Boolean), ...(ev.players || [])])],
           lines: w.lines, text: w.text, lineId: w.lineId, scene: { kind, who, data, spot: w.spot ? { ...w.spot, window: ev.scene?.spot?.window || ev.access?.windowId || null } : (ev.scene?.spot || null) }, access: ev.access || null,
           alliance: ev.alliance, members: ev.members, advType: ev.advType, badgeText: ev.badgeText || '', badgeClass: ev.badgeClass || '',
-          why: whyOf(kind, ending, line ? `${line.type}.${step.step}` : '', who, data, facts) };
+          why: whyOf(kind, ending, line ? `${line.type}.${step.step}` : '', who, data, facts), bondDelta: ev.bondDelta || null };
       };
       for (const f of chosen) {
         const { ev, i, line, step } = f;
@@ -341,9 +342,14 @@ export function airTdEpisode(ep) {
         .sort((x, y) => saysIn(y.ev).filter(p => !shown.has(p)).length - saysIn(x.ev).filter(p => !shown.has(p)).length || x.i - y.i);
       const cutCap = phase === 'pre' ? 3 : 2;
       let cutN = 0;
+      // the same kind of moment between the same people (a threat confessional about the same rival)
+      // rests three episodes: the same thought aired again reads as a loop
+      const topic = ev => `${ev.type}:${[...(ev.players || [])].sort().join('|')}`;
+      const rested = ev => ep.num - (seasonAired['cut:' + topic(ev)] ?? -99) < 3;
       for (const { ev, i } of cuts) {
         if (cutN >= cutCap) break;
-        if (!saysIn(ev).some(p => !shown.has(p))) continue;
+        if (!saysIn(ev).some(p => !shown.has(p)) || rested(ev)) continue;
+        seasonAired['cut:' + topic(ev)] = ep.num;
         ev.aired = true;
         cutN++;
         const item = longScene(ev, i);

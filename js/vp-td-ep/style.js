@@ -139,6 +139,9 @@ export const TDX_CSS = `
 /* reactions */
 .tdx .tdx-ring{position:absolute;aspect-ratio:1;border:3px solid var(--am);border-radius:50%;transform:translate(-50%,-50%);animation:tdxRing .9s ease-out forwards}
 @keyframes tdxRing{from{width:6%;opacity:1}to{width:34%;opacity:0}}
+.tdx .tdx-world.jolt{animation:tdxJolt .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes tdxJolt{0%{transform:scale(1)}18%{transform:scale(1.045) translate(-.6%,.3%)}36%{transform:scale(1.03) translate(.7%,-.4%)}60%{transform:scale(1.015) translate(-.3%,.2%)}100%{transform:scale(1)}}
+.tdx .tdx-pop.shock{color:#ff5a4f;font-size:4.2cqw}
 .tdx .tdx-pop{position:absolute;transform:translate(-50%,-50%);font:400 3cqw/1 'Lilita One';color:var(--am);-webkit-text-stroke:1.5px #1a0e02;paint-order:stroke fill;text-shadow:0 3px 0 #1a0e02;animation:tdxPopW 1.1s cubic-bezier(.3,1.7,.5,1) forwards;white-space:nowrap}
 @keyframes tdxPopW{0%{transform:translate(-50%,-50%) scale(0) rotate(-20deg)}30%{transform:translate(-50%,-50%) scale(1.2) rotate(-6deg)}80%{opacity:1}100%{transform:translate(-50%,-90%) scale(1) rotate(-6deg);opacity:0}}
 .tdx .tdx-excl{position:absolute;transform:translate(-50%,-50%);width:2.4cqw;aspect-ratio:1;border-radius:50%;background:var(--rd);color:#fff;display:grid;place-items:center;font:400 1.6cqw/1 'Lilita One';box-shadow:0 0 0 2px #fff;animation:tdxExcl .9s cubic-bezier(.3,1.8,.5,1) forwards}

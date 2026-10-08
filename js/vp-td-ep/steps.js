@@ -455,7 +455,7 @@ export function tdTribalScreen(ep, o = {}) {
     shown.forEach((v, i) => {
       steps.push({ k: 'scene', spot: 'voting-booth', tod: 'night', plate: booth, place: PLACE['voting-booth'], time: '8:50 PM', card: i === 0, cut: i > 0, focus: [v.voter], bg: [], places: placeScene(booth, [v.voter]) });
       steps.push({ k: 'say', by: v.voter, text: LINES[Math.floor(rng() * LINES.length)](v.voted), focus: [v.voter] });
-      steps.push({ k: 'title', kicker: `${v.voter} votes`, name: v.voted, faces: [v.voted] });
+      steps.push({ k: 'ballot', voter: v.voter, voted: v.voted, venue });
     });
     steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '9:00 PM', card: false, cut: true, focus: [], bg: [], places, seated: tribal, host, ceremony: true });
   }
@@ -583,6 +583,7 @@ export function tdStepTranscript(screen) {
     else if (s.k === 'conf') out.push(`${s.by} (confessional): "${s.text}"`);
     else if (s.k === 'beat') out.push(`(${s.text})`);
     else if (s.k === 'title') out.push(`[${s.kicker}: ${s.name}]`);
+    else if (s.k === 'ballot') out.push(`[${s.voter} votes: ${s.voted}]`);
     else if (s.k === 'ballots') out.push(`(${s.text})`);
     else if (s.k === 'idol') out.push(`(${s.by} plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${s.for}` : ''}.)`);
     else if (s.k === 'safe') out.push(`${screen.host || 'Chris'}: "${s.who}${s.immune ? ', you have immunity' : ''}." (${s.who} is safe${s.last ? ': the last ' + s.item : ''}.)`);

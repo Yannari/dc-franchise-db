@@ -190,6 +190,10 @@ export function sfx(kind) {
   else if (kind === 'safe') [660, 880, 1320].forEach((f, i) => setTimeout(() => { const tt = ctx.currentTime, os = ctx.createOscillator(), e = gain(0); os.frequency.value = f; os.connect(e); e.connect(dest); e.gain.linearRampToValueAtTime(.14, tt + .01); e.gain.exponentialRampToValueAtTime(.001, tt + .25); os.start(tt); os.stop(tt + .3); }, i * 90));
   else if (kind === 'out') { blast(220, 55, 1.1, 'sawtooth', .12); blast(110, 40, 1.2, 'sine', .3); }
   else if (kind === 'slip') { hiss(2400, .12, .14, 'bandpass'); }
+  // a pen on paper: short scratchy strokes for as long as the name takes to write
+  else if (kind === 'scribble') { for (let i = 0; i < 11; i++) setTimeout(() => hiss(3600 + Math.random() * 1800, .06 + Math.random() * .07, .07, 'bandpass'), 500 + i * 140 + Math.random() * 60); }
+  // a folded ballot dropping into the urn
+  else if (kind === 'drop') { hiss(1200, .12, .12, 'bandpass'); setTimeout(() => blast(180, 70, .25, 'sine', .3), 120); }
   else if (kind === 'heart') blast(700, 1050, .18, 'sine', .14);
   else if (kind === 'torch') { hiss(600, .7, .25, 'lowpass'); blast(80, 160, .5, 'sine', .2); }
   else if (kind === 'snuff') { hiss(3200, .5, .18, 'highpass'); blast(300, 60, .6, 'sine', .14); }

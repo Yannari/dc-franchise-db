@@ -110,7 +110,7 @@ export function worldHtml(screen, L) {
   if (motion?.water) h += `<div class="tdx-water" style="-webkit-mask-image:url('${SETS}/${key}-water.webp');mask-image:url('${SETS}/${key}-water.webp')">`;
   of('pool').forEach((m, i) => {
     const w = m.u1 - m.u0, hgt = m.v1 - m.v0;
-    for (let q = 0; q < Math.round(6 + w * 30); q++) h += `<i class="tdx-shimmer" style="left:${p(m.u0 + r() * w * .9)};top:${p(m.v0 + r() * hgt)};width:${p(.015 + r() * .04)};--d:${(3 + r() * 4).toFixed(1)}s;--dl:${(r() * 5).toFixed(1)}s;--ex:${(15 + r() * 40).toFixed(0)}px"></i>`;
+    for (let q = 0; q < Math.round((6 + w * 30) * (night ? .35 : 1)); q++) h += `<i class="tdx-shimmer${night ? ' night' : ''}" style="left:${p(m.u0 + r() * w * .9)};top:${p(m.v0 + r() * hgt)};width:${p(.015 + r() * .04)};--d:${(3 + r() * 4).toFixed(1)}s;--dl:${(r() * 5).toFixed(1)}s;--ex:${(15 + r() * 40).toFixed(0)}px"></i>`;
     if (m.fish && !night) h += `<i class="tdx-fish" style="left:${p(m.u0 + w * (.2 + r() * .6))};top:${p(m.v0 + hgt * .5)};--d:${(7 + r() * 5).toFixed(1)}s;--dl:${(r() * 6).toFixed(1)}s"></i>`;
   });
   if (motion?.water) h += '</div>';
@@ -223,6 +223,8 @@ export function castAt(screen, L) {
   const s = L.step || {};
   if (L.conf) return [{ n: L.conf.by, u: .5, v: .8, h: 50, speak: true, conf: true }];
   const sc = L.scene; if (!sc) return [];
+  // the voting booth is shot like a confessional: the voter alone, close, square to the camera
+  if (sc.spot === 'voting-booth' && !sc.ceremony && (sc.focus || [])[0]) return [{ n: sc.focus[0], u: .5, v: .84, h: 46, speak: s.k === 'say', conf: true }];
   const speaker = (s.k === 'say' || s.k === 'conf') ? s.by : (s.k === 'safe' ? s.who : null);
   const focus = s.focus || null;
   const toks = [];
@@ -248,7 +250,7 @@ export function castAt(screen, L) {
 export function shotOf(screen, L, toks) {
   const s = L.step || {};
   const wide = { k: 1, x: 0, y: 0, who: [] };
-  if (L.conf || !L.scene || s.k === 'scene' || s.k === 'title' || s.k === 'found' || s.k === 'ballots') return wide;
+  if (L.conf || !L.scene || s.k === 'scene' || s.k === 'title' || s.k === 'ballot' || s.k === 'found' || s.k === 'ballots') return wide;
   const speaker = s.k === 'say' ? s.by : s.k === 'safe' ? s.who : s.k === 'read' ? null : null;
   const ceremony = !!L.scene.ceremony;
   if (s.host && ceremony) return wide;
@@ -331,6 +333,7 @@ export function hudHtml(screen, L, fresh, o = {}) {
     }
   }
   if (L.tense) h += `<div class="tdx-chop">On the chopping block</div>`;
+  if (s.k === 'ballot') h += ballotHtml(s, fresh);
   if (s.k === 'title') h += `<div class="tdx-title${fresh ? ' fresh' : ''}${s.tone ? ' ' + esc(s.tone) : ''}${s.vs ? ' vs' : ''}"><div class="band"></div><div class="inner"><div class="kicker">${esc(s.kicker)}</div><div class="big">${esc(s.name)}</div></div><div class="faces">${(s.faces || []).map((n, i) => `${s.vs && i ? '<b class="vsx">VS</b>' : ''}<img src="${esc(avatar(n))}" alt="">`).join('')}</div></div>`;
   if (s.k === 'found') h += foundHtml(s, fresh);
   if (s.k === 'ballots') h += `<div class="tdx-title tdx-ballots${fresh ? ' fresh' : ''}"><div class="band"></div><div class="inner"><div class="kicker">The vote</div><div class="big">${esc(s.text)}</div></div><div class="faces">${(s.who || []).map((n, i) => `<span style="--i:${i}"><img src="${esc(avatar(n))}" alt=""><b>✓</b></span>`).join('')}</div></div>`;
@@ -376,7 +379,7 @@ export function dialogue(screen, L) {
   if (s.k === 'out') return { name: '', cls: 'dir', text: `${s.who} is ${s.island ? 'voted out' : 'eliminated'}.` };
   if (s.k === 'found') return s.text ? { name: '', cls: 'dir', text: s.text, badge: s.item ? { text: s.label.toUpperCase(), cls: 'gold' } : null } : { name: '', cls: 'dir hidden', text: '' };
   if (s.k === 'idol') return { name: '', cls: 'dir', text: `${s.by} stands up and plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${s.for}` : ''}.` };
-  if (s.k === 'ballots' || s.k === 'title') return { name: '', cls: 'dir hidden', text: '' };
+  if (s.k === 'ballots' || s.k === 'title' || s.k === 'ballot') return { name: '', cls: 'dir hidden', text: '' };
   return { name: '', cls: 'dir hidden', text: '' };
 }
 
@@ -412,4 +415,56 @@ export function stageHtml(screen, idx, fresh = false, o = {}) {
   const toks = castAt(screen, L);
   const d = dialogue(screen, L);
   return { L, html: `<div class="tdx-world">${worldHtml(screen, L)}<div class="tdx-cast">${toks.map(t => tokHtml(t, fresh)).join('')}</div><div class="tdx-fx"></div></div><div class="tdx-hud">${hudHtml(screen, L, fresh, o)}</div>`, toks, d };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE BALLOT — a vote written by hand, in each venue's own way
+// ══════════════════════════════════════════════════════════════════════
+// The user (2026-10-07): "a writing name animation for all the venues, it needs to be wow". The voter's
+// pick is written on the venue's own ballot, stroke by stroke under a moving pen, then dropped into
+// the venue's urn (or stamped, on the jet: World Tour votes with passport stamps).
+const BALLOT = {
+  'hosted-camp': { cls: 'camp', head: 'Camp Wawanakwa · Vote', urn: 'tin' },
+  'film-lot': { cls: 'slate', head: 'Gilded Chris Awards · Take 1', urn: 'can' },
+  'world-tour': { cls: 'passport', head: 'Total Drama Jumbo Jet · Passport', urn: 'stamp' },
+  'survival-island': { cls: 'bamboo', head: 'Soluna · Elimination Trial', urn: 'tiki' },
+  carnival: { cls: 'ticket', head: 'Stawaki Carnival · Admit One', urn: 'clown' },
+};
+const URN = {
+  tin: '<svg viewBox="0 0 120 110"><path d="M10 16v80c0 7 22 12 50 12s50-5 50-12V16" fill="#8a7458" stroke="#3b2f22" stroke-width="4"/><ellipse cx="60" cy="16" rx="50" ry="12" fill="#2a2018" stroke="#3b2f22" stroke-width="4"/><path d="M22 40h76M22 70h76" stroke="#6b5a44" stroke-width="5"/><circle cx="34" cy="56" r="4" fill="#a3542e"/><circle cx="84" cy="84" r="5" fill="#a3542e"/></svg>',
+  can: '<svg viewBox="0 0 120 110"><path d="M6 28v44c0 9 24 16 54 16s54-7 54-16V28" fill="#3a3a46" stroke="#111" stroke-width="4"/><ellipse cx="60" cy="28" rx="54" ry="16" fill="#0c0c10" stroke="#111" stroke-width="4"/><circle cx="60" cy="60" r="10" fill="#d4af37"/></svg>',
+  tiki: '<svg viewBox="0 0 120 120"><path d="M30 14h60l-6 96H36z" fill="#9a5a2a" stroke="#3b2210" stroke-width="4"/><rect x="24" y="6" width="72" height="14" rx="4" fill="#6b3a18" stroke="#3b2210" stroke-width="4"/><ellipse cx="46" cy="50" rx="10" ry="12" fill="#f2d16b" stroke="#3b2210" stroke-width="3"/><ellipse cx="74" cy="50" rx="10" ry="12" fill="#f2d16b" stroke="#3b2210" stroke-width="3"/><circle cx="46" cy="52" r="4" fill="#111"/><circle cx="74" cy="52" r="4" fill="#111"/><path d="M42 80q18 14 36 0v10q-18 12-36 0z" fill="#3b2210"/><path d="M36 30h48" stroke="#e8823a" stroke-width="4"/></svg>',
+  clown: '<svg viewBox="0 0 120 120"><path d="M28 30h64l-4 82H32z" fill="#f4efe6" stroke="#2a2a3a" stroke-width="4"/><rect x="22" y="20" width="76" height="14" rx="6" fill="#d33a3a" stroke="#2a2a3a" stroke-width="4"/><path d="M40 56l10-8 10 8M60 56l10-8 10 8" stroke="#2a5bd3" stroke-width="5" fill="none"/><circle cx="60" cy="72" r="9" fill="#e23b3b" stroke="#2a2a3a" stroke-width="3"/><path d="M42 92q18 12 36 0" stroke="#e23b3b" stroke-width="6" fill="none"/><circle cx="34" cy="16" r="9" fill="#2a5bd3"/><circle cx="86" cy="16" r="9" fill="#f2c83a"/></svg>',
+};
+// handwriting faces (Google Fonts, loaded in style.js TDX_FONTS) and how big each writes
+const HANDS = [
+  { f: "Caveat,cursive", w: 700, k: 1 }, { f: "'Indie Flower',cursive", k: .9 }, { f: "'Shadows Into Light',cursive", k: .95 },
+  { f: "'Gochi Hand',cursive", k: .9 }, { f: "'Rock Salt',cursive", k: .62 }, { f: "'Reenie Beanie',cursive", k: 1.15 },
+  { f: "'Nothing You Could Do',cursive", k: .7 }, { f: "'Homemade Apple',cursive", k: .6 }, { f: "Kalam,cursive", w: 700, k: .85 },
+  { f: "'Gloria Hallelujah',cursive", k: .75 }, { f: "'Covered By Your Grace',cursive", k: 1.05 }, { f: "'Just Another Hand',cursive", k: 1.2 },
+];
+const hashStr = t => { let h = 2166136261; for (const c of String(t)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
+export function ballotHtml(s, fresh) {
+  const B = BALLOT[s.venue] || BALLOT['hosted-camp'];
+  const name = String(s.voted || '');
+  // World Tour: nobody writes. The voter stamps the passport of the one they want gone.
+  if (B.urn === 'stamp') return `<div class="tdx-ballot passport${fresh ? ' fresh' : ''}"><div class="glow"></div>
+    <div class="card"><div class="hd">${esc(B.head)}</div>
+      <div class="pp"><img src="${esc(avatar(name))}" alt=""><div class="pf"><span>Surname / Given name</span><b>${esc(name)}</b><span>Nationality</span><b>Total Drama</b></div></div>
+      <div class="by"><img src="${esc(avatar(s.voter))}" alt=""><span>${esc(s.voter)} votes</span></div>
+      <div class="stampx">VOTED<small>OFF</small></div></div></div>`;
+  // everyone has their own hand: a font, a slant and a pen weight that are theirs all season (seeded on
+  // the voter), and every letter a little off its neighbour's line, the way nobody writes in a straight row
+  const H = HANDS[hashStr(s.voter) % HANDS.length], r = seeded(`${s.voter}|${name}`);
+  const fs = Math.round(Math.min(120, 980 / Math.max(name.length, 4)) * H.k);
+  const half = Math.round(fs * name.length * .27);
+  const slant = (hashStr(s.voter + 'slant') % 9) - 5, weight = (1.6 + (hashStr(s.voter + 'w') % 5) * .5).toFixed(1);
+  const letters = [...name].map((ch, i) => `<tspan dy="${i ? ((r() - .5) * fs * .09).toFixed(1) : 0}" rotate="${((r() - .5) * 9).toFixed(1)}">${esc(ch)}</tspan>`).join('');
+  return `<div class="tdx-ballot ${B.cls}${fresh ? ' fresh' : ''}">
+    <div class="glow"></div>
+    <div class="card"><div class="hd">${esc(B.head)}</div>
+      <svg class="ink" viewBox="0 0 1000 220"><text x="500" y="${Math.round(150 + (120 - fs) / 3)}" text-anchor="middle" font-size="${fs}" style="font-family:${H.f};font-weight:${H.w || 400};stroke-width:${weight}" transform="rotate(${slant} 500 120) skewX(${-slant})">${letters}</text><path class="ul" d="M${500 - half} 185 q ${half} 16 ${half * 2} -6"/></svg>
+      <div class="by"><img src="${esc(avatar(s.voter))}" alt=""><span>${esc(s.voter)} votes</span></div></div>
+    <div class="urn">${URN[B.urn] || ''}</div>
+  </div>`;
 }

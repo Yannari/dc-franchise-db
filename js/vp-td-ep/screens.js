@@ -88,6 +88,7 @@ function scriptHtml(scr) {
     else if (s.k === 'conf') t = `<div class="tdx-ln" data-s="${i}"><b>${esc(s.by)} (confessional):</b> ${esc(s.text)}</div>`;
     else if (s.k === 'beat') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.text)})</div>`;
     else if (s.k === 'title') t = `<div class="tdx-ln sc" data-s="${i}">${esc(s.kicker)}: ${esc(s.name)}</div>`;
+    else if (s.k === 'ballot') t = `<div class="tdx-ln sc" data-s="${i}">${esc(s.voter)} votes: ${esc(s.voted)}</div>`;
     else if (s.k === 'ballots') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.text)})</div>`;
     else if (s.k === 'idol') t = `<div class="tdx-ln d" data-s="${i}">(${esc(s.by)} plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${esc(s.for)}` : ''}.)</div>`;
     else if (s.k === 'safe') t = `<div class="tdx-ln" data-s="${i}"><b>${esc(scr.host || 'Chris')}:</b> ${esc(s.who)}${s.immune ? ', you won immunity' : ''}.</div>`;
@@ -267,6 +268,7 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
     }
   }
   if (s.k === 'title') sfx('title');
+  if (s.k === 'ballot') { sfx('slip'); if (s.venue === 'world-tour') setTimeout(() => sfx('slam'), 1150); else { sfx('scribble'); setTimeout(() => sfx('drop'), 2700); } }
   if (s.k === 'ballots') sfx('slip');
   if (s.k === 'idol') sfx('idol');
   if (s.k === 'out') sfx('out');
@@ -643,7 +645,7 @@ export function tdxReset(uid) { const R = sync(uid); if (!R) return; if (R.isMap
 export function tdxJump(el, i) { const root = el.closest('.tdx[data-uid]'); if (!root) return; const R = sync(root.dataset.uid); if (!R || (R.isMap && R.mode !== 'talk')) return; stopAuto(R); R.idx = i; paint(root.dataset.uid, false); }
 export function tdxIntel(uid) { const st = document.getElementById(`tdx-st-${uid}`); if (!st) return; st.classList.toggle('intel-open'); st.querySelector('.tdx-ibtn')?.classList.remove('new'); }
 export function tdxTab(uid, e) { const b = e.target.closest('[data-tab]'); if (!b) return; const R = reg()[uid]; if (!R) return; R.tab = b.dataset.tab; const st = document.getElementById(`tdx-st-${uid}`); st.querySelector('.tdx-intel').innerHTML = intelHtml(R.scr, ledgerAt(R.scr, R.idx), R.tab, false); }
-const holdFor = s => Math.min(9000, 1700 + String(s?.text || '').length * 40) + (['title', 'idol', 'out', 'found'].includes(s?.k) ? 2400 : 0) + (s?.tense ? 1200 : 0) + (s?.k === 'scene' ? 900 : 0) + (s?.k === 'safe' && s.last ? 1800 : 0);
+const holdFor = s => Math.min(9000, 1700 + String(s?.text || '').length * 40) + (['title', 'idol', 'out', 'found'].includes(s?.k) ? 2400 : 0) + (s?.k === 'ballot' ? 2600 : 0) + (s?.tense ? 1200 : 0) + (s?.k === 'scene' ? 900 : 0) + (s?.k === 'safe' && s.last ? 1800 : 0);
 function stopAuto(R) { R.auto = false; clearTimeout(R.timer); }
 export function tdxAuto(uid) {
   const R = sync(uid); if (!R) return;

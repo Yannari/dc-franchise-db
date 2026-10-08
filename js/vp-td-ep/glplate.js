@@ -36,7 +36,8 @@ void main(){
   d.x += b.g * sin(uv.y * 160. - t * 7.) * .0013;
   d.y += b.g * (sin(uv.x * 120. + t * 9.) * .5 + .5) * .0022;
   vec4 c = texture2D(img, uv - d);
-  c.rgb += a.g * smoothstep(.93, 1., sw * sin(uv.x * 140. + t * .9)) * .22;
+  // glints scale with the water's own light: a dark night lake gets a faint shimmer, not white streaks
+  c.rgb += a.g * smoothstep(.95, 1., sw * sin(uv.x * 140. + t * .9)) * .16 * (.25 + dot(c.rgb, vec3(.333)));
   c.rgb *= 1. + b.g * .07 * sin(t * 13. + uv.y * 40.);
   float tw = .8 + .2 * sin(t * 2.6 + sin(uv.x * 37.) * 3. + cos(uv.y * 29.) * 3.);
   c.rgb *= mix(1., tw * 1.12, b.r);

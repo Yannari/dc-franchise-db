@@ -150,3 +150,30 @@ function wager(ep, tw) {
   return tw.idolWagerResults.filter(r => r.holder && !seen.has(r.holder) && seen.add(r.holder)).map(r =>
     sceneOf(write('twist.wager', r.decision === 'declined' ? 'declined' : r.won ? 'won' : 'lost', { a: r.holder }), 'set', [r.holder])).filter(Boolean);
 }
+
+// The Exile Duel (episode.js): the one voted out waits on Exile for the next boot, and they duel.
+// The night it starts, the exiled player says what they will do with it, and somebody at the
+// table answers (the one who wrote their name and likes them least, else their closest friend).
+// The duel night, the two face off before it (who they are to each other: rivals, friends or
+// neither); the result belongs to the duel screen, so nothing here knows it.
+// ep.exileStory = { sent?: lines, faceoff?: lines }.
+export function writeExile(ep) {
+  const write = writer(ep);
+  const out = {};
+  const tribal = ep.tribalPlayers || [];
+  if (ep.exilePlayer && !ep.exileDuelResult) {
+    const a = ep.exilePlayer;
+    const wrote = (ep.votingLog || []).filter(v => v.voted === a && v.voter !== a && tribal.includes(v.voter)).map(v => v.voter);
+    const foe = [...wrote].sort((x, y) => getBond(a, x) - getBond(a, y) || x.localeCompare(y))[0] || null;
+    const b = foe && getBond(a, foe) <= 0 ? foe : closestOf(a, tribal.filter(x => x !== a))[0] || null;
+    const w = write('exile.sent', b === foe ? 'foe' : 'friend', { a, ...(b ? { b } : {}) });
+    if (w) out.sent = w.lines;
+  }
+  const R = ep.exileDuelResult;
+  if (R?.exilePlayer && R.newBoot) {
+    const bond = getBond(R.newBoot, R.exilePlayer);
+    const w = write('exile.faceoff', bond <= -2 ? 'rivals' : bond >= 2 ? 'friends' : 'strangers', { a: R.newBoot, b: R.exilePlayer });
+    if (w) out.faceoff = w.lines;
+  }
+  return Object.keys(out).length ? out : null;
+}

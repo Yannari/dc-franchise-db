@@ -1975,6 +1975,9 @@ export function _textTheVotes(ep, ln, sec) {
       if (st.exit?.length) { ln('  Last words:'); st.exit.forEach(say); }
       if (st.after?.length) { ln('  Later:'); st.after.forEach(say); }
     }
+    const ex = ep.exileStory;
+    if (ex?.sent?.length) { ln(''); ln('SENT TO EXILE:'); ex.sent.forEach(say); }
+    if (ex?.faceoff?.length) { ln(''); ln('THE EXILE DUEL — FACE-OFF:'); ex.faceoff.forEach(say); }
   }
 }
 

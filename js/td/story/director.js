@@ -33,7 +33,7 @@ import { lastTribalOf, challengeOf, lossStreak, bootsBefore } from './record.js'
 import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
 import { writeTribal, whyOf as ballotWhy } from './tribal.js';
-import { writeTwistStory } from './twist.js';
+import { writeTwistStory, writeExile } from './twist.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf } from './places.js';
 
@@ -347,6 +347,28 @@ function auctionTalk(ep, camp, members, next) {
     if (loser) add('outbid', { a: loser, b: r.winner }, itemOf(r), ['Outbid', 'red'], [`${r.winner} outbid ${loser} at the auction.`]);
   }
   return out;
+}
+
+// The morning after an Exile Duel: the winner walks back into camp (the exiled player, back in the
+// game, or the new boot, who won their place back). a is the winner; b the one here who wrote a's
+// name and likes a least, if anybody did; c a's closest friend here.
+function duelReturn(ep, camp, members, n) {
+  const prev = (gs.episodeHistory || []).find(h => h.num === ep.num - 1);
+  const R = prev?.exileDuelResult;
+  if (!R?.winner || !members.includes(R.winner)) return null;
+  const a = R.winner;
+  const back = a === R.exilePlayer ? 'exiled' : 'survived';
+  // who sent them: the vote that put a on Exile (the duel night's own for the new boot)
+  const src = back === 'exiled' ? (gs.episodeHistory || []).find(h => h.exilePlayer === a && h.num < ep.num) : prev;
+  const wrote = (src?.votingLog || []).filter(v => v.voted === a && v.voter !== a && members.includes(v.voter)).map(v => v.voter);
+  const b = [...wrote].sort((x, y) => getBond(a, x) - getBond(a, y) || x.localeCompare(y))[0] || null;
+  const c = members.filter(m => m !== a && m !== b && getBond(a, m) >= 2).sort((x, y) => getBond(a, y) - getBond(a, x) || x.localeCompare(y))[0] || null;
+  const who = { a, ...(b ? { b } : {}), ...(c ? { c } : {}) };
+  const data = { other: R.loser };
+  const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'pre' }), pair: !!b, third: !!c, other: true };
+  const w = writeStory('exile.back', back, who, data, facts, { ep: ep.num, camp, phase: 'pre', n, place: 'public', avoid: ctxAvoid('morning'), unique: 'soft' });
+  return w ? { story: true, kind: `exile.back.${back}`, storyType: 'exile', step: back, players: Object.values(who), lines: w.lines, text: w.text, lineId: w.lineId,
+    scene: { kind: 'exile.back', who, data, spot: w.spot ? { ...w.spot, window: 'morning' } : null }, badgeText: 'Back from Exile', badgeClass: 'gold', why: [`${a} beat ${R.loser} in the Exile Duel and is back in the game.`] } : null;
 }
 
 // After a team challenge: the losers find someone to blame; the winners exhale.
@@ -668,6 +690,8 @@ export function airTdEpisode(ep) {
       const opener = phase === 'pre' ? (dayOne ? firstDay(ep, camp, members, n++) : swapped ? firstDay(ep, camp, members, n++, 'swap') : morningAfter(ep, camp, members, n++))
         : afterChallenge(ep, camp, members, n++);
       if (opener) list.push({ at: -1, item: opener });
+      // back from the Exile Duel: the winner walks into camp first thing
+      if (phase === 'pre') { const dr = duelReturn(ep, camp, members, n++); if (dr) list.push({ at: -0.5, item: dr }); }
       // the auction's fallout, early in the evening
       if (phase === 'post') auctionTalk(ep, camp, members, () => n++).forEach((it, k) => list.push({ at: 0.2 + k * 0.01, item: it }));
       // day one: by the afternoon two of them have hit it off, and by the evening two of them have not
@@ -886,6 +910,8 @@ export function airTdEpisode(ep) {
   ep.campStory = story;
   // the night's words: every voter in the booth, the reading, last words, after (tribal.js)
   if (!ep.tribalStory) ep.tribalStory = writeTribal(ep);
+  // the Exile Duel's two nights: the one sent to Exile, and the face-off (twist.js writeExile)
+  if (ep.exileStory === undefined) ep.exileStory = writeExile(ep);
   // the twists, as the people in them talk (twist.js; the twist screen plays them)
   if (ep.twistStory === undefined) {
     try { ep.twistStory = writeTwistStory(ep); } catch (e) { if (typeof process !== 'undefined' && process.env?.VITEST) throw e; ep.twistStory = null; }

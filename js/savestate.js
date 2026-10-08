@@ -165,6 +165,7 @@ export function patchEpisodeHistory(ep) {
   if (!h.campStory && ep.campStory) h.campStory = ep.campStory;
   if (!h.twistStory && ep.twistStory) h.twistStory = ep.twistStory;
   if (!h.tribalStory && ep.tribalStory) h.tribalStory = ep.tribalStory;
+  if (!h.exileStory && ep.exileStory) h.exileStory = ep.exileStory;
   // Tribal data
   if (!h.tribalPlayers && ep.tribalPlayers) h.tribalPlayers = [...ep.tribalPlayers];
   if (!h.votingLog && ep.votingLog) h.votingLog = ep.votingLog;

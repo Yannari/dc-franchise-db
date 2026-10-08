@@ -44,6 +44,7 @@ const GUARANTEED = [
   [/^story\.vote\.target\./, ['wrote']],
   [/^story\.vote\.doubt\./, ['target']],
   [/^story\.auction\.(power|immunity)$/, ['target']],
+  [/^exile\.back\./, ['other']],
   [/^(room|after)\.burned$/, ['lastBoot', 'item', 'target']],
   [/^room\./, ['lastBoot', 'item']],
   [/^(reveal|exit|after)\./, ['lastBoot', 'item']],

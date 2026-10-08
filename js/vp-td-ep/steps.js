@@ -953,6 +953,10 @@ function elimSwap(ep, o) {
 
 // voted out into an Exile Duel: the vote is read, but the one voted out goes to face the exiled player
 // (the duel itself plays after the vote, on the post-vote screen)
+// a story line as a step (td/story: beats, confessionals, spoken lines)
+const storyStep = (l, focus) => (l.kind === 'beat' ? { k: 'beat', text: cleanText(l.text), focus } : l.kind === 'conf' ? { k: 'conf', by: l.by, text: cleanText(l.text) }
+  : { k: 'say', by: l.by, text: cleanText(l.text), focus: [l.by] });
+
 function duelNight(ep, o) {
   const boot = ep.exileDuelVotedOut, R = ep.exileDuelResult;
   const v = { ...ep, eliminated: boot, exileDuelVotedOut: null, tribalStory: null, riChoice: null };
@@ -967,6 +971,8 @@ function duelNight(ep, o) {
   steps.push({ k: 'say', by: host, host: true, text: `${boot}, you're not out of the game yet. ${R.exilePlayer} has been waiting on Exile for a rematch.`, focus: [boot] },
     { k: 'title', kicker: 'Exile Duel', name: `${boot} vs ${R.exilePlayer}`, faces: [boot, R.exilePlayer], vs: true },
     { k: 'say', by: host, host: true, text: `The two of you duel${R.challengeLabel ? ` in ${R.challengeLabel}` : ''}. The winner stays in the game. The loser is gone for good.` });
+  // the two of them, before it (td/story/twist.js writeExile)
+  for (const l of ep.exileStory?.faceoff || []) steps.push(storyStep(l, [boot, R.exilePlayer]));
   return { ...a, label: `${a.label} · Exile Duel`, steps, elim: null };
 }
 
@@ -985,5 +991,7 @@ function exileSetup(ep, o) {
   steps.push({ k: 'say', by: host, host: true, text: `${boot}, you're not going home. You're going to Exile.`, focus: [boot] },
     { k: 'title', kicker: 'Exile Duel', name: `${boot} goes to Exile`, faces: [boot], tone: 'fire' },
     { k: 'say', by: host, host: true, text: `You'll wait there for the next person voted out. Beat them in a duel and you're back in the game.`, focus: [boot] });
+  // what they say to that, and who answers (td/story/twist.js writeExile)
+  for (const l of ep.exileStory?.sent || []) steps.push(storyStep(l, [boot]));
   return { ...a, label: `${a.label} · Exile Duel`, steps, elim: null };
 }

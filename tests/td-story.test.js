@@ -8,6 +8,7 @@ import { TD_FACT_KEYS } from '../js/td/script/facts.js';
 import { campFeed } from '../js/td/story/feed.js';
 import { GUARANTEED as ENGINE_G } from '../js/td/script/lines/index.js';
 import { VOICE_TAGS } from '../js/td/story/voice.js';
+import VOICES from '../js/td/story/lines/voices/index.js';
 import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 
 // what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
@@ -206,6 +207,21 @@ describe('td story pools', () => {
       const usesC = e.turns.some(t => !t.opt && (t.by === 'c' || /\{c(\.\w+)?\}/.test(t.say || t.conf || t.beat || '')));
       if (usesC && !e.cOptional) expect(e.when?.third, `${e.id} uses c`).toBe(true);
     }
+  });
+});
+
+describe('the voice overlay', () => {
+  // keyed by entry id and turn index: a renamed entry or a reordered scene would drop its variants silently
+  it('points at entries and spoken turns that exist, with real voice tags', () => {
+    const byId = {};
+    for (const es of Object.values(STORY_POOLS)) for (const e of es) byId[e.id] = e;
+    const bad = [];
+    for (const [id, turns] of Object.entries(VOICES)) for (const [i, tags] of Object.entries(turns)) {
+      const t = byId[id]?.turns?.[+i];
+      if (!t || !(t.say || t.conf)) bad.push(`${id}#${i}`);
+      for (const k of Object.keys(tags)) if (!VOICE_TAGS.includes(k)) bad.push(`${id}#${i}:${k}`);
+    }
+    expect(bad).toEqual([]);
   });
 });
 

@@ -75,11 +75,21 @@ import nHandoff from './n-handoff.js';
 import nFinal from './n-final.js';
 import nDeep from './n-deep.js';
 import nNote from './n-note.js';
+import VOICES from './voices/index.js';
 
 const FILES = [firstday, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival, nGroup3, nGroup4, nGroup5, nArrival2, nTwist, nTribal2, nTwist2, nVote4, nVote5, nRoom, nAuction, nExile, nFeast, nPlan, nPlan2, nFirstImp, nAucFloor, nFirstImp2, nPublic, nTqa, nAdvPlay, nTqa2, nArc, nVp2, nVt2, nTqa3, nMorning3, nVp3, nVt3, nPsy, nRun, nThr, nPrev, nLong2, nLong3, nChm, nBlame, nRecall, nChm2, nReveal, nBooth2, nCrash, nExit2, nThr2, nLong4, nCover, nRel, nVp4, nLong5, nLong6, nTeach, nHandoff, nFinal, nDeep, nNote];
 
 export const STORY_POOLS = {};
 for (const f of FILES) for (const [k, v] of Object.entries(f)) STORY_POOLS[k] = STORY_POOLS[k] ? [...STORY_POOLS[k], ...v] : [...v];
+
+// The voice overlay (lines/voices/*.js): extra variants for existing lines, by entry id and turn index,
+// for the voice tags the pools had written least for (the user, 2026-10-09: 'we need another big
+// overhaul to add those variations'). A line's own variants win over the overlay's.
+for (const pool of Object.values(STORY_POOLS)) for (const e of pool) {
+  const ov = VOICES[e.id];
+  if (!ov) continue;
+  for (const [i, extra] of Object.entries(ov)) { const t = e.turns?.[+i]; if (t && (t.say || t.conf)) t.v = { ...extra, ...(t.v || {}) }; }
+}
 
 // A scene that has a third person in it only plays when there is one: c's lines would be
 // dropped and the rest would answer nobody ("Thanks, {c}."). An entry that reads fine without

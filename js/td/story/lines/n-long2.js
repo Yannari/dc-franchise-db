@@ -157,7 +157,7 @@ export default {
   'long.caught.face.none': [
     { id: 'nlx.k5', turns: [
       { by: 'b', say: "Nothing to say? Really?" },
-      { beat: "{a} just keeps doing the dishes." },
+      { beat: "{a} doesn't even look up." },
       { by: 'b', say: "Wow. Okay." },
       { by: 'b', conf: "{a} didn't even try. Not an apology, not an excuse, nothing. That tells me everything I need to know." },
     ] },

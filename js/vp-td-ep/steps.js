@@ -1314,11 +1314,11 @@ function revoteBooth(steps, say, ctx) {
 }
 // where each venue settles a tie with a challenge until it has a challenge zone of its own
 // each venue's challenge zone (the user's frames, 2026-10-08); World Tour settles it in the elimination area
-const TIEBREAK_SPOT = { 'hosted-camp': ['challenge-zone', 'amphitheater', 'beach'], 'film-lot': ['cage-stage', 'studio-backlot'],
+export const TIEBREAK_SPOT = { 'hosted-camp': ['challenge-zone', 'amphitheater', 'beach'], 'film-lot': ['cage-stage', 'studio-backlot'],
   'world-tour': ['ceremony'], 'survival-island': ['volcano', 'beach'], carnival: ['bumper-arena', 'big-top'] };
 // where the tied stand on a set whose floor is low in its frame (the arena, the cage stage): in front, the
 // panel over their feet
-const TIEBREAK_AT = { 'bumper-arena': [[.36, .88], [.64, .88], [.5, .9]], 'cage-stage': [[.37, .9], [.63, .9], [.5, .92]] };
+export const TIEBREAK_AT = { 'bumper-arena': [[.36, .88], [.64, .88], [.5, .9]], 'cage-stage': [[.37, .9], [.63, .9], [.5, .92]] };
 // Wawanakwa's platform: the two signs on their poles, in the frame's own pixels, painted in the teams' colours
 const TIEBREAK_SIGNS = { 'challenge-zone': [[644, 226, 712, 314], [1216, 204, 1278, 282]] };
 const TIEBREAK_WHAT = { 'Fire-Making': 'Two kits, two piles of tinder. First flame high enough to burn through the rope wins.',

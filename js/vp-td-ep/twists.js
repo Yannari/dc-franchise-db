@@ -14,7 +14,7 @@
 // quote (one pool, shared with the classic card); tdStepTranscript hands all of it to the text
 // backlog (_textTdIslands).
 import { TD_MARKS } from './marks.js';
-import { placeScene, plateKey, placeName, venueOf, VENUES, cleanText } from './steps.js';
+import { placeScene, plateKey, placeName, venueOf, VENUES, cleanText, TIEBREAK_SPOT, TIEBREAK_AT } from './steps.js';
 
 const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 const pickBy = (arr, ...k) => arr[hash(k.join('|')) % arr.length];
@@ -144,7 +144,7 @@ export function tdRiChoiceScreen(ep, o = {}) {
     return { id: 'ri-choice', kind: 'island', venue: ISL, ep: ep.num, label: 'Rescue Island', host, steps };
   }
   const accepted = choice === 'REDEMPTION ISLAND';
-  const key = plate('rescue-crossroads', 'night');
+  const key = plateKey(venueOf(ep, o), 'exit', 'night') || plate('rescue-crossroads', 'night');
   const hostMark = ((TD_MARKS[key] || {}).m || []).find(m => m.kind === 'host');
   const places = { [elim]: { u: .4, v: .7, s: .16 } };
   if (hostMark) places[host] = { u: hostMark.u, v: hostMark.v, s: hostMark.s, host: true };
@@ -166,6 +166,13 @@ export function tdRiChoiceScreen(ep, o = {}) {
 // The post-duel events (winner-*, loser-*) belong to the duel screen, which stays classic.
 const POST_DUEL = ['winner-relief', 'winner-hardened', 'winner-streak', 'winner-obsessed', 'loser-graceful', 'loser-bitter', 'loser-emotional', 'loser-neutral'];
 
+// Redemption Island is an island (Boney Island) everywhere but the film lot (its prison set, the cage
+// stage) and Stawaki (its Exile Beach); the user, 2026-10-08: "redemption island still uses a 3D scene"
+function riPlace(ep, o, tod) {
+  const venue = venueOf(ep, o);
+  const at = venue === 'film-lot' ? ['film-lot', 'cage-stage'] : venue === 'carnival' ? [ISL, 'stawaki-exile'] : [ISL, 'boney-island'];
+  return plateKey(at[0], at[1], tod) || plateKey(at[0], at[1], tod === 'night' ? 'day' : 'night');
+}
 export function tdIslandLifeScreen(ep, rescue, o = {}) {
   const all = rescue ? (ep.rescueIslandEvents || []) : (ep.riLifeEvents || []).filter(e => !POST_DUEL.includes(e.type));
   // the day in order: each moment keeps its place among those of its own time of day
@@ -186,7 +193,7 @@ export function tdIslandLifeScreen(ep, rescue, o = {}) {
   let rank = -9;
   const open = r => {
     const t = r === 2 ? 'night' : 'day';
-    const key = plate(spot, t);
+    const key = rescue ? plate(spot, t) : (riPlace(ep, o, t) || plate(spot, t));
     const places = placeScene(key, residents.slice(0, 9), []);
     // morning to afternoon: the light moves on, nobody moves (no new card)
     steps.push({ k: 'scene', spot, tod: t, plate: key, place: isle, time: TIME[r], card: rank === -9 || r === 2, focus: [], bg: [], places,
@@ -340,4 +347,50 @@ export function exileOf(ep, format) {
   }
   const t = (ep.twists || []).find(x => x.type === 'exile-island' && x.exiled);
   return t ? { exiled: t.exiled, chooser: t.exileChooser || null, chooserTribe: t.exileChooserTribe || null, chooserMembers: t.exileChooserMembers || null, found: t.exileFound || null, schoolyard: !!t.schoolyardExile } : null;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE REDEMPTION DUEL — on the venue's challenge zone (the user: "the duel can use the duel backgrounds
+// we use for the tiebreaker"): the host's opener, what the challenge is, every round in the engine's own
+// narration with the host between rounds and the breathing moments, the result, and after
+// ══════════════════════════════════════════════════════════════════════
+const POST_DUEL_EV = ['winner-relief', 'winner-hardened', 'winner-streak', 'winner-obsessed', 'loser-graceful', 'loser-bitter', 'loser-emotional', 'loser-neutral'];
+export function tdRiDuelScreen(ep, o = {}) {
+  const d = ep.riDuel;
+  if (!d?.winner) return null;
+  const host = o.host || 'Chris';
+  const venue = venueOf(ep, o);
+  const who = d.duelists || [d.winner, d.loser].filter(Boolean);
+  const spot = (TIEBREAK_SPOT[venue] || ['beach']).find(s => plateKey(venue, s, 'day') || plateKey(venue, s, 'night'));
+  const key = spot ? (plateKey(venue, spot, 'day') || plateKey(venue, spot, 'night')) : riPlace(ep, o, 'day');
+  const kVenue = spot ? venue : ISL;
+  if (!key) return null;
+  const at = TIEBREAK_AT[spot];
+  const places = at ? Object.fromEntries(who.map((n, i) => [n, { u: at[i % at.length][0], v: at[i % at.length][1], s: .3, h: 30, crowd: true }])) : placeScene(key, who, [], { host });
+  const steps = [];
+  const say = (text, extra = {}) => { const t = cleanText(text); if (t) steps.push({ k: 'say', by: host, host: true, text: t.replace(/^"|"$/g, ''), ...extra }); };
+  steps.push({ k: 'scene', spot: spot || 'duel', tod: /-night$/.test(key) ? 'night' : 'day', plate: key, place: 'The Duel', time: 'Redemption Island', card: true, focus: who, bg: [], places, host });
+  say(d.host?.opener || `Welcome to the duel. One of you goes back to Redemption Island. The other one goes home for good.`);
+  steps.push({ k: 'title', kicker: d.isThreeWay ? 'Three-way duel' : 'Redemption duel', name: d.challenge?.name || d.challengeLabel || 'The Duel', faces: who, vs: who.length === 2 });
+  if (d.challenge?.desc || d.challengeDesc) say(d.challenge?.desc || d.challengeDesc);
+  const streak = d.preStreakData || {};
+  for (const n of who) if (streak[n] >= 1) steps.push({ k: 'beat', text: `${n} has won ${streak[n]} duel${streak[n] > 1 ? 's' : ''} already.`, focus: [n], side: [{ tab: 'residents', text: `${n}: ${streak[n]} duel win${streak[n] > 1 ? 's' : ''} before tonight` }] });
+  const between = [d.host?.after1, d.host?.after2];
+  (d.phases || []).forEach((p, i) => {
+    steps.push({ k: 'beat', text: cleanText(p.narration || `${p.winner} takes ${p.name || `round ${i + 1}`}.`), focus: who, tense: i === (d.phases.length - 1),
+      side: [{ tab: 'log', text: `${p.name || `Round ${i + 1}`}: ${p.winner}` }] });
+    const m = (d.breathingMoments || [])[i];
+    if (m?.text) steps.push({ k: 'beat', text: cleanText(m.text), focus: (m.players || [m.player, m.target]).filter(n => n && places[n]) });
+    if (between[i]) say(between[i]);
+  });
+  if (d.tiebreaker) steps.push({ k: 'beat', text: cleanText(d.tiebreaker.text || d.tiebreaker.narration || `It comes down to a tiebreaker.`), focus: who, tense: true });
+  say(d.host?.closer || `${d.winner} wins the duel.`, { focus: [d.winner] });
+  steps.push({ k: 'title', kicker: 'Still alive', name: d.winner, faces: [d.winner], tone: 'fire' });
+  if (d.loser) {
+    steps.push({ k: 'say', by: host, host: true, text: `${d.loser}, you're out of the game. For good this time.`, focus: [d.loser] });
+    steps.push({ k: 'out', who: d.loser, focus: [d.loser] });
+  }
+  for (const e of (ep.riLifeEvents || []).filter(e => POST_DUEL_EV.includes(e.type) && cleanText(e.text)))
+    steps.push({ k: 'beat', text: cleanText(e.text), focus: (e.players || [e.player]).filter(n => n && places[n]) });
+  return { id: 'ri-duel', kind: 'island', venue: kVenue, ep: ep.num, label: 'Redemption Duel', host, steps };
 }

@@ -726,7 +726,7 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   // a reason about somebody else (alliances.js relationalTargetMod, the same conditions): cut {keep}'s
   // ride-or-die so {keep} has nobody but us; or {target} said out loud they'd never vote {protects}
   const rel = !fromBallot && !coming ? relationalReason([a, ...voters.filter(x => x !== a)], boot) : null;
-  const relCase = rel?.kind === 'isolate' && tribal.includes(rel.partner) ? 'isolate' : rel?.kind === 'pledge' && tribal.includes(rel.protects) ? 'pledge' : null;
+  const relCase = rel?.kind === 'isolate' && tribal.includes(rel.partner) && rel.partner !== who.b && rel.partner !== a ? 'isolate' : rel?.kind === 'pledge' && tribal.includes(rel.protects) ? 'pledge' : null;
   const caseOf = relCase || ((fromBallot === 'coming' && !coming ? null : fromBallot)
     || (coming ? 'coming' : t.ch?.sank === boot ? 'sank' : idol ? 'idol' : pair ? 'pair' : theirs ? 'group'
       : getBond(a, boot) <= -2 ? 'grudge' : rank >= 0 && rank <= 1 && tribal.length >= 4 ? 'threat' : best <= 1 ? 'outsider' : 'numbers'));
@@ -1249,6 +1249,10 @@ export function airTdEpisode(ep) {
           const a = m.players[0];
           const b = m.players[1] || members.filter(x => x !== a).sort((x, y) => getBond(a, y) - getBond(a, x) || x.localeCompare(y))[0];
           if (!b) continue;
+          // a pact or a rescue between two people doesn't air the night one writes the other's name: read in a
+          // played season, Duncan renewed 'to the end' with Seraphine, then ran the vote on her, unremarked
+          const writes = (x, y) => (ep.votingLog || []).some(v => v.voter === x && v.voted === y);
+          if (['pact', 'saved', 'bond', 'spark', 'comeback'].includes(m.kind) && (writes(a, b) || writes(b, a))) continue;
           const key = [a, b].sort().join('|');
           if (seenPair.has(key) || seenPair.has(m.kind + a)) continue;
           const who = { a, b };
@@ -1275,7 +1279,8 @@ export function airTdEpisode(ep) {
       // a thread carried from an earlier episode (threads.js): one scene when one is due
       if (editOn && phase === 'pre' && ep.num > 1) {
         const td = threadDue(ep, members);
-        if (td) {
+        const writesT = (x, y) => (ep.votingLog || []).some(v => v.voter === x && v.voted === y);
+        if (td && !(['rescue', 'debt'].includes(td.t.kind) && (writesT(td.t.a, td.t.b) || writesT(td.t.b, td.t.a)))) {
           const who = { a: td.t.a, b: td.t.b };
           const prevBoot = (gs.episodeHistory || []).find(h => h.num === td.t.ep)?.eliminated || null;
           const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), pair: true, how: td.t.how || 'vote', lastBoot: !!prevBoot, ago: ep.num - td.t.ep <= 1 ? 'recent' : 'while' };

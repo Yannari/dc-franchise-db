@@ -319,7 +319,7 @@ export default {
     C('nk.tn4', { voice: ['warm', 'anxious', 'earnest'] }, ["I really like {b}. But {b} is winning everything, and people are starting to notice.", "If I stay close to {b}, maybe I'm safe. Or maybe I'm standing right next to the biggest target in the game."]),
   ],
   'long.conf.bigmove.any': [
-    C('nk.bm1', null, ["I've been playing safe for too long. Everybody thinks I'm just a vote.", "I want to do something that makes them all stop and look at me. Soon."]),
+    C('nk.bm1', { madeMove: false }, ["I've been playing safe for too long. Everybody thinks I'm just a vote.", "I want to do something that makes them all stop and look at me. Soon."]),
     C('nk.bm2', { late: true }, ["There aren't many of us left. If I don't make a big move soon, I'm walking into the final as the person who did nothing.", "Nobody hands the money to the person who did nothing."]),
     C('nk.bm3', { voice: ['loud', 'chaotic', 'theatrical'] }, ["I'm bored, everybody votes with the majority every single time, it's so boring!", "I want to blow it all up. I just need to figure out how to blow it up without blowing up myself."]),
     C('nk.bm4', { voice: ['schemer', 'calm', 'dry'] }, ["Everyone's comfortable. Comfortable people stop paying attention.", "That's when you move."]),

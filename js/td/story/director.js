@@ -107,6 +107,10 @@ function recordSlots(ep, a, b, camp, phase) {
     if (lt.myVote && !lt.votedBoot && lt.myVote !== a) { data.myVote = lt.myVote; facts.myVote = true; }
     facts.blindside = !!lt.blindside;
     facts.gotVotes = lt.against > 0;
+    // a just made a move at the last vote: wrote the boot's name in a blindside, or against somebody a
+    // was close to. A scene whose premise is 'I've never made a move' can't air for them (read in a
+    // played season: Nichelle voted out her closest ally, then 'I've never made a big move in my life')
+    facts.madeMove = !!lt.votedBoot && (!!lt.blindside || getBond(a, lt.boot) >= 3);
     data.bootVotes = numberWord(lt.bootVotes);
   }
   // b's own ballot is b's secret: a line may only rely on it when b says it (b's own words)

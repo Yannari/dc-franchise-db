@@ -93,7 +93,7 @@ export default {
   ],
 
   'long.conf.bigmove.any': [
-    { id: 'nl5.m1', turns: [
+    { id: 'nl5.m1', when: { madeMove: false }, turns: [
       { beat: "{a} sits alone on the dock at dawn, before anybody else is up." },
       { by: 'a', conf: "I'm tired of being comfortable. I wake up, I do my chores, I vote the way I'm told, and I'm starting to hate it." },
       { by: 'a', conf: "And I've noticed nobody's paying attention to me while I count. That's the best feeling I've had in days." },
@@ -101,7 +101,7 @@ export default {
       { by: 'a', conf: "If I'm wrong, I go home. If I'm right, I'm the reason everybody remembers this season." },
       { by: 'a', conf: "I can live with either one. What I can't live with is sitting here waiting for my turn." },
     ] },
-    { id: 'nl5.m2', when: { voice: ['anxious', 'warm', 'earnest'] }, turns: [
+    { id: 'nl5.m2', when: { voice: ['anxious', 'warm', 'earnest'], madeMove: false }, turns: [
       { by: 'a', conf: "I've never made a big move in my life. Not at school, not at work, not anywhere." },
       { by: 'a', conf: "I'm the person who goes along with things. I'm good at going along with things." },
       { by: 'a', conf: "But going along with things in here gets you a nice seat on the jury and a hug on the way out." },

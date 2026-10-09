@@ -90,7 +90,7 @@ export function premiereSteps(venue, o = {}) {
   const V = VENUES[venue] || VENUES['hosted-camp'];
   const steps = [];
   const say = (text, extra = {}) => steps.push({ k: 'say', by: host, host: true, text, ...extra });
-  const show = (key, place, time = 'Day one') => steps.push({ k: 'scene', spot: key.split('/')[1].replace(/-(day|night)$/, ''), tod: /-night$/.test(key) ? 'night' : 'day', plate: key, place, time, card: false, cut: true, focus: [], bg: [], places: {}, wide: true });
+  const show = (key, place, time = 'Day one') => steps.push({ k: 'scene', spot: key.split('/')[1].replace(/-(day|night)$/, ''), tod: /-night$/.test(key) ? 'night' : 'day', plate: key, place, time, card: false, cut: false, focus: [], bg: [], places: {}, wide: true });
 
   // ── the tour: every zone on the map, empty ──
   const zones = Object.entries(mapZones(venue)).filter(([, Z]) => !Z.rival).sort(([, a], [, b]) => a.u - b.u);

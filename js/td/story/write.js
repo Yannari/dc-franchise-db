@@ -179,7 +179,10 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // "repeating Mike too many times"): spoken lines and confessionals by tidySpoken, beats by tidyNames
     const filled = fill(raw, who, data);
     const text = kind === 'beat' ? tidyNames(filled) : tidySpoken(filled);
-    return { kind, by: t.by ? who[t.by] : null, text: text.charAt(0).toUpperCase() + text.slice(1) };
+    const line = { kind, by: t.by ? who[t.by] : null, text: text.charAt(0).toUpperCase() + text.slice(1) };
+    // which turn of the entry it came from, for the voice-coverage measurement (not saved: non-enumerable)
+    Object.defineProperty(line, 'turn', { value: entry.turns.indexOf(t) });
+    return line;
   });
   if (lines.some(l => /\{\w+(\.\w+)?\}/.test(l.text))) throw new Error(`td story ${entry.id}: unfilled slot in "${lines.find(l => /\{\w+/.test(l.text)).text}"`);
   // breakfast is the morning; dinner is the evening (camp-access.js windows)

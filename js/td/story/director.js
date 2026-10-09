@@ -1365,7 +1365,9 @@ export function airTdEpisode(ep) {
           if (swinger && !torn && close && members.includes(swinger)) deep('swing', swinger, { pitcher: sw.scene.who.a, target: talk.boot }, `${swinger} is the vote everybody needs tonight.`, { yes: /yes$/.test(sw.kind || '') });
         }
         const imm = [].concat(ep.immunityWinner || []).find(x => members.includes(x));
-        if (merged && imm) {
+        // after the challenge only: nobody has won it yet in the morning (read: Paige's winner's
+        // confessional aired before the challenge she went on to win)
+        if (merged && imm && phase === 'post') {
           const warm = members.filter(x => x !== imm).reduce((s0, x) => s0 + getBond(x, imm), 0) / Math.max(1, members.length - 1);
           const before = (gs.episodeHistory || []).filter(h => h.num < ep.num && [].concat(h.immunityWinner || []).includes(imm)).length;
           if (warm < 1) deep('win', imm, {}, `${imm} won immunity, and the camp is not happy about it.`, { again: before >= 1 });

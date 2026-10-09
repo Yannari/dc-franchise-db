@@ -38,7 +38,7 @@ const OUTDOOR = /\b(fire( pit)?|firewood|campfire|fishing|fish|lake|water's edge
 // A line that leans on shared history, in the first two episodes, between two people with none.
 const HISTORY = /\b(always|you never|never once|every time|every single time|again|anymore|any more|lately|like before|used to|last time|the other day|yesterday|since day one|all week|for days)\b/i;
 // After the challenge it is not the morning; before it, nobody can talk about how it went.
-const MORNING = /\b(breakfast|good morning|morning,|this morning\.|sunrise|wakes? up|woke up|before everyone's up|first thing)\b/i;
+const MORNING = /\b(breakfast|good morning|morning,|this morning\.|sunrise|wakes? up|woke up|before everyone's up|first thing|morning chores|everyone else is asleep|light comes? up)\b|\bmorning!|^early\.|\(early\./i;
 const EVENING = /\b(dinner|lights-out|lights out|goodnight|good night|after the challenge)\b/i;
 const CHAL_DONE = /\b(we lost|we won|lost it for us|lost us|carried us|dead last|lowest score|best score|the challenge today|today's challenge was|out there today|the worst one out there)\b/i;
 const ledger = () => ((gs.tdStory ||= {}).ledger ||= newLedger());

@@ -21,44 +21,6 @@
 // Ids: 'nl6.'.
 
 export default {
-  'long.friend.teach.any': [
-    { id: 'nl6.t1', turns: [
-      { beat: "{b} has been trying the same thing for ten minutes. {a} finally walks over." },
-      { by: 'a', say: "Can I show you something?" },
-      { by: 'b', say: "Is it how to stop being terrible at this?" },
-      { by: 'a', say: "Sort of. You're rushing it. Slow down at the start and the rest takes care of itself." },
-      { by: 'b', say: "That's it?" },
-      { by: 'a', say: "Try it." },
-      { beat: "{b} tries it slowly. It works." },
-      { by: 'b', say: "Oh, come on. That's so annoying." },
-      { by: 'a', say: "You're welcome." },
-      { by: 'b', say: "Why are you helping me, though? We're not exactly close." },
-      { by: 'a', say: "Because if you get better, the team gets better. And because you looked like you were about to throw something." },
-      { by: 'b', conf: "{a} fixed in two minutes what I'd been getting wrong all week. I owe {a.obj} one, and I hate owing people." },
-    ] },
-    { id: 'nl6.t2', when: { voice: ['warm', 'earnest', 'goofy'] }, turns: [
-      { by: 'a', say: "You're doing great! One more try!" },
-      { by: 'b', say: "I've done it twelve times. I'm not doing great." },
-      { by: 'a', say: "You're doing great at trying. That's the first part." },
-      { by: 'b', say: "What's the second part?" },
-      { by: 'a', say: "Actually doing it. Go on. Watch my hands, not yours." },
-      { beat: "{b} gets it on the next try. {a} cheers louder than {b} does." },
-      { by: 'b', say: "Okay, okay, calm down, people are looking." },
-      { by: 'a', say: "Let them look! You did it!" },
-      { by: 'b', conf: "{a} celebrated me like I'd won the whole game. It was embarrassing. It was also the nicest thing anybody's done for me out here." },
-    ] },
-    { id: 'nl6.t3', when: { voice: ['tough', 'competitive', 'bossy'] }, turns: [
-      { by: 'a', say: "Again." },
-      { by: 'b', say: "My arms are shaking." },
-      { by: 'a', say: "Then they're working. Again." },
-      { by: 'b', say: "Are you training me or torturing me?" },
-      { by: 'a', say: "Yes." },
-      { beat: "{b} does it again, faster this time." },
-      { by: 'a', say: "See? That's twice as fast as this morning." },
-      { by: 'b', say: "I hate that you're right." },
-      { by: 'b', conf: "{a} is a nightmare coach. I'm also way better than I was yesterday, so I guess I'll keep showing up." },
-    ] },
-  ],
   'long.friend.meal.any': [
     { id: 'nl6.m1', turns: [
       { beat: "{a} and {b} eat together, away from everybody else." },

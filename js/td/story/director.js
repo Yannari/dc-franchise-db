@@ -284,6 +284,16 @@ function rawFits(ev, ep, phase) {
   return true;
 }
 
+// An engine moment that airs in its own words (no long version fit) has to be a scene, not three
+// lines of nothing (the user: "That was incredible!" / "It was just a knot." / "It was an INCREDIBLE
+// knot."): four spoken lines at least, or a confessional of two. Anything shorter does not air on its
+// own; the screen-time pass writes that person a whole scene instead.
+function rawFull(ev) {
+  const spoken = (ev?.lines || []).filter(l => l.by && l.kind !== 'beat' && !(l.text || '').startsWith('('));
+  if (spoken.length >= 4) return true;
+  return spoken.length >= 2 && spoken.every(l => l.kind === 'conf' || /confessional/i.test(l.kind || ''));
+}
+
 // ── the new scenes ─────────────────────────────────────────────────────
 
 // The morning after a vote: whoever was closest to the person who left, and somebody who wrote
@@ -1121,7 +1131,8 @@ function chainScenes(ep, camp, phase, items, next) {
     if ((prev.scene.spot.window || '') !== (cur.scene.spot.window || '')) { run = 0; continue; }
     if (prev.scene.spot.id !== cur.scene.spot.id && (pk !== ck || ck === 'secret' || ck === 'sleep')) { run = 0; continue; }
     // a scene that opens by setting itself somewhere keeps its own place (and its set-up line)
-    if (cur.lines[0]?.kind === 'beat') { run = 0; continue; }
+    // (an automatic set-up line, setup.js, gives way to the arrival instead)
+    if (cur.lines[0]?.kind === 'beat' && !cur.lines[0].auto) { run = 0; continue; }
     // the hand-off: who leaves, who arrives
     const h = hash(`${ep.num}${camp}${phase}${i}`);
     const beats = [];
@@ -1133,7 +1144,7 @@ function chainScenes(ep, camp, phase, items, next) {
       ? [`${come[0]} comes over.`, `${come[0]} walks up.`, `${come[0]} sits down next to ${stay[0]}.`, `${come[0]} drifts over, pretending not to be curious.`, `${come[0]} wanders over to see what's going on.`, `${come[0]} drops down beside ${stay[0]}.`][(h >>> 3) % 6]
       : [`${come[0]} comes over with ${list(come.slice(1))}.`, `${list(come)} walk up together.`][(h >>> 3) % 2]);
     if (!beats.length) { run = 0; continue; }
-    const lines = [...cur.lines];
+    const lines = cur.lines[0]?.auto ? cur.lines.slice(1) : [...cur.lines];
     const lead = [{ kind: 'beat', text: beats.join(' ').trim(), arrive: come }];
     // walking in on a row: the newcomer asks, the one who stayed answers
     if (come.length && go.length && TENSE.test(prev.kind || '')) {
@@ -1487,7 +1498,7 @@ export function airTdEpisode(ep) {
       for (const f of chosen) {
         const { ev, i, line, step } = f;
         const item = longScene(ev, i, line, step);
-        if (!item && !rawFits(ev, ep, phase)) continue;
+        if (!item && (!rawFits(ev, ep, phase) || !rawFull(ev))) continue;
         step.aired = true;
         ev.aired = true;
         seasonAired[`${line.type}.${step.step}`] = (seasonAired[`${line.type}.${step.step}`] || 0) + 1;
@@ -1542,6 +1553,7 @@ export function airTdEpisode(ep) {
           .sort((x, y) => (y.ev.players || []).filter(p => !seenNow.has(p)).length - (x.ev.players || []).filter(p => !seenNow.has(p)).length || x.i - y.i);
         for (const { ev, i } of groupEvs.slice(0, members.length >= 7 ? 2 : 1)) {
           const item = longScene(ev, i);
+          if (!item && !rawFull(ev)) continue;
           ev.aired = true;
           groupN++;
           list.push({ at: i, item: item || { ref: i } });
@@ -1561,6 +1573,7 @@ export function airTdEpisode(ep) {
         if (!saysIn(ev).some(p => !shown.has(p)) || rested(ev)) continue;
         if (editOn && clashes({ ev, step: { roles: {} } })) continue;
         const item = longScene(ev, i);
+        if (!item && !rawFull(ev)) continue;
         seasonAired['cut:' + topic(ev)] = ep.num;
         ev.aired = true;
         cutN++;
@@ -1592,7 +1605,7 @@ export function airTdEpisode(ep) {
       let placed = false;
       for (const phase of ['post', 'pre']) {
         const events = eventsOf(ep, camp, phase);
-        const i = events.findIndex(ev => ev && !ev.aired && speaksIn(ev).includes(name) && (ev.lines || []).length <= 8 && rawFits(ev, ep, phase));
+        const i = events.findIndex(ev => ev && !ev.aired && speaksIn(ev).includes(name) && (ev.lines || []).length <= 8 && rawFits(ev, ep, phase) && rawFull(ev));
         if (i >= 0) {
           events[i].aired = true;
           out[phase].push({ ref: i });

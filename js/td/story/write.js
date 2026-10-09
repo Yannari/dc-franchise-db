@@ -19,6 +19,7 @@ import { hasPlace, placeOf, placeById, kindOf } from './places.js';
 import { foodOk } from '../script/food.js';
 import { voiceOf, voiced } from './voice.js';
 import { phrase } from './phrase.js';
+import { DOING, GROUP, PAIR, SECRET, CROWD } from './setup.js';
 import { tidySpoken, tidyNames } from '../../vp-tr/tidy.js';
 
 // what each venue does not have (places.js PLACES): Wawanakwa sleeps in cabins on a lake, the survival
@@ -184,8 +185,48 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     Object.defineProperty(line, 'turn', { value: entry.turns.indexOf(t) });
     return line;
   });
+  // the set-up line (td/story/setup.js): a scene that opens on dialogue is first set somewhere, with
+  // who finds whom and what they were doing. Marked auto, so a chained scene can trade it for an arrival.
+  if (spot && spot.id !== 'confessional' && lines.length && lines[0].kind !== 'beat' && lines.some(l => l.kind === 'say')) {
+    const set = setupLine(entry, who, data, lines, spot, facts, ctx, rng, placeOk);
+    if (set) lines.unshift(set);
+  }
   if (lines.some(l => /\{\w+(\.\w+)?\}/.test(l.text))) throw new Error(`td story ${entry.id}: unfilled slot in "${lines.find(l => /\{\w+/.test(l.text)).text}"`);
   // breakfast is the morning; dinner is the evening (camp-access.js windows)
   const window = meal ? (ctx.phase === 'pre' ? 'morning' : 'before-tribal') : null;
   return { lines, text: transcript(lines), lineId: entry.id, spot: spot ? { id: spot.id, label: spot.label, fixed: true, ...(window ? { window } : {}) } : null };
+}
+
+// The set-up line for a scene that opens on dialogue (td/story/setup.js).
+function setupLine(entry, who, data, lines, spot, facts, ctx, rng, placeOk) {
+  const roleOf = n => Object.keys(who).find(r => who[r] === n);
+  const said = [...new Set(lines.filter(l => l.kind === 'say' && l.by).map(l => l.by))];
+  let [s1, s2] = said;
+  if (!s2) s2 = Object.values(who).find(n => n && n !== s1);
+  if (!s1 || !s2 || !roleOf(s1) || !roleOf(s2)) return null;
+  // what the spot really is first (a dock is not the middle of camp), then what the scene asked for
+  const kind = kindOf(facts.venue, spot.id) || entry.place || ctx.place || 'public';
+  const phase = ctx.phase === 'post' ? 'post' : 'pre';
+  const of = o => Array.isArray(o) ? o : [...(o?.[phase] || []), ...(o?.any || [])];
+  const tag = n => `{${roleOf(n)}}`;
+  const list = ns => ns.length <= 1 ? ns.join('') : `${ns.slice(0, -1).join(', ')} and ${ns[ns.length - 1]}`;
+  const here = data.here || 'around camp';
+  const cands = [];
+  if (said.length >= 3) {
+    for (const t of CROWD) for (const d of of(GROUP[kind] || GROUP.public)) cands.push(t.replace('{doing}', d));
+  } else if (kind === 'secret') cands.push(...SECRET);
+  else for (const t of PAIR) for (const d of of(DOING[kind] || DOING.public)) cands.push(t.replace('{doing}', d));
+  // a stable shuffle, then the first that fits this venue and this time of day
+  const order = cands.map(c => [rng(), c]).sort((x, y) => x[0] - y[0]).map(x => x[1]);
+  for (const raw of order) {
+    const text0 = raw.split('{s1}').join(tag(s1)).split('{s2}').join(tag(s2)).split('{all}').join(list(said.map(tag)))
+      .split('{here_cap}').join(here.charAt(0).toUpperCase() + here.slice(1)).split('{here}').join(here);
+    const filled = tidyNames(fill(text0, who, data));
+    if (!placeOk({ turns: [{ beat: filled }] })) continue;
+    const line = { kind: 'beat', by: null, text: filled.charAt(0).toUpperCase() + filled.slice(1) };
+    Object.defineProperty(line, 'auto', { value: true });
+    Object.defineProperty(line, 'turn', { value: -1 });
+    return line;
+  }
+  return null;
 }

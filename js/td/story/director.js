@@ -1294,6 +1294,30 @@ export function airTdEpisode(ep) {
         }
       }
       const votes = phase === 'post' && talk ? voteTalk(ep, camp, talk, () => n++) : [];
+      // the confessionals where somebody argues with themselves (the user, from Disventure Camp: "I
+      // don't want to hurt Topaz, but if I hold back, I'm only hurting myself... Right?"), at the two
+      // moments the engine says are real: writing the name of somebody you're close to, and winning
+      // immunity when the camp isn't glad you did
+      if (editOn && phase === 'post') {
+        const deep = (kind, a, data, why, more = {}) => {
+          const who = { a };
+          const w = writeStory(`deep.${kind}`, 'any', who, data, { ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), merged, ...more }, { ep: ep.num, camp, phase, n: n++, place: 'confessional', unique: 'soft' });
+          if (w) list.push({ at: 7e5, item: { story: true, kind: `deep.${kind}`, storyType: 'conf', step: kind, players: [a], lines: w.lines, text: w.text, lineId: w.lineId,
+            scene: { kind: 'deep', who, data, spot: { id: 'confessional' } }, badgeText: '', badgeClass: '', why: [why] } });
+        };
+        if (talk) {
+          const wrote = x => (ep.votingLog || []).find(v => v.voter === x)?.voted;
+          const torn = members.filter(x => x !== talk.leader && x !== talk.boot && wrote(x) === talk.boot && getBond(x, talk.boot) >= 3)
+            .sort((x, y) => getBond(y, talk.boot) - getBond(x, talk.boot) || x.localeCompare(y))[0];
+          if (torn) deep('betray', torn, { friend: talk.boot }, `${torn} is close to ${talk.boot}, and is writing ${talk.boot}'s name tonight.`);
+        }
+        const imm = [].concat(ep.immunityWinner || []).find(x => members.includes(x));
+        if (merged && imm) {
+          const warm = members.filter(x => x !== imm).reduce((s0, x) => s0 + getBond(x, imm), 0) / Math.max(1, members.length - 1);
+          const before = (gs.episodeHistory || []).filter(h => h.num < ep.num && [].concat(h.immunityWinner || []).includes(imm)).length;
+          if (warm < 1) deep('win', imm, {}, `${imm} won immunity, and the camp is not happy about it.`, { again: before >= 1 });
+        }
+      }
       votes.forEach((it, k) => list.push({ at: 8e5 + k, item: it }));
       const cap = (phase === 'pre' ? (merged ? 4 : 3) : tribalTonight ? (merged ? 5 : 4) : 2) - Math.min(2, Math.max(0, votes.length - 1));
       const onScreen = {};

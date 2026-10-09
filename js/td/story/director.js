@@ -41,7 +41,7 @@ import { recordThreads, threadDue } from './threads.js';
 import { writePreviously } from './previously.js';
 import { chalMoments } from './chalmoments.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
-import { placeOf } from './places.js';
+import { placeOf, kindOf } from './places.js';
 
 // Where the season lives decides a few words ({quarters}, {bed}) and what campers can know:
 // at a venue that reads the votes aloud (the Elimination Trial) everyone hears the count; at a
@@ -1089,6 +1089,61 @@ const THREAD_WHY = {
   misled: t => `${t.b} gave ${t.a} a fake name at episode ${t.ep}'s vote.`,
 };
 
+// ── scenes that run into each other ──
+// Two scenes in a row that share somebody happen as one: the second plays where the first was,
+// whoever isn't in it walks off, whoever is new walks up, and when the first was a row, the
+// person who just arrived asks about it (handoff.tense). Nothing changes about what happens, only
+// that it happens in one place, one after the other. Never into a private talk from a public spot
+// (a plan isn't made at the mess hall), never from or into a confessional, three scenes at most.
+const TENSE = /^(long\.)?(drama|crowd\.(lost|clash)|blame|caught|story\.chal\.lost|thr\.(wronged|rivals|grievance|misled)|chm\.(clash|sabotage|betray|taunt)|nbl)/;
+const STAGING = /\b(at|on|in|by|behind|down to|over to|away from|out to|near) (the|a) |pulls .{1,30} (aside|away)|\b(finds|catches up|waits until|walks? (over|up|down|in))\b/i;
+function chainScenes(ep, camp, phase, items, next) {
+  const hash = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+  const castOf = it => [...new Set([...Object.values(it.scene?.who || {}).filter(Boolean), ...(it.lines || []).filter(l => l.by && l.kind !== 'conf').map(l => l.by)])]
+    .filter(n => n !== (seasonConfig?.host || 'Chris'));
+  const talks = it => it?.story && Array.isArray(it.lines) && it.lines.some(l => l.kind === 'say') && it.scene?.spot?.id && it.scene.spot.id !== 'confessional';
+  const list = n => n.length <= 1 ? n.join('') : `${n.slice(0, -1).join(', ')} and ${n[n.length - 1]}`;
+  let run = 0;
+  for (let i = 1; i < items.length; i++) {
+    const prev = items[i - 1], cur = items[i];
+    if (!talks(prev) || !talks(cur) || run >= 2) { run = 0; continue; }
+    const pc = castOf(prev), cc = castOf(cur);
+    const stay = cc.filter(x => pc.includes(x)), come = cc.filter(x => !pc.includes(x)), go = pc.filter(x => !cc.includes(x));
+    if (!stay.length || come.length > 3 || cc.length > 6) { run = 0; continue; }
+    const pk = kindOf(venueNow, prev.scene.spot.id), ck = kindOf(venueNow, cur.scene.spot.id);
+    // the same stretch of the day, and a place the next talk belongs in: a row about a bunk stays in the
+    // cabin, a sunrise doesn't follow an afternoon
+    if ((prev.scene.spot.window || '') !== (cur.scene.spot.window || '')) { run = 0; continue; }
+    if (prev.scene.spot.id !== cur.scene.spot.id && (pk !== ck || ck === 'secret' || ck === 'sleep')) { run = 0; continue; }
+    // a scene that opens by setting itself somewhere keeps its own place (and its set-up line)
+    if (cur.lines[0]?.kind === 'beat') { run = 0; continue; }
+    // the hand-off: who leaves, who arrives
+    const h = hash(`${ep.num}${camp}${phase}${i}`);
+    const beats = [];
+    const pl = go.length > 1;
+    const LEAVE = [`${list(go)} ${pl ? 'head' : 'heads'} off.`, `${list(go)} ${pl ? 'get up and leave' : 'gets up and leaves'} them to it.`, `${list(go)} ${pl ? 'wander' : 'wanders'} away.`,
+      `${list(go)} ${pl ? 'find' : 'finds'} something else to do.`, `${list(go)} ${pl ? 'go' : 'goes'} to get water.`, `${list(go)} ${pl ? 'leave' : 'leaves'} without another word.`];
+    if (go.length) beats.push(LEAVE[h % LEAVE.length]);
+    if (come.length) beats.push(come.length === 1
+      ? [`${come[0]} comes over.`, `${come[0]} walks up.`, `${come[0]} sits down next to ${stay[0]}.`, `${come[0]} drifts over, pretending not to be curious.`, `${come[0]} wanders over to see what's going on.`, `${come[0]} drops down beside ${stay[0]}.`][(h >>> 3) % 6]
+      : [`${come[0]} comes over with ${list(come.slice(1))}.`, `${list(come)} walk up together.`][(h >>> 3) % 2]);
+    if (!beats.length) { run = 0; continue; }
+    const lines = [...cur.lines];
+    const lead = [{ kind: 'beat', text: beats.join(' ').trim(), arrive: come }];
+    // walking in on a row: the newcomer asks, the one who stayed answers
+    if (come.length && go.length && TENSE.test(prev.kind || '')) {
+      const who = { a: come[0], b: stay[0], c: go[0] };
+      const w = writeStory('handoff', 'tense', who, {}, { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), third: true }, { ep: ep.num, camp, phase, n: next(), place: 'aside', unique: 'soft' });
+      if (w) lead.push(...w.lines);
+    }
+    items[i] = { ...cur, lines: [...lead, ...lines], text: [...lead, ...lines].map(l => l.text).join(' '), chained: true,
+      players: [...new Set([...(cur.players || []), ...come])],
+      scene: { ...cur.scene, spot: { ...cur.scene.spot, id: prev.scene.spot.id, label: prev.scene.spot.label, window: prev.scene.spot.window ?? cur.scene.spot.window } } };
+    run++;
+  }
+  return items;
+}
+
 export function airTdEpisode(ep) {
   if (!ep || ep.campStory || !ep.campEvents || !Object.keys(ep.campEvents).length) return;
   if (gs.bb || ep.isFinale) return;
@@ -1502,6 +1557,9 @@ export function airTdEpisode(ep) {
       const VOTE_AT = { other: 2e6, plan: 2.1e6, cover: 2.15e6, swing: 2.2e6, doubt: 2.25e6, decoy: 2.28e6, target: 2.3e6 };
       const at = it => (/^(story\.(firstday|morning|chal)|long\.crowd\.(won|lost))/.test(it.kind || '') ? -1 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5) : it.storyType === 'vote' ? VOTE_AT[it.step] : it.ref != null ? it.ref : 1e6);
       out[phase].sort((x, y) => at(x) - at(y));
+      // one stretch of the day, not a stack of cut-off scenes (the user: "do we have conversation when
+      // people jump in"): scenes that share a person run on from each other at the same spot
+      out[phase] = chainScenes(ep, camp, phase, out[phase], () => n++);
     }
     story[camp] = out;
   }

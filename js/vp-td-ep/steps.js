@@ -469,7 +469,8 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
         const text = cleanText(l.text);
         if (!text) continue;
         if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text });
-        else if (l.kind === 'beat') steps.push({ k: 'beat', text, act: actOf(text, cast, lastBy) });
+        // a scene that runs on from the last one: whoever walks up walks in (director.js chainScenes)
+        else if (l.kind === 'beat') steps.push({ k: 'beat', text, act: l.arrive?.length ? { kind: 'arrive', who: l.arrive } : actOf(text, cast, lastBy) });
         else { steps.push({ k: 'say', by: l.by, text, loud: loud(text), shock: shock(text) }); lastBy = l.by; }
       }
       if (ev.type === 'idolFound') foundStep(steps, ev);

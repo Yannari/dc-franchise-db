@@ -20,6 +20,7 @@ const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: '
   threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder', other: 'other', pitcher: 'pitcher', home: 'home', job: 'job', lot: 'lot', thing: 'thing', others: 'others', shaky: 'shaky', cover: 'cover', found: 'found', alt: 'alt', teller: 'told', warnedAbout: 'fromTarget', imm: 'imm', lastBoot: 'lastBoot', real: 'real', blame: 'blame' };
 // a pool's guarantees: names its moment always carries
 const GUARANTEED = [
+  [/^handoff\./, ['c']],
   [/(isolate)$/, ['target', 'keep']],
   [/(pledge)$/, ['target', 'protects']],
   [/^booth2\.misled/, ['target', 'leader']],
@@ -244,7 +245,8 @@ describe('a season through the director', () => {
       const eats = new Set(Object.values(PLACES).flatMap(v => v.eat || []));
       for (const it of ep.campStory[camp][ph].filter(x => x.story && x.scene?.spot?.id && x.scene.spot.id !== 'confessional' && !eats.has(x.scene.spot.id))) {
         const k = `${it.scene.spot.window || ''}|${it.scene.spot.id}`;
-        expect(seen.has(k), `ep ${ep.num} ${camp}/${ph} ${k}`).toBe(false);
+        // ...and a scene that runs on from the one before it (director.js chainScenes) is that scene, continued
+        if (!it.chained) expect(seen.has(k), `ep ${ep.num} ${camp}/${ph} ${k}`).toBe(false);
         seen.add(k);
       }
     }

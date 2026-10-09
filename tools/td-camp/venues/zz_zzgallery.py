@@ -115,3 +115,12 @@ NIGHT_ONLY.update({'limo-park', 'limo-back', 'limo-in', 'pier', 'boat-deck'})
 # the Summit's tent (the user's frame, 2026-10-08): three pedestals, the gift lettered on each plank
 SCENES['carnival']['summit'] = _wk('cv-gift-tent.json', [(616, 668), (1048, 668)], host=(170, 668))
 NIGHT_ONLY.discard('summit')
+
+# the challenge zones, where a tie is settled (the user's frames, 2026-10-08): Soluna's volcano,
+# Stawaki's Bumper Carnage arena, the film lot's cage stage, Wawanakwa's platform (its two green
+# signs carry the teams' colours in the viewer); World Tour settles it in the elimination area
+SCENES['survival-island']['volcano'] = _wk('sol-volcano.json', [(680, 535), (900, 535), (790, 540)])
+SCENES['carnival']['bumper-arena'] = _wk('cv-bumper.json', [(600, 640), (1000, 640)])
+SCENES['film-lot']['cage-stage'] = _wk('lot-cages.json', [(640, 640), (960, 640)])
+SCENES['hosted-camp']['challenge-zone'] = _wk('hc-platform.json', [(520, 575), (1080, 575), (800, 580)])
+NIGHT_ONLY.update({'bumper-arena', 'cage-stage'})

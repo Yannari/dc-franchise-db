@@ -117,10 +117,12 @@ def nightify(name, P, seed=7):
     out = land * (1 - sky[..., None]) + (night_sky(h, w, horizon, rng, moon) * sky[..., None] if horizon else 0)
     # 3. light: painted lights stay lit (small warm, bright spots: a flame, a lamp, a lit window, never
     # a whole beach of sand), and every marked fire throws a warm pool over the dark
-    warm0 = (((hsv[..., 0] < 30) | (hsv[..., 0] > 170)) & (hsv[..., 2] > 225) & (hsv[..., 1] > 110)).astype(np.uint8)
+    lo_v = 150 if P.get('warmlit') else 225
+    warm0 = (((hsv[..., 0] < 30) | (hsv[..., 0] > 170)) & (hsv[..., 2] > lo_v) & (hsv[..., 1] > 110)).astype(np.uint8)
     n, lbl, st, _ = cv2.connectedComponentsWithStats(warm0)
     small = np.zeros(n, bool); small[1:] = st[1:, 4] < w * h * .0015
-    warm = small[lbl]
+    # a place that is lit by something big and warm (a volcano's lava) keeps all of it lit: 'warmlit'
+    warm = warm0.astype(bool) if P.get('warmlit') else small[lbl]
     lit = cv2.GaussianBlur(warm.astype(np.float32), (0, 0), 1.5)
     out = out * (1 - lit[..., None]) + f * lit[..., None]
     glow = np.zeros((h, w), np.float32)

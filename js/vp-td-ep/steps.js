@@ -701,7 +701,8 @@ export function tdTribalScreen(ep, o = {}) {
   const tie = !!ep.isTie;
   const revote = (ep.revoteLog || []).filter(v => v.voted);
   // the result, as the setting gives it
-  const rv = { booth, plate, places, host, tribal, venue, original: ballots, tied: ep.revoteSilenced || ep.tiedPlayers || [], tb: ep.tiebreakerResult?.challengeLabel ? ep.tiebreakerResult : null };
+  const rv = { booth, plate, places, host, tribal, venue, original: ballots, tied: ep.revoteSilenced || ep.tiedPlayers || [], tb: ep.tiebreakerResult?.challengeLabel ? ep.tiebreakerResult : null,
+    colorOf: o.colorOf || null, teamOf: n => (ep.tribesAtStart || []).find(t => (t.members || []).includes(n))?.name || ep.tribalTribe || null };
   if (V.style === 'handout') handout(steps, say, V, { tribal, elim, counts, immune: [].concat(ep.immunityWinner || []).filter(n => tribal.includes(n)), tie, revote, rocks: !!ep.isRockDraw, host, alsoOut: ep._alsoOut || null, rv });
   else {
     // who has gone before this one: the boot is the nth voted out of the game
@@ -886,7 +887,7 @@ function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, roc
       steps.push({ k: 'ballots', who: [...new Set(revote.map(v => v.voter))], text: 'The revote is in.' });
     }
     if (rv?.tb) {
-      tiebreakStage(steps, say, rv.tb, { venue: rv.venue, host, tribal, hadRevote: !!revote.length });
+      tiebreakStage(steps, say, rv.tb, { venue: rv.venue, host, tribal, hadRevote: !!revote.length, colorOf: rv.colorOf, teamOf: rv.teamOf });
       if (rv.plate) steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate: rv.plate, place: V.ceremony, time: '9:50 PM', card: false, cut: true, focus: [], bg: [], places: rv.places, seated: tribal, host, ceremony: true });
     }
     if (rocks) rockDraw(steps, say, { tribal, elim, tied: rv?.tied || [], immune, host });
@@ -1081,7 +1082,7 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
     if (revote.length && rv) { revoteBooth(steps, say, { ...rv, revote, V }); say(`I'll read the revote.`); }
     const rt = {};
     revote.forEach((v, i) => { rt[v.voted] = (rt[v.voted] || 0) + 1; steps.push({ k: 'read', vote: v.voted, revote: true, deciding: i === revote.length - 1 && !rocks && !rv?.tb, tally: { ...rt }, focus: [v.voted] }); });
-    if (rv?.tb) tiebreakStage(steps, say, rv.tb, { venue: rv.venue, host: V._host || 'Chris', tribal, hadRevote: !!revote.length });
+    if (rv?.tb) tiebreakStage(steps, say, rv.tb, { venue: rv.venue, host: V._host || 'Chris', tribal, hadRevote: !!revote.length, colorOf: rv.colorOf, teamOf: rv.teamOf });
     if (rocks) rockDraw(steps, say, { tribal, elim, tied: rv?.tied || [], immune: [], host: V._host || 'Chris' });
   }
   steps.push({ k: 'out', who: elim, focus: [elim] });
@@ -1305,8 +1306,14 @@ function revoteBooth(steps, say, ctx) {
   if (booth) steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '9:30 PM', card: false, cut: true, focus: [], bg: [], places, seated: tribal, host, ceremony: true });
 }
 // where each venue settles a tie with a challenge until it has a challenge zone of its own
-const TIEBREAK_SPOT = { 'hosted-camp': ['challenge-zone', 'amphitheater', 'cliff', 'beach'], 'film-lot': ['challenge-zone', 'studio-backlot', 'western-set'],
-  'world-tour': ['challenge-zone', 'destination-staging'], 'survival-island': ['challenge-zone', 'beach', 'shoreline'], carnival: ['challenge-zone', 'big-top', 'midway', 'rocky-beach'] };
+// each venue's challenge zone (the user's frames, 2026-10-08); World Tour settles it in the elimination area
+const TIEBREAK_SPOT = { 'hosted-camp': ['challenge-zone', 'amphitheater', 'beach'], 'film-lot': ['cage-stage', 'studio-backlot'],
+  'world-tour': ['ceremony'], 'survival-island': ['volcano', 'beach'], carnival: ['bumper-arena', 'big-top'] };
+// where the tied stand on a set whose floor is low in its frame (the arena, the cage stage): in front, the
+// panel over their feet
+const TIEBREAK_AT = { 'bumper-arena': [[.36, .88], [.64, .88], [.5, .9]], 'cage-stage': [[.37, .9], [.63, .9], [.5, .92]] };
+// Wawanakwa's platform: the two signs on their poles, in the frame's own pixels, painted in the teams' colours
+const TIEBREAK_SIGNS = { 'challenge-zone': [[644, 226, 712, 314], [1216, 204, 1278, 282]] };
 const TIEBREAK_WHAT = { 'Fire-Making': 'Two kits, two piles of tinder. First flame high enough to burn through the rope wins.',
   Endurance: 'Hold on as long as they can. The first one to let go loses.', Strength: 'Pure strength, one against the other. Whoever gives out first loses.',
   'Obstacle Course': 'The course, side by side. First across the line stays.', Puzzle: 'The same puzzle, two tables. First one to finish stays.' };
@@ -1320,14 +1327,21 @@ function rockDraw(steps, say, { tribal, elim, tied = [], immune = [], host = 'Ch
   steps.push({ k: 'say', by: host, host: true, text: `Open your hands.`, tense: true });
   if (elim) steps.push({ k: 'beat', text: `${elim}'s hand opens on the purple rock.`, focus: [elim], tense: true, shock: true, side: [{ tab: 'room', text: `Rock draw: ${drawers.join(', ')}. ${elim} drew the purple rock.` }] });
 }
-function tiebreakStage(steps, say, tb, { venue, host, tribal, hadRevote }) {
+function tiebreakStage(steps, say, tb, { venue, host, tribal, hadRevote, colorOf = null, teamOf = null }) {
   if (!tb?.participants?.length || !tb.loser) return;
   const spot = (TIEBREAK_SPOT[venue] || ['beach']).find(s => plateKey(venue, s, 'night'));
   const plate = spot ? plateKey(venue, spot, 'night') : null;
   const who = tb.participants;
   const list = who.length > 1 ? `${who.slice(0, -1).join(', ')} and ${who[who.length - 1]}` : who.join('');
   say(hadRevote ? `Still tied. Nobody moved enough. ${list}, you'll settle it yourselves.` : `${list}, you'll settle it yourselves.`, { focus: who.filter(n => tribal.includes(n)) });
-  if (plate) steps.push({ k: 'scene', spot, tod: 'night', plate, place: 'The Tiebreaker', time: '9:40 PM', card: true, focus: who, bg: [], places: placeScene(plate, who, [], { host }), host });
+  const at = TIEBREAK_AT[spot];
+  const places = at ? Object.fromEntries(who.map((n, i) => [n, { u: at[i % at.length][0], v: at[i % at.length][1], s: .3, h: 30, crowd: true }])) : placeScene(plate, who, [], { host });
+  const signs = (TIEBREAK_SIGNS[spot] || []).map((r, i) => {
+    const team = teamOf ? teamOf(who[i % who.length]) : null;
+    let color = ['#e8433f', '#3b7dd8'][i % 2]; try { color = (team && colorOf && colorOf(team)) || color; } catch { /* default */ }
+    return { x0: r[0] / 1600, y0: r[1] / 900, x1: r[2] / 1600, y1: r[3] / 900, color, name: team || '' };
+  });
+  if (plate) steps.push({ k: 'scene', spot, tod: 'night', plate, place: 'The Tiebreaker', time: '9:40 PM', card: true, focus: who, bg: [], places, host, ...(signs.length ? { signs } : {}) });
   steps.push({ k: 'title', kicker: 'Tiebreaker', name: tb.challengeLabel || 'Head to head', faces: who, vs: who.length === 2 });
   steps.push({ k: 'say', by: host, host: true, text: TIEBREAK_WHAT[tb.challengeLabel] || `One challenge. Whoever loses goes home.` });
   steps.push({ k: 'beat', text: `${list} go at it.`, focus: who, tense: true });

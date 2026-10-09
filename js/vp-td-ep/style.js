@@ -409,6 +409,9 @@ export const TDX_CSS = `
 .tdx .tdx-intel{position:absolute;top:0;right:0;bottom:0;width:min(34%,340px);background:var(--glass2);z-index:16;transform:translateX(100%);transition:transform .35s cubic-bezier(.3,.8,.3,1);color:var(--ht);padding:14px 14px 0;display:flex;flex-direction:column;border-left:2px solid var(--or);cursor:default}
 .tdx .tdx-stage.intel-open .tdx-intel{transform:none}
 .tdx .tdx-ihead{position:relative}
+.tdx .tdx-sign{position:absolute;background:var(--fc);border:.22cqw solid #111;border-radius:.2cqw;display:grid;place-items:center;overflow:hidden;pointer-events:none;box-shadow:inset 0 -.6cqw 0 rgba(0,0,0,.18);animation:tdxSignSway 3.2s ease-in-out infinite alternate;transform-origin:50% 0}
+.tdx .tdx-sign b{font:400 1cqw/1 'Lilita One';color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.6);writing-mode:vertical-rl;letter-spacing:.06em}
+@keyframes tdxSignSway{from{transform:rotate(-.8deg)}to{transform:rotate(.8deg)}}
 .tdx .tdx-flag{position:absolute;transform:translate(-18%,-100%);aspect-ratio:.6;pointer-events:none;z-index:0}
 .tdx .tdx-flag svg{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 .3cqw .4cqw rgba(0,0,0,.35))}
 .tdx .tdx-flag .cloth{transform-origin:13px 24px;animation:tdxFlagWave 1.6s ease-in-out infinite alternate}

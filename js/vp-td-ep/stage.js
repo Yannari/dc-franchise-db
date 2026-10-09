@@ -77,7 +77,7 @@ export function worldHtml(screen, L) {
   const night = nightFrame || (!!motion && L.scene?.tod === 'night');
   const grade = !motion ? null : night ? (nightFrame ? (wet ? 'nightrain' : 'none') : indoor ? 'dim' : 'night') : indoor ? (wet ? 'dim' : 'day')
     : wx === 'storm' ? 'storm' : wx === 'rain' ? 'rain' : wx === 'overcast' ? 'overcast' : wx === 'fog' ? 'fog' : wx === 'hot' ? 'hot'
-    : ['day', 'day', 'dusk'][partOfDay(L.scene?.time)];   // (the user: no morning haze; day, sunset, night)
+    : ['day', 'day', 'dusk'][partOfDay(L.scene?.wxTime || L.scene?.time)];   // (the user: no morning haze; day, sunset, night)
   // a place the show painted at this hour (sunrise, sunset, a hot afternoon) shows that painting, ungraded
   const painted = motion?.variants && !night ? String(motion.variants).split(',').find(v => v === grade) : null;
   const vkey = painted ? `${key}~${painted}` : key;
@@ -191,7 +191,7 @@ export function partOfDay(time) {
 }
 /** The weather at one scene: the day's weather, where its arc has got to by the scene's clock. */
 export function weatherAt(venue, ep, time) { const day = weatherOf(venue, ep); return (ARC[day] || [day, day, day])[partOfDay(time)]; }
-const wxOf = (screen, L) => weatherAt(screen.venue, screen.ep, L?.scene?.time || (/-night$/.test(L?.scene?.plate || '') ? '9:00 PM' : ''));
+const wxOf = (screen, L) => weatherAt(screen.venue, screen.ep, L?.scene?.wxTime || L?.scene?.time || (/-night$/.test(L?.scene?.plate || '') ? '9:00 PM' : ''));
 export function weatherOf(venue, ep) {
   const c = CLIMATE[venue] || CLIMATE['hosted-camp'];
   let h = 2166136261; for (const ch of `${venue}|${ep}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);

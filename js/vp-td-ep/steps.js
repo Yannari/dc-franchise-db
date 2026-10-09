@@ -187,6 +187,10 @@ const BUSY = {
 // ── the clock ─────────────────────────────────────────────────────────
 // Camp windows (js/camp-access.js) as hours on the clock; a phase never runs backwards.
 const WINDOWS = { morning: [7 * 60, 9 * 60], 'camp-work': [9 * 60, 13 * 60], return: [15 * 60, 15 * 60 + 45], scramble: [15 * 60 + 45, 18 * 60 + 30], 'before-tribal': [18 * 60 + 30, 20 * 60 + 15] };
+// the hour the camp map draws each part of the day at: a scene in it has that part's weather, so a
+// conversation opened from the map looks like the map (the user, 2026-10-08: "the night/day/weather
+// doesn't persist when I click a conversation")
+const WINDOW_WX = { morning: '7:00 AM', 'camp-work': '10:00 AM', return: '3:00 PM', scramble: '4:30 PM', 'before-tribal': '7:00 PM' };
 const clockText = m => { const h = Math.floor(m / 60), mm = m % 60; return `${((h + 11) % 12) + 1}:${String(mm).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`; };
 
 // ── names ─────────────────────────────────────────────────────────────
@@ -439,7 +443,7 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
     const places = placeScene(plate, focus, bg.map(b => b.n), { sit });
     const same = cur && cur.spot === key && cur.tod === tod;
     cur = { spot: key, tod };
-    steps.push({ k: 'scene', spot: key, tod, plate, place: placeName(key), time: clockText(clock), card: !same, cut, focus, bg, places, why });
+    steps.push({ k: 'scene', spot: key, tod, plate, place: placeName(key), time: clockText(clock), wxTime: WINDOW_WX[windowId], card: !same, cut, focus, bg, places, why });
   };
   for (const ev of events) {
     const engineSpot = ev.scene?.spot?.id || ev.access?.locationId || V.public;

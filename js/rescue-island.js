@@ -4,6 +4,7 @@ import { pStats, pronouns, getPlayerState } from './players.js';
 import { getBond, addBond } from './bonds.js';
 import { wRandom } from './alliances.js';
 import { scriptIsland } from './td/script/island.js';
+import { scriptJury } from './td/script/jury.js';
 import { stableRng } from './script/rng.js';
 import { CHALLENGE_BANK } from './ri-challenge-bank.js';
 import { CHALLENGE_BANK_2 } from './ri-challenge-bank-2.js';
@@ -1965,7 +1966,7 @@ export function generateInterludeLife(ep) {
     put('a2', beat('IT BOILS OVER', 'danger', [a, c], draw([
       (x, y) => `It erupts at ${V.kitchen} — ${x} finally says what ${P(x).sub}${P(x).sub === 'they' ? "'ve" : "'s"} been holding, ${y} fires back, and the others clear the room. "You looked me in the eye and lied. In here I've got nothing but time to remember that."`,
     ], a, c), -1.0));
-    put('a3', beat('THE RECKONING', 'iron', [a, c], draw([
+    put('a4', beat('THE RECKONING', 'iron', [a, c], draw([
       (x, y) => `${y} is the one who finally crosses the room. No cameras rolling in their heads anymore — just two people who lost. They talk for an hour. It's ugly, then it isn't.`,
     ], a, c)));
     put('a4', beat('BURIED IT', 'green', [a, c], draw([
@@ -2019,18 +2020,18 @@ export function generateInterludeLife(ep) {
     const bitter = residents.slice().sort((a, b) => (pStats(a).temperament) - (pStats(b).temperament)).find(n => !featured.has(n) && elimInfo(n).voters.length);
     if (!bitter) return;
     const info = elimInfo(bitter);
-    const target = info.betrayedBy[0] || info.voters.find(v => active.includes(v)) || null;
+    const target = info.betrayedBy[0] || info.voters.find(v => active.includes(v)) || info.voters[0] || null;
     featured.add(bitter);
-    put('a1', beat("CAN'T LET GO", 'danger', [bitter], draw([
+    put('a1', Object.assign(beat("CAN'T LET GO", 'danger', [bitter], draw([
       (n) => target
         ? `${n} brings up ${target}'s name at every meal like picking a scab. "${target} looked me dead in the eye and lied. I'm on that jury now, and I've got a long memory."`
         : `${n} replays ${P(n).posAdj} exit on a loop, jaw tight. "Everybody says 'it's just a game.' Easy to say when you're not the one they lied to."`,
-    ], bitter)));
-    put('a4', beat('THE GRUDGE VOTE', 'gold', [bitter], draw([
+    ], bitter)), { target }));
+    put('a4', Object.assign(beat('THE GRUDGE VOTE', 'gold', [bitter], draw([
       (n) => target
         ? `Whatever the others argue at the roundtable, ${n} has already decided: ${target} will never get ${P(n).posAdj} vote. "Play the game, fine. But don't insult me and then ask me to reward you for it."`
         : `${n} tells the house flat out: nobody who smiled in ${P(n).posAdj} face on the way out is getting this vote. "I earned my seat on this jury the hard way. I'm spending it on principle."`,
-    ], bitter)));
+    ], bitter)), { target }));
   }
 
   // ── choose storylines by venue ──
@@ -2138,7 +2139,7 @@ export function generateInterludeLife(ep) {
     opts.sort((x, y) => ((catUsage[x.k] || 0)) - ((catUsage[y.k] || 0)) || Math.random() - 0.5);
     const pick = opts[0]; catUsage[pick.k] = (catUsage[pick.k] || 0) + 1;
     const def = SOLO[pick.k];
-    colorBeats[act].push(beat(def.badge, def.cls, [n], draw(def.pool, n, pick.arg)));
+    colorBeats[act].push(Object.assign(beat(def.badge, def.cls, [n], draw(def.pool, n, pick.arg)), pick.k === 'rooting' && pick.arg ? { fin: pick.arg } : {}));
   };
   // every un-storylined resident gets a solo beat; distribute across acts
   const uncovered = shuffle(residents.filter(n => !featured.has(n)));
@@ -2258,6 +2259,9 @@ export function generateInterludeLife(ep) {
     () => `A warning wrapped in a promise: "Stay sharp. A door back into this game is about to crack open." Nobody sleeps much after that.`,
   ]);
 
+  // the Jury House as scenes (the user, 2026-10-09: "full of one-line events... where's the storyline"):
+  // every beat the engine decided is written as a scene with its people talking (td/script/jury.js)
+  if (venue === 'jury') for (const a of acts) for (const b of a.beats || []) scriptJury(b, { ep: epNum, residents, active });
   const events = acts.flatMap(a => a.beats);
   ep.interlude = { venue, residents, acts, events, roundtable, teaser, epNum };
   ep.juryHouse = ep.interlude; // legacy alias

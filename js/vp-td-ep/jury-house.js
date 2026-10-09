@@ -20,6 +20,10 @@ const ISL = 'islands';
 const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 const pickBy = (arr, ...k) => arr[hash(k.join('|')) % arr.length];
 const AT = (x, y, o = {}) => ({ u: x / 1600, v: y / 900, ...o });
+const WORD = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const num = n => WORD[n] || String(n);
+const times = n => (n === 1 ? 'once' : n === 2 ? 'twice' : `${num(n)} times`);
+const Cap = t => t.charAt(0).toUpperCase() + t.slice(1);
 
 // the pavilion (jh-roundtable): seven stumps around the fire, two tiki thrones behind it
 const STUMPS = [[308, 696], [420, 704], [532, 688], [648, 668], [1032, 676], [1168, 704], [1328, 712]].map(([x, y]) => AT(x, y, { s: .14, sit: true, h: 13 }));
@@ -27,9 +31,19 @@ const THRONE_L = AT(592, 556, { s: .13, sit: true, h: 13 });
 const THRONE_R = AT(1008, 556, { s: .13, sit: true, h: 13 });
 const STANDING = [AT(176, 680, { s: .16, h: 15 }), AT(1424, 690, { s: .16, h: 15 })];
 
-// which of the motel's sets a beat belongs to, by what its sentence says happened
+// which of the motel's sets a scene belongs to: the first place its own lines name, else where that
+// kind of scene happens (KEY_SET), else what an unscripted sentence says
+const PLACE_WORDS = [
+  [/front desk|lobby|doorway|motel path|the gate/i, 'jury-resort'], [/hot tub/i, 'jury-hottub'], [/bingo|\bcards?\b|go fish|poker/i, 'jury-bingo'],
+  [/the bar\b|behind the bar|mini-fridge/i, 'jury-bar'], [/buffet|breakfast|ice machine|chairs away/i, 'jury-buffet'],
+  [/\bpool\b|\bswim|\blaps\b|aerobics|shallow end|deep end/i, 'jury-pool'], [/\bbeach\b|\bsand\b/i, 'jury-playa'],
+  [/lounge|\bTV\b|feeds|couch|lounger/i, 'jury-loungers'],
+];
+const KEY_SET = { 'jury.arrive': 'jury-resort', 'jury.grudge': 'jury-loungers', 'jury.outsider': 'jury-buffet', 'jury.bitter': 'jury-loungers', 'jury.friends': 'jury-pool',
+  'jury.looms': 'jury-loungers', 'jury.solo': 'jury-loungers', 'jury.pair': 'jury-bar', 'jury.group.aerobics': 'jury-pool', 'jury.group.bingo': 'jury-bingo',
+  'jury.group.music': 'jury-playa', 'jury.night.toast': 'jury-pool', 'jury.night.cards': 'jury-bingo' };
 const SET_RULES = [
-  [/onto the pool deck|in the pool/i, 'jury-pool'],
+  [/onto the pool deck|in the pool\b/i, 'jury-pool'],
   [/hot tub/i, 'jury-hottub'],
   [/\bbingo\b|deck of cards|card game|card trick|\bcards\b/i, 'jury-bingo'],
   [/\bbottle\b|\btoast\b|\bdrinks?\b|\bthe bar\b|mini-fridge/i, 'jury-bar'],
@@ -70,7 +84,13 @@ export function tdJuryHouseScreen(ep, o = {}) {
 
   // ── a set: the spot, the hour, who is in it and who is around ─────────
   const setFor = (b, night) => {
-    let spot = (SET_RULES.find(([re]) => re.test(b.text || '')) || [])[1] || null;
+    let spot = null;
+    if (b.jkey) {
+      const said = (b.lines || []).map(l => l.text).join(' ');
+      const hit = PLACE_WORDS.map(([re, sp]) => { const m = re.exec(said); return m ? { at: m.index, sp } : null; }).filter(Boolean).sort((x, y) => x.at - y.at)[0];
+      spot = hit?.sp || KEY_SET[b.jkey.split('.').slice(0, 3).join('.')] || KEY_SET[b.jkey.split('.').slice(0, 2).join('.')] || null;
+    }
+    if (!spot) spot = (SET_RULES.find(([re]) => re.test(b.text || '')) || [])[1] || null;
     if (!spot) spot = night ? pickBy(['jury-playa', 'jury-pool', 'jury-bar'], b.text) : pickBy(['jury-loungers', 'jury-pool', 'jury-buffet', 'jury-bar'], b.text);
     if (night && !plate(spot, 'night')) spot = NIGHT_FOR[spot] || 'jury-pool';
     if (!night && !plate(spot, 'day')) spot = DAY_FOR[spot] || 'jury-pool';
@@ -106,6 +126,25 @@ export function tdJuryHouseScreen(ep, o = {}) {
       return;
     }
     if (!who.length) return;
+    // a scene the engine's decision was written as (td/script/jury.js): its lines, one click each,
+    // its confessionals cut to the motel bench
+    if (Array.isArray(b.lines) && b.lines.length) {
+      const cast = [...new Set([...Object.values(b.scene?.who || {}), ...who])].filter(n => residents.includes(n));
+      const onSet = b.lines.some(l => l.kind !== 'conf');
+      if (onSet && !scene(setFor(b, night), night ? 'night' : 'day', cast, time)) return;
+      const conf = plate('jury-conf', night ? 'night' : 'day') || plate('jury-conf', 'day');
+      let first = true;
+      for (const l of b.lines) {
+        const t = cleanText(l.text);
+        if (!t) continue;
+        const head = first ? { badge, side } : {};
+        if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text: t, plate: conf, ...head });
+        else if (l.kind === 'beat') steps.push({ k: 'beat', text: t, focus: cast, ...head });
+        else steps.push({ k: 'say', by: l.by, text: t, focus: cast, loud: /!/.test(t) && t.length < 70, ...head });
+        first = false;
+      }
+      return;
+    }
     const spot = setFor(b, night);
     if (!scene(spot, night ? 'night' : 'day', who, time)) return;
     const parts = [...raw.matchAll(/"([^"]+)"|([^"]+)/g)].map(m => (m[1] != null ? { q: m[1] } : { n: m[2] }));
@@ -156,6 +195,10 @@ export function tdJuryHouseScreen(ep, o = {}) {
   for (const act of J.acts) {
     if (act.roundtable) { roundtable(act.roundtable); continue; }
     const [tod, time] = TIME[act.title] || ['day', act.title];
+    if (!(act.beats || []).length) continue;
+    // each part of the week opens on its own card (the user, 2026-10-09: "horrible pacing")
+    steps.push({ k: 'title', kicker: 'The Jury House', name: act.title, faces: [...new Set(act.beats.flatMap(b => b.players || []))].filter(n => residents.includes(n)).slice(0, 8) });
+    cur = null;
     for (const b of act.beats || []) play(b, tod === 'night', time);
   }
   if (!J.acts.some(a => a.roundtable) && J.roundtable?.lines?.length) roundtable(J.roundtable);
@@ -164,7 +207,7 @@ export function tdJuryHouseScreen(ep, o = {}) {
   if (J.teaser && plate('jury-resort', 'night')) {
     scene('jury-resort', 'night', residents.slice(0, 3), 'Lights out', { wide: true });
     for (const m of String(J.teaser).matchAll(/"([^"]+)"|([^"]+)/g)) {
-      const t = cleanText((m[1] ?? m[2]).trim());
+      const t = cleanText((m[1] ?? m[2]).trim()).replace(/:$/, '.');
       if (!t || /^[\s.,;:—-]+$/.test(t)) continue;
       steps.push(m[1] != null ? { k: 'say', by: host, host: true, text: t } : { k: 'beat', text: t, focus: [] });
     }
@@ -229,16 +272,30 @@ export function tdJuryHouseScreen(ep, o = {}) {
     plan.forEach((p, i) => {
       const { f } = p, w = wins(f), cutHere = p.cut.filter(j => at.includes(j)).length, a = arch(f), F = pr(f);
       const lead = i === 0 ? `Let's start with` : i === plan.length - 1 ? `And to wrap this up,` : `Next, we have`;
-      const desc = w >= 2 ? `the one who keeps winning immunity, ${w} times and counting: ${f}!`
-        : cutHere >= 2 ? `the person who voted out ${cutHere} of the people sitting here: ${f}!`
+      const desc = w >= 2 ? `the one who keeps winning immunity, ${times(w)} and counting: ${f}!`
+        : cutHere >= 2 ? `the person who voted out ${num(cutHere)} of the people sitting here: ${f}!`
         : /villain|schemer|mastermind/.test(a) ? `the one with a plan for everybody: ${f}!`
         : /floater|goat|underdog/.test(a) ? `the one who's still in there, and nobody's quite sure how: ${f}!`
         : /social-butterfly|showmancer/.test(a) ? `the one everybody in there still seems to like: ${f}!`
         : /hero|loyal-soldier/.test(a) ? `the nicest person left in the game, supposedly: ${f}!`
         : `${f}!`;
       steps.push({ k: 'say', by: mod, text: `${lead} ${desc}`, focus: [mod], rt: true, side: [{ tab: 'log', text: `On ${f}: ${p.backer} for, ${p.doubter} against` }] });
-      say(p.backer, quote(p.backText));
-      say(p.doubter, quote(p.doubtText), { loud: true });
+      // the case for and against, from the record: what they won and whose names they wrote. The
+      // engine picked who speaks; what they say has to be true of this finalist (a player who voted
+      // out five of the table is never called a floater)
+      const cuts = plan.map(q => q.cut.filter(j => at.includes(j)).length), most = Math.max(...cuts);
+      const alone = cutHere === most && cuts.filter(c => c === most).length === 1, half = cutHere * 2 >= at.length;
+      const forIt = w >= 2 ? [`${f} won immunity ${times(w)}. You don't do that by accident.`, `You want a winner? ${f} kept winning when it mattered. ${Cap(num(w))} immunities.`]
+        : cutHere >= 2 ? [`${f} ran the votes. ${half ? 'Half of us' : `${Cap(num(cutHere))} of us`} are sitting here because of ${F.obj}, and that's a résumé.`, `Every big vote this season had ${f} behind it. That's how you play this game.`]
+        : /social-butterfly|showmancer|hero|loyal-soldier/.test(a) ? [`${f} got along with everybody, and that's exactly why ${f} is still there.`, `${f} played the people, not just the challenges. That's the hardest part of this game.`]
+        : [`${f} is still in there and we're out here. That's the whole argument.`, `${f} made it this far for a reason. I don't need more than that.`];
+      const against = cutHere >= 2 ? (alone ? [`${f} has more of us on ${F.posAdj} hands than anyone. I'm not rewarding that.`, `${f} voted out more people at this table than anybody. I'm supposed to hand ${F.obj} the money for it?`]
+          : [`${f} voted out ${num(cutHere)} of us. I'm not rewarding that.`, `${Cap(num(cutHere))} people at this table are here because of ${f}. Let's not forget that.`])
+        : w >= 2 ? [`Winning challenges isn't the same as playing. Who did ${f} actually vote out?`, `${f} won challenges and let other people make the moves.`]
+        : w === 0 && !p.cut.length ? [`${f} floated. I'm not rewarding somebody who never put ${F.posAdj} own neck out.`, `${f} never had to make the hard call. Easy to look clean when somebody else does the dirty work.`]
+        : [`${f} rode other people's numbers to the end. Being there isn't the same as earning it.`, `${f} hid behind other people's plans all game. Now it's a résumé? Convenient.`];
+      say(p.backer, pickBy(forIt, 'rt-for', f, p.backer));
+      say(p.doubter, pickBy(against, 'rt-against', f, p.doubter), { loud: true });
       // the doubter's reason may be their own vote-out, and somebody says so
       if (p.outByF && p.backer !== p.doubter) {
         say(p.backer, pickBy([`${f}'s the one who got you out, ${p.doubter}. Let's not pretend that isn't what this is.`, `You're only saying that because ${f} voted you out.`], 'rt-out', f, p.doubter));

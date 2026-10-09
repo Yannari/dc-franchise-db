@@ -30,7 +30,7 @@ export const hasMap = venue => !!(MAP_VENUES[venue] && TD_MARKS[`${venue}/map-da
 
 // which zone on the map each staged place belongs to; a zone may hold more than one place
 // (the cabins: the porch and the inside)
-const ZONE_OF = {
+export const ZONE_OF = {
   'hosted-camp': { cabins: 'cabins', 'cabin-inside': 'cabins', 'mess-hall': 'mess-hall', washroom: 'washroom', 'communal-grounds': 'communal-grounds',
     confessional: 'confessional', campfire: 'campfire', dock: 'dock', beach: 'beach', 'forest-trail': 'forest-trail', cliff: 'cliff',
     lake: 'lake', boathouse: 'boathouse', waterfall: 'waterfall', caves: 'caves', amphitheater: 'amphitheater', river: 'river', kitchen: 'mess-hall' },

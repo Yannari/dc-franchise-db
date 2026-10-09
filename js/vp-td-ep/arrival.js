@@ -9,6 +9,7 @@
 // portrait, name, the archetype in the show's words, three strongest stats), then the host's line,
 // theirs, and whoever on the dock has something to say. The crowd on the dock grows as they come.
 import { placeScene, plateKey, venueOf, cleanText } from './steps.js';
+import { premiereSteps } from './premiere.js';
 
 // where each venue's cast arrives, and on what
 const ARRIVE = {
@@ -56,7 +57,11 @@ export function tdArrivalScreen(ep, o = {}) {
   scene([], { arrivals: true });
   steps.push({ k: 'say', by: host, host: true, text: A.hello(season) });
   steps.push({ k: 'title', kicker: 'Episode one', name: season, faces: [] });
+  // the season presented before anyone arrives: the venue zone by zone, empty, then this season's rules
+  const pre = premiereSteps(venue, { host, season: o.season || (typeof window !== 'undefined' && window.seasonConfig) || {}, teams: (ep.tribesAtStart || []).map(t => t.name) });
+  if (pre.length) { steps.push(...pre); scene([], { arrivals: true, card: true }); say0(host, `That's the place, and those are the rules. Now, the people.`); }
   steps.push({ k: 'say', by: host, host: true, text: `Let's meet our ${ep.dockArrivals.length} contestants!` });
+  function say0(by, text) { steps.push({ k: 'say', by, host: true, text }); }
   const teamOf = n => (ep.tribesAtStart || []).find(t => (t.members || []).includes(n))?.name || null;
   let lastRide = null, lastTeam = null, lastRet = null, inLoad = 0;
   // a team arrives together (one helicopter each at Stawaki); at Soluna the new players come first, the

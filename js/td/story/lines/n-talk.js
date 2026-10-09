@@ -548,12 +548,12 @@ export default {
   ],
   'long.adv.found.idol': [
     { id: 'nk.af1', place: 'secret', turns: [
-      { beat: "{a} is alone at {place}. {a} reaches into a hollow and pulls something out." },
+      { beat: "{a} is alone {here}. {a} reaches into a hollow and pulls something out." },
       { by: 'a', conf: "Is that... it is, it's an idol, I actually found an idol." },
       { by: 'a', conf: "Nobody can know, not even the people I trust, especially not the people I trust.", v: { warm: "I want to tell somebody so bad, but I'm not going to, I'm really, really not going to.", loud: "I want to scream so bad, but I'm not going to, so I'm screaming on the inside.", schemer: "Now I get to decide who goes home without anyone knowing I'm deciding." } },
     ] },
     { id: 'nk.af2', place: 'secret', when: { voice: ['anxious', 'ditzy', 'goofy'] }, turns: [
-      { beat: "{a} trips over a root at {place} and lands face first next to something carved." },
+      { beat: "{a} trips over a root {here} and lands face first next to something carved." },
       { by: 'a', conf: "I fell over and found an idol. That's how I found it. Please don't tell anyone that's how I found it." },
       { by: 'a', conf: "Where do I even hide this? My pocket has a hole in it." },
     ] },

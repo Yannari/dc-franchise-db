@@ -478,15 +478,22 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
       if (!onlyConf) open(spot === 'confessional' ? V.public : spot, windowId, focus.length ? focus : (ev.players || []).slice(0, 3), { why: badge });
       else if (!cur) open(V.public, windowId, (ev.players || []).slice(0, 3), { why: badge });
       let lastBy = null;
+      // a find (any advantage: idolFound, voteStealFound, extraVote...) is seen happening, then felt: the
+      // search, the thing coming out of the ground, and only then the confessional (the user: "advantage
+      // found, there's no setup, no animation, just text"). A find scene with no set-up line gets one.
+      const find = isFind(ev);
+      let foundShown = false;
+      if (find && !ev.lines.some(l => l.kind === 'beat')) steps.push({ k: 'beat', text: findBeat(ev, venue), act: null });
       for (const l of ev.lines) {
         const text = cleanText(l.text);
         if (!text) continue;
+        if (find && !foundShown && l.kind !== 'beat') { foundStep(steps, ev); foundShown = true; }
         if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text, cap: l.cap || null, stage: l.stage || null });
         // a scene that runs on from the last one: whoever walks up walks in (director.js chainScenes)
         else if (l.kind === 'beat') steps.push({ k: 'beat', text, act: l.arrive?.length ? { kind: 'arrive', who: l.arrive } : actOf(text, cast, lastBy) });
         else { steps.push({ k: 'say', by: l.by, text, loud: loud(text), shock: shock(text) }); lastBy = l.by; }
       }
-      if (ev.type === 'idolFound') foundStep(steps, ev);
+      if (find && !foundShown) foundStep(steps, ev);
       const tt = ev.type !== 'allianceForm' ? STORY_TITLE.find(([re]) => re.test(ev.kind || ev.scene?.kind || ''))?.[1](ev) : null;
       if (tt) steps.push({ k: 'title', kicker: tt.kicker, name: cleanText(tt.name), faces: [...new Set((ev.players || []).filter(Boolean))].slice(0, 4), shock: !!tt.shock, sting: !tt.shock });
       if (ev.type === 'allianceForm' && ev.alliance) {
@@ -520,11 +527,27 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
 // A find (an idol, an advantage) as its own moment: the thing rises out of the ground. Only a
 // single finder's find; an activation of everyone's idols (Beware) stays a line.
 const FIND_NAME = { idol: 'Hidden Immunity Idol', extraVote: 'Extra Vote', voteSteal: 'Vote Steal', legacy: 'Legacy Advantage', kip: 'Knowledge is Power',
-  amulet: 'Amulet', secondLife: 'Second Life Amulet', 'idol-totem': 'Hidden Immunity Idol', beware: 'Beware Advantage' };
+  amulet: 'Amulet', secondLife: 'Second Life Amulet', 'idol-totem': 'Hidden Immunity Idol', beware: 'Beware Advantage',
+  voteBlock: 'Vote Block', teamSwap: 'Team Swap', safetyNoPower: 'Safety Without Power', soleVote: 'Sole Vote' };
+// every kind of find: the idol path (idolFound, with advType) and the tactical ones (advantages.js: voteStealFound...)
+const findType = ev => ev.advType || (ev.type || '').replace(/Found$/, '');
+const isFind = ev => ev.type === 'idolFound' || (/^[a-zA-Z]+Found$/.test(ev.type || '') && !!FIND_NAME[findType(ev)]);
+// the search, when the scene doesn't show it: alone, somewhere the venue has, and the hand finding it
+const FIND_BEAT = {
+  'world-tour': ['{a} waits until the cabin is asleep, then runs a hand under every seat cushion in the row. Under the third one, there is something.', '{a} checks the overhead bin nobody uses. Tucked behind a blanket, there is a small sealed package.'],
+  'film-lot': ['{a} slips into prop storage while everybody is on set and starts going through the crates. One of them is not a prop.', '{a} pulls open a drawer in an empty trailer. Taped to the underside, there is something that was not there yesterday.'],
+  any: ['{a} slips away from camp and starts turning over rocks, one by one. Under a flat one near the roots, there is something wrapped in cloth.', '{a} waits until nobody is looking, then reaches into a hollow log that has been bothering {a} for days. This time there is something inside.', '{a} is alone, digging at the base of a tree with bare hands. The dirt gives way to something hard.'],
+};
+function findBeat(ev, venue) {
+  const who = (ev.players || [])[0] || 'Someone';
+  const list = FIND_BEAT[venue] || FIND_BEAT.any;
+  let h = 0; for (const ch of String(who) + (ev.type || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return list[h % list.length].split('{a}').join(who);
+}
 function foundStep(steps, ev) {
   const who = (ev.players || []).filter(Boolean);
   if (who.length !== 1 || /ACTIVATED/i.test(ev.badgeText || '')) return;
-  const item = FIND_NAME[ev.advType] ? ev.advType : 'idol';
+  const item = FIND_NAME[findType(ev)] ? findType(ev) : 'idol';
   const prev = steps[steps.length - 1];
   steps.push({ k: 'found', who: who[0], item, label: FIND_NAME[item], text: '', side: prev?.side?.some(x => x.tab === 'secrets') ? [] : [{ tab: 'secrets', text: `${who[0]} found the ${FIND_NAME[item]}.` }] });
 }

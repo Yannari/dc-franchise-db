@@ -1298,18 +1298,40 @@ export function airTdEpisode(ep) {
       // don't want to hurt Topaz, but if I hold back, I'm only hurting myself... Right?"), at the two
       // moments the engine says are real: writing the name of somebody you're close to, and winning
       // immunity when the camp isn't glad you did
-      if (editOn && phase === 'post') {
+      {
         const deep = (kind, a, data, why, more = {}) => {
           const who = { a };
           const w = writeStory(`deep.${kind}`, 'any', who, data, { ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), merged, ...more }, { ep: ep.num, camp, phase, n: n++, place: 'confessional', unique: 'soft' });
           if (w) list.push({ at: 7e5, item: { story: true, kind: `deep.${kind}`, storyType: 'conf', step: kind, players: [a], lines: w.lines, text: w.text, lineId: w.lineId,
             scene: { kind: 'deep', who, data, spot: { id: 'confessional' } }, badgeText: '', badgeClass: '', why: [why] } });
         };
-        if (talk) {
+        if (!editOn) { /* the edit is off: the day as the engine's moments alone */ }
+        else if (phase === 'pre') {
+          // the morning after a cover plan: the one who wrote the fake name works out what happened
+          const prevEp = (gs.episodeHistory || []).find(h => h.num === ep.num - 1);
+          const cv = (prevEp?.coverPlans || []).find(p => p.real === prevEp.eliminated && members.includes(p.leader));
+          const fooled = cv ? (cv.told || []).find(m => members.includes(m) && (prevEp.votingLog || []).find(v => v.voter === m)?.voted === cv.cover) : null;
+          if (fooled) deep('liedto', fooled, { leader: cv.leader, cover: cv.cover, lastBoot: prevEp.eliminated }, `${cv.leader} gave ${fooled} a fake name last night.`);
+          // nobody close, two episodes running
+          const book = ((gs.tdStory ||= {}).alone ||= {});
+          const lonely = members.filter(x => Math.max(-10, ...members.filter(y => y !== x).map(y => getBond(x, y))) <= 1);
+          const twice = lonely.filter(x => book[x] === ep.num - 1).sort()[0];
+          lonely.forEach(x => { if (book[x] !== ep.num) book[x] = book[x] === ep.num - 1 && x === twice ? -99 : ep.num; });
+          if (twice && ep.num > 2) deep('alone', twice, {}, `Nobody here is close to ${twice}, and hasn't been for days.`);
+        }
+        else if (talk) {
           const wrote = x => (ep.votingLog || []).find(v => v.voter === x)?.voted;
           const torn = members.filter(x => x !== talk.leader && x !== talk.boot && wrote(x) === talk.boot && getBond(x, talk.boot) >= 3)
             .sort((x, y) => getBond(y, talk.boot) - getBond(x, talk.boot) || x.localeCompare(y))[0];
           if (torn) deep('betray', torn, { friend: talk.boot }, `${torn} is close to ${talk.boot}, and is writing ${talk.boot}'s name tonight.`);
+          // the swing vote, the night they decide (director.js voteTalk's swing scene)
+          const sw = votes.find(it => it.step === 'swing');
+          const swinger = sw?.scene?.who?.b;
+          // only when it really is the vote everybody needs: a close count, and no other confessional like it tonight
+          const tl = {}; (talk.ballots || []).forEach(v => { tl[v.voted] = (tl[v.voted] || 0) + 1; });
+          const top = Object.values(tl).sort((x, y) => y - x);
+          const close = top.length >= 2 && top[0] - top[1] <= 1;
+          if (swinger && !torn && close && members.includes(swinger)) deep('swing', swinger, { pitcher: sw.scene.who.a, target: talk.boot }, `${swinger} is the vote everybody needs tonight.`, { yes: /yes$/.test(sw.kind || '') });
         }
         const imm = [].concat(ep.immunityWinner || []).find(x => members.includes(x));
         if (merged && imm) {

@@ -11,7 +11,7 @@ export default {
     1: { loud: "And last night I couldn't do it, and I'm so angry I could scream. I keep going over every conversation.", earnest: "And last night I let {lastBoot} down. I keep going over every conversation, looking for the one I should have had.", competitive: "And last night I lost that one. I keep replaying it, looking for the move I missed." },
   },
   'nar.h2': {
-    1: { calm: "{pitcher} wants {target} out, and I heard it myself. I'm going to take a breath before I decide who I tell.", earnest: "{pitcher} wants {target} out. I heard it with my own ears, and I honestly don't know if it's my place to say anything.", loud: "{pitcher} wants {target} gone, I heard it myself, and I'm about two seconds away from telling the whole camp.", schemer: "{pitcher} wants {target} out. I heard it, nobody knows I heard it, and that's worth a lot to the right person.", blunt: "{pitcher} wants {target} out. I heard it. I'm probably just going to tell {target} straight." },
+    1: { calm: "{pitcher} wants {target} out, and I heard it myself. I'm going to take a breath before I decide who I tell.", earnest: "{pitcher} wants {target} out. I heard it with my own ears, and I honestly don't know if it's my place to say anything.", loud: "{pitcher} wants {target} gone, I heard it myself, and I'm about two seconds away from telling the whole camp.", schemer: "{pitcher} wants {target} out. I heard it, nobody knows I heard it, and that's worth a lot to the right person.", blunt: "{pitcher} wants {target} out, I heard it myself, and I'm probably just going to tell {target} straight." },
   },
   'nl4.v1': {
     0: { loud: "Okay, real talk, does anybody here take me seriously?", competitive: "Be honest. Do people here see me as competition?", calm: "Can I ask you something honestly? Do people here take me seriously?" },
@@ -31,7 +31,7 @@ export default {
     9: { calm: "{a} is completely sure about tonight. I hope {a} has counted right.", earnest: "{a} is so sure about tonight. I really want {a} to be right.", schemer: "{a} is completely sure about tonight. Certainty is usually the first sign somebody's been told what they wanted to hear." },
   },
   'ndp.s3': {
-    0: { calm: "Everybody wants my vote tonight. I'm going to take my time and pick the one I can live with.", competitive: "Everybody wants my vote tonight. Good. I'm going to make it count.", loud: "Everybody wants my vote tonight! I've never had so many people be so nice to me in one afternoon!", schemer: "Everybody wants my vote tonight. I'm going to find out what each of them will give me for it." },
+    0: { calm: "Everybody wants my vote tonight. I'm going to take my time and pick the one I can live with.", competitive: "Everybody wants my vote tonight, and good. I'm going to make it count.", loud: "Everybody wants my vote tonight! I've never had so many people be so nice to me in one afternoon!", schemer: "Everybody wants my vote tonight. I'm going to find out what each of them will give me for it." },
   },
   'fp.c1': {
     7: { calm: "Everybody says not to trust anyone. I've talked to {a} for ten minutes and I already feel easy around {a}.", earnest: "Everybody told me not to trust anyone out here, and after ten minutes with {a}, I already kind of do. I hope that's not a mistake.", schemer: "Everybody says don't trust anyone, and I won't. {a}, though, I'd like to keep close." },
@@ -40,7 +40,7 @@ export default {
     7: { competitive: "The other team is picking somebody to send home, and we're sitting by the fire. That's exactly where I want to be every week.", calm: "The other team is voting somebody out right now, and we get to sit by the fire. I'm going to enjoy this.", loud: "The other team is picking who goes home and we're by the fire! Best feeling in the world!", earnest: "I feel bad for the other team, I really do, but I'm so glad we're all still here." },
   },
   'fp.x2': {
-    7: { loud: "Day one and {a} already took MY {bed}! Oh, I'm going to remember that.", competitive: "Day one and {a} took the {bed} I wanted. Fine. I'll win the next one.", calm: "Day one, and {a} took my {bed}. I'm letting it go. Mostly.", earnest: "{a} took the {bed} I picked. It's not a big deal, but it did hurt my feelings a little." },
+    7: { loud: "Day one and {a} already took MY {bed}! Oh, I'm going to remember that.", competitive: "Day one and {a} took the {bed} I wanted. Fine, I'll win the next one.", calm: "Day one, and {a} took my {bed}. I'm letting it go, mostly.", earnest: "{a} took the {bed} I picked. It's not a big deal, but it did hurt my feelings a little." },
   },
   'ny.f1': {
     7: { competitive: "{b} is on the other team, and I don't care. When the teams are gone, I want {b} beside me against everybody else.", loud: "{b} is on the other team, and I don't care who knows it! When the teams are gone, {b} is with me!", earnest: "{b} is on the other team, and I really don't care. I just like {b}, and I want {b} with me later." },
@@ -103,7 +103,7 @@ export default {
     0: { competitive: "{target} cost us the challenge. I don't need a meeting, I need us to stop losing.", calm: "{target} cost us the challenge, and everybody watched it happen. I don't think this needs much discussion.", earnest: "I don't like it, but {target} cost us the challenge, and everybody saw. I'll be honest about why I'm voting." },
   },
   'ndp.w1': {
-    1: { competitive: "If nobody claps, fine. I'm not here to be clapped for. I'm here to win.", calm: "If this is what it takes to stay, then fine. I'll get used to the quiet.", earnest: "I guess being good at this makes people scared of you. I'm not going to stop trying, though." },
+    1: { competitive: "If nobody claps, that's fine. I'm not here to be clapped for, I'm here to win.", calm: "If this is what it takes to stay, then fine. I'll get used to the quiet.", earnest: "I guess being good at this makes people scared of you. I'm not going to stop trying, though." },
   },
   'nvu.p1': {
     8: { calm: "I didn't come out here to break hearts. It turns out that's part of the job, and I'll do it quietly.", earnest: "I didn't come out here to break hearts, and I really hate that this is part of it." },

@@ -1289,7 +1289,10 @@ export function airTdEpisode(ep) {
       if (editOn && phase === 'pre' && ep.num > 1) {
         const td = threadDue(ep, members);
         const writesT = (x, y) => (ep.votingLog || []).some(v => v.voter === x && v.voted === y);
-        if (td && !(['rescue', 'debt'].includes(td.t.kind) && (writesT(td.t.a, td.t.b) || writesT(td.t.b, td.t.a)))) {
+        // ...and a feud thread doesn't air between two people who are friends now (read: Duncan and Felipe split
+        // the last bite, 'basically a vow', then fought over a bowl at breakfast in the next scene)
+        const madeUp = td && td.t.kind === 'rivals' && getBond(td.t.a, td.t.b) >= 2;
+        if (td && !madeUp && !(['rescue', 'debt'].includes(td.t.kind) && (writesT(td.t.a, td.t.b) || writesT(td.t.b, td.t.a)))) {
           const who = { a: td.t.a, b: td.t.b };
           const prevBoot = (gs.episodeHistory || []).find(h => h.num === td.t.ep)?.eliminated || null;
           const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), pair: true, how: td.t.how || 'vote', lastBoot: !!prevBoot, ago: ep.num - td.t.ep <= 1 ? 'recent' : 'while' };

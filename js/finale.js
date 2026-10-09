@@ -45,7 +45,7 @@ export function generateFinaleCampOverride(ep, finalists) {
     `The fire burned low overnight. Nobody relit it. The game doesn\u2019t need warmth anymore \u2014 it needs an ending.`,
     `The sun rises on the last day. The camp feels different. Smaller. The empty spots where the others used to sit say more than anyone will today.`,
     `Morning. The last one. The sounds are the same \u2014 birds, waves, wind through the shelter. But everything feels heavier.`,
-    `There are ${finalists.length} torches left. ${finalists.length} people. After today, there will be one.`,
+    `${finalists.length} people left, out of everybody who started. After today, there will be one.`,
   ];
   // the sentence is still picked (it keeps the season's draws); the scene is what airs (td/script/lines/morning.js)
   const _say = (evt, kind, who, data = {}) => (who.a && (who.b !== undefined ? who.b : true)
@@ -73,7 +73,7 @@ export function generateFinaleCampOverride(ep, finalists) {
     else if (wins >= 2)
       reflections.push(`${f} stares at the challenge course in the distance. ${wins} wins got ${fp.obj} here. "One more. That\u2019s all I need. One more."`);
     else if (votesAgainst >= 5)
-      reflections.push(`${f} counts the empty torches. ${votesAgainst} times they came for ${fp.obj}. ${votesAgainst} times ${fp.sub} survived. "They tried everything. I\u2019m still here."`);
+      reflections.push(`${f} looks at the empty spots around the fire. ${votesAgainst} times they came for ${fp.obj}. ${votesAgainst} times ${fp.sub} survived. "They tried everything. I\u2019m still here."`);
     else if (s.loyalty >= 8)
       reflections.push(`${f} looks at the names scratched into the shelter wall. Every player who was here. "I kept my promises. Most of them. The ones that mattered."`);
     else
@@ -128,9 +128,9 @@ export function generateFinaleCampOverride(ep, finalists) {
 
   // 5. Closing — burning the shelter / saying goodbye to camp
   const closers = [
-    `The finalists stand together. They look at the shelter one last time. ${finalists[0]} picks up a torch. "It\u2019s time." The shelter burns. The game ends where it started \u2014 with fire.`,
+    `The finalists stand together. They look at the camp one last time. ${finalists[0]} kicks dirt over the last of the fire. "It\u2019s time." Nobody argues.`,
     `They walk out of camp single file. Nobody looks back. The game is ahead of them now, not behind.`,
-    `${finalists[0]} douses the fire. The smoke rises and disappears. "That\u2019s it. That\u2019s the last camp." They grab their torches and leave.`,
+    `${finalists[0]} douses the fire. The smoke rises and disappears. "That\u2019s it. That\u2019s the last camp." They grab their bags and leave.`,
     `The last meal. The last conversation. The last time this camp will hold all of them. Then they leave \u2014 and the game takes over.`,
   ];
   events.push(_say({ type: 'closing', text: _pick(closers, 'close' + finalists.join('')), players: finalists, badge: null },
@@ -684,18 +684,18 @@ export function simulateFinale() {
       })() },
       // 4. FIRST HORN
       { type: 'horn1', player: _orPlacements[0], text: _pick([
-        `Then — a horn blasts through the trees. ${_orPlacements[0]} breaks out of the undergrowth, dagger raised high. ${_or1S.mental >= 7 ? `${_or1Pr.Sub} read the map like it was second nature — beacon found, coordinates decoded, dagger recovered before the others even had a bearing.` : _or1S.physical >= 7 ? `Pure speed. ${_or1Pr.Sub} covered more ground than anyone and found ${_or1Pr.pos} beacon first.` : `${_or1Pr.Sub} got lucky — found the beacon early and never second-guessed the bearing.`} Safe. Three still out there.`,
+        `Then — a horn blasts through the trees. ${_orPlacements[0]} breaks out of the undergrowth, dagger raised high. ${_or1S.mental >= 7 ? `${_or1Pr.Sub} read the map like it was second nature — beacon found, coordinates decoded, dagger recovered before the others even had a bearing.` : _or1S.physical >= 7 ? `Pure speed. ${_or1Pr.Sub} covered more ground than anyone and found ${_or1Pr.posAdj} beacon first.` : `${_or1Pr.Sub} got lucky — found the beacon early and never second-guessed the bearing.`} Safe. Three still out there.`,
         `A horn rips through the silence. ${_orPlacements[0]} emerges at a dead sprint, dagger in hand. ${_or1Pr.Sub} ${_or1Pr.sub==='they'?'slam':'slams'} it into the pedestal. Safe. The three still in the jungle hear that horn — and the panic sets in.`,
       ]) },
       // 5. AFTER FIRST HORN — pressure building
       { type: 'pressure1', text: _pick([
-        `${_orPlacements[0]} catches ${_or1Pr.pos} breath at the finish line, mud-streaked and winded. ${_or1Pr.Sub} ${_or1Pr.sub==='they'?'look':'looks'} back at the jungle. "Come on," ${_or1Pr.sub} ${_or1Pr.sub==='they'?'whisper':'whispers'}. Nobody knows who ${_or1Pr.sub}'s talking to.`,
+        `${_orPlacements[0]} catches ${_or1Pr.posAdj} breath at the finish line, mud-streaked and winded. ${_or1Pr.Sub} ${_or1Pr.sub==='they'?'look':'looks'} back at the jungle. "Come on," ${_or1Pr.sub} ${_or1Pr.sub==='they'?'whisper':'whispers'}. Nobody knows who ${_or1Pr.sub}'s talking to.`,
         `One spot filled. Two left. The horn echoes and fades. In the jungle, three people just heard the starting gun of a race they're losing. The calculations change — it's not about finding your dagger anymore. It's about not being the last one to find it.`,
         `The waiting resumes. Longer this time. The heat isn't letting up. It's past noon and the jungle is an oven. Whatever stamina they had at the start is being cooked out of them step by step.`,
       ]) },
       // 6. SECOND HORN
       { type: 'horn2', player: _orPlacements[1], text: _pick([
-        `The second horn. ${_orPlacements[1]} appears at the clearing's edge, legs shaking, mud-streaked, dagger in hand. ${_or2S.intuition >= 7 ? `${_or2Pr.Sub} found the beacon early but got turned around — instinct got ${_or2Pr.obj} back on track.` : `It wasn't pretty — wrong turns, retracing steps — but the dagger is in ${_or2Pr.pos} hand.`} Safe. One spot left. ${_orPlacements[2]} and ${_orEliminated} — one of them is going home.`,
+        `The second horn. ${_orPlacements[1]} appears at the clearing's edge, legs shaking, mud-streaked, dagger in hand. ${_or2S.intuition >= 7 ? `${_or2Pr.Sub} found the beacon early but got turned around — instinct got ${_or2Pr.obj} back on track.` : `It wasn't pretty — wrong turns, retracing steps — but the dagger is in ${_or2Pr.posAdj} hand.`} Safe. One spot left. ${_orPlacements[2]} and ${_orEliminated} — one of them is going home.`,
         `The second horn echoes. ${_orPlacements[1]} staggers back, holding the dagger like a lifeline. ${_or2Pr.Sub} ${_or2Pr.sub==='they'?'collapse':'collapses'} at the finish. One dagger remains. Two players are fighting for it somewhere in that jungle.`,
       ]) },
       // 7. THE RACE FOR LAST — extended suspense
@@ -722,7 +722,7 @@ export function simulateFinale() {
       })() },
       // 8. THIRD HORN + ELIMINATION
       { type: 'horn3', player: _orPlacements[2], eliminated: _orEliminated, text: _pick([
-        `Then — movement in the treeline. ${_orPlacements[2]} stumbles into the clearing, barely standing, dagger in hand. The third horn sounds. Safe. The other three watch the jungle. Minutes pass. Finally, ${_orEliminated} appears — slow, empty-handed. ${_or4S.temperament >= 7 ? `${_or4Pr.Sub} ${_or4Pr.sub==='they'?'take':'takes'} a breath, ${_or4Pr.sub==='they'?'nod':'nods'}, and ${_or4Pr.sub==='they'?'accept':'accepts'} it.` : `The look on ${_or4Pr.pos} face says everything.`} It's over.`,
+        `Then — movement in the treeline. ${_orPlacements[2]} stumbles into the clearing, barely standing, dagger in hand. The third horn sounds. Safe. The other three watch the jungle. Minutes pass. Finally, ${_orEliminated} appears — slow, empty-handed. ${_or4S.temperament >= 7 ? `${_or4Pr.Sub} ${_or4Pr.sub==='they'?'take':'takes'} a breath, ${_or4Pr.sub==='they'?'nod':'nods'}, and ${_or4Pr.sub==='they'?'accept':'accepts'} it.` : `The look on ${_or4Pr.posAdj} face says everything.`} It's over.`,
         `The third horn. ${_orPlacements[2]} crashes through the trees holding a dagger. Safe. Then the wait. The long, awful wait. When ${_orEliminated} finally emerges — no dagger — ${_or4Pr.sub} ${_or4Pr.sub==='they'?'don\'t':'doesn\'t'} need to be told. ${_or4S.social >= 7 ? `${_or4Pr.Sub} ${_or4Pr.sub==='they'?'hug':'hugs'} each of the remaining three before walking away.` : `${_or4Pr.Sub} ${_or4Pr.sub==='they'?'stand':'stands'} there for a moment. Then ${_or4Pr.sub} ${_or4Pr.sub==='they'?'turn':'turns'} and ${_or4Pr.sub==='they'?'walk':'walks'} away.`}`,
       ]) },
     ];
@@ -766,7 +766,7 @@ export function simulateFinale() {
         phaseText = _pick([
           `The three finalists step onto their perches. Platform: ${_phasePlatforms[0]}. Wide enough to stand comfortably — but that won't last. The host explains: every few minutes, they'll each pull a cord that removes a peg from beneath their platform. The surface shrinks. Last one standing wins immunity and gets to choose who sits next to them at Final Tribal Council. The jungle goes quiet. Nobody moves. The challenge begins.`,
           `${remaining.join(', ')} take their positions on the wooden perches. ${_phasePlatforms[0]}. The host reminds them what's at stake: the person who outlasts the other two doesn't just win immunity — they choose their opponent at FTC. This isn't just about endurance. It's about who gets to decide the entire outcome of this game. The first minutes pass in silence. Everyone is steady. For now.`,
-          `Three perches. Three players. One winner. The platforms are ${_phasePlatforms[0]} — generous, but temporary. The mechanism is simple: pull the cord, lose a peg, lose surface. The challenge is patience. The stakes are everything. ${remaining[0]} closes ${pronouns(remaining[0]).pos} eyes. ${remaining[1]} stares straight ahead. ${remaining[2]} looks down at the platform beneath ${pronouns(remaining[2]).pos} feet — measuring it, memorizing it. They all know it's about to get smaller.`,
+          `Three perches. Three players. One winner. The platforms are ${_phasePlatforms[0]} — generous, but temporary. The mechanism is simple: pull the cord, lose a peg, lose surface. The challenge is patience. The stakes are everything. ${remaining[0]} closes ${pronouns(remaining[0]).posAdj} eyes. ${remaining[1]} stares straight ahead. ${remaining[2]} looks down at the platform beneath ${pronouns(remaining[2]).posAdj} feet — measuring it, memorizing it. They all know it's about to get smaller.`,
         ]);
       } else if (phase === 3 && remaining.length === 2) {
         // Final showdown
@@ -778,8 +778,8 @@ export function simulateFinale() {
         _perchDropOrder.push(loser);
         phaseText = _pick([
           `Platform: ${_phasePlatforms[3]}. One foot each. ${a} and ${b} are both shaking — calves burning, ankles screaming. Neither speaks. The jury watches from the bench. The wind picks up. A bird screams somewhere above them. Five minutes. Ten. Then ${loser}'s knee buckles — ${_lPrF.sub} ${_lPrF.sub==='they'?'try':'tries'} to correct — overcorrects. ${_lPrF.Sub} ${_lPrF.sub==='they'?'grab':'grabs'} at air. Falls. ${winner} doesn't move. Doesn't celebrate. Just stands there — one foot on a 10-centimeter platform, the last person standing. It's over.`,
-          `The final stage. ${_phasePlatforms[3]}. Nothing left to hold. The platform is barely bigger than a hand. ${a} and ${b} are trembling — not from cold, but from the muscle fatigue that comes after standing still for this long. The jury is on the edge of their seats. Minutes feel like hours. ${_wSF.endurance >= 7 ? `${winner}'s breathing is slow, controlled — ${_wPrF.sub} ${_wPrF.sub==='they'?'have':'has'} been training for this ${_wPrF.pos} whole life.` : `${winner} is hurting — but ${_wPrF.sub} ${_wPrF.sub==='they'?'refuse':'refuses'} to show it.`} Then ${loser}'s balance shifts — a fraction too far. ${_lPrF.Sub} ${_lPrF.sub==='they'?'reach':'reaches'} for the perch — too late. ${winner} is the last one standing. The jury erupts.`,
-          `${_phasePlatforms[3]}. One foot. No room for error. ${a} and ${b} have been up here for what feels like an eternity. ${_lSF.temperament >= 7 ? `${loser} has been remarkably composed — until now. The tremor starts in ${_lPrF.pos} ankle and works upward.` : `${loser} has been fighting ${_lPrF.pos} body for the last ten minutes — and the body is winning.`} The wind gusts. ${loser} sways. Catches it. Sways again. This time there's nothing left to catch. ${_lPrF.Sub} steps off the perch. ${winner} exhales for what might be the first time in twenty minutes. The host calls it: ${winner} wins the Perch.`,
+          `The final stage. ${_phasePlatforms[3]}. Nothing left to hold. The platform is barely bigger than a hand. ${a} and ${b} are trembling — not from cold, but from the muscle fatigue that comes after standing still for this long. The jury is on the edge of their seats. Minutes feel like hours. ${_wSF.endurance >= 7 ? `${winner}'s breathing is slow, controlled — ${_wPrF.sub} ${_wPrF.sub==='they'?'have':'has'} been training for this ${_wPrF.posAdj} whole life.` : `${winner} is hurting — but ${_wPrF.sub} ${_wPrF.sub==='they'?'refuse':'refuses'} to show it.`} Then ${loser}'s balance shifts — a fraction too far. ${_lPrF.Sub} ${_lPrF.sub==='they'?'reach':'reaches'} for the perch — too late. ${winner} is the last one standing. The jury erupts.`,
+          `${_phasePlatforms[3]}. One foot. No room for error. ${a} and ${b} have been up here for what feels like an eternity. ${_lSF.temperament >= 7 ? `${loser} has been remarkably composed — until now. The tremor starts in ${_lPrF.posAdj} ankle and works upward.` : `${loser} has been fighting ${_lPrF.posAdj} body for the last ten minutes — and the body is winning.`} The wind gusts. ${loser} sways. Catches it. Sways again. This time there's nothing left to catch. ${_lPrF.Sub} steps off the perch. ${winner} exhales for what might be the first time in twenty minutes. The host calls it: ${winner} wins the Perch.`,
         ]);
       } else if (drops) {
         _perchDropOrder.push(weakest);
@@ -787,8 +787,8 @@ export function simulateFinale() {
         const _wS = pStats(weakest);
         const _remainStr = remaining.filter(p => p !== weakest).join(' and ');
         phaseText = _pick([
-          `Platform reduced to ${_phasePlatforms[phase]}. ${weakest} pulls the cord. The peg drops. The platform shrinks beneath ${_wPr.pos} feet. ${_wPr.Sub} ${_wPr.sub==='they'?'adjust':'adjusts'} — shifts weight to the center — but the new surface is merciless. A wobble. ${_wPr.Sub} ${_wPr.sub==='they'?'fight':'fights'} it. Arms out. Legs shaking. For a moment it looks like ${_wPr.sub} might hold. Then — ${_wPr.sub} ${_wPr.sub==='they'?'fall':'falls'}. The sound of feet hitting sand. ${_remainStr} remain. Neither of them looked down.`,
-          `${_phasePlatforms[phase]} now. ${weakest} was solid on the last surface. But the cord pull changes everything — the platform shrinks and suddenly ${_wS.physical >= 7 ? `${_wPr.pos} strength becomes a liability. Too much weight, too little surface.` : `the math doesn't work. ${_wPr.Sub} ${_wPr.sub==='they'?'don\'t':'doesn\'t'} have the frame for this.`} ${_wPr.Sub} ${_wPr.sub==='they'?'fight':'fights'} it for twenty agonizing seconds — legs shaking, arms out, jaw clenched — but physics wins. Down. ${_remainStr} ${remaining.filter(p => p !== weakest).length > 1 ? 'are' : 'is'} still up. The challenge continues.`,
+          `Platform reduced to ${_phasePlatforms[phase]}. ${weakest} pulls the cord. The peg drops. The platform shrinks beneath ${_wPr.posAdj} feet. ${_wPr.Sub} ${_wPr.sub==='they'?'adjust':'adjusts'} — shifts weight to the center — but the new surface is merciless. A wobble. ${_wPr.Sub} ${_wPr.sub==='they'?'fight':'fights'} it. Arms out. Legs shaking. For a moment it looks like ${_wPr.sub} might hold. Then — ${_wPr.sub} ${_wPr.sub==='they'?'fall':'falls'}. The sound of feet hitting sand. ${_remainStr} remain. Neither of them looked down.`,
+          `${_phasePlatforms[phase]} now. ${weakest} was solid on the last surface. But the cord pull changes everything — the platform shrinks and suddenly ${_wS.physical >= 7 ? `${_wPr.posAdj} strength becomes a liability. Too much weight, too little surface.` : `the math doesn't work. ${_wPr.Sub} ${_wPr.sub==='they'?'don\'t':'doesn\'t'} have the frame for this.`} ${_wPr.Sub} ${_wPr.sub==='they'?'fight':'fights'} it for twenty agonizing seconds — legs shaking, arms out, jaw clenched — but physics wins. Down. ${_remainStr} ${remaining.filter(p => p !== weakest).length > 1 ? 'are' : 'is'} still up. The challenge continues.`,
           `The cord pulls. ${_phasePlatforms[phase]}. ${weakest} recalibrates — feet together, center of gravity low — but the surface betrays ${_wPr.obj}. ${_wPr.Sub} ${_wPr.sub==='they'?'start':'starts'} to lean, ${_wPr.sub==='they'?'overcorrect':'overcorrects'}, and for one long second the outcome hangs in the air. Then gravity decides. ${weakest} is down. ${_wPr.Sub} ${_wS.temperament >= 6 ? `${_wPr.sub==='they'?'take':'takes'} it in stride — ${_wPr.sub==='they'?'nod':'nods'} to the others as ${_wPr.sub} ${_wPr.sub==='they'?'step':'steps'} off.` : `${_wPr.sub==='they'?'slam':'slams'} a fist against the post. ${_wPr.Sub} ${_wPr.sub==='they'?'know':'knows'} what this means.`} ${_remainStr} stand alone.`,
         ]);
       } else {
@@ -819,16 +819,16 @@ export function simulateFinale() {
         ]));
         // Body language / pain
         _intTexts.push(_pick([
-          `${_intWeak} can't feel ${_iwPr.pos} legs anymore. ${_iwPr.Sub} ${_iwPr.sub==='they'?'shift':'shifts'} weight from one foot to the other — each transfer a risk. The muscles have gone from burning to numb. ${_iwPr.Sub} ${_iwPr.sub==='they'?'don\'t':'doesn\'t'} know which is worse.`,
+          `${_intWeak} can't feel ${_iwPr.posAdj} legs anymore. ${_iwPr.Sub} ${_iwPr.sub==='they'?'shift':'shifts'} weight from one foot to the other — each transfer a risk. The muscles have gone from burning to numb. ${_iwPr.Sub} ${_iwPr.sub==='they'?'don\'t':'doesn\'t'} know which is worse.`,
           `${_intStrong} hasn't moved in ten minutes. Eyes closed. Breathing slow. ${_isS.temperament >= 7 ? `${_isPr.Sub} ${_isPr.sub==='they'?'look':'looks'} almost meditative — like ${_isPr.sub} could stand here forever.` : `It's not calm — it's concentration so intense that everything else has disappeared.`}`,
           `${_intWeak}'s face is telling a story. The jaw is clenched. The eyes are wet — not crying, just the strain. ${_iwS.boldness >= 7 ? `${_iwPr.Sub} ${_iwPr.sub==='they'?'catch':'catches'} ${_intStrong}'s eye and ${_iwPr.sub==='they'?'grin':'grins'}. It's not real — it's defiance.` : `${_iwPr.Sub} ${_iwPr.sub==='they'?'stare':'stares'} straight ahead. Don't look down. Don't think about falling.`}`,
-          `A cramp shoots through ${_intWeak}'s calf. ${_iwPr.Sub} ${_iwPr.sub==='they'?'flinch':'flinches'} — for one terrible second ${_iwPr.pos} balance wavers — then ${_iwPr.sub} ${_iwPr.sub==='they'?'steady':'steadies'}. The jury exhales. ${_intStrong} doesn't react. ${_isPr.Sub} heard it. ${_isPr.Sub} felt it. But ${_isPr.sub} ${_isPr.sub==='they'?'don\'t':'doesn\'t'} give ${_intWeak} the satisfaction.`,
+          `A cramp shoots through ${_intWeak}'s calf. ${_iwPr.Sub} ${_iwPr.sub==='they'?'flinch':'flinches'} — for one terrible second ${_iwPr.posAdj} balance wavers — then ${_iwPr.sub} ${_iwPr.sub==='they'?'steady':'steadies'}. The jury exhales. ${_intStrong} doesn't react. ${_isPr.Sub} heard it. ${_isPr.Sub} felt it. But ${_isPr.sub} ${_isPr.sub==='they'?'don\'t':'doesn\'t'} give ${_intWeak} the satisfaction.`,
         ]));
         // Opponent's face / jury
         if (phase >= 1) _intTexts.push(_pick([
           `The face of ${_intStrong} — steady, composed, almost bored — is the worst thing ${_intWeak} can see right now. It makes ${_iwPr.obj} want to hold on longer just to wipe that look off.`,
           `On the jury bench, someone whispers. ${_intWeak} can't hear what — but ${_iwPr.sub} ${_iwPr.sub==='they'?'see':'sees'} them looking. Are they impressed or are they already writing ${_iwPr.obj} off?`,
-          `${_intStrong} opens ${_isPr.pos} eyes for the first time in minutes. ${_isPr.Sub} ${_isPr.sub==='they'?'look':'looks'} at ${_intWeak}. Not challenging. Not pitying. Just… acknowledging. We're both still here.`,
+          `${_intStrong} opens ${_isPr.posAdj} eyes for the first time in minutes. ${_isPr.Sub} ${_isPr.sub==='they'?'look':'looks'} at ${_intWeak}. Not challenging. Not pitying. Just… acknowledging. We're both still here.`,
         ]));
         _perchPhases.push({ phase: phase + 0.5, platform: '', text: _intTexts.join(' '), dropped: null, remaining: [..._intRemaining], isInterlude: true });
       }
@@ -2706,6 +2706,8 @@ export function simulateJuryVote(finalists, adjustments = null) {
   const _sigOf = line => finalists
     .reduce((t, f) => t.split(f).join('~'), String(line || ''));
 
+  // does this juror believe this finalist ran at least one vote (the architect facts the jury perception reads)
+  const _jrRan = (j, who) => Object.values(gs.knowledge || {}).some(k => k?.type === 'architect' && k.subject === who && Number(k.beliefs?.[j]?.confidence || 0) >= 0.35);
   jury.forEach(juror => {
     const jS = pStats(juror);
     const scores = finalists.map(f => {
@@ -2827,17 +2829,17 @@ export function simulateJuryVote(finalists, adjustments = null) {
     } else if (_jrLayer.brokePromise && _jrLayer.respect >= 4) {
       _jrReason = _jrPick([
         `${pick} looked me in the eye, said we were going to the end together — then wrote my name down. I hated ${_jrFp.obj} for it. But that is exactly the move that got ${_jrFp.obj} here, and I won't punish a winner for winning.`,
-        `The cut still stings. ${pick} broke our deal at the worst possible moment for me — and the best possible moment for ${_jrFp.pos} game. I came to reward the best player, not my feelings.`,
+        `The cut still stings. ${pick} broke our deal at the worst possible moment for me — and the best possible moment for ${_jrFp.posAdj} game. I came to reward the best player, not my feelings.`,
         `I'm bitter and I'm honest about it: ${pick} played me, and ${_jrFp.sub} played me perfectly. That's a winner's résumé.`,
       ]);
     } else if (_jrLayer.knewBetrayal && _jrLayer.respect >= 4) {
       _jrReason = _jrPick([
         `I know exactly what ${pick} did to me — ${_jrFp.sub} set the whole thing up and let me look the other way. I figured it out on the bench. And I'm still voting for ${_jrFp.obj}, because that is how you win this game.`,
-        `${pick} orchestrated my exit and covered ${_jrFp.pos} tracks clean. I found out who was really behind it. Respect. My vote goes to the person who outplayed me.`,
+        `${pick} orchestrated my exit and covered ${_jrFp.posAdj} tracks clean. I found out who was really behind it. Respect. My vote goes to the person who outplayed me.`,
       ]);
     } else if (_jrLayer.keptPromise && _jrLayer.trust >= 1) {
       _jrReason = _jrPick([
-        `${pick} kept ${_jrFp.pos} word to me when ${_jrFp.sub} had every reason to break it. In a game built on lies, that meant something real. ${_jrFp.Sub} earned my vote the honest way.`,
+        `${pick} kept ${_jrFp.posAdj} word to me when ${_jrFp.sub} had every reason to break it. In a game built on lies, that meant something real. ${_jrFp.Sub} earned my vote the honest way.`,
         `Everyone else was willing to burn me. ${pick} wasn't — ${_jrFp.sub} told me where ${_jrFp.sub} stood and stuck to it. That's the loyalty I'm rewarding.`,
       ]);
     } else if (_jrLayer.respectedThreat && _jrLayer.strategicJuror) {
@@ -2871,7 +2873,7 @@ export function simulateJuryVote(finalists, adjustments = null) {
       ]);
     } else if (_jrVotedOut && _jrBond >= 2) {
       _jrReason = _jrPick([
-        `${pick} voted me out — and I'm voting for ${_jrFp.obj} to win. That's how good ${_jrFp.pos} game was.`,
+        `${pick} voted me out — and I'm voting for ${_jrFp.obj} to win. That's how good ${_jrFp.posAdj} game was.`,
         `${pick} ended my game. I hated it then. But watching from the bench, I see it was the right move. That's why ${_jrFp.sub} ${_jrFp.sub==='they'?'get':'gets'} my vote.`,
         `I was bitter. I'm not anymore. ${pick} played the best game and I can admit that now.`,
         `${pick} took my game from me and did it without insulting me on the way out. That matters more than people think.`,
@@ -2903,13 +2905,22 @@ export function simulateJuryVote(finalists, adjustments = null) {
         `I would have taken ${pick} to the end and ${_jrFp.sub} would have taken me. Neither of us got the chance. ${_jrFp.Sub} still gets my vote.`,
         `When I had nobody, ${pick} sat with me. You can call that a strategy if you like. It worked, and it was also true.`,
       ]);
-    } else if (jS.strategic >= 7) {
+    } else if (jS.strategic >= 7 && _jrRan(juror, pick)) {
       _jrReason = _jrPick([
         `${pick} played the most complete game. Strategic, social, physical — ${_jrFp.sub} checked every box.`,
         `I'm voting for the best game, not the best person. ${pick} controlled more votes than anyone up there.`,
         `From the jury bench, it's clear: ${pick} made the moves that shaped this season. That deserves the win.`,
         `I respected ${pick}'s game long before I liked ${_jrFp.obj}, and by the end I did both. That is a rare thing to manage in here.`,
         `${pick} outplayed everyone sitting next to ${_jrFp.obj}. The jury should reward gameplay, not feelings.`,
+      ]);
+    } else if (jS.strategic >= 7) {
+      // A strategic juror who does NOT believe this finalist ran a single vote (read: Duncan crediting goat Leonard,
+      // fifteen votes survived and no boot to his name, with 'controlled more votes than anyone'): the respect is
+      // for what the juror did see, not for moves the jury gives to somebody else.
+      _jrReason = _jrPick([
+        `${pick} didn't run the votes, and I know it. But everybody came for ${_jrFp.obj} at some point, and ${_jrFp.sub} ${_jrFp.sub === 'they' ? 'are' : 'is'} still sitting there. Surviving is a strategy too.`,
+        `I wanted to vote for the person who made the big moves, and I don't think that person made it to the end. So I'm voting for the one who never gave anybody a reason to stop ${_jrFp.obj}.`,
+        `Nobody up there controlled this season. ${pick} at least knew exactly when to keep quiet, and that's a skill most of us on this bench didn't have.`,
       ]);
     } else if (_jrImmWins >= 3) {
       _jrReason = _jrPick([
@@ -2920,8 +2931,8 @@ export function simulateJuryVote(finalists, adjustments = null) {
     } else if (_jrPreMergeVotes >= 4) {
       _jrReason = _jrPick([
         `${pick} was on the bottom from day one. ${_jrPreMergeVotes} votes before the merge — and ${_jrFp.sub} ${_jrFp.sub==='they'?'are':'is'} still here. That's the best underdog story I've seen.`,
-        `Everyone tried to get rid of ${pick} early. It didn't work. ${_jrFp.Sub} clawed ${_jrFp.pos} way to the end and I respect that more than any blindside.`,
-        `${pick} was targeted before most people even learned each other's names. The fact that ${_jrFp.sub} survived to the finale is ${_jrFp.pos} argument. I'm voting for the comeback.`,
+        `Everyone tried to get rid of ${pick} early. It didn't work. ${_jrFp.Sub} clawed ${_jrFp.posAdj} way to the end and I respect that more than any blindside.`,
+        `${pick} was targeted before most people even learned each other's names. The fact that ${_jrFp.sub} survived to the finale is ${_jrFp.posAdj} argument. I'm voting for the comeback.`,
       ]);
     } else if (_jrPosJurorBonds >= 5) {
       _jrReason = _jrPick([
@@ -2948,12 +2959,12 @@ export function simulateJuryVote(finalists, adjustments = null) {
         control: [`I vote for the person who controlled this game, and that's ${pick}. Feelings don't win me over — moves do.`,
           `${pick} was always a step ahead. I respect a player who runs the board, and ${_jrFp.sub} did.`],
         loyalty: [`${pick} never turned on the people ${_jrFp.sub} was loyal to. That's the game I respect, and it gets my vote.`,
-          `I reward people who don't stab their allies in the back. ${pick} kept ${_jrFp.pos} loyalties intact.`],
+          `I reward people who don't stab their allies in the back. ${pick} kept ${_jrFp.posAdj} loyalties intact.`],
         social: [`${pick} understood people. This game is won in the conversations, and ${_jrFp.sub} had them all.`,
           `The social game is the game, and ${pick} played it better than anyone up there.`],
         honesty: [`${pick} played hard but ${_jrFp.sub} played honest. I'd rather reward a clean game than a ruthless one.`,
           `No dirty tricks with ${pick}. In a game that rewards lying, ${_jrFp.sub} stayed straight. That matters to me.`],
-        challenge: [`${pick} won when it counted. ${_jrFp.Sub} earned ${_jrFp.pos} spot on the mat, not in a backroom deal.`,
+        challenge: [`${pick} won when it counted. ${_jrFp.Sub} earned ${_jrFp.posAdj} spot on the mat, not in a backroom deal.`,
           `I respect someone who fights for it. ${pick} never coasted — ${_jrFp.sub} competed.`],
       };
       _jrReason = _jrPick(_valueReasons[_jrLayer.topValue] || [
@@ -5010,9 +5021,11 @@ export function generateFTCData(finalists, juryResult) {
   const _bigMoves = name => gs.playerStates?.[name]?.bigMoves || 0;
   const _betrayalCount = name => (gs.namedAlliances || []).reduce((n, a) => n + (a.betrayals || []).filter(b => b.player === name).length, 0);
   // Find the finalist's closest ally (for specific references)
-  const _closestAlly = name => {
+  // ...never the juror asking: an answer about them, to their face, in the third person (read: Cody asks Rock
+  // whether he kept his word, and Rock says 'I kept my word to Cody')
+  const _closestAlly = (name, asker = null) => {
     const active = [...finalists, ...jury];
-    return active.filter(p => p !== name).sort((a, b) => getBond(name, b) - getBond(name, a))[0] || 'my ally';
+    return active.filter(p => p !== name && p !== asker).sort((a, b) => getBond(name, b) - getBond(name, a))[0] || 'my ally';
   };
   // Find the biggest threat the finalist helped eliminate
   const _biggestKill = name => {
@@ -5025,7 +5038,7 @@ export function generateFTCData(finalists, juryResult) {
   const _qa = (target, fS, wins, juror) => {
     const hi = v => fS[v] >= 7, lo = v => fS[v] <= 4;
     const tPr = pronouns(target);
-    const ally = _closestAlly(target);
+    const ally = _closestAlly(target, juror);
     const kill = _biggestKill(target);
     const bCount = _betrayalCount(target);
     const bigM = _bigMoves(target);
@@ -5044,7 +5057,7 @@ export function generateFTCData(finalists, juryResult) {
     betrayalNeutral: [
       { q:`You had a hand in getting me eliminated, ${target}. Was it personal, or purely the game?`,
         r: hi('strategic') ? `"Purely game, ${juror}. You were too dangerous to keep around — everyone knew it. The decision wasn't easy but it was right."` : `"It wasn't personal, ${juror}. The alliance needed a name and yours came up. I followed the numbers."` },
-      { q:`My torch got snuffed and you were part of it, ${target}. Tell me why.`,
+      { q:`You were part of sending me home, ${target}. Tell me why.`,
         r: hi('social') ? `"${ally} and I made that call together. I could've fought it, but breaking ranks would've ended my game."` : `"I went along with the group. I'm not going to pretend I drove that vote, ${juror}."` },
       { q:`I thought we had something out there, ${target}. Then you voted me out. What happened?`,
         r: hi('loyalty') ? `"We did, ${juror}. And losing that was one of the worst parts of this game. But the numbers left me no choice."` : `"The game moved faster than our relationship could keep up. I made a call — and I'm sorry."` },
@@ -5063,20 +5076,20 @@ export function generateFTCData(finalists, juryResult) {
       { q:`What was your single biggest move, ${target} — and how do you know it was yours?`,
         r: hi('strategic') ? `"${kill ? `Getting ${kill} out. That was my idea — I pulled the votes together and made it happen.` : `The merge vote. I set the direction and everyone followed.`} Ask anyone on this jury."` : wins >= 2 ? `"Winning immunity when I absolutely had to. ${wins} times I saved myself — including the one that got me this seat."` : `"Staying alive when everyone counted me out. That's not one move — that's a whole game."` },
       { q:`Name one player you outplayed, ${target}. Tell me exactly how.`,
-        r: hi('strategic') ? `"${kill || jury[0]}. I saw ${pronouns(kill || jury[0]).pos} game before ${pronouns(kill || jury[0]).sub} did. I let ${pronouns(kill || jury[0]).obj} feel safe, then moved when ${pronouns(kill || jury[0]).sub} ${pronouns(kill || jury[0]).sub==='they'?'weren\'t':'wasn\'t'} looking."` : hi('social') ? `"${kill || jury[0]}. I built a relationship ${pronouns(kill || jury[0]).sub} trusted completely. When the vote came, ${pronouns(kill || jury[0]).sub} never saw it coming from me."` : `"${kill || jury[0]}. ${pronouns(kill || jury[0]).Sub} made a mistake at the wrong time and I was positioned to capitalize. That's how you win this game."` },
+        r: hi('strategic') ? `"${kill || jury[0]}. I saw ${pronouns(kill || jury[0]).posAdj} game before ${pronouns(kill || jury[0]).sub} did. I let ${pronouns(kill || jury[0]).obj} feel safe, then moved when ${pronouns(kill || jury[0]).sub} ${pronouns(kill || jury[0]).sub==='they'?'weren\'t':'wasn\'t'} looking."` : hi('social') ? `"${kill || jury[0]}. I built a relationship ${pronouns(kill || jury[0]).sub} trusted completely. When the vote came, ${pronouns(kill || jury[0]).sub} never saw it coming from me."` : `"${kill || jury[0]}. ${pronouns(kill || jury[0]).Sub} made a mistake at the wrong time and I was positioned to capitalize. That's how you win this game."` },
       { q:`When did you realize you could actually win this game, ${target}?`,
         r: hi('strategic') ? `"At the merge. I looked around and knew I could outmaneuver everyone left."` : wins >= 2 ? `"After my second immunity win. I realized nobody could stop me if I kept competing."` : `"Honestly? Not until I was sitting in this chair. I just kept surviving."` },
       { q:`Walk me through your endgame, ${target}. When did you start building it?`,
         r: hi('strategic') ? `"I started building it at the merge. ${ally} was my endgame partner — every vote after that was a step toward tonight."` : hi('social') ? `"I kept ${ally} close. My endgame was my relationships — they carried me here."` : `"I didn't have a master plan. I had a next-day plan, every day. And here I am."` },
       { q:`Who was your most dangerous opponent, ${target}, and how did you handle ${jPr.obj}?`,
-        r: hi('strategic') ? `"${kill || jury[jury.length-1]}. I identified ${pronouns(kill || jury[jury.length-1]).obj} as the biggest threat and made sure the votes went that way."` : hi('social') ? `"${kill || jury[jury.length-1]}. I kept ${pronouns(kill || jury[jury.length-1]).obj} close enough that ${pronouns(kill || jury[jury.length-1]).sub} never saw me as a threat. Until it was too late."` : `"${kill || jury[jury.length-1]}. I stayed out of ${pronouns(kill || jury[jury.length-1]).pos} crosshairs and let other people take the shot."` },
+        r: hi('strategic') ? `"${kill || jury[jury.length-1]}. I identified ${pronouns(kill || jury[jury.length-1]).obj} as the biggest threat and made sure the votes went that way."` : hi('social') ? `"${kill || jury[jury.length-1]}. I kept ${pronouns(kill || jury[jury.length-1]).obj} close enough that ${pronouns(kill || jury[jury.length-1]).sub} never saw me as a threat. Until it was too late."` : `"${kill || jury[jury.length-1]}. I stayed out of ${pronouns(kill || jury[jury.length-1]).posAdj} crosshairs and let other people take the shot."` },
     ],
     // ── Social ──
     social: [
       { q:`I never felt like you were being straight with me, ${target}. Convince me I was wrong.`,
         r: hi('social') ? `"${juror}, I was as real with you as this game allowed. I never lied to your face. I can look you in the eye on that."` : `"I played a game, ${juror}. Not everything I did was pretty. But I was never fake with you — I just couldn't show all my cards."` },
       { q:`Who out here actually trusted you, ${target} — and did you deserve it?`,
-        r: hi('loyalty') ? `"${ally} trusted me completely, and I never broke that. ${pronouns(ally).Sub} deserved someone who had ${pronouns(ally).pos} back and I was that person."` : `"${ally} trusted me. Did I deserve it? ${bCount === 0 ? 'Yes — I never betrayed anyone.' : `Mostly. But I broke ${bCount} promise${bCount !== 1 ? 's' : ''} to get here.`}"` },
+        r: hi('loyalty') ? `"${ally} trusted me completely, and I never broke that. ${pronouns(ally).Sub} deserved someone who had ${pronouns(ally).posAdj} back and I was that person."` : `"${ally} trusted me. Did I deserve it? ${bCount === 0 ? 'Yes — I never betrayed anyone.' : `Mostly. But I broke ${bCount} promise${bCount !== 1 ? 's' : ''} to get here.`}"` },
       { q:`What relationship in this game are you most proud of, ${target}?`,
         r: hi('social') ? `"My relationship with ${ally}. It didn't always help my game, but it was the most real thing out here."` : `"${ally}. ${pronouns(ally).Sub} had no reason to trust me early on and ended up in my corner. That wasn't strategy — that was earned."` },
       { q:`Did anyone here see the real you, ${target}, or were you performing the whole time?`,
@@ -5087,11 +5100,11 @@ export function generateFTCData(finalists, juryResult) {
       { q:`Did you keep your word out there, ${target}? If you broke it — when, and why?`,
         r: hi('loyalty') ? `"I kept my word to ${ally}. When the game forced hard calls, I owned them instead of hiding."` : `"I broke ${bCount > 0 ? bCount + ' promise' + (bCount !== 1 ? 's' : '') : 'promises'}. I won't pretend otherwise. Every time I did, standing still meant going home."` },
       { q:`Name one promise you made and kept, ${target} — even when it cost you.`,
-        r: hi('loyalty') ? `"I promised ${ally} I'd never write ${pronouns(ally).pos} name down. I didn't. Even when it would've been the easier play."` : `"I promised myself I'd play my own game. That cost me allies, but I'm sitting here."` },
+        r: hi('loyalty') ? `"I promised ${ally} I'd never write ${pronouns(ally).posAdj} name down. I didn't. Even when it would've been the easier play."` : `"I promised myself I'd play my own game. That cost me allies, but I'm sitting here."` },
       { q:`Who did you betray, ${target}, and would you do it again?`,
         r: hi('loyalty') ? `"${bCount === 0 ? 'Nobody. I played clean and I\'m proud of that.' : 'I only moved against people who were already coming for me. And yes, I would.'}"` : lo('loyalty') ? `"${bCount} alliance${bCount !== 1 ? 's' : ''}. And yeah — I would. This game doesn't reward loyalty. It rewards results."` : `"${kill ? kill + '. ' + pronouns(kill).Sub + ' ' + (pronouns(kill).sub==='they'?'know':'knows') + ' why.' : 'One person. They know who they are.'} I'd do it differently if I could. But I'd still be here."` },
       { q:`Was there anyone you refused to write down, ${target}, no matter what?`,
-        r: hi('loyalty') ? `"${ally}. I never wrote ${pronouns(ally).pos} name and I never would have. That was a line I drew on day one."` : `"No. Everyone was on the table. That's not cold — that's honest."` },
+        r: hi('loyalty') ? `"${ally}. I never wrote ${pronouns(ally).posAdj} name and I never would have. That was a line I drew on day one."` : `"No. Everyone was on the table. That's not cold — that's honest."` },
     ],
     // ── General ──
     general: [
@@ -5120,11 +5133,11 @@ export function generateFTCData(finalists, juryResult) {
     // ── Respect / Acknowledgment ──
     respect: [
       { q:`Who sitting next to you deserves to be here, ${target}? And who doesn't?`,
-        r: hi('strategic') ? `"Everyone here earned their spot. But only one of us controlled how we got here. I'll let you figure out who."` : hi('social') ? `"I respect everyone sitting next to me. We all survived the same game. But our games were very different."` : `"We're all here. That means something. But my path was harder than ${finalists.find(x => x !== target) || 'theirs'}. And I think the jury knows it."` },
+        r: hi('strategic') ? `"Everyone here earned their spot. But only one of us controlled how we got here. I'll let you figure out who."` : hi('social') ? `"I respect everyone sitting next to me. We all survived the same game. But our games were very different."` : `"We're all here. That means something. But my path was harder than ${finalists.find(x => x !== target) ? finalists.find(x => x !== target) + "'s" : 'theirs'}. And I think the jury knows it."` },
       { q:`${target}, is there anyone on this jury you owe an apology to?`,
         r: bCount >= 2 ? `"${kill || jury[0]}. I owe ${pronouns(kill || jury[0]).obj} that. What I did was game, but it was also personal, and I should have handled it better."` : bCount === 1 ? `"One person. ${pronouns(kill || jury[0]).Sub} ${pronouns(kill || jury[0]).sub==='they'?'know':'knows'} who ${pronouns(kill || jury[0]).sub} ${pronouns(kill || jury[0]).sub==='they'?'are':'is'}. I'm sorry for how it went down — not for the move, but for the way I did it."` : `"No. I played with integrity. I didn't always succeed, but I never did anything I need to apologize for."` },
       { q:`What would you say to the person you hurt most in this game, ${target}?`,
-        r: hi('social') ? `"I'd say I'm sorry it happened in this context. Outside the game, it wouldn't have gone that way. But in here, I had to make choices I'm not proud of."` : `"I'd tell ${pronouns(kill || jury[0]).obj} I respected ${pronouns(kill || jury[0]).pos} game. The move wasn't about disrespect — it was about winning."` },
+        r: hi('social') ? `"I'd say I'm sorry it happened in this context. Outside the game, it wouldn't have gone that way. But in here, I had to make choices I'm not proud of."` : `"I'd tell ${pronouns(kill || jury[0]).obj} I respected ${pronouns(kill || jury[0]).posAdj} game. The move wasn't about disrespect — it was about winning."` },
     ],
     // ── Fire / Aggressive ──
     fire: [
@@ -5229,7 +5242,7 @@ export function generateFanCampaign(finalists) {
       speech = _pick([
         `"I know people think this game is about strategy. And it is. But it's also about people. ${showmance ? `${showmance.players.find(p => p !== name)} — you know what we had was real. That's not a weakness.` : `Every relationship I built out there was genuine.`} I listened. I cared. And I made it to the end because people trusted me — not because I tricked them. ${wins > 0 ? `I won challenges too — ${wins} of them.` : ''} I played a full game. A human game. I hope that's enough."`,
         `"Thirty-something days out here. I've laughed, I've cried, I've been scared, I've been angry. ${_betrayalCount === 0 ? `And through all of it, I never wrote down someone I promised I wouldn't.` : `I made mistakes — I know that. But I owned them.`} I built real connections with real people. That's not weakness. That's the hardest thing to do in this game. If the fans saw that — if they felt what I felt — then I think they'll know who to vote for."`,
-        `"I want to tell you who I am. Not what I did in the game — who I AM. I'm someone who ${s.loyalty >= 7 ? `keeps ${pr.pos} word even when it costs ${pr.obj}` : `fights for the people ${pr.sub} ${pr.sub==='they'?'care':'cares'} about`}. That's what I brought to this island. ${_bigMoves > 0 ? `I made moves too — don't think I didn't. But the moves meant something because the relationships meant something.` : `I survived by being someone people wanted around.`} I hope the fans saw that."`,
+        `"I want to tell you who I am. Not what I did in the game — who I AM. I'm someone who ${s.loyalty >= 7 ? `keeps ${pr.posAdj} word even when it costs ${pr.obj}` : `fights for the people ${pr.sub} ${pr.sub==='they'?'care':'cares'} about`}. That's what I brought to this island. ${_bigMoves > 0 ? `I made moves too — don't think I didn't. But the moves meant something because the relationships meant something.` : `I survived by being someone people wanted around.`} I hope the fans saw that."`,
       ], name + 'social');
     } else {
       speech = _pick([

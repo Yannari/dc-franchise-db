@@ -35,10 +35,10 @@ export default {
     { id: 'nv4.p3', when: { voice: ['warm', 'earnest', 'anxious', 'emotional'] }, turns: [
       { by: 'b', say: "You've been quiet all afternoon. What's going on?" },
       { by: 'a', say: "I've been thinking about {target} and {partner}." },
-      { by: 'b', say: "They're sweet together." },
+      { by: 'b', say: "They're really close." },
       { by: 'a', say: "They are, and that's what makes this awful, because I think one of them has to go tonight." },
       { by: 'b', say: "Why?" },
-      { by: 'a', say: "Because if they both make it to the merge, they're two votes nobody can ever split, and one of us goes home every time they agree." },
+      { by: 'a', say: "Because if they both make it to the end, they're two votes nobody can ever split, and one of us goes home every time they agree." },
       { by: 'b', say: "And it has to be {target}?" },
       { by: 'a', say: "{target} is the one I'd lose to. I hate saying it out loud." },
       { by: 'b', say: "Then don't say it out loud again. Just write it." },
@@ -113,7 +113,7 @@ export default {
       { by: 'a', say: "Not if we stop talking about it and go eat.", when: { shaky: false } },
       { by: 'c', conf: "Three of us, one name, zero arguments. That never happens out here. Which honestly makes me a little nervous." },
     ] },
-    { id: 'nv4.n5', when: { other: true }, turns: [
+    { id: 'nv4.n5', when: { other: true, otherMe: false }, turns: [
       { by: 'a', say: "There are two names going round camp tonight. {target} and {other}." },
       { by: 'b', say: "Which one's got more?" },
       { by: 'a', say: "{target}, by a little. That's why I'm putting everything on {target}." },
@@ -122,6 +122,17 @@ export default {
       { by: 'b', say: "Pretty much everybody on the far end of the beach." },
       { by: 'a', say: "Then go talk to them. Nice and casual. Just make sure they've heard {target} before they've heard {other}." },
       { by: 'b', conf: "I don't even care who deserves it anymore. I just need to make sure my name isn't the one people hear first." },
+    ] },
+    // the other name going round is a's own (read: "Two names are going round camp tonight. Cody and Duncan", said by Duncan)
+    { id: 'nv4.n6', when: { other: true, otherMe: true }, turns: [
+      { by: 'a', say: "There are two names going round camp tonight, and one of them is mine." },
+      { by: 'b', say: "Yours? Who's saying yours?" },
+      { by: 'a', say: "Enough people that I'm not sleeping until it's {target} instead." },
+      { by: 'b', say: "Okay. Then what do you need from me?" },
+      { by: 'a', say: "Talk to whoever you can. Nice and casual. By the time they sit down, I want {target} to be the only name they've heard." },
+      { by: 'b', say: "And if they've already made up their minds?" },
+      { by: 'a', say: "Then change them back. You're good at that, I've watched you." },
+      { by: 'a', conf: "My name is out there. I can either sit and wait for it, or I can make sure there's a bigger name in the room, and I'm not the sitting type." },
     ] },
   ],
   'vp2.grudge': [

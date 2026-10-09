@@ -65,7 +65,7 @@ export function simulatePhobiaFactor(ep) {
       confText = _rp([
         `${player} stares into the fire. "${f.title}." The tribe goes quiet.`,
         `"You want to know my fear? ${f.title}." ${player} looks away. The vulnerability is real.`,
-        `${player} admits ${pr.pos} fear quietly: ${f.title}. ${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} want to talk about it.`,
+        `${player} admits ${pr.posAdj} fear quietly: ${f.title}. ${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} want to talk about it.`,
       ]);
     }
     confessions.push({ player, fear: f.title, category: f.category, reaction: confText });
@@ -81,9 +81,9 @@ export function simulatePhobiaFactor(ep) {
       `${player} stares at what's in front of ${pr.obj}. ${desc} ${pr.Sub} ${pr.sub === 'they' ? 'do' : 'does'} it. Hands shaking. Eyes wet. But ${pr.sub} ${pr.sub === 'they' ? 'do' : 'does'} it.`,
       `"${fear}." ${player} says it out loud. Then ${pr.sub} ${pr.sub === 'they' ? 'walk' : 'walks'} toward it. The tribe holds its breath. ${pr.Sub} ${pr.sub === 'they' ? 'come' : 'comes'} out the other side.`,
       `${player} almost quits. You can see it \u2014 the moment where ${pr.sub} nearly ${pr.sub === 'they' ? 'turn' : 'turns'} around. But ${pr.sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'}. ${pr.Sub} ${pr.sub === 'they' ? 'push' : 'pushes'} through. The tribe erupts.`,
-      `${player} takes the longest 10 seconds of ${pr.pos} life. ${desc} When the timer hits zero, ${pr.sub} ${pr.sub === 'they' ? 'collapse' : 'collapses'} into a heap. But ${pr.sub} did it.`,
+      `${player} takes the longest 10 seconds of ${pr.posAdj} life. ${desc} When the timer hits zero, ${pr.sub} ${pr.sub === 'they' ? 'collapse' : 'collapses'} into a heap. But ${pr.sub} did it.`,
     ];
-    if (arch === 'hero') r.push(`${player} locks ${pr.pos} jaw and walks straight into ${fear}. Not a word. Not a flinch. The tribe watches in silence.`);
+    if (arch === 'hero') r.push(`${player} locks ${pr.posAdj} jaw and walks straight into ${fear}. Not a word. Not a flinch. The tribe watches in silence.`);
     if (arch === 'villain' || arch === 'mastermind') r.push(`${player} smirks through ${fear}. Whether ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} actually scared or just performing, nobody can tell.`);
     if (arch === 'chaos-agent') r.push(`${player} laughs through ${fear}. Actually laughs. "${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} know why everyone's so worried."`);
     if (arch === 'floater') r.push(`${player} does it so quietly nobody even realizes it's done. No drama. No spectacle. Just conquered.`);
@@ -92,8 +92,8 @@ export function simulatePhobiaFactor(ep) {
   const _failReaction = (player, fear, desc) => {
     const pr = pronouns(player);
     return _rp([
-      `${player} takes one look at ${fear} and the color drains from ${pr.pos} face. ${pr.Sub} ${pr.sub === 'they' ? 'back' : 'backs'} away. "I can't. I physically cannot do this."`,
-      `${player} gets within arm's reach of ${fear}. Then ${pr.pos} whole body locks up. ${pr.Sub} can't move forward. The tribe watches ${pr.obj} give up.`,
+      `${player} takes one look at ${fear} and the color drains from ${pr.posAdj} face. ${pr.Sub} ${pr.sub === 'they' ? 'back' : 'backs'} away. "I can't. I physically cannot do this."`,
+      `${player} gets within arm's reach of ${fear}. Then ${pr.posAdj} whole body locks up. ${pr.Sub} can't move forward. The tribe watches ${pr.obj} give up.`,
       `"No. No no no." ${player} is already shaking before it starts. ${desc} ${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} even attempt it. The phobia wins.`,
       `${player} tries. You can see ${pr.obj} trying. ${pr.Sub} ${pr.sub === 'they' ? 'get' : 'gets'} halfway through and panics. "${fear} is just \u2014 it's too much." The tribe is sympathetic. The scoreboard doesn't care.`,
       `${player} stands there for a long time. Nobody rushes ${pr.obj}. But eventually ${pr.sub} ${pr.sub === 'they' ? 'sit' : 'sits'} down. "${fear}" is all ${pr.sub} ${pr.sub === 'they' ? 'say' : 'says'}.`,

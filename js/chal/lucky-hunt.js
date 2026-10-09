@@ -80,7 +80,7 @@ const LUCKY_HUNT_LOCATIONS = {
       ],
       fail: [
         (n,pr) => `${n} gets eight feet up and slides back. Tries again. Slides again. The pole wins this round.`,
-        (n,pr) => `${n} makes it halfway before ${pr.pos} hands give out. ${pr.Sub} land${pr.sub==='they'?'':'s'} in a heap and glares at the flagpole.`,
+        (n,pr) => `${n} makes it halfway before ${pr.posAdj} hands give out. ${pr.Sub} land${pr.sub==='they'?'':'s'} in a heap and glares at the flagpole.`,
       ],
     },
     {
@@ -210,7 +210,7 @@ const LUCKY_HUNT_LOCATIONS = {
       desc: 'The key is floating on a buoy in the middle of the lake. There are sharks.',
       statWeights: { boldness: 0.06, physical: 0.05, endurance: 0.03 },
       draw: [
-        (n,pr,h) => `"Shark Lake buoy." ${n} stares at the clue for a moment. Then: "Are these actual sharks?" ${h} reads something on ${pr.pos} clipboard. "Moving on."`,
+        (n,pr,h) => `"Shark Lake buoy." ${n} stares at the clue for a moment. Then: "Are these actual sharks?" ${h} reads something on ${pr.posAdj} clipboard. "Moving on."`,
         (n,pr,h) => `${n} reads "sharks" and takes one long breath. Then starts walking to the water like someone who's already decided.`,
         (n,pr,h) => `"I am not doing this," ${n} says, immediately. Then ${pr.sub} look${pr.sub==='they'?'':'s'} at the clue again and goes anyway.`,
       ],

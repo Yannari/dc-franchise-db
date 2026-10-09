@@ -1923,7 +1923,7 @@ export function simulateEmissaryVote(ep) {
     const pitcher = (ep.emissaryScoutEvents || []).find(e => e.type === 'emissaryPitch' && e.pitchTarget === pick.name)?.pitcher;
     reason = pitcher
       ? `${emissary} was swayed by ${pitcher}'s pitch against ${pick.name}.`
-      : `${emissary} heard enough to make ${emPr.pos} mind up about ${pick.name}.`;
+      : `${emissary} heard enough to make ${emPr.posAdj} mind up about ${pick.name}.`;
   } else if (pick.bond <= -1) {
     reason = `${emissary} and ${pick.name} have history. This is personal.`;
   } else if (pick.threat > 6) {
@@ -1931,7 +1931,7 @@ export function simulateEmissaryVote(ep) {
   } else if (pick.heat > 3) {
     reason = `${emissary} reads the room. "${pick.name}. Your own tribe wanted you gone."`;
   } else {
-    reason = `${emissary} makes ${emPr.pos} choice. "${pick.name}."`;
+    reason = `${emissary} makes ${emPr.posAdj} choice. "${pick.name}."`;
   }
 
   ep.emissaryPick = { name: pick.name, reason, scores: scores.slice(0, 5) };

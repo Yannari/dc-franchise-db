@@ -3859,7 +3859,7 @@ export function checkStolenCredit(ep) {
           calloutText = _pick([
             `${architect} pulls ${stealer} aside after the challenge. "We both know what happened at that tribal. You didn't orchestrate anything. I did. And if you keep telling people otherwise, I'll make sure the jury knows exactly who did what." It's not a threat. It's a promise.`,
             `${architect} waits until the right moment — when enough people are listening. "Hey ${stealer}, tell them again about how you planned the blindside. I love that story. Especially the part where I came to YOU with the plan." ${stealer}'s smile freezes.`,
-            `${architect} corners ${stealer} at the water well. ${aPr.Sub} ${aPr.sub==='they'?'keep':'keeps'} ${aPr.pos} voice low but every word lands: "I know what you're doing. Taking credit for my game. It ends now — or I tell everyone exactly how that vote really went down."`,
+            `${architect} corners ${stealer} at the water well. ${aPr.Sub} ${aPr.sub==='they'?'keep':'keeps'} ${aPr.posAdj} voice low but every word lands: "I know what you're doing. Taking credit for my game. It ends now — or I tell everyone exactly how that vote really went down."`,
           ], architect + stealer + 'bold');
         } else {
           // Emotional crack — wasn't planning to confront
@@ -3878,7 +3878,7 @@ export function checkStolenCredit(ep) {
         let responseText;
         if (architectWins) {
           responseText = _pick([
-            `${stealer} tries to laugh it off, but ${architect} has receipts. ${aPr.Sub} ${aPr.sub==='they'?'name':'names'} the conversation, the timing, the exact words. ${stealer} has nothing. The tribe watches ${stealer} shrink. Nobody believes ${sPr.pos} version anymore.`,
+            `${stealer} tries to laugh it off, but ${architect} has receipts. ${aPr.Sub} ${aPr.sub==='they'?'name':'names'} the conversation, the timing, the exact words. ${stealer} has nothing. The tribe watches ${stealer} shrink. Nobody believes ${sPr.posAdj} version anymore.`,
             `${stealer} starts to respond — and stops. There's nothing to say. ${architect} laid it out too clearly. The tribe exchanges looks. ${stealer}'s credibility just evaporated.`,
             `"That's not how it happened—" ${stealer} starts. ${architect} cuts ${sPr.obj} off with specifics: who said what, when, where. ${stealer} goes quiet. The silence is the verdict.`,
           ], architect + stealer + 'awin');
@@ -3898,7 +3898,7 @@ export function checkStolenCredit(ep) {
           responseText = _pick([
             `${stealer} doesn't flinch. "${sPr.Sub} ${sPr.sub==='they'?'don\'t':'doesn\'t'} know what ${architect} is talking about. We all saw what happened. I'm sorry ${aPr.sub} ${aPr.sub==='they'?'feel':'feels'} that way." It's so smooth it almost sounds sincere. The tribe nods along. ${architect} looks like the petty one.`,
             `${stealer} turns it around: "If ${architect} really made that move, why didn't ${aPr.sub} say something at the time? Why now?" The tribe looks at ${architect}. ${aPr.Sub} ${aPr.sub==='they'?'have':'has'} no answer. ${stealer} walks away looking vindicated.`,
-            `${stealer} sighs, shakes ${sPr.pos} head. "I'm not going to argue about who did what. The game speaks for itself." It's dismissive. It's condescending. And it works. ${architect} looks desperate.`,
+            `${stealer} sighs, shakes ${sPr.posAdj} head. "I'm not going to argue about who did what. The game speaks for itself." It's dismissive. It's condescending. And it works. ${architect} looks desperate.`,
           ], architect + stealer + 'swin');
           // Architect looks petty — loses MORE standing
           const aState = gs.playerStates[architect] || {};
@@ -4017,8 +4017,8 @@ export function checkStolenCredit(ep) {
     } else {
       theftText = _pick([
         `${stealer} keeps saying "we" but meaning "I." Every time someone brings up last tribal, ${sPr.sub} ${sPr.sub==='they'?'steer':'steers'} the story. ${architect} notices. Everyone else doesn't.`,
-        `It's subtle. ${stealer} doesn't outright claim the move — ${sPr.sub} just... positions ${sPr.ref} at the center of every retelling. "Yeah, I talked to them first, and then the rest of us got on board." ${architect} bites ${aPr.pos} tongue.`,
-        `${stealer} drops it casually at dinner: "I've been thinking about this game strategically, and I think last tribal was my best move." ${architect} almost chokes on ${aPr.pos} rice. That was NOT ${stealer}'s move.`,
+        `It's subtle. ${stealer} doesn't outright claim the move — ${sPr.sub} just... positions ${sPr.ref} at the center of every retelling. "Yeah, I talked to them first, and then the rest of us got on board." ${architect} bites ${aPr.posAdj} tongue.`,
+        `${stealer} drops it casually at dinner: "I've been thinking about this game strategically, and I think last tribal was my best move." ${architect} almost chokes on ${aPr.posAdj} rice. That was NOT ${stealer}'s move.`,
       ], stealer + architect + 'subtle');
     }
 
@@ -4027,7 +4027,7 @@ export function checkStolenCredit(ep) {
     if (aS.temperament >= 7) {
       reactionText = _pick([
         `${architect} says nothing. But in confessional: "I'm watching someone take credit for MY move and I can't even—" ${aPr.Sub} stops. Breathes. "This isn't over."`,
-        `${architect} keeps ${aPr.pos} face neutral. Inside, something is boiling. ${aPr.Sub} ${aPr.sub==='they'?'know':'knows'} the truth. The question is whether anyone else does.`,
+        `${architect} keeps ${aPr.posAdj} face neutral. Inside, something is boiling. ${aPr.Sub} ${aPr.sub==='they'?'know':'knows'} the truth. The question is whether anyone else does.`,
       ], architect + 'composed');
     } else if (aS.temperament <= 4) {
       reactionText = _pick([
@@ -4037,7 +4037,7 @@ export function checkStolenCredit(ep) {
     } else {
       reactionText = _pick([
         `${architect} forces a smile when ${stealer} retells the story. In confessional: "If ${stealer} wants to tell people ${sPr.sub} did that, fine. The jury will know the truth. I hope."`,
-        `${architect} rolls ${aPr.pos} eyes and looks away. ${aPr.Sub} ${aPr.sub==='they'?'don\'t':'doesn\'t'} trust ${aPr.ref} to respond without losing it. Not yet. But soon.`,
+        `${architect} rolls ${aPr.posAdj} eyes and looks away. ${aPr.Sub} ${aPr.sub==='they'?'don\'t':'doesn\'t'} trust ${aPr.ref} to respond without losing it. Not yet. But soon.`,
       ], architect + 'mid');
     }
 
@@ -4398,7 +4398,7 @@ export function checkFakeIdolPlant(ep) {
     const _findText = _pick([
       `${victim} finds something buried near the tree mail. ${vPr.Sub} ${vPr.sub==='they'?'unwrap':'unwraps'} it with shaking hands — it looks like a Hidden Immunity Idol. ${vPr.Sub} ${vPr.sub==='they'?'can\'t':'can\'t'} believe it. "${vPr.Sub === 'They' ? 'We found' : 'I found'} an idol." ${planter} watches from across camp. ${pPr.Sub} ${pPr.sub==='they'?'say':'says'} nothing.`,
       `${victim} stumbles onto something half-buried near the water well. It's wrapped in a leaf with a note: "This is a Hidden Immunity Idol." ${vPr.Sub} ${vPr.sub==='they'?'tuck':'tucks'} it away before anyone sees. But ${planter} already knows — because ${pPr.sub} put it there.`,
-      `${victim} has been searching for days. Today, ${vPr.sub} finally ${vPr.sub==='they'?'find':'finds'} it — or what ${vPr.sub} ${vPr.sub==='they'?'think':'thinks'} is it. An idol. The relief on ${vPr.pos} face is real. The idol is not.`,
+      `${victim} has been searching for days. Today, ${vPr.sub} finally ${vPr.sub==='they'?'find':'finds'} it — or what ${vPr.sub} ${vPr.sub==='they'?'think':'thinks'} is it. An idol. The relief on ${vPr.posAdj} face is real. The idol is not.`,
     ], victim + planter + 'find');
 
     if (ep.campEvents?.[campKey]) {
@@ -4409,7 +4409,7 @@ export function checkFakeIdolPlant(ep) {
       // Also show the planter's satisfaction (viewer knows it's fake)
       (ep.campEvents[campKey].pre || ep.campEvents[campKey].post || []).push({
         type: 'fakeIdolPlanted', players: [planter], text: _pick([
-          `${planter} to confessional: "That idol ${victim} just found? I made it. Last night. Coconut shell, string, and a prayer. If ${vPr.sub} ${vPr.sub==='they'?'play':'plays'} it at tribal — and ${vPr.sub} will — the look on ${vPr.pos} face will be worth more than any real idol."`,
+          `${planter} to confessional: "That idol ${victim} just found? I made it. Last night. Coconut shell, string, and a prayer. If ${vPr.sub} ${vPr.sub==='they'?'play':'plays'} it at tribal — and ${vPr.sub} will — the look on ${vPr.posAdj} face will be worth more than any real idol."`,
           `${planter} watches ${victim} celebrate the find from across camp. ${pPr.Sub} almost ${pPr.sub==='they'?'feel':'feels'} bad. Almost. "That's not an idol. That's a death sentence wrapped in a leaf."`,
         ], planter + 'satisfaction'),
         badgeText: 'FAKE IDOL PLANTED', badgeClass: 'red',
@@ -4473,7 +4473,7 @@ export function generateFakeIdolTipOffEvents(ep) {
     ], victim + planter + 'confrontStrat');
   } else {
     confrontText = _pick([
-      `${victim} sits by the fire holding the fake idol. ${vPr.Sub} ${vPr.sub==='they'?'know':'knows'} now. ${tipOffer} told ${vPr.obj} everything. The hurt on ${vPr.pos} face isn't anger — it's disbelief. "I actually believed it was real. I was so happy." ${vPr.Sub} ${vPr.sub==='they'?'drop':'drops'} it in the dirt.`,
+      `${victim} sits by the fire holding the fake idol. ${vPr.Sub} ${vPr.sub==='they'?'know':'knows'} now. ${tipOffer} told ${vPr.obj} everything. The hurt on ${vPr.posAdj} face isn't anger — it's disbelief. "I actually believed it was real. I was so happy." ${vPr.Sub} ${vPr.sub==='they'?'drop':'drops'} it in the dirt.`,
       `${victim} doesn't say anything to ${planter}. But ${vPr.sub} ${vPr.sub==='they'?'stop':'stops'} talking to ${pPr.obj}. ${vPr.Sub} ${vPr.sub==='they'?'stop':'stops'} making eye contact. The silence is the punishment. Everyone notices. Nobody asks why.`,
     ], victim + planter + 'confrontEmotional');
   }
@@ -4536,7 +4536,7 @@ export function generateBlackVoteGuessEvents(ep) {
     const _guessText = _pick([
       `${guesser} pulls someone aside. "I've been thinking about ${_from}'s Black Vote. I think ${gPr.sub} ${gPr.sub==='they'?'sent':'sent'} it to ${_guessedTarget}." ${_guessCorrect ? 'The read is correct — but nobody can confirm it.' : 'The read is wrong. But nobody knows that yet.'}`,
       `${guesser} to confessional: "Who did ${_from} target with the Black Vote? ${gS.intuition >= 7 ? `My gut says ${_guessedTarget}. ${_from} never trusted ${pronouns(_guessedTarget).obj}.` : `I have no idea. But if I had to guess... ${_guessedTarget}. ${_from} would want to hurt ${pronouns(_guessedTarget).obj} one last time.`}"`,
-      `At camp, ${guesser} brings it up: "We need to talk about the Black Vote. ${_from} is gone but ${pronouns(_from).pos} vote isn't. I think it's on ${_guessedTarget}." The tribe considers this. ${_guessCorrect ? 'They should — because it\'s right.' : 'They shouldn\'t — because it\'s wrong.'}`,
+      `At camp, ${guesser} brings it up: "We need to talk about the Black Vote. ${_from} is gone but ${pronouns(_from).posAdj} vote isn't. I think it's on ${_guessedTarget}." The tribe considers this. ${_guessCorrect ? 'They should — because it\'s right.' : 'They shouldn\'t — because it\'s wrong.'}`,
     ], guesser + _guessedTarget + 'bvguess');
 
     (ep.campEvents[campKey].pre || []).push({
@@ -6174,7 +6174,7 @@ export function checkFalseInfoBlowup(ep) {
         type: 'falseInfoBlowup', players: [plant.victim, plant.liar],
         text: _pick([
           `${plant.victim} voted ${plant.fakeHolder} to flush an idol that didn't exist. The info came from ${plant.liar}. ${plant.victim} hasn't said a word to ${plant.liar} since.`,
-          `The lie traced back. ${plant.liar} told ${plant.victim} that ${plant.fakeHolder} had an idol. ${plant.fakeHolder} didn't. ${plant.victim} wasted ${vPr.pos} vote. The trust is gone.`,
+          `The lie traced back. ${plant.liar} told ${plant.victim} that ${plant.fakeHolder} had an idol. ${plant.fakeHolder} didn't. ${plant.victim} wasted ${vPr.posAdj} vote. The trust is gone.`,
           `${plant.victim} figured it out. ${plant.liar} planted false information. The idol was never real. The alliance might not be either.`,
         ]),
         badgeText: 'LIE EXPOSED', badgeClass: 'red'
@@ -6575,13 +6575,13 @@ export function generateCampEvents(ep, phase = 'both') {
                   `${newcomer} fits. ${_ncP.Sub} ${_ncP.sub==='they'?'contribute':'contributes'} at camp, ${_ncP.sub} ${_ncP.sub==='they'?'listen':'listens'} at strategy talks. The new tribemates are warming up.`,
                   `${newcomer} brings an energy ${tribe.name} didn't know it needed. By sundown, ${_ncP.sub} ${_ncP.sub==='they'?'feel':'feels'} less like an outsider and more like a missing piece.`,
                 ]) : _ncBondAvg <= -1 ? _rp([
-                  `${newcomer} hasn't found ${_ncP.pos} footing at ${tribe.name}. The conversations are polite but short.`,
+                  `${newcomer} hasn't found ${_ncP.posAdj} footing at ${tribe.name}. The conversations are polite but short.`,
                   `${newcomer} eats alone again. The tribe isn't hostile — just closed. Breaking in is harder than it looks.`,
                   `${newcomer} tries to join a strategy talk. The conversation stops. It starts again when ${_ncP.sub} ${_ncP.sub==='they'?'leave':'leaves'}.`,
                 ]) : _rp([
                   `${newcomer} is still reading the room. Who's in charge, who's on the outs, who can be trusted — all new questions.`,
                   `${newcomer} watches more than ${_ncP.sub} ${_ncP.sub==='they'?'talk':'talks'} today. Every conversation is data.`,
-                  `${newcomer} keeps ${_ncP.pos} head down and does the work. No alliances yet. Just proving ${_ncP.sub} ${_ncP.sub==='they'?'belong':'belongs'} here.`,
+                  `${newcomer} keeps ${_ncP.posAdj} head down and does the work. No alliances yet. Just proving ${_ncP.sub} ${_ncP.sub==='they'?'belong':'belongs'} here.`,
                 ]);
                 pre.push({ type: 'doubt', players: [newcomer], text: _ncText });
               }
@@ -6655,7 +6655,7 @@ export function generateCampEvents(ep, phase = 'both') {
           _pre.push({ type: 'scramble', players: [name, ...bondTargets], text: _rp([
             `${name} pulled three people aside before tribal. By sundown, the conversation had shifted.`,
             `Nobody's sure who changed the plan. ${name} knows.`,
-            `${name} spent the afternoon making rounds. By dinner, ${pr.pos} name wasn't coming up anymore.`,
+            `${name} spent the afternoon making rounds. By dinner, ${pr.posAdj} name wasn't coming up anymore.`,
             `The vote was locked — until ${name} had a conversation with the right person at the right time.`,
             `${name} doesn't panic. ${pr.Sub} work${pr.sub==='they'?'':'s'} the camp like it's a job. Two hours later, the target is someone else.`,
             `There was a plan. Then ${name} talked to everyone individually. Now there's a different plan. Nobody can explain how it happened.`,
@@ -6695,12 +6695,12 @@ export function generateCampEvents(ep, phase = 'both') {
             pre.push(_sceneOf({ type: 'idolBetrayal', players: [snooper, target.holder], text: _rp([
               `${snooper} goes through ${target.holder}'s bag while the tribe is at the water well. ${_spP.Sub} find${_spP.sub==='they'?'':'s'} it — the idol. But ${target.holder} walks back early and catches ${_spP.obj} red-handed. The camp goes silent.`,
               `${snooper} searches ${target.holder}'s belongings and discovers a hidden idol. ${_spP.Sub} barely ${_spP.sub==='they'?'get':'gets'} it back in the bag before someone sees. Someone did see.`,
-              `${target.holder} finds ${snooper} rummaging through ${pronouns(target.holder).pos} things. The excuse is bad. The damage is real. Everyone at camp heard what happened.`,
+              `${target.holder} finds ${snooper} rummaging through ${pronouns(target.holder).posAdj} things. The excuse is bad. The damage is real. Everyone at camp heard what happened.`,
             ]) }, 'idol.snoop', { a: snooper, b: target.holder }, { ending: 'caught' }, ep));
           } else {
             pre.push(_sceneOf({ type: 'eavesdrop', players: [snooper, target.holder], text: _rp([
               `${snooper} searches ${target.holder}'s bag while nobody is looking. ${_spP.Sub} find${_spP.sub==='they'?'':'s'} what ${_spP.sub} ${_spP.sub==='they'?'were':'was'} looking for. Nobody knows. Not yet.`,
-              `${snooper} waits until ${target.holder} is gone and checks ${pronouns(target.holder).pos} things. There it is — the idol. ${snooper} puts everything back exactly as it was. The secret is ${_spP.posAdj} now.`,
+              `${snooper} waits until ${target.holder} is gone and checks ${pronouns(target.holder).posAdj} things. There it is — the idol. ${snooper} puts everything back exactly as it was. The secret is ${_spP.posAdj} now.`,
               `${snooper} discovers ${target.holder}'s idol during a quiet moment at camp. ${_spP.Sub} ${_spP.sub==='they'?'don\'t':'doesn\'t'} take it — ${_spP.sub} just ${_spP.sub==='they'?'need':'needs'} to know it's there. And now ${_spP.sub} ${_spP.sub==='they'?'do':'does'}.`,
             ]) }, 'idol.snoop', { a: snooper }, { ending: 'clean', target: target.holder }, ep));
           }
@@ -6878,9 +6878,9 @@ export function generateCampEvents(ep, phase = 'both') {
           } else {
             // SITD failed but they survived anyway (someone else went home)
             pre.push(_sv(['save.miss', { a: save.player, b: _svClose(save.player) }], { type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
-              `${save.player} rolled the Shot in the Dark last night and it didn't land. ${_p.Sub} survived anyway — but ${_p.sub} wasted ${_p.pos} vote for nothing. The tribe knows ${_p.sub} panicked.`,
+              `${save.player} rolled the Shot in the Dark last night and it didn't land. ${_p.Sub} survived anyway — but ${_p.sub} wasted ${_p.posAdj} vote for nothing. The tribe knows ${_p.sub} panicked.`,
               `The Shot in the Dark failed, but ${save.player} is still here. Someone else went home instead. The desperation move didn't matter — but the tribe saw ${_p.obj} reach for it.`,
-              `${save.player} sacrificed ${_p.pos} vote on a 1-in-6 gamble. It missed. ${_p.Sub} ${_p.sub==='they'?'are':'is'} still in the game, but everyone knows ${_p.sub} felt cornered enough to try.`,
+              `${save.player} sacrificed ${_p.posAdj} vote on a 1-in-6 gamble. It missed. ${_p.Sub} ${_p.sub==='they'?'are':'is'} still in the game, but everyone knows ${_p.sub} felt cornered enough to try.`,
             ]) }));
           }
         }

@@ -75,9 +75,9 @@ export function rpBuildFinaleCampLife(ep) {
     // Relationships line
     let relLine = '';
     if (allianceNames.length >= 2)
-      relLine = `${fp.Sub} built ${fp.pos} game around ${allianceNames.slice(0, 2).join(' and ')}. Some of those bonds survived. Some didn't.`;
+      relLine = `${fp.Sub} built ${fp.posAdj} game around ${allianceNames.slice(0, 2).join(' and ')}. Some of those bonds survived. Some didn't.`;
     else if (allianceNames.length === 1)
-      relLine = `${allianceNames[0]} was ${fp.pos} closest ally out here. Whether that's enough to win \u2014 that's tonight's question.`;
+      relLine = `${allianceNames[0]} was ${fp.posAdj} closest ally out here. Whether that's enough to win \u2014 that's tonight's question.`;
     if ([...rivalNames].length)
       relLine += ` ${[...rivalNames][0]} was the rival ${fp.sub} never shook.`;
 
@@ -340,7 +340,7 @@ export function rpBuildKLCampLife(ep) {
       </div>
     </div>
     <div style="font-size:12px;color:#cdd9e5;line-height:1.6;font-style:italic">${_pick([
-      `${winner} climbs down from the perch and the weight shifts — from ${_pr.pos} legs to ${_pr.pos} mind. Two people are about to make their case. ${_pr.Sub} already ${_pr.sub==='they'?'know':'knows'} what they'll say. The question is whether it changes anything.`,
+      `${winner} climbs down from the perch and the weight shifts — from ${_pr.posAdj} legs to ${_pr.posAdj} mind. Two people are about to make their case. ${_pr.Sub} already ${_pr.sub==='they'?'know':'knows'} what they'll say. The question is whether it changes anything.`,
       `The necklace is around ${_pr.posAdj} neck. ${_pr.Sub} won the Perch. Now comes the harder part: choosing who to bring and who to send home. ${_wS.strategic >= 7 ? `${_pr.Sub}'s already running the numbers.` : `${_pr.Sub}'s thinking about promises made on day one.`}`,
       `${winner} sits alone at camp, legs still trembling from the perch. Two conversations are coming. Two pitches. One choice. ${_pr.Sub} ${_pr.sub==='they'?'stare':'stares'} at the fire and ${_pr.sub==='they'?'wait':'waits'}.`,
     ])}</div>
@@ -364,7 +364,7 @@ export function rpBuildKLCampLife(ep) {
     ]) : _hPick([
       `${player} approaches ${winner} knowing the odds aren't great. "If you send me home, that's your call. But I'll say this — I'd be easier to beat at FTC than ${others.find(o => o !== player) || 'the other one'}." It's the most honest thing ${pPr.sub}'s said all game.`,
       `${player} doesn't have a strong bond with ${winner}. ${pPr.Sub} ${pPr.sub==='they'?'know':'knows'} it. The pitch isn't about loyalty — it's pure game: "Think about the jury votes. Who are they going to respect more — me or ${others.find(o => o !== player) || 'them'}?"`,
-      `${player} barely gets three sentences out before ${pPr.pos} voice cracks. This isn't strategy anymore. It's survival. "I've been out here for ${ep.num > 1 ? (ep.num - 1) * 3 : 1} days. Don't let it end like this."`,
+      `${player} barely gets three sentences out before ${pPr.posAdj} voice cracks. This isn't strategy anymore. It's survival. "I've been out here for ${ep.num > 1 ? (ep.num - 1) * 3 : 1} days. Don't let it end like this."`,
     ]);
 
     html += `<div style="margin-bottom:12px;padding:12px;background:#0d1117;border:1px solid #21262d;border-radius:8px">
@@ -408,7 +408,7 @@ export function rpBuildKLChoice(ep) {
   const _eq = _cePick(_cePool);
   let reasonText;
   if (c.reason === 'strategic' && c.betrayal) {
-    reasonText = `${c.winner} ran the jury math — and the numbers said to cut ${c.eliminated}. ${_pr.Sub} chose ${c.chosen} over ${_pr.pos} own ally. The bond didn't matter. The vote projection did. ${c.eliminated} trusted ${_pr.obj}. That trust just ended ${_ePr.pos} game.`;
+    reasonText = `${c.winner} ran the jury math — and the numbers said to cut ${c.eliminated}. ${_pr.Sub} chose ${c.chosen} over ${_pr.posAdj} own ally. The bond didn't matter. The vote projection did. ${c.eliminated} trusted ${_pr.obj}. That trust just ended ${_ePr.posAdj} game.`;
   } else if (c.reason === 'strategic') {
     reasonText = `${c.winner} ran the jury math. ${_pr.Sub} chose ${c.chosen} — the person ${_pr.sub} ${_pr.sub==='they'?'project':'projects'} ${_pr.sub} can beat. This wasn't about friendship. It was about winning.`;
   } else {
@@ -3190,7 +3190,7 @@ export function rpBuildJuryLife(ep) {
       if (info.wasBlindside)
         pool.push(`${juror} walked into the jury house in shock. "I didn't even know it was me. I voted for someone else. I had no idea." The other jurors have seen it before \u2014 but it never gets easier to watch.`);
       if (info.wasUnanimous)
-        pool.push(`${juror} arrived knowing it was unanimous. Every single person wrote ${jp.pos} name. "Not one person tried to save me. Not one. That tells you everything about where I stood."`);
+        pool.push(`${juror} arrived knowing it was unanimous. Every single person wrote ${jp.posAdj} name. "Not one person tried to save me. Not one. That tells you everything about where I stood."`);
       if (info.wasIdoled)
         pool.push(`${juror} is still processing the idol play. "I wasn't even the target. The idol flipped everything and suddenly I'm here. I did nothing wrong and I'm still out."`);
       if (info.betrayedBy.length)
@@ -3203,7 +3203,7 @@ export function rpBuildJuryLife(ep) {
       const pool = [
         `${juror} hasn't stopped talking about ${info.topVoter} since ${jp.sub} got here. "${info.topVoter} smiled at me while writing my name down. You don't forget that."`,
         `${juror} is still fuming. "I trusted ${info.topVoter}. And ${info.topVoter} looked me dead in the eye and voted me out. If ${info.topVoter} makes the finale, I'm voting for literally anyone else."`,
-        `Every time ${info.topVoter}'s name comes up at dinner, ${juror} puts down ${jp.pos} fork. "Don't. Just don't. I have nothing good to say about ${info.topVoter} and I won't pretend I do."`,
+        `Every time ${info.topVoter}'s name comes up at dinner, ${juror} puts down ${jp.posAdj} fork. "Don't. Just don't. I have nothing good to say about ${info.topVoter} and I won't pretend I do."`,
         `${juror} cornered one of the newer jurors and walked them through exactly how ${info.topVoter} operates. "Let me tell you what ${info.topVoter} did to me. And then you tell me if that person deserves to win."`,
       ];
       if (info.betrayedBy.includes(info.topVoter))
@@ -3217,12 +3217,12 @@ export function rpBuildJuryLife(ep) {
     // P3: ROOTING FOR — strong bond with active player
     if (!picked && friendInGame && friendInGame.bond >= 2) {
       const pool = [
-        `${juror} watches every challenge from the jury bench like ${jp.pos} life depends on it. "I need ${friendInGame.name} to win. That's the only ending to this season that makes sense to me."`,
+        `${juror} watches every challenge from the jury bench like ${jp.posAdj} life depends on it. "I need ${friendInGame.name} to win. That's the only ending to this season that makes sense to me."`,
         `"${friendInGame.name} is my person," ${juror} says. "We played together, we trusted each other, and the fact that ${friendInGame.name} is still in it when I'm not \u2014 that means something."`,
         `${juror} has been coaching ${friendInGame.name} from the jury bench \u2014 eye contact, subtle nods during challenges. The other jurors notice. "I don't care if it's obvious."`,
       ];
       if (friendInGame.bond >= 4)
-        pool.push(`${juror} spends most of ${jp.pos} time at the jury house thinking about ${friendInGame.name}'s game. "If ${friendInGame.name} can just survive this next vote, I think ${friendInGame.name} wins the whole thing. I know it."`);
+        pool.push(`${juror} spends most of ${jp.posAdj} time at the jury house thinking about ${friendInGame.name}'s game. "If ${friendInGame.name} can just survive this next vote, I think ${friendInGame.name} wins the whole thing. I know it."`);
       if (info.allVotersStillIn.length && !info.allVotersStillIn.includes(friendInGame.name))
         pool.push(`${juror} has a clear agenda: "${friendInGame.name} wins, and ${info.allVotersStillIn[0]} goes home. That's my dream finale. One of those people had my back. The other wrote my name down."`);
       addBond(juror, friendInGame.name, 0.5); // rooting strengthens the bond — matters for jury vote
@@ -3309,7 +3309,7 @@ export function rpBuildJuryLife(ep) {
         `While others plot and rant, ${juror} is by the pool. "I said everything I needed to say in the game. Now I just want to watch how it ends."`,
         `${juror} has started a workout routine at the jury house. Up early, running laps, eating clean. "I lost the game but I'm not losing myself. This is my reset."`,
         `${juror} has become the unofficial therapist of the jury house. Every new arrival sits with ${jp.obj} first. "I listen. I don't judge. Everyone processes this differently."`,
-        `${juror} spends most of ${jp.pos} time reading by the pool. Detached, calm, unbothered. The other jurors aren't sure if ${jp.sub} ${jp.sub==='they'?'have':'has'} made peace with it or just shut down.`,
+        `${juror} spends most of ${jp.posAdj} time reading by the pool. Detached, calm, unbothered. The other jurors aren't sure if ${jp.sub} ${jp.sub==='they'?'have':'has'} made peace with it or just shut down.`,
       ];
       picked = { type: 'peace', badge: 'AT PEACE', badgeClass: '', text: _pick(pool, juror + 'peace'), players: [juror] };
     }
@@ -3519,7 +3519,7 @@ export function rpBuildJuryLife(ep) {
         _usedPairs.add(pairKey);
         const pool = [
           `${juror} to the group: "I know where I went wrong. I trusted the wrong person at the wrong time. One conversation. That's all it took."`,
-          `${juror} has been replaying ${jp.pos} game in ${jp.pos} head. "I should've made a move at the final seven. I had the numbers. I was too scared. That's on me."`,
+          `${juror} has been replaying ${jp.posAdj} game in ${jp.posAdj} head. "I should've made a move at the final seven. I had the numbers. I was too scared. That's on me."`,
           `"If I could go back," ${juror} says, "I'd play messier. I played safe and I still went home. At least a big move would've been fun."`,
           `${juror} admits it at the jury house: "My social game was bad. I thought strategy was enough. It's not. You need people to actually like you."`,
           `${juror} stares at the ceiling at night running scenarios. "What if I'd played my idol that night? Everything changes. EVERYTHING. I held it one round too long."`,
@@ -3920,7 +3920,7 @@ export function rpBuildJuryVotes(ep) {
       pool6.push(`I respect ${votedOut} so much. That\u2019s what makes this hard. But from the bench, I can see how this game ends if ${tp.sub} ${tp.sub==='they'?'stay':'stays'}. I\u2019m sorry.`);
       pool6.push(`${votedOut}, I hope you understand. You played a beautiful game. But the jury deserves a finale that isn\u2019t already decided. And with you in it \u2014 it is.`);
       pool6.push(`I never thought I\u2019d vote against ${votedOut}. But the jury bench changes you. I can see things I couldn\u2019t see when I was playing. And what I see is that ${votedOut} can\u2019t stay.`);
-      pool6.push(`${votedOut} was my closest ally in this game. Writing ${tp.pos} name down is the hardest thing I\u2019ve done out here \u2014 harder than getting voted out. But it\u2019s the right call.`);
+      pool6.push(`${votedOut} was my closest ally in this game. Writing ${tp.posAdj} name down is the hardest thing I\u2019ve done out here \u2014 harder than getting voted out. But it\u2019s the right call.`);
       reason = _pick(pool6);
     }
     // Tier 7: mild positive — measured, reflective
@@ -3938,7 +3938,7 @@ export function rpBuildJuryVotes(ep) {
       pool7.push(`The jury bench changes how you see people. ${votedOut} looked different from inside the game than ${tp.sub} ${tp.sub==='they'?'do':'does'} from out here.`);
       pool7.push(`I\u2019ve been thinking about this since I got eliminated. ${votedOut} is the one I keep landing on.`);
       pool7.push(`Honestly? I don\u2019t have a strong feeling either way. But if I have to pick someone, ${votedOut} is the name that makes the most sense to me right now.`);
-      pool7.push(`${votedOut} is a good player. That\u2019s exactly why I\u2019m writing ${tp.pos} name. Good players don\u2019t get to coast to the end on the jury\u2019s watch.`);
+      pool7.push(`${votedOut} is a good player. That\u2019s exactly why I\u2019m writing ${tp.posAdj} name. Good players don\u2019t get to coast to the end on the jury\u2019s watch.`);
       pool7.push(`I\u2019ve gone back and forth on this. But at the end of the day, I think the game is better without ${votedOut} in it. And that\u2019s enough for me.`);
       if (jS.strategic >= 6)
         pool7.push(`I\u2019ve been running scenarios from the bench. In most of them, ${votedOut} wins the game if ${tp.sub} ${tp.sub==='they'?'make':'makes'} it to the end. I\u2019d rather shake things up.`);

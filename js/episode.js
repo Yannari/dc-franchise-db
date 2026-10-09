@@ -722,7 +722,7 @@ export function generateSurvivalEvents(ep) {
 
               ep.campEvents[campKey].pre.push({
                 type: 'medevacReplacement', players: [_replacement, name],
-                text: `${name} is out. But the game doesn't lose a player today — ${_replacement} returns to take ${pronouns(name).pos} spot. ` + _returnText,
+                text: `${name} is out. But the game doesn't lose a player today — ${_replacement} returns to take ${pronouns(name).posAdj} spot. ` + _returnText,
                 badgeText: 'REPLACEMENT', badgeClass: 'gold',
               });
               ep.medevacReplacement = { returned: _replacement, replaced: name, mindset: _rS.boldness >= 7 && _hasEnemies ? 'vengeful' : _rS.strategic >= 7 ? 'strategic' : _rS.loyalty >= 7 || _rS.social >= 7 ? 'grateful' : 'neutral' };

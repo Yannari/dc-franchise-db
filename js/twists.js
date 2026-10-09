@@ -821,8 +821,8 @@ export function executeFirstImpressions(ep, twistObj) {
       `${r.votedOut} walks into ${r.sentTo} camp carrying nothing but a grudge. ${pr.Sub} know${pr.sub==='they'?'':'s'} exactly who put ${pr.obj} here.`,
       `${r.votedOut} arrives at ${r.sentTo}. New faces. Fresh start. But ${pr.sub} ${pr.sub==='they'?'haven\'t':'hasn\'t'} forgotten what ${r.tribe} did.`,
       `The tribe watches ${r.votedOut} walk in. Nobody expected a new face this early. ${r.votedOut} doesn't explain — ${pr.sub} just start${pr.sub==='they'?'':'s'} building shelter.`,
-      `${r.votedOut} drops ${pr.pos} bag at ${r.sentTo} and looks around. These people didn't vote ${pr.obj} out. That's a start.`,
-      `${r.votedOut} doesn't say much when ${pr.sub} arrive${pr.sub==='they'?'':'s'} at ${r.sentTo}. The look on ${pr.pos} face says enough. ${pr.Sub} ${pr.sub==='they'?'were':'was'} voted out by ${pr.pos} own tribe on day one.`,
+      `${r.votedOut} drops ${pr.posAdj} bag at ${r.sentTo} and looks around. These people didn't vote ${pr.obj} out. That's a start.`,
+      `${r.votedOut} doesn't say much when ${pr.sub} arrive${pr.sub==='they'?'':'s'} at ${r.sentTo}. The look on ${pr.posAdj} face says enough. ${pr.Sub} ${pr.sub==='they'?'were':'was'} voted out by ${pr.posAdj} own tribe on day one.`,
     ]), badgeText: 'SWAPPED', badgeClass: 'gold' });
   });
 
@@ -1652,7 +1652,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         toMembers.forEach(tm => addBond(s.name, tm, -0.8));
         s.reaction = 'resists';
         ep.twistNarrativeEvents[s.to + '_abductee'] = { type: 'dispute', players: [s.name], text: _pick([
-          `${s.name} doesn't hide it — ${p.sub} didn't want to be here. The loyalty to ${s.from} is written on ${p.pos} face. ${s.to} watches and takes note.`,
+          `${s.name} doesn't hide it — ${p.sub} didn't want to be here. The loyalty to ${s.from} is written on ${p.posAdj} face. ${s.to} watches and takes note.`,
           `${s.name} sits apart from the group. ${p.Sub} had a tribe, had a plan, and someone else's decision just burned it down. The resentment is visible.`,
           `${s.name} barely speaks to anyone at ${s.to} camp. ${p.Pos} silence says everything — ${p.sub} ${p.sub==='they'?'were':'was'} taken from people ${p.sub} trusted and dropped with strangers.`,
         ]) };
@@ -1671,7 +1671,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         s.reaction = 'cautious';
         ep.twistNarrativeEvents[s.to + '_abductee'] = { type: 'doubt', players: [s.name], text: _pick([
           `${s.name} is polite but guarded. ${p.Sub} ${p.sub==='they'?'don\'t':'doesn\'t'} know these people, and they don't know ${p.obj}. Trust takes time — and time is a luxury.`,
-          `${s.name} keeps ${p.pos} head down and watches. Not hostile, not warm. Just calculating. The new tribe reads it as either caution or threat.`,
+          `${s.name} keeps ${p.posAdj} head down and watches. Not hostile, not warm. Just calculating. The new tribe reads it as either caution or threat.`,
           `${s.name} arrived with nothing — no allies, no information, no safety. ${p.Sub} ${p.sub==='they'?'are':'is'} starting from scratch, and the tribe can feel it.`,
         ]) };
       }
@@ -2681,7 +2681,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
       const _siBetPr = pronouns(_siBetrayer);
       if (_siConfrontation.type === 'explosive') {
         ep.spiritIslandEvents.push({ type: 'spirit-confrontation', players: [spirit, _siBetrayer], text: _pick([
-          `${spirit} walks up to ${_siBetrayer} in front of everyone. "You know what you did." ${_siBetrayer} opens ${_siBetPr.pos} mouth. ${spirit} doesn't let ${_siBetPr.obj} finish. The tribe watches in silence.`,
+          `${spirit} walks up to ${_siBetrayer} in front of everyone. "You know what you did." ${_siBetrayer} opens ${_siBetPr.posAdj} mouth. ${spirit} doesn't let ${_siBetPr.obj} finish. The tribe watches in silence.`,
           `${spirit} has been waiting for this. ${_siPr.Sub} corner${_siPr.sub==='they'?'':'s'} ${_siBetrayer} at the fire and the whole camp hears it. Every word. ${_siBetrayer} has nowhere to go.`,
           `"You wrote my name." ${spirit} says it to ${_siBetrayer}'s face, in front of the entire tribe. ${_siBetrayer} doesn't deny it. The damage is done — not to ${spirit}, who's already gone. To ${_siBetrayer}'s reputation.`,
         ]), badgeText: 'Confrontation', badgeClass: 'red' });
@@ -3326,7 +3326,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         if (!resistFired && dominatorIdx >= 0 && _ambassadors[dominatorIdx].type === 'manipulator') {
           const manip = _ambassadors[dominatorIdx];
           const _manipTarget = _allNonAmb.sort((a, b) => getBond(manip.name, a) - getBond(manip.name, b))[0];
-          if (_manipTarget) { target = _manipTarget; targetReason = `${manip.name}'s choice — steered the conversation to serve ${manip.pr.pos} agenda`; }
+          if (_manipTarget) { target = _manipTarget; targetReason = `${manip.name}'s choice — steered the conversation to serve ${manip.pr.posAdj} agenda`; }
         }
         // Villain override (if not resisted)
         if (!resistFired && dominatorIdx >= 0 && _ambassadors[dominatorIdx].type === 'villain') {
@@ -3381,7 +3381,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         const dm = amb1.type === 'dealmaker' ? amb1 : amb2;
         const other = dm === amb1 ? amb2 : amb1;
         narrative.push(_ambPick([
-          `${dm.name} gets right to it. "Let's not play games. We both know why we're here. I'll tell you who I think is the biggest threat if you tell me yours." ${other.name} considers this. A straight deal — no tricks. ${other.type === 'loyal-shield' ? `But ${other.name} already knows ${other.pr.sub} won't give up one of ${other.pr.pos} own.` : 'Maybe.'}`,
+          `${dm.name} gets right to it. "Let's not play games. We both know why we're here. I'll tell you who I think is the biggest threat if you tell me yours." ${other.name} considers this. A straight deal — no tricks. ${other.type === 'loyal-shield' ? `But ${other.name} already knows ${other.pr.sub} won't give up one of ${other.pr.posAdj} own.` : 'Maybe.'}`,
           `${dm.name} pulls out an imaginary scorecard. "Let me lay it out. Here's who I think survives the merge and here's who doesn't. If we're smart about this, we can both walk out of here with our tribes intact — minus one person who was going to cause problems anyway."`,
           `"I want to make a deal," ${dm.name} says. "A clean one. No tricks, no manipulation, no emotion. We look at the numbers, we pick the right person, and we both live to merge. Can you do that?" ${other.name} thinks. ${other.type === 'emotional' ? `"I can try," ${other.name} says. But trying and doing are different things.` : `"Yeah. Let's talk."`}`,
         ], dm.name + 'dealOpen'));
@@ -3398,7 +3398,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
           `${em.name} speaks first. "This is hard." ${other.name} nods. "Yeah." A pause. Then: "We have to agree on someone." The fire pops. Neither wants to say a name first.`,
           `${em.name} takes a breath. "I've been dreading this conversation all day. I don't want to do this to anyone." ${other.name} watches ${em.pr.obj} carefully. "Neither do I. But one of us has to say a name."`,
           `"Can I be honest with you?" ${em.name} says. "I don't think I can do this. Writing someone's name — ending their game — without them even getting to defend themselves..." ${em.pr.Sub} ${em.pr.sub==='they'?'trail':'trails'} off. ${other.name} waits. The fire crackles.`,
-          `${em.name} sits down and immediately ${em.pr.pos} eyes get wet. "Sorry. I just — the weight of this is real." ${other.name}: "I know." And for a moment, two people from different tribes share something honest.`,
+          `${em.name} sits down and immediately ${em.pr.posAdj} eyes get wet. "Sorry. I just — the weight of this is real." ${other.name}: "I know." And for a moment, two people from different tribes share something honest.`,
         ], em.name + 'emotOpen'));
       } else {
         narrative.push(_ambPick([
@@ -3412,7 +3412,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
       if (_discussedNames.length >= 2 && _discussedNames[0].proposed !== _discussedNames[1].proposed) {
         const p1 = _discussedNames[0], p2 = _discussedNames[1];
         narrative.push(_ambPick([
-          `${p1.proposer} puts a name forward: "${p1.proposed}." ${p2.proposer === amb2.name ? amb2.name : amb1.name} shakes ${(p2.proposer === amb2.name ? amb2.pr : amb1.pr).pos} head slowly. "That's one of ${p1.fromTribe ? 'your' : 'my'} people asking me to sacrifice one of mine." A counter: "${p2.proposed}." Now it's ${p1.proposer}'s turn to hesitate.`,
+          `${p1.proposer} puts a name forward: "${p1.proposed}." ${p2.proposer === amb2.name ? amb2.name : amb1.name} shakes ${(p2.proposer === amb2.name ? amb2.pr : amb1.pr).posAdj} head slowly. "That's one of ${p1.fromTribe ? 'your' : 'my'} people asking me to sacrifice one of mine." A counter: "${p2.proposed}." Now it's ${p1.proposer}'s turn to hesitate.`,
           `"I think we should talk about ${p1.proposed}," ${p1.proposer} says carefully. The other ambassador's jaw tightens. "Absolutely not. ${p1.proposed} is one of the reasons we're still in this game." A beat. "Then what about ${p2.proposed}?" The negotiation is real now.`,
           `${p1.proposer}: "${p1.proposed}." ${p2.proposer === amb2.name ? amb2.name : amb1.name}: "No." "${p1.proposed} is a threat to both of us—" "I said no. What about ${p2.proposed}?" The room gets colder. Neither is giving ground easily.`,
         ], p1.proposer + p2.proposed + 'counter'));
@@ -3426,7 +3426,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
           narrative.push(_ambPick([
             `The debate circles back to ${target}. ${amb1.name}: "If we're being honest, ${target} is the one neither of us can afford to let into the merge." ${amb2.name} doesn't argue. The logic is clean — even if the cost isn't. "${target}." Agreement.`,
             `They keep coming back to the same name. ${target}. "Every time we try another name, we end up here," ${amb2.name} says. ${amb1.name}: "Because this is the right call. We both see it." A heavy exhale. "Fine. ${target}."`,
-            `"${target}," ${amb1.name} says for the third time. ${amb2.name} rubs ${amb2.pr.pos} face. "I know. I just needed to hear myself not say no." ${amb1.name} waits. ${amb2.name}: "Okay. ${target}. Let's go tell them."`,
+            `"${target}," ${amb1.name} says for the third time. ${amb2.name} rubs ${amb2.pr.posAdj} face. "I know. I just needed to hear myself not say no." ${amb1.name} waits. ${amb2.name}: "Okay. ${target}. Let's go tell them."`,
           ], amb1.name + amb2.name + target + 'circleBack'));
         }
       } else if (_discussedNames.length && agreed) {
@@ -3466,7 +3466,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
           `"This is your last chance," the host says. "Agree on a name — or draw." Neither ambassador speaks. The host opens the bag. "Very well." Two rocks. Two fates. One of these ambassadors came to protect their tribe and is about to become the sacrifice instead.`,
         ], amb1.name + amb2.name + 'deadlock'));
         narrative.push(_ambPick([
-          `${amb1.name} draws first. ${amb1.name === rockDrawLoser ? `${_rlPr.Sub} ${_rlPr.sub==='they'?'open':'opens'} ${_rlPr.pos} hand. Black. The wrong color.` : `White. Safe. ${_rlPr.Sub} exhales.`} ${amb2.name} doesn't need to look. ${amb2.name === rockDrawLoser ? `The rock in ${_rlPr.pos} hand confirms it. ${_rlPr.Sub} ${_rlPr.sub==='they'?'close':'closes'} ${_rlPr.pos} eyes.` : `${pronouns(amb2.name).Sub} ${pronouns(amb2.name).sub==='they'?'are':'is'} still in the game.`} ${rockDrawLoser}'s torch is snuffed in the clearing. ${_rsSurvivor} walks back alone.`,
+          `${amb1.name} draws first. ${amb1.name === rockDrawLoser ? `${_rlPr.Sub} ${_rlPr.sub==='they'?'open':'opens'} ${_rlPr.posAdj} hand. Black. The wrong color.` : `White. Safe. ${_rlPr.Sub} exhales.`} ${amb2.name} doesn't need to look. ${amb2.name === rockDrawLoser ? `The rock in ${_rlPr.posAdj} hand confirms it. ${_rlPr.Sub} ${_rlPr.sub==='they'?'close':'closes'} ${_rlPr.posAdj} eyes.` : `${pronouns(amb2.name).Sub} ${pronouns(amb2.name).sub==='they'?'are':'is'} still in the game.`} ${rockDrawLoser}'s torch is snuffed in the clearing. ${_rsSurvivor} walks back alone.`,
           `The host holds the bag between them. ${rockDrawLoser} reaches in. Pulls out a rock. Looks down. Black. The wrong color. For a moment nobody moves. Then ${_rsSurvivor} exhales — relief mixed with something that looks a lot like guilt. ${rockDrawLoser} sets the rock on the ground, stands up, and walks toward the torch. No words. No drama. Just the sound of a torch being snuffed and footsteps fading into the jungle.`,
         ], amb1.name + amb2.name + rockDrawLoser + 'rockdraw'));
       }
@@ -3528,9 +3528,9 @@ export function applyTwist(ep, twist, isPrimary = true) {
             `Minutes pass. Then more minutes. When the other tribe's ambassador appears alone at the edge of camp, ${sel.tribe} knows. ${amb.name} is gone.`,
           ], amb.name + sel.tribe + 'rockReturn1'));
           beats.push(_ambPick([
-            `"${amb.pr.Sub} volunteered to protect us," someone says. "And now ${amb.pr.sub}'s gone." The tribe gathers around ${amb.pr.pos} empty spot in the shelter. Nobody moves for a long time.`,
+            `"${amb.pr.Sub} volunteered to protect us," someone says. "And now ${amb.pr.sub}'s gone." The tribe gathers around ${amb.pr.posAdj} empty spot in the shelter. Nobody moves for a long time.`,
             `The tribe processes it in waves. Shock first. Then anger — not at ${amb.name}, but at the game. "A rock? ${amb.pr.Sub} went home because of a ROCK?" Then sadness. The shelter feels bigger tonight.`,
-            `${amb.name}'s torch sits unlit at the edge of camp. ${amb.pr.Sub} ${amb.pr.sub==='they'?'were':'was'} supposed to come back with good news. Instead, ${amb.pr.pos} bag is packed by someone else. The tribe does it silently — folding ${amb.pr.pos} clothes, clearing ${amb.pr.pos} spot. It feels like a funeral.`,
+            `${amb.name}'s torch sits unlit at the edge of camp. ${amb.pr.Sub} ${amb.pr.sub==='they'?'were':'was'} supposed to come back with good news. Instead, ${amb.pr.posAdj} bag is packed by someone else. The tribe does it silently — folding ${amb.pr.posAdj} clothes, clearing ${amb.pr.posAdj} spot. It feels like a funeral.`,
           ], amb.name + sel.tribe + 'rockReturn2'));
           if (tribemates.length) {
             const reactor = closestToElim || tribemates[0];
@@ -3559,8 +3559,8 @@ export function applyTwist(ep, twist, isPrimary = true) {
 
           // Beat 2: The reveal (3 variants)
           beats.push(_ambPick([
-            `"They're sending ${eliminated} home." The words land like a punch. ${eliminated} was right there — listening. ${_tPr.Sub} heard ${_tPr.pos} own name.`,
-            `${amb.name} looks at ${eliminated}. "I'm sorry. I tried. But the deal..." ${amb.pr.Sub} ${amb.pr.sub==='they'?'trail':'trails'} off. ${eliminated} already understands. The color drains from ${_tPr.pos} face.`,
+            `"They're sending ${eliminated} home." The words land like a punch. ${eliminated} was right there — listening. ${_tPr.Sub} heard ${_tPr.posAdj} own name.`,
+            `${amb.name} looks at ${eliminated}. "I'm sorry. I tried. But the deal..." ${amb.pr.Sub} ${amb.pr.sub==='they'?'trail':'trails'} off. ${eliminated} already understands. The color drains from ${_tPr.posAdj} face.`,
             `"${eliminated}." ${amb.name} says the name and everything stops. The birds. The wind. ${eliminated}'s breath. "What?" "I couldn't — the other ambassador wouldn't—" "What are you saying?" "${eliminated}. It's you. I'm sorry."`,
           ], amb.name + eliminated + 'reveal2'));
 
@@ -3573,9 +3573,9 @@ export function applyTwist(ep, twist, isPrimary = true) {
             ], eliminated + 'hotheadReact'));
           } else if (_tS.loyalty >= 7) {
             beats.push(_ambPick([
-              `${eliminated} doesn't yell. That's what makes it worse. ${_tPr.Sub} just ${_tPr.sub==='they'?'look':'looks'} at ${amb.name}: "I trusted you. I told everyone you were the right person to send. I vouched for you." ${amb.name} opens ${amb.pr.pos} mouth. Nothing comes out.`,
-              `${eliminated} is quiet for a long time. Then: "I stuck up for you, ${amb.name}. When people said you shouldn't go, I said you were the right choice. I believed in you." ${_tPr.Sub} ${_tPr.sub==='they'?'wipe':'wipes'} ${_tPr.pos} eyes. "That's the part that hurts."`,
-              `"I need you to tell me one thing," ${eliminated} says. "Did you fight for me? Even a little? Or was I the first name out of your mouth?" ${amb.name} hesitates a fraction too long. ${eliminated} nods. "That's my answer." ${_tPr.Sub} ${_tPr.sub==='they'?'walk':'walks'} to ${_tPr.pos} bag and ${_tPr.sub==='they'?'start':'starts'} packing.`,
+              `${eliminated} doesn't yell. That's what makes it worse. ${_tPr.Sub} just ${_tPr.sub==='they'?'look':'looks'} at ${amb.name}: "I trusted you. I told everyone you were the right person to send. I vouched for you." ${amb.name} opens ${amb.pr.posAdj} mouth. Nothing comes out.`,
+              `${eliminated} is quiet for a long time. Then: "I stuck up for you, ${amb.name}. When people said you shouldn't go, I said you were the right choice. I believed in you." ${_tPr.Sub} ${_tPr.sub==='they'?'wipe':'wipes'} ${_tPr.posAdj} eyes. "That's the part that hurts."`,
+              `"I need you to tell me one thing," ${eliminated} says. "Did you fight for me? Even a little? Or was I the first name out of your mouth?" ${amb.name} hesitates a fraction too long. ${eliminated} nods. "That's my answer." ${_tPr.Sub} ${_tPr.sub==='they'?'walk':'walks'} to ${_tPr.posAdj} bag and ${_tPr.sub==='they'?'start':'starts'} packing.`,
             ], eliminated + 'loyalReact'));
           } else if (_tS.strategic >= 7) {
             beats.push(_ambPick([
@@ -3586,7 +3586,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
           } else {
             beats.push(_ambPick([
               `${eliminated}'s face crumbles. ${_tPr.Sub} ${_tPr.sub==='they'?'don\'t':'doesn\'t'} understand. ${_tPr.Sub} did everything right. "I never even got to argue my case," ${_tPr.sub} ${_tPr.sub==='they'?'whisper':'whispers'}.`,
-              `${eliminated} sits down hard. ${_tPr.Sub} ${_tPr.sub==='they'?'stare':'stares'} at ${_tPr.pos} hands. "I didn't even get a vote. I didn't get a tribal. I got a conversation I wasn't part of." The tears come. ${_tPr.Sub} ${_tPr.sub==='they'?'don\'t':'doesn\'t'} try to stop them.`,
+              `${eliminated} sits down hard. ${_tPr.Sub} ${_tPr.sub==='they'?'stare':'stares'} at ${_tPr.posAdj} hands. "I didn't even get a vote. I didn't get a tribal. I got a conversation I wasn't part of." The tears come. ${_tPr.Sub} ${_tPr.sub==='they'?'don\'t':'doesn\'t'} try to stop them.`,
               `"Why me?" ${eliminated} asks. It's not angry — it's genuine confusion. "What did I do wrong?" ${amb.name}: "Nothing. You did nothing wrong." "Then WHY?" The question hangs in the air. There's no answer that fixes this.`,
             ], eliminated + 'emotReact'));
           }
@@ -3619,9 +3619,9 @@ export function applyTwist(ep, twist, isPrimary = true) {
 
           // Beat 1: The return (3 variants)
           beats.push(_ambPick([
-            `${amb.name} walks back into camp. The tribe reads ${amb.pr.pos} face — and the relief is instant. "We're safe," ${amb.pr.sub} ${amb.pr.sub==='they'?'say':'says'}. The tribe exhales.`,
+            `${amb.name} walks back into camp. The tribe reads ${amb.pr.posAdj} face — and the relief is instant. "We're safe," ${amb.pr.sub} ${amb.pr.sub==='they'?'say':'says'}. The tribe exhales.`,
             `${amb.name} appears on the path. The tribe holds its breath. Then ${amb.pr.sub} ${amb.pr.sub==='they'?'smile':'smiles'}. Just barely — but enough. "We're all going to the merge." The cheering starts before ${amb.pr.sub} even ${amb.pr.sub==='they'?'sit':'sits'} down.`,
-            `Before ${amb.name} even speaks, the tribe sees it in ${amb.pr.pos} posture. Shoulders back. Head up. "Nobody from ${sel.tribe} is going home tonight." The relief is physical — people sag, laugh, wipe their eyes.`,
+            `Before ${amb.name} even speaks, the tribe sees it in ${amb.pr.posAdj} posture. Shoulders back. Head up. "Nobody from ${sel.tribe} is going home tonight." The relief is physical — people sag, laugh, wipe their eyes.`,
           ], amb.name + sel.tribe + 'safeReturn'));
 
           // Beat 2: What happened (archetype-driven, 2 variants each)
@@ -3647,7 +3647,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
             ], amb.name + 'villSafe'));
           } else {
             beats.push(_ambPick([
-              `${amb.name} sits down at the fire. The tribe gathers around. "It was hard," ${amb.pr.sub} ${amb.pr.sub==='they'?'say':'says'}. "But we made it." Someone puts a hand on ${amb.pr.pos} shoulder. That's enough.`,
+              `${amb.name} sits down at the fire. The tribe gathers around. "It was hard," ${amb.pr.sub} ${amb.pr.sub==='they'?'say':'says'}. "But we made it." Someone puts a hand on ${amb.pr.posAdj} shoulder. That's enough.`,
               `${amb.name} tells the tribe what happened — the back and forth, the proposals, the tension. ${amb.pr.Sub} ${amb.pr.sub==='they'?'leave':'leaves'} out the worst parts. The tribe doesn't need to know how close it was.`,
             ], amb.name + 'emotSafe'));
           }

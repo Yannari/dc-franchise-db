@@ -585,9 +585,9 @@ function lead(dossier, show, root, L) {
     const g = (dossier.bio || {}).gender;
     // They/them unless the roster says otherwise: a wrong guess misgenders a
     // character on their own page, and the neutral never does.
-    const P = g === 'f' ? { sub: 'she', obj: 'her', pos: 'her' }
-      : g === 'm' ? { sub: 'he', obj: 'him', pos: 'his' }
-      : { sub: 'they', obj: 'them', pos: 'their' };
+    const P = g === 'f' ? { sub: 'she', obj: 'her', pos: 'her', posAdj: 'her' }
+      : g === 'm' ? { sub: 'he', obj: 'him', pos: 'his', posAdj: 'his' }
+      : { sub: 'they', obj: 'them', pos: 'their', posAdj: 'their' };
     const Cap = w => w.charAt(0).toUpperCase() + w.slice(1);
     const was = P.sub === 'they' ? 'were' : 'was';
     const has = P.sub === 'they' ? 'have' : 'has';
@@ -623,10 +623,10 @@ function lead(dossier, show, root, L) {
       ? `forming a dominant alliance in ${named[0]}${mates.length ? ` with ${joinList(mates)}` : ''}`
       : named.length
         ? `playing through ${joinList(named)}${mates.length ? ` alongside ${joinList(mates)}` : ''}`
-        : (mates.length ? `building ${P.pos} game around ${joinList(mates)}` : '');
+        : (mates.length ? `building ${P.posAdj} game around ${joinList(mates)}` : '');
     const showmanceBit = notable.showmance
       ? `${(notable.loyalties || []).includes(notable.showmance) ? ''
-        : `, with ${L.person(notable.showmance, { face: false })} as ${P.pos} showmance`}`
+        : `, with ${L.person(notable.showmance, { face: false })} as ${P.posAdj} showmance`}`
       : '';
 
     const opener = [];
@@ -637,7 +637,7 @@ function lead(dossier, show, root, L) {
       opener.push(`${first} played ${link(notable)} without winning a ${compWord}`);
     }
     if (allianceBit) opener.push(allianceBit);
-    sentences.push(`During ${P.pos} time on the show, ${opener.join(' and ')}${showmanceBit}.`);
+    sentences.push(`During ${P.posAdj} time on the show, ${opener.join(' and ')}${showmanceBit}.`);
 
     // 2. WHAT THEY HAD TO SURVIVE. A season nobody voted for is a different
     //    season from one somebody survived, and the record knows which it was.
@@ -646,7 +646,7 @@ function lead(dossier, show, root, L) {
     const survived = [];
     if (noms >= 3) survived.push(`nominated ${num(noms)} times`);
     if (bb.timesSaved) survived.push(`saved by the veto ${bb.timesSaved === 1 ? 'once' : `${num(bb.timesSaved)} times`}`);
-    if (bb.blockBusterWins) survived.push(`winning ${P.pos} way off the block ${bb.blockBusterWins === 1 ? 'once' : `${num(bb.blockBusterWins)} times`}`);
+    if (bb.blockBusterWins) survived.push(`winning ${P.posAdj} way off the block ${bb.blockBusterWins === 1 ? 'once' : `${num(bb.blockBusterWins)} times`}`);
     if (rec.idolsFound) survived.push(`finding ${rec.idolsFound === 1 ? 'an idol' : `${num(rec.idolsFound)} idols`}`);
     if (survived.length) {
       sentences.push(`${Cap(P.sub)} ${was} ${joinList(survived)}${

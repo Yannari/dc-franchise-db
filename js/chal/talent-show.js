@@ -570,7 +570,7 @@ const TALENT_CATEGORIES = [
 const SABOTAGE_TYPES = [
   { id: 'props', effect: 'disaster', // target uses disaster text — props are broken
     text: (saboteur, target, pr) => `Before the show, ${saboteur} got backstage access to ${target}'s setup. Wrong strings on the guitar. Marked cards. Loosened joints. When ${target} reaches for ${pr.posAdj} props on stage, nothing works right.`,
-    stageText: (saboteur, target, pr) => `${target} reaches for ${pr.pos} equipment — something's wrong. The strings are off. The props don't fit. ${pr.Sub} ${pr.sub === 'they' ? 'try' : 'tries'} to adapt, but the whole act falls apart.`,
+    stageText: (saboteur, target, pr) => `${target} reaches for ${pr.posAdj} equipment — something's wrong. The strings are off. The props don't fit. ${pr.Sub} ${pr.sub === 'they' ? 'try' : 'tries'} to adapt, but the whole act falls apart.`,
   },
   { id: 'rumors', effect: 'penalty', penalty: -2, // crowd hostile, Chef scores harsher
     text: (saboteur, target, pr) => `${saboteur} spent the afternoon whispering to anyone who'd listen: "${target} is going to throw the challenge." By showtime, the crowd's arms are crossed before ${target} even walks on.`,
@@ -581,7 +581,7 @@ const SABOTAGE_TYPES = [
     stageText: (saboteur, target, pr) => `${target} walks on stage but ${pr.sub} ${pr.sub === 'they' ? 'aren\'t' : 'isn\'t'} all there. The confidence from rehearsal is gone. ${pr.PosAdj} hands are shaking.`,
   },
   { id: 'replace', effect: 'selfScore0', // saboteur scores 0 on OWN act, but target gets massive temp debuff
-    text: (saboteur, target, pr) => `${saboteur} doesn't perform ${pr.pos} talent. Instead, ${pr.sub} ${pr.sub === 'they' ? 'use' : 'uses'} ${pr.pos} stage time to publicly call out ${target}. Secrets. Accusations. The camp goes dead silent.`,
+    text: (saboteur, target, pr) => `${saboteur} doesn't perform ${pr.posAdj} talent. Instead, ${pr.sub} ${pr.sub === 'they' ? 'use' : 'uses'} ${pr.posAdj} stage time to publicly call out ${target}. Secrets. Accusations. The camp goes dead silent.`,
     stageText: (saboteur, target, pr) => `${saboteur} walks to center stage. No props. No act. Just a mic and a grudge. "${target}. Let's talk about what you really are." What follows is three minutes of calculated demolition. ${target} watches from the crowd, frozen.`,
   },
 ];
@@ -612,7 +612,7 @@ const AUDIENCE_REACTIONS = {
     villain: p => `${p} smirks. Files it away. That's a vote target now.`,
     schemer: p => `${p} smirks. That's a vote target now.`,
     floater: p => { const pr = pronouns(p); return `${p} cringes. Glad it wasn't ${pr.obj} up there.`; },
-    showmancer: p => { const pr = pronouns(p); return `${p} covers ${pr.pos} mouth. Second-hand embarrassment.`; },
+    showmancer: p => { const pr = pronouns(p); return `${p} covers ${pr.posAdj} mouth. Second-hand embarrassment.`; },
     wildcard: p => `${p} laughs out loud. Can't help it. Gets dirty looks.`,
     'chaos-agent': p => `${p} laughs out loud. Can't help it.`,
     mastermind: p => `${p} is already running numbers. Can the other two acts make up for this?`,

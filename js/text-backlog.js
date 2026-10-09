@@ -486,7 +486,7 @@ export function _textCampPre(ep, ln, sec) {
         ln(`- [${p.presentation.badgeText}] ${p.a} & ${p.b} — ${cleanSummary}${note}.${p.presentation.subline ? ` ${p.presentation.subline}.` : ''}`);
       });
     } else {
-      ln('- No notable bonds established yet.');
+      ln(ep.num > 1 ? '- No bond moved enough to note this episode.' : '- No notable bonds established yet.');
     }
   });
 
@@ -2982,6 +2982,8 @@ export function _textLastMorning(ep, ln, sec) {
   const day = ep.num > 1 ? (ep.num - 1) * 3 : 1;
   ln(`Day ${day}. The fire is low. The game is almost over.`);
   ln('');
+  const usedTake = new Set();
+  const nameHash = n => { let h = 0; for (const ch of String(n)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
   finalists.forEach(f => {
     const s = pStats(f);
     const fp = pronouns(f);
@@ -2999,30 +3001,32 @@ export function _textLastMorning(ep, ln, sec) {
     }, new Set())];
 
     let journey;
+    const takes = (...q) => { const left = q.filter(x => !usedTake.has(x)); const pick = (left.length ? left : q)[nameHash(f) % (left.length || q.length)]; usedTake.add(pick); return pick; };
     if (arch === 'mastermind' || arch === 'schemer' || s.strategic >= 8)
-      journey = `"I came into this game knowing exactly what I wanted to do. Control the votes. Control the relationships. Control the outcome. And I'm still here — so either I did that, or I got lucky. I don't believe in luck."`;
+      journey = takes(`"I came into this game knowing exactly what I wanted to do. Control the votes. Control the relationships. Control the outcome. And I'm still here — so either I did that, or I got lucky. I don't believe in luck."`, `"Every vote this season, I knew where it was going before the first name was read. That didn't happen by accident, and today I get to find out if the jury noticed."`);
     else if (arch === 'challenge-beast' || s.physical >= 8)
-      journey = `"People underestimated me early. They saw a physical player and thought that's all I had. But I learned. I adapted. And every time they came for me, I won the challenge that mattered."`;
+      journey = takes(`"People underestimated me early. They saw a physical player and thought that's all I had. But I learned. I adapted. And every time they came for me, I won the challenge that mattered."`, `"My body is wrecked, honestly. Every challenge took something out of me. But I'm still standing, and I've got one more in me."`);
     else if (arch === 'social-butterfly' || s.social >= 8)
-      journey = `"I built something real out here. Every conversation, every late-night talk by the fire — those weren't moves. Those were genuine connections. And somehow, they carried me to the end."`;
+      journey = takes(`"I built something real out here. Every conversation, every late-night talk by the fire — those weren't moves. Those were genuine connections. And somehow, they carried me to the end."`, `"I know everybody on that jury. I mean really know them, what they're scared of and what makes them laugh. Today I find out if that was worth anything."`, `"People keep telling me I didn't do anything. I talked to every single person in this game, every day, and that's why I'm still here and they're not."`);
     else if (arch === 'loyal-soldier' || s.loyalty >= 8)
-      journey = `"I gave my word to the people I trusted, and I kept it. In a game full of liars, I tried to be someone you could count on. Maybe that's not flashy. But I'm still here."`;
+      journey = takes(`"I gave my word to the people I trusted, and I kept it. In a game full of liars, I tried to be someone you could count on. Maybe that's not flashy. But I'm still here."`, `"I never lied to the people I was with. Not once. If that loses me the game, at least I can look every one of them in the eye tonight."`);
     else if (arch === 'underdog')
-      journey = `"Nobody picked me to make it this far. Not the other players, not the audience, probably not even myself. But here I am. I survived every vote they threw at me."`;
+      journey = takes(`"Nobody picked me to make it this far. Not the other players, not the audience, probably not even myself. But here I am. I survived every vote they threw at me."`, `"Day one, I was sure I'd be the first one gone. Now I'm one of the last ones here, and I still don't totally believe it."`);
     else if (arch === 'hothead' || s.temperament <= 3)
-      journey = `"I know I'm not easy. I know I burned some people. But I never pretended to be something I wasn't out here. Every emotion was real. Every fight was real. And I'm in the finale."`;
+      journey = takes(`"I know I'm not easy. I know I burned some people. But I never pretended to be something I wasn't out here. Every emotion was real. Every fight was real. And I'm in the finale."`, `"I yelled at half of that jury at some point. They'll remember that. I just hope they also remember I never once lied to them."`);
     else
-      journey = `"If you told me on day one that I'd be sitting here on the last morning, I would have laughed. But here I am. And I earned every single day."`;
+      journey = takes(`"If you told me on day one that I'd be sitting here on the last morning, I would have laughed. But here I am. And I earned every single day."`, `"Everybody had a plan for me, and none of them worked. I'm not sure I had a plan either, but I'm the one still here."`, `"Last morning. I keep waiting for somebody to tell me it's a mistake and send me home."`);
 
     ln(`${f} (${arch}, ${wins} challenge win${wins !== 1 ? 's' : ''})`);
     ln(journey);
     if (allianceNames.length >= 2)
-      ln(`${fp.Sub} built ${fp.pos} game around ${allianceNames.slice(0, 2).join(' and ')}. Some of those bonds survived. Some didn't.${rivalNames.length ? ` ${rivalNames[0]} was the rival ${fp.sub} never shook.` : ''}`);
+      ln(`${fp.Sub} built ${fp.posAdj} game around ${allianceNames.slice(0, 2).join(' and ')}. Some of those bonds survived. Some didn't.${rivalNames.length ? ` ${rivalNames[0]} was the rival ${fp.sub} never shook.` : ''}`);
     if (votesAgainst >= 6) ln(`${f} has survived ${votesAgainst} votes against. The target was always there.`);
     else if (wins >= 3) ln(`${f} has dominated challenges. The jury knows it.`);
     ln('');
   });
-  ln(`Someone looks at the tribe flag one last time. It's faded now. Weathered. Just like them.`);
+  const lastLook = finalists.length > 1 ? `${finalists.slice(0, -1).join(', ')} and ${finalists[finalists.length - 1]}` : finalists[0];
+  ln(`Before they leave, ${lastLook} take one last look at camp. Nobody says anything for a while.`);
 }
 
 // ── FINALE: CARNIVAL RESCUE ──
@@ -3187,10 +3191,17 @@ export function _textJuryPerception(ep, ln, sec) {
 
 // ── FINALE: JURY VOTES ──
 export function _textJuryVotes(ep, ln, sec) {
-  if (!ep.juryVotes?.length && !ep.finaleResult?.juryVotes?.length) return;
+  // The engine writes ep.juryResult = { votes: { name: n }, reasoning: [{ juror, votedFor, reason }] }. This read
+  // ep.juryVotes, which nothing writes, so no TD finale backlog carried the vote or the winner (read 2026-10-09).
+  const jr = ep.juryResult || ep.finaleResult || null;
+  const votes = ep.juryVotes || ep.finaleResult?.juryVotes || jr?.reasoning || [];
+  if (!votes.length) return;
   sec('JURY VOTES');
-  const votes = ep.juryVotes || ep.finaleResult?.juryVotes || [];
-  votes.forEach(v => ln(`${v.juror} votes for ${v.votedFor}${v.reason ? ` — ${v.reason}` : ''}`));
+  votes.forEach(v => ln(`${v.juror} votes for ${v.votedFor}${v.reason ? ` — "${v.reason}"` : ''}`));
+  const tally = jr?.votes ? Object.entries(jr.votes).sort((a, b) => b[1] - a[1]) : [];
+  if (tally.length) { ln(''); ln(`FINAL TALLY: ${tally.map(([n, k]) => `${n} ${k}`).join(', ')}`); }
+  const winner = ep.winner || jr?.winner || (tally[0] && tally[0][0]);
+  if (winner) ln(`WINNER: ${winner}`);
 }
 
 // ── FINALE: FAN CAMPAIGN ──
@@ -3692,7 +3703,8 @@ export function _textWriterContext(ep, ln, sec) {
     ep.challengeThrows.forEach(ct => ln(`- ${ct.thrower} threw the challenge.${ct.caught ? ` CAUGHT by ${ct.detectedBy.join(', ')}.` : ' Not detected.'}`));
   }
 
-  // Cold open hook for next episode
+  // Cold open hook for next episode (a finale has none)
+  if (ep.isFinale) return;
   ln('');
   ln('COLD OPEN HOOK:');
   ln(buildColdOpen(ep));

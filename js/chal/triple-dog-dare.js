@@ -272,12 +272,12 @@ export function simulateTripleDogDare(ep) {
       reactions.push(`${player} grins. "I've done worse on a Tuesday." ${pr.Sub} ${pr.sub === 'they' ? 'take' : 'takes'} the dare.`);
       reactions.push(`${player} looks almost disappointed it wasn't harder. ${pr.Sub} ${pr.sub === 'they' ? 'accept' : 'accepts'} immediately.`);
     } else {
-      reactions.push(`${player} takes a deep breath. Closes ${pr.pos} eyes. Does it. Barely.`);
+      reactions.push(`${player} takes a deep breath. Closes ${pr.posAdj} eyes. Does it. Barely.`);
       reactions.push(`${player} stares at the dare for a long moment. Then, quietly: "Okay." ${pr.Sub} ${pr.sub === 'they' ? 'do' : 'does'} it.`);
       reactions.push(`${player} looks like ${pr.sub} might refuse. But something shifts — pride, desperation, or just stubbornness. ${pr.Sub} ${pr.sub === 'they' ? 'go' : 'goes'} for it.`);
     }
     if (arch === 'villain' || arch === 'mastermind') reactions.push(`${player} accepts with a smirk. Everything is a power move.`);
-    if (arch === 'hero') reactions.push(`${player} sets ${pr.pos} jaw. "If that's what it takes." ${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} flinch.`);
+    if (arch === 'hero') reactions.push(`${player} sets ${pr.posAdj} jaw. "If that's what it takes." ${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} flinch.`);
     if (arch === 'chaos-agent') reactions.push(`${player} laughs — actually laughs — and takes the dare before anyone can react.`);
     return _rp(reactions);
   };
@@ -286,10 +286,10 @@ export function simulateTripleDogDare(ep) {
     const pr = pronouns(player);
     const reactions = [
       `${player} looks at the dare. Looks at the tribe. Looks back at the dare. "${pr.Sub} can't." The words come out quieter than expected.`,
-      `${player} opens ${pr.pos} mouth to say yes. Nothing comes out. The silence says everything.`,
+      `${player} opens ${pr.posAdj} mouth to say yes. Nothing comes out. The silence says everything.`,
       `${player} starts to step forward — then stops. ${pr.Sub} ${pr.sub === 'they' ? 'know' : 'knows'} it's over. Everyone does.`,
       `${player}'s hands are shaking. "I'm sorry. I just — I can't do this one." The tribe watches ${pr.obj} sit down.`,
-      `${player} tries. Really tries. But ${pr.pos} body won't cooperate. It's done.`,
+      `${player} tries. Really tries. But ${pr.posAdj} body won't cooperate. It's done.`,
     ];
     return _rp(reactions);
   };
@@ -299,7 +299,7 @@ export function simulateTripleDogDare(ep) {
     const tPr = pronouns(target);
     const reactions = [];
     if (isBetrayal) {
-      reactions.push(`${player} turns to ${target} — ${pr.pos} own ally — and passes the dare. The look on ${target}'s face says it all.`);
+      reactions.push(`${player} turns to ${target} — ${pr.posAdj} own ally — and passes the dare. The look on ${target}'s face says it all.`);
       reactions.push(`${player} redirects to ${target}. Nobody saw that coming. Especially not ${target}.`);
       reactions.push(`"Sorry, ${target}." ${player} doesn't look sorry. ${pr.Sub} ${pr.sub === 'they' ? 'slide' : 'slides'} the dare across.`);
     } else if (bond < -2) {
@@ -319,7 +319,7 @@ export function simulateTripleDogDare(ep) {
     const reactions = [];
     if (bond < -2) {
       reactions.push(`${player} catches the dare and glares at ${fromPlayer}. "Of course."`);
-      reactions.push(`${player} shakes ${pr.pos} head. "Real brave, ${fromPlayer}."`);
+      reactions.push(`${player} shakes ${pr.posAdj} head. "Real brave, ${fromPlayer}."`);
     } else if (bond > 3) {
       reactions.push(`${player} looks at ${fromPlayer} — hurt flickers, then disappears. "${pr.Sub} ${pr.sub === 'they' ? 'take' : 'takes'} it."`);
       reactions.push(`${player} nods slowly. Didn't expect this from ${fromPlayer}. But here they are.`);

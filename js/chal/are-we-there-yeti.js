@@ -1774,7 +1774,7 @@ function _phaseSprint(pairs, activePlayers, timeline, personalScores, chefGrudge
     const pr = pronouns(spotter);
     sprintScores[spotter] -= 0.3; chefGrudge[spotter] += 0.3; popDelta(spotter, -1);
     timeline.push({ type: 'falseFinish', phase: 4, player: spotter, players: [...falseFinisher.members],
-      text: `"THERE! I see it!" ${spotter} sprints toward a shape in the clearing. ${pr.Sub} skids to a stop. It's a dead tree. Not the totem pole. Not even close. ${pr.Sub} stands there, chest heaving, while ${pr.pos} partner catches up.`,
+      text: `"THERE! I see it!" ${spotter} sprints toward a shape in the clearing. ${pr.Sub} skids to a stop. It's a dead tree. Not the totem pole. Not even close. ${pr.Sub} stands there, chest heaving, while ${pr.posAdj} partner catches up.`,
       badgeText: 'FALSE FINISH', badgeClass: 'grey' });
   }
 
@@ -1795,7 +1795,7 @@ function _phaseSprint(pairs, activePlayers, timeline, personalScores, chefGrudge
       sprintScores[strongPlayer] -= 0.8; sprintScores[weakPlayer] += 1.5;
       addBond(weakPlayer, strongPlayer, 1.5); chefGrudge[strongPlayer] -= 0.5; popDelta(strongPlayer, 2);
       timeline.push({ type: 'partnerCarryChoice', phase: 4, players: [strongPlayer, weakPlayer],
-        text: `${weakPlayer} stumbles. Can barely stand. ${strongPlayer} looks at the trail ahead, then back at ${pr.pos} partner. ${pr.Sub} turns around. "Get on my back." They're slower now. But they're together.`,
+        text: `${weakPlayer} stumbles. Can barely stand. ${strongPlayer} looks at the trail ahead, then back at ${pr.posAdj} partner. ${pr.Sub} turns around. "Get on my back." They're slower now. But they're together.`,
         badgeText: 'CARRIED', badgeClass: 'gold' });
     } else {
       sprintScores[strongPlayer] += 0.5; addBond(weakPlayer, strongPlayer, -2.0);

@@ -447,7 +447,7 @@ export function _generateFalseMajority(schemer, victim, decoy, group, ep, _rp) {
     results.push({
       type: 'falseMajority', players: [schemer, victim], about: decoy,
       text: _rp([
-        `${schemer} finds ${victim} alone and lowers ${_sP.pos} voice. "It's ${decoy} tonight. Everyone's already locked in — I just didn't want you blindsided." ${victim} nods slowly. It sounds exactly like the truth.`,
+        `${schemer} finds ${victim} alone and lowers ${_sP.posAdj} voice. "It's ${decoy} tonight. Everyone's already locked in — I just didn't want you blindsided." ${victim} nods slowly. It sounds exactly like the truth.`,
         `${schemer} sketches the vote in the sand for ${victim}: names, numbers, arrows all pointing at ${decoy}. The math is clean. The math is also fiction.`,
         `${schemer} walks ${victim} through "the plan" — ${decoy}, unanimous, done by sunset. ${victim} asks who else knows. "Everyone. That's the point." Nobody knows. There is no plan.`,
         `${schemer} leans in at the water pot: "Keep it quiet, but the tribe settled on ${decoy}." ${victim} feels relieved to finally be in the loop. ${_vP.Sub} ${_vP.sub === 'they' ? 'are' : 'is'} the only one in this particular loop.`,
@@ -576,7 +576,7 @@ function _resolveFalseMajorityFallout(group, ep, _rp, results) {
     results.push({
       type: 'falseMajorityConfusion', players: [plot.victim],
       text: _rp([
-        `${plot.victim} stares at the tally in ${pronouns(plot.victim).pos} head. The plan everyone supposedly agreed on got exactly one vote — ${pronouns(plot.victim).pos}. Somebody lied. ${plot.victim} just can't work out who.`,
+        `${plot.victim} stares at the tally in ${pronouns(plot.victim).posAdj} head. The plan everyone supposedly agreed on got exactly one vote — ${pronouns(plot.victim).pos}. Somebody lied. ${plot.victim} just can't work out who.`,
         `${plot.victim} quietly asks two people about last night's "plan." Both look blank. The paranoia settles in like weather.`,
         `Something about that vote doesn't add up, and ${plot.victim} knows it. ${pronouns(plot.victim).Sub} ${pronouns(plot.victim).sub === 'they' ? 'start' : 'starts'} watching everyone a little more carefully.`,
         `${plot.victim} was sure of the numbers. The numbers were sure of something else. Trust, from here on out, gets verified.`,

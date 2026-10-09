@@ -1735,7 +1735,7 @@ export function simulateSlapSlapRevolution(ep) {
     const worst = result.grindPhase.tribes.reduce((a, b) => a.sausageQuality < b.sausageQuality ? a : b);
     result.coldOpen = `${worst.tribeName}'s sausage was so bad, Chris almost called a medevac for the judges.`;
   } else {
-    result.coldOpen = `${champion} slapped ${champPr.pos} way through ${result.tournament.rounds.length} rounds of electrified combat to claim the crown.`;
+    result.coldOpen = `${champion} slapped ${champPr.posAdj} way through ${result.tournament.rounds.length} rounds of electrified combat to claim the crown.`;
   }
 
   // ══════════════════════════════════════════════════════════════

@@ -169,7 +169,7 @@ const SLASHER_EVENTS = {
       bondEffect: { target: 'witnesses', delta: 0.3 },
       textVariants: [
         `{name} grabs a canoe paddle and swings at the slasher. Direct hit. The slasher staggers.`,
-        `{name} picks up a rock the size of {pr.pos} head. The slasher reconsiders.`,
+        `{name} picks up a rock the size of {pr.posAdj} head. The slasher reconsiders.`,
         `{name} squares up. No weapon, just fists. The slasher takes a step back.`,
         `{name} rips a branch off a tree and holds it like a bat. 'Come on then.'`
       ],
@@ -246,7 +246,7 @@ const SLASHER_EVENTS = {
       textVariants: [
         `{name} breathes. Counts to ten. Moves quietly. The panic doesn't touch {pr.obj}.`,
         `Everyone around {name} is losing it. {pr.Sub} {pr.sub==='they'?'are':'is'} steady. Focused. Still here.`,
-        `{name} finds a corner, closes {pr.pos} eyes, and waits. When {pr.sub} open{pr.sub==='they'?'':'s'} them, the slasher has moved on.`
+        `{name} finds a corner, closes {pr.posAdj} eyes, and waits. When {pr.sub} open{pr.sub==='they'?'':'s'} them, the slasher has moved on.`
       ],
       povVariants: [
         "Breathe. Count to ten. The panic is there but you don't let it win. Not tonight.",
@@ -331,7 +331,7 @@ const SLASHER_EVENTS = {
       statCheck: s => s.intuition >= 7 && s.strategic >= 6,
       bondEffect: null,
       textVariants: [
-        `{name} maps the slasher's patrol in {pr.pos} head. Left, right, left, pause. {pr.Sub} move{pr.sub==='they'?'':'s'} during the pause.`,
+        `{name} maps the slasher's patrol in {pr.posAdj} head. Left, right, left, pause. {pr.Sub} move{pr.sub==='they'?'':'s'} during the pause.`,
         `{name} realizes the slasher always checks the cabins first. {pr.Sub} head{pr.sub==='they'?'':'s'} for the beach.`,
         `{name} watches the flashlight pattern. Every twelve seconds it sweeps left. That's the window.`
       ],
@@ -439,7 +439,7 @@ const SLASHER_EVENTS = {
       bondEffect: { target: 'ally', delta: 1.0 },
       textVariants: [
         `{name} puts {pr.ref} between {ally} and the darkness. Whatever comes, it goes through {name} first.`,
-        `{name} doesn't run. {pr.Sub} plant{pr.sub==='they'?'':'s'} {pr.pos} feet and stare{pr.sub==='they'?'':'s'} into the dark. {ally} escapes behind {pr.obj}.`,
+        `{name} doesn't run. {pr.Sub} plant{pr.sub==='they'?'':'s'} {pr.posAdj} feet and stare{pr.sub==='they'?'':'s'} into the dark. {ally} escapes behind {pr.obj}.`,
         `{name} grabs a stick and faces the sound. 'Go,' {pr.sub} tell{pr.sub==='they'?'':'s'} {ally}. {ally} goes.`
       ],
       povVariants: [
@@ -471,7 +471,7 @@ const SLASHER_EVENTS = {
       requiresSolo: true,
       bondEffect: null,
       textVariants: [
-        `{name} bolts into the jungle with no plan. Branches whip {pr.pos} face. {pr.Sub} {pr.sub==='they'?'have':'has'} no idea where {pr.sub} {pr.sub==='they'?'are':'is'}.`,
+        `{name} bolts into the jungle with no plan. Branches whip {pr.posAdj} face. {pr.Sub} {pr.sub==='they'?'have':'has'} no idea where {pr.sub} {pr.sub==='they'?'are':'is'}.`,
         `{name} runs. No direction, no destination. Just away. It costs {pr.obj} position.`,
         `{name} sprints into the dark and trips over a root. Gets up. Runs again. Wrong direction.`
       ],
@@ -501,7 +501,7 @@ const SLASHER_EVENTS = {
       bondEffect: { target: 'ally', delta: -2.0 },
       textVariants: [
         `{name} hears {ally} yell for help. {pr.Sub} calculate{pr.sub==='they'?'':'s'} the odds and keeps running.`,
-        `{name} sees {ally} cornered and decides that's not {pr.pos} problem.`,
+        `{name} sees {ally} cornered and decides that's not {pr.posAdj} problem.`,
         `{name} whispers 'sorry' and disappears into the dark. {ally} heard it.`
       ],
       povVariants: [
@@ -531,7 +531,7 @@ const SLASHER_EVENTS = {
       bondEffect: null,
       textVariants: [
         `{name} trips over a root and goes face-first into the dirt. The slasher's footsteps pause.`,
-        `{name} catches {pr.pos} foot on a vine and stumbles hard. Lost ground.`,
+        `{name} catches {pr.posAdj} foot on a vine and stumbles hard. Lost ground.`,
         `{name} slips on wet rock and goes down. Gets up slower than {pr.sub} should.`
       ],
       povVariants: [
@@ -591,7 +591,7 @@ const SLASHER_EVENTS = {
       bondEffect: null,
       textVariants: [
         `{name} gets cocky. 'I think we lost them.' {pr.Sub} didn't.`,
-        `{name} relaxes too early. Drops {pr.pos} guard. The slasher was waiting for exactly that.`,
+        `{name} relaxes too early. Drops {pr.posAdj} guard. The slasher was waiting for exactly that.`,
         `{name} starts walking instead of running. Confidence is not the same as safety.`
       ],
       povVariants: [
@@ -651,7 +651,7 @@ const SLASHER_EVENTS = {
       textVariants: [
         `{name} rounds a corner and sees {ally} in the dark. {pr.Sub} scream{pr.sub==='they'?'':'s'} before {pr.sub} even realize{pr.sub==='they'?'':'s'} who it is. Half the camp heard that.`,
         `{ally} steps out of a cabin doorway. {name} swings at {pr.obj} before recognizing the face. Both of them are shaking.`,
-        `{ally} is wearing a towel over {pr.pos} head. {name} sees the silhouette and bolts. By the time {name} stops running, {pr.sub} {pr.sub==='they'?'are':'is'} three hundred feet from camp.`,
+        `{ally} is wearing a towel over {pr.posAdj} head. {name} sees the silhouette and bolts. By the time {name} stops running, {pr.sub} {pr.sub==='they'?'are':'is'} three hundred feet from camp.`,
         `{name} walks into the bathroom and sees {ally}'s shadow in the mirror. The scream is loud enough to echo. {ally} just stands there, confused.`,
         `{name} and {ally} walk toward each other in the dark. Neither sees the other. They collide. Both scream. The slasher now knows exactly where they are.`
       ],
@@ -668,7 +668,7 @@ const SLASHER_EVENTS = {
       flags: { justScreamed: true, victimPoints: -3 },
       textVariants: [
         `{name} hides behind a tree and jumps out at {victim}. {victim} screams so loud the birds take off. {name} is doubled over laughing. The slasher is now heading their way.`,
-        `{name} sneaks up behind {victim} and grabs {pr.pos} shoulders. {victim} nearly passes out. {name} thinks it's the funniest thing that's happened all night.`,
+        `{name} sneaks up behind {victim} and grabs {pr.posAdj} shoulders. {victim} nearly passes out. {name} thinks it's the funniest thing that's happened all night.`,
         `{name} puts on a mask they found in the supply shed and walks toward {victim}. {victim} doesn't recognize {name} for a full five seconds. Those five seconds cost both of them.`,
         `{name} whispers {victim}'s name from behind a bush in a low voice. {victim} freezes, then runs. {name} can't stop laughing. The slasher can't stop listening.`
       ],
@@ -686,7 +686,7 @@ const SLASHER_EVENTS = {
       textVariants: [
         `While hiding in the supply shed, {name} finds a note {ally} wrote. It has {name}'s name on it. The trust dies right there in the dark.`,
         `{name} overhears {ally} whispering to someone else: 'We get rid of {name} next.' Hiding two feet away. Hearing every word.`,
-        `In the panic, {ally}'s bag spills open. {name} sees the vote parchment. {pr.Sub} read{pr.sub==='they'?'':'s'} {pr.pos} own name. The look {name} gives {ally} says everything.`
+        `In the panic, {ally}'s bag spills open. {name} sees the vote parchment. {pr.Sub} read{pr.sub==='they'?'':'s'} {pr.posAdj} own name. The look {name} gives {ally} says everything.`
       ],
       povVariants: [
         "The note has your name on it. Their handwriting. The trust dies right there in the dark.",
@@ -718,7 +718,7 @@ const SLASHER_EVENTS = {
       textVariants: [
         `{name} hasn't slept in two days. {pr.Sub} sit{pr.sub==='they'?'':'s'} down behind the cabin for 'just a second.' The next thing {pr.sub} know{pr.sub==='they'?'':'s'}, the slasher is standing over {pr.obj}.`,
         `The adrenaline crash hits {name} like a wall. Eyes close. Just for a moment. When they open, the mask is three feet away.`,
-        `{name} leans against a tree and the exhaustion wins. {pr.Sub} wake{pr.sub==='they'?'':'s'} up to a hand on {pr.pos} shoulder. It's not a friend.`
+        `{name} leans against a tree and the exhaustion wins. {pr.Sub} wake{pr.sub==='they'?'':'s'} up to a hand on {pr.posAdj} shoulder. It's not a friend.`
       ],
       povVariants: [
         "You sit down for 'just a second.' Your eyes close. When they open, the mask is three feet away.",
@@ -922,7 +922,7 @@ const SLASHER_FINAL_WIN = [
     bondEffect: { target: 'tribe', delta: 0.5 },
     textVariants: [
       `{name} starts talking. To the slasher. About life, about fear, about why this doesn't have to end this way. The slasher stops. Nobody can believe it. Neither can {name}.`,
-      `{name} holds up {pr.pos} hands. 'Wait. Just — wait.' The slasher pauses. {name} keeps talking. Calm. Steady. The slasher backs off. The tribe is stunned.`,
+      `{name} holds up {pr.posAdj} hands. 'Wait. Just — wait.' The slasher pauses. {name} keeps talking. Calm. Steady. The slasher backs off. The tribe is stunned.`,
       `{name} sits down. In the open. Looks at the slasher and says, 'I'm done running.' The slasher stands there. Then turns. Then leaves. Nobody will ever explain this.`
     ]
   }
@@ -2356,7 +2356,7 @@ function _generateCinematicText(evt, povPlayer) {
     'find-weapon': [
       `${name}'s hand finds the machete. Cold metal. A weapon. Everything changes.`,
       `${name} pulls the fire axe from the wall mount. The weight feels like power.`,
-      `${name} wraps ${pr.pos} fist around a pipe wrench. Now it's a fair fight.`
+      `${name} wraps ${pr.posAdj} fist around a pipe wrench. Now it's a fair fight.`
     ],
     'noise-distraction': [
       `${name} hurls a rock through the far window. Glass explodes. The slasher's head snaps toward the sound.`,
@@ -2364,7 +2364,7 @@ function _generateCinematicText(evt, povPlayer) {
       `${name} throws the torch into the dark. The slasher's head snaps toward the light.`
     ],
     'run-for-it': [
-      `${name} breaks into a sprint. Branches whip ${pr.pos} face. Doesn't matter. Just run.`,
+      `${name} breaks into a sprint. Branches whip ${pr.posAdj} face. Doesn't matter. Just run.`,
       `${name} launches from cover. Full speed. The treeline is thirty yards away. Maybe.`,
       `${name} runs. Not gracefully. Not strategically. Just pure animal flight.`
     ],
@@ -2376,7 +2376,7 @@ function _generateCinematicText(evt, povPlayer) {
     'barricade': [
       `${name} drags the dresser against the door. Then the table. Then everything else.`,
       `${name} hammers boards across the window. Each nail buys seconds. Maybe.`,
-      `${name} jams the chair under the doorknob. Old trick. ${pr.Sub}'s betting ${pr.pos} life on it.`
+      `${name} jams the chair under the doorknob. Old trick. ${pr.Sub}'s betting ${pr.posAdj} life on it.`
     ],
     'distraction': [
       `${name} steps into the open. Arms wide. 'HEY! OVER HERE!' The others scatter.`,
@@ -2386,7 +2386,7 @@ function _generateCinematicText(evt, povPlayer) {
     'warn-others': [
       `${name} sprints between cabins, banging on doors: 'MOVE! It's coming!'`,
       `${name} screams a warning into the dark. Some hear it. Some don't.`,
-      `${name} finds the others and ${pr.pos} face says everything before ${pr.sub} can speak.`
+      `${name} finds the others and ${pr.posAdj} face says everything before ${pr.sub} can speak.`
     ],
     'rally': [
       `${name} pulls them together. 'We're not dying out here. Not tonight.'`,
@@ -2394,7 +2394,7 @@ function _generateCinematicText(evt, povPlayer) {
       `${name} grabs shoulders, makes eye contact. 'Focus. We're getting out of this.'`
     ],
     'calm-others': [
-      `${name} keeps ${pr.pos} voice low and steady. 'Breathe. We've got time. We've got each other.'`,
+      `${name} keeps ${pr.posAdj} voice low and steady. 'Breathe. We've got time. We've got each other.'`,
       `${name} puts a hand on someone's arm. No words needed. The trembling stops.`,
       `${name} is the reason nobody screams. The calm in ${pr.obj} is contagious.`
     ],

@@ -264,8 +264,8 @@ export function updatePerceivedBonds(ep) {
       if (ep.campEvents?.[campKey]?.pre) {
         const _realizationText = {
           'low-loyalty-betrayal': [
-            `${from} replays the last vote in ${pr.pos} head. The math doesn't add up. ${to}'s name keeps coming back.`,
-            `${from} finally sees what everyone else saw weeks ago. ${to} was never on ${pr.pos} side.`,
+            `${from} replays the last vote in ${pr.posAdj} head. The math doesn't add up. ${to}'s name keeps coming back.`,
+            `${from} finally sees what everyone else saw weeks ago. ${to} was never on ${pr.posAdj} side.`,
             `${from} catches ${to} avoiding eye contact. It clicks.`
           ],
           'villain-manipulation': [
@@ -287,7 +287,7 @@ export function updatePerceivedBonds(ep) {
             `${from} doesn't forgive ${to}. ${pr.Sub} just stop${pr.sub==='they'?'':'s'} pretending.`
           ],
           'showmance-blindspot': [
-            `${from} finds out about the other alliance. The look on ${pr.pos} face says everything.`,
+            `${from} finds out about the other alliance. The look on ${pr.posAdj} face says everything.`,
             `${from} and ${to} sit apart for the first time. The tribe notices before either of them does.`
           ],
           'provider-entitlement': [
@@ -295,8 +295,8 @@ export function updatePerceivedBonds(ep) {
             `${from} stopped fishing. Not because ${pr.sub} can't. Because ${pr.sub} finally realized it wasn't earning ${pr.obj} anything.`
           ],
           'swap-loyalty-assumption': [
-            `${from} realizes the new tribe was never ${pr.pos} tribe. Just a waiting room.`,
-            `${from} hears ${pr.pos} name come up. Not as a target — just as an option. That's worse.`
+            `${from} realizes the new tribe was never ${pr.posAdj} tribe. Just a waiting room.`,
+            `${from} hears ${pr.posAdj} name come up. Not as a target — just as an option. That's worse.`
           ]
         };
         const variants = _realizationText[entry.reason] || [`${from} finally sees the truth about ${to}.`];
@@ -535,7 +535,7 @@ export function checkPerceivedBondTriggers(ep) {
           text: _pick([
             `${victim} still sits next to ${betrayer} at the fire. Everyone else sees it. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'}. Not yet.`,
             `${victim} makes excuses for ${betrayer}. "Maybe ${betrayer} had no choice." The tribe doesn't argue. They know.`,
-            `${victim} won't hear it. ${betrayer} is still ${pr.pos} ally. That's the story ${pr.sub} ${pr.sub==='they'?'are':'is'} telling ${pr.ref}.`,
+            `${victim} won't hear it. ${betrayer} is still ${pr.posAdj} ally. That's the story ${pr.sub} ${pr.sub==='they'?'are':'is'} telling ${pr.ref}.`,
           ]),
           badgeText: 'ONE-SIDED', badgeClass: 'gold',
           pendingScene: { kind: 'blind.denial', who: { a: victim, b: betrayer }, data: {}, phase: 'pre' },

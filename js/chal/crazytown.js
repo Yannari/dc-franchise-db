@@ -115,7 +115,7 @@ const HORSE_DIVE_FORCE_SUCCESS = [
 ];
 
 const HORSE_DIVE_FORCE_FAIL = [
-  (thrower, chicken, tPr, cPr) => `${thrower} tries to push ${chicken} forward and nearly goes over ${tPr.pos} instead. ${chicken} sidesteps and the moment collapses.`,
+  (thrower, chicken, tPr, cPr) => `${thrower} tries to push ${chicken} forward and nearly goes over ${tPr.posAdj} instead. ${chicken} sidesteps and the moment collapses.`,
   (thrower, chicken, tPr, cPr) => `${chicken} braces hard against ${thrower}'s shove. Nobody moves. It's a stalemate, and the tribe groans.`,
   (thrower, chicken, tPr, cPr) => `${thrower} lunges toward ${chicken}, who ducks aside. The push misses completely and they both look foolish.`,
   (thrower, chicken, tPr, cPr) => `${thrower}'s intervention backfires — ${chicken} digs in harder and ${cPr.sub}'s going nowhere.`,

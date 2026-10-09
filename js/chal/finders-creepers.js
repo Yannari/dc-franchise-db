@@ -186,7 +186,7 @@ const BRAVE_TEXT = [
 // ── SOCIAL: bonding / teamwork ──
 const BOND_TEXT = [
   (a, b) => `${a} and ${b} move back to back through the dark, covering each other's blind spots. Trust, forged in fear.`,
-  (a, b) => `${a} shares ${pronouns(a).posAdj} flashlight with ${b} when ${pronouns(b).pos} dies. They navigate the cemetery as one.`,
+  (a, b) => `${a} shares ${pronouns(a).posAdj} flashlight with ${b} when ${pronouns(b).posAdj} dies. They navigate the cemetery as one.`,
   (a, b) => `${a} and ${b} crack the grave-date riddle together, finishing each other's math. The bond grows.`,
 ];
 

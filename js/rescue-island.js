@@ -161,7 +161,7 @@ function _pickBreathingMoment(duelists, riList, phaseIdx, winsPerPlayer, challen
       type: 'psych-out', player: a, target: b,
       text: _pick([
         `${a} leans toward ${b} between rounds. "You feel that? That's you losing." ${b} says nothing.`,
-        `${a} makes eye contact with ${b} and slowly shakes ${prA.pos} head. The message is clear.`,
+        `${a} makes eye contact with ${b} and slowly shakes ${prA.posAdj} head. The message is clear.`,
         `${a} stretches casually, glancing at ${b} like this is beneath ${prA.obj}. The disrespect is deliberate.`,
         `"You done yet?" ${a} asks ${b}. ${b}'s jaw tightens.`,
       ]),
@@ -176,7 +176,7 @@ function _pickBreathingMoment(duelists, riList, phaseIdx, winsPerPlayer, challen
         `${b} stares ${a} down during the reset. The silence is louder than any words.`,
         `${b} lets out a laugh between rounds. Not at anything funny. ${a} notices.`,
         `"I've beaten better," ${b} mutters loud enough for ${a} to hear.`,
-        `${b} takes ${prB.pos} time resetting. Making ${a} wait. Making ${a} think.`,
+        `${b} takes ${prB.posAdj} time resetting. Making ${a} wait. Making ${a} think.`,
       ]),
       bondDelta: -1, momentumDelta: { [a]: -0.3 },
       badgeText: 'PSYCH-OUT', badgeClass: 'ri-pill-danger', players: [b, a],
@@ -188,9 +188,9 @@ function _pickBreathingMoment(duelists, riList, phaseIdx, winsPerPlayer, challen
       type: 'self-talk', player: a,
       text: _pick([
         `${a} mutters to ${prA.ref} between rounds. Fists clenched. Eyes locked forward. ${prA.Sub} ${prA.sub==='they'?'are':'is'} going to a different place mentally.`,
-        `${a} slaps ${prA.pos} own face. Hard. The fire in ${prA.pos} eyes doubles.`,
-        `${a} closes ${prA.pos} eyes. Breathes. When they open, something has shifted.`,
-        `"Come on. COME ON." ${a} pounds ${prA.pos} chest. The self-belief radiates.`,
+        `${a} slaps ${prA.posAdj} own face. Hard. The fire in ${prA.posAdj} eyes doubles.`,
+        `${a} closes ${prA.posAdj} eyes. Breathes. When they open, something has shifted.`,
+        `"Come on. COME ON." ${a} pounds ${prA.posAdj} chest. The self-belief radiates.`,
       ]),
       mentalShift: 'obsessed',
       badgeText: 'FIRED UP', badgeClass: 'ri-pill-fire', players: [a],
@@ -201,7 +201,7 @@ function _pickBreathingMoment(duelists, riList, phaseIdx, winsPerPlayer, challen
       type: 'self-talk', player: b,
       text: _pick([
         `${b} talks to ${prB.ref}. You can see the words — "I can do this. I CAN do this."`,
-        `${b} takes a deep breath, squares ${prB.pos} shoulders. Something clicks.`,
+        `${b} takes a deep breath, squares ${prB.posAdj} shoulders. Something clicks.`,
         `${b} is pacing between rounds. Muttering. Planning. ${prB.Sub} ${prB.sub==='they'?'are':'is'} building into something.`,
         `${b} lets out a primal yell between rounds. ${a} looks over. ${b} doesn't care.`,
       ]),
@@ -215,7 +215,7 @@ function _pickBreathingMoment(duelists, riList, phaseIdx, winsPerPlayer, challen
       type: 'read-opponent', player: a, target: b,
       text: _pick([
         `${a} watches ${b}'s hands during the reset. The way ${prB.sub} grip${prB.sub==='they'?'':'s'}. The slight tremor. ${a} files it away.`,
-        `${a} studies ${b}'s technique. There — a pattern. ${a} adjust${prA.sub==='they'?'':'s'} ${prA.pos} approach.`,
+        `${a} studies ${b}'s technique. There — a pattern. ${a} adjust${prA.sub==='they'?'':'s'} ${prA.posAdj} approach.`,
         `${a}'s eyes narrow. ${prA.Sub}'s spotted something in ${b}'s rhythm. A weakness to exploit.`,
         `${a} watches ${b} reset and nods slowly. ${prA.Sub} see${prA.sub==='they'?'':'s'} it now.`,
       ]),
@@ -227,9 +227,9 @@ function _pickBreathingMoment(duelists, riList, phaseIdx, winsPerPlayer, challen
     eligible.push({
       type: 'read-opponent', player: b, target: a,
       text: _pick([
-        `${b} tilts ${prB.pos} head, watching ${a} reset. Something about ${a}'s footwork... there. Found it.`,
+        `${b} tilts ${prB.posAdj} head, watching ${a} reset. Something about ${a}'s footwork... there. Found it.`,
         `${b} catches a tell in ${a}'s approach. A micro-adjustment follows.`,
-        `${b} replays the last round in ${prB.pos} head. ${prB.Sub} see${prB.sub==='they'?'':'s'} where ${a} is weak.`,
+        `${b} replays the last round in ${prB.posAdj} head. ${prB.Sub} see${prB.sub==='they'?'':'s'} where ${a} is weak.`,
         `Between rounds, ${b} recalibrates. ${prB.Sub}'ve read ${a}'s rhythm now.`,
       ]),
       momentumDelta: { [b]: 0.5 },
@@ -262,7 +262,7 @@ function _pickBreathingMoment(duelists, riList, phaseIdx, winsPerPlayer, challen
       type: 'sideline-encouragement', player: spec, target: supported,
       text: _pick([
         `From the sideline, ${spec} shouts: "Come on, ${supported}! You got this!" ${supported} hears it.`,
-        `${spec} is on ${prSpec.pos} feet at the edge of the arena. "DON'T GIVE UP, ${supported}!" The words land.`,
+        `${spec} is on ${prSpec.posAdj} feet at the edge of the arena. "DON'T GIVE UP, ${supported}!" The words land.`,
         `${spec} claps between rounds. ${supported} looks over and ${spec} gives a thumbs up. Small thing. Means everything.`,
         `"${supported}! ${supported}!" ${spec} is practically in the arena. The support is real.`,
       ]),
@@ -276,9 +276,9 @@ function _pickBreathingMoment(duelists, riList, phaseIdx, winsPerPlayer, challen
     eligible.push({
       type: 'breakdown', player: a,
       text: _pick([
-        `${a}'s composure cracks between rounds. ${prA.Sub} wipe${prA.sub==='they'?'':'s'} ${prA.pos} eyes quickly, hoping no one saw.`,
+        `${a}'s composure cracks between rounds. ${prA.Sub} wipe${prA.sub==='they'?'':'s'} ${prA.posAdj} eyes quickly, hoping no one saw.`,
         `${a} slams the ground. Frustration boiling over. The game is slipping away and ${prA.sub} know${prA.sub==='they'?'':'s'} it.`,
-        `${a}'s shoulders drop. The fight is leaving ${prA.pos} body. You can see it draining out.`,
+        `${a}'s shoulders drop. The fight is leaving ${prA.posAdj} body. You can see it draining out.`,
         `A shaky exhale from ${a}. ${prA.Sub} ${prA.sub==='they'?'are':'is'} coming apart at the seams.`,
       ]),
       mentalShift: 'broken',
@@ -323,7 +323,7 @@ function _pickBreathingMoment(duelists, riList, phaseIdx, winsPerPlayer, challen
       text: _pick([
         `${victim}'s station shifts during the reset. ${prV.Sub} lose${prV.sub==='they'?'':'s'} precious seconds readjusting.`,
         `Something jams on ${victim}'s side. ${prV.Sub} fumble${prV.sub==='they'?'':'s'} with it, losing focus.`,
-        `${victim} drops ${prV.pos} gear between rounds. A small setback — but everything matters here.`,
+        `${victim} drops ${prV.posAdj} gear between rounds. A small setback — but everything matters here.`,
         `A gust of wind scatters ${victim}'s setup. ${prV.Sub} scramble${prV.sub==='they'?'':'s'} to recover.`,
       ]),
       momentumDelta: { [victim]: -0.5 },
@@ -337,7 +337,7 @@ function _pickBreathingMoment(duelists, riList, phaseIdx, winsPerPlayer, challen
       text: _pick([
         `${a} digs somewhere deep between rounds. The posture changes. The breathing steadies. ${prA.Sub} ${prA.sub==='they'?'are':'is'} not done.`,
         `Something shifts in ${a}. The desperation turns to determination. A second wind.`,
-        `${a} rolls ${prA.pos} shoulders. Cracks ${prA.pos} neck. Whatever was broken just got fixed.`,
+        `${a} rolls ${prA.posAdj} shoulders. Cracks ${prA.posAdj} neck. Whatever was broken just got fixed.`,
         `${a} takes one long breath. When ${prA.sub} exhale${prA.sub==='they'?'':'s'}, the fear is gone. ${prA.Sub} ${prA.sub==='they'?'are':'is'} ready.`,
       ]),
       mentalShift: 'focused',
@@ -1067,7 +1067,7 @@ export function generateRILifeEvents(ep) {
           );
           if (bond <= -4) socialPool.push(
             { type: 'explosive-fight', text: `${a} and ${b} finally blow up. Screaming. Pointing. Other residents back away. This was inevitable.`, player: a, player2: b, bondDelta: -1.0 },
-            { type: 'explosive-fight', text: `${b} accuses ${a} of sabotaging ${prB.pos} fire. ${a} accuses ${b} of stealing rice. It devolves from there.`, player: a, player2: b, bondDelta: -1.0 },
+            { type: 'explosive-fight', text: `${b} accuses ${a} of sabotaging ${prB.posAdj} fire. ${a} accuses ${b} of stealing rice. It devolves from there.`, player: a, player2: b, bondDelta: -1.0 },
           );
         }
 
@@ -1109,13 +1109,13 @@ export function generateRILifeEvents(ep) {
         const streakB = gs.riWinStreak[b] || 0;
         if (streakA >= 3) {
           socialPool.push(
-            { type: 'intimidation', text: `${a} has won ${streakA} duels in a row. ${b} can see it in ${prA.pos} posture — ${a} expects to win again.`, player: a, player2: b },
+            { type: 'intimidation', text: `${a} has won ${streakA} duels in a row. ${b} can see it in ${prA.posAdj} posture — ${a} expects to win again.`, player: a, player2: b },
             { type: 'intimidation', text: `${b} watches ${a} train. ${streakA} wins. No weakness. No openings. The dread builds.`, player: a, player2: b },
           );
         }
         if (streakB >= 3) {
           socialPool.push(
-            { type: 'intimidation', text: `${b} has won ${streakB} duels in a row. ${a} can see it in ${prB.pos} posture — ${b} expects to win again.`, player: b, player2: a },
+            { type: 'intimidation', text: `${b} has won ${streakB} duels in a row. ${a} can see it in ${prB.posAdj} posture — ${b} expects to win again.`, player: b, player2: a },
           );
         }
 
@@ -1125,7 +1125,7 @@ export function generateRILifeEvents(ep) {
         if (sA.boldness >= 7 || isVillainA) {
           socialPool.push(
             { type: 'trash-talk', text: `${a} tells ${b} exactly how this is going to go. ${b} says nothing. Just stares.`, player: a, player2: b, bondDelta: -0.5 },
-            { type: 'trash-talk', text: `"You know you can't beat me, right?" ${a} says it like ${prA.sub}'${prA.sub==='they'?'re':'s'} commenting on the weather. ${b} grits ${prB.pos} teeth.`, player: a, player2: b, bondDelta: -0.5 },
+            { type: 'trash-talk', text: `"You know you can't beat me, right?" ${a} says it like ${prA.sub}'${prA.sub==='they'?'re':'s'} commenting on the weather. ${b} grits ${prB.posAdj} teeth.`, player: a, player2: b, bondDelta: -0.5 },
           );
         }
         if (sB.boldness >= 7 || isVillainB) {
@@ -1145,7 +1145,7 @@ export function generateRILifeEvents(ep) {
         }
         if (isNiceB && _getMentalState(a) === 'broken') {
           socialPool.push(
-            { type: 'comfort', text: `${b} won't let ${a} give up. "You didn't come this far to quit." ${a} wipes ${prA.pos} eyes. Maybe not.`, player: b, player2: a, bondDelta: 1.5 },
+            { type: 'comfort', text: `${b} won't let ${a} give up. "You didn't come this far to quit." ${a} wipes ${prA.posAdj} eyes. Maybe not.`, player: b, player2: a, bondDelta: 1.5 },
           );
         }
 
@@ -1183,7 +1183,7 @@ export function generateRILifeEvents(ep) {
         const prR = pronouns(resident);
         socialPool.push(
           { type: 'sizing-up', text: `${resident} watches ${arrival} walk onto the beach. ${prR.Sub} know${prR.sub==='they'?'':'s'} what this means.`, player: resident, player2: arrival },
-          { type: 'sizing-up', text: `${arrival} drops ${prA.pos} torch and looks around. ${resident} is already watching. Measuring.`, player: arrival, player2: resident },
+          { type: 'sizing-up', text: `${arrival} drops ${prA.posAdj} torch and looks around. ${resident} is already watching. Measuring.`, player: arrival, player2: resident },
         );
       });
     });
@@ -1331,7 +1331,7 @@ export function generateRIPostDuelEvents(ep) {
     losePool = [
       { type: 'loser-bitter', text: `${loser} doesn't shake hands. Doesn't look back. ${prL.Sub} will remember this.` },
       { type: 'loser-bitter', text: `${loser} smirks as ${prL.sub} leave${prL.sub==='they'?'':'s'}. 'You'll need more than that to stop me.' But it did stop ${prL.obj}.` },
-      { type: 'loser-bitter', text: `${loser} burns ${prL.pos} buff before walking away. The island can have it.` },
+      { type: 'loser-bitter', text: `${loser} burns ${prL.posAdj} buff before walking away. The island can have it.` },
       { type: 'loser-bitter', text: `${loser} says nothing. Just stares at ${winner} for a long, cold moment. Then walks.` },
     ];
   } else if (isNice) {
@@ -1343,7 +1343,7 @@ export function generateRIPostDuelEvents(ep) {
     ];
   } else {
     losePool = [
-      { type: 'loser-neutral', text: `${loser} nods at ${winner}. Fair fight. Then ${prL.sub} pick${prL.sub==='they'?'':'s'} up ${prL.pos} torch and goes.` },
+      { type: 'loser-neutral', text: `${loser} nods at ${winner}. Fair fight. Then ${prL.sub} pick${prL.sub==='they'?'':'s'} up ${prL.posAdj} torch and goes.` },
       { type: 'loser-bitter', text: `${loser} doesn't look back. The game took everything and gave nothing.` },
       { type: 'loser-emotional', text: `${loser} takes one last look at the island. Then turns around and never looks back.` },
       { type: 'loser-graceful', text: `${loser} shakes ${winner}'s hand and says 'Better player today.' Clean exit.` },
@@ -1363,8 +1363,8 @@ export function generateRIPostDuelEvents(ep) {
 const _ARCH_TRAIN  = { 'challenge-beast':1.8, 'hothead':1.4, 'villain':1.2, 'schemer':1.2, 'mastermind':1.2, 'wildcard':1.1, 'social-butterfly':0.7, 'showmancer':0.7, 'goat':0.6 };
 const _ARCH_SOCIAL = { 'social-butterfly':1.6, 'showmancer':1.6, 'hero':1.4, 'loyal-soldier':1.2, 'villain':0.8, 'schemer':0.8, 'challenge-beast':0.7 };
 const _EDGE_DRILLS = [
-  { label: 'beach sprints',      stat: 'physical',  textFn: n => `${n} runs the beach until ${pronouns(n).pos} legs give out, then runs it again. The body adapts.` },
-  { label: 'dead hangs',         stat: 'endurance', textFn: n => `${n} hangs off the cliff ledge until ${pronouns(n).pos} grip screams, then holds it longer. Building iron.` },
+  { label: 'beach sprints',      stat: 'physical',  textFn: n => `${n} runs the beach until ${pronouns(n).posAdj} legs give out, then runs it again. The body adapts.` },
+  { label: 'dead hangs',         stat: 'endurance', textFn: n => `${n} hangs off the cliff ledge until ${pronouns(n).posAdj} grip screams, then holds it longer. Building iron.` },
   { label: 'driftwood puzzles',  stat: 'mental',    textFn: n => `${n} solves driftwood puzzles over and over, shaving seconds off every attempt.` },
   { label: 'shadow debates',     stat: 'social',    textFn: n => `${n} rehearses pleas to an imaginary jury, sharpening every word.` },
   { label: 'cliff-edge nerves',  stat: 'boldness',  textFn: n => `${n} stands at the cliff edge staring down the drop until the fear goes quiet.` },

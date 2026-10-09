@@ -1438,7 +1438,7 @@ export function simulateHellsKitchen(ep) {
               type: 'dish-stealing',
               course,
               players: [thief, victim],
-              text: `${thief} claims ${victim}'s work as ${pr.pos} in front of ${host}. "I did all of this." ${victim} stands there, jaw dropped. ${pr.Sub} knows. Everyone will know.`,
+              text: `${thief} claims ${victim}'s work as ${pr.posAdj} in front of ${host}. "I did all of this." ${victim} stands there, jaw dropped. ${pr.Sub} knows. Everyone will know.`,
               badge: 'Credit Thief',
               badgeText: `${thief} steals credit from ${victim}`,
               badgeClass: 'badge-danger'

@@ -1688,7 +1688,7 @@ export function rpBuildEmissaryChoice(ep) {
     <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:#f85149;text-shadow:0 0 20px rgba(248,81,73,0.3);margin-bottom:20px">🎯 THE EMISSARY'S CHOICE</div>`;
 
   html += `<div style="padding:16px;margin-bottom:6px;border-radius:10px;border:2px solid #f85149;background:linear-gradient(135deg,rgba(248,81,73,0.12) 0%,rgba(248,81,73,0.04) 100%);box-shadow:0 0 20px rgba(248,81,73,0.15)">
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:12px">${emissary} has watched the vote. Now it's ${pronouns(emissary).pos} turn.</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:12px">${emissary} has watched the vote. Now it's ${pronouns(emissary).posAdj} turn.</div>
     <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px">
       ${rpPortrait(emissary, 'md')}
       <div style="font-size:24px;color:#f85149">→</div>
@@ -4039,7 +4039,7 @@ export function rpBuildFirstImpressions(ep, twistObj) {
       html += `<div style="text-align:center;margin:14px 0;padding:16px;background:rgba(227,179,65,0.08);border:1px solid rgba(227,179,65,0.25);border-radius:8px;animation:scrollDrop 0.5s var(--ease-broadcast) both">
         <div style="font-family:var(--font-display);font-size:20px;color:var(--accent-gold);letter-spacing:2px;text-shadow:0 0 15px var(--accent-gold)">TWIST</div>
         <div style="font-size:14px;color:#e6edf3;margin-top:10px">${step.votedOut} is <strong>not</strong> going home.</div>
-        <div style="font-size:12px;color:#8b949e;margin-top:6px">${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} know it yet — but ${pr.pos} game just changed completely.</div>
+        <div style="font-size:12px;color:#8b949e;margin-top:6px">${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} know it yet — but ${pr.posAdj} game just changed completely.</div>
       </div>`;
     } else if (step.type === 'swap-announce') {
       html += `<div style="text-align:center;margin:20px 0 10px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
@@ -6984,7 +6984,7 @@ export function _buildPostTwistBlocks(ep) {
       const _apPr = pronouns(fm.allyPlayer);
       sc.push({ text: `The vote is cast. But ${fm.allyPlayer} stands up. ${_apPr.Sub} reach${_apPr.sub==='they'?'':'es'} into ${_apPr.posAdj} bag and pull${_apPr.sub==='they'?'':'s'} out the Second Life Amulet — playing it for ${fm.player}.`, players: [fm.allyPlayer, fm.player], badge: 'SECOND LIFE AMULET — ALLY PLAY', badgeClass: 'win' });
     } else if (fm.fromAmulet) {
-      sc.push({ text: `The vote is cast. But ${fm.player} reaches into ${_pPr.pos} bag — the Second Life Amulet. ${_pPr.Sub} ${_pPr.sub==='they'?'are':'is'} not done yet.`, players: [fm.player], badge: 'SECOND LIFE AMULET', badgeClass: 'win' });
+      sc.push({ text: `The vote is cast. But ${fm.player} reaches into ${_pPr.posAdj} bag — the Second Life Amulet. ${_pPr.Sub} ${_pPr.sub==='they'?'are':'is'} not done yet.`, players: [fm.player], badge: 'SECOND LIFE AMULET', badgeClass: 'win' });
     } else {
       sc.push({ text: `The vote is cast. But ${fm.player} is not going home — not yet. Second Life is in play.`, players: [fm.player, fm.opponent].filter(Boolean) });
     }
@@ -7013,7 +7013,7 @@ export function _buildPostTwistBlocks(ep) {
     } else if (_dt === 'endurance') {
       const _edge = _pS.endurance > _oS.endurance;
       if (_edge) {
-        sc.push({ text: `${fm.player} locks in early. Still as stone. This is ${_pPr.pos} kind of suffering.`, players: [fm.player] });
+        sc.push({ text: `${fm.player} locks in early. Still as stone. This is ${_pPr.posAdj} kind of suffering.`, players: [fm.player] });
         sc.push({ text: `${fm.opponent}'s legs are shaking. The beam is barely wide enough and every second stretches longer.`, players: [fm.opponent] });
       } else {
         sc.push({ text: `${fm.opponent} settles into position with a calm that's almost eerie.`, players: [fm.opponent] });
@@ -7043,7 +7043,7 @@ export function _buildPostTwistBlocks(ep) {
     if (fm.winner === fm.player) {
       sc.push({ text: `${fm.player} wins the duel.`, players: [fm.player], badge: 'SECOND LIFE', badgeClass: 'win' });
       sc.push({ text: `${fm.loser} is eliminated.`, players: [fm.loser], badge: 'Eliminated', badgeClass: 'bad' });
-      sc.push({ text: `${fm.player} walks back to camp. ${_pPr.Sub} fought ${_pPr.pos} way off the chopping block.`, players: [fm.player] });
+      sc.push({ text: `${fm.player} walks back to camp. ${_pPr.Sub} fought ${_pPr.posAdj} way off the chopping block.`, players: [fm.player] });
     } else {
       sc.push({ text: `${fm.opponent} wins the duel.`, players: [fm.opponent], badge: 'Wins Duel', badgeClass: 'win' });
       sc.push({ text: `${fm.loser} is eliminated.`, players: [fm.loser], badge: 'Eliminated', badgeClass: 'bad' });
@@ -9532,7 +9532,7 @@ export function rpBuildVotingPlans(ep) {
       ]);
       if (_socialBombed) return _pick([
         `${target}'s outburst at camp sealed it. The tribe was already lukewarm — the social bomb turned lukewarm into consensus.`,
-        `After what happened at camp, ${target} gave the tribe permission to write ${_tPr.pos} name. Nobody needed a second reason.`,
+        `After what happened at camp, ${target} gave the tribe permission to write ${_tPr.posAdj} name. Nobody needed a second reason.`,
       ]);
       if (_isStandout && _allies.length === 0) return _pick([
         `${target} was the best performer in the challenge — but that doesn't matter when nobody at camp is willing to protect you. No alliance, no safety net.`,

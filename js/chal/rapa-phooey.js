@@ -2436,7 +2436,7 @@ export function simulateRapaPhooey(ep) {
                   addBond(witness, n, -0.5);
                   wTxt = pick([
                     (w, s, v) => `${w} sees ${s} destroy ${v}'s egg. Files it away. Says nothing.`,
-                    (w, s, v) => `${w} glances over just in time to see the shell crack. ${pronouns(w).Sub} keeps moving. Not ${pronouns(w).pos} problem.`,
+                    (w, s, v) => `${w} glances over just in time to see the shell crack. ${pronouns(w).Sub} keeps moving. Not ${pronouns(w).posAdj} problem.`,
                     (w, s, v) => `${w} catches the sabotage but stays out of it. Noted, though.`,
                     (w, s, v) => `${w} watches ${s} smash the egg with a blank expression. No reaction. Just... noted.`,
                   ])(witness, n, target);

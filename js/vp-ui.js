@@ -210,7 +210,7 @@ export function vpRevealNextPlacement(containerId) {
   if (_threwIt) {
     // Viewer knows they threw it — show the strategic reasoning
     const _threwReasons = [
-      `Deliberately underperformed. The target on ${playerName}'s back was getting too heavy — winning again would've sealed ${pronouns(playerName).pos} fate.`,
+      `Deliberately underperformed. The target on ${playerName}'s back was getting too heavy — winning again would've sealed ${pronouns(playerName).posAdj} fate.`,
       `Threw it. ${playerName} could've competed harder — chose not to. Looking weak is a strategy. The tribe doesn't know yet.`,
       `${playerName} pulled back on purpose. After recent wins, another immunity necklace would've painted a target ${pronouns(playerName).sub} couldn't survive. Smart? Maybe. Risky? Definitely.`,
     ];

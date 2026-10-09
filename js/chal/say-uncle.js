@@ -53,7 +53,7 @@ export function simulateSayUncle(ep) {
         `${player} breathed through it like ${pr.sub} ${pr.sub === 'they' ? 'were' : 'was'} meditating. The dungeon has a new favourite.`,
       ];
       if (arch === 'villain' || arch === 'mastermind') r.push(`${player} smiled through the pain. That's the scary part.`, `${player} made eye contact with the rest of the tribe during ${dareTitle}. A message. Received.`);
-      if (arch === 'hero') r.push(`${player} gritted ${pr.pos} teeth and powered through. Not a sound. The tribe respects that.`, `${player} took ${dareTitle} like a warrior. The dungeon couldn't break what the game already tested.`);
+      if (arch === 'hero') r.push(`${player} gritted ${pr.posAdj} teeth and powered through. Not a sound. The tribe respects that.`, `${player} took ${dareTitle} like a warrior. The dungeon couldn't break what the game already tested.`);
       if (arch === 'chaos-agent') r.push(`${player} laughed through ${dareTitle}. Actually laughed. The tribe doesn't know what to do with that.`, `${player} started humming during ${dareTitle}. Nobody knows if that's bravery or insanity.`);
       if (arch === 'underdog' || arch === 'floater') r.push(`Nobody expected ${player} to take that. ${pr.Sub} did. The tribe is recalibrating.`);
       return _rp(r);
@@ -63,7 +63,7 @@ export function simulateSayUncle(ep) {
       `${player} was shaking by the end. But ${pr.sub} made it. Barely.`,
       `${player} survived ${dareTitle}. Not gracefully. But survival doesn't need to be graceful.`,
       `${player} hung on. The timer hit ten. ${pr.Sub} let out a breath ${pr.sub} didn't know ${pr.sub} ${pr.sub === 'they' ? 'were' : 'was'} holding.`,
-      `${player} gripped the edges of the torture station until ${pr.pos} knuckles went white. The timer hit zero. ${pr.Sub} let go.`,
+      `${player} gripped the edges of the torture station until ${pr.posAdj} knuckles went white. The timer hit zero. ${pr.Sub} let go.`,
       `${player}'s whole body was rigid. The countdown finished. ${pr.Sub} survived, but it cost something.`,
       `${player} made a sound ${pr.sub} probably didn't mean to make. But ${pr.sub} made it through. That's what counts.`,
       `${player} didn't quit. Not because it was easy — because ${pr.sub} refused to give anyone the satisfaction of watching ${pr.obj} break.`,
@@ -98,7 +98,7 @@ export function simulateSayUncle(ep) {
       `${picker} hesitates, then points at ${victim}. Not the safest choice.`,
       `"${victim}." ${picker} doesn't sound sure. The tribe notices.`,
       `${picker} looks around the dungeon. Weighs it. Points at ${victim}. The tribe holds its breath.`,
-      `${picker} closes ${pr.pos} eyes for a second before saying the name. "${victim}." ${pr.Sub} ${pr.sub === 'they' ? 'know' : 'knows'} what's at stake.`,
+      `${picker} closes ${pr.posAdj} eyes for a second before saying the name. "${victim}." ${pr.Sub} ${pr.sub === 'they' ? 'know' : 'knows'} what's at stake.`,
     ]);
   };
 
@@ -182,7 +182,7 @@ export function simulateSayUncle(ep) {
         `${spectator} looks away from the pillory. ${prS.Sub} can't watch ${activePlayer} go down.`,
       ]);
       if (result === 'dominant') return _rp([
-        `${spectator} grins from the pillory. That's ${prS.pos} person.`,
+        `${spectator} grins from the pillory. That's ${prS.posAdj} person.`,
         `From the pillory, ${spectator} nods. ${activePlayer} is still in it.`,
       ]);
       return _rp([
@@ -226,7 +226,7 @@ export function simulateSayUncle(ep) {
       `From the pillory, ${spectator} beams. That's the person ${prS.sub} chose. Still fighting.`,
     ]);
     return _rp([
-      `${spectator} holds ${prS.pos} breath in the pillory the entire ten seconds. ${activePlayer} made it. ${spectator} breathes again.`,
+      `${spectator} holds ${prS.posAdj} breath in the pillory the entire ten seconds. ${activePlayer} made it. ${spectator} breathes again.`,
       `From the pillory, ${spectator}'s eyes don't leave ${activePlayer} for a single second of the dare.`,
     ]);
   };

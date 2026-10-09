@@ -525,7 +525,7 @@ export default {
       { by: 'a', say: "Me neither." },
       { by: 'b', say: "So now what?" },
       { by: 'a', say: "Now we're two people who used to be in an alliance. Who know exactly how the other one plays." },
-      { by: 'b', conf: "Alliances here don't end with a big fight. They just stop. One day you look up and you're on your own.", v: { teen: "We didn't even fight, we just stopped talking, and that's honestly worse.", grown: "I've seen it a hundred times, things don't really end, they just fade out." } },
+      { by: 'b', conf: "I keep waiting for somebody to tell me it's over, and nobody does. I just looked up today and realised I'm on my own.", v: { teen: "We didn't even fight, we just stopped talking, and that's honestly worse.", grown: "I've seen it a hundred times, things don't really end, they just fade out." } },
     ] },
     { id: 'na.n2', place: 'aside', when: { betrayer: true }, turns: [
       { by: 'b', say: "You heard about {betrayer}?", v: { loud: "Did you HEAR what {betrayer} did?!", dry: "So, {betrayer}. Fun news, huh?" } },

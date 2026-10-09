@@ -70,7 +70,7 @@ export default {
       { by: 'b', say: "So what do we do?" },
       { by: 'a', say: "We make it {wrote}. I don't care how. I'll talk to every single person here if I have to." },
       { by: 'b', say: "I'm with you. Let's go." },
-      { by: 'b', conf: "{a} could be completely wrong about this. But you don't win this game by assuming people stopped talking about the weather." },
+      { by: 'b', conf: "Maybe {a} is wrong. I'd still rather be paranoid with {a} tonight than sit there feeling safe and get blindsided." },
     ] },
   ],
   'vp2.pair': [

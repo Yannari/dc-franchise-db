@@ -121,7 +121,7 @@ export default {
       { by: 'a', say: "Then we've got the night to make sure they don't. Who haven't you talked to yet?" },
       { by: 'b', say: "Pretty much everybody on the far end of the beach." },
       { by: 'a', say: "Then go talk to them. Nice and casual. Just make sure they've heard {target} before they've heard {other}." },
-      { by: 'b', conf: "Tonight's not about who deserves to go. It's about which name gets said first, and loudest." },
+      { by: 'b', conf: "I don't even care who deserves it anymore. I just need to make sure my name isn't the one people hear first." },
     ] },
   ],
   'vp2.grudge': [
@@ -156,7 +156,7 @@ export default {
       { by: 'a', say: "{target} is great. {target} is also liked by everybody, good at everything, and never gets a single vote." },
       { by: 'b', say: "So if not now..." },
       { by: 'a', say: "If not now, never. Next week {target} wins immunity and we've missed it." },
-      { by: 'b', conf: "The worst thing you can be in this game is the person everybody would vote for at the end. {target} just found that out the hard way." },
+      { by: 'b', conf: "I like {target}. That's the problem, because so does everybody else, and I don't want to sit next to {target} at the end and lose." },
     ] },
     { id: 'nv4.t2', when: { third: true }, turns: [
       { by: 'a', say: "We need to talk about {target}. All three of us." },
@@ -166,7 +166,7 @@ export default {
       { by: 'a', say: "It doesn't have to be anybody's fault. It just has to stop." },
       { by: 'c', say: "Everyone's going to say we were scared of {target}." },
       { by: 'a', say: "We are scared of {target}. That's exactly why it's tonight." },
-      { by: 'c', conf: "Nobody here has a bad word to say about {target}. That's what's going to send {target} home." },
+      { by: 'c', conf: "I can't think of one bad thing to say about {target}, and I'm about to vote {target} out for exactly that reason. I feel awful." },
     ] },
   ],
   'vp2.group': [
@@ -205,7 +205,7 @@ export default {
       { by: 'a', say: "Everybody's thinking it. {target} is a lovely person, and {target} is also the reason we keep losing." },
       { by: 'b', say: "So that's the vote." },
       { by: 'a', say: "That's the vote. We need to start winning, and this is how we start." },
-      { by: 'b', conf: "Nobody wants to be cruel about it. But when you lose, somebody has to pay for it, and today it's whoever was slowest." },
+      { by: 'b', conf: "I don't want to be cruel, and I hate myself a little for this, but we lost, and somebody has to go." },
     ] },
   ],
 };

@@ -263,7 +263,7 @@ export default {
       { by: 'a', say: "No, you didn't do anything. That's not what this is." },
       { by: 'b', say: "Then what is it?" },
       { by: 'a', say: "It's just the game. I'm sorry." },
-      { by: 'b', conf: "'It's just the game.' That's what people say right before they stop being your friend." },
+      { by: 'b', conf: "When {a} said it's just the game, it hurt more than if {a} had just been honest and said I'm not wanted anymore.", v: {"tough":"'It's just the game.' Fine. Then I'll play it too.","emotional":"I really thought {a} was my friend. I guess I was the only one who thought that."} },
     ] },
   ],
   'long.conf.bigmove.any': [

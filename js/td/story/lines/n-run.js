@@ -21,7 +21,7 @@ export default {
       { by: 'a', say: "Define 'more'." },
       { by: 'b', say: "{a}." },
       { by: 'a', say: "There might be some in the tool box. And under the big rock. And in my left shoe." },
-      { by: 'a', conf: "Rule one of any group trip: if you don't hide your food, you don't eat your food. That's just science." },
+      { by: 'a', conf: "I'm not sorry about the snacks. Every group trip I've ever been on, if I didn't hide my food, I didn't eat my food." },
     ] },
     { id: 'nrn.f1b', when: { third: true }, turns: [
       { beat: "{c} reaches into the rice sack and pulls out a granola bar that definitely didn't come with the rice." },
@@ -66,7 +66,7 @@ export default {
       { by: 'a', say: "Whoever's hungry." },
       { by: 'b', say: "That's everybody." },
       { by: 'a', say: "Exactly." },
-      { by: 'b', conf: "{a} has been running a snack economy this whole time and nobody noticed. That's either the dumbest strategy in the game, or the best." },
+      { by: 'b', conf: "I'm honestly impressed, and a little worried, because I've eaten {a}'s crackers twice this week and now I feel like I owe {a} my vote." },
     ] },
   ],
   'run.food.3': [

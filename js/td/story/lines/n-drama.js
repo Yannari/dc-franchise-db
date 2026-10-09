@@ -171,7 +171,7 @@ export default {
       { by: 'a', say: "I'm being very calm right now. I'd like you to notice that." },
       { by: 'b', say: "I noticed." },
       { by: 'a', say: "Good. Because I won't be calm next time." },
-      { by: 'b', conf: "{a} didn't raise {a.posAdj} voice once. That was so much scarier than yelling." },
+      { by: 'b', conf: "My hands are still shaking. {a} never raised {a.posAdj} voice, and I think that scared me more than shouting would have.", v: {"tough":"I'm not scared of {a}. I'm just going to watch {a} a lot more closely now.","dry":"Quiet anger. My favourite kind. Said nobody, ever."} },
     ] },
     { id: 'nd.ft2', place: 'secret', when: { voice: ['calm', 'dry', 'schemer', 'proud'] }, turns: [
       { by: 'a', say: "I don't like you. I'm not going to pretend I do." },
@@ -255,7 +255,7 @@ export default {
       { by: 'b', say: "It makes perfect sense. You just didn't think of it." },
       { beat: "The rest of the team stands there holding buckets, waiting." },
       { by: 'a', conf: "Nobody voted {b} in charge. Nobody voted me in charge either. But at least I'm good at it.", v: { bossy: "Somebody has to run this place, and it should be the person who's actually organised. Me." } },
-      { by: 'b', conf: "{a} wants to be the leader so badly. The team doesn't need a leader. It needs people to stop arguing about buckets.", v: { dry: "We had a leadership crisis over buckets. This is the show now." } },
+      { by: 'b', conf: "I'm so tired of it. {a} wants to be in charge, and all I want is for people to stop fighting about buckets so I can sit down.", v: { dry: "We had a leadership crisis over buckets. This is the show now." } },
     ] },
     { id: 'nd.cl2', place: 'public', when: { lost: true }, turns: [
       { by: 'a', say: "Okay, everybody, that can't happen again, so next time we listen to one person.", v: { bossy: "Never again. Next time, everyone listens to me.", competitive: "We don't lose like that again. Ever." } },

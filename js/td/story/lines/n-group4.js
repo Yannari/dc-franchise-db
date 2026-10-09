@@ -40,7 +40,7 @@ export default {
       O('e', "Talk about what? It's a game, people leave."),
       { by: 'a', say: "We don't have to talk about it. We just have to make sure it doesn't happen again for a while." },
       O('f', "Then we'd better win today."),
-      { by: 'c', conf: "Everybody's acting normal, but nobody's acting normal, because one of the people at this table wrote {lastBoot}'s name." },
+      { by: 'c', conf: "I keep looking around the table wondering who wrote {lastBoot}'s name, and it makes me feel a little sick.", v: {"tough":"Somebody at this table wrote {lastBoot}'s name. I'm going to find out who.","schemer":"Everybody's pretending last night didn't happen. I'm pretending too. I'm just better at it."} },
     ] },
     { id: 'nl.m3', place: 'eat', when: { voice: ['goofy', 'food', 'chaotic', 'loud', 'theatrical'] }, turns: [
       { by: 'a', say: "Okay, we're ranking the food, worst to least worst, and everybody gets one vote!" },
@@ -75,7 +75,7 @@ export default {
       O('e', "I can't. I'm too nervous."),
       { by: 'a', say: "Fine, this food is terrible and one of us is going home tonight. Better?" },
       O('f', "...A little, honestly."),
-      { by: 'c', conf: "Dinner before a vote is the worst meal of the day. Everybody's smiling at everybody. Nobody means it." },
+      { by: 'c', conf: "I hate dinner before a vote. I smile at everybody, everybody smiles at me, and I can't tell which of them are lying.", v: {"anxious":"I couldn't even eat. Every time somebody smiled at me, I wondered if they were writing my name.","cruel":"I love dinner before a vote. Everybody's so polite when they're scared."} },
     ] },
   ],
   'long.crowd.chores.any': [
@@ -88,7 +88,7 @@ export default {
       O('e', "I'll do water with {b}. It's the easy one."),
       { by: 'b', say: "It's not the easy one. It's heavy." },
       O('f', "I'll take firewood, then."),
-      { by: 'c', conf: "Nobody voted {a} in charge of chores, but nobody argued either, and that's how it starts." },
+      { by: 'c', conf: "I didn't say anything when {a} started giving out jobs, and now I'm annoyed at myself for that.", v: {"tough":"Nobody put {a} in charge. I'm going to be the one who says it, eventually.","warm":"Honestly, I'm glad somebody's organising things. I just hope {a} doesn't get too used to it."} },
     ] },
   ],
   'long.crowd.project.any': [
@@ -260,7 +260,7 @@ export default {
       O('d', "You've been tapping your foot for ten minutes."),
       O('e', "We're all tapping something."),
       { by: 'c', say: "I'm fine with tapping." },
-      { by: 'a', conf: "One of the people at this fire is going home tonight. Everybody's looking at the fire so nobody has to look at each other." },
+      { by: 'a', conf: "I just kept staring at the fire, because I didn't want to look at anybody and wonder if it was them, or if it was me.", v: {"tough":"I looked everybody in the eye tonight. If they're going to come for me, they can do it to my face.","emotional":"I couldn't look at anyone. I just kept thinking one of us won't be here tomorrow."} },
     ] },
   ],
 };

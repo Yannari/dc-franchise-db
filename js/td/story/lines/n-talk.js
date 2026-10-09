@@ -72,7 +72,7 @@ export default {
       { by: 'a', say: "So I'm a free agent. I'll vote with whoever keeps me around." },
       { by: 'b', say: "That's not exactly loyal." },
       { by: 'a', say: "Loyal to who? Everyone I was loyal to is gone." },
-      { by: 'b', conf: "A person with no team will do anything for a vote. That makes {a} useful. It also makes {a} dangerous." },
+      { by: 'b', conf: "I'm going to use {a}, and I know it. I just have to be careful, because somebody this desperate would use me right back." },
     ] },
   ],
   'long.talk.plan.map': [
@@ -517,7 +517,7 @@ export default {
       { by: 'b', say: "That's... really nice, thank you." },
       { by: 'a', say: "So if you ever need someone, I'm here." },
       { by: 'b', conf: "I didn't think {a} even noticed me. Turns out {a} is actually a really good person." },
-      { by: 'a', conf: "Everyone wants to be noticed. Notice them, and they'll vote however you need." },
+      { by: 'a', conf: "I just paid attention to people, and they opened up to me like nobody had listened to them in weeks. I feel a little bad about how well that works.", v: {"cruel":"I pay attention to people, and they do whatever I need. It's almost too easy."} },
     ] },
     { id: 'nk.rp2', place: 'work', when: { voice: ['schemer', 'calm', 'dry', 'cruel'] }, turns: [
       { beat: "{a} helps {b} with the chores {here}, without being asked." },
@@ -584,7 +584,7 @@ export default {
       { by: 'a', say: "Does it matter? You're not saying no." },
       { by: 'b', say: "It's complicated." },
       { by: 'a', say: "It's really not. We don't have a deal anymore." },
-      { by: 'a', conf: "{b} made the same promise to two people, and now {b} has nobody, because that's how that works." },
+      { by: 'a', conf: "I almost feel sorry for {b}. Almost. {b} promised the same thing to me and somebody else, and now I don't believe a word {b} says.", v: {"cruel":"{b} tried to play both of us. Now {b} gets neither. I'm loving it.","warm":"I'm disappointed in {b}. I really wanted to trust {b}."} },
     ] },
     { id: 'nk.dd2', place: 'aside', when: { other: true }, turns: [
       { by: 'a', say: "You told {other} final two." },

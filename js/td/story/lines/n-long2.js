@@ -36,7 +36,7 @@ export default {
       { by: 'b', say: "You're always getting firewood when something happens." },
       { by: 'a', say: "We always need firewood when something happens." },
       { by: 'b', conf: "I just realised I've never once heard {a} say a name out loud. Not once. Every fight, every plan, {a} is somewhere else, getting firewood." },
-      { by: 'a', conf: "People think staying quiet means you're not playing. Staying quiet is the whole play." },
+      { by: 'a', conf: "I stay quiet, and I'm fine with people thinking that means I'm not playing. It's kept my name out of every conversation so far.", v: {"anxious":"I'm quiet because I'm scared of saying the wrong thing. It just happens to also be working."} },
     ] },
   ],
   // a stands up for b, whose name keeps coming up
@@ -133,7 +133,7 @@ export default {
       { by: 'a', say: "Because if I hadn't, we'd both be in trouble right now, and I can show you why." },
       { by: 'b', say: "Go on, then." },
       { by: 'a', say: "Count the votes with me. Every way you count it, I did the only thing that kept us here." },
-      { by: 'b', conf: "{a} has an answer for everything. The scary part is that the answer actually makes sense." },
+      { by: 'b', conf: "I went in angry and came out half-convinced, and that scares me. {a} is very good at this.", v: {"tough":"{a} talked me in circles. I'm still angry. I'm just angry and confused now."} },
     ] },
   ],
   'long.caught.face.refusal': [
@@ -180,7 +180,7 @@ export default {
       { by: 'a', say: "Enjoy your water." },
       { by: 'b', say: "What's that supposed to mean?" },
       { by: 'a', say: "Just that I'd enjoy everything, if I were you. While it lasts." },
-      { by: 'b', conf: "That was a threat. A smiling, polite, completely terrifying threat." },
+      { by: 'b', conf: "I smiled back, but my heart was pounding. {a} just threatened me, really politely, and I'm not going to sleep tonight.", v: {"tough":"{a} wants me scared. I'm not going to give {a.obj} the satisfaction of seeing it.","dry":"That was the friendliest threat I've ever received. I'd almost like to frame it."} },
     ] },
   ],
   // a, a villain, says out loud who runs the camp, and b is there

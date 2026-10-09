@@ -108,7 +108,7 @@ export default {
       { by: 'c', say: "I'd love to stop noticing." },
       { by: 'a', say: "Then who'd do it?" },
       { by: 'c', say: "Somebody who isn't me." },
-      { by: 'b', conf: "Doing the chores won't win you the game. Not doing them gets you voted out, though.", v: { competitive: "Chores don't win. But lazy people go home first.", earnest: "I like doing my part. It's the right thing to do." } },
+      { by: 'b', conf: "I do the chores because I'm scared of what people say about the ones who don't. I'm not proud of it, but my name stays out of their mouths.", v: { competitive: "Chores don't win. But lazy people go home first.", earnest: "I like doing my part. It's the right thing to do." } },
     ] },
     { id: 'ny.c3', place: 'work', when: { merged: true }, turns: [
       { by: 'b', say: "It's funny, everybody used to work so hard, but since the merge nobody wants to do anything.", v: { dry: "Remember when people used to help? Good times.", blunt: "Nobody works anymore. It's pathetic." } },
@@ -427,7 +427,7 @@ export default {
       { by: 'a', say: "I'm not doing the hair thing." },
       { by: 'c', say: "Do the hair thing!" },
       { beat: "{a} does the hair thing. Everyone loses it." },
-      { by: 'c', conf: "{a} made the whole camp laugh tonight. Even people who can't stand each other.", v: { warm: "That was the best night. Everybody laughing together.", schemer: "Being funny makes people like you, and {a} knows that. It's smart." } },
+      { by: 'c', conf: "I laughed so hard tonight my stomach hurt. I forgot I was in a game for about ten whole minutes, and that's all {a}.", v: { warm: "That was the best night. Everybody laughing together.", schemer: "Being funny makes people like you, and {a} knows that. It's smart." } },
     ] },
     { id: 'ny.l2', place: 'eat', turns: [
       { beat: "{a} is telling a story at dinner. It starts normal. It does not end normal." },
@@ -521,7 +521,7 @@ export default {
       { by: 'a', say: "I know." },
       { by: 'b', say: "People are going to think you're with me." },
       { by: 'a', say: "Let them." },
-      { by: 'b', conf: "{a} didn't say anything, and {a} didn't have to, because everybody saw where {a} sat." },
+      { by: 'b', conf: "When {a} sat down next to me, I almost cried. {a} didn't say a word, and I didn't need {a.obj} to.", v: {"tough":"{a} sat with me. That's all. It meant more than I'm going to admit on camera."} },
     ] },
   ],
   'long.friend.mentor.any': [

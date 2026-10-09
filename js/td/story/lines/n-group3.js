@@ -54,7 +54,7 @@ export default {
       { by: 'd', say: "That's actually fair." },
       { by: 'c', say: "I slept in a puddle last night. I'm in." },
       { by: 'b', say: "Fine. But if we lose today, it's not because of the roof." },
-      { by: 'c', conf: "{a} is trying really hard to hold the team together. {b} is trying really hard not to let {a}." },
+      { by: 'c', conf: "I feel like I'm stuck between two people pulling on the same rope, and I'm the rope.", v: {"goofy":"Watching {a} and {b} argue is like watching my parents fight about directions. I'm just in the back seat."} },
     ] },
     { id: 'nj.p5', place: 'work', when: { voice: ['schemer', 'calm', 'dry', 'proud'] }, turns: [
       { beat: "{a} is directing the work {here} without lifting anything." },

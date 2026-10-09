@@ -383,7 +383,7 @@ export default {
       { by: 'a', say: "It's a quick answer if it's yes." },
       { by: 'b', say: "...Yes." },
       { by: 'a', move: 'thanks' },
-      { by: 'a', conf: "That's {votes}. {target} goes home tonight." },
+      { by: 'a', conf: "That's {votes}, and I can finally breathe. It's {target} tonight.", v: {"anxious":"That's {votes}. I'm going to stop counting before I find a way to doubt it."} },
     ] },
   ],
   'story.vote.swing.no': [

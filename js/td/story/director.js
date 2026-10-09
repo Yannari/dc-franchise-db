@@ -1067,13 +1067,14 @@ function voteTalk(ep, camp, t, next) {
       }
     } else {
       // no idea: a friend who is writing their name sits with them, and keeps it from them
-      const liar = closest(boot, voters.filter(v => v !== leader && getBond(boot, v) >= 1 && !out.some(o => o.players.includes(v) && o.step === 'plan')));
+      // (never the person the boot is voting for: they'd be told 'tonight it's you' to their face)
+      const liar = closest(boot, voters.filter(v => v !== leader && v !== mine && getBond(boot, v) >= 1 && !out.some(o => o.players.includes(v) && o.step === 'plan')));
       const why = [`${boot} thinks it's ${mine} tonight.`, `${pronouns(boot).Sub} ${pronouns(boot).sub === 'they' ? "haven't" : "hasn't"} heard ${pronouns(boot).posAdj} own name.`];
       const two = liar ? item('target', 'vt2', 'safe', { a: boot, b: liar }, { wrote: mine }, base({ a: boot, b: liar }, {}), 'aside', 'before-tribal', ['Feels Safe', 'blue'],
         [...why, `${liar} is writing ${boot}'s name.`]) : null;
       // nobody close is lying to them: they talk it over with a friend who isn't writing their name and
       // doesn't know either (the user: one-line scenes that tell nothing)
-      const pal = !two ? closest(boot, tribal.filter(x => x !== boot && ballotOf(x) !== boot && !voters.includes(x) && getBond(boot, x) >= 1)) : null;
+      const pal = !two ? closest(boot, tribal.filter(x => x !== boot && x !== mine && ballotOf(x) !== boot && !voters.includes(x) && getBond(boot, x) >= 1)) : null;
       const sure = pal ? item('target', 'vt2', 'sure', { a: boot, b: pal }, { wrote: mine, ...(ballotOf(pal) && ballotOf(pal) !== mine ? { other: ballotOf(pal) } : {}) },
         base({ a: boot, b: pal }, { bWrote: ballotOf(pal) === mine, other: !!(ballotOf(pal) && ballotOf(pal) !== mine) }), 'aside', 'before-tribal', ['Feels Safe', 'blue'], [...why, `${pal} isn't writing ${boot}'s name, and doesn't know either.`]) : null;
       const it = two || sure || item('target', 'story.vote.target', 'safe', { a: boot }, { wrote: mine }, base({ a: boot }, { why: ballotWhy(ballots.find(v => v.voter === boot), ep) }), 'confessional', 'before-tribal', ['Feels Safe', 'blue'], why);

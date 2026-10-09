@@ -95,8 +95,8 @@ export default {
   'long.conf.bigmove.any': [
     { id: 'nl5.m1', turns: [
       { beat: "{a} sits alone on the dock at dawn, before anybody else is up." },
-      { by: 'a', conf: "Everybody here is comfortable. They wake up, they do their chores, they vote the way they're told." },
-      { by: 'a', conf: "And comfortable people stop paying attention. They don't notice when somebody starts counting differently." },
+      { by: 'a', conf: "I'm tired of being comfortable. I wake up, I do my chores, I vote the way I'm told, and I'm starting to hate it." },
+      { by: 'a', conf: "And I've noticed nobody's paying attention to me while I count. That's the best feeling I've had in days." },
       { by: 'a', conf: "I've been counting differently for two days. There's a vote coming where everybody thinks they know what happens, and they don't." },
       { by: 'a', conf: "If I'm wrong, I go home. If I'm right, I'm the reason everybody remembers this season." },
       { by: 'a', conf: "I can live with either one. What I can't live with is sitting here waiting for my turn." },
@@ -113,8 +113,8 @@ export default {
     { id: 'nl5.t1', turns: [
       { beat: "{a} watches {b} laughing with half the camp by the fire." },
       { by: 'a', conf: "I like {b}. Everybody likes {b}. That's the problem." },
-      { by: 'a', conf: "{b} wins things, {b} helps people, and {b} has never once had a vote cast against {b.obj}." },
-      { by: 'a', conf: "If {b} gets to the end, {b} wins. Nobody's going to vote against somebody who was nice to them every day." },
+      { by: 'a', conf: "I like {b}, and that's exactly what worries me, because everybody else likes {b} too." },
+      { by: 'a', conf: "If {b} gets to the end, I lose to {b}. I hate thinking like that about somebody I actually like.", v: {"cruel":"If {b} gets to the end, {b} wins, and I'm not going to let that happen.","warm":"I hate that I'm even thinking about voting {b} out. {b} has been nothing but kind to me."} },
       { by: 'a', conf: "So either somebody deals with {b} soon, or we're all just playing for second place." },
     ] },
   ],
@@ -122,8 +122,8 @@ export default {
     { id: 'nl5.k1', turns: [
       { beat: "{a} lies awake in the {quarters}, listening to everybody else breathe." },
       { by: 'a', conf: "Two people I trust were whispering this morning. They stopped when they saw me." },
-      { by: 'a', conf: "Could be nothing. Could be they were talking about breakfast." },
-      { by: 'a', conf: "But nobody stops talking about breakfast when somebody walks up." },
+      { by: 'a', conf: "Maybe it's nothing, and maybe they really were just talking about breakfast." },
+      { by: 'a', conf: "But nobody goes quiet about breakfast when I walk up, and my stomach knows it." },
       { by: 'a', conf: "So now I'm lying here going through every conversation I've had in three days, trying to work out which one gave me away." },
     ] },
   ],

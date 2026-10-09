@@ -439,7 +439,7 @@ export default {
       { by: 'b', say: "Because {target} isn't the one I'm worried about. I'm not wasting my vote." },
       { by: 'a', say: "Then who are you worried about?" },
       { by: 'b', say: "That's my business tonight." },
-      { by: 'a', conf: "{b} has a different name. If enough people have a different name, tonight gets messy." },
+      { by: 'a', conf: "{b} wouldn't give me the name I wanted, and now I'm nervous, because if a few more people do the same, tonight falls apart." },
     ] },
     { id: 'nw.n5', place: 'water', when: { voiceB: ['warm', 'anxious', 'earnest', 'emotional'] }, turns: [
       { by: 'a', say: "We're doing {target} tonight. Will you vote with us?" },

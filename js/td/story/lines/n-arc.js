@@ -61,7 +61,7 @@ export default {
       { beat: "{b} is sitting with the rest of {theirs}, heads close together. They stop talking the moment {a} walks past." },
       { by: 'a', say: "Don't let me interrupt anything." },
       { by: 'b', say: "You're not. We were just talking about lunch.", v: { schemer: "Nothing to interrupt. Sit down if you want." } },
-      { by: 'a', conf: "Nobody stops talking about lunch when somebody walks past. {theirs} has a plan, and {b} is right in the middle of it." },
+      { by: 'a', conf: "I walked past and they all went quiet, and my stomach dropped. Whatever {theirs} is planning, I'd bet anything {b} is in the middle of it.", v: {"tough":"They went quiet when I walked past. Fine. Now I'm watching {b} too.","dry":"Nothing makes me more curious than a group that suddenly stops talking about lunch."} },
     ] },
   ],
   'arc.spark.outsider': [
@@ -290,7 +290,7 @@ export default {
       { by: 'b', say: "Not weird. Same." },
       { by: 'a', say: "Then let's stop pretending we're not a team. We vote together from now on, and we call it {group}." },
       { by: 'c', say: "{group}. Okay. I like it.", v: { goofy: "{group}! We need a handshake. I'm making a handshake." } },
-      { by: 'a', conf: "Three people who trust each other. Out here that's not a friendship, that's a majority waiting to happen." },
+      { by: 'a', conf: "I trust these two, and they trust me, and honestly I haven't felt this safe since we got here.", v: {"schemer":"Three votes I can count on. I feel better about this game than I have in days.","anxious":"I finally have people. I'm so relieved I could cry, and I'm trying really hard not to."} },
     ] },
     { id: 'nar.l4', turns: [
       { by: 'a', say: "Look, I'm not going to make a big speech. I think you and I see this game the same way." },

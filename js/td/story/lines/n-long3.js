@@ -21,7 +21,7 @@ export default {
       { by: 'b', say: "That's yours." },
       { by: 'a', say: "It's a thank you. You carried me in that challenge and you didn't say a word about it." },
       { by: 'b', say: "I'm not going to say no to fruit." },
-      { by: 'b', conf: "{a} gave up actual food to say thank you. Out here, that's basically a marriage proposal." },
+      { by: 'b', conf: "I didn't know what to say when {a} handed it over. Out here, giving away food is huge, and I got really emotional about a piece of fruit.", v: {"goofy":"Is this an engagement? I think {a} and I are engaged now. Through fruit."} },
     ] },
   ],
   // a pulls the camp back together after a bad day
@@ -198,7 +198,7 @@ export default {
       { by: 'a', say: "Somebody had to. It was a mess." },
       { by: 'b', say: "Nobody asked you to." },
       { by: 'a', say: "Nobody asks me to do anything. I just do it." },
-      { by: 'b', conf: "Everybody thinks {a} is the weakest one here, and {a} has quietly been doing everybody's chores for a week." },
+      { by: 'b', conf: "I feel a little guilty, honestly. I've been treating {a} like the weakest one here, and {a} has been doing my chores for a week.", v: {"cruel":"{a} doing everybody's chores is great. Keep {a} around, I say. Until the end.","warm":"I want to give {a} a hug. Nobody has said thank you once, and I'm starting with me."} },
     ] },
   ],
 };

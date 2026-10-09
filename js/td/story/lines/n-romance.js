@@ -92,7 +92,7 @@ export default {
       { by: 'b', say: "It's been a thing since the dock." },
       { by: 'a', say: "Then why didn't you say?" },
       { by: 'b', say: "I wanted you to say it first." },
-      { by: 'a', conf: "It's official. Kind of. As official as you can get whispering in the dark, anyway." },
+      { by: 'a', conf: "I'm smiling so much my face hurts. It's not official official, but it's official to me.", v: {"tough":"Okay, fine, it's a thing. Don't make it weird.","anxious":"I'm so happy and so scared. Is this a bad idea? It's probably a bad idea. I don't care."} },
     ] },
     { id: 'ns.s3', place: 'water', when: { merged: true }, turns: [
       { beat: "{a} and {b} are sitting {here}, shoulders touching." },

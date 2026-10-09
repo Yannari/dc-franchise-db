@@ -153,7 +153,7 @@ export default {
       { by: 'b', say: "I feel awful." },
       { by: 'a', say: "We all feel awful. We'll still feel awful if we keep losing, and then it's one of us." },
       { by: 'b', say: "Okay. {target}." },
-      { by: 'c', conf: "It's the worst kind of vote, voting out somebody who's nice and really tried. But nice doesn't win challenges." },
+      { by: 'c', conf: "I feel terrible about this one. {target} is nice and really tried, and I'm still writing the name, because we can't keep losing.", v: {"cruel":"{target} tried. Trying isn't winning. I'll sleep fine."} },
     ] },
     { id: 'nvr.s2', turns: [
       { beat: "{a} and {b} are hanging the wet clothes from the challenge on a line." },

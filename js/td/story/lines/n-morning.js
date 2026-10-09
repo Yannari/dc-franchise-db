@@ -97,7 +97,7 @@ export default {
       { by: 'a', say: "How would you know who it was about?" },
       { by: 'b', say: "I'm just saying." },
       { by: 'a', say: "You're saying a lot for somebody who wasn't involved." },
-      { by: 'a', conf: "This late in the game, a vote like that doesn't just happen. Somebody organised it. And {b} knows more than {b} is saying." },
+      { by: 'a', conf: "I don't believe last night just happened. Somebody organised it, and every time I look at {b}, I get the feeling {b} knows exactly who.", v: {"tough":"Somebody ran that vote, and I'm going to find out who. Starting with {b}."} },
     ] },
     { id: 'nm.b8', place: 'aside', when: { bVoted: 'boot', voice: ['loud', 'blunt', 'tough', 'competitive'] }, turns: [
       { by: 'a', say: "Just tell me. Did you write {lastBoot}?" },
@@ -285,7 +285,7 @@ export default {
       { beat: "There's about two seconds of silence." },
       { by: 'b', say: "Okay. Who's on firewood?" },
       { by: 'c', say: "You're the worst." },
-      { by: 'a', conf: "{lastBoot} was nice. {lastBoot} just never picked a side. And if you don't pick a side, you end up on the losing one." },
+      { by: 'a', conf: "I liked {lastBoot}, I really did. I just watched {lastBoot} try to be friends with everybody, and it scared me into picking a side.", v: {"cruel":"{lastBoot} never picked a side, so I picked one for {lastBoot}: the boat.","warm":"I miss {lastBoot} already. I wish I'd told {lastBoot} to pick a side sooner."} },
     ] },
     { id: 'nm.n3', place: 'secret', when: { voice: ['schemer', 'competitive', 'calm', 'dry'] }, turns: [
       { beat: "{a} and {b} have gone off to {place}, away from everyone else." },

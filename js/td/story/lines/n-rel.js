@@ -51,7 +51,7 @@ export default {
       { by: 'b', say: "So we go through {target}." },
       { by: 'a', say: "We go through {target} first. Then {protects} doesn't have a shield anymore." },
       { by: 'b', say: "{target} is going to feel so stupid for saying it out loud." },
-      { by: 'a', conf: "Loyalty is a great quality. Announcing it to the whole camp is a terrible strategy." },
+      { by: 'a', conf: "Honestly, I respect {target} for being loyal. I just wish {target} hadn't said it out loud, because now I have to do something about it.", v: {"cruel":"{target} told the whole camp who {target} would protect. Thanks for the map."} },
     ] },
     { id: 'nrl.p2', when: { voice: ['schemer', 'calm', 'dry'] }, turns: [
       { by: 'a', say: "People should be more careful about what promises they make in public." },
@@ -72,7 +72,7 @@ export default {
     { id: 'nrl.s1', turns: [{ by: 'a', conf: "If {target} goes tonight, {keep} has nobody left in this game but me. That's not cruel. That's just good planning." }] },
   ],
   'vp.solo.case.pledge': [
-    { id: 'nrl.s2', turns: [{ by: 'a', conf: "{target} told everybody that {protects} is untouchable as long as {target} is here. Fine. Then {target} won't be here." }] },
+    { id: 'nrl.s2', turns: [{ by: 'a', conf: "When {target} said {protects} was untouchable, I knew straight away what I had to do, and I'm not happy about it.", v: {"cruel":"{target} made {target}'s own name the obvious one. I'm just writing it down."} }] },
   ],
   'booth2.lead.isolate': [
     { id: 'nrl.b1', turns: [{ by: 'a', conf: "{target}, I'm sorry. This isn't about you, it's about {keep} needing me more than {keep} needs you." }] },

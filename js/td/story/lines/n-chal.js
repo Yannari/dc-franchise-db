@@ -143,7 +143,7 @@ export default {
       { by: 'a', say: "We did that.", v: { proud: "Yeah, I did that. You're welcome.", competitive: "We needed that. We really needed that." } },
       { by: 'b', say: "No, you did that. I mostly tried not to fall over." },
       { by: 'a', say: "Hey, you didn't fall over. That counts." },
-      { by: 'a', conf: "Winning feels great, but you know what feels even better? The other team having to vote somebody out." },
+      { by: 'a', conf: "I'm so relieved I could sleep for a week. And I'll admit it, part of me is enjoying watching the other team panic.", v: {"cruel":"Honestly, watching them panic is the best part of winning.","warm":"I'm just so glad it's not us tonight. I feel a little bad for them, actually."} },
     ] },
     { id: 'nc.w2', place: 'public', when: { third: true }, turns: [
       { by: 'b', say: "No vote tonight! No vote tonight!" },

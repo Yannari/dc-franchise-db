@@ -161,7 +161,7 @@ export default {
       { by: 'a', say: "Then it blows up on us, and at least we tried. If we don't do it, it's definitely blowing up on us at the end." },
       { by: 'b', say: "Okay. How many have we got?" },
       { by: 'a', say: "It's tight. Everybody else is pushing {other}, so we need one more person before tonight.", when: { tally: 'tight', other: true } },
-      { by: 'a', conf: "Nobody ever wants to vote out the strong player. That's exactly how the strong player wins." },
+      { by: 'a', conf: "I don't want to vote out the strong player either. I just know I'll be the one sitting next to them at the end, losing." },
     ] },
   ],
 

@@ -146,7 +146,7 @@ export default {
       { by: 'a', say: "We don't have to. But everybody's going to be thinking about it, so we might as well." },
       { by: 'c', say: "Fine. Today was weird. People were weird." },
       { by: 'b', say: "People are always weird. Today they were weird in groups." },
-      { by: 'c', conf: "When three people sit down to dinner and nobody mentions the vote, it's because everybody's thinking about the vote." },
+      { by: 'c', conf: "I couldn't stop thinking about tonight the whole dinner. I'm pretty sure nobody else could either, and we all just talked about the food.", v: {"anxious":"I barely ate. I just kept waiting for somebody to say the vote out loud, and nobody did, which was worse."} },
     ] },
   ],
   'long.drama.thaw.any': [

@@ -163,6 +163,25 @@ export default {
     ] },
   ],
   'long.drama.showboat.any': [
+    { id: 'nl6.s2', turns: [
+      { by: 'a', say: "Did everybody see that catch at the challenge? Because I'm happy to do it again, slower, for anyone who missed it." },
+      { by: 'b', say: "We saw it. You've shown us four times." },
+      { by: 'a', say: "Five, if you count the one I did for the camera." },
+      { by: 'b', say: "Nobody counts the one you did for the camera." },
+      { by: 'a', say: "The camera counts it." },
+      { by: 'b', say: "You know people don't vote for the person who's best at catching things, right? They vote them out." },
+      { by: 'a', say: "...That's a very mean thing to say on such a nice day." },
+      { by: 'b', conf: "I tried to warn {a}, I really did. {a} heard 'you're great at catching things' and nothing after it." },
+    ] },
+    { id: 'nl6.s3', when: { voice: ['loud', 'proud', 'competitive', 'theatrical'] }, turns: [
+      { by: 'a', say: "Let's be honest, if I wasn't on this team, you'd all have lost every challenge by now." },
+      { by: 'b', say: "We won the one you sat out." },
+      { by: 'a', say: "That one doesn't count. It was easy." },
+      { by: 'b', say: "It was the hardest one yet." },
+      { by: 'a', say: "Easy for me, I mean. If I'd been there." },
+      { by: 'b', say: "I'm going to walk away now, before I say something I can't take back." },
+      { by: 'a', conf: "People here can't handle confidence. That's fine. They'll handle it a lot better when I'm winning immunity every week." },
+    ] },
     { id: 'nl6.s1', turns: [
       { by: 'a', say: "Not to brag, but I've basically got this whole game figured out." },
       { by: 'b', say: "That is bragging." },
@@ -172,7 +191,7 @@ export default {
       { by: 'b', say: "Because you don't know." },
       { by: 'a', say: "Because I'm being strategic about who I tell." },
       { by: 'b', say: "You just told me you've got the whole game figured out." },
-      { by: 'b', conf: "{a} says that kind of thing out loud, in front of people. Everyone smiled at {a}. Everyone also remembered it." },
+      { by: 'b', conf: "Part of me wants {a} to keep talking. The more {a} brags, the less work the rest of us have to do at the next vote." },
     ] },
   ],
   'long.drama.dig.any': [
@@ -184,7 +203,7 @@ export default {
       { by: 'b', say: "Because of the way you said 'super creative'." },
       { by: 'a', say: "I can say it again in a different voice if you want." },
       { beat: "Somebody else stares hard at the ground." },
-      { by: 'b', conf: "{a} said 'great' and made it sound like an insult. In front of everybody. And now everybody's going to pretend they didn't notice." },
+      { by: 'b', conf: "I felt about two inches tall. I'm not going to fight about it in front of everybody, but I'm going to remember exactly how that felt the next time {a} needs something from me.", v: { tough: "Fine. Next time I'll keep my ideas to myself, and my vote too.", emotional: "I really thought that idea was good. I'm so embarrassed I want to walk into the water.", dry: "Noted. Filed. I have a very long memory and a very short list of people I'm being nice to." } },
     ] },
   ],
   'long.drama.intimidate.any': [
@@ -250,7 +269,7 @@ export default {
       { by: 'a', say: "You've been on your own a lot. I figured you might be open to a conversation." },
       { by: 'b', say: "A conversation about what?" },
       { by: 'a', say: "About what happens if the two of us stop being the people everybody forgets about." },
-      { by: 'b', conf: "{a} came to me because {a}'s own group is cutting {a.obj} out. I'm not sure if I'm being recruited or rescued." },
+      { by: 'b', conf: "Honestly? I'm a little flattered and a lot suspicious. Nobody comes looking for you out here unless they need something, and I'd like to know what it is before I say yes." },
     ] },
   ],
   'long.trade.info.any': [

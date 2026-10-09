@@ -476,7 +476,10 @@ const closeTo = (name, pool) => [...pool].filter(x => x !== name && getBond(name
 // the moments that can grow past two people, and how ('shared': friends of both, when a works in
 // groups; 'side': b's closest friend steps into a public fight)
 // moments that happen in front of the camp: somebody else is always there to see it
-const PUBLIC = /^(drama\.(bomb|fight|dispute|clash|explode|meltdown|dig|stir)|blame\.loss)/;
+const PUBLIC = /^(drama\.(bomb|fight|dispute|clash|explode|meltdown|dig|stir|showboat|nemesis|jealous)|blame\.loss|credit\.(callout|steal)|villain\.(power|loom))/;
+// what a witness takes away from it, to the camera (public.note.<fam>)
+const NOTE_FAM = k => /^credit/.test(k) ? 'credit' : /showboat|jealous/.test(k) ? 'brag' : /^villain/.test(k) ? 'power' : 'fight';
+const CROWD_WORDS = /\b(everybody|everyone|the whole (camp|team)|the others|the rest of)/i;
 // ── the vote, told across the day (the user: "I don't understand why people target x or y, I
 // don't understand where this is going") ──────────────────────────────────────────────────────
 // The plan scenes say the name and the reason at the end of the afternoon; these are the beats
@@ -1444,17 +1447,34 @@ export function airTdEpisode(ep) {
         // closer to b first (defending b, or just mortified), then one closer to a
         let lines = w.lines;
         const watched = [];
+        // ...and the camp is there: the scene opens with them in earshot, so the stage brings them on
+        if (PUBLIC.test(kind) && who.a && who.b && !lines.slice(0, 2).some(l => CROWD_WORDS.test(l.text || ''))) {
+          const OPEN = ['The rest of the camp has stopped what they are doing to watch.', 'It happens right in the middle of camp, with everybody in earshot.', 'Half the camp is close enough to hear every word.'];
+          lines = [{ kind: 'beat', text: OPEN[(ep.num + i) % OPEN.length] }, ...lines];
+        }
+        // the reactions go in before the scene's closing confessional(s), not after them
+        const tailAt = (() => { let k = lines.length; while (k > 0 && lines[k - 1].kind === 'conf') k--; return k; })();
+        const insert = more => { const t = tailAt + (lines.length - tailAt === 0 ? 0 : 0); lines = [...lines.slice(0, t), ...more, ...lines.slice(t)]; };
+        const fam = NOTE_FAM(kind);
         if (PUBLIC.test(kind) && who.a && who.b && !lines.some(l => l.by && l.by !== who.a && l.by !== who.b)) {
           const lean = x => (getBond(x, who.b) - getBond(x, who.a));
           const around = members.filter(m => !Object.values(who).includes(m));
           const forB = [...around].sort((x, y) => lean(y) - lean(x) || x.localeCompare(y))[0] || null;
           const forA = around.filter(x => x !== forB).sort((x, y) => lean(x) - lean(y) || x.localeCompare(y))[0] || null;
-          if (forB) {
+          // somebody steps in only when it was an attack: a brag or a boast just gets watched
+          if (forB && (fam === 'fight' || fam === 'credit')) {
             const ww = { a: who.a, b: who.b, c: forB, ...(forA ? { d: forA } : {}) };
             const tone = lean(forB) >= 1 ? 'defend' : getBond(forB, who.a) >= 3 ? 'excuse' : 'awkward';
             const r = writeStory('public.react', tone, ww, data, { ...facts, third: true, fourth: !!forA, registerC: registerOf(forB) },
               { ep: ep.num, camp, phase, n: n++, place: 'aside', unique: 'soft' });
-            if (r) { lines = [...lines, ...r.lines]; watched.push(forB, ...(forA && r.lines.some(l => l.by === forA) ? [forA] : [])); }
+            if (r) { insert(r.lines); watched.push(forB, ...(forA && r.lines.some(l => l.by === forA) ? [forA] : [])); }
+          }
+          // ...and somebody watching takes it in: what everybody now knows about a
+          const sharp = around.filter(x => x !== forB && x !== forA).sort((x, y) => ((pStatsOf(y)?.intuition || 0) + (pStatsOf(y)?.strategic || 0)) - ((pStatsOf(x)?.intuition || 0) + (pStatsOf(x)?.strategic || 0)) || x.localeCompare(y))[0];
+          if (sharp) {
+            const wn = { a: sharp, b: who.a, c: who.b };
+            const nt = writeStory(`public.note.${NOTE_FAM(kind)}`, 'any', wn, data, { ...factsFor({ who: wn, data: {} }, { ep: ep.num, phase }), third: true }, { ep: ep.num, camp, phase, n: n++, place: 'confessional', unique: 'soft' });
+            if (nt) { lines = [...lines, ...nt.lines]; watched.push(sharp); }
           }
         }
         return { story: true, kind: pool, storyType: line?.type || 'cut', step: step?.step || 'cut', ...(line ? { storyline: line.id } : { cut: true }), ref: i, type: ev.type,

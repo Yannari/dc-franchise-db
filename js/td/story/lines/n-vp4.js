@@ -64,7 +64,7 @@ export default {
       { by: 'a', say: "They talk to each other and nobody else. That's not a friendship. That's an alliance with a nice face." },
       { by: 'b', say: "And you want to break it." },
       { by: 'a', say: "Tonight, it's {target}, and then we see who {partner} turns to." },
-      { by: 'b', conf: "{a} drew an entire friendship in the dirt and then rubbed half of it out with a foot. I've never been so scared of a stick." },
+      { by: 'b', conf: "Watching that actually scared me a little. I'm on the other half of that drawing, and I would very much like to stay on it." },
     ] },
   ],
   'vp2.numbers': [

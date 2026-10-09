@@ -17,8 +17,9 @@ import batch12 from './batch12.js';
 import batch13 from './batch13.js';
 import batch14 from './batch14.js';
 import batch15 from './batch15.js';
+import batch16 from './batch16.js';
 
-const BATCHES = [batch1, batch2, batch3, batch4, batch5, batch6, batch7, batch8, batch9, batch10, batch11, batch12, batch13, batch14, batch15];
+const BATCHES = [batch1, batch2, batch3, batch4, batch5, batch6, batch7, batch8, batch9, batch10, batch11, batch12, batch13, batch14, batch15, batch16];
 const VOICES = {};
 for (const b of BATCHES) for (const [id, turns] of Object.entries(b)) {
   VOICES[id] ||= {};

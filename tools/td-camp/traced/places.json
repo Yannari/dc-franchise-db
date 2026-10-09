@@ -6341,6 +6341,12 @@
     1600,
     200
    ]
+  ],
+  "mist": [
+   [
+    650,
+    830
+   ]
   ]
  },
  "skull-rock-night": {
@@ -6368,6 +6374,222 @@
    ]
   ],
   "src": "skull-rock-night.webp",
-  "night": true
+  "night": true,
+  "mist": [
+   [
+    650,
+    830
+   ]
+  ]
+ },
+ "ri-shore": {
+  "src": "ri-shore.webp",
+  "wind": 0.6,
+  "ppl": 20,
+  "noclouds": true,
+  "pool": [
+   [
+    80,
+    540,
+    1150,
+    900,
+    false,
+    600,
+    700
+   ]
+  ],
+  "sway": [
+   [
+    0,
+    0,
+    1600,
+    460,
+    0.35
+   ]
+  ],
+  "mist": [
+   [
+    400,
+    540
+   ]
+  ]
+ },
+ "ri-rocky": {
+  "src": "ri-rocky.webp",
+  "wind": 0.4,
+  "ppl": 20,
+  "noclouds": true,
+  "nosky": true,
+  "sway": [
+   [
+    0,
+    0,
+    520,
+    380,
+    0.3
+   ]
+  ],
+  "mist": [
+   [
+    560,
+    700
+   ]
+  ]
+ },
+ "ri-cave": {
+  "src": "ri-cave.webp",
+  "wind": 0.3,
+  "ppl": 20,
+  "noclouds": true,
+  "nosky": true,
+  "mist": [
+   [
+    640,
+    780
+   ]
+  ]
+ },
+ "ri-cavein": {
+  "src": "ri-cavein.webp",
+  "wind": 0.2,
+  "ppl": 20,
+  "noclouds": true,
+  "nosky": true,
+  "pool": [
+   [
+    0,
+    610,
+    1600,
+    840,
+    false,
+    800,
+    720
+   ]
+  ],
+  "mist": [
+   [
+    560,
+    680
+   ]
+  ]
+ },
+ "ri-approach": {
+  "src": "ri-approach.webp",
+  "night": true,
+  "noclouds": true,
+  "wind": 0.4,
+  "ppl": 10,
+  "pool": [
+   [
+    0,
+    650,
+    1600,
+    900,
+    false,
+    800,
+    780
+   ]
+  ],
+  "mist": [
+   [
+    560,
+    730
+   ]
+  ]
+ },
+ "ri-shore-night": {
+  "src": "ri-shore-night.webp",
+  "wind": 0.6,
+  "ppl": 20,
+  "noclouds": true,
+  "pool": [
+   [
+    80,
+    540,
+    1150,
+    900,
+    false,
+    600,
+    700
+   ]
+  ],
+  "sway": [
+   [
+    0,
+    0,
+    1600,
+    460,
+    0.35
+   ]
+  ],
+  "night": true,
+  "mist": [
+   [
+    400,
+    540
+   ]
+  ]
+ },
+ "ri-rocky-night": {
+  "src": "ri-rocky-night.webp",
+  "wind": 0.4,
+  "ppl": 20,
+  "noclouds": true,
+  "nosky": true,
+  "sway": [
+   [
+    0,
+    0,
+    520,
+    380,
+    0.3
+   ]
+  ],
+  "night": true,
+  "mist": [
+   [
+    560,
+    700
+   ]
+  ]
+ },
+ "ri-cave-night": {
+  "src": "ri-cave-night.webp",
+  "wind": 0.3,
+  "ppl": 20,
+  "noclouds": true,
+  "nosky": true,
+  "night": true,
+  "mist": [
+   [
+    640,
+    780
+   ]
+  ]
+ },
+ "ri-cavein-night": {
+  "src": "ri-cavein-night.webp",
+  "wind": 0.2,
+  "ppl": 20,
+  "noclouds": true,
+  "nosky": true,
+  "pool": [
+   [
+    0,
+    610,
+    1600,
+    840,
+    false,
+    800,
+    720
+   ]
+  ],
+  "night": true,
+  "mist": [
+   [
+    560,
+    680
+   ]
+  ]
  }
 }

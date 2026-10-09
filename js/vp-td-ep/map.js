@@ -22,6 +22,7 @@ import { TD_MARKS } from './marks.js';
 import { ACCESS_PROFILES } from '../camp-access.js';
 import { campFeed } from '../td/story/feed.js';
 import { tdCampScreen, stageSpot, venueOf, VENUES, placeName, campSlot, unspoil } from './steps.js';
+import { RI_VENUE, islandMapOn, islandName, islandEvents, islandResidents, islandPlaceOf, islandWindowOf, islandBadge, tdIslandConvScreen } from './twists.js';
 
 // the venues with a painted map (tools/td-camp: '<venue>/map-day'), and how their teams live
 export const MAP_VENUES = { 'hosted-camp': { shared: true }, 'film-lot': { shared: true }, 'world-tour': { shared: true }, 'survival-island': { shared: false }, carnival: { shared: false } };
@@ -41,16 +42,17 @@ const ZONE_OF = {
   carnival: { campsite: 'campsite', shelter: 'shelter', 'forest-edge': 'forest-edge', 'rocky-beach': 'rocky-beach', 'lake-shore': 'lake-shore',
     'carnival-entrance': 'carnival-entrance', midway: 'midway', carousel: 'carousel', 'corn-maze-inside': 'corn-maze', 'haunted-mansion': 'haunted-mansion', 'corn-maze': 'corn-maze', 'theater-tent': 'theater-tent',
     confessional: 'confessional' },
+  redemption: { 'skull-beach': 'skull-beach', shoreline: 'shoreline', 'rocky-beach': 'rocky-beach', 'cave-entrance': 'cave', 'cave-inside': 'cave' },
   'world-tour': { economy: 'economy', aisle: 'aisle', galley: 'galley', 'cargo-hold': 'cargo-hold', 'first-class': 'first-class',
     'destination-staging': 'destination-staging', confessional: 'confessional', 'chris-quarters': 'chris-quarters', cockpit: 'cockpit' },
 };
-export const ZONE_LABEL = { campsite: 'The Campsite', 'forest-edge': 'The Forest Edge', 'rocky-beach': 'The Rocky Beach', 'lake-shore': 'The Lake Shore',
+export const ZONE_LABEL = { 'skull-beach': 'Skull Beach', cave: 'The Cave', campsite: 'The Campsite', 'forest-edge': 'The Forest Edge', 'rocky-beach': 'The Rocky Beach', 'lake-shore': 'The Lake Shore',
   'carnival-entrance': 'The Carnival Gate', midway: 'The Midway', 'haunted-mansion': 'The Haunted Mansion', 'corn-maze': 'The Corn Maze', 'theater-tent': 'The Theater Tent', shelter: 'The Shelter', campfire: 'The Campfire', shoreline: 'The Shoreline', 'water-source': 'The Waterfall Pool', 'jungle-trail': 'The Bamboo Jungle', ruins: 'The Ruins', cave: 'The Cave', 'fishing-area': 'The Fishing Dock', cabins: 'The Cabins', 'mess-hall': 'The Mess Hall', washroom: 'The Washrooms', 'communal-grounds': 'The Camp Grounds',
   trailers: 'The Trailers', 'craft-services': 'Craft Services', 'studio-backlot': 'The Backlot', 'soundstage-corridor': 'The Soundstages', 'prop-storage': 'Prop Storage',
   economy: 'Economy Class', aisle: 'The Aisle', galley: 'The Galley', 'cargo-hold': 'The Cargo Hold', 'first-class': 'First Class', 'destination-staging': 'Down on the Ground',
   confessional: 'The Confession Cam', campfire: 'The Campfire', dock: 'The Dock', beach: 'The Beach', 'forest-trail': 'The Forest Trail', cliff: 'The Cliff',
   'chris-quarters': "Chris's Quarters", cockpit: 'The Cockpit', carousel: 'The Carousel', 'western-set': 'The Western Set', 'city-set': 'The City Set', lake: 'The Lake', boathouse: 'The Boathouse', waterfall: 'The Waterfall', caves: 'The Caves', amphitheater: 'The Amphitheater', river: 'The River' };
-export const PLACE_LABEL = { cabins: 'Porch', 'cabin-inside': 'Inside', trailers: 'Outside', 'trailer-inside': 'Inside', 'mess-hall': 'Dining hall', kitchen: 'Kitchen', 'corn-maze': 'Entrance', 'corn-maze-inside': 'Inside' };
+export const PLACE_LABEL = { 'cave-entrance': 'The mouth', 'cave-inside': 'Inside', cabins: 'Porch', 'cabin-inside': 'Inside', trailers: 'Outside', 'trailer-inside': 'Inside', 'mess-hall': 'Dining hall', kitchen: 'Kitchen', 'corn-maze': 'Entrance', 'corn-maze-inside': 'Inside' };
 
 // the camp's day, in the order it happens (camp-access.js windows)
 export const WINDOW_ORDER = { pre: ['morning', 'camp-work'], post: ['return', 'scramble', 'before-tribal'] };
@@ -201,3 +203,44 @@ export const lockedConv = (map, seen, c) => c?.after != null && !seen.has(c.afte
 
 /** The next conversation in story order the viewer has not watched yet (the Next button). */
 export function nextConv(map, seen) { return map.convs.find(c => !seen.has(c.i)) || null; }
+
+// ══════════════════════════════════════════════════════════════════════
+// THE ISLAND'S MAP — Redemption Island and Rescue Island on Boney Island (the user, 2026-10-09):
+// the same map the camps have, its places Skull Beach, the Shoreline, the Rocky Beach and the Cave.
+// A day there has a morning, an afternoon and a night; each of the engine's island moments is one
+// conversation at the place that kind of moment happens (twists.js islandPlaceOf); whoever is not in
+// one is idle on a beach. The fights, the plots and the arrivals are the ones the clock waits for.
+// ══════════════════════════════════════════════════════════════════════
+const ISLAND_WINDOWS = [{ id: 'ri-day', label: 'Morning', time: '9:00 AM' }, { id: 'ri-later', label: 'Afternoon', time: '3:00 PM' }, { id: 'ri-night', label: 'Night', time: '9:00 PM', night: true }];
+const ISLAND_KEY = new Set(['sizing-up', 'enemy-arrives', 'ally-arrives', 'grudge-confrontation', 'explosive-fight', 'alliance-plot', 'revenge-talk', 'quit', 'group-comeback']);
+const ISLAND_IDLE = ['skull-beach', 'shoreline', 'rocky-beach'];
+const titleCase = t => String(t || '').toLowerCase().replace(/(^|\s)\w/g, c => c.toUpperCase());
+export function tdIslandMap(ep, rescue, o = {}) {
+  if (!islandMapOn(ep, o)) return null;
+  const events = islandEvents(ep, rescue);
+  if (!events.length) return null;
+  const isle = islandName(rescue);
+  const residents = islandResidents(ep, rescue);
+  const zones = mapZones(RI_VENUE);
+  const zoneOf = ZONE_OF[RI_VENUE];
+  const convs = [];
+  for (const e of events) {
+    const screen = tdIslandConvScreen(ep, rescue, e, o);
+    if (!screen) continue;
+    const w = ISLAND_WINDOWS[islandWindowOf(e)], place = islandPlaceOf(e), zone = zoneOf[place] || 'skull-beach';
+    const who = [e.player, e.player2, e.player3].filter(n => n && residents.includes(n));
+    convs.push({ i: convs.length, window: w.id, zone, place, key: ISLAND_KEY.has(e.type), rank: 0, title: titleCase(islandBadge(e)), camp: isle, storyline: null, who,
+      screen: { ...screen, id: `ri-${rescue ? 'rescue' : 'redemption'}-c${convs.length}`, label: `${zones[zone]?.label || placeName(place)} · ${w.label}` } });
+  }
+  if (!convs.length) return null;
+  const windows = ISLAND_WINDOWS.map(w => {
+    const busy = new Set(convs.filter(c => c.window === w.id).flatMap(c => c.who));
+    const idle = {};
+    residents.filter(n => !busy.has(n)).forEach(n => {
+      let h = 0; for (const ch of `${n}|${w.id}|${ep.num}`) h = (h * 31 + ch.charCodeAt(0)) | 0;
+      (idle[ISLAND_IDLE[(h >>> 0) % ISLAND_IDLE.length]] ||= []).push(n);
+    });
+    return { ...w, night: !!w.night, idle };
+  }).filter(w => convs.some(c => c.window === w.id) || Object.keys(w.idle).length);
+  return { venue: RI_VENUE, phase: rescue ? 'rescue' : 'redemption', camps: [isle], teamOf: Object.fromEntries(residents.map(n => [n, isle])), windows, convs, zones, slot: null, title: isle };
+}

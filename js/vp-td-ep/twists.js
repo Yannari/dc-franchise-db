@@ -20,16 +20,6 @@ const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul
 const pickBy = (arr, ...k) => arr[hash(k.join('|')) % arr.length];
 const ISL = 'islands';
 const plate = (spot, tod) => plateKey(ISL, spot, tod);
-// Skull Rock's only floor is the strip of sand under the cliff, lower in the frame than the plate's marks
-// (they stop above the dialogue panel): up to five stand on the sand, the rest in the shallows in front
-const onSand = (key, names, extra = {}) => {
-  if (!/skull-rock/.test(key || '')) return null;
-  const back = names.slice(0, 5), front = names.slice(5);
-  const out = {};
-  back.forEach((n, i) => { out[n] = { u: back.length === 1 ? .6 : .46 + (.3 * i) / (back.length - 1), v: .82, s: .12, h: 15, crowd: true, ...extra }; });
-  front.forEach((n, i) => { out[n] = { u: front.length === 1 ? .5 : .3 + (.42 * i) / (front.length - 1), v: .97, s: .2, h: 22, crowd: true, ...extra }; });
-  return out;
-};
 
 // ── the choice ────────────────────────────────────────────────────────
 // What the voted-out say at the crossroads. The classic card draws from the same pools, by the
@@ -144,8 +134,11 @@ export function tdRiChoiceScreen(ep, o = {}) {
     // crossroads asking again (the user, 2026-10-08: "two different scenes for the RI choice")
     if (choice === 'REDEMPTION ISLAND') {
       const key = riPlace(ep, o, 'night');
-      if (key) {
-        const places = onSand(key, [elim]) || placeScene(key, [elim], []);
+      const already = residentsOf(ep, false).filter(n => n !== elim);
+      if (islandMapOn(ep, o) && landing(steps, elim, already, 'Redemption Island')) {
+        steps.push({ k: 'beat', text: `${elim} wades onto Skull Beach. The next duel decides whether ${elim} gets back in.`, focus: [elim], side: [{ tab: 'residents', text: `${elim} arrives (episode ${ep.num}).` }] });
+      } else if (key) {
+        const places = placeScene(key, [elim], []);
         steps.push({ k: 'scene', spot: 'redemption-camp', tod: 'night', plate: key, place: 'Redemption Island', time: 'That night', card: false, cut: true, focus: [elim], bg: [], places, act: { kind: 'arrive', who: [elim] } });
         steps.push({ k: 'beat', text: `${elim} reaches Redemption Island. The next duel decides whether ${elim} gets back in.`, focus: [elim], side: [{ tab: 'residents', text: `${elim} arrives (episode ${ep.num}).` }] });
       }
@@ -154,11 +147,15 @@ export function tdRiChoiceScreen(ep, o = {}) {
   }
   if (choice === 'RESCUE ISLAND') {
     const already = (ep.riArrival?.existingResidents || []).filter(n => n !== elim);
-    const key = plate('rescue-camp', 'night');
-    const places = placeScene(key, [elim, ...already].slice(0, 9), []);
-    steps.push({ k: 'scene', spot: 'rescue-camp', tod: 'night', plate: key, place: 'Rescue Island', time: 'That night', card: !sign, cut: !!sign, focus: [elim], bg: [], places,
-      acts: Object.fromEntries(already.map(n => [n, pickBy(['whittle', 'nap', 'fish'], n, ep.num)])), act: { kind: 'arrive', who: [elim] } });
-    steps.push({ k: 'beat', text: `A boat drops ${elim} on the shore of Rescue Island. The game isn't over.`, focus: [elim], side: [{ tab: 'residents', text: `${elim} arrives (episode ${ep.num}).` }] });
+    if (islandMapOn(ep, o) && landing(steps, elim, already, 'Rescue Island')) {
+      steps.push({ k: 'beat', text: `The boat drops ${elim} on Skull Beach. The game isn't over.`, focus: [elim], side: [{ tab: 'residents', text: `${elim} arrives (episode ${ep.num}).` }] });
+    } else {
+      const key = plate('rescue-camp', 'night');
+      const places = placeScene(key, [elim, ...already].slice(0, 9), []);
+      steps.push({ k: 'scene', spot: 'rescue-camp', tod: 'night', plate: key, place: 'Rescue Island', time: 'That night', card: !sign, cut: !!sign, focus: [elim], bg: [], places,
+        acts: Object.fromEntries(already.map(n => [n, pickBy(['whittle', 'nap', 'fish'], n, ep.num)])), act: { kind: 'arrive', who: [elim] } });
+      steps.push({ k: 'beat', text: `A boat drops ${elim} on the shore of Rescue Island. The game isn't over.`, focus: [elim], side: [{ tab: 'residents', text: `${elim} arrives (episode ${ep.num}).` }] });
+    }
     steps.push({ k: 'say', by: elim, text: riChoiceQuote(ep, true), focus: [elim], loud: true });
     if (already.length) {
       steps.push({ k: 'beat', text: `${already.length === 1 ? already[0] : already.slice(0, -1).join(', ') + ' and ' + already[already.length - 1]} look${already.length === 1 ? 's' : ''} up from the fire.`, focus: already.slice(0, 4), act: { kind: 'lean', who: [elim, already[0]] } });
@@ -180,6 +177,7 @@ export function tdRiChoiceScreen(ep, o = {}) {
   steps.push({ k: 'beat', text: accepted ? `${elim} takes the path to the right.` : `${elim} takes the path home.`, focus: [elim],
     act: { kind: 'path', who: [elim], dir: accepted ? 'R' : 'L', lit: accepted }, side: [{ tab: 'residents', text: accepted ? `${elim} goes to Redemption Island.` : `${elim} goes home.` }] });
   steps.push({ k: 'title', kicker: accepted ? 'Bound for' : 'Torch snuffed', name: accepted ? 'Redemption Island' : 'Going home', faces: [elim], tone: accepted ? 'fire' : 'out' });
+  if (accepted && islandMapOn(ep, o)) landing(steps, elim, residentsOf(ep, false).filter(n => n !== elim), 'Redemption Island');
   return { id: 'ri-choice', kind: 'island', venue: ISL, ep: ep.num, label: 'One Final Choice', host, steps };
 }
 
@@ -196,7 +194,8 @@ function riPlace(ep, o, tod) {
   // the island itself: Skull Rock in 4K (the user, 2026-10-09: the Boney Island frame is a blurry 930px
   // capture); Boney Island only if Skull Rock is ever missing
   const isle = plateKey(ISL, 'skull-rock', tod) ? 'skull-rock' : 'boney-island';
-  const at = venue === 'film-lot' ? ['film-lot', 'cage-stage'] : venue === 'carnival' ? [ISL, 'stawaki-exile'] : [ISL, isle];
+  // the island as a place (zz_zzzredemption.py, the user's frames, 2026-10-09): Skull Beach
+  const at = venue === 'film-lot' ? ['film-lot', 'cage-stage'] : islandMapOn(ep, o) ? [RI_VENUE, 'skull-beach'] : venue === 'carnival' ? [ISL, 'stawaki-exile'] : [ISL, isle];
   return plateKey(at[0], at[1], tod) || plateKey(at[0], at[1], tod === 'night' ? 'day' : 'night');
 }
 export function tdIslandLifeScreen(ep, rescue, o = {}) {
@@ -219,48 +218,17 @@ export function tdIslandLifeScreen(ep, rescue, o = {}) {
   let rank = -9;
   const open = r => {
     const t = r === 2 ? 'night' : 'day';
-    const key = rescue ? plate(spot, t) : (riPlace(ep, o, t) || plate(spot, t));
-    const places = onSand(key, residents.slice(0, 9)) || placeScene(key, residents.slice(0, 9), []);
+    const key = riPlace(ep, o, t) || plate(spot, t);
+    const places = placeScene(key, residents.slice(0, 9), []);
     // morning to afternoon: the light moves on, nobody moves (no new card)
     steps.push({ k: 'scene', spot, tod: t, plate: key, place: isle, time: TIME[r], card: rank === -9 || r === 2, focus: [], bg: [], places,
       acts: Object.fromEntries(residents.map(n => [n, busy[n] || 'whittle'])) });
     rank = r;
   };
   for (const e of events) {
-    const text = cleanText(e.text);
     const r = Math.max(rankOf(e), 0);   // an arrival opens the day, on the same set
     if (r !== rank) { open(r); if (steps.length === 1) steps[0].side = roll; }
-    const who = [e.player, e.player2, e.player3].filter(n => n && residents.includes(n));
-    let kind = actKind(e.type, text);
-    if ((kind === 'hug' || kind === 'lean') && who.length < 2) kind = null;   // nobody to hold on to
-    const side = [{ tab: 'log', text: `${badgeOf(e.type).text}: ${who.join(', ')}` }];
-    if (e.type === 'quit') side.push({ tab: 'residents', text: `${who[0]} quits ${isle}.` });
-    const gain = e.stat && ['training', 'training-life', 'edge-train', 'shared-training', 'shared-training-life'].includes(e.type) ? { who: who[0], stat: e.stat, up: true }
-      : e.stat && /injury/.test(e.type) ? { who: who[0], stat: e.stat, up: false } : null;
-    if (Array.isArray(e.lines) && e.lines.length) {
-      // a written scene: one click per line, the moment's badge on its first stage direction
-      const first = steps.length;
-      let lastBy = null;
-      for (const l of e.lines) {
-        const t = cleanText(l.text);
-        if (!t) continue;
-        if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text: t });
-        else if (l.kind === 'beat') steps.push({ k: 'beat', text: t, focus: who });
-        else { steps.push({ k: 'say', by: l.by, text: t, focus: who, loud: /!/.test(t) && t.length < 70 }); lastBy = l.by; }
-      }
-      const lead = steps[first];
-      if (lead) {
-        lead.act = kind ? { kind, who } : null;
-        lead.side = side;
-        if (gain) lead.gain = gain;
-        const firstBeat = steps.slice(first).find(s => s.k === 'beat');
-        (firstBeat || lead).badge = badgeOf(e.type);
-      }
-      continue;
-    }
-    const step = { k: 'beat', text, badge: badgeOf(e.type), focus: who, act: kind ? { kind, who } : null, side };
-    if (gain) step.gain = gain;
-    steps.push(step);
+    playEvent(steps, e, residents, isle);
   }
   // what is coming: the duel tonight, or everyone still waiting for their way back
   if (!rescue && ep.riDuel) {
@@ -270,6 +238,97 @@ export function tdIslandLifeScreen(ep, rescue, o = {}) {
     steps.push({ k: 'title', kicker: 'Still on Rescue Island', name: `${residents.length} waiting for a way back`, faces: residents.slice(0, 8) });
   }
   return { id: rescue ? 'rescue-life' : 'ri-life', kind: 'island', venue: ISL, ep: ep.num, label: isle, host: o.host || 'Chris', steps };
+}
+
+// one island moment, played: its written lines one click each, or the engine's sentence as a beat
+function playEvent(steps, e, residents, isle) {
+  const text = cleanText(e.text);
+  const who = [e.player, e.player2, e.player3].filter(n => n && residents.includes(n));
+  let kind = actKind(e.type, text);
+  if ((kind === 'hug' || kind === 'lean') && who.length < 2) kind = null;   // nobody to hold on to
+  const side = [{ tab: 'log', text: `${badgeOf(e.type).text}: ${who.join(', ')}` }];
+  if (e.type === 'quit') side.push({ tab: 'residents', text: `${who[0]} quits ${isle}.` });
+  const gain = e.stat && ['training', 'training-life', 'edge-train', 'shared-training', 'shared-training-life'].includes(e.type) ? { who: who[0], stat: e.stat, up: true }
+    : e.stat && /injury/.test(e.type) ? { who: who[0], stat: e.stat, up: false } : null;
+  if (Array.isArray(e.lines) && e.lines.length) {
+    // a written scene: one click per line, the moment's badge on its first stage direction
+    const first = steps.length;
+    for (const l of e.lines) {
+      const t = cleanText(l.text);
+      if (!t) continue;
+      if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text: t });
+      else if (l.kind === 'beat') steps.push({ k: 'beat', text: t, focus: who });
+      else steps.push({ k: 'say', by: l.by, text: t, focus: who, loud: /!/.test(t) && t.length < 70 });
+    }
+    const lead = steps[first];
+    if (lead) {
+      lead.act = kind ? { kind, who } : null;
+      lead.side = side;
+      if (gain) lead.gain = gain;
+      const firstBeat = steps.slice(first).find(x => x.k === 'beat');
+      (firstBeat || lead).badge = badgeOf(e.type);
+    }
+    return;
+  }
+  const step = { k: 'beat', text, badge: badgeOf(e.type), focus: who, act: kind ? { kind, who } : null, side };
+  if (gain) step.gain = gain;
+  steps.push(step);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE ISLAND AS A MAP (the user, 2026-10-09: "the 4K Skull Rock as a map like the other maps, with
+// zones"; Redemption and Rescue alike, "the difference is that people here stay"). Boney Island
+// (tools/td-camp/venues/zz_zzzredemption.py): the map, Skull Beach under the skull, the Shoreline's
+// lagoon, the Rocky Beach, and the Cave (its mouth, and the pool inside the cliffs). Each moment is
+// played where that kind of moment happens; the map (map.js tdIslandMap) holds them by time of day.
+// The film lot keeps its prison set (the cage stage).
+// ══════════════════════════════════════════════════════════════════════
+export const RI_VENUE = 'redemption';
+export const islandMapOn = (ep, o = {}) => venueOf(ep, o) !== 'film-lot' && !!plateKey(RI_VENUE, 'map', 'day');
+export const islandName = rescue => (rescue ? 'Rescue Island' : 'Redemption Island');
+// what kind of moment happens where: training on the stones, a fight on the stones or the open beach,
+// meals and comfort by the lagoon, a breakdown alone at the cave mouth, scheming deep inside it; a quiet
+// moment wherever there is somewhere to sit and think. The same moment always lands in the same place.
+const PLACE_FOR = { train: ['rocky-beach'], hurt: ['rocky-beach'], shout: ['rocky-beach', 'skull-beach'], laugh: ['shoreline', 'skull-beach'], hug: ['shoreline', 'skull-beach'],
+  storm: ['shoreline'], cry: ['cave-entrance', 'shoreline'], rest: ['cave-entrance', 'shoreline'], fire: ['skull-beach', 'rocky-beach'], gust: ['skull-beach'],
+  lean: ['skull-beach', 'shoreline', 'rocky-beach'] };
+const QUIET = ['skull-beach', 'shoreline', 'cave-entrance'];
+const HIDDEN = new Set(['alliance-plot', 'game-talk', 'cold-war', 'revenge-talk', 'history']);
+export function islandPlaceOf(e) {
+  if (isArrival(e)) return 'skull-beach';
+  if (HIDDEN.has(e.type)) return 'cave-inside';
+  const opts = PLACE_FOR[actKind(e.type, cleanText(e.text))] || QUIET;
+  return opts[hash(`${e.type}|${e.player}|${e.player2 || ''}|${String(e.text || '').slice(0, 40)}`) % opts.length];
+}
+/** The island's moments this episode, in the day's order (the duel's aftermath belongs to the duel). */
+export function islandEvents(ep, rescue) {
+  const all = rescue ? (ep.rescueIslandEvents || []) : (ep.riLifeEvents || []).filter(e => !POST_DUEL.includes(e.type));
+  return all.filter(e => cleanText(e.text)).map((e, i) => ({ e, i })).sort((a, b) => rankOf(a.e) - rankOf(b.e) || a.i - b.i).map(x => x.e);
+}
+export const islandResidents = (ep, rescue) => residentsOf(ep, rescue);
+export const islandWindowOf = e => Math.max(rankOf(e), 0);
+export const islandBadge = e => badgeOf(e.type).text;
+const CLOCK = ['9:00 AM', '3:00 PM', '9:00 PM'];
+/** One island moment as its own screen, on the place it happens. */
+export function tdIslandConvScreen(ep, rescue, e, o = {}) {
+  const residents = residentsOf(ep, rescue), isle = islandName(rescue);
+  const place = islandPlaceOf(e), w = islandWindowOf(e), tod = w === 2 ? 'night' : 'day';
+  const key = plateKey(RI_VENUE, place, tod) || plateKey(RI_VENUE, place, tod === 'night' ? 'day' : 'night');
+  if (!key) return null;
+  const who = [e.player, e.player2, e.player3].filter(n => n && residents.includes(n));
+  const steps = [{ k: 'scene', spot: place, tod, plate: key, place: placeName(place), time: CLOCK[w], card: true, focus: who, bg: [], places: placeScene(key, who, []) }];
+  playEvent(steps, e, residents, isle);
+  return { id: 'ri-conv', kind: 'island', venue: RI_VENUE, ep: ep.num, label: isle, host: o.host || 'Chris', steps };
+}
+/** The crossing: the Boat of Losers out to the island at night, and the landing on Skull Beach. */
+function landing(steps, elim, already, isle) {
+  const far = plateKey(RI_VENUE, 'approach', 'night'), beach = plateKey(RI_VENUE, 'skull-beach', 'night');
+  if (!far || !beach) return false;
+  steps.push({ k: 'scene', spot: 'approach', tod: 'night', plate: far, place: isle, time: 'That night', card: true, focus: [], bg: [], places: {}, wide: true });
+  steps.push({ k: 'beat', text: `The Boat of Losers chugs out across the dark water toward Boney Island, ${elim} alone on the deck.`, focus: [], act: { kind: 'ride', ride: 'boat', riders: [elim] } });
+  steps.push({ k: 'scene', spot: 'skull-beach', tod: 'night', plate: beach, place: 'Skull Beach', time: 'That night', card: false, cut: true, focus: [elim, ...already.slice(0, 4)], bg: [],
+    places: placeScene(beach, [elim, ...already].slice(0, 9), []), act: { kind: 'arrive', who: [elim] } });
+  return true;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -347,7 +406,7 @@ export function tdExileScreen(ep, d, o = {}) {
   const exileSpot = skull ? 'skull-rock' : boney ? 'boney-island' : solx ? 'soluna-exile' : stwx ? 'stawaki-exile' : 'exile-beach',
     exilePlace = (skull || boney) && venueOf(ep, o) === 'hosted-camp' ? 'Boney Island' : 'Exile Island';
   const k2 = plate(exileSpot, 'day');
-  steps.push({ k: 'scene', spot: exileSpot, tod: 'day', plate: k2, place: exilePlace, time: '4:30 PM', card: true, focus: [name], bg: [], places: onSand(k2, [name]) || placeScene(k2, [name], []), act: { kind: 'arrive', who: [name] } });
+  steps.push({ k: 'scene', spot: exileSpot, tod: 'day', plate: k2, place: exilePlace, time: '4:30 PM', card: true, focus: [name], bg: [], places: placeScene(k2, [name], []), act: { kind: 'arrive', who: [name] } });
   steps.push({ k: 'beat', text: d.returns
     ? `${name} is sent to Exile Island. ${P.Sub} will search for advantages — but ${P.sub} ${P.sub === 'they' ? 'are' : 'is'} not safe. ${P.Sub} will return for Tribal Council.`
     : d.schoolyard ? `${name} is sent to Exile Island. ${P.Sub} will skip this episode's challenge and tribal — and return to the tribe that loses a member.`
@@ -358,7 +417,7 @@ export function tdExileScreen(ep, d, o = {}) {
     side: f?.type ? [{ tab: 'secrets', text: `${name} found ${f.type === 'clue' ? 'a clue to an idol' : 'the ' + itemName(f.type)} on Exile Island.` }] : [] });
   if (!d.returns) {
     const k3 = plate(exileSpot, 'night');
-    steps.push({ k: 'scene', spot: exileSpot, tod: 'night', plate: k3, place: exilePlace, time: 'That night', card: false, focus: [name], bg: [], places: onSand(k3, [name]) || placeScene(k3, [name], []), acts: {} });
+    steps.push({ k: 'scene', spot: exileSpot, tod: 'night', plate: k3, place: exilePlace, time: 'That night', card: false, focus: [name], bg: [], places: placeScene(k3, [name], []), acts: {} });
     steps.push({ k: 'beat', text: `${name} spends the night alone while the others go to Tribal Council.`, focus: [name], act: { kind: 'rest', who: [name] } });
   }
   return { id: d.returns ? 'exile-format' : 'exile-island', kind: 'island', venue: ISL, ep: ep.num, label: 'Exile Island', host, steps };
@@ -395,7 +454,7 @@ export function tdRiDuelScreen(ep, o = {}) {
   const kVenue = spot ? venue : ISL;
   if (!key) return null;
   const at = TIEBREAK_AT[spot];
-  const places = at ? Object.fromEntries(who.map((n, i) => [n, { u: at[i % at.length][0], v: at[i % at.length][1], s: .3, h: 30, crowd: true }])) : (onSand(key, who) || placeScene(key, who, [], { host }));
+  const places = at ? Object.fromEntries(who.map((n, i) => [n, { u: at[i % at.length][0], v: at[i % at.length][1], s: .3, h: 30, crowd: true }])) : placeScene(key, who, [], { host });
   const steps = [];
   const say = (text, extra = {}) => { const t = cleanText(text); if (t) steps.push({ k: 'say', by: host, host: true, text: t.replace(/^"|"$/g, ''), ...extra }); };
   steps.push({ k: 'scene', spot: spot || 'duel', tod: /-night$/.test(key) ? 'night' : 'day', plate: key, place: 'The Duel', time: 'Redemption Island', card: true, focus: who, bg: [], places, host });

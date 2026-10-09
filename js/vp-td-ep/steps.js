@@ -64,7 +64,7 @@ const PLACE = {
 Object.assign(PLACE, { 'cabin-inside': 'Inside the Cabin', washroom: 'The Washrooms', cliff: 'The Cliff' });
 // Wawanakwa's other places (the wiki's locations) and the islands beyond camp
 Object.assign(PLACE, { lake: 'The Lake', boathouse: 'The Boathouse', waterfall: 'The Waterfall', caves: 'The Caves', amphitheater: 'The Amphitheater',
-  'boney-island': 'Boney Island', 'skull-rock': 'Skull Rock', 'playa-des-losers': 'Playa Des Losers',
+  'boney-island': 'Boney Island', 'skull-rock': 'Skull Rock', 'skull-beach': 'Skull Beach', 'cave-entrance': 'The Cave', 'cave-inside': 'Inside the Cave', approach: 'Boney Island', 'playa-des-losers': 'Playa Des Losers',
   'trailer-inside': 'Inside the Trailer', 'western-set': 'The Western Set', 'city-set': 'The City Set',
   'chris-quarters': "Chris's Quarters", cockpit: 'The Cockpit', river: 'The River', kitchen: "Chef's Kitchen",
   carousel: 'The Carousel', 'corn-maze-inside': 'Inside the Corn Maze', 'soluna-exile': 'Exile Island', 'stawaki-exile': 'Exile Beach', motel: 'The Motel', sign: 'One Final Choice', 'boat-side': 'The Boat of Losers', yacht: 'On the way in', 'bus-door': 'The Bus', drop: 'The Drop of Shame', 'limo-park': 'The Red Carpet', 'limo-back': 'The Lame-o-sine', 'limo-in': 'The Lame-o-sine', pier: 'The Pier', 'boat-deck': 'The Boat' });
@@ -233,7 +233,19 @@ const marksOf = (key, kind) => ((TD_MARKS[key] || {}).m || []).filter(m => m.kin
 
 // Speakers up front and apart, in the band above the dialogue panel; the busy ones further back.
 // Every name asked for gets a place: when the plate runs out of marks, the band is shared out.
+// Sets whose only floor is low in the frame, under where a mark may sit (Skull Rock's strip of sand, the
+// cave mouth's path): people stand on that floor anyway, as a crowd the dialogue panel can cover, the
+// first ones along the floor and anyone past them in the front row. { spot: [v, u0, u1, h] }
+const LOW_FLOOR = { 'islands/skull-rock': [.82, .46, .76, 15], 'redemption/skull-beach': [.82, .46, .76, 15], 'redemption/cave-entrance': [.86, .3, .78, 24] };
+function lowFloor([v, u0, u1, h], names) {
+  const back = names.slice(0, 5), front = names.slice(5), out = {};
+  back.forEach((n, i) => { out[n] = { u: back.length === 1 ? (u0 + u1) / 2 : u0 + ((u1 - u0) * i) / (back.length - 1), v, s: h / 125, h, crowd: true }; });
+  front.forEach((n, i) => { out[n] = { u: front.length === 1 ? .5 : .3 + (.42 * i) / (front.length - 1), v: .97, s: .2, h: h * 1.4, crowd: true }; });
+  return out;
+}
 export function placeScene(key, focus, bg = [], { sit = false, host = null } = {}) {
+  const low = LOW_FLOOR[String(key || '').replace(/-(day|night)$/, '')];
+  if (low) { const o = lowFloor(low, [...focus, ...(host ? [host] : []), ...bg].slice(0, 9)); if (host && o[host]) o[host].host = true; return o; }
   const out = {};
   const used = [];
   const apart = (a, b) => Math.abs(a.u - b.u) > .13;

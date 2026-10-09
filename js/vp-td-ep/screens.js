@@ -9,7 +9,7 @@
 // cover yet keeps its classic screen. A Classic switch on every stepped screen lands on the same
 // screen in the classic viewer (localStorage 'td-vp' = 'classic' to stay there).
 import { tdCampScreen, tdTribalScreen, tdTribalStepped, tdDoubleTribalScreen, cleanText, placeScene, plateKey, placeName, venueOf, teamSpot } from './steps.js';
-import { tdCampMap, hasMap, MAP_VENUES, openWindow, nextConv, lockedConv, PLACE_LABEL } from './map.js';
+import { tdCampMap, tdIslandMap, hasMap, MAP_VENUES, openWindow, nextConv, lockedConv, PLACE_LABEL } from './map.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, tdRiDuelScreen } from './twists.js';
 import { tdJuryHouseScreen, isJuryHouse } from './jury-house.js';
 import { tdTwistBlocksScreen, tdMergeScreen, tdMiscTwistScreen, tdPreviouslyScreen } from './twist-screens.js';
@@ -71,6 +71,11 @@ export function tdStepScreens(ep, classic = [], o = {}) {
       if (juryDone) continue;
       const jh = tdJuryHouseScreen(ep, o);
       if (jh) { juryDone = true; out.push(shell(jh, { ...S, id: 'jury-house', label: jh.label }, ep, o)); continue; }
+    }
+    // Redemption / Rescue Island: the island's map (the user, 2026-10-09), its moments by place and time of day
+    if (/^(ri-life|rescue-life)$/.test(S?.id || '')) {
+      const im = (() => { try { return tdIslandMap(ep, S.id === 'rescue-life' && !!(ep.rescueIslandEvents || []).length, o); } catch (err) { console.warn('TD island map fell back:', err); return null; } })();
+      if (im) { out.push(mapShell(im, S, ep, o)); continue; }
     }
     const isl = islandScreen(ep, S, o);
     if (isl) { out.push(shell(isl, S, ep, o)); continue; }
@@ -458,8 +463,8 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
 // conversation), 'talk' (one conversation, played by paint() exactly like a linear camp screen).
 // Next always walks the conversations in story order; the clock moves on when a time window's
 // key conversations have been watched.
-const VENUE_PUBLIC = { 'hosted-camp': 'communal-grounds', 'survival-island': 'campfire', 'film-lot': 'studio-backlot', 'world-tour': 'economy', carnival: 'campsite' };
-const VENUE_NAME = { 'hosted-camp': 'Camp Wawanakwa', 'survival-island': 'Soluna Island', 'film-lot': 'The Film Lot', 'world-tour': 'The Jumbo Jet', carnival: 'Stawaki' };
+const VENUE_PUBLIC = { redemption: 'skull-beach', 'hosted-camp': 'communal-grounds', 'survival-island': 'campfire', 'film-lot': 'studio-backlot', 'world-tour': 'economy', carnival: 'campsite' };
+const VENUE_NAME = { redemption: 'Boney Island', 'hosted-camp': 'Camp Wawanakwa', 'survival-island': 'Soluna Island', 'film-lot': 'The Film Lot', 'world-tour': 'The Jumbo Jet', carnival: 'Stawaki' };
 const ICON_BUBBLE = '<svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-5 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" fill="currentColor"/></svg>';
 const ICON_STAR = '<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z" fill="currentColor"/></svg>';
 const ICON_TICK = '<svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6" stroke="currentColor" stroke-width="3.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -477,7 +482,7 @@ function mapShell(map, S, ep, o) {
   try { seen = new Set(JSON.parse(globalThis.localStorage?.getItem(seenKey) || '[]')); } catch { /* per-viewer convenience */ }
   reg()[uid] = { isMap: true, map, ep: ep.num, mode: 'map', win: 0, zone: null, place: null, seen, seenKey, colors, story: false,
     scr: null, idx: -1, cur: null, auto: false, timer: null, typing: null, tab: null, wk: null, o: { teamColor: '#4fb84a' } };
-  const label = `${map.phase === 'pre' ? 'Camp · Morning' : 'Camp · After the challenge'}`;
+  const label = map.title || `${map.phase === 'pre' ? 'Camp · Morning' : 'Camp · After the challenge'}`;
   const html = `<div class="tdx tdm-root" data-uid="${uid}" data-ambient="none">
 <style>${TDX_FONTS}${TDX_CSS}${TDM_CSS}</style>
 <div class="tdx-stage tdm-on" id="tdx-st-${uid}" onclick="tdmStage('${uid}')">
@@ -490,7 +495,7 @@ function mapShell(map, S, ep, o) {
   <div class="tdx-static"></div>
 </div>
 <div class="tdx-ctrl">
-  <button type="button" class="tdx-btn" onclick="tdmMap('${uid}')">Camp map</button>
+  <button type="button" class="tdx-btn" onclick="tdmMap('${uid}')">${map.title ? 'Island map' : 'Camp map'}</button>
   <button type="button" class="tdx-btn" onclick="tdxBack('${uid}')">◀ Back <kbd>←</kbd></button>
   <button type="button" class="tdx-btn go" onclick="tdxNext('${uid}')">Next ▶ <kbd>Space</kbd></button>
   <button type="button" class="tdx-btn" id="tdx-auto-${uid}" onclick="tdxAuto('${uid}')">Auto</button>
@@ -501,7 +506,7 @@ function mapShell(map, S, ep, o) {
 <details class="tdx-script"><summary>Script</summary><div class="tdx-lines" id="tdx-lines-${uid}"><div class="tdx-ln d">Open a conversation on the map to read its script.</div></div></details>
 </div>`;
   // the sidebar names the screen: a shared camp's map is every team's, so it carries no team name
-  const named = map.camps.length > 1 ? (map.phase === 'pre' ? 'Camp' : 'Camp — After the challenge') : S.label;
+  const named = map.title ? S.label : map.camps.length > 1 ? (map.phase === 'pre' ? 'Camp' : 'Camp — After the challenge') : S.label;
   return { ...S, id: S.id, label: named, title: named, html, stepped: true, campMap: true };
 }
 
@@ -547,7 +552,7 @@ function mapPaint(uid, fresh) {
   } else {
     plate = plateKey(M.venue, 'map', tod);
   }
-  const L = { scene: { plate, spot: R.mode === 'zone' ? place : 'map', place: R.mode === 'zone' ? (M.zones[R.zone]?.label || placeName(place)) : (M.camps.length !== 1 || M.camps[0] === 'merge' ? (VENUE_NAME[M.venue] || 'Camp') : MAP_VENUES[M.venue]?.shared ? `${VENUE_NAME[M.venue] || 'Camp'} — ${M.camps[0]}` : `${M.camps[0]} Camp`), time: W.time }, safe: [], side: [], step: {}, conf: null };
+  const L = { scene: { plate, spot: R.mode === 'zone' ? place : 'map', place: R.mode === 'zone' ? (M.zones[R.zone]?.label || placeName(place)) : M.title ? M.title : (M.camps.length !== 1 || M.camps[0] === 'merge' ? (VENUE_NAME[M.venue] || 'Camp') : MAP_VENUES[M.venue]?.shared ? `${VENUE_NAME[M.venue] || 'Camp'} — ${M.camps[0]}` : `${M.camps[0]} Camp`), time: W.time }, safe: [], side: [], step: {}, conf: null };
   world.innerHTML = `${worldHtml(scr0, L)}<div class="tdx-cast">${toks}</div><div class="tdx-fx"></div>`;
   st.querySelector('.tdx-hud').innerHTML = hudHtml(scr0, L, fresh, {});
   layer.innerHTML = clockHtml(uid, R, open) + (R.mode === 'zone' ? zoneHtml(uid, R, here) : pinsHtml(uid, R, W)) + listHtml(uid, R, here);
@@ -637,7 +642,7 @@ function zoneHtml(uid, R, here) {
     return `<button type="button" class="tdm-bub ${st}${lock ? ' locked' : ''}" style="left:${u.toFixed(2)}%;top:${top.toFixed(2)}%" ${lock ? 'disabled title="Watch the earlier part of this story first"' : `onclick="tdmPlay('${uid}',${c.i})"`}>
       <i>${lock ? ICON_LOCK : st === 'done' ? ICON_TICK : st === 'key' ? ICON_STAR : ICON_BUBBLE}</i><span>${esc(c.title)}</span></button>`;
   }).join('');
-  return `<button type="button" class="tdm-back" onclick="tdmMap('${uid}')">◀ Camp map</button>${tabs}${bubbles}`;
+  return `<button type="button" class="tdm-back" onclick="tdmMap('${uid}')">◀ ${M.title ? 'Island map' : 'Camp map'}</button>${tabs}${bubbles}`;
 }
 
 function listHtml(uid, R, here) {

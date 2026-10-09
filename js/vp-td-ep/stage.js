@@ -43,7 +43,7 @@ function seeded(key) { let h = 2166136261; for (const c of key) h = Math.imul(h 
 // THE WORLD
 // ══════════════════════════════════════════════════════════════════════
 // venues whose plates have a 4K render (tools/td-camp/camp.py ... hd)
-const HD_VENUES = new Set(['hosted-camp', 'film-lot', 'world-tour', 'survival-island', 'carnival']);
+const HD_VENUES = new Set(['hosted-camp', 'film-lot', 'world-tour', 'survival-island', 'carnival', 'redemption']);
 export function worldKey(screen, L) {
   if (L.conf) return L.conf.plate || `${screen.venue}/confessional`;
   return L.scene?.plate || `${screen.venue}/none`;
@@ -169,6 +169,9 @@ const CLIMATE = {
   'survival-island': [...Array(7).fill('sunny'), ...Array(5).fill('calm'), 'hot', 'hot', 'hot', 'breezy', 'breezy', 'rain', 'storm'],
   'film-lot': [...Array(8).fill('sunny'), ...Array(6).fill('calm'), 'hot', 'hot', 'breezy', 'overcast', 'overcast', 'fog'],
   'world-tour': [...Array(8).fill('sunny'), ...Array(6).fill('calm'), 'breezy', 'breezy', 'hot', 'overcast', 'rain', 'fog'],
+  // Boney Island (Redemption / Rescue Island): a cursed rock in a grey lake; fog rolls in off the water,
+  // storms break over the skull (the user, 2026-10-09: "fog moving, a lightning storm, some weather sometimes")
+  redemption: [...Array(4).fill('calm'), 'overcast', 'overcast', 'overcast', 'breezy', 'breezy', 'fog', 'fog', 'fog', 'rain', 'rain', 'storm', 'storm'],
   carnival: [...Array(6).fill('calm'), ...Array(5).fill('sunny'), 'overcast', 'overcast', 'overcast', 'breezy', 'breezy', 'rain', 'storm', 'fog'],
 };
 export const WEATHER_LABEL = { sunny: 'Sunny', calm: 'Clear', breezy: 'Windy', overcast: 'Overcast', rain: 'Rain', storm: 'Storm', fog: 'Fog', hot: 'Heatwave' };

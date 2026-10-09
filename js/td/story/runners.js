@@ -11,6 +11,7 @@
 //   fitness   runs a workout club nobody joined   drama     narrates their own life like a show
 //   job       can't stop talking about their job ({job}, authored)
 // run.<kind>.<stage>: a is the person, b somebody who has to put up with it, c (may be missing).
+// Stage 2 carries call (1, 2, 3+): which callback this is, so the bit escalates in order.
 // Words only.
 import { gs, players } from '../../core.js';
 import { voiceOf } from './voice.js';
@@ -49,7 +50,11 @@ export function runnerDue(ep, members) {
     // set up early, called back while the season runs, paid off once it's late
     const late = (gs.activePlayers || []).length <= 7;
     const stage = r.stage === 0 ? 1 : late && r.stage >= 2 ? 3 : 2;
-    return { name, kind: r.kind, stage, commit: () => { r.stage = Math.max(r.stage, stage); r.last = ep.num; } };
+    // three callbacks, then it waits for its payoff: a fourth would be the same joke again
+    if (stage === 2 && (r.calls || 0) >= 3) continue;
+    // the callbacks build in order (call 1, 2, 3...), so each one is the next step of the bit, not the same joke again
+    const call = stage === 2 ? Math.min(3, (r.calls || 0) + 1) : 0;
+    return { name, kind: r.kind, stage, call, commit: () => { r.stage = Math.max(r.stage, stage); r.last = ep.num; if (stage === 2) r.calls = (r.calls || 0) + 1; } };
   }
   return null;
 }

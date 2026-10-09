@@ -1212,7 +1212,7 @@ export function airTdEpisode(ep) {
         if (rd) {
           const foil = members.filter(m => m !== rd.name).sort((x, y) => getBond(rd.name, y) - getBond(rd.name, x) || x.localeCompare(y));
           const who = { a: rd.name, ...(foil[0] ? { b: foil[0] } : {}), ...(foil[1] ? { c: foil[1] } : {}) };
-          const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), third: !!who.c, pair: !!who.b };
+          const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), third: !!who.c, pair: !!who.b, call: rd.call || 0 };
           const w = writeStory(`run.${rd.kind}`, String(rd.stage), who, {}, facts, { ep: ep.num, camp, phase, n: n++, place: 'public', avoid: ctxAvoid('afternoon'), unique: 'soft' });
           if (w) {
             rd.commit();

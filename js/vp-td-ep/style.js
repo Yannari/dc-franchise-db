@@ -109,8 +109,18 @@ export const TDX_CSS = `
 .tdx .tdx-tok .face img{width:100%;height:100%;object-fit:cover;display:block}
 .tdx .tdx-tok .shadow{position:absolute;left:10%;right:10%;bottom:-6%;height:12%;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.45),transparent 70%)}
 .tdx .tdx-tok .tag{position:absolute;left:50%;bottom:-16%;transform:translateX(-50%);white-space:nowrap;font:400 1.05cqw/1 'Lilita One',sans-serif;letter-spacing:.04em;color:#fff;background:rgba(14,16,26,.82);padding:.3em .6em .2em;clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%)}
-.tdx .tdx-tok.dim{filter:saturate(.7) brightness(.72)}
+.tdx .tdx-tok.dim{filter:saturate(.7) brightness(.78)}
 .tdx .tdx-tok.bg{filter:saturate(.8) brightness(.86)}
+/* the people not in this exchange (the user, 2026-10-08: "background people doing something, in the back,
+   a little transparent, so the focus is only on the people talking"): smaller, faded, behind the talk,
+   each idling on their own clock */
+.tdx .tdx-tok{transition:left .8s cubic-bezier(.3,.8,.25,1.05),top .8s cubic-bezier(.3,.8,.25,1.05),filter .4s,opacity .45s,scale .45s;transform-origin:50% 100%}
+.tdx .tdx-tok.dim,.tdx .tdx-tok.bg{opacity:.5;scale:.86;z-index:1!important}
+.tdx .tdx-tok.dim .tag,.tdx .tdx-tok.bg .tag{opacity:.6}
+.tdx .tdx-tok.dim:not([class*="act-"]) .body,.tdx .tdx-tok.bg:not([class*="act-"]) .body{animation:tdxIdleLook 6s ease-in-out infinite}
+.tdx .tdx-tok.dim:nth-child(3n) .body,.tdx .tdx-tok.bg:nth-child(3n) .body{animation-duration:7.5s;animation-delay:-2s}
+.tdx .tdx-tok.dim:nth-child(3n+1) .body,.tdx .tdx-tok.bg:nth-child(3n+1) .body{animation-duration:5.2s;animation-delay:-4s}
+@keyframes tdxIdleLook{0%,100%{transform:translateX(0) rotate(0)}22%{transform:translateX(-2%) rotate(-2.5deg)}48%{transform:translateY(-1.5%) rotate(0)}74%{transform:translateX(2%) rotate(2deg)}}
 .tdx .tdx-tok.speak .face{box-shadow:0 0 0 2px rgba(255,255,255,.9) inset,0 0 0 3px var(--am),0 10px 22px rgba(0,0,0,.45)}
 .tdx .tdx-tok.speak .tag{background:var(--or);color:#1a0e02}
 .tdx .tdx-tok.host .tag{background:var(--am);color:#1a0e02}

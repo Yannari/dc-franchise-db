@@ -700,12 +700,13 @@ export function tdTribalScreen(ep, o = {}) {
   const tie = !!ep.isTie;
   const revote = (ep.revoteLog || []).filter(v => v.voted);
   // the result, as the setting gives it
-  if (V.style === 'handout') handout(steps, say, V, { tribal, elim, counts, immune: [].concat(ep.immunityWinner || []).filter(n => tribal.includes(n)), tie, revote, rocks: !!ep.isRockDraw, host, alsoOut: ep._alsoOut || null });
+  const rv = { booth, plate, places, host, tribal, venue, original: ballots, tied: ep.revoteSilenced || ep.tiedPlayers || [], tb: ep.tiebreakerResult?.challengeLabel ? ep.tiebreakerResult : null };
+  if (V.style === 'handout') handout(steps, say, V, { tribal, elim, counts, immune: [].concat(ep.immunityWinner || []).filter(n => tribal.includes(n)), tie, revote, rocks: !!ep.isRockDraw, host, alsoOut: ep._alsoOut || null, rv });
   else {
     // who has gone before this one: the boot is the nth voted out of the game
     const gone = (window.gs?.episodeHistory || []).filter(e => e.num < ep.num && e.eliminated).length;
     const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth'];
-    readVotes(steps, say, { ...V, _host: host, _nth: ORD[gone] || null, _of: 'of the game', _ep: ep }, { tribal, elim, ballots, protectedSet, tie, revote, rocks: !!ep.isRockDraw });
+    readVotes(steps, say, { ...V, _host: host, _nth: ORD[gone] || null, _of: 'of the game', _ep: ep }, { tribal, elim, ballots, protectedSet, tie, revote, rocks: !!ep.isRockDraw, rv });
   }
   // the reading lands: how the one going home takes it, and who answers (td/story/tribal.js)
   const lineStep = l => (l.kind === 'beat' ? { k: 'beat', text: cleanText(l.text), focus: [] }
@@ -767,7 +768,7 @@ export function tdTribalScreen(ep, o = {}) {
   // in the booth (the user, 2026-10-08: "as the votes are written"): each ballot, as it is written,
   // puts its vote on the tally and its reason under Why
   for (const s of steps) {
-    if (s.k !== 'ballot') continue;
+    if (s.k !== 'ballot' || s.revote) continue;
     const i = left.findIndex(x => x.voter === s.voter), j = why.findIndex(x => x.voter === s.voter);
     s.side = [...(s.side || []), ...(i >= 0 ? left.splice(i, 1) : []), ...(j >= 0 ? why.splice(j, 1) : [])];
   }
@@ -873,24 +874,33 @@ export function tdTribalScreen(ep, o = {}) {
   return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps, elim };
 }
 
-function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, rocks, host, alsoOut = null }) {
+function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, rocks, host, alsoOut = null, rv = null }) {
   const n = tribal.length;
   // a tie: the revote happens before anyone is called
   if (tie) {
     steps.push({ k: 'title', kicker: 'Deadlock', name: 'A tie', faces: Object.entries(counts).sort((a, b) => b[1] - a[1]).filter(([, c], i, a) => c === a[0][1]).map(([nm]) => nm) });
-    say(`We have a tie. Everyone else votes again.`);
-    if (revote.length) steps.push({ k: 'ballots', who: [...new Set(revote.map(v => v.voter))], text: 'The revote is in.' });
-    if (rocks) { steps.push({ k: 'title', kicker: 'Still deadlocked', name: 'Rocks', faces: [] }); say(`Still tied. It comes down to the rocks.`); }
+    say(revote.length ? `We have a tie. Which means a revote.` : `We have a tie.`);
+    if (revote.length) {
+      if (rv) revoteBooth(steps, say, { ...rv, revote, V });
+      steps.push({ k: 'ballots', who: [...new Set(revote.map(v => v.voter))], text: 'The revote is in.' });
+    }
+    if (rv?.tb) {
+      tiebreakStage(steps, say, rv.tb, { venue: rv.venue, host, tribal, hadRevote: !!revote.length });
+      if (rv.plate) steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate: rv.plate, place: V.ceremony, time: '9:50 PM', card: false, cut: true, focus: [], bg: [], places: rv.places, seated: tribal, host, ceremony: true });
+    }
+    if (rocks) rockDraw(steps, say, { tribal, elim, tied: rv?.tied || [], immune, host });
   }
   const left = n - (alsoOut ? 2 : 1);
   say(`There are ${n} of you and only ${left} ${left === 1 ? V.item : V.items} on this plate. When I call your name, come and get one.`);
   // safe order: immunity first, then the fewest votes; the last two are the boot and the closest call
   const others = tribal.filter(x => x !== elim && x !== alsoOut && !immune.includes(x));
   const order = others.sort((a, b) => (counts[a] || 0) - (counts[b] || 0) || a.localeCompare(b));
-  // a double elimination announced in advance: the last two both go, nobody gets the final one
-  const runnerUp = alsoOut ? null : order.length ? order[order.length - 1] : null;
+  // a double elimination announced in advance: the last two both go, nobody gets the final one; after a
+  // tiebreaker or the rocks there is nobody left to keep in suspense
+  const settled = !!(rv?.tb || rocks);
+  const runnerUp = alsoOut || settled ? null : order.length ? order[order.length - 1] : null;
   for (const im of immune) if (im !== elim) { steps.push({ k: 'safe', who: im, item: V.item, immune: true }); }
-  const early = alsoOut ? order : order.slice(0, Math.max(0, order.length - 1));
+  const early = alsoOut || settled ? order : order.slice(0, Math.max(0, order.length - 1));
   for (const w of early) steps.push({ k: 'safe', who: w, item: V.item });
   if (runnerUp) {
     say(`${elim}. ${runnerUp}.`, { tense: true, focus: [elim, runnerUp] });
@@ -987,7 +997,7 @@ function voteReaction(steps, V, { v, tally, deciding, tribal, elim, ballots, i, 
   else if (leads && cnt >= 2 && i >= n - 4) push(knew ? (temper <= 4 ? 'angry' : 'steady') : 'scared', ally, { [X]: knew ? (temper <= 4 ? 'angry' : 'steady') : 'scared' });
 }
 
-function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, revote, rocks }) {
+function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, revote, rocks, rv = null }) {
   say(`I'll read the votes.`);
   // the deciding vote last: everyone else's first, the boot's held back until the end
   const live = ballots.filter(v => !protectedSet.has(v.voted));
@@ -1066,10 +1076,12 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
   });
   if (tie) {
     steps.push({ k: 'title', kicker: 'Deadlock', name: 'A tie', faces: Object.entries(tally).filter(([, c]) => c === Math.max(...Object.values(tally))).map(([n]) => n) });
-    say(`We have a tie. We vote again.`);
+    say(revote.length ? `We have a tie. Which means a revote.` : `We have a tie.`);
+    if (revote.length && rv) { revoteBooth(steps, say, { ...rv, revote, V }); say(`I'll read the revote.`); }
     const rt = {};
-    revote.forEach((v, i) => { rt[v.voted] = (rt[v.voted] || 0) + 1; steps.push({ k: 'read', vote: v.voted, revote: true, deciding: i === revote.length - 1 && !rocks, tally: { ...rt }, focus: [v.voted] }); });
-    if (rocks) { steps.push({ k: 'title', kicker: 'Still deadlocked', name: 'Rocks', faces: [] }); say(`Still tied. It comes down to the rocks.`); }
+    revote.forEach((v, i) => { rt[v.voted] = (rt[v.voted] || 0) + 1; steps.push({ k: 'read', vote: v.voted, revote: true, deciding: i === revote.length - 1 && !rocks && !rv?.tb, tally: { ...rt }, focus: [v.voted] }); });
+    if (rv?.tb) tiebreakStage(steps, say, rv.tb, { venue: rv.venue, host: V._host || 'Chris', tribal, hadRevote: !!revote.length });
+    if (rocks) rockDraw(steps, say, { tribal, elim, tied: rv?.tied || [], immune: [], host: V._host || 'Chris' });
   }
   steps.push({ k: 'out', who: elim, focus: [elim] });
 }
@@ -1232,4 +1244,92 @@ function exileSetup(ep, o) {
   // what they say to that, and who answers (td/story/twist.js writeExile)
   for (const l of ep.exileStory?.sent || []) steps.push(storyStep(l, [boot]));
   return { ...a, label: `${a.label} · Exile Duel`, steps, elim: null };
+}
+
+// ── THE REVOTE AND THE TIEBREAKER ─────────────────────────────────────
+// The user (2026-10-08): "in the revote they need to actually go again in the booth and acknowledge
+// it's a revote, so vote again the same name or switch with good reasoning", and a tie the season
+// settles by challenge has to be seen. The engine wrote both (voting.js simulateRevote: each revote
+// ballot with whether it held or flipped and why; episode.js runTiebreakerChallenge).
+const pickBy = (arr, key) => arr[hash(key) % arr.length];
+const HELD = [
+  (t, o) => `It's a revote. I know. Same name: ${t}. I'm not moving.`,
+  (t, o) => `${t}, again. I said it the first time and I meant it.`,
+  (t, o) => `They want me to flip. I'm not going to. ${t}.`,
+  (t, o) => `I'll draw a rock before I let ${t} stay. ${t}.`,
+];
+const HELD_ALLY = [
+  (t, o, ally) => `If I switch, ${ally} goes home. So it's ${t} again, rocks or no rocks.`,
+  (t, o, ally) => `${ally} would do the same for me. ${t}.`,
+];
+const HELD_HATE = [
+  (t) => `I'm not changing a thing. ${t} doesn't get to stay because the numbers got scary.`,
+];
+const FLIP = [
+  (t, o) => `I wrote ${o} last time. I'm not drawing a rock over it. ${t}.`,
+  (t, o) => `Revote. I'm switching to ${t}. I'd rather be on the right side of this than be proud.`,
+  (t, o) => `${o} was the plan. The plan just failed. ${t}.`,
+];
+const FLIP_LOYAL = [
+  (t, o) => `This one hurts. I like ${t}. But I am not risking a rock for this. ${t}.`,
+];
+const SETTLE = [
+  (t) => `Somebody has to give, so it's ${t}. Let's end this.`,
+  (t) => `The room's landing on ${t}. I'm not going to be the one holding it up.`,
+];
+function revoteLine(v, original) {
+  const r = String(v.reason || ''), t = v.voted, o = original || 'the other name', k = `${v.voter}|${t}|${r}`;
+  const ally = (r.match(/protecting (\S+)/) || [])[1];
+  if (/^held/.test(r)) return ally ? pickBy(HELD_ALLY, k)(t, o, ally.replace(/[.,]$/, '')) : /refuses to let/.test(r) ? pickBy(HELD_HATE, k)(t, o) : pickBy(HELD, k)(t, o);
+  if (/numbers over loyalty|refused to sacrifice/.test(r)) return pickBy(FLIP_LOYAL, k)(t, o);
+  if (/consensus|consolidated|coalition/.test(r)) return pickBy(SETTLE, k)(t, o);
+  return original && original !== t ? pickBy(FLIP, k)(t, o) : pickBy(HELD, k)(t, o);
+}
+/** The revote, voter by voter in the booth: the tied don't vote, the rest pick one of them again. */
+function revoteBooth(steps, say, ctx) {
+  const { revote, tied, booth, plate, places, host, tribal, V, venue, original } = ctx;
+  const names = tied.length ? tied : [...new Set(revote.map(v => v.voted))];
+  const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names.join('');
+  say(`${list}: you don't vote this time. Everyone else, you can only vote for ${names.length > 2 ? 'one of them' : names.join(' or ')}.`, { focus: names.filter(n => tribal.includes(n)) });
+  revote.forEach((v, i) => {
+    const was = original.find(x => x.voter === v.voter)?.voted || null;
+    const side = [{ tab: 'tally', voter: v.voter, target: v.voted, round: 9 }, { tab: 'why', voter: v.voter, target: v.voted, round: 9,
+      text: `${was && was !== v.voted ? `Switched from ${was}. ` : was === v.voted ? 'Held their vote. ' : ''}${cleanText(String(v.reason || '').replace(/^\[[^\]]+\]\s*/, ''))}`, bloc: null, with: [], betray: null, tags: ['revote'] }];
+    if (booth) {
+      steps.push({ k: 'scene', spot: 'voting-booth', tod: 'night', plate: booth, place: 'The Revote', time: '9:20 PM', card: i === 0, cut: i > 0, focus: [v.voter], bg: [], places: placeScene(booth, [v.voter]) });
+      steps.push({ k: 'say', by: v.voter, text: revoteLine(v, was), focus: [v.voter] });
+      steps.push({ k: 'ballot', voter: v.voter, voted: v.voted, venue, revote: true, side });
+    } else steps.push({ k: 'say', by: v.voter, text: revoteLine(v, was), focus: [v.voter], side });
+  });
+  if (booth) steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '9:30 PM', card: false, cut: true, focus: [], bg: [], places, seated: tribal, host, ceremony: true });
+}
+// where each venue settles a tie with a challenge until it has a challenge zone of its own
+const TIEBREAK_SPOT = { 'hosted-camp': ['challenge-zone', 'amphitheater', 'cliff', 'beach'], 'film-lot': ['challenge-zone', 'studio-backlot', 'western-set'],
+  'world-tour': ['challenge-zone', 'destination-staging'], 'survival-island': ['challenge-zone', 'beach', 'shoreline'], carnival: ['challenge-zone', 'big-top', 'midway', 'rocky-beach'] };
+const TIEBREAK_WHAT = { 'Fire-Making': 'Two kits, two piles of tinder. First flame high enough to burn through the rope wins.',
+  Endurance: 'Hold on as long as they can. The first one to let go loses.', Strength: 'Pure strength, one against the other. Whoever gives out first loses.',
+  'Obstacle Course': 'The course, side by side. First across the line stays.', Puzzle: 'The same puzzle, two tables. First one to finish stays.' };
+// the rocks: everyone who is not tied and not immune draws; one rock is the wrong colour
+function rockDraw(steps, say, { tribal, elim, tied = [], immune = [], host = 'Chris' }) {
+  const drawers = tribal.filter(n => !tied.includes(n) && !immune.includes(n));
+  say(`Still tied. It comes down to the rocks.`);
+  say(`${tied.length ? `${tied.join(' and ')}, you're safe from this. ` : ''}Everyone else: one rock each from the bag. Whoever pulls out the purple rock is out of the game.`, { focus: drawers.slice(0, 4) });
+  steps.push({ k: 'title', kicker: 'Still deadlocked', name: 'The rock draw', faces: drawers.slice(0, 8), tone: 'out' });
+  steps.push({ k: 'beat', text: `One by one, ${drawers.length} hands go into the bag and come out closed.`, focus: drawers.slice(0, 4), tense: true });
+  steps.push({ k: 'say', by: host, host: true, text: `Open your hands.`, tense: true });
+  if (elim) steps.push({ k: 'beat', text: `${elim}'s hand opens on the purple rock.`, focus: [elim], tense: true, shock: true, side: [{ tab: 'room', text: `Rock draw: ${drawers.join(', ')}. ${elim} drew the purple rock.` }] });
+}
+function tiebreakStage(steps, say, tb, { venue, host, tribal, hadRevote }) {
+  if (!tb?.participants?.length || !tb.loser) return;
+  const spot = (TIEBREAK_SPOT[venue] || ['beach']).find(s => plateKey(venue, s, 'night'));
+  const plate = spot ? plateKey(venue, spot, 'night') : null;
+  const who = tb.participants;
+  const list = who.length > 1 ? `${who.slice(0, -1).join(', ')} and ${who[who.length - 1]}` : who.join('');
+  say(hadRevote ? `Still tied. Nobody moved enough. ${list}, you'll settle it yourselves.` : `${list}, you'll settle it yourselves.`, { focus: who.filter(n => tribal.includes(n)) });
+  if (plate) steps.push({ k: 'scene', spot, tod: 'night', plate, place: 'The Tiebreaker', time: '9:40 PM', card: true, focus: who, bg: [], places: placeScene(plate, who, [], { host }), host });
+  steps.push({ k: 'title', kicker: 'Tiebreaker', name: tb.challengeLabel || 'Head to head', faces: who, vs: who.length === 2 });
+  steps.push({ k: 'say', by: host, host: true, text: TIEBREAK_WHAT[tb.challengeLabel] || `One challenge. Whoever loses goes home.` });
+  steps.push({ k: 'beat', text: `${list} go at it.`, focus: who, tense: true });
+  if (tb.winner) steps.push({ k: 'beat', text: `${tb.winner} gets there first. ${tb.winner} is safe.`, focus: [tb.winner], applause: 'big' });
+  steps.push({ k: 'say', by: host, host: true, text: `${tb.loser}, that's the game.`, focus: [tb.loser] });
 }

@@ -62,7 +62,7 @@ const FRIEND = ["Keep going, {x}! I want to beat you at your best.", "Don't you 
 const ANSWER = ['Worry about yourself.', "I'm not done!", "I've been worse off than this.", 'Watch me.'];
 const ANSWER_FRIEND = ['Right back at you!', "Don't go easy on me.", "I wouldn't dream of it."];
 // the round, taken and lost
-const TAKE = ['Yes!', "That's one!", 'Come on!', 'Yes! Yes!'];
+const TAKE = ['Yes!', 'Come on!', 'Yes! Yes!', 'Got it!'];
 const DROP = ["No! That's fine. That's fine.", 'Okay. Next one.', "That's not over.", 'Ugh!'];
 // the result
 const WON = ["I'm still in this game!", "I'm not done yet!", 'Yes! I knew it!', "I told you. I'm not going anywhere."];

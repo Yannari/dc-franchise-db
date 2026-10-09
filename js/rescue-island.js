@@ -1920,7 +1920,8 @@ export function generateInterludeLife(ep) {
   let roundtable = null;
   function storyRoundtable() {
     if (!(gs.isMerged && active.length >= 2)) return;
-    const finalists = active.slice().sort((a, b) => (gs.episodeHistory || []).filter(e => e.immunityWinner === b).length - (gs.episodeHistory || []).filter(e => e.immunityWinner === a).length).slice(0, 4);
+    // everyone still in the game, the most decorated first
+    const finalists = active.slice().sort((a, b) => (gs.episodeHistory || []).filter(e => e.immunityWinner === b).length - (gs.episodeHistory || []).filter(e => e.immunityWinner === a).length);
     const backerUse = {}, doubterUse = {};
     const leastUsed = (cands, use, dir) => cands.slice().sort((a, c) => ((use[a.n] || 0) - a.b * dir * 0.15) - ((use[c.n] || 0) - c.b * dir * 0.15) || Math.random() - 0.5)[0].n;
     const lines = finalists.map(fin => {

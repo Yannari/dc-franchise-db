@@ -12,6 +12,7 @@ import { tdCampScreen, tdTribalScreen, tdTribalStepped, tdDoubleTribalScreen, cl
 import { tdCampMap, tdIslandMap, hasMap, MAP_VENUES, openWindow, nextConv, lockedConv, PLACE_LABEL } from './map.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, tdRiDuelScreen } from './twists.js';
 import { tdJuryHouseScreen, isJuryHouse } from './jury-house.js';
+import { tdReturnScreen, tdEmissaryScoutScreen, tdEmissaryChoiceScreen, tdTiedDestiniesScreen, tiedDestiniesTribal } from './returns.js';
 import { tdTwistBlocksScreen, tdMergeScreen, tdMiscTwistScreen, tdPreviouslyScreen } from './twist-screens.js';
 import { tdArrivalScreen, hasArrivals } from './arrival.js';
 import { tdAftermathScreen, hasAftermath } from './aftermath.js';
@@ -34,7 +35,8 @@ function membersOf(ep, camp) {
 export function tdStepScreens(ep, classic = [], o = {}) {
   const out = [];
   let tribalDone = false, aftermathDone = false, juryDone = false;
-  const tribal = tdTribalStepped(ep) ? tdTribalScreen(ep, o) : tdDoubleTribalScreen(ep, o);
+  // Tied Destinies is a double elimination at Tribal: announced, talked about, and the partner sent home too
+  const tribal = tiedDestiniesTribal(tdTribalStepped(ep) ? tdTribalScreen(ep, o) : tdDoubleTribalScreen(ep, o), ep);
   // the camp map (map.js) is the default camp view where the venue has one, one map per team at
   // every venue (the user, 2026-10-08: "I set up 2 teams" - folding a shared camp's teams into one
   // map read as the teams being gone). A shared camp is still drawn whole, with the other team in
@@ -106,6 +108,11 @@ function islandScreen(ep, S, o) {
   if (id === 'ri-choice') return tdRiChoiceScreen(ep, o);
   if (id === 'ri-life') return tdIslandLifeScreen(ep, false, o);
   if (id === 'ri-duel') return tdRiDuelScreen(ep, o);
+  // the way back in, the emissary, Tied Destinies (returns.js)
+  if (id === 'ri-return' || id === 'rescue-return') return tdReturnScreen(ep, o);
+  if (id === 'emissary-scouting') return tdEmissaryScoutScreen(ep, o);
+  if (id === 'emissary-choice') return tdEmissaryChoiceScreen(ep, o);
+  if (id === 'tied-destinies') return tdTiedDestiniesScreen(ep, o);
   if (id === 'rescue-life') return tdIslandLifeScreen(ep, !!(ep.rescueIslandEvents || []).length, o);
   if (id === 'exile-island') return tdExileScreen(ep, exileOf(ep, false), o);
   if (id === 'exile-format') return tdExileScreen(ep, exileOf(ep, true), o);

@@ -17,11 +17,18 @@ const tagged = (t, host) => { const m = String(t || '').match(/^([A-Z][\w' .-]{1
 // the studio, in the frame's own pixels (1600x900): the host's couch, the hot seat, a second seat
 // for a confrontation, and where the gallery sits (the back couches, the centre couch) or stands
 const AT = (x, y, o = {}) => ({ u: x / 1600, v: y / 900, ...o });
-const HOST = AT(600, 548, { s: .15, sit: true, host: true });
-const HOT = AT(1050, 548, { s: .15, sit: true });
-const HOT2 = AT(1140, 548, { s: .15, sit: true });
-const GALLERY = [AT(785, 522, { s: .14, sit: true }), AT(865, 522, { s: .14, sit: true }), AT(445, 505, { s: .13, sit: true }), AT(1215, 492, { s: .13, sit: true }),
-  AT(330, 600, { s: .2 }), AT(1290, 600, { s: .2 }), AT(250, 600, { s: .2 }), AT(1370, 600, { s: .2 }), AT(170, 600, { s: .2 }), AT(1450, 600, { s: .2 })];
+// seated tokens are anchored on the seat cushion and sized to the couch (the user, 2026-10-09: "they're
+// not even in the chair, the avatars are too big"): ~11% of the frame on the front couches, smaller further back
+const HOST = AT(560, 562, { s: .1, sit: true, host: true, h: 12 });
+const HOT = AT(1030, 560, { s: .1, sit: true, h: 12 });
+const HOT2 = AT(1125, 560, { s: .1, sit: true, h: 12 });
+const GALLERY = [
+  // the centre couch, then the two back couches, then the stage wings (standing)
+  AT(770, 528, { s: .09, sit: true, h: 10.5 }), AT(862, 528, { s: .09, sit: true, h: 10.5 }),
+  AT(470, 500, { s: .08, sit: true, h: 9.5 }), AT(590, 500, { s: .08, sit: true, h: 9.5 }), AT(1120, 494, { s: .08, sit: true, h: 9.5 }), AT(1205, 494, { s: .08, sit: true, h: 9.5 }),
+  AT(300, 640, { s: .1, h: 12 }), AT(1300, 640, { s: .1, h: 12 }), AT(220, 645, { s: .1, h: 12 }), AT(1380, 645, { s: .1, h: 12 }),
+  AT(140, 650, { s: .1, h: 12 }), AT(1460, 650, { s: .1, h: 12 }), AT(380, 636, { s: .1, h: 12 }), AT(1220, 636, { s: .1, h: 12 }),
+];
 
 export function hasAftermath(ep) { return !!ep?.aftermath && ((ep.aftermath.interviews || []).length || (ep.aftermath.reunionDiscussion || []).length); }
 
@@ -32,7 +39,8 @@ export function tdAftermathScreen(ep, o = {}) {
   if (!plate) return null;
   const host = o.host || 'Chris';
   const steps = [];
-  const gallery = [...(a.peanutGallery || [])];
+  // the engine's list can name someone twice (screenshot, 2026-10-09: Seraphine in two seats)
+  const gallery = [...new Set(a.peanutGallery || [])];
   const say = (text, extra = {}) => { const t = said(text); if (t) steps.push({ k: 'say', by: host, host: true, text: t, ...extra }); };
   // a line as the engine wrote it can carry its own stage directions between the quotes
   // ("Trent. Let's talk." Chris leans forward. "I have the receipts."): the speech is said, the rest is staged
@@ -52,7 +60,7 @@ export function tdAftermathScreen(ep, o = {}) {
     gallery.filter(n => !guests.includes(n)).slice(0, GALLERY.length).forEach((n, i) => { places[n] = GALLERY[i]; });
     const first = !steps.some(s => s.k === 'scene');
     steps.push({ k: 'scene', spot: 'aftermath-studio', tod: 'day', plate, place: a.isReunion ? 'The Reunion' : 'Total Drama Aftermath', time: 'Live',
-      card: first, cut: false, focus: guests, bg: [], places, host, aftermath: true, ...extra });
+      card: first, cut: false, focus: guests, bg: [], places, host, aftermath: true, ...(guests.length ? {} : { wide: true }), ...extra });
   };
   const toGallery = n => { if (n && !gallery.includes(n)) gallery.push(n); };
 

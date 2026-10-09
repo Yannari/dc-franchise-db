@@ -193,8 +193,9 @@ const POST_DUEL = ['winner-relief', 'winner-hardened', 'winner-streak', 'winner-
 // stage) and Stawaki (its Exile Beach); the user, 2026-10-08: "redemption island still uses a 3D scene"
 function riPlace(ep, o, tod) {
   const venue = venueOf(ep, o);
-  // the island itself: Skull Rock on some nights, Boney Island's beach on others (the user, 2026-10-08)
-  const isle = hash(`ri-isle|${ep.num}`) % 2 && plateKey(ISL, 'skull-rock', tod) ? 'skull-rock' : 'boney-island';
+  // the island itself: Skull Rock in 4K (the user, 2026-10-09: the Boney Island frame is a blurry 930px
+  // capture); Boney Island only if Skull Rock is ever missing
+  const isle = plateKey(ISL, 'skull-rock', tod) ? 'skull-rock' : 'boney-island';
   const at = venue === 'film-lot' ? ['film-lot', 'cage-stage'] : venue === 'carnival' ? [ISL, 'stawaki-exile'] : [ISL, isle];
   return plateKey(at[0], at[1], tod) || plateKey(at[0], at[1], tod === 'night' ? 'day' : 'night');
 }

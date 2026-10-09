@@ -30,7 +30,7 @@ export default {
       { by: 'a', conf: "{b} laughed at all my jokes today, even the bad ones, especially the bad ones.", v: { flirty: "{b} laughed at every joke I made. I've still got it.", nerdy: "{b} laughed at my pun about mitochondria. Nobody laughs at that one." } },
     ] },
     { id: 'ns.f2', place: 'fire', turns: [
-      { beat: "Everyone else has gone to bed. {a} and {b} are still at the fire {here}." },
+      { beat: "Everyone else has gone to bed. {a} and {b} are still up {here}." },
       { by: 'a', say: "You're shivering.", v: { warm: "Hey, you're freezing. Come here.", flirty: "You're cold. I could help with that.", quiet: "...Cold?" } },
       { by: 'b', say: "I'm fine." },
       { by: 'a', say: "Here. Take my jacket." },

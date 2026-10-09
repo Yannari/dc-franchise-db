@@ -1255,14 +1255,23 @@ export function airTdEpisode(ep) {
           if (['pact', 'saved', 'bond', 'spark', 'comeback'].includes(m.kind) && (writes(a, b) || writes(b, a))) continue;
           const key = [a, b].sort().join('|');
           if (seenPair.has(key) || seenPair.has(m.kind + a)) continue;
+          // one of each kind a camp: read in a played season, three 'let's be clear what we agreed' pacts in
+          // one team's evening (and three more at the other camp)
+          if (seenPair.has('kind:' + m.kind)) continue;
           const who = { a, b };
           // a physical line (a hand held over a drop, a bandaged ankle) only after a physical challenge
           const style = (tw && TWIST_CATALOG.find(c => c.id === (tw.catalogId || tw.type))?.chalStyle) || 'physical';
           const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), pair: true, two: m.players.length >= 2, bLikesA: getBond(b, a) >= 2, bHatesA: getBond(b, a) <= -2,
             physical: ['physical', 'endurance', 'adventure', 'hunt', 'chaos'].includes(style) };
-          const w = writeStory(`chm.${m.kind}`, 'any', who, { chal }, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('afternoon'), unique: 'soft' });
+          const w = writeStory(`chm.${m.kind}`, 'any', who, { chal }, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('afternoon'),
+            // a moment is colour, not a reason: once its scenes have aired it skips rather than repeats (read: Alejandro's
+            // sabotage as the same scene three episodes running). Only the one tonight's plan calls back to may come back.
+            unique: planPair(m) ? 'soft' : true });
           if (!w) continue;
-          seenPair.add(key); seenPair.add(m.kind + a); took++;
+          // the same scene never airs twice in one evening, between two different pairs (read: two identical
+          // 'Did you have to celebrate quite that loudly?' exchanges back to back)
+          if (list.some(x => x.item?.lineId === w.lineId)) continue;
+          seenPair.add(key); seenPair.add(m.kind + a); seenPair.add('kind:' + m.kind); took++;
           // tonight's plan calls back to it (planTalk's recall): what the target did, or the fight between them
           if (planPair(m) && talk.em) {
             const did = m.players[0];
@@ -1647,7 +1656,7 @@ export function airTdEpisode(ep) {
         if (!ev || !(MEAL_TYPE.test(ev.type || '') || MEAL_KIND.test(ev.scene?.kind || ''))) return it;
         const eat = placeOf(venueNow, 'eat', 0);
         if (!eat) return it;
-        return { ...ev, story: true, ref: it.ref, ...(it.storyline ? { storyline: it.storyline } : {}),
+        return { ...ev, story: true, kind: ev.scene?.kind || ev.type, ref: it.ref, ...(it.storyline ? { storyline: it.storyline } : {}),
           scene: { ...(ev.scene || {}), spot: { id: eat.id, label: eat.label, fixed: true, window: phase === 'pre' ? 'morning' : 'before-tribal' } } };
       });
     }

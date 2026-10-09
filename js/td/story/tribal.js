@@ -130,7 +130,7 @@ function tribalQA(ep, { tribal, ballots, elim, ch, camp, base, ctx, nextN }) {
       const imm = [].concat(ep.immunityWinner || []).find(x => tribal.includes(x) && !Object.values(openWho).includes(x)) || null;
       const lastBoot = (gs.episodeHistory || []).find(h => h.num === ep.num - 1)?.eliminated || null;
       const facts = { ...factsFor({ who: openWho, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(openWho.a), pair: true, sank: !!ch?.sank, imm: !!imm, lastBoot: !!lastBoot };
-      const w = writeStory(`tqa.open.${ch && !(ep.isMerge || gs.isMerged) ? 'lost' : 'merged'}`, 'any', { ...openWho, h: host }, { ...(ch?.sank ? { sank: ch.sank } : {}), ...(imm ? { imm } : {}), ...(lastBoot ? { lastBoot } : {}) }, facts, ctx(nextN(), 'tribal', 'soft'));
+      const w = writeStory(`tqa.open.${(ep.isMerge || gs.isMerged) ? 'merged' : 'lost'}`, 'any', { ...openWho, h: host }, { ...(ch?.sank ? { sank: ch.sank } : {}), ...(imm ? { imm } : {}), ...(lastBoot ? { lastBoot } : {}) }, facts, ctx(nextN(), 'tribal', 'soft'));
       if (w) out.push({ topic: 'open', players: Object.values(openWho), lines: w.lines });
     }
   }

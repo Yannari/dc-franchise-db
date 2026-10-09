@@ -39,7 +39,7 @@ const OUTDOOR = /\b(fire( pit)?|firewood|campfire|fishing|fish|lake|water's edge
 const HISTORY = /\b(always|you never|never once|every time|every single time|again|anymore|any more|lately|like before|used to|last time|the other day|yesterday|since day one|all week|for days)\b/i;
 // After the challenge it is not the morning; before it, nobody can talk about how it went.
 const MORNING = /\b(breakfast|good morning|morning,|this morning\.|sunrise|wakes? up|woke up|before everyone's up|first thing|morning chores|everyone else is asleep|light comes? up)\b|\bmorning!|^early\.|\(early\./i;
-const EVENING = /\b(dinner|lights-out|lights out|goodnight|good night|after the challenge)\b/i;
+const EVENING = /\b(dinner|lights-out|lights out|goodnight|good night|after the challenge|gone to bed|still up|last ones still up|last two still up)\b|^late,|\(late,/i;
 const CHAL_DONE = /\b(we lost|we won|lost it for us|lost us|carried us|dead last|lowest score|best score|the challenge today|today's challenge was|out there today|the worst one out there)\b/i;
 const ledger = () => ((gs.tdStory ||= {}).ledger ||= newLedger());
 
@@ -103,6 +103,10 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // the season"); the booth, where every voter needs a line every vote, only keeps the rule above
     // A scene every vote needs (the vote talked through, director.js voteTalk) is 'soft': once every
     // fresh one has aired, the least-aired comes back rather than the vote going unexplained
+    // ...and never twice in one episode, between two different sets of people (read in a played season:
+    // the same 'overheard' confessional twice in one evening). Kept only while something else fits.
+    const eu = gs.tdStory?.epUsed;
+    if (ctx.unique !== false && eu && eu.ep === ctx.ep) { const rest = fits.filter(e => !eu.ids.includes(e.id)); if (rest.length) fits.splice(0, fits.length, ...rest); }
     const uses = ledger().uses || {};
     if (ctx.unique === 'soft' && fits.length && fits.every(e => uses[e.id])) {
       const least = Math.min(...fits.map(e => uses[e.id]));
@@ -144,6 +148,7 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     if (entry) break;
   }
   if (!entry) return null;
+  { const book = (gs.tdStory ||= {}); if (!book.epUsed || book.epUsed.ep !== ctx.ep) book.epUsed = { ep: ctx.ep, ids: [] }; book.epUsed.ids.push(entry.id); }
   // Where it is staged: the entry's own kind of place, else where the engine put the moment,
   // else the pool's default kind. The lines say it as {here} ("on the dock") or {place}.
   // a meal is where the camp eats, all of it together, at mealtime: it never makes way for another talk

@@ -71,7 +71,7 @@ export default {
       { by: 'b', conf: "{a} is protecting {mark} without {mark} even knowing. That's either really sweet or really calculated, and with {a}, it's usually both." },
     ] },
     { id: 'nvq.c5', when: { third: true, markMe: true }, turns: [
-      { beat: "{a} rounds up {b} and {c} behind the shelter, one at a time, so nobody sees them leave together." },
+      { beat: "{a} rounds up {b} and {c} behind the {quarters}, one at a time, so nobody sees them leave together." },
       { by: 'c', say: "This had better be good, I left my lunch." },
       { by: 'a', say: "{target} is putting my name out there tonight." },
       { by: 'c', say: "Wait, really?", v: { dry: "Of course {target} is. {target} has been circling you for days." } },

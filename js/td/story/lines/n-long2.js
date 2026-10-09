@@ -9,7 +9,7 @@ export default {
   // a keeps going against the odds; b sees it
   'long.life.underdog.driven': [
     { id: 'nlx.u1', turns: [
-      { beat: "Long after everyone else has gone back to the shelter, {a} is still at the challenge course, running the same balance beam again and again." },
+      { beat: "Long after everyone else has gone back to the {quarters}, {a} is still at the challenge course, running the same balance beam again and again." },
       { by: 'b', say: "You know the challenge is over, right?" },
       { by: 'a', say: "I know. I fell off this thing three times today. I'm not falling off it again." },
       { by: 'b', say: "It's getting dark." },
@@ -20,7 +20,7 @@ export default {
   ],
   'long.life.underdog.unseen': [
     { id: 'nlx.u2', turns: [
-      { beat: "{a} quietly fixes the leak in the shelter roof while everybody else is at the water." },
+      { beat: "{a} quietly fixes the leak in the {quarters} roof while everybody else is at the water." },
       { by: 'b', say: "Wait, did you do that?" },
       { by: 'a', say: "Somebody had to. It was dripping on your head all night." },
       { by: 'b', say: "Why didn't you tell anybody?" },

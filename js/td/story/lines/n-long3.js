@@ -66,12 +66,12 @@ export default {
   // a lifts everyone's mood
   'long.friend.lift.any': [
     { id: 'nly.l1', turns: [
-      { beat: "It's raining, and everybody's crammed under the shelter, miserable. {a} starts humming." },
+      { beat: "It's raining, and everybody's crammed inside the {quarters}, miserable. {a} starts humming." },
       { by: 'b', say: "What are you doing?" },
       { by: 'a', say: "Singing. Join in. It's the only song I know all the words to." },
       { by: 'c', opt: true, say: "That's a commercial jingle." },
       { by: 'a', say: "And it slaps." },
-      { beat: "By the third time through, half the shelter is singing it." },
+      { beat: "By the third time through, half the {quarters} is singing it." },
       { by: 'b', conf: "We were soaking wet and starving, and somehow {a} had us singing about breakfast cereal." },
     ] },
   ],
@@ -164,7 +164,7 @@ export default {
     { id: 'nly.i1', turns: [
       { by: 'a', say: "I'm going to tell you something, and I want something back." },
       { by: 'b', say: "That depends what it is." },
-      { by: 'a', say: "There's a group of three you don't know about. They meet behind the shelter when everybody's at the water." },
+      { by: 'a', say: "There's a group of three you don't know about. They meet behind the {quarters} when everybody's at the water." },
       { by: 'b', say: "And what do you want?" },
       { by: 'a', say: "Your word that when they come for me, you won't help them." },
       { by: 'b', conf: "{a} just handed me something real. I'm going to keep my word, mostly because I want {a} to keep telling me things." },

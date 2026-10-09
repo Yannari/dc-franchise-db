@@ -42,7 +42,7 @@ export default {
   ],
   'long.fallout.mourn.many': [
     { id: 'nmx.n1', turns: [
-      { beat: "Morning. {a} sits by {fallen}'s empty spot in the shelter, folding a shirt {fallen} left behind." },
+      { beat: "Morning. {a} sits by {fallen}'s empty spot in the {quarters}, folding a shirt {fallen} left behind." },
       { by: 'a', conf: "{fallen} forgot this, and I think I'm going to keep it. That's stupid, isn't it?", v: { tough: "Whatever. It's just a shirt." } },
       { by: 'a', conf: "Everybody's acting like last night didn't happen. Everybody's smiling at breakfast. And I know at least half of them wrote {fallen}'s name." },
       { by: 'a', conf: "So I'm going to smile back. And I'm going to remember every single one of them.", v: { warm: "I'm not going to be bitter about it. I'm just going to play like {fallen} would've wanted me to, which is a lot smarter than I've been playing." } },
@@ -75,7 +75,7 @@ export default {
   ],
   'long.fallout.blame.swapped': [
     { id: 'nmx.b1', turns: [
-      { beat: "{a} corners {b} behind the shelter before breakfast." },
+      { beat: "{a} corners {b} behind the {quarters} before breakfast." },
       { by: 'a', say: "It was supposed to be {plan}. We all said {plan}." },
       { by: 'b', say: "I know. I wrote {plan}." },
       { by: 'a', say: "Then how is {boot} the one who went home?" },

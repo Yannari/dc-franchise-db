@@ -47,13 +47,13 @@ export default {
       { by: 'a', conf: "Every time somebody finds one of my hiding places, a little part of me dies. And then I find a new hiding place." },
     ] },
     { id: 'nrn.f3', when: { call: 2 }, turns: [
-      { beat: "It's late. {b} sits up in the shelter to the sound of somebody crunching in the dark." },
+      { beat: "It's late. {b} sits up in the {quarters} to the sound of somebody crunching in the dark." },
       { by: 'b', say: "{a}, are you eating?" },
       { by: 'a', say: "No." },
       { by: 'b', say: "I can hear you chewing." },
       { by: 'a', say: "That's the wind." },
       { by: 'c', say: "The wind doesn't chew, {a}.", opt: true },
-      { by: 'a', say: "Fine. Does anybody want half a cracker? I'm offering half a cracker to the whole shelter." },
+      { by: 'a', say: "Fine. Does anybody want half a cracker? I'm offering half a cracker to the whole {quarters}." },
       { by: 'b', say: "...Yes, actually." },
       { by: 'b', conf: "I went to bed annoyed at {a} and fell asleep holding half a cracker. That's how {a} wins people over. Snacks, at midnight." },
     ] },
@@ -71,7 +71,7 @@ export default {
   ],
   'run.food.3': [
     { id: 'nrn.f4', turns: [
-      { beat: "Everybody's starving after a terrible day. {a} disappears behind the shelter and comes back with both arms full." },
+      { beat: "Everybody's starving after a terrible day. {a} disappears behind the {quarters} and comes back with both arms full." },
       { by: 'a', say: "Okay. Nobody ask me where these came from." },
       { by: 'b', say: "Are those the crackers? From the first week?" },
       { by: 'a', say: "Emergency crackers. This is the emergency." },
@@ -138,7 +138,7 @@ export default {
   ],
   'run.nickname.3': [
     { id: 'nrn.n4', turns: [
-      { beat: "{a} comes back from the water to find a piece of bark leaning against the shelter, with something written on it in charcoal." },
+      { beat: "{a} comes back from the water to find a piece of bark leaning against the {quarters}, with something written on it in charcoal." },
       { by: 'a', say: "'Nickname Machine'?" },
       { by: 'b', say: "We all voted. It was unanimous." },
       { by: 'a', say: "That's the best thing anybody's ever done for me." },
@@ -325,7 +325,7 @@ export default {
   ],
   'run.fitness.3': [
     { id: 'nrn.w3', turns: [
-      { beat: "Sunrise. {a} walks out of the shelter, and {b} is already there, stretching." },
+      { beat: "Sunrise. {a} walks out of the {quarters}, and {b} is already there, stretching." },
       { by: 'a', say: "What are you doing?" },
       { by: 'b', say: "Don't make it a big deal." },
       { by: 'a', say: "Workout club! It's happening! Everybody, workout club is HAPPENING!" },
@@ -391,7 +391,7 @@ export default {
     { id: 'nrn.j1', when: { job: true }, turns: [
       { by: 'b', say: "How do you know how to do that?" },
       { by: 'a', say: "Oh, back home I'm a {job}. You pick things up." },
-      { by: 'b', say: "A {job} taught you to build a shelter?" },
+      { by: 'b', say: "A {job} taught you to do that?" },
       { by: 'a', say: "Being a {job} teaches you everything, if you pay attention." },
       { by: 'b', say: "Name one thing it taught you that's useful out here." },
       { by: 'a', say: "Patience. And how to tie a really good knot." },

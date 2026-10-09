@@ -21,6 +21,16 @@ import { voiceOf, voiced } from './voice.js';
 import { phrase } from './phrase.js';
 import { tidySpoken, tidyNames } from '../../vp-tr/tidy.js';
 
+// what each venue does not have (places.js PLACES): Wawanakwa sleeps in cabins on a lake, the survival
+// island has a beach and a shelter and no mess hall, the carnival camp has tents by a lake, the film
+// lot is trailers and sets, the jet is the jet (OUTDOOR below)
+const VENUE_NO = {
+  'hosted-camp': /\b(shelter|jungle|coconuts?|ocean|the sea|seaweed|tide)\b/i,
+  'survival-island': /\b(cabins?|mess hall|dock|boathouse|the lake|lake shore|bunks?)\b/i,
+  carnival: /\b(cabins?|mess hall|dock|boathouse|jungle|coconuts?|ocean|the sea|seaweed|tide)\b/i,
+  'film-lot': /\b(shelter|cabins?|mess hall|dock|boathouse|lake|beach|shore(line)?|ocean|the sea|sand|seaweed|tide|crabs?|shells?|jungle|coconuts?|fire( pit)?|campfire|firewood|fishing|tent|woods|forest|water pump|the well)\b/i,
+  'world-tour': /\b(mess hall|crabs?|shells?|seaweed|tide|coconuts?|water pump|the well|bunks?)\b/i,
+};
 const OUTDOOR = /\b(fire( pit)?|firewood|campfire|fishing|fish|lake|water's edge|the water|sand|beach|dock|log|shore|tent|shelter|woods?|forest|stones?|pebbles?|bush(es)?|sun)\b/i;
 // Time logic (the user, 2026-10-08: day one had "it's always a joke with you", a challenge brag
 // before the challenge, a five a.m. airhorn in the afternoon).
@@ -54,6 +64,9 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   const placeOk = e => {
     const text = (e.turns || []).map(t => t.beat || t.say || t.conf || '').join(' ');
     if (facts.venue === 'world-tour' && OUTDOOR.test(text)) return false;
+    // ...and nothing that names a place this venue doesn't have (the user, 2026-10-08: "make sure the
+    // events respect the venue always"): places.js says what each one has
+    if (VENUE_NO[facts.venue]?.test(text)) return false;
     if (facts.venue !== 'survival-island' && /coconut/i.test(text)) return false;
     if (!foodOk(facts.venue, text)) return false;
     // strangers don't share a past: no "always" or "again" early on unless they really have one

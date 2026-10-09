@@ -16,7 +16,7 @@
 export default {
   'cover.meet': [
     { id: 'ncv.m1', turns: [
-      { beat: "{a} waves {b} over to the far end of the beach, away from the shelter." },
+      { beat: "{a} waves {b} over to the far end of the beach, away from the {quarters}." },
       { by: 'a', say: "Okay. Tonight. It's {cover}." },
       { by: 'b', say: "{cover}? I thought people were talking about somebody else." },
       { by: 'a', say: "People talk. That's why I'm telling you myself. It's {cover}, and everybody's on it." },

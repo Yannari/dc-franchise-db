@@ -48,8 +48,8 @@ export default {
       { by: 'b', conf: "{a} is so nice about it, nobody notices {a} is running the whole camp. I notice." },
     ] },
     { id: 'nj.p4', place: 'work', turns: [
-      { by: 'a', say: "Okay, nobody slept last night, so today we fix everything, the shelter, the fire, all of it." },
-      { by: 'b', say: "Fixing the shelter isn't going to win a challenge." },
+      { by: 'a', say: "Okay, nobody slept last night, so today we fix everything, the {quarters}, the fire, all of it." },
+      { by: 'b', say: "Fixing the {quarters} isn't going to win a challenge." },
       { by: 'a', say: "Sleeping in a dry bed might." },
       { by: 'd', say: "That's actually fair." },
       { by: 'c', say: "I slept in a puddle last night. I'm in." },

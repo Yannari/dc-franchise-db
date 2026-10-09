@@ -32,7 +32,7 @@ export default {
       { by: 'a', conf: "It feels terrible to break up the best friendship in this camp. It would feel worse to lose to it." },
     ] },
     { id: 'nrl.i3', when: { third: true }, turns: [
-      { beat: "{a}, {b} and {c} sit in a tight huddle behind the shelter." },
+      { beat: "{a}, {b} and {c} sit in a tight huddle behind the {quarters}." },
       { by: 'a', say: "Okay. {target} tonight." },
       { by: 'c', say: "Not {keep}?" },
       { by: 'a', say: "No, {keep} stays. We need {keep}. We just need {keep} without {target} in {keep.posAdj} ear." },

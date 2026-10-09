@@ -151,7 +151,7 @@ export default {
   ],
   'arc.warn.overheard': [
     { id: 'nar.h1', when: { self: true }, turns: [
-      { beat: "{a} is on the other side of the shelter when {pitcher}'s voice carries over, low and fast." },
+      { beat: "{a} is on the other side of the {quarters} when {pitcher}'s voice carries over, low and fast." },
       { beat: "{a} hears {a.posAdj} own name, twice, and freezes." },
       { by: 'a', conf: "I wasn't trying to listen. I just heard my name, and then I heard {pitcher} say 'tonight'. That's all I needed to hear.", v: { anxious: "I heard my name. I heard {pitcher} say my name and the word tonight, and I've been shaking ever since.", tough: "{pitcher} is coming for me. Fine. Now I'm coming for {pitcher}." } },
     ] },

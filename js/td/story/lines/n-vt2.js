@@ -15,7 +15,7 @@
 export default {
   'vt2.scramble': [
     { id: 'nvt.s1', when: { told: true }, turns: [
-      { beat: "{a} finds {b} at the shelter and pulls {b.obj} round the back, out of sight." },
+      { beat: "{a} finds {b} at the {quarters} and pulls {b.obj} round the back, out of sight." },
       { by: 'a', say: "{teller} just told me {pitcher} is getting votes on me." },
       { by: 'b', say: "On you? Are you sure?", v: { warm: "Oh no. Are you okay?" } },
       { by: 'a', say: "{teller} wouldn't make that up, so I need your vote on {wrote} tonight. Please." },

@@ -75,7 +75,7 @@ export default {
       { by: 'a', conf: "{b} wants everybody to think {chal} was my fault, so fine, let {b} try. I know exactly what happened out there." },
     ] },
     { id: 'nl4.c2', when: { two: true, bLikesA: true }, turns: [
-      { beat: "{b} finds {a} sitting alone behind the shelter after {chal}." },
+      { beat: "{b} finds {a} sitting alone behind the {quarters} after {chal}." },
       { by: 'b', say: "Hey. Can we talk about what happened out there?" },
       { by: 'a', say: "You mean you screaming at me in front of everybody?" },
       { by: 'b', say: "I didn't scream." },

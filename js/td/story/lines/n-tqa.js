@@ -120,7 +120,7 @@ export default {
     { id: 'ntq.p1', turns: [
       { by: 'h', say: "{a} and {b}, you two are always together. Are you a voting bloc?" },
       { by: 'a', say: "We're friends. Is that allowed?", v: { schemer: "We're friends. Friends sometimes agree on things." } },
-      { by: 'b', say: "We don't even agree on what to have for breakfast.", v: { goofy: "We don't even agree on which side of the shelter is the front." } },
+      { by: 'b', say: "We don't even agree on what to have for breakfast.", v: { goofy: "We don't even agree on which end of camp is the front." } },
       { by: 'h', say: "That's not a no." },
       { by: 'a', say: "It's not a yes either." },
     ] },

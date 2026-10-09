@@ -120,7 +120,7 @@ export default {
   ],
   'long.conf.paranoia.any': [
     { id: 'nl5.k1', turns: [
-      { beat: "{a} lies awake in the shelter, listening to everybody else breathe." },
+      { beat: "{a} lies awake in the {quarters}, listening to everybody else breathe." },
       { by: 'a', conf: "Two people I trust were whispering this morning. They stopped when they saw me." },
       { by: 'a', conf: "Could be nothing. Could be they were talking about breakfast." },
       { by: 'a', conf: "But nobody stops talking about breakfast when somebody walks up." },

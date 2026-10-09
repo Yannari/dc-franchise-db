@@ -35,7 +35,7 @@ export default {
   'tqa.open.merged.any': [
     { id: 'nto.m4', when: { imm: true }, turns: [
       { by: 'h', say: "{imm} has immunity tonight, which means everybody else is fair game. {a}, how does that feel?" },
-      { by: 'a', say: "Like the safest person in the room is the one I'd most like to vote for, and I can't." },
+      { by: 'a', say: "Annoying, honestly. {imm} was the name a lot of people were thinking about, and now we all have to think again.", v: {"tough":"It doesn't bother me, because I'll beat {imm} next time.","warm":"I'm happy for {imm}, I really am. It just makes tonight scarier for the rest of us.","dry":"Thrilled. Can't you tell?","anxious":"It's scary, because if it's not {imm}, it could be anybody, and anybody includes me."} },
       { by: 'h', say: "{b}?" },
       { by: 'b', say: "Honestly, I'm just glad it narrows it down. Narrows it down to everybody but {imm}, but still." },
     ] },
@@ -47,7 +47,7 @@ export default {
     ] },
     { id: 'nto.m6', when: { lastBoot: true }, turns: [
       { by: 'h', say: "Last time we were here, {lastBoot} walked out. {a}, did camp change after that?" },
-      { by: 'a', say: "It got quieter. {lastBoot} was loud, and now the quiet is where all the whispering happens." },
+      { by: 'a', say: "Yeah, it did. People are a lot more careful about who they talk to now.", v: {"warm":"It did. I miss {lastBoot}, honestly, and camp feels emptier without {lastBoot}.","tough":"Not really. Somebody went home, and that's the game.","dry":"A little. There's one less person to share the rice with, so I'm not complaining.","anxious":"Yes, everybody's on edge now. Every time somebody whispers, I think it's about me.","loud":"Totally! Everybody's suddenly being super nice to each other, and it's creepy!"} },
       { by: 'h', say: "{b}, do you agree?" },
       { by: 'b', say: "I think it changed who people talk to. Everybody had to find a new person." },
     ] },
@@ -74,7 +74,7 @@ export default {
       { by: 'a', say: "There's always walking around camp." },
       { by: 'h', say: "This walking was in pairs. Very quiet pairs." },
       { by: 'a', say: "Then it sounds like you know more than I do." },
-      { by: 'b', say: "Nobody knows more than anybody tonight. That's kind of the problem." },
+      { by: 'b', say: "Honestly, I don't think anybody here knows for sure what's happening tonight.", v: {"dry":"If anybody knows what's going on tonight, they haven't told me.","anxious":"I don't know anything. I really, really hope somebody does."} },
     ] },
     { id: 'nto.m1', turns: [
       { by: 'h', say: "{a}, there are fewer of you every time I see you. What's camp like now?" },

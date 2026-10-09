@@ -17,7 +17,7 @@ export default {
   'cover.meet': [
     { id: 'ncv.m1', turns: [
       { beat: "{a} waves {b} over to the far end of the beach, away from the {quarters}." },
-      { by: 'a', say: "Okay. Tonight. It's {cover}." },
+      { by: 'a', say: "Okay, so tonight, it's {cover}." },
       { by: 'b', say: "{cover}? I thought people were talking about somebody else." },
       { by: 'a', say: "People talk. That's why I'm telling you myself. It's {cover}, and everybody's on it." },
       { by: 'b', say: "Everybody?" },
@@ -52,7 +52,7 @@ export default {
     { id: 'ncv.t1', turns: [
       { beat: "{a} and {b} walk the long way back from the firewood pile." },
       { by: 'b', say: "So? Are you going to tell me who it really is?" },
-      { by: 'a', say: "Not here. Not yet. When we're in the booth, you'll know." },
+      { by: 'a', say: "Not here, not yet. When we're in the booth, you'll know." },
       { by: 'b', say: "And {told}?" },
       { by: 'a', say: "{told} thinks it's somebody else. That's the point.", when: { two: false } },
       { by: 'a', say: "They think it's somebody else. That's the point.", when: { two: true } },

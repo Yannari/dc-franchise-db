@@ -12,7 +12,7 @@ export default {
       { by: 'a', say: "What was that about?" },
       { by: 'b', say: "Don't ask." },
       { by: 'a', say: "I'm asking." },
-      { by: 'b', say: "{c} and I had a disagreement. It's fine. It's mostly fine." },
+      { by: 'b', say: "{c} and I had a disagreement. It's fine, mostly." },
     ] },
     { id: 'nho.t2', turns: [
       { by: 'a', say: "Is {c} okay? {c} walked straight past me." },
@@ -36,7 +36,7 @@ export default {
       { by: 'a', say: "Hey. I saw {c} leave. Are you two okay?" },
       { by: 'b', say: "Honestly, I don't know yet." },
       { by: 'a', say: "Do you want me to go after {c}?" },
-      { by: 'b', say: "No. Stay. I'd rather have somebody here who isn't angry with me." },
+      { by: 'b', say: "No, stay. I'd rather have somebody here who isn't angry with me." },
     ] },
     { id: 'nho.t6', when: { voice: ['goofy', 'chaotic', 'teen'] }, turns: [
       { by: 'a', say: "Okay, I walked up at a really bad time, didn't I?" },

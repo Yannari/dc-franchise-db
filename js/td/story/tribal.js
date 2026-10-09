@@ -432,6 +432,8 @@ export function writeCrashReplies(ep, swing) {
   const named = t => tribal.filter(x => at(t, x) >= 0).sort((p, q) => at(t, p) - at(t, q));
   const wrote = x => (ep.votingLog || []).find(v => v.voter === x)?.voted;
   const pitcher = (ep.votePitches || []).find(p => p.pitchTarget === elim && tribal.includes(p.pitcher) && wrote(p.pitcher) === elim)?.pitcher || null;
+  const planLeader = Object.values(ep.campStory || {}).flatMap(c => [...(c.pre || []), ...(c.post || [])])
+    .find(x => x?.storyType === 'vote' && x.step === 'plan' && x.scene?.data?.target === elim)?.scene?.who?.a || null;
   const closest = x => [...tribal].filter(y => y !== x).sort((p, q) => getBond(x, q) - getBond(x, p) || p.localeCompare(q))[0] || null;
   const watcher = (...not) => [...tribal].filter(y => !not.includes(y)).sort((p, q) => (pStatsOf(q)?.boldness || 0) - (pStatsOf(p)?.boldness || 0) || p.localeCompare(q))[0] || null;
   const out = [];
@@ -441,8 +443,11 @@ export function writeCrashReplies(ep, swing) {
     let pool, ending = 'any', who = null, data = {}, extra = {};
     if (r.type === 'callout' && names[0]) {
       const b = names[0];
-      const real = pitcher && pitcher !== b ? pitcher : null;
-      ending = wrote(b) !== elim ? 'wrong' : real ? 'part' : 'right';
+      const real = [pitcher, planLeader].find(x => x && x !== b && tribal.includes(x)) || null;
+      // b only owns it when b really ran it (pitched the name, or led the plan scene the viewer saw);
+      // somebody who just wrote the name says so, and points elsewhere
+      const ran = b === pitcher || b === planLeader;
+      ending = wrote(b) !== elim ? 'wrong' : ran ? 'right' : real ? 'part' : 'voted';
       pool = 'crash.callout';
       who = { a: elim, b, c: watcher(b, real) };
       if (real) data.real = real;

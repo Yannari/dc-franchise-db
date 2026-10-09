@@ -81,7 +81,7 @@ export default {
     { id: 'nx2.e2', when: { blame: true }, turns: [
       { by: 'a', say: "Just so you know, it was {blame}. I heard about it this afternoon." },
       { by: 'b', say: "Then why didn't you do something?" },
-      { by: 'a', say: "I tried. Nobody would flip. {blame} had them locked." },
+      { by: 'a', say: "I tried, but nobody would flip. {blame} had them locked." },
       { by: 'b', say: "Then I'll unlock them." },
       { by: 'a', say: "Carefully. If {blame} finds out you're coming, you're next." },
       { by: 'b', conf: "I've got a name now. Thanks to {a}, I know who's really running this camp." },
@@ -100,7 +100,7 @@ export default {
       { by: 'b', say: "That was a lot back there." },
       { by: 'a', say: "Somebody had to say it." },
       { by: 'b', say: "You know they're all going to be talking about it at breakfast." },
-      { by: 'a', say: "Good. Let them talk. Somebody should be." },
+      { by: 'a', say: "Good, let them talk. Somebody should be talking about it." },
       { by: 'b', say: "I'm the one who has to go back in there, you know." },
       { by: 'a', say: "...I know, and I'm sorry. Keep your head down for a day or two." },
       { by: 'b', conf: "{a} lit the whole camp on fire on the way out, and now I'm the one standing in it." },

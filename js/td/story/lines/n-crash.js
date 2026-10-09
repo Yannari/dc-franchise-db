@@ -10,8 +10,8 @@ export default {
   'crash.callout.right': [
     { id: 'ncr.r1', turns: [
       { by: 'b', say: "Yeah, it was me, and if you want an apology, you're not getting one.", v: { warm: "Yeah, it was me, and I'm sorry it had to be you. I really am.", anxious: "Okay, yes, it was me, but can we please not do this right now?", schemer: "Of course it was me. Who else here could have pulled it off?" } },
-      { by: 'a', say: "You smiled at me at breakfast!" },
-      { by: 'b', say: "I smile at everybody at breakfast. That's called manners." },
+      { by: 'a', say: "I trusted you. I actually trusted you." },
+      { by: 'b', say: "I know you did. That's not the same as me owing you a vote." },
       { by: 'c', say: "Oh my gosh.", opt: true },
       { by: 'a', say: "You're going to lose this game, {b}. Everybody here just heard what you are." },
       { by: 'h', say: "Okay! As much as I am loving this, and I am loving this, {a}, it's time to go." },
@@ -41,6 +41,206 @@ export default {
       { beat: "Both of them are on their feet now. Nobody else moves." },
       { by: 'h', say: "Whoa, whoa, whoa, sit down! {a}, you're done, and everybody else, stay in your seats." },
     ] },
+  ],
+  // a named b; b wrote a's name but didn't run anything, and nobody knows who did
+  // a named b; b wrote a's name but didn't run anything, and nobody knows who did. How b says it is who b is
+  // to a: guilty when b liked a, cold when b can't stand a, defensive otherwise; every line in their voice
+  'crash.callout.voted': [
+    {
+      id: "ncr.v1",
+      when: {
+        bLikesA: true
+      },
+      turns: [
+        {
+          by: "b",
+          say: "{a}, I wrote your name. I'm not going to lie to you about that. But I didn't plan any of it.",
+          v: {
+            emotional: "I wrote it, okay? I wrote it and I've felt sick about it all night. But it wasn't my plan, I swear it wasn't.",
+            anxious: "I did write it, and I hate that I did, but I didn't plan anything, I promise.",
+            tough: "I wrote it, and I'm not hiding from that. I just didn't plan it."
+          }
+        },
+        {
+          by: "a",
+          say: "Then why did you do it?",
+          v: {
+            loud: "Then WHY did you do it?",
+            emotional: "Then why? Why would you do that to me?",
+            dry: "Fascinating. And why exactly did you write it?"
+          }
+        },
+        {
+          by: "b",
+          say: "Because I was told it was you or me. And I picked me.",
+          v: {
+            warm: "Because somebody told me it was you or me, and I was scared, and I picked me. I'm so sorry.",
+            cruel: "Because it was you or me. Easy choice."
+          }
+        },
+        {
+          by: "a",
+          say: "Who told you that?",
+          v: {
+            loud: "WHO told you that?",
+            emotional: "Who? Please, just tell me who."
+          }
+        },
+        {
+          by: "b",
+          say: "I can't, and I'm sorry. I'm really, really sorry.",
+          v: {
+            tough: "I'm not saying. Not tonight.",
+            emotional: "I can't, I can't, please don't make me."
+          }
+        },
+        {
+          beat: "{b} is crying now. {a} isn't."
+        },
+        {
+          by: "h",
+          say: "Oof. {a}, it's time to go."
+        }
+      ]
+    },
+    {
+      id: "ncr.v2",
+      when: {
+        bHatesA: true
+      },
+      turns: [
+        {
+          by: "b",
+          say: "Wow. You really think I'd need to plan anything to get rid of you?",
+          v: {
+            dry: "Honestly, it's flattering that you think this took planning.",
+            loud: "Oh, please! Like anybody needed a plan to vote YOU out!"
+          }
+        },
+        {
+          by: "a",
+          say: "You've been after me since day one.",
+          v: {
+            emotional: "You've hated me since the first day, and everybody knows it.",
+            tough: "You've been gunning for me from the start. Admit it."
+          }
+        },
+        {
+          by: "b",
+          say: "I wrote your name, because I wanted you gone. That's not a plot. That's just how I feel about you.",
+          v: {
+            cruel: "I wrote your name with a smile on my face, and that's all. No master plan needed.",
+            warm: "I wrote your name, yes. I'm not going to pretend we were ever friends."
+          }
+        },
+        {
+          by: "a",
+          say: "At least you're honest about something.",
+          v: {
+            loud: "Great! At least you finally said it!",
+            dry: "How refreshing. Honesty, on my way out."
+          }
+        },
+        {
+          by: "c",
+          say: "Okay, okay. Can we just let {a} go?",
+          when: {
+            third: true
+          }
+        },
+        {
+          by: "h",
+          say: "I could watch this all night, but sadly, rules are rules. {a}, go."
+        }
+      ]
+    },
+    {
+      id: "ncr.v3",
+      turns: [
+        {
+          by: "b",
+          say: "Whoa, okay. I wrote your name, sure, but so did half the people sitting here.",
+          v: {
+            anxious: "Wait, me? I wrote it, yes, but so did a lot of people, it's not like I...",
+            loud: "Hey, I wrote it, sure, but don't put this on me! Half the room did too!",
+            dry: "I wrote it, and so did most of the room, so I'm not sure why I'm getting the spotlight."
+          }
+        },
+        {
+          by: "a",
+          say: "Don't act like you didn't plan this.",
+          v: {
+            emotional: "Please don't pretend. I know you planned it.",
+            tough: "Don't play dumb. You planned this.",
+            dry: "Please. You didn't just wander into that vote by accident."
+          }
+        },
+        {
+          by: "b",
+          say: "I didn't plan anything. Somebody told me the name this afternoon and I went along with it.",
+          v: {
+            cruel: "I didn't plan anything, and I didn't have to. Everybody was already on you.",
+            warm: "I didn't, I promise. Somebody told me the name and I just went along with it, and I feel awful."
+          }
+        },
+        {
+          by: "a",
+          say: "Then who told you?"
+        },
+        {
+          by: "b",
+          say: "I'm not doing this. Not on your way out.",
+          v: {
+            anxious: "I really don't want to do this right now.",
+            tough: "Not happening. You're not dragging anybody else into this."
+          }
+        },
+        {
+          by: "h",
+          say: "Somebody here knows, just not tonight. {a}, it's time to go."
+        }
+      ]
+    },
+    {
+      id: "ncr.v4",
+      when: {
+        voice: [
+          "goofy",
+          "chaotic",
+          "teen"
+        ]
+      },
+      turns: [
+        {
+          by: "b",
+          say: "Me, running things? I can't even run to the water without tripping!"
+        },
+        {
+          by: "a",
+          say: "This isn't funny.",
+          v: {
+            loud: "This is NOT funny!",
+            emotional: "Please don't make jokes right now."
+          }
+        },
+        {
+          by: "b",
+          say: "I know it's not. I'm sorry. I make jokes when I'm nervous, and I'm really nervous right now."
+        },
+        {
+          by: "a",
+          say: "You wrote my name."
+        },
+        {
+          by: "b",
+          say: "I did, because everybody else was, and I'm not brave enough to be the only one who doesn't."
+        },
+        {
+          by: "h",
+          say: "Honesty, at the very end, how touching. {a}, let's go."
+        }
+      ]
+    }
   ],
   // a named b, who wrote a's name, but {real} ran it (when real)
   'crash.callout.part': [

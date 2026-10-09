@@ -175,7 +175,7 @@ export default {
     7: { competitive: "{b} knew I had {b.posAdj} back and wrote my name anyway. I won't scream about it. I'll beat {b} instead." },
   },
   'nl4.p1': {
-    1: { blunt: "You okay?", bossy: "Are you okay? Sit down." },
+    1: { blunt: "You okay?", bossy: "Are you okay? Eat something." },
     3: { blunt: "Yeah. I noticed.", bossy: "Yeah. I noticed you doing that." },
     5: { blunt: "It's not stupid. You two were close.", bossy: "It's not stupid. You were close." },
     7: { blunt: "You sit with me.", bossy: "You sit with me. That's decided." },

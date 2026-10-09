@@ -158,6 +158,8 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   data = { ...data, here: spot?.here || 'around camp', place: spot?.said || 'camp' };
   // a turn for a part nobody plays (no {c} in this scene) is dropped, never left blank
   // an optional turn (opt: true) plays only when everyone it names is in the scene
+  // a talk somewhere secret is said quietly: nobody shouts after checking nobody followed
+  const hush = !!spot && spot.id !== 'confessional' && (kindOf(facts.venue, spot.id) === 'secret' || entry.place === 'secret');
   const named = t => [...[t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' ').matchAll(/\{([a-f])(?:\.\w+)?\}/g)].map(m => m[1]);
   let lastBy = null;
   // a turn may have its own condition (when: { tally: 'close' }, { shaky: true }): it plays only when the
@@ -169,7 +171,7 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // A move (`move: 'pushback'`) is said in the speaker's own words, from the phrasebook
     // (td/story/phrase.js): their voice, their age. {to} is whoever they answer (the turn's `to`,
     // else the last other speaker), {by} the speaker.
-    let raw = t.beat || (t.move ? null : voiced(t, t.by ? who[t.by] : null));
+    let raw = t.beat || (t.move ? null : voiced(t, t.by ? who[t.by] : null, hush));
     if (t.move) {
       const toRole = t.to || (lastBy && lastBy !== t.by ? lastBy : Object.keys(who).find(r => r !== t.by && r !== 'h' && who[r]));
       raw = phrase(t.move, who[t.by], rng, { to: !!(toRole && who[toRole]) }) || '...';

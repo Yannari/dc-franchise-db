@@ -72,11 +72,12 @@ export function voiceOf(name) {
 export const VOICE_TAGS = [...WORDS.map(([t]) => t), 'kid', 'teen', 'adult', 'grown'];
 
 /** The variant of a turn this speaker says: their strongest tag that has one, else the line itself. */
-export function voiced(turn, speaker) {
+// hush: the scene is somewhere secret (places.js), so a loud voice keeps it down: no shouted variant
+export function voiced(turn, speaker, hush = false) {
   const v = turn.v;
   if (!v || !speaker) return turn.say || turn.conf;
   const tags = voiceOf(speaker);
   const hard = tags.some(t => HARD.includes(t));
-  for (const t of tags) if (v[t] && !(hard && AGE.has(t))) return v[t];
+  for (const t of tags) if (v[t] && !(hard && AGE.has(t)) && !(hush && t === 'loud')) return v[t];
   return turn.say || turn.conf;
 }

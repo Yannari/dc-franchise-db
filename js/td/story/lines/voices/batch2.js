@@ -28,7 +28,7 @@ export default {
   // vp2.pair (loud)
   'nv4.p2': {
     1: { quiet: "That seems a little much.", warm: "That's a bit harsh. They're just close.", ditzy: "Wait, they're a team? I thought they were just friends." },
-    7: { dry: "{partner} is going to take this so well. Said nobody.", anxious: "{partner} is going to be so upset. I really don't want to be around for that.", kid: "{partner} is going to be really mad at us." },
+    7: { dry: "{partner} is going to take this really badly, and I mean really badly.", anxious: "{partner} is going to be so upset. I really don't want to be around for that.", kid: "{partner} is going to be really mad at us." },
   },
   // vp2.pair (warm)
   'nv4.p3': {

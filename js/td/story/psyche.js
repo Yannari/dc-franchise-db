@@ -40,7 +40,9 @@ export function needOf(name) {
 /** What just happened to them, in the terms a psyche scene uses. */
 export function momentOf(name, epNum, members) {
   const lt = lastTribalOf(name, epNum);
-  if (lt && lt.gap === 1 && lt.boot !== name && getBond(name, lt.boot) >= 3) return { moment: 'lost', lastBoot: lt.boot };
+  // grieving the friend who left, never when you wrote their name (read in a played season: Nichelle
+  // explained coldly why she voted Spud out, then 'I don't know who I am here without Spud')
+  if (lt && lt.gap === 1 && lt.boot !== name && !lt.votedBoot && getBond(name, lt.boot) >= 3) return { moment: 'lost', lastBoot: lt.boot };
   if (lt && lt.gap === 1 && lt.against > 0) return { moment: 'votes' };
   const best = Math.max(-10, ...members.filter(m => m !== name).map(m => getBond(name, m)));
   if (best <= 1) return { moment: 'bottom' };

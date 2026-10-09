@@ -49,13 +49,13 @@ export function voiceOf(name) {
   if ((s.strategic ?? 5) >= 8 && !tags.includes('schemer')) tags.push('schemer');
   // the authored age: a teenager and a forty-year-old do not talk alike
   const age = ageOf(name);
-  if (age != null) tags.push(age < 20 ? 'teen' : age >= 35 ? 'grown' : 'adult');
+  if (age != null) tags.push(age < 13 ? 'kid' : age < 20 ? 'teen' : age >= 35 ? 'grown' : 'adult');
   cache.set(key, tags);
   return tags;
 }
 
 /** Every tag a line may key a variant on (the tests check pools against it). */
-export const VOICE_TAGS = [...WORDS.map(([t]) => t), 'teen', 'adult', 'grown'];
+export const VOICE_TAGS = [...WORDS.map(([t]) => t), 'kid', 'teen', 'adult', 'grown'];
 
 /** The variant of a turn this speaker says: their strongest tag that has one, else the line itself. */
 export function voiced(turn, speaker) {

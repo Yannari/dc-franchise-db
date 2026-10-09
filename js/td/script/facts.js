@@ -32,7 +32,7 @@ export const TD_FACT_KEYS = [
   'rival', 'friend', 'threat', 'weak', 'lastBoot',
   // optional names an event decides
   'group', 'plan', 'boot', 'wrote', 'fallen', 'more', 'betrayer', 'holder', 'wins', 'other',
-  // who a and b are, beyond how they talk: an AUTHORED age band ('teen', 'twenties',
+  // who a and b are, beyond how they talk: an AUTHORED age band ('kid' under 13, 'teen', 'twenties',
   // 'thirties', 'older'; absent when nobody set an age), who is older, the archetype,
   // and what a is notably good or bad at (stat >= 7, temperament <= 3 'hot' / >= 8 'calm').
   // Narrative text selection only, never gameplay.
@@ -56,7 +56,7 @@ export function ageOf(name) {
   const now = new Date(), y = now.getFullYear() - +m[1] - ((now.getMonth() + 1 < +m[2] || (now.getMonth() + 1 === +m[2] && now.getDate() < +m[3])) ? 1 : 0);
   return y > 0 && y < 110 ? y : null;
 }
-const ageBand = n => { const a = ageOf(n); return a == null ? null : a < 20 ? 'teen' : a < 30 ? 'twenties' : a < 40 ? 'thirties' : 'older'; };
+const ageBand = n => { const a = ageOf(n); return a == null ? null : a < 13 ? 'kid' : a < 20 ? 'teen' : a < 30 ? 'twenties' : a < 40 ? 'thirties' : 'older'; };
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 const VILLAIN = new Set(['villain', 'mastermind', 'schemer']);

@@ -40,8 +40,22 @@ export function attracted(sexuality, myGender, theirGender) {
 
 /** Mutual interest, from two `{ gender, sexuality }` records. */
 export function romanticallyCompatible(a, b) {
+  // nobody under 18 is ever part of a romance, with anybody: an authored age (or birthdate) under 18
+  // is a hard no. No age set is no information, and the rest of the rule decides.
+  if (isMinor(a) || isMinor(b)) return false;
   return attracted(a?.sexuality, a?.gender, b?.gender)
     && attracted(b?.sexuality, b?.gender, a?.gender);
+}
+
+/** An authored age under 18, from `age` or `birthdate`; false when no age is set. */
+export function isMinor(p) {
+  if (!p) return false;
+  if (Number.isFinite(p.age)) return p.age < 18;
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(p.birthdate || '');
+  if (!m) return false;
+  const now = new Date();
+  const age = now.getFullYear() - +m[1] - ((now.getMonth() + 1 < +m[2] || (now.getMonth() + 1 === +m[2] && now.getDate() < +m[3])) ? 1 : 0);
+  return age >= 0 && age < 18;
 }
 
 /**
@@ -53,6 +67,7 @@ export function romanticallyCompatible(a, b) {
  * benefit of the doubt and lets the caller decide what to do about the gap.
  */
 export function couldBeInterested(a, b) {
+  if (isMinor(a) || isMinor(b)) return false;
   if (!a?.gender || !b?.gender) return true;
   return romanticallyCompatible(a, b);
 }

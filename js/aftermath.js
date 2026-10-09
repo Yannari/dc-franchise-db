@@ -1525,8 +1525,8 @@ export function rpBuildAftermathInterview(ep, interview) {
     const _ff = seasonConfig.finaleFormat || 'traditional';
     const _isJuryFinale = _ff === 'traditional' || _ff === 'jury-cut' || _ff === 'fire-making' || _ff === 'koh-lanta';
     // any no-jury, no-fan-vote format is a challenge finale (final-challenge, olympic-relay, rescue-mission, hawaiian-punch, …)
-    const _isChalFinale = !_isJuryFinale && !_isFanFinale;
     const _isFanFinale = _ff === 'fan-vote';
+    const _isChalFinale = !_isJuryFinale && !_isFanFinale;
     const _deciderLabel = _isJuryFinale ? 'the jury' : _isFanFinale ? 'the fans' : 'the final challenge';
     const _finaleLabel = _isJuryFinale ? 'Final Tribal Council' : _isFanFinale ? 'the fan vote finale' : 'the final challenge';
     const _wonByLabel = _isChalFinale ? 'won the final challenge' : _isFanFinale ? 'won the fan vote' : 'won the jury vote';

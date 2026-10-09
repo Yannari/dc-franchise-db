@@ -578,11 +578,22 @@ function arcBeats(ep, camp, members, phase, t, next, list, earlier = [], mode = 
   return out;
 }
 
+// 'they're coming for us' is a reason only somebody who heard it can give (the user: it was the case
+// in 89 of 170 plans, because in a two-bloc vote the other side always wants one of you): word reached
+// someone in the group (pitchIntel: a leak, an overheard pitch, a warning) that a member of the other
+// side is pushing one of their names
+function heardComing(ep, t, al) {
+  const us = new Set([t.leader, ...(t.voters || [])].filter(Boolean));
+  const them = new Set(al.members || []);
+  return (ep.pitchIntel || []).some(i => i.believed !== false && us.has(i.knower) && them.has(i.pitcher) && us.has(i.target))
+    || (t.em?.warned || []).some(w => us.has(w.knower) && them.has(w.pitcher));
+}
+
 // what made the target a target, from what the plan scene will say (planTalk's case, read the same way)
 function sparkCase(ep, t) {
   const { boot, tribal, voters, leader } = t;
   const has = s => !!s && (typeof s.has === 'function' ? s.has(boot) : Array.isArray(s) ? s.includes(boot) : false);
-  const coming = (t.rivals || []).find(al => (al.members || []).includes(boot) && al.target && (al.target === leader || voters.includes(al.target)));
+  const coming = (t.rivals || []).find(al => (al.members || []).includes(boot) && al.target && (al.target === leader || voters.includes(al.target)) && heardComing(ep, t, al));
   const partner = tribal.filter(x => x !== boot && x !== leader && !voters.includes(x)).sort((x, y) => getBond(boot, y) - getBond(boot, x) || x.localeCompare(y))[0];
   const pair = partner && getBond(boot, partner) >= 5 ? partner : null;
   const theirs = (gs.namedAlliances || []).find(al => al.active !== false && (al.members || []).includes(boot) && !(al.members || []).includes(leader))?.name || null;
@@ -678,7 +689,7 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const has = s => !!s && (typeof s.has === 'function' ? s.has(boot) : Array.isArray(s) ? s.includes(boot) : false);
   const outside = tribal.filter(x => x !== boot && !voters.includes(x));
   // the case: the ballots' own reason first, then the truest specific one
-  const coming = (t.rivals || []).find(al => (al.members || []).includes(boot) && al.target && (al.target === leader || voters.includes(al.target)));
+  const coming = (t.rivals || []).find(al => (al.members || []).includes(boot) && al.target && (al.target === leader || voters.includes(al.target)) && heardComing(ep, t, al));
   const partner = tribal.filter(x => x !== boot && x !== a && !voters.includes(x)).sort((x, y) => getBond(boot, y) - getBond(boot, x) || x.localeCompare(y))[0];
   const pair = partner && getBond(boot, partner) >= 5 ? partner : null;
   const theirs = (gs.namedAlliances || []).find(al => al.active !== false && (al.members || []).includes(boot) && !(al.members || []).includes(a))?.name || null;
@@ -691,7 +702,7 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   // ride-or-die so {keep} has nobody but us; or {target} said out loud they'd never vote {protects}
   const rel = !fromBallot && !coming ? relationalReason([a, ...voters.filter(x => x !== a)], boot) : null;
   const relCase = rel?.kind === 'isolate' && tribal.includes(rel.partner) ? 'isolate' : rel?.kind === 'pledge' && tribal.includes(rel.protects) ? 'pledge' : null;
-  const caseOf = relCase || (fromBallot === 'coming' && !coming ? 'grudge' : fromBallot
+  const caseOf = relCase || ((fromBallot === 'coming' && !coming ? null : fromBallot)
     || (coming ? 'coming' : t.ch?.sank === boot ? 'sank' : idol ? 'idol' : pair ? 'pair' : theirs ? 'group'
       : getBond(a, boot) <= -2 ? 'grudge' : rank >= 0 && rank <= 1 && tribal.length >= 4 ? 'threat' : best <= 1 ? 'outsider' : 'numbers'));
   if (t.why === 'shield') return null;   // saving an ally has its own scenes

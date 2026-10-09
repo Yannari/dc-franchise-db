@@ -22,7 +22,7 @@ export default {
     7: { calm: "{a} told me how much {a} trusts me, and in three hours I'm writing {a}'s name. I'm trying not to let it show.", earnest: "{a} trusts me completely, and I'm writing {a}'s name tonight. I've never felt this bad about anything I've done.", schemer: "{a} trusts me completely, which is exactly why this works. I still felt it, though.", warm: "{a} just told me how much {a} trusts me, and I'm writing {a}'s name tonight. I wanted to hug {a} and tell {a} everything." },
   },
   'nvt.f3': {
-    6: { calm: "{a} is planning for tomorrow, and {a} won't be here tomorrow. I'm keeping my face very still.", earnest: "{a} is making plans for tomorrow, and I know {a} doesn't have one here. Keeping quiet about it feels like lying.", warm: "{a} is planning tomorrow with me, and {a} won't be here. I can't say a word, and it's breaking my heart.", schemer: "{a} is making plans for tomorrow. I nodded along. {a} won't be here to keep them." },
+    6: { calm: "{a} is planning for tomorrow, and {a} won't be here tomorrow. I'm keeping my face very still.", earnest: "{a} is making plans for tomorrow, and I know {a} doesn't have one here. Keeping quiet about it feels like lying.", warm: "{a} is planning tomorrow with me, and {a} won't be here. I can't say a word, and it's breaking my heart.", schemer: "{a} is making plans for tomorrow, and I nodded along. {a} won't be here to keep them." },
   },
   'ndp.a1': {
     0: { calm: "I get along with everybody here. When I think about who would fight for me, though, I can't name anybody.", loud: "I talk to EVERYBODY here! And if you asked them who I'm closest to, I don't think one of them could answer!", competitive: "I've made sure nobody hates me. I just forgot to make sure anybody needs me." },

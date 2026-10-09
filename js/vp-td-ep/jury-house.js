@@ -15,6 +15,8 @@
 // that because" back-and-forth) come from the season's record — who wrote whose name, the bonds, the
 // immunity wins — never from a roll here, so the same episode always plays the same way.
 import { placeScene, plateKey, cleanText } from './steps.js';
+import { roundtableTalk } from './roundtable.js';
+import { familyOf } from '../td/story/voice-family.js';
 
 const ISL = 'islands';
 const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
@@ -55,7 +57,7 @@ const SET_RULES = [
 // what the residents in the background are doing on each set
 const BUSY = { 'jury-pool': 'stretch', 'jury-buffet': 'eat', 'jury-bar': 'eat', 'jury-loungers': 'nap', 'jury-bingo': 'read', 'jury-resort': 'nap', 'jury-playa': 'nap', 'jury-hottub': 'nap' };
 const NAME = { 'jury-resort': 'The Motel', 'jury-pool': 'The Pool Deck', 'jury-buffet': 'The Buffet', 'jury-bar': 'The Swim-Up Bar', 'jury-loungers': 'The Loungers',
-  'jury-bingo': 'Bingo Night', 'jury-hottub': 'The Hot Tub', 'jury-playa': 'The Beach', 'jury-roundtable': 'The Jury Roundtable' };
+  'jury-bingo': 'The Games Room', 'jury-hottub': 'The Hot Tub', 'jury-playa': 'The Beach', 'jury-roundtable': 'The Jury Roundtable' };
 // sets with no night frame, and where their night scenes go instead
 const NIGHT_FOR = { 'jury-hottub': 'jury-pool', 'jury-loungers': 'jury-playa', 'jury-bingo': 'jury-bar', 'jury-resort': 'jury-resort' };
 const DAY_FOR = { 'jury-playa': 'jury-loungers' };
@@ -110,6 +112,45 @@ export function tdJuryHouseScreen(ep, o = {}) {
     return true;
   };
 
+  // the people a scripted moment holds, and its lines played one click each (its confessionals cut
+  // to the motel bench, then back)
+  const castOf = b => [...new Set([...Object.values(b.scene?.who || {}), ...(b.players || [])])].filter(n => residents.includes(n));
+  const speak = (b, lines, cast, night, head0 = null) => {
+    const conf = plate('jury-conf', night ? 'night' : 'day') || plate('jury-conf', 'day');
+    let first = true;
+    for (const l of lines) {
+      const t = cleanText(l.text);
+      if (!t) continue;
+      const head = first && head0 ? head0 : {};
+      if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text: t, plate: conf, ...head });
+      else if (l.kind === 'beat') steps.push({ k: 'beat', text: t, focus: cast, ...head });
+      else steps.push({ k: 'say', by: l.by, text: t, focus: cast, loud: /!/.test(t) && t.length < 70, ...head });
+      first = false;
+    }
+  };
+  const headOf = b => ({ badge: b.badge ? { text: String(b.badge).toUpperCase(), cls: b.cls || 'iron' } : null, side: [{ tab: 'log', text: `${b.badge || 'The motel'}: ${castOf(b).join(', ')}` }] });
+  // a group block (the morning class, the evening game): the whole motel on one set, the activity's
+  // own scene opening and closing it, and the storylines' threads in between, each with the camera
+  // on the people in it while the rest carry on around them
+  const groupBlock = (blk) => {
+    const night = blk.tod === 'night';
+    const threads = (blk.threads || []).filter(t => t.lines?.length);
+    const frame = blk.frame?.lines?.length ? blk.frame : null;
+    if (!frame && !threads.length) return;
+    const crowd = [...new Set([...(frame ? castOf(frame) : []), ...threads.flatMap(castOf), ...residents])].slice(0, 9);
+    const spot = blk.set || 'jury-pool';
+    const key = plate(spot, night ? 'night' : 'day') || plate(spot, night ? 'day' : 'night');
+    if (!key) return;
+    steps.push({ k: 'scene', spot, tod: night ? 'night' : 'day', plate: key, place: NAME[spot] || 'The Motel', time: blk.time, card: true, focus: [], bg: [], places: placeScene(key, crowd, []), wide: true });
+    cur = { spot, tod: night ? 'night' : 'day' };
+    const fl = frame ? frame.lines : [];
+    // the activity starts (its staging and first exchange), the threads play, and it wraps up
+    const cut = Math.min(fl.length, Math.max(2, Math.ceil(fl.length / 2)));
+    if (frame) speak(frame, fl.slice(0, cut), castOf(frame), night, headOf(frame));
+    for (const t of threads) speak(t, t.lines, castOf(t), night, headOf(t));
+    if (frame && cut < fl.length) speak(frame, fl.slice(cut), castOf(frame), night);
+  };
+
   // ── a beat as the engine wrote it: its stage directions staged, its quotes said ──
   const play = (b, night, time) => {
     const who = (b.players || [b.player, b.player2]).filter(n => n && residents.includes(n));
@@ -129,20 +170,10 @@ export function tdJuryHouseScreen(ep, o = {}) {
     // a scene the engine's decision was written as (td/script/jury.js): its lines, one click each,
     // its confessionals cut to the motel bench
     if (Array.isArray(b.lines) && b.lines.length) {
-      const cast = [...new Set([...Object.values(b.scene?.who || {}), ...who])].filter(n => residents.includes(n));
+      const cast = castOf(b);
       const onSet = b.lines.some(l => l.kind !== 'conf');
       if (onSet && !scene(setFor(b, night), night ? 'night' : 'day', cast, time)) return;
-      const conf = plate('jury-conf', night ? 'night' : 'day') || plate('jury-conf', 'day');
-      let first = true;
-      for (const l of b.lines) {
-        const t = cleanText(l.text);
-        if (!t) continue;
-        const head = first ? { badge, side } : {};
-        if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text: t, plate: conf, ...head });
-        else if (l.kind === 'beat') steps.push({ k: 'beat', text: t, focus: cast, ...head });
-        else steps.push({ k: 'say', by: l.by, text: t, focus: cast, loud: /!/.test(t) && t.length < 70, ...head });
-        first = false;
-      }
+      speak(b, b.lines, cast, night, { badge, side });
       return;
     }
     const spot = setFor(b, night);
@@ -192,7 +223,25 @@ export function tdJuryHouseScreen(ep, o = {}) {
 
   // ── the acts: the days, the roundtable, the last night ─────────────
   const TIME = { 'Checking In': ['day', 'Morning'], 'The Long Days': ['day', 'Afternoon'], 'Before the Finale': ['night', 'The last night'] };
-  for (const act of J.acts) {
+  if (Array.isArray(J.blocks) && J.blocks.length) {
+    // the week as Panel of Peers plays it (td/script/jury-week.js): blocks, the storylines through them
+    for (const blk of J.blocks) {
+      if (blk.id === 'roundtable') { const rt = (J.acts || []).find(a => a.roundtable)?.roundtable || J.roundtable; if (rt) roundtable(rt); continue; }
+      const people = [...new Set([...(blk.scenes || []), blk.frame, ...(blk.threads || []), blk.end].filter(Boolean).flatMap(b => b.players || []))].filter(n => residents.includes(n));
+      steps.push({ k: 'title', kicker: 'The Jury House', name: blk.title, faces: people.slice(0, 8) });
+      cur = null;
+      const night = blk.tod === 'night';
+      if (blk.frame || (blk.threads || []).length) groupBlock(blk);
+      const confs = [...(blk.confs || [])];
+      (blk.scenes || []).forEach((b, i) => {
+        play(b, night, blk.time);
+        // a confessional between scenes, not at the end of the block
+        if (i === 0 && confs.length) play(confs.shift(), night, blk.time);
+      });
+      for (const c of confs) play(c, night, blk.time);
+      if (blk.end) play(blk.end, night, blk.time);
+    }
+  } else for (const act of J.acts) {
     if (act.roundtable) { roundtable(act.roundtable); continue; }
     const [tod, time] = TIME[act.title] || ['day', act.title];
     if (!(act.beats || []).length) continue;
@@ -201,7 +250,7 @@ export function tdJuryHouseScreen(ep, o = {}) {
     cur = null;
     for (const b of act.beats || []) play(b, tod === 'night', time);
   }
-  if (!J.acts.some(a => a.roundtable) && J.roundtable?.lines?.length) roundtable(J.roundtable);
+  if (!(J.blocks || []).length && !J.acts.some(a => a.roundtable) && J.roundtable?.lines?.length) roundtable(J.roundtable);
 
   // the last word of the week: the host's word about the finale (the engine's teaser)
   if (J.teaser && plate('jury-resort', 'night')) {
@@ -263,67 +312,22 @@ export function tdJuryHouseScreen(ep, o = {}) {
     });
     const say = (by, text, extra = {}) => { const t = cleanText(text); if (t && at.includes(by)) steps.push({ k: 'say', by, text: t, focus: [by], rt: true, ...extra }); };
     steps.push({ k: 'title', kicker: 'The Jury Roundtable', name: `${fins.length} left in the game`, faces: fins, side: lean, rt: true });
-    say(mod, pickBy([
-      `Hello, everyone, and welcome to the jury roundtable, where we go through everyone still in the game, one at a time. Hosted by me.`,
-      `Okay, everybody. Jury roundtable. We talk about every one of them still in there, and we're honest. That's the only rule.`,
-      `Welcome to the jury roundtable. ${fins.length} people left, and every one of them wants our votes. Let's talk about them.`,
-    ], 'rt-open', ep.num, mod));
-    let heated = null;
-    plan.forEach((p, i) => {
-      const { f } = p, w = wins(f), cutHere = p.cut.filter(j => at.includes(j)).length, a = arch(f), F = pr(f);
-      const lead = i === 0 ? `Let's start with` : i === plan.length - 1 ? `And to wrap this up,` : `Next, we have`;
-      const desc = w >= 2 ? `the one who keeps winning immunity, ${times(w)} and counting: ${f}!`
-        : cutHere >= 2 ? `the person who voted out ${num(cutHere)} of the people sitting here: ${f}!`
-        : /villain|schemer|mastermind/.test(a) ? `the one with a plan for everybody: ${f}!`
-        : /floater|goat|underdog/.test(a) ? `the one who's still in there, and nobody's quite sure how: ${f}!`
-        : /social-butterfly|showmancer/.test(a) ? `the one everybody in there still seems to like: ${f}!`
-        : /hero|loyal-soldier/.test(a) ? `the nicest person left in the game, supposedly: ${f}!`
-        : `${f}!`;
-      steps.push({ k: 'say', by: mod, text: `${lead} ${desc}`, focus: [mod], rt: true, side: [{ tab: 'log', text: `On ${f}: ${p.backer} for, ${p.doubter} against` }] });
-      // the case for and against, from the record: what they won and whose names they wrote. The
-      // engine picked who speaks; what they say has to be true of this finalist (a player who voted
-      // out five of the table is never called a floater)
-      const cuts = plan.map(q => q.cut.filter(j => at.includes(j)).length), most = Math.max(...cuts);
-      const alone = cutHere === most && cuts.filter(c => c === most).length === 1, half = cutHere * 2 >= at.length;
-      const forIt = w >= 2 ? [`${f} won immunity ${times(w)}. You don't do that by accident.`, `You want a winner? ${f} kept winning when it mattered. ${Cap(num(w))} immunities.`]
-        : cutHere >= 2 ? [`${f} ran the votes. ${half ? 'Half of us' : `${Cap(num(cutHere))} of us`} are sitting here because of ${F.obj}, and that's a résumé.`, `Every big vote this season had ${f} behind it. That's how you play this game.`]
-        : /social-butterfly|showmancer|hero|loyal-soldier/.test(a) ? [`${f} got along with everybody, and that's exactly why ${f} is still there.`, `${f} played the people, not just the challenges. That's the hardest part of this game.`]
-        : [`${f} is still in there and we're out here. That's the whole argument.`, `${f} made it this far for a reason. I don't need more than that.`];
-      const against = cutHere >= 2 ? (alone ? [`${f} has more of us on ${F.posAdj} hands than anyone. I'm not rewarding that.`, `${f} voted out more people at this table than anybody. I'm supposed to hand ${F.obj} the money for it?`]
-          : [`${f} voted out ${num(cutHere)} of us. I'm not rewarding that.`, `${Cap(num(cutHere))} people at this table are here because of ${f}. Let's not forget that.`])
-        : w >= 2 ? [`Winning challenges isn't the same as playing. Who did ${f} actually vote out?`, `${f} won challenges and let other people make the moves.`]
-        : w === 0 && !p.cut.length ? [`${f} floated. I'm not rewarding somebody who never put ${F.posAdj} own neck out.`, `${f} never had to make the hard call. Easy to look clean when somebody else does the dirty work.`]
-        : [`${f} rode other people's numbers to the end. Being there isn't the same as earning it.`, `${f} hid behind other people's plans all game. Now it's a résumé? Convenient.`];
-      say(p.backer, pickBy(forIt, 'rt-for', f, p.backer));
-      say(p.doubter, pickBy(against, 'rt-against', f, p.doubter), { loud: true });
-      // the doubter's reason may be their own vote-out, and somebody says so
-      if (p.outByF && p.backer !== p.doubter) {
-        say(p.backer, pickBy([`${f}'s the one who got you out, ${p.doubter}. Let's not pretend that isn't what this is.`, `You're only saying that because ${f} voted you out.`], 'rt-out', f, p.doubter));
-        say(p.doubter, stat(p.doubter, 'temperament') <= 4 ? pickBy([`So? It's still true.`, `And? That doesn't make it wrong.`], 'rt-outr', p.doubter) : pickBy([`Maybe. It doesn't make me wrong.`, `Fair. I'm still allowed to have an opinion.`], 'rt-outr', p.doubter));
-        heated = heated || p.doubter;
-      }
-      if (p.reason && at.includes(p.reason)) {
-        const r = p.reason, b = bond(r, f);
-        say(mod, `Let's hear from the person with the most reason not to want ${f} to win. ${r}?`);
-        if (b >= 1) {
-          say(r, pickBy([`${f} beat me. I can respect that.`, `${f} voted me out, and it was the right call. I'd have done the same.`, `Honestly? Good move. I was a threat, and ${f} saw it first.`], 'rt-why', r, f));
-          say(mod, pickBy([`Huh. Not the fireworks I was expecting.`, `Well. That was civil.`], 'rt-civil', f));
-        } else if (b <= -2) {
-          say(r, pickBy([`${f} smiled at me the morning of my vote. I haven't forgotten that.`, `${f} wrote my name down. That's all I need to know.`, `I'm trying to be fair. It's not easy when ${f} is the reason I'm sitting here.`], 'rt-why', r, f), { loud: true });
-          heated = heated || r;
-        } else say(r, pickBy([`${f} got me out. I'm not voting on that alone. But I'm not forgetting it either.`, `I'll be fair to ${f}. It's just harder when ${F.sub === 'they' ? "they're" : F.sub + "'s"} the reason I'm in this motel.`, `${f} did what ${F.sub} had to. I'd still like to hear ${F.obj} own it.`], 'rt-why0', r, f));
-      }
-      if (p.friend) say(p.friend, pickBy([`${f} was the first person out there who made me feel like I belonged. That's why I'm rooting for ${F.obj}.`, `I'm biased. ${f}'s my friend. But ${F.sub} played, too.`, `Say what you want. I'd trust ${f} with anything.`], 'rt-fr', p.friend, f));
-      if (p.jab) {
-        say(p.jab, pickBy([`Zero immunity wins. Just saying.`, `Not one immunity win. I'm just putting that out there.`], 'rt-jab', p.jab, f));
-        if (p.backer !== p.jab) say(p.backer, `Immunity isn't the only way to stay in this game.`);
-      }
-    });
-    say(mod, pickBy([`And that's all the time we have! You've given each other a lot to think about. Now we wait for the finale.`, `Okay. I think we've all said enough. See you at the finale.`], 'rt-close', ep.num));
-    // after: the host juror checks on whoever it got hot for
-    if (heated && heated !== mod) {
-      say(mod, `You okay? That got kind of heated.`, { focus: [mod, heated] });
-      say(heated, stat(heated, 'temperament') <= 4 ? `I'm fine. I meant every word.` : `Yeah. I just don't love who I was back there.`, { focus: [mod, heated] });
+    // the conversation (roundtable.js): a different kind of segment for each finalist, the motel's
+    // own feuds flaring up at the table, the host juror moving it on
+    const allBeats = (J.acts || []).flatMap(x => x.beats || []);
+    const wounds = allBeats.find(x => x.badge === 'OLD WOUNDS');
+    const bitterBeat = allBeats.find(x => x.badge === "CAN'T LET GO" && x.target);
+    const shows = ep.gsSnapshot?.showmances || [];
+    for (const st of roundtableTalk({
+      mod, at, fins, plan, bond, wins, arch, pr, key: `rt|${ep.num}`,
+      fam: n => { try { return familyOf(n); } catch { return 'plain'; } },
+      couple: f => (shows.find(x => (x.players || []).includes(f) && !x.breakupEp)?.players || []).find(n => n !== f) || null,
+      grudge: wounds?.players?.length === 2 ? { a: wounds.players[0], b: wounds.players[1], madeUp: allBeats.some(x => x.badge === 'BURIED IT') } : null,
+      bitter: bitterBeat ? { juror: bitterBeat.players[0], target: bitterBeat.target } : null,
+    })) {
+      const t = cleanText(st.text);
+      if (!t) continue;
+      steps.push({ ...st, text: t, rt: true });
     }
   }
 }

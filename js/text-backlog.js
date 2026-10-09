@@ -2599,6 +2599,12 @@ export function _textInterlude(ep, ln, sec) {
     rt.lines.forEach(l => { ln(`    On ${l.finalist}:`); ln(`      + ${l.backText}`); ln(`      - ${l.doubtText}`); });
   };
   const clean = (t) => String(t).replace(/<\/?b>/g, '');
+  // the jury's week as it airs (td/script/jury-week.js blocks, played by vp-td-ep/jury-house.js): the
+  // transcript of the stepped episode, word for word
+  if (jury && d?.blocks?.length && (!ep.format || ep.format === 'total-drama')) {
+    const scr = (() => { try { return tdJuryHouseScreen(ep, { host: seasonConfig.host || 'Chris', pronouns, stats: pStats, bond: getBond, history: gs.episodeHistory, players, active: gs.activePlayers }); } catch { return null; } })();
+    if (scr) { ln(''); tdStepTranscript(scr).forEach(l => ln(l)); return; }
+  }
   if (d?.acts?.length) {
     d.acts.forEach((act, i) => {
       ln(''); ln(`--- ACT ${i + 1}: ${act.title} ---`);

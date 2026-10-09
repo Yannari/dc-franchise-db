@@ -39,8 +39,12 @@ describe('Interlude — full episode structure', () => {
     expect(d.venue).toBe('jury');
     expect(d.acts.length).toBeGreaterThanOrEqual(3);
     expect(d.acts.some(a => a.roundtable?.lines?.length)).toBe(true);
-    // full-length episode: dense — roughly 3+ beats per resident, plus confessionals
-    expect(flat(d).length).toBeGreaterThanOrEqual(d.residents.length * 2.5);
+    // full-length episode: every moment is a scene with people talking (td/script/jury.js), ordered
+    // into the week's blocks with threads running through the group activities (jury-week.js); the
+    // density is in the scenes now, not in a count of one-line moments
+    expect(flat(d).length).toBeGreaterThanOrEqual(d.residents.length * 1.5);
+    expect(flat(d).every(b => (b.lines || []).length >= 1 && (b.badge === 'CONFESSIONAL' || b.lines.length >= 2))).toBe(true);
+    expect((d.blocks || []).map(b => b.id)).toEqual(expect.arrayContaining(['activity', 'pairs', 'game', 'roundtable', 'last']));
     expect(flat(d).some(b => b.badge === 'CONFESSIONAL')).toBe(true);
     expect(d.teaser).toBeTruthy();
   });

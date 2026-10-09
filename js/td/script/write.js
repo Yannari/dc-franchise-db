@@ -28,6 +28,7 @@ import { campContext } from './context.js';
 import { makeScene } from './scene.js';
 import { foodOk, entryText } from './food.js';
 import { getBond, bondJournal } from '../../bonds.js';
+import { pickVoice } from '../story/voice-family.js';
 
 // The episode being played. gs.episode still holds the last one until it ends.
 export const epOf = ctx => ctx.ep || (gs.episode || 0) + 1;
@@ -142,7 +143,9 @@ export function writeScene(scene, ctx = {}) {
   const lines = entry.turns.map(t => {
     const kind = t.conf ? 'conf' : t.beat ? 'beat' : 'say';
     const by = t.by ? who[t.by] || null : null;
-    const text = fill(t.conf || t.beat || t.say, who, scene.data || {});
+    // the speaker's own way of saying it (`v: { tag | family: line }`, td/story/voice-family.js)
+    const said = t.v && by ? pickVoice(t.v, by) : null;
+    const text = fill(said || t.conf || t.beat || t.say, who, scene.data || {});
     // a line that opens on a filled-in word ({count}: "eleven top finishes...") still starts with a capital
     return { kind, by, text: text.charAt(0).toUpperCase() + text.slice(1) };
   });

@@ -1097,6 +1097,77 @@ const CARDS = [
   ] },
 ];
 
+// ══════════════════════════════════════════════════════════════════════
+// THREADS — the week as Panel of Peers plays it (the user, 2026-10-09: "I want to know what's
+// happening"): a group block (the morning class at the pool, the evening game) with everyone there,
+// and several storylines running through it at once in short exchanges. These lines happen in the
+// middle of a group activity, so they name no place of their own. (td/script/jury-week.js)
+// ══════════════════════════════════════════════════════════════════════
+
+// in the morning class: the two who hate each other, stuck in the same pool
+const A_GRUDGE = [
+  { id: 'jh.ag1', turns: [{ by: 'a', say: 'Could you not splash me?' }, { by: 'b', say: "I'm doing the exercise." }, { by: 'a', say: "You're doing it at me." }] },
+  { id: 'jh.ag2', turns: [{ by: 'b', say: 'Nice form, {a}.' }, { by: 'a', say: "Don't." }, { by: 'b', say: 'I was being nice!' }, { by: 'a', say: "That's what worries me." }] },
+  { id: 'jh.ag3', turns: [{ beat: '{a} moves to the far end, as far from {b} as the class allows.' }, { by: 'b', say: "I don't bite, you know." }, { by: 'a', say: "No. You do worse." }] },
+  { id: 'jh.ag4', turns: [{ by: 'a', say: 'Of all the people to get stuck next to.' }, { by: 'b', say: "Believe me, it's mutual." }] },
+  { id: 'jh.ag5', turns: [{ by: 'b', say: 'Are we really going to do this for a whole week?' }, { by: 'a', say: 'I am.' }, { beat: 'The class goes very quiet around them.' }] },
+  { id: 'jh.ag6', turns: [{ beat: '{b} drifts closer. {a} drifts away.' }, { by: 'b', say: 'Okay. I get it.' }, { by: 'a', conf: "I'm not ready to be in the same room as {b}, never mind the same exercise class." }] },
+];
+// in the morning class: a juror campaigning for their finalist, and the one being campaigned at
+const A_LOBBY = [
+  { id: 'jh.al21', turns: [{ by: 'a', say: 'You know who deserves it? {fin}.' }, { by: 'b', say: "It's nine in the morning, {a}." }, { by: 'a', say: '{fin} deserves it at nine in the morning too.' }, { by: 'b', say: 'Save it for the roundtable.' }] },
+  { id: 'jh.al22', turns: [{ by: 'a', say: "Just think about {fin}'s game for a second." }, { by: 'b', say: "I'm thinking about not drowning." }] },
+  { id: 'jh.al23', turns: [{ by: 'a', say: 'So, hypothetically, if {fin} made the final...' }, { by: 'b', say: 'Nope. Not doing this today.' }, { by: 'a', say: "I'll ask again tomorrow." }] },
+  { id: 'jh.al24', turns: [{ by: 'a', say: "I'm just saying, {fin} played the best game." }, { by: 'b', say: "You've said that four times since breakfast." }, { by: 'a', say: 'Because it was true all four times.' }] },
+  { id: 'jh.al25', turns: [{ by: 'a', say: 'Have you thought about {fin}?' }, { by: 'b', say: "I've thought about lunch." }, { by: 'a', say: 'Then think about {fin} after lunch.' }] },
+  { id: 'jh.al26', turns: [{ by: 'b', say: 'Let me guess. {fin}?' }, { by: 'a', say: "I didn't even say anything!" }, { by: 'b', say: 'You were about to.' }] },
+];
+// in the morning class: two friends who will not take it seriously
+const A_BANTER = [
+  { id: 'jh.ab1', turns: [{ by: 'a', say: 'Be honest. How bad do I look right now?' }, { by: 'b', say: 'On a scale of one to ten?' }, { by: 'a', say: 'Never mind.' }, { by: 'b', say: "Seven. It's a seven." }] },
+  { id: 'jh.ab2', turns: [{ by: 'a', say: "If I pull a muscle doing this, I'm suing." }, { by: 'b', say: 'Suing who?' }, { by: 'a', say: "Whoever's in charge." }, { by: 'b', say: "{a}, nobody's in charge." }] },
+  { id: 'jh.ab3', turns: [{ by: 'b', say: 'Remember when we thought getting voted out was the worst thing that could happen?' }, { by: 'a', say: 'This is worse.' }, { by: 'b', say: 'This is so much worse.' }, { beat: 'Both of them are laughing too hard to keep up with the class.' }] },
+  { id: 'jh.ab4', turns: [{ by: 'a', say: 'Race you to the buffet after this.' }, { by: 'b', say: "You're on. Loser buys the drinks." }] },
+  { id: 'jh.ab5', turns: [{ by: 'a', say: 'We should start a band.' }, { by: 'b', say: "Neither of us plays anything." }, { by: 'a', say: 'Details.' }] },
+  { id: 'jh.ab6', turns: [{ by: 'a', say: 'Do you think they can see us on the feeds?' }, { by: 'b', say: 'I really hope not.' }, { by: 'a', say: 'I hope so. I look great.' }] },
+];
+// in the morning class: the outsider, not quite joining in
+const A_OUTSIDER = [
+  { id: 'jh.ao1', turns: [{ beat: '{a} sits on the edge, feet in the water, not quite in and not quite out.' }, { by: 'a', say: "I'll join the next one." }, { by: 'a', conf: "There's always a next one. I never join it." }] },
+  { id: 'jh.ao2', turns: [{ by: 'a', say: "I'm just going to watch, if that's okay." }, { beat: 'Nobody tries to talk {a} out of it.' }, { by: 'a', conf: 'I kind of wanted somebody to try.' }] },
+  { id: 'jh.ao3', turns: [{ by: 'a', say: 'Is there a version of this where I just hold the towels?' }, { beat: 'Nobody answers. {a} holds the towels.' }] },
+  { id: 'jh.ao4', when: { register: 'shy' }, turns: [{ beat: '{a} hovers at the back of the class, copying the moves a beat late.' }, { by: 'a', say: 'Sorry. Sorry. Wrong way.' }, { by: 'a', conf: "I'd rather be bad at this than be the one sitting out. Barely." }] },
+  { id: 'jh.ao5', turns: [{ by: 'a', say: 'Go on without me. Really.' }, { by: 'a', conf: 'Everyone here paired up so fast. I keep ending up as the odd one.' }] },
+  { id: 'jh.ao6', turns: [{ beat: '{a} counts the tiles along the side of the pool.' }, { by: 'a', say: 'Forty-one.' }, { by: 'a', conf: "I'm so bored I could cry. I'd still rather be bored than awkward." }] },
+];
+// at the evening game: the feud, either still sniping or starting to thaw
+const C_GRUDGE = [
+  { id: 'jh.cg1', turns: [{ by: 'a', say: "You're sitting very close to my card." }, { by: 'b', say: "I'm sitting next to you. That's all." }, { by: 'a', say: 'Fine.' }, { beat: 'Neither of them moves away, though.' }] },
+  { id: 'jh.cg2', turns: [{ by: 'b', say: 'Want my lucky pen?' }, { by: 'a', say: 'No.' }, { by: 'b', say: "It's lucky." }, { by: 'a', say: 'Fine. Give it here.' }] },
+  { id: 'jh.cg3', turns: [{ by: 'a', say: "Don't you dare win. If you win, I'll never hear the end of it." }, { by: 'b', say: "Then I'm definitely winning." }] },
+  { id: 'jh.cg4', turns: [{ beat: '{a} and {b} reach for the same snack and both pull their hands back.' }, { by: 'b', say: 'You take it.' }, { by: 'a', say: 'No, you take it.' }, { by: 'b', conf: "That's the first time we've been polite to each other in days. It was so weird." }] },
+  { id: 'jh.cg5', turns: [{ by: 'a', say: "I'm still mad at you." }, { by: 'b', say: 'I know.' }, { by: 'a', say: 'Pass the chips.' }] },
+  { id: 'jh.cg6', turns: [{ by: 'b', say: 'Truce for one evening?' }, { by: 'a', say: 'One evening. Then I go back to hating you.' }, { by: 'b', say: 'Deal.' }] },
+];
+// at the evening game: the outsider, pulled in this time by {b}
+const C_OUTSIDER = [
+  { id: 'jh.co21', turns: [{ by: 'b', say: '{a}! I saved you a seat.' }, { by: 'a', say: 'Me?' }, { by: 'b', say: 'Who else?' }, { by: 'a', conf: "Two days ago I couldn't get anyone to look up. Now somebody's saving me seats." }] },
+  { id: 'jh.co22', turns: [{ by: 'a', say: 'Mind if I play?' }, { by: 'b', say: "We've been waiting for you." }] },
+  { id: 'jh.co23', turns: [{ beat: '{a} is squeezed in next to {b}, laughing.' }, { by: 'a', say: 'Wait, explain the rules again.' }, { by: 'b', say: 'There are no rules. Just yell.' }] },
+  { id: 'jh.co24', turns: [{ by: 'b', say: "{a} is with me this round." }, { by: 'a', say: "It's not a partner game." }, { by: 'b', say: 'It is now.' }] },
+  { id: 'jh.co25', turns: [{ by: 'a', say: 'This is the first game night I have come to.' }, { by: 'b', say: "And you're already winning. Typical." }] },
+  { id: 'jh.co26', turns: [{ by: 'a', say: 'Thanks for dragging me down here.' }, { by: 'b', say: "I'm dragging you to all of them from now on." }] },
+];
+// at the evening game: the two new friends
+const C_FRIENDS = [
+  { id: 'jh.cf21', turns: [{ by: 'a', say: 'Same table as last time?' }, { by: 'b', say: "It's our table now." }] },
+  { id: 'jh.cf22', turns: [{ by: 'a', say: 'I bet you the good lounger I win.' }, { by: 'b', say: 'Deal. Say goodbye to that lounger.' }] },
+  { id: 'jh.cf23', turns: [{ by: 'a', say: 'Sit with me.' }, { by: 'b', say: 'Where else would I sit?' }] },
+  { id: 'jh.cf24', turns: [{ by: 'a', say: "You're cheating." }, { by: 'b', say: "I'm not! I'm just lucky." }, { by: 'a', say: "That's what a cheater would say." }] },
+  { id: 'jh.cf25', turns: [{ by: 'a', say: "When we leave, I'm taking you with me." }, { by: 'b', say: 'Deal.' }] },
+  { id: 'jh.cf26', turns: [{ beat: '{a} and {b} keep whispering and laughing, and the people around them keep shushing them.' }, { by: 'b', say: "Sorry! Sorry. It's {a}'s fault." }] },
+];
+
 export default {
   'jury.arrive.hug': ARRIVE_HUG, 'jury.arrive.alone': ARRIVE_ALONE,
   'jury.grudge.wounds': GRUDGE_WOUNDS, 'jury.grudge.boils': GRUDGE_BOILS, 'jury.grudge.reckon': GRUDGE_RECKON, 'jury.grudge.buried': GRUDGE_BURIED,
@@ -1109,9 +1180,11 @@ export default {
   'jury.conf.any': CONF,
   'jury.group.aerobics': AEROBICS, 'jury.group.bingo': BINGO, 'jury.group.music': MUSIC,
   'jury.night.toast': TOAST, 'jury.night.cards': CARDS,
+  'jury.a.grudge': A_GRUDGE, 'jury.a.lobby': A_LOBBY, 'jury.a.banter': A_BANTER, 'jury.a.outsider': A_OUTSIDER,
+  'jury.c.grudge': C_GRUDGE, 'jury.c.outsider': C_OUTSIDER, 'jury.c.friends': C_FRIENDS,
 };
 
 /** Data a jury scene always carries, by key (the writer may say these without asking). */
 export const GUARANTEED = {
-  'jury.bitter.start': ['target'], 'jury.bitter.vote': ['target'], 'jury.solo.rooting': ['fin'],
+  'jury.bitter.start': ['target'], 'jury.bitter.vote': ['target'], 'jury.solo.rooting': ['fin'], 'jury.a.lobby': ['fin'],
 };

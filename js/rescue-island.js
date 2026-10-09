@@ -5,6 +5,7 @@ import { getBond, addBond } from './bonds.js';
 import { wRandom } from './alliances.js';
 import { scriptIsland } from './td/script/island.js';
 import { scriptJury } from './td/script/jury.js';
+import { buildJuryWeek } from './td/script/jury-week.js';
 import { stableRng } from './script/rng.js';
 import { CHALLENGE_BANK } from './ri-challenge-bank.js';
 import { CHALLENGE_BANK_2 } from './ri-challenge-bank-2.js';
@@ -2145,11 +2146,12 @@ export function generateInterludeLife(ep) {
   const uncovered = shuffle(residents.filter(n => !featured.has(n)));
   uncovered.forEach((n, i) => soloFor(n, i % 3 === 0 ? 'a1' : i % 3 === 1 ? 'a2' : 'a4'));
   // give a handful of residents a SECOND beat so acts stay full (bigger casts = more)
-  shuffle(residents).slice(0, Math.max(2, Math.round(residents.length / 2))).forEach((n, i) => soloFor(n, i % 2 === 0 ? 'a2' : 'a4'));
+  // (the jury's week is built from storylines and group blocks: no second round of filler moments)
+  if (venue !== 'jury') shuffle(residents).slice(0, Math.max(2, Math.round(residents.length / 2))).forEach((n, i) => soloFor(n, i % 2 === 0 ? 'a2' : 'a4'));
 
   // pair color beats spread across acts (scale with cast)
   const usedPairs = new Set();
-  const pairTarget = Math.max(2, Math.floor(residents.length / 2));
+  const pairTarget = venue === 'jury' ? Math.min(3, Math.max(2, Math.floor(residents.length / 3))) : Math.max(2, Math.floor(residents.length / 2));
   for (let k = 0, g = 0; k < pairTarget && g < 60; g++) {
     const a = residents[Math.floor(Math.random() * residents.length)];
     const b = residents.filter(n => n !== a)[Math.floor(Math.random() * (residents.length - 1))];
@@ -2262,8 +2264,10 @@ export function generateInterludeLife(ep) {
   // the Jury House as scenes (the user, 2026-10-09: "full of one-line events... where's the storyline"):
   // every beat the engine decided is written as a scene with its people talking (td/script/jury.js)
   if (venue === 'jury') for (const a of acts) for (const b of a.beats || []) scriptJury(b, { ep: epNum, residents, active });
+  // ...and ordered into the week's blocks, with the storylines running through the group activities
+  const blocks = venue === 'jury' ? buildJuryWeek({ acts, residents }, { ep: epNum, residents, active, statOf: pStats }) : null;
   const events = acts.flatMap(a => a.beats);
-  ep.interlude = { venue, residents, acts, events, roundtable, teaser, epNum };
+  ep.interlude = { venue, residents, acts, events, roundtable, teaser, epNum, ...(blocks ? { blocks } : {}) };
   ep.juryHouse = ep.interlude; // legacy alias
 }
 

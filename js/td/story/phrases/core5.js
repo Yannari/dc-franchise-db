@@ -114,7 +114,7 @@ export default {
     blunt: ["That was a mistake. Theirs.", "I'm on my own now."],
     theatrical: ["My partner! Taken from me!", "I will avenge you!"],
     anxious: ["What do I do now? I don't know what to do now."],
-    calm: ["It is what happened. I'll keep going.", "Okay. New plan."],
+    calm: ["It happened, and I'll keep going, because that's all I can do.", "Okay. I need a new plan, and I need it by tomorrow."],
     competitive: ["Now it's personal.", "Fine. I'll win it for both of us."],
     schemer: ["I know who did it. I'll be patient.", "They just showed me who they are."],
     cruel: ["They'll regret it. Every one of them."],

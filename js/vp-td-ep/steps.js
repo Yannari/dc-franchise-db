@@ -468,7 +468,7 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
       for (const l of ev.lines) {
         const text = cleanText(l.text);
         if (!text) continue;
-        if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text });
+        if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text, cap: l.cap || null, stage: l.stage || null });
         // a scene that runs on from the last one: whoever walks up walks in (director.js chainScenes)
         else if (l.kind === 'beat') steps.push({ k: 'beat', text, act: l.arrive?.length ? { kind: 'arrive', who: l.arrive } : actOf(text, cast, lastBy) });
         else { steps.push({ k: 'say', by: l.by, text, loud: loud(text), shock: shock(text) }); lastBy = l.by; }
@@ -574,7 +574,7 @@ export function tdTribalScreen(ep, o = {}) {
     const text = cleanText(l.text);
     if (!text) continue;
     if (l.kind === 'beat') steps.push({ k: 'beat', text, focus: ex.players.filter(p => places[p]) });
-    else if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text });
+    else if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text, cap: l.cap || null, stage: l.stage || null });
     else if (l.by === host) say(text, { focus: ex.players.filter(p => places[p]).slice(0, 1) });
     else steps.push({ k: 'say', by: l.by, text, focus: [l.by], loud: loud(text) });
   }
@@ -613,7 +613,7 @@ export function tdTribalScreen(ep, o = {}) {
       const text = cleanText(l.text);
       if (!text) continue;
       if (l.kind === 'beat') steps.push({ k: 'beat', text, focus: [p.player].filter(n => tribal.includes(n)) });
-      else if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text });
+      else if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text, cap: l.cap || null, stage: l.stage || null });
       else if (l.by === host) say(text);
       else steps.push({ k: 'say', by: l.by, text, focus: [l.by], loud: loud(text), shock: shock(text) });
     }
@@ -711,7 +711,7 @@ export function tdTribalScreen(ep, o = {}) {
   }
   // the reading lands: how the one going home takes it, and who answers (td/story/tribal.js)
   const lineStep = l => (l.kind === 'beat' ? { k: 'beat', text: cleanText(l.text), focus: [] }
-    : l.kind === 'conf' ? { k: 'conf', by: l.by, text: cleanText(l.text) }
+    : l.kind === 'conf' ? { k: 'conf', by: l.by, text: cleanText(l.text), cap: l.cap || null, stage: l.stage || null }
       : { k: 'say', by: l.by, text: cleanText(l.text), focus: [l.by], loud: loud(l.text), shock: shock(l.text) });
   // (played before the 'out' step: the boot is still in their seat when the last vote is read)
   const outAt = steps.map(x => x.k).lastIndexOf('out');
@@ -1096,7 +1096,7 @@ export function tdStepTranscript(screen) {
   for (const s of screen.steps) {
     if (s.k === 'scene') out.push(`— ${s.place}${s.time ? ', ' + s.time : ''} —`);
     else if (s.k === 'say') out.push(`${s.by}: "${s.text}"`);
-    else if (s.k === 'conf') out.push(`${s.by} (confessional): "${s.text}"`);
+    else if (s.k === 'conf') out.push(`${s.by} (confessional${s.stage ? ', ' + s.stage : ''})${s.cap ? ' [' + s.cap + ']' : ''}: "${s.text}"`);
     else if (s.k === 'beat') out.push(`(${s.text})`);
     else if (s.k === 'title') out.push(`[${s.kicker}: ${s.name}]`);
     else if (s.k === 'ballot') out.push(`[${s.voter} votes: ${s.voted}]`);
@@ -1205,7 +1205,7 @@ function elimSwap(ep, o) {
 // voted out into an Exile Duel: the vote is read, but the one voted out goes to face the exiled player
 // (the duel itself plays after the vote, on the post-vote screen)
 // a story line as a step (td/story: beats, confessionals, spoken lines)
-const storyStep = (l, focus) => (l.kind === 'beat' ? { k: 'beat', text: cleanText(l.text), focus } : l.kind === 'conf' ? { k: 'conf', by: l.by, text: cleanText(l.text) }
+const storyStep = (l, focus) => (l.kind === 'beat' ? { k: 'beat', text: cleanText(l.text), focus } : l.kind === 'conf' ? { k: 'conf', by: l.by, text: cleanText(l.text), cap: l.cap || null, stage: l.stage || null }
   : { k: 'say', by: l.by, text: cleanText(l.text), focus: [l.by] });
 
 function duelNight(ep, o) {

@@ -34,6 +34,7 @@ import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
 import { writeTribal, whyOf as ballotWhy, writeCrashReplies, writeExit } from './tribal.js';
 import { relationalReason } from '../../alliances.js';
+import { dressConfessionals } from './captions.js';
 import { writeTwistStory, writeExile, writeFirstImpressions, writeAuctionScript } from './twist.js';
 import { needOf, psycheCast } from './psyche.js';
 import { runnerDue } from './runners.js';
@@ -1601,4 +1602,24 @@ export function airTdEpisode(ep) {
     const ex = writeExit(ep, { elim: ep.eliminated, kind, b, revealKind: ts.revealKind, base: ts.exitBase || {}, data: { lastBoot: ep.eliminated }, blame: acc, crash: true });
     if (ex) { ts.exit = ex.lines; ts.exitWith = b; ts.exitKind = kind; }
   }
+  // the last confessional: their whole game, said on the way out (the user's Disventure Camp exits:
+  // "After losing Seth and Kylie, I knew I had an uphill battle... I stayed true to myself")
+  if (ts && ep.eliminated && !ts.finalConf) {
+    const elim = ep.eliminated;
+    const gone = (gs.episodeHistory || []).filter(h => h.num < ep.num && h.eliminated && h.eliminated !== elim && getBond(elim, h.eliminated) >= 3).map(h => h.eliminated);
+    const lostAlly = gone[gone.length - 1] || null;
+    const told = (ep.pitchIntel || []).find(i => i.knower === elim && i.target === elim && i.believed !== false && i.pitcher)?.pitcher || null;
+    const blame = told || ts.crashReplies?.find(r => r.type === 'callout')?.b || null;
+    const flipped = (gs.namedAlliances || []).some(al => (al.betrayals || []).some(b0 => b0.player === elim));
+    const wins = (gs.episodeHistory || []).filter(h => h.num <= ep.num && [].concat(h.immunityWinner || []).includes(elim)).length;
+    const who = { a: elim };
+    const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'tribal' }), lostAlly: !!lostAlly, blame: !!blame, flipped, won: wins > 0, late: (gs.activePlayers || []).length <= 7 };
+    const d0 = { ...(lostAlly ? { lostAlly } : {}), ...(blame ? { blame } : {}) };
+    const c0 = u => ({ ep: ep.num, camp: 'tribal', phase: 'tribal', n: 2900, place: 'confessional', unique: u });
+    // a fresh one from the night's own pool, then any fresh one, before one comes back
+    const w = writeStory('exit.final', ts.revealKind || 'any', who, d0, facts, c0(true)) || writeStory('exit.final', 'any', who, d0, facts, c0(true)) || writeStory('exit.final', ts.revealKind || 'any', who, d0, facts, c0('soft'));
+    if (w) { ts.exit = [...(ts.exit || []), ...w.lines.map(l => ({ ...l, stage: 'on the way out' }))]; ts.finalConf = true; }
+  }
+  // how every confessional is shot, and the caption under it (captions.js)
+  dressConfessionals(ep);
 }

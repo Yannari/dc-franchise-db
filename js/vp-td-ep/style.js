@@ -377,6 +377,9 @@ export const TDX_CSS = `
 .tdx .tdx-dlg .sub.on{display:flex}
 .tdx .tdx-dlg .sub b{padding:.35em .8em;background:var(--stc,#555);clip-path:polygon(0 0,100% 0,94% 100%,0 100%);color:#0c0c12}
 .tdx .tdx-dlg .sub span{padding:.35em .7em;background:rgba(12,12,20,.82);border-radius:3px}
+/* the confessional caption under them, and how it is shot (td/story/captions.js) */
+.tdx .tdx-dlg .sub span.cap{background:var(--am,#ffc23d);color:#1a0e02;letter-spacing:.08em}
+.tdx .tdx-dlg .sub i.stg{font:italic 700 .95cqw/1 Nunito;letter-spacing:.02em;text-transform:none;color:#e8e2d6;background:rgba(12,12,20,.6);padding:.35em .7em;border-radius:3px}
 .tdx .tdx-dlg .name{position:absolute;left:calc(var(--cut,0%) + 3%);top:-1.3em;font:400 1.8cqw/1 'Lilita One';letter-spacing:.06em;color:#0c1a0a;padding:.32em 1.2em .26em .9em;background:var(--tc,var(--gr));clip-path:polygon(0 0,100% 0,90% 100%,0 100%);text-transform:uppercase}
 .tdx .tdx-dlg .name.host{background:var(--am);color:#1a0e02}
 .tdx .tdx-dlg .name.conf{background:var(--cf);color:#fff}

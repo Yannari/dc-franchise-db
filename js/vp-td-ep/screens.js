@@ -283,7 +283,9 @@ function paint(uid, fresh) {
   else if (who && L.conf && team) {
     const p = (window.players || []).find(x => x.name === who) || {};
     const intro = +scr.ep === 1 ? [p.age ? `${p.age}` : '', p.occupation || ''].filter(Boolean) : [];
-    sub.innerHTML = `<b>${esc(team.name)}</b>${intro.map(t => `<span>${esc(t)}</span>`).join('')}`; sub.classList.add('on');
+    // the caption under them this episode, and how it's shot (td/story/captions.js)
+    const extra = [s.cap ? `<span class="cap">${esc(s.cap)}</span>` : '', s.stage ? `<i class="stg">(${esc(s.stage)})</i>` : ''].join('');
+    sub.innerHTML = `<b>${esc(team.name)}</b>${intro.map(t => `<span>${esc(t)}</span>`).join('')}${extra}`; sub.classList.add('on');
   } else { sub.classList.remove('on'); sub.innerHTML = ''; }
   const say = dlg.querySelector('.say'); say.className = `say${d.cls.includes('dir') ? ' dir' : ''}${d.quote ? ' quote' : ''}`;
   const names = Object.keys(L.scene?.places || {});

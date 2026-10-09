@@ -124,3 +124,24 @@ SCENES['carnival']['bumper-arena'] = _wk('cv-bumper.json', [(600, 640), (1000, 6
 SCENES['film-lot']['cage-stage'] = _wk('lot-cages.json', [(640, 640), (960, 640)])
 SCENES['hosted-camp']['challenge-zone'] = _wk('hc-platform.json', [(520, 575), (1080, 575), (800, 580)])
 NIGHT_ONLY.update({'bumper-arena', 'cage-stage'})
+
+# the walk after One Final Choice, and the jury house (the user's frames, 2026-10-08): the Motel's sign
+# and the Rescue path; the resort (day and night), its roundtable pavilion, the bench outside the motel
+# (its confessional), the pool (day and night), the hot tub, the buffet, the loungers, the swim-up bar,
+# the bingo table and Playa's pool at night
+_STUMPS_RT = [(308, 696), (420, 704), (532, 688), (648, 668), (1032, 676), (1168, 704), (1328, 712)]
+SCENES['islands'].update({
+    'path-motel': _wk('jh-path-motel.json', [(800, 640), (620, 640)]),
+    'path-rescue': _wk('jh-path-rescue.json', [(800, 640), (980, 640)]),
+    'jury-resort': _wk('jh-resort.json', [(760, 560), (900, 575), (1250, 600)]),
+    'jury-roundtable': _wk('jh-roundtable.json', [(800, 640)], seats=_STUMPS_RT, host=(800, 610)),
+    'jury-conf': _wk('jh-motel.json', [(1000, 640)]),
+    'jury-playa': _wk('jh-playa.json', [(560, 640), (900, 630), (1200, 620)]),
+    'jury-hottub': _wk('jh-hottub.json', [(800, 640)], seats=[(400, 740), (800, 720), (1200, 740)]),
+    'jury-buffet': _wk('jh-buffet.json', [(300, 640), (700, 640), (1050, 640)]),
+    'jury-loungers': _wk('jh-loungers.json', [(800, 640)], seats=[(180, 560), (760, 720), (1380, 800)]),
+    'jury-pool': _wk('jh-pool.json', [(300, 600), (1200, 560)], seats=[(580, 730), (770, 710)]),
+    'jury-bar': _wk('jh-bar.json', [(800, 640)], seats=[(216, 620), (448, 662), (704, 668), (968, 662), (1184, 622), (264, 555), (1144, 555)]),
+    'jury-bingo': _wk('jh-bingo.json', [(800, 640)], seats=[(360, 560), (800, 540), (1260, 560)]),
+})
+NIGHT_ONLY.update({'path-motel', 'path-rescue', 'jury-roundtable', 'jury-playa'})

@@ -119,6 +119,14 @@ export function tdRiChoiceScreen(ep, o = {}) {
     steps.push({ k: 'beat', text: take ? `${elim} pulls the torch out of the ground and heads right, into the dark.` : `${elim} looks at the torch for a long moment... then turns and takes the left path to the Motel.`,
       focus: [elim], act: { kind: 'torch', who: [elim], take, tu: torch.u, tv: torch.v }, side: [{ tab: 'residents', text: take ? `${elim} takes the torch.` : `${elim} goes to the Motel.` }] });
     steps.push({ k: 'title', kicker: take ? 'Torch taken' : 'Leaving the game', name: take ? 'Rescue Island' : 'The Motel', faces: [elim], tone: take ? 'fire' : 'out' });
+    // down the path they chose (the user's frames): the torch carried toward Rescue, or the walk to the Motel
+    const path = plate(take ? 'path-rescue' : 'path-motel', 'night');
+    if (path) {
+      steps.push({ k: 'scene', spot: take ? 'path-rescue' : 'path-motel', tod: 'night', plate: path, place: take ? 'The Path to Rescue Island' : 'The Path to the Motel', time: '9:20 PM', card: false, cut: true,
+        focus: [elim], bg: [], wide: true, places: { [elim]: { u: take ? .42 : .58, v: .95, s: .3, h: 34, crowd: true } } });
+      steps.push({ k: 'beat', text: take ? `${elim} follows the torchlight into the trees. Rescue Island is a long way from here.` : `${elim} follows the arrow. Somewhere at the end of this path is a bed, and no more votes.`,
+        focus: [elim], act: { kind: 'path', who: [elim], dir: take ? 'R' : 'L', lit: take } });
+    }
     if (!take) return { id: 'ri-choice', kind: 'island', venue: ISL, ep: ep.num, label: 'One Final Choice', host, steps };
   }
   if (choice === 'RESCUE ISLAND') {

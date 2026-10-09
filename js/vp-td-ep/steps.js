@@ -869,6 +869,13 @@ export function tdTribalScreen(ep, o = {}) {
   }
   // Disventure Camp's voted-out check in at the Motel
   const motel = (venue === 'carnival' || venue === 'survival-island') ? plateKey('islands', 'motel', 'night') : null;
+  // no choice to make: the walk down the Motel's path first (the user's frame)
+  const motelPath = motel ? plateKey('islands', 'path-motel', 'night') : null;
+  if (motelPath) {
+    steps.push({ k: 'scene', spot: 'path-motel', tod: 'night', plate: motelPath, place: 'The Path to the Motel', time: '9:30 PM', card: true, focus: [elim], bg: [], wide: true,
+      places: { [elim]: { u: .58, v: .95, s: .3, h: 34, crowd: true } } });
+    steps.push({ k: 'beat', text: `${elim} follows the arrow toward the Motel.`, focus: [elim], act: { kind: 'path', who: [elim], dir: 'L' } });
+  }
   if (motel) {
     steps.push({ k: 'scene', spot: 'motel', tod: 'night', plate: motel, place: 'The Motel', time: 'Later that night', card: true, focus: [elim], bg: [], places: placeScene(motel, [elim], []) });
     steps.push({ k: 'beat', text: `${elim} checks in at the Motel.`, focus: [elim] });

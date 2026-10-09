@@ -2,6 +2,7 @@
 import { bbStepTranscript } from './vp-bb-ep/steps.js';
 import { tdTribalStepped, tdTribalScreen, tdStepTranscript } from './vp-td-ep/steps.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, exileChooserReason } from './vp-td-ep/twists.js';
+import { tdJuryHouseScreen } from './vp-td-ep/jury-house.js';
 import { tdTwistBlocksScreen, tdMergeScreen } from './vp-td-ep/twist-screens.js';
 import { preTwistBlocks, mergeData, _buildPostTwistBlocks } from './vp-screens.js';
 import { bbHostName } from './bb-aftermath.js';
@@ -2610,6 +2611,12 @@ export function _textInterlude(ep, ln, sec) {
     if (d?.roundtable?.lines?.length) renderRoundtable(d.roundtable);
   }
   if (d?.teaser) { ln(''); ln(d.teaser); }
+  // the roundtable as the stepped viewer plays it: the host juror, every voice at the table
+  if (jury && (!ep.format || ep.format === 'total-drama')) {
+    const scr = (() => { try { return tdJuryHouseScreen(ep, { host: seasonConfig.host || 'Chris', pronouns, stats: pStats, bond: getBond, history: gs.episodeHistory, players, active: gs.activePlayers }); } catch { return null; } })();
+    const rt = scr ? scr.steps.filter(s => s.rt) : [];
+    if (rt.length) { sec('THE JURY ROUNDTABLE — AS IT AIRS'); tdStepTranscript({ ...scr, steps: rt }).forEach(l => ln(l)); }
+  }
 }
 
 // ── JURY ELIMINATION TWIST (mid-game): the eliminated players vote out an active player ──

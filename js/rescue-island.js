@@ -2248,10 +2248,12 @@ export function generateInterludeLife(ep) {
     if (last && last.beats) last.beats.push(...extra); else acts.push({ title: titles.a4, beats: extra });
   }
 
-  const teaser = draw([
-    () => venue === 'jury'
-      ? `That night the host gathers the lounge: "Rest up. Soon, two of you get a shot to fight your way back in." The room lights up with old fire.`
-      : `The host sails out with a promise: two of them get one chance at the return challenge. Camp buzzes; every eye sharpens on the horizon.`,
+  // the jury is out for good: its teaser is the finale and the vote, never a way back in
+  const teaser = venue === 'jury' ? draw([
+    () => `That night the host gathers the lounge: "Enjoy the quiet. The next time you see the finalists, you'll be deciding which one of them wins." Nobody says much after that.`,
+    () => `Before lights out, word comes down: the finale is close, and every vote in this motel will count. The arguments start up again before the lights are off.`,
+  ]) : draw([
+    () => `The host sails out with a promise: two of them get one chance at the return challenge. Camp buzzes; every eye sharpens on the horizon.`,
     () => `Before lights out, word comes down — a return challenge is coming, and not everyone gets a seat. Alliances that died in the game flicker back to life.`,
     () => `A warning wrapped in a promise: "Stay sharp. A door back into this game is about to crack open." Nobody sleeps much after that.`,
   ]);

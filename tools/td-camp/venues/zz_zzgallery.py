@@ -145,3 +145,8 @@ SCENES['islands'].update({
     'jury-bingo': _wk('jh-bingo.json', [(800, 640)], seats=[(360, 560), (800, 540), (1260, 560)]),
 })
 NIGHT_ONLY.update({'path-motel', 'path-rescue', 'jury-roundtable', 'jury-playa'})
+
+# Skull Rock (the user's frames, 2026-10-08): Boney Island's skull cliff across the water, day and night;
+# the exile island and some Redemption Island nights. People stand on the strip of sand below the cliff.
+SCENES['islands']['skull-rock'] = _wk('skull-rock.json', [(780, 738), (940, 742), (1100, 738)])
+OUTDOOR['islands'].discard('skull-rock')

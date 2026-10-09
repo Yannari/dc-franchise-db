@@ -11,6 +11,7 @@
 import { tdCampScreen, tdTribalScreen, tdTribalStepped, tdDoubleTribalScreen, cleanText, placeScene, plateKey, placeName, venueOf, teamSpot } from './steps.js';
 import { tdCampMap, hasMap, MAP_VENUES, openWindow, nextConv, lockedConv, PLACE_LABEL } from './map.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, tdRiDuelScreen } from './twists.js';
+import { tdJuryHouseScreen, isJuryHouse } from './jury-house.js';
 import { tdTwistBlocksScreen, tdMergeScreen, tdMiscTwistScreen, tdPreviouslyScreen } from './twist-screens.js';
 import { tdArrivalScreen, hasArrivals } from './arrival.js';
 import { tdAftermathScreen, hasAftermath } from './aftermath.js';
@@ -32,7 +33,7 @@ function membersOf(ep, camp) {
 
 export function tdStepScreens(ep, classic = [], o = {}) {
   const out = [];
-  let tribalDone = false, aftermathDone = false;
+  let tribalDone = false, aftermathDone = false, juryDone = false;
   const tribal = tdTribalStepped(ep) ? tdTribalScreen(ep, o) : tdDoubleTribalScreen(ep, o);
   // the camp map (map.js) is the default camp view where the venue has one, one map per team at
   // every venue (the user, 2026-10-08: "I set up 2 teams" - folding a shared camp's teams into one
@@ -65,6 +66,12 @@ export function tdStepScreens(ep, classic = [], o = {}) {
     }
     if (tribal && ['voting-plans', 'votes', 'surprise', 'voting-plans-2', 'votes-2'].includes(S.id)) continue;
     if (tribal && S.id === 'tribal' && !tribalDone) { tribalDone = true; out.push(shell(tribal, S, ep, o)); continue; }
+    // the Jury House interlude: its title card and its week are one screen on the motel's sets
+    if (/^il-(title|life)$/.test(S?.id || '') && isJuryHouse(ep)) {
+      if (juryDone) continue;
+      const jh = tdJuryHouseScreen(ep, o);
+      if (jh) { juryDone = true; out.push(shell(jh, { ...S, id: 'jury-house', label: jh.label }, ep, o)); continue; }
+    }
     const isl = islandScreen(ep, S, o);
     if (isl) { out.push(shell(isl, S, ep, o)); continue; }
     // the twists with hand-built classic pages, each on the stage from its own record

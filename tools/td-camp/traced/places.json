@@ -6307,5 +6307,67 @@
    ]
   ],
   "night": true
+ },
+ "skull-rock": {
+  "wind": 0.5,
+  "ppl": 12,
+  "noclouds": true,
+  "pool": [
+   [
+    0,
+    770,
+    1600,
+    900,
+    false,
+    900,
+    840
+   ]
+  ],
+  "sway": [
+   [
+    100,
+    180,
+    1600,
+    700,
+    0.25
+   ]
+  ],
+  "src": "skull-rock.webp",
+  "critters": [
+   [
+    "seagull",
+    0,
+    60,
+    1600,
+    200
+   ]
+  ]
+ },
+ "skull-rock-night": {
+  "wind": 0.5,
+  "ppl": 12,
+  "noclouds": true,
+  "pool": [
+   [
+    0,
+    770,
+    1600,
+    900,
+    false,
+    900,
+    840
+   ]
+  ],
+  "sway": [
+   [
+    100,
+    180,
+    1600,
+    700,
+    0.25
+   ]
+  ],
+  "src": "skull-rock-night.webp",
+  "night": true
  }
 }

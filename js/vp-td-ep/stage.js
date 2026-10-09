@@ -45,14 +45,14 @@ function seeded(key) { let h = 2166136261; for (const c of key) h = Math.imul(h 
 // venues whose plates have a 4K render (tools/td-camp/camp.py ... hd)
 const HD_VENUES = new Set(['hosted-camp', 'film-lot', 'world-tour', 'survival-island', 'carnival']);
 export function worldKey(screen, L) {
-  if (L.conf) return `${screen.venue}/confessional`;
+  if (L.conf) return L.conf.plate || `${screen.venue}/confessional`;
   return L.scene?.plate || `${screen.venue}/none`;
 }
 const CRITTER = {"crab": "<svg viewBox=\"0 0 40 24\"><g stroke=\"#5a1a0a\" stroke-width=\"1.6\" fill=\"#e8552e\"><ellipse cx=\"20\" cy=\"15\" rx=\"10\" ry=\"6\"/><path d=\"M10 13l-6-6 3 8M30 13l6-6-3 8\" fill=\"none\"/><path d=\"M12 19l-5 4M15 20l-3 4M25 20l3 4M28 19l5 4\" fill=\"none\"/></g><circle cx=\"17\" cy=\"10\" r=\"1.6\" fill=\"#111\"/><circle cx=\"23\" cy=\"10\" r=\"1.6\" fill=\"#111\"/></svg>", "duck": "<svg viewBox=\"0 0 44 30\"><path d=\"M6 20c0-7 8-10 16-8 3-8 13-8 14-1 1 4-2 6-5 7 5 3 3 10-8 10H14C9 28 6 25 6 20z\" fill=\"#f4f0e6\" stroke=\"#2a2a3a\" stroke-width=\"1.6\"/><path d=\"M36 13l7 1-6 3z\" fill=\"#f2a43a\" stroke=\"#2a2a3a\" stroke-width=\"1.2\"/><circle cx=\"31\" cy=\"11\" r=\"1.6\" fill=\"#111\"/></svg>", "squirrel": "<svg viewBox=\"0 0 44 34\"><path d=\"M6 30c-6-10 0-24 10-22 6 1 5 9 0 10 8 0 12 4 12 12z\" fill=\"#b8742a\" stroke=\"#4a2a10\" stroke-width=\"1.6\"/><path d=\"M24 30c0-8 4-12 9-12 4-6 10-4 10 1 0 4-3 5-5 6 0 3-1 5-4 5z\" fill=\"#c9843a\" stroke=\"#4a2a10\" stroke-width=\"1.6\"/><circle cx=\"38\" cy=\"17\" r=\"1.4\" fill=\"#111\"/></svg>", "parrot": "<svg viewBox=\"0 0 44 30\"><path d=\"M4 16c8-10 22-12 30-6l8-2-5 6c-6 9-22 12-33 2z\" fill=\"#e23b3b\" stroke=\"#3a1010\" stroke-width=\"1.5\"/><path d=\"M14 14l10-10 6 8z\" fill=\"#2a8ad8\" stroke=\"#3a1010\" stroke-width=\"1.4\"/><path d=\"M8 18l-6 8 10-4z\" fill=\"#f2c83a\" stroke=\"#3a1010\" stroke-width=\"1.2\"/><circle cx=\"33\" cy=\"12\" r=\"1.5\" fill=\"#111\"/></svg>", "frog": "<svg viewBox=\"0 0 40 26\"><path d=\"M4 22c0-8 7-14 16-14s16 6 16 14z\" fill=\"#4fb84a\" stroke=\"#1a4a1a\" stroke-width=\"1.6\"/><circle cx=\"13\" cy=\"9\" r=\"5\" fill=\"#4fb84a\" stroke=\"#1a4a1a\" stroke-width=\"1.6\"/><circle cx=\"27\" cy=\"9\" r=\"5\" fill=\"#4fb84a\" stroke=\"#1a4a1a\" stroke-width=\"1.6\"/><circle cx=\"13\" cy=\"9\" r=\"2\" fill=\"#111\"/><circle cx=\"27\" cy=\"9\" r=\"2\" fill=\"#111\"/></svg>", "seagull": "<svg viewBox=\"0 0 44 26\"><path d=\"M8 18c4-6 14-8 22-6l8-3-3 6c-2 6-14 9-27 3z\" fill=\"#f4f4f4\" stroke=\"#2a2a3a\" stroke-width=\"1.5\"/><path d=\"M14 13l6-9 6 7z\" fill=\"#c8ccd4\" stroke=\"#2a2a3a\" stroke-width=\"1.3\"/><path d=\"M38 9l5 1-4 2z\" fill=\"#f2a43a\"/><circle cx=\"34\" cy=\"10\" r=\"1.4\" fill=\"#111\"/><path d=\"M18 21v4M24 21v4\" stroke=\"#f2a43a\" stroke-width=\"1.6\"/></svg>", "raccoon": "<svg viewBox=\"0 0 48 32\"><path d=\"M8 26c0-9 8-14 18-14s14 4 14 10v4z\" fill=\"#8a8a92\" stroke=\"#2a2a32\" stroke-width=\"1.6\"/><path d=\"M2 20c2-4 6-5 8-3l-2 8c-4 0-6-2-6-5z\" fill=\"#6a6a72\" stroke=\"#2a2a32\" stroke-width=\"1.4\"/><path d=\"M36 14c3-6 11-5 11 2 0 5-4 7-9 6z\" fill=\"#9a9aa2\" stroke=\"#2a2a32\" stroke-width=\"1.6\"/><path d=\"M37 15h9\" stroke=\"#222\" stroke-width=\"3\"/><circle cx=\"40\" cy=\"15\" r=\"1.2\" fill=\"#fff\"/><circle cx=\"44\" cy=\"15\" r=\"1.2\" fill=\"#fff\"/></svg>"};
 const POWER_ICON = {"extraVote": "<rect x=\"10\" y=\"22\" width=\"34\" height=\"44\" rx=\"4\" fill=\"#f4ecd8\" stroke=\"#3a2210\" stroke-width=\"3\"/><rect x=\"20\" y=\"12\" width=\"34\" height=\"44\" rx=\"4\" fill=\"#fff8e6\" stroke=\"#3a2210\" stroke-width=\"3\"/><path d=\"M27 28h20M27 36h20M27 44h12\" stroke=\"#3a2210\" stroke-width=\"3\"/><circle cx=\"50\" cy=\"62\" r=\"12\" fill=\"#2fbf71\" stroke=\"#3a2210\" stroke-width=\"3\"/><path d=\"M50 55v14M43 62h14\" stroke=\"#fff\" stroke-width=\"4\"/>", "voteSteal": "<rect x=\"14\" y=\"14\" width=\"34\" height=\"44\" rx=\"4\" fill=\"#fff8e6\" stroke=\"#3a2210\" stroke-width=\"3\"/><path d=\"M21 28h20M21 36h20\" stroke=\"#3a2210\" stroke-width=\"3\"/><path d=\"M30 58c6-8 18-10 26-4l4 10c-6 8-18 10-26 4z\" fill=\"#e8b48a\" stroke=\"#3a2210\" stroke-width=\"3\"/>", "voteBlock": "<rect x=\"14\" y=\"12\" width=\"34\" height=\"46\" rx=\"4\" fill=\"#fff8e6\" stroke=\"#3a2210\" stroke-width=\"3\"/><path d=\"M21 26h20M21 34h20\" stroke=\"#3a2210\" stroke-width=\"3\"/><circle cx=\"31\" cy=\"44\" r=\"20\" fill=\"none\" stroke=\"#e23b3b\" stroke-width=\"6\"/><path d=\"M17 58l28-28\" stroke=\"#e23b3b\" stroke-width=\"6\"/>", "kip": "<path d=\"M4 40q28-30 56 0q-28 30-56 0z\" fill=\"#fff8e6\" stroke=\"#3a2210\" stroke-width=\"3\"/><circle cx=\"32\" cy=\"40\" r=\"11\" fill=\"#5b7bd8\" stroke=\"#3a2210\" stroke-width=\"3\"/><circle cx=\"32\" cy=\"40\" r=\"4\" fill=\"#111\"/>", "soleVote": "<rect x=\"15\" y=\"12\" width=\"34\" height=\"46\" rx=\"4\" fill=\"#fff8e6\" stroke=\"#3a2210\" stroke-width=\"3\"/><path d=\"M32 22l4 9 10 1-8 7 3 10-9-5-9 5 3-10-8-7 10-1z\" fill=\"#f2c83a\" stroke=\"#3a2210\" stroke-width=\"2\"/>", "safetyNoPower": "<rect x=\"16\" y=\"8\" width=\"32\" height=\"56\" rx=\"3\" fill=\"#a8622e\" stroke=\"#3a2210\" stroke-width=\"3\"/><rect x=\"22\" y=\"14\" width=\"20\" height=\"44\" fill=\"#1a1a22\"/><circle cx=\"38\" cy=\"38\" r=\"2.5\" fill=\"#f2c83a\"/>", "teamSwap": "<path d=\"M12 28h34l-8-8M52 44H18l8 8\" fill=\"none\" stroke=\"#3a2210\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "legacy": "<path d=\"M32 8l20 10v18c0 14-10 22-20 26-10-4-20-12-20-26V18z\" fill=\"#c89a3a\" stroke=\"#3a2210\" stroke-width=\"3\"/><path d=\"M32 22v24M22 32h20\" stroke=\"#3a2210\" stroke-width=\"4\"/>"};
 export function worldHtml(screen, L) {
   // the islands have no booth: a confessional there is shot on location
-  const key = L.conf ? (plateKey(screen.venue, 'confessional', /-night$/.test(L.scene?.plate || '') ? 'night' : 'day') || L.scene?.plate) : L.scene?.plate;
+  const key = L.conf ? (L.conf.plate || plateKey(screen.venue, 'confessional', /-night$/.test(L.scene?.plate || '') ? 'night' : 'day') || L.scene?.plate) : L.scene?.plate;
   if (!key) return `<div class="tdx-plate tdx-noplate"></div>`;
   const M = TD_MARKS[key] || { h: .5, m: [] };
   const spot = key.split('/')[1].replace(/-(day|night)$/, '');
@@ -199,7 +199,7 @@ export function weatherOf(venue, ep) {
 }
 /** What the live layer is made of, for the ambience (sound.js). */
 export function worldSound(screen, L) {
-  const key = L.conf ? (plateKey(screen.venue, 'confessional', /-night$/.test(L.scene?.plate || '') ? 'night' : 'day') || L.scene?.plate) : L.scene?.plate;
+  const key = L.conf ? (L.conf.plate || plateKey(screen.venue, 'confessional', /-night$/.test(L.scene?.plate || '') ? 'night' : 'day') || L.scene?.plate) : L.scene?.plate;
   const M = (key && TD_MARKS[key]) || { m: [] };
   const spot = String(key || '').split('/')[1]?.replace(/-(day|night)$/, '') || '';
   const indoor = /limo-in|summit|mess-hall|cabin-inside|washroom|confessional|corridor|storage|economy|aisle|galley|cargo|first-class|theater|big-top|trailer-inside|boathouse|aftermath|craft-services|chris-quarters|cockpit|kitchen/.test(spot) || (spot === 'ceremony' && screen.venue === 'world-tour') || (spot === 'shelter' && screen.venue === 'carnival');
@@ -422,6 +422,7 @@ const TABS = {
   camp: [['mind', 'In their heads'], ['bonds', 'Just now'], ['log', 'Camp log'], ['people', 'Relationships'], ['allies', 'Alliances'], ['powers', 'Powers'], ['secrets', 'Secrets']],
   tribal: [['room', 'The room'], ['plans', 'Plans'], ['tally', 'Tally'], ['why', 'Why'], ['people', 'Relationships'], ['allies', 'Alliances'], ['powers', 'Powers']],
   island: [['residents', 'Who is here'], ['log', 'Island log'], ['secrets', 'Secrets'], ['people', 'Relationships'], ['powers', 'Powers']],
+  jury: [['residents', 'The motel'], ['lean', 'Leanings'], ['log', 'Motel log'], ['people', 'Relationships']],
   aftermath: [['log', 'Show notes'], ['secrets', 'Receipts'], ['people', 'Relationships'], ['allies', 'Alliances'], ['powers', 'Powers']],
 };
 // the season as it stood after this episode (its snapshot): who is still playing, by team, every bond,
@@ -433,7 +434,9 @@ function seasonAt(screen) {
   const E = (globalThis.gs?.episodeHistory || []).find(e => e.num === +screen.ep);
   const S = E?.gsSnapshot; if (!S) return null;
   const players = [...new Set([...(S.activePlayers || []), ...(E.eliminated && E.eliminated !== 'No elimination' ? [E.eliminated] : [])])];
-  const tribes = (E.tribesAtStart?.length ? E.tribesAtStart : S.tribes || []).map(t => ({ name: t.name, members: (t.members || []).filter(n => players.includes(n)) })).filter(t => t.members.length);
+  // a screen that names its own people (the Jury House: the motel, and who is still playing)
+  if (screen.people) { const all = screen.people.flatMap(t => t.members); players.splice(0, players.length, ...all); }
+  const tribes = screen.people ? screen.people : (E.tribesAtStart?.length ? E.tribesAtStart : S.tribes || []).map(t => ({ name: t.name, members: (t.members || []).filter(n => players.includes(n)) })).filter(t => t.members.length);
   const teams = tribes.length ? tribes : [{ name: S.mergeName || 'Everyone', members: players }];
   const bond = (a, b) => S.bonds?.[a <= b ? `${a}||${b}` : `${b}||${a}`] ?? 0;
   const love = (a, b) => {
@@ -448,7 +451,7 @@ export function intelHtml(screen, L, tab, fresh, who = null) {
   const tabs = TABS[screen.kind] || TABS.camp;
   if (!tabs.some(t => t[0] === tab)) tab = tabs[0][0];
   const items = L.side;
-  let h = `<div class="tdx-ihead"><button type="button" class="tdx-iclose" data-close aria-label="Close Intel" title="Close">&times;</button><b>Intel</b><span>${screen.kind === 'tribal' ? 'Only the viewer sees the votes.' : screen.kind === 'island' ? 'Out of sight of the game.' : 'What the camp doesn’t know yet.'}</span></div><div class="tdx-itabs">`;
+  let h = `<div class="tdx-ihead"><button type="button" class="tdx-iclose" data-close aria-label="Close Intel" title="Close">&times;</button><b>Intel</b><span>${screen.kind === 'tribal' ? 'Only the viewer sees the votes.' : screen.kind === 'island' || screen.kind === 'jury' ? 'Out of sight of the game.' : 'What the camp doesn’t know yet.'}</span></div><div class="tdx-itabs">`;
   for (const [k, l] of tabs) h += `<button type="button" class="${k === tab ? 'on' : ''}" data-tab="${k}">${esc(l)}${items.some(x => x.tab === k && x.at === L.idx) && k !== tab ? '<i></i>' : ''}</button>`;
   h += '</div><div class="tdx-ilist">';
   // a night with two votes: the tally, the reasons and the plans are the vote being read now
@@ -474,6 +477,7 @@ export function intelHtml(screen, L, tab, fresh, who = null) {
       + (x.betray ? `<div class="bet">BETRAYAL · ${esc(x.betray)}</div>` : '')
       + ((x.tags || []).length ? `<div class="chips">${x.tags.map(t => `<span class="chip tag">${esc(t)}</span>`).join('')}</div>` : '')
       + `<small>${esc(x.text)}</small></div>`; });
+  else if (tab === 'lean') mine.forEach(x => { h += `<div class="tdx-ic why${fr(x)}"><div class="vrow"><img src="${esc(avatar(x.juror))}" alt=""><b>${esc(x.juror)}</b> <span class="k">${esc(x.word)}</span> <img src="${esc(avatar(x.target))}" alt=""><b>${esc(x.target)}</b></div><small>${esc(x.text)}</small></div>`; });
   else if (tab === 'plans') mine.forEach(x => { h += `<div class="tdx-ic${fr(x)}"><b>${esc(x.name)}</b> <span class="k">plans to vote</span> <b>${esc(x.target || '?')}</b><div class="minis">${(x.who || []).map(n => `<img src="${esc(avatar(n))}" alt="" title="${esc(n)}">`).join('')}</div></div>`; });
   else mine.forEach(x => { h += `<div class="tdx-ic${fr(x)}">${esc(x.text)}</div>`; });
   const W = ['people', 'allies', 'powers'].includes(tab) ? seasonAt(screen) : null;

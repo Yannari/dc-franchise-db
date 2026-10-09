@@ -64,7 +64,7 @@ const PLACE = {
 Object.assign(PLACE, { 'cabin-inside': 'Inside the Cabin', washroom: 'The Washrooms', cliff: 'The Cliff' });
 // Wawanakwa's other places (the wiki's locations) and the islands beyond camp
 Object.assign(PLACE, { lake: 'The Lake', boathouse: 'The Boathouse', waterfall: 'The Waterfall', caves: 'The Caves', amphitheater: 'The Amphitheater',
-  'boney-island': 'Boney Island', 'playa-des-losers': 'Playa Des Losers',
+  'boney-island': 'Boney Island', 'skull-rock': 'Skull Rock', 'playa-des-losers': 'Playa Des Losers',
   'trailer-inside': 'Inside the Trailer', 'western-set': 'The Western Set', 'city-set': 'The City Set',
   'chris-quarters': "Chris's Quarters", cockpit: 'The Cockpit', river: 'The River', kitchen: "Chef's Kitchen",
   carousel: 'The Carousel', 'corn-maze-inside': 'Inside the Corn Maze', 'soluna-exile': 'Exile Island', 'stawaki-exile': 'Exile Beach', motel: 'The Motel', sign: 'One Final Choice', 'boat-side': 'The Boat of Losers', yacht: 'On the way in', 'bus-door': 'The Bus', drop: 'The Drop of Shame', 'limo-park': 'The Red Carpet', 'limo-back': 'The Lame-o-sine', 'limo-in': 'The Lame-o-sine', pier: 'The Pier', 'boat-deck': 'The Boat' });

@@ -227,7 +227,7 @@ export default {
   },
   'ncv.t2': {
     1: { calm: "You're sure {told} bought it?", anxious: "Are you sure {told} actually bought it?" },
-    5: { calm: "Who's the third?", dry: "Who's the third? The crab?" },
+    5: { calm: "Who's the third?", dry: "Who's the third? Should I be worried?" },
   },
   'ncv.d2': {
     1: { calm: "It was my idea.", schemer: "It was my idea. I'm fine with that." },

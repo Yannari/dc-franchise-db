@@ -171,7 +171,7 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // A move (`move: 'pushback'`) is said in the speaker's own words, from the phrasebook
     // (td/story/phrase.js): their voice, their age. {to} is whoever they answer (the turn's `to`,
     // else the last other speaker), {by} the speaker.
-    let raw = t.beat || (t.move ? null : voiced(t, t.by ? who[t.by] : null, hush));
+    let raw = t.beat || (t.move ? null : voiced(t, t.by ? who[t.by] : null, hush, x => placeOk({ turns: [{ say: x }] })));
     if (t.move) {
       const toRole = t.to || (lastBy && lastBy !== t.by ? lastBy : Object.keys(who).find(r => r !== t.by && r !== 'h' && who[r]));
       raw = phrase(t.move, who[t.by], rng, { to: !!(toRole && who[toRole]) }) || '...';

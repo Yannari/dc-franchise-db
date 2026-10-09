@@ -11,7 +11,7 @@ export default {
   // long.crowd.chores.any
   'ny.c2': {
     2: { warm: "Because we're the ones who notice it needs doing, and I'd rather it was us than nobody.", calm: "Because we notice it needs doing. Somebody has to.", competitive: "Because we're the ones who actually get things done around here." },
-    4: { warm: "Then who'd do it? Come on, it's nearly done.", dry: "Then who'd do it? The crabs?" },
+    4: { warm: "Then who'd do it? Come on, it's nearly done.", dry: "Then who'd do it? The fairies?" },
   },
   // psy.control (my name came up)
   'nps.c1': {

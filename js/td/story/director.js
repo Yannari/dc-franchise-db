@@ -402,7 +402,14 @@ function afterChallenge(ep, camp, members, n) {
     // the blamer: whoever talks loudest about it — a fiery or scheming teammate, else the one who carried
     const loud = members.filter(m => m !== b && ['fiery', 'schemer'].includes(registerOf(m)))
       .sort((x, y) => getBond(x, b) - getBond(y, b) || x.localeCompare(y))[0];
-    const a = loud || (ch.carried !== b ? ch.carried : ch.order[0]);
+    // the team that picks itself up (regroup) is talked round by somebody NOT writing b's name tonight:
+    // the peacemaker who says "we're not doing the blame thing" can't then pin it on b in the booth
+    // (read in a played season: Heather's "STOP, we're not doing that", then "Lindsay cost us the challenge")
+    const blamedRecently = ep.num - (((gs.tdStory ||= {}).blamed ||= {})[camp] ?? -99) <= 2;
+    const writesB = m => (ep.votingLog || []).some(v => v.voter === m && v.voted === b);
+    const peace = blamedRecently ? [ch.carried, ...members.filter(m => m !== b).sort((x, y) => getBond(y, b) - getBond(x, b) || x.localeCompare(y))]
+      .find(m => m && m !== b && !writesB(m)) : null;
+    const a = blamedRecently ? peace : loud || (ch.carried !== b ? ch.carried : ch.order[0]);
     if (!a || a === b) return null;
     const c = members.filter(m => m !== a && m !== b).sort((x, y) => getBond(b, y) - getBond(b, x) || x.localeCompare(y))[0] || null;
     const who = { a, b, c };
@@ -1465,7 +1472,7 @@ export function airTdEpisode(ep) {
         const watched = [];
         // ...and the camp is there: the scene opens with them in earshot, so the stage brings them on
         if (PUBLIC.test(kind) && who.a && who.b && !lines.slice(0, 2).some(l => CROWD_WORDS.test(l.text || ''))) {
-          const OPEN = ['The rest of the camp has stopped what they are doing to watch.', 'It happens right in the middle of camp, with everybody in earshot.', 'Half the camp is close enough to hear every word.'];
+          const OPEN = ['The rest of the camp has stopped what they are doing to watch.', 'Everybody nearby can hear every word.', 'Half the camp is close enough to hear every word.'];
           lines = [{ kind: 'beat', text: OPEN[(ep.num + i) % OPEN.length] }, ...lines];
         }
         // the reactions go in before the scene's closing confessional(s), not after them

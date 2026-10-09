@@ -26,7 +26,7 @@ export default {
   ],
   // a pulls the camp back together after a bad day
   'long.friend.rally.any': [
-    { id: 'nly.r1', turns: [
+    { id: 'nly.r1', when: { lost: true }, turns: [
       { beat: "Everyone's slumped around the fire after the loss. {a} stands up." },
       { by: 'a', say: "Okay. I know today was bad. I'm not going to pretend it wasn't." },
       { by: 'b', say: "Then sit down." },
@@ -35,7 +35,7 @@ export default {
       { by: 'a', say: "Everything. Which means everything can get better." },
       { by: 'b', conf: "I wanted to stay miserable, and {a} wouldn't let me. That's either annoying or exactly what we needed." },
     ] },
-    { id: 'nly.r2', turns: [
+    { id: 'nly.r2', when: { lost: true }, turns: [
       { by: 'a', say: "Can everybody stop looking at their feet for one second?" },
       { by: 'b', say: "We're tired." },
       { by: 'a', say: "I know. I'm tired too. But if we go to bed like this, we wake up like this, and we lose again." },

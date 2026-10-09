@@ -504,7 +504,7 @@ export default {
     ] },
   ],
   'long.friend.rally.any': [
-    { id: 'ny.ra1', place: 'fire', turns: [
+    { id: 'ny.ra1', place: 'fire', when: { lost: true }, turns: [
       { by: 'a', say: "Can I say something? Everyone's walking around like we've already lost.", v: { competitive: "Stop moping, we're not done, not even close.", warm: "Hey, I know it's hard, but I really believe in us." } },
       { by: 'b', say: "We kind of have been losing." },
       { by: 'a', say: "One bad day. I've watched every person here do something amazing." },

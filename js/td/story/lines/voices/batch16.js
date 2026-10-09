@@ -30,7 +30,7 @@ export default {
   },
   'nl4.a1': {
     1: { schemer: "Honest question. Who do you actually trust here?", tough: "Who do you actually trust here?", loud: "Can I ask you something? Who do you ACTUALLY trust here?" },
-    2: { blunt: "You. Maybe only you.", goofy: "Honestly? You, and maybe that crab." },
+    2: { blunt: "You. Maybe only you.", goofy: "Honestly? You, and maybe only you, which is a short list." },
     3: { loud: "Same! I've watched who talks to who, and NOBODY's looking out for either of us!" },
     4: { blunt: "So let's look out for each other.", goofy: "So let's look out for each other. Like two raccoons." },
     5: { loud: "Officially?!" },
@@ -274,7 +274,7 @@ export default {
     2: { tough: "Is your name on it?" },
     7: { warm: "Day one and {a} already took my {bed}. I'm trying not to take it personally.", food: "Day one and {a} took my {bed}. I'm going to remember that, right after I find something to eat." },
   },
-  'ncx.d1': { 2: { goofy: "Who told you that? Was it the crab?" } },
+  
   'nly.x2': {
     0: { earnest: "How's your team doing? Oh, wait, I already know.", warm: "How's your team doing? Oh, I already know, sorry.", calm: "How's your team doing? Oh, wait, I already know." },
     1: { cruel: "Funny. Is that what you practised in the mirror this morning?", warm: "Funny. Did you practise that this morning?", competitive: "Funny. Practised that in the mirror?", nerdy: "Funny. Did you rehearse that?" },

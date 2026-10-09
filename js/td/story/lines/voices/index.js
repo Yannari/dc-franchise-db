@@ -3,8 +3,9 @@
 // ══════════════════════════════════════════════════════════════════════
 // Each batch is { entryId: { turnIndex: { tag: line } } }; a later batch adds to an earlier one.
 import batch1 from './batch1.js';
+import batch2 from './batch2.js';
 
-const BATCHES = [batch1];
+const BATCHES = [batch1, batch2];
 const VOICES = {};
 for (const b of BATCHES) for (const [id, turns] of Object.entries(b)) {
   VOICES[id] ||= {};

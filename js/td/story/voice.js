@@ -25,6 +25,15 @@ const ARCH = {
   goat: ['ditzy'], 'perceptive-player': ['dry', 'calm'], showmancer: ['flirty', 'warm'],
 };
 
+// tags that cannot both describe one voice: a stat never adds one whose opposite is already there
+const OPPOSITE = { loud: ['quiet', 'calm'], warm: ['cruel'], anxious: ['tough', 'proud', 'calm'], calm: ['loud', 'anxious'], blunt: ['quiet'] };
+
+// An age tag is a register, not a personality: its variants are written as a typical kid or teen
+// talks (sweet, eager, "I promise!"). A speaker whose own voice is hard says none of them: Fiore is
+// eleven and venomous, and "That's awesome. You deserve a good night." is not hers.
+const AGE = new Set(['kid', 'teen', 'adult', 'grown']);
+const HARD = ['cruel', 'schemer', 'proud', 'tough', 'blunt', 'dry', 'bossy'];
+
 const cache = new Map();
 /** The ordered voice tags of a camper. Cached per season cast. */
 export function voiceOf(name) {
@@ -38,8 +47,12 @@ export function voiceOf(name) {
   const tags = [...own, ...read.hash.filter(t => !own.includes(t))];
   for (const t of read.words) if (!tags.includes(t)) tags.push(t);
   for (const t of ARCH[p?.archetype] || []) if (!tags.includes(t)) tags.push(t);
-  // the stats as behaviour: what the number says about how they talk
+  // the stats as behaviour: what the number says about how they talk, unless the authored words
+  // or the archetype already said the opposite (a venomous, never-shouting villain with a low
+  // temperament is not 'loud', and high social on a cruel one is not 'warm')
   let s = {}; try { s = pStats(name) || {}; } catch { s = {}; }
+  const push = tags.push.bind(tags);
+  tags.push = t => (OPPOSITE[t] || []).some(o => tags.includes(o)) ? tags.length : push(t);
   if ((s.temperament ?? 5) <= 3 && !tags.includes('loud')) tags.push('loud');
   if ((s.temperament ?? 5) >= 8 && !tags.includes('calm')) tags.push('calm');
   if ((s.boldness ?? 5) >= 8 && !tags.includes('blunt')) tags.push('blunt');
@@ -48,6 +61,7 @@ export function voiceOf(name) {
   if ((s.mental ?? 5) >= 8 && !tags.includes('nerdy')) tags.push('nerdy');
   if ((s.strategic ?? 5) >= 8 && !tags.includes('schemer')) tags.push('schemer');
   // the authored age: a teenager and a forty-year-old do not talk alike
+  tags.push = push;
   const age = ageOf(name);
   if (age != null) tags.push(age < 13 ? 'kid' : age < 20 ? 'teen' : age >= 35 ? 'grown' : 'adult');
   cache.set(key, tags);
@@ -61,6 +75,8 @@ export const VOICE_TAGS = [...WORDS.map(([t]) => t), 'kid', 'teen', 'adult', 'gr
 export function voiced(turn, speaker) {
   const v = turn.v;
   if (!v || !speaker) return turn.say || turn.conf;
-  for (const t of voiceOf(speaker)) if (v[t]) return v[t];
+  const tags = voiceOf(speaker);
+  const hard = tags.some(t => HARD.includes(t));
+  for (const t of tags) if (v[t] && !(hard && AGE.has(t))) return v[t];
   return turn.say || turn.conf;
 }

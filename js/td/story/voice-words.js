@@ -16,10 +16,10 @@ export const WORDS = [
   ['blunt', /\b(blunt|straight-talking|direct|no filter|brutally honest|outspoken|tells it like)\b/],
   ['theatrical', /\b(theatrical|dramatic|diva|flamboyant|melodramatic|performer|performative|showy)\b/],
   ['anxious', /\b(anxious|nervous|neurotic|worri\w*|paranoid|insecure|awkward|jittery|timid)\b/],
-  ['calm', /\b(calm|chill|easygoing|easy-going|laid-back|unbothered|relaxed|mellow|zen)\b/],
+  ['calm', /\b(never raises (?:his|her|their) voice|calm|chill|easygoing|easy-going|laid-back|unbothered|relaxed|mellow|zen)\b/],
   ['competitive', /\b(competitive|ambitious|driven|type-a|intense|cutthroat)\b/],
   ['schemer', /\b(manipulat\w*|calculating|scheming|cunning|devious|two-faced|strategic)\b/],
-  ['cruel', /\b(cruel|condescending|mean|vicious|snide|put-downs?|insult\w*|nasty|bully)\b/],
+  ['cruel', /\b(cruel|condescendw*|venomous|cutting|backhanded|withering|spiteful|catty|icy|mean|vicious|snide|put-downs?|insult\w*|nasty|bully)\b/],
   ['chaotic', /\b(chaotic|unhinged|manic|wild|non-sequitur|unpredictable|feral|hyper)\b/],
   ['food', /\b(food|eats?|eating|snacks?|hungry|appetite)\b/],
   ['ditzy', /\b(ditzy|oblivious|airhead\w*|clueless|forgets|dim|naive|innocent)\b/],
@@ -30,7 +30,7 @@ export const WORDS = [
   ['bossy', /\b(bossy|controlling|uptight|rule-follow\w*|perfectionist|leader|in charge)\b/],
   ['emotional', /\b(emotional|cries|crying|sensitive|tearful|weepy)\b/],
   ['goofy', /\b(goof\w*|clown\w*|silly|jokes?|joker|funny|class clown|prankster)\b/],
-  ['proud', /\b(arrogant|vain|egotistical|self-absorbed|cocky|smug|full of (him|her)self|status)\b/],
+  ['proud', /\b(arrogant|haughty|snobw*|superior|beneath (?:him|her|them)|vain|egotistical|self-absorbed|cocky|smug|full of (him|her)self|status)\b/],
 ];
 
 export const WORD_TAGS = [...new Set(WORDS.map(([t]) => t))];

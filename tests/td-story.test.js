@@ -7,7 +7,7 @@ import { PLACES } from '../js/td/story/places.js';
 import { TD_FACT_KEYS } from '../js/td/script/facts.js';
 import { campFeed } from '../js/td/story/feed.js';
 import { GUARANTEED as ENGINE_G } from '../js/td/script/lines/index.js';
-import { VOICE_TAGS } from '../js/td/story/voice.js';
+import { VOICE_TAGS, voiced, voiceOf } from '../js/td/story/voice.js';
 import VOICES from '../js/td/story/lines/voices/index.js';
 import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 
@@ -222,6 +222,26 @@ describe('the voice overlay', () => {
       for (const k of Object.keys(tags)) if (!VOICE_TAGS.includes(k)) bad.push(`${id}#${i}:${k}`);
     }
     expect(bad).toEqual([]);
+  });
+});
+
+describe('who says an age variant', () => {
+  // Fiore is eleven and venomous: the kid line ('That's awesome. You deserve a good night.') is a
+  // register a sweet kid talks in, and a hard voice never says it; her stats never make her loud or warm
+  it('a hard voice keeps its own words, whatever its age', () => {
+    const was = core.players;
+    const stats = { physical: 3, endurance: 4, mental: 9, social: 8, strategic: 8, loyalty: 2, boldness: 8, intuition: 7, temperament: 2 };
+    core.setPlayers([
+      { name: 'Vee', archetype: 'villain', age: 11, voice: 'Venomous and surgical. Never raises her voice; thinks everyone is beneath her.', stats },
+      { name: 'Pip', archetype: 'underdog', age: 11, voice: 'Sweet and shy.', stats: { ...stats, temperament: 6, social: 5, boldness: 4, strategic: 4 } },
+    ]);
+    try {
+      const turn = { say: 'Plain.', v: { kid: 'Kid.' } };
+      expect(voiced(turn, 'Vee')).toBe('Plain.');
+      expect(voiced(turn, 'Pip')).toBe('Kid.');
+      expect(voiceOf('Vee')).not.toContain('loud');
+      expect(voiceOf('Vee')).not.toContain('warm');
+    } finally { core.setPlayers(was); }
   });
 });
 

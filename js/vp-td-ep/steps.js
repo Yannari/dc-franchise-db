@@ -561,8 +561,10 @@ export function tdTribalStepped(ep) {
   const elim = ep.eliminated;
   const tribal = ep.tribalPlayers || [];
   if (!elim || elim === 'No elimination' || !tribal.includes(elim)) return false;
-  if ((ep.multiTribalResults || []).length || ep.openVote || ep.exileDuelVotedOut || ep.firstEliminated || ep.isFireMaking) return false;
-  if (ep.isSlasherNight || ep.isTripleDogDare || ep.isSuddenDeath || ep.emissary || ep.blackVoteApplied || ep.isFinale) return false;
+  // (an open vote plays as the open vote, twists-more.js openVoteTribal; an emissary's night is an
+  // ordinary vote with the emissary's choice after it, returns.js)
+  if ((ep.multiTribalResults || []).length || ep.exileDuelVotedOut || ep.firstEliminated || ep.isFireMaking) return false;
+  if (ep.isSlasherNight || ep.isTripleDogDare || ep.isSuddenDeath || ep.blackVoteApplied || ep.isFinale) return false;
   if (Object.keys(ep.coachData || {}).length) return false;
   return true;
 }

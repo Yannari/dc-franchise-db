@@ -13,6 +13,7 @@ import { tdCampMap, tdIslandMap, hasMap, MAP_VENUES, openWindow, nextConv, locke
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, tdRiDuelScreen } from './twists.js';
 import { tdJuryHouseScreen, isJuryHouse } from './jury-house.js';
 import { tdReturnScreen, tdEmissaryScoutScreen, tdEmissaryChoiceScreen, tdTiedDestiniesScreen, tiedDestiniesTribal } from './returns.js';
+import { openVoteTribal, tdLateArrivalScreen, tdJuryEliminationScreen, tdSpiritIslandScreen, tdFanVoteScreen, tdAmbassadorsScreen } from './twists-more.js';
 import { tdTwistBlocksScreen, tdMergeScreen, tdMiscTwistScreen, tdPreviouslyScreen } from './twist-screens.js';
 import { tdArrivalScreen, hasArrivals } from './arrival.js';
 import { tdAftermathScreen, hasAftermath } from './aftermath.js';
@@ -34,9 +35,9 @@ function membersOf(ep, camp) {
 
 export function tdStepScreens(ep, classic = [], o = {}) {
   const out = [];
-  let tribalDone = false, aftermathDone = false, juryDone = false;
+  let tribalDone = false, aftermathDone = false, juryDone = false, juryElimDone = false;
   // Tied Destinies is a double elimination at Tribal: announced, talked about, and the partner sent home too
-  const tribal = tiedDestiniesTribal(tdTribalStepped(ep) ? tdTribalScreen(ep, o) : tdDoubleTribalScreen(ep, o), ep);
+  const tribal = openVoteTribal(tiedDestiniesTribal(tdTribalStepped(ep) ? tdTribalScreen(ep, o) : tdDoubleTribalScreen(ep, o), ep), ep);
   // the camp map (map.js) is the default camp view where the venue has one, one map per team at
   // every venue (the user, 2026-10-08: "I set up 2 teams" - folding a shared camp's teams into one
   // map read as the teams being gone). A shared camp is still drawn whole, with the other team in
@@ -68,6 +69,12 @@ export function tdStepScreens(ep, classic = [], o = {}) {
     }
     if (tribal && ['voting-plans', 'votes', 'surprise', 'voting-plans-2', 'votes-2'].includes(S.id)) continue;
     if (tribal && S.id === 'tribal' && !tribalDone) { tribalDone = true; out.push(shell(tribal, S, ep, o)); continue; }
+    // the jury elimination twist: its three classic pages are one screen at the ceremony (twists-more.js)
+    if (/^jury-(life|convenes|votes)$/.test(S?.id || '')) {
+      if (juryElimDone) continue;
+      const je = tdJuryEliminationScreen(ep, o);
+      if (je) { juryElimDone = true; out.push(shell(je, { ...S, id: 'jury-elimination', label: je.label }, ep, o)); continue; }
+    }
     // the Jury House interlude: its title card and its week are one screen on the motel's sets
     if (/^il-(title|life)$/.test(S?.id || '') && isJuryHouse(ep)) {
       if (juryDone) continue;
@@ -113,6 +120,11 @@ function islandScreen(ep, S, o) {
   if (id === 'emissary-scouting') return tdEmissaryScoutScreen(ep, o);
   if (id === 'emissary-choice') return tdEmissaryChoiceScreen(ep, o);
   if (id === 'tied-destinies') return tdTiedDestiniesScreen(ep, o);
+  if (id === 'late-arrival') return tdLateArrivalScreen(ep, o);
+  if (id === 'fan-vote') return tdFanVoteScreen(ep, o);
+  if (id === 'spirit-island') return tdSpiritIslandScreen(ep, o);
+  if (id === 'ambassadors') return tdAmbassadorsScreen(ep, o);
+  if (id === 'twist' && !o.twistBlocks?.length && (ep.twists || []).some(t => (t.type === 'fan-vote-boot' || t.catalogId === 'fan-vote-boot') && t.fanVoteSaved)) return tdFanVoteScreen(ep, o);
   if (id === 'rescue-life') return tdIslandLifeScreen(ep, !!(ep.rescueIslandEvents || []).length, o);
   if (id === 'exile-island') return tdExileScreen(ep, exileOf(ep, false), o);
   if (id === 'exile-format') return tdExileScreen(ep, exileOf(ep, true), o);

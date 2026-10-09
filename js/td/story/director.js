@@ -1317,7 +1317,7 @@ export function airTdEpisode(ep) {
           const lonely = members.filter(x => Math.max(-10, ...members.filter(y => y !== x).map(y => getBond(x, y))) <= 1);
           const twice = lonely.filter(x => book[x] === ep.num - 1).sort()[0];
           lonely.forEach(x => { if (book[x] !== ep.num) book[x] = book[x] === ep.num - 1 && x === twice ? -99 : ep.num; });
-          if (twice && ep.num > 2) deep('alone', twice, {}, `Nobody here is close to ${twice}, and hasn't been for days.`);
+          if (twice && !fooled && ep.num > 2) deep('alone', twice, {}, `Nobody here is close to ${twice}, and hasn't been for days.`);
         }
         else if (talk) {
           const wrote = x => (ep.votingLog || []).find(v => v.voter === x)?.voted;

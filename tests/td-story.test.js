@@ -225,6 +225,22 @@ describe('the voice overlay', () => {
   });
 });
 
+describe('a flirty voice outside a romance', () => {
+  // a flirty variant airs between ANY two people (romanticCompat is never asked for a voice line):
+  // outside the romance pools it is charm, never attraction ('easy on the eyes' to a straight man)
+  it('never says attraction', () => {
+    const bad = [];
+    for (const [k, es] of Object.entries(STORY_POOLS)) {
+      if (/romance|flirt|spark|showmance|kiss|crush/.test(k)) continue;
+      for (const e of es) for (const t of e.turns || []) {
+        const x = t.v?.flirty;
+        if (x && /\b(eyes|cute|gorgeous|hot|handsome|pretty|kiss|date|a thing|crush|like (him|her|them|\{\w\}))\b/i.test(x)) bad.push(`${e.id}: ${x}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+});
+
 describe('who says an age variant', () => {
   // Fiore is eleven and venomous: the kid line ('That's awesome. You deserve a good night.') is a
   // register a sweet kid talks in, and a hard voice never says it; her stats never make her loud or warm

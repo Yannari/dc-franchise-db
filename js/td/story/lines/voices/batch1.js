@@ -57,7 +57,7 @@ export default {
   // story.firstpair.clicked: why'd you sign up
   'fp.c1': {
     1: { quiet: "So why are you here?", theatrical: "So tell me, what brought you to this beautiful disaster?", kid: "So why did you want to be on the show?", nerdy: "Out of curiosity, what's your reason for signing up?" },
-    7: { quiet: "I've known {a} ten minutes, and I already trust {a} a little. That's strange for me.", theatrical: "Everybody warned me not to trust anyone out here. Ten minutes with {a}, and I'm already ignoring that advice completely.", kid: "Everybody said not to trust anybody here, but I already kind of trust {a}. Is that bad?", flirty: "Ten minutes, and I already kind of like {a}. I'm going to have to be careful." },
+    7: { quiet: "I've known {a} ten minutes, and I already trust {a} a little. That's strange for me.", theatrical: "Everybody warned me not to trust anyone out here. Ten minutes with {a}, and I'm already ignoring that advice completely.", kid: "Everybody said not to trust anybody here, but I already kind of trust {a}. Is that bad?", flirty: "Ten minutes with {a}, and we already get along like old friends. I'm going to have to be careful." },
   },
   // long.crowd.won.any
   'nl.w3': {
@@ -69,7 +69,7 @@ export default {
   },
   // story.firstpair.clicked: help with that
   'fp.c2': {
-    6: { quiet: "{b} is easy to be around. That's rare for me.", theatrical: "I've known {b} for an hour and I already feel like we've done a whole season together.", kid: "{b} is really nice to me. I think {b} could be my friend here.", flirty: "{b} is easy to be around, and easy on the eyes. Day one is going well." },
+    6: { quiet: "{b} is easy to be around. That's rare for me.", theatrical: "I've known {b} for an hour and I already feel like we've done a whole season together.", kid: "{b} is really nice to me. I think {b} could be my friend here.", flirty: "{b} is easy to be around, and I made {b} laugh twice. Day one is going well." },
   },
   // long.cross.friend.any
   'ny.f1': {

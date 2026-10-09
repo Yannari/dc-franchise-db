@@ -509,6 +509,41 @@ export const TDX_CSS = `
 .tdx .tdx-tok.sad .body{animation:tdxSad 1.2s ease-out forwards}
 @keyframes tdxSad{to{transform:translateY(6%) rotate(-5deg) scaleY(.94)}}
 .tdx .tdx-tok.sad .face{filter:saturate(.5) brightness(.8)}
+.tdx .tdx-tok.vs-fire .body{animation:tdxVsFire .45s ease-in-out infinite alternate;transform-origin:50% 100%}
+@keyframes tdxVsFire{from{transform:translateY(0) rotate(0)}to{transform:translateY(5%) rotate(calc(var(--vsd,1) * -5deg))}}
+.tdx .tdx-tok.vs-chop .body{animation:tdxVsChop .24s ease-in infinite alternate;transform-origin:50% 100%}
+@keyframes tdxVsChop{from{transform:rotate(calc(var(--vsd,1) * -9deg))}to{transform:rotate(calc(var(--vsd,1) * 7deg)) translateY(3%)}}
+.tdx .tdx-tok.vs-balance .body,.tdx .tdx-tok.vs-hold .body{animation:tdxVsSway .7s ease-in-out infinite alternate;transform-origin:50% 100%}
+.tdx .tdx-tok.vs-balance.vs-lead .body,.tdx .tdx-tok.vs-hold.vs-lead .body{animation-duration:1.4s}
+@keyframes tdxVsSway{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+.tdx .tdx-tok.vs-hold:not(.vs-lead) .face{animation:tdxVsStrain .3s linear infinite}
+@keyframes tdxVsStrain{0%,100%{transform:translateX(0)}50%{transform:translateX(2%)}}
+.tdx .tdx-tok.vs-climb .body{animation:tdxVsClimb 2.4s ease-out forwards}
+.tdx .tdx-tok.vs-climb.vs-lead .body{animation-name:tdxVsClimbLead}
+@keyframes tdxVsClimb{0%{transform:translateY(0)}30%{transform:translateY(-6%)}60%{transform:translateY(-9%)}100%{transform:translateY(-14%)}}
+@keyframes tdxVsClimbLead{0%{transform:translateY(0)}30%{transform:translateY(-10%)}60%{transform:translateY(-18%)}100%{transform:translateY(-26%)}}
+.tdx .tdx-tok.vs-carry .body{animation:tdxVsCarry 1.1s ease-in-out infinite alternate}
+.tdx .tdx-tok.vs-carry.vs-lead .body{animation-duration:.8s}
+@keyframes tdxVsCarry{from{transform:translateX(calc(var(--vsd,1) * -18%))}to{transform:translateX(calc(var(--vsd,1) * 18%)) translateY(-3%)}}
+.tdx .tdx-tok.vs-puzzle .body{animation:tdxVsPuzzle 1.3s ease-in-out infinite alternate;transform-origin:50% 100%}
+@keyframes tdxVsPuzzle{from{transform:rotate(-3deg)}to{transform:rotate(3deg) translateY(2%)}}
+.tdx .tdx-tok.vs-push .body{animation:tdxVsPush .32s ease-in-out infinite alternate}
+@keyframes tdxVsPush{from{transform:translateX(0)}to{transform:translateX(calc(var(--vsd,1) * 9%)) scaleX(.96)}}
+.tdx .tdx-tok.vs-race .body{animation:tdxVsRace .5s ease-in-out infinite alternate}
+.tdx .tdx-tok.vs-race.vs-lead .body{animation-duration:.36s}
+@keyframes tdxVsRace{from{transform:translateX(-14%) translateY(0)}to{transform:translateX(14%) translateY(-6%)}}
+.tdx .tdx-tok.cheer .body{animation:tdxVsCheer .32s ease-out 6 alternate}
+@keyframes tdxVsCheer{from{transform:translateY(0) scale(1)}to{transform:translateY(-16%) scale(1.04)}}
+.tdx .tdx-spark{position:absolute;width:.55cqw;height:.55cqw;border-radius:50%;background:#ffd25a;box-shadow:0 0 .7cqw #ff7a1a,0 0 1.4cqw #ff4a0a;animation:tdxVsSpark 1.3s ease-out forwards;pointer-events:none}
+@keyframes tdxVsSpark{from{transform:translate(-50%,0);opacity:1}to{transform:translate(calc(-50% + var(--dx,0)),-7cqw);opacity:0}}
+.tdx .tdx-chip{position:absolute;width:.7cqw;height:.45cqw;background:#b07a3a;border:1px solid #5a3a14;animation:tdxVsChip 1.1s ease-out forwards;pointer-events:none}
+@keyframes tdxVsChip{0%{transform:translate(-50%,0) rotate(0);opacity:1}60%{transform:translate(calc(-50% + var(--dx,0)),-3cqw) rotate(220deg)}100%{transform:translate(calc(-50% + var(--dx,0)),1cqw) rotate(400deg);opacity:0}}
+.tdx .tdx-drop{position:absolute;width:.45cqw;height:.7cqw;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#6ac8f2;box-shadow:0 0 4px #9ad8ff;animation:tdxVsDrop 1s ease-in forwards;pointer-events:none}
+@keyframes tdxVsDrop{from{transform:translate(calc(-50% + var(--dx,0)),-2cqw);opacity:1}to{transform:translate(calc(-50% + var(--dx,0)),3cqw);opacity:0}}
+.tdx .tdx-qmark{position:absolute;font:400 2.2cqw/1 'Lilita One',system-ui,sans-serif;color:#fff;text-shadow:0 .15cqw 0 #222,0 0 .6cqw rgba(0,0,0,.6);animation:tdxVsQ 1.3s ease-out forwards;pointer-events:none}
+@keyframes tdxVsQ{from{transform:translate(-50%,0) scale(.6);opacity:0}30%{opacity:1;transform:translate(-50%,-1cqw) scale(1)}to{transform:translate(calc(-50% + var(--dx,0)),-4cqw) scale(1);opacity:0}}
+.tdx .tdx-dust{position:absolute;width:1.6cqw;height:1cqw;border-radius:50%;background:rgba(214,196,160,.75);animation:tdxVsDust 1.1s ease-out forwards;pointer-events:none}
+@keyframes tdxVsDust{from{transform:translate(-50%,0) scale(.4);opacity:.9}to{transform:translate(calc(-50% + var(--dx,0)),-1.5cqw) scale(1.8);opacity:0}}
 .tdx .tdx-tear{position:absolute;width:.5cqw;height:.8cqw;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#9ad8ff;box-shadow:0 0 6px #9ad8ff;animation:tdxTear 1.4s ease-in forwards}
 @keyframes tdxTear{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,6cqw);opacity:0}}
 /* the faces at the reading (steps.js voteReaction): a feel per person, held for the step */

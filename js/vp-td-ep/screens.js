@@ -382,6 +382,28 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
     if (a.kind === 'train') who.forEach(n => tokAt(castEl, n).classList.add('train'));
     if (a.kind === 'gust') { who.forEach(n => tokAt(castEl, n).classList.add('shake')); sfx('thunder'); const fl = fxAt(fxEl, 'tdx-bolt', 50, 0, '', 900); fl.style.left = '0'; }
     if (a.kind === 'hurt' && who[0]) { tokAt(castEl, who[0]).classList.add('shake'); const c = centre(st, tokAt(castEl, who[0])); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'OW!'); sfx('slap'); }
+    // a head-to-head (contest.js): each of them doing THE challenge, the one ahead steadier, and what
+    // the challenge throws off (sparks at a fire, chips off a rope, water, puzzle pieces, dust)
+    if (a.kind === 'contest') {
+      const FX = { fire: ['tdx-spark', 6], chop: ['tdx-chip', 4], carry: ['tdx-drop', 4], puzzle: ['tdx-qmark', 2], push: ['tdx-dust', 3], race: ['tdx-dust', 3], climb: ['tdx-dust', 2], balance: ['', 0], hold: ['', 0] };
+      const [cls, n] = FX[a.style] || ['', 0];
+      who.forEach((name, j) => {
+        const el = tokAt(castEl, name);
+        el.classList.add('vs', `vs-${a.style}`);
+        el.classList.toggle('vs-lead', name === a.lead);
+        el.style.setProperty('--vsd', `${(j % 2 ? -1 : 1)}`);
+        if (!cls) return;
+        const c = centre(st, el);
+        for (let k = 0; k < n; k++) setTimeout(() => { const d = fxAt(fxEl, cls, c.x + (Math.random() - .5) * c.h * .5, c.y + c.h * (cls === 'tdx-qmark' ? -.55 : .42), cls === 'tdx-qmark' ? '?' : '', 1300); d.style.setProperty('--dx', `${(Math.random() - .5) * 6}cqw`); }, k * 160 + j * 80);
+      });
+      const SND = { fire: 'hiss', chop: 'slap', carry: 'splash', puzzle: 'pop', push: 'boing', race: 'boing', climb: 'pop' };
+      if (SND[a.style] && s.k === 'beat') sfx(SND[a.style]);
+    }
+    if (a.kind === 'roundwin') {
+      who.forEach(n => { const el = tokAt(castEl, n); el.classList.remove('vs', 'sad'); el.classList.add('cheer'); const c = centre(st, el); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'YES!'); });
+      (a.lose || []).forEach(n => { const el = tokAt(castEl, n); if (el) { el.classList.remove('vs', 'vs-lead'); el.classList.add('sad'); } });
+      sfx('cheer');
+    }
     if (a.kind === 'cry') who.forEach(n => { const el = tokAt(castEl, n); el.classList.add('sad'); const c = centre(st, el); for (let k = 0; k < 4; k++) setTimeout(() => fxAt(fxEl, 'tdx-tear', c.x + (k % 2 ? 1.2 : -1.2), c.y + c.h * .25, '', 1400), k * 260); });
     if (a.kind === 'fire') who.forEach(n => { const el = tokAt(castEl, n); el.classList.add('fired'); const c = centre(st, el); fxAt(fxEl, 'tdx-aura', c.x, c.y + c.h / 2, '', 2400); sfx('title'); });
     if (a.kind === 'rest') who.forEach(n => tokAt(castEl, n).classList.add('act-nap'));

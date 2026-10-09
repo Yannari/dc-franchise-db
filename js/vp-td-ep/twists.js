@@ -14,7 +14,8 @@
 // quote (one pool, shared with the classic card); tdStepTranscript hands all of it to the text
 // backlog (_textTdIslands).
 import { TD_MARKS } from './marks.js';
-import { placeScene, plateKey, placeName, venueOf, VENUES, cleanText, TIEBREAK_SPOT, TIEBREAK_AT } from './steps.js';
+import { placeScene, plateKey, placeName, venueOf, VENUES, cleanText, TIEBREAK_SPOT } from './steps.js';
+import { arenaPlaces, contestStyle, contestTalk, roundTaken, contestResult } from './contest.js';
 
 const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 const pickBy = (arr, ...k) => arr[hash(k.join('|')) % arr.length];
@@ -453,8 +454,11 @@ export function tdRiDuelScreen(ep, o = {}) {
   const key = spot ? (plateKey(venue, spot, 'day') || plateKey(venue, spot, 'night')) : riPlace(ep, o, 'day');
   const kVenue = spot ? venue : ISL;
   if (!key) return null;
-  const at = TIEBREAK_AT[spot];
-  const places = at ? Object.fromEntries(who.map((n, i) => [n, { u: at[i % at.length][0], v: at[i % at.length][1], s: .3, h: 30, crowd: true }])) : placeScene(key, who, [], { host });
+  // centred on the arena, sized for the zoom (contest.js ARENA)
+  const places = arenaPlaces(spot, who) || placeScene(key, who, [], { host });
+  const style = contestStyle(d.challengeType || d.challenge?.id || d.challengeLabel, d.challengeDesc || d.challenge?.desc);
+  const snap = ep.gsSnapshot?.bonds || {};
+  const bond = (a, b) => snap[a <= b ? `${a}||${b}` : `${b}||${a}`] ?? 0;
   const steps = [];
   const say = (text, extra = {}) => { const t = cleanText(text); if (t) steps.push({ k: 'say', by: host, host: true, text: t.replace(/^"|"$/g, ''), ...extra }); };
   steps.push({ k: 'scene', spot: spot || 'duel', tod: /-night$/.test(key) ? 'night' : 'day', plate: key, place: 'The Duel', time: 'Redemption Island', card: true, focus: who, bg: [], places, host });
@@ -465,14 +469,24 @@ export function tdRiDuelScreen(ep, o = {}) {
   for (const n of who) if (streak[n] >= 1) steps.push({ k: 'beat', text: `${n} has won ${streak[n]} duel${streak[n] > 1 ? 's' : ''} already.`, focus: [n], side: [{ tab: 'residents', text: `${n}: ${streak[n]} duel win${streak[n] > 1 ? 's' : ''} before tonight` }] });
   const between = [d.host?.after1, d.host?.after2];
   (d.phases || []).forEach((p, i) => {
-    steps.push({ k: 'beat', text: cleanText(p.narration || `${p.winner} takes ${p.name || `round ${i + 1}`}.`), focus: who, tense: i === (d.phases.length - 1),
+    // the round: the round's name, both of them at it (the challenge's own motion), what they say while
+    // they do it, the engine's account of how it went, and who took it
+    const behind = who.find(n => n !== p.winner) || null;
+    const kk = `duel|${ep.num}|${i}`;
+    const lastRound = i === (d.phases.length - 1);
+    steps.push({ k: 'title', kicker: lastRound ? 'Final round' : `Round ${i + 1}`, name: p.name || `Round ${i + 1}`, faces: who, vs: who.length === 2 });
+    for (const t of contestTalk({ ahead: p.winner, behind, style, bond, key: kk, focus: who })) steps.push({ ...t, act: { kind: 'contest', style, who, lead: p.winner } });
+    steps.push({ k: 'beat', text: cleanText(p.narration || `${p.winner} takes ${p.name || `round ${i + 1}`}.`), focus: who, act: { kind: 'contest', style, who, lead: p.winner },
       side: [{ tab: 'log', text: `${p.name || `Round ${i + 1}`}: ${p.winner}` }] });
+    // the last round's winner celebrates the whole duel (contestResult), not the round
+    if (!lastRound) steps.push(...roundTaken(p.winner, behind, kk, who));
     const m = (d.breathingMoments || [])[i];
     if (m?.text) steps.push({ k: 'beat', text: cleanText(m.text), focus: (m.players || [m.player, m.target]).filter(n => n && places[n]) });
     if (between[i]) say(between[i]);
   });
   if (d.tiebreaker) steps.push({ k: 'beat', text: cleanText(d.tiebreaker.text || d.tiebreaker.narration || `It comes down to a tiebreaker.`), focus: who, tense: true });
   say(d.host?.closer || `${d.winner} wins the duel.`, { focus: [d.winner] });
+  steps.push(...contestResult(d.winner, d.loser, { bond, key: `duel|${ep.num}|end`, focus: who }));
   steps.push({ k: 'title', kicker: 'Still alive', name: d.winner, faces: [d.winner], tone: 'fire' });
   if (d.loser) {
     steps.push({ k: 'say', by: host, host: true, text: `${d.loser}, you're out of the game. For good this time.`, focus: [d.loser] });

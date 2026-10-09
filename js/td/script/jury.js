@@ -11,6 +11,8 @@
 // The beat's badge says what the engine decided. Roles: {a} is the person the moment is about.
 import { makeScene } from './scene.js';
 import { scriptEvent, fill, transcript } from './write.js';
+import { CONF_BY_TAG } from './lines/jury-voices.js';
+import { voiceOf } from '../story/voice.js';
 
 // Where a scene finds its people, when its script opens straight on a line (the user, 2026-10-09:
 // "no setup for a conversation"): one stage direction that says where they are and why the talk
@@ -43,6 +45,29 @@ const SETUP = {
   'jury.night.toast': ['The last night at the motel. {a}, {b} and {c} are out by the pool with everyone else.', 'The last night. Everybody is outside by the pool, and {a} has found the mini-fridge.'],
   'jury.night.cards': ['The last night. {a} has a deck of cards, and {b} and {c} have nowhere to be.', 'Nobody wants the last night to end, so {a} gets out a deck of cards for {b} and {c}.'],
 };
+// the confessional in the speaker's own profile voice (lines/jury-voices.js): their strongest voice
+// tag with a line written for this moment; a speaker with none keeps the scene's own line
+// one week never hears the same voiced line twice (two warm jurors do not share a confessional)
+const aired = new Map();
+function inVoice(beat, key, who, data, ctx = {}) {
+  const byTag = CONF_BY_TAG[key];
+  if (!byTag || !beat.lines?.length) return;
+  const i = beat.lines.map(l => l.kind).lastIndexOf('conf');
+  if (i < 0) return;
+  const by = beat.lines[i].by;
+  // a feud or a friendship reads the same from either side; the rest are written from {a}'s
+  if (by !== who.a && !/^jury\.(grudge|friends)\./.test(key)) return;
+  const wk = `${ctx.ep}|${(ctx.residents || []).join(',')}`;
+  if (!aired.has(wk)) { aired.clear(); aired.set(wk, new Set()); }
+  const used = aired.get(wk);
+  const tag = voiceOf(by).find(t => byTag[t] && !used.has(`${key}|${t}`));
+  if (!tag) return;
+  used.add(`${key}|${tag}`);
+  const other = Object.values(who).find(n => n && n !== by) || '';
+  const text = fill(byTag[tag].replace(/\{o\}/g, other), who, data);
+  beat.lines[i] = { ...beat.lines[i], text: text.charAt(0).toUpperCase() + text.slice(1), voice: tag };
+  beat.text = transcript(beat.lines);
+}
 function setUp(beat, key, who) {
   const opts = SETUP[key];
   if (!opts || !beat.lines?.length || beat.lines[0].kind === 'beat') return;
@@ -116,6 +141,7 @@ export function scriptJury(beat, ctx = {}) {
     scriptEvent(beat, makeScene(kind, who, data, [...(ctx.residents || [])], null), { ep: ctx.ep, phase: 'post' });
     beat.jkey = `${kind}.${ending}`;
     setUp(beat, beat.jkey, who);
+    inVoice(beat, beat.jkey, who, data, ctx);
   } catch (err) { console.warn('jury scene fell back to the engine sentence:', beat.badge, err?.message); }
   return beat;
 }

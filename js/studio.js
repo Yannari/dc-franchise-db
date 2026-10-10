@@ -33,6 +33,8 @@ import { writerEndpoint } from './social/writer.js';
 // with nothing in it but "All shows".
 import { SHOWS } from './shows.js';
 import { readVoiceText, WORD_TAGS } from './td/story/voice-words.js';
+import { HAND_KITS } from './td/story/kits/index.js';
+import { GROUND } from './td/story/kits/kits-ground.js';
 
 const ARCHETYPES = ['mastermind','schemer','hothead','challenge-beast','social-butterfly','loyal-soldier','wildcard','chaos-agent','floater','underdog','hero','villain','goat','perceptive-player','showmancer'];
 
@@ -316,13 +318,14 @@ const KIT_TEXT = [
   ['solo', 'Alone, to camera', 'what they say when the camera finds them alone'],
 ];
 function _emptyKit() {
-  return { thing: '', alone: '', bits: Array.from({ length: KIT_BITS }, () => ({ bit: '', tease: '', reply: '' })), ...Object.fromEntries(KIT_TEXT.map(([k]) => [k, ''])) };
+  return { thing: '', alone: '', ground: '', bits: Array.from({ length: KIT_BITS }, () => ({ bit: '', tease: '', reply: '' })), ...Object.fromEntries(KIT_TEXT.map(([k]) => [k, ''])) };
 }
 function _kitFrom(k) {
   const out = _emptyKit();
   if (typeof k === 'string') { try { k = JSON.parse(k); } catch { k = null; } }
   if (!k || typeof k !== 'object') return out;
   out.thing = k.thing || ''; out.alone = k.alone || '';
+  out.ground = (Array.isArray(k.ground) ? k.ground : []).join(', ');
   const n = Math.max(KIT_BITS, (k.bit || []).length);
   out.bits = Array.from({ length: n }, (_, i) => ({ bit: k.bit?.[i] || '', tease: k.tease?.[i] || '', reply: k.reply?.[i] || '' }));
   for (const [key] of KIT_TEXT) out[key] = (Array.isArray(k[key]) ? k[key] : []).join('\n');
@@ -335,6 +338,9 @@ function _kitOut(d) {
   const out = {};
   if (k.thing?.trim()) out.thing = k.thing.trim();
   if (k.alone?.trim()) out.alone = k.alone.trim();
+  // shared ground: the fixed vocabulary only (js/td/story/kits/kits-ground.js), so a typo can't invent a tag
+  const g = String(k.ground || '').split(/[,\n]/).map(x => x.trim().toLowerCase()).filter(x => GROUND[x]);
+  if (g.length) out.ground = [...new Set(g)];
   const rows = (k.bits || []).filter(b => b.bit?.trim() && b.tease?.trim() && b.reply?.trim());
   if (rows.length) { out.bit = rows.map(b => b.bit.trim()); out.tease = rows.map(b => b.tease.trim()); out.reply = rows.map(b => b.reply.trim()); }
   for (const [key] of KIT_TEXT) { const v = lines(k[key]); if (v.length) out[key] = v; }
@@ -1370,7 +1376,9 @@ async function _editBySlug(slug) {
        live database, the roster row is exactly where it has not made it to. */
     drag: { ..._emptyDrag(), ...((rich && rich.drag) || {}), ...(base.drag || {}) },
     ties: (Array.isArray(base.ties) ? base.ties : Array.isArray(rich && rich.ties) ? rich.ties : []).map(t => ({ ...t })),
-    kit: _kitFrom(base.kit || (rich && rich.kit)),
+    // the roster row's kit (saved in the Studio), else the hand-written one (js/td/story/kits/), so the 58
+    // written kits open filled in and saving one keeps it
+    kit: _kitFrom(base.kit || (rich && rich.kit) || HAND_KITS[base.name] || null),
     age: pick(base.age, rich && rich.age, parsed.age),
     ethnicity: pick(base.ethnicity, rich && rich.ethnicity, parsed.ethnicity, legacy.ethnicity),
     nationality: pick(base.nationality, rich && rich.nationality, parsed.nationality, legacy.nationality),
@@ -1960,6 +1968,8 @@ function _renderEditor() {
             <textarea class="st-input st-area" rows="2" data-kit="${key}" placeholder="one line per entry">${_esc(d.kit?.[key] || '')}</textarea></label>`).join('')}
           <label class="st-l">Alone <span class="st-hint">what the camera finds them doing: "{a} is …"</span>
             <input class="st-input" data-kit="alone" value="${_esc(d.kit?.alone || '')}" placeholder="e.g. is sketching the shoreline in the back of a notebook"></label>
+          <label class="st-l">Shared ground <span class="st-hint">what their life has in it, from their backstory only (comma-separated): ${Object.keys(GROUND).join(', ')}</span>
+            <input class="st-input" data-kit="ground" value="${_esc(d.kit?.ground || '')}" placeholder="e.g. raised-siblings, immigrant-family"></label>
         </div>
       </details>` : ''}
 

@@ -46,10 +46,15 @@ function studioKit(name) {
   return kit;
 }
 
-// The hand-written kit first; a Studio kit for everybody else. Keys (Object.keys) stay the
-// hand-written ones, which is what tests/td-kits.test.js checks.
+// A kit saved in the Studio wins: the Studio opens on the hand-written kit (HAND_KITS below), so a saved
+// one is that kit as the user has edited it (the user, 2026-10-10: "did u fill it, everyone is empty rn,
+// camp kit": the Studio showed nothing, and an edit there would have been ignored behind the hand-written
+// one). Without a saved kit, the hand-written one. Keys (Object.keys) stay the hand-written ones, which is
+// what tests/td-kits.test.js checks.
 const KITS = new Proxy(BUILT, {
-  get(t, name) { return t[name] || studioKit(name) || undefined; },
+  get(t, name) { return studioKit(name) || t[name] || undefined; },
   has(t, name) { return name in t || !!studioKit(name); },
 });
 export default KITS;
+/** The hand-written kits, by name: what the Studio's Camp kit opens on when the roster row has none. */
+export const HAND_KITS = BUILT;

@@ -23,7 +23,7 @@
 // badges and every other reader are untouched. Viewers read the list through
 // feed.js campFeed().
 import { gs, players, seasonConfig, TWIST_CATALOG } from '../../core.js';
-import { getBond } from '../../bonds.js';
+import { getBond, addBond } from '../../bonds.js';
 import { kinshipBetween } from '../../core.js';
 import { pronouns, pStats as pStatsOf, threatScore } from '../../players.js';
 import { voiceOf } from './voice.js';
@@ -58,6 +58,26 @@ const VENUE_WORDS = {
 };
 let venueNow = 'hosted-camp';
 let ctxAvoid = () => null;
+
+// The director's own scenes are events (the user, 2026-10-10: "they're not events that change bonds?"): each
+// carries fx, [[a, b, delta]] or [['pop', name, delta]], applied here and kept on the scene as `effects`.
+// airTdEpisode runs at the end of simulateEpisode, after the vote and before the next episode, so the change
+// reaches the next episode's alliances and votes. It applies only on the live episode: the one simulateEpisode
+// built (it carries bondChanges; the history rows are fresh copies without it) and the one now playing. A
+// transcript regenerated for an old row (cast-ui.js export) must never move today's bonds.
+const liveEp = ep => Array.isArray(ep?.bondChanges) && ep.num === gs.episode;
+function applyStoryFx(ep, list) {
+  const live = liveEp(ep);
+  for (const { item } of list) {
+    if (!item?.fx) continue;
+    item.effects = item.fx.map(([x, y, d]) => x === 'pop' ? { pop: y, d } : { a: x, b: y, d });
+    if (live) for (const [x, y, d] of item.fx) {
+      if (x === 'pop') { if (!gs.popularity) gs.popularity = {}; gs.popularity[y] = (gs.popularity[y] || 0) + d; }
+      else addBond(x, y, d);
+    }
+    delete item.fx;
+  }
+}
 function writeStory(pool, outcome, who, data, facts, ctx) {
   const v = VENUE_WORDS[venueNow] || VENUE_WORDS['hosted-camp'];
   const voteYet = (gs.episodeHistory || []).some(h => (h.num || 0) < (ctx.ep || 0) && h.eliminated) || ctx.phase === 'tribal';
@@ -1303,7 +1323,7 @@ export function airTdEpisode(ep) {
             const w = writeStory('chm.banter', 'any', who, { chal }, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('afternoon'), unique: true });
             if (!w) continue;
             list.push({ at: 0.27, item: { story: true, kind: 'chm.banter', storyType: 'challenge', step: 'banter', players: [x, y], lines: w.lines, text: w.text, lineId: w.lineId,
-              scene: { kind: 'chm', who, data: { chal }, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: '', badgeClass: '', why: [`${x} and ${y} replay ${chal}.`] } });
+              scene: { kind: 'chm', who, data: { chal }, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: '', badgeClass: '', why: [`${x} and ${y} replay ${chal}.`], fx: [[x, y, 0.5]] } });
             break;
           }
         }
@@ -1577,11 +1597,11 @@ export function airTdEpisode(ep) {
             if (!w) continue;
             book[a] = ep.num; gs.tdStory.kitBitWith[a] = b;
             list.push({ at: 0.35, item: { story: true, kind: 'kit.bit', storyType: 'kit', step: 'bit', players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
-              scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a}'s own thing, and ${b} has opinions about it.`] } });
+              scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a}'s own thing, and ${b} has opinions about it.`], fx: [[a, b, 0.5]] } });
             break;
           }
-          const kitItem = (kind, step, players, w, who, why) => list.push({ at: kind === 'kit.call' ? 0.4 : 0.38, item: { story: true, kind, storyType: 'kit', step, players, lines: w.lines, text: w.text, lineId: w.lineId,
-            scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [why] } });
+          const kitItem = (kind, step, players, w, who, why, fx = []) => list.push({ at: kind === 'kit.call' ? 0.4 : 0.38, item: { story: true, kind, storyType: 'kit', step, players, lines: w.lines, text: w.text, lineId: w.lineId,
+            scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [why], fx } });
           // a mentor arc over three episodes (lines/n-mentor.js): somebody struggling at a skill, somebody good at it
           // who offers, the practice, and the day they do it alone. One at a time, two a season, and it ends if
           // either of them leaves. The skill is the mentor's strongest (the user's read: Anastasia teaching Rosa fire).
@@ -1610,7 +1630,7 @@ export function airTdEpisode(ep) {
               if (w) {
                 M.cur.last = ep.num; M.cur.step++;
                 list.push({ at: 0.33, item: { story: true, kind: `arc.mentor.${step}`, storyType: 'arc', step, players: [who.a, who.b], lines: w.lines, text: w.text, lineId: w.lineId,
-                  scene: { kind: 'arc', who, data: { skill: M.cur.skill }, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${who.a} is teaching ${who.b} ${M.cur.skill}.`] } });
+                  scene: { kind: 'arc', who, data: { skill: M.cur.skill }, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${who.a} is teaching ${who.b} ${M.cur.skill}.`], fx: [[who.a, who.b, 1]] } });
                 if (M.cur.step >= STEPS.length) M.cur = null;
               }
             }
@@ -1625,7 +1645,7 @@ export function airTdEpisode(ep) {
             const w = kitClashScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside' });
             if (!w) continue;
             book[a] = ep.num;
-            kitItem('kit.clash', 'clash', [a, b], w, who, `${b} can't stand ${a}, and today it came out.`);
+            kitItem('kit.clash', 'clash', [a, b], w, who, `${b} can't stand ${a}, and today it came out.`, [[a, b, -1]]);
             break;
           }
           // a running bit, called back by two others (every other day, once it has aired)
@@ -1635,7 +1655,7 @@ export function airTdEpisode(ep) {
             const who = { a: c, b: d };
             const w = kitCallbackScene(c, d, about, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside' });
             if (!w) continue;
-            kitItem('kit.call', 'callback', [c, d], w, who, `${about}'s running bit, as the camp sees it.`);
+            kitItem('kit.call', 'callback', [c, d], w, who, `${about}'s running bit, as the camp sees it.`, [[c, d, 0.5]]);
             break;
           }
         } else {
@@ -1647,7 +1667,7 @@ export function airTdEpisode(ep) {
             const w = kitDeepScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'secret' });
             if (!w) continue;
             list.push({ at: 0.55, item: { story: true, kind: 'kit.deep', storyType: 'kit', step: 'deep', players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
-              scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a} trusts ${b} with something real.`] } });
+              scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a} trusts ${b} with something real.`], fx: [[a, b, 1.5]] } });
             break;
           }
           const pairs = [];
@@ -1664,7 +1684,7 @@ export function airTdEpisode(ep) {
             if (!w) continue;
             book[a] = ep.num;
             list.push({ at: 0.5, item: { story: true, kind: 'kit.life', storyType: 'kit', step: 'life', players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
-              scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a} and ${b} get to know each other.`] } });
+              scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a} and ${b} get to know each other.`], fx: [[a, b, 1]] } });
             break;
           }
         }
@@ -1673,13 +1693,22 @@ export function airTdEpisode(ep) {
       // the one who coasts, learning to talk to people, a showmance for the numbers), the camp's free time
       // (four people and a game, every other episode), and one person alone with the camera in the afternoon
       // (kits-solo.js, the least recently alone first). On top of the caps, like the kit scenes.
-      if (editOn && !ep.isFinale) {
+      // The merge episode is its own story (the merge, everybody in one camp, the busiest night of the season,
+      // 21-24 scenes without these): the arcs wait a day and there is no game or solo.
+      if (editOn && !ep.isFinale && !ep.isMerge) {
         const writeHere = (p, o, w, d, f, c) => writeStory(p, o, w, d, f, { ...c, avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
-        list.push(...runArcs(ep, camp, members, phase, () => n++, writeHere));
+        // the mentor arc counts against the same room: two serial stories a phase is plenty
+        const arcsNow = list.filter(x => x.item?.storyType === 'arc').length;
+        // after the merge every night is a tribal night for the one camp, and the vote talk fills the evening
+        // (11-14 scenes), so the morning keeps less room for colour
+        const ROOM = merged && tribalTonight ? 7 : 10;
+        list.push(...runArcs(ep, camp, members, phase, () => n++, writeHere, Math.max(0, Math.min(2 - arcsNow, ROOM + 2 - list.length))));
         const busyNow = new Set(list.flatMap(x => x.item?.players || []).filter(Boolean));
-        const g = campGame(ep, camp, members, phase, () => n++, writeHere, busyNow);
+        // the game and the solo are colour: they air only while the phase has room (a merge night, one camp
+        // holding everybody, already fills a show's worth; tests/td-story.test.js 'show-sized episode')
+        const g = list.length < ROOM ? campGame(ep, camp, members, phase, () => n++, writeHere, busyNow) : null;
         if (g) list.push(g);
-        if (phase === 'post') {
+        if (phase === 'post' && list.length < ROOM) {
           const soloBook = ((gs.tdStory ||= {}).soloLast ||= {});
           // somebody not already in a scene this afternoon first, then the rest
           const loners = members.filter(m => hasKit(m)).sort((x, y) => (busyNow.has(x) ? 1 : 0) - (busyNow.has(y) ? 1 : 0) || (soloBook[x] ?? -99) - (soloBook[y] ?? -99) || x.localeCompare(y));
@@ -1693,6 +1722,8 @@ export function airTdEpisode(ep) {
           }
         }
       }
+      // what the director's own scenes did to the people in them (fx above: kits, banter, mentor, arcs, games)
+      applyStoryFx(ep, list);
       // a returnee's past airs on top of the caps (camp-events.js franchise-meta block: the grudge from
       // last season, the reunion, the newcomer asking what happened, the newcomers plotting against the
       // vets). No storyline files them, so without this none ever aired (read 2026-10-09: twenty of them

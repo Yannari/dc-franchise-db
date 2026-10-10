@@ -1174,8 +1174,12 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         if (gs.namedAlliances?.some(a => a.active && allianceMembers.every(m => a.members.includes(m)))) continue;
         Math.random(); // the draw that picked the sentence
         // a pitches; b, c, d and e are the recruits, each in the scene (the user, 2026-10-09: an alliance of
-        // four formed as a conversation between two); anyone past five is named in {more}.
-        const [_r1, _r2, _r3, _r4, ..._rMore] = safeRecruits;
+        // four formed as a conversation between two). Everyone past c is ALSO named in {more}: the engine's
+        // short scripts are written for a, b and c and say the rest by name, while the story layer's long
+        // scenes (n-alliance4.js) stage d and e themselves (read 2026-10-10: a four-person alliance got
+        // "It's an alliance. Us three." and Izzy, a member, was never in the scene).
+        const [_r1, _r2, _r3, _r4, ..._rRest] = safeRecruits;
+        const _rMore = [_r3, _r4, ..._rRest].filter(Boolean);
         _createAlliance(allianceMembers, name => makeScene('alliance.form', { a: initiator, b: _r1, ...(_r2 ? { c: _r2 } : {}), ...(_r3 ? { d: _r3 } : {}), ...(_r4 ? { e: _r4 } : {}) },
           { ending: 'pitch', group: name, more: _rMore.length ? _rMore.join(' and ') : null }, [], _spotNow(initiator, _r1)));
 

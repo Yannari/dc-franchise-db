@@ -6555,20 +6555,9 @@ function simulateJuryRoundtable(ep) {
       const _second = _a2Sorted.find(([n]) => n !== r1.eliminated && gs.activePlayers.includes(n))?.[0] || null;
       ep.eliminated = _second;
       if (_second) {
-        if (isRIStillActive()) {
-          if (cfg.riFormat === 'rescue') {
-            gs.riPlayers.push(_second);
-            if (!gs.riArrivalEp) gs.riArrivalEp = {};
-            gs.riArrivalEp[_second] = epNum;
-          } else {
-            const _c2 = simulateRIChoice(_second);
-            if (_c2 === 'REDEMPTION ISLAND') gs.riPlayers.push(_second);
-            else { gs.eliminated.push(_second); if (gs.isMerged) gs.jury.push(_second); }
-          }
-        } else {
-          gs.eliminated.push(_second);
-          if (gs.isMerged) gs.jury.push(_second);
-        }
+        // (where the second boot goes, Redemption/Rescue Island or home, is decided ONCE, by the standard
+        // RI-choice block below, which runs for ep.eliminated: deciding it here too pushed them twice
+        // and could roll the choice twice with different answers)
         gs.activePlayers = gs.activePlayers.filter(p => p !== _second);
         gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== _second)}));
         handleAdvantageInheritance(_second, ep);
@@ -7365,7 +7354,7 @@ function simulateJuryRoundtable(ep) {
   gs.episode = epNum;
   gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
         lateArrival: ep.lateArrival || null,
-    num: epNum, eliminated: ep.eliminated, firstEliminated: ep.firstEliminated || null, riChoice: ep.riChoice,
+    num: epNum, eliminated: ep.eliminated, firstEliminated: ep.firstEliminated || null, riChoice: ep.riChoice, firstRIChoice: ep.firstRIChoice || null,
     immunityWinner: ep.challengeType === 'tribe' ? null : (ep.immunityWinner || null),
     challengeType: ep.challengeType, isMerge: ep.isMerge,
     challengeLabel: ep.challengeLabel || null,

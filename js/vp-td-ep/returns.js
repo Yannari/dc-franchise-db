@@ -20,6 +20,7 @@
 import { placeScene, plateKey, placeName, venueOf, VENUES, cleanText, TIEBREAK_SPOT, campSlot, teamSpot } from './steps.js';
 import { arenaPlaces, contestStyle, contestTalk, roundTaken, contestResult } from './contest.js';
 import { familyOf } from '../td/story/voice-family.js';
+import { emissaryDay } from './emissary.js';
 
 const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 const pickBy = (arr, ...k) => arr[hash(k.join('|')) % arr.length];
@@ -165,32 +166,9 @@ export function tdEmissaryScoutScreen(ep, o = {}) {
   steps.push({ k: 'scene', spot: C.spot, tod: 'day', plate: C.key, place: `${E.targetTribe} Camp`, time: 'Afternoon', card: true, focus: [em], bg: [], places: placeScene(C.key, [em, ...near], []), act: { kind: 'arrive', who: [em] } });
   steps.push({ k: 'title', kicker: 'The emissary', name: em, faces: [em] });
   steps.push({ k: 'beat', text: `${E.tribe} won, and sent ${em} to ${E.targetTribe}'s camp. Tonight ${em} watches their vote, and then picks a second person to go home.`, focus: [em] });
-  steps.push({ k: 'say', by: em, focus: [em], text: V(em, {
-    loud: ["Hi! Don't mind me. I'm just here to decide who goes home.", "So! Who wants to make their case first?"],
-    sharp: ['Lovely camp. I can see why you all want to stay in it. Some of you, anyway.', "Don't all rush to be nice to me at once."],
-    soft: ["I'm sorry. I didn't ask for this. I'll try to be fair.", "This feels like a lot of power. I'm going to be careful with it."],
-    dry: ['Hello. I am your judge, jury and second executioner. Please, carry on.', "Don't act natural on my account."],
-    odd: ['Greetings, rivals! I come in peace. Mostly. Partially.'],
-    any: ["So this is where you all live. Okay. Let's talk.", "I'm just here to listen. For now."],
-  }, 'arrive', ep.num), act: { kind: 'shout', who: [em] } });
-  for (const e of evs) {
-    const who = (e.players || []).filter(Boolean);
-    const first = steps.length;
-    if (Array.isArray(e.lines) && e.lines.length) for (const l of e.lines) { const t = cleanText(l.text); if (t) steps.push(l.kind === 'beat' ? { k: 'beat', text: t, focus: who } : l.kind === 'conf' ? { k: 'conf', by: l.by, text: t } : { k: 'say', by: l.by, text: t, focus: who }); }
-    else playText(steps, e.text, who, who);
-    const lead = steps[first];
-    if (lead) {
-      lead.badge = { text: (e.badgeText || (e.type === 'emissaryPitch' ? 'PITCH' : e.type === 'emissaryDeal' ? 'CROSS-TEAM DEAL' : 'OBSERVATION')).toUpperCase(), cls: e.type === 'emissaryDeal' ? 'green' : e.type === 'emissaryPitch' ? 'gold' : 'iron' };
-      lead.side = [{ tab: 'log', text: `${lead.badge.text}: ${who.join(', ')}` }];
-    }
-  }
-  steps.push({ k: 'conf', by: em, text: V(em, {
-    sharp: ["They all want me to pick somebody else. I'll pick the one who helps me most later. They don't need to know that."],
-    loud: ['Everybody in that camp just tried to sell me somebody. I bought nobody. Yet.'],
-    soft: ["Everybody was so nice to me. That's what makes this hard. Somebody's going home because of me."],
-    dry: ['I heard four pitches and three of them were about the same person. That tells me plenty.'],
-    any: ["I've heard everyone out. Now I watch the vote, and then it's my turn."],
-  }, 'scoutconf', ep.num) });
+  // the day itself, as conversations (emissary.js): the camp going quiet, each pitch in private, the
+  // target noticing, the one nobody sits with, the deal by the water, the emissary's read before the vote
+  steps.push(...emissaryDay({ ep, em, hosts: [...new Set([...hosts, ...near])], bond: bondOf(ep) }));
   return { id: 'emissary-scouting', kind: 'camp', venue: C.venue, ep: ep.num, label: 'The Emissary', host, steps, team: E.targetTribe };
 }
 export function tdEmissaryChoiceScreen(ep, o = {}) {

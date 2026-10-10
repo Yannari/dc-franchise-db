@@ -99,7 +99,19 @@ function residentsOf(ep, rescue) {
 // ══════════════════════════════════════════════════════════════════════
 // THE CHOICE — the voted-out at the crossroads (Redemption), or landed on Rescue Island
 // ══════════════════════════════════════════════════════════════════════
+// A double elimination sends two people to the crossroads (the user, 2026-10-10: "the RI choice doesn't
+// manage double elimination, so only one person is seen making a choice"): the first boot walks it, then
+// the second, one after the other, each with their own choice.
 export function tdRiChoiceScreen(ep, o = {}) {
+  const second = riChoiceOne(ep, o);
+  if (!(ep.firstEliminated && ep.firstRIChoice && ep.firstEliminated !== ep.eliminated)) return second;
+  const first = riChoiceOne({ ...ep, eliminated: ep.firstEliminated, riChoice: ep.firstRIChoice, riArrival: null }, o);
+  if (!first || !second) return first || second;
+  // the second walk opens as a cut, not a new title card
+  const rest = second.steps.map((x, i) => (i === 0 && x.k === 'scene' ? { ...x, card: false, cut: true } : x));
+  return { ...second, label: 'Two Final Choices', steps: [...first.steps, { k: 'beat', text: `And ${ep.eliminated} is next.`, focus: [] }, ...rest] };
+}
+function riChoiceOne(ep, o = {}) {
   const elim = ep.eliminated, choice = ep.riChoice;
   if (!elim || !choice) return null;
   const host = o.host || 'Chris';

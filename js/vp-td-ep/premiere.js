@@ -109,7 +109,7 @@ function placeOfZone(venue, zone) {
 
 /**
  * The pitch, the tour and the season's rules, as steps. o: { host, season (the season's settings),
- * teams, cast (how many are about to arrive) }. arrival.js calls this after the host's welcome.
+ * teams, cast (how many are about to arrive), back (how many of them are returnees) }. arrival.js calls this after the host's welcome.
  */
 export function premiereSteps(venue, o = {}) {
   const host = o.host || 'Chris';
@@ -122,7 +122,16 @@ export function premiereSteps(venue, o = {}) {
   const n = o.cast || 0;
 
   // ── the pitch, straight to camera ──
-  say(`Here's the deal. ${n ? `${Cap(num(n))} brand-new contestants are` : 'A brand-new cast is'} about to move in right here at ${WHERE[venue] || 'camp'}${teams.length >= 2 ? `, split into ${num(teams.length)} teams` : ''}.`);
+  // who is coming: all new, all back (an all-stars season), or a mix — never "brand-new" over a returnee
+  const back = Math.min(o.back || 0, n);
+  const fresh = n - back;
+  const who = !n ? (back ? 'Our cast is' : 'A brand-new cast is')
+    : !back ? `${Cap(num(n))} brand-new contestants are`
+    : !fresh ? `${Cap(num(n))} familiar faces, all of them back for another shot, are`
+    : `${Cap(num(n))} contestants, ${num(fresh)} brand-new and ${num(back)} who've been here before, are`;
+  say(`Here's the deal. ${who} about to move in right here at ${WHERE[venue] || 'camp'}${teams.length >= 2 ? `, split into ${num(teams.length)} teams` : ''}.`);
+  if (back && !fresh) say(`They've all played before, they all know the game, and this time nobody gets to say they didn't see it coming.`);
+  else if (back) say(`And trust me, the ones who've been here before haven't forgotten a thing. Neither have I.`);
   say(`They'll face challenges, the elements, and worst of all... each other.`);
   say(GO_HOME[venue] || GO_HOME['hosted-camp']);
   say(`In the end, only one of them will be left standing, with the prize, the glory, and a lot of people who don't talk to them anymore.`);

@@ -1291,6 +1291,21 @@ export function airTdEpisode(ep) {
           list.push({ at: 0.25 + took * 0.01, item: { story: true, kind: `chm.${m.kind}`, storyType: 'challenge', step: m.kind, players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
             scene: { kind: 'chm', who, data: { chal, two: m.players.length >= 2 }, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: m.badge, badgeClass: '', why: [`At ${chal}: ${m.badge} (${m.players.join(', ')}).`] } });
         }
+        // ...and when the challenge left room, two friends replay it: the jokes, not the result (lines/n-banter.js)
+        if (took < 2) {
+          const inChm = new Set(list.filter(x => /^chm\./.test(x.item?.kind || '')).flatMap(x => x.item.players || []));
+          const fr = [];
+          for (const x of members) for (const y of members) if (x < y && !inChm.has(x) && !inChm.has(y) && getBond(x, y) >= 2) fr.push([x, y, getBond(x, y)]);
+          fr.sort((p, q) => q[2] - p[2] || p[0].localeCompare(q[0]));
+          for (const [x, y] of fr.slice(0, 4)) {
+            const who = { a: x, b: y };
+            const w = writeStory('chm.banter', 'any', who, { chal }, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('afternoon'), unique: true });
+            if (!w) continue;
+            list.push({ at: 0.27, item: { story: true, kind: 'chm.banter', storyType: 'challenge', step: 'banter', players: [x, y], lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'chm', who, data: { chal }, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: '', badgeClass: '', why: [`${x} and ${y} replay ${chal}.`] } });
+            break;
+          }
+        }
       }
       // a thread carried from an earlier episode (threads.js): one scene when one is due
       if (editOn && phase === 'pre' && ep.num > 1) {

@@ -22,6 +22,9 @@ const NEEDS = { glueA: 'glue', glueB: 'glue', lastBy: 'pastBy', lastPartner: 'pa
   threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder', other: 'other', pitcher: 'pitcher', home: 'home', job: 'job', lot: 'lot', thing: 'thing', others: 'others', shaky: 'shaky', cover: 'cover', found: 'found', alt: 'alt', teller: 'told', warnedAbout: 'fromTarget', imm: 'imm', lastBoot: 'lastBoot', real: 'real', blame: 'blame', lostAlly: 'lostAlly' };
 // a pool's guarantees: names its moment always carries
 const GUARANTEED = [
+  [/^long\.pitch\.turn\./, ['friend']],
+  [/^booth\.turned$/, ['target', 'pitcher']],
+  [/^long\.recruit\.join\.poach$/, ['group', 'from']],
   [/^deep\.liedto/, ['leader', 'cover', 'lastBoot']],
   [/^deep\.swing/, ['pitcher', 'target']],
   [/^deep\.betray/, ['friend']],

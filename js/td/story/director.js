@@ -221,7 +221,7 @@ function whyOf(kind, ending, storyKey, who, data, facts) {
 // the season). The user, 2026-10-08: "I still get 3-line conversations that mean nothing". Banter
 // with nothing behind it stays off camera (the backlog still lists it); what airs as-is is game
 // information: a confessional, an idol, a pitch, a flip, a deal, a catch, or a real scene.
-const GAME_TYPE = /^(idol|voteSteal|votePitch|scramble|secretFlip|betrayal|loyaltyTest|conflictingDeals|challengeThrow|stolenCredit|dealOverheard|showmance|affair|triangle|eavesdrop|infoTrade|allianceForm|allianceCrack|allianceDissolved|allianceExpelled|allianceRecruit|sideDeal|endgameDeal|spreadLies|forgeNote|whisperCampaign|falseMajority|chalThreat|sitOut|bigMoveThoughts|mergeScramble|mergeConfessional|goat|ftc|perceptionRealization|wildcardPivot)/;
+const GAME_TYPE = /^(idol|voteSteal|votePitch|scramble|secretFlip|betrayal|loyaltyTest|conflictingDeals|challengeThrow|stolenCredit|dealOverheard|showmance|affair|triangle|eavesdrop|infoTrade|allianceForm|allianceCrack|allianceDissolved|allianceExpelled|allianceRecruit|turnFriend|sideDeal|endgameDeal|spreadLies|forgeNote|whisperCampaign|falseMajority|chalThreat|sitOut|bigMoveThoughts|mergeScramble|mergeConfessional|goat|ftc|perceptionRealization|wildcardPivot)/;
 function worthAiring(ev) {
   if (!ev) return false;
   const kind = ev.scene?.kind || '';
@@ -931,6 +931,7 @@ function causeFor(ep, camp, leader, boot) {
       // back from a loss the team's own blame scene opens the afternoon already
       if (phase === 'post' && (ev.type === 'blame' || /^crowd\.lost/.test(ev.scene?.kind || ''))) return null;
       if (/idol/i.test(s)) return null;   // an idol read is the idol case's own scene
+      if (ev.type === 'turnFriend') return null;   // a pitch airs in its own slot (pitchTake), never a second way
       // making up is not where a vote starts
       if (/thaw|amend|truce|forgiv|apolog|rekindle|celebrat|gratitude|bond/i.test(s)) return null;
       const kind = ev.scene?.kind || '';
@@ -1502,8 +1503,13 @@ export function airTdEpisode(ep) {
       // from camp life"): the day's best friendship, showmance and underdog moments go first, on top
       // of the cap, two in the morning and one after the challenge
       const LIFE = /^(friendship|showmance|underdog)$/;
-      const lifeTake = editOn ? ranked.filter(f => LIFE.test(f.line.type)).slice(0, phase === 'pre' ? 2 : 1) : [];
-      const order = [...lifeTake, ...ranked.filter(f => !lifeTake.includes(f))];
+      // (a pitch to turn on a friend, below, takes one of these places: the day stays a show's length)
+      const pitchHere = ranked.some(f => f.ev?.type === 'turnFriend');
+      const lifeTake = editOn ? ranked.filter(f => LIFE.test(f.line.type)).slice(0, Math.max(0, (phase === 'pre' ? 2 : 1) - (pitchHere ? 1 : 0))) : [];
+      // a pitch to turn on a friend airs first, inside the cap: it comes back at the vote, and a
+      // payoff nobody saw set up is the thing the user keeps finding (camp-events.js checkTurnFriendPitches)
+      const pitchTake = ranked.filter(f => f.ev?.type === 'turnFriend' && !lifeTake.includes(f));
+      const order = [...pitchTake, ...lifeTake, ...ranked.filter(f => !lifeTake.includes(f) && !pitchTake.includes(f))];
       // one day, one story per person (the user: Duncan panicking, then calmly running the winning plan):
       // tonight's leader doesn't come apart on camera, and the one going home unaware doesn't scramble
       const DISTRESS = { 'friend.mentor': 'b', 'friend.comfort': 'b', 'friend.lift': 'b', 'talk.scramble': 'a', 'conf.paranoia': 'a', 'drama.paranoia': 'a',
@@ -1519,10 +1525,11 @@ export function airTdEpisode(ep) {
       };
       for (const f of order) {
         if (chosen.length >= cap + lifeTake.length) break;
-        if (editOn && clashes(f)) continue;
-        if (usedLines.has(f.line)) continue;
+        const must = pitchTake.includes(f);
+        if (!must && editOn && clashes(f)) continue;
+        if (!must && usedLines.has(f.line)) continue;
         const cast = [f.step.roles.a, f.step.roles.b, f.step.roles.c].filter(Boolean);
-        if (cast.some(p => (onScreen[p] || 0) >= 2)) continue;
+        if (!must && cast.some(p => (onScreen[p] || 0) >= 2)) continue;
         chosen.push(f);
         usedLines.add(f.line);
         cast.forEach(p => { onScreen[p] = (onScreen[p] || 0) + 1; });
@@ -1875,7 +1882,9 @@ export function airTdEpisode(ep) {
       const shown = new Set(list.flatMap(x => x.item.players || speaksIn(events[x.item.ref])));
       const cuts = events.map((ev, i) => ({ ev, i })).filter(({ ev }) => ev && !ev.aired && !dup(ev) && saysIn(ev).length && (ev.lines || []).length <= 7 && rawFits(ev, ep, phase))
         .sort((x, y) => saysIn(y.ev).filter(p => !shown.has(p)).length - saysIn(x.ev).filter(p => !shown.has(p)).length || x.i - y.i);
-      const cutCap = Math.max(0, (phase === 'pre' ? 3 : votes.length >= 3 ? 1 : 2) - groupN);
+      // a pitch that aired (pitchTake) takes one quick cut's place, so the day stays a show's length
+      const pitchN = events.filter(ev => ev?.type === 'turnFriend' && ev.aired === true).length;
+      const cutCap = Math.max(0, (phase === 'pre' ? 3 : votes.length >= 3 ? 1 : 2) - groupN - pitchN);
       let cutN = 0;
       // the same kind of moment between the same people (a threat confessional about the same rival)
       // rests three episodes: the same thought aired again reads as a loop

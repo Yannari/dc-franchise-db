@@ -3368,6 +3368,78 @@ function _leakPass(events, group, ep) {
   }
 }
 
+// ── TURN ON A FRIEND: a pitch away from the vote (the user, 2026-10-10: "pitch not only being before the
+// votes, like pitch to switch people from one alliance to another, or convince to vote a friend") ──
+// Somebody who schemes (a villain, schemer or mastermind; a neutral only with strategic >= 6 and loyalty <= 4;
+// never a nice archetype) works on b to go after b's close friend c, whom the schemer wants gone. Whether b
+// turns is proportional: b's loyalty, how much b likes a against how much b likes c, a's charm and craft.
+//   took     b's bond with c drops, and c carries heat into the next vote or two (gs._turnedHeat, read by
+//            computeHeat): b now has a reason to write c's name
+//   refused  b's bond with a drops
+//   warned   b refuses AND tells c (a loyal b, or one very close to c): c turns on a, and a carries heat
+// One a camp a night at most. The event is a full scene (td/script pitch.turn.*, td/story long.pitch.turn.*).
+const _turnRoll = key => ([...key].reduce((s, c) => (s * 31 + c.charCodeAt(0)) >>> 0, 7) % 1000) / 1000;
+export function checkTurnFriendPitches(ep) {
+  if (!gs.activePlayers?.length) return;
+  const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+  const SCHEMER = new Set(['villain', 'schemer', 'mastermind']);
+  const archOf = n => players.find(p => p.name === n)?.archetype || '';
+  const canScheme = n => { const a = archOf(n), s = pStats(n); return !NICE.has(a) && (SCHEMER.has(a) || (s.strategic >= 6 && s.loyalty <= 4)); };
+  const groups = gs.isMerged ? [{ key: 'merge', members: gs.activePlayers.slice() }]
+    : (gs.tribes || []).map(t => ({ key: t.name, members: t.members.filter(m => gs.activePlayers.includes(m)) }));
+  if (!gs.turnPitches) gs.turnPitches = [];
+  for (const g of groups) {
+    if (g.members.length < 4 || !ep.campEvents?.[g.key]) continue;
+    const pitchers = g.members.filter(canScheme).sort((x, y) => pStats(y).strategic - pStats(x).strategic || x.localeCompare(y));
+    for (const a of pitchers) {
+      // the friend a wants gone (a dislikes c), and the friend of theirs a can work on (b close to c, not hostile to a)
+      let best = null;
+      for (const c of g.members) {
+        if (c === a || getBond(a, c) > 0) continue;
+        for (const b of g.members) {
+          if (b === a || b === c || getBond(b, c) < 3 || getBond(a, b) < 0) continue;
+          const sc = getBond(b, c) - getBond(a, c);
+          if (!best || sc > best.sc) best = { b, c, sc };
+        }
+      }
+      if (!best) continue;
+      const sa = pStats(a);
+      // a tries, some nights: the more strategic, the likelier
+      if (_turnRoll(`try|${ep.num}|${a}|${g.key}`) > 0.12 + sa.strategic * 0.025) continue;
+      const { b, c } = best;
+      const sb = pStats(b);
+      const pull = (10 - sb.loyalty) * 0.04 + (getBond(a, b) - getBond(b, c) * 0.6) * 0.035 + sa.social * 0.015 + sa.strategic * 0.01;
+      const took = _turnRoll(`take|${ep.num}|${a}|${b}|${c}`) < Math.max(0.05, Math.min(0.65, pull));
+      // telling the friend is proportional too: the more loyal b is, and the closer to c, the likelier
+      const warns = !took && _turnRoll(`warn|${ep.num}|${a}|${b}|${c}`) < Math.max(0.05, Math.min(0.8, sb.loyalty * 0.04 + (getBond(b, c) - 3) * 0.06));
+      const result = took ? 'took' : warns ? 'warned' : 'refused';
+      if (!gs._turnedHeat) gs._turnedHeat = {};
+      const until = (gs.episode || 0) + 1 + 2;
+      if (took) {
+        addBond(b, c, -1.2);
+        gs._turnedHeat[c] = { amount: Math.max(gs._turnedHeat[c]?.amount || 0, 0.6), expiresEp: until };
+      } else {
+        addBond(b, a, -0.5);
+        if (warns) {
+          addBond(c, a, -1.5);
+          addBond(b, c, 0.3);
+          gs._turnedHeat[a] = { amount: Math.max(gs._turnedHeat[a]?.amount || 0, 0.6), expiresEp: until };
+        }
+      }
+      gs.turnPitches.push({ ep: ep.num, a, b, c, result });
+      const block = ep.campEvents[g.key];
+      const into = block.post || block.pre;
+      // the people IN the scene: the friend only when b goes and tells them (talked about is not present)
+      if (Array.isArray(into)) into.push(scriptEvent({ type: 'turnFriend', players: warns ? [a, b, c] : [a, b], friend: c, badgeText: took ? 'TURNED' : warns ? 'WARNED' : 'TURNED DOWN', badgeClass: took ? 'red' : warns ? 'gold' : 'blue',
+        consequences: took ? `${b} starts to see ${c} the way ${a} wants (bond -1.2); ${c} carries heat into the next vote.` : warns ? `${b} refuses and tells ${c}: ${c} turns on ${a}, and ${a} carries heat.` : `${b} refuses; ${b} trusts ${a} a little less.` },
+        // the friend is talked about, not there, unless b goes and tells them (warned): only then on stage
+        makeScene('pitch.turn', warns ? { a, b, c } : { a, b }, { ending: result, friend: c }, [], spotOf(ep, a, b, 'post').spot),
+        { ep: ep.num, phase: 'post' }));
+      break;   // one a camp a night
+    }
+  }
+}
+
 export function checkAllianceRecruitment(ep) {
   if (!gs.namedAlliances?.length) return;
 
@@ -3479,7 +3551,8 @@ export function checkAllianceRecruitment(ep) {
       const _RECRUIT_KINDS = ['swap-outsider', 'post-quit', 'blindside-swing', 'free-agent', 'post-betrayal', 'power-couple', 'idol-shield'];
       _target.push(scriptEvent({ type: 'allianceRecruit', players: [recruit, recruiter], badgeText: 'RECRUITED', badgeClass: 'gold' },
         makeScene('recruit.join', { a: recruiter, b: recruit },
-          { ending: _RECRUIT_KINDS.includes(scenario) ? scenario : 'other', group: alliance.name }, [],
+          // pulled out of another alliance: a poach, played as one (the old alliance named and watching)
+          rivalAlliance ? { ending: 'poach', group: alliance.name, from: rivalAlliance.name } : { ending: _RECRUIT_KINDS.includes(scenario) ? scenario : 'other', group: alliance.name }, [],
           spotOf(ep, recruiter, recruit, 'post').spot),
         { ep: ep.num, phase: 'post' }));
     }
@@ -6951,6 +7024,9 @@ export function generateCampEvents(ep, phase = 'both') {
         : []),
     ];
     _prevSaves.forEach(save => {
+      // a save the player didn't survive the night on (saved at the first vote of a double, out at the
+      // second; sent to Exile): there is no morning after for them to talk in
+      if (!gs.activePlayers.includes(save.player)) return;
       // who is in the morning-after scene: the saved player with someone who wrote their name if
       // there is one, else the person closest to them (td/script/lines/save.js)
       const _svCamp = (gs.isMerged ? gs.activePlayers : (gs.tribes.find(t => t.members.includes(save.player))?.members
@@ -8039,6 +8115,7 @@ export function generateCampEvents(ep, phase = 'both') {
     // Social bomb check — fires before alliance quitting (bond hits can trigger quitting)
     checkSocialBomb(ep);
     // Alliance quitting evaluated once after all events are done, then recruitment (scenarios A + B)
+    checkTurnFriendPitches(ep);   // a pitch to turn on a friend, away from the vote
     checkAllianceQuitting(ep);
     checkAllianceRecruitment(ep);
     // Goat targeting: merge recognition + late-game FTC threat reassessment
@@ -8056,6 +8133,7 @@ export function generateCampEvents(ep, phase = 'both') {
     generateBlackVoteGuessEvents(ep);
     // Social bomb + alliance quitting + recruitment after the single-phase generation
     checkSocialBomb(ep);
+    checkTurnFriendPitches(ep);
     checkAllianceQuitting(ep);
     checkAllianceRecruitment(ep);
     checkGoatTargeting(ep);

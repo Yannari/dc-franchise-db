@@ -253,6 +253,14 @@ export function writeTribal(ep) {
   const CASES = new Set(['coming', 'sank', 'idol', 'pair', 'group', 'grudge', 'threat', 'outsider', 'numbers', 'isolate', 'pledge']);
   for (const v of ballots) {
     const why = whyOf(v, ep);
+    // a friend turned against them earlier (camp-events.js checkTurnFriendPitches, 'took'): the voter says
+    // who talked them into it, so the pitch the viewer saw comes back at the urn
+    const turned = v.voter !== elim && (gs.turnPitches || []).find(t => t.result === 'took' && t.b === v.voter && t.c === v.voted && t.ep <= ep.num && ep.num - t.ep <= 3);
+    if (turned) {
+      const tw = writeStory('booth', 'turned', { a: v.voter }, { target: v.voted, pitcher: turned.a },
+        { ...factsFor({ who: { a: v.voter }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(v.voter) }, ctx(n++, 'tribal', 'soft'));
+      if (tw) { booth.push({ voter: v.voter, voted: v.voted, why: 'turned', line: tw.lines.map(l => l.text).join(' ') }); continue; }
+    }
     const r = v.voter === elim ? null : roleOf(v);
     if (r && (r.role === 'misled' || whyOf(v, ep) !== 'flip')) {
       const sd = r.scene.scene.data || {};

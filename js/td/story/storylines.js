@@ -51,6 +51,8 @@ function ruleOf(ev) {
   // ── schemes ──
   if (/^(spreadLies|forgeNote|whisperCampaign|falseMajority|schemerManipulates|mastermindOrchestrates|chaosAgentStirsUp|lie|stolenCredit|villainIntimidate|villainPower|villainLoyalty)$/.test(t)) return R('scheme', 'move');
   if (/^(whisperCampaignExposed|stolenCreditConfrontation|loyaltyTestCaught|challengeThrowCaught)$/.test(t)) return R('scheme', 'caught');
+  // a pitch to turn on a friend (camp-events.js checkTurnFriendPitches): caught when the friend was told
+  if (t === 'turnFriend') return e === 'warned' ? R('scheme', 'caught', 'warned') : R('scheme', 'move', e || 'any');
   // ── friendships ──
   if (/^(bond|comfort|rideOrDie|secretShared|vulnerability|mentorBond|teachingMoment|gratitude|insideJoke|sunriseTalk|protectiveInstinct|silentSolidarity|loyaltyProof|rekindle|sharedStruggle|sharedMeal|celebrateTogether|groupLaugh)$/.test(t)) return R('friendship', 'bond');
   if (t === 'breakup') return R('friendship', 'drift');

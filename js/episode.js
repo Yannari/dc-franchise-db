@@ -7094,6 +7094,7 @@ function simulateJuryRoundtable(ep) {
       });
       if (!Object.keys(gs._suckyOutdoorsHeat).length) delete gs._suckyOutdoorsHeat;
     }
+    if (gs._turnedHeat) Object.keys(gs._turnedHeat).forEach(k => { if (((gs.episode || 0) + 1) >= gs._turnedHeat[k].expiresEp) delete gs._turnedHeat[k]; });
     if (gs._leakHeat) {
       Object.keys(gs._leakHeat).forEach(k => {
         if (((gs.episode || 0) + 1) >= gs._leakHeat[k].expiresEp) delete gs._leakHeat[k];

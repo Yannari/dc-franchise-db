@@ -114,40 +114,65 @@ export function tdFinalTribalScreen(ep, o = {}) {
     if (i === Math.floor(jurors.length / 2)) steps.push({ k: 'beat', text: `One by one, the jurors walk up, write a name and drop it in the urn.`, focus: finalists });
   });
 
-  // the reading: alternating finalists, the winner's clinching vote read last (and then it stops)
-  const need = Math.floor(jurors.length / 2) + 1;
-  const byFor = {};
-  jr.reasoning.forEach(r => (byFor[r.votedFor] ||= []).push(r));
-  const order = [];
-  const tally = {};
-  const pools = Object.fromEntries(Object.entries(byFor).map(([k, v]) => [k, [...v]]));
-  let clinched = false, turn = 0;
-  const others = finalists.filter(f => f !== winner);
-  while (!clinched && order.length < jurors.length) {
-    // the others first, while the winner is kept one short of the line until the end
-    const cand = turn % 2 === 0 ? others.find(f => pools[f]?.length) : null;
-    const pick = cand || ((tally[winner] || 0) < need - 1 || !others.some(f => pools[f]?.length) ? winner : others.find(f => pools[f]?.length));
-    const r = pools[pick]?.shift();
-    if (!r) { const any = Object.keys(pools).find(k => pools[k].length); if (!any) break; order.push(pools[any].shift()); tally[any] = (tally[any] || 0) + 1; turn++; continue; }
-    order.push(r); tally[pick] = (tally[pick] || 0) + 1; turn++;
-    if (pick === winner && tally[winner] >= need) clinched = true;
-  }
+  // the reading: alternating finalists, the winner's clinching vote read last (and then it stops). A tie
+  // (finale.js juryTiebreak) is read in full, lands on the tie, and goes to the revote, then if that ties
+  // too to the finalist who was cut, or to two winners.
+  const tb = ep.juryTiebreak;
   say(pickBy([`I'll read the votes.`, `I'll go tally the votes.`, `Okay. I have the votes.`], ep.num, 'read'));
-  const t = {};
-  order.forEach((r, i) => {
-    t[r.votedFor] = (t[r.votedFor] || 0) + 1;
-    const last = i === order.length - 1 && r.votedFor === winner && t[winner] >= need;
-    if (last) {
-      say(`${seasonOf(o) === 'this season' ? 'The winner' : `The winner of ${seasonOf(o)}`}...`, { focus: finalists, tense: true, hold: true });
-      steps.push({ k: 'beat', text: `${host} unfolds the last one and takes a long look at it before turning it around.`, focus: finalists, tense: true });
+  const readRound = (reasoning, win, clinchIt, tag) => {
+    const need = Math.floor(reasoning.length / 2) + 1;
+    const pools = {};
+    reasoning.forEach(r => (pools[r.votedFor] ||= []).push(r));
+    const rest = Object.keys(pools).filter(k => k !== win);
+    const order = [], tally = {};
+    let turn = 0;
+    while (order.length < reasoning.length) {
+      const other = turn % 2 === 0 ? rest.find(k => pools[k]?.length) : null;
+      let pick = other || ((tally[win] || 0) < need - 1 || !rest.some(k => pools[k]?.length) ? win : rest.find(k => pools[k]?.length));
+      if (!pools[pick]?.length) pick = Object.keys(pools).find(k => pools[k].length);
+      if (!pick) break;
+      order.push(pools[pick].shift()); tally[pick] = (tally[pick] || 0) + 1; turn++;
+      if (clinchIt && pick === win && tally[win] >= need) break;
     }
-    const lead = Object.entries(t).sort((a, b) => b[1] - a[1]);
-    const level = lead.length >= 2 && lead.every(x => x[1] === lead[0][1]);
-    const line = last ? `${winner}!` : lead.length >= 2 && i >= 1 ? (level ? `${r.votedFor}. That's ${word(lead[0][1])} vote${lead[0][1] === 1 ? '' : 's'} each.` : `${r.votedFor}. That's ${listOf(lead.map(([n, k]) => `${word(k)} ${n}`))}.`) : `${r.votedFor}.`;
-    steps.push({ k: 'read', vote: r.votedFor, deciding: last, tally: { ...t }, focus: [r.votedFor], line, tense: last || (lead.length >= 2 && lead[0][1] - lead[1][1] <= 1) });
-  });
-  if (ep.juryTiebreak) steps.push({ k: 'beat', text: `It's a tie on the jury. ${ep.juryTiebreak.text || ep.juryTiebreak.reason || `It goes to the tiebreak, and the tiebreak goes to ${winner}.`}`, focus: finalists, tense: true });
-  winnerMoment(steps, ep, o, winner, finalists, jurors, bond);
+    const t = {};
+    order.forEach((r, i) => {
+      t[r.votedFor] = (t[r.votedFor] || 0) + 1;
+      const last = clinchIt && i === order.length - 1 && r.votedFor === win && t[win] >= need;
+      if (last) {
+        say(`${seasonOf(o) === 'this season' ? 'The winner' : `The winner of ${seasonOf(o)}`}...`, { focus: finalists, tense: true, hold: true });
+        steps.push({ k: 'beat', text: `${host} unfolds the last one and takes a long look at it before turning it around.`, focus: finalists, tense: true });
+      }
+      const lead = Object.entries(t).sort((a, b) => b[1] - a[1]);
+      const level = lead.length >= 2 && lead.every(x => x[1] === lead[0][1]);
+      const line = last ? `${win}!` : lead.length >= 2 && i >= 1 ? (level ? `${r.votedFor}. That's ${word(lead[0][1])} vote${lead[0][1] === 1 ? '' : 's'} each.` : `${r.votedFor}. That's ${listOf(lead.map(([n, k]) => `${word(k)} ${n}`))}.`) : `${r.votedFor}.`;
+      steps.push({ k: 'read', vote: r.votedFor, revote: tag === 'revote', deciding: last, tally: { ...t }, focus: [r.votedFor], line, tense: last || (lead.length >= 2 && lead[0][1] - lead[1][1] <= 1) });
+    });
+  };
+  let crowned = winner;
+  if (!tb) readRound(jr.reasoning, winner, true, 'first');
+  else {
+    readRound(jr.reasoning, tb.tied?.[0], false, 'first');
+    const tied = tb.tied || [];
+    say(`That's a tie. ${listOf(tied)}, the jury couldn't split you.`, { tense: true, focus: tied });
+    steps.push({ k: 'beat', text: `Nobody moves. ${listOf(tied)} look at each other, then at the jury.`, focus: tied, tense: true });
+    say(`Jury, you're voting again, and this time it's only between ${listOf(tied)}.`, { focus: jurors.slice(0, 5) });
+    steps.push({ k: 'beat', text: `The jurors walk back up to the urn, one at a time.`, focus: jurors.slice(0, 6) });
+    const rv = tb.revote?.reasoning || [];
+    if (tb.method === 'revote') readRound(rv, tb.winner, true, 'revote');
+    else {
+      readRound(rv, tied[0], false, 'revote');
+      if (tb.method === 'finalist-tiebreaker' && tb.tiebreaker) {
+        say(`Still tied. So it comes down to one person: ${tb.tiebreaker}, the last one cut from this game. ${tb.tiebreaker}, who wins?`, { tense: true, focus: [tb.tiebreaker, ...tied] });
+        steps.push({ k: 'say', by: tb.tiebreaker, focus: [tb.tiebreaker, tb.winner], tense: true, text: `${tb.winner}.` });
+        if (tb.tiebreakerReason) steps.push({ k: 'beat', text: tb.tiebreakerReason, focus: [tb.tiebreaker] });
+        crowned = tb.winner;
+      } else {
+        say(`Still tied. For the first time ever, there are two winners. ${listOf(tied)}!`, { tense: true, focus: tied });
+        crowned = tied[0];
+      }
+    }
+  }
+  winnerMoment(steps, ep, o, crowned, finalists, jurors, bond);
 
   // and now the jury says why (generateFTCData / the jury vote's reasons), with the result known
   say(`Jury, you don't have to explain yourselves. But some of you want to.`);

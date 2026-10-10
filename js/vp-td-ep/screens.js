@@ -50,6 +50,9 @@ export function tdStepScreens(ep, classic = [], o = {}) {
   const mapped = new Map();
   for (const S of classic) {
     const m = /^camp-(pre|post)-(.+)$/.exec(S?.id || '');
+    // the finale's camp plays once, as the last morning (finale-camp): its classic camp page would show the
+    // same morning again (read in the browser, 2026-10-09)
+    if (m && ep.isFinale && classic.some(x => x?.id === 'finale-camp')) continue;
     if (m && mapOn) {
       const key = `${m[1]}:${m[2]}`;
       if (!mapped.has(key)) {

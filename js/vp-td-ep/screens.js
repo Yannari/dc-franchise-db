@@ -624,6 +624,9 @@ function mapPaint(uid, fresh) {
   world.innerHTML = `${worldHtml(scr0, L)}<div class="tdx-cast">${toks}</div><div class="tdx-fx"></div>`;
   st.querySelector('.tdx-hud').innerHTML = hudHtml(scr0, L, fresh, {});
   layer.innerHTML = clockHtml(uid, R, open) + (R.mode === 'zone' ? zoneHtml(uid, R, here) : pinsHtml(uid, R, W)) + listHtml(uid, R, here);
+  // the strip scrolls with the mouse wheel too, but only when it runs past the frame
+  const strip = layer.querySelector('.tdm-list');
+  if (strip) strip.onwheel = e => { if (strip.scrollWidth > strip.clientWidth + 2 && Math.abs(e.deltaY) > Math.abs(e.deltaX)) { strip.scrollLeft += e.deltaY; e.preventDefault(); } };
   // the whole day's count, and how many of those are still to come in later windows (the user, 2026-10-08:
   // "it says 5 to watch but I only get key conversations": the rest open later in the day)
   const later = M.convs.filter(c => M.windows.findIndex(w => w.id === c.window) > R.win && !R.seen.has(c.i)).length;
@@ -828,7 +831,8 @@ const TDM_CSS = `
 .tdx .tdm-stem{position:absolute;width:2px;transform:translateX(-50%);background:rgba(255,255,255,.85)}
 .tdx .tdm-stem.empty,.tdx .tdm-dot.empty{opacity:.5}
 .tdx .tdm-pin:hover{z-index:5}
-.tdx .tdm-list{scrollbar-width:none}.tdx .tdm-list::-webkit-scrollbar{display:none}
+/* the strip of scenes scrolls sideways when it runs past the frame: a thin bar shows there's more (the user, 2026-10-10) */
+.tdx .tdm-list{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.55) rgba(14,16,26,.55)}.tdx .tdm-list::-webkit-scrollbar{height:.55cqw}.tdx .tdm-list::-webkit-scrollbar-track{background:rgba(14,16,26,.55);border-radius:99px}.tdx .tdm-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.55);border-radius:99px}
 .tdx .tdm-dot{position:absolute;width:.8cqw;height:.8cqw;transform:translate(-50%,-50%);border-radius:50%;background:#fff;border:2px solid rgba(14,16,26,.9)}
 .tdx .tdm-clock{position:absolute;left:50%;top:1.6cqw;transform:translateX(-50%);display:flex;gap:.4cqw;align-items:center;background:rgba(14,16,26,.86);border-radius:12px;padding:.4cqw;max-width:62%;flex-wrap:wrap;justify-content:center}
 .tdx .tdm-win{border:0;background:none;color:#a9adbd;border-radius:9px;padding:.4cqw .7cqw;display:flex;flex-direction:column;align-items:flex-start;gap:.15cqw;cursor:pointer;font:inherit}
@@ -839,7 +843,7 @@ const TDM_CSS = `
 .tdx .tdm-bub.locked,.tdx .tdm-item.locked{cursor:not-allowed;opacity:.5;filter:grayscale(.6)}
 .tdx .tdm-later{border:0;background:#2ec4c4;color:#08201f;border-radius:9px;padding:.55cqw .8cqw;font:900 .85cqw/1 Nunito;cursor:pointer}
 .tdx .tdm-left{display:flex;align-items:center;gap:.3cqw;color:#ffc23a;font:800 .85cqw/1 Nunito;padding:0 .5cqw}
-.tdx .tdm-list{position:absolute;left:2%;right:2%;bottom:2.2%;display:flex;gap:.6cqw;overflow-x:auto;padding:.3cqw;scrollbar-width:none}
+.tdx .tdm-list{position:absolute;left:2%;right:2%;bottom:1.2%;display:flex;gap:.6cqw;overflow-x:auto;padding:.3cqw .3cqw .5cqw}
 .tdx .tdm-list.empty{justify-content:center}
 .tdx .tdm-list.empty span{background:rgba(14,16,26,.86);color:#a9adbd;border-radius:10px;padding:.7cqw 1.1cqw;font:700 .95cqw/1 Nunito}
 .tdx .tdm-item{flex:none;display:flex;align-items:center;gap:.6cqw;background:rgba(14,16,26,.9);border:2px solid rgba(255,255,255,.1);border-radius:12px;padding:.5cqw .8cqw .5cqw .5cqw;cursor:pointer;color:#f4f1ea;text-align:left;font:inherit}

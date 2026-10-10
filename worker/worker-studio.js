@@ -76,7 +76,7 @@ const VOICE_PATH = 'voice-profiles.json';
 const LIFE_PATH = 'life_events.json';
 const AVATAR_DIR = 'assets/avatars';
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
-const ROSTER_FIELDS = ['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats', 'voice', 'profileSources', 'continuityNote', 'drag', 'ties'];
+const ROSTER_FIELDS = ['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats', 'voice', 'profileSources', 'continuityNote', 'drag', 'ties', 'kit'];
 
 export default {
   async fetch(request, env) {
@@ -713,6 +713,26 @@ function tiesToJson(raw) {
   return out.length ? JSON.stringify(out.slice(0, 40)) : null;
 }
 
+// A Total Drama character kit (js/td/story/kits.js): their own lines for camp scenes, authored in the
+// Studio. Only the known parts, only strings; bit / tease / reply stay aligned (one exchange per index).
+const KIT_LISTS = ['bit', 'tease', 'reply', 'home', 'want', 'conf', 'askHome', 'askWant', 'defend', 'deep', 'solo'];
+function kitToJson(raw) {
+  if (raw == null || raw === '') return null;
+  let k = raw;
+  if (typeof k === 'string') { try { k = JSON.parse(k); } catch { throw new ValidationError('kit must be an object'); } }
+  if (!k || typeof k !== 'object' || Array.isArray(k)) throw new ValidationError('kit must be an object');
+  const line = v => (typeof v === 'string' ? v.trim().slice(0, 400) : '');
+  const out = {};
+  for (const one of ['thing', 'alone']) if (line(k[one])) out[one] = line(k[one]);
+  for (const part of KIT_LISTS) {
+    const arr = Array.isArray(k[part]) ? k[part].map(line).filter(Boolean).slice(0, 12) : [];
+    if (arr.length) out[part] = arr;
+  }
+  const n = Math.min(out.bit?.length || 0, out.tease?.length || 0, out.reply?.length || 0);
+  for (const part of ['bit', 'tease', 'reply']) { if (n) out[part] = out[part].slice(0, n); else delete out[part]; }
+  return Object.keys(out).length ? JSON.stringify(out) : null;
+}
+
 function rosterRowToJson(r) {
   const stats = {};
   for (const k of STAT_KEYS) if (r[k] != null) stats[k] = r[k];
@@ -754,6 +774,13 @@ function rosterRowToJson(r) {
       const ties = JSON.parse(r.ties);
       if (Array.isArray(ties) && ties.length) out.ties = ties;
     } catch { /* malformed ties are omitted rather than published broken */ }
+  }
+  // The Total Drama kit: read back out, or Publish deletes it (same as ties above).
+  if (r.kit) {
+    try {
+      const kit = JSON.parse(r.kit);
+      if (kit && typeof kit === 'object' && !Array.isArray(kit)) out.kit = kit;
+    } catch { /* malformed kit is omitted rather than published broken */ }
   }
   // The bio, as fields. Published alongside the rest so the static site can ask
   // demographic questions without reaching for D1 — and so the answer on the
@@ -849,6 +876,7 @@ async function rosterSave(env, payload) {
 
   const drag = dragToJson(payload.drag);
   const ties = tiesToJson(payload.ties);
+  const kit = kitToJson(payload.kit);
 
   const d = db(env);
   const existing = await d.prepare('SELECT slug FROM roster WHERE slug = ?').bind(slug).first();
@@ -857,9 +885,9 @@ async function rosterSave(env, payload) {
     `INSERT INTO roster (slug,name,gender,sexuality,archetype,${STAT_KEYS.join(',')},
                          voice,profile_sources,continuity_note,age,birthdate,ethnicity,nationality,
                          hometown,occupation,descriptor,backstory,personality,
-                         casting_interview,drag,ties,
+                         casting_interview,drag,ties,kit,
                          is_returnee,retired,updated_at)
-     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
+     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
      ON CONFLICT(slug) DO UPDATE SET
        name=excluded.name, gender=excluded.gender, sexuality=excluded.sexuality,
        archetype=excluded.archetype,
@@ -872,7 +900,7 @@ async function rosterSave(env, payload) {
        descriptor=excluded.descriptor, backstory=excluded.backstory,
        personality=excluded.personality,
        casting_interview=excluded.casting_interview,
-       drag=excluded.drag, ties=excluded.ties,
+       drag=excluded.drag, ties=excluded.ties, kit=excluded.kit,
        is_returnee=excluded.is_returnee,
        retired=excluded.retired, updated_at=datetime('now')`
   ).bind(
@@ -885,7 +913,7 @@ async function rosterSave(env, payload) {
     text(payload.hometown), text(payload.occupation),
     text(payload.descriptor), text(payload.backstory), text(payload.personality),
     text(payload.castingInterview),
-    drag, ties,
+    drag, ties, kit,
     payload.isReturnee ? 1 : 0,
     payload.retired ? 1 : 0,
   ).run();

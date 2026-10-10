@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS roster (
   -- person, not about a season: set once, read by every show (js/ties.js),
   -- both ways, with the family nobody typed worked out from it.
   ties TEXT,
+  kit TEXT,                -- Total Drama character kit (JSON), authored in the Studio
 
   is_returnee INTEGER DEFAULT 0,      -- roster flag carried over from the JSON
   retired     INTEGER DEFAULT 0,      -- 1 = hidden from casting, history preserved

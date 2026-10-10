@@ -299,6 +299,50 @@ const _esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&am
 function _slugify(name) { return String(name || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
 function _statHue(v) { v = Math.max(1, Math.min(10, v)); let h; if (v <= 5.5) h = 4 + ((v - 1) / 4.5) * 38; else h = 42 + ((v - 5.5) / 4.5) * 108; return `hsl(${h.toFixed(0)} 70% 50%)`; }
 function _avatarSrc(slug) { return (window.__studioAvatars && window.__studioAvatars[slug]) || `assets/avatars/${slug}.png`; }
+// ── THE TOTAL DRAMA KIT ──
+// A character's own lines for camp scenes (js/td/story/kits.js reads it off the roster row as
+// `kit`, after the hand-written kits in js/td/story/kits/). Shown only while Total Drama is the
+// selected show. Held in the editor as text (one line per entry) and the bit rows; serialised to
+// the kit's own shape on save.
+const KIT_BITS = 3;
+const KIT_TEXT = [
+  ['home', 'Home', 'asked who is waiting back home, they say…'],
+  ['want', 'What they want', 'asked what they want out of this, they say…'],
+  ['conf', 'Confessionals', 'alone with the camera, in their own voice'],
+  ['askHome', 'Asking about home', 'how THEY ask somebody else about home'],
+  ['askWant', 'Asking what you want', 'how THEY ask somebody else what they want'],
+  ['defend', 'Pushback', 'when somebody mocks their thing'],
+  ['deep', 'The real thing', 'what is under the act, to somebody they trust'],
+  ['solo', 'Alone, to camera', 'what they say when the camera finds them alone'],
+];
+function _emptyKit() {
+  return { thing: '', alone: '', bits: Array.from({ length: KIT_BITS }, () => ({ bit: '', tease: '', reply: '' })), ...Object.fromEntries(KIT_TEXT.map(([k]) => [k, ''])) };
+}
+function _kitFrom(k) {
+  const out = _emptyKit();
+  if (typeof k === 'string') { try { k = JSON.parse(k); } catch { k = null; } }
+  if (!k || typeof k !== 'object') return out;
+  out.thing = k.thing || ''; out.alone = k.alone || '';
+  const n = Math.max(KIT_BITS, (k.bit || []).length);
+  out.bits = Array.from({ length: n }, (_, i) => ({ bit: k.bit?.[i] || '', tease: k.tease?.[i] || '', reply: k.reply?.[i] || '' }));
+  for (const [key] of KIT_TEXT) out[key] = (Array.isArray(k[key]) ? k[key] : []).join('\n');
+  return out;
+}
+/** The kit as the game reads it, or null when nothing was written. */
+function _kitOut(d) {
+  const k = d?.kit; if (!k) return null;
+  const lines = t => String(t || '').split('\n').map(x => x.trim()).filter(Boolean);
+  const out = {};
+  if (k.thing?.trim()) out.thing = k.thing.trim();
+  if (k.alone?.trim()) out.alone = k.alone.trim();
+  const rows = (k.bits || []).filter(b => b.bit?.trim() && b.tease?.trim() && b.reply?.trim());
+  if (rows.length) { out.bit = rows.map(b => b.bit.trim()); out.tease = rows.map(b => b.tease.trim()); out.reply = rows.map(b => b.reply.trim()); }
+  for (const [key] of KIT_TEXT) { const v = lines(k[key]); if (v.length) out[key] = v; }
+  return Object.keys(out).length ? out : null;
+}
+const _kitCount = d => { const o = _kitOut(d); return o ? Object.keys(o).length : 0; };
+const _tdSelected = () => { try { const f = window.seasonConfig?.format; return !f || f === 'total-drama'; } catch { return true; } };
+
 function _blankChar() {
   return {
     name:'', slug:'', age:'', gender:'nb', sexuality:'straight', archetype:'',
@@ -318,6 +362,7 @@ function _blankChar() {
     voice:'', avatarDataUri:'', portraits: [], removePortraits: [], stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
     drag: _emptyDrag(),
     ties: [],
+    kit: _emptyKit(),
   };
 }
 
@@ -1324,6 +1369,7 @@ async function _editBySlug(slug) {
        live database, the roster row is exactly where it has not made it to. */
     drag: { ..._emptyDrag(), ...((rich && rich.drag) || {}), ...(base.drag || {}) },
     ties: (Array.isArray(base.ties) ? base.ties : Array.isArray(rich && rich.ties) ? rich.ties : []).map(t => ({ ...t })),
+    kit: _kitFrom(base.kit || (rich && rich.kit)),
     age: pick(base.age, rich && rich.age, parsed.age),
     ethnicity: pick(base.ethnicity, rich && rich.ethnicity, parsed.ethnicity, legacy.ethnicity),
     nationality: pick(base.nationality, rich && rich.nationality, parsed.nationality, legacy.nationality),
@@ -1893,6 +1939,28 @@ function _renderEditor() {
         </div>
       </details>
 
+      <!-- THE TOTAL DRAMA KIT. Their own lines for camp scenes (js/td/story/kits.js): a running
+           bit with the tease and the comeback, home, what they want, confessionals, what they do
+           alone. Only while Total Drama is the selected show. {a} is them, {b} whoever they talk to. -->
+      ${_tdSelected() ? `<details class="st-iv st-kit">
+        <summary class="st-iv-sum">Camp kit <span class="st-hint" id="st-kit-count">${_kitCount(d) ? `${_kitCount(d)} parts written` : 'empty'} &middot; Total Drama camp scenes</span></summary>
+        <div class="st-iv-body">
+          <span class="st-hint">Their own lines, in plain spoken English. Every line plays once a season. {a} is them, {b} is the person they're talking to. One line per entry.</span>
+          <label class="st-l">Known for <span class="st-hint">what they're known for, as somebody else would put it</span>
+            <input class="st-input" data-kit="thing" value="${_esc(d.kit?.thing || '')}" placeholder="e.g. being goth"></label>
+          <div class="st-l">Running bits <span class="st-hint">they bring it up, somebody teases them, they come back at it</span></div>
+          ${(d.kit?.bits || []).map((b, i) => `<div class="st-kit-bit">
+            <textarea class="st-input st-area" rows="2" data-kit-bit="${i}" data-part="bit" placeholder="they say…">${_esc(b.bit)}</textarea>
+            <textarea class="st-input st-area" rows="2" data-kit-bit="${i}" data-part="tease" placeholder="somebody teases them…">${_esc(b.tease)}</textarea>
+            <textarea class="st-input st-area" rows="2" data-kit-bit="${i}" data-part="reply" placeholder="they come back with…">${_esc(b.reply)}</textarea>
+          </div>`).join('')}
+          ${KIT_TEXT.map(([key, label, hint]) => `<label class="st-l">${_esc(label)} <span class="st-hint">${_esc(hint)}</span>
+            <textarea class="st-input st-area" rows="2" data-kit="${key}" placeholder="one line per entry">${_esc(d.kit?.[key] || '')}</textarea></label>`).join('')}
+          <label class="st-l">Alone <span class="st-hint">what the camera finds them doing: "{a} is …"</span>
+            <input class="st-input" data-kit="alone" value="${_esc(d.kit?.alone || '')}" placeholder="e.g. is sketching the shoreline in the back of a notebook"></label>
+        </div>
+      </details>` : ''}
+
       <!-- CONTINUITY — what they already did, read back out of the archive.
            The mirror image of the casting interview above it: that tape was
            recorded before the door shut and may not mention a season, this one
@@ -1995,6 +2063,15 @@ function _renderEditor() {
       if (c) c.textContent = `${_ivCount(d)} of ${INTERVIEW_QUESTIONS.length} answered · shown on their wiki page`;
     });
   });
+
+  // the camp kit (Total Drama only)
+  const kitCount = () => { const c = ed.querySelector('#st-kit-count'); if (c) c.textContent = `${_kitCount(d) ? `${_kitCount(d)} parts written` : 'empty'} · Total Drama camp scenes`; };
+  ed.querySelectorAll('[data-kit]').forEach(el => el.addEventListener('input', e => { d.kit = d.kit || _emptyKit(); d.kit[el.dataset.kit] = e.target.value; kitCount(); }));
+  ed.querySelectorAll('[data-kit-bit]').forEach(el => el.addEventListener('input', e => {
+    d.kit = d.kit || _emptyKit();
+    const i = +el.dataset.kitBit; d.kit.bits[i] = d.kit.bits[i] || { bit: '', tease: '', reply: '' };
+    d.kit.bits[i][el.dataset.part] = e.target.value; kitCount();
+  }));
 
   // ── WRITE THE INTERVIEW ──
   //
@@ -2947,6 +3024,8 @@ async function _save() {
   // Family & ties: always sent, so removing the last tie clears it in the
   // database too (the Worker stores an empty list as NULL).
   entry.ties = (d.ties || []).filter(t => t && t.name && t.kin && t.name !== d.name).map(t => ({ ...t }));
+  // The camp kit: always sent, so clearing it clears it in the database too (null).
+  entry.kit = _kitOut(d);
 
   // 1) live projection into the roster the Cast Builder reads
   const arr = _roster().slice();
@@ -2975,7 +3054,7 @@ async function _save() {
        whether or not `_hasDrag` would send it to the server: this is the local
        draft, and a row of fives here costs nothing and loses nothing. */
     drag: d.drag ? { ...d.drag, traits: [...(d.drag.traits || [])] } : null,
-    ties: entry.ties,
+    ties: entry.ties, kit: entry.kit,
     voice: d.voice, avatarDataUri: d.avatarDataUri || '' };
   try { await _idbPut('characters', rich); } catch {}
   if (d.avatarDataUri) { window.__studioAvatars = window.__studioAvatars || {}; window.__studioAvatars[d.slug] = d.avatarDataUri; }
@@ -3536,6 +3615,8 @@ function _injectCSS() {
   .st-iv-sum::before{content:'\\25b8';display:inline-block;transition:transform .15s;opacity:.6}
   .st-iv[open] .st-iv-sum::before{transform:rotate(90deg)}
   .st-iv-body{padding:0 14px 12px;display:grid;gap:10px}
+  .st-kit-bit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  @media (max-width:700px){.st-kit-bit{grid-template-columns:1fr}}
   .st-iv-gen{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:2px}
   .st-iv-body .st-l{font-size:12.5px;font-weight:600;line-height:1.45}
   .st-cont{margin:14px 0;border:1px solid var(--st-stroke,rgba(255,255,255,.12));border-radius:10px;background:rgba(255,255,255,.02)}

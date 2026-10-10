@@ -9,6 +9,7 @@
 // cover yet keeps its classic screen. A Classic switch on every stepped screen lands on the same
 // screen in the classic viewer (localStorage 'td-vp' = 'classic' to stay there).
 import { tdCampScreen, tdTribalScreen, tdTribalStepped, tdDoubleTribalScreen, cleanText, placeScene, plateKey, placeName, venueOf, teamSpot } from './steps.js';
+import { tdFinalTribalScreen, tdFinaleDecisionScreen, tdFanFinaleScreen, tdWinnerScreen } from './finale.js';
 import { tdCampMap, tdIslandMap, hasMap, MAP_VENUES, openWindow, nextConv, lockedConv, PLACE_LABEL } from './map.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, tdRiDuelScreen } from './twists.js';
 import { tdJuryHouseScreen, isJuryHouse } from './jury-house.js';
@@ -36,6 +37,7 @@ function membersOf(ep, camp) {
 export function tdStepScreens(ep, classic = [], o = {}) {
   const out = [];
   let tribalDone = false, aftermathDone = false, juryDone = false, juryElimDone = false;
+  const finDone = new Set();
   // Tied Destinies is a double elimination at Tribal: announced, talked about, and the partner sent home too
   const tribal = openVoteTribal(tiedDestiniesTribal(tdTribalStepped(ep) ? tdTribalScreen(ep, o) : tdDoubleTribalScreen(ep, o), ep), ep);
   // the camp map (map.js) is the default camp view where the venue has one, one map per team at
@@ -59,6 +61,23 @@ export function tdStepScreens(ep, classic = [], o = {}) {
     if (m) {
       const scr = tdCampScreen(ep, m[2], m[1], membersOf(ep, m[2]), o);
       if (scr) { out.push(shell(scr, S, ep, o)); continue; }
+    }
+    // the finale (finale.js): the last morning at camp, the decision, the fan vote, Final Tribal and the
+    // winner on the stage; the finale's races and the fire-making duel stay classic, like every challenge
+    if (ep.isFinale) {
+      const id = S?.id || '';
+      const fin = (key, build) => { if (finDone.has(key)) return 'skip'; const x = (() => { try { return build(); } catch (err) { console.warn('TD finale screen fell back:', key, err); return null; } })(); if (!x) return null; finDone.add(key); out.push(shell(x, { ...S, id: x.id, label: x.label }, ep, o)); return 'done'; };
+      let r = null;
+      if (id === 'finale-camp') {
+        const campK = Object.keys(ep.campEvents || {})[0];
+        const scr = campK ? tdCampScreen(ep, campK, 'pre', membersOf(ep, campK), o) : null;
+        if (scr) { out.push(shell(scr, S, ep, o)); continue; }
+      }
+      else if (['firemaking-decision', 'final-cut', 'kl-choice'].includes(id)) r = fin('decision', () => tdFinaleDecisionScreen(ep, o));
+      else if (['fan-campaign', 'fan-vote-reveal'].includes(id)) r = fin('fan', () => tdFanFinaleScreen(ep, o));
+      else if (['ftc', 'jury-vote'].includes(id)) r = fin('ftc', () => tdFinalTribalScreen(ep, o));
+      else if (id === 'winner-ceremony') r = fin('winner', () => tdWinnerScreen(ep, o));
+      if (r) continue;
     }
     // the Aftermath talk show: every classic segment screen becomes one show on the studio stage
     // (the Aftermayhem minigames keep their own screens)

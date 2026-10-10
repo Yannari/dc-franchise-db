@@ -200,7 +200,7 @@ const BOND = [
     { by: 'b', say: "You too. I mean it." },
   ] },
   { id: 'mo.b7', when: { reason: 'truce' }, turns: [
-    { by: 'b', say: "Want the last of the coconut?" },
+    { by: 'b', say: "Want the last of my breakfast?" },
     { by: 'a', say: "Are you trying to poison me?" },
     { by: 'b', say: "Not today." },
     { by: 'a', conf: "{b} and I never had a deal. We just never voted for each other. Out here, that's practically a friendship." },

@@ -14217,8 +14217,10 @@ function _buildVPScreensClassic(epRecord) {
   delete _tvState[String(vpEpNum) + '_bench'];
   delete _tvState[String(vpEpNum) + '_slasher']; // slasher night round reveal state
   delete _tvState[`coc-chain-${vpEpNum}`]; // chain of command reveal state
-  delete _reunionRevealed[String(vpEpNum) + '_reunion'];
-  delete _gcRevealed[String(vpEpNum) + '_gc'];
+  // (main.js puts these on window; a headless build has no window copy, and a bare name there threw on
+  // every finale)
+  if (typeof window !== 'undefined' && window._reunionRevealed) delete window._reunionRevealed[String(vpEpNum) + '_reunion'];
+  if (typeof window !== 'undefined' && window._gcRevealed) delete window._gcRevealed[String(vpEpNum) + '_gc'];
   const ep = epRecord;
 
   // A Big Brother week is a different show with a different visual player, and

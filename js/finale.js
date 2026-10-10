@@ -4983,29 +4983,47 @@ export function generateFTCData(finalists, juryResult) {
   const jury = gs.jury || [];
 
   // Opening statements: grounded in each finalist's actual game stats
+  // Each finalist's own record, so two finalists never open with the same speech (read 2026-10-09: two
+  // social finalists said the identical words in every season), and a claim is only made when it is true
+  // ("Every big vote, I was behind it" had been said by whoever had the strategic stat).
   const finalistStatements = {};
+  const usedOpen = new Set();
+  const firstFree = (...opts) => { const o = opts.find(x => !usedOpen.has(x)) || opts[0]; usedOpen.add(o); return o; };
   finalists.forEach(f => {
     const fs = pStats(f);
-    const arch = players.find(p => p.name === f)?.archetype || '';
     const wins = gs.episodeHistory.filter(e => e.immunityWinner === f).length;
     const totalVotes = gs.episodeHistory.reduce((s, e) => s + (e.votes?.[f] || 0), 0);
+    // the boots they voted for, latest first: the moves that are really theirs
+    const kills = gs.episodeHistory.filter(e => e.eliminated && (e.votingLog || []).some(v => v.voter === f && v.voted === e.eliminated)).map(e => e.eliminated).reverse();
+    const ally = [...finalists, ...jury].filter(p => p !== f).sort((a, b) => getBond(f, b) - getBond(f, a))[0];
+    const broke = (gs.namedAlliances || []).reduce((n, a) => n + (a.betrayals || []).filter(b => b.player === f).length, 0);
     const lines = [];
 
-    if (fs.strategic >= 8 && fs.social >= 7)
-      lines.push(`I played this game on every level — strategy, relationships, competition. I want your vote based on gameplay, because I believe mine was the best game up here.`);
+    if (fs.strategic >= 8 && kills.length >= 3)
+      lines.push(firstFree(`I made the moves in this game. ${kills[0]} and ${kills[1]} didn't go home by accident. I'm not going to apologise for playing hard. I'm asking you to respect it.`,
+        `Look at the votes. ${kills[0]}, ${kills[1]}, ${kills[2]}. I was on the right side of every one of them, because I put myself there.`));
     else if (fs.strategic >= 8)
-      lines.push(`I controlled this game. Every big vote — I was behind it. I'm not apologizing for playing hard. I'm asking you to respect it.`);
+      lines.push(firstFree(`I knew where every vote was going, even the ones I didn't run. Knowing is a skill, and it's the reason I'm sitting here.`,
+        `I didn't always make the big move, but I always saw it coming. That kept me alive when people with bigger games went home.`));
     else if (fs.social >= 8)
-      lines.push(`I played this game with each of you in mind. I kept my word where I could. I built real relationships. I'm here because people trusted me.`);
+      lines.push(firstFree(`I played this game with each of you in mind. I kept my word where I could. I built real relationships. I'm here because people trusted me.`,
+        `Every person on that bench, I really talked to. Not to work you, to know you. That's the game I played, and it's why I'm still here.`));
+    else if (fs.loyalty >= 8 && ally && broke === 0)
+      lines.push(firstFree(`I made a promise to ${ally} early, and I kept it all the way here. In a game like this, that's rare, and I think it should count for something.`,
+        `I never turned on the people I was with. Not once. I'm asking you to decide if that's worth a million dollars.`));
     else if (wins >= 3 || fs.physical >= 8)
-      lines.push(`I earned every single day out here. I won when I had to. I never hid. I competed — and I'm asking you to reward that.`);
+      lines.push(firstFree(`I earned every single day out here. I won when I had to. I never hid. I competed, and I'm asking you to reward that.`,
+        `When my game was on the line, I didn't need anybody's permission to stay. I went out and won.`));
     else
-      lines.push(`I know I'm not the flashiest player up here. But I navigated this game on my own terms and I'm standing at the end. That took something real.`);
+      lines.push(firstFree(`I know I'm not the flashiest player up here. But I navigated this game on my own terms and I'm standing at the end. That took something real.`,
+        `Nobody thought I'd be sitting here. I let them think that, and every time they picked somebody else, I got one step closer to tonight.`));
 
     if (totalVotes >= 5)
-      lines.push(`I was targeted multiple times. People wanted me gone. I found a way to survive every single time.`);
+      lines.push(`My name came up ${totalVotes} times this season. Every single time, I found a way to stay.`);
     else if (wins >= 2)
-      lines.push(`${wins} individual wins — including the one that guaranteed my spot tonight. I was never just along for the ride.`);
+      lines.push(`${wins} individual wins, including the one that guaranteed my spot tonight. I was never just along for the ride.`);
+    else if (broke === 0 && kills.length)
+      lines.push(`And I never broke a promise to an alliance to get here.`);
 
     finalistStatements[f] = lines;
   });

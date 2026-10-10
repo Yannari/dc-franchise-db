@@ -10,6 +10,7 @@
 // PURE. Who arrives, who votes for whom and in what order, who the jury boots, who the spirit is
 // and what they stir up, the fans' ranking, what the ambassadors agree: all the engine's record.
 // The words are the host's and the players', each in their own voice (td/story/voice-family.js).
+import { ambassadorsDay } from './ambassadors.js';
 import { placeScene, plateKey, placeName, venueOf, VENUES, cleanText, campSlot, teamSpot } from './steps.js';
 import { familyOf } from '../td/story/voice-family.js';
 
@@ -254,24 +255,9 @@ export function tdAmbassadorsScreen(ep, o = {}) {
   const venue = venueOf(ep, o);
   const key = plateKey('islands', 'skull-rock', 'day') || plateKey(venue, VENUES[venue]?.public || 'communal-grounds', 'day');
   if (!key) return null;
-  const sel = d.ambassadorSelections || [];
-  const amb = sel.map(s => s.ambassador).filter(Boolean);
-  const steps = [];
-  const say = (text, extra = {}) => steps.push({ k: 'say', by: host, host: true, text, ...extra });
-  steps.push({ k: 'scene', spot: 'skull-rock', tod: 'day', plate: key, place: 'Neutral Ground', time: 'Afternoon', card: true, focus: amb, bg: [], places: placeScene(key, amb, [], { host }), host });
-  say(`Each team picked an ambassador. ${listOf(amb)}, the two of you decide, right here, who goes home. Agree on one name, or draw rocks.`);
-  steps.push({ k: 'title', kicker: 'Twist', name: 'The Ambassadors', faces: amb, vs: amb.length === 2 });
-  for (const s of sel) if (s.runnerUp) steps.push({ k: 'beat', text: `${s.tribe} sent ${s.ambassador}. ${s.runnerUp} nearly went instead.`, focus: [s.ambassador] });
-  for (const line of m.narrative || []) playText(steps, line, amb);
-  if (m.eliminatedByRocks || m.rockDrawLoser) {
-    say(`No deal. Then it comes down to the rocks.`, { tense: true });
-    steps.push({ k: 'beat', text: `${m.rockDrawLoser || m.eliminated} draws the purple rock.`, focus: [m.rockDrawLoser || m.eliminated], act: { kind: 'shake', who: [m.rockDrawLoser || m.eliminated] } });
-  } else if (m.agreed && m.target) {
-    steps.push({ k: 'title', kicker: 'They agree', name: m.target, faces: [m.target], tone: 'out' });
-  }
-  if (m.eliminated) {
-    say(`${m.eliminated}, the ambassadors have spoken.`, { focus: [m.eliminated] });
-    steps.push({ k: 'out', who: m.eliminated, focus: [m.eliminated] });
-  }
+  // the whole day as conversations (ambassadors.js); an episode simulated before the meeting kept its
+  // proposals still plays it, from the same record
+  const steps = ambassadorsDay({ ep, host, venue, neutral: key });
+  if (!steps.length) return null;
   return { id: 'ambassadors', kind: 'tribal', venue: plateKey('islands', 'skull-rock', 'day') ? 'islands' : venue, ep: ep.num, label: 'The Ambassadors', host, steps };
 }

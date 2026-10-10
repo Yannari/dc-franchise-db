@@ -3684,6 +3684,8 @@ export function applyTwist(ep, twist, isPrimary = true) {
       twistObj.ambassadorMeeting = {
         ambassadors: _ambassadors.map(a => a.name), types: _ambassadors.map(a => ({ name: a.name, type: a.type })),
         agreed, target, targetReason, rockDrawLoser, narrative, eliminatedByRocks, eliminated, resistFired,
+        // what the meeting was made of, for the viewer to write it as a conversation (vp-td-ep/ambassadors.js)
+        proposals: _discussedNames, dominator: _dominator?.name || null, defender: _defender?.name || null, sharedEnemy: _sharedEnemy || null,
         returnEvents: _returnEvents,
       };
       twistObj.ambassadorEliminated = eliminated;

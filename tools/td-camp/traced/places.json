@@ -6591,5 +6591,123 @@
     680
    ]
   ]
+ },
+ "jury-sol": {
+  "src": "jury-sol.png",
+  "night": true,
+  "wind": 0.0,
+  "ppl": 26,
+  "seat": 20,
+  "host": 26,
+  "noleaf": true,
+  "still": [
+   [
+    0,
+    0,
+    1600,
+    900
+   ]
+  ]
+ },
+ "jury-sol-close": {
+  "src": "jury-sol-close.png",
+  "night": true,
+  "wind": 0.0,
+  "ppl": 40,
+  "seat": 34,
+  "host": 40,
+  "noleaf": true,
+  "still": [
+   [
+    0,
+    0,
+    1600,
+    900
+   ]
+  ]
+ },
+ "jury-cv": {
+  "src": "jury-cv.png",
+  "wind": 0.0,
+  "nosky": true,
+  "noleaf": true,
+  "ppl": 22,
+  "seat": 18,
+  "host": 22,
+  "still": [
+   [
+    0,
+    0,
+    1600,
+    900
+   ]
+  ]
+ },
+ "jury-hc": {
+  "src": "jury-hc.png",
+  "wind": 0.0,
+  "nosky": true,
+  "noleaf": true,
+  "ppl": 22,
+  "seat": 16,
+  "host": 22,
+  "still": [
+   [
+    0,
+    0,
+    1600,
+    900
+   ]
+  ]
+ },
+ "jury-lot": {
+  "src": "jury-lot.png",
+  "wind": 0.0,
+  "nosky": true,
+  "noleaf": true,
+  "ppl": 28,
+  "seat": 22,
+  "host": 28,
+  "still": [
+   [
+    0,
+    0,
+    1600,
+    900
+   ]
+  ]
+ },
+ "jury-lot-close": {
+  "src": "jury-lot-close.png",
+  "wind": 0.0,
+  "nosky": true,
+  "noleaf": true,
+  "ppl": 40,
+  "seat": 32,
+  "host": 40,
+  "still": [
+   [
+    0,
+    0,
+    1600,
+    900
+   ]
+  ]
+ },
+ "jury-wt": {
+  "src": "jury-wt.png",
+  "wind": 0.0,
+  "ppl": 26,
+  "seat": 21,
+  "host": 26,
+  "noleaf": true,
+  "still": [
+   [
+    0,
+    0,
+    1600,
+    900
+   ]
+  ]
  }
 }

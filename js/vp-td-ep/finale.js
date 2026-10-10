@@ -19,6 +19,7 @@
 // person's voice (td/story/voice-family.js), never deciding anything.
 import { placeScene, plateKey, venueOf, VENUES, cleanText } from './steps.js';
 import { familyOf } from '../td/story/voice-family.js';
+import { TD_MARKS } from './marks.js';
 
 const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 const pickBy = (arr, ...k) => arr[hash(k.join('|')) % arr.length];
@@ -33,6 +34,8 @@ const word = n => WORD[n] || String(n);
 // the ceremony set at night (where every vote of the season happened), or the venue's public place
 function ceremony(ep, o, tod = 'night') {
   const venue = venueOf(ep, o);
+  // Total Drama Action's finale is in the Aftermath studio (the user, 2026-10-10)
+  if (venue === 'film-lot' && TD_MARKS['islands/aftermath-studio-day']) return { venue, key: 'islands/aftermath-studio-day', spot: 'aftermath-studio' };
   const key = plateKey(venue, 'ceremony', tod) || plateKey(venue, 'ceremony', 'night') || plateKey(venue, VENUES[venue]?.public || 'communal-grounds', tod);
   return { venue, key, spot: plateKey(venue, 'ceremony', tod) || plateKey(venue, 'ceremony', 'night') ? 'ceremony' : (VENUES[venue]?.public || 'communal-grounds') };
 }
@@ -41,6 +44,30 @@ function grounds(ep, o, tod = 'day') {
   return { venue, spot: pub, key: plateKey(venue, pub, tod) || plateKey(venue, pub, 'day') };
 }
 const seasonOf = o => o.seasonName || 'this season';
+// where the jury sits (tools/td-camp/venues/zz_zzzzjury.py, the user's frames): the wide shot, and a close
+// one where the venue has it. Null where a venue has none: the jury then stands at the ceremony as before.
+function juryPlates(ep, o) {
+  const venue = venueOf(ep, o);
+  // what each frame is: the tiki stage is painted at night, the big top, the cave and the lounge are indoors,
+  // the Hawaiian beach is in the day
+  return { wide: plateKey(venue, 'jury-bleachers', 'night'), close: plateKey(venue, 'jury-close', 'night'),
+    night: venue === 'survival-island', indoor: ['carnival', 'hosted-camp', 'film-lot'].includes(venue), day: venue === 'world-tour' };
+}
+// the jury in the stands: the front row first, left to right, then the row behind, each person sized to the
+// gap beside them (placeScene's group seating picks the centre seats of every row, and they overlapped)
+function seatJury(key, names) {
+  const seats = ((TD_MARKS[key] || {}).m || []).filter(m => m.kind === 'seat' && m.u > .1 && m.u < .9 && m.v > .38 && m.v < .78)
+    .sort((a, b) => b.v - a.v || a.u - b.u);
+  const out = {};
+  names.slice(0, seats.length).forEach((n, i) => {
+    const m = seats[i];
+    const row = seats.filter(x => Math.abs(x.v - m.v) < .03).map(x => x.u).sort((a, b) => a - b);
+    const gap = row.length > 1 ? Math.min(...row.slice(1).map((u, k) => u - row[k])) : .2;
+    out[n] = { u: m.u, v: m.v, s: m.s, sit: true, h: Math.max(8, Math.min(m.s * 95, (gap * .95) / .5625 * 100)) };
+  });
+  return out;
+}
+const seatsOn = key => ((TD_MARKS[key] || {}).m || []).filter(m => m.kind === 'seat' && m.u > .1 && m.u < .9 && m.v > .38 && m.v < .78).length;
 
 // ══════════════════════════════════════════════════════════════════════
 // FINAL TRIBAL COUNCIL — the case, the questions, the vote, the reasons
@@ -60,13 +87,31 @@ export function tdFinalTribalScreen(ep, o = {}) {
   const steps = [];
   const say = (text, extra = {}) => steps.push({ k: 'say', by: host, host: true, text, ...extra });
 
+  const J = juryPlates(ep, o);
+  const seated = J.wide ? jurors.slice(0, Math.max(1, seatsOn(J.wide))) : [];
+  // a cut to the stands (all of them seated, the one talking in focus), or to a close shot of one juror
+  const toJury = (focus, close = false) => {
+    const key = close && J.close ? J.close : J.wide;
+    if (!key) return;
+    const who = close && J.close ? focus.slice(0, 1) : seated;
+    // the plate's own hour: these frames are painted at their time already (the tiki stage is night), and a
+    // day plate asked for at night is darkened a second time
+    steps.push({ k: 'scene', spot: key === J.close ? 'jury-close' : 'jury-bleachers', tod: /-night$/.test(key) ? 'night' : 'day', plate: key, place: 'The Jury', time: J.day ? 'Day' : 'Night', card: false,
+      focus, bg: [], places: seatJury(key, who), host: null, wide: key !== J.close, still: true, ...(J.indoor ? { noWx: true } : {}), ...(J.night ? { nightFrame: true } : {}) });
+  };
+  const toFinal = (focus = finalists) => steps.push({ k: 'scene', spot: C.spot, tod: 'night', plate: C.key, place: 'Final Tribal Council', time: 'Night', card: false,
+    focus, bg: [], places: placeScene(C.key, J.wide ? finalists : [...finalists, ...jurors.slice(0, 7)], [], { host }), host, wide: true });
   steps.push({ k: 'scene', spot: C.spot, tod: 'night', plate: C.key, place: 'Final Tribal Council', time: 'Night', card: true,
-    focus: finalists, bg: [], places: placeScene(C.key, [...finalists, ...jurors.slice(0, 7)], [], { host }), host, wide: true });
+    focus: finalists, bg: [], places: placeScene(C.key, J.wide ? finalists : [...finalists, ...jurors.slice(0, 7)], [], { host }), host, wide: true });
   say(pickBy([
     `${listOf(finalists)}. Out of everybody who started this season, you're the last ${word(finalists.length)}. Tonight, for once, none of you get a vote.`,
     `Welcome to the final Tribal Council. ${listOf(finalists)}, everything you did to get here is about to be judged by the people you did it to.`,
   ], ep.num, finalists.join('|')));
-  steps.push({ k: 'beat', text: `The jury walks in: ${listOf(jurors)}. Every one of them was voted out by somebody in this game, and some of them by somebody sitting right here.`,
+  if (J.wide) {
+    toJury(seated);
+    steps.push({ k: 'beat', text: `The jury files in and takes their seats: ${listOf(jurors)}. Every one of them was voted out by somebody in this game, and some of them by somebody sitting right across from them.`, focus: seated, act: { kind: 'arrive', who: seated } });
+    toFinal();
+  } else steps.push({ k: 'beat', text: `The jury walks in: ${listOf(jurors)}. Every one of them was voted out by somebody in this game, and some of them by somebody sitting right here.`,
     focus: jurors.slice(0, 6), act: { kind: 'arrive', who: jurors.slice(0, 7) } });
   steps.push({ k: 'title', kicker: 'The Finale', name: 'Final Tribal Council', faces: finalists });
   say(`Finalists, this is the last time you get to make your case. Jury, this is the last time you get to ask. Let's start with why each of you thinks you should win.`);
@@ -84,17 +129,20 @@ export function tdFinalTribalScreen(ep, o = {}) {
   if (QA.length) say(pickBy([`Jury, the floor is yours.`, `Jury. Ask whatever you want.`], ep.num, 'qa'));
   QA.forEach((q, i) => {
     const t = q.targetForQuestion, j = q.juror;
-    steps.push({ k: 'say', by: j, focus: [j, t], text: unquote(q.question), tense: bond(j, t) <= -2 });
-    if (q.response) steps.push({ k: 'say', by: t, focus: [t, j], text: unquote(q.response) });
+    if (J.wide) toJury([j], !!J.close && i % 2 === 1);
+    steps.push({ k: 'say', by: j, focus: J.wide ? [j] : [j, t], text: unquote(q.question), tense: bond(j, t) <= -2 });
+    if (J.wide) toFinal([t]);
+    if (q.response) steps.push({ k: 'say', by: t, focus: J.wide ? [t] : [t, j], text: unquote(q.response) });
     // the juror's face says whether that worked (their bond with who answered), never how they will vote
     const b = bond(j, t);
-    if (i % 2 === 0) steps.push({ k: 'beat', focus: [j], text: b >= 3 ? pickBy([`${j} nods slowly.`, `${j} almost smiles.`], j, ep.num, i)
+    if (i % 2 === 0) steps.push({ k: 'beat', focus: J.wide ? [t] : [j], text: (J.wide ? 'Up in the stands, ' : '') + (b >= 3 ? pickBy([`${j} nods slowly.`, `${j} almost smiles.`], j, ep.num, i)
       : b <= -2 ? pickBy([`${j} folds ${pos(j)} arms and doesn't say anything.`, `${j} shakes ${pos(j)} head, just slightly.`], j, ep.num, i)
-        : pickBy([`${j} sits back and thinks about it.`, `${j} writes nothing down, but doesn't look away either.`], j, ep.num, i) });
+        : pickBy([`${j} sits back and thinks about it.`, `${j} writes nothing down, but doesn't look away either.`], j, ep.num, i)) });
   });
 
   // the vote: each juror walks up, and the name stays theirs until it is read
   say(`Jury, it's time to vote. This time, you're not voting somebody out. You're voting for the winner.`, { tense: true });
+  if (J.wide) toJury(seated);
   const swung = new Set((ep.ftcSwings || []).map(s => s.juror || s.name).filter(Boolean));
   const saidJ = new Set();
   const fresh = (n, o2, ...k) => { const list = o2[fam(n)] || o2.any; const free = list.filter(x => !saidJ.has(x)); const pool = free.length ? free : [...(o2.any || []), ...Object.values(o2).flat()].filter(x => !saidJ.has(x)); const x = pickBy(pool.length ? pool : list, n, ...k); saidJ.add(x); return x; };
@@ -118,6 +166,7 @@ export function tdFinalTribalScreen(ep, o = {}) {
   // (finale.js juryTiebreak) is read in full, lands on the tie, and goes to the revote, then if that ties
   // too to the finalist who was cut, or to two winners.
   const tb = ep.juryTiebreak;
+  if (J.wide) toFinal();
   say(pickBy([`I'll read the votes.`, `I'll go tally the votes.`, `Okay. I have the votes.`], ep.num, 'read'));
   const readRound = (reasoning, win, clinchIt, tag) => {
     const need = Math.floor(reasoning.length / 2) + 1;
@@ -172,10 +221,11 @@ export function tdFinalTribalScreen(ep, o = {}) {
       }
     }
   }
-  winnerMoment(steps, ep, o, crowned, finalists, jurors, bond);
+  winnerMoment(steps, ep, o, crowned, finalists, jurors, bond, J.wide ? () => toJury(seated) : null);
 
   // and now the jury says why (generateFTCData / the jury vote's reasons), with the result known
   say(`Jury, you don't have to explain yourselves. But some of you want to.`);
+  if (J.wide) toJury(seated);
   jr.reasoning.forEach((r, i) => {
     steps.push({ k: 'conf', by: r.juror, text: unquote(r.reason), focus: [r.juror, r.votedFor], side: [{ tab: 'tally', voter: r.juror, target: r.votedFor }] });
   });
@@ -183,7 +233,7 @@ export function tdFinalTribalScreen(ep, o = {}) {
 }
 
 // the moment: the winner, the runners-up, the jury
-function winnerMoment(steps, ep, o, winner, finalists, crowd, bond) {
+function winnerMoment(steps, ep, o, winner, finalists, crowd, bond, toCrowd = null) {
   if (!winner) return;
   steps.push({ k: 'say', by: winner, focus: [winner], loud: true, act: { kind: 'roundwin', who: [winner], lose: finalists.filter(f => f !== winner) }, text: V(winner, {
     loud: ['I WON! I actually won! Are you serious?!', 'Yes! YES! Somebody pinch me!'],
@@ -202,6 +252,7 @@ function winnerMoment(steps, ep, o, winner, finalists, crowd, bond) {
       soft: ["I'm a little crushed, but I'm happy for you. I mean that."], dry: ['Second place. I can live with that. Probably.'], any: ['Well played. You got me.', "It hurts, but you earned it."],
     }, 'rn', ep.num, i) });
   });
+  if (crowd?.length && toCrowd) toCrowd();
   if (crowd?.length) steps.push({ k: 'beat', text: crowd.length > 4 ? `${crowd.slice(0, 4).join(', ')} and the rest of the jury are on their feet.` : `${listOf(crowd)} ${crowd.length === 1 ? 'is' : 'are'} on their feet.`, focus: [winner, ...crowd.slice(0, 4)], applause: 'big' });
 }
 

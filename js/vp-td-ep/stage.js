@@ -73,7 +73,8 @@ export function worldHtml(screen, L) {
   // a plate built from the show's own frame moves by its motion map (glplate.js): wind, water, heat.
   // It is drawn once, by day, and graded for the hour and the weather: a night scene at a day frame
   // is that frame by moonlight, its painted fires and lights still burning.
-  const motion = of('motion')[0];
+  // (a still set has no movement at all: the jury's bleachers, the user 2026-10-10 'we don't need movement')
+  const motion = L.scene?.still ? null : of('motion')[0];
   const night = nightFrame || (!!motion && L.scene?.tod === 'night');
   const grade = !motion ? null : night ? (nightFrame ? (wet ? 'nightrain' : 'none') : indoor ? 'dim' : 'night') : indoor ? (wet ? 'dim' : 'day')
     : wx === 'storm' ? 'storm' : wx === 'rain' ? 'rain' : wx === 'overcast' ? 'overcast' : wx === 'fog' ? 'fog' : wx === 'hot' ? 'hot'
@@ -366,8 +367,9 @@ export function hudHtml(screen, L, fresh, o = {}) {
   const freshLoc = fresh && (s.k === 'scene' || (s.k === 'conf' && L.idx > 0 && screen.steps[L.idx - 1]?.k !== 'conf'));
   h += `<div class="tdx-loc${freshLoc ? ' fresh' : ''}"><div class="ic"><svg viewBox="0 0 24 24">${iconFor(L.conf ? 'confessional' : (sc.spot || ''))}</svg></div><div class="txt"><div class="place">${esc(place)}</div><div class="when"><b>Episode ${esc(screen.ep)}</b>${sc.time && !L.conf ? ' · ' + esc(sc.time) : ''}${sc.cut && !L.conf ? ' · meanwhile' : ''}</div></div></div>`;
   // the day's weather, as a chip: the same weather the set shows and the sound plays
-  const wx = !L.conf && sc.plate && !/^islands\//.test(sc.plate) ? wxOf(screen, L) : null;
-  const clearNight = /-night$/.test(sc.plate || '') && ['calm', 'sunny', 'hot'].includes(wx);
+  // (noWx: an indoor set; nightFrame: a frame painted at night but filed as a day plate, the jury's tiki stage)
+  const wx = !L.conf && sc.plate && !sc.noWx && !/^islands\//.test(sc.plate) ? wxOf(screen, L) : null;
+  const clearNight = (/-night$/.test(sc.plate || '') || sc.nightFrame) && ['calm', 'sunny', 'hot'].includes(wx);
   if (wx) h += `<div class="tdx-wx"><svg viewBox="0 0 24 24">${WX_ICON[clearNight ? 'night' : wx] || ''}</svg>${esc(clearNight ? 'Clear night' : WEATHER_LABEL[wx])}</div>`;
   if (screen.team && !L.conf) h += `<div class="tdx-team" style="--tc:${esc(o.teamColor || '#4fb84a')}">${esc(screen.team)}</div>`;
   if (screen.kind === 'tribal' && !sc.exit) {

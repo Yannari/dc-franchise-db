@@ -109,6 +109,7 @@ export function tdStepScreens(ep, classic = [], o = {}) {
       if (im) { out.push(mapShell(im, S, ep, o)); continue; }
     }
     const isl = islandScreen(ep, S, o);
+    if (isl === 'skip') continue;
     if (isl) { out.push(shell(isl, S, ep, o)); continue; }
     // the twists with hand-built classic pages, each on the stage from its own record
     const misc = (() => { try { return tdMiscTwistScreen(ep, S?.id || '', o); } catch (err) { console.warn('TD twist screen fell back:', S?.id, err); return null; } })();
@@ -152,7 +153,11 @@ function islandScreen(ep, S, o) {
   if (id === 'exile-format') return tdExileScreen(ep, exileOf(ep, true), o);
   if (id === 'twist' && o.twistBlocks?.length) return tdTwistBlocksScreen(ep, o.twistBlocks, o);
   // the post-vote screen also carries an elimination card for a duel or a second life: classic there
-  if (id === 'post-twist' && o.postBlocks?.length && !ep.exileDuelResult && !ep.fireMaking) return tdTwistBlocksScreen(ep, o.postBlocks, o, { post: true });
+  // (the Elimination Swap plays at the vote now, as scenes: its narration block is not repeated here)
+  if (id === 'post-twist' && o.postBlocks?.length && !ep.exileDuelResult && !ep.fireMaking) {
+    const blocks = o.postBlocks.filter(b => !(ep.swapResult && b.label === 'Elimination Swap'));
+    return blocks.length ? tdTwistBlocksScreen(ep, blocks, o, { post: true }) : 'skip';
+  }
   if (id === 'merge' && o.merge) return tdMergeScreen(ep, o.merge, o);
   return null;
 }

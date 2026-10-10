@@ -16,6 +16,7 @@
 // talk. Who else is around comes from the record (ep.campAccess: who was at that spot in that
 // window), and they are busy with something of their own.
 import { TD_MARKS } from './marks.js';
+import { swapNight } from './elimswap.js';
 import { TD_WET, WET_COLS, WET_ROWS } from './wet.js';
 import { stableRng } from '../script/rng.js';
 import { campFeed } from '../td/story/feed.js';
@@ -1303,11 +1304,8 @@ function elimSwap(ep, o) {
   const host = a.host;
   const steps = a.steps.slice(0, out + 1);
   steps[out] = { ...steps[out], island: true };
-  steps.push({ k: 'say', by: host, host: true, text: `${swapper}, you're not going home. Tonight is an Elimination Swap.`, focus: [swapper] },
-    { k: 'title', kicker: 'Elimination Swap', name: `${swapper} joins ${toTribe}`, faces: [swapper, pickedPlayer].filter(Boolean), tone: 'fire' },
-    { k: 'say', by: host, host: true, text: `You're joining ${toTribe}. And you get to pick one of them to take your place on ${fromTribe}.`, focus: [swapper] });
-  if (pickedPlayer) steps.push({ k: 'beat', text: `${swapper} picks ${pickedPlayer}. ${pickedPlayer} is going to ${fromTribe}.`, focus: [swapper], tense: true,
-    side: [{ tab: 'room', text: `${swapper} moves to ${toTribe}; ${pickedPlayer} moves to ${fromTribe}. Nobody goes home.` }] });
+  // the night it is (elimswap.js): the twist landing at the fire, the confrontation, the choice in the other camp
+  steps.push(...swapNight({ ep, host, venue: venueOf(ep, o) }));
   return { ...a, label: `${a.label} · Elimination Swap`, steps, elim: null };
 }
 

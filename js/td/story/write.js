@@ -10,7 +10,7 @@
 // An entry: { id, when?, turns: [{ by: 'a'|'b'|'c'|'d', say | conf } | { beat }] }.
 // `when` filters on facts (STORY_FACT_KEYS, checked by tests/td-story.test.js).
 // The words draw from their own stream (stableRng), never the engine's dice.
-import { gs } from '../../core.js';
+import { gs, players } from '../../core.js';
 import { pickEntry, newLedger } from '../../script/pick.js';
 import { stableRng } from '../../script/rng.js';
 import { fill, transcript, salt } from '../script/write.js';
@@ -135,8 +135,15 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // (a scene whose lines for a are moves is in a's voice by construction: phrase.js says them)
     // ...and a scene written for what really happened to a last time (td/past.js) over one that only fits
     // their voice: a first-out returnee gets the first-out entrance, not the generic one
-    const mine = fits.filter(e => [].concat(e.when?.voice || []).some(t => top.includes(t)) || (e.turns || []).some(t => t.by === 'a' && t.move)
-      || (e.past && e.when?.past !== undefined && facts.past !== 'none'));
+    let mine = fits.filter(e => [].concat(e.when?.voice || []).some(t => top.includes(t)) || (e.turns || []).some(t => t.by === 'a' && t.move)
+      || (e.past && e.when?.past !== undefined && facts.past !== 'none') || (e.past && e.when?.pastB !== undefined && facts.pastB !== 'none'));
+    // On the dock, a scene written for a's archetype beats one written for a voice a has only been guessed
+    // to have from the stats (the user, 2026-10-10, 'the writing is horrendous': Scarlett, a villain, arrived
+    // with snacks for anybody feeling sick, the warm voice's entrance). An authored voice still wins.
+    if (/^arrive\./.test(keys[0] || '') && facts.arch && !(players.find(p => p.name === who.a)?.voiceTags || []).length) {
+      const byArch = fits.filter(e => [].concat(e.when?.arch || []).includes(facts.arch));
+      if (byArch.length) mine = byArch;
+    }
     // ...and a whole conversation over a sketch (the user, 2026-10-08: "I'm tired of 4/5 line events that
     // tell nothing"): when a pool has a version of six spoken lines or more for these people, a short one
     // only airs when no long one fits. A pool of one-liners (the booth, a recall) is left as it is.

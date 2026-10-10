@@ -43,7 +43,13 @@ export function writeArrival({ ep, p, n, host, onDock, chem, venue, state = { sp
   const lines = [];
   const add = w => {
     if (!w) return w;
-    lines.push(...w.lines.map(l => ({ kind: l.kind, by: l.by, text: l.text })));
+    // the host says one thing, not two lines in a row (the user, 2026-10-10: "Here's Miriam!" then "Welcome!
+    // What do you think?"): a host line straight after the host's own intro joins it
+    for (const l of w.lines) {
+      const prev = lines[lines.length - 1];
+      if (prev && l.kind === 'say' && prev.kind === 'say' && l.by && l.by === host && prev.by === host) prev.text = `${prev.text} ${l.text}`;
+      else lines.push({ kind: l.kind, by: l.by, text: l.text });
+    }
     for (const l of w.lines) if (l.by) state.spoke[l.by] = (state.spoke[l.by] || 0) + 1;
     return w;
   };

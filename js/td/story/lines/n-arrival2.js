@@ -24,7 +24,7 @@ export default {
     H('nx.h3', { voice: 'loud' }, "You probably heard {a} before you saw the boat. Everybody, {a}!"),
     H('nx.h4', { voice: 'loud' }, "Here's {a}! Our sound guy is already crying."),
     H('nx.h5', { voice: 'warm' }, "Here's {a}, who asked if there'd be a group hug. There won't."),
-    H('nx.h6', { voice: 'warm' }, "Everybody, meet {a}. Be nice. {a} will be nice to you first anyway."),
+    H('nx.h6', { voice: 'warm' }, "Everybody, meet {a}. Be nice. {a.Sub}'ll be nice to you first anyway."),
     H('nx.h7', { voice: 'theatrical' }, "And now, making an entrance, because of course {a} is making an entrance... {a}!"),
     H('nx.h8', { voice: 'theatrical' }, "Here's {a}! Please hold your applause. {a} won't."),
     H('nx.h9', { voice: 'anxious' }, "Here's {a}! Breathe, {a}. You're doing great. Mostly."),

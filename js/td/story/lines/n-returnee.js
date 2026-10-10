@@ -632,5 +632,81 @@ export default {
     P({ id: 'nrt.h9', when: { past: 'mid' }, turns: [{ by: 'h', say: "Welcome back, {a}! {lastPlace} last time. This time, try to do something I'll remember." }] }),
     P({ id: 'nrt.h10', turns: [{ by: 'h', say: "Look who's back! {a}, everybody. Some of you have seen {a} play. The rest of you are about to." }] }),
     P({ id: 'nrt.h11', turns: [{ by: 'h', say: "{a}! I said I'd never have {a} back on this show. Then the ratings came in." }] }),
+    P({ id: 'nrt.h12', turns: [{ by: 'h', say: "Welcome back, {a}! Some of you are about to find out why the rest of us remember {a.obj}." }] }),
+    P({ id: 'nrt.h13', turns: [{ by: 'h', say: "And look who couldn't stay away. {a}, everybody!" }] }),
+    P({ id: 'nrt.h14', turns: [{ by: 'h', say: "{a} is back. Newbies, take notes. Or run. Either is fine." }] }),
+    P({ id: 'nrt.h15', turns: [{ by: 'h', say: "Here's a face some of you know. {a}, back for round two!" }] }),
+    P({ id: 'nrt.h16', turns: [{ by: 'h', say: "{a}! Our producers begged. I said no. They begged harder." }] }),
+    P({ id: 'nrt.h17', turns: [{ by: 'h', say: "Everybody, {a} has done this before. Try not to look too scared." }] }),
+  ],
+
+  // ── on the dock: a new player recognises a returnee who is already there (a new, b returnee) ──
+  // The old one had every returnee answer "I went home", the season's winner included (the user, 2026-10-10:
+  // "the writing is horrendous"). Each is what really happened to b (td/past.js pastB).
+  'arrive.meet.fan-of-them': [
+    P({ id: 'nrt.f1', when: { pastB: 'won' }, turns: [
+      { by: 'a', say: "Hang on. You're {b}. You won {lastSeasonB}." },
+      { by: 'b', say: "Guilty.", v: { proud: "I did. Thank you for noticing.", dry: "That's what they tell me." } },
+      { by: 'a', say: "I watched that finale twice. I couldn't believe how that jury voted." },
+      { by: 'b', say: "Neither could I, honestly." },
+      { by: 'a', say: "So you've done this already. Any advice?" },
+      { by: 'b', say: "Plenty. I'm just not giving it to the competition on day one." },
+      { by: 'b', conf: "Every new player who recognises me has already decided I'm the one to beat. I'd rather they worked that out a little later." },
+    ] }),
+    P({ id: 'nrt.f2', when: { pastB: 'final' }, turns: [
+      { by: 'a', say: "Oh my gosh, you're {b}! You came {lastPlaceB} last time. You were so close!" },
+      { by: 'b', say: "Thanks. I'd almost forgotten.", v: { warm: "I know. I think about it more than I should.", loud: "Don't remind me! I'm still not over it!" } },
+      { by: 'a', say: "Sorry. I was rooting for you, for what it's worth." },
+      { by: 'b', say: "Everybody says that afterwards. Nobody on that jury did." },
+      { by: 'a', conf: "{b} got to the very end last time and lost. I don't know if that makes {b.obj} dangerous or desperate. Probably both." },
+    ] }),
+    P({ id: 'nrt.f3', when: { pastB: 'early' }, turns: [
+      { by: 'a', say: "Wait, weren't you on the show before?" },
+      { by: 'b', say: "For about three days, yeah." },
+      { by: 'a', say: "Oh, right. I remember now. That vote was rough." },
+      { by: 'b', say: "It was. I've had a long time to think about what I'd do differently." },
+      { by: 'a', say: "And?" },
+      { by: 'b', say: "And I'm not telling you on the dock." },
+      { by: 'b', conf: "Hardly anybody remembers my first season. That's the best thing about it." },
+    ] }),
+    P({ id: 'nrt.f4', when: { pastB: 'blindsided' }, turns: [
+      { by: 'a', say: "You're {b}. I watched you get blindsided last time. I actually yelled at my TV." },
+      { by: 'b', say: "You and me both." },
+      { by: 'a', say: "You really didn't see it coming?" },
+      { by: 'b', say: "Not even a little. That's why I'm going to see everything coming this time." },
+      { by: 'b', conf: "Every new player here watched me go out the worst way possible. Some of them feel sorry for me. I'm going to use that." },
+    ] }),
+    P({ id: 'nrt.f5', when: { pastB: 'mid' }, turns: [
+      { by: 'a', say: "You're {b}! You were really good last time." },
+      { by: 'b', say: "I finished {lastPlaceB}. 'Really good' is generous." },
+      { by: 'a', say: "Well, I liked you." },
+      { by: 'b', say: "Then you're going to be very easy to talk to." },
+      { by: 'a', conf: "{b} was nice to me, but I can't tell if that was {b} being nice, or {b} playing already." },
+    ] }),
+  ],
+
+  // ── on the dock: a returnee arrives and a new player already there recognises them (a returnee, b new) ──
+  'arrive.meet.fan': [
+    P({ id: 'nrt.m1', when: { past: 'won' }, turns: [
+      { beat: "{b}, already on {landing}, stops talking mid-sentence as {a} steps off." },
+      { by: 'b', say: "No way. That's {a}. That's the actual winner." },
+      { by: 'a', say: "Hi. Please don't make it weird." },
+      { by: 'b', say: "It's already weird. I'm sorry. Hi." },
+      { by: 'a', conf: "I've been on this dock thirty seconds and the new players are already looking at me like a target with a nice smile." },
+    ] }),
+    P({ id: 'nrt.m2', when: { past: ['final', 'mid', 'blindsided'] }, turns: [
+      { beat: "{b}, already on {landing}, goes very still as {a} steps off." },
+      { by: 'b', say: "That's {a}. I watched your whole season." },
+      { by: 'a', say: "The whole thing? Even the end?" },
+      { by: 'b', say: "Especially the end." },
+      { by: 'a', conf: "The new ones all know how my last season went. That's great for my ego and terrible for my game." },
+    ] }),
+    P({ id: 'nrt.m3', when: { past: 'early' }, turns: [
+      { by: 'b', say: "Wait, I know you. Weren't you the one who went home right at the start?" },
+      { by: 'a', say: "{lastPlace}, thank you. Nice to meet you too." },
+      { by: 'b', say: "Sorry! I didn't mean it like that." },
+      { by: 'a', say: "Yes, you did. It's fine. I'd have said it too." },
+      { by: 'a', conf: "Everybody else came back as somebody. I came back as the one who went home first. Fine. Nobody's scared of that one." },
+    ] }),
   ],
 };

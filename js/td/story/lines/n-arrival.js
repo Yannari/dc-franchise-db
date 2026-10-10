@@ -42,7 +42,7 @@ const POOLS = {
   ],
   'arrive.host.social-butterfly': [
     H('np.hb1', null, "Here's {a}! And {a} is already waving at people {a} hasn't met."),
-    H('np.hb2', null, "Everybody, this is {a}. In about an hour {a} will be friends with all of you."),
+    H('np.hb2', null, "Everybody, this is {a}. Give it an hour, and {a.sub}'ll be friends with all of you."),
   ],
   'arrive.host.loyal-soldier': [
     H('np.hl1', null, "Here's {a}. Reliable, hardworking, and way too nice for this show."),
@@ -552,12 +552,13 @@ const POOLS = {
   // ── a first-timer meets a returnee ──
   'arrive.meet.fan-of-them': [
     { id: 'np.fa1', when: { pastB: ['final', 'early', 'blindsided', 'mid', 'none'] }, turns: [
-      { by: 'a', say: "Wait, you're {b}! You were on the show before!" },
-      { by: 'b', say: "Hi. Yes." },
-      { by: 'a', say: "I watched every episode. You were so good!" },
-      { by: 'b', say: "I went home." },
-      { by: 'a', say: "Still good!" },
-      { by: 'b', conf: "Every new player here has seen me play. They know my moves. I don't know a single one of theirs." },
+      { by: 'a', say: "Wait. You're {b}, from the show!" },
+      { by: 'b', say: "Hi. Yeah, that's me." },
+      { by: 'a', say: "I watched every episode of your season. I was so mad about how it ended for you." },
+      { by: 'b', say: "That makes two of us." },
+      { by: 'a', say: "So what's different this time?" },
+      { by: 'b', say: "This time I'm not telling anybody my plan on the first day." },
+      { by: 'b', conf: "Every new player here has seen me play. They know my moves. I don't know a single one of theirs, and that's the part that scares me." },
     ] },
     { id: 'np.fa2', turns: [
       { by: 'a', say: "Oh no. You're {b}." },

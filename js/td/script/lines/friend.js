@@ -14,7 +14,8 @@
 // friend.sunrise.any     {a} and {b}, up before everyone, talking.
 // friend.meal.any        {a} and {b} share food.
 // friend.secret.any      {a} tells {b} something real about life outside.
-// friend.defend.<loud|quiet|surprise>  {a} stands up for {b}, whose name keeps coming up.
+// friend.defend.<loud|quiet|surprise>  {a} stands up for {b}, whose name keeps coming up: loud to {c}'s face
+//                                       (and {more}'s), who was giving {b} a hard time; quiet and surprise with no critic there.
 // friend.teach.<physical|strategic|mental>  {a} teaches {b}.
 // friend.mentor.<spiral|rough>  {a} steadies {b} (spiralling / just rattled).
 // friend.solidarity.any  {a} has {b}'s back, without saying so.
@@ -608,34 +609,45 @@ const SECRET = [
     { by: 'b', conf: "Now I know what {a} is playing for. That changes how I see everything." },
   ] },
 ];
+// c is giving b a hard time ({more}, a second one, when there is one): camp-events.js protectiveInstinct
+// picks them, the people here who like b least, and they are in every one of these
 const DEFEND_LOUD = [
-  { id: 'fr.dl1', turns: [
-    { beat: "{b}'s name comes up in a group conversation. {a} shuts it down immediately." },
-    { by: 'a', say: "Not {b}. Pick someone else." },
-    { by: 'b', conf: "I wasn't even there. {a} stood up for me anyway. I just found out." },
+  { id: 'fr.dl1', when: { third: true }, turns: [
+    { by: 'c', say: "I'm just saying, {b} hasn't done much around here." },
+    { by: 'a', say: "Not {b}, {c}. Pick on somebody else." },
+    { by: 'b', conf: "{c} has been on my case for days, and {a} shut it down in about two seconds." },
   ] },
-  { id: 'fr.dl2', turns: [
-    { by: 'a', say: "If anybody has a problem with {b}, they can bring it to me." },
-    { beat: 'Nobody brings it to {a}.' },
+  { id: 'fr.dl2', when: { third: true }, turns: [
+    { by: 'a', say: "If you've got a problem with {b}, {c}, you can bring it to me." },
+    { beat: "{c} doesn't bring it to {a}." },
     { by: 'b', say: "You didn't have to do that." },
     { by: 'a', say: "Yes, I did." },
   ] },
-  { id: 'fr.dl3', when: { register: 'fiery' }, turns: [
-    { by: 'a', say: "Leave {b} ALONE. Seriously. Back off." },
-    { by: 'b', conf: "{a} yelled at three people for me. Not one of them has said my name since." },
+  { id: 'fr.dl3', when: { register: 'fiery', third: true }, turns: [
+    { by: 'a', say: "Leave {b} ALONE, {c}. Seriously, back off." },
+    { by: 'c', say: "Okay! Okay, relax, it was a joke." },
+    { by: 'b', conf: "{a} yelled at {c} for me, and {c} hasn't said my name since." },
   ] },
-  { id: 'fr.dl4', turns: [
-    { by: 'a', say: "{b} pulls more weight than any of you. So stop." },
+  { id: 'fr.dl4', when: { third: true }, turns: [
+    { by: 'c', say: "Some of us are actually working today, {b}." },
+    { by: 'a', say: "{b} pulls more weight than you do, {c}, so stop." },
     { by: 'b', say: "Thanks." },
     { by: 'a', say: "Don't thank me. It's true." },
   ] },
-  { id: 'fr.dl5', when: { strong: true }, turns: [
-    { beat: "{a} steps between {b} and the two people giving {b} a hard time. Just stands there." },
+  { id: 'fr.dl5', when: { strong: true, more: true, third: true }, turns: [
+    { beat: "{c} and {more} are giving {b} a hard time. {a} walks over and just stands between them." },
+    { by: 'c', conf: "Nobody wants to argue with {a}. Not even me, and I wanted to." },
+  ] },
+  { id: 'fr.dl5b', when: { strong: true, more: false, third: true }, turns: [
+    { beat: "{c} is giving {b} a hard time until {a} walks over and stands between them." },
+    { by: 'c', say: "...Fine. Whatever." },
     { by: 'b', conf: "{a} didn't have to say anything. Nobody wants to argue with {a}." },
   ] },
-  { id: 'fr.dl6', turns: [
-    { by: 'a', say: "Funny how {b}'s name comes up every time something goes wrong. Almost like somebody's putting it there." },
-    { by: 'b', conf: "{a} called it out in front of everyone. Now everyone knows somebody's been targeting me." },
+  { id: 'fr.dl6', when: { more: true, third: true }, turns: [
+    { by: 'a', say: "Funny how {c} and {more} bring up {b} every single time something goes wrong." },
+    { by: 'c', say: "We're just saying what everyone's thinking." },
+    { by: 'a', say: "No, you're saying it. Everyone else is just listening to you." },
+    { by: 'b', conf: "{a} called out {c} and {more} in front of everyone. Now everybody knows who's been on my case." },
   ] },
 ];
 const DEFEND_QUIET = [

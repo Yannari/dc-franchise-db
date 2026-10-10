@@ -337,6 +337,10 @@ const ATMOS = [
     { by: 'a', conf: "Spending an afternoon with {b} doing nothing was the most useful thing I did all day. People trust who they waste time with." },
   ] },
   { id: 'lf.at5', turns: [
+    { by: 'a', say: "Don't move. Just look at this for a minute." },
+    { by: 'b', say: "Look at what?" },
+    { by: 'a', say: "All of it. Nobody's scheming, nobody's yelling. It's just quiet." },
+    { by: 'b', say: "...Okay, yeah. That's nice." },
     { by: 'b', conf: "For a whole hour I forgot this was a game. Then I remembered. Still, an hour." },
   ] },
   { id: 'lf.at6', when: { register: 'competitor' }, turns: [

@@ -40,14 +40,16 @@ export default {
     ] },
   ],
   // a stands up for b, whose name keeps coming up
+  // c is giving b a hard time ({more}, a second one, when there is one): they're real, and they're in it
   'long.friend.defend.loud': [
     { id: 'nlx.d1', turns: [
-      { beat: "The group around the fire is talking about {b}. {a} has heard enough." },
-      { by: 'a', say: "Okay, can we stop? {b} isn't even here to defend {b.ref}." },
-      { by: 'c', opt: true, say: "We're just talking." },
+      { beat: "{c} is going on about {b} at the fire again. {a} has heard enough." },
+      { by: 'a', say: "Okay, can we stop? {b} is sitting right there, {c}." },
+      { by: 'c', say: "We're just talking." },
       { by: 'a', say: "You're talking about who should go, and you keep saying the same name. I'm saying it's not happening." },
       { beat: "The fire goes quiet." },
-      { by: 'a', conf: "Maybe that just put a target on me. I don't care. {b} has done more for this team than half the people sitting at that fire." },
+      { by: 'c', conf: "Fine. {a} wants to be {b}'s bodyguard, then {a} can go home with {b}." },
+      { by: 'a', conf: "Maybe that just put a target on me. I don't care. {b} has done more for this team than {c} ever has." },
     ] },
   ],
   'long.friend.defend.quiet': [

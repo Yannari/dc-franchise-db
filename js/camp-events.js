@@ -2088,12 +2088,22 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const a = _pick(defenders, n => Math.max(0.1, pStats(n).loyalty * 0.4 + pStats(n).boldness * 0.3 + 1));
       addBond(a, target, 0.7);
       addBond(target, a, 0.8);
-      group.filter(p => p !== a && p !== target).forEach(p => addBond(p, a, 0.1));
+      // who was giving the target a hard time: the one or two here who like them least, if anybody actually
+      // dislikes them (the user, 2026-10-10, of "Two people are giving Fiore a hard time": "who are these
+      // people?" — the scene invented them). Shut down in front of the camp, they cool on the defender and
+      // on the target; everyone else saw somebody stand up for somebody.
+      const critics = group.filter(p => p !== a && p !== target && getBond(p, target) < 0)
+        .sort((x, y) => getBond(x, target) - getBond(y, target) || x.localeCompare(y)).slice(0, 2);
+      critics.forEach(c => { addBond(c, a, -0.5); addBond(c, target, -0.3); });
+      group.filter(p => p !== a && p !== target && !critics.includes(p)).forEach(p => addBond(p, a, 0.1));
       const pA = pronouns(a), pT = pronouns(target);
-      const boA = pStats(a).boldness, loA = pStats(a).loyalty;
+      const loA = pStats(a).loyalty;
       Math.random(); // the draw that picked the sentence (the season must not move)
-      events.push(scriptEvent({ type: 'protectiveInstinct', players: [a, target], badgeText: 'DEFENDED', badgeClass: 'green' },
-        makeScene('friend.defend', { a, b: target }, { ending: boA >= 8 ? 'loud' : loA >= 8 ? 'quiet' : 'surprise' }, [], _spotNow(a, target))));
+      // with critics, a faces them ('loud': c is the first, {more} the second); without, a defends the target
+      // where it counts, out of sight ('quiet'), or the target is surprised a did it at all ('surprise')
+      const ending = critics.length ? 'loud' : loA >= 8 ? 'quiet' : 'surprise';
+      events.push(scriptEvent({ type: 'protectiveInstinct', players: [a, target, ...critics], badgeText: 'DEFENDED', badgeClass: 'green' },
+        makeScene('friend.defend', { a, b: target, ...(critics[0] ? { c: critics[0] } : {}) }, { ending, ...(critics[1] ? { more: critics[1] } : {}) }, [], _spotNow(a, target))));
 
     } else if (eventType === 'sharedMeal') {
       const a = _pick(group, n => Math.max(0.1, pStats(n).loyalty * 0.3 + pStats(n).social * 0.3 + pStats(n).endurance * 0.2 + 1));

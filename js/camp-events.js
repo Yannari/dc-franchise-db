@@ -2083,9 +2083,11 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       });
       if (!_recentTargets.length) continue;
       const target = _recentTargets[Math.floor(Math.random() * _recentTargets.length)];
-      const defenders = group.filter(p => p !== target && getBond(p, target) >= 0.5 && (pStats(p).loyalty >= 6 || pStats(p).boldness >= 7));
+      // anyone who likes the target can be the one who steps in; loyalty and boldness make it likelier,
+      // in proportion (stats are never a gate on what someone does: CLAUDE.md "Stats are ALWAYS Proportional")
+      const defenders = group.filter(p => p !== target && getBond(p, target) >= 0.5);
       if (!defenders.length) continue;
-      const a = _pick(defenders, n => Math.max(0.1, pStats(n).loyalty * 0.4 + pStats(n).boldness * 0.3 + 1));
+      const a = _pick(defenders, n => Math.max(0.1, pStats(n).loyalty * 0.4 + pStats(n).boldness * 0.3 + getBond(n, target) * 0.2));
       addBond(a, target, 0.7);
       addBond(target, a, 0.8);
       // who was giving the target a hard time: the one or two here who like them least, if anybody actually

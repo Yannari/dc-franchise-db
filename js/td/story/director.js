@@ -27,6 +27,7 @@ import { getBond, addBond } from '../../bonds.js';
 import { kinshipBetween } from '../../core.js';
 import { pronouns, pStats as pStatsOf, threatScore } from '../../players.js';
 import { voiceOf } from './voice.js';
+import { writeFirstImpression } from './first-impressions.js';
 import { classify, file, prevAired } from './storylines.js';
 import { writeStory as writeRaw, hasStoryPool } from './write.js';
 import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './record.js';
@@ -286,11 +287,16 @@ function firstPair(ep, camp, members, n, kind) {
   }
   if (!best || (kind === 'clicked' ? best.v < 1 : best.v > -0.5)) return null;
   if (historyOf(best.a, best.b).facts.hist !== 'none') return null;
-  const who = { a: best.a, b: best.b };
   const phase = kind === 'clicked' ? 'pre' : 'post';
-  const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), outcome: kind };
-  const w = writeStory('story.firstpair', kind, who, { tribe: camp }, facts, { ep: ep.num, camp, phase, n, place: 'aside', avoid: ctxAvoid(phase === 'pre' ? 'camp-work' : 'scramble') });
-  return w ? { story: true, kind: 'story.firstpair', storyType: 'firstday', step: kind, players: [best.a, best.b], lines: w.lines, text: w.text, lineId: w.lineId,
+  const v = VENUE_WORDS[venueNow] || VENUE_WORDS['hosted-camp'];
+  const written = writeFirstImpression(best, members, kind, { ep: ep.num, camp, phase, n, venue: venueNow, history: historyOf,
+    data: { tribe: camp, bed: v.bed }, facts: { count: v.count, voteYet: false },
+    place: 'aside', avoid: ctxAvoid(phase === 'pre' ? 'camp-work' : 'scramble') });
+  const { w, who } = written || {};
+  return w ? { story: true, kind: 'story.firstpair', storyType: 'firstday', step: kind, players: Object.values(who), firstImpressionMode: written.mode, kit: written.kit,
+    fx: kind === 'clicked' ? Object.values(who).flatMap((a,i,all)=>all.slice(i+1).map(b=>[a,b,0.3]))
+      : [[who.a,who.b,-0.35],...(who.c?[[who.a,who.c,0.15],[who.b,who.c,-0.2]]:[]),...(who.d?[[who.a,who.d,0.1],[who.b,who.d,-0.15]]:[])],
+    lines: w.lines, text: w.text, lineId: w.lineId,
     scene: { kind: 'story.firstpair', who, data: {}, spot: w.spot ? { window: phase === 'pre' ? 'camp-work' : 'scramble', ...w.spot } : null },
     badgeText: kind === 'clicked' ? 'First Impressions' : 'Off on the Wrong Foot', badgeClass: kind === 'clicked' ? 'green' : 'red' } : null;
 }

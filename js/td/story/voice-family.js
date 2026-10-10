@@ -8,13 +8,8 @@
 // key fits every tag in that family. Narrative text selection only.
 import { voiceOf } from './voice.js';
 
-export const FAMILY = {
-  cruel: 'sharp', schemer: 'sharp', proud: 'sharp', bossy: 'sharp',
-  dry: 'dry', calm: 'dry', quiet: 'dry', nerdy: 'dry',
-  loud: 'loud', blunt: 'loud', tough: 'loud', competitive: 'loud', chaotic: 'loud',
-  warm: 'soft', earnest: 'soft', emotional: 'soft', anxious: 'soft', flirty: 'soft',
-  goofy: 'odd', ditzy: 'odd', food: 'odd', theatrical: 'odd',
-};
+import { FAMILY } from './voice-family-map.js';
+export { FAMILY } from './voice-family-map.js';
 /** The speaker's voice family, from their strongest tag that has one ('plain' when none does). */
 export function familyOf(name) {
   for (const t of voiceOf(name)) if (FAMILY[t]) return FAMILY[t];

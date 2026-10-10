@@ -9,6 +9,7 @@
 import { gs, players, kinshipBetween, REL_KINSHIP } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { pStats } from '../../players.js';
+import KITS from '../story/kits/index.js';
 
 const epOf = ctx => ctx.ep || (gs.episode || 0) + 1;
 
@@ -18,7 +19,7 @@ export const TD_FACT_KEYS = [
   // the relationship between a and b; whether each is in any active alliance at all
   'band', 'alliance', 'showmance', 'kin', 'allied', 'alliedB',
   // how a and b talk
-  'register', 'registerB', 'nice', 'villain',
+  'register', 'registerB', 'nice', 'villain', 'kitA', 'kitB', 'canFlirt',
   // where in the season and the episode
   'early', 'late', 'merged', 'phase', 'tribal', 'immune',
   // the scene names a target ({target}) who is not in it
@@ -99,6 +100,8 @@ export function factsFor(scene, ctx = {}) {
     phase: ctx.phase || null,
     tribal: ctx.tribal ?? null,
     third: !!c,
+    kitA: !!KITS[a],
+    kitB: !!KITS[b],
     spot: scene.spot?.id || null,
     known: !!scene.data?.target && !Object.values(scene.who || {}).includes(scene.data.target),
   };

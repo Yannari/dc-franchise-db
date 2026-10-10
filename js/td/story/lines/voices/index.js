@@ -30,4 +30,6 @@ for (const b of BATCHES) for (const [id, turns] of Object.entries(b)) {
   VOICES[id] ||= {};
   for (const [i, tags] of Object.entries(turns)) VOICES[id][i] = { ...(VOICES[id][i] || {}), ...tags };
 }
+// Retired day-one scripts have been replaced by firstpair.js, which authors its own variants.
+for (const id of ['fp.c1','fp.c2','fp.c3','fp.c4','fp.x1','fp.x2','fp.x3']) delete VOICES[id];
 export default VOICES;

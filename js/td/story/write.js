@@ -22,6 +22,7 @@ import { phrase } from './phrase.js';
 import { DOING, GROUP, PAIR, SECRET, CROWD } from './setup.js';
 import { tidySpoken, tidyNames } from '../../vp-tr/tidy.js';
 import { pastOf, pastData, isReturnee } from '../past.js';
+import KITS from './kits/index.js';
 
 // what each venue does not have (places.js PLACES): Wawanakwa sleeps in cabins on a lake, the survival
 // island has a beach and a shelter and no mess hall, the carnival camp has tents by a lake, the film
@@ -100,12 +101,19 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // the kind of place the scene needs (places.js): the venue must have one
     return hasPlace(facts.venue, e.place || (ctx.spotId ? null : ctx.place));
   };
+  // Day-one conversations have their own strict line ledger. Other story families keep their
+  // existing reuse policy (for example the voting booth must always be able to speak).
+  const firstImpressions = ctx.firstImpressions || /^story.first(pair|group)$/.test(pool);
+  const firstLines = () => ((gs.tdStory ||= {}).firstImpressionLines ||= []);
+  const lineKey = x => String(x || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  const ownWords = (e, t) => t.beat || voiced(t, who[t.by], e.place === 'secret', x => placeOk({turns:[{say:x}]}));
   // the outcome's own pool first; '.any' only when nothing in it fits
   let entry = null;
   const fitsFor = k => {
     // `voice` / `voiceB` ask for one of a or b's voice tags (voice.js); everything else is a fact
     const voiceFit = (want, name) => [].concat(want).some(t => voiceOf(name).includes(t));
-    const fits = (STORY_POOLS[k] || []).filter(e => placeOk(e) && Object.entries(e.when || {}).every(([f, v]) =>
+    const fits = (STORY_POOLS[k] || []).filter(e => (!ctx.entryIds || ctx.entryIds.includes(e.id)) && placeOk(e) &&
+      (!firstImpressions || e.turns.every(t => t.by && !who[t.by] || !firstLines().includes(lineKey(ownWords(e,t))))) && Object.entries(e.when || {}).every(([f, v]) =>
       f === 'voice' ? voiceFit(v, who.a) : f === 'voiceB' ? voiceFit(v, who.b) : f === 'voiceC' ? voiceFit(v, who.c)
         // `notVoice`: a line that is wrong in this mouth (a meek line for a loud speaker)
         : f === 'notVoice' ? !voiceFit(v, who.a) : f === 'notVoiceB' ? !voiceFit(v, who.b)
@@ -131,6 +139,10 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // the speaker's own voice first: a scene written for one of a's strongest tags (their first three)
     // wins over one that only fits the archetype or the stats (the user: an underdog with a temper
     // should not sound like a doormat)
+    if (firstImpressions && fits.length) {
+      const most = Math.max(...fits.map(e => Object.keys(e.when || {}).length));
+      for(let i=fits.length-1;i>=0;i--) if(Object.keys(fits[i].when || {}).length < most) fits.splice(i,1);
+    }
     const top = voiceOf(who.a).slice(0, 3);
     // (a scene whose lines for a are moves is in a's voice by construction: phrase.js says them)
     // ...and a scene written for what really happened to a last time (td/past.js) over one that only fits
@@ -211,6 +223,7 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     if (t.by && !t.conf) lastBy = t.by;
     // a name said again in the same sentence becomes a pronoun, "they" takes its verb (the user:
     // "repeating Mike too many times"): spoken lines and confessionals by tidySpoken, beats by tidyNames
+    raw = raw.replace(/\{([ab])\.thing\}/g, (slot,role) => KITS[who[role]]?.thing || slot);
     const filled = fill(raw, who, data);
     const text = kind === 'beat' ? tidyNames(filled) : tidySpoken(filled);
     const line = { kind, by: t.by ? who[t.by] : null, text: text.charAt(0).toUpperCase() + text.slice(1) };
@@ -232,6 +245,10 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   // scene.who, so a role the entry never uses is a silent extra on stage (the user, 2026-10-10: "it's a 4
   // person scene but no one talking but the 2 girls"); director.js keeps only these
   const usedRoles = Object.keys(who).filter(r => who[r] && entry.turns.some(t => (t.by === r && (!t.when || turnOk(t))) || named(t).includes(r)));
+  if (firstImpressions) for (const t of entry.turns) {
+    if(t.by && !who[t.by]) continue;
+    firstLines().push(lineKey(ownWords(entry,t)));
+  }
   return { lines, text: transcript(lines), lineId: entry.id, cast: usedRoles, spot: spot ? { id: spot.id, label: spot.label, fixed: true, ...(window ? { window } : {}) } : null };
 }
 

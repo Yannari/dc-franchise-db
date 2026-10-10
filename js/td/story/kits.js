@@ -34,9 +34,9 @@ function take(name, part, fits = null) {
   const k = KITS[name]?.[part];
   if (!Array.isArray(k) || !k.length) return null;
   const u = (used()[name] ||= []);
-  const i = k.findIndex((line, j) => !u.includes(`${part}:${j}`) && (!fits || fits(line)));
+  const i = k.findIndex((line, j) => !u.includes(`${part}:${j}`) && (!fits || fits(line, j)));
   if (i < 0) return null;
-  return { line: k[i], mark: () => u.push(`${part}:${i}`) };
+  return { line: k[i], index: i, mark: () => u.push(`${part}:${i}`) };
 }
 // Somebody without a kit, asked about home or what they want, answers from their archetype (the user's
 // complaint about generic lines: everybody had said "I want to prove I can do something hard"), each answer
@@ -96,7 +96,7 @@ const REACT = ["Huh. I didn't expect that.", "That's more than I thought you'd t
 function writeKitScene(entry, who, facts, ctx) {
   const key = `kit.${entry.id.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
   STORY_POOLS[`${key}.any`] = [entry];
-  try { return writeStory(key, 'any', who, {}, facts, { ...ctx, unique: false }); }
+  try { return writeStory(key, 'any', who, ctx.data || {}, facts, { ...ctx, unique: ctx.firstImpressions ? true : false }); }
   finally { delete STORY_POOLS[`${key}.any`]; }
 }
 
@@ -273,5 +273,44 @@ export function kitCallbackScene(c, d, about, facts, ctx) {
   const w = (() => { const key = `kit.${entry.id.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`; STORY_POOLS[`${key}.any`] = [entry];
     try { return writeStory(key, 'any', { a: c, b: d, c: about }, STORE, { ...facts, third: true }, { ...ctx, unique: false }); } finally { delete STORY_POOLS[`${key}.any`]; } })();
   if (w) u.push(`call:${n}`);
+  return w;
+}
+
+
+// Day one spends at most one kit opening per team (budgeted by the director).
+// A bit/tease/reply is one aligned exchange; do not choose the three independently.
+export function kitFirstPairScene(a, b, kind, facts, ctx) {
+  const template = STORY_POOLS[kind === 'clicked' ? 'story.firstpair.clicked' : 'story.firstpair.clashed']
+    ?.find(e => e.id === (kind === 'clicked' ? 'fp2.kit-interest' : 'fp2.kit-mock'));
+  if (!template || !hasKit(a)) return null;
+  const dayOne = line => !/^And\?/i.test(line) && !/snores|awake since|at every meal|fine with the dark|morning fog|out here it.s eight|\b(yesterday|last night|again|always|lately|anymore|used to|every time)\b|\b(cooked|breakfast|lunch|shelter|nest)\b/i.test(line);
+  const bit = take(a, 'bit', (line,i) => dayOne(line) && (kind !== 'clashed' || [kitOf(a).tease?.[i],kitOf(a).reply?.[i]].every(x => x && dayOne(x))));
+  const tease = kind === 'clashed' && bit ? take(a, 'tease', (_, i) => i === bit.index) : null;
+  const defend = kind === 'clashed' ? take(a, 'defend', dayOne) : null;
+  const reply = kind === 'clashed' && bit ? take(a, 'reply', (_, i) => i === bit.index) : null;
+  if (!bit || kind === 'clashed' && (!tease || !reply || !defend)) return null;
+  const ownTurn = (by, line) => ({ by, say: line, v: Object.fromEntries(['sharp','dry','loud','soft','odd'].map(f => [f,line])) });
+  const turns = template.turns.map(t => ({...t, ...(t.v ? {v:{...t.v}} : {})}));
+  turns[1] = ownTurn('a', bit.line);
+  if (kind === 'clashed') {
+    turns.splice(2,0,ownTurn('b',tease.line),ownTurn('a',reply.line));
+    turns[5] = ownTurn('a',defend.line);
+  }
+  else {
+    const voicedTurn = (by, variants) => ({by,say:variants[0],v:Object.fromEntries(['sharp','dry','loud','soft','odd'].map((f,i)=>[f,variants[i+1]]))});
+    turns[5] = voicedTurn('b',["I'm glad we're talking. I wasn't sure how to start a conversation here.","At least you said something. Everyone else is waiting to be introduced.","This is easier than standing around trying to look approachable.","I'm glad you started talking! I hate awkward introductions.","I was nervous about meeting everyone. This helps.","I had no idea what to say first, so thanks for going first."]);
+    turns[6] = voicedTurn('a',["Neither was I. It's easier once somebody listens.","I wasn't going to stand around all day. I wanted to meet somebody.","I wasn't sure you'd listen, so this is going better than expected.","Yeah! I just started talking before I could worry about it.","I'm nervous too. It helps knowing you are.","I was hoping I'd think of something once I opened my mouth."]);
+    turns[7] = voicedTurn('b',["Well, I'd like to keep sitting with you, if that's okay.","Well, you've met me. I'm staying here a while.","I think I'll stay here rather than attempt another introduction.","Well, we know each other now! I'm sitting with you.","Could I stay here with you for a little while?","Good. Can we keep talking until I work out where my bag went?"]);
+  }
+  const who = {...(ctx.who || {}), a, b};
+  if (who.c) turns.splice(kind === 'clashed' ? 6 : 3,0,kind === 'clicked'
+    ? {by:'c',say:"Can I listen too? I'd like to hear about it.",v:{sharp:"Keep going, I want to hear this too.",dry:"I'll listen as well, if that's all right.",loud:"Wait, I want to hear too!",soft:"Could I listen? I want to know you better.",odd:"I'm joining the listening part, if there's room."}}
+    : {by:'c',say:"You could let {a} finish before deciding you don't like it.",v:{sharp:"Let {a} finish. You haven't heard the point yet.",dry:"We could hear the whole thing before reviewing it.",loud:"Let {a} finish talking!",soft:"I wanted to hear it, even if you didn't.",odd:"Can we finish the introduction before we start arguing?"}});
+  if (who.d) turns.splice(turns.length-2,0,kind === 'clicked'
+    ? {by:'d',say:"I didn't know that about you. I'm glad I sat here.",v:{sharp:"That's more interesting than the introduction we got.",dry:"I've learned something I wouldn't have guessed.",loud:"That's interesting! Tell us more.",soft:"It's nice getting to know what you care about.",odd:"I'm glad I joined before you finished the interesting part."}}
+    : {by:'d',say:"I don't want this to turn into an argument before we've unpacked.",v:{sharp:"We can disagree without making the whole group uncomfortable.",dry:"I was hoping sitting down would be less awkward than this.",loud:"Can we stop arguing for a minute?",soft:"Could we be a little kinder about it?",odd:"I haven't put my bag down and we're already arguing."}});
+  const entry = {...template,id:`kit:first:${kind}:${a}:${bit.index}`,when:undefined,turns};
+  const w = writeKitScene(entry,who,facts,{...ctx,firstImpressions:true,data:{...(ctx.data || {}),'a.thing':kitOf(a).thing}});
+  if (w) { bit.mark(); if(tease) tease.mark(); if(reply) reply.mark(); if(defend) defend.mark(); w.kit=true; w.who=who; }
   return w;
 }

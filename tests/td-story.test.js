@@ -8,6 +8,7 @@ import { TD_FACT_KEYS } from '../js/td/script/facts.js';
 import { campFeed } from '../js/td/story/feed.js';
 import { GUARANTEED as ENGINE_G } from '../js/td/script/lines/index.js';
 import { VOICE_TAGS, voiced, voiceOf } from '../js/td/story/voice.js';
+import { FAMILY } from '../js/td/story/voice-family.js';
 import VOICES from '../js/td/story/lines/voices/index.js';
 import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 
@@ -158,7 +159,7 @@ describe('td story pools', () => {
   });
 
   it('keys every voice variant on a tag voice.js gives people', () => {
-    for (const [, e] of all) for (const t of e.turns) for (const k of Object.keys(t.v || {})) expect(VOICE_TAGS.includes(k), `${e.id}: variant '${k}'`).toBe(true);
+    for (const [, e] of all) for (const t of e.turns) for (const k of Object.keys(t.v || {})) expect([...VOICE_TAGS, ...Object.values(FAMILY)].includes(k), `${e.id}: variant '${k}'`).toBe(true);
     for (const [, e] of all) for (const f of ['voice', 'voiceB', 'voiceC']) for (const t of [].concat(e.when?.[f] || [])) expect(VOICE_TAGS.includes(t), `${e.id}: ${f} '${t}'`).toBe(true);
   });
 

@@ -16,6 +16,7 @@ import { players } from '../../core.js';
 import { pStats } from '../../players.js';
 import { ageOf } from '../script/facts.js';
 
+import { FAMILY } from './voice-family-map.js';
 import { WORDS, readVoiceText } from './voice-words.js';
 // tag ← archetype (when the authored words have not already said it)
 const ARCH = {
@@ -80,6 +81,12 @@ export function voiced(turn, speaker, hush = false, fits = null) {
   if (!v || !speaker) return turn.say || turn.conf;
   const tags = voiceOf(speaker);
   const hard = tags.some(t => HARD.includes(t));
-  for (const t of tags) if (v[t] && !(hard && AGE.has(t)) && !(hush && t === 'loud') && (!fits || fits(v[t]))) return v[t];
+  for (const t of tags) {
+    if (hard && AGE.has(t)) continue;
+    for (const key of [...new Set([t, FAMILY[t]].filter(Boolean))]) {
+      if (hush && key === 'loud') continue;
+      if (v[key] && (!fits || fits(v[key]))) return v[key];
+    }
+  }
   return turn.say || turn.conf;
 }

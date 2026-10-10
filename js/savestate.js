@@ -982,6 +982,18 @@ export function initGameState() {
     lifeStage: sh.stage,
     lifeKids: sh.kids || 0,
   }));
+  // A showmance that LASTED on a show they both come back from walks in as a couple too (the user,
+  // 2026-10-09: a returnee season read Connor and Natasha, together at the end of season 1 and both
+  // back on one team, as two people who had never met). Life has the last word: a couple it has split
+  // since, or either one with somebody else now, is left as the bond the ledger already seeded.
+  for (const sp of (_fMeta?.seededPairs || []).filter(x => x.kind === 'showmance-intact')) {
+    const has = n => _lifeShowmances.some(sh => sh.players.includes(n));
+    const splitSince = (_life?.pairs || []).some(p => p.kind === 'life-ex' && [p.a, p.b].includes(sp.a) && [p.a, p.b].includes(sp.b));
+    if (has(sp.a) || has(sp.b) || splitSince) continue;
+    if (!players.some(p => p.name === sp.a) || !players.some(p => p.name === sp.b)) continue;
+    _lifeShowmances.push({ players: [sp.a, sp.b], phase: 'established', sparkEp: 0, episodesActive: 0, tested: false,
+      breakupEp: null, breakupVoter: null, breakupType: null, origin: 'arrived-together', returned: true, lifeStage: 'dating', lifeKids: 0 });
+  }
 
   const tribeList = Object.entries(tribeMap).map(([name,members]) => ({name, members:[...members]}));
 

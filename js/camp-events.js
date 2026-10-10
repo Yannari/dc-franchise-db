@@ -1172,9 +1172,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         const allianceMembers = [initiator, ...safeRecruits];
         if (gs.namedAlliances?.some(a => a.active && allianceMembers.every(m => a.members.includes(m)))) continue;
         Math.random(); // the draw that picked the sentence
-        // a pitches; b and c are the first two recruits; anyone past them is named in {more}.
-        const [_r1, _r2, ..._rMore] = safeRecruits;
-        _createAlliance(allianceMembers, name => makeScene('alliance.form', { a: initiator, b: _r1, ...(_r2 ? { c: _r2 } : {}) },
+        // a pitches; b, c, d and e are the recruits, each in the scene (the user, 2026-10-09: an alliance of
+        // four formed as a conversation between two); anyone past five is named in {more}.
+        const [_r1, _r2, _r3, _r4, ..._rMore] = safeRecruits;
+        _createAlliance(allianceMembers, name => makeScene('alliance.form', { a: initiator, b: _r1, ...(_r2 ? { c: _r2 } : {}), ...(_r3 ? { d: _r3 } : {}), ...(_r4 ? { e: _r4 } : {}) },
           { ending: 'pitch', group: name, more: _rMore.length ? _rMore.join(' and ') : null }, [], _spotNow(initiator, _r1)));
 
       } else if (_chosen.id === 'power-couple') {

@@ -1609,7 +1609,7 @@ export function nameNewAlliance(size) {
       'The Hat Trick', 'The Triple Threat', 'The Three Amigos',
       // Total Drama / Disventure Camp style
       'The Drama Triangle', 'The Chaos Trio', 'The Triple Blindside',
-      'The Three Torches', 'The Outhouse Alliance',
+      'The Back Row', 'The Outhouse Alliance',
       'The Camp Legends', 'The Marshmallow Club', 'The Dock Rats',
     ],
     4: [
@@ -1632,7 +1632,7 @@ export function nameNewAlliance(size) {
     'The Drama Club', 'The Chaos Brigade',
     'The Confessional Clique', 'The Campfire Crew', 'The Dock Pact',
     'The Marshmallow Mafia', 'The Island Syndicate', 'The Outwit Club',
-    'The Blindside Brigade', 'The Torch Carriers', 'The Camp Takeover',
+    'The Blindside Brigade', 'The Late Night Crew', 'The Camp Takeover',
     'The Merge Mob', 'The Tribal Terrors', 'The Immunity Hunters',
     'The Snuff Squad',
   ];

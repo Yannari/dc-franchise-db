@@ -246,7 +246,8 @@ export default {
     ] },
   ],
   'long.alliance.form.any': [
-    { id: 'nl6.a1', turns: [
+    // two people only: an alliance of three or more never plays as this (the user: 'an alliance of 4, a conversation of 2')
+    { id: 'nl6.a1', when: { third: false }, turns: [
       { by: 'a', say: "I think I'm next." },
       { by: 'b', say: "Funny. I think I'm next." },
       { by: 'a', say: "We can't both be next." },

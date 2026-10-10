@@ -43,6 +43,7 @@ import { writePreviously } from './previously.js';
 import { chalMoments } from './chalmoments.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf, kindOf } from './places.js';
+import { kitBitScene, kitLifeScene, hasKit } from './kits.js';
 
 // Where the season lives decides a few words ({quarters}, {bed}) and what campers can know:
 // at a venue that reads the votes aloud (the Elimination Trial) everyone hears the count; at a
@@ -1533,6 +1534,49 @@ export function airTdEpisode(ep) {
         ev.aired = true;
         seasonAired[`${line.type}.${step.step}`] = (seasonAired[`${line.type}.${step.step}`] || 0) + 1;
         list.push({ at: i, item: item || { ref: i, storyline: line.id } });
+      }
+      // each character's own material (td/story/kits.js, written from the roster profile: Bruno's job as a
+      // personal assistant, Dunia's witchcraft, Gabby's pets and Ellie): one bit a camp in the morning, the
+      // least recently featured first, teased by whoever is closest to them; and one life talk a camp in the
+      // afternoon, between two people still getting to know each other. On top of the caps: it is what the
+      // day is made of in a real episode (the user, 2026-10-10: "more like a real Disventure Camp episode").
+      if (editOn && !ep.isFinale) {
+        const book = ((gs.tdStory ||= {}).kitLast ||= {});
+        const kitted = members.filter(m => hasKit(m)).sort((x, y) => (book[x] ?? -99) - (book[y] ?? -99) || x.localeCompare(y));
+        const busy = new Set(list.flatMap(x => x.item?.players || []).filter(Boolean));
+        if (phase === 'pre') {
+          for (const a of kitted) {
+            // the closest one to a teases them, but not the same person every time
+            const lastB = ((gs.tdStory ||= {}).kitBitWith ||= {})[a];
+            const b = members.filter(m => m !== a && m !== lastB).sort((x, y) => getBond(a, y) - getBond(a, x) || x.localeCompare(y))[0];
+            if (!b) break;
+            const who = { a, b };
+            const w = kitBitScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside' });
+            if (!w) continue;
+            book[a] = ep.num; gs.tdStory.kitBitWith[a] = b;
+            list.push({ at: 0.35, item: { story: true, kind: 'kit.bit', storyType: 'kit', step: 'bit', players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a}'s own thing, and ${b} has opinions about it.`] } });
+            break;
+          }
+        } else {
+          const pairs = [];
+          for (const a of kitted) for (const b of members) {
+            if (b === a || busy.has(a) && busy.has(b)) continue;
+            const bd = getBond(a, b);
+            if (bd <= -3) continue;
+            pairs.push([a, b, Math.abs(bd - 1) - (hasKit(b) ? 1 : 0) + ((book[a] ?? -99) === ep.num ? 3 : 0)]);
+          }
+          pairs.sort((x, y) => x[2] - y[2] || x[0].localeCompare(y[0]) || x[1].localeCompare(y[1]));
+          for (const [a, b] of pairs.slice(0, 6)) {
+            const who = { a, b };
+            const w = kitLifeScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside' });
+            if (!w) continue;
+            book[a] = ep.num;
+            list.push({ at: 0.5, item: { story: true, kind: 'kit.life', storyType: 'kit', step: 'life', players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a} and ${b} get to know each other.`] } });
+            break;
+          }
+        }
       }
       // a returnee's past airs on top of the caps (camp-events.js franchise-meta block: the grudge from
       // last season, the reunion, the newcomer asking what happened, the newcomers plotting against the

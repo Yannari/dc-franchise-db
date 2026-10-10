@@ -277,40 +277,125 @@ export function kitCallbackScene(c, d, about, facts, ctx) {
 }
 
 
-// Day one spends at most one kit opening per team (budgeted by the director).
-// A bit/tease/reply is one aligned exchange; do not choose the three independently.
+// ── day one, opened from a kit (spec 2026-10-10-td-first-impressions-design.md §6.2) ──
+// The user's review of the first build: "the kit scenes are one template with the opening swapped ... only the
+// first line is about that person". So the whole scene is made of the two people: where a's solo scene finds
+// a (Gwen with a burnt stick for eyeliner), a's bit, b's tease and a's comeback (one aligned exchange), then b
+// asks the question a's kit answers (home or want), and b answers it too, from b's own kit or archetype. The
+// clash keeps the tease and goes to a's `defend`. Only the joins between those are written here, per voice.
+// Day one spends at most one kit opening per team (budgeted by first-impressions.js).
+const fam = (by, neutral, sharp, dry, loud, soft, odd) => ({ by, say: neutral, v: { sharp, dry, loud, soft, odd } });
+const famConf = (by, ...l) => { const t = fam(by, ...l); return { by, conf: t.say, v: t.v }; };
+const own = (by, line) => ({ by, say: line, v: { sharp: line, dry: line, loud: line, soft: line, odd: line } });
+const DAY_ONE_OK = line => !/^And\?/i.test(line) && !/snores|awake since|at every meal|fine with the dark|morning fog|out here it.s eight|\b(yesterday|last night|again|always|lately|anymore|used to|every time|every day|every morning|all week)\b|\b(cooked|breakfast|lunch|dinner|shelter|nest)\b/i.test(line);
+// b laughing at the comeback, then b asking what a's kit can answer
+const FIRST_LAUGHED = ["{b} laughs before {b.sub} can stop {b.ref}.", "{b} snorts, then pretends it was a cough.", "{b} grins and sits down properly.", "{b} shakes {b.posAdj} head, but can't stop smiling."];
+const FIRST_ASK = {
+  want: [
+    fam('b', "Okay, real question. What are you actually here for?", "So what's the plan? Nobody comes here just to make friends.", "Real question, then. Why are you here?", "Okay, but seriously, what do you want out of this?", "Can I ask what you're hoping for, out here?", "Okay, serious question, and you have to answer it seriously. What are you here for?"),
+    fam('b', "So what made you sign up for this?", "Why'd you sign up? And don't say for fun.", "What made you sign up for this, of all things?", "So why are you here? What's the big reason?", "What made you want to come? You don't have to tell me.", "What's your reason for being here? You have to answer properly."),
+  ],
+  home: [
+    fam('b', "So who's waiting for you back home?", "Who's at home cheering for you, then?", "Who's back home watching this?", "So who's going to be screaming at the TV back home?", "Is there somebody back home you're doing this for?", "Who's back home right now, wondering what you're up to?"),
+    fam('b', "Do you have people back home? What are they like?", "Tell me about home. Who's going to be watching?", "What's waiting for you at home?", "Who've you got at home? Tell me everything!", "Do you miss anyone yet? It's okay if you do.", "What's home like? Paint me a picture."),
+  ],
+};
+// b taking in a's answer, before a asks the same question back
+const FIRST_TOOK = [
+  fam('b', "Okay, that's a really good answer.", "Hm. That's a better answer than I expected.", "That's a good answer.", "Okay, that's a GREAT answer!", "Oh, that's a really lovely answer.", "Okay, that's a better answer than mine, and I haven't even said mine yet."),
+  fam('b', "Huh. I didn't expect that.", "Huh. Didn't see that coming.", "Huh.", "Whoa, I did NOT expect that!", "Oh. I didn't expect that, but I like it.", "Huh. You're full of surprises, aren't you?"),
+  fam('b', "Okay, I respect that.", "Fine. I respect that.", "I respect that.", "Okay, I RESPECT that!", "That's really honest. I respect that.", "Okay, I respect that, and I'm a little bit jealous of it."),
+];
+const ME_TOO = ["Me? ", "For me? ", "Honestly? ", "Me? Honestly? "];
+const CLICK_CLOSE = [
+  fam('a', "Okay, you're stuck with me now. I want to hear more about that later.", "Fine, you can sit with me. You passed.", "You can stay. You're more interesting than you look.", "Okay, that's it, we're friends now. No take-backs!", "I'm really glad you came over. Can we keep talking later?", "Okay, I've decided you're my first friend here. You don't get a say."),
+  fam('a', "I think we're going to get along, you know that?", "You're all right. Don't let it go to your head.", "This is the best conversation I've had all day, which isn't saying much, but still.", "See, this is why you talk to people! You're great!", "I was nervous about meeting everybody, but this was nice.", "You're officially my favourite person here, and I've met almost everyone."),
+];
+const CLICK_CONF_A = [
+  famConf('a', "I thought {b} would roll {b.posAdj} eyes at me. {b} didn't. I like {b}.", "{b} gave me a hard time and then actually listened. That's my kind of person.", "{b} laughed at the right part. That's rare.", "{b} is great! I talked way too much and {b} stayed anyway!", "I was worried I'd be too much for everybody, but {b} didn't seem to mind.", "I talked about myself for twenty minutes and {b} asked questions. I'm keeping {b}."),
+  famConf('a', "I didn't expect to make a friend this fast. I think I did, though.", "{b} doesn't just smile and nod, which means when {b} likes something, it counts.", "I don't usually like people straight away. {b} might be an exception.", "I already know {b} is going to be one of my people here!", "{b} made me feel like I didn't have to pretend. That's a really good start.", "{b} teased me and I liked it, so either we're friends or I need to think about some things."),
+];
+const CLICK_CONF_B = [
+  famConf('b', "I came over to make fun of {a} a little, and now I actually like {a}. That wasn't the plan.", "I wanted to see if {a} could take a joke. {a} can, and {a} hit back. Good.", "{a} is a lot. But {a}'s the interesting kind of a lot.", "{a} is so much fun! I'm sitting next to {a} every chance I get!", "{a} told me something real on the first day. I want to deserve that.", "I've known {a} for an hour and I already know way too much about {a}. I love it."),
+  famConf('b', "There's more to {a} than I thought. I'm glad I asked.", "I'll admit {a} surprised me. Not many people do.", "I thought {a} would be exhausting. {a} is, but in a good way.", "{a} is my first friend here, and I'm calling it right now!", "I didn't expect to like {a} this much, this fast. I'm really glad I came over.", "I asked {a} one question and got the whole story. I'm going to need a nap, but I'm happy."),
+];
+// the clash: after the tease and the comeback, b keeps at it, a defends the thing (kit `defend`), and it stays bad
+const CLASH_PUSH = [
+  fam('b', "Okay, that's cute, but is every conversation with you going to be about that?", "Clever. Do you introduce yourself like this to everyone, or am I special?", "Very good. I asked your name, though, and I didn't ask for all of this.", "Okay, cute, but do you ever stop talking about it?", "That's funny, but I'm sorry, it's a lot to hear before I've even unpacked.", "That was a good line, but I've known you five minutes and I've already heard enough about it for a week."),
+  fam('b', "Funny. You know it's not a personality, though, right?", "Sure. But that's a hobby, not a personality, you know.", "Nice. Most people lead with their name, though.", "Okay, ha, but seriously, that's the first thing you tell people?", "That's funny, but I don't really get why it matters so much to you.", "Ha. Is there a version of you that isn't about that? I want to meet that one."),
+];
+const CLASH_JAB = [
+  fam('b', "Okay. Sensitive.", "Wow. Touchy.", "Noted.", "Whoa, okay! Calm down!", "I didn't mean to upset you.", "Okay, I'm backing away slowly."),
+  fam('b', "Whatever you say.", "Sure. Keep telling yourself that.", "If you say so.", "Fine! Talk to someone who cares!", "I wasn't trying to start a fight.", "I'm going to go talk to a tree for a while."),
+];
+const CLASH_BACK = [
+  [fam('a', "And you've been a joy to meet, haven't you?", "You've known me five minutes, and you've already decided. Impressive.", "Good talk. Really. Let's never do it again.", "You know what, you're not exactly a ray of sunshine either!", "I was trying to be friendly. I don't know why that was so hard.", "I'm giving you a fresh start tomorrow. Today you're on probation."),
+   fam('b', "At least I'm honest about it.", "I'm not here to be liked by you.", "Fine by me.", "Good! I didn't want to anyway!", "I'm sorry. I don't think we got off on the right foot.", "Fine by me. I've survived worse first impressions.")],
+  [fam('a', "You don't have to like it. You just have to leave it alone.", "Mock it all you want. I'll still be here when you're gone.", "You can find somebody else to judge. I'm busy.", "Then go talk to somebody else! Nobody's making you stay!", "I'd rather you just said you weren't interested.", "Okay, new rule. You don't get to hear the good part now."),
+   fam('b', "Happily.", "With pleasure.", "Already going.", "I'm going! Relax!", "Okay. I'm sorry it came out like that.", "I'll survive, probably.")],
+];
+const CLASH_CONF_A = [
+  famConf('a', "{b} decided what I was before I'd finished a sentence. Fine. I've met people like {b} before.", "{b} thinks laughing at people makes {b} interesting. It doesn't. It makes {b} easy to read.", "So {b} is the person here who's going to roll {b.posAdj} eyes at everything. Good to know early.", "{b} made fun of me on the first day! I'm not forgetting that!", "I really wanted to get along with everybody. I don't think {b} wants to get along with me.", "First impression of {b}: rude. Second impression: still rude. I'll let you know about the third."),
+];
+const CLASH_CONF_B = [
+  famConf('b', "Maybe I was harsh. But nobody needs to hear all of that in the first five minutes.", "{a} is going to talk about that until the merge. Somebody has to say it.", "I said one thing and {a} acted like I'd kicked {a.obj}. This is going to be a long season.", "{a} can't take a joke! Good luck out here!", "I didn't mean to hurt {a}. I just said it really badly, and now it's weird.", "{a} and I are not going to be friends, and honestly, I think we both know it."),
+];
+
 export function kitFirstPairScene(a, b, kind, facts, ctx) {
-  const template = STORY_POOLS[kind === 'clicked' ? 'story.firstpair.clicked' : 'story.firstpair.clashed']
-    ?.find(e => e.id === (kind === 'clicked' ? 'fp2.kit-interest' : 'fp2.kit-mock'));
-  if (!template || !hasKit(a)) return null;
-  const dayOne = line => !/^And\?/i.test(line) && !/snores|awake since|at every meal|fine with the dark|morning fog|out here it.s eight|\b(yesterday|last night|again|always|lately|anymore|used to|every time)\b|\b(cooked|breakfast|lunch|shelter|nest)\b/i.test(line);
-  const bit = take(a, 'bit', (line,i) => dayOne(line) && (kind !== 'clashed' || [kitOf(a).tease?.[i],kitOf(a).reply?.[i]].every(x => x && dayOne(x))));
-  const tease = kind === 'clashed' && bit ? take(a, 'tease', (_, i) => i === bit.index) : null;
-  const defend = kind === 'clashed' ? take(a, 'defend', dayOne) : null;
-  const reply = kind === 'clashed' && bit ? take(a, 'reply', (_, i) => i === bit.index) : null;
-  if (!bit || kind === 'clashed' && (!tease || !reply || !defend)) return null;
-  const ownTurn = (by, line) => ({ by, say: line, v: Object.fromEntries(['sharp','dry','loud','soft','odd'].map(f => [f,line])) });
-  const turns = template.turns.map(t => ({...t, ...(t.v ? {v:{...t.v}} : {})}));
-  turns[1] = ownTurn('a', bit.line);
-  if (kind === 'clashed') {
-    turns.splice(2,0,ownTurn('b',tease.line),ownTurn('a',reply.line));
-    turns[5] = ownTurn('a',defend.line);
+  if (!hasKit(a)) return null;
+  const k = kitOf(a);
+  const bit = take(a, 'bit', (line, i) => DAY_ONE_OK(line) && [k.tease?.[i], k.reply?.[i]].every(x => x && DAY_ONE_OK(x)));
+  if (!bit) return null;
+  const tease = take(a, 'tease', (_, i) => i === bit.index), reply = take(a, 'reply', (_, i) => i === bit.index);
+  if (!tease || !reply) return null;
+  const pick = (list, ...key) => list[[...key.join('|')].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % list.length];
+  const archOf = n => (typeof window !== 'undefined' && window.players || []).find(p => p.name === n)?.archetype || 'floater';
+  const opening = k.alone && DAY_ONE_OK(k.alone)
+    ? { beat: `{a} ${k.alone}, when {b} ${kind === 'clicked' ? "comes over to see what's going on" : 'sits down nearby'}.` }
+    : { beat: kind === 'clicked' ? '{b} sits down next to {a} {here}.' : '{a} is talking about {a.thing} {here}, and {b} has to sit through it.' };
+  let turns, spent = [bit, tease, reply];
+  if (kind === 'clicked') {
+    // the question a's own kit answers, and b's own answer to it
+    const part = take(a, 'want', DAY_ONE_OK) ? 'want' : 'home';
+    const ans = take(a, part, DAY_ONE_OK);
+    const mine = hasKit(b) ? take(b, part, DAY_ONE_OK) : plain(part, b, archOf(b));
+    if (!ans || !mine) return null;
+    spent.push(ans, mine);
+    const lead = pick(ME_TOO, a, b);
+    turns = [
+      opening, own('a', bit.line), own('b', tease.line), own('a', reply.line),
+      { beat: pick(FIRST_LAUGHED, b, a) },
+      pick(FIRST_ASK[part], a, b), own('a', ans.line),
+      pick(FIRST_TOOK, b, a),
+      fam('a', "What about you?", "Your turn. Same question.", "Now you.", "Okay, your turn! Same question!", "What about you? I want to know.", "Your turn, and you have to be just as honest as me."),
+      own('b', lead + mine.line),
+      pick(CLICK_CLOSE, a, b),
+      pick(CLICK_CONF_A, a, b), pick(CLICK_CONF_B, b, a),
+    ];
+  } else {
+    const defend = take(a, 'defend', DAY_ONE_OK);
+    if (!defend) return null;
+    spent.push(defend);
+    const [hit, back] = pick(CLASH_BACK, a, b);
+    // the kit's tease and comeback stay one exchange (spec §6.2); the next line is b's reaction to the
+    // comeback, which is where it stops being banter (read 2026-10-10: a friendly comeback straight into
+    // "I asked your name, I didn't ask for all of this" had no turn in it)
+    turns = [
+      opening, own('a', bit.line), own('b', tease.line), own('a', reply.line),
+      pick(CLASH_PUSH, b, a), own('a', defend.line), pick(CLASH_JAB, a, b),
+      hit, back,
+      { beat: '{b} gets up and finds somewhere else to sit.' },
+      pick(CLASH_CONF_A, a, b), pick(CLASH_CONF_B, b, a),
+    ];
   }
-  else {
-    const voicedTurn = (by, variants) => ({by,say:variants[0],v:Object.fromEntries(['sharp','dry','loud','soft','odd'].map((f,i)=>[f,variants[i+1]]))});
-    turns[5] = voicedTurn('b',["I'm glad we're talking. I wasn't sure how to start a conversation here.","At least you said something. Everyone else is waiting to be introduced.","This is easier than standing around trying to look approachable.","I'm glad you started talking! I hate awkward introductions.","I was nervous about meeting everyone. This helps.","I had no idea what to say first, so thanks for going first."]);
-    turns[6] = voicedTurn('a',["Neither was I. It's easier once somebody listens.","I wasn't going to stand around all day. I wanted to meet somebody.","I wasn't sure you'd listen, so this is going better than expected.","Yeah! I just started talking before I could worry about it.","I'm nervous too. It helps knowing you are.","I was hoping I'd think of something once I opened my mouth."]);
-    turns[7] = voicedTurn('b',["Well, I'd like to keep sitting with you, if that's okay.","Well, you've met me. I'm staying here a while.","I think I'll stay here rather than attempt another introduction.","Well, we know each other now! I'm sitting with you.","Could I stay here with you for a little while?","Good. Can we keep talking until I work out where my bag went?"]);
+  const who = { a, b };
+  const entry = { id: `kit:first:${kind}:${a}:${bit.index}`, place: 'aside', turns };
+  let w = writeKitScene(entry, who, facts, { ...ctx, firstImpressions: true, data: { ...(ctx.data || {}), 'a.thing': k.thing } });
+  // the solo opening names a place the venue may not have: open plainly instead
+  if (!w && opening.beat.includes(k.alone || '\u0000')) {
+    turns[0] = { beat: kind === 'clicked' ? '{b} sits down next to {a} {here}.' : '{a} is talking about {a.thing} {here}, and {b} has to sit through it.' };
+    w = writeKitScene({ ...entry, turns }, who, facts, { ...ctx, firstImpressions: true, data: { ...(ctx.data || {}), 'a.thing': k.thing } });
   }
-  const who = {...(ctx.who || {}), a, b};
-  if (who.c) turns.splice(kind === 'clashed' ? 6 : 3,0,kind === 'clicked'
-    ? {by:'c',say:"Can I listen too? I'd like to hear about it.",v:{sharp:"Keep going, I want to hear this too.",dry:"I'll listen as well, if that's all right.",loud:"Wait, I want to hear too!",soft:"Could I listen? I want to know you better.",odd:"I'm joining the listening part, if there's room."}}
-    : {by:'c',say:"You could let {a} finish before deciding you don't like it.",v:{sharp:"Let {a} finish. You haven't heard the point yet.",dry:"We could hear the whole thing before reviewing it.",loud:"Let {a} finish talking!",soft:"I wanted to hear it, even if you didn't.",odd:"Can we finish the introduction before we start arguing?"}});
-  if (who.d) turns.splice(turns.length-2,0,kind === 'clicked'
-    ? {by:'d',say:"I didn't know that about you. I'm glad I sat here.",v:{sharp:"That's more interesting than the introduction we got.",dry:"I've learned something I wouldn't have guessed.",loud:"That's interesting! Tell us more.",soft:"It's nice getting to know what you care about.",odd:"I'm glad I joined before you finished the interesting part."}}
-    : {by:'d',say:"I don't want this to turn into an argument before we've unpacked.",v:{sharp:"We can disagree without making the whole group uncomfortable.",dry:"I was hoping sitting down would be less awkward than this.",loud:"Can we stop arguing for a minute?",soft:"Could we be a little kinder about it?",odd:"I haven't put my bag down and we're already arguing."}});
-  const entry = {...template,id:`kit:first:${kind}:${a}:${bit.index}`,when:undefined,turns};
-  const w = writeKitScene(entry,who,facts,{...ctx,firstImpressions:true,data:{...(ctx.data || {}),'a.thing':kitOf(a).thing}});
-  if (w) { bit.mark(); if(tease) tease.mark(); if(reply) reply.mark(); if(defend) defend.mark(); w.kit=true; w.who=who; }
+  if (w) { for (const s of spent) s.mark(); w.kit = true; w.who = who; }
   return w;
 }

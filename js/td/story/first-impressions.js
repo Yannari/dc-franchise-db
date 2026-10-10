@@ -65,9 +65,12 @@ export function writeFirstImpression(anchor,members,kind,ctx) {
  }
  const kitTeams=((gs.tdStory ||= {}).firstImpressionKitTeams ||= []);
  if(!kitTeams.includes(ctx.camp)) {
-   for(const {who,facts} of orientations.filter(x=>hasKit(x.who.a))) {
-     const w=kitFirstPairScene(who.a,who.b,kind,facts,{...ctx,who,firstImpressions:true});
-     if(w){kitTeams.push(ctx.camp);return {w,who,mode:cast.mode,kit:true};}
+   // a kit scene is about two people: whoever else the cast drew stays out of it (a seat with nothing of
+   // its own to say is the bug the user found, 2026-10-10)
+   for(const x of orientations.filter(x=>hasKit(x.who.a))) {
+     const who={a:x.who.a,b:x.who.b};
+     const w=kitFirstPairScene(who.a,who.b,kind,factsOf(who,kind,ctx),{...ctx,who,firstImpressions:true});
+     if(w){kitTeams.push(ctx.camp);return {w,who,mode:'pair',kit:true};}
    }
  }
  const group=cast.names.length>=3;

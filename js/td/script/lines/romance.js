@@ -496,7 +496,12 @@ const FADE_AMICABLE = [
     { by: 'a', conf: "We hugged. It was a goodbye hug. We both knew it." },
   ] },
   { id: 'ro.fa6', turns: [
-    { by: 'b', conf: "The long talks got shorter. Then they stopped. I don't think we ever decided anything. It just ended." },
+    { by: 'a', say: "We haven't really talked in a while, have we?" },
+    { by: 'b', say: "No. I kept meaning to, and then I didn't." },
+    { by: 'a', say: "Me too. Is that a bad sign?" },
+    { by: 'b', say: "I think it's just a sign. I'm not mad at you." },
+    { by: 'a', say: "I'm not mad at you either. That's kind of the sad part." },
+    { by: 'b', conf: "The long talks got shorter, and then they stopped. I don't think we ever decided anything. It just ended." },
   ] },
 ];
 const FADE_SOURED = [

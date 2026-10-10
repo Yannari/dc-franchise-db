@@ -155,7 +155,12 @@ export function buildAftermathShow(ep, a) {
   // ═══ THE OPEN ═══
   const first = (a.number || 1) === 1;
   shot('stage-wide', wideSeats(), { title: { kicker: a.isReunion ? 'Live' : `Aftermath ${a.number || ''}`.trim(), name: a.isReunion ? 'The Reunion' : 'Total Drama Aftermath' } });
-  say(HA, first ? V(HA, 'hello', {
+  if (a.isReunion) say(HA, V(HA, 'hello-r', {
+    loud: [`Welcome to the Total Drama Reunion! Everybody's here, and I mean EVERYBODY!`], soft: [`Hi, everyone! Welcome to the Total Drama Reunion. The whole cast, together again. I might cry.`],
+    sharp: [`Welcome to the Reunion. One winner, a lot of losers, and one couch big enough for all of them.`], dry: [`Welcome to the Reunion, where everyone who hated each other sits on the same couch.`],
+    odd: [`Welcome to the Reunion! It's like a family dinner, if the family voted each other out!`], any: [`Welcome to the Total Drama Reunion!`],
+  }));
+  else say(HA, first ? V(HA, 'hello', {
     loud: [`What is up, everybody?! Welcome to the brand-new, totally live Total Drama Aftermath!`],
     soft: [`Hi, everyone! Welcome to the very first Total Drama Aftermath! We're coming to you live, and we're so happy you're here.`],
     sharp: [`Welcome to the Total Drama Aftermath. Yes, it's live. Yes, I'm hosting. Try to keep up.`],
@@ -269,7 +274,7 @@ export function buildAftermathShow(ep, a) {
       const f = factsOf(n);
       say(hostNow, pick([`We've got ${n}!`, `There's ${n}!`, `And ${n}, everybody!`, `Say hi, ${n}!`, `Look who it is! ${n}!`, `${n}'s here!`], `galhost${turn % 3}`));
       if (known[n]) { f.traitor = known[n]; }
-      if (known[n]) say(n, V(n, 'galbitter', {
+      if (known[n] && !a.isReunion) say(n, V(n, 'galbitter', {
         sharp: [`Thrilled to be here. Really. Ask ${f.traitor} how thrilled I am.`, `Hi. ${f.traitor}, if you're watching, I'm still here. And I still know.`, `I'm doing great, ${f.traitor}. Thanks for asking. You didn't.`],
         loud: [`Oh, I'm here. And ${f.traitor} had better be watching.`, `${f.traitor}! I see you on that screen! I'm still mad!`, `Still here! Still mad at ${f.traitor}!`],
         dry: [`Hi. I'm the one ${f.traitor} said was safe.`, `Hello. Still not over ${f.traitor}. Moving on.`, `Hi. Yes, I'm still thinking about ${f.traitor}. Next.`],
@@ -640,8 +645,10 @@ export function buildAftermathShow(ep, a) {
     shot('stage-wide', wideSeats(), { title: { kicker: 'On webcam', name: fc.fanName || 'A fan' } });
     say(HA, pick([`We've got a fan on webcam! ${fc.fanName || 'Hi'}, you're on the Aftermath!`, `Time to check in on our webcams! ${fc.fanName || 'Hello'}, you're live!`, `We've got ${fc.fanName || 'a fan'} on the line!`], 'webcam'));
     for (const x of fc.exchanges) {
-      beat(`${fc.fanName || 'The fan'}: "${String(x.q || '').replace(/^"|"$/g, '')}"`, { act: 'webcam' });
-      if (fc.target) say(fc.target, String(x.a || '').replace(/^"|"$/g, ''));
+      // (the engine's lines can carry a stage direction in brackets: never read aloud)
+      const clean = t => String(t || '').replace(/\[[^\]]*\]\s*/g, '').replace(/^"|"$/g, '').trim();
+      beat(`${fc.fanName || 'The fan'}: "${clean(x.q)}"`, { act: 'webcam' });
+      if (fc.target && clean(x.a)) say(fc.target, clean(x.a));
     }
     say(HB, pick([`Thanks, ${fc.fanName || 'buddy'}!`, `Love the fans! Thanks, ${fc.fanName || 'buddy'}!`, `Okay! Thank you, ${fc.fanName || 'buddy'}!`], 'webcambye'));
   }
@@ -653,38 +660,125 @@ export function buildAftermathShow(ep, a) {
     beat(`The studio erupts.`, { applause: 'big' });
   }
 
-  // ═══ THE REUNION: the finalists, the season's big topics, the awards ═══
+  // ═══ THE REUNION: the winner, the runner-up, the jury, the season's feud and its betrayal, the awards ═══
+  // (written from the finale's own record: who won, the jury's votes and why, who led which boot,
+  // the storylines; never the engine's interview templates)
   if (a.isReunion) {
-    // the engine's lines carry their stage directions between quotes: only the spoken part is said
-    const spoken = t => { const q = [...String(t || '').matchAll(/"([^"]+)"/g)].map(x => x[1]); return (q.length ? q.join(' ') : String(t || '')).trim(); };
-    for (const iv of (a.interviews || []).filter(x => x.isActive)) {
-      const p = iv.player, won = p === ep.winner;
-      shot('couch-front', { [HA]: 'hA', [p]: 'g', [HB]: 'hB' }, { title: { kicker: won ? 'The winner' : 'Finalist', name: p } });
-      say(HA, won ? `And now, the one you've all been waiting for. Our winner, ${p}!` : `Give it up for one of our finalists, ${p}!`);
-      beat(won ? `The studio is on its feet for ${p}.` : `Big applause as ${p} sits down.`, { applause: 'big', act: 'arrive' });
-      for (const q of iv.questions || []) { say(HB, spoken(q.q)); say(p, spoken(q.a)); }
+    const W = ep.winner || null;
+    const fins = [...new Set([...(ep.finaleFinalists || []), ...(gs.activePlayers || [])])].filter(Boolean);
+    const jv = ep.juryResult?.votes || {};
+    const why = ep.juryResult?.reasoning || [];
+    const ledBoots = n => hist.filter(h => (h.tribalStory?.booth || []).some(b => b.voter === n && b.role === 'lead' && b.voted === h.eliminated)).map(h => ({ boot: h.eliminated, ep: h.num, blind: !!h.tribalStory?.blindside }));
+    const wins = n => gs.chalRecord?.[n]?.wins || 0;
+    if (W) {
+      shot('couch-front', { [HA]: 'hA', [W]: 'g', [HB]: 'hB' }, { title: { kicker: 'The winner', name: W } });
+      say(HA, pick([`And now, the one you've all been waiting for. Our winner, ${W}!`, `Please welcome the winner of this season, ${W}!`, `And here they are, the last one standing. ${W}!`], 'rwin'));
+      beat(`The studio is on its feet for ${W}.`, { applause: 'big', act: 'arrive' });
+      const myVotes = jv[W] || 0, total = Object.values(jv).reduce((x, y) => x + y, 0);
+      say(HB, total ? `${Cap(num(myVotes))} out of ${num(total)} jury votes. ${W}, how does it feel?` : `${W}, you won the whole thing. How does it feel?`);
+      say(W, V(W, 'rwin-feel', {
+        soft: [`Honestly? I still don't believe it. I keep waiting for somebody to tell me it was a mistake.`, `I cried for about three days. Happy crying. Mostly.`],
+        sharp: [`Exactly how I knew it would feel. Earned.`, `Like the right result. I said it on day one, and nobody listened.`],
+        loud: [`AMAZING! I'm still screaming! Inside! And sometimes outside!`, `Unreal! I won! Me! I WON!`],
+        dry: [`Good. Very good. I've been sleeping in a real bed, which helps.`, `Better than losing. I've checked.`],
+        odd: [`Like eating the biggest cake in the world, and then finding a second cake.`, `I bought a hat with the money. Just one hat. For now.`],
+      }));
+      const led = ledBoots(W);
+      const big = led.find(x => x.blind) || led[led.length - 1];
+      say(HA, big ? `Let's talk about episode ${num(big.ep)}. You took out ${big.boot}. Was that the move that won it?` : wins(W) >= 2 ? `${Cap(num(wins(W)))} challenge wins. Was it the challenges that won it for you?` : `You flew under the radar for most of this game. Was that the plan all along?`);
+      say(W, big ? V(W, 'rwin-move', { soft: [`It was the hardest vote I ever cast. ${big.boot} was my friend. But yes.`], sharp: [`Obviously. ${big.boot} was the biggest threat out there, and I handled it.`], loud: [`YES! That night, I knew! I just knew!`], dry: [`That and a lot of quiet conversations nobody saw.`], odd: [`I like to think it was my charm. But it was probably that.`] })
+        : wins(W) >= 2 ? V(W, 'rwin-chal', { soft: [`They kept me safe when I needed it most.`], sharp: [`When they can't vote you out, they have to watch you win.`], loud: [`Can't vote me out if I keep winning!`], dry: [`It helps when nobody can write your name down.`], odd: [`I'm just really good at running into things!`] })
+        : V(W, 'rwin-radar', { soft: [`I just tried to be a good person out there, and somehow it worked.`], sharp: [`Of course. Let them fight each other. I'll be over here, winning.`], loud: [`Plan? I had no plan! But it worked!`], dry: [`If nobody's looking at you, nobody's voting for you.`], odd: [`I was hiding in plain sight. Mostly in the bushes.`] }));
+      // the runner-up: how close it was, and the vote they thought they had
+      const runner = fins.filter(n => n !== W).sort((x, y) => (jv[y] || 0) - (jv[x] || 0))[0];
+      if (runner) {
+        shot('couch-front', { [HA]: 'hA', [runner]: 'g', [HB]: 'hB' }, { title: { kicker: 'Runner-up', name: runner } });
+        say(HB, `And our runner-up, ${runner}!`);
+        beat(`Big applause for ${runner}.`, { applause: 'big' });
+        say(HA, (jv[runner] || 0) ? `${Cap(num(jv[runner]))} ${jv[runner] === 1 ? 'vote' : 'votes'}. So close. What happened?` : `${runner}, you made it all the way to the end. What happened?`);
+        const gap = Math.max(1, (jv[W] || 0) - (jv[runner] || 0));
+        say(runner, V(runner, 'ru', {
+          soft: [`I don't know. I think they just liked ${W} more. And that's okay. It really is.`, `I gave it everything. It just wasn't enough at the end.`],
+          sharp: [`The jury got it wrong. I'll be polite about it, but they got it wrong.`, `A bitter jury happened.`],
+          loud: [`I got robbed! On national television!`, `I was RIGHT there! RIGHT THERE!`],
+          dry: [`About ${num(gap)} ${gap === 1 ? 'vote' : 'votes'} happened.`, `${W} happened.`],
+          odd: [`I think the jury mixed up our names. That's my theory and I'm sticking to it.`, `I was distracted by how nice the final set was.`],
+        }));
+        // the juror they were sure of, who wasn't sure of them
+        const turned = why.filter(r => r.votedFor === W && bond(runner, r.juror) >= 3).map(r => r.juror)[0];
+        if (turned) {
+          say(HB, `Was there a vote you were counting on?`);
+          say(runner, V(runner, 'ru-who', { soft: [`${turned}. I really thought ${turned} was with me.`], sharp: [`${turned}. And ${turned} knows exactly why I'm saying that.`], loud: [`${turned}! I thought we were friends!`], dry: [`${turned}. That one stung.`], odd: [`${turned}! I even let ${pr(turned).obj} borrow my good pillow!`] }));
+          if (!gallery.includes(turned)) gallery.push(turned);
+          shot('gallery-side', gallerySeats([turned]));
+          say(turned, V(turned, 'juror', { soft: [`I'm sorry, ${runner}. I just thought ${W} played the better game. It wasn't personal.`], sharp: [`I voted for the best game. Friendship doesn't win a million dollars.`], loud: [`It was a hard call! I agonized! For like a whole minute!`], dry: [`I voted for the game, not the friendship.`], odd: [`I flipped a coin. Kidding! Mostly kidding.`] }));
+          addBond(runner, turned, -0.5);
+        }
+      }
+      // the jury: one who voted against the winner says why
+      const against = why.filter(r => r.votedFor !== W && r.juror && !fins.includes(r.juror)).map(r => r.juror)[0];
+      if (against) {
+        if (!gallery.includes(against)) gallery.push(against);
+        shot('gallery-side', gallerySeats([against]), { title: { kicker: 'The jury speaks', name: `Why not ${W}?` } });
+        say(HA, `${against}, you didn't vote for ${W}. Why not?`);
+        const led2 = led.find(x => x.boot === against);
+        say(against, led2 ? V(against, 'jagainst-me', { any: [`${W} voted me out in episode ${num(led2.ep)}, and then wanted my vote. That's not how it works.`], soft: [`${W} sent me home. I tried to let it go. I couldn't.`], loud: [`${W} took me out! And then asked for my vote?! No!`] })
+          : V(against, 'jagainst', { soft: [`I just felt ${W} didn't own ${pr(W).posAdj} game at the end.`], sharp: [`${W} got carried. Someone had to say it.`], loud: [`Because I didn't want to! Next question!`], dry: [`I voted for the game I respected more. Simple.`], odd: [`I was voting for vibes. ${W} had bad vibes.`] }));
+        say(W, V(W, 'jreply', { soft: [`That's fair. I'm still grateful you were on that jury.`], sharp: [`And yet, here I am. With the money.`], loud: [`Still won, though!`], dry: [`Noted. Also, I won.`], odd: [`I'll send you a postcard from my yacht!`] }));
+        beat(`The gallery goes "Ooooh."`);
+      }
     }
-    for (const topic of a.reunionDiscussion || []) {
-      const speakers = [...new Set((topic.lines || []).map(l => l.speaker).filter(n => n && n !== host))];
-      speakers.forEach(n => { if (!gallery.includes(n)) gallery.push(n); });
-      shot('gallery-side', gallerySeats(speakers), { title: { kicker: 'The reunion', name: topic.title } });
-      for (const l of topic.lines || []) say(!l.speaker || l.speaker === host ? HA : l.speaker, spoken(l.text));
+    // the season's longest feud, face to face
+    const feud = (gs.tdStory?.lines || []).filter(l => l.type === 'rivalry' && l.people.length >= 2).sort((x, y) => y.steps.length - x.steps.length)[0];
+    if (feud && feud.steps.length >= 2) {
+      const [fx, fy] = feud.people;
+      [fx, fy].forEach(n => { if (!gallery.includes(n)) gallery.push(n); });
+      shot('gallery-side', gallerySeats([fx, fy]), { title: { kicker: 'The reunion', name: `${fx} vs. ${fy}` } });
+      say(HB, `Okay. ${fx}. ${fy}. You two have been at it since episode ${num(feud.since || feud.steps[0].ep)}. Is there anything left to say?`);
+      say(fx, V(fx, 'feud1', { soft: [`I just wish it hadn't gotten so ugly. I don't even remember how it started.`], sharp: [`Plenty. But I'll keep it short. ${fy} was the worst part of my summer.`], loud: [`Oh, there's a LOT left to say!`], dry: [`I think we've covered it. Repeatedly. On camera.`], odd: [`I wrote a speech! It's eleven pages!`] }));
+      say(fy, V(fy, 'feud2', { soft: [`For what it's worth, I'm sorry about how I talked to you.`], sharp: [`Funny. I was going to say the same thing about you.`], loud: [`You started it, and you know it!`], dry: [`Please don't read the speech.`], odd: [`I also wrote a speech! Mine has drawings!`] }));
+      say(HA, `So, can you two make peace? Right here, right now?`);
+      if (bond(fx, fy) > -3) { beat(`${fx} and ${fy} look at each other. Then, slowly, they shake hands.`, { applause: 'big' }); addBond(fx, fy, 1); }
+      else { say(fx, V(fx, 'nopeace', { any: [`No.`], soft: [`Maybe someday. Not today.`], loud: [`Absolutely not!`], dry: [`Let's not get carried away.`] })); beat(`The gallery groans.`); }
+    }
+    // the betrayal that never got settled
+    const kn = Object.entries(gs.aftermathKnown || {}).find(([g2, t2]) => t2 && g2 !== W);
+    if (kn) {
+      const [vic, trt] = kn;
+      [vic, trt].forEach(n => { if (!gallery.includes(n)) gallery.push(n); });
+      shot('gallery-side', gallerySeats([vic, trt]), { title: { kicker: 'Unfinished business', name: `${vic} and ${trt}` } });
+      say(HA, `${vic}, the last time you were on this show, you found out ${trt} voted you out. ${trt} is sitting right there.`);
+      say(vic, V(vic, 'betr1', { soft: [`I know. I've been looking at the floor all night so I don't have to look at you, ${trt}.`], sharp: [`I'm aware. I've been aware for weeks.`], loud: [`Oh, I KNOW! I saw ${pr(trt).obj} the second I walked in!`], dry: [`Yes. We've been avoiding eye contact professionally.`], odd: [`I brought a sign! It says "${trt}, why?"`] }));
+      say(trt, V(trt, 'betr2', { soft: [`I'm so sorry. I hated doing it. I still think about it.`], sharp: [`It was the right move. I'd make it again. I'm sorry it hurt.`], loud: [`It was a GAME! I said I was sorry! Didn't I?`], dry: [`In my defense, it worked.`], odd: [`I'm sorry! I made you a friendship bracelet! It's a little late!`] }));
+      beat(bond(vic, trt) > -2 ? `${vic} thinks about it, and nods.` : `${vic} doesn't say anything. ${Cap(pr(vic).sub)} ${pr(vic).sub === 'they' ? "don't" : "doesn't"} have to.`);
+    }
+    // the couples
+    const sm = (gs.showmances || []).find(s => (s.players || []).length === 2);
+    if (sm) {
+      const [p1, p2] = sm.players;
+      [p1, p2].forEach(n => { if (!gallery.includes(n)) gallery.push(n); });
+      shot('gallery-side', gallerySeats([p1, p2]));
+      say(HB, `And the question everybody's been asking. ${p1}, ${p2}. Are you two still together?`);
+      if (sm.breakupEp) { say(p1, V(p1, 'sm-no', { soft: [`No. But we're okay. I think.`], sharp: [`No. And I'm thriving.`], loud: [`NOPE!`], dry: [`That would be a no.`], odd: [`We're on a break! A permanent one!`] })); say(p2, V(p2, 'sm-no2', { any: [`Yeah. We're good, though.`], sharp: [`Moving on.`], soft: [`It was really special while it lasted.`] })); }
+      else { say(p1, V(p1, 'sm-yes', { soft: [`We are! Six weeks and counting.`], sharp: [`Obviously.`], loud: [`YES! Look at us!`], dry: [`Against all odds, yes.`], odd: [`We're getting matching sweaters!`] })); beat(`The audience goes "Awww."`, { applause: 'small' }); }
     }
     if ((a.awards || []).length) {
       shot('stage-wide', wideSeats(), { title: { kicker: 'The reunion', name: 'The awards' } });
-      say(HB, `And now, the awards nobody asked for!`);
+      say(HB, pick([`And now, the awards nobody asked for!`, `It's awards time! Try to act surprised.`], 'awopen'));
       a.awards.forEach((aw, i) => {
         beat(`${aw.title}...`, { tense: true });
         say(i % 2 ? HB : HA, `${aw.winner}!`);
         beat(`Applause for ${aw.winner}.`, { applause: 'big' });
+        if (typeof aw.winner === 'string' && cast.includes(aw.winner)) say(aw.winner, V(aw.winner, `award${i % 3}`, { soft: [`Oh my gosh, thank you!`, `I don't know what to say!`, `This means so much!`], sharp: [`Finally, some recognition.`, `Deserved.`, `I'll put it with the others.`], loud: [`YES! Let's GO!`, `I WON SOMETHING!`, `Woo! Thank you!`], dry: [`Thank you. I'll treasure it for about a week.`, `Wow. Okay. Thanks.`, `I'd like to thank nobody.`], odd: [`I'm going to sleep with this under my pillow!`, `Is it edible? It looks edible.`, `I'd like to thank my mom, my dog, and my lucky socks.`] }));
       });
     }
   }
 
   // ═══ THE SIGN-OFF ═══
   shot('stage-wide', wideSeats());
-  say(HA, pick([`That's all the time we've got!`, `And that's our show!`, `That's it for this Aftermath!`], 'close'));
-  say(HB, V(HB, 'bye', { any: [`Don't forget to join ${host} next time for the most dramatic episode yet of Total Drama!`, `Join ${host} next time on Total Drama!`], loud: [`Join ${host} next time on Total! Drama! Woo!`, `See you next time! Total Drama!`], dry: [`Join ${host} next time on Total Drama. We'll be here, on the couch.`, `Join ${host} next time. We'll be right here.`] }));
+  say(HA, a.isReunion ? `And that's the season! Thank you, everybody, for an unforgettable summer.` : pick([`That's all the time we've got!`, `And that's our show!`, `That's it for this Aftermath!`], 'close'));
+  if (a.isReunion) say(HB, V(HB, 'bye-r', { any: [`See you next season, everybody!`], loud: [`That's a wrap! See you next season! Woo!`], dry: [`See you next season. Same couch, probably.`], soft: [`We love you all. See you next season!`] }));
+  else say(HB, V(HB, 'bye', { any: [`Don't forget to join ${host} next time for the most dramatic episode yet of Total Drama!`, `Join ${host} next time on Total Drama!`], loud: [`Join ${host} next time on Total! Drama! Woo!`, `See you next time! Total Drama!`], dry: [`Join ${host} next time on Total Drama. We'll be here, on the couch.`, `Join ${host} next time. We'll be right here.`] }));
   if (blocks.some(b => b.lines.some(l => l.act === 'hammer'))) say(HA, pick([`And can somebody please put that hammer away?`, `Somebody get that hammer off the stage!`], 'hammerbye'));
   beat(`The audience cheers as the lights go down.`, { applause: 'big' });
 

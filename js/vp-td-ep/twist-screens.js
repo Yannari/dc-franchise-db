@@ -422,7 +422,7 @@ export function throwbackScene(sh, venue, ep, time = 'Last time') {
   const slot = sh.camp && ep ? campSlot(ep, sh.camp, venue) : null;
   const key = plateKey(venue, teamSpot(venue, where, slot), tod) || plateKey(venue, where, tod) || plateKey(venue, V.public, 'day');
   const people = (sh.players || []).filter(Boolean).slice(0, 4);
-  return { k: 'scene', spot: where, tod, plate: key, place: placeName(where), time, card: false, cut: false, focus: people, bg: [], places: placeScene(key, people, []), throwback: true };
+  return { k: 'scene', spot: where, tod, plate: key, place: placeName(where), time, card: false, cut: false, focus: people, bg: [], places: placeScene(key, people, []), throwback: true, noWx: true };
 }
 export function tdPreviouslyScreen(ep, o = {}) {
   const lines = ep.tdPreviously || [];
@@ -458,7 +458,9 @@ export function tdPreviouslyScreen(ep, o = {}) {
       const tb = throwbackScene(sh, venue, ep);
       card(tb, `tb:${tb.plate}:${tb.focus.join(',')}`);
     } else if (shown !== 'title' && !String(shown).startsWith('tb:')) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Previously on...', time: 'Last time', card: false, focus: [], bg: [], places: {}, wide: true, still: true, board: { mode: 'title' } }, 'title');
-    steps.push({ k: 'say', by: host, host: true, text, ...(sh?.boot ? { tense: true } : {}) });
+    // the host narrates; a player's own line (a clip from last time) plays inside its throwback
+    if (l.clip && l.by && l.by !== host) steps.push({ k: 'say', by: l.by, text, focus: [l.by] });
+    else steps.push({ k: 'say', by: host, host: true, text, ...(sh?.boot ? { tense: true } : {}) });
   }
   return { id: 'previously', kind: 'twist', venue, ep: ep.num, label: 'Previously On', host, steps };
 }

@@ -113,6 +113,8 @@ const GUARANTEED = [
   // a returnee's moment (camp-events.js franchise-meta block) carries a's last season; the threat and target
   // scenes carry the returnee they are about ({target}, td/past.js pastData suffix T)
   [/^long\.ret\./, ['lastSeason', 'lastPlace']],
+  // the mentor arc (director.js) always carries the skill it's about
+  [/^arc\.mentor\./, ['skill']],
   [/^long\.ret\.(threat|target)\./, ['target', 'lastSeasonT', 'lastPlaceT']],
 ];
 // a long scene carries what its engine moment always carries (td/script/lines GUARANTEED)

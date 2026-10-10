@@ -1566,6 +1566,39 @@ export function airTdEpisode(ep) {
           }
           const kitItem = (kind, step, players, w, who, why) => list.push({ at: kind === 'kit.call' ? 0.4 : 0.38, item: { story: true, kind, storyType: 'kit', step, players, lines: w.lines, text: w.text, lineId: w.lineId,
             scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [why] } });
+          // a mentor arc over three episodes (lines/n-mentor.js): somebody struggling at a skill, somebody good at it
+          // who offers, the practice, and the day they do it alone. One at a time, two a season, and it ends if
+          // either of them leaves. The skill is the mentor's strongest (the user's read: Anastasia teaching Rosa fire).
+          {
+            const M = ((gs.tdStory ||= {}).mentor ||= { arcs: 0, cur: null });
+            const STEPS = ['offer', 'practice', 'done'];
+            const SKILL = { endurance: 'making fire', physical: 'climbing', mental: 'tying the shelter knots', intuition: 'fishing', social: 'fishing', strategic: 'tying the shelter knots' };
+            const st = x => { try { return pStatsOf(x) || {}; } catch { return {}; } };
+            // it ends when one of them has left the game, not when this camp is somebody else's
+            const alive = new Set(gs.activePlayers || []);
+            if (M.cur && (!alive.has(M.cur.a) || !alive.has(M.cur.b))) M.cur = null;
+            if (!M.cur && M.arcs < 2 && ep.num >= 2 && !merged) {
+              const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'underdog', 'goat', 'showmancer', 'perceptive-player', 'floater']);
+              const archOf = x => (players.find(p => p.name === x) || {}).archetype;
+              for (const key of ['endurance', 'physical', 'mental']) {
+                const learner = [...members].sort((x, y) => (st(x)[key] ?? 5) - (st(y)[key] ?? 5) || x.localeCompare(y))[0];
+                const teacher = members.filter(x => x !== learner && NICE.has(archOf(x)) && getBond(x, learner) >= 0 && (st(x)[key] ?? 5) - (st(learner)[key] ?? 5) >= 3)
+                  .sort((x, y) => (st(y)[key] ?? 5) - (st(x)[key] ?? 5) || x.localeCompare(y))[0];
+                if (learner && teacher) { M.cur = { a: teacher, b: learner, skill: SKILL[key], step: 0, last: -1 }; M.arcs++; break; }
+              }
+            }
+            if (M.cur && M.cur.last < ep.num && members.includes(M.cur.a) && members.includes(M.cur.b)) {
+              const step = STEPS[M.cur.step];
+              const who = { a: M.cur.a, b: M.cur.b };
+              const w = writeStory('arc.mentor', step, who, { skill: M.cur.skill }, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', unique: 'soft' });
+              if (w) {
+                M.cur.last = ep.num; M.cur.step++;
+                list.push({ at: 0.33, item: { story: true, kind: `arc.mentor.${step}`, storyType: 'arc', step, players: [who.a, who.b], lines: w.lines, text: w.text, lineId: w.lineId,
+                  scene: { kind: 'arc', who, data: { skill: M.cur.skill }, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${who.a} is teaching ${who.b} ${M.cur.skill}.`] } });
+                if (M.cur.step >= STEPS.length) M.cur = null;
+              }
+            }
+          }
           // the heat between two people who don't like each other: b sneers at a's thing, a defends it
           // (every other day, so a cast full of kits doesn't fight every morning)
           if (ep.num % 2 === 1) for (const a of kitted) {

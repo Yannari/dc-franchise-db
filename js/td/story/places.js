@@ -30,7 +30,7 @@ export const PLACES = {
   },
   'survival-island': {
     secret: ['jungle-trail', 'ruins', 'cave'], aside: ['shoreline', 'fishing-area', 'water-source'], public: ['campfire', 'beach'],
-    sleep: ['shelter'], eat: ['campfire'], wash: ['water-source'], water: ['shoreline', 'fishing-area', 'beach'], work: ['campfire', 'beach'], fire: ['campfire'],
+    sleep: ['shelter'], eat: ['campfire'], wash: ['water-source'], water: ['shoreline', 'fishing-area', 'beach'], work: ['campfire', 'shelter'], fire: ['campfire'],
   },
   carnival: {
     secret: ['forest-edge', 'corn-maze'], aside: ['rocky-beach', 'lake-shore'], public: ['campsite', 'carnival-entrance'],
@@ -65,6 +65,8 @@ const ON = new Set(['dock', 'beach', 'forest-trail', 'cabins', 'shoreline', 'jun
   'western-set', 'city-set', 'cliff']);
 const prep = id => (IN.has(id) ? 'in' : ON.has(id) ? 'on' : 'at');
 
+// a team's chores and meetings happen at its own camp (the user, 2026-10-10: "why would the team meeting be at
+// the beach and not camp"): no venue's `work` is a beach or a shore
 const NEAR = { work: ['public', 'aside'], public: ['aside', 'work'], aside: ['secret', 'water', 'public'], secret: ['aside'], water: ['aside', 'public'], fire: ['public', 'aside'], sleep: ['aside', 'public'], wash: ['aside', 'sleep'], eat: ['public'] };
 
 const LABEL = id => (SAID[id] || id.replace(/-/g, ' ')).replace(/^the /, '').replace(/\b\w/g, c => c.toUpperCase());

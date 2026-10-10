@@ -16,6 +16,7 @@
 // talk. Who else is around comes from the record (ep.campAccess: who was at that spot in that
 // window), and they are busy with something of their own.
 import { TD_MARKS } from './marks.js';
+import { TD_WET, WET_COLS, WET_ROWS } from './wet.js';
 import { stableRng } from '../script/rng.js';
 import { campFeed } from '../td/story/feed.js';
 import { arenaPlaces, contestStyle, contestTalk, contestResult } from './contest.js';
@@ -275,7 +276,8 @@ export function placeScene(key, focus, bg = [], { sit = false, host = null } = {
       // on the ground (the user, 2026-10-08: "they're floating... everyone there without overlapping"):
       // the crowd stands on the floor in front of the set, two rows past six, each back-row person
       // between two in front with no more than the lower third behind them
-      const placed = floorRows(focus, .1, .9, 22);
+      const fl = floorOf(key);
+      const placed = floorRows(focus, fl.u0, fl.u1, 22, fl);
       for (const [name, p] of Object.entries(placed)) out[name] = p;
     }
   } else for (const n of focus) {
@@ -286,10 +288,12 @@ export function placeScene(key, focus, bg = [], { sit = false, host = null } = {
   // somebody already placed and never off screen
   const taken = () => Object.values(out).map(p => p.u);
   for (const n of focus.filter(x => !out[x])) {
-    const slot = [.3, .7, .18, .82, .5, .42, .58].find(u => taken().every(t => Math.abs(t - u) > .11)) ?? .5;
+    const fl = floorOf(key);
+    const slot = [.3, .7, .18, .82, .5, .42, .58].map(u => fl.u0 + (fl.u1 - fl.u0) * (u - .1) / .8).find(u => taken().every(t => Math.abs(t - u) > .11)) ?? (fl.u0 + fl.u1) / 2;
     const near = front.length ? front.reduce((a, b) => (Math.abs(b.u - slot) < Math.abs(a.u - slot) ? b : a)) : null;
-    out[n] = { u: slot, v: near ? near.v : .7, s: near ? near.s : .2, sit: false };
+    out[n] = { u: slot, v: near ? near.v : floorOf(key).front - .03, s: near ? near.s : .2, sit: false, free: true };
   }
+  keepDry(key, out);
   const back = [...marksOf(key, 'stand'), ...marksOf(key, 'seat')].filter(m => m.u > .08 && m.u < .92 && m.v > .22 && m.v < .74).sort((a, b) => a.s - b.s);
   for (const b of bg) {
     const m = back.find(c => !used.includes(c) && used.every(u => behind(c, u)));
@@ -319,19 +323,76 @@ const CROWD_TYPES = new Set(['leadershipClash', 'groupArgument', 'campMeeting', 
 // line and a back row a step behind, each back-row person in the gap between two in front, sized
 // so no portrait is wider than its share and no more than a third of a back-row one is covered.
 const FLOOR_FRONT = .81, FLOOR_BACK_MIN = .69;
-function floorRows(names, u0, u1, hMax) {
+// Where a crowd can stand on this plate (the user, 2026-10-10: "dont put people in the water if they're not
+// swimming ... respect the venues"): no lower than the plate's own standing spots, and never past the top of
+// a body of water in the foreground (a 'pool' mark: the sea along the bottom of the beach). Plates without
+// marks keep the default floor.
+// Is this point of the plate water? (wet.js, from the plate's own water mask; the user, 2026-10-10: "if the
+// avatars are in the water they're swimming ... same for all type of venues")
+function wetAt(key, u, v) {
+  const g = TD_WET[key];
+  if (!g || u < 0 || u >= 1 || v < 0 || v >= 1) return false;
+  const row = g[Math.min(WET_ROWS - 1, Math.floor(v * WET_ROWS))], col = Math.min(WET_COLS - 1, Math.floor(u * WET_COLS));
+  return !!((parseInt(row[15 - (col >> 2)], 16) >> (col & 3)) & 1);
+}
+// feet on dry ground: the spot itself and a little either side of it
+const wetFeet = (key, u, v) => wetAt(key, u, v) || wetAt(key, u - .015, v) || wetAt(key, u + .015, v);
+// Out of the water: up the frame to the nearest dry ground at the same spot, or along it to the nearest dry
+// column; whoever stood behind a moved person keeps a step behind them.
+function keepDry(key, out) {
+  if (!TD_WET[key]) return out;
+  const free = Object.entries(out).filter(([, p]) => p && !p.host && (p.crowd || p.free));
+  for (const [, p] of free) {
+    if (!wetFeet(key, p.u, p.v)) continue;
+    let v = p.v;
+    while (v > .3 && wetFeet(key, p.u, v)) v -= .01;
+    if (!wetFeet(key, p.u, v)) { p.v = v; continue; }
+    for (let d = .02; d <= .4; d += .02) {
+      const u = [p.u - d, p.u + d].find(x => x > .05 && x < .95 && !wetFeet(key, x, p.v));
+      if (u != null) { p.u = u; break; }
+    }
+  }
+  // the back row stays behind the front: a step up the frame from anyone in front of it nearby
+  const placed = free.map(([, p]) => p).sort((a, b) => b.v - a.v);
+  for (let i = 0; i < placed.length; i++) for (let j = 0; j < i; j++) {
+    const f = placed[j], b = placed[i];
+    if (Math.abs(f.u - b.u) < .08 && b.v > f.v - .05) { b.v = f.v - .05; while (b.v > .3 && wetFeet(key, b.u, b.v)) b.v -= .01; }
+  }
+  return out;
+}
+
+function floorOf(key) {
+  const ms = (TD_MARKS[key] || {}).m || [];
+  // the authored standing and sitting spots are the ground truth (a pier or a dock over water included):
+  // a crowd stands no deeper than the deepest of them, and across the stretch of floor they cover
+  const marks = ms.filter(m => (m.kind === 'stand' || m.kind === 'seat') && m.u > .05 && m.u < .95);
+  let front = FLOOR_FRONT, u0 = .1, u1 = .9;
+  if (marks.length) {
+    const deep = Math.max(...marks.map(m => m.v));
+    front = Math.min(front, deep + .02);
+    u0 = Math.max(.06, Math.min(...marks.map(m => m.u)) - .16);
+    u1 = Math.min(.94, Math.max(...marks.map(m => m.u)) + .16);
+    // never narrower than a third of the frame: a crowd of eight still needs room
+    if (u1 - u0 < .3) { const c = (u0 + u1) / 2; u0 = Math.max(.06, c - .15); u1 = Math.min(.94, u0 + .3); }
+    // water along the bottom that starts above the spots is in front of everyone (the sea on the beach)
+    for (const w of ms.filter(m => m.kind === 'pool' && (m.u1 - m.u0) > .3 && m.v1 >= .9 && m.v0 > deep - .005)) front = Math.min(front, w.v0 - .006);
+  } else for (const w of ms.filter(m => m.kind === 'pool' && (m.u1 - m.u0) > .3 && m.v1 >= .9)) front = Math.min(front, w.v0 - .006);
+  return { front, back: Math.max(.3, front - (FLOOR_FRONT - FLOOR_BACK_MIN)), u0, u1 };
+}
+function floorRows(names, u0, u1, hMax, floor = { front: FLOOR_FRONT, back: FLOOR_BACK_MIN }) {
   const n = names.length, W = .5625, out = {};
+  const F = floor.front, B = floor.back;
   const rows = n > 6 ? 2 : 1, nf = Math.ceil(n / rows), nb = n - nf;
   const slot = (u1 - u0) / Math.max(nf, 1);
   let h = Math.min(hMax, (slot * .92) / W * 100);
-  if (rows === 2) h = Math.min(h, (FLOOR_FRONT - FLOOR_BACK_MIN) / .7 * 100);
-  const vb = Math.max(FLOOR_BACK_MIN, FLOOR_FRONT - .7 * h / 100);
+  if (rows === 2) h = Math.min(h, (F - B) / .7 * 100);
+  const vb = Math.max(B, F - .7 * h / 100);
   // the front row centred in its slots, the back row in the gaps between them
   names.forEach((name, i) => {
     const back = rows === 2 && i % 2 === 1, k = rows === 2 ? Math.floor(i / 2) : i;
     // the gaps between the front row, and with as many behind as in front, the last one at the left edge
     const u = back ? u0 + slot * ((k + 1) % (nb === nf ? nf : nf + 1)) + (nb === nf && k === nf - 1 ? slot * .1 : 0) : u0 + slot * (k + .5);
-    out[name] = { u: Math.min(.95, Math.max(.05, u)), v: back ? vb : (rows === 1 ? FLOOR_FRONT - .03 : FLOOR_FRONT), s: .2, h: back ? h * .96 : h, sit: false, crowd: true };
+    out[name] = { u: Math.min(.95, Math.max(.05, u)), v: back ? vb : (rows === 1 ? F - .03 : F), s: .2, h: back ? h * .96 : h, sit: false, crowd: true };
   });
   return out;
 }
@@ -347,14 +408,15 @@ export function placeTeams(key, teams, host, colorOf = null) {
   const half = k === 1 ? .36 : Math.min(.2, .42 / k);
   teams.forEach((t, ti) => {
     const cu = k === 1 ? .5 : .08 + (.84 * (ti + .5)) / k;
-    const placed = floorRows(t.members, cu - half + .02, cu + half - .02, 16);
+    const placed = floorRows(t.members, cu - half + .02, cu + half - .02, 16, floorOf(key));
     Object.assign(out, placed);
     const h = Math.max(...Object.values(placed).map(p => p.h), 8), backV = Math.min(...Object.values(placed).map(p => p.v));
     let color = PAL[ti % PAL.length]; try { color = (colorOf && colorOf(t.name)) || color; } catch { /* default */ }
     flags.push({ u: cu, v: backV - .006, name: t.name, color, h: h * 1.8 });
     hostH = Math.max(hostH, h * 1.12);
   });
-  if (host) out[host] = { u: .5, v: FLOOR_FRONT, s: .2, host: true, h: hostH, crowd: true };
+  if (host) out[host] = { u: .5, v: floorOf(key).front, s: .2, host: true, h: hostH, crowd: true };
+  keepDry(key, out);
   return { places: out, flags };
 }
 

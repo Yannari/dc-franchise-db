@@ -1230,6 +1230,11 @@ export function airTdEpisode(ep) {
         moment: old.kind === 'grievance' ? 'the night {target} wrote my name' : old.kind === 'wronged' ? `what {target} did to me at ${old.chal}` : `everything that happened at ${old.chal}` }];
     }
     if (talk) for (const ev of eventsOf(ep, camp, 'post')) if (ev && ev.aired == null && /^votePitch/.test(ev.type || '') && talk.covers.has(ev.players?.[0])) ev.aired = 'covered';
+    // A First Impressions swap is told on the twist's own screen (td/story/twist.js: the vote, the walk over,
+    // the new team's welcome). The camp's copy of it had no scene, got a generic aside bolted on, and aired as
+    // "I saw what you did" / "Don't make it a thing" with nothing seen (the user, 2026-10-10: "she did what
+    // exactly?"): it stays off the camp feed.
+    for (const ph of ['pre', 'post']) for (const ev of eventsOf(ep, camp, ph)) if (ev && ev.aired == null && ev.type === 'firstImpressionsSwap') ev.aired = 'covered';
     for (const phase of ['pre', 'post']) {
       const events = eventsOf(ep, camp, phase);
       // file every moment of the phase into its storyline
@@ -1884,6 +1889,23 @@ export function airTdEpisode(ep) {
       // nobody stands on stage through a scene that never speaks to them or of them: the viewer stages
       // scene.who (the user, 2026-10-10: "it's a 4 person scene but no one talking but the 2 girls").
       // The morning, the challenge's aftermath and the psyche beats cast more people than their lines use.
+      // No sketches on screen (the user, 2026-10-10, of a three-line meal at the campfire: "i thought we fix
+      // this type of scenes"): a conversation of fewer than four spoken lines doesn't air. The quick cuts
+      // and the meal pass air the engine's own words, and the engine's pools are full of two- and three-liners;
+      // such a moment stays off camera (the text backlog lists it) unless a long scene was written for it.
+      // A vote or arc scene is the story's spine and stays; its pools are written long (td-story guard).
+      { const evs = eventsOf(ep, camp, phase);
+        out[phase] = out[phase].filter((it, i, all) => {
+          if (!it || it.storyType === 'vote' || it.storyType === 'arc' || all[i + 1]?.chained) return true;
+          // an aside (td/script/lines/aside.js) is the filler written onto a moment that has no scene of its
+          // own: "So... that happened", "I saw what you did". It can't say what happened, so it doesn't air
+          const ev = it.story ? null : evs[it.ref];
+          if (ev && /^aside\./.test(ev.scene?.kind || '')) return false;
+          const lines = it.story ? it.lines : ev?.lines;
+          if (!Array.isArray(lines)) return true;
+          const spoken = lines.filter(l => l.by && l.kind === 'say').length;
+          return spoken === 0 || spoken >= 4;
+        }); }
       for (const it of out[phase]) {
         if (!it?.story || !it.scene?.who || !Array.isArray(it.lines) || !it.lines.length) continue;
         const inIt = n => it.lines.some(l => l.by === n || String(l.text || '').includes(n));

@@ -15,16 +15,16 @@ import { premiereSteps } from './premiere.js';
 const ARRIVE = {
   // Wawanakwa: the yacht brings the campers to the dock a few at a time (the user, 2026-10-08), the
   // first load seen out at sea on the way in
-  'hosted-camp': { spot: 'dock', place: 'The Dock of Shame', ride: 'yacht', group: true, load: 4, sea: true, hello: s => `Welcome to Camp Wawanakwa! I'm your host, and this is ${s}!` },
+  'hosted-camp': { spot: 'dock', place: 'The Dock of Shame', ride: 'yacht', group: true, load: 4, sea: true, hello: (s, h) => `Yo! We're coming at you live from Camp Wawanakwa, somewhere in the middle of nowhere. I'm your host, ${h}, and this is ${s}!` },
   // Total Drama Action: one bus drops the whole cast at the lot (each one seen stepping out of its door),
   // then Chris rolls up in a tram
-  'film-lot': { spot: 'studio-backlot', place: 'The Backlot', ride: 'bus', group: true, door: true, close: 'tram', hello: s => `Welcome to the film lot! Lights, camera... ${s}!` },
+  'film-lot': { spot: 'studio-backlot', place: 'The Backlot', ride: 'bus', group: true, door: true, close: 'tram', hello: (s, h) => `Welcome to the film lot! I'm your host, ${h}, and this summer, the cameras never stop rolling. Lights, camera... ${s}!` },
   // World Tour: a bus to the landing strip, then the Jumbo Jet taxis in
-  'world-tour': { spot: 'destination-staging', place: 'The Landing Strip', ride: 'bus', group: true, door: true, close: 'jet', hello: s => `Welcome to the airport! Next stop: everywhere. This is ${s}!` },
+  'world-tour': { spot: 'destination-staging', place: 'The Landing Strip', ride: 'bus', group: true, door: true, close: 'jet', hello: (s, h) => `Welcome to the airport! I'm your host, ${h}, and this season we're taking the show around the world. Next stop: everywhere. This is ${s}!` },
   // Disventure Camp 5: the cast lands on the beach by helicopter, the returning Favorites in a second one
-  'survival-island': { spot: 'beach', place: 'Soluna Beach', ride: 'helicopter', group: true, back: 'helicopter', hello: s => `Welcome to Soluna! Sun, sand, and nowhere to hide. This is ${s}!` },
+  'survival-island': { spot: 'beach', place: 'Soluna Beach', ride: 'helicopter', group: true, back: 'helicopter', hello: (s, h) => `It's been a long time... but we're finally back! Welcome to Soluna. Sun, sand, and nowhere to hide. I'm your host, ${h}, and this is ${s}!` },
   // Disventure Camp 4: a helicopter per team lands at the fairground
-  carnival: { spot: 'carnival-entrance', place: 'The Carnival Gate', ride: 'helicopter', group: true, byTeam: true, hello: s => `Welcome to the Stawaki Carnival! Step right up... this is ${s}!` },
+  carnival: { spot: 'carnival-entrance', place: 'The Carnival Gate', ride: 'helicopter', group: true, byTeam: true, hello: (s, h) => `The carnival. Once a place of fun and games. Now? A battleground. Step right up! I'm your host, ${h}, and this is ${s}!` },
 };
 // the archetype as the show would put it on a card
 const TAG = {
@@ -55,11 +55,11 @@ export function tdArrivalScreen(ep, o = {}) {
     places: placeScene(plate, focus, here.filter(n => !focus.includes(n)).slice(-8), { host }), ...extra });
   // the host alone, before anyone arrives
   scene([], { arrivals: true });
-  steps.push({ k: 'say', by: host, host: true, text: A.hello(season) });
+  steps.push({ k: 'say', by: host, host: true, text: A.hello(season, host) });
   steps.push({ k: 'title', kicker: 'Episode one', name: season, faces: [] });
   // the season presented before anyone arrives: the venue zone by zone, empty, then this season's rules
-  const pre = premiereSteps(venue, { host, season: o.season || (typeof window !== 'undefined' && window.seasonConfig) || {}, teams: (ep.tribesAtStart || []).map(t => t.name) });
-  if (pre.length) { steps.push(...pre); scene([], { arrivals: true, card: true }); say0(host, `That's the place, and those are the rules. Now, the people.`); }
+  const pre = premiereSteps(venue, { host, season: o.season || (typeof window !== 'undefined' && window.seasonConfig) || {}, teams: (ep.tribesAtStart || []).map(t => t.name), cast: ep.dockArrivals.length });
+  if (pre.length) { steps.push(...pre); scene([], { arrivals: true, card: true }); say0(host, `Okay! Enough about the place. Here come the people.`); }
   steps.push({ k: 'say', by: host, host: true, text: `Let's meet our ${ep.dockArrivals.length} contestants!` });
   function say0(by, text) { steps.push({ k: 'say', by, host: true, text }); }
   const teamOf = n => (ep.tribesAtStart || []).find(t => (t.members || []).includes(n))?.name || null;

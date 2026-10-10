@@ -1,77 +1,104 @@
 // ══════════════════════════════════════════════════════════════════════
-// js/vp-td-ep/premiere.js — the season's first minutes: the place, then the rules, then the people
+// js/vp-td-ep/premiere.js — the season's first minutes: the pitch, the place, the rules, then the people
 // ══════════════════════════════════════════════════════════════════════
 // The user (2026-10-09): "for the first episode a real presentation of the season: present the
-// island / venue with all the zones, empty obviously, like a real show; then if there's a season
-// twist present it too, before calling the people." The host walks the venue before anyone arrives
-// (every zone on the venue's map, on its own empty set), ends at the place where somebody leaves
-// every week, then reads out how this season works (the teams, Redemption or Rescue Island, Exile
-// Island, a mole, the coaches, how the winner is decided). arrival.js plays this before the first
-// contestant arrives.
+// venue with all the zones, empty, like a real show; then the season twist, before calling the
+// people", and then "the dialogue is pretty bad: check the transcript of a first episode".
 //
-// PURE: the venue and the season's settings in, steps out. Nothing here decides anything; every
-// rule it reads out is a setting the season was created with.
+// What the premieres do (Disventure Camp 4's "Come One, Come All", Total Drama Island's "Not So
+// Happy Campers"): the host sells the season straight to camera, with stakes and energy (how many
+// people, the teams, the challenges, the elements, "and each other", how somebody goes home every
+// time, only one left standing, "52 days, 18 people, 1 winner!"); shows the place off with a joke
+// or a threat for each corner of it; and drops the twists as quick asides ("the hidden Immunity
+// Totem is in play, so first come, first served"). arrival.js plays this before anyone arrives.
+//
+// PURE: the venue and the season's settings in, steps out. Every rule it says is a setting the
+// season was created with.
 import { plateKey, VENUES, placeName, teamSpot } from './steps.js';
 import { mapZones, ZONE_OF, ZONE_LABEL } from './map.js';
 
-// what the host says about each place, as the camera finds it empty
+const WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
+  'seventeen', 'eighteen', 'nineteen', 'twenty', 'twenty-one', 'twenty-two', 'twenty-three', 'twenty-four'];
+const num = n => WORD[n] || String(n);
+const Cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+
+// how somebody goes home here, in the venue's own words
+const GO_HOME = {
+  'hosted-camp': "Lose a challenge, and your team meets me at the campfire. Everybody who's safe gets a marshmallow. Whoever doesn't get one walks the Dock of Shame, catches the Boat of Losers, and never comes back. Ever.",
+  'film-lot': "Lose, and your team comes to the Gilded Chris Awards. Everybody safe gets a statue. Whoever doesn't walks the Walk of Shame and takes the Lame-o-sine home.",
+  'world-tour': "Lose, and your team flies straight to the Barf Bag Ceremony. No barf bag for you? Then you take the Drop of Shame. With a parachute. Probably.",
+  'survival-island': "Lose a challenge, and your team faces the Elimination Trial. Every time, one of you goes home.",
+  carnival: "Lose, and your team comes to the Elimination Trial. Somebody gets a one-way ride on the Boat of Losers. Every single time.",
+};
+const WHERE = { 'hosted-camp': 'Camp Wawanakwa', 'film-lot': 'the film lot', 'world-tour': 'thirty thousand feet', 'survival-island': 'Soluna Island', carnival: 'the Stawaki Carnival' };
+
+// what the host says about each place as the camera finds it empty: a joke, a threat, or both
 const TOUR = {
   // Wawanakwa
-  'communal-grounds': "The camp grounds. This is where you'll live, fight, and make friends you'll betray later.",
-  cabins: "Your cabins. Bunk beds, no air conditioning, and a wildlife situation I'm not allowed to discuss.",
-  'mess-hall': "The mess hall. Chef serves three meals a day. I'd eat before you get here.",
-  washroom: 'The communal washrooms. Hot water is more of a rumour.',
-  confessional: 'The confessional. Tell the camera everything. Everyone watching at home will hear it, and so will everyone here, eventually.',
-  dock: "The dock. You'll walk down it once, on your way out.",
-  beach: 'The beach. Swim at your own risk.',
-  'forest-trail': 'The woods. Lots of trees, and lots of places to hide things.',
-  cliff: "The cliff. You'll get to know it much better than you want to.",
-  lake: "The lake. Don't ask what lives in it.",
-  boathouse: 'The boathouse. Nobody goes in the boathouse.',
-  waterfall: 'The waterfall. Lovely to look at. Less lovely to fall down.',
-  caves: 'The caves. Dark, damp, and full of things nobody has named yet.',
-  amphitheater: 'The amphitheater, for the challenges that need an audience.',
-  river: 'The river. Fast, cold, and in a challenge near you soon.',
+  'communal-grounds': "The heart of camp. You'll eat here, fight here, and make friends here that you'll stab in the back later.",
+  cabins: "Your cabins. Boys on one side, girls on the other. The bunks are brand new. The mattresses are not.",
+  'mess-hall': "The mess hall, where Chef serves three meals a day. He used to cook for the army. I don't ask which army.",
+  washroom: "The communal washrooms. One mirror, one shower, and the hot water lasts about four seconds.",
+  confessional: "And this is the confessional. Vent about your teammates, spill your secrets, confess your undying love. The whole country gets to hear it. So, eventually, does everyone you talked about.",
+  dock: "The dock. You'll walk down it at least once. Hopefully not on your way out.",
+  beach: "The beach. Great for a tan. Also great for challenges.",
+  'forest-trail': "The woods. Lots of trees, lots of places to hide things, and lots of things that bite.",
+  cliff: "And that's the cliff. You'll be jumping off it. Not today. But soon.",
+  lake: "The lake. Crystal clear, perfectly safe, and I'm legally required to stop the sentence there.",
+  boathouse: "The boathouse. Nobody goes in the boathouse. Trust me on this one.",
+  waterfall: "The waterfall. Beautiful to look at. Less beautiful to go over.",
+  caves: "The caves. Dark, damp, and nobody who went in last season wants to talk about it.",
+  amphitheater: "The amphitheater. Some challenges need an audience. Some need a place to scream. This one does both.",
+  river: "The river. Fast, freezing, and coming soon to a challenge near you.",
   // the film lot
-  trailers: "Your trailers. Very glamorous from the outside. Don't look inside.",
-  'craft-services': "Craft services. Free food, which is the only thing around here that's free.",
-  'studio-backlot': "The backlot, where you'll do most of your challenges.",
-  'soundstage-corridor': "The soundstages. Something is always filming, and something's usually on fire.",
-  'prop-storage': "Prop storage. If you lose something, it's in here.",
-  'western-set': 'The western set. Saloon doors, tumbleweeds, the works.',
-  'city-set': 'The city set. Fake buildings, real danger.',
+  trailers: "Your trailers. They look very glamorous from out here. Don't look inside.",
+  'craft-services': "Craft services. Free food all day, which, trust me, is the only free thing on this lot.",
+  'studio-backlot': "The backlot. Most of your challenges happen out here, in front of the cameras, where you belong.",
+  'soundstage-corridor': "The soundstages. Something's always filming in there, and something's usually on fire.",
+  'prop-storage': "Prop storage. If something goes missing on this lot, it's in here.",
+  'western-set': "The western set. Saloon doors, tumbleweeds, a horse who hates everyone. The works.",
+  'city-set': "The city set. Fake buildings, real danger.",
   // the jet
-  economy: "Economy class. This is where you'll sleep. All of you.",
-  'first-class': 'First class. You have to win your way in here.',
-  galley: 'The galley, where the food is cooked. Loosely speaking.',
+  economy: "Economy class. This is where you'll live. All of you. Together. With one bathroom.",
+  'first-class': "First class. Massage chairs, real food, and only the winning team gets to sleep here. Everybody else gets to watch.",
+  galley: "The galley, where Chef cooks your meals. Loosely speaking.",
   'cargo-hold': "The cargo hold. Don't ask what else is down there.",
   aisle: "The aisle. It's narrow, so try not to stab each other in the back. Literally.",
-  cockpit: 'The cockpit. Off limits.',
-  'chris-quarters': 'My private quarters. Very off limits.',
-  'destination-staging': 'And every week, we land somewhere new.',
+  cockpit: "The cockpit, where Chef flies this thing. No, he doesn't have a licence. Yes, that's fine.",
+  'chris-quarters': "My private quarters. Off limits. Very, very off limits.",
+  'destination-staging': "And every week, we land somewhere new, and somebody doesn't get back on the plane.",
   // Soluna
-  shelter: "Your shelter. You'll build it yourselves. It's all you've got.",
-  campfire: 'The fire. Keep it going, or eat everything raw.',
-  shoreline: 'The shoreline. Pretty, until the tide comes in.',
-  'water-source': 'Your water. Boil it before you drink it, unless you enjoy surprises.',
-  'jungle-trail': 'The bamboo jungle. Easy to get lost in. Easier to get lost in on purpose.',
-  'fishing-area': "The fishing spot. Catch your dinner, or don't eat it.",
-  ruins: 'The ruins. Old, crumbling, and probably cursed.',
-  cave: 'The cave. Bring a torch.',
+  shelter: "Your shelter. Or it will be, once you build it yourselves. It's all you've got out here.",
+  campfire: "The fire pit. Keep the fire going, or eat everything raw. Your choice.",
+  shoreline: "The shoreline. Gorgeous, until the tide comes in.",
+  'water-source': "Your water. Boil it before you drink it, unless you enjoy surprises.",
+  'jungle-trail': "The bamboo jungle. Easy to get lost in. Even easier to get lost in on purpose.",
+  'fishing-area': "The fishing spot. You catch dinner, or you don't eat dinner.",
+  ruins: "The old ruins. Ancient, crumbling, and almost definitely cursed.",
+  cave: "The cave. Bring a torch. Bring a friend. Bring a friend you can outrun.",
   // Stawaki
-  campsite: 'Your campsite, just outside the fairground.',
-  'forest-edge': 'The edge of the woods. People will go there to talk where nobody can hear.',
-  'rocky-beach': 'The rocky beach. Not a lot of sand. A lot of rocks.',
-  'lake-shore': 'The lake shore.',
-  'carnival-entrance': 'The front gate of the carnival.',
-  midway: 'The midway. Games, rides, and a lot of ways to lose.',
-  carousel: 'The carousel. It still works. Mostly.',
-  'corn-maze': 'The corn maze. Go in at your own risk.',
-  'haunted-mansion': "The haunted mansion. Yes, it's haunted.",
-  'theater-tent': 'The theater tent.',
+  campsite: "Your campsite, right outside the fairground. Cosy. Ish.",
+  'forest-edge': "The edge of the woods, where people go to talk when they don't want to be heard. It never works.",
+  'rocky-beach': "The rocky beach. Not a lot of sand. A lot of rocks.",
+  'lake-shore': "The lake shore. Lovely for a swim, if you don't mind the company.",
+  'carnival-entrance': "The front gate of the carnival. Closed for years. Open again, just for you.",
+  midway: "The midway. Games, rides, and a lot of ways to lose. Most of them rigged.",
+  carousel: "The carousel. It still works. Mostly.",
+  'corn-maze': "The corn maze. Go in at your own risk. Coming out is a separate risk.",
+  'haunted-mansion': "The haunted mansion. Yes, it's actually haunted. No, that's not a joke.",
+  'theater-tent': "The theater tent. Every great carnival needs a show, and you're it.",
 };
-// a venue's own version of a place everyone has (Wawanakwa's campfire is a pit, not the cooking fire)
-const TOUR_AT = { 'hosted-camp': { campfire: "The campfire pit. Good for roasting marshmallows, and for talking about each other behind your backs." }, carnival: { shelter: 'Your shelter. Build it well, because it gets cold out here at night.' } };
+// the order a host walks a place: where they'll live first, then the rest of it, the confessional last
+const WALK = ['communal-grounds', 'campsite', 'carnival-entrance', 'cabins', 'trailers', 'economy', 'shelter', 'mess-hall', 'craft-services', 'galley', 'washroom', 'first-class',
+  'campfire', 'dock', 'beach', 'shoreline', 'rocky-beach', 'lake', 'lake-shore', 'water-source', 'fishing-area', 'forest-trail', 'forest-edge', 'jungle-trail', 'studio-backlot',
+  'midway', 'carousel', 'western-set', 'city-set', 'soundstage-corridor', 'prop-storage', 'cargo-hold', 'aisle', 'river', 'waterfall', 'caves', 'cave', 'ruins', 'corn-maze',
+  'haunted-mansion', 'theater-tent', 'boathouse', 'amphitheater', 'cliff', 'cockpit', 'chris-quarters', 'destination-staging', 'confessional'];
+const walkRank = p => { const i = WALK.indexOf(p); return i < 0 ? WALK.length - 1 : i; };
+// a venue's own version of a place everyone has
+const TOUR_AT = {
+  'hosted-camp': { campfire: "And the campfire pit, where you'll come every time you lose, and where somebody goes home. But we'll get to that." },
+  carnival: { shelter: "Your shelter. Build it well, because it gets cold out here at night." },
+};
 // the place inside a zone the camera shows (a zone may hold more than one place: the cabins' porch and inside)
 function placeOfZone(venue, zone) {
   const own = Object.entries(ZONE_OF[venue] || {}).filter(([, z]) => z === zone).map(([p]) => p);
@@ -81,8 +108,8 @@ function placeOfZone(venue, zone) {
 }
 
 /**
- * The tour and the season's rules, as steps. o: { host, season (the season's settings), teams }.
- * The arrival screen calls this right after the host's welcome.
+ * The pitch, the tour and the season's rules, as steps. o: { host, season (the season's settings),
+ * teams, cast (how many are about to arrive) }. arrival.js calls this after the host's welcome.
  */
 export function premiereSteps(venue, o = {}) {
   const host = o.host || 'Chris';
@@ -91,55 +118,53 @@ export function premiereSteps(venue, o = {}) {
   const steps = [];
   const say = (text, extra = {}) => steps.push({ k: 'say', by: host, host: true, text, ...extra });
   const show = (key, place, time = 'Day one') => steps.push({ k: 'scene', spot: key.split('/')[1].replace(/-(day|night)$/, ''), tod: /-night$/.test(key) ? 'night' : 'day', plate: key, place, time, card: false, cut: false, focus: [], bg: [], places: {}, wide: true });
+  const teams = (o.teams || []).filter(Boolean);
+  const n = o.cast || 0;
+
+  // ── the pitch, straight to camera ──
+  say(`Here's the deal. ${n ? `${Cap(num(n))} brand-new contestants are` : 'A brand-new cast is'} about to move in right here at ${WHERE[venue] || 'camp'}${teams.length >= 2 ? `, split into ${num(teams.length)} teams` : ''}.`);
+  say(`They'll face challenges, the elements, and worst of all... each other.`);
+  say(GO_HOME[venue] || GO_HOME['hosted-camp']);
+  say(`In the end, only one of them will be left standing, with the prize, the glory, and a lot of people who don't talk to them anymore.`);
+  say(n ? `${Cap(num(n))} people. One winner. But first, let me show you around.` : `But first, let me show you around.`);
 
   // ── the tour: every zone on the map, empty ──
-  const zones = Object.entries(mapZones(venue)).filter(([, Z]) => !Z.rival).sort(([, a], [, b]) => a.u - b.u);
+  const zones = Object.entries(mapZones(venue)).filter(([, Z]) => !Z.rival).sort(([a], [b]) => walkRank(placeOfZone(venue, a)?.place || a) - walkRank(placeOfZone(venue, b)?.place || b));
   const seen = new Set();
-  if (zones.length) say(`Before anybody gets here, let me show you around.`);
   for (const [zone, Z] of zones) {
     const at = placeOfZone(venue, zone);
     if (!at || seen.has(at.key)) continue;
     seen.add(at.key);
     show(at.key, Z.label || ZONE_LABEL[zone] || placeName(at.place));
-    say(TOUR_AT[venue]?.[at.place] || TOUR[at.place] || TOUR[zone] || `This is ${Z.label || placeName(at.place)}.`);
+    say(TOUR_AT[venue]?.[at.place] || TOUR[at.place] || TOUR[zone] || `And this is ${Z.label || placeName(at.place)}.`);
   }
-  // ...and the place where somebody goes home every week
+  // ...and where somebody goes home
   const cer = plateKey(venue, 'ceremony', 'night');
   if (cer) {
     show(cer, V.ceremony || 'The Ceremony', 'Every week');
-    say(`And this is the most important place on the whole ${venue === 'world-tour' ? 'plane' : venue === 'film-lot' ? 'lot' : venue === 'carnival' ? 'fairground' : 'island'}. Every time you lose, you come here, and one of you goes home.`, { tense: true });
+    say(V.item ? `And this is where it all ends. ${V.ceremony}. Get a ${V.item}, and you're safe. Don't get one... and you're gone.`
+      : `And this is where it all ends. ${V.ceremony}. Every time your team loses, you sit right here, and one of you doesn't leave the way you came in.`, { tense: true });
   }
 
-  // ── the season's rules ──
-  const rules = [];
-  const teams = (o.teams || []).filter(Boolean);
-  if (teams.length >= 2) rules.push({ kicker: 'The teams', name: teams.join(' vs ').slice(0, 60), lines: [`You'll be split into ${teams.length === 2 ? 'two' : teams.length === 3 ? 'three' : teams.length} teams. Win as a team, or vote somebody off as a team.`] });
-  if (S.ri) {
-    const rescue = S.riFormat === 'rescue';
-    rules.push({ kicker: 'Season twist', name: rescue ? 'Rescue Island' : 'Redemption Island', plate: plateKey('redemption', 'map', 'day') || plateKey('islands', 'skull-rock', 'day'), place: 'Boney Island',
-      lines: rescue
-        ? [`Getting voted out does not mean you are done. The voted-out go to Rescue Island, where you'll wait, train, and fight for a way back in.`, `Every so often, the people on Rescue Island compete, and the winner comes back into the game.`]
-        : [`Getting voted out does not mean you are done. You'll get one final choice: go home, or take a torch to Redemption Island.`, `On Redemption Island, you'll duel whoever else is out there. Lose a duel, and you are gone for good. Keep winning, and one day you walk back into this game.`] });
-  }
-  if (S.exile) rules.push({ kicker: 'Season twist', name: 'Exile Island', plate: plateKey('islands', 'skull-rock', 'day'), place: 'Exile Island',
-    lines: [`Every week, somebody gets sent to Exile Island. Alone. No team, no food, nobody to talk to.`, `But there might be something out there worth finding.`] });
-  if (S.mole && S.mole !== 'disabled') rules.push({ kicker: 'Season twist', name: 'The Mole', lines: [`One more thing. One of you isn't here to win. One of you is working for me, and sabotaging everything you do.`, `Find the Mole, and maybe you stop them. Trust the wrong person, and you'll never know what hit you.`] });
-  if (S.coaches && S.coaches !== 'disabled') rules.push({ kicker: 'Season twist', name: 'The Coaches', lines: [`This season, every team has a coach. Somebody who has played this game before, and who wants their team to win almost as much as you do.`] });
-  if (S.foodWater && S.foodWater !== 'disabled') rules.push({ kicker: 'Season rule', name: 'Survival', lines: [`And this season, nobody's feeding you. Find your own food, find your own water, and keep each other alive.`] });
+  // ── the twists, as the asides they are on the show ──
+  const asides = [];
+  if (S.ri) asides.push(S.riFormat === 'rescue'
+    ? { name: 'Rescue Island', plate: plateKey('redemption', 'map', 'day'), place: 'Boney Island', lines: [`Oh, and getting voted off this season? Not necessarily the end. The voted-out go to Rescue Island, and if they can survive out there, one of them might just win their way back in.`] }
+    : { name: 'Redemption Island', plate: plateKey('redemption', 'map', 'day'), place: 'Boney Island', lines: [`Oh, and getting voted off this season? Not necessarily the end. You'll get one last choice: go home, or grab a torch and head to Redemption Island.`, `Out there, you duel. Lose, and you're gone for good. Keep winning, and one day you walk right back into this game.`] });
+  if (S.exile) asides.push({ name: 'Exile Island', plate: plateKey('islands', 'skull-rock', 'day'), place: 'Exile Island', lines: [`Some of you will get a little vacation on Exile Island. Alone. No food, no friends, no team. But there might be something hidden out there, if you look hard enough.`] });
   const adv = S.advantages || {};
-  if (Object.values(adv).some(a => a && (a === true || a.enabled))) rules.push({ kicker: 'Season rule', name: 'Hidden advantages', lines: [`Hidden around this place are idols and advantages. Find one, and it could save you. Tell the wrong person you have it, and it could cost you everything.`] });
+  if (Object.values(adv).some(a => a && (a === true || a.enabled))) asides.push({ name: 'Hidden immunity idols', lines: [`The hidden immunity idols are in play, too. Find one, and it can save you. So, first come, first served.`] });
+  if (S.mole && S.mole !== 'disabled') asides.push({ name: 'The Mole', lines: [`And one of you isn't here to win at all. One of you works for me, and will be quietly ruining everything the rest of you do. Have fun figuring out who.`] });
+  if (S.coaches && S.coaches !== 'disabled') asides.push({ name: 'The Coaches', lines: [`Every team gets a coach this season. Somebody who's been through all this before, and who will absolutely yell at you.`] });
+  if (S.foodWater && S.foodWater !== 'disabled') asides.push({ name: 'Survival', lines: [`And nobody's feeding you this time. You want dinner? Go catch it.`] });
   const fin = S.finaleFormat || 'traditional';
-  rules.push({ kicker: 'How to win', name: fin === 'fan-vote' ? 'The fans decide' : /challenge/.test(fin) ? 'The final challenge' : 'The jury decides',
-    lines: [fin === 'fan-vote' ? `At the very end, it's not up to the people you voted out. The fans at home pick the winner.`
-      : /challenge/.test(fin) ? `At the very end, the last ones standing face one final challenge. Win it, and you win everything.`
-        : `At the very end, the people you voted out come back as the jury, and they decide who wins. So be careful how you send them home.`] });
-  if (rules.length) {
-    say(`Now, the rules.`);
-    for (const r of rules) {
-      if (r.plate) show(r.plate, r.place || r.name);
-      steps.push({ k: 'title', kicker: r.kicker, name: r.name, faces: [] });
-      for (const l of r.lines) say(l);
-    }
-  }
+  asides.push(fin === 'fan-vote' ? { name: 'The fans decide', lines: [`And at the very end, the fans at home pick the winner. So smile for the camera.`] }
+    : /challenge/.test(fin) ? { name: 'The final challenge', lines: [`And at the very end, it all comes down to one final challenge. Winner takes everything.`] }
+      : { name: 'The jury decides', lines: [`And remember: everyone you vote off comes back at the end to vote for the winner. So be nice to them. Or don't. That's way better TV.`] });
+  asides.forEach((r, i) => {
+    if (r.plate) show(r.plate, r.place || r.name);
+    steps.push({ k: 'title', kicker: i === asides.length - 1 ? 'How to win' : 'This season', name: r.name, faces: [] });
+    for (const l of r.lines) say(l);
+  });
   return steps;
 }

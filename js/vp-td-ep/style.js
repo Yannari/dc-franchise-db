@@ -252,6 +252,8 @@ export const TDX_CSS = `
 .tdx .tdx-intro .info{position:relative;color:#fff;max-width:44%;text-shadow:0 3px 0 #111}
 .tdx .tdx-intro .num{font:900 1.05cqw/1 Nunito;letter-spacing:.3em;text-transform:uppercase;color:#111;text-shadow:none;margin-bottom:.6cqw}
 .tdx .tdx-intro .nm{font:400 6.4cqw/1 'Lilita One';letter-spacing:.02em;-webkit-text-stroke:.25cqw #111;paint-order:stroke}
+.tdx .tdx-intro .past{margin-top:.55cqw;font:800 1.15cqw/1.2 Nunito;letter-spacing:.08em;text-transform:uppercase;color:#111;text-shadow:none;opacity:.85}
+.tdx .tdx-intro .past.won{color:#8a5a00;opacity:1}
 .tdx .tdx-intro .tag{display:inline-block;margin-top:.6cqw;padding:.35cqw 1.1cqw;background:#111;color:#ffd23a;font:400 1.7cqw/1 'Lilita One';letter-spacing:.06em;transform:skewX(-8deg);text-shadow:none}
 .tdx .tdx-intro .facts{display:flex;gap:.6cqw;margin-top:.8cqw;flex-wrap:wrap}
 .tdx .tdx-intro .facts span{padding:.3cqw .8cqw;background:rgba(255,255,255,.92);color:#111;font:800 1.05cqw/1 Nunito;text-transform:uppercase;letter-spacing:.08em;border-radius:3px;text-shadow:none}

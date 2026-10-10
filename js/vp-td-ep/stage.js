@@ -575,6 +575,9 @@ export function ballotHtml(s, fresh) {
 // ══════════════════════════════════════════════════════════════════════
 // THE INTRO CARD — a newcomer's character-select card on arrival day (arrival.js)
 // ══════════════════════════════════════════════════════════════════════
+// a returnee's last season in a line (td/past.js): 'Winner · Season 1', '4th · Season 1 · blindsided by Minnie Skurr'
+const pastLine = p => p.kind === 'won' ? `Winner · ${p.where}`
+  : `${p.placeWord} · ${p.where}${p.kind === 'final' ? ' · finalist' : p.kind === 'early' ? ' · out early' : p.kind === 'blindsided' && p.by ? ` · blindsided by ${p.by}` : ''}`;
 export function introHtml(s, fresh) {
   const facts = [s.age ? `${s.age}` : '', s.job || '', s.home || ''].filter(Boolean);
   const bars = (s.stats || []).map((x, i) => `<div class="st" style="--i:${i}"><span>${esc(x.k)}</span><i><b style="width:${Math.max(8, Math.min(100, x.v * 10))}%"></b></i></div>`).join('');
@@ -585,6 +588,7 @@ export function introHtml(s, fresh) {
       <div class="num">Contestant ${s.n} / ${s.of}${s.returnee ? ' · Returning' : ''}</div>
       <div class="nm">${esc(s.who)}</div>
       ${s.tag ? `<div class="tag">${esc(s.tag)}</div>` : ''}
+      ${s.past ? `<div class="past${s.past.kind === 'won' ? ' won' : ''}">${esc(pastLine(s.past))}</div>` : ''}
       ${facts.length ? `<div class="facts">${facts.map(f => `<span>${esc(f)}</span>`).join('')}</div>` : ''}
       <div class="stats">${bars}</div>
     </div></div>`;

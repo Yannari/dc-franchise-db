@@ -6,6 +6,7 @@ import { reassignCoaches } from './coaches.js';
 import { wRandom, computeHeat, formAlliances, nameNewAlliance } from './alliances.js';
 import { runAuction } from './auction.js';
 import { writeArrival } from './td/story/arrival.js';
+import { pastOf } from './td/past.js';
 import { simulateDisadvantageVote } from './disadvantage-vote.js';
 
 export const JOURNEY_CHALLENGES = [
@@ -646,6 +647,9 @@ export function generateDockArrivals(ep) {
     arrivals.push({
       name: p.name, order: i, archetype: arch, isReturnee,
       hostLine, playerLine, dockReaction, statFlavor, lines: scene?.lines || null,
+      // what happened to a returnee last time, frozen with the episode (the viewer's arrival card shows it;
+      // a saved season replays it even if the ledger changes later)
+      past: isReturnee ? (pastOf(p.name) || null) : null,
     });
 
     onDock.push(p);

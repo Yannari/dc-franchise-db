@@ -111,7 +111,7 @@ export function tdArrivalScreen(ep, o = {}) {
         act: { kind: 'ride', ride, riders: ride === 'yacht' ? load : [] }, tense: false });
     }
     const intro = { k: 'intro', who: a.name, tag: TAG[a.archetype] || '', age: p.age || null, job: p.occupation || null, home: p.hometown || null,
-      returnee: !!a.isReturnee, stats, n: here.length + 1, of: ep.dockArrivals.length, ride: A.ride };
+      returnee: !!a.isReturnee, past: a.past || null, stats, n: here.length + 1, of: ep.dockArrivals.length, ride: A.ride };
     // off the bus: a close-up in its doorway, the card, then down onto the lot with everyone else
     if (door) {
       steps.push({ k: 'scene', spot: 'bus-door', tod: 'day', plate: door, place: A.place, time: 'Day one', focus: [a.name], bg: [], wide: true,

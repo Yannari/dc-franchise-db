@@ -8,18 +8,12 @@
 // pitch taken somewhere private with a real reason and a real question back, the target noticing, the
 // emissary sitting down with the one nobody sits with, the deal by the water. Every line in the
 // speaker's own voice (sharp, dry, loud, soft, odd). Words only: nothing here decides anything.
-import { familyOf } from '../td/story/voice-family.js';
 import { pronouns } from '../players.js';
-import { players } from '../core.js';
+import { famOf } from './voiced.js';
 
 const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
-// somebody whose voice has no family yet talks the way their archetype does
-const BY_ARCH = { villain: 'sharp', schemer: 'sharp', mastermind: 'sharp', hothead: 'loud', 'challenge-beast': 'loud', 'chaos-agent': 'loud',
-  hero: 'soft', 'loyal-soldier': 'soft', 'social-butterfly': 'soft', showmancer: 'soft', underdog: 'soft', floater: 'dry', 'perceptive-player': 'dry', goat: 'odd', wildcard: 'odd' };
-const fam = n => { let f = 'plain'; try { f = familyOf(n) || 'plain'; } catch {}
-  if (f !== 'plain') return f;
-  const a = (players || []).find?.(p => p.name === n)?.archetype || (globalThis.FRANCHISE_ROSTER || []).find?.(p => p?.name === n)?.archetype;
-  return BY_ARCH[a] || 'plain'; };
+// the speaker's family, an archetype's when their voice has none (voiced.js, shared by the twist scenes)
+const fam = n => famOf(n);
 
 /** The scouting day's steps after the emissary's arrival card. ctx: { ep, em, hosts, bond(a,b) } */
 export function emissaryDay(ctx) {

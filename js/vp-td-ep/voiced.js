@@ -16,7 +16,10 @@ export const archOf = n => (players || []).find?.(p => p.name === n)?.archetype 
 export function famOf(n) {
   let f = 'plain';
   try { f = familyOf(n) || 'plain'; } catch { /* no voice */ }
-  return f !== 'plain' ? f : (BY_ARCH[archOf(n)] || 'plain');
+  const arch = archOf(n);
+  // a villain's charm is still a villain's: never the soft, scared lines (Alejandro reads "charming")
+  if (f === 'soft' && ['villain', 'schemer', 'mastermind'].includes(arch)) return 'sharp';
+  return f !== 'plain' ? f : (BY_ARCH[arch] || 'plain');
 }
 /** Pronoun forms plus the verb agreements a line needs ({is, has, was, s: "smile|s"}). */
 export function P(n) {

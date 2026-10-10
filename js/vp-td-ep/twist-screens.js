@@ -18,6 +18,7 @@ import { matches } from '../script/pick.js';
 import { stableRng } from '../script/rng.js';
 import { pStats } from '../players.js';
 import { players as _players } from '../core.js';
+import { mergeDay } from './merge.js';
 import { placeScene, placeTeams, plateKey, placeName, venueOf, VENUES, cleanText, campSlot, teamSpot } from './steps.js';
 
 export const ANNOUNCE = {
@@ -213,17 +214,8 @@ export function tdMergeScreen(ep, m, o = {}) {
   const steps = [];
   const { key, places } = gather(venue, V.public, 'day', m.participants, host);
   steps.push({ k: 'scene', spot: V.public, tod: 'day', plate: key, place: placeName(V.public), time: '9:00 AM', card: true, focus: [], bg: [], places, host });
-  steps.push({ k: 'say', by: host, host: true, text: `Drop your buffs. From now on, you're one tribe.` });
-  steps.push({ k: 'title', kicker: 'The merge', name: m.name || 'One tribe', faces: m.participants.slice(0, 8),
-    side: [{ tab: 'log', text: `${m.participants.length} players: ${m.participants.join(', ')}` },
-      ...(m.alliances || []).map(a => ({ tab: 'allies', name: a.name, who: a.members })),
-      ...((m.bottom || []).length ? [{ tab: 'secrets', text: `On the bottom, with no alliance: ${m.bottom.join(', ')}` }] : [])] });
-  steps.push({ k: 'say', by: host, host: true, text: `${m.participants.length} of you left. From here on, it's every player for themselves.` });
-  const top = (m.alliances || [])[0];
-  const pairTop = (top?.members || []).filter(n => places[n]).slice(0, 2);
-  if (pairTop.length === 2) steps.push(...toSteps(reactionLines('twist.react.merge', pairTop[0], pairTop[1], `${ep.num}|merge`), pairTop));
-  const pairLow = (m.bottom || []).filter(n => places[n] && !pairTop.includes(n)).slice(0, 2);
-  if (pairLow.length === 2) steps.push(...toSteps(reactionLines('twist.react.bottom', pairLow[0], pairLow[1], `${ep.num}|bottom`), pairLow));
+  // the day itself (merge.js): the news, reunions, rivals, the threat, the alliance counting votes, the bottom
+  steps.push(...mergeDay({ ep, m, host, places }));
   // the merge feast, as the people at it talk (td/story/twist.js feast)
   for (const sc of ep.twistStory?.['merge-reward'] || []) {
     steps.push({ k: 'scene', spot: V.public, tod: 'night', plate: gather(venue, V.public, 'night', sc.players, host).key || key, place: 'The Merge Feast', time: '7:00 PM', card: false, focus: sc.players.slice(0, 4), bg: [], places, host });

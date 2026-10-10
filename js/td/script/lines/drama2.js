@@ -372,6 +372,9 @@ const MESS_BAD = [
     { by: 'a', say: "Did you just take two portions?" },
     { by: 'b', say: "It's gray goop. Nobody wants two portions." },
     { by: 'a', say: "Then why did you TAKE two?" },
+    { by: 'b', say: "Because I'm hungry, and it's still technically food." },
+    { by: 'a', say: "There are people who haven't eaten yet!" },
+    { by: 'b', say: "Fine! Here! Have your goop!" },
     { by: 'b', conf: "We're fighting over food none of us can even eat. That's the mess hall for you." },
   ] },
   { id: 'd2.mb3', turns: [
@@ -402,7 +405,10 @@ const MESS_GOOD = [
   { id: 'd2.mg1', turns: [
     { by: 'a', say: "Saved you a seat. And the only thing on the menu that's not moving." },
     { by: 'b', say: "You're a hero." },
-    { by: 'a', say: "I know." },
+    { by: 'a', say: "I know. I had to fight two people for that spoon." },
+    { by: 'b', say: "Seriously? Who?" },
+    { by: 'a', say: "Doesn't matter. They know what they did. Eat before it gets cold." },
+    { by: 'b', say: "It was never warm." },
     { by: 'b', conf: "Out here, a saved seat and a safe meal is basically a friendship bracelet." },
   ] },
   { id: 'd2.mg2', turns: [
@@ -432,6 +438,9 @@ const MESS_GOOD = [
     { by: 'b', say: "Sit with me? The other table's arguing again." },
     { by: 'a', say: "Isn't every table arguing?" },
     { by: 'b', say: "This one's arguing quieter." },
+    { by: 'a', say: "What are they arguing about this time?" },
+    { by: 'b', say: "Whether the meat is chicken. Nobody's winning." },
+    { by: 'a', say: "It's not chicken. I'm not going to say what it is, but it's not chicken." },
     { by: 'a', conf: "Best table in the mess hall. Mostly because {b} is at it." },
   ] },
 ];
@@ -457,7 +466,10 @@ const NEMESIS = [
   { id: 'd2.n5', turns: [
     { by: 'a', say: "Hey, everybody. Big news. I'm still here." },
     { by: 'b', say: "Unfortunately." },
-    { by: 'a', say: "For you, sure." },
+    { by: 'a', say: "For you, sure. For me, it's a beautiful morning." },
+    { by: 'b', say: "Enjoy it. Mornings don't last forever." },
+    { by: 'a', say: "Neither does your luck, but here we both are." },
+    { by: 'b', say: "Can somebody please put something in {a}'s mouth?" },
     { by: 'a', conf: "Every day I'm here is a bad day for {b}. That's my favourite part of the game." },
   ] },
   { id: 'd2.n6', when: { register: 'fiery' }, turns: [
@@ -501,6 +513,9 @@ const PARANOIA_BOLD = [
     { by: 'a', say: "You said my name. Yesterday. I heard you." },
     { by: 'b', say: "I said your name because I was defending you!" },
     { by: 'a', say: "That's exactly what someone would say." },
+    { by: 'b', say: "It's also exactly what someone who was defending you would say!" },
+    { by: 'a', say: "Then who were you defending me from?" },
+    { by: 'b', say: "I'm not telling you that now. You'd just go after them too." },
     { by: 'b', conf: "There's no way to win this conversation. I tried every way." },
   ] },
   { id: 'd2.pb6', when: { sly: true }, turns: [

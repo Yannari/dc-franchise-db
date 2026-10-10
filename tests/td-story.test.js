@@ -318,6 +318,33 @@ describe('a season through the director', () => {
     }
   });
 
+  // The user, 2026-10-10, of a fishing-spot scene with four faces on stage and two talking: "it's a 4
+  // person scene but no one talking but the 2 girls". The viewer stages scene.who, so everyone in it
+  // speaks or is spoken of.
+  it('stages nobody who is silent and unmentioned', () => {
+    const silent = [];
+    for (const ep of eps) for (const camp of Object.keys(ep.campStory)) for (const ph of ['pre', 'post'])
+      for (const sc of campFeed(ep, camp, ph).filter(x => x.story && x.lines?.length && x.scene?.who))
+        for (const n of Object.values(sc.scene.who).filter(Boolean))
+          if (!sc.lines.some(l => l.by === n || String(l.text || '').includes(n))) silent.push(`ep ${ep.num} ${sc.kind} ${sc.lineId}: ${n}`);
+    expect(silent).toEqual([]);
+  });
+
+  // ...and "audit for weirdly short scenes ... we need meat and story": a conversation that airs (somebody
+  // speaks to somebody; a confessional on its own is a confessional) has at least four spoken lines.
+  // Measured 2026-10-10 over 2131 aired scenes: 11.7% short before, 0.8% after.
+  it('airs conversations, not two-line sketches', () => {
+    let convo = 0, short = [];
+    for (const ep of eps) for (const camp of Object.keys(ep.campStory)) for (const ph of ['pre', 'post'])
+      for (const sc of campFeed(ep, camp, ph)) {
+        const spoken = (sc.lines || []).filter(l => l.by && l.kind === 'say').length;
+        if (!spoken) continue;
+        convo++;
+        if (spoken < 4) short.push(`ep ${ep.num} ${sc.kind || sc.type} ${sc.lineId || sc.scene?.lineId}`);
+      }
+    expect(short.length / convo, short.join('\n')).toBeLessThan(0.03);
+  });
+
   it('leaves no slot unfilled', () => {
     for (const ep of eps) for (const camp of Object.keys(ep.campStory)) for (const ph of ['pre', 'post'])
       for (const it of ep.campStory[camp][ph].filter(x => x.story)) for (const l of it.lines) expect(/\{\w+/.test(l.text), `${it.lineId}: ${l.text}`).toBe(false);

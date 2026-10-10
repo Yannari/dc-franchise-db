@@ -523,6 +523,9 @@ const MEAL = [
     { by: 'a', say: "Half for you, half for me." },
     { by: 'b', say: "That's the last of it." },
     { by: 'a', say: "Which is why it's half." },
+    { by: 'b', say: "You could've just eaten it. Nobody would've known." },
+    { by: 'a', say: "I'd have known. Besides, you look hungrier than me." },
+    { by: 'b', say: "I am hungrier than you. Thank you." },
     { by: 'b', conf: "{a} split the last bite down the middle. Out here that's basically a vow." },
   ] },
   { id: 'fr.m2', turns: [
@@ -930,12 +933,18 @@ const JOKE = [
     { by: 'a', say: "Don't. Say. It." },
     { by: 'b', say: "Goose." },
     { by: 'a', say: "I SAID DON'T SAY IT!" },
+    { by: 'b', say: "I'm just saying a word. It's a normal word. Goose." },
+    { by: 'a', say: "One more time and I'm telling everybody about the thing with the canoe." },
+    { by: 'b', say: "...Okay. Truce. No goose, no canoe." },
     { by: 'b', conf: "There was an incident with a goose. {a} will never live it down. I'll make sure." },
   ] },
   { id: 'fr.j6', turns: [
     { by: 'a', say: "Same time tomorrow?" },
     { by: 'b', say: "Same rock?" },
-    { by: 'a', say: "Same rock." },
+    { by: 'a', say: "Same rock. If anybody else is on it, we fight them." },
+    { by: 'b', say: "Politely, though." },
+    { by: 'a', say: "Very politely. And then we fight them." },
+    { by: 'b', say: "Deal. Same rock, same time, polite fighting." },
     { by: 'b', conf: "We have a rock now. It's our rock. Don't sit on our rock." },
   ] },
   { id: 'fr.j7', turns: [
@@ -1044,7 +1053,11 @@ const RALLY = [
   { id: 'fr.ra1', turns: [
     { by: 'a', say: "Okay. Everybody up. We're still here. That's what matters." },
     { by: 'b', say: "We just had the worst day." },
-    { by: 'a', say: "And tomorrow will be better. Because we're making it better. Starting with the fire." },
+    { by: 'a', say: "And tomorrow will be better, because we're making it better, starting with the fire." },
+    { by: 'b', say: "The fire's out. It's been out for an hour." },
+    { by: 'a', say: "Then that's the first thing we fix. Who's with me?" },
+    { beat: "Slowly, people start getting up." },
+    { by: 'b', say: "...Fine. I'll get wood." },
     { by: 'c', conf: "I believed {a}. I don't know why. I just did." },
   ] },
   { id: 'fr.ra2', turns: [
@@ -1096,10 +1109,13 @@ const LIFT = [
     { beat: 'By the end of it, the whole camp feels lighter.' },
   ] },
   { id: 'fr.li3', when: { charm: true }, turns: [
-    { by: 'b', conf: "{a} walked into a miserable camp and somehow, by evening, everybody was laughing. I couldn't tell you how." },
     { by: 'c', say: "{a}, do the thing again!" },
     { by: 'a', say: "What thing?" },
     { by: 'c', say: "The thing that makes everybody happy!" },
+    { by: 'a', say: "I don't have a thing. I just talk to people." },
+    { by: 'b', say: "That's the thing. Nobody else here does it." },
+    { by: 'a', say: "Okay, fine. Who wants to hear about the worst job I ever had?" },
+    { by: 'b', conf: "{a} walked into a miserable camp and somehow, by evening, everybody was laughing. I couldn't tell you how." },
   ] },
   { id: 'fr.li4', turns: [
     { by: 'a', say: "Compliment circle. Everybody says one nice thing about the person on their left." },

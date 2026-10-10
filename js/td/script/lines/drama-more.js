@@ -49,7 +49,10 @@ const BOMB_HOTHEAD = [
     { beat: "{b} reaches for the last banana. {a} reaches at the same time." },
     { by: 'a', say: "That's MINE. I saw it FIRST." },
     { by: 'b', say: "It's a banana." },
-    { by: 'a', say: "It's MY banana!" },
+    { by: 'a', say: "It's MY banana! I've been thinking about it since breakfast!" },
+    { by: 'b', say: "You've been thinking about a banana since breakfast? Are you okay?" },
+    { by: 'a', say: "NO. I'm hungry, and tired, and that is my banana." },
+    { by: 'b', say: "...Fine. Take it. Enjoy your banana." },
     { by: 'b', conf: "We had a whole fight over a banana. In front of everyone. I let {a} have it. I'm still mad." },
   ] },
   { id: 'dm.bh8', when: { register: 'competitor' }, turns: [
@@ -298,6 +301,9 @@ const DISPUTE_PLAIN = [
     { by: 'a', say: "Your plan's going to get us both voted out." },
     { by: 'b', say: "And yours is better?" },
     { by: 'a', say: "Mine doesn't involve trusting everybody." },
+    { by: 'b', say: "Mine doesn't involve trusting nobody. You can't get to the end on your own." },
+    { by: 'a', say: "Watch me try." },
+    { by: 'b', say: "I'd rather not. I'd rather we were on the same page." },
     { by: 'a', conf: "We left still disagreeing. That's two people with two different votes now." },
   ] },
   { id: 'dm.dl3', when: { register: 'fiery' }, turns: [
@@ -357,6 +363,9 @@ const STIR_SLY = [
     { by: 'a', say: "Funny how {b} always volunteers for the easy jobs, right, {c}?" },
     { by: 'c', say: "Ha. Yeah. Actually, yeah." },
     { by: 'b', say: "I did the latrine yesterday!" },
+    { by: 'a', say: "Once. You did it once, and you've been telling everybody about it ever since." },
+    { by: 'b', say: "Because nobody else would do it!" },
+    { by: 'c', say: "...Huh. Now that you mention it, you did pick firewood again today." },
     { by: 'a', conf: "{b} defends {b.ref}, {c} gets suspicious. I just watch." },
   ] },
   { id: 'dm.ss3', turns: [

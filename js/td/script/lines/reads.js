@@ -83,9 +83,9 @@ const PLAYED_DEEP = [
   ] },
   { id: 'rd.p2', turns: [
     { by: 'a', say: "I've never told anyone this, but you're the only person here I trust." },
-    { by: 'b', say: "Wow. That means a lot." },
+    { by: 'b', say: "Wow. I trust you too, actually." },
     { by: 'a', say: "I mean it." },
-    { by: 'a', conf: "I've said that to more than one person here. It means a lot to all of them." },
+    { by: 'a', conf: "I've said that to more than one person here. They all believed it, too." },
   ] },
   { id: 'rd.p3', turns: [
     { by: 'b', say: "You always know the right thing to say." },
@@ -187,6 +187,9 @@ const ORCH_SETUP = [
     { by: 'a', say: "Hypothetically, if something happened next week, would you be on board?" },
     { by: 'b', say: "What kind of something?" },
     { by: 'a', say: "I'll tell you next week." },
+    { by: 'b', say: "You can't ask me to say yes to something I don't know about." },
+    { by: 'a', say: "I'm not asking you to say yes. I'm asking you not to say no." },
+    { by: 'b', say: "...Okay. I'm not saying no." },
     { by: 'a', conf: "{b} doesn't know it yet, but {b} is the most important part of my next move." },
   ] },
   { id: 'rd.s2', turns: [

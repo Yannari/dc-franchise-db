@@ -100,12 +100,32 @@ function writeKitScene(entry, who, facts, ctx) {
   finally { delete STORY_POOLS[`${key}.any`]; }
 }
 
-/** a brings their thing up, b teases them about it, a answers, and one of them reflects. */
+// a bit's second round: b comes back at a, a gets the last word (pairs, so the answer always fits the
+// question; neutral, so they follow any bit). Handed out in turn across the season (pickOf).
+const BIT_AFTER = [
+  ["Do you practise these, or do they just come out of you?", "Bit of both. Mostly they just come out."],
+  ["Okay, I'll admit that was a little bit funny.", "A little? I'll take a little. It's early."],
+  ["You know everybody can hear you, right?", "Good. I'd hate for anybody to miss it."],
+  ["I can't tell if you're joking or not.", "That's the best part. Neither can I, most days."],
+  ["Is it always going to be like this with you?", "Every single day. You'll miss it when I'm gone."],
+  ["Fine, you win this one. Don't get used to it.", "Too late. I'm already used to it."],
+  ["Please never change. Actually, change a little.", "No promises either way."],
+  ["That's the most you've said all morning.", "I was saving it up for you, honestly."],
+  ["I'm going to be thinking about that all day now.", "You're welcome. It's a gift."],
+  ["Who even talks like that?", "Me. Apparently only me. It's a lonely life."],
+  ["You're kind of a lot, you know that?", "I've been told. Usually by people who end up liking me."],
+  ["I'm not laughing. This is my serious face.", "Your serious face is laughing, though."],
+  ["Can you say that again, slower, so I can understand it?", "Absolutely not. It only works once."],
+  ["Okay, I see why people like you now.", "Took you long enough."],
+];
+/** a brings their thing up, b teases them about it, a answers, b comes back at it, a has the last word,
+ *  and one of them reflects. */
 export function kitBitScene(a, b, facts, ctx) {
   const bit = take(a, 'bit'), tease = take(a, 'tease'), reply = take(a, 'reply'), conf = take(a, 'conf');
   if (!bit || !tease || !reply) return null;
   const entry = { id: `kit:${a}:bit:${(used()[a] || []).length}`, place: 'aside', turns: [
     { by: 'a', say: bit.line }, { by: 'b', say: tease.line }, { by: 'a', say: reply.line },
+    ...(([q, r]) => [{ by: 'b', say: q }, { by: 'a', say: r }])(pickOf(BIT_AFTER, a, b)),
     ...(conf ? [{ by: 'a', conf: conf.line }] : []),
   ] };
   const w = writeKitScene(entry, { a, b }, facts, ctx);
@@ -159,6 +179,17 @@ const pickOf = (list, ...k) => {
 };
 const SNEER = ["Do you ever talk about anything else?", "Nobody cares, {a}. Honestly. Nobody.", "Here we go again. Can we have one day off from it?", "You know it's not actually a personality, right?", "Wow. Every single day with this.", "Can you not? Just for one morning?", "I swear, if I hear about it one more time.", "Is there an off switch, {a}? Asking for everybody.", "We get it. We all get it. We got it on day one.", "I'm begging you. Talk about the weather. Talk about anything else.", "If I had a dollar for every time you brought that up, I'd never be hungry again.", "Does it ever get old for you? Because it got old for me ages ago.", "Some of us are trying to have a quiet morning, {a}.", "You know nobody asked, right? Nobody ever asks."];
 const PUSH = ["Whatever you say.", "Sure. Keep telling yourself that.", "I'm just saying what everybody's thinking.", "Okay. I'm done.", "Wow. Okay. Sensitive.", "Fine. Talk to someone who cares.", "You really need to relax.", "Noted. Still annoying.", "Touchy, touchy.", "Okay, okay. Calm down. It was a joke, mostly.", "You don't have to bite my head off about it.", "Right. I'll just leave you to it, then.", "See, this is why nobody brings it up with you.", "Whatever helps you sleep at night."];
+// a hits back after defending their thing, and b has the last word (pairs: the reply answers the jab)
+const HIT_BACK = [
+  ["And you've been an absolute joy since day one, haven't you?", "At least I'm honest about it."],
+  ["You don't have to like it. You just have to leave me alone.", "Happily. Believe me, happily."],
+  ["Funny, nobody asked what you think about it, either.", "And yet here I am, telling you anyway."],
+  ["Say it again. I dare you to say it again.", "...I'm not doing this with you today."],
+  ["Maybe find a hobby of your own, instead of mocking mine.", "Mocking yours is my hobby now."],
+  ["You know what? I feel sorry for you.", "Don't. Seriously, save it."],
+  ["I've met kinder people at the bottom of a lake.", "Then go back and talk to them."],
+  ["Every single day, you find something new to hate about me.", "You make it really easy."],
+];
 const CLASH_CONF = ["{a} takes everything so personally. Fine. Now I know exactly where to push.", "I didn't mean to start a fight. I did mean what I said, though.", "I said one thing and {a} acted like I'd burned the whole camp down.", "I don't get {a}, and I've stopped trying to.", "{a} needs to learn that not everybody finds it charming. I'm happy to be the teacher.", "I know I was harsh. Somebody had to say it, and I'm the only one here who'll say it to {a.posAdj} face.", "Every day, the same thing. I'm not proud I snapped. I'm just surprised it took this long.", "{a} looked hurt, and I almost felt bad about it. Almost."];
 /** b, who doesn't like a, sneers at a's thing; a defends it (Nura and Dunia). */
 export function kitClashScene(a, b, facts, ctx) {
@@ -168,6 +199,7 @@ export function kitClashScene(a, b, facts, ctx) {
   const entry = { id: `kit:${a}:${b}:clash`, place: 'aside', turns: [
     { beat: `{a} is going on about ${k.thing} again, and {b} has had enough.` },
     { by: 'b', say: pickOf(SNEER, a, b) }, { by: 'a', say: def.line }, { by: 'b', say: pickOf(PUSH, b, a) },
+    ...(([x, y]) => [{ by: 'a', say: x }, { by: 'b', say: y }])(pickOf(HIT_BACK, a, b)),
     { by: 'b', conf: pickOf(CLASH_CONF, b, a, 'c') },
   ] };
   const w = writeKitScene(entry, { a, b }, facts, ctx);
@@ -208,19 +240,38 @@ export function kitSoloScene(a, facts, ctx) {
 // ── a running bit, called back by other people (who aren't the one doing it) ──
 const CALL = ["Has {about} brought up {thing} yet today?", "Ten minutes. I'm giving it ten minutes before {about} mentions {thing}.", "Did you hear {about} going on about {thing} again this morning?", "What's the over-under on {thing} coming up at dinner tonight?", "If {about} doesn't mention {thing} today, I'm going to check {about} for a fever.", "I've started counting how often {about} brings up {thing}. I need a bigger stick to keep tally on."];
 const ANSWER = ["Twice. Before breakfast.", "Not yet. I'm almost worried.", "I could do the whole speech for you at this point.", "Honestly? I'm starting to like it.", "Only four times. It's a slow day.", "I tried to change the subject. It didn't work.", "Three times, and once was in a whisper.", "Are you kidding? It's practically the camp's theme song now.", "I'm keeping a tally. We're in double figures.", "It came up while I was asleep. I heard it in a dream."];
-/** c and d joke about `about`'s thing, once it has aired as a bit at least once. */
+// the callback's follow-up between the two of them, then the one they're talking about walks up
+const CALL_MORE = [
+  ["Should we tell {about} it's become a thing?", "Absolutely not. It's the best part of my day."],
+  ["I'm starting a tally. On a tree.", "Put me down for a guess of six by sunset."],
+  ["Honestly, I'd miss it if {about} stopped.", "Me too. Don't tell {about} I said that."],
+  ["Do you think {about} knows we notice?", "There's no way. Or there's every way, and that's worse."],
+  ["We could try to get {about} to say it on purpose.", "Ten minutes. I bet you I can do it in ten."],
+  ["It's kind of a comfort at this point, isn't it?", "Like a really strange alarm clock."],
+];
+const CALL_ARRIVE = [
+  ["What are you two laughing at?", "Nothing. Absolutely nothing."],
+  ["Why did you both just go quiet?", "No reason. Lovely weather, isn't it?"],
+  ["Are you talking about me?", "We would never. Okay, a little."],
+  ["I can feel you looking at me.", "We're looking at the view, which you happen to be in."],
+];
+/** c and d joke about `about`'s thing, once it has aired as a bit at least once; then `about` turns up. */
 export function kitCallbackScene(c, d, about, facts, ctx) {
   const k = KITS[about];
   if (!k) return null;
   const u = (used()[about] ||= []);
   const n = u.filter(x => x.startsWith('call:')).length;
   if (n >= CALL.length || !u.some(x => x.startsWith('bit:'))) return null;
+  const [m1, m2] = pickOf(CALL_MORE, c, d, about);
+  const [q, r] = pickOf(CALL_ARRIVE, about, c);
   const entry = { id: `kit:${about}:call:${n}`, place: 'aside', turns: [
     { by: 'a', say: CALL[n].split('{thing}').join(k.thing) }, { by: 'b', say: pickOf(ANSWER, c, d, about) },
+    { by: 'a', say: m1 }, { by: 'b', say: m2 },
+    { beat: '{c} wanders over.' }, { by: 'c', say: q }, { by: 'a', say: r },
   ] };
   const STORE = { about };
   const w = (() => { const key = `kit.${entry.id.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`; STORY_POOLS[`${key}.any`] = [entry];
-    try { return writeStory(key, 'any', { a: c, b: d }, STORE, facts, { ...ctx, unique: false }); } finally { delete STORY_POOLS[`${key}.any`]; } })();
+    try { return writeStory(key, 'any', { a: c, b: d, c: about }, STORE, { ...facts, third: true }, { ...ctx, unique: false }); } finally { delete STORY_POOLS[`${key}.any`]; } })();
   if (w) u.push(`call:${n}`);
   return w;
 }

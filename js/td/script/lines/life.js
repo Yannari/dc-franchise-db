@@ -234,6 +234,9 @@ const DREAM_SEER = [
     { by: 'b', say: "What did you dream about?" },
     { by: 'a', say: "A snake. Wearing a crown. Sitting right here at the fire." },
     { by: 'b', say: "That's oddly specific." },
+    { by: 'a', say: "Dreams usually are. This one kept looking at me, like it knew something." },
+    { by: 'b', say: "Do you think it means anything?" },
+    { by: 'a', say: "I think it means somebody here is wearing a crown they haven't earned." },
     { by: 'a', conf: "I know who the snake is. I'm not telling {b} yet." },
   ] },
   { id: 'lf.ds4', when: { register: 'cool' }, turns: [
@@ -594,6 +597,10 @@ const WEIRD_BOLD = [
     { by: 'a', say: "Morning, everyone! I've decided to talk like a pirate today." },
     { by: 'b', say: "Why?" },
     { by: 'a', say: "ARR. Because." },
+    { by: 'b', say: "That's not a reason. That's just a noise." },
+    { by: 'a', say: "Every reason is a noise, matey, if you think about it hard enough." },
+    { by: 'b', say: "Please stop calling me matey." },
+    { by: 'a', say: "Never, matey." },
     { by: 'b', conf: "{a} talked like a pirate all day. By dinner half of us were doing it too." },
   ] },
   { id: 'lf.wo3', turns: [

@@ -228,7 +228,11 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   if (lines.some(l => /\{\w+(\.\w+)?\}/.test(l.text))) throw new Error(`td story ${entry.id}: unfilled slot in "${lines.find(l => /\{\w+/.test(l.text)).text}"`);
   // breakfast is the morning; dinner is the evening (camp-access.js windows)
   const window = meal ? (ctx.phase === 'pre' ? 'morning' : 'before-tribal') : null;
-  return { lines, text: transcript(lines), lineId: entry.id, spot: spot ? { id: spot.id, label: spot.label, fixed: true, ...(window ? { window } : {}) } : null };
+  // who the scene actually has in it: the roles that speak, or that the lines name. The viewer stages
+  // scene.who, so a role the entry never uses is a silent extra on stage (the user, 2026-10-10: "it's a 4
+  // person scene but no one talking but the 2 girls"); director.js keeps only these
+  const usedRoles = Object.keys(who).filter(r => who[r] && entry.turns.some(t => (t.by === r && (!t.when || turnOk(t))) || named(t).includes(r)));
+  return { lines, text: transcript(lines), lineId: entry.id, cast: usedRoles, spot: spot ? { id: spot.id, label: spot.label, fixed: true, ...(window ? { window } : {}) } : null };
 }
 
 // The set-up line for a scene that opens on dialogue (td/story/setup.js).

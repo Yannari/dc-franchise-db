@@ -331,8 +331,11 @@ const NIGHT_DARE = [
   { id: 'ro.nd3', turns: [
     { by: 'b', say: "Do an impression of everybody here." },
     { by: 'a', say: "Everybody?" },
-    { by: 'b', say: "Everybody." },
-    { beat: '{a} goes around the circle. The impression of {b} is last, and it is perfect.' },
+    { by: 'b', say: "Everybody. Go." },
+    { beat: "{a} goes around the circle. The impression of {b} is last, and it is perfect." },
+    { by: 'b', say: "I do not sound like that." },
+    { by: 'a', say: "\"I do not sound like that.\"" },
+    { by: 'b', say: "Stop it! Okay, that one was actually good." },
     { by: 'b', conf: "I don't sound like that. Do I sound like that? Everyone says I sound like that." },
   ] },
   { id: 'ro.nd4', turns: [

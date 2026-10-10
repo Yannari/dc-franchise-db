@@ -65,6 +65,9 @@ let ctxAvoid = () => null;
 // reaches the next episode's alliances and votes. It applies only on the live episode: the one simulateEpisode
 // built (it carries bondChanges; the history rows are fresh copies without it) and the one now playing. A
 // transcript regenerated for an old row (cast-ui.js export) must never move today's bonds.
+// only the people the written scene has in it: a role the entry never speaks or names stays off the stage
+// (the viewer stages scene.who; read 2026-10-10: Will and Sterling stood silent through Ashley and Seraphine)
+const castOnly = (who, w) => (Array.isArray(w?.cast) ? Object.fromEntries(Object.entries(who).filter(([r]) => w.cast.includes(r) || r === 'a' || r === 'b')) : who);
 const liveEp = ep => Array.isArray(ep?.bondChanges) && ep.num === gs.episode;
 function applyStoryFx(ep, list) {
   const live = liveEp(ep);
@@ -1564,7 +1567,7 @@ export function airTdEpisode(ep) {
         }
         return { story: true, kind: pool, storyType: line?.type || 'cut', step: step?.step || 'cut', ...(line ? { storyline: line.id } : { cut: true }), ref: i, type: ev.type,
           players: [...new Set([...Object.values(who).filter(Boolean), ...(ev.players || []), ...watched])],
-          lines, text: lines.map(l => l.text).join(' '), lineId: w.lineId, scene: { kind, who, data, spot: w.spot ? { window: ev.scene?.spot?.window || ev.access?.windowId || null, ...w.spot } : (ev.scene?.spot || null) }, access: ev.access || null,
+          lines, text: lines.map(l => l.text).join(' '), lineId: w.lineId, scene: { kind, who: castOnly(who, w), data, spot: w.spot ? { window: ev.scene?.spot?.window || ev.access?.windowId || null, ...w.spot } : (ev.scene?.spot || null) }, access: ev.access || null,
           alliance: ev.alliance, members: ev.members, advType: ev.advType, badgeText: ev.badgeText || '', badgeClass: ev.badgeClass || '',
           why: whyOf(kind, ending, line ? `${line.type}.${step.step}` : '', who, data, facts), bondDelta: ev.bondDelta || null };
       };
@@ -1655,7 +1658,7 @@ export function airTdEpisode(ep) {
             const who = { a: c, b: d };
             const w = kitCallbackScene(c, d, about, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside' });
             if (!w) continue;
-            kitItem('kit.call', 'callback', [c, d], w, who, `${about}'s running bit, as the camp sees it.`, [[c, d, 0.5]]);
+            kitItem('kit.call', 'callback', [c, d, about], w, { ...who, c: about }, `${about}'s running bit, as the camp sees it.`, [[c, d, 0.5]]);
             break;
           }
         } else {
@@ -1874,6 +1877,14 @@ export function airTdEpisode(ep) {
       // one stretch of the day, not a stack of cut-off scenes (the user: "do we have conversation when
       // people jump in"): scenes that share a person run on from each other at the same spot
       out[phase] = chainScenes(ep, camp, phase, out[phase], () => n++);
+      // nobody stands on stage through a scene that never speaks to them or of them: the viewer stages
+      // scene.who (the user, 2026-10-10: "it's a 4 person scene but no one talking but the 2 girls").
+      // The morning, the challenge's aftermath and the psyche beats cast more people than their lines use.
+      for (const it of out[phase]) {
+        if (!it?.story || !it.scene?.who || !Array.isArray(it.lines) || !it.lines.length) continue;
+        const inIt = n => it.lines.some(l => l.by === n || String(l.text || '').includes(n));
+        it.scene = { ...it.scene, who: Object.fromEntries(Object.entries(it.scene.who).filter(([r, n]) => n && (r === 'a' || inIt(n)))) };
+      }
     }
     story[camp] = out;
   }

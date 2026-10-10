@@ -414,6 +414,10 @@ export default {
     { id: 'ny.dr2', place: 'public', when: { voice: ['schemer', 'calm', 'competitive', 'dry'] }, turns: [
       { by: 'b', say: "Want to sit with me?" },
       { by: 'a', say: "Maybe later." },
+      { by: 'b', say: "That's what you said earlier. And yesterday." },
+      { by: 'a', say: "I've just got a lot going on. It's not about you." },
+      { by: 'b', say: "It kind of feels like it's about me." },
+      { by: 'a', say: "Later. I promise. Okay?" },
       { by: 'b', conf: "Maybe later. That's the third maybe later today." },
       { by: 'a', conf: "{b} is a good friend. {b} is also on the wrong side right now. I need a little distance." },
     ] },

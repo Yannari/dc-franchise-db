@@ -44,6 +44,9 @@ const BOMB_ARROGANT = [
     { by: 'a', say: "I'm just saying, some people here are carrying and some people are being carried." },
     { by: 'b', say: "And which one are you?" },
     { by: 'a', say: "Do you really need me to answer that?" },
+    { by: 'b', say: "Yeah, I kind of do. Because from where I'm standing, you're mostly talking." },
+    { by: 'a', say: "Talking, and winning. Check the scoreboard sometime." },
+    { by: 'b', say: "The scoreboard doesn't vote. People do." },
     { by: 'b', conf: "Everyone heard it. Everyone. And {a} walked off smiling like {a} told a great joke." },
   ] },
   { id: 'dr.ba4', when: { register: 'schemer' }, turns: [
@@ -111,6 +114,9 @@ const BOMB_HOTHEAD = [
     { by: 'a', say: "Everybody here is so fake it makes me want to scream." },
     { by: 'b', say: "You are screaming." },
     { by: 'a', say: "BECAUSE OF HOW FAKE EVERYBODY IS!" },
+    { by: 'b', say: "Okay, okay. Who's fake? Give me names." },
+    { by: 'a', say: "Everybody who smiles at me at breakfast and whispers about me at dinner. You know who you are!" },
+    { by: 'b', say: "I think the whole camp knows who you are now." },
     { by: 'b', conf: "{a} said the quiet part loud. Then louder. Then really loud." },
   ] },
   { id: 'dr.bh7', when: { age: 'teen' }, turns: [
@@ -493,6 +499,9 @@ const DISPUTE_PLAIN = [
     { by: 'a', say: "I don't want to fight about this." },
     { by: 'b', say: "Then just agree with me." },
     { by: 'a', say: "I can't. I think you're wrong." },
+    { by: 'b', say: "Since when do you think I'm wrong about anything?" },
+    { by: 'a', say: "Since now, I guess. I'm sorry. I still think you're wrong." },
+    { by: 'b', say: "Wow. Okay. I didn't know you had that in you." },
     { by: 'a', conf: "Saying no to {b} was the hardest thing I've done all game." },
   ] },
   { id: 'dr.dl6', turns: [
@@ -530,6 +539,9 @@ const CLASH = [
     { by: 'a', say: "I led us to a win last time. I'm leading again." },
     { by: 'b', say: "You led us to one win and three losses." },
     { by: 'a', say: "The win was the important one." },
+    { by: 'b', say: "They're all important. That's how this works." },
+    { by: 'a', say: "Fine. Then you lead, and we'll see how you do." },
+    { by: 'b', say: "Maybe I will. Somebody should try something new." },
     { by: 'b', conf: "{a} remembers every win and none of the losses. Must be nice." },
   ] },
   { id: 'dr.cl5', turns: [
@@ -630,6 +642,9 @@ const INTIMIDATE_PHYSICAL = [
     { by: 'a', say: "You're on my side in the next challenge, right?" },
     { by: 'b', say: "Sure." },
     { by: 'a', say: "Good. I'd hate to have to run you over." },
+    { by: 'b', say: "...That's a joke, right?" },
+    { by: 'a', say: "Mostly. Just stay out of my way, and we'll never have to find out." },
+    { by: 'b', say: "Got it. Noted. Very noted." },
     { by: 'b', conf: "{a} said it with a smile. I'm not smiling." },
   ] },
   { id: 'dr.ip6', turns: [
@@ -807,6 +822,9 @@ const DIG = [
     { by: 'a', say: "Do you want help with that? It's okay if you can't do it on your own." },
     { by: 'b', say: "I've got it." },
     { by: 'a', say: "Of course you do. Of course." },
+    { by: 'b', say: "What's that supposed to mean?" },
+    { by: 'a', say: "Nothing! I was being nice. Can't anybody be nice around here anymore?" },
+    { by: 'b', say: "That wasn't nice. That was you being nice at me." },
     { by: 'b', conf: "It's not what {a} says. It's how {a} says it. Every single time." },
   ] },
   { id: 'dr.dg3', turns: [
@@ -990,7 +1008,7 @@ const TRUCE_PLAIN = [
     { by: 'a', say: "I was wrong. About what I said. I'm sorry." },
     { by: 'b', say: "Okay." },
     { by: 'a', say: "Okay?" },
-    { by: 'b', say: "Okay. Thank you. I mean it." },
+    { by: 'b', say: "Okay. No, really, okay. Thanks for just saying it." },
     { by: 'b', conf: "No excuses. No 'but'. Just sorry. I didn't know {a} could do that." },
   ] },
   { id: 'dr.tp2', turns: [

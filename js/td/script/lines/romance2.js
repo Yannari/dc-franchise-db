@@ -764,6 +764,10 @@ const AFFAIR_EXPOSED = [
     { by: 'a', say: "I couldn't keep it in anymore. You deserve to know." },
     { by: 'b', say: "Know what?" },
     { by: 'a', say: "{c} has been sneaking off at night. Not alone." },
+    { by: 'b', say: "Who with? Tell me who." },
+    { by: 'a', say: "I'm not sure. I only saw them go, and I didn't follow." },
+    { by: 'b', say: "Then why tell me at all?" },
+    { by: 'a', say: "Because if it were me, I'd want somebody to tell me." },
     { by: 'b', conf: "I knew something was off. I didn't want to know what." },
   ] },
   { id: 'r2.ae3', turns: [

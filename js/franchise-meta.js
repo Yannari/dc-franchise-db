@@ -506,8 +506,12 @@ export function lastSeasonOf(name) {
     return p.num === last.seasonNum && p.format === last.format;
   })?.[1];
   const where = !last.format || last.format === DEFAULT_FORMAT ? `Season ${last.seasonNum}` : `${SHOWS[last.format]?.name || 'Season'} ${last.seasonNum}`;
+  // a season they WON, any of them, latest first: a champion is a champion even after a 19th since
+  // (the user, 2026-10-10: 'she was 19th last time but also won her first season')
+  const won = [...hist].reverse().find(h => h.rec?.winner);
+  const wonWhere = won ? (!won.format || won.format === DEFAULT_FORMAT ? `Season ${won.seasonNum}` : `${SHOWS[won.format]?.name || 'Season'} ${won.seasonNum}`) : null;
   return { where, format: last.format, num: last.seasonNum, seasons: hist.length, rec: last.rec,
-    total: Object.keys(season?.players || {}).length || null, name: last.seasonName || null };
+    total: Object.keys(season?.players || {}).length || null, name: last.seasonName || null, wonWhere };
 }
 
 function _resumeLines(name, history) {

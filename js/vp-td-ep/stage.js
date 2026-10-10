@@ -14,11 +14,25 @@
 //                or tally, title cards, and the Intel drawer (what the camp cannot see).
 import { TD_MARKS } from './marks.js';
 import { plateKey } from './steps.js';
-import { playerAvatarUrl } from '../players.js';
+import { playerAvatarUrl, baseAvatarSlug } from '../players.js';
+import { portraitOptions } from '../avatar-registry.js';
+import { players } from '../core.js';
 
 export const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const SETS = 'assets/sets/td';
-export const avatar = (n, host) => (host && /^chris/i.test(n) ? 'assets/avatars/chris-mclean.png' : playerAvatarUrl(n));
+// a player cast as Returning wears their returnee portrait in the viewer, where they have one for this show
+// (the user, 2026-10-10: 'the viewer doesn't use returnee icons when returnee is checked'); everyone else,
+// and a returnee with no such portrait, keeps their own selection
+const returneeArt = n => {
+  const p = (players || []).find(x => x && x.name === n);
+  if (!p?.isReturnee) return null;
+  try {
+    const base = baseAvatarSlug(p);
+    const o = portraitOptions(base, 'total-drama').find(x => x.file === `${base}-returnee.png` && !x.missing);
+    return o?.url || null;
+  } catch { return null; }
+};
+export const avatar = (n, host) => (host && /^chris/i.test(n) ? 'assets/avatars/chris-mclean.png' : returneeArt(n) || playerAvatarUrl(n));
 
 // ── the ledger: what is true at step N, folded from the steps ───────────
 export function ledgerAt(screen, idx) {

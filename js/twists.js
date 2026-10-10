@@ -568,6 +568,17 @@ export function generateDockArrivals(ep) {
   }
 
   const ordered = [first, ...middle, last].filter(Boolean);
+  // ...in the order the viewer plays them (vp-td-ep/arrival.js): a team per helicopter at the carnival, and
+  // on the island the returning players in their own helicopter after the new ones. The scenes below are
+  // written against who is already on the dock, so the order has to be settled first (the user, 2026-10-10:
+  // contestant 1 greeted Jake, a returnee who had not arrived yet).
+  {
+    const _venue = seasonConfig.setting || 'hosted-camp';
+    const _teamOf = n => (gs.tribes || []).find(t => (t.members || []).includes(n))?.name || '';
+    const _idx = new Map(ordered.map((p, i) => [p, i]));
+    if (_venue === 'carnival') ordered.sort((x, y) => _teamOf(x.name).localeCompare(_teamOf(y.name)) || _idx.get(x) - _idx.get(y));
+    else if (_venue === 'survival-island') ordered.sort((x, y) => (x.isReturnee ? 1 : 0) - (y.isReturnee ? 1 : 0) || _idx.get(x) - _idx.get(y));
+  }
 
   // ── Step 4: Generate dialogue for each arrival ──
   const arrivals = [];

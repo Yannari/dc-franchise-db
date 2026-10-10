@@ -275,8 +275,8 @@ export default {
       { by: 'b', conf: "{a} is so nice. That's the scary part. You can see exactly how {a} won." },
     ] }),
     P({ id: 'nrt.a2', when: { voice: ['proud', 'competitive', 'loud', 'bossy', 'blunt'] }, turns: [
-      { by: 'b', say: "So you're the one who won last time." },
-      { by: 'a', say: "I'm the one who won last time." },
+      { by: 'b', say: "So you're the one who won it before." },
+      { by: 'a', say: "I'm the one who won it." },
       { by: 'b', say: "Any advice?" },
       { by: 'a', say: "Don't sit next to me at the end." },
       { by: 'b', say: "That's not advice, that's a threat." },
@@ -389,7 +389,7 @@ export default {
       { by: 'b', say: "Sure." },
       { by: 'a', say: "We have to get rid of {target}. Not later. As soon as we lose." },
       { by: 'b', say: "{target} has barely done anything yet." },
-      { by: 'a', say: "{target} won the whole thing last time. {target} doesn't need to do anything yet, that's the point." },
+      { by: 'a', say: "{target} has already won this whole thing once. {target} doesn't need to do anything yet, that's the point." },
       { by: 'b', say: "People are going to say we're scared of {target}." },
       { by: 'a', say: "We are scared of {target}. That's not an insult, that's just good sense." },
       { by: 'b', say: "...Fine. If we lose, it's {target}." },
@@ -439,10 +439,10 @@ export default {
     ] }),
     P({ id: 'nrt.p2', when: { moment: 'votes', past: 'won' }, turns: [
       { by: 'a', conf: "My name came up last night. Of course it did, I'm the one who already won." },
-      { by: 'a', conf: "Last time nobody saw me coming. This time everybody saw me walk in. I have to win a completely different way." },
+      { by: 'a', conf: "When I won, nobody saw me coming. This time everybody saw me walk in. I have to win a completely different way." },
     ] }),
     P({ id: 'nrt.p3', when: { moment: 'bottom', past: 'won' }, turns: [
-      { by: 'a', conf: "I'm on the bottom, and it's because I won last time. Nobody's even pretending it's about anything else." },
+      { by: 'a', conf: "I'm on the bottom, and it's because I've won this before. Nobody's even pretending it's about anything else." },
       { by: 'a', conf: "Fine. I won one way. I can win from the bottom too." },
     ] }),
     P({ id: 'nrt.p4', when: { moment: 'quiet', past: 'final' }, turns: [
@@ -485,8 +485,8 @@ export default {
       { by: 'a', say: "That's the most polite threat I've ever heard." },
     ] }),
     P({ id: 'nrt.q2', when: { past: 'won' }, turns: [
-      { by: 'h', say: "{a}, last time you were sitting here you were on your way to winning the whole thing. How does this vote feel?" },
-      { by: 'a', say: "Different. Last time nobody was looking at me. Now everybody is." },
+      { by: 'h', say: "{a}, you've won this game before. How does this vote feel?" },
+      { by: 'a', say: "Different. When I won, nobody was looking at me. Now everybody is." },
       { by: 'h', say: "And you're okay with that?" },
       { by: 'a', say: "I have to be. It comes with the title." },
     ] }),
@@ -583,7 +583,7 @@ export default {
     ] }),
     P({ id: 'nrt.e2', when: { past: 'won', voice: ['anxious', 'warm', 'emotional', 'quiet', 'earnest'] }, turns: [
       { by: 'h', say: "So how does it feel, coming back as the champion?" },
-      { by: 'a', say: "Terrifying, honestly. Last time nobody expected anything from me." },
+      { by: 'a', say: "Terrifying, honestly. When I won, nobody expected anything from me." },
       { by: 'h', say: "And this time?" },
       { by: 'a', say: "This time everybody here expects me to win, and everybody here wants me to lose." },
       { by: 'a', conf: "Winning {lastSeason} changed my life. Coming back might be the stupidest thing I've ever done, and I couldn't say no." },
@@ -622,7 +622,7 @@ export default {
   // ── the host brings a returnee back on (td/story/arrival.js: in place of the first-timer's 'arrive.host') ──
   'arrive.hostback.any': [
     P({ id: 'nrt.h1', when: { past: 'won' }, turns: [{ by: 'h', say: "And here comes the winner of {lastSeason}! {a}, everybody! Try to act surprised when {a} wins again." }] }),
-    P({ id: 'nrt.h2', when: { past: 'won' }, turns: [{ by: 'h', say: "The last time {a} was on this show, {a} walked away with the money. Let's see if anybody remembers how to beat {a.obj}." }] }),
+    P({ id: 'nrt.h2', when: { past: 'won' }, turns: [{ by: 'h', say: "{a} has walked away from this show with the money before. Let's see if anybody remembers how to beat {a.obj}." }] }),
     P({ id: 'nrt.h3', when: { past: 'final' }, turns: [{ by: 'h', say: "Here's {a}, who finished {lastPlace} on {lastSeason} and has been very normal about it ever since. Very normal." }] }),
     P({ id: 'nrt.h4', when: { past: 'final' }, turns: [{ by: 'h', say: "{a} is back! One vote from winning last time. I'm sure that doesn't keep {a} up at night." }] }),
     P({ id: 'nrt.h5', when: { past: 'early' }, turns: [{ by: 'h', say: "Remember {a}? No? That's fair, {a} was gone {lastPlace} on {lastSeason}. Second chances, people!" }] }),

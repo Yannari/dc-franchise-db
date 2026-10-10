@@ -28,7 +28,9 @@ export function pastOf(name) {
   const r = last?.rec;
   if (!r || !(r.placement > 0)) return null;
   const total = last.total || r.placement;
-  const kind = r.winner ? 'won'
+  // a past champion is introduced as one, whatever happened since: {lastSeason} is then the season they won
+  const champ = !r.winner && !!last.wonWhere;
+  const kind = r.winner || champ ? 'won'
     : r.finalist ? 'final'
       : r.placement > total - 3 ? 'early'
         : r.blindsided ? 'blindsided'
@@ -36,7 +38,7 @@ export function pastOf(name) {
   const by = (r.blindsidedBy || [])[0] || (r.betrayedBy || [])[0] || null;
   const sh = (r.showmances || [])[0] || null;
   return {
-    where: last.where, place: r.placement, placeWord: ORD(r.placement), total, seasons: last.seasons,
+    where: champ ? last.wonWhere : last.where, place: r.placement, champ, placeWord: ORD(r.placement), total, seasons: last.seasons,
     kind, by, partner: sh?.partner || null, partnerEnded: sh?.ended || null, wins: r.chalWins || 0,
   };
 }

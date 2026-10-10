@@ -752,7 +752,13 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const cover = alt || (rival?.target && rival.target !== a ? rival.target : null) || outside.find(x => x !== a) || null;
   const data = { target: boot, votes: numberWord(voters.length), ...(relCase === 'isolate' ? { keep: rel.partner } : {}), ...(relCase === 'pledge' ? { protects: rel.protects } : {}), ...(shaky ? { shaky } : {}), ...(cover ? { cover } : {}), them: numberWord(them || 1), ...(mark ? { mark } : {}), ...(pair ? { partner: pair } : {}),
     ...(theirs ? { theirs } : {}), ...(alt ? { alt } : {}), ...(rest.length ? { others: list(rest) } : {}), ...(rival?.target ? { other: rival.target } : {}) };
-  const facts = { ...baseFacts, shaky: !!shaky, cover: !!cover, close: !!b && getBond(a, b) >= 4, others: !!rest.length, other: !!rival?.target, markMe: mark === a, markB: !!mark && mark === b, otherMe: rival?.target === a, otherB: !!b && rival?.target === b, cast: shape };
+  // the glue (the user's Disventure Camp read: "Aiden connects Gabby and Tom to Lake and Rosa. Cut him out, and
+  // that group is toast"): the target is close to two people here who aren't close to each other
+  const gluePair = (() => { const f = tribal.filter(x => x !== boot && !inScene.has(x) && getBond(boot, x) >= 3);
+    for (let i = 0; i < f.length; i++) for (let j = i + 1; j < f.length; j++) if (getBond(f[i], f[j]) < 1) return [f[i], f[j]];
+    return null; })();
+  if (gluePair) { data.glueA = gluePair[0]; data.glueB = gluePair[1]; }
+  const facts = { ...baseFacts, count, glue: !!gluePair, shaky: !!shaky, cover: !!cover, close: !!b && getBond(a, b) >= 4, others: !!rest.length, other: !!rival?.target, markMe: mark === a, markB: !!mark && mark === b, otherMe: rival?.target === a, otherB: !!b && rival?.target === b, cast: shape };
   // what this camp's day has already shown (arcBeats, t.em): the plan can call back to it
   const em = t.em || { spark: null, warned: [] };
   const sparkSeen = !!em.spark && em.spark.by === a && em.spark.of === boot;

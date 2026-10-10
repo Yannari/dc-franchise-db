@@ -490,6 +490,26 @@ export function hasFranchiseHistory(name) {
   return !!name && _historyFor(name).length > 0;
 }
 
+// WHAT HAPPENED TO THEM LAST TIME: the latest recorded season they played, never the one being
+// played now (a replayed season is already in the ledger). { where, format, num, rec, total } or
+// null. `total` is how many played that season, so a placement can be read as early or late.
+// Read by the Total Drama story layer (js/td/past.js), which writes a returnee's lines from it.
+export function lastSeasonOf(name) {
+  if (!name) return null;
+  const nowFmt = seasonFormat(seasonConfig);
+  const nowNum = Number(gs?.seasonNumber || seasonConfig?.seasonNumber) || null;
+  const hist = _historyFor(name).filter(h => !(h.format === nowFmt && h.seasonNum === nowNum));
+  const last = hist[hist.length - 1];
+  if (!last) return null;
+  const season = Object.entries(activeSeasons()).find(([k, s]) => {
+    const p = seasonKeyParts(k, s);
+    return p.num === last.seasonNum && p.format === last.format;
+  })?.[1];
+  const where = !last.format || last.format === DEFAULT_FORMAT ? `Season ${last.seasonNum}` : `${SHOWS[last.format]?.name || 'Season'} ${last.seasonNum}`;
+  return { where, format: last.format, num: last.seasonNum, seasons: hist.length, rec: last.rec,
+    total: Object.keys(season?.players || {}).length || null, name: last.seasonName || null };
+}
+
 function _resumeLines(name, history) {
   // One line PER SEASON — the season's headline result with notable feats
   // folded in — so a multi-season vet's card references a little of every

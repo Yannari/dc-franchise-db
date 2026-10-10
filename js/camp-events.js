@@ -18,6 +18,7 @@ import { recordIntimidation, recordProtection, recordBetrayal } from './relation
 import { attachCampAccessToEvents, buildCampAccessSchedule, findConversationAccess, ACCESS_PROFILES, campIsShared } from './camp-access.js';
 import { stableRng } from './script/rng.js';
 import { makeScene, spotOf, spotFromAccess } from './td/script/scene.js';
+import { pastOf, pastData } from './td/past.js';
 import { scriptEvent, scriptEventParts, withSceneCtx, ambientCtx, transcript, writeScene } from './td/script/write.js';
 
 // Where two people talk, in the phase the camp generator is writing (its callers set it).
@@ -3070,20 +3071,45 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
     // premiere episodes. 100% weight at ep 1 tapering ~8%/episode to a 30%
     // floor, so only the juiciest leftover history surfaces late-game.
     const _metaDecay = Math.max(0.3, 1 - (gs.episode || 0) * 0.08);
+    // Each moment plays as a scene (td/story/lines/n-returnee.js, long.ret.<kind>.<ending>),
+    // written from what really happened last time (td/past.js): who blindsided whom, where they placed.
+    // The narration sentence is still drawn (the season's draws stay where they were); the scene is what
+    // airs. A scene with no lines keeps the sentence. (The user, 2026-10-09: "we don't have returnee
+    // dialogue, only first timer".)
+    const _retScene = (evt, kind, who, ending, extra = {}) => {
+      if (!Object.values(who).every(Boolean)) return evt;
+      // the scene is described, not scripted: the story director writes it (there is no quick-cut pool), and
+      // the sentence above is what airs if no scene fits
+      evt.storyOnly = true;
+      evt.scene = makeScene(kind, who, { ending, ...pastData(who.a), ...(who.b ? pastData(who.b, 'B') : {}), ...extra }, [], _spotNow(who.a, who.b || null));
+      return evt;
+    };
     const _pairs = (_fm.seededPairs || []).filter(sp =>
       // Skip betrayer-side duplicate of a betrayal pair (wronged === false) so one betrayal fires one event.
       sp.wronged !== false &&
       group.includes(sp.a) && group.includes(sp.b) &&
       !gs._metaCalloutsFired[sp.a + '||' + sp.b + '::' + sp.kind]);
+    // One history moment per pair, the strongest: a betrayal or blindside over a couple, a couple over a
+    // rivalry, a rivalry over an alliance (read: Oliver apologised to Bowie for the blindside, then in the
+    // next scene they had 'fought the whole way through'; Connor and Natasha, a couple, got the 'we're
+    // friends' reunion). When one fires, the pair's other kinds are spent with it.
+    const _RANK = { betrayal: 0, blindside: 0, 'showmance-intact': 1, 'showmance-broken': 1, rivals: 2, allies: 3 };
+    _pairs.sort((x, y) => (_RANK[x.kind] ?? 4) - (_RANK[y.kind] ?? 4));
+    const _pk = sp => [sp.a, sp.b].sort().join('||');
+    const _spent = new Set(Object.keys(gs._metaCalloutsFired).filter(k => k.startsWith('pair::')).map(k => k.slice(6)));
     for (const sp of _pairs) {
-      if (Math.random() > 0.25 * _metaDecay) continue; // early-season wave, rare late
+      if (_spent.has(_pk(sp))) continue;
+      // two people with a real past sharing a camp have it out early: most of them in the first episodes
+      // (a pair whose strongest moment doesn't come up today has none today: its weaker kinds wait too)
+      if (Math.random() > 0.6 * _metaDecay) { _spent.add(_pk(sp)); continue; } // early-season wave, rare late
       gs._metaCalloutsFired[sp.a + '||' + sp.b + '::' + sp.kind] = true;
+      gs._metaCalloutsFired['pair::' + _pk(sp)] = true; _spent.add(_pk(sp));
       const A = sp.a, B = sp.b, pa = pronouns(A);
       if (sp.kind === 'betrayal' || sp.kind === 'blindside') {
         addBond(A, B, -0.5);
         if (!gs.popularity) gs.popularity = {};
         gs.popularity[A] = (gs.popularity[A] || 0) + 0.5; // sympathy for the wronged
-        events.push({ type: 'metaGrudge', players: [A, B],
+        events.push(_retScene({ type: 'metaGrudge', players: [A, B],
           text: _rp([
             `${A} finally says it to ${B}'s face: "${sp.reason}. I haven't forgotten." The whole camp goes quiet.`,
             `${A} and ${B} circle each other all morning. ${sp.reason} — some wounds don't close between seasons.`,
@@ -3091,10 +3117,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
             `Old business surfaces at the fire: ${sp.reason}. ${A} wants an apology. ${B} offers strategy instead. It goes badly.`
           ]),
           consequences: `Bond ${A}↔${B} −0.5. ${A} gains sympathy.`,
-          badgeText: 'OLD WOUNDS', badgeClass: 'red' });
+          badgeText: 'OLD WOUNDS', badgeClass: 'red' }, 'ret.grudge', { a: A, b: B }, sp.kind));
       } else if (sp.kind === 'allies' || sp.kind === 'showmance-intact') {
         addBond(A, B, +0.5);
-        events.push({ type: 'metaReunion', players: [A, B],
+        events.push(_retScene({ type: 'metaReunion', players: [A, B],
           text: _rp([
             `${A} and ${B} fall back into their old rhythm within minutes. ${sp.reason} — and everyone else at camp notices the shorthand.`,
             `No pitch needed: ${A} and ${B} shared a foxhole once. ${sp.reason}. The trust is already built.`,
@@ -3102,10 +3128,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
             `Veterans move different: ${A} and ${B} debrief by the water like no time passed at all. ${sp.reason}.`
           ]),
           consequences: `Bond ${A}↔${B} +0.5. Their closeness is public knowledge.`,
-          badgeText: 'REUNION', badgeClass: 'gold' });
+          badgeText: 'REUNION', badgeClass: 'gold' }, 'ret.reunion', { a: A, b: B }, sp.kind === 'allies' ? 'allies' : 'couple'));
       } else { // rivals, showmance-broken
         addBond(A, B, -0.3);
-        events.push({ type: 'metaAwkward', players: [A, B],
+        events.push(_retScene({ type: 'metaAwkward', players: [A, B],
           text: _rp([
             `${A} and ${B} get assigned the same chore and say maybe nine words total. ${sp.reason} — the tension is its own third player.`,
             `Everyone can feel it: ${A} and ${B} have history. ${sp.reason}. Nobody asks. Everybody watches.`,
@@ -3113,28 +3139,35 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
             `A too-long silence when ${A} and ${B} end up alone at the fire. ${sp.reason}. Some things don't need a confessional.`
           ]),
           consequences: `Bond ${A}↔${B} −0.3. Camp reads the tension.`,
-          badgeText: 'HISTORY', badgeClass: 'red' });
+          badgeText: 'HISTORY', badgeClass: 'red' }, 'ret.awkward', { a: A, b: B }, sp.kind === 'rivals' ? 'rivals' : 'exes'));
       }
     }
 
     // ── Real-returnee moments beyond shared-past pairs ──
     const _epNext = (gs.episode || 0) + 1;
 
-    // (a) Someone names a decorated vet as THE threat — real targeting heat.
+    // (a) Someone names a decorated vet as THE threat — real targeting heat. One a camp a day (read:
+    // Autumnatic naming Mike, then Rodney, to Ivy in back-to-back scenes).
+    let _threatToday = false;
     for (const T of group) {
+      if (_threatToday) break;
       const _prof = _fm.profiles?.[T];
       if (!_prof || _prof.repScore < 0.5) continue;
       const _tKey = 'threatcall::' + T;
       if (gs._metaCalloutsFired[_tKey] || Math.random() > 0.2 * _metaDecay) continue;
-      const O = group.filter(n => n !== T && (_fm.profiles?.[n]?.repScore || 0) < 0.5)
+      const O = group.filter(n => n !== T && (_fm.profiles?.[n]?.repScore || 0) < 0.5 && !players.find(p => p.name === n)?.isReturnee)
         .sort((x, y) => (pStats(y).strategic + pStats(y).intuition) - (pStats(x).strategic + pStats(x).intuition))[0];
       if (!O) continue;
-      gs._metaCalloutsFired[_tKey] = true;
+      gs._metaCalloutsFired[_tKey] = true; _threatToday = true;
       if (!gs._metaThreatHeat) gs._metaThreatHeat = {};
       gs._metaThreatHeat[T] = { amount: 0.8 + _prof.repScore, expiresEp: _epNext + 2 };
       addBond(O, T, -0.3);
       const _headline = _prof.resume?.[0] || 'that résumé';
-      events.push({ type: 'metaThreatCall', players: [O, T],
+      // told to somebody new who isn't close to T (read: Chris warning Connor's old ally Minnie about Connor)
+      const _isR = n => !!players.find(p => p.name === n)?.isReturnee;
+      const _L = group.filter(n => n !== O && n !== T).sort((x, y) => (_isR(x) - _isR(y)) || (getBond(x, T) >= 2) - (getBond(y, T) >= 2) || getBond(O, y) - getBond(O, x) || x.localeCompare(y))[0];
+      const _tk = pastOf(T)?.kind;
+      events.push(_retScene({ type: 'metaThreatCall', players: [O, T],
         text: _rp([
           `${O} says the quiet part at the fire: "${_headline}. Why are we all pretending ${T} isn't the biggest threat here?" Heads nod slowly.`,
           `${O} pulls two people aside and holds up fingers, counting: "${_headline}. You don't carry that record by accident." ${T}'s name is officially in the air.`,
@@ -3142,14 +3175,16 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           `${O} watches ${T} work the camp and mutters, "${_headline} — and we're just letting it happen again." A few people start watching too.`
         ]),
         consequences: `${T} takes threat heat for 2 episodes. Bond ${O}↔${T} −0.3.`,
-        badgeText: 'THREAT NAMED', badgeClass: 'red' });
+        badgeText: 'THREAT NAMED', badgeClass: 'red' }, 'ret.threat', { a: O, b: _L }, _tk === 'won' ? 'won' : _tk === 'final' ? 'final' : 'other', { target: T, ...pastData(T, 'T') }));
     }
 
     // (b) Distrust of a known betrayer by someone with no personal history — the tapes are enough.
     for (const T of group) {
       const _prof = _fm.profiles?.[T];
       if (!_prof || _prof.knownSchemer < 0.4) continue;
-      const _cands = group.filter(n => n !== T && !(_fm.seededPairs || []).some(sp =>
+      // somebody new: a returnee from the same season didn't watch the tapes, they were in them (read: Cameron
+      // telling Minnie Skurr 'I watched your last season', both of them on it)
+      const _cands = group.filter(n => n !== T && !players.find(p => p.name === n)?.isReturnee && !(_fm.seededPairs || []).some(sp =>
         (sp.a === n && sp.b === T) || (sp.a === T && sp.b === n)));
       const A = _cands.sort((x, y) => (pStats(y).intuition + pStats(y).mental) - (pStats(x).intuition + pStats(x).mental))[0];
       if (!A) continue;
@@ -3157,7 +3192,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       if (gs._metaCalloutsFired[_dKey] || Math.random() > 0.18 * _metaDecay) continue;
       gs._metaCalloutsFired[_dKey] = true;
       addBond(A, T, -0.5);
-      events.push({ type: 'metaDistrust', players: [A, T],
+      events.push(_retScene({ type: 'metaDistrust', players: [A, T],
         text: _rp([
           `${T} extends a hand and a deal. ${A} smiles, agrees to nothing, and later tells the fire: "I've seen ${T}'s seasons. I know how this movie ends."`,
           `${A} keeps every conversation with ${T} short and public. Nothing personal — just an unreliable history and a good memory.`,
@@ -3165,7 +3200,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           `${T} offers ${A} the same warmth that worked on past casts. ${A} clocks it instantly — different season, same script — and quietly steps back.`
         ]),
         consequences: `Bond ${A}↔${T} −0.5. ${A} won't be recruited easily.`,
-        badgeText: 'RECEIPTS', badgeClass: 'red' });
+        badgeText: 'RECEIPTS', badgeClass: 'red' }, 'ret.distrust', { a: A, b: T }, 'any'));
     }
 
     // (c) Old flames — rekindle attempt through the REAL romance pipeline
@@ -3182,7 +3217,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const _sparked = (typeof window !== 'undefined' && typeof window._challengeRomanceSpark === 'function')
         ? window._challengeRomanceSpark(sp.a, sp.b, null, null, null) : false;
       if (_sparked) {
-        events.push({ type: 'metaRekindle', players: [sp.a, sp.b],
+        events.push(_retScene({ type: 'metaRekindle', players: [sp.a, sp.b],
           text: _rp([
             `${sp.a} and ${sp.b} end up on water duty together. Ten quiet minutes, one old joke, and suddenly last season doesn't feel so far away.`,
             `Everyone remembers ${sp.a} and ${sp.b} from before. Judging by the way they're orbiting each other at the fire, so do they.`,
@@ -3190,7 +3225,69 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
             `Old flames don't need kindling: ${sp.a} saves ${sp.b} the good spot in the shelter without being asked. Neither of them comments. Everyone else does.`
           ]),
           consequences: `A romantic spark rekindles between ${sp.a} and ${sp.b} (romance pipeline).`,
-          badgeText: 'OLD FLAME', badgeClass: 'gold' });
+          badgeText: 'OLD FLAME', badgeClass: 'gold' }, 'ret.rekindle', { a: sp.a, b: sp.b }, 'any'));
+      }
+    }
+
+    // (d) A newcomer asks a returnee what happened last time. Once a returnee, in the first episodes:
+    // they talk (a bond), and the newcomer now knows how that season went.
+    const _past = n => pastOf(n);
+    const _rets = group.filter(n => _past(n));
+    const _news = group.filter(n => !players.find(p => p.name === n)?.isReturnee);
+    const _loud = n => pStats(n).social + pStats(n).boldness;
+    for (const R of _rets) {
+      const _aKey = 'asked::' + R;
+      if (gs._metaCalloutsFired[_aKey] || (gs.episode || 0) > 3) continue;
+      if (Math.random() > 0.55 * _metaDecay) continue;
+      const N = _news.filter(n => !gs._metaCalloutsFired['asker::' + n]).sort((x, y) => _loud(y) - _loud(x) || x.localeCompare(y))[0];
+      if (!N) continue;
+      gs._metaCalloutsFired[_aKey] = true; gs._metaCalloutsFired['asker::' + N] = true;
+      addBond(N, R, 0.4);
+      events.push(_retScene({ type: 'metaAsked', players: [R, N], text: N + ' asks ' + R + ' what happened last time.',
+        consequences: 'Bond ' + N + '↔' + R + ' +0.4. ' + N + ' knows how ' + R + "'s last season went.", badgeText: 'LAST SEASON', badgeClass: 'gold' },
+        'ret.asked', { a: R, b: N }, _past(R).kind));
+    }
+
+    // (e) Two returnees with no bad blood see the newcomers outnumber them, and agree to look out for
+    // each other: the old guard.
+    if (_rets.length === 2 && _news.length > _rets.length && !gs.isMerged) {
+      const BAD = ['betrayal', 'blindside', 'rivals', 'showmance-broken'];
+      const _pairsR = [];
+      for (let i = 0; i < _rets.length; i++) for (let j = i + 1; j < _rets.length; j++) {
+        const x = _rets[i], y = _rets[j];
+        const sps = (_fm.seededPairs || []).filter(sp => (sp.a === x && sp.b === y) || (sp.a === y && sp.b === x));
+        if (sps.some(sp => BAD.includes(sp.kind)) || getBond(x, y) < 0) continue;
+        _pairsR.push([x, y, sps.some(sp => sp.kind === 'allies') ? 'allies' : 'none']);
+      }
+      _pairsR.sort((p, q) => getBond(q[0], q[1]) - getBond(p[0], p[1]) || p[0].localeCompare(q[0]));
+      const P = _pairsR.find(([x, y]) => !gs._metaCalloutsFired['bloc::' + [x, y].sort().join('|')]);
+      if (P && Math.random() < 0.4 * _metaDecay) {
+        const [x, y, how] = P;
+        gs._metaCalloutsFired['bloc::' + [x, y].sort().join('|')] = true;
+        addBond(x, y, 0.6);
+        events.push(_retScene({ type: 'metaVetBloc', players: [x, y], text: x + ' and ' + y + ', the only ones here who have done this before, agree to look out for each other.',
+          consequences: 'Bond ' + x + '↔' + y + ' +0.6.', badgeText: 'OLD GUARD', badgeClass: 'gold' }, 'ret.bloc', { a: x, b: y }, how));
+      }
+    }
+
+    // (f) Two newcomers agree the returnees can't be allowed to settle in: real heat on the one they name.
+    if (_rets.length && _news.length >= 2) {
+      const _sharp = n => pStats(n).strategic + pStats(n).intuition;
+      const [N1, N2] = [..._news].sort((x, y) => _sharp(y) - _sharp(x) || x.localeCompare(y));
+      const _rank = n => (_fm.profiles?.[n]?.repScore || 0) + (['won', 'final'].includes(_past(n)?.kind) ? 1 : 0);
+      const T = [..._rets].sort((x, y) => _rank(y) - _rank(x) || x.localeCompare(y))[0];
+      const _vKey = 'vettarget::' + T;
+      const _vEp = 'vettargetEp::' + (gs.episode || 0) + '::' + [N1, N2].sort().join('|');
+      if (!gs._metaCalloutsFired[_vKey] && !gs._metaCalloutsFired[_vEp] && Math.random() < 0.35 * _metaDecay) {
+        gs._metaCalloutsFired[_vEp] = true;
+        gs._metaCalloutsFired[_vKey] = true;
+        addBond(N1, N2, 0.4);
+        if (!gs._metaThreatHeat) gs._metaThreatHeat = {};
+        if (!gs._metaThreatHeat[T] || gs._metaThreatHeat[T].amount < 0.6) gs._metaThreatHeat[T] = { amount: 0.6, expiresEp: _epNext + 1 };
+        events.push(_retScene({ type: 'metaVetTarget', players: [N1, N2, T], text: N1 + ' and ' + N2 + ' agree that ' + T + " has played this game before, and that's the problem.",
+          consequences: T + ' takes threat heat for an episode. Bond ' + N1 + '↔' + N2 + ' +0.4.', badgeText: 'TARGET: RETURNEE', badgeClass: 'red' },
+          'ret.target', { a: N1, b: N2 }, ['won', 'final'].includes(_past(T)?.kind) ? _past(T).kind : _rets.length >= 2 ? 'many' : 'one',
+          { target: T, ...pastData(T, 'T') }));
       }
     }
   }

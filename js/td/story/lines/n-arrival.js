@@ -351,7 +351,7 @@ const POOLS = {
   // ── a returnee comes back ──
   'arrive.back.any': [
     { id: 'np.ba1', turns: [
-      { by: 'h', say: "Look who's back! {a}, how does it feel?" },
+      { by: 'h', say: "So, how does it feel to be back?" },
       { by: 'a', say: "Weird, but good weird, because I swore I'd never do this again." },
       { by: 'h', say: "They all say that." },
       { by: 'a', conf: "Last time I learned how this place works. This time I'm going to use it." },
@@ -368,20 +368,20 @@ const POOLS = {
       { by: 'h', say: "And yet, here you are." },
       { by: 'a', conf: "Last time they didn't see me coming. This time they will. That just means I have to be better." },
     ] },
-    { id: 'np.ba4', when: { arch: ['hero', 'loyal-soldier', 'underdog', 'social-butterfly'] }, turns: [
+    { id: 'np.ba4', when: { past: ['final', 'early', 'blindsided', 'mid', 'none'], arch: ['hero', 'loyal-soldier', 'underdog', 'social-butterfly'] }, turns: [
       { by: 'a', say: "Hey, everybody! I'm back!" },
       { by: 'h', say: "And the fans love {a}. Don't they?" },
       { by: 'a', say: "I hope so. I've got unfinished business." },
       { by: 'a', conf: "Last time I trusted the wrong people, and I'm still going to trust people, just better ones this time." },
     ] },
-    { id: 'np.ba5', when: { arch: ['hothead', 'challenge-beast', 'chaos-agent'] }, turns: [
+    { id: 'np.ba5', when: { past: ['early', 'none'], arch: ['hothead', 'challenge-beast', 'chaos-agent'] }, turns: [
       { by: 'a', say: "I'm back, and I'm not going home early this time." },
       { by: 'h', say: "Lot of confidence for someone who went home early last time." },
       { by: 'a', say: "Exactly. That's why." },
       { by: 'a', conf: "I've had a long time to think about how I went out. I'm not doing that again." },
     ] },
     { id: 'np.ba6', when: { arch: ['floater', 'goat', 'wildcard', 'perceptive-player', 'showmancer'] }, turns: [
-      { by: 'h', say: "{a}! Nobody expected you back." },
+      { by: 'h', say: "Nobody expected you back, you know." },
       { by: 'a', say: "Including me." },
       { by: 'h', say: "So why come back?" },
       { by: 'a', say: "Because last time nobody saw me coming. I want to find out if that works twice." },
@@ -398,7 +398,7 @@ const POOLS = {
       { by: 'a', say: "Ready to do it better." },
       { by: 'a', conf: "The new players don't know me, but the old ones do, and they're my real problem." },
     ] },
-    { id: 'np.ba9', when: { voice: ['warm', 'anxious', 'emotional', 'earnest'] }, turns: [
+    { id: 'np.ba9', when: { past: ['final', 'early', 'blindsided', 'mid', 'none'], voice: ['warm', 'anxious', 'emotional', 'earnest'] }, turns: [
       { by: 'a', say: "Oh wow, I'm shaking, is that normal?" },
       { by: 'h', say: "For you? Yes." },
       { by: 'a', say: "I can't believe they asked me back." },
@@ -551,7 +551,7 @@ const POOLS = {
 
   // ── a first-timer meets a returnee ──
   'arrive.meet.fan-of-them': [
-    { id: 'np.fa1', turns: [
+    { id: 'np.fa1', when: { pastB: ['final', 'early', 'blindsided', 'mid', 'none'] }, turns: [
       { by: 'a', say: "Wait, you're {b}! You were on the show before!" },
       { by: 'b', say: "Hi. Yes." },
       { by: 'a', say: "I watched every episode. You were so good!" },

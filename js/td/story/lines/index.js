@@ -79,9 +79,10 @@ import nFinds from './n-finds.js';
 import nSolo2 from './n-solo2.js';
 import nChm3 from './n-chm3.js';
 import nAlliance4 from './n-alliance4.js';
+import nReturnee from './n-returnee.js';
 import VOICES from './voices/index.js';
 
-const FILES = [firstday, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival, nGroup3, nGroup4, nGroup5, nArrival2, nTwist, nTribal2, nTwist2, nVote4, nVote5, nRoom, nAuction, nExile, nFeast, nPlan, nPlan2, nFirstImp, nAucFloor, nFirstImp2, nPublic, nTqa, nAdvPlay, nTqa2, nArc, nVp2, nVt2, nTqa3, nMorning3, nVp3, nVt3, nPsy, nRun, nThr, nPrev, nLong2, nLong3, nChm, nBlame, nRecall, nChm2, nReveal, nBooth2, nCrash, nExit2, nThr2, nLong4, nCover, nRel, nVp4, nLong5, nLong6, nTeach, nHandoff, nFinal, nDeep, nNote, nFinds, nSolo2, nChm3, nAlliance4];
+const FILES = [firstday, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival, nGroup3, nGroup4, nGroup5, nArrival2, nTwist, nTribal2, nTwist2, nVote4, nVote5, nRoom, nAuction, nExile, nFeast, nPlan, nPlan2, nFirstImp, nAucFloor, nFirstImp2, nPublic, nTqa, nAdvPlay, nTqa2, nArc, nVp2, nVt2, nTqa3, nMorning3, nVp3, nVt3, nPsy, nRun, nThr, nPrev, nLong2, nLong3, nChm, nBlame, nRecall, nChm2, nReveal, nBooth2, nCrash, nExit2, nThr2, nLong4, nCover, nRel, nVp4, nLong5, nLong6, nTeach, nHandoff, nFinal, nDeep, nNote, nFinds, nSolo2, nChm3, nAlliance4, nReturnee];
 
 export const STORY_POOLS = {};
 for (const f of FILES) for (const [k, v] of Object.entries(f)) STORY_POOLS[k] = STORY_POOLS[k] ? [...STORY_POOLS[k], ...v] : [...v];
@@ -93,6 +94,22 @@ for (const pool of Object.values(STORY_POOLS)) for (const e of pool) {
   const ov = VOICES[e.id];
   if (!ov) continue;
   for (const [i, extra] of Object.entries(ov)) { const t = e.turns?.[+i]; if (t && (t.say || t.conf)) t.v = { ...extra, ...(t.v || {}) }; }
+}
+
+// A first-timer's scene: the speaker is new to all of it ("why'd you sign up", "I don't know anybody
+// here", "I wanted to find out if I could"). A returnee who came second last time saying it reads as
+// a stranger to their own season (read 2026-10-09: Minnie Skurr, runner-up, "I've given up halfway on
+// so many things"). Each entry names the parts that must be new: 'a', 'b' or both (write.js sets
+// `returnee`/`returneeB` from the cast). Found by scanning every pool for the phrases; re-run that
+// scan (the regex is in the commit that added this) when a pool is added.
+const FIRST_TIMER = {
+  'fd.k1': ['a'], 'fp.c1': ['a', 'b'], 'fp.c3': ['a'], 'na.p4': ['a'], 'ny.b2': ['a', 'b'],
+  'nl6.x1': ['a'], 'np.hu2': ['a'], 'nx.h15': ['a'], 'np.na1': ['a'], 'np.ce1': ['a'],
+};
+for (const pool of Object.values(STORY_POOLS)) for (const e of pool) {
+  const parts = FIRST_TIMER[e.id];
+  if (!parts) continue;
+  e.when = { ...(e.when || {}), ...(parts.includes('a') ? { returnee: false } : {}), ...(parts.includes('b') ? { returneeB: false } : {}) };
 }
 
 // A scene that has a third person in it only plays when there is one: c's lines would be

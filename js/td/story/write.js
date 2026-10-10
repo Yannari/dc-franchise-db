@@ -21,6 +21,7 @@ import { voiceOf, voiced } from './voice.js';
 import { phrase } from './phrase.js';
 import { DOING, GROUP, PAIR, SECRET, CROWD } from './setup.js';
 import { tidySpoken, tidyNames } from '../../vp-tr/tidy.js';
+import { pastOf, pastData, isReturnee } from '../past.js';
 
 // what each venue does not have (places.js PLACES): Wawanakwa sleeps in cabins on a lake, the survival
 // island has a beach and a shelter and no mess hall, the carnival camp has tents by a lake, the film
@@ -55,6 +56,20 @@ const keysFor = (pool, outcome) => [`${pool}.${outcome || 'any'}`, `${pool}.any`
 export function writeStory(pool, outcome, who, data, facts, ctx) {
   // who is in the scene: b present or not ('pair'), checked like third/fourth (lines/index.js)
   facts = { ...facts, pair: !!who.b, third: facts.third ?? !!who.c, fourth: facts.fourth ?? !!who.d, fifth: !!who.e, sixth: !!who.f };
+  // who has played before, and what kind of season they had (td/past.js, from the ledger): a scene written for
+  // somebody new doesn't play for a returnee, and a returnee's scene can say what really happened last time
+  // ({lastSeason}, {lastPlace}, {lastBy}, {lastPartner}; the same with B for b)
+  { const pa = pastOf(who.a), pb = pastOf(who.b);
+    facts = { ...facts, returnee: facts.returnee ?? isReturnee(who.a), returneeB: facts.returneeB ?? isReturnee(who.b),
+      past: pa?.kind || 'none', pastB: pb?.kind || 'none', pastBy: !!pa?.by, pastPartnerHere: !!pa?.partner && Object.values(who).includes(pa.partner) };
+    data = { ...pastData(who.a), ...pastData(who.b, 'B'), ...(data || {}) };
+    // ...and the one the scene is about ({target}): a vote against somebody who won last time can say so
+    if (data.target && facts.targetPast === undefined) {
+      const pt = pastOf(data.target);
+      // targetWronged: the target is the one who blindsided or betrayed a last time (payback)
+      facts = { ...facts, targetPast: pt?.kind || 'none', targetWronged: !!pa?.by && pa.by === data.target };
+      if (pt) data = { ...pastData(data.target, 'T'), ...data };
+    } }
   const keys = keysFor(pool, outcome);
   if (!keys.length) return null;
   const rng = stableRng('td-story', salt(), ctx.ep, ctx.camp || '', ctx.phase || '', pool, who.a || '', who.b || '', ctx.n || 0);
@@ -73,9 +88,10 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // strangers don't share a past: no "always" or "again" early on unless they really have one
     // (a returnee's own entrance may talk about their last season: that past is theirs, not shared)
     const strangers = (ctx.ep || 0) <= 2 && (facts.hist || 'none') === 'none' && (facts.prev || 'none') === 'none' && !(facts.returnee && !who.b);
-    if (strangers && HISTORY.test(text)) return false;
+    if (strangers && !e.past && HISTORY.test(text)) return false;
     // before the season's first vote nobody has been voted for, or nearly
-    if (!facts.voteYet && /\b(voted|last vote|the vote last|wrote (my|your|his|her|their) name|on the edge of a vote|been on the edge|last night)\b/i.test(text)) return false;
+    // (a returnee's scene about last season is exempt: e.past, lines/n-returnee.js)
+    if (!facts.voteYet && !e.past && /\b(voted|last vote|the vote last|wrote (my|your|his|her|their) name|on the edge of a vote|been on the edge|last night)\b/i.test(text)) return false;
     // the time of day and the order of the day
     if (ctx.phase === 'post' && MORNING.test(text)) return false;
     if (ctx.phase === 'pre' && EVENING.test(text)) return false;
@@ -117,7 +133,10 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // should not sound like a doormat)
     const top = voiceOf(who.a).slice(0, 3);
     // (a scene whose lines for a are moves is in a's voice by construction: phrase.js says them)
-    const mine = fits.filter(e => [].concat(e.when?.voice || []).some(t => top.includes(t)) || (e.turns || []).some(t => t.by === 'a' && t.move));
+    // ...and a scene written for what really happened to a last time (td/past.js) over one that only fits
+    // their voice: a first-out returnee gets the first-out entrance, not the generic one
+    const mine = fits.filter(e => [].concat(e.when?.voice || []).some(t => top.includes(t)) || (e.turns || []).some(t => t.by === 'a' && t.move)
+      || (e.past && e.when?.past !== undefined && facts.past !== 'none'));
     // ...and a whole conversation over a sketch (the user, 2026-10-08: "I'm tired of 4/5 line events that
     // tell nothing"): when a pool has a version of six spoken lines or more for these people, a short one
     // only airs when no long one fits. A pool of one-liners (the booth, a recall) is left as it is.
@@ -194,7 +213,8 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   });
   // the set-up line (td/story/setup.js): a scene that opens on dialogue is first set somewhere, with
   // who finds whom and what they were doing. Marked auto, so a chained scene can trade it for an arrival.
-  if (spot && spot.id !== 'confessional' && lines.length && lines[0].kind !== 'beat' && lines.some(l => l.kind === 'say')) {
+  // (not on the dock: an arrival is somebody stepping off the boat, staged by its own screen, ctx.noSetup)
+  if (spot && !ctx.noSetup && spot.id !== 'confessional' && lines.length && lines[0].kind !== 'beat' && lines.some(l => l.kind === 'say')) {
     const set = setupLine(entry, who, data, lines, spot, facts, ctx, rng, placeOk);
     if (set) lines.unshift(set);
   }

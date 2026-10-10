@@ -1534,6 +1534,19 @@ export function airTdEpisode(ep) {
         seasonAired[`${line.type}.${step.step}`] = (seasonAired[`${line.type}.${step.step}`] || 0) + 1;
         list.push({ at: i, item: item || { ref: i, storyline: line.id } });
       }
+      // a returnee's past airs on top of the caps (camp-events.js franchise-meta block: the grudge from
+      // last season, the reunion, the newcomer asking what happened, the newcomers plotting against the
+      // vets). No storyline files them, so without this none ever aired (read 2026-10-09: twenty of them
+      // in one returnee season, all off camera). Two a camp early on, one after.
+      { let tookR = 0;
+        const capR = ep.num <= 2 ? 2 : 1;
+        events.forEach((ev, i) => {
+          if (tookR >= capR || !ev || ev.aired != null || !/^meta[A-Z]/.test(ev.type || '') || !ev.scene?.kind) return;
+          const item = longScene(ev, i);
+          if (!item) return;
+          ev.aired = true; tookR++;
+          list.push({ at: 0.3 + tookR * 0.01, item });
+        }); }
       // what tonight's plan comes from (causeOf) airs on top of the caps: the plan calls back to it
       for (const c of (talk?.cause || []).filter(c => c.phase === phase)) {
         const ev = events[c.i];

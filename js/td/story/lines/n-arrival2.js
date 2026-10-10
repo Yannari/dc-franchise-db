@@ -257,7 +257,7 @@ export default {
 
   'arrive.back.any': [
     { id: 'nx.b1', when: { voice: 'dry' }, turns: [
-      { by: 'h', say: "{a}! Welcome back!" },
+      { by: 'h', say: "Welcome back. Thrilled to be here?" },
       { by: 'a', say: "Thrilled. Can't you tell?" },
       { by: 'a', conf: "I said I'd never come back. Then they offered me another shot at the money. I'm not proud." },
     ] },
@@ -277,7 +277,7 @@ export default {
       { by: 'a', say: "Right. That's why." },
       { by: 'a', conf: "Last time I was so scared I couldn't think. This time I'm still scared. But I can think." },
     ] },
-    { id: 'nx.b5', when: { voice: 'competitive' }, turns: [
+    { id: 'nx.b5', when: { past: ['final', 'early', 'blindsided', 'mid', 'none'], voice: 'competitive' }, turns: [
       { by: 'a', say: "I've been training since the day I went home." },
       { by: 'h', say: "That's a little intense." },
       { by: 'a', say: "That's the point." },
@@ -287,7 +287,7 @@ export default {
       { by: 'h', say: "It's very weird." },
       { by: 'a', conf: "I made real friends here last time. I want to do that again. And maybe, this time, also win." },
     ] },
-    { id: 'nx.b7', when: { voice: 'theatrical' }, turns: [
+    { id: 'nx.b7', when: { past: ['early', 'none'], voice: 'theatrical' }, turns: [
       { by: 'a', say: "The legend returns!" },
       { by: 'h', say: "You went home pretty early." },
       { by: 'a', say: "Legends are misunderstood!" },
@@ -297,7 +297,7 @@ export default {
       { by: 'a', conf: "The new people have seen me play. They think they know how I'll play this time. That's my favourite kind of mistake." },
     ] },
     { id: 'nx.b9', when: { age: 'older' }, turns: [
-      { by: 'h', say: "{a}! Look at you, still standing." },
+      { by: 'h', say: "Look at you, still standing." },
       { by: 'a', say: "Barely. My knees have opinions about this." },
       { by: 'a', conf: "These kids think the old one is the easy vote. They thought that last time too." },
     ] },

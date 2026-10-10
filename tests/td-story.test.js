@@ -14,10 +14,10 @@ import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 // what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
 const STORY_FACTS = new Set([...TD_FACT_KEYS, 'madeMove',
   'venue', 'count', 'outcome', 'story', 'step', 'prev', 'prevGap', 'chapter', 'members', 'aOther', 'bOther', 'target', 'group',
-  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'fifth', 'sixth', 'notVoice', 'notVoiceB', 'home', 'job', 'lot', 'eats', 'thing', 'others', 'markMe', 'markB', 'otherMe', 'otherB', 'shaky', 'cover', 'close', 'aVoted', 'defends', 'cWasted', 'self', 'found', 'sparkSeen', 'told', 'tally', 'alt', 'fromTarget', 'sparkKind', 'wroteIsBoot', 'moment', 'how', 'ago', 'bWrote', 'tease', 'two', 'bLikesA', 'bHatesA', 'physical', 'imm', 'ally', 'markLeader', 'real', 'blame', 'crash', 'revealKind', 'saw', 'call', 'lostAlly', 'flipped', 'won', 'again', 'yes']);
+  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'past', 'pastB', 'pastBy', 'pastPartnerHere', 'targetPast', 'targetWronged', 'fifth', 'sixth', 'notVoice', 'notVoiceB', 'home', 'job', 'lot', 'eats', 'thing', 'others', 'markMe', 'markB', 'otherMe', 'otherB', 'shaky', 'cover', 'close', 'aVoted', 'defends', 'cWasted', 'self', 'found', 'sparkSeen', 'told', 'tally', 'alt', 'fromTarget', 'sparkKind', 'wroteIsBoot', 'moment', 'how', 'ago', 'bWrote', 'tease', 'two', 'bLikesA', 'bHatesA', 'physical', 'imm', 'ally', 'markLeader', 'real', 'blame', 'crash', 'revealKind', 'saw', 'call', 'lostAlly', 'flipped', 'won', 'again', 'yes']);
 // names a line may say, and the fact that must be asked for unless the pool always has it
 const ALWAYS = new Set(['a', 'b', 'c', 'd', 'e', 'f', 'h', 'quarters', 'bed', 'item', 'here', 'place', 'host']);
-const NEEDS = { myVote: 'myVote', sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
+const NEEDS = { lastBy: 'pastBy', lastPartner: 'pastPartnerHere', lastSeason: 'past', lastPlace: 'past', lastSeasonT: 'targetPast', lastPlaceT: 'targetPast',myVote: 'myVote',sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
   threat: 'threat', weak: 'weak', target: 'target', group: 'group', plan: 'plan', wrote: 'wrote', boot: 'boot', fallen: 'fallen', holder: 'holder', other: 'other', pitcher: 'pitcher', home: 'home', job: 'job', lot: 'lot', thing: 'thing', others: 'others', shaky: 'shaky', cover: 'cover', found: 'found', alt: 'alt', teller: 'told', warnedAbout: 'fromTarget', imm: 'imm', lastBoot: 'lastBoot', real: 'real', blame: 'blame', lostAlly: 'lostAlly' };
 // a pool's guarantees: names its moment always carries
 const GUARANTEED = [
@@ -109,6 +109,10 @@ const GUARANTEED = [
   [/^room\./, ['lastBoot', 'item']],
   [/^(reveal|exit|after)\./, ['lastBoot', 'item']],
   [/^long\.(talk\.lie\.about|drama\.paranoia\.quiet|romance\.tri\.(exploit|cut-))/, ['target']],
+  // a returnee's moment (camp-events.js franchise-meta block) carries a's last season; the threat and target
+  // scenes carry the returnee they are about ({target}, td/past.js pastData suffix T)
+  [/^long\.ret\./, ['lastSeason', 'lastPlace']],
+  [/^long\.ret\.(threat|target)\./, ['target', 'lastSeasonT', 'lastPlaceT']],
 ];
 // a long scene carries what its engine moment always carries (td/script/lines GUARANTEED)
 const engineG = key => {

@@ -225,7 +225,8 @@ export function scriptLooseEvents(ep) {
       || (ep.gsSnapshot?.tribes || []).find(t => t.name === camp)?.members || ep.gsSnapshot?.activePlayers || gs.activePlayers || [];
     for (const [phase, events] of Array.isArray(block) ? [['pre', block]] : [['pre', block?.pre || []], ['post', block?.post || []]]) {
       for (const ev of events) {
-        if (!ev || ev.lines?.length || ev.pendingScene || !String(ev.text || '').trim()) continue;
+        // (storyOnly: a moment only the story layer writes, its scene already described — camp-events.js's returnee moments)
+        if (!ev || ev.lines?.length || ev.pendingScene || ev.storyOnly || !String(ev.text || '').trim()) continue;
         const named = [...new Set((ev.players || []).filter(n => typeof n === 'string' && n))];
         if (!named.length) continue;
         const a = named[0];

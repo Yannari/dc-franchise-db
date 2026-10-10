@@ -50,12 +50,13 @@ export function writeArrival({ ep, p, n, host, onDock, chem, venue, state = { sp
   // the authored hometown and job, when the character has them ({home}, {job})
   const home = p.hometown || null, job = p.occupation || null;
   const base = (who, extra = {}) => ({ ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'pre' }), venue, voteYet: false, returnee: !!p.isReturnee, home: !!home, job: !!job, ...extra });
-  const ctx = k => ({ ep: ep.num, camp: 'arrival', phase: 'pre', n: n * 10 + k, place: 'public' });
+  const ctx = k => ({ ep: ep.num, camp: 'arrival', phase: 'pre', n: n * 10 + k, place: 'public', noSetup: true });
   const data = { landing, ...(home ? { home } : {}), ...(job ? { job } : {}) };
   const quiet = list => [...list].sort((x, y) => (state.spoke[x.name] || 0) - (state.spoke[y.name] || 0) || x.name.localeCompare(y.name));
 
   // the host's introduction, then their entrance
-  add(writeStory('arrive.host', 'any', { a: name, h: host }, data, base({ a: name }), ctx(1)));
+  // a returnee is introduced as somebody the host already knows (lines/n-returnee.js arrive.hostback): 'meet {a}' is for strangers
+  add(writeStory(p.isReturnee ? 'arrive.hostback' : 'arrive.host', 'any', { a: name, h: host }, data, base({ a: name }), ctx(1)));
   add(writeStory(p.isReturnee ? 'arrive.back' : 'arrive.new', 'any', { a: name, h: host }, data, base({ a: name }), ctx(2)));
 
   // somebody already waiting: the first reason that applies

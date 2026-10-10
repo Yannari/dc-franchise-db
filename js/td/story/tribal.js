@@ -13,6 +13,7 @@
 // steps (vp-td-ep/steps.js tdTribalScreen) play them; the ballots, the tally and each
 // ballot's engine reason in the side panel stay exactly as they were.
 import { gs, seasonConfig } from '../../core.js';
+import { pastOf, isReturnee } from '../past.js';
 import { getBond } from '../../bonds.js';
 import { pStats as pStatsOf } from '../../players.js';
 import { registerOf, factsFor } from '../script/facts.js';
@@ -102,6 +103,15 @@ function tribalQA(ep, { tribal, ballots, elim, ch, camp, base, ctx, nextN }) {
   // the outsider: nobody here is close to them
   const lone = tribal.filter(x => x !== elim && best(x) <= 1).sort((x, y) => best(x) - best(y) || x.localeCompare(y))[0];
   if (lone) add('outsider', 5, { a: lone, b: tribal.filter(x => x !== lone).sort((x, y) => getBond(lone, y) - getBond(lone, x) || x.localeCompare(y))[0] });
+  // a returnee: the host brings up what really happened to them last time (td/past.js, the ledger), and
+  // somebody new cuts in. Sharpest early, while it is still the thing everybody knows about them.
+  // ...once a returnee a season: the second time it's a rerun (read: Connor asked the same question twice)
+  const vetAsked = ((gs.tdStory ||= {}).vetAsked ||= {});
+  const vet = tribal.filter(x => x !== elim && pastOf(x) && !vetAsked[x]).sort((x, y) => (pastOf(y).kind === 'won') - (pastOf(x).kind === 'won') || x.localeCompare(y))[0];
+  if (vet) {
+    const nb = tribal.filter(x => x !== vet && x !== elim && !isReturnee(x)).sort((x, y) => strat(y) - strat(x) || x.localeCompare(y))[0];
+    add('returnee', ep.num <= 4 ? 6 : 4, { a: vet, ...(nb ? { b: nb } : {}) });
+  }
   // a suspected idol holder
   const has = (s, x) => !!s && (typeof s.has === 'function' ? s.has(x) : Array.isArray(s) && s.includes(x));
   const idolMan = tribal.find(x => has(gs.knownIdolHoldersPersistent, x) || has(gs.knownIdolHoldersThisEp, x));
@@ -147,6 +157,7 @@ function tribalQA(ep, { tribal, ballots, elim, ch, camp, base, ctx, nextN }) {
     if (!w) continue;
     cast.forEach(p => used.add(p));
     mem[c.topic] = ep.num;
+    if (c.topic === 'returnee') (gs.tdStory.vetAsked ||= {})[c.who.a] = ep.num;
     out.push({ topic: c.topic, players: cast, lines: w.lines });
   }
   return out;

@@ -135,22 +135,22 @@ export default {
 
   // ── redemption: back for another try; scared of making the same mistake ──
   'psy.redemption': [
-    { id: 'nps.e1', when: { moment: 'quiet' }, turns: [
+    { id: 'nps.e1', when: { moment: 'quiet', past: 'blindsided' }, turns: [
       { by: 'a', conf: "Last time I trusted too fast. I told everybody everything, and I went home with a smile on my face, completely blindsided." },
       { by: 'a', conf: "This time I'm keeping my mouth shut and my eyes open. It's harder than it sounds. I really like talking.", v: { tough: "This time nobody gets the jump on me. Nobody." } },
     ] },
-    { id: 'nps.e2', when: { moment: 'votes' }, turns: [
+    { id: 'nps.e2', when: { moment: 'votes', past: ['final', 'early', 'blindsided', 'mid', 'none'] }, turns: [
       { by: 'a', conf: "My name came up last night, and for a second I was right back there, last time, watching the votes come out." },
       { by: 'a', conf: "But I'm still here. That's already better than last time. I'm going to keep counting it like that." },
     ] },
-    { id: 'nps.e3', when: { moment: 'quiet', pair: true }, turns: [
+    { id: 'nps.e3', when: { moment: 'quiet', pair: true, past: ['final', 'early', 'blindsided', 'mid', 'none'] }, turns: [
       { by: 'b', say: "Is it weird, being back?" },
       { by: 'a', say: "Weird is one word. Everybody knows exactly how I lost last time." },
       { by: 'b', say: "So they think they know how to beat you." },
       { by: 'a', say: "They think they know how to beat the old me. That's the advantage." },
       { by: 'a', conf: "Coming back was the scariest thing I've ever done. Going home the same way twice would be worse." },
     ] },
-    { id: 'nps.e4', when: { moment: 'lost', lastBoot: true }, turns: [
+    { id: 'nps.e4', when: { moment: 'lost', lastBoot: true, past: ['final', 'early', 'blindsided', 'mid', 'none'] }, turns: [
       { by: 'a', conf: "{lastBoot} going home last night felt like watching my own boot all over again. Same feeling. Same stomach drop." },
       { by: 'a', conf: "I can't save everybody, I'm finally learning that. I just have to make sure I'm still standing." },
     ] },

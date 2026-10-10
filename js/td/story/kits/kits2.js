@@ -377,7 +377,7 @@ export default {
     bit: [
       "Is there a spa on this island? There must be a spa. Somewhere. Behind a rock.",
       "I'm not lazy, darling. I'm conserving my charisma for when it's needed.",
-      "My mother gave me this ascot. It's been to Monaco. It has never been to a place like this.",
+      "My mother gave me this ascot. It has been to every resort worth going to, and it has never been to a place like this.",
     ],
     tease: [
       "Evie, there's no spa.",
@@ -389,7 +389,7 @@ export default {
       "Brunch, mostly. And emergencies.",
       "Of course. You never know when you'll need to look elegant during a crisis.",
     ],
-    home: ["A lovely little estate, my horses, and a very attentive masseuse named Raoul.", "My father's stables, my scarf collection, and my brunch friends, who are all very worried."],
+    home: ["A lovely little estate, my horses, and a very attentive masseuse who I miss terribly already.", "My father's stables, my scarf collection, and my brunch friends, who are all very worried."],
     want: ["To be charming on television. And the money, I suppose, though I've got rather a lot already.", "To find a man. Is that allowed? I'm putting it out there."],
     conf: ["Everyone thinks I'm silly. I'm not silly. I'm just very, very relaxed.", "I've never done anything hard in my entire life. This is my first time. It's awful."],
     askHome: ["And who's waiting for you at home, darling? A husband? Two?", "Do you have a big house? Tell me about the house."],
@@ -398,7 +398,7 @@ export default {
   Finn: {
     thing: 'being a theatre kid',
     bit: [
-      "I don't mean to brag, but I was the understudy who saved opening night. Ride the Cyclone. Look it up.",
+      "I don't mean to brag, but I grew up on Blue Water High, every single episode, so I basically studied drama at the source.",
       "Darling, if you're going to cry, at least find your light. You're crying in the shade.",
       "Everyone here is under-rehearsed. It's honestly painful to watch.",
     ],
@@ -408,7 +408,7 @@ export default {
       "You haven't rehearsed anything either.",
     ],
     reply: [
-      "Because it's the best thing I've ever done, and I'm twenty.",
+      "Because it's the reason I'm an actor, and I'll mention it a fourth time if I have to.",
       "Someone has to. You're clearly not.",
       "I'm a natural. There's a difference, darling."],
     home: ["My drama school in Sydney, where everyone is jealous of me, rightly.", "My mum, who has every one of my programmes framed. Every one."],

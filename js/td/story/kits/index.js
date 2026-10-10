@@ -1,5 +1,6 @@
 // td/story/kits/index.js — every character kit (td/story/kits.js), by name; kits-deep.js adds the
-// parts the pair scenes use (defend, deep), kits-solo.js the solo scene (alone, solo)
+// parts the pair scenes use (defend, deep), kits-solo.js the solo scene (alone, solo), kits-ground.js
+// what each one's life has in it (ground), for two people who find they share something
 //
 // And a kit written in the Studio (the user, 2026-10-10: "how in cast setup / character creation can
 // I build a kit"): the roster row's own `kit`, for anybody without a hand-written one here. Looked up
@@ -9,9 +10,10 @@ import kits2 from './kits2.js';
 import kits3 from './kits3.js';
 import deep from './kits-deep.js';
 import solo from './kits-solo.js';
+import ground, { GROUND } from './kits-ground.js';
 
 const BUILT = Object.assign({}, kits1, kits2, kits3);
-for (const [n, k] of [...Object.entries(deep), ...Object.entries(solo)]) if (BUILT[n]) Object.assign(BUILT[n], k);
+for (const [n, k] of [...Object.entries(deep), ...Object.entries(solo), ...Object.entries(ground)]) if (BUILT[n]) Object.assign(BUILT[n], k);
 
 const PARTS = ['bit', 'tease', 'reply', 'home', 'want', 'conf', 'askHome', 'askWant', 'defend', 'deep', 'solo'];
 const studioCache = new Map();
@@ -35,6 +37,8 @@ function studioKit(name) {
     // a bit, its tease and its reply are one exchange: keep only whole ones
     const n = Math.min(kit.bit.length, kit.tease.length, kit.reply.length);
     for (const p of ['bit', 'tease', 'reply']) kit[p] = kit[p].slice(0, n);
+    // what their life has in it (kits-ground.js vocabulary only: the Studio's tags are checked, never guessed)
+    kit.ground = Array.isArray(k.ground) ? k.ground.filter(t => typeof t === 'string' && GROUND[t]) : [];
     if (!kit.thing) kit.thing = 'the way they are';
     if (!PARTS.some(p => kit[p].length)) kit = null;
   }

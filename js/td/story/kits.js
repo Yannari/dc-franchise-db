@@ -27,6 +27,31 @@ import KITS from './kits/index.js';
 
 export const kitOf = name => KITS[name] || null;
 export const hasKit = name => !!KITS[name];
+export { GROUND } from './kits/kits-ground.js';
+
+// ── what two people's lives have in common (kits-ground.js) ──
+// The kit's own authored tags, plus what the roster row says plainly for everybody, kit or not: the same
+// hometown, the same nationality. Nothing is inferred from free text. The user, 2026-10-10: "do we also
+// have bond by backstory?" and "stay true to the character always".
+const norm = x => String(x || '').split(',')[0].normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+const rowOf = name => {
+  const roster = (typeof globalThis !== 'undefined' && Array.isArray(globalThis.FRANCHISE_ROSTER)) ? globalThis.FRANCHISE_ROSTER : null;
+  return roster?.find(r => r && r.name === name) || (typeof window !== 'undefined' && window.players || []).find(p => p.name === name) || null;
+};
+/** The authored shared-ground tags of one character (empty without a kit or without tags). */
+export function groundOf(name) { return [...(KITS[name]?.ground || [])]; }
+/** What a and b share: [{ tag, kind: 'kit'|'home'|'country', value? }], the authored tags first. */
+export function sharedGround(a, b) {
+  if (!a || !b || a === b) return [];
+  const ga = new Set(groundOf(a)), out = [];
+  for (const t of groundOf(b)) if (ga.has(t)) out.push({ tag: t, kind: 'kit' });
+  const ra = rowOf(a), rb = rowOf(b);
+  const ha = norm(ra?.hometown), hb = norm(rb?.hometown);
+  if (ha && ha === hb) out.push({ tag: 'same-hometown', kind: 'home', value: String(ra.hometown).split(',')[0].trim() });
+  const na = norm(ra?.nationality), nb = norm(rb?.nationality);
+  if (na && na === nb && !(ha && ha === hb)) out.push({ tag: 'same-country', kind: 'country', value: String(ra.nationality).trim() });
+  return out;
+}
 
 // once a season per line: gs.tdStory.kitUsed[name] = ['bit:0', ...]
 const used = () => ((gs.tdStory ||= {}).kitUsed ||= {});

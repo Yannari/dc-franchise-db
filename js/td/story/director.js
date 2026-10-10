@@ -30,6 +30,7 @@ import { voiceOf } from './voice.js';
 import { writeFirstImpression } from './first-impressions.js';
 import { classify, file, prevAired } from './storylines.js';
 import { writeStory as writeRaw, hasStoryPool } from './write.js';
+import { STORY_POOLS } from './lines/index.js';
 import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './record.js';
 import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
@@ -822,6 +823,19 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const fromTarget = em.warned.find(w => w.knower === a && w.teller === boot) || null;
   if (fromTarget) data.warnedAbout = fromTarget.pitcher;
   Object.assign(facts, { sparkSeen, told: !!tip, tally: count, alt: !!alt, fromTarget: !!fromTarget, sparkKind: sparkSeen ? em.spark.kind : 'none' });
+  // has the viewer ever SEEN this side come together? (the user, 2026-10-10: "four against five" on day one,
+  // with no scene before it setting those sides). An alliance chapter with a and one of the people being
+  // counted that aired before now, or a vote they planned together on an earlier night. If not, the scene
+  // shows the side forming instead of counting it (vp.form), and the counting lines stay out (fact sides).
+  const sideNames = [...new Set([...voters.filter(v => v !== a), ...(b ? [b] : [])])];
+  const sides = (() => {
+    const shown = (gs.tdStory?.lines || []).some(l => l.type === 'alliance' && (l.people || []).includes(a) && l.people.some(p => sideNames.includes(p))
+      && l.steps.some(s => s.aired && (s.ep < ep.num || (s.ep === ep.num && s.phase === 'pre'))));
+    if (shown) return true;
+    return (gs.episodeHistory || []).some(h => h.num < ep.num && Object.values(h.campStory || {}).some(c => [...(c.pre || []), ...(c.post || [])]
+      .some(x => x?.storyType === 'vote' && (x.players || []).includes(a) && x.players.some(p => sideNames.includes(p)))));
+  })();
+  facts.sides = sides;
   // the moment it started (causeOf), said to the camera at the end of the plan
   // only a moment that aired: the morning's must have made it on screen; the afternoon's airs after this (airTdEpisode)
   const causeAired = c => { if (c.aired) return true; const ev = eventsOf(ep, camp, c.phase)[c.i]; return c.phase === 'pre' ? ev?.aired === true : ev?.aired == null || ev?.aired === true; };
@@ -835,7 +849,10 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   // short"); the beats below only when no whole scene fits this cast
   if (b) {
     // a scene nobody has seen this season first, then the least-aired one
-    const ws = u => writeStory('vp2', caseOf, who, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place: 'secret', avoid: ctxAvoid('scramble'), unique: u });
+    // (a side nobody has seen form: only the whole scenes that don't count it)
+    const noCount = sides ? null : ['vp2.' + caseOf, 'vp2.any'].flatMap(k => STORY_POOLS[k] || [])
+      .filter(e => !(e.turns || []).some(t => /\{(us|theirSide|them)\}/.test([t.say, t.conf, ...Object.values(t.v || {})].join(' ')))).map(e => e.id);
+    const ws = u => writeStory('vp2', caseOf, who, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place: 'secret', avoid: ctxAvoid('scramble'), unique: u, ...(noCount ? { entryIds: noCount } : {}) });
     const whole = ws(true) || ws('soft');
     if (whole) recall(whole.lines);
     if (whole) return { story: true, kind: `story.vote.${as.step}.${caseOf}`, storyType: 'vote', step: as.step, players: [...new Set(Object.values(who).filter(Boolean))], lines: whole.lines,
@@ -853,12 +870,14 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   };
   if (shape === 'solo' || !b) {
     if (!beat('vp.solo.case', caseOf)) return null;
-    beat('vp.solo.count', count);
+    if (sides) beat('vp.solo.count', count);
   } else {
     beat('vp.open', shape === 'group' ? 'group' : 'duo');
     if (!beat('vp.case', caseOf)) return null;
     if (push && beat('vp.push', push)) beat('vp.answer', push);
-    beat('vp.count', count);
+    // the count, or, when nobody has seen this side form, the side forming right here
+    if (sides) beat('vp.count', count);
+    else beat('vp.form', shape === 'group' ? 'group' : 'duo');
     beat('vp.close', shape === 'group' ? 'group' : 'duo');
   }
   recall(lines);
@@ -1748,6 +1767,26 @@ export function airTdEpisode(ep) {
         // holding everybody, already fills a show's worth; tests/td-story.test.js 'show-sized episode')
         const g = list.length < ROOM ? campGame(ep, camp, members, phase, () => n++, writeHere, busyNow) : null;
         if (g) list.push(g);
+        // Day one's own set pieces (lines/n-dayone.js: the tour going wrong, the luggage, lost exploring, a raid
+        // on the food, the flag, the first cooking, the first night's noise, homesick), one a team in each stretch
+        // of the day, the franchise's least-seen first (write.js storySeen). The user, 2026-10-10: "the first day
+        // seems to roll always the same events".
+        if (ep.num === 1 && members.length >= 3) {
+          const FUNNY = new Set(['wildcard', 'chaos-agent', 'goat', 'social-butterfly', 'hothead', 'showmancer', 'underdog']);
+          const free = members.filter(m => !busyNow.has(m));
+          const pool = free.length >= 3 ? free : members;
+          const archOf = x => (players.find(p => p.name === x) || {}).archetype;
+          const lead = [...pool].sort((x, y) => (FUNNY.has(archOf(y)) ? 3 : 0) + (pStatsOf(y)?.boldness ?? 5) - (FUNNY.has(archOf(x)) ? 3 : 0) - (pStatsOf(x)?.boldness ?? 5) || x.localeCompare(y))[0];
+          const rest = pool.filter(m => m !== lead).sort((x, y) => getBond(lead, y) - getBond(lead, x) || x.localeCompare(y));
+          const dwho = { a: lead, b: rest[0], c: rest[1], ...(rest[2] ? { d: rest[rest.length - 1] } : {}), h: seasonConfig?.host || 'Chris' };
+          if (dwho.b && dwho.c) {
+            const dw = writeHere('story.dayone', 'any', dwho, { host: dwho.h },
+              { ...factsFor({ who: dwho, data: {} }, { ep: ep.num, phase }), third: true, fourth: !!dwho.d, phase }, { ep: ep.num, camp, phase, n: n++, place: 'public', unique: true });
+            if (dw) list.push({ at: phase === 'pre' ? 0.44 : 0.46, item: { story: true, kind: 'story.dayone', storyType: 'fun', step: 'dayone',
+              players: [dwho.a, dwho.b, dwho.c, ...(dwho.d ? [dwho.d] : [])], lines: dw.lines, text: dw.text, lineId: dw.lineId,
+              scene: { kind: 'dayone', who: Object.fromEntries(Object.entries(dwho).filter(([r]) => r !== 'h')), data: {}, spot: dw.spot || null }, badgeText: '', badgeClass: '', why: ['Day one at camp.'] } });
+          }
+        }
         if (phase === 'post' && list.length < ROOM) {
           const soloBook = ((gs.tdStory ||= {}).soloLast ||= {});
           // somebody not already in a scene this afternoon first, then the rest

@@ -23,6 +23,16 @@ import { DOING, GROUP, PAIR, SECRET, CROWD } from './setup.js';
 import { tidySpoken, tidyNames } from '../../vp-tr/tidy.js';
 import { pastOf, pastData, isReturnee } from '../past.js';
 import KITS from './kits/index.js';
+import { activeFranchise } from '../../franchise-meta.js';
+
+// What has aired in this franchise's past seasons, scene by scene (the user, 2026-10-10: "the first day
+// seems to roll always the same events"; measured: one banter scene aired on day one in 12 seasons of 12).
+// Kept on the active franchise, so it's saved with the franchise ledger and survives into the next season;
+// a franchise is the user's own run of seasons, so two franchises don't share it. Built-from-kit scenes
+// (ids 'kit:...') are one person's own lines and never repeat anyway: they aren't counted.
+function storySeen() {
+  try { const af = activeFranchise(); return (af.storySeen ||= {}); } catch { return {}; }
+}
 
 // what each venue does not have (places.js PLACES): Wawanakwa sleeps in cabins on a lake, the survival
 // island has a beach and a shelter and no mess hall, the carnival camp has tents by a lake, the film
@@ -160,8 +170,17 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // tell nothing"): when a pool has a version of six spoken lines or more for these people, a short one
     // only airs when no long one fits. A pool of one-liners (the booth, a recall) is left as it is.
     const said = e => (e.turns || []).filter(t => t.by && who[t.by] && (t.say || t.conf || t.move || t.v)).length;
-    const longOf = list => list.filter(e => said(e) >= 6);
-    const pool = longOf(mine).length ? longOf(mine) : longOf(fits).length ? longOf(fits) : mine.length ? mine : fits;
+    // "long" is near the longest that fits, five lines at the least: a strict six left a pool of six
+    // versions with two that could ever air, the same two every season
+    const longOf = list => { const top = Math.max(0, ...list.map(said)); return top >= 6 ? list.filter(e => said(e) >= Math.max(5, top - 1)) : []; };
+    // Across seasons first: only the versions this franchise has seen least are in the running (storySeen
+    // above), and the voice and length preferences choose among those. The other way round, a loud speaker
+    // got the one loud version every season.
+    const seen = storySeen();
+    const low = Math.min(...fits.map(e => seen[e.id] || 0));
+    const fresh2 = fits.filter(e => (seen[e.id] || 0) === low);
+    const mine2 = mine.filter(e => fresh2.includes(e));
+    const pool = longOf(mine2).length ? longOf(mine2) : longOf(fresh2).length ? longOf(fresh2) : mine2.length ? mine2 : fresh2;
     fits.splice(0, fits.length, ...pool);
     return fits;
   };
@@ -187,6 +206,7 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   }
   if (!entry) return null;
   { const book = (gs.tdStory ||= {}); if (!book.epUsed || book.epUsed.ep !== ctx.ep) book.epUsed = { ep: ctx.ep, ids: [] }; book.epUsed.ids.push(entry.id); }
+  if (!/^kit:/.test(entry.id || '')) { const seen = storySeen(); seen[entry.id] = (seen[entry.id] || 0) + 1; }
   // Where it is staged: the entry's own kind of place, else where the engine put the moment,
   // else the pool's default kind. The lines say it as {here} ("on the dock") or {place}.
   // a meal is where the camp eats, all of it together, at mealtime: it never makes way for another talk

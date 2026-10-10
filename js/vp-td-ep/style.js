@@ -419,6 +419,13 @@ export const TDX_CSS = `
 .tdx .tdx-flag .cloth{transform-origin:13px 24px;animation:tdxFlagWave 1.6s ease-in-out infinite alternate}
 @keyframes tdxFlagWave{from{transform:skewY(-4deg) scaleX(.94)}to{transform:skewY(5deg) scaleX(1.04)}}
 .tdx .tdx-flag b{position:absolute;left:18%;top:101%;transform:translateX(-50%);white-space:nowrap;padding:.15cqw .7cqw;border-radius:.4cqw;background:var(--fc);color:#fff;font:400 1.1cqw/1.2 'Lilita One';letter-spacing:.04em;text-shadow:0 1px 0 rgba(0,0,0,.5);border:2px solid #111}
+.tdx .tdx-hammer{position:absolute;width:11%;transform-origin:50% -120%;transform:translate(-50%,-100%) rotate(-75deg);animation:tdxHammer .5s cubic-bezier(.55,0,.9,.5) forwards;z-index:6;pointer-events:none}
+.tdx .tdx-hammer svg{width:100%;display:block;filter:drop-shadow(0 .4cqw .6cqw rgba(0,0,0,.45))}
+.tdx .tdx-hammer.miss{animation-name:tdxHammerMiss}
+@keyframes tdxHammer{0%{transform:translate(-50%,-100%) rotate(-75deg)}80%{transform:translate(-50%,-100%) rotate(4deg)}100%{transform:translate(-50%,-100%) rotate(0)}}
+@keyframes tdxHammerMiss{0%{transform:translate(-50%,-100%) rotate(-75deg)}100%{transform:translate(-50%,-100%) rotate(40deg)}}
+.tdx .tdx-tok.knocked{animation:tdxKnocked 1.6s cubic-bezier(.3,.7,.4,1) both}
+@keyframes tdxKnocked{0%{transform:translate(-50%,-100%)}25%{transform:translate(-10%,-60%) rotate(70deg);opacity:.9}55%{transform:translate(30%,-40%) rotate(100deg);opacity:.5}100%{transform:translate(-50%,-100%) rotate(0);opacity:1}}
 .tdx .tdx-anvil{position:absolute;width:9%;transform:translate(-50%,-100%);animation:tdxAnvil .55s cubic-bezier(.6,0,1,.6) both;z-index:6;pointer-events:none}
 .tdx .tdx-anvil svg{width:100%;display:block}
 @keyframes tdxAnvil{from{margin-top:-60cqw}to{margin-top:0}}

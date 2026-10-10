@@ -413,6 +413,17 @@ export function tdAuctionScreen(ep, o = {}) {
  * the board of the season's teams, everyone still in in their team's colour, everyone out crossed.
  */
 const TIEBREAK_ZONES = { 'hosted-camp': 'challenge-zone', 'film-lot': 'cage-stage', 'world-tour': 'ceremony', 'survival-island': 'volcano', carnival: 'bumper-arena' };
+/** A throwback: the place a moment happened, the people who were in it, tinted as old footage.
+ *  sh: { players, spot?, camp?, chal?, tribal?, ep? }; ep: the episode it happened in (for a team's own camp). */
+export function throwbackScene(sh, venue, ep, time = 'Last time') {
+  const V = VENUES[venue] || VENUES['hosted-camp'];
+  const where = sh.chal ? (plateKey(venue, TIEBREAK_ZONES[venue], 'day') ? TIEBREAK_ZONES[venue] : V.public) : sh.tribal ? 'ceremony' : (sh.spot || V.public);
+  const tod = sh.tribal ? 'night' : 'day';
+  const slot = sh.camp && ep ? campSlot(ep, sh.camp, venue) : null;
+  const key = plateKey(venue, teamSpot(venue, where, slot), tod) || plateKey(venue, where, tod) || plateKey(venue, V.public, 'day');
+  const people = (sh.players || []).filter(Boolean).slice(0, 4);
+  return { k: 'scene', spot: where, tod, plate: key, place: placeName(where), time, card: false, cut: false, focus: people, bg: [], places: placeScene(key, people, []), throwback: true };
+}
 export function tdPreviouslyScreen(ep, o = {}) {
   const lines = ep.tdPreviously || [];
   if (!lines.length) return null;
@@ -444,13 +455,8 @@ export function tdPreviouslyScreen(ep, o = {}) {
     if (sh?.board) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: `${still.size} left`, time: 'Still in the game', card: false, focus: [], bg: [], places: {}, wide: true, still: true, board }, 'board');
     else if (sh?.boot) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Eliminated', time: 'Last time', card: false, focus: [], bg: [], places: {}, wide: true, still: true, board: { mode: 'boot', who: sh.boot } }, `boot:${sh.boot}`);
     else if (sh && (sh.players || []).length) {
-      // the throwback: the place it happened, the people who were in it, as last time
-      const where = sh.chal ? (plateKey(venue, TIEBREAK_ZONES[venue], 'day') ? TIEBREAK_ZONES[venue] : V.public) : sh.tribal ? 'ceremony' : (sh.spot || V.public);
-      const tod = sh.tribal ? 'night' : 'day';
-      const slot = sh.camp ? campSlot(ep, sh.camp, venue) : null;
-      const key = plateKey(venue, teamSpot(venue, where, slot), tod) || plateKey(venue, where, tod) || plateKey(venue, V.public, 'day');
-      const people = sh.players.filter(Boolean).slice(0, 4);
-      card({ k: 'scene', spot: where, tod, plate: key, place: placeName(where), time: 'Last time', card: false, cut: false, focus: people, bg: [], places: placeScene(key, people, []), throwback: true }, `tb:${key}:${people.join(',')}`);
+      const tb = throwbackScene(sh, venue, ep);
+      card(tb, `tb:${tb.plate}:${tb.focus.join(',')}`);
     } else if (shown !== 'title' && !String(shown).startsWith('tb:')) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Previously on...', time: 'Last time', card: false, focus: [], bg: [], places: {}, wide: true, still: true, board: { mode: 'title' } }, 'title');
     steps.push({ k: 'say', by: host, host: true, text, ...(sh?.boot ? { tense: true } : {}) });
   }

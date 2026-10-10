@@ -38,7 +38,8 @@ const cache = new Map();
 /** The ordered voice tags of a camper. Cached per season cast. */
 export function voiceOf(name) {
   if (!name) return [];
-  const p = players.find(x => x.name === name);
+  // somebody outside this cast (an alumnus hosting the Aftermath) talks the way the roster wrote them
+  const p = players.find(x => x.name === name) || ((typeof globalThis !== 'undefined' && Array.isArray(globalThis.FRANCHISE_ROSTER)) ? globalThis.FRANCHISE_ROSTER.find(x => x?.name === name) : null);
   const key = `${name}|${p?.voice || ''}|${p?.archetype || ''}|${(p?.voiceTags || []).join(',')}`;
   if (cache.has(key)) return cache.get(key);
   // the author's hashtags (#loud) and hand-set tags first, then the words of the authored voice

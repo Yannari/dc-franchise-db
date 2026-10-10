@@ -7,6 +7,7 @@ import { getIntentions } from './intentions.js';
 import { believes, factId } from './knowledge.js';
 import { buildNextEpQs, buildTrackedArcs } from './text-backlog.js';
 import { simulateAftermayhem } from './chal/aftermayhem.js';
+import { buildAftermathShow } from './td/aftermath/show.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
 //   rpPortrait, vpArchLabel
@@ -752,7 +753,7 @@ export function generateAftermathShow(ep) {
         : `When this airs, ${_aff} will see everything. Bond with ${name} drops hard (-1.0).`;
     }
 
-    return { player: name, secretType: chosen.type, toldTruth, dialogue, evidence: chosen.evidence, consequence, affectedPlayers: chosen.affected };
+    return { player: name, secretType: chosen.type, setup: chosen.setup, toldTruth, dialogue, evidence: chosen.evidence, consequence, affectedPlayers: chosen.affected };
   });
 
   // ── BUILD UNSEEN FOOTAGE ──
@@ -1380,6 +1381,8 @@ export function generateAftermathShow(ep) {
     interviewees: [...interviewees], peanutGallery: [...peanutGallery],
     interviews, truthOrAnvil, unseenFootage, fanCall, fanVote, aftermayhem: aftermayhemData, aftermathMoments: aftermathMoment, reunionDiscussion, awards, seasonRating
   };
+  // the show as it airs: the alumni hosts, every segment written, its consequences applied (td/aftermath/show.js)
+  try { ep.aftermath.show = buildAftermathShow(ep, ep.aftermath); } catch (e) { console.warn('[aftermath show]', e); }
   gs.lastAftermathEp = curEp;
   if (!gs.aftermathHistory) gs.aftermathHistory = [];
   gs.aftermathHistory.push({ ep: curEp, interviewees: [...interviewees] });

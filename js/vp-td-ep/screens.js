@@ -253,6 +253,8 @@ function smoke(fxEl, d, P, ms) {
   tick();
 }
 const ANVIL = '<svg viewBox="0 0 120 80"><path d="M14 10h92v14c-14 2-22 8-24 18h-44c-2-10-10-16-24-18z" fill="#4a4f5c" stroke="#111" stroke-width="5"/><path d="M38 42h44l8 26H30z" fill="#3a3e48" stroke="#111" stroke-width="5"/><path d="M22 70h76v8H22z" fill="#2a2d35" stroke="#111" stroke-width="4"/><path d="M20 14h70" stroke="#8a90a0" stroke-width="4"/></svg>';
+// Truth or Hammer: a big wooden mallet on a long handle, swung down from the rig over the couch
+const HAMMER = '<svg viewBox="0 0 140 220"><rect x="62" y="0" width="16" height="150" rx="5" fill="#8a5a2c" stroke="#111" stroke-width="5"/><path d="M66 10v130" stroke="#b07a40" stroke-width="4"/><rect x="14" y="140" width="112" height="72" rx="10" fill="#a8743a" stroke="#111" stroke-width="6"/><path d="M14 158h112M14 194h112" stroke="#6a4420" stroke-width="5"/><path d="M24 148h30" stroke="#d8a868" stroke-width="5" stroke-linecap="round"/></svg>';
 const PHONE = '<svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="27" fill="#2fbf71" stroke="#111" stroke-width="4"/><path d="M19 17c3-3 6-3 8 0l3 5c1 2 0 4-2 5l-2 1c2 5 5 8 10 10l1-2c1-2 3-3 5-2l5 3c3 2 3 5 0 8-3 3-7 4-11 2-9-4-16-11-20-20-2-4-1-7 3-10z" fill="#fff"/></svg>';
 const RIDE_SFX = { limo: 'engine', clownboat: 'motor', bus: 'engine', helicopter: 'rotor', boat: 'motor', yacht: 'motor', jet: 'jetroar', tram: 'engine', canoe: 'splash' };
 const RIDE = {
@@ -472,6 +474,9 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
       setTimeout(() => { const c = centre(st, el); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), esc(a.label || ''), 2600); sfx('title'); }, 900); } }
     // the Aftermath: an anvil for a lie, a stamp for the truth, the tape rolling, the phone ringing
     if (a.kind === 'anvil' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-anvil', c.x, c.y, ANVIL, 2200); setTimeout(() => { el.classList.add('shake'); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 2, 8), 'CLANG!'); sfx('slam'); }, 520); } }
+    if ((a.kind === 'hammer' || a.kind === 'hammer-miss') && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const c = centre(st, el); const hit = a.kind === 'hammer';
+      fxAt(fxEl, `tdx-hammer${hit ? '' : ' miss'}`, c.x + (hit ? 0 : 6), c.y + c.h * .35, HAMMER, 2000); sfx('whoosh');
+      setTimeout(() => { if (hit) { el.classList.remove('knocked'); void el.offsetWidth; el.classList.add('knocked'); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 2, 8), 'WHAM!'); sfx('slam'); } else fxAt(fxEl, 'tdx-pop', c.x + 8, Math.max(c.y - 2, 8), 'WHOOSH!'); }, 430); } }
     if (a.kind === 'truth' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-stamp', c.x, c.y + c.h * .45, 'TRUTH', 2400); sfx('safe'); } }
     if (a.kind === 'tape') { fxAt(fxEl, 'tdx-tape', 0, 0, '<i></i><b>PLAY ▶</b>', 2600); sfx('static'); }
     if (a.kind === 'phone') { fxAt(fxEl, 'tdx-phone', 86, 18, PHONE, 1800); sfx('blip'); setTimeout(() => sfx('blip'), 220); }

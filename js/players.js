@@ -67,7 +67,8 @@ export function romanticCompat(a, b) {
 }
 
 export function pronouns(nameOrPlayer) {
-  const p = typeof nameOrPlayer === 'string' ? players.find(x => x.name === nameOrPlayer) : nameOrPlayer;
+  // (somebody outside this cast, an alumnus hosting the Aftermath, is who the roster says they are)
+  const p = typeof nameOrPlayer === 'string' ? (players.find(x => x.name === nameOrPlayer) || DEFAULT_ROSTER.find(x => x.name === nameOrPlayer)) : nameOrPlayer;
   // In drag, every queen is she/her on the main stage.
   try { if (seasonFormat(seasonConfig) === DRAG_FORMAT) return pronounsOf('f'); } catch {}
   return pronounsOf(p?.gender || 'nb');

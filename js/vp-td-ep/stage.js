@@ -57,7 +57,7 @@ function seeded(key) { let h = 2166136261; for (const c of key) h = Math.imul(h 
 // THE WORLD
 // ══════════════════════════════════════════════════════════════════════
 // venues whose plates have a 4K render (tools/td-camp/camp.py ... hd)
-const HD_VENUES = new Set(['hosted-camp', 'film-lot', 'world-tour', 'survival-island', 'carnival', 'redemption']);
+const HD_VENUES = new Set(['hosted-camp', 'film-lot', 'world-tour', 'survival-island', 'carnival', 'redemption', 'aftermath']);
 export function worldKey(screen, L) {
   if (L.conf) return L.conf.plate || `${screen.venue}/confessional`;
   return L.scene?.plate || `${screen.venue}/none`;
@@ -72,7 +72,8 @@ export function worldHtml(screen, L) {
   const spot = key.split('/')[1].replace(/-(day|night)$/, '');
   const nightFrame = /-night$/.test(key);
   const indoor = ['limo-in', 'summit', 'mess-hall', 'cabin-inside', 'washroom', 'confessional', 'soundstage-corridor', 'prop-storage', 'economy', 'aisle', 'galley', 'cargo-hold', 'first-class', 'shelter', 'theater-tent', 'big-top', 'ceremony', 'trailer-inside', 'boathouse', 'aftermath-studio', 'craft-services', 'chris-quarters', 'cockpit', 'kitchen'].includes(spot)
-    && !(spot === 'ceremony' && ['hosted-camp', 'survival-island', 'carnival', 'film-lot'].includes(screen.venue)) && !(spot === 'shelter' && screen.venue === 'survival-island');
+    && !(spot === 'ceremony' && ['hosted-camp', 'survival-island', 'carnival', 'film-lot'].includes(screen.venue)) && !(spot === 'shelter' && screen.venue === 'survival-island')
+    || /^aftermath\//.test(key);   // the Aftermath studio's sets
   const r = seeded(key);
   const p = (x, n = 2) => `${(x * 100).toFixed(n)}%`;
   // the 4K render of the same frame, faded in when the camera closes on a conversation
@@ -220,7 +221,7 @@ export function worldSound(screen, L) {
   const key = L.conf ? (L.conf.plate || plateKey(screen.venue, 'confessional', /-night$/.test(L.scene?.plate || '') ? 'night' : 'day') || L.scene?.plate) : L.scene?.plate;
   const M = (key && TD_MARKS[key]) || { m: [] };
   const spot = String(key || '').split('/')[1]?.replace(/-(day|night)$/, '') || '';
-  const indoor = /limo-in|summit|mess-hall|cabin-inside|washroom|confessional|corridor|storage|economy|aisle|galley|cargo|first-class|theater|big-top|trailer-inside|boathouse|aftermath|craft-services|chris-quarters|cockpit|kitchen/.test(spot) || (spot === 'ceremony' && screen.venue === 'world-tour') || (spot === 'shelter' && screen.venue === 'carnival');
+  const indoor = /limo-in|summit|mess-hall|cabin-inside|washroom|confessional|corridor|storage|economy|aisle|galley|cargo|first-class|theater|big-top|trailer-inside|boathouse|aftermath|craft-services|chris-quarters|cockpit|kitchen/.test(spot) || (spot === 'ceremony' && screen.venue === 'world-tour') || (spot === 'shelter' && screen.venue === 'carnival') || /^aftermath\//.test(L.scene?.plate || '');
   const night = /-night$/.test(key || ''), island = /^islands\//.test(key || '');
   // the venue's own soundscape, and the day's weather in it (the same day, the same weather)
   const scape = island || spot === 'confessional' ? null

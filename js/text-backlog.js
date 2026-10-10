@@ -3453,6 +3453,22 @@ export function _textAftermath(ep, ln, sec) {
   if (!ep.aftermath) return;
   const a = ep.aftermath;
   sec(a.isReunion ? 'TOTAL DRAMA AFTERMATH: THE REUNION' : `AFTERMATH #${a.number}`);
+  // the show as it airs (td/aftermath/show.js): every segment, every line, in order
+  if (a.show?.blocks?.length) {
+    ln(`Hosted by ${a.show.hosts.map(h => h.name).join(' and ')}.`);
+    const SET = { 'stage-wide': 'The studio', 'couch-front': 'The hot seat', 'gallery-side': 'The Peanut Gallery', doorway: 'The stage door', 'green-wide': 'Backstage', 'green-close': 'Backstage' };
+    let where = null;
+    for (const b of a.show.blocks) {
+      if (b.title) { ln(''); ln(`[${b.title.kicker}: ${b.title.name}]`); }
+      const here = b.clip ? 'Clip' : SET[b.set] || b.set;
+      if (here !== where && !b.title) { ln(''); ln(`(${here})`); }
+      where = here;
+      for (const l of b.lines) ln(l.beat ? `  ${l.beat}` : `${l.by}: ${l.text}`);
+    }
+    if (a.aftermayhem) { ln(''); sec('AFTERMATH AFTERMAYHEM'); _textAftermayhem(a.aftermayhem, ln); }
+    if (a.awards?.length) { ln(''); ln('SEASON AWARDS:'); a.awards.forEach(aw => ln(`${aw.title}: ${aw.winner} — ${aw.description}`)); }
+    return;
+  }
   ln(`Guests: ${a.interviewees.join(', ')}`);
   if (a.peanutGallery.length) ln(`Peanut Gallery: ${a.peanutGallery.join(', ')}`);
   // Interviews

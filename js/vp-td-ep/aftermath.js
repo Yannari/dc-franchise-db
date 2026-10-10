@@ -7,7 +7,8 @@
 // on the left couch, each guest walking out to the hot seat on the right, the Peanut Gallery (the
 // voted-out already interviewed) on the couches behind them and at the sides of the stage, growing
 // as the show goes on. Nothing here decides anything; it says what the engine wrote, in order.
-import { plateKey, cleanText } from './steps.js';
+import { plateKey, cleanText, venueOf } from './steps.js';
+import { throwbackScene } from './twist-screens.js';
 
 // strip the quotes the engine wraps every spoken line in
 const said = t => cleanText(String(t || '').trim().replace(/^"([\s\S]*)"$/, '$1').replace(/^“([\s\S]*)”$/, '$1'));
@@ -32,9 +33,62 @@ const GALLERY = [
 
 export function hasAftermath(ep) { return !!ep?.aftermath && ((ep.aftermath.interviews || []).length || (ep.aftermath.reunionDiscussion || []).length); }
 
+// ── the show as td/aftermath/show.js wrote it (the user, 2026-10-10: "something this level"), on the
+// studio's own sets: the lounge, the interview couch, the Peanut Gallery's couches, the doorway, the
+// green room. Seats in each frame's own pixels (1600x900), the seated anchored on the cushion. ──
+const SEATS = {
+  'stage-wide': { hA: [600, 528, 17], g: [780, 528, 17], hB: [960, 528, 17], L0: [110, 545, 16], L1: [245, 545, 16], R0: [1290, 525, 16], R1: [1440, 525, 16] },
+  'couch-front': { hA: [450, 600, 23], g: [800, 600, 23], hB: [1150, 600, 23] },
+  'gallery-side': { G0: [140, 585, 21], G1: [330, 585, 21], G2: [830, 600, 21], G3: [1020, 600, 21], G4: [1210, 600, 21], G5: [1400, 600, 21], G6: [1290, 425, 15], G7: [1480, 425, 15] },
+  'doorway': { walk: [720, 740, 28] },
+  'green-wide': { S0: [690, 605, 15], S1: [820, 605, 15], S2: [960, 605, 15] },
+  'green-close': { C0: [480, 650, 24], C1: [800, 650, 24], C2: [1120, 650, 24] },
+};
+const SET_PLACE = { 'stage-wide': 'Total Drama Aftermath', 'couch-front': 'The hot seat', 'gallery-side': 'The Peanut Gallery', doorway: 'The stage door', 'green-wide': 'The green room', 'green-close': 'The green room' };
+function showScreen(ep, a, o) {
+  const show = a.show;
+  const [HA, HB] = (show.hosts || []).map(h => h.name);
+  const venue = venueOf(ep, o);
+  const hist = o.history || globalThis.gs?.episodeHistory || [];
+  const steps = [];
+  let guest = null;
+  for (const b of show.blocks || []) {
+    if (b.clip) {
+      // a look back: the season's own place, as old footage
+      if (b.shot) steps.push({ ...throwbackScene(b.shot, venue, hist.find(h => h.num === b.shot.ep) || ep, 'Flashback'), noWx: true });
+    } else {
+      const plate = plateKey('aftermath', b.set, 'day');
+      if (!plate) continue;
+      const places = {};
+      guest = null;
+      for (const [n, slot] of Object.entries(b.seats || {})) {
+        const at = SEATS[b.set]?.[slot]; if (!at) continue;
+        const stand = b.set === 'doorway';
+        places[n] = AT(at[0], at[1], { s: at[2] / 100, h: at[2], ...(stand ? {} : { sit: true }), ...(n === HA || n === HB ? { host: true } : {}) });
+        if (slot === 'g' || slot === 'walk') guest = n;
+      }
+      const speakers = [...new Set(b.lines.filter(l => l.by).map(l => l.by))];
+      steps.push({ k: 'scene', spot: b.set, tod: 'day', plate, place: SET_PLACE[b.set] || 'Total Drama Aftermath', time: 'Live', card: !steps.some(x => x.k === 'scene'), cut: false, still: true, noWx: true,
+        focus: speakers.filter(n => places[n]).slice(0, 3), bg: [], places, host: HA, aftermath: true, wide: true });   // (each set is already its own camera angle: no zoom)
+    }
+    if (b.title) steps.push({ k: 'title', kicker: b.title.kicker, name: b.title.name, faces: [...new Set(b.lines.filter(l => l.by).map(l => l.by))].slice(0, 6), ...(b.hammer ? { tone: 'fire' } : {}) });
+    for (const l of b.lines) {
+      if (l.beat) {
+        const act = l.act === 'arrive' && guest ? { kind: 'arrive', who: [guest], ride: 'walk' } : (l.act === 'hammer' || l.act === 'hammer-miss') && guest ? { kind: l.act, who: [guest] } : l.act === 'webcam' ? { kind: 'phone' } : null;
+        steps.push({ k: 'beat', text: cleanText(l.beat), focus: guest && /hammer|walks out/.test(l.beat) ? [guest] : [], ...(act ? { act } : {}), ...(l.applause ? { applause: l.applause } : {}), ...(l.tense ? { tense: true } : {}) });
+      } else {
+        const host = l.by === HA || l.by === HB;
+        steps.push({ k: 'say', by: l.by, text: cleanText(l.text), focus: [l.by], ...(host ? { host: true } : {}), ...(l.loud ? { loud: true } : {}) });
+      }
+    }
+  }
+  return { id: 'aftermath-show', kind: 'aftermath', venue: 'aftermath', ep: ep.num, label: a.isReunion ? 'The Reunion' : 'Aftermath', host: HA, steps };
+}
+
 export function tdAftermathScreen(ep, o = {}) {
   if (!hasAftermath(ep)) return null;
   const a = ep.aftermath;
+  if (a.show?.blocks?.length && plateKey('aftermath', 'stage-wide', 'day')) return showScreen(ep, a, o);
   const plate = plateKey('islands', 'aftermath-studio', 'day');
   if (!plate) return null;
   const host = o.host || 'Chris';

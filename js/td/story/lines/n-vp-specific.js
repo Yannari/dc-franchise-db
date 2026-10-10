@@ -31,7 +31,7 @@ const GLUE = [
 ];
 const MATH = [
   { when: { count: 'tight' }, turns: [
-    { by: 'a', say: "Okay, let's actually count. We've got {votes}, and they've got {them}, maybe." },
+    { by: 'a', say: "Okay, let's actually count. It's {us}, so that's {votes}. They've got {theirSide}, so that's {them}, maybe." },
     { by: 'b', say: "That's basically even." },
     { by: 'a', say: "Which means one person decides tonight, and I want to know who that person is before we walk in." },
     { by: 'b', say: "And if it ties?" },
@@ -39,7 +39,7 @@ const MATH = [
     { by: 'a', conf: "It's {votes} against {them}. In a vote that close, the plan doesn't matter. The one person who changes their mind matters." },
   ] },
   { when: { count: 'close' }, turns: [
-    { by: 'a', say: "Here's the math: we've got {votes} on {target}, and their side's got {them}." },
+    { by: 'a', say: "Here's the math. It's {us} on {target}, that's {votes}. And they've got {theirSide}, so {them}." },
     { by: 'b', say: "So we're fine." },
     { by: 'a', say: "We're fine if nobody moves. One flip and it's a tie, and two flips means it's one of us." },
     { by: 'b', say: "So who's the one most likely to flip?" },

@@ -148,7 +148,7 @@ export default {
   // ── the count ──
   'vp.count.close': [
     { id: 'npl.k1', when: { otherMe: false, otherB: false }, turns: [
-      { by: 'a', say: "Here's where we are: they're trying to get {them} people on {other}. We've got {votes} on {target}, if nobody flips." },
+      { by: 'a', say: "Here's where we are. They've got {theirSide} trying to get {other} out, that's {them}. And it's {us} on {target}, that's {votes}, if nobody flips." },
       { by: 'b', say: "That's close." },
       { by: 'a', say: "It's close, so nobody talks to anybody on that side tonight, okay? Not even to be nice.", v: { anxious: "It's way too close. I'm going to be sick until the votes are read.", competitive: "Close is fine. Close means we win by one." } },
     ] },
@@ -158,12 +158,12 @@ export default {
       { by: 'a', say: "Then I find out who, and they're next." },
     ] },
     { id: 'npl.k6', when: { otherMe: true }, turns: [
-      { by: 'a', say: "And yes, they're coming for me too. They've got {them} on my name, and we've got {votes} on {target}.", v: { tough: "They've got {them} votes on me and we've got {votes} on {target}, so let them try.", anxious: "They've got {them} people on my name, and we've got {votes} on {target}, so please, please let that be enough." } },
+      { by: 'a', say: "And yes, they're coming for me too. They've got {theirSide} on my name, that's {them}, and it's {us} on {target}, that's {votes}.", v: { tough: "They've got {theirSide} on me, that's {them}. It's {us} on {target}, that's {votes}. So let them try.", anxious: "They've got {theirSide} on my name, that's {them}, and it's {us} on {target}, that's {votes}, so please, please let that be enough." } },
       { by: 'b', say: "So if anybody flips, you're gone." },
       { by: 'a', say: "So nobody flips." },
     ] },
     { id: 'npl.k7', when: { otherB: true }, turns: [
-      { by: 'a', say: "They've got {them} on you, {b}. We've got {votes} on {target}, so as long as we hold, you're fine." },
+      { by: 'a', say: "They've got {theirSide} on you, {b}, that's {them}. But it's {us} on {target}, that's {votes}, so as long as we hold, you're fine." },
       { by: 'b', say: "As long as we hold." },
       { by: 'a', say: "We'll hold." },
     ] },

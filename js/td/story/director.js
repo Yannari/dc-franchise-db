@@ -797,7 +797,14 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   // not here if possible), the name they tell camp, and why b is really in
   const shaky = [...rest].sort((x, y) => getBond(a, x) - getBond(a, y) || x.localeCompare(y))[0] || null;
   const cover = alt || (rival?.target && rival.target !== a ? rival.target : null) || outside.find(x => x !== a) || null;
-  const data = { target: boot, votes: numberWord(voters.length), ...(relCase === 'isolate' ? { keep: rel.partner } : {}), ...(relCase === 'pledge' ? { protects: rel.protects } : {}), ...(shaky ? { shaky } : {}), ...(cover ? { cover } : {}), them: numberWord(them || 1), ...(mark ? { mark } : {}), ...(pair ? { partner: pair } : {}),
+  // the sides, by name (the user, 2026-10-10: "four against five" on day one, and nobody had ever been
+  // shown who the four and the five were): who a is counting on, said from a's side ("you, me, Sky and
+  // Riot"), and who the other side is
+  const usNames = voters.filter(v => v !== a);
+  const us = list([...(b && usNames.includes(b) ? ['you'] : []), 'me', ...usNames.filter(v => v !== b)]);
+  const themNames = rival ? (rival.members || []).filter(m => tribal.includes(m) && m !== rival.target && !voters.includes(m)) : [];
+  const theirSide = themNames.length ? list(themNames) : 'the rest of them';
+  const data = { target: boot, us, theirSide, votes: numberWord(voters.length), ...(relCase === 'isolate' ? { keep: rel.partner } : {}), ...(relCase === 'pledge' ? { protects: rel.protects } : {}), ...(shaky ? { shaky } : {}), ...(cover ? { cover } : {}), them: numberWord(them || 1), ...(mark ? { mark } : {}), ...(pair ? { partner: pair } : {}),
     ...(theirs ? { theirs } : {}), ...(alt ? { alt } : {}), ...(rest.length ? { others: list(rest) } : {}), ...(rival?.target ? { other: rival.target } : {}) };
   // the glue (the user's Disventure Camp read: "Aiden connects Gabby and Tom to Lake and Rosa. Cut him out, and
   // that group is toast"): the target is close to two people here who aren't close to each other

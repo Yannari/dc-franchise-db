@@ -127,7 +127,7 @@ export default {
       { by: 'c', say: "{target} decides things?" },
       { by: 'a', say: "Watch them at dinner. Everybody looks at {target} before they say anything." },
       { by: 'b', say: "How many have we got?" },
-      { by: 'a', say: "{votes}, and they've got {them}. It's close.", when: { tally: ['close', 'tight'] } },
+      { by: 'a', say: "It's {us}, that's {votes}, and they've got {theirSide}. It's close.", when: { tally: ['close', 'tight'] } },
       { by: 'a', say: "{votes}. It's enough.", when: { tally: ['all', 'enough'] } },
       { by: 'c', conf: "I've walked past {theirs} a hundred times and never noticed they look at {target} first. Now I can't stop seeing it." },
     ] },

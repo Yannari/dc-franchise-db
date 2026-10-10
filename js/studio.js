@@ -342,6 +342,7 @@ function _kitOut(d) {
 }
 const _kitCount = d => { const o = _kitOut(d); return o ? Object.keys(o).length : 0; };
 const _tdSelected = () => { try { const f = window.seasonConfig?.format; return !f || f === 'total-drama'; } catch { return true; } };
+const _bbSelected = () => { try { return window.seasonConfig?.format === 'big-brother'; } catch { return false; } };
 
 function _blankChar() {
   return {
@@ -1922,8 +1923,9 @@ function _renderEditor() {
            Folded shut by default. It is eleven answers and it would otherwise be
            the longest thing on a form whose top half is the part you edit every
            time. Written BEFORE they play — nothing in here may reference a
-           season, because the tape was recorded before the door shut. -->
-      <details class="st-iv">
+           season, because the tape was recorded before the door shut.
+           Only while Big Brother is the selected show; a hidden fold keeps its answers. -->
+      ${_bbSelected() ? `<details class="st-iv">
         <summary class="st-iv-sum">Casting interview
           <span class="st-hint">${_ivCount(d)} of ${INTERVIEW_QUESTIONS.length} answered &middot; shown on their wiki page</span>
         </summary>
@@ -1937,7 +1939,7 @@ function _renderEditor() {
               placeholder="in their own voice">${_esc(d.interview?.[x.key] || '')}</textarea>
           </label>`).join('')}
         </div>
-      </details>
+      </details>` : ''}
 
       <!-- THE TOTAL DRAMA KIT. Their own lines for camp scenes (js/td/story/kits.js): a running
            bit with the tease and the comeback, home, what they want, confessionals, what they do

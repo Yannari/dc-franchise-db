@@ -546,10 +546,11 @@ export const TDX_CSS = `
 @keyframes tdxVsQ{from{transform:translate(-50%,0) scale(.6);opacity:0}30%{opacity:1;transform:translate(-50%,-1cqw) scale(1)}to{transform:translate(calc(-50% + var(--dx,0)),-4cqw) scale(1);opacity:0}}
 .tdx .tdx-dust{position:absolute;width:1.6cqw;height:1cqw;border-radius:50%;background:rgba(214,196,160,.75);animation:tdxVsDust 1.1s ease-out forwards;pointer-events:none}
 @keyframes tdxVsDust{from{transform:translate(-50%,0) scale(.4);opacity:.9}to{transform:translate(calc(-50% + var(--dx,0)),-1.5cqw) scale(1.8);opacity:0}}
-.tdx .tdx-tb{position:absolute;inset:0;pointer-events:none;backdrop-filter:sepia(.55) saturate(.7) contrast(1.06) brightness(.95);box-shadow:inset 0 0 14cqw rgba(40,20,0,.55);z-index:1}
+.tdx .tdx-tb{position:absolute;inset:0;pointer-events:none;background:rgba(150,104,48,.32);mix-blend-mode:multiply;box-shadow:inset 0 0 14cqw rgba(40,20,0,.55);z-index:1}
 .tdx .tdx-tbtag{position:absolute;right:2.2cqw;top:9cqw;font:400 1.5cqw/1 'Lilita One',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#ffe9b8;background:rgba(60,30,0,.55);border:.15cqw solid rgba(255,233,184,.6);padding:.45cqw .9cqw;border-radius:.4cqw;z-index:2;animation:tdxTbBlink 2.2s ease-in-out infinite}
 @keyframes tdxTbBlink{0%,100%{opacity:1}50%{opacity:.55}}
-.tdx .tdx-board{position:absolute;inset:0;pointer-events:none;backdrop-filter:blur(.9cqw) saturate(1.05);background:rgba(0,0,0,.06);z-index:2;display:flex;align-items:center;justify-content:center;gap:8cqw;padding-bottom:9cqw}
+.tdx .tdx-board-bg{position:absolute;inset:-3%;pointer-events:none;background-size:cover;background-position:center;filter:blur(.9cqw) saturate(1.05) brightness(.92);z-index:2}
+.tdx .tdx-board{position:absolute;inset:0;pointer-events:none;background:rgba(0,0,0,.06);z-index:2;display:flex;align-items:center;justify-content:center;gap:8cqw;padding-bottom:9cqw}
 .tdx .tdx-board .team{display:flex;flex-direction:column;align-items:center;gap:1.2cqw}
 .tdx .tdx-board .tname{font:400 2.2cqw/1 'Lilita One',system-ui,sans-serif;color:#fff;background:var(--tc);padding:.5cqw 1.6cqw;border-radius:.7cqw;text-shadow:0 .15cqw 0 rgba(0,0,0,.45);box-shadow:0 .3cqw 1cqw rgba(0,0,0,.35)}
 .tdx .tdx-board .grid{display:grid;grid-template-columns:repeat(var(--cols),8.2cqw);gap:1.2cqw}

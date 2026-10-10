@@ -173,7 +173,7 @@ export function worldHtml(screen, L) {
   h += `</div>${night && !indoor && !gl ? '<div class="tdx-wash"></div>' : ''}`;
   // the sky behind a living plate takes the hour and the weather: stars and a moon, storm cloud, dusk
   const moon = grade === 'night' ? '<i class="tdx-moon"></i>' : '';
-  return h.replace('<!--sky-->', gl ? `<div class="tdx-sky g-${grade}">${moon}${sky}</div>` : '') + flagsHtml(L) + signsHtml(L) + recapHtml(L);
+  return h.replace('<!--sky-->', gl ? `<div class="tdx-sky g-${grade}">${moon}${sky}</div>` : '') + flagsHtml(L) + signsHtml(L) + recapHtml(L, vkey);
 }
 // Each venue's climate: the weathers its days are drawn from, the commoner ones listed more than once.
 // A northern lake camp gets sun, wind, cloud, rain, a storm and morning fog; a tropical island is hot,
@@ -255,11 +255,14 @@ export function signsHtml(L) {
 // "Previously on..." (twist-screens.js tdPreviouslyScreen): a throwback's tint and tag, and the cards
 // over the season's blurred backdrop: the boot crossed out, and the board of who is still in
 const XMARK = '<svg class="x" viewBox="0 0 100 100" aria-hidden="true"><path d="M16 18 Q50 52 84 82"/><path d="M84 16 Q48 50 18 84"/></svg>';
-export function recapHtml(L) {
+// (the blur is the set drawn again and blurred, never a backdrop-filter: Firefox paints a backdrop
+// filter over the living plate's WebGL canvas black, the user 2026-10-10)
+export function recapHtml(L, key) {
   const sc = L.scene || {};
   let h = sc.throwback ? '<div class="tdx-tb"></div><div class="tdx-tbtag">Last time</div>' : '';
   const B = sc.board;
   if (!B) return h;
+  if (key) h += `<div class="tdx-board-bg" style="background-image:url('${SETS}/${key}.webp')"></div>`;
   if (B.mode === 'title') return h + '<div class="tdx-board"></div>';
   if (B.mode === 'boot') return h + `<div class="tdx-board boot"><div class="av big out"><img src="${esc(avatar(B.who))}" alt="">${XMARK}</div><div class="bootname">${esc(B.who)}</div></div>`;
   return h + `<div class="tdx-board teams">${(B.teams || []).map(t => {

@@ -435,14 +435,14 @@ export function tdPreviouslyScreen(ep, o = {}) {
   const steps = [];
   let shown = null;
   const card = (scene, sig) => { if (shown === sig) return; shown = sig; steps.push(scene); };
-  card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Previously on...', time: 'Last time', card: true, focus: [], bg: [], places: {}, wide: true, board: { mode: 'title' } }, 'title');
+  card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Previously on...', time: 'Last time', card: true, focus: [], bg: [], places: {}, wide: true, still: true, board: { mode: 'title' } }, 'title');
   steps.push({ k: 'title', kicker: `Episode ${ep.num}`, name: 'Previously on...', faces: [] });
   for (const l of lines) {
     const text = cleanText(l.text);
     if (!text) continue;
     const sh = l.shot || null;
-    if (sh?.board) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: `${still.size} left`, time: 'Still in the game', card: false, focus: [], bg: [], places: {}, wide: true, board }, 'board');
-    else if (sh?.boot) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Eliminated', time: 'Last time', card: false, focus: [], bg: [], places: {}, wide: true, board: { mode: 'boot', who: sh.boot } }, `boot:${sh.boot}`);
+    if (sh?.board) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: `${still.size} left`, time: 'Still in the game', card: false, focus: [], bg: [], places: {}, wide: true, still: true, board }, 'board');
+    else if (sh?.boot) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Eliminated', time: 'Last time', card: false, focus: [], bg: [], places: {}, wide: true, still: true, board: { mode: 'boot', who: sh.boot } }, `boot:${sh.boot}`);
     else if (sh && (sh.players || []).length) {
       // the throwback: the place it happened, the people who were in it, as last time
       const where = sh.chal ? (plateKey(venue, TIEBREAK_ZONES[venue], 'day') ? TIEBREAK_ZONES[venue] : V.public) : sh.tribal ? 'ceremony' : (sh.spot || V.public);
@@ -451,7 +451,7 @@ export function tdPreviouslyScreen(ep, o = {}) {
       const key = plateKey(venue, teamSpot(venue, where, slot), tod) || plateKey(venue, where, tod) || plateKey(venue, V.public, 'day');
       const people = sh.players.filter(Boolean).slice(0, 4);
       card({ k: 'scene', spot: where, tod, plate: key, place: placeName(where), time: 'Last time', card: false, cut: false, focus: people, bg: [], places: placeScene(key, people, []), throwback: true }, `tb:${key}:${people.join(',')}`);
-    } else if (shown !== 'title' && !String(shown).startsWith('tb:')) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Previously on...', time: 'Last time', card: false, focus: [], bg: [], places: {}, wide: true, board: { mode: 'title' } }, 'title');
+    } else if (shown !== 'title' && !String(shown).startsWith('tb:')) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Previously on...', time: 'Last time', card: false, focus: [], bg: [], places: {}, wide: true, still: true, board: { mode: 'title' } }, 'title');
     steps.push({ k: 'say', by: host, host: true, text, ...(sh?.boot ? { tense: true } : {}) });
   }
   return { id: 'previously', kind: 'twist', venue, ep: ep.num, label: 'Previously On', host, steps };

@@ -55,7 +55,60 @@ const MATH = [
   ] },
 ];
 const CASES = ['threat', 'numbers', 'group', 'grudge', 'outsider', 'sank', 'pair', 'coming', 'idol'];
-const out = {};
+// A side the viewer has never seen form (director.js planTalk, fact sides false): instead of counting it, the
+// scene forms it, on camera. a says who the side is ({us}), and who the other side is ({theirSide}). The user,
+// 2026-10-10: "how is the viewer supposed to know who those 5 and 4 are? We didn't get a setup event."
+const FORM = {
+  'vp.form.duo': [
+    { id: 'nvs.f1', turns: [
+      { by: 'a', say: "Can I be honest with you? I think this camp is already splitting in two.", v: { sharp: "Let's not pretend. This camp is already picking sides.", loud: "Okay, real talk. There are two groups out here now, and I want to be in the right one.", soft: "Can I tell you something? I think people are already picking sides, and it scares me a little.", dry: "So, there are two groups now. Nobody announced it, but there are." } },
+      { by: 'b', say: "Already? How can you tell?" },
+      { by: 'a', say: "Because {theirSide} have barely left each other's side all day. Watch them. They eat together, they whisper together." },
+      { by: 'b', say: "So what are you saying?" },
+      { by: 'a', say: "I'm saying it should be {us}. We stick together, we vote together, and we're not the easy vote.", v: { sharp: "I'm saying it's {us}, starting right now. We vote together, and they don't get to pick us off.", soft: "I'm saying I'd feel a lot better if it was {us}. Together. Like, for real.", loud: "I'm saying it's {us}! Team! Right now!" } },
+      { by: 'b', say: "That's {votes} of us.", v: { dry: "That's {votes}. Not exactly a crowd.", anxious: "That's {votes}. Is {votes} enough?" } },
+      { by: 'a', say: "It's {votes} today. By tonight, it's whoever we can get." },
+      { by: 'b', say: "Okay. I'm in." },
+      { by: 'a', conf: "Everybody's going to say they didn't play the game on day one. I'd rather be the one who did." },
+    ] },
+    { id: 'nvs.f2', turns: [
+      { by: 'b', say: "You've been looking at {theirSide} all afternoon. What's going on?" },
+      { by: 'a', say: "They're a group. A real one. They've been together since this morning, and nobody else has noticed." },
+      { by: 'b', say: "And?" },
+      { by: 'a', say: "And if we don't do the same thing, they're going to vote us out one at a time, and they'll be nice about it.", v: { sharp: "And if we don't make our own, they'll pick us off one at a time and smile while they do it.", loud: "And if we don't do the same thing, we're toast! Both of us!", soft: "And if we don't look out for each other, nobody else is going to." } },
+      { by: 'b', say: "So who's ours?" },
+      { by: 'a', say: "It's {us}. That's {votes}. It's not a lot, but it's a start." },
+      { by: 'b', say: "Fine. But if this goes wrong, I'm blaming you." },
+      { by: 'a', say: "Deal." },
+      { by: 'b', conf: "I came out here thinking I'd make friends first and play later. {a} just skipped the friends part." },
+    ] },
+  ],
+  'vp.form.group': [
+    { id: 'nvs.fg1', turns: [
+      { beat: "{a} waits until everybody else is busy, then pulls {b} and the others away from camp." },
+      { by: 'a', say: "Okay, I'm just going to say it. I think we should stick together.", v: { sharp: "I'll keep this short. We're a group now, if you're smart.", loud: "Okay, huddle up. We're a team now. A real one.", soft: "I don't want to be weird about this, but I think we should look out for each other." } },
+      { by: 'b', say: "Like an alliance? It's the first day." },
+      { by: 'a', say: "Exactly. Because {theirSide} already are one, and they didn't wait for the second day." },
+      { by: 'b', say: "How do you know that?" },
+      { by: 'a', say: "Because I watched them do it. Same spot at lunch, same whispering, same looks when we walk by." },
+      { by: 'a', say: "It's {us}. That's {votes}. If we vote together, nobody picks us off." },
+      { by: 'b', say: "...Okay. Yeah. I'm in.", v: { dry: "Fine. It's better than being the first one out.", loud: "I'm in! Let's go!", anxious: "Okay. Yes. I'm in. Please let this work." } },
+      { by: 'a', conf: "Day one, and I've already got {votes} people. Tomorrow they'll all say they didn't want to play this fast. They'll be lying." },
+    ] },
+    { id: 'nvs.fg2', turns: [
+      { by: 'b', say: "Why did you drag us all the way out here?" },
+      { by: 'a', say: "Because I didn't want {theirSide} to hear this." },
+      { by: 'b', say: "Hear what?" },
+      { by: 'a', say: "That they're already a group, and if we don't become one too, we're the ones going home." },
+      { by: 'b', say: "That's a little paranoid, isn't it?" },
+      { by: 'a', say: "Maybe. But I'd rather be paranoid with {votes} people than relaxed on my own. It's {us}. Are we doing this or not?", v: { sharp: "Paranoid is what people call you right before you win. It's {us}. Yes or no?", soft: "Maybe I am. But I'd feel so much safer if it was {us}. Please?" } },
+      { by: 'b', say: "We're doing this." },
+      { by: 'b', conf: "{a} has a whole plan already. Honestly, I'm a little scared of {a}. But I'd rather be scared on the same side." },
+    ] },
+  ],
+};
+
+const out = { ...FORM };
 for (const c of CASES) {
   out[`vp2.${c}`] = [
     ...GLUE.map((e, i) => ({ id: `nvs.g${i + 1}.${c}`, ...e })),

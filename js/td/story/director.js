@@ -30,7 +30,6 @@ import { voiceOf } from './voice.js';
 import { writeFirstImpression } from './first-impressions.js';
 import { classify, file, prevAired } from './storylines.js';
 import { writeStory as writeRaw, hasStoryPool } from './write.js';
-import { STORY_POOLS } from './lines/index.js';
 import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './record.js';
 import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
@@ -847,12 +846,10 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   };
   // a whole scene, written start to finish (the user: "they're not talking to each other, it's cut
   // short"); the beats below only when no whole scene fits this cast
-  if (b) {
+  // (a side nobody has seen form plays beat by beat, so it can form on camera: vp.form below)
+  if (b && sides) {
     // a scene nobody has seen this season first, then the least-aired one
-    // (a side nobody has seen form: only the whole scenes that don't count it)
-    const noCount = sides ? null : ['vp2.' + caseOf, 'vp2.any'].flatMap(k => STORY_POOLS[k] || [])
-      .filter(e => !(e.turns || []).some(t => /\{(us|theirSide|them)\}/.test([t.say, t.conf, ...Object.values(t.v || {})].join(' ')))).map(e => e.id);
-    const ws = u => writeStory('vp2', caseOf, who, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place: 'secret', avoid: ctxAvoid('scramble'), unique: u, ...(noCount ? { entryIds: noCount } : {}) });
+    const ws = u => writeStory('vp2', caseOf, who, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place: 'secret', avoid: ctxAvoid('scramble'), unique: u });
     const whole = ws(true) || ws('soft');
     if (whole) recall(whole.lines);
     if (whole) return { story: true, kind: `story.vote.${as.step}.${caseOf}`, storyType: 'vote', step: as.step, players: [...new Set(Object.values(who).filter(Boolean))], lines: whole.lines,

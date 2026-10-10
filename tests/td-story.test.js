@@ -115,6 +115,10 @@ const GUARANTEED = [
   [/^long\.ret\./, ['lastSeason', 'lastPlace']],
   // the mentor arc (director.js) always carries the skill it's about
   [/^arc\.mentor\./, ['skill']],
+  // the arcs (td/story/arcs.js) carry what they're about: the friend and the rival, the mark, the challenge
+  [/^arc\.avenge\./, ['friend', 'rival']],
+  [/^arc\.fake\./, ['mark']],
+  [/^arc\.slack\.effort\./, ['chal']],
   [/^long\.ret\.(threat|target)\./, ['target', 'lastSeasonT', 'lastPlaceT']],
 ];
 // a long scene carries what its engine moment always carries (td/script/lines GUARANTEED)

@@ -1,10 +1,11 @@
 // td/story/kits/index.js — every character kit (td/story/kits.js), by name; kits-deep.js adds the
-// parts the pair scenes use (defend, deep)
+// parts the pair scenes use (defend, deep), kits-solo.js the solo scene (alone, solo)
 import kits1 from './kits1.js';
 import kits2 from './kits2.js';
 import kits3 from './kits3.js';
 import deep from './kits-deep.js';
+import solo from './kits-solo.js';
 
 const KITS = Object.assign({}, kits1, kits2, kits3);
-for (const [n, k] of Object.entries(deep)) if (KITS[n]) Object.assign(KITS[n], k);
+for (const [n, k] of [...Object.entries(deep), ...Object.entries(solo)]) if (KITS[n]) Object.assign(KITS[n], k);
 export default KITS;

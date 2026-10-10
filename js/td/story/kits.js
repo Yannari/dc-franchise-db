@@ -90,7 +90,7 @@ function plain(part, name, arch) {
 }
 // b takes in what a just said, before a asks back
 // (neutral: it follows any answer, a nana with purple hair or a brother who wants you to lose)
-const REACT = ["Huh. I didn't expect that.", "That's more than I thought you'd tell me.", "Wow. Okay.", "That actually makes a lot of sense.", "Huh. Okay.", "I can see that, honestly."];
+const REACT = ["Huh. I didn't expect that.", "That's more than I thought you'd tell me.", "Wow. Okay.", "That actually makes a lot of sense.", "Huh. Okay.", "I can see that, honestly.", "I didn't see that coming, honestly.", "That's a lot more than I knew about you.", "Oh. That's really sweet, actually.", "Okay, now I get you a bit better."];
 
 // write a scene from an entry built for these people (a pool of one, removed again)
 function writeKitScene(entry, who, facts, ctx) {
@@ -157,9 +157,9 @@ const pickOf = (list, ...k) => {
   for (let i = 0; i < list.length; i++) { const j = (start + i) % list.length; if (!taken.includes(j)) { taken.push(j); return list[j]; } }
   return list[start];
 };
-const SNEER = ["Do you ever talk about anything else?", "Nobody cares, {a}. Honestly. Nobody.", "Here we go again. Can we have one day off from it?", "You know it's not actually a personality, right?", "Wow. Every single day with this.", "Can you not? Just for one morning?", "I swear, if I hear about it one more time.", "Is there an off switch, {a}? Asking for everybody."];
-const PUSH = ["Whatever you say.", "Sure. Keep telling yourself that.", "I'm just saying what everybody's thinking.", "Okay. I'm done.", "Wow. Okay. Sensitive.", "Fine. Talk to someone who cares.", "You really need to relax.", "Noted. Still annoying."];
-const CLASH_CONF = ["{a} takes everything so personally. Fine. Now I know exactly where to push.", "I didn't mean to start a fight. I did mean what I said, though.", "I said one thing and {a} acted like I'd burned the shelter down."];
+const SNEER = ["Do you ever talk about anything else?", "Nobody cares, {a}. Honestly. Nobody.", "Here we go again. Can we have one day off from it?", "You know it's not actually a personality, right?", "Wow. Every single day with this.", "Can you not? Just for one morning?", "I swear, if I hear about it one more time.", "Is there an off switch, {a}? Asking for everybody.", "We get it. We all get it. We got it on day one.", "I'm begging you. Talk about the weather. Talk about anything else.", "If I had a coconut for every time you brought that up, I'd never be hungry again.", "Does it ever get old for you? Because it got old for me ages ago.", "Some of us are trying to have a quiet morning, {a}.", "You know nobody asked, right? Nobody ever asks."];
+const PUSH = ["Whatever you say.", "Sure. Keep telling yourself that.", "I'm just saying what everybody's thinking.", "Okay. I'm done.", "Wow. Okay. Sensitive.", "Fine. Talk to someone who cares.", "You really need to relax.", "Noted. Still annoying.", "Touchy, touchy.", "Okay, okay. Calm down. It was a joke, mostly.", "You don't have to bite my head off about it.", "Right. I'll just leave you to it, then.", "See, this is why nobody brings it up with you.", "Whatever helps you sleep at night."];
+const CLASH_CONF = ["{a} takes everything so personally. Fine. Now I know exactly where to push.", "I didn't mean to start a fight. I did mean what I said, though.", "I said one thing and {a} acted like I'd burned the shelter down.", "I don't get {a}, and I've stopped trying to.", "{a} needs to learn that not everybody finds it charming. I'm happy to be the teacher.", "I know I was harsh. Somebody had to say it, and I'm the only one here who'll say it to {a.posAdj} face.", "Every day, the same thing. I'm not proud I snapped. I'm just surprised it took this long.", "{a} looked hurt, and I almost felt bad about it. Almost."];
 /** b, who doesn't like a, sneers at a's thing; a defends it (Nura and Dunia). */
 export function kitClashScene(a, b, facts, ctx) {
   const k = KITS[a];
@@ -174,10 +174,10 @@ export function kitClashScene(a, b, facts, ctx) {
   if (w) def.mark();
   return w;
 }
-const OPEN = ["You okay? You've been quiet all day.", "Can I ask you something real?", "You don't have to be on all the time, you know. Not with me.", "Hey. What's going on with you? For real.", "You looked far away just now. Where'd you go?", "Can we just talk? No game stuff."];
-const HEARD = ["Thank you for telling me. Really.", "I had no idea. I'm glad you told me.", "That stays between us. I promise.", "That's a lot to carry around. I'm sorry.", "I'm really glad it was me you told.", "Hey. You're not on your own with that out here."];
-const CLOSE = ["Okay. Don't make it weird.", "Okay. That's enough feelings for one day.", "I don't usually say that stuff out loud.", "Anyway. Don't tell anybody I got soft.", "Thanks. I mean it. Now, back to the game.", "Okay, I'm done. That was a lot."];
-const DEEP_CONF = ["{a} told me something real today. I'm not going to use it. I just want {a.obj} to know I heard it.", "Everybody here sees one side of {a}. Today I got to see the other one.", "I came here to play a game. I didn't expect to actually care about anybody. Then {a} said that."];
+const OPEN = ["You okay? You've been quiet all day.", "Can I ask you something real?", "You don't have to be on all the time, you know. Not with me.", "Hey. What's going on with you? For real.", "You looked far away just now. Where'd you go?", "Can we just talk? No game stuff.", "You've been off all day. Want to walk?", "Sit with me for a minute. Everybody else is asleep.", "I feel like I don't actually know you yet. Not the real you.", "Is this game getting to you? Because it's getting to me."];
+const HEARD = ["Thank you for telling me. Really.", "I had no idea. I'm glad you told me.", "That stays between us. I promise.", "That's a lot to carry around. I'm sorry.", "I'm really glad it was me you told.", "Hey. You're not on your own with that out here.", "I'd never have guessed that. Not in a million years.", "That explains a lot about you, in a good way.", "I'm not going anywhere. You can say anything you want to me.", "Thank you for trusting me with that. I won't make you regret it."];
+const CLOSE = ["Okay. Don't make it weird.", "Okay. That's enough feelings for one day.", "I don't usually say that stuff out loud.", "Anyway. Don't tell anybody I got soft.", "Thanks. I mean it. Now, back to the game.", "Okay, I'm done. That was a lot.", "Okay, I'm going to go splash some water on my face now.", "Can we go back to talking about nothing? I'm good at nothing.", "Anyway. That's the most I've talked in a week.", "If you tell anybody I cried, I'll deny it."];
+const DEEP_CONF = ["{a} told me something real today. I'm not going to use it. I just want {a.obj} to know I heard it.", "Everybody here sees one side of {a}. Today I got to see the other one.", "I came here to play a game. I didn't expect to actually care about anybody. Then {a} said that.", "You spend so long out here working out who to trust. Then somebody tells you something like that, and you just know.", "I'll remember what {a} told me today long after I forget who won this season.", "I used to think {a} was all front. Now I know what's behind it, and I like {a} a lot more.", "{a} doesn't open up to anybody. Today {a} opened up to me. I'm not taking that lightly.", "It's easy to forget there are real people under all this. {a} reminded me today."];
 /** a, with a friend, says the true thing under the bit. */
 export function kitDeepScene(a, b, facts, ctx) {
   const deep = KITS[a] && take(a, 'deep');
@@ -191,9 +191,23 @@ export function kitDeepScene(a, b, facts, ctx) {
   return w;
 }
 
+// ── a alone with the camera, doing their own thing (kits-solo.js): a person, not a plot ──
+/** a, on their own: what the camera finds them doing, and what they say to it then. */
+export function kitSoloScene(a, facts, ctx) {
+  const k = KITS[a];
+  const line = k?.alone && take(a, 'solo');
+  if (!line) return null;
+  const entry = { id: `kit:${a}:solo:${(used()[a] || []).length}`, place: 'aside', turns: [
+    { beat: `{a} ${k.alone}.` }, { by: 'a', conf: line.line },
+  ] };
+  const w = writeKitScene(entry, { a }, facts, ctx);
+  if (w) line.mark();
+  return w;
+}
+
 // ── a running bit, called back by other people (who aren't the one doing it) ──
-const CALL = ["Has {about} brought up {thing} yet today?", "Ten minutes. I'm giving it ten minutes before {about} mentions {thing}.", "Did you hear {about} going on about {thing} again this morning?"];
-const ANSWER = ["Twice. Before breakfast.", "Not yet. I'm almost worried.", "I could do the whole speech for you at this point.", "Honestly? I'm starting to like it.", "Only four times. It's a slow day.", "I tried to change the subject. It didn't work."];
+const CALL = ["Has {about} brought up {thing} yet today?", "Ten minutes. I'm giving it ten minutes before {about} mentions {thing}.", "Did you hear {about} going on about {thing} again this morning?", "What's the over-under on {thing} coming up at dinner tonight?", "If {about} doesn't mention {thing} today, I'm going to check {about} for a fever.", "I've started counting how often {about} brings up {thing}. I need a bigger stick to keep tally on."];
+const ANSWER = ["Twice. Before breakfast.", "Not yet. I'm almost worried.", "I could do the whole speech for you at this point.", "Honestly? I'm starting to like it.", "Only four times. It's a slow day.", "I tried to change the subject. It didn't work.", "Three times, and once was in a whisper.", "Are you kidding? It's practically the camp's theme song now.", "I'm keeping a tally. We're in double figures.", "It came up while I was asleep. I heard it in a dream."];
 /** c and d joke about `about`'s thing, once it has aired as a bit at least once. */
 export function kitCallbackScene(c, d, about, facts, ctx) {
   const k = KITS[about];

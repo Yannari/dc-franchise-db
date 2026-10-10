@@ -77,7 +77,8 @@ export function isKey(ev) {
   // a joke) are optional colour (the user, 2026-10-08: "why do we only have key conversations")
   const minor = /^(friendship\.|rivalry\.(friction|cold)|showmance\.spark|alliance\.checkin|underdog\.rise)/.test(`${ev?.storyType}.${ev?.step}`);
   // the talk before a vote: the plan and the warning are key, the first idea and the lining-up are colour
-  const storyKey = !!ev?.story && ((ev.storyType === 'vote' && !['spark', 'ally'].includes(ev.step)) || (ev.storyType !== 'vote' && !!ev.storyline && !minor));
+  // ...and a chapter of a story that runs across episodes (td/story/arcs.js, the mentor arc): miss one and the next makes no sense
+  const storyKey = !!ev?.story && ((ev.storyType === 'vote' && !['spark', 'ally'].includes(ev.step)) || ev.storyType === 'arc' || (ev.storyType !== 'vote' && !!ev.storyline && !minor));
   return storyKey || KEY_KIND.test(ev?.scene?.kind || '') || KEY_TYPE.test(ev?.type || '');
 }
 
@@ -85,7 +86,7 @@ export function isKey(ev) {
 const KIND_TITLE = { alliance: 'An alliance', deal: 'A deal', pitch: 'A vote pitch', recruit: 'Recruiting', plot: 'A scheme', broker: 'Double agent', credit: 'Stolen credit',
   idol: 'An idol', adv: 'An advantage', fallout: 'Fallout', caught: 'Caught out', blind: 'A blind spot', goat: 'A read', save: 'The morning after', threat: 'A threat',
   romance: 'Romance', friend: 'Friends', drama: 'Drama', life: 'Camp life', hosted: 'Camp life', talk: 'A talk', flow: 'Gossip', read: 'A read', mind: 'Thinking', aside: 'After the challenge',
-  merge: 'The merge', morning: 'The last morning', crowd: 'Together', cross: 'Across the line', villain: 'The villain', spot: 'Noticed', throw: 'A thrown challenge', misvote: 'A wrong vote', last: 'Camp life', tail: 'Camp life' };
+  merge: 'The merge', morning: 'The last morning', crowd: 'Together', game: 'Free time', arc: 'A story', kit: 'Camp life', cross: 'Across the line', villain: 'The villain', spot: 'Noticed', throw: 'A thrown challenge', misvote: 'A wrong vote', last: 'Camp life', tail: 'Camp life' };
 const titleOf = ev => {
   const b = unspoil(String(ev.badgeText || '').trim()).text;
   if (b) return b.charAt(0) + b.slice(1).toLowerCase();

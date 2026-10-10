@@ -43,7 +43,8 @@ import { writePreviously } from './previously.js';
 import { chalMoments } from './chalmoments.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf, kindOf } from './places.js';
-import { kitBitScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, hasKit } from './kits.js';
+import { kitBitScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, hasKit } from './kits.js';
+import { runArcs, campGame } from './arcs.js';
 
 // Where the season lives decides a few words ({quarters}, {bed}) and what campers can know:
 // at a venue that reads the votes aloud (the Elimination Trial) everyone hears the count; at a
@@ -1664,6 +1665,30 @@ export function airTdEpisode(ep) {
             book[a] = ep.num;
             list.push({ at: 0.5, item: { story: true, kind: 'kit.life', storyType: 'kit', step: 'life', players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
               scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a} and ${b} get to know each other.`] } });
+            break;
+          }
+        }
+      }
+      // stories that run across episodes (arcs.js: revenge for a friend, the friend who won't let go, envy,
+      // the one who coasts, learning to talk to people, a showmance for the numbers), the camp's free time
+      // (four people and a game, every other episode), and one person alone with the camera in the afternoon
+      // (kits-solo.js, the least recently alone first). On top of the caps, like the kit scenes.
+      if (editOn && !ep.isFinale) {
+        const writeHere = (p, o, w, d, f, c) => writeStory(p, o, w, d, f, { ...c, avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
+        list.push(...runArcs(ep, camp, members, phase, () => n++, writeHere));
+        const busyNow = new Set(list.flatMap(x => x.item?.players || []).filter(Boolean));
+        const g = campGame(ep, camp, members, phase, () => n++, writeHere, busyNow);
+        if (g) list.push(g);
+        if (phase === 'post') {
+          const soloBook = ((gs.tdStory ||= {}).soloLast ||= {});
+          // somebody not already in a scene this afternoon first, then the rest
+          const loners = members.filter(m => hasKit(m)).sort((x, y) => (busyNow.has(x) ? 1 : 0) - (busyNow.has(y) ? 1 : 0) || (soloBook[x] ?? -99) - (soloBook[y] ?? -99) || x.localeCompare(y));
+          for (const a of loners) {
+            const w = kitSoloScene(a, factsFor({ who: { a }, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside' });
+            if (!w) continue;
+            soloBook[a] = ep.num;
+            list.push({ at: 0.47, item: { story: true, kind: 'kit.solo', storyType: 'kit', step: 'solo', players: [a], lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'kit', who: { a }, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a}, on ${pronouns(a).posAdj} own.`] } });
             break;
           }
         }

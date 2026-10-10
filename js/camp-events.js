@@ -2076,36 +2076,40 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         makeScene('friend.thanks', { a, b }, {}, [], _spotNow(a, b))));
 
     } else if (eventType === 'protectiveInstinct') {
-      // Player defends another from group criticism — needs someone who was recently blamed/targeted
+      // Somebody stands up for somebody who's getting a hard time, from somebody real. The target is one the
+      // camp likes least (average bond under 1.5) AND that at least one person here actually dislikes; the
+      // critics are the one or two who like them least. No critic, no defence: the scene used to say "what
+      // they were saying" with nobody saying anything (the user, 2026-10-10: "who are these people?", then of
+      // "Why did you stick up for me back there?": "Wix never did that").
+      const criticsOf = n => group.filter(p => p !== n && getBond(p, n) < 0)
+        .sort((x, y) => getBond(x, n) - getBond(y, n) || x.localeCompare(y)).slice(0, 2);
       const _recentTargets = group.filter(n => {
         const avgBond = group.filter(p => p !== n).reduce((s, p) => s + getBond(p, n), 0) / Math.max(1, group.length - 1);
-        return avgBond < 1.5;
+        return avgBond < 1.5 && criticsOf(n).length;
       });
       if (!_recentTargets.length) continue;
       const target = _recentTargets[Math.floor(Math.random() * _recentTargets.length)];
+      const critics = criticsOf(target);
       // anyone who likes the target can be the one who steps in; loyalty and boldness make it likelier,
       // in proportion (stats are never a gate on what someone does: CLAUDE.md "Stats are ALWAYS Proportional")
-      const defenders = group.filter(p => p !== target && getBond(p, target) >= 0.5);
+      const defenders = group.filter(p => p !== target && !critics.includes(p) && getBond(p, target) >= 0.5);
       if (!defenders.length) continue;
       const a = _pick(defenders, n => Math.max(0.1, pStats(n).loyalty * 0.4 + pStats(n).boldness * 0.3 + getBond(n, target) * 0.2));
       addBond(a, target, 0.7);
       addBond(target, a, 0.8);
-      // who was giving the target a hard time: the one or two here who like them least, if anybody actually
-      // dislikes them (the user, 2026-10-10, of "Two people are giving Fiore a hard time": "who are these
-      // people?" — the scene invented them). Shut down in front of the camp, they cool on the defender and
-      // on the target; everyone else saw somebody stand up for somebody.
-      const critics = group.filter(p => p !== a && p !== target && getBond(p, target) < 0)
-        .sort((x, y) => getBond(x, target) - getBond(y, target) || x.localeCompare(y)).slice(0, 2);
+      // shut down in front of the camp, the critics cool on the defender and on the target; everyone else saw
+      // somebody stand up for somebody
       critics.forEach(c => { addBond(c, a, -0.5); addBond(c, target, -0.3); });
       group.filter(p => p !== a && p !== target && !critics.includes(p)).forEach(p => addBond(p, a, 0.1));
       const pA = pronouns(a), pT = pronouns(target);
       const loA = pStats(a).loyalty;
       Math.random(); // the draw that picked the sentence (the season must not move)
-      // with critics, a faces them ('loud': c is the first, {more} the second); without, a defends the target
-      // where it counts, out of sight ('quiet'), or the target is surprised a did it at all ('surprise')
-      const ending = critics.length ? 'loud' : loA >= 8 ? 'quiet' : 'surprise';
+      // how it's told (narrative selection only): two who barely know each other ('surprise': the target can't
+      // work out why); a loyal one who did it out of the target's sight and tells them ('quiet'); else to the
+      // critic's face, in front of everyone ('loud'). c is the critic in all three; {more} the second one.
+      const ending = getBond(a, target) <= 1.5 ? 'surprise' : loA >= 8 ? 'quiet' : 'loud';
       events.push(scriptEvent({ type: 'protectiveInstinct', players: [a, target, ...critics], badgeText: 'DEFENDED', badgeClass: 'green' },
-        makeScene('friend.defend', { a, b: target, ...(critics[0] ? { c: critics[0] } : {}) }, { ending, ...(critics[1] ? { more: critics[1] } : {}) }, [], _spotNow(a, target))));
+        makeScene('friend.defend', { a, b: target, c: critics[0] }, { ending, ...(critics[1] ? { more: critics[1] } : {}) }, [], _spotNow(a, target))));
 
     } else if (eventType === 'sharedMeal') {
       const a = _pick(group, n => Math.max(0.1, pStats(n).loyalty * 0.3 + pStats(n).social * 0.3 + pStats(n).endurance * 0.2 + 1));

@@ -101,7 +101,7 @@ export default {
       { by: 'a', say: "Is there a problem?" },
       { by: 'b', say: "It's fine, {a}." },
       { by: 'a', say: "It doesn't look fine. It looks like {c} and {more} ganging up on one person." },
-      { by: 'c', say: "Relax, we were only joking around." },
+      { by: 'c', say: "Relax. We were only saying that {b} {charge}. It's true." },
       { beat: "{c} and {more} find something else to do." },
       { by: 'b', say: "You didn't have to do that." },
       { by: 'a', say: "I know I didn't. That's kind of the point." },
@@ -112,7 +112,7 @@ export default {
     { id: 'nl6.d2', when: { more: false }, turns: [
       { beat: "{c} is giving {b} a hard time. {a} walks over and stands between them." },
       { by: 'a', say: "Is there a problem, {c}?" },
-      { by: 'c', say: "No problem. I was just telling {b} a few things." },
+      { by: 'c', say: "No problem. I was just telling {b} that {b} {charge}." },
       { by: 'a', say: "Well, now you can tell me instead." },
       { beat: "{c} doesn't. {c} finds something else to do." },
       { by: 'b', say: "You didn't have to do that." },

@@ -68,11 +68,6 @@ export default {
     1: { loud: "Can you STOP? Nobody cares about your grandma's dog!", cruel: "Could you stop? Nobody here cares about your grandma's dog." },
     7: { loud: "Okay, that was too far, and I'll say sorry later, when I'm less hungry.", calm: "That one was too far, and I'll apologise later, once I've eaten something." },
   },
-  'nl6.d1': {
-    1: { calm: "Is there a problem?", loud: "Is there a PROBLEM here?", tough: "Is there a problem?" },
-    3: { calm: "It doesn't look fine. It looks like two people ganging up on one.", tough: "It doesn't look fine. It looks like two on one." },
-    9: { calm: "{a} didn't even raise {a.posAdj} voice. {a} just stood there, and it was enough.", warm: "{a} just stood there next to me, and it was enough. I'm never going to forget that." },
-  },
   'nlx.j1': {
     1: { loud: "Did you see {b} out there? UNREAL!", calm: "Did you see {b} out there? Unreal." },
     3: { warm: "What's that supposed to mean?", tough: "What's that supposed to mean?" },

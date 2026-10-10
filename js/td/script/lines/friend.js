@@ -653,62 +653,99 @@ const DEFEND_LOUD = [
     { by: 'b', conf: "{a} called out {c} and {more} in front of everyone. Now everybody knows who's been on my case." },
   ] },
 ];
+// quiet: a told c off where b couldn't hear it, and tells b afterwards (c named, not there)
 const DEFEND_QUIET = [
-  { id: 'fr.dq1', turns: [
-    { beat: "When {b}'s name comes up, {a} quietly steers the conversation somewhere else." },
-    { by: 'a', conf: "{b} doesn't know I did that. {b} doesn't need to know." },
+  { id: 'fr.dq1', when: { third: true }, turns: [
+    { by: 'a', say: "Hey. Just so you know, {c} was going on about you earlier." },
+    { by: 'b', say: "Great. What did {c} say?" },
+    { by: 'a', say: "That you're dead weight. I told {c} you've carried more water than anyone here." },
+    { by: 'b', say: "You said that? To {c}'s face?" },
+    { by: 'a', say: "Yeah. {c} didn't have much to say after that." },
+    { by: 'b', conf: "{a} stuck up for me when I wasn't even there. Nobody's done that for me in this game." },
   ] },
-  { id: 'fr.dq2', turns: [
-    { by: 'a', say: "Hey. Watch yourself. Your name's been floating." },
+  { id: 'fr.dq2', when: { third: true }, turns: [
+    { by: 'a', say: "Watch yourself around {c}. Your name's been coming up." },
     { by: 'b', say: "Since when?" },
-    { by: 'a', say: "Since yesterday. I've been pushing it back down." },
+    { by: 'a', say: "Since this morning. I shut it down, but {c} isn't going to stop." },
+    { by: 'b', say: "Why would you shut it down? You didn't have to." },
+    { by: 'a', say: "Because what {c} was saying wasn't fair." },
+    { by: 'a', conf: "{b} doesn't need to know everything I said to {c}. {b} just needs to know somebody's got {b.posAdj} back." },
   ] },
-  { id: 'fr.dq3', when: { register: 'schemer' }, turns: [
-    { by: 'a', conf: "Every time someone says {b}, I give them a different name. {b} has no idea I'm the only reason {b} is still here." },
+  { id: 'fr.dq3', when: { third: true, register: 'schemer' }, turns: [
+    { by: 'a', say: "{c} wanted your name for the next vote. I gave {c} a different one." },
+    { by: 'b', say: "You did what?" },
+    { by: 'a', say: "Relax. {c} thinks it was {c.posAdj} own idea." },
+    { by: 'b', say: "That's terrifying. Thank you." },
+    { by: 'a', conf: "{b} has no idea how close that was. Neither does {c}. That's how I like it." },
   ] },
-  { id: 'fr.dq4', turns: [
-    { by: 'b', say: "Why does everyone keep being weird around me?" },
-    { by: 'a', say: "Don't worry about it. I've got it handled." },
-    { by: 'b', conf: "I don't know what {a} handled. I'm just glad somebody did." },
+  { id: 'fr.dq4', when: { third: true, loyal: true }, turns: [
+    { by: 'b', say: "Why has {c} gone quiet around me?" },
+    { by: 'a', say: "Because I had a word with {c}." },
+    { by: 'b', say: "What kind of word?" },
+    { by: 'a', say: "The kind where {c} stops talking about you behind your back." },
+    { by: 'a', conf: "{b} has my loyalty. Sometimes that means having a quiet word with {c} that {b} never hears." },
   ] },
-  { id: 'fr.dq5', when: { loyal: true }, turns: [
-    { by: 'a', conf: "{b} has my loyalty. Loyalty means working behind the scenes. Nobody needs a thank-you." },
+  { id: 'fr.dq5', when: { third: true }, turns: [
+    { by: 'b', say: "{c} walked past me just now and didn't say a word. What happened?" },
+    { by: 'a', say: "I told {c} that if {c} has a problem with you, {c} can say it to you, not behind your back." },
+    { by: 'b', say: "And what did {c} say?" },
+    { by: 'a', say: "Nothing. That's sort of the point." },
+    { by: 'b', conf: "{a} went and dealt with {c} without telling me first. I don't know whether to be grateful or embarrassed. Grateful, I think." },
   ] },
-  { id: 'fr.dq6', turns: [
-    { beat: "{a} spends the afternoon talking to people one by one. By sunset, {b}'s name has stopped coming up." },
-    { by: 'a', conf: "I didn't campaign. I just reminded people of everything {b} does around here." },
+  { id: 'fr.dq6', when: { third: true }, turns: [
+    { by: 'a', say: "Just so you hear it from me, {c} and I had words about you." },
+    { by: 'b', say: "Good words or bad words?" },
+    { by: 'a', say: "Bad words from {c}. Better ones from me." },
+    { by: 'b', say: "You didn't have to get into it with {c} for me." },
+    { by: 'a', say: "I know. I'd do it again." },
+    { by: 'a', conf: "{c} has been on {b}'s case since we got here. Somebody had to tell {c} to stop, and I'd rather it was me." },
   ] },
-];
+]
+// surprise: a and b barely talk, and a stood up to c anyway; b can't work out why
 const DEFEND_SURPRISE = [
-  { id: 'fr.ds1', turns: [
-    { by: 'a', say: "Actually, {b} has been really good to me. So let's not." },
-    { beat: 'Everyone looks at {a}. {a} looks surprised too.' },
-    { by: 'a', conf: "I didn't plan that. It just came out. I meant it." },
+  { id: 'fr.ds1', when: { third: true }, turns: [
+    { by: 'b', say: "Why did you stick up for me with {c}? We barely talk." },
+    { by: 'a', say: "Because what {c} was saying about you wasn't true." },
+    { by: 'b', say: "That's it?" },
+    { by: 'a', say: "That's it. I don't like watching people get piled on." },
+    { by: 'b', conf: "Out of everybody, {a} was the last person I expected to stand up to {c} for me. I don't know what to do with that." },
   ] },
-  { id: 'fr.ds2', turns: [
-    { by: 'b', say: "Did you just defend me?" },
-    { by: 'a', say: "I guess I did." },
-    { by: 'b', say: "Since when do you defend people?" },
-    { by: 'a', say: "Since right now, apparently." },
+  { id: 'fr.ds2', when: { third: true }, turns: [
+    { by: 'c', say: "Honestly, {b} hasn't done one useful thing since we got here." },
+    { by: 'a', say: "{b} has done more for this team today than you have, {c}, and you know it." },
+    { by: 'c', say: "Says who?" },
+    { by: 'a', say: "Says everybody who's been watching you sit there." },
+    { by: 'b', conf: "{a} has barely said two words to me, and then {a} shut {c} down in front of everyone. I'm so confused." },
   ] },
-  { id: 'fr.ds3', turns: [
-    { by: 'a', say: "That's not fair to {b}." },
-    { by: 'b', conf: "{a} has never said a nice word about me. Today {a} stood up for me. I'm so confused." },
+  { id: 'fr.ds3', when: { third: true, register: 'shy' }, turns: [
+    { by: 'c', say: "Let's be real, {b} is going home first." },
+    { by: 'a', say: "Um. I don't think that's fair. {b} is really nice, actually." },
+    { by: 'c', say: "Since when do you talk?" },
+    { by: 'a', say: "Since right now, I guess." },
+    { by: 'b', conf: "{a} never talks. {a} talked for me, to {c}'s face. I'll never forget that." },
   ] },
-  { id: 'fr.ds4', when: { register: 'shy' }, turns: [
-    { by: 'a', say: "Um. I think {b} is nice. Actually." },
-    { beat: 'The group goes quiet. {a} goes red.' },
-    { by: 'b', conf: "{a} never talks. {a} talked for me. I'll never forget that." },
+  { id: 'fr.ds4', when: { third: true, register: 'fiery' }, turns: [
+    { by: 'c', say: "Can somebody tell {b} to stop trying so hard? It's embarrassing." },
+    { by: 'a', say: "You know what? No. Leave {b} alone, {c}." },
+    { by: 'c', say: "Since when are you two friends?" },
+    { by: 'a', say: "We're not. I just hate a pile-on more than I dislike anybody." },
+    { by: 'a', conf: "I don't even know {b} that well. I just know {c} was out of line." },
   ] },
-  { id: 'fr.ds5', turns: [
-    { by: 'a', say: "{b} covered for me last week. I'm not voting for {b}. Sorry." },
-    { by: 'a', conf: "I owed {b} one. Now we're even. Mostly." },
+  { id: 'fr.ds5', when: { third: true }, turns: [
+    { by: 'c', say: "I don't get why everyone's so nice to {b}. {b} hasn't done anything." },
+    { by: 'a', say: "I'm not even that close to {b}, and I can tell you that's not true." },
+    { by: 'c', say: "Then why are you sticking up for {b}?" },
+    { by: 'a', say: "Because somebody should, and you weren't going to." },
+    { by: 'b', conf: "{a} and I have barely spoken, and {a} just went against {c} for me. I owe {a} now, I think." },
   ] },
-  { id: 'fr.ds6', when: { register: 'fiery' }, turns: [
-    { by: 'a', say: "You know what? No. {b} doesn't deserve this." },
-    { by: 'a', conf: "I don't even like {b} that much. I just hate a pile-on more." },
+  { id: 'fr.ds6', when: { third: true }, turns: [
+    { by: 'b', say: "I heard what you said to {c} about me. Thanks, I guess?" },
+    { by: 'a', say: "You don't have to thank me. {c} was being unfair." },
+    { by: 'b', say: "We've said about five words to each other since we got here." },
+    { by: 'a', say: "Then that's five words, and now this." },
+    { by: 'b', conf: "I thought {a} didn't even know my name. Turns out {a} knew it well enough to defend it to {c}." },
   ] },
-];
+]
 const TEACH_PHYSICAL = [
   { id: 'fr.tp1', turns: [
     { by: 'a', say: "You're climbing with your arms. Use your legs. Push, don't pull." },

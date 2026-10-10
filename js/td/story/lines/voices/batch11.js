@@ -146,8 +146,8 @@ export default {
     8: { calm: "No side deals.", warm: "No side deals. Promise." },
   },
   'nlx.d3': {
-    0: { calm: "Why did you stick up for me back there? We barely talk.", warm: "Why did you stick up for me? We barely even talk." },
-    4: { calm: "Out of everybody, {a} was the last person I expected to have my back. I don't know what to do with that.", warm: "{a} stood up for me, and I never expected it from {a}. I want to thank {a} properly." },
+    0: { calm: "Why did you stick up for me when {c} said I {charge}? We barely know each other.", warm: "Why did you stick up for me, when {c} said I {charge}? We barely even talk." },
+    6: { calm: "Out of everybody, {a} was the last person I expected to stand up to {c} for me. I don't know what to do with that.", warm: "{a} stood up to {c} for me, and I never expected it from {a}. I want to thank {a} properly." },
   },
   'no.b1': {
     2: { calm: "We're just sitting here.", dry: "We're literally just sitting here." },

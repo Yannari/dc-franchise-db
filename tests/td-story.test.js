@@ -120,6 +120,10 @@ const GUARANTEED = [
   [/^arc\.avenge\./, ['friend', 'rival']],
   [/^arc\.fake\./, ['mark']],
   [/^arc\.slack\.effort\./, ['chal']],
+  // a defence and its setup carry the charge (director.js defendCharge); the setup the record behind it
+  [/^(long\.friend\.defend\.|story\.defend\.setup\.)/, ['charge']],
+  [/^story\.defend\.setup\.sank/, ['chal']],
+  [/^story\.defend\.setup\.kit/, ['thing']],
   [/^long\.ret\.(threat|target)\./, ['target', 'lastSeasonT', 'lastPlaceT']],
 ];
 // a long scene carries what its engine moment always carries (td/script/lines GUARANTEED)

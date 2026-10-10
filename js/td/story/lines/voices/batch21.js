@@ -120,7 +120,6 @@ export default {
     3: { proud: "It's called getting to know each other.", loud: "It's called GETTING TO KNOW EACH OTHER!", warm: "It's called getting to know each other!" },
     6: { proud: "See? That wasn't so bad.", loud: "SEE? That wasn't so bad!", warm: "See? That wasn't so bad!" },
   },
-  'nlx.d1': { 1: { loud: "Okay, can we STOP? {b} isn't even here to defend {b.ref}!", competitive: "Can we stop? {b} isn't even here to defend {b.ref}.", dry: "Okay, can we stop? {b} isn't even here to defend {b.ref}.", nerdy: "Can we stop? {b} isn't here to defend {b.ref}." } },
   'nk.bm1': { 1: { blunt: "I want to do something that makes them all stop and look at me. Soon.", cruel: "I want to do something that makes them all stop and stare, and I want it soon.", warm: "I want to do something that makes them all notice me, soon.", loud: "I want to do something that makes them ALL stop and look at me!", schemer: "I want a move that makes them all stop and look at me, soon." } },
   'nk.lb1': {
     2: { warm: "{target} has been telling people you're the next to go, and I'm so sorry.", anxious: "{target} has been telling people you're the next to go.", schemer: "{target} has been telling people you're the next to go.", nerdy: "{target} has been telling people you're the next to go." },

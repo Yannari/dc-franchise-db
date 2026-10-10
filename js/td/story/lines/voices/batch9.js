@@ -84,11 +84,6 @@ export default {
     0: { calm: "I really like {b}, but {b} is winning everything, and people are starting to notice.", loud: "I LOVE {b}, but {b} is winning everything, and people are noticing!" },
     1: { calm: "If I stay close to {b}, maybe I'm safe, or maybe I'm standing next to the biggest target in the game.", competitive: "Staying close to {b} keeps me safe until it doesn't. I need to know when to step away." },
   },
-  'nlx.d1': {
-    2: { calm: "We're just talking.", cruel: "We're just talking. Relax." },
-    3: { loud: "You keep saying the same name! I'm telling you, it's NOT happening!", tough: "You keep saying the same name, and it's not happening while I'm here.", calm: "You keep saying the same name, and I'm telling you it isn't happening." },
-    5: { calm: "Maybe that put a target on me. I don't care. {b} has done more for this team than half of them.", warm: "Maybe that put a target on me, and I honestly don't care. {b} has done so much for this team." },
-  },
   'nar.e3': {
     0: { calm: "They're coming after somebody I care about tonight. My Extra Vote goes on {target}, and I'll live with what happens.", loud: "They're coming for somebody I care about tonight, so my Extra Vote goes straight on {target}!", warm: "They're going after someone I really care about tonight. My Extra Vote is on {target}, and I hope it's enough to save them." },
   },
@@ -172,11 +167,6 @@ export default {
     1: { calm: "Can I help you?", loud: "Can I HELP you?", tough: "Can I help you with something?" },
     7: { loud: "Getting water isn't interesting!", calm: "Getting water isn't interesting." },
     9: { calm: "{a} hasn't said one threatening thing all day, and I'm more scared of {a} than of anyone who has.", loud: "{a} hasn't said ONE threatening thing all day, and I'm terrified!", tough: "{a} hasn't threatened me once, and it's getting to me anyway. I hate that it's working." },
-  },
-  'nlx.d2': {
-    1: { calm: "Great. From who?", loud: "Great. From WHO?" },
-    3: { calm: "You didn't have to do that.", warm: "You didn't have to do that. Thank you." },
-    5: { calm: "{a} stuck up for me when I wasn't even there. Nobody's done that for me in a long time.", tough: "{a} stuck up for me when I wasn't around to hear it. I'm not going to forget that." },
   },
   'nk.ai1': {
     1: { calm: "That sounds bad.", dry: "That sounds bad already." },

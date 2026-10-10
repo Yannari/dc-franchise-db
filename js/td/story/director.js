@@ -44,7 +44,7 @@ import { writePreviously } from './previously.js';
 import { chalMoments } from './chalmoments.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf, kindOf } from './places.js';
-import { kitBitScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, hasKit } from './kits.js';
+import { kitBitScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, hasKit, kitOf } from './kits.js';
 import { runArcs, campGame } from './arcs.js';
 
 // Where the season lives decides a few words ({quarters}, {bed}) and what campers can know:
@@ -69,6 +69,23 @@ let ctxAvoid = () => null;
 // only the people the written scene has in it: a role the entry never speaks or names stays off the stage
 // (the viewer stages scene.who; read 2026-10-10: Will and Sterling stood silent through Ashley and Seraphine)
 const castOnly = (who, w) => (Array.isArray(w?.cast) ? Object.fromEntries(Object.entries(who).filter(([r]) => w.cast.includes(r) || r === 'a' || r === 'b')) : who);
+// What the critic holds against b in a defence (camp-events.js protectiveInstinct; n-defend.js): something the
+// game really produced, as a verb phrase that reads after "I", "you" or a name. b came last for a team that
+// lost the last challenge; else b had votes at the last vote; else b's own kit thing; else not pulling weight.
+function defendCharge(ep, b) {
+  const prev = (gs.episodeHistory || []).find(h => h.num === ep.num - 1);
+  const team = prev ? (prev.tribesAtStart || []).find(t => (t.members || []).includes(b))?.name : null;
+  const ch = team ? challengeOf(prev, team) : null;
+  if (ch?.lost && ch.sank === b) {
+    const chal = prev.challengeLabel || 'the challenge';
+    return { chargeKey: 'sank', chal, charge: `cost us ${chal}` };
+  }
+  if ((prev?.votingLog || []).some(v => v.voted === b && v.voter !== b)) return { chargeKey: 'votes', charge: 'should be the next one to go' };
+  const k = kitOf(b);
+  if (k?.thing) return { chargeKey: 'kit', thing: k.thing, charge: `won't stop going on about ${k.thing}` };
+  return { chargeKey: 'lazy', charge: 'should be doing a lot more around here' };
+}
+
 const liveEp = ep => Array.isArray(ep?.bondChanges) && ep.num === gs.episode;
 function applyStoryFx(ep, list) {
   const live = liveEp(ep);
@@ -1532,6 +1549,8 @@ export function airTdEpisode(ep) {
         // who they were to each other before the season (siblings, exes, an old betrayal)
         const hist = historyOf(who.a, who.b);
         const data = { ...rec.data, ...hist.data, ...(ev.scene?.data || {}) };
+        // a defence says what the critic said (and the setup scene shows them saying it)
+        if (ev.type === 'protectiveInstinct' && who.b) Object.assign(data, defendCharge(ep, who.b));
         const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), ...(ev.scene?.facts || {}), ...rec.facts,
           ...Object.fromEntries(['ending', 'result', 'intent', 'reason', 'again', 'size'].filter(k => ev.scene?.data?.[k] != null).map(k => [k, ev.scene.data[k]])),
           ...Object.fromEntries(['rival', 'friend', 'threat', 'weak', 'group', 'plan', 'boot', 'wrote', 'fallen', 'more', 'betrayer', 'holder', 'wins', 'other', 'target', 'mine', 'theirs'].map(k => [k, !!data[k]])),
@@ -1892,6 +1911,38 @@ export function airTdEpisode(ep) {
       // one stretch of the day, not a stack of cut-off scenes (the user: "do we have conversation when
       // people jump in"): scenes that share a person run on from each other at the same spot
       out[phase] = chainScenes(ep, camp, phase, out[phase], () => n++);
+      // A defence needs its setup (the user, 2026-10-10: "it needs a prior setup, that's how we know it's a good
+      // show with continuation"): the critic needles b in front of people, and the one who'll defend b is
+      // there and says nothing yet (n-defend.js). It airs earlier the same stretch of the day, after the opener.
+      const evsHere = eventsOf(ep, camp, phase);
+      for (let idx = 0; idx < out[phase].length; idx++) {
+        const it = out[phase][idx];
+        if (!it || it.setupDone) continue;
+        // the long defence carries its charge; the engine's own short one (when the long ones are spent) gets it here
+        // (a defence chained onto the scene before it keeps the engine's type, story: true)
+        const raw = it.ref != null && evsHere[it.ref]?.type === 'protectiveInstinct' && !it.scene?.data?.chargeKey ? evsHere[it.ref]
+          : it.story && it.type === 'protectiveInstinct' && !it.scene?.data?.chargeKey ? it : null;
+        const longOne = it.story && /^long\.friend\.defend/.test(it.kind || '') && it.scene?.data?.chargeKey;
+        if (!raw && !longOne) continue;
+        const sc = raw ? raw.scene : it.scene;
+        const { a: defender, b: target, c: critic } = sc?.who || {};
+        if (!defender || !target || !critic) continue;
+        const sdata = longOne ? it.scene.data : { ...(sc.data || {}), ...defendCharge(ep, target) };
+        const more = sdata.more && members.includes(sdata.more) ? sdata.more : null;
+        const swho = { a: critic, b: target, c: defender, ...(more ? { d: more } : {}) };
+        const sw = writeStory('story.defend.setup', sdata.chargeKey, swho, sdata,
+          { ...factsFor({ who: swho, data: {} }, { ep: ep.num, phase }), fourth: !!more }, { ep: ep.num, camp, phase, n: n++, place: 'public', unique: 'soft' });
+        it.setupDone = true;
+        if (!sw) continue;
+        const setup = { story: true, kind: 'story.defend.setup', storyType: 'drama', step: 'setup', players: Object.values(swho),
+          lines: sw.lines, text: sw.text, lineId: sw.lineId, scene: { kind: 'defend.setup', who: swho, data: sdata, spot: sw.spot || null },
+          badgeText: '', badgeClass: '', why: [`${critic} gives ${target} a hard time, and ${defender} sees it.`] };
+        // early in the stretch, after the opener, and never inside a run of chained scenes
+        let pos = idx > 1 ? 1 : idx;
+        while (pos < idx && out[phase][pos]?.chained) pos++;
+        out[phase].splice(pos, 0, setup);
+        idx++;
+      }
       // nobody stands on stage through a scene that never speaks to them or of them: the viewer stages
       // scene.who (the user, 2026-10-10: "it's a 4 person scene but no one talking but the 2 girls").
       // The morning, the challenge's aftermath and the psyche beats cast more people than their lines use.

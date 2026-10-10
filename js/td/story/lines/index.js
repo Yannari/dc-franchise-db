@@ -87,9 +87,10 @@ import nMentor from './n-mentor.js';
 import nBanter from './n-banter.js';
 import nArcs from './n-arcs.js';
 import nGames from './n-games.js';
+import nDefend from './n-defend.js';
 import VOICES from './voices/index.js';
 
-const FILES = [firstday, firstpair, firstgroups, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival, nGroup3, nGroup4, nGroup5, nArrival2, nTwist, nTribal2, nTwist2, nVote4, nVote5, nRoom, nAuction, nExile, nFeast, nPlan, nPlan2, nFirstImp, nAucFloor, nFirstImp2, nPublic, nTqa, nAdvPlay, nTqa2, nArc, nVp2, nVt2, nTqa3, nMorning3, nVp3, nVt3, nPsy, nRun, nThr, nPrev, nLong2, nLong3, nChm, nBlame, nRecall, nChm2, nReveal, nBooth2, nCrash, nExit2, nThr2, nLong4, nCover, nRel, nVp4, nLong5, nLong6, nTeach, nHandoff, nFinal, nDeep, nNote, nFinds, nSolo2, nChm3, nAlliance4, nReturnee, nVpSpecific, nMentor, nBanter, nArcs, nGames];
+const FILES = [firstday, firstpair, firstgroups, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival, nGroup3, nGroup4, nGroup5, nArrival2, nTwist, nTribal2, nTwist2, nVote4, nVote5, nRoom, nAuction, nExile, nFeast, nPlan, nPlan2, nFirstImp, nAucFloor, nFirstImp2, nPublic, nTqa, nAdvPlay, nTqa2, nArc, nVp2, nVt2, nTqa3, nMorning3, nVp3, nVt3, nPsy, nRun, nThr, nPrev, nLong2, nLong3, nChm, nBlame, nRecall, nChm2, nReveal, nBooth2, nCrash, nExit2, nThr2, nLong4, nCover, nRel, nVp4, nLong5, nLong6, nTeach, nHandoff, nFinal, nDeep, nNote, nFinds, nSolo2, nChm3, nAlliance4, nReturnee, nVpSpecific, nMentor, nBanter, nArcs, nGames, nDefend];
 
 export const STORY_POOLS = {};
 for (const f of FILES) for (const [k, v] of Object.entries(f)) STORY_POOLS[k] = STORY_POOLS[k] ? [...STORY_POOLS[k], ...v] : [...v];

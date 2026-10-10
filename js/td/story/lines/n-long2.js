@@ -40,38 +40,46 @@ export default {
     ] },
   ],
   // a stands up for b, whose name keeps coming up
-  // c is giving b a hard time ({more}, a second one, when there is one): they're real, and they're in it
+  // the defence, after its setup (n-defend.js, earlier the same day): c said b {charge}, in front of people.
+  // loud: a takes it up with c, to c's face, with b there
   'long.friend.defend.loud': [
     { id: 'nlx.d1', turns: [
-      { beat: "{c} is going on about {b} at the fire again. {a} has heard enough." },
+      { beat: "{c} is still going on about {b} {here}. {a} has heard enough." },
+      { by: 'c', say: "I'm just saying what everyone's thinking. {b} {charge}." },
       { by: 'a', say: "Okay, can we stop? {b} is sitting right there, {c}." },
       { by: 'c', say: "We're just talking." },
-      { by: 'a', say: "You're talking about who should go, and you keep saying the same name. I'm saying it's not happening." },
+      { by: 'a', say: "You've been saying it all day, and you keep saying the same name. I'm saying it stops now." },
       { by: 'c', say: "Since when are you {b}'s spokesperson?" },
       { by: 'a', say: "Since you started talking about {b} like {b} isn't three feet away." },
       { by: 'b', say: "It's okay. I can hear all of it." },
-      { beat: "The fire goes quiet." },
+      { beat: "Nobody says anything for a while." },
       { by: 'c', conf: "Fine. {a} wants to be {b}'s bodyguard, then {a} can go home with {b}." },
-      { by: 'a', conf: "Maybe that just put a target on me. I don't care. {b} has done more for this team than {c} ever has." },
+      { by: 'a', conf: "Maybe that just put a target on me. I don't care. {c} has been at {b} all day, and somebody had to stop it." },
     ] },
   ],
+  // quiet: a told c off where b couldn't hear it, and tells b afterwards
   'long.friend.defend.quiet': [
     { id: 'nlx.d2', turns: [
-      { by: 'a', say: "Hey. I heard your name come up again today." },
-      { by: 'b', say: "Great. From who?" },
-      { by: 'a', say: "Doesn't matter. I told them you're not an easy vote, and I meant it." },
+      { by: 'a', say: "Hey. I heard what {c} said about you earlier, that you {charge}." },
+      { by: 'b', say: "Yeah. Everybody heard it." },
+      { by: 'a', say: "I went and found {c} afterwards, and I told {c} to knock it off." },
+      { by: 'b', say: "You said that to {c}? Out loud?" },
+      { by: 'a', say: "Out loud, and {c} didn't like it much." },
       { by: 'b', say: "You didn't have to do that." },
       { by: 'a', say: "I know I didn't. I wanted to." },
-      { by: 'b', conf: "{a} stuck up for me when I wasn't even there. Nobody's done that for me in this game, or honestly, out of it." },
+      { by: 'b', conf: "{a} went and stood up to {c} for me when I wasn't even there. Nobody's done that for me in this game, or honestly, out of it." },
     ] },
   ],
+  // surprise: a and b barely talk, and a stood up to c anyway
   'long.friend.defend.surprise': [
     { id: 'nlx.d3', turns: [
-      { by: 'b', say: "Why did you stick up for me back there? We barely talk." },
-      { by: 'a', say: "Because what they were saying wasn't true." },
+      { by: 'b', say: "Why did you stick up for me when {c} said I {charge}? We barely talk." },
+      { by: 'a', say: "Because it wasn't fair, and {c} knew it wasn't fair." },
       { by: 'b', say: "That's it?" },
-      { by: 'a', say: "That's it. I don't like people getting piled on." },
-      { by: 'b', conf: "Out of everybody here, {a} was the last person I expected to have my back. Now I don't know what to do with that." },
+      { by: 'a', say: "That's it. I don't like watching people get piled on." },
+      { by: 'b', say: "{c} is going to be mad at you now, you know that?" },
+      { by: 'a', say: "{c} was already mad at somebody. Now it's me instead of you. I can handle it." },
+      { by: 'b', conf: "Out of everybody, {a} was the last person I expected to stand up to {c} for me. Now I don't know what to do with that." },
     ] },
   ],
   // a starts a celebration; b and c join in

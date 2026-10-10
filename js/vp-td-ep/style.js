@@ -546,6 +546,27 @@ export const TDX_CSS = `
 @keyframes tdxVsQ{from{transform:translate(-50%,0) scale(.6);opacity:0}30%{opacity:1;transform:translate(-50%,-1cqw) scale(1)}to{transform:translate(calc(-50% + var(--dx,0)),-4cqw) scale(1);opacity:0}}
 .tdx .tdx-dust{position:absolute;width:1.6cqw;height:1cqw;border-radius:50%;background:rgba(214,196,160,.75);animation:tdxVsDust 1.1s ease-out forwards;pointer-events:none}
 @keyframes tdxVsDust{from{transform:translate(-50%,0) scale(.4);opacity:.9}to{transform:translate(calc(-50% + var(--dx,0)),-1.5cqw) scale(1.8);opacity:0}}
+.tdx .tdx-tb{position:absolute;inset:0;pointer-events:none;backdrop-filter:sepia(.55) saturate(.7) contrast(1.06) brightness(.95);box-shadow:inset 0 0 14cqw rgba(40,20,0,.55);z-index:1}
+.tdx .tdx-tbtag{position:absolute;right:2.2cqw;top:9cqw;font:400 1.5cqw/1 'Lilita One',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#ffe9b8;background:rgba(60,30,0,.55);border:.15cqw solid rgba(255,233,184,.6);padding:.45cqw .9cqw;border-radius:.4cqw;z-index:2;animation:tdxTbBlink 2.2s ease-in-out infinite}
+@keyframes tdxTbBlink{0%,100%{opacity:1}50%{opacity:.55}}
+.tdx .tdx-board{position:absolute;inset:0;pointer-events:none;backdrop-filter:blur(.9cqw) saturate(1.05);background:rgba(0,0,0,.06);z-index:2;display:flex;align-items:center;justify-content:center;gap:8cqw;padding-bottom:9cqw}
+.tdx .tdx-board .team{display:flex;flex-direction:column;align-items:center;gap:1.2cqw}
+.tdx .tdx-board .tname{font:400 2.2cqw/1 'Lilita One',system-ui,sans-serif;color:#fff;background:var(--tc);padding:.5cqw 1.6cqw;border-radius:.7cqw;text-shadow:0 .15cqw 0 rgba(0,0,0,.45);box-shadow:0 .3cqw 1cqw rgba(0,0,0,.35)}
+.tdx .tdx-board .grid{display:grid;grid-template-columns:repeat(var(--cols),8.2cqw);gap:1.2cqw}
+.tdx .tdx-board .av{position:relative;width:8.2cqw;height:8.2cqw;border-radius:50%;border:.45cqw solid var(--tc,#888);background:var(--tc,#888);overflow:visible;box-shadow:0 .3cqw .9cqw rgba(0,0,0,.4);animation:tdxBoardIn .45s cubic-bezier(.2,1.4,.4,1) both;animation-delay:calc(var(--i,0) * 45ms)}
+.tdx .tdx-board .av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.tdx .tdx-board .av.out{border-color:#4a4a4a;background:#6a6a6a}
+.tdx .tdx-board .av.out img{filter:grayscale(1) brightness(.92) contrast(1.05)}
+.tdx .tdx-board .x{position:absolute;inset:-8%;width:116%;height:116%;overflow:visible}
+.tdx .tdx-board .x path{fill:none;stroke:#c8333a;stroke-width:9;stroke-linecap:round;opacity:.92;stroke-dasharray:110;stroke-dashoffset:110;animation:tdxXDraw .35s ease-out forwards}
+.tdx .tdx-board .x path+path{animation-delay:.2s}
+.tdx .tdx-board.boot{flex-direction:column;gap:1.6cqw}
+.tdx .tdx-board .av.big{width:26cqw;height:26cqw;border-width:1.2cqw;animation:tdxBoardIn .6s cubic-bezier(.2,1.4,.4,1) both}
+.tdx .tdx-board .av.big .x path{stroke-width:7;animation-delay:.5s}
+.tdx .tdx-board .av.big .x path+path{animation-delay:.75s}
+.tdx .tdx-board .bootname{font:400 3cqw/1 'Lilita One',system-ui,sans-serif;color:#fff;text-shadow:0 .25cqw 0 rgba(0,0,0,.55),0 0 1.5cqw rgba(0,0,0,.4)}
+@keyframes tdxBoardIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes tdxXDraw{to{stroke-dashoffset:0}}
 .tdx .tdx-tear{position:absolute;width:.5cqw;height:.8cqw;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#9ad8ff;box-shadow:0 0 6px #9ad8ff;animation:tdxTear 1.4s ease-in forwards}
 @keyframes tdxTear{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,6cqw);opacity:0}}
 /* the faces at the reading (steps.js voteReaction): a feel per person, held for the step */

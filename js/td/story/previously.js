@@ -17,13 +17,17 @@ export function writePreviously(ep) {
   const host = seasonConfig?.host || 'Chris';
   // the show's own name (shows.js), never the series this camp borrowed its look from
   const show = formatName() || 'Total Drama';
-  const aired = Object.values(prev.campStory || {}).flatMap(c => [...(c.pre || []), ...(c.post || [])]).filter(x => x && x.kind);
+  // what aired last time, with the camp it aired at (a throwback shot is that place, those people)
+  const aired = Object.entries(prev.campStory || {}).flatMap(([camp, c]) => [...(c.pre || []), ...(c.post || [])].map(x => (x && x.kind ? { ...x, camp } : null))).filter(Boolean);
+  const shotOf = x => (x ? { players: (x.players || []).filter(Boolean).slice(0, 4), spot: x.scene?.spot?.id || null, camp: x.camp || null } : null);
   const find = re => aired.find(x => re.test(x.kind));
   const out = [];
   let n = 900;
-  const say = (beat, data = {}, facts = {}) => {
+  // each line carries what the screen shows under it (vp-td-ep twist-screens tdPreviouslyScreen): a
+  // throwback of the moment (its place, its people), the boot's card, or the board of who is left
+  const say = (beat, data = {}, facts = {}, shot = null) => {
     const w = writeStory(`prev.${beat}`, 'any', { h: host }, { show, ...data }, { ...facts }, { ep: ep.num, camp: 'prev', phase: 'pre', n: n++, place: 'confessional', unique: 'soft' });
-    if (w) out.push(...w.lines);
+    if (w) out.push(...w.lines.map(l => (shot ? { ...l, shot } : l)));
     return !!w;
   };
   say('open');
@@ -37,40 +41,46 @@ export function writePreviously(ep) {
     const loseM = new Set(prev.loser.members || []);
     const sank = [...ranked].reverse().find(p => loseM.has(p));
     const star = ranked.find(p => (prev.winner.members || []).includes(p));
-    say('chal', { chal, win, lose, x: star || win, y: sank || lose }, { sank: !!sank, carried: !!star });
-  } else if (chal && prev.immunityWinner) say('chalInd', { chal, x: prev.immunityWinner });
+    say('chal', { chal, win, lose, x: star || win, y: sank || lose }, { sank: !!sank, carried: !!star }, { chal: true, players: [star, sank].filter(Boolean) });
+  } else if (chal && prev.immunityWinner) say('chalInd', { chal, x: prev.immunityWinner }, {}, { chal: true, players: [prev.immunityWinner] });
   // what moved the game last time, four beats at most, then how it ended
   const beats = [];
-  const pair = re => { const x = find(re); return x?.players?.length >= 2 ? x.players : null; };
-  const blame = pair(/story.chal.lost|crowd.lost|blame./);
-  if (blame) beats.push(['blame', { x: blame[0], y: blame[1] }]);
-  const spark = pair(/romance|spark|showmance|flirt/);
-  if (spark) beats.push(['spark', { x: spark[0], y: spark[1] }]);
-  const fight = pair(/clash|fight|feud|confront|grudge|caught/);
-  if (fight && !(blame && fight.slice(0, 2).every(p => blame.includes(p)))) beats.push(['fight', { x: fight[0], y: fight[1] }]);
+  const pairEv = re => { const x = find(re); return x?.players?.length >= 2 ? x : null; };
+  const blame = pairEv(/story.chal.lost|crowd.lost|blame./);
+  if (blame) beats.push(['blame', { x: blame.players[0], y: blame.players[1] }, shotOf(blame)]);
+  const spark = pairEv(/romance|spark|showmance|flirt/);
+  if (spark) beats.push(['spark', { x: spark.players[0], y: spark.players[1] }, shotOf(spark)]);
+  const fight = pairEv(/clash|fight|feud|confront|grudge|caught/);
+  if (fight && !(blame && fight.players.slice(0, 2).every(p => blame.players.includes(p)))) beats.push(['fight', { x: fight.players[0], y: fight.players[1] }, shotOf(fight)]);
   const flip = find(/vote\.doubt\.breaks/);
-  if (flip) beats.push(['flip', { x: flip.players?.[0] }]);
+  if (flip) beats.push(['flip', { x: flip.players?.[0] }, shotOf(flip)]);
   const warn = find(/arc\.warn\.told/);
-  if (warn) beats.push(['warn', { x: warn.scene?.who?.a, y: warn.scene?.who?.b, pitcher: warn.scene?.data?.pitcher }]);
+  if (warn) beats.push(['warn', { x: warn.scene?.who?.a, y: warn.scene?.who?.b, pitcher: warn.scene?.data?.pitcher }, shotOf(warn)]);
   const ally = find(/arc\.ally\.formed|alliance\.form/);
-  if (ally && ally.scene?.data?.group) beats.push(['ally', { group: ally.scene.data.group }]);
+  if (ally && ally.scene?.data?.group) beats.push(['ally', { group: ally.scene.data.group }, shotOf(ally)]);
   const adv = (prev.idolPlays || [])[0];
-  if (adv?.player) beats.push(['adv', { x: adv.player }]);
+  if (adv?.player) beats.push(['adv', { x: adv.player }, { tribal: true, players: [adv.player] }]);
   const run = find(/^run\./);
-  if (run) beats.push(['runner', { x: run.players?.[0] }]);
+  if (run) beats.push(['runner', { x: run.players?.[0] }, shotOf(run)]);
   // the game beats outrank the camp ones when there are too many; they still air in story order
+  // (the show's recaps run six or seven beats, one sentence each)
   const RANK = ['flip', 'adv', 'warn', 'blame', 'ally', 'spark', 'fight', 'runner'];
-  const keep = new Set(beats.filter(([, d]) => Object.values(d).every(Boolean)).sort((p, q) => RANK.indexOf(p[0]) - RANK.indexOf(q[0])).slice(0, 4));
-  for (const b of beats) if (keep.has(b)) say(b[0], b[1]);
+  const keep = new Set(beats.filter(([, d]) => Object.values(d).every(Boolean)).sort((p, q) => RANK.indexOf(p[0]) - RANK.indexOf(q[0])).slice(0, 6));
+  for (const b of beats) if (keep.has(b)) say(b[0], b[1], {}, b[2]);
   if (prev.eliminated) {
     const blind = !!prev.tribalStory?.blindside;
-    say(blind ? 'blindside' : 'boot', { boot: prev.eliminated });
+    say(blind ? 'blindside' : 'boot', { boot: prev.eliminated }, {}, { boot: prev.eliminated });
   }
   // the tease: the kind of night, never the result
   const merge = !!ep.isMerge;
   const playsTonight = (ep.idolPlays || []).length > 0;
   const blindTonight = !!ep.tribalStory?.blindside;
-  say('tease', {}, { tease: merge ? 'merge' : playsTonight ? 'power' : blindTonight ? 'trust' : 'any' });
-  say('close');
+  // how many are left, over the board of who is still in (the show: "10 are left!")
+  const left = (prev.gsSnapshot?.activePlayers || gs.activePlayers || []).length;
+  const W = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
+  say('tease', {}, { tease: merge ? 'merge' : playsTonight ? 'power' : blindTonight ? 'trust' : 'any' }, { board: true });
+  const lw = W[left] || String(left);
+  if (left) say('left', { left: lw, Left: lw.charAt(0).toUpperCase() + lw.slice(1) }, {}, { board: true });
+  else say('close', {}, {}, { board: true });
   return out.length ? out : null;
 }

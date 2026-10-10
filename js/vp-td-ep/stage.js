@@ -158,7 +158,7 @@ export function worldHtml(screen, L) {
   h += `</div>${night && !indoor && !gl ? '<div class="tdx-wash"></div>' : ''}`;
   // the sky behind a living plate takes the hour and the weather: stars and a moon, storm cloud, dusk
   const moon = grade === 'night' ? '<i class="tdx-moon"></i>' : '';
-  return h.replace('<!--sky-->', gl ? `<div class="tdx-sky g-${grade}">${moon}${sky}</div>` : '') + flagsHtml(L) + signsHtml(L);
+  return h.replace('<!--sky-->', gl ? `<div class="tdx-sky g-${grade}">${moon}${sky}</div>` : '') + flagsHtml(L) + signsHtml(L) + recapHtml(L);
 }
 // Each venue's climate: the weathers its days are drawn from, the commoner ones listed more than once.
 // A northern lake camp gets sun, wind, cloud, rain, a storm and morning fog; a tropical island is hot,
@@ -236,6 +236,21 @@ export const BUSY_LABEL = { fish: 'fishing', read: 'reading', eat: 'eating', str
 export function signsHtml(L) {
   // a painted sign the viewer fills with a team's colour (Wawanakwa's challenge platform)
   return (L.scene?.signs || []).map(g => `<div class="tdx-sign" style="left:${(g.x0 * 100).toFixed(2)}%;top:${(g.y0 * 100).toFixed(2)}%;width:${((g.x1 - g.x0) * 100).toFixed(2)}%;height:${((g.y1 - g.y0) * 100).toFixed(2)}%;--fc:${esc(g.color)}">${g.name ? `<b>${esc(g.name)}</b>` : ''}</div>`).join('');
+}
+// "Previously on..." (twist-screens.js tdPreviouslyScreen): a throwback's tint and tag, and the cards
+// over the season's blurred backdrop: the boot crossed out, and the board of who is still in
+const XMARK = '<svg class="x" viewBox="0 0 100 100" aria-hidden="true"><path d="M16 18 Q50 52 84 82"/><path d="M84 16 Q48 50 18 84"/></svg>';
+export function recapHtml(L) {
+  const sc = L.scene || {};
+  let h = sc.throwback ? '<div class="tdx-tb"></div><div class="tdx-tbtag">Last time</div>' : '';
+  const B = sc.board;
+  if (!B) return h;
+  if (B.mode === 'title') return h + '<div class="tdx-board"></div>';
+  if (B.mode === 'boot') return h + `<div class="tdx-board boot"><div class="av big out"><img src="${esc(avatar(B.who))}" alt="">${XMARK}</div><div class="bootname">${esc(B.who)}</div></div>`;
+  return h + `<div class="tdx-board teams">${(B.teams || []).map(t => {
+    const cols = Math.max(2, Math.min(3, Math.ceil(t.members.length / 4)));
+    return `<div class="team" style="--tc:${esc(t.color)}">${t.name ? `<div class="tname">${esc(t.name)}</div>` : ''}<div class="grid" style="--cols:${cols}">${t.members.map((m, i) => `<div class="av${m.out ? ' out' : ''}" style="--i:${i}"><img src="${esc(avatar(m.n))}" alt="" title="${esc(m.n)}">${m.out ? XMARK : ''}</div>`).join('')}</div></div>`;
+  }).join('')}</div>`;
 }
 export function flagsHtml(L) {
   return (L.scene?.flags || []).map(f => `<div class="tdx-flag" style="left:${(f.u * 100).toFixed(2)}%;top:${(f.v * 100).toFixed(2)}%;height:${(f.h || 24).toFixed(1)}%;--fc:${esc(f.color || '#e8433f')}"><svg viewBox="0 0 60 100" preserveAspectRatio="xMidYMax meet"><rect x="8" y="4" width="5" height="96" rx="2" fill="#6b4a2a" stroke="#2a1a0a" stroke-width="1.5"/><circle cx="10.5" cy="5" r="4" fill="#f2c83a" stroke="#2a1a0a" stroke-width="1.5"/><path class="cloth" d="M13 10 Q30 4 44 11 T58 12 L58 40 Q44 34 30 40 T13 38 Z" fill="var(--fc)" stroke="#111" stroke-width="2"/></svg><b>${esc(f.name)}</b></div>`).join('');

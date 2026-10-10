@@ -405,16 +405,54 @@ export function tdAuctionScreen(ep, o = {}) {
   return { id: 'auction', kind: 'twist', venue, ep: ep.num, label: 'The Auction', host, steps };
 }
 
-/** "Previously on...": the host recaps last episode on the venue's set (td/story/previously.js). */
+/**
+ * "Previously on...": the host recaps last episode (td/story/previously.js), the way the show cuts it
+ * (the user, 2026-10-10, from Disventure Camp's recaps): every moment the host names plays as a
+ * throwback of where it happened, with the people in it; the boot gets their own card (their portrait
+ * in grey, crossed out, over the season's backdrop, blurred); and the count of who is left plays over
+ * the board of the season's teams, everyone still in in their team's colour, everyone out crossed.
+ */
+const TIEBREAK_ZONES = { 'hosted-camp': 'challenge-zone', 'film-lot': 'cage-stage', 'world-tour': 'ceremony', 'survival-island': 'volcano', carnival: 'bumper-arena' };
 export function tdPreviouslyScreen(ep, o = {}) {
   const lines = ep.tdPreviously || [];
   if (!lines.length) return null;
   const host = o.host || 'Chris';
   const venue = venueOf(ep, o);
   const V = VENUES[venue];
-  const { key, places } = gather(venue, V.public, 'day', [], host);
-  const steps = [{ k: 'scene', spot: V.public, tod: 'day', plate: key, place: placeName(V.public), time: `Episode ${ep.num}`, card: true, focus: [], bg: [], places, host }];
+  const hist = o.history || globalThis.gs?.episodeHistory || [];
+  const prev = hist.find(h => h.num === ep.num - 1);
+  // the season's backdrop, blurred behind the cards: Soluna's island (the user's frame), else the venue's map
+  const base = venue === 'survival-island' ? 'ui/recap-island-day' : (plateKey(venue, 'map', 'day') || plateKey(venue, V.public, 'day'));
+  // the board: the teams the season started with, who of them is still in as this episode starts
+  const first = hist.find(h => (h.tribesAtStart || []).length) || ep;
+  const teams = (first.tribesAtStart || []).map(t => ({ name: t.name, members: [...(t.members || [])] })).filter(t => t.members.length);
+  const still = new Set(prev?.gsSnapshot?.activePlayers || ep.tribalPlayers || []);
+  const everyone = new Set(teams.flatMap(t => t.members));
+  const extra = [...still].filter(n => !everyone.has(n));
+  if (extra.length) teams.push({ name: 'Joined later', members: extra });
+  const color = t => { try { return (o.colorOf && o.colorOf(t)) || '#888'; } catch { return '#888'; } };
+  const board = { mode: 'teams', teams: (teams.length ? teams : [{ name: '', members: [...still] }]).map(t => ({ name: t.name, color: color(t.name), members: t.members.map(n => ({ n, out: !still.has(n) })) })) };
+  const steps = [];
+  let shown = null;
+  const card = (scene, sig) => { if (shown === sig) return; shown = sig; steps.push(scene); };
+  card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Previously on...', time: 'Last time', card: true, focus: [], bg: [], places: {}, wide: true, board: { mode: 'title' } }, 'title');
   steps.push({ k: 'title', kicker: `Episode ${ep.num}`, name: 'Previously on...', faces: [] });
-  for (const l of lines) { const text = cleanText(l.text); if (text) steps.push({ k: 'say', by: host, host: true, text }); }
+  for (const l of lines) {
+    const text = cleanText(l.text);
+    if (!text) continue;
+    const sh = l.shot || null;
+    if (sh?.board) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: `${still.size} left`, time: 'Still in the game', card: false, focus: [], bg: [], places: {}, wide: true, board }, 'board');
+    else if (sh?.boot) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Eliminated', time: 'Last time', card: false, focus: [], bg: [], places: {}, wide: true, board: { mode: 'boot', who: sh.boot } }, `boot:${sh.boot}`);
+    else if (sh && (sh.players || []).length) {
+      // the throwback: the place it happened, the people who were in it, as last time
+      const where = sh.chal ? (plateKey(venue, TIEBREAK_ZONES[venue], 'day') ? TIEBREAK_ZONES[venue] : V.public) : sh.tribal ? 'ceremony' : (sh.spot || V.public);
+      const tod = sh.tribal ? 'night' : 'day';
+      const slot = sh.camp ? campSlot(ep, sh.camp, venue) : null;
+      const key = plateKey(venue, teamSpot(venue, where, slot), tod) || plateKey(venue, where, tod) || plateKey(venue, V.public, 'day');
+      const people = sh.players.filter(Boolean).slice(0, 4);
+      card({ k: 'scene', spot: where, tod, plate: key, place: placeName(where), time: 'Last time', card: false, cut: false, focus: people, bg: [], places: placeScene(key, people, []), throwback: true }, `tb:${key}:${people.join(',')}`);
+    } else if (shown !== 'title' && !String(shown).startsWith('tb:')) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Previously on...', time: 'Last time', card: false, focus: [], bg: [], places: {}, wide: true, board: { mode: 'title' } }, 'title');
+    steps.push({ k: 'say', by: host, host: true, text, ...(sh?.boot ? { tense: true } : {}) });
+  }
   return { id: 'previously', kind: 'twist', venue, ep: ep.num, label: 'Previously On', host, steps };
 }

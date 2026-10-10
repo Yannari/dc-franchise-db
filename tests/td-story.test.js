@@ -81,6 +81,7 @@ const GUARANTEED = [
   [/^prev\.warn\./, ['show', 'x', 'y', 'pitcher']],
   [/^prev\.ally\./, ['show', 'group']],
   [/^prev\.(boot|blindside)\./, ['show', 'boot']],
+  [/^prev\.left\./, ['show', 'left', 'Left']],
   [/^prev\./, ['show']],
   [/^vp\.recall\.(revenge|fallout)$/, ['target', 'moment', 'fallen']],
   [/^vp\.recall\./, ['target', 'moment']],

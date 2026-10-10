@@ -43,7 +43,7 @@ import { writePreviously } from './previously.js';
 import { chalMoments } from './chalmoments.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf, kindOf } from './places.js';
-import { kitBitScene, kitLifeScene, hasKit } from './kits.js';
+import { kitBitScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, hasKit } from './kits.js';
 
 // Where the season lives decides a few words ({quarters}, {bed}) and what campers can know:
 // at a venue that reads the votes aloud (the Elimination Trial) everyone hears the count; at a
@@ -1558,7 +1558,43 @@ export function airTdEpisode(ep) {
               scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a}'s own thing, and ${b} has opinions about it.`] } });
             break;
           }
+          const kitItem = (kind, step, players, w, who, why) => list.push({ at: kind === 'kit.call' ? 0.4 : 0.38, item: { story: true, kind, storyType: 'kit', step, players, lines: w.lines, text: w.text, lineId: w.lineId,
+            scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [why] } });
+          // the heat between two people who don't like each other: b sneers at a's thing, a defends it
+          // (every other day, so a cast full of kits doesn't fight every morning)
+          if (ep.num % 2 === 1) for (const a of kitted) {
+            if (book[a] === ep.num) continue;
+            const b = members.filter(m => m !== a && getBond(m, a) <= -3).sort((x, y) => getBond(x, a) - getBond(y, a) || x.localeCompare(y))[0];
+            if (!b) continue;
+            const who = { a, b };
+            const w = kitClashScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside' });
+            if (!w) continue;
+            book[a] = ep.num;
+            kitItem('kit.clash', 'clash', [a, b], w, who, `${b} can't stand ${a}, and today it came out.`);
+            break;
+          }
+          // a running bit, called back by two others (every other day, once it has aired)
+          if (ep.num % 2 === 0) for (const about of kitted) {
+            const [c, d] = members.filter(m => m !== about).sort((x, y) => getBond(about, x) - getBond(about, y) || x.localeCompare(y));
+            if (!c || !d) break;
+            const who = { a: c, b: d };
+            const w = kitCallbackScene(c, d, about, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside' });
+            if (!w) continue;
+            kitItem('kit.call', 'callback', [c, d], w, who, `${about}'s running bit, as the camp sees it.`);
+            break;
+          }
         } else {
+          // a friend hears the true thing under the bit (every other day)
+          if (ep.num % 2 === 0) for (const a of kitted) {
+            const b = members.filter(m => m !== a && getBond(a, m) >= 4).sort((x, y) => getBond(a, y) - getBond(a, x) || x.localeCompare(y))[0];
+            if (!b) continue;
+            const who = { a, b };
+            const w = kitDeepScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'secret' });
+            if (!w) continue;
+            list.push({ at: 0.55, item: { story: true, kind: 'kit.deep', storyType: 'kit', step: 'deep', players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a} trusts ${b} with something real.`] } });
+            break;
+          }
           const pairs = [];
           for (const a of kitted) for (const b of members) {
             if (b === a || busy.has(a) && busy.has(b)) continue;

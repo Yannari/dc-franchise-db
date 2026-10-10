@@ -144,3 +144,69 @@ export function kitLifeScene(a, b, facts, ctx) {
   if (w) { ask1.mark(); ans1.mark(); ask2.mark(); ans2.mark(); c?.mark(); }
   return w;
 }
+
+// ── the pair's heat (kits-deep.js): a clash with somebody who doesn't like a, a deep talk with a friend ──
+// the connecting lines are shared, so each pool hands them out in turn across the season, none twice until the
+// pool is spent (read: three clashes in one season opened with the same 'Here we go again')
+const pickOf = (list, ...k) => {
+  const book = ((gs.tdStory ||= {}).kitGeneric ||= {});
+  const id = list[0];
+  const taken = (book[id] ||= []);
+  if (taken.length >= list.length) taken.length = 0;
+  const start = [...k.join('|')].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 11) % list.length;
+  for (let i = 0; i < list.length; i++) { const j = (start + i) % list.length; if (!taken.includes(j)) { taken.push(j); return list[j]; } }
+  return list[start];
+};
+const SNEER = ["Do you ever talk about anything else?", "Nobody cares, {a}. Honestly. Nobody.", "Here we go again. Can we have one day off from it?", "You know it's not actually a personality, right?", "Wow. Every single day with this.", "Can you not? Just for one morning?", "I swear, if I hear about it one more time.", "Is there an off switch, {a}? Asking for everybody."];
+const PUSH = ["Whatever you say.", "Sure. Keep telling yourself that.", "I'm just saying what everybody's thinking.", "Okay. I'm done.", "Wow. Okay. Sensitive.", "Fine. Talk to someone who cares.", "You really need to relax.", "Noted. Still annoying."];
+const CLASH_CONF = ["{a} takes everything so personally. Fine. Now I know exactly where to push.", "I didn't mean to start a fight. I did mean what I said, though.", "I said one thing and {a} acted like I'd burned the shelter down."];
+/** b, who doesn't like a, sneers at a's thing; a defends it (Nura and Dunia). */
+export function kitClashScene(a, b, facts, ctx) {
+  const k = KITS[a];
+  const def = k && take(a, 'defend');
+  if (!def) return null;
+  const entry = { id: `kit:${a}:${b}:clash`, place: 'aside', turns: [
+    { beat: `{a} is going on about ${k.thing} again, and {b} has had enough.` },
+    { by: 'b', say: pickOf(SNEER, a, b) }, { by: 'a', say: def.line }, { by: 'b', say: pickOf(PUSH, b, a) },
+    { by: 'b', conf: pickOf(CLASH_CONF, b, a, 'c') },
+  ] };
+  const w = writeKitScene(entry, { a, b }, facts, ctx);
+  if (w) def.mark();
+  return w;
+}
+const OPEN = ["You okay? You've been quiet all day.", "Can I ask you something real?", "You don't have to be on all the time, you know. Not with me.", "Hey. What's going on with you? For real.", "You looked far away just now. Where'd you go?", "Can we just talk? No game stuff."];
+const HEARD = ["Thank you for telling me. Really.", "I had no idea. I'm glad you told me.", "That stays between us. I promise.", "That's a lot to carry around. I'm sorry.", "I'm really glad it was me you told.", "Hey. You're not on your own with that out here."];
+const CLOSE = ["Okay. Don't make it weird.", "Okay. That's enough feelings for one day.", "I don't usually say that stuff out loud.", "Anyway. Don't tell anybody I got soft.", "Thanks. I mean it. Now, back to the game.", "Okay, I'm done. That was a lot."];
+const DEEP_CONF = ["{a} told me something real today. I'm not going to use it. I just want {a.obj} to know I heard it.", "Everybody here sees one side of {a}. Today I got to see the other one.", "I came here to play a game. I didn't expect to actually care about anybody. Then {a} said that."];
+/** a, with a friend, says the true thing under the bit. */
+export function kitDeepScene(a, b, facts, ctx) {
+  const deep = KITS[a] && take(a, 'deep');
+  if (!deep) return null;
+  const entry = { id: `kit:${a}:${b}:deep`, place: 'secret', turns: [
+    { by: 'b', say: pickOf(OPEN, b, a) }, { by: 'a', say: deep.line }, { by: 'b', say: pickOf(HEARD, a, b) }, { by: 'a', say: pickOf(CLOSE, a) },
+    { by: 'b', conf: pickOf(DEEP_CONF, b, a) },
+  ] };
+  const w = writeKitScene(entry, { a, b }, facts, ctx);
+  if (w) deep.mark();
+  return w;
+}
+
+// ── a running bit, called back by other people (who aren't the one doing it) ──
+const CALL = ["Has {about} brought up {thing} yet today?", "Ten minutes. I'm giving it ten minutes before {about} mentions {thing}.", "Did you hear {about} going on about {thing} again this morning?"];
+const ANSWER = ["Twice. Before breakfast.", "Not yet. I'm almost worried.", "I could do the whole speech for you at this point.", "Honestly? I'm starting to like it.", "Only four times. It's a slow day.", "I tried to change the subject. It didn't work."];
+/** c and d joke about `about`'s thing, once it has aired as a bit at least once. */
+export function kitCallbackScene(c, d, about, facts, ctx) {
+  const k = KITS[about];
+  if (!k) return null;
+  const u = (used()[about] ||= []);
+  const n = u.filter(x => x.startsWith('call:')).length;
+  if (n >= CALL.length || !u.some(x => x.startsWith('bit:'))) return null;
+  const entry = { id: `kit:${about}:call:${n}`, place: 'aside', turns: [
+    { by: 'a', say: CALL[n].split('{thing}').join(k.thing) }, { by: 'b', say: pickOf(ANSWER, c, d, about) },
+  ] };
+  const STORE = { about };
+  const w = (() => { const key = `kit.${entry.id.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`; STORY_POOLS[`${key}.any`] = [entry];
+    try { return writeStory(key, 'any', { a: c, b: d }, STORE, facts, { ...ctx, unique: false }); } finally { delete STORY_POOLS[`${key}.any`]; } })();
+  if (w) u.push(`call:${n}`);
+  return w;
+}

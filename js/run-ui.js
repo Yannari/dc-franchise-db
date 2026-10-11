@@ -2764,6 +2764,8 @@ export function pickSeasonTwistPlayer(key, id, name) {
  * kind of person. The note on each row is the half that differs: finding a
  * thing and being allowed to use it are separate permissions for a coach.
  */
+// (a checkbox saves and shows its own sources; it must not call updateCoachesUI, which rebuilds this list from
+// the saved config before the click is saved, and put every box back the way it was: the user, 2026-10-11)
 export function buildCoachAdvantageList() {
   const host = document.getElementById('coach-adv-list');
   if (!host) return;
@@ -2775,7 +2777,7 @@ export function buildCoachAdvantageList() {
     const sources = entry?.sources || ['camp'];
     const selfPlay = coachCanPlay(a.key);
     return `<div class="adv-row" style="align-items:flex-start">
-      <input type="checkbox" id="coach-adv-${a.key}" class="adv-check" ${on ? 'checked' : ''} onchange="updateCoachesUI();saveConfig()">
+      <input type="checkbox" id="coach-adv-${a.key}" class="adv-check" ${on ? 'checked' : ''} onchange="saveConfig();document.getElementById('coach-adv-sources-${a.key}').style.display=this.checked?'flex':'none'">
       <div style="flex:1">
         <span style="font-size:13px;color:#e2e8f0;cursor:pointer" onclick="document.getElementById('coach-adv-${a.key}').click()">${a.label}</span>
         <div style="font-size:10px;color:var(--muted);margin-top:1px">${selfPlay

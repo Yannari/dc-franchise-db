@@ -23,7 +23,13 @@ ap.add_argument('--dir', default='assets/audio/td/vo-test')
 ap.add_argument('--force', action='store_true', help='render lines that already have a clip')
 # lines voiced together: measured on the RTX 5070 Laptop (8 GB), one at a time 11.9 s a line, 6 at once 3.1 s,
 # 12 at once 2.5 s (6.2 GB), 18 at once 6.1 s (7.6 GB: past the card, it spills and slows)
-ap.add_argument('--batch', type=int, default=12)
+ap.add_argument('--batch', type=int, default=12, help='most lines in one batch')
+# BATCHES BY LENGTH, NOT BY COUNT. Twelve lines a batch held for short lines and spilled for long ones: the
+# whole of episode 2 took 30 minutes (7.7 s a line), its longest batches 25 s a line, at 6.9 GB peak on an
+# 8 GB card whose desktop and browser already hold ~2 GB. A batch now holds lines up to this many characters
+# of text, so a batch of long lines is a short batch.
+ap.add_argument('--budget', type=int, default=450, help='characters of text in one batch')
+ap.add_argument('--only', nargs='*', default=[], help='render only these characters (with --force: re-voice them)')
 # the drift experiments (the user, 2026-10-11: Design acts best but its voices drift between lines)
 # THE CHOSEN SETTINGS (the user, 2026-10-11, after hearing five versions: "precise + less random do a good job
 # enough and it's quick"): each character's precise voice from voices/profiles.json, at temperature 0.6
@@ -58,12 +64,20 @@ def desc(l):
 gen = {'temperature': a.temperature, 'subtalker_temperature': a.temperature} if a.temperature else {}
 if a.seed is not None:
     a.batch = 1
-todo = [l for l in script['lines'] if a.force or not (dest / l['file']).exists()]
+todo = [l for l in script['lines'] if (not a.only or l['by'] in a.only) and (a.force or not (dest / l['file']).exists())]
 # a batch runs as long as its longest line: lines of a like length together, so short ones don't wait
 todo.sort(key=lambda l: len(l['text']))
+batches, cur = [], []
+for l in todo:
+    if cur and (len(cur) >= a.batch or sum(len(x['text']) for x in cur) + len(l['text']) > a.budget):
+        batches.append(cur); cur = []
+    cur.append(l)
+if cur:
+    batches.append(cur)
+free, total = torch.cuda.mem_get_info()
+print(f'{len(todo)} lines in {len(batches)} batches; {free / 2**30:.1f} of {total / 2**30:.1f} GB free on the GPU', flush=True)
 done, t1 = 0, time.time()
-for i in range(0, len(todo), a.batch):
-    chunk = todo[i:i + a.batch]
+for chunk in batches:
     torch.cuda.reset_peak_memory_stats()
     t = time.time()
     if a.seed is not None:

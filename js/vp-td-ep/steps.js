@@ -833,7 +833,7 @@ export function tdTribalScreen(ep, o = {}) {
     const gone = (window.gs?.episodeHistory || []).filter(e => e.num < ep.num && e.eliminated).length;
     const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth'];
     // a coach read out is the season's nth coach voted out, not its nth player
-    const coachGone = (window.gs?.episodeHistory || []).filter(e => e.num < ep.num).reduce((t, e) => t + (e.coachElimination || []).length + (e.coachSaves || []).length, 0);
+    const coachGone = (window.gs?.episodeHistory || []).filter(e => e.num < ep.num).reduce((t, e) => t + (e.coachElimination || []).length, 0);
     const isCoach = coaches.includes(elim);
     readVotes(steps, say, { ...V, _host: host, _nth: isCoach ? ORD[coachGone] || null : ORD[gone] || null, _who: isCoach ? 'coach' : 'person', _of: isCoach ? 'this season' : 'of the game', _ep: ep },
       { tribal: seatedAll, elim, ballots, protectedSet, tie, revote, rocks: !!ep.isRockDraw, rv });

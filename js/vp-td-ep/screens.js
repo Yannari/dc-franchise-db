@@ -89,6 +89,8 @@ export function tdStepScreens(ep, classic = [], o = {}) {
       const am = tdAftermathScreen(ep, o);
       if (am) { aftermathDone = true; out.push(shell(am, { ...S, id: 'aftermath-show', label: am.label }, ep, o)); continue; }
     }
+    // (the coaches' promotion plays inside the stepped merge: merge.js)
+    if (S.id === 'cb-promo' && out.some(x => x?.id === 'merge' && /class="tdx/.test(x.html || ''))) continue;
     // (the Save Card's signatures play inside the stepped vote: coach-tribal.js)
     if (tribal && ['voting-plans', 'votes', 'surprise', 'voting-plans-2', 'votes-2', 'cb-sigs'].includes(S.id)) continue;
     if (tribal && S.id === 'tribal' && !tribalDone) { tribalDone = true; out.push(shell(tribal, S, ep, o)); continue; }

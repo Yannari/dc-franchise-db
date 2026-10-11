@@ -38,6 +38,54 @@ export function mergeDay({ ep, m, host, places }) {
       ...((m.bottom || []).length ? [{ tab: 'secrets', text: `On the bottom, with no alliance: ${m.bottom.join(', ')}` }] : [])] });
   hostSay(`${all.length} of you left. No more teams to hide behind, no more winning as a group. From here on, it's every player for themselves.`);
   hostSay(`And from now on, if you get voted out, you don't just go home. You sit on the jury and help decide who wins.`, { tense: true });
+  // ── the coaches who made it stop coaching (coach-episode.js promoteCoaches) ──
+  // read through the viewer, 2026-10-10: Heather went from coach to player and the merge never said a word
+  const promos = (ep.coachPromotions || []).filter(p => here(p.name));
+  if (promos.length) {
+    const ps = promos.map(p => p.name);
+    hostSay(`And one more thing. ${ps.length > 1 ? 'Coaches' : ps[0]}, come on up.`, { tense: true });
+    beat(`${listOf(ps)} ${ps.length > 1 ? 'walk' : `walk${P(ps[0]).s}`} into the middle of camp.`, ps);
+    hostSay(`You made the merge. ${ps.length > 1 ? 'You\'re' : `${ps[0]}, you're`} not ${ps.length > 1 ? 'coaches' : 'a coach'} anymore. From tonight, you play. You compete, you vote, and you can be voted out like everybody else.`, { tense: true });
+    for (const p of promos) {
+      const n = p.name, pr = P(n);
+      const kept = (p.surviving || []).filter(here);
+      if (kept.length) hostSay(`And ${n}, everybody you trained who's still here, ${listOf(kept)}, gives you a head start. Coaching well pays.`);
+      say(n, V(n, {
+        sharp: [`Finally. I've been waiting for this since the dock.`, `Good. I've watched every one of you. I know exactly how you play.`],
+        loud: [`YES! I'm PLAYING! Let's GO!`, `Oh, I have been waiting SO long for this!`],
+        soft: [`I'm so nervous. I'm really excited, but I'm so nervous.`, `I just want you all to know, I'll still be nice. Mostly.`],
+        dry: [`So I spent weeks making you all better, and now I have to beat you. Great plan.`, `Hi. I'm one of you now. Please don't look at me like that.`],
+        odd: [`I've waited my whole life for this. Well, a few weeks. It felt like my whole life.`, `I'm a player now. I don't know what to do with my whistle.`],
+        any: [`Finally. I'm playing.`],
+      }, `promo|${n}`), [n]);
+      const fan = kept.sort((x, y) => bond(n, y) - bond(n, x))[0];
+      if (fan) say(fan, V(fan, {
+        sharp: [`So you trained me to beat you. Interesting choice.`, `Everything you taught me, I'm going to use. Against everybody. Maybe even you.`],
+        loud: [`My COACH is playing?! This is so weird!`, `Wait, so we're on the same side now? Or not? Which is it?!`],
+        soft: [`I'm really glad you made it. Honestly.`, `I hope we stay on the same side. I really do.`],
+        dry: [`So the person who knows all my weaknesses is now playing against me. Cool.`, `Great. My coach is my competition. Love that.`],
+        odd: [`It's like when your teacher shows up at the same party as you.`, `I don't know whether to hug you or hide.`],
+        any: [`I'm glad you made it.`],
+      }, `promofan|${n}`), [fan, n]);
+      const wary = all.filter(x => x !== n && !kept.includes(x)).sort((x, y) => bond(n, x) - bond(n, y))[0];
+      if (wary && bond(n, wary) < 1) say(wary, V(wary, {
+        sharp: [`${n} has been watching all of us for weeks. That's not a player. That's a threat.`, `Just so everyone knows, ${n} has notes on every one of us.`],
+        loud: [`Nobody else thinks it's unfair that ${n} gets to just jump in?!`, `So ${n} skips half the game and walks into the merge? Come ON!`],
+        soft: [`I don't know how I feel about this. ${n} knows everything about us.`],
+        dry: [`Fresh legs and a head start. ${n} is going to be fine.`, `Welcome, ${n}. You're the biggest target here, and you've been playing for five minutes.`],
+        odd: [`It's like a final boss joined the game halfway through.`],
+        any: [`${n} knows everything about us. I don't like it.`],
+      }, `promowary|${n}`), [wary, n]);
+      conf(n, V(n, {
+        sharp: [`I've studied every one of them for weeks. They think they know me. I know them better.`, `I trained half of them. I know exactly where every one of them is weak.`],
+        loud: [`I'm in the GAME! I'm actually in the game! I want to scream! I'm screaming!`],
+        soft: [`It's scary going from helping people to playing against them. I'll try to do both for as long as I can.`],
+        dry: [`Everybody here owes me a session or hates me for not getting one. That's my whole game now.`],
+        odd: [`I'm going to play exactly how I coached. Loudly, and with snacks.`],
+        any: [`Now I'm playing. That changes everything.`],
+      }, `promoconf|${n}`));
+    }
+  }
   beat(`Everybody looks around at everybody else.`, all.slice(0, 6));
 
   // ── reunions across the old line ──

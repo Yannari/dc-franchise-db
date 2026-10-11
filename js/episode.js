@@ -2443,6 +2443,28 @@ export function simulateEpisode() {
       const _sessionEvents = Object.entries(_byCoach).map(([coach, x]) => _sceneIt({ type: 'coachSession', coach, stat: x.stat, trainees: x.trainees,
         players: [coach, ...x.trainees.map(t => t.name)], badgeText: 'TRAINING', badgeClass: 'gold',
         text: `${coach} runs a ${x.stat} session with ${x.trainees.map(t => t.name).join(' and ')}.` }));
+      // the morning after a coach night on this team (td/coach/scenes.js): the first morning without a coach, or
+      // the replacement's friend facing the coach the card saved. Both cost a bond; the coach's people close ranks.
+      const _prevEp = (gs.episodeHistory || []).find(h => h.num === ep.num - 1);
+      const _here = tribe.members || [];
+      for (const ce of (_prevEp?.coachElimination || []).filter(x => x.tribe === tribeKey)) {
+        const _taught = Object.keys(ce.lost || {}).filter(n => _here.includes(n)).sort((x, y) => getBond(ce.coach, y) - getBond(ce.coach, x));
+        const _prot = _taught[0] || _here.slice().sort((x, y) => getBond(ce.coach, y) - getBond(ce.coach, x))[0];
+        if (!_prot) continue;
+        const _voter = (_prevEp.votingLog || []).filter(v => v.voted === ce.coach && _here.includes(v.voter) && v.voter !== _prot).map(v => v.voter).sort((x, y) => getBond(_prot, x) - getBond(_prot, y))[0] || null;
+        if (_voter) addBond(_prot, _voter, -0.5);
+        for (let i = 0; i < _taught.length; i++) for (let j = i + 1; j < _taught.length; j++) addBond(_taught[i], _taught[j], 0.3);
+        _sessionEvents.unshift(_sceneIt({ type: 'coachGoneMorning', coach: ce.coach, protege: _prot, voter: _voter, players: [_prot, _voter].filter(Boolean),
+          badgeText: 'NO COACH', badgeClass: 'red', text: `The first morning without ${ce.coach}. ${_prot} feels it${_voter ? `, and knows ${_voter} wrote the name` : ''}.` }));
+      }
+      for (const sv of (_prevEp?.coachSaves || []).filter(x => x.tribe === tribeKey && _here.length)) {
+        if (!coachesOf(tribeKey).some(c => c.name === sv.coach)) continue;
+        const _friend = _here.slice().sort((x, y) => getBond(sv.replacement, y) - getBond(sv.replacement, x))[0];
+        if (!_friend || getBond(sv.replacement, _friend) < 1) continue;
+        addBond(_friend, sv.coach, -1.0);
+        _sessionEvents.unshift(_sceneIt({ type: 'coachSavedMorning', coach: sv.coach, replacement: sv.replacement, friend: _friend, players: [sv.coach, _friend],
+          badgeText: 'THE PRICE OF THE CARD', badgeClass: 'red', text: `${_friend} confronts ${sv.coach} about sending ${sv.replacement} home with the Save Card.` }));
+      }
       if (_sessionEvents.length) {
         if (!ep.campEvents) ep.campEvents = {};
         if (!ep.campEvents[tribeKey]) ep.campEvents[tribeKey] = { pre: [], post: [] };

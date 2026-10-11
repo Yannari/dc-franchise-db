@@ -114,7 +114,7 @@ export function writePreviously(ep) {
 
   // ═══ THE STORYLINES THAT MOVED ═══
   const lines = gs.tdStory?.lines || [];
-  const NAMES = new Set([...(gs.activePlayers || []), ...(gs.eliminated || []), ...hist.flatMap(h => [h.eliminated, h.firstEliminated]).filter(Boolean), ...Object.keys(gs.popularity || {}), ...(gs.namedAlliances || []).map(x => x.name).filter(Boolean)]);
+  const NAMES = new Set([...(gs.activePlayers || []), ...(gs.eliminated || []), ...(gs.coaches || []).map(c => c.name), ...(gs.coachesEliminated || []).map(c => c.coach), ...hist.flatMap(h => [h.eliminated, h.firstEliminated]).filter(Boolean), ...Object.keys(gs.popularity || {}), ...(gs.namedAlliances || []).map(x => x.name).filter(Boolean)]);
   const boots = [prev.eliminated, prev.firstEliminated, prev.tiedDestinies?.eliminatedPartner, prev.ambassadorData?.ambassadorEliminated, prev.medevac?.name].filter(Boolean);
   const cand = [];
   const seenLine = new Set();
@@ -188,6 +188,15 @@ export function writePreviously(ep) {
   const votesFor = (log, n) => (log || []).filter(v => v.voted === n && v.voter !== n);
   const logOf = n => (votesFor(prev.votingLog2, n).length > votesFor(prev.votingLog, n).length ? { log: prev.votingLog2, votes: prev.votes2, alliances: prev.alliances2 || prev.alliances, second: true } : { log: prev.votingLog, votes: prev.votes, alliances: prev.alliances, second: false });
   const tribalShot = players => ({ tribal: true, players: players.filter(Boolean).slice(0, 4) });
+  // a coach season's night (the user, 2026-10-10: the recap said Katie lost a revote; the votes were for
+  // Alejandro, and the Save Card sent Katie home in his place): the votes went to the coach, and the card
+  // (or its absence) decided who left
+  const coachOut = (prev.coachElimination || [])[0]?.coach || (gs.coachesEliminated || []).find(c => c.ep === prev.num)?.coach || null;
+  const coachSave = (prev.coachSaves || [])[0] || null;
+  const coachRefused = (prev.coachSaveRefusals || [])[0] || null;
+  const coachUnplayed = (prev.coachCardNotPlayed || []).find(c => c.coach === coachOut && c.held !== false) || null;
+  const coachNth = () => { const k = (gs.episodeHistory || []).filter(h => h.num < prev.num).reduce((t, h) => t + (h.coachElimination || []).length, 0);
+    return ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'][k] || 'next'; };
   const voteStory = (boot, idx, total) => {
     const { log, votes, alliances, second } = logOf(boot);
     // an announced double boot: one vote, and the two highest both go
@@ -246,6 +255,21 @@ export function writePreviously(ep) {
     const score = topTwo ? `${num(n)} ${n === 1 ? 'vote' : 'votes'}, the second-most` : m ? `${num(n)} votes to ${num(m)}` : n === 1 ? 'one vote' : `${num(n)} votes`;
     const sent = prev.riChoice && idx === 0 && !second ? ` and sent to ${/RESCUE/i.test(prev.riChoice) ? 'Rescue Island' : 'Redemption Island'}` : '';
     const card = { boot };   // the boot's card: their portrait, crossed out
+    if (coachSave && boot === coachSave.coach) {
+      const rep = coachSave.replacement, repVotes = votesFor(log, rep).length;
+      const tied = prev.isTie ? pick([`It was a tie, then a revote, and it landed on ${boot}.`, `The first vote tied. The revote didn't, and it was ${boot}.`], 'cardTie') : '';
+      H(tied ? `${tied} ${pick([`Then the Save Card came out.`, `But ${boot}'s team had already played the Save Card.`], 'cardTie2')}` : pick([`${Cap(score)}. ${boot} was going home. Then the Save Card came out.`, `The votes said ${boot}, ${score}. But ${boot}'s team had already played the Save Card.`, `${Cap(score)} for ${boot}, the ${coachNth()} coach voted out. For about ten seconds.`], 'cardSave'), tribalShot([boot]));
+      H(pick([`The catch? ${boot} had to pick somebody to go home instead. ${Cap(pr(boot).sub)} picked ${rep}.`, `And the card isn't free. ${boot} named ${rep}, and ${rep} went home with ${repVotes ? `${num(repVotes)} ${repVotes === 1 ? 'vote' : 'votes'}` : 'zero votes'}.`, `So ${boot} stayed, and ${rep}, ${repVotes ? `with only ${num(repVotes)}` : 'with no votes at all'}, took the boat instead.`], 'cardRep'), { boot: rep });
+      return true;
+    }
+    if (coachOut && boot === coachOut) {
+      H(prev.isTie ? pick([`It was a tie. Then a revote, and ${boot} became the ${coachNth()} coach voted out of the game.`, `The first vote tied, the revote didn't, and ${boot} was the ${coachNth()} coach to go home.`], 'coachTie')
+        : pick([`${Cap(score)}, and ${boot} became the ${coachNth()} coach voted out of the game.`, `When the votes were read, it was ${boot}, ${score}. The ${coachNth()} coach to go home.`, `And just like that, the team fired its coach. ${Cap(score)}.`], 'coachOut'), card);
+      if (coachRefused?.coach === boot && coachRefused.refusedBy) H(pick([`The Save Card was played. It just needed every signature, and ${coachRefused.refusedBy} wouldn't sign it.`, `${boot} called for the card. ${coachRefused.refusedBy} said no.`], 'cardRefused'), tribalShot([boot, coachRefused.refusedBy]));
+      else if (coachUnplayed) H(pick([`And the Save Card? Still in ${boot}'s pocket.`, `${boot} went home holding the Save Card. Never even played it.`], 'cardUnplayed'), tribalShot([boot]));
+      H(pick([`And everything ${boot} taught that team went home with ${pr(boot).obj}.`, `Every session ${boot} ran? Gone, with ${pr(boot).obj}.`], 'coachLost'), tribalShot([boot]));
+      return true;
+    }
     if (prev.isRockDraw && idx === 0) H(pick([`It came down to a rock draw, and ${boot}'s luck ran out${sent}.`, `A tie, a deadlock, and a bag of rocks. ${boot} drew the wrong one${sent}.`], 'rocks'), card);
     else if (prev.isTie && idx === 0) H(pick([`It was a tie. Then a revote. And then ${boot} was gone${sent}.`, `The first vote tied, the revote didn't, and ${boot} went home${sent}.`], 'tie'), card);
     else if (blind) H(pick([`${Cap(score)}, and ${boot} never saw it coming. Total blindside!${sent ? ` Off to ${/RESCUE/i.test(prev.riChoice) ? 'Rescue' : 'Redemption'} Island with you.` : ''}`, `${boot} walked in sure of a different name, and walked out of the game${sent}. ${Cap(score)}. Blindside!`, `Nobody told ${boot}. And I mean nobody. ${Cap(score)}${sent}.`, `${boot} voted for ${bootVote || 'someone else'}, smiled, and then heard ${pr(boot).posAdj} own name. ${Cap(score)}${sent}.`], 'blind') + aside('blind', .5), card);
@@ -261,7 +285,7 @@ export function writePreviously(ep) {
     return true;
   };
 
-  const elimOrder = [prev.firstEliminated, prev.eliminated].filter(Boolean);
+  const elimOrder = coachSave ? [coachSave.coach] : coachOut ? [coachOut] : [prev.firstEliminated, prev.eliminated].filter(Boolean);
   const unique = [...new Set(elimOrder)];
   unique.forEach((b, i) => { if (!voteStory(b, i, unique.length)) H(pick([`And in the end, ${b} was the one who went home.`, `In the end, it was ${b} who had to leave.`], 'bootOnly'), { boot: b }); });
   // the ones who left without a vote of their own

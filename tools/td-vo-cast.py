@@ -57,7 +57,10 @@ vpath = vdir / 'voices.json'
 voices = json.loads(vpath.read_text(encoding='utf-8')) if vpath.exists() else {}
 cast = voices.setdefault('_cast', {})
 for n in names:
-    keep = cast.get(n, {}).get('pick') if not a.force else None
-    cast[n] = {'text': lines[n], 'takes': [f'cast/{n}-{k}.wav' for k in range(1, a.takes + 1)], 'pick': keep}
+    old = cast.get(n, {})
+    remade = a.force or not old.get('made')
+    # `made` dates the takes: casting.html drops a pick remembered for takes that have since been remade
+    cast[n] = {'text': lines[n], 'takes': [f'cast/{n}-{k}.wav' for k in range(1, a.takes + 1)],
+               'pick': None if remade else old.get('pick'), 'made': int(time.time()) if remade else old['made']}
 vpath.write_text(json.dumps(voices, indent=2), encoding='utf-8')
 print(f'{len(jobs)} takes for {len(names)} characters in {time.time() - t0:.0f}s')

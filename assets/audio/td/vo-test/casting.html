@@ -59,7 +59,16 @@ Promise.all([
   fetch('voices/profiles.json', { cache: 'no-store' }).then(r => r.json()).catch(() => ({})),
 ]).then(([voices, profiles]) => {
   const cast = voices._cast || {};
-  for (const [n, c] of Object.entries(cast)) if (!picks[n] && c.pick) picks[n] = c.pick;
+  // a pick counts only for the takes it was made on (`made`): remade takes start unpicked
+  const MADE = KEY + ':made';
+  let made = {}; try { made = JSON.parse(localStorage.getItem(MADE) || '{}') || {}; } catch { made = {}; }
+  for (const [n, c] of Object.entries(cast)) {
+    if (picks[n] && made[n] !== c.made) delete picks[n];
+    if (!picks[n] && c.pick) picks[n] = c.pick;
+    made[n] = c.made;
+  }
+  try { localStorage.setItem(MADE, JSON.stringify(made)); } catch { /* private window */ }
+  save();
   const names = Object.keys(cast);
   const out = document.getElementById('out');
   const render = () => {

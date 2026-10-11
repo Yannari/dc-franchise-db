@@ -4771,9 +4771,9 @@ async function generateSpeakingVoice(body, env) {
     .filter(o => o && o.name && o.speakingVoice && o.name !== person.name).slice(0, 40);
 
   const EXAMPLES = [
-    ["Heather", "Adult woman in her early twenties, General American accent. A low-to-medium, mature, grown-up voice with a full, rich tone: never childlike, girlish, squeaky or high-pitched. Polished and slightly nasal. Fast, clipped, precise speech with crisp consonants; sentences end on a firm downward note, dismissive and superior. Confident, cold and condescending; sugary only when she is faking it."],
-    ["Owen", "Adult man in his early twenties, General American accent, a big heavy-set guy. A deep, low-pitched bass-baritone voice, warm, round and chesty with a slightly breathy, gravelly edge: a grown man's voice that stays low even when he is excited. Loud, fast and enthusiastic, words tumbling out; only at a real shock does it crack upward for a moment. Goofy, open and good-natured, often on the edge of laughing."],
-    ["Gwen", "Adult woman in her early twenties, General American accent. A low alto, slightly husky and smooth. Slow, even, unhurried pace; flat deadpan intonation with very little pitch movement, sentences ending low. Dry and sarcastic, bored with everyone; only softer and warmer when she means it."],
+    ["Heather", "Young woman in her late teens, about eighteen, General American accent: a youthful voice, but past childhood, never a little girl's. Medium pitch, clear and polished with a slightly nasal, mean-girl edge. Fast, clipped, precise speech with crisp consonants; sentences end on a firm downward note, dismissive and superior. Confident, cold and condescending; sugary only when she is faking it."],
+    ["Owen", "Young man in his late teens, about eighteen, General American accent: a youthful voice, fully broken, never a child's. A big heavy-set guy with a warm, round, medium-pitched voice, a little breathy, not deep. Loud, fast and excitable, words tumbling out; when he is thrilled or scared it jumps higher and cracks for a moment, and he laughs mid-sentence. Goofy, open and good-natured."],
+    ["Gwen", "Young woman in her late teens, about eighteen, General American accent: a youthful voice, but past childhood, never a little girl's. Low-medium pitch, slightly husky and smooth. Slow, even, unhurried pace; flat deadpan intonation with very little pitch movement, sentences ending low. Dry and sarcastic, bored with everyone; only softer and warmer when she means it."],
     ["Alejandro", "Adult man in his mid twenties with a light Spanish accent. A smooth, velvety low baritone, rich and polished. Slow, deliberate, honeyed delivery, every compliment savoured; charming and seductive on the surface with a cold, controlled edge underneath. Never rushed, never loud."],
   ].map(([n, v]) => `${n}: ${v}`).join("\n\n");
 
@@ -4787,7 +4787,9 @@ async function generateSpeakingVoice(body, env) {
     "unlike everyone else in the cast.",
     "",
     "WRITE, in this order, 4 to 6 sentences:",
-    "1. Adult + sex + age in words + accent: 'Adult woman in her early twenties, General American accent.'",
+    "1. Who: age in words + sex + accent. AGE COUNTS: use the age given. A contestant with no age is in",
+    "   their late teens: 'Young woman in her late teens, about eighteen, General American accent: a youthful",
+    "   voice, but past childhood, never a little girl's.' In their twenties: 'Young man in his mid twenties'.",
     "   The accent comes from nationality and hometown (British, Australian, Nigerian, Korean, a light Spanish",
     "   accent...); with neither, General American.",
     "2. Pitch and timbre: low / medium / high for their sex, and the texture (husky, nasal, gravelly, breathy,",
@@ -4797,11 +4799,11 @@ async function generateSpeakingVoice(body, env) {
     "5. The attitude you hear in it, from their personality.",
     "",
     "HARD RULES",
-    "- Always say 'Adult', and the age in words ('early twenties', 'late thirties'). Never a number under 20,",
-    "  never girl, boy, teen, kid or child: the model makes those voices sound like children.",
+    "- Under twenty, say 'youthful, but past childhood' outright; never girl, boy, kid or child: the model makes",
+    "  those voices sound like children. Never 'mature' or 'grown-up' for a teenager either: that makes them",
+    "  sound thirty, with a deep voice the character does not have (a big guy is not a deep voice by default).",
     "- A woman is never 'high-pitched' or 'squeaky' unless the profile says so: write 'medium' or 'bright'.",
-    "  A man's voice stays low or medium unless the profile says otherwise. Never describe a crack or squeak",
-    "  as their normal voice: only as a moment under pressure.",
+    "  Never describe a crack or squeak as their normal voice: only as a moment under pressure.",
     "- Use the stats as a guide, proportionally: high boldness is loud and forceful, low is soft and hesitant;",
     "  low temperament snaps and sharpens, high stays calm; high social is warm and fluent, low is curt.",
     "- Make it DIFFERENT from every voice already taken (listed below): change the pitch, the texture or the",

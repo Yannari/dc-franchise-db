@@ -230,7 +230,6 @@ function shell(scr, classicScreen, ep, o) {
 // ══════════════════════════════════════════════════════════════════════
 // PAINT — keyed updates: the set rebuilds only when the scene changes, people never blink out
 // ══════════════════════════════════════════════════════════════════════
-const blip = { n: 0 };
 function sync(uid) {
   const R = reg()[uid];
   const root = typeof document !== 'undefined' ? document.querySelector(`.tdx[data-uid="${uid}"]`) : null;
@@ -304,7 +303,6 @@ function paint(uid, fresh) {
     world.innerHTML = `${worldHtml(scr, L)}<div class="tdx-cast"></div><div class="tdx-fx"></div>`;
     liveGL(world);
     if (fresh && (L.conf || wasConf)) { const bz = st.querySelector('.tdx-static'); bz.classList.remove('burst'); void bz.offsetWidth; bz.classList.add('burst'); sfx('static'); }
-    else if (fresh && L.scene?.cut) sfx('whoosh');
   }
   const castEl = world.querySelector('.tdx-cast'), fxEl = world.querySelector('.tdx-fx');
   // a vote being read, live: the chips and the tally show the count BEFORE it until the slip has
@@ -379,7 +377,6 @@ function paint(uid, fresh) {
       if (wait > 0) { wait--; return; }
       n += full.length > 160 ? 3 : 2;
       say.innerHTML = badge + esc(full.slice(0, n)) + '<span class="caret"></span>';
-      if ((blip.n++ % 2) === 0 && !d.cls.includes('dir')) sfx('blip');
       const ch = full[Math.min(n, full.length) - 1];
       if (/[.!?…]/.test(ch) && n < full.length) wait = 9; else if (/[,;:—]/.test(ch) && n < full.length) wait = 4;
       if (n >= full.length) { clearInterval(R.typing); say.innerHTML = badge + lit(full); }
@@ -413,7 +410,6 @@ const FEEL_MARK = {
   guilty: '<svg viewBox="0 0 24 24"><path d="M5 9h14M7 14c3 2 7 2 10 0" fill="none" stroke="#c8ccd8" stroke-width="2.2" stroke-linecap="round"/></svg>',
   relief: '<svg viewBox="0 0 24 24"><g fill="none" stroke="#bfe8ff" stroke-width="2.2" stroke-linecap="round"><path d="M3 10c4-2 7 2 11 0s5-1 7 0"/><path d="M5 15c3-1.5 6 1.5 9 0s4-1 5 0"/></g></svg>',
 };
-const FEEL_SFX = { shock: 'shock', betray: 'shock', angry: 'slap', surprised: 'pop' };
 const tokAt = (castEl, n) => [...castEl.children].find(el => el.dataset.n === n);
 const centre = (st, el) => { const f = st.querySelector('.tdx-world').getBoundingClientRect(), r = el.getBoundingClientRect(); return { x: (r.left + r.width / 2 - f.left) / f.width * 100, y: (r.top - f.top) / f.height * 100, h: r.height / f.height * 100 }; };
 function fxAt(fxEl, cls, x, y, html = '', life = 2400) { const d = document.createElement('div'); d.className = cls; d.style.left = x + '%'; d.style.top = y + '%'; d.innerHTML = html; fxEl.appendChild(d); setTimeout(() => d.remove(), life); return d; }
@@ -456,14 +452,12 @@ function readFx(st, castEl, fxEl, s, toks) {
         row.classList.remove('zero', 'up'); void row.offsetWidth; row.classList.add('up');
       }
       const lt = st.querySelector('.tdx-tally .need'); if (lt && s.left != null) lt.textContent = leftText(s.left);
-      sfx(s.deciding ? 'boom' : 'thump');
+      if (s.deciding) sfx('boom');
       if (!s.deciding) return;
       const w = st.querySelector('.tdx-world'); if (w) { w.classList.remove('jolt'); void w.offsetWidth; w.classList.add('jolt'); }
       fxAt(fxEl, 'tdx-flashred', 50, 50, '', 1000);
       fxAt(fxEl, 'tdx-vstamp out', Math.min(Math.max(c.x, 14), 86), Math.max(c.y - 4, 14), 'VOTED OUT', 3600);
       to.classList.add('doomed');
-      sfx('shock');
-      if (s.blind) setTimeout(() => sfx('gasp'), 260);
     };
   }, s.deciding ? 1400 : 650);
 }
@@ -472,28 +466,27 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
   const speaker = s.k === 'say' ? s.by : null;
   if (speaker) tokAt(castEl, speaker)?.classList.add('pop');
   // a shock: the line lands like a reveal ("What? No."): the speaker jolts, "!?" over them, the stab
-  if (s.shock && speaker) { const el = tokAt(castEl, speaker); if (el) { el.classList.add('shake'); const c = centre(st, el); fxAt(fxEl, 'tdx-pop shock', c.x, Math.max(c.y - 4, 10), '!?'); } const w = st.querySelector('.tdx-world'); if (w) { w.classList.remove('jolt'); void w.offsetWidth; w.classList.add('jolt'); } sfx('shock'); }
-  else if (s.loud && speaker) { const el = tokAt(castEl, speaker); if (el) { const c = centre(st, el); for (let k = 0; k < 3; k++) setTimeout(() => fxAt(fxEl, 'tdx-ring', c.x, c.y + c.h / 2), k * 140); sfx('boing'); } }
+  if (s.shock && speaker) { const el = tokAt(castEl, speaker); if (el) { el.classList.add('shake'); const c = centre(st, el); fxAt(fxEl, 'tdx-pop shock', c.x, Math.max(c.y - 4, 10), '!?'); } const w = st.querySelector('.tdx-world'); if (w) { w.classList.remove('jolt'); void w.offsetWidth; w.classList.add('jolt'); } }
+  else if (s.loud && speaker) { const el = tokAt(castEl, speaker); if (el) { const c = centre(st, el); for (let k = 0; k < 3; k++) setTimeout(() => fxAt(fxEl, 'tdx-ring', c.x, c.y + c.h / 2), k * 140); } }
   // the faces at the reading (steps.js voteReaction): a mark over each face that feels something
   if (s.feel) for (const [n, f] of Object.entries(s.feel)) {
     const el = tokAt(castEl, n); if (!el || !FEEL_MARK[f]) continue;
     const c = centre(st, el);
     fxAt(fxEl, 'tdx-mark', c.x + c.h * 0.18, Math.max(c.y - 2, 8), FEEL_MARK[f], 1700);
     if (f === 'sad' || f === 'guilty') for (let k = 0; k < (f === 'sad' ? 3 : 1); k++) setTimeout(() => fxAt(fxEl, 'tdx-tear', c.x + (k % 2 ? 1.2 : -1.2), c.y + c.h * .25, '', 1400), 300 + k * 280);
-    if (FEEL_SFX[f]) sfx(FEEL_SFX[f]);
   }
   const a = s.act;
-  if (s.gain) { const el = tokAt(castEl, s.gain.who); if (el) { const c = centre(st, el); setTimeout(() => fxAt(fxEl, `tdx-gain${s.gain.up ? '' : ' down'}`, c.x, Math.max(c.y - 2, 8), `${esc(s.gain.stat)} ${s.gain.up ? '▲' : '▼'}`, 2200), 500); setTimeout(() => sfx(s.gain.up ? 'pop' : 'slap'), 500); } }
+  if (s.gain) { const el = tokAt(castEl, s.gain.who); if (el) { const c = centre(st, el); setTimeout(() => fxAt(fxEl, `tdx-gain${s.gain.up ? '' : ' down'}`, c.x, Math.max(c.y - 2, 8), `${esc(s.gain.stat)} ${s.gain.up ? '▲' : '▼'}`, 2200), 500); } }
   if (a) {
     const who = (a.who || []).filter(n => tokAt(castEl, n));
     if (a.kind === 'laugh') who.forEach(n => tokAt(castEl, n).classList.add('laugh'));
-    if (a.kind === 'shake') { who.forEach(n => tokAt(castEl, n).classList.add('shake')); const el = tokAt(castEl, who[who.length - 1] || ''); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'WHAM!'); } sfx('slap'); }
+    if (a.kind === 'shake') { who.forEach(n => tokAt(castEl, n).classList.add('shake')); const el = tokAt(castEl, who[who.length - 1] || ''); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'WHAM!'); } }
     if (a.kind === 'storm' && who[0]) { tokAt(castEl, who[0]).classList.add('storm'); sfx('slam'); const c = centre(st, tokAt(castEl, who[0])); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'SLAM!'); }
-    if (a.kind === 'shout' && who[0]) { const c = centre(st, tokAt(castEl, who[0])); for (let k = 0; k < 3; k++) setTimeout(() => fxAt(fxEl, 'tdx-ring', c.x, c.y + c.h / 2), k * 140); sfx('boing'); }
+    if (a.kind === 'shout' && who[0]) { const c = centre(st, tokAt(castEl, who[0])); for (let k = 0; k < 3; k++) setTimeout(() => fxAt(fxEl, 'tdx-ring', c.x, c.y + c.h / 2), k * 140); }
     // a group ride: the bus, the helicopters, the jet, the tram crosses the set (arrival.js)
     if (a.kind === 'ride') { const R = rideHtml(a.ride, a.riders || []); if (R) { fxAt(fxEl, `tdx-ride big ${a.ride}`, 50, a.ride === 'helicopter' ? 40 : a.y || 72, R, 4600);
       sfx(RIDE_SFX[a.ride] || 'whoosh'); if (a.ride === 'yacht' || a.ride === 'boat') setTimeout(() => sfx('horn'), 1500); } }
-    if (a.kind === 'arrive') who.forEach(n => { const el = tokAt(castEl, n); el.classList.remove('arrive'); void el.offsetWidth; el.classList.add('arrive'); sfx('whoosh');
+    if (a.kind === 'arrive') who.forEach(n => { const el = tokAt(castEl, n); el.classList.remove('arrive'); void el.offsetWidth; el.classList.add('arrive');
       // what brought them: a boat or canoe glides in and pulls away, a bus pulls up, or they just walk in
       if (a.ride && a.ride !== 'walk' && el) { const c = centre(st, el); fxAt(fxEl, `tdx-ride ${a.ride}`, c.x, c.y + c.h * .9, rideHtml(a.ride), 2600); sfx(RIDE_SFX[a.ride] || 'whoosh'); } else if (el) el.classList.add('walkin'); });
     if (a.kind === 'train') who.forEach(n => tokAt(castEl, n).classList.add('train'));
@@ -513,16 +506,13 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
         const c = centre(st, el);
         for (let k = 0; k < n; k++) setTimeout(() => { const d = fxAt(fxEl, cls, c.x + (Math.random() - .5) * c.h * .5, c.y + c.h * (cls === 'tdx-qmark' ? -.55 : .42), cls === 'tdx-qmark' ? '?' : '', 1300); d.style.setProperty('--dx', `${(Math.random() - .5) * 6}cqw`); }, k * 160 + j * 80);
       });
-      const SND = { fire: 'hiss', chop: 'slap', carry: 'splash', puzzle: 'pop', push: 'boing', race: 'boing', climb: 'pop' };
-      if (SND[a.style] && s.k === 'beat') sfx(SND[a.style]);
     }
     if (a.kind === 'roundwin') {
       who.forEach(n => { const el = tokAt(castEl, n); el.classList.remove('vs', 'sad'); el.classList.add('cheer'); const c = centre(st, el); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'YES!'); });
       (a.lose || []).forEach(n => { const el = tokAt(castEl, n); if (el) { el.classList.remove('vs', 'vs-lead'); el.classList.add('sad'); } });
-      sfx('cheer');
     }
     if (a.kind === 'cry') who.forEach(n => { const el = tokAt(castEl, n); el.classList.add('sad'); const c = centre(st, el); for (let k = 0; k < 4; k++) setTimeout(() => fxAt(fxEl, 'tdx-tear', c.x + (k % 2 ? 1.2 : -1.2), c.y + c.h * .25, '', 1400), k * 260); });
-    if (a.kind === 'fire') who.forEach(n => { const el = tokAt(castEl, n); el.classList.add('fired'); const c = centre(st, el); fxAt(fxEl, 'tdx-aura', c.x, c.y + c.h / 2, '', 2400); sfx('title'); });
+    if (a.kind === 'fire') who.forEach(n => { const el = tokAt(castEl, n); el.classList.add('fired'); const c = centre(st, el); fxAt(fxEl, 'tdx-aura', c.x, c.y + c.h / 2, '', 2400); });
     if (a.kind === 'rest') who.forEach(n => tokAt(castEl, n).classList.add('act-nap'));
     if (a.kind === 'search' && who[0]) { const el = tokAt(castEl, who[0]); el.classList.add('search'); for (let k = 0; k < 5; k++) setTimeout(() => { const c = centre(st, el); fxAt(fxEl, 'tdx-dust', c.x, c.y + c.h * .95, '', 900); sfx('slip'); }, 300 + k * 520); }
     // One Final Choice: walk to the torch and lift it (the flame comes along), or turn away from it
@@ -542,18 +532,18 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
     // a jump off the pier down into the boat
     if (a.kind === 'hop' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.style.transition = 'left .9s ease-out,top .9s cubic-bezier(.3,-1.4,.6,1),opacity .4s linear .9s';
       requestAnimationFrame(() => requestAnimationFrame(() => { el.style.left = `${a.tu * 100}%`; el.style.top = `${a.tv * 100}%`; el.style.opacity = '0'; }));
-      sfx('boing'); setTimeout(() => sfx('drop'), 900); } }
+      setTimeout(() => sfx('drop'), 900); } }
     // the Summit: up to the pedestal, and the gift's name over it
     if (a.kind === 'pick' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.style.left = `${a.tu * 100}%`;
-      setTimeout(() => { const c = centre(st, el); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), esc(a.label || ''), 2600); sfx('title'); }, 900); } }
+      setTimeout(() => { const c = centre(st, el); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), esc(a.label || ''), 2600); }, 900); } }
     // the Aftermath: an anvil for a lie, a stamp for the truth, the tape rolling, the phone ringing
     if (a.kind === 'anvil' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-anvil', c.x, c.y, ANVIL, 2200); setTimeout(() => { el.classList.add('shake'); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 2, 8), 'CLANG!'); sfx('slam'); }, 520); } }
     if ((a.kind === 'hammer' || a.kind === 'hammer-miss') && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const c = centre(st, el); const hit = a.kind === 'hammer';
       fxAt(fxEl, `tdx-hammer${hit ? '' : ' miss'}`, c.x + (hit ? 0 : 6), c.y + c.h * .35, HAMMER, 2000); sfx('whoosh');
       setTimeout(() => { if (hit) { el.classList.remove('knocked'); void el.offsetWidth; el.classList.add('knocked'); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 2, 8), 'WHAM!'); sfx('slam'); } else fxAt(fxEl, 'tdx-pop', c.x + 8, Math.max(c.y - 2, 8), 'WHOOSH!'); }, 430); } }
-    if (a.kind === 'truth' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-stamp', c.x, c.y + c.h * .45, 'TRUTH', 2400); sfx('safe'); } }
+    if (a.kind === 'truth' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-stamp', c.x, c.y + c.h * .45, 'TRUTH', 2400); } }
     if (a.kind === 'tape') { fxAt(fxEl, 'tdx-tape', 0, 0, '<i></i><b>PLAY ▶</b>', 2600); sfx('static'); }
-    if (a.kind === 'phone') { fxAt(fxEl, 'tdx-phone', 86, 18, PHONE, 1800); sfx('blip'); setTimeout(() => sfx('blip'), 220); }
+    if (a.kind === 'phone') { fxAt(fxEl, 'tdx-phone', 86, 18, PHONE, 1800); sfx('ring'); }
     // stepping down off the bus: a little drop and settle, the door's hiss
     if (a.kind === 'step' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.classList.remove('stepoff'); void el.offsetWidth; el.classList.add('stepoff'); } sfx('hiss'); }
     // the last step aboard the Boat of Losers: walk off toward the boat, the horn, the motor
@@ -568,31 +558,26 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
       if (pair.length === 2) {
         const [l, r] = pair.map(n => ({ n, el: tokAt(castEl, n) })).filter(x => x.el).sort((x, y) => centre(st, x.el).x - centre(st, y.el).x);
         if (l && r) { l.el.classList.add('leanR'); r.el.classList.add('leanL');
-          if (a.kind === 'kiss' || a.kind === 'hug') { const c1 = centre(st, l.el), c2 = centre(st, r.el); fxAt(fxEl, 'tdx-heart', (c1.x + c2.x) / 2, Math.min(c1.y, c2.y), '<svg viewBox="0 0 24 22"><path d="M12 21s-9-6-9-12a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12-9 12z" fill="#ff5a7a" stroke="#1a0e14" stroke-width="1.5"/></svg>'); sfx('heart'); } }
+          if (a.kind === 'kiss' || a.kind === 'hug') { const c1 = centre(st, l.el), c2 = centre(st, r.el); fxAt(fxEl, 'tdx-heart', (c1.x + c2.x) / 2, Math.min(c1.y, c2.y), '<svg viewBox="0 0 24 22"><path d="M12 21s-9-6-9-12a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 12-9 12z" fill="#ff5a7a" stroke="#1a0e14" stroke-width="1.5"/></svg>'); } }
       }
     }
   }
-  if (s.k === 'title') { sfx(s.shock ? 'shock' : s.sting ? 'sting' : 'title'); if (s.shock) { const w = st.querySelector('.tdx-world'); if (w) { w.classList.remove('jolt'); void w.offsetWidth; w.classList.add('jolt'); } } }
+  if (s.k === 'title') { if (s.shock) { const w = st.querySelector('.tdx-world'); if (w) { w.classList.remove('jolt'); void w.offsetWidth; w.classList.add('jolt'); } } }
   if (s.k === 'ballot') { sfx('slip'); if (s.venue === 'world-tour') setTimeout(() => sfx('slam'), 1150); else { sfx('scribble'); setTimeout(() => sfx('drop'), 2700); } }
   if (s.k === 'ballots') sfx('slip');
   if (s.k === 'idol' || s.k === 'power') sfx('idol');
   if (s.applause) sfx(s.applause === 'boo' ? 'boo' : s.applause === 'big' ? 'cheer' : 'applause');
   if (s.k === 'out') sfx('out');
   if (s.k === 'found') sfx(s.item ? 'idol' : 'empty');
-  if (s.k === 'title' && s.vs) sfx('thunder');
-  if (s.k === 'intro') { sfx('title'); setTimeout(() => sfx('pop'), 450); }
   if (s.k === 'read') readFx(st, castEl, fxEl, s, toks);
-  if (s.drum) sfx('drumroll');
-  else if (s.hold && (s.contend || []).length) sfx('heartbeat');
   if (s.k === 'safe') {
     const host = toks.find(t => t.host); const to = tokAt(castEl, s.who);
     if (to) {
       const from = host ? { x: host.u * 100, y: host.v * 100 - host.h * .6 } : { x: 64, y: 46 };
       const c = centre(st, to);
       const d = document.createElement('div'); d.className = 'tdx-toss'; fxEl.appendChild(d);
-      sfx('whoosh');
       const anim = d.animate([{ left: from.x + '%', top: from.y + '%', transform: 'rotate(0)' }, { left: (from.x + c.x) / 2 + '%', top: Math.min(from.y, c.y) - 22 + '%', transform: 'rotate(260deg)', offset: .5 }, { left: c.x + '%', top: c.y + '%', transform: 'rotate(520deg)' }], { duration: s.last ? 1100 : 700, easing: 'cubic-bezier(.3,.6,.4,1)' });
-      anim.onfinish = () => { d.remove(); sfx(s.last ? 'safe' : 'pop'); if (s.last) fxAt(fxEl, 'tdx-pop', c.x, c.y - 4, 'SAFE!'); };
+      anim.onfinish = () => { d.remove(); if (s.last) fxAt(fxEl, 'tdx-pop', c.x, c.y - 4, 'SAFE!'); };
     }
   }
   if (s.k === 'beat' && s.walk) { const el = tokAt(castEl, s.walk); if (el) setTimeout(() => el.classList.add('walk'), 300); }
@@ -815,7 +800,6 @@ export function tdmZone(uid, zone) {
   if (world && Z && world.animate) {
     world.style.transformOrigin = `${(Z.u * 100).toFixed(1)}% ${(Z.v * 100).toFixed(1)}%`;
     st.querySelector('.tdm').hidden = true;
-    sfx('whoosh');
     const a = world.animate([{ transform: 'scale(1)', filter: 'blur(0)' }, { transform: 'scale(3.2)', filter: 'blur(3px)' }], { duration: 520, easing: 'cubic-bezier(.5,0,.75,.4)' });
     a.onfinish = () => { mapPaint(uid, true); world.animate([{ opacity: .2, transform: 'scale(1.06)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 380, easing: 'ease-out' }); };
   } else mapPaint(uid, true);
@@ -832,7 +816,6 @@ export function tdmWin(uid, i) {
   if (i > open) return;
   R.win = Math.max(0, Math.min(i, R.map.windows.length - 1));
   if (R.mode === 'talk') R.mode = 'map';
-  sfx('title');
   mapPaint(uid, true);
 }
 export function tdmPlay(uid, i, story = false) {

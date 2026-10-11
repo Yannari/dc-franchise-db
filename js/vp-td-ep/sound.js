@@ -181,16 +181,11 @@ export function sfx(kind) {
   const hiss = (f, dur, v = .2, type = 'bandpass') => { const s = ctx.createBufferSource(); s.buffer = noiseBuf(ctx); const fl = ctx.createBiquadFilter(); fl.type = type; fl.frequency.value = f; const e = gain(0); s.connect(fl); fl.connect(e); e.connect(dest); e.gain.linearRampToValueAtTime(v, t + .01); e.gain.exponentialRampToValueAtTime(.001, t + dur); s.start(t); s.stop(t + dur + .05); };
   if (kind === 'static') { hiss(3000, .4, .2, 'highpass'); blast(60, 50, .3, 'square', .04); }
   else if (kind === 'whoosh') { const s = ctx.createBufferSource(); s.buffer = noiseBuf(ctx); const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 1.5; const e = gain(0); s.connect(bp); bp.connect(e); e.connect(dest); bp.frequency.setValueAtTime(300, t); bp.frequency.exponentialRampToValueAtTime(2400, t + .35); e.gain.linearRampToValueAtTime(.16, t + .12); e.gain.exponentialRampToValueAtTime(.001, t + .4); s.start(t); s.stop(t + .45); }
-  else if (kind === 'pop') blast(500, 1100, .09, 'sine', .22);
   else if (kind === 'slam') { blast(140, 40, .35, 'sine', .4); hiss(800, .25, .22); }
   else if (kind === 'slap') { hiss(1800, .08, .4, 'highpass'); blast(300, 120, .08, 'triangle', .18); }
-  else if (kind === 'boing') blast(180, 520, .25, 'triangle', .18);
-  else if (kind === 'title') { blast(90, 45, .6, 'sine', .38); setTimeout(() => sfx('whoosh'), 60); }
   else if (kind === 'idol') { [392, 523, 659, 784].forEach((f, i) => setTimeout(() => { const tt = ctx.currentTime, os = ctx.createOscillator(), e = gain(0); os.type = 'triangle'; os.frequency.value = f; os.connect(e); e.connect(dest); e.gain.linearRampToValueAtTime(.16, tt + .02); e.gain.exponentialRampToValueAtTime(.001, tt + .7); os.start(tt); os.stop(tt + .75); }, i * 110)); blast(70, 40, .9, 'sine', .3); }
-  else if (kind === 'safe') [660, 880, 1320].forEach((f, i) => setTimeout(() => { const tt = ctx.currentTime, os = ctx.createOscillator(), e = gain(0); os.frequency.value = f; os.connect(e); e.connect(dest); e.gain.linearRampToValueAtTime(.14, tt + .01); e.gain.exponentialRampToValueAtTime(.001, tt + .25); os.start(tt); os.stop(tt + .3); }, i * 90));
   else if (kind === 'out') { blast(220, 55, 1.1, 'sawtooth', .12); blast(110, 40, 1.2, 'sine', .3); }
   else if (kind === 'slip') { hiss(2400, .12, .14, 'bandpass'); }
-  // a pen on paper: short scratchy strokes for as long as the name takes to write
   // the rides (about 4s, louder as it comes, fading as it goes): a voice through a filter, shaken by a pulse
   else if (['engine', 'motor', 'rotor', 'jetroar', 'wind'].includes(kind)) {
     const dur = kind === 'wind' ? 1.8 : 4.2;
@@ -221,22 +216,13 @@ export function sfx(kind) {
   else if (kind === 'scribble') { for (let i = 0; i < 11; i++) setTimeout(() => hiss(3600 + Math.random() * 1800, .06 + Math.random() * .07, .07, 'bandpass'), 500 + i * 140 + Math.random() * 60); }
   // a folded ballot dropping into the urn
   else if (kind === 'drop') { hiss(1200, .12, .12, 'bandpass'); setTimeout(() => blast(180, 70, .25, 'sine', .3), 120); }
-  else if (kind === 'heart') blast(700, 1050, .18, 'sine', .14);
-  // a shock: the orchestra stab of a reality show reveal (a low hit under a falling high note)
-  else if (kind === 'shock') { blast(1400, 380, .55, 'sawtooth', .07); blast(95, 38, .7, 'sine', .42); hiss(900, .3, .2); setTimeout(() => blast(60, 40, .5, 'sine', .25), 180); }
-  // a dun-dun for a big moment landing (a deal, a betrayal, a showmance going official)
-  else if (kind === 'sting') { blast(160, 150, .28, 'square', .08); setTimeout(() => blast(120, 110, .5, 'square', .09), 260); blast(70, 50, .9, 'sine', .3); }
   else if (kind === 'torch') { hiss(600, .7, .25, 'lowpass'); blast(80, 160, .5, 'sine', .2); }
   else if (kind === 'snuff') { hiss(3200, .5, .18, 'highpass'); blast(300, 60, .6, 'sine', .14); }
   else if (kind === 'empty') { blast(330, 220, .35, 'triangle', .16); setTimeout(() => blast(262, 165, .6, 'triangle', .16), 260); }
-  // the reading (screens.js readFx): each vote lands with a thud, the deciding one with a boom; a
-  // heartbeat under a close count, a drumroll before the last name, the room's gasp at a blindside
-  else if (kind === 'thump') blast(72, 40, .24, 'sine', .42);
+  // the reading (screens.js readFx): one hit for the vote that decides it, nothing for the rest
   else if (kind === 'boom') { hiss(140, .7, .42, 'lowpass'); blast(85, 32, .9, 'sine', .45); }
-  else if (kind === 'heartbeat') { [0, 170, 900, 1070].forEach(ms => setTimeout(() => sfx('thump'), ms)); }
-  else if (kind === 'drumhit') { hiss(220, .08, .2, 'lowpass'); blast(130, 80, .07, 'triangle', .1); }
-  else if (kind === 'drumroll') { for (let k = 0; k < 28; k++) setTimeout(() => sfx('drumhit'), k * 52); }
-  else if (kind === 'gasp') { hiss(1900, .55, .16, 'bandpass'); hiss(650, .5, .12, 'bandpass'); }
+  // a phone ringing: the old two-tone bell trill, twice
+  else if (kind === 'ring') [0, 1].forEach(r => { for (let i = 0; i < 12; i++) { const tt = t + r * .9 + i * .05, os = ctx.createOscillator(), e = gain(0); os.type = 'triangle'; os.frequency.value = i % 2 ? 1180 : 940; os.connect(e); e.connect(dest);
+    e.gain.setValueAtTime(0, tt); e.gain.linearRampToValueAtTime(.08, tt + .005); e.gain.exponentialRampToValueAtTime(.001, tt + .045); os.start(tt); os.stop(tt + .05); } });
   else if (kind === 'thunder') { hiss(90, 2.4, .5, 'lowpass'); blast(55, 30, 1.6, 'sine', .35); }
-  else if (kind === 'blip') { const os = ctx.createOscillator(), e = gain(0); os.type = 'square'; os.frequency.value = 520 + Math.random() * 60; os.connect(e); e.connect(dest); e.gain.linearRampToValueAtTime(.02, t + .004); e.gain.exponentialRampToValueAtTime(.001, t + .035); os.start(t); os.stop(t + .05); }
 }

@@ -546,13 +546,8 @@ export function _audioToastOnce() {
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 500); }, 3500);
 }
 
-// ── App-wide subtle UI sounds + dev/test panel ──
-export function installUiSounds() {
-  document.addEventListener('click', (e) => {
-    const btn = e.target && e.target.closest && e.target.closest('.btn, .tab-btn');
-    if (btn) audio.sfx('button-tick');
-  }, true);
-}
+// ── Dev/test panel ──
+// (Buttons make no sound: the tick on every click was cut, the user 2026-10-11: "remove that click sound")
 export function audioPlay(name) { audio.sfx(name); }
 export function audioBed(name) { audio.ambient(name || null); }
 export function buildAudioDebugPanel() {
@@ -576,7 +571,6 @@ export function initAudio() {
   };
   document.addEventListener('pointerdown', unlock);
   document.addEventListener('keydown', unlock);
-  installUiSounds();
   // Reflect persisted state on the control immediately on load.
   _syncAudioControl();
   return audio;

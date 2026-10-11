@@ -6051,7 +6051,62 @@
       "descriptor": "The Circus Artist",
       "backstory": "Before the show, Ren had built a creative, mobile life as a graphic designer with a background in acrobatics, which explains both his artistic flair and his athletic confidence. He traveled, met many different kinds of people, and found that they were generally welcoming of his genderfluid identity. The article gives no family or hometown details, so his pre-show life reads as independent, social, and shaped by performance and design.",
       "personality": "Ren is openly eccentric, free-spirited, and comfortable being perceived as strange; pressure does not make him shrink or pretend to be more conventional. He is social and affectionate with people he trusts, but his loyalty has limits when someone harms the group or humiliates another person. He will strategize, take risks, and call out incompetence or bullying, but he will not abandon his sense of self just to be accepted.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Playful, stubborn, electric.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think they picked me because I look like I wandered out of a design studio, a circus tent, and a group chat argument all at once. I’m athletic, I’m queer, I’m expressive, and I can make a room either loosen up or go, “Wait, what did he just say?”\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be having no space to disappear and turn into a quiet little cave bat. I’m social, but even I need a moment without twelve people breathing strategy and protein powder into my aura.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to be useful, likable, and just weird enough that people underestimate how hard I’m working. I’m not going in pretending I’m a chess goblin mastermind; I’m going in to build trust, win when I need to, and keep my eyes open even though my intuition is sometimes a broken carnival light.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m loyal if I actually commit to you; I’m not doing fake friendship confetti just for decoration. I’d like to hide how bad I can be at reading people at first, because once they smell that, suddenly I’m the piñata at the birthday party.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A sketchbook, because if I can’t draw, I start emotionally chewing the furniture.\\n- A deck of tarot cards, not because I think they’ll tell me who to trust, but because they make people talk and reveal their little raccoon secrets.\\n- A good pair of training shoes, because if there’s climbing, running, balancing, or general nonsense, I want my feet dressed for the opera.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love acrobatics, dancing around like I’m dodging invisible lasers, designing things until 2 a.m., people-watching, and traveling. Also eating dramatically, which is different from regular eating because there’s commentary.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is fun from a balcony with snacks, less fun when it’s chewing on your ankle. I’ll try to cool things down first, but if someone keeps poking me, the clown horn stops and the blunt instrument comes out verbally.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Maybe, but I’m not walking in with rose petals in my pockets. If someone is charming and the vibes are sparkling, sure, but I’m not ruining my game because somebody has nice shoulders and a tragic backstory.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… make it beautiful, make it bold, and if it collapses, make the collapse look intentional.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a wild story, a little money if the universe is feeling generous, and proof that I can handle pressure without turning into a glittery feral raccoon. I also want to represent people like me by being fully myself, not a polished brochure version.\"}]"
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Playful, stubborn, electric.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think they picked me because I look like I wandered out of a design studio, a circus tent, and a group chat argument all at once. I’m athletic, I’m queer, I’m expressive, and I can make a room either loosen up or go, “Wait, what did he just say?”\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be having no space to disappear and turn into a quiet little cave bat. I’m social, but even I need a moment without twelve people breathing strategy and protein powder into my aura.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to be useful, likable, and just weird enough that people underestimate how hard I’m working. I’m not going in pretending I’m a chess goblin mastermind; I’m going in to build trust, win when I need to, and keep my eyes open even though my intuition is sometimes a broken carnival light.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m loyal if I actually commit to you; I’m not doing fake friendship confetti just for decoration. I’d like to hide how bad I can be at reading people at first, because once they smell that, suddenly I’m the piñata at the birthday party.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A sketchbook, because if I can’t draw, I start emotionally chewing the furniture.\\n- A deck of tarot cards, not because I think they’ll tell me who to trust, but because they make people talk and reveal their little raccoon secrets.\\n- A good pair of training shoes, because if there’s climbing, running, balancing, or general nonsense, I want my feet dressed for the opera.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love acrobatics, dancing around like I’m dodging invisible lasers, designing things until 2 a.m., people-watching, and traveling. Also eating dramatically, which is different from regular eating because there’s commentary.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is fun from a balcony with snacks, less fun when it’s chewing on your ankle. I’ll try to cool things down first, but if someone keeps poking me, the clown horn stops and the blunt instrument comes out verbally.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Maybe, but I’m not walking in with rose petals in my pockets. If someone is charming and the vibes are sparkling, sure, but I’m not ruining my game because somebody has nice shoulders and a tragic backstory.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… make it beautiful, make it bold, and if it collapses, make the collapse look intentional.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a wild story, a little money if the universe is feeling generous, and proof that I can handle pressure without turning into a glittery feral raccoon. I also want to represent people like me by being fully myself, not a polished brochure version.\"}]",
+      "ties": [],
+      "kit": {
+        "thing": "being a circus acrobat",
+        "alone": "is juggling three rocks, badly, and loving it",
+        "ground": [
+          "artist",
+          "athlete",
+          "left-school"
+        ],
+        "bit": [
+          "If anybody needs something from the top of the tree, I've got you. Also, I'm already up here.",
+          "I used to do aerial silks. Then I did graphic design. Then I did both, at once. It went badly.",
+          "Ladies, gentlemen, everyone in between, please stay seated for the greatest show on this beach."
+        ],
+        "tease": [
+          "Why are you up a tree, Ren?",
+          "How do you do both at once?",
+          "There's no show, Ren."
+        ],
+        "reply": [
+          "Why is anyone anywhere? It's the view.",
+          "Very carefully, upside down, with a laptop.",
+          "There's always a show. You're just not watching."
+        ],
+        "home": [
+          "Nowhere and everywhere. I've lived out of a backpack for years, and people have been lovely almost everywhere.",
+          "A studio in Vegas, my silks, and a lot of friends who think I'm the weird one. They're right."
+        ],
+        "want": [
+          "To make people smile. And to win. Smiling first, though.",
+          "To play my own game, my own way, and still be me at the end."
+        ],
+        "conf": [
+          "People think I'm weird. I am weird. It's my favourite thing about me.",
+          "I'll joke about everything. Then somebody gets bullied, and I'm not joking anymore."
+        ],
+        "askHome": [
+          "Who's at home for you? Spill. I'm nosy.",
+          "Got anybody special back home?"
+        ],
+        "askWant": [
+          "What do you want from all this? Dream big. I mean big.",
+          "What's your act? Everybody has an act."
+        ],
+        "defend": [
+          "I'm weird. You're boring. Only one of those is a problem, and it's not mine."
+        ],
+        "deep": [
+          "Everywhere I've travelled, people have mostly let me be exactly who I am. I don't take that for granted. I want this place to be one of those places."
+        ],
+        "solo": [
+          "I'm going to run away and join a carnival when this is over. I'm already practising.",
+          "Some people think I'm weird. I am weird. It's the most fun thing about me."
+        ]
+      }
     },
     {
       "name": "Sami",

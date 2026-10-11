@@ -2665,6 +2665,11 @@
       "kit": {
         "thing": "being a cop",
         "alone": "is checking every knot and rope around camp, retying the loose ones",
+        "ground": [
+          "raised-siblings",
+          "family-doubts",
+          "hard-home"
+        ],
         "bit": [
           "Nobody leaves camp alone after dark. I'm serious. Buddy system, everybody.",
           "I'm just going to walk the perimeter real quick. Old habit.",
@@ -2719,7 +2724,8 @@
       "occupation": "Policeman",
       "descriptor": "The Spy",
       "backstory": "Thomas “Tom” Reed, born Winters, grew up with a mother named Jackie who strongly shaped his life and a younger brother, Tony, whom he gets along with well. One of his happiest childhood memories was going skating with his mother, and his childhood love of comics gave him an idealistic desire to protect people. He became a spy before later police work, and his life before public fame was marked by a serious traumatic incident that left him with lasting PTSD-related struggles and difficulty showing his face or trusting others. His parents suspected he was gay before he fully understood it himself, and he first recognized his sexuality when he was younger.",
-      "personality": "Tom is secretive and self-protective at first, but his instinct is still to look after people rather than abandon them. Under pressure, he tries to take charge physically and morally, leaning on discipline, strength, and a strong sense of justice; however, if he believes a larger mission or someone’s safety depends on it, he can lie, withhold the truth, or double-cross others. He is loyal once he trusts someone, but trust does not come easily, and he may avoid people rather than admit how badly he has been hurt. He will stand up to cheating and cruelty, but he will not easily expose his own vulnerability unless someone has earned it."
+      "personality": "Tom is secretive and self-protective at first, but his instinct is still to look after people rather than abandon them. Under pressure, he tries to take charge physically and morally, leaning on discipline, strength, and a strong sense of justice; however, if he believes a larger mission or someone’s safety depends on it, he can lie, withhold the truth, or double-cross others. He is loyal once he trusts someone, but trust does not come easily, and he may avoid people rather than admit how badly he has been hurt. He will stand up to cheating and cruelty, but he will not easily expose his own vulnerability unless someone has earned it.",
+      "ties": []
     },
     {
       "name": "Jake",

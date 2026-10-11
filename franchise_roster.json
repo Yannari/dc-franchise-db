@@ -3600,7 +3600,7 @@
         "temperament": 5
       },
       "sexuality": "gay",
-      "voice": "Smooth, calculating, always reasonable-sounding. Frames manipulation as plain logic, never raises his voice — the more in control he is, the calmer he gets. 'I counted. He doesn't have the numbers.' / 'Plans change. I don't.'",
+      "voice": "Smooth, calculating, always reasonable-sounding. Frames manipulation as plain logic, never raises his voice — the more in control he is, the calmer he gets. 'I counted. He doesn't have the numbers.' / 'Plans change. I don't.' #-calm#proud",
       "profileSources": {
         "voice": [
           {
@@ -3675,7 +3675,63 @@
       "hometown": "Sao paulo",
       "occupation": "Actor and social media influencer",
       "backstory": "James Costa was born in Brazil on May 29, 2002. Growing up, he had few friends beyond his sister, so social media attention became a substitute measure of belonging and value. He turned that instinct into a career as an influencer and later an actor, arriving at competition with a practiced persona, an eye for content, and a willingness to manufacture moments before learning that genuine connection could satisfy what an audience never did.",
-      "personality": "James is charming, calculating, image-conscious, and skilled at making an audience feel included in his version of events. Early in life, loneliness taught him to treat follower counts as proof that he mattered; this made staged affection, selective truth, and public spectacle feel like reasonable tools. Real relationships challenged that equation. He remains ambitious and capable of deception, but authentic loyalty now has weight that fame cannot automatically outweigh. Under pressure he narrates, reframes, and searches for the move that preserves both leverage and reputation. He dislikes being made foolish in public and can retaliate with precision. His strongest boundary is earned intimacy: once someone becomes real to him rather than useful, exploiting that bond should create visible conflict rather than effortless villainy."
+      "personality": "James is charming, calculating, image-conscious, and skilled at making an audience feel included in his version of events. Early in life, loneliness taught him to treat follower counts as proof that he mattered; this made staged affection, selective truth, and public spectacle feel like reasonable tools. Real relationships challenged that equation. He remains ambitious and capable of deception, but authentic loyalty now has weight that fame cannot automatically outweigh. Under pressure he narrates, reframes, and searches for the move that preserves both leverage and reputation. He dislikes being made foolish in public and can retaliate with precision. His strongest boundary is earned intimacy: once someone becomes real to him rather than useful, exploiting that bond should create visible conflict rather than effortless villainy.",
+      "ties": [],
+      "kit": {
+        "thing": "being an influencer",
+        "alone": "is writing a caption for a photo nobody's taking",
+        "ground": [
+          "lonely-child",
+          "close-sibling",
+          "online-fame",
+          "performer"
+        ],
+        "bit": [
+          "I counted. Four people at breakfast, three at lunch. Somebody's skipping meals to have conversations.",
+          "Back home, I had half a million people watching every move I made. Out here it's eight. It's almost relaxing.",
+          "Plans change. I don't. That's the whole secret."
+        ],
+        "tease": [
+          "You counted people at breakfast?",
+          "Eight people and a camera crew.",
+          "That's a very nice sentence. What does it mean?"
+        ],
+        "reply": [
+          "I count everything. It's free information.",
+          "The camera crew doesn't vote.",
+          "It means I'll still be here when your plan doesn't work."
+        ],
+        "home": [
+          "My sister. She was my only friend for a long time. She's the one I'm doing this for, if I'm honest.",
+          "A lot of followers, and one person who would notice if I disappeared. That's my sister."
+        ],
+        "want": [
+          "To win, cleanly, and in a way that looks good on camera. Both matter.",
+          "To find out if I can win without performing. I'm not sure I can."
+        ],
+        "conf": [
+          "Everybody wants to be part of a story. I just make sure I'm the one telling it.",
+          "I don't raise my voice. If you raise your voice, you've already lost the room."
+        ],
+        "askHome": [
+          "Tell me about home. Who matters there?",
+          "Who's watching for you back home?"
+        ],
+        "askWant": [
+          "What do you want from this? People always have an answer they say and an answer they mean.",
+          "What's your end goal here?"
+        ],
+        "defend": [
+          "Half a million people chose to watch me. You can sneer, but they chose."
+        ],
+        "deep": [
+          "For years the only person who talked to me was my sister. The followers were just proof I existed."
+        ],
+        "solo": [
+          "If I'm honest, I'm already planning the posts for when I get home. My followers are going to lose it.",
+          "Out here nobody likes or comments. You just have to be a person. It's weirder than I thought."
+        ]
+      }
     },
     {
       "name": "Kai",

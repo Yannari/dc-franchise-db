@@ -342,3 +342,40 @@ export function babble(text, v, { loud = false } = {}) {
     talkUntil = t; ambLevel();
   });
 }
+
+// ── VOICE ACTING (the test) ───────────────────────────────────────────
+// The user means to voice the cast with Qwen3-TTS (2026-10-11) and is testing it by hand first: the lines
+// of one episode, exported by tools/td-vo-script.mjs into assets/audio/td/vo-test/script.json, voiced in
+// the online demo and dropped in the same folder as <id>.wav (or .mp3). A line with a clip plays it; any
+// other line, or a clip that is not there yet, falls back to the blips. The id is the speaker and the
+// line's text, hashed, so the clip follows the line and not its position.
+export function lineId(by, text) {
+  let h = 2166136261; for (const ch of `${by}|${text}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  return 'L' + (h >>> 0).toString(16).padStart(8, '0');
+}
+let voIndex = null;
+const VO = 'vo-test/';
+function voLoad() {
+  if (!voIndex) voIndex = fetch(TD_AUDIO + VO + 'script.json').then(r => r.ok ? r.json() : null)
+    .then(j => { const m = new Set((j?.lines || []).map(l => l.id)); voIndex.ids = m; return m; }).catch(() => { voIndex.ids = new Set(); return voIndex.ids; });
+  return voIndex;
+}
+if (typeof window !== 'undefined') voLoad();
+/** Speak a line: the voice actor's clip when there is one, else the blips. */
+export function speak(by, text, v, opts = {}) {
+  hush();
+  const id = lineId(by, text);
+  try { window.__tdLine?.(by, text, id, opts.meta || {}); } catch { /* a harness hook (tools/td-vo-script.mjs) */ }
+  const o = out(); if (!o) return;
+  if (!voIndex?.ids?.has(id)) return babble(text, v, opts);
+  const ctx = o.ctx, tok = talkTok;
+  const clip = loadBuf(ctx, `${VO}${id}.wav`).then(L => L || loadBuf(ctx, `${VO}${id}.mp3`));
+  clip.then(L => {
+    if (tok !== talkTok) return;
+    if (!L) return babble(text, v, opts);
+    const src = ctx.createBufferSource(), g = ctx.createGain(); src.buffer = L.b; g.gain.value = L.norm * (opts.loud ? .95 : .8);
+    src.connect(g); g.connect(o.dest); src.start(); talkSrcs.push(src);
+    try { window.__tdClip?.(id); } catch { /* a harness hook */ }
+    talkUntil = ctx.currentTime + L.b.duration; ambLevel();
+  });
+}

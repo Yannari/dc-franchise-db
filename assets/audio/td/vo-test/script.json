@@ -1,0 +1,156 @@
+{
+  "episode": 2,
+  "season": "season-vo-test.json",
+  "note": "Voice each line in the Qwen3-TTS demo and save it here as <id>.wav (or .mp3).",
+  "characters": {
+    "Heather": "Young woman, about 18. Sharp, fast and condescending: a queen-bee villain. Clipped consonants, a sweet sing-song when she wants something, then cold and cutting. Confident, never hesitant.",
+    "Owen": "Young man, about 18, big and cheerful. Loud, warm, breathless and excitable, laughs mid-sentence, voice cracks up high when he is excited or scared. Friendly goofball, never mean.",
+    "Gwen": "Young woman, about 18. Low, dry and deadpan: a sarcastic goth who is tired of everyone. Flat, unhurried delivery, little pitch movement, a quiet edge of warmth only with friends."
+  },
+  "lines": [
+    {
+      "id": "Le81142a9",
+      "by": "Heather",
+      "text": "The easy name keeps everybody calm, and calm people vote the way I want them to, so it's Courtney.",
+      "direction": "Speak naturally. Just before this, Chris said: \"When it came time to vote, Heather found out Courtney was coming for her, and struck first, and got the numbers.\"",
+      "voiceDescription": "Young woman, about 18. Sharp, fast and condescending: a queen-bee villain. Clipped consonants, a sweet sing-song when she wants something, then cold and cutting. Confident, never hesitant. Speak naturally. Just before this, Chris said: \"When it came time to vote, Heather found out Courtney was coming for her, and struck first, and got the numbers.\"",
+      "file": "Le81142a9.wav"
+    },
+    {
+      "id": "L7d103028",
+      "by": "Heather",
+      "text": "It's very good, it means I'd rather have you next to me than against me. Final two.",
+      "direction": "Speak naturally, in a casual conversation at camp. Just before this, Trent said: \"Is that good?\"",
+      "voiceDescription": "Young woman, about 18. Sharp, fast and condescending: a queen-bee villain. Clipped consonants, a sweet sing-song when she wants something, then cold and cutting. Confident, never hesitant. Speak naturally, in a casual conversation at camp. Just before this, Trent said: \"Is that good?\"",
+      "file": "L7d103028.wav"
+    },
+    {
+      "id": "Ladbd59ee",
+      "by": "Heather",
+      "text": "Have I ever lied to you?",
+      "direction": "Speak naturally, in a casual conversation at camp. Just before this, Trent said: \"You're serious.\"",
+      "voiceDescription": "Young woman, about 18. Sharp, fast and condescending: a queen-bee villain. Clipped consonants, a sweet sing-song when she wants something, then cold and cutting. Confident, never hesitant. Speak naturally, in a casual conversation at camp. Just before this, Trent said: \"You're serious.\"",
+      "file": "Ladbd59ee.wav"
+    },
+    {
+      "id": "L7c5b6fa7",
+      "by": "Heather",
+      "text": "Funny. Is that what you practised in the mirror this morning?",
+      "direction": "Speak naturally, in a casual conversation at camp. Just before this, Duncan said: \"How's your team doing? Oh, wait, I already know.\"",
+      "voiceDescription": "Young woman, about 18. Sharp, fast and condescending: a queen-bee villain. Clipped consonants, a sweet sing-song when she wants something, then cold and cutting. Confident, never hesitant. Speak naturally, in a casual conversation at camp. Just before this, Duncan said: \"How's your team doing? Oh, wait, I already know.\"",
+      "file": "L7c5b6fa7.wav"
+    },
+    {
+      "id": "L2c5b048a",
+      "by": "Heather",
+      "text": "The truth is we're going to beat you today, and you'll have to walk past me after.",
+      "direction": "Speak naturally, in a casual conversation at camp. Just before this, Duncan said: \"I don't need to practise. I just tell the truth.\"",
+      "voiceDescription": "Young woman, about 18. Sharp, fast and condescending: a queen-bee villain. Clipped consonants, a sweet sing-song when she wants something, then cold and cutting. Confident, never hesitant. Speak naturally, in a casual conversation at camp. Just before this, Duncan said: \"I don't need to practise. I just tell the truth.\"",
+      "file": "L2c5b048a.wav"
+    },
+    {
+      "id": "Lfbce9bfb",
+      "by": "Heather",
+      "text": "It's the choice that doesn't start a war. Any other, and somebody comes for us next week.",
+      "direction": "Speak naturally, in a casual conversation at camp. Just before this, Trent said: \"Is that a good reason?\"",
+      "voiceDescription": "Young woman, about 18. Sharp, fast and condescending: a queen-bee villain. Clipped consonants, a sweet sing-song when she wants something, then cold and cutting. Confident, never hesitant. Speak naturally, in a casual conversation at camp. Just before this, Trent said: \"Is that a good reason?\"",
+      "file": "Lfbce9bfb.wav"
+    },
+    {
+      "id": "L01a7e0d6",
+      "by": "Heather",
+      "text": "I've nothing against Bridgette. Bridgette is simply the name that keeps everybody else together.",
+      "direction": "Speak quietly and candidly, confiding in a camera when nobody else can hear.",
+      "voiceDescription": "Young woman, about 18. Sharp, fast and condescending: a queen-bee villain. Clipped consonants, a sweet sing-song when she wants something, then cold and cutting. Confident, never hesitant. Speak quietly and candidly, confiding in a camera when nobody else can hear.",
+      "file": "L01a7e0d6.wav"
+    },
+    {
+      "id": "Laa8196e6",
+      "by": "Owen",
+      "text": "Those are emergency crackers. For emergencies.",
+      "direction": "Speak naturally, in a casual conversation at camp. Just before this, Duncan said: \"Why are there crackers in your sleeping bag?\"",
+      "voiceDescription": "Young man, about 18, big and cheerful. Loud, warm, breathless and excitable, laughs mid-sentence, voice cracks up high when he is excited or scared. Friendly goofball, never mean. Speak naturally, in a casual conversation at camp. Just before this, Duncan said: \"Why are there crackers in your sleeping bag?\"",
+      "file": "Laa8196e6.wav"
+    },
+    {
+      "id": "L4f672b19",
+      "by": "Owen",
+      "text": "Lucky still counts!",
+      "direction": "Shout it, loud and emphatic. Just before this, Harold said: \"We're not that good. We got lucky on the last part.\"",
+      "voiceDescription": "Young man, about 18, big and cheerful. Loud, warm, breathless and excitable, laughs mid-sentence, voice cracks up high when he is excited or scared. Friendly goofball, never mean. Shout it, loud and emphatic. Just before this, Harold said: \"We're not that good. We got lucky on the last part.\"",
+      "file": "L4f672b19.wav"
+    },
+    {
+      "id": "L8c5e2baa",
+      "by": "Owen",
+      "text": "So who's waiting for you back home?",
+      "direction": "Speak naturally, in a casual conversation at camp. Just before this, Alejandro said: \"The trick is to make everybody feel like they're your favourite. The hard part is remembering who you told.\"",
+      "voiceDescription": "Young man, about 18, big and cheerful. Loud, warm, breathless and excitable, laughs mid-sentence, voice cracks up high when he is excited or scared. Friendly goofball, never mean. Speak naturally, in a casual conversation at camp. Just before this, Alejandro said: \"The trick is to make everybody feel like they're your favourite. The hard part is remembering who you told.\"",
+      "file": "L8c5e2baa.wav"
+    },
+    {
+      "id": "L9e22d584",
+      "by": "Owen",
+      "text": "Huh. I didn't expect that.",
+      "direction": "Speak naturally, in a casual conversation at camp. Just before this, Alejandro said: \"A family that measures everything. Grades, trophies, money. Winning this is the only thing José won't have done first.\"",
+      "voiceDescription": "Young man, about 18, big and cheerful. Loud, warm, breathless and excitable, laughs mid-sentence, voice cracks up high when he is excited or scared. Friendly goofball, never mean. Speak naturally, in a casual conversation at camp. Just before this, Alejandro said: \"A family that measures everything. Grades, trophies, money. Winning this is the only thing José won't have done first.\"",
+      "file": "L9e22d584.wav"
+    },
+    {
+      "id": "Lb7d82ad6",
+      "by": "Gwen",
+      "text": "What are you two laughing at?",
+      "direction": "Speak naturally, in a casual conversation at camp. Just before this, Lindsay said: \"Ten minutes. I bet you I can do it in ten.\"",
+      "voiceDescription": "Young woman, about 18. Low, dry and deadpan: a sarcastic goth who is tired of everyone. Flat, unhurried delivery, little pitch movement, a quiet edge of warmth only with friends. Speak naturally, in a casual conversation at camp. Just before this, Lindsay said: \"Ten minutes. I bet you I can do it in ten.\"",
+      "file": "Lb7d82ad6.wav"
+    },
+    {
+      "id": "Ldb0ff550",
+      "by": "Gwen",
+      "text": "There's nothing to take. I'm doing it.",
+      "direction": "Speak naturally, in a casual conversation at camp. Just before this, Cody said: \"I'll take it from here, thanks.\"",
+      "voiceDescription": "Young woman, about 18. Low, dry and deadpan: a sarcastic goth who is tired of everyone. Flat, unhurried delivery, little pitch movement, a quiet edge of warmth only with friends. Speak naturally, in a casual conversation at camp. Just before this, Cody said: \"I'll take it from here, thanks.\"",
+      "file": "Ldb0ff550.wav"
+    },
+    {
+      "id": "La3ee5f8e",
+      "by": "Gwen",
+      "text": "Then show me. From over there.",
+      "direction": "Speak naturally, in a casual conversation at camp. Just before this, Cody said: \"You're doing it wrong.\"",
+      "voiceDescription": "Young woman, about 18. Low, dry and deadpan: a sarcastic goth who is tired of everyone. Flat, unhurried delivery, little pitch movement, a quiet edge of warmth only with friends. Speak naturally, in a casual conversation at camp. Just before this, Cody said: \"You're doing it wrong.\"",
+      "file": "La3ee5f8e.wav"
+    },
+    {
+      "id": "Lf706a1b5",
+      "by": "Gwen",
+      "text": "Fantastic, ten out of ten, would recommend.",
+      "direction": "Speak in a low, tense voice at the campfire ceremony, aware that everyone is listening. Just before this, Chris said: \"Gwen, you were on the wrong side of the Courtney vote. How did that feel?\"",
+      "voiceDescription": "Young woman, about 18. Low, dry and deadpan: a sarcastic goth who is tired of everyone. Flat, unhurried delivery, little pitch movement, a quiet edge of warmth only with friends. Speak in a low, tense voice at the campfire ceremony, aware that everyone is listening. Just before this, Chris said: \"Gwen, you were on the wrong side of the Courtney vote. How did that feel?\"",
+      "file": "Lf706a1b5.wav"
+    },
+    {
+      "id": "L1dba9424",
+      "by": "Gwen",
+      "text": "I gave The Confessional Clique my word, and I don't break my word, so it's Bridgette.",
+      "direction": "Speak in a low, tense voice at the campfire ceremony, aware that everyone is listening. Just before this, Lindsay said: \"I told them I had doubts, and nobody listened, so tonight I'm listening to myself instead. Trent.\"",
+      "voiceDescription": "Young woman, about 18. Low, dry and deadpan: a sarcastic goth who is tired of everyone. Flat, unhurried delivery, little pitch movement, a quiet edge of warmth only with friends. Speak in a low, tense voice at the campfire ceremony, aware that everyone is listening. Just before this, Lindsay said: \"I told them I had doubts, and nobody listened, so tonight I'm listening to myself instead. Trent.\"",
+      "file": "L1dba9424.wav"
+    },
+    {
+      "id": "Lccd09c00",
+      "by": "Gwen",
+      "text": "I'm sorry, Bridgette, I really am.",
+      "direction": "Speak in a low, tense voice at the campfire ceremony, aware that everyone is listening. Just before this, Leshawna said: \"Ha! Not me! Not me tonight!\"",
+      "voiceDescription": "Young woman, about 18. Low, dry and deadpan: a sarcastic goth who is tired of everyone. Flat, unhurried delivery, little pitch movement, a quiet edge of warmth only with friends. Speak in a low, tense voice at the campfire ceremony, aware that everyone is listening. Just before this, Leshawna said: \"Ha! Not me! Not me tonight!\"",
+      "file": "Lccd09c00.wav"
+    },
+    {
+      "id": "L12ee69cb",
+      "by": "Gwen",
+      "text": "Everybody thinks that vote just happened, but it didn't just happen, I made it happen.",
+      "direction": "Speak quietly and candidly, confiding in a camera when nobody else can hear.",
+      "voiceDescription": "Young woman, about 18. Low, dry and deadpan: a sarcastic goth who is tired of everyone. Flat, unhurried delivery, little pitch movement, a quiet edge of warmth only with friends. Speak quietly and candidly, confiding in a camera when nobody else can hear.",
+      "file": "L12ee69cb.wav"
+    }
+  ]
+}

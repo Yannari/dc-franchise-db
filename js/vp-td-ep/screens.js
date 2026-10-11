@@ -21,7 +21,7 @@ import { tdAftermathScreen, hasAftermath } from './aftermath.js';
 import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf, hideBooth, setHideBooth, maskName } from './stage.js';
 import { TDX_CSS, TDX_FONTS } from './style.js';
 import { liveGL } from './glplate.js';
-import { ambience, stopAmbience, sfx, babble, hush } from './sound.js';
+import { ambience, stopAmbience, sfx, speak, hush } from './sound.js';
 
 const reg = () => (typeof window !== 'undefined' ? (window._tdx ||= {}) : (globalThis._tdx ||= {}));
 export const tdSteppedOn = () => { try { return globalThis.localStorage?.getItem('td-vp') !== 'classic'; } catch { return true; } };
@@ -383,7 +383,7 @@ function paint(uid, fresh) {
       if (n >= full.length) { clearInterval(R.typing); say.innerHTML = badge + lit(full); }
     }, 16);
   }
-  if (fresh) { hush(); if ((s.k === 'say' || s.k === 'conf') && s.by && d.text && !d.cls.includes('dir')) babble(d.text, voiceOf(s.by), { loud: !!(s.loud || s.shock) }); }
+  if (fresh) { hush(); if ((s.k === 'say' || s.k === 'conf') && s.by && d.text && !d.cls.includes('dir')) speak(s.by, d.text, voiceOf(s.by), { loud: !!(s.loud || s.shock), meta: { k: s.k, stage: s.stage || null, loud: !!s.loud, shock: !!s.shock, badge: d.badge?.text || null, screen: scr.id } }); }
   if (fresh && s.loud) { dlg.classList.remove('loud'); void dlg.offsetWidth; dlg.classList.add('loud'); }
   // what happens, animated
   if (fresh) act(st, castEl, fxEl, scr, L, s, toks);

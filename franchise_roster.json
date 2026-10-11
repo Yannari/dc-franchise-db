@@ -1257,7 +1257,7 @@
         "temperament": 4
       },
       "sexuality": "straight",
-      "voice": "Sweet-poison manipulator. Disarms you with a smile and then cuts, talks people into their own bad decisions; no loyalty and won't bother pretending otherwise once she's caught.",
+      "voice": "Sweet-poison manipulator. Disarms you with a smile and then cuts, talks people into their own b#competitivead decisions; no loyalty and won't bother pretending otherwise once she's caught. #-warm#cruel #blunt#bossy",
       "profileSources": {
         "voice": [
           {
@@ -1350,7 +1350,60 @@
       "occupation": "Social media influencer",
       "descriptor": "The Influencer and Evil in Human Form",
       "backstory": "Before the show, Julia built an online identity as a wellness and lifestyle influencer, presenting herself as a serene “citizen of Mother Earth” while privately disliking parts of the brand she sold. Her family includes parents Greg and Judy, who ran a bake shop where she worked as a child, and a sister, Megan, whom Julia targets with casual cruelty. Competition gave her a platform large enough to discard the mask and monetize the real Julia instead.",
-      "personality": "Julia is fiercely competitive, physically resilient, and strategically aggressive. She first cultivated a sunny influencer persona built from crystals, nature slogans, and curated positivity, but humiliation stripped away the performance and revealed someone who enjoys winning, intimidation, and a perfectly timed insult. She is excellent at turning social information into leverage and persistent enough to rebuild after exposure. Loyalty is conditional, though she can form a compelling partnership when the other person matches her nerve and usefulness. Under pressure she doubles down, lies boldly, and attacks the weak point rather than retreating. Her temper and public cruelty create jurors and enemies even when the move itself is sound. She respects competent opposition—especially Bowie—because beating a real strategist proves more than dominating a passive room."
+      "personality": "Julia is fiercely competitive, physically resilient, and strategically aggressive. She first cultivated a sunny influencer persona built from crystals, nature slogans, and curated positivity, but humiliation stripped away the performance and revealed someone who enjoys winning, intimidation, and a perfectly timed insult. She is excellent at turning social information into leverage and persistent enough to rebuild after exposure. Loyalty is conditional, though she can form a compelling partnership when the other person matches her nerve and usefulness. Under pressure she doubles down, lies boldly, and attacks the weak point rather than retreating. Her temper and public cruelty create jurors and enemies even when the move itself is sound. She respects competent opposition—especially Bowie—because beating a real strategist proves more than dominating a passive room.",
+      "ties": [],
+      "kit": {
+        "thing": "being an influencer",
+        "alone": "is filming herself on an imaginary phone, practising a sponsorship read",
+        "ground": [
+          "online-fame"
+        ],
+        "bit": [
+          "Okay, this light is actually gorgeous. If we had a phone, this would get so much engagement.",
+          "I'm a citizen of Mother Earth, so honestly, sleeping outside is kind of my brand.",
+          "Babe, your posture. I'm not being mean, I'm being honest. People respect honesty."
+        ],
+        "tease": [
+          "We don't have phones. Nobody's watching except the cameras.",
+          "Didn't you complain about a bug for twenty minutes yesterday?",
+          "That was definitely mean."
+        ],
+        "reply": [
+          "The cameras are the phones now. Smile.",
+          "Mother Earth and I are working through some things.",
+          "It was honest. Being honest just sounds mean when you're not used to it."
+        ],
+        "home": [
+          "My parents run a bake shop. I used to work there. Now I have, like, a platform.",
+          "My followers, mostly. And my sister, Megan, who is going to hate how good I look on TV."
+        ],
+        "want": [
+          "To win, and to be the most talked-about person on this show. Both is ideal.",
+          "A bigger platform. Money's nice. Attention lasts longer."
+        ],
+        "conf": [
+          "The trick is, you smile while you say it. Then they don't even notice they've been cut.",
+          "They all think I'm a ditzy influencer. Good. Ditzy influencers don't get voted out first."
+        ],
+        "askHome": [
+          "Who's your support system back home? I love that for you, whoever it is.",
+          "So who are you going home to? Be honest."
+        ],
+        "askWant": [
+          "What's your brand here, though? Like, what do you want people to say about you?",
+          "What are you actually after? Everybody's after something."
+        ],
+        "defend": [
+          "Laugh all you want. I built a brand from nothing, and that's more than you've ever done."
+        ],
+        "deep": [
+          "The influencer thing is a costume. I'm not sure anymore what's under it. That scares me more than losing."
+        ],
+        "solo": [
+          "When I get home, I'm going to have the best content of my life. I'm basically storyboarding right now.",
+          "Everybody thinks I'm shallow. Shallow doesn't build a following from nothing. Strategy does."
+        ]
+      }
     },
     {
       "name": "Junior",

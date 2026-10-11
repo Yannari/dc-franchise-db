@@ -1044,8 +1044,8 @@ function _selectEncounters(name, survivors, threatLevel, location, capturedPool,
         target = candidates[Math.floor(Math.random() * candidates.length)] || null;
       } else if (chosen.type === 'showmance') {
         const showmances = gs.showmances || [];
-        const sm = showmances.find(sm => sm.pair && sm.pair.includes(name) && sm.pair.some(p => p !== name && survivors.includes(p)));
-        target = sm ? sm.pair.find(p => p !== name) : null;
+        const sm = showmances.find(sm => sm.phase !== 'broken-up' && sm.players?.includes(name) && sm.players.some(p => p !== name && survivors.includes(p)));
+        target = sm ? sm.players.find(p => p !== name) : null;
       } else if (chosen.type === 'alliance' || chosen.type === 'confrontation') {
         const bonded = survivors.filter(p => p !== name && getBond(name, p) >= 1);
         const candidates = bonded.length ? bonded : survivors.filter(p => p !== name);
@@ -1188,8 +1188,8 @@ export function simulateMonsterCash(ep) {
 
     if (seasonConfig.romance) {
       for (const sm of (gs.showmances || [])) {
-        if (sm.pair && survivors.includes(sm.pair[0]) && survivors.includes(sm.pair[1])) {
-          _checkShowmanceChalMoment(sm.pair[0], sm.pair[1], ep);
+        if (sm.phase !== 'broken-up' && sm.players?.length === 2 && survivors.includes(sm.players[0]) && survivors.includes(sm.players[1]) && Math.random() < 0.25) {
+          _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores, 'danger', [...sm.players]);
         }
       }
     }

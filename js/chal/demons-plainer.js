@@ -576,8 +576,8 @@ function _runCoaster(ep, active, scores, campEvents, flagOrder, isMerged, shelte
   if (seasonConfig.romance) {
     // existing showmances
     for (const sm of (gs.showmances || [])) {
-      if (sm.pair && !sm.broken && active.includes(sm.pair[0]) && active.includes(sm.pair[1])) {
-        _checkShowmanceChalMoment(sm.pair[0], sm.pair[1], ep);
+      if (sm.phase !== 'broken-up' && sm.players?.length === 2 && active.includes(sm.players[0]) && active.includes(sm.players[1])) {
+        _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores, 'danger', [...sm.players]);
       }
     }
     // fear hand-hold spark between a nervous rider + a seatmate

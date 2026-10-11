@@ -4,6 +4,11 @@ import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
+// Showmances are { players, phase }; this file reads a couple as { a, b } / .pair (it used to read those
+// straight off gs.showmances, where they never exist, so no couple ever counted here).
+const _couples = () => (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players?.length === 2)
+  .map(sh => ({ a: sh.players[0], b: sh.players[1], pair: [...sh.players], players: [...sh.players] }));
+
 // ── HELPERS ──
 function host() { return seasonConfig?.hostName || 'Chris'; }
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -1591,7 +1596,7 @@ export function simulatePlanesTrains(ep) {
 
     // Showmance moment (once per land race, seg 1 or 2)
     if ((seg === 1 || seg === 2) && gs.showmances?.length) {
-      for (const sm of gs.showmances.filter(s => !s.broken)) {
+      for (const sm of _couples().filter(s => !s.broken)) {
         if (landRacers.includes(sm.a) && landRacers.includes(sm.b)) {
           segEvents.push({ segment: seg, type: 'showmance', player: sm.a, target: sm.b,
             text: pick(SHOWMANCE_RACE_TEXT)(sm.a, sm.b) });
@@ -1972,7 +1977,7 @@ export function simulatePlanesTrains(ep) {
 
     // Showmance moment on the water
     if (seg === 1 && gs.showmances?.length) {
-      for (const sm of gs.showmances.filter(s => !s.broken)) {
+      for (const sm of _couples().filter(s => !s.broken)) {
         if (active.includes(sm.a) && active.includes(sm.b)) {
           const SEA_SHOWMANCE_TEXT = [
             (a, b) => `${a} and ${b} drifted close on the waves. For just a moment, the race didn't matter. Then it did again.`,

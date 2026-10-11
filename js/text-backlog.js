@@ -2778,6 +2778,10 @@ export function _textAftermathStrategic(ep, ln, sec) {
   buildStorylines(ep).forEach(s => ln(`- ${s}`));
 }
 
+// A showmance has no `broken` flag: an ended one has phase 'broken-up', and breakupType 'separated'
+// means a vote split them up rather than a break-up.
+const _brokeUp = sh => sh.phase === 'broken-up' && sh.breakupType !== 'separated';
+
 // ── SEASON ARCS: multi-episode narrative threads derived from history ──
 // Unlike buildStorylines (which reads the CURRENT episode's state), this reads
 // ACROSS gs.episodeHistory + votingHistory + popularity + showmances to surface
@@ -2816,11 +2820,11 @@ export function buildSeasonArcs(ep) {
   (gs.showmances || []).forEach(sh => {
     const [a, b] = sh.players || [];
     if (!a || !b) return;
-    if (!sh.broken && active.has(a) && active.has(b)) {
+    if (sh.phase !== 'broken-up' && active.has(a) && active.has(b)) {
       const eps = sh.episodesActive || 0;
       if (eps >= 2) lines.push(`${a} and ${b} have been a showmance for ${eps} episode(s) now — it's no longer a secret. The longer it lasts, the bigger the target on both of them, and the harder the eventual "the game vs. the relationship" choice gets.`);
       else lines.push(`${a} and ${b}'s showmance is still new and fragile — others are starting to notice. Show it deepening or straining, not static.`);
-    } else if (sh.broken && sh.breakupEp && sh.breakupEp >= ep.num - 2 && (active.has(a) || active.has(b))) {
+    } else if (_brokeUp(sh) && sh.breakupEp && sh.breakupEp >= ep.num - 2 && (active.has(a) || active.has(b))) {
       lines.push(`The ${a}/${b} showmance recently fell apart${sh.breakupVoter ? ` (${sh.breakupVoter} was involved)` : ''}. That wreckage is still fresh — the fallout shapes how they move now.`);
     }
   });
@@ -2910,11 +2914,11 @@ export function buildTrackedArcs(ep) {
     // (a returnee getting re-eliminated must not re-resolve the same thread).
     const _elimEpOf = nm => { const h = (gs.episodeHistory || []).find(e => e && (e.eliminated === nm || e.firstEliminated === nm || e.suddenDeathEliminated === nm)); return h ? h.num : Infinity; };
     const _firstCutEp = Math.min(_elimEpOf(a), _elimEpOf(b), elimThis.has(a) || elimThis.has(b) ? ep.num : Infinity);
-    if (sh.broken && sh.breakupEp === ep.num) arcs.push({ type: 'showmance', players: [a, b], status: 'resolved', intensity: sh.episodesActive || 1,
+    if (_brokeUp(sh) && sh.breakupEp === ep.num) arcs.push({ type: 'showmance', players: [a, b], status: 'resolved', intensity: sh.episodesActive || 1,
       summary: `${a} and ${b}'s showmance fell apart${sh.breakupVoter ? ` — ${sh.breakupVoter} pulled the trigger` : ''}.`, payoff: `The relationship didn't survive the game.` });
-    else if (partnerCut && !sh.broken && _firstCutEp === ep.num) arcs.push({ type: 'showmance', players: [a, b], status: 'resolved', intensity: sh.episodesActive || 1,
+    else if (partnerCut && !_brokeUp(sh) && _firstCutEp === ep.num) arcs.push({ type: 'showmance', players: [a, b], status: 'resolved', intensity: sh.episodesActive || 1,
       summary: `The ${a}/${b} showmance ended the only way the game allows — one of them went home.`, payoff: `Game beat the relationship.` });
-    else if (!sh.broken && active.has(a) && active.has(b) && (sh.sparkEp === ep.num || sh.formedEp === ep.num)) arcs.push({ type: 'showmance', players: [a, b], status: 'building', intensity: 1,
+    else if (sh.phase !== 'broken-up' && active.has(a) && active.has(b) && (sh.sparkEp === ep.num || sh.formedEp === ep.num)) arcs.push({ type: 'showmance', players: [a, b], status: 'building', intensity: 1,
       summary: `${a} and ${b} are becoming a thing — and a target.` });
   });
 

@@ -2,7 +2,7 @@
 import { gs, players, seasonConfig } from '../core.js';
 import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
-import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
+import { _challengeRomanceSpark, _checkShowmanceChalMoment, _groupRomanceSpark } from '../romance.js';
 
 // ── HELPERS ──
 function host() { return seasonConfig?.hostName || 'Chris'; }
@@ -404,8 +404,11 @@ function _ordinal(n) {
 export function simulateGreatFakeOut(ep) {
   const active = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
   const campKey = gs.mergeName || 'merge';
-  if (!gs.campEvents) gs.campEvents = {};
-  if (!gs.campEvents[campKey]) gs.campEvents[campKey] = [];
+  // filed on the episode's camp (gs.campEvents had no reader: these never reached a screen or the backlog)
+  if (!ep.campEvents) ep.campEvents = {};
+  if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+  if (!ep.campEvents[campKey].post) ep.campEvents[campKey].post = [];
+  const _campPost = ep.campEvents[campKey].post;
 
   ep.chalMemberScores = {};
   active.forEach(n => { ep.chalMemberScores[n] = 0; });
@@ -498,7 +501,7 @@ export function simulateGreatFakeOut(ep) {
         popDelta(actor, -1);
         usedDramaPlayers.add(actor);
         usedDramaPlayers.add(target);
-        gs.campEvents[campKey].push({
+        _campPost.push({
           type: 'gfo-manipulate', players: [actor, target],
           text: `${actor} tricked ${target} into grabbing a terrible vehicle during the scramble.`,
           badgeText: 'Manipulated', badgeClass: 'bad',
@@ -516,7 +519,7 @@ export function simulateGreatFakeOut(ep) {
       popDelta(a, -1);
       usedDramaPlayers.add(a);
       usedDramaPlayers.add(b);
-      gs.campEvents[campKey].push({
+      _campPost.push({
         type: 'gfo-shove', players: [a, b],
         text: `${a} shoved ${b} during the vehicle scramble.`,
         badgeText: 'Shoved', badgeClass: 'bad',
@@ -535,7 +538,7 @@ export function simulateGreatFakeOut(ep) {
       popDelta(helper, 1);
       usedDramaPlayers.add(helper);
       usedDramaPlayers.add(target);
-      gs.campEvents[campKey].push({
+      _campPost.push({
         type: 'gfo-help', players: [helper, target],
         text: `${helper} helped ${target} get a good vehicle during the scramble.`,
         badgeText: 'Helped Ally', badgeClass: 'green',
@@ -736,7 +739,7 @@ export function simulateGreatFakeOut(ep) {
               consequences: 'rescuer +1.5s, victim recovers half, bond +2',
             });
             usedEventPlayers.add(rescuer);
-            gs.campEvents[campKey].push({
+            _campPost.push({
               type: 'gfo-rescue', players: [rescuer, victim],
               text: `${rescuer} stopped to help ${victim} when ${pronouns(victim).posAdj} vehicle broke down during the race.`,
               badgeText: 'Race Rescue', badgeClass: 'green',
@@ -765,7 +768,7 @@ export function simulateGreatFakeOut(ep) {
             });
             usedEventPlayers.add(villain);
             usedEventPlayers.add(target);
-            gs.campEvents[campKey].push({
+            _campPost.push({
               type: 'gfo-dirty', players: [villain, target],
               text: `${villain} sabotaged ${target} during the fortress race.`,
               badgeText: 'Dirty Racer', badgeClass: 'bad',
@@ -869,7 +872,7 @@ export function simulateGreatFakeOut(ep) {
   const raceElimVehicle = raceStandings[raceStandings.length - 1].vehicle;
   const raceElimText = pick(RACE_ELIMINATED)(raceEliminated, raceElimPr, raceElimVehicle);
 
-  gs.campEvents[campKey].push({
+  _campPost.push({
     type: 'gfo-race-elim', players: [raceEliminated],
     text: `${raceEliminated} finished last in the race and was cut from the eating gauntlet.`,
     badgeText: 'Race Eliminated', badgeClass: 'bad',
@@ -1219,7 +1222,7 @@ export function simulateGreatFakeOut(ep) {
 
   popDelta(immunityWinner, 2);
 
-  gs.campEvents[campKey].push({
+  _campPost.push({
     type: 'gfo-winner', players: [immunityWinner],
     text: `${immunityWinner} won The Great Fake-Out immunity challenge by surviving the eating gauntlet.`,
     badgeText: 'Immunity Winner', badgeClass: 'gold',
@@ -1255,7 +1258,7 @@ export function simulateGreatFakeOut(ep) {
   ep.chalPlacements = finalPlacements.map(fp => fp.name);
 
   // Romance hooks
-  _challengeRomanceSpark(null, null, active);
+  _groupRomanceSpark(ep, active, 'the fake-out');
   _checkShowmanceChalMoment(ep, null, null);
 
   // Set episode data

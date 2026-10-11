@@ -5309,6 +5309,10 @@ export function checkHeroVillainEvents(ep) {
 
   const _heroes = gs.activePlayers.filter(p => players.find(pl => pl.name === p)?.archetype === 'hero');
   const _villains = gs.activePlayers.filter(p => players.find(pl => pl.name === p)?.archetype === 'villain');
+  // the departure a villain can gloat about: camp runs before tonight's vote, so it is last episode's
+  // (ep.eliminated is only set this early on a night with no vote — Slasher Night, Sudden Death)
+  const _lastEp = (gs.episodeHistory || []).filter(h => h && h.num < ep.num).slice(-1)[0];
+  const _fallen = ep.eliminated || (_lastEp?.eliminated && _lastEp.eliminated !== 'No elimination' ? _lastEp.eliminated : null);
 
   // ── VILLAIN EVENTS (~30% per villain per episode) ──
   _villains.forEach(v => {
@@ -5340,14 +5344,14 @@ export function checkHeroVillainEvents(ep) {
         `${v} doesn't whisper strategy. ${_vPr.Sub} announce${_vPr.sub==='they'?'':'s'} it. The tribe can accept it or fight it — but ${_vPr.sub} ${_vPr.sub==='they'?'aren\'t':'isn\'t'} hiding.`,
         `${v} lays out exactly what's going to happen tonight. No deception. No spin. Just power.`,
       ]), badgeText: 'Power Play', badgeClass: 'red' }, 'villain.power', { a: v, b: _heard }, {}, ep));
-    } else if (_roll < 0.70 && ep.eliminated) {
+    } else if (_roll < 0.70 && _fallen) {
       // Gloating — villain celebrates an enemy's departure
-      const _elimBond = getBond(v, ep.eliminated);
+      const _elimBond = getBond(v, _fallen);
       if (_elimBond < -1) {
         _rp([0]); // the draw that picked the sentence
         pushEvt(scriptEvent({ type: 'villainGloat', players: [v], badgeText: 'Gloating', badgeClass: 'red' },
-          makeScene('villain.gloat', { a: v }, { fallen: ep.eliminated }, [], { id: 'confessional', label: 'Confessional' }), { ep: ep.num, phase: 'pre' }));
-        tribeMembers.forEach(p => { if (getBond(p, ep.eliminated) >= 2) addBond(p, v, -0.3); }); // allies of eliminated resent
+          makeScene('villain.gloat', { a: v }, { fallen: _fallen }, [], { id: 'confessional', label: 'Confessional' }), { ep: ep.num, phase: 'pre' }));
+        tribeMembers.forEach(p => { if (getBond(p, _fallen) >= 2) addBond(p, v, -0.3); }); // allies of eliminated resent
       }
     } else {
       // Villain's inner circle — fierce loyalty to their #1
@@ -6799,8 +6803,11 @@ export function generateCampEvents(ep, phase = 'both') {
       if (ep.twistNarrativeEvents?.['merge']) mergePreEvents.unshift(ep.twistNarrativeEvents['merge']);
       if (!ep.campEvents) ep.campEvents = {};
       const _existingMergePre = ep.campEvents.merge?.pre || [];
+      // a twist that ran before camp (the auction) may already have filed post-challenge moments:
+      // keep them, as the tribe branch above does
+      const _existingMergePost = ep.campEvents.merge?.post || [];
       const _crowdMergePre = _crowdScenes(ep, 'merge', _campActivePlayers, 'pre');
-      ep.campEvents.merge = { pre: _chimeIns(ep, 'merge', 'pre', [..._existingMergePre, ..._crowdMergePre.slice(0, 1), ...mergePreEvents, ..._crowdMergePre.slice(1)]), post: [] };
+      ep.campEvents.merge = { pre: _chimeIns(ep, 'merge', 'pre', [..._existingMergePre, ..._crowdMergePre.slice(0, 1), ...mergePreEvents, ..._crowdMergePre.slice(1)]), post: [..._existingMergePost] };
     }
   }
 

@@ -3,6 +3,11 @@ import { gs, players, seasonConfig } from '../core.js';
 import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { getBond, addBond } from '../bonds.js';
 
+// Showmances are { players, phase }; this file reads a couple as { a, b } / .pair (it used to read those
+// straight off gs.showmances, where they never exist, so no couple ever counted here).
+const _couples = () => (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players?.length === 2)
+  .map(sh => ({ a: sh.players[0], b: sh.players[1], pair: [...sh.players], players: [...sh.players] }));
+
 // ── HELPERS ──
 function host() { return seasonConfig?.hostName || 'Chris'; }
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -517,7 +522,7 @@ function _simulateLaser(active, state, timeline, ep) {
         }
       }
       // Showmance
-      const sm = gs.showmances?.find(s => active.includes(s.a) && active.includes(s.b));
+      const sm = _couples().find(s => active.includes(s.a) && active.includes(s.b));
       if (sm) {
         eventPool.push({ type: 'showmance', players: [sm.a, sm.b], text: pick(LASER_MID_EVENTS.showmanceMoment)(sm.a, sm.b) });
       }

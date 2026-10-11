@@ -4,6 +4,11 @@ import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
+// Showmances are { players, phase }; this file reads a couple as { a, b } / .pair (it used to read those
+// straight off gs.showmances, where they never exist, so no couple ever counted here).
+const _couples = () => (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players?.length === 2)
+  .map(sh => ({ a: sh.players[0], b: sh.players[1], pair: [...sh.players], players: [...sh.players] }));
+
 // ── HELPERS ──
 function host() { return seasonConfig?.hostName || 'Chris'; }
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -556,10 +561,10 @@ const EVENT_POOL = [
   {
     id: 'showmanceShield', weight: 4,
     check(alive) {
-      return gs.showmances?.some(s => alive.includes(s.a) && alive.includes(s.b));
+      return _couples().some(s => alive.includes(s.a) && alive.includes(s.b));
     },
     apply(alive, heroes) {
-      const sm = gs.showmances.find(s => alive.includes(s.a) && alive.includes(s.b));
+      const sm = _couples().find(s => alive.includes(s.a) && alive.includes(s.b));
       if (!sm) return null;
       addBond(sm.a, sm.b, 0.5);
       return { type: 'showmanceShield', players: [sm.a, sm.b],
@@ -877,9 +882,9 @@ const MICRO_EVENTS = [
     }
   },
   { id: 'showmanceMoment', weight: 2,
-    check: (bystanders, alive) => gs.showmances?.some(s => bystanders.includes(s.a) && alive.includes(s.b) || bystanders.includes(s.b) && alive.includes(s.a)),
+    check: (bystanders, alive) => _couples().some(s => bystanders.includes(s.a) && alive.includes(s.b) || bystanders.includes(s.b) && alive.includes(s.a)),
     gen(bystanders, alive, heroes, allKOs, injuries, alliances, lastFight) {
-      const sm = gs.showmances?.find(s => (bystanders.includes(s.a) && alive.includes(s.b)) || (bystanders.includes(s.b) && alive.includes(s.a)));
+      const sm = _couples().find(s => (bystanders.includes(s.a) && alive.includes(s.b)) || (bystanders.includes(s.b) && alive.includes(s.a)));
       if (!sm) return null;
       const texts = [
         `${sm.a} caught ${sm.b}'s eye across the battlefield. No words needed. A look that said "I've got your back." Then they both looked away — focus.`,
@@ -1156,7 +1161,7 @@ function _simulateBossFight(survivors, heroes, result, ep, injuries) {
 
     // Showmance shield moment
     if (beat >= 1 && gs.showmances) {
-      const smPair = gs.showmances.find(s => survivors.includes(s.a) && survivors.includes(s.b));
+      const smPair = _couples().find(s => survivors.includes(s.a) && survivors.includes(s.b));
       if (smPair && Math.random() < 0.4) {
         const protector = pStats(smPair.a).boldness >= pStats(smPair.b).boldness ? smPair.a : smPair.b;
         const protected_ = protector === smPair.a ? smPair.b : smPair.a;

@@ -4,6 +4,11 @@ import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat, playerA
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
+// Showmances are { players, phase }; this file reads a couple as { a, b } / .pair (it used to read those
+// straight off gs.showmances, where they never exist, so no couple ever counted here).
+const _couples = () => (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players?.length === 2)
+  .map(sh => ({ a: sh.players[0], b: sh.players[1], pair: [...sh.players], players: [...sh.players] }));
+
 function noise(range = 2.5) { return (Math.random() - 0.5) * range; }
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function popDelta(name, delta) {
@@ -279,7 +284,7 @@ export function simulateCrazyFunTime(ep) {
         if (roles.writer?.player) ep.chalMemberScores[roles.writer.player] = (ep.chalMemberScores[roles.writer.player] || 0) - 1;
       } else if (pe.type === 'showmance') {
         // Both showmance partners get a small boost for chemistry
-        const sm = (gs.showmances || []).find(s => members.includes(s.a) && members.includes(s.b));
+        const sm = _couples().find(s => members.includes(s.a) && members.includes(s.b));
         if (sm) {
           ep.chalMemberScores[sm.a] = (ep.chalMemberScores[sm.a] || 0) + 2;
           ep.chalMemberScores[sm.b] = (ep.chalMemberScores[sm.b] || 0) + 2;
@@ -1107,7 +1112,7 @@ function _generateProductionEvents(roles, members, ep, tribeName) {
   }
 
   // Showmance on set
-  const showmances = gs.showmances || [];
+  const showmances = _couples();
   const onSetShowmance = showmances.find(sm => members.includes(sm.a) && members.includes(sm.b));
   if (onSetShowmance) {
     eventPool.push({

@@ -58,6 +58,10 @@ const VENUE_WORDS = {
   carnival: { quarters: 'shelter', bed: 'sleeping bag', count: true, item: 'vote' },
 };
 let venueNow = 'hosted-camp';
+// engine moments that air whatever the episode's story is (see airTdEpisode): somebody leaving or arriving,
+// and the secret plays a viewer has to have seen for what follows to make sense
+const MUST_AIR = new Set(['medevac', 'medevacReplacement', 'kissTrap', 'moleBondSabotage', 'moleInfoLeak', 'moleChallengeThrow', 'moleAdvSabotage']);
+const AIRS_FIRST = new Set(['medevac', 'medevacReplacement']);
 let ctxAvoid = () => null;
 
 // The director's own scenes are events (the user, 2026-10-10: "they're not events that change bonds?"): each
@@ -2171,6 +2175,16 @@ export function airTdEpisode(ep) {
         if (!OPTIONAL.test(it.kind || '')) continue;
         out[phase].splice(i, 1);
       } }
+    // a moment that changes who is in the game, or that the season cannot be followed without, always
+    // airs (a medevac used to be left off camera every time: a player was gone with no screen saying so).
+    // Last, after every cut: `aired` is not enough, a storyline step can claim a moment and then be cut.
+    for (const phase of ['pre', 'post']) {
+      eventsOf(ep, camp, phase).forEach((ev, i) => {
+        if (!ev || !MUST_AIR.has(ev.type) || out[phase].some(it => it.ref === i)) return;
+        ev.aired = true;
+        if (AIRS_FIRST.has(ev.type)) out[phase].unshift({ ref: i }); else out[phase].push({ ref: i });
+      });
+    }
     story[camp] = out;
   }
   ep.campStory = story;

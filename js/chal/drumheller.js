@@ -2,7 +2,12 @@
 import { gs, players, seasonConfig } from '../core.js';
 import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
-import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
+
+// Showmances are { players, phase }; this file reads them as { a, b } (it used sh.a / sh.broken, which
+// never exist, so no couple ever counted here).
+const _couples = () => (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players?.length === 2)
+  .map(sh => ({ a: sh.players[0], b: sh.players[1] }));
+import { _challengeRomanceSpark, _checkShowmanceChalMoment, _groupRomanceSpark } from '../romance.js';
 
 // ── HELPERS ──
 function host() { return seasonConfig?.hostName || 'Chris'; }
@@ -610,7 +615,7 @@ export function simulateDrumheller(ep) {
     return false;
   });
   if (schemers.length >= 2) eventTypes.push('scheme-convo');
-  const activeShowmances = (gs.showmances || []).filter(sh => !sh.broken && active.includes(sh.a) && active.includes(sh.b));
+  const activeShowmances = _couples().filter(sh => active.includes(sh.a) && active.includes(sh.b));
   if (activeShowmances.length > 0) eventTypes.push('showmance-build');
 
   const usedPlayersB2 = new Set();
@@ -685,7 +690,7 @@ export function simulateDrumheller(ep) {
       addBond(sh.a, sh.b, 1.5);
       popDelta(sh.a, 1);
       popDelta(sh.b, 1);
-      _checkShowmanceChalMoment(sh.a, sh.b, null, null);
+      _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, 'teamwork', [sh.a, sh.b]);
       const evObj = { type: 'showmance-build', beat: 2, text: pickU(BUILD_SHOWMANCE)(sh.a, sh.b), players: [sh.a, sh.b] };
       beat2Events.push(evObj);
       builds[sh.a].events.push(evObj);
@@ -740,7 +745,7 @@ export function simulateDrumheller(ep) {
   }
 
   // Showmance romance spark opportunity
-  _challengeRomanceSpark(active, null, null);
+  _groupRomanceSpark(ep, active, 'the dig');
 
   // Finalize builds — generate descriptions and clamp quality
   for (const name of active) {
@@ -968,7 +973,7 @@ export function simulateDrumheller(ep) {
 
           if (NICE.has(ra)) {
             if (ra === 'hero' || ra === 'loyal-soldier') willRescue = bond >= 0;
-            else willRescue = bond >= 2 || (gs.showmances?.some(sh => !sh.broken && ((sh.a === rescuer && sh.b === boulderTarget) || (sh.b === rescuer && sh.a === boulderTarget))));
+            else willRescue = bond >= 2 || _couples().some(sh => (sh.a === rescuer && sh.b === boulderTarget) || (sh.b === rescuer && sh.a === boulderTarget));
           } else if (VILLAIN.has(ra)) {
             willRescue = bond >= 5 || (pStats(rescuer).strategic * 0.3 + noise(2) > 4);
           } else {
@@ -998,8 +1003,8 @@ export function simulateDrumheller(ep) {
             });
             ep.chalMemberScores[rescuer] += 3;
             // Showmance moment
-            if (gs.showmances?.some(sh => !sh.broken && ((sh.a === rescuer && sh.b === boulderTarget) || (sh.b === rescuer && sh.a === boulderTarget)))) {
-              _checkShowmanceChalMoment(rescuer, boulderTarget, null, null);
+            if (_couples().some(sh => (sh.a === rescuer && sh.b === boulderTarget) || (sh.b === rescuer && sh.a === boulderTarget))) {
+              _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, 'danger', [rescuer, boulderTarget]);
             }
             break;
           }
@@ -1036,7 +1041,7 @@ export function simulateDrumheller(ep) {
         if (socialType.target) usedSocialPlayers.add(socialType.target);
         // Apply consequences
         if (socialType.type === 'showmance-moment') {
-          _checkShowmanceChalMoment(socialType.a, socialType.b, null, null);
+          _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, 'partner-interaction', [socialType.a, socialType.b]);
         } else if (socialType.type === 'rivalry') {
           addBond(socialType.a, socialType.b, -1);
           popDelta(socialType.a, 1); // entertainment
@@ -1123,8 +1128,8 @@ function _pickSocialEvent(active, trapped, toolBonus, usedSocialPlayers) {
 
   // Check for showmance pair
   if (gs.showmances?.length && Math.random() < 0.35) {
-    for (const sm of gs.showmances) {
-      if (!sm.broken && freeActive.includes(sm.a) && freeActive.includes(sm.b)) {
+    for (const sm of _couples()) {
+      if (freeActive.includes(sm.a) && freeActive.includes(sm.b)) {
         return { type: 'showmance-moment', a: sm.a, b: sm.b };
       }
     }

@@ -121,7 +121,7 @@ export function recapRelationships(g = gs) {
     const key = [...s.players].sort().join('|');
     if (seen.has(key)) continue;
     seen.add(key);
-    showmances.push({ players: [...s.players], broken: !!s.broken, phase: s.phase || null });
+    showmances.push({ players: [...s.players], broken: !!s.broken || (s.phase === 'broken-up' && s.breakupType !== 'separated'), phase: s.phase || null });
   }
   return { rivalries, showmances };
 }

@@ -4,6 +4,11 @@ import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
+// Showmances are { players, phase }; this file reads a couple as { a, b } / .pair (it used to read those
+// straight off gs.showmances, where they never exist, so no couple ever counted here).
+const _couples = () => (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players?.length === 2)
+  .map(sh => ({ a: sh.players[0], b: sh.players[1], pair: [...sh.players], players: [...sh.players] }));
+
 // ── HELPERS ──
 function host() { return seasonConfig?.hostName || 'Chris'; }
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -61,7 +66,7 @@ function _selectRoyal(active) {
   let royalName = null;
   // Showmance rigging: if active showmance, pick the half with higher social
   if (gs.showmances?.length) {
-    for (const sm of gs.showmances) {
+    for (const sm of _couples()) {
       if (active.includes(sm.a) && active.includes(sm.b)) {
         royalName = pStats(sm.a).social >= pStats(sm.b).social ? sm.a : sm.b;
         break;
@@ -554,9 +559,9 @@ const SOCIAL_EVENTS = [
   },
   {
     id: 'showmanceMoment', weight: 4,
-    check(alive) { return gs.showmances?.some(s => alive.includes(s.a) && alive.includes(s.b)); },
+    check(alive) { return _couples().some(s => alive.includes(s.a) && alive.includes(s.b)); },
     apply(alive, classMap) {
-      const sm = gs.showmances?.find(s => alive.includes(s.a) && alive.includes(s.b));
+      const sm = _couples().find(s => alive.includes(s.a) && alive.includes(s.b));
       if (!sm) return null;
       addBond(sm.a, sm.b, 0.5);
       const smTexts = [
@@ -689,8 +694,8 @@ const SOCIAL_EVENTS = [
           `"The sword goes to the weakest link," ${royalTitle} ${royalName} murmured, studying the quest below. "Not the strongest. The weakest. Because the weakest is the most GRATEFUL." ${pr.Sub} was playing chess while everyone else played fairy tales.`,
         ];
         text = pick(villainRoyalTexts);
-      } else if (gs.showmances?.some(s => (s.a === royalName || s.b === royalName))) {
-        const sm = gs.showmances.find(s => (s.a === royalName || s.b === royalName));
+      } else if (_couples().some(s => (s.a === royalName || s.b === royalName))) {
+        const sm = _couples().find(s => (s.a === royalName || s.b === royalName));
         const partner = sm.a === royalName ? sm.b : sm.a;
         const smRoyalTexts = [
           `${royalTitle} ${royalName} leaned against the tower window. ${pr.Sub} was watching the quest, yes. But ${pr.posAdj} eyes kept drifting to ${partner}. "Be careful down there." Whispered. Nobody heard. That was the point.`,
@@ -1042,7 +1047,7 @@ function _simulatePhase(phaseId, phaseLabel, beats, alive, classMap, result, ep,
         });
         // Royal save — fires for close allies, showmance, OR strategic value
         const royalBond = getBond(result.royalName, victim);
-        const isShowmancePair = gs.showmances?.some(s => (s.a === result.royalName && s.b === victim) || (s.b === result.royalName && s.a === victim));
+        const isShowmancePair = _couples().some(s => (s.a === result.royalName && s.b === victim) || (s.b === result.royalName && s.a === victim));
         const royalStrategic = pStats(result.royalName).strategic;
         const strategicSave = royalStrategic * 0.08 + royalBond * 0.1 + noise(0.2) > 0.3;
         const saveWorthy = isShowmancePair || royalBond >= 2 || strategicSave;
@@ -1096,7 +1101,7 @@ function _simulateDuel(royalName, knightName, result, ep, campKey, fatigue) {
 
   // ── HAPPY ENDING CHECK: showmance or very high bond = they refuse to fight ──
   const duelBond = getBond(royalName, knightName);
-  const isShowmance = gs.showmances?.some(s =>
+  const isShowmance = _couples().some(s =>
     (s.a === royalName && s.b === knightName) || (s.a === knightName && s.b === royalName));
   const happyEnding = isShowmance || (duelBond >= 6 && Math.random() < 0.7);
 

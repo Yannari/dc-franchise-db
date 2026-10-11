@@ -81,7 +81,7 @@ export function simulateBasicStraining(ep) {
   function hasEmotionalDebuff(name) {
     const prevEp = gs.episodeHistory?.length ? gs.episodeHistory[gs.episodeHistory.length - 1] : null;
     if (prevEp?.eliminated && getBond(name, prevEp.eliminated) >= 3) return true;
-    if (gs.showmances?.some(s => s.broken && s.players.includes(name))) return true;
+    if (gs.showmances?.some(s => s.phase === 'broken-up' && s.breakupType !== 'separated' && s.players.includes(name))) return true;
     return false;
   }
 
@@ -306,6 +306,7 @@ export function simulateBasicStraining(ep) {
             `${player} gets stuck on the wall. Slides down. Twice. Three times. ${chef}: "OUT."`,
           ]);
           if (Math.random() < 0.25) {
+            if (!gs.lingeringInjuries) gs.lingeringInjuries = {};
             gs.lingeringInjuries[player] = { ep: epNum, duration: 1, type: 'obstacle-course', penalty: 0.3 + Math.random() * 0.3 };
           }
         } else if (phase.id === 'night-march') {

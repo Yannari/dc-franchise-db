@@ -2,7 +2,7 @@
 import { gs, players, seasonConfig } from '../core.js';
 import { pStats, pronouns, tribeColor, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
-import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
+import { _challengeRomanceSpark, _checkShowmanceChalMoment, _groupRomanceSpark } from '../romance.js';
 
 // ── HELPERS ──
 function host() { return seasonConfig?.hostName || 'Chris'; }
@@ -1083,7 +1083,7 @@ export function simulateProjectRunaway(ep) {
   });
 
   // Romance hooks
-  _challengeRomanceSpark(ep, null, null, ep.chalMemberScores, 'project runaway', allActive);
+  _groupRomanceSpark(ep, allActive, 'project runaway');
   _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores, 'project runaway', allActive);
 
   // Store simulation data

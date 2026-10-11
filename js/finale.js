@@ -435,7 +435,7 @@ export function simulateFinale() {
       if (peanutGallery.length >= 4 && Math.random() < 0.5) _galleryEvent(2, 2, 'argue', _hpPick(players));
 
       // Showmance moment
-      const activeShowmances = (gs.showmances || []).filter(sh => !sh.broken && sh.players.some(p => players.includes(p)));
+      const activeShowmances = (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players.some(p => players.includes(p)));
       if (activeShowmances.length > 0) {
         const sh = _hpPick(activeShowmances);
         const inRace = sh.players.filter(p => players.includes(p));
@@ -1088,7 +1088,7 @@ export function simulateFinale() {
         }
 
         // Showmance Tension
-        const showmance = (gs.showmances || []).find(sh => !sh.broken && sh.players.includes(dA) && sh.players.includes(dB));
+        const showmance = (gs.showmances || []).find(sh => sh.phase !== 'broken-up' && sh.players.includes(dA) && sh.players.includes(dB));
         if (showmance && Math.random() < 0.35) {
           addBond(dA, dB, 0.5);
           exchangeEvents.push({ type: 'showmance-tension', players: [dA, dB], round: i + 1 });
@@ -1674,7 +1674,7 @@ export function simulateFinale() {
       }
 
       // Beat 3: Mind games (trailing player only)
-      const hasShowmance = (gs.showmances || []).some(sh => !sh.broken && sh.players.includes(leader) && sh.players.includes(trailer));
+      const hasShowmance = (gs.showmances || []).some(sh => sh.phase !== 'broken-up' && sh.players.includes(leader) && sh.players.includes(trailer));
       const pairBond = getBond(leader, trailer);
       const canAttempt = trailerS.social >= 5 || hasShowmance || pairBond >= 4;
 

@@ -8,6 +8,11 @@ import { pStats, pronouns, updateChalRecord, tribeColor, playerAvatarUrl } from 
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
+// Showmances are { players, phase }; this file reads a couple as { a, b } / .pair (it used to read those
+// straight off gs.showmances, where they never exist, so no couple ever counted here).
+const _couples = () => (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players?.length === 2)
+  .map(sh => ({ a: sh.players[0], b: sh.players[1], pair: [...sh.players], players: [...sh.players] }));
+
 // ── HELPERS ──
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 const noise = r => (Math.random() - 0.5) * r;
@@ -725,8 +730,8 @@ function _simulateMaze(active, ep, tribeData) {
         function _pushSocial(evt) { roundData.events.push(evt); maze.socialEvents.push(evt); socialFired++; }
 
         // Showmance moment (existing showmance or romantic spark)
-        const hasShowmance = gs.showmances?.some(sh => !sh.broken && sh.pair?.includes(pair[0]) && sh.pair?.includes(pair[1]));
-        const hasSpark = gs.romanticSparks?.some(sp => sp.pair?.includes(pair[0]) && sp.pair?.includes(pair[1]));
+        const hasShowmance = _couples().some(sh => !sh.broken && sh.pair?.includes(pair[0]) && sh.pair?.includes(pair[1]));
+        const hasSpark = gs.romanticSparks?.some(sp => sp.players?.includes(pair[0]) && sp.players?.includes(pair[1]));
         if ((hasShowmance || hasSpark) && Math.random() < 0.70) {
           addBond(pair[0], pair[1], 1);
           _pushSocial({

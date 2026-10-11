@@ -4,6 +4,11 @@ import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat, playerA
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
+// Showmances are { players, phase }; this file reads a couple as { a, b } / .pair (it used to read those
+// straight off gs.showmances, where they never exist, so no couple ever counted here).
+const _couples = () => (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players?.length === 2)
+  .map(sh => ({ a: sh.players[0], b: sh.players[1], pair: [...sh.players], players: [...sh.players] }));
+
 // ── HELPERS ──
 function host() { return seasonConfig?.hostName || 'Chris'; }
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -599,7 +604,7 @@ export function simulateNightAtMuseum(ep) {
   tribes.forEach(t => t.members.forEach(m => { tribeOf[m] = t.name; }));
 
   // Active showmances
-  const activeShowmances = (gs.showmances || []).filter(sh => !sh.broken && sh.pair?.length === 2);
+  const activeShowmances = _couples().filter(sh => !sh.broken && sh.pair?.length === 2);
 
   // Result data
   const result = {

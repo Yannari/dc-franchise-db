@@ -719,7 +719,7 @@ function _extractSocialData(name) {
       sparkEp: sh.sparkEp ?? null,
       phase: sh.phase || null,
       intensity: sh.intensity ?? null,
-      broken: sh.broken || false,
+      broken: !!sh.broken || (sh.phase === 'broken-up' && sh.breakupType !== 'separated'),
       breakupEp: sh.breakupEp ?? null
     }));
 
@@ -1099,7 +1099,7 @@ function _extractSeasonStats() {
     .length;
 
   const totalShowmances = (gs.showmances || []).length;
-  const totalBreakups = (gs.showmances || []).filter(sh => sh.broken).length;
+  const totalBreakups = (gs.showmances || []).filter(sh => sh.broken || (sh.phase === 'broken-up' && sh.breakupType !== 'separated')).length;
 
   return {
     totalTribalCouncils,
@@ -1458,7 +1458,7 @@ export function extractSeasonRawStats() {
   const showmances = (gs.showmances || []).map(sh => ({
     pair: [sh.a, sh.b],
     formedEp: sh.formedEp ?? null,
-    broken: sh.broken || false,
+    broken: !!sh.broken || (sh.phase === 'broken-up' && sh.breakupType !== 'separated'),
     brokenEp: sh.brokenEp ?? null,
     intensity: sh.intensity ?? 0,
     reason: sh.reason ?? null
@@ -1650,7 +1650,7 @@ function _extractShowmances() {
     players: (sh.players || []).slice(0, 2),
     playerSlugs: (sh.players || []).slice(0, 2).map(n => _slug(n)),
     // `phase` is where it got to: spark, showmance, or broken.
-    phase: sh.broken ? 'broken' : (sh.phase || 'showmance'),
+    phase: (sh.broken || (sh.phase === 'broken-up' && sh.breakupType !== 'separated')) ? 'broken' : (sh.phase || 'showmance'),
     startEpisode: sh.sparkEp ?? sh.firstMoveEp ?? null,
     endEpisode: sh.breakupEp ?? null,
     // Ended how, when it ended — a breakup at a vote is a different story from

@@ -3,6 +3,11 @@ import { gs, players, seasonConfig } from '../core.js';
 import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 
+// Showmances are { players, phase }; this file reads a couple as { a, b } / .pair (it used to read those
+// straight off gs.showmances, where they never exist, so no couple ever counted here).
+const _couples = () => (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players?.length === 2)
+  .map(sh => ({ a: sh.players[0], b: sh.players[1], pair: [...sh.players], players: [...sh.players] }));
+
 // ── HELPERS ──
 function getArchetype(name) { return players.find(p => p.name === name)?.archetype || ''; }
 const VILLAIN_ARCHETYPES = ['villain', 'mastermind', 'schemer'];
@@ -1149,7 +1154,7 @@ function _simulateRound(ep, fighters, fireWinner, roundNum, isTiebreaker = false
 
     // Showmance moment — if a showmance partner is watching
     for (const f of fighters) {
-      const sm = gs.showmances?.find(s => s.a === f.fighter || s.b === f.fighter);
+      const sm = _couples().find(s => s.a === f.fighter || s.b === f.fighter);
       if (sm && Math.random() < 0.4) {
         const partner = sm.a === f.fighter ? sm.b : sm.a;
         const isActive = fighters.some(fi => fi.fighter === partner);

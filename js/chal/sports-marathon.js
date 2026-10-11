@@ -3,6 +3,11 @@ import { gs, players, seasonConfig } from '../core.js';
 import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 
+// Showmances are { players, phase }; this file reads a couple as { a, b } / .pair (it used to read those
+// straight off gs.showmances, where they never exist, so no couple ever counted here).
+const _couples = () => (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players?.length === 2)
+  .map(sh => ({ a: sh.players[0], b: sh.players[1], pair: [...sh.players], players: [...sh.players] }));
+
 // ── HELPERS ──
 function getArchetype(name) { return players.find(p => p.name === name)?.archetype || ''; }
 const VILLAIN_ARCHETYPES = ['villain', 'mastermind', 'schemer'];
@@ -731,9 +736,9 @@ const HALFTIME_EVENTS = [
   },
   {
     id: 'showmanceTension',
-    check(ep, all) { return gs.showmances?.some(s => all.includes(s.a) && all.includes(s.b)); },
+    check(ep, all) { return _couples().some(s => all.includes(s.a) && all.includes(s.b)); },
     apply(ep, all) {
-      const sm = gs.showmances.find(s => all.includes(s.a) && all.includes(s.b));
+      const sm = _couples().find(s => all.includes(s.a) && all.includes(s.b));
       if (!sm) return null;
       const onSameTeam = result => {
         const oc = result?.obstacleCourse?.players || [];

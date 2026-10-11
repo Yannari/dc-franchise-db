@@ -4,6 +4,11 @@ import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } f
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
+// Showmances are { players, phase }; this file reads a couple as { a, b } / .pair (it used to read those
+// straight off gs.showmances, where they never exist, so no couple ever counted here).
+const _couples = () => (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players?.length === 2)
+  .map(sh => ({ a: sh.players[0], b: sh.players[1], pair: [...sh.players], players: [...sh.players] }));
+
 // ── HELPERS ──
 function noise(range = 2.5) { return (Math.random() - 0.5) * 2 * range; }
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -1107,17 +1112,18 @@ export function simulateRapaPhooey(ep) {
 
         // Showmance moment (pair both on pillar)
         if (gs.showmances?.length > 0) {
-          for (const sh of gs.showmances) {
+          for (const sh of _couples()) {
             if (sh.broken) continue;
             const [pa, pb] = [sh.a, sh.b];
-            if (livePillar.includes(pa) && livePillar.includes(pb) && !state[pa].atBase && !state[pb].atBase && Math.random() < 0.30) {
+            // once per couple per race: this ran every tick (a couple got it seven times in one climb)
+            if (livePillar.includes(pa) && livePillar.includes(pb) && !state[pa].atBase && !state[pb].atBase && !state[pa].pillarMoment && Math.random() < 0.30) {
+              state[pa].pillarMoment = state[pb].pillarMoment = true;
               state[pa].pepTalkBuff = true; state[pb].pepTalkBuff = true;
               addBond(pa, pb, 1.5); popDelta(pa, 2); popDelta(pb, 2);
               const txt = pick(T.SOCIAL_SHOWMANCE_PILLAR)(pa, pb);
               const ev = { type: 'showmance-pillar', actor: pa, target: pb, zone: 3, tick: tick + 1, round: pillarRound, text: txt };
               tickEvents.push(ev); pillarEvents.push(ev);
               campEvents.push({ type: 'rapaShowmance', players: [pa, pb], badgeText: 'Showmance', badgeClass: 'green', desc: txt });
-              _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores, 'partner', null);
               return;
             }
           }
@@ -2279,7 +2285,7 @@ export function simulateRapaPhooey(ep) {
       // Basket weaving decision
       const wantBasket = !st.basket && (ps.strategic >= 6 || st.carrying.length >= 2);
       const wantGiftBasket = st.basket && fieldOccupants.some(o => {
-        return o !== n && !state[o].basket && (getBond(n, o) >= 5 || (gs.showmances || []).some(sh => !sh.broken && (sh.a === n || sh.b === n) && (sh.a === o || sh.b === o)) || ps.loyalty >= 7);
+        return o !== n && !state[o].basket && (getBond(n, o) >= 5 || _couples().some(sh => !sh.broken && (sh.a === n || sh.b === n) && (sh.a === o || sh.b === o)) || ps.loyalty >= 7);
       });
 
       if (wantGiftBasket && Math.random() < 0.25) {
@@ -2948,9 +2954,11 @@ export function simulateRapaPhooey(ep) {
 
   campEvents.push({ type: 'rapaImmune', players: [winner], badgeText: 'Won the Egg Race', badgeClass: 'win', desc: pick(T.VICTORY_TEXT)(winner) });
 
-  if (!gs.campEvents) gs.campEvents = {};
-  if (!gs.campEvents[campKey]) gs.campEvents[campKey] = [];
-  gs.campEvents[campKey].push(...campEvents);
+  // filed on the episode's camp (gs.campEvents had no reader: these never reached a screen or the backlog)
+  if (!ep.campEvents) ep.campEvents = {};
+  if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+  if (!ep.campEvents[campKey].post) ep.campEvents[campKey].post = [];
+  ep.campEvents[campKey].post.push(...campEvents.map(({ desc, ...ev }) => ({ ...ev, text: ev.text || desc })));
 
   const standings = [...active].sort((a, b) => (ep.chalMemberScores[b] || 0) - (ep.chalMemberScores[a] || 0));
 

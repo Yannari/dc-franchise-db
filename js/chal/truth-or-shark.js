@@ -5,6 +5,11 @@ import { addBond, getBond } from '../bonds.js';
 import { romanticCompat } from '../players.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
+// Showmances are { players, phase }; this file reads a couple as { a, b } / .pair (it used to read those
+// straight off gs.showmances, where they never exist, so no couple ever counted here).
+const _couples = () => (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players?.length === 2)
+  .map(sh => ({ a: sh.players[0], b: sh.players[1], pair: [...sh.players], players: [...sh.players] }));
+
 // ── HELPERS ──
 function host() { return seasonConfig?.hostName || 'Chris'; }
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -329,7 +334,7 @@ function _decideConfessOrRefuse(name, fatigue, tribemates, roundNum, totalRounds
   }
 
   // Showmancer with active showmance watching -> confess for vulnerability
-  if (a === 'showmancer' && gs.showmances?.some(sm =>
+  if (a === 'showmancer' && _couples().some(sm =>
     (sm.a === name || sm.b === name) && tribemates.includes(sm.a === name ? sm.b : sm.a)
   )) {
     prob += 0.2;
@@ -1132,7 +1137,7 @@ function _generateSocialEvent(target, tribe, otherTribe, eliminated, hecklerGall
 
   // Showmance moment
   if (gs.showmances?.length) {
-    for (const sm of gs.showmances) {
+    for (const sm of _couples()) {
       if (aliveAll.includes(sm.a) && aliveAll.includes(sm.b) && romanticCompat(sm.a, sm.b)) {
         candidates.push({ type: 'showmance-moment', players: [sm.a, sm.b], weight: 3 });
         break;

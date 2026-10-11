@@ -177,7 +177,7 @@ export function simulateTusksLadders(ep) {
   // showmance danger moments
   if (seasonConfig.romance) {
     for (const sm of (gs.showmances || [])) {
-      if (sm.pair && !sm.broken && active.includes(sm.pair[0]) && active.includes(sm.pair[1])) _checkShowmanceChalMoment(sm.pair[0], sm.pair[1], ep);
+      if (sm.phase !== 'broken-up' && sm.players?.length === 2 && active.includes(sm.players[0]) && active.includes(sm.players[1])) _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, 'danger', [...sm.players]);
     }
   }
 

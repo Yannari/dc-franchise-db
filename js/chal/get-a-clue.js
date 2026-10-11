@@ -4,6 +4,11 @@ import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
+// Showmances are { players, phase }; this file reads a couple as { a, b } / .pair (it used to read those
+// straight off gs.showmances, where they never exist, so no couple ever counted here).
+const _couples = () => (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players?.length === 2)
+  .map(sh => ({ a: sh.players[0], b: sh.players[1], pair: [...sh.players], players: [...sh.players] }));
+
 // ── HELPERS ──
 function host() { return seasonConfig?.hostName || 'Chris'; }
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -357,7 +362,7 @@ export function simulateGetAClue(ep) {
 
     // Bond/showmance vulnerability
     const bond = getBond(trapper, target);
-    const isShowmance = gs.showmances?.some(sm => (sm.a === trapper && sm.b === target) || (sm.a === target && sm.b === trapper));
+    const isShowmance = _couples().some(sm => (sm.a === trapper && sm.b === target) || (sm.a === target && sm.b === trapper));
     const trustBonus = (bond > 3 ? 1.5 : bond > 0 ? 0.5 : 0) + (isShowmance ? 2 : 0);
 
     const margin = trapQuality + trustBonus - resistance;
@@ -834,7 +839,7 @@ export function simulateGetAClue(ep) {
 
     // Showmance moment in the dark — share evidence + protective bias
     if (gs.showmances?.length) {
-      for (const sm of gs.showmances) {
+      for (const sm of _couples()) {
         if (active.includes(sm.a) && active.includes(sm.b) && Math.random() < 0.5) {
           // Share evidence: whoever has more gives one to the other
           const aEvidence = result.phase2.playerEvidence[sm.a]?.length || 0;
@@ -1050,7 +1055,7 @@ export function simulateGetAClue(ep) {
   // Showmance protection — guaranteed if partner was framed, otherwise 50%
   const protections = result.phase2.showmanceProtections || [];
   if (gs.showmances?.length) {
-    for (const sm of gs.showmances) {
+    for (const sm of _couples()) {
       if (!active.includes(sm.a) || !active.includes(sm.b)) continue;
       const aFramed = framedNames.has(sm.a);
       const bFramed = framedNames.has(sm.b);

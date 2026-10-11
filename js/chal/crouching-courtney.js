@@ -4,6 +4,11 @@ import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
+// Showmances are { players, phase }; this file reads a couple as { a, b } / .pair (it used to read those
+// straight off gs.showmances, where they never exist, so no couple ever counted here).
+const _couples = () => (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players?.length === 2)
+  .map(sh => ({ a: sh.players[0], b: sh.players[1], pair: [...sh.players], players: [...sh.players] }));
+
 // ── HELPERS ──
 function host() { return seasonConfig?.hostName || 'Chris'; }
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -384,7 +389,7 @@ export function simulateCrouchingCourtney(ep) {
       const fs = pStats(pair.fighter);
       const ts = pStats(pair.trainer);
       const bond = getBond(pair.trainer, pair.fighter);
-      const isShowmance = gs.showmances?.some(sm =>
+      const isShowmance = _couples().some(sm =>
         (sm.a === pair.trainer && sm.b === pair.fighter) || (sm.a === pair.fighter && sm.b === pair.trainer));
 
       // Fighter performance
@@ -492,7 +497,7 @@ export function simulateCrouchingCourtney(ep) {
     if (beat.id === 'wax') {
       // Showmance check
       for (const pair of pairs) {
-        const isShowmance = gs.showmances?.some(sm => (sm.a === pair.trainer && sm.b === pair.fighter) || (sm.a === pair.fighter && sm.b === pair.trainer));
+        const isShowmance = _couples().some(sm => (sm.a === pair.trainer && sm.b === pair.fighter) || (sm.a === pair.fighter && sm.b === pair.trainer));
         if (isShowmance) {
           beatSocial.push({ type: 'showmance', players: [pair.trainer, pair.fighter],
             text: pick([
@@ -743,7 +748,7 @@ export function simulateCrouchingCourtney(ep) {
       addBond(winner, loser, 1);
     }
     // Showmance comfort for loser
-    const showmancePair = gs.showmances?.find(sm =>
+    const showmancePair = _couples().find(sm =>
       (sm.a === loser && active.includes(sm.b)) || (sm.b === loser && active.includes(sm.a)));
     if (showmancePair) {
       const comforter = showmancePair.a === loser ? showmancePair.b : showmancePair.a;

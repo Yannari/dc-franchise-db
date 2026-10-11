@@ -2251,7 +2251,7 @@ export function simulateAmazonRace(ep) {
 
     // Showmance moment in dark corridors (~30% if active showmance in tribe)
     if (seasonConfig.romance) {
-      const activeShowmances = (gs.showmances || []).filter(sh => !sh.broken);
+      const activeShowmances = (gs.showmances || []).filter(sh => sh.phase !== 'broken-up');
       const tribeShowmance = activeShowmances.find(sh =>
         t.members.includes(sh.a) && t.members.includes(sh.b)
       );

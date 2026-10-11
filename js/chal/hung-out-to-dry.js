@@ -47,11 +47,11 @@ function allyOf(name, alive) {
   return friends[0] || null;
 }
 function romPartner(name, alive) {
-  const sh = (gs.showmances || []).find(s => !s.broken && (s.players || []).includes(name));
+  const sh = (gs.showmances || []).find(s => s.phase !== 'broken-up' && (s.players || []).includes(name));
   if (sh) { const o = sh.players.find(p => p !== name); if (o && alive.includes(o)) return o; }
   for (const s of (gs.romanticSparks || [])) {
     const ps = s.players || [s.a, s.b].filter(Boolean);
-    if (ps.includes(name) && !s.broken) { const o = ps.find(p => p !== name); if (o && alive.includes(o)) return o; }
+    if (ps.includes(name) && s.phase !== 'broken-up') { const o = ps.find(p => p !== name); if (o && alive.includes(o)) return o; }
   }
   return null;
 }
@@ -516,7 +516,7 @@ function _resolve(kind, asker, answerer, ri, alive, ep, campKey, force) {
           // CUSTOM: going public STRENGTHENS the showmance (now official — they'll protect each
           // other) but also flags a power-couple the others want split. Mild heat (< a real scheme).
           // Guard so a couple confessing in BOTH directions only pays off the big moment once.
-          const sh = (gs.showmances || []).find(s => !s.broken && (s.players || []).includes(answerer) && (s.players || []).includes(p));
+          const sh = (gs.showmances || []).find(s => s.phase !== 'broken-up' && (s.players || []).includes(answerer) && (s.players || []).includes(p));
           if (sh && sh.public) { addBond(answerer, p, 0.5); return; } // already out — just a warm nod
           addBond(answerer, p, 3);
           if (sh) sh.public = true;
@@ -674,7 +674,7 @@ export function simulateHungOutToDry(ep) {
     const s = pStats(t); let v = canScheme(t) ? 0.7 : 0.28;
     v -= s.boldness * 0.03 + s.loyalty * 0.02;
     if ((gs.namedAlliances || []).some(al => al.active && al.members.includes(t))) v += 0.1;   // has a scheme to hide
-    if ((gs.showmances || []).some(sh => !sh.broken && (sh.players || []).includes(t))) v += 0.06; // has a heart to hide
+    if ((gs.showmances || []).some(sh => sh.phase !== 'broken-up' && (sh.players || []).includes(t))) v += 0.06; // has a heart to hide
     return clamp(v, 0.05, 0.9);
   };
   const threatVal = (t) => pStats(t).endurance * 0.5 + pStats(t).strategic * 0.3;

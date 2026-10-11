@@ -999,9 +999,10 @@ export function simulateAlienEgg(ep) {
     // Showmance moments
     if (seasonConfig.romance) {
       for (const sm of (gs.showmances || [])) {
-        if (sm.pair && survivors.includes(sm.pair[0]) && survivors.includes(sm.pair[1])) {
+        // showmances are { players, phase } (this read sm.pair, which never exists, so it never ran)
+        if (sm.phase !== 'broken-up' && sm.players?.length === 2 && survivors.includes(sm.players[0]) && survivors.includes(sm.players[1])) {
           if (Math.random() < 0.3) {
-            const [a, b] = sm.pair;
+            const [a, b] = sm.players;
             const pool = SHOWMANCE_ENCOUNTERS;
             if (pool.length) {
               const tmpl = _pickRand(pool);
@@ -1009,8 +1010,8 @@ export function simulateAlienEgg(ep) {
               roundEvents.push({ player: a, type: 'showmance', id: tmpl.id, text, points: tmpl.basePoints, target: b, tribe: tribeMap[a]?.name || null });
               addBond(a, b, 1);
             }
+            _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores, 'danger', [a, b]);
           }
-          _checkShowmanceChalMoment(sm.pair[0], sm.pair[1], ep);
         }
       }
     }
@@ -1201,20 +1202,26 @@ export function simulateAlienEgg(ep) {
   })() : null;
 
   // Camp events with badges
-  const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes[0]?.name || 'merge');
-  if (!gs.campEvents) gs.campEvents = {};
-  if (!gs.campEvents[campKey]) gs.campEvents[campKey] = [];
+  // filed on the episode, in the player's own camp (they went to gs.campEvents, which nothing reads,
+  // and pre-merge all of them to the first tribe whatever team the player was on)
+  const _campPost = name => {
+    const key = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(name))?.name || gs.tribes[0]?.name || 'merge');
+    if (!ep.campEvents) ep.campEvents = {};
+    if (!ep.campEvents[key]) ep.campEvents[key] = { pre: [], post: [] };
+    if (!ep.campEvents[key].post) ep.campEvents[key].post = [];
+    return ep.campEvents[key].post;
+  };
 
   if (immunityWinner) {
-    gs.campEvents[campKey].push({
-      text: `${immunityWinner} delivered the most alien eggs and wins immunity in the Alien Resurr-eggtion challenge!`,
+    _campPost(immunityWinner).push({
+      type: 'alienEggChampion', text: `${immunityWinner} delivered the most alien eggs and wins immunity in the Alien Resurr-eggtion challenge!`,
       players: [immunityWinner], badgeText: 'EGG CHAMPION', badgeClass: 'gold'
     });
   }
   for (const entry of leaderboard) {
     if (entry.eggsDelivered >= 3) {
-      gs.campEvents[campKey].push({
-        text: `${entry.name} delivered ${entry.eggsDelivered} eggs — a dominant performance in the egg hunt.`,
+      _campPost(entry.name).push({
+        type: 'alienEggCollector', text: `${entry.name} delivered ${entry.eggsDelivered} eggs — a dominant performance in the egg hunt.`,
         players: [entry.name], badgeText: 'TOP COLLECTOR', badgeClass: 'gold'
       });
     }
@@ -1222,23 +1229,23 @@ export function simulateAlienEgg(ep) {
   for (const sl of slimedOrder) {
     const slimeData = rounds.flatMap(rd => rd.slimes).find(s => s.name === sl);
     if (slimeData && slimeData.round <= 2) {
-      gs.campEvents[campKey].push({
-        text: `${sl} was slimed early in Round ${slimeData.round} — an easy target for Mama Alien.`,
+      _campPost(sl).push({
+        type: 'alienEggSlimed', text: `${sl} was slimed early in Round ${slimeData.round} — an easy target for Mama Alien.`,
         players: [sl], badgeText: 'FIRST SLIMED', badgeClass: 'red'
       });
     }
   }
   const heroicPlayers = rounds.flatMap(rd => rd.events).filter(e => e.type === 'heroic').map(e => e.player);
   for (const hp of [...new Set(heroicPlayers)]) {
-    gs.campEvents[campKey].push({
-      text: `${hp} put ${pronouns(hp).ref} in danger to protect others during the alien egg hunt.`,
+    _campPost(hp).push({
+      type: 'alienEggHero', text: `${hp} put ${pronouns(hp).ref} in danger to protect others during the alien egg hunt.`,
       players: [hp], badgeText: 'HEROIC', badgeClass: 'gold'
     });
   }
   const sabotagePlayers = rounds.flatMap(rd => rd.events).filter(e => e.type === 'sabotage').map(e => e.player);
   for (const sp of [...new Set(sabotagePlayers)]) {
-    gs.campEvents[campKey].push({
-      text: `${sp} sabotaged other players during the egg hunt — and people noticed.`,
+    _campPost(sp).push({
+      type: 'alienEggSaboteur', text: `${sp} sabotaged other players during the egg hunt — and people noticed.`,
       players: [sp], badgeText: 'SABOTEUR', badgeClass: 'red'
     });
   }

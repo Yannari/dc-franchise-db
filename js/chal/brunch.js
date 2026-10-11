@@ -3,7 +3,7 @@ import { BRUNCH_EATOFF_DISH, BRUNCH_FOOD_CATEGORIES, BRUNCH_FOOD_POOL, BRUNCH_RE
 import { pStats, pronouns, updateChalRecord } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { wRandom } from '../alliances.js';
-import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
+import { _challengeRomanceSpark, _checkShowmanceChalMoment, _groupRomanceSpark } from '../romance.js';
 
 export function simulateBrunchOfDisgustingness(ep) {
   const teams = ep.brunchTeams;
@@ -689,7 +689,7 @@ export function simulateBrunchOfDisgustingness(ep) {
     if (!gs.showmances?.length) return null;
     const xName = crossoverEntry.name;
     const prX = pronouns(xName);
-    const partner = gs.showmances.find(s => s.players.includes(xName) && !s.broken)?.players.find(p => p !== xName);
+    const partner = gs.showmances.find(s => s.players.includes(xName) && s.phase !== 'broken-up')?.players.find(p => p !== xName);
     if (!partner) return null;
     const texts = [
       `${xName} is on the wrong team for the night, separated from ${partner}. ${prX.Sub} ${prX.sub === 'they' ? 'keep' : 'keeps'} it together, but keeps glancing at the door.`,
@@ -950,7 +950,7 @@ export function simulateBrunchOfDisgustingness(ep) {
 
     // 1. Showmance encouragement
     if (seasonConfig.romance === 'enabled' && gs.showmances?.length) {
-      const sm = gs.showmances.find(s => !s.broken && teams.boys.includes(s.players[0]) !== teams.boys.includes(s.players[1]));
+      const sm = gs.showmances.find(s => s.phase !== 'broken-up' && teams.boys.includes(s.players[0]) !== teams.boys.includes(s.players[1]));
       if (sm) {
         const [a, b] = sm.players;
         const prA = pronouns(a);
@@ -1075,7 +1075,7 @@ export function simulateBrunchOfDisgustingness(ep) {
           if (refused && seasonConfig.romance === 'enabled') {
             const otherTeam = members === teams.boys ? teams.girls : teams.boys;
             const crossPartner = otherTeam.find(p =>
-              (gs.showmances?.find(s => !s.broken && s.players.includes(name) && s.players.includes(p))) ||
+              (gs.showmances?.find(s => s.phase !== 'broken-up' && s.players.includes(name) && s.players.includes(p))) ||
               getBond(name, p) >= 4
             );
             if (crossPartner) {
@@ -1401,13 +1401,13 @@ export function simulateBrunchOfDisgustingness(ep) {
     // 8. Sneak to check on showmance partner
     if (seasonConfig.romance === 'enabled' && gs.showmances?.length) {
       const smWinner = wm.find(n => {
-        const sm = gs.showmances.find(s => !s.broken && s.players.includes(n));
+        const sm = gs.showmances.find(s => s.phase !== 'broken-up' && s.players.includes(n));
         if (!sm) return false;
         const partner = sm.players.find(p => p !== n);
         return loseTeamMembers.includes(partner);
       });
       if (smWinner) {
-        const smPartner = gs.showmances.find(s => !s.broken && s.players.includes(smWinner))?.players.find(p => p !== smWinner);
+        const smPartner = gs.showmances.find(s => s.phase !== 'broken-up' && s.players.includes(smWinner))?.players.find(p => p !== smWinner);
         addBond(smWinner, smPartner, 0.1);
         winnersPostEvents.push({
           type: 'brunchPost', subtype: 'showmance',
@@ -1615,7 +1615,7 @@ export function simulateBrunchOfDisgustingness(ep) {
 
   // Romance spark from challenge
   if (seasonConfig.romance === 'enabled') {
-    _challengeRomanceSpark(ep, 'eating', [...teams.boys, ...teams.girls]);
+    _groupRomanceSpark(ep, [...teams.boys, ...teams.girls], 'the brunch');
     _checkShowmanceChalMoment(ep, 'eating', ep.brunch, playerEatScores, 'danger', teams.boys);
     _checkShowmanceChalMoment(ep, 'eating', ep.brunch, playerEatScores, 'danger', teams.girls);
   }

@@ -2450,8 +2450,8 @@ export function applyTwist(ep, twist, isPrimary = true) {
         let w = 0.1;
         const s = pStats(name);
         w += s.social * 0.4;
-        if ((gs.showmances || []).some(sh => sh.pair?.includes(name))) w += 3;
-        if ((gs.romanticSparks || []).some(sp => sp.pair?.includes(name) || sp.a === name || sp.b === name)) w += 1.5;
+        if ((gs.showmances || []).some(sh => sh.phase !== 'broken-up' && sh.players?.includes(name))) w += 3;
+        if ((gs.romanticSparks || []).some(sp => sp.players?.includes(name))) w += 1.5;
         w += s.boldness * 0.2;
         return Math.max(0.1, w + Math.random() * 0.5);
       },

@@ -2,7 +2,7 @@
 import { gs, players, seasonConfig } from '../core.js';
 import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
-import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
+import { _challengeRomanceSpark, _checkShowmanceChalMoment, _groupRomanceSpark } from '../romance.js';
 
 // ── HELPERS ──
 function noise(range = 2.5) { return (Math.random() - 0.5) * 2 * range; }
@@ -703,7 +703,7 @@ function simulateSockerToMe(active, ep, campKey, campEvents) {
   }
 
   // Romance hook
-  _challengeRomanceSpark(active, null, null, campKey, campEvents, ep);
+  _groupRomanceSpark(ep, active, 'the safari');
   return results;
 }
 
@@ -798,7 +798,7 @@ function simulateGourdSmash(active, ep, campKey, campEvents, sockerResults) {
     sorted[0].events.push({ type: 'hunt-advantage', text: `${sorted[0].name} smashed the most gourds. Chris hands over a sealed clue — a head start in the hunt.` });
   }
 
-  _challengeRomanceSpark(active, null, null, campKey, campEvents, ep);
+  _groupRomanceSpark(ep, active, 'the safari');
   return results;
 }
 
@@ -1039,12 +1039,12 @@ function simulateHunt(active, ep, campKey, campEvents, gourdResults) {
             tranqRoll += TIER_HIT_BONUS[ps.awareness];
 
             // Showmance distraction bonus
-            const showmance = gs.showmances?.find(sh => !sh.broken && (sh.p1 === name || sh.p2 === name));
+            const showmance = gs.showmances?.find(sh => sh.phase !== 'broken-up' && sh.players?.includes(name));
             if (showmance) {
-              const partner = showmance.p1 === name ? showmance.p2 : showmance.p1;
+              const partner = showmance.players.find(p => p !== name);
               if (playerStates[partner]?.zone === ps.zone) {
                 tranqRoll += 1;
-                _checkShowmanceChalMoment(name, partner, null, null, campKey, campEvents, ep);
+                _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores, 'partner-interaction', [name, partner]);
               }
             }
 
@@ -1205,8 +1205,8 @@ function simulateHunt(active, ep, campKey, campEvents, gourdResults) {
       }
 
       const othersInSameZone = active.filter(o => o !== target && playerStates[o].zone === ps.zone);
-      if (othersInSameZone.length > 0) {
-        _challengeRomanceSpark(active, null, null, campKey, campEvents, ep);
+      if (othersInSameZone.length > 0 && Math.random() < 0.25) {
+        _groupRomanceSpark(ep, [target, ...othersInSameZone], 'the safari hunt');
       }
     }
 
@@ -1453,7 +1453,7 @@ function simulateHunt(active, ep, campKey, campEvents, gourdResults) {
           popDelta(victim, 1);
           ep.chalMemberScores[rescuer] = (ep.chalMemberScores[rescuer] || 0) + 2;
           tickEvents.push({ type: 'rescue', player: rescuer, target: victim, text: pickFresh(QUICKSAND_RESCUE, 'rescue')(rescuer, victim) });
-          _checkShowmanceChalMoment(rescuer, victim, null, null, campKey, campEvents, ep);
+          _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores, 'danger', [rescuer, victim]);
           campEvents.push({ type: 'heroicRescue', text: `${rescuer} pulls ${victim} from quicksand during the safari hunt.`, players: [rescuer, victim], badgeText: 'Rescue', badgeClass: 'badge-success' });
           sc++;
           break;

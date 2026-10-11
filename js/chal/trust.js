@@ -47,7 +47,7 @@ export function simulateTrustChallenge(ep) {
   function hasEmotionalDebuff(name) {
     const prevEp = gs.episodeHistory?.length ? gs.episodeHistory[gs.episodeHistory.length - 1] : null;
     if (prevEp?.eliminated && getBond(name, prevEp.eliminated) >= 3) return true;
-    if (gs.showmances?.some(s => s.broken && s.players.includes(name))) return true;
+    if (gs.showmances?.some(s => s.phase === 'broken-up' && s.breakupType !== 'separated' && s.players.includes(name))) return true;
     return false;
   }
 

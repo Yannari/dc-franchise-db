@@ -160,6 +160,32 @@ export function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScore
   return true;
 }
 
+/** A spark somewhere in a group: the strongest compatible pair gets the roll. For the challenges that
+ * used to hand _challengeRomanceSpark the whole cast as one player (it never sparked). */
+export function _groupRomanceSpark(ep, group, context) {
+  if (seasonConfig.romance === 'disabled' || !Array.isArray(group)) return false;
+  const pairs = [];
+  for (let i = 0; i < group.length; i++) for (let j = i + 1; j < group.length; j++) {
+    const a = group[i], b = group[j];
+    if (typeof romanticCompat === 'function' && !romanticCompat(a, b)) continue;
+    pairs.push({ a, b, w: Math.max(0.1, getBond(a, b) + 3) });
+  }
+  if (!pairs.length) return false;
+  let r = Math.random() * pairs.reduce((s, p) => s + p.w, 0);
+  const pick = pairs.find(p => (r -= p.w) <= 0) || pairs[pairs.length - 1];
+  // the spark (and a partner-at-home overlap) airs at camp after the challenge
+  const phases = { _camp: [] };
+  if (!_challengeRomanceSpark(pick.a, pick.b, ep, '_camp', phases, ep?.chalMemberScores || null, context)) return false;
+  if (ep && typeof ep === 'object') {
+    const camp = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(pick.a) || 'merge');
+    if (!ep.campEvents) ep.campEvents = {};
+    if (!ep.campEvents[camp]) ep.campEvents[camp] = { pre: [], post: [] };
+    if (!ep.campEvents[camp].post) ep.campEvents[camp].post = [];
+    for (const { phase: _ph, personalScores: _ps, badge, ...ev } of phases._camp) ep.campEvents[camp].post.push({ ...ev, badgeText: badge });
+  }
+  return true;
+}
+
 export function updateRomanticSparks(ep) {
   if (seasonConfig.romance === 'disabled') return;
   if (!gs.romanticSparks) gs.romanticSparks = [];
@@ -454,8 +480,16 @@ export function checkShowmanceSabotage(ep) {
   });
 }
 
+// couples that already had their camp moment this episode (the challenges with no phase lists call this
+// every tick: Rapa Phooey filed 40-60 moments, and moved the bond as many times, in one race)
+const _campMomentPairs = new WeakMap();
+
 export function _checkShowmanceChalMoment(ep, phaseKey, phases, personalScores, triggerType, tribeMembers) {
   if (seasonConfig.romance === 'disabled') return;
+  if (!ep || typeof ep !== 'object') return;
+  if (!personalScores) personalScores = {};
+  const toCamp = !(phases && phases[phaseKey]);
+  if (toCamp && !_campMomentPairs.has(ep)) _campMomentPairs.set(ep, new Set());
   if (!gs.showmances?.length) return;
 
   const activeShowmances = gs.showmances.filter(sh =>
@@ -469,8 +503,13 @@ export function _checkShowmanceChalMoment(ep, phaseKey, phases, personalScores, 
   activeShowmances.forEach(sh => {
     if (fired) return;
     const [a, b] = sh.players;
+    if (toCamp && _campMomentPairs.get(ep).has([a, b].sort().join('|'))) return;
     // Both must be in the challenge (in tribeMembers)
-    const allMembers = tribeMembers ? tribeMembers.flatMap(t => t.members || []) : gs.activePlayers;
+    // callers pass either tribes ({ members }) or plain name lists; a name list used to flatten to
+    // nobody, so the moment could never fire for ~40 challenges
+    const allMembers = Array.isArray(tribeMembers)
+      ? tribeMembers.flatMap(t => (typeof t === 'string' ? [t] : (t?.members || [])))
+      : gs.activePlayers;
     if (!allMembers.includes(a) || !allMembers.includes(b)) return;
 
     const prA = pronouns(a), prB = pronouns(b);
@@ -556,9 +595,15 @@ export function _checkShowmanceChalMoment(ep, phaseKey, phases, personalScores, 
       if (phases && phases[phaseKey]) {
         phases[phaseKey].push({ ...moment, phase: phaseKey });
       } else {
-        // No phases object (e.g. yeti) — attach to ep timeline
-        if (!ep.chalTimeline) ep.chalTimeline = [];
-        ep.chalTimeline.push({ ...moment, phase: phaseKey });
+        // No phases object (e.g. yeti): the moment airs at camp after the challenge. It used to go on
+        // ep.chalTimeline, which nothing reads, so it reached no screen and no backlog.
+        const camp = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(a) || 'merge');
+        if (!ep.campEvents) ep.campEvents = {};
+        if (!ep.campEvents[camp]) ep.campEvents[camp] = { pre: [], post: [] };
+        if (!ep.campEvents[camp].post) ep.campEvents[camp].post = [];
+        const { personalScores: _ps, ...ev } = moment;
+        ep.campEvents[camp].post.push(ev);
+        _campMomentPairs.get(ep).add([a, b].sort().join('|'));
       }
       fired = true;
     }

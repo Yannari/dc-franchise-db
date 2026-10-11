@@ -6124,7 +6124,7 @@
         "temperament": 7
       },
       "sexuality": "straight",
-      "voice": "Manu talks in an upbeat, welcoming rush, the kind of person who opens with a big greeting and tries to keep the mood light. His vocabulary leans casual and encouraging, with jokes, smiles, and direct reassurance when someone is embarrassed. In conflict, he becomes firmer and more protective, especially if someone he cares about is being mocked.",
+      "voice": "Manu talks in an upbeat, welcoming rush, the kind of person who opens with a big greeting and tries to keep the mood light. His vocabulary leans casual and encouraging, with jokes, smiles, and direct reassurance when someone is embarrassed. In conflict, he becomes firmer and more protective, especially if someone he cares about is being mocked. #-blunt#loud",
       "profileSources": {
         "backstory": [
           {
@@ -6160,7 +6160,62 @@
       "descriptor": "The Big Brother",
       "backstory": "Before appearing on the show, Manu worked as an appliance salesman and had a close bond with his younger brother Aleki. His father Fetuu divorced his biological mother Naomi when Manu was 19, though the split was on good terms, and his stepmother is named Leilani. Manu used to go to many parties when he was 20, but after the family changes and Aleki’s birth, he stopped so he could become a better role model for his brother. He is single, has an ex-girlfriend, and describes himself as having become more alone than before while still relying on smiling and laughing to get through life.",
       "personality": "Manu is optimistic, helpful, and driven by the idea that being reliable matters. Under pressure he can become overwhelmed and indecisive, especially because he knows he is trusting and not naturally strategic, but he still tries to make choices that protect himself and the people he cares about. His loyalty is warm and active: he encourages embarrassed friends, feels bad when others are hurt, and will confront people who mock someone close to him. He will bend when manipulated or frightened, but he will not quietly tolerate cruelty toward his loved ones.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Loyal, goofy, protective.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think they picked me because I’m a big friendly guy who can sell you a refrigerator and make you laugh while doing it. I’m not coming in pretending I’m some mastermind, but I’ve got heart, I work hard, and I know how to make people feel comfortable.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will probably be being away from my family, especially my little brother. I’m used to being the guy who checks in, makes sure everybody’s good, so sitting in there with no phone and no updates might mess with my head.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is simple: be useful, be loyal, and don’t run my mouth like I’m smarter than everybody. I want to find a couple people I can trust, ride with them, and keep the mood light so people want me around.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want people to know I’m loyal when I give my word, because that’s real for me. I’d probably hide how lonely I can get sometimes, because once people see that soft spot, they might poke at it or use it.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A family photo, because seeing my brother and my parents would keep me grounded.\\n- A good pair of slippers, because come on, I’m from Hawaii, my feet need to feel right.\\n- A little notebook, because my memory is not always the sharpest and I need to write things down before my brain drops them like a bad warranty claim.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I like cooking out, talking story, watching sports, swimming, and fixing little things around the house even when I pretend I know more than I do. I also like helping people pick appliances, honestly — it sounds boring, but matching somebody with the right washer is a beautiful thing, my friend.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is funny from far away and exhausting when it’s in your lap. I’ll laugh if it’s silly, but if somebody starts mocking or bullying someone, then my smile is going to disappear real quick.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Ahh, I don’t think so. I’m single, yes, but I’m not trying to embarrass myself on television because a pretty smile made me forget there’s a game going on.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is keep smiling, keep showing up, and don’t become the kind of man your little brother can’t look up to.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a better version of myself out of this, honestly. Maybe prove I’m more than the funny salesman guy, maybe learn I can stand on my own without always hiding behind jokes.\"}]"
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Loyal, goofy, protective.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think they picked me because I’m a big friendly guy who can sell you a refrigerator and make you laugh while doing it. I’m not coming in pretending I’m some mastermind, but I’ve got heart, I work hard, and I know how to make people feel comfortable.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will probably be being away from my family, especially my little brother. I’m used to being the guy who checks in, makes sure everybody’s good, so sitting in there with no phone and no updates might mess with my head.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is simple: be useful, be loyal, and don’t run my mouth like I’m smarter than everybody. I want to find a couple people I can trust, ride with them, and keep the mood light so people want me around.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want people to know I’m loyal when I give my word, because that’s real for me. I’d probably hide how lonely I can get sometimes, because once people see that soft spot, they might poke at it or use it.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A family photo, because seeing my brother and my parents would keep me grounded.\\n- A good pair of slippers, because come on, I’m from Hawaii, my feet need to feel right.\\n- A little notebook, because my memory is not always the sharpest and I need to write things down before my brain drops them like a bad warranty claim.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I like cooking out, talking story, watching sports, swimming, and fixing little things around the house even when I pretend I know more than I do. I also like helping people pick appliances, honestly — it sounds boring, but matching somebody with the right washer is a beautiful thing, my friend.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is funny from far away and exhausting when it’s in your lap. I’ll laugh if it’s silly, but if somebody starts mocking or bullying someone, then my smile is going to disappear real quick.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Ahh, I don’t think so. I’m single, yes, but I’m not trying to embarrass myself on television because a pretty smile made me forget there’s a game going on.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is keep smiling, keep showing up, and don’t become the kind of man your little brother can’t look up to.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a better version of myself out of this, honestly. Maybe prove I’m more than the funny salesman guy, maybe learn I can stand on my own without always hiding behind jokes.\"}]",
+      "ties": [],
+      "kit": {
+        "thing": "being everybody's big brother",
+        "alone": "is carving a tiny wooden turtle with a pocket knife",
+        "ground": [
+          "parents-split",
+          "close-sibling",
+          "divorced"
+        ],
+        "bit": [
+          "Hey, hey, no frowns! What's wrong? Come here, tell big Manu.",
+          "I sell refrigerators back home. You know how hard it is to make someone excited about a fridge? Very hard. I'm very good.",
+          "I used to party a lot. Then my little brother was born, and I thought, he needs somebody to look up to."
+        ],
+        "tease": [
+          "Manu, I'm fine, I'm just thinking.",
+          "Are you going to sell us a fridge?",
+          "That's actually really sweet."
+        ],
+        "reply": [
+          "You were thinking with a frown. Think with a smile.",
+          "If I find one on this island, you're getting the deal of a lifetime.",
+          "Don't tell Aleki. He thinks I'm cool."
+        ],
+        "home": [
+          "My little brother, Aleki, and my dad and Leilani. They're having a watch party every week.",
+          "Hawaii. My family, my friends, and my store, where I'm the top seller three years running."
+        ],
+        "want": [
+          "To make my family proud. And maybe buy my dad a new boat.",
+          "To protect the people I like out here. And win, if they let me."
+        ],
+        "conf": [
+          "I'm not a mastermind. I know that. I've just got heart, and I work hard.",
+          "When somebody I care about gets laughed at, I'm not so friendly anymore."
+        ],
+        "askHome": [
+          "Hey, tell me about your family! Who's at home?",
+          "You got brothers? Sisters? Tell me everything."
+        ],
+        "askWant": [
+          "What are you gonna do with the money, huh? Something good?",
+          "What do you want out of this, bro?"
+        ],
+        "defend": [
+          "Hey. You can laugh at me, but you don't laugh at my friends."
+        ],
+        "deep": [
+          "I wasn't a great example when I was young. Then Aleki was born, and I realised somebody was watching me. I changed for him."
+        ],
+        "solo": [
+          "It's for Aleki. He loves turtles. I'm going to give it to him the day I get home.",
+          "My son's watching. Everything I do out here, I think: would I want him to see this?"
+        ]
+      }
     },
     {
       "name": "Nura",

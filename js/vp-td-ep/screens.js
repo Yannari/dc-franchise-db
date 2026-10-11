@@ -21,7 +21,7 @@ import { tdAftermathScreen, hasAftermath } from './aftermath.js';
 import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf, hideBooth, setHideBooth, maskName } from './stage.js';
 import { TDX_CSS, TDX_FONTS } from './style.js';
 import { liveGL } from './glplate.js';
-import { ambience, stopAmbience, sfx } from './sound.js';
+import { ambience, stopAmbience, sfx, babble, hush } from './sound.js';
 
 const reg = () => (typeof window !== 'undefined' ? (window._tdx ||= {}) : (globalThis._tdx ||= {}));
 export const tdSteppedOn = () => { try { return globalThis.localStorage?.getItem('td-vp') !== 'classic'; } catch { return true; } };
@@ -383,6 +383,7 @@ function paint(uid, fresh) {
       if (n >= full.length) { clearInterval(R.typing); say.innerHTML = badge + lit(full); }
     }, 16);
   }
+  if (fresh) { hush(); if ((s.k === 'say' || s.k === 'conf') && s.by && d.text && !d.cls.includes('dir')) babble(d.text, voiceOf(s.by), { loud: !!(s.loud || s.shock) }); }
   if (fresh && s.loud) { dlg.classList.remove('loud'); void dlg.offsetWidth; dlg.classList.add('loud'); }
   // what happens, animated
   if (fresh) act(st, castEl, fxEl, scr, L, s, toks);
@@ -411,6 +412,23 @@ const FEEL_MARK = {
   guilty: '<svg viewBox="0 0 24 24"><path d="M5 9h14M7 14c3 2 7 2 10 0" fill="none" stroke="#c8ccd8" stroke-width="2.2" stroke-linecap="round"/></svg>',
   relief: '<svg viewBox="0 0 24 24"><g fill="none" stroke="#bfe8ff" stroke-width="2.2" stroke-linecap="round"><path d="M3 10c4-2 7 2 11 0s5-1 7 0"/><path d="M5 15c3-1.5 6 1.5 9 0s4-1 5 0"/></g></svg>',
 };
+// Each character's speaking voice (sound.js babble): the blips' register from pronouns (some of each
+// spread across the next register, so a cast is not three voices), their own pitch from the name, and
+// pace from social. A name that is nobody's (a host, Chef) still gets a steady voice from the name.
+const _voices = {};
+function voiceOf(name) {
+  if (!name) return null;
+  if (_voices[name]) return _voices[name];
+  let h = 2166136261; for (const ch of name) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  const r = k => ((h >>> k) & 255) / 255;
+  const p = (window.players || []).find(x => x.name === name);
+  let sub = ''; try { sub = window.pronouns?.(name)?.sub || ''; } catch { /* nobody */ }
+  let st = {}; try { st = (p && window.pStats?.(name)) || {}; } catch { /* nobody */ }
+  const chef = /chef/i.test(name);
+  const reg = chef ? 'low' : sub === 'she' ? (r(0) < .7 ? 'high' : 'mid') : sub === 'they' ? 'mid' : (r(0) < .5 ? 'low' : 'mid');
+  const rate = (chef ? .85 : .92 + r(8) * .18) * (p?.age && p.age < 20 ? 1.04 : 1);
+  return (_voices[name] = { reg, rate, gap: .095 - (st.social ?? 5) / 10 * .025 });
+}
 const tokAt = (castEl, n) => [...castEl.children].find(el => el.dataset.n === n);
 const centre = (st, el) => { const f = st.querySelector('.tdx-world').getBoundingClientRect(), r = el.getBoundingClientRect(); return { x: (r.left + r.width / 2 - f.left) / f.width * 100, y: (r.top - f.top) / f.height * 100, h: r.height / f.height * 100 }; };
 function fxAt(fxEl, cls, x, y, html = '', life = 2400) { const d = document.createElement('div'); d.className = cls; d.style.left = x + '%'; d.style.top = y + '%'; d.innerHTML = html; fxEl.appendChild(d); setTimeout(() => d.remove(), life); return d; }
@@ -492,7 +510,7 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
       if (a.ride && a.ride !== 'walk' && el) { const c = centre(st, el); fxAt(fxEl, `tdx-ride ${a.ride}`, c.x, c.y + c.h * .9, rideHtml(a.ride), 2600); sfx(RIDE_SFX[a.ride] || 'whoosh'); } else if (el) el.classList.add('walkin'); });
     if (a.kind === 'train') who.forEach(n => tokAt(castEl, n).classList.add('train'));
     if (a.kind === 'gust') { who.forEach(n => tokAt(castEl, n).classList.add('shake')); sfx('thunder'); const fl = fxAt(fxEl, 'tdx-bolt', 50, 0, '', 900); fl.style.left = '0'; }
-    if (a.kind === 'hurt' && who[0]) { tokAt(castEl, who[0]).classList.add('shake'); const c = centre(st, tokAt(castEl, who[0])); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'OW!'); sfx('slap'); }
+    if (a.kind === 'hurt' && who[0]) { tokAt(castEl, who[0]).classList.add('shake'); const c = centre(st, tokAt(castEl, who[0])); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'OW!'); sfx('bonk'); }
     // a head-to-head (contest.js): each of them doing THE challenge, the one ahead steadier, and what
     // the challenge throws off (sparks at a fire, chips off a rope, water, puzzle pieces, dust)
     if (a.kind === 'contest') {
@@ -533,15 +551,15 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
     // a jump off the pier down into the boat
     if (a.kind === 'hop' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.style.transition = 'left .9s ease-out,top .9s cubic-bezier(.3,-1.4,.6,1),opacity .4s linear .9s';
       requestAnimationFrame(() => requestAnimationFrame(() => { el.style.left = `${a.tu * 100}%`; el.style.top = `${a.tv * 100}%`; el.style.opacity = '0'; }));
-      setTimeout(() => sfx('drop'), 900); } }
+      sfx('boing'); } }
     // the Summit: up to the pedestal, and the gift's name over it
     if (a.kind === 'pick' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.style.left = `${a.tu * 100}%`;
       setTimeout(() => { const c = centre(st, el); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), esc(a.label || ''), 2600); }, 900); } }
     // the Aftermath: an anvil for a lie, a stamp for the truth, the tape rolling, the phone ringing
-    if (a.kind === 'anvil' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-anvil', c.x, c.y, ANVIL, 2200); setTimeout(() => { el.classList.add('shake'); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 2, 8), 'CLANG!'); sfx('slam'); }, 520); } }
+    if (a.kind === 'anvil' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-anvil', c.x, c.y, ANVIL, 2200); setTimeout(() => { el.classList.add('shake'); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 2, 8), 'CLANG!'); sfx('anvil'); }, 520); } }
     if ((a.kind === 'hammer' || a.kind === 'hammer-miss') && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const c = centre(st, el); const hit = a.kind === 'hammer';
       fxAt(fxEl, `tdx-hammer${hit ? '' : ' miss'}`, c.x + (hit ? 0 : 6), c.y + c.h * .35, HAMMER, 2000); sfx('whoosh');
-      setTimeout(() => { if (hit) { el.classList.remove('knocked'); void el.offsetWidth; el.classList.add('knocked'); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 2, 8), 'WHAM!'); sfx('slam'); } else fxAt(fxEl, 'tdx-pop', c.x + 8, Math.max(c.y - 2, 8), 'WHOOSH!'); }, 430); } }
+      setTimeout(() => { if (hit) { el.classList.remove('knocked'); void el.offsetWidth; el.classList.add('knocked'); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 2, 8), 'WHAM!'); sfx('bonk'); } else fxAt(fxEl, 'tdx-pop', c.x + 8, Math.max(c.y - 2, 8), 'WHOOSH!'); }, 430); } }
     if (a.kind === 'truth' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-stamp', c.x, c.y + c.h * .45, 'TRUTH', 2400); } }
     if (a.kind === 'tape') { fxAt(fxEl, 'tdx-tape', 0, 0, '<i></i><b>PLAY ▶</b>', 2600); sfx('static'); }
     if (a.kind === 'phone') { fxAt(fxEl, 'tdx-phone', 86, 18, PHONE, 1800); sfx('ring'); }
@@ -550,7 +568,7 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
     // the last step aboard the Boat of Losers: walk off toward the boat, the horn, the motor
     if (a.kind === 'board' && who[0]) { const el = tokAt(castEl, who[0]); if (el) setTimeout(() => el.classList.add('board'), 600); setTimeout(() => sfx('horn'), 1400); setTimeout(() => sfx('motor'), 2200); }
     // the Drop of Shame (World Tour): to the hatch, a run, and out into the sky
-    if (a.kind === 'jump' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.style.left = `${a.tu * 100}%`; setTimeout(() => { el.classList.add('jump'); sfx('whoosh'); sfx('wind'); }, 1300); } }
+    if (a.kind === 'jump' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.style.left = `${a.tu * 100}%`; setTimeout(() => { el.classList.add('jump'); sfx('fall-whistle'); }, 1300); } }
     // and the parachute opens
     if (a.kind === 'chute' && who[0]) { const el = tokAt(castEl, who[0]); if (el) { el.classList.add('chute'); setTimeout(() => sfx('pop'), 700); } sfx('wind'); }
     if (a.kind === 'path' && who[0]) { const el = tokAt(castEl, who[0]); setTimeout(() => el.classList.add(a.dir === 'L' ? 'pathL' : 'pathR'), 250); sfx(a.lit ? 'torch' : 'snuff'); }
@@ -1025,12 +1043,12 @@ if (typeof document !== 'undefined') {
     setTimeout(() => {
       const root = document.querySelector('.tdx[data-uid]');
       for (const [uid, R] of Object.entries(reg())) if (R && (!root || root.dataset.uid !== uid)) { stopAuto(R); clearInterval(R.typing); }
-      if (!root) { stopAmbience(); return; }
+      if (!root) { stopAmbience(); hush(); return; }
       const R = sync(root.dataset.uid);
       if (R && R.idx < 0) { R.idx = 0; if (R.isMap) mapPaint(root.dataset.uid, true); else paint(root.dataset.uid, true); }
     }, 0);
   });
-  document.addEventListener('vp:close', () => { for (const R of Object.values(reg())) if (R) { stopAuto(R); clearInterval(R.typing); } stopAmbience(); });
+  document.addEventListener('vp:close', () => { for (const R of Object.values(reg())) if (R) { stopAuto(R); clearInterval(R.typing); } stopAmbience(); hush(); });
   document.addEventListener('keydown', e => {
     const root = document.querySelector('.tdx[data-uid]');
     if (!root || /input|textarea|select/i.test(e.target?.tagName || '')) return;

@@ -1,0 +1,16 @@
+{
+  "files": 54,
+  "totalBytes": 15326478,
+  "ambienceSeconds": 90,
+  "checks": [
+    "decode",
+    "finite samples",
+    "non-silent",
+    "peak below 0 dBFS",
+    "ambience 60\u2013180 seconds",
+    "effects/voices under 3 seconds",
+    "effects/voices under 30ms leading silence",
+    "ambience boundary continuity"
+  ],
+  "listeningReview": "Not performed by automated processing; use preview.html to audition."
+}

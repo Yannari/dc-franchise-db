@@ -168,7 +168,10 @@ function build(ctx, dest, spec) {
 // The mix (the user, 2026-10-11: "the ambience shouldn't be too strong, we wanna hear the voices …
 // if you're mixing ambience with real music, the music is more important"): the place sits low on its
 // own, far lower under a music bed, and dips again for as long as somebody is talking.
-const AMB_ALONE = .55, AMB_UNDER_MUSIC = .18, AMB_UNDER_VOICE = .45;
+// Every recording is first brought to -20 dBFS RMS (normOf), so these are the levels it is heard at:
+// about -48 dB alone (measured), 11 dB lower under a bed (the beds play near -26 dB, the voices too),
+// and 5 dB lower again while someone talks.
+const AMB_ALONE = .12, AMB_UNDER_MUSIC = .035, AMB_UNDER_VOICE = .55;
 let talkUntil = 0;
 const ambBase = () => (engine._currentBed ? AMB_UNDER_MUSIC : AMB_ALONE);
 function ambLevel() {
@@ -180,6 +183,43 @@ function ambLevel() {
 // the music bed is chosen after the screen paints (vp-ui.js), and announced with vp:screen
 if (typeof document !== 'undefined') document.addEventListener('vp:screen', () => setTimeout(ambLevel, 60));
 
+// ── THE RECORDINGS ────────────────────────────────────────────────────
+// assets/audio/td/ (the user's downloads, 2026-10-11; sources and the CC BY credit in its CREDITS.md):
+// ambience loops per venue, the effects, and the dialogue blips. A file that fails to load falls back
+// to the synthesized sound above, so a missing file is never silence.
+const TD_AUDIO = 'assets/audio/td/';
+const bufs = {};
+// the gain that brings a file to -20 dBFS RMS, held so its peak stays under -1 dBFS
+function normOf(b) {
+  let sum = 0, n = 0, peak = 0;
+  for (let c = 0; c < b.numberOfChannels; c++) { const d = b.getChannelData(c); for (let i = 0; i < d.length; i += 5) { const x = d[i]; sum += x * x; n++; if (x > peak) peak = x; else if (-x > peak) peak = -x; } }
+  const rms = Math.sqrt(sum / Math.max(n, 1)) || 1e-4;
+  return Math.min(10 ** ((-20 - 20 * Math.log10(rms)) / 20), .89 / Math.max(peak, 1e-4));
+}
+function loadBuf(ctx, path) {
+  if (!bufs[path]) bufs[path] = fetch(TD_AUDIO + path).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status))
+    .then(a => ctx.decodeAudioData(a)).then(b => ({ b, norm: normOf(b) })).catch(() => null);
+  return bufs[path];
+}
+const AMB_VENUE = { 'hosted-camp': 'camp', 'survival-island': 'island', 'film-lot': 'filmlot', carnival: 'carnival' };
+// which loops a place plays: one bed for where we are, then the fire and the rain over it
+function ambFiles(spec) {
+  const sc = spec.scape, part = (file, level = 1) => ({ file, level }), out = [];
+  const outside = (venue, night) => `${AMB_VENUE[venue] || 'camp'}-${night ? 'night' : 'day'}`;
+  if (sc) out.push(part(sc.venue === 'world-tour' && !sc.open ? 'worldtour' : !sc.open ? 'indoor' : outside(sc.venue, sc.night)));
+  else if (spec.indoor || spec.flies) out.push(part('indoor'));
+  else if (spec.outdoor || spec.rain || spec.water) out.push(part(outside('hosted-camp', spec.night)));
+  if (spec.fire) out.push(part('campfire', .9));
+  if (spec.rain) out.push(part('rain', spec.storm ? 1 : .8));
+  return out;
+}
+let preloaded = false;
+function preload(ctx) {
+  if (preloaded) return; preloaded = true;
+  Object.values(SFX_FILE).forEach(f => loadBuf(ctx, `sfx/${f}.ogg`));
+  ['high', 'mid', 'low'].forEach(r => { for (let i = 1; i <= 6; i++) loadBuf(ctx, `voice/${r}-${i}.ogg`); });
+}
+
 /** The place's ambience. Called on every paint; rebuilt only when the place changes. */
 export function ambience(spec) {
   const o = out();
@@ -187,15 +227,41 @@ export function ambience(spec) {
   if (k === key) { ambLevel(); return; }
   key = k;
   timers.forEach(clearTimeout); timers = [];
-  if (amb) { const old = amb, ctx = old.context; old.gain.setTargetAtTime(0, ctx.currentTime, .3); setTimeout(() => { try { old.disconnect(); } catch { /* gone */ } }, 1500); amb = null; }
+  if (amb) { const old = amb, ctx = old.context; old.gain.setTargetAtTime(0, ctx.currentTime, .3); setTimeout(() => { (old._srcs || []).forEach(x => { try { x.stop(); } catch { /* done */ } }); try { old.disconnect(); } catch { /* gone */ } }, 1500); amb = null; }
   if (!o || !spec) return;
-  amb = o.ctx.createGain(); amb.gain.value = 0; amb.connect(o.dest); amb.gain.setTargetAtTime(ambBase(), o.ctx.currentTime, .6);
-  build(o.ctx, amb, spec);
+  const ctx = o.ctx, mine = amb = ctx.createGain(); mine._srcs = [];
+  mine.gain.value = 0; mine.connect(o.dest); mine.gain.setTargetAtTime(ambBase(), ctx.currentTime, .6);
+  preload(ctx);
+  const parts = ambFiles(spec);
+  Promise.all(parts.map(x => loadBuf(ctx, `amb/${x.file}.ogg`))).then(loaded => {
+    if (amb !== mine) return;
+    if (!loaded[0]) { const fb = ctx.createGain(); fb.gain.value = 7; fb.connect(mine); build(ctx, fb, spec); return; }   // the synth was mixed for a level 7x this one
+    loaded.forEach((L, i) => {
+      if (!L) return;
+      const src = ctx.createBufferSource(), g = ctx.createGain(); src.buffer = L.b; src.loop = true; g.gain.value = L.norm * parts[i].level;
+      src.connect(g); g.connect(mine); src.start(0, Math.random() * L.b.duration); mine._srcs.push(src);
+    });
+  });
 }
 export function stopAmbience() { ambience(null); }
 
-/** A one-shot for a moment. */
+// the moments with a recording, and how loud each sits against a -20 dB file (.5 = -26 dB, the beds' level)
+const SFX_FILE = { static: 'confessional', slam: 'door-slam', anvil: 'anvil', bonk: 'bonk', boing: 'boing', 'fall-whistle': 'fall-whistle', 'record-scratch': 'record-scratch',
+  horn: 'boat-horn', motor: 'motorboat', engine: 'bus-engine', rotor: 'helicopter', jetroar: 'jet', hiss: 'bus-door', splash: 'splash', thunder: 'thunder',
+  torch: 'torch-light', snuff: 'torch-snuff', scribble: 'pencil', drop: 'ballot-drop', idol: 'idol', applause: 'applause', cheer: 'cheer', boo: 'boo', ring: 'phone-ring' };
+const SFX_LEVEL = { engine: .32, motor: .32, rotor: .32, jetroar: .32, horn: .4, applause: .38, cheer: .38, boo: .32, scribble: .3, drop: .4, static: .4, torch: .4 };
+/** A one-shot for a moment: the recording when there is one, else the synthesized cue. */
 export function sfx(kind) {
+  const o = out(); if (!o) return;
+  if (!SFX_FILE[kind]) return synthSfx(kind);
+  const ctx = o.ctx;
+  loadBuf(ctx, `sfx/${SFX_FILE[kind]}.ogg`).then(L => {
+    if (!L) return synthSfx(kind);
+    const src = ctx.createBufferSource(), g = ctx.createGain(); src.buffer = L.b; g.gain.value = L.norm * (SFX_LEVEL[kind] ?? .5);
+    src.connect(g); g.connect(o.dest); src.start();
+  });
+}
+function synthSfx(kind) {
   const o = out(); if (!o) return;
   const ctx = o.ctx, t = ctx.currentTime, dest = o.dest;
   const gain = v => { const g = ctx.createGain(); g.gain.value = v; return g; };
@@ -249,3 +315,30 @@ export function sfx(kind) {
   else if (kind === 'thunder') { hiss(90, 2.4, .5, 'lowpass'); blast(55, 30, 1.6, 'sine', .35); }
 }
 
+// ── THE VOICES ────────────────────────────────────────────────────────
+// A video game's talk (the user, 2026-10-11): a line is spoken as a run of dialogue blips (dmochas's
+// pack, voice/), in the speaker's register at the speaker's own pitch, rising at a question. A long
+// line is voiced at its start; the text carries the rest. v: { reg: high|mid|low, rate, gap (s) }
+let talkSrcs = [], talkTok = 0;
+/** Cut whoever is talking (a new step is a new line). */
+export function hush() { talkTok++; talkSrcs.forEach(x => { try { x.stop(); } catch { /* done */ } }); talkSrcs = []; }
+export function babble(text, v, { loud = false } = {}) {
+  hush();
+  const o = out(); if (!o || !v || !text) return;
+  const ctx = o.ctx, tok = talkTok;
+  Promise.all([1, 2, 3, 4, 5, 6].map(i => loadBuf(ctx, `voice/${v.reg}-${i}.ogg`))).then(all => {
+    const L = all.filter(Boolean); if (tok !== talkTok || !L.length) return;
+    const syl = (String(text).toLowerCase().match(/[aeiouy]+/g) || []).length, n = Math.max(2, Math.min(Math.round(syl * .6), 12));
+    const ask = /\?["')]?\s*$/.test(text);
+    let h = 0; for (const ch of text) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    const rnd = () => ((h = (h * 1103515245 + 12345) >>> 0) >>> 8) / 16777216;
+    let t = ctx.currentTime + .02;
+    for (let i = 0; i < n; i++) {
+      const B = L[Math.floor(rnd() * L.length)], src = ctx.createBufferSource(), g = ctx.createGain();
+      src.buffer = B.b; src.playbackRate.value = v.rate * (1 + (rnd() - .5) * .08) * (ask && i === n - 1 ? 1.15 : 1);
+      g.gain.value = B.norm * (loud ? .95 : .75); src.connect(g); g.connect(o.dest); src.start(t); talkSrcs.push(src);
+      t += v.gap * (.85 + rnd() * .3) + (rnd() < .1 ? v.gap * .8 : 0);   // now and then a word break
+    }
+    talkUntil = t; ambLevel();
+  });
+}

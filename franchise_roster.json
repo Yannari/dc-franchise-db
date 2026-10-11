@@ -288,19 +288,9 @@
           }
         ]
       },
-      "age": 22,
-      "birthdate": "2004-06-12",
-      "backstory": "Before competing, Bowie was already a practiced performer and relentless competitor. His audition presents him as Total Drama’s first openly gay contestant, a basketball-playing student who had been crowned both prom king and queen and wanted another crown. That mix of pageantry, preparation, and self-belief explains why he arrived expecting to manage both the room and the show around it.",
-      "personality": "Bowie is openly competitive, socially alert, and comfortable being the most visibly confident person in a room. He enjoys drama as both entertainment and information, notices who needs reassurance, and can build sincere friendships even while planning around them. He prefers clean strategic authorship: identify the dangerous player, assemble the numbers, and own the decision in confessional. His affection for people such as Raj reveals a real boundary beneath the ambition; he can postpone or soften a move when the human cost becomes personal. Under pressure he gets sharper and more controlling, but not randomly cruel. He respects opponents who can answer him move for move and hates being treated as strategically naive.",
-      "ties": [],
       "kit": {
         "thing": "being a theatre kid",
         "alone": "is running dance steps on the dock, counting under his breath",
-        "ground": [
-          "performer",
-          "athlete",
-          "came-out"
-        ],
         "bit": [
           "Okay, nobody panic, but I've been rehearsing my reaction for when we win, and it involves a split.",
           "I was prom king AND prom queen, so I think I can handle a team captain election, thank you.",
@@ -346,7 +336,11 @@
           "If I'm not performing, I'm thinking about performing. Right now I'm thinking about how good this confessional is going to look.",
           "Some people come out here to rest. I come out here to rehearse. The whole island is a stage."
         ]
-      }
+      },
+      "age": 22,
+      "birthdate": "2004-06-12",
+      "backstory": "Before competing, Bowie was already a practiced performer and relentless competitor. His audition presents him as Total Drama’s first openly gay contestant, a basketball-playing student who had been crowned both prom king and queen and wanted another crown. That mix of pageantry, preparation, and self-belief explains why he arrived expecting to manage both the room and the show around it.",
+      "personality": "Bowie is openly competitive, socially alert, and comfortable being the most visibly confident person in a room. He enjoys drama as both entertainment and information, notices who needs reassurance, and can build sincere friendships even while planning around them. He prefers clean strategic authorship: identify the dangerous player, assemble the numbers, and own the decision in confessional. His affection for people such as Raj reveals a real boundary beneath the ambition; he can postpone or soften a move when the human cost becomes personal. Under pressure he gets sharper and more controlling, but not randomly cruel. He respects opponents who can answer him move for move and hates being treated as strategically naive."
     },
     {
       "name": "Brick",
@@ -1263,7 +1257,7 @@
         "temperament": 4
       },
       "sexuality": "straight",
-      "voice": "Sweet-poison manipulator. Disarms you with a smile and then cuts, talks people into their own bad decisions; no loyalty and won't bother pretending otherwise once she's caught.",
+      "voice": "Sweet-poison manipulator. Disarms you with a smile and then cuts, talks people into their own b#competitivead decisions; no loyalty and won't bother pretending otherwise once she's caught. #-warm#cruel #blunt#bossy",
       "profileSources": {
         "voice": [
           {
@@ -1346,6 +1340,55 @@
             "label": "Read from the wiki article, not stated in it",
             "kind": "interpretation"
           }
+        ]
+      },
+      "kit": {
+        "thing": "being an influencer",
+        "alone": "is filming herself on an imaginary phone, practising a sponsorship read",
+        "bit": [
+          "Okay, this light is actually gorgeous. If we had a phone, this would get so much engagement.",
+          "I'm a citizen of Mother Earth, so honestly, sleeping outside is kind of my brand.",
+          "Babe, your posture. I'm not being mean, I'm being honest. People respect honesty."
+        ],
+        "tease": [
+          "We don't have phones. Nobody's watching except the cameras.",
+          "Didn't you complain about a bug for twenty minutes yesterday?",
+          "That was definitely mean."
+        ],
+        "reply": [
+          "The cameras are the phones now. Smile.",
+          "Mother Earth and I are working through some things.",
+          "It was honest. Being honest just sounds mean when you're not used to it."
+        ],
+        "home": [
+          "My parents run a bake shop. I used to work there. Now I have, like, a platform.",
+          "My followers, mostly. And my sister, Megan, who is going to hate how good I look on TV."
+        ],
+        "want": [
+          "To win, and to be the most talked-about person on this show. Both is ideal.",
+          "A bigger platform. Money's nice. Attention lasts longer."
+        ],
+        "conf": [
+          "The trick is, you smile while you say it. Then they don't even notice they've been cut.",
+          "They all think I'm a ditzy influencer. Good. Ditzy influencers don't get voted out first."
+        ],
+        "askHome": [
+          "Who's your support system back home? I love that for you, whoever it is.",
+          "So who are you going home to? Be honest."
+        ],
+        "askWant": [
+          "What's your brand here, though? Like, what do you want people to say about you?",
+          "What are you actually after? Everybody's after something."
+        ],
+        "defend": [
+          "Laugh all you want. I built a brand from nothing, and that's more than you've ever done."
+        ],
+        "deep": [
+          "The influencer thing is a costume. I'm not sure anymore what's under it. That scares me more than losing."
+        ],
+        "solo": [
+          "When I get home, I'm going to have the best content of my life. I'm basically storyboarding right now.",
+          "Everybody thinks I'm shallow. Shallow doesn't build a following from nothing. Strategy does."
         ]
       },
       "age": 21,
@@ -1814,22 +1857,9 @@
           }
         ]
       },
-      "age": 20,
-      "birthdate": "2006-07-12",
-      "ethnicity": "Black",
-      "nationality": "American",
-      "hometown": "Connecticut",
-      "occupation": "Aspiring journalist",
-      "backstory": "An aspiring journalist with a lonely childhood, Millie auditioned to document what she saw as the failures of her generation. Writing about other people gave her a sense of expertise and kept attention away from her own low self-worth. She arrived with a notebook, a research project, and very little practical preparation, expecting the cast to prove her thesis rather than expecting any of them to become important to her.",
-      "personality": "Millie is book-smart, observant, and habitually judgmental, especially when she can study a group from its edge instead of risking participation. Her notebook once let her convert loneliness and insecurity into criticism of everyone else; genuine friendship forced her to see that observation without compassion can become exploitation. She still notices absurd behavior quickly and can sound condescending when anxious, but she now understands that people are not merely material. Social cues do not always come naturally, and physical challenges can expose her hesitation, yet she learns quickly when someone gives her a concrete method. Under pressure she may retreat into analysis or justify a selfish choice as research. Her best growth comes when she puts the notebook down, accepts responsibility without qualifiers, and acts for a person she has chosen to trust.",
-      "ties": [],
       "kit": {
         "thing": "her notebook",
         "alone": "is writing in her journal by the fire, glancing up at everyone in turn",
-        "ground": [
-          "lonely-child",
-          "writer"
-        ],
         "bit": [
           "Fun fact: forty percent of plastic in the ocean is fishing nets. So when we fish, we should really think about that.",
           "I'm keeping notes on everyone. For journalism. It's not a strategy thing. It's mostly not a strategy thing.",
@@ -1875,7 +1905,15 @@
           "I've filled half this notebook already. It's mostly about the people here. They'd be horrified, honestly.",
           "Writing about people is easier than talking to them. I'm trying to do more of the second one."
         ]
-      }
+      },
+      "age": 20,
+      "birthdate": "2006-07-12",
+      "ethnicity": "Black",
+      "nationality": "American",
+      "hometown": "Connecticut",
+      "occupation": "Aspiring journalist",
+      "backstory": "An aspiring journalist with a lonely childhood, Millie auditioned to document what she saw as the failures of her generation. Writing about other people gave her a sense of expertise and kept attention away from her own low self-worth. She arrived with a notebook, a research project, and very little practical preparation, expecting the cast to prove her thesis rather than expecting any of them to become important to her.",
+      "personality": "Millie is book-smart, observant, and habitually judgmental, especially when she can study a group from its edge instead of risking participation. Her notebook once let her convert loneliness and insecurity into criticism of everyone else; genuine friendship forced her to see that observation without compassion can become exploitation. She still notices absurd behavior quickly and can sound condescending when anxious, but she now understands that people are not merely material. Social cues do not always come naturally, and physical challenges can expose her hesitation, yet she learns quickly when someone gives her a concrete method. Under pressure she may retreat into analysis or justify a selfish choice as research. Her best growth comes when she puts the notebook down, accepts responsibility without qualifiers, and acts for a person she has chosen to trust."
     },
     {
       "name": "MK",
@@ -2509,8 +2547,66 @@
         "temperament": 8
       },
       "sexuality": "straight",
-      "voice": "Steady, perceptive, kind. Hates conflict, cautious, rarely shows her hand; sweet indie girl who toughens up when pushed.",
-      "profileSources": {}
+      "voice": "Steady, perceptive, kind. Hates conflict, cautious, rarely shows her hand; sweet indie girl who toughens up when pushed.#earnest#emotional#flirty",
+      "profileSources": {},
+      "kit": {
+        "thing": "being a sweet indie girl who makes her own retro clothes",
+        "alone": "sewing a loose button back on and quietly matching thread colors with way more focus than the situation probably needs.",
+        "bit": [
+          "I made this top myself, so if a seam pops during a challenge, everyone please pretend it's a design choice and not me panicking.",
+          "If anyone wants to talk indie theatre while we wait, I'm very available, and I promise I only get a little intense about bad lighting.",
+          "I'm trying to be chill, but I did pack outfits by color mood, because red, lavender, and blue make me feel less like I'm about to be judged on television."
+        ],
+        "tease": [
+          "{a}, you made that? It looks like it lost a fight with a craft bin.",
+          "{a}, indie theatre sounds like regular theatre with worse chairs.",
+          "{a}, color mood packing is the most nervous thing I've ever heard."
+        ],
+        "reply": [
+          "Okay, rude, but the craft bin and I worked really hard, so I'm choosing to take that as handmade charm.",
+          "The chairs are worse, yeah, but the feelings are huge, so it balances out.",
+          "It is nervous, but it's organized nervous, and honestly that's one of my better settings."
+        ],
+        "home": [
+          "My mom and dad are back home, and I hope they're watching the parts where I look calm and not the parts where my face gives away everything.",
+          "My parents are waiting back home, and Ms. Puffycheeks too, which is my hamster, so I'm hoping she doesn't judge my screen presence."
+        ],
+        "want": [
+          "I want to make real friends, not just polite small talk where everyone silently decides I'm too much.",
+          "I want to prove I can be kind without being a pushover, because there's a difference and I'm still working on showing it."
+        ],
+        "conf": [
+          "I came here wanting people to like me, which is sweet in theory and a little dangerous in practice, because I can talk myself into trusting almost anybody.",
+          "I know I look soft, and I am, but if someone keeps pushing, there's definitely a point where I stop apologizing and start paying attention.",
+          "There are cute people here, and I'm not saying I'm distracted, but I did just fix my hair for a camera that was already on."
+        ],
+        "askHome": [
+          "So who's waiting for you back home, if you don't mind me asking?",
+          "What do people back home think about you being here, and are they excited or pretending not to be worried?"
+        ],
+        "askWant": [
+          "What do you actually want out of this, besides surviving the weird stuff they throw at us?",
+          "Are you here to win, to meet people, to prove something, or is it a secret fourth thing I should be scared of?"
+        ],
+        "defend": [
+          "You can mock the retro thing, but I made choices on purpose, and that's more than I can say for some of the comments happening right now.",
+          "It's fine if it's not your taste, but laughing at something I made doesn't make you look tougher, it just makes me trust you less."
+        ],
+        "deep": [
+          "I didn't have a lot of friends before this, so when someone seems nice to me, I want to believe it really badly, and I know that can mess with my judgment."
+        ],
+        "solo": [
+          "I know sewing doesn't look intimidating, but give me a needle, a plan, and five minutes, and suddenly I'm weirdly prepared.",
+          "Being alone is familiar, but I'm trying not to make it my comfort zone here, because I didn't come all this way to hide behind fabric."
+        ]
+      },
+      "age": 24,
+      "birthdate": "2002-04-22",
+      "ethnicity": "White",
+      "nationality": "Canadian",
+      "hometown": "Fort Langley",
+      "occupation": "Florist",
+      "descriptor": "The Indie Chick"
     },
     {
       "name": "Thom",
@@ -2894,7 +2990,7 @@
         "temperament": 2
       },
       "sexuality": "bi",
-      "voice": "Grett is rather abrasive, rude, and she's never afraid of speaking her mind.Grett is also very cunning, as she is willing to lie and cheat in order to advance in the game. Despite this, however, a more vulnerable side of her can be seen sometimes, as she's also shown to be a jealous and insecure individual. Bossy, blunt, takes charge whether asked or not. Gets frustrated when people don't listen, doesn't sugarcoat. 'Just do what I said.' / 'This is why we keep losing.'",
+      "voice": "Grett is rather abrasive, rude, and she's never afraid of speaking her mind.Grett is also very cunning, as she is willing to lie and cheat in order to advance in the game. Despite this, however, a more vulnerable side of her can be seen sometimes, as she's also shown to be a jealous and insecure individual. Bossy, blunt, takes charge whether asked or not. Gets frustrated when people don't listen, doesn't sugarcoat. 'Just do what I said.' / 'This is why we keep losing.'#cruel ",
       "profileSources": {
         "voice": [
           {
@@ -2953,6 +3049,55 @@
             "url": "https://disventure-camp.fandom.com/wiki/Grett",
             "kind": "source-canon"
           }
+        ]
+      },
+      "kit": {
+        "thing": "being a fitness influencer",
+        "alone": "is doing a full workout on the beach, with no audience but the camera",
+        "bit": [
+          "If anyone wants to actually be useful today, I'm doing a circuit at the beach. You're welcome.",
+          "This is why we keep losing. Nobody here has done a real squat in their life.",
+          "My followers would be horrified by this diet. I'm horrified by this diet."
+        ],
+        "tease": [
+          "Nobody asked for a workout, Grett.",
+          "Was that a pep talk? Because it felt like an insult.",
+          "Your followers aren't here."
+        ],
+        "reply": [
+          "Nobody asked to lose the last challenge either, and here we are.",
+          "It was both. You're welcome for both.",
+          "They'll see the episode. I'm doing this for the episode."
+        ],
+        "home": [
+          "My audience, my brand, and a flat that's far too nice to be away from this long.",
+          "Nobody I'd call when I'm upset. I'm working on that. Don't make it a thing."
+        ],
+        "want": [
+          "To win. And for everybody who said I was just a pretty face to watch me do it.",
+          "Control. Of my own game, for once, and nobody else's."
+        ],
+        "conf": [
+          "People think I'm mean. I'm honest, and honest just sounds mean to people who aren't used to it.",
+          "I don't need them to like me. I need them to be scared of what happens if they cross me."
+        ],
+        "askHome": [
+          "So who's waiting for you? Boyfriend? Girlfriend? Nobody? Come on.",
+          "Who's watching you back home? Be honest."
+        ],
+        "askWant": [
+          "What do you actually want out of this? You can't just be here for fun.",
+          "What's your plan here, really?"
+        ],
+        "defend": [
+          "My body is my job. I'm not going to apologise for being good at it."
+        ],
+        "deep": [
+          "I've spent so long making people see me a certain way. I'm not sure anybody's ever actually seen me."
+        ],
+        "solo": [
+          "Rest days are for people who don't want it. I want it.",
+          "Most people see the body and stop there. That's fine. It means they don't see me coming."
         ]
       },
       "age": 25,
@@ -3019,7 +3164,7 @@
         "temperament": 6
       },
       "sexuality": "lesbian",
-      "voice": "Normally sweet and friendly but insecure underneath. Second-guesses herself, wants to be liked, but has real backbone when pushed. 'Did I do something wrong?' / 'No — I'm not apologizing for that.'",
+      "voice": "Normally sweet and friendly but insecure underneath. Second-guesses herself, wants to be liked, but has real backbone when pushed. 'Did I do something wrong?' / 'No — I'm not apologizing for that.' #blunt#chaotic#earnest",
       "profileSources": {
         "voice": [
           {
@@ -3073,6 +3218,56 @@
           }
         ]
       },
+      "kit": {
+        "thing": "how many pets she has",
+        "alone": "is talking softly to a lizard on a rock",
+        "bit": [
+          "Look, I made a friend! He's a crab, and his name is Pavel, and he's very shy, so please be quiet.",
+          "Did anybody eat the eggs? Because those were somebody's babies, and I need to know who.",
+          "At home I have three cats, two dogs, a ferret, a lizard, and a goat. The goat is my favourite. Don't tell the cats."
+        ],
+        "tease": [
+          "Gabby, please don't name the dinner.",
+          "We're starving. The eggs were dinner.",
+          "Who is watching all those animals right now?"
+        ],
+        "reply": [
+          "He isn't dinner. He's Pavel.",
+          "Then I'll eat the rice and I'll be sad about it.",
+          "Ellie. She's going to be so tired when I get home."
+        ],
+        "home": [
+          "Ellie. My girlfriend. We've been together five years and this is the longest we've ever been apart, and I hate it.",
+          "Ellie and a house full of animals. I miss all of them so much I can't think about it for too long."
+        ],
+        "want": [
+          "To win and use the money for an animal sanctuary. A big one, with a pond.",
+          "To make it far enough that Ellie is proud. And then win, if I can."
+        ],
+        "conf": [
+          "Sometimes there's a voice in my head that says the mean thing first. I don't have to listen to it. Today I didn't.",
+          "If you're kind to me, I'll do anything for you. If you hurt somebody I love, I won't forget it. Ever."
+        ],
+        "askHome": [
+          "Who's waiting for you at home? Do you have pets? Please say you have pets.",
+          "Do you have a girlfriend or a boyfriend back home? Do they miss you?"
+        ],
+        "askWant": [
+          "What would you do with the money? I want to hear everybody's answer!",
+          "What do you want most out of this? Like, in your heart?"
+        ],
+        "defend": [
+          "They're not just pets. They're my family. Say it again and see what happens."
+        ],
+        "deep": [
+          "There's a voice in my head that says the meanest thing it can. I don't always know which one of us is talking."
+        ],
+        "solo": [
+          "This is Gerald. Gerald's my new friend. He doesn't judge me, and he doesn't vote, so he's the best person here.",
+          "I miss Ellie so much. Talking to animals helps. It feels a little bit like home."
+        ]
+      },
+      "age": 26,
       "birthdate": "2000-05-12",
       "ethnicity": "Black",
       "nationality": "Polish",
@@ -3209,6 +3404,57 @@
       "sexuality": "asexual",
       "voice": "Venomous and surgical. Never raises her voice, weaponizes politeness, hands out compliments that draw blood; thinks everyone is beneath her and never sputters, stammers, or repeats herself. Defensive when caught, never admits fault.#blunt#cruel#schemer",
       "profileSources": {},
+      "kit": {
+        "thing": "being a tiny manipulator",
+        "alone": "sitting by herself with a pencil, writing names in careful child handwriting and crossing out everyone she finds boring.",
+        "bit": [
+          "Oh, don't worry, I can keep track of the supplies. I promise I'll be very fair to anyone who stays useful.",
+          "You can all argue about leadership, and I'll quietly remember who begged for instructions after ten minutes.",
+          "If anyone needs me, I'll be the helpless child somehow doing less work and making better decisions."
+        ],
+        "tease": [
+          "{a}, you make sharing sound like a threat.",
+          "{a}, nobody asked you to rank us.",
+          "{a}, being small doesn't make you the boss."
+        ],
+        "reply": [
+          "That's sweet of you to notice. Most people need a chart.",
+          "I know. That's why the rankings are honest.",
+          "Of course not. Being smarter does, but your confidence is adorable."
+        ],
+        "home": [
+          "My parents are back home, probably enjoying the silence and pretending they've solved something.",
+          "Some nuns may be expecting me to return, which is touching because hope is very important for simple people."
+        ],
+        "want": [
+          "I want control of the game, and I want everyone else to realize it too late.",
+          "I want everyone to stop treating me like a cute little side issue, preferably right before they realize I was the main problem."
+        ],
+        "conf": [
+          "People see a child and get very generous with their mistakes. I consider that a public service.",
+          "I'm not here to make friends. If one happens to be useful, I'll survive the tragedy.",
+          "Softening my personality is easy. I just smile before I say the part that ruins someone's day."
+        ],
+        "askHome": [
+          "Who is waiting for you at home, and do they know you're this easy to disappoint?",
+          "Do your people at home think you're impressive, or is that a little story you brought with you?"
+        ],
+        "askWant": [
+          "What do you want here, besides applause for basic effort?",
+          "Are you trying to win, or are you just collecting speeches for your exit?"
+        ],
+        "defend": [
+          "Mock me all you want. Adults do it too, and then they hand me exactly what I need.",
+          "If politeness confuses you, I can be rude, but I don't think your confidence would survive the translation."
+        ],
+        "deep": [
+          "My mother called me a monster once. I wasn't upset; I just thought it was rude to notice so late."
+        ],
+        "solo": [
+          "This isn't personal. Personal would mean I respect them enough to care.",
+          "I do like cats more than dogs. Cats understand boundaries, and dogs forgive people who don't deserve it."
+        ]
+      },
       "age": 11,
       "birthdate": "2015-12-17",
       "ethnicity": "White",
@@ -3385,7 +3631,7 @@
         "temperament": 5
       },
       "sexuality": "gay",
-      "voice": "Smooth, calculating, always reasonable-sounding. Frames manipulation as plain logic, never raises his voice — the more in control he is, the calmer he gets. 'I counted. He doesn't have the numbers.' / 'Plans change. I don't.'",
+      "voice": "Smooth, calculating, always reasonable-sounding. Frames manipulation as plain logic, never raises his voice — the more in control he is, the calmer he gets. 'I counted. He doesn't have the numbers.' / 'Plans change. I don't.' #-calm#proud",
       "profileSources": {
         "voice": [
           {
@@ -3451,6 +3697,55 @@
             "url": "https://disventure-camp.fandom.com/wiki/James",
             "kind": "source-canon"
           }
+        ]
+      },
+      "kit": {
+        "thing": "being an influencer",
+        "alone": "is writing a caption for a photo nobody's taking",
+        "bit": [
+          "I counted. Four people at breakfast, three at lunch. Somebody's skipping meals to have conversations.",
+          "Back home, I had half a million people watching every move I made. Out here it's eight. It's almost relaxing.",
+          "Plans change. I don't. That's the whole secret."
+        ],
+        "tease": [
+          "You counted people at breakfast?",
+          "Eight people and a camera crew.",
+          "That's a very nice sentence. What does it mean?"
+        ],
+        "reply": [
+          "I count everything. It's free information.",
+          "The camera crew doesn't vote.",
+          "It means I'll still be here when your plan doesn't work."
+        ],
+        "home": [
+          "My sister. She was my only friend for a long time. She's the one I'm doing this for, if I'm honest.",
+          "A lot of followers, and one person who would notice if I disappeared. That's my sister."
+        ],
+        "want": [
+          "To win, cleanly, and in a way that looks good on camera. Both matter.",
+          "To find out if I can win without performing. I'm not sure I can."
+        ],
+        "conf": [
+          "Everybody wants to be part of a story. I just make sure I'm the one telling it.",
+          "I don't raise my voice. If you raise your voice, you've already lost the room."
+        ],
+        "askHome": [
+          "Tell me about home. Who matters there?",
+          "Who's watching for you back home?"
+        ],
+        "askWant": [
+          "What do you want from this? People always have an answer they say and an answer they mean.",
+          "What's your end goal here?"
+        ],
+        "defend": [
+          "Half a million people chose to watch me. You can sneer, but they chose."
+        ],
+        "deep": [
+          "For years the only person who talked to me was my sister. The followers were just proof I existed."
+        ],
+        "solo": [
+          "If I'm honest, I'm already planning the posts for when I get home. My followers are going to lose it.",
+          "Out here nobody likes or comments. You just have to be a person. It's weirder than I thought."
         ]
       },
       "age": 24,
@@ -3563,22 +3858,9 @@
           }
         ]
       },
-      "age": 19,
-      "birthdate": "2007-12-23",
-      "ethnicity": "White",
-      "nationality": "German",
-      "occupation": "Writer",
-      "backstory": "Lake Müller grew up under strict parents who controlled her schedule, appearance, and future. The pressure to be perfect left her private, anxious about vulnerability, and deeply self-conscious about wearing a wig after stress-related hair loss. Chess and writing offered places to think freely. Friendships beyond her family eventually gave her the support to defy that control, choose a new appearance, and begin living according to her own values.",
-      "personality": "Lake is intelligent, creative, principled, and shaped by years of rigid parental control. Perfection was enforced so harshly that stress contributed to her losing her hair, and hiding vulnerability became a survival habit. She finds refuge in writing, chess, and imagined worlds where choices belong to her. Freedom has not made her reckless; it has made her deliberate. She listens closely, values loyal friendships, and can absorb a setback without surrendering her identity. Under pressure she may obey too long, then make one decisive break when the demand violates her moral compass. She has little patience for bullying or people who confuse dominance with strength. Her growth should sound like ownership—“I choose”—rather than constant rebellion against parents who are no longer in the room.",
-      "ties": [],
       "kit": {
         "thing": "chess",
         "alone": "is folding every piece of clothing into a perfect square",
-        "ground": [
-          "strict-parents",
-          "writer",
-          "mental-health"
-        ],
         "bit": [
           "If anyone wants to play, I've drawn a chessboard in the sand. The pieces are shells. The white king is a slightly larger shell.",
           "I've started writing a story about a girl stranded on an island. It's fiction. Mostly.",
@@ -3624,7 +3906,14 @@
           "Everything in my bag is folded the same way. It's the one thing on this island I get to control.",
           "My mother would be horrified by the dirt. I love the dirt. I'm never telling her."
         ]
-      }
+      },
+      "age": 19,
+      "birthdate": "2007-12-23",
+      "ethnicity": "White",
+      "nationality": "German",
+      "occupation": "Writer",
+      "backstory": "Lake Müller grew up under strict parents who controlled her schedule, appearance, and future. The pressure to be perfect left her private, anxious about vulnerability, and deeply self-conscious about wearing a wig after stress-related hair loss. Chess and writing offered places to think freely. Friendships beyond her family eventually gave her the support to defy that control, choose a new appearance, and begin living according to her own values.",
+      "personality": "Lake is intelligent, creative, principled, and shaped by years of rigid parental control. Perfection was enforced so harshly that stress contributed to her losing her hair, and hiding vulnerability became a survival habit. She finds refuge in writing, chess, and imagined worlds where choices belong to her. Freedom has not made her reckless; it has made her deliberate. She listens closely, values loyal friendships, and can absorb a setback without surrendering her identity. Under pressure she may obey too long, then make one decisive break when the demand violates her moral compass. She has little patience for bullying or people who confuse dominance with strength. Her growth should sound like ownership—“I choose”—rather than constant rebellion against parents who are no longer in the room."
     },
     {
       "name": "Maggy",
@@ -3733,7 +4022,7 @@
         "temperament": 2
       },
       "sexuality": "straight",
-      "voice": "Snide bully — superior and condescending, enjoys watching people fail. Everything is a backhanded remark. 'Bold choice. Bold.' / 'Nothing personal.' (it is always personal)",
+      "voice": "Snide bully — superior and condescending, enjoys watching people fail. Everything is a backhanded remark. 'Bold choice. Bold.' / 'Nothing personal.' (it is always personal)#blunt#schemer",
       "profileSources": {
         "voice": [
           {
@@ -3799,6 +4088,55 @@
             "url": "https://disventure-camp.fandom.com/wiki/Yul",
             "kind": "source-canon"
           }
+        ]
+      },
+      "kit": {
+        "thing": "being a former dancer",
+        "alone": "is recording a monologue into a tin can like it's a microphone",
+        "bit": [
+          "Bold choice, wearing that today. Bold.",
+          "I went viral at fifteen. Some of you are going to go viral after this, too. For crying.",
+          "Nothing personal, but whoever built this shelter should never build anything again."
+        ],
+        "tease": [
+          "Wow. Do you ever say anything nice?",
+          "At least people will remember us.",
+          "You didn't help build it."
+        ],
+        "reply": [
+          "That was nice. You'd know if I was being mean.",
+          "That's the dream, isn't it? Being remembered for the worst thing you did.",
+          "I don't build. I critique. Someone has to."
+        ],
+        "home": [
+          "A podcast that does better than your entire family's careers combined.",
+          "A lot of people who want to be me. Nobody I'd call."
+        ],
+        "want": [
+          "The money and the attention, and I'll take the attention first.",
+          "To remind everybody who I am."
+        ],
+        "conf": [
+          "Nice is a performance. I just stopped performing it.",
+          "Nothing personal. That's what I always say. It's always personal."
+        ],
+        "askHome": [
+          "Who's at home, then? Let me guess. Nobody important.",
+          "Do you even have anyone back home?"
+        ],
+        "askWant": [
+          "What do you want? Fame? You don't have the face for it.",
+          "Why are you here? Genuinely asking. I can't work it out."
+        ],
+        "defend": [
+          "You're just upset someone finally said it out loud."
+        ],
+        "deep": [
+          "When I went viral, everybody loved me. When they stopped, I didn't know who I was without it."
+        ],
+        "solo": [
+          "I've had a hot take ready every single day. Nobody's asked. That won't stop me.",
+          "When the internet loved me, I didn't know who I was. Out here, I think I'm starting to work it out."
         ]
       },
       "age": 23,
@@ -4055,7 +4393,7 @@
         "temperament": 4
       },
       "sexuality": "bi",
-      "voice": "Bubbly PR-pro social butterfly — banter, slang, teasing, a little dirty humor. Charms everyone, asks the bold questions, bonds fast and flies under the radar while doing it. Fast, quippy and warm.",
+      "voice": "Bubbly PR-pro social butterfly — banter, slang, teasing, a little dirty humor. Charms everyone, asks the bold questions, bonds fast and flies under the radar while doing it. Fast, quippy and warm.#chaotic #blunt#schemer#emotional #-warm",
       "profileSources": {
         "voice": [
           {
@@ -4130,6 +4468,55 @@
           }
         ]
       },
+      "kit": {
+        "thing": "being a publicist",
+        "alone": "is lying on the dock, narrating everyone's love lives to the sky",
+        "bit": [
+          "Okay, I'm not saying there's a story here, but somebody went to the well three times this morning and came back with no water.",
+          "Babes, as a professional publicist, I'm telling you, your image on this team is in crisis. I can fix it. I charge.",
+          "I've already got the chisme on everybody. Who's crying at night, who's whispering, who's lying about where they went."
+        ],
+        "tease": [
+          "Do you ever just mind your own business?",
+          "You're going to charge me? Out here?",
+          "That sounds like a full-time job."
+        ],
+        "reply": [
+          "Minding other people's business IS my business, babes.",
+          "First consult's free. After that we talk about rice.",
+          "It is, and I'm the best employee I've ever had."
+        ],
+        "home": [
+          "My family, who always backed me, even when I came out. Especially then. I'm doing this for them.",
+          "My clients, my friends, and a group chat that has definitely been on fire since I left."
+        ],
+        "want": [
+          "To win, and to control my own story for once instead of fixing everybody else's.",
+          "Discipline. Real bonds, fewer messy flips. And then the money, obviously."
+        ],
+        "conf": [
+          "Everybody thinks gossip is useless. Gossip is just information that hasn't been fact-checked yet.",
+          "I bond fast. It's my superpower and it's going to get me in trouble. It always does."
+        ],
+        "askHome": [
+          "Okay, spill. Who's waiting for you at home? Are they cute?",
+          "Babes, who's back home? Give me names."
+        ],
+        "askWant": [
+          "What do you actually want out of this, though? I won't tell anyone. I'll tell some people.",
+          "What's your story here? Like, how do you want this to end?"
+        ],
+        "defend": [
+          "Babes, gossip is how I survived. I'm not about to be ashamed of it for you."
+        ],
+        "deep": [
+          "When I came out, I was terrified nobody would stay. My family did. I don't take people staying for granted."
+        ],
+        "solo": [
+          "Babes, I know everything. Who likes who, who's lying, who's crying behind the shed. I can't help it.",
+          "Gossip isn't mean if you love everybody. I love everybody. That's my loophole."
+        ]
+      },
       "age": 30,
       "birthdate": "1996-08-03",
       "ethnicity": "Latina",
@@ -4175,7 +4562,66 @@
         "temperament": 6
       },
       "sexuality": "bi",
-      "voice": "Sharp, competitive and critical — quick to scold teammates who slow him down, quietly envious of people more authentic than him. Strategic-minded, a little superior, and dismissive when he loses."
+      "voice": "Sharp, competitive and critical — quick to scold teammates who slow him down, quietly envious of people more authentic than him. Strategic-minded, a little superior, and dismissive when he loses.#blunt",
+      "profileSources": {},
+      "kit": {
+        "thing": "being a calculating statistics snob",
+        "alone": "quietly ranking the others by usefulness, risk, and how likely they are to panic under pressure.",
+        "bit": [
+          "If we're picking pairs, don't pick who makes you feel safe; pick who improves the odds and doesn't need instructions twice.",
+          "This vote isn't about who's annoying, even though that's a crowded category; it's about who gives us the cleanest path through the game.",
+          "I've already counted three people making decisions off vibes, and somehow I'm the unpleasant one for noticing the numbers."
+        ],
+        "tease": [
+          "Relax, {a}, it's not a maths exam.",
+          "You make everything sound like a spreadsheet, {a}.",
+          "Maybe people don't like being treated like numbers, {a}."
+        ],
+        "reply": [
+          "No, exams have standards; this has people wandering into failure and calling it teamwork.",
+          "Good, because spreadsheets don't waste my time pretending bad ideas are brave.",
+          "Then they can stop making decisions that are easy to count against them."
+        ],
+        "home": [
+          "No one I'm offering up as leverage. I'm from London, I'm studying, and that's all anyone here needs for the calculation.",
+          "Whoever's at home can watch me win without becoming part of my pitch, because I'm not selling a sob story."
+        ],
+        "want": [
+          "I want control, the prize, and proof that being prepared beats whatever everyone else is calling instinct.",
+          "I want to win without pretending this is a group therapy exercise with challenges attached."
+        ],
+        "conf": [
+          "People say they want honesty until I honestly tell them their plan is rubbish, and then suddenly I'm the villain.",
+          "Statistical probability is comforting because numbers don't sulk when you point out they're wrong.",
+          "Feelings are the one variable that ruins a clean plan, so I'm keeping mine out of it and expecting everyone else to do the same."
+        ],
+        "askHome": [
+          "Who's watching you from home, and are they useful motivation or just something you're going to cry about later?",
+          "What did you leave behind to come here, besides common sense, and does it affect how you'll vote?"
+        ],
+        "askWant": [
+          "Be specific: do you want the prize, the attention, or the moral victory people mention when they've lost?",
+          "What are you actually playing for, and please don't say the experience unless you're trying to make me vote you out."
+        ],
+        "defend": [
+          "Mock the strategy if you want, but it's still more useful than guessing and hoping the cameras find it charming.",
+          "Yes, I calculate things, because somebody has to think before half of you sprint into a bad decision."
+        ],
+        "deep": [
+          "I talk like it's all numbers because numbers don't make me feel stupid for caring, and feelings do."
+        ],
+        "solo": [
+          "This isn't me being cold. This is me refusing to be dragged down by people who think effort is optional.",
+          "If they want me gone, they'll need a plan with more structure than rolling their eyes and hoping I vanish."
+        ]
+      },
+      "age": 21,
+      "birthdate": "2005-02-15",
+      "ethnicity": "White",
+      "nationality": "British",
+      "hometown": "London",
+      "occupation": "Statistics student",
+      "descriptor": "The Statistician"
     },
     {
       "name": "Ted",
@@ -4951,7 +5397,7 @@
         "temperament": 4
       },
       "sexuality": "straight",
-      "voice": "Aubrey talks in quick, confident bursts, mixing friendly self-introduction with astrology jargon and psych-student framing. She likes labels, rankings, and decisive reads, so in an argument she tends to diagnose people rather than patiently hear them out. When challenged, her tone turns sharp and absolutist; she presents suspicion as instinctive certainty instead of something she needs to prove.#blunt#theatrical #chaotic#emotional ",
+      "voice": "Aubrey talks in quick, confident bursts, mixing friendly self-introduction with astrology jargon and psych-student framing. She likes labels, rankings, and decisive reads, so in an argument she tends to diagnose people rather than patiently hear them out. When challenged, her tone turns sharp and absolutist; she presents suspicion as instinctive certainty instead of something she needs to prove.#blunt#theatrical #chaotic#emotional",
       "profileSources": {
         "ethnicity": [
           {
@@ -5004,24 +5450,9 @@
           }
         ]
       },
-      "age": 21,
-      "birthdate": "2005-05-28",
-      "ethnicity": "White",
-      "nationality": "American",
-      "hometown": "New York",
-      "occupation": "Psychology student",
-      "descriptor": "The Astrology junkie",
-      "backstory": "Aubrey grew up attending public school, where she preferred reading to going out for recess and was much shyer as a child before gradually becoming more self-assured. She studies psychology and got into astrology while in college, even tying star charts into academic work. Her parents are in their early forties, and she has a Siamese cat named Ziggy. Outside school and astrology, she enjoys traveling, reading fantasy books, socializing, cross stitching, and cake decorating.",
-      "personality": "Aubrey is sociable, self-assured, and eager to lead, but she is also highly judgmental and prone to deciding who is trustworthy before she really knows them. Under pressure, she can lose composure fast, snapping into anger when she feels slighted or when events stop matching the story she has built in her head. Her loyalty is strongest toward people she believes she can understand or categorize, especially through astrology, while she is much colder toward those she has written off. She will keep pushing toward a goal and offer advice when she feels in control, but she will not easily abandon her biases or admit that her first read of someone may be wrong.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Intuitive, chaotic, loyal.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think I got picked because I’m a little hard to categorize, in a good way. I’m a psych student from New York who reads star charts, clocks vibes fast, and says the thing everyone else is thinking but is too scared to say.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be living with people who have zero self-awareness and then being expected to smile through it. I can handle mess, but I cannot handle someone projecting their issues onto me and calling it honesty.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to make people feel comfortable with me early, get good reads, and then decide who is actually safe versus who is just performing safe. I’m not going in as some challenge beast, obviously, so socially I need to be useful, loyal enough, and just unpredictable enough that people hesitate to box me in.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want people to know I’m loyal when I actually choose you, because I’m not fake-loyal to everyone. I’d hide how suspicious I can get, because once my intuition says someone is off, my face tends to send a full press release before my mouth does.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My birth chart notes, because if I’m trapped with strangers, I need categories immediately.\\n- A fantasy book, because my brain needs somewhere dramatic to go that is not the kitchen.\\n- A picture of my Siamese cat Ziggy, because he’s judgmental, grounding, and honestly probably a better social player than me.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love reading fantasy, traveling, cross stitching, cake decorating, and going out with friends when I’m in the mood to be perceived. I also really like astrology and psychology, which basically means I enjoy analyzing people and then pretending I’m being casual about it.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is information wearing heels. I don’t want pointless screaming all day, but if people are fighting, I’m listening, because conflict tells you who’s insecure, who’s performative, and who cannot regulate their nervous system.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Probably not. I’m not saying never, because I’m bold and I know myself, but I also know a house crush can turn into a strategy parasite really fast.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… trust the vibe, but verify the pattern.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a real adventure out of this and prove I can be braver than my anxious little inner child who wanted to read during recess. Also, I want to see what happens when I stop overthinking from the sidelines and actually throw myself into the mess.\"}]",
-      "ties": [],
       "kit": {
         "thing": "astrology",
         "alone": "is looking up at the stars, naming every constellation out loud",
-        "ground": [
-          "shy-child",
-          "pets"
-        ],
         "bit": [
           "Okay, I don't want to alarm anyone, but we have three Scorpios on this team, and that's a problem.",
           "What time were you born? I'm asking for a reason. It matters. Trust me.",
@@ -5067,7 +5498,17 @@
           "Mercury's in retrograde, which explains a lot about the last vote, honestly.",
           "When I was shy, the stars were the only thing I could talk about. Now they're how I start every conversation."
         ]
-      }
+      },
+      "age": 21,
+      "birthdate": "2005-05-28",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "New York",
+      "occupation": "Psychology student",
+      "descriptor": "The Astrology junkie",
+      "backstory": "Aubrey grew up attending public school, where she preferred reading to going out for recess and was much shyer as a child before gradually becoming more self-assured. She studies psychology and got into astrology while in college, even tying star charts into academic work. Her parents are in their early forties, and she has a Siamese cat named Ziggy. Outside school and astrology, she enjoys traveling, reading fantasy books, socializing, cross stitching, and cake decorating.",
+      "personality": "Aubrey is sociable, self-assured, and eager to lead, but she is also highly judgmental and prone to deciding who is trustworthy before she really knows them. Under pressure, she can lose composure fast, snapping into anger when she feels slighted or when events stop matching the story she has built in her head. Her loyalty is strongest toward people she believes she can understand or categorize, especially through astrology, while she is much colder toward those she has written off. She will keep pushing toward a goal and offer advice when she feels in control, but she will not easily abandon her biases or admit that her first read of someone may be wrong.",
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Intuitive, chaotic, loyal.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think I got picked because I’m a little hard to categorize, in a good way. I’m a psych student from New York who reads star charts, clocks vibes fast, and says the thing everyone else is thinking but is too scared to say.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be living with people who have zero self-awareness and then being expected to smile through it. I can handle mess, but I cannot handle someone projecting their issues onto me and calling it honesty.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to make people feel comfortable with me early, get good reads, and then decide who is actually safe versus who is just performing safe. I’m not going in as some challenge beast, obviously, so socially I need to be useful, loyal enough, and just unpredictable enough that people hesitate to box me in.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want people to know I’m loyal when I actually choose you, because I’m not fake-loyal to everyone. I’d hide how suspicious I can get, because once my intuition says someone is off, my face tends to send a full press release before my mouth does.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My birth chart notes, because if I’m trapped with strangers, I need categories immediately.\\n- A fantasy book, because my brain needs somewhere dramatic to go that is not the kitchen.\\n- A picture of my Siamese cat Ziggy, because he’s judgmental, grounding, and honestly probably a better social player than me.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love reading fantasy, traveling, cross stitching, cake decorating, and going out with friends when I’m in the mood to be perceived. I also really like astrology and psychology, which basically means I enjoy analyzing people and then pretending I’m being casual about it.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is information wearing heels. I don’t want pointless screaming all day, but if people are fighting, I’m listening, because conflict tells you who’s insecure, who’s performative, and who cannot regulate their nervous system.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Probably not. I’m not saying never, because I’m bold and I know myself, but I also know a house crush can turn into a strategy parasite really fast.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… trust the vibe, but verify the pattern.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a real adventure out of this and prove I can be braver than my anxious little inner child who wanted to read during recess. Also, I want to see what happens when I stop overthinking from the sidelines and actually throw myself into the mess.\"}]"
     },
     {
       "name": "Ara",
@@ -5086,7 +5527,7 @@
         "temperament": 2
       },
       "sexuality": "bi",
-      "voice": "Ara talks with sharp, cutting confidence, using insults and pointed observations to put others on the back foot. In arguments, she pushes hard, rebukes people directly, and is willing to threaten or embarrass someone if it helps her win the exchange. Her language is strategic and self-justifying: she frames ambition as proof that she is right, not something she needs to apologize for.",
+      "voice": "Ara talks with sharp, cutting confidence, using insults and pointed observations to put others on the back foot. In arguments, she pushes hard, rebukes people directly, and is willing to threaten or embarrass someone if it helps her win the exchange. Her language is strategic and self-justifying: she frames ambition as proof that she is right, not something she needs to apologize for.#blunt#dry",
       "profileSources": {
         "backstory": [
           {
@@ -5109,6 +5550,55 @@
             "label": "Read from the wiki article, not stated in it",
             "kind": "interpretation"
           }
+        ]
+      },
+      "kit": {
+        "thing": "being class president",
+        "alone": "is writing a list of names and drawing arrows between them",
+        "bit": [
+          "If we're doing this, we're doing it properly. I was class president. I know how to run a room full of idiots.",
+          "I'm a business student. Everything here is a negotiation. Including breakfast.",
+          "Some of you are being very loud for people with no plan."
+        ],
+        "tease": [
+          "Wow. Love that you called us idiots.",
+          "You're negotiating breakfast?",
+          "Do you have a plan?"
+        ],
+        "reply": [
+          "I said a room full. Not this room. Mostly.",
+          "Everything's a negotiation if you're doing it right.",
+          "Obviously. You'll see it when it's too late."
+        ],
+        "home": [
+          "My parents, who left Korea for love. I'm never doing that. Love's not a plan.",
+          "A family that thinks I'm the golden child. I'd like to keep it that way."
+        ],
+        "want": [
+          "To win. I don't do second place. I don't do 'great effort'.",
+          "To prove ambition isn't something you have to apologise for."
+        ],
+        "conf": [
+          "I build trust fast and spend it faster. That's not cruel. It's efficient.",
+          "Everybody wants to be liked. I want to be the one deciding who goes home."
+        ],
+        "askHome": [
+          "So who's at home? I'm asking to be polite.",
+          "What's your family like? Supportive? Embarrassing?"
+        ],
+        "askWant": [
+          "What's your plan? Please tell me you have one.",
+          "What do you actually want? Specifics."
+        ],
+        "defend": [
+          "Ambition isn't a character flaw. It's the only thing that's ever worked for me."
+        ],
+        "deep": [
+          "My parents gave up everything for love. I watched what it cost them. I'm never doing that."
+        ],
+        "solo": [
+          "Everyone's a number, and everyone's a vote. I don't say that out loud, because it sounds cold. It is cold. It works.",
+          "My parents gave up everything for love. I came here for one thing, and it isn't love."
         ]
       },
       "age": 21,
@@ -5166,23 +5656,9 @@
           }
         ]
       },
-      "age": 23,
-      "birthdate": "2003-06-24",
-      "ethnicity": "Latino",
-      "nationality": "Peruvian American",
-      "hometown": "New York",
-      "occupation": "Personal assistant",
-      "descriptor": "The Superfan",
-      "backstory": "Before appearing on television, Bruno had lived in Hartford, Connecticut and later moved to New York. His parents are Teresa and Alvaro, and his mother made him a hoodie that he treasures as a good-luck gift. He became a personal assistant because the pay was good and because he likes helping others and feeling useful; his boss is named Valerie. He is also strongly connected to his family history, with his grandmother also being named Teresa.",
-      "personality": "Bruno is intensely optimistic, enthusiastic, and knowledge-driven, but pressure can shake his confidence. He wants to be useful and impressive, yet he may need encouragement from stronger personalities when his plans are questioned or fail. He is more likely to motivate, explain, and rally people than to bully them, and he will speak up when excited even if it embarrasses him or creates a strategic mistake. His loyalty reads as cooperative rather than cutthroat: he wants people to believe in his ideas, but he is not naturally ruthless.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Loyal, jumpy, useful.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think I got picked because I am, like, a walking spreadsheet of this game but with feelings. I know the difference between being a loyal number and being somebody’s disposable pawn, even if I’m probably still going to panic-smile through half the conversations.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be not having my family, my routine, or a clear job to do. I’m a personal assistant, so I like lists, tasks, Valerie saying “Bruno, can you handle this,” and then I handle it — in the house, the task is basically survive everyone lying to your face.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to attach myself to a strong core early, be useful, be loyal, and not get fancy just because I’ve watched people make big moves on TV. I know my strategic stat is not elite, okay, so I need to be the guy people trust with information, not the guy trying to invent a twelve-step blindside on day three.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want people to know I’m loyal for real, not fake loyal where you say it in the pantry and then run upstairs five seconds later. I want to hide how nervous I get, because if people see my brain buffering, they might think I’m easy to drag around or easy to cut.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My mom Teresa’s hoodie, because she made it for me and I would need that good-luck family armor.\\n- A notebook, because if I can’t write down names, patterns, and who said what, I’ll start storing it all in my face and that is dangerous.\\n- A photo of my family, especially because my grandmother was Teresa too, and remembering where I come from keeps me from spiraling.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love watching reality strategy shows, obviously, and then overanalyzing every vote like I’m being paid by the comma. I also like helping people organize their lives, walking around New York with coffee, calling my parents, and making tiny plans for situations that do not require tiny plans.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is great television and terrible living conditions. I’ll watch it, clock who benefits from it, maybe whisper “bad move” under my breath, but I do not want to be the person screaming over cereal unless the cereal did something criminal.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Probably not, because I know myself and I would turn into a nervous little loyalty goblin and forget the game exists. Also, showmances become targets so fast — like, congratulations, you found love and also a nomination couch.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is help first, panic later, and stay loyal to the people who actually have your back.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to prove that someone like me — not the loudest, not the strongest, not the cold mastermind — can still matter in the game. And honestly, I want to make my family proud, especially my mom, because that hoodie is coming in with expectations.\"}]",
-      "ties": [],
       "kit": {
         "thing": "his job as a personal assistant",
         "alone": "is reorganising the supply box, alphabetically",
-        "ground": [
-          "grandma"
-        ],
         "bit": [
           "As a personal assistant, I can tell you, this schedule is a mess. I could fix it. I fix Valerie's every day.",
           "Fun fact: the last time they did this challenge, the team that went for the flag first won. I've watched it eleven times.",
@@ -5228,7 +5704,17 @@
           "I'm a personal assistant, so this is basically my dream job. Nobody asked me to, and that's the best part.",
           "Being useful is the only time I'm sure I belong somewhere. So I'm going to be very useful."
         ]
-      }
+      },
+      "age": 23,
+      "birthdate": "2003-06-24",
+      "ethnicity": "Latino",
+      "nationality": "Peruvian American",
+      "hometown": "New York",
+      "occupation": "Personal assistant",
+      "descriptor": "The Superfan",
+      "backstory": "Before appearing on television, Bruno had lived in Hartford, Connecticut and later moved to New York. His parents are Teresa and Alvaro, and his mother made him a hoodie that he treasures as a good-luck gift. He became a personal assistant because the pay was good and because he likes helping others and feeling useful; his boss is named Valerie. He is also strongly connected to his family history, with his grandmother also being named Teresa.",
+      "personality": "Bruno is intensely optimistic, enthusiastic, and knowledge-driven, but pressure can shake his confidence. He wants to be useful and impressive, yet he may need encouragement from stronger personalities when his plans are questioned or fail. He is more likely to motivate, explain, and rally people than to bully them, and he will speak up when excited even if it embarrasses him or creates a strategic mistake. His loyalty reads as cooperative rather than cutthroat: he wants people to believe in his ideas, but he is not naturally ruthless.",
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Loyal, jumpy, useful.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think I got picked because I am, like, a walking spreadsheet of this game but with feelings. I know the difference between being a loyal number and being somebody’s disposable pawn, even if I’m probably still going to panic-smile through half the conversations.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be not having my family, my routine, or a clear job to do. I’m a personal assistant, so I like lists, tasks, Valerie saying “Bruno, can you handle this,” and then I handle it — in the house, the task is basically survive everyone lying to your face.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to attach myself to a strong core early, be useful, be loyal, and not get fancy just because I’ve watched people make big moves on TV. I know my strategic stat is not elite, okay, so I need to be the guy people trust with information, not the guy trying to invent a twelve-step blindside on day three.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want people to know I’m loyal for real, not fake loyal where you say it in the pantry and then run upstairs five seconds later. I want to hide how nervous I get, because if people see my brain buffering, they might think I’m easy to drag around or easy to cut.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My mom Teresa’s hoodie, because she made it for me and I would need that good-luck family armor.\\n- A notebook, because if I can’t write down names, patterns, and who said what, I’ll start storing it all in my face and that is dangerous.\\n- A photo of my family, especially because my grandmother was Teresa too, and remembering where I come from keeps me from spiraling.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love watching reality strategy shows, obviously, and then overanalyzing every vote like I’m being paid by the comma. I also like helping people organize their lives, walking around New York with coffee, calling my parents, and making tiny plans for situations that do not require tiny plans.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is great television and terrible living conditions. I’ll watch it, clock who benefits from it, maybe whisper “bad move” under my breath, but I do not want to be the person screaming over cereal unless the cereal did something criminal.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Probably not, because I know myself and I would turn into a nervous little loyalty goblin and forget the game exists. Also, showmances become targets so fast — like, congratulations, you found love and also a nomination couch.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is help first, panic later, and stay loyal to the people who actually have your back.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to prove that someone like me — not the loudest, not the strongest, not the cold mastermind — can still matter in the game. And honestly, I want to make my family proud, especially my mom, because that hoodie is coming in with expectations.\"}]"
     },
     {
       "name": "Dunia",
@@ -5247,7 +5733,7 @@
         "temperament": 8
       },
       "sexuality": "lesbian",
-      "voice": "Dunia talks with an upbeat, performative rhythm, leaning into mystical language, teasing confidence, and wordplay. In conversation or an argument, she is likely to charm first, joke second, and press for emotional honesty while keeping the tone playful rather than openly cruel.",
+      "voice": "Dunia talks with an upbeat, performative rhythm, leaning into mystical language, teasing confidence, and wordplay. In conversation or an argument, she is likely to charm first, joke second, and press for emotional honesty while keeping the tone playful rather than openly cruel. #-cruel #-emotional #-goofy #-theatrical#warm#calm#earnest",
       "profileSources": {
         "backstory": [
           {
@@ -5272,6 +5758,55 @@
             "kind": "source-canon",
             "quote": "she's done with the \"witch jokes\""
           }
+        ]
+      },
+      "kit": {
+        "thing": "being a witch",
+        "alone": "is arranging stones and feathers at a little altar in a quiet corner of camp",
+        "bit": [
+          "I pulled a card for the team this morning. The Tower. I'm not going to tell you what it means. You don't want to know.",
+          "Don't touch my altar. It's a pile of shells and a candle stub, and it's sacred, thank you.",
+          "Your energy is very grey today. Not bad grey. Just grey. Drink some water."
+        ],
+        "tease": [
+          "Is the Tower bad?",
+          "It's a pile of shells.",
+          "What does grey mean?"
+        ],
+        "reply": [
+          "It's change. Sometimes change is a building on fire.",
+          "It's a sacred pile of shells. Respect the shells.",
+          "It means you need water and a hug, and I've only got water."
+        ],
+        "home": [
+          "My tarot clients in Montreal and three cats, a toad and a rabbit. Don't ask how they all get along.",
+          "My coven. Okay, my friends. But we call it a coven."
+        ],
+        "want": [
+          "To win, and to show people my practice isn't a gimmick. It's who I am.",
+          "To read every person here before they've read a single card of mine."
+        ],
+        "conf": [
+          "People think it's an aesthetic. It's my religion. I'm not going to apologise for it.",
+          "I charm first and listen hardest. By the time anybody notices, I've read the whole deck."
+        ],
+        "askHome": [
+          "Tell me, who's waiting for you back home? Your energy says someone.",
+          "Who's in your life back home? I'm getting a feeling."
+        ],
+        "askWant": [
+          "What do you want, really? I'll know if you're lying. Witch thing.",
+          "What's your heart after out here?"
+        ],
+        "defend": [
+          "This isn't some aesthetic or a cute hobby. It's my religion. My belief. Not something I do to feel special."
+        ],
+        "deep": [
+          "I started reading tarot for my friends in high school, just for fun. Then one day it stopped being for fun. It's the most real thing I have."
+        ],
+        "solo": [
+          "This is for protection. Not for the game. Okay, partly for the game.",
+          "People can laugh at it. It's been here for me longer than any of them have."
         ]
       },
       "age": 31,
@@ -5302,7 +5837,7 @@
         "temperament": 5
       },
       "sexuality": "straight",
-      "voice": "Ernesto speaks like a seasoned mentor: measured, declarative, and fond of framing his opinions as practical guidance. In an argument, he challenges weak logic directly rather than escalating emotionally, using experience-based reasoning and occasionally blunt judgments. His vocabulary can sound formal or paternal, especially when he talks about younger people needing direction.",
+      "voice": "Ernesto speaks like a seasoned mentor: measured, declarative, and fond of framing his opinions as practical guidance. In an argument, he challenges weak logic directly rather than escalating emotionally, using experience-based reasoning and occasionally blunt judgments. His vocabulary can sound formal or paternal, especially when he talks about younger people needing direction. #-nerdy#calm#bossy #-blunt",
       "profileSources": {
         "backstory": [
           {
@@ -5329,7 +5864,56 @@
           }
         ]
       },
-      "age": 64,
+      "kit": {
+        "thing": "giving advice",
+        "alone": "is teaching himself a card trick, very slowly",
+        "bit": [
+          "If I may offer some guidance: we should build the shelter first and decorate never.",
+          "In my career, I trained hundreds of people. Not one of them listened as little as this team.",
+          "When I was a boy, I made gazpacho with my mother. You learn patience from a tomato."
+        ],
+        "tease": [
+          "Nobody asked for guidance, Ernesto.",
+          "Maybe they were just bored.",
+          "You learn what from a tomato?"
+        ],
+        "reply": [
+          "And that, my young friend, is exactly the problem.",
+          "Boredom is also a choice. A poor one.",
+          "Patience. Peel it slowly or it bleeds everywhere. Like this team."
+        ],
+        "home": [
+          "My children and my grandchildren. And my wood carvings, which are much better behaved.",
+          "A small town in Spain, a workshop full of wood shavings, and a family I am very proud of."
+        ],
+        "want": [
+          "To be useful, and to be respected for it. Winning would be a pleasant bonus.",
+          "To show these young peacocks that experience still counts for something."
+        ],
+        "conf": [
+          "I am not bossy. I simply have more experience than everyone around me. It looks the same from outside.",
+          "When people listen to me, I would walk through fire for them. When they do not, I sulk. I am aware."
+        ],
+        "askHome": [
+          "Tell me about your family. Who is waiting for you?",
+          "Do you have people at home who worry about you?"
+        ],
+        "askWant": [
+          "And what is it you hope to gain here? Besides blisters.",
+          "What brought you here, young one?"
+        ],
+        "defend": [
+          "Experience is not something to mock, young one. One day you will have some, if you are lucky."
+        ],
+        "deep": [
+          "I have children, and a grandchild now. I came here to show them their grandfather still has some adventure left in him."
+        ],
+        "solo": [
+          "At my age, one learns new things slowly but very thoroughly. This trick will be ready in a week.",
+          "The young people rush everywhere. I have rushed before. It got me nowhere faster."
+        ]
+      },
+      "age": 65,
       "birthdate": "1962-01-11",
       "ethnicity": "White",
       "nationality": "Spanish",
@@ -5384,24 +5968,9 @@
           }
         ]
       },
-      "age": 59,
-      "birthdate": "1967-02-09",
-      "ethnicity": "White",
-      "nationality": "American",
-      "hometown": "Los Angeles",
-      "occupation": "Unemployed",
-      "descriptor": "The Heiress",
-      "backstory": "Evangeline “Evie” Marlowe was born in Los Angeles and comes from extreme inherited wealth as the heiress to the Marlowe Oil Fortune. Her upbringing appears luxurious and family-centered in a privileged way: her mother passed down an ascot to her, and her father gave her horses and a stable. Before appearing on television, she spent much of her life maintaining her looks, lounging at resorts, eating, getting massages, drinking wine, gossiping, and enjoying high-society comforts, while feeling judged as someone who had never worked for anything.",
-      "personality": "Evie behaves like a pampered socialite who wants to be seen as elegant, beautiful, and effortlessly charming, but under pressure she is easily confused, lazy, and prone to avoiding real work. She likes luxury, attention, brunch, travel, and gossip, and she can be petty when criticized, but she is not fundamentally cruel; she is optimistic, socially warm, and capable of leaving setbacks without bitterness. She will play strategically once she understands what is happening, but she will not reliably push herself through boring or difficult tasks.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Glamorous, misunderstood, buoyant\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think they picked me because I have a sort of champagne-in-the-daytime charisma, and people do like to watch a woman who owns excellent scarves become mildly inconvenienced. Also, I’m not afraid to say the wrong thing beautifully.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The most difficult part will be sharing a bathroom with people who may not have a relationship with moisturizer. I’m very communal at brunch, but less so around towels.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to be adored, underestimated, and slightly confusing. If people think I’m just lounging around being decorative, that’s fine, because decorative objects are rarely blamed until very late.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m warmer than I look; the diamonds create a chill, but underneath I’m very soft. I’d like to hide that I take criticism terribly personally, because if someone calls me useless, I may accidentally make that my entire voting philosophy.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My mother’s ascot, because it makes me feel expensive and protected, like a horse with emotional depth.\\n- A very good face cream, because stress is temporary but neck texture is forever.\\n- A bottle of wine, if they allow it, because I make better social decisions while making worse personal ones.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I enjoy massages, resort lounging, gossiping in a harmless but specific way, horseback riding when someone else saddles the horse, and long lunches that become dinner. I also love shopping for things I don’t technically need, which is most things.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is dreadful when it’s aimed at me and absolutely delicious when it’s happening three feet away. I don’t seek it out, but sometimes people are rude, and then suddenly I’m involved and wearing sunglasses indoors.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Oh, maybe, if he’s charming and not damp-looking. I’m open to romance, but I’m not ruining my blowout for a man who thinks protein powder is a personality.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if you can’t be useful, be unforgettable and well-lit.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a little respect, honestly. People assume because I’ve had money and horses and lunches that I’m empty, and I’d love to prove I’m at least half-full, preferably of white wine.\"}]",
-      "ties": [],
       "kit": {
         "thing": "being rich",
         "alone": "is lying on a towel she has somehow kept perfectly clean",
-        "ground": [
-          "wealthy",
-          "underestimated"
-        ],
         "bit": [
           "Is there a spa on this island? There must be a spa. Somewhere. Behind a rock.",
           "I'm not lazy, darling. I'm conserving my charisma for when it's needed.",
@@ -5447,7 +6016,17 @@
           "Darling, I'm not lazy. I'm conserving my energy, like the rich do.",
           "Everybody thinks I've never worked a day in my life. They're right, and I'm working very hard right now."
         ]
-      }
+      },
+      "age": 59,
+      "birthdate": "1967-02-09",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Los Angeles",
+      "occupation": "Unemployed",
+      "descriptor": "The Heiress",
+      "backstory": "Evangeline “Evie” Marlowe was born in Los Angeles and comes from extreme inherited wealth as the heiress to the Marlowe Oil Fortune. Her upbringing appears luxurious and family-centered in a privileged way: her mother passed down an ascot to her, and her father gave her horses and a stable. Before appearing on television, she spent much of her life maintaining her looks, lounging at resorts, eating, getting massages, drinking wine, gossiping, and enjoying high-society comforts, while feeling judged as someone who had never worked for anything.",
+      "personality": "Evie behaves like a pampered socialite who wants to be seen as elegant, beautiful, and effortlessly charming, but under pressure she is easily confused, lazy, and prone to avoiding real work. She likes luxury, attention, brunch, travel, and gossip, and she can be petty when criticized, but she is not fundamentally cruel; she is optimistic, socially warm, and capable of leaving setbacks without bitterness. She will play strategically once she understands what is happening, but she will not reliably push herself through boring or difficult tasks.",
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Glamorous, misunderstood, buoyant\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think they picked me because I have a sort of champagne-in-the-daytime charisma, and people do like to watch a woman who owns excellent scarves become mildly inconvenienced. Also, I’m not afraid to say the wrong thing beautifully.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The most difficult part will be sharing a bathroom with people who may not have a relationship with moisturizer. I’m very communal at brunch, but less so around towels.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to be adored, underestimated, and slightly confusing. If people think I’m just lounging around being decorative, that’s fine, because decorative objects are rarely blamed until very late.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m warmer than I look; the diamonds create a chill, but underneath I’m very soft. I’d like to hide that I take criticism terribly personally, because if someone calls me useless, I may accidentally make that my entire voting philosophy.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My mother’s ascot, because it makes me feel expensive and protected, like a horse with emotional depth.\\n- A very good face cream, because stress is temporary but neck texture is forever.\\n- A bottle of wine, if they allow it, because I make better social decisions while making worse personal ones.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I enjoy massages, resort lounging, gossiping in a harmless but specific way, horseback riding when someone else saddles the horse, and long lunches that become dinner. I also love shopping for things I don’t technically need, which is most things.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is dreadful when it’s aimed at me and absolutely delicious when it’s happening three feet away. I don’t seek it out, but sometimes people are rude, and then suddenly I’m involved and wearing sunglasses indoors.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Oh, maybe, if he’s charming and not damp-looking. I’m open to romance, but I’m not ruining my blowout for a man who thinks protein powder is a personality.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if you can’t be useful, be unforgettable and well-lit.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a little respect, honestly. People assume because I’ve had money and horses and lunches that I’m empty, and I’d love to prove I’m at least half-full, preferably of white wine.\"}]"
     },
     {
       "name": "Finn",
@@ -5521,7 +6100,7 @@
         "temperament": 7
       },
       "sexuality": "straight",
-      "voice": "Manu talks in an upbeat, welcoming rush, the kind of person who opens with a big greeting and tries to keep the mood light. His vocabulary leans casual and encouraging, with jokes, smiles, and direct reassurance when someone is embarrassed. In conflict, he becomes firmer and more protective, especially if someone he cares about is being mocked.",
+      "voice": "Manu talks in an upbeat, welcoming rush, the kind of person who opens with a big greeting and tries to keep the mood light. His vocabulary leans casual and encouraging, with jokes, smiles, and direct reassurance when someone is embarrassed. In conflict, he becomes firmer and more protective, especially if someone he cares about is being mocked. #-blunt#loud",
       "profileSources": {
         "backstory": [
           {
@@ -5546,6 +6125,55 @@
             "kind": "source-canon",
             "quote": "welcoming the \"party people\" with energy"
           }
+        ]
+      },
+      "kit": {
+        "thing": "being everybody's big brother",
+        "alone": "is carving a tiny wooden turtle with a pocket knife",
+        "bit": [
+          "Hey, hey, no frowns! What's wrong? Come here, tell big Manu.",
+          "I sell refrigerators back home. You know how hard it is to make someone excited about a fridge? Very hard. I'm very good.",
+          "I used to party a lot. Then my little brother was born, and I thought, he needs somebody to look up to."
+        ],
+        "tease": [
+          "Manu, I'm fine, I'm just thinking.",
+          "Are you going to sell us a fridge?",
+          "That's actually really sweet."
+        ],
+        "reply": [
+          "You were thinking with a frown. Think with a smile.",
+          "If I find one on this island, you're getting the deal of a lifetime.",
+          "Don't tell Aleki. He thinks I'm cool."
+        ],
+        "home": [
+          "My little brother, Aleki, and my dad and Leilani. They're having a watch party every week.",
+          "Hawaii. My family, my friends, and my store, where I'm the top seller three years running."
+        ],
+        "want": [
+          "To make my family proud. And maybe buy my dad a new boat.",
+          "To protect the people I like out here. And win, if they let me."
+        ],
+        "conf": [
+          "I'm not a mastermind. I know that. I've just got heart, and I work hard.",
+          "When somebody I care about gets laughed at, I'm not so friendly anymore."
+        ],
+        "askHome": [
+          "Hey, tell me about your family! Who's at home?",
+          "You got brothers? Sisters? Tell me everything."
+        ],
+        "askWant": [
+          "What are you gonna do with the money, huh? Something good?",
+          "What do you want out of this, bro?"
+        ],
+        "defend": [
+          "Hey. You can laugh at me, but you don't laugh at my friends."
+        ],
+        "deep": [
+          "I wasn't a great example when I was young. Then Aleki was born, and I realised somebody was watching me. I changed for him."
+        ],
+        "solo": [
+          "It's for Aleki. He loves turtles. I'm going to give it to him the day I get home.",
+          "My son's watching. Everything I do out here, I think: would I want him to see this?"
         ]
       },
       "age": 41,
@@ -5576,7 +6204,7 @@
         "temperament": 3
       },
       "sexuality": "lesbian",
-      "voice": "Nura speaks in a dry, deadpan rhythm, with sarcasm and complaint as her default modes. In an argument, she tends to needle people with blunt pessimistic observations and mock-politeness rather than emotional appeals. Her vocabulary leans cynical and theatrical, turning ordinary annoyances into dark jokes about life, death, and failure.",
+      "voice": "Nura speaks in a dry, deadpan rhythm, with sarcasm and complaint as her default modes. In an argument, she tends to needle people with blunt pessimistic observations and mock-politeness rather than emotional appeals. Her vocabulary leans cynical and theatrical, turning ordinary annoyances into dark jokes about life, death, and failure. #-theatrical #-emotional #-goofy #-nerdy",
       "profileSources": {
         "backstory": [
           {
@@ -5603,7 +6231,56 @@
           }
         ]
       },
-      "age": 29,
+      "kit": {
+        "thing": "being a pessimist",
+        "alone": "is lying in the hammock staring at the sky, unimpressed by it",
+        "bit": [
+          "Great. Another beautiful day in paradise. Can't wait to die of sunburn.",
+          "I work retail. People yell at me about coupons for a living. This is a vacation.",
+          "I used to write poetry. Then a girl laughed at it. Now I write tragic comedies. Mostly tragic."
+        ],
+        "tease": [
+          "Do you ever say anything positive?",
+          "That's genuinely the saddest thing I've heard today.",
+          "Can I read one?"
+        ],
+        "reply": [
+          "I'm positive this is going to go badly.",
+          "It's early. Give me an hour.",
+          "No. Maybe later. Probably not."
+        ],
+        "home": [
+          "A roommate named Chelsea and a cash register that misses me. That's it.",
+          "San Francisco, a job I hate, and a bass guitar I haven't touched since I was sixteen."
+        ],
+        "want": [
+          "Something different. Anything. I'll know it when it's not a cash register.",
+          "To win, so I never have to scan another coupon."
+        ],
+        "conf": [
+          "Everybody here is so excited. It's exhausting. I'm trying to be excited. It's not working.",
+          "I don't hate people. I just don't know how to talk to them without making a joke about death."
+        ],
+        "askHome": [
+          "Who's at home for you? Or do you live alone with your regrets, like a normal person?",
+          "Got anyone back home?"
+        ],
+        "askWant": [
+          "What do you want out of this? And don't say it's 'a journey'.",
+          "Why are you even here?"
+        ],
+        "defend": [
+          "Being negative isn't a personality. It's just accurate."
+        ],
+        "deep": [
+          "I'm stuck. Same job, same flat, same everything. I came here because I was scared I'd stay stuck forever."
+        ],
+        "solo": [
+          "The sky's fine. It's just a sky. Everybody here acts like it's a miracle every morning.",
+          "I'm not negative. I'm accurate. There's a difference, and nobody here ever gets it."
+        ]
+      },
+      "age": 30,
       "birthdate": "1996-11-21",
       "ethnicity": "Black",
       "nationality": "American Somali",
@@ -5656,24 +6333,9 @@
           }
         ]
       },
-      "age": 25,
-      "birthdate": "2001-09-17",
-      "ethnicity": "White",
-      "nationality": "Polish-American",
-      "hometown": "Alaska",
-      "occupation": "Taxidermist",
-      "descriptor": "The Taxidermist",
-      "backstory": "Before appearing on the show, Oliwia worked as a taxidermist and genuinely loved the craft. She had been fascinated with death since childhood, which made it difficult for her to make friends because others found her interests and beliefs strange. She kept many pets, some living and some preserved, including a beloved first cat named Lena, and she enjoyed knitting small sweaters for her specimens. Growing up, she did not watch many cartoons, though she liked the Polish cartoon Reksio.",
-      "personality": "Oliwia is eccentric, morbidly curious, and desperate to be accepted. Under pressure she becomes anxious and easily agitated, especially when she thinks she might lose approval or be left out. She is loyal in a clingy, approval-seeking way: she wants to be useful, liked, and needed, but that need can push her into unhealthy choices. She will try hard to help people she wants closeness with, but she will not easily accept rejection, judgment, or being treated as disposable.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Quiet, morbid, loyal\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think they picked me because I make people tilt their heads a little. I’m a taxidermist from Alaska who knits sweaters for preserved animals, so… I suppose I am not the most normal little bird in the box.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"Probably the constant noise of people needing things from me. I’m used to stillness, and in my work the bodies are very patient, which is not always true of living people.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"I want to be useful, listen carefully, and not look too hungry too early. I’m not very intimidating physically, so I think I have to be the person people trust until it is time to make a very clean cut.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m loyal if I actually give my word, because that matters to me in a deep, old-fashioned way. I’d like to hide how badly I want people to approve of me, because that is… not a strong-looking organ to leave out on the table.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A small knitted sweater I made for my first cat, Lena, because it reminds me that love can stay after the breathing stops.\\n- A notebook, because my thoughts get crowded and strange if I don’t pin them down somewhere.\\n- A little sewing kit, because I’m calmer when I can mend things, even if it’s just a sleeve or a tiny unraveling edge.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I like taxidermy, knitting, taking careful walks where I look for bones or feathers, and tending to my pets, both living and preserved. I also like old cartoons sometimes, especially Reksio, because he feels gentle without being stupid.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama makes my stomach feel like wet wool. I don’t enjoy it, but I know it can show where the seams are in people, and that can be useful if I don’t panic first.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"No. I’m asexual, and also I think I would rather be haunted than flirt on purpose in a shared kitchen.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if something must end, hold it gently and make it mean something.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get proof that I can be around people without becoming either invisible or embarrassing. And maybe, if I’m lucky, I’ll learn that being odd is not the same as being unwanted.\"}]",
-      "ties": [],
       "kit": {
         "thing": "taxidermy",
         "alone": "is collecting pretty shells into a little pile",
-        "ground": [
-          "lonely-child",
-          "pets"
-        ],
         "bit": [
           "That bird by the shelter passed away. It's very peaceful. I could preserve it, if anyone wanted.",
           "I knit little sweaters for my specimens back home. My first cat, Lena, has six.",
@@ -5719,7 +6381,17 @@
           "I keep things so I can remember them later. This shell is from the day I made a friend. I'm keeping it forever.",
           "I've been alone a lot. I'm not alone out here. I'm keeping everything, just in case."
         ]
-      }
+      },
+      "age": 25,
+      "birthdate": "2001-09-17",
+      "ethnicity": "White",
+      "nationality": "Polish-American",
+      "hometown": "Alaska",
+      "occupation": "Taxidermist",
+      "descriptor": "The Taxidermist",
+      "backstory": "Before appearing on the show, Oliwia worked as a taxidermist and genuinely loved the craft. She had been fascinated with death since childhood, which made it difficult for her to make friends because others found her interests and beliefs strange. She kept many pets, some living and some preserved, including a beloved first cat named Lena, and she enjoyed knitting small sweaters for her specimens. Growing up, she did not watch many cartoons, though she liked the Polish cartoon Reksio.",
+      "personality": "Oliwia is eccentric, morbidly curious, and desperate to be accepted. Under pressure she becomes anxious and easily agitated, especially when she thinks she might lose approval or be left out. She is loyal in a clingy, approval-seeking way: she wants to be useful, liked, and needed, but that need can push her into unhealthy choices. She will try hard to help people she wants closeness with, but she will not easily accept rejection, judgment, or being treated as disposable.",
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Quiet, morbid, loyal\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think they picked me because I make people tilt their heads a little. I’m a taxidermist from Alaska who knits sweaters for preserved animals, so… I suppose I am not the most normal little bird in the box.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"Probably the constant noise of people needing things from me. I’m used to stillness, and in my work the bodies are very patient, which is not always true of living people.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"I want to be useful, listen carefully, and not look too hungry too early. I’m not very intimidating physically, so I think I have to be the person people trust until it is time to make a very clean cut.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m loyal if I actually give my word, because that matters to me in a deep, old-fashioned way. I’d like to hide how badly I want people to approve of me, because that is… not a strong-looking organ to leave out on the table.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A small knitted sweater I made for my first cat, Lena, because it reminds me that love can stay after the breathing stops.\\n- A notebook, because my thoughts get crowded and strange if I don’t pin them down somewhere.\\n- A little sewing kit, because I’m calmer when I can mend things, even if it’s just a sleeve or a tiny unraveling edge.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I like taxidermy, knitting, taking careful walks where I look for bones or feathers, and tending to my pets, both living and preserved. I also like old cartoons sometimes, especially Reksio, because he feels gentle without being stupid.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama makes my stomach feel like wet wool. I don’t enjoy it, but I know it can show where the seams are in people, and that can be useful if I don’t panic first.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"No. I’m asexual, and also I think I would rather be haunted than flirt on purpose in a shared kitchen.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if something must end, hold it gently and make it mean something.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get proof that I can be around people without becoming either invisible or embarrassing. And maybe, if I’m lucky, I’ll learn that being odd is not the same as being unwanted.\"}]"
     },
     {
       "name": "Ren",
@@ -5765,7 +6437,56 @@
           }
         ]
       },
-      "age": 26,
+      "kit": {
+        "thing": "being a circus acrobat",
+        "alone": "is juggling three rocks, badly, and loving it",
+        "bit": [
+          "If anybody needs something from the top of the tree, I've got you. Also, I'm already up here.",
+          "I used to do aerial silks. Then I did graphic design. Then I did both, at once. It went badly.",
+          "Ladies, gentlemen, everyone in between, please stay seated for the greatest show on this beach."
+        ],
+        "tease": [
+          "Why are you up a tree, Ren?",
+          "How do you do both at once?",
+          "There's no show, Ren."
+        ],
+        "reply": [
+          "Why is anyone anywhere? It's the view.",
+          "Very carefully, upside down, with a laptop.",
+          "There's always a show. You're just not watching."
+        ],
+        "home": [
+          "Nowhere and everywhere. I've lived out of a backpack for years, and people have been lovely almost everywhere.",
+          "A studio in Vegas, my silks, and a lot of friends who think I'm the weird one. They're right."
+        ],
+        "want": [
+          "To make people smile. And to win. Smiling first, though.",
+          "To play my own game, my own way, and still be me at the end."
+        ],
+        "conf": [
+          "People think I'm weird. I am weird. It's my favourite thing about me.",
+          "I'll joke about everything. Then somebody gets bullied, and I'm not joking anymore."
+        ],
+        "askHome": [
+          "Who's at home for you? Spill. I'm nosy.",
+          "Got anybody special back home?"
+        ],
+        "askWant": [
+          "What do you want from all this? Dream big. I mean big.",
+          "What's your act? Everybody has an act."
+        ],
+        "defend": [
+          "I'm weird. You're boring. Only one of those is a problem, and it's not mine."
+        ],
+        "deep": [
+          "Everywhere I've travelled, people have mostly let me be exactly who I am. I don't take that for granted. I want this place to be one of those places."
+        ],
+        "solo": [
+          "I'm going to run away and join a carnival when this is over. I'm already practising.",
+          "Some people think I'm weird. I am weird. It's the most fun thing about me."
+        ]
+      },
+      "age": 27,
       "birthdate": "1999-12-10",
       "ethnicity": "Latino",
       "nationality": "American Chilean",
@@ -5820,23 +6541,9 @@
           }
         ]
       },
-      "age": 29,
-      "birthdate": "1997-10-29",
-      "ethnicity": "Asian",
-      "nationality": "American Thai",
-      "hometown": "Bangkok",
-      "occupation": "Risk analyst",
-      "descriptor": "The Analyst",
-      "backstory": "Before appearing on the show, Samuel “Sami” Thitivoranan worked as a risk analyst, a job his coworkers considered him very good at. He has been married at some point, enjoys working out at the gym, puzzles, surfing, psychological horror movies, and Thai foods such as mango sticky rice and Tom Yum Goong. His childhood tastes included Rocko’s Modern Life, and his interests suggest someone analytical, social, and comfortable mixing practical routines with geeky hobbies.",
-      "personality": "Sami presents himself as chill, laid back, and easy to connect with, but under pressure he becomes a careful schemer. He is good at reading people and situations, using charm and analysis to stay near power without taking visible blame. His loyalty is pragmatic rather than sentimental: he will work with people when it benefits him, but he will not hesitate to hide his intentions, deny manipulation, or double down when sharper players begin to see through him. He is also easily frightened, which gives his calm persona a more vulnerable edge.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Analytical, charming, dangerous.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think I got picked because I look calm, but there’s a lot going on behind the eyes. I’m a risk analyst for a living, so I’m literally paid to figure out which bad idea has the best upside.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be not having clean separation between game and personal space. I can handle pressure, but if someone is chewing loudly, crying theatrically, and blocking my path to the bathroom, my odds of staying zen drop fast.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to make people feel like keeping me is the safe move, even when it isn’t. I want to build trust early, gather information quietly, and only make a bold move when the reward is worth the exposure.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m approachable and useful; I can cook, listen, work out, solve puzzles, whatever makes me valuable. I’d like to hide how comfortable I am with cutting a deal loose when the numbers stop making sense, because people get emotional about that for some reason.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A deck of cards, because games reveal people faster than conversations do.\\n- A photo from home, because I’m not completely made of spreadsheets and bad intentions.\\n- Chili flakes, because bland food is not a hardship I’m interested in pretending is character-building.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I’m big on the gym, puzzles, surfing when I can, and psychological horror movies when I want to relax in the least relaxing way possible. I also love Thai food — mango sticky rice, Tom Yum Goong, all of it — and I have a soft spot for weird cartoons from when I was a kid.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is useful until it becomes radioactive. If people want to fight, I’ll usually let them, take notes, and decide whether stepping in improves my position or just gets sauce on my shirt.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"I’m not going in looking for one, but I’m also not going to pretend I’m immune to charm and bad decisions. The risk is obvious, though: feelings make people sloppy, and I prefer other people being sloppy.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if you’re going to gamble, at least know the odds.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I want to test whether my instincts are as good under pressure as they are on paper. Also, I’d like a story big enough that it scares me a little to tell it later.\"}]",
-      "ties": [],
       "kit": {
         "thing": "calculating the odds",
         "alone": "is working out odds on a piece of bark",
-        "ground": [
-          "divorced"
-        ],
         "bit": [
           "I'm a risk analyst. So when I say this plan has maybe a thirty percent chance, that's me being generous.",
           "Relax. Nobody's coming for you tonight. Probably. I'd put it at eighty-twenty.",
@@ -5882,7 +6589,17 @@
           "Thirty-eight percent chance I go home before the merge. Twelve percent I win. I'll take the twelve.",
           "Numbers never lie to you. People do it all the time. I'll keep my numbers, thanks."
         ]
-      }
+      },
+      "age": 29,
+      "birthdate": "1997-10-29",
+      "ethnicity": "Asian",
+      "nationality": "American Thai",
+      "hometown": "Bangkok",
+      "occupation": "Risk analyst",
+      "descriptor": "The Analyst",
+      "backstory": "Before appearing on the show, Samuel “Sami” Thitivoranan worked as a risk analyst, a job his coworkers considered him very good at. He has been married at some point, enjoys working out at the gym, puzzles, surfing, psychological horror movies, and Thai foods such as mango sticky rice and Tom Yum Goong. His childhood tastes included Rocko’s Modern Life, and his interests suggest someone analytical, social, and comfortable mixing practical routines with geeky hobbies.",
+      "personality": "Sami presents himself as chill, laid back, and easy to connect with, but under pressure he becomes a careful schemer. He is good at reading people and situations, using charm and analysis to stay near power without taking visible blame. His loyalty is pragmatic rather than sentimental: he will work with people when it benefits him, but he will not hesitate to hide his intentions, deny manipulation, or double down when sharper players begin to see through him. He is also easily frightened, which gives his calm persona a more vulnerable edge.",
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Analytical, charming, dangerous.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think I got picked because I look calm, but there’s a lot going on behind the eyes. I’m a risk analyst for a living, so I’m literally paid to figure out which bad idea has the best upside.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be not having clean separation between game and personal space. I can handle pressure, but if someone is chewing loudly, crying theatrically, and blocking my path to the bathroom, my odds of staying zen drop fast.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to make people feel like keeping me is the safe move, even when it isn’t. I want to build trust early, gather information quietly, and only make a bold move when the reward is worth the exposure.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m approachable and useful; I can cook, listen, work out, solve puzzles, whatever makes me valuable. I’d like to hide how comfortable I am with cutting a deal loose when the numbers stop making sense, because people get emotional about that for some reason.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A deck of cards, because games reveal people faster than conversations do.\\n- A photo from home, because I’m not completely made of spreadsheets and bad intentions.\\n- Chili flakes, because bland food is not a hardship I’m interested in pretending is character-building.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I’m big on the gym, puzzles, surfing when I can, and psychological horror movies when I want to relax in the least relaxing way possible. I also love Thai food — mango sticky rice, Tom Yum Goong, all of it — and I have a soft spot for weird cartoons from when I was a kid.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is useful until it becomes radioactive. If people want to fight, I’ll usually let them, take notes, and decide whether stepping in improves my position or just gets sauce on my shirt.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"I’m not going in looking for one, but I’m also not going to pretend I’m immune to charm and bad decisions. The risk is obvious, though: feelings make people sloppy, and I prefer other people being sloppy.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if you’re going to gamble, at least know the odds.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I want to test whether my instincts are as good under pressure as they are on paper. Also, I’d like a story big enough that it scares me a little to tell it later.\"}]"
     },
     {
       "name": "Anita Crown Davenport",

@@ -64,7 +64,7 @@
         "cast/Owen-2.wav",
         "cast/Owen-3.wav"
       ],
-      "pick": null,
+      "pick": 2,
       "made": 1791746753
     },
     "Gwen": {
@@ -84,7 +84,7 @@
         "cast/Duncan-2.wav",
         "cast/Duncan-3.wav"
       ],
-      "pick": null,
+      "pick": 1,
       "made": 1791746753
     },
     "Courtney": {

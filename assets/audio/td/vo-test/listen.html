@@ -32,8 +32,8 @@
 <main>
   <h1>Voice test</h1>
   <p class="sub">Every line of episode 2, by character, in the chosen voice. Heather, Owen and Gwen, the first three tried, also have the versions that were compared. Play the same version across several lines to hear whether each voice stays the same person.</p>
-  <div class="legend"><b>Chosen</b>: what the episode plays. A precise description of each voice (voices/profiles.json) plus the line's reading direction, sampled with less randomness. 2.0 s a line.<br>
-  <b>Precise</b>: the same at the model's usual randomness. <b>Precise + same seed</b>: every line of a character from the same random point (12.5 s a line). <b>Clone light</b>: consistent but flat.</div>
+  <div class="legend"><b>Chosen</b>: what the episode plays. Every line cloned from the casting take you picked for that character (casting.html), so each voice stays the same person.<br>
+  On Heather, Owen and Gwen's first 18 lines, the earlier versions are kept for comparison: <b>Precise</b>, <b>Precise + same seed</b> (both designed line by line, which drifts) and <b>Clone light</b>.</div>
   <div id="list"></div>
 </main>
 <script>

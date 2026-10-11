@@ -5139,7 +5139,7 @@
         "temperament": 9
       },
       "sexuality": "straight",
-      "voice": "Bruno talks like an overexcited superfan: quick, eager, and packed with references to contestants, strategies, strengths, and weaknesses. When he argues, he tends to lean on facts, precedent, and show knowledge rather than intimidation, but his excitement can make him blurt things out before he thinks them through. His rhythm is enthusiastic and slightly nervous, especially when he is trying to prove an idea.",
+      "voice": "Bruno talks like an overexcited superfan: quick, eager, and packed with references to contestants, strategies, strengths, and weaknesses. When he argues, he tends to lean on facts, precedent, and show knowledge rather than intimidation, but his excitement can make him blurt things out before he thinks them through. His rhythm is enthusiastic and slightly nervous, especially when he is trying to prove an idea.#earnest",
       "profileSources": {
         "backstory": [
           {
@@ -5175,7 +5175,60 @@
       "descriptor": "The Superfan",
       "backstory": "Before appearing on television, Bruno had lived in Hartford, Connecticut and later moved to New York. His parents are Teresa and Alvaro, and his mother made him a hoodie that he treasures as a good-luck gift. He became a personal assistant because the pay was good and because he likes helping others and feeling useful; his boss is named Valerie. He is also strongly connected to his family history, with his grandmother also being named Teresa.",
       "personality": "Bruno is intensely optimistic, enthusiastic, and knowledge-driven, but pressure can shake his confidence. He wants to be useful and impressive, yet he may need encouragement from stronger personalities when his plans are questioned or fail. He is more likely to motivate, explain, and rally people than to bully them, and he will speak up when excited even if it embarrasses him or creates a strategic mistake. His loyalty reads as cooperative rather than cutthroat: he wants people to believe in his ideas, but he is not naturally ruthless.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Loyal, jumpy, useful.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think I got picked because I am, like, a walking spreadsheet of this game but with feelings. I know the difference between being a loyal number and being somebody’s disposable pawn, even if I’m probably still going to panic-smile through half the conversations.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be not having my family, my routine, or a clear job to do. I’m a personal assistant, so I like lists, tasks, Valerie saying “Bruno, can you handle this,” and then I handle it — in the house, the task is basically survive everyone lying to your face.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to attach myself to a strong core early, be useful, be loyal, and not get fancy just because I’ve watched people make big moves on TV. I know my strategic stat is not elite, okay, so I need to be the guy people trust with information, not the guy trying to invent a twelve-step blindside on day three.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want people to know I’m loyal for real, not fake loyal where you say it in the pantry and then run upstairs five seconds later. I want to hide how nervous I get, because if people see my brain buffering, they might think I’m easy to drag around or easy to cut.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My mom Teresa’s hoodie, because she made it for me and I would need that good-luck family armor.\\n- A notebook, because if I can’t write down names, patterns, and who said what, I’ll start storing it all in my face and that is dangerous.\\n- A photo of my family, especially because my grandmother was Teresa too, and remembering where I come from keeps me from spiraling.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love watching reality strategy shows, obviously, and then overanalyzing every vote like I’m being paid by the comma. I also like helping people organize their lives, walking around New York with coffee, calling my parents, and making tiny plans for situations that do not require tiny plans.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is great television and terrible living conditions. I’ll watch it, clock who benefits from it, maybe whisper “bad move” under my breath, but I do not want to be the person screaming over cereal unless the cereal did something criminal.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Probably not, because I know myself and I would turn into a nervous little loyalty goblin and forget the game exists. Also, showmances become targets so fast — like, congratulations, you found love and also a nomination couch.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is help first, panic later, and stay loyal to the people who actually have your back.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to prove that someone like me — not the loudest, not the strongest, not the cold mastermind — can still matter in the game. And honestly, I want to make my family proud, especially my mom, because that hoodie is coming in with expectations.\"}]"
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Loyal, jumpy, useful.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think I got picked because I am, like, a walking spreadsheet of this game but with feelings. I know the difference between being a loyal number and being somebody’s disposable pawn, even if I’m probably still going to panic-smile through half the conversations.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be not having my family, my routine, or a clear job to do. I’m a personal assistant, so I like lists, tasks, Valerie saying “Bruno, can you handle this,” and then I handle it — in the house, the task is basically survive everyone lying to your face.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to attach myself to a strong core early, be useful, be loyal, and not get fancy just because I’ve watched people make big moves on TV. I know my strategic stat is not elite, okay, so I need to be the guy people trust with information, not the guy trying to invent a twelve-step blindside on day three.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want people to know I’m loyal for real, not fake loyal where you say it in the pantry and then run upstairs five seconds later. I want to hide how nervous I get, because if people see my brain buffering, they might think I’m easy to drag around or easy to cut.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My mom Teresa’s hoodie, because she made it for me and I would need that good-luck family armor.\\n- A notebook, because if I can’t write down names, patterns, and who said what, I’ll start storing it all in my face and that is dangerous.\\n- A photo of my family, especially because my grandmother was Teresa too, and remembering where I come from keeps me from spiraling.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love watching reality strategy shows, obviously, and then overanalyzing every vote like I’m being paid by the comma. I also like helping people organize their lives, walking around New York with coffee, calling my parents, and making tiny plans for situations that do not require tiny plans.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is great television and terrible living conditions. I’ll watch it, clock who benefits from it, maybe whisper “bad move” under my breath, but I do not want to be the person screaming over cereal unless the cereal did something criminal.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Probably not, because I know myself and I would turn into a nervous little loyalty goblin and forget the game exists. Also, showmances become targets so fast — like, congratulations, you found love and also a nomination couch.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is help first, panic later, and stay loyal to the people who actually have your back.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to prove that someone like me — not the loudest, not the strongest, not the cold mastermind — can still matter in the game. And honestly, I want to make my family proud, especially my mom, because that hoodie is coming in with expectations.\"}]",
+      "ties": [],
+      "kit": {
+        "thing": "his job as a personal assistant",
+        "alone": "is reorganising the supply box, alphabetically",
+        "ground": [
+          "grandma"
+        ],
+        "bit": [
+          "As a personal assistant, I can tell you, this schedule is a mess. I could fix it. I fix Valerie's every day.",
+          "Fun fact: the last time they did this challenge, the team that went for the flag first won. I've watched it eleven times.",
+          "My mom made me this hoodie for good luck. Don't laugh. It's worked so far."
+        ],
+        "tease": [
+          "Bruno, you've told us you're a personal assistant like twelve times.",
+          "Eleven times?",
+          "It's been one day, Bruno."
+        ],
+        "reply": [
+          "Because it's relevant! It's always relevant!",
+          "Twelve. I watched it again on the flight.",
+          "And I'm still here. It's working."
+        ],
+        "home": [
+          "My parents, Teresa and Alvaro, and my boss Valerie, who has definitely called me forty times already.",
+          "My mom, my grandma, who's also Teresa, and a very lonely to-do list."
+        ],
+        "want": [
+          "To be a real Favourite. Not just a fan. Somebody people remember.",
+          "To prove a superfan can actually win this. I've studied for years."
+        ],
+        "conf": [
+          "I know everything about this game. Doing it is really, really different from knowing it.",
+          "Valerie always says, 'Bruno, can you handle this?' And I always can. I just need somebody to ask."
+        ],
+        "askHome": [
+          "Okay, who's at home for you? I'm asking because I genuinely want to know!",
+          "Who's your support system? Mine's my mom and a hoodie."
+        ],
+        "askWant": [
+          "What's your strategy? Sorry. Also, what do you want? Both.",
+          "What would winning mean for you? Like, emotionally?"
+        ],
+        "defend": [
+          "I know I talk about it a lot. But being useful is the only time I feel like I'm actually good at something."
+        ],
+        "deep": [
+          "My mom made me this hoodie for good luck. When I get scared out here, I hold onto the sleeve. I'm holding it right now, actually."
+        ],
+        "solo": [
+          "I'm a personal assistant, so this is basically my dream job. Nobody asked me to, and that's the best part.",
+          "Being useful is the only time I'm sure I belong somewhere. So I'm going to be very useful."
+        ]
+      }
     },
     {
       "name": "Dunia",

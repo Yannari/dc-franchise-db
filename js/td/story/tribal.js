@@ -50,6 +50,9 @@ export function truthOf(v, ep, { tribal = [], named = new Set() } = {}) {
   // an alliance or a pact with somebody the voter has come to dislike is not a friendship: Spud wrote
   // Lorenzo at -4.3 and said "you're my friend"; the pact is still the story, said coldly (facts.band)
   const pact = !!v.planBreak?.pactBroken;
+  // they found they share something (director.js kindredOf): writing that name is its own story
+  const kin = gs.tdStory?.kindred?.[v.voter < v.voted ? `${v.voter}||${v.voted}` : `${v.voted}||${v.voter}`];
+  const kindred = kin && !kin.broken ? kin.tone : null;
   const rel = pact ? 'pact' : mine && bond >= 0 ? 'ally' : bond >= 3 ? 'close' : bond <= -3 ? 'enemy' : bond < 0 ? 'cold' : 'plain';
   const d = { target: v.voted };
   if (mine) d.mine = mine.name;
@@ -95,7 +98,7 @@ export function truthOf(v, ep, { tribal = [], named = new Set() } = {}) {
   if (!kase && /animosity|hostility|from day one|simmering|distrust|tension|rubs them|too much history|friction|grudge|personal|can't stand/.test(r)) kase = 'grudge';
   if (!kase && /gut feeling|reads people|feels calculated|can't shake|doesn't sit right|never gave them|feels off|can't fully commit|hasn't clicked/.test(r)) kase = 'gut';
   if (!kase) { kase = 'plan'; if (chosen) d.group = chosen.label; }
-  return { case: kase, rel, d, tkind };
+  return { case: kase, rel, d, tkind, kindred };
 }
 
 const VENUE_COUNT = { 'survival-island': true, carnival: true };
@@ -340,12 +343,12 @@ export function writeTribal(ep) {
       const facts = { ...factsFor({ who: { a: v.voter }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(v.voter),
         rel: t.rel, tkind: t.tkind || 'none', sankT: !!ch && ch.sank === v.voted, group: !!d.group, other: !!d.other, warner: !!d.warner,
         keep: !!d.keep, wanted: !!d.wanted, area: !!d.area, mine: !!d.mine, leader: !!lead, pitcher: !!d.pitcher, alt: !!d.alt, locked: !!d.locked,
-        band: bandOf(v.voter, v.voted) };
+        band: bandOf(v.voter, v.voted), kindred: !!t.kindred, kin: t.kindred || 'none' };
       const fresh = x => (x && !said3.has(x.lines.map(l => l.text).join(' ')) ? x : null);
       const wr = (e, u) => writeStory('booth3', e, { a: v.voter }, d, facts, ctx(n++, 'tribal', u));
       return fresh(wr(t.case, true)) || fresh(wr('any', true)) || fresh(wr(t.case, 'soft')) || fresh(wr('any', 'soft'));
     };
-    if (v.voter !== elim && ['pact', 'ally', 'close'].includes(t.rel) && r?.role !== 'misled') {
+    if (v.voter !== elim && (['pact', 'ally', 'close'].includes(t.rel) || t.kindred) && r?.role !== 'misled') {
       const w3 = b3();
       if (w3) { booth.push({ voter: v.voter, voted: v.voted, why: t.case, rel: t.rel, line: w3.lines.map(l => l.text).join(' ') }); continue; }
     }

@@ -44,7 +44,7 @@ import { writePreviously } from './previously.js';
 import { chalMoments } from './chalmoments.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf, kindOf } from './places.js';
-import { kitBitScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, hasKit, kitOf } from './kits.js';
+import { kitBitScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, hasKit, kitOf, sharedGround } from './kits.js';
 import { runArcs, campGame } from './arcs.js';
 
 // Where the season lives decides a few words ({quarters}, {bed}) and what campers can know:
@@ -87,6 +87,84 @@ function defendCharge(ep, b) {
 }
 
 const liveEp = ep => Array.isArray(ep?.bondChanges) && ep.num === gs.episode;
+// ── kindred (lines/n-kindred.js): two people find out their lives have the same thing in them ──
+// kits.js sharedGround: a kit's authored ground tags (kits/kits-ground.js, read off the roster profile) or
+// the same hometown or nationality on both roster rows, so it is true of both of them. The user, 2026-10-10:
+// "do we also have bond by backstory? ... continuing storyline". Three beats over the season:
+//   discovery  an afternoon: one lets it slip, the other recognises it; the bond goes up (most for grief
+//              and family wounds). Weightier ground first; the same country only when nothing else is
+//              shared. Once a pair, at most one discovery a camp every other episode, from episode 3.
+//   check-in   two to five episodes later, a morning: the one who heard it checks on the other
+//   betrayal   the morning after one of them voted for the other and both are still here: a confrontation,
+//              the bond drops, and the thread is over. The booth knows it too (tribal.js truthOf: kindred).
+// gs.tdStory.kindred['A||B'] = { tag, tone, ep, opener, checked?, broken? }.
+const KIN_HEAVY = new Set(['lost-parent', 'widowed', 'lost-child', 'parent-left', 'estranged', 'hard-home', 'trauma', 'mental-health', 'came-out', 'sibling-bully', 'strict-parents', 'parents-split', 'divorced']);
+const KIN_HOME = new Set(['same-hometown', 'same-country']);
+export const kinTone = tag => (KIN_HEAVY.has(tag) ? 'heavy' : KIN_HOME.has(tag) ? 'home' : 'light');
+const kinKey = (x, y) => (x < y ? `${x}||${y}` : `${y}||${x}`);
+/** The kindred thread between x and y, if they found one and it hasn't been broken. */
+export function kindredOf(x, y) { const r = gs.tdStory?.kindred?.[kinKey(x, y)]; return r && !r.broken ? r : null; }
+const KIN_W = g => (g.kind === 'kit' ? (KIN_HEAVY.has(g.tag) ? 3 : 2) : g.kind === 'home' ? 1.5 : 0.5);
+function kindredScenes(ep, members, camp, phase, nextN) {
+  const S = (gs.tdStory ||= {}), K = (S.kindred ||= {}), last = (S.kindredLast ||= {});
+  const out = [];
+  const avoid = ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening');
+  const put = (at, kind, step, who, w, why, d) => out.push({ at, item: { story: true, kind, storyType: 'kindred', step, players: [who.a, who.b], lines: w.lines, text: w.text, lineId: w.lineId,
+    scene: { kind: 'kindred', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [why], fx: [[who.a, who.b, d]] } });
+  const write = (pool, outcome, who, data) => writeStory(pool, outcome, who, data, { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), pair: true },
+    { ep: ep.num, camp, phase, n: nextN(), place: 'aside', unique: 'soft', avoid });
+  if (phase === 'pre') {
+    // the morning after a vote: one of them wrote the other's name, and both are still here
+    const prev = (gs.episodeHistory || []).find(e => e.num === ep.num - 1);
+    for (const v of prev?.votingLog || []) {
+      const r = v.voter && v.voted && v.voter !== v.voted ? kindredOf(v.voter, v.voted) : null;
+      if (!r || !members.includes(v.voter) || !members.includes(v.voted)) continue;
+      const who = { a: v.voted, b: v.voter };
+      const w = write('kindred.betray', r.tone, who, {});
+      if (!w) continue;
+      r.broken = ep.num;
+      put(0.3, 'kindred.betray', 'betray', who, w, `${who.b} voted for ${who.a}, after what they found they share.`, -2.5);
+      return out;
+    }
+    // or days later, the one who heard it checks in
+    for (const [k, r] of Object.entries(K)) {
+      if (r.broken || r.checked || ep.num - r.ep < 2 || ep.num - r.ep > 5) continue;
+      const [x, y] = k.split('||');
+      if (!members.includes(x) || !members.includes(y) || getBond(x, y) < 0) continue;
+      const a = r.opener === y ? y : x, who = { a, b: a === x ? y : x };
+      const w = write('kindred.check', r.tone, who, r.where ? { where: r.where } : {});
+      if (!w) continue;
+      r.checked = ep.num;
+      put(0.45, 'kindred.check', 'check', who, w, `${who.b} checks in on ${who.a}.`, 0.75);
+      return out;
+    }
+    return out;
+  }
+  // the afternoon: two people find it
+  if (ep.num < 3 || (last[camp] ?? -99) >= ep.num - 1) return out;
+  const cand = [];
+  for (let i = 0; i < members.length; i++) for (let j = i + 1; j < members.length; j++) {
+    const x = members[i], y = members[j];
+    if (K[kinKey(x, y)] || getBond(x, y) <= -3) continue;
+    const g = sharedGround(x, y).sort((p, q) => KIN_W(q) - KIN_W(p) || p.tag.localeCompare(q.tag))[0];
+    if (g) cand.push({ x, y, g, w: KIN_W(g) });
+  }
+  cand.sort((p, q) => q.w - p.w || p.x.localeCompare(q.x) || p.y.localeCompare(q.y));
+  const open = n0 => { const s = pStatsOf(n0) || {}; return (s.social || 5) + (s.boldness || 5); };
+  for (const c of cand.slice(0, 4)) {
+    const a = open(c.x) >= open(c.y) ? c.x : c.y, who = { a, b: a === c.x ? c.y : c.x };
+    const data = c.g.value ? { where: c.g.value } : {};
+    const w = write('kindred', c.g.tag, who, data);
+    if (!w) continue;
+    const tone = kinTone(c.g.tag);
+    K[kinKey(c.x, c.y)] = { tag: c.g.tag, tone, ep: ep.num, opener: a, ...(c.g.value ? { where: c.g.value } : {}) };
+    last[camp] = ep.num;
+    put(0.55, 'kindred.find', 'find', who, w, `${who.a} and ${who.b} find out they share something.`, tone === 'heavy' ? 2 : tone === 'light' ? 1.5 : c.g.kind === 'home' ? 1.25 : 1);
+    break;
+  }
+  return out;
+}
+
 function applyStoryFx(ep, list) {
   const live = liveEp(ep);
   for (const { item } of list) {
@@ -1524,7 +1602,9 @@ export function airTdEpisode(ep) {
           const loud = f => (f.ev.trainees || []).reduce((t, x) => t + Math.abs(Number(x.gain) || 0), 0) + (gs._coachSessAired?.[f.ev.coach] === ep.num - 1 ? 0 : 1);
           const one = ss.sort((x, y) => loud(y) - loud(x) || x.i - y.i).slice(0, 1);
           if (one[0]) (gs._coachSessAired ||= {})[one[0].ev.coach] = ep.num;
-          return one;
+          // the morning after a coach night comes first: the camp has to feel what the vote did
+          const after = mine.filter(f => /^coach(Gone|Saved)Morning$/.test(f.ev?.type || '')).slice(0, 1);
+          return [...after, ...one];
         }
         const pri = f => COACH_PRI[f.ev?.type] ?? 3;
         // the same kind of moment with the same coach not again within four episodes (read 2026-10-10: the
@@ -1786,6 +1866,8 @@ export function airTdEpisode(ep) {
           }
         }
       }
+      // what two people's lives have in common, and what they do with it later (kindredScenes)
+      if (editOn && !ep.isFinale && !ep.isMerge) for (const it of kindredScenes(ep, members, camp, phase, () => n++)) list.push(it);
       // stories that run across episodes (arcs.js: revenge for a friend, the friend who won't let go, envy,
       // the one who coasts, learning to talk to people, a showmance for the numbers), the camp's free time
       // (four people and a game, every other episode), and one person alone with the camera in the afternoon

@@ -210,6 +210,12 @@ export default {
 
   // ── the relationship, whatever the case, and the promises broken ──
   'booth3.any': [
+    B('nb3.n1', "You told me something real out here, {target}, something I'd been through too, and I'm still writing your name. I don't know what that makes me.", { kindred: true, kin: 'heavy' },
+      { emotional: "You trusted me with the worst thing that ever happened to you, {target}, because it happened to me too. And I'm writing your name. I'm so sorry." , cruel: "We bonded, {target}. It was sweet. This is a game." }),
+    B('nb3.n2', "Out of everybody here, {target}, you're the one who actually gets me, and that's exactly why I can't take you to the end.", { kindred: true },
+      { schemer: "The person who understands me best is the most dangerous person here, {target}, so it's you.", warm: "I found somebody out here who gets me, {target}, and now I'm voting them out. This game is the worst." }),
+    B('nb3.n3', "We're from the same place, {target}, and I'll buy you a drink back home, but tonight it's you.", { kindred: true, kin: 'home' },
+      { goofy: "Home's going to be so awkward now, {target}. Sorry in advance, and also, see you at the supermarket." }),
     B('nb3.a1', "We made a final three deal, {target}, and I meant it when I said it. It's just that I need to get to the end more than I need the deal.", { rel: 'pact', band: ['friends', 'neutral'] },
       { schemer: "We had a deal to go to the final three, {target}, and I had a better one with everybody else, so it's you.", emotional: "I promised you we'd go to the end together, {target}, and I'm breaking it, and I'll never forgive myself." }),
     B('nb3.a2', "I told you the end, {target}, just you and me, and now I'm writing your name, and I'm going to have to look at you while they read it.", { rel: 'pact', band: ['friends', 'neutral'] },

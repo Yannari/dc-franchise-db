@@ -46,8 +46,10 @@ export function sharedGround(a, b) {
   const ga = new Set(groundOf(a)), out = [];
   for (const t of groundOf(b)) if (ga.has(t)) out.push({ tag: t, kind: 'kit' });
   const ra = rowOf(a), rb = rowOf(b);
+  // a roster row can say "Sao paulo"; said out loud it's "Sao Paulo" (each word's first letter, accents kept)
+  const titleCase = x => x.split(/(\s+|-)/).map(w => (w && /^\p{Ll}/u.test(w) ? w[0].toUpperCase() + w.slice(1) : w)).join('');
   const ha = norm(ra?.hometown), hb = norm(rb?.hometown);
-  if (ha && ha === hb) out.push({ tag: 'same-hometown', kind: 'home', value: String(ra.hometown).split(',')[0].trim() });
+  if (ha && ha === hb) out.push({ tag: 'same-hometown', kind: 'home', value: titleCase(String(ra.hometown).split(',')[0].trim()) });
   const na = norm(ra?.nationality), nb = norm(rb?.nationality);
   if (na && na === nb && !(ha && ha === hb)) out.push({ tag: 'same-country', kind: 'country', value: String(ra.nationality).trim() });
   return out;

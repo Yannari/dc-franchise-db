@@ -5851,7 +5851,7 @@
         "temperament": 5
       },
       "sexuality": "straight",
-      "voice": "Ernesto speaks like a seasoned mentor: measured, declarative, and fond of framing his opinions as practical guidance. In an argument, he challenges weak logic directly rather than escalating emotionally, using experience-based reasoning and occasionally blunt judgments. His vocabulary can sound formal or paternal, especially when he talks about younger people needing direction.",
+      "voice": "Ernesto speaks like a seasoned mentor: measured, declarative, and fond of framing his opinions as practical guidance. In an argument, he challenges weak logic directly rather than escalating emotionally, using experience-based reasoning and occasionally blunt judgments. His vocabulary can sound formal or paternal, especially when he talks about younger people needing direction. #-nerdy#calm#quiet#bossy #-blunt",
       "profileSources": {
         "backstory": [
           {
@@ -5887,7 +5887,62 @@
       "descriptor": "The Elder",
       "backstory": "Before appearing on the show, Ernesto lived a long adult life as a corporate trainer from Spain. He has been married, has children, and is a grandfather. As a child, he helped his mother make gazpacho and spent time reading comics such as Mortadelo and Filemón and Zipi y Zape. In his free time, he enjoys woodcarving, a hobby he finds relaxing and skillful.",
       "personality": "Ernesto is steady under pressure and trusts age, experience, and preparation to carry him through difficult situations. He wants to be useful and respected, but when ignored he becomes frustrated and can come across as bossy or rude. He is loyal to people who genuinely listen to him, offering advice, encouragement, and warmth in return. He will question a bad plan and refuse to pretend nonsense makes sense, but he is not cruel; even after conflict or disappointment, he can show sympathy and support.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Practical, stubborn, loyal.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think they picked me because I am not a young peacock trying to impress the mirror. I have lived enough life to stay calm, read a room, and say plainly when something is foolish.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be living with people who confuse noise with personality. I can tolerate discomfort, but childish disorder tests my patience.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to be useful, keep my word when it matters, and not run around making grand plans I cannot control. People underestimate older men until they need one to steady the table.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I am loyal if I give my word, because that still means something to me. I would prefer to hide that I am not naturally very social, because in a house like this, silence can be mistaken for arrogance or weakness.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A small piece of wood, because carving keeps my hands calm and my mind ordered.\\n- A family photograph, because a grandfather should remember who he is representing.\\n- A good pair of reading glasses, because squinting at nonsense is bad enough without doing it literally.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I enjoy woodcarving, walking, reading comics like Mortadelo and Filemón and Zipi y Zape, and cooking simple food like the gazpacho I made with my mother as a boy. I like activities where skill improves with patience, not with shouting.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is usually poor communication wearing fancy clothes. If there is a real problem, address it directly; if there is not, people should stop feeding it like a stray cat.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"No. I am a married man, a father, and a grandfather, not a teenager at a village dance.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… measure twice, speak once, and do not mistake confidence for competence.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a serious test of myself outside my normal life. If I can show that an older underdog still has discipline, usefulness, and backbone, that will be worth the discomfort.\"}]"
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Practical, stubborn, loyal.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think they picked me because I am not a young peacock trying to impress the mirror. I have lived enough life to stay calm, read a room, and say plainly when something is foolish.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be living with people who confuse noise with personality. I can tolerate discomfort, but childish disorder tests my patience.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to be useful, keep my word when it matters, and not run around making grand plans I cannot control. People underestimate older men until they need one to steady the table.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I am loyal if I give my word, because that still means something to me. I would prefer to hide that I am not naturally very social, because in a house like this, silence can be mistaken for arrogance or weakness.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A small piece of wood, because carving keeps my hands calm and my mind ordered.\\n- A family photograph, because a grandfather should remember who he is representing.\\n- A good pair of reading glasses, because squinting at nonsense is bad enough without doing it literally.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I enjoy woodcarving, walking, reading comics like Mortadelo and Filemón and Zipi y Zape, and cooking simple food like the gazpacho I made with my mother as a boy. I like activities where skill improves with patience, not with shouting.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is usually poor communication wearing fancy clothes. If there is a real problem, address it directly; if there is not, people should stop feeding it like a stray cat.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"No. I am a married man, a father, and a grandfather, not a teenager at a village dance.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… measure twice, speak once, and do not mistake confidence for competence.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a serious test of myself outside my normal life. If I can show that an older underdog still has discipline, usefulness, and backbone, that will be worth the discomfort.\"}]",
+      "ties": [],
+      "kit": {
+        "thing": "giving advice",
+        "alone": "is teaching himself a card trick, very slowly",
+        "ground": [
+          "parent",
+          "grandparent",
+          "cook"
+        ],
+        "bit": [
+          "If I may offer some guidance: we should build the shelter first and decorate never.",
+          "In my career, I trained hundreds of people. Not one of them listened as little as this team.",
+          "When I was a boy, I made gazpacho with my mother. You learn patience from a tomato."
+        ],
+        "tease": [
+          "Nobody asked for guidance, Ernesto.",
+          "Maybe they were just bored.",
+          "You learn what from a tomato?"
+        ],
+        "reply": [
+          "And that, my young friend, is exactly the problem.",
+          "Boredom is also a choice. A poor one.",
+          "Patience. Peel it slowly or it bleeds everywhere. Like this team."
+        ],
+        "home": [
+          "My children and my grandchildren. And my wood carvings, which are much better behaved.",
+          "A small town in Spain, a workshop full of wood shavings, and a family I am very proud of."
+        ],
+        "want": [
+          "To be useful, and to be respected for it. Winning would be a pleasant bonus.",
+          "To show these young peacocks that experience still counts for something."
+        ],
+        "conf": [
+          "I am not bossy. I simply have more experience than everyone around me. It looks the same from outside.",
+          "When people listen to me, I would walk through fire for them. When they do not, I sulk. I am aware."
+        ],
+        "askHome": [
+          "Tell me about your family. Who is waiting for you?",
+          "Do you have people at home who worry about you?"
+        ],
+        "askWant": [
+          "And what is it you hope to gain here? Besides blisters.",
+          "What brought you here, young one?"
+        ],
+        "defend": [
+          "Experience is not something to mock, young one. One day you will have some, if you are lucky."
+        ],
+        "deep": [
+          "I have children, and a grandchild now. I came here to show them their grandfather still has some adventure left in him."
+        ],
+        "solo": [
+          "At my age, one learns new things slowly but very thoroughly. This trick will be ready in a week.",
+          "The young people rush everywhere. I have rushed before. It got me nowhere faster."
+        ]
+      }
     },
     {
       "name": "Evie",

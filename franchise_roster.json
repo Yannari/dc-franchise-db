@@ -6204,7 +6204,7 @@
         "temperament": 3
       },
       "sexuality": "lesbian",
-      "voice": "Nura speaks in a dry, deadpan rhythm, with sarcasm and complaint as her default modes. In an argument, she tends to needle people with blunt pessimistic observations and mock-politeness rather than emotional appeals. Her vocabulary leans cynical and theatrical, turning ordinary annoyances into dark jokes about life, death, and failure.",
+      "voice": "Nura speaks in a dry, deadpan rhythm, with sarcasm and complaint as her default modes. In an argument, she tends to needle people with blunt pessimistic observations and mock-politeness rather than emotional appeals. Her vocabulary leans cynical and theatrical, turning ordinary annoyances into dark jokes about life, death, and failure. #-theatrical #-emotional #-goofy #-nerdy",
       "profileSources": {
         "backstory": [
           {
@@ -6240,7 +6240,62 @@
       "descriptor": "The Debbie Downer",
       "backstory": "Before appearing on the show, Nura worked as a retail cashier and felt stuck, wanting something more than the life she had. She lived with a roommate named Chelsea, had a habit of writing—especially mellow dramas and tragic comedies—and once abandoned poetry after being rejected by a girl she liked. As a teen, she gave herself an ear piercing at fourteen and played bass in a band at sixteen, though the band only lasted about six months.",
       "personality": "Nura is gloomy, guarded, and reflexively negative, especially when surrounded by people who are eager to socialize. Under pressure she stays outwardly flat and unimpressed, even around frightening or dangerous situations, but her coldness is not total indifference: she feels guilt over failing to connect and slowly pushes herself to reach out. She is not naturally warm or sympathetic, and she will complain, judge, and withdraw before she comforts someone, but she will not entirely give up on the possibility that she can become closer to others or do more with her life.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Dry, stubborn, combustible.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"Probably because somebody watched my interview and thought, \\\"This woman looks like she could ruin a brunch.\\\" I’m a cashier from San Francisco with resting apocalypse face, so maybe they smelled affordable chaos.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"Living with people who think being loud is the same as being interesting. Also sharing a bathroom, because humanity was a mistake and group hygiene proves it.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"I’m going to try not to instantly tell everyone exactly what I think of them, which will be my Everest. I’ll watch, listen, keep my head down when useful, and strike when people get too comfortable being stupid.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m not some delicate little flower; I’ve worked retail, so I’ve stared into the mouth of hell and said, \\\"Have a nice day.\\\" I want to hide how badly I want this, because desperation is basically blood in the water with worse lighting.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A notebook, because if I don’t write things down, my thoughts start chewing through the walls.\\n- A hoodie, because I like comfort and also looking like I’m preparing for my own funeral.\\n- Earplugs, because I assume at least one person will breathe like a haunted leaf blower.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I like writing mellow dramas and tragic comedies, playing bass badly enough to annoy ghosts, and wandering around the city pretending I’m not avoiding my life. I also enjoy complaining, which is free cardio.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is exhausting, stupid, and usually caused by people with the emotional regulation of a microwave burrito. That said, I will absolutely watch it happen from the corner like it’s community theater with worse acting.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"No. I’m a lesbian, not a hostage negotiator, and I’m not coming here to fall in love under fluorescent surveillance with someone who thinks eye contact is strategy.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if the ship is sinking, at least insult the décor on the way down.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I want proof that I can do something bigger than ringing up shampoo and pretending customers are sentient. Money would be great too, obviously, because personal growth does not pay rent.\"}]"
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Dry, stubborn, combustible.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"Probably because somebody watched my interview and thought, \\\"This woman looks like she could ruin a brunch.\\\" I’m a cashier from San Francisco with resting apocalypse face, so maybe they smelled affordable chaos.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"Living with people who think being loud is the same as being interesting. Also sharing a bathroom, because humanity was a mistake and group hygiene proves it.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"I’m going to try not to instantly tell everyone exactly what I think of them, which will be my Everest. I’ll watch, listen, keep my head down when useful, and strike when people get too comfortable being stupid.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m not some delicate little flower; I’ve worked retail, so I’ve stared into the mouth of hell and said, \\\"Have a nice day.\\\" I want to hide how badly I want this, because desperation is basically blood in the water with worse lighting.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A notebook, because if I don’t write things down, my thoughts start chewing through the walls.\\n- A hoodie, because I like comfort and also looking like I’m preparing for my own funeral.\\n- Earplugs, because I assume at least one person will breathe like a haunted leaf blower.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I like writing mellow dramas and tragic comedies, playing bass badly enough to annoy ghosts, and wandering around the city pretending I’m not avoiding my life. I also enjoy complaining, which is free cardio.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is exhausting, stupid, and usually caused by people with the emotional regulation of a microwave burrito. That said, I will absolutely watch it happen from the corner like it’s community theater with worse acting.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"No. I’m a lesbian, not a hostage negotiator, and I’m not coming here to fall in love under fluorescent surveillance with someone who thinks eye contact is strategy.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if the ship is sinking, at least insult the décor on the way down.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I want proof that I can do something bigger than ringing up shampoo and pretending customers are sentient. Money would be great too, obviously, because personal growth does not pay rent.\"}]",
+      "ties": [],
+      "kit": {
+        "thing": "being a pessimist",
+        "alone": "is lying in the hammock staring at the sky, unimpressed by it",
+        "ground": [
+          "stuck",
+          "writer",
+          "tight-money"
+        ],
+        "bit": [
+          "Great. Another beautiful day in paradise. Can't wait to die of sunburn.",
+          "I work retail. People yell at me about coupons for a living. This is a vacation.",
+          "I used to write poetry. Then a girl laughed at it. Now I write tragic comedies. Mostly tragic."
+        ],
+        "tease": [
+          "Do you ever say anything positive?",
+          "That's genuinely the saddest thing I've heard today.",
+          "Can I read one?"
+        ],
+        "reply": [
+          "I'm positive this is going to go badly.",
+          "It's early. Give me an hour.",
+          "No. Maybe later. Probably not."
+        ],
+        "home": [
+          "A roommate named Chelsea and a cash register that misses me. That's it.",
+          "San Francisco, a job I hate, and a bass guitar I haven't touched since I was sixteen."
+        ],
+        "want": [
+          "Something different. Anything. I'll know it when it's not a cash register.",
+          "To win, so I never have to scan another coupon."
+        ],
+        "conf": [
+          "Everybody here is so excited. It's exhausting. I'm trying to be excited. It's not working.",
+          "I don't hate people. I just don't know how to talk to them without making a joke about death."
+        ],
+        "askHome": [
+          "Who's at home for you? Or do you live alone with your regrets, like a normal person?",
+          "Got anyone back home?"
+        ],
+        "askWant": [
+          "What do you want out of this? And don't say it's 'a journey'.",
+          "Why are you even here?"
+        ],
+        "defend": [
+          "Being negative isn't a personality. It's just accurate."
+        ],
+        "deep": [
+          "I'm stuck. Same job, same flat, same everything. I came here because I was scared I'd stay stuck forever."
+        ],
+        "solo": [
+          "The sky's fine. It's just a sky. Everybody here acts like it's a miracle every morning.",
+          "I'm not negative. I'm accurate. There's a difference, and nobody here ever gets it."
+        ]
+      }
     },
     {
       "name": "Oliwia",

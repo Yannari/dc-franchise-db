@@ -1,1 +1,3 @@
 design-takes/
+# casting takes: the full-quality WAVs stay on the machine that clones from them; the page plays the .ogg copies
+voices/cast/*.wav

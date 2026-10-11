@@ -23,15 +23,20 @@ ap = argparse.ArgumentParser()
 ap.add_argument('--dir', default='assets/audio/td/vo-test')
 ap.add_argument('--redesign', nargs='*', default=[], help='characters whose reference takes are made again')
 # measured on the 8 GB card: batch 6 is 5.5 s a line, 12 passes 8 GB on the long lines (8.7 GB) for no gain
-ap.add_argument('--batch', type=int, default=6)
+ap.add_argument('--batch', type=int, default=12)
 # the clone normally re-reads the whole reference take (its audio and words) beside every line; --light keeps
 # only the speaker's fingerprint (x-vector): shorter input, faster, possibly less like the reference
 ap.add_argument('--light', action='store_true')
+# THE CASTING (the user, 2026-10-11): clone every line from the take the user picked on casting.html
+# (voices.json `_cast`, made by td-vo-cast.py), into the episode's own clips, so the episode plays them
+ap.add_argument('--cast', action='store_true', help='clone from the picked casting takes into the episode clips')
+ap.add_argument('--budget', type=int, default=300, help='characters of text in one batch (a clone reads its reference beside every line: smaller than design)')
+ap.add_argument('--only', nargs='*', default=[])
 a = ap.parse_args()
 
 out = pathlib.Path(a.dir)
 script = json.loads((out / 'script.json').read_text(encoding='utf-8'))
-vdir, cdir = out / 'voices', out / ('clone-light' if a.light else 'clone')
+vdir, cdir = out / 'voices', (out if a.cast else out / ('clone-light' if a.light else 'clone'))
 vdir.mkdir(exist_ok=True); cdir.mkdir(exist_ok=True)
 vpath = vdir / 'voices.json'
 voices = json.loads(vpath.read_text(encoding='utf-8')) if vpath.exists() else {}
@@ -45,7 +50,7 @@ REF = {
 }
 
 # ── 1. the reference voices ──
-need = [n for n in script['characters'] if n not in voices or n in a.redesign]
+need = [] if a.cast else [n for n in script['characters'] if n not in voices or n in a.redesign]
 t0 = time.time()
 if need:
     design = Qwen3TTSModel.from_pretrained('Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign', device_map='cuda:0', dtype=torch.bfloat16, attn_implementation='sdpa')
@@ -64,17 +69,27 @@ print(f'references ready in {time.time() - t0:.0f}s', flush=True)
 # ── 2. every line, cloned in the picked voice ──
 clone = Qwen3TTSModel.from_pretrained('Qwen/Qwen3-TTS-12Hz-1.7B-Base', device_map='cuda:0', dtype=torch.bfloat16, attn_implementation='sdpa')
 prompt = {}
-for name, v in voices.items():
-    ref = vdir / v['takes'][v['pick'] - 1]
-    prompt[name] = clone.create_voice_clone_prompt(ref_audio=str(ref), ref_text=None if a.light else v['text'], x_vector_only_mode=a.light)[0]
-todo = sorted([l for l in script['lines'] if l['by'] in prompt], key=lambda l: len(l['text']))
+refs = ({n: (vdir / c['takes'][c['pick'] - 1], c['text']) for n, c in voices.get('_cast', {}).items() if c.get('pick')} if a.cast
+        else {n: (vdir / v['takes'][v['pick'] - 1], v['text']) for n, v in voices.items() if not n.startswith('_')})
+for name, (ref, text) in refs.items():
+    prompt[name] = clone.create_voice_clone_prompt(ref_audio=str(ref), ref_text=None if a.light else text, x_vector_only_mode=a.light)[0]
+if a.cast:
+    print(f"cloning from the picked takes of {len(prompt)}: {', '.join(sorted(prompt))}", flush=True)
+todo = sorted([l for l in script['lines'] if l['by'] in prompt and (not a.only or l['by'] in a.only)], key=lambda l: len(l['text']))
+batches, cur = [], []
+for l in todo:
+    if cur and (len(cur) >= a.batch or sum(len(x['text']) for x in cur) + len(l['text']) > a.budget):
+        batches.append(cur); cur = []
+    cur.append(l)
+if cur:
+    batches.append(cur)
 t1, done = time.time(), 0
-for i in range(0, len(todo), a.batch):
-    chunk = todo[i:i + a.batch]
+for chunk in batches:
     t = time.time(); torch.cuda.reset_peak_memory_stats()
     wavs, sr = clone.generate_voice_clone(text=[l['text'] for l in chunk], language=['English'] * len(chunk), voice_clone_prompt=[prompt[l['by']] for l in chunk])
     for l, w in zip(chunk, wavs):
-        sf.write(cdir / l['file'], w, sr)
+        name = l['file'] if a.cast else l['id'] + '.wav'
+        sf.write(cdir / name, w, sr, **({'format': 'OGG', 'subtype': 'OPUS'} if name.endswith('.ogg') else {}))
     done += len(chunk)
     print(f"{done}/{len(todo)}  {len(chunk)} lines, {sum(len(w) for w in wavs) / sr:5.1f}s of speech in {time.time() - t:5.1f}s  peak {torch.cuda.max_memory_allocated() / 2**30:.2f} GB", flush=True)
 print(f'{done} cloned lines in {time.time() - t1:.0f}s ({(time.time() - t1) / max(done, 1):.1f}s a line)')

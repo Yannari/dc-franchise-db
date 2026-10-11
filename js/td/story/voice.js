@@ -66,8 +66,10 @@ export function voiceOf(name) {
   tags.push = push;
   const age = ageOf(name);
   if (age != null) tags.push(age < 13 ? 'kid' : age < 20 ? 'teen' : age >= 35 ? 'grown' : 'adult');
-  cache.set(key, tags);
-  return tags;
+  // the author took these away ("#-loud"): gone whatever added them
+  const out = read.off?.length ? tags.filter(t => !read.off.includes(t)) : tags;
+  cache.set(key, out);
+  return out;
 }
 
 /** Every tag a line may key a variant on (the tests check pools against it). */

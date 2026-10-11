@@ -40,6 +40,10 @@ export default {
       // as `social` for living here: this worker already holds the key and
       // already dispatches creative writing by mode.
       return await generateCastingInterview(body, env);
+    } else if (mode === "camp-kit") {
+      // A character's Total Drama camp kit (js/td/story/kits.js), written from their PROFILE only.
+      // Same reason as `casting-interview` for living here: the key is here.
+      return await generateCampKit(body, env);
     } else if (mode === "continuity-read") {
       // What a career MEANS. The opposite of casting-interview directly above:
       // that one must never see a season, this one may see nothing else.
@@ -3850,6 +3854,125 @@ async function generateCastingInterview(body, env) {
     return json({ error: "the model answered none of the questions" }, 502);
   }
   return json({ ok: true, answers, answered: Object.keys(answers).length });
+}
+
+/**
+ * ── THE CAMP KIT: WRITTEN FROM THE PROFILE, AND NOTHING ELSE ──
+ *
+ * A character's own lines for Total Drama camp scenes (js/td/story/kits.js reads the shape): what they're
+ * known for, three running bits each with the tease somebody answers it with and their comeback, home, what
+ * they want, confessionals, how they ask somebody else about home and what they want, their pushback when
+ * mocked, the real thing under the act, what the camera finds them doing alone, and the shared-ground tags
+ * (js/td/story/kits/kits-ground.js) their life has in it.
+ *
+ * The user, 2026-10-10: "stay true to the character always, especially if the character exists in another
+ * show". So the model is handed the profile (backstory, personality, casting interview, voice) and told,
+ * line by line, that nothing may be added to it: no family member, event, place, job or name the profile
+ * doesn't contain. With no backstory and no personality, it refuses — fill the profile from the wiki first.
+ *
+ * Like casting-interview, it must never see a season: a kit is who they are walking in.
+ * The vocabulary for `ground` comes from the caller (this worker has no imports: see worker-no-imports).
+ */
+async function generateCampKit(body, env) {
+  const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
+  const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
+  if (!env.OPENAI_API_KEY) {
+    return json({ error: "Camp kits need OPENAI_API_KEY on this worker.",
+      hint: "wrangler secret put OPENAI_API_KEY --config wrangler-analytics.toml" }, 400);
+  }
+  const p = body.person || {};
+  const vocab = body.ground && typeof body.ground === "object" ? body.ground : {};
+  if (!p.name) return json({ error: "no person" }, 400);
+  if (!String(p.backstory || "").trim() && !String(p.personality || "").trim()) {
+    return json({ error: "no profile to write from: fill their backstory and personality first (the wiki button), so nothing has to be invented" }, 400);
+  }
+  const interview = p.interview && typeof p.interview === "object"
+    ? Object.entries(p.interview).filter(([, v]) => v).map(([k, v]) => `- ${k}: ${v}`).join("\n") : "";
+  const facts = [
+    p.age && `Age ${p.age}`,
+    p.occupation && `Occupation: ${p.occupation}`,
+    p.hometown && `From: ${p.hometown}`,
+    joinOrigin(p.ethnicity, p.nationality),
+    p.gender === "f" ? "Female" : p.gender === "m" ? "Male" : p.gender === "nb" ? "Non-binary" : "",
+    p.archetype && `Plays as: ${p.archetype}`,
+  ].filter(Boolean).join("\n");
+
+  const prompt = [
+    `You are writing ${p.name}'s lines for the camp scenes of a Total Drama-style reality show.`,
+    "This is the character's whole profile. It is the ONLY source of facts about them.",
+    "",
+    facts,
+    p.voice ? `\nHow they talk and act: ${p.voice}` : "",
+    p.backstory ? `\nBackstory: ${p.backstory}` : "",
+    p.personality ? `\nPersonality: ${p.personality}` : "",
+    interview ? `\nTheir casting interview:\n${interview}` : "",
+    "",
+    "THE RULE ABOVE ALL: stay true to the character. Use only what the profile says.",
+    "- Never invent a family member, a name, a past event, a job, a place, an injury, a relationship or a",
+    "  number the profile doesn't contain. Where the profile says something hasn't been revealed, don't",
+    "  reveal it. If a part would need a fact the profile doesn't have, write it about their personality",
+    "  instead, in the moment.",
+    "- They have just arrived. Nobody shares a past with them, so never 'again', 'always', 'used to',",
+    "  'every time', 'last time', 'yesterday' about people here. No season, placement, win or cast name.",
+    "- No camp places (beach, fire, shelter, cabin, dock, lake, tent, woods): the show moves between venues.",
+    "",
+    "HOW IT SOUNDS (this is checked):",
+    "- Plain, fluent, spoken English, the way this person talks. Contractions always.",
+    "- Connected sentences ('and', 'but', 'so', 'because'). Never three short sentences in a row.",
+    "- A joke lands on first read and makes sense. No metaphors, no wordplay, no aphorism endings, nothing",
+    "  that sounds written or clever. Never 'I'd like to', 'A word about', 'that means a lot', 'I hear you'.",
+    "- The voice comes from what they say and want, not from quirks stapled on.",
+    "",
+    "THE PARTS (return ONLY this JSON object):",
+    '{ "thing": "what they are known for, as others would say it (e.g. \\"being goth\\")",',
+    '  "bit": ["three lines where they bring their thing up, unprompted, in the middle of camp life"],',
+    '  "tease": ["for each bit, in order, what somebody else says back to them about it (address them as {a})"],',
+    '  "reply": ["for each bit, in order, their comeback to that tease"],',
+    '  "home": ["two answers, asked who is waiting back home"],',
+    '  "want": ["two answers, asked what they want out of this"],',
+    '  "conf": ["three things they say alone to the camera, in their own voice"],',
+    '  "askHome": ["two ways THEY ask somebody else about home"],',
+    '  "askWant": ["two ways THEY ask somebody else what they want"],',
+    '  "defend": ["two lines when somebody mocks their thing"],',
+    '  "deep": ["one true thing under the act, said to somebody they trust, from the backstory"],',
+    '  "alone": "what the camera finds them doing alone, continuing \\"{a} is ...\\" (no camp place)",',
+    '  "solo": ["two things they say to the camera then"],',
+    '  "ground": [{ "tag": "a tag from the list below", "quote": "the exact words of the profile it comes from" }] }',
+    "",
+    "For ground, use ONLY tags from this list, and only where the profile says it plainly (quote it):",
+    ...Object.entries(vocab).map(([t, d]) => `- ${t}: ${d}`),
+    "No slot other than {a} anywhere. bit, tease and reply have the same length.",
+  ].filter(x => x !== "").join("\n");
+
+  let text = "";
+  try {
+    const res = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.OPENAI_API_KEY}` },
+      body: JSON.stringify({ model: "gpt-5.5", instructions: prompt, input: "Write the kit.", max_output_tokens: 6000 }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return json({ error: `openai ${res.status}`, detail: data?.error?.message || JSON.stringify(data).slice(0, 300) }, 502);
+    text = typeof data?.output_text === "string" ? data.output_text
+      : Array.isArray(data?.output) ? data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("") : "";
+  } catch (e) {
+    return json({ error: `openai: ${e.message}` }, 502);
+  }
+  text = String(text).trim().replace(/^```(?:json)?\s*/i, "").replace(/```$/, "").trim();
+  let k = null;
+  try { k = JSON.parse(text); } catch { /* below */ }
+  if (!k || typeof k !== "object") return json({ error: "the model did not return JSON", raw: String(text).slice(0, 400) }, 502);
+  // only the parts asked for, only strings, only the {a} slot; bits kept whole (bit/tease/reply together)
+  const clean = x => String(x || "").trim().replace(/\{(?!a\})[^}]*\}/g, "");
+  const list = x => (Array.isArray(x) ? x : []).map(clean).filter(Boolean);
+  const kit = { thing: clean(k.thing), alone: clean(k.alone).replace(/^\{a\}\s+is\s+/i, "") };
+  for (const part of ["bit", "tease", "reply", "home", "want", "conf", "askHome", "askWant", "defend", "deep", "solo"]) kit[part] = list(k[part]);
+  const n = Math.min(kit.bit.length, kit.tease.length, kit.reply.length);
+  for (const part of ["bit", "tease", "reply"]) kit[part] = kit[part].slice(0, n);
+  const ground = (Array.isArray(k.ground) ? k.ground : []).filter(g => g && vocab[g.tag] && String(g.quote || "").trim())
+    .map(g => ({ tag: g.tag, quote: String(g.quote).trim() }));
+  if (!kit.thing || !n) return json({ error: "the model wrote no usable kit" }, 502);
+  return json({ ok: true, kit, ground });
 }
 
 async function socialViaOpenAI(prompt, env) {

@@ -7,6 +7,8 @@
 //   - in its words ("Sarcastic, lazy bookworm" -> dry), unless the words say what they are NOT
 //     ("never warm", "fake-nice", "sweet only when she wants something");
 //   - outright, with a hashtag anywhere in the text ("#loud #dry"): the author's word, first.
+// And one way to take a tag away: "#-loud" drops it, however it got there (the words, the archetype,
+// the stats). The user, 2026-10-10: "add an option to remove a tag from voice profile".
 // tag ← words in the authored voice / personality (order inside a text decides strength)
 export const WORDS = [
   ['quiet', /\b(quiet|silent|mute|reserved|taciturn|stoic|soft-spoken|few words|says little|rarely speaks|barely speaks|man of few|woman of few|monosyllab\w*)\b/],
@@ -35,10 +37,11 @@ export const WORDS = [
 
 export const WORD_TAGS = [...new Set(WORDS.map(([t]) => t))];
 
-/** { hash: tags written as #tag, words: tags read from the words, in the order written }. */
+/** { hash: tags written as #tag, words: tags read from the words, off: tags taken away as #-tag }. */
 export function readVoiceText(text = '') {
   const t = String(text || '').toLowerCase();
-  const hash = [...t.matchAll(/#([a-z]+)/g)].map(m => m[1]).filter(x => WORD_TAGS.includes(x)).filter((x, i, a) => a.indexOf(x) === i);
+  const off = [...new Set([...t.matchAll(/#-([a-z]+)/g)].map(m => m[1]))];
+  const hash = [...t.matchAll(/#([a-z]+)/g)].map(m => m[1]).filter(x => WORD_TAGS.includes(x) && !off.includes(x)).filter((x, i, a) => a.indexOf(x) === i);
   const found = [];
   for (const [tag, re] of WORDS) {
     const g = new RegExp(re.source, 'g');
@@ -49,6 +52,6 @@ export function readVoiceText(text = '') {
       found.push([m.index, tag]); break;
     }
   }
-  const words = found.sort((a, b) => a[0] - b[0]).map(([, x]) => x).filter((x, i, a) => a.indexOf(x) === i && !hash.includes(x));
-  return { hash, words };
+  const words = found.sort((a, b) => a[0] - b[0]).map(([, x]) => x).filter((x, i, a) => a.indexOf(x) === i && !hash.includes(x) && !off.includes(x));
+  return { hash, words, off };
 }

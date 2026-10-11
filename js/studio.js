@@ -1319,11 +1319,27 @@ async function _existingVoice(name) {
 // What the Total Drama simulator hears in this voice (td/story/voice-words.js): the tags it reads
 // from the words, and any set outright with a hashtag ("#loud #dry"). Archetype, stats and age add
 // more in the sim; this shows the part the author controls.
+// Each chip has an ×: a hashtag tag is taken out of the text, a tag read from the words is switched off
+// with "#-tag" (the words stay as written). A switched-off tag shows struck through, and × puts it back.
 function _voiceReadHtml(text) {
-  const { hash, words } = readVoiceText(text || '');
-  const chip = (t, own) => `<b style="padding:1px 6px;border-radius:8px;background:${own ? 'rgba(255,170,60,.25)' : 'rgba(120,160,255,.18)'}">${own ? '#' : ''}${t}</b>`;
-  const got = [...hash.map(t => chip(t, true)), ...words.map(t => chip(t, false))].join(' ') || '<i>nothing yet</i>';
-  return `Simulator reads: ${got}<br>Set one outright with a hashtag in the text: ${WORD_TAGS.map(t => '#' + t).join(' ')}`;
+  const { hash, words, off } = readVoiceText(text || '');
+  const x = (t, act, tip) => `<button type="button" class="st-vtag-x" data-vtag="${t}" data-act="${act}" title="${tip}" style="border:0;background:none;cursor:pointer;padding:0 0 0 4px;font:inherit;color:inherit;opacity:.7">×</button>`;
+  const chip = (t, kind) => `<b style="padding:1px 6px;border-radius:8px;white-space:nowrap;background:${kind === 'own' ? 'rgba(255,170,60,.25)' : kind === 'off' ? 'rgba(128,128,128,.15)' : 'rgba(120,160,255,.18)'}">`
+    + (kind === 'off' ? `<s>${t}</s>${x(t, 'on', 'put it back')}` : `${kind === 'own' ? '#' : ''}${t}${x(t, 'off', 'remove this tag')}`) + '</b>';
+  const got = [...hash.map(t => chip(t, 'own')), ...words.map(t => chip(t, 'word'))].join(' ') || '<i>nothing yet</i>';
+  const gone = off.length ? `<br>Removed: ${off.map(t => chip(t, 'off')).join(' ')}` : '';
+  return `Simulator reads: ${got}${gone}<br>Set one outright with a hashtag in the text: ${WORD_TAGS.map(t => '#' + t).join(' ')}. Remove one with its ×, or #-tag (it also overrides the archetype and stats)`;
+}
+/** The voice text with a tag removed (act 'off') or put back ('on'). */
+function _voiceToggleTag(text, tag, act) {
+  let t = String(text || '');
+  const esc = tag.replace(/[^a-z]/g, '');
+  if (act === 'on') return t.replace(new RegExp(`\\s*#-${esc}\\b`, 'gi'), '').trim();
+  const had = new RegExp(`#${esc}\\b`, 'i').test(t);
+  t = t.replace(new RegExp(`\\s*#${esc}\\b`, 'gi'), '').trim();
+  // a hashtag was the only reason: taking it out is enough, unless the words also say it
+  if (had && !readVoiceText(t).words.includes(tag)) return t;
+  return `${t} #-${esc}`.trim();
 }
 
 function _composeVoice(d) {
@@ -1956,6 +1972,10 @@ function _renderEditor() {
         <summary class="st-iv-sum">Camp kit <span class="st-hint" id="st-kit-count">${_kitCount(d) ? `${_kitCount(d)} parts written` : 'empty'} &middot; Total Drama camp scenes</span></summary>
         <div class="st-iv-body">
           <span class="st-hint">Their own lines, in plain spoken English. Every line plays once a season. {a} is them, {b} is the person they're talking to. One line per entry.</span>
+          <div class="st-iv-gen">
+            <button type="button" class="st-btn" id="st-kit-write">Write it from their profile</button>
+            <span class="st-hint" id="st-kit-gen-note">one call, from the backstory, personality and voice only; every line stays editable</span>
+          </div>
           <label class="st-l">Known for <span class="st-hint">what they're known for, as somebody else would put it</span>
             <input class="st-input" data-kit="thing" value="${_esc(d.kit?.thing || '')}" placeholder="e.g. being goth"></label>
           <div class="st-l">Running bits <span class="st-hint">they bring it up, somebody teases them, they come back at it</span></div>
@@ -2028,6 +2048,14 @@ function _renderEditor() {
   ed.querySelector('#st-f-sex').addEventListener('change', e => d.sexuality = e.target.value);
   ed.querySelector('#st-f-arch').addEventListener('change', e => { d.archetype = e.target.value; _updateRead(); });
   ed.querySelector('#st-f-voice').addEventListener('input', e => { d.voice = e.target.value; const r = ed.querySelector('#st-voice-read'); if (r) r.innerHTML = _voiceReadHtml(d.voice); });
+  // the × on a voice tag: rewrite the text, so the removal is saved with the voice like everything else
+  ed.querySelector('#st-voice-read')?.addEventListener('click', e => {
+    const b = e.target.closest('.st-vtag-x'); if (!b) return;
+    const v = ed.querySelector('#st-f-voice');
+    d.voice = _voiceToggleTag(d.voice, b.dataset.vtag, b.dataset.act);
+    if (v) v.value = d.voice;
+    e.currentTarget.innerHTML = _voiceReadHtml(d.voice);
+  });
   ed.querySelector('#st-f-ethnicity').addEventListener('input', e => d.ethnicity = e.target.value);
   ed.querySelector('#st-f-nationality').addEventListener('input', e => d.nationality = e.target.value);
   ed.querySelector('#st-f-descriptor').addEventListener('input', e => d.descriptor = e.target.value);
@@ -2084,6 +2112,52 @@ function _renderEditor() {
     const i = +el.dataset.kitBit; d.kit.bits[i] = d.kit.bits[i] || { bit: '', tease: '', reply: '' };
     d.kit.bits[i][el.dataset.part] = e.target.value; kitCount();
   }));
+
+  // ── WRITE THE CAMP KIT ── (worker mode 'camp-kit')
+  // Like the interview below: sends the PERSON, never a season, fills the boxes and does not save.
+  // The worker refuses without a backstory or personality, so nothing has to be invented (true to canon).
+  const kitBtn = ed.querySelector('#st-kit-write');
+  if (kitBtn) kitBtn.addEventListener('click', async () => {
+    const note = ed.querySelector('#st-kit-gen-note');
+    const say = t => { if (note) note.textContent = t; };
+    if (!d.name) return say('give them a name first');
+    if (!String(d.backstory || '').trim() && !String(d.personality || '').trim())
+      return say('fill their backstory or personality first (Fill in this profile), so the kit has something true to come from');
+    if (_kitCount(d) && !confirm(`${_kitCount(d)} parts of the kit are already written.\n\nOverwrite them?`)) return;
+    kitBtn.disabled = true;
+    say('writing…');
+    try {
+      const res = await fetch(writerEndpoint(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'camp-kit',
+          // the shared-ground vocabulary travels with the request: the worker keeps no copy
+          ground: GROUND,
+          person: {
+            name: d.name, gender: d.gender, sexuality: d.sexuality,
+            archetype: d.archetype, age: d.age,
+            occupation: d.occupation, hometown: d.hometown,
+            ethnicity: d.ethnicity, nationality: d.nationality,
+            voice: d.voice, backstory: d.backstory, personality: d.personality,
+            interview: d.interview || null,
+          },
+        }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) throw new Error(json?.error || `worker ${res.status}`);
+      d.kit = _kitFrom({ ...json.kit, ground: (json.ground || []).map(g => g.tag) });
+      ed.querySelectorAll('[data-kit]').forEach(el => { el.value = d.kit[el.dataset.kit] || ''; });
+      ed.querySelectorAll('[data-kit-bit]').forEach(el => { el.value = d.kit.bits[+el.dataset.kitBit]?.[el.dataset.part] || ''; });
+      kitCount();
+      const why = (json.ground || []).map(g => `${g.tag} ("${g.quote}")`).join('; ');
+      say(`written: read it, edit, then Save character${why ? ` · shared ground from: ${why}` : ''}`);
+    } catch (e) {
+      say(`couldn't write it: ${e.message}`);
+    } finally {
+      kitBtn.disabled = false;
+    }
+  });
 
   // ── WRITE THE INTERVIEW ──
   //

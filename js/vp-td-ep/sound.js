@@ -49,11 +49,22 @@ function scape(ctx, dest, sc, { noise, filt, gain, every, lfo }) {
   const crickets = (v = .009) => [4300, 4720].forEach((f, k) => {
     const o = ctx.createOscillator(), am = gain(0), g2 = gain(0); o.frequency.value = f; o.connect(am); am.connect(g2); g2.connect(dest); o.start();
     const p = ctx.createOscillator(); p.type = 'square'; p.frequency.value = 28 + k * 3; const pg = gain(.5); p.connect(pg); pg.connect(am.gain); p.start();
-    every(() => { const t = ctx.currentTime; g2.gain.setValueAtTime(v, t); g2.gain.setValueAtTime(0, t + .35 + Math.random() * .3); }, 700 + k * 230, 1300 + k * 300);
+    every(() => { const t = ctx.currentTime; g2.gain.setTargetAtTime(v, t, .02); g2.gain.setTargetAtTime(0, t + .35 + Math.random() * .3, .03); }, 700 + k * 230, 1300 + k * 300);
   });
-  const cicadas = v => { const s = noise(), bp = filt('bandpass', 5200, 6), g = gain(0); s.connect(bp); bp.connect(g); g.connect(dest); s.start(); lfo(g.gain, .12, v * .8, v); };
   const lapping = v => every(() => burst(380 + Math.random() * 200, 1.2, .5 + Math.random() * .5, v, 'lowpass'), 900, 2600);
-  const surf = v => { const s = noise(), lp = filt('lowpass', 700), g = gain(0); s.connect(lp); lp.connect(g); g.connect(dest); s.start(); lfo(g.gain, .09, v * .9, v); };
+  // a wave: the swell rises and brightens as it breaks, then the wash runs back up the sand with a
+  // fizz on top; one every few seconds, overlapping, over a low rumble of the sea further out
+  const waves = (v, slow = 1) => {
+    { const s = noise(), lp = filt('lowpass', 150), g = gain(v * .22); s.connect(lp); lp.connect(g); g.connect(dest); s.start(); }
+    every(() => {
+      const t = ctx.currentTime, up = (1.3 + Math.random() * .9) * slow, down = (3 + Math.random() * 1.8) * slow, pk = v * (.65 + Math.random() * .5);
+      const n = noise(), lp = filt('lowpass', 240, .5), e = gain(0); n.connect(lp); lp.connect(e); e.connect(dest);
+      lp.frequency.setValueAtTime(240, t); lp.frequency.exponentialRampToValueAtTime(900 + Math.random() * 600, t + up); lp.frequency.exponentialRampToValueAtTime(260, t + up + down);
+      e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(pk, t + up); e.gain.exponentialRampToValueAtTime(.0005, t + up + down); n.start(t); n.stop(t + up + down + .1);
+      const n2 = noise(), bp = filt('bandpass', 3000, .6), e2 = gain(0); n2.connect(bp); bp.connect(e2); e2.connect(dest);
+      e2.gain.setValueAtTime(0, t + up * .8); e2.gain.linearRampToValueAtTime(pk * .16, t + up + .35); e2.gain.exponentialRampToValueAtTime(.0005, t + up + down * .8); n2.start(t + up * .8); n2.stop(t + up + down);
+    }, 4200 * slow, 7800 * slow);
+  };
   const thunderFar = () => every(() => burst(90, .7, 3.5, .14, 'lowpass'), 25000, 60000);
   const busy = { sunny: 1.7, calm: 1, breezy: 1, birdsong: 2.2, hot: .6, overcast: .35, rain: .05, storm: 0, fog: .3 }[W] ?? 1;
   const windy = { sunny: .01, calm: .012, breezy: .04, birdsong: .012, hot: .008, overcast: .026, rain: .02, storm: .07, fog: .005 }[W] ?? .015;
@@ -83,14 +94,10 @@ function scape(ctx, dest, sc, { noise, filt, gain, every, lfo }) {
       if (W !== 'hot') every(() => { tone(700, 1050, .9, .025, 'triangle'); tone(1050, 900, 1.1, .022, 'triangle', .9); }, 26000, 60000);   // the loon
     }
   } else if (sc.venue === 'survival-island') {
-    // Soluna: surf, tropical birds, cicadas in the heat, palm fronds
-    surf(sc.shore ? .07 : .04); wind(900, windy * .7);
-    if (sc.night) { crickets(.012); every(() => burst(2400, 8, .25, .02), 3000, 9000); }
-    else {
-      every(() => { const f = 1200 + Math.random() * 600; tone(f, f * 1.8, .18, .03, 'sawtooth'); tone(f * 1.6, f, .2, .025, 'sawtooth', .2); }, 5000 / busy, 14000 / busy);   // parrots
-      every(() => tone(1600, 1300, .5, .02, 'triangle'), 7000, 18000);   // gulls
-      cicadas(W === 'hot' ? .02 : .006);
-    }
+    // Soluna: the sea and the palms, nothing else (the user, 2026-10-11: no parrots, gulls or cicadas,
+    // and the old surf, one steady hiss, "isn't good enough"): waves that break and wash back
+    waves(sc.shore ? .11 : .06, sc.night ? 1.3 : 1); wind(900, windy * .6);
+    if (sc.night) crickets(.004);
   } else if (sc.venue === 'film-lot') {
     // the backlot: the city beyond the fence, a generator, a far plane, sprinklers by day, a dog at night
     { const s = noise(), lp = filt('lowpass', 220), g = gain(.035); s.connect(lp); lp.connect(g); g.connect(dest); s.start(); }
@@ -127,8 +134,9 @@ function build(ctx, dest, spec) {
   if (spec.scape) scape(ctx, dest, spec.scape, { noise, filt, gain, every, lfo });
   if (spec.fire) {
     const s = noise(), bp = filt('bandpass', 900, .5), g = gain(.04 + .015 * Math.min(spec.fire, 4)); s.connect(bp); bp.connect(g); g.connect(dest); s.start();
-    every(() => { const t = ctx.currentTime, n = noise(), hp = filt('highpass', 2200), e = gain(0); n.connect(hp); hp.connect(e); e.connect(dest);
-      e.gain.setValueAtTime(.12 + Math.random() * .16, t); e.gain.exponentialRampToValueAtTime(.001, t + .03 + Math.random() * .05); n.start(t); n.stop(t + .1); }, 50, 280);
+    // the crackle, soft and rounded (it was a hard tick every 50-280ms, heard as a click under everything)
+    every(() => { const t = ctx.currentTime, n = noise(), bp = filt('bandpass', 1800 + Math.random() * 1400, .9), e = gain(0); n.connect(bp); bp.connect(e); e.connect(dest);
+      e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(.03 + Math.random() * .04, t + .006); e.gain.exponentialRampToValueAtTime(.001, t + .05 + Math.random() * .06); n.start(t); n.stop(t + .14); }, 160, 900);
   }
   if (spec.water) {
     const s = noise(), lp = filt('lowpass', 420), g = gain(0); s.connect(lp); lp.connect(g); g.connect(dest); s.start(); lfo(g.gain, .16, .04, .055);
@@ -138,14 +146,13 @@ function build(ctx, dest, spec) {
     if (spec.night) {
       [4300, 4720].forEach((f, k) => { const o = ctx.createOscillator(), am = gain(0), g2 = gain(0); o.frequency.value = f; o.connect(am); am.connect(g2); g2.connect(dest); o.start();
         const p = ctx.createOscillator(); p.type = 'square'; p.frequency.value = 28 + k * 3; const pg = gain(.5); p.connect(pg); pg.connect(am.gain); p.start();
-        every(() => { const t = ctx.currentTime; g2.gain.setValueAtTime(.01, t); g2.gain.setValueAtTime(0, t + .35 + Math.random() * .3); }, 700 + k * 230, 1300 + k * 300); });
+        every(() => { const t = ctx.currentTime; g2.gain.setTargetAtTime(.01, t, .02); g2.gain.setTargetAtTime(0, t + .35 + Math.random() * .3, .03); }, 700 + k * 230, 1300 + k * 300); });
     } else {
       every(() => { const t0 = ctx.currentTime, n = 2 + Math.floor(Math.random() * 4), f = 2600 + Math.random() * 1800;
         for (let i = 0; i < n; i++) { const t = t0 + i * (.09 + Math.random() * .05), o = ctx.createOscillator(), e = gain(0); o.connect(e); e.connect(dest);
           o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * (1.3 + Math.random() * .4), t + .06); e.gain.linearRampToValueAtTime(.035, t + .01); e.gain.exponentialRampToValueAtTime(.001, t + .08); o.start(t); o.stop(t + .1); } }, 1600, 5200);
     }
   }
-  if (spec.flies) [182, 197, 214].forEach((f, k) => { const o = ctx.createOscillator(), lp = filt('lowpass', 1100), g = gain(0); o.type = 'sawtooth'; o.frequency.value = f; o.connect(lp); lp.connect(g); g.connect(dest); o.start(); lfo(o.frequency, 9 + k * 2, 14, f); lfo(g.gain, .3 + k * .17, .01, .011); });
   if (spec.rain) {
     // the rain on Rescue Island: a hiss, drops on leaves, a far roll of thunder now and then
     const s = noise(), hp = filt('highpass', 1400), lp = filt('lowpass', 7000), g = gain(.07); s.connect(hp); hp.connect(lp); lp.connect(g); g.connect(dest); s.start();
@@ -158,16 +165,31 @@ function build(ctx, dest, spec) {
   if (spec.crowd) { const s = noise(), bp = filt('bandpass', 700, .8), g = gain(.018); s.connect(bp); bp.connect(g); g.connect(dest); s.start(); lfo(g.gain, .4, .006, .018); }
 }
 
+// The mix (the user, 2026-10-11: "the ambience shouldn't be too strong, we wanna hear the voices …
+// if you're mixing ambience with real music, the music is more important"): the place sits low on its
+// own, far lower under a music bed, and dips again for as long as somebody is talking.
+const AMB_ALONE = .55, AMB_UNDER_MUSIC = .18, AMB_UNDER_VOICE = .45;
+let talkUntil = 0;
+const ambBase = () => (engine._currentBed ? AMB_UNDER_MUSIC : AMB_ALONE);
+function ambLevel() {
+  if (!amb) return;
+  const ctx = amb.context, now = ctx.currentTime, base = ambBase();
+  amb.gain.cancelScheduledValues(now); amb.gain.setTargetAtTime(talkUntil > now ? base * AMB_UNDER_VOICE : base, now, .25);
+  if (talkUntil > now) amb.gain.setTargetAtTime(base, talkUntil, .4);
+}
+// the music bed is chosen after the screen paints (vp-ui.js), and announced with vp:screen
+if (typeof document !== 'undefined') document.addEventListener('vp:screen', () => setTimeout(ambLevel, 60));
+
 /** The place's ambience. Called on every paint; rebuilt only when the place changes. */
 export function ambience(spec) {
   const o = out();
   const k = o ? JSON.stringify(spec) : '';
-  if (k === key) return;
+  if (k === key) { ambLevel(); return; }
   key = k;
   timers.forEach(clearTimeout); timers = [];
   if (amb) { const old = amb, ctx = old.context; old.gain.setTargetAtTime(0, ctx.currentTime, .3); setTimeout(() => { try { old.disconnect(); } catch { /* gone */ } }, 1500); amb = null; }
   if (!o || !spec) return;
-  amb = o.ctx.createGain(); amb.gain.value = 0; amb.connect(o.dest); amb.gain.setTargetAtTime(1, o.ctx.currentTime, .6);
+  amb = o.ctx.createGain(); amb.gain.value = 0; amb.connect(o.dest); amb.gain.setTargetAtTime(ambBase(), o.ctx.currentTime, .6);
   build(o.ctx, amb, spec);
 }
 export function stopAmbience() { ambience(null); }
@@ -227,79 +249,3 @@ export function sfx(kind) {
   else if (kind === 'thunder') { hiss(90, 2.4, .5, 'lowpass'); blast(55, 30, 1.6, 'sine', .35); }
 }
 
-// ── THE VOICES ────────────────────────────────────────────────────────
-// A video game's talk (the user, 2026-10-11: "them talking should make some sounds … their voices
-// made some sounds"): every line is spoken as a short run of gibberish syllables, Animal Crossing
-// style, in the speaker's own voice. A syllable is a buzz shaped by two vowel formants taken from the
-// line's own vowels, so it reads as speech and not as a beep (the old typewriter blip, one square
-// click every two letters for everyone, was the "click" the user asked to have removed). The phrase
-// is capped: a long line is voiced at its start, the text carries the rest.
-// v: { f (base pitch, Hz), wave, bright (formant shift), range (pitch spread), rate (syllables/s) }
-const VOWEL = { a: [800, 1250], e: [470, 1900], i: [330, 2300], o: [520, 900], u: [370, 820], y: [400, 2000] };
-let talk = null;
-/** Cut whoever is talking (a new step is a new line). */
-export function hush() {
-  if (!talk) return;
-  const g = talk, c = g.context; talk = null;
-  try { g.gain.setTargetAtTime(0, c.currentTime, .015); } catch { /* gone */ }
-  setTimeout(() => { try { g.disconnect(); } catch { /* gone */ } }, 250);
-}
-function bus(o) { hush(); talk = o.ctx.createGain(); talk.gain.value = 1; talk.connect(o.dest); return talk; }
-// one syllable at time tt: the buzz through the vowel's two formants, a quick swell and decay
-// a sawtooth or square buzz carries about three times a triangle's energy through the formants: level them
-const WAVE_LEVEL = { sawtooth: .38, square: .5, triangle: 1, sine: 1.15 };
-function syl(ctx, dest, v, vowel, tt, dur, f0, f1, vol) {
-  const [F1, F2] = VOWEL[vowel] || VOWEL.a, b = v.bright || 1;
-  vol *= WAVE_LEVEL[v.wave] ?? 1;
-  const os = ctx.createOscillator(); os.type = v.wave || 'triangle';
-  os.frequency.setValueAtTime(f0, tt); os.frequency.exponentialRampToValueAtTime(Math.max(f1, 40), tt + dur);
-  const env = ctx.createGain(); env.gain.setValueAtTime(0, tt);
-  env.gain.linearRampToValueAtTime(vol, tt + Math.min(.018, dur / 3)); env.gain.setValueAtTime(vol, tt + dur * .55); env.gain.exponentialRampToValueAtTime(.0006, tt + dur);
-  env.connect(dest);
-  [[F1 * b, 5, 1], [F2 * b, 7, .55]].forEach(([f, q, w]) => { const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = q; const g = ctx.createGain(); g.gain.value = w * 2.2; os.connect(bp); bp.connect(g); g.connect(env); });
-  const body = ctx.createBiquadFilter(); body.type = 'lowpass'; body.frequency.value = 600; const bg = ctx.createGain(); bg.gain.value = .35; os.connect(body); body.connect(bg); bg.connect(env);
-  os.start(tt); os.stop(tt + dur + .03);
-}
-function breath(ctx, dest, tt, dur, f0, f1, vol) {
-  const s = ctx.createBufferSource(); s.buffer = noiseBuf(ctx); const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 1.4;
-  bp.frequency.setValueAtTime(f0, tt); bp.frequency.exponentialRampToValueAtTime(f1, tt + dur);
-  const e = ctx.createGain(); e.gain.setValueAtTime(0, tt); e.gain.linearRampToValueAtTime(vol, tt + dur * .4); e.gain.exponentialRampToValueAtTime(.0006, tt + dur);
-  s.connect(bp); bp.connect(e); e.connect(dest); s.start(tt); s.stop(tt + dur + .03);
-}
-/** Speak a line: its vowels, in the speaker's voice; rising at a question, harder at a shout. */
-export function babble(text, v, { loud = false } = {}) {
-  const o = out(); if (!o || !v || !text) return;
-  const ctx = o.ctx, dest = bus(o);
-  const vow = (String(text).toLowerCase().match(/[aeiouy]+/g) || []).map(g => g[0]);
-  const n = Math.min(vow.length, Math.round(4 + Math.min(text.length, 140) / 9), 16);
-  if (!n) return;
-  const end = String(text).trim().slice(-1), ask = end === '?', yell = loud || end === '!';
-  const step = 1 / (v.rate || 10), vol = (yell ? .075 : .055);
-  let h = 0; for (const ch of text) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  const rnd = () => ((h = (h * 1103515245 + 12345) >>> 0) >>> 8) / 16777216;
-  let t = ctx.currentTime + .03;
-  for (let i = 0; i < n; i++) {
-    const last = i === n - 1, drift = 1 - .06 * (i / n);           // a line settles as it goes
-    const f = v.f * drift * (1 + (rnd() - .5) * 2 * (v.range || .12)) * (yell ? 1.08 : 1);
-    const dur = step * (last ? 1.6 : .8 + rnd() * .35);
-    const f1 = last && ask ? f * 1.35 : last ? f * .9 : f * (1 + (rnd() - .5) * .08);
-    syl(ctx, dest, v, vow[i], t, dur, f, f1, vol);
-    t += step * (.9 + rnd() * .3) + (rnd() < .12 ? step * .7 : 0);   // now and then a word break
-  }
-}
-/** A wordless reaction in the character's voice: the "huh?", the gasp, the groan, the laugh. */
-export function vocal(kind, v, delay = 0) {
-  const o = out(); if (!o || !v) return;
-  const ctx = o.ctx, dest = o.dest, t = ctx.currentTime + .02 + delay, f = v.f;
-  const S = (vw, at, dur, a, b, vol = .065) => syl(ctx, dest, v, vw, t + at, dur, f * a, f * b, vol);
-  if (kind === 'surprised') S('a', 0, .22, 1, 1.55);                                         // "huh?"
-  else if (kind === 'shock') { breath(ctx, dest, t, .32, 1300, 2600, .09); S('a', .2, .16, 1.35, 1.5, .05); }   // the gasp
-  else if (kind === 'betray') { S('o', 0, .12, 1.1, 1.15); S('a', .13, .26, 1.2, 1.6, .075); }   // "what?!"
-  else if (kind === 'angry') { S('u', 0, .32, .85, .68, .075); breath(ctx, dest, t, .25, 500, 380, .03); }   // "ugh"
-  else if (kind === 'sad') S('o', 0, .5, 1.1, .74, .05);                                      // "aww"
-  else if (kind === 'guilty') syl(ctx, dest, { ...v, wave: 'sine', bright: .6 }, 'u', t, .34, f, f * .9, .03);   // "hm"
-  else if (kind === 'relief') { breath(ctx, dest, t, .45, 1400, 600, .07); S('u', .12, .3, 1, .85, .035); }   // "phew"
-  else if (kind === 'scared') { S('i', 0, .1, 1.7, 1.8); S('i', .14, .12, 1.75, 1.9); }      // "eep eep"
-  else if (kind === 'laugh') [1.3, 1.24, 1.18, 1.08].forEach((k, i) => { breath(ctx, dest, t + i * .13, .05, 1800, 1500, .03); S('a', i * .13 + .03, .09, k, k * .95, .06); });
-  else if (kind === 'cry') [1.2, 1.1, 1.0].forEach((k, i) => S('u', i * .24, .2, k, k * .82, .045));
-}

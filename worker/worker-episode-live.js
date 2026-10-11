@@ -3873,6 +3873,19 @@ async function generateCastingInterview(body, env) {
  * Like casting-interview, it must never see a season: a kit is who they are walking in.
  * The vocabulary for `ground` comes from the caller (this worker has no imports: see worker-no-imports).
  */
+// The article as a kit may read it: profileRelevantExcerpt (no recap sections), then the infobox lines a
+// season wrote (teams, eliminations, placements, exes, friends, enemies, episode count) and the sections
+// about other productions or the competition itself. What is left is who they are: personality, family,
+// looks, trivia. Measured on Gwen: the infobox alone named three placements and two exes.
+const KIT_INFOBOX_DROP = /^(.*\b(team|eliminated|place|placement|relationship|friends|enemies|episode count|label|debut|status|season|name)\b.*):/i;
+const KIT_SECTION_DROP = /^(camp tv|competition|.*\btv\b.*|reception|production|voice actors?|gallery)\s*:/i;
+function campKitExcerpt(prose, limit = 10000) {
+  const parts = profileRelevantExcerpt(prose, 60000).split(/\n\n(?=[A-Z][^\n:]{2,40}:\n)/);
+  const kept = parts.filter(part => !KIT_SECTION_DROP.test(part.trim())).map(part =>
+    part.split("\n").filter(l => !(KIT_INFOBOX_DROP.test(l) && l.length < 200)).join("\n"));
+  return kept.join("\n\n").replace(/\n{3,}/g, "\n\n").trim().slice(0, limit);
+}
+
 async function generateCampKit(body, env) {
   const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
   const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
@@ -3883,8 +3896,24 @@ async function generateCampKit(body, env) {
   const p = body.person || {};
   const vocab = body.ground && typeof body.ground === "object" ? body.ground : {};
   if (!p.name) return json({ error: "no person" }, 400);
-  if (!String(p.backstory || "").trim() && !String(p.personality || "").trim()) {
-    return json({ error: "no profile to write from: fill their backstory and personality first (the wiki button), so nothing has to be invented" }, 400);
+  // The wiki article, when the Studio found one (same allowlist and reader as wiki-profile; the recap
+  // sections are dropped by profileRelevantExcerpt). The user, 2026-10-10: "isn't it supposed to fill
+  // from the wiki too?" It is the canon: personality, trivia, quotes. What the show did TO them stays out.
+  let article = "", source = null;
+  const wh = body.wiki && Object.values(WIKI_HOSTS).find(w => w.host === String(body.wiki.host || ""));
+  if (wh && String(body.wiki.title || "").trim()) {
+    const title = String(body.wiki.title).trim();
+    try {
+      const data = await wikiApi(wh.host, { action: "parse", page: title, prop: "wikitext" });
+      const prose = wikitextToProse(data?.parse?.wikitext?.["*"] || "");
+      if (prose.length >= 200) {
+        article = campKitExcerpt(prose);
+        source = { label: wh.label, title, url: `https://${wh.host}/wiki/${encodeURIComponent(title)}` };
+      }
+    } catch { /* the profile alone, below */ }
+  }
+  if (!article && !String(p.backstory || "").trim() && !String(p.personality || "").trim()) {
+    return json({ error: "nothing to write from: no wiki page, and no backstory or personality on their profile, so it would all be invented" }, 400);
   }
   const interview = p.interview && typeof p.interview === "object"
     ? Object.entries(p.interview).filter(([, v]) => v).map(([k, v]) => `- ${k}: ${v}`).join("\n") : "";
@@ -3899,15 +3928,19 @@ async function generateCampKit(body, env) {
 
   const prompt = [
     `You are writing ${p.name}'s lines for the camp scenes of a Total Drama-style reality show.`,
-    "This is the character's whole profile. It is the ONLY source of facts about them.",
+    article ? "Below are their profile and their wiki article. They are the ONLY sources of facts about them."
+      : "This is the character's whole profile. It is the ONLY source of facts about them.",
     "",
     facts,
     p.voice ? `\nHow they talk and act: ${p.voice}` : "",
     p.backstory ? `\nBackstory: ${p.backstory}` : "",
     p.personality ? `\nPersonality: ${p.personality}` : "",
     interview ? `\nTheir casting interview:\n${interview}` : "",
+    article ? `\nTheir article on the ${source.label} (canon: the show's own facts about them):\n${article}` : "",
     "",
-    "THE RULE ABOVE ALL: stay true to the character. Use only what the profile says.",
+    article
+      ? "THE RULE ABOVE ALL: stay true to the character. Use only what the profile and the article say. From the article, use who they ARE (personality, tastes, habits, skills, family, life before the show, how they talk); never what happened to them on a season (no events, eliminations, rivals, romances, other characters)."
+      : "THE RULE ABOVE ALL: stay true to the character. Use only what the profile says.",
     "- Never invent a family member, a name, a past event, a job, a place, an injury, a relationship or a",
     "  number the profile doesn't contain. Where the profile says something hasn't been revealed, don't",
     "  reveal it. If a part would need a fact the profile doesn't have, write it about their personality",
@@ -3939,7 +3972,7 @@ async function generateCampKit(body, env) {
     '  "solo": ["two things they say to the camera then"],',
     '  "ground": [{ "tag": "a tag from the list below", "quote": "the exact words of the profile it comes from" }] }',
     "",
-    "For ground, use ONLY tags from this list, and only where the profile says it plainly (quote it):",
+    "For ground, use ONLY tags from this list, and only where the profile or the article says it plainly (quote it):",
     ...Object.entries(vocab).map(([t, d]) => `- ${t}: ${d}`),
     "No slot other than {a} anywhere. bit, tease and reply have the same length.",
   ].filter(x => x !== "").join("\n");
@@ -3973,7 +4006,7 @@ async function generateCampKit(body, env) {
   const ground = (Array.isArray(k.ground) ? k.ground : []).filter(g => g && vocab[g.tag] && String(g.quote || "").trim())
     .map(g => ({ tag: g.tag, quote: String(g.quote).trim() }));
   if (!kit.thing || !n) return json({ error: "the model wrote no usable kit" }, 502);
-  return json({ ok: true, kit, ground });
+  return json({ ok: true, kit, ground, source });
 }
 
 async function socialViaOpenAI(prompt, env) {

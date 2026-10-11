@@ -1974,7 +1974,7 @@ function _renderEditor() {
           <span class="st-hint">Their own lines, in plain spoken English. Every line plays once a season. {a} is them, {b} is the person they're talking to. One line per entry.</span>
           <div class="st-iv-gen">
             <button type="button" class="st-btn" id="st-kit-write">Write it from their profile</button>
-            <span class="st-hint" id="st-kit-gen-note">one call, from the backstory, personality and voice only; every line stays editable</span>
+            <span class="st-hint" id="st-kit-gen-note">reads their wiki page and profile only; every line stays editable</span>
           </div>
           <label class="st-l">Known for <span class="st-hint">what they're known for, as somebody else would put it</span>
             <input class="st-input" data-kit="thing" value="${_esc(d.kit?.thing || '')}" placeholder="e.g. being goth"></label>
@@ -2115,23 +2115,29 @@ function _renderEditor() {
 
   // ── WRITE THE CAMP KIT ── (worker mode 'camp-kit')
   // Like the interview below: sends the PERSON, never a season, fills the boxes and does not save.
-  // The worker refuses without a backstory or personality, so nothing has to be invented (true to canon).
+  // Reads their wiki article as well as the profile; with neither a page nor a backstory/personality the
+  // worker refuses, so nothing has to be invented (true to canon).
   const kitBtn = ed.querySelector('#st-kit-write');
   if (kitBtn) kitBtn.addEventListener('click', async () => {
     const note = ed.querySelector('#st-kit-gen-note');
     const say = t => { if (note) note.textContent = t; };
     if (!d.name) return say('give them a name first');
-    if (!String(d.backstory || '').trim() && !String(d.personality || '').trim())
-      return say('fill their backstory or personality first (Fill in this profile), so the kit has something true to come from');
     if (_kitCount(d) && !confirm(`${_kitCount(d)} parts of the kit are already written.\n\nOverwrite them?`)) return;
     kitBtn.disabled = true;
-    say('writing…');
     try {
+      // their wiki article too, like Fill in this profile (same lookup: asks only when a name is on two wikis)
+      say('searching the wiki…');
+      let page = null;
+      try { page = await _resolveWikiPage(d.name); } catch { page = null; }
+      if (!page && !String(d.backstory || '').trim() && !String(d.personality || '').trim())
+        throw new Error('no wiki page, and no backstory or personality to write from (Fill in this profile first)');
+      say(page ? `reading ${page.title} on the ${page.label} and writing…` : 'no wiki page: writing from their profile…');
       const res = await fetch(writerEndpoint(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mode: 'camp-kit',
+          wiki: page ? { host: page.host, title: page.title } : null,
           // the shared-ground vocabulary travels with the request: the worker keeps no copy
           ground: GROUND,
           person: {
@@ -2151,7 +2157,8 @@ function _renderEditor() {
       ed.querySelectorAll('[data-kit-bit]').forEach(el => { el.value = d.kit.bits[+el.dataset.kitBit]?.[el.dataset.part] || ''; });
       kitCount();
       const why = (json.ground || []).map(g => `${g.tag} ("${g.quote}")`).join('; ');
-      say(`written: read it, edit, then Save character${why ? ` · shared ground from: ${why}` : ''}`);
+      const from = json.source ? `from their profile and ${json.source.title} on the ${json.source.label}` : 'from their profile';
+      say(`written ${from}: read it, edit, then Save character${why ? ` · shared ground from: ${why}` : ''}`);
     } catch (e) {
       say(`couldn't write it: ${e.message}`);
     } finally {

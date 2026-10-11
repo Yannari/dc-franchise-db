@@ -2875,6 +2875,10 @@
       "kit": {
         "thing": "being old enough to be everyone's grandmother",
         "alone": "is knitting something long and purple out of a frayed rope",
+        "ground": [
+          "widowed",
+          "grandma"
+        ],
         "bit": [
           "I've been awake since five. Somebody here snores like a leaf blower, and I will find out who.",
           "In my day, we didn't complain about the food. We ate it, and then we complained.",
@@ -2926,7 +2930,8 @@
       "occupation": "Retiree",
       "descriptor": "Bitter old lady",
       "backstory": "Miriam is an elderly widow and bereaved mother whose husband and only son died in a drunk driving accident. When she was younger, her family did not understand her and she struggled to fit in, but sports gave her a sense of purpose; she tried rowing, water polo, lacrosse, cheerleading, debate, knife throwing, archery, cooking, and baking. She owns a cat named Biscuit and has a neighbor named Joey who helps watch over him.",
-      "personality": "Miriam is guarded, sharp-tongued, and initially keeps emotional distance from younger people, but her bitterness comes from grief rather than simple cruelty. Under pressure, she is clever and highly capable, willing to manipulate others or misdirect them when she thinks it is necessary. She can become deeply loyal once someone’s pain reaches her, and she is capable of real warmth, but she will not waste energy pretending to be sweet or harmless."
+      "personality": "Miriam is guarded, sharp-tongued, and initially keeps emotional distance from younger people, but her bitterness comes from grief rather than simple cruelty. Under pressure, she is clever and highly capable, willing to manipulate others or misdirect them when she thinks it is necessary. She can become deeply loyal once someone’s pain reaches her, and she is capable of real warmth, but she will not waste energy pretending to be sweet or harmless.",
+      "ties": []
     },
     {
       "name": "Grett",

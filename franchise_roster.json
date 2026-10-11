@@ -5357,7 +5357,7 @@
         "temperament": 8
       },
       "sexuality": "straight",
-      "voice": "Evie speaks with a glamorous, breathy, Jennifer Coolidge-inspired delivery, making even confused or self-centered lines sound airy and polished. Her vocabulary leans wealthy-socialite and self-flattering—lounging, brunch, massages, charisma—and in an argument she is more likely to misunderstand the stakes, take criticism personally, and pivot into a petty vote than make a hard-edged attack.",
+      "voice": "Evie speaks with a glamorous, breathy, Jennifer Coolidge-inspired delivery, making even confused or self-centered lines sound airy and polished. Her vocabulary leans wealthy-socialite and self-flattering—lounging, brunch, massages, charisma—and in an argument she is more likely to misunderstand the stakes, take criticism personally, and pivot into a petty vote than make a hard-edged attack. #-nerdy #-tough#ditzy#theatrical",
       "profileSources": {
         "backstory": [
           {
@@ -5393,7 +5393,61 @@
       "descriptor": "The Heiress",
       "backstory": "Evangeline “Evie” Marlowe was born in Los Angeles and comes from extreme inherited wealth as the heiress to the Marlowe Oil Fortune. Her upbringing appears luxurious and family-centered in a privileged way: her mother passed down an ascot to her, and her father gave her horses and a stable. Before appearing on television, she spent much of her life maintaining her looks, lounging at resorts, eating, getting massages, drinking wine, gossiping, and enjoying high-society comforts, while feeling judged as someone who had never worked for anything.",
       "personality": "Evie behaves like a pampered socialite who wants to be seen as elegant, beautiful, and effortlessly charming, but under pressure she is easily confused, lazy, and prone to avoiding real work. She likes luxury, attention, brunch, travel, and gossip, and she can be petty when criticized, but she is not fundamentally cruel; she is optimistic, socially warm, and capable of leaving setbacks without bitterness. She will play strategically once she understands what is happening, but she will not reliably push herself through boring or difficult tasks.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Glamorous, misunderstood, buoyant\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think they picked me because I have a sort of champagne-in-the-daytime charisma, and people do like to watch a woman who owns excellent scarves become mildly inconvenienced. Also, I’m not afraid to say the wrong thing beautifully.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The most difficult part will be sharing a bathroom with people who may not have a relationship with moisturizer. I’m very communal at brunch, but less so around towels.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to be adored, underestimated, and slightly confusing. If people think I’m just lounging around being decorative, that’s fine, because decorative objects are rarely blamed until very late.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m warmer than I look; the diamonds create a chill, but underneath I’m very soft. I’d like to hide that I take criticism terribly personally, because if someone calls me useless, I may accidentally make that my entire voting philosophy.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My mother’s ascot, because it makes me feel expensive and protected, like a horse with emotional depth.\\n- A very good face cream, because stress is temporary but neck texture is forever.\\n- A bottle of wine, if they allow it, because I make better social decisions while making worse personal ones.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I enjoy massages, resort lounging, gossiping in a harmless but specific way, horseback riding when someone else saddles the horse, and long lunches that become dinner. I also love shopping for things I don’t technically need, which is most things.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is dreadful when it’s aimed at me and absolutely delicious when it’s happening three feet away. I don’t seek it out, but sometimes people are rude, and then suddenly I’m involved and wearing sunglasses indoors.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Oh, maybe, if he’s charming and not damp-looking. I’m open to romance, but I’m not ruining my blowout for a man who thinks protein powder is a personality.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if you can’t be useful, be unforgettable and well-lit.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a little respect, honestly. People assume because I’ve had money and horses and lunches that I’m empty, and I’d love to prove I’m at least half-full, preferably of white wine.\"}]"
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Glamorous, misunderstood, buoyant\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think they picked me because I have a sort of champagne-in-the-daytime charisma, and people do like to watch a woman who owns excellent scarves become mildly inconvenienced. Also, I’m not afraid to say the wrong thing beautifully.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The most difficult part will be sharing a bathroom with people who may not have a relationship with moisturizer. I’m very communal at brunch, but less so around towels.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to be adored, underestimated, and slightly confusing. If people think I’m just lounging around being decorative, that’s fine, because decorative objects are rarely blamed until very late.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m warmer than I look; the diamonds create a chill, but underneath I’m very soft. I’d like to hide that I take criticism terribly personally, because if someone calls me useless, I may accidentally make that my entire voting philosophy.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My mother’s ascot, because it makes me feel expensive and protected, like a horse with emotional depth.\\n- A very good face cream, because stress is temporary but neck texture is forever.\\n- A bottle of wine, if they allow it, because I make better social decisions while making worse personal ones.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I enjoy massages, resort lounging, gossiping in a harmless but specific way, horseback riding when someone else saddles the horse, and long lunches that become dinner. I also love shopping for things I don’t technically need, which is most things.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is dreadful when it’s aimed at me and absolutely delicious when it’s happening three feet away. I don’t seek it out, but sometimes people are rude, and then suddenly I’m involved and wearing sunglasses indoors.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Oh, maybe, if he’s charming and not damp-looking. I’m open to romance, but I’m not ruining my blowout for a man who thinks protein powder is a personality.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if you can’t be useful, be unforgettable and well-lit.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a little respect, honestly. People assume because I’ve had money and horses and lunches that I’m empty, and I’d love to prove I’m at least half-full, preferably of white wine.\"}]",
+      "ties": [],
+      "kit": {
+        "thing": "being rich",
+        "alone": "is lying on a towel she has somehow kept perfectly clean",
+        "ground": [
+          "wealthy",
+          "underestimated"
+        ],
+        "bit": [
+          "Is there a spa on this island? There must be a spa. Somewhere. Behind a rock.",
+          "I'm not lazy, darling. I'm conserving my charisma for when it's needed.",
+          "My mother gave me this ascot. It has been to every resort worth going to, and it has never been to a place like this."
+        ],
+        "tease": [
+          "Evie, there's no spa.",
+          "When is it needed?",
+          "You brought an ascot? Here?"
+        ],
+        "reply": [
+          "Then what's the point of the island?",
+          "Brunch, mostly. And emergencies.",
+          "Of course. You never know when you'll need to look elegant during a crisis."
+        ],
+        "home": [
+          "A lovely little estate, my horses, and a very attentive masseuse who I miss terribly already.",
+          "My father's stables, my scarf collection, and my brunch friends, who are all very worried."
+        ],
+        "want": [
+          "To be charming on television. And the money, I suppose, though I've got rather a lot already.",
+          "To find a man. Is that allowed? I'm putting it out there."
+        ],
+        "conf": [
+          "Everyone thinks I'm silly. I'm not silly. I'm just very, very relaxed.",
+          "I've never done anything hard in my entire life. This is my first time. It's awful."
+        ],
+        "askHome": [
+          "And who's waiting for you at home, darling? A husband? Two?",
+          "Do you have a big house? Tell me about the house."
+        ],
+        "askWant": [
+          "What on earth are you doing here, darling? Is it the money? It's always the money.",
+          "What do you want? I want a massage."
+        ],
+        "defend": [
+          "Well, I think I'm very interesting, actually. Money doesn't make you boring, darling. It just makes you rested."
+        ],
+        "deep": [
+          "Everybody thinks I've had an easy life. I have. And I've never once been sure anybody liked me for me."
+        ],
+        "solo": [
+          "Darling, I'm not lazy. I'm conserving my energy, like the rich do.",
+          "Everybody thinks I've never worked a day in my life. They're right, and I'm working very hard right now."
+        ]
+      }
     },
     {
       "name": "Finn",

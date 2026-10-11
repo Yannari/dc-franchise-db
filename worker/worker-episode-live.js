@@ -3972,7 +3972,7 @@ async function generateCampKit(body, env) {
     '  "solo": ["two things they say to the camera then"],',
     '  "ground": [{ "tag": "a tag from the list below", "quote": "the exact words of the profile it comes from" }] }',
     "",
-    "For ground, use ONLY tags from this list, and only where the profile or the article says it plainly (quote it):",
+    "For ground, use ONLY tags from this list, and only where the backstory, personality or article says it plainly (quote it; the archetype and the facts lines are not evidence):",
     ...Object.entries(vocab).map(([t, d]) => `- ${t}: ${d}`),
     "No slot other than {a} anywhere. bit, tease and reply have the same length.",
   ].filter(x => x !== "").join("\n");
@@ -4003,7 +4003,10 @@ async function generateCampKit(body, env) {
   for (const part of ["bit", "tease", "reply", "home", "want", "conf", "askHome", "askWant", "defend", "deep", "solo"]) kit[part] = list(k[part]);
   const n = Math.min(kit.bit.length, kit.tease.length, kit.reply.length);
   for (const part of ["bit", "tease", "reply"]) kit[part] = kit[part].slice(0, n);
-  const ground = (Array.isArray(k.ground) ? k.ground : []).filter(g => g && vocab[g.tag] && String(g.quote || "").trim())
+  // a tag must quote their life (backstory, personality, article), never the facts line: Gwen came back
+  // "underestimated" quoting "Plays as: underdog", which is the archetype, not something that happened to her
+  const fromFacts = q => /^(plays as|age|occupation|from)\b/i.test(q) || facts.toLowerCase().includes(q.toLowerCase());
+  const ground = (Array.isArray(k.ground) ? k.ground : []).filter(g => g && vocab[g.tag] && String(g.quote || "").trim() && !fromFacts(String(g.quote).trim()))
     .map(g => ({ tag: g.tag, quote: String(g.quote).trim() }));
   if (!kit.thing || !n) return json({ error: "the model wrote no usable kit" }, 502);
   return json({ ok: true, kit, ground, source });

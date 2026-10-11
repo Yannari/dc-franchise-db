@@ -24,6 +24,11 @@ ap.add_argument('--force', action='store_true', help='render lines that already 
 # lines voiced together: measured on the RTX 5070 Laptop (8 GB), one at a time 11.9 s a line, 6 at once 3.1 s,
 # 12 at once 2.5 s (6.2 GB), 18 at once 6.1 s (7.6 GB: past the card, it spills and slows)
 ap.add_argument('--batch', type=int, default=12)
+# the drift experiments (the user, 2026-10-11: Design acts best but its voices drift between lines)
+ap.add_argument('--profiles', help="a JSON of precise voices per character, used in place of the script's short one")
+ap.add_argument('--seed', type=int, help='every line of a character starts from the same random state (one line at a time: a batch gives each line its own draws)')
+ap.add_argument('--temperature', type=float, help='sampling temperature (the model default is 0.9): lower is less random')
+ap.add_argument('--sub', default='', help='write the clips into this subfolder')
 a = ap.parse_args()
 
 out = pathlib.Path(a.dir)
@@ -35,7 +40,15 @@ t0 = time.time()
 model = Qwen3TTSModel.from_pretrained(model_id, device_map='cuda:0', dtype=torch.bfloat16, attn_implementation='sdpa')
 print(f'loaded {model_id} in {time.time() - t0:.1f}s, {torch.cuda.memory_allocated() / 2**30:.2f} GB on the GPU', flush=True)
 
-todo = [l for l in script['lines'] if a.force or not (out / l['file']).exists()]
+dest = out / a.sub
+dest.mkdir(exist_ok=True)
+profiles = json.loads(pathlib.Path(a.profiles).read_text(encoding='utf-8')) if a.profiles else {}
+def desc(l):
+    return f"{profiles[l['by']]} {l['direction']}" if l['by'] in profiles else l['voiceDescription']
+gen = {'temperature': a.temperature, 'subtalker_temperature': a.temperature} if a.temperature else {}
+if a.seed is not None:
+    a.batch = 1
+todo = [l for l in script['lines'] if a.force or not (dest / l['file']).exists()]
 # a batch runs as long as its longest line: lines of a like length together, so short ones don't wait
 todo.sort(key=lambda l: len(l['text']))
 done, t1 = 0, time.time()
@@ -43,9 +56,11 @@ for i in range(0, len(todo), a.batch):
     chunk = todo[i:i + a.batch]
     torch.cuda.reset_peak_memory_stats()
     t = time.time()
-    wavs, sr = model.generate_voice_design(text=[l['text'] for l in chunk], language=['English'] * len(chunk), instruct=[l['voiceDescription'] for l in chunk])
+    if a.seed is not None:
+        torch.manual_seed(a.seed + sum(map(ord, chunk[0]['by'])))   # the same start for every line of one character
+    wavs, sr = model.generate_voice_design(text=[l['text'] for l in chunk], language=['English'] * len(chunk), instruct=[desc(l) for l in chunk], **gen)
     for line, w in zip(chunk, wavs):
-        sf.write(out / line['file'], w, sr)
+        sf.write(dest / line['file'], w, sr)
     done += len(chunk)
     print(f"{done}/{len(todo)}  {len(chunk)} lines, {sum(len(w) for w in wavs) / sr:5.1f}s of speech in {time.time() - t:5.1f}s  peak {torch.cuda.max_memory_allocated() / 2**30:.2f} GB", flush=True)
 print(f'{done} clips in {time.time() - t1:.0f}s ({(time.time() - t1) / max(done, 1):.1f}s a line), model load {t1 - t0:.0f}s')

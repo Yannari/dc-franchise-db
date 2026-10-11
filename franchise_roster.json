@@ -5631,7 +5631,7 @@
         "temperament": 3
       },
       "sexuality": "asexual",
-      "voice": "She speaks in a hesitant, self-conscious rhythm, often pausing before landing on a strangely intense thought. Her vocabulary makes morbid ideas sound tender or artistic, framing death as permanence and preservation rather than horror. In an argument, she is likely to become nervous and pleading, trying to justify herself and win approval instead of staying detached.",
+      "voice": "She speaks in a hesitant, self-conscious rhythm, often pausing before landing on a strangely intense thought. Her vocabulary makes morbid ideas sound tender or artistic, framing death as permanence and preservation rather than horror. In an argument, she is likely to become nervous and pleading, trying to justify herself and win approval instead of staying detached. #-competitive",
       "profileSources": {
         "backstory": [
           {
@@ -5665,7 +5665,61 @@
       "descriptor": "The Taxidermist",
       "backstory": "Before appearing on the show, Oliwia worked as a taxidermist and genuinely loved the craft. She had been fascinated with death since childhood, which made it difficult for her to make friends because others found her interests and beliefs strange. She kept many pets, some living and some preserved, including a beloved first cat named Lena, and she enjoyed knitting small sweaters for her specimens. Growing up, she did not watch many cartoons, though she liked the Polish cartoon Reksio.",
       "personality": "Oliwia is eccentric, morbidly curious, and desperate to be accepted. Under pressure she becomes anxious and easily agitated, especially when she thinks she might lose approval or be left out. She is loyal in a clingy, approval-seeking way: she wants to be useful, liked, and needed, but that need can push her into unhealthy choices. She will try hard to help people she wants closeness with, but she will not easily accept rejection, judgment, or being treated as disposable.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Quiet, morbid, loyal\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think they picked me because I make people tilt their heads a little. I’m a taxidermist from Alaska who knits sweaters for preserved animals, so… I suppose I am not the most normal little bird in the box.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"Probably the constant noise of people needing things from me. I’m used to stillness, and in my work the bodies are very patient, which is not always true of living people.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"I want to be useful, listen carefully, and not look too hungry too early. I’m not very intimidating physically, so I think I have to be the person people trust until it is time to make a very clean cut.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m loyal if I actually give my word, because that matters to me in a deep, old-fashioned way. I’d like to hide how badly I want people to approve of me, because that is… not a strong-looking organ to leave out on the table.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A small knitted sweater I made for my first cat, Lena, because it reminds me that love can stay after the breathing stops.\\n- A notebook, because my thoughts get crowded and strange if I don’t pin them down somewhere.\\n- A little sewing kit, because I’m calmer when I can mend things, even if it’s just a sleeve or a tiny unraveling edge.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I like taxidermy, knitting, taking careful walks where I look for bones or feathers, and tending to my pets, both living and preserved. I also like old cartoons sometimes, especially Reksio, because he feels gentle without being stupid.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama makes my stomach feel like wet wool. I don’t enjoy it, but I know it can show where the seams are in people, and that can be useful if I don’t panic first.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"No. I’m asexual, and also I think I would rather be haunted than flirt on purpose in a shared kitchen.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if something must end, hold it gently and make it mean something.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get proof that I can be around people without becoming either invisible or embarrassing. And maybe, if I’m lucky, I’ll learn that being odd is not the same as being unwanted.\"}]"
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Quiet, morbid, loyal\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think they picked me because I make people tilt their heads a little. I’m a taxidermist from Alaska who knits sweaters for preserved animals, so… I suppose I am not the most normal little bird in the box.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"Probably the constant noise of people needing things from me. I’m used to stillness, and in my work the bodies are very patient, which is not always true of living people.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"I want to be useful, listen carefully, and not look too hungry too early. I’m not very intimidating physically, so I think I have to be the person people trust until it is time to make a very clean cut.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m loyal if I actually give my word, because that matters to me in a deep, old-fashioned way. I’d like to hide how badly I want people to approve of me, because that is… not a strong-looking organ to leave out on the table.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A small knitted sweater I made for my first cat, Lena, because it reminds me that love can stay after the breathing stops.\\n- A notebook, because my thoughts get crowded and strange if I don’t pin them down somewhere.\\n- A little sewing kit, because I’m calmer when I can mend things, even if it’s just a sleeve or a tiny unraveling edge.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I like taxidermy, knitting, taking careful walks where I look for bones or feathers, and tending to my pets, both living and preserved. I also like old cartoons sometimes, especially Reksio, because he feels gentle without being stupid.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama makes my stomach feel like wet wool. I don’t enjoy it, but I know it can show where the seams are in people, and that can be useful if I don’t panic first.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"No. I’m asexual, and also I think I would rather be haunted than flirt on purpose in a shared kitchen.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if something must end, hold it gently and make it mean something.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get proof that I can be around people without becoming either invisible or embarrassing. And maybe, if I’m lucky, I’ll learn that being odd is not the same as being unwanted.\"}]",
+      "ties": [],
+      "kit": {
+        "thing": "taxidermy",
+        "alone": "is collecting pretty shells into a little pile",
+        "ground": [
+          "lonely-child",
+          "pets"
+        ],
+        "bit": [
+          "That bird by the shelter passed away. It's very peaceful. I could preserve it, if anyone wanted.",
+          "I knit little sweaters for my specimens back home. My first cat, Lena, has six.",
+          "Can I sit with you? I'll be quiet. I'm very good at being quiet. I promise."
+        ],
+        "tease": [
+          "Please don't preserve the bird.",
+          "Your dead cat has six sweaters?",
+          "You can just sit, Oliwia. You don't have to ask."
+        ],
+        "reply": [
+          "Okay. But it would've been beautiful.",
+          "She gets cold. Well, she used to. Now it's for her dignity.",
+          "Oh. Okay. Thank you. That's very nice."
+        ],
+        "home": [
+          "My animals in Alaska. Some living, some preserved. I love all of them the same.",
+          "A workshop, a lot of glass eyes, and Lena, who watches over everything."
+        ],
+        "want": [
+          "To make a friend. A real one, who stays.",
+          "To be useful. If I'm useful, people keep me."
+        ],
+        "conf": [
+          "People think death is scary. I think it's the only thing that lasts.",
+          "I'll do anything to be on the right side of the vote. Anything. I know that's not good."
+        ],
+        "askHome": [
+          "Who's waiting for you at home? Sorry. Is that okay to ask?",
+          "Do you have pets? Living ones?"
+        ],
+        "askWant": [
+          "What do you want out of this? I'd like to know. If that's okay.",
+          "What would make you happy out here?"
+        ],
+        "defend": [
+          "It's not creepy. It's love. I keep things so they don't disappear."
+        ],
+        "deep": [
+          "I didn't have any friends growing up. The animals were the only ones who stayed. I don't want to be alone again."
+        ],
+        "solo": [
+          "I keep things so I can remember them later. This shell is from the day I made a friend. I'm keeping it forever.",
+          "I've been alone a lot. I'm not alone out here. I'm keeping everything, just in case."
+        ]
+      }
     },
     {
       "name": "Ren",

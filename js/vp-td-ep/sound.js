@@ -8,7 +8,8 @@
 import { audio as engine } from '../audio.js';
 
 let amb = null, key = '', timers = [];
-const out = () => { try { return engine.output(); } catch { return null; } };
+let silent = false;   // tdVoiceRecord plays a whole episode at speed: no sound while it does
+const out = () => { if (silent) return null; try { return engine.output(); } catch { return null; } };
 
 let _noise = null;
 function noiseBuf(ctx) {
@@ -369,6 +370,29 @@ function voLoad() {
 const spoken = new Map();
 if (typeof window !== 'undefined') {
   voLoad();
+  // Play a whole episode in this browser, silently and at speed, through every screen and every camp
+  // conversation, then download its lines: one command instead of watching it all and opening every
+  // conversation on the map (the user's first export held only the six lines of the recap).
+  window.tdVoiceRecord = async (ep) => {
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    const idx = uid => document.querySelector(`.tdx[data-uid="${uid}"]`)?.dataset.idx || '';
+    silent = true; stopAmbience();
+    try {
+      window.openVisualPlayer(ep); await wait(1500);
+      const n = (window.vpScreens || []).length;
+      for (let si = 0; si < n; si++) {
+        window.vpCurrentScreen = si; window.renderVPScreen(); await wait(400);
+        const uid = document.querySelector('.tdx')?.dataset.uid; if (!uid) continue;
+        const map = !!document.querySelector('.tdm-root');
+        for (let k = 0; k < (map ? 60 : 400); k++) {
+          const a = idx(uid); window.tdxNext(uid); await wait(map ? 90 : 35);
+          if (!map && a === idx(uid) && k > 3) break;
+        }
+        console.log(`tdVoiceRecord: screen ${si + 1}/${n}, ${spoken.size} lines so far`);
+      }
+    } finally { silent = false; }
+    return window.tdVoiceExport(ep);
+  };
   window.tdVoiceExport = (ep) => {
     const lines = [...spoken.values()].filter(l => ep == null || +l.ep === +ep);
     const eps = [...new Set(lines.map(l => l.ep))];

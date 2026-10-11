@@ -3963,7 +3963,8 @@ async function generateCampKit(body, env) {
   try { k = JSON.parse(text); } catch { /* below */ }
   if (!k || typeof k !== "object") return json({ error: "the model did not return JSON", raw: String(text).slice(0, 400) }, 502);
   // only the parts asked for, only strings, only the {a} slot; bits kept whole (bit/tease/reply together)
-  const clean = x => String(x || "").trim().replace(/\{(?!a\})[^}]*\}/g, "");
+  // straight quotes, like every hand-written kit (the model writes curly ones)
+  const clean = x => String(x || "").trim().replace(/\{(?!a\})[^}]*\}/g, "").replace(/[‘’]/g, "'").replace(/[“”]/g, '"');
   const list = x => (Array.isArray(x) ? x : []).map(clean).filter(Boolean);
   const kit = { thing: clean(k.thing), alone: clean(k.alone).replace(/^\{a\}\s+is\s+/i, "") };
   for (const part of ["bit", "tease", "reply", "home", "want", "conf", "askHome", "askWant", "defend", "deep", "solo"]) kit[part] = list(k[part]);

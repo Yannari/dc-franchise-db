@@ -3462,7 +3462,7 @@
         "temperament": 8
       },
       "sexuality": "lesbian",
-      "voice": "Measured, thoughtful, and quietly formal, with confidence that grows rather than announces itself. Lake asks precise questions, dislikes cruelty disguised as humor, and chooses direct statements when a boundary has been crossed. Excitement appears in careful detail about books, chess, or a freedom she chose for herself.",
+      "voice": "Measured, thoughtful, and quietly formal, with confidence that grows rather than announces itself. Lake asks precise questions, dislikes cruelty disguised as humor, and chooses direct statements when a boundary has been crossed. Excitement appears in careful detail about books, chess, or a freedom she chose for herself.#warm#calm#earnest",
       "profileSources": {
         "voice": [
           {
@@ -3515,7 +3515,62 @@
       "nationality": "German",
       "occupation": "Writer",
       "backstory": "Lake Müller grew up under strict parents who controlled her schedule, appearance, and future. The pressure to be perfect left her private, anxious about vulnerability, and deeply self-conscious about wearing a wig after stress-related hair loss. Chess and writing offered places to think freely. Friendships beyond her family eventually gave her the support to defy that control, choose a new appearance, and begin living according to her own values.",
-      "personality": "Lake is intelligent, creative, principled, and shaped by years of rigid parental control. Perfection was enforced so harshly that stress contributed to her losing her hair, and hiding vulnerability became a survival habit. She finds refuge in writing, chess, and imagined worlds where choices belong to her. Freedom has not made her reckless; it has made her deliberate. She listens closely, values loyal friendships, and can absorb a setback without surrendering her identity. Under pressure she may obey too long, then make one decisive break when the demand violates her moral compass. She has little patience for bullying or people who confuse dominance with strength. Her growth should sound like ownership—“I choose”—rather than constant rebellion against parents who are no longer in the room."
+      "personality": "Lake is intelligent, creative, principled, and shaped by years of rigid parental control. Perfection was enforced so harshly that stress contributed to her losing her hair, and hiding vulnerability became a survival habit. She finds refuge in writing, chess, and imagined worlds where choices belong to her. Freedom has not made her reckless; it has made her deliberate. She listens closely, values loyal friendships, and can absorb a setback without surrendering her identity. Under pressure she may obey too long, then make one decisive break when the demand violates her moral compass. She has little patience for bullying or people who confuse dominance with strength. Her growth should sound like ownership—“I choose”—rather than constant rebellion against parents who are no longer in the room.",
+      "ties": [],
+      "kit": {
+        "thing": "chess",
+        "alone": "is folding every piece of clothing into a perfect square",
+        "ground": [
+          "strict-parents",
+          "writer",
+          "mental-health"
+        ],
+        "bit": [
+          "If anyone wants to play, I've drawn a chessboard in the sand. The pieces are shells. The white king is a slightly larger shell.",
+          "I've started writing a story about a girl stranded on an island. It's fiction. Mostly.",
+          "There's a precise way to split the firewood so it lasts all night. I can show you, if you'd like to do it properly."
+        ],
+        "tease": [
+          "You're playing chess with shells. On a beach. In a survival game.",
+          "Is the girl in the story going to vote anyone out?",
+          "Is there a precise way to do everything?"
+        ],
+        "reply": [
+          "Chess is a survival game. It just has better manners.",
+          "Not yet. She's still deciding who she trusts.",
+          "Yes. Most people simply don't bother."
+        ],
+        "home": [
+          "My friends, who helped me stop living the way my parents wanted me to. I chose this. That still feels strange to say.",
+          "My notebooks and my chessboard. My parents, technically, though they don't know I'm here."
+        ],
+        "want": [
+          "To make my own choices for as long as I can. Winning would just be the last one.",
+          "To win, without becoming someone I'd have to forgive."
+        ],
+        "conf": [
+          "I've spent my life being told what to do. Out here, every move is mine. It's terrifying. I love it.",
+          "People confuse being loud with being strong. I'd rather be strong."
+        ],
+        "askHome": [
+          "May I ask who's waiting for you at home?",
+          "What's your life like at home? I'd like to know, if you're willing."
+        ],
+        "askWant": [
+          "What would winning mean for you? Not the money. The other thing.",
+          "What brought you here? I mean the real reason."
+        ],
+        "defend": [
+          "Precision isn't coldness. It's caring enough to do something properly."
+        ],
+        "deep": [
+          "My parents controlled everything. My clothes, my hair, my future. Out here, every choice is mine, and it terrifies me."
+        ],
+        "solo": [
+          "Everything in my bag is folded the same way. It's the one thing on this island I get to control.",
+          "My mother would be horrified by the dirt. I love the dirt. I'm never telling her."
+        ]
+      }
     },
     {
       "name": "Maggy",

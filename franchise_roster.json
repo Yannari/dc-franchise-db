@@ -4200,7 +4200,7 @@
         "temperament": 4
       },
       "sexuality": "bi",
-      "voice": "Bubbly PR-pro social butterfly — banter, slang, teasing, a little dirty humor. Charms everyone, asks the bold questions, bonds fast and flies under the radar while doing it. Fast, quippy and warm.",
+      "voice": "Bubbly PR-pro social butterfly — banter, slang, teasing, a little dirty humor. Charms everyone, asks the bold questions, bonds fast and flies under the radar while doing it. Fast, quippy and warm.#chaotic #blunt#schemer#emotional #-warm",
       "profileSources": {
         "voice": [
           {
@@ -4282,7 +4282,61 @@
       "occupation": "Publicist",
       "descriptor": "Transgender woman with ADHD",
       "backstory": "Natalia Baez was born on August 3, 1996 and is proudly Puerto Rican American. She built a career as a publicist—the person friends call when an image needs repair—and developed a taste for tabloids, celebrity drama, and the human motives behind both. Her parents supported her transition; accepting herself as a transgender woman was frightening and liberating. She also identifies as pansexual and has spoken about having ADHD.",
-      "personality": "Natalia is outgoing, funny, socially curious, and professionally attuned to reputation. She genuinely likes learning about people, whether through direct conversation or gossip, and humor is her fastest route into a group. Friendship also makes her strategically messy: when someone she cares about is targeted, emotion can overwhelm the cleaner plan she intended to play. She is capable of flipping, reconciling with a rival for a shared objective, and recognizing when the public version of events matters as much as the vote. Her returning goal is discipline rather than personality replacement—strong bonds, fewer impulsive pivots, and control of her own story. Serious betrayals remain hard for her to release. Under pressure she talks faster, negotiates across factions, and may expose the whole room rather than leave quietly."
+      "personality": "Natalia is outgoing, funny, socially curious, and professionally attuned to reputation. She genuinely likes learning about people, whether through direct conversation or gossip, and humor is her fastest route into a group. Friendship also makes her strategically messy: when someone she cares about is targeted, emotion can overwhelm the cleaner plan she intended to play. She is capable of flipping, reconciling with a rival for a shared objective, and recognizing when the public version of events matters as much as the vote. Her returning goal is discipline rather than personality replacement—strong bonds, fewer impulsive pivots, and control of her own story. Serious betrayals remain hard for her to release. Under pressure she talks faster, negotiates across factions, and may expose the whole room rather than leave quietly.",
+      "ties": [],
+      "kit": {
+        "thing": "being a publicist",
+        "alone": "is lying on the dock, narrating everyone's love lives to the sky",
+        "ground": [
+          "came-out",
+          "mental-health"
+        ],
+        "bit": [
+          "Okay, I'm not saying there's a story here, but somebody went to the well three times this morning and came back with no water.",
+          "Babes, as a professional publicist, I'm telling you, your image on this team is in crisis. I can fix it. I charge.",
+          "I've already got the chisme on everybody. Who's crying at night, who's whispering, who's lying about where they went."
+        ],
+        "tease": [
+          "Do you ever just mind your own business?",
+          "You're going to charge me? Out here?",
+          "That sounds like a full-time job."
+        ],
+        "reply": [
+          "Minding other people's business IS my business, babes.",
+          "First consult's free. After that we talk about rice.",
+          "It is, and I'm the best employee I've ever had."
+        ],
+        "home": [
+          "My family, who always backed me, even when I came out. Especially then. I'm doing this for them.",
+          "My clients, my friends, and a group chat that has definitely been on fire since I left."
+        ],
+        "want": [
+          "To win, and to control my own story for once instead of fixing everybody else's.",
+          "Discipline. Real bonds, fewer messy flips. And then the money, obviously."
+        ],
+        "conf": [
+          "Everybody thinks gossip is useless. Gossip is just information that hasn't been fact-checked yet.",
+          "I bond fast. It's my superpower and it's going to get me in trouble. It always does."
+        ],
+        "askHome": [
+          "Okay, spill. Who's waiting for you at home? Are they cute?",
+          "Babes, who's back home? Give me names."
+        ],
+        "askWant": [
+          "What do you actually want out of this, though? I won't tell anyone. I'll tell some people.",
+          "What's your story here? Like, how do you want this to end?"
+        ],
+        "defend": [
+          "Babes, gossip is how I survived. I'm not about to be ashamed of it for you."
+        ],
+        "deep": [
+          "When I came out, I was terrified nobody would stay. My family did. I don't take people staying for granted."
+        ],
+        "solo": [
+          "Babes, I know everything. Who likes who, who's lying, who's crying behind the shed. I can't help it.",
+          "Gossip isn't mean if you love everybody. I love everybody. That's my loophole."
+        ]
+      }
     },
     {
       "name": "Richard",

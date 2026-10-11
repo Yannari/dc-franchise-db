@@ -1,10 +1,9 @@
 # Voice test: episode 2
 
-**Before you start:** importing replaces the season you have open. Save yours first (Season > Save).
+These are the lines your own browser spoke, so they play in the season you recorded them from.
 
-1. In the simulator: **Season > Import**, choose `season-vo-test.json` from this folder.
-2. In the Qwen3-TTS demo, for each line below: paste **Text** into the text box and **Voice Description** into the Voice Description box. Generate, listen, regenerate if it is off, then download it and save it in this folder under the **file name** shown.
-3. Reload the simulator (Ctrl+Shift+R), click once anywhere (the browser only allows sound after a click), and watch episode 2. A line with a clip plays it; every other line keeps the blips.
+- To voice them: `C:/Users/yanna/qwen-tts/.venv/Scripts/python.exe tools/td-vo-render.py` (or by hand in the Qwen3-TTS demo: **Text** into the text box, **Voice Description** into its box, saved here under the file name shown).
+- To hear them: reload the simulator (Ctrl+Shift+R), click once anywhere (the browser only allows sound after a click), and watch episode 2. A line with a clip plays it; every other line keeps the blips.
 
 The character part of every description is the same for all of their lines, so the voice should stay the same person; listen for whether it does. That is half of what this test is for.
 

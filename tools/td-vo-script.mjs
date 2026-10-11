@@ -8,10 +8,17 @@
 //   season-vo-test.json the season itself, to load with Season > Import, so the lines play where they aired
 //
 // Needs the dev server on 127.0.0.1:8791.  node tools/td-vo-script.mjs [episode=2] [perCharacter=7]
+//
+// --from <file>: the lines as the USER's browser spoke them (tdVoiceExport() in its console, sound.js)
+// instead of a simulated season. Use this one. The TD writer reads each character's franchise career, so
+// a clean browser and the user's own say different lines for the same save, and a script written in a
+// clean browser matched nothing on the user's screen (2026-10-11).
+//   node tools/td-vo-script.mjs --from ~/Downloads/td-voice-lines-ep2.json [perCharacter=7]
 import { chromium } from 'playwright';
 import fs from 'fs';
 
-const EP = +process.argv[2] || 2, PER = +process.argv[3] || 7;
+const argv = process.argv.slice(2), fi = argv.indexOf('--from'), FROM = fi >= 0 ? argv.splice(fi, 2)[1] : null;
+const EP = FROM ? null : (+argv[0] || 2), PER = +(FROM ? argv[0] : argv[1]) || 7;
 const OUT = 'assets/audio/td/vo-test';
 // three voices as far apart as a test can ask: two young women of opposite energy (can the model keep
 // two of the same gender apart?) and a loud, warm man. Written from each roster profile's "voice".
@@ -23,12 +30,17 @@ const CAST = {
 const N = ['Heather', 'Owen', 'Gwen', 'Duncan', 'Courtney', 'Izzy', 'Cody', 'Sierra', 'Lindsay', 'Harold', 'Leshawna', 'Noah', 'Bridgette', 'Geoff', 'Trent', 'Alejandro'];
 
 fs.mkdirSync(OUT, { recursive: true });
+const errs = [];
+let save = null, lines;
+if (FROM) {
+  const got = JSON.parse(fs.readFileSync(FROM, 'utf8'));
+  lines = got.lines.map(l => ({ by: l.by, text: l.text, id: l.id, screen: l.screen, ep: l.ep, meta: { k: l.k, stage: l.stage, loud: l.loud, shock: l.shock, badge: l.badge } }));
+} else {
 const b = await chromium.launch();
 const page = await b.newPage({ viewport: { width: 1440, height: 900 } });
-const errs = [];
 page.on('pageerror', e => errs.push(String(e).slice(0, 200)));
 await page.goto('http://127.0.0.1:8791/simulator.html'); await page.waitForTimeout(2500);
-const save = await page.evaluate(async ({ N, EP }) => {
+save = await page.evaluate(async ({ N, EP }) => {
   const core = await import('./js/core.js'), ss = await import('./js/savestate.js'), epm = await import('./js/episode.js'), cast = await import('./js/cast-ui.js');
   const roster = await (await fetch('franchise_roster.json')).json();
   core.setPlayers(N.map((n, i) => ({ ...roster.players.find(p => p.name === n), tribe: i % 2 ? 'Bass' : 'Gophers' })));
@@ -54,8 +66,9 @@ for (let si = 0; si < screens.length; si++) {
     if (!isMap && before === after && n > 3) break;
   }
 }
-const lines = await page.evaluate(() => window.__lines);
+lines = await page.evaluate(() => window.__lines);
 await b.close();
+}
 
 // How to read the line. The demo has ONE box, "Voice Description", and it takes who is speaking and how
 // in one go (its own example: "Speak in an incredulous tone, but with a hint of panic beginning to creep
@@ -84,15 +97,19 @@ for (const name of Object.keys(CAST)) {
   const pick = [...new Set([...ask.slice(0, 2), ...shout.slice(0, 2), ...[...mine].sort((a, b) => b.text.length - a.text.length)])].slice(0, PER);
   chosen.push(...mine.filter(l => pick.includes(l)));
 }
-const script = { episode: EP, season: 'season-vo-test.json', note: 'Voice each line in the Qwen3-TTS demo and save it here as <id>.wav (or .mp3).',
+const episode = EP ?? [...new Set(lines.map(l => l.ep))].join(', ');
+const script = { episode, season: FROM ? 'your own (lines recorded in your browser)' : 'season-vo-test.json', note: 'tools/td-vo-render.py voices each line into <id>.wav here (or voice it by hand in the Qwen3-TTS demo).',
   characters: CAST, lines: chosen.map(l => ({ id: l.id, by: l.by, text: l.text, direction: l.direction, voiceDescription: `${CAST[l.by]} ${l.direction}`, file: `${l.id}.wav` })) };
 fs.writeFileSync(`${OUT}/script.json`, JSON.stringify(script, null, 2));
-fs.writeFileSync(`${OUT}/season-vo-test.json`, JSON.stringify(save));
-const md = [`# Voice test: episode ${EP}`, '',
-  '**Before you start:** importing replaces the season you have open. Save yours first (Season > Save).', '',
-  '1. In the simulator: **Season > Import**, choose `season-vo-test.json` from this folder.',
-  '2. In the Qwen3-TTS demo, for each line below: paste **Text** into the text box and **Voice Description** into the Voice Description box. Generate, listen, regenerate if it is off, then download it and save it in this folder under the **file name** shown.',
-  `3. Reload the simulator (Ctrl+Shift+R), click once anywhere (the browser only allows sound after a click), and watch episode ${EP}. A line with a clip plays it; every other line keeps the blips.`, '',
+if (save) fs.writeFileSync(`${OUT}/season-vo-test.json`, JSON.stringify(save));
+// a clip whose line is no longer in the script is a stale render: gone, so the folder is the script
+const keep = new Set(script.lines.map(l => l.file));
+for (const f of fs.readdirSync(OUT)) if (/^L[0-9a-f]{8}\.(wav|mp3)$/.test(f) && !keep.has(f)) fs.unlinkSync(`${OUT}/${f}`);
+const md = [`# Voice test: episode ${episode}`, '',
+  ...(FROM ? [`These are the lines your own browser spoke, so they play in the season you recorded them from.`, '']
+    : ['**Before you start:** importing replaces the season you have open. Save yours first (Season > Save).', '', '1. In the simulator: **Season > Import**, choose `season-vo-test.json` from this folder.']),
+  '- To voice them: `C:/Users/yanna/qwen-tts/.venv/Scripts/python.exe tools/td-vo-render.py` (or by hand in the Qwen3-TTS demo: **Text** into the text box, **Voice Description** into its box, saved here under the file name shown).',
+  `- To hear them: reload the simulator (Ctrl+Shift+R), click once anywhere (the browser only allows sound after a click), and watch episode ${episode}. A line with a clip plays it; every other line keeps the blips.`, '',
   'The character part of every description is the same for all of their lines, so the voice should stay the same person; listen for whether it does. That is half of what this test is for.', ''];
 let k = 0;
 for (const name of Object.keys(CAST)) {
@@ -100,6 +117,6 @@ for (const name of Object.keys(CAST)) {
   for (const l of script.lines.filter(x => x.by === name)) md.push(`### ${++k}. ${name}: save as \`${l.file}\``, '', '**Text**', '```', l.text, '```', '**Voice Description**', '```', l.voiceDescription, '```', '');
 }
 fs.writeFileSync(`${OUT}/SCRIPT.md`, md.join('\n'));
-console.log(`episode ${EP}: ${lines.length} lines shown, ${new Set(lines.map(l => l.by)).size} speakers`);
+console.log(`episode ${episode}: ${lines.length} lines shown, ${new Set(lines.map(l => l.by)).size} speakers`);
 for (const name of Object.keys(CAST)) console.log(`  ${name}: ${lines.filter(l => l.by === name).length} lines, ${script.lines.filter(l => l.by === name).length} chosen`);
 console.log('errors', errs.length ? errs : 'none');

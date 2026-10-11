@@ -197,7 +197,8 @@ function normOf(b) {
   return Math.min(10 ** ((-20 - 20 * Math.log10(rms)) / 20), .89 / Math.max(peak, 1e-4));
 }
 function loadBuf(ctx, path) {
-  if (!bufs[path]) bufs[path] = fetch(TD_AUDIO + path).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status))
+  // the voice test's files change between renders: never from the browser's cache
+  if (!bufs[path]) bufs[path] = fetch(TD_AUDIO + path, path.startsWith('vo-test/') ? { cache: 'no-store' } : undefined).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status))
     .then(a => ctx.decodeAudioData(a)).then(b => ({ b, norm: normOf(b) })).catch(() => null);
   return bufs[path];
 }
@@ -356,15 +357,32 @@ export function lineId(by, text) {
 let voIndex = null;
 const VO = 'vo-test/';
 function voLoad() {
-  if (!voIndex) voIndex = fetch(TD_AUDIO + VO + 'script.json').then(r => r.ok ? r.json() : null)
+  if (!voIndex) voIndex = fetch(TD_AUDIO + VO + 'script.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
     .then(j => { const m = new Set((j?.lines || []).map(l => l.id)); voIndex.ids = m; return m; }).catch(() => { voIndex.ids = new Set(); return voIndex.ids; });
   return voIndex;
 }
-if (typeof window !== 'undefined') voLoad();
+// The lines as THIS browser speaks them. A line's words depend on more than the season save: the TD writer
+// reads each character's franchise career (js/td/past.js), so the user's own browser, with their history,
+// says other lines than a clean one, and a script written in a clean browser matched nothing (the user,
+// 2026-10-11: "I hear the Animal Crossing voice fallback but not the model voices"). So the viewer keeps
+// every line it speaks, and tdVoiceExport() in the console downloads them for tools/td-vo-script.mjs --from.
+const spoken = new Map();
+if (typeof window !== 'undefined') {
+  voLoad();
+  window.tdVoiceExport = (ep) => {
+    const lines = [...spoken.values()].filter(l => ep == null || +l.ep === +ep);
+    const eps = [...new Set(lines.map(l => l.ep))];
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify({ episodes: eps, lines }, null, 1)], { type: 'application/json' }));
+    a.download = `td-voice-lines${ep != null ? `-ep${ep}` : ''}.json`; document.body.appendChild(a); a.click(); a.remove();
+    return `${lines.length} lines from episode${eps.length === 1 ? '' : 's'} ${eps.join(', ')} saved to your Downloads`;
+  };
+}
 /** Speak a line: the voice actor's clip when there is one, else the blips. */
 export function speak(by, text, v, opts = {}) {
   hush();
   const id = lineId(by, text);
+  if (!spoken.has(id)) spoken.set(id, { by, text, id, ...(opts.meta || {}) });
   try { window.__tdLine?.(by, text, id, opts.meta || {}); } catch { /* a harness hook (tools/td-vo-script.mjs) */ }
   const o = out(); if (!o) return;
   if (!voIndex?.ids?.has(id)) return babble(text, v, opts);

@@ -383,7 +383,7 @@ function paint(uid, fresh) {
       if (n >= full.length) { clearInterval(R.typing); say.innerHTML = badge + lit(full); }
     }, 16);
   }
-  if (fresh) { hush(); if ((s.k === 'say' || s.k === 'conf') && s.by && d.text && !d.cls.includes('dir')) speak(s.by, d.text, voiceOf(s.by), { loud: !!(s.loud || s.shock), meta: { k: s.k, stage: s.stage || null, loud: !!s.loud, shock: !!s.shock, badge: d.badge?.text || null, screen: scr.id } }); }
+  if (fresh) { hush(); if ((s.k === 'say' || s.k === 'conf') && s.by && d.text && !d.cls.includes('dir')) speak(s.by, d.text, voiceOf(s.by), { loud: !!(s.loud || s.shock), meta: { k: s.k, stage: s.stage || null, loud: !!s.loud, shock: !!s.shock, badge: d.badge?.text || null, screen: scr.id, ep: scr.ep } }); }
   if (fresh && s.loud) { dlg.classList.remove('loud'); void dlg.offsetWidth; dlg.classList.add('loud'); }
   // what happens, animated
   if (fresh) act(st, castEl, fxEl, scr, L, s, toks);

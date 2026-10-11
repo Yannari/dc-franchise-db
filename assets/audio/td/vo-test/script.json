@@ -1,7 +1,7 @@
 {
-  "episode": 2,
-  "season": "season-vo-test.json",
-  "note": "Voice each line in the Qwen3-TTS demo and save it here as <id>.wav (or .mp3).",
+  "episode": "2",
+  "season": "your own (lines recorded in your browser)",
+  "note": "tools/td-vo-render.py voices each line into <id>.wav here (or voice it by hand in the Qwen3-TTS demo).",
   "characters": {
     "Heather": "Young woman, about 18. Sharp, fast and condescending: a queen-bee villain. Clipped consonants, a sweet sing-song when she wants something, then cold and cutting. Confident, never hesitant.",
     "Owen": "Young man, about 18, big and cheerful. Loud, warm, breathless and excitable, laughs mid-sentence, voice cracks up high when he is excited or scared. Friendly goofball, never mean.",

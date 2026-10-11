@@ -323,10 +323,25 @@ export function shotOf(screen, L, toks) {
   if (L.conf || !L.scene || s.k === 'scene' || s.k === 'title' || s.k === 'ballot' || s.k === 'intro' || s.k === 'found' || s.k === 'ballots') return wide;
   const speaker = s.k === 'say' ? s.by : s.k === 'safe' ? s.who : s.k === 'read' ? null : null;
   const ceremony = !!L.scene.ceremony;
-  if (s.host && ceremony) return wide;
-  if (ceremony && !speaker && !(s.focus || []).length) return wide;
+  // the reading and the handout hold still (the user, 2026-10-10: "the camera moves a lot during voting
+  // for no reason"): every read, reaction and marshmallow used to push in on its own face and back out.
+  // Wide for all of it; one push-in, on the vote that decides it (or the last marshmallow), held on the
+  // one going home until they're out.
+  let held = null;
+  const safeL = L.safe || [];
+  if (ceremony && (L.read || s.k === 'safe' || safeL.length > (L.safeAtScene || 0))) {
+    const sc0 = screen.steps.indexOf(L.scene);
+    for (let i = L.idx; i > sc0; i--) {
+      const x = screen.steps[i];
+      if (x.k === 'read' && x.deciding && !x.revote) { held = x.vote; break; }
+      if (x.k === 'safe' && x.last) { held = (L.scene.seated || []).find(n => !safeL.includes(n) && n !== x.who) || null; break; }
+    }
+    if (!held || s.k === 'out') return wide;
+  }
+  if (s.host && ceremony && !held) return wide;
+  if (ceremony && !held && !speaker && !(s.focus || []).length) return wide;
   const near = toks.filter(t => !t.bg && !t.host);
-  let group = ceremony ? [speaker, ...(s.focus || [])] : [...(L.scene.focus || []), speaker, ...(s.focus || [])];
+  let group = held ? [held] : ceremony ? [speaker, ...(s.focus || [])] : [...(L.scene.focus || []), speaker, ...(s.focus || [])];
   group = [...new Set(group.filter(Boolean))].filter(n => near.some(t => t.n === n));
   if (s.host && !ceremony) group = [...new Set([...group, ...toks.filter(t => t.host).map(t => t.n)])];
   if (!group.length || group.length > 4) return wide;

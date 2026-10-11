@@ -118,6 +118,11 @@ const DRAMA = {
   'idol.found': 7, 'idol.shared': 6, 'idol.search': 3, 'idol.known': 6,
 };
 const dramaOf = (type, step) => DRAMA[`${type}.${step}`] ?? 3;
+// which coach moment airs first after the challenge (the coaching twist's slot, below)
+const COACH_PRI = { coachCardTalk: 9, coachDealBroken: 9, coachTheFall: 9, coachGivesAdvantage: 8, coachBadAdvice: 8, coachCardFlush: 7, coachSaysTheUnsayable: 7,
+  coachPoachedProtege: 7, coachPassedOverNotices: 6, coachDefended: 6, coachCardFlinch: 6, coachUnimpressed: 6, coachPullsRank: 5, coachCompareNotes: 5,
+  coachBreakthrough: 5, coachNoBallotWeightless: 5, coachDealRejected: 5, coachTrade: 5, coachNonAggression: 4, coachStarstruck: 4, coachShineWearsOff: 4,
+  coachOwnSeason: 4, coachPlayingForTheMerge: 3, coachIdleAdvantage: 3, coachProtegeBond: 3 };
 
 const eventsOf = (ep, camp, phase) => {
   const block = ep.campEvents?.[camp];
@@ -328,6 +333,9 @@ const RAW_MORNING = /\b(breakfast|good morning|sunrise|wakes? up|woke up|five in
 const RAW_CHAL = /\b(we lost|we won|lost it for us|carried us|dead last|flew up that wall|right at the end)\b/i;
 function rawFits(ev, ep, phase) {
   if (/^aside\./.test(ev?.scene?.kind || '')) return false;
+  // the coaching twist's scenes are written for the moment they air (td/coach/scenes.js): the word checks below
+  // are for engine lines written without knowing when they would play ("Again." in a drill is not a past)
+  if (/^coach\./.test(ev?.scene?.kind || '')) return true;
   const text = (ev?.lines || []).map(l => l.text).join(' ') || String(ev?.text || '');
   if (ep.num <= 2 && RAW_PAST.test(text)) return false;
   if (!(gs.episodeHistory || []).some(h => (h.num || 0) < ep.num && h.eliminated) && RAW_VOTE.test(text)) return false;
@@ -1505,11 +1513,34 @@ export function airTdEpisode(ep) {
       const LIFE = /^(friendship|showmance|underdog)$/;
       // (a pitch to turn on a friend, below, takes one of these places: the day stays a show's length)
       const pitchHere = ranked.some(f => f.ev?.type === 'turnFriend');
-      const lifeTake = editOn ? ranked.filter(f => LIFE.test(f.line.type)).slice(0, Math.max(0, (phase === 'pre' ? 2 : 1) - (pitchHere ? 1 : 0))) : [];
+      // the coaching twist airs every day (td/coach/scenes.js): in the morning one session (the one where most
+      // happened), after the challenge its strongest moment, two when that one is a big one (the card, a deal,
+      // a gift, a fall). They take camp life's places, so the day stays a show's length.
+      const coachTake = (() => {
+        const mine = ranked.filter(f => f.line.type === 'coach');
+        if (!mine.length) return [];
+        if (phase === 'pre') {
+          const ss = mine.filter(f => f.ev?.type === 'coachSession');
+          const loud = f => (f.ev.trainees || []).reduce((t, x) => t + Math.abs(Number(x.gain) || 0), 0) + (gs._coachSessAired?.[f.ev.coach] === ep.num - 1 ? 0 : 1);
+          const one = ss.sort((x, y) => loud(y) - loud(x) || x.i - y.i).slice(0, 1);
+          if (one[0]) (gs._coachSessAired ||= {})[one[0].ev.coach] = ep.num;
+          return one;
+        }
+        const pri = f => COACH_PRI[f.ev?.type] ?? 3;
+        // the same kind of moment with the same coach not again within four episodes (read 2026-10-10: the
+        // same passed-over confrontation three weeks running, the card shown to the same person twice)
+        const seen = gs._coachAiredKind ||= {};
+        const kindKey = f => `${f.ev?.type}|${f.ev?.scene?.data?.coach || f.step.roles?.a}`;
+        const rest = mine.filter(f => f.ev?.type !== 'coachSession' && !(ep.num - (seen[kindKey(f)] ?? -99) < 4)).sort((x, y) => pri(y) - pri(x) || x.i - y.i);
+        const take = rest.slice(0, rest.length && pri(rest[0]) >= 7 ? 2 : 1);
+        take.forEach(f => { seen[kindKey(f)] = ep.num; });
+        return take;
+      })();
+      const lifeTake = editOn ? ranked.filter(f => LIFE.test(f.line.type)).slice(0, Math.max(0, (phase === 'pre' ? 2 : 1) - (pitchHere ? 1 : 0) - coachTake.length)) : [];
       // a pitch to turn on a friend airs first, inside the cap: it comes back at the vote, and a
       // payoff nobody saw set up is the thing the user keeps finding (camp-events.js checkTurnFriendPitches)
-      const pitchTake = ranked.filter(f => f.ev?.type === 'turnFriend' && !lifeTake.includes(f));
-      const order = [...pitchTake, ...lifeTake, ...ranked.filter(f => !lifeTake.includes(f) && !pitchTake.includes(f))];
+      const pitchTake = [...ranked.filter(f => f.ev?.type === 'turnFriend' && !lifeTake.includes(f)), ...coachTake];
+      const order = [...pitchTake, ...lifeTake, ...ranked.filter(f => !lifeTake.includes(f) && !pitchTake.includes(f) && !(f.line.type === 'coach' && f.ev?.type === 'coachSession'))];
       // one day, one story per person (the user: Duncan panicking, then calmly running the winning plan):
       // tonight's leader doesn't come apart on camera, and the one going home unaware doesn't scramble
       const DISTRESS = { 'friend.mentor': 'b', 'friend.comfort': 'b', 'friend.lift': 'b', 'talk.scramble': 'a', 'conf.paranoia': 'a', 'drama.paranoia': 'a',

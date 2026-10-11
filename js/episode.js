@@ -42,6 +42,7 @@ import { rememberStrategy } from './strategy-memory.js';
 import { updateAdaptationFromEpisode } from './adaptation.js';
 import { applyCoachElimination, coachCardTalk, coachFallout, commitSaveCards, maybeSaveCoach, promoteCoaches, runCoachingBlock } from './coach-episode.js';
 import { coachStatusEvents } from './coach-status-events.js';
+import { writeCoachScene } from './td/coach/scenes.js';
 import { activeCoaches, coachesOf, coachRecord as coachRecordFn, reassignCoaches, tribeHeadcount } from './coaches.js';
 import { runCoachDealBlock } from './coach-deals.js';
 
@@ -2428,6 +2429,25 @@ export function simulateEpisode() {
       // ballot, the card in the room, and a merge nobody else is playing for.
       const statusEvents = coachStatusEvents(ep, tribe, roll);
       const coachEvents = [...falloutEvents, ...dealEvents, ...cardEvents, ...statusEvents];
+      // Each of them as a scene, and the sessions themselves as the morning they were (td/coach/scenes.js):
+      // read through the viewer, a coach season aired none of this, because none of it was a scene
+      const _cctx = { ep, members: tribe.members || [], sessions: blockResult?.sessions || [], passed: blockResult?.passedOver || [] };
+      const _sceneIt = ev => {
+        const sc = writeCoachScene(ev, _cctx);
+        if (sc?.lines?.length) { ev.lines = sc.lines; ev.scene = { kind: sc.kind, who: sc.who, data: { ending: 'any', coach: sc.coach || sc.who.a } }; }
+        return ev;
+      };
+      coachEvents.forEach(_sceneIt);
+      const _byCoach = {};
+      for (const s of blockResult?.sessions || []) (_byCoach[s.coach] ||= { stat: s.stat, trainees: [] }).trainees.push({ name: s.contestant, gain: s.gain });
+      const _sessionEvents = Object.entries(_byCoach).map(([coach, x]) => _sceneIt({ type: 'coachSession', coach, stat: x.stat, trainees: x.trainees,
+        players: [coach, ...x.trainees.map(t => t.name)], badgeText: 'TRAINING', badgeClass: 'gold',
+        text: `${coach} runs a ${x.stat} session with ${x.trainees.map(t => t.name).join(' and ')}.` }));
+      if (_sessionEvents.length) {
+        if (!ep.campEvents) ep.campEvents = {};
+        if (!ep.campEvents[tribeKey]) ep.campEvents[tribeKey] = { pre: [], post: [] };
+        ep.campEvents[tribeKey].pre.push(..._sessionEvents);
+      }
       if (coachEvents.length) {
         if (!ep.campEvents) ep.campEvents = {};
         if (!ep.campEvents[tribeKey]) ep.campEvents[tribeKey] = { pre: [], post: [] };

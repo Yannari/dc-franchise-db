@@ -58,6 +58,8 @@ function ruleOf(ev) {
   if (t === 'breakup') return R('friendship', 'drift');
   // ── the underdog ──
   if (/^(underdogMoment|unexpectedCompetence|socialBoost|moraleBoost)$/.test(t)) return R('underdog', 'rise');
+  // ── the coaching twist (td/coach/scenes.js): a coach's season is one storyline, keyed on the coach ──
+  if (/^coach[A-Z]/.test(t) && /^coach\./.test(kind)) return R('coach', kind.slice(6));
   // ── idols ──
   if (/^(idolSearch|idolFound|idolShare|idolConfession|idolExposureRead|idolBetrayal|voteStealFound|voteStealSnooped|infoTrade)$/.test(t)) return R('idol', t === 'idolFound' || t === 'voteStealFound' ? 'found' : t === 'idolShare' || t === 'idolConfession' ? 'shared' : t === 'idolSearch' ? 'search' : 'known');
   return null;
@@ -79,6 +81,7 @@ export function classify(ev) {
   if (data.group && !data.alliance) data.alliance = data.group;
   let key;
   if (rule.type === 'alliance') key = data.alliance ? `name:${data.alliance}` : `pair:${[a, b].sort().join('|')}`;
+  else if (rule.type === 'coach') key = data.coach || a;
   else if (['bottom', 'underdog', 'scheme', 'idol'].includes(rule.type)) key = a;
   else key = [a, b].sort().join('|');
   return { ...rule, key, roles: { a, b, c }, data };

@@ -730,6 +730,13 @@ function kitToJson(raw) {
   }
   const n = Math.min(out.bit?.length || 0, out.tease?.length || 0, out.reply?.length || 0);
   for (const part of ['bit', 'tease', 'reply']) { if (n) out[part] = out[part].slice(0, n); else delete out[part]; }
+  // shared ground (js/td/story/kits/kits-ground.js): tag words, not lines. Missing from this list, every
+  // Studio save dropped them and the next publish wrote the roster without them (the user, 2026-10-11:
+  // "I filled shared ground right before and all that is gone", Sami and Ara). The vocabulary lives in the
+  // game, which checks the tags again (kits/index.js), so here only the shape: lowercase words and hyphens.
+  const ground = (Array.isArray(k.ground) ? k.ground : typeof k.ground === 'string' ? k.ground.split(/[,\n]/) : [])
+    .map(t => (typeof t === 'string' ? t.trim().toLowerCase() : '')).filter(t => /^[a-z][a-z-]{1,30}$/.test(t));
+  if (ground.length) out.ground = [...new Set(ground)].slice(0, 16);
   return Object.keys(out).length ? JSON.stringify(out) : null;
 }
 

@@ -359,7 +359,7 @@ let voIndex = null;
 const VO = 'vo-test/';
 function voLoad() {
   if (!voIndex) voIndex = fetch(TD_AUDIO + VO + 'script.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
-    .then(j => { const m = new Set((j?.lines || []).map(l => l.id)); voIndex.ids = m; if (m.size) console.info(`[voice test] script loaded: ${m.size} voiced lines`); return m; })
+    .then(j => { const m = new Set((j?.lines || []).map(l => l.id)); voIndex.ids = m; voIndex.files = Object.fromEntries((j?.lines || []).map(l => [l.id, l.file || `${l.id}.wav`])); if (m.size) console.info(`[voice test] script loaded: ${m.size} voiced lines`); return m; })
     .catch(e => { console.warn('[voice test] no script.json:', e); voIndex.ids = new Set(); return voIndex.ids; });
   return voIndex;
 }
@@ -419,7 +419,8 @@ export function speak(by, text, v, opts = {}) {
   if (!voIndex?.ids?.has(id)) return babble(text, v, opts);
   const ctx = o.ctx, tok = talkTok, tag = `[voice test] ${by} ${id} "${String(text).slice(0, 40)}"`;
   console.info(`${tag}: voiced line, loading the clip (audio ${ctx.state})`);
-  const clip = loadBuf(ctx, `${VO}${id}.wav`).then(L => L || loadBuf(ctx, `${VO}${id}.mp3`));
+  const file = voIndex.files?.[id] || `${id}.wav`;
+  const clip = loadBuf(ctx, `${VO}${file}`).then(L => L || (file.endsWith('.wav') ? loadBuf(ctx, `${VO}${id}.mp3`) : null));
   clip.then(L => {
     if (tok !== talkTok) return console.info(`${tag}: skipped, the next line had already started`);
     if (!L) { console.warn(`${tag}: the clip did not load or decode, blips instead`); return babble(text, v, opts); }

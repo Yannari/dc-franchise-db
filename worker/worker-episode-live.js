@@ -44,6 +44,10 @@ export default {
       // A character's Total Drama camp kit (js/td/story/kits.js), written from their PROFILE only.
       // Same reason as `casting-interview` for living here: the key is here.
       return await generateCampKit(body, env);
+    } else if (mode === "speaking-voice") {
+      // What a character SOUNDS like, for voice acting (tools/td-vo-render.py). From the profile only.
+      // Same reason as `camp-kit` for living here: the key is here.
+      return await generateSpeakingVoice(body, env);
     } else if (mode === "continuity-read") {
       // What a career MEANS. The opposite of casting-interview directly above:
       // that one must never see a season, this one may see nothing else.
@@ -4747,6 +4751,97 @@ async function generateWikiProfile(body, env) {
  * over the other — "never nominated" over a camp season — and a paragraph
  * about a career spanning both shows is precisely where that happens.
  * ═══════════════════════════════════════════════════════════════════════ */
+/**
+ * A character's SPEAKING voice: the description Qwen3-TTS VoiceDesign speaks their lines in. Written from
+ * the profile and the stats, told which voices are already taken so the new one stays distinct.
+ *
+ * What the voice-acting test taught (2026-10-11): the model reads every word. "18 years old" and girlish
+ * wording put Heather at 287 Hz, a child's pitch ("like a kid", the user); "voice cracks up high" made Owen
+ * a 279 Hz man. Saying ADULT, the age in words, and the pitch plainly (low, medium) brought them to 218 and
+ * 130 Hz. And a vague description drifts from line to line: precise ones (pitch, timbre, pace, accent, how
+ * sentences end) hold the voice.
+ */
+async function generateSpeakingVoice(body, env) {
+  const person = body.person || {};
+  if (!person.name) return json({ ok: false, error: "no character" }, 400);
+  const others = (Array.isArray(body.others) ? body.others : [])
+    .filter(o => o && o.name && o.speakingVoice && o.name !== person.name).slice(0, 40);
+
+  const EXAMPLES = [
+    ["Heather", "Adult woman in her early twenties, General American accent. A low-to-medium, mature, grown-up voice with a full, rich tone: never childlike, girlish, squeaky or high-pitched. Polished and slightly nasal. Fast, clipped, precise speech with crisp consonants; sentences end on a firm downward note, dismissive and superior. Confident, cold and condescending; sugary only when she is faking it."],
+    ["Owen", "Adult man in his early twenties, General American accent, a big heavy-set guy. A deep, low-pitched bass-baritone voice, warm, round and chesty with a slightly breathy, gravelly edge: a grown man's voice that stays low even when he is excited. Loud, fast and enthusiastic, words tumbling out; only at a real shock does it crack upward for a moment. Goofy, open and good-natured, often on the edge of laughing."],
+    ["Gwen", "Adult woman in her early twenties, General American accent. A low alto, slightly husky and smooth. Slow, even, unhurried pace; flat deadpan intonation with very little pitch movement, sentences ending low. Dry and sarcastic, bored with everyone; only softer and warmer when she means it."],
+    ["Alejandro", "Adult man in his mid twenties with a light Spanish accent. A smooth, velvety low baritone, rich and polished. Slow, deliberate, honeyed delivery, every compliment savoured; charming and seductive on the surface with a cold, controlled edge underneath. Never rushed, never loud."],
+  ].map(([n, v]) => `${n}: ${v}`).join("\n\n");
+
+  const stats = person.stats && typeof person.stats === "object"
+    ? Object.entries(person.stats).map(([k, v]) => `${k} ${v}/10`).join(", ") : "";
+  const sex = person.gender === "f" ? "woman" : person.gender === "m" ? "man" : "person (nonbinary: pick a pitch that fits them and say so plainly)";
+
+  const system = [
+    "You write the SPEAKING voice of a reality-show contestant: one paragraph a text-to-speech voice-design",
+    "model reads to invent their voice. It will speak every line they say, so it must sound like them and",
+    "unlike everyone else in the cast.",
+    "",
+    "WRITE, in this order, 4 to 6 sentences:",
+    "1. Adult + sex + age in words + accent: 'Adult woman in her early twenties, General American accent.'",
+    "   The accent comes from nationality and hometown (British, Australian, Nigerian, Korean, a light Spanish",
+    "   accent...); with neither, General American.",
+    "2. Pitch and timbre: low / medium / high for their sex, and the texture (husky, nasal, gravelly, breathy,",
+    "   smooth, bright, rich, raspy...).",
+    "3. Pace and rhythm: fast, slow, clipped, drawling, run-on, halting.",
+    "4. How sentences end, and what happens to the voice under pressure.",
+    "5. The attitude you hear in it, from their personality.",
+    "",
+    "HARD RULES",
+    "- Always say 'Adult', and the age in words ('early twenties', 'late thirties'). Never a number under 20,",
+    "  never girl, boy, teen, kid or child: the model makes those voices sound like children.",
+    "- A woman is never 'high-pitched' or 'squeaky' unless the profile says so: write 'medium' or 'bright'.",
+    "  A man's voice stays low or medium unless the profile says otherwise. Never describe a crack or squeak",
+    "  as their normal voice: only as a moment under pressure.",
+    "- Use the stats as a guide, proportionally: high boldness is loud and forceful, low is soft and hesitant;",
+    "  low temperament snaps and sharpens, high stays calm; high social is warm and fluent, low is curt.",
+    "- Make it DIFFERENT from every voice already taken (listed below): change the pitch, the texture or the",
+    "  pace so nobody could be confused with someone else of the same sex.",
+    "- Never name an actor, a show or a cartoon. Never invent biography. Plain words a voice model knows.",
+    "",
+    "Examples of the format:",
+    EXAMPLES,
+    "",
+    'Return JSON only: {"speakingVoice": "..."}',
+  ].join("\n");
+
+  const user = [
+    `${person.name}: ${sex}${person.age ? `, age ${person.age}` : ""}.`,
+    person.nationality || person.hometown ? `From: ${[person.nationality, person.hometown].filter(Boolean).join(", ")}` : "",
+    person.ethnicity ? `Ethnicity: ${person.ethnicity}` : "",
+    person.archetype ? `Archetype: ${person.archetype}` : "",
+    stats ? `Stats: ${stats}` : "",
+    person.voice ? `Personality in a line: ${person.voice}` : "",
+    person.personality ? `Personality: ${String(person.personality).slice(0, 1200)}` : "",
+    person.descriptor ? `Known as: ${person.descriptor}` : "",
+    "",
+    others.length ? `Voices already taken:\n${others.map(o => `- ${o.name}: ${String(o.speakingVoice).slice(0, 300)}`).join("\n")}` : "No voices taken yet.",
+  ].filter(Boolean).join("\n");
+
+  let raw = "", provider = "";
+  try {
+    const out = await callShortModel(system, user, env, { maxTokens: 700, model: claudeModel("creative", body, env) });
+    raw = out.text; provider = out.provider;
+  } catch (e) {
+    return json({ ok: false, error: `model: ${e.message}` }, 502);
+  }
+  let v = "";
+  try {
+    const m = raw.match(/\{[\s\S]*\}/);
+    v = String(JSON.parse(m ? m[0] : raw).speakingVoice || "").trim();
+  } catch {
+    return json({ ok: false, error: "the model did not return usable JSON" }, 502);
+  }
+  if (!v) return json({ ok: false, error: "nothing usable came back" }, 502);
+  return json({ ok: true, speakingVoice: v.slice(0, 900), provider });
+}
+
 async function generateContinuityRead(body, env) {
   const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
   const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });

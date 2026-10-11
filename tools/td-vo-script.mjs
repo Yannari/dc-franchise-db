@@ -18,7 +18,9 @@ import { chromium } from 'playwright';
 import fs from 'fs';
 
 const argv = process.argv.slice(2), fi = argv.indexOf('--from'), FROM = fi >= 0 ? argv.splice(fi, 2)[1] : null;
-const EP = FROM ? null : (+argv[0] || 2), PER = +(FROM ? argv[0] : argv[1]) || 7;
+// --all: every line of every character with a voice (a whole episode), not a sample of each
+const ai = argv.indexOf('--all'), ALL = ai >= 0 && !!argv.splice(ai, 1);
+const EP = FROM ? null : (+argv[0] || 2), PER = ALL ? Infinity : +(FROM ? argv[0] : argv[1]) || 7;
 const OUT = 'assets/audio/td/vo-test';
 // three voices as far apart as a test can ask: two young women of opposite energy (can the model keep
 // two of the same gender apart?) and a loud, warm man. Written from each roster profile's "voice".
@@ -27,6 +29,17 @@ const CAST = {
   Owen: 'Young man, about 18, big and cheerful. Loud, warm, breathless and excitable, laughs mid-sentence, voice cracks up high when he is excited or scared. Friendly goofball, never mean.',
   Gwen: 'Young woman, about 18. Low, dry and deadpan: a sarcastic goth who is tired of everyone. Flat, unhurried delivery, little pitch movement, a quiet edge of warmth only with friends.',
 };
+// everyone with a precise voice in voices/profiles.json speaks in it (the demo cast, 2026-10-11); the short
+// descriptions above stay the fallback for anyone without one
+try {
+  const prof = JSON.parse(fs.readFileSync(`${OUT}/voices/profiles.json`, 'utf8'));
+  for (const [k, v] of Object.entries(prof)) if (!k.startsWith('_')) CAST[k] = v;
+} catch { /* no profiles yet */ }
+// and every voice written in the Studio (Speaking voice → speakingVoice on the roster), under the test file's
+try {
+  for (const p of JSON.parse(fs.readFileSync('franchise_roster.json', 'utf8')).players || [])
+    if (String(p.speakingVoice || '').trim() && !CAST[p.name]) CAST[p.name] = p.speakingVoice.trim();
+} catch { /* no roster */ }
 const N = ['Heather', 'Owen', 'Gwen', 'Duncan', 'Courtney', 'Izzy', 'Cody', 'Sierra', 'Lindsay', 'Harold', 'Leshawna', 'Noah', 'Bridgette', 'Geoff', 'Trent', 'Alejandro'];
 
 fs.mkdirSync(OUT, { recursive: true });
@@ -99,12 +112,12 @@ for (const name of Object.keys(CAST)) {
 }
 const episode = EP ?? [...new Set(lines.map(l => l.ep))].join(', ');
 const script = { episode, season: FROM ? 'your own (lines recorded in your browser)' : 'season-vo-test.json', note: 'tools/td-vo-render.py voices each line into <id>.wav here (or voice it by hand in the Qwen3-TTS demo).',
-  characters: CAST, lines: chosen.map(l => ({ id: l.id, by: l.by, text: l.text, direction: l.direction, voiceDescription: `${CAST[l.by]} ${l.direction}`, file: `${l.id}.wav` })) };
+  characters: CAST, lines: chosen.map(l => ({ id: l.id, by: l.by, text: l.text, direction: l.direction, voiceDescription: `${CAST[l.by]} ${l.direction}`, file: `${l.id}.ogg` })) };   // Ogg Opus: a line is ~28 KB, a WAV ~300
 fs.writeFileSync(`${OUT}/script.json`, JSON.stringify(script, null, 2));
 if (save) fs.writeFileSync(`${OUT}/season-vo-test.json`, JSON.stringify(save));
 // a clip whose line is no longer in the script is a stale render: gone, so the folder is the script
 const keep = new Set(script.lines.map(l => l.file));
-for (const f of fs.readdirSync(OUT)) if (/^L[0-9a-f]{8}\.(wav|mp3)$/.test(f) && !keep.has(f)) fs.unlinkSync(`${OUT}/${f}`);
+for (const f of fs.readdirSync(OUT)) if (/^L[0-9a-f]{8}\.(wav|mp3|ogg)$/.test(f) && !keep.has(f)) fs.unlinkSync(`${OUT}/${f}`);
 const md = [`# Voice test: episode ${episode}`, '',
   ...(FROM ? [`These are the lines your own browser spoke, so they play in the season you recorded them from.`, '']
     : ['**Before you start:** importing replaces the season you have open. Save yours first (Season > Save).', '', '1. In the simulator: **Season > Import**, choose `season-vo-test.json` from this folder.']),

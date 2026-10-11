@@ -46,6 +46,13 @@ dest = out / a.sub
 dest.mkdir(exist_ok=True)
 ppath = out / a.profiles if a.profiles and not pathlib.Path(a.profiles).is_absolute() and (out / a.profiles).exists() else pathlib.Path(a.profiles or '')
 profiles = {k: v for k, v in json.loads(ppath.read_text(encoding='utf-8')).items() if not k.startswith('_')} if a.profiles and ppath.is_file() else {}
+# a voice written in the Studio (Speaking voice, saved as speakingVoice on the roster) counts too, under the test file's
+try:
+    for p in json.loads(pathlib.Path('franchise_roster.json').read_text(encoding='utf-8'))['players']:
+        if str(p.get('speakingVoice') or '').strip():
+            profiles.setdefault(p['name'], p['speakingVoice'].strip())
+except (OSError, ValueError, KeyError):
+    pass
 def desc(l):
     return f"{profiles[l['by']]} {l['direction']}" if l['by'] in profiles else l['voiceDescription']
 gen = {'temperature': a.temperature, 'subtalker_temperature': a.temperature} if a.temperature else {}
@@ -63,7 +70,8 @@ for i in range(0, len(todo), a.batch):
         torch.manual_seed(a.seed + sum(map(ord, chunk[0]['by'])))   # the same start for every line of one character
     wavs, sr = model.generate_voice_design(text=[l['text'] for l in chunk], language=['English'] * len(chunk), instruct=[desc(l) for l in chunk], **gen)
     for line, w in zip(chunk, wavs):
-        sf.write(dest / line['file'], w, sr)
+        # .ogg is Ogg Opus: eleven times smaller than a WAV for speech, and every current browser plays it
+        sf.write(dest / line['file'], w, sr, **({'format': 'OGG', 'subtype': 'OPUS'} if line['file'].endswith('.ogg') else {}))
     done += len(chunk)
     print(f"{done}/{len(todo)}  {len(chunk)} lines, {sum(len(w) for w in wavs) / sr:5.1f}s of speech in {time.time() - t:5.1f}s  peak {torch.cuda.max_memory_allocated() / 2**30:.2f} GB", flush=True)
 print(f'{done} clips in {time.time() - t1:.0f}s ({(time.time() - t1) / max(done, 1):.1f}s a line), model load {t1 - t0:.0f}s')

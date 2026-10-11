@@ -362,6 +362,8 @@ function _blankChar() {
     // an age is a number that silently rots, a date does not.
     birthdate:'', hometown:'', occupation:'', backstory:'', personality:'',
     continuityNote:'',
+    // How they SOUND, for voice acting (tools/td-vo-render.py): not `voice`, which is how they write.
+    speakingVoice:'',
     // The casting interview, held as { key: answer } while it is being edited
     // and serialised on save. See js/casting-interview.js.
     interview: {}, profileSources:{},
@@ -1402,6 +1404,7 @@ async function _editBySlug(slug) {
       return k;
     })(),
     age: pick(base.age, rich && rich.age, parsed.age),
+    speakingVoice: pick(base.speakingVoice, rich && rich.speakingVoice),
     ethnicity: pick(base.ethnicity, rich && rich.ethnicity, parsed.ethnicity, legacy.ethnicity),
     nationality: pick(base.nationality, rich && rich.nationality, parsed.nationality, legacy.nationality),
     descriptor: pick(base.descriptor, rich && rich.descriptor, parsed.descriptor, legacy.descriptor),
@@ -1974,6 +1977,21 @@ function _renderEditor() {
       <!-- THE TOTAL DRAMA KIT. Their own lines for camp scenes (js/td/story/kits.js): a running
            bit with the tease and the comeback, home, what they want, confessionals, what they do
            alone. Only while Total Drama is the selected show. {a} is them, {b} whoever they talk to. -->
+      <!-- THE SPEAKING VOICE. What they sound like when the voice actor (Qwen3-TTS) speaks their lines: one
+           paragraph, adult, accent, pitch, texture, pace. Every show, since a character sounds the same
+           wherever they play. -->
+      <details class="st-iv st-sv">
+        <summary class="st-iv-sum">Speaking voice <span class="st-hint" id="st-sv-state">${String(d.speakingVoice || '').trim() ? 'written' : 'empty'} &middot; what they sound like when voiced</span></summary>
+        <div class="st-iv-body">
+          <span class="st-hint">Adult, accent, pitch, texture (husky, nasal, gravelly...), pace, and how their sentences end. Say the pitch plainly: words like "girl" or a teen age make the voice sound like a child.</span>
+          <div class="st-iv-gen">
+            <button type="button" class="st-btn" id="st-sv-write">Write it from their profile</button>
+            <span class="st-hint" id="st-sv-note">kept distinct from the voices already written; stays editable</span>
+          </div>
+          <textarea class="st-input st-area" id="st-f-speaking" rows="4"
+            placeholder="e.g. Adult woman in her early twenties, General American accent. A low alto, slightly husky...">${_esc(d.speakingVoice || '')}</textarea>
+        </div>
+      </details>
       ${_tdSelected() ? `<details class="st-iv st-kit">
         <summary class="st-iv-sum">Camp kit <span class="st-hint" id="st-kit-count">${_kitCount(d) ? `${_kitCount(d)} parts written` : 'empty'} &middot; Total Drama camp scenes</span></summary>
         <div class="st-iv-body">
@@ -2291,6 +2309,46 @@ function _renderEditor() {
 
   _fillContinuity(ed, d.slug);
   ed.querySelector('#st-f-continuity')?.addEventListener('input', e => { d.continuityNote = e.target.value; });
+
+  // ── WRITE THE SPEAKING VOICE ── (worker mode 'speaking-voice')
+  // Sends the person and the voices the rest of the roster already has (same sex first, where two voices
+  // are most easily confused), fills the box and does not save: read it, edit, then Save character.
+  const svBox = ed.querySelector('#st-f-speaking');
+  svBox?.addEventListener('input', e => { d.speakingVoice = e.target.value; });
+  const svBtn = ed.querySelector('#st-sv-write');
+  if (svBtn) svBtn.addEventListener('click', async () => {
+    const note = ed.querySelector('#st-sv-note');
+    const say = t => { if (note) note.textContent = t; };
+    if (!d.name) return say('give them a name first');
+    if (String(d.speakingVoice || '').trim() && !confirm('A speaking voice is already written.\n\nOverwrite it?')) return;
+    svBtn.disabled = true; say('writing…');
+    try {
+      const taken = _roster().filter(p => p.name !== d.name && String(p.speakingVoice || '').trim())
+        .sort((a, b) => (b.gender === d.gender) - (a.gender === d.gender))
+        .slice(0, 40).map(p => ({ name: p.name, speakingVoice: p.speakingVoice }));
+      const res = await fetch(writerEndpoint(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'speaking-voice',
+          person: { name: d.name, gender: d.gender, age: d.age, archetype: d.archetype, stats: d.stats,
+            nationality: d.nationality, hometown: d.hometown, ethnicity: d.ethnicity,
+            descriptor: d.descriptor, voice: d.voice, personality: d.personality },
+          others: taken,
+        }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) throw new Error(json?.error || `worker ${res.status}`);
+      d.speakingVoice = json.speakingVoice;
+      if (svBox) svBox.value = d.speakingVoice;
+      const st = ed.querySelector('#st-sv-state'); if (st) st.textContent = 'written · what they sound like when voiced';
+      say(`written, kept apart from ${taken.length} voice${taken.length === 1 ? '' : 's'} already taken: read it, edit, then Save character`);
+    } catch (e) {
+      say(`couldn't write it: ${e.message}`);
+    } finally {
+      svBtn.disabled = false;
+    }
+  });
   ed.querySelector('#st-cont-write')?.addEventListener('click', () => {
     const note = ed.querySelector('#st-cont-note');
     _draftContinuityRead(ed, d, t => { if (note) note.textContent = t; });
@@ -3103,7 +3161,7 @@ async function _save() {
     // Rides with the bio because it must reach D1 for the same reason the bio
     // does: Publish rebuilds franchise_roster.json from that table, so a field
     // the database never sees is deleted the next time the button is pressed.
-    'continuityNote']) {
+    'continuityNote', 'speakingVoice']) {
     const v = (d[k] ?? '').toString().trim();
     if (v) bio[k] = v;
   }
@@ -3144,7 +3202,7 @@ async function _save() {
     ethnicity: d.ethnicity, nationality: d.nationality, descriptor: d.descriptor,
     birthdate: d.birthdate, hometown: d.hometown,
     occupation: d.occupation, backstory: d.backstory, personality: d.personality,
-    continuityNote: d.continuityNote,
+    continuityNote: d.continuityNote, speakingVoice: d.speakingVoice,
     castingInterview: iv, profileSources: d.profileSources,
     /* AND HER CRAFT. This record is the offline copy of everything the editor
        is holding, and it carried the nine stats' worth of prose and not the

@@ -76,7 +76,7 @@ const VOICE_PATH = 'voice-profiles.json';
 const LIFE_PATH = 'life_events.json';
 const AVATAR_DIR = 'assets/avatars';
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
-const ROSTER_FIELDS = ['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats', 'voice', 'profileSources', 'continuityNote', 'drag', 'ties', 'kit'];
+const ROSTER_FIELDS = ['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats', 'voice', 'profileSources', 'continuityNote', 'drag', 'ties', 'kit', 'speakingVoice'];
 
 export default {
   async fetch(request, env) {
@@ -765,6 +765,8 @@ function rosterRowToJson(r) {
   // franchise_roster.json wholesale FROM this table, so a field the database
   // never hears about is deleted the next time somebody presses the button.
   if (r.continuity_note) out.continuityNote = r.continuity_note;
+  // How they SOUND (voice acting, roster_migration_speaking_voice.sql): read back out, or Publish deletes it.
+  if (r.speaking_voice) out.speakingVoice = r.speaking_voice;
   // The craft block, for the show that scores it. Same reasoning as the
   // continuity note directly above: publish rebuilds the roster file FROM this
   // table, so a field read back here is a field that survives the button.
@@ -892,9 +894,9 @@ async function rosterSave(env, payload) {
     `INSERT INTO roster (slug,name,gender,sexuality,archetype,${STAT_KEYS.join(',')},
                          voice,profile_sources,continuity_note,age,birthdate,ethnicity,nationality,
                          hometown,occupation,descriptor,backstory,personality,
-                         casting_interview,drag,ties,kit,
+                         casting_interview,drag,ties,kit,speaking_voice,
                          is_returnee,retired,updated_at)
-     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
+     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
      ON CONFLICT(slug) DO UPDATE SET
        name=excluded.name, gender=excluded.gender, sexuality=excluded.sexuality,
        archetype=excluded.archetype,
@@ -908,6 +910,7 @@ async function rosterSave(env, payload) {
        personality=excluded.personality,
        casting_interview=excluded.casting_interview,
        drag=excluded.drag, ties=excluded.ties, kit=excluded.kit,
+       speaking_voice=excluded.speaking_voice,
        is_returnee=excluded.is_returnee,
        retired=excluded.retired, updated_at=datetime('now')`
   ).bind(
@@ -920,7 +923,7 @@ async function rosterSave(env, payload) {
     text(payload.hometown), text(payload.occupation),
     text(payload.descriptor), text(payload.backstory), text(payload.personality),
     text(payload.castingInterview),
-    drag, ties, kit,
+    drag, ties, kit, text(payload.speakingVoice),
     payload.isReturnee ? 1 : 0,
     payload.retired ? 1 : 0,
   ).run();

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice Test</title>
+<style>
+  :root { --bg: #f6f4ef; --card: #fff; --ink: #1d1b18; --mute: #6b665d; --line: #e4dfd5; --accent: #c2410c; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #16150f; --card: #211f19; --ink: #f1ede4; --mute: #a39d90; --line: #35322a; --accent: #fb923c; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 60px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--mute); margin: 0 0 24px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; }
+  .voice { color: var(--mute); font-size: 13px; margin: 0 0 10px; }
+  .row { display: flex; gap: 12px; align-items: flex-start; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 8px 0; }
+  button { flex: none; width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; font-size: 16px; cursor: pointer; }
+  button.on { outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent); }
+  .text { font-weight: 600; }
+  .dir { color: var(--mute); font-size: 13px; margin-top: 2px; }
+  .err { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Voice test</h1>
+  <p class="sub">Every voiced line from episode 2, by character. Play a few in a row to hear whether each voice stays the same person.</p>
+  <div id="list"></div>
+</main>
+<script>
+// The voice test's clips in one place: script.json (tools/td-vo-script.mjs) and the <id>.wav beside it.
+let playing = null;
+function play(btn, file) {
+  if (playing) { playing.audio.pause(); playing.btn.classList.remove('on'); playing.btn.textContent = '▶'; }
+  if (playing && playing.btn === btn) { playing = null; return; }
+  const audio = new Audio(file); playing = { audio, btn };
+  btn.classList.add('on'); btn.textContent = '■';
+  audio.onended = () => { btn.classList.remove('on'); btn.textContent = '▶'; playing = null; };
+  audio.onerror = () => { btn.textContent = '!'; btn.title = 'This clip did not load'; };
+  audio.play();
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+fetch('script.json', { cache: 'no-store' }).then(r => r.json()).then(s => {
+  const list = document.getElementById('list');
+  list.innerHTML = Object.entries(s.characters).map(([name, voice]) => {
+    const lines = s.lines.filter(l => l.by === name);
+    return `<h2>${esc(name)}</h2><p class="voice">${esc(voice)}</p>` + lines.map(l =>
+      `<div class="row"><button type="button" aria-label="Play" data-file="${esc(l.file)}">▶</button><div><div class="text">${esc(l.text)}</div><div class="dir">${esc(l.direction)}</div></div></div>`).join('');
+  }).join('');
+  list.addEventListener('click', e => { const b = e.target.closest('button'); if (b) play(b, b.dataset.file); });
+}).catch(() => { document.getElementById('list').innerHTML = '<p class="err">The script did not load.</p>'; });
+</script>
+</body>
+</html>

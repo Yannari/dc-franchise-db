@@ -33,7 +33,7 @@ import { writerEndpoint } from './social/writer.js';
 // with nothing in it but "All shows".
 import { SHOWS } from './shows.js';
 import { readVoiceText, WORD_TAGS } from './td/story/voice-words.js';
-import { HAND_KITS } from './td/story/kits/index.js';
+import { HAND_KITS, handGround } from './td/story/kits/index.js';
 import { GROUND } from './td/story/kits/kits-ground.js';
 
 const ARCHETYPES = ['mastermind','schemer','hothead','challenge-beast','social-butterfly','loyal-soldier','wildcard','chaos-agent','floater','underdog','hero','villain','goat','perceptive-player','showmancer'];
@@ -1394,7 +1394,13 @@ async function _editBySlug(slug) {
     ties: (Array.isArray(base.ties) ? base.ties : Array.isArray(rich && rich.ties) ? rich.ties : []).map(t => ({ ...t })),
     // the roster row's kit (saved in the Studio), else the hand-written one (js/td/story/kits/), so the 58
     // written kits open filled in and saving one keeps it
-    kit: _kitFrom(base.kit || (rich && rich.kit) || HAND_KITS[base.name] || null),
+    kit: (() => {
+      const k = _kitFrom(base.kit || (rich && rich.kit) || HAND_KITS[base.name] || null);
+      // no tags saved (every save dropped them until 2026-10-11): open on the ones written for them, so
+      // the field shows what the game plays and the next save keeps it
+      if (!String(k.ground || '').trim()) k.ground = handGround(base.name).join(', ');
+      return k;
+    })(),
     age: pick(base.age, rich && rich.age, parsed.age),
     ethnicity: pick(base.ethnicity, rich && rich.ethnicity, parsed.ethnicity, legacy.ethnicity),
     nationality: pick(base.nationality, rich && rich.nationality, parsed.nationality, legacy.nationality),

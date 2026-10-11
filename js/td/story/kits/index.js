@@ -15,6 +15,8 @@ import ground, { GROUND } from './kits-ground.js';
 const BUILT = Object.assign({}, kits1, kits2, kits3);
 for (const [n, k] of [...Object.entries(deep), ...Object.entries(solo), ...Object.entries(ground)]) if (BUILT[n]) Object.assign(BUILT[n], k);
 
+/** The shared-ground tags written for a character in kits-ground.js, kit or not (Spencer and Zoey have none). */
+export const handGround = name => [...(ground[name]?.ground || [])].filter(t => GROUND[t]);
 const PARTS = ['bit', 'tease', 'reply', 'home', 'want', 'conf', 'askHome', 'askWant', 'defend', 'deep', 'solo'];
 const studioCache = new Map();
 /** The Studio kit on the roster row, in the shape kits.js reads, or null. */
@@ -39,6 +41,10 @@ function studioKit(name) {
     for (const p of ['bit', 'tease', 'reply']) kit[p] = kit[p].slice(0, n);
     // what their life has in it (kits-ground.js vocabulary only: the Studio's tags are checked, never guessed)
     kit.ground = Array.isArray(k.ground) ? k.ground.filter(t => typeof t === 'string' && GROUND[t]) : [];
+    // none saved: the tags written for them in kits-ground.js. A saved kit replaces the hand-written one
+    // whole, and the Studio dropped ground on every save (worker-studio.js, fixed 2026-10-11), so 23 of them
+    // had no shared ground in the game at all
+    if (!kit.ground.length) kit.ground = handGround(name);
     if (!kit.thing) kit.thing = 'the way they are';
     if (!PARTS.some(p => kit[p].length)) kit = null;
   }

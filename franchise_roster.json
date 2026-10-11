@@ -335,6 +335,11 @@
         "solo": [
           "If I'm not performing, I'm thinking about performing. Right now I'm thinking about how good this confessional is going to look.",
           "Some people come out here to rest. I come out here to rehearse. The whole island is a stage."
+        ],
+        "ground": [
+          "performer",
+          "athlete",
+          "came-out"
         ]
       },
       "age": 22,
@@ -1389,6 +1394,10 @@
         "solo": [
           "When I get home, I'm going to have the best content of my life. I'm basically storyboarding right now.",
           "Everybody thinks I'm shallow. Shallow doesn't build a following from nothing. Strategy does."
+        ],
+        "ground": [
+          "online-fame",
+          "farm"
         ]
       },
       "age": 21,
@@ -1904,6 +1913,10 @@
         "solo": [
           "I've filled half this notebook already. It's mostly about the people here. They'd be horrified, honestly.",
           "Writing about people is easier than talking to them. I'm trying to do more of the second one."
+        ],
+        "ground": [
+          "lonely-child",
+          "writer"
         ]
       },
       "age": 20,
@@ -2550,54 +2563,58 @@
       "voice": "Steady, perceptive, kind. Hates conflict, cautious, rarely shows her hand; sweet indie girl who toughens up when pushed.#earnest#emotional#flirty",
       "profileSources": {},
       "kit": {
-        "thing": "being a sweet indie girl who makes her own retro clothes",
-        "alone": "sewing a loose button back on and quietly matching thread colors with way more focus than the situation probably needs.",
+        "thing": "being the sweet indie girl with the retro clothes",
+        "alone": "is fixing the hem of a vintage skirt with a needle and thread, very carefully",
         "bit": [
-          "I made this top myself, so if a seam pops during a challenge, everyone please pretend it's a design choice and not me panicking.",
-          "If anyone wants to talk indie theatre while we wait, I'm very available, and I promise I only get a little intense about bad lighting.",
-          "I'm trying to be chill, but I did pack outfits by color mood, because red, lavender, and blue make me feel less like I'm about to be judged on television."
+          "I found this top in a vintage shop back home, and it's from before I was born, so if it rips today, I'm going to need a minute.",
+          "Does anyone here like indie theatre? Because I've been waiting my whole life to have that conversation with somebody.",
+          "I dyed my hair red before I came here. It's actually brown. I just wanted to look like someone who'd be brave on TV."
         ],
         "tease": [
-          "{a}, you made that? It looks like it lost a fight with a craft bin.",
-          "{a}, indie theatre sounds like regular theatre with worse chairs.",
-          "{a}, color mood packing is the most nervous thing I've ever heard."
+          "{a}, you're wearing a vintage outfit to a challenge?",
+          "{a}, indie theatre? Is that the one where nobody comes?",
+          "{a}, so the brave look is just hair dye?"
         ],
         "reply": [
-          "Okay, rude, but the craft bin and I worked really hard, so I'm choosing to take that as handmade charm.",
-          "The chairs are worse, yeah, but the feelings are huge, so it balances out.",
-          "It is nervous, but it's organized nervous, and honestly that's one of my better settings."
+          "If I'm going to fall in a mud pit, I'm at least going to look good doing it.",
+          "Okay, sometimes it's eight people, but those eight people really care.",
+          "It's a start. Next week I'm planning to try actual bravery."
         ],
         "home": [
-          "My mom and dad are back home, and I hope they're watching the parts where I look calm and not the parts where my face gives away everything.",
-          "My parents are waiting back home, and Ms. Puffycheeks too, which is my hamster, so I'm hoping she doesn't judge my screen presence."
+          "My mom and dad, and my hamster, and my cat, who is probably sitting in my room wondering where I went.",
+          "Honestly, not that many people. I didn't have a lot of friends back home, which is kind of why I wanted to come here."
         ],
         "want": [
-          "I want to make real friends, not just polite small talk where everyone silently decides I'm too much.",
-          "I want to prove I can be kind without being a pushover, because there's a difference and I'm still working on showing it."
+          "I want to make real friends. People who actually like the same things I do, and not just because they're stuck here with me.",
+          "I want to go home and not feel like the odd one out anymore, and if I win, I'd like that too."
         ],
         "conf": [
-          "I came here wanting people to like me, which is sweet in theory and a little dangerous in practice, because I can talk myself into trusting almost anybody.",
-          "I know I look soft, and I am, but if someone keeps pushing, there's definitely a point where I stop apologizing and start paying attention.",
-          "There are cute people here, and I'm not saying I'm distracted, but I did just fix my hair for a camera that was already on."
+          "I keep apologising for things that aren't my fault. I counted. It was six times before lunch.",
+          "Everyone's being so nice to me, and I really want to believe them. I just have to make sure I'm not being stupid about it.",
+          "I'm a nice person, I really am. But if someone lies to me out here, they're going to find out I'm not only a nice person."
         ],
         "askHome": [
-          "So who's waiting for you back home, if you don't mind me asking?",
-          "What do people back home think about you being here, and are they excited or pretending not to be worried?"
+          "Who's waiting for you at home? Do you have pets? Please say you have pets.",
+          "Is there anyone back home who's going to be really proud of you? I'd like to hear about them."
         ],
         "askWant": [
-          "What do you actually want out of this, besides surviving the weird stuff they throw at us?",
-          "Are you here to win, to meet people, to prove something, or is it a secret fourth thing I should be scared of?"
+          "What made you want to do this? You can tell me, I won't make it weird.",
+          "What do you actually want out of this, besides winning? I'm curious."
         ],
         "defend": [
-          "You can mock the retro thing, but I made choices on purpose, and that's more than I can say for some of the comments happening right now.",
-          "It's fine if it's not your taste, but laughing at something I made doesn't make you look tougher, it just makes me trust you less."
+          "I'm allowed to like things that you think are weird. That's sort of the whole point of liking things.",
+          "I'm sorry, but actually, no. I'm not going to say sorry for this one."
         ],
         "deep": [
-          "I didn't have a lot of friends before this, so when someone seems nice to me, I want to believe it really badly, and I know that can mess with my judgment."
+          "I grew up an only child in a really small town, and I never fit in there. I'm scared that if I'm not nice enough, people here won't want me around either."
         ],
         "solo": [
-          "I know sewing doesn't look intimidating, but give me a needle, a plan, and five minutes, and suddenly I'm weirdly prepared.",
-          "Being alone is familiar, but I'm trying not to make it my comfort zone here, because I didn't come all this way to hide behind fabric."
+          "I think I'm finally making friends, real ones. I just hope they're real on their side too.",
+          "Nobody here knows the real me yet. Honestly, I'm still figuring out who she is."
+        ],
+        "ground": [
+          "lonely-child",
+          "pets"
         ]
       },
       "age": 24,
@@ -2606,7 +2623,9 @@
       "nationality": "Canadian",
       "hometown": "Fort Langley",
       "occupation": "Florist",
-      "descriptor": "The Indie Chick"
+      "descriptor": "The Indie Chick",
+      "backstory": "Zoey grew up an only child in a small town, where she always felt very different from the people around her and did not have many friends. She loves indie theatre and retro clothing and dyes her naturally brown hair red. At home she has a pet hamster and a cat, though she is allergic to dog hair. She signed up for the show hoping to finally meet people who shared her interests and to make real friends.",
+      "personality": "Zoey is optimistic, kind-hearted, and easy to get along with, but she is also apologetic and overly concerned with how other people see her, and her trusting nature and need for approval make her easy for people with bad intentions to fool. She avoids conflict and rarely shows her hand. Pushed far enough, though, she toughens up completely: she becomes brave, focused, and revenge-driven, and she is fiercely protective of the people she loves. Once she knows someone has lied to her, she does not forget it."
     },
     {
       "name": "Thom",
@@ -2760,6 +2779,15 @@
         "solo": [
           "Somebody has to make sure this thing won't fall on us. I'd rather it was me.",
           "Old habits. I walk around and check everything is safe. It's the only way I can sleep."
+        ],
+        "ground": [
+          "close-sibling",
+          "trauma",
+          "came-out",
+          "hard-home",
+          "parents-split",
+          "raised-siblings",
+          "family-doubts"
         ]
       },
       "age": 29,
@@ -3098,6 +3126,10 @@
         "solo": [
           "Rest days are for people who don't want it. I want it.",
           "Most people see the body and stop there. That's fine. It means they don't see me coming."
+        ],
+        "ground": [
+          "online-fame",
+          "athlete"
         ]
       },
       "age": 25,
@@ -3265,6 +3297,12 @@
         "solo": [
           "This is Gerald. Gerald's my new friend. He doesn't judge me, and he doesn't vote, so he's the best person here.",
           "I miss Ellie so much. Talking to animals helps. It feels a little bit like home."
+        ],
+        "ground": [
+          "pets",
+          "mental-health",
+          "family-doubts",
+          "moved-countries"
         ]
       },
       "age": 26,
@@ -3746,6 +3784,12 @@
         "solo": [
           "If I'm honest, I'm already planning the posts for when I get home. My followers are going to lose it.",
           "Out here nobody likes or comments. You just have to be a person. It's weirder than I thought."
+        ],
+        "ground": [
+          "lonely-child",
+          "close-sibling",
+          "online-fame",
+          "performer"
         ]
       },
       "age": 24,
@@ -3905,6 +3949,13 @@
         "solo": [
           "Everything in my bag is folded the same way. It's the one thing on this island I get to control.",
           "My mother would be horrified by the dirt. I love the dirt. I'm never telling her."
+        ],
+        "ground": [
+          "strict-parents",
+          "writer",
+          "estranged",
+          "family-doubts",
+          "lonely-child"
         ]
       },
       "age": 19,
@@ -4137,6 +4188,12 @@
         "solo": [
           "I've had a hot take ready every single day. Nobody's asked. That won't stop me.",
           "When the internet loved me, I didn't know who I was. Out here, I think I'm starting to work it out."
+        ],
+        "ground": [
+          "online-fame",
+          "performer",
+          "career-slipped",
+          "strict-parents"
         ]
       },
       "age": 23,
@@ -4515,6 +4572,10 @@
         "solo": [
           "Babes, I know everything. Who likes who, who's lying, who's crying behind the shed. I can't help it.",
           "Gossip isn't mean if you love everybody. I love everybody. That's my loophole."
+        ],
+        "ground": [
+          "came-out",
+          "mental-health"
         ]
       },
       "age": 30,
@@ -4565,54 +4626,57 @@
       "voice": "Sharp, competitive and critical — quick to scold teammates who slow him down, quietly envious of people more authentic than him. Strategic-minded, a little superior, and dismissive when he loses.#blunt",
       "profileSources": {},
       "kit": {
-        "thing": "being a calculating statistics snob",
-        "alone": "quietly ranking the others by usefulness, risk, and how likely they are to panic under pressure.",
+        "thing": "doing the maths on everything",
+        "alone": "is working out everyone's odds of making the merge on the back of a challenge map, and crossing a few names out",
         "bit": [
-          "If we're picking pairs, don't pick who makes you feel safe; pick who improves the odds and doesn't need instructions twice.",
-          "This vote isn't about who's annoying, even though that's a crowded category; it's about who gives us the cleanest path through the game.",
-          "I've already counted three people making decisions off vibes, and somehow I'm the unpleasant one for noticing the numbers."
+          "Before anyone panics, I've worked it out, and statistically one of us is going home tonight, and it is very unlikely to be me.",
+          "For the record, I'm a mathlete, not an athlete, so if this challenge involves running, please lower your expectations accordingly.",
+          "I'm studying statistical probability, so when I say this plan has a sixty percent chance of working, I'm actually being quite generous."
         ],
         "tease": [
-          "Relax, {a}, it's not a maths exam.",
-          "You make everything sound like a spreadsheet, {a}.",
-          "Maybe people don't like being treated like numbers, {a}."
+          "{a}, nobody asked for the odds, mate.",
+          "{a}, you could at least pretend to try.",
+          "{a}, do you ever just say yes or no like a normal person?"
         ],
         "reply": [
-          "No, exams have standards; this has people wandering into failure and calling it teamwork.",
-          "Good, because spreadsheets don't waste my time pretending bad ideas are brave.",
-          "Then they can stop making decisions that are easy to count against them."
+          "You didn't have to ask. It's a free service, and you're welcome.",
+          "I am trying. This is what my trying looks like, and it's more efficient than yours.",
+          "Yes or no is just a probability with the interesting part taken out."
         ],
         "home": [
-          "No one I'm offering up as leverage. I'm from London, I'm studying, and that's all anyone here needs for the calculation.",
-          "Whoever's at home can watch me win without becoming part of my pitch, because I'm not selling a sob story."
+          "My parents, mostly. They're the kind who ring to ask if I'm eating properly and then ask about my grades in the same breath.",
+          "My little sister Alice is definitely watching. My older sister will catch up later, because she's always working, which is very on brand for our family."
         ],
         "want": [
-          "I want control, the prize, and proof that being prepared beats whatever everyone else is calling instinct.",
-          "I want to win without pretending this is a group therapy exercise with challenges attached."
+          "I want to prove that this game is just a problem with a solution, and then I want to be the one who solved it.",
+          "I want the money, obviously, but mostly I want to finish top of the class. It would be absolute bollocks to come second."
         ],
         "conf": [
-          "People say they want honesty until I honestly tell them their plan is rubbish, and then suddenly I'm the villain.",
-          "Statistical probability is comforting because numbers don't sulk when you point out they're wrong.",
-          "Feelings are the one variable that ruins a clean plan, so I'm keeping mine out of it and expecting everyone else to do the same."
+          "Everyone here thinks feelings are a strategy. They're not. They're a variable, and they're the one variable I can't control, which is exactly why I don't trust them.",
+          "I don't need people to like me. I need them to think I'm useful, and those are very different things, and I'm good at one of them.",
+          "If I go home because of a challenge where you have to climb something, I want it on record that it was a statistical anomaly."
         ],
         "askHome": [
-          "Who's watching you from home, and are they useful motivation or just something you're going to cry about later?",
-          "What did you leave behind to come here, besides common sense, and does it affect how you'll vote?"
+          "Who's back home, then? And be honest, are they watching for you or for the drama?",
+          "Have you got people at home, or are you one of those people who says they're doing this for themselves?"
         ],
         "askWant": [
-          "Be specific: do you want the prize, the attention, or the moral victory people mention when they've lost?",
-          "What are you actually playing for, and please don't say the experience unless you're trying to make me vote you out."
+          "What's your actual plan here? Not the one you tell people, the real one.",
+          "What do you want out of this, in one sentence? I'm timing you."
         ],
         "defend": [
-          "Mock the strategy if you want, but it's still more useful than guessing and hoping the cameras find it charming.",
-          "Yes, I calculate things, because somebody has to think before half of you sprint into a bad decision."
+          "Laugh all you want, but I've been right about every vote so far, and you've been right about lunch.",
+          "Being good with numbers isn't a personality flaw. Being bad with them, on the other hand, is how people get blindsided."
         ],
         "deep": [
-          "I talk like it's all numbers because numbers don't make me feel stupid for caring, and feelings do."
+          "When I was little we had a house full of pets, and losing them was the worst thing that ever happened to me. I think that's when I decided I liked things I could actually work out, because numbers don't leave."
         ],
         "solo": [
-          "This isn't me being cold. This is me refusing to be dragged down by people who think effort is optional.",
-          "If they want me gone, they'll need a plan with more structure than rolling their eyes and hoping I vanish."
+          "I keep telling myself it's all just numbers. It mostly works, until somebody's nice to me and I don't know what to do with it.",
+          "Top of the class. That's all this is. Top of the class, with a slightly worse dormitory."
+        ],
+        "ground": [
+          "close-sibling"
         ]
       },
       "age": 21,
@@ -4621,7 +4685,9 @@
       "nationality": "British",
       "hometown": "London",
       "occupation": "Statistics student",
-      "descriptor": "The Statistician"
+      "descriptor": "The Statistician",
+      "backstory": "Spencer Lawrence grew up in England in a loving, steady family: his parents George and Charlotte have always backed his academic talent, and he has an older sister, Evelyn, who is usually busy with work, and a younger sister, Alice, he is close to. He has been exceptional at maths since childhood, and his favourite memory is leading his middle-school mathletes club to victory; another is sneaking a few pounds from his parents' wallets with his sisters to buy sweets at the corner shop. The family kept several pets when he was young, and saying goodbye to them when they died is his worst childhood memory. His grandparents gave him an RC car for his sixth birthday that he still treasures. He chose a degree in statistical probability because he is good at it and because numbers are straightforward, lived in a college dorm with a roommate, and says it would be absolute bollocks if he did not graduate top of his class.",
+      "personality": "Spencer is sharp, competitive, and convinced that anything can be solved once it is broken down into a formula. He arrives wanting to lock in, build a powerful alliance, and stay three moves ahead, and he can be superior and quick to scold teammates who slow him down, especially in physical challenges, where he insists he is a mathlete, not an athlete. His weak point is feelings: he does not know what to do with them, and when one gets in the way he is capable of making a cold, self-sabotaging decision rather than admitting it. When he loses control of the game he gets insecure and defensive, and he quietly envies people who are more relaxed and authentic than he is. At his best he is a patient schemer who takes out threats while absorbing very little of the blame."
     },
     {
       "name": "Ted",
@@ -5497,6 +5563,10 @@
         "solo": [
           "Mercury's in retrograde, which explains a lot about the last vote, honestly.",
           "When I was shy, the stars were the only thing I could talk about. Now they're how I start every conversation."
+        ],
+        "ground": [
+          "shy-child",
+          "pets"
         ]
       },
       "age": 21,
@@ -5599,6 +5669,12 @@
         "solo": [
           "Everyone's a number, and everyone's a vote. I don't say that out loud, because it sounds cold. It is cold. It works.",
           "My parents gave up everything for love. I came here for one thing, and it isn't love."
+        ],
+        "ground": [
+          "immigrant-family",
+          "golden-child",
+          "cook",
+          "strict-parents"
         ]
       },
       "age": 21,
@@ -5703,6 +5779,11 @@
         "solo": [
           "I'm a personal assistant, so this is basically my dream job. Nobody asked me to, and that's the best part.",
           "Being useful is the only time I'm sure I belong somewhere. So I'm going to be very useful."
+        ],
+        "ground": [
+          "immigrant-family",
+          "pets",
+          "shy-child"
         ]
       },
       "age": 23,
@@ -5807,6 +5888,11 @@
         "solo": [
           "This is for protection. Not for the game. Okay, partly for the game.",
           "People can laugh at it. It's been here for me longer than any of them have."
+        ],
+        "ground": [
+          "came-out",
+          "pets",
+          "left-school"
         ]
       },
       "age": 31,
@@ -5911,6 +5997,11 @@
         "solo": [
           "At my age, one learns new things slowly but very thoroughly. This trick will be ready in a week.",
           "The young people rush everywhere. I have rushed before. It got me nowhere faster."
+        ],
+        "ground": [
+          "parent",
+          "grandparent",
+          "cook"
         ]
       },
       "age": 65,
@@ -6015,6 +6106,11 @@
         "solo": [
           "Darling, I'm not lazy. I'm conserving my energy, like the rich do.",
           "Everybody thinks I've never worked a day in my life. They're right, and I'm working very hard right now."
+        ],
+        "ground": [
+          "wealthy",
+          "underestimated",
+          "lost-parent"
         ]
       },
       "age": 59,
@@ -6174,6 +6270,11 @@
         "solo": [
           "It's for Aleki. He loves turtles. I'm going to give it to him the day I get home.",
           "My son's watching. Everything I do out here, I think: would I want him to see this?"
+        ],
+        "ground": [
+          "parents-split",
+          "close-sibling",
+          "divorced"
         ]
       },
       "age": 41,
@@ -6278,6 +6379,11 @@
         "solo": [
           "The sky's fine. It's just a sky. Everybody here acts like it's a miracle every morning.",
           "I'm not negative. I'm accurate. There's a difference, and nobody here ever gets it."
+        ],
+        "ground": [
+          "stuck",
+          "writer",
+          "needs-money"
         ]
       },
       "age": 30,
@@ -6287,7 +6393,7 @@
       "hometown": "San Francisco",
       "occupation": "Retail cashier",
       "descriptor": "The Debbie Downer",
-      "backstory": "Before appearing on the show, Nura worked as a retail cashier and felt stuck, wanting something more than the life she had. She lived with a roommate named Chelsea, had a habit of writing—especially mellow dramas and tragic comedies—and once abandoned poetry after being rejected by a girl she liked. As a teen, she gave herself an ear piercing at fourteen and played bass in a band at sixteen, though the band only lasted about six months.",
+      "backstory": "Before appearing on the show, Nura worked as a retail cashier and felt stuck, wanting something more than the life she had. She lived with a roommate named Chelsea, had a habit of writing—especially mellow dramas and tragic comedies—and once abandoned poetry after being rejected by a girl she liked. As a teen, she gave herself an ear piercing at fourteen and played bass in a band at sixteen, though the band only lasted about six months. She is working as a cashier to get by, and she needs the prize money to make a real go of becoming a playwright.",
       "personality": "Nura is gloomy, guarded, and reflexively negative, especially when surrounded by people who are eager to socialize. Under pressure she stays outwardly flat and unimpressed, even around frightening or dangerous situations, but her coldness is not total indifference: she feels guilt over failing to connect and slowly pushes herself to reach out. She is not naturally warm or sympathetic, and she will complain, judge, and withdraw before she comforts someone, but she will not entirely give up on the possibility that she can become closer to others or do more with her life.",
       "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Dry, stubborn, combustible.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"Probably because somebody watched my interview and thought, \\\"This woman looks like she could ruin a brunch.\\\" I’m a cashier from San Francisco with resting apocalypse face, so maybe they smelled affordable chaos.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"Living with people who think being loud is the same as being interesting. Also sharing a bathroom, because humanity was a mistake and group hygiene proves it.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"I’m going to try not to instantly tell everyone exactly what I think of them, which will be my Everest. I’ll watch, listen, keep my head down when useful, and strike when people get too comfortable being stupid.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m not some delicate little flower; I’ve worked retail, so I’ve stared into the mouth of hell and said, \\\"Have a nice day.\\\" I want to hide how badly I want this, because desperation is basically blood in the water with worse lighting.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A notebook, because if I don’t write things down, my thoughts start chewing through the walls.\\n- A hoodie, because I like comfort and also looking like I’m preparing for my own funeral.\\n- Earplugs, because I assume at least one person will breathe like a haunted leaf blower.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I like writing mellow dramas and tragic comedies, playing bass badly enough to annoy ghosts, and wandering around the city pretending I’m not avoiding my life. I also enjoy complaining, which is free cardio.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is exhausting, stupid, and usually caused by people with the emotional regulation of a microwave burrito. That said, I will absolutely watch it happen from the corner like it’s community theater with worse acting.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"No. I’m a lesbian, not a hostage negotiator, and I’m not coming here to fall in love under fluorescent surveillance with someone who thinks eye contact is strategy.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if the ship is sinking, at least insult the décor on the way down.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I want proof that I can do something bigger than ringing up shampoo and pretending customers are sentient. Money would be great too, obviously, because personal growth does not pay rent.\"}]"
     },
@@ -6380,6 +6486,12 @@
         "solo": [
           "I keep things so I can remember them later. This shell is from the day I made a friend. I'm keeping it forever.",
           "I've been alone a lot. I'm not alone out here. I'm keeping everything, just in case."
+        ],
+        "ground": [
+          "lonely-child",
+          "pets",
+          "big-family",
+          "underestimated"
         ]
       },
       "age": 25,
@@ -6484,6 +6596,11 @@
         "solo": [
           "I'm going to run away and join a carnival when this is over. I'm already practising.",
           "Some people think I'm weird. I am weird. It's the most fun thing about me."
+        ],
+        "ground": [
+          "artist",
+          "athlete",
+          "left-school"
         ]
       },
       "age": 27,
@@ -6544,9 +6661,6 @@
       "kit": {
         "thing": "calculating the odds",
         "alone": "is working out odds on a piece of bark",
-        "ground": [
-          "widowed"
-        ],
         "bit": [
           "I'm a risk analyst. So when I say this plan has maybe a thirty percent chance, that's me being generous.",
           "Relax. Nobody's coming for you tonight. Probably. I'd put it at eighty-twenty.",
@@ -6591,6 +6705,10 @@
         "solo": [
           "Thirty-eight percent chance I go home before the merge. Twelve percent I win. I'll take the twelve.",
           "Numbers never lie to you. People do it all the time. I'll keep my numbers, thanks."
+        ],
+        "ground": [
+          "widowed",
+          "estranged"
         ]
       },
       "age": 29,

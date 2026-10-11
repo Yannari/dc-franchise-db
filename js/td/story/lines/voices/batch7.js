@@ -221,6 +221,6 @@ export default {
   },
   'nar.w5': {
     1: { warm: "Does {target} know? Somebody should tell {target}.", calm: "Does {target} know?" },
-    3: { calm: "{a} came to me first with that. Either {a} trusts me, or {a} wants me to do something about it.", warm: "{a} came to me first. I really hope that means {a} trusts me.", competitive: "{a} came to me first, which means {a} thinks I can do something about it. I can." },
+    7: { calm: "{a} came to me first with that. Either {a} trusts me, or {a} wants me to do something about it.", warm: "{a} came to me first. I really hope that means {a} trusts me.", competitive: "{a} came to me first, which means {a} thinks I can do something about it. I can." },
   },
 };

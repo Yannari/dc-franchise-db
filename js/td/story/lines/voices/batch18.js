@@ -47,7 +47,7 @@ export default {
     2: { anxious: "Vote {target} tonight.", dry: "Vote {target} tonight.", warm: "Vote {target} tonight. I'm sorry.", schemer: "Vote {target} tonight.", competitive: "Vote {target} tonight.", calm: "Vote {target} tonight." },
     4: { anxious: "I know, that's what makes it hard. It's {target} or somebody you like a lot more.", dry: "I know, that's what makes it hard. It's {target} or someone you like far more.", warm: "I know, and that's what makes it so hard. It's {target}, or somebody you like a lot more.", schemer: "I know. It's {target}, or someone you like a lot more.", competitive: "I know. It's {target} or someone you like more.", calm: "I know. It's {target}, or somebody you like a lot more." },
   },
-  'nlx.k5': { 2: { warm: "Wow. Okay.", nerdy: "Wow. Okay.", loud: "WOW. Okay.", flirty: "Wow. Okay.", proud: "Wow. Fine.", anxious: "Wow. Okay.", theatrical: "Wow. Just wow." } },
+  'nlx.k5': { 6: { warm: "Wow. Okay.", nerdy: "Wow. Okay.", loud: "WOW. Okay.", flirty: "Wow. Okay.", proud: "Wow. Fine.", anxious: "Wow. Okay.", theatrical: "Wow. Just wow." } },
   'nl.n1': {
     2: { quiet: "The waiting?", loud: "The WAITING?", proud: "The waiting?", competitive: "The waiting?", dry: "The waiting?", ditzy: "The waiting?", warm: "The waiting?", nerdy: "The waiting?", earnest: "The waiting?" },
     5: { warm: "You've been tapping your foot for ten minutes.", loud: "You've been tapping your foot for TEN MINUTES.", anxious: "You've been tapping your foot for ten minutes.", emotional: "You've been tapping your foot for ten minutes.", proud: "You've been tapping your foot for ten minutes.", blunt: "You've been tapping for ten minutes.", theatrical: "You've been tapping your foot for ten whole minutes." },

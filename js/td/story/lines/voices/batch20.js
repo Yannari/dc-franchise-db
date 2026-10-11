@@ -254,7 +254,7 @@ export default {
     5: { warm: "Talk about what? It's a game, people leave.", earnest: "Talk about what? It's a game, and people leave.", calm: "Talk about what? It's a game, and people leave.", dry: "Talk about what? It's a game, people leave, and that's the format." },
     8: { quiet: "I keep looking around the table, wondering who wrote {lastBoot}'s name.", dry: "I keep looking around the table wondering who wrote {lastBoot}'s name, and nobody's giving it away.", calm: "I keep looking around the table wondering who wrote {lastBoot}'s name, and it makes me a little sick.", warm: "I keep looking around the table wondering who wrote {lastBoot}'s name, and it makes me feel sick." },
   },
-  'nar.t1': { 3: { competitive: "Everybody loves {b}, and {b} wins challenges and never gets tired. That's great for the team now and a disaster for me later.", anxious: "Everybody here loves {b}. {b} wins, helps everyone, never gets tired, and that terrifies me for later." } },
+  'nar.t1': { 7: { competitive: "Everybody loves {b}, and {b} wins challenges and never gets tired. That's great for the team now and a disaster for me later.", anxious: "Everybody here loves {b}. {b} wins, helps everyone, never gets tired, and that terrifies me for later." } },
   'nl6.i1': {
     2: { warm: "Nope.", calm: "Nope.", dry: "Nope.", quiet: "No.", food: "Nope." },
     3: { warm: "Then why are you staring at me?", earnest: "Then why are you staring at me?", ditzy: "Then why are you staring at me?", nerdy: "Then why are you staring at me?" },
@@ -298,7 +298,7 @@ export default {
     5: { warm: "Good, because I won't either. {target}.", loud: "Good, because I won't EITHER! {target}!", food: "Good, because I won't either. {target}." },
     6: { warm: "{a} owes me now, and that's worth a lot more than one vote.", loud: "{a} owes me NOW, and that's worth more than one vote!", food: "{a} owes me now, and that's worth a lot more than one vote." },
   },
-  'nly.k2': { 3: { calm: "I'm not looking at you like anything.", quiet: "I'm not looking at you.", theatrical: "I am not looking at you like anything, darling.", anxious: "I'm not looking at you like anything!" } },
+  'nly.k2': { 4: { calm: "I'm not looking at you like anything.", quiet: "I'm not looking at you.", theatrical: "I am not looking at you like anything, darling.", anxious: "I'm not looking at you like anything!" } },
   'nl.h3': { 8: { calm: "{a} runs these meetings like a general, which is a little scary, but it keeps us alive.", dry: "{a} runs these meetings like a general, which is a little scary, but also why we're alive.", ditzy: "{a} runs these meetings like a general! It's scary, but it keeps us alive." } },
   'nps.e4': { 1: { nerdy: "I can't save everybody, and I'm finally accepting that. I just have to make sure I'm still standing.", anxious: "I can't save everybody, I'm learning that, and it scares me. I just have to stay standing.", quiet: "I can't save everyone. I just have to keep standing." } },
   'ny.st1': {

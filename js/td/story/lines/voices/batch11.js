@@ -14,7 +14,7 @@ export default {
   },
   'nar.s1': {
     3: { calm: "I wasn't going to say anything.", warm: "I wasn't going to say anything, I promise." },
-    4: { calm: "I wasn't going to say anything to {b}. I'll say it to everybody else, later.", cruel: "I wasn't going to say a word to {b}'s face. I'll say it to everyone else, when {b} isn't there." },
+    7: { calm: "I wasn't going to say anything to {b}. I'll say it to everybody else, later.", cruel: "I wasn't going to say a word to {b}'s face. I'll say it to everyone else, when {b} isn't there." },
   },
   'nw.o3': {
     1: { calm: "Yeah?", schemer: "Yeah?" },
@@ -74,7 +74,7 @@ export default {
   },
   'ny.dr2': {
     0: { warm: "Want to sit with me?", loud: "Come sit with me!" },
-    2: { warm: "Maybe later. That's the third maybe later today, and it really hurts.", tough: "Maybe later, that's the third one today. I can take a hint." },
+    6: { warm: "Maybe later. That's the third maybe later today, and it really hurts.", tough: "Maybe later, that's the third one today. I can take a hint." },
   },
   'na.j6': {
     1: { calm: "Oh. Thanks.", loud: "Oh! Thanks!" },

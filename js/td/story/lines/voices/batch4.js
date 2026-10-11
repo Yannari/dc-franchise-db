@@ -198,7 +198,7 @@ export default {
   // long.caught.face.none
   'nlx.k5': {
     0: { quiet: "Nothing to say?", loud: "Nothing? You've got NOTHING to say to me?", kid: "You're not even going to say anything?", cruel: "Nothing to say? How very brave of you." },
-    3: { quiet: "{a} didn't even try. That told me enough.", kid: "{a} didn't even say sorry. Not even a little bit.", loud: "{a} couldn't even look at me! Not an apology, not an excuse, nothing, and that says everything!" },
+    7: { quiet: "{a} didn't even try. That told me enough.", kid: "{a} didn't even say sorry. Not even a little bit.", loud: "{a} couldn't even look at me! Not an apology, not an excuse, nothing, and that says everything!" },
   },
   // thr.grievance.1 (your vote on me)
   'nth.g2': {

@@ -116,7 +116,7 @@ export default {
   },
   'nar.g2': {
     1: { calm: "Then do it yourself.", loud: "Then do it YOURSELF!", tough: "Then do it yourself." },
-    4: { calm: "Every day, {b} finds something I'm doing wrong. Soon I'm going to return the favour, and it won't be about a chore.", loud: "EVERY day {b} finds something I'm doing wrong! One day soon I'm returning the favour!" },
+    7: { calm: "Every day, {b} finds something I'm doing wrong. Soon I'm going to return the favour, and it won't be about a chore.", loud: "EVERY day {b} finds something I'm doing wrong! One day soon I'm returning the favour!" },
   },
   'na.p11': {
     3: { dry: "That's a creepy thing to say.", warm: "That's kind of a creepy thing to say." },
@@ -200,7 +200,7 @@ export default {
   },
   'nar.i1': {
     1: { calm: "Where do you keep going?", loud: "Where do you KEEP going?" },
-    3: { calm: "Nobody needs the bathroom that much. {b} has been searching for something, and the way {b} is smiling, I think {b} found it.", competitive: "Nobody goes to the bathroom that often. {b} found something, and I want to know what." },
+    7: { calm: "Nobody needs the bathroom that much. {b} has been searching for something, and the way {b} is smiling, I think {b} found it.", competitive: "Nobody goes to the bathroom that often. {b} found something, and I want to know what." },
   },
   'nvr.t1': {
     1: { calm: "Sure.", warm: "Of course." },

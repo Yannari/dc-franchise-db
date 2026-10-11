@@ -46,7 +46,7 @@ export default {
   },
   'ncx.b2': {
     1: { calm: "You don't have to ask.", tough: "You don't have to ask. Sit." },
-    3: { calm: "{a} has been a little lost since {lastBoot} left. I don't mind being the person {a} sits with.", warm: "{a} has been so lost since {lastBoot} left. I'm happy to be the person {a} sits with, for as long as {a} needs." },
+    6: { calm: "{a} has been a little lost since {lastBoot} left. I don't mind being the person {a} sits with.", warm: "{a} has been so lost since {lastBoot} left. I'm happy to be the person {a} sits with, for as long as {a} needs." },
   },
   'nps.b1': {
     0: { calm: "{lastBoot} was the first person here who sat with me at breakfast without me asking. I keep looking at that spot.", loud: "{lastBoot} sat with me at breakfast on the first day without me even asking! And now I keep staring at that spot!" },
@@ -62,7 +62,7 @@ export default {
   },
   'nth.d4': {
     1: { calm: "You don't have to do that.", warm: "You really don't have to do that." },
-    3: { calm: "I helped {a} once, and now {a} would walk through fire for me. Best decision I've made.", schemer: "I helped {a} once, and now {a} would walk through fire for me. That's the best return on anything I've done out here." },
+    6: { calm: "I helped {a} once, and now {a} would walk through fire for me. Best decision I've made.", schemer: "I helped {a} once, and now {a} would walk through fire for me. That's the best return on anything I've done out here." },
   },
   'nd.bh3': {
     1: { loud: "Can you STOP? Nobody cares about your grandma's dog!", cruel: "Could you stop? Nobody here cares about your grandma's dog." },
@@ -71,7 +71,7 @@ export default {
   'nlx.j1': {
     1: { loud: "Did you see {b} out there? UNREAL!", calm: "Did you see {b} out there? Unreal." },
     3: { warm: "What's that supposed to mean?", tough: "What's that supposed to mean?" },
-    5: { calm: "I work just as hard as {b}, maybe harder. {b} gets the moment every time, and I get to clap.", loud: "I work just as hard as {b}, HARDER, and {b} gets the moment every single time!", competitive: "I work as hard as {b}, harder even. {b} gets the moment, and I'm sick of clapping." },
+    8: { calm: "I work just as hard as {b}, maybe harder. {b} gets the moment every time, and I get to clap.", loud: "I work just as hard as {b}, HARDER, and {b} gets the moment every single time!", competitive: "I work as hard as {b}, harder even. {b} gets the moment, and I'm sick of clapping." },
   },
   'nps.e3': {
     0: { warm: "Is it weird, being back?", calm: "Is it strange, being back?" },

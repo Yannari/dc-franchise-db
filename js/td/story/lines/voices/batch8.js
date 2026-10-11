@@ -15,8 +15,8 @@ export default {
   },
   'nly.k2': {
     0: { loud: "Never have I ever... had a crush on somebody in this game!", calm: "Never have I ever had a crush on somebody in this game." },
-    2: { loud: "Don't look at me like that!", calm: "Don't look at me like that.", flirty: "Don't look at me like that. Unless you mean it." },
-    4: { calm: "I wasn't going to tell anybody. Then {b} put a finger down at the same time, and now I can't stop thinking about it.", loud: "I wasn't going to tell ANYBODY! Then {b} put a finger down at the exact same time, and now it's all I can think about!", anxious: "I wasn't going to tell anyone, and then {b} put a finger down at the same moment, and now my heart won't slow down." },
+    3: { loud: "Don't look at me like that!", calm: "Don't look at me like that.", flirty: "Don't look at me like that. Unless you mean it." },
+    8: { calm: "I wasn't going to tell anybody. Then {b} put a finger down at the same time, and now I can't stop thinking about it.", loud: "I wasn't going to tell ANYBODY! Then {b} put a finger down at the exact same time, and now it's all I can think about!", anxious: "I wasn't going to tell anyone, and then {b} put a finger down at the same moment, and now my heart won't slow down." },
   },
   'nv.a6': {
     0: { loud: "{wrote} is going home tonight! I can't WAIT to see {wrote}'s face!", tough: "{wrote} goes home tonight. I want a good look at {wrote}'s face when it happens.", blunt: "{wrote} is going home. Good." },
@@ -120,7 +120,7 @@ export default {
   },
   'nar.f1': {
     1: { anxious: "I don't know, maybe. Why, have you heard something?", tough: "Maybe. Why?", calm: "I don't know, maybe. Why do you ask?" },
-    3: { calm: "{b} has had my back since day one, and I've got an idol. If it comes to it, I know who it's for.", loud: "{b} has had my back since DAY ONE, and I've got an idol! If it comes down to it, I know who it's for!", competitive: "{b} has had my back since day one. If it comes to it, my idol goes to {b}, and we go to the end together." },
+    7: { calm: "{b} has had my back since day one, and I've got an idol. If it comes to it, I know who it's for.", loud: "{b} has had my back since DAY ONE, and I've got an idol! If it comes down to it, I know who it's for!", competitive: "{b} has had my back since day one. If it comes to it, my idol goes to {b}, and we go to the end together." },
   },
   'nm.b1': {
     2: { tough: "Are you serious right now?", warm: "Are you seriously asking me that right now?", calm: "Are you serious?" },

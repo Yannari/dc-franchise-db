@@ -346,7 +346,7 @@ export default {
     7: { cruel: "{a} is ridiculous. I'm going to keep {a} around.", loud: "{a} is RIDICULOUS! I kind of love it!", warm: "{a} is ridiculous, and I kind of love it already.", ditzy: "{a} is so ridiculous! I kind of love it." },
   },
   'nm.a4': { 0: { anxious: "Morning.", blunt: "Morning.", cruel: "Morning.", loud: "MORNING." } },
-  'nlx.k5': { 3: { earnest: "{a} didn't even try, no apology, no excuse, nothing, and that told me everything.", ditzy: "{a} didn't even try, no sorry, no excuse, nothing! That tells me everything.", flirty: "{a} didn't even try. Not an apology, not an excuse. That told me all I need to know.", blunt: "{a} didn't try or apologise, and that says everything.", dry: "{a} didn't even try, with no apology and no excuse, which was very informative." } },
+  'nlx.k5': { 7: { earnest: "{a} didn't even try, no apology, no excuse, nothing, and that told me everything.", ditzy: "{a} didn't even try, no sorry, no excuse, nothing! That tells me everything.", flirty: "{a} didn't even try. Not an apology, not an excuse. That told me all I need to know.", blunt: "{a} didn't try or apologise, and that says everything.", dry: "{a} didn't even try, with no apology and no excuse, which was very informative." } },
   'nvr.s1': {
     0: { earnest: "So we're all thinking the same thing, right?", warm: "So we're all thinking the same thing, right?", ditzy: "So we're all thinking the same thing, right?", loud: "So we're ALL thinking the same thing, right?" },
     2: { earnest: "I'm going to say it. We lost because of {target}.", warm: "I'm going to say it, and I'm sorry. We lost because of {target}.", ditzy: "I'm going to say it! We lost because of {target}.", loud: "I'm going to SAY it! We lost because of {target}!" },

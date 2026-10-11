@@ -27,7 +27,7 @@ export default {
     1: { nerdy: "Enjoy your water.", schemer: "Enjoy your water.", food: "Enjoy your water, and your lunch.", warm: "Enjoy your water.", cruel: "Enjoy your water.", proud: "Enjoy your water." },
     2: { warm: "What's that supposed to mean?", earnest: "What's that supposed to mean?", schemer: "What's that supposed to mean?" },
     3: { nerdy: "Only that I'd enjoy everything, if I were you, while it lasts.", schemer: "Just that I'd enjoy everything, if I were you, while it lasts.", food: "Just that I'd enjoy every meal, if I were you, while it lasts.", warm: "Just that I'd enjoy everything, if I were you, while it lasts.", cruel: "Just that I'd enjoy everything while it lasts.", proud: "Just that I'd enjoy everything while it lasts." },
-    4: { warm: "I smiled back, but my heart was pounding, because {a} just threatened me so politely.", earnest: "I smiled back, but my heart was pounding. {a} just threatened me politely, and I won't sleep tonight." },
+    7: { warm: "I smiled back, but my heart was pounding, because {a} just threatened me so politely.", earnest: "I smiled back, but my heart was pounding. {a} just threatened me politely, and I won't sleep tonight." },
   },
   'na.p11': {
     2: { warm: "Everybody who matters to me.", loud: "Everybody who MATTERS.", cruel: "Everybody who matters.", proud: "Everybody who matters.", schemer: "Everybody who matters." },
@@ -151,7 +151,7 @@ export default {
   },
   'nar.g2': {
     0: { loud: "You're doing it WRONG, by the way.", warm: "You're doing it wrong, by the way.", earnest: "You're doing it wrong, by the way.", competitive: "You're doing it wrong.", calm: "You're doing it wrong, by the way." },
-    2: { loud: "Maybe I WILL.", warm: "Maybe I will.", earnest: "Maybe I will.", competitive: "Maybe I will.", calm: "Maybe I will." },
+    5: { loud: "Maybe I WILL.", warm: "Maybe I will.", earnest: "Maybe I will.", competitive: "Maybe I will.", calm: "Maybe I will." },
   },
   'nm.n4': {
     1: { warm: "Okay, we're down one, and we need to stop losing.", anxious: "Okay, we're down one, and we have to stop losing.", nerdy: "We're down one, and we need to stop losing." },

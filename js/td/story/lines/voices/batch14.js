@@ -255,7 +255,7 @@ export default {
     0: { nerdy: "Have you noticed {b} and {c} finish each other's sentences now?", warm: "Have you noticed {b} and {c} finish each other's sentences now? It's sweet.", loud: "Have you NOTICED {b} and {c} finish each other's sentences now?", calm: "Have you noticed {b} and {c} finish each other's sentences?", blunt: "{b} and {c} finish each other's sentences now.", dry: "Have you noticed {b} and {c} finish each other's sentences now? It's unsettling." },
     1: { loud: "We do NOT.", ditzy: "We do not! Do we?", nerdy: "We do not.", tough: "We don't.", warm: "We do not!", earnest: "We honestly don't." },
     2: { dry: "We kind of do.", warm: "We kind of do.", earnest: "We kind of do, honestly.", flirty: "We kind of do.", loud: "We kind of DO!" },
-    3: { nerdy: "It's cute until you realise it's two votes I'll never get. {b} and {c} will go to the end together unless somebody intervenes.", blunt: "It's cute, and it's also two votes I'll never get. Somebody has to split {b} and {c}." },
+    7: { nerdy: "It's cute until you realise it's two votes I'll never get. {b} and {c} will go to the end together unless somebody intervenes.", blunt: "It's cute, and it's also two votes I'll never get. Somebody has to split {b} and {c}." },
   },
   'nvu.d3': {
     0: { loud: "Can I ask you to do something for me tonight, NO questions?" },

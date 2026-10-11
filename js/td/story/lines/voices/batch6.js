@@ -179,7 +179,7 @@ export default {
   },
   // arc.spark.pair (finish sentences)
   'nar.p2': {
-    3: { schemer: "It's cute until you realise it's two votes I'll never get. Somebody has to split {b} and {c} up soon.", warm: "It's really cute, and I hate that my first thought was that I'll never get either of their votes.", competitive: "It's cute until it's two votes walking to the end together. That's not happening on my watch." },
+    7: { schemer: "It's cute until you realise it's two votes I'll never get. Somebody has to split {b} and {c} up soon.", warm: "It's really cute, and I hate that my first thought was that I'll never get either of their votes.", competitive: "It's cute until it's two votes walking to the end together. That's not happening on my watch." },
   },
   // run.food.1 (emergency crackers)
   'nrn.f1': {

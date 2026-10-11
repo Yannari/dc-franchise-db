@@ -1279,6 +1279,10 @@ export function renderRandomMurderTwists() {
 
 export function saveConfig() {
   const g = id => document.getElementById(id);
+  // what a coach may find is only on screen while the coaches section shows its list: saved from boxes that
+  // aren't there, every power came back off (the user, 2026-10-11: all twelve unticked). Keep them as they were.
+  const _coachAdvPrev = seasonConfig?.coachAdvantages || null;
+  const _coachAdvShown = !!g('coach-adv-' + ADVANTAGES[0].key);
   seasonConfig = {
     name:        g('cfg-name')?.value.trim() || '',
     seasonNumber: parseInt(g('cfg-season-number')?.value) || 0,
@@ -1426,7 +1430,7 @@ export function saveConfig() {
     coachesPerTribe: parseInt(g('cfg-coaches-per-tribe')?.value) || 1,
     // What a coach may find, and from where. Separate from `advantages` above:
     // that governs contestants, and a coach is not one.
-    coachAdvantages: Object.fromEntries(ADVANTAGES.map(a => {
+    coachAdvantages: !_coachAdvShown && _coachAdvPrev ? _coachAdvPrev : Object.fromEntries(ADVANTAGES.map(a => {
       const enabled = !!g('coach-adv-' + a.key)?.checked;
       const sources = Object.keys(ADV_SOURCE_LABELS).filter(src => g('coach-adv-src-' + a.key + '-' + src)?.checked);
       return [a.key, { enabled, sources: sources.length ? sources : ['camp'] }];

@@ -359,7 +359,8 @@ let voIndex = null;
 const VO = 'vo-test/';
 function voLoad() {
   if (!voIndex) voIndex = fetch(TD_AUDIO + VO + 'script.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
-    .then(j => { const m = new Set((j?.lines || []).map(l => l.id)); voIndex.ids = m; return m; }).catch(() => { voIndex.ids = new Set(); return voIndex.ids; });
+    .then(j => { const m = new Set((j?.lines || []).map(l => l.id)); voIndex.ids = m; if (m.size) console.info(`[voice test] script loaded: ${m.size} voiced lines`); return m; })
+    .catch(e => { console.warn('[voice test] no script.json:', e); voIndex.ids = new Set(); return voIndex.ids; });
   return voIndex;
 }
 // The lines as THIS browser speaks them. A line's words depend on more than the season save: the TD writer
@@ -393,6 +394,12 @@ if (typeof window !== 'undefined') {
     } finally { silent = false; }
     return window.tdVoiceExport(ep);
   };
+  // what the voice test sees: the script's lines, and the last lines spoken with whether each has a clip
+  window.tdVoiceCheck = () => {
+    const ids = voIndex?.ids;
+    console.info(`[voice test] script: ${ids ? ids.size + ' voiced lines' : 'not loaded'}; audio: ${out() ? out().ctx.state : 'off (muted, locked, or no click yet)'}`);
+    console.table([...spoken.values()].slice(-15).map(l => ({ by: l.by, id: l.id, voiced: !!ids?.has(l.id), text: l.text.slice(0, 50) })));
+  };
   window.tdVoiceExport = (ep) => {
     const lines = [...spoken.values()].filter(l => ep == null || +l.ep === +ep);
     const eps = [...new Set(lines.map(l => l.ep))];
@@ -410,11 +417,13 @@ export function speak(by, text, v, opts = {}) {
   try { window.__tdLine?.(by, text, id, opts.meta || {}); } catch { /* a harness hook (tools/td-vo-script.mjs) */ }
   const o = out(); if (!o) return;
   if (!voIndex?.ids?.has(id)) return babble(text, v, opts);
-  const ctx = o.ctx, tok = talkTok;
+  const ctx = o.ctx, tok = talkTok, tag = `[voice test] ${by} ${id} "${String(text).slice(0, 40)}"`;
+  console.info(`${tag}: voiced line, loading the clip (audio ${ctx.state})`);
   const clip = loadBuf(ctx, `${VO}${id}.wav`).then(L => L || loadBuf(ctx, `${VO}${id}.mp3`));
   clip.then(L => {
-    if (tok !== talkTok) return;
-    if (!L) return babble(text, v, opts);
+    if (tok !== talkTok) return console.info(`${tag}: skipped, the next line had already started`);
+    if (!L) { console.warn(`${tag}: the clip did not load or decode, blips instead`); return babble(text, v, opts); }
+    console.info(`${tag}: playing ${L.b.duration.toFixed(1)}s clip (audio ${ctx.state})`);
     const src = ctx.createBufferSource(), g = ctx.createGain(); src.buffer = L.b; g.gain.value = L.norm * (opts.loud ? .95 : .8);
     src.connect(g); g.connect(o.dest); src.start(); talkSrcs.push(src);
     try { window.__tdClip?.(id); } catch { /* a harness hook */ }

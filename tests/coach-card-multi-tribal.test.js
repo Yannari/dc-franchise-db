@@ -63,7 +63,11 @@ describe('the save card on a multi-tribal night', () => {
 
   it('seals across a double-tribal council, where the label is not a tribe', async () => {
     let nights = 0, commits = 0, aimedAtCoach = 0;
-    for (const seed of [1, 3]) {
+    // six seeds, not two: a bloc naming a coach on a given double-tribal night, and the coach reading it as
+    // coming for the staff, are both chances, and two seeds put the whole guard on a handful of draws. A
+    // camp-event change on 2026-10-10 (pitches to turn on a friend, which put heat on contestants) moved
+    // seeds 1 and 3 from 4 aimed nights to 1; seeds 9-19 measured then: 11 aimed nights, 7 commits.
+    for (const seed of [1, 3, 5, 7, 9, 11]) {
       const s = await season('double-tribal', seed);
       const coaches = new Set(s.coachNames);
       for (const e of s.episodes) {

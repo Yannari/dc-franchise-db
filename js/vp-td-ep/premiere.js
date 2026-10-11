@@ -164,7 +164,8 @@ export function premiereSteps(venue, o = {}) {
   const adv = S.advantages || {};
   if (Object.values(adv).some(a => a && (a === true || a.enabled))) asides.push({ name: 'Hidden immunity idols', lines: [`The hidden immunity idols are in play, too. Find one, and it can save you. So, first come, first served.`] });
   if (S.mole && S.mole !== 'disabled') asides.push({ name: 'The Mole', lines: [`And one of you isn't here to win at all. One of you works for me, and will be quietly ruining everything the rest of you do. Have fun figuring out who.`] });
-  if (S.coaches && S.coaches !== 'disabled') asides.push({ name: 'The Coaches', lines: [`Every team gets a coach this season. Somebody who's been through all this before, and who will absolutely yell at you.`] });
+  // the coaches explain themselves when they arrive (coach-arrive.js); here, only that they are coming
+  if (S.coaches && S.coaches !== 'disabled') asides.push({ name: 'The Coaches', lines: [`And this season, every team gets ${(S.coachesPerTribe || 1) > 1 ? 'coaches' : 'a coach'}. People who've been through all this before, and who will absolutely yell at you. You'll meet them later.`] });
   if (S.foodWater && S.foodWater !== 'disabled') asides.push({ name: 'Survival', lines: [`And nobody's feeding you this time. You want dinner? Go catch it.`] });
   const fin = S.finaleFormat || 'traditional';
   asides.push(fin === 'fan-vote' ? { name: 'The fans decide', lines: [`And at the very end, the fans at home pick the winner. So smile for the camera.`] }

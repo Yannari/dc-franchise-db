@@ -21,8 +21,9 @@ const ORD = n => { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (
 
 export const isReturnee = name => !!name && !!players.find(p => p.name === name)?.isReturnee;
 
-export function pastOf(name) {
-  if (!isReturnee(name)) return null;
+export function pastOf(name, any = false) {
+  // any: read the ledger whatever the flag says (a coach is back, but not as a returning contestant)
+  if (!any && !isReturnee(name)) return null;
   let last = null;
   try { last = lastSeasonOf(name); } catch { last = null; }
   const r = last?.rec;

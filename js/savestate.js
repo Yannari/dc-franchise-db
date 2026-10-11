@@ -233,6 +233,7 @@ export function patchEpisodeHistory(ep) {
   // Tribes at start
   if (!h.tribesAtStart && ep.tribesAtStart) h.tribesAtStart = ep.tribesAtStart.map(t => ({ name: t.name, members: [...t.members] }));
   if (!h.dockArrivals && ep.dockArrivals) h.dockArrivals = ep.dockArrivals;
+  if (!h.coachArrivals && ep.coachArrivals) h.coachArrivals = ep.coachArrivals;
   // Save tie/revote state so VP can detect ties for display
   if (ep.isTie !== undefined && !h.isTie) h.isTie = ep.isTie;
   if (ep.tiedPlayers?.length && !h.tiedPlayers) h.tiedPlayers = [...ep.tiedPlayers];

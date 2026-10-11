@@ -7650,9 +7650,12 @@ function simulateJuryRoundtable(ep) {
       // counter-move; the pitcher's own read. Nobody commits a ballot on screen.
       const _pPhase = { ep: ep.num, phase: 'post', tribal: true };
       const _pData = { target: p.pitchTarget, claimed: numberWord(Math.max(2, p.claimedSupport || 0)) };
+      // a coach has no ballot and lobbies as a coach (td/script/lines/pitch-coach.js): the eight reactions in three
+      const _COACH_TONE = { receptive: 'yes', cold: 'no', skeptical: 'no', unreceptive: 'no' };
       const _parts = (p.responses || []).filter(r => r.voter && r.voter !== p.pitcher && r.voter !== p.pitchTarget).slice(0, 3)
-        .map(r => makeScene('pitch.react', { a: p.pitcher, b: r.voter },
-          { ..._pData, ending: describePitchReaction(p, r, () => 0).tone }, [], spotOf(ep, p.pitcher, r.voter, 'post').spot));
+        .map(r => { const tone = describePitchReaction(p, r, () => 0).tone;
+          return makeScene(p.coachPitch ? 'pitch.coach' : 'pitch.react', { a: p.pitcher, b: r.voter },
+            { ..._pData, ending: p.coachPitch ? (_COACH_TONE[tone] || 'maybe') : tone }, [], spotOf(ep, p.pitcher, r.voter, 'post').spot); });
       if (_targetWarning && _targetWarning.source && _targetWarning.source !== p.pitchTarget) {
         _parts.push(makeScene('pitch.warn', { a: _targetWarning.source, b: p.pitchTarget },
           { ending: _targetWarning.believed ? 'believed' : 'doubted', pitcher: p.pitcher }, [],
@@ -7662,7 +7665,7 @@ function simulateJuryRoundtable(ep) {
         _parts.push(makeScene('pitch.counter', { a: _counter.actor },
           { ending: _counter.type, pitcher: p.pitcher }, [], { id: 'confessional', label: 'Confessional' }));
       }
-      _parts.push(makeScene('pitch.read', { a: p.pitcher },
+      _parts.push(makeScene(p.coachPitch ? 'pitch.coachread' : 'pitch.read', { a: p.pitcher },
         { ending: p.success ? 'landed' : 'stalled', target: p.pitchTarget }, [], { id: 'confessional', label: 'Confessional' }));
       ep.campEvents[_vpCampKey].post.push(scriptEventParts(p.success
         ? { type: 'votePitch', players: [p.pitcher], badgeText: 'VOTE PITCH', badgeClass: 'gold' }

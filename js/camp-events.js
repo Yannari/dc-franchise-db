@@ -1034,7 +1034,17 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         gs.namedAlliances.push({ id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`, name: allianceName, members: [...members], formed: gs.episode + 1, betrayals: [], active: true });
         for (let x = 0; x < members.length; x++) for (let y = x + 1; y < members.length; y++) addBond(members[x], members[y], 0.2);
         events.push(scriptEvent({ type: 'allianceForm', alliance: allianceName, members, players: members, badgeText: 'ALLIANCE', badgeClass: 'gold' },
-          sceneOf(allianceName)));
+          _withCoach(sceneOf(allianceName), members, allianceName)));
+      };
+      // an alliance with a coach in it (not the coach-and-protege pact, which is written for them): the coach
+      // has no ballot, so the scene is the coach's offer, the coach speaking first (td/script/lines/pitch-coach.js)
+      const _withCoach = (sc, members, name) => {
+        const coach = members.find(m => isCoachName(m));
+        if (!coach || sc?.data?.ending === 'coach') return sc;
+        const [b1, b2, b3, b4, ...bx] = members.filter(m => m !== coach);
+        const more = [b3, b4, ...bx].filter(Boolean);
+        return makeScene('alliance.form', { a: coach, b: b1, ...(b2 ? { c: b2 } : {}), ...(b3 ? { d: b3 } : {}), ...(b4 ? { e: b4 } : {}) },
+          { ending: 'withcoach', group: name, more: more.length ? more.join(' and ') : null }, [], sc?.spot || null);
       };
       const _isAllied = p => gs.namedAlliances?.some(a => a.active && a.members.includes(p) && a.members.filter(m => group.includes(m)).length >= 2);
       // Global cap: max active alliances scales with active player count

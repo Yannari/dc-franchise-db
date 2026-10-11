@@ -535,8 +535,16 @@ export function generateDockArrivals(ep) {
   // back is that the house does not know they are coming, and the premiere was
   // introducing them by name.
   const _held = gs._lateArrival && !gs._lateArrival.seated ? gs._lateArrival.name : null;
-  const allPlayers = [...players].filter(p => p.name !== _held);
+  // the coaches arrive after the contestants, as coaches (the user, 2026-10-10: Heather stepped off the
+  // boat as one of "twenty contestants" saying "I'm here to win"): they are kept out of the contestants'
+  // order and get their own record, which the viewer plays as their own entrance (vp-td-ep/coach-arrive.js)
+  const _coachNames = new Set((gs.coaches || []).map(c => c.name));
+  const allPlayers = [...players].filter(p => p.name !== _held && !_coachNames.has(p.name));
   if (!allPlayers.length) return;
+  if (_coachNames.size) ep.coachArrivals = (gs.coaches || []).map(c => {
+    const p = players.find(x => x.name === c.name) || {};
+    return { name: c.name, tribe: c.tribe, archetype: p.archetype || 'floater', past: pastOf(c.name, true) || null };
+  });
 
   // ── Step 1: Group players by energy tier ──
   const tierGroups = { chill: [], intense: [], volatile: [] };

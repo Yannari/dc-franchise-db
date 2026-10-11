@@ -10,6 +10,7 @@
 // theirs, and whoever on the dock has something to say. The crowd on the dock grows as they come.
 import { placeScene, plateKey, venueOf, cleanText } from './steps.js';
 import { premiereSteps } from './premiere.js';
+import { coachArrival } from './coach-arrive.js';
 
 // where each venue's cast arrives, and on what
 const ARRIVE = {
@@ -139,10 +140,15 @@ export function tdArrivalScreen(ep, o = {}) {
     }
     here.push(a.name);
   }
+  // the coaches, after everybody who is playing (coach-arrive.js)
+  const coachNames = coachArrival({ ep, host, steps, here: [...here], scene, ride: A.ride, players,
+    intro: (n, extra) => { const p = players.find(x => x.name === n) || {};
+      steps.push({ k: 'intro', who: n, age: p.age || null, job: p.occupation || null, home: p.hometown || null, ride: A.ride,
+        stats: Object.entries(p.stats || {}).filter(([k]) => STAT[k]).sort((x, y) => y[1] - x[1]).slice(0, 3).map(([k, v]) => ({ k: STAT[k], v })), ...extra }); } });
   if (A.close === 'jet') { steps.push({ k: 'beat', text: `Chef rolls the Total Drama Jumbo Jet up the runway. It does not look safe.`, act: { kind: 'ride', ride: 'jet' } });
     steps.push({ k: 'say', by: host, host: true, text: `Everybody on board! Next stop: everywhere!` }); }
   if (A.close === 'tram') { steps.push({ k: 'beat', text: `${host} rolls up in a studio tram, waving like a parade float.`, act: { kind: 'ride', ride: 'tram' } });
     steps.push({ k: 'say', by: host, host: true, text: `Hop on! Time for the tour.` }); }
-  steps.push({ k: 'title', kicker: 'The cast is complete', name: `${here.length} players`, faces: here.slice(-8) });
+  steps.push({ k: 'title', kicker: 'The cast is complete', name: coachNames.length ? `${here.length} players, ${coachNames.length} coach${coachNames.length > 1 ? 'es' : ''}` : `${here.length} players`, faces: [...here.slice(-6), ...coachNames.slice(0, 2)] });
   return { id: 'arrivals', kind: 'arrivals', venue, ep: ep.num, label: 'Arrivals', host, steps };
 }

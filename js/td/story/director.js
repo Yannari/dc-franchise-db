@@ -1542,6 +1542,9 @@ export function airTdEpisode(ep) {
         const kind = ev.scene?.kind || '';
         const pool = kind ? `long.${kind}` : null;
         if (!pool || !hasStoryPool(pool)) return null;
+        // a coach's own version (a pitch or an alliance with no ballot in it, td/script pitch-coach.js) is never
+        // swapped for the general long scene, which is written for somebody who votes
+        if (['withcoach', 'coach'].includes(ev.scene?.data?.ending) || /^pitch\.coach/.test(kind)) return null;
         const ending = ev.scene?.data?.ending || 'any';
         const who = { ...(ev.scene?.who || (step ? { a: step.roles.a, b: step.roles.b, c: step.roles.c } : { a: ev.players?.[0], b: ev.players?.[1], c: ev.players?.[2] })) };
         // the people a group moment invited (camp-events.js _crowdScenes data.with) take the next

@@ -2,6 +2,7 @@
 import { gs, players } from './core.js';
 import { pStats, pronouns, romanticCompat } from './players.js';
 import { getBond, addBond } from './bonds.js';
+import { isCoach } from './coaches.js';
 import { recordPlantedLie } from './knowledge-integration.js';
 import { META_WEIGHTS } from './franchise-meta.js';
 
@@ -675,7 +676,8 @@ export function generateSocialManipulationEvents(group, ep, boostRate) {
     }
     // False majority — sell someone a fake vote plan. Needs a victim who trusts
     // the schemer at least neutrally, and a decoy to burn the ballot on.
-    const _fmVictims = group.filter(p => p !== schemer && getBond(schemer, p) >= 0);
+    // (never a coach: the scheme burns the victim's ballot, and a coach has none)
+    const _fmVictims = group.filter(p => p !== schemer && !isCoach(p) && getBond(schemer, p) >= 0);
     const _fmVictim = _fmVictims.sort((a, b) => getBond(schemer, b) - getBond(schemer, a))[0];
     const _fmDecoyPool = group.filter(p => p !== schemer && p !== _fmVictim);
     const _fmDecoy = _fmDecoyPool.sort((a, b) => getBond(schemer, a) - getBond(schemer, b))[0];

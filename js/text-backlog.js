@@ -1,6 +1,7 @@
 // js/text-backlog.js - Text backlog generators for non-challenge episode sections
 import { bbStepTranscript } from './vp-bb-ep/steps.js';
 import { tdTribalStepped, tdTribalScreen, tdStepTranscript } from './vp-td-ep/steps.js';
+import { coachArrival } from './vp-td-ep/coach-arrive.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, exileChooserReason } from './vp-td-ep/twists.js';
 import { tdJuryHouseScreen } from './vp-td-ep/jury-house.js';
 import { tdTwistBlocksScreen, tdMergeScreen } from './vp-td-ep/twist-screens.js';
@@ -3593,6 +3594,15 @@ export function _textDockArrivals(ep, ln, sec) {
     ln(`[${a.name}] ${a.playerLine}`);
     if (a.dockReaction) ln(`  ${a.dockReaction.text}`);
   });
+  // the coaches' entrance, every line the viewer plays (vp-td-ep/coach-arrive.js)
+  if (ep.coachArrivals?.length) {
+    sec('THE COACHES ARRIVE');
+    const st = [];
+    coachArrival({ ep, host, steps: st, here: ep.dockArrivals.map(a => a.name), scene: () => {}, ride: null, players,
+      intro: (n, x) => st.push({ k: 'intro', who: n, past: x.past }) });
+    for (const s of st) { const t = s.k === 'beat' ? `  (${s.text})` : s.k === 'conf' ? `[${s.by} - confessional] ${s.text}` : s.k === 'say' ? `[${s.by}] ${s.text}`
+      : s.k === 'intro' ? `  ${s.who}, coach${s.past ? ` (${s.past.placeWord} on ${s.past.where})` : ''}` : s.k === 'title' ? `  — ${s.name} —` : ''; if (t) ln(t); }
+  }
 }
 
 export function _textFirstImpressions(ep, ln, sec) {

@@ -1767,7 +1767,7 @@
         "temperament": 6
       },
       "sexuality": "straight",
-      "voice": "High-strung eco-activist overachiever. Passionate about the environment and causes, intensely competitive and perfectionist, anxious and easily overwhelmed; lectures people about doing the right thing, spirals under pressure. Earnest, a little exhausting, genuinely good-hearted underneath the stress.",
+      "voice": "High-strung eco-activist overachiever. Passionate about the environment and causes, intensely competitive and perfectionist, anxious and easily overwhelmed; lectures people about doing the right thing, spirals under pressure. Earnest, a little exhausting, genuinely good-hearted underneath the stress. #-competitive #-bossy #-earnest#calm#quiet#nerdy",
       "profileSources": {
         "voice": [
           {
@@ -1821,7 +1821,61 @@
       "hometown": "Connecticut",
       "occupation": "Aspiring journalist",
       "backstory": "An aspiring journalist with a lonely childhood, Millie auditioned to document what she saw as the failures of her generation. Writing about other people gave her a sense of expertise and kept attention away from her own low self-worth. She arrived with a notebook, a research project, and very little practical preparation, expecting the cast to prove her thesis rather than expecting any of them to become important to her.",
-      "personality": "Millie is book-smart, observant, and habitually judgmental, especially when she can study a group from its edge instead of risking participation. Her notebook once let her convert loneliness and insecurity into criticism of everyone else; genuine friendship forced her to see that observation without compassion can become exploitation. She still notices absurd behavior quickly and can sound condescending when anxious, but she now understands that people are not merely material. Social cues do not always come naturally, and physical challenges can expose her hesitation, yet she learns quickly when someone gives her a concrete method. Under pressure she may retreat into analysis or justify a selfish choice as research. Her best growth comes when she puts the notebook down, accepts responsibility without qualifiers, and acts for a person she has chosen to trust."
+      "personality": "Millie is book-smart, observant, and habitually judgmental, especially when she can study a group from its edge instead of risking participation. Her notebook once let her convert loneliness and insecurity into criticism of everyone else; genuine friendship forced her to see that observation without compassion can become exploitation. She still notices absurd behavior quickly and can sound condescending when anxious, but she now understands that people are not merely material. Social cues do not always come naturally, and physical challenges can expose her hesitation, yet she learns quickly when someone gives her a concrete method. Under pressure she may retreat into analysis or justify a selfish choice as research. Her best growth comes when she puts the notebook down, accepts responsibility without qualifiers, and acts for a person she has chosen to trust.",
+      "ties": [],
+      "kit": {
+        "thing": "her notebook",
+        "alone": "is writing in her journal by the fire, glancing up at everyone in turn",
+        "ground": [
+          "lonely-child",
+          "writer"
+        ],
+        "bit": [
+          "Fun fact: forty percent of plastic in the ocean is fishing nets. So when we fish, we should really think about that.",
+          "I'm keeping notes on everyone. For journalism. It's not a strategy thing. It's mostly not a strategy thing.",
+          "We're doing the shelter wrong. I read about this. I can't do it myself, but I know we're doing it wrong."
+        ],
+        "tease": [
+          "Millie, we're starving. Let us fish.",
+          "What did you write about me?",
+          "So you'll supervise."
+        ],
+        "reply": [
+          "Fine. But I'm writing down that I said it.",
+          "Nothing bad. Mostly nothing bad. It's descriptive.",
+          "I'll consult. Consulting is a real job."
+        ],
+        "home": [
+          "My mom, who wanted me to do something normal for once. This is not normal. I'm aware.",
+          "My editor at the school paper, who thinks this will be a great series. I hope she's right. I hope I survive it."
+        ],
+        "want": [
+          "To prove I can do more than watch people. I want to actually be in it.",
+          "To win, and to write about it after. I have notes already."
+        ],
+        "conf": [
+          "I came here to observe my generation's failures. Turns out I'm one of them. I'm adding that to the notes.",
+          "It's easier to judge people than to talk to them. I'm working on it. It's slow."
+        ],
+        "askHome": [
+          "Can I ask about your life back home? It's for context. And because I'm curious.",
+          "What's your family like? You don't have to answer. I'll still take notes."
+        ],
+        "askWant": [
+          "What are you hoping to get out of this, honestly? I'm trying to understand people better.",
+          "Why are you really here? Off the record."
+        ],
+        "defend": [
+          "Taking notes isn't the same as judging. Okay, it's a little the same. But it's also how I understand things."
+        ],
+        "deep": [
+          "I write about people because I never knew how to be with them. I'd really like to learn. Out here, maybe."
+        ],
+        "solo": [
+          "I've filled half this notebook already. It's mostly about the people here. They'd be horrified, honestly.",
+          "Writing about people is easier than talking to them. I'm trying to do more of the second one."
+        ]
+      }
     },
     {
       "name": "MK",

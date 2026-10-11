@@ -58,7 +58,7 @@ Promise.all([fetch('script.json', { cache: 'no-store' }).then(r => r.json()), fe
     const refs = v ? `<div class="refs">${v.takes.map((t, k) => btn('voices/' + t, `Reference take ${k + 1}${k + 1 === v.pick ? ' ★' : ''}`, true)).join('')}</div>` : '';
     return `<h2>${esc(name)}</h2><p class="voice">${esc(voice)}</p>${refs}` + lines.map(l =>
       `<div class="row"><div class="text">${esc(l.text)}</div><div class="dir">Direction (Design only): ${esc(l.direction)}</div>
-       <div class="btns">${btn(l.file, 'Chosen')}${v ? btn('design-precise/' + l.id + '.wav', 'Precise') + btn('design-precise-seed/' + l.id + '.wav', 'Precise + same seed') + btn('clone-light/' + l.id + '.wav', 'Clone light') : ''}</div></div>`).join('');
+       <div class="btns">${btn(l.file, 'Chosen')}${v && (voices._compared || []).includes(l.id) ? btn('design-precise/' + l.id + '.wav', 'Precise') + btn('design-precise-seed/' + l.id + '.wav', 'Precise + same seed') + btn('clone-light/' + l.id + '.wav', 'Clone light') : ''}</div></div>`).join('');
   }).join('');
   list.addEventListener('click', e => { const b = e.target.closest('button'); if (b) play(b, b.dataset.file); });
 }).catch(() => { document.getElementById('list').innerHTML = '<p class="err">The script did not load.</p>'; });

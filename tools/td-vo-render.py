@@ -25,9 +25,11 @@ ap.add_argument('--force', action='store_true', help='render lines that already 
 # 12 at once 2.5 s (6.2 GB), 18 at once 6.1 s (7.6 GB: past the card, it spills and slows)
 ap.add_argument('--batch', type=int, default=12)
 # the drift experiments (the user, 2026-10-11: Design acts best but its voices drift between lines)
-ap.add_argument('--profiles', help="a JSON of precise voices per character, used in place of the script's short one")
+# THE CHOSEN SETTINGS (the user, 2026-10-11, after hearing five versions: "precise + less random do a good job
+# enough and it's quick"): each character's precise voice from voices/profiles.json, at temperature 0.6
+ap.add_argument('--profiles', default='voices/profiles.json', help="precise voices per character (relative to --dir), used in place of the script's short one")
 ap.add_argument('--seed', type=int, help='every line of a character starts from the same random state (one line at a time: a batch gives each line its own draws)')
-ap.add_argument('--temperature', type=float, help='sampling temperature (the model default is 0.9): lower is less random')
+ap.add_argument('--temperature', type=float, default=0.6, help='sampling temperature (the model default is 0.9): lower is less random')
 ap.add_argument('--sub', default='', help='write the clips into this subfolder')
 a = ap.parse_args()
 
@@ -42,7 +44,8 @@ print(f'loaded {model_id} in {time.time() - t0:.1f}s, {torch.cuda.memory_allocat
 
 dest = out / a.sub
 dest.mkdir(exist_ok=True)
-profiles = json.loads(pathlib.Path(a.profiles).read_text(encoding='utf-8')) if a.profiles else {}
+ppath = out / a.profiles if a.profiles and not pathlib.Path(a.profiles).is_absolute() and (out / a.profiles).exists() else pathlib.Path(a.profiles or '')
+profiles = {k: v for k, v in json.loads(ppath.read_text(encoding='utf-8')).items() if not k.startswith('_')} if a.profiles and ppath.is_file() else {}
 def desc(l):
     return f"{profiles[l['by']]} {l['direction']}" if l['by'] in profiles else l['voiceDescription']
 gen = {'temperature': a.temperature, 'subtalker_temperature': a.temperature} if a.temperature else {}

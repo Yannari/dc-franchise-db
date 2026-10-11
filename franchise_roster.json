@@ -2420,7 +2420,7 @@
         "temperament": 7
       },
       "sexuality": "gay",
-      "voice": "Tom tends to speak in a guarded, controlled way, especially when he is trying to keep emotional distance. In conflict, he can become blunt and moralizing, framing arguments around fairness, safety, and what he thinks is right. When he feels safe, his rhythm loosens into warmer reassurance, but shame or trauma can make him evasive or quietly defensive.",
+      "voice": "Tom tends to speak in a guarded, controlled way, especially when he is trying to keep emotional distance. In conflict, he can become blunt and moralizing, framing arguments around fairness, safety, and what he thinks is right. When he feels safe, his rhythm loosens into warmer reassurance, but shame or trauma can make him evasive or quietly defensive. #-blunt#tough#goofy",
       "profileSources": {
         "voice": [
           {
@@ -2508,6 +2508,55 @@
           }
         ]
       },
+      "kit": {
+        "thing": "being a cop",
+        "alone": "is checking every knot and rope around camp, retying the loose ones",
+        "bit": [
+          "Nobody leaves camp alone after dark. I'm serious. Buddy system, everybody.",
+          "I'm just going to walk the perimeter real quick. Old habit.",
+          "When I was a kid I read every comic I could find. I always wanted to be the guy who shows up when it goes wrong."
+        ],
+        "tease": [
+          "Okay, Officer. Should we sign in and out, too?",
+          "There's no perimeter. It's a beach.",
+          "So you're the hero now?"
+        ],
+        "reply": [
+          "If it keeps everybody safe, yes.",
+          "Then I'm walking the beach. Same thing.",
+          "I'm just the guy who shows up. That's all I've ever wanted to be."
+        ],
+        "home": [
+          "My mom, Jackie, who taught me to skate, and my little brother Tony, who is definitely eating all my food right now.",
+          "My mom and my brother. They've been there for the worst of it. I'd like to give them something good."
+        ],
+        "want": [
+          "I want to do this right. Win or lose, I want to be able to look myself in the mirror.",
+          "To prove I can trust people again. And to win, if I can."
+        ],
+        "conf": [
+          "I don't like lying. I'm good at it, which is worse. I'm trying not to need it out here.",
+          "People think I'm guarded. I am. You'd be too. But I'll go to war for the ones who earn it."
+        ],
+        "askHome": [
+          "Who's waiting for you at home? Somebody's got your back out there, I hope.",
+          "You got family back home? They okay with you being out here?"
+        ],
+        "askWant": [
+          "What are you really here for? I'd rather know now.",
+          "What happens if you win? Where does it go?"
+        ],
+        "defend": [
+          "Keeping people safe isn't a joke to me. It never will be."
+        ],
+        "deep": [
+          "Something happened on the job I still can't talk about. Out here, nobody needs me to be okay all the time. That's new."
+        ],
+        "solo": [
+          "Somebody has to make sure this thing won't fall on us. I'd rather it was me.",
+          "Old habits. I walk around and check everything is safe. It's the only way I can sleep."
+        ]
+      },
       "age": 29,
       "birthdate": "1997-06-18",
       "ethnicity": "White",
@@ -2535,7 +2584,8 @@
         "temperament": 4
       },
       "sexuality": "gay",
-      "voice": "Guarded and testing. Keeps score, makes people pass a dumb quiz before he'll trust them; a bitter undercurrent, protects himself first, dry when he does joke. Genuinely nice but hurt when betrayed because he didn't see it coming."
+      "voice": "Guarded and testing. Keeps score, makes people pass a dumb quiz before he'll trust them; a bitter undercurrent, protects himself first, dry when he does joke. Genuinely nice but hurt when betrayed because he didn't see it coming.#emotional #-dry #-goofy#anxious#chaotic #warm",
+      "profileSources": {}
     },
     {
       "name": "Miriam",
@@ -2554,7 +2604,7 @@
         "temperament": 5
       },
       "sexuality": "straight",
-      "voice": "Miriam likely speaks in a clipped, dry, no-nonsense way, using blunt criticism rather than soft reassurance. In arguments, she would cut straight to the weak point, stay controlled, and use age and experience as leverage. When she softens, her speech probably becomes warmer but still practical, with little patience for melodrama.",
+      "voice": "Miriam likely speaks in a clipped, dry, no-nonsense way, using blunt criticism rather than soft reassurance. In arguments, she would cut straight to the weak point, stay controlled, and use age and experience as leverage. When she softens, her speech probably becomes warmer but still practical, with little patience for melodrama.#bossy",
       "profileSources": {
         "descriptor": [
           {
@@ -2611,7 +2661,56 @@
           }
         ]
       },
-      "age": 73,
+      "kit": {
+        "thing": "being old enough to be everyone's grandmother",
+        "alone": "is knitting something long and purple out of a frayed rope",
+        "bit": [
+          "I've been awake since five. Somebody here snores like a leaf blower, and I will find out who.",
+          "In my day, we didn't complain about the food. We ate it, and then we complained.",
+          "I rowed, I played water polo, I threw knives competitively. This challenge does not frighten me."
+        ],
+        "tease": [
+          "You're up at five every day? Why?",
+          "Miriam, you've complained about the food at every meal.",
+          "You threw knives?"
+        ],
+        "reply": [
+          "Because I'm seventy-three, dear, and the sleep is over.",
+          "After eating it. Pay attention.",
+          "Competitively. Ask nicely and I'll show you. Ask rudely and I'll also show you."
+        ],
+        "home": [
+          "My cat, Biscuit, and my neighbour Joey, who's watching him. Joey had better not be feeding him the cheap food.",
+          "An empty house and a very spoiled cat. That's all I need to say about it."
+        ],
+        "want": [
+          "To win, and then to watch every one of you realise you underestimated the old lady.",
+          "Enough money to keep Biscuit in the good food until he outlives us all."
+        ],
+        "conf": [
+          "They think the old woman is an easy vote. Let them think it. I've buried better people than this lot.",
+          "I don't do sweet. I do useful. Sweet gets you a nice funeral, useful gets you to the end."
+        ],
+        "askHome": [
+          "And who's waiting for you at home? Somebody, I hope. You look like you need somebody.",
+          "Do your parents know you're out here doing this? Heavens."
+        ],
+        "askWant": [
+          "What on earth do you want out of this? Fame? You'll find it disappointing.",
+          "Why are you here, young one? And don't give me the speech."
+        ],
+        "defend": [
+          "I've earned every one of these years, dear. Don't you dare make them sound like a weakness."
+        ],
+        "deep": [
+          "My husband and my son died the same night. A drunk driver. I don't talk about it. I don't know why I'm telling you."
+        ],
+        "solo": [
+          "I don't know what it is yet, dear. It might be a scarf. It might be a rope again by Tuesday.",
+          "These young people think they're tired. I've buried a husband and raised a son. This is a holiday."
+        ]
+      },
+      "age": 74,
       "birthdate": "1952-12-14",
       "occupation": "Retiree",
       "descriptor": "Bitter old lady",
@@ -2740,7 +2839,8 @@
         "temperament": 10
       },
       "sexuality": "asexual",
-      "voice": "Insecure, awkward, tries too hard to fit in. Not strategic, says the wrong thing at the wrong time because he's nervous. 'I didn't mean it like that.' / 'Can I just— never mind.'"
+      "voice": "Insecure, awkward, tries too hard to fit in. Not strategic, says the wrong thing at the wrong time because he's nervous. 'I didn't mean it like that.' / 'Can I just— never mind.' #-cruel#quiet#calm",
+      "profileSources": {}
     },
     {
       "name": "Gabby",
@@ -2974,7 +3074,8 @@
         "temperament": 5
       },
       "sexuality": "bi",
-      "voice": "Smart, observant, dryly sarcastic (not quirky). Talks about strategy plainly, sees what others miss. 'I saw what she did. She knows I saw.'"
+      "voice": "Smart, observant, dryly sarcastic (not quirky). Talks about strategy plainly, sees what#competitive others miss. 'I saw what she did. She knows I saw.'#schemer#blunt",
+      "profileSources": {}
     },
     {
       "name": "Nick",
@@ -3029,7 +3130,9 @@
         "intuition": 5,
         "temperament": 8
       },
-      "voice": "Emotional, loyal to a fault, wears her heart on her sleeve. Gets hurt easily and shows it, confrontational when upset. 'You said you'd have my back!' / 'I'm trying! I'm TRYING!'"
+      "sexuality": "straight",
+      "voice": "Emotional, loyal to a fault, wears her heart on her sleeve. Gets hurt easily and shows it, confrontational when upset. 'You said you'd have my back!' / 'I'm trying! I'm TRYING!'#bossy #warm #calm #-emotional",
+      "profileSources": {}
     },
     {
       "name": "Aiden",

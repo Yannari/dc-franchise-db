@@ -21,7 +21,6 @@ import { coachesAt, coachReadOut, coachSeats, cardBeforeVote, cardAfterRead } fr
 import { TD_WET, WET_COLS, WET_ROWS } from './wet.js';
 import { stableRng } from '../script/rng.js';
 import { campFeed } from '../td/story/feed.js';
-import { multiTribalView } from '../td/story/tribal.js';
 import { arenaPlaces, contestStyle, contestTalk, contestResult } from './contest.js';
 
 // ── the venues ────────────────────────────────────────────────────────
@@ -681,9 +680,7 @@ export function tdTribalScreen(ep, o = {}) {
   let elim = coachReadOut(ep) || ep.eliminated;
   const seatedAll = [...tribal, ...coaches.filter(c => !tribal.includes(c))];
   const team = ep.tribalTribe || null;
-  // a Double Tribal council (episode.js 'double-tribal'): the losing tribes sit together and vote out one
-  const council = ep.challengeType === 'double-tribal' && (ep.doubleTribalLosingTribes || []).length >= 2 ? ep.doubleTribalLosingTribes.map(t => t.name) : null;
-  const callName = council ? (council.length === 2 ? `${council[0]} and ${council[1]}` : `${council.slice(0, -1).join(', ')} and ${council[council.length - 1]}`) : team || 'campers';
+  const callName = team || 'campers';
   const rng = stableRng('td-tribal', String(ep.num), team || 'merge', elim);
   const pick = arr => arr[Math.floor(rng() * arr.length)];
   const plate = plateKey(venue, 'ceremony', 'night');
@@ -695,13 +692,7 @@ export function tdTribalScreen(ep, o = {}) {
   // them (the user: "back at the fire so soon" on a team's first vote). The merge counts from the merge.
   const been = (window.gs?.episodeHistory || []).some(h => h.num < ep.num && h.eliminated && (team ? h.tribalTribe === team : (h.isMerge || h.gsSnapshot?.isMerged)));
   const opens = V.open(callName);
-  say(council ? opens[0] : been ? pick(opens.slice(1)) : opens[0]);
-  // the twist, said before anything else: everybody who lost votes together, and one of them goes
-  if (council) {
-    steps.push({ k: 'title', kicker: 'Twist', name: 'Two tribes, one Tribal', faces: tribal.slice(0, 8), tone: 'fire' });
-    say(`Tonight is different. ${callName}, you all lost today, so you're all here together, and there's only one vote. One of you is going home.`);
-    say(`So tonight your own tribe can't save you on its own. You'll need votes from across the fire.`);
-  }
+  say(been ? pick(opens.slice(1)) : opens[0]);
   coachSeats(steps, ep, coaches);
   // the questions: the host asks about what happened today (td/story/tribal.js tribalQA); an episode
   // written before that keeps the classic screen's exchanges (buildTribalQA)
@@ -1291,7 +1282,6 @@ export function tdStepTranscript(screen) {
  * as the ordinary stepped Tribal, the first boot walked out, then the second vote among who is left.
  */
 export function tdDoubleTribalScreen(ep, o = {}) {
-  if ((ep?.multiTribalResults || []).length) return tdMultiTribalScreen(ep, o);
   if (ep?.swapResult?.swapper && !ep.eliminated) return elimSwap(ep, o);
   if (ep?.exileDuelVotedOut && ep.exileDuelResult) return duelNight(ep, o);
   if (ep?.exilePlayer && !ep.eliminated && (ep.tribalPlayers || []).includes(ep.exilePlayer)) return exileSetup(ep, o);
@@ -1322,55 +1312,6 @@ export function tdDoubleTribalScreen(ep, o = {}) {
   const { keep, later } = afterlife(a.steps);
   return { ...b, id: 'tribal', label: `${b.label} · Double elimination`, steps: [...keep, ...b.steps, ...later], elim: ep.eliminated, first };
 }
-
-/**
- * A Multi-Tribal night (the user, 2026-10-10: the double Tribal): every losing tribe goes to its own council,
- * one after the other, and each sends somebody home. Each plays as the ordinary stepped Tribal from its own
- * result (td/story/tribal.js multiTribalView): its own booth, reading, Intel round and walk-out. The host
- * springs the twist at the first council and hands over to the next tribe at each one after. Anybody's
- * Playa or Motel arrival waits for the end of the night.
- */
-const later90 = (t, k) => {
-  const [, h, m, ap] = t.match(/^(\d{1,2}):(\d\d) ([AP]M)$/);
-  let mins = ((+h % 12) + (ap === 'PM' ? 12 : 0)) * 60 + +m + 90 * k;
-  mins %= 24 * 60;
-  const H = Math.floor(mins / 60), M = mins % 60;
-  return `${((H + 11) % 12) + 1}:${String(M).padStart(2, '0')} ${H >= 12 ? 'PM' : 'AM'}`;
-};
-export function tdMultiTribalScreen(ep, o = {}) {
-  const results = (ep?.multiTribalResults || []).filter(r => r.eliminated && (r.log || []).length);
-  if (results.length < 2) return null;
-  const views = results.map(r => multiTribalView(ep, r));
-  if (!views.every(v => tdTribalStepped(v))) return null;
-  const scrs = views.map((v, i) => tdTribalScreen(v, i ? { ...o, qa: [] } : o));
-  if (scrs.some(x => !x)) return null;
-  const host = scrs[0].host;
-  const names = results.map(r => r.tribe);
-  const both = names.length === 2 ? `${names[0]} and ${names[1]}` : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
-  const NUM = ['', 'one', 'two', 'three', 'four', 'five'];
-  const winner = (ep.tribesAtStart || []).map(t => t.name).find(t => !names.includes(t)) || null;
-  const steps = [], later = [];
-  scrs.forEach((S, i) => {
-    S.steps.forEach(s => { if (s.side) s.side = s.side.map(x => (['tally', 'why', 'plans'].includes(x.tab) ? { ...x, round: i + 1 } : x)); });
-    const opener = S.steps.findIndex((s, j) => j > 0 && s.k === 'say' && s.host);
-    const springs = i === 0
-      ? [{ k: 'title', kicker: 'Twist', name: `${NUM[names.length] ? NUM[names.length][0].toUpperCase() + NUM[names.length].slice(1) : names.length} Tribals tonight`, faces: views.flatMap(v => v.tribalPlayers).slice(0, 8), tone: 'fire' },
-        { k: 'say', by: host, host: true, text: `${winner ? `${winner} won immunity today, and they're the only ones safe.` : 'Only the winners are safe tonight.'} ${both}, you all lost, so you're all coming to Tribal tonight, one tribe at a time.` },
-        { k: 'say', by: host, host: true, text: `${names[0]}, you're up first. By the end of the night, ${NUM[names.length] || names.length} people are going home.` }]
-      : [{ k: 'say', by: host, host: true, text: `That's one Tribal done, and ${results[i - 1].eliminated} is gone. ${names[i]}, you're up.` }];
-    // a later council: its own clock (an hour and a half after the one before), and the handover in place
-    // of a second welcome
-    if (i > 0) S.steps.forEach(s => { if (s.time && /^\d{1,2}:\d\d [AP]M$/.test(s.time)) s.time = later90(s.time, i); });
-    if (i > 0) S.steps[0] = { ...S.steps[0], card: true, cut: true };
-    if (opener > 0) S.steps.splice(opener + (i > 0 ? 0 : 1), i > 0 ? 1 : 0, ...springs); else S.steps.splice(1, 0, ...springs);
-    const { keep, later: away } = afterlife(S.steps);
-    steps.push(...keep); later.push(...away);
-  });
-  const last = scrs[scrs.length - 1];
-  return { ...last, id: 'tribal', label: `${names.length} Tribals`, steps: [...steps, ...later], elim: ep.eliminated, first: results.slice(0, -1).map(r => r.eliminated) };
-}
-
-// the first boot of a double night arrives at Playa / the Motel after the second, not in the middle of the ceremony
 function afterlife(steps) {
   const keep = [], later = [];
   let away = false;

@@ -241,7 +241,7 @@
         "temperament": 6
       },
       "sexuality": "gay",
-      "voice": "Sweet, dramatic theater kid. Expressive, supportive, non-confrontational; devoted to his friends. Emotes big.",
+      "voice": "Sweet, dramatic theater kid. Expressive, supportive, non-confrontational; devoted to his friends. Emotes big.#schemer#blunt ",
       "profileSources": {
         "voice": [
           {
@@ -291,7 +291,62 @@
       "age": 22,
       "birthdate": "2004-06-12",
       "backstory": "Before competing, Bowie was already a practiced performer and relentless competitor. His audition presents him as Total Drama’s first openly gay contestant, a basketball-playing student who had been crowned both prom king and queen and wanted another crown. That mix of pageantry, preparation, and self-belief explains why he arrived expecting to manage both the room and the show around it.",
-      "personality": "Bowie is openly competitive, socially alert, and comfortable being the most visibly confident person in a room. He enjoys drama as both entertainment and information, notices who needs reassurance, and can build sincere friendships even while planning around them. He prefers clean strategic authorship: identify the dangerous player, assemble the numbers, and own the decision in confessional. His affection for people such as Raj reveals a real boundary beneath the ambition; he can postpone or soften a move when the human cost becomes personal. Under pressure he gets sharper and more controlling, but not randomly cruel. He respects opponents who can answer him move for move and hates being treated as strategically naive."
+      "personality": "Bowie is openly competitive, socially alert, and comfortable being the most visibly confident person in a room. He enjoys drama as both entertainment and information, notices who needs reassurance, and can build sincere friendships even while planning around them. He prefers clean strategic authorship: identify the dangerous player, assemble the numbers, and own the decision in confessional. His affection for people such as Raj reveals a real boundary beneath the ambition; he can postpone or soften a move when the human cost becomes personal. Under pressure he gets sharper and more controlling, but not randomly cruel. He respects opponents who can answer him move for move and hates being treated as strategically naive.",
+      "ties": [],
+      "kit": {
+        "thing": "being a theatre kid",
+        "alone": "is running dance steps on the dock, counting under his breath",
+        "ground": [
+          "performer",
+          "athlete",
+          "came-out"
+        ],
+        "bit": [
+          "Okay, nobody panic, but I've been rehearsing my reaction for when we win, and it involves a split.",
+          "I was prom king AND prom queen, so I think I can handle a team captain election, thank you.",
+          "If we lose today, I want everyone to know I'm going to cry, and it's going to be beautiful."
+        ],
+        "tease": [
+          "Please don't do the split. Your knees are on our team.",
+          "Is there anything you haven't been crowned?",
+          "Can you cry quieter than last time, at least?"
+        ],
+        "reply": [
+          "My knees are trained professionals. They'll be fine.",
+          "Not yet. That's what this show is for.",
+          "Absolutely not. If I'm crying, I'm giving it everything."
+        ],
+        "home": [
+          "My mom, who has watched every musical I've ever been in, including the ones where I was a tree.",
+          "My friends from the theatre. They made me promise to win and also to name an alliance after a Broadway show."
+        ],
+        "want": [
+          "Another crown. I don't care what it's made of.",
+          "To be the one everybody remembers, and to win. In that order, honestly."
+        ],
+        "conf": [
+          "I love these people. I'm also going to beat them. Both of those things are true.",
+          "People think drama is a distraction. It's information. Who cries, who yells, who goes quiet. I'm taking notes."
+        ],
+        "askHome": [
+          "Okay, tell me everything. Who's at home? Partner? Pets? A secret twin?",
+          "Who are you doing this for back home?"
+        ],
+        "askWant": [
+          "What's the dream, though? Like the real one, not the one you'd say in the audition tape.",
+          "If you win, what's the first thing you do?"
+        ],
+        "defend": [
+          "I'm loud because I'm good at this. You don't get to make that sound like a flaw."
+        ],
+        "deep": [
+          "Sometimes I'm not sure people like me or just like watching me. I think that's why I perform so hard."
+        ],
+        "solo": [
+          "If I'm not performing, I'm thinking about performing. Right now I'm thinking about how good this confessional is going to look.",
+          "Some people come out here to rest. I come out here to rehearse. The whole island is a stage."
+        ]
+      }
     },
     {
       "name": "Brick",

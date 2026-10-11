@@ -2500,7 +2500,62 @@
       "sexuality": "straight",
       "voice": "Steady, perceptive, kind. Hates conflict, cautious, rarely shows her hand; sweet indie girl who toughens up when pushed.#earnest#emotional#flirty",
       "profileSources": {},
-      "ties": []
+      "ties": [],
+      "kit": {
+        "thing": "being a sweet indie girl who makes her own retro clothes",
+        "alone": "sewing a loose button back on and quietly matching thread colors with way more focus than the situation probably needs.",
+        "ground": [
+          "lonely-child",
+          "pets"
+        ],
+        "bit": [
+          "I made this top myself, so if a seam pops during a challenge, everyone please pretend it's a design choice and not me panicking.",
+          "If anyone wants to talk indie theatre while we wait, I'm very available, and I promise I only get a little intense about bad lighting.",
+          "I'm trying to be chill, but I did pack outfits by color mood, because red, lavender, and blue make me feel less like I'm about to be judged on television."
+        ],
+        "tease": [
+          "{a}, you made that? It looks like it lost a fight with a craft bin.",
+          "{a}, indie theatre sounds like regular theatre with worse chairs.",
+          "{a}, color mood packing is the most nervous thing I've ever heard."
+        ],
+        "reply": [
+          "Okay, rude, but the craft bin and I worked really hard, so I'm choosing to take that as handmade charm.",
+          "The chairs are worse, yeah, but the feelings are huge, so it balances out.",
+          "It is nervous, but it's organized nervous, and honestly that's one of my better settings."
+        ],
+        "home": [
+          "My mom and dad are back home, and I hope they're watching the parts where I look calm and not the parts where my face gives away everything.",
+          "My parents are waiting back home, and Ms. Puffycheeks too, which is my hamster, so I'm hoping she doesn't judge my screen presence."
+        ],
+        "want": [
+          "I want to make real friends, not just polite small talk where everyone silently decides I'm too much.",
+          "I want to prove I can be kind without being a pushover, because there's a difference and I'm still working on showing it."
+        ],
+        "conf": [
+          "I came here wanting people to like me, which is sweet in theory and a little dangerous in practice, because I can talk myself into trusting almost anybody.",
+          "I know I look soft, and I am, but if someone keeps pushing, there's definitely a point where I stop apologizing and start paying attention.",
+          "There are cute people here, and I'm not saying I'm distracted, but I did just fix my hair for a camera that was already on."
+        ],
+        "askHome": [
+          "So who's waiting for you back home, if you don't mind me asking?",
+          "What do people back home think about you being here, and are they excited or pretending not to be worried?"
+        ],
+        "askWant": [
+          "What do you actually want out of this, besides surviving the weird stuff they throw at us?",
+          "Are you here to win, to meet people, to prove something, or is it a secret fourth thing I should be scared of?"
+        ],
+        "defend": [
+          "You can mock the retro thing, but I made choices on purpose, and that's more than I can say for some of the comments happening right now.",
+          "It's fine if it's not your taste, but laughing at something I made doesn't make you look tougher, it just makes me trust you less."
+        ],
+        "deep": [
+          "I didn't have a lot of friends before this, so when someone seems nice to me, I want to believe it really badly, and I know that can mess with my judgment."
+        ],
+        "solo": [
+          "I know sewing doesn't look intimidating, but give me a needle, a plan, and five minutes, and suddenly I'm weirdly prepared.",
+          "Being alone is familiar, but I'm trying not to make it my comfort zone here, because I didn't come all this way to hide behind fabric."
+        ]
+      }
     },
     {
       "name": "Thom",

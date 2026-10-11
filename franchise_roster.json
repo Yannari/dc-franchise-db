@@ -2420,7 +2420,7 @@
         "temperament": 7
       },
       "sexuality": "gay",
-      "voice": "Tom tends to speak in a guarded, controlled way, especially when he is trying to keep emotional distance. In conflict, he can become blunt and moralizing, framing arguments around fairness, safety, and what he thinks is right. When he feels safe, his rhythm loosens into warmer reassurance, but shame or trauma can make him evasive or quietly defensive.",
+      "voice": "Tom tends to speak in a guarded, controlled way, especially when he is trying to keep emotional distance. In conflict, he can become blunt and moralizing, framing arguments around fairness, safety, and what he thinks is right. When he feels safe, his rhythm loosens into warmer reassurance, but shame or trauma can make him evasive or quietly defensive. #-blunt#tough#goofy",
       "profileSources": {
         "voice": [
           {
@@ -2516,7 +2516,62 @@
       "occupation": "Policeman",
       "descriptor": "The Spy",
       "backstory": "Thomas “Tom” Reed, born Winters, grew up with a mother named Jackie who strongly shaped his life and a younger brother, Tony, whom he gets along with well. One of his happiest childhood memories was going skating with his mother, and his childhood love of comics gave him an idealistic desire to protect people. He became a spy before later police work, and his life before public fame was marked by a serious traumatic incident that left him with lasting PTSD-related struggles and difficulty showing his face or trusting others. His parents suspected he was gay before he fully understood it himself, and he first recognized his sexuality when he was younger.",
-      "personality": "Tom is secretive and self-protective at first, but his instinct is still to look after people rather than abandon them. Under pressure, he tries to take charge physically and morally, leaning on discipline, strength, and a strong sense of justice; however, if he believes a larger mission or someone’s safety depends on it, he can lie, withhold the truth, or double-cross others. He is loyal once he trusts someone, but trust does not come easily, and he may avoid people rather than admit how badly he has been hurt. He will stand up to cheating and cruelty, but he will not easily expose his own vulnerability unless someone has earned it."
+      "personality": "Tom is secretive and self-protective at first, but his instinct is still to look after people rather than abandon them. Under pressure, he tries to take charge physically and morally, leaning on discipline, strength, and a strong sense of justice; however, if he believes a larger mission or someone’s safety depends on it, he can lie, withhold the truth, or double-cross others. He is loyal once he trusts someone, but trust does not come easily, and he may avoid people rather than admit how badly he has been hurt. He will stand up to cheating and cruelty, but he will not easily expose his own vulnerability unless someone has earned it.",
+      "ties": [],
+      "kit": {
+        "thing": "being a cop",
+        "alone": "is checking every knot and rope around camp, retying the loose ones",
+        "ground": [
+          "close-sibling",
+          "trauma",
+          "came-out"
+        ],
+        "bit": [
+          "Nobody leaves camp alone after dark. I'm serious. Buddy system, everybody.",
+          "I'm just going to walk the perimeter real quick. Old habit.",
+          "When I was a kid I read every comic I could find. I always wanted to be the guy who shows up when it goes wrong."
+        ],
+        "tease": [
+          "Okay, Officer. Should we sign in and out, too?",
+          "There's no perimeter. It's a beach.",
+          "So you're the hero now?"
+        ],
+        "reply": [
+          "If it keeps everybody safe, yes.",
+          "Then I'm walking the beach. Same thing.",
+          "I'm just the guy who shows up. That's all I've ever wanted to be."
+        ],
+        "home": [
+          "My mom, Jackie, who taught me to skate, and my little brother Tony, who is definitely eating all my food right now.",
+          "My mom and my brother. They've been there for the worst of it. I'd like to give them something good."
+        ],
+        "want": [
+          "I want to do this right. Win or lose, I want to be able to look myself in the mirror.",
+          "To prove I can trust people again. And to win, if I can."
+        ],
+        "conf": [
+          "I don't like lying. I'm good at it, which is worse. I'm trying not to need it out here.",
+          "People think I'm guarded. I am. You'd be too. But I'll go to war for the ones who earn it."
+        ],
+        "askHome": [
+          "Who's waiting for you at home? Somebody's got your back out there, I hope.",
+          "You got family back home? They okay with you being out here?"
+        ],
+        "askWant": [
+          "What are you really here for? I'd rather know now.",
+          "What happens if you win? Where does it go?"
+        ],
+        "defend": [
+          "Keeping people safe isn't a joke to me. It never will be."
+        ],
+        "deep": [
+          "Something happened on the job I still can't talk about. Out here, nobody needs me to be okay all the time. That's new."
+        ],
+        "solo": [
+          "Somebody has to make sure this thing won't fall on us. I'd rather it was me.",
+          "Old habits. I walk around and check everything is safe. It's the only way I can sleep."
+        ]
+      }
     },
     {
       "name": "Jake",

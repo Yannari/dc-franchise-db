@@ -749,10 +749,17 @@ export function tdTribalScreen(ep, o = {}) {
   const story = ep.tribalStory || null;
   if (booth && cast.length >= 2 && story?.booth?.length) {
     const said = new Map(story.booth.map(b => [b.voter, b.line]));
-    const order = [...cast.filter(v => v.voted !== elim), ...cast.filter(v => v.voted === elim)];
+    // the order they vote in gives nothing away (the user, 2026-10-10: "the writing of the votes always
+    // starts with the one getting eliminated"): it used to be every other name first and the boot's
+    // votes last, so the boot, who writes somebody else, opened the booth and the last few voters
+    // spelled out the result. Now a stable shuffle per episode, and the boot never goes first.
+    const hs = x => { let h = 2166136261; for (const c of `${ep.num}|${x}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
+    const order = [...cast].sort((p, q) => hs(p.voter) - hs(q.voter) || p.voter.localeCompare(q.voter));
+    if (order.length > 1 && order[0].voter === elim) order.push(order.shift());
     order.forEach((v, i) => {
       steps.push({ k: 'scene', spot: 'voting-booth', tod: 'night', plate: booth, place: PLACE['voting-booth'], time: '8:50 PM', card: i === 0, cut: i > 0, focus: [v.voter], bg: [], places: placeScene(booth, [v.voter]) });
-      steps.push({ k: 'say', by: v.voter, text: cleanText(said.get(v.voter) || `${v.voted}.`), focus: [v.voter] });
+      // writes: the name on their paper, which the Intel spoiler switch blacks out (screens.js hideBooth)
+      steps.push({ k: 'say', by: v.voter, text: cleanText(said.get(v.voter) || `${v.voted}.`), focus: [v.voter], writes: v.voted });
       steps.push({ k: 'ballot', voter: v.voter, voted: v.voted, venue });
       for (const x of extraOf(v)) { steps.push({ k: 'beat', text: `${v.voter} writes a second name: the ${x.extra}.`, focus: [v.voter] }); steps.push({ k: 'ballot', ...x }); }
     });
@@ -767,7 +774,7 @@ export function tdTribalScreen(ep, o = {}) {
     const LINES = [t => `${t}. Nothing personal.`, t => `I'm writing down ${t}.`, t => `${t}. It's just the game.`, t => `It has to be ${t}.`, t => `${t}. I've made up my mind.`];
     shown.forEach((v, i) => {
       steps.push({ k: 'scene', spot: 'voting-booth', tod: 'night', plate: booth, place: PLACE['voting-booth'], time: '8:50 PM', card: i === 0, cut: i > 0, focus: [v.voter], bg: [], places: placeScene(booth, [v.voter]) });
-      steps.push({ k: 'say', by: v.voter, text: LINES[Math.floor(rng() * LINES.length)](v.voted), focus: [v.voter] });
+      steps.push({ k: 'say', by: v.voter, text: LINES[Math.floor(rng() * LINES.length)](v.voted), focus: [v.voter], writes: v.voted });
       steps.push({ k: 'ballot', voter: v.voter, voted: v.voted, venue });
       for (const x of extraOf(v)) { steps.push({ k: 'beat', text: `${v.voter} writes a second name: the ${x.extra}.`, focus: [v.voter] }); steps.push({ k: 'ballot', ...x }); }
     });
@@ -1153,6 +1160,9 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
     }
   }
   const tally = {};
+  // the tally panel's bars run out of every vote that counts; under them, how many are still to read
+  // (not a majority: the most votes sends someone home, and Geoff went out on 3 of 7)
+  const of = live.length;
   // the read is the show's suspense: Chris holds the paper, keeps the count, and the closer it gets the
   // longer he takes (the user, 2026-10-08: "Chris just reads the paper, no suspense")
   const word = n => ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][n] || String(n);
@@ -1172,9 +1182,12 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
     const before = lead(tally);
     const close = before.length >= 2 && before[0][1] - before[1][1] <= 1 && before[0][1] >= 1;
     // a pause before a vote that could swing it, longer before the one that ends it
+    // the two still in it get the spotlight and a heartbeat; before the one that ends it, a drumroll
+    // (screens.js act; the user, 2026-10-10: "the vote reading is boring, no wow effect, no visual reactions")
+    const contend = before.slice(0, 2).map(x => x[0]).filter(x => tribal.includes(x));
     if (deciding || (close && i >= 2)) {
-      steps.push({ k: 'say', by: V._host, host: true, text: HOLD[i % HOLD.length], focus: before.slice(0, 2).map(x => x[0]), tense: true, hold: true });
-      if (deciding) steps.push({ k: 'beat', text: `${V._host} unfolds the paper and takes a long look at it before turning it around.`, focus: before.slice(0, 2).map(x => x[0]), tense: true });
+      steps.push({ k: 'say', by: V._host, host: true, text: HOLD[i % HOLD.length], focus: before.slice(0, 2).map(x => x[0]), tense: true, hold: true, contend });
+      if (deciding) steps.push({ k: 'beat', text: `${V._host} unfolds the paper and takes a long look at it before turning it around.`, focus: before.slice(0, 2).map(x => x[0]), tense: true, contend, drum: true });
     } else if (i === 0) steps.push({ k: 'say', by: V._host, host: true, text: OPEN[(ballots.length + i) % OPEN.length] });
     if (!d) tally[v.voted] = (tally[v.voted] || 0) + 1;
     const after = lead(tally);
@@ -1184,7 +1197,8 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
     else if (after.length >= 2 && i >= 1) line = `${v.voted}. That's ${word(after[0][1])} vote${after[0][1] === 1 ? '' : 's'} ${after[0][0]}, ${word(after[1][1])} vote${after[1][1] === 1 ? '' : 's'} ${after[1][0]}.`;
     else if (after.length === 1 && tally[v.voted] > 1) line = `${v.voted}. That's ${word(tally[v.voted])} votes ${v.voted}.`;
     else line = `${v.voted}.`;
-    steps.push({ k: 'read', vote: v.voted, dead: !!d, deciding: !!deciding, tally: { ...tally }, focus: [v.voted], line, tense: !!deciding || close });
+    steps.push({ k: 'read', vote: v.voted, dead: !!d, deciding: !!deciding, tally: { ...tally }, focus: [v.voted], line, tense: !!deciding || close,
+      of, left: order.length - i - 1, blind: !!deciding && !!V._ep?.tribalStory?.shocking, ...(close && !deciding && i >= 2 ? { contend } : {}) });
     if (d) steps.push({ k: 'beat', text: `A vote for ${v.voted}, and it doesn't count. ${v.voted} lets out a breath.`, focus: [v.voted], feel: { [v.voted]: 'relief' } });
     else if (V._ep) voteReaction(steps, V, { v, tally, deciding: !!deciding, tribal, elim, ballots, i, n: order.length });
   });

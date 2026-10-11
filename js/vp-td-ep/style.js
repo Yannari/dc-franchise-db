@@ -174,6 +174,49 @@ export const TDX_CSS = `
 .tdx .tdx-toss{position:absolute;width:2.2%;aspect-ratio:1.1;border-radius:30%;background:#fffaf0;box-shadow:0 0 0 1px rgba(0,0,0,.4),0 0 12px rgba(255,240,200,.8)}
 .tdx .tdx-voteslip{position:absolute;left:50%;top:30%;transform:translate(-50%,-50%) rotate(-3deg);background:#f6f0dc;color:#1a1420;padding:.6em 1.6em;font:400 3.2cqw/1 'Permanent Marker','Lilita One',cursive;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:tdxSlip .45s cubic-bezier(.3,1.5,.5,1)}
 .tdx .tdx-voteslip.dead{text-decoration:line-through;color:#8a2a2a}
+/* ── the vote reading (screens.js readFx) ── */
+.tdx .tdx-voteslip.flip{animation:tdxSlipFlip .6s cubic-bezier(.3,1.3,.5,1) both;backface-visibility:hidden}
+.tdx .tdx-voteslip.flip.slow{animation:tdxSlipFlipSlow 1.4s cubic-bezier(.6,0,.4,1) both}
+@keyframes tdxSlipFlip{0%{transform:translate(-50%,-50%) rotateY(90deg) scale(.6)}100%{transform:translate(-50%,-50%) rotateY(0) rotate(-3deg) scale(1)}}
+@keyframes tdxSlipFlipSlow{0%{transform:translate(-50%,-50%) rotateY(90deg) scale(.6);color:transparent}55%{transform:translate(-50%,-50%) rotateY(70deg) scale(1);color:transparent}100%{transform:translate(-50%,-50%) rotateY(0) rotate(-3deg) scale(1.15)}}
+.tdx .tdx-vmark{position:absolute;width:2.4cqw;height:1.5cqw;border-radius:.4cqw;background:#e0473f;box-shadow:0 0 0 .25cqw #f6f0dc,0 6px 16px rgba(0,0,0,.5);z-index:350;pointer-events:none}
+.tdx .tdx-vchips{position:absolute;left:50%;bottom:100%;transform:translate(-50%,-.4cqw);display:flex;flex-wrap:wrap;justify-content:center;gap:.25cqw;width:160%;pointer-events:none}
+.tdx .tdx-vchips i{display:block;width:1.1cqw;height:.75cqw;border-radius:.2cqw;background:#e0473f;box-shadow:0 0 0 .15cqw #f6f0dc,0 2px 6px rgba(0,0,0,.45)}
+.tdx .tdx-vchips i.new{animation:tdxChipIn .5s cubic-bezier(.2,1.8,.4,1)}
+@keyframes tdxChipIn{0%{transform:scale(2.4);filter:brightness(1.8)}100%{transform:scale(1)}}
+.tdx .tdx-tok.hit .body{animation:tdxHit .55s cubic-bezier(.3,1.8,.5,1)}
+.tdx .tdx-tok.hit .face{animation:tdxHitFlash .7s ease-out}
+@keyframes tdxHit{0%{transform:translateY(0)}25%{transform:translateY(-6%) scale(1.06,.95)}55%{transform:translateY(1%) scale(.98,1.03)}100%{transform:none}}
+@keyframes tdxHitFlash{0%{box-shadow:0 0 0 .4cqw #e0473f,0 0 30px rgba(224,71,63,.9)}100%{box-shadow:0 0 0 0 transparent}}
+.tdx .tdx-tok.contend .face{animation:tdxContend 1s ease-in-out infinite}
+.tdx .tdx-tok.contend::after{content:'';position:absolute;left:50%;bottom:-4%;width:150%;height:20%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(255,236,170,.55),transparent);animation:tdxSpot 1s ease-in-out infinite;pointer-events:none}
+@keyframes tdxContend{0%,100%{box-shadow:0 0 0 .2cqw rgba(255,224,130,.6),0 0 12px rgba(255,224,130,.35)}50%{box-shadow:0 0 0 .35cqw rgba(255,224,130,.95),0 0 28px rgba(255,224,130,.6)}}
+@keyframes tdxSpot{0%,100%{opacity:.6}50%{opacity:1}}
+.tdx .tdx-tok.doomed .face{filter:saturate(.35) brightness(.85);box-shadow:0 0 0 .4cqw #e0473f;transition:filter .6s}
+.tdx .tdx-flashred{position:absolute;inset:0;left:0!important;top:0!important;background:radial-gradient(circle,rgba(224,71,63,0) 30%,rgba(160,20,20,.55));animation:tdxRedFlash 1s ease-out both;pointer-events:none;z-index:7}
+@keyframes tdxRedFlash{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+.tdx .tdx-vstamp{position:absolute;transform:translate(-50%,-50%) rotate(-10deg);font:400 3.4cqw/1 'Lilita One';letter-spacing:.06em;color:#e0473f;border:.35cqw solid #e0473f;border-radius:.5cqw;padding:.25cqw 1cqw;background:rgba(20,8,8,.55);animation:tdxVStamp .5s cubic-bezier(.2,1.7,.4,1) both;z-index:400;pointer-events:none;white-space:nowrap}
+.tdx .tdx-vstamp.void{color:#9aa3ad;border-color:#9aa3ad;font-size:2.6cqw}
+@keyframes tdxVStamp{0%{transform:translate(-50%,-50%) rotate(-10deg) scale(3);opacity:0}100%{transform:translate(-50%,-50%) rotate(-10deg) scale(1);opacity:1}}
+.tdx .tdx-tally .need{font:700 .85cqw/1.2 Nunito;color:var(--hd);margin-bottom:2px}
+.tdx .tdx-tally span{position:relative;padding-bottom:4px}
+.tdx .tdx-tally span em{position:absolute;left:0;bottom:0;height:3px;width:var(--w);border-radius:2px;background:#e0473f;transition:width .5s cubic-bezier(.3,1.4,.5,1)}
+.tdx .tdx-tally span.up{animation:tdxTallyUp .6s ease-out}
+.tdx .tdx-tally span.over b{color:#ff6b5e}
+.tdx .tdx-tally span.zero{display:none}
+/* ── spoiler protection: the booth's names hidden ── */
+.tdx .tdx-spoil{display:flex;align-items:center;gap:6px;margin-left:auto;font:700 .8cqw/1 Nunito;color:var(--ht);cursor:pointer;white-space:nowrap}
+.tdx .tdx-spoil input{accent-color:#f5a524;width:1cqw;height:1cqw;cursor:pointer}
+.tdx .tdx-ic.hidden-note{font-style:italic;opacity:.75}
+.tdx .tdx-ic .minis i.anon{display:inline-grid;place-items:center;width:1.6cqw;height:1.6cqw;border-radius:4px;background:rgba(255,255,255,.12);font:800 .9cqw Nunito;color:var(--ht);font-style:normal}
+.tdx .tdx-ballot.back .card .fold{display:flex;flex-direction:column;align-items:center;gap:.6cqw;padding:1.2cqw 0;color:#6b5a3a}
+.tdx .tdx-ballot.back .card .fold svg{width:9cqw}
+.tdx .tdx-ballot.back .card .fold span{font:700 1.1cqw Nunito;letter-spacing:.04em}
+.tdx .tdx-ballot.back .card{animation:tdxFoldOver .7s cubic-bezier(.3,1.3,.5,1) both}
+@keyframes tdxFoldOver{0%{transform:rotateX(70deg)}100%{transform:rotateX(0)}}
+.tdx .tdx-tally{top:11%}
+.tdx .tdx-voteslip.flip{z-index:300;font-size:4.2cqw;padding:.8em 2em}
+@keyframes tdxTallyUp{0%{transform:scale(1.12);background:rgba(224,71,63,.35)}100%{transform:none;background:transparent}}
 @keyframes tdxSlip{from{transform:translate(-50%,10%) rotate(10deg) scale(.6);opacity:0}to{transform:translate(-50%,-50%) rotate(-3deg) scale(1);opacity:1}}
 
 /* HUD */

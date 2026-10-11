@@ -18,7 +18,7 @@ import { openVoteTribal, tdLateArrivalScreen, tdJuryEliminationScreen, tdSpiritI
 import { tdTwistBlocksScreen, tdMergeScreen, tdMiscTwistScreen, tdPreviouslyScreen } from './twist-screens.js';
 import { tdArrivalScreen, hasArrivals } from './arrival.js';
 import { tdAftermathScreen, hasAftermath } from './aftermath.js';
-import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf } from './stage.js';
+import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf, hideBooth, setHideBooth, maskName } from './stage.js';
 import { TDX_CSS, TDX_FONTS } from './style.js';
 import { liveGL } from './glplate.js';
 import { ambience, stopAmbience, sfx } from './sound.js';
@@ -284,7 +284,7 @@ function paint(uid, fresh) {
   if (!root || !st) return;
   root.dataset.idx = String(R.idx);
   const scr = R.scr, L = ledgerAt(scr, R.idx), s = L.step || {};
-  clearInterval(R.typing);
+  clearInterval(R.typing); clearTimeout(R.typing);
   const world = st.querySelector('.tdx-world'), cast = st.querySelector('.tdx-cast'), fx = st.querySelector('.tdx-fx');
   // the set: rebuilt only on a new place (or into and out of the confessional)
   const wk = worldKey(scr, L) + (L.conf ? '' : '#' + scr.steps.indexOf(L.scene));
@@ -298,8 +298,12 @@ function paint(uid, fresh) {
     else if (fresh && L.scene?.cut) sfx('whoosh');
   }
   const castEl = world.querySelector('.tdx-cast'), fxEl = world.querySelector('.tdx-fx');
+  // a vote being read, live: the chips and the tally show the count BEFORE it until the slip has
+  // turned and the vote has landed (readFx), so the deciding vote isn't on screen before it's read
+  const pending = fresh && s.k === 'read' && !s.dead && !s.revote && L.read?.tally?.[s.vote] ? s.vote : null;
+  const Lv = pending ? { ...L, read: { ...L.read, pending, left: (L.read.left ?? 0) + 1, tally: { ...L.read.tally, [pending]: L.read.tally[pending] - 1 } } } : L;
   // the people: keyed by name, updated in place
-  const toks = castAt(scr, L);
+  const toks = castAt(scr, Lv);
   const have = new Map([...castEl.children].map(el => [el.dataset.n, el]));
   for (const t of toks) {
     const tmp = document.createElement('div'); tmp.innerHTML = tokHtml(t, fresh); const el = tmp.firstElementChild;
@@ -323,9 +327,10 @@ function paint(uid, fresh) {
   }
   st.classList.toggle('tense', L.tense);
   // the HUD
-  st.querySelector('.tdx-hud').innerHTML = hudHtml(scr, L, fresh, R.o);
-  // the line
-  const d = dialogue(scr, L);
+  st.querySelector('.tdx-hud').innerHTML = hudHtml(scr, Lv, fresh, R.o);
+  // the line (a booth line with spoilers hidden: the same words, the name on the paper blacked out)
+  const d0 = dialogue(scr, L);
+  const d = s.writes && scr.kind === 'tribal' && hideBooth() ? { ...d0, text: maskName(d0.text, s.writes) } : d0;
   const dlg = st.querySelector('.tdx-dlg');
   dlg.className = `tdx-dlg${/hidden/.test(d.cls) || !d.text ? ' hidden' : ''}${L.conf ? ' conf' : ''}`;
   if (R.o.teamColor) dlg.style.setProperty('--tc', R.o.teamColor);
@@ -353,9 +358,14 @@ function paint(uid, fresh) {
   const lit = text => esc(text).replace(names.length ? new RegExp(`\\b(${names.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`, 'g') : /^\b$/, '<span class="hn">$1</span>')
     .replace(/\b(alliance|vote|votes|idol|immunity|marshmallow|elimination|tonight|blindside|final two)\b/gi, '<span class="hg">$1</span>');
   const badge = d.badge ? `<span class="badge">${esc(d.badge.text)}</span>` : '';
-  if (!fresh || !d.text || d.text.length < 44) { say.innerHTML = badge + lit(d.text || ''); if (fresh) { say.classList.remove('punch'); void say.offsetWidth; say.classList.add('punch'); } }
+  const hold = fresh && s.k === 'read' ? (s.deciding ? 1400 : 600) : 0;
+  if (!fresh || !d.text || d.text.length < 44) {
+    const show = () => { say.innerHTML = badge + lit(d.text || ''); if (fresh) { say.classList.remove('punch'); void say.offsetWidth; say.classList.add('punch'); } };
+    if (hold) { say.innerHTML = ''; R.typing = setTimeout(show, hold); } else show();
+  }
   else {
-    let n = 0, wait = 0; const full = d.text;
+    let n = 0, wait = Math.round(hold / 16); const full = d.text;
+    if (hold) say.innerHTML = badge;
     R.typing = setInterval(() => {
       if (wait > 0) { wait--; return; }
       n += full.length > 160 ? 3 : 2;
@@ -398,6 +408,56 @@ const FEEL_SFX = { shock: 'shock', betray: 'shock', angry: 'slap', surprised: 'p
 const tokAt = (castEl, n) => [...castEl.children].find(el => el.dataset.n === n);
 const centre = (st, el) => { const f = st.querySelector('.tdx-world').getBoundingClientRect(), r = el.getBoundingClientRect(); return { x: (r.left + r.width / 2 - f.left) / f.width * 100, y: (r.top - f.top) / f.height * 100, h: r.height / f.height * 100 }; };
 function fxAt(fxEl, cls, x, y, html = '', life = 2400) { const d = document.createElement('div'); d.className = cls; d.style.left = x + '%'; d.style.top = y + '%'; d.innerHTML = html; fxEl.appendChild(d); setTimeout(() => d.remove(), life); return d; }
+
+// A vote being read (the user, 2026-10-10: "the vote reading is boring, no wow effect, no visual
+// reactions"): the slip turns over in the host's hands (slowly for the one that decides it), the vote
+// flies from it to the named seat and lands as a chip over their head, the room turns to look at them.
+// The deciding vote shakes the set, flashes red and stamps them VOTED OUT; a blindside gets the room's gasp.
+const leftText = n => n ? `${n} vote${n === 1 ? '' : 's'} still to read` : 'Every vote is read';
+function readFx(st, castEl, fxEl, s, toks) {
+  const host = toks.find(t => t.host);
+  const hx = host ? host.u * 100 : 50, hy = host ? Math.max(host.v * 100 - host.h * 0.95, 14) : 30;
+  const sx = Math.min(Math.max((hx + 50) / 2, 22), 78), sy = 26;
+  fxAt(fxEl, `tdx-voteslip flip${s.dead ? ' dead' : ''}${s.deciding ? ' slow' : ''}`, sx, sy, esc(s.vote), s.deciding ? 3400 : 2100);
+  sfx('slip');
+  const to = tokAt(castEl, s.vote);
+  if (!to) return;
+  setTimeout(() => {
+    const c = centre(st, to);
+    for (const el of castEl.children) {
+      if (el === to || el.classList.contains('host') || el.classList.contains('bg')) continue;
+      el.classList.remove('leanL', 'leanR'); el.classList.add(centre(st, el).x < c.x ? 'leanR' : 'leanL');
+    }
+    if (s.dead) { fxAt(fxEl, 'tdx-vstamp void', Math.min(Math.max(c.x, 12), 88), Math.max(c.y - 3, 12), 'VOID', 1900); sfx('empty'); return; }
+    const m = document.createElement('div'); m.className = 'tdx-vmark'; fxEl.appendChild(m);
+    const fly = m.animate([{ left: sx + '%', top: sy + '%', transform: 'translate(-50%,-50%) scale(1.5) rotate(-20deg)' },
+      { left: c.x + '%', top: (c.y - 1) + '%', transform: 'translate(-50%,-50%) scale(.55) rotate(15deg)' }], { duration: 460, easing: 'cubic-bezier(.5,0,.75,1)' });
+    fly.onfinish = () => {
+      m.remove();
+      to.classList.remove('hit'); void to.offsetWidth; to.classList.add('hit');
+      // the chip over their head and the tally row, now that the vote is in
+      const body = to.querySelector('.body');
+      let box = to.querySelector('.tdx-vchips'); if (!box && body) { box = document.createElement('div'); box.className = 'tdx-vchips'; body.appendChild(box); }
+      if (box) { const i = document.createElement('i'); i.className = 'new'; box.appendChild(i); }
+      const row = [...st.querySelectorAll('.tdx-tally span[data-n]')].find(x => x.dataset.n === s.vote);
+      if (row) {
+        const c = (s.tally || {})[s.vote] || 0;
+        row.querySelector('b').textContent = String(c);
+        const em = row.querySelector('em'); if (em && s.of) em.style.setProperty('--w', Math.min(100, c / s.of * 100) + '%');
+        row.classList.remove('zero', 'up'); void row.offsetWidth; row.classList.add('up');
+      }
+      const lt = st.querySelector('.tdx-tally .need'); if (lt && s.left != null) lt.textContent = leftText(s.left);
+      sfx(s.deciding ? 'boom' : 'thump');
+      if (!s.deciding) return;
+      const w = st.querySelector('.tdx-world'); if (w) { w.classList.remove('jolt'); void w.offsetWidth; w.classList.add('jolt'); }
+      fxAt(fxEl, 'tdx-flashred', 50, 50, '', 1000);
+      fxAt(fxEl, 'tdx-vstamp out', Math.min(Math.max(c.x, 14), 86), Math.max(c.y - 4, 14), 'VOTED OUT', 3600);
+      to.classList.add('doomed');
+      sfx('shock');
+      if (s.blind) setTimeout(() => sfx('gasp'), 260);
+    };
+  }, s.deciding ? 1400 : 650);
+}
 
 function act(st, castEl, fxEl, scr, L, s, toks) {
   const speaker = s.k === 'say' ? s.by : null;
@@ -512,7 +572,9 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
   if (s.k === 'found') sfx(s.item ? 'idol' : 'empty');
   if (s.k === 'title' && s.vs) sfx('thunder');
   if (s.k === 'intro') { sfx('title'); setTimeout(() => sfx('pop'), 450); }
-  if (s.k === 'read') { fxAt(fxEl, `tdx-voteslip${s.dead ? ' dead' : ''}`, 50, 30, esc(s.vote), 1800); sfx('slip'); }
+  if (s.k === 'read') readFx(st, castEl, fxEl, s, toks);
+  if (s.drum) sfx('drumroll');
+  else if (s.hold && (s.contend || []).length) sfx('heartbeat');
   if (s.k === 'safe') {
     const host = toks.find(t => t.host); const to = tokAt(castEl, s.who);
     if (to) {
@@ -923,7 +985,9 @@ export function tdxSeek(uid, e) {
   window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
 }
 export function tdxIntel(uid) { const st = document.getElementById(`tdx-st-${uid}`); if (!st) return; st.classList.toggle('intel-open'); st.querySelector('.tdx-ibtn')?.classList.remove('new'); }
-export function tdxTab(uid, e) { if (e.target.closest('[data-close]')) { tdxIntel(uid); return; } const pick = e.target.closest('[data-rel]'); const b = pick || e.target.closest('[data-tab]'); if (!b) return; const R = reg()[uid]; if (!R) return; if (pick) R.relWho = pick.dataset.rel; else R.tab = b.dataset.tab; const st = document.getElementById(`tdx-st-${uid}`); st.querySelector('.tdx-intel').innerHTML = intelHtml(R.scr, ledgerAt(R.scr, R.idx), R.tab, false, R.relWho); }
+export function tdxTab(uid, e) { if (e.target.closest('[data-close]')) { tdxIntel(uid); return; }
+  // the spoiler switch: flip it and repaint this step in place
+  const sp = e.target.closest('[data-spoil]'); if (sp) { setHideBooth(sp.checked); paint(uid, false); return; } const pick = e.target.closest('[data-rel]'); const b = pick || e.target.closest('[data-tab]'); if (!b) return; const R = reg()[uid]; if (!R) return; if (pick) R.relWho = pick.dataset.rel; else R.tab = b.dataset.tab; const st = document.getElementById(`tdx-st-${uid}`); st.querySelector('.tdx-intel').innerHTML = intelHtml(R.scr, ledgerAt(R.scr, R.idx), R.tab, false, R.relWho); }
 const holdFor = s => Math.min(9000, 1700 + String(s?.text || '').length * 40) + (['title', 'idol', 'out', 'found', 'intro'].includes(s?.k) ? 2400 : 0) + (s?.k === 'ballot' ? 2600 : 0) + (s?.tense ? 1200 : 0) + (s?.k === 'scene' ? 900 : 0) + (s?.k === 'safe' && s.last ? 1800 : 0);
 function stopAuto(R) { R.auto = false; clearTimeout(R.timer); }
 export function tdxAuto(uid) {

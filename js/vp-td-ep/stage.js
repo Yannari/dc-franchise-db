@@ -301,7 +301,10 @@ export function castAt(screen, L) {
     const h = pl.h || (pl.host ? Math.max(Math.min(pl.s * 125, 30), 16) : sit ? Math.max(Math.min(pl.s * 95, 24), 13) : Math.max(Math.min(pl.s * 125, sc.exit ? 30 : 34), bg ? 11 : 16));
     toks.push({ n, u: pl.u, v: pl.v, h, sit, host: !!pl.host, act: bg?.act || busy || null,
       speak: n === speaker || (pl.host && s.host), dim: !!(focus && focus.length && !focus.includes(n) && !pl.host && n !== speaker),
-      bg: !!bg, safe: L.safe.includes(n), out: L.out === n, conf: !!pl.close, aboard: !!pl.aboard, glow: glow[n] || null, crowd: !!pl.crowd, feel: s.feel?.[n] || null });
+      bg: !!bg, safe: L.safe.includes(n), out: L.out === n, conf: !!pl.close, aboard: !!pl.aboard, glow: glow[n] || null, crowd: !!pl.crowd, feel: s.feel?.[n] || null,
+      // the reading: the votes against them so far, over their head; the two still in it, lit
+      votes: screen.kind === 'tribal' && L.read && !sc.exit && !pl.host ? (L.read.tally || {})[n] || 0 : 0,
+      contend: !!(s.contend || []).includes(n) });
   }
   return toks;
 }
@@ -354,8 +357,9 @@ export function shotOf(screen, L, toks) {
 export function tokHtml(t, fresh) {
   const w = t.h * 9 / 16;
   const busy = t.act ? `${t.act === 'fish' ? '<div class="tdx-rod"><i></i></div>' : ''}${t.act === 'nap' ? '<b class="tdx-zzz">z</b>' : ''}<div class="tdx-busy" title="${esc(BUSY_LABEL[t.act] || '')}"><svg viewBox="0 0 24 24">${BUSY_ICON[t.act] || ''}</svg></div>` : '';
-  const cls = ['tdx-tok', t.speak && 'speak', t.dim && 'dim', t.bg && 'bg', t.sit && 'sit', t.host && 'host', t.conf && 'conf', t.aboard && 'aboard', t.glow && `glow-${t.glow}`, t.out && 'out', t.act && `act-${t.act}`, t.feel && `feel-${t.feel}`].filter(Boolean).join(' ');
-  return `<div class="${cls}" data-n="${esc(t.n)}" style="left:${t.u * 100}%;top:${t.v * 100}%;height:${t.h}%;width:${w}%;z-index:${Math.round(t.v * 100) + (t.speak ? 50 : 0)}"><div class="body"><div class="shadow"></div><div class="face"><img src="${esc(avatar(t.n, t.host))}" alt="" onerror="this.style.visibility='hidden'"></div><div class="tag">${esc(t.host ? t.n + ' · host' : t.n)}</div>${t.safe ? '<i class="tdx-got"></i>' : ''}${busy}</div></div>`;
+  const cls = ['tdx-tok', t.speak && 'speak', t.dim && 'dim', t.bg && 'bg', t.sit && 'sit', t.host && 'host', t.conf && 'conf', t.aboard && 'aboard', t.glow && `glow-${t.glow}`, t.out && 'out', t.act && `act-${t.act}`, t.feel && `feel-${t.feel}`, t.contend && 'contend'].filter(Boolean).join(' ');
+  const chips = t.votes ? `<div class="tdx-vchips">${'<i></i>'.repeat(Math.min(t.votes, 12))}</div>` : '';
+  return `<div class="${cls}" data-n="${esc(t.n)}" style="left:${t.u * 100}%;top:${t.v * 100}%;height:${t.h}%;width:${w}%;z-index:${Math.round(t.v * 100) + (t.speak ? 50 : 0)}"><div class="body"><div class="shadow"></div><div class="face"><img src="${esc(avatar(t.n, t.host))}" alt="" onerror="this.style.visibility='hidden'"></div><div class="tag">${esc(t.host ? t.n + ' · host' : t.n)}</div>${t.safe ? '<i class="tdx-got"></i>' : ''}${chips}${busy}</div></div>`;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -397,11 +401,16 @@ export function hudHtml(screen, L, fresh, o = {}) {
       h += `<div class="tdx-plateh">${esc(VENUE_ITEM[screen.venue])} ${Array.from({ length: Math.max(total, 0) }, (_, i) => `<i class="${i < got ? 'gone' : ''}"></i>`).join('')}</div>`;
     } else if (L.read) {
       const t = L.read.tally || {};
-      h += `<div class="tdx-tally">${Object.entries(t).sort((a, b) => b[1] - a[1]).map(([n, c]) => `<span><img src="${esc(avatar(n))}" alt="">${esc(n)} <b>${c}</b></span>`).join('')}${L.read.dead ? '<span class="void">Does not count</span>' : ''}</div>`;
+      // a bar per name toward the votes that send someone home; the one just read pulses
+      // (a vote still landing, L.read.pending, shows its row at the count before it: readFx ticks it up)
+      const of = L.read.of || 0, left = L.read.left, just = fresh && s.k === 'read' && !L.read.pending ? s.vote : null;
+      const top = Math.max(0, ...Object.values(t));
+      const leftTxt = left == null ? '' : left ? `${left} vote${left === 1 ? '' : 's'} still to read` : 'Every vote is read';
+      h += `<div class="tdx-tally">${leftTxt ? `<div class="need">${leftTxt}</div>` : ''}${Object.entries(t).sort((a, b) => b[1] - a[1]).map(([n, c]) => `<span data-n="${esc(n)}" class="${n === just ? 'up' : ''}${!c ? ' zero' : ''}${c && c === top && left === 0 ? ' over' : ''}"><img src="${esc(avatar(n))}" alt="">${esc(n)} <b>${c}</b>${of ? `<em style="--w:${Math.min(100, c / of * 100)}%"></em>` : ''}</span>`).join('')}${L.read.dead ? '<span class="void">Does not count</span>' : ''}</div>`;
     }
   }
   if (L.tense) h += `<div class="tdx-chop">On the chopping block</div>`;
-  if (s.k === 'ballot') h += ballotHtml(s, fresh);
+  if (s.k === 'ballot') h += ballotHtml(s, fresh, screen.kind === 'tribal' && hideBooth());
   if (s.k === 'intro') h += introHtml(s, fresh);
   if (s.k === 'title') h += `<div class="tdx-title${fresh ? ' fresh' : ''}${s.tone ? ' ' + esc(s.tone) : ''}${s.vs ? ' vs' : ''}"><div class="band"></div><div class="inner"><div class="kicker">${esc(s.kicker)}</div><div class="big">${esc(s.name)}</div></div><div class="faces">${(s.faces || []).map((n, i) => `${s.vs && i ? '<b class="vsx">VS</b>' : ''}<img src="${esc(avatar(n))}" alt="">`).join('')}</div></div>`;
   if (s.k === 'found') h += foundHtml(s, fresh);
@@ -485,11 +494,30 @@ function seasonAt(screen) {
   };
   return { players, teams, bond, love, alliances: S.namedAlliances || [], gone: S.dissolvedAlliances || [], powers: (S.advantages || []).filter(a => players.includes(a.holder)), num: E.num };
 }
+// ── spoiler protection (the user, 2026-10-10): hide the name each voter writes in the booth. The line
+// stays as written, only the name is blacked out, the ballot shows its folded back, and Intel keeps the
+// Tally and Why to itself until the host reads the votes. A viewer convenience, so browser storage.
+const SPOIL_KEY = 'tdx_hide_booth';
+export function hideBooth() { try { return localStorage.getItem(SPOIL_KEY) === '1'; } catch { return false; } }
+export function setHideBooth(on) { try { localStorage.setItem(SPOIL_KEY, on ? '1' : '0'); } catch { /* private window: it just won't stick */ } }
+/** The text with the name on the paper blacked out, one block per letter, so the line reads the same. */
+export function maskName(text, name) {
+  if (!name || !text) return text;
+  const re = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
+  return String(text).replace(re, '\u2588'.repeat(Math.max(4, Math.min(name.length, 9))));
+}
 export function intelHtml(screen, L, tab, fresh, who = null) {
   const tabs = TABS[screen.kind] || TABS.camp;
   if (!tabs.some(t => t[0] === tab)) tab = tabs[0][0];
-  const items = L.side;
-  let h = `<div class="tdx-ihead"><button type="button" class="tdx-iclose" data-close aria-label="Close Intel" title="Close">&times;</button><b>Intel</b><span>${screen.kind === 'tribal' ? 'Only the viewer sees the votes.' : screen.kind === 'island' || screen.kind === 'jury' ? 'Out of sight of the game.' : 'What the camp doesn’t know yet.'}</span></div><div class="tdx-itabs">`;
+  let items = L.side;
+  // spoilers hidden: nothing from the booth until the host starts reading. The tally then grows with
+  // the reading (L.read), and the reasons open when the last vote is read
+  const hid = screen.kind === 'tribal' && hideBooth();
+  const firstRead = screen.steps.findIndex(x => x.k === 'read'), outAt = screen.steps.findIndex(x => x.k === 'out');
+  const reading = hid && firstRead >= 0 && L.idx >= firstRead, done = hid && outAt >= 0 && L.idx >= outAt;
+  if (hid && !done) items = items.filter(x => x.tab !== 'tally' && x.tab !== 'why');
+  if (hid && reading && !done && L.read) items = [...items, ...Object.entries(L.read.tally || {}).flatMap(([t, c]) => Array.from({ length: c }, () => ({ tab: 'tally', target: t, voter: '?', at: L.idx })))];
+  let h = `<div class="tdx-ihead"><button type="button" class="tdx-iclose" data-close aria-label="Close Intel" title="Close">&times;</button><b>Intel</b><span>${screen.kind === 'tribal' ? 'Only the viewer sees the votes.' : screen.kind === 'island' || screen.kind === 'jury' ? 'Out of sight of the game.' : 'What the camp doesn’t know yet.'}</span>${screen.kind === 'tribal' ? `<label class="tdx-spoil" title="The booth keeps every line, but the name on the paper stays hidden until the host reads the votes"><input type="checkbox" data-spoil${hid ? ' checked' : ''}> Hide names in the booth</label>` : ''}</div><div class="tdx-itabs">`;
   for (const [k, l] of tabs) h += `<button type="button" class="${k === tab ? 'on' : ''}" data-tab="${k}">${esc(l)}${items.some(x => x.tab === k && x.at === L.idx) && k !== tab ? '<i></i>' : ''}</button>`;
   h += '</div><div class="tdx-ilist">';
   // a night with two votes: the tally, the reasons and the plans are the vote being read now
@@ -499,7 +527,7 @@ export function intelHtml(screen, L, tab, fresh, who = null) {
   else if (tab === 'tally') {
     const by = {}; mine.forEach(x => (by[x.target] ||= []).push(x));
     Object.entries(by).sort((a, b) => b[1].filter(v => !v.void).length - a[1].filter(v => !v.void).length).forEach(([t, vs]) => {
-      h += `<div class="tdx-ic tally${vs.some(v => v.at === L.idx) && fresh ? ' fresh' : ''}"><img src="${esc(avatar(t))}" alt=""><div><b>${esc(t)}</b><div class="minis">${vs.map(v => `<img src="${esc(avatar(v.voter))}" alt="" title="${esc(v.voter)}${v.void ? ' (void)' : ''}"${v.void ? ' style="opacity:.35"' : ''}>`).join('')}</div></div><span>${vs.filter(v => !v.void).length}</span></div>`;
+      h += `<div class="tdx-ic tally${vs.some(v => v.at === L.idx) && fresh ? ' fresh' : ''}"><img src="${esc(avatar(t))}" alt=""><div><b>${esc(t)}</b><div class="minis">${vs.map(v => v.voter === '?' ? '<i class="anon" title="A vote, read out">?</i>' : `<img src="${esc(avatar(v.voter))}" alt="" title="${esc(v.voter)}${v.void ? ' (void)' : ''}"${v.void ? ' style="opacity:.35"' : ''}>`).join('')}</div></div><span>${vs.filter(v => !v.void).length}</span></div>`;
     });
   } else if (tab === 'bonds') {
     // the latest change for each pair, newest first: what the conversation just did
@@ -518,6 +546,7 @@ export function intelHtml(screen, L, tab, fresh, who = null) {
   else if (tab === 'lean') mine.forEach(x => { h += `<div class="tdx-ic why${fr(x)}"><div class="vrow"><img src="${esc(avatar(x.juror))}" alt=""><b>${esc(x.juror)}</b> <span class="k">${esc(x.word)}</span> <img src="${esc(avatar(x.target))}" alt=""><b>${esc(x.target)}</b></div><small>${esc(x.text)}</small></div>`; });
   else if (tab === 'plans') mine.forEach(x => { h += `<div class="tdx-ic${fr(x)}"><b>${esc(x.name)}</b> <span class="k">plans to vote</span> <b>${esc(x.target || '?')}</b><div class="minis">${(x.who || []).map(n => `<img src="${esc(avatar(n))}" alt="" title="${esc(n)}">`).join('')}</div></div>`; });
   else mine.forEach(x => { h += `<div class="tdx-ic${fr(x)}">${esc(x.text)}</div>`; });
+  if (hid && !done && (tab === 'why' || (tab === 'tally' && !reading))) h += `<div class="tdx-ic hidden-note">${tab === 'why' ? 'Hidden until every vote is read.' : 'Hidden until the votes are read.'}</div>`;
   const W = ['people', 'allies', 'powers'].includes(tab) ? seasonAt(screen) : null;
   const face = n => `<img src="${esc(avatar(n))}" alt="" title="${esc(n)}">`;
   if (tab === 'people' && W) {
@@ -583,9 +612,13 @@ const HANDS = [
   { f: "'Gloria Hallelujah',cursive", k: .75 }, { f: "'Covered By Your Grace',cursive", k: 1.05 }, { f: "'Just Another Hand',cursive", k: 1.2 },
 ];
 const hashStr = t => { let h = 2166136261; for (const c of String(t)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
-export function ballotHtml(s, fresh) {
+export function ballotHtml(s, fresh, hidden = false) {
   const B = BALLOT[s.venue] || BALLOT['hosted-camp'];
   const name = String(s.voted || '');
+  // spoilers hidden: the paper is folded over before the camera sees it (the passport stays shut)
+  if (hidden) return `<div class="tdx-ballot ${B.urn === 'stamp' ? 'passport' : B.cls} back${fresh ? ' fresh' : ''}"><div class="glow"></div>
+    <div class="card"><div class="hd">${esc(B.head)}</div><div class="fold"><svg viewBox="0 0 200 120"><path d="M20 20h160v80H20z" fill="none" stroke="currentColor" stroke-width="4"/><path d="M20 20l80 46 80-46" fill="none" stroke="currentColor" stroke-width="4"/></svg><span>Folded. The host reads it later.</span></div>
+      <div class="by"><img src="${esc(avatar(s.voter))}" alt=""><span>${esc(s.voter)} votes</span></div></div></div>`;
   // World Tour: nobody writes. The voter stamps the passport of the one they want gone.
   if (B.urn === 'stamp') return `<div class="tdx-ballot passport${fresh ? ' fresh' : ''}"><div class="glow"></div>
     <div class="card"><div class="hd">${esc(B.head)}</div>

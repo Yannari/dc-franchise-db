@@ -2939,7 +2939,7 @@
         "temperament": 2
       },
       "sexuality": "bi",
-      "voice": "Grett is rather abrasive, rude, and she's never afraid of speaking her mind.Grett is also very cunning, as she is willing to lie and cheat in order to advance in the game. Despite this, however, a more vulnerable side of her can be seen sometimes, as she's also shown to be a jealous and insecure individual. Bossy, blunt, takes charge whether asked or not. Gets frustrated when people don't listen, doesn't sugarcoat. 'Just do what I said.' / 'This is why we keep losing.'",
+      "voice": "Grett is rather abrasive, rude, and she's never afraid of speaking her mind.Grett is also very cunning, as she is willing to lie and cheat in order to advance in the game. Despite this, however, a more vulnerable side of her can be seen sometimes, as she's also shown to be a jealous and insecure individual. Bossy, blunt, takes charge whether asked or not. Gets frustrated when people don't listen, doesn't sugarcoat. 'Just do what I said.' / 'This is why we keep losing.'#cruel ",
       "profileSources": {
         "voice": [
           {
@@ -3006,7 +3006,61 @@
       "nationality": "British",
       "occupation": "Fitness influencer",
       "backstory": "Gretchen “Grett” Clark was born in Britain on October 25, 1999 and built a public career as a fitness influencer. Long before camp, image and approval were tangled with her self-worth, encouraging a persona that was glamorous, superior, and impossible to dismiss. Competition gave that armor a strategic use, while later relationships and public scrutiny forced her to separate genuine confidence from the need to control how everyone saw her.",
-      "personality": "Grett is ambitious, perceptive, and difficult to intimidate. Her earliest social armor was vanity and condescension: strike first, define everyone else as lesser, and no one gets to name the insecurity underneath. She can lie, build overlapping alliances, and weaponize a private weakness when she believes control is slipping. Experience has made her more self-aware and capable of real care, especially after learning how exploitation feels from the receiving end, but it has not erased her pride or temper. She values independence and responds badly to pity, public embarrassment, or a partner trying to shrink her. Under pressure she may overplay, issue ultimatums, and mistake fear for authority. At her best, she combines strategic nerve with boundaries strong enough to protect both herself and someone else."
+      "personality": "Grett is ambitious, perceptive, and difficult to intimidate. Her earliest social armor was vanity and condescension: strike first, define everyone else as lesser, and no one gets to name the insecurity underneath. She can lie, build overlapping alliances, and weaponize a private weakness when she believes control is slipping. Experience has made her more self-aware and capable of real care, especially after learning how exploitation feels from the receiving end, but it has not erased her pride or temper. She values independence and responds badly to pity, public embarrassment, or a partner trying to shrink her. Under pressure she may overplay, issue ultimatums, and mistake fear for authority. At her best, she combines strategic nerve with boundaries strong enough to protect both herself and someone else.",
+      "ties": [],
+      "kit": {
+        "thing": "being a fitness influencer",
+        "alone": "is doing a full workout on the beach, with no audience but the camera",
+        "ground": [
+          "online-fame",
+          "athlete"
+        ],
+        "bit": [
+          "If anyone wants to actually be useful today, I'm doing a circuit at the beach. You're welcome.",
+          "This is why we keep losing. Nobody here has done a real squat in their life.",
+          "My followers would be horrified by this diet. I'm horrified by this diet."
+        ],
+        "tease": [
+          "Nobody asked for a workout, Grett.",
+          "Was that a pep talk? Because it felt like an insult.",
+          "Your followers aren't here."
+        ],
+        "reply": [
+          "Nobody asked to lose the last challenge either, and here we are.",
+          "It was both. You're welcome for both.",
+          "They'll see the episode. I'm doing this for the episode."
+        ],
+        "home": [
+          "My audience, my brand, and a flat that's far too nice to be away from this long.",
+          "Nobody I'd call when I'm upset. I'm working on that. Don't make it a thing."
+        ],
+        "want": [
+          "To win. And for everybody who said I was just a pretty face to watch me do it.",
+          "Control. Of my own game, for once, and nobody else's."
+        ],
+        "conf": [
+          "People think I'm mean. I'm honest, and honest just sounds mean to people who aren't used to it.",
+          "I don't need them to like me. I need them to be scared of what happens if they cross me."
+        ],
+        "askHome": [
+          "So who's waiting for you? Boyfriend? Girlfriend? Nobody? Come on.",
+          "Who's watching you back home? Be honest."
+        ],
+        "askWant": [
+          "What do you actually want out of this? You can't just be here for fun.",
+          "What's your plan here, really?"
+        ],
+        "defend": [
+          "My body is my job. I'm not going to apologise for being good at it."
+        ],
+        "deep": [
+          "I've spent so long making people see me a certain way. I'm not sure anybody's ever actually seen me."
+        ],
+        "solo": [
+          "Rest days are for people who don't want it. I want it.",
+          "Most people see the body and stop there. That's fine. It means they don't see me coming."
+        ]
+      }
     },
     {
       "name": "Dan",

@@ -17,6 +17,7 @@
 // window), and they are busy with something of their own.
 import { TD_MARKS } from './marks.js';
 import { swapNight } from './elimswap.js';
+import { coachesAt, coachReadOut, coachSeats, cardBeforeVote, cardAfterRead } from './coach-tribal.js';
 import { TD_WET, WET_COLS, WET_ROWS } from './wet.js';
 import { stableRng } from '../script/rng.js';
 import { campFeed } from '../td/story/feed.js';
@@ -624,14 +625,17 @@ function foundStep(steps, ev) {
 /** Whether this episode's Tribal plays on the stepped stage. Anything unusual keeps the classic screens. */
 export function tdTribalStepped(ep) {
   if (!ep || !(ep.votingLog || []).length) return false;
-  const elim = ep.eliminated;
+  // a coach season's vote plays here too (coach-tribal.js): the one the votes sent home may be a coach
+  const coaches = coachesAt(ep);
+  const elim = coachReadOut(ep) || ep.eliminated;
   const tribal = ep.tribalPlayers || [];
-  if (!elim || elim === 'No elimination' || !tribal.includes(elim)) return false;
+  if (!elim || elim === 'No elimination' || !(tribal.includes(elim) || coaches.includes(elim))) return false;
   // (an open vote plays as the open vote, twists-more.js openVoteTribal; an emissary's night is an
   // ordinary vote with the emissary's choice after it, returns.js)
   if ((ep.multiTribalResults || []).length || ep.exileDuelVotedOut || ep.firstEliminated || ep.isFireMaking) return false;
   if (ep.isSlasherNight || ep.isTripleDogDare || ep.isSuddenDeath || ep.blackVoteApplied || ep.isFinale) return false;
-  if (Object.keys(ep.coachData || {}).length) return false;
+  // more than one coach out in a night, or a coach out at a combined council: still the classic screens
+  if ((ep.coachElimination || []).length > 1 || (Object.keys(ep.coachData || {}).length && !coaches.length && coachReadOut(ep))) return false;
   return true;
 }
 
@@ -656,21 +660,26 @@ export function tdTribalScreen(ep, o = {}) {
   const V = VENUES[venue];
   const host = o.host || 'Chris';
   const tribal = [...ep.tribalPlayers];
-  const elim = ep.eliminated;
+  // the coaches sit with the team, no vote (coach-tribal.js); the votes may send a coach home
+  const coaches = coachesAt(ep);
+  // (let: from the walk-out on, it is whoever actually leaves; the card can send somebody else)
+  let elim = coachReadOut(ep) || ep.eliminated;
+  const seatedAll = [...tribal, ...coaches.filter(c => !tribal.includes(c))];
   const team = ep.tribalTribe || null;
   const callName = team || 'campers';
   const rng = stableRng('td-tribal', String(ep.num), team || 'merge', elim);
   const pick = arr => arr[Math.floor(rng() * arr.length)];
   const plate = plateKey(venue, 'ceremony', 'night');
-  const places = seatAll(plate, tribal, host);
+  const places = seatAll(plate, seatedAll, host);
   const steps = [];
   const say = (text, extra = {}) => steps.push({ k: 'say', by: host, host: true, text, ...extra });
-  steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '8:30 PM', card: true, focus: [], bg: [], places, seated: tribal, host, ceremony: true });
+  steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '8:30 PM', card: true, focus: [], bg: [], places, seated: seatedAll, host, ceremony: true });
   // the first opener welcomes; the others say they have been here before, so they need a vote behind
   // them (the user: "back at the fire so soon" on a team's first vote). The merge counts from the merge.
   const been = (window.gs?.episodeHistory || []).some(h => h.num < ep.num && h.eliminated && (team ? h.tribalTribe === team : (h.isMerge || h.gsSnapshot?.isMerged)));
   const opens = V.open(callName);
   say(been ? pick(opens.slice(1)) : opens[0]);
+  coachSeats(steps, ep, coaches);
   // the questions: the host asks about what happened today (td/story/tribal.js tribalQA); an episode
   // written before that keeps the classic screen's exchanges (buildTribalQA)
   const storyQA = ep.tribalStory?.qa || [];
@@ -733,6 +742,8 @@ export function tdTribalScreen(ep, o = {}) {
       reacted(p);
     }
   }
+  // the Save Card, called and signed (or not) before anybody writes a name (coach-tribal.js)
+  if (coaches.length) cardBeforeVote(steps, say, ep, coaches);
   // the vote
   const voters = [...new Set((ep.votingLog || []).map(v => v.voter).filter(n => tribal.includes(n)))];
   say(V.voted);
@@ -763,7 +774,7 @@ export function tdTribalScreen(ep, o = {}) {
       steps.push({ k: 'ballot', voter: v.voter, voted: v.voted, venue });
       for (const x of extraOf(v)) { steps.push({ k: 'beat', text: `${v.voter} writes a second name: the ${x.extra}.`, focus: [v.voter] }); steps.push({ k: 'ballot', ...x }); }
     });
-    steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '9:00 PM', card: false, cut: true, focus: [], bg: [], places, seated: tribal, host, ceremony: true });
+    steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '9:00 PM', card: false, cut: true, focus: [], bg: [], places, seated: seatedAll, host, ceremony: true });
   } else if (booth && cast.length >= 2) {
     const shown = [];
     const forElim = cast.filter(v => v.voted === elim), other = cast.filter(v => v.voted !== elim);
@@ -778,7 +789,7 @@ export function tdTribalScreen(ep, o = {}) {
       steps.push({ k: 'ballot', voter: v.voter, voted: v.voted, venue });
       for (const x of extraOf(v)) { steps.push({ k: 'beat', text: `${v.voter} writes a second name: the ${x.extra}.`, focus: [v.voter] }); steps.push({ k: 'ballot', ...x }); }
     });
-    steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '9:00 PM', card: false, cut: true, focus: [], bg: [], places, seated: tribal, host, ceremony: true });
+    steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '9:00 PM', card: false, cut: true, focus: [], bg: [], places, seated: seatedAll, host, ceremony: true });
   }
   steps.push({ k: 'ballots', who: voters, text: `${voters.length} votes are in.` });
   // a vote cast before anybody wrote a name: the challenge's penalty, or a Black Vote left by an earlier boot
@@ -815,13 +826,21 @@ export function tdTribalScreen(ep, o = {}) {
   const rv = { booth, plate, places, host, tribal, venue, original: ballots, tied: ep.revoteSilenced || ep.tiedPlayers || [], tb: ep.tiebreakerResult?.challengeLabel ? ep.tiebreakerResult : null,
     colorOf: o.colorOf || null, teamOf: n => (ep.tribesAtStart || []).find(t => (t.members || []).includes(n))?.name || ep.tribalTribe || null,
     bond: (x, y) => (ep.gsSnapshot?.bonds || {})[x <= y ? `${x}||${y}` : `${y}||${x}`] ?? 0 };
-  if (V.style === 'handout') handout(steps, say, V, { tribal, elim, counts, immune: [].concat(ep.immunityWinner || []).filter(n => tribal.includes(n)), tie, revote, rocks: !!ep.isRockDraw, host, alsoOut: ep._alsoOut || null, rv });
+  // (a coach night reads the votes: a coach was never in line for a marshmallow)
+  if (V.style === 'handout' && !coaches.length) handout(steps, say, V, { tribal, elim, counts, immune: [].concat(ep.immunityWinner || []).filter(n => tribal.includes(n)), tie, revote, rocks: !!ep.isRockDraw, host, alsoOut: ep._alsoOut || null, rv });
   else {
     // who has gone before this one: the boot is the nth voted out of the game
     const gone = (window.gs?.episodeHistory || []).filter(e => e.num < ep.num && e.eliminated).length;
     const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth'];
-    readVotes(steps, say, { ...V, _host: host, _nth: ORD[gone] || null, _of: 'of the game', _ep: ep }, { tribal, elim, ballots, protectedSet, tie, revote, rocks: !!ep.isRockDraw, rv });
+    // a coach read out is the season's nth coach voted out, not its nth player
+    const coachGone = (window.gs?.episodeHistory || []).filter(e => e.num < ep.num).reduce((t, e) => t + (e.coachElimination || []).length + (e.coachSaves || []).length, 0);
+    const isCoach = coaches.includes(elim);
+    readVotes(steps, say, { ...V, _host: host, _nth: isCoach ? ORD[coachGone] || null : ORD[gone] || null, _who: isCoach ? 'coach' : 'person', _of: isCoach ? 'this season' : 'of the game', _ep: ep },
+      { tribal: seatedAll, elim, ballots, protectedSet, tie, revote, rocks: !!ep.isRockDraw, rv });
   }
+  // the card's verdict, and a coach's goodbye (coach-tribal.js)
+  const coachNight = coaches.length ? cardAfterRead(steps, say, { ep, host, tribal, coaches, readOut: coachReadOut(ep) }) : null;
+  const cardDecided = !!coachNight && (coachNight.coachOut || (ep.coachSaves || []).length > 0);
   // the reading lands: how the one going home takes it, and who answers (td/story/tribal.js)
   const lineStep = l => (l.kind === 'beat' ? { k: 'beat', text: cleanText(l.text), focus: [] }
     : l.kind === 'conf' ? { k: 'conf', by: l.by, text: cleanText(l.text), cap: l.cap || null, stage: l.stage || null }
@@ -830,13 +849,14 @@ export function tdTribalScreen(ep, o = {}) {
   const outAt = steps.map(x => x.k).lastIndexOf('out');
   const moment = [];
   // a blindside lands as one: the show's shock card before the boot finds words
-  if (story?.shocking && story.reveal?.length) moment.push({ k: 'title', kicker: 'Blindside', name: elim, faces: [elim], shock: true });
-  for (const l of story?.reveal || []) moment.push(lineStep(l));
+  // (a night the card decided has its own ending above: the boot's words were written for a vote)
+  if (!cardDecided && story?.shocking && story.reveal?.length) moment.push({ k: 'title', kicker: 'Blindside', name: elim, faces: [elim], shock: true });
+  for (const l of cardDecided ? [] : story?.reveal || []) moment.push(lineStep(l));
   // ...and the room: a plan that did not happen lands on everybody it touched (td/story/tribal.js room)
   for (const l of story?.room || []) moment.push(lineStep(l));
   // ...and the classic screen's Tribal Blowup or Crashout: the boot goes out swinging, and what
   // they say changes the game (episode.js checkTribalBlowup; vp-screens.js buildCrashout)
-  const swing = ep.tribalBlowup?.player === elim ? { ...ep.tribalBlowup, kind: 'Tribal Blowup' }
+  const swing = cardDecided ? null : ep.tribalBlowup?.player === elim ? { ...ep.tribalBlowup, kind: 'Tribal Blowup' }
     : story?.crashout?.player === elim || (story?.crashout && !story.crashout.player) ? { ...story.crashout, player: elim, kind: 'Crashout' } : null;
   if (swing?.reveals?.length) {
     moment.push({ k: 'title', kicker: swing.kind, name: swing.trigger === 'temperament' ? `${elim} can't hold it in` : `${elim} goes out swinging`, faces: [elim], shock: true });
@@ -900,14 +920,18 @@ export function tdTribalScreen(ep, o = {}) {
     say(ep.riChoice === 'RESCUE ISLAND' ? `${elim}, you're not going home. You're going to Rescue Island.` : `${elim}, grab your torch. You have one more choice to make.`, { focus: [elim] });
     return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps, elim };
   }
-  // the walk out
+  // the walk out: whoever actually leaves (the card's replacement, not the coach it saved)
+  if (coachNight?.out) elim = coachNight.out;
+  // (a night the card decided: the last words were written for somebody voted out the ordinary way)
+  const coachLeft = !!coachNight?.coachOut || cardDecided;
   // the host walks them out (the Dock of Shame, the red carpet, the hatch): both on screen
   const exitPlate = plateKey(venue, 'exit', 'night');
   const exitPlaces = { [elim]: { u: .6, v: .74, s: .24 } };
   const hs = ((TD_MARKS[exitPlate] || {}).m || []).filter(m => m.kind === 'stand' && m.u < .36 && m.u > .12 && m.v > .45 && m.v < .78).sort((a, b) => b.s - a.s)[0];
   exitPlaces[host] = hs ? { u: hs.u, v: hs.v, s: Math.min(hs.s, .24), host: true } : { u: .26, v: .72, s: .22, host: true };
   // last words: their person walks them down, or they turn round for one more shot (tribal.js)
-  const exitWith = story?.exit?.length && story.exitWith && story.exitKind !== 'alone' ? story.exitWith : null;
+  // (a coach has said goodbye at the fire already: coach-tribal.js)
+  const exitWith = !coachLeft && story?.exit?.length && story.exitWith && story.exitKind !== 'alone' ? story.exitWith : null;
   if (exitWith) exitPlaces[exitWith] = { u: .78, v: .74, s: .22 };
   // the Jumbo Jet's hatch (Tdwtelimination): close on the three of them, the open door on the left
   const hatch = venue === 'world-tour' && plateKey(venue, 'drop', 'night');
@@ -933,7 +957,7 @@ export function tdTribalScreen(ep, o = {}) {
   if (exitWith) steps.push({ k: 'beat', text: story?.exitKind === 'shot' ? `${exitWith} follows ${elim} down to the end of the path. ${elim} hears the footsteps and turns round.` : `${exitWith} walks ${elim} down to say goodbye.`, focus: [exitWith, elim] });
   say(V.exitLine(elim));
   // where the goodbye ends in a close-up (inside the car, on the boat's deck), their own last line waits for it
-  const exitLines = [...(story?.exit || [])];
+  const exitLines = coachLeft ? [] : [...(story?.exit || [])];
   const side = venue === 'hosted-camp' ? plateKey(venue, 'boat-side', 'night') : null;
   const lastWords = (limo || clown || side) && exitLines.length && exitLines[exitLines.length - 1].by === elim ? exitLines.pop() : null;
   for (const l of exitLines) steps.push(lineStep(l));
@@ -1193,7 +1217,7 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
     const after = lead(tally);
     let line;
     if (d) line = `${v.voted}. Does not count.`;
-    else if (deciding) line = `The ${V._nth || 'next'} person voted out ${V._of}... ${v.voted}.${order.some(o => o.after) ? ` That's ${word(tally[v.voted])} votes. That's enough.` : ''}`;
+    else if (deciding) line = `The ${V._nth || 'next'} ${V._who || 'person'} voted out ${V._of}... ${v.voted}.${order.some(o => o.after) ? ` That's ${word(tally[v.voted])} votes. That's enough.` : ''}`;
     else if (after.length >= 2 && i >= 1) line = `${v.voted}. That's ${word(after[0][1])} vote${after[0][1] === 1 ? '' : 's'} ${after[0][0]}, ${word(after[1][1])} vote${after[1][1] === 1 ? '' : 's'} ${after[1][0]}.`;
     else if (after.length === 1 && tally[v.voted] > 1) line = `${v.voted}. That's ${word(tally[v.voted])} votes ${v.voted}.`;
     else line = `${v.voted}.`;

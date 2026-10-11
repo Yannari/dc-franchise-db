@@ -89,7 +89,8 @@ export function tdStepScreens(ep, classic = [], o = {}) {
       const am = tdAftermathScreen(ep, o);
       if (am) { aftermathDone = true; out.push(shell(am, { ...S, id: 'aftermath-show', label: am.label }, ep, o)); continue; }
     }
-    if (tribal && ['voting-plans', 'votes', 'surprise', 'voting-plans-2', 'votes-2'].includes(S.id)) continue;
+    // (the Save Card's signatures play inside the stepped vote: coach-tribal.js)
+    if (tribal && ['voting-plans', 'votes', 'surprise', 'voting-plans-2', 'votes-2', 'cb-sigs'].includes(S.id)) continue;
     if (tribal && S.id === 'tribal' && !tribalDone) { tribalDone = true; out.push(shell(tribal, S, ep, o)); continue; }
     // the jury elimination twist: its three classic pages are one screen at the ceremony (twists-more.js)
     if (/^jury-(life|convenes|votes)$/.test(S?.id || '')) {

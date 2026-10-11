@@ -273,9 +273,13 @@ function playReactions(ep, { tribal, ballots, base, ctx, nextN }) {
 
 /** The words of the night (see the header). */
 export function writeTribal(ep) {
-  const elim = ep?.eliminated;
+  // a coach season's vote can send a coach home (eliminated is then null): the booth, the questions and the
+  // room are written the same way; the coach's goodbye is the viewer's (vp-td-ep/coach-tribal.js)
+  const coachesHere = (ep?.tribalTribe && ep.coachData?.[ep.tribalTribe]?.coaches) || [];
+  // (the season's record has the coach by the time this is written; the episode's own copy may not yet)
+  const elim = ep?.eliminated || (ep?.coachElimination || [])[0]?.coach || (gs.coachesEliminated || []).find(c => c.ep === ep?.num)?.coach || null;
   const tribal = ep?.tribalPlayers || [];
-  if (!elim || !tribal.includes(elim)) return null;
+  if (!elim || !(tribal.includes(elim) || coachesHere.includes(elim))) return null;
   const ballots = (ep.votingLog || []).filter(v => v.voter && v.voted && tribal.includes(v.voter));
   if (ballots.length < 2) return null;
   const venue = ITEM[ep.campAccess?.setting] ? ep.campAccess.setting : 'hosted-camp';

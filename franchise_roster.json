@@ -3823,7 +3823,7 @@
         "temperament": 2
       },
       "sexuality": "straight",
-      "voice": "Snide bully — superior and condescending, enjoys watching people fail. Everything is a backhanded remark. 'Bold choice. Bold.' / 'Nothing personal.' (it is always personal)",
+      "voice": "Snide bully — superior and condescending, enjoys watching people fail. Everything is a backhanded remark. 'Bold choice. Bold.' / 'Nothing personal.' (it is always personal)#blunt#schemer",
       "profileSources": {
         "voice": [
           {
@@ -3898,7 +3898,62 @@
       "hometown": "Seoul",
       "occupation": "Podcaster and brand promoter; former dancer",
       "backstory": "Yul Kim was born in Korea on July 24, 2001. A dance performance went viral when he was fifteen, creating early fame and a public “nice” persona that concealed his contempt for others. His behavior eventually cost him dancing work and damaged his reputation, after which he continued as a podcaster and brand promoter. He enters competition treating money and renewed celebrity as permission to stop pretending to be decent.",
-      "personality": "Yul is vain, cruel, discriminatory, and convinced that fame should exempt him from ordinary accountability. Viral success as a teenage dancer rewarded performance before he developed empathy, and he learned to treat outrage as both threat and publicity. He can maintain tactical loyalty and understand alliance structure, yet his contempt repeatedly destroys the trust that strategy requires. Apologies are usually reputation management; remorse becomes suspect the moment consequences fade. Under pressure he insults appearance, identity, or intelligence, tries to reassert hierarchy, and threatens retaliation when control fails. His behavior must not be softened into harmless sass: abuse and bigotry should damage bonds, reputation, and voting options. He can be funny through vanity, hypocrisy, and failed self-importance without making targeted cruelty consequence-free."
+      "personality": "Yul is vain, cruel, discriminatory, and convinced that fame should exempt him from ordinary accountability. Viral success as a teenage dancer rewarded performance before he developed empathy, and he learned to treat outrage as both threat and publicity. He can maintain tactical loyalty and understand alliance structure, yet his contempt repeatedly destroys the trust that strategy requires. Apologies are usually reputation management; remorse becomes suspect the moment consequences fade. Under pressure he insults appearance, identity, or intelligence, tries to reassert hierarchy, and threatens retaliation when control fails. His behavior must not be softened into harmless sass: abuse and bigotry should damage bonds, reputation, and voting options. He can be funny through vanity, hypocrisy, and failed self-importance without making targeted cruelty consequence-free.",
+      "ties": [],
+      "kit": {
+        "thing": "being a former dancer",
+        "alone": "is recording a monologue into a tin can like it's a microphone",
+        "ground": [
+          "online-fame",
+          "performer",
+          "career-slipped"
+        ],
+        "bit": [
+          "Bold choice, wearing that today. Bold.",
+          "I went viral at fifteen. Some of you are going to go viral after this, too. For crying.",
+          "Nothing personal, but whoever built this shelter should never build anything again."
+        ],
+        "tease": [
+          "Wow. Do you ever say anything nice?",
+          "At least people will remember us.",
+          "You didn't help build it."
+        ],
+        "reply": [
+          "That was nice. You'd know if I was being mean.",
+          "That's the dream, isn't it? Being remembered for the worst thing you did.",
+          "I don't build. I critique. Someone has to."
+        ],
+        "home": [
+          "A podcast that does better than your entire family's careers combined.",
+          "A lot of people who want to be me. Nobody I'd call."
+        ],
+        "want": [
+          "The money and the attention, and I'll take the attention first.",
+          "To remind everybody who I am."
+        ],
+        "conf": [
+          "Nice is a performance. I just stopped performing it.",
+          "Nothing personal. That's what I always say. It's always personal."
+        ],
+        "askHome": [
+          "Who's at home, then? Let me guess. Nobody important.",
+          "Do you even have anyone back home?"
+        ],
+        "askWant": [
+          "What do you want? Fame? You don't have the face for it.",
+          "Why are you here? Genuinely asking. I can't work it out."
+        ],
+        "defend": [
+          "You're just upset someone finally said it out loud."
+        ],
+        "deep": [
+          "When I went viral, everybody loved me. When they stopped, I didn't know who I was without it."
+        ],
+        "solo": [
+          "I've had a hot take ready every single day. Nobody's asked. That won't stop me.",
+          "When the internet loved me, I didn't know who I was. Out here, I think I'm starting to work it out."
+        ]
+      }
     },
     {
       "name": "Alessio",

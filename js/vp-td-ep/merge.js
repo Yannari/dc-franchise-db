@@ -37,7 +37,12 @@ export function mergeDay({ ep, m, host, places }) {
     side: [{ tab: 'log', text: `${all.length} players: ${all.join(', ')}` }, ...(m.alliances || []).map(a => ({ tab: 'allies', name: a.name, who: a.members })),
       ...((m.bottom || []).length ? [{ tab: 'secrets', text: `On the bottom, with no alliance: ${m.bottom.join(', ')}` }] : [])] });
   hostSay(`${all.length} of you left. No more teams to hide behind, no more winning as a group. From here on, it's every player for themselves.`);
-  hostSay(`And from now on, if you get voted out, you don't just go home. You sit on the jury and help decide who wins.`, { tense: true });
+  // what being voted out means from here, by this season's finale (no jury over a final challenge or the fans)
+  const fin = globalThis.seasonConfig?.finaleFormat || 'traditional';
+  hostSay(fin === 'fan-vote' ? `And from now on, the fans at home are watching every move. They're the ones who pick the winner.`
+    : fin === 'hawaiian-punch' ? `And from now on, every vote brings the last ones standing a step closer to the final race.`
+      : ['final-challenge', 'olympic-relay', 'rescue-mission'].includes(fin) ? `And from now on, if you get voted out, you'll be back for the final challenge, picking a side.`
+        : `And from now on, if you get voted out, you don't just go home. You sit on the jury and help decide who wins.`, { tense: true });
   // ── the coaches who made it stop coaching (coach-episode.js promoteCoaches) ──
   // read through the viewer, 2026-10-10: Heather went from coach to player and the merge never said a word
   const promos = (ep.coachPromotions || []).filter(p => here(p.name));

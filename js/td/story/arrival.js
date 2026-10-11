@@ -20,6 +20,7 @@ import { writeStory } from './write.js';
 import { historyOf } from './director.js';
 import { voiceOf } from './voice.js';
 import { factsFor } from '../script/facts.js';
+import { resumeOf } from '../past.js';
 
 const LANDING = { 'hosted-camp': 'the dock', 'film-lot': 'the backlot', 'world-tour': 'the runway', 'survival-island': 'the beach', carnival: 'the gate' };
 
@@ -62,7 +63,14 @@ export function writeArrival({ ep, p, n, host, onDock, chem, venue, state = { sp
 
   // the host's introduction, then their entrance
   // a returnee is introduced as somebody the host already knows (lines/n-returnee.js arrive.hostback): 'meet {a}' is for strangers
-  add(writeStory(p.isReturnee ? 'arrive.hostback' : 'arrive.host', 'any', { a: name, h: host }, data, base({ a: name }), ctx(1)));
+  const hb = add(writeStory(p.isReturnee ? 'arrive.hostback' : 'arrive.host', 'any', { a: name, h: host }, data, base({ a: name }), ctx(1)));
+  // a returnee is introduced from the whole career, not last season's placing alone (td/past.js resumeOf;
+  // the user, 2026-10-11: "maybe 13th last time, but 1st in the first season, with a lot of challenge wins")
+  if (p.isReturnee && hb) {
+    const res = resumeOf(name, n);
+    const hl = res && [...lines].reverse().find(l => l.by === host && l.kind === 'say');
+    if (hl) hl.text = `${name}! ${res}`;
+  }
   add(writeStory(p.isReturnee ? 'arrive.back' : 'arrive.new', 'any', { a: name, h: host }, data, base({ a: name }), ctx(2)));
 
   // somebody already waiting: the first reason that applies

@@ -72,13 +72,13 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   // ({lastSeason}, {lastPlace}, {lastBy}, {lastPartner}; the same with B for b)
   { const pa = pastOf(who.a), pb = pastOf(who.b);
     facts = { ...facts, returnee: facts.returnee ?? isReturnee(who.a), returneeB: facts.returneeB ?? isReturnee(who.b),
-      past: pa?.kind || 'none', pastB: pb?.kind || 'none', pastBy: !!pa?.by, pastPartnerHere: !!pa?.partner && Object.values(who).includes(pa.partner) };
+      past: pa?.kind || 'none', pastB: pb?.kind || 'none', pastEnd: pa?.end || 'none', pastBy: !!pa?.by, pastPartnerHere: !!pa?.partner && Object.values(who).includes(pa.partner) };
     data = { ...pastData(who.a), ...pastData(who.b, 'B'), ...(data || {}) };
     // ...and the one the scene is about ({target}): a vote against somebody who won last time can say so
     if (data.target && facts.targetPast === undefined) {
       const pt = pastOf(data.target);
       // targetWronged: the target is the one who blindsided or betrayed a last time (payback)
-      facts = { ...facts, targetPast: pt?.kind || 'none', targetWronged: !!pa?.by && pa.by === data.target };
+      facts = { ...facts, targetPast: pt?.kind || 'none', targetEnd: pt?.end || 'none', targetWronged: !!pa?.by && pa.by === data.target };
       if (pt) data = { ...pastData(data.target, 'T'), ...data };
     } }
   const keys = keysFor(pool, outcome);

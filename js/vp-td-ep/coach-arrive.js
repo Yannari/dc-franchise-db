@@ -10,6 +10,7 @@
 // each team meets its coaches. Words only: nothing here moves a bond.
 import { famOf, P, listOf } from './voiced.js';
 import { historyOf } from '../td/story/director.js';
+import { resumeOf } from '../td/past.js';
 
 const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 // the host's introduction for a coach with no record in the ledger: who they are on this show (their
@@ -88,7 +89,10 @@ export function coachArrival(ctx) {
     const n = c.name, p = P(n), past = c.past;
     scene([n], { act: { kind: 'arrive', who: [n], ride: 'walk' } });
     ctx.intro(n, { tag: 'Coach', n: i + 1, of: coaches.length, returnee: !!past, past: past || null });
-    hostSay(!past ? introOf(n, c.archetype, p, i)
+    // the whole career when the ledger has one (td/past.js resumeOf): wins, finals and how they were lost, the
+    // comedown, the challenges, the blindsides, or the joke for a flop; otherwise who they are on this show
+    const resume = resumeOf(n, i);
+    hostSay(resume ? `${n}. ${resume}` : !past ? introOf(n, c.archetype, p, i)
       : past.kind === 'won' ? `${n}. Won ${past.where}. Yes, that ${n}. Some of you have the poster.`
         : past.kind === 'final' ? `${n}. Made it all the way to the final of ${past.where}, and ${p.sub} still ${p.sub === 'they' ? 'think' : 'thinks'} about that vote.`
           : `${n}. ${past.placeWord} on ${past.where}, which, believe it or not, still beats most of you.`, [n]);

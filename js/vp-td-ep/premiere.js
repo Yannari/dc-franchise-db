@@ -168,9 +168,16 @@ export function premiereSteps(venue, o = {}) {
   if (S.coaches && S.coaches !== 'disabled') asides.push({ name: 'The Coaches', lines: [`And this season, every team gets ${(S.coachesPerTribe || 1) > 1 ? 'coaches' : 'a coach'}. People who've been through all this before, and who will absolutely yell at you. You'll meet them later.`] });
   if (S.foodWater && S.foodWater !== 'disabled') asides.push({ name: 'Survival', lines: [`And nobody's feeding you this time. You want dinner? Go catch it.`] });
   const fin = S.finaleFormat || 'traditional';
-  asides.push(fin === 'fan-vote' ? { name: 'The fans decide', lines: [`And at the very end, the fans at home pick the winner. So smile for the camera.`] }
-    : /challenge/.test(fin) ? { name: 'The final challenge', lines: [`And at the very end, it all comes down to one final challenge. Winner takes everything.`] }
-      : { name: 'The jury decides', lines: [`And remember: everyone you vote off comes back at the end to vote for the winner. So be nice to them. Or don't. That's way better TV.`] });
+  // how this season is won, by its own finale (the user, 2026-10-11: "the jury decides" was said over a final
+  // challenge; and only the people voted out after the merge sit on a jury, never "everyone you vote off")
+  const JURY = `After the merge, everyone you vote out joins the jury, and at the very end, they vote for the winner. So be nice to them. Or don't. That's way better TV.`;
+  asides.push(fin === 'fan-vote' ? { name: 'The fans decide', lines: [`And at the very end, there's no jury. The fans at home pick the winner. So smile for the camera.`] }
+    : fin === 'hawaiian-punch' ? { name: 'The final race', lines: [`And at the very end, there's no jury and no vote. Just one last race, up a volcano. First one to the top takes everything.`] }
+      : ['final-challenge', 'olympic-relay', 'rescue-mission'].includes(fin) ? { name: 'The final challenge', lines: [`And at the very end, there's no jury. It all comes down to one final challenge, and everybody you voted out gets to pick a side. Winner takes everything.`] }
+        : fin === 'jury-cut' ? { name: 'The jury decides', lines: [JURY, `Oh, and whoever wins the last immunity gets to pick who sits next to them at the end. Choose wisely.`] }
+          : fin === 'fire-making' ? { name: 'The jury decides', lines: [`At the final four, one of you gets a choice nobody wants: who has to make fire to stay in the game.`, JURY] }
+            : fin === 'koh-lanta' ? { name: 'The jury decides', lines: [`The last four face one more test before the end: a race, and then who can hold on the longest.`, JURY] }
+              : { name: 'The jury decides', lines: [JURY] });
   asides.forEach((r, i) => {
     if (r.plate) show(r.plate, r.place || r.name);
     steps.push({ k: 'title', kicker: i === asides.length - 1 ? 'How to win' : 'This season', name: r.name, faces: [] });

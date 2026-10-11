@@ -363,8 +363,12 @@ export function deriveSeasonRecord(state = null) {
   // told they "never made the merge" (there is no merge in the house) and a
   // Big Brother season was cited as "S1", which is also the name of a Total
   // Drama season.
+  // how the season was decided (the user, 2026-10-11: a runner-up was "one vote from winning" after a final
+  // challenge): the finale's format, and the jury's votes when a jury voted
+  const _finFormat = (state ? state?.config?.finaleFormat : seasonConfig?.finaleFormat) || null;
   const rec = { seasonName: _seasonName, format: _gs.format || DEFAULT_FORMAT,
-    fanFavorite: _favouriteOf(_gs), ratings, players: {} };
+    fanFavorite: _favouriteOf(_gs), ratings, players: {},
+    finale: { format: _finFormat, votes: fin.votes && Object.keys(fin.votes).length ? { ...fin.votes } : null } };
   for (const n of names) {
     // Last (not first) elimination episode — RI/EoE returnees can be booted twice.
     const elimEp = [...hist].reverse().find(ep => _bootOf(ep) === n) || null;
@@ -511,7 +515,23 @@ export function lastSeasonOf(name) {
   const won = [...hist].reverse().find(h => h.rec?.winner);
   const wonWhere = won ? (!won.format || won.format === DEFAULT_FORMAT ? `Season ${won.seasonNum}` : `${SHOWS[won.format]?.name || 'Season'} ${won.seasonNum}`) : null;
   return { where, format: last.format, num: last.seasonNum, seasons: hist.length, rec: last.rec,
-    total: Object.keys(season?.players || {}).length || null, name: last.seasonName || null, wonWhere };
+    total: Object.keys(season?.players || {}).length || null, name: last.seasonName || null, wonWhere, finale: season?.finale || null };
+}
+
+/**
+ * Every season this person played before this one, oldest first: { where, num, format, rec, total, finale }.
+ * The whole career, for an introduction that is more than last season's placing (the user, 2026-10-11:
+ * "13th last season, but maybe 1st in the first one, with a lot of challenge wins").
+ */
+export function careerOf(name) {
+  if (!name) return [];
+  const nowFmt = seasonFormat(seasonConfig);
+  const nowNum = Number(gs?.seasonNumber || seasonConfig?.seasonNumber) || null;
+  return _historyFor(name).filter(h => !(h.format === nowFmt && h.seasonNum === nowNum)).map(h => {
+    const season = Object.entries(activeSeasons()).find(([k, s]) => { const p = seasonKeyParts(k, s); return p.num === h.seasonNum && p.format === h.format; })?.[1];
+    const where = !h.format || h.format === DEFAULT_FORMAT ? `Season ${h.seasonNum}` : `${SHOWS[h.format]?.name || 'Season'} ${h.seasonNum}`;
+    return { where, num: h.seasonNum, format: h.format, rec: h.rec, total: Object.keys(season?.players || {}).length || null, finale: season?.finale || null };
+  });
 }
 
 function _resumeLines(name, history) {

@@ -13,7 +13,7 @@ import VOICES from '../js/td/story/lines/voices/index.js';
 import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 
 // what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
-const STORY_FACTS = new Set([...TD_FACT_KEYS, 'madeMove', 'targetKnows',
+const STORY_FACTS = new Set([...TD_FACT_KEYS, 'madeMove', 'targetKnows', 'pastEnd', 'targetEnd',
   'venue', 'count', 'outcome', 'story', 'step', 'prev', 'prevGap', 'chapter', 'members', 'aOther', 'bOther', 'target', 'group',
   'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'past', 'pastB', 'pastBy', 'pastPartnerHere', 'targetPast', 'targetWronged', 'glue', 'count', 'fifth', 'sixth', 'notVoice', 'notVoiceB', 'home', 'job', 'lot', 'eats', 'thing', 'others', 'markMe', 'markB', 'otherMe', 'otherB', 'shaky', 'cover', 'close', 'aVoted', 'defends', 'cWasted', 'self', 'found', 'sparkSeen', 'told', 'tally', 'alt', 'fromTarget', 'sparkKind', 'wroteIsBoot', 'moment', 'how', 'ago', 'bWrote', 'tease', 'two', 'bLikesA', 'bHatesA', 'physical', 'imm', 'ally', 'markLeader', 'real', 'blame', 'crash', 'revealKind', 'saw', 'call', 'lostAlly', 'flipped', 'won', 'again', 'yes', 'rel', 'tkind', 'warner', 'keep', 'wanted', 'area', 'mine', 'leader', 'locked', 'band', 'kindred', 'kin', 'most']);
 // names a line may say, and the fact that must be asked for unless the pool always has it

@@ -2609,7 +2609,7 @@
         "temperament": 5
       },
       "sexuality": "straight",
-      "voice": "Miriam likely speaks in a clipped, dry, no-nonsense way, using blunt criticism rather than soft reassurance. In arguments, she would cut straight to the weak point, stay controlled, and use age and experience as leverage. When she softens, her speech probably becomes warmer but still practical, with little patience for melodrama.",
+      "voice": "Miriam likely speaks in a clipped, dry, no-nonsense way, using blunt criticism rather than soft reassurance. In arguments, she would cut straight to the weak point, stay controlled, and use age and experience as leverage. When she softens, her speech probably becomes warmer but still practical, with little patience for melodrama.#bossy",
       "profileSources": {
         "descriptor": [
           {
@@ -2671,7 +2671,64 @@
       "occupation": "Retiree",
       "descriptor": "Bitter old lady",
       "backstory": "Miriam is an elderly widow and bereaved mother whose husband and only son died in a drunk driving accident. When she was younger, her family did not understand her and she struggled to fit in, but sports gave her a sense of purpose; she tried rowing, water polo, lacrosse, cheerleading, debate, knife throwing, archery, cooking, and baking. She owns a cat named Biscuit and has a neighbor named Joey who helps watch over him.",
-      "personality": "Miriam is guarded, sharp-tongued, and initially keeps emotional distance from younger people, but her bitterness comes from grief rather than simple cruelty. Under pressure, she is clever and highly capable, willing to manipulate others or misdirect them when she thinks it is necessary. She can become deeply loyal once someone’s pain reaches her, and she is capable of real warmth, but she will not waste energy pretending to be sweet or harmless."
+      "personality": "Miriam is guarded, sharp-tongued, and initially keeps emotional distance from younger people, but her bitterness comes from grief rather than simple cruelty. Under pressure, she is clever and highly capable, willing to manipulate others or misdirect them when she thinks it is necessary. She can become deeply loyal once someone’s pain reaches her, and she is capable of real warmth, but she will not waste energy pretending to be sweet or harmless.",
+      "ties": [],
+      "kit": {
+        "thing": "being old enough to be everyone's grandmother",
+        "alone": "is knitting something long and purple out of a frayed rope",
+        "ground": [
+          "widowed",
+          "lost-child",
+          "lonely-child",
+          "athlete",
+          "pets"
+        ],
+        "bit": [
+          "I've been awake since five. Somebody here snores like a leaf blower, and I will find out who.",
+          "In my day, we didn't complain about the food. We ate it, and then we complained.",
+          "I rowed, I played water polo, I threw knives competitively. This challenge does not frighten me."
+        ],
+        "tease": [
+          "You're up at five every day? Why?",
+          "Miriam, you've complained about the food at every meal.",
+          "You threw knives?"
+        ],
+        "reply": [
+          "Because I'm seventy-three, dear, and the sleep is over.",
+          "After eating it. Pay attention.",
+          "Competitively. Ask nicely and I'll show you. Ask rudely and I'll also show you."
+        ],
+        "home": [
+          "My cat, Biscuit, and my neighbour Joey, who's watching him. Joey had better not be feeding him the cheap food.",
+          "An empty house and a very spoiled cat. That's all I need to say about it."
+        ],
+        "want": [
+          "To win, and then to watch every one of you realise you underestimated the old lady.",
+          "Enough money to keep Biscuit in the good food until he outlives us all."
+        ],
+        "conf": [
+          "They think the old woman is an easy vote. Let them think it. I've buried better people than this lot.",
+          "I don't do sweet. I do useful. Sweet gets you a nice funeral, useful gets you to the end."
+        ],
+        "askHome": [
+          "And who's waiting for you at home? Somebody, I hope. You look like you need somebody.",
+          "Do your parents know you're out here doing this? Heavens."
+        ],
+        "askWant": [
+          "What on earth do you want out of this? Fame? You'll find it disappointing.",
+          "Why are you here, young one? And don't give me the speech."
+        ],
+        "defend": [
+          "I've earned every one of these years, dear. Don't you dare make them sound like a weakness."
+        ],
+        "deep": [
+          "My husband and my son died the same night. A drunk driver. I don't talk about it. I don't know why I'm telling you."
+        ],
+        "solo": [
+          "I don't know what it is yet, dear. It might be a scarf. It might be a rope again by Tuesday.",
+          "These young people think they're tired. I've buried a husband and raised a son. This is a holiday."
+        ]
+      }
     },
     {
       "name": "Grett",

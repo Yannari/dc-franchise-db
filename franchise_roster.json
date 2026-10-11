@@ -4951,7 +4951,7 @@
         "temperament": 4
       },
       "sexuality": "straight",
-      "voice": "Aubrey talks in quick, confident bursts, mixing friendly self-introduction with astrology jargon and psych-student framing. She likes labels, rankings, and decisive reads, so in an argument she tends to diagnose people rather than patiently hear them out. When challenged, her tone turns sharp and absolutist; she presents suspicion as instinctive certainty instead of something she needs to prove.",
+      "voice": "Aubrey talks in quick, confident bursts, mixing friendly self-introduction with astrology jargon and psych-student framing. She likes labels, rankings, and decisive reads, so in an argument she tends to diagnose people rather than patiently hear them out. When challenged, her tone turns sharp and absolutist; she presents suspicion as instinctive certainty instead of something she needs to prove.#blunt#theatrical #chaotic#emotional ",
       "profileSources": {
         "ethnicity": [
           {
@@ -5013,7 +5013,61 @@
       "descriptor": "The Astrology junkie",
       "backstory": "Aubrey grew up attending public school, where she preferred reading to going out for recess and was much shyer as a child before gradually becoming more self-assured. She studies psychology and got into astrology while in college, even tying star charts into academic work. Her parents are in their early forties, and she has a Siamese cat named Ziggy. Outside school and astrology, she enjoys traveling, reading fantasy books, socializing, cross stitching, and cake decorating.",
       "personality": "Aubrey is sociable, self-assured, and eager to lead, but she is also highly judgmental and prone to deciding who is trustworthy before she really knows them. Under pressure, she can lose composure fast, snapping into anger when she feels slighted or when events stop matching the story she has built in her head. Her loyalty is strongest toward people she believes she can understand or categorize, especially through astrology, while she is much colder toward those she has written off. She will keep pushing toward a goal and offer advice when she feels in control, but she will not easily abandon her biases or admit that her first read of someone may be wrong.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Intuitive, chaotic, loyal.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think I got picked because I’m a little hard to categorize, in a good way. I’m a psych student from New York who reads star charts, clocks vibes fast, and says the thing everyone else is thinking but is too scared to say.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be living with people who have zero self-awareness and then being expected to smile through it. I can handle mess, but I cannot handle someone projecting their issues onto me and calling it honesty.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to make people feel comfortable with me early, get good reads, and then decide who is actually safe versus who is just performing safe. I’m not going in as some challenge beast, obviously, so socially I need to be useful, loyal enough, and just unpredictable enough that people hesitate to box me in.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want people to know I’m loyal when I actually choose you, because I’m not fake-loyal to everyone. I’d hide how suspicious I can get, because once my intuition says someone is off, my face tends to send a full press release before my mouth does.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My birth chart notes, because if I’m trapped with strangers, I need categories immediately.\\n- A fantasy book, because my brain needs somewhere dramatic to go that is not the kitchen.\\n- A picture of my Siamese cat Ziggy, because he’s judgmental, grounding, and honestly probably a better social player than me.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love reading fantasy, traveling, cross stitching, cake decorating, and going out with friends when I’m in the mood to be perceived. I also really like astrology and psychology, which basically means I enjoy analyzing people and then pretending I’m being casual about it.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is information wearing heels. I don’t want pointless screaming all day, but if people are fighting, I’m listening, because conflict tells you who’s insecure, who’s performative, and who cannot regulate their nervous system.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Probably not. I’m not saying never, because I’m bold and I know myself, but I also know a house crush can turn into a strategy parasite really fast.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… trust the vibe, but verify the pattern.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a real adventure out of this and prove I can be braver than my anxious little inner child who wanted to read during recess. Also, I want to see what happens when I stop overthinking from the sidelines and actually throw myself into the mess.\"}]"
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Intuitive, chaotic, loyal.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think I got picked because I’m a little hard to categorize, in a good way. I’m a psych student from New York who reads star charts, clocks vibes fast, and says the thing everyone else is thinking but is too scared to say.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be living with people who have zero self-awareness and then being expected to smile through it. I can handle mess, but I cannot handle someone projecting their issues onto me and calling it honesty.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to make people feel comfortable with me early, get good reads, and then decide who is actually safe versus who is just performing safe. I’m not going in as some challenge beast, obviously, so socially I need to be useful, loyal enough, and just unpredictable enough that people hesitate to box me in.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want people to know I’m loyal when I actually choose you, because I’m not fake-loyal to everyone. I’d hide how suspicious I can get, because once my intuition says someone is off, my face tends to send a full press release before my mouth does.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My birth chart notes, because if I’m trapped with strangers, I need categories immediately.\\n- A fantasy book, because my brain needs somewhere dramatic to go that is not the kitchen.\\n- A picture of my Siamese cat Ziggy, because he’s judgmental, grounding, and honestly probably a better social player than me.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love reading fantasy, traveling, cross stitching, cake decorating, and going out with friends when I’m in the mood to be perceived. I also really like astrology and psychology, which basically means I enjoy analyzing people and then pretending I’m being casual about it.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is information wearing heels. I don’t want pointless screaming all day, but if people are fighting, I’m listening, because conflict tells you who’s insecure, who’s performative, and who cannot regulate their nervous system.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Probably not. I’m not saying never, because I’m bold and I know myself, but I also know a house crush can turn into a strategy parasite really fast.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… trust the vibe, but verify the pattern.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a real adventure out of this and prove I can be braver than my anxious little inner child who wanted to read during recess. Also, I want to see what happens when I stop overthinking from the sidelines and actually throw myself into the mess.\"}]",
+      "ties": [],
+      "kit": {
+        "thing": "astrology",
+        "alone": "is looking up at the stars, naming every constellation out loud",
+        "ground": [
+          "shy-child",
+          "pets"
+        ],
+        "bit": [
+          "Okay, I don't want to alarm anyone, but we have three Scorpios on this team, and that's a problem.",
+          "What time were you born? I'm asking for a reason. It matters. Trust me.",
+          "I'm a psych student, and I'm into astrology, and both of them are telling me the same thing about you."
+        ],
+        "tease": [
+          "You think three people are a problem because of their birthdays?",
+          "Why does that matter?",
+          "What are they telling you?"
+        ],
+        "reply": [
+          "I don't think it. I know it. Water signs are all secrets.",
+          "Your rising sign tells me who you are when nobody's watching.",
+          "That you're hiding something. Earth sign energy. Very suspicious."
+        ],
+        "home": [
+          "My parents and my cat, Ziggy. He's a Siamese and a Leo, which explains everything.",
+          "My psych classes, my cross-stitch, and a cat who definitely thinks I abandoned him."
+        ],
+        "want": [
+          "To win, and to prove I was right about everyone. I usually am.",
+          "To read everybody before they read me."
+        ],
+        "conf": [
+          "People think astrology is a joke. It's a framework. Like psychology, but prettier.",
+          "I made my mind up about everybody on day one. I don't change it. Why would I? I was right."
+        ],
+        "askHome": [
+          "Okay, who's waiting for you at home? Also, what's your sign?",
+          "Do you have a partner? What sign are they?"
+        ],
+        "askWant": [
+          "What do you want out of this? Your chart says ambition, but I want to hear it.",
+          "What's your dream? Like, your Midheaven dream?"
+        ],
+        "defend": [
+          "It's not a joke to me, okay? It's how I make sense of people. You're not better than me for not believing."
+        ],
+        "deep": [
+          "I was so shy as a kid. Astrology gave me a way to talk to people. It still kind of does."
+        ],
+        "solo": [
+          "Mercury's in retrograde, which explains a lot about the last vote, honestly.",
+          "When I was shy, the stars were the only thing I could talk about. Now they're how I start every conversation."
+        ]
+      }
     },
     {
       "name": "Ara",

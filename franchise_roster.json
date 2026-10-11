@@ -5527,7 +5527,7 @@
         "temperament": 2
       },
       "sexuality": "bi",
-      "voice": "Ara talks with sharp, cutting confidence, using insults and pointed observations to put others on the back foot. In arguments, she pushes hard, rebukes people directly, and is willing to threaten or embarrass someone if it helps her win the exchange. Her language is strategic and self-justifying: she frames ambition as proof that she is right, not something she needs to apologize for.",
+      "voice": "Ara talks with sharp, cutting confidence, using insults and pointed observations to put others on the back foot. In arguments, she pushes hard, rebukes people directly, and is willing to threaten or embarrass someone if it helps her win the exchange. Her language is strategic and self-justifying: she frames ambition as proof that she is right, not something she needs to apologize for.#blunt#dry",
       "profileSources": {
         "backstory": [
           {
@@ -5561,7 +5561,62 @@
       "descriptor": "The Class President",
       "backstory": "Before appearing on the show, Ara was a 21-year-old business student. Her family history shaped her guarded view of relationships: her parents left Korea for love, a choice she refuses to repeat, and she was regarded as the golden child in her family. She had dated several people before, but tended to end relationships first out of fear they would hold her back; outside of academics, she enjoyed badminton, journalism, and cooking.",
       "personality": "Ara is calculating, proud, and intensely goal-driven. Under pressure, she looks for leverage rather than comfort, and she is willing to use secrets, manipulation, revenge, and social embarrassment to get ahead. Her loyalty is conditional: she can cooperate when it benefits her or when she feels comfortable, but she resists vulnerability and struggles with rejection. She will cross many ethical lines for success, but she draws a firm boundary at physical violence.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Ambitious, blunt, dangerous.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"Because I’m not here to hold hands and cry over cereal. I’m young, smart, pretty enough to be underestimated, and mean enough to make that everyone else’s problem.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"Pretending that every loud, needy person in the house is fascinating. I can tolerate discomfort; I have less patience for stupidity with a microphone.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"Yes: build trust fast, spend it even faster, and never confuse loyalty with usefulness. I’ll let people think they’re steering while I’m the one cutting the brakes.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m ambitious, because hiding that is for cowards and bad liars. I’d rather hide how quickly I can detach from people, because once they realize I can smile at them and still vote them out, they’ll get nervous.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A journal, because people reveal patterns and I like receipts.\\n- Korean skincare, because stress is not an excuse to look tragic.\\n- A photo of my family, to remind me exactly what I’m not throwing my future away for.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I play badminton, I cook, and I like journalism because asking the right question makes people expose themselves. I also enjoy studying business, which is basically learning how to profit from people pretending they’re rational.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is useful when it’s pointed at someone else. If people want to embarrass themselves emotionally, I’ll stand nearby and take notes.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Probably not. I’m bi, not brain-dead, and I’m not risking my game because someone has nice eyes and the strategic depth of a spoon.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if you’re not moving up, you’re being moved out.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I want proof that I can outthink people in a room where everyone thinks they’re special. Also money, obviously — anyone pretending that isn’t part of it is already insulting my intelligence.\"}]"
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Ambitious, blunt, dangerous.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"Because I’m not here to hold hands and cry over cereal. I’m young, smart, pretty enough to be underestimated, and mean enough to make that everyone else’s problem.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"Pretending that every loud, needy person in the house is fascinating. I can tolerate discomfort; I have less patience for stupidity with a microphone.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"Yes: build trust fast, spend it even faster, and never confuse loyalty with usefulness. I’ll let people think they’re steering while I’m the one cutting the brakes.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m ambitious, because hiding that is for cowards and bad liars. I’d rather hide how quickly I can detach from people, because once they realize I can smile at them and still vote them out, they’ll get nervous.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A journal, because people reveal patterns and I like receipts.\\n- Korean skincare, because stress is not an excuse to look tragic.\\n- A photo of my family, to remind me exactly what I’m not throwing my future away for.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I play badminton, I cook, and I like journalism because asking the right question makes people expose themselves. I also enjoy studying business, which is basically learning how to profit from people pretending they’re rational.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is useful when it’s pointed at someone else. If people want to embarrass themselves emotionally, I’ll stand nearby and take notes.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Probably not. I’m bi, not brain-dead, and I’m not risking my game because someone has nice eyes and the strategic depth of a spoon.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if you’re not moving up, you’re being moved out.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I want proof that I can outthink people in a room where everyone thinks they’re special. Also money, obviously — anyone pretending that isn’t part of it is already insulting my intelligence.\"}]",
+      "ties": [],
+      "kit": {
+        "thing": "being class president",
+        "alone": "is writing a list of names and drawing arrows between them",
+        "ground": [
+          "immigrant-family",
+          "golden-child",
+          "strict-parents"
+        ],
+        "bit": [
+          "If we're doing this, we're doing it properly. I was class president. I know how to run a room full of idiots.",
+          "I'm a business student. Everything here is a negotiation. Including breakfast.",
+          "Some of you are being very loud for people with no plan."
+        ],
+        "tease": [
+          "Wow. Love that you called us idiots.",
+          "You're negotiating breakfast?",
+          "Do you have a plan?"
+        ],
+        "reply": [
+          "I said a room full. Not this room. Mostly.",
+          "Everything's a negotiation if you're doing it right.",
+          "Obviously. You'll see it when it's too late."
+        ],
+        "home": [
+          "My parents, who left Korea for love. I'm never doing that. Love's not a plan.",
+          "A family that thinks I'm the golden child. I'd like to keep it that way."
+        ],
+        "want": [
+          "To win. I don't do second place. I don't do 'great effort'.",
+          "To prove ambition isn't something you have to apologise for."
+        ],
+        "conf": [
+          "I build trust fast and spend it faster. That's not cruel. It's efficient.",
+          "Everybody wants to be liked. I want to be the one deciding who goes home."
+        ],
+        "askHome": [
+          "So who's at home? I'm asking to be polite.",
+          "What's your family like? Supportive? Embarrassing?"
+        ],
+        "askWant": [
+          "What's your plan? Please tell me you have one.",
+          "What do you actually want? Specifics."
+        ],
+        "defend": [
+          "Ambition isn't a character flaw. It's the only thing that's ever worked for me."
+        ],
+        "deep": [
+          "My parents gave up everything for love. I watched what it cost them. I'm never doing that."
+        ],
+        "solo": [
+          "Everyone's a number, and everyone's a vote. I don't say that out loud, because it sounds cold. It is cold. It works.",
+          "My parents gave up everything for love. I came here for one thing, and it isn't love."
+        ]
+      }
     },
     {
       "name": "Bruno",

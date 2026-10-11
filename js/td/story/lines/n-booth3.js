@@ -142,7 +142,7 @@ export default {
       { earnest: "I gave {group} my word, and I don't break my word, so it's {target}.", schemer: "{group} thinks this is their plan. Fine, let them think that, so it's {target}." }),
     B('nb3.p2', "{leader} said {target}, and {leader} has been right every time so far, so I'm not going to start doubting {leader} tonight.", { rel: PL, leader: true },
       { anxious: "{leader} said {target}, so I'm writing {target}, and please let {leader} be right.", tough: "{leader} made the call and I'm backing it, so it's {target}." }),
-    B('nb3.p3', "Everybody's voting {target} tonight, and I'm not going to be the one vote that sticks out, so it's {target}.", { rel: PL },
+    B('nb3.p3', "Everybody's voting {target} tonight, and I'm not going to be the one vote that sticks out, so it's {target}.", { rel: PL, most: true },
       { dry: "I checked, and everybody's writing {target}. I don't do group projects, but I'll do this one.", goofy: "Everybody's writing {target}, and I'm not about to be the weird one, so {target}." }),
     B('nb3.p4', "{group} gets one person closer to the end tonight, and I get rid of somebody I don't like, so everybody wins except {target}.", { rel: ['enemy'], group: true },
       { cruel: "{group} picked {target}, and honestly, it's like they read my mind." }),
@@ -150,7 +150,7 @@ export default {
       { blunt: "This was the easiest vote of the game, {target}. Bye." }),
     B('nb3.p6', "{group} chose you, {target}, and we're friends, so I fought it for as long as I could, and then I lost, and now I'm writing it.", { rel: FR, group: true },
       { warm: "I tried to talk {group} out of you, {target}. I'm still writing your name, and I'm sorry." }),
-    B('nb3.p7', "You're one of the people I trust most out here, {target}, and I'm still writing your name, because I can't be the only one who doesn't.", { rel: FR },
+    B('nb3.p7', "You're one of the people I trust most out here, {target}, and I'm still writing your name, because I can't be the only one who doesn't.", { rel: FR, most: true },
       { emotional: "Everybody's voting for you, {target}, and if I don't, they'll come for me next. I'm sorry, I'm so sorry." }),
   ],
 

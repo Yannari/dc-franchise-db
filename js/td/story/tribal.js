@@ -274,6 +274,29 @@ function playReactions(ep, { tribal, ballots, base, ctx, nextN }) {
   return out;
 }
 
+/**
+ * One losing tribe's council on a Multi-Tribal night (episode.js: ep.multiTribalResults, each tribe voting on
+ * its own) as an ordinary episode: its players, ballots, alliances, idol plays, tie-break and boot, and the
+ * coach card records that are its own (the classic Votes screen's subEp does the same). The director writes
+ * each council's booth and reading from it, and the stepped viewer plays each one as its own Tribal.
+ */
+export function multiTribalView(ep, r) {
+  const mine = n => (r.tribalPlayers || []).includes(n);
+  return { ...ep, tribalPlayers: [...(r.tribalPlayers || [])], tribalTribe: r.tribe, votingLog: r.log || [], votes: r.votes || {},
+    alliances: r.alliances || [], eliminated: r.eliminated, isTie: !!r.isTie, tiedPlayers: r.tiedPlayers || [],
+    idolPlays: r.idolPlays || [], shotInDark: r.shotInDark || null, tiebreakerResult: r.tiebreakerResult || null,
+    revoteLog: r.revoteLog || [], revoteVotes: r.revoteVotes || null, revoteSilenced: r.revoteSilenced || null,
+    isRockDraw: !!r.isRockDraw, sidFreshVote: !!r.sidFreshVote, fireMaking: r.fireMaking || null, isFireMaking: !!r.fireMaking,
+    riChoice: (ep.multiTribalRIChoices || []).find(c => c.name === r.eliminated)?.choice || null,
+    multiTribalResults: [], multiTribalElims: null, firstEliminated: null, votingLog2: null, votes2: null, alliances2: null,
+    tribalStory: r.tribalStory || null,
+    defections: (ep.defections || []).filter(d => mine(d.player)), coverPlans: (ep.coverPlans || []).filter(p => mine(p.leader)),
+    tribalBlowup: ep.tribalBlowup && mine(ep.tribalBlowup.player) ? ep.tribalBlowup : null,
+    coachCardCommits: (ep.coachCardCommits || []).filter(c => c.tribe === r.tribe), coachSaves: (ep.coachSaves || []).filter(c => c.tribe === r.tribe),
+    coachCardNotPlayed: (ep.coachCardNotPlayed || []).filter(c => c.tribe === r.tribe), coachSaveRefusals: (ep.coachSaveRefusals || []).filter(c => c.tribe === r.tribe),
+    coachElimination: (ep.coachElimination || []).filter(c => mine(c.name || c.coach || c)) };
+}
+
 /** The words of the night (see the header). */
 export function writeTribal(ep) {
   // a coach season's vote can send a coach home (eliminated is then null): the booth, the questions and the
@@ -343,7 +366,9 @@ export function writeTribal(ep) {
       const facts = { ...factsFor({ who: { a: v.voter }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(v.voter),
         rel: t.rel, tkind: t.tkind || 'none', sankT: !!ch && ch.sank === v.voted, group: !!d.group, other: !!d.other, warner: !!d.warner,
         keep: !!d.keep, wanted: !!d.wanted, area: !!d.area, mine: !!d.mine, leader: !!lead, pitcher: !!d.pitcher, alt: !!d.alt, locked: !!d.locked,
-        band: bandOf(v.voter, v.voted), kindred: !!t.kindred, kin: t.kindred || 'none' };
+        band: bandOf(v.voter, v.voted), kindred: !!t.kindred, kin: t.kindred || 'none',
+        // "everybody's writing X" only when X really has at least half the ballots (it was said on split votes, and on a 5-5)
+        most: ballots.filter(x => x.voted === v.voted).length * 2 > ballots.length };
       const fresh = x => (x && !said3.has(x.lines.map(l => l.text).join(' ')) ? x : null);
       const wr = (e, u) => writeStory('booth3', e, { a: v.voter }, d, facts, ctx(n++, 'tribal', u));
       return fresh(wr(t.case, true)) || fresh(wr('any', true)) || fresh(wr(t.case, 'soft')) || fresh(wr('any', 'soft'));

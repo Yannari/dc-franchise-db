@@ -33,7 +33,7 @@ import { writeStory as writeRaw, hasStoryPool } from './write.js';
 import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './record.js';
 import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
-import { writeTribal, whyOf as ballotWhy, writeCrashReplies, writeExit } from './tribal.js';
+import { writeTribal, multiTribalView, whyOf as ballotWhy, writeCrashReplies, writeExit } from './tribal.js';
 import { relationalReason } from '../../alliances.js';
 import { dressConfessionals } from './captions.js';
 import { writeTwistStory, writeExile, writeFirstImpressions, writeAuctionScript } from './twist.js';
@@ -2176,6 +2176,8 @@ export function airTdEpisode(ep) {
   ep.campStory = story;
   // the night's words: every voter in the booth, the reading, last words, after (tribal.js)
   if (!ep.tribalStory) ep.tribalStory = writeTribal(ep);
+  // a Multi-Tribal night: each losing tribe's council has its own booth, reading and last words
+  for (const r of ep.multiTribalResults || []) if (!r.tribalStory) r.tribalStory = writeTribal(multiTribalView(ep, r));
   // last episode, as the host recaps it before this one (previously.js)
   if (ep.tdPreviously === undefined) ep.tdPreviously = writePreviously(ep);
   // what this episode leaves between people, for the episodes after it (threads.js)

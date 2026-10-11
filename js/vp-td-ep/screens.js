@@ -94,6 +94,12 @@ export function tdStepScreens(ep, classic = [], o = {}) {
     // (the Save Card's signatures play inside the stepped vote: coach-tribal.js)
     if (tribal && ['voting-plans', 'votes', 'surprise', 'voting-plans-2', 'votes-2', 'cb-sigs'].includes(S.id)) continue;
     if (tribal && S.id === 'tribal' && !tribalDone) { tribalDone = true; out.push(shell(tribal, S, ep, o)); continue; }
+    // a Multi-Tribal night: the classic viewer has Plans, Tribal, Signatures and Votes per tribe; the stepped
+    // night plays them all, in the first tribe's Tribal slot
+    if (tribal && (ep.multiTribalResults || []).length && /^(voting-plans|tribal|cb-sigs|votes)-/.test(S?.id || '')) {
+      if (!tribalDone && /^tribal-/.test(S.id)) { tribalDone = true; out.push(shell(tribal, { ...S, id: 'tribal', label: tribal.label }, ep, o)); }
+      continue;
+    }
     // the jury elimination twist: its three classic pages are one screen at the ceremony (twists-more.js)
     if (/^jury-(life|convenes|votes)$/.test(S?.id || '')) {
       if (juryElimDone) continue;

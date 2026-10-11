@@ -3129,7 +3129,7 @@
         "temperament": 6
       },
       "sexuality": "lesbian",
-      "voice": "Normally sweet and friendly but insecure underneath. Second-guesses herself, wants to be liked, but has real backbone when pushed. 'Did I do something wrong?' / 'No — I'm not apologizing for that.'",
+      "voice": "Normally sweet and friendly but insecure underneath. Second-guesses herself, wants to be liked, but has real backbone when pushed. 'Did I do something wrong?' / 'No — I'm not apologizing for that.' #blunt#chaotic#earnest",
       "profileSources": {
         "voice": [
           {
@@ -3189,7 +3189,61 @@
       "hometown": "Warsaw",
       "occupation": "Self-defense instructor",
       "backstory": "Before competition, Gabby was already an environmental activist, devoted vegan, animal lover, and caretaker of a remarkable number of pets, including exotic animals. The outdoors felt safer and more legible to her than many social groups. She came to camp thrilled by nature and connection, carrying both enormous affection and intrusive thoughts that could turn perceived rejection into an immediate demand for justice or revenge.",
-      "personality": "Gabby is energetic, kind, intensely affectionate, and unpredictable when a moral or personal boundary is crossed. Kindness earns fierce loyalty from her, while betrayal can become absolute in a single emotional swing. Nature, animals, veganism, and activism are commitments rather than decorative quirks; cruelty toward living things provokes some of her strongest reactions. She experiences intrusive thoughts represented onscreen as a harsher duplicate of herself. That voice can be rude, manipulative, and threatening, but it should be written as an internal struggle—not an invented diagnosis and not proof that Gabby is secretly evil. She reacts before she calculates, remembers who stood by her, and can become strategically dangerous when anger supplies focus. After the explosion, remorse and renewed tenderness are both possible if accountability feels real."
+      "personality": "Gabby is energetic, kind, intensely affectionate, and unpredictable when a moral or personal boundary is crossed. Kindness earns fierce loyalty from her, while betrayal can become absolute in a single emotional swing. Nature, animals, veganism, and activism are commitments rather than decorative quirks; cruelty toward living things provokes some of her strongest reactions. She experiences intrusive thoughts represented onscreen as a harsher duplicate of herself. That voice can be rude, manipulative, and threatening, but it should be written as an internal struggle—not an invented diagnosis and not proof that Gabby is secretly evil. She reacts before she calculates, remembers who stood by her, and can become strategically dangerous when anger supplies focus. After the explosion, remorse and renewed tenderness are both possible if accountability feels real.",
+      "ties": [],
+      "kit": {
+        "thing": "how many pets she has",
+        "alone": "is talking softly to a lizard on a rock",
+        "ground": [
+          "pets",
+          "mental-health"
+        ],
+        "bit": [
+          "Look, I made a friend! He's a crab, and his name is Pavel, and he's very shy, so please be quiet.",
+          "Did anybody eat the eggs? Because those were somebody's babies, and I need to know who.",
+          "At home I have three cats, two dogs, a ferret, a lizard, and a goat. The goat is my favourite. Don't tell the cats."
+        ],
+        "tease": [
+          "Gabby, please don't name the dinner.",
+          "We're starving. The eggs were dinner.",
+          "Who is watching all those animals right now?"
+        ],
+        "reply": [
+          "He isn't dinner. He's Pavel.",
+          "Then I'll eat the rice and I'll be sad about it.",
+          "Ellie. She's going to be so tired when I get home."
+        ],
+        "home": [
+          "Ellie. My girlfriend. We've been together five years and this is the longest we've ever been apart, and I hate it.",
+          "Ellie and a house full of animals. I miss all of them so much I can't think about it for too long."
+        ],
+        "want": [
+          "To win and use the money for an animal sanctuary. A big one, with a pond.",
+          "To make it far enough that Ellie is proud. And then win, if I can."
+        ],
+        "conf": [
+          "Sometimes there's a voice in my head that says the mean thing first. I don't have to listen to it. Today I didn't.",
+          "If you're kind to me, I'll do anything for you. If you hurt somebody I love, I won't forget it. Ever."
+        ],
+        "askHome": [
+          "Who's waiting for you at home? Do you have pets? Please say you have pets.",
+          "Do you have a girlfriend or a boyfriend back home? Do they miss you?"
+        ],
+        "askWant": [
+          "What would you do with the money? I want to hear everybody's answer!",
+          "What do you want most out of this? Like, in your heart?"
+        ],
+        "defend": [
+          "They're not just pets. They're my family. Say it again and see what happens."
+        ],
+        "deep": [
+          "There's a voice in my head that says the meanest thing it can. I don't always know which one of us is talking."
+        ],
+        "solo": [
+          "This is Gerald. Gerald's my new friend. He doesn't judge me, and he doesn't vote, so he's the best person here.",
+          "I miss Ellie so much. Talking to animals helps. It feels a little bit like home."
+        ]
+      }
     },
     {
       "name": "Sterling",

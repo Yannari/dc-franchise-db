@@ -21,6 +21,9 @@ ap = argparse.ArgumentParser()
 ap.add_argument('--model', default='1.7B', help='1.7B (VoiceDesign is only published at 1.7B) or a local path')
 ap.add_argument('--dir', default='assets/audio/td/vo-test')
 ap.add_argument('--force', action='store_true', help='render lines that already have a clip')
+# lines voiced together: measured on the RTX 5070 Laptop (8 GB), one at a time 11.9 s a line, 6 at once 3.1 s,
+# 12 at once 2.5 s (6.2 GB), 18 at once 6.1 s (7.6 GB: past the card, it spills and slows)
+ap.add_argument('--batch', type=int, default=12)
 a = ap.parse_args()
 
 out = pathlib.Path(a.dir)
@@ -32,16 +35,17 @@ t0 = time.time()
 model = Qwen3TTSModel.from_pretrained(model_id, device_map='cuda:0', dtype=torch.bfloat16, attn_implementation='sdpa')
 print(f'loaded {model_id} in {time.time() - t0:.1f}s, {torch.cuda.memory_allocated() / 2**30:.2f} GB on the GPU', flush=True)
 
-done = 0
-for line in script['lines']:
-    path = out / line['file']
-    if path.exists() and not a.force:
-        continue
+todo = [l for l in script['lines'] if a.force or not (out / l['file']).exists()]
+# a batch runs as long as its longest line: lines of a like length together, so short ones don't wait
+todo.sort(key=lambda l: len(l['text']))
+done, t1 = 0, time.time()
+for i in range(0, len(todo), a.batch):
+    chunk = todo[i:i + a.batch]
     torch.cuda.reset_peak_memory_stats()
     t = time.time()
-    wavs, sr = model.generate_voice_design(text=line['text'], language='English', instruct=line['voiceDescription'])
-    sf.write(path, wavs[0], sr)
-    took, secs = time.time() - t, len(wavs[0]) / sr
-    print(f"{line['by']:8} {line['file']}  {secs:4.1f}s of speech in {took:4.1f}s  peak {torch.cuda.max_memory_allocated() / 2**30:.2f} GB  | {line['text'][:60]}", flush=True)
-    done += 1
-print(f'{done} clips in {time.time() - t0:.0f}s')
+    wavs, sr = model.generate_voice_design(text=[l['text'] for l in chunk], language=['English'] * len(chunk), instruct=[l['voiceDescription'] for l in chunk])
+    for line, w in zip(chunk, wavs):
+        sf.write(out / line['file'], w, sr)
+    done += len(chunk)
+    print(f"{done}/{len(todo)}  {len(chunk)} lines, {sum(len(w) for w in wavs) / sr:5.1f}s of speech in {time.time() - t:5.1f}s  peak {torch.cuda.max_memory_allocated() / 2**30:.2f} GB", flush=True)
+print(f'{done} clips in {time.time() - t1:.0f}s ({(time.time() - t1) / max(done, 1):.1f}s a line), model load {t1 - t0:.0f}s')

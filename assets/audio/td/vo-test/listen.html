@@ -15,7 +15,13 @@
   h2 { font-size: 17px; margin: 28px 0 4px; }
   .voice { color: var(--mute); font-size: 13px; margin: 0 0 10px; }
   .row { display: flex; gap: 12px; align-items: flex-start; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 8px 0; }
-  button { flex: none; width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; font-size: 16px; cursor: pointer; }
+  button { flex: none; height: 34px; padding: 0 12px; border-radius: 17px; border: 0; background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  button.alt { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+  .btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .row { display: block !important; }
+  .refs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+  .legend { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px; font-size: 13px; color: var(--mute); }
+  .legend b { color: var(--ink); }
   button.on { outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent); }
   .text { font-weight: 600; }
   .dir { color: var(--mute); font-size: 13px; margin-top: 2px; }
@@ -25,28 +31,35 @@
 <body>
 <main>
   <h1>Voice test</h1>
-  <p class="sub">Every voiced line from episode 2, by character. Play a few in a row to hear whether each voice stays the same person.</p>
+  <p class="sub">Every voiced line from episode 2, by character, in three versions. Play the same version across several lines to hear whether each voice stays the same person.</p>
+  <div class="legend"><b>Design</b>: the voice made fresh from the description for every line, with the line's reading direction. Follows directions, but the voice drifts.<br>
+  <b>Clone</b>: every line in the character's reference voice (the take marked ★ below). No reading directions: tone from the words alone.<br>
+  <b>Clone light</b>: the same, from a lighter copy of the voice. Faster to make; listen for whether it still sounds like the reference.</div>
   <div id="list"></div>
 </main>
 <script>
 // The voice test's clips in one place: script.json (tools/td-vo-script.mjs) and the <id>.wav beside it.
 let playing = null;
 function play(btn, file) {
-  if (playing) { playing.audio.pause(); playing.btn.classList.remove('on'); playing.btn.textContent = '▶'; }
+  const label = b => b.dataset.label;
+  if (playing) { playing.audio.pause(); playing.btn.classList.remove('on'); playing.btn.textContent = '▶ ' + label(playing.btn); }
   if (playing && playing.btn === btn) { playing = null; return; }
   const audio = new Audio(file); playing = { audio, btn };
-  btn.classList.add('on'); btn.textContent = '■';
-  audio.onended = () => { btn.classList.remove('on'); btn.textContent = '▶'; playing = null; };
-  audio.onerror = () => { btn.textContent = '!'; btn.title = 'This clip did not load'; };
+  btn.classList.add('on'); btn.textContent = '■ ' + label(btn);
+  audio.onended = () => { btn.classList.remove('on'); btn.textContent = '▶ ' + label(btn); playing = null; };
+  audio.onerror = () => { btn.textContent = '! ' + label(btn); btn.title = 'This clip did not load'; };
   audio.play();
 }
+const btn = (file, label, alt) => `<button type="button" class="${alt ? 'alt' : ''}" data-file="${esc(file)}" data-label="${esc(label)}">▶ ${esc(label)}</button>`;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-fetch('script.json', { cache: 'no-store' }).then(r => r.json()).then(s => {
+Promise.all([fetch('script.json', { cache: 'no-store' }).then(r => r.json()), fetch('voices/voices.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : {}).catch(() => ({}))]).then(([s, voices]) => {
   const list = document.getElementById('list');
   list.innerHTML = Object.entries(s.characters).map(([name, voice]) => {
-    const lines = s.lines.filter(l => l.by === name);
-    return `<h2>${esc(name)}</h2><p class="voice">${esc(voice)}</p>` + lines.map(l =>
-      `<div class="row"><button type="button" aria-label="Play" data-file="${esc(l.file)}">▶</button><div><div class="text">${esc(l.text)}</div><div class="dir">${esc(l.direction)}</div></div></div>`).join('');
+    const lines = s.lines.filter(l => l.by === name), v = voices[name];
+    const refs = v ? `<div class="refs">${v.takes.map((t, k) => btn('voices/' + t, `Reference take ${k + 1}${k + 1 === v.pick ? ' ★' : ''}`, true)).join('')}</div>` : '';
+    return `<h2>${esc(name)}</h2><p class="voice">${esc(voice)}</p>${refs}` + lines.map(l =>
+      `<div class="row"><div class="text">${esc(l.text)}</div><div class="dir">Direction (Design only): ${esc(l.direction)}</div>
+       <div class="btns">${btn(l.file, 'Design')}${btn('clone/' + l.file, 'Clone')}${btn('clone-light/' + l.file, 'Clone light')}</div></div>`).join('');
   }).join('');
   list.addEventListener('click', e => { const b = e.target.closest('button'); if (b) play(b, b.dataset.file); });
 }).catch(() => { document.getElementById('list').innerHTML = '<p class="err">The script did not load.</p>'; });

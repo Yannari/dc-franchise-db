@@ -1,0 +1,29 @@
+{
+  "Heather": {
+    "pick": 1,
+    "text": "Okay, listen, because I'm only saying this once. I'm here to win, and honestly, most of you are just standing in my way.",
+    "takes": [
+      "Heather-1.wav",
+      "Heather-2.wav",
+      "Heather-3.wav"
+    ]
+  },
+  "Owen": {
+    "pick": 1,
+    "text": "Oh man, this is gonna be the best summer ever! Did somebody say there's a buffet? Because I am so ready for a buffet.",
+    "takes": [
+      "Owen-1.wav",
+      "Owen-2.wav",
+      "Owen-3.wav"
+    ]
+  },
+  "Gwen": {
+    "pick": 1,
+    "text": "Great. A summer camp. Exactly what I wanted. Wake me up when it's over, or when somebody actually says something interesting.",
+    "takes": [
+      "Gwen-1.wav",
+      "Gwen-2.wav",
+      "Gwen-3.wav"
+    ]
+  }
+}

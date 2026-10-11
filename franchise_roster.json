@@ -2508,24 +2508,9 @@
           }
         ]
       },
-      "age": 29,
-      "birthdate": "1997-06-18",
-      "ethnicity": "White",
-      "nationality": "American",
-      "hometown": "Miami, Florida",
-      "occupation": "Policeman",
-      "descriptor": "The Spy",
-      "backstory": "Thomas “Tom” Reed, born Winters, grew up with a mother named Jackie who strongly shaped his life and a younger brother, Tony, whom he gets along with well. One of his happiest childhood memories was going skating with his mother, and his childhood love of comics gave him an idealistic desire to protect people. He became a spy before later police work, and his life before public fame was marked by a serious traumatic incident that left him with lasting PTSD-related struggles and difficulty showing his face or trusting others. His parents suspected he was gay before he fully understood it himself, and he first recognized his sexuality when he was younger.",
-      "personality": "Tom is secretive and self-protective at first, but his instinct is still to look after people rather than abandon them. Under pressure, he tries to take charge physically and morally, leaning on discipline, strength, and a strong sense of justice; however, if he believes a larger mission or someone’s safety depends on it, he can lie, withhold the truth, or double-cross others. He is loyal once he trusts someone, but trust does not come easily, and he may avoid people rather than admit how badly he has been hurt. He will stand up to cheating and cruelty, but he will not easily expose his own vulnerability unless someone has earned it.",
-      "ties": [],
       "kit": {
         "thing": "being a cop",
         "alone": "is checking every knot and rope around camp, retying the loose ones",
-        "ground": [
-          "close-sibling",
-          "trauma",
-          "came-out"
-        ],
         "bit": [
           "Nobody leaves camp alone after dark. I'm serious. Buddy system, everybody.",
           "I'm just going to walk the perimeter real quick. Old habit.",
@@ -2571,7 +2556,16 @@
           "Somebody has to make sure this thing won't fall on us. I'd rather it was me.",
           "Old habits. I walk around and check everything is safe. It's the only way I can sleep."
         ]
-      }
+      },
+      "age": 29,
+      "birthdate": "1997-06-18",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Miami, Florida",
+      "occupation": "Policeman",
+      "descriptor": "The Spy",
+      "backstory": "Thomas “Tom” Reed, born Winters, grew up with a mother named Jackie who strongly shaped his life and a younger brother, Tony, whom he gets along with well. One of his happiest childhood memories was going skating with his mother, and his childhood love of comics gave him an idealistic desire to protect people. He became a spy before later police work, and his life before public fame was marked by a serious traumatic incident that left him with lasting PTSD-related struggles and difficulty showing his face or trusting others. His parents suspected he was gay before he fully understood it himself, and he first recognized his sexuality when he was younger.",
+      "personality": "Tom is secretive and self-protective at first, but his instinct is still to look after people rather than abandon them. Under pressure, he tries to take charge physically and morally, leaning on discipline, strength, and a strong sense of justice; however, if he believes a larger mission or someone’s safety depends on it, he can lie, withhold the truth, or double-cross others. He is loyal once he trusts someone, but trust does not come easily, and he may avoid people rather than admit how badly he has been hurt. He will stand up to cheating and cruelty, but he will not easily expose his own vulnerability unless someone has earned it."
     },
     {
       "name": "Jake",
@@ -2590,7 +2584,8 @@
         "temperament": 4
       },
       "sexuality": "gay",
-      "voice": "Guarded and testing. Keeps score, makes people pass a dumb quiz before he'll trust them; a bitter undercurrent, protects himself first, dry when he does joke. Genuinely nice but hurt when betrayed because he didn't see it coming."
+      "voice": "Guarded and testing. Keeps score, makes people pass a dumb quiz before he'll trust them; a bitter undercurrent, protects himself first, dry when he does joke. Genuinely nice but hurt when betrayed because he didn't see it coming.#emotional #-dry #-goofy#anxious#chaotic #warm",
+      "profileSources": {}
     },
     {
       "name": "Miriam",
@@ -2666,23 +2661,9 @@
           }
         ]
       },
-      "age": 73,
-      "birthdate": "1952-12-14",
-      "occupation": "Retiree",
-      "descriptor": "Bitter old lady",
-      "backstory": "Miriam is an elderly widow and bereaved mother whose husband and only son died in a drunk driving accident. When she was younger, her family did not understand her and she struggled to fit in, but sports gave her a sense of purpose; she tried rowing, water polo, lacrosse, cheerleading, debate, knife throwing, archery, cooking, and baking. She owns a cat named Biscuit and has a neighbor named Joey who helps watch over him.",
-      "personality": "Miriam is guarded, sharp-tongued, and initially keeps emotional distance from younger people, but her bitterness comes from grief rather than simple cruelty. Under pressure, she is clever and highly capable, willing to manipulate others or misdirect them when she thinks it is necessary. She can become deeply loyal once someone’s pain reaches her, and she is capable of real warmth, but she will not waste energy pretending to be sweet or harmless.",
-      "ties": [],
       "kit": {
         "thing": "being old enough to be everyone's grandmother",
         "alone": "is knitting something long and purple out of a frayed rope",
-        "ground": [
-          "widowed",
-          "lost-child",
-          "lonely-child",
-          "athlete",
-          "pets"
-        ],
         "bit": [
           "I've been awake since five. Somebody here snores like a leaf blower, and I will find out who.",
           "In my day, we didn't complain about the food. We ate it, and then we complained.",
@@ -2728,7 +2709,13 @@
           "I don't know what it is yet, dear. It might be a scarf. It might be a rope again by Tuesday.",
           "These young people think they're tired. I've buried a husband and raised a son. This is a holiday."
         ]
-      }
+      },
+      "age": 74,
+      "birthdate": "1952-12-14",
+      "occupation": "Retiree",
+      "descriptor": "Bitter old lady",
+      "backstory": "Miriam is an elderly widow and bereaved mother whose husband and only son died in a drunk driving accident. When she was younger, her family did not understand her and she struggled to fit in, but sports gave her a sense of purpose; she tried rowing, water polo, lacrosse, cheerleading, debate, knife throwing, archery, cooking, and baking. She owns a cat named Biscuit and has a neighbor named Joey who helps watch over him.",
+      "personality": "Miriam is guarded, sharp-tongued, and initially keeps emotional distance from younger people, but her bitterness comes from grief rather than simple cruelty. Under pressure, she is clever and highly capable, willing to manipulate others or misdirect them when she thinks it is necessary. She can become deeply loyal once someone’s pain reaches her, and she is capable of real warmth, but she will not waste energy pretending to be sweet or harmless."
     },
     {
       "name": "Grett",
@@ -2852,7 +2839,8 @@
         "temperament": 10
       },
       "sexuality": "asexual",
-      "voice": "Insecure, awkward, tries too hard to fit in. Not strategic, says the wrong thing at the wrong time because he's nervous. 'I didn't mean it like that.' / 'Can I just— never mind.'"
+      "voice": "Insecure, awkward, tries too hard to fit in. Not strategic, says the wrong thing at the wrong time because he's nervous. 'I didn't mean it like that.' / 'Can I just— never mind.' #-cruel#quiet#calm",
+      "profileSources": {}
     },
     {
       "name": "Gabby",
@@ -3086,7 +3074,8 @@
         "temperament": 5
       },
       "sexuality": "bi",
-      "voice": "Smart, observant, dryly sarcastic (not quirky). Talks about strategy plainly, sees what others miss. 'I saw what she did. She knows I saw.'"
+      "voice": "Smart, observant, dryly sarcastic (not quirky). Talks about strategy plainly, sees what#competitive others miss. 'I saw what she did. She knows I saw.'#schemer#blunt",
+      "profileSources": {}
     },
     {
       "name": "Nick",
@@ -3141,7 +3130,9 @@
         "intuition": 5,
         "temperament": 8
       },
-      "voice": "Emotional, loyal to a fault, wears her heart on her sleeve. Gets hurt easily and shows it, confrontational when upset. 'You said you'd have my back!' / 'I'm trying! I'm TRYING!'"
+      "sexuality": "straight",
+      "voice": "Emotional, loyal to a fault, wears her heart on her sleeve. Gets hurt easily and shows it, confrontational when upset. 'You said you'd have my back!' / 'I'm trying! I'm TRYING!'#bossy #warm #calm #-emotional",
+      "profileSources": {}
     },
     {
       "name": "Aiden",

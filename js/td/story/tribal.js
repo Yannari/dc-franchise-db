@@ -35,6 +35,69 @@ export function whyOf(v, ep) {
   return 'plan';
 }
 
+// ── what the ballot really is (booth3: lines/n-booth3.js) ──
+// The engine's own reason, read for its case AND the names and details inside it (who warned them, who
+// they are protecting, the stat that keeps losing, what kind of threat), plus what the alliances wanted
+// tonight and who the voter is to the name they write. The user, 2026-10-10: "the vote reasoning is too
+// vague, not voice flavoured, and doesn't represent the relationship, the episode, the alliance or the
+// strategy". whyOf above keeps its seven words for the older pools.
+const AREA = { physical: 'anything physical', endurance: 'anything that takes stamina', mental: 'the puzzles', social: 'anything that takes teamwork' };
+export function truthOf(v, ep, { tribal = [], named = new Set() } = {}) {
+  const raw = String(v.reason || ''), r = raw.toLowerCase();
+  const inRoom = n => !!n && tribal.includes(n) && n !== v.voter && n !== v.voted;
+  const bond = getBond(v.voter, v.voted);
+  const mine = (gs.namedAlliances || []).find(al => al.active !== false && (al.members || []).includes(v.voter) && (al.members || []).includes(v.voted));
+  // an alliance or a pact with somebody the voter has come to dislike is not a friendship: Spud wrote
+  // Lorenzo at -4.3 and said "you're my friend"; the pact is still the story, said coldly (facts.band)
+  const pact = !!v.planBreak?.pactBroken;
+  const rel = pact ? 'pact' : mine && bond >= 0 ? 'ally' : bond >= 3 ? 'close' : bond <= -3 ? 'enemy' : bond < 0 ? 'cold' : 'plain';
+  const d = { target: v.voted };
+  if (mine) d.mine = mine.name;
+  // tonight's named plans that had the voter in them
+  const blocs = (ep.alliances || []).filter(al => (al.members || []).includes(v.voter) && al.target && named.has(al.label));
+  const chosen = blocs.find(al => al.target === v.voted), broken = blocs.find(al => al.target !== v.voted);
+  let kase = null;
+  const warner = (raw.match(/\[PITCH EXPOSED\]\s*(.+?) warned /) || [])[1];
+  const joined = (raw.match(/joined (.+?)'s (?:pitch|response)/) || [])[1];
+  const locked = +((raw.match(/locking in (\d+) votes/) || [])[1] || 0);
+  const alt = (raw.match(/shifted from (.+?) to |moved off (.+?) once|considered (.+?), but|weighed (.+?);|heard the case for (.+?), but|(.+?) remained an option/) || []).slice(1).find(Boolean);
+  const WORD = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+  if (inRoom(warner)) { kase = 'strike'; d.warner = warner; }
+  else if (/\[miscommunication\]/.test(r)) kase = 'mixup';
+  else if (/\[overplaying\]|whispered too loudly/.test(r)) kase = 'overplay';
+  else if (/organized the move|organizing|spearhead/.test(r) && !joined) { kase = 'organized'; if (WORD[locked]) d.locked = WORD[locked]; }
+  else if (inRoom(joined)) { kase = 'joined'; d.pitcher = joined; }
+  else if (/shifted from|moved off/.test(r) && inRoom(alt?.trim())) { kase = 'shifted'; d.alt = alt.trim(); }
+  else if (/\[held commitment\]/.test(r) && inRoom(alt?.trim())) { kase = 'held'; d.alt = alt.trim(); }
+  else if (/preemptive|being targeted|coming their way|organizing the vote against|self-defense|struck before|felt the heat|saw the move forming|identified the source/.test(r)) kase = 'coming';
+  else if (chosen && broken) { kase = 'between'; d.group = chosen.label; d.other = broken.label; }
+  else if (broken && !chosen && /broke own bloc|stated plan|bold move|negotiated flip|couldn't pull the trigger|refused to write/.test(r)) {
+    kase = 'break'; d.other = broken.label; if (inRoom(broken.target)) d.wanted = broken.target;
+  }
+  if (!kase) {
+    const keep = (raw.match(/protecting (.+?)(?: —| at )|(.+?) is untouchable|write (.+?)'s name|(.+?) is their person|keeping (.+?) safe|couldn't vote (.+?),|(.+?) stays safe|real target was (.+?) but/) || []).slice(1).find(Boolean);
+    if (inRoom(keep?.trim())) { kase = 'shield'; d.keep = keep.trim(); }
+  }
+  let tkind = null;
+  if (!kase && /dead weight|pulled their weight|weak in|weakest|liability|lost a .*challenge|can't afford to keep losing|injur|hurt —|no challenge value/.test(r)) {
+    kase = 'weak';
+    const st = (r.match(/(?:especially in|weak in) (physical|endurance|mental|social)/) || [])[1];
+    if (st) d.area = AREA[st];
+  }
+  if (!kase && /jury|final tribal|ftc|wins the game|threat|dangerous|too smart|running the game|puppeteer|orchestrat|complete player|likeable|everyone's friend|playing all angles|playing well enough|keeps coming up|been a target|third time|amulet|legacy advantage|inherit/.test(r)) {
+    kase = 'threat';
+    tkind = /keeps coming up|been a target|third time/.test(r) ? 'overdue'
+      : /likeable|everyone's friend|real bonds|social threat/.test(r) ? 'social'
+      : /jury|final tribal|ftc|wins the game/.test(r) ? 'jury'
+      : /running the game|puppeteer|orchestrat|too smart|playing all angles|strategic|complete player/.test(r) ? 'game'
+      : /challenge|immunity|physical/.test(r) ? 'strong' : null;
+  }
+  if (!kase && /animosity|hostility|from day one|simmering|distrust|tension|rubs them|too much history|friction|grudge|personal|can't stand/.test(r)) kase = 'grudge';
+  if (!kase && /gut feeling|reads people|feels calculated|can't shake|doesn't sit right|never gave them|feels off|can't fully commit|hasn't clicked/.test(r)) kase = 'gut';
+  if (!kase) { kase = 'plan'; if (chosen) d.group = chosen.label; }
+  return { case: kase, rel, d, tkind };
+}
+
 const VENUE_COUNT = { 'survival-island': true, carnival: true };
 const ITEM = { 'hosted-camp': 'marshmallow', 'film-lot': 'Gilded Chris', 'world-tour': 'barf bag', 'survival-island': 'vote', carnival: 'vote' };
 const bandOf = (a, b) => { const x = getBond(a, b); return x <= -3 ? 'enemies' : x < 0 ? 'cold' : x < 3 ? 'neutral' : 'friends'; };
@@ -250,6 +313,7 @@ export function writeTribal(ep) {
     if (dt) return { role: 'doubt', scene: dt, held: /holds$/.test(dt.kind || '') };
     return null;
   };
+  const namedSet = new Set((gs.namedAlliances || []).map(al => al.name));
   const CASES = new Set(['coming', 'sank', 'idol', 'pair', 'group', 'grudge', 'threat', 'outsider', 'numbers', 'isolate', 'pledge']);
   for (const v of ballots) {
     const why = whyOf(v, ep);
@@ -262,6 +326,25 @@ export function writeTribal(ep) {
       if (tw) { booth.push({ voter: v.voter, voted: v.voted, why: 'turned', line: tw.lines.map(l => l.text).join(' ') }); continue; }
     }
     const r = v.voter === elim ? null : roleOf(v);
+    // the truth of this ballot (truthOf), said in the voter's voice: when the voter is a friend, an
+    // alliance-mate or a broken final-three promise, that IS the story and it goes first
+    const t = truthOf(v, ep, { tribal, named: namedSet });
+    const said3 = new Set(booth.map(b => b.line));
+    const b3 = () => {
+      const lead = r && r.leader && r.leader !== v.voter ? r.leader : null;
+      const d = { ...t.d, ...(lead ? { leader: lead } : {}) };
+      const facts = { ...factsFor({ who: { a: v.voter }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(v.voter),
+        rel: t.rel, tkind: t.tkind || 'none', sankT: !!ch && ch.sank === v.voted, group: !!d.group, other: !!d.other, warner: !!d.warner,
+        keep: !!d.keep, wanted: !!d.wanted, area: !!d.area, mine: !!d.mine, leader: !!lead, pitcher: !!d.pitcher, alt: !!d.alt, locked: !!d.locked,
+        band: bandOf(v.voter, v.voted) };
+      const fresh = x => (x && !said3.has(x.lines.map(l => l.text).join(' ')) ? x : null);
+      const wr = (e, u) => writeStory('booth3', e, { a: v.voter }, d, facts, ctx(n++, 'tribal', u));
+      return fresh(wr(t.case, true)) || fresh(wr('any', true)) || fresh(wr(t.case, 'soft')) || fresh(wr('any', 'soft'));
+    };
+    if (v.voter !== elim && ['pact', 'ally', 'close'].includes(t.rel) && r?.role !== 'misled') {
+      const w3 = b3();
+      if (w3) { booth.push({ voter: v.voter, voted: v.voted, why: t.case, rel: t.rel, line: w3.lines.map(l => l.text).join(' ') }); continue; }
+    }
     if (r && (r.role === 'misled' || whyOf(v, ep) !== 'flip')) {
       const sd = r.scene.scene.data || {};
       const cs = CASES.has(r.cs) ? r.cs : 'numbers';
@@ -281,8 +364,11 @@ export function writeTribal(ep) {
       const w = fresh(wr(ending, true)) || (two ? fresh(wr('any', true)) : null) || fresh(wr(ending, 'soft')) || (two ? fresh(wr('any', 'soft')) : null);
       if (w) { booth.push({ voter: v.voter, voted: v.voted, why, role: r.role, line: w.lines.map(l => l.text).join(' ') }); continue; }
     }
+    // no aired scene to say it: the ballot's own truth (booth3) before the older seven-word pools
+    const w3 = b3();
+    if (w3) { booth.push({ voter: v.voter, voted: v.voted, why: t.case, rel: t.rel, line: w3.lines.map(l => l.text).join(' ') }); continue; }
     // the voter's group by name, only when it is a real alliance (not tonight's 'Anti-X Bloc')
-    const named = new Set((gs.namedAlliances || []).map(al => al.name));
+    const named = namedSet;
     const plan = (ep.alliances || []).find(al => (al.members || []).includes(v.voter) && al.target === v.voted && named.has(al.label));
     const who = { a: v.voter };
     const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(v.voter),

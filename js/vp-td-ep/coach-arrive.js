@@ -232,15 +232,26 @@ export function coachArrival(ctx) {
       }, `tr-${t.name}`), [r, first]);
     }
     if (mine.length > 1) {
-      const [a, b] = mine;
-      say(a, V(a, {
+      // two coaches or more on one team (the user, 2026-10-11: "three coaches on that team, not two"): the lines
+      // that only work for a pair ("you and me", "down the middle") are for a pair, and a third coach gets a say
+      const [a, b, c3] = mine;
+      const crowd = mine.length > 2;
+      const nWord = ['', 'one', 'two', 'three', 'four', 'five'][mine.length] || String(mine.length);
+      say(a, V(a, crowd ? {
+        sharp: [`Stay out of my way, all of you, and we'll be fine.`, `Just so we're clear, I'm the head coach.`],
+        dry: [`So which one of us is the good cop?`, `${nWord.charAt(0).toUpperCase() + nWord.slice(1)} coaches. This is going to go great.`],
+        loud: [`Coaches! Bring it in! Let's GO!`, `This is the best coaching team in history!`],
+        soft: [`I'm really glad we're doing this together.`, `We're going to make a great team, I think.`],
+        odd: [`Do we get matching whistles?`, `We should have a secret handshake. Coaches only.`],
+        any: [`So, we're in this together.`],
+      } : {
         sharp: [`Stay out of my way, and we'll be fine.`, `Just so we're clear, I'm the head coach.`],
         dry: [`So which one of us is the good cop?`, `I assume we're splitting them down the middle.`],
         loud: [`Co-coaches! Let's GO!`, `You and me, partner! This is going to be amazing!`],
         soft: [`I'm really glad we're doing this together.`, `We're going to make a great team, I think.`],
         odd: [`Do we get matching whistles?`, `We should have a secret handshake. Coaches only.`],
         any: [`So, we're in this together.`],
-      }, `pair-${t.name}`), [a, b]);
+      }, `pair-${t.name}`), crowd ? mine : [a, b]);
       // a sharp first coach staked a claim; anyone else offered to share
       say(b, famOf(a) === 'sharp' ? V(b, {
         sharp: [`Head coach? That's cute.`, `We'll see who they listen to.`],
@@ -251,15 +262,25 @@ export function coachArrival(ctx) {
         any: [`We'll see.`],
       }, `pair2-${t.name}`) : V(b, {
         sharp: [`Let's not get carried away.`, `Sure. Just don't slow me down.`],
-        dry: [`Sure. Just don't expect a hug.`, `Fine by me. You take the loud ones.`],
+        dry: crowd ? [`Sure. Just don't expect a hug.`, `Fine by me. I'll take the quiet ones.`] : [`Sure. Just don't expect a hug.`, `Fine by me. You take the loud ones.`],
         loud: [`YES! Let's go!`, `Oh, we are going to be SO good at this!`],
         soft: [`Me too. This is going to be fun.`, `Totally. Let's look after them.`],
         odd: [`Only if we get matching whistles.`, `I'll work on our handshake tonight.`],
         any: [`Sure. Let's do it.`],
       }, `pair2-${t.name}`), [b, a]);
-      const ca = famOf(a), cb = famOf(b);
-      if (ca === 'sharp' || cb === 'sharp') { const s = ca === 'sharp' ? a : b, o2 = s === a ? b : a;
-        conf(s, V(s, { sharp: [`Two coaches, one team, one card. Only one of us is still here at the merge, and it's going to be me.`, `${o2} is very nice. That's going to be a problem for ${P(o2).obj}, not for me.`] }, `pconf-${t.name}`)); }
+      // the third coach on the team, who has watched the first two
+      if (c3) say(c3, V(c3, {
+        sharp: [`Are you two done? Some of us came here to coach.`, `Head coach? Neither of you. Moving on.`],
+        dry: [`I'll just be over here, coaching. Quietly.`, `Wake me up when you've decided who's in charge.`],
+        loud: [`Hey! Don't forget about ME!`, `Three coaches! THREE! Let's GO!`],
+        soft: [`Is there room for one more? I promise I'm helpful.`, `I'm just happy to be here with you guys.`],
+        odd: [`I'm the third coach. Like a spare tyre. A very wise spare tyre.`, `Can I be in the handshake too?`],
+        any: [`Don't forget about me.`],
+      }, `trio-${t.name}`), [c3, a, b]);
+      const sharpOne = mine.find(n => famOf(n) === 'sharp');
+      if (sharpOne) { const others = mine.filter(n => n !== sharpOne), o2 = others[0];
+        conf(sharpOne, V(sharpOne, { sharp: [`${nWord.charAt(0).toUpperCase() + nWord.slice(1)} coaches, one team, one card. If it ever comes down to which of us that card saves, it's going to be me.`,
+          others.length > 1 ? `${listOf(others)} are very nice. That's going to be a problem for them, not for me.` : `${o2} is very nice. That's going to be a problem for ${P(o2).obj}, not for me.`] }, `pconf-${t.name}`)); }
     }
   }
   return names;

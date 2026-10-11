@@ -4762,6 +4762,9 @@ async function generateWikiProfile(body, env) {
  * sentences end) hold the voice.
  */
 async function generateSpeakingVoice(body, env) {
+  // this worker keeps no shared response helper: every mode makes its own (the first deploy threw without it)
+  const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
+  const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
   const person = body.person || {};
   if (!person.name) return json({ ok: false, error: "no character" }, 400);
   const others = (Array.isArray(body.others) ? body.others : [])

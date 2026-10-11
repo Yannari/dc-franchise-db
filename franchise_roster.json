@@ -5743,7 +5743,7 @@
         "temperament": 8
       },
       "sexuality": "lesbian",
-      "voice": "Dunia talks with an upbeat, performative rhythm, leaning into mystical language, teasing confidence, and wordplay. In conversation or an argument, she is likely to charm first, joke second, and press for emotional honesty while keeping the tone playful rather than openly cruel.",
+      "voice": "Dunia talks with an upbeat, performative rhythm, leaning into mystical language, teasing confidence, and wordplay. In conversation or an argument, she is likely to charm first, joke second, and press for emotional honesty while keeping the tone playful rather than openly cruel. #-cruel #-emotional #-goofy #-theatrical#warm#calm#earnest",
       "profileSources": {
         "backstory": [
           {
@@ -5779,7 +5779,60 @@
       "descriptor": "The Tarot Reader",
       "backstory": "Before appearing on the show, Dunia grew up in Edmonton, Canada. She developed an interest in witchcraft after reading tarot for friends in high school, eventually shaping that into a serious spiritual practice and public identity as a tarot reader and witch.",
       "personality": "Dunia is relaxed, charismatic, and socially magnetic, especially around people who meet her with optimism and openness. Under pressure, she is more likely to use charm, intuition, and personal mystique than brute force, trying to draw out what others are feeling even if they resist. She is loyal to people whose energy feels positive to her, but she will not tolerate her religion or practice being reduced to a shallow aesthetic or branding gimmick.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Perceptive, playful, stubborn.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"Because I’m a little sparkle, a little shadow, and I can read a room before the room knows it has walls. Also, let’s be honest, “lesbian Congolese Canadian witch from Montreal” does not exactly blend into beige wallpaper.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be not having space to reset my spirit. I love people, but too much unprocessed emotion in one house? That’s not a vibe, that’s a haunted Airbnb.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to charm first, listen harder than people expect, and let everyone reveal their cards before I show mine. I’m not going in there to bulldoze; I’m going in like incense smoke, soft but suddenly everywhere.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m loyal when I choose you, like lock-the-circle loyal. I want to hide how sensitive I am, because people love to call that weakness when really it’s just my antenna working overtime.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My tarot deck, because obviously I need my little gossiping ancestors in cardboard form.\\n- A headscarf, because beauty sleep is spiritual warfare and my edges deserve protection.\\n- A good lip gloss, because if I’m going to be stressed, betrayed, or confused, I should at least look moisturized.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love reading tarot, dancing in my kitchen, thrifting dramatic little outfits, cooking for friends, and going on long walks where I pretend I’m in a music video. I also enjoy people-watching, which is just social strategy with better shoes.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is seasoning: a little makes the meal, too much and now everybody has heartburn. I don’t chase mess, but if mess sits beside me and starts lying, I will absolutely ask it follow-up questions.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"A showmance? With a woman, maybe, if the moon is right and she makes me laugh. But I’m not losing my whole head over dim lighting and shared stress, please.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… trust the signs, but still read the fine print.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I want to test myself somewhere I can’t just light a candle and take a bath when things get weird. I hope I leave with a sharper sense of myself, a few real connections, and proof that my intuition is not just cute, it’s accurate.\"}]"
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Perceptive, playful, stubborn.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"Because I’m a little sparkle, a little shadow, and I can read a room before the room knows it has walls. Also, let’s be honest, “lesbian Congolese Canadian witch from Montreal” does not exactly blend into beige wallpaper.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be not having space to reset my spirit. I love people, but too much unprocessed emotion in one house? That’s not a vibe, that’s a haunted Airbnb.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to charm first, listen harder than people expect, and let everyone reveal their cards before I show mine. I’m not going in there to bulldoze; I’m going in like incense smoke, soft but suddenly everywhere.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m loyal when I choose you, like lock-the-circle loyal. I want to hide how sensitive I am, because people love to call that weakness when really it’s just my antenna working overtime.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My tarot deck, because obviously I need my little gossiping ancestors in cardboard form.\\n- A headscarf, because beauty sleep is spiritual warfare and my edges deserve protection.\\n- A good lip gloss, because if I’m going to be stressed, betrayed, or confused, I should at least look moisturized.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love reading tarot, dancing in my kitchen, thrifting dramatic little outfits, cooking for friends, and going on long walks where I pretend I’m in a music video. I also enjoy people-watching, which is just social strategy with better shoes.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is seasoning: a little makes the meal, too much and now everybody has heartburn. I don’t chase mess, but if mess sits beside me and starts lying, I will absolutely ask it follow-up questions.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"A showmance? With a woman, maybe, if the moon is right and she makes me laugh. But I’m not losing my whole head over dim lighting and shared stress, please.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… trust the signs, but still read the fine print.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I want to test myself somewhere I can’t just light a candle and take a bath when things get weird. I hope I leave with a sharper sense of myself, a few real connections, and proof that my intuition is not just cute, it’s accurate.\"}]",
+      "ties": [],
+      "kit": {
+        "thing": "being a witch",
+        "alone": "is arranging stones and feathers at a little altar in a quiet corner of camp",
+        "ground": [
+          "left-school"
+        ],
+        "bit": [
+          "I pulled a card for the team this morning. The Tower. I'm not going to tell you what it means. You don't want to know.",
+          "Don't touch my altar. It's a pile of shells and a candle stub, and it's sacred, thank you.",
+          "Your energy is very grey today. Not bad grey. Just grey. Drink some water."
+        ],
+        "tease": [
+          "Is the Tower bad?",
+          "It's a pile of shells.",
+          "What does grey mean?"
+        ],
+        "reply": [
+          "It's change. Sometimes change is a building on fire.",
+          "It's a sacred pile of shells. Respect the shells.",
+          "It means you need water and a hug, and I've only got water."
+        ],
+        "home": [
+          "My tarot clients in Montreal and three cats, a toad and a rabbit. Don't ask how they all get along.",
+          "My coven. Okay, my friends. But we call it a coven."
+        ],
+        "want": [
+          "To win, and to show people my practice isn't a gimmick. It's who I am.",
+          "To read every person here before they've read a single card of mine."
+        ],
+        "conf": [
+          "People think it's an aesthetic. It's my religion. I'm not going to apologise for it.",
+          "I charm first and listen hardest. By the time anybody notices, I've read the whole deck."
+        ],
+        "askHome": [
+          "Tell me, who's waiting for you back home? Your energy says someone.",
+          "Who's in your life back home? I'm getting a feeling."
+        ],
+        "askWant": [
+          "What do you want, really? I'll know if you're lying. Witch thing.",
+          "What's your heart after out here?"
+        ],
+        "defend": [
+          "This isn't some aesthetic or a cute hobby. It's my religion. My belief. Not something I do to feel special."
+        ],
+        "deep": [
+          "I started reading tarot for my friends in high school, just for fun. Then one day it stopped being for fun. It's the most real thing I have."
+        ],
+        "solo": [
+          "This is for protection. Not for the game. Okay, partly for the game.",
+          "People can laugh at it. It's been here for me longer than any of them have."
+        ]
+      }
     },
     {
       "name": "Ernesto",

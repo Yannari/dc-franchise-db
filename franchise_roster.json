@@ -2585,7 +2585,58 @@
       },
       "sexuality": "gay",
       "voice": "Guarded and testing. Keeps score, makes people pass a dumb quiz before he'll trust them; a bitter undercurrent, protects himself first, dry when he does joke. Genuinely nice but hurt when betrayed because he didn't see it coming.#emotional #-dry #-goofy#anxious#chaotic #warm",
-      "profileSources": {}
+      "profileSources": {},
+      "kit": {
+        "thing": "making people pass a dumb trust quiz",
+        "alone": "writing a tiny trust quiz, then crossing out questions that make him look too needy",
+        "bit": [
+          "Before anyone asks, yes, there's a trust quiz, and no, 'I'm chill' isn't an answer because that's what shady people say when they're trying to sound normal.",
+          "I'm not being paranoid, I'm being organized, and if you can't handle three questions about loyalty, maybe don't stand near my snacks.",
+          "I can be friendly and still keep score because apparently my heart needs paperwork now."
+        ],
+        "tease": [
+          "Oh my god, {a}, are we contestants or applicants for your friendship internship?",
+          "Relax, {a}, nobody's plotting against your snacks.",
+          "Keeping score sounds exhausting, {a}."
+        ],
+        "reply": [
+          "Applicants get benefits, and you get me deciding if you're safe around my Kit-Kat.",
+          "Great, then the quiz should be easy, and my snacks can survive with dignity.",
+          "It is, but so is pretending I'm fine when I missed a red flag, so I'm picking the option with handwriting."
+        ],
+        "home": [
+          "Tom, I hope. I'm not making that sound casual because I'm terrible at casual when I care.",
+          "The honest answer is not my parents. We don't talk, and I'm not doing the cheerful version of that for camera time."
+        ],
+        "want": [
+          "I want to leave with people I didn't scare off by being anxious and weird about trust.",
+          "I want to prove I can play this without handing my insecurities to the first person who knows where to push."
+        ],
+        "conf": [
+          "I know the quiz thing sounds dumb, and it is dumb, but it buys me five minutes before I trust someone too fast.",
+          "If someone says they're honest too quickly, I start checking for exits, and that's not mysterious, that's me being tired.",
+          "I want to trust people here, and I hate that I need proof first, but I do."
+        ],
+        "askHome": [
+          "So who's waiting for you back home, and how much of that answer are you editing so I don't ask follow-ups?",
+          "Do you have people checking on you, or are you doing the whole 'I'm fine' thing where nobody is allowed to check?"
+        ],
+        "askWant": [
+          "What do you actually want out of this, not the cute answer you practiced?",
+          "Are you here to win, make friends, get famous, or say one thing while doing another? You can pick more than one, which is terrifying."
+        ],
+        "defend": [
+          "It's a dumb quiz, not a crime, and if it bothers you this much, congratulations, you're failing it.",
+          "You don't have to like my walls, but you don't get to make fun of me for having them."
+        ],
+        "deep": [
+          "When my parents found out, they weren't proud. They were disappointed, and we don't talk, so I test people because I need one warning before I let them matter."
+        ],
+        "solo": [
+          "Question one was going to be, 'Do you bail when things get uncomfortable?' Then I realized that's not subtle, even for me.",
+          "I do want friends. I just want friends who don't make me feel stupid for believing them."
+        ]
+      }
     },
     {
       "name": "Miriam",

@@ -226,3 +226,80 @@ export function sfx(kind) {
     e.gain.setValueAtTime(0, tt); e.gain.linearRampToValueAtTime(.08, tt + .005); e.gain.exponentialRampToValueAtTime(.001, tt + .045); os.start(tt); os.stop(tt + .05); } });
   else if (kind === 'thunder') { hiss(90, 2.4, .5, 'lowpass'); blast(55, 30, 1.6, 'sine', .35); }
 }
+
+// ── THE VOICES ────────────────────────────────────────────────────────
+// A video game's talk (the user, 2026-10-11: "them talking should make some sounds … their voices
+// made some sounds"): every line is spoken as a short run of gibberish syllables, Animal Crossing
+// style, in the speaker's own voice. A syllable is a buzz shaped by two vowel formants taken from the
+// line's own vowels, so it reads as speech and not as a beep (the old typewriter blip, one square
+// click every two letters for everyone, was the "click" the user asked to have removed). The phrase
+// is capped: a long line is voiced at its start, the text carries the rest.
+// v: { f (base pitch, Hz), wave, bright (formant shift), range (pitch spread), rate (syllables/s) }
+const VOWEL = { a: [800, 1250], e: [470, 1900], i: [330, 2300], o: [520, 900], u: [370, 820], y: [400, 2000] };
+let talk = null;
+/** Cut whoever is talking (a new step is a new line). */
+export function hush() {
+  if (!talk) return;
+  const g = talk, c = g.context; talk = null;
+  try { g.gain.setTargetAtTime(0, c.currentTime, .015); } catch { /* gone */ }
+  setTimeout(() => { try { g.disconnect(); } catch { /* gone */ } }, 250);
+}
+function bus(o) { hush(); talk = o.ctx.createGain(); talk.gain.value = 1; talk.connect(o.dest); return talk; }
+// one syllable at time tt: the buzz through the vowel's two formants, a quick swell and decay
+// a sawtooth or square buzz carries about three times a triangle's energy through the formants: level them
+const WAVE_LEVEL = { sawtooth: .38, square: .5, triangle: 1, sine: 1.15 };
+function syl(ctx, dest, v, vowel, tt, dur, f0, f1, vol) {
+  const [F1, F2] = VOWEL[vowel] || VOWEL.a, b = v.bright || 1;
+  vol *= WAVE_LEVEL[v.wave] ?? 1;
+  const os = ctx.createOscillator(); os.type = v.wave || 'triangle';
+  os.frequency.setValueAtTime(f0, tt); os.frequency.exponentialRampToValueAtTime(Math.max(f1, 40), tt + dur);
+  const env = ctx.createGain(); env.gain.setValueAtTime(0, tt);
+  env.gain.linearRampToValueAtTime(vol, tt + Math.min(.018, dur / 3)); env.gain.setValueAtTime(vol, tt + dur * .55); env.gain.exponentialRampToValueAtTime(.0006, tt + dur);
+  env.connect(dest);
+  [[F1 * b, 5, 1], [F2 * b, 7, .55]].forEach(([f, q, w]) => { const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = q; const g = ctx.createGain(); g.gain.value = w * 2.2; os.connect(bp); bp.connect(g); g.connect(env); });
+  const body = ctx.createBiquadFilter(); body.type = 'lowpass'; body.frequency.value = 600; const bg = ctx.createGain(); bg.gain.value = .35; os.connect(body); body.connect(bg); bg.connect(env);
+  os.start(tt); os.stop(tt + dur + .03);
+}
+function breath(ctx, dest, tt, dur, f0, f1, vol) {
+  const s = ctx.createBufferSource(); s.buffer = noiseBuf(ctx); const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 1.4;
+  bp.frequency.setValueAtTime(f0, tt); bp.frequency.exponentialRampToValueAtTime(f1, tt + dur);
+  const e = ctx.createGain(); e.gain.setValueAtTime(0, tt); e.gain.linearRampToValueAtTime(vol, tt + dur * .4); e.gain.exponentialRampToValueAtTime(.0006, tt + dur);
+  s.connect(bp); bp.connect(e); e.connect(dest); s.start(tt); s.stop(tt + dur + .03);
+}
+/** Speak a line: its vowels, in the speaker's voice; rising at a question, harder at a shout. */
+export function babble(text, v, { loud = false } = {}) {
+  const o = out(); if (!o || !v || !text) return;
+  const ctx = o.ctx, dest = bus(o);
+  const vow = (String(text).toLowerCase().match(/[aeiouy]+/g) || []).map(g => g[0]);
+  const n = Math.min(vow.length, Math.round(4 + Math.min(text.length, 140) / 9), 16);
+  if (!n) return;
+  const end = String(text).trim().slice(-1), ask = end === '?', yell = loud || end === '!';
+  const step = 1 / (v.rate || 10), vol = (yell ? .075 : .055);
+  let h = 0; for (const ch of text) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const rnd = () => ((h = (h * 1103515245 + 12345) >>> 0) >>> 8) / 16777216;
+  let t = ctx.currentTime + .03;
+  for (let i = 0; i < n; i++) {
+    const last = i === n - 1, drift = 1 - .06 * (i / n);           // a line settles as it goes
+    const f = v.f * drift * (1 + (rnd() - .5) * 2 * (v.range || .12)) * (yell ? 1.08 : 1);
+    const dur = step * (last ? 1.6 : .8 + rnd() * .35);
+    const f1 = last && ask ? f * 1.35 : last ? f * .9 : f * (1 + (rnd() - .5) * .08);
+    syl(ctx, dest, v, vow[i], t, dur, f, f1, vol);
+    t += step * (.9 + rnd() * .3) + (rnd() < .12 ? step * .7 : 0);   // now and then a word break
+  }
+}
+/** A wordless reaction in the character's voice: the "huh?", the gasp, the groan, the laugh. */
+export function vocal(kind, v, delay = 0) {
+  const o = out(); if (!o || !v) return;
+  const ctx = o.ctx, dest = o.dest, t = ctx.currentTime + .02 + delay, f = v.f;
+  const S = (vw, at, dur, a, b, vol = .065) => syl(ctx, dest, v, vw, t + at, dur, f * a, f * b, vol);
+  if (kind === 'surprised') S('a', 0, .22, 1, 1.55);                                         // "huh?"
+  else if (kind === 'shock') { breath(ctx, dest, t, .32, 1300, 2600, .09); S('a', .2, .16, 1.35, 1.5, .05); }   // the gasp
+  else if (kind === 'betray') { S('o', 0, .12, 1.1, 1.15); S('a', .13, .26, 1.2, 1.6, .075); }   // "what?!"
+  else if (kind === 'angry') { S('u', 0, .32, .85, .68, .075); breath(ctx, dest, t, .25, 500, 380, .03); }   // "ugh"
+  else if (kind === 'sad') S('o', 0, .5, 1.1, .74, .05);                                      // "aww"
+  else if (kind === 'guilty') syl(ctx, dest, { ...v, wave: 'sine', bright: .6 }, 'u', t, .34, f, f * .9, .03);   // "hm"
+  else if (kind === 'relief') { breath(ctx, dest, t, .45, 1400, 600, .07); S('u', .12, .3, 1, .85, .035); }   // "phew"
+  else if (kind === 'scared') { S('i', 0, .1, 1.7, 1.8); S('i', .14, .12, 1.75, 1.9); }      // "eep eep"
+  else if (kind === 'laugh') [1.3, 1.24, 1.18, 1.08].forEach((k, i) => { breath(ctx, dest, t + i * .13, .05, 1800, 1500, .03); S('a', i * .13 + .03, .09, k, k * .95, .06); });
+  else if (kind === 'cry') [1.2, 1.1, 1.0].forEach((k, i) => S('u', i * .24, .2, k, k * .82, .045));
+}

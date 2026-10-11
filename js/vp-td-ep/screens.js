@@ -21,7 +21,7 @@ import { tdAftermathScreen, hasAftermath } from './aftermath.js';
 import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf, hideBooth, setHideBooth, maskName } from './stage.js';
 import { TDX_CSS, TDX_FONTS } from './style.js';
 import { liveGL } from './glplate.js';
-import { ambience, stopAmbience, sfx } from './sound.js';
+import { ambience, stopAmbience, sfx, babble, hush, vocal } from './sound.js';
 
 const reg = () => (typeof window !== 'undefined' ? (window._tdx ||= {}) : (globalThis._tdx ||= {}));
 export const tdSteppedOn = () => { try { return globalThis.localStorage?.getItem('td-vp') !== 'classic'; } catch { return true; } };
@@ -382,6 +382,7 @@ function paint(uid, fresh) {
       if (n >= full.length) { clearInterval(R.typing); say.innerHTML = badge + lit(full); }
     }, 16);
   }
+  if (fresh) { hush(); if ((s.k === 'say' || s.k === 'conf') && s.by && d.text && !d.cls.includes('dir')) babble(d.text, voiceOf(s.by), { loud: !!(s.loud || s.shock) }); }
   if (fresh && s.loud) { dlg.classList.remove('loud'); void dlg.offsetWidth; dlg.classList.add('loud'); }
   // what happens, animated
   if (fresh) act(st, castEl, fxEl, scr, L, s, toks);
@@ -410,6 +411,32 @@ const FEEL_MARK = {
   guilty: '<svg viewBox="0 0 24 24"><path d="M5 9h14M7 14c3 2 7 2 10 0" fill="none" stroke="#c8ccd8" stroke-width="2.2" stroke-linecap="round"/></svg>',
   relief: '<svg viewBox="0 0 24 24"><g fill="none" stroke="#bfe8ff" stroke-width="2.2" stroke-linecap="round"><path d="M3 10c4-2 7 2 11 0s5-1 7 0"/><path d="M5 15c3-1.5 6 1.5 9 0s4-1 5 0"/></g></svg>',
 };
+// Each character's speaking voice (sound.js babble): pitch from pronouns and age, colour from the
+// archetype, how far the pitch wanders from boldness, the pace from social. A name that is nobody's
+// (a host, Chef) still gets a steady voice of its own, from the name.
+const VOICE_ARCH = {
+  hothead: ['sawtooth', 1.12, 1.05], villain: ['sawtooth', .92, .95], 'chaos-agent': ['sawtooth', 1.15, 1.2], 'challenge-beast': ['sawtooth', .9, 1],
+  mastermind: ['square', .85, .9], schemer: ['square', .9, 1], 'perceptive-player': ['triangle', .95, .95], wildcard: ['square', 1.1, 1.15],
+  'social-butterfly': ['triangle', 1.12, 1.15], showmancer: ['triangle', 1.08, 1.05], hero: ['triangle', 1.02, 1], underdog: ['triangle', 1, 1.05],
+  'loyal-soldier': ['triangle', .95, .95], floater: ['sine', 1, 1], goat: ['sine', 1.05, 1.1],
+};
+const _voices = {};
+function voiceOf(name) {
+  if (!name) return null;
+  if (_voices[name]) return _voices[name];
+  let h = 2166136261; for (const ch of name) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  const r = k => ((h >>> k) & 255) / 255;
+  const p = (window.players || []).find(x => x.name === name);
+  let sub = ''; try { sub = window.pronouns?.(name)?.sub || ''; } catch { /* nobody */ }
+  let st = {}; try { st = (p && window.pStats?.(name)) || {}; } catch { /* nobody */ }
+  const chef = /chef/i.test(name);
+  let f = sub === 'she' ? 240 : sub === 'they' ? 180 : chef ? 88 : 125;
+  if (p?.age) f *= p.age < 20 ? 1.08 : p.age > 35 ? .92 : 1;
+  f *= .88 + r(0) * .24;
+  const [wave, bright, pace] = VOICE_ARCH[p?.archetype] || (chef ? ['sawtooth', .8, .85] : p ? ['triangle', 1, 1] : ['triangle', 1.05, 1.1]);
+  const bold = (st.boldness ?? 5) / 10, social = (st.social ?? 5) / 10;
+  return (_voices[name] = { f, wave, bright: bright * (.94 + r(8) * .12), range: .07 + bold * .16, rate: (9 + social * 3) * pace });
+}
 const tokAt = (castEl, n) => [...castEl.children].find(el => el.dataset.n === n);
 const centre = (st, el) => { const f = st.querySelector('.tdx-world').getBoundingClientRect(), r = el.getBoundingClientRect(); return { x: (r.left + r.width / 2 - f.left) / f.width * 100, y: (r.top - f.top) / f.height * 100, h: r.height / f.height * 100 }; };
 function fxAt(fxEl, cls, x, y, html = '', life = 2400) { const d = document.createElement('div'); d.className = cls; d.style.left = x + '%'; d.style.top = y + '%'; d.innerHTML = html; fxEl.appendChild(d); setTimeout(() => d.remove(), life); return d; }
@@ -469,6 +496,7 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
   if (s.shock && speaker) { const el = tokAt(castEl, speaker); if (el) { el.classList.add('shake'); const c = centre(st, el); fxAt(fxEl, 'tdx-pop shock', c.x, Math.max(c.y - 4, 10), '!?'); } const w = st.querySelector('.tdx-world'); if (w) { w.classList.remove('jolt'); void w.offsetWidth; w.classList.add('jolt'); } }
   else if (s.loud && speaker) { const el = tokAt(castEl, speaker); if (el) { const c = centre(st, el); for (let k = 0; k < 3; k++) setTimeout(() => fxAt(fxEl, 'tdx-ring', c.x, c.y + c.h / 2), k * 140); } }
   // the faces at the reading (steps.js voteReaction): a mark over each face that feels something
+  if (s.feel) Object.entries(s.feel).filter(([n]) => tokAt(castEl, n)).slice(0, 2).forEach(([n, f], k) => vocal(f, voiceOf(n), .15 + k * .32));
   if (s.feel) for (const [n, f] of Object.entries(s.feel)) {
     const el = tokAt(castEl, n); if (!el || !FEEL_MARK[f]) continue;
     const c = centre(st, el);
@@ -479,7 +507,7 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
   if (s.gain) { const el = tokAt(castEl, s.gain.who); if (el) { const c = centre(st, el); setTimeout(() => fxAt(fxEl, `tdx-gain${s.gain.up ? '' : ' down'}`, c.x, Math.max(c.y - 2, 8), `${esc(s.gain.stat)} ${s.gain.up ? '▲' : '▼'}`, 2200), 500); } }
   if (a) {
     const who = (a.who || []).filter(n => tokAt(castEl, n));
-    if (a.kind === 'laugh') who.forEach(n => tokAt(castEl, n).classList.add('laugh'));
+    if (a.kind === 'laugh') { who.forEach(n => tokAt(castEl, n).classList.add('laugh')); who.slice(0, 2).forEach((n, k) => vocal('laugh', voiceOf(n), .1 + k * .2)); }
     if (a.kind === 'shake') { who.forEach(n => tokAt(castEl, n).classList.add('shake')); const el = tokAt(castEl, who[who.length - 1] || ''); if (el) { const c = centre(st, el); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'WHAM!'); } }
     if (a.kind === 'storm' && who[0]) { tokAt(castEl, who[0]).classList.add('storm'); sfx('slam'); const c = centre(st, tokAt(castEl, who[0])); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'SLAM!'); }
     if (a.kind === 'shout' && who[0]) { const c = centre(st, tokAt(castEl, who[0])); for (let k = 0; k < 3; k++) setTimeout(() => fxAt(fxEl, 'tdx-ring', c.x, c.y + c.h / 2), k * 140); }
@@ -511,6 +539,7 @@ function act(st, castEl, fxEl, scr, L, s, toks) {
       who.forEach(n => { const el = tokAt(castEl, n); el.classList.remove('vs', 'sad'); el.classList.add('cheer'); const c = centre(st, el); fxAt(fxEl, 'tdx-pop', c.x, Math.max(c.y - 4, 10), 'YES!'); });
       (a.lose || []).forEach(n => { const el = tokAt(castEl, n); if (el) { el.classList.remove('vs', 'vs-lead'); el.classList.add('sad'); } });
     }
+    if (a.kind === 'cry') vocal('cry', voiceOf(who[0]), .1);
     if (a.kind === 'cry') who.forEach(n => { const el = tokAt(castEl, n); el.classList.add('sad'); const c = centre(st, el); for (let k = 0; k < 4; k++) setTimeout(() => fxAt(fxEl, 'tdx-tear', c.x + (k % 2 ? 1.2 : -1.2), c.y + c.h * .25, '', 1400), k * 260); });
     if (a.kind === 'fire') who.forEach(n => { const el = tokAt(castEl, n); el.classList.add('fired'); const c = centre(st, el); fxAt(fxEl, 'tdx-aura', c.x, c.y + c.h / 2, '', 2400); });
     if (a.kind === 'rest') who.forEach(n => tokAt(castEl, n).classList.add('act-nap'));
@@ -1024,12 +1053,12 @@ if (typeof document !== 'undefined') {
     setTimeout(() => {
       const root = document.querySelector('.tdx[data-uid]');
       for (const [uid, R] of Object.entries(reg())) if (R && (!root || root.dataset.uid !== uid)) { stopAuto(R); clearInterval(R.typing); }
-      if (!root) { stopAmbience(); return; }
+      if (!root) { stopAmbience(); hush(); return; }
       const R = sync(root.dataset.uid);
       if (R && R.idx < 0) { R.idx = 0; if (R.isMap) mapPaint(root.dataset.uid, true); else paint(root.dataset.uid, true); }
     }, 0);
   });
-  document.addEventListener('vp:close', () => { for (const R of Object.values(reg())) if (R) { stopAuto(R); clearInterval(R.typing); } stopAmbience(); });
+  document.addEventListener('vp:close', () => { for (const R of Object.values(reg())) if (R) { stopAuto(R); clearInterval(R.typing); } stopAmbience(); hush(); });
   document.addEventListener('keydown', e => {
     const root = document.querySelector('.tdx[data-uid]');
     if (!root || /input|textarea|select/i.test(e.target?.tagName || '')) return;

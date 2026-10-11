@@ -247,6 +247,9 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     const filled = fill(raw, who, data);
     const text = kind === 'beat' ? tidyNames(filled) : tidySpoken(filled);
     const line = { kind, by: t.by ? who[t.by] : null, text: text.charAt(0).toUpperCase() + text.slice(1) };
+    // the scene moves (goes: the people in the rest of it walk somewhere else) or somebody walks in (comes)
+    if (t.goes) line.goes = true;
+    if (t.comes && who[t.comes]) line.arrive = [who[t.comes]];
     // which turn of the entry it came from, for the voice-coverage measurement (not saved: non-enumerable)
     Object.defineProperty(line, 'turn', { value: entry.turns.indexOf(t) });
     return line;
@@ -254,7 +257,9 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   // the set-up line (td/story/setup.js): a scene that opens on dialogue is first set somewhere, with
   // who finds whom and what they were doing. Marked auto, so a chained scene can trade it for an arrival.
   // (not on the dock: an arrival is somebody stepping off the boat, staged by its own screen, ctx.noSetup)
-  if (spot && !ctx.noSetup && spot.id !== 'confessional' && lines.length && lines[0].kind !== 'beat' && lines.some(l => l.kind === 'say')) {
+  // (an entry that stages itself a line or two in is set already: "catches Bridgette alone" then "pulls Bridgette and
+  // the others aside", read 2026-10-11)
+  if (spot && !ctx.noSetup && spot.id !== 'confessional' && lines.length && !lines.slice(0, 3).some(l => l.kind === 'beat') && lines.some(l => l.kind === 'say')) {
     const set = setupLine(entry, who, data, lines, spot, facts, ctx, rng, placeOk);
     if (set) lines.unshift(set);
   }

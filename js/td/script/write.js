@@ -147,7 +147,11 @@ export function writeScene(scene, ctx = {}) {
     const said = t.v && by ? pickVoice(t.v, by) : null;
     const text = fill(said || t.conf || t.beat || t.say, who, scene.data || {});
     // a line that opens on a filled-in word ({count}: "eleven top finishes...") still starts with a capital
-    return { kind, by, text: text.charAt(0).toUpperCase() + text.slice(1) };
+    const line = { kind, by, text: text.charAt(0).toUpperCase() + text.slice(1) };
+    // the scene moves (goes) or somebody walks in (comes): td/story/write.js says the same
+    if (t.goes) line.goes = true;
+    if (t.comes && who[t.comes]) line.arrive = [who[t.comes]];
+    return line;
   });
   return { lines, text: transcript(lines), lineId: entry.id, facts };
 }

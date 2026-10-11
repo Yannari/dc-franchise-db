@@ -182,7 +182,7 @@ export default {
       { by: 'a', say: "I'm telling you, aren't I? Find somebody else for {pitcher} to go after, and fast." },
       { by: 'b', conf: "Two minutes ago I thought I was safe. Now I've got until tonight to turn this around." },
     ] },
-    { id: 'nar.w5', when: { self: false }, turns: [
+    { id: 'nar.w5', when: { self: false, targetKnows: false }, turns: [
       { by: 'a', say: "Don't freak out, but {pitcher} is trying to get people on {target}." },
       { by: 'b', say: "Does {target} know?" },
       { by: 'a', say: "Not yet. I came to you first." },
@@ -191,6 +191,25 @@ export default {
       { by: 'b', say: "So you want me to be the one holding it." },
       { by: 'a', say: "I want us both to be holding it, and to decide together what we do with it." },
       { by: 'b', conf: "{a} came to me with that before going to anybody else, which means either {a} trusts me, or {a} wants me to do something about it. Probably both." },
+    ] },
+    // the target already heard it from {a}: {a} says so, and says why {b} is next
+    { id: 'nar.w6', when: { self: false, targetKnows: true }, turns: [
+      { by: 'a', say: "You should know, {pitcher} is trying to get people on {target}." },
+      { by: 'b', say: "Does {target} know?" },
+      { by: 'a', say: "I told {target} already. Now I'm telling you." },
+      { by: 'b', say: "Why me?" },
+      { by: 'a', say: "Because you're close to {target}, and {pitcher} is going to need your vote to pull this off." },
+      { by: 'b', say: "So you're getting everybody ready before {pitcher} even asks." },
+      { by: 'a', say: "Somebody has to." },
+      { by: 'b', conf: "{a} has been to {target}, and now to me. Either {a} really wants {pitcher} to fail, or {a} is building something. Maybe both." },
+    ] },
+    { id: 'nar.w7', when: { self: false, targetKnows: true }, turns: [
+      { by: 'a', say: "Heads up. {pitcher} is going after {target}. I already warned {target}." },
+      { by: 'b', say: "Then why are you telling me?" },
+      { by: 'a', say: "Because one warning doesn't stop a vote. Enough people knowing does." },
+      { by: 'b', say: "And you want me to be one of them." },
+      { by: 'a', say: "I want you on the right side of it when it happens." },
+      { by: 'b', conf: "{a} is telling everybody the same secret. That's not gossip anymore, that's a campaign." },
     ] },
   ],
   'arc.warn.overheard': [

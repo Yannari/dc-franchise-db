@@ -33,7 +33,7 @@ import { writeStory as writeRaw, hasStoryPool } from './write.js';
 import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './record.js';
 import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
-import { writeTribal, whyOf as ballotWhy, writeCrashReplies, writeExit } from './tribal.js';
+import { writeTribal, multiTribalView, whyOf as ballotWhy, writeCrashReplies, writeExit } from './tribal.js';
 import { relationalReason } from '../../alliances.js';
 import { dressConfessionals } from './captions.js';
 import { writeTwistStory, writeExile, writeFirstImpressions, writeAuctionScript } from './twist.js';
@@ -700,15 +700,19 @@ function arcBeats(ep, camp, members, phase, t, next, list, earlier = [], mode = 
   const wrote = x => (ep.votingLog || []).find(v => v.voter === x)?.voted;
   const warned = (ep.pitchIntel || []).filter(i => i.believed !== false && here(i.knower) && tribal.includes(i.knower) && i.target && tribal.includes(i.target) && i.pitcher && i.pitcher !== i.knower && wrote(i.pitcher) === i.target);
   const seen = new Set();
+  const toldTargets = new Set();
   for (const i of warned) {
     if (seen.size >= 2 || seen.has(i.knower)) continue;
     const told = i.sourceType !== 'overheard' && i.source && i.source !== i.pitcher && here(i.source) && i.source !== i.knower;
     const who = told ? { a: i.source, b: i.knower } : { a: i.knower };
     const data = { pitcher: i.pitcher, target: i.target };
     seen.add(i.knower);
+    // (the user, 2026-10-11: Bruno told Millie, then told Julia "Millie doesn't know yet, I came to you first")
+    const targetKnows = toldTargets.has(i.target);
+    if (i.target === i.knower) toldTargets.add(i.target);
     if (t.em) t.em.warned.push({ teller: told ? i.source : null, knower: i.knower, pitcher: i.pitcher, target: i.target });
     say('arc.warn', told ? 'told' : 'overheard', who, data, 5e5 + seen.size, 'warn', ['Word Gets Around', 'blue'],
-      [`${i.knower} finds out ${i.pitcher} is pushing ${i.target === i.knower ? 'their name' : i.target}.`], { self: i.target === i.knower, pitcher: true, target: true });
+      [`${i.knower} finds out ${i.pitcher} is pushing ${i.target === i.knower ? 'their name' : i.target}.`], { self: i.target === i.knower, pitcher: true, target: true, targetKnows });
   }
   // 3. why an advantage comes out tonight
   (ep.idolPlays || []).forEach((p, k) => {
@@ -943,8 +947,10 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   }
   const lines = [];
   let spot = null, lineId = null;
+  // one conversation, one place (the user, 2026-10-11: five set-ups in five places inside one scene, "the cave",
+  // "the shoreline", "the fishing rocks", while the screen stayed at the ruins): only the first beat sets it
   const beat = (pool, ending, w = who) => {
-    const r = writeStory(pool, ending, w, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place: 'secret', avoid: ctxAvoid('scramble'), unique: 'soft' });
+    const r = writeStory(pool, ending, w, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place: 'secret', avoid: ctxAvoid('scramble'), unique: 'soft', noSetup: lines.length > 0 });
     if (!r) return false;
     if (!spot && r.spot) spot = r.spot;
     lineId = lineId || r.lineId;
@@ -1289,8 +1295,15 @@ const TENSE = /^(long\.)?(drama|crowd\.(lost|clash)|blame|caught|story\.chal\.lo
 const STAGING = /\b(at|on|in|by|behind|down to|over to|away from|out to|near) (the|a) |pulls .{1,30} (aside|away)|\b(finds|catches up|waits until|walks? (over|up|down|in))\b/i;
 function chainScenes(ep, camp, phase, items, next) {
   const hash = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
-  const castOf = it => [...new Set([...Object.values(it.scene?.who || {}).filter(Boolean), ...(it.lines || []).filter(l => l.by && l.kind !== 'conf').map(l => l.by)])]
-    .filter(n => n !== (seasonConfig?.host || 'Chris'));
+  // who is there when the scene opens: a scene that moves or that somebody walks into partway (a line marked goes or
+  // comes, td/story/write.js) counts only its opening, so the friend b is about to warn isn't standing there for it
+  const opening = it => { const k = (it.lines || []).findIndex((l, i) => i > 0 && l.kind === 'beat' && (l.goes || (l.arrive?.length && !l.auto))); return k > 0 ? it.lines.slice(0, k) : (it.lines || []); };
+  const castOf = it => {
+    const head = opening(it), all = it.lines || [];
+    const later = all.slice(head.length).filter(l => l.by).map(l => l.by).filter(n => !head.some(l => l.by === n));
+    return [...new Set([...Object.values(it.scene?.who || {}).filter(n => n && !later.includes(n)), ...head.filter(l => l.by && l.kind !== 'conf').map(l => l.by)])]
+      .filter(n => n !== (seasonConfig?.host || 'Chris'));
+  };
   const talks = it => it?.story && Array.isArray(it.lines) && it.lines.some(l => l.kind === 'say') && it.scene?.spot?.id && it.scene.spot.id !== 'confessional';
   const list = n => n.length <= 1 ? n.join('') : `${n.slice(0, -1).join(', ')} and ${n[n.length - 1]}`;
   let run = 0;
@@ -2131,6 +2144,15 @@ export function airTdEpisode(ep) {
           const spoken = lines.filter(l => l.by && l.kind === 'say').length;
           return spoken === 0 || spoken >= 4;
         }); }
+      // one scene, one set-up (the user, 2026-10-11: "multiple scenes mixing"): a scene assembled from several
+      // writes (a plan beat by beat, a row with the people it pulls in) got the automatic set-up line on each
+      // piece, "in the cave", "on the shoreline", "at the river", inside one scene in one place. An automatic
+      // set-up (setup.js, marked auto) belongs only at a scene's start.
+      for (const it of out[phase]) {
+        if (!it?.story || !Array.isArray(it.lines)) continue;
+        const kept = it.lines.filter((l, i) => !(l.auto && i > 0));
+        if (kept.length !== it.lines.length) { it.lines = kept; it.text = kept.map(l => l.text).join(' '); }
+      }
       for (const it of out[phase]) {
         if (!it?.story || !it.scene?.who || !Array.isArray(it.lines) || !it.lines.length) continue;
         const inIt = n => it.lines.some(l => l.by === n || String(l.text || '').includes(n));
@@ -2154,6 +2176,8 @@ export function airTdEpisode(ep) {
   ep.campStory = story;
   // the night's words: every voter in the booth, the reading, last words, after (tribal.js)
   if (!ep.tribalStory) ep.tribalStory = writeTribal(ep);
+  // a Multi-Tribal night: each losing tribe's council has its own booth, reading and last words
+  for (const r of ep.multiTribalResults || []) if (!r.tribalStory) r.tribalStory = writeTribal(multiTribalView(ep, r));
   // last episode, as the host recaps it before this one (previously.js)
   if (ep.tdPreviously === undefined) ep.tdPreviously = writePreviously(ep);
   // what this episode leaves between people, for the episodes after it (threads.js)

@@ -79,11 +79,12 @@ export default {
   ],
   'long.pitch.turn.warned': [
     { id: 'npi.w1', place: 'aside', turns: [
+      { beat: "{a} finds {b} alone, away from everybody else." },
       { by: 'a', say: "I'll be honest with you, because somebody should be. {friend} is going to cost you this game." },
       { by: 'b', say: "Is that right?" },
       { by: 'a', say: "Everybody loves {friend}, and you'll never beat {friend} at the end, so think about it." },
       { by: 'b', say: "Oh, I'm thinking about it.", v: { sharp: "Oh, I'm thinking. Just not about {friend}.", loud: "Oh, I'm thinking about it, all right!" } },
-      { beat: "{b} walks straight across camp to {c}." },
+      { beat: "{b} walks straight across camp to {c}.", goes: true },
       { by: 'b', say: "We need to talk. {a} just tried to get me to turn on you." },
       { by: 'c', say: "What? What did {a} say?" },
       { by: 'b', say: "That everybody loves you, and I'd never beat you at the end. So I should get rid of you while I can." },
@@ -92,12 +93,13 @@ export default {
       { by: 'c', conf: "{a} went after me through my best friend. That's a mistake {a} is going to pay for." },
     ] },
     { id: 'npi.w2', place: 'aside', turns: [
+      { beat: "{a} sits down next to {b}, a little apart from the others." },
       { by: 'a', say: "Has {friend} said anything to you about me?" },
       { by: 'b', say: "No. Why would {friend}?" },
       { by: 'a', say: "Because {friend} has been saying plenty about you." },
       { by: 'b', say: "Funny. Let's ask {friend}." },
       { by: 'a', say: "Wait, you don't have to do that..." },
-      { beat: "{b} waves {c} over before {a} can stop it." },
+      { beat: "{b} waves {c} over before {a} can stop it.", comes: 'c' },
       { by: 'b', say: "{a} says you've been talking about me." },
       { by: 'c', say: "I haven't said one word about you. {a}, what is this?", v: { loud: "WHAT? I haven't said a single word about you, so {a}, what are you doing?", soft: "I would never. {b}, you know I would never." } },
       { by: 'a', say: "I must have heard it wrong." },

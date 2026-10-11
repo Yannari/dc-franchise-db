@@ -54,7 +54,8 @@
         "cast/Heather-2.wav",
         "cast/Heather-3.wav"
       ],
-      "pick": null
+      "pick": 2,
+      "made": 1791746604
     },
     "Owen": {
       "text": "Oh man, oh man, did you guys smell that? Chef made pancakes! Real ones! Okay, okay, I'm totally calm. Who wants to share? Nobody? Great, more for me!",
@@ -63,7 +64,8 @@
         "cast/Owen-2.wav",
         "cast/Owen-3.wav"
       ],
-      "pick": null
+      "pick": null,
+      "made": 1791746753
     },
     "Gwen": {
       "text": "Wow. Another challenge in the mud. Shocking. Look, I'm not here to make friends, okay? I just want to get through today without anybody talking to me. Is that so much to ask?",
@@ -72,7 +74,8 @@
         "cast/Gwen-2.wav",
         "cast/Gwen-3.wav"
       ],
-      "pick": null
+      "pick": 2,
+      "made": 1791746604
     },
     "Duncan": {
       "text": "Relax, I'm not gonna hurt anybody. Probably. You want my advice? Keep your head down, stay out of my way, and we'll get along just fine. Unless you snore.",
@@ -81,7 +84,8 @@
         "cast/Duncan-2.wav",
         "cast/Duncan-3.wav"
       ],
-      "pick": null
+      "pick": null,
+      "made": 1791746753
     },
     "Courtney": {
       "text": "Excuse me? No. Absolutely not. I have a plan, and the plan works if everybody does exactly what I say. Is that clear? Good. Now, who left this mess on the dock?",
@@ -90,7 +94,8 @@
         "cast/Courtney-2.wav",
         "cast/Courtney-3.wav"
       ],
-      "pick": null
+      "pick": 2,
+      "made": 1791746604
     },
     "Izzy": {
       "text": "Okay, so, true story: I once wrestled a bear. Or the bear wrestled me, details! Wanna see my moves? No? Too bad! Ha! Where did everybody go?",
@@ -99,7 +104,8 @@
         "cast/Izzy-2.wav",
         "cast/Izzy-3.wav"
       ],
-      "pick": null
+      "pick": 3,
+      "made": 1791746604
     },
     "Cody": {
       "text": "Hey! So, uh, I was thinking, maybe we could be partners for the challenge? Not in a weird way. Unless you want it to be a little weird. Too much? Yeah, too much.",
@@ -108,7 +114,8 @@
         "cast/Cody-2.wav",
         "cast/Cody-3.wav"
       ],
-      "pick": null
+      "pick": 3,
+      "made": 1791746604
     },
     "Sierra": {
       "text": "Oh my gosh, oh my gosh, do you know how long I've waited for this? I know every challenge, every vote, every single thing anybody's ever said here! This is the best day of my life!",
@@ -117,7 +124,8 @@
         "cast/Sierra-2.wav",
         "cast/Sierra-3.wav"
       ],
-      "pick": null
+      "pick": 3,
+      "made": 1791746604
     },
     "Lindsay": {
       "text": "Wait, which one are you again? Oh! Sorry! You all kind of look the same when you're not wearing a headband. Anyway, I love your shoes! Are those new?",
@@ -126,7 +134,8 @@
         "cast/Lindsay-2.wav",
         "cast/Lindsay-3.wav"
       ],
-      "pick": null
+      "pick": 3,
+      "made": 1791746604
     },
     "Harold": {
       "text": "Actually, I've been training for this exact scenario my entire life. I have mad skills in archery, nunchucks and calligraphy. So, technically, I'm the most qualified person here. Gosh!",
@@ -135,7 +144,8 @@
         "cast/Harold-2.wav",
         "cast/Harold-3.wav"
       ],
-      "pick": null
+      "pick": 2,
+      "made": 1791746604
     },
     "Leshawna": {
       "text": "Mm-hmm. Honey, let me tell you something. I don't do fake, and I can smell it from across this camp. You want to come at my friends? You come through me first.",
@@ -144,7 +154,8 @@
         "cast/Leshawna-2.wav",
         "cast/Leshawna-3.wav"
       ],
-      "pick": null
+      "pick": 1,
+      "made": 1791746604
     },
     "Noah": {
       "text": "Let me get this straight. We're supposed to carry a canoe across an island, for fun? Wow. Great. I'll be over here, reading, if anybody needs me to not care.",
@@ -153,7 +164,8 @@
         "cast/Noah-2.wav",
         "cast/Noah-3.wav"
       ],
-      "pick": null
+      "pick": 3,
+      "made": 1791746604
     },
     "Bridgette": {
       "text": "Hey, you guys, come on. Can we not fight today? We're all tired and hungry, and honestly, yelling isn't gonna make the water any warmer. Let's just breathe, okay?",
@@ -162,7 +174,8 @@
         "cast/Bridgette-2.wav",
         "cast/Bridgette-3.wav"
       ],
-      "pick": null
+      "pick": 1,
+      "made": 1791746604
     },
     "Geoff": {
       "text": "Dude! Party at the campfire tonight! Everybody's invited, even the grumpy ones! Come on, man, we won today! We gotta celebrate! Who's bringing the snacks?",
@@ -171,7 +184,8 @@
         "cast/Geoff-2.wav",
         "cast/Geoff-3.wav"
       ],
-      "pick": null
+      "pick": 3,
+      "made": 1791746604
     },
     "Trent": {
       "text": "Look, guys, I get it. Everybody's stressed. But turning on each other isn't gonna help anybody win. I'd rather lose playing it straight than win like that. That's just me.",
@@ -180,7 +194,8 @@
         "cast/Trent-2.wav",
         "cast/Trent-3.wav"
       ],
-      "pick": null
+      "pick": 3,
+      "made": 1791746604
     },
     "Alejandro": {
       "text": "Ah, my friend, you misunderstand me. I only want what is best for the team. And for you, of course. Trust me. Have I ever given you a reason not to?",
@@ -189,7 +204,8 @@
         "cast/Alejandro-2.wav",
         "cast/Alejandro-3.wav"
       ],
-      "pick": null
+      "pick": 1,
+      "made": 1791746604
     },
     "Chris": {
       "text": "Welcome back! Today's challenge is going to be extreme, dangerous, and totally hilarious... for me! Somebody is going home tonight, and I cannot wait. Stay tuned!",
@@ -198,7 +214,8 @@
         "cast/Chris-2.wav",
         "cast/Chris-3.wav"
       ],
-      "pick": null
+      "pick": 2,
+      "made": 1791746604
     }
   }
 }

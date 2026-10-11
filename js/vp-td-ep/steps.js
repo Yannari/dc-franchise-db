@@ -494,6 +494,7 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
   const windows = ep.campAccess?.phases?.[`${phase}:${camp}`] || [];
   const slot = o.slot !== undefined ? o.slot : campSlot(ep, camp, venue);
   const cast = [...new Set([...members, ...events.flatMap(e => e.players || [])])].filter(Boolean);
+  const campHost = o.host || window.seasonConfig?.host || 'Chris';
   const steps = [];
   let clock = phase === 'pre' ? 7 * 60 + 5 : 15 * 60 + 10;
   let cur = null;                       // the scene on screen: { spot, tod, people }
@@ -554,6 +555,8 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
         if (l.kind === 'conf') steps.push({ k: 'conf', by: l.by, text, cap: l.cap || null, stage: l.stage || null });
         // a scene that runs on from the last one: whoever walks up walks in (director.js chainScenes)
         else if (l.kind === 'beat') steps.push({ k: 'beat', text, act: l.arrive?.length ? { kind: 'arrive', who: l.arrive } : actOf(text, cast, lastBy) });
+        // the host walking through a camp scene (the day-one tour) speaks as the host: the host's portrait, not a player's
+        else if (l.by === campHost) steps.push({ k: 'say', by: l.by, host: true, text, loud: loud(text) });
         else { steps.push({ k: 'say', by: l.by, text, loud: loud(text), shock: shock(text) }); lastBy = l.by; }
       }
       if (find && !foundShown) foundStep(steps, ev);

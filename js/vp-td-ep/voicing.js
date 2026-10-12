@@ -41,7 +41,7 @@ async function pool(items, n, fn) {
   await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => { while (next < items.length) { const i = next++; await fn(items[i], i); } }));
 }
 
-export async function tdVoiceEpisode(ep = Number(window.vpEpNum)) {
+export async function tdVoiceEpisode(ep = Number(window.vpEpNum), { force = false } = {}) {
   if (!ep) return alert('Open the episode you want voiced first.');
   // the studio token, asked once and remembered on this device (it is kept per site: one set on localhost is not
   // on the published site), the way the photo backup asks; the button shows either way (the user did not see it)
@@ -62,7 +62,7 @@ export async function tdVoiceEpisode(ep = Number(window.vpEpNum)) {
     if (!Object.keys(voices).length) voices = await (await fetch('assets/audio/td/voices/inworld.json', { cache: 'no-store' })).json();
     const have = (await voicedLines(ep, true)) || new Set();
     const lines = all.filter(l => voices[l.by] && l.text);
-    const todo = lines.filter(l => !have.has(l.id));
+    const todo = force ? lines : lines.filter(l => !have.has(l.id));   // Revoice: every line again
     if (!todo.length) { P.say(`Episode ${ep} is already voiced`, `${lines.length} lines have a voice. Nothing to pay for.`, 1, true); return; }
 
     // 2. the director: each line in context, a stretch (one screen) at a time
@@ -102,7 +102,7 @@ export async function tdVoiceEpisode(ep = Number(window.vpEpNum)) {
     await pool(batches, 3, async b => {
       const r = await fetch(`${VOICE_API()}/api/voice/render`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
-        body: JSON.stringify({ season, episode: ep, voices, lines: b.map(l => ({ id: l.id, by: l.by, text: l.text, direction: dir[l.id] || '' })) }),
+        body: JSON.stringify({ season, episode: ep, voices, force, lines: b.map(l => ({ id: l.id, by: l.by, text: l.text, direction: dir[l.id] || '' })) }),
       });
       const j = await r.json().catch(() => ({ ok: false, error: `studio ${r.status}` }));
       if (!j.ok) { failed.push(...b.map(l => ({ id: l.id, error: j.error }))); return; }
@@ -111,6 +111,7 @@ export async function tdVoiceEpisode(ep = Number(window.vpEpNum)) {
     });
 
     await voicedLines(ep, true);
+    hubVoiceLabel(ep);
     const secs = Math.round((Date.now() - t0) / 1000);
     const cost = (chars * PRICE).toFixed(2);
     console.info(`[voicing] episode ${ep}: ${done} lines in ${secs}s, ${chars} characters (~$${cost}); directions:`, dir, failed.length ? failed : '');
@@ -121,16 +122,24 @@ export async function tdVoiceEpisode(ep = Number(window.vpEpNum)) {
     P.say(`Voicing episode ${ep} stopped`, String(e.message || e), null, true);
   }
 }
-/** The Run tab's button (simulator.html, Voice Acting): which episode, then tdVoiceEpisode. */
-export function voiceEpisodeAsk() {
-  const gs = window.gs;
-  if (!gs || !gs.initialized) return alert('Load a season first.');
-  const highest = (gs.episodeHistory || []).length;
-  if (!highest) return alert('Simulate an episode first.');
-  const asked = prompt(`Which episode should be voiced? (1–${highest})`, String(highest));
-  if (!asked) return;
-  const ep = Number(asked);
-  if (!Number.isInteger(ep) || ep < 1 || ep > highest) return alert(`No episode ${asked}.`);
+/** The Run tab's 🎙 button (run-ui.js, beside Watch latest and Sim 5): 'Voice' for the latest episode, 'Revoice'
+ *  once it has voices (the user, 2026-10-12). Asks the bucket after every render of the tab. */
+export function hubVoiceLabel(ep) {
+  const btn = typeof document !== 'undefined' && document.getElementById('hub-voice');
+  if (!btn || !ep) return;
+  voicedLines(ep).then(ids => { if (btn.isConnected) { btn.textContent = ids && ids.size ? '🎙 Revoice' : '🎙 Voice'; btn.dataset.voiced = ids && ids.size ? '1' : ''; } });
+}
+export function voiceLatestEpisode(ep) {
+  const btn = document.getElementById('hub-voice');
+  if (btn?.dataset.voiced) {
+    // a new take of every line, with new directions: it costs what the first voicing did, so it asks
+    if (!confirm(`Episode ${ep} already has voices.
+
+Revoice every line with new directions and new takes? That costs about as much as the first time (roughly $0.45).`)) return;
+    return tdVoiceEpisode(ep, { force: true });
+  }
   return tdVoiceEpisode(ep);
 }
-if (typeof window !== 'undefined') { window.tdVoiceEpisode = tdVoiceEpisode; window.tdCanVoice = canVoice; window.voiceEpisodeAsk = voiceEpisodeAsk; }
+if (typeof window !== 'undefined') {
+  Object.assign(window, { tdVoiceEpisode, tdCanVoice: canVoice, voiceLatestEpisode, hubVoiceLabel });
+}

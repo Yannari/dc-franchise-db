@@ -2455,7 +2455,7 @@ const VOICE_SEASON = /^[a-z0-9][a-z0-9-]{0,60}$/;
 /**
  * Voice acting: a batch of an episode's lines voiced on Inworld TTS-2 and kept in the audio bucket.
  *
- * POST /api/voice/render (token): { season, episode, lines: [{ id, by, text, direction }], voices: { name: voiceId } }
+ * POST /api/voice/render (token): { season, episode, lines: [{ id, by, text, direction }], voices: { name: voiceId }, force }
  *   -> { ok, done: [id], failed: [{ id, error }], chars }. Four lines at a time; a line already in the bucket is
  *   kept, not paid for twice. The Inworld key is this worker's secret (INWORLD_API_KEY), never the browser's.
  * GET /api/voice/list?season=&episode= (open) -> { ok, ids: [id] }: what the episode can play.
@@ -2502,7 +2502,7 @@ async function voiceRoute(request, env, url, cors) {
   let chars = 0, next = 0;
   const one = async l => {
     const key = `voice/${s}/e${ep}/${l.id}.mp3`;
-    if (await env.AUDIO.head(key)) { done.push(l.id); return; }
+    if (!body.force && await env.AUDIO.head(key)) { done.push(l.id); return; }   // force: Revoice, a new take replaces it
     const dir = String(l.direction || '').replace(/[\[\]]/g, '').trim().slice(0, 80);
     const text = (dir ? `[${dir}] ` : '') + l.text.trim().slice(0, 1200);
     const r = await fetch('https://api.inworld.ai/tts/v1/voice', {

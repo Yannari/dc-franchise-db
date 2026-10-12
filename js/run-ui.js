@@ -714,6 +714,7 @@ export function renderSeasonHub() {
   const secondaryActions = model.lifecycle === 'setup' ? '' : `<nav class="hub-secondary-actions" aria-label="Secondary season actions">
     <button type="button" onclick="openVisualPlayer(${_watchArg(model.latest?.num || model.liveEpisode)})" ${model.latest ? '' : 'disabled'}>Watch latest</button>
     <button type="button" onclick="simulateMultipleEpisodes(5)" ${canBatch ? '' : 'disabled'}>Sim 5</button>
+    ${seasonFormat(seasonConfig) === 'total-drama' && model.latest ? `<button type="button" id="hub-voice" onclick="voiceLatestEpisode(${Number(model.latest.num)})" title="Voice every line of the latest episode with each character's Inworld voice">🎙 Voice</button>` : ''}
     <button type="button" onclick="simulateMultipleEpisodes()" ${canBatch ? '' : 'disabled'}>Sim to finale</button>
     <button type="button" onclick="replayEpisode(${Number(model.latest?.num || 0)})" ${canReplay ? '' : 'disabled'}>Replay viewed</button>
     <button type="button" onclick="saveSeasonToStorage()">Save</button>
@@ -727,6 +728,8 @@ export function renderSeasonHub() {
     ${aftermathHtml}
     <div class="hub-grid"><div class="hub-main-column"><div class="hub-section-title"><span>${_spoilerFree && model.latest ? 'Cast after the episode' : 'Cast still in the game'}</span><small>${_spoilerFree && model.latest ? 'Hidden' : `${model.remaining} remaining`}</small></div><div class="hub-tribes">${castHtml}</div></div><aside class="hub-briefing"><div class="hub-section-title"><span>Going forward</span><small>Public context</small></div><div class="hub-next-card"><label>Next episode</label><strong>${_spoilerFree && model.latest ? 'Available after revealing the outcome' : _hubEsc(model.twistLabel)}</strong></div><div class="hub-story-list">${publicStorylines.map((line, index) => `<div><b>${String(index + 1).padStart(2, '0')}</b><span>${_hubEsc(line)}</span></div>`).join('')}</div></aside></div>
   </section>`;
+  // 🎙 Voice or Revoice, from the audio bucket (js/vp-td-ep/voicing.js)
+  window.hubVoiceLabel?.(model.latest?.num);
 }
 
 // Two villa cards are ALTERNATIVES when they answer the same question for the

@@ -15,6 +15,8 @@ export const TDX_CSS = `
 .tdx .tdx-tok.offshot{filter:blur(1.6px) saturate(.6) brightness(.62)}
 @keyframes tdxDrift{from{transform:scale(1.035) translate(-.6%,.2%)}to{transform:scale(1.06) translate(.6%,-.4%)}}
 .tdx .tdx-plate{position:absolute;inset:0;background-size:100% 100%;animation:tdxFade .5s ease-out}
+.tdx .tdx-plate.wash{filter:brightness(.42) saturate(.65) contrast(1.08)}
+.tdx .tdx-washtint{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(24,34,86,.42),rgba(8,12,38,.38));mix-blend-mode:multiply}
 .tdx .tdx-noplate{background:linear-gradient(#26304f,#3d4a72)}
 .tdx .tdx-plate.hd{opacity:0;transition:opacity .5s;animation:none}
 .tdx .tdx-stage.push .tdx-plate.hd{opacity:1}

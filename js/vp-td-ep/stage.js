@@ -100,7 +100,11 @@ export function worldHtml(screen, L) {
   const gl = motion ? `<canvas class="tdx-gl" data-src="${SETS}/${vkey}" data-mot="${SETS}/${key}"${motion?.flow ? ' data-flow="1"' : ''}${L.scene?.bobAmp ? ` data-bobamp="${L.scene.bobAmp}"` : ''} data-grade="${painted ? 'day' : grade}"${HD_VENUES.has(screen.venue) && !L.conf ? ' data-hd="1"' : ''}></canvas>` : '';
   // under a living plate, the sky is a layer of its own: clouds and birds pass behind every tree and roof
   // (the shader leaves the plate see-through only where the frame shows open sky)
-  let h = `<div class="tdx-plate" style="background-image:url('${SETS}/${vkey}.webp')"></div>${hd.replace(`${key}-hd`, `${vkey}-hd`)}<!--sky-->${gl}<div class="tdx-live">`, sky = '';
+  // A STILL frame with no night version (the island shelter, the mess hall, the confessional) at night is that frame
+  // with the light taken out: it was drawn in daylight whatever the clock said (the user, 2026-10-12: "at 7:00 the bg
+  // is still day"; measured: 154 night scenes of a camp season on a day plate). A living plate grades itself (glplate).
+  const wash = !nightFrame && !motion && (L.scene?.tod === 'night' || /-night$/.test(L.scene?.plate || ''));
+  let h = `<div class="tdx-plate${wash ? ' wash' : ''}" style="background-image:url('${SETS}/${vkey}.webp')"></div>${wash ? '<i class="tdx-washtint"></i>' : hd.replace(`${key}-hd`, `${vkey}-hd`)}<!--sky-->${gl}<div class="tdx-live">`, sky = '';
   const skyward = x => { if (gl) sky += x; else h += x; };
   if (of('lightning').length) h += `<i class="tdx-lightning"></i>`;
   of('cloud').forEach((m, i) => {

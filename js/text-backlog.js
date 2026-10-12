@@ -443,7 +443,7 @@ export function _textCampPre(ep, ln, sec) {
 
   // Camp events (pre phase)
   if (ep.campEvents && Object.keys(ep.campEvents).length) {
-    const hasPreEvs = Object.values(ep.campEvents).some(phaseData => {
+    const hasPreEvs = Object.keys(ep.campEvents).some(camp => campFeed(ep, camp, 'pre').length > 0) || Object.values(ep.campEvents).some(phaseData => {
       const evs = Array.isArray(phaseData) ? phaseData : (phaseData?.pre || []);
       return evs.length > 0;
     });

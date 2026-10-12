@@ -30,6 +30,7 @@ import { voiceOf } from './voice.js';
 import { writeFirstImpression } from './first-impressions.js';
 import { classify, file, prevAired } from './storylines.js';
 import { continuityScore, rememberMoment } from './continuity.js';
+import { recordFollowups, followupScene } from './followups.js';
 import { writeStory as writeRaw, hasStoryPool } from './write.js';
 import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './record.js';
 import { numberWord } from '../script/write.js';
@@ -1967,10 +1968,14 @@ export function airTdEpisode(ep) {
       if (editOn && !ep.isFinale && !ep.isMerge) {
         const writeHere = (p, o, w, d, f, c) => writeStory(p, o, w, d, f, { ...c, avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
         // the mentor arc counts against the same room: two serial stories a phase is plenty
-        const arcsNow = list.filter(x => x.item?.storyType === 'arc').length;
+        let arcsNow = list.filter(x => x.item?.storyType === 'arc').length;
         // after the merge every night is a tribal night for the one camp, and the vote talk fills the evening
         // (11-14 scenes), so the morning keeps less room for colour
         const ROOM = merged && tribalTonight ? 7 : 10;
+        if (liveEp(ep) && arcsNow < 2 && list.length < ROOM + 2) {
+          const follow = followupScene(ep, camp, members, phase, () => n++, writeHere, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }));
+          if (follow) { list.push(follow); arcsNow++; }
+        }
         list.push(...runArcs(ep, camp, members, phase, () => n++, writeHere, Math.max(0, Math.min(2 - arcsNow, ROOM + 2 - list.length))));
         const busyNow = new Set(list.flatMap(x => x.item?.players || []).filter(Boolean));
         // the game and the solo are colour: they air only while the phase has room (a merge night, one camp
@@ -2285,6 +2290,7 @@ export function airTdEpisode(ep) {
       const classified = ev && (filedMoments.get(ev) || classify(ev));
       if (classified) rememberMoment(continuity, { ...classified, topic: ev.scene?.kind || ev.type }, { ep: ep.num, camp, phase });
     }
+    if (liveEp(ep)) recordFollowups(ep, camp, out);
     story[camp] = out;
   }
   ep.campStory = story;

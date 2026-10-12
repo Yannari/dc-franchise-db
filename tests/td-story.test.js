@@ -23,6 +23,8 @@ const NEEDS = { glueA: 'glue', glueB: 'glue', lastBy: 'pastBy', lastPartner: 'pa
   warner: 'warner', keep: 'keep', wanted: 'wanted', area: 'area', mine: 'mine', leader: 'leader', locked: 'locked' };
 // a pool's guarantees: names its moment always carries
 const GUARANTEED = [
+  // Follow-ups carry the exact spoken line recorded from the aired incident.
+  [/^follow\.(defense|clash)\./, ['remark']],
   [/^long\.pitch\.turn\./, ['friend']],
   [/^booth\.turned$/, ['target', 'pitcher']],
   [/^long\.recruit\.join\.poach$/, ['group', 'from']],

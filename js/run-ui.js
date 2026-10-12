@@ -2104,9 +2104,9 @@ export function replayEpisode(epNum) {
   // A replayed episode kept its number but is a different night, so its feed is
   // rewritten rather than left alone — and the episodes it replaced lose theirs.
   _refreshFeed({ rebuild: true });
-  // ...and their voices go with them: this episode and every later one is a different night now (the user,
-  // 2026-10-12: "when an episode gets deleted it should delete the voicing too"; js/vp-td-ep/voicing.js)
-  window.tdClearVoices?.({ from: ep.num });
+  // ...and so do their voices (the user, 2026-10-12: "when an episode gets deleted it should delete the voicing too"):
+  // each episode from here keeps the clips of the lines it still has word for word, loses the rest; later ones go
+  window.tdVoicesAfterRerun?.(ep.num);
   _autoRevealSpoiler(ep.num);
   viewingEpNum = ep.num;
   renderRunTab();

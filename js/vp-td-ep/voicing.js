@@ -77,6 +77,26 @@ export async function clearVoices({ season = voiceSeason(), episode, from, keep 
   } catch { return 0; }
 }
 
+/** After a re-run from `fromEp`: each episode from there keeps the clips of the lines it still has (same speaker, same
+ *  words: the same clip, "if the lines are legitimately the same, keeping it is not a bad idea", the user) and loses
+ *  the rest; anything past the season's new last episode goes. Lines are built in memory (tdEpisodeLines). */
+export async function voicesAfterRerun(fromEp) {
+  if (!token()) return;
+  const hist = (window.gs?.episodeHistory || []).filter(e => +e.num >= +fromEp);
+  let last = +fromEp - 1;
+  try {
+    const { tdEpisodeLines } = await import('./screens.js');
+    for (const rec of hist) {
+      last = Math.max(last, +rec.num);
+      let keep = [];
+      try { keep = tdEpisodeLines(rec).map(l => l.id); } catch { /* cannot build it: keep nothing, it is a new night */ }
+      await clearVoices({ episode: +rec.num, keep });
+    }
+  } finally {
+    await clearVoices({ from: last + 1 });
+  }
+}
+
 /** What an episode needs: its lines, the voices, what the bucket already holds, and what is missing. */
 async function plan(ep, say = () => {}) {
   const rec = (window.gs?.episodeHistory || []).find(e => +e.num === +ep);
@@ -199,5 +219,5 @@ export async function voiceSelectedEpisode(ep) {
   hubVoiceLabel(ep);
 }
 if (typeof window !== 'undefined') {
-  Object.assign(window, { tdVoiceEpisode, tdCanVoice: canVoice, voiceSelectedEpisode, hubVoiceLabel, tdClearVoices: clearVoices });
+  Object.assign(window, { tdVoiceEpisode, tdCanVoice: canVoice, voiceSelectedEpisode, hubVoiceLabel, tdClearVoices: clearVoices, tdVoicesAfterRerun: voicesAfterRerun });
 }

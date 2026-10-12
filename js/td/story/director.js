@@ -1447,7 +1447,10 @@ export function airTdEpisode(ep) {
           const who = { a, b };
           // a physical line (a hand held over a drop, a bandaged ankle) only after a physical challenge
           const style = (tw && TWIST_CATALOG.find(c => c.id === (tw.catalogId || tw.type))?.chalStyle) || 'physical';
-          const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), pair: true, two: m.players.length >= 2, bLikesA: getBond(b, a) >= 2, bHatesA: getBond(b, a) <= -2,
+          const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), pair: true, two: m.players.length >= 2,
+            // did this camp win the challenge it is talking about? (a team that lost goes to tribal tonight; the user,
+            // 2026-10-12: Spencer's "We won, and I should be happy" after his team lost). After the merge there is no team
+            teamWon: !(ep.isMerge || gs.isMerged) && !tribalTonight, bLikesA: getBond(b, a) >= 2, bHatesA: getBond(b, a) <= -2,
             physical: ['physical', 'endurance', 'adventure', 'hunt', 'chaos'].includes(style) };
           const w = writeStory(`chm.${m.kind}`, 'any', who, { chal }, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('afternoon'),
             // a moment is colour, not a reason: once its scenes have aired it skips rather than repeats (read: Alejandro's

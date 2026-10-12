@@ -35,7 +35,7 @@ export default {
       { by: 'a', say: "I know. I'm saying it for you." },
       { by: 'b', conf: "The one person here I can't stand pulled me out of trouble at {chal}. Now I owe {a.obj}, and I hate owing {a.obj} anything." },
     ] },
-    { id: 'ncm.s3', when: { merged: false, two: false }, turns: [
+    { id: 'ncm.s3', when: { merged: false, two: false, teamWon: true }, turns: [
       { by: 'b', say: "That thing you did out there? Everybody saw it." },
       { by: 'a', say: "It wasn't a big deal." },
       { by: 'b', say: "It was a really big deal. We'd have lost without it." },
@@ -62,7 +62,7 @@ export default {
       { by: 'a', say: "It's a 'why would I do that'." },
       { by: 'b', conf: "{a} didn't deny it. {a} just asked me a question back. That's what guilty people do." },
     ] },
-    { id: 'ncm.b3', when: { merged: false, two: false }, turns: [
+    { id: 'ncm.b3', when: { merged: false, two: false, teamWon: true }, turns: [
       { by: 'b', say: "I saw you at {chal}. With the other team's stuff." },
       { by: 'a', say: "You didn't see anything." },
       { by: 'b', say: "I saw enough. You messed with their stuff when nobody was looking." },

@@ -7,7 +7,7 @@
 
 export default {
   'chm.sabotage.any': [
-    { id: 'nc3.b1', when: { two: false }, turns: [
+    { id: 'nc3.b1', when: { two: false, merged: false, teamWon: true }, turns: [
       { beat: "{b} waits until the rest of the team has gone ahead, then falls into step beside {a}." },
       { by: 'b', say: "What happened to the other team at {chal} didn't happen by itself, did it?" },
       { by: 'a', say: "Things go wrong out there all the time." },
@@ -17,7 +17,7 @@ export default {
       { by: 'a', say: "You didn't say you were going to tell anybody, either." },
       { by: 'b', conf: "{a} is right, I'm not telling anybody, because it won us {chal}. But I know {a} will do that to anybody, and one day the anybody is me." },
     ] },
-    { id: 'nc3.b2', when: { two: false, merged: false }, turns: [
+    { id: 'nc3.b2', when: { two: false, merged: false, teamWon: true }, turns: [
       { by: 'b', say: "The other team is losing their minds over what happened at {chal}." },
       { by: 'a', say: "Accidents happen." },
       { by: 'b', say: "Funny how the accident happened right next to you." },
@@ -36,6 +36,16 @@ export default {
       { by: 'b', say: "Maybe you should learn that people talk." },
       { by: 'a', say: "Let them. Who's going to believe the person who came last?" },
       { by: 'b', conf: "{a} cost me {chal} on purpose and then laughed about it. I can't prove it, but I don't need proof to write a name down." },
+    ] },
+    // the other team was sabotaged, and this team lost anyway ('we won' above plays only when it won)
+    { id: 'nc3.b4', when: { two: false, merged: false, teamWon: false }, turns: [
+      { by: 'b', say: "I saw what you did to the other team at {chal}." },
+      { by: 'a', say: "Then you saw it didn't matter. We lost anyway." },
+      { by: 'b', say: "That's not the part that bothers me." },
+      { by: 'a', say: "What part bothers you, then?" },
+      { by: 'b', say: "That you'd do it at all. To people who never did anything to you." },
+      { by: 'a', say: "It's a game. They'd do the same to us." },
+      { by: 'b', conf: "{a} cheated, and we still lost. So now we've got a cheater on the team and nothing to show for it, and I'm the one who knows." },
     ] },
   ],
   'chm.pact.any': [
@@ -77,7 +87,7 @@ export default {
       { by: 'a', say: "Too late. Watch the footwork." },
       { by: 'b', conf: "{a} beat me and then made sure the whole camp knew it. Next time I win something, I'm doing the dance too, right in {a}'s face." },
     ] },
-    { id: 'nc3.t2', when: { two: false }, turns: [
+    { id: 'nc3.t2', when: { two: false, merged: false, teamWon: true }, turns: [
       { by: 'b', say: "Did you have to wave at them on the way out?" },
       { by: 'a', say: "They were waving at me first." },
       { by: 'b', say: "They were not waving. They were shaking their fists." },

@@ -29,6 +29,7 @@ import { pronouns, pStats as pStatsOf, threatScore } from '../../players.js';
 import { voiceOf } from './voice.js';
 import { writeFirstImpression } from './first-impressions.js';
 import { classify, file, prevAired } from './storylines.js';
+import { continuityScore, rememberMoment } from './continuity.js';
 import { writeStory as writeRaw, hasStoryPool } from './write.js';
 import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './record.js';
 import { numberWord } from '../script/write.js';
@@ -1405,6 +1406,7 @@ export function airTdEpisode(ep) {
   venueNow = VENUE_WORDS[ep.campAccess?.setting] ? ep.campAccess.setting : 'hosted-camp';
   const seasonAired = ((gs.tdStory ||= {}).aired ||= {});
   const story = {};
+  const continuity = (gs.tdStory.continuity ||= {});
   let n = 0;
   for (const camp of Object.keys(ep.campEvents)) {
     const members = membersOf(ep, camp);
@@ -1414,6 +1416,7 @@ export function airTdEpisode(ep) {
     const knowsTribal = phase => (phase === 'post' || ep.isMerge || gs.isMerged ? tribalTonight : false);
     const spoke = new Set();
     const out = { pre: [], post: [] };
+    const filedMoments = new Map();
     const talk = tribalTonight ? votePlan(ep, camp, members) : null;
     // the episode's memory for this camp: what the vote story has shown so far (arcBeats fills it)
     if (talk) talk.em = { spark: null, warned: [], aired: [], causes: [] };
@@ -1442,6 +1445,7 @@ export function airTdEpisode(ep) {
         if (!c) return;
         const { line, step } = file(c, { ep: ep.num, phase, camp, order: i });
         filed.push({ ev, i, line, step });
+        filedMoments.set(ev, { type: line.type, ...step });
       });
       const list = [];
       // the spots taken in each stretch of the day, so two talks are never staged on top of each other
@@ -1643,7 +1647,7 @@ export function airTdEpisode(ep) {
       const onScreen = {};
       [opener, ...votes].forEach(it => it?.players.forEach(p => { onScreen[p] = (onScreen[p] || 0) + 1; }));
       const score = f => dramaOf(f.line.type, f.step.step)
-        + (f.line.steps.some(s => s.aired) ? 3 : 0)
+        + continuityScore(continuity, { type: f.line.type, ...f.step, topic: f.ev.scene?.kind || f.ev.type }, { ep: ep.num, camp, phase })
         + (phase === 'post' && tribalTonight && ['bottom', 'alliance', 'scheme'].includes(f.line.type) ? 2 : 0)
         - 0.6 * (seasonAired[`${f.line.type}.${f.step.step}`] || 0)
         + (f.ev.scene?.kind && hasStoryPool(`long.${f.ev.scene.kind}`) ? 1.5 : 0);
@@ -2274,6 +2278,12 @@ export function airTdEpisode(ep) {
         ev.aired = true;
         if (AIRS_FIRST.has(ev.type)) out[phase].unshift({ ref: i }); else out[phase].push({ ref: i });
       });
+    }
+    // Record only scenes that survived every cut. Off-camera events cannot create continuity.
+    for (const phase of ['pre', 'post']) for (const item of out[phase]) {
+      const ev = item.ref != null ? eventsOf(ep, camp, phase)[item.ref] : null;
+      const classified = ev && (filedMoments.get(ev) || classify(ev));
+      if (classified) rememberMoment(continuity, { ...classified, topic: ev.scene?.kind || ev.type }, { ep: ep.num, camp, phase });
     }
     story[camp] = out;
   }

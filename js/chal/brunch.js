@@ -1431,11 +1431,12 @@ export function simulateBrunchOfDisgustingness(ep) {
     losersPostEvents.push({
       type: 'brunchPost', subtype: 'blame',
       players: blamer ? [blamer, worst] : [worst],
-      text: _rp([
-        `The ${finalLoser === 'boys' ? 'boys\'' : 'girls\''} team doesn't need to say it out loud. They're all thinking it. ${worst} knows.`,
-        `${blamer && blamer !== worst ? blamer + ' looks at ' + worst + '. ' : ''}The team is quiet in the way that means something is being silently agreed to.`,
-        `"We ate everything. Everything." ${blamer || lm[0]} stops there. ${worst} stares at the table.`,
-      ]),
+      text: blamer && blamer !== worst ? _rp([
+        `"You had our lowest score," ${blamer} tells ${worst}. "I also had to eat that food," ${worst} replies. "You can be disappointed without acting like I ordered it."`,
+        `${blamer} looks at ${worst}. "We needed you to get more down." "I was there," ${worst} says. "I didn't stop to enjoy the menu." Neither looks ready to laugh about it.`,
+        `"I'm trying not to make this personal," ${blamer} says. "Then stop announcing my score to everyone," ${worst} replies. "They heard it the first time. So did I."`,
+        `${blamer} starts to question ${worst} about the result. "Can I finish recovering before I defend myself?" ${worst} asks. "The challenge was disgusting enough without a review from you."`,
+      ]) : `${worst} sits quietly, still upset about the result and in no hurry to relive the menu.`,
       badgeText: 'BLAME GAME', badgeClass: 'red',
     });
 

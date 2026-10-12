@@ -404,11 +404,11 @@ export function simulateSayCheese(ep) {
       const [a, b] = lowPair; addBond(a, b, -1.5); bumpPop(a, -0.3);
       addBeat({ type: 'rivalry', kind: 'social', players: [a, b], badge: 'Blame Game', badgeClass: 'social', selfie: null,
         text: draw([
-          (x, y) => `A ruined selfie sparks a screaming match — ${x} is certain ${y} threw the last shot, ${y} swears it wasn't ${pronouns(y).obj}, and the whole tower echoes with "WHO screwed me?!" Nobody's smiling now.`,
-          (x, y) => `${x} and ${y} stop even pretending to be friendly. "That was YOU." "Prove it." They're jabbing fingers at the bottom of the tower while the cords swing empty above them.`,
-          (x, y) => `The pressure cracks ${x} and ${y} wide open — old grudges, this challenge's sabotage, all of it, right there at the jump line. This ends at the jury.`,
-          (x, y) => `${x} shoves ${y} at the base of the ladder. "You've been playing dirty all morning." ${y} shoves right back. The hosts don't even try to break it up.`,
-          (x, y) => `"Enjoy the win you cheated for," ${x} spits at ${y}. ${y} just smiles, which somehow makes it worse. Two people who will absolutely be voting against each other.`,
+          (x, y) => `"I'm watching you," ${x} tells ${y} at the jump line. "Then watch me compete," ${y} replies. "You might learn something besides my facial expressions." The conversation gets louder from there.`,
+          (x, y) => `${x} and ${y} stop pretending to be friendly. "You look very pleased with yourself." "Would you prefer I looked scared of you?" Neither moves aside, and the argument delays the next jump.`,
+          (x, y) => `"If you've got a problem, say it," ${y} tells ${x}. "I don't trust you." "That was wonderfully clear. Now can I get to the ladder?" ${x} steps aside only after making ${y} ask.`,
+          (x, y) => `${x} complains that ${y} is enjoying the pressure too much. "I can look miserable if it helps you concentrate," ${y} says. "Or you could stop staring at me." The cords swing above them while they argue.`,
+          (x, y) => `"Try concentrating on your own shot," ${y} tells ${x}. "I'll concentrate when I want to." "Great. Let me know when that starts." ${x} turns back toward the ladder, furious.`,
         ], a, b) });
     });
 

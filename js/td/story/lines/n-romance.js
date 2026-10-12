@@ -27,7 +27,7 @@ export default {
       { by: 'a', say: "You're smiling, though.", v: { flirty: "You keep saying that. You keep standing next to me, though.", anxious: "Is that a good annoying? Please say it's a good annoying." } },
       { by: 'b', say: "...Shut up." },
       { by: 'b', conf: "I am not here to fall for somebody. I'm here to win. I need {a} to stop being cute for like one day.", v: { anxious: "I know... I promised myself I wouldn't fall for anyone here, but I really like {a}. Oh, this is very bad.", competitive: "I keep telling myself to focus and win and not look at {a}, and then I look at {a}.", grown: "I'm too old to get a crush on a game show. And yet." } },
-      { by: 'a', conf: "{b} laughed at all my jokes today, even the bad ones, especially the bad ones.", v: { flirty: "{b} laughed at every joke I made. I've still got it.", nerdy: "{b} laughed at my pun about mitochondria. Nobody laughs at that one." } },
+      { by: 'a', conf: "{b} laughed at all my jokes today, even the bad ones, especially the bad ones.", v: { flirty: "{b} laughed at every joke I made. I have still got it.", nerdy: "{b} laughed at my pun about mitochondria. Nobody laughs at that one." } },
     ] },
     { id: 'ns.f2', place: 'fire', turns: [
       { beat: "Everyone else has gone to bed. {a} and {b} are still up {here}." },
@@ -60,39 +60,39 @@ export default {
       { by: 'a', say: "...Oh. Okay, I'll stay." },
       { by: 'a', conf: "I've never been good at talking to people I like, but today I was okay, like medium, and medium is a big step for me." },
     ] },
-    { id: 'ns.f5', place: 'public', when: { merged: true }, turns: [
-      { by: 'b', say: "We were on different teams for so long. I never really talked to you.", v: { flirty: "Weird that we never talked before. Your loss, mostly.", anxious: "I never talked to you before. I was kind of scared of you, honestly." } },
-      { by: 'a', say: "You were busy trying to beat me." },
-      { by: 'b', say: "And you were busy being annoyingly good at challenges." },
-      { by: 'a', say: "Was that a compliment?" },
-      { by: 'b', say: "Don't let it go to your head." },
-      { by: 'a', say: "Too late." },
-      { by: 'b', conf: "I spent weeks thinking {a} was my enemy. Turns out {a} is just really, really fun to talk to. That's a problem.", v: { schemer: "{a} is charming, and that's either a threat or an opportunity, maybe both." } },
+    { id: "nrs.f5", place: "public", when: {"merged":true}, turns: [
+      {"by":"b","say":"It feels strange sitting here talking instead of worrying about the game."},
+      {"by":"a","say":"We can worry about it if you prefer. I can look suspicious and lower my voice."},
+      {"by":"b","say":"Please do not. I'm trying to enjoy the company."},
+      {"by":"a","say":"Was that a compliment?"},
+      {"by":"b","say":"Don't make me regret it before I finish."},
+      {"by":"a","say":"Too late. I'm enjoying it."},
+      {"by":"b","conf":"I wanted a normal conversation. Then {a} made me laugh, and I started caring much more about whether I sounded normal."}
     ] },
   ],
   'long.romance.spark.any': [
-    { id: 'ns.s1', place: 'secret', turns: [
-      { beat: "{a} and {b} have snuck away to {place}." },
-      { by: 'b', say: "Everyone's going to wonder where we are.", v: { anxious: "Everyone's going to notice we're gone, right? They'll totally notice.", flirty: "Let them wonder." } },
-      { by: 'a', say: "Let them wonder." },
-      { by: 'b', say: "So what is this? You and me?" },
-      { by: 'a', say: "I don't know. I just know I want to be wherever you are." },
-      { by: 'b', say: "That's a lot." },
-      { by: 'a', say: "Too much?" },
-      { by: 'b', say: "No. Not too much." },
-      { beat: "{b} kisses {a}." },
-      { by: 'a', conf: "I didn't come here to fall for anybody. That plan lasted about a week.", v: { dry: "My plan was no romance. My plan lasted six days.", teen: "I literally said I wasn't going to have a showmance. Whoops." } },
-      { by: 'b', conf: "Everybody's going to say a showmance is a target, and they're right, but I don't care right now." },
+    { id: "nrs.s1", place: "secret", turns: [
+      {"beat":"{a} and {b} step aside to talk {here}."},
+      {"by":"b","say":"Everyone is going to wonder where we are."},
+      {"by":"a","say":"We can go back. I just wanted to ask you something without an audience."},
+      {"by":"b","say":"You can ask."},
+      {"by":"a","say":"Do you want this to be a relationship? Because I do."},
+      {"by":"b","say":"Yes. I wanted to hear you say it, though."},
+      {"by":"a","say":"Was I that hard to read?"},
+      {"by":"b","say":"I wanted to be sure, not clever."},
+      {"beat":"{b} takes {a.posAdj} hand and kisses {a.obj}."},
+      {"by":"a","conf":"I wanted to say something impressive. {b} wanted something clear. I'm very glad I managed the second one."},
+      {"by":"b","conf":"There's going to be plenty of time for everyone else to have an opinion. For this minute, I just want to be happy with {a}."}
     ] },
-    { id: 'ns.s2', place: 'sleep', turns: [
-      { beat: "The {quarters} at night. {a} and {b} are the only ones still awake, whispering." },
-      { by: 'a', say: "Can I ask you something?", v: { anxious: "Can I ask you something? It's kind of scary.", flirty: "Can I ask you something? Don't laugh." } },
-      { by: 'b', say: "You're going to anyway." },
-      { by: 'a', say: "Is this a thing, you and me? Because I want it to be a thing." },
-      { by: 'b', say: "It's been a thing since the dock." },
-      { by: 'a', say: "Then why didn't you say?" },
-      { by: 'b', say: "I wanted you to say it first." },
-      { by: 'a', conf: "I'm smiling so much my face hurts. It's not official official, but it's official to me.", v: {"tough":"Okay, fine, it's a thing. Don't make it weird.","anxious":"I'm so happy and so scared. Is this a bad idea? It's probably a bad idea. I don't care."} },
+    { id: "nrs.s2", place: "sleep", turns: [
+      {"beat":"{a} and {b} speak quietly {here}."},
+      {"by":"a","say":"Can I ask you something without you laughing?"},
+      {"by":"b","say":"I can try. You look very serious."},
+      {"by":"a","say":"Is this a thing, you and me? I want it to be."},
+      {"by":"b","say":"Yes. I wanted to know whether you'd actually ask."},
+      {"by":"a","say":"I could have spent a very long time working up to that."},
+      {"by":"b","say":"I'm glad you did not. I'd rather spend the time with you."},
+      {"by":"a","conf":"I got an actual yes. I'm trying to look composed about it. I don't think anyone is going to believe the composed part."}
     ] },
     { id: 'ns.s3', place: 'water', when: { merged: true }, turns: [
       { beat: "{a} and {b} are sitting {here}, shoulders touching." },
@@ -136,22 +136,24 @@ export default {
     ] },
   ],
   'long.romance.moment.crush': [
-    { id: 'ns.mr1', place: 'aside', turns: [
-      { beat: "{a} has been sneaking looks at {b} all morning. {b} finally notices." },
-      { by: 'b', say: "Do I have something on my face?", v: { dry: "Is there something on my face, or am I just that interesting?", anxious: "Is something on my face? Oh no, is it bad?" } },
-      { by: 'a', say: "What? No! No, your face is fine, your face is great, I mean..." },
-      { by: 'b', say: "My face is great?" },
-      { by: 'a', say: "I'm going to go stand in the lake now." },
-      { by: 'a', conf: "I've liked {b} for days, and I think everybody knows except {b}, and now maybe {b} knows too.", v: { teen: "I've had a crush on {b} since basically day one. I'm so obvious." } },
+    { id: "nrs.mr1", place: "aside", turns: [
+      {"by":"b","say":"Were you going to say something, or are you just watching me think?"},
+      {"by":"a","say":"I was going to ask if you wanted company."},
+      {"by":"b","say":"You can ask that while standing a little closer."},
+      {"by":"a","say":"Right. I was trying to make this less awkward."},
+      {"by":"b","say":"How is that going?"},
+      {"by":"a","say":"Terribly. Would you like company anyway?"},
+      {"by":"b","say":"Yes. Come here before you talk yourself out of it."},
+      {"by":"a","conf":"I wanted to look casual. I looked like I needed directions to a conversation. {b} still said yes, so I'm calling it a success."}
     ] },
-    { id: 'ns.mr2', place: 'work', turns: [
-      { beat: "{a} has volunteered for every chore {b} has done today." },
-      { by: 'b', say: "You know you don't have to help with everything.", v: { dry: "You realise you're helping with literally everything I do?", warm: "You're so sweet, but you don't have to help with everything." } },
-      { by: 'a', say: "I like helping." },
-      { by: 'b', say: "You hate helping. You said so on the first day." },
-      { by: 'a', say: "...People change." },
-      { by: 'b', say: "In three days?" },
-      { by: 'a', conf: "Okay, fine, I don't like chores, I like doing chores next to {b}, and that's different." },
+    { id: "nrs.mr2", place: "work", turns: [
+      {"beat":"{a} joins {b} for a chore {here}."},
+      {"by":"b","say":"You don't have to help. I can manage this."},
+      {"by":"a","say":"I know. I wanted to spend time with you."},
+      {"by":"b","say":"That was surprisingly direct."},
+      {"by":"a","say":"I can make up a complicated excuse if you'd prefer."},
+      {"by":"b","say":"No. Stay. I liked the first answer."},
+      {"by":"a","conf":"I nearly pretended I was just being helpful. Then I told the truth, and {b} asked me to stay. I'm going to think about that for a completely unreasonable amount of time."}
     ] },
   ],
   'long.romance.honeymoon.any': [
@@ -177,15 +179,15 @@ export default {
     ] },
   ],
   'long.romance.night.kiss': [
-    { id: 'ns.k1', place: 'fire', turns: [
-      { beat: "Late, {here}. Someone found an empty bottle. It spins, and stops on {a}. Then again, on {b}." },
-      { by: 'b', say: "No. No way.", v: { loud: "NO. No way!", flirty: "Well, the bottle has spoken.", anxious: "Oh no. Oh no, no, no." } },
-      { by: 'a', say: "Rules are rules." },
-      { by: 'b', say: "There are no rules! We made this up ten minutes ago!" },
-      { by: 'a', say: "Then I'm making a new rule." },
-      { beat: "{a} leans over and kisses {b}. Everyone at the fire screams." },
-      { by: 'b', say: "...Okay. Spin it again." },
-      { by: 'b', conf: "It was a game. It was just a game. I'm going to be thinking about it all night.", v: { dry: "It was a game, and I'm totally fine. ...I'm not fine.", teen: "I literally can't stop thinking about it. It was just a game!" } },
+    { id: "nrs.k1", place: "fire", turns: [
+      {"beat":"The bottle stops on {a}, then {b}. The group waits for a reaction."},
+      {"by":"b","say":"Of course. The bottle has excellent comic timing."},
+      {"by":"a","say":"Do you want to, or should we spin it again?"},
+      {"by":"b","say":"I want to. I just needed a second to look cool about it."},
+      {"by":"a","say":"Take your second. I need one too."},
+      {"beat":"They lean toward each other and kiss. Cheers break the silence around them."},
+      {"by":"b","say":"Okay. I'm definitely not looking cool now."},
+      {"by":"b","conf":"{a} gave me a way to say no without making it embarrassing. That made saying yes feel very different. Now I have to stop smiling long enough to rejoin the game."}
     ] },
   ],
   'long.romance.night.never': [
@@ -232,15 +234,15 @@ export default {
     ] },
   ],
   'long.romance.fade.soured': [
-    { id: 'ns.d2', place: 'public', turns: [
-      { beat: "{a} and {b} walk past each other {here} without saying a word." },
-      { by: 'c', say: "Are you two okay?", v: { warm: "Hey, are you two okay? Something feels off.", dry: "So, are we not doing the couple thing anymore?" } },
-      { by: 'a', say: "Ask {b}." },
-      { by: 'b', say: "There's nothing to ask. We're done." },
-      { by: 'c', say: "Since when?" },
-      { by: 'b', say: "Since about an hour ago." },
-      { by: 'a', conf: "I thought {b} actually cared about me, but {b} just cared about having a vote, so, lesson learned.", v: { emotional: "I really thought it was real, and it wasn't, and that hurts so much.", cruel: "{b} used me, fine, so now I'll use my vote." } },
-      { by: 'b', conf: "{a} wants me to feel bad, and I don't. Okay, I do, a little." },
+    { id: "nrs.d2", place: "public", turns: [
+      {"beat":"{a} and {b} keep their distance {here}. {c} notices."},
+      {"by":"c","say":"Are you two okay?"},
+      {"by":"a","say":"We're not together anymore."},
+      {"by":"b","say":"I was going to tell people when I was ready."},
+      {"by":"c","say":"You don't owe me the details."},
+      {"by":"a","say":"Good, because I don't want to explain this in front of everyone."},
+      {"by":"a","conf":"I'm hurt. I want a simple explanation that makes being hurt feel less humiliating, but I don't get to decide what {b} felt."},
+      {"by":"b","conf":"The relationship ended. Living with the audience has not. I'd really like some space before the questions start."}
     ] },
   ],
   'long.romance.rideordie.any': [
@@ -256,25 +258,25 @@ export default {
     ] },
   ],
   'long.romance.noticed.any': [
-    { id: 'ns.o1', place: 'aside', turns: [
-      { beat: "{a} watches {b} and {c} share a plate {here}." },
-      { by: 'a', conf: "{b} and {c} are two votes that will never, ever split, and that's not cute, that's a problem." },
-      { by: 'a', conf: "If I'm not in with one of them, I'm against both of them. I need to pick soon." },
+    { id: "nrs.o1", place: "aside", turns: [
+      {"beat":"{a} watches {b} and {c} sit close together {here}."},
+      {"by":"a","conf":"{b} and {c} have a reason to protect each other. That doesn't mean they agree on every vote. I need to know where they actually stand before I treat them like one person."},
+      {"by":"a","conf":"If I only speak to one of them, I might miss how the other one is thinking. I should have two conversations instead of making one convenient assumption."}
     ] },
-    { id: 'ns.o2', place: 'aside', when: { voice: ['schemer', 'calm', 'dry', 'competitive'] }, turns: [
-      { by: 'a', conf: "Look at them. {b} and {c} haven't been more than three feet apart all day." },
-      { by: 'a', conf: "Everyone thinks it's sweet, but I'm counting, and that's two votes right there, holding hands." },
+    { id: "nrs.o2", place: "aside", when: {"voice":["schemer","calm","dry","competitive"]}, turns: [
+      {"by":"a","conf":"{b} and {c} look comfortable together. I'm wondering how much they tell each other when the rest of us are not around."},
+      {"by":"a","conf":"I can be friendly with them and still check whether their plans match. I'm not letting a cute conversation do my thinking for me."}
     ] },
   ],
   'long.romance.target.any': [
-    { id: 'ns.t1', place: 'aside', turns: [
-      { beat: "{a} watches {b} and {c} {here}, whispering to each other again." },
-      { by: 'a', conf: "{b} and {c} are a couple. A couple is two votes that go together every time." },
-      { by: 'a', conf: "If we don't split them now, they walk to the end holding hands. So one of them goes. Soon." },
+    { id: "nrs.t1", place: "aside", turns: [
+      {"beat":"{a} watches {b} and {c} talk quietly {here}."},
+      {"by":"a","conf":"I want {b} and {c} split up. Having someone here who cares about you gives you a reason to keep fighting when everyone else gets tired."},
+      {"by":"a","conf":"Now I need an actual argument people will listen to. Being annoyed that they have each other isn't going to be enough."}
     ] },
-    { id: 'ns.t2', place: 'aside', when: { voice: ['loud', 'tough', 'blunt'] }, turns: [
-      { by: 'a', conf: "I'm sick of {b} and {c}. They act like the rest of us don't matter. Like we're the background to their love story." },
-      { by: 'a', conf: "One of them is going home, and I don't even care which one, just one of them." },
+    { id: "nrs.t2", place: "aside", when: {"voice":["loud","tough","blunt"]}, turns: [
+      {"by":"a","conf":"Watching {b} and {c} together is getting under my skin. I want one of them out, and I know being irritated isn't enough to make it happen."},
+      {"by":"a","conf":"I need to find out who else is worried about them. If nobody is, I have to make a better case instead of getting louder."}
     ] },
   ],
   'long.romance.tri.tension': [

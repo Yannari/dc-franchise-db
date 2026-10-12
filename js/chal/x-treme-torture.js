@@ -2436,14 +2436,13 @@ export function simulateXtremeTorture(ep) {
       const _xtLoserParticipantsBlame = tribeMembers.filter(m => _xtEventScores[m] != null);
       if (_xtLoserParticipantsBlame.length >= 2) {
         const _xtBlameTarget = _xtLoserParticipantsBlame.slice().sort((a, b) => (_xtEventScores[a] || 0) - (_xtEventScores[b] || 0))[0];
-        const _xtBlameTargetPr = pronouns(_xtBlameTarget);
         const blamers = tribeMembers.filter(m => m !== _xtBlameTarget && pStats(m).strategic >= 6);
         if (blamers.length > 0) {
           blamers.forEach(m => addBond(m, _xtBlameTarget, -0.3));
           postEvents.push({
             type: 'xtBlameGame',
             players: [_xtBlameTarget, ...blamers.slice(0, 2)],
-            text: `The tribe's headed to tribal and someone has to be the reason. ${_xtBlameTarget}'s score hangs in the air like a question nobody wants to ask out loud — but ${blamers[0]} is already doing the math. ${_xtBlameTargetPr.Sub} ${_xtBlameTargetPr.sub === 'they' ? 'know' : 'knows'} it too.`,
+            text: `${blamers[0]} brings up ${_xtBlameTarget}'s score before the team has settled in. "We needed more than that." "I know what I scored," ${_xtBlameTarget} replies. "Tell me what you want me to change, or let me recover before you give the speech." ${blamers[0]} does not look ready to let it go.`,
             badgeText: 'ON THE BLOCK',
             badgeClass: 'red',
             bondChanges: blamers.map(m => ({ a: m, b: _xtBlameTarget, delta: -0.3 })),

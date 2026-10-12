@@ -44,7 +44,7 @@ import { writePreviously } from './previously.js';
 import { chalMoments } from './chalmoments.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf, kindOf } from './places.js';
-import { kitBitScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, hasKit, kitOf, sharedGround } from './kits.js';
+import { kitBitScene, kitDigScene, kitRomanceScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, hasKit, kitOf, sharedGround } from './kits.js';
 import { runArcs, campGame } from './arcs.js';
 
 // Where the season lives decides a few words ({quarters}, {bed}) and what campers can know:
@@ -1705,6 +1705,12 @@ export function airTdEpisode(ep) {
             if (joins) mates.slice(0, most).forEach((m, k) => { who[['c', 'd', 'e'][k]] = m; });
           }
         }
+        // Public couple downtime can include a friend already present in this camp.
+        // Private flirtation and triangle confrontations keep their engine cast.
+        if (!who.c && who.a && who.b && (kind === 'romance.honeymoon' || (kind === 'romance.moment' && ending === 'couple')) && (ep.num + i) % 3 === 0) {
+          who.c = members.filter(m => m !== who.a && m !== who.b && getBond(m, who.a) >= 0 && getBond(m, who.b) >= 0)
+            .sort((x, y) => getBond(y, who.a) + getBond(y, who.b) - getBond(x, who.a) - getBond(x, who.b) || x.localeCompare(y))[0] || null;
+        }
         const prev = line && step ? prevAired(line, step) : null;
         const rec = recordSlots(ep, who.a, who.b, camp, phase);
         // who they were to each other before the season (siblings, exes, an old betrayal)
@@ -1719,8 +1725,16 @@ export function airTdEpisode(ep) {
           prevGap: prev ? (ep.num - prev.ep >= 3 ? 'long' : ep.num === prev.ep ? 'same' : 'recent') : 'none',
           tribal: knowsTribal(phase), phase, third: !!who.c, known: !!data.target && !Object.values(who).includes(data.target),
           registerC: who.c ? registerOf(who.c) : null, ...allianceFacts(ev, who, data), hist: hist.facts.hist };
-        const w = writeStory(pool, ending, who, data, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', spotId: ev.scene?.spot?.id || ev.access?.locationId || null, avoid: ctxAvoid(ev.scene?.spot?.window || ev.access?.windowId) });
+        const sceneCtx = { ep: ep.num, camp, phase, n: n++, place: 'aside', spotId: ev.scene?.spot?.id || ev.access?.locationId || null, avoid: ctxAvoid(ev.scene?.spot?.window || ev.access?.windowId) };
+        const groupRomanceId = who.c && (kind === 'romance.honeymoon' ? 'nrx.honey1' : kind === 'romance.moment' && ending === 'couple' ? 'nrx.couple2' : null);
+        const w = kitRomanceScene(kind, ending, who, data, facts, sceneCtx) || kitDigScene(kind, who, data, facts, sceneCtx)
+          || (groupRomanceId ? writeStory(pool, ending, who, data, facts, { ...sceneCtx, entryIds: [groupRomanceId] }) : null)
+          || writeStory(pool, ending, who, data, facts, sceneCtx);
         if (!w) return null;
+        if ((w.lineId?.startsWith('ndx.') || w.lineId?.startsWith('nrx.')) && /^(drama\.|crowd\.clash)/.test(kind) && who.c && w.lines.some(l => l.by === who.c && l.kind === 'say'))
+          w.fx = [[who.a, who.c, -0.15]];
+        if (w.lineId?.startsWith('nrx.') && /^romance\./.test(kind) && who.c && w.lines.some(l => l.by === who.c && l.kind === 'say'))
+          w.fx = [[who.a, who.c, 0.15], [who.b, who.c, 0.15]];
         // a public moment has an audience (the user: "a social bomb, but no one in the background and
         // no one reacted"): when nobody but a and b spoke, the people around them react, the one
         // closer to b first (defending b, or just mortified), then one closer to a
@@ -1760,7 +1774,7 @@ export function airTdEpisode(ep) {
           players: [...new Set([...Object.values(who).filter(Boolean), ...(ev.players || []), ...watched])],
           lines, text: lines.map(l => l.text).join(' '), lineId: w.lineId, scene: { kind, who: castOnly(who, w), data, spot: w.spot ? { window: ev.scene?.spot?.window || ev.access?.windowId || null, ...w.spot } : (ev.scene?.spot || null) }, access: ev.access || null,
           alliance: ev.alliance, members: ev.members, advType: ev.advType, badgeText: ev.badgeText || '', badgeClass: ev.badgeClass || '',
-          why: whyOf(kind, ending, line ? `${line.type}.${step.step}` : '', who, data, facts), bondDelta: ev.bondDelta || null };
+          why: whyOf(kind, ending, line ? `${line.type}.${step.step}` : '', who, data, facts), bondDelta: ev.bondDelta || null, ...(w.fx?.length ? { fx: w.fx } : {}) };
       };
       for (const f of chosen) {
         const { ev, i, line, step } = f;
@@ -1787,11 +1801,14 @@ export function airTdEpisode(ep) {
             const b = members.filter(m => m !== a && m !== lastB).sort((x, y) => getBond(a, y) - getBond(a, x) || x.localeCompare(y))[0];
             if (!b) break;
             const who = { a, b };
-            const w = kitBitScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
+            // A third camper joins the same scheduled bit, with a consequence for participating.
+            const third = (ep.num + n) % 3 === 0 ? members.filter(m => m !== a && m !== b && getBond(a, m) >= 0 && getBond(b, m) >= 0)
+              .sort((x, y) => getBond(a, y) + getBond(b, y) - getBond(a, x) - getBond(b, x) || x.localeCompare(y))[0] : null;
+            const w = kitBitScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, third, place: 'aside', avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
             if (!w) continue;
             book[a] = ep.num; gs.tdStory.kitBitWith[a] = b;
-            list.push({ at: 0.35, item: { story: true, kind: 'kit.bit', storyType: 'kit', step: 'bit', players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
-              scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a}'s own thing, and ${b} has opinions about it.`], fx: [[a, b, 0.5]] } });
+            list.push({ at: 0.35, item: { story: true, kind: 'kit.bit', storyType: 'kit', step: 'bit', players: Object.values(w.who || who), lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'kit', who: w.who || who, data: {}, spot: w.spot || null }, badgeText: 'Camp Banter', badgeClass: 'green', why: [`${a}'s own thing, and ${b} has opinions about it.`], fx: [[a, b, 0.5], ...(w.fx || [])] } });
             break;
           }
           const kitItem = (kind, step, players, w, who, why, fx = []) => list.push({ at: kind === 'kit.call' ? 0.4 : 0.38, item: { story: true, kind, storyType: 'kit', step, players, lines: w.lines, text: w.text, lineId: w.lineId,

@@ -285,6 +285,36 @@ const T_CLOSE = [
     { by: 'b', say: "I won't get weird!" },
     { by: 'c', conf: "Friends on an island. It's not strategy. It's just nice." },
   ] },
+  { id: "ix.close1", turns: [
+    {"by":"c","say":"Can I sit with you two without having to explain how I'm doing?"},
+    {"by":"a","say":"Yes. We can talk about something stupid."},
+    {"by":"b","say":"Finally, a conversation I'm qualified for."},
+    {"by":"c","say":"Good. I'm exhausted by having a meaningful journey."},
+    {"by":"c","conf":"They let me sit down without turning me into a project. That was what I needed."}
+  ] },
+  { id: "ix.close2", turns: [
+    {"by":"a","say":"I need one person to say something encouraging and one person to make fun of it."},
+    {"by":"b","say":"You can still turn this around."},
+    {"by":"c","say":"There. Very moving. Should we all look toward the horizon?"},
+    {"by":"a","say":"Perfect. I needed both of those."},
+    {"by":"a","conf":"I wanted to feel better without having everyone stare at me like I was about to break. They understood the assignment."}
+  ] },
+  { id: "ix.close3", turns: [
+    {"by":"b","say":"Are we allowed to enjoy the company if we're still annoyed about being here?"},
+    {"by":"c","say":"I hope so. I'm doing an excellent job of both."},
+    {"by":"a","say":"You do look very committed to the annoyance."},
+    {"by":"c","say":"Thank you. I'd hate for the pleasant conversation to undermine my position."},
+    {"by":"b","conf":"We can laugh without pretending the island is a holiday. I like not having to choose."}
+  ] },
+  {"id":"ix.close4","turns":[{"by":"c","say":"If I start feeling sorry for myself, can one of you stop me?"},{"by":"a","say":"Do you want reassurance or a distraction?"},{"by":"c","say":"Reassurance first. Then distract me before I have to thank you dramatically."},{"by":"b","say":"You're still here. That gives you something to work with."},{"by":"a","say":"Now tell us which of us would be worse at hosting this show."},{"by":"c","say":"Oh, you. Immediately you."},{"by":"a","conf":"That was very fast. I'm glad {c} feels better, but I'd have appreciated a little hesitation."}]},
+  { id: "ix.close5", turns: [
+    {"by":"a","say":"What do you want from us right now? Advice, company, or five minutes to yourself?"},
+    {"by":"b","say":"Company. Absolutely no advice."},
+    {"by":"c","say":"Good. I was about to offer some, and I had no idea whether it was useful."},
+    {"by":"b","say":"You can stay. Just don't turn being eliminated into homework."},
+    {"by":"b","conf":"They asked instead of guessing. That sounds small until you have sat through someone telling you how you should feel."}
+  ] },
+  {"id":"ix.close6","turns":[{"by":"b","say":"Can we have a conversation that's not about getting back in?"},{"by":"a","say":"Yes. What would you like to talk about?"},{"by":"c","say":"Whether {b} has an interesting second topic ready."},{"by":"b","say":"I was hoping one of you'd provide it."},{"by":"a","say":"Excellent meeting. We've banned our only subject."},{"by":"c","conf":"We had nothing to talk about and still didn't want to leave. I think that's a fairly good sign."}]},
 ];
 const T_PETTY = [
   { id: 'ig.p1', turns: [

@@ -429,13 +429,13 @@ export default {
     ] },
   ],
   'long.blame.loss.any': [
-    { id: 'nk.bl1', place: 'public', turns: [
-      { by: 'a', say: "I'm just going to say it. That loss was on you.", v: { cruel: "Let's not pretend, that was you, all you.", blunt: "That loss was you. Own it." } },
-      { by: 'b', say: "On me? Everyone messed up!" },
-      { by: 'a', say: "Some people messed up more." },
-      { by: 'b', say: "You weren't exactly amazing either." },
-      { by: 'a', say: "At least I wasn't the reason." },
-      { by: 'b', conf: "Every time we lose, somebody needs to be the reason. Today {a} picked me.", v: { emotional: "{a} blamed me in front of everyone. I wanted to disappear.", tough: "{a} wants to blame me? Fine, but I'll remember that at the vote." } },
+    { id: "ncb.talk.bl1", place: "public", turns: [
+      {"by":"a","say":"I'm just going to say it. That loss was on you.","v":{"cruel":"Let's not pretend, that was you, all you.","blunt":"That loss was you. Own it."}},
+      {"by":"b","say":"On me? Everyone messed up!"},
+      {"by":"a","say":"Some people messed up more."},
+      {"by":"b","say":"You weren't exactly amazing either."},
+      {"by":"a","say":"At least I wasn't the reason."},
+      {"by":"b","conf":"{a} wants one person to explain a team loss. I am not going to agree just to make the conversation shorter."}
     ] },
   ],
   'long.fallout.found.one': [

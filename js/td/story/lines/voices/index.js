@@ -32,4 +32,10 @@ for (const b of BATCHES) for (const [id, turns] of Object.entries(b)) {
 }
 // Retired day-one scripts have been replaced by firstpair.js, which authors its own variants.
 for (const id of ['fp.c1','fp.c2','fp.c3','fp.c4','fp.x1','fp.x2','fp.x3']) delete VOICES[id];
+// Rewritten blame scenes have new turn structures; old overlays would contradict the replies.
+for (const id of Object.keys(VOICES)) if (id.startsWith('nbl.')) delete VOICES[id];
+// These rewritten conversations also retire overlays tied to unsupported history or old replies.
+for (const id of ["ns.f5","ns.mr1","ns.mr2","ns.s1","ns.s2","ns.k1","ns.d2","ns.o1","ns.o2","ns.t1","ns.t2","nh.m1"]) delete VOICES[id];
+// Corrected loss fallbacks cannot inherit accusations of unrecorded mistakes.
+for (const id of ["nc.l1","nc.l2","nc.l3","nc.l6","nc.l7","nc.l9","nc.l10","nc.l11","nl.l1","nl.l2","nl.l3","nk.bl1"]) delete VOICES[id];
 export default VOICES;

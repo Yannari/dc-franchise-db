@@ -150,14 +150,14 @@ export default {
     ] },
   ],
   'long.drama.bomb.any': [
-    { id: 'nh.m1', place: 'public', when: { third: true }, turns: [
+    { id: "ncb.bomb.m1", place: 'public', when: { third: true }, turns: [
       { beat: "Everyone is {here} when {a} says it." },
       { by: 'a', say: "Let's be honest. Half the people here are only here because somebody's carrying them.", v: { cruel: "Let's be real. Half of you are dead weight and the rest of us are carrying you.", proud: "Some of us are carrying this team, and I won't name names, but it's me." } },
       { by: 'b', say: "Are you talking about me?" },
       { by: 'a', say: "If it fits." },
-      { by: 'c', say: "Are you kidding? {b} won us the last challenge." },
-      { by: 'a', say: "Once." },
-      { by: 'c', say: "Once is more than you." },
+      { by: 'c', say: "Then say what you mean. Do not make {b} guess whether that was aimed at {b.obj}." },
+      { by: 'a', say: "I am allowed to have an opinion." },
+      { by: 'c', say: "You want everybody to hear it, but nobody gets to answer?" },
       { beat: "Somebody actually goes 'oooh'." },
       { by: 'b', conf: "I didn't even have to answer, because {c} did it for me, and honestly better than I would have." },
       { by: 'a', conf: "I said what everybody was thinking, and nobody else was brave enough to say it. Or dumb enough, one of those.", v: { loud: "Somebody had to say it! I said it!", dry: "I said it out loud. Apparently that's illegal here." } },

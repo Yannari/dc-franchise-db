@@ -233,9 +233,10 @@ const DRAMA_EVENTS = [
       const blamed = pick(all.filter(n => n !== blamer));
       addBond(blamer, blamed, -0.4);
       const texts = [
-        `"You tripped the alarm back there." ${blamer} jabbed a finger at ${blamed}. "That's on YOU."`,
-        `${blamer} was furious. "${blamed} almost got us ALL caught. I'm not going down because of someone else's mistake."`,
-        `"If we lose this, I know who to blame." ${blamer} glared at ${blamed}. The tension was suffocating.`,
+        `"If this goes wrong, I don't want to hear that nobody saw it coming," ${blamer} says, looking at ${blamed}. "Then say what you're worried about," ${blamed} replies. "Looking at me isn't a plan."`,
+        `${blamer} turns to ${blamed}. "I need to know you're taking this seriously." "I'm standing in the same death trap you are," ${blamed} says. "How much more interested would you like me to look?"`,
+        `"Can we get through the next part without you blaming me in advance?" ${blamed} asks. ${blamer} folds ${pronouns(blamer).posAdj} arms. "Depends what happens." "Very reassuring. Glad we had this briefing."`,
+        `${blamer} starts explaining how the mission could go wrong, staring straight at ${blamed}. "You can describe the problem without using my face as a visual aid," ${blamed} says. ${blamer} looks away, still annoyed.`,
       ];
       return { text: pick(texts), players: [blamer, blamed], badgeText: 'BLAME GAME', badgeClass: 'red' };
     },

@@ -24,6 +24,7 @@ import { gs } from '../../core.js';
 import { STORY_POOLS } from './lines/index.js';
 import { writeStory } from './write.js';
 import KITS from './kits/index.js';
+import { kitExchange, kitDigEntry, kitRomanceEntry } from './kit-exchanges.js';
 
 export const kitOf = name => KITS[name] || null;
 export const hasKit = name => !!KITS[name];
@@ -123,7 +124,7 @@ const REACT = ["Huh. I didn't expect that.", "That's more than I thought you'd t
 function writeKitScene(entry, who, facts, ctx) {
   const key = `kit.${entry.id.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
   STORY_POOLS[`${key}.any`] = [entry];
-  try { return writeStory(key, 'any', who, ctx.data || {}, facts, { ...ctx, unique: ctx.firstImpressions ? true : false }); }
+  try { return writeStory(key, 'any', who, ctx.data || {}, facts, { ...ctx, unique: ctx.unique ?? !!ctx.firstImpressions }); }
   finally { delete STORY_POOLS[`${key}.any`]; }
 }
 
@@ -148,7 +149,24 @@ const BIT_AFTER = [
 /** a brings their thing up, b teases them about it, a answers, b comes back at it, a has the last word,
  *  and one of them reflects. */
 export function kitBitScene(a, b, facts, ctx) {
-  const bit = take(a, 'bit'), tease = take(a, 'tease'), reply = take(a, 'reply'), conf = take(a, 'conf');
+  const authoredBit = take(a, 'bit', line => !!kitExchange(a, b, line));
+  if (authoredBit) {
+    const third = ctx.third && (gs.activePlayers || []).includes(ctx.third) ? ctx.third : null;
+    const exchange = kitExchange(a, b, authoredBit.line, third);
+    const entry = { id: `kit:${exchange.id}`, place: 'aside', turns: exchange.turns };
+    const w = writeKitScene(entry, exchange.who, { ...facts, third: !!exchange.who.c }, ctx);
+    if (w) {
+      authoredBit.mark();
+      w.who = exchange.who; w.fx = exchange.fx;
+      return w;
+    }
+  }
+  // Keep custom kits working and keep the tease/reply on the opening's index.
+  // The bundled sign claims need birthdays the engine has never established.
+  const bit = take(a, 'bit', (line, i) => KITS[a]?.tease?.[i] && KITS[a]?.reply?.[i]
+    && !(a === 'Aubrey' && /three Scorpios|psych student.*astrology/i.test(line)));
+  if (!bit) return null;
+  const tease = take(a, 'tease', (_, i) => i === bit.index), reply = take(a, 'reply', (_, i) => i === bit.index), conf = take(a, 'conf');
   if (!bit || !tease || !reply) return null;
   const entry = { id: `kit:${a}:bit:${(used()[a] || []).length}`, place: 'aside', turns: [
     { by: 'a', say: bit.line }, { by: 'b', say: tease.line }, { by: 'a', say: reply.line },
@@ -156,8 +174,22 @@ export function kitBitScene(a, b, facts, ctx) {
     ...(conf ? [{ by: 'a', conf: conf.line }] : []),
   ] };
   const w = writeKitScene(entry, { a, b }, facts, ctx);
-  if (w) { bit.mark(); tease.mark(); reply.mark(); conf?.mark(); }
+  if (w) { bit.mark(); tease.mark(); reply.mark(); conf?.mark(); w.who = { a, b }; w.fx = []; }
   return w;
+}
+
+/** A richer rendering of an existing dig; its original consequences still apply. */
+export function kitDigScene(kind, who, data, facts, ctx) {
+  const entry = kitDigEntry(kind, who);
+  const w = entry ? writeKitScene(entry, who, facts, { ...ctx, data, unique: true }) : null;
+  if (w && who.c) w.fx = [[who.b, who.c, 0.25], [who.a, who.c, -0.25]];
+  return w;
+}
+
+/** A kit-grounded alternative for an existing, engine-authorized romance moment. */
+export function kitRomanceScene(kind, ending, who, data, facts, ctx) {
+  const entry = kitRomanceEntry(kind, ending, who);
+  return entry ? writeKitScene(entry, { a: who.a, b: who.b }, facts, { ...ctx, data, unique: true }) : null;
 }
 
 /** Two people get to know each other: b asks about home, a answers; a asks back about what b wants, b answers. */
@@ -235,7 +267,7 @@ export function kitClashScene(a, b, facts, ctx) {
 }
 const OPEN = ["You okay? You've been quiet all day.", "Can I ask you something real?", "You don't have to be on all the time, you know. Not with me.", "Hey. What's going on with you? For real.", "You looked far away just now. Where'd you go?", "Can we just talk? No game stuff.", "You've been off all day. Want to walk?", "Sit with me for a minute. Everybody else is asleep.", "I feel like I don't actually know you yet. Not the real you.", "Is this game getting to you? Because it's getting to me."];
 const HEARD = ["Thank you for telling me. Really.", "I had no idea. I'm glad you told me.", "That stays between us. I promise.", "That's a lot to carry around. I'm sorry.", "I'm really glad it was me you told.", "Hey. You're not on your own with that out here.", "I'd never have guessed that. Not in a million years.", "That explains a lot about you, in a good way.", "I'm not going anywhere. You can say anything you want to me.", "Thank you for trusting me with that. I won't make you regret it."];
-const CLOSE = ["Okay. Don't make it weird.", "Okay. That's enough feelings for one day.", "I don't usually say that stuff out loud.", "Anyway. Don't tell anybody I got soft.", "Thanks. I mean it. Now, back to the game.", "Okay, I'm done. That was a lot.", "Okay, I'm going to go splash some water on my face now.", "Can we go back to talking about nothing? I'm good at nothing.", "Anyway. That's the most I've talked in a week.", "If you tell anybody I cried, I'll deny it."];
+const CLOSE = ["Okay. Don't make it weird.", "Okay. That's enough feelings for one day.", "I don't usually say that stuff out loud.", "Anyway. Don't tell anybody I got soft.", "Thanks. I mean it. Now, back to the game.", "Okay, I'm done. That was a lot.", "Okay, I'm going to go splash some water on my face now.", "Can we go back to talking about nothing? I'm good at nothing.", "Anyway. I would like to hear about you now.", "If you make a big thing of this, I am changing the subject."];
 const DEEP_CONF = ["{a} told me something real today. I'm not going to use it. I just want {a.obj} to know I heard it.", "Everybody here sees one side of {a}. Today I got to see the other one.", "I came here to play a game. I didn't expect to actually care about anybody. Then {a} said that.", "You spend so long out here working out who to trust. Then somebody tells you something like that, and you just know.", "I'll remember what {a} told me today long after I forget who won this season.", "I used to think {a} was all front. Now I know what's behind it, and I like {a} a lot more.", "{a} doesn't open up to anybody. Today {a} opened up to me. I'm not taking that lightly.", "It's easy to forget there are real people under all this. {a} reminded me today."];
 /** a, with a friend, says the true thing under the bit. */
 export function kitDeepScene(a, b, facts, ctx) {
@@ -265,12 +297,12 @@ export function kitSoloScene(a, facts, ctx) {
 }
 
 // ── a running bit, called back by other people (who aren't the one doing it) ──
-const CALL = ["Has {about} brought up {thing} yet today?", "Ten minutes. I'm giving it ten minutes before {about} mentions {thing}.", "Did you hear {about} going on about {thing} again this morning?", "What's the over-under on {thing} coming up at dinner tonight?", "If {about} doesn't mention {thing} today, I'm going to check {about} for a fever.", "I've started counting how often {about} brings up {thing}. I need a bigger stick to keep tally on."];
-const ANSWER = ["Twice. Before breakfast.", "Not yet. I'm almost worried.", "I could do the whole speech for you at this point.", "Honestly? I'm starting to like it.", "Only four times. It's a slow day.", "I tried to change the subject. It didn't work.", "Three times, and once was in a whisper.", "Are you kidding? It's practically the camp's theme song now.", "I'm keeping a tally. We're in double figures.", "It came up while I was asleep. I heard it in a dream."];
+const CALL = ["If {about} starts talking about {thing}, are you joining in or finding an excuse to leave?","How would you get {about} talking about {thing} without actually asking?","Do you think {about} knows we remember the part about {thing}?","What is your guess: does {thing} come up if we sit with {about}?","If we try to talk about {thing}, will {about} correct us?","Are we going to ask {about} about {thing}, or keep having this conversation without the expert?"];
+const ANSWER = ["Joining in. I want to find out whether I can keep up.","I would be subtle. So subtle that I would probably have to ask.","We could mention it and see. Preferably without making it sound like an interrogation.","I am guessing yes. I would also like to hear about something else.","I hope so. I would rather be corrected than have to pretend I understand.","Let us ask. I have already reached the limit of what I can confidently make up."];
 // the callback's follow-up between the two of them, then the one they're talking about walks up
 const CALL_MORE = [
   ["Should we tell {about} it's become a thing?", "Absolutely not. It's the best part of my day."],
-  ["I'm starting a tally. On a tree.", "Put me down for a guess of six by sunset."],
+  ["We should probably ask what it means to {about}.", "Good idea. I would rather hear that than guess."],
   ["Honestly, I'd miss it if {about} stopped.", "Me too. Don't tell {about} I said that."],
   ["Do you think {about} knows we notice?", "There's no way. Or there's every way, and that's worse."],
   ["We could try to get {about} to say it on purpose.", "Ten minutes. I bet you I can do it in ten."],
@@ -292,7 +324,7 @@ export function kitCallbackScene(c, d, about, facts, ctx) {
   const [m1, m2] = pickOf(CALL_MORE, c, d, about);
   const [q, r] = pickOf(CALL_ARRIVE, about, c);
   const entry = { id: `kit:${about}:call:${n}`, place: 'aside', turns: [
-    { by: 'a', say: CALL[n].split('{thing}').join(k.thing) }, { by: 'b', say: pickOf(ANSWER, c, d, about) },
+    { by: 'a', say: CALL[n].split('{thing}').join(k.thing) }, { by: 'b', say: ANSWER[n] },
     { by: 'a', say: m1 }, { by: 'b', say: m2 },
     { beat: '{c} wanders over.' }, { by: 'c', say: q }, { by: 'a', say: r },
   ] };
@@ -371,7 +403,7 @@ const CLASH_CONF_B = [
 export function kitFirstPairScene(a, b, kind, facts, ctx) {
   if (!hasKit(a)) return null;
   const k = kitOf(a);
-  const bit = take(a, 'bit', (line, i) => DAY_ONE_OK(line) && [k.tease?.[i], k.reply?.[i]].every(x => x && DAY_ONE_OK(x)));
+  const bit = take(a, 'bit', (line, i) => DAY_ONE_OK(line) && !(a === 'Aubrey' && /three Scorpios|psych student.*astrology/i.test(line)) && [k.tease?.[i], k.reply?.[i]].every(x => x && DAY_ONE_OK(x)));
   if (!bit) return null;
   const tease = take(a, 'tease', (_, i) => i === bit.index), reply = take(a, 'reply', (_, i) => i === bit.index);
   if (!tease || !reply) return null;

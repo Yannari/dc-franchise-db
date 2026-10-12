@@ -16,6 +16,7 @@ import nVote from './n-vote.js';
 import nVote2 from './n-vote2.js';
 import nVote3 from './n-vote3.js';
 import nDrama from './n-drama.js';
+import nDramaExchanges from './n-drama-exchanges.js';
 import nRomance from './n-romance.js';
 import nTalk from './n-talk.js';
 import nCamp from './n-camp.js';
@@ -59,6 +60,7 @@ import nLong2 from './n-long2.js';
 import nLong3 from './n-long3.js';
 import nChm from './n-chm.js';
 import nBlame from './n-blame.js';
+import nSocialExchanges from './n-social-exchanges.js';
 import nRecall from './n-recall.js';
 import nChm2 from './n-chm2.js';
 import nReveal from './n-reveal.js';
@@ -94,7 +96,7 @@ import nDayone from './n-dayone.js';
 import nPitch from './n-pitch.js';
 import VOICES from './voices/index.js';
 
-const FILES = [firstday, firstpair, firstgroups, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival, nGroup3, nGroup4, nGroup5, nArrival2, nTwist, nTribal2, nTwist2, nVote4, nVote5, nRoom, nAuction, nExile, nFeast, nPlan, nPlan2, nFirstImp, nAucFloor, nFirstImp2, nPublic, nTqa, nAdvPlay, nTqa2, nArc, nVp2, nVt2, nTqa3, nMorning3, nVp3, nVt3, nPsy, nRun, nThr, nPrev, nLong2, nLong3, nChm, nBlame, nRecall, nChm2, nReveal, nBooth2, nBooth3, nKindred, nCrash, nExit2, nThr2, nLong4, nCover, nRel, nVp4, nLong5, nLong6, nTeach, nHandoff, nFinal, nDeep, nNote, nFinds, nSolo2, nChm3, nAlliance4, nReturnee, nVpSpecific, nMentor, nBanter, nArcs, nGames, nDefend, nDayone, nPitch];
+const FILES = [firstday, firstpair, firstgroups, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nDramaExchanges, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival, nGroup3, nGroup4, nGroup5, nArrival2, nTwist, nTribal2, nTwist2, nVote4, nVote5, nRoom, nAuction, nExile, nFeast, nPlan, nPlan2, nFirstImp, nAucFloor, nFirstImp2, nPublic, nTqa, nAdvPlay, nTqa2, nArc, nVp2, nVt2, nTqa3, nMorning3, nVp3, nVt3, nPsy, nRun, nThr, nPrev, nLong2, nLong3, nChm, nBlame, nSocialExchanges, nRecall, nChm2, nReveal, nBooth2, nBooth3, nKindred, nCrash, nExit2, nThr2, nLong4, nCover, nRel, nVp4, nLong5, nLong6, nTeach, nHandoff, nFinal, nDeep, nNote, nFinds, nSolo2, nChm3, nAlliance4, nReturnee, nVpSpecific, nMentor, nBanter, nArcs, nGames, nDefend, nDayone, nPitch];
 
 export const STORY_POOLS = {};
 for (const f of FILES) for (const [k, v] of Object.entries(f)) STORY_POOLS[k] = STORY_POOLS[k] ? [...STORY_POOLS[k], ...v] : [...v];

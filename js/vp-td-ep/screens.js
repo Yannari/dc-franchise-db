@@ -383,6 +383,10 @@ function paint(uid, fresh) {
       if (n >= full.length) { clearInterval(R.typing); say.innerHTML = badge + lit(full); }
     }, 16);
   }
+  // a voice belongs to the line it was spoken on: any other line on screen cuts it, however it got there (back,
+  // show all, the timeline; the user: "when I pass a dialogue the sound continues" — only Next used to cut it)
+  if (!fresh && R.voiceIdx !== R.idx) hush();
+  if (fresh) R.voiceIdx = R.idx;
   if (fresh) { hush(); if ((s.k === 'say' || s.k === 'conf') && s.by && d.text && !d.cls.includes('dir')) speak(s.by, d.text, voiceOf(s.by), { loud: !!(s.loud || s.shock), meta: { k: s.k, stage: s.stage || null, loud: !!s.loud, shock: !!s.shock, badge: d.badge?.text || null, screen: scr.id, ep: scr.ep } }); }
   if (fresh && s.loud) { dlg.classList.remove('loud'); void dlg.offsetWidth; dlg.classList.add('loud'); }
   // what happens, animated
@@ -663,6 +667,7 @@ const faceImg = (R, n, cls = '') => `<img class="${cls}" src="${esc(avatar(n))}"
 function mapPaint(uid, fresh) {
   const R = reg()[uid];
   if (!R || typeof document === 'undefined') return;
+  hush();   // back on the map: the conversation's last line stops with it
   const root = document.querySelector(`.tdx[data-uid="${uid}"]`), st = document.getElementById(`tdx-st-${uid}`);
   if (!root || !st) return;
   root.dataset.idx = '0';

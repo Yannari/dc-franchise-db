@@ -218,7 +218,6 @@ function shell(scr, classicScreen, ep, o) {
   <button type="button" class="tdx-btn go" onclick="tdxNext('${uid}')">Next ▶ <kbd>Space</kbd></button>
   <button type="button" class="tdx-btn" id="tdx-auto-${uid}" onclick="tdxAuto('${uid}')">Auto</button>
   <button type="button" class="tdx-btn" onclick="tdxAll('${uid}')">Skip ⏭</button>
-  ${typeof window !== 'undefined' && window.tdCanVoice?.() ? `<button type="button" class="tdx-btn" onclick="tdVoiceEpisode()" title="Voice every line of this episode (Inworld, about $0.50; lines already voiced are free)">🎙 Voice</button>` : ''}
   <div class="tdx-chap" id="tdx-chap-${uid}" onpointerdown="tdxSeek('${uid}',event)" title="Click or drag to go anywhere in the episode">${chapHtml(scr)}<span class="head"></span></div>
   <span class="tdx-count" id="tdx-count-${uid}">0 / ${scr.steps.length}</span>
   <button type="button" class="tdx-btn" onclick="tdxTv()">TV mode</button>

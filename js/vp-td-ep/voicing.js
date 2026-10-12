@@ -43,7 +43,13 @@ async function pool(items, n, fn) {
 
 export async function tdVoiceEpisode(ep = Number(window.vpEpNum)) {
   if (!ep) return alert('Open the episode you want voiced first.');
-  if (!token()) return alert('Voicing needs the studio token (the one the Casting Studio saves with). Open the Studio once and save a character to set it.');
+  // the studio token, asked once and remembered on this device (it is kept per site: one set on localhost is not
+  // on the published site), the way the photo backup asks; the button shows either way (the user did not see it)
+  if (!token() && typeof prompt === 'function') {
+    const t = (prompt('Paste your studio token to voice this episode. It is the same token the Casting Studio and the gallery use, and it is remembered on this device.') || '').trim();
+    if (t) { try { localStorage.setItem('studio_api_token', t); } catch { /* this session only */ } }
+  }
+  if (!token()) return;
   const P = panel(), t0 = Date.now(), season = voiceSeason();
   try {
     // 1. the lines, as this browser says them
@@ -115,4 +121,16 @@ export async function tdVoiceEpisode(ep = Number(window.vpEpNum)) {
     P.say(`Voicing episode ${ep} stopped`, String(e.message || e), null, true);
   }
 }
-if (typeof window !== 'undefined') { window.tdVoiceEpisode = tdVoiceEpisode; window.tdCanVoice = canVoice; }
+/** The Run tab's button (simulator.html, Voice Acting): which episode, then tdVoiceEpisode. */
+export function voiceEpisodeAsk() {
+  const gs = window.gs;
+  if (!gs || !gs.initialized) return alert('Load a season first.');
+  const highest = (gs.episodeHistory || []).length;
+  if (!highest) return alert('Simulate an episode first.');
+  const asked = prompt(`Which episode should be voiced? (1–${highest})`, String(highest));
+  if (!asked) return;
+  const ep = Number(asked);
+  if (!Number.isInteger(ep) || ep < 1 || ep > highest) return alert(`No episode ${asked}.`);
+  return tdVoiceEpisode(ep);
+}
+if (typeof window !== 'undefined') { window.tdVoiceEpisode = tdVoiceEpisode; window.tdCanVoice = canVoice; window.voiceEpisodeAsk = voiceEpisodeAsk; }

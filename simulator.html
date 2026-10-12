@@ -1638,6 +1638,11 @@
             <button class="btn btn-secondary btn-sm" onclick="redoEpisodeSocial()" style="margin-bottom:2px;width:100%" title="Throw away one episode's posts and make them again — with the AI writer if it is switched on. Every other episode is left exactly as it is.">💬 Redo one episode</button>
             <button class="btn btn-secondary btn-sm" onclick="rebuildSeasonSocial()" style="margin-bottom:2px;width:100%" title="Throw away every post this season has and build the whole feed again. Use it after the generator changes; it asks first, because there is no undo.">♻️ Rebuild the whole season</button>
             <div id="redo-social-note" class="season-controls-note" style="margin-bottom:6px">The alumni room is rebuilt every time you open it. This is for the timeline, which is saved.</div>
+            <!-- VOICE ACTING (js/vp-td-ep/voicing.js): every line of an episode directed and voiced on Inworld, kept
+                 in the audio bucket, played to anybody watching. Lines already voiced are never paid for again. -->
+            <div class="season-controls-label">Voice Acting</div>
+            <button class="btn btn-secondary btn-sm" onclick="voiceEpisodeAsk()" style="margin-bottom:2px;width:100%" title="Voice every line of one episode with each character's Inworld voice (about $0.50 an episode; lines already voiced cost nothing). Characters without a voice of their name in your Inworld account keep the blips.">🎙 Voice an episode</button>
+            <div id="voice-ep-note" class="season-controls-note" style="margin-bottom:6px">Total Drama episodes. Asks which one, then directs and voices every line.</div>
             <div class="divider" style="margin:8px 0"></div>
             <div class="season-controls-label">Season Save</div>
             <button class="btn btn-secondary btn-sm" onclick="saveSeasonToStorage()" style="margin-bottom:2px;width:100%">Save Season</button>

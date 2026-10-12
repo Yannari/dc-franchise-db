@@ -2505,12 +2505,20 @@ async function voiceRoute(request, env, url, cors) {
     if (!body.force && await env.AUDIO.head(key)) { done.push(l.id); return; }   // force: Revoice, a new take replaces it
     const dir = String(l.direction || '').replace(/[\[\]]/g, '').trim().slice(0, 80);
     const text = (dir ? `[${dir}] ` : '') + l.text.trim().slice(0, 1200);
-    const r = await fetch('https://api.inworld.ai/tts/v1/voice', {
-      method: 'POST',
-      headers: { Authorization: `Basic ${env.INWORLD_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, voiceId: String(body.voices[l.by]), modelId: 'inworld-tts-2',
-        audioConfig: { audioEncoding: 'MP3', sampleRateHertz: 48000, bitRate: 64000, speakingRate: 1 }, temperature: 1 }),
-    });
+    // The user's Inworld plan allows 5 requests at once (the first real episode: 416 of 638 lines refused with
+    // 429 when the browser sent three batches of four). The browser now sends one batch at a time, this voices
+    // four at a time, and a 429 waits and goes again rather than failing the line.
+    let r;
+    for (let tries = 0; ; tries++) {
+      r = await fetch('https://api.inworld.ai/tts/v1/voice', {
+        method: 'POST',
+        headers: { Authorization: `Basic ${env.INWORLD_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, voiceId: String(body.voices[l.by]), modelId: 'inworld-tts-2',
+          audioConfig: { audioEncoding: 'MP3', sampleRateHertz: 48000, bitRate: 64000, speakingRate: 1 }, temperature: 1 }),
+      });
+      if (r.status !== 429 || tries >= 4) break;
+      await new Promise(res => setTimeout(res, 800 * (tries + 1)));
+    }
     if (!r.ok) throw new Error(`inworld ${r.status}: ${(await r.text()).slice(0, 160)}`);
     const j = await r.json();
     const bin = Uint8Array.from(atob(j.audioContent || ''), c => c.charCodeAt(0));

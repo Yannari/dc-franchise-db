@@ -21,10 +21,50 @@ import { tdAftermathScreen, hasAftermath } from './aftermath.js';
 import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf, hideBooth, setHideBooth, maskName } from './stage.js';
 import { TDX_CSS, TDX_FONTS } from './style.js';
 import { liveGL } from './glplate.js';
-import { ambience, stopAmbience, sfx, speak, hush, voicedLines } from './sound.js';
+import { ambience, stopAmbience, sfx, speak, hush, voicedLines, lineId } from './sound.js';
 import './voicing.js';
 
 const reg = () => (typeof window !== 'undefined' ? (window._tdx ||= {}) : (globalThis._tdx ||= {}));
+
+/**
+ * Every spoken line of an episode, without playing it (the user, 2026-10-12: voice it in the background, without
+ * opening the viewer). The viewer's own builder (buildVPScreens) makes every stepped screen and every camp
+ * conversation in memory; each line is then read exactly as paint() would speak it: the same dialogue(), the same
+ * mask on a written vote while the spoiler switch hides them, the same id. Leaves the viewer as it found it: the
+ * screen list and the registry are put back, so an episode open on screen is not disturbed.
+ * Returns [{ by, text, id, k, stage, loud, shock, badge, screen, ep, why }] in screen order, each line once.
+ */
+export function tdEpisodeLines(epRecord) {
+  const R0 = reg(), saved = { ...R0 };
+  const prev = typeof window !== 'undefined' ? window.vpScreens : null;
+  try { window.buildVPScreens(epRecord); } finally { if (prev) window.vpScreens = prev; }
+  const lines = [], have = new Set();
+  const take = scr => {
+    if (!scr?.steps) return;
+    for (let i = 0; i < scr.steps.length; i++) {
+      const L = ledgerAt(scr, i), s = L.step || {};
+      if (!((s.k === 'say' || s.k === 'conf') && s.by)) continue;
+      const d0 = dialogue(scr, L);
+      const d = s.writes && scr.kind === 'tribal' && hideBooth() ? { ...d0, text: maskName(d0.text, s.writes) } : d0;
+      if (!d.text || String(d.cls || '').includes('dir')) continue;
+      const id = lineId(s.by, d.text);
+      if (have.has(id)) continue;
+      have.add(id);
+      lines.push({ by: s.by, text: d.text, id, k: s.k, stage: s.stage || null, loud: !!s.loud, shock: !!s.shock,
+        badge: d.badge?.text || null, screen: scr.id, ep: scr.ep ?? epRecord.num, why: L.scene?.why || null });
+    }
+  };
+  try {
+    for (const [uid, R] of Object.entries(R0)) {
+      if (saved[uid] === R) continue;   // built before: another episode, or the one on screen
+      if (R.isMap) (R.map?.convs || []).forEach(c => take(c.screen)); else take(R.scr);
+    }
+  } finally {
+    for (const k of Object.keys(R0)) if (!(k in saved)) delete R0[k];
+    Object.assign(R0, saved);
+  }
+  return lines;
+}
 export const tdSteppedOn = () => { try { return globalThis.localStorage?.getItem('td-vp') !== 'classic'; } catch { return true; } };
 
 /** Each camp's members as the episode started (the record, never live gs). */

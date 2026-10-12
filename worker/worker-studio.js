@@ -369,7 +369,7 @@ export default {
         return await audioRoute(request, env, url, cors);
       }
       // ── VOICE ACTING (js/vp-td-ep/voicing.js) ──────────────────────────
-      if (url.pathname === '/api/voice/render' || url.pathname === '/api/voice/list' || url.pathname === '/api/voice/voices') {
+      if (['/api/voice/render', '/api/voice/list', '/api/voice/voices', '/api/voice/clear'].includes(url.pathname)) {
         return await voiceRoute(request, env, url, cors);
       }
 
@@ -2494,6 +2494,29 @@ async function voiceRoute(request, env, url, cors) {
   }
   if (request.method !== 'POST') return json({ ok: false, error: 'method not allowed' }, 405, cors);
   const body = await request.json().catch(() => ({}));
+  // POST /api/voice/clear (token): { season, episode? | from?, keep? } — a deleted or replaced episode's voices go
+  // with it (the user, 2026-10-12: "when an episode gets deleted it should delete the voicing too"). `episode`: that
+  // episode only, minus the line ids in `keep` (the lines it still has); `from`: that episode and every later one
+  // (a re-run replaces them all); neither: the whole season (a reset, a deleted save).
+  if (url.pathname === '/api/voice/clear') {
+    const sc = String(body.season || '').toLowerCase();
+    if (!VOICE_SEASON.test(sc)) return json({ ok: false, error: 'season' }, 400, cors);
+    const one = parseInt(body.episode, 10), from = parseInt(body.from, 10), keep = new Set(Array.isArray(body.keep) ? body.keep : []);
+    const prefix = one > 0 ? `voice/${sc}/e${one}/` : `voice/${sc}/`;
+    const gone = [];
+    let cursor;
+    do {
+      const page = await env.AUDIO.list({ prefix, cursor });
+      for (const o of page.objects) {
+        const m = o.key.match(/\/e(\d+)\/(L[0-9a-f]{8})\.mp3$/);
+        if (!m || keep.has(m[2]) || (from > 0 && +m[1] < from)) continue;
+        gone.push(o.key);
+      }
+      cursor = page.truncated ? page.cursor : undefined;
+    } while (cursor);
+    for (let k = 0; k < gone.length; k += 1000) await env.AUDIO.delete(gone.slice(k, k + 1000));
+    return json({ ok: true, deleted: gone.length }, 200, cors);
+  }
   const s = String(body.season || '').toLowerCase(), ep = parseInt(body.episode, 10);
   if (!VOICE_SEASON.test(s) || !(ep > 0)) return json({ ok: false, error: 'season and episode' }, 400, cors);
   const lines = (Array.isArray(body.lines) ? body.lines : []).slice(0, 12)

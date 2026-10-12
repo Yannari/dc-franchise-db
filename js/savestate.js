@@ -1153,6 +1153,9 @@ export function initGameState() {
 
 export function resetSeason() {
   if (!confirm('Reset season? This clears all episode history. Your cast and setup are kept.')) return;
+  // every episode is gone, so are their voices (js/vp-td-ep/voicing.js): the season's key is read now, before the
+  // state it comes from is cleared
+  window.tdClearVoices?.({});
   setGs(null);
   _idbDelete('gs');
   // Also clean up any leftover localStorage keys from before the migration

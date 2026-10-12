@@ -30,6 +30,15 @@ function panel() {
     document.body.appendChild(el);
   }
   return {
+    /** Buttons in the box; resolves with the chosen value (null: Cancel). */
+    choose(title, detail, options) {
+      return new Promise(resolve => {
+        el.innerHTML = `<b style="display:block;margin-bottom:3px">${title}</b><div style="color:#b9b4c6;margin-bottom:8px">${detail}</div>`
+          + options.map((o, k) => `<button type="button" data-k="${k}" style="display:block;width:100%;margin-top:6px;text-align:left;border-radius:8px;padding:7px 10px;font-weight:700;cursor:pointer;${o.main ? 'background:#f4b23e;border:0;color:#16151d' : 'background:transparent;border:1px solid #4a4658;color:#f2efe8'}">${o.label}</button>`).join('')
+          + '<button type="button" data-k="-1" style="margin-top:8px;background:transparent;border:0;color:#9c97ab;cursor:pointer">Cancel</button>';
+        el.querySelectorAll('button[data-k]').forEach(b => b.addEventListener('click', () => { const k = +b.dataset.k; el.remove(); resolve(k < 0 ? null : options[k].value); }));
+      });
+    },
     say(title, detail = '', pct = null, done = false) {
       el.innerHTML = `<b style="display:block;margin-bottom:3px">${title}</b><div style="color:#b9b4c6">${detail}</div>`
         + (pct != null ? `<div style="height:5px;background:#2b2936;border-radius:3px;margin-top:8px"><div style="height:5px;width:${Math.round(pct * 100)}%;background:#f4b23e;border-radius:3px"></div></div>` : '')
@@ -53,6 +62,21 @@ function askToken() {
   return !!token();
 }
 
+/** Delete voices from the bucket: one episode (but the line ids in `keep`), every episode from `from` on, or the
+ *  whole season. For the places that delete or replace episodes (run-ui.js replay, savestate.js reset, cast-ui.js
+ *  delete save): "when an episode gets deleted it should delete the voicing too" (the user, 2026-10-12). Quietly
+ *  nothing without the studio token. */
+export async function clearVoices({ season = voiceSeason(), episode, from, keep } = {}) {
+  if (!token()) return 0;
+  try {
+    const r = await fetch(`${VOICE_API()}/api/voice/clear`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+      body: JSON.stringify({ season, episode, from, keep }) });
+    const j = await r.json();
+    if (episode) await voicedLines(episode, true);
+    return j.deleted || 0;
+  } catch { return 0; }
+}
+
 /** What an episode needs: its lines, the voices, what the bucket already holds, and what is missing. */
 async function plan(ep, say = () => {}) {
   const rec = (window.gs?.episodeHistory || []).find(e => +e.num === +ep);
@@ -63,7 +87,11 @@ async function plan(ep, say = () => {}) {
   let voices = {};
   try { const j = await (await fetch(`${VOICE_API()}/api/voice/voices`, { headers: { Authorization: `Bearer ${token()}` } })).json(); if (j.ok) voices = j.voices; } catch { /* the file */ }
   if (!Object.keys(voices).length) voices = await (await fetch('assets/audio/td/voices/inworld.json', { cache: 'no-store' })).json();
-  const have = (await voicedLines(ep, true)) || new Set();
+  let have = (await voicedLines(ep, true)) || new Set();
+  // a clip that is none of this episode's lines belongs to a version of it that is gone (deleted, re-run): it goes,
+  // so "already voiced" never counts a dead episode's lines (the user saw "64 already have a voice" on a new one)
+  const ids = new Set(all.map(l => l.id));
+  if ([...have].some(id => !ids.has(id))) { await clearVoices({ episode: ep, keep: [...ids] }); have = new Set([...have].filter(id => ids.has(id))); }
   const lines = all.filter(l => voices[l.by] && l.text);
   const missing = lines.filter(l => !have.has(l.id));
   return { all, voices, lines, missing, voicedCount: lines.length - missing.length };
@@ -149,9 +177,9 @@ export function hubVoiceLabel(ep) {
   voicedLines(ep).then(ids => { if (btn.isConnected && +btn.dataset.ep === +ep) { btn.textContent = ids && ids.size ? `🎙 Revoice EP ${n}` : `🎙 Voice EP ${n}`; btn.dataset.voiced = ids && ids.size ? '1' : ''; } });
 }
 
-/** The click. An episode with voices is checked first: lines still without one (a run that failed half way, a
- *  character given a voice since) are offered on their own, at their own price; a new take of EVERY line only when
- *  nothing is missing. Revoice never silently re-pays for lines that are fine. */
+/** The click. An episode with voices gets a choice in the corner box: the lines still without a voice (a run that
+ *  failed half way, a character given a voice since), or every line again with new directions and takes (the
+ *  user: "it doesn't give me the option to revoice all"). Each with its price. */
 export async function voiceSelectedEpisode(ep) {
   if (busy) return alert('An episode is already being voiced. Wait for it to finish.');
   const btn = document.getElementById('hub-voice');
@@ -161,14 +189,15 @@ export async function voiceSelectedEpisode(ep) {
   P.say(`Episode ${ep}`, 'Checking which lines already have a voice…', 0.05);
   let p;
   try { p = await plan(ep); } catch (e) { P.say(`Episode ${ep}`, String(e.message || e), null, true); return; }
-  document.getElementById('td-voicing')?.remove();
-  if (p.missing.length) {
-    if (!confirm(`Episode ${ep}: ${p.voicedCount} lines already have a voice, ${p.missing.length} don't yet.\n\nVoice the ${p.missing.length} missing lines (about $${estimate(p.missing)})? The others are kept as they are.`)) return;
-    return tdVoiceEpisode(ep, { ready: p });
-  }
-  if (!confirm(`Episode ${ep}: all ${p.lines.length} lines have a voice.\n\nRevoice every line with new directions and new takes? About $${estimate(p.lines)}.`)) return;
-  return tdVoiceEpisode(ep, { force: true, ready: p });
+  const opts = [];
+  if (p.missing.length) opts.push({ label: `Voice the ${p.missing.length} missing lines · about $${estimate(p.missing)}`, value: 'missing', main: true });
+  opts.push({ label: `Revoice all ${p.lines.length} lines (new directions and takes) · about $${estimate(p.lines)}`, value: 'all', main: !p.missing.length });
+  const pick = await panel().choose(`Episode ${ep}`,
+    p.missing.length ? `${p.voicedCount} lines have a voice, ${p.missing.length} don't yet.` : `All ${p.lines.length} lines have a voice.`, opts);
+  if (pick === 'missing') return tdVoiceEpisode(ep, { ready: p });
+  if (pick === 'all') return tdVoiceEpisode(ep, { force: true, ready: p });
+  hubVoiceLabel(ep);
 }
 if (typeof window !== 'undefined') {
-  Object.assign(window, { tdVoiceEpisode, tdCanVoice: canVoice, voiceSelectedEpisode, hubVoiceLabel });
+  Object.assign(window, { tdVoiceEpisode, tdCanVoice: canVoice, voiceSelectedEpisode, hubVoiceLabel, tdClearVoices: clearVoices });
 }

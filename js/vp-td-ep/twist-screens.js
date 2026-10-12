@@ -19,6 +19,7 @@ import { stableRng } from '../script/rng.js';
 import { pStats } from '../players.js';
 import { players as _players } from '../core.js';
 import { mergeDay } from './merge.js';
+import { journeyDay } from './journey.js';
 import { placeScene, placeTeams, plateKey, placeName, venueOf, VENUES, cleanText, campSlot, teamSpot } from './steps.js';
 
 export const ANNOUNCE = {
@@ -125,6 +126,11 @@ export function tdTwistBlocksScreen(ep, blocks, o = {}, { post = false } = {}) {
   const V = VENUES[venue];
   const steps = [];
   list.forEach((blk, bi) => {
+    // the Journey plays as its own scenes: each camp choosing, the journey, the walk back (journey.js)
+    if (blk.type === 'journey' && ep.journey?.travelers?.length) {
+      const j = journeyDay({ ep, host, venue, neutral: plateKey('islands', 'skull-rock', 'day') });
+      if (j.length) { if (bi > 0) j[0] = { ...j[0], card: false, cut: true }; steps.push(...j); return; }
+    }
     let named = [...new Set(blk.scenes.flatMap(s => s.players || []))].filter(Boolean);
     // a twist that names nobody (a feast, a reward for all) happens to everybody: the whole cast is on
     // the set, and the pair who react are one from each of the first two tribes

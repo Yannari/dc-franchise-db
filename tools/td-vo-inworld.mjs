@@ -48,7 +48,8 @@ const BASE = { Heather: 'speak coldly', Gwen: 'speak flatly', Owen: 'speak excit
   Chris: 'speak like a TV host' };
 const steer = l => /shocked/.test(l.direction) ? 'speak in shock'
   : /Shout it/.test(l.direction) ? 'shout'
-  : /confiding in a camera/.test(l.direction) ? 'speak softly, to the camera'
+  // not 'softly': the model hears it as intimate (the user: "like they're confessing love in a sensual way")
+  : /confiding in a camera/.test(l.direction) ? 'speak candidly, to the camera'
   : /ceremony/.test(l.direction) ? 'speak tense, low'
   : BASE[l.by] || null;
 

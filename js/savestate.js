@@ -1116,6 +1116,16 @@ export function initGameState() {
   // exclusion only kept coaches out of `tribe.members`, not off their own
   // player record.
   players.filter(isCoachNow).forEach(p => addCoach({ name: p.name, tribe: p.tribe }));
+  // The twist is ON and nobody became a coach: say so, now, while it can still be fixed before episode 1 (the user,
+  // 2026-10-12: the season ran with the setting on and no coaches, and only the premiere's aside ever mentioned them)
+  if (_coachMode !== 'disabled' && !(gs.coaches || []).length && typeof window !== 'undefined' && typeof alert === 'function') {
+    const why = _coachMode === 'manual'
+      ? 'Coaches is set to "Choose Coaches", but no player in the Cast Builder has the Coach box ticked.'
+      : 'Coaches is set to "Auto-Select", but no player is on a team in the Cast Builder, so nobody could be picked.';
+    setTimeout(() => alert(`${why}
+
+This season has no coaches. Fix it in the Cast Builder, then use Reset Season (it keeps your cast and setup) to start again with them.`), 0);
+  }
 
   // Initialize survival values when food/water system is enabled
   if (seasonConfig.foodWater === 'enabled') {

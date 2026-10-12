@@ -59,7 +59,9 @@ export function tdArrivalScreen(ep, o = {}) {
   steps.push({ k: 'say', by: host, host: true, text: A.hello(season, host) });
   steps.push({ k: 'title', kicker: 'Episode one', name: season, faces: [] });
   // the season presented before anyone arrives: the venue zone by zone, empty, then this season's rules
-  const pre = premiereSteps(venue, { host, season: o.season || (typeof window !== 'undefined' && window.seasonConfig) || {}, teams: (ep.tribesAtStart || []).map(t => t.name), cast: ep.dockArrivals.length, back: ep.dockArrivals.filter(x => x?.isReturnee).length });
+  const pre = premiereSteps(venue, { host, season: o.season || (typeof window !== 'undefined' && window.seasonConfig) || {}, teams: (ep.tribesAtStart || []).map(t => t.name), cast: ep.dockArrivals.length, back: ep.dockArrivals.filter(x => x?.isReturnee).length,
+    // the coaches who really arrive this episode, not the setting (the user, 2026-10-12: Chris announced coaches who never came)
+    coaches: ep.coachArrivals || [] });
   if (pre.length) { steps.push(...pre); scene([], { arrivals: true, card: true }); say0(host, `Okay! Enough about the place. Here come the people.`); }
   steps.push({ k: 'say', by: host, host: true, text: `Let's meet our ${ep.dockArrivals.length} contestants!` });
   function say0(by, text) { steps.push({ k: 'say', by, host: true, text }); }

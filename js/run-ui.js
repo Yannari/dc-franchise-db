@@ -2820,6 +2820,18 @@ export function updateCoachesUI() {
     };
     desc.textContent = text[mode] || '';
   }
+  // a season already under way keeps the coaches it started with: coaches are chosen when a season starts, and a
+  // re-run goes back to that start (the user, 2026-10-12: switched on, re-ran episode 1, still no coaches)
+  const late = document.getElementById('coaches-late-note') || (() => {
+    const n = document.createElement('p'); n.id = 'coaches-late-note'; n.className = 'acc-desc';
+    n.style.cssText = 'color:#f4b23e;margin:6px 0 0';
+    document.getElementById('cfg-coaches')?.closest('.form-group')?.appendChild(n); return n;
+  })();
+  const started = !!(window.gs?.initialized && (window.gs.episodeHistory || []).length);
+  const has = (window.gs?.coaches || []).length > 0;
+  late.textContent = !started ? '' : mode !== 'disabled' && !has
+    ? 'This season started without coaches. Coaches are chosen when a season starts, and re-running an episode goes back to that start: use Reset Season (it keeps your cast and setup) to bring them in.'
+    : mode === 'disabled' && has ? 'This season already has coaches. Turning this off takes effect from a Reset Season or a new season.' : '';
 }
 
 /**

@@ -1641,7 +1641,10 @@
             <div class="divider" style="margin:8px 0"></div>
             <div class="season-controls-label">Season Save</div>
             <button class="btn btn-secondary btn-sm" onclick="saveSeasonToStorage()" style="margin-bottom:2px;width:100%">Save Season</button>
-            <button class="btn btn-secondary btn-sm" onclick="exportSeason()" style="margin-bottom:2px;width:100%">Export Season</button>
+            <!-- exportSeasonJson, not exportSeason: that name is the stats publish pipeline's (js/stats-export.js), which
+                 main.js puts on window after cast-ui's, so this button published instead of downloading (the user, 2026-10-12:
+                 "export season doesn't work ... download nothing"). The hub's Export was fixed the same way before. -->
+            <button class="btn btn-secondary btn-sm" onclick="exportSeasonJson()" style="margin-bottom:2px;width:100%">Export Season</button>
             <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-season-file').click()" style="margin-bottom:2px;width:100%">Import Season</button>
             <input type="file" id="import-season-file" accept=".json" style="display:none" onchange="importSeason(event)">
             <select id="season-save-list" class="form-select" style="font-size:10px;margin-top:2px" onchange="loadSeasonFromStorage(this.value)"><option value="">— Load saved season —</option></select>

@@ -239,6 +239,44 @@ const RETURN = [
     { by: 'a', say: "Even them. Mostly." },
   ] },
 ];
+// somebody new walks into a camp that has been playing for days (late-arrival): a is the newcomer, b was already
+// here. Never "back": they were never in the game (the user, 2026-10-12: Grett said "Being out of the game was the
+// best thing that happened to me" on a Late Arrival, and she had never left; somebody new had come)
+const NEWCOMER = [
+  { id: 'tw.n1', turns: [
+    { by: 'a', say: "Hi! So, I guess I live here now?" },
+    { by: 'b', say: "I guess you do. You missed a lot." },
+    { by: 'a', say: "Then somebody had better catch me up." },
+    { by: 'b', conf: "Everybody here has spent days working out who they trust. {a} gets to skip all of that, and I don't love it." },
+  ] },
+  { id: 'tw.n2', turns: [
+    { by: 'b', say: "So you've been watching all this from somewhere?" },
+    { by: 'a', say: "Not watching. Waiting. Nobody told me anything." },
+    { by: 'b', say: "Lucky you. We've had days of it." },
+    { by: 'a', conf: "Everybody already has their friends. I've got about a day to find mine." },
+  ] },
+  { id: 'tw.n3', when: { register: 'schemer' }, turns: [
+    { by: 'a', conf: "Walking in late means nobody has a reason to vote for me yet. I'd like to keep it that way for as long as possible." },
+    { by: 'b', say: "You're very quiet for somebody new." },
+    { by: 'a', say: "I'm listening. You'd be surprised what people tell the new person." },
+  ] },
+  { id: 'tw.n4', when: { register: 'sweet' }, turns: [
+    { by: 'a', say: "Hi, everyone! I'm so excited to finally be here!" },
+    { by: 'b', say: "That makes one of us. Sorry, that came out wrong. Welcome." },
+    { by: 'a', say: "It's okay! I'll win you over." },
+  ] },
+  { id: 'tw.n5', when: { register: 'fiery' }, turns: [
+    { by: 'a', say: "I know what you're all thinking. The new one's the easy vote." },
+    { by: 'b', say: "Nobody said that." },
+    { by: 'a', say: "Nobody had to. Try it and see what happens." },
+  ] },
+  { id: 'tw.n6', turns: [
+    { by: 'b', say: "Okay, honest question. Whose side are you on?" },
+    { by: 'a', say: "I got here ten minutes ago. I don't even know where the sides are." },
+    { by: 'b', say: "Fair. Stick with me and you'll find out." },
+    { by: 'b', conf: "A brand new vote, with no history and no grudges. Whoever gets {a} on side first could be running this camp in a few days." },
+  ] },
+];
 const ADVANTAGE = [
   { id: 'tw.a1', turns: [
     { by: 'a', say: "What do you think's out there?" },
@@ -334,6 +372,6 @@ const OTHER = [
 
 export default {
   'twist.react.shuffle': SHUFFLE, 'twist.react.merge': MERGE, 'twist.react.bottom': BOTTOM, 'twist.react.safety': SAFETY,
-  'twist.react.danger': DANGER, 'twist.react.return': RETURN, 'twist.react.advantage': ADVANTAGE, 'twist.react.feast': FEAST,
+  'twist.react.danger': DANGER, 'twist.react.return': RETURN, 'twist.react.advantage': ADVANTAGE, 'twist.react.feast': FEAST, 'twist.react.newcomer': NEWCOMER,
   'twist.react.other': OTHER,
 };

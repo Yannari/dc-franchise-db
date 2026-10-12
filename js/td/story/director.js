@@ -2160,8 +2160,29 @@ export function airTdEpisode(ep) {
     // the refs that were added late go back into the camp's own order
     for (const phase of ['pre', 'post']) {
       const VOTE_AT = { other: 2e6, plan: 2.1e6, cover: 2.15e6, swing: 2.2e6, doubt: 2.25e6, decoy: 2.28e6, target: 2.3e6 };
-      const at = it => (/^(story\.(firstday|morning|chal)|long\.crowd\.(won|lost))/.test(it.kind || '') ? -1 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5) : it.storyType === 'vote' ? VOTE_AT[it.step] : it.ref != null ? it.ref : 1e6);
-      out[phase].sort((x, y) => at(x) - at(y));
+      // the rest of the written scenes keep to the clock of the day: the challenge talk of the afternoon, then the
+      // evening, then the scramble, then the walk to the vote. The vote's own beats (its spark, a warning, a bloc
+      // forming: arcBeats) had no place here and sorted as NaN, which leaves a sort's order undefined: the user,
+      // 2026-10-12, "they talk about the challenge, then the votes, and right after about the challenge again"
+      const WIN_RANK = { morning: 0, 'camp-work': 1, return: 0, afternoon: 1, evening: 2, scramble: 3, 'before-tribal': 4 };
+      // ...and every scene by the window the viewer stages it in (vp-td-ep/steps.js tdCampScreen: its own spot's window,
+      // the engine's access window, else the phase's), the order within a window as before. Engine moments sorted by
+      // their place in the engine's list ahead of every written scene, so a 7 PM fight aired before the 3 PM banter
+      const evs0 = eventsOf(ep, camp, phase);
+      const winOf = it => { const ev = it.ref != null && !it.lines ? evs0[it.ref] : it;
+        return ev?.scene?.spot?.window || ev?.access?.windowId || (phase === 'pre' ? 'camp-work' : 'scramble'); };
+      // the challenge is talked about once, as the camp gets back, and then the day moves on (the user, 2026-10-12:
+      // "when a discussion has been talked about, no need to come back unless there's a real reason"): its moments
+      // (chm.*: a sabotage, a rescue, the replay between friends) follow the opener instead of resuming after a
+      // pitch. A plan that names the challenge as its reason is that reason, and stays with the vote.
+      const chalTalk = it => /^chm\./.test(it.kind || '');
+      // (said as the camp gets back, when its spot is free then; else in its own window, still straight after the opener)
+      const takenAt = new Set(out[phase].filter(it => !chalTalk(it) && it.scene?.spot?.window === 'return').map(it => it.scene.spot.id));
+      for (const it of out[phase]) if (chalTalk(it) && it.scene?.spot && !takenAt.has(it.scene.spot.id)) { it.scene.spot = { ...it.scene.spot, window: 'return' }; takenAt.add(it.scene.spot.id); }
+      const rank = it => (at(it) === -1 ? -1 : chalTalk(it) ? 0 : WIN_RANK[winOf(it)] ?? 1);
+      const at = it => (/^(story\.(firstday|morning|chal)|long\.crowd\.(won|lost))/.test(it.kind || '') ? -1 : chalTalk(it) ? -0.5 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5)
+        : it.storyType === 'vote' ? (VOTE_AT[it.step] ?? 1.5e6) : it.ref != null ? it.ref : 1e6);
+      out[phase].sort((x, y) => rank(x) - rank(y) || at(x) - at(y));
       // one stretch of the day, not a stack of cut-off scenes (the user: "do we have conversation when
       // people jump in"): scenes that share a person run on from each other at the same spot
       out[phase] = chainScenes(ep, camp, phase, out[phase], () => n++);

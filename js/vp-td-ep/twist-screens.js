@@ -74,7 +74,7 @@ const GROUP = {
   'penalty-vote': 'danger', 'rock-draw': 'danger', 'open-vote': 'danger', 'cultural-reset': 'danger', 'jury-elimination': 'danger',
   'elimination-swap': 'danger', 'exile-duel': 'danger', 'fire-making': 'danger', 'tied-destinies': 'danger', 'chain-of-command': 'danger',
   'emissary-vote': 'danger', ambassadors: 'danger',
-  'returning-player': 'return', 'spirit-island': 'return', 'second-chance': 'return', 'late-arrival': 'return', 'fan-vote-boot': 'return',
+  'returning-player': 'return', 'spirit-island': 'return', 'second-chance': 'return', 'late-arrival': 'newcomer', 'fan-vote-boot': 'danger',
   'three-gifts': 'advantage', auction: 'advantage', journey: 'advantage', 'idol-wager': 'advantage',
   'loved-ones': 'feast', 'the-feast': 'feast', 'merge-reward': 'feast',
 };
@@ -132,6 +132,9 @@ export function tdTwistBlocksScreen(ep, blocks, o = {}, { post = false } = {}) {
       if (j.length) { if (bi > 0) j[0] = { ...j[0], card: false, cut: true }; steps.push(...j); return; }
     }
     let named = [...new Set(blk.scenes.flatMap(s => s.players || []))].filter(Boolean);
+    // somebody new walks in: the newcomer and the camp they join stand there (the block's card names nobody)
+    if (blk.type === 'late-arrival' && ep.lateArrival?.name && !named.includes(ep.lateArrival.name))
+      named = [ep.lateArrival.name, ...(ep.lateArrival.alreadyHere || []).filter(n => n !== ep.lateArrival.name), ...named].slice(0, 9);
     // a twist that names nobody (a feast, a reward for all) happens to everybody: the whole cast is on
     // the set, and the pair who react are one from each of the first two tribes
     const tribes = (ep.gsSnapshot?.tribes || []).map(t => (t.members || []).filter(Boolean)).filter(t => t.length);
@@ -201,8 +204,22 @@ export function tdTwistBlocksScreen(ep, blocks, o = {}, { post = false } = {}) {
       const r = stableRng('td-react-pair', ep.num, blk.type);
       const across = !nobody ? [] : tribes.length > 1 ? [tribes[0][Math.floor(r() * tribes[0].length)], tribes[1][Math.floor(r() * tribes[1].length)]]
         : [...named].sort((x, y) => x.localeCompare(y)).map(n => [r(), n]).sort((x, y) => x[0] - y[0]).map(x => x[1]).slice(0, 2);
-      const pair = [...new Set([...solo, ...across, ...named])].filter(n => places[n] && n !== host).slice(0, 2);
-      if (pair.length === 2) steps.push(...toSteps(reactionLines(`twist.react.${GROUP[blk.type] || 'other'}`, pair[0], pair[1], `${ep.num}|${blk.type}`), pair));
+      let pair = [...new Set([...solo, ...across, ...named])].filter(n => places[n] && n !== host).slice(0, 2);
+      const group = GROUP[blk.type] || 'other';
+      // the newcomer speaks as the newcomer: the real arrival, with somebody who was already here
+      if (group === 'newcomer') {
+        const nu = ep.lateArrival?.name;
+        const here = nu && [...(ep.lateArrival.alreadyHere || []), ...named].find(n => n !== nu && places[n] && n !== host);
+        pair = nu && places[nu] && here ? [nu, here] : [];
+      }
+      // "I'm back" only in the mouth of somebody this season voted out (a returnee's lines on anybody else
+      // is a person claiming a past they don't have)
+      if (group === 'return') {
+        const gone = n => (window.gs?.episodeHistory || []).some(h => h.num < ep.num && (h.eliminated === n || [].concat(h.firstEliminated || []).includes(n)));
+        const back = pair.find(gone);
+        pair = back ? [back, pair.find(n => n !== back) || named.find(n => n !== back && places[n] && n !== host)].filter(Boolean) : [];
+      }
+      if (pair.length === 2) steps.push(...toSteps(reactionLines(`twist.react.${group}`, pair[0], pair[1], `${ep.num}|${blk.type}`), pair));
     }
   });
   return { id: post ? 'post-twist' : 'twist', kind: 'twist', venue, ep: ep.num, label: list.map(b => b.label).join(' · '), host, steps };

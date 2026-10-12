@@ -21,7 +21,8 @@ import { tdAftermathScreen, hasAftermath } from './aftermath.js';
 import { ledgerAt, worldKey, worldHtml, worldSound, castAt, tokHtml, hudHtml, dialogue, intelHtml, esc, avatar, shotOf, hideBooth, setHideBooth, maskName } from './stage.js';
 import { TDX_CSS, TDX_FONTS } from './style.js';
 import { liveGL } from './glplate.js';
-import { ambience, stopAmbience, sfx, speak, hush } from './sound.js';
+import { ambience, stopAmbience, sfx, speak, hush, voicedLines } from './sound.js';
+import './voicing.js';
 
 const reg = () => (typeof window !== 'undefined' ? (window._tdx ||= {}) : (globalThis._tdx ||= {}));
 export const tdSteppedOn = () => { try { return globalThis.localStorage?.getItem('td-vp') !== 'classic'; } catch { return true; } };
@@ -217,6 +218,7 @@ function shell(scr, classicScreen, ep, o) {
   <button type="button" class="tdx-btn go" onclick="tdxNext('${uid}')">Next ▶ <kbd>Space</kbd></button>
   <button type="button" class="tdx-btn" id="tdx-auto-${uid}" onclick="tdxAuto('${uid}')">Auto</button>
   <button type="button" class="tdx-btn" onclick="tdxAll('${uid}')">Skip ⏭</button>
+  ${typeof window !== 'undefined' && window.tdCanVoice?.() ? `<button type="button" class="tdx-btn" onclick="tdVoiceEpisode()" title="Voice every line of this episode (Inworld, about $0.50; lines already voiced are free)">🎙 Voice</button>` : ''}
   <div class="tdx-chap" id="tdx-chap-${uid}" onpointerdown="tdxSeek('${uid}',event)" title="Click or drag to go anywhere in the episode">${chapHtml(scr)}<span class="head"></span></div>
   <span class="tdx-count" id="tdx-count-${uid}">0 / ${scr.steps.length}</span>
   <button type="button" class="tdx-btn" onclick="tdxTv()">TV mode</button>
@@ -387,7 +389,8 @@ function paint(uid, fresh) {
   // show all, the timeline; the user: "when I pass a dialogue the sound continues" — only Next used to cut it)
   if (!fresh && R.voiceIdx !== R.idx) hush();
   if (fresh) R.voiceIdx = R.idx;
-  if (fresh) { hush(); if ((s.k === 'say' || s.k === 'conf') && s.by && d.text && !d.cls.includes('dir')) speak(s.by, d.text, voiceOf(s.by), { loud: !!(s.loud || s.shock), meta: { k: s.k, stage: s.stage || null, loud: !!s.loud, shock: !!s.shock, badge: d.badge?.text || null, screen: scr.id, ep: scr.ep } }); }
+  if (fresh && scr.ep != null) voicedLines(scr.ep);   // ask the bucket early, so the first line can play its voice
+  if (fresh) { hush(); if ((s.k === 'say' || s.k === 'conf') && s.by && d.text && !d.cls.includes('dir')) speak(s.by, d.text, voiceOf(s.by), { loud: !!(s.loud || s.shock), meta: { k: s.k, stage: s.stage || null, loud: !!s.loud, shock: !!s.shock, badge: d.badge?.text || null, screen: scr.id, ep: scr.ep, why: L.scene?.why || null } }); }
   if (fresh && s.loud) { dlg.classList.remove('loud'); void dlg.offsetWidth; dlg.classList.add('loud'); }
   // what happens, animated
   if (fresh) act(st, castEl, fxEl, scr, L, s, toks);

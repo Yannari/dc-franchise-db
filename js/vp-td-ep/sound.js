@@ -199,7 +199,7 @@ function normOf(b) {
 }
 function loadBuf(ctx, path) {
   // the voice test's files change between renders: never from the browser's cache
-  if (!bufs[path]) bufs[path] = fetch(TD_AUDIO + path, path.startsWith('vo-test/') ? { cache: 'no-store' } : undefined).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status))
+  if (!bufs[path]) bufs[path] = fetch(/^https?:/.test(path) ? path : TD_AUDIO + path, path.startsWith('vo-test/') ? { cache: 'no-store' } : undefined).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status))
     .then(a => ctx.decodeAudioData(a)).then(b => ({ b, norm: normOf(b) })).catch(() => null);
   return bufs[path];
 }
@@ -374,26 +374,7 @@ if (typeof window !== 'undefined') {
   // Play a whole episode in this browser, silently and at speed, through every screen and every camp
   // conversation, then download its lines: one command instead of watching it all and opening every
   // conversation on the map (the user's first export held only the six lines of the recap).
-  window.tdVoiceRecord = async (ep) => {
-    const wait = ms => new Promise(r => setTimeout(r, ms));
-    const idx = uid => document.querySelector(`.tdx[data-uid="${uid}"]`)?.dataset.idx || '';
-    silent = true; stopAmbience();
-    try {
-      window.openVisualPlayer(ep); await wait(1500);
-      const n = (window.vpScreens || []).length;
-      for (let si = 0; si < n; si++) {
-        window.vpCurrentScreen = si; window.renderVPScreen(); await wait(400);
-        const uid = document.querySelector('.tdx')?.dataset.uid; if (!uid) continue;
-        const map = !!document.querySelector('.tdm-root');
-        for (let k = 0; k < (map ? 60 : 400); k++) {
-          const a = idx(uid); window.tdxNext(uid); await wait(map ? 90 : 35);
-          if (!map && a === idx(uid) && k > 3) break;
-        }
-        console.log(`tdVoiceRecord: screen ${si + 1}/${n}, ${spoken.size} lines so far`);
-      }
-    } finally { silent = false; }
-    return window.tdVoiceExport(ep);
-  };
+  window.tdVoiceRecord = async (ep) => { await recordEpisodeLines(ep); return window.tdVoiceExport(ep); };
   // what the voice test sees: the script's lines, and the last lines spoken with whether each has a clip
   window.tdVoiceCheck = () => {
     const ids = voIndex?.ids;
@@ -410,21 +391,74 @@ if (typeof window !== 'undefined') {
   };
 }
 /** Speak a line: the voice actor's clip when there is one, else the blips. */
+/** Play a whole episode in this browser, silently and at speed, every screen and every camp conversation, and
+ *  return the lines it spoke, as this browser says them (the TD writer reads the franchise ledger, so another
+ *  browser can word a line differently). progress(screen, screens, lines) as it goes. */
+export async function recordEpisodeLines(ep, progress = () => {}) {
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const idx = uid => document.querySelector(`.tdx[data-uid="${uid}"]`)?.dataset.idx || '';
+  silent = true; stopAmbience();
+  try {
+    window.openVisualPlayer(ep); await wait(1500);
+    const n = (window.vpScreens || []).length;
+    for (let si = 0; si < n; si++) {
+      window.vpCurrentScreen = si; window.renderVPScreen(); await wait(400);
+      const uid = document.querySelector('.tdx')?.dataset.uid;
+      if (uid) {
+        // to the END of the screen: a camp map holds every conversation of the day, and a cap of 60 steps cut one
+        // off half way (31 lines of episode 2 never recorded, so never voiced). Stop when the viewer moves on.
+        const map = !!document.querySelector('.tdm-root');
+        for (let k = 0; k < 1500; k++) {
+          const a = idx(uid); window.tdxNext(uid); await wait(map ? 90 : 35);
+          if (window.vpCurrentScreen !== si || !document.querySelector(`.tdx[data-uid="${uid}"]`)) break;
+          if (!map && a === idx(uid) && k > 3) break;
+        }
+      }
+      progress(si + 1, n, spoken.size);
+    }
+  } finally { silent = false; }
+  return [...spoken.values()].filter(l => +l.ep === +ep);
+}
+
+// ── THE VOICED EPISODES (js/vp-td-ep/voicing.js made them; dc-studio keeps them in the audio bucket) ──
+export const VOICE_API = () => { try { return (localStorage.getItem('studio_api_base') || '').replace(/\/+$/, '') || 'https://dc-studio.yannari19.workers.dev'; } catch { return 'https://dc-studio.yannari19.workers.dev'; } };
+/** The season's key in the bucket: td-<number>, or td-<its name> before it has one. */
+export function voiceSeason() {
+  const cfg = (typeof window !== 'undefined' && window.seasonConfig) || {}, gs = (typeof window !== 'undefined' && window.gs) || {};
+  const n = gs.seasonNumber || cfg.seasonNumber;
+  const base = n ? String(n) : String(cfg.name || 'season').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'season';
+  return `td-${base}`;
+}
+const live = {};
+/** Which lines of this episode have a voice in the bucket (asked once per episode, again after voicing). */
+export function voicedLines(ep, fresh = false) {
+  const k = `${voiceSeason()}/${ep}`;
+  if (!live[k] || fresh) {
+    live[k] = fetch(`${VOICE_API()}/api/voice/list?season=${encodeURIComponent(voiceSeason())}&episode=${ep}`, { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : { ids: [] }).then(j => { live[k].ids = new Set(j.ids || []); return live[k].ids; })
+      .catch(() => { live[k].ids = new Set(); return live[k].ids; });
+  }
+  return live[k];
+}
+
 export function speak(by, text, v, opts = {}) {
   hush();
   const id = lineId(by, text);
   if (!spoken.has(id)) spoken.set(id, { by, text, id, ...(opts.meta || {}) });
   try { window.__tdLine?.(by, text, id, opts.meta || {}); } catch { /* a harness hook (tools/td-vo-script.mjs) */ }
   const o = out(); if (!o) return;
-  if (!voIndex?.ids?.has(id)) return babble(text, v, opts);
-  const ctx = o.ctx, tok = talkTok, tag = `[voice test] ${by} ${id} "${String(text).slice(0, 40)}"`;
-  console.info(`${tag}: voiced line, loading the clip (audio ${ctx.state})`);
-  const file = voIndex.files?.[id] || `${id}.wav`;
-  const clip = loadBuf(ctx, `${VO}${file}`).then(L => L || (file.endsWith('.wav') ? loadBuf(ctx, `${VO}${id}.mp3`) : null));
+  // a line voiced for this season (the bucket), else one in the voice test folder, else the blips
+  const ep = opts.meta?.ep, lv = ep != null ? voicedLines(ep) : null;
+  const inLive = !!lv?.ids?.has(id), inTest = !!voIndex?.ids?.has(id);
+  if (!inLive && !inTest) return babble(text, v, opts);
+  const ctx = o.ctx, tok = talkTok, tag = `[voice] ${by} ${id} "${String(text).slice(0, 40)}"`;
+  const file = voIndex?.files?.[id] || `${id}.wav`;
+  const clip = inLive ? loadBuf(ctx, `${VOICE_API()}/audio/voice/${voiceSeason()}/e${ep}/${id}.mp3`)
+    : loadBuf(ctx, `${VO}${file}`).then(L => L || (file.endsWith('.wav') ? loadBuf(ctx, `${VO}${id}.mp3`) : null));
   clip.then(L => {
-    if (tok !== talkTok) return console.info(`${tag}: skipped, the next line had already started`);
+    if (tok !== talkTok) return;
     if (!L) { console.warn(`${tag}: the clip did not load or decode, blips instead`); return babble(text, v, opts); }
-    console.info(`${tag}: playing ${L.b.duration.toFixed(1)}s clip (audio ${ctx.state})`);
+
     const src = ctx.createBufferSource(), g = ctx.createGain(); src.buffer = L.b; g.gain.value = L.norm * (opts.loud ? .95 : .8);
     src.connect(g); g.connect(o.dest); src.start(); talkSrcs.push(src);
     try { window.__tdClip?.(id); } catch { /* a harness hook */ }

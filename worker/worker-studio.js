@@ -368,6 +368,10 @@ export default {
       if (url.pathname.startsWith('/audio/') || url.pathname.startsWith('/api/audio/')) {
         return await audioRoute(request, env, url, cors);
       }
+      // ── VOICE ACTING (js/vp-td-ep/voicing.js) ──────────────────────────
+      if (url.pathname === '/api/voice/render' || url.pathname === '/api/voice/list' || url.pathname === '/api/voice/voices') {
+        return await voiceRoute(request, env, url, cors);
+      }
 
       if (request.method === 'GET' && url.pathname === '/api/ping') {
         const doc = await getJson(env, ROSTER_PATH, { players: [] });
@@ -2443,6 +2447,85 @@ const AUDIO_KEY_SONG = /^lipsync\/[a-z0-9][a-z0-9-]{0,80}\.(mp3|m4a|ogg|wav)$/;
 // served without the token. The published site fetches them from here.
 const AUDIO_KEY_CUE = /^cues\/[a-z0-9][a-z0-9-]{0,60}\.(mp3|m4a|ogg|wav)$/;
 const AUDIO_TYPES = { mp3: 'audio/mpeg', m4a: 'audio/mp4', ogg: 'audio/ogg', wav: 'audio/wav' };
+// A voiced line (Inworld TTS, voiceRoute below): voice/<season>/e<episode>/<line id>.mp3. Public like the moments:
+// it is the show's own dialogue, played on the published site to anybody watching.
+const AUDIO_KEY_VOICE = /^voice\/[a-z0-9][a-z0-9-]{0,60}\/e\d{1,3}\/L[0-9a-f]{8}\.mp3$/;
+const VOICE_SEASON = /^[a-z0-9][a-z0-9-]{0,60}$/;
+
+/**
+ * Voice acting: a batch of an episode's lines voiced on Inworld TTS-2 and kept in the audio bucket.
+ *
+ * POST /api/voice/render (token): { season, episode, lines: [{ id, by, text, direction }], voices: { name: voiceId } }
+ *   -> { ok, done: [id], failed: [{ id, error }], chars }. Four lines at a time; a line already in the bucket is
+ *   kept, not paid for twice. The Inworld key is this worker's secret (INWORLD_API_KEY), never the browser's.
+ * GET /api/voice/list?season=&episode= (open) -> { ok, ids: [id] }: what the episode can play.
+ *
+ * Why Inworld (the user, 2026-10-11): Qwen3-TTS on the laptop took 15-20 minutes an episode and either drifted or
+ * went flat; ElevenLabs "not impressed, and it costs too much". Inworld voiced episode 2 in 46 s for $0.41.
+ */
+async function voiceRoute(request, env, url, cors) {
+  if (!env.AUDIO) return json({ ok: false, error: 'the audio bucket is not bound (see wrangler.toml)' }, 503, cors);
+  const open = { ...cors, 'Access-Control-Allow-Origin': '*' };
+  const season = String(url.searchParams.get('season') || '').toLowerCase();
+  if (request.method === 'GET' && url.pathname === '/api/voice/list') {
+    const ep = parseInt(url.searchParams.get('episode'), 10);
+    if (!VOICE_SEASON.test(season) || !(ep > 0)) return json({ ok: false, error: 'season and episode' }, 400, open);
+    const ids = [];
+    let cursor;
+    do {
+      const page = await env.AUDIO.list({ prefix: `voice/${season}/e${ep}/`, cursor });
+      for (const o of page.objects) { const m = o.key.match(/(L[0-9a-f]{8})\.mp3$/); if (m) ids.push(m[1]); }
+      cursor = page.truncated ? page.cursor : undefined;
+    } while (cursor);
+    return json({ ok: true, ids }, 200, open);
+  }
+  const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) return json({ ok: false, error: 'unauthorized' }, 401, cors);
+  if (!env.INWORLD_API_KEY) return json({ ok: false, error: 'no INWORLD_API_KEY on this worker (wrangler secret put INWORLD_API_KEY)' }, 503, cors);
+  // GET /api/voice/voices (token): the account's own voices by name, { name: voiceId }. A voice made in the Inworld
+  // playground under a character's name is used from then on, nothing else to update. Stock voices (no
+  // workspace__ prefix; one is called Duncan) never count.
+  if (request.method === 'GET' && url.pathname === '/api/voice/voices') {
+    const r = await fetch('https://api.inworld.ai/voices/v1/voices', { headers: { Authorization: `Basic ${env.INWORLD_API_KEY}` } });
+    if (!r.ok) return json({ ok: false, error: `inworld ${r.status}` }, 502, cors);
+    const voices = {};
+    for (const v of (await r.json()).voices || []) if ((v.voiceId || '').includes('__') && v.displayName) voices[v.displayName.trim()] = v.voiceId;
+    return json({ ok: true, voices }, 200, cors);
+  }
+  if (request.method !== 'POST') return json({ ok: false, error: 'method not allowed' }, 405, cors);
+  const body = await request.json().catch(() => ({}));
+  const s = String(body.season || '').toLowerCase(), ep = parseInt(body.episode, 10);
+  if (!VOICE_SEASON.test(s) || !(ep > 0)) return json({ ok: false, error: 'season and episode' }, 400, cors);
+  const lines = (Array.isArray(body.lines) ? body.lines : []).slice(0, 12)
+    .filter(l => l && /^L[0-9a-f]{8}$/.test(l.id) && typeof l.text === 'string' && l.text.trim() && body.voices?.[l.by]);
+  const done = [], failed = [];
+  let chars = 0, next = 0;
+  const one = async l => {
+    const key = `voice/${s}/e${ep}/${l.id}.mp3`;
+    if (await env.AUDIO.head(key)) { done.push(l.id); return; }
+    const dir = String(l.direction || '').replace(/[\[\]]/g, '').trim().slice(0, 80);
+    const text = (dir ? `[${dir}] ` : '') + l.text.trim().slice(0, 1200);
+    const r = await fetch('https://api.inworld.ai/tts/v1/voice', {
+      method: 'POST',
+      headers: { Authorization: `Basic ${env.INWORLD_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, voiceId: String(body.voices[l.by]), modelId: 'inworld-tts-2',
+        audioConfig: { audioEncoding: 'MP3', sampleRateHertz: 48000, bitRate: 64000, speakingRate: 1 }, temperature: 1 }),
+    });
+    if (!r.ok) throw new Error(`inworld ${r.status}: ${(await r.text()).slice(0, 160)}`);
+    const j = await r.json();
+    const bin = Uint8Array.from(atob(j.audioContent || ''), c => c.charCodeAt(0));
+    if (!bin.byteLength) throw new Error('inworld sent no audio');
+    await env.AUDIO.put(key, bin, { httpMetadata: { contentType: 'audio/mpeg' }, customMetadata: { by: String(l.by).slice(0, 60), direction: dir } });
+    chars += text.length; done.push(l.id);
+  };
+  await Promise.all(Array.from({ length: 4 }, async () => {
+    while (next < lines.length) {
+      const l = lines[next++];
+      try { await one(l); } catch (e) { failed.push({ id: l.id, error: String(e.message || e).slice(0, 200) }); }
+    }
+  }));
+  return json({ ok: true, done, failed, chars }, 200, cors);
+}
 
 async function audioRoute(request, env, url, cors) {
   if (!env.AUDIO) return json({ ok: false, error: 'the audio bucket is not bound (see wrangler.toml)' }, 503, cors);
@@ -2475,7 +2558,7 @@ async function audioRoute(request, env, url, cors) {
 
   if (!url.pathname.startsWith('/audio/')) return json({ ok: false, error: 'not found' }, 404, cors);
   const key = decodeURIComponent(url.pathname.slice('/audio/'.length));
-  const isMoment = AUDIO_KEY_MOMENT.test(key);
+  const isMoment = AUDIO_KEY_MOMENT.test(key) || AUDIO_KEY_VOICE.test(key);   // a voiced line is public too
   const isSong = AUDIO_KEY_SONG.test(key) || AUDIO_KEY_CUE.test(key);   // both private
   if (!isMoment && !isSong) return json({ ok: false, error: 'bad key' }, 400, cors);
 

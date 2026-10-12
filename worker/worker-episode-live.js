@@ -44,6 +44,9 @@ export default {
       // A character's Total Drama camp kit (js/td/story/kits.js), written from their PROFILE only.
       // Same reason as `casting-interview` for living here: the key is here.
       return await generateCampKit(body, env);
+    } else if (mode === "voice-direction") {
+      // How each line of an episode should be SAID, for voice acting (js/vp-td-ep/voicing.js). The key is here.
+      return await generateVoiceDirection(body, env);
     } else if (mode === "speaking-voice") {
       // What a character SOUNDS like, for voice acting (tools/td-vo-render.py). From the profile only.
       // Same reason as `camp-kit` for living here: the key is here.
@@ -4761,6 +4764,70 @@ async function generateWikiProfile(body, env) {
  * 130 Hz. And a vague description drifts from line to line: precise ones (pitch, timbre, pace, accent, how
  * sentences end) hold the voice.
  */
+/**
+ * The voice director: a short delivery for every line of a stretch of an episode, for Inworld TTS-2, which takes
+ * it in brackets before the line ([speak bitterly] ...). It reads who says it, to whom, in what scene, and the
+ * line before, because tone is context: "Have I ever lied to you?" from Heather mid-scheme is fake sincerity.
+ *
+ * What the voice tests taught (2026-10-11): "softly" made confessionals sound like a love scene ("confessing love
+ * in a sensual way", the user), so a confessional is candid; short directions are cheaper and land better; [pause],
+ * [laugh] and [sigh] work. Returns { directions: [{ i, d }] }, one per line, d without brackets.
+ */
+async function generateVoiceDirection(body, env) {
+  const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
+  const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
+  const lines = (Array.isArray(body.lines) ? body.lines : []).slice(0, 80);
+  if (!lines.length) return json({ ok: false, error: "no lines" }, 400);
+  const cast = body.cast && typeof body.cast === "object" ? body.cast : {};
+  const who = Object.entries(cast).slice(0, 40).map(([n, v]) => `- ${n}: ${String(v).slice(0, 160)}`).join("\n");
+  const system = [
+    "You are the voice director of a reality-TV cartoon. Each line below will be spoken by a voice actor model",
+    "that reads a short delivery in brackets before the line. For EVERY line, write that delivery.",
+    "",
+    "HOW",
+    "- 2 to 4 words, plain English, usually 'speak <how>': speak bitterly, speak with fake sweetness, speak",
+    "  nervously, speak smugly, speak in shock, speak through gritted teeth. Or a sound: laugh, sigh, scoff.",
+    "- Read the CONTEXT, not just the words: who says it, to whom, the scene, the line before. A question can be",
+    "  a threat; 'I'm fine' can be hurt. The speaker's personality colours it, but the moment decides it.",
+    "- Confessionals (kind conf) are the speaker alone, talking to the camera like an interview: 'speak candidly',",
+    "  'speak smugly to the camera', 'speak worried, candidly'. NEVER 'softly', 'gently', 'tenderly' or 'warmly'",
+    "  unless the line is truly tender: the voice model makes those sound intimate and romantic.",
+    "- 'whisper' only for a real secret said near others. 'shout' only for a real shout (an exclamation in a",
+    "  fight, a cheer); most exclamation marks are just energy: 'speak excitedly'.",
+    "- The host (Chris) is a TV host: 'speak like a TV host', 'speak smugly', 'speak dramatically, slowly'.",
+    "- You may add one of [pause], [laugh], [sigh] as part of the delivery when the line clearly has it: 'laugh,",
+    "  then speak smugly'.",
+    "- Vary it: the same character should not get the same delivery on every line unless every line is the same.",
+    "",
+    "The cast:",
+    who || "(not given)",
+    "",
+    'Return JSON only: {"directions": [{"i": <line number>, "d": "<delivery, no brackets>"}]} with one entry per line.',
+  ].join("\n");
+  const user = lines.map(l => {
+    const ctx = [l.kind === "conf" ? "CONFESSIONAL" : null, l.scene ? `scene: ${l.scene}` : null, l.to ? `to ${l.to}` : null,
+      l.prev ? `after ${l.prev.by}: "${String(l.prev.text).slice(0, 140)}"` : null].filter(Boolean).join("; ");
+    return `${l.i}. ${l.by}${ctx ? ` (${ctx})` : ""}: "${String(l.text).slice(0, 400)}"`;
+  }).join("\n");
+  let raw = "", provider = "";
+  try {
+    const out = await callShortModel(system, user, env, { maxTokens: 2600, model: claudeModel("fast", body, env) });
+    raw = out.text; provider = out.provider;
+  } catch (e) {
+    return json({ ok: false, error: `model: ${e.message}` }, 502);
+  }
+  let parsed;
+  try { const m = raw.match(/\{[\s\S]*\}/); parsed = JSON.parse(m ? m[0] : raw); }
+  catch { return json({ ok: false, error: "the model did not return usable JSON" }, 502); }
+  const banned = /\b(softly|gently|tenderly|sensual|seductively|intimately)\b/i;
+  const directions = (Array.isArray(parsed.directions) ? parsed.directions : [])
+    .map(x => ({ i: Number(x.i), d: String(x.d || "").replace(/[\[\]]/g, "").trim().slice(0, 60) }))
+    .filter(x => Number.isFinite(x.i) && x.d)
+    // a tender word on a line that is not a confession of love is the voice model's cue to go intimate: drop it
+    .map(x => (banned.test(x.d) && lines.find(l => l.i === x.i)?.kind === "conf" ? { ...x, d: "speak candidly" } : x));
+  return json({ ok: true, directions, provider });
+}
+
 async function generateSpeakingVoice(body, env) {
   // this worker keeps no shared response helper: every mode makes its own (the first deploy threw without it)
   const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };

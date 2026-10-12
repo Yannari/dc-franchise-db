@@ -122,14 +122,16 @@ export async function tdVoiceEpisode(ep = Number(window.vpEpNum), { force = fals
     P.say(`Voicing episode ${ep} stopped`, String(e.message || e), null, true);
   }
 }
-/** The Run tab's 🎙 button (run-ui.js, beside Watch latest and Sim 5): 'Voice' for the latest episode, 'Revoice'
- *  once it has voices (the user, 2026-10-12). Asks the bucket after every render of the tab. */
+/** The Run tab's 🎙 button (run-ui.js, beside Watch latest and Sim 5): the SELECTED episode (the one the hub is
+ *  showing, picked on its episode strip), named on the button, 'Voice' or 'Revoice' once it has voices (the user,
+ *  2026-10-12). Asks the bucket after every render of the tab. */
 export function hubVoiceLabel(ep) {
   const btn = typeof document !== 'undefined' && document.getElementById('hub-voice');
   if (!btn || !ep) return;
-  voicedLines(ep).then(ids => { if (btn.isConnected) { btn.textContent = ids && ids.size ? '🎙 Revoice' : '🎙 Voice'; btn.dataset.voiced = ids && ids.size ? '1' : ''; } });
+  const n = String(ep).padStart(2, '0');
+  voicedLines(ep).then(ids => { if (btn.isConnected && +btn.dataset.ep === +ep) { btn.textContent = ids && ids.size ? `🎙 Revoice EP ${n}` : `🎙 Voice EP ${n}`; btn.dataset.voiced = ids && ids.size ? '1' : ''; } });
 }
-export function voiceLatestEpisode(ep) {
+export function voiceSelectedEpisode(ep) {
   const btn = document.getElementById('hub-voice');
   if (btn?.dataset.voiced) {
     // a new take of every line, with new directions: it costs what the first voicing did, so it asks
@@ -141,5 +143,5 @@ Revoice every line with new directions and new takes? That costs about as much a
   return tdVoiceEpisode(ep);
 }
 if (typeof window !== 'undefined') {
-  Object.assign(window, { tdVoiceEpisode, tdCanVoice: canVoice, voiceLatestEpisode, hubVoiceLabel });
+  Object.assign(window, { tdVoiceEpisode, tdCanVoice: canVoice, voiceSelectedEpisode, hubVoiceLabel });
 }

@@ -714,7 +714,7 @@ export function renderSeasonHub() {
   const secondaryActions = model.lifecycle === 'setup' ? '' : `<nav class="hub-secondary-actions" aria-label="Secondary season actions">
     <button type="button" onclick="openVisualPlayer(${_watchArg(model.latest?.num || model.liveEpisode)})" ${model.latest ? '' : 'disabled'}>Watch latest</button>
     <button type="button" onclick="simulateMultipleEpisodes(5)" ${canBatch ? '' : 'disabled'}>Sim 5</button>
-    ${seasonFormat(seasonConfig) === 'total-drama' && model.latest ? `<button type="button" id="hub-voice" onclick="voiceLatestEpisode(${Number(model.latest.num)})" title="Voice every line of the latest episode with each character's Inworld voice">🎙 Voice</button>` : ''}
+    ${seasonFormat(seasonConfig) === 'total-drama' && model.latest ? `<button type="button" id="hub-voice" data-ep="${Number(model.latest.num)}" onclick="voiceSelectedEpisode(${Number(model.latest.num)})" title="Voice every line of the episode selected above with each character's Inworld voice">🎙 Voice EP ${String(model.latest.num).padStart(2, '0')}</button>` : ''}
     <button type="button" onclick="simulateMultipleEpisodes()" ${canBatch ? '' : 'disabled'}>Sim to finale</button>
     <button type="button" onclick="replayEpisode(${Number(model.latest?.num || 0)})" ${canReplay ? '' : 'disabled'}>Replay viewed</button>
     <button type="button" onclick="saveSeasonToStorage()">Save</button>

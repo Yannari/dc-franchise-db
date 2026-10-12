@@ -1,3 +1,4 @@
+import { STORY_POOLS } from '../js/td/story/lines/index.js';
 import followupPools from '../js/td/story/lines/n-followups.js';
 import fs from 'node:fs';
 import { afterEach, expect, it } from 'vitest';
@@ -93,4 +94,10 @@ it('allows an actual day-one argument to be recalled on day two', () => {
  setup(); recordFollowups({num:1},'Bass',{pre:[],post:[source('drama.fight')]});
  const scene = followupScene({num:2},'Bass',cast,'pre',()=>0,(p,o,w,d,f,c)=>writeStory(p,o,w,d,f,{...c,entryIds:['nfu.cm4']}),who=>({...factsFor({who,data:{}},{ep:2,phase:'pre'}),venue:'hosted-camp'}));
  expect(scene).toBeTruthy();
+});
+
+it('keeps obligation phrases and subject contractions grammatical across all story voices', () => {
+ for (const entries of Object.values(STORY_POOLS)) for (const entry of entries) for (const turn of entry.turns) for (const text of [turn.say,turn.conf,...Object.values(turn.v||{})].filter(Boolean)) {
+  expect(text,entry.id).not.toMatch(/\b(?:I|we|you|they)[’']ve to\b|\bboth of you[’']re\b|\b(?:can|could|would|should) we[’']ve\b/i);
+ }
 });

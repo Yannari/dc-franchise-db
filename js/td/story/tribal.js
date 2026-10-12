@@ -292,7 +292,7 @@ export function multiTribalView(ep, r) {
     tribalStory: r.tribalStory || null,
     defections: (ep.defections || []).filter(d => mine(d.player)), coverPlans: (ep.coverPlans || []).filter(p => mine(p.leader)),
     tribalBlowup: ep.tribalBlowup && mine(ep.tribalBlowup.player) ? ep.tribalBlowup : null,
-    coachCardCommits: (ep.coachCardCommits || []).filter(c => c.tribe === r.tribe), coachSaves: (ep.coachSaves || []).filter(c => c.tribe === r.tribe),
+    coachCardCommits: (ep.coachCardCommits || []).filter(c => c.tribe === r.tribe), coachCardCalls: (ep.coachCardCalls || []).filter(c => c.tribe === r.tribe), coachSaves: (ep.coachSaves || []).filter(c => c.tribe === r.tribe),
     coachCardNotPlayed: (ep.coachCardNotPlayed || []).filter(c => c.tribe === r.tribe), coachSaveRefusals: (ep.coachSaveRefusals || []).filter(c => c.tribe === r.tribe),
     coachElimination: (ep.coachElimination || []).filter(c => mine(c.name || c.coach || c)) };
 }

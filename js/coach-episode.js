@@ -978,7 +978,11 @@ export function commitSaveCards(ep, tribeLabel, alliances = [], roll = Math.rand
     .flatMap(a => a.members || [])).size;
   const aimedAt = Object.fromEntries(staff.map(c => [c.name, aimersOf(c.name)]));
   const exposed = staff.filter(c => aimedAt[c.name] > 0);
-  if (!exposed.length) return [];
+  // EVERY decision is kept, the ones that hold the card too: the stepped viewer's huddle before the call
+  // (vp-td-ep/coach-tribal.js) voices the choice this function made, and a held card was otherwise invisible
+  // (the user, 2026-10-12: "strategy: should we use the save card or not"). Recording changes no roll.
+  const call = d => { (ep.coachCardCalls ||= []).push({ tribe: tribeLabel, coaches: staff.map(c => c.name), ...d }); };
+  if (!exposed.length) { call({ held: true, why: 'safe' }); return []; }
 
   // Whoever reads the room decides to reach for it — the most exposed, and
   // between equals the one who sees it coming soonest. Intuition reads the
@@ -1000,13 +1004,14 @@ export function commitSaveCards(ep, tribeLabel, alliances = [], roll = Math.rand
   // as somebody with insurance to protect.
   const alone = staff.length === 1 ? 1.35 : 1;
   const play = danger * nerve * alone;
-  if (roll() >= Math.min(0.95, play)) return [];
+  if (roll() >= Math.min(0.95, play)) { call({ held: true, why: 'gamble', coach: reader.name, aimed: aimedAt[reader.name], danger }); return []; }
 
   // Every coach on the tribe signs — including the one who called for it, who
   // is not asked because reaching for it IS their signature.
   const peers = staff.filter(c => c.name !== reader.name);
   const votes = peers.map(pc => ({ coach: pc.name, ...saveCardVerdict(pc.name, reader.name) }));
   const signed = votes.every(v => v.consents);
+  call({ held: false, coach: reader.name, aimed: aimedAt[reader.name], danger, refusers: votes.filter(v => !v.consents).map(v => v.coach) });
 
   if (signed) spendTribeCard(tribeLabel);
 

@@ -15477,7 +15477,7 @@ function _buildVPScreensClassic(epRecord) {
         // A multi-tribal night draws a Tribal and a Votes screen per tribe, and
         // every card record carries the tribe it belongs to — so each tribe's
         // screens show its own card and not the other councils'.
-        coachCardCommits: (ep.coachCardCommits || []).filter(c => c.tribe === r.tribe),
+        coachCardCommits: (ep.coachCardCommits || []).filter(c => c.tribe === r.tribe), coachCardCalls: (ep.coachCardCalls || []).filter(c => c.tribe === r.tribe),
         coachSaves: (ep.coachSaves || []).filter(c => c.tribe === r.tribe),
         coachCardNotPlayed: (ep.coachCardNotPlayed || []).filter(c => c.tribe === r.tribe),
         coachSaveRefusals: (ep.coachSaveRefusals || []).filter(c => c.tribe === r.tribe) };

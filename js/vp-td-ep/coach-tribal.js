@@ -49,8 +49,128 @@ const WHY = {
   strategic: 'the numbers did not come out in their favour',
 };
 
+const NUM = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+const people = n => `${NUM[n] || n} ${n === 1 ? 'person' : 'people'}`;
+const cap = t => t ? t[0].toUpperCase() + t.slice(1) : t;
+
+/**
+ * The coaches' huddle: whether tonight is the night for the Save Card, said before the host asks. The choice is
+ * the engine's (coach-episode.js commitSaveCards, ep.coachCardCalls: played, held while in danger, or held because
+ * nobody is coming); this only says it, so it can never disagree with what happens next. Co-coaches lean together
+ * on the bench; a coach alone on a team has nobody to ask, so it is a confessional. A co-coach about to refuse to
+ * sign stays evasive here: the refusal still lands when the host reads it. (The user, 2026-10-12: "do coach
+ * signature and strategy, should we use the save card or not, is it in the stepped viewer?" It was not.)
+ */
+function huddle(steps, ep, coaches) {
+  const d = (ep.coachCardCalls || []).find(c => c.tribe === ep.tribalTribe);
+  if (!d || !coaches.length) return;
+  const V = voice(ep, 'huddle');
+  const lead = d.coach && coaches.includes(d.coach) ? d.coach : coaches[0], other = coaches.find(c => c !== lead);
+  const heard = cap(d.aimed ? people(d.aimed) : 'some people');
+  const verb = d.aimed === 1 ? 'has' : 'have';
+  const side = text => [{ tab: 'room', text }];
+  if (other) steps.push({ k: 'beat', text: `Before the votes, ${lead} leans over to ${other} at the end of the row and keeps ${P(lead).posAdj} voice down.`, focus: [lead, other] });
+
+  if (d.why === 'safe') {
+    if (other) {
+      steps.push({ k: 'say', by: lead, text: V(lead, {
+        sharp: [`Nobody's said our names all week. The card stays where it is.`, `They're not coming for us tonight. We keep it.`],
+        loud: [`Nobody's coming for us! We keep the card, right?`, `Tonight's not about us. Card stays in the pocket!`],
+        soft: [`I don't think anyone's coming for us tonight. Can we keep it?`, `It's not our night, is it? Let's hold on to it.`],
+        dry: [`Nobody's even mentioned us. Let's not waste it.`, `We're the least interesting thing here tonight. We keep it.`],
+        odd: [`The card is sleeping. Let it sleep.`, `My instincts say keep it. My instincts are rarely wrong. Occasionally wrong.`],
+        any: [`Nobody's coming for us. We keep the card.`],
+      }, 'safe-a'), focus: [lead, other], side: side(`Nobody's plan has a coach in it tonight: the card is held.`) });
+      steps.push({ k: 'say', by: other, text: V(other, {
+        sharp: [`Agreed. We'll need it later.`, `Fine. Later's when it matters.`],
+        loud: [`Agreed! Save it for the big one!`, `Totally. Keep it!`],
+        soft: [`Okay. That makes me feel better.`, `Yeah. Let's keep it.`],
+        dry: [`Fine by me.`, `Sure. Wake me up when it's interesting.`],
+        odd: [`Shh. Don't wake the card.`, `Yes. The card agrees.`],
+        any: [`Agreed.`],
+      }, 'safe-b'), focus: [other, lead] });
+    } else steps.push({ k: 'conf', by: lead, text: V(lead, {
+      sharp: [`Nobody's coming for me tonight. The card stays in my pocket.`, `I know what they're planning, and I'm not in it. I'm keeping the card.`],
+      loud: [`Nobody's even said my name! The card is staying right where it is!`, `Not tonight! I'm saving this for when it counts!`],
+      soft: [`I don't think it's me tonight. I really hope it's not me tonight. I'm keeping it.`, `I'm safe, I think. I'll hold on to it.`],
+      dry: [`Nobody cares about me tonight. Which is exactly how I like it. Card stays.`, `Wasting it tonight would be like buying an umbrella in a drought.`],
+      odd: [`The card told me to wait. We have an understanding.`, `I'm saving it. For a rainy day. Or a rainy vote.`],
+      any: [`Nobody's coming for me tonight. I'm keeping the card.`],
+    }, 'safe-c'), side: side(`Nobody's plan has ${lead} in it tonight: the card is held.`) });
+    return;
+  }
+
+  if (d.held) {
+    // in danger, and still holding it: a bet that the talk is only talk
+    if (other) {
+      steps.push({ k: 'say', by: lead, text: V(lead, {
+        sharp: [`${heard} ${verb} said my name. Not enough to burn the card.`, `${heard} ${verb} been saying my name. I think it's noise.`],
+        loud: [`${heard} ${verb} been saying my name! But I'm not wasting the card on a rumour!`, `People are talking about me! Do we play it? No. No, we don't. Right?`],
+        soft: [`${heard} ${verb} said my name. I don't know if they mean it.`, `${heard} ${verb} been talking about me. Should I be worried?`],
+        dry: [`${heard} ${verb} said my name. That's a conversation, not a vote.`, `I'm getting some attention. Not enough to spend the card on.`],
+        odd: [`${heard} ${verb} been saying my name. Like a chant. A small, quiet chant.`, `I'm hearing whispers. Whispers aren't votes. Usually.`],
+        any: [`${heard} ${verb} said my name. I'm not burning the card on that.`],
+      }, 'gamble-a'), focus: [lead, other], tense: true, side: side(`${heard} ${verb} talked about voting ${lead} out; ${lead} holds the card anyway.`) });
+      steps.push({ k: 'say', by: other, text: V(other, {
+        sharp: [`Your call. Just don't make me regret it.`, `If you're wrong, you're the one going home.`],
+        loud: [`Okay, but if you're wrong, I'm going to be SO mad!`, `It's your neck! Hopefully not literally!`],
+        soft: [`Are you sure? I'll back you either way.`, `Okay. I trust you.`],
+        dry: [`Bold. Let's see if it's smart too.`, `It's your neck.`],
+        odd: [`I'll light a candle for you. Metaphorically.`, `Fortune favours the bold. Or eats them. One of those.`],
+        any: [`It's your call.`],
+      }, 'gamble-b'), focus: [other, lead] });
+    }
+    steps.push({ k: 'conf', by: lead, text: V(lead, {
+      sharp: [`If I play it every time somebody says my name, it's gone by next week. I'm betting they won't follow through.`, `I can count. They don't have the numbers. I'm keeping it.`],
+      loud: [`Is it risky? YES! Am I doing it anyway? ALSO YES!`, `I'm not wasting it! I just really, really hope I'm right!`],
+      soft: [`I could be wrong. I really, really hope I'm not wrong.`, `Maybe I'm being stupid. But it might matter more later.`],
+      dry: [`Either I'm right and I look clever, or I'm wrong and I'm on a boat. Let's find out.`, `If they really wanted me gone, they'd be quieter about it.`],
+      odd: [`I'm keeping it. If I'm wrong, tell my plants I love them.`, `It's a gamble. I'm good at gambling. I've never gambled.`],
+      any: [`I'm taking the risk. I'm keeping the card.`],
+    }, 'gamble-c'), ...(other ? {} : { side: side(`${heard} ${verb} talked about voting ${lead} out; ${lead} holds the card anyway.`) }) });
+    return;
+  }
+
+  // played: the call is coming; a co-coach who will refuse keeps it to themselves until the host asks
+  const refuses = (d.refusers || []).includes(other);
+  const playSide = side(`${heard} ${verb} talked about voting ${lead} out: ${lead} calls for the card.`);
+  if (other) {
+    steps.push({ k: 'say', by: lead, text: V(lead, {
+      sharp: [`${heard} ${verb} been saying my name. Tonight's the night. Are you signing?`, `They're coming for me tonight. I'm calling it, and I need your signature.`],
+      loud: [`${heard} ${verb} got my name! We have to play it! You'll sign, right?`, `It's tonight! I can feel it! You're signing, yes?`],
+      soft: [`I think it's me tonight. ${heard} ${verb} said my name. Will you sign?`, `I'm scared. I want to play the card. Please say you'll sign.`],
+      dry: [`${heard} ${verb} my name in mind. I'm cashing it in. You're signing.`, `I'd like to still be here tomorrow. Card. Tonight. Sign it.`],
+      odd: [`The stars say tonight. So does the gossip. Will you sign?`, `My doom is near. Please sign my card.`],
+      any: [`They're coming for me. I'm playing it. Will you sign?`],
+    }, 'play-a'), focus: [lead, other], tense: true, side: playSide });
+    steps.push({ k: 'say', by: other, text: refuses ? V(other, {
+      sharp: [`We'll see.`, `Ask me when it's time.`],
+      loud: [`Uh... let's see how it goes!`, `Ask me later!`],
+      soft: [`I... I need to think about it.`, `Can we talk about it when it happens?`],
+      dry: [`Mm.`, `I'll consider it.`],
+      odd: [`The answer is hiding. I'll find it.`, `My pen is thinking.`],
+      any: [`We'll see.`],
+    }, 'play-no') : V(other, {
+      sharp: [`I'll sign. You owe me.`, `Fine. Call it.`],
+      loud: [`Of course I'll sign! Call it!`, `Yes! Let's do it!`],
+      soft: [`I'll sign. I've got you.`, `Of course. Call it.`],
+      dry: [`I'll sign. Try not to waste it.`, `Fine. Pen's ready.`],
+      odd: [`I'll sign. I've been practising my signature.`, `Yes. I brought my lucky pen.`],
+      any: [`I'll sign.`],
+    }, 'play-yes'), focus: [other, lead] });
+  } else steps.push({ k: 'conf', by: lead, text: V(lead, {
+    sharp: [`${heard} ${verb} said my name this week. That's enough. I'm playing it.`, `I'm not waiting to find out the hard way. The card comes out tonight.`],
+    loud: [`They're coming for me! So the card is coming OUT!`, `Nobody's sending me home tonight! I'm playing it!`],
+    soft: [`I'm scared it's me. I'm playing the card.`, `I'd rather waste it than be wrong. It comes out tonight.`],
+    dry: [`${heard} ${verb} said my name. That's not a rumour, that's a plan. Card's coming out.`, `I like being here. I'd like to keep being here. So, the card.`],
+    odd: [`My left ear itches. That means danger. Card time.`, `I can sense it. Like a squirrel senses rain. I'm playing it.`],
+    any: [`They're coming for me. I'm playing the card.`],
+  }, 'play-c'), side: playSide });
+}
+
 /** Before the vote: the card called, and signed or refused. */
 export function cardBeforeVote(steps, say, ep, coaches) {
+  huddle(steps, ep, coaches);
   const commit = (ep.coachCardCommits || []).find(c => !c.tribe || c.tribe === ep.tribalTribe);
   if (!commit) {
     if (coaches.length && ((ep.coachCardNotPlayed || []).length || (ep.coachData?.[ep.tribalTribe]?.card || 'unused') === 'unused'))

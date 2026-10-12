@@ -1749,7 +1749,7 @@ export function simulateEpisode() {
     // Unified story-driven generator for both venues (survival camp / furnished motel).
     generateInterludeLife(ep);
     gs.episode = epNum;
-    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
         lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
       challengeType: null, isMerge: false,
@@ -1819,7 +1819,7 @@ export function simulateEpisode() {
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
 
-    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
       num: epNum, eliminated: ep.eliminated || null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: 'slasher-night', isMerge: ep.isMerge,
@@ -2183,7 +2183,7 @@ export function simulateEpisode() {
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
 
-    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
       num: epNum, eliminated: ep.eliminated || null, riChoice: ep.riChoice || null,
       immunityWinner: null,
       challengeType: 'triple-dog-dare', isMerge: ep.isMerge,
@@ -2319,7 +2319,7 @@ export function simulateEpisode() {
     gs.episode = epNum;
     if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
-    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
       num: epNum, eliminated: ep.eliminated || null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: 'individual', challengeLabel: ep.challengeLabel,
@@ -2987,7 +2987,7 @@ export function simulateEpisode() {
       gs.episode = epNum;
       if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
-      gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+      gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
         num: epNum, eliminated: ep.eliminated || _sdLastPlace, riChoice: ep.riChoice || null,
         immunityWinner: ep.immunityWinner || null,
         challengeType: ep.challengeType || 'individual',
@@ -3089,7 +3089,7 @@ export function simulateEpisode() {
     gs.episode = epNum;
     if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
-    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
       num: epNum, eliminated: _ytElim || null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: ep.challengeType || 'individual',
@@ -3385,7 +3385,7 @@ export function simulateEpisode() {
       gs.episode = epNum;
       if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
-      gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+      gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
         lateArrival: ep.lateArrival || null,
         num: epNum, eliminated: _sdLastPlace, riChoice: ep.riChoice || null,
         immunityWinner: ep.immunityWinner || null,
@@ -3873,7 +3873,7 @@ export function simulateEpisode() {
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
-    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null, num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null, immunityWinner: null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null, num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null, immunityWinner: null,
       challengeType: ep.challengeType, isMerge: ep.isMerge, votes: {}, alliances: [],
       lastChance: true, riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
       advantagesPreTribal: ep.advantagesPreTribal || null,
@@ -4024,7 +4024,7 @@ export function simulateEpisode() {
       updateSurvival(ep);
       if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
       gs.episode = epNum;
-      gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null, num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
+      gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null, num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
         challengeType: ep.challengeType, isMerge: ep.isMerge, votes: {}, alliances: [],
         riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
         advantagesPreTribal: ep.advantagesPreTribal || null,
@@ -4198,7 +4198,7 @@ export function simulateEpisode() {
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
-    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null, num: epNum, eliminated: ep.eliminated || null, riChoice: null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null, num: epNum, eliminated: ep.eliminated || null, riChoice: null,
         lateArrival: ep.lateArrival || null,
       departure: ep.departure || null,
       immunityWinner: ep.immunityWinner || null, challengeType: ep.challengeType || null,
@@ -5293,7 +5293,7 @@ export function simulateEpisode() {
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
-    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null, num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null, num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null,
         lateArrival: ep.lateArrival || null,
       immunityWinner: null, challengeType: 'double-tribal', isMerge: ep.isMerge,
       challengeLabel: ep.challengeLabel || null, challengeCategory: ep.challengeCategory || null,
@@ -5566,7 +5566,7 @@ export function simulateEpisode() {
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
-    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
         lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null,
       multiTribalRIChoices: ep.multiTribalRIChoices || null,
@@ -5979,7 +5979,7 @@ function simulateJuryRoundtable(ep) {
         generateRIPostDuelEvents(ep);
       }
     }
-    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
         lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: ep.eliminated || null, firstEliminated: null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
@@ -6301,7 +6301,7 @@ function simulateJuryRoundtable(ep) {
       }
     }
 
-    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
         lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: ep.eliminated || null, firstEliminated: null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
@@ -7395,7 +7395,7 @@ function simulateJuryRoundtable(ep) {
 
   // ── INCREMENT & SAVE ──
   gs.episode = epNum;
-  gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+  gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachCardCalls: ep.coachCardCalls || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
         lateArrival: ep.lateArrival || null,
     num: epNum, eliminated: ep.eliminated, firstEliminated: ep.firstEliminated || null, riChoice: ep.riChoice, firstRIChoice: ep.firstRIChoice || null,
     immunityWinner: ep.challengeType === 'tribe' ? null : (ep.immunityWinner || null),

@@ -49,6 +49,7 @@ import nArc from './n-arc.js';
 import nVp2 from './n-vp2.js';
 import nVt2 from './n-vt2.js';
 import nTqa3 from './n-tqa3.js';
+import nTqa4 from './n-tqa4.js';
 import nMorning3 from './n-morning3.js';
 import nVp3 from './n-vp3.js';
 import nVt3 from './n-vt3.js';
@@ -96,7 +97,7 @@ import nDayone from './n-dayone.js';
 import nPitch from './n-pitch.js';
 import VOICES from './voices/index.js';
 
-const FILES = [firstday, firstpair, firstgroups, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nDramaExchanges, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival, nGroup3, nGroup4, nGroup5, nArrival2, nTwist, nTribal2, nTwist2, nVote4, nVote5, nRoom, nAuction, nExile, nFeast, nPlan, nPlan2, nFirstImp, nAucFloor, nFirstImp2, nPublic, nTqa, nAdvPlay, nTqa2, nArc, nVp2, nVt2, nTqa3, nMorning3, nVp3, nVt3, nPsy, nRun, nThr, nPrev, nLong2, nLong3, nChm, nBlame, nSocialExchanges, nRecall, nChm2, nReveal, nBooth2, nBooth3, nKindred, nCrash, nExit2, nThr2, nLong4, nCover, nRel, nVp4, nLong5, nLong6, nTeach, nHandoff, nFinal, nDeep, nNote, nFinds, nSolo2, nChm3, nAlliance4, nReturnee, nVpSpecific, nMentor, nBanter, nArcs, nGames, nDefend, nDayone, nPitch];
+const FILES = [firstday, firstpair, firstgroups, nMorning, nChal, nTribal, nAlliance, nVote, nVote2, nVote3, nDrama, nDramaExchanges, nRomance, nTalk, nCamp, nGroup, nGroup2, nArrival, nGroup3, nGroup4, nGroup5, nArrival2, nTwist, nTribal2, nTwist2, nVote4, nVote5, nRoom, nAuction, nExile, nFeast, nPlan, nPlan2, nFirstImp, nAucFloor, nFirstImp2, nPublic, nTqa, nAdvPlay, nTqa2, nArc, nVp2, nVt2, nTqa3, nMorning3, nVp3, nVt3, nPsy, nRun, nThr, nPrev, nLong2, nLong3, nChm, nBlame, nSocialExchanges, nRecall, nChm2, nReveal, nBooth2, nBooth3, nKindred, nCrash, nExit2, nThr2, nLong4, nCover, nRel, nVp4, nLong5, nLong6, nTeach, nHandoff, nFinal, nDeep, nNote, nFinds, nSolo2, nChm3, nAlliance4, nReturnee, nVpSpecific, nMentor, nBanter, nArcs, nGames, nDefend, nDayone, nPitch, nTqa4];
 
 export const STORY_POOLS = {};
 for (const f of FILES) for (const [k, v] of Object.entries(f)) STORY_POOLS[k] = STORY_POOLS[k] ? [...STORY_POOLS[k], ...v] : [...v];

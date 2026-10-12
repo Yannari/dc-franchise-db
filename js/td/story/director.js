@@ -825,8 +825,18 @@ function votePlan(ep, camp, members) {
   const other = pitch?.originalTarget && pitch.originalTarget !== boot && tribal.includes(pitch.originalTarget) && !voters.includes(pitch.originalTarget) ? pitch.originalTarget : null;
   // the other side: a bloc of two or more with a different name, the boot's own if there is one
   const rivals = (ep.alliances || []).filter(al => al.target && al.target !== boot && tribal.includes(al.target) && (al.members || []).filter(m => tribal.includes(m) && m !== al.target).length >= 2);
-  // the boot's own side first (they're sure it's someone else), then the biggest
-  rivals.sort((x, y) => (y.members.includes(boot) ? 1 : 0) - (x.members.includes(boot) ? 1 : 0) || (y.members || []).length - (x.members || []).length);
+  // ...and every other name that two ballots or more went to, by whoever wrote it, alliance or not (the user,
+  // 2026-10-12: "Thom and Finn were on the chopping block but I heard no one talk about Thom, no bloc formation,
+  // no explanation, no logic". Measured: 27% of the names on the block who survived had no scene about them,
+  // because a plan only aired when one alliance had made it, and votes from people in different groups made none)
+  const wroteFor = {};
+  for (const v of ballots) if (v.voted !== boot && v.voter !== v.voted && tribal.includes(v.voted)) (wroteFor[v.voted] ||= []).push(v.voter);
+  for (const [name, vs] of Object.entries(wroteFor))
+    if (vs.length >= 2 && !rivals.some(al => al.target === name)) rivals.push({ label: null, members: [...vs], target: name, loose: true });
+  // a plan two ballots really followed first (it is on the chopping block), then the boot's own side (they're sure
+  // it's someone else), then the one with the most real votes behind it
+  const realVotes = al => ballots.filter(v => v.voted === al.target && (al.members || []).includes(v.voter)).length;
+  rivals.sort((x, y) => (realVotes(y) >= 2) - (realVotes(x) >= 2) || (y.members.includes(boot) ? 1 : 0) - (x.members.includes(boot) ? 1 : 0) || realVotes(y) - realVotes(x) || (y.members || []).length - (x.members || []).length);
   const rival = rivals.find(al => al.members.includes(boot)) || rivals[0] || null;
   const counter = (ep.votePitches || []).find(p => p !== pitch && p.pitchTarget !== boot && tribal.includes(p.pitcher) && tribal.includes(p.pitchTarget));
   const covers = new Set([pitch?.pitcher, counter?.pitcher].filter(Boolean));
@@ -1243,38 +1253,75 @@ function voteTalk(ep, camp, t, next) {
       if (it) out.push(it);
     }
   }
-  const mine = ballotOf(boot);
-  if (mine && mine !== boot && boot === t.gone) {
-    const heard = (ep.pitchIntel || []).find(i => i.knower === boot && i.target === boot && i.believed !== false)
-      || (ep.pitchCounterplay || []).filter(c => c.actor === boot).map(c => ({ pitcher: c.pitcher }))[0];
+  // the same scene for the one going home and for one person who survives the night thinking the same way (the
+  // user, 2026-10-12: "they always focus more on the person getting the boot"): read in played seasons, the
+  // scramble or the 'feels safe' scene was the boot's alone whenever no other plan had aired, so the person shown
+  // relaxing while a friend kept a secret was always the person who went home. Now a decoy with a vote of their
+  // own on them gets the same scene, and which of the two airs first has nothing to do with who goes.
+  const targetScene = (x, step) => {
+    const mine = ballotOf(x);
+    if (!mine || mine === x) return null;
+    const onX = ballots.filter(v => v.voted === x && v.voter !== x).map(v => v.voter);
+    const heard = (ep.pitchIntel || []).find(i => i.knower === x && i.target === x && i.believed !== false)
+      || (ep.pitchCounterplay || []).filter(c => c.actor === x).map(c => ({ pitcher: c.pitcher }))[0];
     if (heard) {
-      const b = closest(boot, tribal.filter(x => x !== boot && x !== mine));
-      if (b) {
-        const who = { a: boot, b };
-        const tip = tipFor(boot);
-        const data = { wrote: mine, pitcher: heard.pitcher || leader, ...(tip && tip.teller !== b ? { teller: tip.teller } : {}) };
-        // what b actually writes: b only promises the name b really writes (the user: Owen promising Mike a vote he never cast)
-        const facts = base(who, { bVoted: ballotOf(b) === boot ? 'boot' : 'other', bWrote: ballotOf(b) === mine, pitcher: !!heard.pitcher, told: !!data.teller });
-        const why = [`${boot} heard the votes were coming for ${pronouns(boot).obj}.`, `${boot} is pushing ${mine} instead. ${b} ${ballotOf(b) === boot ? 'is voting ' + boot : 'is not on ' + boot}.`];
-        const it = item('target', 'vt2', 'scramble', who, data, facts, 'aside', 'before-tribal', ['Scramble', 'red'], why)
-          || item('target', 'story.vote.target', 'scramble', who, data, facts, 'aside', 'before-tribal', ['Scramble', 'red'], why);
-        if (it) out.push(it);
-      }
-    } else {
-      // no idea: a friend who is writing their name sits with them, and keeps it from them
-      // (never the person the boot is voting for: they'd be told 'tonight it's you' to their face)
-      const liar = closest(boot, voters.filter(v => v !== leader && v !== mine && getBond(boot, v) >= 1 && !out.some(o => o.players.includes(v) && o.step === 'plan')));
-      const why = [`${boot} thinks it's ${mine} tonight.`, `${pronouns(boot).Sub} ${pronouns(boot).sub === 'they' ? "haven't" : "hasn't"} heard ${pronouns(boot).posAdj} own name.`];
-      const two = liar ? item('target', 'vt2', 'safe', { a: boot, b: liar }, { wrote: mine }, base({ a: boot, b: liar }, {}), 'aside', 'before-tribal', ['Feels Safe', 'blue'],
-        [...why, `${liar} is writing ${boot}'s name.`]) : null;
-      // nobody close is lying to them: they talk it over with a friend who isn't writing their name and
-      // doesn't know either (the user: one-line scenes that tell nothing)
-      const pal = !two ? closest(boot, tribal.filter(x => x !== boot && x !== mine && ballotOf(x) !== boot && !voters.includes(x) && getBond(boot, x) >= 1)) : null;
-      const sure = pal ? item('target', 'vt2', 'sure', { a: boot, b: pal }, { wrote: mine, ...(ballotOf(pal) && ballotOf(pal) !== mine ? { other: ballotOf(pal) } : {}) },
-        base({ a: boot, b: pal }, { bWrote: ballotOf(pal) === mine, other: !!(ballotOf(pal) && ballotOf(pal) !== mine) }), 'aside', 'before-tribal', ['Feels Safe', 'blue'], [...why, `${pal} isn't writing ${boot}'s name, and doesn't know either.`]) : null;
-      const it = two || sure || item('target', 'story.vote.target', 'safe', { a: boot }, { wrote: mine }, base({ a: boot }, { why: ballotWhy(ballots.find(v => v.voter === boot), ep) }), 'confessional', 'before-tribal', ['Feels Safe', 'blue'], why);
-      if (it) out.push(it);
+      const b = closest(x, tribal.filter(y => y !== x && y !== mine));
+      if (!b) return null;
+      const who = { a: x, b };
+      const tip = tipFor(x);
+      const data = { wrote: mine, pitcher: heard.pitcher || (x === boot ? leader : onX[0]) || leader, ...(tip && tip.teller !== b ? { teller: tip.teller } : {}) };
+      // what b actually writes: b only promises the name b really writes (the user: Owen promising Mike a vote he never cast)
+      const facts = base(who, { bVoted: ballotOf(b) === x ? 'boot' : 'other', bWrote: ballotOf(b) === mine, pitcher: !!heard.pitcher, told: !!data.teller });
+      const why = [`${x} heard the votes were coming for ${pronouns(x).obj}.`, `${x} is pushing ${mine} instead. ${b} ${ballotOf(b) === x ? 'is voting ' + x : 'is not on ' + x}.`];
+      return item(step, 'vt2', 'scramble', who, data, facts, 'aside', 'before-tribal', ['Scramble', 'red'], why)
+        || item(step, 'story.vote.target', 'scramble', who, data, facts, 'aside', 'before-tribal', ['Scramble', 'red'], why);
     }
+    // no idea: a friend who is writing their name sits with them, and keeps it from them
+    // (never the person they are voting for: they'd be told 'tonight it's you' to their face)
+    const liar = closest(x, onX.filter(v => v !== leader && v !== mine && getBond(x, v) >= 1 && !out.some(o => o.players.includes(v) && o.step === 'plan')));
+    const why = [`${x} thinks it's ${mine} tonight.`, `${pronouns(x).Sub} ${pronouns(x).sub === 'they' ? "haven't" : "hasn't"} heard ${pronouns(x).posAdj} own name.`];
+    const two = liar ? item(step, 'vt2', 'safe', { a: x, b: liar }, { wrote: mine }, base({ a: x, b: liar }, {}), 'aside', 'before-tribal', ['Feels Safe', 'blue'],
+      [...why, `${liar} is writing ${x}'s name.`]) : null;
+    // nobody close is lying to them: they talk it over with a friend who isn't writing their name and
+    // doesn't know either (the user: one-line scenes that tell nothing)
+    const pal = !two ? closest(x, tribal.filter(y => y !== x && y !== mine && ballotOf(y) !== x && !onX.includes(y) && getBond(x, y) >= 1)) : null;
+    const sure = pal ? item(step, 'vt2', 'sure', { a: x, b: pal }, { wrote: mine, ...(ballotOf(pal) && ballotOf(pal) !== mine ? { other: ballotOf(pal) } : {}) },
+      base({ a: x, b: pal }, { bWrote: ballotOf(pal) === mine, other: !!(ballotOf(pal) && ballotOf(pal) !== mine) }), 'aside', 'before-tribal', ['Feels Safe', 'blue'], [...why, `${pal} isn't writing ${x}'s name, and doesn't know either.`]) : null;
+    return two || sure || item(step, 'story.vote.target', 'safe', { a: x }, { wrote: mine }, base({ a: x }, { why: ballotWhy(ballots.find(v => v.voter === x), ep) }), 'confessional', 'before-tribal', ['Feels Safe', 'blue'], why);
+  };
+  if (boot === t.gone) {
+    const pair = [];
+    const own = targetScene(boot, 'target');
+    if (own) pair.push(own);
+    // no other plan's target sat there sure it was them (the decoy above): somebody with a vote on them who survives
+    if (own && !out.some(o => o.step === 'decoy')) {
+      const imm = new Set([].concat(ep.immunityWinner || [], ep.extraImmune || []));
+      const hs = x => { let h = 2166136261; for (const c of `${ep.num}|decoy|${x}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
+      // (somebody not on screen yet first; then anybody, short of the people running plans)
+      const seen = x => out.some(o => o.players.includes(x)) ? 1 : 0;
+      const cands = tribal.filter(x => x !== boot && !leads.has(x) && !imm.has(x) && ballots.some(v => v.voted === x && v.voter !== x))
+        .sort((p, q) => seen(p) - seen(q) || hs(p) - hs(q) || p.localeCompare(q));
+      for (const x of cands) { const d = targetScene(x, 'decoy'); if (d) { pair.push(d); break; } }
+      // a unanimous night has nobody else with a vote on them: somebody scared, or a plan's name that came to
+      // nothing, is as sure as anybody that it's them (vt2.decoy: sure the votes are coming, pushing their own name)
+      if (pair.length < 2) {
+        const scared = x => ['paranoid', 'desperate'].includes(gs.playerStates?.[x]?.emotional);
+        const planned = new Set((ep.alliances || []).map(al => al.target));
+        const more = tribal.filter(x => x !== boot && !leads.has(x) && !imm.has(x) && (scared(x) || planned.has(x)) && ballotOf(x) && ballotOf(x) !== x)
+          .sort((p, q) => seen(p) - seen(q) || hs(p) - hs(q) || p.localeCompare(q));
+        for (const x of more) {
+          const friend = closest(x, tribal.filter(y => y !== x && y !== boot && getBond(x, y) >= 1));
+          if (!friend) continue;
+          const tip = tipFor(x), who = { a: x, b: friend }, dWrote = ballotOf(x);
+          const d = item('decoy', 'vt2', 'decoy', who, { wrote: dWrote, ...(tip ? { teller: tip.teller } : {}) },
+            base(who, { told: !!tip, bVoted: ballotOf(friend) === x ? 'boot' : 'other', bWrote: ballotOf(friend) === dWrote, wroteIsBoot: dWrote === boot }), 'aside', 'before-tribal', ['On Edge', 'red'],
+            [`${x} is sure the votes are coming for ${pronouns(x).obj}.`, `${x} is pushing ${dWrote}.`]);
+          if (d) { pair.push(d); break; }
+        }
+      }
+      if (pair.length === 2 && hs(boot) % 2) pair.reverse();
+    }
+    out.push(...pair);
   }
   return out;
 }
@@ -1590,7 +1637,9 @@ export function airTdEpisode(ep) {
         }
       }
       votes.forEach((it, k) => list.push({ at: 8e5 + k, item: it }));
-      const cap = (phase === 'pre' ? (merged ? 4 : 3) : tribalTonight ? (merged ? 5 : 4) : 2) - Math.min(2, Math.max(0, votes.length - 1));
+      // the vote's own scenes come first, and each one past the first takes a place from the rest of the day, three at
+      // most (the user, 2026-10-12: "I sometimes don't feel like the strategy is talked about much... prioritize")
+      const cap = (phase === 'pre' ? (merged ? 4 : 3) : tribalTonight ? (merged ? 5 : 4) : 2) - Math.min(3, Math.max(0, votes.length - 1));
       const onScreen = {};
       [opener, ...votes].forEach(it => it?.players.forEach(p => { onScreen[p] = (onScreen[p] || 0) + 1; }));
       const score = f => dramaOf(f.line.type, f.step.step)

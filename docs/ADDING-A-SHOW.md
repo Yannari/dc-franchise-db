@@ -1765,6 +1765,27 @@ whose people differ from the day's end carries them for the screen. The test
 books a swap and checks the morning's stage directions name the owners; it
 fails with the as-of read switched off.
 
+**A scene only the loser can get is a spoiler.** Total Drama's elimination asked
+the boot alone whether they felt safe (`tribal.js tribalQA`), its camp gave the
+boot alone the "feels safe while a friend keeps a secret" scene (`director.js
+voteTalk`), and five other questions skipped the boot outright, so whoever got
+one of those was safe. Each choice was reasonable. Together they named the
+boot before the reading. Measured on 52 played tribals: the boot was asked a
+question 85% of the time against a fair 64%, with 1.5 times everyone else's
+lines; the camp's on-the-block scene was the boot's alone at 39% of votes. The
+user: "they always focus more on the person getting the boot".
+
+**The rule: choose who a danger scene goes to from the people in danger, never
+from the result.** Anybody a ballot or a plan named, anybody scared, anybody
+working the camp; the same scene for each; the order hashed, not ranked by
+votes. Measure it against the right baseline: the boot versus the *other*
+people in danger (86% and 82% after), not versus the whole tribe. The same
+read found the converse: a target nobody talks about (27% of surviving names
+on the chopping block had no scene, because a plan only aired when one
+alliance had made it). Every name two ballots went to is now a plan with its
+own scene. The probe is `zz-td-tribal-measure`'s shape: per tribal, who was
+asked, who was on the block, and which scenes were about them.
+
 ---
 
 ## 12. What will still be hardcoded when you are done

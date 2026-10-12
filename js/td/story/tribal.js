@@ -136,17 +136,61 @@ function tribalQA(ep, { tribal, ballots, elim, ch, camp, base, ctx, nextN }) {
   const fight = aired.find(it => /^long\.(drama\.(bomb|fight|dispute|clash|explode|meltdown|dig)|blame\.loss)/.test(it?.kind || '')
     && it.scene?.who?.a && it.scene?.who?.b && tribal.includes(it.scene.who.a) && tribal.includes(it.scene.who.b));
   if (fight) add('fight', 9, { a: fight.scene.who.a, b: fight.scene.who.b }, {}, { aVoted: ballotOf(fight.scene.who.a) === fight.scene.who.b ? 'b' : 'other' });
-  // the one going home
-  const mine = ballotOf(elim);
-  const knows = (ep.pitchIntel || []).some(i => i.knower === elim && i.target === elim && i.believed !== false)
-    || (ep.pitchCounterplay || []).some(c => c.actor === elim);
-  if (knows && mine && mine !== elim && tribal.includes(mine)) add('scramble', 8, { a: elim, b: mine }, { target: mine });
-  else if (forBoot.length) {
-    const shifty = [...forBoot].sort((x, y) => getBond(elim, y) - getBond(elim, x) || x.localeCompare(y))[0];
-    add('confident', 6, { a: elim, b: shifty }, {}, { close: getBond(elim, shifty) >= 3 });
+  // ── who is in danger tonight: everybody who is, not only the one going home ──
+  // The user, 2026-10-12: "the structure spoiled who is eliminated, they always focus more on the person getting
+  // the boot". Measured on 52 played tribals: the boot was one of the people asked 85% of the time against a fair
+  // 64%, with 1.5 times everybody else's lines, because this asked the boot alone whether they felt safe. Now the
+  // question goes to the people the night is really about, chosen without looking at who leaves: anybody a ballot
+  // or a plan named, anybody scared (paranoid, desperate), anybody seen working camp to save themselves (the
+  // engine's scramble, alliances.js). Each gets the same scene the boot used to get, so a decoy who survives looks
+  // exactly like the one who doesn't. Two of them at most, in an order the outcome has no part in.
+  const safe = new Set([].concat(ep.immunityWinner || [], ep.extraImmune || []));
+  const votesOn = {};
+  for (const v of ballots) if (v.voter !== v.voted) votesOn[v.voted] = (votesOn[v.voted] || 0) + 1;
+  const planned = new Set((ep.alliances || []).map(al => al.target).filter(Boolean));
+  const scared = x => ['paranoid', 'desperate'].includes(gs.playerStates?.[x]?.emotional);
+  const working = new Set(Object.keys(ep._debugScramble || {}));
+  const heard = x => (ep.pitchIntel || []).some(i => i.knower === x && i.target === x && i.believed !== false)
+    || (ep.pitchCounterplay || []).some(c => c.actor === x) || working.has(x) || scared(x);
+  const danger = tribal.filter(x => !safe.has(x) && (votesOn[x] || planned.has(x) || scared(x) || working.has(x)));
+  const hashOf = x => { let h = 2166136261; for (const c of `${ep.num}|danger|${x}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
+  const order = [...danger].sort((p, q) => hashOf(p) - hashOf(q) || p.localeCompare(q));
+  // only one name in danger: asked half the nights, so a quiet night does not mean a unanimous one
+  const take = order.length >= 2 ? order.slice(0, 2) : order.length && hashOf(order[0]) % 2 ? order : [];
+  take.forEach((x, k) => {
+    const wrote = ballotOf(x);
+    const onX = ballots.filter(v => v.voted === x && v.voter !== x).map(v => v.voter);
+    const pri = 7 - k * 0.5;
+    if (heard(x) && wrote && wrote !== x && tribal.includes(wrote)) add('scramble', pri, { a: x, b: wrote }, { target: wrote }, { onA: onX.length ? 'yes' : 'no' });
+    else if (onX.length) {
+      // b is writing a's name tonight, whoever a is: the one going home, or the one who survives it
+      const shifty = [...onX].sort((p, q) => getBond(x, q) - getBond(x, p) || p.localeCompare(q))[0];
+      add('confident', pri, { a: x, b: shifty }, {}, { close: getBond(x, shifty) >= 3 });
+    } else {
+      // scared for nothing (nobody writes them): somebody close talks them down, or doesn't
+      const pal = tribal.filter(p => p !== x).sort((p, q) => getBond(x, q) - getBond(x, p) || p.localeCompare(q))[0];
+      if (pal) add('nervous', pri, { a: x, b: pal }, {}, { close: getBond(x, pal) >= 3 });
+    }
+  });
+  // ── the classic Tribal's moments (vp-screens.js rpBuildTribal), now said at the fire ──
+  // caught working the room at the vote (episode.js [3] OVERPLAYING): votes flipped onto them for it
+  const ovp = ep.overplayer;
+  if (ovp?.player && tribal.includes(ovp.player)) {
+    const flipped = (ovp.votersFlipped || []).find(x => tribal.includes(x));
+    if (flipped) add('overplay', 9, { a: ovp.player, b: flipped }, {}, { two: (ovp.votersFlipped || []).length >= 2 });
+  }
+  // the hothead who blows up at the person organizing against them (episode.js TRIBAL DISRUPTION)
+  const dis = ep.tribalDisruption;
+  if (dis?.disruptor && dis.organizer && tribal.includes(dis.disruptor) && tribal.includes(dis.organizer))
+    add('disrupt', 9.5, { a: dis.disruptor, b: dis.organizer }, {}, { helped: !!dis.helped });
+  // seen checked out at camp (camp-events.js comfort blindspot): the host noticed too
+  const out0 = ep.comfortBlindspotPlayer;
+  if (out0 && tribal.includes(out0)) {
+    const saw = tribal.filter(p => p !== out0).sort((p, q) => (pStatsOf(q)?.intuition || 0) - (pStatsOf(p)?.intuition || 0) || p.localeCompare(q))[0];
+    if (saw) add('checkedout', 6, { a: out0, b: saw });
   }
   // the challenge
-  if (ch?.sank && tribal.includes(ch.sank) && ch.sank !== elim) {
+  if (ch?.sank && tribal.includes(ch.sank)) {
     const side = tribal.filter(x => x !== ch.sank).sort((x, y) => Math.abs(getBond(ch.sank, y)) - Math.abs(getBond(ch.sank, x)) || x.localeCompare(y))[0];
     if (side) add('sank', 7, { a: ch.sank, b: side }, {}, { defends: getBond(ch.sank, side) >= 1 });
   }
@@ -165,17 +209,17 @@ function tribalQA(ep, { tribal, ballots, elim, ch, camp, base, ctx, nextN }) {
   if (pairs.length) add('pair', 4, { a: pairs[0][0], b: pairs[0][1] });
   // immunity
   const imm = [ep.immunityWinner, ...(ep.extraImmune || [])].find(x => x && tribal.includes(x));
-  if (imm) add('immune', 5, { a: imm, b: tribal.find(x => x !== imm && x !== elim) || null });
+  if (imm) add('immune', 5, { a: imm, b: tribal.filter(x => x !== imm).sort((x, y) => hashOf(x) - hashOf(y))[0] || null });
   // the outsider: nobody here is close to them
-  const lone = tribal.filter(x => x !== elim && best(x) <= 1).sort((x, y) => best(x) - best(y) || x.localeCompare(y))[0];
+  const lone = tribal.filter(x => best(x) <= 1).sort((x, y) => best(x) - best(y) || x.localeCompare(y))[0];
   if (lone) add('outsider', 5, { a: lone, b: tribal.filter(x => x !== lone).sort((x, y) => getBond(lone, y) - getBond(lone, x) || x.localeCompare(y))[0] });
   // a returnee: the host brings up what really happened to them last time (td/past.js, the ledger), and
   // somebody new cuts in. Sharpest early, while it is still the thing everybody knows about them.
   // ...once a returnee a season: the second time it's a rerun (read: Connor asked the same question twice)
   const vetAsked = ((gs.tdStory ||= {}).vetAsked ||= {});
-  const vet = tribal.filter(x => x !== elim && pastOf(x) && !vetAsked[x]).sort((x, y) => (pastOf(y).kind === 'won') - (pastOf(x).kind === 'won') || x.localeCompare(y))[0];
+  const vet = tribal.filter(x => pastOf(x) && !vetAsked[x]).sort((x, y) => (pastOf(y).kind === 'won') - (pastOf(x).kind === 'won') || x.localeCompare(y))[0];
   if (vet) {
-    const nb = tribal.filter(x => x !== vet && x !== elim && !isReturnee(x)).sort((x, y) => strat(y) - strat(x) || x.localeCompare(y))[0];
+    const nb = tribal.filter(x => x !== vet && !isReturnee(x)).sort((x, y) => strat(y) - strat(x) || x.localeCompare(y))[0];
     add('returnee', ep.num <= 4 ? 6 : 4, { a: vet, ...(nb ? { b: nb } : {}) });
   }
   // a suspected idol holder
@@ -186,21 +230,21 @@ function tribalQA(ep, { tribal, ballots, elim, ch, camp, base, ctx, nextN }) {
   if (ep.isMerge) {
     const old = ep.tribesAtStart || [];
     const tribeOf = x => old.find(t => (t.members || []).includes(x))?.name;
-    const x = tribal.find(p => p !== elim), y = x ? tribal.find(p => p !== elim && tribeOf(p) && tribeOf(p) !== tribeOf(x)) : null;
+    const x = [...tribal].sort((p, q) => hashOf(p) - hashOf(q))[0], y = x ? tribal.find(p => tribeOf(p) && tribeOf(p) !== tribeOf(x)) : null;
     if (x && y) add('merge', 8, { a: x, b: y });
   }
   // the end of the game is close
   if ((ep.isMerge || gs.isMerged) && tribal.length <= 6) {
-    const x = [...tribal].filter(p => p !== elim).sort((p, q) => strat(q) - strat(p) || p.localeCompare(q))[0];
-    if (x) add('endgame', 6, { a: x, b: tribal.filter(p => p !== x && p !== elim).sort((p, q) => getBond(x, q) - getBond(x, p) || p.localeCompare(q))[0] });
+    const x = [...tribal].sort((p, q) => strat(q) - strat(p) || p.localeCompare(q))[0];
+    if (x) add('endgame', 6, { a: x, b: tribal.filter(p => p !== x).sort((p, q) => getBond(x, q) - getBond(x, p) || p.localeCompare(q))[0] });
   }
   // a question to the room, when nothing else is sharp enough
-  { const r = [...tribal].filter(p => p !== elim).sort((p, q) => (pStatsOf(q)?.boldness || 0) - (pStatsOf(p)?.boldness || 0) || p.localeCompare(q));
+  { const r = [...tribal].sort((p, q) => (pStatsOf(q)?.boldness || 0) - (pStatsOf(p)?.boldness || 0) || p.localeCompare(q));
     if (r.length >= 3) add('room', 2, { a: r[0], b: r[1], c: r[2] }); }
   // the opener: the host warms the room up on the day before the sharp questions (the user: "who
   // starts a tribal like this"): a lost challenge, or for the merged tribe how camp feels
-  { const r = [...tribal].filter(p => p !== elim).sort((p, q) => (pStatsOf(q)?.social || 0) - (pStatsOf(p)?.social || 0) || p.localeCompare(q));
-    const openWho = { a: ch?.carried && tribal.includes(ch.carried) && ch.carried !== elim ? ch.carried : r[0], b: r.find(x => x !== (ch?.carried || r[0])) };
+  { const r = [...tribal].sort((p, q) => (pStatsOf(q)?.social || 0) - (pStatsOf(p)?.social || 0) || p.localeCompare(q));
+    const openWho = { a: ch?.carried && tribal.includes(ch.carried) ? ch.carried : r[0], b: r.find(x => x !== (ch?.carried || r[0])) };
     if (openWho.a && openWho.b) {
       // what the day had in it, for the host to ask about: who won immunity, who went home last time
       const imm = [].concat(ep.immunityWinner || []).find(x => tribal.includes(x) && !Object.values(openWho).includes(x)) || null;
@@ -224,7 +268,14 @@ function tribalQA(ep, { tribal, ballots, elim, ch, camp, base, ctx, nextN }) {
     cast.forEach(p => used.add(p));
     mem[c.topic] = ep.num;
     if (c.topic === 'returnee') (gs.tdStory.vetAsked ||= {})[c.who.a] = ep.num;
-    out.push({ topic: c.topic, players: cast, lines: w.lines });
+    out.push({ topic: c.topic, players: cast, lines: w.lines, id: w.lineId });
+  }
+  // whoever answered the opener isn't asked the very next question (read: Owen, twice in a row)
+  const op = out.findIndex(x => x.topic === 'open');
+  const near = x => x.players.some(p => out[op].players.includes(p));
+  if (op >= 0 && out[op + 1] && near(out[op + 1])) {
+    const j = out.findIndex((x, i) => i > op + 1 && !near(x));
+    if (j > 0) out.splice(op + 1, 0, ...out.splice(j, 1));
   }
   return out;
 }
@@ -517,6 +568,28 @@ export function writeTribal(ep) {
     };
     camConf('burned', burned, { target: plan?.target });
     if (relieved !== architect) camConf('relieved', relieved);
+  }
+  // ── the classic Votes screen's footnotes, as the room hears them (vp-screens.js vpWhyBullets) ──
+  // a ballot written wrong (voting.js miscommunication): somebody on the same plan catches it at the reading
+  for (const mc of (ep.voteMiscommunications || []).filter(m => tribal.includes(m.voter) && m.voter !== elim && m.actual && m.intended && m.actual !== m.intended).slice(0, 1)) {
+    const al = (ep.alliances || []).find(x => x.label === mc.alliance);
+    // (the one who catches it wrote the plan's name themselves: they know what it was)
+    const mate = (al?.members || []).filter(x => x !== mc.voter && x !== elim && tribal.includes(x) && ballots.find(v => v.voter === x)?.voted === mc.intended)
+      .sort((x, y) => getBond(mc.voter, y) - getBond(mc.voter, x) || x.localeCompare(y))[0];
+    if (!mate) continue;
+    const f = { ...factsFor({ who: { a: mc.voter, b: mate }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(mc.voter), lastBoot: true, pair: true };
+    const w = writeStory('room.mixup', 'any', { a: mc.voter, b: mate }, { ...data, intended: mc.intended, actual: mc.actual }, f, ctx(n++, 'tribal', 'soft'));
+    if (w) room.push(...w.lines);
+  }
+  // a plan that split its votes against an idol (alliances.js splitTarget): one of them says why, when it worked
+  for (const sp of ep.splitVotePlans || []) {
+    const idolled = (ep.idolPlays || []).some(p => !p.type && (p.player === sp.primary || p.playedFor === sp.primary) && (p.votesNegated || 0) > 0);
+    const ending = idolled && sp.secondary === elim ? 'idol' : !idolled && sp.primary === elim ? 'plain' : null;
+    const by = ending && [...(sp.secondaryVoters || []), ...(sp.primaryVoters || [])].find(x => tribal.includes(x) && x !== elim);
+    if (!by) continue;
+    const f = { ...factsFor({ who: { a: by }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(by), lastBoot: true };
+    const w = writeStory(`after.split.${ending}`, 'any', { a: by }, { ...data, primary: sp.primary, secondary: sp.secondary }, f, ctx(n++, 'tribal', 'soft'));
+    if (w) { after.unshift(...w.lines); break; }
   }
   // the host's questions, from what happened today
   const qa = tribalQA(ep, { tribal, ballots, elim, ch, camp: camp || gs.mergeName || 'merge', base, ctx, nextN: () => n++ });

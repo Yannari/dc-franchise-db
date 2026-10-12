@@ -15,7 +15,7 @@ import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 // what a story entry's `when` may ask (td/script/facts.js plus the story layer's own)
 const STORY_FACTS = new Set([...TD_FACT_KEYS, 'madeMove', 'targetKnows', 'pastEnd', 'targetEnd',
   'venue', 'count', 'outcome', 'story', 'step', 'prev', 'prevGap', 'chapter', 'members', 'aOther', 'bOther', 'target', 'group',
-  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'past', 'pastB', 'pastBy', 'pastPartnerHere', 'targetPast', 'targetWronged', 'glue', 'count', 'fifth', 'sixth', 'notVoice', 'notVoiceB', 'home', 'job', 'lot', 'eats', 'thing', 'others', 'markMe', 'markB', 'otherMe', 'otherB', 'shaky', 'cover', 'close', 'aVoted', 'defends', 'cWasted', 'self', 'found', 'sparkSeen', 'told', 'tally', 'alt', 'fromTarget', 'sparkKind', 'wroteIsBoot', 'moment', 'how', 'ago', 'bWrote', 'tease', 'two', 'bLikesA', 'bHatesA', 'physical', 'imm', 'ally', 'markLeader', 'real', 'blame', 'crash', 'revealKind', 'saw', 'call', 'lostAlly', 'flipped', 'won', 'again', 'yes', 'rel', 'tkind', 'warner', 'keep', 'wanted', 'area', 'mine', 'leader', 'locked', 'band', 'kindred', 'kin', 'most']);
+  'voted', 'votedB', 'bVoted', 'myVote', 'blindside', 'gotVotes', 'unanimous', 'lost', 'won', 'sank', 'carried', 'sankA', 'carriedA', 'sankB', 'carriedB', 'streak', 'sankT', 'registerC', 'voice', 'voiceB', 'voiceC', 'hist', 'fresh', 'fourth', 'swing', 'why', 'votes', 'other', 'pitcher', 'merged', 'late', 'cast', 'pair', 'returnee', 'returneeB', 'past', 'pastB', 'pastBy', 'pastPartnerHere', 'targetPast', 'targetWronged', 'glue', 'count', 'fifth', 'sixth', 'notVoice', 'notVoiceB', 'home', 'job', 'lot', 'eats', 'thing', 'others', 'markMe', 'markB', 'otherMe', 'otherB', 'shaky', 'cover', 'close', 'aVoted', 'defends', 'cWasted', 'self', 'found', 'sparkSeen', 'told', 'tally', 'alt', 'fromTarget', 'sparkKind', 'wroteIsBoot', 'moment', 'how', 'ago', 'bWrote', 'tease', 'two', 'bLikesA', 'bHatesA', 'physical', 'imm', 'ally', 'markLeader', 'real', 'blame', 'crash', 'revealKind', 'saw', 'call', 'lostAlly', 'flipped', 'won', 'again', 'yes', 'rel', 'tkind', 'warner', 'keep', 'wanted', 'area', 'mine', 'leader', 'locked', 'band', 'kindred', 'kin', 'most', 'onA', 'helped', 'teamWon']);
 // names a line may say, and the fact that must be asked for unless the pool always has it
 const ALWAYS = new Set(['a', 'b', 'c', 'd', 'e', 'f', 'h', 'quarters', 'bed', 'item', 'here', 'place', 'host']);
 const NEEDS = { glueA: 'glue', glueB: 'glue', lastBy: 'pastBy', lastPartner: 'pastPartnerHere', lastSeason: 'past', lastPlace: 'past', lastSeasonT: 'targetPast', lastPlaceT: 'targetPast', lastSeasonB: 'pastB', lastPlaceB: 'pastB',myVote: 'myVote',sank: 'sank', carried: 'carried', bootVotes: 'count', betrayer: 'betrayer', more: 'more', rival: 'rival', friend: 'friend',
@@ -99,6 +99,8 @@ const GUARANTEED = [
   [/^vt2\.scramble$/, ['wrote', 'pitcher']],
   [/^vt2\./, ['wrote']],
   [/^tqa\.scramble\./, ['target']],
+  [/^room\.mixup\./, ['intended', 'actual']],
+  [/^after\.split\./, ['primary', 'secondary']],
   [/^arc\.warn\./, ['pitcher', 'target']],
   [/^arc\.adv\.idol\.warned$/, ['pitcher', 'source']],
   [/^arc\.spark\.pair$/, ['partner']],
@@ -311,7 +313,9 @@ describe('a season through the director', () => {
       const n = campFeed(ep, camp, 'pre').length + campFeed(ep, camp, 'post').length;
       // 18 was the camp-only edit; the vote told across the day (director.js arcBeats) adds its spark,
       // warnings and advantage decisions on top of the free scenes, so a big night runs a little longer
-      expect(n, `ep ${ep.num} ${camp}`).toBeLessThanOrEqual(22);
+      // ...and since 2026-10-12 every name on the chopping block gets its own plan scene (director.js votePlan's
+      // rivals; the user: "I heard no one talk about Thom"): one more on the busiest night, never more
+      expect(n, `ep ${ep.num} ${camp}`).toBeLessThanOrEqual(23);
     }
   });
 

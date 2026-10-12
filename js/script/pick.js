@@ -78,7 +78,10 @@ export function pickEntry(ledger, pools, key, facts, pairKey, rng, speaker = nul
   // ...and a line one of these speakers has already said is out while anything they have not said fits
   // (SAID_AGAIN alone lost to a small pool: a resident said the same notes scene twice on Rescue Island)
   const saidBy = e => speakers.some(sp => (u.by?.[e.id] || []).includes(sp));
-  if (scored.some(([e, w]) => w > 0 && !saidBy(e))) for (const x of scored) if (saidBy(x[0])) x[1] = 0;
+  // (anything they have not said, even one only this pair has had: else the pair rule zeroed every fresh line and
+  // the one line Trent had already said won again on Rescue Island. With nothing weighted left, the fallback
+  // below takes the least-used line nobody here has said.)
+  if (fits.some(e => !saidBy(e))) for (const x of scored) if (saidBy(x[0])) x[1] = 0;
   let total = scored.reduce((s, [, w]) => s + w, 0);
   // Everything that fits has been used on this pair: take the least-used fit.
   if (!total) {

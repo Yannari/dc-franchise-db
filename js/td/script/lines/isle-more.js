@@ -315,6 +315,10 @@ const GRIND = [
     { by: 'a', say: "Hit! Finally!" },
     { by: 'a', conf: "Could be useless. Could be the thing that gets me back in. I'll take the chance." },
   ] },
+  {"id":"im.g7","turns":[{"beat":"{a} stops halfway through a practice run, catches {a.posAdj} breath, then goes back to the start."},{"by":"a","say":"I'm not counting that one. I stopped."},{"by":"a","conf":"Nobody's making me start over. That's almost worse, because now I know exactly whose fault this is."}]},
+  {"id":"im.g8","turns":[{"beat":"{a} finishes a set of stretches and stays on the sand for a moment before standing again."},{"by":"a","say":"I was hoping that would make getting up easier."},{"by":"a","conf":"I'd love to spend the day complaining. Unfortunately, I also want to get back in, so I'm trying to do both."}]},
+  {"id":"im.g9","turns":[{"beat":"{a} practises balancing on one foot, wobbles, and tries again without looking around."},{"by":"a","say":"If the camera missed that, I was excellent."},{"by":"a","conf":"I'm getting better. I can tell because I almost caught myself before I started making excuses."}]},
+  {"id":"im.g10","turns":[{"beat":"{a} pauses during practice, looks toward the water, then gets moving again."},{"by":"a","say":"Okay. I can be miserable after this."},{"by":"a","conf":"I keep thinking about how good it would feel to walk back into that game. It's getting me through the part where I really don't want to move."}]},
 ];
 const CLOSE = [
   { id: 'im.c1', when: { gap: 'older' }, turns: [

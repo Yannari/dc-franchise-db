@@ -41,7 +41,7 @@ import { dressConfessionals } from './captions.js';
 import { writeTwistStory, writeExile, writeFirstImpressions, writeAuctionScript } from './twist.js';
 import { needOf, psycheCast } from './psyche.js';
 import { runnerDue } from './runners.js';
-import { recordThreads, threadDue } from './threads.js';
+import { recordThreads, threadDue, threadKnown } from './threads.js';
 import { writePreviously } from './previously.js';
 import { chalMoments } from './chalmoments.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
@@ -1425,7 +1425,7 @@ export function airTdEpisode(ep) {
     if (talk?.cause?.length) talk.em.causes = talk.cause;
     // ...or an old wound between them (threads.js): the plan's leader has been carrying it since
     if (talk && !talk.cause?.length) {
-      const old = ((gs.tdStory ||= {}).threads || []).find(t => !t.done && t.ep < ep.num && t.a === talk.leader && t.b === talk.boot && ['wronged', 'rivals', 'grievance'].includes(t.kind))
+      const old = ((gs.tdStory ||= {}).threads || []).find(t => !t.done && t.ep < ep.num && t.a === talk.leader && t.b === talk.boot && threadKnown(t, ep.num) && ['wronged', 'rivals', 'grievance'].includes(t.kind))
         || ((gs.tdStory ||= {}).threads || []).find(t => !t.done && t.ep < ep.num && t.kind === 'rivals' && t.a === talk.boot && t.b === talk.leader);
       if (old) talk.em.causes = [{ by: talk.leader, of: talk.boot, kind: 'history', aired: true,
         moment: old.kind === 'grievance' ? 'the night {target} wrote my name' : old.kind === 'wronged' ? `what {target} did to me at ${old.chal}` : `everything that happened at ${old.chal}` }];
@@ -1542,7 +1542,7 @@ export function airTdEpisode(ep) {
         }
       }
       // a thread carried from an earlier episode (threads.js): one scene when one is due
-      if (editOn && phase === 'pre' && ep.num > 1) {
+      if (editOn && liveEp(ep) && phase === 'pre' && ep.num > 1) {
         const td = threadDue(ep, members);
         const writesT = (x, y) => (ep.votingLog || []).some(v => v.voter === x && v.voted === y);
         // ...and a feud thread doesn't air between two people who are friends now (read: Duncan and Felipe split
@@ -2301,7 +2301,7 @@ export function airTdEpisode(ep) {
   // last episode, as the host recaps it before this one (previously.js)
   if (ep.tdPreviously === undefined) ep.tdPreviously = writePreviously(ep);
   // what this episode leaves between people, for the episodes after it (threads.js)
-  { const all = Object.values(story).flatMap(c => [...(c.pre || []), ...(c.post || [])]);
+  if (liveEp(ep)) { const all = Object.values(story).flatMap(c => [...(c.pre || []), ...(c.post || [])]);
     recordThreads(ep, all.filter(it => it?.kind === 'arc.warn.told').map(it => ({ teller: it.scene?.who?.a, knower: it.scene?.who?.b })), all.filter(it => it?.storyType === 'challenge')); }
   // the Exile Duel's two nights: the one sent to Exile, and the face-off (twist.js writeExile)
   if (ep.exileStory === undefined) ep.exileStory = writeExile(ep);

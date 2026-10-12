@@ -1,0 +1,39 @@
+{
+  "base": "f870d34a",
+  "scope": "Three seeded 16-player seasons with romance enabled; final aired camp feed. After secret-ballot fix; before replay-only guard and island-pool additions, which do not affect these live non-island samples.",
+  "seasons": [
+    {
+      "setting": "hosted-camp",
+      "seed": 1729,
+      "episodes": 14,
+      "scenes": 319,
+      "groups": 71,
+      "exactRepeatedExchanges": 0,
+      "missingSpeakers": [],
+      "overCap": [],
+      "storylinesWithThreeAiredSteps": 1
+    },
+    {
+      "setting": "carnival",
+      "seed": 2026,
+      "episodes": 14,
+      "scenes": 326,
+      "groups": 75,
+      "exactRepeatedExchanges": 0,
+      "missingSpeakers": [],
+      "overCap": [],
+      "storylinesWithThreeAiredSteps": 3
+    },
+    {
+      "setting": "world-tour",
+      "seed": 81,
+      "episodes": 14,
+      "scenes": 323,
+      "groups": 73,
+      "exactRepeatedExchanges": 0,
+      "missingSpeakers": [],
+      "overCap": [],
+      "storylinesWithThreeAiredSteps": 1
+    }
+  ]
+}

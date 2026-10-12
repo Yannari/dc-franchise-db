@@ -199,7 +199,7 @@ function normOf(b) {
 }
 function loadBuf(ctx, path) {
   // the voice test's files change between renders: never from the browser's cache
-  if (!bufs[path]) bufs[path] = fetch(/^https?:/.test(path) ? path : TD_AUDIO + path, path.startsWith('vo-test/') ? { cache: 'no-store' } : undefined).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status))
+  if (!bufs[path]) bufs[path] = fetch(/^https?:/.test(path) ? path : TD_AUDIO + path).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status))
     .then(a => ctx.decodeAudioData(a)).then(b => ({ b, norm: normOf(b) })).catch(() => null);
   return bufs[path];
 }
@@ -345,41 +345,28 @@ export function babble(text, v, { loud = false } = {}) {
   });
 }
 
-// ── VOICE ACTING (the test) ───────────────────────────────────────────
-// The user means to voice the cast with Qwen3-TTS (2026-10-11) and is testing it by hand first: the lines
-// of one episode, exported by tools/td-vo-script.mjs into assets/audio/td/vo-test/script.json, voiced in
-// the online demo and dropped in the same folder as <id>.wav (or .mp3). A line with a clip plays it; any
-// other line, or a clip that is not there yet, falls back to the blips. The id is the speaker and the
-// line's text, hashed, so the clip follows the line and not its position.
+// ── VOICE ACTING ──────────────────────────────────────────────────────
+// A line's id is the speaker and its words, hashed: the clip follows the line, not its position. Voiced lines
+// live in the audio bucket (voicing.js makes them, voicedLines below finds them); any other line is the blips.
 export function lineId(by, text) {
   let h = 2166136261; for (const ch of `${by}|${text}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
   return 'L' + (h >>> 0).toString(16).padStart(8, '0');
-}
-let voIndex = null;
-const VO = 'vo-test/';
-function voLoad() {
-  if (!voIndex) voIndex = fetch(TD_AUDIO + VO + 'script.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
-    .then(j => { const m = new Set((j?.lines || []).map(l => l.id)); voIndex.ids = m; voIndex.files = Object.fromEntries((j?.lines || []).map(l => [l.id, l.file || `${l.id}.wav`])); if (m.size) console.info(`[voice test] script loaded: ${m.size} voiced lines`); return m; })
-    .catch(e => { console.warn('[voice test] no script.json:', e); voIndex.ids = new Set(); return voIndex.ids; });
-  return voIndex;
 }
 // The lines as THIS browser speaks them. A line's words depend on more than the season save: the TD writer
 // reads each character's franchise career (js/td/past.js), so the user's own browser, with their history,
 // says other lines than a clean one, and a script written in a clean browser matched nothing (the user,
 // 2026-10-11: "I hear the Animal Crossing voice fallback but not the model voices"). So the viewer keeps
-// every line it speaks, and tdVoiceExport() in the console downloads them for tools/td-vo-script.mjs --from.
+// every line it speaks (recordEpisodeLines reads them for voicing; tdVoiceExport() downloads them).
 const spoken = new Map();
 if (typeof window !== 'undefined') {
-  voLoad();
   // Play a whole episode in this browser, silently and at speed, through every screen and every camp
   // conversation, then download its lines: one command instead of watching it all and opening every
   // conversation on the map (the user's first export held only the six lines of the recap).
   window.tdVoiceRecord = async (ep) => { await recordEpisodeLines(ep); return window.tdVoiceExport(ep); };
-  // what the voice test sees: the script's lines, and the last lines spoken with whether each has a clip
+  // the last lines spoken, and whether each has a voice in the bucket
   window.tdVoiceCheck = () => {
-    const ids = voIndex?.ids;
-    console.info(`[voice test] script: ${ids ? ids.size + ' voiced lines' : 'not loaded'}; audio: ${out() ? out().ctx.state : 'off (muted, locked, or no click yet)'}`);
-    console.table([...spoken.values()].slice(-15).map(l => ({ by: l.by, id: l.id, voiced: !!ids?.has(l.id), text: l.text.slice(0, 50) })));
+    console.info(`[voice] season ${voiceSeason()}; audio: ${out() ? out().ctx.state : 'off (muted, locked, or no click yet)'}`);
+    console.table([...spoken.values()].slice(-15).map(l => ({ by: l.by, id: l.id, voiced: !!live[`${voiceSeason()}/${l.ep}`]?.ids?.has(l.id), text: l.text.slice(0, 50) })));
   };
   window.tdVoiceExport = (ep) => {
     const lines = [...spoken.values()].filter(l => ep == null || +l.ep === +ep);
@@ -447,14 +434,11 @@ export function speak(by, text, v, opts = {}) {
   if (!spoken.has(id)) spoken.set(id, { by, text, id, ...(opts.meta || {}) });
   try { window.__tdLine?.(by, text, id, opts.meta || {}); } catch { /* a harness hook (tools/td-vo-script.mjs) */ }
   const o = out(); if (!o) return;
-  // a line voiced for this season (the bucket), else one in the voice test folder, else the blips
+  // a line voiced for this season (the bucket), else the blips
   const ep = opts.meta?.ep, lv = ep != null ? voicedLines(ep) : null;
-  const inLive = !!lv?.ids?.has(id), inTest = !!voIndex?.ids?.has(id);
-  if (!inLive && !inTest) return babble(text, v, opts);
+  if (!lv?.ids?.has(id)) return babble(text, v, opts);
   const ctx = o.ctx, tok = talkTok, tag = `[voice] ${by} ${id} "${String(text).slice(0, 40)}"`;
-  const file = voIndex?.files?.[id] || `${id}.wav`;
-  const clip = inLive ? loadBuf(ctx, `${VOICE_API()}/audio/voice/${voiceSeason()}/e${ep}/${id}.mp3`)
-    : loadBuf(ctx, `${VO}${file}`).then(L => L || (file.endsWith('.wav') ? loadBuf(ctx, `${VO}${id}.mp3`) : null));
+  const clip = loadBuf(ctx, `${VOICE_API()}/audio/voice/${voiceSeason()}/e${ep}/${id}.mp3`);
   clip.then(L => {
     if (tok !== talkTok) return;
     if (!L) { console.warn(`${tag}: the clip did not load or decode, blips instead`); return babble(text, v, opts); }

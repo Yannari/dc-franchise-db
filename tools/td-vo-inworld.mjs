@@ -18,6 +18,9 @@ const argv = process.argv.slice(2);
 const opt = (f, d) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] : d; };
 const list = f => { const i = argv.indexOf(f); if (i < 0) return []; const o = []; for (let j = i + 1; j < argv.length && !argv[j].startsWith('--'); j++) o.push(argv[j]); return o; };
 const MODEL = opt('--model', 'inworld-tts-2'), WS = opt('--workspace', 'jolly-rainbow-3303'), ONLY = list('--only');
+// --all: THE EPISODE. Every line of every character with a voice, into the episode's own clips (<id>.mp3 beside
+// script.json, which the viewer plays), and script.json pointed at them. Without it: the 18-line test into inworld/.
+const ALL = argv.includes('--all'), FORCE = argv.includes('--force');
 
 const keyFile = ['.inworld-key', '.inworld-key.txt'].map(f => path.join(os.homedir(), f)).find(f => fs.existsSync(f));
 const KEY = (process.env.INWORLD_API_KEY || (keyFile ? fs.readFileSync(keyFile, 'utf8') : '')).trim();
@@ -26,30 +29,63 @@ if (!KEY) { console.error('No key: put it in %USERPROFILE%\\.inworld-key (or INW
 const DIR = 'assets/audio/td/vo-test';
 const script = JSON.parse(fs.readFileSync(`${DIR}/script.json`, 'utf8'));
 const compared = new Set(JSON.parse(fs.readFileSync(`${DIR}/voices/voices.json`, 'utf8'))._compared || []);
-const lines = script.lines.filter(l => compared.has(l.id) && (!ONLY.length || ONLY.includes(l.by)));
+// each character's voice: voices/inworld.json (the user's own, by name), else the workspace__name pattern
+let VOICE = {};
+try { VOICE = JSON.parse(fs.readFileSync(`${DIR}/voices/inworld.json`, 'utf8')); } catch { /* the pattern */ }
+const voiceOf = n => VOICE[n] || `${WS}__${n.toLowerCase()}`;
+const lines = script.lines.filter(l => (ALL ? (VOICE[l.by] || !Object.keys(VOICE).length) : compared.has(l.id)) && (!ONLY.length || ONLY.includes(l.by)));
+const OUT = ALL ? DIR : `${DIR}/inworld`;
+const fileOf = l => `${OUT}/${l.id}.mp3`;
 fs.mkdirSync(`${DIR}/inworld`, { recursive: true });
 
-// The line's reading direction (tools/td-vo-script.mjs) in Inworld's words; else how the character usually sounds.
-const BASE = { Heather: 'speak coldly, condescending', Gwen: 'speak flatly, deadpan', Owen: 'speak excitedly' };
+// SHORT DIRECTIONS (the user, 2026-10-11: "we would work on shorter, better direction"): two or three words. The
+// line's own direction first (tools/td-vo-script.mjs), else how the character usually sounds, the tone each one
+// was tested in on the Inworld playground. Words cost: the long ones put ~60% on top of an episode's characters.
+const BASE = { Heather: 'speak coldly', Gwen: 'speak flatly', Owen: 'speak excitedly', Duncan: 'speak smugly',
+  Courtney: 'speak sharply', Izzy: 'speak manically', Cody: 'speak eagerly', Sierra: 'speak excitedly, fast',
+  Lindsay: 'speak sweetly', Harold: 'speak pompously', Leshawna: 'speak confidently', Noah: 'speak dryly',
+  Bridgette: 'speak calmly', Geoff: 'speak cheerfully', Trent: 'speak gently', Alejandro: 'speak smoothly',
+  Chris: 'speak like a TV host' };
 const steer = l => /shocked/.test(l.direction) ? 'speak in shock'
   : /Shout it/.test(l.direction) ? 'shout'
-  : /confiding in a camera/.test(l.direction) ? 'speak softly, confiding in the camera'
-  : /ceremony/.test(l.direction) ? 'speak tense and low, everyone is listening'
+  : /confiding in a camera/.test(l.direction) ? 'speak softly, to the camera'
+  : /ceremony/.test(l.direction) ? 'speak tense, low'
   : BASE[l.by] || null;
 
 let secs = 0, chars = 0;
-for (const l of lines) {
+const t0 = Date.now();
+fs.mkdirSync(OUT, { recursive: true });
+const todo = lines.filter(l => FORCE || !ALL || !fs.existsSync(fileOf(l)));
+async function voice(l) {
   const s = steer(l), text = s ? `[${s}] ${l.text}` : l.text, t = Date.now();
   const r = await fetch('https://api.inworld.ai/tts/v1/voice', {
     method: 'POST',
     headers: { Authorization: `Basic ${KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, voiceId: `${WS}__${l.by.toLowerCase()}`, modelId: MODEL,
+    body: JSON.stringify({ text, voiceId: voiceOf(l.by), modelId: MODEL,
       audioConfig: { audioEncoding: 'MP3', sampleRateHertz: 48000, bitRate: 96000, speakingRate: 1 }, temperature: 1 }),
   });
-  if (!r.ok) { console.error(`${l.by} ${l.id}: ${r.status} ${(await r.text()).slice(0, 300)}`); process.exit(1); }
+  if (!r.ok) throw new Error(`${l.by} ${l.id}: ${r.status} ${(await r.text()).slice(0, 300)}`);
   const j = await r.json();
-  fs.writeFileSync(`${DIR}/inworld/${l.id}.mp3`, Buffer.from(j.audioContent, 'base64'));
+  fs.writeFileSync(fileOf(l), Buffer.from(j.audioContent, 'base64'));
   const took = (Date.now() - t) / 1000; secs += took; chars += text.length;
-  console.log(`${l.by.padEnd(8)} ${took.toFixed(1)}s  [${s || '-'}] ${l.text.slice(0, 55)}`);
+  if (!ALL) console.log(`${l.by.padEnd(8)} ${took.toFixed(1)}s  [${s || '-'}] ${l.text.slice(0, 55)}`);
+}
+// four at a time; a failed line is tried twice more before the run stops
+let next = 0, done = 0;
+await Promise.all(Array.from({ length: 4 }, async () => {
+  while (next < todo.length) {
+    const l = todo[next++];
+    for (let k = 0; ; k++) {
+      try { await voice(l); break; } catch (e) { if (k >= 2) throw e; await new Promise(r => setTimeout(r, 2000 * (k + 1))); }
+    }
+    if (ALL && ++done % 25 === 0) console.log(`${done}/${todo.length}`);
+  }
+}));
+if (ALL) {
+  // the episode plays what the script names: point every voiced line at its new clip
+  const voiced = new Set(lines.map(l => l.id));
+  script.lines.forEach(l => { if (voiced.has(l.id)) l.file = `${l.id}.mp3`; });
+  fs.writeFileSync(`${DIR}/script.json`, JSON.stringify(script, null, 2));
+  console.log(`episode: ${todo.length} lines voiced in ${((Date.now() - t0) / 1000).toFixed(0)}s of wall time`);
 }
 console.log(`${lines.length} lines in ${secs.toFixed(0)}s (${(secs / lines.length).toFixed(1)}s a line); ${chars} characters with the steering, about $${(chars / 1e6 * 25).toFixed(3)} at $25 a million`);

@@ -7,7 +7,7 @@
 // ceiling; colour fills to the target and stops; nothing airs twice; and a proposal that does not air gives back
 // what it claimed.
 import { describe, it, expect } from 'vitest';
-import { selectScenes } from '../js/td/story/director.js';
+import { selectScenes, airtimeScore } from '../js/td/story/director.js';
 import { onCommit, onDiscard, commit, discard, pending } from '../js/td/story/commit.js';
 import { parseDirectorRow } from '../js/td/story/director-debug.js';
 
@@ -106,7 +106,7 @@ describe('a dropped proposal gives back what it claimed', () => {
 // window talked 1.54x an equal share at the median and 2.6x at the worst, and a third of a cast sat under half their
 // share in the worst window, because within the colour the first system to propose took the room.
 describe('who gets the last places (airtime)', () => {
-  const look = (ratios = {}, pairs = {}) => ({ ratio: p => ratios[p] ?? 1, pair: k => pairs[k] || { seen: true, recent: 0 } });
+  const look = (ratios = {}, pairs = {}, ties = {}) => ({ ratio: p => ratios[p] ?? 1, pair: k => pairs[k] || { seen: true, recent: 0 }, tie: k => ties[k] || 0 });
   const one = { target: 1, ceiling: 3 };
 
   it('gives the last place to somebody the last episodes barely heard from', () => {
@@ -124,6 +124,21 @@ describe('who gets the last places (airtime)', () => {
     const again = scene('banter', 'colour', { players: ['Bea', 'Ann'] }), other = scene('banter', 'colour', { players: ['Eve', 'Fay'] });
     const sel2 = selectScenes([again, other], [], { scenes: 0, turns: 0, people: { Ann: 1, Bea: 1 }, pairs: { 'Ann|Bea': 1 } }, one, BIG, look());
     expect(sel2.keep).toEqual([other]);
+  });
+
+  // the user, 2026-10-13: "a romance between two people shows only one scene per episode?", and the same for big
+  // friendships and big enemies: a tie is a relationship the show follows, not a pair it keeps cutting back to
+  it('follows a showmance, a best friendship or a feud instead of treating it as a worn pair', () => {
+    const couple = scene('storyline', 'story', { players: ['Leshawna', 'Trent'] }), other = scene('storyline', 'story', { players: ['Ann', 'Bea'] });
+    const pairs = { 'Leshawna|Trent': { seen: true, recent: 3 }, 'Ann|Bea': { seen: true, recent: 1 } };
+    // without the tie, three recent episodes lose to one; with it, they don't
+    expect(selectScenes([couple, other], [], { scenes: 0, turns: 0 }, one, BIG, look({}, pairs)).keep).toEqual([other]);
+    expect(selectScenes([couple, other], [], { scenes: 0, turns: 0 }, one, BIG, look({}, pairs, { 'Leshawna|Trent': 1 })).keep).toEqual([couple]);
+    // and a second scene for them the same day costs half what it costs a pair with nothing between them
+    const again = scene('kit', 'colour', { players: ['Trent', 'Leshawna'] });
+    const today = { people: { Leshawna: 1, Trent: 1 }, pairs: { 'Leshawna|Trent': 1 } };
+    const tied = airtimeScore(again, [], look({}, {}, { 'Leshawna|Trent': 1 }), today), plain = airtimeScore(again, [], look(), today);
+    expect(tied - plain).toBeCloseTo(0.75);
   });
 
   it('keeps a third scene in one day for somebody only when nothing else wants the place', () => {

@@ -230,6 +230,49 @@ const LEAN = [
     { by: 'a', say: "Thanks." },
     { by: 'a', conf: "{b} noticed I wasn't okay before I did. That's a friend." },
   ] },
+  // (more for a long stay: read 2026-10-13, two people out here together for weeks went through the plain ones and
+  // repeated five of them in one season)
+  { id: 'im.ln8', turns: [
+    { by: 'a', say: "I keep thinking about home. Is that bad?" },
+    { by: 'b', say: "It's not bad. Tell me about it." },
+    { by: 'a', say: "Just normal stuff. My own bed. Food that isn't rice." },
+    { by: 'b', say: "Keep going. I like hearing about it." },
+    { by: 'a', conf: "Talking about home made it feel less far away. {b} let me talk for an hour." },
+  ] },
+  { id: 'im.ln9', turns: [
+    { beat: '{a} is sitting at the edge of the water, not moving. {b} sits down next to {a.obj} without asking.' },
+    { by: 'b', say: "Long day?" },
+    { by: 'a', say: "Long week." },
+    { by: 'b', say: "Then we'll sit here until it's a bit shorter." },
+    { by: 'a', conf: "{b} didn't try to fix anything. That's exactly what I needed." },
+  ] },
+  { id: 'im.ln10', turns: [
+    { by: 'a', say: "Do you think we'll actually get back in?" },
+    { by: 'b', say: "One of us will. Maybe both." },
+    { by: 'a', say: "And if it's you and not me?" },
+    { by: 'b', say: "Then I'll make sure they remember your name in there." },
+    { by: 'a', conf: "We're competing for the same way back, and {b} still has my back. I don't know what to do with that." },
+  ] },
+  { id: 'im.ln11', turns: [
+    { beat: "{a} can't sleep. {b} hears {a.obj} moving around and gets up too." },
+    { by: 'b', say: "Bad night?" },
+    { by: 'a', say: "Every night's a bad night out here." },
+    { by: 'b', say: "Then let's have a bad night together. It's better with company." },
+    { by: 'a', conf: "We sat up until the sun came up. Didn't fix anything. Still the best night I've had out here." },
+  ] },
+  { id: 'im.ln12', turns: [
+    { by: 'a', say: "I messed up. In the game. I keep going over it." },
+    { by: 'b', say: "Everybody out here messed up. That's how we got here." },
+    { by: 'a', say: "That doesn't make me feel better." },
+    { by: 'b', say: "It should. You're in good company." },
+    { by: 'a', conf: "{b} made me laugh about the worst week of my life. I didn't think that was possible." },
+  ] },
+  { id: 'im.ln13', turns: [
+    { beat: '{a} and {b} split the last of the food without saying a word about it.' },
+    { by: 'a', say: "You had less yesterday." },
+    { by: 'b', say: "You'll have less tomorrow. That's how this works." },
+    { by: 'a', conf: "Out here, sharing food is the biggest thing you can do for somebody. {b} does it every day." },
+  ] },
 ];
 const LATE = [
   { id: 'im.l1', turns: [

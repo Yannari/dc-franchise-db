@@ -314,6 +314,29 @@ const THRIVING = [
     { beat: '{a} sits in the sun, calm, eating a fish {a.sub} caught.' },
     { by: 'a', conf: "This place breaks people who fight it. I stopped fighting it. Now it works for me." },
   ] },
+  // (more for a long stay: read 2026-10-13, one season's island ran a player through the plain ones and repeated one)
+  { id: 'is.th7', turns: [
+    { beat: '{a} has rebuilt the shelter roof on {a.posAdj} own, and it is the first night nobody gets rained on.' },
+    { by: 'a', conf: "I came out here with nothing. Now I've got a roof, a fire and a routine. That's more than I had in the game." },
+  ] },
+  { id: 'is.th8', turns: [
+    { beat: '{a} is up before the sun, the fire already going and the water already boiled.' },
+    { by: 'a', say: "Morning! Breakfast is whatever you can find, same as always." },
+    { by: 'a', conf: "The first few days out here were the worst of my life. Somewhere along the way it turned into the best part." },
+  ] },
+  { id: 'is.th9', turns: [
+    { beat: '{a} finishes the morning chores in half the time it took a week ago, and goes straight to training.' },
+    { by: 'a', conf: "I know where everything is now. The wood, the water, the good fishing spot. Out here, knowing is half of it." },
+  ] },
+  { id: 'is.th10', turns: [
+    { beat: '{a} sleeps soundly through a storm that keeps everybody else awake.' },
+    { by: 'a', say: "What storm?" },
+    { by: 'a', conf: "I used to need my own bed and total silence. Now I could sleep standing up. This place changes you." },
+  ] },
+  { id: 'is.th11', turns: [
+    { beat: '{a} walks the whole beach before lunch, just to see what the tide brought in.' },
+    { by: 'a', conf: "Every day I find something new out here. In the game, I never had time to notice anything." },
+  ] },
 ];
 const STRUGGLING = [
   { id: 'is.st1', turns: [

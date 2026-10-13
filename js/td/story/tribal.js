@@ -342,8 +342,13 @@ export function firstVoteView(ep) {
 }
 export function secondVoteView(ep) {
   const once = new Set((ep.idolPlays1 || []).map(idolKey));
+  // ...and what the day's pitching was about is the first vote's when it names the person that vote sent home (read
+  // 2026-10-13: at the second vote, "If Courtney wants Geoff gone", Geoff already gone)
+  const gone = ep.firstEliminated, clear = (list, ...keys) => (list || []).filter(x => !keys.some(k => x?.[k] === gone));
   return { ...ep, firstEliminated: null, votingLog: ep.votingLog2 || [], votes: ep.votes2 || {}, idolPlays: (ep.idolPlays || []).filter(p => !once.has(idolKey(p))),
-    tribalPlayers: (ep.tribalPlayers || []).filter(n => n !== ep.firstEliminated), alliances: ep.alliances2 || [], defections: [], votingLog2: null, votes2: null, tribalStory: null };
+    tribalPlayers: (ep.tribalPlayers || []).filter(n => n !== gone), alliances: ep.alliances2 || [], defections: [], votingLog2: null, votes2: null, tribalStory: null,
+    votePitches: clear(ep.votePitches, 'pitcher', 'pitchTarget', 'originalTarget'), pitchIntel: clear(ep.pitchIntel, 'pitcher', 'target', 'knower', 'source'),
+    pitchCounterplay: clear(ep.pitchCounterplay, 'actor', 'pitcher', 'target'), coverPlans: clear(ep.coverPlans, 'leader', 'real', 'cover') };
 }
 export const isTwoVoteNight = ep => !!(ep?.firstEliminated && (ep.votingLog2 || []).length);
 
@@ -392,7 +397,12 @@ export function writeTribal(ep) {
   // the reason under each name is the one the viewer watched (the user, 2026-10-08: "the reasoning in
   // the voting booth doesn't represent the real reasoning; someone spearheading a vote should be more
   // confident"). A voter none of it touched falls back to the engine's own reason (whyOf).
-  const voteScenes = Object.values(ep.campStory || {}).flatMap(c => [...(c.pre || []), ...(c.post || [])]).filter(x => x?.storyType === 'vote' && x.scene);
+  // (only scenes whose people are all at this vote: on a double boot's second vote, a plan the first vote's boot led, or
+  // was the mark of, is not a reason anybody still here gives; read 2026-10-13, "If Courtney wants Geoff gone" at the
+  // second vote, Geoff already gone. Those voters give their own ballot's reason)
+  const atVote = x => !x || tribal.includes(x);
+  const voteScenes = Object.values(ep.campStory || {}).flatMap(c => [...(c.pre || []), ...(c.post || [])]).filter(x => x?.storyType === 'vote' && x.scene
+    && atVote(x.scene.who?.a) && atVote(x.scene.who?.b) && atVote(x.scene.data?.mark) && atVote(x.scene.data?.target));
   const CASE = { weak: 'sank', plan: 'numbers' };
   const caseOfKind = k => { const c = String(k || '').split('.').pop(); return CASE[c] || c; };
   const roleOf = v => {

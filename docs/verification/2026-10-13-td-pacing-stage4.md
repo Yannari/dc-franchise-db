@@ -76,3 +76,34 @@ plans, they are the engine's storylines, they are the vote. That is the season, 
   The control arm is reproducible with `TD_NO_AIRTIME=1 TD_PACING_OUT=<dir> npm run audit:td-pacing`.
 
 Next is stage 5, rhythm: a merge tribal night is still a short morning and an evening of vote talk.
+
+## Addendum: couples, best friends and feuds (same day)
+
+The user asked whether a couple only gets one scene an episode, and for the same treatment for big friendships and
+big rivalries. Measured first: a couple has had about one romance scene per episode since stage 1 (couple-episodes
+with 0/1/2 romance scenes: 298/140/4 at stage 1). The cause was not stage 4 but an older main-pool rule, no third
+storyline scene in a day for anybody counting the opener and the vote talk: it cut 47% of the engine's romance
+moments, because one of the couple is nearly always in the vote talk.
+
+A tie (`look.tie`, 0..1: an active showmance is 1, otherwise the bond either way from 3 to 7) now loses the "seen in
+recent episodes" penalty and pays half for a second scene the same day. A couple (`look.couple`) also passes the old
+two-scene cap and stays its own partner in casting. Four options were measured on the matrix (romance moments that
+air / cut by the cap / Gini / quietest person / fresh pairs):
+
+| Option | Air | Cap | Gini | Quietest | Fresh |
+|---|---|---|---|---|---|
+| stage 4 off | 28% | 47% | 0.140 | 0.61 | 18.6% |
+| stage 4 as committed | 24% | 44% | 0.129 | 0.64 | 19.8% |
+| every tie through the cap and kept as partner | 34% | 16% | 0.140 | 0.62 | 18.6% |
+| **couples through the cap and kept as partner; friends and feuds the softer penalties only (chosen)** | 28% | 25% | 0.132 | 0.65 | 19.1% |
+
+Exempting friendships and feuds everywhere undid stage 4: big ties belong mostly to the central players. The user
+chose the last row. Past the cap, a couple's moments now meet the next rule, one step of a storyline per stretch of
+the day (same-storyline cuts 12 → 66): more romance than that is a design question for the romance step, not pacing.
+Romance totals swing with which romances form (140 to 166 scenes between runs of the same rule), so the share of the
+engine's romance moments that air is the measure. Evidence: `docs/superpowers/audits/2026-10-13-td-pacing-stage4-ties/`.
+
+Also fixed: a double boot's second-round booth still used the first vote's plan scenes ("If Courtney wants Geoff
+gone", Geoff already gone): the booth reads only plan scenes whose people are all at this vote, and the second vote's
+view drops the first vote's pitches and intel about the person it sent home. Rescue Island got six more "leaning on
+somebody" and five more "thriving" scenes (the repetition guard tripped on the new seasons; 5 of 416 now).

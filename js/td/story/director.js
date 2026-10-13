@@ -1387,9 +1387,14 @@ export function airtimeScore(e, events, look, today, prior = 0) {
   const k = pairKey(c);
   if (k) {
     const pi = look.pair(k);
-    if (today.pairs[k]) s -= 1.5;
+    // a tie (an active showmance, a big friendship, a big rivalry: look.tie, 0..1) is a relationship the show follows,
+    // not a pair it keeps cutting back to (the user, 2026-10-13: "a romance between two people shows only one scene per
+    // episode?" - measured, stage 4 had cost 5% of the romance scenes): the recent-episodes cost goes, and a second
+    // scene the same day costs half
+    const tie = look.tie ? look.tie(k) : 0;
+    if (today.pairs[k]) s -= 1.5 * (1 - 0.5 * tie);
     else if (!pi.seen) s += 0.6;
-    else s -= 0.35 * Math.min(3, pi.recent);
+    else s -= 0.35 * Math.min(3, pi.recent) * (1 - tie);
   }
   return s;
 }
@@ -1473,7 +1478,9 @@ function foilFor(a, pool, look, today = {}, band = 2) {
   if (!byBond.length || !look) return byBond[0] || null;
   const top = getBond(a, byBond[0]);
   const near = byBond.filter(x => getBond(a, x) >= top - band);
-  const worn = x => { const pi = look.pair([a, x].sort().join('|')); return Math.min(3, look.ratio(x)) + 0.5 * Math.min(3, pi.recent) - (pi.seen ? 0 : 0.5) + 0.6 * (today[x] || 0); };
+  // (the person a is tied to, a showmance, a best friend, a sworn enemy, stays the partner: look.tie)
+  const worn = x => { const k = [a, x].sort().join('|'), pi = look.pair(k), tie = look.tie ? look.tie(k) : 0, mate = look.couple?.(k) ? 1 : 0;
+    return Math.min(3, look.ratio(x)) + 0.5 * Math.min(3, pi.recent) * (1 - tie) - (pi.seen ? 0 : 0.5) + 0.6 * (today[x] || 0) - 1.2 * mate; };
   return near.sort((x, y) => worn(x) - worn(y) || getBond(a, y) - getBond(a, x) || x.localeCompare(y))[0];
 }
 
@@ -1505,9 +1512,16 @@ function airtimeLook(ep, members) {
   const turnsOf = p => rows.reduce((t, r) => t + (r.people[p] || 0), 0);
   const mean = members.length ? members.reduce((t, m) => t + turnsOf(m), 0) / members.length : 0;
   const pairs = S.pairAir || {};
+  // an active showmance (romance on, not broken up)
+  const couple = k => { const [x, y] = k.split('|');
+    return seasonConfig?.romance !== 'disabled' && (gs.showmances || []).some(sh => sh.phase !== 'broken-up' && (sh.players || []).includes(x) && (sh.players || []).includes(y)); };
   return {
     ratio: p => (rows.length && mean > 0 ? (turnsOf(p) + 2) / (mean + 2) : 1),
     pair: k => { const eps = (pairs[k] || []).filter(x => x < ep.num); return { seen: eps.length > 0, recent: eps.filter(x => x >= ep.num - 2).length }; },
+    // how tied two people are, 0..1: an active showmance is 1; otherwise the bond either way, from nothing at 3 to all
+    // of it at 7 (measured 2026-10-13: about 15 of a season's 120 pairs reach 5 either way)
+    tie: k => (couple(k) ? 1 : (([x, y]) => Math.max(0, Math.min(1, (Math.abs(getBond(x, y)) - 3) / 4)))(k.split('|'))),
+    couple: k => couple(k),
   };
 }
 
@@ -1925,7 +1939,12 @@ export function airTdEpisode(ep) {
         if (!must && editOn && clashes(f)) continue;
         if (!must && usedLines.has(f.line)) continue;
         const cast = [f.step.roles.a, f.step.roles.b, f.step.roles.c].filter(Boolean);
-        if (!must && cast.some(p => (onScreen[p] || 0) >= 2)) continue;
+        // ...except a moment between a couple (an active showmance: look.couple): measured 2026-10-13, this cap cut ~45%
+        // of the engine's romance moments, because one of the two is nearly always in the vote talk; the day's budget
+        // still charges a third scene in a day (selectScenes). Big friendships and feuds keep the cap: letting them
+        // through too gave the room back to the central players and undid stage 4's spread (Gini 0.129 -> 0.140)
+        const tiedPair = !!look && !!f.step.roles.a && !!f.step.roles.b && look.couple(pairKey([f.step.roles.a, f.step.roles.b]));
+        if (!must && !tiedPair && cast.some(p => (onScreen[p] || 0) >= 2)) continue;
         chosen.push(f);
         usedLines.add(f.line);
         cast.forEach(p => { onScreen[p] = (onScreen[p] || 0) + 1; });

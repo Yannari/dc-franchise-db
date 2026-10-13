@@ -79,7 +79,9 @@ export default {
       { by: 'b', say: "I didn't write your name. I need you to know that." },
       { by: 'a', say: "I know you didn't." },
       { by: 'a', move: 'goodbye' },
-      { by: 'b', say: "I'll miss you too. A lot.", v: {tough: "Yeah. Me too. Go on, before I say something soft.",dry: "I'll miss you too. Mostly."} },
+      // (it stands on its own: the goodbye before it is the leaver's own words, and "I'll miss you too" answered
+      // "Watch your back. I'll be watching too", read 2026-10-14)
+      { by: 'b', say: "I'm going to miss you so much.", v: {tough: "Go on, before I say something soft.",dry: "It's going to be weirdly quiet without you."} },
       { by: 'a', move: 'parting', asConf: true },
     ] },
   ],

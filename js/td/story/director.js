@@ -49,7 +49,7 @@ import { writePreviously } from './previously.js';
 import { chalMoments } from './chalmoments.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf, kindOf, placeById } from './places.js';
-import { kitBitScene, kitDigScene, kitRomanceScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, hasKit, kitOf, sharedGround } from './kits.js';
+import { kitBitScene, kitDigScene, kitRomanceScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, hasKit, kitOf, sharedGround, setKitVenue } from './kits.js';
 import { runArcs, campGame } from './arcs.js';
 import { coupleScenes } from './couple.js';
 
@@ -1681,6 +1681,7 @@ export function airTdEpisode(ep) {
   if (!ep || ep.campStory || !ep.campEvents || !Object.keys(ep.campEvents).length) return;
   if (gs.bb || ep.isFinale) return;
   venueNow = VENUE_WORDS[ep.campAccess?.setting] ? ep.campAccess.setting : 'hosted-camp';
+  setKitVenue(venueNow);
   const seasonAired = ((gs.tdStory ||= {}).aired ||= {});
   const story = {};
   const continuity = (gs.tdStory.continuity ||= {});
@@ -2210,7 +2211,11 @@ export function airTdEpisode(ep) {
           {
             const M = ((gs.tdStory ||= {}).mentor ||= { arcs: 0, cur: null });
             const STEPS = ['offer', 'practice', 'done'];
-            const SKILL = { endurance: 'making fire', physical: 'climbing', mental: 'tying the shelter knots', intuition: 'fishing', social: 'fishing', strategic: 'tying the shelter knots' };
+            // (what there is to learn where the season is: read 2026-10-14, "making fire" taught on the World Tour jet)
+            const SKILL = ({
+              'world-tour': { endurance: 'packing a parachute', physical: 'climbing the cargo net', mental: 'reading a map', intuition: 'reading a map', social: 'packing a parachute', strategic: 'tying knots' },
+              'film-lot': { endurance: 'stage fighting', physical: 'climbing the scaffolding', mental: 'learning lines', intuition: 'learning lines', social: 'stage fighting', strategic: 'tying knots' },
+            })[venueNow] || { endurance: 'making fire', physical: 'climbing', mental: 'tying the shelter knots', intuition: 'fishing', social: 'fishing', strategic: 'tying the shelter knots' };
             const st = x => { try { return pStatsOf(x) || {}; } catch { return {}; } };
             // it ends when one of them has left the game, not when this camp is somebody else's
             const alive = new Set(gs.activePlayers || []);

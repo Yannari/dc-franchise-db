@@ -60,7 +60,7 @@ export default {
   ],
   'arc.mentor.done': [
     { id: 'nmt.d1', turns: [
-      { beat: "{b} works at {skill} alone, while {a} pretends not to watch from across camp." },
+      { beat: "{b} works at {skill} alone, while {a} pretends not to watch." },
       { by: 'b', say: "I did it, I actually did it! {a}, look!" },
       { by: 'a', say: "I see it. See, that wasn't so hard, was it?" },
       { by: 'b', say: "It was very hard. Thank you, really, thank you." },

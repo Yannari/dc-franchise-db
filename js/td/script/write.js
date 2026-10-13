@@ -33,6 +33,8 @@ import { pickVoice } from '../story/voice-family.js';
 // The episode being played. gs.episode still holds the last one until it ends.
 export const epOf = ctx => ctx.ep || (gs.episode || 0) + 1;
 const PHASE_CLOCK = { pre: 0, challenge: 1, post: 2, tribal: 3 };
+const JET_NO = /\b(fire( pit)?|firewood|campfire|fishing|lake|water's edge|sand|beach|dock|shore|tent|shelter|woods?|forest|stones?|pebbles?|rocks?|trees?|river|waterfall|trail|caves?|shade|shoreline|across camp|side of camp)\b/i;
+
 export const clockOf = ctx => (epOf(ctx)) * 10 + (PHASE_CLOCK[ctx.phase] ?? 0);
 const ledger = () => (gs.tdLineLedger ||= newLedger());
 
@@ -137,7 +139,9 @@ export function writeScene(scene, ctx = {}) {
   const venue = seasonConfig?.setting || 'hosted-camp';
   const base = firstDay(ctx) ? noPast(key) : POOLS;
   const pools = {};
-  for (const k of [].concat(key)) { const kept = (base[k] || []).filter(e => foodOk(venue, entryText(e))); pools[k] = kept.length ? kept : (base[k] || []); }
+  // ...and nothing outdoors on the jet (read 2026-10-14: "Same rock? ... Don't sit on our rock" on the World Tour plane)
+  const indoorOk = e => venue !== 'world-tour' || !JET_NO.test(entryText(e));
+  for (const k of [].concat(key)) { const kept = (base[k] || []).filter(e => foodOk(venue, entryText(e)) && indoorOk(e)); pools[k] = kept.length ? kept : (base[k] || []); }
   const entry = pickEntry(ledger(), pools, key, facts, pairKey, rng, speakers, clockOf(ctx));
   if (!entry) throw new Error(`no lines for ${[].concat(key).join(' + ')}`);
   const lines = entry.turns.map(t => {

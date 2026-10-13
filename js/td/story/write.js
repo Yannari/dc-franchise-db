@@ -65,7 +65,7 @@ const VENUE_NO = {
   'film-lot': /\b(shelter|cabins?|mess hall|dock|boathouse|lake|beach|shore(line)?|ocean|the sea|sand|seaweed|tide|crabs?|shells?|jungle|coconuts?|fire( pit)?|campfire|firewood|fishing|tent|woods|forest|water pump|the well)\b/i,
   'world-tour': /\b(mess hall|crabs?|shells?|seaweed|tide|coconuts?|water pump|the well|bunks?)\b/i,
 };
-const OUTDOOR = /\b(fire( pit)?|firewood|campfire|fishing|fish|lake|water's edge|the water|sand|beach|dock|log|shore|tent|shelter|woods?|forest|stones?|pebbles?|bush(es)?|sun)\b/i;
+const OUTDOOR = /\b(fire( pit)?|firewood|campfire|fishing|fish|lake|water's edge|the water|sand|beach|dock|log|shore|tent|shelter|woods?|forest|stones?|pebbles?|bush(es)?|sun|shade|rocks?|trees?|river|waterfall|trail|caves?|shoreline|across camp|around camp|side of camp)\b/i;
 // Time logic (the user, 2026-10-08: day one had "it's always a joke with you", a challenge brag
 // before the challenge, a five a.m. airhorn in the afternoon).
 // A line that leans on shared history, in the first two episodes, between two people with none.

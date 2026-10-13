@@ -123,10 +123,14 @@ function plain(part, name, arch) {
 const REACT = ["Huh. I didn't expect that.", "That's more than I thought you'd tell me.", "Wow. Okay.", "That actually makes a lot of sense.", "Huh. Okay.", "I can see that, honestly.", "I didn't see that coming, honestly.", "That's a lot more than I knew about you.", "Oh. That's really sweet, actually.", "Okay, now I get you a bit better."];
 
 // write a scene from an entry built for these people (a pool of one, removed again)
+// the venue the director is airing (setKitVenue): a kit scene is written for where the season is, not for the camp
+// (read 2026-10-14: on the World Tour jet, "At the river, Noah, Alejandro and Gwen..." and a talk on "the trail")
+let kitVenue = null;
+export function setKitVenue(v) { kitVenue = v || null; }
 function writeKitScene(entry, who, facts, ctx) {
   const key = `kit.${entry.id.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
   STORY_POOLS[`${key}.any`] = [entry];
-  try { return writeStory(key, 'any', who, ctx.data || {}, facts, { ...ctx, unique: ctx.unique ?? !!ctx.firstImpressions }); }
+  try { return writeStory(key, 'any', who, ctx.data || {}, { ...(kitVenue ? { venue: kitVenue } : {}), ...facts }, { ...ctx, unique: ctx.unique ?? !!ctx.firstImpressions }); }
   finally { delete STORY_POOLS[`${key}.any`]; }
 }
 
@@ -341,6 +345,7 @@ export function kitCallbackScene(c, d, about, facts, ctx) {
   const picks = Array.from({ length: CALL_PAIRS.length }, (_, i) => (start + n + i) % CALL_PAIRS.length).filter(i => !book.used.includes(i) && !u.includes(`pair:${i}`));
   const [q, r] = pickOf(CALL_ARRIVE, about, c);
   const STORE = { about };
+  const callFacts = { ...(kitVenue ? { venue: kitVenue } : {}), ...facts };
   // the first pair the writer can stage here (a pair that names a time of day doesn't air at the wrong one)
   let w = null, pick = null;
   for (const i of picks) {
@@ -349,7 +354,7 @@ export function kitCallbackScene(c, d, about, facts, ctx) {
       { beat: '{c} wanders over.', comes: 'c' }, { by: 'c', say: q }, { by: 'a', say: r },
     ] };
     w = (() => { const key = `kit.${entry.id.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`; STORY_POOLS[`${key}.any`] = [entry];
-      try { return writeStory(key, 'any', { a: c, b: d, c: about }, STORE, { ...facts, third: true }, { ...ctx, unique: false }); } finally { delete STORY_POOLS[`${key}.any`]; } })();
+      try { return writeStory(key, 'any', { a: c, b: d, c: about }, STORE, { ...callFacts, third: true }, { ...ctx, unique: false }); } finally { delete STORY_POOLS[`${key}.any`]; } })();
     if (w) { pick = i; break; }
   }
   // (the episode holds the pair at once, like a draft; the person's own record moves only if the scene airs, commit.js)

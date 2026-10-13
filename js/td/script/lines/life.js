@@ -303,7 +303,7 @@ const CRITTER = [
   { id: 'lf.cr3', turns: [
     { by: 'a', say: "I'm naming it." },
     { by: 'b', say: "You can't name it. It's wild." },
-    { by: 'a', say: "Its name is Gerald now." },
+    { by: 'a', say: "Its name is Pickles now." },
   ] },
   { id: 'lf.cr4', when: { register: 'sweet' }, turns: [
     { by: 'a', say: "Aw, it's just scared. Like us." },

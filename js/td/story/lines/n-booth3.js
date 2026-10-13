@@ -49,12 +49,12 @@ export default {
 
   // ── two alliances, one vote ──
   'booth3.between': [
-    B('nb3.b1', "{other} wanted a different name tonight, and {group} wanted {target}. I can only be loyal to one of them, so it's {target}.", { rel: PL, group: true, other: true },
-      { schemer: "{other} and {group} both think I'm theirs. Tonight {group} gets my vote and {other} gets a story, so it's {target}.", anxious: "{other} is going to be so mad at me tomorrow, but {group} said {target}, and {group} has the numbers." }),
-    B('nb3.b2', "I've been in {other} and {group} at the same time, and tonight that stopped working, so I picked {group}, and {group} picked {target}.", { rel: PL, group: true, other: true },
-      { dry: "Being in two alliances is fine right up until they disagree, and tonight they disagreed, so it's {target}.", goofy: "Two alliances, one pencil. The pencil goes with {group}, so it's {target}." }),
-    B('nb3.b3', "If I go with {other} tonight, {group} finds out by tomorrow, and I'd rather lose {other}, so it's {target}.", { rel: ['plain', 'cold', 'enemy'], group: true, other: true },
-      { competitive: "{group} gets me further than {other} does, so I'm going with {group}. {target}." }),
+    B('nb3.b1', "My two groups wanted different names tonight, and I can only be loyal to one of them. {group} said {target}, so it's {target}.", { rel: PL, group: true, other: true },
+      { schemer: "Both my groups think I'm theirs. Tonight {group} gets my vote, and the others get a story, so it's {target}.", anxious: "{other} is going to be so mad at me tomorrow, but {group} said {target}, and they have the numbers." }),
+    B('nb3.b2', "I've been in two alliances at once, and tonight that stopped working. I picked {group}, and they picked {target}.", { rel: PL, group: true, other: true },
+      { dry: "Being in two alliances is fine right up until they disagree, and tonight they did, so it's {target}.", goofy: "Two alliances, one pencil. The pencil goes with {group}, so it's {target}." }),
+    B('nb3.b3', "If I go with {other} tonight, {group} finds out by tomorrow, and I can't afford that. So it's {target}.", { rel: ['plain', 'cold', 'enemy'], group: true, other: true },
+      { competitive: "{group} has more votes than {other}. That's the whole decision. {target}." }),
     B('nb3.b4', "{group} wants you gone, {target}, and we're friends, and I'm still going with {group}, because {other} can't protect either of us.", { rel: FR, group: true, other: true },
       { warm: "I'm so sorry, {target}. {group} has the numbers tonight, and if I stand with you, we both go." }),
   ],

@@ -426,8 +426,8 @@ export default {
       { by: 'b', say: "...That's true." },
       { by: 'a', say: "So let me help you. I'm good at this, and I'll give you lessons." },
       { by: 'b', say: "Lessons in talking." },
-      { by: 'a', say: "Lessons in being the person people don't want to vote out. It's basically the same thing." },
-      { by: 'a', conf: "{b} is sweet, funny and totally invisible. I can fix two of those things, and I can make everybody notice the other one." },
+      { by: 'a', say: "Lessons in being the person nobody wants to vote out. Trust me, you need them." },
+      { by: 'a', conf: "{b} is sweet and funny, and nobody even notices. I'm going to fix that, whether {b} likes it or not." },
     ] },
   ],
   'arc.coach.practice.any': [

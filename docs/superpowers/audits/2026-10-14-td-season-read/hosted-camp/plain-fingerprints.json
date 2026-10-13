@@ -1,0 +1,82 @@
+[
+  {
+    "id": "hosted-camp_enabled_no-coaches_1729",
+    "fingerprint": {
+      "history": "7cd90bb699bb7c134917bd5ad4af4c555e19fad6ecd83c427f84b4e2a39beb03",
+      "bonds": "b5ea0400f30612782972354226099328d8920e9ec146743b2ad205ccc6bdb26d",
+      "story": "31456b60e2829e1f376ecf76615223f27acfb2a2df716481f802615aaac4916a",
+      "randomCalls": 8706,
+      "winner": "Gwen"
+    }
+  },
+  {
+    "id": "hosted-camp_enabled_no-coaches_2026",
+    "fingerprint": {
+      "history": "ec922973d2e9e0f10c92abc30372131e8c286e405b6caa2691ef2d7a914c70fb",
+      "bonds": "d7537ca089c4d77932979d629fb7a9fcc5b395bc670c19f8f92986457a0a257a",
+      "story": "19b703c092418572400800aca1a4f61c7901da1cf59ef71e5d143ab0f7ae0834",
+      "randomCalls": 8011,
+      "winner": "Owen"
+    }
+  },
+  {
+    "id": "hosted-camp_enabled_coaches_1729",
+    "fingerprint": {
+      "history": "20958228962df4a0269577000976fa181ef9aef704a95930633f2874e492cf36",
+      "bonds": "f74e8aa2e90c8f02ddee705bce445a8f49b1749978909ce49d95480145086d48",
+      "story": "4fbcc704bcb87d530a75634c7dabd03e4d2c23013a3bbd13416ddca61d553d04",
+      "randomCalls": 10653,
+      "winner": "Lake"
+    }
+  },
+  {
+    "id": "hosted-camp_enabled_coaches_2026",
+    "fingerprint": {
+      "history": "522cf822cf868bcf58b12048bbc48c94952461e9edf5ff85fdc5e4002404f5e6",
+      "bonds": "563a130f8461adaa640758f364ed0ba1f3f786f08e038ef805b57f6f15fa1d02",
+      "story": "e4babba02b002745be0cfab59d6bb66e21beeeb531ff7b3a4e6aaed04dcbdcaa",
+      "randomCalls": 11040,
+      "winner": "Bowie"
+    }
+  },
+  {
+    "id": "hosted-camp_disabled_no-coaches_1729",
+    "fingerprint": {
+      "history": "abd205963beee97f705c67d3bcc619c6240aafa5be983ec9b56268bdaee0e182",
+      "bonds": "bd5fe0739388148ebda77e3c89e552ab0a7836261e66085ea6e2216966ae43b1",
+      "story": "f56d6b48b8840a80934323ab99bd01c2974bf8826f879e1581b641d7fa54fd50",
+      "randomCalls": 8723,
+      "winner": "Trent"
+    }
+  },
+  {
+    "id": "hosted-camp_disabled_no-coaches_2026",
+    "fingerprint": {
+      "history": "404d611c4c92cc56b410fdfb308a4ddb8f7a6703a24055e31470ff13f7f0842b",
+      "bonds": "7ebb641826934e88fb781a87862defd593e2913d569dd3f6e90af31885fa2ce9",
+      "story": "3c0e12debd94642c77603a4d7aefdcd9da19150880bd21a4b967717ddebbf2c3",
+      "randomCalls": 8341,
+      "winner": "Lake"
+    }
+  },
+  {
+    "id": "hosted-camp_disabled_coaches_1729",
+    "fingerprint": {
+      "history": "d4aafd99a93256396f95fc4eff0fc1aacda4e915b5a61955a2b5a0d28705b7a1",
+      "bonds": "08e210ff4abef8b275954f414df9fe9a6c7d3e84c2e387f81c3a0b846d735157",
+      "story": "60cc072c31dbba9231cf447a56316aee98170349f25517745a70911b4a38c7ee",
+      "randomCalls": 10379,
+      "winner": "Julia"
+    }
+  },
+  {
+    "id": "hosted-camp_disabled_coaches_2026",
+    "fingerprint": {
+      "history": "a0c5194f467bae914b7f0363e4d3d37d934edf84e26c94d933da9fd19dee404a",
+      "bonds": "b09b8d6f7cdc47adbba634f545de3aa0958282bcd149051bdd81a4a7db4d19ed",
+      "story": "1d67437e7894448de31924cdf8e226c3a2d1a5372500e95658047f60a6a218df",
+      "randomCalls": 10052,
+      "winner": "Bruno"
+    }
+  }
+]

@@ -189,8 +189,8 @@ const POOLS = {
     { id: 'np.nw1', turns: [
       { by: 'a', say: "Is that a raccoon? I'm going to name it." },
       { by: 'h', say: "Please don't touch the wildlife." },
-      { by: 'a', say: "Too late. Its name is Gerald." },
-      { by: 'a', conf: "People keep asking what my strategy is. My strategy is Gerald." },
+      { by: 'a', say: "Too late. Its name is Kevin." },
+      { by: 'a', conf: "People keep asking what my strategy is. My strategy is Kevin." },
     ] },
     { id: 'np.nw2', turns: [
       { by: 'a', say: "Hello! I'm {a}, and I'm either going to win or lose spectacularly, there's no in between." },

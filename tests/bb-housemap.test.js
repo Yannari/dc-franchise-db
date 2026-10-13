@@ -12,7 +12,8 @@ import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
-import { conversationsOf, ZONES, WINDOWS, openWindow, nextConv, whereAt, isKeyScene, windowOf, hourOf } from '../js/vp-bb-ep/housemap.js';
+import { RESORT } from '../js/vp-bb-ep/resort.js';
+import { conversationsOf, ZONES, ISLAND, ZONE_PLATE, ZONE_PENDING, islandOf, WINDOWS, openWindow, nextConv, whereAt, isKeyScene, windowOf, hourOf } from '../js/vp-bb-ep/housemap.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -51,7 +52,8 @@ describe('the house map', () => {
     for (const S of SEGS) {
       const convs = conversationsOf(S);
       for (const c of convs) {
-        expect(ZONES[c.zone], `${c.scene.plate || c.scene.set}`).toBeTruthy();
+        expect(ZONES[c.zone] || ISLAND[c.zone], `${c.scene.plate || c.scene.set}`).toBeTruthy();
+        expect(ISLAND[c.zone]?.locked, `a house scene at a locked place: ${c.zone}`).toBeFalsy();
         expect(c.window >= 0 && c.window < WINDOWS.length).toBe(true);
         expect(c.cast.length, c.title).toBeGreaterThan(0);
       }
@@ -93,6 +95,19 @@ describe('the house map', () => {
         expect(new Set(all).size).toBe(all.length);
       }
     }
+  });
+
+  it('gives every place on both maps a built plate, or names the edit it is waiting for', () => {
+    for (const z of [...Object.keys(ZONES), ...Object.keys(ISLAND)]) {
+      const plate = ZONE_PLATE[z];
+      if (plate) expect(RESORT.have.default?.[plate], `${z}: plate ${plate} is not built`).toBeTruthy();
+      else expect(ZONE_PENDING[z], `${z} has no plate and no pending edit`).toBeTruthy();
+    }
+  });
+
+  it('puts every room of the house inside the resort on the island', () => {
+    for (const z of Object.keys(ZONES)) expect(islandOf(z)).toBe('resort');
+    for (const z of Object.keys(ISLAND)) expect(islandOf(z)).toBe(z);
   });
 
   it('reads the clock, and knows what the week turns on', () => {

@@ -151,7 +151,9 @@ export function bbxTitlePlay(btn) {
 }
 /** The season's own render is missing: play the generic pair; if that is missing too, move on. */
 export function bbxTitleFallback(v) {
-  if (!v) return;
+  // a titles video the viewer has already left is not on the page any more: its late load error
+  // must not move the viewer on from the screen they are watching now (it skipped House Life maps)
+  if (!v || v.isConnected === false) return;
   if (!v.dataset.fellBack && v.dataset.fallback) { v.dataset.fellBack = '1'; v.dataset.started = ''; v.src = v.dataset.fallback; v.load?.(); return; }
   bbxTitleDone(v);
 }
@@ -160,6 +162,7 @@ export function bbxTitleDone(el) {
   const v = videoOf(el);
   try { v?.pause?.(); } catch { /* fine */ }
   if (!viewerOpen()) return;
+  if (v && v.isConnected === false) return;      // ended or failed after the viewer moved on
   if (typeof window !== 'undefined' && typeof window.vpNext === 'function') window.vpNext();
 }
 

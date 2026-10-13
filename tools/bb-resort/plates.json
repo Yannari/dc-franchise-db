@@ -133,7 +133,7 @@
  "patio": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "patio|balcony|railing"},
  "balcony": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "balcony|view|railing|sea", "sea": true, "pool": [[430, 200, 830, 340, 0, 700, 280]]},
  "beach-bar": {
-  "room": "backyard", "sets": ["juryhouse"], "use": ["house"], "nosky": true, "words": "beach bar|tiki|cocktail",
+  "room": "backyard", "sets": ["yard"], "use": ["quiet"], "nosky": true, "words": "beach bar|tiki|cocktail|on the beach",
   "lights": [[120, 40, 50], [310, 40, 50], [470, 40, 50], [650, 40, 50], [900, 40, 50], [1180, 40, 50], [1450, 40, 50]],
   "glow": [[0, 0, 1600, 90]]
  },
@@ -148,11 +148,13 @@
  "comp-cart": {"room": "backyard", "sets": ["comp"], "use": []},
  "forest-night": {"room": "backyard", "sets": ["comp"], "use": [], "nightonly": true},
 
- "dock": {"room": "backyard", "sets": ["juryhouse"], "use": ["house"], "sea": true, "pool": [[0, 300, 1600, 500, 0, 150, 420], [0, 640, 1600, 900, 0, 600, 800]]},
- "beach-hut": {"room": "backyard", "sets": ["juryhouse"], "use": ["house"]},
- "beach-volcano": {"room": "backyard", "sets": ["juryhouse"], "use": ["house"]},
- "beach-arch": {"room": "backyard", "sets": ["juryhouse"], "use": ["house"]},
+ "dock": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "dock|pier|jetty|over the water", "sea": true, "pool": [[0, 300, 1600, 500, 0, 150, 420], [0, 640, 1600, 900, 0, 600, 800]]},
+ "beach-hut": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach|sand|shore|waves|sunbath|umbrella|the water"},
+ "beach-volcano": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach|sand|shore|waves|sunbath|umbrella|the water"},
+ "beach-arch": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach|sand|shore|waves|sunbath|umbrella|the water"},
 
+ "map-island": {"room": "backyard", "sets": ["map"], "use": [], "nonight": true, "nosky": true, "sea": true, "wind": 0.6,
+  "pool": [[0, 0, 1600, 900, 0, 60, 60]]},
  "map-house": {"room": "living-room", "sets": ["map"], "use": [], "nonight": true, "noleaf": true, "nosky": true, "box": [88, 84, 1600, 529]},
  "front": {"room": "living-room", "sets": ["door", "premiere"], "use": [], "nightsrc": "front-night"},
  "memory-wall": {"room": "living-room", "sets": ["wall"], "use": [], "indoor": true},

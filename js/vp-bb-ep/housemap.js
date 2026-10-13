@@ -32,16 +32,54 @@ export const ZONES = {
   dining: { label: 'Dining Room', cam: 3, box: [51.5, 57, 65, 85] },
   library: { label: 'Library', cam: 15, box: [66.5, 57, 79, 85] },
   front: { label: 'Front Lawn', cam: 16, box: [2, 86, 98, 99] },
-  hoh: { label: 'HOH Suite', cam: 14, box: [66, 1, 81.5, 9], tile: 'Upstairs' },
-  dr: { label: 'Diary Room', cam: 1, box: [82.5, 1, 98, 9], tile: 'Diary Room' },
+  hoh: { label: 'HOH Suite', cam: 14, box: [69.5, 1, 83.5, 9], tile: 'Upstairs' },
+  dr: { label: 'Diary Room', cam: 1, box: [84.5, 1, 98, 9], tile: 'Diary Room' },
 };
-// rooms where the house hangs out (idle people go here, never into a private conversation's room)
-const PUBLIC = ['living', 'kitchen', 'pool', 'gym', 'wing', 'bar', 'library', 'dining'];
+// The island (the user, 2026-10-13: "fully use this island"): the map opens here, and the resort is
+// the way into the house. Boxes in % of the map-island plate (the user's RR1_Island). The jury lives
+// in the red cabins, sequestered: houseguests never go there (the user chose "locked"). The villa
+// opens only for a reward; the village at the top is the studio, where the live shows are taped.
+export const ISLAND = {
+  resort: { label: 'The Resort', box: [37.5, 44, 49, 57], enter: 'house' },
+  beach: { label: 'The Beach', cam: 20, box: [23, 76, 58, 88] },
+  westdock: { label: 'West Dock', cam: 21, box: [3.5, 57, 20, 75] },
+  eastdock: { label: 'The Pier', cam: 22, box: [72, 15, 94, 32] },
+  clearing: { label: 'The Clearing', cam: 23, box: [51, 34, 58.5, 52] },
+  npond: { label: 'North Pond', cam: 24, box: [36, 37, 43.5, 42.5] },
+  epond: { label: 'East Pond', cam: 25, box: [60, 43, 67.5, 49.5] },
+  lagoon: { label: 'The Lagoon', cam: 26, box: [27, 64, 45, 73] },
+  volcano: { label: 'The Volcano', cam: 27, box: [46.5, 57.5, 56, 71] },
+  jury: { label: 'Jury House', cam: 30, box: [70, 48, 82, 58.5], locked: 'Sequestered' },
+  villa: { label: 'Reward Villa', cam: 31, box: [62, 53.5, 67, 59.5], locked: 'Rewards only' },
+  studio: { label: 'The Studio', cam: 32, box: [46, 15, 62, 24], locked: 'Live shows' },
+};
+const ALL = { ...ZONES, ...ISLAND };
+
+// Every place's own picture, for its feed when nothing is happening there (the user, 2026-10-13: "make
+// sure we're not missing any plate for all the zones"). A place whose plate the user is still making
+// names its to-edit folder instead; tests/bb-housemap.test.js holds every zone to one or the other.
+export const ZONE_PLATE = {
+  pool: 'pool-wide', bar: 'bar-lobby-wide', gym: 'gym-racks', hallway: 'purple-hall', bathroom: 'hallway', wing: 'bedroom-wide',
+  kitchen: 'kitchen-wide', living: 'living-sofas', dining: 'dining-wide', library: 'library-wide', front: 'front', dr: 'confessional',
+  beach: 'beach-hut', westdock: 'dock', clearing: 'comp-clearing', resort: 'front',
+};
+export const ZONE_PENDING = {
+  hoh: 'B02-hoh-suite', pantry: 'B05-storage-room', lounge: 'B04-have-not-room (redo: it came out too comfortable)',
+  foyer: 'B07-foyer (made, not wired yet)', eastdock: 'B16-east-pier', npond: 'B17-north-pond', epond: 'B18-east-pond',
+  lagoon: 'B19-lagoon', volcano: 'B20-volcano-lookout', jury: 'B21-jury-cabins + B22-jury-house-inside', villa: 'B23-reward-villa',
+  studio: 'B08-B11 studio sets (made, not wired yet)',
+};
+/** A zone's place on the island: an island zone is itself; every room of the house is the resort. */
+export const islandOf = z => (ISLAND[z] ? z : 'resort');
+// where the house hangs out (idle people go here, never into a private conversation's room)
+const PUBLIC = ['living', 'kitchen', 'pool', 'gym', 'wing', 'bar', 'library', 'dining', 'beach'];
 
 // a plate's room on the blueprint
 const ZONE_OF_PLATE = [[/^living-/, 'living'], [/^library-/, 'library'], [/^confessional$/, 'dr'], [/^dining-/, 'dining'],
   [/^kitchen-/, 'kitchen'], [/^bar-/, 'bar'], [/^bedroom-/, 'wing'], [/^hallway$/, 'bathroom'], [/^purple-hall$/, 'hallway'],
-  [/^gym-/, 'gym'], [/^(pool-|patio$|balcony$)/, 'pool'], [/^(lawn-|comp-|front)/, 'front'], [/^memory-wall$/, 'living']];
+  [/^gym-/, 'gym'], [/^(pool-|patio$|balcony$)/, 'pool'], [/^(lawn-|front)/, 'front'], [/^memory-wall$/, 'living'],
+  [/^beach-/, 'beach'], [/^dock$/, 'westdock'], [/^pier/, 'eastdock'], [/^(comp-|forest-night$)/, 'clearing'],
+  [/^pond-north/, 'npond'], [/^pond-east/, 'epond'], [/^lagoon/, 'lagoon'], [/^volcano/, 'volcano'], [/^jury-/, 'jury'], [/^villa/, 'villa']];
 // a set's room, when the scene has no plate (a room the user has not made yet)
 const ZONE_OF_SET = { ceremony: 'living', ceremony3: 'living', dining: 'dining', kitchen: 'kitchen', bedroom: 'wing', hoh: 'hoh', yard: 'pool',
   dr: 'dr', storage: 'pantry', havenot: 'lounge', bathroom: 'bathroom', door: 'foyer' };
@@ -93,7 +131,7 @@ export function conversationsOf(S) {
     const said = new Set(steps.slice(from, to + 1).map(s => s.by).filter(Boolean));
     return { k, from: k === 0 ? 0 : from, to, scene, cast: cast.length ? cast : [...said], zone: zoneOf(scene),
       time: scene.time || '', window: Math.max(0, windowOf(scene.time)), key: isKeyScene(scene),
-      title: scene.room || ZONES[zoneOf(scene)].label, dr: steps.slice(from, to + 1).every(s => s.k === 'dr' || s.k === 'beat') };
+      title: scene.room || ALL[zoneOf(scene)].label, dr: steps.slice(from, to + 1).every(s => s.k === 'dr' || s.k === 'beat') };
   });
   // the clock never runs backwards (the scenes are already in the day's order; a late scene
   // listed early keeps the later window for everything after it)
@@ -141,7 +179,7 @@ export function whereAt(convs, w, house = []) {
 const LOCK = '<svg viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="1.6" fill="currentColor"/><path d="M5 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
 const CHECK = '<svg viewBox="0 0 16 16"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const STAR = '<svg viewBox="0 0 16 16"><path d="M8 1.5l1.9 4.1 4.5.5-3.4 3 1 4.4L8 11.3l-4 2.2 1-4.4-3.4-3 4.5-.5z" fill="currentColor"/></svg>';
-const camTag = z => `CAM ${String(ZONES[z].cam).padStart(2, '0')}`;
+const camTag = z => (ALL[z].cam ? `CAM ${String(ALL[z].cam).padStart(2, '0')}` : 'RESORT');
 const face = (n, cls = '') => `<i class="hm-face ${cls}" style="--c:${col(n)}" title="${esc(n)}">${img(n)}<b>${esc(String(n)[0])}</b></i>`;
 
 function bubble(uid, c, convs, watched, now) {
@@ -154,29 +192,50 @@ function bubble(uid, c, convs, watched, now) {
   return `<button type="button" class="${cls}" ${act} title="${esc(c.title)} · ${esc(c.cast.join(', '))}${open ? '' : ' (later)'}">${who}<span class="hm-ic">${icon}</span></button>`;
 }
 
-/** The house, from above: rooms, cameras, who is where, a bubble per conversation. */
+/** The resort's conversations, as one bubble on the island: how many, and whether one is key. */
+function resortBubble(uid, here, convs, watched, now) {
+  const open = here.filter(c => !watched.has(c.k) && unlocked(c, convs, watched));
+  const key = open.some(c => c.key);
+  const cls = `hm-bub hm-sum ${key ? 'key' : ''} ${open.length ? '' : 'done'} ${now && here.some(c => c.k === now.k) ? 'next' : ''}`;
+  return `<button type="button" class="${cls}" onclick="event.stopPropagation();bbxMapLevel('${uid}','house')" title="Inside the resort">${open.length ? `<b>${open.length}</b> inside` : `<span class="hm-ic">${CHECK}</span>`}${key ? `<span class="hm-ic">${STAR}</span>` : ''}</button>`;
+}
+
+/**
+ * The map, from above, at one of its two levels: the island (the resort is one place on it) or
+ * the house inside the resort. Each place: its camera, who is there, a bubble per conversation.
+ */
 export function houseMapHtml(uid, S, st) {
   const convs = st.convs;
+  const island = st.level !== 'house';
+  const zones = island ? ISLAND : ZONES;
   const w = openWindow(convs, st.watched);
   const view = st.window ?? w;
   const now = nextConv(convs, st.watched);
-  const at = whereAt(convs, view, S.house || []);
+  const at0 = whereAt(convs, view, S.house || []);
+  const at = {};
+  for (const [z, ppl] of Object.entries(at0)) (at[island ? islandOf(z) : z] ||= []).push(...ppl);
+  if (island) at.jury = [...(S.jury || [])];
   const night = view >= 3;
-  const base = `${PLATE_DIR}/default/map-house-day.webp?v=${RESORT.v}`;
-  let h = `<div class="hm ${night ? 'night' : ''}" onclick="event.stopPropagation()"><div class="hm-plate" style="background-image:url('${base}')"></div><div class="hm-scan"></div>`;
-  for (const [z, Z] of Object.entries(ZONES)) {
+  const plate = `${PLATE_DIR}/default/${island ? 'map-island' : 'map-house'}-day`;
+  // the island moves: the sea ripples and the palms sway (vp-td-ep/glplate.js)
+  const gl = island ? `<canvas class="tdx-gl bbx-gl" data-src="${plate}" data-grade="none"></canvas>` : '';
+  let h = `<div class="hm ${island ? 'hm-island' : ''} ${night ? 'night' : ''}" onclick="event.stopPropagation()"><div class="hm-plate" style="background-image:url('${plate}.webp?v=${RESORT.v}')">${gl}</div><div class="hm-scan"></div>`;
+  for (const [z, Z] of Object.entries(zones)) {
     const [x0, y0, x1, y1] = Z.box;
-    const here = convs.filter(c => c.zone === z && c.window === view);
+    const here = convs.filter(c => (island ? islandOf(c.zone) : c.zone) === z && c.window === view);
     const live = here.some(c => !st.watched.has(c.k) && unlocked(c, convs, st.watched));
     const people = (at[z] || []);
-    h += `<div class="hm-room ${Z.tile ? 'hm-tile' : ''} ${live ? 'hm-live' : ''} ${here.length ? 'hm-has' : ''}" style="left:${x0}%;top:${y0}%;width:${x1 - x0}%;height:${y1 - y0}%" onclick="event.stopPropagation();bbxMapRoom('${uid}','${z}')">
+    const max = Z.tile ? 3 : island && z !== 'resort' ? 4 : 6;
+    const click = Z.enter ? `bbxMapLevel('${uid}','${Z.enter}')` : `bbxMapRoom('${uid}','${z}')`;
+    h += `<div class="hm-room ${Z.tile ? 'hm-tile' : ''} ${Z.locked ? 'hm-lockz' : ''} ${Z.enter ? 'hm-enter' : ''} ${live ? 'hm-live' : ''} ${here.length ? 'hm-has' : ''}" style="left:${x0}%;top:${y0}%;width:${x1 - x0}%;height:${y1 - y0}%" onclick="event.stopPropagation();${click}">
       <span class="hm-cam">${live ? '<i class="hm-rec"></i>' : ''}${camTag(z)}${Z.tile ? ` · ${esc(Z.tile)}` : ''}</span>${Z.tile ? `<b class="hm-tname">${esc(Z.label)}</b>` : ''}
-      ${people.length ? `<span class="hm-ppl">${people.slice(0, Z.tile ? 3 : 6).map(n => face(n)).join('')}${people.length > (Z.tile ? 3 : 6) ? `<em>+${people.length - (Z.tile ? 3 : 6)}</em>` : ''}</span>` : ''}
-      ${here.length ? `<span class="hm-bubs">${here.map(c => bubble(uid, c, convs, st.watched, now)).join('')}</span>` : ''}
+      ${island ? `<b class="hm-pname">${Z.locked ? `<span class="hm-ic">${LOCK}</span>` : ''}${esc(Z.label)}${Z.locked ? `<small>${esc(Z.locked)}</small>` : ''}</b>` : ''}
+      ${people.length ? `<span class="hm-ppl">${people.slice(0, max).map(n => face(n)).join('')}${people.length > max ? `<em>+${people.length - max}</em>` : ''}</span>` : ''}
+      ${here.length ? `<span class="hm-bubs">${island && z === 'resort' ? resortBubble(uid, here, convs, st.watched, now) : here.map(c => bubble(uid, c, convs, st.watched, now)).join('')}</span>` : ''}
     </div>`;
   }
   const left = convs.filter(c => !st.watched.has(c.k)).length;
-  h += `<div class="hm-top"><span class="hm-eye">${eyeSvg('hm-eyesvg')}</span><b>LIVE FEEDS</b><span class="hm-day">Day ${esc(S.day ?? '')}</span></div>
+  h += `<div class="hm-top"><span class="hm-eye">${eyeSvg('hm-eyesvg')}</span><b>LIVE FEEDS</b><span class="hm-day">Day ${esc(S.day ?? '')}</span>${island ? '<span class="hm-where">The Island</span>' : `<button type="button" class="hm-up" onclick="event.stopPropagation();bbxMapLevel('${uid}','island')">◀ Island</button>`}</div>
     <div class="hm-tabs">${WINDOWS.map((W, i) => {
       const n = convs.filter(c => c.window === i).length;
       const state = i < w ? 'past' : i === w ? 'now' : 'later';
@@ -189,14 +248,14 @@ export function houseMapHtml(uid, S, st) {
 
 /** One room's feed: its plate, the people in it, and its conversations as feed cards. */
 export function houseFeedHtml(uid, S, st, zone) {
-  const Z = ZONES[zone];
+  const Z = ALL[zone];
   const convs = st.convs;
   const view = st.window ?? openWindow(convs, st.watched);
   const here = convs.filter(c => c.zone === zone && c.window === view);
-  const plate = here[0]?.scene?.plate || convs.find(c => c.zone === zone && c.scene?.plate)?.scene?.plate;
+  const plate = here[0]?.scene?.plate || convs.find(c => c.zone === zone && c.scene?.plate)?.scene?.plate || ZONE_PLATE[zone];
   const bg = plate ? `${plateBase(plate, 'default', isNight(here[0]?.time || (WINDOWS[view].id === 'night' ? '11:00 PM' : '2:00 PM')))}.webp?v=${RESORT.v}` : '';
   // everyone in this room's conversations, then whoever is idling here
-  const people = [...new Set([...here.flatMap(c => c.cast), ...(whereAt(convs, view, S.house || [])[zone] || [])])];
+  const people = zone === 'jury' ? [...(S.jury || [])] : [...new Set([...here.flatMap(c => c.cast), ...(whereAt(convs, view, S.house || [])[zone] || [])])];
   const cards = here.map(c => {
     const done = st.watched.has(c.k), open = unlocked(c, convs, st.watched);
     return `<button type="button" class="hmf-card ${c.key ? 'key' : ''} ${done ? 'done' : ''} ${open ? '' : 'locked'}" ${open ? `onclick="event.stopPropagation();bbxMapPlay('${uid}',${c.k})"` : 'disabled'}>
@@ -205,7 +264,8 @@ export function houseFeedHtml(uid, S, st, zone) {
   }).join('');
   return `<div class="hmf" onclick="event.stopPropagation()">${bg ? `<div class="hmf-plate" style="background-image:url('${bg}')"></div>` : '<div class="hmf-plate none"></div>'}
     <div class="hmf-top"><span class="hm-cam big"><i class="hm-rec"></i>${camTag(zone)} · ${esc(Z.label.toUpperCase())}</span><span class="hmf-clock">${esc(WINDOWS[view].label)}</span>
-      <button type="button" class="hmf-back" onclick="event.stopPropagation();bbxMapBack('${uid}')">◀ House</button></div>
+      <button type="button" class="hmf-back" onclick="event.stopPropagation();bbxMapBack('${uid}')">◀ ${ISLAND[zone] ? 'Island' : 'House'}</button></div>
+    ${Z.locked ? `<div class="hmf-lock"><span class="hm-ic">${LOCK}</span>${zone === 'jury' ? 'The jury is sequestered: no houseguest goes in, and nothing from the house gets out.' : zone === 'villa' ? 'Only a reward opens the villa.' : 'The studio comes alive on live nights.'}</div>` : ''}
     ${people.length ? `<div class="hmf-ppl">${people.map(n => `<span class="hmf-p">${face(n)}<b>${esc(n)}</b></span>`).join('')}</div>` : '<div class="hmf-empty">Nobody in here right now.</div>'}
     <div class="hmf-cards">${cards || '<span class="hmf-none">No conversation in here at this time of day.</span>'}</div></div>`;
 }
@@ -222,6 +282,22 @@ export const HM_CSS = `
 .bbx .hm-room.hm-tile{background:rgba(5,12,24,.82);box-shadow:inset 0 0 0 .14cqw #22e1ff55;display:flex;align-items:center}
 .bbx .hm-cam{position:absolute;left:.35cqw;top:.3cqw;display:flex;align-items:center;gap:.3cqw;background:rgba(3,8,16,.78);color:#9fe9ff;font:700 .72cqw/1 'Chakra Petch',monospace;letter-spacing:.08em;padding:.22cqw .4cqw;border-radius:.25cqw;white-space:nowrap}
 .bbx .hm-tname{position:absolute;left:.5cqw;bottom:.35cqw;font:800 1.15cqw/1 'Chakra Petch';letter-spacing:.06em;color:#eaf6ff;text-transform:uppercase}
+.bbx .hm-island .hm-room{border-radius:1.2cqw}
+.bbx .hm-island .hm-room:hover{background:rgba(34,225,255,.16)}
+.bbx .hm-pname{position:absolute;left:50%;top:-1.5cqw;transform:translateX(-50%);display:flex;align-items:center;gap:.3cqw;white-space:nowrap;font:800 .95cqw/1 'Chakra Petch';letter-spacing:.05em;color:#fff;background:rgba(3,8,16,.78);padding:.28cqw .55cqw;border-radius:.3cqw;text-transform:uppercase}
+.bbx .hm-pname small{font:600 .68cqw 'Chakra Petch';color:#ffcf6b;text-transform:none;margin-left:.3cqw}
+.bbx .hm-pname .hm-ic{color:#ffcf6b}
+.bbx .hm-island .hm-cam{display:none}
+.bbx .hm-island .hm-room.hm-live .hm-cam{display:flex;top:auto;bottom:-1.4cqw;left:50%;transform:translateX(-50%)}
+.bbx .hm-lockz{background:repeating-linear-gradient(135deg,rgba(255,207,107,.10) 0 .5cqw,transparent .5cqw 1cqw)}
+.bbx .hm-enter{box-shadow:inset 0 0 0 .18cqw rgba(255,255,255,.65);background:rgba(255,255,255,.06)}
+.bbx .hm-enter:hover{background:rgba(34,225,255,.22)!important}
+.bbx .hm-sum{font:700 .85cqw 'Chakra Petch';gap:.3cqw}
+.bbx .hm-up{pointer-events:auto;border:1px solid #22e1ff;background:rgba(5,14,26,.85);color:#22e1ff;font:700 .8cqw 'Chakra Petch';padding:.3cqw .6cqw;border-radius:.3cqw;cursor:pointer}
+.bbx .hm-where{color:#ffcf6b;font-size:.8cqw}
+.bbx .hm-plate .bbx-gl{position:absolute;inset:0}
+.bbx .hmf-lock{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:.6cqw;max-width:60%;background:rgba(3,8,16,.85);border:1px solid #ffcf6b;color:#ffe9b8;padding:.8cqw 1.2cqw;border-radius:.6cqw;font:600 1.05cqw 'Chakra Petch';z-index:2}
+.bbx .hmf-lock .hm-ic{width:1.3cqw;height:1.3cqw;color:#ffcf6b;flex:none}
 .bbx .hm-tile .hm-bubs{flex-direction:row;top:auto;bottom:-2.3cqw;right:0}
 .bbx .hm-tile .hm-ppl{left:auto;right:.35cqw;bottom:.3cqw}
 .bbx .hm-cam.big{position:static;font-size:1.05cqw;padding:.4cqw .7cqw}

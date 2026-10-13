@@ -69,10 +69,10 @@ describe('the plate list', () => {
     }
   });
 
-  it('keeps the beach out of the house: houseguests never leave it, the beach is the jury\'s', () => {
+  it('keeps the jury sequestered: no plate the jury lives in is a room of the house', () => {
     const HOUSE = new Set(['ceremony', 'ceremony3', 'dining', 'kitchen', 'bedroom', 'hoh', 'yard', 'dr', 'storage', 'havenot', 'bathroom']);
-    for (const id of IDS.filter(id => /^(beach|dock)/.test(id))) {
-      for (const s of PLATES[id].sets) expect(HOUSE.has(s), `${id} is listed for the house set ${s}`).toBe(false);
+    for (const id of IDS.filter(id => PLATES[id].sets.includes('juryhouse'))) {
+      for (const s of PLATES[id].sets) expect(HOUSE.has(s), `${id} is the jury's and the house's (${s})`).toBe(false);
     }
   });
 

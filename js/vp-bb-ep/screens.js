@@ -36,7 +36,7 @@ import { conversationsOf, nextConv, houseMapHtml, houseFeedHtml, HM_CSS } from '
 const mapOn = () => { try { return localStorage.getItem('bb-map') !== 'linear'; } catch { return true; } };
 const newMap = S => {
   const convs = S.kind === 'houselife' && mapOn() ? conversationsOf(S) : [];
-  return convs.length > 1 ? { convs, watched: new Set(), mode: 'map', window: null, zone: null, cur: null, end: null } : null;
+  return convs.length > 1 ? { convs, watched: new Set(), mode: 'map', level: 'island', window: null, zone: null, cur: null, end: null } : null;
 };
 const mapHtml = (uid, R) => {
   const S = R.screens[R.si];
@@ -304,6 +304,7 @@ function paint(uid, fresh) {
   if (R.map && R.map.mode !== 'play') {
     el.innerHTML = mapHtml(uid, R);
     el.className = 'bbx-stage stage onmap';
+    liveGL(el);       // the island's sea and palms
     const count = document.getElementById(`bbx-count-${uid}`);
     if (count) count.textContent = `${R.map.watched.size} / ${R.map.convs.length} feeds`;
     return;
@@ -374,6 +375,7 @@ export function bbxMapPlay(uid, k) {
 }
 export function bbxMapRoom(uid, zone) { const R = sync(uid); if (!R?.map) return; Object.assign(R.map, { mode: 'feed', zone }); paint(uid, false); }
 export function bbxMapBack(uid) { const R = sync(uid); if (!R?.map) return; Object.assign(R.map, { mode: 'map', zone: null }); paint(uid, false); }
+export function bbxMapLevel(uid, level) { const R = sync(uid); if (!R?.map) return; Object.assign(R.map, { mode: 'map', level, zone: null }); paint(uid, false); }
 export function bbxMapWindow(uid, w) { const R = sync(uid); if (!R?.map) return; R.map.window = w; paint(uid, false); }
 export function bbxMapMode() {
   try { localStorage.setItem('bb-map', mapOn() ? 'linear' : 'map'); } catch { /* per-viewer convenience */ }
@@ -490,7 +492,7 @@ export function bbxSwitchViewer(which) {
     if (i > 0 && typeof window.vpGoTo === 'function') window.vpGoTo(i);
   } catch { location.reload(); }
 }
-if (typeof window !== 'undefined') Object.assign(window, { bbxLive, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
+if (typeof window !== 'undefined') Object.assign(window, { bbxLive, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
 // Closing the Viewing Party only hides it: stop every Auto run and the line typing out,
 // or Auto keeps clicking through the week (and its music) behind a closed window.
 if (typeof document !== 'undefined') document.addEventListener('vp:close', () => {

@@ -26,6 +26,7 @@ import { pronouns } from '../players.js';
 import { voiceLine } from '../bb/story/register.js';
 import { players as ROSTER } from '../core.js';
 import { pickPlate } from './plates.js';
+import { seatedJurors } from '../bb/jury.js';
 
 // The engine's own moments that happen AT a ceremony (the user, 2026-10-06: "most of the time the
 // reactions are after, but sometimes it causes drama during the ceremony, same for veto"). They play
@@ -2995,7 +2996,7 @@ function storyLifeScreen(scenes, ctx, n) {
     id: `bb-hl-${n}`, kind: 'houselife', anchor: ctx.anchor, day: ctx.day, time: ACT_TIME.house,
     title: `House Life · Day ${ctx.day}`, label: 'House Life', sub: `Day ${ctx.day} in the house`,
     set: first.set || 'ceremony', room: first.room || 'Living Room', cam: first.cam || 4, kicker: first.kicker || 'Cam 04 · Living room',
-    cast: first.cast || [], mood, steps, storyScenes: scenes.map(sc => sc.id), house: [...(ctx.house || [])],
+    cast: first.cast || [], mood, steps, storyScenes: scenes.map(sc => sc.id), house: [...(ctx.house || [])], jury: [...(ctx.juryNow || [])],
   };
 }
 
@@ -3077,6 +3078,8 @@ export function truthTime(text, week) {
 export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = null, houseLife = houseLifeMode() } = {}) {
   const house = (row.houseAtStart || []).slice();
   const ctx = { host, week: row.num || 1, hoh: row.hoh, house, nominees: (row.initialNominees || []).slice(), vetoHolder: row.vetoWinner,
+    // the jury as it stood when this week began (never the live season's: a replayed week shows its own)
+    juryNow: (() => { try { return seatedJurors({ upToWeek: (row.num || 1) - 1 }); } catch { return []; } })(),
     // a Halting Hex or a Rewind is about to cancel tonight's eviction
     hexed: (row.acts || []).some(x => x.type === 'halting-hex' || x.type === 'rewind'),
     // the week's Block Buster, announced at the top of eviction night

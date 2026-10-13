@@ -6116,7 +6116,7 @@ export async function recordRetrospectiveInFranchise() {
   if (!seasonNumber) { alert('Set a season number before recording this season in Franchise.'); return false; }
   if (!confirm(`Record or update Season ${seasonNumber} in the active franchise?`)) return false;
   const recorded = typeof recordSeasonToLedger === 'function' && recordSeasonToLedger(null, 'manual');
-  if (!recorded) { alert('The season could not be recorded. The active franchise may be locked.'); return false; }
+  if (!recorded) { alert(window.lastLedgerRefusal?.() || 'The season could not be recorded. The active franchise may be locked.'); return false; }
   if (typeof persistFranchiseLedger === 'function') await persistFranchiseLedger();
   if (typeof renderFranchiseTab === 'function') renderFranchiseTab();
   renderResultsTab();

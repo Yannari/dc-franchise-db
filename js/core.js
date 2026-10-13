@@ -2190,6 +2190,9 @@ export function defaultConfig() {
     bbCompSchedule: [],
     tribes: [],  // [{ name, color }]
     popularityEnabled: true,
+    // A test season never reaches Legacy (franchise-meta.js _refuseRecord) or
+    // the cloud backup (main.js, the cloud-backup predicate).
+    testSeason: false,
     franchiseMeta: true,
     franchiseMetaAutoRecord: true,
     seasonNumber: 0,

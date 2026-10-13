@@ -142,6 +142,21 @@ describe('the simulator mirrors its saves', () => {
     expect([...env.SAVES.m.keys()].some(k => k.includes('cp_7'))).toBe(false);
   });
 
+  it('a test season stays in the browser (user: "test season shouldnt be ... in a cloud backup")', async () => {
+    const stores = {
+      gameState: new Map([['season_Real', { name: 'Real', config: { format: 'drag-race' } }], ['season_Trial', { name: 'Trial', config: { testSeason: true } }]]),
+      franchiseLedger: new Map(),
+    };
+    cb.startCloudBackup({ openDb: async () => fakeDb(stores),
+      shouldBackUp: (store, key, value) => !(String(key).startsWith('season_') && value?.config?.testSeason) });
+    await cb.cloudBackupNow({ quiet: true });
+    expect(env.SAVES.m.has(live('gameState', 'season_Real'))).toBe(true);
+    expect(env.SAVES.m.has(live('gameState', 'season_Trial'))).toBe(false);
+    cb.cloudMirror('gameState', 'season_Trial2', { name: 'Trial2', config: { testSeason: true } });
+    await new Promise(r => setTimeout(r, 50));
+    expect(env.SAVES.m.has(live('gameState', 'season_Trial2'))).toBe(false);
+  });
+
   it('with no password it says it is off rather than failing quietly', async () => {
     localStorage.removeItem('studio_api_token');
     cb.startCloudBackup({ openDb: async () => fakeDb({ gameState: new Map(), franchiseLedger: new Map() }) });

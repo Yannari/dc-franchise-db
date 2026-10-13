@@ -183,11 +183,35 @@ describe('franchise-ui with more than one show in the ledger', () => {
       'dr-1': { ...season('Drag Race 1', 'Drwin'), format: 'drag-race' },
     } });
     expect(() => ui.renderFranchiseTab()).not.toThrow();
-    const html = document.getElementById('tab-franchise').innerHTML;
-    for (const w of ['Tdwin', 'Bbwin', 'Drwin']) expect(html).toContain(w);
-    expect(html).toContain('winner of S9');
-    expect(html).toContain('winner of BB1');
-    expect(html).toContain('winner of DR1');
-    expect(html).not.toContain('NaN');
+    const html = () => document.getElementById('tab-franchise').innerHTML;
+    const hof = () => document.querySelector('.fr-hof-gallery')?.innerHTML || '';
+    expect(html()).not.toContain('NaN');
+    // One show at a time (the user: "why is paige turner even in total drama").
+    expect(document.querySelectorAll('.fr-show-tab').length).toBe(3);
+    expect(hof()).toContain('winner of S9');
+    expect(hof()).not.toContain('Drwin');
+    ui.frSetShow('big-brother');
+    expect(hof()).toContain('winner of BB1');
+    expect(hof()).not.toContain('Tdwin');
+    ui.frSetShow('drag-race');
+    expect(hof()).toContain('winner of DR1');
+    expect(html()).toContain('Drag Race Season Timeline');
+    ui.frSetShow(null);
+  });
+
+  it('a couple wins together (the user: "perfect match is always a couple winner")', () => {
+    document.body.innerHTML = '<div id="tab-franchise" class="tab-content"></div>';
+    for (const [k, v] of Object.entries(ui)) if (typeof v === 'function') window[k] = v;
+    const p = (placement, winner = false) => ({ placement, winner, finalist: placement <= 2, blindsidedBy: [], betrayed: [], betrayedBy: [], allies: [], showmances: [], rivals: [] });
+    setFranchiseLedger({ seasons: { 'pm-1': { seasonName: 'Perfect Match 1', format: 'perfect-match', source: 'live',
+      players: { Ava: p(1, true), Ben: p(1, true), Cleo: p(2), Dev: p(2), Eli: p(3) } } } });
+    ui.frSetShow('perfect-match');
+    ui.renderFranchiseTab();
+    const card = document.querySelector('.fr-card').textContent.replace(/\s+/g, ' ');
+    expect(card).toContain('Winners');
+    expect(card).toContain('Ava & Ben');
+    expect(card).toContain('runners-up: Cleo & Dev');
+    expect(document.querySelector('.fr-hof-caption').textContent).toContain('Ava & Ben');
+    ui.frSetShow(null);
   });
 });

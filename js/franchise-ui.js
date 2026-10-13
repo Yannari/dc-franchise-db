@@ -3,7 +3,7 @@
 // timeline, details flyouts, import dropzone, and franchise-pulse footer.
 // All DOM code for the ledger lives HERE (franchise-meta.js stays DOM-free).
 // ══════════════════════════════════════════════════════════════════════
-import { players, downloadFile } from './core.js';
+import { players, downloadFile, seasonConfig, seasonFormat } from './core.js';
 import {
   activeFranchise, activeSeasons, listFranchises, createFranchise, renameFranchise,
   deleteFranchise, setActiveFranchise, setSeasonIncluded, backfillFromSeasonsDb,
@@ -70,18 +70,59 @@ function _seasonsInOrder(seasons, dir = 1) {
     .filter(e => e.s)
     .sort((a, b) => dir * (a.num - b.num));
 }
-function _winnerOf(season) {
-  const e = Object.entries(season.players || {}).find(([, r]) => r.winner);
-  return e ? e[0] : null;
+// ── WHICH SHOW LEGACY IS SHOWING ──────────────────────────────────────
+// The user, 2026-10-13: "legacy should account for all the other simulator
+// like why is paige turner even in total drama". One ledger holds every show
+// (returnees remember each other across them), but the history view shows one
+// show at a time: its timeline, champions, medals and pulse. Careers, a
+// player's medals, the Scout and the Record Book still span every show.
+let _frShow = null;
+
+function _showsInLedger() {
+  const counts = new Map();
+  for (const [k, s] of Object.entries(activeSeasons())) {
+    const f = seasonKeyParts(k, s).format;
+    counts.set(f, (counts.get(f) || 0) + 1);
+  }
+  return counts;
 }
-function _placeName(season, place) {
-  const e = Object.entries(season.players || {}).find(([, r]) => r.placement === place);
-  return e ? e[0] : null;
+function _viewShow() {
+  const shows = _showsInLedger();
+  if (_frShow && shows.has(_frShow)) return _frShow;
+  const selected = seasonFormat(seasonConfig);
+  return shows.has(selected) ? selected : (shows.keys().next().value || selected || DEFAULT_FORMAT);
 }
+/** The active franchise's seasons, for the show being viewed only. */
+function _viewSeasons() {
+  const f = _viewShow();
+  return Object.fromEntries(Object.entries(activeSeasons()).filter(([k, s]) => seasonKeyParts(k, s).format === f));
+}
+export function frSetShow(format) { _frShow = format; renderFranchiseTab(); }
+
+function _renderShowTabs() {
+  const shows = _showsInLedger();
+  if (shows.size < 2) return '';
+  const cur = _viewShow();
+  const order = Object.keys(SHOWS).filter(f => shows.has(f));
+  return `<nav class="fr-show-tabs" role="tablist" aria-label="Show">${order.map(f => `<button class="fr-show-tab${f === cur ? ' active' : ''}" role="tab" aria-selected="${f === cur}"
+    style="--show-accent:${_esc(SHOWS[f].accent || 'var(--accent)')}" onclick="frSetShow('${_esc(f)}')">${SHOWS[f].emoji || ''} ${_esc(SHOWS[f].name)}<span class="fr-show-count">${shows.get(f)}</span></button>`).join('')}</nav>`;
+}
+
+// Everyone who won. Perfect Match is always won by a couple (the user, 2026-10-13)
+// and Total Drama 8 by two; the first name alone dropped the other half.
+function _winnersOf(season) {
+  return Object.entries(season.players || {}).filter(([, r]) => r.winner).map(([n]) => n);
+}
+function _placeNames(season, place) {
+  return Object.entries(season.players || {}).filter(([, r]) => r.placement === place && !r.winner).map(([n]) => n);
+}
+const _clickNames = names => names.map(n => `<span class="fr-clickable" ${_careerClick(n)}>${_esc(n)}</span>`).join(' &amp; ');
 function _sourceBadge(season) {
   const src = season.source;
   const anyBackfilled = Object.values(season.players || {}).some(p => p.backfilled);
   if (src === 'live') return `<span class="fr-src fr-src-live">LIVE</span>`;
+  // Laid over the ledger from the published season (js/legacy-canon.js).
+  if (src === 'published') return `<span class="fr-src fr-src-live" title="From the published season">PUBLISHED</span>`;
   if (src === 'manual') return `<span class="fr-src fr-src-manual">MANUAL</span>`;
   if (src === 'imported-save') return `<span class="fr-src fr-src-import">IMPORT</span>`;
   if (anyBackfilled) return `<span class="fr-src fr-src-import">IMPORT</span>`;
@@ -156,6 +197,7 @@ export function renderFranchiseTab() {
           data-view="${k}" role="tab" aria-selected="${_frView === k}">${label}</button>`).join('')}
     </nav>
     <div class="fr-view" data-view="history"${_frView === 'history' ? '' : ' hidden'}>
+      ${_renderShowTabs()}
       ${_renderTimeline()}
       ${_renderHallOfFame()}
       ${_renderTrophyCase()}
@@ -212,7 +254,7 @@ function _renderHeader() {
 }
 
 function _renderTimeline() {
-  const seasons = activeSeasons();
+  const seasons = _viewSeasons();
   // Keys are (show, number) now, so they are sorted by the parsed number rather
   // than by Number("bb-1"), which is NaN and sorts nowhere.
   const keys = Object.keys(seasons)
@@ -222,7 +264,7 @@ function _renderTimeline() {
       <div class="fr-empty-text">No recorded seasons yet — drop a savestate below or finish a season with auto-record on.</div></div>`;
   }
   const cards = keys.map(key => _renderSeasonCard(key, seasons[key])).join('');
-  return `<div class="vp-section-header gold">Season Timeline</div>
+  return `<div class="vp-section-header gold">${_esc(SHOWS[_viewShow()]?.name || '')} Season Timeline</div>
     <div class="fr-grid">${cards}</div>`;
 }
 
@@ -238,8 +280,9 @@ function _renderSeasonCard(key, season) {
   // reads "Sbb-1" the moment it is not.
   const { format: _fmt, num } = seasonKeyParts(key, season);
   const included = _isIncluded(season);
-  const winner = _winnerOf(season);
-  const runnerUp = _placeName(season, 2);
+  const winners = _winnersOf(season);
+  const winner = winners[0] || null;
+  const runnersUp = _placeNames(season, 2);
   const castN = season.castSize || Object.keys(season.players || {}).length;
   const eps = season.episodeCount || Math.max(0, ...Object.values(season.players || {}).map(p => p.episodesLasted || 0));
   const chips = [];
@@ -256,11 +299,11 @@ function _renderSeasonCard(key, season) {
     </div>
     <div class="fr-card-name">${_esc(season.seasonName || `Season ${num}`)}</div>
     <div class="fr-winner">
-      <span class="fr-winner-portrait ${winner ? 'fr-clickable' : ''}" ${winner ? _careerClick(winner) : ''}>${_svgCrown()}${_winnerPortrait(winner, true, season.players?.[winner]?.slug)}</span>
+      <span class="fr-winner-portrait ${winner ? 'fr-clickable' : ''}" ${winner ? _careerClick(winner) : ''}>${_svgCrown()}${winners.slice(0, 2).map(w => _winnerPortrait(w, true, season.players?.[w]?.slug)).join('') || _winnerPortrait(null, true)}</span>
       <div class="fr-winner-meta">
-        <span class="fr-winner-label">Winner</span>
-        <span class="fr-winner-name ${winner ? 'fr-clickable' : ''}" ${winner ? _careerClick(winner) : ''}>${_esc(winner || '—')}</span>
-        ${runnerUp ? `<span class="fr-runnerup">runner-up: <span class="fr-clickable" ${_careerClick(runnerUp)}>${_esc(runnerUp)}</span></span>` : ''}
+        <span class="fr-winner-label">${winners.length > 1 ? 'Winners' : 'Winner'}</span>
+        <span class="fr-winner-name">${winners.length ? _clickNames(winners) : '—'}</span>
+        ${runnersUp.length ? `<span class="fr-runnerup">runner${runnersUp.length > 1 ? 's' : ''}-up: ${_clickNames(runnersUp)}</span>` : ''}
       </div>
     </div>
     ${chips.length ? `<div class="fr-chips">${chips.map(c => `<span class="fr-chip">${_esc(c)}</span>`).join('')}</div>` : ''}
@@ -323,7 +366,7 @@ function _renderDropzone() {
 }
 
 function _renderPulse() {
-  const seasons = activeSeasons();
+  const seasons = _viewSeasons();
   const included = Object.entries(seasons).filter(([, s]) => _isIncluded(s));
   if (!included.length) return '';
   const titles = {}, blindsides = {}, appearances = {};
@@ -361,20 +404,20 @@ function _tile(label, value, portraitName) {
 
 // ── 1. HALL OF FAME + Record Book ─────────────────────────────────────
 function _renderHallOfFame() {
-  const seasons = activeSeasons();
+  const seasons = _viewSeasons();
   const champs = [];
   for (const { s, num, format } of _seasonsInOrder(seasons)) {
     if (!_isIncluded(s)) continue;
-    const w = _winnerOf(s);
-    if (w) champs.push({ num, tag: _seasonTagUI(num, format), name: w, slug: s.players?.[w]?.slug });
+    const ws = _winnersOf(s);
+    if (ws.length) champs.push({ num, tag: _seasonTagUI(num, format), names: ws, name: ws[0], slugs: ws.map(w => s.players?.[w]?.slug) });
   }
   const records = franchiseRecords();
   if (!champs.length && !records.length) return '';
 
   const gallery = champs.length
-    ? `<div class="fr-hof-gallery">${champs.map(c => `<div class="fr-hof-chip fr-clickable" ${_careerClick(c.name)} title="${_esc(c.name)} — winner of ${_esc(c.tag)}">
-        <span class="fr-hof-portrait">${_svgCrown()}${_winnerPortrait(c.name, false, c.slug)}</span>
-        <span class="fr-hof-caption"><span class="fr-hof-snum">${_esc(c.tag)}</span> · ${_esc(c.name)}</span>
+    ? `<div class="fr-hof-gallery">${champs.map(c => `<div class="fr-hof-chip fr-clickable" ${_careerClick(c.name)} title="${_esc(c.names.join(' & '))} — winner${c.names.length > 1 ? 's' : ''} of ${_esc(c.tag)}">
+        <span class="fr-hof-portrait">${_svgCrown()}${c.names.slice(0, 2).map((n, i) => _winnerPortrait(n, false, c.slugs[i])).join('')}</span>
+        <span class="fr-hof-caption"><span class="fr-hof-snum">${_esc(c.tag)}</span> · ${_esc(c.names.join(' & '))}</span>
       </div>`).join('')}</div>`
     : `<div class="fr-legacy-empty">No champions recorded yet.</div>`;
 
@@ -387,7 +430,7 @@ function _renderHallOfFame() {
 
   return `<div class="vp-section-header gold">Hall of Fame</div>
     ${gallery}
-    ${records.length ? `<div class="fr-recbook-label">Record Book</div>${book}` : ''}`;
+    ${records.length ? `<div class="fr-recbook-label">Record Book · all shows</div>${book}` : ''}`;
 }
 
 // ── 1b. TROPHY CASE — achievement medals + season objectives ──────────
@@ -421,7 +464,7 @@ function _svgMedal(type) {
 // Flatten achievements across INCLUDED seasons, grouped by type (newest first).
 function _gatherAchievements() {
   const groups = {};
-  const seasons = activeSeasons();
+  const seasons = _viewSeasons();
   for (const { s, num } of _seasonsInOrder(seasons, -1)) {
     if (!_isIncluded(s)) continue;
     for (const a of (s.achievements || [])) {
@@ -435,7 +478,7 @@ function _gatherAchievements() {
 // Per-season objective results across INCLUDED seasons (newest first).
 function _gatherObjectives() {
   const out = [];
-  const seasons = activeSeasons();
+  const seasons = _viewSeasons();
   for (const { s, num, format } of _seasonsInOrder(seasons, -1)) {
     if (!_isIncluded(s)) continue;
     const objs = s.objectives || [];
@@ -703,6 +746,15 @@ const _LEGACY_CSS = `
 .fr-pill-lock { font-size: 11px; margin-right: -2px; }
 .fr-pill-locked.active { box-shadow: 0 0 0 1px var(--accent-gold), 0 0 16px -4px var(--accent-gold); border-color: var(--accent-gold); color: var(--accent-gold); }
 .fr-btn-locked { border-color: var(--accent-gold); color: var(--accent-gold); }
+
+/* One show at a time */
+.fr-show-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 14px; }
+.fr-show-tab { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px;
+  border: 1px solid var(--border, #333); background: none; color: var(--muted, #9a9);
+  font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: border-color .16s, color .16s, background .16s; }
+.fr-show-tab:hover { color: inherit; border-color: var(--show-accent); }
+.fr-show-tab.active { color: inherit; border-color: var(--show-accent); background: color-mix(in srgb, var(--show-accent) 16%, transparent); }
+.fr-show-count { font-size: 10px; opacity: .7; }
 
 /* Legacy sub-tabs */
 .fr-views { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 16px;
@@ -999,7 +1051,7 @@ export function frDeleteSeason(key) {
   const seasons = activeSeasons();
   const season = seasons[String(key)];
   if (!season) return;
-  const winner = _winnerOf(season);
+  const winner = _winnersOf(season).join(' & ');
   const { format, num } = seasonKeyParts(key, season);
   // Named for its show, because two shows can both have a season 1 and
   // "Delete Season 1" is not a question anybody can answer.

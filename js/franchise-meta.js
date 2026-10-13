@@ -1586,6 +1586,110 @@ export function healLedgerRecord() {
   } catch { return false; }
 }
 
+// ── WHAT LEGACY WILL NOT TAKE ─────────────────────────────────────────────
+// The user, 2026-10-13: "miriam won s11 not sterling, quin won drag race 1 not
+// paige". Both had been published, then replayed, and the replay's finale
+// recorded over the published result: a replay is a live season like any
+// other, and live always won. And: "test season shouldnt be a legacy". So two
+// kinds of season never reach the ledger, manual record included:
+//   - a season marked as a test in Setup (seasonConfig.testSeason), and
+//   - a season already published (seasons_database.json): what was published
+//     IS the record, and applyPublishedSeason keeps the ledger matching it.
+let _published = new Set();   // seasonKey(format, num) of every published season
+let _lastRefusal = null;
+
+/** Which seasons are published. js/legacy-canon.js fills this from seasons_database.json. */
+export function setPublishedSeasons(list) {
+  _published = new Set((list || []).map(s => seasonKey(s.format, Number(s.num))));
+}
+export function isPublishedSeason(format, num) { return _published.has(seasonKey(format, Number(num))); }
+
+/** Why the last record was refused, for a button that has to say so. */
+export function lastLedgerRefusal() { return _lastRefusal; }
+
+function _refuseRecord(format, num) {
+  _lastRefusal = null;
+  if (seasonConfig?.testSeason) {
+    _lastRefusal = 'This is a test season (Setup › Season Basics), so it stays out of Legacy.';
+  } else if (isPublishedSeason(format, num)) {
+    _lastRefusal = `This season (${seasonKey(format, num)}) is already published, and Legacy keeps the published result. A replay does not replace it.`;
+  }
+  if (_lastRefusal) console.info('Franchise ledger: not recorded —', _lastRefusal);
+  return _lastRefusal;
+}
+
+/**
+ * Make the ledger say what the published season document says.
+ *
+ * A record that already matches -- every player, every placement -- is left
+ * exactly as it is, so a chronicle-enriched record keeps its betrayals and
+ * alliances. One that differs (a replay recorded over it) or is missing is
+ * rebuilt from the document. Returns true when it changed anything.
+ */
+export function applyPublishedSeason(doc, format, num) {
+  const af = activeFranchise();
+  if (af.locked) return false;
+  const placements = (doc?.placements || []).filter(p => p && p.name);
+  if (!placements.length) return false;
+  const key = seasonKey(format, num);
+  const existing = af.seasons[key];
+  const canon = new Map(placements.map(p => [p.name, p.placement || 0]));
+  const names = Object.keys(existing?.players || {});
+  const matches = existing && names.length === canon.size
+    && names.every(n => canon.has(n) && (existing.players[n].placement || 0) === canon.get(n));
+  if (matches) {
+    if (format !== DEFAULT_FORMAT && existing.format !== format) { existing.format = format; return true; }
+    return false;
+  }
+  const winnerName = doc.winner?.name || doc.winner || null;
+  const rec = {
+    seasonName: doc.title || `${SHOWS[format]?.name || 'Season'} ${num}`,
+    format,
+    castSize: doc.castSize || placements.length,
+    episodeCount: doc.episodeCount || 0,
+    source: 'published',
+    players: {},
+  };
+  for (const p of placements) {
+    const r = _emptyRecord();
+    r.placement = p.placement || 0;
+    r.winner = p.phase === 'Winner' || r.placement === 1 || p.name === winnerName;
+    r.finalist = r.winner || p.phase === 'Finalist';
+    const imm = String(p.notes || '').match(/(\d+)\s+immunity wins?/i);
+    r.chalWins = imm ? parseInt(imm[1], 10) : 0;
+    if (p.playerSlug) r.slug = p.playerSlug;
+    rec.players[p.name] = r;
+  }
+  af.seasons[key] = rec;
+  console.info(`Franchise ledger: ${key} set to the published result${existing ? ' (it held a replay)' : ''}.`);
+  return true;
+}
+
+/**
+ * Drop a record that is a test run wearing another show's name.
+ *
+ * The Traitors recorder took its name from the season settings, so a test run
+ * started while they still said "Perfect Match 1" was filed as Traitors 1
+ * called "Perfect Match 1". Only an unpublished record whose name opens with a
+ * DIFFERENT show's name is removed; nothing real is shaped like that.
+ */
+export function dropMislabeledRecords() {
+  const af = activeFranchise();
+  if (af.locked) return 0;
+  let dropped = 0;
+  for (const [key, rec] of Object.entries(af.seasons)) {
+    const { format, num } = seasonKeyParts(key, rec);
+    if (isPublishedSeason(format, num)) continue;
+    const name = String(rec?.seasonName || '');
+    const other = Object.keys(SHOWS).find(f => f !== format && SHOWS[f]?.name && name.startsWith(SHOWS[f].name));
+    if (!other) continue;
+    console.info(`Franchise ledger: removed ${key}, a test run of ${SHOWS[format]?.name || format} named "${name}".`);
+    delete af.seasons[key];
+    dropped++;
+  }
+  return dropped;
+}
+
 export function recordSeasonToLedger(_ep, source = 'live') {
   const af = activeFranchise();
   if (af.locked) {
@@ -1598,9 +1702,10 @@ export function recordSeasonToLedger(_ep, source = 'live') {
   if (source === 'live' && (seasonConfig?.franchiseMeta === false || seasonConfig?.franchiseMetaAutoRecord === false)) return false;
   const rec = deriveSeasonRecord();
   if (!rec) return false;
+  const _num = Number(gs?.seasonNumber || seasonConfig.seasonNumber);
+  if (_refuseRecord(rec.format, _num)) return false;
   rec.source = source;
   rec.deriverV = LEDGER_DERIVER_V; // 'live' | 'manual' (Task 8b) — backfill entries carry per-player backfilled flags
-  const _num = Number(gs?.seasonNumber || seasonConfig.seasonNumber);
   // Keyed by SHOW AND NUMBER. Writing to the bare number meant recording Big
   // Brother 1 deleted Total Drama season 1, taking every returnee relationship
   // in it with them.
@@ -1627,6 +1732,12 @@ export function recordBuiltSeason(rec, seasonNumber, source = 'live') {
   const af = activeFranchise();
   if (af.locked) { console.warn(`Franchise "${af.name || 'Untitled'}" is locked — season not recorded.`); return false; }
   if (source === 'live' && (seasonConfig?.franchiseMeta === false || seasonConfig?.franchiseMetaAutoRecord === false)) return false;
+  if (_refuseRecord(rec.format, Number(seasonNumber))) return false;
+  // The name comes from the season settings, which do not change when the show
+  // does: a Traitors season was filed as "Perfect Match 1". Another show's name
+  // is never this one's.
+  const _otherShow = Object.keys(SHOWS).find(f => f !== rec.format && SHOWS[f]?.name && String(rec.seasonName || '').startsWith(SHOWS[f].name));
+  if (_otherShow) rec.seasonName = `${SHOWS[rec.format]?.name || 'Season'} ${Number(seasonNumber)}`;
   rec.source = source;
   rec.deriverV = LEDGER_DERIVER_V;
   activeSeasons()[seasonKey(rec.format, Number(seasonNumber))] = rec;

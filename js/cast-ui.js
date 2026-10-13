@@ -10,11 +10,12 @@ import { seasonFormat, formatIsRunnable, formatName, TWIST_CATALOG, downloadFile
 import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
   playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
 import { SHOWS, HOSTS_BY_FORMAT, DEFAULT_FORMAT, DRAG_FORMAT } from './shows.js';
+import { cloudBackupRestore, cloudBackupReady, cloudBackupInventory, cloudBackupFetch, cloudSite } from './cloud-backup.js';
 import { CIRCLE_CATEGORIES } from './ci/categories.js';
 // The drag family is derived from the same rows the tab already saves.
 import { dragRelationsFrom, familiesFromRelations, familyTree, relationsFromRoster } from './dr/family.js';
 import { activeSeasons, franchiseHistorySummary,
-  clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta, healLedgerRecord } from './franchise-meta.js';
+  clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta, healLedgerRecord, lastLedgerRefusal } from './franchise-meta.js';
 import { persistFranchiseLedger, applyPreAlliances } from './savestate.js';
 // The career record, and the resolver that reads it. `js/tr/state.js` owns the
 // Alumni/Celebrity/Civilian decision; this file only draws it.
@@ -515,7 +516,7 @@ export function recordLoadedSeasonToHistory() {
     renderFranchiseHistoryPanel();
     alert(`Season ${seasonNum} recorded into franchise history (${Object.keys(activeSeasons()[String(seasonNum)].players).length} players).`);
   } else {
-    alert('Could not derive a season record from this save.');
+    alert(lastLedgerRefusal() || 'Could not derive a season record from this save.');
   }
 }
 
@@ -848,6 +849,14 @@ export async function _migrateSeasonSavesFromLS() {
   } catch (e) { console.warn('Season save migration failed:', e); }
 }
 
+// An index line says which show the save is and whether it is a test, so the
+// list can show one show at a time (user, 2026-10-13: "i dont have a save of
+// drag race when big brother is selected").
+function _indexEntry(data, name = data?.name) {
+  return { name, date: data?.date || '', episode: data?.episode || 0,
+    format: seasonFormat(data?.config), test: !!data?.config?.testSeason };
+}
+
 export async function saveSeasonToStorage() {
   if (!gs?.initialized) { alert('No season to save. Initialize first.'); return; }
   const defaultName = (seasonConfig.name || 'Season') + ' (Ep ' + (gs.episode || 0) + ')';
@@ -859,9 +868,9 @@ export async function saveSeasonToStorage() {
   data.name = name;
   if (existing >= 0) {
     if (!confirm(`Overwrite "${name}"?`)) return;
-    index[existing] = { name, date: data.date, episode: data.episode };
+    index[existing] = _indexEntry(data, name);
   } else {
-    index.push({ name, date: data.date, episode: data.episode });
+    index.push(_indexEntry(data, name));
   }
   await _idbPut(_seasonKey(name), data);
   await _saveSeasonIndex(index);
@@ -871,6 +880,15 @@ export async function saveSeasonToStorage() {
 }
 export async function loadSeasonFromStorage(name) {
   if (!name) { document.getElementById('season-delete-row').style.display = 'none'; return; }
+  // A save only the cloud has comes down into this browser first, then loads
+  // like any other.
+  if (name.startsWith(_CLOUD_OPT)) {
+    name = name.slice(_CLOUD_OPT.length);
+    try {
+      await cloudBackupRestore(cloudSite(), [{ store: 'gameState', key: _seasonKey(name) }]);
+      _cloudSaves = null;
+    } catch (e) { alert('Could not fetch that save from the cloud: ' + (e.message || e)); return; }
+  }
   const data = await _idbGet(_seasonKey(name));
   if (!data) { alert('Save not found.'); return; }
   if (!confirm(`Load "${name}"? This replaces your current season.`)) {
@@ -885,6 +903,7 @@ export async function deleteSeasonSave() {
   const sel = document.getElementById('season-save-list');
   const name = sel.value;
   if (!name) return;
+  if (name.startsWith(_CLOUD_OPT)) { alert('That save is only in the cloud backup. Load it first to delete it from this browser and the cloud.'); return; }
   if (!confirm(`Delete "${name}"?`)) return;
   const index = (await _getSeasonIndex()).filter(e => e.name !== name);
   await _idbDelete(_seasonKey(name));
@@ -893,15 +912,62 @@ export async function deleteSeasonSave() {
   sel.value = '';
   document.getElementById('season-delete-row').style.display = 'none';
 }
+// The list shows the show selected in Setup, and nothing from another show.
+// Saves only the cloud backup holds are listed under their own heading.
+const _CLOUD_OPT = 'cloud:';
+let _cloudSaves = null;            // { at, entries: [{ name, format, test }] }
+const _CLOUD_TTL = 60000;
+let _saveListShow = null;          // the show the list was last drawn for
+
+async function _cloudSaveEntries() {
+  if (!cloudBackupReady()) return [];
+  if (_cloudSaves && Date.now() - _cloudSaves.at < _CLOUD_TTL) return _cloudSaves.entries;
+  const site = cloudSite();
+  const inv = (await cloudBackupInventory())[site] || [];
+  const names = inv.filter(r => r.store === 'gameState' && r.key.startsWith('season_') && r.key !== 'season_index')
+    .map(r => r.key.slice('season_'.length));
+  let cloudIndex = [];
+  try { cloudIndex = (await cloudBackupFetch('gameState', 'season_index', site)) || []; } catch {}
+  const entries = names.map(name => ({ name, ...(cloudIndex.find(e => e.name === name) || {}) }));
+  _cloudSaves = { at: Date.now(), entries };
+  return entries;
+}
+
 export async function renderSeasonSaveList() {
   const sel = document.getElementById('season-save-list');
   if (!sel) return;
+  const show = seasonFormat(seasonConfig);
+  _saveListShow = show;
   const index = await _getSeasonIndex();
-  sel.innerHTML = '<option value="">— Load saved season —</option>' +
-    index.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+  // Saves from before the index knew its show: read each once and write it down.
+  let filled = false;
+  for (const e of index) {
+    if (e.format) continue;
+    try { const d = await _idbGet(_seasonKey(e.name)); e.format = seasonFormat(d?.config); e.test = !!d?.config?.testSeason; filled = true; } catch {}
+  }
+  if (filled) await _saveSeasonIndex(index);
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const label = e => `${e.test ? '🧪 ' : ''}${e.name}`;
+  const paint = (cloudOnly = []) => {
+    const mine = index.filter(e => seasonFormat(e.format) === show);
+    const hidden = index.length - mine.length;
+    const cloudMine = cloudOnly.filter(e => !e.format || seasonFormat(e.format) === show);
+    sel.innerHTML = `<option value="">— Load saved ${esc(SHOWS[show]?.name || 'season')} season —</option>`
+      + mine.map(e => `<option value="${esc(e.name)}">${esc(label(e))}</option>`).join('')
+      + (cloudMine.length ? `<optgroup label="☁ Only in the cloud backup">${cloudMine.map(e => `<option value="${esc(_CLOUD_OPT + e.name)}">${esc(label(e))}</option>`).join('')}</optgroup>` : '')
+      + (hidden ? `<option value="" disabled>${hidden} save${hidden === 1 ? '' : 's'} from other shows hidden</option>` : '');
+  };
+  paint();
   sel.onchange = function() {
     document.getElementById('season-delete-row').style.display = this.value ? 'block' : 'none';
   };
+  try {
+    const cloud = await _cloudSaveEntries();
+    const local = new Set(index.map(e => e.name));
+    const cloudOnly = cloud.filter(e => !local.has(e.name));
+    if (cloudOnly.length && seasonFormat(seasonConfig) === show) paint(cloudOnly);
+  } catch (e) { console.warn('Cloud save list unavailable:', e); }
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -1295,6 +1361,7 @@ export function saveConfig() {
     finaleSize:  parseInt(g('cfg-finale')?.value) || 3,
     finaleFormat: g('cfg-finale-format')?.value || 'traditional',
     finaleAssistants: g('cfg-finale-assistants')?.checked || false,
+    testSeason: g('cfg-test-season')?.checked || false,
     franchiseMeta: g('cfg-franchise-meta')?.checked !== false,
     franchiseMetaAutoRecord: g('cfg-franchise-meta-autorecord')?.checked !== false,
     jurySize:    parseInt(g('cfg-jury')?.value) || 9,
@@ -1511,6 +1578,8 @@ export function saveConfig() {
   // The house season shape is derived from jury size, cast size and the twist
   // schedule, so it is redrawn whenever any of them is written.
   window.renderHouseStructure?.();
+  // The saved-season list shows one show; a new show is a new list.
+  if (seasonFormat(seasonConfig) !== _saveListShow) renderSeasonSaveList();
 }
 export function renderConfig() {
   const g = id => document.getElementById(id);
@@ -1525,6 +1594,7 @@ export function renderConfig() {
   set('cfg-finale',  seasonConfig.finaleSize);
   set('cfg-finale-format', seasonConfig.finaleFormat || 'traditional');
   if (g('cfg-finale-assistants')) g('cfg-finale-assistants').checked = !!seasonConfig.finaleAssistants;
+  if (g('cfg-test-season')) g('cfg-test-season').checked = !!seasonConfig.testSeason;
   if (g('cfg-franchise-meta')) g('cfg-franchise-meta').checked = seasonConfig.franchiseMeta !== false;
   if (g('cfg-franchise-meta-autorecord')) g('cfg-franchise-meta-autorecord').checked = seasonConfig.franchiseMetaAutoRecord !== false;
   set('cfg-jury',    seasonConfig.jurySize || 9);

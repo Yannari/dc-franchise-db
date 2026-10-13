@@ -34,6 +34,7 @@ const FLUSH_DELAY = 4000;
 const RETRY_DELAY = 60000;
 
 let _openMain = null;            // savestate's _openDB, handed in by startCloudBackup
+let _shouldBackUp = null;        // (store, key, value) => false for a test season's records
 const _remoteSha = new Map();    // remote key -> sha of what is there
 const _queue = new Map();        // store\nkey -> { store, key, value } | { store, key, del }
 let _timer = null;
@@ -183,7 +184,7 @@ async function _getObject(rk) {
 
 /** Queue one dc_franchise_db record for upload. */
 export function cloudMirror(store, key, value) {
-  if (_suppress) return;
+  if (_suppress || !_wanted(store, key, value)) return;
   _queue.set(store + '\n' + key, { store, key, value });
   _schedule(FLUSH_DELAY);
 }
@@ -193,6 +194,12 @@ export function cloudMirrorDelete(store, key) {
   if (_suppress) return;
   _queue.set(store + '\n' + key, { store, key, del: true });
   _schedule(FLUSH_DELAY);
+}
+
+// The user, 2026-10-13: "test season shouldnt be a legacy or in a cloud
+// backup". main.js says which records belong to a test season.
+function _wanted(store, key, value) {
+  try { return !_shouldBackUp || _shouldBackUp(store, key, value) !== false; } catch { return true; }
 }
 
 function _schedule(ms) {
@@ -252,7 +259,7 @@ async function _reconcile() {
     const keys = await _req(db.transaction(store).objectStore(store).getAllKeys());
     for (const k of keys) {
       const v = await _req(db.transaction(store).objectStore(store).get(k));
-      if (v !== undefined && await _putRecord(store, k, v)) sent++;
+      if (v !== undefined && _wanted(store, k, v) && await _putRecord(store, k, v)) sent++;
     }
   }
   return sent;
@@ -324,8 +331,9 @@ async function _snapshot() {
  * (it then will not evict it under disk pressure), uploads whatever the cloud
  * is missing, and takes today's snapshot if there is not one yet.
  */
-export function startCloudBackup({ openDb } = {}) {
+export function startCloudBackup({ openDb, shouldBackUp } = {}) {
   _openMain = openDb;
+  _shouldBackUp = shouldBackUp || null;
   try { navigator.storage?.persist?.(); } catch {}
   _paintIndicator();
   if (!_token()) { _setStatus('off', 'No backup password in this browser.'); return; }
@@ -378,6 +386,14 @@ export async function cloudBackupInventory() {
   return sites;
 }
 
+/** Is the backup able to talk to the cloud from this browser at all? */
+export function cloudBackupReady() { return !!_token(); }
+
+/** One record, straight from the cloud. */
+export async function cloudBackupFetch(store, key, site = cloudSite()) {
+  return JSON.parse(await _getObject(_remoteKey(store, key, site)));
+}
+
 export async function cloudBackupSnapshots(site = cloudSite()) {
   return (await _listRemote(`snap/${site}/`)).sort((a, b) => b.key.localeCompare(a.key));
 }
@@ -405,7 +421,8 @@ export async function cloudBackupRestore(site, items) {
       const value = JSON.parse(await _getObject(_remoteKey(it.store, it.key, site)));
       await _putLocal(db, it.store, it.key, value);
       if (it.store === 'gameState' && String(it.key).startsWith('season_') && it.key !== 'season_index') {
-        restoredSeasons.push({ name: value?.name || String(it.key).slice('season_'.length), date: value?.date || '', episode: value?.episode || 0 });
+        restoredSeasons.push({ name: value?.name || String(it.key).slice('season_'.length), date: value?.date || '', episode: value?.episode || 0,
+          format: value?.config?.format || null, test: !!value?.config?.testSeason });
       }
     }
     if (restoredSeasons.length) {

@@ -189,6 +189,7 @@ import * as vpUiMod from './vp-ui.js';
 import * as vpCoachesMod from './vp-coaches.js';
 import * as savestateMod from './savestate.js';
 import * as cloudBackupMod from './cloud-backup.js';
+import * as legacyCanonMod from './legacy-canon.js';
 import * as statsExportMod from './stats-export.js';
 import * as audioMod from './audio.js';
 import * as recapMod from './recap.js';
@@ -404,10 +405,14 @@ async function init() {
   await loadAll();
   // Load persistent cross-season history ledger (never blocks the sim); refresh the
   // history panel once it lands so imported/persisted seasons show without a reload.
-  savestateMod.loadFranchiseLedgerFromDb().then(() => {
-    try { castUiMod.renderFranchiseHistoryPanel?.(); } catch {}
-    try { franchiseUiMod.renderFranchiseTab?.(); } catch {}
-  });
+  // Then the published seasons are laid over it (js/legacy-canon.js): a replay
+  // recorded over a published season is put back, and replays are refused.
+  savestateMod.loadFranchiseLedgerFromDb()
+    .then(() => legacyCanonMod.syncPublishedSeasons().catch(e => console.warn('Published-season sync failed:', e)))
+    .then(() => {
+      try { castUiMod.renderFranchiseHistoryPanel?.(); } catch {}
+      try { franchiseUiMod.renderFranchiseTab?.(); } catch {}
+    });
   renderCast();
   renderConfig();
   renderRelList();
@@ -417,7 +422,17 @@ async function init() {
   renderSeasonSaveList();
   // Every save also goes to the cloud (js/cloud-backup.js). Starts quietly a
   // few seconds in, after the page is up.
-  cloudBackupMod.startCloudBackup({ openDb: savestateMod._openDB });
+  cloudBackupMod.startCloudBackup({
+    openDb: savestateMod._openDB,
+    // A test season stays in this browser: its saves carry their own config,
+    // and the season in play (gs, checkpoints) is the one Setup describes.
+    shouldBackUp: (store, key, value) => {
+      if (store !== 'gameState') return true;
+      if (String(key).startsWith('season_') && key !== 'season_index') return !value?.config?.testSeason;
+      if (key === 'gs' || /^cp_\d+$/.test(String(key))) return !core.seasonConfig?.testSeason;
+      return true;
+    },
+  });
   // Restore spoiler-free state BEFORE rendering tabs (so episode history respects it)
   const _sfSaved2 = localStorage.getItem('simulator_spoilerFree') === 'true';
   const _sfCb2 = document.getElementById('cfg-spoiler-free');

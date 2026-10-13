@@ -69,7 +69,7 @@ function huddle(steps, ep, coaches) {
   const heard = cap(d.aimed ? people(d.aimed) : 'some people');
   const verb = d.aimed === 1 ? 'has' : 'have';
   const side = text => [{ tab: 'room', text }];
-  if (other) steps.push({ k: 'beat', text: `Before the votes, ${lead} leans over to ${other} at the end of the row and keeps ${P(lead).posAdj} voice down.`, focus: [lead, other] });
+  if (other) steps.push({ k: 'beat', text: `Before the votes are read, ${lead} leans over to ${other} at the end of the row and keeps ${P(lead).posAdj} voice down.`, focus: [lead, other] });
 
   if (d.why === 'safe') {
     if (other) {

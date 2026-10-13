@@ -786,8 +786,6 @@ export function tdTribalScreen(ep, o = {}) {
       reacted(p);
     }
   }
-  // the Save Card, called and signed (or not) before anybody writes a name (coach-tribal.js)
-  if (coaches.length) cardBeforeVote(steps, say, ep, coaches);
   // the vote
   const voters = [...new Set((ep.votingLog || []).map(v => v.voter).filter(n => tribal.includes(n)))];
   say(V.voted);
@@ -836,6 +834,9 @@ export function tdTribalScreen(ep, o = {}) {
     steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate, place: V.ceremony, time: '9:00 PM', card: false, cut: true, focus: [], bg: [], places, seated: seatedAll, host, ceremony: true });
   }
   steps.push({ k: 'ballots', who: voters, text: `${voters.length} votes are in.` });
+  // the Save Card, called and signed (or not) once the votes are written and before they are read (coach-tribal.js;
+  // the user, 2026-10-14: "the save card should be use after they already wrote their votes not before")
+  if (coaches.length) cardBeforeVote(steps, say, ep, coaches);
   // a vote cast before anybody wrote a name: the challenge's penalty, or a Black Vote left by an earlier boot
   for (const v of precast) say(v.isBlackVote ? `Before we read: ${v.voter} left us a parting gift on the way out. A Black Vote, against ${v.voted}.` : `Before we read: there's already one vote against ${v.voted}. The penalty from today's challenge.`,
     { focus: [v.voted].filter(n => tribal.includes(n)), side: [{ tab: 'room', text: v.isBlackVote ? `${v.voter}'s Black Vote: ${v.voted}.` : `Penalty vote: ${v.voted}.` }] });
@@ -958,14 +959,16 @@ export function tdTribalScreen(ep, o = {}) {
     if (i >= 0) s.side = [...(s.side || []), left.splice(i, 1)[0]];
   }
   if (left.length) { const t = steps[outStep] || steps[steps.length - 1]; t.side = [...(t.side || []), ...left]; }
+  // whoever actually leaves: the card's replacement, not the coach it saved (the user, 2026-10-14: the host told Bowie,
+  // just saved by the card, to grab his torch)
+  if (coachNight?.out) elim = coachNight.out;
   // voted out onto an island: nobody leaves the game tonight, the host says where they go next
   if (ep.riChoice) {
     steps.forEach(x => { if (x.k === 'out') x.island = true; });
     say(ep.riChoice === 'RESCUE ISLAND' ? `${elim}, you're not going home. You're going to Rescue Island.` : `${elim}, grab your torch. You have one more choice to make.`, { focus: [elim] });
     return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps: forwardClock(steps), elim };
   }
-  // the walk out: whoever actually leaves (the card's replacement, not the coach it saved)
-  if (coachNight?.out) elim = coachNight.out;
+  // the walk out: whoever actually leaves (elim, the card's replacement when the card decided it, above)
   // (a night the card decided: the last words were written for somebody voted out the ordinary way)
   const coachLeft = !!coachNight?.coachOut || cardDecided;
   // the host walks them out (the Dock of Shame, the red carpet, the hatch): both on screen

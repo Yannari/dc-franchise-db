@@ -518,7 +518,7 @@ const CLASH = [
     { by: 'a', say: "Okay, everybody. Firewood first, then water, then food." },
     { by: 'b', say: "No. Water first. Obviously water first." },
     { by: 'a', say: "Firewood. We need fire to boil the water." },
-    { by: 'b', say: "We need water to boil, genius!" },
+    { by: 'b', say: "You can't boil anything without water, genius." },
     { beat: 'The rest of the camp quietly goes and does nothing at all.' },
   ] },
   { id: 'dr.cl2', turns: [
@@ -529,10 +529,10 @@ const CLASH = [
     { by: 'b', conf: "Two people trying to lead one camp. Zero people actually working." },
   ] },
   { id: 'dr.cl3', turns: [
-    { by: 'a', say: "You take the left side, you take the right side—" },
-    { by: 'b', say: "Actually, scratch that. Everybody with me." },
-    { by: 'a', say: "Excuse me, I was talking." },
-    { by: 'b', say: "And now I am." },
+    { by: 'a', say: "Okay, you two are cooking, and you two are on—" },
+    { by: 'b', say: "Hang on. Forget the cooking. Everybody's practising for the next challenge." },
+    { by: 'a', say: "Excuse me, I was in the middle of talking." },
+    { by: 'b', say: "And now you're not." },
     { by: 'a', conf: "{b} can't stand anyone else being in charge. Funny. Neither can I." },
   ] },
   { id: 'dr.cl4', when: { register: 'competitor' }, turns: [
@@ -544,12 +544,14 @@ const CLASH = [
     { by: 'b', say: "Maybe I will. Somebody should try something new." },
     { by: 'b', conf: "{a} remembers every win and none of the losses. Must be nice." },
   ] },
+  // (the argument is about something you can name: read 2026-10-14, "Can we agree on a plan for once?" never said a plan
+  // for what, so the friend who then said "{a} is right about this one" was right about nothing)
   { id: 'dr.cl5', turns: [
-    { by: 'a', say: "Can we agree on a plan for once?" },
-    { by: 'b', say: "Sure. Mine." },
-    { by: 'a', say: "That's not agreeing, that's winning." },
-    { by: 'b', say: "Same thing." },
-    { by: 'a', conf: "By noon nothing was done and both of us were furious. Great day." },
+    { by: 'a', say: "Can we please just decide who's doing what today?" },
+    { by: 'b', say: "Easy. I'll decide." },
+    { by: 'a', say: "That's not us deciding. That's you bossing everybody around." },
+    { by: 'b', say: "Call it what you want. Somebody has to." },
+    { by: 'a', conf: "We spent ages arguing about who does what, and in the end nobody did anything." },
   ] },
   { id: 'dr.cl6', when: { age: 'older' }, turns: [
     { by: 'a', say: "I've managed teams of fifty people. I think I can handle a fire." },

@@ -227,7 +227,7 @@ export function houseMapHtml(uid, S, st) {
     const people = (at[z] || []);
     const max = Z.tile ? 3 : island && z !== 'resort' ? 4 : 6;
     const click = Z.enter ? `bbxMapLevel('${uid}','${Z.enter}')` : `bbxMapRoom('${uid}','${z}')`;
-    h += `<div class="hm-room ${Z.tile ? 'hm-tile' : ''} ${Z.locked ? 'hm-lockz' : ''} ${Z.enter ? 'hm-enter' : ''} ${live ? 'hm-live' : ''} ${here.length ? 'hm-has' : ''}" style="left:${x0}%;top:${y0}%;width:${x1 - x0}%;height:${y1 - y0}%" onclick="event.stopPropagation();${click}">
+    h += `<div data-z="${z}" class="hm-room ${Z.tile ? 'hm-tile' : ''} ${Z.locked ? 'hm-lockz' : ''} ${Z.enter ? 'hm-enter' : ''} ${live ? 'hm-live' : ''} ${here.length ? 'hm-has' : ''}" style="left:${x0}%;top:${y0}%;width:${x1 - x0}%;height:${y1 - y0}%" onclick="event.stopPropagation();${click}">
       <span class="hm-cam">${live ? '<i class="hm-rec"></i>' : ''}${camTag(z)}${Z.tile ? ` · ${esc(Z.tile)}` : ''}</span>${Z.tile ? `<b class="hm-tname">${esc(Z.label)}</b>` : ''}
       ${island ? `<b class="hm-pname">${Z.locked ? `<span class="hm-ic">${LOCK}</span>` : ''}${esc(Z.label)}${Z.locked ? `<small>${esc(Z.locked)}</small>` : ''}</b>` : ''}
       ${people.length ? `<span class="hm-ppl">${people.slice(0, max).map(n => face(n)).join('')}${people.length > max ? `<em>+${people.length - max}</em>` : ''}</span>` : ''}
@@ -271,6 +271,13 @@ export function houseFeedHtml(uid, S, st, zone) {
 }
 
 export const HM_CSS = `
+.bbx .hm{transition:transform .55s cubic-bezier(.65,0,.25,1),filter .55s;will-change:transform}
+.bbx .hm.hm-fly{transform:scale(var(--fz,3));filter:brightness(1.15) saturate(1.1)}
+.bbx .hm.hm-fly .hm-top,.bbx .hm.hm-fly .hm-foot,.bbx .hm.hm-fly .hm-tabs,.bbx .hm.hm-fly .hm-bubs,.bbx .hm.hm-fly .hm-ppl,.bbx .hm.hm-fly .hm-pname{opacity:0;transition:opacity .2s}
+.bbx .stage.arrive .hm,.bbx .stage.arrive .hmf,.bbx .stage.arrive .lens{animation:hmArrive .85s cubic-bezier(.2,.7,.2,1) both}
+@keyframes hmArrive{from{transform:scale(1.22);filter:blur(.35cqw) brightness(1.25);opacity:.2}to{transform:none;filter:none;opacity:1}}
+.bbx .stage.leave .hm{animation:hmLeave .7s cubic-bezier(.2,.7,.2,1) both}
+@keyframes hmLeave{from{transform:scale(2.4);filter:blur(.3cqw);opacity:.3}to{transform:none;filter:none;opacity:1}}
 .bbx .hm,.bbx .hmf{position:absolute;inset:0;overflow:hidden;font-family:'Chakra Petch',system-ui,sans-serif;color:#eaf6ff;cursor:default}
 .bbx .hm-plate,.bbx .hmf-plate{position:absolute;inset:0;background-size:cover;background-position:center;transition:filter .6s}
 .bbx .hm.night .hm-plate{filter:brightness(.45) saturate(.75) hue-rotate(-12deg)}

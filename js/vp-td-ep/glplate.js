@@ -9,14 +9,19 @@
 // flutter against the sky, the sea glints, the boat bobs and nothing has been cut out to do it.
 // The wind is one wind: gusts roll across the frame from left to right and everything in their
 // way leans together. Without WebGL the painted plate underneath simply stays as it is.
+// A plate with a depth map (`data-depth`, Big Brother's Reality Resort: tools/bb-resort/depth.py) also
+// moves in depth: the near furniture slides further than the far wall as the camera drifts and as the
+// pointer tilts the view, so a flat painting reads as a room. Off (0) for a plate without one.
 
 const VERT = `attribute vec2 p; varying vec2 v; void main(){ v = vec2(p.x * .5 + .5, .5 - p.y * .5); gl_Position = vec4(p, 0., 1.); }`;
 const FRAG = `precision mediump float;
-varying vec2 v; uniform sampler2D img, mot, sky; uniform float t, flows, bobA;
+varying vec2 v; uniform sampler2D img, mot, sky, dep; uniform float t, flows, bobA, dOn; uniform vec2 par;
 uniform vec3 gMul, gAdd, gFog; uniform float gSat, gHaze, gHot, gKeep;
 float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 void main(){
   vec2 uv = v;
+  // depth: a little margin so the edges never run out, then each pixel moved by how near it is
+  if (dOn > .5) { uv = (uv - .5) * .97 + .5; uv -= par * (texture2D(dep, uv).r - .4); }
   vec3 a = texture2D(mot, vec2(uv.x, uv.y / 3.)).bgr;          // b: wind, g: water, r: fall
   vec3 b = texture2D(mot, vec2(uv.x, (1. + uv.y) / 3.)).bgr;   // b: bob, g: heat, r: lights
   // the wind: a gust rolling left to right, the leaves fluttering inside it
@@ -110,13 +115,23 @@ export function liveGL(root) {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     gl.uniform1i(gl.getUniformLocation(pr, 'img'), 0); gl.uniform1i(gl.getUniformLocation(pr, 'mot'), 1); gl.uniform1i(gl.getUniformLocation(pr, 'sky'), 2);
+    gl.uniform1i(gl.getUniformLocation(pr, 'dep'), 3); gl.uniform1f(gl.getUniformLocation(pr, 'dOn'), 0);
     gl.uniform1f(gl.getUniformLocation(pr, 'flows'), cv.dataset.flow ? 1 : 0);
     const bobA = +cv.dataset.bobamp || 1; gl.uniform1f(gl.getUniformLocation(pr, 'bobA'), bobA);
     const G = GRADES[cv.dataset.grade] || {}, u = n => gl.getUniformLocation(pr, n);
     gl.uniform3fv(u('gMul'), G.mul || [1, 1, 1]); gl.uniform3fv(u('gAdd'), G.add || [0, 0, 0]); gl.uniform3fv(u('gFog'), G.fog || [.85, .87, .9]);
     gl.uniform1f(u('gSat'), G.sat ?? 1); gl.uniform1f(u('gHaze'), G.haze || 0); gl.uniform1f(u('gHot'), G.hot || 0); gl.uniform1f(u('gKeep'), G.keep || 0);
-    const s = { cv, gl, ut: gl.getUniformLocation(pr, 't'), ready: 0, raf: 0, t0: performance.now(), bobA };
+    const s = { cv, gl, ut: gl.getUniformLocation(pr, 't'), ready: 0, raf: 0, t0: performance.now(), bobA, upar: gl.getUniformLocation(pr, 'par'), dAmp: 0, px: 0, py: 0, tx: 0, ty: 0 };
     cv._gl = s; live.add(s);
+    if (cv.dataset.depth) {
+      // the depth arrives on its own: until then the plate is flat, never held back
+      texture(gl, 3, cv.dataset.depth, () => { gl.uniform1f(gl.getUniformLocation(pr, 'dOn'), 1); s.dAmp = +cv.dataset.depthamp || 1; });
+      const stage = cv.closest('.stage') || cv.parentElement;
+      s.onMove = e => { const r = stage.getBoundingClientRect(); s.tx = ((e.clientX - r.left) / r.width - .5) * 2; s.ty = ((e.clientY - r.top) / r.height - .5) * 2; };
+      s.onLeave = () => { s.tx = 0; s.ty = 0; };
+      stage?.addEventListener('pointermove', s.onMove); stage?.addEventListener('pointerleave', s.onLeave);
+      s.stage = stage;
+    }
     const src = cv.dataset.src;
     const go = () => { if (++s.ready === 2) { cv.classList.add('on'); frame(s); } };
     if (cv.dataset.flow) { s.ready--; texture(gl, 2, `${cv.dataset.mot || src}-sky.webp`, go); }
@@ -135,6 +150,12 @@ function frame(s) {
   if (w > 0 && (cv.width !== w || cv.height !== h)) { cv.width = w; cv.height = h; gl.viewport(0, 0, w, h); }
   const t = (performance.now() - s.t0) / 1000;
   gl.uniform1f(s.ut, t);
+  if (s.dAmp) {
+    // a slow drift, as if the camera breathes, and the pointer tilting the view (eased)
+    s.px += (s.tx - s.px) * .04; s.py += (s.ty - s.py) * .04;
+    const a = s.dAmp * .011;
+    gl.uniform2f(s.upar, a * (Math.sin(t * .13) * .55 + s.px * .45), a * (Math.sin(t * .09 + 1) * .3 + s.py * .25));
+  }
   // whoever is aboard a rocking boat rocks with it: the same swell, handed to the people as px
   if (s.bobA > 1) { const wd = cv.closest('.tdx-world'); if (wd) { wd.style.setProperty('--bx', `${(Math.sin(t * .7) * .0012 * s.bobA * cv.clientWidth).toFixed(2)}px`); wd.style.setProperty('--by', `${(Math.sin(t * 1.1) * .0028 * s.bobA * cv.clientHeight).toFixed(2)}px`); } }
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -143,5 +164,6 @@ function frame(s) {
 
 function stop(s) {
   cancelAnimationFrame(s.raf); live.delete(s);
+  if (s.stage) { s.stage.removeEventListener('pointermove', s.onMove); s.stage.removeEventListener('pointerleave', s.onLeave); }
   s.gl.getExtension('WEBGL_lose_context')?.loseContext();
 }

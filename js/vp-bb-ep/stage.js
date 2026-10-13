@@ -13,7 +13,7 @@
 // and the seats are the plate's own; the Blender room stays the fallback.
 import { playerAvatarUrl } from '../players.js';
 import { ANCH } from './anchors.js';
-import { plateHtml, plateAnchors, plateTv } from './plates.js';
+import { plateHtml, plateAnchors, plateTv, plateFor } from './plates.js';
 import { HUNT_SPOTS } from './steps.js';
 
 const ROOM_FILE = { kitchen: 'kitchen', ceremony: 'living', ceremony3: 'living3', bedroom: 'bedroom', hoh: 'hoh', dr: 'dr', yard: 'yard', dining: 'dining',
@@ -204,8 +204,9 @@ function setDiv(set, season, S = null) {
   if (plate) return plate;
   return `<div class="set set-${set} photo" style="background-image:url('${roomUrl(season, set)}')"><div class="floor"></div></div>`;
 }
-// the seats of the room on screen: the plate's when it has them, else Blender's
-const anchOf = S => plateAnchors(S) || ANCH[S.set];
+// the seats of the room on screen: the plate's when it plays on a plate (none, if that angle has none:
+// a Blender seat or memory wall drawn over a different picture floats over the furniture), else Blender's
+const anchOf = S => (plateFor(S) ? plateAnchors(S) : ANCH[S.set]);
 
 function memoryFrames(panels, n) {
   const out = [];
@@ -610,6 +611,38 @@ export function focusAt(S, idx) {
 }
 const FRONT = { 1: [50], 2: [36, 64], 3: [27, 50, 73] };
 
+// ── the living room: what the rest of the room is doing ─────────────────
+// The user, 2026-10-13 (part 3, the living stage): nobody in the background just stands there. The
+// people in a scene who are not talking do what the room is for (the gym lifts, the kitchen cooks,
+// the pool tans, the library reads, the bedroom sleeps), with a small badge and their own rhythm.
+// each room's things to do; each person picks one of them (by name, so they keep it all scene)
+const IDLE_OF = [[/^kitchen-/, ['cook', 'eat', 'drink']], [/^dining-/, ['eat', 'drink']], [/^(bar-|beach-bar)/, ['drink', 'eat']], [/^gym-/, ['lift', 'stretch']],
+  [/^(pool-|patio$|balcony$|beach-|dock$)/, ['tan', 'drink', 'read']], [/^library-/, ['read']], [/^bedroom-/, ['rest', 'read', 'groom']], [/^hallway$/, ['groom']],
+  [/^(comp-|lawn-)/, ['stretch']], [/^living-/, ['eat', 'read', 'drink', null]]];
+const IDLE_SET = { kitchen: ['cook', 'eat'], dining: ['eat'], yard: ['tan', 'drink'], bedroom: ['rest', 'read'], havenot: ['rest'], storage: ['snack'], hoh: ['rest', 'snack'] };
+const IDLE_ICON = {
+  cook: '<path d="M3 13h12a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" fill="#cfd8e3"/><path d="M15 14h6" stroke="#cfd8e3" stroke-width="2" stroke-linecap="round"/><path class="st" d="M7 10c0-2 2-2 2-4M11 10c0-2 2-2 2-4" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/>',
+  eat: '<circle cx="11" cy="14" r="7" fill="#f4f7fb"/><circle cx="11" cy="14" r="4" fill="#9ccf6b"/><path d="M20 6v14M18 6v4M22 6v4" stroke="#cfd8e3" stroke-width="1.6" stroke-linecap="round"/>',
+  drink: '<path d="M6 5h12l-5 7v6h3v2H8v-2h3v-6z" fill="#7fd3ff"/><circle cx="16" cy="6" r="2" fill="#ff7a59"/>',
+  lift: '<rect x="2" y="9" width="3" height="8" rx="1" fill="#cfd8e3"/><rect x="19" y="9" width="3" height="8" rx="1" fill="#cfd8e3"/><rect x="5" y="12" width="14" height="2" fill="#9fb0c6"/>',
+  tan: '<rect x="3" y="10" width="7" height="5" rx="2.5" fill="#1a2233"/><rect x="14" y="10" width="7" height="5" rx="2.5" fill="#1a2233"/><path d="M10 12h4" stroke="#1a2233" stroke-width="1.4"/><circle cx="19" cy="5" r="2.6" fill="#ffcf4a"/>',
+  read: '<path d="M3 6c3-1 6-1 9 1 3-2 6-2 9-1v12c-3-1-6-1-9 1-3-2-6-2-9-1z" fill="#f4f7fb"/><path d="M12 7v12" stroke="#9fb0c6" stroke-width="1.2"/>',
+  rest: '<text x="4" y="18" font-family="Chakra Petch" font-weight="800" font-size="11" fill="#bcd6ff">z</text><text x="11" y="12" font-family="Chakra Petch" font-weight="800" font-size="8" fill="#bcd6ff">z</text>',
+  groom: '<rect x="4" y="10" width="14" height="3" rx="1.5" fill="#f4f7fb"/><rect x="15" y="7" width="4" height="4" rx="1" fill="#7fd3ff"/>',
+  stretch: '<path d="M5 18l7-12 7 12" stroke="#cfd8e3" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+  snack: '<rect x="6" y="6" width="12" height="14" rx="2" fill="#f5c542"/><rect x="8" y="9" width="8" height="3" fill="#ff7a59"/>',
+};
+export function idleOf(S, name = '') {
+  const p = plateFor(S);
+  let list = null;
+  if (p) for (const [re, k] of IDLE_OF) if (re.test(p)) { list = k; break; }
+  list ||= IDLE_SET[S.set] || [];
+  if (!list.length) return null;
+  let h = 7; for (const c of String(name)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return list[h % list.length];
+}
+const idleFx = k => (k ? `<span class="idle-b idle-${k}"><svg viewBox="0 0 24 24">${IDLE_ICON[k]}</svg></span>` : '');
+
 // ── what people DO, animated ────────────────────────────────────────────
 // The user, 2026-10-06: "when they're shouting we should have an animation, an animation of every
 // action, that's how you make a viewer alive, like we did in Perfect Match". As there, the action
@@ -746,10 +779,13 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
     const react = reactionOf(st);
     const who = react ? new Set(back.filter((_, i) => (i + idx) % 3 !== 2).slice(0, 2)) : new Set();
     back.forEach((n, i) => {
+      const idle = idleOf(S, n);
       const x = places[i % Math.max(1, places.length)] ?? 50;
       const r = who.has(n) ? `react ${react}` : '';
       const badge = r ? `<i class="rb">${react === 'laugh' ? REACT_LAUGH : REACT_WOW}</i>` : '';
-      h += tileHtml(n, x, `bgp ${r}`, L, badge, `z-index:1;bottom:${(21.5 + (i % 2) * 0.8).toFixed(1)}cqw;--d:${(-(i * 0.9 + idx * 0.13) % 4).toFixed(2)}s`);
+      // a reaction interrupts what they were doing; otherwise they go on doing it
+      const doing = r || !idle ? '' : `doing do-${idle}`;
+      h += tileHtml(n, x, `bgp ${r} ${doing}`, L, badge, `z-index:1;bottom:${(21.5 + (i % 2) * 0.8).toFixed(1)}cqw;--d:${(-(i * 0.9 + idx * 0.13) % 4).toFixed(2)}s`, doing ? idleFx(idle) : '');
     });
     const A = fresh ? actionOf(st, cast.map(([n]) => n)) : null;
     const at = Object.fromEntries(focus.slice(0, 3).map((n, i) => [n, xs[i]]));

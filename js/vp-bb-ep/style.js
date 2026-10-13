@@ -246,6 +246,27 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .set.photo{background-size:cover!important;background-position:center!important}
 .bbx .bbx-gl{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .4s;pointer-events:none}
 .bbx .bbx-gl.on{opacity:1}
+.bbx .gt.doing{filter:brightness(.62) saturate(.8) blur(.06cqw)}
+.bbx .gt .idle-b{position:absolute;right:-.6cqw;top:-.9cqw;width:2.3cqw;height:2.3cqw;border-radius:50%;background:rgba(5,12,24,.88);box-shadow:0 0 0 .12cqw rgba(255,255,255,.55);display:grid;place-items:center;z-index:3;animation:bbxIdleB 2.6s ease-in-out infinite;animation-delay:var(--d,0s)}
+.bbx .gt .idle-b svg{width:70%;height:70%;overflow:visible}
+.bbx .gt .idle-b .st{animation:bbxSteam 1.6s ease-in-out infinite}
+@keyframes bbxIdleB{50%{transform:translateY(-.25cqw)}}
+@keyframes bbxSteam{50%{transform:translateY(-1.5px);opacity:.4}}
+.bbx .gt.do-lift .tile{animation:bbxLift 1.3s ease-in-out infinite;animation-delay:var(--d,0s)}
+@keyframes bbxLift{0%,100%{transform:translateY(0)}45%{transform:translateY(-.55cqw) scaleY(1.03)}}
+.bbx .gt.do-cook .tile,.bbx .gt.do-groom .tile{animation:bbxStir 1.8s ease-in-out infinite;animation-delay:var(--d,0s)}
+@keyframes bbxStir{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) translateX(.15cqw)}}
+.bbx .gt.do-eat .tile,.bbx .gt.do-drink .tile,.bbx .gt.do-snack .tile{animation:bbxSip 3.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+@keyframes bbxSip{0%,70%,100%{transform:none}80%{transform:translateY(-.25cqw) rotate(-3deg)}}
+.bbx .gt.do-tan .tile{transform:rotate(-8deg) translateY(.6cqw);animation:bbxBreathe 5s ease-in-out infinite}
+.bbx .gt.do-read .tile{transform:rotate(4deg);animation:bbxBreathe 4s ease-in-out infinite}
+.bbx .gt.do-rest{filter:brightness(.42) saturate(.6) blur(.08cqw)}
+.bbx .gt.do-rest .tile{transform:rotate(-14deg) translateY(1cqw);animation:bbxBreathe 4.5s ease-in-out infinite}
+.bbx .gt.do-rest .idle-b{animation:bbxZ 2.4s ease-in-out infinite}
+@keyframes bbxZ{0%{transform:translate(0,0);opacity:.2}60%{opacity:1}100%{transform:translate(.5cqw,-1cqw);opacity:0}}
+.bbx .gt.do-stretch .tile{animation:bbxStretch 2.4s ease-in-out infinite;animation-delay:var(--d,0s)}
+@keyframes bbxStretch{0%,100%{transform:none}50%{transform:scaleY(1.06) translateY(-.3cqw)}}
+@keyframes bbxBreathe{50%{scale:1.015}}
 .bbx .set.photo::before,.bbx .set.photo::after,.bbx .set.photo .floor{display:none}
 /* The room is alive (the user, 2026-10-06: "the background isn't moving at all"): the whole shot,
    room and people together, drifts like a handheld camera that never quite settles, so the

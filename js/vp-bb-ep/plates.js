@@ -77,13 +77,19 @@ export function plateBase(id, theme, night) {
   return `${PLATE_DIR}/${t}/${id}-${tod}`;
 }
 
+/** The plate's depth map, for the shader to move it in depth (the theme's own, else the default house's: same room). */
+export function depthAttr(id, theme = 'default') {
+  const t = (RESORT.depth?.[theme] || []).includes(id) ? theme : (RESORT.depth?.default || []).includes(id) ? 'default' : null;
+  return t ? ` data-depth="${PLATE_DIR}/${t}/${id}-depth.webp?v=${RESORT.v}"` : '';
+}
+
 /** The stage's painted room: the plate under its moving copy (js/vp-td-ep/glplate.js reads the canvas). */
 export function plateHtml(S, theme) {
   const id = plateFor(S);
   if (!id) return '';
   const base = plateBase(id, theme, isNight(S.time));
   return `<div class="set set-${S.set} photo plate" data-plate="${id}" style="background-image:url('${base}.webp?v=${RESORT.v}')">`
-    + `<canvas class="tdx-gl bbx-gl" data-src="${base}" data-grade="none" data-hd="1"></canvas></div>`;
+    + `<canvas class="tdx-gl bbx-gl" data-src="${base}" data-grade="none" data-hd="1"${depthAttr(id, theme)}></canvas></div>`;
 }
 
 /** The host's screen on the plate's wall (the big teal screen in the living room), as CSS. */

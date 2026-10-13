@@ -360,6 +360,29 @@ export function bbxLive(uid) {
   if (el) liveGL(el);
 }
 // ── the house map: a conversation at a time, in any order the clock allows ──
+// The camera flies (the user, 2026-10-13: "do the fly-in"): from the island into the resort, from
+// the house into a room, from a room into its conversation. The map zooms on the place picked, then
+// the next view lands with a push. Off for reduced motion and for scripted runs (window._bbxFast).
+const ISLAND_ZONES = new Set(['resort', 'beach', 'westdock', 'eastdock', 'clearing', 'npond', 'epond', 'lagoon', 'volcano', 'jury', 'villa', 'studio']);
+function land(el, cls = 'arrive') {
+  el.classList.remove('arrive', 'leave'); void el.offsetWidth; el.classList.add(cls);
+  setTimeout(() => el.classList.remove(cls), 900);
+}
+function fly(uid, R, zone, then) {
+  const el = typeof document !== 'undefined' ? document.getElementById(`bbx-st-${uid}`) : null;
+  const hm = el?.querySelector('.hm');
+  const still = (typeof window !== 'undefined' && (window._bbxFast || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches));
+  // on the island, a room of the house is reached through the resort
+  const target = hm && zone ? (hm.classList.contains('hm-island') && !ISLAND_ZONES.has(zone) ? 'resort' : zone) : null;
+  const box = target ? hm.querySelector(`.hm-room[data-z="${target}"]`) : null;
+  if (!el || !box || still || R.flying) { then(); if (el && !still) land(el); return; }
+  const H = hm.getBoundingClientRect(), B = box.getBoundingClientRect();
+  hm.style.transformOrigin = `${((B.left + B.width / 2 - H.left) / H.width) * 100}% ${((B.top + B.height / 2 - H.top) / H.height) * 100}%`;
+  hm.style.setProperty('--fz', Math.min(6, Math.max(1.8, Math.min(H.width / B.width, H.height / B.height) * 0.8)).toFixed(2));
+  R.flying = true;
+  requestAnimationFrame(() => hm.classList.add('hm-fly'));
+  setTimeout(() => { R.flying = false; then(); land(el); }, 560);
+}
 function mapPlay(uid, R, c) {
   Object.assign(R.map, { mode: 'play', cur: c.k, end: c.to });
   R.idx = c.from; paint(uid, true);
@@ -371,11 +394,17 @@ function mapDone(uid, R) {
 }
 export function bbxMapPlay(uid, k) {
   const R = sync(uid); if (!R?.map) return;
-  const c = R.map.convs[k]; if (c) mapPlay(uid, R, c);
+  const c = R.map.convs[k]; if (c) fly(uid, R, R.map.mode === 'map' ? c.zone : null, () => mapPlay(uid, R, c));
 }
-export function bbxMapRoom(uid, zone) { const R = sync(uid); if (!R?.map) return; Object.assign(R.map, { mode: 'feed', zone }); paint(uid, false); }
+export function bbxMapRoom(uid, zone) { const R = sync(uid); if (!R?.map) return; fly(uid, R, zone, () => { Object.assign(R.map, { mode: 'feed', zone }); paint(uid, false); }); }
 export function bbxMapBack(uid) { const R = sync(uid); if (!R?.map) return; Object.assign(R.map, { mode: 'map', zone: null }); paint(uid, false); }
-export function bbxMapLevel(uid, level) { const R = sync(uid); if (!R?.map) return; Object.assign(R.map, { mode: 'map', level, zone: null }); paint(uid, false); }
+export function bbxMapLevel(uid, level) {
+  const R = sync(uid); if (!R?.map) return;
+  const go = () => { Object.assign(R.map, { mode: 'map', level, zone: null }); paint(uid, false); };
+  // into the resort the camera dives; back out to the island it pulls away
+  if (level === 'house' && R.map.mode === 'map') fly(uid, R, 'resort', go);
+  else { go(); const el = typeof document !== 'undefined' && document.getElementById(`bbx-st-${uid}`); if (el && !(typeof window !== 'undefined' && window._bbxFast)) land(el, 'leave'); }
+}
 export function bbxMapWindow(uid, w) { const R = sync(uid); if (!R?.map) return; R.map.window = w; paint(uid, false); }
 export function bbxMapMode() {
   try { localStorage.setItem('bb-map', mapOn() ? 'linear' : 'map'); } catch { /* per-viewer convenience */ }
@@ -390,7 +419,7 @@ export function bbxNext(uid) {
     if (R.map.mode === 'play' && R.map.cur != null) { mapDone(uid, R); return; }
     // on the house: the next conversation in story order whose time has come
     const c = R.map.mode !== 'play' ? nextConv(R.map.convs, R.map.watched) : null;
-    if (c) { mapPlay(uid, R, c); return; }
+    if (c) { if (R.flying) return; fly(uid, R, R.map.mode === 'map' ? c.zone : null, () => mapPlay(uid, R, c)); return; }
   }
   if (R.idx >= S.steps.length - 1 || (R.map && R.map.mode !== 'play')) {
     const wasAuto = R.auto; stopAuto(R);

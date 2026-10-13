@@ -854,7 +854,7 @@ export function tdTribalScreen(ep, o = {}) {
     colorOf: o.colorOf || null, teamOf: n => (ep.tribesAtStart || []).find(t => (t.members || []).includes(n))?.name || ep.tribalTribe || null,
     bond: (x, y) => (ep.gsSnapshot?.bonds || {})[x <= y ? `${x}||${y}` : `${y}||${x}`] ?? 0 };
   // (a coach night reads the votes: a coach was never in line for a marshmallow)
-  if (V.style === 'handout' && !coaches.length) handout(steps, say, V, { tribal, elim, counts, immune: [].concat(ep.immunityWinner || []).filter(n => tribal.includes(n)), tie, revote, rocks: !!ep.isRockDraw, host, alsoOut: ep._alsoOut || null, rv });
+  if (V.style === 'handout' && !coaches.length) handout(steps, say, V, { tribal, elim, counts, immune: [].concat(ep.immunityWinner || []).filter(n => tribal.includes(n)), tie, revote, rocks: !!ep.isRockDraw, host, alsoOut: ep._alsoOut || null, hold: !!ep._holdPlate, rv });
   else {
     // who has gone before this one: the boot is the nth voted out of the game
     const gone = (window.gs?.episodeHistory || []).filter(e => e.num < ep.num && e.eliminated).length;
@@ -1046,7 +1046,7 @@ export function tdTribalScreen(ep, o = {}) {
   return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps, elim };
 }
 
-function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, rocks, host, alsoOut = null, rv = null }) {
+function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, rocks, host, alsoOut = null, hold = false, rv = null }) {
   const n = tribal.length;
   // a tie: the revote happens before anyone is called
   if (tie) {
@@ -1061,6 +1061,14 @@ function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, roc
       if (rv.plate) steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate: rv.plate, place: V.ceremony, time: '9:50 PM', card: false, cut: true, focus: [], bg: [], places: rv.places, seated: tribal, host, ceremony: true });
     }
     if (rocks) rockDraw(steps, say, { tribal, elim, tied: rv?.tied || [], immune, host });
+  }
+  // an announced double elimination the first vote could not settle (an idol left one name with votes, episode.js
+  // goes to a second vote): the host knows two are going, so the plate waits until both votes have been read
+  if (hold) {
+    say(`Two of you are going home tonight, so nobody gets a ${V.item} until it's over.`);
+    say(`The first person leaving tonight is...`, { tense: true, focus: [elim] });
+    steps.push({ k: 'out', who: elim, focus: [elim] });
+    return;
   }
   const left = n - (alsoOut ? 2 : 1);
   say(`There are ${n} of you and only ${left} ${left === 1 ? V.item : V.items} on this plate. When I call your name, come and get one.`);
@@ -1304,7 +1312,7 @@ export function tdDoubleTribalScreen(ep, o = {}) {
   const first = ep.firstEliminated;
   const key = p => `${p.player}:${p.type || 'idol'}:${p.stolenFrom || ''}`;
   const once = new Set((ep.idolPlays1 || []).map(key));
-  const v1 = { ...ep, eliminated: first, firstEliminated: null, idolPlays: ep.idolPlays1 || [], tribalStory: null, riChoice: ep.firstRIChoice || null,
+  const v1 = { ...ep, eliminated: first, firstEliminated: null, idolPlays: ep.idolPlays1 || [], tribalStory: ep.tribalStory1 || null, riChoice: ep.firstRIChoice || null, _holdPlate: !!ep.announcedDoubleElim,
     isTie: false, revoteLog: [], shotInDark: ep.shotInDark1 || null, tiebreakerResult: ep.tiebreakerResult1 || null };
   const v2 = { ...ep, firstEliminated: null, votingLog: ep.votingLog2, votes: ep.votes2, idolPlays: (ep.idolPlays || []).filter(p => !once.has(key(p))),
     tribalPlayers: (ep.tribalPlayers || []).filter(n => n !== first), alliances: ep.alliances2 || [], defections: [] };

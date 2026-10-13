@@ -170,6 +170,8 @@ export function patchEpisodeHistory(ep) {
   if (!h.tdDirectorLog && ep.tdDirectorLog) h.tdDirectorLog = ep.tdDirectorLog;
   if (!h.twistStory && ep.twistStory) h.twistStory = ep.twistStory;
   if (!h.tribalStory && ep.tribalStory) h.tribalStory = ep.tribalStory;
+  // a double boot's first vote has its own night (td/story/tribal.js firstVoteView)
+  if (!h.tribalStory1 && ep.tribalStory1) h.tribalStory1 = ep.tribalStory1;
   if (!h.exileStory && ep.exileStory) h.exileStory = ep.exileStory;
   if (!h.tdFirstImp && ep.tdFirstImp) h.tdFirstImp = ep.tdFirstImp;
   if (!h.tdAuction && ep.tdAuction) h.tdAuction = ep.tdAuction;

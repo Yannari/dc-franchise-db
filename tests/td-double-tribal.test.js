@@ -33,6 +33,23 @@ describe('double elimination on the stage', () => {
       expect(safe.includes(ep.firstEliminated) || (ep.announcedDoubleElim && safe.includes(ep.eliminated)), `ep${ep.num}`).toBe(false);
     }
   });
+  // read 2026-10-13: one script was written for the whole night, from the first vote, and the second round played it
+  // (Gwen at the second vote: "I wrote Noah. We all said Noah. What just happened?", Noah already gone)
+  it('the second vote is its own night: no ballot in it names the person who already left', () => {
+    let checked = 0;
+    for (const { ep, scr } of nights) {
+      if (!(ep.votingLog2 || []).length) continue;
+      expect(ep.tribalStory1, `ep${ep.num}`).toBeTruthy();
+      const turn = scr.steps.findIndex(s => /not done/i.test(s.text || ''));
+      expect(turn, `ep${ep.num}`).toBeGreaterThan(0);
+      scr.steps.forEach((s, i) => {
+        if (i <= turn || s.k !== 'say' || s.host || scr.steps[i + 1]?.k !== 'ballot') return;
+        checked++;
+        expect(s.text, `ep${ep.num} ${s.by}`).not.toContain(ep.firstEliminated);
+      });
+    }
+    expect(checked).toBeGreaterThan(3);
+  });
   it('every step paints, and the tally is the vote being read', () => {
     for (const { ep, scr } of nights) scr.steps.forEach((s, i) => {
       const { L, html } = stageHtml(scr, i, true);

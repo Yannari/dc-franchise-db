@@ -6591,10 +6591,14 @@ function simulateJuryRoundtable(ep) {
       }
     }
 
-    if (ep.announcedDoubleElim) {
-      // Announced: top 2 vote-getters both go — no second vote needed
-      const _a2Sorted = Object.entries(ep.votes||{}).sort(([,a],[,b]) => b-a);
-      const _second = _a2Sorted.find(([n]) => n !== r1.eliminated && gs.activePlayers.includes(n))?.[0] || null;
+    // Announced: top 2 vote-getters both go — no second vote needed. Unless the first vote left only one name with
+    // votes (an idol voided everybody else's: read 2026-10-13, Leshawna's idol for Alejandro cancelled every vote but
+    // Gwen's, and the announced double elimination sent one person home): then the second goes by a second vote, as
+    // the surprise double boot does (the stepped Tribal plays it as "As promised, we're not done", vp-td-ep/steps.js)
+    const _a2Sorted = Object.entries(ep.votes||{}).filter(([, v]) => v > 0).sort(([,a],[,b]) => b-a);
+    const _a2Second = ep.announcedDoubleElim ? (_a2Sorted.find(([n]) => n !== r1.eliminated && gs.activePlayers.includes(n))?.[0] || null) : null;
+    if (ep.announcedDoubleElim && _a2Second) {
+      const _second = _a2Second;
       ep.eliminated = _second;
       if (_second) {
         // (where the second boot goes, Redemption/Rescue Island or home, is decided ONCE, by the standard
@@ -6626,7 +6630,7 @@ function simulateJuryRoundtable(ep) {
         }
       }
     } else {
-      // Surprise double boot: run a second tribal vote
+      // Surprise double boot (or an announced one the first vote could not settle): run a second tribal vote
       const remaining = ep.tribalPlayers.filter(p => p !== r1.eliminated);
       ep.immunityWinner2 = null; // no separate immunity challenge for vote 2
       gs._currentImmuneNames = [ep.immunityWinner, ...(ep.extraImmune || [])].filter(Boolean);

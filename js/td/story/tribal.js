@@ -331,6 +331,22 @@ function playReactions(ep, { tribal, ballots, base, ctx, nextN }) {
  * coach card records that are its own (the classic Votes screen's subEp does the same). The director writes
  * each council's booth and reading from it, and the stepped viewer plays each one as its own Tribal.
  */
+// A double boot's two votes, each as its own night (the engine keeps the first on votingLog/votes/idolPlays1 and the
+// second on votingLog2/votes2/idolPlays; vp-td-ep/steps.js tdDoubleTribalScreen splits them the same way). One script
+// written from the whole episode put the first vote's booth and questions into the second round (read 2026-10-13: Gwen
+// at the second vote, "I wrote Noah. We all said Noah. What just happened?", with Noah already gone).
+const idolKey = p => `${p.player}:${p.type || 'idol'}:${p.stolenFrom || ''}`;
+export function firstVoteView(ep) {
+  return { ...ep, eliminated: ep.firstEliminated, firstEliminated: null, idolPlays: ep.idolPlays1 || [], votingLog2: null, votes2: null, alliances2: null,
+    isTie: false, revoteLog: [], shotInDark: ep.shotInDark1 || null, tiebreakerResult: ep.tiebreakerResult1 || null, riChoice: ep.firstRIChoice || null, tribalStory: null };
+}
+export function secondVoteView(ep) {
+  const once = new Set((ep.idolPlays1 || []).map(idolKey));
+  return { ...ep, firstEliminated: null, votingLog: ep.votingLog2 || [], votes: ep.votes2 || {}, idolPlays: (ep.idolPlays || []).filter(p => !once.has(idolKey(p))),
+    tribalPlayers: (ep.tribalPlayers || []).filter(n => n !== ep.firstEliminated), alliances: ep.alliances2 || [], defections: [], votingLog2: null, votes2: null, tribalStory: null };
+}
+export const isTwoVoteNight = ep => !!(ep?.firstEliminated && (ep.votingLog2 || []).length);
+
 export function multiTribalView(ep, r) {
   const mine = n => (r.tribalPlayers || []).includes(n);
   return { ...ep, tribalPlayers: [...(r.tribalPlayers || [])], tribalTribe: r.tribe, votingLog: r.log || [], votes: r.votes || {},

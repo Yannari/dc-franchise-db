@@ -6,7 +6,7 @@
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 const REASON = {
-  must: 'always airs', due: 'a payoff that is due', story: 'the day\'s story', colour: 'colour, with room', room: 'room left over',
+  must: 'always airs', due: 'a payoff that is due', story: 'the day\'s story', colour: 'colour, with room', room: 'room left over', underheard: 'somebody the last episodes barely heard from',
   'same-scene': 'the same scene already airs today', claimed: 'that person\'s bit, or that pair\'s payoff, already airs today',
   budget: 'no room left in the day', deferred: 'no room even for a payoff (still due, uncommitted)',
   'dialogue-budget': 'the day already has enough talk', 'deferred-dialogue': 'too much talk today (still due, uncommitted)',

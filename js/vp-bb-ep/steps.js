@@ -25,6 +25,7 @@ import { arenaFor } from '../bb/comp-arenas.js';
 import { pronouns } from '../players.js';
 import { voiceLine } from '../bb/story/register.js';
 import { players as ROSTER } from '../core.js';
+import { pickPlate } from './plates.js';
 
 // The engine's own moments that happen AT a ceremony (the user, 2026-10-06: "most of the time the
 // reactions are after, but sometimes it causes drama during the ceremony, same for veto"). They play
@@ -2948,8 +2949,13 @@ function storyLifeScreen(scenes, ctx, n) {
     const xs = spread(sc.cast.length);
     // the set is the nearest one the stage has; the label is the room the scene is really in
     const label = sc.roomName || ROOM_NAME[set];
-    const scene = { set, room: label, cam: CAM[set], kicker: `Cam ${String(CAM[set]).padStart(2, '0')} · ${label}`,
-      cast: sc.cast.map((p, i) => [p, xs[i]]), mood: sc.mood || 'house', time: sc._clock, slate: true, ...(sc.why?.length ? { why: sc.why } : {}) };
+    // the plate it plays on (plates.js): the place the lines name, else one of the room's by the scene's id;
+    // a meal in the kitchen sits at the dining table
+    const said = (sc.lines || []).map(l => l.text || '').join(' ');
+    const meal = set === 'kitchen' && /(dinner|breakfast|lunch|at the table|eating)/i.test(said);
+    const plate = meal ? pickPlate('dining', sc.id, said, 'meal') : pickPlate(set, sc.id, said);
+    const scene = { set: meal && plate ? 'dining' : set, room: label, cam: CAM[set], kicker: `Cam ${String(CAM[set]).padStart(2, '0')} · ${label}`,
+      cast: sc.cast.map((p, i) => [p, xs[i]]), mood: sc.mood || 'house', time: sc._clock, slate: true, ...(plate ? { plate } : {}), ...(sc.why?.length ? { why: sc.why } : {}) };
     delete sc._clock;
     if ((MOOD_RANK[scene.mood] || 0) > (MOOD_RANK[mood] || 0)) mood = scene.mood;
     const lines = (sc.lines || []).map(l => ({ k: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, t: l.text, ...(l.bg ? { bg: true } : {}) }));

@@ -8,9 +8,12 @@
 // one-shot business (a line typing, a pop, a toast, a key turning) plays only
 // on a fresh step. Rooms are the Blender renders of the season's own house
 // (tools/bb-house/house.py); seats, the nominations screen and the memory
-// wall come from Blender's anchors (anchors.js).
+// wall come from Blender's anchors (anchors.js). Where the Reality Resort plate for
+// the set is built (plates.js, tools/bb-resort), the room is that plate, moving,
+// and the seats are the plate's own; the Blender room stays the fallback.
 import { playerAvatarUrl } from '../players.js';
 import { ANCH } from './anchors.js';
+import { plateHtml, plateAnchors, plateTv } from './plates.js';
 import { HUNT_SPOTS } from './steps.js';
 
 const ROOM_FILE = { kitchen: 'kitchen', ceremony: 'living', ceremony3: 'living3', bedroom: 'bedroom', hoh: 'hoh', dr: 'dr', yard: 'yard', dining: 'dining',
@@ -131,7 +134,7 @@ function seatsAt(S, i) {
   return seated;
 }
 function seatOf(S, seated, n) {
-  const a = ANCH[S.set]; const id = seated[n];
+  const a = anchOf(S); const id = seated[n];
   if (!a || !id) return null;
   if (id === 'head') return { at: a.head.at, w: a.head.w * 1.25 };
   // the finale stage: the middle of the two places at the front of the platform
@@ -196,9 +199,13 @@ function tileHtml(n, x, cls, L, extra = '', more = '', fx = '') {
 }
 const DRRING = `<svg viewBox="-100 -100 200 200"><circle r="78" fill="none" stroke="#22e1ff" stroke-width="2.2" opacity=".85"/><circle r="86" fill="none" stroke="#a593ff" stroke-width="1.2" stroke-dasharray="3 6" opacity=".7"/></svg>`;
 
-function setDiv(set, season) {
+function setDiv(set, season, S = null) {
+  const plate = plateHtml(S ? { ...S, set } : { set }, season);
+  if (plate) return plate;
   return `<div class="set set-${set} photo" style="background-image:url('${roomUrl(season, set)}')"><div class="floor"></div></div>`;
 }
+// the seats of the room on screen: the plate's when it has them, else Blender's
+const anchOf = S => plateAnchors(S) || ANCH[S.set];
 
 function memoryFrames(panels, n) {
   const out = [];
@@ -216,7 +223,7 @@ function memoryFrames(panels, n) {
   return out;
 }
 function wallHtml(S, L, st, fresh) {
-  const A = ANCH[S.set];
+  const A = anchOf(S);
   if (!A?.panels) return '';
   const names = S.wall || [];
   const frames = memoryFrames(A.panels, names.length);
@@ -228,14 +235,15 @@ function wallHtml(S, L, st, fresh) {
   }).join('')}</div>`;
 }
 function nomScreenHtml(S, L, st, fresh) {
-  const r = ANCH.dining.screen;
+  const DA = anchOf(S)?.screen ? anchOf(S) : ANCH.dining;
+  const r = DA.screen;
   const n = S.steps.filter(x => x.reveal).length;
   const slots = Array.from({ length: n }, (_, i) => {
     const who = L.revealed[i];
     const flip = fresh && st && st.reveal && who === st.reveal;
     return `<div class="nslot ${who ? 'on' : ''} ${flip ? 'flip' : ''}">${who ? `${img(who)}<b>${esc(who)}</b>` : '<i>?</i>'}</div>`;
   }).join('');
-  const b = ANCH.dining.box;
+  const b = DA.box;
   const keys = Array.from({ length: n }, (_, i) => {
     const turned = i < L.revealed.length;
     const now = fresh && st && st.reveal && i === L.revealed.length - 1;
@@ -693,15 +701,19 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   const isDr = st && st.k === 'dr';
   if (isDr) {
     const held = st.hold ? `<div class="drpass ${fresh ? 'fresh' : ''}">${passHtml(st.by, 'held')}<b>STILL IN MY POCKET</b></div>` : '';
-    return `${setDiv('dr', o.season)}<div class="drring">${DRRING}</div>${tileHtml(st.by, 40, 'speak', L, '', 'width:15cqw;bottom:17cqw')}${held}`;
+    // on the confessional couch (the user: "diary room we have confessional"), in the middle of it
+    const room = setDiv('dr', o.season, S);
+    const onCouch = /data-plate=/.test(room);
+    return `${room}<div class="drring">${DRRING}</div>${tileHtml(st.by, onCouch ? 50 : 40, 'speak', L, '', 'width:15cqw;bottom:17cqw')}${held}`;
   }
   const arena = S.arena;
   let h = arena ? `<div class="set photo" style="background-image:url('assets/bb/house/${/^studio/.test(S.set) ? 'default' : o.season}/${S.set}-td-b.webp?v=${V}')"></div>`
-    : S.built ? `<div class="set set-${S.set}"><div class="floor"></div></div>` : setDiv(S.set, o.season);
+    : S.built ? `<div class="set set-${S.set}"><div class="floor"></div></div>` : setDiv(S.set, o.season, S);
   h += suiteObjects(S, L, st, idx, fresh);
   h += wallHtml(S, L, st, fresh);
   if (S.tvObj && !(L.out.length && st && st.k !== 'host' && L.out.at(-1) && S.steps.some(x => x.out))) {
-    h += `<div class="obj ledtv ${st && st.k === 'host' ? 'on' : ''} ${L.votes && st && st.k === 'host' ? 'dim' : ''}">${img(o.host, true)}<div class="lb"><span>● LIVE · HOST</span>${esc(String(o.host).toUpperCase())}</div></div>`;
+    // on a plate the host is on the living room's own big screen
+    h += `<div class="obj ledtv ${st && st.k === 'host' ? 'on' : ''} ${L.votes && st && st.k === 'host' ? 'dim' : ''}" style="${plateTv(S)}">${img(o.host, true)}<div class="lb"><span>● LIVE · HOST</span>${esc(String(o.host).toUpperCase())}</div></div>`;
   }
   if (idx < 0) return h;
   const cast = castAt(S, idx);
@@ -776,7 +788,8 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
     h += `<div class="obj keydrop" style="left:${sl.at[0]}%;bottom:${(sl.at[1] * 0.5625).toFixed(2)}cqw;width:${(sl.w * 0.42).toFixed(2)}cqw">${KEY_SVG}</div><div class="obj boxglow" style="left:${sl.at[0]}%;bottom:${(sl.at[1] * 0.5625 - sl.w * 0.3).toFixed(2)}cqw;width:${(sl.w * 1.3).toFixed(2)}cqw"></div>`;
   }
   if (S.set === 'dining') {
-    h += `<img class="front" src="assets/bb/house/${o.season}/dining-td-b-nombox.webp?v=${V}" alt="" style="z-index:${zOf(ANCH.dining.box)}">`;
+    // the Blender table's front edge, drawn over the keys; a plate's table is in the picture
+    if (!plateAnchors(S)) h += `<img class="front" src="assets/bb/house/${o.season}/dining-td-b-nombox.webp?v=${V}" alt="" style="z-index:${zOf(ANCH.dining.box)}">`;
     h += nomScreenHtml(S, L, st, fresh);
   }
   if (!seated) h += passersHtml(S, st, cast.map(([n]) => n), L, fresh);

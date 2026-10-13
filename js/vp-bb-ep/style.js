@@ -244,6 +244,8 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .rest .s{font:500 1.6cqw Archivo;color:rgba(255,255,255,.75)}
 .bbx .rest .go{margin-top:2.4cqw;font:700 1cqw 'Chakra Petch';letter-spacing:.4cqw;color:#001018;background:#22e1ff;padding:.6cqw 1.6cqw;border-radius:.3cqw}
 .bbx .set.photo{background-size:cover!important;background-position:center!important}
+.bbx .bbx-gl{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .4s;pointer-events:none}
+.bbx .bbx-gl.on{opacity:1}
 .bbx .set.photo::before,.bbx .set.photo::after,.bbx .set.photo .floor{display:none}
 /* The room is alive (the user, 2026-10-06: "the background isn't moving at all"): the whole shot,
    room and people together, drifts like a handheld camera that never quite settles, so the

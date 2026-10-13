@@ -28,6 +28,7 @@ import { BBX_WHACK_CSS } from './style-whack.js';
 import { bedFor, playStep } from './sound.js';
 import { titleScreen } from './titles.js';
 import { seasonId } from '../shows.js';
+import { liveGL } from '../vp-td-ep/glplate.js';
 
 const reg = () => (typeof window !== 'undefined' ? (window._bbx ||= {}) : (globalThis._bbx ||= {}));
 const SHELL_CSS = `
@@ -207,6 +208,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
       label: S.label || S.title,
       html: `<div class="bbx" data-uid="${uid}" data-ambient="${bedFor(S)}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${BBX_PX_CSS}${BBX_DUO_CSS}${BBX_CAMP_CSS}${BBX_WILD_CSS}${BBX_SPOWER_CSS}${BBX_CAPSULE_CSS}${BBX_INTERRO_CSS}${BBX_WHACK_CSS}${SHELL_CSS}</style>
   <div class="bbx-stage stage" id="bbx-st-${uid}" onclick="bbxNext('${uid}')" title="Click for the next line">${stageHtml(steps, si, -1, false, o).html}</div>
+  <img alt="" hidden src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" onload="bbxLive('${uid}')">
   <div class="bbx-ctrl">
     <button type="button" class="bbx-btn" onclick="bbxBack('${uid}')">◀ Back</button>
     <button type="button" class="bbx-btn main" onclick="bbxNext('${uid}')">Next ▶</button>
@@ -286,6 +288,7 @@ function paint(uid, fresh) {
   const out = stageHtml(R.screens, R.si, R.idx, fresh, R.o);
   el.innerHTML = out.html;
   el.className = `bbx-stage ${out.cls}`;
+  liveGL(el);       // a Reality Resort plate moves by its motion map (water, palms, lights)
   const cam = el.querySelector('.cam');
   if (cam && fresh) requestAnimationFrame(() => requestAnimationFrame(() => cam.setAttribute('style', camStyle(out.cam))));
   const S = R.screens[R.si];
@@ -326,6 +329,11 @@ function paint(uid, fresh) {
       }, 16);
     }
   }
+}
+/** The first paint is a string the viewer inserts: once it is in the page, the plate starts moving. */
+export function bbxLive(uid) {
+  const el = typeof document !== 'undefined' && document.getElementById(`bbx-st-${uid}`);
+  if (el) liveGL(el);
 }
 export function bbxNext(uid) {
   const R = sync(uid); if (!R) return;
@@ -411,7 +419,7 @@ export function bbxSwitchViewer(which) {
     if (i > 0 && typeof window.vpGoTo === 'function') window.vpGoTo(i);
   } catch { location.reload(); }
 }
-if (typeof window !== 'undefined') Object.assign(window, { bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
+if (typeof window !== 'undefined') Object.assign(window, { bbxLive, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
 // Closing the Viewing Party only hides it: stop every Auto run and the line typing out,
 // or Auto keeps clicking through the week (and its music) behind a closed window.
 if (typeof document !== 'undefined') document.addEventListener('vp:close', () => {

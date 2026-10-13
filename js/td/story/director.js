@@ -1398,13 +1398,29 @@ export function airtimeScore(e, events, look, today, prior = 0) {
   }
   return s;
 }
+// ── rhythm (the pacing plan, stage 5) ──
+// A scene's tone, from what it is: 'H' the game (the vote, a scheme, a fight, a betrayal), 'L' a breather from it (a
+// person's own thing, friends, a game, a joke, a flirt, two people finding what they share), 'N' neither. Measured on
+// the stage-4 matrix: a quarter of the stretches with a tribal at the end ran five or more heavy scenes in a row, all
+// of them the vote block (scramble, before-tribal), and a merge night could run twelve.
+const LIGHT_KIND = /^(kit\.(bit|call|life|solo|deep)|camp\.game|story\.dayone|run\.|kindred\.(find|check)|chm\.(banter|comedy|bond|saved|comeback)|(long\.)?(friend\.(bond|goof|joke|sunrise|meal|celebrate|laugh|rally|teach|open|solidarity|struggle|lift|mentor|rideordie)|crowd\.(meal|chores|banter|project|dinner|won)|romance\.(flirt|honeymoon|moment|spark|rekindle))|follow\.romance|arc\.mentor\.)/;
+const HEAVY_KIND = /vote|tribal|pitch|scheme|betray|blame|fight|clash|explode|threat|jealous|breakup|wronged|grievance|witness|turn\.|guarded|tense|paranoi|meltdown|bottom|eliminat|plot|lie|caught|scramble|spark|warn|adv\.|ally\.|cover|deal|recruit|dispute|nemesis|intimidat/;
+export function toneOf(item, events) {
+  const it = item || {}, ev = it.ref != null && !it.lines ? events?.[it.ref] : null;
+  const kind = it.kind || (ev?.scene?.kind ? ev.scene.kind : ev?.type) || '';
+  if (it.storyType === 'vote' || /^(story\.vote|vt2|vp|arc\.(warn|ally|spark|adv))/.test(kind)) return 'H';
+  if (LIGHT_KIND.test(kind)) return 'L';
+  if (HEAVY_KIND.test(`${kind} ${it.step || ''} ${it.storyType || ''}`)) return 'H';
+  return 'N';
+}
+
 /**
  * Choose what airs from one stretch of the day's proposals. `entries` are { at, item, src, tier, extra? } in the
  * order they were proposed; `used` is what the day has aired already ({ scenes, turns, people, pairs }); `limit` this
  * stretch's share ({ target, ceiling }); `look` the season's airtime ({ ratio(name), pair(key) }, stage 4: without it
  * every tier keeps proposal order). Returns { keep, drop, log }, keep in proposal order.
  */
-export function selectScenes(entries, events, used, limit, turns = DAY_BUDGET, look = null) {
+export function selectScenes(entries, events, used, limit, turns = DAY_BUDGET, look = null, rhythm = false) {
   const cost = e => spokenIn(e.item?.lines || events?.[e.item?.ref]?.lines);
   // A colour scene about somebody the last two episodes barely heard from (under 60% of the camp's average) competes
   // with the day's story, not with the rest of the colour: read on the stage-4 matrix, Lindsay spoke 7 lines in three
@@ -1454,6 +1470,17 @@ export function selectScenes(entries, events, used, limit, turns = DAY_BUDGET, l
       left.forEach((x, k) => { const sc = airtimeScore(x.e, events, look, today, x.prior); if (sc > bs + 1e-9) { bs = sc; best = k; } });
       const [x] = left.splice(best, 1);
       decide(x.e);
+    }
+  }
+  // A breather (stage 5): a stretch that is all game, five heavy scenes and not one light one, gets back the best light
+  // scene the budget dropped, up to the ceiling (a real edit cuts away from the scramble for a moment, then comes back)
+  if (rhythm) {
+    const tones = entries.filter(e => kept.has(e)).map(e => toneOf(e.item, events));
+    if (tones.filter(t => t === 'H').length >= 5 && !tones.includes('L') && scenes < limit.ceiling) {
+      const light = entries.filter(e => !kept.has(e) && ['budget', 'dialogue-budget'].includes(reasons.get(e)) && toneOf(e.item, events) === 'L'
+        && !(e.item?.lineId && lineIds.has(e.item.lineId)) && !(claimOf(e) && claims.has(claimOf(e))) && said + cost(e) <= turns.turnCeiling);
+      const best = look ? light.map((e, i) => ({ e, s: airtimeScore(e, events, look, today, i / Math.max(1, light.length)) })).sort((x, y) => y.s - x.s)[0]?.e : light[0];
+      if (best) { kept.add(best); reasons.set(best, 'breather'); scenes++; said += cost(best); }
     }
   }
   const keep = entries.filter(e => kept.has(e)), drop = entries.filter(e => !kept.has(e));
@@ -1523,6 +1550,50 @@ function airtimeLook(ep, members) {
     tie: k => (couple(k) ? 1 : (([x, y]) => Math.max(0, Math.min(1, (Math.abs(getBond(x, y)) - 3) / 4)))(k.split('|'))),
     couple: k => couple(k),
   };
+}
+
+// ── a breather inside a long heavy run (stage 5) ──
+const THREAD_START = new Set(['plan', 'other', 'target', 'decoy']);
+const MOVABLE = new Set(['kit', 'fun', 'comedy', 'kindred', 'friendship', 'showmance', 'arc', 'challenge']);
+export function breathe(items, events, winOf, chalTalk = () => false) {
+  const out = [...items];
+  for (let pass = 0; pass < 2; pass++) {
+    const tone = out.map(it => toneOf(it, events));
+    let best = 0, start = -1;
+    for (let i = 0, run = 0; i < out.length; i++) { run = tone[i] === 'H' ? run + 1 : 0; if (run > best) { best = run; start = i - run + 1; } }
+    if (best < 5) break;
+    const end = start + best;   // the run is out[start .. end-1]
+    // where it can open: at a new thread (or where the window changes), not in the first two or last two scenes
+    const opens = [];
+    for (let k = start + 2; k <= end - 2; k++) {
+      const it = out[k];
+      const newThread = it.storyType === 'vote' ? THREAD_START.has(it.step) : true;
+      if (newThread || winOf(out[k]) !== winOf(out[k - 1])) opens.push(k);
+    }
+    if (!opens.length) break;
+    const mid = start + best / 2;
+    opens.sort((x, y) => Math.abs(x - mid) - Math.abs(y - mid));
+    // what can move: a light written scene from earlier in the stretch, not the challenge talk, not part of the vote,
+    // from a story kind that does not depend on its hour (a kit, a game, friends, a flirt); the nearest one first
+    let moved = false;
+    for (const k of opens) {
+      const win = winOf(out[k]);
+      const busy = new Set(out.filter(x => winOf(x) === win).map(x => x.scene?.spot?.id).filter(Boolean));
+      for (let j = start - 1; j >= 0 && !moved; j--) {
+        const it = out[j];
+        if (tone[j] !== 'L' || !it?.story || !it.scene?.spot?.id || chalTalk(it) || !MOVABLE.has(it.storyType) || it.storyType === 'vote') continue;
+        if (/^(story\.(firstday|morning|chal)|long\.crowd\.(won|lost))/.test(it.kind || '')) continue;
+        if (busy.has(it.scene.spot.id)) continue;
+        const moving = { ...it, scene: { ...it.scene, spot: { ...it.scene.spot, window: win } } };
+        out.splice(j, 1);
+        out.splice(k - 1, 0, moving);   // (k shifted down by one when j < k)
+        moved = true;
+      }
+      if (moved) break;
+    }
+    if (!moved) break;
+  }
+  return out;
 }
 
 // ── scenes that run into each other ──
@@ -2372,7 +2443,7 @@ export function airTdEpisode(ep) {
           // (one place kept for what comes after the edit: somebody nobody has heard from yet, a defence's setup)
           : { target: B.target - 1, ceiling: B.ceiling - 1 };
         const turns = phase === 'pre' ? { turnTarget: Math.round(B.turnTarget / 2), turnCeiling: Math.round(B.turnCeiling / 2) } : B;
-        const sel = selectScenes(list, events, dayUsed, limit, turns, editOn ? look : null);
+        const sel = selectScenes(list, events, dayUsed, limit, turns, editOn ? look : null, editOn && !globalThis.__tdNoRhythm);
         for (const e of sel.drop) { discard(e.item); discard(e.item.lines); }
         for (const e of sel.keep) { commit(e.item); commit(e.item.lines); }
         list.splice(0, list.length, ...sel.keep);
@@ -2437,6 +2508,7 @@ export function airTdEpisode(ep) {
       });
     }
     // the refs that were added late go back into the camp's own order
+    const editOn0 = (seasonConfig?.tdEdit || 'full') !== 'off';
     for (const phase of ['pre', 'post']) {
       const VOTE_AT = { other: 2e6, plan: 2.1e6, cover: 2.15e6, swing: 2.2e6, doubt: 2.25e6, decoy: 2.28e6, target: 2.3e6 };
       // the rest of the written scenes keep to the clock of the day: the challenge talk of the afternoon, then the
@@ -2462,6 +2534,10 @@ export function airTdEpisode(ep) {
       const at = it => (/^(story\.(firstday|morning|chal)|long\.crowd\.(won|lost))/.test(it.kind || '') ? -1 : chalTalk(it) ? -0.5 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5)
         : it.storyType === 'vote' ? (VOTE_AT[it.step] ?? 1.5e6) : it.ref != null ? it.ref : 1e6);
       out[phase].sort((x, y) => rank(x) - rank(y) || at(x) - at(y));
+      // the rhythm of the stretch (stage 5): a run of five heavy scenes or more gets a light one from earlier the same
+      // evening cut into it, at a thread's start (before a plan, another plan, the target's or a decoy's scene; never
+      // between a plan and its swing or its doubt), staged in the window it now airs in and at a spot nobody else uses then
+      if (editOn0 && !globalThis.__tdNoRhythm) out[phase] = breathe(out[phase], evs0, winOf, chalTalk);
       // one stretch of the day, not a stack of cut-off scenes (the user: "do we have conversation when
       // people jump in"): scenes that share a person run on from each other at the same spot
       out[phase] = chainScenes(ep, camp, phase, out[phase], () => n++);

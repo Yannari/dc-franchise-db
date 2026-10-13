@@ -1,0 +1,192 @@
+{
+  "postDay1": {
+    "fresh": 1924,
+    "pairs": 9997
+  },
+  "peaks": {
+    "person": {
+      "run": "world-tour_enabled_coaches_2026",
+      "episodes": [
+        12,
+        13,
+        14
+      ],
+      "speakers": 7,
+      "name": "Bowie",
+      "share": 0.3308550185873606
+    },
+    "pair": {
+      "run": "survival-island_disabled_coaches_2026",
+      "episodes": [
+        13,
+        14,
+        15
+      ],
+      "speakers": 6,
+      "name": "Alejandro|Duncan",
+      "share": 0.3235294117647059
+    },
+    "earlyPerson": {
+      "run": "film-lot_enabled_no-coaches_1729",
+      "episodes": [
+        5,
+        6,
+        7
+      ],
+      "speakers": 12,
+      "name": "Owen",
+      "share": 0.15177065767284992
+    },
+    "earlyPair": {
+      "run": "survival-island_enabled_no-coaches_2026",
+      "episodes": [
+        5,
+        6,
+        7
+      ],
+      "speakers": 12,
+      "name": "Gabby|Gwen",
+      "share": 0.22058823529411764
+    }
+  },
+  "opportunities": {
+    "follow-up:aired": 132,
+    "witness-after:aired": 172,
+    "turn:aired": 149,
+    "witness-after:writer-no-scene": 12,
+    "follow-up:offered-then-cut": 6,
+    "witness-after:offered-then-cut": 10
+  },
+  "rawRomanceEnabled": {
+    "aired": 153,
+    "same-storyline": 58,
+    "offered-then-cut": 21,
+    "local-person-cap": 109,
+    "not-in-main-pool": 82,
+    "selected-not-rendered": 25,
+    "main-cap": 11,
+    "day-one-filter": 5
+  },
+  "romanceDisabledAired": {
+    "long.romance.moment": 22,
+    "romance.night": 6,
+    "long.romance.night": 8,
+    "long.romance.flirt": 32
+  },
+  "constructedCuts": {
+    "camp-game": 311,
+    "opener": 545,
+    "challenge-chat": 223,
+    "kit": 955,
+    "confessional": 294,
+    "running-gag": 99,
+    "vote": 126,
+    "showmance": 18,
+    "bottom": 85,
+    "alliance": 77,
+    "engine": 95,
+    "friendship": 92,
+    "quick-cut": 40,
+    "rivalry": 39,
+    "idol": 22,
+    "scheme": 18,
+    "coach": 20,
+    "follow-up": 6,
+    "witness-after": 10,
+    "underdog": 11,
+    "arc": 23,
+    "mentor": 2
+  },
+  "byVenue": {
+    "hosted-camp": {
+      "scenes": {
+        "n": 168,
+        "min": 9,
+        "median": 17,
+        "p90": 19,
+        "max": 21,
+        "mean": 16.49404761904762
+      },
+      "spoken": {
+        "n": 168,
+        "min": 34,
+        "median": 88,
+        "p90": 108,
+        "max": 125,
+        "mean": 87.82738095238095
+      }
+    },
+    "survival-island": {
+      "scenes": {
+        "n": 168,
+        "min": 9,
+        "median": 17,
+        "p90": 18,
+        "max": 20,
+        "mean": 16.202380952380953
+      },
+      "spoken": {
+        "n": 168,
+        "min": 42,
+        "median": 87,
+        "p90": 112,
+        "max": 137,
+        "mean": 87.78571428571429
+      }
+    },
+    "film-lot": {
+      "scenes": {
+        "n": 168,
+        "min": 10,
+        "median": 17,
+        "p90": 18,
+        "max": 20,
+        "mean": 16.125
+      },
+      "spoken": {
+        "n": 168,
+        "min": 46,
+        "median": 86,
+        "p90": 108,
+        "max": 140,
+        "mean": 86.19642857142857
+      }
+    },
+    "carnival": {
+      "scenes": {
+        "n": 168,
+        "min": 9,
+        "median": 17,
+        "p90": 18,
+        "max": 21,
+        "mean": 15.958333333333334
+      },
+      "spoken": {
+        "n": 168,
+        "min": 41,
+        "median": 86,
+        "p90": 108,
+        "max": 134,
+        "mean": 85.23214285714286
+      }
+    },
+    "world-tour": {
+      "scenes": {
+        "n": 168,
+        "min": 7,
+        "median": 17,
+        "p90": 18,
+        "max": 20,
+        "mean": 15.880952380952381
+      },
+      "spoken": {
+        "n": 168,
+        "min": 33,
+        "median": 86,
+        "p90": 108,
+        "max": 135,
+        "mean": 84.82738095238095
+      }
+    }
+  }
+}

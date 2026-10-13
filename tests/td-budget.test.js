@@ -7,7 +7,7 @@
 // ceiling; colour fills to the target and stops; nothing airs twice; and a proposal that does not air gives back
 // what it claimed.
 import { describe, it, expect } from 'vitest';
-import { selectScenes, airtimeScore } from '../js/td/story/director.js';
+import { selectScenes, airtimeScore, toneOf, breathe } from '../js/td/story/director.js';
 import { onCommit, onDiscard, commit, discard, pending } from '../js/td/story/commit.js';
 import { parseDirectorRow } from '../js/td/story/director-debug.js';
 
@@ -165,5 +165,56 @@ describe('who gets the last places (airtime)', () => {
   it('still prefers the system\'s own order between two equal candidates', () => {
     const a = scene('storyline', 'story', { players: ['Ann', 'Bea'] }), b = scene('storyline', 'story', { players: ['Cal', 'Dee'] });
     expect(selectScenes([a, b], [], { scenes: 0, turns: 0 }, one, BIG, look()).keep).toEqual([a]);
+  });
+});
+
+// Stage 5: rhythm. Measured on the stage-4 matrix (2026-10-13): 426 of 1,680 stretches of a day ran five heavy scenes
+// or more in a row, nearly all of them the vote block at the end of a tribal night, and a merge night could run twelve.
+describe('rhythm: a breather in a long run of the game', () => {
+  const vote = (step, who, win = 'scramble', spot = `s${id}`) => ({ story: true, storyType: 'vote', step, kind: `story.vote.${step}.x`, players: who, lineId: `V${id++}`,
+    lines: [{ kind: 'say', by: who[0], text: 'x' }], scene: { who: { a: who[0], b: who[1] }, spot: { id: spot, window: win } } });
+  const kit = (who, win = 'evening', spot = `k${id}`) => ({ story: true, storyType: 'kit', kind: 'kit.life', players: who, lineId: `K${id++}`,
+    lines: [{ kind: 'say', by: who[0], text: 'x' }], scene: { who: { a: who[0], b: who[1] }, spot: { id: spot, window: win } } });
+  const winOf = it => it.scene?.spot?.window;
+
+  it('knows the game from a breather', () => {
+    expect(toneOf(vote('plan', ['A', 'B']))).toBe('H');
+    expect(toneOf(kit(['A', 'B']))).toBe('L');
+    expect(toneOf({ story: true, kind: 'kit.clash', storyType: 'kit' })).toBe('H');
+    expect(toneOf({ ref: 0 }, [{ scene: { kind: 'friend.goof' } }])).toBe('L');
+  });
+
+  it('cuts a light scene from earlier in the evening into the middle of the vote block, at a thread\'s start', () => {
+    const k = kit(['Cal', 'Dee']);
+    const block = [vote('other', ['A', 'B']), vote('other', ['C', 'D']), vote('plan', ['E', 'F']), vote('swing', ['E', 'G']), vote('doubt', ['H']), vote('target', ['I', 'J'], 'before-tribal'), vote('decoy', ['K', 'L'], 'before-tribal')];
+    const out = breathe([k, ...block], [], winOf);
+    const at = out.findIndex(x => x.lineId === k.lineId);
+    expect(at).toBeGreaterThan(1);
+    // never between a plan and its swing or doubt
+    expect(['plan', 'other', 'target', 'decoy']).toContain(out[at + 1].step);
+    // staged in the window it now airs in
+    expect(out[at].scene.spot.window).toBe(out[at + 1].scene.spot.window);
+    // ...and nothing else moved: the vote keeps its order
+    expect(out.filter(x => x.storyType === 'vote').map(x => x.lineId)).toEqual(block.map(x => x.lineId));
+  });
+
+  it('leaves a short run alone, and never stages two scenes in one spot at one time', () => {
+    const k = kit(['Cal', 'Dee']);
+    const short = [k, vote('other', ['A', 'B']), vote('plan', ['C', 'D']), vote('swing', ['C', 'E'])];
+    expect(breathe(short, [], winOf).map(x => x.lineId)).toEqual(short.map(x => x.lineId));
+    const taken = kit(['Cal', 'Dee'], 'evening', 'cabin');
+    const block = [vote('other', ['A', 'B'], 'scramble', 'cabin'), vote('other', ['C', 'D'], 'scramble', 'cabin'), vote('plan', ['E', 'F'], 'scramble', 'cabin'), vote('swing', ['E', 'G'], 'scramble', 'cabin'), vote('plan', ['H', 'I'], 'scramble', 'cabin'), vote('target', ['J', 'K'], 'scramble', 'cabin')];
+    expect(breathe([taken, ...block], [], winOf)[0]).toBe(taken);
+  });
+
+  it('gives a stretch that is all game the best light scene the budget dropped', () => {
+    const heavy = Array.from({ length: 6 }, (_, i) => ({ at: i, src: 'vote', tier: 'must', extra: false, item: vote('plan', [`P${i}`, `Q${i}`]) }));
+    const light = { at: 9, src: 'kit', tier: 'colour', extra: false, item: kit(['Cal', 'Dee']) };
+    const sel = selectScenes([...heavy, light], [], { scenes: 10, turns: 0 }, { target: 16, ceiling: 20 }, BIG, null, true);
+    expect(sel.keep).toContain(light);
+    expect(parseDirectorRow(sel.log[6])).toMatchObject({ aired: true, reason: 'breather' });
+    // ...but not past the ceiling, and not without the rhythm switched on
+    expect(selectScenes([...heavy, light], [], { scenes: 14, turns: 0 }, { target: 16, ceiling: 20 }, BIG, null, true).keep).not.toContain(light);
+    expect(selectScenes([...heavy, light], [], { scenes: 10, turns: 0 }, { target: 16, ceiling: 20 }, BIG).keep).not.toContain(light);
   });
 });

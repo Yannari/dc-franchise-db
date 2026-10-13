@@ -29,6 +29,19 @@ import { bedFor, playStep } from './sound.js';
 import { titleScreen } from './titles.js';
 import { seasonId } from '../shows.js';
 import { liveGL } from '../vp-td-ep/glplate.js';
+import { conversationsOf, nextConv, houseMapHtml, houseFeedHtml, HM_CSS } from './housemap.js';
+
+// House Life plays as the house map by default (the user, 2026-10-13: "start the house map");
+// the linear segment is one click away and remembered per viewer
+const mapOn = () => { try { return localStorage.getItem('bb-map') !== 'linear'; } catch { return true; } };
+const newMap = S => {
+  const convs = S.kind === 'houselife' && mapOn() ? conversationsOf(S) : [];
+  return convs.length > 1 ? { convs, watched: new Set(), mode: 'map', window: null, zone: null, cur: null, end: null } : null;
+};
+const mapHtml = (uid, R) => {
+  const S = R.screens[R.si];
+  return R.map.mode === 'feed' ? houseFeedHtml(uid, S, R.map, R.map.zone) : houseMapHtml(uid, S, R.map);
+};
 
 const reg = () => (typeof window !== 'undefined' ? (window._bbx ||= {}) : (globalThis._bbx ||= {}));
 const SHELL_CSS = `
@@ -196,7 +209,8 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
       return;
     }
     const uid = `bbx${esc(row.num)}-${si}`;
-    reg()[uid] = { screens: steps, si, idx: -1, o, auto: false, timer: null };
+    reg()[uid] = { screens: steps, si, idx: -1, o, auto: false, timer: null, map: newMap(S) };
+    const R0 = reg()[uid];
     // a House Life segment holds its stretch's classic House Life screens (and takes the first one's id)
     const feed = S.kind === 'houselife' ? (houseOf[keyOf[si]] || []).splice(0) : [];
     // the stepped screen sets the music, not the record underneath it
@@ -206,8 +220,8 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     out.push({
       id: feed[0]?.id || ids[si],
       label: S.label || S.title,
-      html: `<div class="bbx" data-uid="${uid}" data-ambient="${bedFor(S)}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${BBX_PX_CSS}${BBX_DUO_CSS}${BBX_CAMP_CSS}${BBX_WILD_CSS}${BBX_SPOWER_CSS}${BBX_CAPSULE_CSS}${BBX_INTERRO_CSS}${BBX_WHACK_CSS}${SHELL_CSS}</style>
-  <div class="bbx-stage stage" id="bbx-st-${uid}" onclick="bbxNext('${uid}')" title="Click for the next line">${stageHtml(steps, si, -1, false, o).html}</div>
+      html: `<div class="bbx" data-uid="${uid}" data-ambient="${bedFor(S)}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${BBX_PX_CSS}${BBX_DUO_CSS}${BBX_CAMP_CSS}${BBX_WILD_CSS}${BBX_SPOWER_CSS}${BBX_CAPSULE_CSS}${BBX_INTERRO_CSS}${BBX_WHACK_CSS}${HM_CSS}${SHELL_CSS}</style>
+  <div class="bbx-stage stage" id="bbx-st-${uid}" onclick="bbxNext('${uid}')" title="Click for the next line">${R0.map ? mapHtml(uid, R0) : stageHtml(steps, si, -1, false, o).html}</div>
   <img alt="" hidden src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" onload="bbxLive('${uid}')">
   <div class="bbx-ctrl">
     <button type="button" class="bbx-btn" onclick="bbxBack('${uid}')">◀ Back</button>
@@ -218,6 +232,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     <button type="button" class="bbx-btn" onclick="bbxTv()">TV mode</button>
     <button type="button" class="bbx-btn bbx-voices ${voicesOn() ? 'on' : ''}" onclick="bbxVoices()" title="The houseguests' voices, and the room sound when there is no music">Voices</button>
     <button type="button" class="bbx-btn" onclick="bbxSwitchViewer('classic')" title="Back to the classic screens">Classic</button>
+    ${S.kind === 'houselife' ? `<button type="button" class="bbx-btn ${mapOn() ? 'on' : ''}" onclick="bbxMapMode()" title="House Life as the house map you explore, or as one segment in story order">${mapOn() ? 'Linear view' : 'House map'}</button>` : ''}
     <button type="button" class="bbx-btn" onclick="bbxHouseLife()" title="House life as one segment per stretch, or one scene per screen">${houseLifeMode() === 'scenes' ? 'House Life view' : 'Scenes view'}</button>
     <span class="bbx-count" id="bbx-count-${uid}">0 / ${S.steps.length}</span>
     <input class="bbx-jump" type="number" min="1" max="${S.steps.length}" placeholder="Go to" title="Jump to a step: type its number and press Enter" onkeydown="if(event.key==='Enter')bbxJump('${uid}', this.value)">
@@ -274,7 +289,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
 function sync(uid) {
   const S = reg()[uid];
   const root = typeof document !== 'undefined' ? document.querySelector(`.bbx[data-uid="${uid}"]`) : null;
-  if (S && root && root.dataset.idx == null) { S.idx = -1; stopAuto(S); }
+  if (S && root && root.dataset.idx == null) { S.idx = -1; stopAuto(S); if (S.map) S.map = newMap(S.screens[S.si]); }
   return S;
 }
 function paint(uid, fresh) {
@@ -285,6 +300,14 @@ function paint(uid, fresh) {
   const el = document.getElementById(`bbx-st-${uid}`);
   if (!el) return;
   clearInterval(R.typing);
+  // the house map and a room's feed are drawn instead of the stage
+  if (R.map && R.map.mode !== 'play') {
+    el.innerHTML = mapHtml(uid, R);
+    el.className = 'bbx-stage stage onmap';
+    const count = document.getElementById(`bbx-count-${uid}`);
+    if (count) count.textContent = `${R.map.watched.size} / ${R.map.convs.length} feeds`;
+    return;
+  }
   const out = stageHtml(R.screens, R.si, R.idx, fresh, R.o);
   el.innerHTML = out.html;
   el.className = `bbx-stage ${out.cls}`;
@@ -335,10 +358,39 @@ export function bbxLive(uid) {
   const el = typeof document !== 'undefined' && document.getElementById(`bbx-st-${uid}`);
   if (el) liveGL(el);
 }
+// ── the house map: a conversation at a time, in any order the clock allows ──
+function mapPlay(uid, R, c) {
+  Object.assign(R.map, { mode: 'play', cur: c.k, end: c.to });
+  R.idx = c.from; paint(uid, true);
+}
+function mapDone(uid, R) {
+  if (R.map.cur != null) R.map.watched.add(R.map.cur);
+  Object.assign(R.map, { mode: 'map', cur: null, end: null, window: null });
+  paint(uid, false);
+}
+export function bbxMapPlay(uid, k) {
+  const R = sync(uid); if (!R?.map) return;
+  const c = R.map.convs[k]; if (c) mapPlay(uid, R, c);
+}
+export function bbxMapRoom(uid, zone) { const R = sync(uid); if (!R?.map) return; Object.assign(R.map, { mode: 'feed', zone }); paint(uid, false); }
+export function bbxMapBack(uid) { const R = sync(uid); if (!R?.map) return; Object.assign(R.map, { mode: 'map', zone: null }); paint(uid, false); }
+export function bbxMapWindow(uid, w) { const R = sync(uid); if (!R?.map) return; R.map.window = w; paint(uid, false); }
+export function bbxMapMode() {
+  try { localStorage.setItem('bb-map', mapOn() ? 'linear' : 'map'); } catch { /* per-viewer convenience */ }
+  bbxHouseLife(true);
+}
 export function bbxNext(uid) {
   const R = sync(uid); if (!R) return;
   const S = R.screens[R.si];
-  if (R.idx >= S.steps.length - 1) {
+  if (R.map) {
+    // inside a conversation: its next line, and at its last line back to the house
+    if (R.map.mode === 'play' && R.idx < R.map.end) { R.idx++; paint(uid, true); return; }
+    if (R.map.mode === 'play' && R.map.cur != null) { mapDone(uid, R); return; }
+    // on the house: the next conversation in story order whose time has come
+    const c = R.map.mode !== 'play' ? nextConv(R.map.convs, R.map.watched) : null;
+    if (c) { mapPlay(uid, R, c); return; }
+  }
+  if (R.idx >= S.steps.length - 1 || (R.map && R.map.mode !== 'play')) {
     const wasAuto = R.auto; stopAuto(R);
     if (typeof window !== 'undefined' && typeof window.vpNext === 'function') {
       window.vpNext();
@@ -348,21 +400,40 @@ export function bbxNext(uid) {
   }
   R.idx++; paint(uid, true);
 }
-export function bbxBack(uid) { const R = sync(uid); if (!R || R.idx < 0) return; stopAuto(R); R.idx--; paint(uid, false); }
-export function bbxAll(uid) { const R = sync(uid); if (!R) return; stopAuto(R); R.idx = R.screens[R.si].steps.length - 1; paint(uid, false); }
+export function bbxBack(uid) {
+  const R = sync(uid); if (!R || R.idx < 0) return; stopAuto(R);
+  // inside a conversation, Back never leaves it: from its first line it returns to the house
+  if (R.map?.mode === 'play' && R.map.cur != null && R.idx <= R.map.convs[R.map.cur].from) { Object.assign(R.map, { mode: 'map', cur: null, end: null }); paint(uid, false); return; }
+  if (R.map && R.map.mode !== 'play') return;
+  R.idx--; paint(uid, false);
+}
+// Reveal all, Go to and a script line keep their linear meaning: they play from that step
+const mapLinear = (R, idx) => {
+  if (!R.map) return;
+  const c = R.map.convs.find(x => idx >= x.from && idx <= x.to);
+  Object.assign(R.map, { mode: 'play', cur: c ? c.k : null, end: c ? c.to : R.screens[R.si].steps.length - 1 });
+};
+export function bbxAll(uid) {
+  const R = sync(uid); if (!R) return; stopAuto(R);
+  R.idx = R.screens[R.si].steps.length - 1;
+  if (R.map) { R.map.convs.forEach(c => R.map.watched.add(c.k)); Object.assign(R.map, { mode: 'play', cur: null, end: R.idx }); }
+  paint(uid, false);
+}
 /** Jump to step n (1-based) of this screen, as if it had just been reached. */
 export function bbxJump(uid, n) {
   const R = sync(uid); if (!R) return;
   const S = R.screens[R.si];
   const k = Math.max(0, Math.min(S.steps.length, Math.round(Number(n) || 0)));
-  stopAuto(R); R.idx = k - 1; paint(uid, k > 0);
+  stopAuto(R); R.idx = k - 1;
+  if (R.map) { if (k > 0) mapLinear(R, R.idx); else Object.assign(R.map, { mode: 'map', cur: null, end: null }); }
+  paint(uid, k > 0);
 }
 /** A line of the script, clicked: jump to it. */
 export function bbxJumpFromLine(el, i) {
   const root = el.closest('.bbx[data-uid]');
   if (root) bbxJump(root.dataset.uid, i + 1);
 }
-export function bbxReset(uid) { const R = sync(uid); if (!R) return; stopAuto(R); R.idx = -1; paint(uid, false); }
+export function bbxReset(uid) { const R = sync(uid); if (!R) return; stopAuto(R); R.idx = -1; if (R.map) R.map = newMap(R.screens[R.si]); paint(uid, false); }
 // a reveal holds the screen longer: the room needs a beat with the name
 const holdFor = st => Math.min(9000, 1600 + String(st?.t || '').length * 40) + (st?.big ? 2600 : 0) + (st?.tense ? 1200 : 0) + (st?.scene?.slate ? 600 : 0);
 function stopAuto(R) { R.auto = false; clearTimeout(R.timer); }
@@ -389,8 +460,8 @@ export function bbxTv() {
 }
 /** Switch between the stepped viewer and the classic screens, and redraw this week. */
 /** Flip house life between one segment per stretch and one scene per screen, and redraw. */
-export function bbxHouseLife() {
-  try { localStorage.setItem('bb-houselife', houseLifeMode() === 'scenes' ? 'segments' : 'scenes'); } catch { /* per-viewer convenience */ }
+export function bbxHouseLife(keep = false) {
+  if (keep !== true) try { localStorage.setItem('bb-houselife', houseLifeMode() === 'scenes' ? 'segments' : 'scenes'); } catch { /* per-viewer convenience */ }
   try {
     const ep = window.vpEpNum ?? window._vpEpNum;
     if (typeof window.openVisualPlayer === 'function' && ep != null) window.openVisualPlayer(ep);
@@ -419,7 +490,7 @@ export function bbxSwitchViewer(which) {
     if (i > 0 && typeof window.vpGoTo === 'function') window.vpGoTo(i);
   } catch { location.reload(); }
 }
-if (typeof window !== 'undefined') Object.assign(window, { bbxLive, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
+if (typeof window !== 'undefined') Object.assign(window, { bbxLive, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
 // Closing the Viewing Party only hides it: stop every Auto run and the line typing out,
 // or Auto keeps clicking through the week (and its music) behind a closed window.
 if (typeof document !== 'undefined') document.addEventListener('vp:close', () => {

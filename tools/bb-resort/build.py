@@ -171,7 +171,7 @@ def build(pid, P, theme):
     if not os.path.exists(src):
         return None
     d = os.path.join(OUT, theme); os.makedirs(d, exist_ok=True)
-    day = None if P.get('nightonly') else sharpen_4k(src, P.get('anchor', 0.5))
+    day = None if P.get('nightonly') else sharpen_4k(src, P.get('anchor', 0.5), P.get('box'))
     info = {}
     if day is not None:
         save(os.path.join(d, f'{pid}-day-hd.webp'), day, 86)
@@ -187,7 +187,7 @@ def build(pid, P, theme):
     if nsrc:
         night = sharpen_4k(os.path.join(SRC, nsrc + '.webp'), P.get('anchor', 0.5))
     elif P.get('nightonly'):
-        night = sharpen_4k(src, P.get('anchor', 0.5))
+        night = sharpen_4k(src, P.get('anchor', 0.5), P.get('box'))
     elif day is not None:
         night = night_indoor(day, P) if P.get('indoor') else night_outdoor(day, P, sum(map(ord, pid)))
     else:

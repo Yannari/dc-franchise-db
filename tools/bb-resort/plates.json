@@ -153,6 +153,7 @@
  "beach-volcano": {"room": "backyard", "sets": ["juryhouse"], "use": ["house"]},
  "beach-arch": {"room": "backyard", "sets": ["juryhouse"], "use": ["house"]},
 
+ "map-house": {"room": "living-room", "sets": ["map"], "use": [], "nonight": true, "noleaf": true, "nosky": true, "box": [88, 84, 1600, 529]},
  "front": {"room": "living-room", "sets": ["door", "premiere"], "use": [], "nightsrc": "front-night"},
  "memory-wall": {"room": "living-room", "sets": ["wall"], "use": [], "indoor": true},
 

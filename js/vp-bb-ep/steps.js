@@ -2955,7 +2955,9 @@ function storyLifeScreen(scenes, ctx, n) {
     const meal = set === 'kitchen' && /(dinner|breakfast|lunch|at the table|eating)/i.test(said);
     const plate = meal ? pickPlate('dining', sc.id, said, 'meal') : pickPlate(set, sc.id, said);
     const scene = { set: meal && plate ? 'dining' : set, room: label, cam: CAM[set], kicker: `Cam ${String(CAM[set]).padStart(2, '0')} · ${label}`,
-      cast: sc.cast.map((p, i) => [p, xs[i]]), mood: sc.mood || 'house', time: sc._clock, slate: true, ...(plate ? { plate } : {}), ...(sc.why?.length ? { why: sc.why } : {}) };
+      cast: sc.cast.map((p, i) => [p, xs[i]]), mood: sc.mood || 'house', time: sc._clock, slate: true, ...(plate ? { plate } : {}), ...(sc.why?.length ? { why: sc.why } : {}),
+      // what the house map (housemap.js) needs: which scene this is, and whether the week turns on it
+      sid: sc.id, type: sc.type, step: sc.step };
     delete sc._clock;
     if ((MOOD_RANK[scene.mood] || 0) > (MOOD_RANK[mood] || 0)) mood = scene.mood;
     const lines = (sc.lines || []).map(l => ({ k: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, t: l.text, ...(l.bg ? { bg: true } : {}) }));
@@ -2993,7 +2995,7 @@ function storyLifeScreen(scenes, ctx, n) {
     id: `bb-hl-${n}`, kind: 'houselife', anchor: ctx.anchor, day: ctx.day, time: ACT_TIME.house,
     title: `House Life · Day ${ctx.day}`, label: 'House Life', sub: `Day ${ctx.day} in the house`,
     set: first.set || 'ceremony', room: first.room || 'Living Room', cam: first.cam || 4, kicker: first.kicker || 'Cam 04 · Living room',
-    cast: first.cast || [], mood, steps, storyScenes: scenes.map(sc => sc.id),
+    cast: first.cast || [], mood, steps, storyScenes: scenes.map(sc => sc.id), house: [...(ctx.house || [])],
   };
 }
 

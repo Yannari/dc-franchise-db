@@ -37,3 +37,11 @@ bucket_name = "dc-gallery"
 [[r2_buckets]]
 binding = "AUDIO"
 bucket_name = "dc-audio"
+
+# The simulator's saves (js/cloud-backup.js). Private: every route needs
+# STUDIO_TOKEN, reads included. They lived only in the browser until a Firefox
+# refresh lost them on 2026-10-13.
+# Created with: npx wrangler r2 bucket create dc-saves
+[[r2_buckets]]
+binding = "SAVES"
+bucket_name = "dc-saves"

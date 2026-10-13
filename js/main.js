@@ -188,6 +188,7 @@ import * as vpFinaleMod from './vp-finale.js';
 import * as vpUiMod from './vp-ui.js';
 import * as vpCoachesMod from './vp-coaches.js';
 import * as savestateMod from './savestate.js';
+import * as cloudBackupMod from './cloud-backup.js';
 import * as statsExportMod from './stats-export.js';
 import * as audioMod from './audio.js';
 import * as recapMod from './recap.js';
@@ -285,6 +286,7 @@ const extractedModules = [
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
   castUiMod, tiesMod, castRoomMod, studioMod, quickSetupMod, trArrivalMod, trConclaveMod, trRoundTableMod, trColdOpenMod, trHouseStatusMod, trMissionMod, trArmouryMod, trRecruitmentMod, trEndgameMod, trCastleDayMod, trCastleStageMod, trTableStageMod, trSelectionStageMod, trArrivalStageMod, trSuspicionStageMod, trMissionBespokeStageMod, trSelectionMod, trSuspicionMod, trConfessionalsMod, trDebugMod, trRunMod, drRunMod, pmRunMod, ciRunMod, ciCastUiMod, pmVpMod, pmCastUiMod, drJudgesUiMod, vpDrRevealMod, vpDrScreensMod, vpDrChartMod, vpDrWerkMod, vpDrArrivalsMod, vpDrChalMod, vpDrStageMod, vpDrResultsMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod, vpCoachesMod,
   savestateMod,
+  cloudBackupMod,
   statsExportMod,
   audioMod,
   recapMod,
@@ -413,6 +415,9 @@ async function init() {
   renderPresetList();
   await _migrateSeasonSavesFromLS();
   renderSeasonSaveList();
+  // Every save also goes to the cloud (js/cloud-backup.js). Starts quietly a
+  // few seconds in, after the page is up.
+  cloudBackupMod.startCloudBackup({ openDb: savestateMod._openDB });
   // Restore spoiler-free state BEFORE rendering tabs (so episode history respects it)
   const _sfSaved2 = localStorage.getItem('simulator_spoilerFree') === 'true';
   const _sfCb2 = document.getElementById('cfg-spoiler-free');

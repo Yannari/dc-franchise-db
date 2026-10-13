@@ -368,6 +368,10 @@ export default {
       if (url.pathname.startsWith('/audio/') || url.pathname.startsWith('/api/audio/')) {
         return await audioRoute(request, env, url, cors);
       }
+      // ── THE SIMULATOR'S SAVES, OUT OF A PRIVATE BUCKET (js/cloud-backup.js) ──
+      if (url.pathname.startsWith('/api/saves/')) {
+        return await savesRoute(request, env, url, cors);
+      }
       // ── VOICE ACTING (js/vp-td-ep/voicing.js) ──────────────────────────
       if (['/api/voice/render', '/api/voice/list', '/api/voice/voices', '/api/voice/clear'].includes(url.pathname)) {
         return await voiceRoute(request, env, url, cors);
@@ -2623,6 +2627,102 @@ async function audioRoute(request, env, url, cors) {
     return json({ ok: true, key, size: body.byteLength }, 200, cors);
   }
   return json({ ok: false, error: 'method not allowed' }, 405, cors);
+}
+
+// ── THE SIMULATOR'S SAVES ─────────────────────────────────────────────────
+// They lived only in the browser. On 2026-10-13 a Firefox update refreshed the
+// profile, the move of the old one stopped partway through the alphabet, and
+// yannari.github.io was past where it stopped: ten seasons and the Legacy
+// ledger, back only because Windows had a restore point from the day before.
+// js/cloud-backup.js mirrors every save here now.
+//
+//   live/<site>/<store>/<key>.json.gz   the current copy of one record
+//   prev/<same path>                    the copy it replaced (one step back)
+//   trash/<same path>                   a deleted record; nothing is destroyed
+//   snap/<site>/<YYYY-MM-DD>.json.gz    a daily snapshot of everything else
+//
+// Private on every method, reads included: these are the user's own seasons.
+// The key comes in ?key= so a season name's own % signs survive the URL.
+const SAVE_KEY = /^(live|prev|trash|snap)\/[A-Za-z0-9._-]+(\/[A-Za-z0-9%._~!*'()-]+){1,2}$/;
+const SAVE_MAX = 95 * 1024 * 1024;
+const SNAP_KEEP = 14;
+
+async function savesRoute(request, env, url, cors) {
+  if (!env.SAVES) return json({ ok: false, error: 'the saves bucket is not bound (see wrangler.toml)' }, 503, cors);
+  const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  // Unlike the other routes, no token configured is a refusal, not an open door.
+  if (!env.STUDIO_TOKEN || auth !== env.STUDIO_TOKEN) return json({ ok: false, error: 'unauthorized' }, 401, cors);
+
+  if (request.method === 'GET' && url.pathname === '/api/saves/list') {
+    const prefix = url.searchParams.get('prefix') || '';
+    if (!/^(live|prev|trash|snap)\/[A-Za-z0-9%._~!*'()\/-]*$/.test(prefix)) return json({ ok: false, error: 'bad prefix' }, 400, cors);
+    const out = [];
+    let cursor;
+    do {
+      const page = await env.SAVES.list({ prefix, cursor, include: ['customMetadata'] });
+      for (const o of page.objects) {
+        out.push({ key: o.key, size: o.size, uploaded: o.uploaded, sha: o.customMetadata?.sha || null, raw: Number(o.customMetadata?.raw) || null });
+      }
+      cursor = page.truncated ? page.cursor : undefined;
+    } while (cursor);
+    return json({ ok: true, objects: out }, 200, cors);
+  }
+
+  if (url.pathname !== '/api/saves/obj') return json({ ok: false, error: 'not found' }, 404, cors);
+  const key = url.searchParams.get('key') || '';
+  if (!SAVE_KEY.test(key) || key.split('/').some(s => s === '.' || s === '..')) return json({ ok: false, error: 'bad key' }, 400, cors);
+
+  if (request.method === 'GET') {
+    const obj = await env.SAVES.get(key);
+    if (!obj) return json({ ok: false, error: 'not found' }, 404, cors);
+    const h = new Headers(cors);
+    h.set('Content-Type', 'application/octet-stream');
+    h.set('Cache-Control', 'private, no-store');
+    return new Response(obj.body, { headers: h });
+  }
+
+  if (request.method === 'PUT') {
+    if (!key.startsWith('live/') && !key.startsWith('snap/')) return json({ ok: false, error: 'only live/ and snap/ are written' }, 400, cors);
+    const body = await request.arrayBuffer();
+    if (!body.byteLength) return json({ ok: false, error: 'empty body' }, 400, cors);
+    if (body.byteLength > SAVE_MAX) return json({ ok: false, error: 'too large (95 MB limit)' }, 413, cors);
+    const customMetadata = {};
+    const sha = url.searchParams.get('sha');
+    const raw = url.searchParams.get('raw');
+    if (sha && /^[a-f0-9]{64}$/.test(sha)) customMetadata.sha = sha;
+    if (raw && /^\d+$/.test(raw)) customMetadata.raw = raw;
+    // One step back: a save overwritten by a broken one can still be had.
+    if (key.startsWith('live/')) await moveSave(env, key, 'prev/' + key.slice('live/'.length), false);
+    await env.SAVES.put(key, body, { httpMetadata: { contentType: 'application/octet-stream' }, customMetadata });
+    if (key.startsWith('snap/')) {
+      const site = key.split('/')[1];
+      const page = await env.SAVES.list({ prefix: `snap/${site}/` });
+      const old = page.objects.map(o => o.key).sort().reverse().slice(SNAP_KEEP);
+      for (const k of old) await env.SAVES.delete(k);
+    }
+    return json({ ok: true, key, size: body.byteLength }, 200, cors);
+  }
+
+  if (request.method === 'DELETE') {
+    if (!key.startsWith('live/')) return json({ ok: false, error: 'only live/ is deleted' }, 400, cors);
+    // A deleted season goes to the trash, never away. Checkpoints are the one
+    // exception: a rewind deletes them by the dozen and they are rebuilt by play.
+    const isCheckpoint = /\/cp_\d+\.json\.gz$/.test(key);
+    if (isCheckpoint) await env.SAVES.delete(key);
+    else await moveSave(env, key, 'trash/' + key.slice('live/'.length), true);
+    return json({ ok: true, deleted: key }, 200, cors);
+  }
+  return json({ ok: false, error: 'method not allowed' }, 405, cors);
+}
+
+async function moveSave(env, from, to, removeSource) {
+  const obj = await env.SAVES.get(from);
+  if (!obj) return;
+  await env.SAVES.put(to, await obj.arrayBuffer(), {
+    httpMetadata: { contentType: 'application/octet-stream' },
+    customMetadata: obj.customMetadata || {},
+  });
+  if (removeSource) await env.SAVES.delete(from);
 }
 
 function corsHeaders(request, env) {

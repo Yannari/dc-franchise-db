@@ -4920,6 +4920,35 @@
     .season-menu-panel button { min-height:36px; padding:0 10px; border:1px solid transparent; background:var(--surface2); color:var(--text); text-align:left; font:700 10px var(--font-body); cursor:pointer; }
     .season-menu-panel button:hover { border-color:var(--accent); }
     .season-menu-panel button.danger { color:#f87171; }
+
+    /* ── Cloud backup (js/cloud-backup.js) ── the dot says whether saves are
+       reaching the cloud: green on, amber uploading, grey off, red failing. */
+    .cloud-backup-dot { width:7px; height:7px; border-radius:50%; background:var(--muted); flex:none; }
+    .cloud-backup-dot[data-state="ok"] { background:var(--accent); }
+    .cloud-backup-dot[data-state="syncing"] { background:var(--accent-gold); animation:cb-pulse 1.2s ease-in-out infinite; }
+    .cloud-backup-dot[data-state="error"] { background:#ef4444; box-shadow:0 0 0 3px rgba(239,68,68,.25); }
+    @keyframes cb-pulse { 50% { opacity:.35; } }
+    @media (prefers-reduced-motion: reduce) { .cloud-backup-dot[data-state="syncing"] { animation:none; } }
+    dialog.cloud-backup { margin:auto; width:min(560px, calc(100vw - 32px)); max-height:min(80vh, 760px); padding:18px 20px; border:1px solid var(--border); background:var(--surface); color:var(--text); box-shadow:0 24px 60px rgba(0,0,0,.5); font:400 13px/1.5 var(--font-body); }
+    dialog.cloud-backup::backdrop { background:rgba(4,8,14,.6); }
+    .cloud-backup h2 { margin:0; font:400 22px var(--font-display); letter-spacing:.5px; }
+    .cloud-backup h3 { margin:18px 0 6px; font-size:11px; font-weight:800; letter-spacing:.8px; text-transform:uppercase; color:var(--muted); }
+    .cloud-backup .cb-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .cloud-backup .cb-x { background:none; border:0; color:var(--muted); font-size:16px; cursor:pointer; padding:4px 8px; }
+    .cloud-backup .cb-x:hover { color:var(--text); }
+    .cloud-backup .cb-note { display:block; margin:4px 0; color:var(--muted); font-size:12px; }
+    .cloud-backup .cb-error { color:#ef4444; }
+    .cloud-backup .cb-status { margin:10px 0; padding:8px 10px; border-left:3px solid var(--muted); background:var(--surface2); }
+    .cloud-backup .cb-status[data-state="ok"] { border-color:var(--accent); }
+    .cloud-backup .cb-status[data-state="syncing"] { border-color:var(--accent-gold); }
+    .cloud-backup .cb-status[data-state="error"], .cloud-backup .cb-status[data-state="off"] { border-color:#ef4444; }
+    .cloud-backup .cb-pw label { display:block; margin:8px 0 4px; font-size:12px; color:var(--muted); }
+    .cloud-backup .cb-row { display:flex; gap:8px; align-items:center; margin:6px 0; flex-wrap:wrap; }
+    .cloud-backup .cb-row input, .cloud-backup .cb-row select { flex:1; min-width:0; }
+    .cloud-backup .cb-list { display:grid; gap:2px; max-height:260px; overflow:auto; }
+    .cloud-backup .cb-item { display:flex; align-items:center; gap:8px; padding:6px 8px; background:var(--surface2); cursor:pointer; }
+    .cloud-backup .cb-item > span:first-of-type { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .cloud-backup .cb-meta { color:var(--muted); font-size:11px; white-space:nowrap; }
     .season-menu-panel hr { width:100%; border:0; border-top:1px solid var(--border); }
     .bcast-context { display:inline-flex; align-items:center; gap:7px; }
     .bcast-phase { color:var(--muted); font:800 9px var(--font-body); letter-spacing:.7px; text-transform:uppercase; }

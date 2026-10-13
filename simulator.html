@@ -28,9 +28,10 @@
       <button class="tab-btn" onclick="showTab('franchise')">🏆 Legacy</button>
     </nav>
     <details class="season-menu" id="season-menu">
-      <summary>Season</summary>
+      <summary>Season <span id="cloud-backup-dot" class="cloud-backup-dot" aria-hidden="true"></span></summary>
       <div class="season-menu-panel">
         <button onclick="saveSeasonToStorage();document.getElementById('season-menu').removeAttribute('open')">Save season</button>
+        <button onclick="openCloudBackup();document.getElementById('season-menu').removeAttribute('open')">☁ Cloud backup</button>
         <button onclick="(window.exportSeasonJson?exportSeasonJson():alert('This page is running a cached older version of the simulator. Reload it — in Firefox or Chrome open DevTools (F12), go to Network, tick Disable cache, and reload with DevTools open.'));document.getElementById('season-menu').removeAttribute('open')">Export JSON</button>
         <button onclick="document.getElementById('import-season-file').click();document.getElementById('season-menu').removeAttribute('open')">Import JSON</button>
         <hr>
@@ -1641,6 +1642,7 @@
             <div class="divider" style="margin:8px 0"></div>
             <div class="season-controls-label">Season Save</div>
             <button class="btn btn-secondary btn-sm" onclick="saveSeasonToStorage()" style="margin-bottom:2px;width:100%">Save Season</button>
+            <button class="btn btn-secondary btn-sm" onclick="openCloudBackup()" style="margin-bottom:2px;width:100%">☁ Cloud backup</button>
             <!-- exportSeasonJson, not exportSeason: that name is the stats publish pipeline's (js/stats-export.js), which
                  main.js puts on window after cast-ui's, so this button published instead of downloading (the user, 2026-10-12:
                  "export season doesn't work ... download nothing"). The hub's Export was fixed the same way before. -->

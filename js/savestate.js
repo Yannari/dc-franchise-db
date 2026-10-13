@@ -9,6 +9,7 @@ import { _checkMoleExposure } from './camp-events.js';
 import { setFranchiseLedger, franchiseLedger, buildFranchiseMeta, META_WEIGHTS } from './franchise-meta.js';
 import { lifeSeeds } from './life-cast.js';
 import { addCoach } from './coaches.js';
+import { cloudMirror, cloudMirrorDelete } from './cloud-backup.js';
 
 // ── IndexedDB wrapper (replaces localStorage for gs + checkpoints) ──
 const DB_NAME = 'dc_franchise_db';
@@ -55,7 +56,7 @@ export function _idbPut(key, value) {
     tx.objectStore(STORE_NAME).put(value, key);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
-  })).catch(e => {
+  })).then(() => cloudMirror(STORE_NAME, key, value)).catch(e => {
     _lastStorageFailure = {
       key,
       when: Date.now(),
@@ -83,9 +84,11 @@ export function _idbDelete(key) {
     tx.objectStore(STORE_NAME).delete(key);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
-  })).catch(e => console.warn('IndexedDB delete failed:', e));
+  })).then(() => cloudMirrorDelete(STORE_NAME, key)).catch(e => console.warn('IndexedDB delete failed:', e));
 }
 
+// Not mirrored: a clear is a reset of this browser, and the cloud copy is what
+// is left to restore from when it was not meant to be.
 export function _idbClear() {
   return _openDB().then(db => new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -108,7 +111,7 @@ export function _idbLedgerPut(key, value) {
   return _openDB().then(db => new Promise((resolve) => {
     const tx = db.transaction(LEDGER_STORE, 'readwrite');
     tx.objectStore(LEDGER_STORE).put(value, key);
-    tx.oncomplete = () => resolve();
+    tx.oncomplete = () => { cloudMirror(LEDGER_STORE, key, value); resolve(); };
     tx.onerror = () => resolve();
   })).catch(() => {});
 }

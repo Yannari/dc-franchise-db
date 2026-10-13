@@ -136,6 +136,21 @@ function tribalQA(ep, { tribal, ballots, elim, ch, camp, base, ctx, nextN }) {
   const fight = aired.find(it => /^long\.(drama\.(bomb|fight|dispute|clash|explode|meltdown|dig)|blame\.loss)/.test(it?.kind || '')
     && it.scene?.who?.a && it.scene?.who?.b && tribal.includes(it.scene.who.a) && tribal.includes(it.scene.who.b));
   if (fight) add('fight', 9, { a: fight.scene.who.a, b: fight.scene.who.b }, {}, { aVoted: ballotOf(fight.scene.who.a) === fight.scene.who.b ? 'b' : 'other' });
+  // a pitch to turn on a friend that the friend heard about today (camp-events.js turnFriend, 'warned': the one asked went
+  // and told): everybody knows, so the host asks the friend, and the one who pitched it is sitting right there
+  // (the user, 2026-10-14: "the suspense, the shock at tribal")
+  const turned = aired.find(it => /pitch\.turn/.test(it?.kind || '') && it.scene?.data?.ending === 'warned');
+  if (turned) {
+    const { a: pit, b: asked, c: friend } = turned.scene.who || {};
+    if ([pit, asked, friend].every(x => x && tribal.includes(x)) && new Set([pit, asked, friend]).size === 3) add('turned', 9, { a: friend, b: pit, c: asked });
+  }
+  // a lie the cameras saw today, believed (talk.lie, plot.lie): the host asks where the trouble is, with the liar and the
+  // one it was about at the same fire; nothing said exposes it (n-tqa5.js)
+  const lie = aired.find(it => /^(long\.)?(talk|plot)\.lie/.test(it?.kind || '') && it.scene?.data?.target && ['about', 'believed'].includes(it.scene?.data?.ending));
+  if (lie) {
+    const liar = lie.scene.who?.a, told = lie.scene.who?.b, subj = lie.scene.data.target;
+    if ([liar, told, subj].every(x => x && tribal.includes(x)) && new Set([liar, told, subj]).size === 3) add('lied', 8, { a: told, b: liar, c: subj });
+  }
   // ── who is in danger tonight: everybody who is, not only the one going home ──
   // The user, 2026-10-12: "the structure spoiled who is eliminated, they always focus more on the person getting
   // the boot". Measured on 52 played tribals: the boot was one of the people asked 85% of the time against a fair
@@ -250,7 +265,9 @@ function tribalQA(ep, { tribal, ballots, elim, ch, camp, base, ctx, nextN }) {
       const imm = [].concat(ep.immunityWinner || []).find(x => tribal.includes(x) && !Object.values(openWho).includes(x)) || null;
       const lastBoot = (gs.episodeHistory || []).find(h => h.num === ep.num - 1)?.eliminated || null;
       const facts = { ...factsFor({ who: openWho, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(openWho.a), pair: true, sank: !!ch?.sank, imm: !!imm, lastBoot: !!lastBoot };
-      const w = writeStory(`tqa.open.${(ep.isMerge || gs.isMerged) ? 'merged' : 'lost'}`, 'any', { ...openWho, h: host }, { ...(ch?.sank ? { sank: ch.sank } : {}), ...(imm ? { imm } : {}), ...(lastBoot ? { lastBoot } : {}) }, facts, ctx(nextN(), 'tribal', 'soft'));
+      // (fresh only: the opener is asked every night, and a recycled one is the most noticeable repeat at the fire, read
+      // 2026-10-14; when this season has heard them all, the host goes straight to the sharp questions)
+      const w = writeStory(`tqa.open.${(ep.isMerge || gs.isMerged) ? 'merged' : 'lost'}`, 'any', { ...openWho, h: host }, { ...(ch?.sank ? { sank: ch.sank } : {}), ...(imm ? { imm } : {}), ...(lastBoot ? { lastBoot } : {}) }, facts, ctx(nextN(), 'tribal', true));
       if (w) out.push({ topic: 'open', players: Object.values(openWho), lines: w.lines });
     }
   }
@@ -642,9 +659,14 @@ export function writeExit(ep, { elim, kind, b, revealKind, base = {}, data = {},
     bVoted: b ? (wrote(b) === elim ? 'boot' : 'other') : 'none', blame: !!bl, crash: !!crash, pair: !!b };
   const d = { ...data, ...(bl ? { blame: bl } : {}) };
   const ctx0 = { ep: ep.num, camp: ep.tribalTribe || 'merge', phase: 'tribal', n, place: 'confessional', unique: 'soft' };
-  return (kind === 'shot' ? writeStory('exit2.shot', 'any', who, d, facts, ctx0)
-    : (crash && writeStory(`exit2.${kind}`, 'any', who, d, facts, ctx0)) || writeStory(`exit2.${kind}`, revealKind, who, d, facts, ctx0) || writeStory(`exit2.${kind}`, 'any', who, d, facts, ctx0))
-    || writeStory('exit', kind, { a: elim, ...(b ? { b } : {}) }, data, facts, ctx0);
+  // every exit pool with a walk this season hasn't heard first, and only then one that has (read 2026-10-14: Yul's walk
+  // down with Julia and Bowie's with Duncan, the same seven lines, five episodes apart)
+  const walk = c => (kind === 'shot' ? writeStory('exit2.shot', 'any', who, d, facts, c)
+    : (crash && writeStory(`exit2.${kind}`, 'any', who, d, facts, c)) || writeStory(`exit2.${kind}`, revealKind, who, d, facts, c) || writeStory(`exit2.${kind}`, 'any', who, d, facts, c))
+    || writeStory('exit', kind, { a: elim, ...(b ? { b } : {}) }, data, facts, c);
+  // ...and when every one of them has been heard, the least-heard of the big general pool before the small night-shaped ones
+  // (a three-version pool replayed one scene three times in a season)
+  return walk({ ...ctx0, unique: true }) || (kind !== 'shot' && writeStory('exit', kind, { a: elim, ...(b ? { b } : {}) }, data, facts, ctx0)) || walk(ctx0);
 }
 
 // ── the crashout, answered (the user, 2026-10-08: "the crashout doesn't go anywhere: no escalation,

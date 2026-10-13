@@ -495,21 +495,30 @@ export default {
     ] },
   ],
   'room.mixup.any': [
-    { id: 'nt4.mx1', turns: [
+    // (caught at the reading only where the votes are read aloud, fact count: at a marshmallow ceremony nobody hears who
+    // wrote what; read 2026-10-14, "You wrote Courtney?" at the campfire)
+    { id: 'nt4.mx1', when: { count: true }, turns: [
       { by: 'b', say: "Wait, who wrote {actual}? That wasn't the plan." },
       { beat: "{a} goes very still." },
       { by: 'a', say: "...I thought it was {actual}. Wasn't it {actual}?", v: { anxious: "Oh no. Oh, no, no. Was it {intended}? It was {intended}, wasn't it?" } },
       { by: 'b', say: "It was {intended}, {a}. It was always {intended}." },
     ] },
-    { id: 'nt4.mx2', turns: [
+    { id: 'nt4.mx2', when: { count: true }, turns: [
       { beat: "{b} turns to look down the log at {a}." },
       { by: 'b', say: "You wrote {actual}?" },
       { by: 'a', say: "I wrote what we said. Didn't we say {actual}?", v: { tough: "I wrote what I heard. If somebody said it wrong, that's not on me." } },
       { by: 'b', say: "We said {intended}. We said it twice." },
     ] },
-    { id: 'nt4.mx3', turns: [
+    { id: 'nt4.mx3', when: { count: true }, turns: [
       { by: 'a', conf: "I had one job tonight. Write {intended}. I wrote {actual}. I don't even know how it happened. I think I'm going to be hearing about this for a long time." },
       { by: 'b', conf: "{a} wrote the wrong name. On the night it mattered. I can't even be angry, I'm too busy being amazed." },
+    ] },
+    // where nobody hears the votes, only the one who wrote it knows
+    { id: 'nt4.mx4', when: { count: false }, turns: [
+      { by: 'a', conf: "We all said {intended}. I wrote {actual}. I don't even know how. Nobody heard the votes, so nobody knows but me, and I'm keeping it that way." },
+    ] },
+    { id: 'nt4.mx5', when: { count: false }, turns: [
+      { by: 'a', conf: "I think I wrote {actual}. The plan was {intended}. If anybody ever finds out, I was confused. Which is true." },
     ] },
   ],
   'after.split.idol': [

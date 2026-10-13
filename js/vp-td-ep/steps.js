@@ -673,6 +673,23 @@ const IDOL_SAY = p => p.type === 'voteBlock' ? `${p.player} blocks ${p.blockedPl
   : p.type === 'safetyNoPower' ? `${p.player} leaves the ceremony: safe tonight, but without a vote.`
   : p.type === 'teamSwap' ? `${p.player} plays Team Swap.` : null;
 
+// The night's clock only runs forward (read 2026-10-14: the ceremony at 9:30 after a revote, then the Dock of Shame at
+// 9:10). Each scene's time is a fixed label; when one is earlier than the scene before it, it and every later one move on
+// by the same amount, so the gaps between them stay as written. Labels that are not a clock time ("Later") are left alone.
+function forwardClock(steps) {
+  const parse = t => { const m = /^(\d{1,2}):(\d{2}) ([AP]M)$/.exec(t || ''); return m ? ((+m[1] % 12) + (m[3] === 'PM' ? 12 : 0)) * 60 + +m[2] : null; };
+  const show = n => { const h = Math.floor(n / 60) % 24, mm = n % 60; return `${h % 12 || 12}:${String(mm).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`; };
+  let last = -1, shift = 0;
+  return steps.map(s => {
+    const t0 = s?.k === 'scene' ? parse(s.time) : null;
+    if (t0 == null) return s;
+    let t = t0 + shift;
+    if (t < last) { shift += last - t + 5; t = last + 5; }
+    last = t;
+    return t === t0 ? s : { ...s, time: show(t) };
+  });
+}
+
 export function tdTribalScreen(ep, o = {}) {
   if (!tdTribalStepped(ep)) return null;
   const venue = venueOf(ep, o);
@@ -945,7 +962,7 @@ export function tdTribalScreen(ep, o = {}) {
   if (ep.riChoice) {
     steps.forEach(x => { if (x.k === 'out') x.island = true; });
     say(ep.riChoice === 'RESCUE ISLAND' ? `${elim}, you're not going home. You're going to Rescue Island.` : `${elim}, grab your torch. You have one more choice to make.`, { focus: [elim] });
-    return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps, elim };
+    return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps: forwardClock(steps), elim };
   }
   // the walk out: whoever actually leaves (the card's replacement, not the coach it saved)
   if (coachNight?.out) elim = coachNight.out;
@@ -1043,7 +1060,7 @@ export function tdTribalScreen(ep, o = {}) {
     steps.push({ k: 'scene', spot: 'motel', tod: 'night', plate: motel, place: 'The Motel', time: 'Later that night', card: true, focus: [elim], bg: [], places: placeScene(motel, [elim], []) });
     steps.push({ k: 'beat', text: `${elim} checks in at the Motel.`, focus: [elim] });
   }
-  return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps, elim };
+  return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps: forwardClock(steps), elim };
 }
 
 function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, rocks, host, alsoOut = null, hold = false, rv = null }) {
@@ -1332,7 +1349,7 @@ export function tdDoubleTribalScreen(ep, o = {}) {
       { k: 'say', by: host, host: true, text: `There's a second vote. Right now. ${left} of you, and one more is going home.` }];
   if (b.steps[1]?.k === 'say' && b.steps[1].host) b.steps.splice(1, 1, ...turn); else b.steps.splice(1, 0, ...turn);
   const { keep, later } = afterlife(a.steps);
-  return { ...b, id: 'tribal', label: `${b.label} · Double elimination`, steps: [...keep, ...b.steps, ...later], elim: ep.eliminated, first };
+  return { ...b, id: 'tribal', label: `${b.label} · Double elimination`, steps: forwardClock([...keep, ...b.steps, ...later]), elim: ep.eliminated, first };
 }
 
 /**
@@ -1483,7 +1500,15 @@ function exileSetup(ep, o) {
 // it's a revote, so vote again the same name or switch with good reasoning", and a tie the season
 // settles by challenge has to be seen. The engine wrote both (voting.js simulateRevote: each revote
 // ballot with whether it held or flipped and why; episode.js runTiebreakerChallenge).
-const pickBy = (arr, key) => arr[hash(key) % arr.length];
+// (the night's lines so far: a template already said tonight steps aside for the next one in its list; read 2026-10-14,
+// Heather and Courtney both "The room's landing on Bowie. I'm not going to be the one holding it up.")
+let saidTonight = new Set();
+// (a small list spent tonight falls back to the general one of the same meaning: held -> HELD, flipped -> FLIP)
+const pickBy = (arr, key, wider = null) => {
+  const start = hash(key) % arr.length;
+  for (let i = 0; i < arr.length; i++) { const f = arr[(start + i) % arr.length]; if (!saidTonight.has(f)) { saidTonight.add(f); return f; } }
+  return wider && wider !== arr ? pickBy(wider, key) : arr[start];
+};
 const HELD = [
   (t, o) => `It's a revote. I know. Same name: ${t}. I'm not moving.`,
   (t, o) => `${t}, again. I said it the first time and I meant it.`,
@@ -1508,18 +1533,22 @@ const FLIP_LOYAL = [
 const SETTLE = [
   (t) => `Somebody has to give, so it's ${t}. Let's end this.`,
   (t) => `The room's landing on ${t}. I'm not going to be the one holding it up.`,
+  (t) => `I'm not drawing a rock tonight. ${t}.`,
+  (t) => `Everybody I trust is going ${t}, so I am too.`,
+  (t) => `I don't love it, but ${t} is where this ends.`,
 ];
 function revoteLine(v, original) {
   const r = String(v.reason || ''), t = v.voted, o = original || 'the other name', k = `${v.voter}|${t}|${r}`;
   const ally = (r.match(/protecting (\S+)/) || [])[1];
-  if (/^held/.test(r)) return ally ? pickBy(HELD_ALLY, k)(t, o, ally.replace(/[.,]$/, '')) : /refuses to let/.test(r) ? pickBy(HELD_HATE, k)(t, o) : pickBy(HELD, k)(t, o);
-  if (/numbers over loyalty|refused to sacrifice/.test(r)) return pickBy(FLIP_LOYAL, k)(t, o);
-  if (/consensus|consolidated|coalition/.test(r)) return pickBy(SETTLE, k)(t, o);
-  return original && original !== t ? pickBy(FLIP, k)(t, o) : pickBy(HELD, k)(t, o);
+  if (/^held/.test(r)) return ally ? pickBy(HELD_ALLY, k, HELD)(t, o, ally.replace(/[.,]$/, '')) : /refuses to let/.test(r) ? pickBy(HELD_HATE, k, HELD)(t, o) : pickBy(HELD, k)(t, o);
+  if (/numbers over loyalty|refused to sacrifice/.test(r)) return pickBy(FLIP_LOYAL, k, FLIP)(t, o);
+  if (/consensus|consolidated|coalition/.test(r)) return pickBy(SETTLE, k, FLIP)(t, o);
+  return original && original !== t ? pickBy(FLIP, k, SETTLE)(t, o) : pickBy(HELD, k)(t, o);
 }
 /** The revote, voter by voter in the booth: the tied don't vote, the rest pick one of them again. */
 function revoteBooth(steps, say, ctx) {
   const { revote, tied, booth, plate, places, host, tribal, V, venue, original } = ctx;
+  saidTonight = new Set();
   const names = tied.length ? tied : [...new Set(revote.map(v => v.voted))];
   const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names.join('');
   say(`${list}: you don't vote this time. Everyone else, you can only vote for ${names.length > 2 ? 'one of them' : names.join(' or ')}.`, { focus: names.filter(n => tribal.includes(n)) });

@@ -31,7 +31,7 @@ import { activeFranchise } from '../../franchise-meta.js';
 
 // a place a scene's stage directions name outright (a beat, never a {here}): the spot it must be staged at
 const NAMED_SPOTS = [
-  [/\bthe (end of the )?dock\b/i, 'dock'], [/\b(around|by|at|round) the fire\b|\bfire pit\b|\bcampfire\b/i, 'fire'], [/\bboathouse\b/i, 'boathouse'],
+  [/\bthe (end of the )?dock\b/i, 'dock'], [/\bthe fire\b|\bfire pit\b|\bcampfire\b/i, 'fire'], [/\bboathouse\b/i, 'boathouse'],
   [/\bwaterfall\b/i, 'waterfall'], [/\bmess hall\b/i, 'mess-hall'], [/\bcabin porch\b/i, 'cabins'], [/\bcabin roof\b/i, 'cabins'],
 ];
 function namedSpot(entry, venue) {

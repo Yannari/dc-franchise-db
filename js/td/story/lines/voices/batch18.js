@@ -351,10 +351,6 @@ export default {
     6: { warm: "Gerald nodded. Well, he moved his eye stalk, which is basically a nod.", competitive: "Gerald nodded, or his eye stalk moved, which counts as a nod.", loud: "Gerald NODDED! Well, his eye stalk moved!", proud: "Gerald nodded. In his way.", tough: "His eye stalk moved. That's a nod." },
     7: { calm: "...Okay. If Gerald's in, I'm in.", emotional: "...Okay. If Gerald's in, I'm in.", competitive: "...Fine. If Gerald's in, I'm in.", anxious: "...Okay. If Gerald's in, I'm in.", ditzy: "Okay! If Gerald's in, I'm in!", dry: "...Fine. If Gerald's in, I'm in." },
   },
-  'nl.h3': {
-    2: { anxious: "I heard one name. Twice.", warm: "I heard one name. Twice.", chaotic: "I heard one name! Twice!", dry: "I heard one name. Twice." },
-    4: { anxious: "Same one.", warm: "Same one.", chaotic: "Same one!", dry: "Same one." },
-  },
   'nk.la2': {
     1: { ditzy: "Why?", theatrical: "Why?", schemer: "Why?", loud: "WHY?" },
     3: { ditzy: "Like what?", theatrical: "Like what?", schemer: "Like what?", loud: "Like WHAT?" },

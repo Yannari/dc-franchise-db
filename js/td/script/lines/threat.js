@@ -16,7 +16,7 @@ const SELF_WINS = [
     { by: 'a', conf: "Winning feels amazing. Until you get back to camp and everyone's looking at you funny." },
   ] },
   { id: 'th.w3', turns: [
-    { by: 'a', conf: "Every time I win, I can see people doing the maths in their heads. Fine. Let them do maths. I'll keep winning." },
+    { by: 'a', conf: "Every time I win, I can see people doing the math in their heads. Fine. Let them do math. I'll keep winning." },
   ] },
   { id: 'th.w4', when: { register: 'competitor' }, turns: [
     { by: 'a', conf: "{count} wins. People keep telling me to lose one on purpose. Not happening." },

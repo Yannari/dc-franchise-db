@@ -155,7 +155,7 @@ const SIT_BACK = [
 
 const WAKE = {
   'low-loyalty-betrayal': [
-    C('qt.w1', "I keep replaying the last vote. The maths doesn't add up. And {b}'s name keeps coming back."),
+    C('qt.w1', "I keep replaying the last vote. The math doesn't add up. And {b}'s name keeps coming back."),
     C('qt.w2', "Everyone else saw it weeks ago. I'm only seeing it now. {b} was never on my side."),
     C('qt.w3', "{b} won't look me in the eye anymore. That's when it clicked."),
     C('qt.w4', "I defended {b}. To everyone. And {b} was the one working against me the whole time."),

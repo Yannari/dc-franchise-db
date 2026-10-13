@@ -104,7 +104,7 @@ export default {
       { by: 'b', say: "And you want to be in a pair." },
       { by: 'a', say: "I don't want to be the one left over when everyone else is." },
       { by: 'b', say: "That's not exactly romantic." },
-      { by: 'a', say: "It's not supposed to be. It's maths.", v: { dry: "It's not a proposal. It's arithmetic." } },
+      { by: 'a', say: "It's not supposed to be. It's math.", v: { dry: "It's not a proposal. It's arithmetic." } },
       { by: 'b', say: "What do I get?" },
       { by: 'a', say: "My vote whenever you need it. And you tell me what you hear." },
       { by: 'b', say: "And if I hear something about you?" },

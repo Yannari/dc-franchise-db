@@ -71,7 +71,7 @@ export default {
   },
   // deep.win (warm, alone)
   'ndp.w2': {
-    1: { quiet: "They weren't happy for me. I'm safe tonight, and I've never felt so alone.", kid: "They weren't happy for me at all. I'm safe tonight, but I feel really lonely.", goofy: "They weren't happy for me, they were doing maths. I'm safe, and I've never felt more alone, which is a weird combination." },
+    1: { quiet: "They weren't happy for me. I'm safe tonight, and I've never felt so alone.", kid: "They weren't happy for me at all. I'm safe tonight, but I feel really lonely.", goofy: "They weren't happy for me, they were doing math. I'm safe, and I've never felt more alone, which is a weird combination." },
   },
   // long.conf.bigmove (anxious)
   'nl5.m2': {

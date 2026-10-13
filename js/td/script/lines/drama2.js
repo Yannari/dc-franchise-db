@@ -409,7 +409,7 @@ const MESS_GOOD = [
     { by: 'b', say: "Seriously? Who?" },
     { by: 'a', say: "Doesn't matter. They know what they did. Eat before it gets cold." },
     { by: 'b', say: "It was never warm." },
-    { by: 'b', conf: "Out here, a saved seat and a safe meal is basically a friendship bracelet." },
+    { by: 'b', conf: "Out here, somebody saving you a seat and some food is a big deal." },
   ] },
   { id: 'd2.mg2', turns: [
     { by: 'a', say: "On a scale of one to ten, how dead is this meatloaf?" },

@@ -167,7 +167,7 @@ export default {
       { by: 'b', conf: "{a} is going to be unbearable tonight, but I don't care, because we're not voting anybody out." },
     ] },
     { id: 'nl.w3', place: 'fire', turns: [
-      { by: 'c', say: "So that's two in a row. Or one, whatever, it felt like two." },
+      { by: 'c', say: "We actually won! I'm still not over it." },
       { by: 'a', say: "Don't jinx it." },
       { by: 'b', say: "It's not a jinx. We're just good." },
       O('d', "We're not that good. We got lucky on the last part."),
@@ -193,25 +193,25 @@ export default {
       {"by":"c","conf":"{b} had a bad day and {a} had a bad attitude, and I know which one I'd rather keep."}
     ] },
     { id: "ncb.crowd.l2", place: "public", when: {"voice":["loud","tough","blunt","cruel"]}, turns: [
-      {"by":"a","say":"Are we going to discuss that score, {b}, or wait until nobody can mention it?"},
-      {"by":"b","say":"We can discuss it. I'd like to hear a suggestion instead of a complaint."},
-      {"by":"a","say":"I suggest doing better."},
-      {"by":"d","say":"Very detailed. Should we write that down?","opt":true},
-      {"by":"c","say":"If you want an answer, let {b} explain."},
-      {"by":"e","say":"I want to hear what would actually help.","opt":true},
-      {"by":"b","say":"Thank you. I know I have things to improve. Can we talk about them without turning it into a performance?"},
-      {"by":"f","say":"I'd also like a shorter performance. For everyone.","opt":true},
-      {"by":"a","conf":"I wanted people to take the result seriously. They took my delivery seriously instead. I'm not enjoying the distinction."}
+      {"by":"a","say":"Are we going to talk about that score, {b}, or are we just pretending it didn't happen?"},
+      {"by":"b","say":"We can talk about it. Got any actual ideas, or just complaints?"},
+      {"by":"a","say":"Here's an idea: do better."},
+      {"by":"d","say":"Wow. Super helpful. Should we write that down?","opt":true},
+      {"by":"c","say":"If you want an answer, let {b} talk."},
+      {"by":"e","say":"Yeah, what would actually help?","opt":true},
+      {"by":"b","say":"Thank you. I know I messed up. Can we just talk about it without the yelling?"},
+      {"by":"f","say":"Less yelling sounds great, honestly. For everybody.","opt":true},
+      {"by":"a","conf":"I wanted everybody to take the loss seriously. Instead they all ganged up on me for yelling. Unbelievable."}
     ] },
     { id: "ncb.crowd.l3", place: "aside", turns: [
       {"by":"c","say":"Okay. Everybody take a breath.","v":{"calm":"Okay, everybody just take a breath for a second.","bossy":"Okay, stop, everybody breathe, now."}},
-      {"by":"a","say":"I'm breathing. I'm also annoyed."},
+      {"by":"a","say":"I'm breathing. I'm also mad."},
       {"by":"b","say":"I know it was me. You don't have to say it."},
       {"by":"d","say":"It wasn't only you.","opt":true},
-      {"by":"c","say":"It was all of us. And whoever goes tonight, it's going to be because of a vote, not one mistake."},
-      {"by":"e","say":"A bad score is worth discussing. It's not proof that we know everything about {b}.","opt":true},
+      {"by":"c","say":"It was all of us. And whoever goes tonight, it's going to be a vote, not one bad challenge."},
+      {"by":"e","say":"One bad score doesn't mean {b} is useless.","opt":true},
       {"by":"f","say":"Can we talk about it later? I just want to sit down.","opt":true},
-      {"by":"b","conf":"I can deal with people being worried about my result. {c} made room for me to answer instead of letting everyone decide what it meant."}
+      {"by":"b","conf":"I can handle people being worried about my score. I'm just glad {c} let me say something before everybody decided what it meant."}
     ] },
   ],
   'long.crowd.huddle.any': [
@@ -241,12 +241,12 @@ export default {
     { id: 'nl.h3', place: 'secret', when: { voice: ['bossy', 'schemer', 'calm', 'competitive'] }, turns: [
       { by: 'a', say: "Let's go around. Everybody tells me what they've heard today." },
       { by: 'b', say: "People are nervous. Nobody's said a name to me." },
-      { by: 'c', say: "I heard one name. Twice." },
-      O('d', "Same one?"),
-      { by: 'c', say: "Same one." },
-      O('e', "Then that's the name we watch."),
-      O('f', "Or the name we use."),
-      { by: 'a', say: "We'll decide together, just not here. Later, one at a time." },
+      { by: 'c', say: "Somebody asked me if we're all voting together. I said I didn't know." },
+      O('d', "Good. Keep saying that."),
+      { by: 'c', say: "I will." },
+      O('e', "Then nobody knows anything about us. Perfect."),
+      O('f', "For now."),
+      { by: 'a', say: "We'll pick the name together, just not here. Later, one at a time." },
       { by: 'b', conf: "{a} runs these meetings like a general, which is a little scary, but it also keeps us alive." },
     ] },
   ],

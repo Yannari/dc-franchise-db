@@ -83,7 +83,8 @@ export default {
       { by: 'b', say: "Nothing's easy out here." },
       { by: 'a', say: "Wow. Optimistic. Who are you, and what have you done with my friend?" },
       { by: 'b', say: "Sorry. I'm just tired." },
-      { by: 'b', conf: "{a} is making plans for tomorrow. {a} doesn't have a tomorrow, not here, and I can't say a word." },
+      // (b knows b's own ballot, never the result: read 2026-10-14, "doesn't have a tomorrow" for somebody who stayed)
+      { by: 'b', conf: "{a} is making plans for tomorrow, and I'm writing {a.posAdj} name tonight. I can't say a word." },
     ] },
     // (more of them: read 2026-10-14, three versions for every night somebody goes home feeling safe, so each came back
     // two or three times a season)

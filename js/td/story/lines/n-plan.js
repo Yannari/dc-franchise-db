@@ -184,6 +184,14 @@ export default {
       { by: 'a', say: "We'll get one more. I promise." },
     ] },
   ],
+  // (two or more votes short: they say so)
+  'vp.count.behind': [
+    { id: 'npl.k11', turns: [
+      { by: 'a', say: "I'm not going to lie to you. They've got {them}, and we've got {votes}." },
+      { by: 'b', say: "So we lose." },
+      { by: 'a', say: "Not if we find people before tonight. Somebody on their side is nervous. We just have to find out who." },
+    ] },
+  ],
   'vp.count.all': [
     { id: 'npl.k3', turns: [
       { by: 'a', say: "And this one isn't close. It's everybody except {target}.", v: { dry: "Spoiler: this one isn't close." } },

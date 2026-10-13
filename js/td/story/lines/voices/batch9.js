@@ -103,7 +103,7 @@ export default {
   'nvr.n1': {
     1: { dry: "Let me guess. {target}.", calm: "Let me guess. {target}." },
     3: { warm: "That's a weird reason to vote somebody out.", loud: "That's such a weird reason to vote somebody out!" },
-    7: { calm: "{a} has turned this into a maths problem. I'm just glad my name isn't the answer.", warm: "{a} turned this into a maths problem, and {target} is the answer. I'm relieved, and I feel bad about being relieved." },
+    7: { calm: "{a} has turned this into a math problem. I'm just glad my name isn't the answer.", warm: "{a} turned this into a math problem, and {target} is the answer. I'm relieved, and I feel bad about being relieved." },
   },
   'nvq.r1': {
     2: { calm: "Doing what?", warm: "Doing what?" },

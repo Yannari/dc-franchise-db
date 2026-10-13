@@ -48,7 +48,7 @@ import { recordThreads, threadDue, threadKnown } from './threads.js';
 import { writePreviously } from './previously.js';
 import { chalMoments } from './chalmoments.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
-import { placeOf, kindOf } from './places.js';
+import { placeOf, kindOf, placeById } from './places.js';
 import { kitBitScene, kitDigScene, kitRomanceScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, hasKit, kitOf, sharedGround } from './kits.js';
 import { runArcs, campGame } from './arcs.js';
 import { coupleScenes } from './couple.js';
@@ -896,7 +896,8 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const rival = (t.rivals || [])[0];
   const them = rival ? (rival.members || []).filter(m => tribal.includes(m) && m !== rival.target && !voters.includes(m)).length : 0;
   // what a can know: their own number, and roughly the other side's (never more than a winning plan faced)
-  const count = them >= 2 ? (them >= voters.length ? 'tight' : 'close') : voters.length >= tribal.length - 1 ? 'all' : 'enough';
+  // (two or more short is behind, not tight: read 2026-10-14, "two against five" answered "That's basically even")
+  const count = them >= 2 ? (them >= voters.length + 2 ? 'behind' : them >= voters.length ? 'tight' : 'close') : voters.length >= tribal.length - 1 ? 'all' : 'enough';
   const inScene = new Set(Object.values(who).filter(Boolean));
   const rest = voters.filter(v => !inScene.has(v));
   const list = n => n.length <= 1 ? n.join('') : `${n.slice(0, -1).join(', ')} and ${n[n.length - 1]}`;
@@ -919,7 +920,12 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
     for (let i = 0; i < f.length; i++) for (let j = i + 1; j < f.length; j++) if (getBond(f[i], f[j]) < 1) return [f[i], f[j]];
     return null; })();
   if (gluePair) { data.glueA = gluePair[0]; data.glueB = gluePair[1]; }
-  const facts = { ...baseFacts, count, glue: !!gluePair, shaky: !!shaky, cover: !!cover, close: !!b && getBond(a, b) >= 4, others: !!rest.length, other: !!rival?.target, markMe: mark === a, markB: !!mark && mark === b, otherMe: rival?.target === a, otherB: !!b && rival?.target === b, cast: shape };
+  // the other side has really voted as one before: two or more of them wrote the same name at an earlier vote (read
+  // 2026-10-14: "Duncan, Lake and Bowie always end up writing the same name. Every time." before that team had voted)
+  const sideVoted = themNames.length >= 2 && (gs.episodeHistory || []).some(h => h.num < ep.num && (() => {
+    const log = (h.votingLog || []).filter(v => themNames.includes(v.voter) && v.voted);
+    return log.length >= 2 && new Set(log.map(v => v.voted)).size === 1; })());
+  const facts = { ...baseFacts, sideVoted, count, glue: !!gluePair, shaky: !!shaky, cover: !!cover, close: !!b && getBond(a, b) >= 4, others: !!rest.length, other: !!rival?.target, markMe: mark === a, markB: !!mark && mark === b, otherMe: rival?.target === a, otherB: !!b && rival?.target === b, cast: shape };
   // what this camp's day has already shown (arcBeats, t.em): the plan can call back to it
   const em = t.em || { spark: null, warned: [] };
   const sparkSeen = !!em.spark && em.spark.by === a && em.spark.of === boot;
@@ -1623,7 +1629,8 @@ function chainScenes(ep, camp, phase, items, next) {
   const castOf = it => {
     const head = opening(it), all = it.lines || [];
     const later = all.slice(head.length).filter(l => l.by).map(l => l.by).filter(n => !head.some(l => l.by === n));
-    return [...new Set([...Object.values(it.scene?.who || {}).filter(n => n && !later.includes(n)), ...head.filter(l => l.by && l.kind !== 'conf').map(l => l.by)])]
+    const present = n => all.some(l => l.by === n && l.kind !== 'conf') || head.some(l => l.kind === 'beat' && (l.text || '').includes(n));
+    return [...new Set([...Object.values(it.scene?.who || {}).filter(n => n && !later.includes(n) && present(n)), ...head.filter(l => l.by && l.kind !== 'conf').map(l => l.by)])]
       .filter(n => n !== (seasonConfig?.host || 'Chris'));
   };
   const talks = it => it?.story && Array.isArray(it.lines) && it.lines.some(l => l.kind === 'say') && it.scene?.spot?.id && it.scene.spot.id !== 'confessional';
@@ -2540,6 +2547,21 @@ export function airTdEpisode(ep) {
           scene: { ...(ev.scene || {}), spot: { id: eat.id, label: eat.label, fixed: true, window: phase === 'pre' ? 'morning' : 'before-tribal' } } };
       });
     }
+    // a pitch is somebody trying to get the numbers, so it airs before the plans that settle the vote, never after them on
+    // the walk to Tribal (read 2026-10-14: Yul pitched Aubrey before Tribal, after his plan for Julia had aired)
+    { const evs = eventsOf(ep, camp, 'post');
+      out.post = out.post.map(it => {
+        const ev = it.ref != null && !it.lines ? evs[it.ref] : it;
+        const kind = it.kind || ev?.scene?.kind || ev?.type || '';
+        if (!/^pitch\./.test(kind)) return it;
+        const sp = ev?.scene?.spot || null, win = sp?.window || ev?.access?.windowId;
+        if (win !== 'before-tribal') return it;
+        const id = sp?.id || ev?.access?.locationId;
+        const at = id ? placeById(id) : null;
+        if (!id) return it;
+        return { ...ev, ...it, story: true, kind, ref: it.ref, ...(it.storyline ? { storyline: it.storyline } : {}),
+          scene: { ...(ev.scene || {}), spot: { ...(sp || {}), id, label: sp?.label || at?.label || id, window: 'scramble' } } };
+      }); }
     // a night scene written before the challenge airs that evening (read 2026-10-14: spin the bottle "in a circle around
     // the fire" aired on the trail in the morning): only a written scene moves, an engine moment keeps its own phase
     { const NIGHT_GAME = /spin the bottle|empty bottle|the bottle (wobbles|spins|stops)|truth or dare|never have I ever|^\(?late[,.]|\bit's late\b|gone to bed|as it gets dark|\bin the dark\b|under the stars|moonlight/i;

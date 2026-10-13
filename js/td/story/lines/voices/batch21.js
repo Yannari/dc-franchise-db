@@ -163,7 +163,6 @@ export default {
     7: { warm: "I've got a few.", anxious: "I've got a few.", nerdy: "I have a few." },
     8: { quiet: "{lastBoot} has been gone one night, and {b} is already picking the next. I want to be on {b}'s side.", dry: "{lastBoot} has been gone one night, and {b} is already picking the next. I'd like to be on {b}'s side of that.", warm: "{lastBoot} has been gone one night, and {b} is already planning the next. I'd feel safer on {b}'s side.", anxious: "{lastBoot} has only been gone one night, and {b} is already picking the next. I want to be on {b}'s side.", earnest: "{lastBoot} has been gone one night, and {b} is already picking the next one. I want to be on {b}'s side." },
   },
-  'nl.h3': { 3: { loud: "Same one?", emotional: "Same one?", proud: "Same one?", goofy: "Same one?" } },
   'nl5.f2': {
     2: { earnest: "Mm-hmm?", competitive: "Mm-hmm?", warm: "Mm-hmm?", proud: "Mm-hmm?" },
     3: { warm: "Those were the emergency crackers.", competitive: "Those were the emergency crackers.", dry: "Those were the emergency crackers.", blunt: "Those were the emergency crackers." },

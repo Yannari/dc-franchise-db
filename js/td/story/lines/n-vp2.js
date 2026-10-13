@@ -66,7 +66,7 @@ export default {
       { by: 'b', say: "So we save {mark}." },
       { by: 'a', say: "We save {mark} by sending {target} home first. If {target} goes, their whole plan goes with them." },
       { by: 'b', say: "Does {mark} know?" },
-      { by: 'a', say: "Not yet, and I'd like to keep it that way until the votes are read. {mark} can't act normal to save their life." },
+      { by: 'a', say: "Not yet, and I'd like to keep it that way until the votes are read. {mark} can't keep a straight face to save {mark.posAdj} life." },
       { by: 'b', say: "That's fair, actually.", v: { goofy: "That's so true. {mark} once told me a secret by accident while trying to keep a different secret." } },
       { by: 'b', conf: "{a} is protecting {mark} without {mark} even knowing. That's either really sweet or really calculated, and with {a}, it's usually both." },
     ] },

@@ -73,7 +73,7 @@ export default {
     5: { dry: "That's {votes}, and I can breathe now. It's {target} tonight." },
   },
   'nl5.f3': {
-    0: { loud: "HEY! That's three fish, and there are EIGHT of us!", dry: "Three fish, and there are eight of us. Interesting maths.", quiet: "That's three fish. There are eight of us.", blunt: "That's three fish. There are eight of us." },
+    0: { loud: "HEY! That's three fish, and there are EIGHT of us!", dry: "Three fish, and there are eight of us. Interesting math.", quiet: "That's three fish. There are eight of us.", blunt: "That's three fish. There are eight of us." },
     1: { warm: "I caught them, though." },
     2: { loud: "You caught them for the TEAM! That's how it works!", dry: "You caught them for the team. That's how teams work, apparently.", quiet: "You caught them for the team.", blunt: "You caught them for the team." },
     3: { warm: "Then the team can go catch some. Sorry, I'm just tired." },
@@ -100,7 +100,7 @@ export default {
   'nl.w1': {
     2: { ditzy: "Everybody saw {a} out there!" },
     6: { loud: "No vote tonight! NOBODY goes home!" },
-    8: { dry: "Winning feels amazing. Being the reason we won is better. It's also how you become a target, which is less fun.", nerdy: "Winning feels amazing, and being the reason we won is better. It also makes me a target later, statistically." },
+    8: { dry: "Winning feels amazing. Being the reason we won is better. It's also how you become a target, which is less fun.", nerdy: "Winning feels amazing, and being the reason we won is better. It also makes me a target later." },
   },
   'nlx.l1': { 1: { ditzy: "That's just what you do for your people, right? You don't do it so they owe you. You do it because it's right.", calm: "That's what you do for your people, not so they owe you, but because it's right." } },
   'ny.r2': {
@@ -179,13 +179,13 @@ export default {
   },
   'nvu.d3': {
     1: { cruel: "That depends on the something." },
-    3: { cruel: "That's a question-shaped request." },
+    3: { cruel: "That's a big ask with no questions." },
     6: { cruel: "I can't promise you {wrote}. I can promise it won't be my vote that sends you home." },
   },
   'nth.g1': {
     1: { dry: "Can I ask you something? Why did you write my name?", emotional: "Can I ask you something? Why did you write my name?" },
     2: { anxious: "What makes you think I did?", loud: "What makes you think I DID?", cruel: "What makes you think I did?", warm: "What makes you think I did?" },
-    3: { dry: "There were hardly any votes on me. The maths wasn't hard.", emotional: "There were hardly any votes on me, and it wasn't hard to work out where they came from, and it hurt." },
+    3: { dry: "There were hardly any votes on me. The math wasn't hard.", emotional: "There were hardly any votes on me, and it wasn't hard to work out where they came from, and it hurt." },
     4: { loud: "It wasn't about YOU! It was a numbers thing!", cruel: "It wasn't about you. It was a numbers thing." },
     5: { dry: "I had your back. From the first day.", emotional: "I had your back from the very first day." },
     6: { anxious: "I know you did.", loud: "I KNOW you did.", cruel: "I know you did." },

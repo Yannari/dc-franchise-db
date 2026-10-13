@@ -165,7 +165,7 @@ const CRACK_VOTE = [
     { by: 'a', conf: "It was {b}. I'm sure of it. And {b} just lied to my face." },
   ] },
   { id: 'tl.v2', turns: [
-    { by: 'a', conf: "{group} agreed on {plan}. {b} wrote {wrote}. I did the maths, and it only works one way." },
+    { by: 'a', conf: "{group} agreed on {plan}. {b} wrote {wrote}. I did the math, and it only works one way." },
     { by: 'a', conf: "I haven't said anything. But I will." },
   ] },
   { id: 'tl.v3', turns: [

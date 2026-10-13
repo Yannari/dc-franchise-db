@@ -47,7 +47,7 @@ const FORM_DUAL = [
   ] },
   { id: 'r2.fd4', when: { register: 'schemer' }, turns: [
     { beat: '{b} is on one side of the fire. {c} is on the other.' },
-    { by: 'a', conf: "Two people think they're my person. Technically, they're both right. Technically, I'm a genius. Emotionally? A mess." },
+    { by: 'a', conf: "Two people think they're my person, and they're both kind of right. It sounds like a genius move. It feels like a mess." },
   ] },
   { id: 'r2.fd5', turns: [
     { by: 'b', say: "So you and {c}, huh?" },

@@ -185,7 +185,7 @@ export default {
       { by: 'b', say: "Wow. That's a first." },
       { by: 'a', say: "In the challenges, I mean. {target} keeps beating me. So if I can't beat {target} out there, {target} goes tonight." },
       { by: 'b', say: "That's a lot of pride for one vote." },
-      { by: 'a', say: "It's not pride, it's maths. When {target} wins immunity, {target} can't go home, but tonight {target} can." },
+      { by: 'a', say: "It's not pride, it's math. When {target} wins immunity, {target} can't go home, but tonight {target} can." },
       { by: 'a', conf: "Tonight's the one night {target} isn't wearing a necklace. I'm not wasting it." },
     ] },
     { id: 'nv.t5', when: { other: true }, turns: [

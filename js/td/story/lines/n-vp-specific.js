@@ -30,6 +30,14 @@ const GLUE = [
   ] },
 ];
 const MATH = [
+  { when: { count: 'behind' }, turns: [
+    { by: 'a', say: "Okay, let's actually count. It's {us}, so that's {votes}. They've got {theirSide}, so that's {them}." },
+    { by: 'b', say: "That's not close. That's bad." },
+    { by: 'a', say: "I know. So we don't need a better plan, we need more people." },
+    { by: 'b', say: "From where?" },
+    { by: 'a', say: "From their side. Somebody over there is scared of being next, and we have to find them before tonight." },
+    { by: 'a', conf: "It's {votes} against {them}. Unless somebody over there flips, this vote isn't ours to decide." },
+  ] },
   { when: { count: 'tight' }, turns: [
     { by: 'a', say: "Okay, let's actually count. It's {us}, so that's {votes}. They've got {theirSide}, so that's {them}, maybe." },
     { by: 'b', say: "That's basically even." },
@@ -85,7 +93,7 @@ const FORM = {
       { by: 'b', conf: "I came out here thinking I'd make friends first and play later. {a} just skipped the friends part." },
     ] },
     // later in the game a side forms from what everybody has watched happen at the votes, not from a first impression
-    { id: 'nvs.f3', when: { early: false }, turns: [
+    { id: 'nvs.f3', when: { early: false, sideVoted: true }, turns: [
       { by: 'a', say: "Have you noticed {theirSide} always end up writing the same name?" },
       { by: 'b', say: "Now that you say it, yeah. Every time." },
       { by: 'a', say: "That's not luck. They're voting as a group, and nobody's been calling it that." },
@@ -95,7 +103,7 @@ const FORM = {
       { by: 'a', say: "Then they find out when the votes are read." },
       { by: 'a', conf: "Everybody else is still voting on their own, and that's why {theirSide} keep getting their way. Not tonight." },
     ] },
-    { id: 'nvs.f4', when: { early: false }, turns: [
+    { id: 'nvs.f4', when: { early: false, sideVoted: true }, turns: [
       { by: 'b', say: "Why do you keep watching who sits with who?" },
       { by: 'a', say: "Because {theirSide} sit together every night, and they vote together every night too." },
       { by: 'b', say: "And we don't." },

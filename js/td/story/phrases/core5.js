@@ -21,7 +21,7 @@ export default {
     chaotic: ["Ha! Okay! Didn't see that coming! Cool cool cool."],
     food: ["Do I at least get dinner first?"],
     ditzy: ["Wait, is that me? That's me? Oh."],
-    nerdy: ["That defies every calculation I made.", "Statistically, that shouldn't have happened."],
+    nerdy: ["That defies every calculation I made.", "That should not have happened."],
     earnest: ["I hope you know what you're doing.", "Okay, I respect it, I just don't like it."],
     tough: ["Whatever.", "Fine. Your loss."],
     emotional: ["No! I'm not ready! I'm not ready to go!", "I can't believe this. I really can't."],

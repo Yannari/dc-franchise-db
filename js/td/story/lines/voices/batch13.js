@@ -84,7 +84,7 @@ export default {
     0: { food: "Can I ask you to do something for me tonight, no questions? I'll give you my rice.", calm: "Can I ask you for something tonight, no questions?", warm: "Can I ask you for a favour tonight, no questions?", ditzy: "Can you do something for me tonight? Without asking why?" },
     1: { earnest: "That depends on the something, honestly.", competitive: "That depends on the something." },
     2: { theatrical: "Write {wrote}. Please.", food: "Write {wrote}.", calm: "Write {wrote}.", warm: "Please write {wrote}.", ditzy: "Just write {wrote}." },
-    3: { warm: "That's a question-shaped request.", nerdy: "That's a question disguised as a request.", earnest: "That's a big request.", competitive: "That's a question-shaped request.", calm: "That's a question-shaped request." },
+    3: { warm: "That's a big ask with no questions.", nerdy: "That's a big ask with no questions.", earnest: "That's a big request.", competitive: "That's a big ask with no questions.", calm: "That's a big ask with no questions." },
     4: { theatrical: "I have a terrible feeling it's me tonight, and if enough people write {wrote}, it can't be.", food: "I have a feeling it's me tonight, and if enough people write {wrote}, it can't be.", calm: "I have a feeling it's me tonight. If enough people write {wrote}, it can't be.", warm: "I have this awful feeling it's me tonight, and if enough people write {wrote}, it can't be.", ditzy: "I just have a feeling it's me tonight, and if people write {wrote}, then it can't be me, right?" },
     5: { nerdy: "Okay. For you, I'll write {wrote}.", earnest: "Okay. For you, I'll write {wrote}, I promise.", competitive: "Okay. For you, {wrote}.", warm: "Okay. For you, I'll write {wrote}.", calm: "Okay. For you, I'll write {wrote}." },
     6: { warm: "I can't promise you {wrote}, I'm sorry. I can promise you it won't be my vote that sends you home." },
@@ -100,7 +100,7 @@ export default {
   },
   'nl.w2': {
     1: { anxious: "We heard you the first five times.", schemer: "We heard you the first five times.", cruel: "We heard you the first five times." },
-    2: { warm: "Let {a} have it. {a} earned it.", proud: "Let {a} have it. {a} earned it.", nerdy: "Let {a} have it. Statistically, {a} earned it.", anxious: "Let {a} have it, it's fine." },
+    2: { warm: "Let {a} have it. {a} earned it.", proud: "Let {a} have it. {a} earned it.", nerdy: "Let {a} have it. {a} earned it, fair and square.", anxious: "Let {a} have it, it's fine." },
     3: { nerdy: "Can I have a little bit of it? I did carry the rope.", competitive: "Can I have some of it? I carried the rope.", emotional: "Can I have it a little bit too? I carried the rope, and I tried so hard.", anxious: "Can I have it a little bit too? I carried the rope." },
     5: { earnest: "That's so corny, and I love it.", warm: "That's so corny. I love it.", theatrical: "That is unbelievably corny." },
     6: { dry: "Corny and safe. I'll take it.", calm: "Corny and safe. I'll take it.", quiet: "Corny and safe is fine.", nerdy: "Corny and safe. I'll take it.", earnest: "Corny and safe. I'll take it." },

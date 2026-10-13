@@ -6,7 +6,7 @@ export default {
   // it's going to be okay
   reassure: {
     any: ["Hey. It's going to be okay.", "Don't worry about it.", "We'll be fine.", "You're okay. Breathe.", "It's not as bad as it looks.", "We've got this."],
-    dry: ["Relax. If it was you, you'd know by now.", "Statistically, you'll probably survive. Probably."],
+    dry: ["Relax. If it was you, you'd know by now.", "You'll probably survive. Probably."],
     loud: ["Hey, chin up, we're fine!", "Stop worrying! We've totally got this!"],
     warm: ["Come here. It's going to be okay, I promise.", "You're doing so much better than you think.", "I've got you. Okay?"],
     blunt: ["Stop panicking. It doesn't help.", "You're fine. Move on."],
@@ -117,7 +117,7 @@ export default {
     anxious: ["Wait, really? Really? Oh my gosh.", "I can't believe it worked!"],
     calm: ["Nice.", "That's pretty great."],
     competitive: ["That's what I'm talking about!", "Winning feels so good."],
-    nerdy: ["That's statistically incredible!", "We did it! Against all odds!"],
+    nerdy: ["That's actually incredible!", "We did it! Against all odds!"],
     tough: ["Yeah! Good.", "About time."],
     emotional: ["I'm going to cry! Happy crying!", "This is the best day of my life!"],
     goofy: ["Victory dance! Everybody!", "I'm so happy I could eat a whole... anything."],

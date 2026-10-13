@@ -29,7 +29,7 @@ export default {
       { by: 'a', say: "Can I ask you to do something for me tonight, no questions?" },
       { by: 'b', say: "That depends on the something." },
       { by: 'a', say: "Write {wrote}." },
-      { by: 'b', say: "That's a question-shaped request." },
+      { by: 'b', say: "That's a big ask with no questions." },
       { by: 'a', say: "I just have a feeling it's me tonight, and if enough people write {wrote}, it can't be." },
       { by: 'b', say: "Okay. For you, I'll write {wrote}.", when: { bVoted: 'other', bWrote: true } },
       { by: 'b', say: "I can't promise you {wrote}. I can promise you it won't be my vote that sends you home.", when: { bVoted: 'other', bWrote: false } },

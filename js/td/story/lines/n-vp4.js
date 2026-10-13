@@ -59,7 +59,7 @@ export default {
     { id: 'nv4.p5', when: { voice: ['dry', 'calm', 'schemer'] }, turns: [
       { by: 'a', say: "Let me show you something." },
       { by: 'b', say: "Is it another drawing in the sand?" },
-      { by: 'a', say: "It's another drawing in the sand. Look, every line from {partner} goes to {target}, and every line from {target} goes to {partner}." },
+      { by: 'a', say: "It's another drawing in the sand. Look. Every line from {partner} goes to {target}. And every line from {target} goes straight back." },
       { by: 'b', say: "So they talk to each other a lot." },
       { by: 'a', say: "They talk to each other and nobody else. That's not a friendship. That's an alliance with a nice face." },
       { by: 'b', say: "And you want to break it." },

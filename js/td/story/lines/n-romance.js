@@ -242,7 +242,7 @@ export default {
       {"by":"c","say":"You don't owe me the details."},
       {"by":"a","say":"Good, because I don't want to explain this in front of everyone."},
       {"by":"a","conf":"I'm hurt. I want a simple explanation that makes being hurt feel less humiliating, but I don't get to decide what {b} felt."},
-      {"by":"b","conf":"The relationship ended. Living with the audience has not. I'd really like some space before the questions start."}
+      {"by":"b","conf":"We broke up, but we still have to live here with everybody watching. I just want some space before the questions start."}
     ] },
   ],
   'long.romance.rideordie.any': [

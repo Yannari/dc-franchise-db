@@ -661,7 +661,7 @@ const DOUBT = [
     { by: 'a', conf: "I thought I knew where I stood. Today I'm not so sure." },
   ] },
   { id: 'md.d2', turns: [
-    { by: 'a', conf: "I keep doing the maths in my head. It's not adding up in my favour." },
+    { by: 'a', conf: "I keep doing the math in my head. It's not adding up in my favour." },
   ] },
   { id: 'md.d3', turns: [
     { by: 'a', conf: "Everybody's being nice to me. That's what worries me." },

@@ -89,7 +89,7 @@ export default {
   },
   'nv4.g2': {
     0: { dry: "You've been very calm about {target} lately. Unnervingly calm.", nerdy: "You've been unusually calm about {target} lately." },
-    2: { nerdy: "Statistically suspicious. After everything." },
+    2: { nerdy: "That's suspicious. After everything?" },
     4: { nerdy: "So tonight's the night." },
   },
   'nv.n5': {
@@ -116,11 +116,11 @@ export default {
   },
   'nps.r3': { 0: { anxious: "Somebody I've been looking after wrote my name last night. I can count, and it's making me feel sick." } },
   'nl.w2': {
-    0: { nerdy: "Who won it? We did, technically all of us!", warm: "Who won it? WE won it, everybody!" },
+    0: { nerdy: "Who won it? We did! All of us!", warm: "Who won it? WE won it, everybody!" },
     1: { competitive: "We heard you the first five times.", loud: "We HEARD you the first five times!" },
     2: { ditzy: "Let {a} have it! {a} earned it.", competitive: "Let {a} have it. {a} earned it." },
     3: { earnest: "Can I have it a little bit too? I really did carry the rope.", loud: "Can I have it TOO? I carried the rope!", warm: "Can I have it a little bit too? I carried the rope.", blunt: "I carried the rope. I'd like some credit.", calm: "Can I have a little of it? I carried the rope." },
-    4: { nerdy: "Everybody can have it! Tonight, statistically, we're all winners!", warm: "Everybody can have it! Tonight we're all winners!" },
+    4: { nerdy: "Everybody can have it! Tonight we're all winners!", warm: "Everybody can have it! Tonight we're all winners!" },
     5: { schemer: "That's so corny." },
     7: { loud: "{a} is going to be UNBEARABLE tonight, and I don't care, because nobody's going home!", proud: "{a} is going to be insufferable tonight. I'll allow it, since nobody's going home." },
   },

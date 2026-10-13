@@ -37,7 +37,7 @@ export default {
   // deep.alone
   'ndp.a1': {
     0: { quiet: "I talk to everybody a little and nobody a lot, and I didn't even notice until today.", theatrical: "I am everybody's acquaintance and nobody's person. It's like being the friendly extra in someone else's movie.", kid: "I talk to everybody here, but nobody really picks me to hang out with. It's like recess all over again.", food: "I help with every meal, I eat with everybody, and I still don't think anybody would save me a seat." },
-    1: { quiet: "That scares me. Nobody fights for somebody who belongs to nobody.", nerdy: "And statistically, the person with no close ally is the easiest vote at every tribal. I know the numbers. I'm the numbers.", kid: "And I'm scared, because if nobody picks me, nobody's going to stop them from picking me to go home." },
+    1: { quiet: "That scares me. Nobody fights for somebody who belongs to nobody.", nerdy: "And statistically, the person with no close ally is the easiest vote at every tribal. I've watched it happen every single time.", kid: "And I'm scared, because if nobody picks me, nobody's going to stop them from picking me to go home." },
   },
   // vt2.sure: a is sure it's {wrote}
   'nl4.u1': {

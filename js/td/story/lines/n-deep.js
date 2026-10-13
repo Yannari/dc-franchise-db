@@ -124,7 +124,7 @@ export default {
     ] },
     { id: 'ndp.w2', when: { voice: ['warm', 'earnest', 'emotional', 'anxious'] }, turns: [
       { by: 'a', conf: "Winning was supposed to feel good. It did, for about three seconds, and then I saw everybody's faces." },
-      { by: 'a', conf: "They weren't happy for me. They were doing maths. I'm safe tonight, and I've never felt more alone out here." },
+      { by: 'a', conf: "They weren't happy for me. They were doing math. I'm safe tonight, and I've never felt more alone out here." },
     ] },
     { id: 'ndp.w3', when: { voice: ['tough', 'competitive', 'proud', 'cruel'] }, turns: [
       { by: 'a', conf: "Did you see their faces? Not a single smile. They wanted me to lose so badly, and I beat every one of them anyway." },

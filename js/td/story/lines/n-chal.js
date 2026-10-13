@@ -38,12 +38,12 @@ export default {
       {"by":"a","say":"So are we going to talk about it, or are we just going to pretend it didn't happen?"},
       {"by":"b","say":"Talk about what?"},
       {"by":"a","say":"About you. Dead last on our team."},
-      {"by":"b","say":"I had a bad result. You're making sure everyone has to hear you explain it."},
+      {"by":"b","say":"I had a bad day, okay? You don't have to make a speech about it."},
       {"by":"a","say":"Someone needs to say what went wrong."},
-      {"by":"b","say":"Then talk about what we can change. You have said my name enough."},
-      {"by":"c","say":"Can we have a useful conversation without making this worse?"},
-      {"by":"b","say":"We could. {a} would have to let me finish one answer."},
-      {"by":"b","conf":"I need to recover from that challenge. I also need to find out whether people think this conversation is helping, because I certainly do not."}
+      {"by":"b","say":"Then talk about what we fix. You've said my name enough times."},
+      {"by":"c","say":"Can we not do this right now?"},
+      {"by":"b","say":"Tell that to {a}."},
+      {"by":"b","conf":"I had a bad challenge. I get it. But {a} going on and on about it isn't helping anybody, least of all me."}
     ] },
     { id: 'nc.l4', place: 'public', when: { voiceB: ['competitive', 'blunt', 'tough', 'bossy'] }, turns: [
       { beat: "The {tribe} drag themselves back to camp. {b} is the last one in." },
@@ -74,7 +74,7 @@ export default {
       {"by":"a","say":"Do we? Because I don't think everybody's taking this seriously."},
       {"by":"b","say":"Is that about me?"},
       {"by":"a","say":"You were last today. You tell me."},
-      {"by":"b","say":"You know who was last today. You don't know whether blaming me will help the next challenge."},
+      {"by":"b","say":"Yeah, I was last. Yelling at me isn't going to win the next one."},
       {"by":"a","say":"It's a start."},
       {"by":"b","conf":"Two losses and everyone's looking for someone to vote out. I just need to make sure it isn't me."}
     ] },
@@ -85,7 +85,7 @@ export default {
       {"by":"a","say":"Yeah. We need to stop dragging people along."},
       {"by":"b","say":"Here we go."},
       {"by":"a","say":"I'm not wrong, {b}. You had the lowest score today."},
-      {"by":"b","say":"Today. You can criticize today without making me responsible for the whole streak."},
+      {"by":"b","say":"Today, yeah. Not the whole streak. Don't put all of that on me."},
       {"by":"c","conf":"We've lost {streak} in a row. I want a better plan, not a longer argument about {b}."},
       {"by":"b","conf":"We've lost {streak} in a row and somehow I'm the one everybody's blaming."}
     ] },
@@ -107,11 +107,11 @@ export default {
       {"by":"a","say":"Then when? After {b} costs us another one?"},
       {"by":"b","say":"I can hear you."},
       {"by":"a","say":"Good! That's the point!"},
-      {"by":"b","say":"I had a bad challenge. That doesn't make this conversation useful."},
+      {"by":"b","say":"I had a bad challenge. You yelling about it doesn't fix anything."},
       {"by":"a","say":"Excuse me?"},
       {"by":"b","say":"You heard me."},
       {"by":"c","say":"Okay! Everybody go to a different part of camp, now."},
-      {"by":"a","conf":"{b} wants to argue about my tone when I want to talk about that score. Now we're annoyed about two different things."},
+      {"by":"a","conf":"I'm trying to talk about the challenge, and {b} wants to talk about how loud I am. Unbelievable."},
       {"by":"b","conf":"I'm done letting {a} talk to me like that. Done."}
     ] },
     { id: "ncb.l10", place: "public", when: {"voice":["warm","earnest","anxious"]}, turns: [
@@ -119,19 +119,19 @@ export default {
       {"by":"b","say":"If it's about today, I know. I'm sorry."},
       {"by":"a","say":"I'm not mad. I just think you should go talk to people before tonight."},
       {"by":"b","say":"Why? Am I going home?"},
-      {"by":"a","say":"I don't know. I don't want you sitting alone assuming everyone has decided."},
+      {"by":"a","say":"I don't know. But don't just sit here alone and assume it's over."},
       {"by":"b","say":"...Okay. Thanks."},
-      {"by":"a","conf":"I can't promise {b} is safe. I can say I'd rather have an actual conversation than let a bad result do all the talking."}
+      {"by":"a","conf":"I can't promise {b} is safe. But {b} shouldn't just give up because of one bad challenge."}
     ] },
     { id: "ncb.l11", place: "public", when: {"voice":["goofy","food","ditzy","chaotic"]}, turns: [
       {"by":"a","say":"Okay, so that went badly."},
       {"by":"c","say":"Understatement."},
-      {"by":"a","say":"I'd like to find a bright side. I'm having a difficult time."},
-      {"by":"b","say":"You could start by not looking at me while you search."},
-      {"by":"a","say":"Sorry. I'm worried about the result."},
-      {"by":"b","say":"So am I. I don't need to become the group project on top of it."},
-      {"by":"a","say":"Okay. We can talk about what would help instead."},
-      {"by":"b","conf":"I know {a} is trying to make this less awful. I'd appreciate a little less improvising at my expense."}
+      {"by":"a","say":"I'm trying to find a bright side. I've got nothing."},
+      {"by":"b","say":"Maybe stop looking at me while you look for it?"},
+      {"by":"a","say":"Sorry! I'm just stressed."},
+      {"by":"b","say":"So am I. I don't need everybody trying to fix me on top of it."},
+      {"by":"a","say":"Okay. What would actually help?"},
+      {"by":"b","conf":"I know {a} is trying to help. I'd just like {a} to stop making it all about me."}
     ] },
   ],
 

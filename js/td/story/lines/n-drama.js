@@ -266,7 +266,7 @@ export default {
       { by: 'a', say: "Because I was trying to get us organised!" },
       { by: 'b', say: "You were trying to be in charge. There's a difference." },
       { by: 'a', conf: "If I don't lead, nobody does. And then we lose." },
-      { by: 'b', conf: "We lost with {a} leading. I'm just pointing that out.", v: { dry: "{a} led us straight to a loss. Great leadership. Very inspiring.", cruel: "{a} led, and we lost, so you do the maths." } },
+      { by: 'b', conf: "We lost with {a} leading. I'm just pointing that out.", v: { dry: "{a} led us straight to a loss. Great leadership. Very inspiring.", cruel: "{a} led, and we lost, so you do the math." } },
     ] },
   ],
   'long.drama.explode.any': [

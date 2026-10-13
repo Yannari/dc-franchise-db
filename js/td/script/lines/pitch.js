@@ -116,7 +116,7 @@ const REACT_NUMBERS = [
   ] },
   { id: 'pt.n4', when: { register: 'schemer' }, turns: [
     { by: 'a', say: "{target}. Tonight. Are you in?" },
-    { by: 'b', say: "Walk me through the maths. After tonight, who's got the majority?" },
+    { by: 'b', say: "Walk me through the math. After tonight, who's got the majority?" },
     { by: 'a', say: "We do." },
     { by: 'b', say: "Who's 'we'? Because I'm not sure I'm in it. I'll think about it." },
   ] },

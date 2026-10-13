@@ -408,6 +408,21 @@ window.CHALLENGES = {
     const off = new URLSearchParams(location.search).has('nosw') || (local && localStorage.getItem('dc_sw_local') !== '1');
     if (off) { navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => {}); return; }
     navigator.serviceWorker.register('sw.js').catch(e => console.warn('Smart cache not installed:', e));
+    // A new deploy downloads behind the open page; when all of it is in, say so.
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data?.type !== 'dc-site-update-ready' || document.getElementById('dc-update-ready')) return;
+      const bar = document.createElement('div');
+      bar.id = 'dc-update-ready';
+      bar.setAttribute('role', 'status');
+      bar.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;display:flex;gap:10px;align-items:center;'
+        + 'padding:10px 14px;background:var(--surface,#141c26);color:var(--text,#e2e8f0);border:1px solid var(--accent,#10b981);'
+        + 'box-shadow:0 12px 30px rgba(0,0,0,.45);font:600 13px var(--font-body,system-ui)';
+      bar.innerHTML = '<span>New version ready</span><button type="button" class="btn btn-primary btn-sm">Reload</button><button type="button" aria-label="Dismiss" style="background:none;border:0;color:inherit;cursor:pointer">✕</button>';
+      const [reload, dismiss] = bar.querySelectorAll('button');
+      reload.onclick = () => location.reload();
+      dismiss.onclick = () => bar.remove();
+      document.body.appendChild(bar);
+    });
   } catch (e) { console.warn('Smart cache:', e); }
 })();
 

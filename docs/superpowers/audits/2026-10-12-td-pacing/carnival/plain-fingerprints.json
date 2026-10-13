@@ -1,0 +1,82 @@
+[
+  {
+    "id": "carnival_enabled_no-coaches_1729",
+    "fingerprint": {
+      "history": "032eaf26f709b3854c5f89ac8b89dd0b2b52f7bf44aeeb58e7378176bda1aed8",
+      "bonds": "bc74fc10467872ddc667f965d91df494a28927ebef84fe8fc7617e3576c9da5f",
+      "story": "74ad12340dbbcbaa8dd90e6b43930b42f50e2fa88006966c9c033d46c4eec148",
+      "randomCalls": 8105,
+      "winner": "Aubrey"
+    }
+  },
+  {
+    "id": "carnival_enabled_no-coaches_2026",
+    "fingerprint": {
+      "history": "94d32935f8f2bf5cad6155e7a3e589ebca470032d0c43cd158f076a1ec5d76fa",
+      "bonds": "ffd35abfe446ae4edb3af9630600d57ed4ba896b9bf2bd84a18bf18aa9c915a9",
+      "story": "f7d21378d3860930feb5469e085fbb8c2c644097b5d136cda53041da9d4da6e9",
+      "randomCalls": 8554,
+      "winner": "Bowie"
+    }
+  },
+  {
+    "id": "carnival_enabled_coaches_1729",
+    "fingerprint": {
+      "history": "0d2ad37105439fd7988ffe51f984a322806ffc6f36b3e8dc4c50094ee46eb85e",
+      "bonds": "7a56f8604965c452d3d5bdf081de15d6276d6f5642bad3afe4e45219dbd8758b",
+      "story": "3a62aee9583c3c0dc211a4f29f1e6f0b7322d77d50f77b5d5e236d996d21bd14",
+      "randomCalls": 10006,
+      "winner": "Leshawna"
+    }
+  },
+  {
+    "id": "carnival_enabled_coaches_2026",
+    "fingerprint": {
+      "history": "75762a94a81b127c490d89d5ff8fd1bf126b24af01b2b4e4a2e8b1291e3f5ec2",
+      "bonds": "713c38d7e584b27d27dd3efb7431b43edec7bde3d22c580be64edaacaf95ffa5",
+      "story": "65547639e3811eaba8a752396eb23a753c519e156e9c16dd01bdadf0752356e9",
+      "randomCalls": 10420,
+      "winner": "Bowie"
+    }
+  },
+  {
+    "id": "carnival_disabled_no-coaches_1729",
+    "fingerprint": {
+      "history": "d1c9885c3ec2bbf2aac961c0296441cb3db369cf9c024d00b88eb23c032d7c42",
+      "bonds": "07e16dfd7ff97e80c38f1de97bf2d3f19d62278ff6a2e20758d5aa1145ec80aa",
+      "story": "c58545112da8c41cc34e7cccf37cd27872a871af4fd49e1f0a9dfe50cd17552d",
+      "randomCalls": 7761,
+      "winner": "Leshawna"
+    }
+  },
+  {
+    "id": "carnival_disabled_no-coaches_2026",
+    "fingerprint": {
+      "history": "b4ba5f32936eb6651b56781481c26ee61cefd05fa0a51abbb664280eb306b613",
+      "bonds": "6e4a7a8e698ab586dcb1241f57b7de8034b4556ecec2cb8ed3e17241a0e42c46",
+      "story": "51f2ac64b5d49f8ecea494c95895482fb125e90035106af906c296d54ff6f4c3",
+      "randomCalls": 8406,
+      "winner": "Gwen"
+    }
+  },
+  {
+    "id": "carnival_disabled_coaches_1729",
+    "fingerprint": {
+      "history": "e384b67154ee164a5065d1a1632e45b42077bbf01d424172cd4f6abab8ce6b57",
+      "bonds": "c9280118888102097b2108ee551431adf9a9354e523aaca7c1ef4dd7fb33e17c",
+      "story": "1721fa5b1d6c5325f6fcfcf376c95861ef54781dfc3d445e306c4db221e75848",
+      "randomCalls": 10349,
+      "winner": "Bowie"
+    }
+  },
+  {
+    "id": "carnival_disabled_coaches_2026",
+    "fingerprint": {
+      "history": "e28198497c45397151b94909f716da7f79ff069a245098d7970fbb71d8f3a286",
+      "bonds": "18c5c1f2b8affc6aef779165b270f68f21063d581cf3fee8cf62f8fe6b488363",
+      "story": "c25c02fdf54b0ca5cf8bc733de1e5e9b8310a935bec009101482ef41929d1304",
+      "randomCalls": 9727,
+      "winner": "Yul"
+    }
+  }
+]

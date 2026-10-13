@@ -1,0 +1,607 @@
+
+=== META ===
+SEASON: Pacing baseline
+EPISODE 11 - "Dodgeball"
+Phase: post-merge | Players Remaining: 7
+
+=== CAST (ALL) ===
+Gwen
+Leshawna
+Heather
+Duncan
+Courtney
+Owen
+Lindsay
+Trent
+Julia
+Millie
+Aubrey
+Lake
+Gabby
+Bowie
+Yul
+Bruno
+Alejandro
+Izzy
+
+=== TRIBES (ACTIVE) ===
+MERGED (7): Owen, Lindsay, Trent, Millie, Lake, Gabby, Bowie
+
+=== ELIMINATED (PERMANENT) ===
+Bruno
+Gwen
+Leshawna
+Julia
+Courtney
+Heather
+Aubrey
+Yul
+Duncan
+
+=== ROSTER AT EPISODE START ===
+Everyone alive and active when this episode BEGAN. Players marked (OUT THIS EPISODE) are eliminated later THIS episode but are fully present in every scene until their elimination beat — never write them as gone before then.
+Duncan (OUT THIS EPISODE)
+Owen
+Lindsay
+Trent
+Millie
+Lake
+Gabby
+Bowie
+
+=== ELIMINATED THIS EPISODE ===
+Eliminated DURING this episode (NOT before it). Alive until their elimination at the challenge / Tribal / duel / twist. The "previously on" recap must NEVER mention these names:
+Duncan
+
+=== COLD OPEN ===
+Chris: Last time on Total Drama...
+Chris: At Dig Deep, Trent grabbed immunity, which sent a lot of people scrambling for a new name.
+Chris: Duncan knew he was in trouble, and started making calls.
+Trent: And if the others find out?
+Chris: Bowie cut a side deal with Duncan. Then possibly another one. With someone else.
+Chris: Meanwhile, Yul got caught. Everybody saw. Nobody forgot. Ouch.
+Bowie: No. Why would Lake?
+Chris: When it came time to vote, Bowie flipped, and nobody saw it coming, least of all Yul, and rounded up the votes.
+Bowie: The Movement gets me further than The Assembly does, so I'm going with The Movement. Yul.
+Chris: The swing vote? Owen.
+Chris: And then Lake pulled out an idol, and the whole room did the math again.
+Chris: Yul walked in sure of a different name, and walked out of the game. Six votes to one. Blindside! Television gold.
+Yul: Hold on. Hold on. That can't be right.
+Chris: This time, a promise gets made by the fire and broken by midnight.
+Chris: Eight campers. One winner. Who goes tonight? Stay tuned!
+
+Ep.10: Trent won immunity. Yul was voted out.
+Yul broke The Iron Four — voted Duncan instead of Owen. Why: the whispers got loud enough. The alliance's target, Owen, survived because of it. The relationship with remaining members has taken damage.
+
+=== CAMP — PRE-CHALLENGE ===
+ADVANTAGES:
+- No advantages active.
+
+CAMP EVENTS:
+- [The Morning After] Owen, Lindsay and Duncan are in the shelter, slowly waking up. Owen: "Did Yul take the good pillow?" Lindsay: "What good pillow?" Owen: "Exactly. There's no good pillow anymore." Duncan: "That's what you're worried about? A pillow?" Owen: "The vote's over. The pillow thing is still happening." Owen, in the confessional: "I liked Yul, we just weren't close, so I'm not going to fake cry about it. I'm going to go find a better pillow."
+- [DISPUTE] Half the camp is close enough to hear every word. Your strategy is terrible. Let's talk. Can I stop you? You're telling everybody different things, and people talk! They compare notes! I'm keeping my options open. You're keeping everybody confused, honestly. Even your own side. If they're CONFUSED, they're not voting for me! Or they're voting for you because they don't know where you are. Duncan goes after Bowie and sits down beside him. Ignore Gabby. Seriously, nobody thinks that about you. Gabby does. Gabby isn't everybody. Can we stop pretending Bowie started this? I watched the whole thing, Gabby. That's... not how I remember it. I don't think I did. Duncan ran straight to Bowie, and Gabby saw it. That's two sides now, whether anybody wanted them or not. Gabby thinks there's one right way to play! There ISN'T! Bowie is going to get us both voted out. I can feel it. I just stood there wishing I was literally anywhere else. And then I started thinking about which side I'd want to be on, and I didn't love the answer.
+- [SIDE DEAL] Duncan and Lake talk quietly in the corn maze, where nobody can overhear. I'll keep this short. I want a final two, with you. That's very direct. I don't see the point in being indirect. And why should I believe you? Because I need somebody I can trust to get me there, and somebody I think I can beat at the end. You're both. Wait, did you just say you think you can beat me? I said it to your face. That's how you know I'm being honest. ...Fine. Final two. Duncan thinks he can beat me at the end, and that's fine. Let Duncan keep thinking it.
+- [The Spark] Bowie, Duncan and Trent are at the edge of the woods, huddled together where nobody can hear. Bowie: "Have you two ever had an argument? Even one?" Duncan: "Not really. Why?" Trent: "We honestly just get each other." Bowie: "That's really sweet." Duncan: "You say that like it's a bad thing." Bowie: "No, no, it's great. For you two." Bowie, in the confessional: "If Duncan and Trent reach the merge together, nobody will ever split them. I like them both, and I still think somebody has to."
+- [ADVANTAGE FOUND] I can steal somebody's vote. Take it from them and use it myself. I already know whose. I'm going to wait for the night it matters most.
+- Gabby is going on about how many pets she has again, and Duncan has had enough. Duncan: "Is there an off switch, Gabby? Asking for everybody." Gabby: "They're not just pets. They're my family. Say it again and see what happens." Duncan: "Whatever helps you sleep at night." Gabby: "Say it again. I dare you to say it again." Duncan: "...I'm not doing this with you today." Duncan, in the confessional: "Gabby takes everything so personally. Fine. Now I know exactly where to push."
+- [Between Us] Trent and Millie meet at the edge of the woods, both checking over their shoulders first. Trent: "Can we talk about “Talking to me without trying to impress me.”, just the two of us?" Millie: "You want a private conversation, so you opened with the most suspicious possible sentence." Trent: "I want to hear what you think before I start guessing for both of us." Millie: "What do you want us to be?" Trent: "I want to keep getting to know you without having to perform it for people." Millie: "I can do that. Do I still get to flirt with you?" Trent: "Quietly." Millie: "I was going to tell you that you look nice. Should I whisper?" Trent: "You can say that one at a normal volume." Millie: "Good. You look nice. I also like how badly you pretended not to want the compliment." Trent, in the confessional: "I came here to set some boundaries and immediately negotiated an exception for compliments. I'm choosing to call that progress."
+- [In Their Head] Duncan is on the lake shore, doing nothing in particular, when Owen comes over. Owen: "Can I ask you something weird? Do people here like me?" Duncan: "Of course they do. Mostly." Owen: "Then why did my name come up last night?" Duncan: "That's not about LIKING you! That's numbers!" Owen: "Numbers don't write names. People do." Duncan: "Fair. I didn't write it, and if I knew who did, I'd tell you." Owen: "You promise?" Duncan: "I PROMISE." Owen, in the confessional: "Getting votes is one thing. Not knowing who's being honest with me is what's keeping me up."
+- [Meanwhile] Duncan comes back from the water pump with a very serious face. Duncan: "I have NEWS! Gerald has a family!" Trent: "A what?" Duncan: "There are four little crabs living under the shell house. Gerald's been a dad this whole time." Trent: "So that's where he's been going." Duncan: "To work. I told you. He was at work. Being a dad is work." Trent, in the confessional: "I didn't expect a crab to make me emotional this season, and here I am."
+  Off camera:
+  · [BREAKFAST] Bowie, Lake and Trent share the end of a bench and one questionable loaf of bread. Bowie: "So what do we think today's challenge is?" Lake: "Something with mud. It's always something with mud." Trent: "Or heights. Please not heights."
+  · [OVERCONFIDENT] Duncan, in the confessional: "Am I worried? Nope. Not even a little." Duncan, in the confessional: "Everyone else can run around panicking. I'm going to have a nap."
+  · [OBLIVIOUS] Millie: "Should I be doing more? Strategy-wise?" Owen: "Nah. You're doing great." Owen, in the confessional: "Millie should definitely be doing more. I'm just not going to be the one to say so."
+  · [FUNHOUSE] Duncan and Lake get lost in the mirror maze and give up trying to escape, just narrating their own distorted reflections until security fishes them out. Lake: "I don't think I said thank you." Duncan: "You don't have to." Lake: "I'm saying it anyway. Thank you."
+  · [CARNIVAL] Somewhere a game barker is still shouting to no one at midnight. Gabby and Lindsay start heckling back from the striped tents. Lindsay: "Best afternoon we've had out here." Gabby: "Low bar." Lindsay: "Still counts."
+  · [LOYALTY PROOF] Gabby, in the confessional: "Everyone was piling on Lindsay. I'm not going to just sit there and let that happen."
+  · [RIDE OR DIE] Duncan: "Anybody who says Trent's name deals with me." Trent: "You can't say that out loud." Duncan: "I just did. Twice."
+  · [BREAKUP] Owen: "We used to plan everything together." Bowie: "Things change." Owen, in the confessional: "Bowie made a plan without me. I found out from someone else. That's the betrayal: not being told."
+  · [RIDE OR DIE] Lindsay: "Do you ever think about how lucky we got? Finding each other out here?" Gabby: "Every day."
+  · [RIDE OR DIE] Trent: "Whatever happens at the vote, look at me when they read the names." Lake: "Why?" Trent: "So you know I'm still with you. Every single vote."
+  · [CHORES] Owen: "Is it just me, or does Millie always disappear when there's work?" Millie: "I'm right here!" Duncan: "Now you are."
+  · [PUBLIC CLASH] Lake: "Could you not stand right there?" Lindsay: "It's a free camp." Lake: "Then go be free somewhere else!" Owen: "Okay, okay, both of you, separate corners."
+  · [LOYALTY TEST] Lake: "I trust you, so I'm telling you first. It's Duncan." Millie: "Thanks for trusting me." Lake, in the confessional: "Do I trust Millie? That's exactly what I'm trying to find out."
+  · [KNOWS] Lake: "Funny thing. I heard my name got a vote last night." Lindsay: "Really? Huh. Weird." Lake: "Yeah. Weird. And I heard it was yours." Lindsay suddenly finds something very interesting on the ground.
+  · [PRIVATE GAME PLAN] Lake, in the confessional: "Keep Millie close. Keep an eye on Duncan." Lake, in the confessional: "It's a simple plan. Everyone who tried a complicated one is already on their way home."
+  · [PRIVATE GAME PLAN] Trent, in the confessional: "I really like Owen. I think we could go far together." Trent, in the confessional: "Lake kind of scares me, though. I don't want to be mean about it, but I'm watching her."
+
+RELATIONSHIPS:
+- No bond moved enough to note this episode.
+
+ALLIANCES:
+The Iron Four (formed ep.5): Lindsay, Gabby
+  > Yul betrayed ep.9 — voted Bowie instead of Lake — running the game and building the jury at the same time
+  > Yul betrayed ep.10 — voted Duncan instead of Owen — voted against own ally — the whispers got loud enough
+  > Duncan betrayed ep.11 — voted Gabby instead of Millie — voted against own ally — pulled by a competing alliance
+  > Heather left ep.8 (went solo)
+The Movement (formed ep.7): Trent, Lake, Millie, Bowie
+  > Owen betrayed ep.11 — voted Millie instead of Duncan — voted against own ally — Duncan is untouchable to them
+  > Duncan left ep.11 (strategic pivot)
+  > Owen left ep.11 (expelled — betrayed the alliance)
+The Assembly (formed ep.8) — DISSOLVED: Owen, Bowie, Duncan (out)
+  > Bowie broke rank — the alliance couldn't survive it.
+  > Duncan betrayed ep.9 — voted Aubrey instead of Trent
+  > Bowie betrayed ep.11 — voted Duncan instead of Gabby — voted against own ally — following The Movement
+
+ALLIANCE CHANGES:
+- Duncan quietly reclassifies The Movement as a liability.
+
+=== IMMUNITY CHALLENGE ===
+INDIVIDUAL IMMUNITY (Dodgeball challenge — physical): Owen wins.
+Full-tribe dodgeball played in elimination rounds. It's chaotic, physical, and ends exactly the way you'd expect it to.
+  Full standings: Owen (1st, immune) > Duncan > Gabby > Millie > Trent > Lindsay > Bowie > Lake (last)
+
+=== CAMP — POST-CHALLENGE ===
+- [Truce?] Lindsay finds Gabby on the rocky beach, counting clouds, apparently. Lindsay: "So that's where we are now? You kept a promise when it would have been easier to break it, and I have to be nice to you?" Gabby: "You don't have to do anything. I'd just like you to stop yelling at me." Lindsay: "I don't yell." Gabby: "You're a little bit yelling right now." Lindsay: "Okay, truce, and thanks, actually." Lindsay, in the confessional: "I wanted to stay angry at Gabby. Then Gabby kept a promise when it would have been easier to break it, and staying angry got a lot harder."
+- [TURNED DOWN] Bowie: "Can I ask you something about Gabby?" Lindsay: "Depends. Is it something nice?" Bowie: "I just think Gabby is playing a much bigger game than you know." Lindsay: "And you're telling me this because you care about me so much?" Bowie: "I'm telling you because I think you should know." Lindsay: "Well, now I know. And I don't believe you." Lindsay, in the confessional: "Bowie wants me to turn on Gabby. That tells me a lot more about Bowie than about Gabby."
+- Millie, in the confessional: "I keep picturing Duncan's face when the votes get read, and I can't stop." Millie, in the confessional: "Everybody says it's just a game. Then why does it feel like I'm about to do something I'll have to apologise for for the rest of my life?"
+- [Other Plan] Duncan catches Lindsay alone in the corn maze. Duncan: "Okay, let's actually count. It's you and me, so that's two. They've got Millie, Lake, Gabby and Bowie, so that's four, maybe." Lindsay: "That's basically even." Duncan: "Which means one person decides tonight, and I want to know who that person is before we walk in." Lindsay: "And if it ties?" Duncan: "Then it's a revote, and in a revote, people get scared and go with the safe name. We need to be the safe name." Duncan, in the confessional: "It's two against four. In a vote that close, the plan doesn't matter. The one person who changes their mind matters."
+- [Other Plan] Duncan catches Owen alone at the edge of the woods. Duncan: "I'm just going to say it. Gabby and Lindsay are running this camp as a two-person team." Owen: "That's a bit harsh. They're just close." Duncan: "Is it? Name one vote they split on." Owen thinks about it, and can't. Duncan: "Exactly. Two votes, one brain. If we don't break it up now, we're all just waiting to be next." Owen: "Okay. Which one?" Duncan: "Gabby. Gabby is the one who does the talking." Owen: "Lindsay is going to be so upset." Duncan: "Let Lindsay scream. Screaming isn't a vote." Duncan, in the confessional: "Everybody here is so afraid of upsetting Lindsay that they're letting those two walk to the end. I'm not afraid of Lindsay."
+- [The Plan] Bowie heads over to Lake, who is drawing in the dirt with a stick on the rocky beach. Bowie: "Here's the math. It's you, me, Millie and Gabby on Duncan, that's four. And they've got Lindsay and Duncan, so two." Lake: "So we're fine." Bowie: "We're fine if nobody moves. One flip and it's a tie, and two flips means it's one of us." Lake: "So who's the one most likely to flip?" Bowie: "That's the question I'm going to spend the rest of the afternoon answering." Lake, in the confessional: "Bowie has counted the vote about forty times today. I'm glad somebody has, honestly."
+- [Locked In] Lake and Millie head off. Gabby drifts over, pretending not to be curious. You've been floating between groups all week. I've been LISTENING to groups all week! It's Duncan. With you, we have the numbers. And WITHOUT me? Then we're less sure, and nobody trusts you. ...FINE. Duncan. Being the swing vote is GREAT until you swing the wrong way! I'm not swinging the wrong way tonight!
+- [POWER CLASH] The rest of the camp has stopped what they are doing to watch. Are you going to make that face every time I speak? Can you stop checking whether I approve? Everyone can see you doing it. Then ask whether I disagree. You might get an answer you can use. Fine. Do you disagree? Yes. I think you're deciding for people who haven't answered yet. And you're very generously answering for them. Okay, Millie's just hungry and tired. We all are. Let's just drop it. That's not an excuse. I know it isn't. I'm just trying to get through dinner. Everybody turns to look at Trent, because everybody knows Trent and Lindsay are close. Don't look at me like that. Millie is right, and I'm not going to lie because it's Lindsay. Thanks a lot, Trent. I like Lindsay. I do. But I'm not going to stand there and agree with something I think is wrong, even for a friend. I like Millie, I do, but she makes it really hard to defend her sometimes. I dislike being talked over. Apparently I dislike it enough to talk over someone else. I'm not thrilled that Millie noticed. Honestly? Best entertainment we've had all week. I'm not proud of it. I'd watch it again, though.
+- [On Edge] Millie wanders over to Trent, who is on the lake shore, counting clouds, apparently. Millie: "If it's me tonight, I want you to know I'm not mad at you. Mildly annoyed, maybe." Trent: "Why would it be you?" Millie: "Because I've been here long enough to know what it feels like the day it's you." Trent: "Then let's make it somebody else." Millie: "Duncan?" Trent: "Duncan. I'll start asking around." Millie, in the confessional: "One friend, one name and about three hours. It's not much, but I'm not panicking yet."
+- [Feels Safe] Millie finds something else to do. Duncan wanders over to see what's going on. Gabby is going home, and honestly, I can't wait to watch it happen. You're very confident for somebody who hasn't seen a single ballot. I'm confident because I counted. Gabby has nobody. Who did you actually count with? Everybody. I talked to everybody. And they really all said Gabby? They all nodded when I said Gabby. Same thing. ...Is it, though? Honestly? Don't do that. Don't make me nervous right before the vote.
+  Off camera:
+  · [THREAT] Owen, in the confessional: "I'm consistent. That's my thing. I just hope consistent doesn't become dangerous."
+  · [TAKING NOTE] Bowie, in the confessional: "I've been watching the challenges closely. Owen keeps showing up. I don't like it."
+  · [IMMUNITY] Owen: "Nobody can touch me tonight!" Lake: "Enjoy it." Gabby: "Some of us were really counting on touching you tonight."
+  · [WILDCARD] Duncan: "I've decided I don't like you anymore." Gabby: "Since when?" Duncan: "Since about two minutes ago. Bye!" Duncan skips off. Gabby stares after him.
+  · [ORCHESTRATING] Millie: "Do you ever think about Bowie? How strong Bowie is?" Duncan: "Now I do." Millie, in the confessional: "That's the seed. Give it a week."
+  · [GOOD VIBES] A seagull lands on Trent's head and refuses to leave. Trent: "Is it gone? Tell me it's gone." Millie: "It's making itself comfortable." Lake: "It likes you!"
+  · [DUNKED!] Duncan winds up at the dunk-tank lever and drops Gabby straight into the cold water on the first throw. Gabby comes up sputtering; the midway roars. Gabby: "This camp is too small for this." Duncan: "Then stay out of my way."
+  · [STRATEGY] Bowie: "Next vote isn't Duncan. The one after that is." Lake: "Why wait?" Bowie: "Because right now Duncan wins us challenges. The second that stops being useful, Duncan goes." Lake: "That's cold." Bowie: "That's the game."
+  · [COMFORT] Lindsay: "Okay, I'm going to make you laugh. Brace yourself." Trent: "I'm not in the mood." Lindsay tells the worst joke in the world. Trent laughs anyway. Trent, in the confessional: "Lindsay spotted I was having a bad day before I even knew it."
+  · [GRATITUDE] Lindsay: "Hey. Thanks for checking on me the other day." Owen: "You noticed?" Lindsay: "I notice who notices."
+  · [ALLIANCE HUDDLE] Owen: "Is everybody still in? Be honest." Lake: "I'm in." Trent: "I'm in. Why, did you hear something?" Owen: "No. I just like hearing you say it."
+  · [DINNER] Bowie: "Well. That was a day." Millie: "Every day here is a day." Trent: "This one was more of a day than usual."
+  · [SOLIDARITY] Duncan and Millie sit next to each other at the fire. Neither says anything. Everyone can see they're a pair. Millie, in the confessional: "We don't have to talk about it. We both know."
+  · [SIDE DEAL] Bowie: "Can I say something about our group without you running off to tell everyone?" Owen: "Depends what it is." Bowie: "I don't think it lasts. And when it falls apart, I want to know you and I are still okay." Owen: "That's a dark thought." Bowie: "It's a realistic one."
+  · [SIDE DEAL] Owen: "Why are we whispering? We're in the same alliance." Bowie: "Exactly. Which is why nobody else in it should hear this." Owen: "Okay, now I'm nervous." Bowie: "Don't be. I just want a backup plan. And I want it to be you."
+  · [SIDE DEAL] Owen: "Do you ever feel like we're the bottom of the group?" Duncan: "All the time." Owen: "Then maybe the bottom should look out for each other. Quietly." Duncan: "Quietly. Yeah. I like that."
+  · [DREAM] Lake: "I dreamed about who's going home next." Bowie: "Who?" Lake: "I'm not saying." Bowie, in the confessional: "Nobody laughed. Lake's reads have been too right for that."
+  · [BREAKUP] Bowie starts treating Duncan like everyone else. That's the part that hurts. Duncan, in the confessional: "No fight. No reason. Just… less. Every day a little less."
+  · [RIDE OR DIE] Gabby, in the confessional: "People keep asking if Lindsay and I are a showmance. We're not. It's worse. We're loyal."
+  · [RIDE OR DIE] Lake: "What's the first thing we do after this?" Trent: "Real food. Together. My treat." Lake: "Even if I win?" Trent: "Especially if you win. Then it's your treat."
+  · [NERVES] Lindsay: "Whatever happens tonight, it was nice knowing you guys." Bowie: "Stop. You're making it weird." Gabby: "It was already weird."
+  · [WALKED AWAY] Duncan, in the confessional: "The numbers changed. The Movement isn't the winning side now. So I'm moving."
+  · [RECRUITED] Lindsay: "I've been watching you in The Assembly. You do all the work and they make all the decisions." Duncan: "Is it that obvious?" Lindsay: "To me it is. In The Iron Four, you'd have a real say." Duncan: "That's what The Assembly told me at the start." Lindsay: "Then judge us by what we do, not what we say. Come and see." Duncan: "...Okay. I'll come and see." Duncan, in the confessional: "I don't know if I'm smart or a traitor. Probably both."
+  · [PRIVATE WORD] Bowie: "I need to tell you something, and you're not going to like it." Duncan: "You're breaking up with me?" Bowie: "Funny. No. Your name's going round for the vote." Duncan: "My name? Who's saying it?" Bowie: "I don't know everyone. But I've heard it more than once."
+  · [PRIVATE WORD] Owen: "I don't want to scare you, but your name's out there for tonight." Lake: "Tonight? Are you serious?" Owen: "I wish I wasn't." Lake: "Okay. I need to go talk to some people. Like, all of them." Lake hurries off.
+  · [PRIVATE WORD] Trent: "I'm still not over Yul. Nobody told me anything." Duncan: "Then let me tell you something this time. It's Lake next." Trent: "Already?" Duncan: "Already. This place doesn't wait around." Trent: "Okay. Thanks for not letting me find out at the vote again."
+  · [REPUTATION SHIFT] Lindsay, in the confessional: "Lake acts like the boss. Somebody needs to remind Lake that nobody voted for that."
+  · [PITCH STALLED] Gabby: "What if we went with Trent tonight instead?" Lindsay: "We already have a plan." Gabby: "Plans change." Lindsay: "Not this one. Not for me." Gabby: "I'm thinking Trent tonight." Lake: "Trent? No way. Trent's my friend." Gabby: "This isn't about friends. It's about the game." Lake: "Then the game can find somebody else." Gabby: "We've got two for Trent. You in?" Bowie: "Absolutely not. And you should leave Trent alone." Gabby: "Why do you care so much?" Bowie: "Because Trent would never do this to me." Gabby, in the confessional: "Nobody's biting. I pitched Trent to everyone, and I got a lot of 'maybe'." Gabby, in the confessional: "I don't think it's happening tonight."
+
+=== VOTING PLANS ===
+Owen is safe (Dodgeball challenge). Everyone else is vulnerable.
+VOTING MATH:
+  8 attending - 0 without a vote = 8 eligible voters.
+  5 ballots are needed to guarantee majority control. A read of "5 supporting; 5 needed" means the plan is one ballot short of controlling the vote.
+  A target does NOT need 5 votes to leave. If the field splits, the highest valid total wins by plurality; 3-2-2-2-1 still eliminates the player with 3.
+  Players without votes can still discuss strategy and influence allies, but contribute zero ballots. Extra Votes add ballots only when played at Tribal.
+  The Movement considered a split against Duncan but rejected it: an assigned voter was unreliable.
+
+STRATEGIC REPUTATIONS:
+  Owen: Discreet. Reliability 51%; persuasion 42%; discretion 82%; control 56%; deception 48%.
+  Lindsay: Discreet. Reliability 58%; persuasion 42%; discretion 82%; control 50%; deception 18%.
+  Trent: Discreet. Reliability 58%; persuasion 42%; discretion 82%; control 56%; deception 48%.
+  Millie: Discreet. Reliability 58%; persuasion 42%; discretion 82%; control 56%; deception 18%.
+  Lake: Discreet, Controlling. Reliability 58%; persuasion 24%; discretion 82%; control 71%; deception 12%.
+  Gabby: Discreet. Reliability 58%; persuasion 24%; discretion 82%; control 58%; deception 48%.
+  Bowie: Discreet, Controlling. Reliability 48%; persuasion 24%; discretion 82%; control 71%; deception 12%.
+  These are behavior-based reputations, not guarantees. Bonds, current numbers, and emotional state can still override them.
+
+ALLIANCE PLANS:
+BALLOT RELIABILITY DICTIONARY:
+  DEPENDABLE — forecast to follow the proposal with at least 65% plan pull. It is the firmest modeled ballot, not a guarantee.
+  TENTATIVE — forecast to follow the proposal with under 65% plan pull; a better pitch, relationship conflict, or late disruption can move them.
+  EARLY RESERVATIONS — began on another personal choice, then was forecast to return. This is a note on a Tentative/Dependable voter, not an extra ballot.
+  FORECAST ELSEWHERE — alliance member expected to cast a different ballot; contributes zero projected support to this proposal.
+The Movement (5 members, 5 can vote)
+  TARGET: Duncan
+  PROJECTED ELIGIBLE BALLOTS: Millie, Lake, Gabby (3)
+  BALLOT RELIABILITY: 0 dependable (none); 2 tentative (Millie, Lake).
+  EARLY RESERVATIONS: Millie. Already counted above; they initially preferred another name.
+  FORECAST ELSEWHERE: Trent. Alliance membership does not count them as ballots tonight.
+  REASONING: following The Movement — it's the right call for now — [ENDGAME PLAN REVISION] Bowie abandoned the private preferred shield plan for Duncan; no pact was broken, but their intended route to the end changed — broke The Assembly
+  MEMBERS: Bowie, Lake, Millie, Owen, Trent
+  SPEARHEADER: Bowie
+  CONFLICTED:
+    Bowie: Strong bond with Duncan (3.0) — may hesitate
+    Lake: Extremely close bond with Duncan (5.0) — betrayal risk
+    Millie: Extremely close bond with Duncan (6.5) — betrayal risk
+    Owen: Actually voted Millie — Duncan is untouchable to them — Millie absorbs the vote instead — broke own bloc — broke The Movement
+    Trent: Actually voted Gabby — Trent would not vote Duncan, so Gabby became the alternative
+
+The Iron Four (3 members, 3 can vote)
+  TARGET: Millie
+  PROJECTED ELIGIBLE BALLOTS: Lindsay (1)
+  BALLOT RELIABILITY: 1 dependable (Lindsay); 0 tentative (none).
+  FORECAST ELSEWHERE: Gabby. Alliance membership does not count them as ballots tonight.
+  REASONING: sticking with The Iron Four; changing now would leave both sides distrusting them
+  MEMBERS: Lindsay, Gabby, Duncan
+  SPEARHEADER: Duncan
+  CONFLICTED:
+    Gabby: Actually voted Duncan — [HELD COMMITMENT] considered Trent, but no credible late coalition or disruption justified abandoning Duncan
+    Duncan: Actually voted Gabby — split — The Assembly made a more compelling case — broke The Iron Four
+
+The Assembly (3 members, 3 can vote)
+  TARGET: Gabby
+  PROJECTED ELIGIBLE BALLOTS: Duncan, Owen, Trent, Bowie (4)
+  BALLOT RELIABILITY: 3 dependable (Duncan, Owen, Bowie); 0 tentative (none).
+  REASONING: split — The Assembly made a more compelling case — broke The Iron Four
+  MEMBERS: Owen, Bowie, Duncan
+  SPEARHEADER: Bowie
+  CONFLICTED:
+    Owen: Actually voted Millie — Duncan is untouchable to them — Millie absorbs the vote instead — broke own bloc — broke The Movement
+    Bowie: Actually voted Duncan — following The Movement — it's the right call for now — [ENDGAME PLAN REVISION] Bowie abandoned the private preferred shield plan for Duncan; no pact was broken, but their intended route to the end changed — broke The Assembly
+    Duncan: Also in The Iron Four with Gabby — torn loyalties
+
+PLAN STABILITY:
+  Duncan: locked on plan. Initial lean Gabby; forecast ballot Gabby. Plan pull 70%. Estimates 3 early support; 5 needed. Forecasted proposal ballots: Duncan, Owen, Trent, Bowie.
+  Owen: locked on plan. Initial lean Gabby; forecast ballot Gabby. Plan pull 95%. Estimates 3 early support; 5 needed. Forecasted proposal ballots: Duncan, Owen, Trent, Bowie.
+  Lindsay: locked on plan. Initial lean Millie; forecast ballot Millie. Plan pull 78%. Estimates 2 early support; 5 needed. Forecasted proposal ballots: Lindsay.
+  Trent: forecast elsewhere. Initial lean Duncan; forecast ballot Gabby. Plan pull 51%. Estimates 2 early support; 5 needed. Forecasted proposal ballots: Millie, Lake, Gabby.
+  Millie: forecast to return to plan. Initial lean Lindsay; forecast ballot Duncan. Plan pull 44%. Estimates 2 early support; 5 needed. Forecasted proposal ballots: Millie, Lake, Gabby.
+  Lake: leaning plan. Initial lean Duncan; forecast ballot Duncan. Plan pull 55%. Estimates 2 early support; 5 needed. Forecasted proposal ballots: Millie, Lake, Gabby.
+  Gabby: forecast elsewhere. Initial lean Millie; forecast ballot Duncan. Plan pull 71%. Estimates 1 early support; 5 needed. Forecasted proposal ballots: Lindsay.
+  Bowie: locked on plan. Initial lean Gabby; forecast ballot Gabby. Plan pull 81%. Estimates 3 early support; 5 needed. Forecasted proposal ballots: Duncan, Owen, Trent, Bowie.
+  CURRENT LEANS ACROSS ALL ALLIANCES:
+    Gabby: 4 — Duncan, Owen, Trent, Bowie
+    Duncan: 3 — Millie, Lake, Gabby
+    Millie: 1 — Lindsay
+  No target currently has 5 firm leans. A smaller plurality can still decide the elimination.
+
+FLIP NEGOTIATIONS:
+  Gabby pitched Trent, claiming 2 possible votes.
+    Confirmed coalition: Gabby. Accepted: none.
+    Resolution: dissolved after overlapping promises were reconciled; those voters chose another coalition.
+    Rejected: Lindsay (strong-plan-not-replaced); Lake (protecting-target); Bowie (protecting-target); Millie (protecting-target).
+
+PITCH INFORMATION FLOW:
+  Gabby → Millie: warned that Gabby was organizing against Trent. 85% credibility; believed.
+  Gabby → Bowie: warned that Gabby was organizing against Trent. 88% credibility; believed.
+
+HOW THE PLANS CHANGED:
+  Duncan: moved from the Gabby forecast to Gabby.
+  Owen: voted Millie to protect an ally.
+  Trent: voted Gabby to protect an ally.
+  Gabby: considered Trent, but stayed on Duncan because no credible coalition or disruption supported the switch.
+  Bowie: joined a simultaneous 3-ballot coalition on Duncan.
+
+GOING INTO TRIBAL:
+  Primary Target: Duncan (4 votes)
+
+ADVANTAGES IN PLAY:
+  Trent holds Vote Steal
+
+KEY CONFESSIONALS:
+  Bowie [Spearheader]: "following The Movement — it's the right call for now — [ENDGAME PLAN REVISION] Bowie abandoned the private preferred shield plan for Duncan; no pact was broken, but their intended route to the end changed — broke The Assembly"
+  Duncan [Conflicted]: "split — The Assembly made a more compelling case — broke The Iron Four"
+
+=== CAMP ACCESS — WHERE THE STRATEGY HAPPENED ===
+Venue profile: carnival. Only strategically meaningful contacts are shown here; the complete movement schedule is available in Debug → Camp Access.
+- Gabby tried to build the Trent pitch: reached 4/4 available approaches across Team campsite (off to the side).
+    Lindsay, Lake, Bowie, Millie heard it in exposed surroundings; keeping the conversation contained was difficult.
+    Nearby Millie overheard at Team campsite (off to the side); Bowie overheard at Team campsite (off to the side).
+
+=== WHERE THEIR HEADS ARE AT — GAME PLANS ===
+Persistent strategy: pre-merge reads focus on surviving the current tribe; stronger endgame structures can grow later. A private preference is not a pact. Confirmed deals require an interaction, and plans only shift when something forces them to.
+READ DICTIONARY: DRIVING = actively pitched a target and tried to move the vote this episode (success is not guaranteed). PRIVATE READ = a personal intention that was not meaningfully pitched this episode.
+- [PRIVATE READ] Owen: privately prefers to move forward with Trent — this is not a confirmed pact; fallback option: Millie (trusted fallback if the preferred structure fails); long-term targets: Bowie (revenge made removing them part of the strategic plan), Lake (their Final Two deal ended because conflicting endgame promises were exposed), Millie (revenge made removing them part of the strategic plan); holding a grudge against Bowie (resentment reached 5.1 after a crossed line or betrayal), Millie (resentment reached 4.5 after a crossed line or betrayal); planning style: reactive; plan stage: adaptation.
+- [PRIVATE READ] Lindsay: fallback option: Gabby (trusted fallback if the preferred structure fails); planning style: reactive; plan stage: adaptation.
+- [PRIVATE READ] Trent: confirmed endgame deal with Millie (formed through an actual interaction); privately prefers to move forward with Owen — this is not a confirmed pact; fallback option: Millie (trusted fallback if the preferred structure fails); long-term target: Lake (their Final Two deal ended because conflicting endgame promises were exposed); holding a grudge against Lake (endgame promise was broken; resentment reached 3.8); advantage plan: hold; planning style: structured; plan stage: endgame.
+- [PRIVATE READ] Millie: confirmed endgame deal with Trent (formed through an actual interaction); privately prefers to move forward with Owen & Lake — this is not a confirmed pact; fallback option: Bowie (trusted fallback if the preferred structure fails); long-term targets: Trent (their Final Two deal ended because conflicting endgame promises were exposed), Owen (revenge made removing them part of the strategic plan); holding a grudge against Owen (resentment reached 4.5 after a crossed line or betrayal); planning style: structured; plan stage: endgame.
+- [PRIVATE READ] Lake: privately prefers to move forward with Millie — this is not a confirmed pact; fallback option: Bowie (trusted fallback if the preferred structure fails); long-term targets: Trent (revenge made removing them part of the strategic plan), Lindsay (revenge made removing them part of the strategic plan), Duncan (their Final Two deal ended because conflicting endgame promises were exposed); holding a grudge against Trent (resentment reached 5.0 after a crossed line or betrayal), Lindsay (resentment reached 4.3 after a crossed line or betrayal); planning style: structured; plan stage: endgame.
+- [DRIVING] Gabby: fallback option: Lindsay (trusted fallback if the preferred structure fails); planning style: reactive; plan stage: adaptation.
+- [PRIVATE READ] Bowie: privately prefers to move forward with Lake — this is not a confirmed pact; fallback options: Lake (trusted fallback if the preferred structure fails), Owen (trusted fallback if the preferred structure fails); long-term targets: Owen (revenge made removing them part of the strategic plan), Duncan (their Final Three deal ended because conflicting endgame promises were exposed); holding a grudge against Owen (resentment reached 4.8 after a crossed line or betrayal); planning style: endgame-architect; plan stage: endgame.
+
+=== WHO KNEW WHAT — INFORMATION FLOW ===
+This section tracks awareness, not support. Knowing a name or hearing a pitch does not mean the contestant agreed, committed, or voted that way.
+INFORMATION BADGE DICTIONARY:
+  EXPOSED — actionable information reached the affected player or an outsider able to respond. It may trigger counterplay, but does not guarantee success.
+  LEAKED — restricted information was passed outside its intended conversation; it may still have narrow reach.
+  WORD SPREAD — information circulated, but that step was contextual, lower-confidence, or not independently decisive.
+  KNOWN BY / PRIVATE / SHARED DEAL — identifies who holds the information. Awareness is not agreement; SHARED DEAL means an actual pact exists.
+
+INFORMATION FLOW (in order):
+- Bowie warned Duncan that Duncan's name is live (told directly), The carousel — now known by 6 (Bowie, Lake, Millie, Owen, Trent, Duncan). [EXPOSED]
+- Owen warned Lake that Lake's name is live (told directly), Lake shore — now known by 7 (Owen, Bowie, Duncan, Lindsay, Millie, Lake, Trent). [EXPOSED]
+- Duncan passed Lake's name to Trent (told directly), Forest near camp — now known by 7 (Owen, Bowie, Duncan, Lindsay, Millie, Lake, Trent). [LEAK]
+- Lindsay passed Yul's name to Owen (told directly), The carousel — now known by 3 (Lindsay, Gabby, Owen). [LEAK]
+- Duncan passed Duncan's name to Lindsay (told directly), Rocky beach — now known by 3 (Duncan, Lake, Lindsay). [LEAK]
+- Lindsay passed Yul's name to Duncan (told directly), Rocky beach — now known by 3 (Lindsay, Gabby, Duncan). [LEAK]
+- Duncan passed Duncan's name to Trent (told directly), Forest near camp — now known by 2 (Duncan, Trent). [LEAK]
+- Bowie passed Gabby's name to Lindsay (told directly), Rocky beach — now known by 5 (Owen, Bowie, Duncan, Lindsay, Gabby). [LEAK]
+- Duncan warned Gabby that Gabby's name is live (told directly), Team shelter — now known by 5 (Owen, Bowie, Duncan, Lindsay, Gabby). [EXPOSED]
+- Duncan heard that Gabby pitched Trent (told directly), Rocky beach — now known by 7 (Gabby, Lindsay, Lake, Bowie, Millie, Duncan, Trent). [PITCH HEARD]
+- Trent heard that Gabby pitched Trent (told directly), Rocky beach — now known by 7 (Gabby, Lindsay, Lake, Bowie, Millie, Duncan, Trent). [PITCH HEARD]
+TARGET NAMES IN CIRCULATION:
+- Lake: heard by Owen, Bowie, Duncan, Lindsay, Millie, Lake, Trent (7). This records awareness of the proposal, not promised ballots.
+- Duncan: heard by Bowie, Lake, Millie, Owen, Trent, Duncan (6). This records awareness of the proposal, not promised ballots.
+- Yul: heard by Bowie, Duncan, Lake, Millie, Owen, Trent (6). This records awareness of the proposal, not promised ballots.
+- Gabby: heard by Owen, Bowie, Duncan, Lindsay, Gabby (5). This records awareness of the proposal, not promised ballots.
+- Bruno: heard by Bowie, Lake, Millie, Owen (4). This records awareness of the proposal, not promised ballots.
+- Leshawna: heard by Duncan, Owen, Trent, Millie (4). This records awareness of the proposal, not promised ballots.
+- 9 additional names had smaller or more private conversations around them.
+DIRECT PITCHES HEARD:
+- Yul pitched Lindsay to Gabby, Owen, Trent, Bowie, Lindsay, Duncan. Their presence here means they heard it; their reaction and ballot may still differ.
+- Gabby pitched Trent to Lindsay, Lake, Bowie, Millie, Duncan, Trent. Their presence here means they heard it; their reaction and ballot may still differ.
+- Bowie pitched Duncan to Lake, Owen, Millie, Duncan, Trent. Their presence here means they heard it; their reaction and ballot may still differ.
+- Bowie pitched Trent to Lake, Millie, Owen, Duncan, Trent. Their presence here means they heard it; their reaction and ballot may still differ.
+- Duncan pitched Aubrey to Lake, Bowie, Owen, Trent, Millie. Their presence here means they heard it; their reaction and ballot may still differ.
+- 9 other pitches stayed narrower.
+KNOWN BETRAYALS:
+- Bowie's move against Owen is known by Lake. Anyone absent from this list has not directly identified the betrayal.
+- Yul's move against Bowie is known by Lindsay, Gabby, Owen. Anyone absent from this list has not directly identified the betrayal.
+- Duncan's move against Aubrey is known by nobody recorded. Anyone absent from this list has not directly identified the betrayal.
+- Yul's move against Duncan is known by Lindsay, Gabby, Duncan. Anyone absent from this list has not directly identified the betrayal.
+
+=== WHAT SHIFTED THIS EPISODE — RELATIONSHIP MOVEMENT ===
+Directional changes in how contestants privately regard each other, with the recorded cause. These feed targeting and endgame plans; they are not public knowledge.
+- Trent → Lindsay: OWES ↑ 0.4 — Lindsay saved/protected them.
+
+=== STRATEGY TIMELINE — HOW THE EPISODE UNFOLDED ===
+The strategic arc in order, camp to the edge of Tribal (the vote itself is transcribed in the tribal-council section).
+[CAMP LIFE]
+- (ADVANTAGE FOUND) Trent, in the confessional: "One vote can change everything. Now I've got an extra one."
+- (BREAKFAST) Bowie, Lake and Trent share the end of a bench and one questionable loaf of bread. Bowie: "So what do we think today's challenge is?" Lake: "Something with mud. It's always something with mud." Trent: "Or heights. Please not heights." — at Forest near camp
+- (OVERCONFIDENT) Duncan, in the confessional: "Am I worried? Nope. Not even a little." Duncan, in the confessional: "Everyone else can run around panicking. I'm going to have a nap."
+- (OBLIVIOUS) Millie: "Should I be doing more? Strategy-wise?" Owen: "Nah. You're doing great." Owen, in the confessional: "Millie should definitely be doing more. I'm just not going to be the one to say so."
+- (FUNHOUSE) Duncan and Lake get lost in the mirror maze and give up trying to escape, just narrating their own distorted reflections until security fishes them out. Lake: "I don't think I said thank you." Duncan: "You don't have to." Lake: "I'm saying it anyway. Thank you." — at The carousel
+- (CARNIVAL) Somewhere a game barker is still shouting to no one at midnight. Gabby and Lindsay start heckling back from the striped tents. Lindsay: "Best afternoon we've had out here." Gabby: "Low bar." Lindsay: "Still counts." — at Lake shore
+[CHALLENGE]
+- (IMMUNITY) Owen won immunity — safe tonight.
+[SCRAMBLE]
+- (THREAT) Owen, in the confessional: "I'm consistent. That's my thing. I just hope consistent doesn't become dangerous."
+- (TAKING NOTE) Bowie, in the confessional: "I've been watching the challenges closely. Owen keeps showing up. I don't like it." — at Rocky beach
+- (IMMUNITY) Owen: "Nobody can touch me tonight!" Lake: "Enjoy it." Gabby: "Some of us were really counting on touching you tonight." — at Lake shore
+- (WILDCARD) Duncan: "I've decided I don't like you anymore." Gabby: "Since when?" Duncan: "Since about two minutes ago. Bye!" Duncan skips off. Gabby stares after him.
+- (POWER CLASH) Millie: "Can we agree on a plan for once?" Lindsay: "Sure. Mine." Millie: "That's not agreeing, that's winning." Lindsay: "Same thing." Millie, in the confessional: "By noon nothing was done and both of us were furious. Great day." Duncan: "Okay, can you two take this somewhere else? Some of us are trying to live here." — at Team shelter
+- (ORCHESTRATING) Millie: "Do you ever think about Bowie? How strong Bowie is?" Duncan: "Now I do." Millie, in the confessional: "That's the seed. Give it a week." — at The carousel
+- (PITCH) Gabby works a vote on Trent (1 on board: Gabby).
+
+=== CAMP HIERARCHY — SOCIAL STANDING ===
+The role(s) each contestant occupies right now, read from observable behavior. "Hidden reads" are strategic roles only some players recognize — the game's view, not public consensus.
+- Owen: social hub · hidden reads: the swing
+- Lindsay: social hub · hidden reads: information broker
+- Trent: social hub, half of a power pair · hidden reads: the swing
+- Millie: social hub, half of a power pair · hidden reads: the swing
+- Lake: social hub · hidden reads: information broker, the swing
+- Gabby: social hub
+- Bowie: social hub · hidden reads: information broker, a shield, the swing
+MOVEMENT THIS EPISODE:
+- Owen rose to the swing.
+- Bowie rose to a shield; no longer abrasive but useful.
+
+=== TRIBAL COUNCIL ===
+Attendees: Duncan, Owen, Lindsay, Trent, Millie, Lake, Gabby, Bowie
+
+WORD AT CAMP:
+  #1 TARGET: Duncan — Strategic threat — hard to beat at FTC. (The writing is on the wall)
+  #2 TARGET: Gabby — The Assembly made the call. (The tribe is watching)
+  #3 WATCH: Millie — The Iron Four made the call. (The tribe is watching)
+
+TRIBAL DISRUPTION: Duncan erupted at tribal, calling out Owen.
+The explosion confirmed suspicions — Duncan is too volatile to keep around.
+
+"The votes have been cast."
+
+=== THE VOTES ===
+Duncan voted for Gabby — split — The Assembly made a more compelling case — broke The Iron Four
+Owen voted for Millie — Duncan is untouchable to them — Millie absorbs the vote instead — broke own bloc — broke The Movement
+Lindsay voted for Millie — sticking with The Iron Four; changing now would leave both sides distrusting them
+Trent voted for Gabby — Trent would not vote Duncan, so Gabby became the alternative
+Millie voted for Duncan — finally targeting the puppeteer — the numbers won't be better than this
+Lake voted for Duncan — loyal to The Movement — not breaking ranks — [BROKE ENDGAME PACT] Lake voted against confirmed final-three partner Duncan; this ballot ends their actual endgame agreement
+Gabby voted for Duncan — [HELD COMMITMENT] considered Trent, but no credible late coalition or disruption justified abandoning Duncan
+Bowie voted for Duncan — following The Movement — it's the right call for now — [ENDGAME PLAN REVISION] Bowie abandoned the private preferred shield plan for Duncan; no pact was broken, but their intended route to the end changed — broke The Assembly
+
+THE PLAN COLLAPSED — the room went into this on Gabby and came out on Duncan.
+  Owen broke the bloc they helped build; Lake broke the bloc they helped build; Bowie broke the bloc they helped build.
+
+THE READING — BLINDSIDE:
+  Duncan: WHAT?! No way. No WAY!
+  Duncan: Millie? Did you write my name?
+  Millie: I hope you can respect a game move.
+  Duncan: A game move? I trusted you!
+  Millie: I know. That's why it worked.
+  Trent: Duncan, I'm so sorry, I'm so sorry, I wrote somebody else, I had no idea.
+  (Lindsay's head snaps toward the rest of the group.)
+  Lindsay: Somebody flipped. Somebody in this row flipped.
+  (Bowie watches the faces down the row, one at a time, and says nothing.)
+  Last words:
+  (Trent catches up with Duncan halfway down the path.)
+  Duncan: Did you know?
+  Trent: No. I swear on everything, I had no idea.
+  Duncan: Then nobody told either of us. That means they don't trust you either.
+  Trent: I know. I thought of that the second your name came out of the urn.
+  Duncan: Then you have to be smarter than I was. Starting tomorrow morning.
+  Trent: I will. I'm going to find out who did this.
+  Chris: Let's wrap it up, the boat is not getting any younger.
+  Duncan [conf]: Coming this far wasn't luck. I got further than a lot of people thought I would, and I'm proud of every single day of it. I just ran out of days.
+  Later:
+  Bowie [conf]: Duncan was a threat, and now he is gone and I'm still here, and I'll take that every time.
+  Trent [conf]: Duncan is gone.
+  Trent [conf]: I'm going to keep playing the way they'd want.
+  Lindsay [conf]: Everybody told me it was Millie, and I believed them, and now I don't know who I can believe anymore.
+
+=== ELIMINATION TRIAL — AS IT AIRS ===
+Chris: "campers. Take a seat."
+Chris: "Bowie, was today a good day or a bad day?"
+Chris: "That bad?"
+Chris: "Lindsay, you were on the wrong side of the Yul vote. How did that feel?"
+Chris: "And are you on the right side tonight?"
+Chris: "Duncan, nobody else is shouting. Just you."
+Chris: "Gabby, Bowie, I'm told today got heated. Who started it?"
+Chris: "Glad that's cleared up."
+Chris: "You've all cast your votes at the booth."
+— The Voting Booth —
+Millie: "You're my friend, Duncan, and you're also the person most likely to beat me, and I can only care about one of those tonight."
+  [Millie votes Duncan]
+Bowie: "I'm so sorry, Duncan. The Movement has the numbers tonight, and if I stand with you, we both go."
+  [Bowie votes Duncan]
+Owen: "The Movement wanted Duncan, but I've been waiting all game to write you, Millie, and I'm not wasting the chance."
+  [Owen votes Millie]
+Duncan: "If I go with The Iron Four tonight, The Assembly finds out by tomorrow, and I'd rather lose The Iron Four, so it's Gabby."
+  [Duncan votes Gabby]
+Trent: "I thought about this all day, and the answer was Gabby the whole time."
+  [Trent votes Gabby]
+Lake: "We made a final three deal, Duncan, and I meant it when I said it. It's just that I need to get to the end more than I need the deal."
+  [Lake votes Duncan]
+Lindsay: "Duncan said if we don't split up Millie and Trent now, we never will. I believe it, so it's Millie."
+  [Lindsay votes Millie]
+Gabby: "Honestly? I said yes to Bowie because I'd rather be on the side that wins, so it's Duncan."
+  [Gabby votes Duncan]
+(8 votes are in.)
+Chris: "If anybody has a Hidden Immunity Idol and you want to play it, now would be the time to do so."
+(Nobody moves.)
+Chris: "I'll read the votes."
+Chris: "First vote..."
+Chris: "Gabby."
+(Gabby's eyebrows go up. Just a little.)
+Chris: "Duncan."
+(Duncan frowns at the urn like it made a mistake.)
+Chris: "Next vote..."
+Chris: "Millie."
+(Millie's eyebrows go up. Just a little.)
+Chris: "Okay. Next vote..."
+Chris: "Duncan."
+Chris: "Next vote..."
+Chris: "Millie."
+Chris: "Okay. Next vote..."
+Chris: "Duncan."
+(Duncan starts counting the faces around the fire.)
+Chris: "Next vote..."
+Chris: "Gabby."
+Chris: "Okay. Next vote..."
+(Chris unfolds the paper and takes a long look at it before turning it around.)
+Chris: "Duncan."
+(Duncan looks at Owen, then at the urn, then back at Owen.)
+(Owen's head whips round to the urn.)
+(Across the fire, Bowie lets out a breath he has been holding all night.)
+[Blindside: Duncan]
+Duncan: "WHAT?! No way. No WAY!"
+Duncan: "Millie? Did you write my name?"
+Millie: "I hope you can respect a game move."
+Duncan: "A game move? I trusted you!"
+Millie: "I know. That's why it worked."
+Trent: "Duncan, I'm so sorry, I'm so sorry, I wrote somebody else, I had no idea."
+(Lindsay's head snaps toward the rest of the group.)
+Lindsay: "Somebody flipped. Somebody in this row flipped."
+(Bowie watches the faces down the row, one at a time, and says nothing.)
+(Duncan is eliminated.)
+— The Boat of Losers —
+(Trent walks Duncan down to say goodbye.)
+Chris: "Duncan, the Boat of Losers is waiting."
+(Trent catches up with Duncan halfway down the path.)
+Duncan: "Did you know?"
+Trent: "No. I swear on everything, I had no idea."
+Duncan: "Then nobody told either of us. That means they don't trust you either."
+Trent: "I know. I thought of that the second your name came out of the urn."
+Duncan: "Then you have to be smarter than I was. Starting tomorrow morning."
+Trent: "I will. I'm going to find out who did this."
+Chris: "Let's wrap it up, the boat is not getting any younger."
+(A boat strung with lights chugs out of the dark and pulls up to the end of the pier.)
+(Duncan jumps down into the boat.)
+Duncan (confessional): "Coming this far wasn't luck. I got further than a lot of people thought I would, and I'm proud of every single day of it. I just ran out of days."
+(The boat pulls away from Stawaki. Duncan leaves the game.)
+— Later, in the confessional —
+Bowie (confessional): "Duncan was a threat, and now he is gone and I'm still here, and I'll take that every time."
+Trent (confessional): "Duncan is gone."
+Trent (confessional): "I'm going to keep playing the way they'd want."
+Lindsay (confessional): "Everybody told me it was Millie, and I believed them, and now I don't know who I can believe anymore."
+(Duncan follows the arrow toward the Motel.)
+(Duncan checks in at the Motel.)
+
+=== THE ROOM — AND WHAT LINGERS ===
+Gabby's name was ahead without being secure. At 4 possible votes, the plan had momentum—not ownership of the room.
+Duncan and Lindsay came away with the uncomfortable knowledge that the decisive movement happened beyond their view. That does not make them wiser overnight, but it gives them a sharper reason to verify the next plan.
+Trent never became Gabby's move, yet the conversations were serious enough to leave fingerprints. Gabby now knows which part of the room might be workable later.
+
+=== WHY THIS VOTE HAPPENED ===
+Duncan was voted out because:
+- Identified as a long-term jury threat (7.3/10) — the group decided the window was now
+- Name written down 7 times before
+- Unpredictable and hard to control
+- Strategic read: Duncan was running things
+- Voted out by: Millie, Lake, Gabby, Bowie
+- Betrayed by Gabby (The Iron Four) — personal — fractured relationship
+- Owen voted Millie to hold The Assembly together — it wasn't enough
+- Lindsay voted Millie to hold The Iron Four together — it wasn't enough
+- Trent voted Gabby — tried to pull the numbers a different way
+
+FACTION FRACTURE — The Iron Four split at tribal
+- Stated plan: vote Millie
+- Votes cast: Duncan→Gabby, Lindsay→Millie, Gabby→Duncan
+- Members voted each other: Duncan→Gabby, Gabby→Duncan
+
+FACTION FRACTURE — The Assembly split at tribal
+- Stated plan: vote Gabby
+- Votes cast: Duncan→Gabby, Owen→Millie, Bowie→Duncan
+- Members voted each other: Bowie→Duncan
+- Stray votes: Owen→Millie
+
+Duncan (Chaos Agent) — the tribe has spoken.
+"One vote. ONE vote and I'd still be here. Someone out there was on the fence and chose wrong. I just don't know who — and that's going to haunt me."
+
+VOTED OUT THIS EPISODE:
+Duncan
+
+=== AUDIENCE PULSE (THE EDIT) ===
+How this episode was cut for the audience — viewer perception, not game truth.
+
+EDIT READS:
+  - Owen: Steady presence
+  - Lindsay: Winner edit
+  - Trent: Showmance edit
+  - Millie: Showmance edit
+  - Lake: Mastermind edit
+  - Gabby: Steady presence
+  - Bowie: Steady presence
+  - Duncan: Comic relief
+
+CONFESSIONALS:
+  Duncan: "Quiet week for me. Out here, a quiet week is a gift."
+  Lake: "One day at a time. That's the whole plan, and so far the plan is working."
+  Lindsay: "Quiet week for me. Out here, a quiet week is a gift."
+
+=== OVERNIGHT RATINGS ===
+This episode: 56.7 out of 100 (up 0.1 on last time).
+The season so far: 48.2 — Okay.
+
+WHO WATCHED, AND WHAT THEY MADE OF IT:
+  - Older: 73 (up 2.4) — the villains have the numbers now
+  - Middle Aged: 54 (down 2.8) — the vote everybody expected was not the vote that happened
+  - Young Adults: 33 (down 4.2) — a vote that turned over in its last hour, and took Duncan with it
+  - Teens: 16 (down 2.7) — ballots moved late and Duncan left without ever seeing it coming
+
+=== SEASON THREADS ===
+The season's ongoing storylines and where each stands this episode:
+- [RESOLVED] Duncan dodged the vote at 2 tribals — and the tribe finally caught up. (The escape artist's run ended.)
+- [PEAKING] Bowie has steered 2+ votes now — a kingmaker hiding in plain sight.
+
+=== CAMP OVERVIEW ===
+ADVANTAGES IN PLAY:
+- Izzy: Hidden Immunity Idol (found ep.2)
+- Trent: Vote Steal (found ep.11)
+
+Active (7): Owen, Lindsay, Trent, Millie, Lake, Gabby, Bowie
+Permanently out: Bruno, Gwen, Leshawna, Julia, Courtney, Heather, Aubrey, Yul, Duncan
+
+=== JURY PERCEPTION — WHO THEY THINK RAN THE GAME ===
+The jury votes on what it BELIEVES about who controlled each vote — which can differ from the truth (stolen credit, secret moves). Belief, not fact, decides the winner.
+- The Aubrey boot: 4 jurors credit Duncan (Aubrey, Duncan, Lake, Lindsay).
+- The Yul boot: 4 jurors credit Duncan (Aubrey, Yul, Duncan, Trent).
+- The Duncan boot: 4 jurors credit Bowie (Aubrey, Yul, Duncan, Bowie).
+
+=== WRITER CONTEXT ===
+
+COLD OPEN HOOK:
+Owen hasn't eaten enough in three days and they're starting to feel it. They don't say anything. They can't afford to look weak right now.
+
+NEXT EPISODE QUESTIONS:
+- Bowie is calling the shots. The question isn't if someone tries to stop it — it's who goes first.
+- Owen has no alliance. Are they the next target — or the next swing vote?
+- Millie is desperate. Desperate players make big moves — or big mistakes.
+- With 7 left, every vote is personal. Who draws the line?

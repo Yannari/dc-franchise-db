@@ -1,0 +1,88 @@
+{
+  "runs": 8,
+  "days": 168,
+  "sceneCount": {
+    "n": 168,
+    "min": 8,
+    "median": 18,
+    "p90": 22,
+    "max": 26,
+    "mean": 17.238095238095237
+  },
+  "spokenLines": {
+    "n": 168,
+    "min": 40,
+    "median": 88,
+    "p90": 124,
+    "max": 162,
+    "mean": 92.20238095238095
+  },
+  "confessionalLines": {
+    "n": 168,
+    "min": 6,
+    "median": 20,
+    "p90": 27,
+    "max": 37,
+    "mean": 20.470238095238095
+  },
+  "above22": 1,
+  "heavyRun": {
+    "n": 168,
+    "min": 0,
+    "median": 5,
+    "p90": 8,
+    "max": 10,
+    "mean": 4.25
+  },
+  "freshPairs": 506,
+  "pairScenes": 2403,
+  "systems": {
+    "opener": 164,
+    "alliance": 115,
+    "rivalry": 67,
+    "kit": 439,
+    "camp-game": 92,
+    "quick-cut": 161,
+    "challenge-chat": 96,
+    "vote": 716,
+    "underdog": 18,
+    "running-gag": 35,
+    "showmance": 37,
+    "idol": 50,
+    "bottom": 72,
+    "mentor": 37,
+    "arc": 66,
+    "confessional": 212,
+    "scheme": 64,
+    "coach": 121,
+    "friendship": 157,
+    "turn": 33,
+    "witness-after": 33,
+    "engine": 54,
+    "thread": 19,
+    "follow-up": 33,
+    "drama": 4,
+    "cover": 1
+  },
+  "romance": {
+    "aired": 48,
+    "offered-then-cut": 2,
+    "local-person-cap": 32,
+    "not-in-main-pool": 12,
+    "main-cap": 17,
+    "same-storyline": 2,
+    "selected-not-rendered": 1
+  },
+  "candidateReasons": {
+    "aired": 2896,
+    "day-one-filter": 105,
+    "replaced": 84,
+    "local-person-cap": 1267,
+    "main-cap": 924,
+    "selected-not-rendered": 83,
+    "offered-then-cut": 44,
+    "contradicts-vote-role": 42,
+    "same-storyline": 75,
+    "not-in-main-pool": 14
+  }
+}

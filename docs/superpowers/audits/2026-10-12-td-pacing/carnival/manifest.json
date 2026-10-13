@@ -1,0 +1,1753 @@
+{
+  "revision": "0c211794e2f51f44c9aa64f2d685084ac11988ce",
+  "fixedDate": "2026-10-12T12:00:00Z",
+  "seeds": [
+    1729,
+    2026
+  ],
+  "baseConfig": {
+    "name": "",
+    "year": "",
+    "days": 39,
+    "gameMode": "spectator",
+    "format": "total-drama",
+    "teams": 2,
+    "mergeAt": 10,
+    "finaleSize": 3,
+    "finaleFormat": "traditional",
+    "finaleAssistants": false,
+    "jurySize": 7,
+    "ri": false,
+    "riReentryAt": 12,
+    "riFormat": "redemption",
+    "riReturnPoints": 1,
+    "riSecondReturnAt": 5,
+    "journey": false,
+    "shotInDark": false,
+    "firemaking": false,
+    "tiebreakerMode": "survivor",
+    "qem": false,
+    "idolRehide": false,
+    "advExpire": 4,
+    "foodWater": "disabled",
+    "survivalDifficulty": "casual",
+    "mole": "disabled",
+    "molePlayers": [],
+    "moleCoordination": "independent",
+    "coaches": "disabled",
+    "coachesPerTribe": 1,
+    "romance": "enabled",
+    "drPremiere": "standard",
+    "drFinale": "top4",
+    "drAllStars": false,
+    "drAllStarsRule": "legacy",
+    "drAllStarsTwist": "none",
+    "drAllStarsTwistEp": 0,
+    "drAllStarsJury": false,
+    "drDoubleShantay": true,
+    "drDoubleSashay": false,
+    "drSmackdown": false,
+    "drImmunity": false,
+    "drTripleLipsync": false,
+    "drSave": "none",
+    "drTankLevers": 6,
+    "drTankRetire": 8,
+    "drTankLive": 1,
+    "drGoldenBars": 1,
+    "drSchedule": [],
+    "drJudgeWeights": {},
+    "aftermath": "disabled",
+    "fanVoteFrequency": "disabled",
+    "aftermayhemReturn": "disabled",
+    "host": "Chris",
+    "bbHostStyle": "auto",
+    "traitorCount": 3,
+    "trTraitorMode": "random",
+    "trChosenTraitors": [],
+    "trAutoDouble": true,
+    "trAutoRecruit": true,
+    "trEndgameSize": 3,
+    "trEndgameReveal": true,
+    "trSeer": "draw",
+    "trShieldSource": "mission",
+    "trRandomMurderTwists": [],
+    "trShieldEpisodes": [],
+    "trShieldCount": 1,
+    "trArmourySize": 4,
+    "trPotCeiling": 120000,
+    "auctionAwardsImmunity": true,
+    "setting": "hosted-camp",
+    "theme": "none",
+    "themeArcStamped": "",
+    "advantages": {
+      "idol": {
+        "enabled": true,
+        "count": 2
+      },
+      "beware": {
+        "enabled": false,
+        "count": 0
+      },
+      "voteSteal": {
+        "enabled": true,
+        "count": 1
+      },
+      "extraVote": {
+        "enabled": true,
+        "count": 1
+      },
+      "kip": {
+        "enabled": false,
+        "count": 0
+      },
+      "legacy": {
+        "enabled": false,
+        "count": 0
+      },
+      "amulet": {
+        "enabled": false,
+        "count": 0
+      },
+      "secondLife": {
+        "enabled": false,
+        "count": 0
+      },
+      "teamSwap": {
+        "enabled": false,
+        "count": 0
+      },
+      "voteBlock": {
+        "enabled": false,
+        "count": 0
+      },
+      "safetyNoPower": {
+        "enabled": false,
+        "count": 0
+      },
+      "soleVote": {
+        "enabled": false,
+        "count": 0
+      }
+    },
+    "twistSchedule": [],
+    "bbCompSchedule": [],
+    "tribes": [],
+    "popularityEnabled": false,
+    "franchiseMeta": true,
+    "franchiseMetaAutoRecord": true,
+    "seasonNumber": 0,
+    "tdEdit": "full",
+    "rescueIsland": "disabled"
+  },
+  "cast": [
+    {
+      "name": "Gwen",
+      "slug": "gwen",
+      "gender": "f",
+      "archetype": "underdog",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 8,
+        "social": 6,
+        "strategic": 6,
+        "loyalty": 8,
+        "boldness": 6,
+        "intuition": 7,
+        "temperament": 4
+      },
+      "sexuality": "bi",
+      "voice": "Deadpan, sarcastic goth. Tired of everyone and everything, dry wit, genuine fierce loyalty to the few she trusts.",
+      "profileSources": {
+        "ethnicity": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "nationality": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "descriptor": [
+          {
+            "label": "Total Drama Wiki - Gwen",
+            "url": "https://totaldrama.fandom.com/wiki/Gwen",
+            "kind": "source-canon",
+            "quote": "The Goth Girl"
+          }
+        ],
+        "birthdate": [
+          {
+            "label": "16 at Total Drama (spring 2020), so born 2004",
+            "kind": "simulator-continuity"
+          }
+        ],
+        "age": [
+          {
+            "label": "16 at Total Drama (spring 2020), and it is fall 2026 now",
+            "kind": "simulator-continuity"
+          }
+        ],
+        "hometown": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Total Drama Wiki - Gwen",
+            "url": "https://totaldrama.fandom.com/wiki/Gwen",
+            "kind": "source-canon",
+            "quote": "single parent (mother only)"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Total Drama Wiki - Gwen",
+            "url": "https://totaldrama.fandom.com/wiki/Gwen",
+            "kind": "source-canon",
+            "quote": "She is smart, independent, kind-hearted, and level-headed"
+          }
+        ]
+      },
+      "age": 26,
+      "birthdate": "2000-09-21",
+      "ethnicity": "White",
+      "nationality": "Canadian",
+      "hometown": "Toronto, Ontario",
+      "occupation": "Student",
+      "descriptor": "The Goth Girl",
+      "backstory": "Gwen comes from a mother-only household and has a brother and grandmother; her family life includes a nana who shares her taste for hair dye. Before the show, she built a goth identity around dyed hair, homemade makeup, platform boots, horror movies, art, astronomy, drums, and punk rock/emo music.",
+      "personality": "Gwen is smart, independent, sarcastic, and guarded, but her coldness is more caution than cruelty. Under pressure she tries to stay level-headed and unimpressed by petty drama, though claustrophobia can shake her badly. She is loyal once someone earns her trust, empathetic even toward people who have hurt her, and willing to stand her ground when her reputation suffers; she will not fake enthusiasm for popular trends or let herself be absorbed into a crowd where she feels she does not belong.",
+      "tribe": "Gophers"
+    },
+    {
+      "name": "Leshawna",
+      "slug": "leshawna",
+      "gender": "f",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 8,
+        "endurance": 8,
+        "mental": 6,
+        "social": 8,
+        "strategic": 6,
+        "loyalty": 8,
+        "boldness": 6,
+        "intuition": 7,
+        "temperament": 4
+      },
+      "voice": "Sassy, loud, confident. Tells it exactly like it is, fiercely loyal, big personality and bigger opinions, zero tolerance for fakes.",
+      "tribe": "Bass"
+    },
+    {
+      "name": "Heather",
+      "slug": "heather",
+      "gender": "f",
+      "archetype": "villain",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 8,
+        "social": 6,
+        "strategic": 10,
+        "loyalty": 2,
+        "boldness": 9,
+        "intuition": 7,
+        "temperament": 2
+      },
+      "voice": "The manipulative queen-bee villain. Cruel, status-obsessed, openly strategic; sweet only when she wants something, sharp condescending put-downs otherwise. Respects only competence.",
+      "tribe": "Gophers"
+    },
+    {
+      "name": "Duncan",
+      "slug": "duncan",
+      "gender": "m",
+      "archetype": "chaos-agent",
+      "stats": {
+        "physical": 8,
+        "endurance": 8,
+        "mental": 6,
+        "social": 6,
+        "strategic": 8,
+        "loyalty": 4,
+        "boldness": 8,
+        "intuition": 6,
+        "temperament": 4
+      },
+      "voice": "Delinquent bad boy. Tough, sarcastic, loves stirring trouble and scaring people; secretly softer than he lets on. Smug, blunt.",
+      "tribe": "Bass"
+    },
+    {
+      "name": "Courtney",
+      "slug": "courtney",
+      "gender": "f",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 6,
+        "endurance": 4,
+        "mental": 8,
+        "social": 6,
+        "strategic": 8,
+        "loyalty": 4,
+        "boldness": 8,
+        "intuition": 7,
+        "temperament": 2
+      },
+      "voice": "Controlling, type-A ex-CIT. Sharp commands, obsessed with rules and being right, furious when ignored or underestimated. Bossy and combative.",
+      "isReturnee": true,
+      "tribe": "Gophers"
+    },
+    {
+      "name": "Owen",
+      "slug": "owen",
+      "gender": "m",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 8,
+        "endurance": 4,
+        "mental": 2,
+        "social": 10,
+        "strategic": 2,
+        "loyalty": 10,
+        "boldness": 3,
+        "intuition": 6,
+        "temperament": 10
+      },
+      "sexuality": "bi",
+      "voice": "Lovable, food-obsessed goofball. Farts, eats everything, relentlessly friendly and optimistic, cries and hugs easily. The heart of any group.",
+      "tribe": "Bass"
+    },
+    {
+      "name": "Lindsay",
+      "slug": "lindsay",
+      "gender": "f",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 4,
+        "endurance": 6,
+        "mental": 2,
+        "social": 8,
+        "strategic": 2,
+        "loyalty": 8,
+        "boldness": 4,
+        "intuition": 5,
+        "temperament": 8
+      },
+      "voice": "Ditzy, sweet blonde. Forgets everyone's names, endlessly kind and oblivious, easily led, secretly stronger than she seems.",
+      "tribe": "Gophers"
+    },
+    {
+      "name": "Trent",
+      "slug": "trent",
+      "gender": "m",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 6,
+        "social": 8,
+        "strategic": 4,
+        "loyalty": 8,
+        "boldness": 4,
+        "intuition": 7,
+        "temperament": 8
+      },
+      "voice": "Earnest, mellow musician. 'Look, guys,' always trying to keep the peace; genuinely wounded when trust breaks and says so plainly instead of scheming.",
+      "tribe": "Bass"
+    },
+    {
+      "name": "Julia",
+      "slug": "julia",
+      "gender": "f",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 6,
+        "endurance": 8,
+        "mental": 6,
+        "social": 6,
+        "strategic": 10,
+        "loyalty": 2,
+        "boldness": 9,
+        "intuition": 6,
+        "temperament": 4
+      },
+      "sexuality": "straight",
+      "voice": "Sweet-poison manipulator. Disarms you with a smile and then cuts, talks people into their own b#competitivead decisions; no loyalty and won't bother pretending otherwise once she's caught. #-warm#cruel #blunt#bossy",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Julia character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Julia",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Julia character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Julia",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Julia character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Julia",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Julia character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Julia",
+            "kind": "source-canon"
+          }
+        ],
+        "ethnicity": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "nationality": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "descriptor": [
+          {
+            "label": "Total Drama Wiki - Julia",
+            "url": "https://totaldrama.fandom.com/wiki/Julia",
+            "kind": "source-canon",
+            "quote": "The Influencer and Evil in Human Form"
+          }
+        ],
+        "birthdate": [
+          {
+            "label": "16 at Total Drama: Land of Powers (spring 2024), so born 2008",
+            "kind": "simulator-continuity"
+          }
+        ],
+        "age": [
+          {
+            "label": "16 at Total Drama: Land of Powers (spring 2024), and it is fall 2026 now",
+            "kind": "simulator-continuity"
+          }
+        ],
+        "hometown": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ]
+      },
+      "kit": {
+        "thing": "being an influencer",
+        "alone": "is filming herself on an imaginary phone, practising a sponsorship read",
+        "bit": [
+          "Okay, this light is actually gorgeous. If we had a phone, this would get so much engagement.",
+          "I'm a citizen of Mother Earth, so honestly, sleeping outside is kind of my brand.",
+          "Babe, your posture. I'm not being mean, I'm being honest. People respect honesty."
+        ],
+        "tease": [
+          "We don't have phones. Nobody's watching except the cameras.",
+          "Didn't you complain about a bug for twenty minutes yesterday?",
+          "That was definitely mean."
+        ],
+        "reply": [
+          "The cameras are the phones now. Smile.",
+          "Mother Earth and I are working through some things.",
+          "It was honest. Being honest just sounds mean when you're not used to it."
+        ],
+        "home": [
+          "My parents run a bake shop. I used to work there. Now I have, like, a platform.",
+          "My followers, mostly. And my sister, Megan, who is going to hate how good I look on TV."
+        ],
+        "want": [
+          "To win, and to be the most talked-about person on this show. Both is ideal.",
+          "A bigger platform. Money's nice. Attention lasts longer."
+        ],
+        "conf": [
+          "The trick is, you smile while you say it. Then they don't even notice they've been cut.",
+          "They all think I'm a ditzy influencer. Good. Ditzy influencers don't get voted out first."
+        ],
+        "askHome": [
+          "Who's your support system back home? I love that for you, whoever it is.",
+          "So who are you going home to? Be honest."
+        ],
+        "askWant": [
+          "What's your brand here, though? Like, what do you want people to say about you?",
+          "What are you actually after? Everybody's after something."
+        ],
+        "defend": [
+          "Laugh all you want. I built a brand from nothing, and that's more than you've ever done."
+        ],
+        "deep": [
+          "The influencer thing is a costume. I'm not sure anymore what's under it. That scares me more than losing."
+        ],
+        "solo": [
+          "When I get home, I'm going to have the best content of my life. I'm basically storyboarding right now.",
+          "Everybody thinks I'm shallow. Shallow doesn't build a following from nothing. Strategy does."
+        ],
+        "ground": [
+          "online-fame",
+          "farm"
+        ]
+      },
+      "age": 21,
+      "birthdate": "2005-06-23",
+      "ethnicity": "White",
+      "nationality": "Canadian",
+      "hometown": "Toronto, Ontario",
+      "occupation": "Social media influencer",
+      "descriptor": "The Influencer and Evil in Human Form",
+      "backstory": "Before the show, Julia built an online identity as a wellness and lifestyle influencer, presenting herself as a serene “citizen of Mother Earth” while privately disliking parts of the brand she sold. Her family includes parents Greg and Judy, who ran a bake shop where she worked as a child, and a sister, Megan, whom Julia targets with casual cruelty. Competition gave her a platform large enough to discard the mask and monetize the real Julia instead.",
+      "personality": "Julia is fiercely competitive, physically resilient, and strategically aggressive. She first cultivated a sunny influencer persona built from crystals, nature slogans, and curated positivity, but humiliation stripped away the performance and revealed someone who enjoys winning, intimidation, and a perfectly timed insult. She is excellent at turning social information into leverage and persistent enough to rebuild after exposure. Loyalty is conditional, though she can form a compelling partnership when the other person matches her nerve and usefulness. Under pressure she doubles down, lies boldly, and attacks the weak point rather than retreating. Her temper and public cruelty create jurors and enemies even when the move itself is sound. She respects competent opposition—especially Bowie—because beating a real strategist proves more than dominating a passive room.",
+      "tribe": "Gophers"
+    },
+    {
+      "name": "Millie",
+      "slug": "millie",
+      "gender": "f",
+      "archetype": "underdog",
+      "stats": {
+        "physical": 4,
+        "endurance": 2,
+        "mental": 10,
+        "social": 4,
+        "strategic": 6,
+        "loyalty": 8,
+        "boldness": 5,
+        "intuition": 7,
+        "temperament": 6
+      },
+      "sexuality": "straight",
+      "voice": "High-strung eco-activist overachiever. Passionate about the environment and causes, intensely competitive and perfectionist, anxious and easily overwhelmed; lectures people about doing the right thing, spirals under pressure. Earnest, a little exhausting, genuinely good-hearted underneath the stress. #-competitive #-bossy #-earnest#calm#quiet#nerdy",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Millie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Millie",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Millie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Millie",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Millie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Millie",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Millie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Millie",
+            "kind": "source-canon"
+          }
+        ]
+      },
+      "kit": {
+        "thing": "her notebook",
+        "alone": "is writing in her journal by the fire, glancing up at everyone in turn",
+        "bit": [
+          "Fun fact: forty percent of plastic in the ocean is fishing nets. So when we fish, we should really think about that.",
+          "I'm keeping notes on everyone. For journalism. It's not a strategy thing. It's mostly not a strategy thing.",
+          "We're doing the shelter wrong. I read about this. I can't do it myself, but I know we're doing it wrong."
+        ],
+        "tease": [
+          "Millie, we're starving. Let us fish.",
+          "What did you write about me?",
+          "So you'll supervise."
+        ],
+        "reply": [
+          "Fine. But I'm writing down that I said it.",
+          "Nothing bad. Mostly nothing bad. It's descriptive.",
+          "I'll consult. Consulting is a real job."
+        ],
+        "home": [
+          "My mom, who wanted me to do something normal for once. This is not normal. I'm aware.",
+          "My editor at the school paper, who thinks this will be a great series. I hope she's right. I hope I survive it."
+        ],
+        "want": [
+          "To prove I can do more than watch people. I want to actually be in it.",
+          "To win, and to write about it after. I have notes already."
+        ],
+        "conf": [
+          "I came here to observe my generation's failures. Turns out I'm one of them. I'm adding that to the notes.",
+          "It's easier to judge people than to talk to them. I'm working on it. It's slow."
+        ],
+        "askHome": [
+          "Can I ask about your life back home? It's for context. And because I'm curious.",
+          "What's your family like? You don't have to answer. I'll still take notes."
+        ],
+        "askWant": [
+          "What are you hoping to get out of this, honestly? I'm trying to understand people better.",
+          "Why are you really here? Off the record."
+        ],
+        "defend": [
+          "Taking notes isn't the same as judging. Okay, it's a little the same. But it's also how I understand things."
+        ],
+        "deep": [
+          "I write about people because I never knew how to be with them. I'd really like to learn. Out here, maybe."
+        ],
+        "solo": [
+          "I've filled half this notebook already. It's mostly about the people here. They'd be horrified, honestly.",
+          "Writing about people is easier than talking to them. I'm trying to do more of the second one."
+        ],
+        "ground": [
+          "lonely-child",
+          "writer"
+        ]
+      },
+      "age": 20,
+      "birthdate": "2006-07-12",
+      "ethnicity": "Black",
+      "nationality": "American",
+      "hometown": "Connecticut",
+      "occupation": "Aspiring journalist",
+      "backstory": "An aspiring journalist with a lonely childhood, Millie auditioned to document what she saw as the failures of her generation. Writing about other people gave her a sense of expertise and kept attention away from her own low self-worth. She arrived with a notebook, a research project, and very little practical preparation, expecting the cast to prove her thesis rather than expecting any of them to become important to her.",
+      "personality": "Millie is book-smart, observant, and habitually judgmental, especially when she can study a group from its edge instead of risking participation. Her notebook once let her convert loneliness and insecurity into criticism of everyone else; genuine friendship forced her to see that observation without compassion can become exploitation. She still notices absurd behavior quickly and can sound condescending when anxious, but she now understands that people are not merely material. Social cues do not always come naturally, and physical challenges can expose her hesitation, yet she learns quickly when someone gives her a concrete method. Under pressure she may retreat into analysis or justify a selfish choice as research. Her best growth comes when she puts the notebook down, accepts responsibility without qualifiers, and acts for a person she has chosen to trust.",
+      "tribe": "Bass"
+    },
+    {
+      "name": "Aubrey",
+      "slug": "aubrey",
+      "gender": "f",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 2,
+        "endurance": 2,
+        "mental": 4,
+        "social": 6,
+        "strategic": 3,
+        "loyalty": 7,
+        "boldness": 8,
+        "intuition": 6,
+        "temperament": 4
+      },
+      "sexuality": "straight",
+      "voice": "Aubrey talks in quick, confident bursts, mixing friendly self-introduction with astrology jargon and psych-student framing. She likes labels, rankings, and decisive reads, so in an argument she tends to diagnose people rather than patiently hear them out. When challenged, her tone turns sharp and absolutist; she presents suspicion as instinctive certainty instead of something she needs to prove.#blunt#theatrical #chaotic#emotional",
+      "profileSources": {
+        "ethnicity": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "nationality": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "descriptor": [
+          {
+            "label": "Disventure Camp Wiki - Aubrey",
+            "url": "https://disventure-camp.fandom.com/wiki/Aubrey",
+            "kind": "source-canon",
+            "quote": "as one of the fans"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Disventure Camp Wiki - Aubrey",
+            "url": "https://disventure-camp.fandom.com/wiki/Aubrey",
+            "kind": "source-canon",
+            "quote": "Aubrey is a psychology student"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Disventure Camp Wiki - Aubrey",
+            "url": "https://disventure-camp.fandom.com/wiki/Aubrey",
+            "kind": "source-canon",
+            "quote": "Aubrey went to public school growing up and preferred reading over going to recess."
+          }
+        ],
+        "personality": [
+          {
+            "label": "Disventure Camp Wiki - Aubrey",
+            "url": "https://disventure-camp.fandom.com/wiki/Aubrey",
+            "kind": "source-canon",
+            "quote": "When things do not go her way, Aubrey can lose her composure very quickly."
+          }
+        ],
+        "voice": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ]
+      },
+      "kit": {
+        "thing": "astrology",
+        "alone": "is looking up at the stars, naming every constellation out loud",
+        "bit": [
+          "Okay, I don't want to alarm anyone, but we have three Scorpios on this team, and that's a problem.",
+          "What time were you born? I'm asking for a reason. It matters. Trust me.",
+          "I'm a psych student, and I'm into astrology, and both of them are telling me the same thing about you."
+        ],
+        "tease": [
+          "You think three people are a problem because of their birthdays?",
+          "Why does that matter?",
+          "What are they telling you?"
+        ],
+        "reply": [
+          "I don't think it. I know it. Water signs are all secrets.",
+          "Your rising sign tells me who you are when nobody's watching.",
+          "That you're hiding something. Earth sign energy. Very suspicious."
+        ],
+        "home": [
+          "My parents and my cat, Ziggy. He's a Siamese and a Leo, which explains everything.",
+          "My psych classes, my cross-stitch, and a cat who definitely thinks I abandoned him."
+        ],
+        "want": [
+          "To win, and to prove I was right about everyone. I usually am.",
+          "To read everybody before they read me."
+        ],
+        "conf": [
+          "People think astrology is a joke. It's a framework. Like psychology, but prettier.",
+          "I made my mind up about everybody on day one. I don't change it. Why would I? I was right."
+        ],
+        "askHome": [
+          "Okay, who's waiting for you at home? Also, what's your sign?",
+          "Do you have a partner? What sign are they?"
+        ],
+        "askWant": [
+          "What do you want out of this? Your chart says ambition, but I want to hear it.",
+          "What's your dream? Like, your Midheaven dream?"
+        ],
+        "defend": [
+          "It's not a joke to me, okay? It's how I make sense of people. You're not better than me for not believing."
+        ],
+        "deep": [
+          "I was so shy as a kid. Astrology gave me a way to talk to people. It still kind of does."
+        ],
+        "solo": [
+          "Mercury's in retrograde, which explains a lot about the last vote, honestly.",
+          "When I was shy, the stars were the only thing I could talk about. Now they're how I start every conversation."
+        ],
+        "ground": [
+          "shy-child",
+          "pets"
+        ]
+      },
+      "age": 21,
+      "birthdate": "2005-05-28",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "New York",
+      "occupation": "Psychology student",
+      "descriptor": "The Astrology junkie",
+      "backstory": "Aubrey grew up attending public school, where she preferred reading to going out for recess and was much shyer as a child before gradually becoming more self-assured. She studies psychology and got into astrology while in college, even tying star charts into academic work. Her parents are in their early forties, and she has a Siamese cat named Ziggy. Outside school and astrology, she enjoys traveling, reading fantasy books, socializing, cross stitching, and cake decorating.",
+      "personality": "Aubrey is sociable, self-assured, and eager to lead, but she is also highly judgmental and prone to deciding who is trustworthy before she really knows them. Under pressure, she can lose composure fast, snapping into anger when she feels slighted or when events stop matching the story she has built in her head. Her loyalty is strongest toward people she believes she can understand or categorize, especially through astrology, while she is much colder toward those she has written off. She will keep pushing toward a goal and offer advice when she feels in control, but she will not easily abandon her biases or admit that her first read of someone may be wrong.",
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Intuitive, chaotic, loyal.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think I got picked because I’m a little hard to categorize, in a good way. I’m a psych student from New York who reads star charts, clocks vibes fast, and says the thing everyone else is thinking but is too scared to say.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be living with people who have zero self-awareness and then being expected to smile through it. I can handle mess, but I cannot handle someone projecting their issues onto me and calling it honesty.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to make people feel comfortable with me early, get good reads, and then decide who is actually safe versus who is just performing safe. I’m not going in as some challenge beast, obviously, so socially I need to be useful, loyal enough, and just unpredictable enough that people hesitate to box me in.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want people to know I’m loyal when I actually choose you, because I’m not fake-loyal to everyone. I’d hide how suspicious I can get, because once my intuition says someone is off, my face tends to send a full press release before my mouth does.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My birth chart notes, because if I’m trapped with strangers, I need categories immediately.\\n- A fantasy book, because my brain needs somewhere dramatic to go that is not the kitchen.\\n- A picture of my Siamese cat Ziggy, because he’s judgmental, grounding, and honestly probably a better social player than me.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love reading fantasy, traveling, cross stitching, cake decorating, and going out with friends when I’m in the mood to be perceived. I also really like astrology and psychology, which basically means I enjoy analyzing people and then pretending I’m being casual about it.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is information wearing heels. I don’t want pointless screaming all day, but if people are fighting, I’m listening, because conflict tells you who’s insecure, who’s performative, and who cannot regulate their nervous system.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Probably not. I’m not saying never, because I’m bold and I know myself, but I also know a house crush can turn into a strategy parasite really fast.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… trust the vibe, but verify the pattern.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get a real adventure out of this and prove I can be braver than my anxious little inner child who wanted to read during recess. Also, I want to see what happens when I stop overthinking from the sidelines and actually throw myself into the mess.\"}]",
+      "tribe": "Gophers"
+    },
+    {
+      "name": "Lake",
+      "slug": "lake",
+      "gender": "f",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 5,
+        "endurance": 5,
+        "mental": 9,
+        "social": 5,
+        "strategic": 6,
+        "loyalty": 9,
+        "boldness": 4,
+        "intuition": 7,
+        "temperament": 8
+      },
+      "sexuality": "lesbian",
+      "voice": "Measured, thoughtful, and quietly formal, with confidence that grows rather than announces itself. Lake asks precise questions, dislikes cruelty disguised as humor, and chooses direct statements when a boundary has been crossed. Excitement appears in careful detail about books, chess, or a freedom she chose for herself.#warm#calm#earnest",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Lake character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Lake",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Lake character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Lake",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Lake character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Lake",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "sexuality": [
+          {
+            "label": "Lake character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Lake",
+            "kind": "source-canon"
+          }
+        ]
+      },
+      "kit": {
+        "thing": "chess",
+        "alone": "is folding every piece of clothing into a perfect square",
+        "bit": [
+          "If anyone wants to play, I've drawn a chessboard in the sand. The pieces are shells. The white king is a slightly larger shell.",
+          "I've started writing a story about a girl stranded on an island. It's fiction. Mostly.",
+          "There's a precise way to split the firewood so it lasts all night. I can show you, if you'd like to do it properly."
+        ],
+        "tease": [
+          "You're playing chess with shells. On a beach. In a survival game.",
+          "Is the girl in the story going to vote anyone out?",
+          "Is there a precise way to do everything?"
+        ],
+        "reply": [
+          "Chess is a survival game. It just has better manners.",
+          "Not yet. She's still deciding who she trusts.",
+          "Yes. Most people simply don't bother."
+        ],
+        "home": [
+          "My friends, who helped me stop living the way my parents wanted me to. I chose this. That still feels strange to say.",
+          "My notebooks and my chessboard. My parents, technically, though they don't know I'm here."
+        ],
+        "want": [
+          "To make my own choices for as long as I can. Winning would just be the last one.",
+          "To win, without becoming someone I'd have to forgive."
+        ],
+        "conf": [
+          "I've spent my life being told what to do. Out here, every move is mine. It's terrifying. I love it.",
+          "People confuse being loud with being strong. I'd rather be strong."
+        ],
+        "askHome": [
+          "May I ask who's waiting for you at home?",
+          "What's your life like at home? I'd like to know, if you're willing."
+        ],
+        "askWant": [
+          "What would winning mean for you? Not the money. The other thing.",
+          "What brought you here? I mean the real reason."
+        ],
+        "defend": [
+          "Precision isn't coldness. It's caring enough to do something properly."
+        ],
+        "deep": [
+          "My parents controlled everything. My clothes, my hair, my future. Out here, every choice is mine, and it terrifies me."
+        ],
+        "solo": [
+          "Everything in my bag is folded the same way. It's the one thing on this island I get to control.",
+          "My mother would be horrified by the dirt. I love the dirt. I'm never telling her."
+        ],
+        "ground": [
+          "strict-parents",
+          "writer",
+          "estranged",
+          "family-doubts",
+          "lonely-child"
+        ]
+      },
+      "age": 19,
+      "birthdate": "2007-12-23",
+      "ethnicity": "White",
+      "nationality": "German",
+      "occupation": "Writer",
+      "backstory": "Lake Müller grew up under strict parents who controlled her schedule, appearance, and future. The pressure to be perfect left her private, anxious about vulnerability, and deeply self-conscious about wearing a wig after stress-related hair loss. Chess and writing offered places to think freely. Friendships beyond her family eventually gave her the support to defy that control, choose a new appearance, and begin living according to her own values.",
+      "personality": "Lake is intelligent, creative, principled, and shaped by years of rigid parental control. Perfection was enforced so harshly that stress contributed to her losing her hair, and hiding vulnerability became a survival habit. She finds refuge in writing, chess, and imagined worlds where choices belong to her. Freedom has not made her reckless; it has made her deliberate. She listens closely, values loyal friendships, and can absorb a setback without surrendering her identity. Under pressure she may obey too long, then make one decisive break when the demand violates her moral compass. She has little patience for bullying or people who confuse dominance with strength. Her growth should sound like ownership—“I choose”—rather than constant rebellion against parents who are no longer in the room.",
+      "tribe": "Bass"
+    },
+    {
+      "name": "Gabby",
+      "slug": "gabby",
+      "gender": "f",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 7,
+        "endurance": 7,
+        "mental": 6,
+        "social": 6,
+        "strategic": 3,
+        "loyalty": 9,
+        "boldness": 6,
+        "intuition": 4,
+        "temperament": 6
+      },
+      "sexuality": "lesbian",
+      "voice": "Normally sweet and friendly but insecure underneath. Second-guesses herself, wants to be liked, but has real backbone when pushed. 'Did I do something wrong?' / 'No — I'm not apologizing for that.' #blunt#chaotic#earnest",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Gabby character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Gabby",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Gabby character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Gabby",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Gabby character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Gabby",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Gabby character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Gabby",
+            "kind": "source-canon"
+          }
+        ],
+        "sexuality": [
+          {
+            "label": "Gabby character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Gabby",
+            "kind": "source-canon"
+          }
+        ]
+      },
+      "kit": {
+        "thing": "how many pets she has",
+        "alone": "is talking softly to a lizard on a rock",
+        "bit": [
+          "Look, I made a friend! He's a crab, and his name is Pavel, and he's very shy, so please be quiet.",
+          "Did anybody eat the eggs? Because those were somebody's babies, and I need to know who.",
+          "At home I have three cats, two dogs, a ferret, a lizard, and a goat. The goat is my favourite. Don't tell the cats."
+        ],
+        "tease": [
+          "Gabby, please don't name the dinner.",
+          "We're starving. The eggs were dinner.",
+          "Who is watching all those animals right now?"
+        ],
+        "reply": [
+          "He isn't dinner. He's Pavel.",
+          "Then I'll eat the rice and I'll be sad about it.",
+          "Ellie. She's going to be so tired when I get home."
+        ],
+        "home": [
+          "Ellie. My girlfriend. We've been together five years and this is the longest we've ever been apart, and I hate it.",
+          "Ellie and a house full of animals. I miss all of them so much I can't think about it for too long."
+        ],
+        "want": [
+          "To win and use the money for an animal sanctuary. A big one, with a pond.",
+          "To make it far enough that Ellie is proud. And then win, if I can."
+        ],
+        "conf": [
+          "Sometimes there's a voice in my head that says the mean thing first. I don't have to listen to it. Today I didn't.",
+          "If you're kind to me, I'll do anything for you. If you hurt somebody I love, I won't forget it. Ever."
+        ],
+        "askHome": [
+          "Who's waiting for you at home? Do you have pets? Please say you have pets.",
+          "Do you have a girlfriend or a boyfriend back home? Do they miss you?"
+        ],
+        "askWant": [
+          "What would you do with the money? I want to hear everybody's answer!",
+          "What do you want most out of this? Like, in your heart?"
+        ],
+        "defend": [
+          "They're not just pets. They're my family. Say it again and see what happens."
+        ],
+        "deep": [
+          "There's a voice in my head that says the meanest thing it can. I don't always know which one of us is talking."
+        ],
+        "solo": [
+          "This is Gerald. Gerald's my new friend. He doesn't judge me, and he doesn't vote, so he's the best person here.",
+          "I miss Ellie so much. Talking to animals helps. It feels a little bit like home."
+        ],
+        "ground": [
+          "pets",
+          "mental-health",
+          "family-doubts",
+          "moved-countries"
+        ]
+      },
+      "age": 26,
+      "birthdate": "2000-05-12",
+      "ethnicity": "Black",
+      "nationality": "Polish",
+      "hometown": "Warsaw",
+      "occupation": "Self-defense instructor",
+      "backstory": "Before competition, Gabby was already an environmental activist, devoted vegan, animal lover, and caretaker of a remarkable number of pets, including exotic animals. The outdoors felt safer and more legible to her than many social groups. She came to camp thrilled by nature and connection, carrying both enormous affection and intrusive thoughts that could turn perceived rejection into an immediate demand for justice or revenge.",
+      "personality": "Gabby is energetic, kind, intensely affectionate, and unpredictable when a moral or personal boundary is crossed. Kindness earns fierce loyalty from her, while betrayal can become absolute in a single emotional swing. Nature, animals, veganism, and activism are commitments rather than decorative quirks; cruelty toward living things provokes some of her strongest reactions. She experiences intrusive thoughts represented onscreen as a harsher duplicate of herself. That voice can be rude, manipulative, and threatening, but it should be written as an internal struggle—not an invented diagnosis and not proof that Gabby is secretly evil. She reacts before she calculates, remembers who stood by her, and can become strategically dangerous when anger supplies focus. After the explosion, remorse and renewed tenderness are both possible if accountability feels real.",
+      "tribe": "Gophers"
+    },
+    {
+      "name": "Bowie",
+      "slug": "bowie",
+      "gender": "m",
+      "archetype": "mastermind",
+      "stats": {
+        "physical": 6,
+        "endurance": 4,
+        "mental": 8,
+        "social": 10,
+        "strategic": 10,
+        "loyalty": 6,
+        "boldness": 7,
+        "intuition": 9,
+        "temperament": 6
+      },
+      "sexuality": "gay",
+      "voice": "Sweet, dramatic theater kid. Expressive, supportive, non-confrontational; devoted to his friends. Emotes big.#schemer#blunt ",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Bowie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Bowie",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Bowie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Bowie",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Bowie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Bowie",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "sexuality": [
+          {
+            "label": "Bowie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Bowie",
+            "kind": "source-canon"
+          }
+        ]
+      },
+      "kit": {
+        "thing": "being a theatre kid",
+        "alone": "is running dance steps on the dock, counting under his breath",
+        "bit": [
+          "Okay, nobody panic, but I've been rehearsing my reaction for when we win, and it involves a split.",
+          "I was prom king AND prom queen, so I think I can handle a team captain election, thank you.",
+          "If we lose today, I want everyone to know I'm going to cry, and it's going to be beautiful."
+        ],
+        "tease": [
+          "Please don't do the split. Your knees are on our team.",
+          "Is there anything you haven't been crowned?",
+          "Can you cry quieter than last time, at least?"
+        ],
+        "reply": [
+          "My knees are trained professionals. They'll be fine.",
+          "Not yet. That's what this show is for.",
+          "Absolutely not. If I'm crying, I'm giving it everything."
+        ],
+        "home": [
+          "My mom, who has watched every musical I've ever been in, including the ones where I was a tree.",
+          "My friends from the theatre. They made me promise to win and also to name an alliance after a Broadway show."
+        ],
+        "want": [
+          "Another crown. I don't care what it's made of.",
+          "To be the one everybody remembers, and to win. In that order, honestly."
+        ],
+        "conf": [
+          "I love these people. I'm also going to beat them. Both of those things are true.",
+          "People think drama is a distraction. It's information. Who cries, who yells, who goes quiet. I'm taking notes."
+        ],
+        "askHome": [
+          "Okay, tell me everything. Who's at home? Partner? Pets? A secret twin?",
+          "Who are you doing this for back home?"
+        ],
+        "askWant": [
+          "What's the dream, though? Like the real one, not the one you'd say in the audition tape.",
+          "If you win, what's the first thing you do?"
+        ],
+        "defend": [
+          "I'm loud because I'm good at this. You don't get to make that sound like a flaw."
+        ],
+        "deep": [
+          "Sometimes I'm not sure people like me or just like watching me. I think that's why I perform so hard."
+        ],
+        "solo": [
+          "If I'm not performing, I'm thinking about performing. Right now I'm thinking about how good this confessional is going to look.",
+          "Some people come out here to rest. I come out here to rehearse. The whole island is a stage."
+        ],
+        "ground": [
+          "performer",
+          "athlete",
+          "came-out"
+        ]
+      },
+      "age": 22,
+      "birthdate": "2004-06-12",
+      "backstory": "Before competing, Bowie was already a practiced performer and relentless competitor. His audition presents him as Total Drama’s first openly gay contestant, a basketball-playing student who had been crowned both prom king and queen and wanted another crown. That mix of pageantry, preparation, and self-belief explains why he arrived expecting to manage both the room and the show around it.",
+      "personality": "Bowie is openly competitive, socially alert, and comfortable being the most visibly confident person in a room. He enjoys drama as both entertainment and information, notices who needs reassurance, and can build sincere friendships even while planning around them. He prefers clean strategic authorship: identify the dangerous player, assemble the numbers, and own the decision in confessional. His affection for people such as Raj reveals a real boundary beneath the ambition; he can postpone or soften a move when the human cost becomes personal. Under pressure he gets sharper and more controlling, but not randomly cruel. He respects opponents who can answer him move for move and hates being treated as strategically naive.",
+      "tribe": "Bass"
+    },
+    {
+      "name": "Yul",
+      "slug": "yul",
+      "gender": "m",
+      "archetype": "villain",
+      "stats": {
+        "physical": 6,
+        "endurance": 5,
+        "mental": 6,
+        "social": 3,
+        "strategic": 8,
+        "loyalty": 1,
+        "boldness": 10,
+        "intuition": 4,
+        "temperament": 2
+      },
+      "sexuality": "straight",
+      "voice": "Snide bully — superior and condescending, enjoys watching people fail. Everything is a backhanded remark. 'Bold choice. Bold.' / 'Nothing personal.' (it is always personal)#blunt#schemer",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Yul character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Yul",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Yul character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Yul",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Yul character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Yul",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "birthdate": [
+          {
+            "label": "Yul character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Yul",
+            "kind": "source-canon"
+          }
+        ],
+        "ethnicity": [
+          {
+            "label": "Yul character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Yul",
+            "kind": "source-canon"
+          }
+        ],
+        "nationality": [
+          {
+            "label": "Yul character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Yul",
+            "kind": "source-canon"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Yul character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Yul",
+            "kind": "source-canon"
+          }
+        ]
+      },
+      "kit": {
+        "thing": "being a former dancer",
+        "alone": "is recording a monologue into a tin can like it's a microphone",
+        "bit": [
+          "Bold choice, wearing that today. Bold.",
+          "I went viral at fifteen. Some of you are going to go viral after this, too. For crying.",
+          "Nothing personal, but whoever built this shelter should never build anything again."
+        ],
+        "tease": [
+          "Wow. Do you ever say anything nice?",
+          "At least people will remember us.",
+          "You didn't help build it."
+        ],
+        "reply": [
+          "That was nice. You'd know if I was being mean.",
+          "That's the dream, isn't it? Being remembered for the worst thing you did.",
+          "I don't build. I critique. Someone has to."
+        ],
+        "home": [
+          "A podcast that does better than your entire family's careers combined.",
+          "A lot of people who want to be me. Nobody I'd call."
+        ],
+        "want": [
+          "The money and the attention, and I'll take the attention first.",
+          "To remind everybody who I am."
+        ],
+        "conf": [
+          "Nice is a performance. I just stopped performing it.",
+          "Nothing personal. That's what I always say. It's always personal."
+        ],
+        "askHome": [
+          "Who's at home, then? Let me guess. Nobody important.",
+          "Do you even have anyone back home?"
+        ],
+        "askWant": [
+          "What do you want? Fame? You don't have the face for it.",
+          "Why are you here? Genuinely asking. I can't work it out."
+        ],
+        "defend": [
+          "You're just upset someone finally said it out loud."
+        ],
+        "deep": [
+          "When I went viral, everybody loved me. When they stopped, I didn't know who I was without it."
+        ],
+        "solo": [
+          "I've had a hot take ready every single day. Nobody's asked. That won't stop me.",
+          "When the internet loved me, I didn't know who I was. Out here, I think I'm starting to work it out."
+        ],
+        "ground": [
+          "online-fame",
+          "performer",
+          "career-slipped",
+          "strict-parents"
+        ]
+      },
+      "age": 23,
+      "birthdate": "2003-07-24",
+      "ethnicity": "Asian",
+      "nationality": "Korean",
+      "hometown": "Seoul",
+      "occupation": "Podcaster and brand promoter; former dancer",
+      "backstory": "Yul Kim was born in Korea on July 24, 2001. A dance performance went viral when he was fifteen, creating early fame and a public “nice” persona that concealed his contempt for others. His behavior eventually cost him dancing work and damaged his reputation, after which he continued as a podcaster and brand promoter. He enters competition treating money and renewed celebrity as permission to stop pretending to be decent.",
+      "personality": "Yul is vain, cruel, discriminatory, and convinced that fame should exempt him from ordinary accountability. Viral success as a teenage dancer rewarded performance before he developed empathy, and he learned to treat outrage as both threat and publicity. He can maintain tactical loyalty and understand alliance structure, yet his contempt repeatedly destroys the trust that strategy requires. Apologies are usually reputation management; remorse becomes suspect the moment consequences fade. Under pressure he insults appearance, identity, or intelligence, tries to reassert hierarchy, and threatens retaliation when control fails. His behavior must not be softened into harmless sass: abuse and bigotry should damage bonds, reputation, and voting options. He can be funny through vanity, hypocrisy, and failed self-importance without making targeted cruelty consequence-free.",
+      "tribe": "Gophers"
+    },
+    {
+      "name": "Bruno",
+      "slug": "bruno",
+      "gender": "m",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 5,
+        "endurance": 5,
+        "mental": 4,
+        "social": 4,
+        "strategic": 3,
+        "loyalty": 10,
+        "boldness": 1,
+        "intuition": 4,
+        "temperament": 9
+      },
+      "sexuality": "straight",
+      "voice": "Bruno talks like an overexcited superfan: quick, eager, and packed with references to contestants, strategies, strengths, and weaknesses. When he argues, he tends to lean on facts, precedent, and show knowledge rather than intimidation, but his excitement can make him blurt things out before he thinks them through. His rhythm is enthusiastic and slightly nervous, especially when he is trying to prove an idea.#earnest",
+      "profileSources": {
+        "backstory": [
+          {
+            "label": "Disventure Camp Wiki - Bruno",
+            "url": "https://disventure-camp.fandom.com/wiki/Bruno",
+            "kind": "source-canon",
+            "quote": "Bruno was originally from Hartford, Connecticut before moving to New York."
+          }
+        ],
+        "personality": [
+          {
+            "label": "Disventure Camp Wiki - Bruno",
+            "url": "https://disventure-camp.fandom.com/wiki/Bruno",
+            "kind": "source-canon",
+            "quote": "his enthusiasm and optimism are spectacular at making others feel motivated"
+          }
+        ],
+        "voice": [
+          {
+            "label": "Disventure Camp Wiki - Bruno",
+            "url": "https://disventure-camp.fandom.com/wiki/Bruno",
+            "kind": "source-canon",
+            "quote": "trouble stopping himself from speaking up when excited"
+          }
+        ]
+      },
+      "kit": {
+        "thing": "his job as a personal assistant",
+        "alone": "is reorganising the supply box, alphabetically",
+        "bit": [
+          "As a personal assistant, I can tell you, this schedule is a mess. I could fix it. I fix Valerie's every day.",
+          "Fun fact: the last time they did this challenge, the team that went for the flag first won. I've watched it eleven times.",
+          "My mom made me this hoodie for good luck. Don't laugh. It's worked so far."
+        ],
+        "tease": [
+          "Bruno, you've told us you're a personal assistant like twelve times.",
+          "Eleven times?",
+          "It's been one day, Bruno."
+        ],
+        "reply": [
+          "Because it's relevant! It's always relevant!",
+          "Twelve. I watched it again on the flight.",
+          "And I'm still here. It's working."
+        ],
+        "home": [
+          "My parents, Teresa and Alvaro, and my boss Valerie, who has definitely called me forty times already.",
+          "My mom, my grandma, who's also Teresa, and a very lonely to-do list."
+        ],
+        "want": [
+          "To be a real Favourite. Not just a fan. Somebody people remember.",
+          "To prove a superfan can actually win this. I've studied for years."
+        ],
+        "conf": [
+          "I know everything about this game. Doing it is really, really different from knowing it.",
+          "Valerie always says, 'Bruno, can you handle this?' And I always can. I just need somebody to ask."
+        ],
+        "askHome": [
+          "Okay, who's at home for you? I'm asking because I genuinely want to know!",
+          "Who's your support system? Mine's my mom and a hoodie."
+        ],
+        "askWant": [
+          "What's your strategy? Sorry. Also, what do you want? Both.",
+          "What would winning mean for you? Like, emotionally?"
+        ],
+        "defend": [
+          "I know I talk about it a lot. But being useful is the only time I feel like I'm actually good at something."
+        ],
+        "deep": [
+          "My mom made me this hoodie for good luck. When I get scared out here, I hold onto the sleeve. I'm holding it right now, actually."
+        ],
+        "solo": [
+          "I'm a personal assistant, so this is basically my dream job. Nobody asked me to, and that's the best part.",
+          "Being useful is the only time I'm sure I belong somewhere. So I'm going to be very useful."
+        ],
+        "ground": [
+          "immigrant-family",
+          "pets",
+          "shy-child"
+        ]
+      },
+      "age": 23,
+      "birthdate": "2003-06-24",
+      "ethnicity": "Latino",
+      "nationality": "Peruvian American",
+      "hometown": "New York",
+      "occupation": "Personal assistant",
+      "descriptor": "The Superfan",
+      "backstory": "Before appearing on television, Bruno had lived in Hartford, Connecticut and later moved to New York. His parents are Teresa and Alvaro, and his mother made him a hoodie that he treasures as a good-luck gift. He became a personal assistant because the pay was good and because he likes helping others and feeling useful; his boss is named Valerie. He is also strongly connected to his family history, with his grandmother also being named Teresa.",
+      "personality": "Bruno is intensely optimistic, enthusiastic, and knowledge-driven, but pressure can shake his confidence. He wants to be useful and impressive, yet he may need encouragement from stronger personalities when his plans are questioned or fail. He is more likely to motivate, explain, and rally people than to bully them, and he will speak up when excited even if it embarrasses him or creates a strategic mistake. His loyalty reads as cooperative rather than cutthroat: he wants people to believe in his ideas, but he is not naturally ruthless.",
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Loyal, jumpy, useful.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think I got picked because I am, like, a walking spreadsheet of this game but with feelings. I know the difference between being a loyal number and being somebody’s disposable pawn, even if I’m probably still going to panic-smile through half the conversations.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be not having my family, my routine, or a clear job to do. I’m a personal assistant, so I like lists, tasks, Valerie saying “Bruno, can you handle this,” and then I handle it — in the house, the task is basically survive everyone lying to your face.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to attach myself to a strong core early, be useful, be loyal, and not get fancy just because I’ve watched people make big moves on TV. I know my strategic stat is not elite, okay, so I need to be the guy people trust with information, not the guy trying to invent a twelve-step blindside on day three.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want people to know I’m loyal for real, not fake loyal where you say it in the pantry and then run upstairs five seconds later. I want to hide how nervous I get, because if people see my brain buffering, they might think I’m easy to drag around or easy to cut.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- My mom Teresa’s hoodie, because she made it for me and I would need that good-luck family armor.\\n- A notebook, because if I can’t write down names, patterns, and who said what, I’ll start storing it all in my face and that is dangerous.\\n- A photo of my family, especially because my grandmother was Teresa too, and remembering where I come from keeps me from spiraling.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love watching reality strategy shows, obviously, and then overanalyzing every vote like I’m being paid by the comma. I also like helping people organize their lives, walking around New York with coffee, calling my parents, and making tiny plans for situations that do not require tiny plans.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is great television and terrible living conditions. I’ll watch it, clock who benefits from it, maybe whisper “bad move” under my breath, but I do not want to be the person screaming over cereal unless the cereal did something criminal.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Probably not, because I know myself and I would turn into a nervous little loyalty goblin and forget the game exists. Also, showmances become targets so fast — like, congratulations, you found love and also a nomination couch.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is help first, panic later, and stay loyal to the people who actually have your back.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to prove that someone like me — not the loudest, not the strongest, not the cold mastermind — can still matter in the game. And honestly, I want to make my family proud, especially my mom, because that hoodie is coming in with expectations.\"}]",
+      "tribe": "Bass"
+    }
+  ],
+  "coaches": [
+    {
+      "name": "Alejandro",
+      "slug": "alejandro",
+      "gender": "m",
+      "archetype": "mastermind",
+      "stats": {
+        "physical": 8,
+        "endurance": 8,
+        "mental": 10,
+        "social": 10,
+        "strategic": 10,
+        "loyalty": 2,
+        "boldness": 9,
+        "intuition": 10,
+        "temperament": 4
+      },
+      "sexuality": "straight",
+      "voice": "Smooth, charming, calculated manipulator. Weaponizes charm and good looks, always three steps ahead, never lets you see the scheme. Silky, flattering speech that hides a knife.",
+      "profileSources": {
+        "ethnicity": [
+          {
+            "label": "Total Drama Wiki - Alejandro",
+            "url": "https://totaldrama.fandom.com/wiki/Alejandro",
+            "kind": "source-canon",
+            "quote": "proud of his Hispanic heritage"
+          }
+        ],
+        "nationality": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "descriptor": [
+          {
+            "label": "Total Drama Wiki - Alejandro",
+            "url": "https://totaldrama.fandom.com/wiki/Alejandro",
+            "kind": "source-canon",
+            "quote": "label: The Arch Villain"
+          }
+        ],
+        "birthdate": [
+          {
+            "label": "16 at Total Drama (spring 2020), so born 2004",
+            "kind": "simulator-continuity"
+          }
+        ],
+        "age": [
+          {
+            "label": "16 at Total Drama (spring 2020), and it is fall 2026 now",
+            "kind": "simulator-continuity"
+          }
+        ],
+        "hometown": [
+          {
+            "label": "Total Drama Wiki - Alejandro",
+            "url": "https://totaldrama.fandom.com/wiki/Alejandro",
+            "kind": "source-canon",
+            "quote": "originally from Spain"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Total Drama Wiki - Alejandro",
+            "url": "https://totaldrama.fandom.com/wiki/Alejandro",
+            "kind": "source-canon",
+            "quote": "on the honor roll at their high school"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Total Drama Wiki - Alejandro",
+            "url": "https://totaldrama.fandom.com/wiki/Alejandro",
+            "kind": "source-canon",
+            "quote": "originally from Spain, moved to Latin America shortly after his birth, and later moved to Canada"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Total Drama Wiki - Alejandro",
+            "url": "https://totaldrama.fandom.com/wiki/Alejandro",
+            "kind": "source-canon",
+            "quote": "On the surface, Alejandro appears to be a polite, dashing, and charming gentleman, but underneath he is dark and twisted."
+          }
+        ]
+      },
+      "age": 26,
+      "birthdate": "2000-05-05",
+      "ethnicity": "Hispanic",
+      "nationality": "Spanish-Canadian",
+      "hometown": "Spain",
+      "occupation": "Student",
+      "descriptor": "The Arch Villain",
+      "backstory": "Alejandro grew up in a successful Hispanic family with his parents, uncle Julio, and older brothers José and Carlos. He was born in Spain, moved to Latin America shortly after birth, and later moved to Canada. Before appearing on television, he was an honor-roll high school student shaped by a polished, high-achieving household and by José’s bullying, which helped form his competitiveness, hatred of the nickname “Al,” and obsession with being superior.",
+      "personality": "Alejandro behaves like a charming gentleman until pressure reveals the calculating villain underneath. He is patient, image-conscious, and highly strategic, willing to fake kindness, exploit attraction, and hold grudges over even small slights if it helps him get ahead. His loyalty is selective: he can be sincerely kind when he chooses, but he usually treats relationships as tools unless someone earns real respect. He will manipulate, humiliate, and take revenge, but he draws a line at pointless cruelty and senseless harm.",
+      "tribe": "Gophers",
+      "isCoach": true
+    },
+    {
+      "name": "Izzy",
+      "slug": "izzy",
+      "gender": "f",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 8,
+        "endurance": 10,
+        "mental": 2,
+        "social": 4,
+        "strategic": 2,
+        "loyalty": 4,
+        "boldness": 6,
+        "intuition": 3,
+        "temperament": 6
+      },
+      "voice": "Unhinged, chaotic wildcard. Manic energy, wild non-sequitur stories, unpredictable and fearless, genuinely a little dangerous — and having the time of her life.",
+      "tribe": "Bass",
+      "isCoach": true
+    }
+  ],
+  "runs": [
+    {
+      "id": "carnival_enabled_no-coaches_1729",
+      "config": {
+        "setting": "carnival",
+        "romance": "enabled",
+        "coaches": "disabled",
+        "name": "Pacing baseline"
+      },
+      "seed": 1729,
+      "withCoaches": false,
+      "result": {
+        "phase": "complete",
+        "episodes": 14,
+        "winner": "Aubrey"
+      },
+      "fingerprint": {
+        "history": "032eaf26f709b3854c5f89ac8b89dd0b2b52f7bf44aeeb58e7378176bda1aed8",
+        "bonds": "bc74fc10467872ddc667f965d91df494a28927ebef84fe8fc7617e3576c9da5f",
+        "story": "74ad12340dbbcbaa8dd90e6b43930b42f50e2fa88006966c9c033d46c4eec148",
+        "randomCalls": 8105,
+        "winner": "Aubrey"
+      }
+    },
+    {
+      "id": "carnival_enabled_no-coaches_2026",
+      "config": {
+        "setting": "carnival",
+        "romance": "enabled",
+        "coaches": "disabled",
+        "name": "Pacing baseline"
+      },
+      "seed": 2026,
+      "withCoaches": false,
+      "result": {
+        "phase": "complete",
+        "episodes": 14,
+        "winner": "Bowie"
+      },
+      "fingerprint": {
+        "history": "94d32935f8f2bf5cad6155e7a3e589ebca470032d0c43cd158f076a1ec5d76fa",
+        "bonds": "ffd35abfe446ae4edb3af9630600d57ed4ba896b9bf2bd84a18bf18aa9c915a9",
+        "story": "f7d21378d3860930feb5469e085fbb8c2c644097b5d136cda53041da9d4da6e9",
+        "randomCalls": 8554,
+        "winner": "Bowie"
+      }
+    },
+    {
+      "id": "carnival_enabled_coaches_1729",
+      "config": {
+        "setting": "carnival",
+        "romance": "enabled",
+        "coaches": "manual",
+        "name": "Pacing baseline"
+      },
+      "seed": 1729,
+      "withCoaches": true,
+      "result": {
+        "phase": "complete",
+        "episodes": 16,
+        "winner": "Leshawna"
+      },
+      "fingerprint": {
+        "history": "0d2ad37105439fd7988ffe51f984a322806ffc6f36b3e8dc4c50094ee46eb85e",
+        "bonds": "7a56f8604965c452d3d5bdf081de15d6276d6f5642bad3afe4e45219dbd8758b",
+        "story": "3a62aee9583c3c0dc211a4f29f1e6f0b7322d77d50f77b5d5e236d996d21bd14",
+        "randomCalls": 10006,
+        "winner": "Leshawna"
+      }
+    },
+    {
+      "id": "carnival_enabled_coaches_2026",
+      "config": {
+        "setting": "carnival",
+        "romance": "enabled",
+        "coaches": "manual",
+        "name": "Pacing baseline"
+      },
+      "seed": 2026,
+      "withCoaches": true,
+      "result": {
+        "phase": "complete",
+        "episodes": 16,
+        "winner": "Bowie"
+      },
+      "fingerprint": {
+        "history": "75762a94a81b127c490d89d5ff8fd1bf126b24af01b2b4e4a2e8b1291e3f5ec2",
+        "bonds": "713c38d7e584b27d27dd3efb7431b43edec7bde3d22c580be64edaacaf95ffa5",
+        "story": "65547639e3811eaba8a752396eb23a753c519e156e9c16dd01bdadf0752356e9",
+        "randomCalls": 10420,
+        "winner": "Bowie"
+      }
+    },
+    {
+      "id": "carnival_disabled_no-coaches_1729",
+      "config": {
+        "setting": "carnival",
+        "romance": "disabled",
+        "coaches": "disabled",
+        "name": "Pacing baseline"
+      },
+      "seed": 1729,
+      "withCoaches": false,
+      "result": {
+        "phase": "complete",
+        "episodes": 14,
+        "winner": "Leshawna"
+      },
+      "fingerprint": {
+        "history": "d1c9885c3ec2bbf2aac961c0296441cb3db369cf9c024d00b88eb23c032d7c42",
+        "bonds": "07e16dfd7ff97e80c38f1de97bf2d3f19d62278ff6a2e20758d5aa1145ec80aa",
+        "story": "c58545112da8c41cc34e7cccf37cd27872a871af4fd49e1f0a9dfe50cd17552d",
+        "randomCalls": 7761,
+        "winner": "Leshawna"
+      }
+    },
+    {
+      "id": "carnival_disabled_no-coaches_2026",
+      "config": {
+        "setting": "carnival",
+        "romance": "disabled",
+        "coaches": "disabled",
+        "name": "Pacing baseline"
+      },
+      "seed": 2026,
+      "withCoaches": false,
+      "result": {
+        "phase": "complete",
+        "episodes": 14,
+        "winner": "Gwen"
+      },
+      "fingerprint": {
+        "history": "b4ba5f32936eb6651b56781481c26ee61cefd05fa0a51abbb664280eb306b613",
+        "bonds": "6e4a7a8e698ab586dcb1241f57b7de8034b4556ecec2cb8ed3e17241a0e42c46",
+        "story": "51f2ac64b5d49f8ecea494c95895482fb125e90035106af906c296d54ff6f4c3",
+        "randomCalls": 8406,
+        "winner": "Gwen"
+      }
+    },
+    {
+      "id": "carnival_disabled_coaches_1729",
+      "config": {
+        "setting": "carnival",
+        "romance": "disabled",
+        "coaches": "manual",
+        "name": "Pacing baseline"
+      },
+      "seed": 1729,
+      "withCoaches": true,
+      "result": {
+        "phase": "complete",
+        "episodes": 16,
+        "winner": "Bowie"
+      },
+      "fingerprint": {
+        "history": "e384b67154ee164a5065d1a1632e45b42077bbf01d424172cd4f6abab8ce6b57",
+        "bonds": "c9280118888102097b2108ee551431adf9a9354e523aaca7c1ef4dd7fb33e17c",
+        "story": "1721fa5b1d6c5325f6fcfcf376c95861ef54781dfc3d445e306c4db221e75848",
+        "randomCalls": 10349,
+        "winner": "Bowie"
+      }
+    },
+    {
+      "id": "carnival_disabled_coaches_2026",
+      "config": {
+        "setting": "carnival",
+        "romance": "disabled",
+        "coaches": "manual",
+        "name": "Pacing baseline"
+      },
+      "seed": 2026,
+      "withCoaches": true,
+      "result": {
+        "phase": "complete",
+        "episodes": 16,
+        "winner": "Yul"
+      },
+      "fingerprint": {
+        "history": "e28198497c45397151b94909f716da7f79ff069a245098d7970fbb71d8f3a286",
+        "bonds": "18c5c1f2b8affc6aef779165b270f68f21063d581cf3fee8cf62f8fe6b488363",
+        "story": "c25c02fdf54b0ca5cf8bc733de1e5e9b8310a935bec009101482ef41929d1304",
+        "randomCalls": 9727,
+        "winner": "Yul"
+      }
+    }
+  ]
+}

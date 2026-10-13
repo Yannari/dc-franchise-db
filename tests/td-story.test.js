@@ -319,7 +319,9 @@ describe('a season through the director', () => {
       // warnings and advantage decisions on top of the free scenes, so a big night runs a little longer
       // ...and since 2026-10-12 every name on the chopping block gets its own plan scene (director.js votePlan's
       // rivals; the user: "I heard no one talk about Thom"): one more on the busiest night, never more
-      expect(n, `ep ${ep.num} ${camp}`).toBeLessThanOrEqual(23);
+      // ...and since 2026-10-14 the day is thirty and more (the user: "not enough events"; director.js DAY_BUDGET): the
+      // ceiling plus the late passes, never forty
+      expect(n, `ep ${ep.num} ${camp}`).toBeLessThanOrEqual(38);
     }
   });
 

@@ -1,0 +1,195 @@
+{
+  "postDay1": {
+    "fresh": 2057,
+    "pairs": 14936
+  },
+  "peaks": {
+    "person": {
+      "run": "hosted-camp_enabled_coaches_2026",
+      "episodes": [
+        13,
+        14,
+        15
+      ],
+      "speakers": 6,
+      "name": "Julia",
+      "share": 0.26541554959785524
+    },
+    "pair": {
+      "run": "carnival_disabled_no-coaches_1729",
+      "episodes": [
+        11,
+        12,
+        13
+      ],
+      "speakers": 6,
+      "name": "Lake|Owen",
+      "share": 0.2708333333333333
+    },
+    "earlyPerson": {
+      "run": "film-lot_disabled_coaches_2026",
+      "episodes": [
+        5,
+        6,
+        7
+      ],
+      "speakers": 14,
+      "name": "Lindsay",
+      "share": 0.15104166666666666
+    },
+    "earlyPair": {
+      "run": "hosted-camp_enabled_no-coaches_2026",
+      "episodes": [
+        4,
+        5,
+        6
+      ],
+      "speakers": 13,
+      "name": "Bowie|Owen",
+      "share": 0.14960629921259844
+    }
+  },
+  "opportunities": {
+    "witness-after:writer-no-scene": 29,
+    "witness-after:aired": 370,
+    "follow-up:aired": 326,
+    "turn:aired": 341,
+    "follow-up:writer-no-scene": 19,
+    "witness-after:offered-then-cut": 42,
+    "follow-up:offered-then-cut": 14,
+    "turn:offered-then-cut": 3,
+    "follow-up:ambiguous-multiple-attempts": 4
+  },
+  "rawRomanceEnabled": {
+    "aired": 228,
+    "same-storyline": 60,
+    "offered-then-cut": 12,
+    "selected-not-rendered": 41,
+    "not-in-main-pool": 77,
+    "day-one-filter": 5,
+    "local-person-cap": 4
+  },
+  "romanceDisabledAired": {
+    "romance.night": 12,
+    "long.romance.flirt": 80,
+    "long.romance.moment": 33,
+    "long.romance.night": 15
+  },
+  "constructedCuts": {
+    "opener": 545,
+    "challenge-chat": 80,
+    "kit": 546,
+    "bottom": 45,
+    "running-gag": 35,
+    "engine": 461,
+    "camp-game": 92,
+    "quick-cut": 12,
+    "rivalry": 63,
+    "confessional": 104,
+    "alliance": 43,
+    "friendship": 47,
+    "idol": 9,
+    "witness-after": 42,
+    "follow-up": 14,
+    "coach": 6,
+    "arc": 28,
+    "showmance": 4,
+    "underdog": 5,
+    "scheme": 16,
+    "turn": 3,
+    "vote": 11,
+    "mentor": 3
+  },
+  "byVenue": {
+    "hosted-camp": {
+      "scenes": {
+        "n": 168,
+        "min": 10,
+        "median": 25,
+        "p90": 29,
+        "max": 31,
+        "mean": 23.886904761904763
+      },
+      "spoken": {
+        "n": 168,
+        "min": 43,
+        "median": 139,
+        "p90": 174,
+        "max": 201,
+        "mean": 134.10119047619048
+      }
+    },
+    "survival-island": {
+      "scenes": {
+        "n": 168,
+        "min": 13,
+        "median": 24,
+        "p90": 29,
+        "max": 31,
+        "mean": 23.482142857142858
+      },
+      "spoken": {
+        "n": 168,
+        "min": 66,
+        "median": 131,
+        "p90": 174,
+        "max": 193,
+        "mean": 131.42261904761904
+      }
+    },
+    "film-lot": {
+      "scenes": {
+        "n": 168,
+        "min": 9,
+        "median": 23,
+        "p90": 29,
+        "max": 31,
+        "mean": 22.702380952380953
+      },
+      "spoken": {
+        "n": 168,
+        "min": 60,
+        "median": 128,
+        "p90": 169,
+        "max": 216,
+        "mean": 125.5952380952381
+      }
+    },
+    "carnival": {
+      "scenes": {
+        "n": 168,
+        "min": 11,
+        "median": 24,
+        "p90": 29,
+        "max": 30,
+        "mean": 23.226190476190474
+      },
+      "spoken": {
+        "n": 168,
+        "min": 37,
+        "median": 130,
+        "p90": 165,
+        "max": 193,
+        "mean": 127.86309523809524
+      }
+    },
+    "world-tour": {
+      "scenes": {
+        "n": 168,
+        "min": 7,
+        "median": 23,
+        "p90": 29,
+        "max": 30,
+        "mean": 22.464285714285715
+      },
+      "spoken": {
+        "n": 168,
+        "min": 37,
+        "median": 122,
+        "p90": 166,
+        "max": 217,
+        "mean": 122.76785714285714
+      }
+    }
+  }
+}

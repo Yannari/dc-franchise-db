@@ -45,12 +45,14 @@ export function recordFollowups(ep, camp, out) {
   // a callback the edit had no room for keeps one more episode, then it has gone stale (the pacing plan: two episodes)
   gs.tdStory.followups = pending.filter(t => ep.num - t.ep <= 2);
 }
-export function followupScene(ep, camp, members, phase, next, write, factsForWho) {
+// (skip: follow-ups already proposed this morning, so a second call proposes the next one)
+export function followupScene(ep, camp, members, phase, next, write, factsForWho, skip = new Set()) {
   if (phase !== 'pre') return null;
   const pending = book().filter(t => !t.done && ep.num > t.ep && ep.num - t.ep <= 2
     && members.includes(t.a) && members.includes(t.b) && (t.kind !== 'clash' || members.includes(t.c)));
   pending.sort((x,y) => x.ep - y.ep || x.id.localeCompare(y.id));
   for (const t of pending) {
+    if (skip.has(t.id)) continue;
     if (t.kind === 'romance' && !romanticPair(t.a,t.b)) continue;
     if (t.chapter && Math.abs(getBond(t.a,t.b) - t.lastBond) < 1) continue;
     const who = t.kind === 'defense' ? { a: t.b, b: t.a } : t.kind === 'clash' ? { a: t.a, b: t.b, c: t.c } : { a: t.a, b: t.b };

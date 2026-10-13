@@ -205,7 +205,7 @@ export function kitLifeScene(a, b, facts, ctx) {
   const ans2 = kb ? take(b, 'want') : plain('want', b, archOf(b));
   // the question has to be the one the answer answers: "what would you do with the money?" only when b's answer
   // is about the money (read: Gabby asked it, and Sami answered what he wanted from the game)
-  const MONEY = /money|buy|pay/i;
+  const MONEY = /\bmoney\b|\bbuy\b|\bpay\b/i;
   const fitsAns = q => !/money|buy|spend/i.test(q) || MONEY.test(ans2?.line || '');
   const ask2 = ka ? (take(a, 'askWant', fitsAns) || null) : plain('askWant', a);
   if (!ask1 || !ans1 || !ask2 || !ans2) return null;
@@ -299,12 +299,26 @@ export function kitSoloScene(a, facts, ctx) {
 }
 
 // ── a running bit, called back by other people (who aren't the one doing it) ──
-const CALL = ["If {about} starts talking about {thing}, are you joining in or finding an excuse to leave?","How would you get {about} talking about {thing} without actually asking?","Do you think {about} knows we remember the part about {thing}?","What is your guess: does {thing} come up if we sit with {about}?","If we try to talk about {thing}, will {about} correct us?","Are we going to ask {about} about {thing}, or keep having this conversation without the expert?"];
-const ANSWER = ["Joining in. I want to find out whether I can keep up.","I would be subtle. So subtle that I would probably have to ask.","We could mention it and see. Preferably without making it sound like an interrogation.","I am guessing yes. I would also like to hear about something else.","I hope so. I would rather be corrected than have to pretend I understand.","Let us ask. I have already reached the limit of what I can confidently make up."];
+// The callback: two people on a third person's running thing, a question and its answer, said the way people talk (the
+// user, 2026-10-14: the old bank read like a translation, "Let us ask", and its first pair aired in 61 episodes of 560,
+// because the first callback about anybody always took pair one). Each pair is whole; {thing} reads after "about".
+const CALL_PAIRS = [
+  // (predictions and opinions only: the callback must not claim a moment nobody saw, tests/td-social-exchanges)
+  ["Has {about} told you about {thing} yet?", "Not yet. Something tells me I'm about to hear all of it."],
+  ["If {about} brings up {thing} again today, I'm timing it.", "I give it five minutes. Maybe less."],
+  ["What happens if you ask {about} one question about {thing}?", "You lose an hour. Maybe two."],
+  ["Do you think you'd keep up if {about} got going about {thing}?", "No. I'd just nod. I'm very good at nodding."],
+  ["Is it weird that I want to hear more about {thing}?", "No. It's catching. I can feel it too."],
+  ["Bet you can't get through a whole day without {about} bringing up {thing}.", "No chance. Nobody could."],
+  ["Somebody should tell {about} we're not all experts on {thing}.", "Somebody should. It's not going to be me."],
+  ["Honestly, the way {about} talks about it, {thing} sounds kind of fun.", "Don't tell {about} that. You'll never hear the end of it."],
+  ["I think every conversation with {about} is going to end up being about {thing}.", "Then we'd better learn something about it."],
+  ["Should we try changing the subject if {about} starts on {thing}?", "You can try. I'll watch."],
+];
 // the callback's follow-up between the two of them, then the one they're talking about walks up
 const CALL_MORE = [
   ["Should we tell {about} it's become a thing?", "Absolutely not. It's the best part of my day."],
-  ["We should probably ask what it means to {about}.", "Good idea. I would rather hear that than guess."],
+  ["We should probably ask what it means to {about}.", "Good idea. Better than guessing."],
   ["Honestly, I'd miss it if {about} stopped.", "Me too. Don't tell {about} I said that."],
   ["Do you think {about} knows we notice?", "There's no way. Or there's every way, and that's worse."],
   ["We could try to get {about} to say it on purpose.", "Ten minutes. I bet you I can do it in ten."],
@@ -322,18 +336,30 @@ export function kitCallbackScene(c, d, about, facts, ctx) {
   if (!k) return null;
   const u = (used()[about] ||= []);
   const n = u.filter(x => x.startsWith('call:')).length;
-  if (n >= CALL.length || !u.some(x => x.startsWith('bit:'))) return null;
+  if (n >= CALL_PAIRS.length || !u.some(x => x.startsWith('bit:'))) return null;
+  // the pair: this person's own next one (a rotation that starts somewhere different for each person), never one this
+  // episode has already used for anybody
+  const book = ((gs.tdStory ||= {}).callEp ||= { ep: null, used: [] });
+  if (book.ep !== ctx.ep) { book.ep = ctx.ep; book.used = []; }
+  const start = [...about].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7) % CALL_PAIRS.length;
+  const picks = Array.from({ length: CALL_PAIRS.length }, (_, i) => (start + n + i) % CALL_PAIRS.length).filter(i => !book.used.includes(i) && !u.includes(`pair:${i}`));
   const [m1, m2] = pickOf(CALL_MORE, c, d, about);
   const [q, r] = pickOf(CALL_ARRIVE, about, c);
-  const entry = { id: `kit:${about}:call:${n}`, place: 'aside', turns: [
-    { by: 'a', say: CALL[n].split('{thing}').join(k.thing) }, { by: 'b', say: ANSWER[n] },
-    { by: 'a', say: m1 }, { by: 'b', say: m2 },
-    { beat: '{c} wanders over.' }, { by: 'c', say: q }, { by: 'a', say: r },
-  ] };
   const STORE = { about };
-  const w = (() => { const key = `kit.${entry.id.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`; STORY_POOLS[`${key}.any`] = [entry];
-    try { return writeStory(key, 'any', { a: c, b: d, c: about }, STORE, { ...facts, third: true }, { ...ctx, unique: false }); } finally { delete STORY_POOLS[`${key}.any`]; } })();
-  if (w) u.push(`call:${n}`);
+  // the first pair the writer can stage here (a pair that names a time of day doesn't air at the wrong one)
+  let w = null, pick = null;
+  for (const i of picks) {
+    const entry = { id: `kit:${about}:call:${n}`, place: 'aside', turns: [
+      { by: 'a', say: CALL_PAIRS[i][0].split('{thing}').join(k.thing) }, { by: 'b', say: CALL_PAIRS[i][1].split('{thing}').join(k.thing) },
+      { by: 'a', say: m1 }, { by: 'b', say: m2 },
+      { beat: '{c} wanders over.' }, { by: 'c', say: q }, { by: 'a', say: r },
+    ] };
+    w = (() => { const key = `kit.${entry.id.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`; STORY_POOLS[`${key}.any`] = [entry];
+      try { return writeStory(key, 'any', { a: c, b: d, c: about }, STORE, { ...facts, third: true }, { ...ctx, unique: false }); } finally { delete STORY_POOLS[`${key}.any`]; } })();
+    if (w) { pick = i; break; }
+  }
+  // (the episode holds the pair at once, like a draft; the person's own record moves only if the scene airs, commit.js)
+  if (w) { book.used.push(pick); onCommit(w, () => u.push(`call:${n}`, `pair:${pick}`)); }
   return w;
 }
 

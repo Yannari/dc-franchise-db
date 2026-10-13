@@ -20,7 +20,7 @@ export function pacingTracePlugin(enabled=true) { return {name:'td-pacing-baseli
  once('      const list = [];', "      const list = [];\n      const __pacingPush = (line, ...items) => { globalThis.__tdPacing?.('offer', {ep, camp, phase, line, items, events}); return list.push(...items); };\n      const __pacingReasons = new Map();");
  once('if (!must && editOn && clashes(f)) continue;', "if (!must && editOn && clashes(f)) { __pacingReasons.set(f, 'contradicts-vote-role'); continue; }");
  once('if (!must && usedLines.has(f.line)) continue;', "if (!must && usedLines.has(f.line)) { __pacingReasons.set(f, 'same-storyline'); continue; }");
- once('if (!must && !tiedPair && cast.some(p => (onScreen[p] || 0) >= 2)) continue;', "if (!must && !tiedPair && cast.some(p => (onScreen[p] || 0) >= 2)) { __pacingReasons.set(f, 'local-person-cap'); continue; }");
+ once('if (!must && !tiedPair && cast.some(p => (onScreen[p] || 0) >= (editOn ? 6 : 2))) continue;', "if (!must && !tiedPair && cast.some(p => (onScreen[p] || 0) >= (editOn ? 6 : 2))) { __pacingReasons.set(f, 'local-person-cap'); continue; }");
  once('      // The long scene is a fuller version', "      globalThis.__tdPacing?.('rank', {ep,camp,phase,events,filed,ranked,order,chosen,reasons:__pacingReasons});\n      // The long scene is a fuller version");
  once('          if (k >= 0) list[k] =', "          if (k >= 0) globalThis.__tdPacing?.('replacement',{ep,camp,phase,old:list[k].item,item});\n          if (k >= 0) list[k] =");
  once('    const out = { pre: [], post: [] };', "    const out = { pre: [], post: [] };\n    const __pacingLate = (method,phase,...items) => {globalThis.__tdPacing?.('late',{ep,camp,phase,items});return out[phase][method](...items);};");

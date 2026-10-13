@@ -149,8 +149,12 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // (by its words too: one template copied under several ids, a vote count written once for every case, is one scene;
     // read 2026-10-12: Gwen and Lake both "Even if one of ours flips, we've still got the numbers" in one evening).
     // ctx.epFresh: nothing at all rather than a repeat, for a part of a scene that can go without it
-    const eu = gs.tdStory?.epUsed;
-    if (ctx.unique !== false && eu && eu.ep === ctx.ep) { const rest = fits.filter(e => !eu.ids.includes(e.id) && !(eu.keys || []).includes(entryKey(e))); if (rest.length || ctx.epFresh) fits.splice(0, fits.length, ...rest); }
+    // ...nor one a draft already holds this episode: a proposal spends its line only if it airs (commit.js), so without
+    // this, several drama scenes proposed in one stretch of the day all took the same fresh reaction and the episode aired
+    // it twice (measured 2026-10-14: 155 of 560 episodes once the day aired the game's own story)
+    const eu = gs.tdStory?.epUsed, ed = gs.tdStory?.epDraft;
+    const heldEp = e => (eu && eu.ep === ctx.ep && (eu.ids.includes(e.id) || (eu.keys || []).includes(entryKey(e)))) || (ed && ed.ep === ctx.ep && (ed.ids.includes(e.id) || ed.keys.includes(entryKey(e))));
+    if (ctx.unique !== false && ((eu && eu.ep === ctx.ep) || (ed && ed.ep === ctx.ep))) { const rest = fits.filter(e => !heldEp(e)); if (rest.length || ctx.epFresh) fits.splice(0, fits.length, ...rest); }
     const uses = ledger().uses || {};
     if (ctx.unique === 'soft' && fits.length && fits.every(e => uses[e.id])) {
       const least = Math.min(...fits.map(e => uses[e.id]));
@@ -218,6 +222,8 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   }
   if (!entry) return null;
   spend(() => { const book = (gs.tdStory ||= {}); if (!book.epUsed || book.epUsed.ep !== ctx.ep) book.epUsed = { ep: ctx.ep, ids: [], keys: [] }; book.epUsed.ids.push(entry.id); (book.epUsed.keys ||= []).push(entryKey(entry)); });
+  // a draft holds its entry for the rest of the episode at once (above), aired or not
+  if (ctx?.draft) { const book = (gs.tdStory ||= {}); if (!book.epDraft || book.epDraft.ep !== ctx.ep) book.epDraft = { ep: ctx.ep, ids: [], keys: [] }; book.epDraft.ids.push(entry.id); book.epDraft.keys.push(entryKey(entry)); }
   if (!/^kit:/.test(entry.id || '')) spend(() => { const seen = storySeen(); seen[entry.id] = (seen[entry.id] || 0) + 1; });
   // Where it is staged: the entry's own kind of place, else where the engine put the moment,
   // else the pool's default kind. The lines say it as {here} ("on the dock") or {place}.

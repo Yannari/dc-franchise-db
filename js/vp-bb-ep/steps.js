@@ -2952,7 +2952,7 @@ function storyLifeScreen(scenes, ctx, n) {
     // the plate it plays on (plates.js): the place the lines name, else one of the room's by the scene's id;
     // a meal in the kitchen sits at the dining table
     const said = (sc.lines || []).map(l => l.text || '').join(' ');
-    const meal = set === 'kitchen' && /(dinner|breakfast|lunch|at the table|eating)/i.test(said);
+    const meal = set === 'kitchen' && /\b(dinner|breakfast|lunch|at the table|eating)\b/i.test(said);
     const plate = meal ? pickPlate('dining', sc.id, said, 'meal') : pickPlate(set, sc.id, said);
     const scene = { set: meal && plate ? 'dining' : set, room: label, cam: CAM[set], kicker: `Cam ${String(CAM[set]).padStart(2, '0')} · ${label}`,
       cast: sc.cast.map((p, i) => [p, xs[i]]), mood: sc.mood || 'house', time: sc._clock, slate: true, ...(plate ? { plate } : {}), ...(sc.why?.length ? { why: sc.why } : {}),

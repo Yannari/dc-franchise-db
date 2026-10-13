@@ -1,0 +1,82 @@
+[
+  {
+    "id": "world-tour_enabled_no-coaches_1729",
+    "fingerprint": {
+      "history": "e66c1f9c003b14939944639de80ac4b167589bb58f953c7a6f486da4173c1b9c",
+      "bonds": "1628a02dce4d9ca9902511635f342ec549c0e1b1242b2e298479ea89683927cd",
+      "story": "0198f90294b61566a8627a525608d83ce223accd2373056da67562ab53e6484f",
+      "randomCalls": 8924,
+      "winner": "Leshawna"
+    }
+  },
+  {
+    "id": "world-tour_enabled_no-coaches_2026",
+    "fingerprint": {
+      "history": "cab19da5f0218fb449465ecac7c6d587a9f75ed2c15b20e704e98cacecb65435",
+      "bonds": "e68081a30e2e816ba624df0df07354244b4f444d01844699b75a58662b10ccec",
+      "story": "7eaeddd68f13a34b23ce53151022d91f74c0e4df07688387a9c984f970114417",
+      "randomCalls": 8483,
+      "winner": "Lake"
+    }
+  },
+  {
+    "id": "world-tour_enabled_coaches_1729",
+    "fingerprint": {
+      "history": "82e0acd57606d03ed1b63143bcdff80b637ce39bae3f0ba9b8cf79409ec18dd6",
+      "bonds": "37b72eeb475a40649c8506f9dc0e964e4cdc35926f3d9f541b8dacc0712e3368",
+      "story": "0feebc376db4fdc30ada1057f2c60fa941cd51715236850ff1815b21c3d0a52a",
+      "randomCalls": 10286,
+      "winner": "Courtney"
+    }
+  },
+  {
+    "id": "world-tour_enabled_coaches_2026",
+    "fingerprint": {
+      "history": "af469972b5f7b1f3e18d7b2b373c700a5fbc0ab4f8a168bfde2ae73de474ef30",
+      "bonds": "aa744d9c8ffa554444233f6f3b9059c2c1d6e6d3572cf3fe29e2aade4f5b2fe3",
+      "story": "d1ef00037646873df274d88d3b0c9c9f251777e0072449041c2b51f8f1200478",
+      "randomCalls": 10087,
+      "winner": "Julia"
+    }
+  },
+  {
+    "id": "world-tour_disabled_no-coaches_1729",
+    "fingerprint": {
+      "history": "508cba86c67a3adddad072e8a5d29d2e23947f7487b1d03252b9ffc831ca3d8a",
+      "bonds": "238de52eef516bed086702893ca24649a1794027148a1558ca4b2ca4018f3bbe",
+      "story": "29a83a94d99aeb7e136d0bcb9bd1534ffb47f7e1c85190219844e79ecc9fe624",
+      "randomCalls": 8557,
+      "winner": "Bowie"
+    }
+  },
+  {
+    "id": "world-tour_disabled_no-coaches_2026",
+    "fingerprint": {
+      "history": "c8bf9a830ee17ee502a6c569907cde17e37c9bcfae5ac08bcf7ad782567043d3",
+      "bonds": "0b9aded40ffb0b8f326f0b9d040415d7ffed1eca98f7205eebc4d5171b360df3",
+      "story": "b5fbfa0ed5bea165983e2e27b974b9aa856b3a93608ab7bbc250fd6f4862c74c",
+      "randomCalls": 8361,
+      "winner": "Trent"
+    }
+  },
+  {
+    "id": "world-tour_disabled_coaches_1729",
+    "fingerprint": {
+      "history": "b7c537809678fc429678d6c0f8e092ac985c4f41daa85959eb64a2d631d27be1",
+      "bonds": "4d6f471634b74a242f1ef04ed1d1ed06c4473fbffb9247f6b14eae21fcfe4e66",
+      "story": "d7009ed958ea937449b43aa00b5806a1a9e1cf71def76d627a70217cefcb274b",
+      "randomCalls": 10072,
+      "winner": "Bowie"
+    }
+  },
+  {
+    "id": "world-tour_disabled_coaches_2026",
+    "fingerprint": {
+      "history": "bbe519d6a3684a6ea477c0eabec60c7edd847de3b940ad302a39a81b90fea238",
+      "bonds": "036a13ab5052a81864773e17b2fb4c1742239eb4abb2fd7a069e740d601f543a",
+      "story": "11fcecc695fa0d4fd83e57d71376ca85ba034352d54f94ee5022c54dc2d6a644",
+      "randomCalls": 10082,
+      "winner": "Lindsay"
+    }
+  }
+]

@@ -33,7 +33,7 @@ describe('knowledge integration', () => {
     // The card is a scene now (td/script): whatever the listener says, nobody
     // commits a vote in it — the vote has not happened, and the pitch's result
     // is not theirs to know. Checked across every line the scene can pick.
-    const COMMITS = /(i'll vote|i'm voting|i will vote|my vote is|you have my vote|you've got my vote|count me in|i'll write)/i;
+    const COMMITS = /\b(i'll vote|i'm voting|i will vote|my vote is|you have my vote|you've got my vote|count me in|i'll write)\b/i;
     for (const [key, pool] of Object.entries(POOLS)) if (key.startsWith('flow.gossip.')) {
       for (const e of pool) for (const t of e.turns) expect(COMMITS.test(t.say || t.conf || t.beat), `${key} ${e.id}`).toBe(false);
     }

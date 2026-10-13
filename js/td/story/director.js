@@ -1358,7 +1358,10 @@ const THREAD_WHY = {
 // the storyline steps and the challenge's moments, then the colour (kits, games, quick cuts), which fills a day up
 // to the target and no further. A proposal that does not air changes nothing (commit.js), so a payoff dropped for
 // room is still there to be told another day. Every proposal gets a recorded reason, for the debug view.
-export const DAY_BUDGET = { target: 18, ceiling: 22, turnTarget: 110, turnCeiling: 130 };
+// (the user, 2026-10-14, reading a season: "we definitely don't have enough events... there's barely any strategy...
+// where's the drama, the comedy, the romance": thirty a day and more; it was 18 to 22, and most of the game's own story
+// never aired. The talk budgets scale with it, about five and a half spoken lines a scene)
+export const DAY_BUDGET = { target: 30, ceiling: 36, turnTarget: 180, turnCeiling: 220 };
 const TIER_RANK = { must: 0, due: 1, story: 2, colour: 3 };
 const spokenIn = lines => (Array.isArray(lines) ? lines.filter(l => l?.by && l.kind === 'say').length : 0);
 // Who gets the last places (stage 4): within the story and the colour, a scene about somebody the last two episodes
@@ -2000,12 +2003,15 @@ export function airTdEpisode(ep) {
         const who = f.ev.scene?.who?.[role] || f.step.roles?.[role];
         return who === talk.leader || (who === talk.boot && !bootKnows);
       };
-      // past the quota, two more of the day's best moments are proposed as room-fillers: they air only when the day's
-      // budget has room left after everything else (selectScenes)
-      const EXTRA = editOn ? 2 : 0;
+      // The game's own story, offered whole (the user, 2026-10-14: "where's the story... they talk like two or three
+      // times and it's over"): measured on the stage-5 matrix, the engine made about 21 storyline moments a camp-day
+      // (friendship 4.7, rivalry 3.4, alliance 2.9, the bottom 2.7, schemes 1.6, idols 0.9, romance 0.7) and 1 in 5 aired:
+      // this loop took 2 to 5 a stretch, and a person could be in two at most counting the opener and the vote talk.
+      // Now up to twelve a stretch are proposed, in the storyline's own drama order, and the day's budget chooses
+      // (selectScenes: story before colour, airtime spread). The old quota is kept as the order's first places.
+      const STORY_MAX = editOn ? Math.max(12, cap + lifeTake.length) : cap + lifeTake.length;
       for (const f of order) {
-        if (chosen.length >= cap + lifeTake.length + EXTRA) break;
-        if (chosen.length >= cap + lifeTake.length) f.extra = true;
+        if (chosen.length >= STORY_MAX) break;
         const must = pitchTake.includes(f);
         if (!must && editOn && clashes(f)) continue;
         if (!must && usedLines.has(f.line)) continue;
@@ -2015,7 +2021,9 @@ export function airTdEpisode(ep) {
         // still charges a third scene in a day (selectScenes). Big friendships and feuds keep the cap: letting them
         // through too gave the room back to the central players and undid stage 4's spread (Gini 0.129 -> 0.140)
         const tiedPair = !!look && !!f.step.roles.a && !!f.step.roles.b && look.couple(pairKey([f.step.roles.a, f.step.roles.b]));
-        if (!must && !tiedPair && cast.some(p => (onScreen[p] || 0) >= 2)) continue;
+        // (six a person now, with the day at thirty: the airtime score charges each scene past two, selectScenes; measured
+        // 2026-10-14, at four this still cut 1,265 friendship and 1,066 rivalry moments on the matrix)
+        if (!must && !tiedPair && cast.some(p => (onScreen[p] || 0) >= (editOn ? 6 : 2))) continue;
         chosen.push(f);
         usedLines.add(f.line);
         cast.forEach(p => { onScreen[p] = (onScreen[p] || 0) + 1; });
@@ -2101,7 +2109,9 @@ export function airTdEpisode(ep) {
         // closer to b first (defending b, or just mortified), then one closer to a
         let lines = w.lines;
         const watched = [];
-        // (the reactions are written in draft too: they are spent only if this scene airs)
+        // (the reactions are written in draft too: they are spent only if this scene airs; and a bystander's line the
+        // episode has already used is left out rather than said again, 2026-10-14: 'Best entertainment we've had all week'
+        // twice in one episode)
         const spentToo = [];
         // ...and the camp is there: the scene opens with them in earshot, so the stage brings them on
         if (PUBLIC.test(kind) && who.a && who.b && !lines.slice(0, 2).some(l => CROWD_WORDS.test(l.text || ''))) {
@@ -2122,14 +2132,14 @@ export function airTdEpisode(ep) {
             const ww = { a: who.a, b: who.b, c: forB, ...(forA ? { d: forA } : {}) };
             const tone = lean(forB) >= 1 ? 'defend' : getBond(forB, who.a) >= 3 ? 'excuse' : 'awkward';
             const r = writeStory('public.react', tone, ww, data, { ...facts, third: true, fourth: !!forA, registerC: registerOf(forB) },
-              { ep: ep.num, camp, phase, n: n++, place: 'aside', unique: 'soft', draft: true });
+              { ep: ep.num, camp, phase, n: n++, place: 'aside', unique: 'soft', draft: true, epFresh: true });
             if (r) { spentToo.push(r.lines); insert(r.lines); watched.push(forB, ...(forA && r.lines.some(l => l.by === forA) ? [forA] : [])); }
           }
           // ...and somebody watching takes it in: what everybody now knows about a
           const sharp = around.filter(x => x !== forB && x !== forA).sort((x, y) => ((pStatsOf(y)?.intuition || 0) + (pStatsOf(y)?.strategic || 0)) - ((pStatsOf(x)?.intuition || 0) + (pStatsOf(x)?.strategic || 0)) || x.localeCompare(y))[0];
           if (sharp) {
             const wn = { a: sharp, b: who.a, c: who.b };
-            const nt = writeStory(`public.note.${NOTE_FAM(kind)}`, 'any', wn, data, { ...factsFor({ who: wn, data: {} }, { ep: ep.num, phase }), third: true }, { ep: ep.num, camp, phase, n: n++, place: 'confessional', unique: 'soft', draft: true });
+            const nt = writeStory(`public.note.${NOTE_FAM(kind)}`, 'any', wn, data, { ...factsFor({ who: wn, data: {} }, { ep: ep.num, phase }), third: true }, { ep: ep.num, camp, phase, n: n++, place: 'confessional', unique: 'soft', draft: true, epFresh: true });
             if (nt) { spentToo.push(nt.lines); lines = [...lines, ...nt.lines]; watched.push(sharp); }
           }
         }
@@ -2281,23 +2291,31 @@ export function airTdEpisode(ep) {
         // the mentor arc counts against the same room: two serial stories a phase is plenty
         let arcsNow = list.filter(x => x.item?.storyType === 'arc').length;
         // (how much of this airs is the day's budget's call, selectScenes: these only propose)
-        if (liveEp(ep) && arcsNow < 2) {
-          const follow = followupScene(ep, camp, members, phase, () => n++, writeHere, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }));
-          if (follow) { offer('follow-up', 'due', follow); arcsNow++; }
+        // (three serial stories a stretch, and two follow-ups a morning, with the day at thirty: measured 2026-10-14, with
+        // the game's own story airing, a clash's follow-up kept taking the one slot and a defence's never came)
+        const ARCS_MAX = 3;
+        if (liveEp(ep) && arcsNow < ARCS_MAX) {
+          const skip = new Set();
+          for (let k = 0; k < 2 && arcsNow < ARCS_MAX; k++) {
+            const follow = followupScene(ep, camp, members, phase, () => n++, writeHere, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), skip);
+            if (!follow) break;
+            skip.add(follow.item.scene?.data?.followupId);
+            offer('follow-up', 'due', follow); arcsNow++;
+          }
         }
         // a relationship that turned on something one of them did since an aired setup (turns.js): one a morning, in
         // the same room as the follow-ups and the arcs
-        if (liveEp(ep) && phase === 'pre' && arcsNow < 2) {
+        if (liveEp(ep) && phase === 'pre' && arcsNow < ARCS_MAX) {
           const busyPairs = new Set(list.filter(x => x.item?.storyType === 'arc' && (x.item.players || []).length >= 2).map(x => [...x.item.players].slice(0, 2).sort().join('|')));
           const tn = turnScene(ep, camp, members, null, () => n++, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), 'pre', busyPairs, writeHere);
           if (tn) { offer('turn', 'due', tn); arcsNow++; }
         }
         // the morning after a fight somebody watched: the one they went against (or left on their own) has it out with them
-        if (liveEp(ep) && phase === 'pre' && arcsNow < 2) {
+        if (liveEp(ep) && phase === 'pre' && arcsNow < ARCS_MAX) {
           const wa = witnessAfter(ep, camp, members, () => n++, writeHere, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }));
           if (wa) { offer('witness-after', 'due', wa); arcsNow++; }
         }
-        offer('arc', 'due', ...runArcs(ep, camp, members, phase, () => n++, writeHere, Math.max(0, 2 - arcsNow)));
+        offer('arc', 'due', ...runArcs(ep, camp, members, phase, () => n++, writeHere, Math.max(0, ARCS_MAX - arcsNow)));
         const busyNow = new Set(list.flatMap(x => x.item?.players || []).filter(Boolean));
         // the game and the solo are colour: they air only while the day has room (selectScenes; a merge night, one
         // camp holding everybody, already fills a show's worth; tests/td-story.test.js 'show-sized episode')
@@ -2439,7 +2457,7 @@ export function airTdEpisode(ep) {
       {
         const B = DAY_BUDGET;
         const limit = phase === 'pre'
-          ? { target: tribalTonight ? 8 : 9, ceiling: tribalTonight ? 10 : 11 }
+          ? { target: tribalTonight ? 13 : 15, ceiling: tribalTonight ? 16 : 18 }
           // (one place kept for what comes after the edit: somebody nobody has heard from yet, a defence's setup)
           : { target: B.target - 1, ceiling: B.ceiling - 1 };
         const turns = phase === 'pre' ? { turnTarget: Math.round(B.turnTarget / 2), turnCeiling: Math.round(B.turnCeiling / 2) } : B;
@@ -2530,6 +2548,39 @@ export function airTdEpisode(ep) {
       // (said as the camp gets back, when its spot is free then; else in its own window, still straight after the opener)
       const takenAt = new Set(out[phase].filter(it => !chalTalk(it) && it.scene?.spot?.window === 'return').map(it => it.scene.spot.id));
       for (const it of out[phase]) if (chalTalk(it) && it.scene?.spot && !takenAt.has(it.scene.spot.id)) { it.scene.spot = { ...it.scene.spot, window: 'return' }; takenAt.add(it.scene.spot.id); }
+      // the hour a scene says it is (read 2026-10-14: an engine moment marked 'morning' aired after the challenge, and "Late.
+      // Courtney and Julia are still up after everybody else has gone to bed" aired as the team got back): a morning window
+      // after the challenge is the afternoon, an evening one before it is the afternoon, and a scene whose stage directions
+      // say it is late or dark is the evening
+      { const PRE_WIN = new Set(['morning', 'camp-work']), POST_WIN = new Set(['return', 'evening', 'scramble', 'before-tribal']);
+        const NIGHT = /^\(?late[,.]|\bit's late\b|after every(one|body)( else)?( has)? gone to bed|\b(are|is) (the last (two|ones) )?still up\b|as it gets dark|\bin the dark\b|under the stars|moonlight|can't sleep/i;
+        for (const it of out[phase]) {
+          const sp = it?.story ? it.scene?.spot : null;
+          if (!sp || sp.id === 'confessional' || it.storyType === 'vote') continue;
+          let w = sp.window || null;
+          if (phase === 'post' && PRE_WIN.has(w)) w = 'afternoon';
+          if (phase === 'pre' && POST_WIN.has(w)) w = 'afternoon';
+          if (phase === 'post' && (!w || ['return', 'afternoon'].includes(w)) && (it.lines || []).some(l => l.kind === 'beat' && NIGHT.test(l.text || ''))) w = 'evening';
+          if (w && w !== sp.window) it.scene = { ...it.scene, spot: { ...sp, window: w } };
+        } }
+      // one spot, one talk at a time (tests/td-story 'never stages two written scenes on the same spot'): a written scene
+      // that would share its spot and its stretch with an earlier one moves to the next stretch of the day where that spot
+      // is free (its lines name the place, not the hour). Read 2026-10-14: with thirty a day, a friendship moment and the
+      // team's return from the challenge both landed on the communal grounds as everybody got back.
+      { const NEXT = phase === 'pre' ? ['morning', 'camp-work', 'afternoon'] : ['return', 'afternoon', 'evening', 'scramble', 'before-tribal'];
+        const eats = new Set(placeOf(venueNow, 'eat', 0) ? [placeOf(venueNow, 'eat', 0).id] : []);
+        const held = new Set();
+        for (const it of out[phase]) {
+          const sp = it?.story ? it.scene?.spot : null;
+          // (a fixed spot keeps its place: only its stretch of the day moves)
+          if (!sp?.id || sp.id === 'confessional' || eats.has(sp.id)) continue;
+          let win = sp.window || winOf(it);
+          if (held.has(`${win}|${sp.id}`)) {
+            const later = NEXT.slice(NEXT.indexOf(win) + 1).find(w => !held.has(`${w}|${sp.id}`));
+            if (later) { win = later; it.scene = { ...it.scene, spot: { ...sp, window: later } }; }
+          }
+          held.add(`${win}|${sp.id}`);
+        } }
       const rank = it => (at(it) === -1 ? -1 : chalTalk(it) ? 0 : WIN_RANK[winOf(it)] ?? 1);
       const at = it => (/^(story\.(firstday|morning|chal)|long\.crowd\.(won|lost))/.test(it.kind || '') ? -1 : chalTalk(it) ? -0.5 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5)
         : it.storyType === 'vote' ? (VOTE_AT[it.step] ?? 1.5e6) : it.ref != null ? it.ref : 1e6);
@@ -2611,7 +2662,7 @@ export function airTdEpisode(ep) {
     // A show-sized day (tests/td-story.test.js 'show-sized episode', 22 scenes a camp): when the day runs
     // over, the most optional colour makes way, the morning's first, latest in the day first. Never a vote
     // scene, an arc's chapter, a storyline step, or a scene the next one runs on from (chainScenes).
-    { const CAP = 22;
+    { const CAP = DAY_BUDGET.ceiling;
       const OPTIONAL = /^(run\.|psy\.|kit\.|camp\.game|long\.friend\.(bond|sunrise|goof|joke|meal|celebrate|laugh)|long\.crowd\.(meal|chores|banter|project|dinner))/;
       const total = () => out.pre.length + out.post.length;
       for (const phase of ['pre', 'post']) for (let i = out[phase].length - 1; i >= 0 && total() > CAP; i--) {

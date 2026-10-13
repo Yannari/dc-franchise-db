@@ -140,7 +140,7 @@ export function writePreviously(ep) {
     const g = c.alliance;
     const lead = i === 0 ? '' : pick(['Meanwhile, ', 'Back at camp, ', 'And then ', 'Elsewhere, ', '', 'Oh, and ', 'Over at camp, '], `lead${i}`);
     // (a sentence that opens on a name keeps its capital after "Meanwhile, ")
-    const T = (t) => (!lead ? t : [...NAMES].some(n => t.startsWith(n)) || /^I/.test(t) ? lead + t : lead + t.charAt(0).toLowerCase() + t.slice(1));
+    const T = (t) => (!lead ? t : [...NAMES].some(n => t.startsWith(n)) || /^I\b/.test(t) ? lead + t : lead + t.charAt(0).toLowerCase() + t.slice(1));
     const kb = `${c.type}:${c.step}`;
     const say = {
       'rivalry:blowup': [`${a} and ${b} finally exploded at each other${sinceOf(c)}, and the whole camp had front-row seats.`, `${a} and ${b} had it out in front of everyone${sinceOf(c)}. It was loud. It was ugly. It was great.`, `${a} lost it at ${b}${sinceOf(c)}, and there was no taking it back.`],

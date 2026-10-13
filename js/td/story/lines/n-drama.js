@@ -69,7 +69,7 @@ export default {
   ],
   'long.drama.bomb.arrogant': [
     { id: 'nd.ba1', place: 'public', turns: [
-      { beat: "The team is hanging around {here}. {a} is stretched out like {a} owns the place." },
+      { beat: "The team is hanging around {here}. {a} is stretched out like {a.sub} owns the place." },
       { by: 'a', say: "Let's be honest. Without me, this team would have lost every challenge." },
       { by: 'b', move: 'pushback' },
       { by: 'a', say: "Am I wrong? Who won it for us last time?" },

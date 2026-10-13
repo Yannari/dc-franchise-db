@@ -957,7 +957,9 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
     // a scene nobody has seen this season first, then the least-aired one
     // (never a whole plan scene this episode has already aired for another plan: then it plays beat by beat, below)
     const ws = u => writeStory('vp2', caseOf, who, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place: 'secret', avoid: ctxAvoid('scramble'), unique: u, epFresh: true });
-    const whole = ws(true) || ws('soft');
+    // (a fresh one only: once this season has used them, the plan is built beat by beat from tonight's own reason and count,
+    // never a whole scene from an earlier night again; read 2026-10-14, plan scenes came back 2.4 times a season)
+    const whole = ws(true);
     if (whole) recall(whole.lines);
     if (whole) return { story: true, kind: `story.vote.${as.step}.${caseOf}`, storyType: 'vote', step: as.step, players: [...new Set(Object.values(who).filter(Boolean))], lines: whole.lines,
       text: whole.text, lineId: whole.lineId, scene: { kind: 'story.vote', who, data, spot: whole.spot ? { ...whole.spot, window: 'scramble' } : null }, badgeText: as.badge[0], badgeClass: as.badge[1], why };
@@ -970,7 +972,9 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   // episode by two different plans; the case itself always gets said
   const OPTIONAL_BEAT = /^vp\.(push|count|close|solo\.count)$/;
   const beat = (pool, ending, w = who) => {
-    const r = writeStory(pool, ending, w, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place: 'secret', avoid: ctxAvoid('scramble'), unique: 'soft', noSetup: lines.length > 0, epFresh: OPTIONAL_BEAT.test(pool) });
+    // (a side forming is said once a season per version: once they're spent the plan goes on without it, the reason and the
+    // count still said; read 2026-10-14, the same 'they always end up writing the same name' 1.6 times a season)
+    const r = writeStory(pool, ending, w, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place: 'secret', avoid: ctxAvoid('scramble'), unique: /^vp\.form/.test(pool) ? true : 'soft', noSetup: lines.length > 0, epFresh: OPTIONAL_BEAT.test(pool) });
     if (!r) return false;
     if (!spot && r.spot) spot = r.spot;
     lineId = lineId || r.lineId;
@@ -1116,8 +1120,9 @@ function voteTalk(ep, camp, t, next) {
   const named = new Set((gs.namedAlliances || []).filter(al => al.active !== false).map(al => al.name));
   const groupOf = (a, b) => (gs.namedAlliances || []).find(al => named.has(al.name) && al.members?.includes(a) && al.members?.includes(b))?.name || null;
   const closest = (x, pool) => [...pool].sort((p, q) => getBond(x, q) - getBond(x, p) || p.localeCompare(q))[0] || null;
-  const item = (step, pool, ending, who, data, facts, place, win, badge, why) => {
-    const w = writeStory(pool, ending, who, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place, avoid: ctxAvoid(win), unique: 'soft' });
+  // (u: 'soft' brings back the least-used scene once a pool is spent; true steps aside so the caller's next choice airs)
+  const item = (step, pool, ending, who, data, facts, place, win, badge, why, u = 'soft') => {
+    const w = writeStory(pool, ending, who, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place, avoid: ctxAvoid(win), unique: u });
     if (!w) return null;
     return { story: true, kind: `${pool}.${ending}`, storyType: 'vote', step, players: [...new Set(Object.values(who).filter(Boolean))], lines: w.lines, text: w.text, lineId: w.lineId,
       scene: { kind: 'story.vote', who, data, spot: w.spot ? { ...w.spot, window: win } : null }, badgeText: badge[0], badgeClass: badge[1], why };
@@ -1295,13 +1300,15 @@ function voteTalk(ep, camp, t, next) {
     // (never the person they are voting for: they'd be told 'tonight it's you' to their face)
     const liar = closest(x, onX.filter(v => v !== leader && v !== mine && getBond(x, v) >= 1 && !out.some(o => o.players.includes(v) && o.step === 'plan')));
     const why = [`${x} thinks it's ${mine} tonight.`, `${pronouns(x).Sub} ${pronouns(x).sub === 'they' ? "haven't" : "hasn't"} heard ${pronouns(x).posAdj} own name.`];
+    // (fresh ones only, here and below: a spent pool steps aside to the target's own confessional rather than replay a scene
+    // from an earlier night; read 2026-10-14, "I'm confident because I counted" 2.5 times a season)
     const two = liar ? item(step, 'vt2', 'safe', { a: x, b: liar }, { wrote: mine }, base({ a: x, b: liar }, {}), 'aside', 'before-tribal', ['Feels Safe', 'blue'],
-      [...why, `${liar} is writing ${x}'s name.`]) : null;
+      [...why, `${liar} is writing ${x}'s name.`], true) : null;
     // nobody close is lying to them: they talk it over with a friend who isn't writing their name and
     // doesn't know either (the user: one-line scenes that tell nothing)
     const pal = !two ? closest(x, tribal.filter(y => y !== x && y !== mine && ballotOf(y) !== x && !onX.includes(y) && getBond(x, y) >= 1)) : null;
     const sure = pal ? item(step, 'vt2', 'sure', { a: x, b: pal }, { wrote: mine, ...(ballotOf(pal) && ballotOf(pal) !== mine ? { other: ballotOf(pal) } : {}) },
-      base({ a: x, b: pal }, { bWrote: ballotOf(pal) === mine, other: !!(ballotOf(pal) && ballotOf(pal) !== mine) }), 'aside', 'before-tribal', ['Feels Safe', 'blue'], [...why, `${pal} isn't writing ${x}'s name, and doesn't know either.`]) : null;
+      base({ a: x, b: pal }, { bWrote: ballotOf(pal) === mine, other: !!(ballotOf(pal) && ballotOf(pal) !== mine) }), 'aside', 'before-tribal', ['Feels Safe', 'blue'], [...why, `${pal} isn't writing ${x}'s name, and doesn't know either.`], true) : null;
     return two || sure || item(step, 'story.vote.target', 'safe', { a: x }, { wrote: mine }, base({ a: x }, { why: ballotWhy(ballots.find(v => v.voter === x), ep) }), 'confessional', 'before-tribal', ['Feels Safe', 'blue'], why);
   };
   if (boot === t.gone) {

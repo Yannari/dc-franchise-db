@@ -1,0 +1,196 @@
+{
+  "postDay1": {
+    "fresh": 2036,
+    "pairs": 14612
+  },
+  "peaks": {
+    "person": {
+      "run": "film-lot_enabled_no-coaches_1729",
+      "episodes": [
+        11,
+        12,
+        13
+      ],
+      "speakers": 6,
+      "name": "Courtney",
+      "share": 0.3177570093457944
+    },
+    "pair": {
+      "run": "film-lot_enabled_coaches_1729",
+      "episodes": [
+        13,
+        14,
+        15
+      ],
+      "speakers": 6,
+      "name": "Leshawna|Owen",
+      "share": 0.2857142857142857
+    },
+    "earlyPerson": {
+      "run": "survival-island_enabled_no-coaches_2026",
+      "episodes": [
+        5,
+        6,
+        7
+      ],
+      "speakers": 12,
+      "name": "Duncan",
+      "share": 0.1568627450980392
+    },
+    "earlyPair": {
+      "run": "survival-island_disabled_no-coaches_2026",
+      "episodes": [
+        4,
+        5,
+        6
+      ],
+      "speakers": 13,
+      "name": "Aubrey|Gwen",
+      "share": 0.14655172413793102
+    }
+  },
+  "opportunities": {
+    "witness-after:writer-no-scene": 28,
+    "witness-after:aired": 390,
+    "follow-up:aired": 326,
+    "turn:aired": 306,
+    "follow-up:offered-then-cut": 15,
+    "witness-after:offered-then-cut": 36,
+    "follow-up:writer-no-scene": 15,
+    "follow-up:ambiguous-multiple-attempts": 2,
+    "turn:offered-then-cut": 2
+  },
+  "rawRomanceEnabled": {
+    "aired": 226,
+    "selected-not-rendered": 43,
+    "same-storyline": 59,
+    "not-in-main-pool": 72,
+    "offered-then-cut": 12,
+    "local-person-cap": 9,
+    "day-one-filter": 5
+  },
+  "romanceDisabledAired": {
+    "romance.night": 9,
+    "long.romance.flirt": 71,
+    "long.romance.moment": 52,
+    "long.romance.night": 19,
+    "romance.flirt": 1
+  },
+  "constructedCuts": {
+    "opener": 545,
+    "challenge-chat": 74,
+    "kit": 521,
+    "bottom": 40,
+    "engine": 472,
+    "running-gag": 32,
+    "camp-game": 90,
+    "quick-cut": 12,
+    "rivalry": 51,
+    "friendship": 47,
+    "follow-up": 15,
+    "confessional": 105,
+    "arc": 33,
+    "alliance": 59,
+    "showmance": 7,
+    "vote": 17,
+    "witness-after": 36,
+    "underdog": 4,
+    "coach": 7,
+    "idol": 10,
+    "scheme": 17,
+    "turn": 2,
+    "mentor": 3
+  },
+  "byVenue": {
+    "hosted-camp": {
+      "scenes": {
+        "n": 168,
+        "min": 10,
+        "median": 24,
+        "p90": 29,
+        "max": 31,
+        "mean": 23.49404761904762
+      },
+      "spoken": {
+        "n": 168,
+        "min": 44,
+        "median": 135,
+        "p90": 166,
+        "max": 185,
+        "mean": 128.95833333333334
+      }
+    },
+    "survival-island": {
+      "scenes": {
+        "n": 168,
+        "min": 10,
+        "median": 24,
+        "p90": 29,
+        "max": 30,
+        "mean": 22.94047619047619
+      },
+      "spoken": {
+        "n": 168,
+        "min": 53,
+        "median": 130,
+        "p90": 168,
+        "max": 187,
+        "mean": 126.72619047619048
+      }
+    },
+    "film-lot": {
+      "scenes": {
+        "n": 168,
+        "min": 11,
+        "median": 23,
+        "p90": 29,
+        "max": 31,
+        "mean": 22.488095238095237
+      },
+      "spoken": {
+        "n": 168,
+        "min": 46,
+        "median": 123,
+        "p90": 163,
+        "max": 212,
+        "mean": 122.10119047619048
+      }
+    },
+    "carnival": {
+      "scenes": {
+        "n": 168,
+        "min": 13,
+        "median": 24,
+        "p90": 29,
+        "max": 30,
+        "mean": 23.011904761904763
+      },
+      "spoken": {
+        "n": 168,
+        "min": 59,
+        "median": 125,
+        "p90": 164,
+        "max": 190,
+        "mean": 125.8452380952381
+      }
+    },
+    "world-tour": {
+      "scenes": {
+        "n": 168,
+        "min": 11,
+        "median": 23,
+        "p90": 29,
+        "max": 30,
+        "mean": 22.267857142857142
+      },
+      "spoken": {
+        "n": 168,
+        "min": 54,
+        "median": 122,
+        "p90": 152,
+        "max": 209,
+        "mean": 119.94047619047619
+      }
+    }
+  }
+}

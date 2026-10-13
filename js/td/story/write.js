@@ -59,6 +59,9 @@ const CHAL_DONE = /\b(we lost|we won|lost it for us|lost us|carried us|dead last
 const ledger = () => ((gs.tdStory ||= {}).ledger ||= newLedger());
 // an entry by its words: its first spoken line, as written (the same template under two ids is the same scene)
 const entryKey = e => { const t = (e?.turns || []).find(x => x.say || x.conf); return t ? String(t.say || t.conf).slice(0, 80) : String(e?.id || ''); };
+// every pool entry's words, by id (built once: the pools are fixed at load)
+const keyOfId = new Map();
+for (const pool of Object.values(STORY_POOLS)) for (const e of pool) if (e?.id && !keyOfId.has(e.id)) keyOfId.set(e.id, entryKey(e));
 
 export const hasStoryPool = pool => !!(STORY_POOLS[`${pool}.any`]?.length || Object.keys(STORY_POOLS).some(k => k.startsWith(pool + '.')));
 
@@ -155,7 +158,10 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     const eu = gs.tdStory?.epUsed, ed = gs.tdStory?.epDraft;
     const heldEp = e => (eu && eu.ep === ctx.ep && (eu.ids.includes(e.id) || (eu.keys || []).includes(entryKey(e)))) || (ed && ed.ep === ctx.ep && (ed.ids.includes(e.id) || ed.keys.includes(entryKey(e))));
     if (ctx.unique !== false && ((eu && eu.ep === ctx.ep) || (ed && ed.ep === ctx.ep))) { const rest = fits.filter(e => !heldEp(e)); if (rest.length || ctx.epFresh) fits.splice(0, fits.length, ...rest); }
-    const uses = ledger().uses || {};
+    // a scene's season count is by its id and by its words (keyUses): one template copied under several ids (the vote
+    // talk's glue and math scenes, one copy per reason) is one scene, used once
+    const idUses = ledger().uses || {}, keyUses = gs.tdStory?.keyUses || {};
+    const uses = new Proxy({}, { get: (_, id) => Math.max(idUses[id] || 0, keyUses[keyOfId.get(id)] || 0) });
     if (ctx.unique === 'soft' && fits.length && fits.every(e => uses[e.id])) {
       const least = Math.min(...fits.map(e => uses[e.id]));
       for (let i = fits.length - 1; i >= 0; i--) if (uses[fits[i].id] > least) fits.splice(i, 1);
@@ -225,6 +231,8 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   // a draft holds its entry for the rest of the episode at once (above), aired or not
   if (ctx?.draft) { const book = (gs.tdStory ||= {}); if (!book.epDraft || book.epDraft.ep !== ctx.ep) book.epDraft = { ep: ctx.ep, ids: [], keys: [] }; book.epDraft.ids.push(entry.id); book.epDraft.keys.push(entryKey(entry)); }
   if (!/^kit:/.test(entry.id || '')) spend(() => { const seen = storySeen(); seen[entry.id] = (seen[entry.id] || 0) + 1; });
+  // the season's count of these words (the once-a-season rule above reads it with the id's own count)
+  spend(() => { const k = (gs.tdStory ||= {}).keyUses ||= {}; const key = entryKey(entry); k[key] = (k[key] || 0) + 1; });
   // Where it is staged: the entry's own kind of place, else where the engine put the moment,
   // else the pool's default kind. The lines say it as {here} ("on the dock") or {place}.
   // a meal is where the camp eats, all of it together, at mealtime: it never makes way for another talk

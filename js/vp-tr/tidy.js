@@ -140,7 +140,11 @@ function _tidySentence(sent, re, speech = false) {
         const next = _nextWord(sent, h.end);
         const prev = _prevWord(sent, h.at);
         const trueVerb = VERBS.has(next) && !ADVERBS.has(next);
-        if (h.poss) rep = p.posAdj;
+        // "like Courtney owns the place": after like/as/than a name with a verb of its own is a subject, and the verb list
+        // can't know every verb, so the name stays (read 2026-10-14: "stretched out like her owns the place")
+        const clause = ['like', 'as', 'than'].includes(prev) && /^(is|was|has|had|does|did|can|could|will|would|[a-z]+s)$/.test(next || '') && !trueVerb;
+        if (clause) rep = null;
+        else if (h.poss) rep = p.posAdj;
         // "after Gerry said" is a clause, not an object: a real verb after
         // the name wins over the preposition before it.
         else if ((PREPOSITIONS.has(prev) || (speech && OBJ_AFTER.has(prev))) && !trueVerb) rep = p.obj;

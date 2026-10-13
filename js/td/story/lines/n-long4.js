@@ -60,6 +60,42 @@ export default {
       { by: 'a', say: "That's what I like about you. You're honest about what you don't know." },
       { by: 'a', conf: "I've done the math. It's {wrote}. The only thing I can't count is who's lying to me, and I don't think anybody is." },
     ] },
+    // (more of them, for any voice: read 2026-10-14, these came back two or three times a season, because a person matched
+    // only the one written for their voice)
+    { id: 'nl4.u5', turns: [
+      { by: 'a', say: "Are you nervous about tonight?" },
+      { by: 'b', say: "A little. Aren't you?" },
+      { by: 'a', say: "Not really. It's {wrote}. Everybody I've talked to says {wrote}." },
+      { by: 'b', say: "Everybody?" },
+      { by: 'a', say: "Everybody. When that many people say the same name, it's done." },
+      { by: 'b', conf: "Everybody told {a} it's {wrote}. I'd feel a lot better about that if I knew who everybody was." },
+    ] },
+    { id: 'nl4.u6', turns: [
+      { by: 'b', say: "You're in a good mood." },
+      { by: 'a', say: "Because for once it's not about me. It's {wrote}, and I get to just sit there and watch." },
+      { by: 'b', say: "Must be nice." },
+      { by: 'a', say: "It's very nice. You should try it." },
+      { by: 'b', say: "I'm writing {wrote} too, if that's what you're asking.", when: { bWrote: true } },
+      { by: 'b', say: "Honestly, I'm writing {other}. But I don't think it matters.", when: { other: true } },
+      { by: 'a', conf: "I've been on the chopping block so many times. Tonight I'm just a voter. I could get used to that." },
+    ] },
+    { id: 'nl4.u7', turns: [
+      { beat: "{a} is already planning the next vote while everybody else is still worried about this one." },
+      { by: 'a', say: "After {wrote}, it's going to get messy. We should think about who's next." },
+      { by: 'b', say: "Can we get through tonight first?" },
+      { by: 'a', say: "Tonight's decided. I'm thinking about the one after." },
+      { by: 'b', say: "That's either really smart or really cocky." },
+      { by: 'a', say: "Why not both?" },
+      { by: 'b', conf: "{a} is already playing next week. I just hope {a} is right about this week." },
+    ] },
+    { id: 'nl4.u8', turns: [
+      { by: 'a', say: "Can I say something without you laughing?" },
+      { by: 'b', say: "No promises." },
+      { by: 'a', say: "I think I'm actually good at this game. It's {wrote} tonight, and I saw it coming before anybody." },
+      { by: 'b', say: "Did you, though?" },
+      { by: 'a', say: "I did. Ask anybody." },
+      { by: 'a', conf: "Everybody's scrambling, and I'm the calmest person here. That's how you know you're winning." },
+    ] },
   ],
 
   'chm.clash.any': [

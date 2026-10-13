@@ -60,7 +60,9 @@ const CASES = ['threat', 'numbers', 'group', 'grudge', 'outsider', 'sank', 'pair
 // 2026-10-10: "how is the viewer supposed to know who those 5 and 4 are? We didn't get a setup event."
 const FORM = {
   'vp.form.duo': [
-    { id: 'nvs.f1', turns: [
+    // (the first two episodes only: these are about a camp splitting before anybody has a voting record. Read 2026-10-14:
+    // "Everybody's going to say they didn't play the game on day one" aired in episode 6, 2.3 times a season)
+    { id: 'nvs.f1', when: { early: true }, turns: [
       { by: 'a', say: "Can I be honest with you? I think this camp is already splitting in two.", v: { sharp: "Let's not pretend. This camp is already picking sides.", loud: "Okay, real talk. There are two groups out here now, and I want to be in the right one.", soft: "Can I tell you something? I think people are already picking sides, and it scares me a little.", dry: "So, there are two groups now. Nobody announced it, but there are." } },
       { by: 'b', say: "Already? How can you tell?" },
       { by: 'a', say: "Because {theirSide} have barely left each other's side all day. Watch them. They eat together, they whisper together." },
@@ -69,11 +71,11 @@ const FORM = {
       { by: 'b', say: "That's {votes} of us.", v: { dry: "That's {votes}. Not exactly a crowd.", anxious: "That's {votes}. Is {votes} enough?" } },
       { by: 'a', say: "It's {votes} today. By tonight, it's whoever we can get." },
       { by: 'b', say: "Okay. I'm in." },
-      { by: 'a', conf: "Everybody's going to say they didn't play the game on day one. I'd rather be the one who did." },
+      { by: 'a', conf: "Everybody's going to say they didn't play this early. I'd rather be the one who did." },
     ] },
-    { id: 'nvs.f2', turns: [
+    { id: 'nvs.f2', when: { early: true }, turns: [
       { by: 'b', say: "You've been looking at {theirSide} all afternoon. What's going on?" },
-      { by: 'a', say: "They're a group. A real one. They've been together since this morning, and nobody else has noticed." },
+      { by: 'a', say: "They're a group. A real one. They've stuck together from the start, and nobody else has noticed." },
       { by: 'b', say: "And?" },
       { by: 'a', say: "And if we don't do the same thing, they're going to vote us out one at a time, and they'll be nice about it.", v: { sharp: "And if we don't make our own, they'll pick us off one at a time and smile while they do it.", loud: "And if we don't do the same thing, we're toast! Both of us!", soft: "And if we don't look out for each other, nobody else is going to." } },
       { by: 'b', say: "So who's ours?" },
@@ -82,18 +84,38 @@ const FORM = {
       { by: 'a', say: "Deal." },
       { by: 'b', conf: "I came out here thinking I'd make friends first and play later. {a} just skipped the friends part." },
     ] },
+    // later in the game a side forms from what everybody has watched happen at the votes, not from a first impression
+    { id: 'nvs.f3', when: { early: false }, turns: [
+      { by: 'a', say: "Have you noticed {theirSide} always end up writing the same name?" },
+      { by: 'b', say: "Now that you say it, yeah. Every time." },
+      { by: 'a', say: "That's not luck. They're voting as a group, and nobody's been calling it that." },
+      { by: 'b', say: "So what do we do about it?" },
+      { by: 'a', say: "We do the same thing. It's {us}, the same name every time, and tonight that name is {target}." },
+      { by: 'b', say: "And if they find out?" },
+      { by: 'a', say: "Then they find out when the votes are read." },
+      { by: 'a', conf: "Everybody else is still voting on their own, and that's why {theirSide} keep getting their way. Not tonight." },
+    ] },
+    { id: 'nvs.f4', when: { early: false }, turns: [
+      { by: 'b', say: "Why do you keep watching who sits with who?" },
+      { by: 'a', say: "Because {theirSide} sit together every night, and they vote together every night too." },
+      { by: 'b', say: "And we don't." },
+      { by: 'a', say: "Not yet. It's {us}, starting now, and our name is {target}." },
+      { by: 'b', say: "That's {votes}. Is that enough?" },
+      { by: 'a', say: "It's enough if nobody gets cold feet." },
+      { by: 'b', conf: "I didn't know I was in an alliance until about a minute ago. Apparently I am." },
+    ] },
   ],
   'vp.form.group': [
-    { id: 'nvs.fg1', turns: [
+    { id: 'nvs.fg1', when: { early: true }, turns: [
       { beat: "{a} waits until everybody else is busy, then pulls {b} and the others away from camp." },
       { by: 'a', say: "Okay, I'm just going to say it. I think we should stick together.", v: { sharp: "I'll keep this short. We're a group now, if you're smart.", loud: "Okay, huddle up. We're a team now. A real one.", soft: "I don't want to be weird about this, but I think we should look out for each other." } },
-      { by: 'b', say: "Like an alliance? It's the first day." },
-      { by: 'a', say: "Exactly. Because {theirSide} already are one, and they didn't wait for the second day." },
+      { by: 'b', say: "Like an alliance? Already? It's way too early." },
+      { by: 'a', say: "Exactly. Because {theirSide} already are one, and they didn't wait around." },
       { by: 'b', say: "How do you know that?" },
       { by: 'a', say: "Because I watched them do it. Same spot at lunch, same whispering, same looks when we walk by." },
       { by: 'a', say: "It's {us}. That's {votes}. If we vote together, nobody picks us off." },
       { by: 'b', say: "...Okay. Yeah. I'm in.", v: { dry: "Fine. It's better than being the first one out.", loud: "I'm in! Let's go!", anxious: "Okay. Yes. I'm in. Please let this work." } },
-      { by: 'a', conf: "Day one, and I've already got {votes} people. Tomorrow they'll all say they didn't want to play this fast. They'll be lying." },
+      { by: 'a', conf: "This early, and I've already got {votes} people. Later they'll all say they didn't want to play this fast. They'll be lying." },
     ] },
     { id: 'nvs.fg2', turns: [
       { by: 'b', say: "Why did you drag us all the way out here?" },
@@ -105,12 +127,22 @@ const FORM = {
       { by: 'b', say: "We're doing this." },
       { by: 'b', conf: "{a} has a whole plan already. Honestly, I'm a little scared of {a}. But I'd rather be scared on the same side." },
     ] },
+    { id: 'nvs.fg3', when: { early: false }, turns: [
+      { beat: "{a} gets {b} and the others away from camp for a minute." },
+      { by: 'a', say: "Every vote so far, {theirSide} have stuck together, and we haven't. That's the whole difference." },
+      { by: 'b', say: "So we stick together." },
+      { by: 'a', say: "Starting tonight. It's {us}, and the name is {target}." },
+      { by: 'b', say: "That's {votes} of us. Okay. I can work with that." },
+      { by: 'a', conf: "We've been losing the vote one person at a time. Tonight we vote as a group." },
+    ] },
   ],
 };
 
 const out = { ...FORM };
 for (const c of CASES) {
   out[`vp2.${c}`] = [
+    // (one id per reason; the season's once-only rule also reads a scene by its words, write.js keyUses, so a scene used
+    // under one reason is used for all: read 2026-10-14, these aired 2.4 times a season)
     ...GLUE.map((e, i) => ({ id: `nvs.g${i + 1}.${c}`, ...e })),
     ...MATH.map((e, i) => ({ id: `nvs.m${i + 1}.${c}`, ...e })),
   ];

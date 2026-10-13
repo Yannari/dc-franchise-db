@@ -85,6 +85,32 @@ export default {
       { by: 'b', say: "Sorry. I'm just tired." },
       { by: 'b', conf: "{a} is making plans for tomorrow. {a} doesn't have a tomorrow, not here, and I can't say a word." },
     ] },
+    // (more of them: read 2026-10-14, three versions for every night somebody goes home feeling safe, so each came back
+    // two or three times a season)
+    { id: 'nvt.f4', turns: [
+      { by: 'a', say: "Do you want to sit together tonight? At the vote, I mean." },
+      { by: 'b', say: "Sure. Why?" },
+      { by: 'a', say: "I don't know. It's {wrote} tonight, and it's going to be awkward, and I'd rather be next to a friend." },
+      { by: 'b', say: "Yeah. Okay. We'll sit together." },
+      { by: 'a', conf: "Tonight's easy for once. I'm actually looking forward to a vote, which is a weird thing to say." },
+      { by: 'b', conf: "{a} wants to sit next to me while I write {a.posAdj} name. I said yes. I didn't know what else to say." },
+    ] },
+    { id: 'nvt.f5', turns: [
+      { by: 'a', say: "Be honest with me. Is there anything I should be worried about tonight?" },
+      { by: 'b', say: "Like what?" },
+      { by: 'a', say: "Like my name. Has anybody said my name?" },
+      { by: 'b', say: "Not to me." },
+      { by: 'a', say: "Okay. Good. Then it's {wrote}, like everybody said." },
+      { by: 'b', conf: "Nobody said {a}'s name to me, because I'm one of the people saying it. I didn't lie. I just didn't tell the truth." },
+    ] },
+    { id: 'nvt.f6', turns: [
+      { beat: "{a} hands {b} half of the last piece of fruit." },
+      { by: 'a', say: "For tonight. We're going to need the energy to watch {wrote} pack." },
+      { by: 'b', say: "Thanks. You didn't have to." },
+      { by: 'a', say: "Of course I did. You've been the one person I can count on out here." },
+      { beat: "{b} eats it without saying anything." },
+      { by: 'b', conf: "{a} just shared food with me, out here, where nobody shares food. And I'm still writing {a.posAdj} name tonight." },
+    ] },
   ],
   'vt2.decoy': [
     { id: 'nvt.d1', when: { told: true }, turns: [

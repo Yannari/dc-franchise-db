@@ -7,7 +7,7 @@ import { recordFollowups, followupScene } from '../js/td/story/followups.js';
 import { airTdEpisode } from '../js/td/story/director.js';
 import { writeStory } from '../js/td/story/write.js';
 import { factsFor } from '../js/td/script/facts.js';
-import { getBond } from '../js/bonds.js';
+import { getBond, addBond } from '../js/bonds.js';
 import { campFeed } from '../js/td/story/feed.js';
 import { tdCampScreen, tdStepTranscript } from '../js/vp-td-ep/steps.js';
 import { _textCampPre } from '../js/text-backlog.js';
@@ -39,10 +39,12 @@ it('waits until a later episode, expires old incidents, and survives save/load',
  core.setGs(JSON.parse(JSON.stringify(core.gs))); expect(due()).toBeTruthy();
  setup(); record(); expect(due(cast,6)).toBeNull();
 });
-it('airs through the director with bond consequences and identical VP/backlog speech', () => {
- setup(); record(); const before = getBond('Gwen','Leshawna');
+it.each(['friend.defend','romance.honeymoon'])('airs %s through the director with bond consequences and identical VP/backlog speech', kind => {
+ setup();
+ if (kind.startsWith('romance.')) {core.players.forEach(p => {p.sexuality='bi';}); core.gs.showmances=[{players:['Gwen','Leshawna'],phase:'honeymoon'}];}
+ record(source(kind)); const before = getBond('Gwen','Leshawna');
  const ep = {num:3,bondChanges:[],tribesAtStart:[{name:'Bass',members:cast}],campEvents:{Bass:{pre:[],post:[]}}};
- airTdEpisode(ep); const scene = campFeed(ep,'Bass','pre').find(s => s.kind === 'follow.defense');
+ airTdEpisode(ep); const scene = campFeed(ep,'Bass','pre').find(s => s.kind === (kind.startsWith('romance.') ? 'follow.romance' : 'follow.defense'));
  expect(scene).toBeTruthy(); expect(getBond('Gwen','Leshawna')).toBeGreaterThan(before);
  const vp = JSON.stringify(tdStepTranscript(tdCampScreen(ep,'Bass','pre',cast,{setting:'hosted-camp'})));
  const backlog = []; _textCampPre(ep,l => backlog.push(l),()=>{});
@@ -55,10 +57,10 @@ it('renders every variant at every venue with its exact remembered line', () => 
   core.gs.tdStory = {}; const who = {a:'Gwen',b:'Leshawna',c:'Heather'};
   const split = key.lastIndexOf('.'); const w = writeStory(key.slice(0,split),key.slice(split+1),who,{remark:'You can answer without insulting me.'},{...factsFor({who,data:{}},{ep:3,phase:'pre'}),third:true,venue},{ep:3,phase:'pre',camp:'Bass',entryIds:[entry.id],unique:false});
   expect(w,entry.id+venue).toBeTruthy(); expect(w.text).toContain('You can answer without insulting me.'); expect(w.text).not.toMatch(/\{[^}]+\}/);
-  expect(new Set(w.lines.filter(l=>l.kind==='say').map(l=>l.by)).size).toBe(key.includes('clash')?3:2);
+  expect(new Set(w.lines.filter(l=>l.kind==='say').map(l=>l.by)).size).toBe(/clash|rivalry/.test(key)?3:2);
  }
 });
-it('reaches both follow-up families in played seasons with valid source speech', () => {
+it('reaches defense, clash, and romance follow-ups in played seasons with valid source speech', () => {
  const roster = JSON.parse(fs.readFileSync('franchise_roster.json','utf8')).players;
  const names = ['Gwen','Leshawna','Heather','Duncan','Courtney','Owen','Lindsay','Trent','Julia','Millie','Aubrey','Lake','Gabby','Bowie','Yul','Bruno'];
  const cast = names.map((name,i)=>({...roster.find(p=>p.name===name),tribe:i%2?'Bass':'Gophers'}));
@@ -74,7 +76,8 @@ it('reaches both follow-up families in played seasons with valid source speech',
    if (members) for (const name of scene.players) expect(members).toContain(name);
   }
  }
- expect(kinds).toEqual(new Set(['follow.defense','follow.clash']));
+ expect(kinds.has('follow.defense')).toBe(true); expect(kinds.has('follow.clash')).toBe(true); expect(kinds.has('follow.romance')).toBe(true);
+ expect([...kinds].every(k => ['follow.defense','follow.clash','follow.rivalry','follow.romance'].includes(k))).toBe(true);
 },60000);
 it('can follow a quiet defense heard directly by its target', () => {
  setup(); const scene = source(); scene.lines = scene.lines.slice(0,2); record(scene); expect(due()).toBeTruthy();
@@ -100,4 +103,65 @@ it('keeps obligation phrases and subject contractions grammatical across all sto
  for (const entries of Object.values(STORY_POOLS)) for (const entry of entries) for (const turn of entry.turns) for (const text of [turn.say,turn.conf,...Object.values(turn.v||{})].filter(Boolean)) {
   expect(text,entry.id).not.toMatch(/\b(?:I|we|you|they)[’']ve to\b|\bboth of you[’']re\b|\b(?:can|could|would|should) we[’']ve\b/i);
  }
+});
+
+it('continues a witnessed rivalry only after another relationship change', () => {
+ setup(); record(source('drama.fight')); const first = due().item;
+ expect(first.scene.data.chapter).toBe(1);
+ for (const [a,b,delta] of first.fx) addBond(a,b,delta);
+ recordFollowups({num:3},'Bass',{pre:[first],post:[]});
+ core.setGs(JSON.parse(JSON.stringify(core.gs)));
+ expect(due(['Gwen','Leshawna','Owen'],4)).toBeNull();
+ expect(due(cast,4)).toBeNull();
+ // A later improvement is independent of the already-applied callback effects.
+ core.gs.bonds['Gwen||Leshawna'] = 3;
+ const second = due(cast,4)?.item;
+ expect(second).toBeTruthy(); expect(second.scene.data.chapter).toBe(2);
+ expect(second.scene.data.sourceEp).toBe(3);
+ expect(first.lines.some(l => l.kind === 'say' && l.text === second.scene.data.remark)).toBe(true);
+ expect(due(cast,5)).toBeNull();
+});
+it('remembers a mutual aired romance, without creating a new couple', () => {
+ setup(); core.players.forEach(p => { p.sexuality = 'bi'; });
+ core.gs.showmances = [{players:['Gwen','Leshawna'],phase:'honeymoon'}];
+ record(source('romance.honeymoon')); const before = JSON.stringify(core.gs.showmances);
+ const scene = due()?.item; expect(scene?.kind).toBe('follow.romance');
+ expect(scene.text).toContain('You do not get to talk to her like that.');
+ expect(scene.fx.length).toBeGreaterThan(0); expect(JSON.stringify(core.gs.showmances)).toBe(before);
+});
+it('does not turn one-sided confessionals or incompatible pairings into romance callbacks', () => {
+ setup(); core.gs.showmances = [{players:['Gwen','Leshawna'],phase:'honeymoon'}];
+ record(source('romance.honeymoon')); expect(due()).toBeNull();
+ setup(); core.players.forEach(p => {p.sexuality='bi';}); core.gs.showmances = [{players:['Gwen','Leshawna'],phase:'honeymoon'}];
+ const s = source('romance.honeymoon'); s.lines[1].kind='conf'; record(s); expect(due()).toBeNull();
+});
+
+it('uses the direction of a later change, not a still-positive bond, for romance tension', () => {
+ setup(); core.players.forEach(p => {p.sexuality='bi';});
+ core.gs.bonds['Gwen||Leshawna'] = 6;
+ core.gs.showmances = [{players:['Gwen','Leshawna'],phase:'honeymoon'}];
+ record(source('romance.honeymoon')); const first = due().item;
+ for (const [a,b,delta] of first.fx) addBond(a,b,delta);
+ recordFollowups({num:3},'Bass',{pre:[first],post:[]});
+ expect(due(cast,4)).toBeNull(); addBond('Gwen','Leshawna',-2);
+ const second = due(cast,4).item; expect(second.step).toBe('guarded');
+ expect(second.scene.data.chapter).toBe(2); expect(second.players).toEqual(['Gwen','Leshawna']);
+ recordFollowups({num:4},'Bass',{pre:[second],post:[]}); addBond('Gwen','Leshawna',2);
+ expect(due(cast,5)).toBeNull();
+});
+it('drops romance callbacks when the couple breaks up or romance is disabled', () => {
+ setup(); core.players.forEach(p => {p.sexuality='bi';});
+ core.gs.showmances = [{players:['Gwen','Leshawna'],phase:'honeymoon'}];
+ record(source('romance.honeymoon'));
+ core.gs.showmances[0].phase = 'broken-up'; expect(due()).toBeNull();
+ core.gs.showmances[0].phase = 'honeymoon';
+ const previous = core.seasonConfig.romance;
+ try { core.seasonConfig.romance = 'disabled'; expect(due()).toBeNull(); }
+ finally {core.seasonConfig.romance = previous;}
+ expect(due()).toBeTruthy();
+});
+
+it('does not continue a proposed callback that never made the final edit', () => {
+ setup(); record(source('drama.fight')); expect(due()).toBeTruthy();
+ addBond('Gwen','Leshawna',3); expect(due(cast,4)).toBeNull();
 });

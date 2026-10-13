@@ -60,6 +60,16 @@ function _winnerPortrait(name, big, storedSlug) {
 
 // ── data helpers ──────────────────────────────────────────────────────
 function _isIncluded(s) { return !s || s.included !== false; }
+// Every season in the ledger in show-number order, oldest first (dir -1 for
+// newest). Keys are (show, number): Number("bb-1") is NaN, and looking NaN back
+// up found no season at all -- which crashed the whole Legacy tab the first
+// time a ledger held a Big Brother season next to a Total Drama one.
+function _seasonsInOrder(seasons, dir = 1) {
+  return Object.keys(seasons)
+    .map(key => ({ key, s: seasons[key], ...seasonKeyParts(key, seasons[key]) }))
+    .filter(e => e.s)
+    .sort((a, b) => dir * (a.num - b.num));
+}
 function _winnerOf(season) {
   const e = Object.entries(season.players || {}).find(([, r]) => r.winner);
   return e ? e[0] : null;
@@ -352,21 +362,19 @@ function _tile(label, value, portraitName) {
 // ── 1. HALL OF FAME + Record Book ─────────────────────────────────────
 function _renderHallOfFame() {
   const seasons = activeSeasons();
-  const nums = Object.keys(seasons).map(Number).sort((a, b) => a - b)
-    .filter(n => _isIncluded(seasons[String(n)]));
   const champs = [];
-  for (const num of nums) {
-    const s = seasons[String(num)];
+  for (const { s, num, format } of _seasonsInOrder(seasons)) {
+    if (!_isIncluded(s)) continue;
     const w = _winnerOf(s);
-    if (w) champs.push({ num, name: w, slug: s.players?.[w]?.slug });
+    if (w) champs.push({ num, tag: _seasonTagUI(num, format), name: w, slug: s.players?.[w]?.slug });
   }
   const records = franchiseRecords();
   if (!champs.length && !records.length) return '';
 
   const gallery = champs.length
-    ? `<div class="fr-hof-gallery">${champs.map(c => `<div class="fr-hof-chip fr-clickable" ${_careerClick(c.name)} title="${_esc(c.name)} — winner of Season ${c.num}">
+    ? `<div class="fr-hof-gallery">${champs.map(c => `<div class="fr-hof-chip fr-clickable" ${_careerClick(c.name)} title="${_esc(c.name)} — winner of ${_esc(c.tag)}">
         <span class="fr-hof-portrait">${_svgCrown()}${_winnerPortrait(c.name, false, c.slug)}</span>
-        <span class="fr-hof-caption"><span class="fr-hof-snum">S${c.num}</span> · ${_esc(c.name)}</span>
+        <span class="fr-hof-caption"><span class="fr-hof-snum">${_esc(c.tag)}</span> · ${_esc(c.name)}</span>
       </div>`).join('')}</div>`
     : `<div class="fr-legacy-empty">No champions recorded yet.</div>`;
 
@@ -414,9 +422,7 @@ function _svgMedal(type) {
 function _gatherAchievements() {
   const groups = {};
   const seasons = activeSeasons();
-  const nums = Object.keys(seasons).map(Number).sort((a, b) => b - a);
-  for (const num of nums) {
-    const s = seasons[String(num)];
+  for (const { s, num } of _seasonsInOrder(seasons, -1)) {
     if (!_isIncluded(s)) continue;
     for (const a of (s.achievements || [])) {
       if (!a || !a.id || !a.player) continue;
@@ -430,13 +436,11 @@ function _gatherAchievements() {
 function _gatherObjectives() {
   const out = [];
   const seasons = activeSeasons();
-  const nums = Object.keys(seasons).map(Number).sort((a, b) => b - a);
-  for (const num of nums) {
-    const s = seasons[String(num)];
+  for (const { s, num, format } of _seasonsInOrder(seasons, -1)) {
     if (!_isIncluded(s)) continue;
     const objs = s.objectives || [];
     if (!objs.length) continue;
-    out.push({ seasonNum: num, seasonName: s.seasonName || `Season ${num}`,
+    out.push({ seasonNum: num, seasonName: s.seasonName || _seasonTagUI(num, format),
       objectives: objs, met: objs.filter(o => o.met).length, total: objs.length });
   }
   return out;
@@ -509,8 +513,7 @@ export function frToggleMedal(type) {
 function _medalsForPlayer(name) {
   const out = [];
   const seasons = activeSeasons();
-  for (const num of Object.keys(seasons).map(Number).sort((a, b) => a - b)) {
-    const s = seasons[String(num)];
+  for (const { s, num } of _seasonsInOrder(seasons)) {
     if (!_isIncluded(s)) continue;
     for (const a of (s.achievements || [])) {
       if (a && a.player === name) out.push({ ...a, seasonNum: a.seasonNum || num });

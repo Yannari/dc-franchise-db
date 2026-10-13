@@ -163,3 +163,31 @@ describe('franchise-ui legacy layer', () => {
     expect(isFranchiseLocked('main')).toBe(false);
   });
 });
+
+// The user's own ledger, 2026-10-13: ten seasons across five shows, and the
+// Legacy tab would not open -- "can't access property players, season is
+// undefined". Four readers turned each key into a Number, and Number('bb-1')
+// is NaN, which looks up nothing.
+describe('franchise-ui with more than one show in the ledger', () => {
+  it('opens, and names each champion the way their own show numbers them', () => {
+    document.body.innerHTML = '<div id="tab-franchise" class="tab-content"></div>';
+    for (const [k, v] of Object.entries(ui)) if (typeof v === 'function') window[k] = v;
+    const season = (name, winner) => ({ seasonName: name, castSize: 2, source: 'live', players: {
+      [winner]: { placement: 1, winner: true, finalist: true, chalWins: 2, blindsidesAuthored: 0, blindsidedBy: [], betrayed: [], betrayedBy: [], allies: [], showmances: [], rivals: [], idolsPlayed: 0 },
+      Other: { placement: 2, winner: false, finalist: true, blindsidedBy: [], betrayed: [], betrayedBy: [], allies: [], showmances: [], rivals: [] } },
+      achievements: [{ id: 'immunity-streak', label: 'Immunity Streak', player: winner, detail: '2 wins' }],
+      objectives: [{ id: 'chaos-season', label: 'Chaos Season', met: true, detail: 'Loud.' }] });
+    setFranchiseLedger({ seasons: {
+      '9': season('Doom Island', 'Tdwin'),
+      'bb-1': { ...season('Big Brother 1', 'Bbwin'), format: 'big-brother' },
+      'dr-1': { ...season('Drag Race 1', 'Drwin'), format: 'drag-race' },
+    } });
+    expect(() => ui.renderFranchiseTab()).not.toThrow();
+    const html = document.getElementById('tab-franchise').innerHTML;
+    for (const w of ['Tdwin', 'Bbwin', 'Drwin']) expect(html).toContain(w);
+    expect(html).toContain('winner of S9');
+    expect(html).toContain('winner of BB1');
+    expect(html).toContain('winner of DR1');
+    expect(html).not.toContain('NaN');
+  });
+});

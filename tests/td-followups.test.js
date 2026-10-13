@@ -11,13 +11,15 @@ import { getBond, addBond } from '../js/bonds.js';
 import { campFeed } from '../js/td/story/feed.js';
 import { tdCampScreen, tdStepTranscript } from '../js/vp-td-ep/steps.js';
 import { _textCampPre } from '../js/text-backlog.js';
+import { commit } from '../js/td/story/commit.js';
 const saved = { gs: core.gs, players: core.players };
 afterEach(() => { core.setGs(saved.gs); core.setPlayers(saved.players); });
 const cast = ['Gwen','Leshawna','Heather','Owen'];
 function setup() { core.setPlayers(cast.map(name => ({ name, archetype: name === 'Heather' ? 'villain' : 'hero', stats: {} }))); core.setGs({ episode: 3, activePlayers: cast, bonds: {}, namedAlliances: [], showmances: [], episodeHistory: [], tdStory: {} }); }
 function source(kind = 'friend.defend') { return { story: true, kind: 'long.' + kind, scene: { kind, who: { a: cast[0], b: cast[1], c: cast[2] } }, lines: [{ kind: 'say', by: cast[0], text: 'You do not get to talk to her like that.' }, {kind:'say',by:cast[1],text:'I can answer for myself.'}, {kind:'say',by:cast[2],text:'Then answer.'}] }; }
 const record = (scene = source()) => recordFollowups({ num: 2 }, 'Bass', { pre: [], post: [scene] });
-function due(members = cast, num = 3) { return followupScene({num}, 'Bass', members, 'pre', () => 0, writeStory, who => ({...factsFor({who,data:{}},{ep:num,phase:'pre'}),venue:'hosted-camp'})); }
+// (the director accepts what it airs: a scene built here is accepted the same way, commit.js)
+function due(members = cast, num = 3) { const s = followupScene({num}, 'Bass', members, 'pre', () => 0, writeStory, who => ({...factsFor({who,data:{}},{ep:num,phase:'pre'}),venue:'hosted-camp'})); if (s) commit(s.item); return s; }
 it('follows an aired defense privately with the original defender and target', () => {
  setup(); record(); const item = due().item;
  expect(item.players).toEqual(['Leshawna','Gwen']);
@@ -96,6 +98,7 @@ it('does not consume or record current follow-ups when rebuilding an older episo
 it('allows an actual day-one argument to be recalled on day two', () => {
  setup(); recordFollowups({num:1},'Bass',{pre:[],post:[source('drama.fight')]});
  const scene = followupScene({num:2},'Bass',cast,'pre',()=>0,(p,o,w,d,f,c)=>writeStory(p,o,w,d,f,{...c,entryIds:['nfu.cm4']}),who=>({...factsFor({who,data:{}},{ep:2,phase:'pre'}),venue:'hosted-camp'}));
+ if (scene) commit(scene.item);
  expect(scene).toBeTruthy();
 });
 

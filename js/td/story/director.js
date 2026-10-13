@@ -33,6 +33,7 @@ import { continuityScore, rememberMoment } from './continuity.js';
 import { recordFollowups, followupScene } from './followups.js';
 import { recordTurns, turnScene } from './turns.js';
 import { witnessConflicts, witnessAfter } from './witness.js';
+import { onCommit, adopt, commit, pending } from './commit.js';
 import { writeStory as writeRaw, hasStoryPool } from './write.js';
 import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './record.js';
 import { numberWord } from '../script/write.js';
@@ -117,10 +118,10 @@ function kindredScenes(ep, members, camp, phase, nextN) {
   const S = (gs.tdStory ||= {}), K = (S.kindred ||= {}), last = (S.kindredLast ||= {});
   const out = [];
   const avoid = ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening');
-  const put = (at, kind, step, who, w, why, d) => out.push({ at, item: { story: true, kind, storyType: 'kindred', step, players: [who.a, who.b], lines: w.lines, text: w.text, lineId: w.lineId,
-    scene: { kind: 'kindred', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [why], fx: [[who.a, who.b, d]] } });
+  const put = (at, kind, step, who, w, why, d, then = null) => out.push({ at, item: onCommit({ story: true, kind, storyType: 'kindred', step, players: [who.a, who.b], lines: w.lines, text: w.text, lineId: w.lineId,
+    scene: { kind: 'kindred', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [why], fx: [[who.a, who.b, d]] }, then) });
   const write = (pool, outcome, who, data) => writeStory(pool, outcome, who, data, { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), pair: true },
-    { ep: ep.num, camp, phase, n: nextN(), place: 'aside', unique: 'soft', avoid });
+    { ep: ep.num, camp, phase, n: nextN(), place: 'aside', unique: 'soft', avoid, draft: true });
   if (phase === 'pre') {
     // the morning after a vote: one of them wrote the other's name, and both are still here
     const prev = (gs.episodeHistory || []).find(e => e.num === ep.num - 1);
@@ -142,8 +143,7 @@ function kindredScenes(ep, members, camp, phase, nextN) {
       const a = r.opener === y ? y : x, who = { a, b: a === x ? y : x };
       const w = write('kindred.check', r.tone, who, r.where ? { where: r.where } : {});
       if (!w) continue;
-      r.checked = ep.num;
-      put(0.45, 'kindred.check', 'check', who, w, `${who.b} checks in on ${who.a}.`, 0.75);
+      put(0.45, 'kindred.check', 'check', who, w, `${who.b} checks in on ${who.a}.`, 0.75, () => { r.checked = ep.num; });
       return out;
     }
     return out;
@@ -165,9 +165,8 @@ function kindredScenes(ep, members, camp, phase, nextN) {
     const w = write('kindred', c.g.tag, who, data);
     if (!w) continue;
     const tone = kinTone(c.g.tag);
-    K[kinKey(c.x, c.y)] = { tag: c.g.tag, tone, ep: ep.num, opener: a, ...(c.g.value ? { where: c.g.value } : {}) };
-    last[camp] = ep.num;
-    put(0.55, 'kindred.find', 'find', who, w, `${who.a} and ${who.b} find out they share something.`, tone === 'heavy' ? 2 : tone === 'light' ? 1.5 : c.g.kind === 'home' ? 1.25 : 1);
+    put(0.55, 'kindred.find', 'find', who, w, `${who.a} and ${who.b} find out they share something.`, tone === 'heavy' ? 2 : tone === 'light' ? 1.5 : c.g.kind === 'home' ? 1.25 : 1,
+      () => { K[kinKey(c.x, c.y)] = { tag: c.g.tag, tone, ep: ep.num, opener: a, ...(c.g.value ? { where: c.g.value } : {}) }; last[camp] = ep.num; });
     break;
   }
   return out;
@@ -565,12 +564,12 @@ function afterChallenge(ep, camp, members, n) {
     const blamed = ((gs.tdStory ||= {}).blamed ||= {});
     const lately = ep.num - (blamed[camp] ?? -99) <= 2;
     const ending = lately ? 'regroup' : 'lost';
-    if (!lately) blamed[camp] = ep.num;
     const w = writeStory('story.chal', ending, who, data, { ...facts, outcome: lately ? 'regroup' : 'blame' }, { ep: ep.num, camp, phase: 'post', n, place: 'public', avoid: ctxAvoid('return') })
       || (lately ? writeStory('story.chal', 'lost', who, data, facts, { ep: ep.num, camp, phase: 'post', n, place: 'public', avoid: ctxAvoid('return') }) : null);
-    return w ? { story: true, kind: `story.chal.${ending}`, storyType: 'chal', step: ending, players: [a, b, c].filter(Boolean), lines: w.lines, text: w.text, lineId: w.lineId,
+    // (the team is on record as having blamed somebody when the scene airs: commit.js)
+    return w ? onCommit({ story: true, kind: `story.chal.${ending}`, storyType: 'chal', step: ending, players: [a, b, c].filter(Boolean), lines: w.lines, text: w.text, lineId: w.lineId,
       scene: { kind: 'story.chal', who, data, spot: w.spot ? { ...w.spot, window: 'return' } : null }, badgeText: 'Who Lost It', badgeClass: 'red',
-      why: [`${camp} lost${streak > 1 ? ` (${numberWord(streak)} in a row)` : ''}. ${b} had the team's lowest score; ${ch.carried} the highest.`] } : null;
+      why: [`${camp} lost${streak > 1 ? ` (${numberWord(streak)} in a row)` : ''}. ${b} had the team's lowest score; ${ch.carried} the highest.`] }, () => { if (!lately) blamed[camp] = ep.num; }) : null;
   }
   const a = ch.carried;
   const b = members.filter(m => m !== a).sort((x, y) => getBond(a, y) - getBond(a, x) || x.localeCompare(y))[0];
@@ -1451,6 +1450,9 @@ export function airTdEpisode(ep) {
         filedMoments.set(ev, { type: line.type, ...step });
       });
       const list = [];
+      // a scene is accepted when it goes on the day's list, and only then does what it changes in the story happen
+      // (commit.js: a builder proposes, and its setup, its kit line, its arc step are spent on acceptance)
+      const accept = (...es) => { for (const e of es) { if (e?.item) { commit(e.item); commit(e.item.lines); } list.push(e); } return list.length; };
       // the spots taken in each stretch of the day, so two talks are never staged on top of each other
       const taken = {};
       const avoidIn = win => (taken[win || 'any'] ||= new Set());
@@ -1460,18 +1462,18 @@ export function airTdEpisode(ep) {
       const dayOne = ep.num === 1;
       const opener = phase === 'pre' ? (dayOne ? firstDay(ep, camp, members, n++) : swapped ? firstDay(ep, camp, members, n++, 'swap') : morningAfter(ep, camp, members, n++))
         : afterChallenge(ep, camp, members, n++);
-      if (opener) list.push({ at: -1, item: opener });
+      if (opener) accept({ at: -1, item: opener });
       // back from the Exile Duel: the winner walks into camp first thing
-      if (phase === 'pre') { const dr = duelReturn(ep, camp, members, n++); if (dr) list.push({ at: -0.5, item: dr }); }
+      if (phase === 'pre') { const dr = duelReturn(ep, camp, members, n++); if (dr) accept({ at: -0.5, item: dr }); }
       // the auction's fallout, early in the evening
-      if (phase === 'post') auctionTalk(ep, camp, members, () => n++).forEach((it, k) => list.push({ at: 0.2 + k * 0.01, item: it }));
+      if (phase === 'post') auctionTalk(ep, camp, members, () => n++).forEach((it, k) => accept({ at: 0.2 + k * 0.01, item: it }));
       // day one: by the afternoon two of them have hit it off, and by the evening two of them have not
-      if (dayOne) { const fp = firstPair(ep, camp, members, n++, phase === 'pre' ? 'clicked' : 'clashed'); if (fp) list.push({ at: phase === 'pre' ? 0.5 : 1e5, item: fp }); }
+      if (dayOne) { const fp = firstPair(ep, camp, members, n++, phase === 'pre' ? 'clicked' : 'clashed'); if (fp) accept({ at: phase === 'pre' ? 0.5 : 1e5, item: fp }); }
       // the storyline steps worth a scene
       const merged = ep.isMerge || gs.isMerged;
       // the vote story's own beats first, so the plan scenes can call back to them
       const editOn = (seasonConfig?.tdEdit || 'full') !== 'off';
-      if (editOn && talk) list.push(...arcBeats(ep, camp, members, phase, talk, () => n++, list, [], 'vote'));
+      if (editOn && talk) accept(...arcBeats(ep, camp, members, phase, talk, () => n++, list, [], 'vote'));
       // the challenge, brought back to camp (chalmoments.js): its biggest moments between people here
       if (editOn && phase === 'post') {
         const W = { betray: 5, sabotage: 5, saved: 4, spark: 4, clash: 4, quit: 3, taunt: 3, comeback: 3, hurt: 3, pact: 3, panic: 2, wipeout: 2, comedy: 2, bond: 2 };
@@ -1490,8 +1492,8 @@ export function airTdEpisode(ep) {
           // (not a pair the morning already gave a chapter to: a follow-up, an arc, a turn)
           const busyPairs = new Set((out.pre || []).filter(x => ['arc', 'challenge'].includes(x?.storyType) && (x.players || []).length >= 2).map(x => [...x.players].slice(0, 2).sort().join('|')));
           turnHere = editOn ? turnScene(ep, camp, members, chal, () => n++, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), 'post', busyPairs,
-            (p, o, w, d, f, c) => writeStory(p, o, w, d, f, { ...c, avoid: ctxAvoid('afternoon') })) : null;
-          if (turnHere) { list.push(turnHere); seenPair.add([...turnHere.item.players].sort().join('|')); took++; }
+            (p, o, w, d, f, c) => writeStory(p, o, w, d, f, { ...c, draft: true, avoid: ctxAvoid('afternoon') })) : null;
+          if (turnHere) { accept(turnHere); seenPair.add([...turnHere.item.players].sort().join('|')); took++; }
         }
         for (const m of picks) {
           if (took >= (members.length >= 8 ? 3 : 2)) break;
@@ -1515,7 +1517,7 @@ export function airTdEpisode(ep) {
             // 2026-10-12: Spencer's "We won, and I should be happy" after his team lost). After the merge there is no team
             teamWon: !(ep.isMerge || gs.isMerged) && !tribalTonight, bLikesA: getBond(b, a) >= 2, bHatesA: getBond(b, a) <= -2,
             physical: ['physical', 'endurance', 'adventure', 'hunt', 'chaos'].includes(style) };
-          const w = writeStory(`chm.${m.kind}`, 'any', who, { chal }, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('afternoon'),
+          const w = writeStory(`chm.${m.kind}`, 'any', who, { chal }, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', draft: true, avoid: ctxAvoid('afternoon'),
             // a moment is colour, not a reason: once its scenes have aired it skips rather than repeats (read: Alejandro's
             // sabotage as the same scene three episodes running). Only the one tonight's plan calls back to may come back.
             unique: planPair(m) ? 'soft' : true });
@@ -1533,7 +1535,7 @@ export function airTdEpisode(ep) {
             if (ok && !(talk.em.causes || []).some(c => c.by === talk.leader && c.of === talk.boot))
               (talk.em.causes ||= []).push({ by: talk.leader, of: talk.boot, kind: CK, moment: MOM[CK], phase: 'post', aired: true, chm: true });
           }
-          list.push({ at: 0.25 + took * 0.01, item: { story: true, kind: `chm.${m.kind}`, storyType: 'challenge', step: m.kind, players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
+          accept({ at: 0.25 + took * 0.01, item: { story: true, kind: `chm.${m.kind}`, storyType: 'challenge', step: m.kind, players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
             scene: { kind: 'chm', who, data: { chal, two: m.players.length >= 2 }, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: m.badge, badgeClass: '', why: [`At ${chal}: ${m.badge} (${m.players.join(', ')}).`] } });
         }
         // ...and when the challenge left room, two friends replay it: the jokes, not the result (lines/n-banter.js)
@@ -1545,9 +1547,9 @@ export function airTdEpisode(ep) {
           fr.sort((p, q) => q[2] - p[2] || p[0].localeCompare(q[0]));
           for (const [x, y] of fr.slice(0, 4)) {
             const who = { a: x, b: y };
-            const w = writeStory('chm.banter', 'any', who, { chal }, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('afternoon'), unique: true });
+            const w = writeStory('chm.banter', 'any', who, { chal }, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', draft: true, avoid: ctxAvoid('afternoon'), unique: true });
             if (!w) continue;
-            list.push({ at: 0.27, item: { story: true, kind: 'chm.banter', storyType: 'challenge', step: 'banter', players: [x, y], lines: w.lines, text: w.text, lineId: w.lineId,
+            accept({ at: 0.27, item: { story: true, kind: 'chm.banter', storyType: 'challenge', step: 'banter', players: [x, y], lines: w.lines, text: w.text, lineId: w.lineId,
               scene: { kind: 'chm', who, data: { chal }, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: '', badgeClass: '', why: [`${x} and ${y} replay ${chal}.`], fx: [[x, y, 0.5]] } });
             break;
           }
@@ -1564,12 +1566,11 @@ export function airTdEpisode(ep) {
           const who = { a: td.t.a, b: td.t.b };
           const prevBoot = (gs.episodeHistory || []).find(h => h.num === td.t.ep)?.eliminated || null;
           const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), pair: true, how: td.t.how || 'vote', lastBoot: !!prevBoot, ago: ep.num - td.t.ep <= 1 ? 'recent' : 'while' };
-          const w = writeStory(`thr.${td.t.kind}`, td.stage, who, { ...(prevBoot ? { lastBoot: prevBoot } : {}), ...(td.t.chal ? { chal: td.t.chal } : {}) }, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('morning'), unique: 'soft' });
+          const w = writeStory(`thr.${td.t.kind}`, td.stage, who, { ...(prevBoot ? { lastBoot: prevBoot } : {}), ...(td.t.chal ? { chal: td.t.chal } : {}) }, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('morning'), unique: 'soft', draft: true });
           if (w) {
-            td.commit();
-            list.push({ at: 0.45, item: { story: true, kind: `thr.${td.t.kind}.${td.stage}`, storyType: 'thread', step: td.stage, players: [td.t.a, td.t.b], lines: w.lines, text: w.text, lineId: w.lineId,
+            accept({ at: 0.45, item: onCommit({ story: true, kind: `thr.${td.t.kind}.${td.stage}`, storyType: 'thread', step: td.stage, players: [td.t.a, td.t.b], lines: w.lines, text: w.text, lineId: w.lineId,
               scene: { kind: 'thr', who, data: {}, spot: w.spot ? { ...w.spot, window: 'morning' } : null }, badgeText: THREAD_BADGE[td.t.kind][0], badgeClass: THREAD_BADGE[td.t.kind][1],
-              why: [THREAD_WHY[td.t.kind](td.t)] } });
+              why: [THREAD_WHY[td.t.kind](td.t)] }, () => td.commit()) });
           }
         }
       }
@@ -1580,11 +1581,10 @@ export function airTdEpisode(ep) {
           const foil = members.filter(m => m !== rd.name).sort((x, y) => getBond(rd.name, y) - getBond(rd.name, x) || x.localeCompare(y));
           const who = { a: rd.name, ...(foil[0] ? { b: foil[0] } : {}), ...(foil[1] ? { c: foil[1] } : {}) };
           const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), third: !!who.c, pair: !!who.b, call: rd.call || 0 };
-          const w = writeStory(`run.${rd.kind}`, String(rd.stage), who, {}, facts, { ep: ep.num, camp, phase, n: n++, place: 'public', avoid: ctxAvoid('afternoon'), unique: 'soft' });
+          const w = writeStory(`run.${rd.kind}`, String(rd.stage), who, {}, facts, { ep: ep.num, camp, phase, n: n++, place: 'public', avoid: ctxAvoid('afternoon'), unique: 'soft', draft: true });
           if (w) {
-            rd.commit();
-            list.push({ at: 0.8, item: { story: true, kind: `run.${rd.kind}.${rd.stage}`, storyType: 'comedy', step: String(rd.stage), players: Object.values(who), lines: w.lines, text: w.text, lineId: w.lineId,
-              scene: { kind: 'run', who, data: {}, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: 'Meanwhile', badgeClass: '', why: [`${rd.name}'s running gag.`] } });
+            accept({ at: 0.8, item: onCommit({ story: true, kind: `run.${rd.kind}.${rd.stage}`, storyType: 'comedy', step: String(rd.stage), players: Object.values(who), lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'run', who, data: {}, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: 'Meanwhile', badgeClass: '', why: [`${rd.name}'s running gag.`] }, () => rd.commit()) });
           }
         }
       }
@@ -1596,11 +1596,10 @@ export function airTdEpisode(ep) {
           const conf = members.filter(m => m !== pc.name && getBond(pc.name, m) >= 3).sort((x, y) => getBond(pc.name, y) - getBond(pc.name, x) || x.localeCompare(y))[0] || null;
           const who = { a: pc.name, ...(conf ? { b: conf } : {}) };
           const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), moment: pc.moment, lastBoot: !!pc.lastBoot, pair: !!conf };
-          const w = writeStory('psy', need, who, pc.lastBoot ? { lastBoot: pc.lastBoot } : {}, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('afternoon'), unique: 'soft' });
+          const w = writeStory('psy', need, who, pc.lastBoot ? { lastBoot: pc.lastBoot } : {}, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('afternoon'), unique: 'soft', draft: true });
           if (w) {
-            ((gs.tdStory ||= {}).psySeen ||= {})[pc.name] = ep.num;
-            list.push({ at: 0.6, item: { story: true, kind: `psy.${need}`, storyType: 'psyche', step: pc.moment, players: Object.values(who), lines: w.lines, text: w.text, lineId: w.lineId,
-              scene: { kind: 'psy', who, data: {}, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: 'In Their Head', badgeClass: 'teal', why: [`${pc.name}: ${need}.`] } });
+            accept({ at: 0.6, item: onCommit({ story: true, kind: `psy.${need}`, storyType: 'psyche', step: pc.moment, players: Object.values(who), lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'psy', who, data: {}, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: 'In Their Head', badgeClass: 'teal', why: [`${pc.name}: ${need}.`] }, () => { ((gs.tdStory ||= {}).psySeen ||= {})[pc.name] = ep.num; }) });
           }
         }
       }
@@ -1612,8 +1611,8 @@ export function airTdEpisode(ep) {
       {
         const deep = (kind, a, data, why, more = {}) => {
           const who = { a };
-          const w = writeStory(`deep.${kind}`, 'any', who, data, { ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), merged, ...more }, { ep: ep.num, camp, phase, n: n++, place: 'confessional', unique: 'soft' });
-          if (w) list.push({ at: 7e5, item: { story: true, kind: `deep.${kind}`, storyType: 'conf', step: kind, players: [a], lines: w.lines, text: w.text, lineId: w.lineId,
+          const w = writeStory(`deep.${kind}`, 'any', who, data, { ...factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), merged, ...more }, { ep: ep.num, camp, phase, n: n++, place: 'confessional', unique: 'soft', draft: true });
+          if (w) accept({ at: 7e5, item: { story: true, kind: `deep.${kind}`, storyType: 'conf', step: kind, players: [a], lines: w.lines, text: w.text, lineId: w.lineId,
             scene: { kind: 'deep', who, data, spot: { id: 'confessional' } }, badgeText: '', badgeClass: '', why: [why] } });
         };
         if (!editOn) { /* the edit is off: the day as the engine's moments alone */ }
@@ -1653,7 +1652,7 @@ export function airTdEpisode(ep) {
           if (warm < 1) deep('win', imm, {}, `${imm} won immunity, and the camp is not happy about it.`, { again: before >= 1 });
         }
       }
-      votes.forEach((it, k) => list.push({ at: 8e5 + k, item: it }));
+      votes.forEach((it, k) => accept({ at: 8e5 + k, item: it }));
       // the vote's own scenes come first, and each one past the first takes a place from the rest of the day, three at
       // most (the user, 2026-10-12: "I sometimes don't feel like the strategy is talked about much... prioritize")
       const cap = (phase === 'pre' ? (merged ? 4 : 3) : tribalTonight ? (merged ? 5 : 4) : 2) - Math.min(3, Math.max(0, votes.length - 1));
@@ -1797,7 +1796,7 @@ export function airTdEpisode(ep) {
         // the engine's own spot, unless a scene already written for this window is there (read: a crowd huddle and a vote
         // plan both at the caves at 4:30): then the writer finds this one somewhere else
         const engineSpot = ev.scene?.spot?.id || ev.access?.locationId || null, winHere = ev.scene?.spot?.window || ev.access?.windowId;
-        const sceneCtx = { ep: ep.num, camp, phase, n: n++, place: 'aside', spotId: engineSpot && !ctxAvoid(winHere)?.has?.(engineSpot) ? engineSpot : null, avoid: ctxAvoid(winHere) };
+        const sceneCtx = { ep: ep.num, camp, phase, n: n++, place: 'aside', draft: true, spotId: engineSpot && !ctxAvoid(winHere)?.has?.(engineSpot) ? engineSpot : null, avoid: ctxAvoid(winHere) };
         const groupRomanceId = who.c && (kind === 'romance.honeymoon' ? 'nrx.honey1' : kind === 'romance.moment' && ending === 'couple' ? 'nrx.couple2' : null);
         const w = kitRomanceScene(kind, ending, who, data, facts, sceneCtx) || kitDigScene(kind, who, data, facts, sceneCtx)
           || (groupRomanceId ? writeStory(pool, ending, who, data, facts, { ...sceneCtx, entryIds: [groupRomanceId] }) : null)
@@ -1842,11 +1841,11 @@ export function airTdEpisode(ep) {
             if (nt) { lines = [...lines, ...nt.lines]; watched.push(sharp); }
           }
         }
-        return { story: true, kind: pool, storyType: line?.type || 'cut', step: step?.step || 'cut', ...(line ? { storyline: line.id } : { cut: true }), ref: i, type: ev.type,
+        return adopt(adopt({ story: true, kind: pool, storyType: line?.type || 'cut', step: step?.step || 'cut', ...(line ? { storyline: line.id } : { cut: true }), ref: i, type: ev.type,
           players: [...new Set([...Object.values(who).filter(Boolean), ...(ev.players || []), ...watched])],
           lines, text: lines.map(l => l.text).join(' '), lineId: w.lineId, scene: { kind, who: castOnly(who, w), data, spot: w.spot ? { window: ev.scene?.spot?.window || ev.access?.windowId || null, ...w.spot } : (ev.scene?.spot || null) }, access: ev.access || null,
           alliance: ev.alliance, members: ev.members, advType: ev.advType, badgeText: ev.badgeText || '', badgeClass: ev.badgeClass || '',
-          why: whyOf(kind, ending, line ? `${line.type}.${step.step}` : '', who, data, facts), bondDelta: ev.bondDelta || null, ...(w.fx?.length ? { fx: w.fx } : {}) };
+          why: whyOf(kind, ending, line ? `${line.type}.${step.step}` : '', who, data, facts), bondDelta: ev.bondDelta || null, ...(w.fx?.length ? { fx: w.fx } : {}) }, w), w.lines);
       };
       for (const f of chosen) {
         const { ev, i, line, step } = f;
@@ -1855,7 +1854,7 @@ export function airTdEpisode(ep) {
         step.aired = true;
         ev.aired = true;
         seasonAired[`${line.type}.${step.step}`] = (seasonAired[`${line.type}.${step.step}`] || 0) + 1;
-        list.push({ at: i, item: item || { ref: i, storyline: line.id } });
+        accept({ at: i, item: item || { ref: i, storyline: line.id } });
       }
       // each character's own material (td/story/kits.js, written from the roster profile: Bruno's job as a
       // personal assistant, Dunia's witchcraft, Gabby's pets and Ellie): one bit a camp in the morning, the
@@ -1876,15 +1875,14 @@ export function airTdEpisode(ep) {
             // A third camper joins the same scheduled bit, with a consequence for participating.
             const third = (ep.num + n) % 3 === 0 ? members.filter(m => m !== a && m !== b && getBond(a, m) >= 0 && getBond(b, m) >= 0)
               .sort((x, y) => getBond(a, y) + getBond(b, y) - getBond(a, x) - getBond(b, x) || x.localeCompare(y))[0] : null;
-            const w = kitBitScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, third, place: 'aside', avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
+            const w = kitBitScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, third, place: 'aside', draft: true, avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
             if (!w) continue;
-            book[a] = ep.num; gs.tdStory.kitBitWith[a] = b;
-            list.push({ at: 0.35, item: { story: true, kind: 'kit.bit', storyType: 'kit', step: 'bit', players: Object.values(w.who || who), lines: w.lines, text: w.text, lineId: w.lineId,
-              scene: { kind: 'kit', who: w.who || who, data: {}, spot: w.spot || null }, badgeText: 'Camp Banter', badgeClass: 'green', why: [`${a}'s own thing, and ${b} has opinions about it.`], fx: [[a, b, 0.5], ...(w.fx || [])] } });
+            accept({ at: 0.35, item: onCommit(adopt({ story: true, kind: 'kit.bit', storyType: 'kit', step: 'bit', players: Object.values(w.who || who), lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'kit', who: w.who || who, data: {}, spot: w.spot || null }, badgeText: 'Camp Banter', badgeClass: 'green', why: [`${a}'s own thing, and ${b} has opinions about it.`], fx: [[a, b, 0.5], ...(w.fx || [])] }, w), () => { book[a] = ep.num; gs.tdStory.kitBitWith[a] = b; }) });
             break;
           }
-          const kitItem = (kind, step, players, w, who, why, fx = []) => list.push({ at: kind === 'kit.call' ? 0.4 : 0.38, item: { story: true, kind, storyType: 'kit', step, players, lines: w.lines, text: w.text, lineId: w.lineId,
-            scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [why], fx } });
+          const kitItem = (kind, step, players, w, who, why, fx = [], then = null) => accept({ at: kind === 'kit.call' ? 0.4 : 0.38, item: onCommit(adopt({ story: true, kind, storyType: 'kit', step, players, lines: w.lines, text: w.text, lineId: w.lineId,
+            scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [why], fx }, w), then) });
           // a mentor arc over three episodes (lines/n-mentor.js): somebody struggling at a skill, somebody good at it
           // who offers, the practice, and the day they do it alone. One at a time, two a season, and it ends if
           // either of them leaves. The skill is the mentor's strongest (the user's read: Anastasia teaching Rosa fire).
@@ -1896,6 +1894,7 @@ export function airTdEpisode(ep) {
             // it ends when one of them has left the game, not when this camp is somebody else's
             const alive = new Set(gs.activePlayers || []);
             if (M.cur && (!alive.has(M.cur.a) || !alive.has(M.cur.b))) M.cur = null;
+            let cand = null;
             if (!M.cur && M.arcs < 2 && ep.num >= 2 && !merged) {
               const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'underdog', 'goat', 'showmancer', 'perceptive-player', 'floater']);
               const archOf = x => (players.find(p => p.name === x) || {}).archetype;
@@ -1903,18 +1902,22 @@ export function airTdEpisode(ep) {
                 const learner = [...members].sort((x, y) => (st(x)[key] ?? 5) - (st(y)[key] ?? 5) || x.localeCompare(y))[0];
                 const teacher = members.filter(x => x !== learner && NICE.has(archOf(x)) && getBond(x, learner) >= 0 && (st(x)[key] ?? 5) - (st(learner)[key] ?? 5) >= 3)
                   .sort((x, y) => (st(y)[key] ?? 5) - (st(x)[key] ?? 5) || x.localeCompare(y))[0];
-                if (learner && teacher) { M.cur = { a: teacher, b: learner, skill: SKILL[key], step: 0, last: -1 }; M.arcs++; break; }
+                // (proposed here; it starts when its first scene airs, below)
+                if (learner && teacher) { cand = { a: teacher, b: learner, skill: SKILL[key], step: 0, last: -1 }; break; }
               }
             }
-            if (M.cur && M.cur.last < ep.num && members.includes(M.cur.a) && members.includes(M.cur.b)) {
-              const step = STEPS[M.cur.step];
-              const who = { a: M.cur.a, b: M.cur.b };
-              const w = writeStory('arc.mentor', step, who, { skill: M.cur.skill }, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', unique: 'soft', avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
+            const cur = M.cur || cand;
+            if (cur && cur.last < ep.num && members.includes(cur.a) && members.includes(cur.b)) {
+              const step = STEPS[cur.step];
+              const who = { a: cur.a, b: cur.b };
+              const w = writeStory('arc.mentor', step, who, { skill: cur.skill }, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', unique: 'soft', draft: true, avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
               if (w) {
-                M.cur.last = ep.num; M.cur.step++;
-                list.push({ at: 0.33, item: { story: true, kind: `arc.mentor.${step}`, storyType: 'arc', step, players: [who.a, who.b], lines: w.lines, text: w.text, lineId: w.lineId,
-                  scene: { kind: 'arc', who, data: { skill: M.cur.skill }, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${who.a} is teaching ${who.b} ${M.cur.skill}.`], fx: [[who.a, who.b, 1]] } });
-                if (M.cur.step >= STEPS.length) M.cur = null;
+                accept({ at: 0.33, item: onCommit({ story: true, kind: `arc.mentor.${step}`, storyType: 'arc', step, players: [who.a, who.b], lines: w.lines, text: w.text, lineId: w.lineId,
+                  scene: { kind: 'arc', who, data: { skill: cur.skill }, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${who.a} is teaching ${who.b} ${cur.skill}.`], fx: [[who.a, who.b, 1]] }, () => {
+                  if (!M.cur) { M.cur = cur; M.arcs++; }
+                  M.cur.last = ep.num; M.cur.step++;
+                  if (M.cur.step >= STEPS.length) M.cur = null;
+                }) });
               }
             }
           }
@@ -1925,10 +1928,9 @@ export function airTdEpisode(ep) {
             const b = members.filter(m => m !== a && getBond(m, a) <= -3).sort((x, y) => getBond(x, a) - getBond(y, a) || x.localeCompare(y))[0];
             if (!b) continue;
             const who = { a, b };
-            const w = kitClashScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
+            const w = kitClashScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', draft: true, avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
             if (!w) continue;
-            book[a] = ep.num;
-            kitItem('kit.clash', 'clash', [a, b], w, who, `${b} can't stand ${a}, and today it came out.`, [[a, b, -1]]);
+            kitItem('kit.clash', 'clash', [a, b], w, who, `${b} can't stand ${a}, and today it came out.`, [[a, b, -1]], () => { book[a] = ep.num; });
             break;
           }
           // a running bit, called back by two others (every other day, once it has aired)
@@ -1936,7 +1938,7 @@ export function airTdEpisode(ep) {
             const [c, d] = members.filter(m => m !== about).sort((x, y) => getBond(about, x) - getBond(about, y) || x.localeCompare(y));
             if (!c || !d) break;
             const who = { a: c, b: d };
-            const w = kitCallbackScene(c, d, about, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
+            const w = kitCallbackScene(c, d, about, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', draft: true, avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
             if (!w) continue;
             kitItem('kit.call', 'callback', [c, d, about], w, { ...who, c: about }, `${about}'s running bit, as the camp sees it.`, [[c, d, 0.5]]);
             break;
@@ -1947,10 +1949,10 @@ export function airTdEpisode(ep) {
             const b = members.filter(m => m !== a && getBond(a, m) >= 4).sort((x, y) => getBond(a, y) - getBond(a, x) || x.localeCompare(y))[0];
             if (!b) continue;
             const who = { a, b };
-            const w = kitDeepScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'secret', avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
+            const w = kitDeepScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'secret', draft: true, avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
             if (!w) continue;
-            list.push({ at: 0.55, item: { story: true, kind: 'kit.deep', storyType: 'kit', step: 'deep', players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
-              scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a} trusts ${b} with something real.`], fx: [[a, b, 1.5]] } });
+            accept({ at: 0.55, item: adopt({ story: true, kind: 'kit.deep', storyType: 'kit', step: 'deep', players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a} trusts ${b} with something real.`], fx: [[a, b, 1.5]] }, w) });
             break;
           }
           const pairs = [];
@@ -1963,17 +1965,16 @@ export function airTdEpisode(ep) {
           pairs.sort((x, y) => x[2] - y[2] || x[0].localeCompare(y[0]) || x[1].localeCompare(y[1]));
           for (const [a, b] of pairs.slice(0, 6)) {
             const who = { a, b };
-            const w = kitLifeScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
+            const w = kitLifeScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', draft: true, avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
             if (!w) continue;
-            book[a] = ep.num;
-            list.push({ at: 0.5, item: { story: true, kind: 'kit.life', storyType: 'kit', step: 'life', players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
-              scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a} and ${b} get to know each other.`], fx: [[a, b, 1]] } });
+            accept({ at: 0.5, item: onCommit(adopt({ story: true, kind: 'kit.life', storyType: 'kit', step: 'life', players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'kit', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a} and ${b} get to know each other.`], fx: [[a, b, 1]] }, w), () => { book[a] = ep.num; }) });
             break;
           }
         }
       }
       // what two people's lives have in common, and what they do with it later (kindredScenes)
-      if (editOn && !ep.isFinale && !ep.isMerge) for (const it of kindredScenes(ep, members, camp, phase, () => n++)) list.push(it);
+      if (editOn && !ep.isFinale && !ep.isMerge) for (const it of kindredScenes(ep, members, camp, phase, () => n++)) accept(it);
       // stories that run across episodes (arcs.js: revenge for a friend, the friend who won't let go, envy,
       // the one who coasts, learning to talk to people, a showmance for the numbers), the camp's free time
       // (four people and a game, every other episode), and one person alone with the camera in the afternoon
@@ -1981,7 +1982,8 @@ export function airTdEpisode(ep) {
       // The merge episode is its own story (the merge, everybody in one camp, the busiest night of the season,
       // 21-24 scenes without these): the arcs wait a day and there is no game or solo.
       if (editOn && !ep.isFinale && !ep.isMerge) {
-        const writeHere = (p, o, w, d, f, c) => writeStory(p, o, w, d, f, { ...c, avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
+        // (in draft: a scene here is a proposal, and spends its lines and its place only if it airs, commit.js)
+        const writeHere = (p, o, w, d, f, c) => writeStory(p, o, w, d, f, { ...c, draft: true, avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
         // the mentor arc counts against the same room: two serial stories a phase is plenty
         let arcsNow = list.filter(x => x.item?.storyType === 'arc').length;
         // after the merge every night is a tribal night for the one camp, and the vote talk fills the evening
@@ -1989,26 +1991,26 @@ export function airTdEpisode(ep) {
         const ROOM = merged && tribalTonight ? 7 : 10;
         if (liveEp(ep) && arcsNow < 2 && list.length < ROOM + 2) {
           const follow = followupScene(ep, camp, members, phase, () => n++, writeHere, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }));
-          if (follow) { list.push(follow); arcsNow++; }
+          if (follow) { accept(follow); arcsNow++; }
         }
         // a relationship that turned on something one of them did since an aired setup (turns.js): one a morning, in
         // the same room as the follow-ups and the arcs
         if (liveEp(ep) && phase === 'pre' && arcsNow < 2 && list.length < ROOM + 2) {
           const busyPairs = new Set(list.filter(x => x.item?.storyType === 'arc' && (x.item.players || []).length >= 2).map(x => [...x.item.players].slice(0, 2).sort().join('|')));
           const tn = turnScene(ep, camp, members, null, () => n++, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), 'pre', busyPairs, writeHere);
-          if (tn) { list.push(tn); arcsNow++; }
+          if (tn) { accept(tn); arcsNow++; }
         }
         // the morning after a fight somebody watched: the one they went against (or left on their own) has it out with them
         if (liveEp(ep) && phase === 'pre' && arcsNow < 2 && list.length < ROOM + 2) {
           const wa = witnessAfter(ep, camp, members, () => n++, writeHere, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }));
-          if (wa) { list.push(wa); arcsNow++; }
+          if (wa) { accept(wa); arcsNow++; }
         }
-        list.push(...runArcs(ep, camp, members, phase, () => n++, writeHere, Math.max(0, Math.min(2 - arcsNow, ROOM + 2 - list.length))));
+        accept(...runArcs(ep, camp, members, phase, () => n++, writeHere, Math.max(0, Math.min(2 - arcsNow, ROOM + 2 - list.length))));
         const busyNow = new Set(list.flatMap(x => x.item?.players || []).filter(Boolean));
         // the game and the solo are colour: they air only while the phase has room (a merge night, one camp
         // holding everybody, already fills a show's worth; tests/td-story.test.js 'show-sized episode')
         const g = list.length < ROOM ? campGame(ep, camp, members, phase, () => n++, writeHere, busyNow) : null;
-        if (g) list.push(g);
+        if (g) accept(g);
         // Day one's own set pieces (lines/n-dayone.js: the tour going wrong, the luggage, lost exploring, a raid
         // on the food, the flag, the first cooking, the first night's noise, homesick), one a team in each stretch
         // of the day, the franchise's least-seen first (write.js storySeen). The user, 2026-10-10: "the first day
@@ -2024,7 +2026,7 @@ export function airTdEpisode(ep) {
           if (dwho.b && dwho.c) {
             const dw = writeHere('story.dayone', 'any', dwho, { host: dwho.h },
               { ...factsFor({ who: dwho, data: {} }, { ep: ep.num, phase }), third: true, fourth: !!dwho.d, phase }, { ep: ep.num, camp, phase, n: n++, place: 'public', unique: true });
-            if (dw) list.push({ at: phase === 'pre' ? 0.44 : 0.46, item: { story: true, kind: 'story.dayone', storyType: 'fun', step: 'dayone',
+            if (dw) accept({ at: phase === 'pre' ? 0.44 : 0.46, item: { story: true, kind: 'story.dayone', storyType: 'fun', step: 'dayone',
               players: [dwho.a, dwho.b, dwho.c, ...(dwho.d ? [dwho.d] : [])], lines: dw.lines, text: dw.text, lineId: dw.lineId,
               scene: { kind: 'dayone', who: Object.fromEntries(Object.entries(dwho).filter(([r]) => r !== 'h')), data: {}, spot: dw.spot || null }, badgeText: '', badgeClass: '', why: ['Day one at camp.'] } });
           }
@@ -2034,11 +2036,10 @@ export function airTdEpisode(ep) {
           // somebody not already in a scene this afternoon first, then the rest
           const loners = members.filter(m => hasKit(m)).sort((x, y) => (busyNow.has(x) ? 1 : 0) - (busyNow.has(y) ? 1 : 0) || (soloBook[x] ?? -99) - (soloBook[y] ?? -99) || x.localeCompare(y));
           for (const a of loners) {
-            const w = kitSoloScene(a, factsFor({ who: { a }, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
+            const w = kitSoloScene(a, factsFor({ who: { a }, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', draft: true, avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
             if (!w) continue;
-            soloBook[a] = ep.num;
-            list.push({ at: 0.47, item: { story: true, kind: 'kit.solo', storyType: 'kit', step: 'solo', players: [a], lines: w.lines, text: w.text, lineId: w.lineId,
-              scene: { kind: 'kit', who: { a }, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a}, on ${pronouns(a).posAdj} own.`] } });
+            accept({ at: 0.47, item: onCommit(adopt({ story: true, kind: 'kit.solo', storyType: 'kit', step: 'solo', players: [a], lines: w.lines, text: w.text, lineId: w.lineId,
+              scene: { kind: 'kit', who: { a }, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a}, on ${pronouns(a).posAdj} own.`] }, w), () => { soloBook[a] = ep.num; }) });
             break;
           }
         }
@@ -2060,7 +2061,7 @@ export function airTdEpisode(ep) {
           const item = longScene(ev, i);
           if (!item) return;
           ev.aired = true; tookR++;
-          list.push({ at: 0.3 + tookR * 0.01, item });
+          accept({ at: 0.3 + tookR * 0.01, item });
         }); }
       // what tonight's plan comes from (causeOf) airs on top of the caps: the plan calls back to it
       for (const c of (talk?.cause || []).filter(c => c.phase === phase)) {
@@ -2070,7 +2071,7 @@ export function airTdEpisode(ep) {
         if ((c.kind === 'revenge' || c.kind === 'fallout') && opener?.players?.includes(ev.scene?.who?.a)) continue;
         const item = longScene(ev, c.i);
         ev.aired = true;
-        list.push({ at: c.i, item: item ? { ...item, why: [...(item.why || []), `This is where ${c.of} becomes ${c.by}'s target.`] } : { ref: c.i } });
+        accept({ at: c.i, item: item ? { ...item, why: [...(item.why || []), `This is where ${c.of} becomes ${c.by}'s target.`] } : { ref: c.i } });
       }
       // quick cuts: short moments between the long scenes, new faces first. A moment the opener
       // already covered (the team's own "who lost it", the morning's mourning) does not air twice.
@@ -2087,7 +2088,7 @@ export function airTdEpisode(ep) {
           events[gi].aired = true;
           const k = list.findIndex(x => x.item === opener);
           const item = { ...g, why: opener.why || g.why };
-          if (k >= 0) list[k] = { at: -1, item }; else list.push({ at: -1, item });
+          if (k >= 0) list[k] = { at: -1, item }; else accept({ at: -1, item });
           openerNow = item;
         }
       }
@@ -2114,7 +2115,7 @@ export function airTdEpisode(ep) {
           if (!item && !rawFull(ev)) continue;
           ev.aired = true;
           groupN++;
-          list.push({ at: i, item: item || { ref: i } });
+          accept({ at: i, item: item || { ref: i } });
         }
       }
       const shown = new Set(list.flatMap(x => x.item.players || speaksIn(events[x.item.ref])));
@@ -2138,7 +2139,7 @@ export function airTdEpisode(ep) {
         ev.aired = true;
         cutN++;
         (item ? item.players : saysIn(ev)).forEach(p => shown.add(p));
-        list.push({ at: i, item: item || { ref: i } });
+        accept({ at: i, item: item || { ref: i } });
       }
       // ...and the coverage pass below does not bring the duplicate back
       events.forEach(ev => { if (ev && !ev.aired && dup(ev)) ev.aired = 'covered'; });
@@ -2148,7 +2149,7 @@ export function airTdEpisode(ep) {
         // the story beats are added on top: the free scenes keep their room (the user, 2026-10-08)
         // what already aired this morning, quick cuts read from their engine event
         const morning = phase === 'post' ? (out.pre || []).map(it => it.lines ? it : { kind: eventsOf(ep, camp, 'pre')[it.ref]?.type || '', players: eventsOf(ep, camp, 'pre')[it.ref]?.players || [] }) : [];
-        list.push(...arcBeats(ep, camp, members, phase, talk, () => n++, list, morning, 'ally'));
+        accept(...arcBeats(ep, camp, members, phase, talk, () => n++, list, morning, 'ally'));
       }
       list.sort((x, y) => x.at - y.at);
       for (const x of list) {
@@ -2316,6 +2317,12 @@ export function airTdEpisode(ep) {
       const ev = item.ref != null ? eventsOf(ep, camp, phase)[item.ref] : null;
       const classified = ev && (filedMoments.get(ev) || classify(ev));
       if (classified) rememberMoment(continuity, { ...classified, topic: ev.scene?.kind || ev.type }, { ep: ep.num, camp, phase });
+    }
+    // everything that airs has spent what it spends (commit.js): a scene that reached the day by any path other than
+    // accept() spends it now, so nothing on screen can leave its lines unspent for a later scene to repeat
+    for (const phase of ['pre', 'post']) for (const it of out[phase] || []) {
+      if (!it?.story) continue;
+      if (pending(it) || pending(it.lines)) { if (globalThis.__tdCommitLate) globalThis.__tdCommitLate.push({ ep: ep.num, camp, phase, kind: it.kind }); commit(it); commit(it.lines); }
     }
     // the people watching a public fight take a side, and it lasts (witness.js): before the follow-ups and turns read
     // the day, so a stance can become their next chapter

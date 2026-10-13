@@ -50,7 +50,21 @@ export const wordsOf = e => (e.turns || []).flatMap(t => [t.say, t.react, t.send
  * Pick an entry from `pools[key]` (or the merge of several keys) whose `when`
  * fits `facts`, by the repetition rules above, and note its use.
  */
-export function pickEntry(ledger, pools, key, facts, pairKey, rng, speaker = null, clock = 0) {
+export function pickEntry(...args) {
+  const r = choose(...args);
+  return r ? note(...r) : null;
+}
+
+/**
+ * The same choice as pickEntry, without noting it: { entry, note }, note() recording the use. For a scene that is
+ * only proposed (td/story/commit.js): its line is spent when it airs, not when it is written. Null when nothing fits.
+ */
+export function chooseEntry(...args) {
+  const r = choose(...args);
+  return r && r[1] ? { entry: r[1], note: () => note(...r) } : null;
+}
+
+function choose(ledger, pools, key, facts, pairKey, rng, speaker = null, clock = 0) {
   // A list of keys merges pools: a game's own lines (weighted up) with its
   // family's, so a game never runs out and repeats itself.
   const pool = Array.isArray(key) ? key.flatMap(k => pools[k] || []) : pools[key];
@@ -89,11 +103,11 @@ export function pickEntry(ledger, pools, key, facts, pairKey, rng, speaker = nul
     const heardToday = x => ((u.day || {})[x.id] === clock || wordsOf(x).some(w => (u.words || {})[w] === clock)) ? 1 : 0;
     const said = x => (speakers.some(sp => (u.by?.[x.id] || []).includes(sp)) ? 1 : 0);
     const e = fits.sort((x, y) => said(x) - said(y) || heardToday(x) - heardToday(y) || (u.uses[x.id] || 0) - (u.uses[y.id] || 0))[0] || pool.find(p => !p.when);
-    return note(u, e, pairKey, speaker, key, pool.length, clock);
+    return [u, e, pairKey, speaker, key, pool.length, clock];
   }
   let r = rng() * total;
-  for (const [e, w] of scored) { if ((r -= w) <= 0) return note(u, e, pairKey, speaker, key, pool.length, clock); }
-  return note(u, scored.at(-1)[0], pairKey, speaker, key, pool.length, clock);
+  for (const [e, w] of scored) { if ((r -= w) <= 0) return [u, e, pairKey, speaker, key, pool.length, clock]; }
+  return [u, scored.at(-1)[0], pairKey, speaker, key, pool.length, clock];
 }
 
 function note(u, e, pairKey, speaker, key = null, size = 0, clock = 0) {

@@ -1,4 +1,5 @@
 // Day-one casting and writing. Uses only the word RNG; simulation outcomes do not move.
+import { commit } from './commit.js';
 import { gs, seasonConfig } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { romanticCompat } from '../../players.js';
@@ -70,7 +71,8 @@ export function writeFirstImpression(anchor,members,kind,ctx) {
    for(const x of orientations.filter(x=>hasKit(x.who.a))) {
      const who={a:x.who.a,b:x.who.b};
      const w=kitFirstPairScene(who.a,who.b,kind,factsOf(who,kind,ctx),{...ctx,who,firstImpressions:true});
-     if(w){kitTeams.push(ctx.camp);return {w,who,mode:'pair',kit:true};}
+     // (chosen the moment it is written: day one airs it, so its kit lines are spent now, commit.js)
+     if(w){commit(w);kitTeams.push(ctx.camp);return {w,who,mode:'pair',kit:true};}
    }
  }
  const group=cast.names.length>=3;

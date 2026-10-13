@@ -19,6 +19,7 @@
 // One step of an arc an episode (a step marked `same` may follow the previous one the same day), at
 // most two arc scenes a camp a phase, one new arc a camp an episode, two of each type a season, and
 // nobody in two open arcs at once. An arc that can't air for four episodes is dropped.
+import { onCommit } from './commit.js';
 import { gs, players, seasonConfig } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { pStats as pStatsOf, romanticCompat } from '../../players.js';
@@ -257,15 +258,16 @@ export function runArcs(ep, camp, members, phase, nextN, writeStory, max = 2) {
     const who = c.who;
     const w = writeStory(`arc.${arc.type}.${s.id}`, c.outcome || 'any', who, data, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: nextN(), place: c.place || 'aside', unique: 'soft' });
     if (!w) continue;
-    if (s.id === 'hurt' || s.id === 'plan') arc.lastB = who.b;
-    arc.last = ep.num; arc.lastPhase = phase; arc.step++;
-    if (arc.step >= def.steps.length) arc.done = true;
+    // the step is taken when the scene airs, not when it is proposed (commit.js): the arc as it will be, for the
+    // scene's own reason line, and the arc itself moves on acceptance
+    const next = { ...arc, ...(s.id === 'hurt' || s.id === 'plan' ? { lastB: who.b } : {}), last: ep.num, lastPhase: phase, step: arc.step + 1 };
+    if (next.step >= def.steps.length) next.done = true;
     const ending = c.outcome && c.outcome !== 'any' ? c.outcome : null;
     const fxKey = `${arc.type}.${s.id}${ending ? '.' + ending : ''}`;
-    out.push({ at: phase === 'pre' ? 0.34 + out.length * 0.01 : 0.45 + out.length * 0.01, item: { story: true, kind: `arc.${arc.type}.${s.id}${ending ? '.' + ending : ''}`, storyType: 'arc', step: s.id,
+    out.push({ at: phase === 'pre' ? 0.34 + out.length * 0.01 : 0.45 + out.length * 0.01, item: onCommit({ story: true, kind: `arc.${arc.type}.${s.id}${ending ? '.' + ending : ''}`, storyType: 'arc', step: s.id,
       players: [...new Set(Object.values(who))], lines: w.lines, text: w.text, lineId: w.lineId,
-      scene: { kind: 'arc', who, data, spot: w.spot || null }, badgeText: BADGE[arc.type][0], badgeClass: BADGE[arc.type][1], why: [WHY[arc.type](arc)],
-      fx: fxOf(FX[fxKey], who, { rival: arc.data.rival }) } });
+      scene: { kind: 'arc', who, data, spot: w.spot || null }, badgeText: BADGE[arc.type][0], badgeClass: BADGE[arc.type][1], why: [WHY[arc.type](next)],
+      fx: fxOf(FX[fxKey], who, { rival: arc.data.rival }) }, () => { Object.assign(arc, { lastB: next.lastB, last: next.last, lastPhase: next.lastPhase, step: next.step, done: !!next.done }); }) });
   }
   return out;
 }
@@ -285,9 +287,8 @@ export function campGame(ep, camp, members, phase, nextN, writeStory, busy = new
   const who = { a, b: rest[0], c: rest[1], d: rest[rest.length - 1] };
   const w = writeStory('camp.game', 'any', who, {}, { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), fourth: true }, { ep: ep.num, camp, phase, n: nextN(), place: 'public', unique: true });
   if (!w) return null;
-  book[camp] = ep.num;
-  return { at: 0.42, item: { story: true, kind: 'camp.game', storyType: 'fun', step: 'game', players: Object.values(who), lines: w.lines, text: w.text, lineId: w.lineId,
+  return { at: 0.42, item: onCommit({ story: true, kind: 'camp.game', storyType: 'fun', step: 'game', players: Object.values(who), lines: w.lines, text: w.text, lineId: w.lineId,
     scene: { kind: 'game', who, data: {}, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${a} gets a game going.`],
     // playing together brings the four of them a little closer, the one roped in included
-    fx: Object.values(who).flatMap((x, i, all) => all.slice(i + 1).map(y => [x, y, 0.5])) } };
+    fx: Object.values(who).flatMap((x, i, all) => all.slice(i + 1).map(y => [x, y, 0.5])) }, () => { book[camp] = ep.num; }) };
 }

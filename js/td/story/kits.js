@@ -25,6 +25,8 @@ import { STORY_POOLS } from './lines/index.js';
 import { writeStory } from './write.js';
 import KITS from './kits/index.js';
 import { kitExchange, kitDigEntry, kitRomanceEntry } from './kit-exchanges.js';
+// a kit line is spent when its scene airs, not when it is proposed (commit.js): a scene cut for room keeps its lines
+import { onCommit } from './commit.js';
 
 export const kitOf = name => KITS[name] || null;
 export const hasKit = name => !!KITS[name];
@@ -156,7 +158,7 @@ export function kitBitScene(a, b, facts, ctx) {
     const entry = { id: `kit:${exchange.id}`, place: 'aside', turns: exchange.turns };
     const w = writeKitScene(entry, exchange.who, { ...facts, third: !!exchange.who.c }, ctx);
     if (w) {
-      authoredBit.mark();
+      onCommit(w, () => authoredBit.mark());
       w.who = exchange.who; w.fx = exchange.fx;
       return w;
     }
@@ -174,7 +176,7 @@ export function kitBitScene(a, b, facts, ctx) {
     ...(conf ? [{ by: 'a', conf: conf.line }] : []),
   ] };
   const w = writeKitScene(entry, { a, b }, facts, ctx);
-  if (w) { bit.mark(); tease.mark(); reply.mark(); conf?.mark(); w.who = { a, b }; w.fx = []; }
+  if (w) { onCommit(w, () => { bit.mark(); tease.mark(); reply.mark(); conf?.mark(); }); w.who = { a, b }; w.fx = []; }
   return w;
 }
 
@@ -220,7 +222,7 @@ export function kitLifeScene(a, b, facts, ctx) {
   if (c) turns.push({ by: byConf, conf: c.line });
   const entry = { id: `kit:${a}:${b}:life:${(used()[a] || []).length}`, place: 'aside', turns };
   const w = writeKitScene(entry, { a, b }, facts, ctx);
-  if (w) { ask1.mark(); ans1.mark(); ask2.mark(); ans2.mark(); c?.mark(); }
+  if (w) onCommit(w, () => { ask1.mark(); ans1.mark(); ask2.mark(); ans2.mark(); c?.mark(); });
   return w;
 }
 
@@ -262,7 +264,7 @@ export function kitClashScene(a, b, facts, ctx) {
     { by: 'b', conf: pickOf(CLASH_CONF, b, a, 'c') },
   ] };
   const w = writeKitScene(entry, { a, b }, facts, ctx);
-  if (w) def.mark();
+  if (w) onCommit(w, () => def.mark());
   return w;
 }
 const OPEN = ["You okay? You've been quiet all day.", "Can I ask you something real?", "You don't have to be on all the time, you know. Not with me.", "Hey. What's going on with you? For real.", "You looked far away just now. Where'd you go?", "Can we just talk? No game stuff.", "You've been off all day. Want to walk?", "Sit with me for a minute. Everybody else is asleep.", "I feel like I don't actually know you yet. Not the real you.", "Is this game getting to you? Because it's getting to me."];
@@ -278,7 +280,7 @@ export function kitDeepScene(a, b, facts, ctx) {
     { by: 'b', conf: pickOf(DEEP_CONF, b, a) },
   ] };
   const w = writeKitScene(entry, { a, b }, facts, ctx);
-  if (w) deep.mark();
+  if (w) onCommit(w, () => deep.mark());
   return w;
 }
 
@@ -292,7 +294,7 @@ export function kitSoloScene(a, facts, ctx) {
     { beat: `{a} ${k.alone}.` }, { by: 'a', conf: line.line },
   ] };
   const w = writeKitScene(entry, { a }, facts, ctx);
-  if (w) line.mark();
+  if (w) onCommit(w, () => line.mark());
   return w;
 }
 
@@ -455,6 +457,6 @@ export function kitFirstPairScene(a, b, kind, facts, ctx) {
     turns[0] = { beat: kind === 'clicked' ? '{b} sits down next to {a} {here}.' : '{a} is talking about {a.thing} {here}, and {b} has to sit through it.' };
     w = writeKitScene({ ...entry, turns }, who, facts, { ...ctx, firstImpressions: true, data: { ...(ctx.data || {}), 'a.thing': k.thing } });
   }
-  if (w) { for (const s of spent) s.mark(); w.kit = true; w.who = who; }
+  if (w) { onCommit(w, () => { for (const s of spent) s.mark(); }); w.kit = true; w.who = who; }
   return w;
 }

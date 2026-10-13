@@ -57,6 +57,7 @@ import { runOneSeason, seededRun } from './helpers/season-harness.js';
 import { campFeed } from '../js/td/story/feed.js';
 import { tdCampScreen, tdStepTranscript } from '../js/vp-td-ep/steps.js';
 import { _textCampPre } from '../js/text-backlog.js';
+import { commit } from '../js/td/story/commit.js';
 
 it('renders every authored partner/group branch and consumes only aired openings', () => {
   for (const a of ['Aubrey','Julia','Millie','Lake','Dunia','Gabby','Bruno','Gwen']) {
@@ -70,6 +71,7 @@ it('renders every authored partner/group branch and consumes only aired openings
       expect(w.lineId, a).toContain('exchange:');
       expect(w.lines.filter(l => l.kind === 'say').length).toBeGreaterThanOrEqual(5);
       expect(w.text).not.toMatch(/\{[^}]+\}/);
+      commit(w);
       expect(core.gs.tdStory.kitUsed[a].filter(x => x.startsWith('bit:'))).toHaveLength(1);
       const next = kitBitScene(a,b,facts,{ep:2,phase:'pre',camp:'Test',n:1});
       expect(next?.lineId).not.toBe(w.lineId);

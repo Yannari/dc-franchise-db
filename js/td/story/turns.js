@@ -33,6 +33,7 @@
 // the kit's thing when the setup was about it, {deed} the development in the receiver's words. Each setup pays
 // off once; a camp has one turn an episode. Measured first: two-person challenge moments exist on 6 episodes in
 // 84, so the challenge alone gave no turns in six seasons; the camp's own events are where most of what people do is.
+import { onCommit } from './commit.js';
 import { gs } from '../../core.js';
 import { campFeed } from './feed.js';
 import { chalMoments } from './chalmoments.js';
@@ -156,13 +157,12 @@ export function turnScene(ep, camp, members, chal, next, factsForWho, phase = 'p
       const w = write(`turn.${kase}`, 'any', who, data, { ...factsForWho(who), pair: true, thing: !!s.thing, remark: !!quote },
         { ep: ep.num, camp, phase, n: next(), place: 'aside', unique: 'soft' });
       if (!w) continue;
-      s.done = true;
       const [badge, cls] = BADGE[kase];
       // (one that happened at the challenge is part of the challenge talk; one from camp is the day's own story)
-      return { at: d.chal ? 0.24 : 0.5, item: { story: true, kind: `${d.chal ? 'chm.' : ''}turn.${kase}`, storyType: d.chal ? 'challenge' : 'arc', step: kase, players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
+      return { at: d.chal ? 0.24 : 0.5, item: onCommit({ story: true, kind: `${d.chal ? 'chm.' : ''}turn.${kase}`, storyType: d.chal ? 'challenge' : 'arc', step: kase, players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
         scene: { kind: 'turn', who, data, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: badge, badgeClass: cls,
         why: [`${s.by} ${SETUP_WORD[s.kind]} ${s.to}${s.thing ? ` (${s.thing})` : ''} on camera at episode ${s.ep}; ${d.ep === ep.num ? 'today' : `at episode ${d.ep}`} ${d.by} ${d.kind === 'help' ? 'helped' : 'turned on'} ${d.to}: "${d.deed}".`],
-        fx: [[a, b, FX[kase]]] } };
+        fx: [[a, b, FX[kase]]] }, () => { s.done = true; }) };
     }
   }
   return null;

@@ -52,6 +52,9 @@ it('opens a first-day kit scene in the character own material and spends it only
  expect(kits.kitFirstPairScene).toBeTypeOf('function');
  const w = kits.kitFirstPairScene('Gwen','Owen','clicked',pairFacts('Gwen','Owen'),{ep:1,phase:'pre',camp:'A',n:0});
  expect(w).toBeTruthy();
+ // spent when it airs (commit.js): proposed, nothing is spent yet
+ expect(core.gs.tdStory.kitUsed?.Gwen || []).toHaveLength(0);
+ commit(w);
  expect(w.lines.some(l=>l.by==='Gwen' && kits.kitOf('Gwen').bit.includes(l.text))).toBe(true);
  expect(core.gs.tdStory.kitUsed.Gwen.some(x=>x.startsWith('bit:'))).toBe(true);
  expect(w.lines.filter(l=>l.kind==='conf').map(l=>l.by).sort()).toEqual(['Gwen','Owen']);
@@ -71,6 +74,7 @@ for (const kind of ['clicked','clashed']) it('has six distinct '+kind+' group si
 import { beforeAll } from 'vitest';
 import { writeFirstImpression, castFirstImpression } from '../js/td/story/first-impressions.js';
 import { addBond } from '../js/bonds.js';
+import { commit } from '../js/td/story/commit.js';
 const resetCast = names => {
  const cast = names.map(n=>roster.find(p=>p.name===n));
  core.setPlayers(cast); core.setGs({activePlayers:names,tdStory:{},bonds:{},episodeHistory:[]});

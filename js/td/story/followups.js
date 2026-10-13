@@ -1,4 +1,5 @@
 // Follow-ups are grounded in final aired speech, never inferred from unseen events.
+import { onCommit } from './commit.js';
 import { gs, seasonConfig } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { romanticCompat } from '../../players.js';
@@ -63,14 +64,13 @@ export function followupScene(ep, camp, members, phase, next, write, factsForWho
       { ...factsForWho(who), pair: true, third: !!who.c, prev: t.kind },
       { ep: ep.num, camp, phase, n: next(), place: t.kind === 'clash' ? 'public' : 'secret', unique: true });
     if (!w) continue;
-    t.done = true; t.chapter = chapter;
     const fx = t.kind !== 'clash' ? [[who.a,who.b,outcome === 'warm' ? 0.75 : -0.25]]
       : [[who.a,who.b,outcome === 'mend' ? 0.5 : -0.5], [who.a,who.c,0.25], [who.b,who.c,0.25]];
-    return { at: 0.58, item: { story: true, kind: 'follow.' + kind, storyType: 'arc', step: outcome,
+    return { at: 0.58, item: onCommit({ story: true, kind: 'follow.' + kind, storyType: 'arc', step: outcome,
       players: Object.values(who), lines: w.lines, text: w.text, lineId: w.lineId,
       scene: { kind: 'follow.' + kind, who, data, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null },
       badgeText: t.kind === 'defense' ? 'After the Defense' : t.kind === 'romance' ? 'Between Us' : chapter === 2 ? 'Where We Stand' : 'Unfinished Argument', badgeClass: outcome === 'warm' || outcome === 'mend' ? 'green' : 'red',
-      why: [t.kind === 'romance' ? t.a + ' and ' + t.b + ' heard each other in an aired romance scene.' : t.kind === 'defense' ? t.a + ' defended ' + t.b + ' in an aired conversation.' : t.c + ' was present for the argument between ' + t.a + ' and ' + t.b + '.'], fx } };
+      why: [t.kind === 'romance' ? t.a + ' and ' + t.b + ' heard each other in an aired romance scene.' : t.kind === 'defense' ? t.a + ' defended ' + t.b + ' in an aired conversation.' : t.c + ' was present for the argument between ' + t.a + ' and ' + t.b + '.'], fx }, () => { t.done = true; t.chapter = chapter; }) };
   }
   return null;
 }

@@ -11,7 +11,10 @@
 // `when` filters on facts (STORY_FACT_KEYS, checked by tests/td-story.test.js).
 // The words draw from their own stream (stableRng), never the engine's dice.
 import { gs, players } from '../../core.js';
-import { pickEntry, newLedger } from '../../script/pick.js';
+import { pickEntry, chooseEntry, newLedger } from '../../script/pick.js';
+// a scene written in draft (ctx.draft) is only proposed: what it spends (its lines, its place, the season's count of
+// it) is spent when the director accepts it (commit.js), keyed to its lines, which the scene built from it carries
+import { onCommit } from './commit.js';
 import { stableRng } from '../../script/rng.js';
 import { fill, transcript, salt } from '../script/write.js';
 import { STORY_POOLS } from './lines/index.js';
@@ -65,6 +68,8 @@ const keysFor = (pool, outcome) => [`${pool}.${outcome || 'any'}`, `${pool}.any`
  * Returns { lines, text, lineId } or null when no pool fits.
  */
 export function writeStory(pool, outcome, who, data, facts, ctx) {
+  const later = [];
+  const spend = fn => (ctx?.draft ? later.push(fn) : fn());
   // who is in the scene: b present or not ('pair'), checked like third/fourth (lines/index.js)
   facts = { ...facts, pair: !!who.b, third: facts.third ?? !!who.c, fourth: facts.fourth ?? !!who.d, fifth: !!who.e, sixth: !!who.f };
   // who has played before, and what kind of season they had (td/past.js, from the ledger): a scene written for
@@ -200,13 +205,15 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     const VOICE_KEYS = ['voice', 'voiceB', 'voiceC', 'notVoice', 'notVoiceB'];
     const bare = fits.map(e => (e.when && VOICE_KEYS.some(x => x in e.when)
       ? { ...e, when: Object.fromEntries(Object.entries(e.when).filter(([x]) => !VOICE_KEYS.includes(x))) } : e));
-    const picked = pickEntry(ledger(), { [k]: bare }, k, facts, pairKey, rng, speakers, ctx.ep * 10 + (ctx.phase === 'post' ? 2 : 0));
+    const clock = ctx.ep * 10 + (ctx.phase === 'post' ? 2 : 0);
+    const picked = ctx.draft ? (c => c && (later.push(c.note), c.entry))(chooseEntry(ledger(), { [k]: bare }, k, facts, pairKey, rng, speakers, clock))
+      : pickEntry(ledger(), { [k]: bare }, k, facts, pairKey, rng, speakers, clock);
     entry = picked ? fits[bare.indexOf(picked)] || picked : null;
     if (entry) break;
   }
   if (!entry) return null;
-  { const book = (gs.tdStory ||= {}); if (!book.epUsed || book.epUsed.ep !== ctx.ep) book.epUsed = { ep: ctx.ep, ids: [] }; book.epUsed.ids.push(entry.id); }
-  if (!/^kit:/.test(entry.id || '')) { const seen = storySeen(); seen[entry.id] = (seen[entry.id] || 0) + 1; }
+  spend(() => { const book = (gs.tdStory ||= {}); if (!book.epUsed || book.epUsed.ep !== ctx.ep) book.epUsed = { ep: ctx.ep, ids: [] }; book.epUsed.ids.push(entry.id); });
+  if (!/^kit:/.test(entry.id || '')) spend(() => { const seen = storySeen(); seen[entry.id] = (seen[entry.id] || 0) + 1; });
   // Where it is staged: the entry's own kind of place, else where the engine put the moment,
   // else the pool's default kind. The lines say it as {here} ("on the dock") or {place}.
   // a meal is where the camp eats, all of it together, at mealtime: it never makes way for another talk
@@ -217,6 +224,8 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     : entry.place ? placeOf(facts.venue, entry.place, rng(), avoid)
     : ctx.spotId && !(avoid?.has(ctx.spotId) && engineKind) ? placeById(ctx.spotId)
       : placeOf(facts.venue, engineKind || ctx.place || 'public', rng(), avoid);
+  // (the place is held at once, even for a proposal: two proposals in one call must not both take it; holding a place
+  // spends no story, so a scene cut later costs nothing but the spot for that stretch of the day)
   if (spot && avoid && spot.id !== 'confessional') avoid.add(spot.id);
   data = { ...data, here: spot?.here || 'around camp', place: spot?.said || 'camp' };
   // a turn for a part nobody plays (no {c} in this scene) is dropped, never left blank
@@ -272,8 +281,9 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   const usedRoles = Object.keys(who).filter(r => who[r] && entry.turns.some(t => (t.by === r && (!t.when || turnOk(t))) || named(t).includes(r)));
   if (firstImpressions) for (const t of entry.turns) {
     if(t.by && !who[t.by]) continue;
-    firstLines().push(lineKey(ownWords(entry,t)));
+    spend(() => firstLines().push(lineKey(ownWords(entry,t))));
   }
+  if (later.length) onCommit(lines, () => later.forEach(fn => fn()));
   return { lines, text: transcript(lines), lineId: entry.id, cast: usedRoles, spot: spot ? { id: spot.id, label: spot.label, fixed: true, ...(window ? { window } : {}) } : null };
 }
 

@@ -51,6 +51,7 @@ import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf, kindOf } from './places.js';
 import { kitBitScene, kitDigScene, kitRomanceScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, hasKit, kitOf, sharedGround } from './kits.js';
 import { runArcs, campGame } from './arcs.js';
+import { coupleScenes } from './couple.js';
 
 // Where the season lives decides a few words ({quarters}, {bed}) and what campers can know:
 // at a venue that reads the votes aloud (the Elimination Trial) everyone hears the count; at a
@@ -2043,6 +2044,8 @@ export function airTdEpisode(ep) {
         const kind = ev.scene?.kind || '';
         const pool = kind ? `long.${kind}` : null;
         if (!pool || !hasStoryPool(pool)) return null;
+        // with romance off, no romance scene is written out (the long night games are romantic): the engine's own words only
+        if (seasonConfig?.romance === 'disabled' && /^romance\./.test(kind)) return null;
         // a coach's own version (a pitch or an alliance with no ballot in it, td/script pitch-coach.js) is never
         // swapped for the general long scene, which is written for somebody who votes
         if (['withcoach', 'coach'].includes(ev.scene?.data?.ending) || /^pitch\.coach/.test(kind)) return null;
@@ -2286,6 +2289,11 @@ export function airTdEpisode(ep) {
       }
       // what two people's lives have in common, and what they do with it later (kindredScenes)
       if (editOn && !ep.isFinale && !ep.isMerge) for (const it of kindredScenes(ep, members, camp, phase, () => n++)) offer('kindred', it.item.kind === 'kindred.find' ? 'colour' : 'due', it);
+      // a couple between their engine moments (couple.js: competing priorities, a disagreement and making up, something real,
+      // a small moment of their own), one beat a couple a stretch
+      if (editOn && !ep.isFinale) for (const it of coupleScenes(ep, camp, members, phase, () => n++,
+        (p, o, w, d, f, c) => writeStory(p, o, w, d, f, { ...c, draft: true, avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') }),
+        who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), { tribalTonight })) offer('couple', it.tier, it);
       // stories that run across episodes (arcs.js: revenge for a friend, the friend who won't let go, envy,
       // the one who coasts, learning to talk to people, a showmance for the numbers), the camp's free time
       // (four people and a game, every other episode), and one person alone with the camera in the afternoon

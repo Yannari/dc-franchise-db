@@ -50,8 +50,30 @@ const ALONE_VOTE = [
   ] },
   { id: 'is.v6', turns: [
     { beat: '{a} is counting on {a.posAdj} fingers and keeps losing count.' },
-    { by: 'a', say: "Four votes. Where did four votes come from?" },
+    { by: 'a', say: "That many votes. Where did that many votes come from?" },
     { by: 'a', conf: "I didn't see it coming. That's the part that bugs me the most. I'm supposed to see it coming." },
+  ] },
+  // (more of these: read 2026-10-14, a player sent out twice in a season said the same one twice; and is.v6 used to say
+  // "four votes" whatever the count was)
+  { id: 'is.v9', turns: [
+    { beat: '{a} is sitting on the shore, watching the water, not really looking at it.' },
+    { by: 'a', say: "I had a plan. I had a whole plan." },
+    { by: 'a', conf: "Everybody out here has a plan. Mine just ran out a day before theirs did." },
+  ] },
+  { id: 'is.v10', turns: [
+    { beat: '{a} is going through the vote out loud, one name at a time.' },
+    { by: 'a', say: "Okay. Who did I actually trust? And who just told me what I wanted to hear?" },
+    { by: 'a', conf: "The answer to that second question is a lot longer than I'd like." },
+  ] },
+  { id: 'is.v11', turns: [
+    { beat: "{a} hasn't eaten anything all morning." },
+    { by: 'a', say: "I'm fine. I'm fine. I'm just thinking." },
+    { by: 'a', conf: "I keep picturing everybody's faces when they read my name. Some of them looked sorry. Some of them didn't." },
+  ] },
+  { id: 'is.v12', turns: [
+    { beat: '{a} keeps getting up, walking a few steps, and sitting back down.' },
+    { by: 'a', say: "One more conversation. If I'd had one more conversation, I'd still be in there." },
+    { by: 'a', conf: "Everybody says you can't change it now. I know. I'm still going to think about it for a week." },
   ] },
   { id: 'is.v7', when: { register: 'shy' }, turns: [
     { by: 'a', say: "Should've said more. Should've talked to people." },

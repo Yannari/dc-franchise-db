@@ -1320,6 +1320,8 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
 
     } else if (eventType === 'flirtation') {
       // Romantic tension — bond boost for both; others notice
+      // (never in a season with romance off: measured 2026-10-14, 152 romance scenes aired across the romance-off seasons)
+      if (seasonConfig.romance === 'disabled') continue;
       const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.5 + pStats(n).boldness * 0.2 + 1));
       const others = group.filter(p => p !== a && romanticCompat(a, p));
       if (!others.length) continue;
@@ -1331,6 +1333,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         makeScene('romance.flirt', { a, b }, {}, [], _spotNow(a, b))));
 
     } else if (eventType === 'showmancerMoment') {
+      if (seasonConfig.romance === 'disabled') continue;
       // Showmancer deepens their most important relationship — bigger bond boost than flirtation
       // Strongly prefers showmancer archetype players; falls back to highest-social if none present
       const isShowmancer = n => players.find(p => p.name === n)?.archetype === 'showmancer';
@@ -2388,7 +2391,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
 
     // ═══════════════ CASUAL NIGHT GAMES ═══════════════
     } else if (eventType === 'nightGame') {
-      const mode = ['spin', 'never', 'dare'][Math.floor(Math.random() * 3)];
+      // (spin the bottle is a kissing game: with romance off the same draw plays truth or dare)
+      const mode0 = ['spin', 'never', 'dare'][Math.floor(Math.random() * 3)];
+      const mode = mode0 === 'spin' && seasonConfig.romance === 'disabled' ? 'dare' : mode0;
       if (mode === 'spin') {
         const a = _pick(group, n => Math.max(0.1, pStats(n).boldness * 0.3 + pStats(n).social * 0.2 + 1));
         const compat = group.filter(p => p !== a && romanticCompat(a, p) && seasonConfig.romance !== 'disabled');

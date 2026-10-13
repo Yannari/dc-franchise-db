@@ -1,0 +1,82 @@
+[
+  {
+    "id": "film-lot_enabled_no-coaches_1729",
+    "fingerprint": {
+      "history": "ec48ac2fb9347b3713137e1734cd892325287a15db819ae332fcfed6154032c0",
+      "bonds": "ea877698f1e68dff2573d537b4b26bfc1fd76e1a57d0d8221bae1397b9acf8e2",
+      "story": "293cadb878213b4366c97bea73432735a8d846cb11fa6f38c0803bd98e324122",
+      "randomCalls": 7957,
+      "winner": "Lake"
+    }
+  },
+  {
+    "id": "film-lot_enabled_no-coaches_2026",
+    "fingerprint": {
+      "history": "702aee8b4f402f9eb2f63f5091978807cc63ea0c27981d8428ff9f8f8d6ec218",
+      "bonds": "833bbf59d97243791e5fa1e86f1939e1d96a424ae94bdcfdebb4d6e962c590fd",
+      "story": "a18957ec2537677ccb0d7498971d30b76fd3aac2cd9a14857d2941df26c5e984",
+      "randomCalls": 8175,
+      "winner": "Trent"
+    }
+  },
+  {
+    "id": "film-lot_enabled_coaches_1729",
+    "fingerprint": {
+      "history": "bb89ad038dd0233bc6b9a3abbc72caf52ea61e6b0ee3af54a69cf1ddc2cfe187",
+      "bonds": "7f5b53ee2ee23a66a9c97d779794b954d23fe0219e6f17d1c0a120797fcff19a",
+      "story": "6202a502765900d8a53214173e45facf3f26197b15efec8ea2be7a2e9dda9279",
+      "randomCalls": 10410,
+      "winner": "Izzy"
+    }
+  },
+  {
+    "id": "film-lot_enabled_coaches_2026",
+    "fingerprint": {
+      "history": "d899c37a8f5706541a3225e298f3c83891a1e3ce9447ef0117fde24af94a529e",
+      "bonds": "31aadaf9d5f5889bc6d0abb793bf14af7bf158c9d6a0f9d2d2754262360e4445",
+      "story": "d433204d7a970259ba4662b13886bae5396b9ba685b7045084b7317f0ecf9b21",
+      "randomCalls": 10550,
+      "winner": "Lindsay"
+    }
+  },
+  {
+    "id": "film-lot_disabled_no-coaches_1729",
+    "fingerprint": {
+      "history": "bfade40beb762d60ce9958839f5c37e45c6f4703fdafb9695ce3a85f4ed47bd4",
+      "bonds": "ffb69bbba29ae2cfdaf0094f0d1716bd0eeaa62bac624b6107e6aa92a904a594",
+      "story": "6cd23e384f296e70bcc0177d9eb1bd6c4d562f93a88a5fcbfe168ed4173aa728",
+      "randomCalls": 7985,
+      "winner": "Leshawna"
+    }
+  },
+  {
+    "id": "film-lot_disabled_no-coaches_2026",
+    "fingerprint": {
+      "history": "22a06cb41ed8cf0e24bb8d07d4c791fd06ece8ce7fb0809b8cee09915dec51ba",
+      "bonds": "be1f03a87d87d8f22ac4db96f775c6c7359e0e277c95ee6f1c4d14467862c8ce",
+      "story": "761c6f07951d9146930b89e4c6bb45de002441a3ebdd60bb5a6d48e423627f55",
+      "randomCalls": 8614,
+      "winner": "Duncan"
+    }
+  },
+  {
+    "id": "film-lot_disabled_coaches_1729",
+    "fingerprint": {
+      "history": "cca669da748b16603bf9d91d4bd2df9323d550aa0e88abfb349f675b3722d9fa",
+      "bonds": "ecc6b85c03f3b1592400e8864e1e1b01180879bc2acbca08ba6f37869d8bdd26",
+      "story": "4ad87a38f410bf43e2c927d04fb74ed2eadc55022cbf4e917c001596c1e2d958",
+      "randomCalls": 10717,
+      "winner": "Bowie"
+    }
+  },
+  {
+    "id": "film-lot_disabled_coaches_2026",
+    "fingerprint": {
+      "history": "70629dc4b28946c5f4cd585d98e92eada17c2da4b8577b1fb7a95ccec0963ec5",
+      "bonds": "9b221bbf5563086b137718b49de0f22166f1303fad4269f9160e19d99641a7a9",
+      "story": "c97be4a1252ef7e6b8098e0d5e57d1949ff6118af27680c5d582f54b15e4e435",
+      "randomCalls": 10216,
+      "winner": "Lindsay"
+    }
+  }
+]

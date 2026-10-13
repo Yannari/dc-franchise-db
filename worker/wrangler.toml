@@ -10,7 +10,8 @@ GITHUB_BRANCH = "main"                      # branch Pages builds from
 # the player page, and that page is usually open on serve.py while you are
 # working. Origin is not the security boundary — every write route checks
 # STUDIO_TOKEN, and a browser cannot forge an Origin header anyway.
-ALLOWED_ORIGIN = "https://yannari.github.io,http://localhost:8080,http://127.0.0.1:8080"
+# dc-site is the Cloudflare copy of the site (wrangler-site.toml), beside GitHub Pages.
+ALLOWED_ORIGIN = "https://yannari.github.io,https://dc-site.yannari19.workers.dev,http://localhost:8080,http://127.0.0.1:8080"
 
 # Secrets are NOT stored here. Set them once with:
 #   wrangler secret put GITHUB_TOKEN     (fine-grained PAT: Contents = Read+Write on this repo)

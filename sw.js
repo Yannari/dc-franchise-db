@@ -40,8 +40,22 @@ const scopePath = () => new URL(self.registration.scope).pathname;
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 
-/** The live deploy's stamp: the Last-Modified every file in it shares. */
+/**
+ * The live deploy's stamp. On the Cloudflare copy of the site the deploy
+ * writes deploy.json (.github/workflows/deploy-site.yml) -- needed, because
+ * its files carry no shared Last-Modified. On GitHub Pages there is no
+ * deploy.json, and the Last-Modified every file shares is the stamp.
+ */
 async function deployStamp() {
+  try {
+    const marker = new URL('deploy.json', self.registration.scope);
+    marker.searchParams.set('deploy-probe', Date.now());
+    const r = await fetch(marker, { cache: 'no-store' });
+    if (r.ok) {
+      const { sha } = await r.json();
+      if (sha && /^[0-9a-f]{7,40}$/i.test(sha)) return sha.toLowerCase();
+    }
+  } catch {}
   try {
     const probe = new URL('simulator.html', self.registration.scope);
     probe.searchParams.set('deploy-probe', Date.now());
@@ -52,11 +66,19 @@ async function deployStamp() {
   } catch { return null; }   // offline: keep serving the copy we have
 }
 
-/** The newest copy that holds a whole deploy, or null. */
+/**
+ * The newest copy that holds a whole deploy, or null. Newest by when it was
+ * completed (the marker's body), not by name: a stamp is a time on GitHub
+ * Pages but a commit hash on the Cloudflare copy, and hashes do not sort.
+ */
 async function newestComplete() {
-  const names = (await caches.keys()).filter(k => k.startsWith(PREFIX)).sort().reverse();
-  for (const n of names) if (await (await caches.open(n)).match(scopeUrl(DONE))) return n;
-  return null;
+  let best = null, bestAt = -1;
+  for (const n of (await caches.keys()).filter(k => k.startsWith(PREFIX))) {
+    const done = await (await caches.open(n)).match(scopeUrl(DONE));
+    const at = done ? Number(await done.text()) || 0 : -1;
+    if (at > bestAt) { best = n; bestAt = at; }
+  }
+  return best;
 }
 
 async function markComplete(name) {

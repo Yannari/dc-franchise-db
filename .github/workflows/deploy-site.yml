@@ -1,0 +1,55 @@
+# The Cloudflare copy of the site (worker/wrangler-site.toml), beside GitHub
+# Pages -- which keeps deploying exactly as before.
+#
+# Every push to main deploys, but a burst does not deploy once per push: each
+# run waits a minute, and a newer push cancels the run still waiting, so only
+# the last push of a burst uploads. This repo is pushed to by several sessions
+# at once (1,584 commits in the 30 days to 2026-10-13).
+#
+# Free: GitHub Actions is free on a public repo, and Cloudflare static assets
+# are free with no build cap. Needs two repository secrets:
+#   CLOUDFLARE_API_TOKEN  -- a token with "Workers Scripts: Edit" on the account
+#   (the account id is in wrangler-site.toml; it is not a secret)
+name: Deploy site (Cloudflare)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Until the token is added, every step below is skipped, not failed.
+      HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+    steps:
+      - name: No Cloudflare token yet
+        if: env.HAS_TOKEN != 'true'
+        run: echo "CLOUDFLARE_API_TOKEN is not set; skipping the Cloudflare deploy."
+
+      - name: Let a burst of pushes settle
+        if: env.HAS_TOKEN == 'true'
+        run: sleep 60
+
+      - uses: actions/checkout@v4
+        if: env.HAS_TOKEN == 'true'
+
+      # The deploy's own stamp, for sw.js: it reads this first and only falls
+      # back to Last-Modified (which is how it tells GitHub Pages deploys apart).
+      - name: Stamp the deploy
+        if: env.HAS_TOKEN == 'true'
+        run: echo "{\"sha\":\"${GITHUB_SHA}\",\"at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > deploy.json
+
+      - name: Upload to Cloudflare
+        if: env.HAS_TOKEN == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          wranglerVersion: "4"
+          command: deploy --config worker/wrangler-site.toml

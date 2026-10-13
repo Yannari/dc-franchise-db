@@ -1,0 +1,25 @@
+# The site itself, served by Cloudflare as static assets (no Worker code runs).
+#
+# A SECOND copy of the site, beside GitHub Pages -- not a replacement. Both
+# stay live (the user, 2026-10-13: "dont make the github site obsolete").
+#
+# Why: GitHub Pages restamps every file on every deploy (Last-Modified, and an
+# ETag built from it), so after each push a browser re-downloads all 14 MB, and
+# its max-age=600 is what mixed old and new modules in one page. Here the ETag
+# is a hash of the file -- an unchanged file is a 304 -- and the default
+# Cache-Control is max-age=0, must-revalidate. Static asset requests are free
+# and unlimited, and Workers have no monthly build cap (Pages' free plan has
+# 500, and this repo deploys over 1,000 times a month).
+#
+# Deployed by .github/workflows/deploy-site.yml on every push to main (a burst
+# of pushes becomes one deploy), which also writes deploy.json for sw.js.
+# What is NOT uploaded: .assetsignore at the repo root.
+name = "dc-site"
+account_id = "0e4acd29eba65cbd9827840fd9468c0f"
+compatibility_date = "2026-10-01"
+
+[assets]
+directory = ".."
+# Every file at its own path, exactly as GitHub Pages serves it. The default
+# ("auto-trailing-slash") answers /simulator.html with a 307 to /simulator.
+html_handling = "none"

@@ -1,0 +1,24 @@
+# What the Cloudflare copy of the site does NOT upload (worker/wrangler-site.toml).
+# Only files git tracks reach the deploy at all (it runs on a fresh checkout),
+# so this is about tracked files that are not part of the site.
+.git
+.github
+.agents
+.superpowers
+.claude
+.worktrees
+node_modules
+tests
+tools
+docs
+worker
+scripts
+mockup
+*.md
+*.bat
+*.vbs
+*.py
+vitest*.js
+package.json
+package-lock.json
+.assetsignore

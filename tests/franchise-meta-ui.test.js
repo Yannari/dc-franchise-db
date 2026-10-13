@@ -2,6 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { setFranchiseLedger, activeSeasons, listFranchises, isFranchiseLocked } from '../js/franchise-meta.js';
 import * as ui from '../js/franchise-ui.js';
+import { SHOWS } from '../js/shows.js';
 
 describe('franchise-ui smoke', () => {
   it('renders empty state, then a season card + pulse, and imports a savestate', () => {
@@ -12,7 +13,7 @@ describe('franchise-ui smoke', () => {
 
     ui.renderFranchiseTab();
     let html = document.getElementById('tab-franchise').innerHTML;
-    expect(html).toContain('No recorded seasons yet');
+    expect(html).toContain('No seasons recorded yet');
     expect(listFranchises().length).toBe(1);
 
     // import a savestate-shaped object via the internal path
@@ -186,16 +187,27 @@ describe('franchise-ui with more than one show in the ledger', () => {
     const html = () => document.getElementById('tab-franchise').innerHTML;
     const hof = () => document.querySelector('.fr-hof-gallery')?.innerHTML || '';
     expect(html()).not.toContain('NaN');
-    // One show at a time (the user: "why is paige turner even in total drama").
-    expect(document.querySelectorAll('.fr-show-tab').length).toBe(3);
+    // The site's switcher: All shows plus every show, recorded or not.
+    expect(document.querySelectorAll('.show-sw-btn').length).toBe(Object.keys(SHOWS).length + 1);
+    // All shows: every champion, and the franchise-wide record book.
+    expect(hof()).toContain('winner of S9');
+    expect(hof()).toContain('winner of BB1');
+    expect(html()).toContain('Most career competition wins');
+    // One show: its champions, its record book in its own words.
+    ui.frSetShow('total-drama');
     expect(hof()).toContain('winner of S9');
     expect(hof()).not.toContain('Drwin');
+    expect(html()).toContain('Most immunity wins');
     ui.frSetShow('big-brother');
     expect(hof()).toContain('winner of BB1');
     expect(hof()).not.toContain('Tdwin');
+    expect(html()).toContain('Most competition wins');
     ui.frSetShow('drag-race');
     expect(hof()).toContain('winner of DR1');
     expect(html()).toContain('Drag Race Season Timeline');
+    expect(html()).toContain('Most maxi challenges won');
+    // Careers are the show's too: a Total Drama winner is not a queen.
+    expect(document.querySelector('.fr-roster')?.textContent || html()).not.toContain('Tdwin');
     ui.frSetShow(null);
   });
 

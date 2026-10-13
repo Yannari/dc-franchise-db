@@ -71,7 +71,12 @@ describe('the traitors registry entry', () => {
     const cs = SHOWS['traitors'].careerStats;
     expect(Array.isArray(cs)).toBe(true);
     expect(cs.length).toBeGreaterThan(0);
-    for (const row of cs) expect(row).toHaveLength(2);
+    // [season-row path, career total, Legacy record label]
+    for (const row of cs) {
+      expect(row).toHaveLength(3);
+      expect(typeof row[2]).toBe('string');
+      expect(row[2].length).toBeGreaterThan(0);
+    }
   });
 
   it('takes its franchise history from the ledger, not a checkbox', () => {

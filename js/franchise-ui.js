@@ -3,7 +3,7 @@
 // timeline, details flyouts, import dropzone, and franchise-pulse footer.
 // All DOM code for the ledger lives HERE (franchise-meta.js stays DOM-free).
 // ══════════════════════════════════════════════════════════════════════
-import { players, downloadFile, seasonConfig, seasonFormat } from './core.js';
+import { players, downloadFile } from './core.js';
 import {
   activeFranchise, activeSeasons, listFranchises, createFranchise, renameFranchise,
   deleteFranchise, setActiveFranchise, setSeasonIncluded, backfillFromSeasonsDb,
@@ -15,6 +15,7 @@ import {
 import { persistFranchiseLedger } from './savestate.js';
 import { seasonKeyParts } from './franchise-meta.js';
 import { SHOWS, DEFAULT_FORMAT } from './shows.js';
+import { mountShowSwitcher, currentShow, rememberShow, ALL, SHOW_SWITCHER_CSS } from './show-switcher.js';
 import { loadRankingBoards } from './ranking-boards.js';
 import { FRANCHISE_ROSTER } from './cast-ui.js';
 
@@ -72,40 +73,49 @@ function _seasonsInOrder(seasons, dir = 1) {
 }
 // ── WHICH SHOW LEGACY IS SHOWING ──────────────────────────────────────
 // The user, 2026-10-13: "legacy should account for all the other simulator
-// like why is paige turner even in total drama". One ledger holds every show
-// (returnees remember each other across them), but the history view shows one
-// show at a time: its timeline, champions, medals and pulse. Careers, a
-// player's medals, the Scout and the Record Book still span every show.
-let _frShow = null;
+// like why is paige turner even in total drama", then "theres no franchise
+// switcher in legacy for all my other simulators", "record book should be per
+// show and the rest of the section too", and "just add a tab all shows too
+// like franchise.html". So the history view runs on the site's own switcher
+// (js/show-switcher.js: All shows + every show, the choice in ?show= and
+// remembered for the tab, the same control franchise.html has), and every
+// section of it -- timeline, champions, record book, medals, careers, the
+// Scout, pulse -- reads one show, or all of them. One ledger still holds
+// every show, and whatever decides a season reads all of it.
+let _switcher = null;
 
-function _showsInLedger() {
-  const counts = new Map();
-  for (const [k, s] of Object.entries(activeSeasons())) {
-    const f = seasonKeyParts(k, s).format;
-    counts.set(f, (counts.get(f) || 0) + 1);
-  }
-  return counts;
-}
-function _viewShow() {
-  const shows = _showsInLedger();
-  if (_frShow && shows.has(_frShow)) return _frShow;
-  const selected = seasonFormat(seasonConfig);
-  return shows.has(selected) ? selected : (shows.keys().next().value || selected || DEFAULT_FORMAT);
-}
-/** The active franchise's seasons, for the show being viewed only. */
+/** The show being viewed, or ALL. */
+function _viewShow() { return currentShow(); }
+/** The show to narrow a career or a record to; null for all shows. */
+function _viewFormat() { const s = _viewShow(); return s === ALL ? null : s; }
+/** The active franchise's seasons, for the show being viewed. */
 function _viewSeasons() {
-  const f = _viewShow();
+  const f = _viewFormat();
+  if (!f) return activeSeasons();
   return Object.fromEntries(Object.entries(activeSeasons()).filter(([k, s]) => seasonKeyParts(k, s).format === f));
 }
-export function frSetShow(format) { _frShow = format; renderFranchiseTab(); }
-
-function _renderShowTabs() {
-  const shows = _showsInLedger();
-  if (shows.size < 2) return '';
-  const cur = _viewShow();
-  const order = Object.keys(SHOWS).filter(f => shows.has(f));
-  return `<nav class="fr-show-tabs" role="tablist" aria-label="Show">${order.map(f => `<button class="fr-show-tab${f === cur ? ' active' : ''}" role="tab" aria-selected="${f === cur}"
-    style="--show-accent:${_esc(SHOWS[f].accent || 'var(--accent)')}" onclick="frSetShow('${_esc(f)}')">${SHOWS[f].emoji || ''} ${_esc(SHOWS[f].name)}<span class="fr-show-count">${shows.get(f)}</span></button>`).join('')}</nav>`;
+/** Pick a show (or ALL) from code; the switcher's own buttons do the same. */
+export function frSetShow(format) {
+  const next = SHOWS[format] ? format : ALL;
+  try {
+    const url = new URL(window.location.href);
+    if (next === ALL) url.searchParams.delete('show'); else url.searchParams.set('show', next);
+    window.history.replaceState(window.history.state, '', url);
+  } catch {}
+  rememberShow(next);
+  renderFranchiseTab();
+}
+function _mountShowSwitcher(host) {
+  _switcher?.destroy();
+  const el = host.querySelector('#fr-show-switcher');
+  if (!el) return;
+  if (!document.getElementById('show-switcher-css')) {
+    const st = document.createElement('style');
+    st.id = 'show-switcher-css';
+    st.textContent = SHOW_SWITCHER_CSS;
+    document.head.appendChild(st);
+  }
+  _switcher = mountShowSwitcher(el, { formats: Object.keys(SHOWS), onChange: () => renderFranchiseTab() });
 }
 
 // Everyone who won. Perfect Match is always won by a couple (the user, 2026-10-13)
@@ -197,7 +207,7 @@ export function renderFranchiseTab() {
           data-view="${k}" role="tab" aria-selected="${_frView === k}">${label}</button>`).join('')}
     </nav>
     <div class="fr-view" data-view="history"${_frView === 'history' ? '' : ' hidden'}>
-      ${_renderShowTabs()}
+      <div id="fr-show-switcher" class="fr-show-switcher"></div>
       ${_renderTimeline()}
       ${_renderHallOfFame()}
       ${_renderTrophyCase()}
@@ -217,6 +227,7 @@ export function renderFranchiseTab() {
   host.querySelectorAll('.fr-view-tab').forEach(b =>
     b.addEventListener('click', () => _frSetView(b.dataset.view)));
 
+  _mountShowSwitcher(host);
   frBriefingPopulate();   // async — fills the Returnee Briefing checkbox grid
   if (_frView === 'rankings') _frLoadRankings();
   if (prevScroll) { const w = host.querySelector('.fr-wrap'); if (w) w.scrollTop = prevScroll; }
@@ -248,7 +259,7 @@ function _renderHeader() {
         <button class="fr-btn fr-btn-icon fr-btn-danger" onclick="frDeleteFranchise()" title="Delete active franchise">🗑</button>
       </div>
     </div>
-    <div class="fr-pills">${pills}</div>
+    ${list.length > 1 ? `<div class="fr-pills">${pills}</div>` : ''}
     <div class="fr-subtext">${locked ? '🔒 This franchise is locked — sealed canon. Unlock to record, import, or wipe.' : 'Active franchise feeds returnee history.'}</div>
   </div>`;
 }
@@ -261,10 +272,10 @@ function _renderTimeline() {
     .sort((a, b) => seasonKeyParts(a, seasons[a]).num - seasonKeyParts(b, seasons[b]).num);
   if (!keys.length) {
     return `<div class="fr-empty">${_svgTrophy()}
-      <div class="fr-empty-text">No recorded seasons yet — drop a savestate below or finish a season with auto-record on.</div></div>`;
+      <div class="fr-empty-text">No ${_viewFormat() ? _esc(SHOWS[_viewFormat()].name) + ' ' : ''}seasons recorded yet. Finish one (not marked as a test) or drop a savestate below.</div></div>`;
   }
   const cards = keys.map(key => _renderSeasonCard(key, seasons[key])).join('');
-  return `<div class="vp-section-header gold">${_esc(SHOWS[_viewShow()]?.name || '')} Season Timeline</div>
+  return `<div class="vp-section-header gold">${_viewFormat() ? _esc(SHOWS[_viewFormat()].name) + ' ' : ''}Season Timeline</div>
     <div class="fr-grid">${cards}</div>`;
 }
 
@@ -411,7 +422,7 @@ function _renderHallOfFame() {
     const ws = _winnersOf(s);
     if (ws.length) champs.push({ num, tag: _seasonTagUI(num, format), names: ws, name: ws[0], slugs: ws.map(w => s.players?.[w]?.slug) });
   }
-  const records = franchiseRecords();
+  const records = franchiseRecords({ format: _viewFormat() });
   if (!champs.length && !records.length) return '';
 
   const gallery = champs.length
@@ -430,7 +441,7 @@ function _renderHallOfFame() {
 
   return `<div class="vp-section-header gold">Hall of Fame</div>
     ${gallery}
-    ${records.length ? `<div class="fr-recbook-label">Record Book · all shows</div>${book}` : ''}`;
+    ${records.length ? `<div class="fr-recbook-label">${_viewFormat() ? _esc(SHOWS[_viewFormat()].name) + ' ' : ''}Record Book${_viewFormat() ? '' : ' · all shows'}</div>${book}` : ''}`;
 }
 
 // ── 1b. TROPHY CASE — achievement medals + season objectives ──────────
@@ -555,7 +566,7 @@ export function frToggleMedal(type) {
 // All medals earned by ONE player across included seasons (for their career panel).
 function _medalsForPlayer(name) {
   const out = [];
-  const seasons = activeSeasons();
+  const seasons = _viewSeasons();
   for (const { s, num } of _seasonsInOrder(seasons)) {
     if (!_isIncluded(s)) continue;
     for (const a of (s.achievements || [])) {
@@ -568,7 +579,7 @@ function _medalsForPlayer(name) {
 // ── 2. CAREERS — roster index + inline legacy panel ───────────────────
 function _renderCareers() {
   // Every player with history, ranked by titles then best placement — the index.
-  const roster = _allCareerNames().map(n => careerFor(n)).filter(Boolean)
+  const roster = _allCareerNames().map(n => careerFor(n, { format: _viewFormat() })).filter(Boolean)
     .sort((a, b) => b.totals.wins - a.totals.wins
       || (a.totals.bestPlacement || 999) - (b.totals.bestPlacement || 999)
       || a.name.localeCompare(b.name));
@@ -585,7 +596,7 @@ function _renderCareers() {
 
 function _allCareerNames() {
   const set = new Set();
-  for (const s of Object.values(activeSeasons())) {
+  for (const s of Object.values(_viewSeasons())) {
     if (s.included === false) continue;
     for (const nm of Object.keys(s.players || {})) set.add(nm);
   }
@@ -681,7 +692,7 @@ function _openPools() {
 }
 
 function _renderScout() {
-  const pools = returneePools();
+  const pools = returneePools({ format: _viewFormat() });
   const anyData = _POOL_ORDER.some(k => (pools[k] || []).length);
   if (!anyData) return '';
   const open = _openPools();
@@ -747,14 +758,6 @@ const _LEGACY_CSS = `
 .fr-pill-locked.active { box-shadow: 0 0 0 1px var(--accent-gold), 0 0 16px -4px var(--accent-gold); border-color: var(--accent-gold); color: var(--accent-gold); }
 .fr-btn-locked { border-color: var(--accent-gold); color: var(--accent-gold); }
 
-/* One show at a time */
-.fr-show-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 14px; }
-.fr-show-tab { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px;
-  border: 1px solid var(--border, #333); background: none; color: var(--muted, #9a9);
-  font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: border-color .16s, color .16s, background .16s; }
-.fr-show-tab:hover { color: inherit; border-color: var(--show-accent); }
-.fr-show-tab.active { color: inherit; border-color: var(--show-accent); background: color-mix(in srgb, var(--show-accent) 16%, transparent); }
-.fr-show-count { font-size: 10px; opacity: .7; }
 
 /* Legacy sub-tabs */
 .fr-views { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 16px;
@@ -947,7 +950,7 @@ function _persistAndRerender() { try { persistFranchiseLedger(); } catch (e) { c
 export function frOpenCareer(name) {
   const panel = document.getElementById('fr-career-panel');
   if (!panel) return;
-  const c = careerFor(name);
+  const c = careerFor(name, { format: _viewFormat() }) || careerFor(name);
   if (!c) { panel.style.display = 'none'; panel.innerHTML = ''; return; }
   panel.innerHTML = _careerPanelHtml(c);
   panel.style.display = 'block';
@@ -976,7 +979,7 @@ function _flashCopy(label, ok) {
   log.appendChild(row);
 }
 export function frCopyPool(key) {
-  const pool = returneePools()[key] || [];
+  const pool = returneePools({ format: _viewFormat() })[key] || [];
   if (!pool.length) return;
   const meta = _POOL_META[key];
   const names = key === 'feuds'
@@ -985,7 +988,7 @@ export function frCopyPool(key) {
   _copyText(names.join('\n'), `${meta ? meta.label : key} cast list`);
 }
 export function frCopyAllStars() {
-  const pools = returneePools();
+  const pools = returneePools({ format: _viewFormat() });
   const seen = new Set(); const names = [];
   for (const key of ['legends', 'unfinishedBusiness', 'fallenAngels', 'redemption']) {
     for (const x of (pools[key] || []).slice(0, 5)) {

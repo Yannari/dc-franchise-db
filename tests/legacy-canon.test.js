@@ -64,6 +64,24 @@ describe('published seasons are what Legacy says happened', () => {
   });
 });
 
+describe('one switcher, not two ("we dont need two")', () => {
+  it('folds a franchise made for one show into the main one, once', async () => {
+    const { foldShowFranchises, listFranchises } = await import('../js/franchise-meta.js');
+    setFranchiseLedger({ v: 2, active: 'big-brother', franchises: {
+      'total-drama': { name: 'Total Drama', seasons: { '1': rec([['Lindsay', 1]]), '2': rec([['Duncan', 1]]), 'dr-1': rec([['Quin', 1]], { format: 'drag-race' }) } },
+      'big-brother': { name: 'Big Brother', seasons: { '1': rec([['Misha', 1]], { format: 'total-drama', seasonName: 'Big Brother 1' }) } },
+      'what-if': { name: 'What If', seasons: { '1': rec([['Owen', 1]]) } },
+    } });
+    expect(foldShowFranchises()).toBe(true);
+    const names = listFranchises().map(f => f.name).sort();
+    expect(names).toEqual(['Main', 'What If']);           // a universe the user named stays
+    expect(winner('bb-1')).toBe('Misha');                 // filed under its show
+    expect(activeSeasons()['bb-1'].format).toBe('big-brother');
+    expect(winner('1')).toBe('Lindsay');                  // nothing overwritten
+    expect(foldShowFranchises()).toBe(false);             // once per ledger
+  });
+});
+
 describe('test seasons stay out', () => {
   it('a season marked as a test is never recorded', () => {
     setSeasonConfig({ ...seasonConfig, testSeason: true });
@@ -82,5 +100,30 @@ describe('test seasons stay out', () => {
   it('a new season never takes another show\'s name', () => {
     recordBuiltSeason({ format: 'traitors', seasonName: 'Perfect Match 1', players: { Topher: { placement: 1, winner: true } } }, 2);
     expect(activeSeasons()['tr-2'].seasonName).toBe('The Traitors 2');
+  });
+});
+
+describe('each show keeps its own records ("they are not the same records per show")', () => {
+  it('reads the show\'s declared numbers off the published document and names them its own way', async () => {
+    const { franchiseRecords } = await import('../js/franchise-meta.js');
+    const dr = { title: null, winner: { name: 'Quin' }, placements: [
+      { name: 'Quin', placement: 1, dr: { wins: 5, lipsyncWins: 1, highs: 4 } },
+      { name: 'Paige Turner', placement: 2, dr: { wins: 2, lipsyncWins: 3, highs: 2 } }] };
+    expect(applyPublishedSeason(dr, 'drag-race', 1)).toBe(true);
+    const titles = franchiseRecords({ format: 'drag-race' }).map(r => `${r.title}: ${r.holder}`);
+    expect(titles).toContain('Most maxi challenges won: Quin');
+    expect(titles).toContain('Most lip syncs won: Paige Turner');
+    expect(titles.some(t => /idol|blindside|immunity/i.test(t))).toBe(false);
+    // All shows keeps the franchise-wide book, in no one show's words.
+    expect(franchiseRecords().some(r => /lip sync/.test(r.title))).toBe(false);
+  });
+
+  it('a matching record gains the numbers and keeps everything else', () => {
+    const s1 = { title: 'Cullhouse', winner: { name: 'Lindsay' }, placements: [
+      { name: 'Lindsay', placement: 1, immunityWins: 3 }, { name: 'Owen', placement: 2, immunityWins: 1 }] };
+    expect(applyPublishedSeason(s1, 'total-drama', 1)).toBe(true);
+    expect(activeSeasons()['1'].players.Lindsay.stats).toEqual({ immunityWins: 3 });
+    expect(activeSeasons()['1'].players.Lindsay.allies).toEqual(['kept']);
+    expect(applyPublishedSeason(s1, 'total-drama', 1)).toBe(false);   // nothing left to add
   });
 });

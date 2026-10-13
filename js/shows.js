@@ -90,11 +90,14 @@ export const SHOWS = {
     // built out of twists.
     audience: { strategy: 0.7, mess: 1.3, showmance: 1.25, predictable: 1.15,
       twist: { teens: 1.35, youngAdults: 1.25, middleAged: 0.45, older: 0.3 } },
+    // [season-row path, career total, record label]. The label is this show's
+    // Legacy record book: "Most <label>" / "<n> <label>" (franchise-meta.js
+    // franchiseRecords), so it must read right after both.
     careerStats: [
-      ['challengeWins', 'totalChallengeWins'],
-      ['immunityWins', 'totalImmunityWins'],
-      ['rewardWins', 'totalRewardWins'],
-      ['idolsFound', 'totalIdolsFound'],
+      ['challengeWins', 'totalChallengeWins', 'challenges won'],
+      ['immunityWins', 'totalImmunityWins', 'immunity wins'],
+      ['rewardWins', 'totalRewardWins', 'reward wins'],
+      ['idolsFound', 'totalIdolsFound', 'idols found'],
     ],
     /* WHICH NUMBERS A CHARACTER ARTICLE SHOWS, and what each is called.
        js/wiki-view.js chose these with `format === 'big-brother' ? A : B`, so
@@ -139,14 +142,14 @@ export const SHOWS = {
     // the defining complaint about THIS show — not about television.
     audience: { strategy: 1.3, blindside: 1.25, steamroll: 1.3, mess: 0.85, showmance: 0.9 },
     careerStats: [
-      ['challengeWins', 'totalCompWins'],
-      ['bb.hohWins', 'hohWins'],
-      ['bb.vetoWins', 'vetoWins'],
+      ['challengeWins', 'totalCompWins', 'competitions won'],
+      ['bb.hohWins', 'hohWins', 'HOH wins'],
+      ['bb.vetoWins', 'vetoWins', 'vetoes won'],
       // THE ARENA. Left out, so a career's competition record silently excluded
       // the one comp won while already on the block -- Ireland's three counted
       // for nothing anywhere byShow was read.
-      ['bb.blockBusterWins', 'blockBusterWins'],
-      ['bb.timesNominated', 'timesNominated'],
+      ['bb.blockBusterWins', 'blockBusterWins', 'Block Busters won'],
+      ['bb.timesNominated', 'timesNominated', 'nominations'],
     ],
     articleStats: {
       career: [['hohWins', 'HOH wins'], ['vetoWins', 'Veto wins'],
@@ -257,12 +260,12 @@ export const SHOWS = {
     // roundsAsTraitor rather than seasonsAsTraitor: recruitment means the role
     // is not a season-level property of a person.
     careerStats: [
-      ['tr.missionsWon',     'totalMissionsWon'],
-      ['tr.shieldsWon',      'totalShieldsWon'],
-      ['tr.roundsAsTraitor', 'totalRoundsAsTraitor'],
-      ['tr.timesRecruited',  'totalTimesRecruited'],
-      ['tr.timesMurdered',   'totalTimesMurdered'],
-      ['tr.timesBanished',   'totalTimesBanished'],
+      ['tr.missionsWon',     'totalMissionsWon', 'missions won'],
+      ['tr.shieldsWon',      'totalShieldsWon', 'shields won'],
+      ['tr.roundsAsTraitor', 'totalRoundsAsTraitor', 'rounds as a Traitor'],
+      ['tr.timesRecruited',  'totalTimesRecruited', 'times recruited'],
+      ['tr.timesMurdered',   'totalTimesMurdered', 'times murdered'],
+      ['tr.timesBanished',   'totalTimesBanished', 'times banished'],
     ],
     articleStats: {
       career: [['missionsWon', 'Missions won'], ['shieldsWon', 'Shields won'],
@@ -335,12 +338,12 @@ export const SHOWS = {
     audience: { strategy: 0.4, blindside: 0.7, mess: 1.4, predictable: 0.8,
       steamroll: 1.2, showmance: 0.6, twist: 0.9 },
     careerStats: [
-      ['dr.wins',         'totalMaxiWins'],
-      ['dr.highs',        'totalHighs'],
-      ['dr.lows',         'totalLows'],
-      ['dr.bottoms',      'totalBottoms'],
-      ['dr.lipsyncWins',  'totalLipsyncWins'],
-      ['dr.congeniality', 'totalCongeniality'],
+      ['dr.wins',         'totalMaxiWins', 'maxi challenges won'],
+      ['dr.highs',        'totalHighs', 'high placements'],
+      ['dr.lows',         'totalLows', 'low placements'],
+      ['dr.bottoms',      'totalBottoms', 'bottom placements'],
+      ['dr.lipsyncWins',  'totalLipsyncWins', 'lip syncs won'],
+      ['dr.congeniality', 'totalCongeniality', 'Miss Congeniality titles'],
     ],
     articleStats: {
       /* CAREER KEYS ARE THE LAST SEGMENT OF THE SEASON PATHS. `buildDossier`
@@ -418,9 +421,9 @@ export const SHOWS = {
     signals: 'villa',
     // Written by the export (Plan 5). Declared now so the article rows exist.
     careerStats: [
-      ['pm.couplings',            'totalCouplings'],
-      ['pm.timesStolen',          'totalTimesStolen'],
-      ['pm.publicVotesSurvived',  'totalPublicVotesSurvived'],
+      ['pm.couplings',            'totalCouplings', 'couplings'],
+      ['pm.timesStolen',          'totalTimesStolen', 'times stolen'],
+      ['pm.publicVotesSurvived',  'totalPublicVotesSurvived', 'public votes survived'],
     ],
     articleStats: {
       career: [['couplings', 'Couplings'], ['publicVotesSurvived', 'Public votes survived']],
@@ -478,10 +481,10 @@ export const SHOWS = {
       steamroll: 0.9, showmance: 0.8, twist: 1.3 },
     // Written by the export (Plan 6). Declared now so the article rows exist.
     careerStats: [
-      ['ci.influencerTimes', 'totalInfluencerTimes'],
-      ['ci.firstPlaces',     'totalFirstPlaceRatings'],
-      ['ci.blocksMade',      'totalBlocksMade'],
-      ['ci.catfishSeasons',  'totalCatfishSeasons'],
+      ['ci.influencerTimes', 'totalInfluencerTimes', 'times as Influencer'],
+      ['ci.firstPlaces',     'totalFirstPlaceRatings', 'first-place ratings'],
+      ['ci.blocksMade',      'totalBlocksMade', 'blocks made'],
+      ['ci.catfishSeasons',  'totalCatfishSeasons', 'seasons as a catfish'],
     ],
     articleStats: {
       career: [['influencerTimes', 'Times Influencer'], ['firstPlaceRatings', 'First-place ratings']],

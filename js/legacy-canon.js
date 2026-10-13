@@ -12,7 +12,7 @@
 // keeps everything it knows beyond placements.
 
 import { SHOWS, DEFAULT_FORMAT, seasonId } from './shows.js';
-import { setPublishedSeasons, applyPublishedSeason, dropMislabeledRecords } from './franchise-meta.js';
+import { setPublishedSeasons, applyPublishedSeason, dropMislabeledRecords, foldShowFranchises } from './franchise-meta.js';
 import { persistFranchiseLedger } from './savestate.js';
 
 /** The season document's path, by the site's one naming rule (wiki-fill-run.js seasonFile). */
@@ -27,6 +27,9 @@ const _json = url => fetch(url, { cache: 'no-cache' }).then(r => (r.ok ? r.json(
  * published list is the ledger as it was, which is what it always showed.
  */
 export async function syncPublishedSeasons() {
+  // One franchise per show was how shows were kept apart before the tabs.
+  const folded = foldShowFranchises();
+  if (folded) await persistFranchiseLedger();
   const idx = await _json('seasons_database.json');
   const list = (idx?.seasons || [])
     .filter(s => s && Number(s.seasonNumber) && (!s.status || /complete/i.test(s.status)))

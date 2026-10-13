@@ -133,6 +133,46 @@ export function renameFranchise(id, name) {
   const f = franchiseLedger.franchises[id]; if (!f) return false;
   f.name = (name || '').trim() || f.name || 'Untitled'; return true;
 }
+/**
+ * Fold franchises that were made to keep one show apart into the main one.
+ *
+ * Before Legacy had a tab per show, the way to keep Big Brother off the Total
+ * Drama timeline was a franchise per show. With the tabs that is two switchers
+ * for one choice -- the user, 2026-10-13: "we dont need two", and a franchise
+ * called "Total Drama" counting 16 seasons because it held every show's. So,
+ * once per ledger: a franchise NAMED for a show gives its seasons to the one
+ * with the most (filed under that show, where the main one has no such season
+ * yet), and goes; the one left, if it is named for a show, becomes "Main". A
+ * locked franchise is never touched. Returns true when it changed anything.
+ */
+export function foldShowFranchises() {
+  activeFranchise();
+  if (franchiseLedger.showTabsFolded) return false;
+  franchiseLedger.showTabsFolded = true;
+  const showOf = name => Object.keys(SHOWS).find(f => SHOWS[f].name.toLowerCase() === String(name || '').trim().toLowerCase());
+  const ids = Object.keys(franchiseLedger.franchises);
+  if (ids.length < 2) return true;
+  const main = ids.reduce((a, b) => (Object.keys(franchiseLedger.franchises[b].seasons || {}).length > Object.keys(franchiseLedger.franchises[a].seasons || {}).length ? b : a));
+  const into = franchiseLedger.franchises[main];
+  if (into.locked) return true;
+  for (const id of ids) {
+    const f = franchiseLedger.franchises[id];
+    const show = showOf(f.name);
+    if (id === main || !show || f.locked) continue;
+    for (const [key, rec] of Object.entries(f.seasons || {})) {
+      // A bare number in a show's own franchise was that show's season.
+      const num = seasonKeyParts(key, rec).num;
+      const want = /^[a-z]+-\d+$/i.test(key) ? key : seasonKey(show, num);
+      if (!into.seasons[want]) into.seasons[want] = { ...rec, format: show };
+    }
+    delete franchiseLedger.franchises[id];
+    console.info(`Franchise ledger: folded the "${f.name}" franchise into "${into.name}" — the show tabs do its job now.`);
+  }
+  franchiseLedger.active = main;
+  if (showOf(into.name)) into.name = 'Main';
+  return true;
+}
+
 export function deleteFranchise(id) {
   activeFranchise();
   const ids = Object.keys(franchiseLedger.franchises);
@@ -467,11 +507,14 @@ export function deriveSeasonRecord(state = null) {
 }
 
 // ── Season-start meta build ───────────────────────────────────────────────
-function _historyFor(name) {
+// `format` narrows it to one show, for Legacy's per-show view. Everything that
+// decides a season (returnee memory, grudges, bonds) calls it without one.
+function _historyFor(name, format = null) {
   const out = []; // [{ seasonNum, rec }] sorted oldest → newest
   for (const [num, season] of Object.entries(activeSeasons())) {
     if (season.included === false) continue; // excluded seasons feed nothing to meta
     const { format: _f, num: _n } = seasonKeyParts(num, season);
+    if (format && _f !== format) continue;
     if (season.players?.[name]) out.push({ seasonNum: _n, rec: season.players[name],
       seasonName: season.seasonName, format: _f });
   }
@@ -862,8 +905,8 @@ function _resolveArchetype(name) {
   try { return _archResolver ? (_archResolver(name) || null) : null; } catch (e) { return null; }
 }
 
-export function careerFor(name) {
-  const history = _historyFor(name); // [{ seasonNum, seasonName, rec }] oldest→newest, included only
+export function careerFor(name, { format = null } = {}) {
+  const history = _historyFor(name, format); // [{ seasonNum, seasonName, rec }] oldest→newest, included only
   if (!history.length) return null;
   let slug = '';
   const seasons = history.map(({ seasonNum, seasonName, format, rec }) => {
@@ -883,11 +926,13 @@ export function careerFor(name) {
     seasons: history.length, wins: 0, finals: 0, chalWins: 0, idolsPlayed: 0, idolsFound: 0,
     blindsidesAuthored: 0, timesBlindsided: 0, betrayalsCommitted: 0, timesBetrayed: 0,
     schemesCaught: 0, bestPlacement: 0, avgPlacement: 0,
-    popularity: 0, popularityKnown: false
+    popularity: 0, popularityKnown: false,
+    stats: {},   // the show's own careerStats, keyed by their season-row path
   };
   let placeSum = 0, placeN = 0, archetype = null;
   for (const { seasonNum, rec } of history) {
     if (rec.archetype) archetype = rec.archetype; // latest recorded season wins
+    for (const [k, v] of Object.entries(rec.stats || {})) totals.stats[k] = (totals.stats[k] || 0) + (Number(v) || 0);
     if (typeof rec.popularity === 'number') { totals.popularity += rec.popularity; totals.popularityKnown = true; }
     totals.wins += rec.winner ? 1 : 0;
     totals.finals += rec.finalist ? 1 : 0; // finalist appearances (a win is a finals appearance too)
@@ -938,17 +983,23 @@ export function careerFor(name) {
 
 // Record book across the active franchise's included seasons. Skips any record
 // with no data so an empty franchise shows an empty book, not zeros.
-export function franchiseRecords() {
+// With `format`, one show's record book: its careers only, its own words
+// ("Most maxi challenges won", "Most missions won"), and only the records the
+// show's seasons actually hold -- a show with no idols has no idol record,
+// because nobody on it has a nonzero count, not because of a list of shows.
+// The user, 2026-10-13: "they are not the same records per show".
+export function franchiseRecords({ format = null } = {}) {
   const careers = {};
-  for (const [num, season] of Object.entries(activeSeasons())) {
+  for (const [key, season] of Object.entries(activeSeasons())) {
     if (season.included === false) continue;
+    if (format && seasonKeyParts(key, season).format !== format) continue;
     for (const nm of Object.keys(season.players || {})) {
-      if (!careers[nm]) careers[nm] = careerFor(nm);
+      if (!careers[nm]) careers[nm] = careerFor(nm, { format });
     }
-    void num;
   }
   const list = Object.values(careers).filter(Boolean);
   if (!list.length) return [];
+  const w = format ? showWords(format) : null;
   const out = [];
   const push = (title, holder, value, detail) => { if (holder) out.push({ title, holder, value, detail }); };
   const best = (metric, min = 0) => {
@@ -962,7 +1013,20 @@ export function franchiseRecords() {
   // word. There is no immunity in the house -- there is the HOH, the veto and
   // the Block Buster -- and this counts all of them alongside Total Drama's
   // challenges, so it is named for what it actually measures.
-  t = best(c => c.totals.chalWins); push('Most career competition wins', t?.c.name, t?.v, t ? `${t.v} competition wins` : '');
+  // One show's book uses that show's word for it.
+  t = best(c => c.totals.chalWins);
+  if (w) push(`Most ${w.comps}`, t?.c.name, t?.v, t ? `${t.v} ${w.compWon}` : '');
+  else push('Most career competition wins', t?.c.name, t?.v, t ? `${t.v} competition wins` : '');
+  // This show's own numbers, named by its registry entry (careerStats):
+  // lip syncs on Drag Race, HOH and veto wins in the house, shields in the
+  // castle. A stat that says what a record above already says (same holder,
+  // same count) is that record, not a second one.
+  if (format) for (const [path, , label] of (SHOWS[format]?.careerStats || [])) {
+    if (!label) continue;
+    t = best(c => c.totals.stats?.[path] || 0);
+    if (!t || out.some(r => r.title === `Most ${label}` || (r.holder === t.c.name && r.value === t.v && /^Most /.test(r.title) && r.title !== 'Most titles'))) continue;
+    push(`Most ${label}`, t.c.name, t.v, `${t.v} ${label}`);
+  }
   t = best(c => c.totals.blindsidesAuthored); push('Most blindsides authored', t?.c.name, t?.v, t ? `${t.v} blindsides` : '');
   t = best(c => c.totals.seasons, 1); push('Most seasons played', t?.c.name, t?.v, t ? `${t.v} seasons` : '');
   // Best average placement — only players with ≥2 scored seasons qualify; lower is better.
@@ -986,10 +1050,11 @@ export function franchiseRecords() {
 // All-Stars scouting pools drawn from the active franchise's included seasons.
 // A name lands in exactly ONE pool (priority legends > fallenAngels >
 // unfinishedBusiness > redemption). Each pool caps at 8, sorted by relevance.
-export function returneePools() {
+export function returneePools({ format = null } = {}) {
   const names = new Set();
-  for (const season of Object.values(activeSeasons())) {
+  for (const [key, season] of Object.entries(activeSeasons())) {
     if (season.included === false) continue;
+    if (format && seasonKeyParts(key, season).format !== format) continue;
     for (const nm of Object.keys(season.players || {})) names.add(nm);
   }
   const pools = { legends: [], unfinishedBusiness: [], fallenAngels: [], redemption: [] };
@@ -997,7 +1062,7 @@ export function returneePools() {
   const scored = { legends: [], unfinishedBusiness: [], fallenAngels: [], redemption: [] };
 
   for (const name of names) {
-    const c = careerFor(name); if (!c) continue;
+    const c = careerFor(name, { format }); if (!c) continue;
     const slug = c.slug;
     const last = c.seasons[c.seasons.length - 1];
 
@@ -1618,6 +1683,18 @@ function _refuseRecord(format, num) {
   return _lastRefusal;
 }
 
+// The numbers this show declares (SHOWS[format].careerStats), read off one
+// published placement row. A dotted path reads the show's own block
+// (`dr.lipsyncWins`), walked generically as stats-export.js does.
+function _statsFromRow(p, format) {
+  const out = {};
+  for (const [path] of (SHOWS[format]?.careerStats || [])) {
+    const v = path.split('.').reduce((o, k) => (o == null ? o : o[k]), p);
+    if (typeof v === 'number' && Number.isFinite(v)) out[path] = v;
+  }
+  return out;
+}
+
 /**
  * Make the ledger say what the published season document says.
  *
@@ -1638,8 +1715,15 @@ export function applyPublishedSeason(doc, format, num) {
   const matches = existing && names.length === canon.size
     && names.every(n => canon.has(n) && (existing.players[n].placement || 0) === canon.get(n));
   if (matches) {
-    if (format !== DEFAULT_FORMAT && existing.format !== format) { existing.format = format; return true; }
-    return false;
+    let changed = false;
+    if (format !== DEFAULT_FORMAT && existing.format !== format) { existing.format = format; changed = true; }
+    // The one thing a matching record may gain: the show's own numbers, which
+    // its record book reads. Nothing it already holds is replaced.
+    for (const p of placements) {
+      const r = existing.players[p.name];
+      if (r && !r.stats) { const st = _statsFromRow(p, format); if (Object.keys(st).length) { r.stats = st; changed = true; } }
+    }
+    return changed;
   }
   const winnerName = doc.winner?.name || doc.winner || null;
   const rec = {
@@ -1656,7 +1740,10 @@ export function applyPublishedSeason(doc, format, num) {
     r.winner = p.phase === 'Winner' || r.placement === 1 || p.name === winnerName;
     r.finalist = r.winner || p.phase === 'Finalist';
     const imm = String(p.notes || '').match(/(\d+)\s+immunity wins?/i);
-    r.chalWins = imm ? parseInt(imm[1], 10) : 0;
+    r.chalWins = Number(p.immunityWins ?? p.challengeWins) || (imm ? parseInt(imm[1], 10) : 0);
+    if (typeof p.idolsFound === 'number') r.idolsFound = p.idolsFound;
+    const st = _statsFromRow(p, format);
+    if (Object.keys(st).length) r.stats = st;
     if (p.playerSlug) r.slug = p.playerSlug;
     rec.players[p.name] = r;
   }

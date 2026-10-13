@@ -907,6 +907,99 @@ replayable), then:
   franchise. Perfect Match has it: an islander who was somebody's ex on another
   show walks into the villa as one.
 
+### 8.4 Legacy, published seasons, test seasons and the cloud backup
+
+Built 2026-10-13. That day, Firefox lost every save the user had on the published
+site. Their Legacy then turned out to show Paige Turner under Total Drama, to
+crown the wrong winners of S11 and Drag Race 1, and to crash outright on a
+ledger that held more than one show. This section covers what a new show gets
+for free and the few things it has to supply.
+
+**Legacy is one ledger, viewed one show at a time** (`js/franchise-ui.js`).
+- The history view mounts the site's own switcher, `js/show-switcher.js`. It is
+  the same control `franchise.html` has: **All shows**, then every show in
+  `SHOWS`, with the choice kept in `?show=` and remembered for the tab.
+- Every section reads `_viewSeasons()` / `_viewFormat()`: timeline, champions,
+  record book, Trophy Case, careers, the Scout and the pulse.
+- `careerFor`, `franchiseRecords` and `returneePools` take `{ format }`. Called
+  without one they span every show, and **everything that decides a season
+  calls them without one**, so returnees still remember each other across shows.
+- A new show gets its tab with no edit. Its record book is its own, built from
+  the registry entry rather than one list for every show:
+  - `Most ${words.comps}` / `${n} ${words.compWon}` for its wins, so `comps`
+    and `compWon` must read right after "Most" and after a number.
+  - One record per `careerStats` row, from the row's **third element, its
+    label**: `['dr.lipsyncWins', 'totalLipsyncWins', 'lip syncs won']` becomes
+    "Most lip syncs won". `legacy-canon.js` copies those numbers off each
+    published placement row onto the ledger record (`rec.players[n].stats`),
+    adding them to a matching record without replacing anything else.
+  - The result is Drag Race showing lip syncs and Miss Congeniality, Big Brother
+    showing HOH, veto and Block Buster wins, and Total Drama showing idols.
+  - A show whose seasons are recorded live but not yet published has no `stats`
+    until a publish; its `ledger-record.js` may write them itself, under the
+    same paths.
+- A record appears only when some player on that show has a nonzero count. A
+  show with no idols has no idol record because no idol was ever counted, not
+  because of a list of shows.
+- **Never key a ledger season by `Number(key)`.** `Number('bb-1')` is NaN, and
+  looking NaN up found no season, which took the whole tab down. Walk keys
+  through `seasonKeyParts`.
+
+**Every winner is a winner.** Mark `winner: true` (and placement 1) on each of
+them. A Perfect Match couple, a Traitors pot split three ways and Total Drama
+8's Alejandro & Cameron all render as "Winners: A & B". Nothing may assume one
+winner per season: the card, the Hall of Fame and the delete prompt all read
+`_winnersOf`.
+
+**What the ledger refuses** (`franchise-meta.js _refuseRecord`). It applies to
+both recorders, `recordSeasonToLedger` and `recordBuiltSeason`, automatic and
+manual alike:
+- **A test season.** `seasonConfig.testSeason` is the 🧪 switch in Season
+  Basics. A test season is never recorded and never backed up.
+- **A replay of a published season.** What was published *is* the record. Two
+  published seasons had been replayed and the replays had recorded over them;
+  that is where "Sterling won S11" came from.
+
+The manual record buttons show `lastLedgerRefusal()`, so a refusal is never a
+silent failure.
+
+**Published seasons are canon** (`js/legacy-canon.js`, on every load). It reads
+`seasons_database.json`: rows with `status: Complete`, using the `format` and
+`seasonNumber` you export. It then fetches each season's document through the
+site's naming rule (`season{N}-data.json`, or `{prefix}-{N}-data.json`) and
+compares the ledger record **placement for placement**:
+- A record that matches is never touched, so a chronicle-enriched record keeps
+  its alliances and betrayals.
+- A record that differs, or a missing one, is rebuilt from the document.
+
+So your export (§5) must write `placements[]` with the same names the ledger
+uses. A document with no placements is skipped, and the ledger keeps whatever
+the last finale wrote.
+
+Two more repairs run once on load:
+- `foldShowFranchises` folds any franchise *named* for a show into the main
+  one. Before the tabs, people made one franchise per show to keep them apart.
+- `dropMislabeledRecords` removes an unpublished record whose name opens with
+  a different show's name. The Traitors recorder took its name from season
+  settings that still said "Perfect Match 1". `recordBuiltSeason` now renames
+  such a record instead.
+
+**The cloud backup covers what goes through `savestate.js`** (`js/cloud-backup.js`).
+- Every `_idbPut`, `_idbDelete` and `_idbLedgerPut` in `dc_franchise_db` is
+  mirrored, a few seconds later, to the private R2 bucket `dc-saves` behind the
+  `dc-studio` Worker (`savesRoute`). That covers season saves, the season in
+  play, its checkpoints and the ledger.
+- Once a day, a snapshot also takes localStorage and **every other IndexedDB
+  database** on the origin.
+- So a show that keeps its saves in `dc_franchise_db` through `_idbPut` is
+  covered within seconds. One that writes its own database is covered only by
+  the daily snapshot.
+- A season save's `config` must carry `format` and `testSeason`. The
+  saved-season list filters by `seasonFormat(config)` (one show at a time,
+  matching the Setup selection), and the backup leaves test saves out.
+- The bucket is private on every method, reads included, behind
+  `STUDIO_TOKEN`. A new route never needs it public.
+
 ---
 
 ## 9. The duplication you will hit

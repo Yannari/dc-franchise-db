@@ -1000,6 +1000,23 @@ Two more repairs run once on load:
 - The bucket is private on every method, reads included, behind
   `STUDIO_TOKEN`. A new route never needs it public.
 
+**The AI writer's returnee briefing builds itself** (`js/returnee-briefing.js`).
+Legacy's "Returnee Briefing" tab is gone. When `current-season.html` assembles
+the writer's context for a season, each returnee gets a history line and a Voice
+line from the Season Builder Worker, and everyone else gets their voice-profile
+line. A returnee is anyone with a `players_database.json` `seasonDetails` row
+before this one:
+- from the same show, only seasons with a lower number;
+- from any other show, every season.
+
+So that `format` stamp (§8, "absent means Total Drama") also decides whose past
+a racer brings into a later season.
+
+**The smart cache** (`sw.js`, registered in `main.js`) keeps one complete copy
+of the site per Pages deploy. The deploy is identified by the Last-Modified
+time that every file in it shares. New files are covered without any edit. It
+is off on a local server, and `?nosw` removes it.
+
 ---
 
 ## 9. The duplication you will hit

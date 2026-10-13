@@ -1052,21 +1052,32 @@ Owen: This is going to be amazing!"
     }
     return _voiceProfilesCache;
   }
-  // Build a franchise-context string from a cast list using the stored voice profiles.
-  // Returns '' if none of the cast have a profile.
+  // Build a franchise-context string from a cast list: every returnee's history
+  // and Voice line (js/returnee-briefing.js -- this used to be Legacy's Returnee
+  // Briefing tab, a paste nobody was reminded to make), then a voice-profile
+  // line for everyone else. Runs once per season; the result is stored.
+  // Returns '' if nobody has either.
   async function buildFranchiseContextFromCast(cast) {
     if (!Array.isArray(cast) || !cast.length) return '';
     const vp = await _loadVoiceProfiles();
     const profiles = (vp && vp.profiles) || {};
-    const names = cast.map(c => typeof c === 'string' ? c : (c && (c.name || c.player))).filter(Boolean);
-    const seen = new Set();
-    const lines = [];
-    names.forEach(n => {
-      if (seen.has(n)) return; seen.add(n);
-      if (profiles[n]) lines.push(`- ${n} ${profiles[n]}`);
-    });
+    const names = [...new Set(cast.map(c => typeof c === 'string' ? c : (c && (c.name || c.player))).filter(Boolean))];
+    let briefed = [];
+    try {
+      const { briefReturnees } = await import('./js/returnee-briefing.js');
+      briefed = await briefReturnees(names, { format: _csFormat(), season: Number(CURRENT.season) || 0,
+        workerUrl: typeof getSeasonBuilderWorkerUrl === 'function' ? getSeasonBuilderWorkerUrl() : '' });
+      if (briefed.length) console.log(`✅ Returnee briefing written for ${briefed.length} returning player(s).`);
+    } catch (e) { console.warn('Returnee briefing failed; voice profiles only:', e); }
+    const briefedNames = new Set(briefed.map(b => b.name));
+    const lines = [
+      ...briefed.map(b => b.line),
+      ...names.filter(n => !briefedNames.has(n) && profiles[n]).map(n => `- ${n} ${profiles[n]}`),
+    ];
     if (!lines.length) return '';
-    return (vp.note ? vp.note + '\n\n' : '') + lines.join('\n');
+    let note = vp.note || '';
+    if (briefed.length) { try { note = (await import('./js/returnee-briefing.js')).BRIEF_NOTE; } catch {} }
+    return (note ? note + '\n\n' : '') + lines.join('\n');
   }
 
   // Quick console check: how many voice profiles are loaded + a sample, and whether it's the

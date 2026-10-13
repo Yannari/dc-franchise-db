@@ -395,6 +395,22 @@ window.CHALLENGES = {
   'beach-blanket-bogus': { simulate: beachBlanketBogusMod.simulateBeachBlanketBogus, rpBuild: beachBlanketBogusMod.rpBuildBeachBlanketBogusTitleCard, text: beachBlanketBogusMod._textBeachBlanketBogus },
 };
 
+// ── The smart cache (sw.js) ──
+// One complete copy of the site per deploy: repeat loads come out of it, and a
+// new deploy is fetched as one set rather than mixed with the old one. Off on a
+// local server, where a file's Last-Modified is its own mtime and not a deploy
+// stamp (localStorage dc_sw_local=1 turns it on there, for testing it). ?nosw
+// removes it, if it ever has to go.
+(function registerSmartCache() {
+  try {
+    if (!('serviceWorker' in navigator)) return;
+    const local = location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+    const off = new URLSearchParams(location.search).has('nosw') || (local && localStorage.getItem('dc_sw_local') !== '1');
+    if (off) { navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => {}); return; }
+    navigator.serviceWorker.register('sw.js').catch(e => console.warn('Smart cache not installed:', e));
+  } catch (e) { console.warn('Smart cache:', e); }
+})();
+
 // ══════════════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════════════

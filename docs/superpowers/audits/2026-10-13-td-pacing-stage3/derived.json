@@ -1,0 +1,194 @@
+{
+  "postDay1": {
+    "fresh": 1851,
+    "pairs": 9969
+  },
+  "peaks": {
+    "person": {
+      "run": "carnival_enabled_no-coaches_1729",
+      "episodes": [
+        11,
+        12,
+        13
+      ],
+      "speakers": 6,
+      "name": "Duncan",
+      "share": 0.3107142857142857
+    },
+    "pair": {
+      "run": "world-tour_disabled_no-coaches_1729",
+      "episodes": [
+        11,
+        12,
+        13
+      ],
+      "speakers": 6,
+      "name": "Leshawna|Trent",
+      "share": 0.3870967741935484
+    },
+    "earlyPerson": {
+      "run": "film-lot_disabled_no-coaches_2026",
+      "episodes": [
+        5,
+        6,
+        7
+      ],
+      "speakers": 12,
+      "name": "Owen",
+      "share": 0.14821763602251406
+    },
+    "earlyPair": {
+      "run": "film-lot_enabled_no-coaches_2026",
+      "episodes": [
+        3,
+        4,
+        5
+      ],
+      "speakers": 14,
+      "name": "Bowie|Leshawna",
+      "share": 0.189873417721519
+    }
+  },
+  "opportunities": {
+    "follow-up:aired": 135,
+    "witness-after:aired": 167,
+    "follow-up:offered-then-cut": 4,
+    "turn:aired": 144,
+    "witness-after:writer-no-scene": 10,
+    "witness-after:offered-then-cut": 5,
+    "turn:offered-then-cut": 2
+  },
+  "rawRomanceEnabled": {
+    "aired": 117,
+    "selected-not-rendered": 16,
+    "same-storyline": 12,
+    "local-person-cap": 195,
+    "offered-then-cut": 13,
+    "main-cap": 7,
+    "not-in-main-pool": 53,
+    "day-one-filter": 5
+  },
+  "romanceDisabledAired": {
+    "long.romance.flirt": 38,
+    "long.romance.moment": 27,
+    "long.romance.night": 13,
+    "romance.night": 4
+  },
+  "constructedCuts": {
+    "quick-cut": 149,
+    "opener": 548,
+    "challenge-chat": 196,
+    "kit": 1231,
+    "camp-game": 374,
+    "bottom": 121,
+    "running-gag": 27,
+    "confessional": 163,
+    "friendship": 96,
+    "follow-up": 4,
+    "vote": 97,
+    "engine": 112,
+    "rivalry": 61,
+    "alliance": 83,
+    "scheme": 31,
+    "witness-after": 5,
+    "idol": 30,
+    "coach": 19,
+    "underdog": 8,
+    "showmance": 7,
+    "arc": 18,
+    "turn": 2,
+    "mentor": 2
+  },
+  "byVenue": {
+    "hosted-camp": {
+      "scenes": {
+        "n": 168,
+        "min": 8,
+        "median": 17,
+        "p90": 18,
+        "max": 21,
+        "mean": 16.232142857142858
+      },
+      "spoken": {
+        "n": 168,
+        "min": 46,
+        "median": 86,
+        "p90": 110,
+        "max": 133,
+        "mean": 88.07142857142857
+      }
+    },
+    "survival-island": {
+      "scenes": {
+        "n": 168,
+        "min": 10,
+        "median": 17,
+        "p90": 18,
+        "max": 20,
+        "mean": 15.946428571428571
+      },
+      "spoken": {
+        "n": 168,
+        "min": 36,
+        "median": 87,
+        "p90": 111,
+        "max": 122,
+        "mean": 86.21428571428571
+      }
+    },
+    "film-lot": {
+      "scenes": {
+        "n": 168,
+        "min": 10,
+        "median": 17,
+        "p90": 18,
+        "max": 20,
+        "mean": 15.904761904761905
+      },
+      "spoken": {
+        "n": 168,
+        "min": 24,
+        "median": 87,
+        "p90": 109,
+        "max": 129,
+        "mean": 85.7797619047619
+      }
+    },
+    "carnival": {
+      "scenes": {
+        "n": 168,
+        "min": 6,
+        "median": 17,
+        "p90": 18,
+        "max": 19,
+        "mean": 15.958333333333334
+      },
+      "spoken": {
+        "n": 168,
+        "min": 29,
+        "median": 86,
+        "p90": 110,
+        "max": 128,
+        "mean": 85.86309523809524
+      }
+    },
+    "world-tour": {
+      "scenes": {
+        "n": 168,
+        "min": 9,
+        "median": 16,
+        "p90": 18,
+        "max": 19,
+        "mean": 15.791666666666666
+      },
+      "spoken": {
+        "n": 168,
+        "min": 38,
+        "median": 84,
+        "p90": 107,
+        "max": 126,
+        "mean": 83.58928571428571
+      }
+    }
+  }
+}

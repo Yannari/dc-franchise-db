@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { gunzipSync } from 'node:zlib';
-const root='docs/superpowers/audits/2026-10-12-td-pacing';
+const root=process.env.TD_PACING_OUT||'docs/superpowers/audits/2026-10-12-td-pacing';
 const venues=['hosted-camp','survival-island','film-lot','carnival','world-tour'];
 const read=(venue,file)=>{const data=fs.readFileSync(path.join(root,venue,file));return JSON.parse(file.endsWith('.gz')?gunzipSync(data):data);};
 const comparisons=[];
@@ -10,7 +10,8 @@ for(const venue of venues){const traced=read(venue,'manifest.json'),plain=read(v
  for(const r of traced.runs){const p=plain.find(p=>p.id===r.id);const same=JSON.stringify(r.fingerprint)===JSON.stringify(p?.fingerprint);comparisons.push({run:r.id,same});if(!same)throw new Error('Observation changed output for '+r.id);}}
 const days=venues.flatMap(v=>read(v,'days.json.gz')),candidates=venues.flatMap(v=>read(v,'candidates.json.gz'));
 const dist=values=>{const a=[...values].sort((x,y)=>x-y);return {n:a.length,min:a[0],median:a[Math.floor(a.length*.5)],p90:a[Math.floor(a.length*.9)],max:a.at(-1),mean:a.reduce((s,x)=>s+x,0)/a.length};};
-const summary={runs:comparisons.length,unchanged:comparisons.filter(x=>x.same).length,days:days.length,sceneCount:dist(days.map(d=>d.scenes)),spokenLines:dist(days.map(d=>d.spoken)),confessionalLines:dist(days.map(d=>d.confessionals)),above22:days.filter(d=>d.scenes>22).length,heavyRun:dist(days.map(d=>d.maxHeavyRun)),freshPairs:days.reduce((n,d)=>n+d.freshPairs,0),pairScenes:days.reduce((n,d)=>n+d.pairScenes,0),systems:{},romance:{},candidateReasons:{}};
+const summary={runs:comparisons.length,unchanged:comparisons.filter(x=>x.same).length,days:days.length,sceneCount:dist(days.map(d=>d.scenes)),spokenLines:dist(days.map(d=>d.spoken)),confessionalLines:dist(days.map(d=>d.confessionals)),above22:days.filter(d=>d.scenes>22).length,heavyRun:dist(days.map(d=>d.maxHeavyRun)),freshPairs:days.reduce((n,d)=>n+d.freshPairs,0),pairScenes:days.reduce((n,d)=>n+d.pairScenes,0),systems:{},romance:{},candidateReasons:{},selector:{}};
+for(const v of venues){try{const sv=read(v,'summary.json');for(const [k,n] of Object.entries(sv.selector||{}))summary.selector[k]=(summary.selector[k]||0)+n;}catch{}}
 for(const d of days)for(const [k,n] of Object.entries(d.systems))summary.systems[k]=(summary.systems[k]||0)+n;
 for(const r of candidates){summary.candidateReasons[r.finalReason]=(summary.candidateReasons[r.finalReason]||0)+1;if(r.romance)summary.romance[r.finalReason]=(summary.romance[r.finalReason]||0)+1;}
 fs.writeFileSync(path.join(root,'summary.json'),JSON.stringify(summary,null,2));

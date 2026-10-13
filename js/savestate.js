@@ -163,6 +163,8 @@ export function patchEpisodeHistory(ep) {
   if (!h.tipOffCampEvents && ep.tipOffCampEvents) h.tipOffCampEvents = ep.tipOffCampEvents;
   // which camp scenes air, in order (td/story/director.js)
   if (!h.campStory && ep.campStory) h.campStory = ep.campStory;
+  // ...and why each proposed scene aired or didn't (director.js selectScenes), for the debug view
+  if (!h.tdDirectorLog && ep.tdDirectorLog) h.tdDirectorLog = ep.tdDirectorLog;
   if (!h.twistStory && ep.twistStory) h.twistStory = ep.twistStory;
   if (!h.tribalStory && ep.tribalStory) h.tribalStory = ep.tribalStory;
   if (!h.exileStory && ep.exileStory) h.exileStory = ep.exileStory;

@@ -57,6 +57,8 @@ const MORNING = /\b(breakfast|good morning|morning,|this morning\.|sunrise|wakes
 const EVENING = /\b(dinner|lights-out|lights out|goodnight|good night|after the challenge|gone to bed|still up|last ones still up|last two still up)\b|^late,|\(late,/i;
 const CHAL_DONE = /\b(we lost|we won|lost it for us|lost us|carried us|dead last|lowest score|best score|the challenge today|today's challenge was|out there today|the worst one out there)\b/i;
 const ledger = () => ((gs.tdStory ||= {}).ledger ||= newLedger());
+// an entry by its words: its first spoken line, as written (the same template under two ids is the same scene)
+const entryKey = e => { const t = (e?.turns || []).find(x => x.say || x.conf); return t ? String(t.say || t.conf).slice(0, 80) : String(e?.id || ''); };
 
 export const hasStoryPool = pool => !!(STORY_POOLS[`${pool}.any`]?.length || Object.keys(STORY_POOLS).some(k => k.startsWith(pool + '.')));
 
@@ -144,8 +146,11 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     // fresh one has aired, the least-aired comes back rather than the vote going unexplained
     // ...and never twice in one episode, between two different sets of people (read in a played season:
     // the same 'overheard' confessional twice in one evening). Kept only while something else fits.
+    // (by its words too: one template copied under several ids, a vote count written once for every case, is one scene;
+    // read 2026-10-12: Gwen and Lake both "Even if one of ours flips, we've still got the numbers" in one evening).
+    // ctx.epFresh: nothing at all rather than a repeat, for a part of a scene that can go without it
     const eu = gs.tdStory?.epUsed;
-    if (ctx.unique !== false && eu && eu.ep === ctx.ep) { const rest = fits.filter(e => !eu.ids.includes(e.id)); if (rest.length) fits.splice(0, fits.length, ...rest); }
+    if (ctx.unique !== false && eu && eu.ep === ctx.ep) { const rest = fits.filter(e => !eu.ids.includes(e.id) && !(eu.keys || []).includes(entryKey(e))); if (rest.length || ctx.epFresh) fits.splice(0, fits.length, ...rest); }
     const uses = ledger().uses || {};
     if (ctx.unique === 'soft' && fits.length && fits.every(e => uses[e.id])) {
       const least = Math.min(...fits.map(e => uses[e.id]));
@@ -212,7 +217,7 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     if (entry) break;
   }
   if (!entry) return null;
-  spend(() => { const book = (gs.tdStory ||= {}); if (!book.epUsed || book.epUsed.ep !== ctx.ep) book.epUsed = { ep: ctx.ep, ids: [] }; book.epUsed.ids.push(entry.id); });
+  spend(() => { const book = (gs.tdStory ||= {}); if (!book.epUsed || book.epUsed.ep !== ctx.ep) book.epUsed = { ep: ctx.ep, ids: [], keys: [] }; book.epUsed.ids.push(entry.id); (book.epUsed.keys ||= []).push(entryKey(entry)); });
   if (!/^kit:/.test(entry.id || '')) spend(() => { const seen = storySeen(); seen[entry.id] = (seen[entry.id] || 0) + 1; });
   // Where it is staged: the entry's own kind of place, else where the engine put the moment,
   // else the pool's default kind. The lines say it as {here} ("on the dock") or {place}.

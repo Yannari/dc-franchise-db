@@ -389,6 +389,35 @@ const ANY = [
     { beat: '{a} trains hard all morning, then collapses in the shade.' },
     { by: 'a', conf: "I'm in the best shape of my life and I'm living on rice. I don't understand bodies." },
   ] },
+  // (more for a long stay: read 2026-10-13, a season of six weeks out here ran through the plain ones and repeated three).
+  // This pool is the fallback for every kind of training, so nothing here names a body part or one skill.
+  { id: 'it.an9', turns: [
+    { beat: '{a} keeps a tally of every session on a piece of driftwood, one scratch a day, and adds another.' },
+    { by: 'a', say: "That's a week without missing one." },
+    { by: 'a', conf: "There's nothing else to do out here except get better. So that's what I'm doing, every single day." },
+  ] },
+  { id: 'it.an10', turns: [
+    { beat: '{a} works on the same thing all afternoon, gets it wrong, and starts again from the beginning.' },
+    { by: 'a', conf: "I keep thinking about the moment I went home. Next time I'm in that moment, I want to already know what to do." },
+  ] },
+  { id: 'it.an11', turns: [
+    { beat: '{a} is still at it when the sun goes down, long after everyone else has stopped.' },
+    { by: 'a', say: "One more. Then food. Then one more." },
+    { by: 'a', conf: "Out here nobody's watching, so nobody can tell me I'm doing too much. That's the best part." },
+  ] },
+  { id: 'it.an12', turns: [
+    { beat: '{a} starts the day before anyone else is up, and has been at it for an hour when the others crawl out of the shelter.' },
+    { by: 'a', conf: "The first week out here I felt sorry for myself. That got boring. This doesn't." },
+  ] },
+  { id: 'it.an13', turns: [
+    { beat: '{a} goes back to the thing {a} was worst at yesterday, before anything else.' },
+    { by: 'a', say: "Okay. You again." },
+    { by: 'a', conf: "If I only practise what I'm good at, I come back exactly as good as when I left. That didn't work last time." },
+  ] },
+  { id: 'it.an14', turns: [
+    { beat: '{a} sets a target in the morning and keeps going, through the heat, until it is done.' },
+    { by: 'a', conf: "When I get back in, nobody is going to ask how I spent my time out here. They'll see it." },
+  ] },
 ];
 
 const INJURY_BODY = [

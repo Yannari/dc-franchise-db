@@ -1,0 +1,162 @@
+[
+  {
+    "run": "hosted-camp_enabled_no-coaches_1729",
+    "same": true
+  },
+  {
+    "run": "hosted-camp_enabled_no-coaches_2026",
+    "same": true
+  },
+  {
+    "run": "hosted-camp_enabled_coaches_1729",
+    "same": true
+  },
+  {
+    "run": "hosted-camp_enabled_coaches_2026",
+    "same": true
+  },
+  {
+    "run": "hosted-camp_disabled_no-coaches_1729",
+    "same": true
+  },
+  {
+    "run": "hosted-camp_disabled_no-coaches_2026",
+    "same": true
+  },
+  {
+    "run": "hosted-camp_disabled_coaches_1729",
+    "same": true
+  },
+  {
+    "run": "hosted-camp_disabled_coaches_2026",
+    "same": true
+  },
+  {
+    "run": "survival-island_enabled_no-coaches_1729",
+    "same": true
+  },
+  {
+    "run": "survival-island_enabled_no-coaches_2026",
+    "same": true
+  },
+  {
+    "run": "survival-island_enabled_coaches_1729",
+    "same": true
+  },
+  {
+    "run": "survival-island_enabled_coaches_2026",
+    "same": true
+  },
+  {
+    "run": "survival-island_disabled_no-coaches_1729",
+    "same": true
+  },
+  {
+    "run": "survival-island_disabled_no-coaches_2026",
+    "same": true
+  },
+  {
+    "run": "survival-island_disabled_coaches_1729",
+    "same": true
+  },
+  {
+    "run": "survival-island_disabled_coaches_2026",
+    "same": true
+  },
+  {
+    "run": "film-lot_enabled_no-coaches_1729",
+    "same": true
+  },
+  {
+    "run": "film-lot_enabled_no-coaches_2026",
+    "same": true
+  },
+  {
+    "run": "film-lot_enabled_coaches_1729",
+    "same": true
+  },
+  {
+    "run": "film-lot_enabled_coaches_2026",
+    "same": true
+  },
+  {
+    "run": "film-lot_disabled_no-coaches_1729",
+    "same": true
+  },
+  {
+    "run": "film-lot_disabled_no-coaches_2026",
+    "same": true
+  },
+  {
+    "run": "film-lot_disabled_coaches_1729",
+    "same": true
+  },
+  {
+    "run": "film-lot_disabled_coaches_2026",
+    "same": true
+  },
+  {
+    "run": "carnival_enabled_no-coaches_1729",
+    "same": true
+  },
+  {
+    "run": "carnival_enabled_no-coaches_2026",
+    "same": true
+  },
+  {
+    "run": "carnival_enabled_coaches_1729",
+    "same": true
+  },
+  {
+    "run": "carnival_enabled_coaches_2026",
+    "same": true
+  },
+  {
+    "run": "carnival_disabled_no-coaches_1729",
+    "same": true
+  },
+  {
+    "run": "carnival_disabled_no-coaches_2026",
+    "same": true
+  },
+  {
+    "run": "carnival_disabled_coaches_1729",
+    "same": true
+  },
+  {
+    "run": "carnival_disabled_coaches_2026",
+    "same": true
+  },
+  {
+    "run": "world-tour_enabled_no-coaches_1729",
+    "same": true
+  },
+  {
+    "run": "world-tour_enabled_no-coaches_2026",
+    "same": true
+  },
+  {
+    "run": "world-tour_enabled_coaches_1729",
+    "same": true
+  },
+  {
+    "run": "world-tour_enabled_coaches_2026",
+    "same": true
+  },
+  {
+    "run": "world-tour_disabled_no-coaches_1729",
+    "same": true
+  },
+  {
+    "run": "world-tour_disabled_no-coaches_2026",
+    "same": true
+  },
+  {
+    "run": "world-tour_disabled_coaches_1729",
+    "same": true
+  },
+  {
+    "run": "world-tour_disabled_coaches_2026",
+    "same": true
+  }
+]

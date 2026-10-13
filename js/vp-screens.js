@@ -30,6 +30,7 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 // not look like anything already in this repo.
 import { traitorsScreens } from './vp-tr/screens.js';
 import { rpBuildTraitorsDebug } from './vp-tr/debug.js';
+import { directorLogHtml } from './td/story/director-debug.js';
 import { rpBuildDragSummary } from './vp-dr/summary.js';
 import { dragScreens } from './vp-dr/screens.js';
 import { perfectMatchVpScreens } from './vp-pm/screens.js';
@@ -2611,6 +2612,7 @@ export function rpBuildDebug(ep) {
       ${(ep.adaptationSnapshot || snap.adaptationProfiles) ? _tabBtn('learning', 'Learning') : ''}
       ${_tabBtn('commitments', 'Vote Commitments')}
       ${_tabBtn('history', 'Hidden Moves')}
+      ${ep.tdDirectorLog ? _tabBtn('director', 'Director') : ''}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
       ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isTruthOrDareTrain || ep.isAMazeInGrip || ep.isPolesApart || ep.isTusksLadders || ep.isKillerClown || ep.isBumperCarBash || ep.isSayCheese || ep.isWheelOfMisfortune || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isCampCastaways || ep.isSlasherNight || ep.isMonsterCash || ep.isAlienEgg) ? _tabBtn('challenge', 'Challenge') : ''}
@@ -2634,6 +2636,11 @@ export function rpBuildDebug(ep) {
   // ════════════════════════════════════════════════
   // TAB: CAMP TIME / LOCATION ACCESS
   // ════════════════════════════════════════════════
+  // ════════════════════════════════════════════════
+  // TAB: DIRECTOR — every camp scene proposed, and why it aired or didn't (td/story/director.js selectScenes)
+  // ════════════════════════════════════════════════
+  if (_dbTab === 'director') html += directorLogHtml(ep.tdDirectorLog);
+
   if (_dbTab === 'access') {
     const access = ep.campAccess || snap.campAccess;
     html += `<div style="margin-bottom:14px;padding:10px;background:rgba(87,166,232,0.07);border:1px solid rgba(87,166,232,0.18);border-radius:8px">

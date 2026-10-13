@@ -30,8 +30,21 @@ export function adopt(to, from) {
   return to;
 }
 
+// What a proposal holds while the director decides (stage 3): an engine moment a proposal claims is marked aired at
+// once, so no other system proposes the same moment the same day, and a proposal that is dropped gives it back.
+const RELEASE = new WeakMap();
+
+/** Run fn if the director drops this candidate (it gives back what proposing it claimed). */
+export function onDiscard(candidate, fn) {
+  if (!candidate || typeof fn !== 'function') return candidate;
+  const list = RELEASE.get(candidate);
+  if (list) list.push(fn); else RELEASE.set(candidate, [fn]);
+  return candidate;
+}
+
 /** Accept a candidate: its changes happen now, once. */
 export function commit(candidate) {
+  if (candidate) RELEASE.delete(candidate);
   const list = candidate && PENDING.get(candidate);
   if (!list) return candidate;
   PENDING.delete(candidate);
@@ -40,9 +53,13 @@ export function commit(candidate) {
   return candidate;
 }
 
-/** Drop a candidate: nothing it would have changed happens. */
+/** Drop a candidate: nothing it would have changed happens, and what it claimed is given back. */
 export function discard(candidate) {
-  if (candidate) PENDING.delete(candidate);
+  if (!candidate) return;
+  PENDING.delete(candidate);
+  const back = RELEASE.get(candidate);
+  RELEASE.delete(candidate);
+  if (back) for (const fn of back.reverse()) fn();
 }
 
-export const pending = candidate => !!candidate && PENDING.has(candidate);
+export const pending = candidate => !!candidate && (PENDING.has(candidate) || RELEASE.has(candidate));

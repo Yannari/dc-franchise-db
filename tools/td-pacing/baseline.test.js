@@ -10,7 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { core, runOneSeason } from '../../tests/helpers/season-harness.js';
 import { campFeed } from '../../js/td/story/feed.js';
 import { sceneMeasure, rhythm, rollingShares } from './metrics.js';
-const OUT=import.meta.env.MODE==='baseline-smoke'?path.join(os.tmpdir(),'td-pacing-smoke'):path.join('docs/superpowers/audits/2026-10-12-td-pacing',process.env.TD_PACING_VENUE||'unbatched');
+const OUT=import.meta.env.MODE==='baseline-smoke'?path.join(os.tmpdir(),'td-pacing-smoke'):path.join(process.env.TD_PACING_OUT||'docs/superpowers/audits/2026-10-12-td-pacing',process.env.TD_PACING_VENUE||'unbatched');
 const clone=x=>JSON.parse(JSON.stringify(x));
 const hash=x=>createHash('sha256').update(JSON.stringify(x)).digest('hex');
 const names=['Gwen','Leshawna','Heather','Duncan','Courtney','Owen','Lindsay','Trent','Julia','Millie','Aubrey','Lake','Gabby','Bowie','Yul','Bruno'];
@@ -32,7 +32,7 @@ it('captures a reproducible director baseline without changing production code',
  const baseConfig={...initialConfig,format:'total-drama',tdEdit:'full',teams:2,mergeAt:10,finaleSize:3,finaleFormat:'traditional',jurySize:7,aftermath:'disabled',popularityEnabled:false,twistSchedule:[],coaches:'disabled',rescueIsland:'disabled'};
  const plain=import.meta.env.MODE==='baseline-plain';
  const report={revision:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),fixedDate:'2026-10-12T12:00:00Z',seeds,baseConfig,cast:baseCast,coaches,runs:[]};
- const allDays=[],allCandidates=[],allWindows=[],allPending=[],allOpportunities=[],transcripts=[],episodeTexts=[];
+ const allSelector={};const allDays=[],allCandidates=[],allWindows=[],allPending=[],allOpportunities=[],transcripts=[],episodeTexts=[];
  for(const setting of ((process.env.TD_PACING_SMOKE||import.meta.env.MODE==='baseline-smoke')?venues.slice(0,1):venues.filter(v=>v===process.env.TD_PACING_VENUE)))for(const romance of ((process.env.TD_PACING_SMOKE||import.meta.env.MODE==='baseline-smoke')?['enabled']:['enabled','disabled']))for(const withCoaches of ((process.env.TD_PACING_SMOKE||import.meta.env.MODE==='baseline-smoke')?[false]:[false,true]))for(const seed of seeds){
   const id=[setting,romance,withCoaches?'coaches':'no-coaches',seed].join('_');
   progress(id+' before reset');
@@ -97,6 +97,8 @@ it('captures a reproducible director baseline without changing production code',
    for(const r of candidates.values())if(!r.finalReason)r.finalReason=r.replaced?'replaced':r.proposed?'offered-then-cut':r.mainDecision==='selected'?'selected-not-rendered':r.mainDecision||'not-selected';
    for(const o of opportunities){const duplicates=opportunities.filter(q=>q.ep===o.ep&&q.camp===o.camp&&q.phase===o.phase&&q.kind===o.kind&&q.pair===o.pair).length;const rows=[...candidates.values()].filter(r=>r.ep===o.ep&&r.camp===o.camp&&r.phase===o.phase&&r.kind===o.kind&&r.pair===o.pair);o.status=duplicates>1?'ambiguous-multiple-attempts':rows.some(r=>r.aired)?'aired':rows.some(r=>r.proposed)?'offered-then-cut':'writer-no-scene';}allOpportunities.push(...opportunities);
    episodeTexts.push(...core.gs.episodeHistory.map(ep=>({run:id,ep:ep.num,text:ep.summaryText||''})));
+   // the director's own reason for every proposal (stage 3 onward; director.js selectScenes, ep.tdDirectorLog)
+   for(const h of core.gs.episodeHistory)for(const day of Object.values(h.tdDirectorLog||{}))for(const r of [...(day.pre||[]),...(day.post||[])]){const [head,src,tier]=String(r).split('|');const k=src+'|'+tier+'|'+head;allSelector[k]=(allSelector[k]||0)+1;}
    allDays.push(...runDays);allCandidates.push(...candidates.values());allWindows.push(...rollingShares(sceneRows).map(w=>({run:id,...w})));allPending.push(...pending);transcripts.push(...runTranscripts);
   }
   report.runs.push({id,config,seed,withCoaches,result,fingerprint});
@@ -107,7 +109,7 @@ it('captures a reproducible director baseline without changing production code',
  fs.mkdirSync(OUT,{recursive:true});
  if(plain){fs.writeFileSync(path.join(OUT,'plain-fingerprints.json'),JSON.stringify(report.runs.map(({id,fingerprint})=>({id,fingerprint})),null,2));return;}
  const summary={runs:report.runs.length,days:allDays.length,sceneCount:dist(allDays.map(d=>d.scenes)),spokenLines:dist(allDays.map(d=>d.spoken)),confessionalLines:dist(allDays.map(d=>d.confessionals)),above22:allDays.filter(d=>d.scenes>22).length,
-  heavyRun:dist(allDays.map(d=>d.maxHeavyRun)),freshPairs:allDays.reduce((n,d)=>n+d.freshPairs,0),pairScenes:allDays.reduce((n,d)=>n+d.pairScenes,0),systems:{},romance:{},candidateReasons:{}};
+  heavyRun:dist(allDays.map(d=>d.maxHeavyRun)),freshPairs:allDays.reduce((n,d)=>n+d.freshPairs,0),pairScenes:allDays.reduce((n,d)=>n+d.pairScenes,0),systems:{},romance:{},candidateReasons:{},selector:allSelector};
  for(const d of allDays)for(const [k,n] of Object.entries(d.systems))summary.systems[k]=(summary.systems[k]||0)+n;
  for(const r of allCandidates){summary.candidateReasons[r.finalReason]=(summary.candidateReasons[r.finalReason]||0)+1;if(r.romance)summary.romance[r.finalReason]=(summary.romance[r.finalReason]||0)+1;}
  for(const [file,data] of Object.entries({'manifest.json':report,'summary.json':summary,'days.json':allDays,'candidates.json':allCandidates,'rolling-shares.json':allWindows,'pending.json':allPending,'opportunities.json':allOpportunities})){const content=JSON.stringify(data,null,2);fs.writeFileSync(path.join(OUT,file.endsWith('summary.json')||file.endsWith('manifest.json')?file:file+'.gz'),file.endsWith('summary.json')||file.endsWith('manifest.json')?content:gzipSync(content));}

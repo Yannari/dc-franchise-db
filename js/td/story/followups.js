@@ -42,11 +42,12 @@ export function recordFollowups(ep, camp, out) {
     pending.push({ id, kind: topic, a, b, c, ep: ep.num, camp, phase,
       remark: spoken.filter(l => l.by === a).sort((x,y) => y.text.length - x.text.length)[0].text, done: false });
   }
-  gs.tdStory.followups = pending.filter(t => ep.num - t.ep <= 3);
+  // a callback the edit had no room for keeps one more episode, then it has gone stale (the pacing plan: two episodes)
+  gs.tdStory.followups = pending.filter(t => ep.num - t.ep <= 2);
 }
 export function followupScene(ep, camp, members, phase, next, write, factsForWho) {
   if (phase !== 'pre') return null;
-  const pending = book().filter(t => !t.done && ep.num > t.ep && ep.num - t.ep <= 3
+  const pending = book().filter(t => !t.done && ep.num > t.ep && ep.num - t.ep <= 2
     && members.includes(t.a) && members.includes(t.b) && (t.kind !== 'clash' || members.includes(t.c)));
   pending.sort((x,y) => x.ep - y.ep || x.id.localeCompare(y.id));
   for (const t of pending) {

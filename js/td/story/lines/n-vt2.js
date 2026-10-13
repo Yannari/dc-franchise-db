@@ -66,7 +66,8 @@ export default {
       { beat: "{b} looks out at the water and doesn't say anything." },
       { by: 'b', conf: "{a} just told me how much {a} trusts me, and in about three hours I'm writing {a}'s name. I've never felt this bad about something I know is right." },
     ] },
-    { id: 'nvt.f2', turns: [
+    // (before the merge only: read 2026-10-13, Duncan sure he'd 'make the merge' on the merge episode itself)
+    { id: 'nvt.f2', when: { merged: false }, turns: [
       { by: 'a', say: "Can I tell you something? I think I'm actually going to make the merge. Like, really make it." },
       { by: 'b', say: "Yeah?" },
       { by: 'a', say: "Yeah. Tonight's going to be {wrote}, and after that, nobody's got a reason to come for me." },

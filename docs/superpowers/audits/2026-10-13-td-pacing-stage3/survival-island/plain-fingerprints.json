@@ -1,0 +1,82 @@
+[
+  {
+    "id": "survival-island_enabled_no-coaches_1729",
+    "fingerprint": {
+      "history": "d94d22cbdb31309f73970e2717b23f6d5e4c321e43086092aaddef930a10f1b8",
+      "bonds": "cde8eea8b4a6344bd029555e7186bdda7731602ae651671d4e97a367f63db3e9",
+      "story": "f018a8066fef5da6c6345147b2ba690d5939c4aed91d69563f4a98f3af6ca82a",
+      "randomCalls": 8429,
+      "winner": "Bowie"
+    }
+  },
+  {
+    "id": "survival-island_enabled_no-coaches_2026",
+    "fingerprint": {
+      "history": "41425916fc44f1771530c9a10e1634305b15ad6d43e8313300844905671b4119",
+      "bonds": "22c4f92ac02219de4785bf3ea608e1f1a331fabf0235dc9e5674e69be5dbd8c9",
+      "story": "d353c2f32559462b4e02ef5db86f3befbb5fc9352d94247cabf6906ccbe7193f",
+      "randomCalls": 8506,
+      "winner": "Millie"
+    }
+  },
+  {
+    "id": "survival-island_enabled_coaches_1729",
+    "fingerprint": {
+      "history": "ec003420e46aa9816e9ffff7461e01f225f3d54a640effcfbfef096adddaf427",
+      "bonds": "1598f64db942789dc2307888b459c97061d99496e42b79ec50860143253412d4",
+      "story": "ef6f7771c14c4ed3ce5424f6ab23715e3827298d990836158e0ccf866f863bde",
+      "randomCalls": 10139,
+      "winner": "Bruno"
+    }
+  },
+  {
+    "id": "survival-island_enabled_coaches_2026",
+    "fingerprint": {
+      "history": "0890a47b1b25c3dfcda302a2ab3c405163b93820025814d520e1acdd3f57a603",
+      "bonds": "c538f1a9c04ebb39107ff83c5d667fdefdaba6c24cffa106f53eb724a913df62",
+      "story": "02863d3d4e263bf0367631fd40d5552ad072f5aa0e5c7b798adeaf67c4935eaa",
+      "randomCalls": 10292,
+      "winner": "Lindsay"
+    }
+  },
+  {
+    "id": "survival-island_disabled_no-coaches_1729",
+    "fingerprint": {
+      "history": "0d9d9dcd6828073304267761c1b4bd6fef4f5d1e42da55aad3dbd3c665ed6436",
+      "bonds": "5f7be620ff253c6052bcb97c23731b9c15b77a28547d2097dda1578b5916bb11",
+      "story": "52a37d5b1510c6b5f24a1e7e1998a733e533c15786390fa93303e91bb4e8e7e7",
+      "randomCalls": 7571,
+      "winner": "Leshawna"
+    }
+  },
+  {
+    "id": "survival-island_disabled_no-coaches_2026",
+    "fingerprint": {
+      "history": "f038db473f173cee2a62f094060450c03c6fcf9d2d09187fc901b06c3116822d",
+      "bonds": "634414ec0a71a665842a48d601ff20ef4cc07125e856e6488bc5616114cf3e12",
+      "story": "5c6e8d14439cddbfb43aa308b8e377c71f74f7473d17e2ffb53fa563b7bab6e4",
+      "randomCalls": 8461,
+      "winner": "Gwen"
+    }
+  },
+  {
+    "id": "survival-island_disabled_coaches_1729",
+    "fingerprint": {
+      "history": "962c14b502c3b161253f4ee53b1c8042e19d3586ee5610a690d50845a6e7d66d",
+      "bonds": "6842a0d2719d0449bafa08e3a031e47a6ec0d9a03bc5c5a8f9f64912ba37cb55",
+      "story": "ba79a0d5db6e7d78c786e02a3f6f617aa6354439aecc5167d70dfbb52605ac86",
+      "randomCalls": 10067,
+      "winner": "Gabby"
+    }
+  },
+  {
+    "id": "survival-island_disabled_coaches_2026",
+    "fingerprint": {
+      "history": "c6ffeb0677116aab455a33126fc3fb08fd9bad8dfe6514a899cf462759dcb547",
+      "bonds": "d163003ec6523179a7656854b6308b439d2d0e76f7b864fea6581507b57c28d1",
+      "story": "1fc7c18354e2ac473f0dfed999f201d590166e8a076f42004b88ee8331638234",
+      "randomCalls": 10434,
+      "winner": "Lake"
+    }
+  }
+]

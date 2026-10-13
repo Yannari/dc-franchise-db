@@ -158,6 +158,29 @@ const REST = [
     { beat: '{a} patches up a blister with a leaf and a strip of cloth and calls it a day.' },
     { by: 'a', conf: "Tomorrow I train. Today I let the island win one." },
   ] },
+  // (more for a long stay: read 2026-10-13, one season's six weeks out here repeated three of the plain ones)
+  { id: 'im.r21', turns: [
+    { beat: '{a} spends the afternoon on the rocks, watching the boat go past without stopping.' },
+    { by: 'a', conf: "Every day I think it's coming for me. Today I just watched it go. That felt like rest, somehow." },
+  ] },
+  { id: 'im.r22', turns: [
+    { beat: '{a} cooks the rice slowly for once, stirring it like there is somewhere to be after.' },
+    { by: 'a', say: "Perfect. Okay, nearly perfect." },
+    { by: 'a', conf: "It's the first thing out here I've done slowly on purpose. I'd forgotten that was allowed." },
+  ] },
+  { id: 'im.r23', turns: [
+    { beat: '{a} lies on the sand counting the days scratched into a piece of driftwood.' },
+    { by: 'a', conf: "I've been out here longer than I was in the game. I try not to think about that on a day off." },
+  ] },
+  { id: 'im.r24', turns: [
+    { beat: '{a} sits with {a.posAdj} back against a tree and talks to the camera about home for an hour.' },
+    { by: 'a', conf: "If I don't rest my body I'm no good tomorrow. If I don't rest my head I'm no good at all." },
+  ] },
+  { id: 'im.r25', turns: [
+    { beat: '{a} wakes up late, looks at the training course, and lies back down.' },
+    { by: 'a', say: "Nope. Not today." },
+    { by: 'a', conf: "I've pushed every day for weeks. One day off won't send me home. Being too tired to stand will." },
+  ] },
 ];
 const LEAN = [
   { id: 'im.ln1', turns: [

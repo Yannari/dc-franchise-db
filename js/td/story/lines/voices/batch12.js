@@ -27,7 +27,7 @@ export default {
     4: { warm: "And nobody's mentioned anybody else to you? You'd tell me?" },
     5: { dry: "Not to me. People don't bring me their plans, and I can't think why.", warm: "Not to me, but people don't really come to me with plans.", anxious: "Not to me. People don't tell me plans, which honestly worries me.", calm: "Not to me. I'm not who people bring plans to.", cruel: "Not to me. People know better than to tell me things." },
     6: { warm: "That's what I like about you. You're honest about what you don't know, and I trust that." },
-    7: { warm: "I've done the maths, and it's {wrote}. I just hope nobody's lying to me, because I don't think anybody would." },
+    7: { warm: "I've counted it, and it's {wrote}. I just hope nobody's lying to me, because I don't think anybody would." },
   },
   'nl4.v1': {
     0: { ditzy: "Do you think people here take me seriously? Like, at all?" },

@@ -131,7 +131,7 @@ export default {
       { by: 'b', say: "It worked, didn't it?" },
       { by: 'a', say: "For tonight. Enjoy tonight." },
       { by: 'b', say: "I will. I really, really will." },
-      { by: 'h', say: "And that's why we keep the boat running. {a}, go." },
+      { by: 'h', say: "Okay, okay, save it for the Aftermath. {a}, time to go." },
     ] },
     { id: 'nx2.k4', when: { voice: ['calm', 'dry', 'schemer'] }, turns: [
       { by: 'a', say: "Well played, {b}." },

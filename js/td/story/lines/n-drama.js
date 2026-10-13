@@ -233,12 +233,13 @@ export default {
       { by: 'a', say: "Then I hope I've been useful the rest of the time." },
       { by: 'b', conf: "{a} wants to keep the strong ones. I want to keep the ones who'll actually vote with us. We can't both be right.", v: { competitive: "Strong or loyal? I want both, but we can't have both.", nerdy: "It's a classic trade-off: strength versus loyalty. {a} is weighting it wrong." } },
     ] },
-    { id: 'nd.dp3', place: 'aside', when: { voice: ['loud', 'blunt', 'tough'] }, turns: [
+    // (it names who the plan is about: read 2026-10-14, "the strongest person here, whom we need" named nobody)
+    { id: 'nd.dp3', place: 'aside', when: { voice: ['loud', 'blunt', 'tough'], carried: true }, turns: [
       { by: 'a', say: "Your plan is bad." },
-      { by: 'b', say: "Good morning to you too." },
-      { by: 'a', say: "I'm serious, you want to go after the strongest person here, and we need them for challenges." },
-      { by: 'b', say: "We need them gone before they win immunity every week." },
-      { by: 'a', say: "We need to make it to the merge first!" },
+      { by: 'b', say: "Hi to you too." },
+      { by: 'a', say: "I'm serious. You want to get rid of {carried}, and {carried} is the best we've got in challenges." },
+      { by: 'b', say: "That's exactly why. If we wait until the merge, {carried} wins immunity every single time." },
+      { by: 'a', say: "We have to make it to the merge first!" },
       { by: 'b', say: "Fine, do it your way, but when it goes wrong, I'm going to say I told you so." },
       { by: 'a', say: "And when it goes right, I'm going to say it louder." },
       { by: 'b', conf: "{a} and I want the same thing. We just completely disagree about how to get it." },

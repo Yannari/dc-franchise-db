@@ -188,13 +188,6 @@ export default {
     7: { loud: "And then we watch them fall apart trying to decide who's in charge!", dry: "Then we watch them fall apart deciding who's in charge.", flirty: "Then we watch them fall apart trying to decide who's in charge.", warm: "Then we watch them fall apart deciding who's in charge." },
     8: { emotional: "{a} wants to pull one brick out of {theirs} and watch the wall come down, and I really hope {a} chose the right brick.", competitive: "{a} wants to pull one brick and bring down {theirs}. I hope it's the right brick.", nerdy: "{a} wants to remove the one brick holding {theirs} up. I hope {a} has identified the right one.", blunt: "{a} is pulling one brick to drop {theirs}. Hope it's the right one.", flirty: "{a} wants to pull one brick and watch {theirs} fall. I hope {a} picked the right brick." },
   },
-  'nd.dp3': {
-    0: { warm: "Your plan is bad, I'm sorry.", dry: "Your plan is bad.", competitive: "Your plan is bad.", flirty: "Your plan is bad.", nerdy: "Your plan is flawed." },
-    1: { warm: "Good morning to you too.", loud: "Good MORNING to you too!" },
-    2: { warm: "I'm serious, you want to go after the strongest person here, and we need them for challenges.", theatrical: "I'm serious, you want to go after our strongest player, and we need them!", dry: "I'm serious. You want to go after the strongest person here, whom we need for challenges.", flirty: "I'm serious, you want to go after the strongest person here, and we need them." },
-    5: { dry: "Fine, do it your way, and when it goes wrong, I'll say I told you so.", theatrical: "Fine, do it your way! And when it goes wrong, I shall say I told you so!" },
-    7: { dry: "{a} and I want the same thing, and completely disagree about how to get it.", theatrical: "{a} and I want the very same thing, and disagree utterly on how to get there." },
-  },
   'ns.s1': { 9: { calm: "I didn't come here to fall for anybody, and that plan lasted about a week.", warm: "I didn't come here to fall for anybody, and that plan lasted about a week. I'm glad.", quiet: "I didn't plan on falling for anyone. That lasted a week.", loud: "I did NOT come here to fall for anybody! That plan lasted about a week!", schemer: "I didn't come here to fall for anybody, and that plan lasted about a week." } },
   'nps.p2': {
     0: { warm: "You've been up since before sunrise.", earnest: "You've been up since before sunrise.", loud: "You've been up since BEFORE sunrise!", flirty: "You've been up since before sunrise." },
@@ -353,7 +346,7 @@ export default {
   },
   'nv.y5': { 4: { competitive: "You'll get something back. I won't forget.", proud: "You'll get something back. I don't forget.", schemer: "You'll get something back. I won't forget." } },
   'na.n3': {
-    1: { loud: "Wow. Good MORNING to you too.", calm: "Wow. Good morning to you too.", warm: "Wow, good morning to you too.", blunt: "Good morning to you too." },
+    1: { loud: "Wow. HI to you too.", calm: "Wow. Hi to you too.", warm: "Wow, hi to you too.", blunt: "Hi to you too." },
     3: { loud: "We could TRY to fix it!", calm: "We could try to fix it.", warm: "We could try to fix it, you know.", blunt: "We could fix it." },
     5: { loud: "FINE! Don't come to me when you need a vote!", calm: "Fine. Don't come to me when you need a vote.", warm: "Fine, but don't come to me when you need a vote.", blunt: "Fine. Don't come to me for votes." },
     7: { loud: "{a} just blew up the only group keeping {a.obj} safe! I'm not stopping {a.obj}!", calm: "{a} just blew up the only group keeping {a.obj} safe, and I'm not going to stop {a.obj}.", warm: "{a} just blew up the only group that was keeping {a.obj} safe, and I'm too tired to stop {a.obj}.", blunt: "{a} blew up the group keeping {a.obj} safe. I'm not stopping {a.obj}." },

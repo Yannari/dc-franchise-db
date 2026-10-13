@@ -18,7 +18,8 @@ import { onCommit } from './commit.js';
 import { stableRng } from '../../script/rng.js';
 import { fill, transcript, salt } from '../script/write.js';
 import { STORY_POOLS } from './lines/index.js';
-import { hasPlace, placeOf, placeById, kindOf } from './places.js';
+import { hasPlace, placeOf, placeById, kindOf, PLACES } from './places.js';
+const PLACES_OF = venue => PLACES[venue] || PLACES['hosted-camp'];
 import { foodOk } from '../script/food.js';
 import { voiceOf, voiced } from './voice.js';
 import { phrase } from './phrase.js';
@@ -27,6 +28,23 @@ import { tidySpoken, tidyNames } from '../../vp-tr/tidy.js';
 import { pastOf, pastData, isReturnee } from '../past.js';
 import KITS from './kits/index.js';
 import { activeFranchise } from '../../franchise-meta.js';
+
+// a place a scene's stage directions name outright (a beat, never a {here}): the spot it must be staged at
+const NAMED_SPOTS = [
+  [/\bthe (end of the )?dock\b/i, 'dock'], [/\b(around|by|at|round) the fire\b|\bfire pit\b|\bcampfire\b/i, 'fire'], [/\bboathouse\b/i, 'boathouse'],
+  [/\bwaterfall\b/i, 'waterfall'], [/\bmess hall\b/i, 'mess-hall'], [/\bcabin porch\b/i, 'cabins'], [/\bcabin roof\b/i, 'cabins'],
+];
+function namedSpot(entry, venue) {
+  const text = (entry.turns || []).filter(t => t.beat).map(t => t.beat).join(' ');
+  if (!text) return null;
+  const table = PLACES_OF(venue);
+  for (const [rx, id] of NAMED_SPOTS) {
+    if (!rx.test(text)) continue;
+    if (id === 'fire') return (table.fire || []).length ? placeOf(venue, 'fire', 0) : null;
+    return Object.values(table).some(l => l.includes(id)) ? placeById(id) : null;
+  }
+  return null;
+}
 
 // What has aired in this franchise's past seasons, scene by scene (the user, 2026-10-10: "the first day
 // seems to roll always the same events"; measured: one banter scene aired on day one in 12 seasons of 12).
@@ -239,7 +257,12 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   const meal = entry.place === 'eat' || ctx.place === 'eat' && !entry.place;
   const avoid = meal ? null : (ctx.avoid || null);
   const engineKind = ctx.spotId ? kindOf(facts.venue, ctx.spotId) : null;
+  // a scene whose own stage directions say where it is ("on the end of the dock", "around the fire") is staged there,
+  // when this venue has it (read 2026-10-14: "Gwen is sitting on the end of the dock" aired at the river, "Millie is
+  // writing in her journal by the fire" at the river)
+  const namedAt = meal ? null : namedSpot(entry, facts.venue);
   const spot = meal ? placeOf(facts.venue, 'eat', 0)
+    : namedAt ? namedAt
     : entry.place ? placeOf(facts.venue, entry.place, rng(), avoid)
     : ctx.spotId && !(avoid?.has(ctx.spotId) && engineKind) ? placeById(ctx.spotId)
       : placeOf(facts.venue, engineKind || ctx.place || 'public', rng(), avoid);

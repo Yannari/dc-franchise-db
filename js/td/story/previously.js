@@ -82,7 +82,10 @@ export function writePreviously(ep) {
   const quoteOf = (x, people) => {
     const ls = (x?.lines || []).filter(l => (l.kind === 'say' || l.kind === 'conf') && people.includes(l.by) && l.text && l.text.length >= 18 && l.text.length <= 130);
     if (!ls.length) return null;
-    const bite = l => (/!|\?/.test(l.text) ? 2 : 0) + (l.kind === 'conf' ? 1 : 0) + (/never|always|nobody|everybody|fault|liar|trust|promise|hate|done/i.test(l.text) ? 2 : 0);
+    // (a confessional stands on its own; a line that answers somebody doesn't, out of its scene: read 2026-10-14,
+    // "Interesting. And you're the trustworthy one in this conversation?" under "Heather started pulling strings")
+    const reply = l => l.kind === 'say' && /^(Interesting|Wow|Okay|Ok|So|And|But|Yeah|Yes|No|Fine|Then|That|Oh|Huh|Well|Wait|Why|What|Sure|Right)\b/.test(l.text);
+    const bite = l => (/!|\?/.test(l.text) ? 2 : 0) + (l.kind === 'conf' ? 3 : 0) - (reply(l) ? 4 : 0) + (/never|always|nobody|everybody|fault|liar|trust|promise|hate|done/i.test(l.text) ? 2 : 0);
     return [...ls].sort((p, q) => bite(q) - bite(p) || hash(p.text) - hash(q.text))[0];
   };
   let quotes = 0;
@@ -176,9 +179,11 @@ export function writePreviously(ep) {
     }[kb];
     if (!say) return;
     const shot = shotOf(c.x, [a, b].filter(Boolean));
-    H(T(pick(say, `sl-${kb}`)) + (c.score >= 9 ? aside(`sl${i}`) : ''), shot);
-    // the line that mattered, from the people in it
-    if (quotes < QUOTES && (c.score >= 7 || roll(`q${i}`, .5))) { const q = quoteOf(c.x, [a, b].filter(Boolean)); if (q) { Q(q.by, q.text, shot); quotes++; } }
+    const said = T(pick(say, `sl-${kb}`));
+    H(said + (c.score >= 9 ? aside(`sl${i}`) : ''), shot);
+    // the line that mattered, from the people in it: somebody the host just named (a clip from a person the sentence
+    // never mentioned reads as a non sequitur, read 2026-10-14: "Leshawna knew she was in trouble" then Millie)
+    if (quotes < QUOTES && (c.score >= 7 || roll(`q${i}`, .5))) { const q = quoteOf(c.x, [a, b].filter(n => n && said.includes(n))); if (q) { Q(q.by, q.text, shot); quotes++; } }
   });
 
   // ═══ EVERY ELIMINATION: why, who, and how it went down ═══
@@ -237,7 +242,10 @@ export function writePreviously(ep) {
       flip: [`${lead} switched sides at the last second, and took ${boot} out`, `${lead} broke ranks, and ${boot} paid for it`, `${lead} flipped, and nobody saw it coming, least of all ${boot}`],
     }[reason] || [`${lead} put ${boot}'s name out there, and it stuck`, `${lead} needed a name, and ${boot}'s was the easiest to say`, `${lead} went to work on getting ${boot} out`];
     const plural = voters.length > 1;
-    H(`${idx ? (topTwo ? pick(['And the runner-up? ', 'As for the other one, ', 'And right behind them? '], 'second2') : pick(['And the second one? ', 'As for the other one, ', 'Then, round two. '], 'second')) : pick(['', 'At the vote, ', 'When it came time to vote, ', 'So here\'s what really happened. '], 'vlead')}${Cap(pick(why, `why-${reason}`))}${g && !['flip', 'strike'].includes(reason) ? `, and ${g} fell in line` : plural && voters.length >= 3 ? pick([`, and ${num(voters.length - 1)} others went along with it`, `, and got the numbers`, `, and rounded up the votes`], 'numbers') : ''}.${feudWith && feudWith !== lead ? ` ${pick([`And ${boot}'s feud with ${feudWith}? That didn't help.`, `It didn't help that ${feudWith} had been feuding with ${boot} for weeks.`, `And ${feudWith}, still stewing over that feud with ${boot}, was happy to help.`], 'feud')}` : ''}`, tribalShot([lead, boot]));
+    // (an ending that adds the voters only after a clause whose subject is still the lead: "Heather broke ranks, and
+    // Aubrey paid for it, and rounded up the votes" read 2026-10-14)
+    const whyText = Cap(pick(why, `why-${reason}`)), tail = !/, and |least of all/.test(whyText);
+    H(`${idx ? (topTwo ? pick(['And the runner-up? ', 'As for the other one, ', 'And right behind them? '], 'second2') : pick(['And the second one? ', 'As for the other one, ', 'Then, round two. '], 'second')) : pick(['', 'At the vote, ', 'When it came time to vote, ', 'So here\'s what really happened. '], 'vlead')}${whyText}${!tail ? '' : g && !['flip', 'strike'].includes(reason) ? `, and ${g} fell in line` : plural && voters.length >= 3 ? pick([`, and ${num(voters.length - 1)} others went along with it`, `, and got the numbers`, `, and rounded up the votes`], 'numbers') : ''}.${feudWith && feudWith !== lead ? ` ${pick([`And ${boot}'s feud with ${feudWith}? That didn't help.`, `It didn't help that ${feudWith} had been feuding with ${boot} for weeks.`, `And ${feudWith}, still stewing over that feud with ${boot}, was happy to help.`], 'feud')}` : ''}`, tribalShot([lead, boot]));
     // the spearhead, at the urn, in their own words
     const lb = booth.find(b => b.voter === lead && b.voted === boot);
     if (lb?.line && quotes < QUOTES) { Q(lead, lb.line, tribalShot([lead])); quotes++; }

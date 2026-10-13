@@ -29,7 +29,7 @@ export default {
       { by: 'a', say: "Fine, {target}, tonight." },
       { by: 'b', say: "Why {target}?" },
       { by: 'a', say: "Because I can get {votes} people to write it. I can't get that many on anyone else." },
-      { by: 'b', say: "You've done the maths." },
+      { by: 'b', say: "You've counted." },
       { by: 'a', say: "Twice." },
       { by: 'a', conf: "I'd love to tell you {target} is some huge threat. Honestly, {target} is just the name that adds up." },
     ] },

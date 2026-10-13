@@ -52,7 +52,7 @@ export default {
       { by: 'h', say: "{a}, what's the name you're expecting to hear tonight?" },
       { by: 'a', say: "I'm not saying it out loud. That person is sitting right there, and I'm not cruel.", v: { cruel: "Do you want me to point? Because I'll point.", goofy: "I'd tell you, but then I'd have to sit next to them on the walk back." } },
       { by: 'b', say: "That's a lot of confidence for a night like this." },
-      { by: 'a', say: "It's not confidence if you've done the maths." },
+      { by: 'a', say: "It's not confidence if you've counted the votes." },
     ] },
     { id: 'nt4.c6', when: { close: false }, turns: [
       { by: 'h', say: "{b}, you've barely looked at {a} all night. Any reason?" },

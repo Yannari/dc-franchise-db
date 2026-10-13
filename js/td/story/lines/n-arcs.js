@@ -90,7 +90,7 @@ export default {
     { id: 'nav.f1', turns: [
       { beat: "{a} finds {b} alone, and doesn't bother with hello." },
       { by: 'a', say: "Why did you write {friend}'s name?" },
-      { by: 'b', say: "Wow, okay. Good morning to you too." },
+      { by: 'b', say: "Wow, okay. Hi to you too." },
       { by: 'a', say: "Just answer me. You owe me that much." },
       { by: 'b', say: "{friend} was a threat, and that's all it was. It was never personal." },
       { by: 'a', say: "It was personal to me. You knew {friend} was my person out here, and you did it anyway." },
@@ -517,9 +517,9 @@ export default {
   'arc.fake.flirt.any': [
     { id: 'nfk.f1', turns: [
       { by: 'a', say: "Has anyone told you you look good in this light?" },
-      { by: 'b', say: "We're gutting fish right now." },
+      { by: 'b', say: "I'm literally covered in dirt right now." },
       { by: 'a', say: "Then imagine how good you'd look somewhere nice." },
-      { by: 'b', say: "...Okay, that was smooth. Annoyingly smooth." },
+      { by: 'b', say: "...Okay, that was pretty smooth." },
       { by: 'a', say: "Sit with me tonight at the fire?" },
       { by: 'b', say: "Maybe, yes. Okay, yes." },
       { by: 'b', conf: "{a} has been really sweet to me lately. I don't want to read into it. I'm reading into it a lot." },

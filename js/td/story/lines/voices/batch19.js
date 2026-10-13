@@ -170,10 +170,6 @@ export default {
     6: { loud: "{target} NEVER said that! But now {b} won't trust {target}, and {b} trusts me more. Two for one!", theatrical: "{target} never said a word of it. Now {b} distrusts {target}, and trusts me a little more.", nerdy: "{target} never said that, but {b}'s trust in {target} drops and in me rises, which is efficient.", warm: "{target} never said that, and I feel awful. But now {b} trusts me more." },
     7: { warm: "I thought {target} was on my side. I guess I was wrong, and it really hurts.", nerdy: "I thought {target} was on my side. Apparently I miscalculated.", anxious: "I thought {target} was on my side. Now I don't know who is.", dry: "I thought {target} was on my side. I guess I thought wrong." },
   },
-  'nd.dp3': {
-    1: { warm: "Good morning to you too.", loud: "Good MORNING to you too!", earnest: "Good morning to you too.", tough: "Morning to you too." },
-    3: { loud: "We need them gone before they win immunity EVERY week!", warm: "We need them gone before they win immunity every week.", tough: "They need to go before they win immunity every week." },
-  },
   'nl.c1': { 8: { bossy: "I didn't say anything when {a} started giving out jobs, and I should have. I'd have done it better.", earnest: "I didn't say anything when {a} started giving out jobs, and honestly, I'm annoyed at myself.", calm: "I didn't say anything when {a} took charge of the jobs. I'm a little annoyed at myself.", dry: "I said nothing when {a} started giving out jobs, and now I'm on water. Great.", cruel: "I let {a} start giving out jobs. I won't let it happen twice." } },
   'nl6.c1': { 1: { earnest: "With what? We've got water.", blunt: "With what? Water?", calm: "With what? We've got water.", anxious: "With what? We've only got water." } },
   'ny.i2': { 4: { schemer: "Enjoy it. Next week you're the biggest target here.", warm: "Enjoy it. Next week you're the biggest target here, though.", emotional: "Enjoy it. Next week you're the biggest target here.", earnest: "Enjoy it. Next week, you're the biggest target here.", loud: "ENJOY it! Next week you're the biggest target here!" } },

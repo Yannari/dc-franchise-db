@@ -1,181 +1,183 @@
-// Whole conversations for existing events. Roles and outcomes come from the simulator.
+// Whole conversations for existing events. Roles and outcomes come from the simulator: a blames b, who had the team's
+// lowest score; c, when there is one, sticks up for b.
+// Rewritten 2026-10-14 (the season read): the first version was a therapy session about a challenge ("Don't make {b}
+// audition to be a teammate", "I needed someone to stop the pile-on, not lie for me", "That's irritatingly effective").
+// The user: the conversations "dont feel like im reading/listening to total drama". A losing team in Total Drama
+// blames somebody out loud, somebody bites back, somebody sticks up for them, and a confessional says how it felt.
 export default {
   "story.chal.lost": [
     { id: "nbw.l1", place: "public", turns: [
-      {"by":"a","say":"You had our lowest score, {b}. What are we supposed to do with that?"},
-      {"by":"b","say":"Tell me what to improve. You can do that without announcing me to the whole camp."},
-      {"by":"a","say":"Everybody here saw the challenge."},
-      {"by":"c","say":"Then everybody saw a team lose. Let {b} answer before you finish the speech."},
-      {"by":"b","say":"I want another chance. I also want teammates who actually want me to do well."},
-      {"by":"b","conf":"The score was bad enough. Having to ask whether my own team wants me to recover? That was worse."}
+      {"by":"a","say":"Okay, I'm just going to say it. {b}, we lost because of you."},
+      {"by":"b","say":"Wow. Thanks. I was there, you know."},
+      {"by":"a","say":"Then you saw what happened."},
+      {"by":"b","say":"I saw a whole team lose. Not just me."},
+      {"by":"a","say":"Yeah, but mostly you."},
+      {"by":"c","say":"Okay, that's enough. Everybody was bad today."},
+      {"by":"b","conf":"Was I the worst one out there today? Yeah. Did {a} need to say it in front of everybody? No."},
     ] },
-    { id: "nbw.l2", place: "public", when: {"streak":["two","many"]}, turns: [
-      {"by":"a","say":"{streak} losses in a row, and now this score. How long are we supposed to stay cheerful?"},
-      {"by":"b","say":"Nobody asked you to be cheerful. Just stop making me responsible for the whole streak."},
+    { id: "nbw.l2", place: "public", when: {"streak":["two","many"], "third":true}, turns: [
+      {"by":"a","say":"That's {streak} in a row now. And {b}, you were the worst one out there. Again."},
+      {"by":"b","say":"Oh, so all of the losses are my fault now?"},
       {"by":"a","say":"I'm talking about today."},
-      {"by":"c","say":"Then why did you open with the streak?"},
-      {"by":"b","say":"Exactly. My score today is mine. You don't get to hand me every loss because it makes the meeting shorter."},
-      {"by":"c","conf":"I can admit {b} struggled without letting {a} rewrite the other challenges."}
+      {"by":"c","say":"Then why'd you bring up all the other ones?"},
+      {"by":"b","say":"Exactly. Today was bad, I know. The other ones weren't all me."},
+      {"by":"c","conf":"{b} had a bad day, sure. But {a} is acting like every single loss is {b}'s fault."},
     ] },
-    { id: "nbw.l3", place: "public", when: {"voice":["dry","schemer","calm"]}, turns: [
-      {"by":"a","say":"I'd love to hear the explanation for that score."},
-      {"by":"b","say":"Would you? Or have you already picked the part where you interrupt?"},
-      {"by":"c","say":"Let {b} finish. I want an explanation too."},
-      {"by":"b","say":"I did badly. I need to work out how to do better, and I need about five minutes without an audience."},
-      {"by":"a","say":"Five minutes doesn't change the result."},
-      {"by":"b","say":"Neither does this conversation, but you seem very committed to it."},
-      {"by":"c","conf":"I wanted {b} to take the result seriously. {b} did. Now I want {a} to notice."}
+    { id: "nbw.l3", place: "public", when: {"voice":["dry","schemer","calm"], "third":true}, turns: [
+      {"by":"a","say":"So, {b}. Do you want to explain what happened out there, or should I?"},
+      {"by":"b","say":"Oh, I'm sure you've already got a whole speech ready."},
+      {"by":"c","say":"Just let {b} talk."},
+      {"by":"b","say":"I messed up. Okay? I know. I don't need a play-by-play."},
+      {"by":"a","say":"Admitting it doesn't change the score."},
+      {"by":"b","say":"And neither does you going on about it."},
+      {"by":"c","conf":"{b} owned it. {a} still kept going. At some point it stops being about the challenge."},
     ] },
     { id: "nbw.l4", place: "public", when: {"voice":["loud","tough","competitive"]}, turns: [
-      {"by":"a","say":"I hate losing, {b}. I hate coming back here knowing we could have done better."},
-      {"by":"b","say":"You think I enjoyed seeing my score?"},
-      {"by":"a","say":"Then give me something besides excuses."},
-      {"by":"c","say":"What excuse? {b} asked you a question."},
-      {"by":"b","say":"I know I let the team down. I'm still on the team. Talk to me like it."},
-      {"by":"b","conf":"I can take criticism. I'm having a much harder time taking orders from someone who thinks volume counts as leadership."}
+      {"by":"a","say":"I HATE losing, {b}! I hate it! And we only lost because of you!"},
+      {"by":"b","say":"You think I liked it? I saw my score too!"},
+      {"by":"a","say":"Then do better next time!"},
+      {"by":"b","say":"I will! And maybe you could try not yelling at your own team!"},
+      {"by":"c","say":"Both of you, stop. The other team can hear you."},
+      {"by":"b","conf":"I know I let the team down. But if {a} yells at me one more time, I'm going to lose it."},
     ] },
-    { id: "nbw.l5", place: "public", when: {"voice":["warm","earnest","emotional"]}, turns: [
-      {"by":"a","say":"I want you to feel included, {b}. I also need to know we can count on you."},
-      {"by":"b","say":"You said those two things like I have to choose one."},
-      {"by":"a","say":"That's not what I meant. Your score scared me."},
-      {"by":"c","say":"Then ask what would help. Don't make {b} audition to be a teammate."},
-      {"by":"b","say":"Ask me what I need next time. I can answer that. I can't promise to magically stop having bad days."},
-      {"by":"a","conf":"I thought saying it gently would make it easier. Then {b} said it sounded like being included and being reliable were two different choices. I had to hear that."}
-    ] }
+    { id: "nbw.l5", place: "public", when: {"voice":["warm","earnest","emotional"], "third":true}, turns: [
+      {"by":"a","say":"{b}, I'm not trying to be mean. But we really needed you out there today."},
+      {"by":"b","say":"I know. You don't think I know?"},
+      {"by":"a","say":"I'm just scared. If we keep losing, one of us goes home every time."},
+      {"by":"c","say":"Everybody's scared. That doesn't mean it's all on {b}."},
+      {"by":"b","say":"I'll do better. I promise. I just really need a minute right now."},
+      {"by":"a","conf":"I tried to say it nicely. I don't think there's a nice way to tell somebody they lost the challenge for you."},
+    ] },
   ],
   "story.chal.regroup": [
-    { id: "nbw.r1", place: "public", turns: [
-      {"by":"b","say":"If this is another meeting about who disappointed everyone, I know where to sit."},
-      {"by":"a","say":"Sit next to me. We need to work out what you can do better."},
-      {"by":"b","say":"That sounds suspiciously like the same meeting."},
-      {"by":"c","say":"Except this time you get to tell us what help you need."},
-      {"by":"b","say":"Can we decide what we're doing before everyone starts giving different instructions?"},
-      {"by":"a","say":"Yes. One plan, and we check that everybody actually understands it."},
-      {"by":"b","conf":"I was ready to defend myself. Being asked what I needed threw me completely. I almost forgot I had an answer."}
+    { id: "nbw.r1", place: "public", when: {"third":true}, turns: [
+      {"by":"b","say":"Let me guess. Another meeting about who messed up."},
+      {"by":"a","say":"No. A meeting about how we stop losing."},
+      {"by":"c","say":"And for once, nobody's yelling at anybody."},
+      {"by":"b","say":"Wait, really?"},
+      {"by":"a","say":"Really. What do you need from us next time?"},
+      {"by":"b","conf":"I came over ready to defend myself, and they just asked me what would help. I didn't even have an answer ready."},
     ] },
-    { id: "nbw.r2", place: "public", turns: [
-      {"by":"b","say":"I had the lowest score. You can say it."},
-      {"by":"a","say":"You just did. Now tell me which part you want help with."},
-      {"by":"c","say":"I can stay while we figure it out. Nobody needs to perform for the cameras."},
-      {"by":"b","say":"Can I think for a minute without someone deciding I'm making excuses?"},
-      {"by":"a","say":"Take the minute. I'd rather hear a useful answer than a fast apology."},
-      {"by":"b","conf":"I still feel awful about the challenge. But {a} waited for me to think, and {c} stayed. That made it easier to actually talk."}
+    { id: "nbw.r2", place: "public", when: {"third":true}, turns: [
+      {"by":"b","say":"I had the lowest score. Go ahead, say it."},
+      {"by":"a","say":"You just did. So what happened out there?"},
+      {"by":"b","say":"I don't know. I just couldn't get it together today."},
+      {"by":"c","say":"Okay. Then next time, you tell us when that's happening, and we help."},
+      {"by":"a","say":"Deal. No yelling."},
+      {"by":"c","say":"Some yelling. It's still a challenge."},
+      {"by":"b","conf":"I still feel awful about the challenge. But nobody piled on me, and that made it a lot easier to actually talk about it."},
     ] },
-    { id: "nbw.r3", place: "public", when: {"voice":["goofy","dry","chaotic"]}, turns: [
-      {"by":"a","say":"Team meeting. Attendance is compulsory; dramatic resignations are limited to one each."},
+    { id: "nbw.r3", place: "public", when: {"voice":["goofy","dry","chaotic"], "third":true}, turns: [
+      {"by":"a","say":"Team meeting! Everybody gets one dramatic meltdown, max."},
       {"by":"b","say":"Can I use mine now?"},
-      {"by":"c","say":"Save it. We have not even chosen who takes the minutes."},
-      {"by":"a","say":"Fine, no minutes. {b}, what would make the next challenge easier to handle?"},
-      {"by":"b","say":"Less pressure to say I understand before I actually do."},
-      {"by":"c","say":"Then we make time for questions. Including the ones we think sound stupid."},
-      {"by":"b","conf":"I expected a joke at my expense. Getting to make the joke myself helped me say what was actually bothering me."}
+      {"by":"c","say":"Save it. We're going to lose again eventually."},
+      {"by":"a","say":"Okay, seriously, {b}. What would actually help next time?"},
+      {"by":"b","say":"Honestly? If somebody explained the challenge to me before it started. I had no idea what we were doing."},
+      {"by":"c","say":"Nobody did. You were just the one who looked like it."},
+      {"by":"b","conf":"I was ready for everybody to make fun of me. Then I got to make the joke first, and it was way easier to talk after that."},
     ] },
-    { id: "nbw.r4", place: "public", when: {"streak":"many"}, turns: [
-      {"by":"c","say":"{streak} losses. I'm running out of encouraging things to say."},
-      {"by":"a","say":"Then don't give a speech. Sit with us and help us figure this out."},
-      {"by":"b","say":"Even if I don't have a brilliant answer?"},
-      {"by":"a","say":"Especially then. I'd like one conversation where we admit we don't know everything."},
-      {"by":"c","say":"I can offer an extremely thorough list of things I don't know."},
-      {"by":"b","say":"Good. I thought I was going to have to write the whole thing."},
-      {"by":"c","conf":"Nobody promised we would win the next one. We just stayed and talked instead of leaving {b} alone with the result."}
-    ] }
+    { id: "nbw.r4", place: "public", when: {"streak":"many", "third":true}, turns: [
+      {"by":"c","say":"That's {streak} in a row. I'm officially out of pep talks."},
+      {"by":"a","say":"Then no pep talk. Let's just figure out what keeps going wrong."},
+      {"by":"b","say":"Even if the answer is me?"},
+      {"by":"a","say":"It's not just you. It's all of us."},
+      {"by":"c","say":"I've got a whole list of stuff I'm bad at, if that helps."},
+      {"by":"b","say":"It kind of does, actually."},
+      {"by":"c","conf":"Nobody promised we'd win the next one. But at least nobody left {b} sitting alone with it."},
+    ] },
   ],
   "long.crowd.lost.any": [
-    { id: "nbw.c1", place: "public", turns: [
-      {"by":"a","say":"So, {b}. Lowest score. Are we discussing that, or am I supposed to pretend I missed it?"},
-      {"by":"b","say":"Discuss it. Just leave room for me to speak."},
-      {"by":"a","say":"I'm listening."},
-      {"by":"c","say":"You're standing over {b} with your arms folded. Try listening from over here."},
-      {"by":"b","say":"I know I did badly. What I don't know is whether you want me to improve or just look worse than you."},
-      {"by":"a","say":"I want us to win."},
-      {"by":"c","say":"Then let us talk about what helps {b} do better."},
-      {"by":"b","conf":"{c} didn't pretend my score was good. That's why the defense mattered. I needed someone to stop the pile-on, not lie for me."}
+    { id: "nbw.c1", place: "public", when: {"third":true}, turns: [
+      {"by":"a","say":"So, are we going to talk about it, or are we all just going to pretend {b} didn't tank the challenge?"},
+      {"by":"b","say":"Wow. Okay. Yes, let's talk about it."},
+      {"by":"a","say":"We lost because of you!"},
+      {"by":"c","say":"We lost because all of us were bad. {b} was just bad last."},
+      {"by":"b","say":"...Thanks, I think?"},
+      {"by":"c","say":"You're welcome."},
+      {"by":"b","conf":"{c} didn't pretend I was good out there. {c} just didn't let {a} pile everything on me, and I really needed that."},
     ] },
-    { id: "nbw.c2", place: "public", when: {"voice":["cruel","proud"]}, turns: [
-      {"by":"a","say":"Congratulations, {b}. You managed to become the main topic of our team meeting."},
-      {"by":"b","say":"And you managed to make yourself the host. Was there an audition?"},
-      {"by":"c","say":"I'd have voted for a quieter host."},
-      {"by":"a","say":"Someone has to address that performance."},
-      {"by":"b","say":"Address it, then. You have spent more time introducing the complaint than explaining it."},
-      {"by":"c","conf":"I want {b} to improve. I also enjoyed watching {a} lose control of a meeting nobody asked for."}
+    { id: "nbw.c2", place: "public", when: {"voice":["cruel","proud"], "third":true}, turns: [
+      {"by":"a","say":"Congratulations, {b}. You single-handedly lost us the challenge."},
+      {"by":"b","say":"And you single-handedly made everybody miserable. We all have talents."},
+      {"by":"c","say":"Ooh."},
+      {"by":"a","say":"Somebody has to say it."},
+      {"by":"b","say":"You didn't have to. You just wanted to."},
+      {"by":"c","conf":"{b} was bad today, no question. But watching {a} try to boss everybody around and fail? That was the best part of my day."},
     ] },
-    { id: "nbw.c3", place: "public", when: {"voice":["warm","earnest","anxious"]}, turns: [
-      {"by":"a","say":"I'm worried about how today went, {b}. I need you to understand that."},
-      {"by":"b","say":"I understand. I saw my score too."},
-      {"by":"a","say":"I know. I just need to hear that you care."},
-      {"by":"c","say":"Look at {b}. You don't need a bigger apology to prove that."},
-      {"by":"b","say":"I care enough that this is humiliating. Can we work on the problem before you ask me to feel worse?"},
-      {"by":"a","say":"Okay. Tell me what would help."},
-      {"by":"b","conf":"{a} was scared about losing. I get that. But I was the one standing there trying not to fall apart, and I needed {c} to say it."}
+    { id: "nbw.c3", place: "public", when: {"voice":["warm","earnest","anxious"], "third":true}, turns: [
+      {"by":"a","say":"{b}, I'm really worried about how today went."},
+      {"by":"b","say":"I know. I saw my score too."},
+      {"by":"a","say":"I just need to know you care about this."},
+      {"by":"c","say":"Look at {b}. Of course {b} cares."},
+      {"by":"b","say":"I care so much it's embarrassing. Can we please just figure out the next one?"},
+      {"by":"a","say":"Okay. Yeah. Sorry."},
+      {"by":"b","conf":"{a} was scared, I get it. But I was the one standing there trying not to cry, and I'm really glad {c} said something."},
     ] },
-    { id: "nbw.c4", place: "public", turns: [
-      {"by":"b","say":"Before the meeting starts: yes, I saw my score. No, I'm not happy with it."},
-      {"by":"a","say":"You don't get to write both sides of the conversation."},
-      {"by":"b","say":"Then stop looking so disappointed that I used your opening line."},
-      {"by":"c","say":"We could skip the opening and get to something useful."},
-      {"by":"a","say":"Fine. What changes next time?"},
-      {"by":"b","say":"For a start, I tell you when I need help instead of worrying you will turn it into this."},
-      {"by":"c","conf":"That was an actual answer. Uncomfortable for {a}, but an actual answer."}
+    { id: "nbw.c4", place: "public", when: {"third":true}, turns: [
+      {"by":"b","say":"Before anybody says it: yes, I know I had the worst score. No, I'm not happy about it."},
+      {"by":"a","say":"Well, that saves me a speech."},
+      {"by":"c","say":"Thank God. Nobody wanted the speech."},
+      {"by":"a","say":"Fine. So what changes next time?"},
+      {"by":"b","say":"Next time I ask for help, instead of worrying everybody's going to yell at me for it."},
+      {"by":"c","conf":"That was actually a good answer. {a} looked kind of annoyed there wasn't anything left to complain about."},
     ] },
-    { id: "nbw.c5", place: "public", when: {"voice":["loud","tough","competitive","bossy"]}, turns: [
-      {"by":"a","say":"Everybody listen. We can't keep acting like that result is acceptable."},
-      {"by":"b","say":"Who accepted it? Show me the person celebrating."},
-      {"by":"c","say":"Nobody is celebrating. You're shouting at people who are already upset."},
-      {"by":"a","say":"Because being upset doesn't win challenges!"},
-      {"by":"b","say":"Neither does making us sit through your angry acceptance speech for team captain."},
-      {"by":"c","say":"You want to lead? Ask {b} a question and wait for the answer."},
-      {"by":"b","conf":"My score gave {a} something real to complain about. It didn't automatically put {a} in charge of me."}
+    { id: "nbw.c5", place: "public", when: {"voice":["loud","tough","competitive","bossy"], "third":true}, turns: [
+      {"by":"a","say":"Everybody listen up! We can't keep losing like that!"},
+      {"by":"b","say":"Who said we wanted to? Show me one person here who's happy about it."},
+      {"by":"c","say":"Nobody's happy. You're just yelling at people who already feel bad."},
+      {"by":"a","say":"Because feeling bad doesn't win challenges!"},
+      {"by":"b","say":"Neither does yelling!"},
+      {"by":"c","say":"If you want to be the leader, try asking {b} what happened instead of screaming at {b}."},
+      {"by":"b","conf":"Fine, my score was bad, and {a} gets to be mad about that. That doesn't make {a} the boss of me."},
     ] },
-    { id: "nbw.c6", place: "public", when: {"voice":["dry","schemer","calm"]}, turns: [
-      {"by":"a","say":"I have a concern about our chances if today is what we can expect from {b}."},
-      {"by":"b","say":"Then ask me about today. Don't turn one score into a prediction of my entire life."},
-      {"by":"c","say":"That's fair. What do you actually want to know, {a}?"},
-      {"by":"a","say":"Whether we can rely on {b} under pressure."},
-      {"by":"b","say":"You can rely on me to admit I did badly. Can I rely on you to help me improve?"},
-      {"by":"c","say":"I'd like to hear the answer to that one too."},
-      {"by":"a","conf":"I came in wanting {b} to answer for the result. Now {c} is waiting for my answer. That's irritatingly effective."}
+    { id: "nbw.c6", place: "public", when: {"voice":["dry","schemer","calm"], "third":true}, turns: [
+      {"by":"a","say":"I'm just saying, if that's what {b} does under pressure, we're in trouble."},
+      {"by":"b","say":"It was one challenge. Don't act like that's my whole life."},
+      {"by":"c","say":"Yeah, what do you actually want, {a}?"},
+      {"by":"a","say":"I want to know if we can count on {b}."},
+      {"by":"b","say":"You can count on me to admit I was bad. Can I count on you to help, or just to complain?"},
+      {"by":"c","say":"Good question. I'd like to hear that answer too."},
+      {"by":"a","conf":"I wanted {b} to feel bad about the challenge. Instead I'm the one getting asked questions. How did that happen?"},
     ] },
-    { id: "nbw.c7", place: "public", when: {"age":"teen"}, turns: [
-      {"by":"a","say":"That score is going to be very hard to explain, {b}."},
-      {"by":"b","say":"To who? You're the only one doing a press conference."},
-      {"by":"c","say":"I do have a question. When does the press conference end?"},
-      {"by":"a","say":"When we work out how not to lose."},
-      {"by":"b","say":"Great. Ask me what I'd change instead of telling everyone I was bad. We covered that part at the challenge."},
-      {"by":"c","conf":"{b} is embarrassed, {a} is angry, and somehow I'm moderating. I should have walked back slower."}
+    { id: "nbw.c7", place: "public", when: {"age":"teen", "third":true}, turns: [
+      {"by":"a","say":"Dude, that score. How are you even going to explain that?"},
+      {"by":"b","say":"To who? You're the only one asking."},
+      {"by":"c","say":"Seriously, you're acting like it's a press conference."},
+      {"by":"a","say":"I just want to know how we don't lose again!"},
+      {"by":"b","say":"Then ask me what I'd do differently, instead of telling everybody I sucked. They saw."},
+      {"by":"c","conf":"{b} is embarrassed, {a} is mad, and somehow I'm the one stuck in the middle. I should've walked back slower."},
     ] },
-    { id: "nbw.c8", place: "public", when: {"age":["thirties","older"]}, turns: [
-      {"by":"a","say":"Let us be adults about this. Your performance hurt the team, {b}."},
-      {"by":"b","say":"Adults can hear an answer without rolling their eyes. Can we start there?"},
-      {"by":"c","say":"We can. {a}, give {b} a minute."},
-      {"by":"a","say":"I'm trying to have a serious conversation."},
-      {"by":"b","say":"So am I. I want to know what we can change, not whether you approve of my apology."},
-      {"by":"c","say":"Then we talk about the next challenge. No one has to ask permission to finish a sentence."},
-      {"by":"b","conf":"Being spoken to like a child really makes you appreciate the one person who says you can finish talking."}
-    ] }
+    { id: "nbw.c8", place: "public", when: {"age":["thirties","older"], "third":true}, turns: [
+      {"by":"a","say":"Let's be grown-ups about this. {b}, you hurt the team today."},
+      {"by":"b","say":"Grown-ups don't roll their eyes when somebody's answering them. Can we start there?"},
+      {"by":"c","say":"Okay. {a}, give {b} a second."},
+      {"by":"a","say":"I'm trying to have a serious conversation!"},
+      {"by":"b","say":"So am I. I want to talk about the next challenge, not about how sorry I am."},
+      {"by":"b","conf":"Getting talked to like a kid is the worst. Thank goodness {c} was there to make {a} let me finish a sentence."},
+    ] },
   ],
   "long.blame.loss.any": [
     { id: "nbw.b1", place: "public", turns: [
-      {"by":"a","say":"I'm still annoyed about the challenge, {b}. I'd rather tell you than let it sit."},
-      {"by":"b","say":"Then tell me what bothered you. Don't just say my name like it explains everything."},
-      {"by":"a","say":"I need to feel like we have a chance when we compete together."},
-      {"by":"b","say":"I want that too. If you have something useful for me, say it. If you just need someone to be angry at, I need a break."},
-      {"by":"b","conf":"I stayed for the conversation. That doesn't mean I agreed to stand there while {a} worked through every bad feeling about the loss."}
+      {"by":"a","say":"I'm still mad about the challenge, {b}. I'd rather say it than let it fester."},
+      {"by":"b","say":"Okay. Then say what you're actually mad about."},
+      {"by":"a","say":"I need to know we can win when we're out there together."},
+      {"by":"b","say":"I want that too. But if you just need somebody to be mad at, I'm not doing this right now."},
+      {"by":"b","conf":"I listened. That doesn't mean I'm going to stand there while {a} yells at me about every single thing that went wrong."},
     ] },
     { id: "nbw.b2", place: "public", when: {"voice":["schemer","cruel"]}, turns: [
-      {"by":"a","say":"People are going to remember how that challenge went."},
-      {"by":"b","say":"Including me. What is the warning supposed to accomplish?"},
-      {"by":"a","say":"I thought you might want to think about how it looks."},
-      {"by":"b","say":"I'm thinking about doing better. You seem much more interested in making sure I feel watched."},
-      {"by":"a","conf":"{b} noticed exactly what I was doing. I wanted a nervous apology, and I got a very public objection."}
+      {"by":"a","say":"People are going to remember how that challenge went, you know."},
+      {"by":"b","say":"So am I. Is that supposed to be a threat?"},
+      {"by":"a","say":"I just thought you'd want to know how it looks."},
+      {"by":"b","say":"I'm trying to do better. You're trying to make me feel watched. There's a difference."},
+      {"by":"a","conf":"{b} saw right through me. I wanted {b} nervous, and instead {b} called me out, loud enough for everybody to hear."},
     ] },
     { id: "nbw.b3", place: "public", when: {"voice":["warm","emotional"]}, turns: [
-      {"by":"a","say":"I want to talk about the loss before we let it get awkward."},
-      {"by":"b","say":"It's already awkward. I can hear how carefully you're choosing every word."},
-      {"by":"a","say":"Because I don't want to hurt you. I also can't pretend I'm happy with the result."},
-      {"by":"b","say":"You don't have to be happy. I just need to know you still want to work with me."},
-      {"by":"a","say":"I do. That's why I came over instead of leaving you alone."},
-      {"by":"b","say":"Then stay a minute. I'm not ready to make a big speech about fixing everything."},
-      {"by":"a","conf":"I came over expecting to discuss the challenge. {b} wanted to know whether I'd still sit there after a loss. I can do that."}
-    ] }
-  ]
+      {"by":"a","say":"Can we talk about the challenge before it gets weird between us?"},
+      {"by":"b","say":"It's already weird. You're picking every word super carefully."},
+      {"by":"a","say":"Because I don't want to hurt you. But I can't pretend I'm happy about it, either."},
+      {"by":"b","say":"You don't have to be happy. I just need to know you still want me on the team."},
+      {"by":"a","say":"I do. That's why I came over."},
+      {"by":"a","conf":"I came over to talk about the challenge. Really, {b} just wanted to know I'd still sit with {b.obj} after we lost. I can do that."},
+    ] },
+  ],
 };

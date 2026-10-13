@@ -23,7 +23,8 @@ function due(members = cast, num = 3) { const s = followupScene({num}, 'Bass', m
 it('follows an aired defense privately with the original defender and target', () => {
  setup(); record(); const item = due().item;
  expect(item.players).toEqual(['Leshawna','Gwen']);
- expect(item.text).toContain('You do not get to talk to her like that.');
+ // (the remark is kept for the record and never read back out loud: the user, 2026-10-14)
+ expect(item.scene.data.remark).toBe('You do not get to talk to her like that.'); expect(item.text).not.toContain('You do not get to talk to her like that.');
  expect(item.scene.data.sourceEp).toBe(2); expect(item.fx.length).toBeGreaterThan(0);
  expect(due()).toBeNull();
 });
@@ -54,11 +55,11 @@ it.each(['friend.defend','romance.honeymoon'])('airs %s through the director wit
  const state = JSON.stringify(core.gs); airTdEpisode(ep); expect(JSON.stringify(core.gs)).toBe(state);
 });
 
-it('renders every variant at every venue with its exact remembered line', () => {
+it('renders every variant at every venue without reading the remembered line back', () => {
  setup(); for (const venue of ['hosted-camp','survival-island','film-lot','carnival','world-tour']) for (const [key, entries] of Object.entries(followupPools)) for (const entry of entries) {
   core.gs.tdStory = {}; const who = {a:'Gwen',b:'Leshawna',c:'Heather'};
   const split = key.lastIndexOf('.'); const w = writeStory(key.slice(0,split),key.slice(split+1),who,{remark:'You can answer without insulting me.'},{...factsFor({who,data:{}},{ep:3,phase:'pre'}),third:true,venue},{ep:3,phase:'pre',camp:'Bass',entryIds:[entry.id],unique:false});
-  expect(w,entry.id+venue).toBeTruthy(); expect(w.text).toContain('You can answer without insulting me.'); expect(w.text).not.toMatch(/\{[^}]+\}/);
+  expect(w,entry.id+venue).toBeTruthy(); expect(w.text).not.toContain('You can answer without insulting me.'); expect(w.text).not.toMatch(/\{[^}]+\}/);
   expect(new Set(w.lines.filter(l=>l.kind==='say').map(l=>l.by)).size).toBe(/clash|rivalry/.test(key)?3:2);
  }
 });
@@ -129,7 +130,7 @@ it('remembers a mutual aired romance, without creating a new couple', () => {
  core.gs.showmances = [{players:['Gwen','Leshawna'],phase:'honeymoon'}];
  record(source('romance.honeymoon')); const before = JSON.stringify(core.gs.showmances);
  const scene = due()?.item; expect(scene?.kind).toBe('follow.romance');
- expect(scene.text).toContain('You do not get to talk to her like that.');
+ expect(scene.scene.data.remark).toBe('You do not get to talk to her like that.');
  expect(scene.fx.length).toBeGreaterThan(0); expect(JSON.stringify(core.gs.showmances)).toBe(before);
 });
 it('does not turn one-sided confessionals or incompatible pairings into romance callbacks', () => {

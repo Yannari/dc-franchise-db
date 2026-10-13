@@ -443,7 +443,7 @@ const POOLS = {
       { beat: "{a} sees {b} on {landing} and runs straight over." },
       { by: 'b', say: "You made it!" },
       { by: 'a', say: "We made it!" },
-      { beat: "They hug. Everybody else watches, doing the maths." },
+      { beat: "They hug. Everybody else watches, already wondering what it means." },
       { by: 'b', conf: "We decided to apply together. We knew we'd be a target. We decided we'd rather be a target together." },
     ] },
   ],

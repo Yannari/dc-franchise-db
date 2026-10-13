@@ -79,8 +79,8 @@ export default {
   // long.friend.meal.any (half each)
   'nl6.m2': {
     0: { warm: "Here, do you want the rest of mine?", food: "Do you want the rest of mine? I can't believe I'm offering, but do you?", quiet: "Want mine?" },
-    3: { dry: "Nobody here is not hungry. Try again.", warm: "Nobody out here is not hungry. Come on." },
-    7: { warm: "{a} tried to give me {a.posAdj} food. Out here, that's huge, and I'm going to remember it for a long time.", competitive: "{a} tried to give me {a.posAdj} food. Out here, that's loyalty, and I don't forget loyalty.", calm: "{a} offered me {a.posAdj} food. Out here, that means a lot, and I'm going to remember it." },
+    3: { dry: "Everybody here is hungry. Try again.", warm: "Everybody out here is hungry. Come on." },
+    7: { warm: "{a} tried to give me {a.posAdj} food. Out here, that's huge, and I'm going to remember it for a long time.", competitive: "{a} tried to give me {a.posAdj} food. Out here, that's loyalty, and I don't forget loyalty.", calm: "{a} offered me {a.posAdj} food. Out here, that's a big deal, and I'm going to remember it." },
   },
   // long.drama.explode.any
   'nh.e1': {

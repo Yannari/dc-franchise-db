@@ -22,7 +22,7 @@ export default {
     4: { proud: "And nobody's mentioned anybody else to you?" },
     5: { earnest: "Not to me. But honestly, I'm not who people come to with plans." },
     6: { proud: "That's what I like about you. You're honest about what you don't know." },
-    7: { proud: "I've done the maths, and it's {wrote}. I've planned for everything except a liar, and I don't think there is one." },
+    7: { proud: "I've counted it, and it's {wrote}. I've planned for everything except a liar, and I don't think there is one." },
   },
   'nl4.v1': {
     0: { dry: "Do people here take me seriously? Be honest, I can probably handle it.", warm: "Can I ask you something? Do you think people here take me seriously?", earnest: "Honest question. Do you think people here take me seriously?" },

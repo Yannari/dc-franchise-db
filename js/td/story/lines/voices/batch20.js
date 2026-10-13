@@ -275,7 +275,7 @@ export default {
     6: { calm: "We were soaking wet and starving, and {a} had us singing about breakfast cereal.", ditzy: "We were soaking wet and starving, and somehow {a} had us all singing about cereal!", earnest: "We were wet and starving, and {a} had us singing about breakfast cereal. I loved it.", loud: "We were SOAKING wet and STARVING, and {a} had us singing about breakfast cereal!" },
   },
   'nar.e1': { 0: { calm: "I've got an Extra Vote, and tonight I'm using it, because I want {target} gone and I'm not leaving that to anybody else.", quiet: "I've got an Extra Vote. Tonight it goes on {target}." } },
-  'nl6.m2': { 3: { calm: "Nobody here is not hungry.", anxious: "Nobody here is not hungry.", chaotic: "Nobody here is not hungry!", loud: "NOBODY here is not hungry!" } },
+  'nl6.m2': { 3: { calm: "Everybody here is hungry.", anxious: "Everybody here is hungry, come on.", chaotic: "Everybody here is starving!", loud: "EVERYBODY here is hungry!" } },
   'nm.n3': { 2: { dry: "{lastBoot}'s been gone, what, ten hours? Respect for the dead.", emotional: "{lastBoot}'s been gone, what, ten hours?", calm: "{lastBoot}'s been gone, what, ten hours?" } },
   'nl.l3': {
     1: { loud: "I'm breathing! I'm also annoyed!", proud: "I'm breathing, and I'm also annoyed.", warm: "I'm breathing, and I'm also a bit annoyed." },

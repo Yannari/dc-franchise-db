@@ -132,7 +132,7 @@ export default {
   // long.friend.comfort.any (homesick)
   'ny.co1': {
     2: { quiet: "I'm fine.", tough: "I'm fine. Go away.", kid: "I'm okay." },
-    4: { quiet: "...I miss home. That's all.", kid: "...I miss my family. It's dumb.", tough: "...I miss home, okay? Don't make it a thing." },
+    4: { quiet: "...I miss home. It's stupid.", kid: "...I miss my family. It's dumb.", tough: "...I miss home, okay? It's stupid. Don't make it a thing." },
     5: { tough: "It's not stupid. I miss home every day too.", kid: "It's not dumb. I miss home too, every day.", dry: "It's not stupid. I miss home every single day, and I'm famously not fun to be around about it." },
   },
   // vt2.decoy (people went quiet)

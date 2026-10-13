@@ -1,300 +1,279 @@
 // Whole conversations for existing events. Roles and outcomes come from the simulator.
+// Rewritten 2026-10-14 (the season read): the first version talked like a written essay about a conversation ("Very
+// generous of the romance department", "Those are compatible", "That's technically progress") and its arguments had
+// no subject. The user: the conversations "dont feel like im reading/listening to total drama", "sometimes too clever".
+// Plain words, the character's attitude, and something to be about.
 export default {
   "long.romance.flirt.any": [
     { id: "nrx.flirt1", place: "public", turns: [
-      {"by":"a","say":"Can I sit here, or are you saving this spot for someone more impressive?","v":{"dry":"Is this seat free, or does sitting with you involve an interview?","warm":"Can I sit with you? I could use some company.","loud":"Tell me this spot isn't taken. I was trying to make an entrance."}},
-      {"by":"b","say":"I was saving it for five minutes of peace. You have an ambitious opening.","v":{"dry":"I was hoping for quiet. This is a bold start.","warm":"You can sit. I'd like some quiet company, though.","loud":"An entrance? You're sitting down, not accepting a trophy."}},
-      {"by":"a","say":"Okay. I can settle down."},
-      {"by":"b","say":"You could have demonstrated that instead of announcing it."},
-      {"beat":"{a} sits down. For a moment, neither speaks."},
-      {"by":"b","say":"You can stop holding your breath. I said peaceful, not dead."},
-      {"by":"a","say":"Good. I was starting to regret my whole approach."},
-      {"by":"a","conf":"I wanted to look relaxed around {b}. Apparently my version of relaxed requires supervision."},
-      {"by":"b","conf":"{a} actually tried being quiet because I asked. Then I missed the conversation. I'm choosing not to examine that."}
+      {"by":"a","say":"Is this seat taken?"},
+      {"by":"b","say":"It is now, I guess."},
+      {"by":"a","say":"Wow. Try to contain your excitement."},
+      {"by":"b","say":"I'm containing it really well."},
+      {"beat":"{a} sits down anyway. {b} doesn't move away."},
+      {"by":"a","conf":"{b} acts like it's no big deal, but {b} didn't move away either. I'm counting that."},
+      {"by":"b","conf":"Okay, fine. I'm glad {a} sat down. Don't tell {a}."},
     ] },
     { id: "nrx.flirt2", place: "public", turns: [
-      {"by":"b","say":"You look very pleased with yourself."},
-      {"by":"a","say":"You came over. I'm taking that as a good sign."},
-      {"by":"b","say":"I came over to see what you were smiling about."},
-      {"by":"a","say":"Excellent. We have a very efficient system."},
-      {"by":"b","say":"Does this work on people?"},
-      {"by":"a","say":"You're still here."},
-      {"by":"b","say":"I'm deciding whether that's a mistake."},
-      {"by":"a","say":"Take your time. I like the company."},
-      {"by":"b","conf":"That was such an obvious line. I had three perfectly good responses, and all I did was smile. Extremely disappointing work from me."}
+      {"by":"b","say":"Why are you smiling like that?"},
+      {"by":"a","say":"Because you came over."},
+      {"by":"b","say":"I came over because you've been staring at me for ten minutes."},
+      {"by":"a","say":"And it worked."},
+      {"by":"b","say":"...Okay, it kind of worked."},
+      {"by":"b","conf":"That was such a cheesy line, and I still smiled. I'm so embarrassed."},
     ] },
     { id: "nrx.flirt3", place: "public", turns: [
-      {"by":"a","say":"I was going to say something charming, but I forgot it when you looked over."},
-      {"by":"b","say":"You could just say hello."},
-      {"by":"a","say":"Hello. That went much better in rehearsal."},
-      {"by":"b","say":"You rehearsed?"},
-      {"by":"a","say":"Please focus on how brave I was to admit that."},
-      {"by":"b","say":"I am. It's giving you a lot of credit."},
-      {"by":"a","say":"Can I try sitting next to you without rehearsing that too?"},
-      {"by":"b","say":"Yes. You can even stay if the first sentence goes wrong."},
-      {"by":"a","conf":"{b} saw the whole disaster and still made room. I like that more than I'd have liked delivering the perfect line."}
-    ] }
+      {"by":"a","say":"Okay, I had a really smooth line ready, and I forgot it."},
+      {"by":"b","say":"You could just say hi."},
+      {"by":"a","say":"Hi."},
+      {"by":"b","say":"See? That was fine."},
+      {"by":"a","say":"It was supposed to be way better than that."},
+      {"by":"b","say":"I liked it."},
+      {"by":"a","conf":"I completely blew it, and {b} still smiled at me. I'll take that."},
+    ] },
   ],
   "long.romance.spark.any": [
     { id: "nrx.spark1", place: "public", turns: [
-      {"by":"b","say":"Before we make this a thing, I have a question."},
-      {"by":"a","say":"That sounded terrifyingly organized."},
-      {"by":"b","say":"Do I get an honest answer when I ask about the game, or the answer you think will keep me happy?"},
-      {"by":"a","say":"The honest one. Even if it makes this conversation longer."},
-      {"by":"b","say":"Good. I want to like you without having to switch my brain off."},
-      {"by":"a","say":"I was hoping you'd keep it on. I like talking to you."},
-      {"by":"b","say":"Then yes. I want this to be a thing."},
+      {"by":"b","say":"Before this turns into a thing, can I ask you something?"},
+      {"by":"a","say":"Uh oh."},
+      {"by":"b","say":"If I ask you about the game, are you going to tell me the truth?"},
+      {"by":"a","say":"Yes. Even when you won't like it."},
+      {"by":"b","say":"Okay. Then yes. I want this to be a thing."},
       {"beat":"{a} reaches for {b.posAdj} hand, and {b} takes it."},
-      {"by":"a","conf":"I expected to be asked whether I was serious. {b} asked whether I'd be honest when it was inconvenient. That made saying yes feel much bigger."},
-      {"by":"b","conf":"I'm happy. I'm also aware we just gave the cameras an incredible amount of material. I'd like one minute before everyone starts having opinions."}
+      {"by":"a","conf":"I thought {b} was going to ask if I was serious. {b} asked if I'd be honest, and that's way bigger."},
+      {"by":"b","conf":"I'm so happy right now. Everybody's going to have something to say about it, and I don't even care."},
     ] },
     { id: "nrx.spark2", place: "public", turns: [
-      {"by":"a","say":"I like you. I wanted to say it without turning it into a joke."},
-      {"by":"b","say":"You look like holding the joke in is physically hurting you."},
-      {"by":"a","say":"A little. Please answer before it gets worse."},
-      {"by":"b","say":"I like you too. You can breathe now."},
-      {"by":"a","say":"Great. Very cool. I had a much calmer reaction planned."},
-      {"by":"b","say":"I prefer this one."},
-      {"beat":"They sit closer, still smiling at each other."},
-      {"by":"b","conf":"I didn't want a perfect speech. I wanted to know whether {a} meant it without an audience laughing. Now I know."},
-      {"by":"a","conf":"If anyone asks, I handled that gracefully. If they show the footage, I have no further comment."}
-    ] }
+      {"by":"a","say":"I like you. There, I said it, and I didn't even make a joke."},
+      {"by":"b","say":"You look like it's killing you not to."},
+      {"by":"a","say":"It is. Please say something."},
+      {"by":"b","say":"I like you too, dummy."},
+      {"by":"a","say":"Oh. Okay. Cool. Very cool."},
+      {"beat":"They sit closer, both still grinning."},
+      {"by":"b","conf":"I didn't need a big speech. I just wanted {a} to say it without hiding behind a joke."},
+      {"by":"a","conf":"If anybody asks, I was super smooth. Please don't show the footage."},
+    ] },
   ],
   "long.romance.moment.couple": [
     { id: "nrx.couple1", place: "public", turns: [
-      {"by":"a","say":"Do you want company or a distraction?"},
-      {"by":"b","say":"Company. But if you could be slightly distracting, that would help."},
-      {"by":"a","say":"I can talk about how attractive I am."},
-      {"by":"b","say":"I said slightly. That sounds like a full afternoon."},
-      {"by":"a","say":"You have noticed, then."},
-      {"by":"b","say":"I've noticed you're very easy to encourage."},
-      {"by":"a","say":"I can also sit here and let you be upset."},
-      {"by":"b","say":"Do that. Keep the terrible flirting available, though."},
-      {"by":"b","conf":"{a} asked what I needed instead of telling me to cheer up. Then made an awful joke. Somehow that was exactly the right combination."}
+      {"by":"a","say":"Do you want company, or do you want me to go away?"},
+      {"by":"b","say":"Company. Just don't try to cheer me up."},
+      {"by":"a","say":"What if I tell you how good-looking I am?"},
+      {"by":"b","say":"That's literally trying to cheer me up."},
+      {"by":"a","say":"Is it working?"},
+      {"by":"b","say":"...A little."},
+      {"by":"b","conf":"{a} didn't tell me to smile or that everything will be fine. {a} just sat with me, and that's all I wanted."},
     ] },
     { id: "nrx.couple2", place: "public", when: {"third":true}, turns: [
-      {"by":"c","say":"Quick question. Am I interrupting a private conversation, or do you two just look like that now?"},
+      {"by":"c","say":"Am I interrupting, or do you two just look like that all the time now?"},
       {"by":"b","say":"Like what?"},
-      {"by":"c","say":"Like I need to buy a ticket before I sit down."},
-      {"by":"a","say":"You can sit down."},
-      {"by":"c","say":"Thank you. Very generous of the romance department."},
-      {"by":"b","say":"You could try being happy for us."},
-      {"by":"c","say":"I can be happy for you and need someone to talk to. Those are compatible."},
-      {"by":"a","say":"Fair. What do you want to talk about?"},
-      {"by":"c","conf":"They made room. I was prepared to be extremely annoying about it, so honestly they got off lightly."}
-    ] }
+      {"by":"c","say":"Like I need to knock before I sit down."},
+      {"by":"a","say":"Sit down, {c}."},
+      {"by":"c","say":"Thank you. I'd like to talk to my friends without feeling like a third wheel."},
+      {"by":"b","say":"You're not a third wheel."},
+      {"by":"c","say":"I'm a little bit of a third wheel."},
+      {"by":"c","conf":"I'm happy for them, I really am. I just miss having my friends to myself sometimes."},
+    ] },
   ],
   "long.romance.moment.crush": [
     { id: "nrx.crush1", place: "public", turns: [
       {"by":"b","say":"You were about to say something."},
-      {"by":"a","say":"I was deciding whether it was a good idea."},
-      {"by":"b","say":"And the decision?"},
-      {"by":"a","say":"Still under review."},
-      {"by":"b","say":"You can ask me. I might even help with the review."},
-      {"by":"a","say":"Would you want to sit with me for a while? Just us."},
-      {"by":"b","say":"Yes. That one didn't need so much review."},
-      {"by":"a","conf":"I nearly talked myself out of asking. Then {b} said yes like it was easy. I'd like to borrow that confidence for the next conversation."}
-    ] }
+      {"by":"a","say":"I was working up to it."},
+      {"by":"b","say":"Well? I'm right here."},
+      {"by":"a","say":"Do you want to sit with me for a while? Just us?"},
+      {"by":"b","say":"Yeah. I'd like that."},
+      {"by":"a","conf":"I almost talked myself out of asking. Then {b} said yes like it was nothing. I really need to stop overthinking everything."},
+    ] },
   ],
   "long.romance.honeymoon.any": [
     { id: "nrx.honey1", place: "public", when: {"third":true}, turns: [
-      {"by":"c","say":"I need to know whether I can still have an ordinary conversation with either of you."},
-      {"by":"a","say":"Of course you can."},
-      {"by":"c","say":"Good. {b}, stop looking at {a} for long enough to prove it."},
-      {"by":"b","say":"I can listen and look at someone."},
-      {"by":"c","say":"Then tell me what I just said."},
-      {"by":"b","say":"Something extremely supportive about our relationship."},
-      {"by":"a","say":"That's almost definitely wrong."},
-      {"by":"c","say":"Thank you. At least one of you is still reachable."},
-      {"by":"b","conf":"I heard every word. I just wanted to annoy {c}. Being this happy makes it very hard to look innocent."}
+      {"by":"c","say":"Can I still talk to you two, or is it just staring at each other now?"},
+      {"by":"a","say":"Of course you can talk to us."},
+      {"by":"c","say":"Okay. {b}, what did I just say?"},
+      {"by":"b","say":"Something about... us being cute?"},
+      {"by":"c","say":"I asked if I could talk to you."},
+      {"by":"a","say":"Sorry, {c}. We're listening now."},
+      {"by":"b","conf":"I heard every word. I just wanted to annoy {c}. I'm way too happy right now to act normal."},
     ] },
     { id: "nrx.honey2", place: "public", turns: [
-      {"by":"a","say":"I know this probably looks ridiculous from the outside."},
-      {"by":"b","say":"I'm on the inside, and it looks a little ridiculous from here too."},
-      {"by":"a","say":"Should I act less pleased when you sit down?"},
-      {"by":"b","say":"Absolutely not. I worked hard on being this charming."},
-      {"by":"a","say":"You asked if the seat was taken."},
-      {"by":"b","say":"And look what happened. Excellent results."},
-      {"by":"a","conf":"I'm aware we have become the people who laugh at things nobody else finds funny. I'd apologize, but {b} is about to say something else."}
-    ] }
+      {"by":"a","say":"We're being so gross right now, aren't we?"},
+      {"by":"b","say":"So gross."},
+      {"by":"a","say":"Should we stop?"},
+      {"by":"b","say":"Absolutely not."},
+      {"by":"a","conf":"We laugh at stuff nobody else thinks is funny, and everybody's sick of us. I don't care at all."},
+    ] },
   ],
   "long.romance.jealous.any": [
     { id: "nrx.jealous1", place: "public", when: {"third":true}, turns: [
-      {"by":"a","say":"Is there room for me in this conversation?"},
-      {"by":"b","say":"Yes. You can sit here."},
+      {"by":"a","say":"Can I sit with you guys?"},
+      {"by":"b","say":"Sure."},
       {"by":"c","say":"We were just talking."},
-      {"by":"a","say":"I can see that. I'm trying not to make this unpleasant."},
-      {"by":"b","say":"Then tell me what is bothering you without taking it out on {c}."},
-      {"by":"a","say":"I wanted your attention. There. That's an embarrassing thing to say in front of everyone."},
-      {"by":"c","say":"I can give you a minute. I'd appreciate not being treated like I stole something."},
-      {"by":"a","say":"Okay. That's fair."},
-      {"by":"a","conf":"I wanted {b} to notice I was upset without having to admit why. Unfortunately {b} asked, and I had to say the mortifying part out loud."}
-    ] }
+      {"by":"a","say":"Yeah, I noticed. You've been just talking for an hour."},
+      {"by":"b","say":"Okay, what's wrong?"},
+      {"by":"a","say":"Nothing. I just wanted you to notice me too. That's so embarrassing to say out loud."},
+      {"by":"c","say":"I'm not trying to steal anybody, you know."},
+      {"by":"a","say":"...Okay. Sorry."},
+      {"by":"a","conf":"I wanted {b} to see I was upset without me having to say why. Then {b} asked, and I had to say the embarrassing part out loud."},
+    ] },
   ],
   "long.romance.fade.any": [
     { id: "nrx.fade1", place: "public", turns: [
-      {"by":"a","say":"I don't want to keep calling this a relationship because ending it would be awkward."},
-      {"by":"b","say":"It's going to be awkward. We still have to live here."},
-      {"by":"a","say":"I know. I'd rather be awkward and honest than keep reassuring you about something I'm not feeling."},
-      {"by":"b","say":"Thank you for telling me. I'm not ready to be cheerful about it."},
-      {"by":"a","say":"You don't have to be. Do you want some space?"},
-      {"by":"b","say":"Yes. And no big announcement to the camp. I want to tell people when I'm ready."},
-      {"by":"b","conf":"It was a kind conversation. That doesn't make it painless. I still have to sit somewhere else and notice the empty spot."}
-    ] }
+      {"by":"a","say":"I don't want to keep pretending this is still working."},
+      {"by":"b","say":"We still have to live together, you know."},
+      {"by":"a","say":"I know. But I'd rather be honest than keep telling you I'm fine."},
+      {"by":"b","say":"Okay. Thanks for telling me, I guess."},
+      {"by":"a","say":"Do you want some space?"},
+      {"by":"b","say":"Yeah. And don't tell everybody yet. I'll tell people when I'm ready."},
+      {"by":"b","conf":"It was a nice way to break up, and it still hurts. Now I have to act like it doesn't, with everybody watching."},
+    ] },
   ],
   "long.romance.fade.soured": [
     { id: "nrx.soured1", place: "public", when: {"third":true}, turns: [
       {"by":"c","say":"Do you want me to leave you two alone?"},
       {"by":"b","say":"No. We're done talking."},
-      {"by":"a","say":"You mean you're done answering."},
-      {"by":"b","say":"I answered. You didn't like the answer."},
-      {"by":"c","say":"Then I'm not going to make you repeat it for me."},
-      {"by":"a","say":"Fine. But don't tell everyone we're perfectly fine."},
-      {"by":"b","say":"I was not planning to. I'd like to get through the next five minutes first."},
-      {"by":"a","conf":"I wanted an ending that made me feel less stupid for caring. There was not one."},
-      {"by":"b","conf":"Now I have to be upset in a place where people can turn it into a discussion. I don't want to provide the discussion."}
-    ] }
+      {"by":"a","say":"You're done. I'm not."},
+      {"by":"b","say":"I gave you an answer. You just didn't like it."},
+      {"by":"c","say":"Okay, I'm not getting in the middle of this."},
+      {"by":"a","say":"Fine. Just don't go telling everybody we're fine."},
+      {"by":"b","say":"I wasn't going to."},
+      {"by":"a","conf":"I wanted it to end in a way that didn't make me feel stupid for caring. It didn't."},
+      {"by":"b","conf":"Now everybody's going to have an opinion about us breaking up, and I don't want to hear any of them."},
+    ] },
   ],
   "long.romance.rideordie.any": [
     { id: "nrx.ride1", place: "public", turns: [
-      {"by":"b","say":"If we disagree about the game, do we get to say so?"},
-      {"by":"a","say":"Yes. I'd rather argue with you than have you nod and resent me."},
-      {"by":"b","say":"Good. Because I want us to get to the end, and I'm not promising to stop having opinions."},
-      {"by":"a","say":"I like your opinions. I have concerns about how often they are about me."},
-      {"by":"b","say":"That's what you get for being important to me."},
-      {"by":"a","conf":"We want to reach the end together. That's going to take more than holding hands and assuming we have the same plan. I'm glad {b} said it."}
-    ] }
+      {"by":"b","say":"If we disagree about a vote, can we say so?"},
+      {"by":"a","say":"Yes. I'd rather argue with you than have you go along with me and hate me later."},
+      {"by":"b","say":"Good. I want us both at the end, but I'm not going to stop having opinions."},
+      {"by":"a","say":"I like your opinions. I just wish they weren't always about me."},
+      {"by":"b","say":"That's what you get for being my favourite person here."},
+      {"by":"a","conf":"We want to get to the end together, and that's going to take more than holding hands. I'm glad {b} said it out loud."},
+    ] },
   ],
   "long.romance.noticed.any": [
     { id: "nrx.notice1", place: "public", turns: [
-      {"beat":"{a} watches {b} and {c} sit close together."},
-      {"by":"a","conf":"I could make a joke about {b} and {c}, but I'm more interested in whether they tell each other things they don't tell me. Being a couple doesn't prove they share every plan. It gives me a very good reason to check."}
-    ] }
+      {"beat":"{a} watches {b} and {c} sitting close together."},
+      {"by":"a","conf":"{b} and {c} are cute and all. But couples tell each other everything, and I'd love to know what they're saying about the rest of us."},
+    ] },
   ],
   "long.romance.target.any": [
     { id: "nrx.target1", place: "public", turns: [
-      {"by":"a","conf":"{b} and {c} have someone here who can reassure them without having to think about it. I want that advantage broken up. I still need people to agree with me, and walking over to complain that they are happy isn't much of a pitch."}
-    ] }
+      {"by":"a","conf":"{b} and {c} will always have each other's backs, and that's two votes I can never split. That has to end. I just need somebody else to see it too."},
+    ] },
   ],
   "long.romance.tri.confront": [
     { id: "nrx.triangle1", place: "public", when: {"third":true}, turns: [
-      {"by":"a","say":"I need an answer about {c}. Not a joke, and not a question about why I'm upset."},
-      {"by":"b","say":"I'm still trying to work out what I feel."},
-      {"by":"a","say":"Then say that. Don't reassure me just to get through this conversation."},
+      {"by":"a","say":"I need an answer about {c}. And not a joke."},
+      {"by":"b","say":"I don't know what I feel yet."},
+      {"by":"a","say":"Then say that. Don't just tell me what I want to hear."},
       {"by":"b","say":"I like you. I'm also confused about {c}, and I know that's a horrible answer."},
-      {"by":"a","say":"It is. It's still better than making me argue until you admit it."},
+      {"by":"a","say":"It is. But at least it's honest."},
       {"by":"b","say":"What do you want me to do?"},
-      {"by":"a","say":"Give me space. You don't get to ask me to make this easier for you."},
-      {"by":"b","conf":"I wanted to explain without hurting {a}. That stopped being possible before I opened my mouth. Now I have to decide what I'm actually going to do."}
-    ] }
+      {"by":"a","say":"Figure it out. And until you do, give me some space."},
+      {"by":"b","conf":"I didn't want to hurt {a}, but that was never going to happen. Now I actually have to decide."},
+    ] },
   ],
   "long.crowd.banter.any": [
     { id: "nrx.group1", place: "public", turns: [
-      {"by":"a","say":"If we were watching this instead of living it, who would be the hardest person to explain to someone?"},
-      {"by":"b","say":"You. I'd need diagrams."},
-      {"by":"c","say":"I'd start with the fact that you asked this question voluntarily."},
-      {"by":"d","say":"Then we show them this conversation and let them work it out."},
-      {"by":"a","say":"I was offering everyone a chance to talk about themselves."},
-      {"by":"b","say":"You asked us to name someone confusing. We worked together beautifully."},
-      {"by":"c","say":"Honestly, our most efficient team decision."},
-      {"by":"a","conf":"I wanted an interesting group conversation. I got one. I should have specified that I wanted to enjoy it too."}
+      {"by":"a","say":"Okay, question. If you were watching this at home, who'd be your favourite?"},
+      {"by":"b","say":"Not you."},
+      {"by":"a","say":"Wow. Okay."},
+      {"by":"c","say":"I'd pick {a}, honestly. Just to watch {a} get roasted like this."},
+      {"by":"d","say":"Same. It's really good TV."},
+      {"by":"a","conf":"I wanted a fun group conversation, and I got roasted instead. I guess that counts."},
     ] },
     { id: "nrx.group2", place: "public", turns: [
-      {"by":"a","say":"What is one thing you want people watching to understand about you?"},
-      {"by":"b","say":"That I'm considerably more relaxed when nobody is pointing a camera at me."},
-      {"by":"c","say":"I'd like them to know I'm trying, even when it looks bad."},
-      {"by":"d","say":"I want them to give us some credit for living with each other."},
-      {"by":"b","say":"That sounded aimed at someone."},
-      {"by":"d","say":"It was generously aimed at everybody."},
-      {"by":"a","say":"I was hoping for a sincere answer."},
-      {"by":"c","say":"Mine was sincere. You can let it be sincere without making everyone else stop joking."},
-      {"by":"c","conf":"I didn't want a big emotional scene. I wanted to say one true thing and still get to laugh with everyone afterward."}
+      {"by":"a","say":"What's one thing you want people watching at home to know about you?"},
+      {"by":"b","say":"That I'm way nicer when there's no camera on me."},
+      {"by":"c","say":"That I'm trying. Even when it looks bad."},
+      {"by":"d","say":"That living with all of you is really hard."},
+      {"by":"b","say":"Was that aimed at somebody?"},
+      {"by":"d","say":"It was aimed at everybody."},
+      {"by":"c","conf":"I didn't want a big emotional moment. I just wanted to say one true thing and still laugh with everybody after."},
     ] },
     { id: "nrx.group3", place: "public", turns: [
-      {"by":"b","say":"Who do you think gives the best confessional?"},
-      {"by":"a","say":"Me. I have an excellent working relationship with the camera."},
-      {"by":"c","say":"The camera can't leave. That's a very forgiving relationship."},
-      {"by":"d","say":"I bet {b} says something completely different once the door closes."},
-      {"by":"b","say":"I'm not giving away the good material for free."},
-      {"by":"a","say":"See? That's why mine are better. Generosity."},
-      {"by":"c","say":"Volume. You mean volume."},
-      {"by":"d","conf":"Now I want to watch everybody else in the booth. I also urgently want to know whether I've been giving the boring ones."}
-    ] }
+      {"by":"b","say":"Who do you think has the best confessionals?"},
+      {"by":"a","say":"Me. Obviously."},
+      {"by":"c","say":"You just yell at the camera."},
+      {"by":"a","say":"Passionately. I yell passionately."},
+      {"by":"d","say":"I bet {b} is totally different in there."},
+      {"by":"b","say":"I'm not giving away my best stuff for free."},
+      {"by":"d","conf":"Now I really want to know what everybody says about me in there."},
+    ] },
   ],
   "long.crowd.project.any": [
     { id: "nrx.project1", place: "public", turns: [
-      {"by":"a","say":"We can get this done faster if everybody takes a job."},
-      {"by":"b","say":"Excellent. What is your job?"},
-      {"by":"a","say":"Making sure we agree on the jobs."},
-      {"by":"c","say":"That's the part we're doing right now. Pick one for afterward."},
-      {"by":"d","say":"I'll help {c}. {b}, do you want to work with {a}?"},
-      {"by":"b","say":"I want {a} to ask instead of assigning me."},
-      {"by":"a","say":"Would you help me?"},
-      {"by":"b","say":"Yes. See how little time that took?"},
-      {"by":"c","conf":"I'm glad we sorted that out. I didn't want our first completed task to be appointing a boss."}
-    ] }
+      {"by":"a","say":"We'd get this done way faster if everybody took a job."},
+      {"by":"b","say":"Okay. What's your job?"},
+      {"by":"a","say":"Telling everybody their jobs."},
+      {"by":"c","say":"Nice try. Pick a real one."},
+      {"by":"d","say":"I'll help {c}. {b}, you go with {a}."},
+      {"by":"b","say":"Only if {a} asks nicely."},
+      {"by":"a","say":"Will you please help me?"},
+      {"by":"b","say":"See? Was that so hard?"},
+      {"by":"c","conf":"I'm glad we sorted it out. The last thing this group needs is a boss."},
+    ] },
   ],
   "long.crowd.clash.any": [
     { id: "nrx.crowdclash1", place: "public", turns: [
-      {"by":"a","say":"If you have a problem with what I said, answer me instead of looking around for support."},
-      {"by":"b","say":"I'm looking around because you made it everybody's business."},
-      {"by":"c","say":"We can all hear you. Neither of you needs to repeat it louder."},
-      {"by":"a","say":"I'm asking for an answer."},
-      {"by":"b","say":"You're asking for agreement. I answered, and you kept going."},
-      {"by":"c","say":"Then say what you actually want from {b}."},
-      {"by":"a","say":"I want to finish without being corrected."},
-      {"by":"b","say":"You can finish. You don't get to decide whether I agree afterward."},
-      {"by":"c","conf":"I thought I could calm them down by making them be specific. Now they are having a very specific argument. That's technically progress."}
-    ] }
+      {"by":"a","say":"If you've got a problem with what I said, say it to me, not to everybody else."},
+      {"by":"b","say":"You made it everybody's business when you said it in front of everybody."},
+      {"by":"c","say":"We can all hear you both. You don't need to get louder."},
+      {"by":"a","say":"I just want an answer."},
+      {"by":"b","say":"You want me to agree with you. That's different."},
+      {"by":"c","say":"Okay, {a}, what do you actually want from {b}?"},
+      {"by":"a","say":"I want to finish one sentence without getting corrected!"},
+      {"by":"c","conf":"I tried to calm them down. Now they're still fighting, just a little more quietly. I'll take it."},
+    ] },
   ],
   "long.drama.clash.any": [
     { id: "nrx.clash1", place: "public", turns: [
-      {"by":"a","say":"Can you stop making a face every time I speak?","v":{"dry":"Are you going to make that face every time I speak?","loud":"You could at least wait until I'm finished before making that face!","warm":"Could you tell me what you think instead of making that face?"}},
-      {"by":"b","say":"Can you stop checking whether I approve?"},
-      {"by":"a","say":"Everyone can see you doing it."},
-      {"by":"b","say":"Then ask whether I disagree. You might get an answer you can use."},
-      {"by":"a","say":"Fine. Do you disagree?"},
-      {"by":"b","say":"Yes. I think you're deciding for people who haven't answered yet."},
-      {"by":"a","say":"And you're very generously answering for them."},
-      {"by":"b","conf":"I dislike being talked over. Apparently I dislike it enough to talk over someone else. I'm not thrilled that {a} noticed."}
-    ] }
+      {"by":"a","say":"Can you stop rolling your eyes every time I talk?"},
+      {"by":"b","say":"Can you stop checking if everybody agrees with you?"},
+      {"by":"a","say":"Everybody can see you doing it."},
+      {"by":"b","say":"Then ask me if I disagree."},
+      {"by":"a","say":"Fine. Do you?"},
+      {"by":"b","say":"Yes. You keep deciding stuff for people who haven't said anything yet."},
+      {"by":"a","say":"And now you're talking for them too."},
+      {"by":"b","conf":"I hate being talked over. Apparently I hate it so much I started doing it too, and {a} noticed."},
+    ] },
   ],
   "long.drama.dispute.any": [
     { id: "nrx.dispute1", place: "public", turns: [
-      {"by":"a","say":"I said I could help. I didn't say you could decide how I spend the whole day."},
-      {"by":"b","say":"I thought we had agreed."},
-      {"by":"a","say":"You asked one question and added three jobs after I said yes."},
-      {"by":"b","say":"Then tell me which part you're actually doing."},
+      {"by":"a","say":"I said I'd help with the chores. I didn't say you could plan my whole day."},
+      {"by":"b","say":"I thought we agreed."},
+      {"by":"a","say":"You asked me for one thing, and then you added three more jobs."},
+      {"by":"b","say":"Fine. Which part are you actually doing?"},
       {"by":"a","say":"The part you asked me about. If you need more, ask."},
-      {"by":"b","say":"Fine. Can you help with the rest?"},
-      {"by":"a","say":"No. But I appreciate finally getting the choice."},
-      {"by":"b","conf":"I genuinely thought we had a plan. {a} thought I had given an order. We're going to have an extremely literal conversation next time."}
-    ] }
+      {"by":"b","say":"Okay. Can you help with the rest?"},
+      {"by":"a","say":"No. But thanks for asking this time."},
+      {"by":"b","conf":"I really thought we had a plan. {a} thought I was giving orders. Next time I'm spelling everything out."},
+    ] },
   ],
   "long.drama.fight.tense": [
     { id: "nrx.tense3", place: "public", when: {"third":true}, turns: [
-      {"by":"a","say":"That's an interesting way to tell the story."},
-      {"by":"b","say":"Then tell me which part you disagree with."},
-      {"by":"a","say":"The part where you sound very reasonable and I sound difficult."},
-      {"by":"b","say":"I can let you explain yourself. I can't promise the explanation will make you sound better."},
-      {"by":"c","say":"Could you both stop addressing the room and talk to each other?"},
-      {"by":"a","say":"I'm talking to {b}."},
-      {"by":"b","say":"You're watching everyone else to see whether they laugh."},
-      {"by":"c","say":"Nobody is laughing. You can stop waiting for it."},
-      {"by":"a","conf":"That conversation would have gone a lot better without {c} announcing that my audience was not cooperating."}
-    ] }
+      {"by":"a","say":"Wow. That's a funny way to tell the story."},
+      {"by":"b","say":"Then tell me which part is wrong."},
+      {"by":"a","say":"The part where you sound totally reasonable and I sound crazy."},
+      {"by":"b","say":"You can explain. I just can't promise it'll make you look any better."},
+      {"by":"c","say":"Can you two talk to each other and not to the whole room?"},
+      {"by":"a","say":"I am talking to {b}."},
+      {"by":"b","say":"You're looking around to see if anybody's laughing."},
+      {"by":"c","say":"Nobody's laughing."},
+      {"by":"a","conf":"That would've gone way better if {c} hadn't pointed out that nobody was on my side."},
+    ] },
   ],
   "long.drama.fight.snap": [
     { id: "nrx.snap3", place: "public", turns: [
-      {"by":"b","say":"You could have asked me before deciding I'd be fine with it."},
+      {"by":"b","say":"You could've asked me first."},
       {"by":"a","say":"I thought it was obvious!"},
-      {"by":"b","say":"Then asking would have been a very short conversation."},
-      {"by":"a","say":"Why does everything have to turn into an argument?"},
-      {"by":"b","say":"Because you keep asking questions you don't want me to answer."},
-      {"beat":"{a} takes a breath, but the next words still come out sharp."},
-      {"by":"a","say":"Fine. Next time I'll ask. Are we done?"},
-      {"by":"b","say":"For now. You don't get extra credit for sounding angry about it."},
-      {"by":"b","conf":"I got the answer I wanted. I also got a very clear demonstration of how annoyed {a} was that I asked."}
-    ] }
-  ]
+      {"by":"b","say":"Then asking would've taken two seconds."},
+      {"by":"a","say":"Why does everything have to be a fight with you?"},
+      {"by":"b","say":"Because you never ask me anything!"},
+      {"beat":"{a} takes a breath, but it still comes out sharp."},
+      {"by":"a","say":"Fine. Next time I'll ask. Happy?"},
+      {"by":"b","say":"Not really."},
+      {"by":"b","conf":"I got what I wanted. I also got to see how mad {a} was about having to ask."},
+    ] },
+  ],
 };

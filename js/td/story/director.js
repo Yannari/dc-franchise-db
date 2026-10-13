@@ -2540,6 +2540,16 @@ export function airTdEpisode(ep) {
           scene: { ...(ev.scene || {}), spot: { id: eat.id, label: eat.label, fixed: true, window: phase === 'pre' ? 'morning' : 'before-tribal' } } };
       });
     }
+    // a night scene written before the challenge airs that evening (read 2026-10-14: spin the bottle "in a circle around
+    // the fire" aired on the trail in the morning): only a written scene moves, an engine moment keeps its own phase
+    { const NIGHT_GAME = /spin the bottle|empty bottle|the bottle (wobbles|spins|stops)|truth or dare|never have I ever|^\(?late[,.]|\bit's late\b|gone to bed|as it gets dark|\bin the dark\b|under the stars|moonlight/i;
+      const night = it => it?.story && Array.isArray(it.lines) && it.scene?.spot && it.scene.spot.id !== 'confessional' && it.storyType !== 'vote'
+        && it.lines.some(l => l.kind === 'beat' && NIGHT_GAME.test(l.text || ''));
+      const moving = out.pre.filter(night);
+      if (moving.length) {
+        out.pre = out.pre.filter(it => !moving.includes(it));
+        out.post.push(...moving.map(it => ({ ...it, scene: { ...it.scene, spot: { ...it.scene.spot, window: 'evening' } } })));
+      } }
     // the refs that were added late go back into the camp's own order
     const editOn0 = (seasonConfig?.tdEdit || 'full') !== 'off';
     for (const phase of ['pre', 'post']) {

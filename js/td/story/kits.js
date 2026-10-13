@@ -303,37 +303,33 @@ export function kitSoloScene(a, facts, ctx) {
 // user, 2026-10-14: the old bank read like a translation, "Let us ask", and its first pair aired in 61 episodes of 560,
 // because the first callback about anybody always took pair one). Each pair is whole; {thing} reads after "about".
 const CALL_PAIRS = [
-  // (predictions and opinions only: the callback must not claim a moment nobody saw, tests/td-social-exchanges)
-  ["Has {about} told you about {thing} yet?", "Not yet. Something tells me I'm about to hear all of it."],
-  ["If {about} brings up {thing} again today, I'm timing it.", "I give it five minutes. Maybe less."],
-  ["What happens if you ask {about} one question about {thing}?", "You lose an hour. Maybe two."],
-  ["Do you think you'd keep up if {about} got going about {thing}?", "No. I'd just nod. I'm very good at nodding."],
-  ["Is it weird that I want to hear more about {thing}?", "No. It's catching. I can feel it too."],
-  ["Bet you can't get through a whole day without {about} bringing up {thing}.", "No chance. Nobody could."],
-  ["Somebody should tell {about} we're not all experts on {thing}.", "Somebody should. It's not going to be me."],
-  ["Honestly, the way {about} talks about it, {thing} sounds kind of fun.", "Don't tell {about} that. You'll never hear the end of it."],
-  ["I think every conversation with {about} is going to end up being about {thing}.", "Then we'd better learn something about it."],
-  ["Should we try changing the subject if {about} starts on {thing}?", "You can try. I'll watch."],
+  // (whole four-line talks, read 2026-10-14: the old question pairs and follow-ups were picked separately and did not
+  // connect, "We should probably ask what it means to Bowie." / "Good idea. Better than guessing.". Predictions and
+  // opinions only: the callback must not claim a moment nobody saw, tests/td-social-exchanges)
+  ["Has {about} told you about {thing} yet?", "Not yet. Should I be scared?", "Just don't ask any questions, or you'll be there all day.", "Too late. I already asked one."],
+  ["How long do you think before {about} brings up {thing} again?", "Five minutes, tops.", "I say two.", "Okay. Whoever loses carries the water."],
+  ["Okay, don't laugh, but I kind of like it when {about} talks about {thing}.", "I'm not laughing. Me too, honestly.", "Really?", "Yeah. Just don't tell {about}, or we'll never hear about anything else."],
+  ["Is {about} actually serious about {thing}?", "Completely serious. So don't laugh when it comes up.", "I wasn't going to laugh.", "You totally were. I saw your face."],
+  ["Do you understand anything {about} says about {thing}?", "Not a word. I just nod.", "Same. I've gotten really good at nodding.", "We'd better learn something about it before {about} catches on."],
+  ["Somebody needs to tell {about} that not everybody cares about {thing}.", "Go ahead. I'll watch.", "Why me?", "Because I'm not doing it, and you brought it up."],
+  ["Bet you can't get {about} to talk about anything except {thing} for five minutes.", "Easy. I'll talk about the weather.", "And then what?", "And then I guess we'll be talking about {thing}."],
+  ["What's the deal with {about} and {thing}, anyway?", "I think it's just really important to {about}.", "Huh. I figured it was a bit.", "It's not a bit. Trust me, I asked."],
+  ["Does {about} know everybody's heard all about {thing} by now?", "Oh, {about} knows.", "And doesn't care at all?", "Not even a little. Honestly, I kind of respect it."],
+  ["If {about} goes home, who's going to tell us about {thing}?", "Nobody. It'll be so quiet.", "I'd kind of miss it.", "Don't say that out loud. {about} might hear you."],
+  ["I'm going to ask {about} about {thing}.", "Why would you do that to yourself?", "I'm curious!", "Okay. Say goodbye to the rest of your day."],
 ];
-// the callback's follow-up between the two of them, then the one they're talking about walks up
-const CALL_MORE = [
-  ["Should we tell {about} it's become a thing?", "Absolutely not. It's the best part of my day."],
-  ["We should probably ask what it means to {about}.", "Good idea. Better than guessing."],
-  ["Honestly, I'd miss it if {about} stopped.", "Me too. Don't tell {about} I said that."],
-  ["Do you think {about} knows we notice?", "There's no way. Or there's every way, and that's worse."],
-  ["We could try to get {about} to say it on purpose.", "Ten minutes. I bet you I can do it in ten."],
-  ["It's kind of a comfort at this point, isn't it?", "Like a really strange alarm clock."],
-];
+// (a thing that is a trait, not a topic, can't be "brought up": "Has Jane told you about how quiet she is yet?")
+const CALL_TRAIT = /^(how |never |falling |knowing |giving |calculating |being (in charge|everybody|a pessimist))/;
 const CALL_ARRIVE = [
-  ["What are you two laughing at?", "Nothing. Absolutely nothing."],
-  ["Why did you both just go quiet?", "No reason. Lovely weather, isn't it?"],
-  ["Are you talking about me?", "We would never. Okay, a little."],
-  ["I can feel you looking at me.", "We're looking at the view, which you happen to be in."],
+  ["What are you two laughing at?", "Nothing! Nothing at all."],
+  ["Why did you both just stop talking?", "No reason. How's it going?"],
+  ["Are you talking about me?", "Maybe a little. It was nice stuff, I swear."],
+  ["Okay, what's going on? You're both being weird.", "We're not being weird. You're being weird."],
 ];
 /** c and d joke about `about`'s thing, once it has aired as a bit at least once; then `about` turns up. */
 export function kitCallbackScene(c, d, about, facts, ctx) {
   const k = KITS[about];
-  if (!k) return null;
+  if (!k || CALL_TRAIT.test(k.thing || '')) return null;
   const u = (used()[about] ||= []);
   const n = u.filter(x => x.startsWith('call:')).length;
   if (n >= CALL_PAIRS.length || !u.some(x => x.startsWith('bit:'))) return null;
@@ -343,16 +339,14 @@ export function kitCallbackScene(c, d, about, facts, ctx) {
   if (book.ep !== ctx.ep) { book.ep = ctx.ep; book.used = []; }
   const start = [...about].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7) % CALL_PAIRS.length;
   const picks = Array.from({ length: CALL_PAIRS.length }, (_, i) => (start + n + i) % CALL_PAIRS.length).filter(i => !book.used.includes(i) && !u.includes(`pair:${i}`));
-  const [m1, m2] = pickOf(CALL_MORE, c, d, about);
   const [q, r] = pickOf(CALL_ARRIVE, about, c);
   const STORE = { about };
   // the first pair the writer can stage here (a pair that names a time of day doesn't air at the wrong one)
   let w = null, pick = null;
   for (const i of picks) {
     const entry = { id: `kit:${about}:call:${n}`, place: 'aside', turns: [
-      { by: 'a', say: CALL_PAIRS[i][0].split('{thing}').join(k.thing) }, { by: 'b', say: CALL_PAIRS[i][1].split('{thing}').join(k.thing) },
-      { by: 'a', say: m1 }, { by: 'b', say: m2 },
-      { beat: '{c} wanders over.' }, { by: 'c', say: q }, { by: 'a', say: r },
+      ...CALL_PAIRS[i].map((t, j) => ({ by: j % 2 ? 'b' : 'a', say: t.split('{thing}').join(k.thing) })),
+      { beat: '{c} wanders over.', comes: 'c' }, { by: 'c', say: q }, { by: 'a', say: r },
     ] };
     w = (() => { const key = `kit.${entry.id.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`; STORY_POOLS[`${key}.any`] = [entry];
       try { return writeStory(key, 'any', { a: c, b: d, c: about }, STORE, { ...facts, third: true }, { ...ctx, unique: false }); } finally { delete STORY_POOLS[`${key}.any`]; } })();

@@ -21,8 +21,13 @@ export const DOING = {
   fire: { pre: ['raking out last night\'s ashes', 'trying to get the fire going again'], post: ['feeding the fire', 'poking at the coals', 'sitting by the fire'] },
   sleep: { pre: ['only just awake', 'folding up a blanket', 'shaking out a sleeping bag'], post: ['lying down for a rest', 'folding up a blanket', 'trying and failing to nap'] },
   wash: { any: ['washing up', 'filling a water bottle', 'rinsing out a cup', 'splashing water around, trying to wake up'] },
-  aside: { any: ['taking a break from everybody', 'sitting in the shade', 'killing time', 'doing nothing in particular', 'staring out at nothing', 'drawing in the dirt with a stick', 'retying a shoelace for the third time', 'counting clouds, apparently', 'hiding from the chores', 'eating something out of a pocket'] },
-  public: { any: ['trying to look busy', 'watching everybody else work', 'pretending to read', 'stretching', 'people-watching', 'sorting out a tangle of rope', 'eating something out of a pocket'] },
+  // (ordinary things a person does, said plainly, true at every venue: read 2026-10-14, 'retying a shoelace for the third
+  // time', 'counting clouds, apparently' and 'eating something out of a pocket' set every other scene, and read as odd)
+  aside: { any: ['taking a break from everybody', 'sitting in the shade', 'killing time', 'hiding from the chores', 'mending a hole in a sock',
+    'doodling in a notebook', 'doing some stretches', 'trying to get a splinter out', 'tying knots in a bit of rope', 'sitting with both eyes shut',
+    'reorganising a bag that was already organised', 'picking at a loose thread'] },
+  public: { any: ['trying to look busy', 'watching everybody else work', 'stretching', 'people-watching', 'sorting out a tangle of rope',
+    'folding laundry', 'counting the supplies', 'fixing a broken strap', 'doing push-ups'] },
   secret: { any: ['alone, well away from everybody', 'alone, where nobody else can hear', 'keeping well out of sight'] },
 };
 
@@ -56,7 +61,7 @@ export const SECRET = [
   '{s1} and {s2} meet {here}, both checking over their shoulders first.',
   '{s1} follows {s2} {here}, keeping a few steps behind until they are out of sight.',
   '{s1} taps {s2} on the shoulder and nods towards the quiet. They end up {here}.',
-  '{s2} is alone {here} when {s1} turns up, a little out of breath.',
+  '{s1} finds {s2} alone {here} and sits down without asking.',
   '{s1} and {s2} leave the camp one at a time, and meet up again {here}.',
   '{s1} finds {s2} {here}, and checks that nobody followed.',
 ];

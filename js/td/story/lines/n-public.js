@@ -19,9 +19,9 @@ export default {
     ] },
     { id: 'npb.d2', turns: [
       { beat: "{c} goes after {b} and sits down beside {b.obj}." },
-      { by: 'c', say: "Ignore {a}. Seriously, nobody thinks that about you." },
-      { by: 'b', say: "{a} does." },
-      { by: 'c', say: "{a} isn't everybody." },
+      { by: 'c', say: "Hey. Don't let {a} get to you." },
+      { by: 'b', say: "Too late." },
+      { by: 'c', say: "Well, for what it's worth, I'm on your side." },
       { by: 'd', opt: true, conf: "{c} ran straight to {b}, and {a} saw it. That's two sides now, whether anybody wanted them or not." },
     ] },
   ],

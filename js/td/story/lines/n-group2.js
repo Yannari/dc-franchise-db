@@ -78,7 +78,7 @@ export default {
   'long.friend.sunrise.any': [
     { id: 'nh.s1', place: 'water', when: { third: true }, turns: [
       { beat: "Early. {a}, {b} and {c} are the only ones awake, sitting {here}." },
-      { by: 'c', say: "Did either of you sleep?", v: { anxious: "Did anyone sleep? Because I didn't sleep at all.", dry: "So. Who got the full zero hours?", calm: "Sleep okay?" } },
+      { by: 'c', say: "Did either of you sleep?", v: { anxious: "Did anyone sleep? Because I didn't sleep at all.", dry: "So. Did anybody actually sleep?", calm: "Sleep okay?" } },
       { by: 'a', say: "Not really." },
       { by: 'b', say: "Something was crawling on me all night." },
       { by: 'c', say: "That was me, sorry, the ground is really lumpy." },

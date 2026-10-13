@@ -34,11 +34,12 @@ export default {
       { by: 'a', say: "That's so sad, and I completely agree." },
       { by: 'a', conf: "We described food for half an hour. It was torture. It was also the best conversation I've had out here in days." },
     ] },
-    { id: 'nl6.m2', turns: [
+    // (staged where people eat: an automatic set-up line had them sneaking off with nothing to eat, read 2026-10-14)
+    { id: 'nl6.m2', place: 'eat', turns: [
       { by: 'a', say: "Want the rest of mine?" },
       { by: 'b', say: "You haven't eaten anything." },
       { by: 'a', say: "I'm not hungry." },
-      { by: 'b', say: "Nobody here is not hungry." },
+      { by: 'b', say: "Everybody here is hungry. Try again." },
       { by: 'a', say: "Okay, I'm hungry. You just look like you need it more." },
       { by: 'b', say: "Split it, then. Half each." },
       { by: 'a', say: "Deal." },

@@ -538,7 +538,7 @@ export default {
     ] },
     { id: 'na.n3', place: 'aside', when: { voice: ['loud', 'blunt', 'tough'] }, turns: [
       { by: 'a', say: "I'm going to say what everyone's thinking. {group} is dead." },
-      { by: 'b', say: "Wow. Good morning to you too." },
+      { by: 'b', say: "Wow. Hi to you too." },
       { by: 'a', say: "We can't be around each other without fighting. That's not an alliance." },
       { by: 'b', say: "We could try to fix it." },
       { by: 'a', say: "With what, group hugs? I'm done." },
@@ -564,7 +564,7 @@ export default {
     { id: 'na.x2', place: 'aside', when: { voice: ['warm', 'anxious', 'earnest'] }, turns: [
       { by: 'a', say: "I'm sorry. I wanted to be the one to tell you." },
       { by: 'b', say: "Tell me what?" },
-      { by: 'a', say: "{group} talked after how you voted, and they don't want you in it anymore." },
+      { by: 'a', say: "{group} talked after the way you voted, and they don't want you in it anymore." },
       { by: 'b', say: "They? Or you?" },
       { by: 'a', say: "...All of us. I'm sorry, I didn't fight it." },
       { by: 'b', say: "At least you're honest." },

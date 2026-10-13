@@ -136,7 +136,7 @@ const SETUP_WORD = { mock: 'mocked', wronged: 'wronged', clash: 'fought with', h
  * The turn this camp's day set up, if any: an aired setup from an earlier episode, and something one of the two
  * did to the other today. Returns the director's list item ({ at, item }) or null.
  */
-export function turnScene(ep, camp, members, chal, next, factsForWho, phase = 'post', busy = new Set()) {
+export function turnScene(ep, camp, members, chal, next, factsForWho, phase = 'post', busy = new Set(), write = writeStory) {
   // (a pair already in a developing story today, a follow-up or an arc, waits: one chapter between two people a day)
   const open = book().filter(t => !t.done && t.ep < ep.num && members.includes(t.by) && members.includes(t.to) && !busy.has(pairKey(t.by, t.to)));
   if (!open.length) return null;
@@ -153,14 +153,14 @@ export function turnScene(ep, camp, members, chal, next, factsForWho, phase = 'p
       // short enough to say again; read in played seasons: "You told me “I'm fine.”. Remember?"
       const quote = QUOTED.has(s.kind) && s.remark && s.remark.length <= 70 ? s.remark.trim().replace(/\.$/, '') : null;
       const data = { deed: d.deed, ...(quote ? { remark: quote } : {}), ...(s.thing ? { thing: s.thing } : {}) };
-      const w = writeStory(`turn.${kase}`, 'any', who, data, { ...factsForWho(who), pair: true, thing: !!s.thing, remark: !!quote },
+      const w = write(`turn.${kase}`, 'any', who, data, { ...factsForWho(who), pair: true, thing: !!s.thing, remark: !!quote },
         { ep: ep.num, camp, phase, n: next(), place: 'aside', unique: 'soft' });
       if (!w) continue;
       s.done = true;
       const [badge, cls] = BADGE[kase];
       // (one that happened at the challenge is part of the challenge talk; one from camp is the day's own story)
       return { at: d.chal ? 0.24 : 0.5, item: { story: true, kind: `${d.chal ? 'chm.' : ''}turn.${kase}`, storyType: d.chal ? 'challenge' : 'arc', step: kase, players: [a, b], lines: w.lines, text: w.text, lineId: w.lineId,
-        scene: { kind: 'turn', who, data, spot: w.spot ? { ...w.spot, window: phase === 'pre' ? 'camp-work' : 'afternoon' } : null }, badgeText: badge, badgeClass: cls,
+        scene: { kind: 'turn', who, data, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: badge, badgeClass: cls,
         why: [`${s.by} ${SETUP_WORD[s.kind]} ${s.to}${s.thing ? ` (${s.thing})` : ''} on camera at episode ${s.ep}; ${d.ep === ep.num ? 'today' : `at episode ${d.ep}`} ${d.by} ${d.kind === 'help' ? 'helped' : 'turned on'} ${d.to}: "${d.deed}".`],
         fx: [[a, b, FX[kase]]] } };
     }

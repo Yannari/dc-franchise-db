@@ -32,6 +32,7 @@ import { classify, file, prevAired } from './storylines.js';
 import { continuityScore, rememberMoment } from './continuity.js';
 import { recordFollowups, followupScene } from './followups.js';
 import { recordTurns, turnScene } from './turns.js';
+import { witnessConflicts, witnessAfter } from './witness.js';
 import { writeStory as writeRaw, hasStoryPool } from './write.js';
 import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './record.js';
 import { numberWord } from '../script/write.js';
@@ -1488,7 +1489,8 @@ export function airTdEpisode(ep) {
         {
           // (not a pair the morning already gave a chapter to: a follow-up, an arc, a turn)
           const busyPairs = new Set((out.pre || []).filter(x => ['arc', 'challenge'].includes(x?.storyType) && (x.players || []).length >= 2).map(x => [...x.players].slice(0, 2).sort().join('|')));
-          turnHere = editOn ? turnScene(ep, camp, members, chal, () => n++, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), 'post', busyPairs) : null;
+          turnHere = editOn ? turnScene(ep, camp, members, chal, () => n++, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), 'post', busyPairs,
+            (p, o, w, d, f, c) => writeStory(p, o, w, d, f, { ...c, avoid: ctxAvoid('afternoon') })) : null;
           if (turnHere) { list.push(turnHere); seenPair.add([...turnHere.item.players].sort().join('|')); took++; }
         }
         for (const m of picks) {
@@ -1993,8 +1995,13 @@ export function airTdEpisode(ep) {
         // the same room as the follow-ups and the arcs
         if (liveEp(ep) && phase === 'pre' && arcsNow < 2 && list.length < ROOM + 2) {
           const busyPairs = new Set(list.filter(x => x.item?.storyType === 'arc' && (x.item.players || []).length >= 2).map(x => [...x.item.players].slice(0, 2).sort().join('|')));
-          const tn = turnScene(ep, camp, members, null, () => n++, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), 'pre', busyPairs);
+          const tn = turnScene(ep, camp, members, null, () => n++, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), 'pre', busyPairs, writeHere);
           if (tn) { list.push(tn); arcsNow++; }
+        }
+        // the morning after a fight somebody watched: the one they went against (or left on their own) has it out with them
+        if (liveEp(ep) && phase === 'pre' && arcsNow < 2 && list.length < ROOM + 2) {
+          const wa = witnessAfter(ep, camp, members, () => n++, writeHere, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }));
+          if (wa) { list.push(wa); arcsNow++; }
         }
         list.push(...runArcs(ep, camp, members, phase, () => n++, writeHere, Math.max(0, Math.min(2 - arcsNow, ROOM + 2 - list.length))));
         const busyNow = new Set(list.flatMap(x => x.item?.players || []).filter(Boolean));
@@ -2310,6 +2317,10 @@ export function airTdEpisode(ep) {
       const classified = ev && (filedMoments.get(ev) || classify(ev));
       if (classified) rememberMoment(continuity, { ...classified, topic: ev.scene?.kind || ev.type }, { ep: ep.num, camp, phase });
     }
+    // the people watching a public fight take a side, and it lasts (witness.js): before the follow-ups and turns read
+    // the day, so a stance can become their next chapter
+    if ((seasonConfig?.tdEdit || 'full') !== 'off') witnessConflicts(ep, camp, out, members, writeStory,
+      who => ({ ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'post' }) }), liveEp(ep));
     if (liveEp(ep)) recordFollowups(ep, camp, out);
     if (liveEp(ep)) recordTurns(ep, camp, out);
     story[camp] = out;

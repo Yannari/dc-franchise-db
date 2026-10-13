@@ -103,6 +103,7 @@ const GUARANTEED = [
   [/^tqa\.scramble\./, ['target']],
   [/^room\.mixup\./, ['intended', 'actual']],
   [/^turn\./, ['deed']],
+  [/^witness\.after\./, ['other']],
   [/^after\.split\./, ['primary', 'secondary']],
   [/^arc\.warn\./, ['pitcher', 'target']],
   [/^arc\.adv\.idol\.warned$/, ['pitcher', 'source']],

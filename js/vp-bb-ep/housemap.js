@@ -40,7 +40,7 @@ const PUBLIC = ['living', 'kitchen', 'pool', 'gym', 'wing', 'bar', 'library', 'd
 
 // a plate's room on the blueprint
 const ZONE_OF_PLATE = [[/^living-/, 'living'], [/^library-/, 'library'], [/^confessional$/, 'dr'], [/^dining-/, 'dining'],
-  [/^kitchen-/, 'kitchen'], [/^(bar-|beach-bar)/, 'bar'], [/^bedroom-/, 'wing'], [/^hallway$/, 'bathroom'], [/^purple-hall$/, 'hallway'],
+  [/^kitchen-/, 'kitchen'], [/^bar-/, 'bar'], [/^bedroom-/, 'wing'], [/^hallway$/, 'bathroom'], [/^purple-hall$/, 'hallway'],
   [/^gym-/, 'gym'], [/^(pool-|patio$|balcony$)/, 'pool'], [/^(lawn-|comp-|front)/, 'front'], [/^memory-wall$/, 'living']];
 // a set's room, when the scene has no plate (a room the user has not made yet)
 const ZONE_OF_SET = { ceremony: 'living', ceremony3: 'living', dining: 'dining', kitchen: 'kitchen', bedroom: 'wing', hoh: 'hoh', yard: 'pool',

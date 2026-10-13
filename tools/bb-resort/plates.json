@@ -133,7 +133,7 @@
  "patio": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "patio|balcony|railing"},
  "balcony": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "balcony|view|railing|sea", "sea": true, "pool": [[430, 200, 830, 340, 0, 700, 280]]},
  "beach-bar": {
-  "room": "backyard", "sets": ["yard", "juryhouse"], "use": ["house"], "nosky": true, "words": "beach bar|tiki|cocktail",
+  "room": "backyard", "sets": ["juryhouse"], "use": ["house"], "nosky": true, "words": "beach bar|tiki|cocktail",
   "lights": [[120, 40, 50], [310, 40, 50], [470, 40, 50], [650, 40, 50], [900, 40, 50], [1180, 40, 50], [1450, 40, 50]],
   "glow": [[0, 0, 1600, 90]]
  },

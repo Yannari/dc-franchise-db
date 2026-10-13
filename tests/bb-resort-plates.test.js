@@ -69,6 +69,13 @@ describe('the plate list', () => {
     }
   });
 
+  it('keeps the beach out of the house: houseguests never leave it, the beach is the jury\'s', () => {
+    const HOUSE = new Set(['ceremony', 'ceremony3', 'dining', 'kitchen', 'bedroom', 'hoh', 'yard', 'dr', 'storage', 'havenot', 'bathroom']);
+    for (const id of IDS.filter(id => /^(beach|dock)/.test(id))) {
+      for (const s of PLATES[id].sets) expect(HOUSE.has(s), `${id} is listed for the house set ${s}`).toBe(false);
+    }
+  });
+
   it('every room the engine plays in has a plate or its Blender room', () => {
     for (const [set, file] of Object.entries(ROOM_SETS)) {
       const plate = IDS.some(id => PLATES[id].sets.includes(set));

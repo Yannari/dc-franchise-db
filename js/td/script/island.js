@@ -10,9 +10,11 @@
 // A pair moment on an island with three or more people may pull a third resident in
 // ('isle.trio.*'): somebody always overhears out here. Who, and whether, comes from a stream
 // keyed on the moment itself, never the engine's dice.
-import { gs, players } from '../../core.js';
+import { gs, players, seasonConfig } from '../../core.js';
 import { stableRng } from '../../script/rng.js';
 import { makeScene } from './scene.js';
+import { POOLS } from './lines/index.js';
+import { foodOk, entryText } from './food.js';
 import { scriptEvent, numberWord } from './write.js';
 
 // What training looks like, by the stat it builds (the engine decides the stat).
@@ -122,6 +124,17 @@ export function scriptIsland(evt, ctx) {
     if (others.length && rng() < 0.45) { c = others[Math.floor(rng() * others.length)]; kind = `isle.trio.${base.split('.')[1]}`; }
   }
   if (base.startsWith('group.')) kind = `isle.${base}`;
+  // a long stay on the island runs a pool dry for the people in it: once everybody here has said every version of this
+  // kind of scene, another kind of scene between them, rather than the same lines again (read: Geoff, nine episodes on
+  // Redemption Island, said the same comedy exchange twice)
+  {
+    const said = gs.tdLineLedger?.by || {}, cast = [a, b, c].filter(Boolean);
+    // (counted the way the writer will see them: no condition, and food that fits this venue, food.js)
+    const venue = seasonConfig?.setting || 'hosted-camp';
+    const fresh = k => (POOLS[k] || []).some(e => !e.when && foodOk(venue, entryText(e)) && !cast.some(p => (said[e.id] || []).includes(p)));
+    const ALT = c ? ['isle.trio.close', 'isle.trio.late', 'isle.trio.comedy'] : b ? ['isle.pair.lean', 'isle.pair.close', 'isle.pair.late', 'isle.pair.spar', 'isle.pair.comedy'] : [];
+    if ((POOLS[kind] || []).length && !fresh(kind)) { const alt = ALT.find(k => k !== kind && fresh(k)); if (alt) kind = alt; }
+  }
   const who = { a }; if (b) who.b = b; if (c) who.c = c;
   const [family, k, ending] = kind.split('.');
   scriptEvent(evt, makeScene(`${family}.${k}`, who, { ending, ...data }, [...(ctx.residents || [])], null), { ep: ctx.ep, phase: 'post' });

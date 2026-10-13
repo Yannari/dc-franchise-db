@@ -31,6 +31,7 @@ import { writeFirstImpression } from './first-impressions.js';
 import { classify, file, prevAired } from './storylines.js';
 import { continuityScore, rememberMoment } from './continuity.js';
 import { recordFollowups, followupScene } from './followups.js';
+import { recordTurns, turnScene } from './turns.js';
 import { writeStory as writeRaw, hasStoryPool } from './write.js';
 import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './record.js';
 import { numberWord } from '../script/write.js';
@@ -1481,7 +1482,15 @@ export function airTdEpisode(ep) {
         const planPair = m => talk && m.players.length >= 2 && m.players.includes(talk.leader) && m.players.includes(talk.boot);
         const picks = chalMoments(ep).filter(m => m.players.every(p => members.includes(p)))
           .sort((x, y) => (W[y.kind] + (y.players.length >= 2 ? 1 : 0) + (planPair(y) ? 10 : 0)) - (W[x.kind] + (x.players.length >= 2 ? 1 : 0) + (planPair(x) ? 10 : 0)));
-        let took = 0;
+        let took = 0, turnHere = null;
+        // a relationship that turned on something done at this challenge (turns.js): an aired setup between these two,
+        // and what one of them did to the other today. It replaces the plain moment between the same pair.
+        {
+          // (not a pair the morning already gave a chapter to: a follow-up, an arc, a turn)
+          const busyPairs = new Set((out.pre || []).filter(x => ['arc', 'challenge'].includes(x?.storyType) && (x.players || []).length >= 2).map(x => [...x.players].slice(0, 2).sort().join('|')));
+          turnHere = editOn ? turnScene(ep, camp, members, chal, () => n++, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), 'post', busyPairs) : null;
+          if (turnHere) { list.push(turnHere); seenPair.add([...turnHere.item.players].sort().join('|')); took++; }
+        }
         for (const m of picks) {
           if (took >= (members.length >= 8 ? 3 : 2)) break;
           const a = m.players[0];
@@ -1526,7 +1535,8 @@ export function airTdEpisode(ep) {
             scene: { kind: 'chm', who, data: { chal, two: m.players.length >= 2 }, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: m.badge, badgeClass: '', why: [`At ${chal}: ${m.badge} (${m.players.join(', ')}).`] } });
         }
         // ...and when the challenge left room, two friends replay it: the jokes, not the result (lines/n-banter.js)
-        if (took < 2) {
+        // (a turn is the day's real conversation about the challenge: the light replay steps aside)
+        if (took < 2 && !turnHere) {
           const inChm = new Set(list.filter(x => /^chm\./.test(x.item?.kind || '')).flatMap(x => x.item.players || []));
           const fr = [];
           for (const x of members) for (const y of members) if (x < y && !inChm.has(x) && !inChm.has(y) && getBond(x, y) >= 2) fr.push([x, y, getBond(x, y)]);
@@ -1782,7 +1792,10 @@ export function airTdEpisode(ep) {
           prevGap: prev ? (ep.num - prev.ep >= 3 ? 'long' : ep.num === prev.ep ? 'same' : 'recent') : 'none',
           tribal: knowsTribal(phase), phase, third: !!who.c, known: !!data.target && !Object.values(who).includes(data.target),
           registerC: who.c ? registerOf(who.c) : null, ...allianceFacts(ev, who, data), hist: hist.facts.hist };
-        const sceneCtx = { ep: ep.num, camp, phase, n: n++, place: 'aside', spotId: ev.scene?.spot?.id || ev.access?.locationId || null, avoid: ctxAvoid(ev.scene?.spot?.window || ev.access?.windowId) };
+        // the engine's own spot, unless a scene already written for this window is there (read: a crowd huddle and a vote
+        // plan both at the caves at 4:30): then the writer finds this one somewhere else
+        const engineSpot = ev.scene?.spot?.id || ev.access?.locationId || null, winHere = ev.scene?.spot?.window || ev.access?.windowId;
+        const sceneCtx = { ep: ep.num, camp, phase, n: n++, place: 'aside', spotId: engineSpot && !ctxAvoid(winHere)?.has?.(engineSpot) ? engineSpot : null, avoid: ctxAvoid(winHere) };
         const groupRomanceId = who.c && (kind === 'romance.honeymoon' ? 'nrx.honey1' : kind === 'romance.moment' && ending === 'couple' ? 'nrx.couple2' : null);
         const w = kitRomanceScene(kind, ending, who, data, facts, sceneCtx) || kitDigScene(kind, who, data, facts, sceneCtx)
           || (groupRomanceId ? writeStory(pool, ending, who, data, facts, { ...sceneCtx, entryIds: [groupRomanceId] }) : null)
@@ -1975,6 +1988,13 @@ export function airTdEpisode(ep) {
         if (liveEp(ep) && arcsNow < 2 && list.length < ROOM + 2) {
           const follow = followupScene(ep, camp, members, phase, () => n++, writeHere, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }));
           if (follow) { list.push(follow); arcsNow++; }
+        }
+        // a relationship that turned on something one of them did since an aired setup (turns.js): one a morning, in
+        // the same room as the follow-ups and the arcs
+        if (liveEp(ep) && phase === 'pre' && arcsNow < 2 && list.length < ROOM + 2) {
+          const busyPairs = new Set(list.filter(x => x.item?.storyType === 'arc' && (x.item.players || []).length >= 2).map(x => [...x.item.players].slice(0, 2).sort().join('|')));
+          const tn = turnScene(ep, camp, members, null, () => n++, who => factsFor({ who, data: {} }, { ep: ep.num, phase, tribal: knowsTribal(phase) }), 'pre', busyPairs);
+          if (tn) { list.push(tn); arcsNow++; }
         }
         list.push(...runArcs(ep, camp, members, phase, () => n++, writeHere, Math.max(0, Math.min(2 - arcsNow, ROOM + 2 - list.length))));
         const busyNow = new Set(list.flatMap(x => x.item?.players || []).filter(Boolean));
@@ -2291,6 +2311,7 @@ export function airTdEpisode(ep) {
       if (classified) rememberMoment(continuity, { ...classified, topic: ev.scene?.kind || ev.type }, { ep: ep.num, camp, phase });
     }
     if (liveEp(ep)) recordFollowups(ep, camp, out);
+    if (liveEp(ep)) recordTurns(ep, camp, out);
     story[camp] = out;
   }
   ep.campStory = story;

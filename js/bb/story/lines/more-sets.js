@@ -19,7 +19,7 @@ export default {
       { by: 'a', say: "How do you know there's— did you open it?" },
       { by: 'd', say: "It was very slightly open." },
       { beat: 'Six people stand round a fridge looking at a cake that belongs to one of them.' },
-      { by: 'c', dr: "Nobody ate the cake. We all wanted to. Nobody wanted to be the one who ate the HOH's cake in week whatever. That's politics." },
+      { by: 'c', dr: "Nobody ate the cake. We all wanted to, but nobody wanted to be the person who ate the new HOH's cake. Not the week they're picking nominations." },
     ] },
     { id: 'msh.2', room: 'hoh-room', turns: [
       { beat: 'HOH room. {a} is reading the letter from home out loud, voice cracking. Everyone is squeezed onto the bed to listen.' },
@@ -104,12 +104,12 @@ export default {
       { by: 'd', say: "When?" },
       { by: 'a', say: "In about four minutes." },
       { beat: 'Six people sway awkwardly to a song nobody knows, waiting for it to speed up. It never does.' },
-      { by: 'b', dr: "We danced to {a}'s song because {a} is HOH. That's it. That's the whole reason. That's power." },
+      { by: 'b', dr: "We all danced to {a}'s song because {a} is HOH. That's the only reason. Nobody says no to the HOH this week." },
     ] },
   ],
   'set.hohroom.close': [
     { id: 'msh.c1', room: 'hoh-room', turns: [{ beat: 'The house leaves in a slow trickle. {a} watches who goes first, and who hangs back.' }, { by: 'a', dr: "The first ones out don't need anything from me. The last ones out do." }] },
-    { id: 'msh.c2', room: 'hoh-room', turns: [{ beat: 'Downstairs, the house splits into little huddles. Upstairs, {a} locks the door and lies on the bed.' }, { by: 'a', dr: "One week. One room. One decision. It feels a lot heavier than a key." }] },
+    { id: 'msh.c2', room: 'hoh-room', turns: [{ beat: 'Downstairs, the house splits into little huddles. Upstairs, {a} locks the door and lies on the bed.' }, { by: 'a', dr: "I've got this room for a week and one big decision to make. It's a lot heavier than it looked when I won." }] },
     { id: 'msh.c3', room: 'hoh-room', turns: [{ beat: 'The chocolates are gone. So is the house. Just {a} and the camera screen now.' }, { by: 'a', dr: "I'm going to watch that screen for an hour. Don't judge me. Everybody would." }] },
     { id: 'msh.c4', room: 'hoh-room', turns: [{ beat: 'Somebody is already knocking. {a} hasn’t even sat down.' }, { by: 'a', dr: "Somebody knocked before I'd even sat down on the bed. I know it comes with the room, but it's a bit sad: everybody who's nice to me this week wants something." }] },
   ],
@@ -181,12 +181,12 @@ export default {
       { by: 'e', say: "Was that you?" },
       { by: 'd', say: "I skipped lunch. I was nervous." },
       { by: 'b', say: "You were nervous? I was nervous." },
-      { by: 'a', say: "We're all nervous. Some of us are just nervous in chairs." },
+      { by: 'a', say: "Everyone's nervous. {b} and I just have a better reason." },
       { beat: 'A small laugh goes round the room. It helps a bit.' },
       { by: 'f', say: "Pizza night? Somebody ask for pizza night." },
       { by: 'b', say: "We never get pizza night." },
       { by: 'f', say: "We never ask!" },
-      { by: 'd', dr: "My stomach broke the silence. Best thing my stomach has ever done for this house." },
+      { by: 'd', dr: "My stomach broke the silence. Embarrassing, but honestly, it did everyone a favour." },
     ] },
     { id: 'msa.7', room: 'living-room', turns: [
       { beat: 'After nominations. Half the house goes to hug {a}. The other half goes to hug {b}. One person stands in the middle, unsure.' },
@@ -196,8 +196,8 @@ export default {
       { by: 'a', say: "Just hug someone." },
       { beat: '{f} hugs both nominees at once. It is awkward. It is also sort of lovely.' },
       { by: 'b', say: "This is very confusing." },
-      { by: 'f', say: "I'm Switzerland." },
-      { by: 'a', say: "Switzerland still votes on Thursday." },
+      { by: 'f', say: "I'm not picking a side." },
+      { by: 'a', say: "You'll have to on Thursday." },
       { by: 'f', dr: "I hugged both. I'm voting for one. That's the job." },
     ] },
     { id: 'msa.8', room: 'bedroom', turns: [
@@ -216,7 +216,7 @@ export default {
   ],
   'set.afternoms.close': [
     { id: 'msa.c1', turns: [{ beat: 'By evening, the HOH room door has opened and closed a dozen times. The nominees count every visitor.' }, { by: 'a', dr: "Every person who goes up those stairs is either saving me or burying me. I can't tell which." }] },
-    { id: 'msa.c2', turns: [{ beat: 'Dinner is quiet. People sit with the people they’re voting with, and everyone can see it.' }, { by: 'b', dr: "You can read the votes off the seating plan. Thursday's already at the dinner table." }] },
+    { id: 'msa.c2', turns: [{ beat: 'Dinner is quiet. People sit with the people they’re voting with, and everyone can see it.' }, { by: 'b', dr: "You can tell how Thursday's going to go just from who sits next to who at dinner." }] },
     { id: 'msa.c3', turns: [{ beat: 'The two nominees end up alone on the backyard swing as the light goes.' }, { by: 'b', dr: "We're up against each other. We sat on the swing for an hour. That's this game." }] },
   ],
   'set.morningafter.open': [
@@ -391,7 +391,7 @@ export default {
     ] },
   ],
   'set.dinner.close': [
-    { id: 'msd.c1', room: 'kitchen', turns: [{ beat: 'The plates go in the sink and stay there. People start pairing off for the evening.' }, { by: 'd', dr: "Dinner's when we're a family. The washing-up is when we go back to being a game." }] },
+    { id: 'msd.c1', room: 'kitchen', turns: [{ beat: 'The plates go in the sink and stay there. People start pairing off for the evening.' }, { by: 'd', dr: "At dinner we're like a family. Once the plates are cleared, everyone goes back to playing the game." }] },
     { id: 'msd.c2', room: 'kitchen', turns: [{ beat: 'Somebody starts singing at the table. Within a minute half the house is singing. Badly.' }, { by: 'b', dr: "Some nights it's just fun. I hate that it's fun. It makes Thursday harder." }] },
   ],
   'set.backyard.open': [
@@ -453,11 +453,11 @@ export default {
       { by: 'a', say: "Come out!" },
       { by: 'e', say: "...Fine." },
       { beat: 'Everyone ends up in the rain, soaked, laughing.' },
-      { by: 'c', dr: "Rain. It's just rain. But it's the first thing in here that wasn't decided by a person in this house." },
+      { by: 'c', dr: "It's just rain. But it's the first thing in weeks that nobody in this house planned." },
     ] },
   ],
   'set.backyard.close': [
-    { id: 'msy.c1', room: 'backyard', turns: [{ beat: 'The fun winds down. People start to peel off in twos, heading inside to talk.' }, { by: 'e', dr: "Out here we're friends. In there we're votes. Every day you walk between the two." }] },
+    { id: 'msy.c1', room: 'backyard', turns: [{ beat: 'The fun winds down. People start to peel off in twos, heading inside to talk.' }, { by: 'e', dr: "Out in the yard, we're all friends. Inside, everyone's counting votes. You go back and forth all day." }] },
     { id: 'msy.c2', room: 'backyard', turns: [{ beat: 'Big Brother calls lockdown. Everybody trudges inside, still dripping.' }, { by: 'a', dr: "Lockdown means something's being built out here. Something's coming. Everyone knows it. Nobody says it." }] },
   ],
   'set.gamenight.open': [

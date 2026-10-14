@@ -99,7 +99,7 @@ export default {
   'nly.o1': {
     0: { kid: "Can I tell you the real reason I wanted to be here?", theatrical: "Can I tell you the real reason I'm here? The truth, I mean.", quiet: "Can I tell you why I'm really here?" },
     4: { goofy: "And I'm still pretty quiet, but I'm louder than I was. I'm at a medium volume now.", kid: "And I'm still kind of shy, but I'm less shy than on day one." },
-    5: { warm: "I've known {a} for weeks, and I feel like I just met {a.obj} for the first time. I really liked it.", dry: "Weeks of knowing {a}, and today I finally met {a.obj}.", kid: "I've known {a} for weeks, but I feel like I just found out who {a} really is." },
+    5: { warm: "I've known {a} since day one, and I feel like I just met {a.obj} for the first time. I really liked it.", dry: "All this time knowing {a}, and today I finally met {a.obj}.", kid: "I've known {a} for weeks, but I feel like I just found out who {a} really is." },
   },
   // vt2.decoy (scared friend)
   'nvt.d3': {

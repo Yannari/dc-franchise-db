@@ -49,7 +49,7 @@ export default {
   'couple.disagree.any': [
     { id: 'ncp.d1', turns: [
       { by: 'a', say: "I don't trust {c}." },
-      { by: 'b', say: "{c}'s my friend." },
+      { by: 'b', say: "{c} is my friend." },
       { by: 'a', say: "I know. That's why I'm telling you and not everybody else." },
       { by: 'b', say: "Well, I trust {c}." },
       { by: 'a', say: "Okay." },

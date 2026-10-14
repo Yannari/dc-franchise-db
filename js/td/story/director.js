@@ -209,6 +209,9 @@ const COACH_PRI = { coachCardTalk: 9, coachDealBroken: 9, coachTheFall: 9, coach
   coachBreakthrough: 5, coachNoBallotWeightless: 5, coachDealRejected: 5, coachTrade: 5, coachNonAggression: 4, coachStarstruck: 4, coachShineWearsOff: 4,
   coachOwnSeason: 4, coachPlayingForTheMerge: 3, coachIdleAdvantage: 3, coachProtegeBond: 3 };
 
+// fight scenes that end with b fine about it: nobody steps in for b afterwards
+const CALM_ENDS = new Set(['ndo.hh4']);
+
 const eventsOf = (ep, camp, phase) => {
   const block = ep.campEvents?.[camp];
   return phase === 'pre' ? (Array.isArray(block) ? block : (block?.pre || [])) : (Array.isArray(block) ? [] : (block?.post || []));
@@ -216,12 +219,28 @@ const eventsOf = (ep, camp, phase) => {
 const saysIn = ev => [...new Set((ev?.lines || []).filter(l => l.kind === 'say' && l.by).map(l => l.by))];
 const speaksIn = ev => [...new Set((ev?.lines || []).filter(l => (l.kind === 'say' || l.kind === 'conf') && l.by).map(l => l.by))];
 
+// who has left the game before this episode and not come back (a returnee, or anybody at tonight's vote, is back)
+function goneBefore(ep) {
+  const gone = new Set((gs.episodeHistory || []).filter(h => (h.num || 0) < (ep.num || 0))
+    .flatMap(h => [h.eliminated, h.firstEliminated, h.tiedDestinies?.eliminatedPartner, h.ambassadorData?.ambassadorEliminated, h.medevac?.name]).filter(Boolean));
+  for (const h of (gs.episodeHistory || []).filter(h => (h.num || 0) <= (ep.num || 0))) for (const n of [h.returnee, h.riReturnee, ...(h.returnees || [])]) gone.delete(n);
+  for (const n of ep.tribalPlayers || []) gone.delete(n);
+  return gone;
+}
+
 function membersOf(ep, camp) {
+  // nobody voted out before this episode is in its camp, whatever list says so (the user, 2026-10-14: Finn, voted out in
+  // episode one, was the one Manu "went and found" in episode two; measured: Max talking at camp the morning after his
+  // boot, because a merged camp was read off the episode's events and the events still name whoever just left)
+  const gone = goneBefore(ep);
+  const here = n => n && !gone.has(n);
   const t = (ep.tribesAtStart || []).find(x => x.name === camp);
-  if (t) return [...t.members];
-  // the merged camp: everybody who started the episode
+  if (t) return [...t.members].filter(here);
+  // the merged camp: everybody who started the episode (who sat at its vote, when there was one)
   const all = (ep.tribesAtStart || []).flatMap(x => x.members || []);
-  return all.length ? [...new Set(all)] : [...new Set([...(ep.tribalPlayers || []), ...eventsOf(ep, camp, 'pre').flatMap(e => e.players || [])])];
+  if (all.length) return [...new Set(all)].filter(here);
+  const sat = (ep.tribalPlayers || []).filter(here);
+  return sat.length ? [...new Set(sat)] : [...new Set(eventsOf(ep, camp, 'pre').flatMap(e => e.players || []))].filter(here);
 }
 
 // the scene's facts: what the event knew when it fired, plus what the story knows
@@ -1070,6 +1089,9 @@ function causeFor(ep, camp, leader, boot) {
       if (phase === 'post' && (ev.type === 'blame' || /^crowd\.lost/.test(ev.scene?.kind || ''))) return null;
       if (/idol/i.test(s)) return null;   // an idol read is the idol case's own scene
       if (ev.type === 'turnFriend') return null;   // a pitch airs in its own slot (pitchTake), never a second way
+      // a loyalty test is the tester's move, not the tested one's ("what Topher pulled this morning": Topher passed Jo's
+      // test, read 2026-10-14)
+      if (/^test\./.test(ev.scene?.kind || '')) return null;
       // making up is not where a vote starts
       if (/thaw|amend|truce|forgiv|apolog|rekindle|celebrat|gratitude|bond/i.test(s)) return null;
       const kind = ev.scene?.kind || '';
@@ -1735,6 +1757,19 @@ export function airTdEpisode(ep) {
     for (const ph of ['pre', 'post']) for (const ev of eventsOf(ep, camp, ph)) if (ev && ev.aired == null && ev.type === 'firstImpressionsSwap') ev.aired = 'covered';
     for (const phase of ['pre', 'post']) {
       const events = eventsOf(ep, camp, phase);
+      // an engine moment that casts somebody already gone (as one of its parts, or speaking) never airs: talk ABOUT the
+      // one who left is fine, a scene where they did something today is not (the user, 2026-10-14: "they talk about
+      // finn but finn isnt suppose to be here", Finn the critic Manu "went and found")
+      { const gone = goneBefore(ep);
+        if (gone.size) for (const ev of events) if (ev && ev.aired == null
+          && [...Object.values(ev.scene?.who || {}), ...speaksIn(ev)].some(n => typeof n === 'string' && gone.has(n))) ev.aired = 'gone'; }
+      // ...and a friendship cooling never airs on the day the same two shook on a deal or an alliance (read 2026-10-14:
+      // Jasmine "needs a little distance" from Anne Maria in the afternoon, made a final two with her that morning and an
+      // alliance that night)
+      { const pk = (x, y) => [x, y].sort().join('|');
+        const sealed = new Set(['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph)).filter(ev => /^(alliance\.form|deal\.)/.test(ev?.scene?.kind || ''))
+          .map(ev => pk(ev.scene.who?.a, ev.scene.who?.b)));
+        for (const ev of events) if (ev && ev.aired == null && /^friend\.drift/.test(ev.scene?.kind || '') && sealed.has(pk(ev.scene.who?.a, ev.scene.who?.b))) ev.aired = 'covered'; }
       // file every moment of the phase into its storyline
       const filed = [];
       events.forEach((ev, i) => {
@@ -2159,7 +2194,9 @@ export function airTdEpisode(ep) {
           const forB = [...around].sort((x, y) => lean(y) - lean(x) || x.localeCompare(y))[0] || null;
           const forA = around.filter(x => x !== forB).sort((x, y) => lean(x) - lean(y) || x.localeCompare(y))[0] || null;
           // somebody steps in only when it was an attack: a brag or a boast just gets watched
-          if (forB && (fam === 'fight' || fam === 'credit')) {
+          // (not after a scene that ended friendly: Topher called Max "so mean" for a line Zoey had just called sweet,
+          // read 2026-10-14; those entries are in CALM_ENDS), nor in a dispute, an argument about somebody else)
+          if (forB && (fam === 'fight' || fam === 'credit') && !CALM_ENDS.has(w.lineId) && !/dispute/.test(kind)) {
             const ww = { a: who.a, b: who.b, c: forB, ...(forA ? { d: forA } : {}) };
             const tone = lean(forB) >= 1 ? 'defend' : getBond(forB, who.a) >= 3 ? 'excuse' : 'awkward';
             const r = writeStory('public.react', tone, ww, data, { ...facts, third: true, fourth: !!forA, registerC: registerOf(forB) },
@@ -2659,8 +2696,12 @@ export function airTdEpisode(ep) {
           }
           held.add(`${win}|${sp.id}`);
         } }
-      const rank = it => (at(it) === -1 ? -1 : chalTalk(it) ? 0 : WIN_RANK[winOf(it)] ?? 1);
-      const at = it => (/^(story\.(firstday|morning|chal)|long\.crowd\.(won|lost))/.test(it.kind || '') ? -1 : chalTalk(it) ? -0.5 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5)
+      // the swing's confessional ("X wanted my vote, and I said no") airs right after the scene where it happened, not
+      // before it (read 2026-10-14)
+      const swingIt = out[phase].find(x => x.storyType === 'vote' && x.step === 'swing');
+      const afterSwing = it => !!swingIt && it.kind === 'deep.swing';
+      const rank = it => (afterSwing(it) ? rank(swingIt) : at(it) === -1 ? -1 : chalTalk(it) ? 0 : WIN_RANK[winOf(it)] ?? 1);
+      const at = it => afterSwing(it) ? VOTE_AT.swing + 1e4 : (/^(story\.(firstday|morning|chal)|long\.crowd\.(won|lost))/.test(it.kind || '') ? -1 : chalTalk(it) ? -0.5 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5)
         : it.storyType === 'vote' ? (VOTE_AT[it.step] ?? 1.5e6) : it.ref != null ? it.ref : 1e6);
       out[phase].sort((x, y) => rank(x) - rank(y) || at(x) - at(y));
       // the rhythm of the stretch (stage 5): a run of five heavy scenes or more gets a light one from earlier the same

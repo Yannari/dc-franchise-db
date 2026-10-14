@@ -26,7 +26,7 @@ export default {
       { by: 'b', conf: "It's not about the rice. It's about {a} deciding {a.posAdj} stomach matters more than everybody else's. People remember that kind of thing at a vote." },
     ] },
     { id: 'nl5.f2', turns: [
-      { beat: "{b} catches {a} by the food box after dark, cheeks suspiciously full." },
+      { beat: "{b} catches {a} by the food box, cheeks suspiciously full." },
       { by: 'b', say: "Are you serious right now?" },
       { by: 'a', say: "Mm-hmm?" },
       { by: 'b', say: "Those were the emergency crackers." },

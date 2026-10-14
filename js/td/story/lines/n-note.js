@@ -32,7 +32,7 @@ export default {
     { id: 'nnt.f9', when: { voice: ['goofy', 'chaotic', 'loud'] }, turns: [{ by: 'a', conf: "I didn't move. I didn't blink. I barely breathed. Best thing I've seen all week." }] },
     { id: 'nnt.f10', turns: [{ by: 'a', conf: "Everybody's going to pick a side after that. I just need to make sure I pick the right one." }] },
     { id: 'nnt.f1', turns: [{ by: 'a', conf: "I just stood there wishing I was literally anywhere else. And then I started thinking about which side I'd want to be on, and I didn't love the answer." }] },
-    { id: 'nnt.f2', when: { voice: ['dry', 'calm', 'schemer'] }, turns: [{ by: 'a', conf: "Nothing tells you more about people than watching them fight. I learned more in two minutes than in a whole week of small talk." }] },
+    { id: 'nnt.f2', when: { voice: ['dry', 'calm', 'schemer'] }, turns: [{ by: 'a', conf: "Nothing tells you more about people than watching them fight. I learned more in two minutes than in all the small talk put together." }] },
     { id: 'nnt.f3', when: { voice: ['warm', 'anxious', 'earnest', 'emotional'] }, turns: [{ by: 'a', conf: "I hate it when it gets like that. My heart was going so fast. I just want everybody to be okay, and I know that's not how this game works." }] },
     { id: 'nnt.f4', when: { voice: ['goofy', 'chaotic', 'loud'] }, turns: [{ by: 'a', conf: "Honestly? Best entertainment we've had all week. I'm not proud of it. I'd watch it again, though." }] },
   ],

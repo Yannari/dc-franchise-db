@@ -237,7 +237,7 @@ export default {
   },
   'nrn.d1': {
     1: { dry: "You're narrating again.", calm: "You're narrating again." },
-    3: { dry: "Our hero's tribe-mate hasn't had breakfast, because our hero burnt it.", calm: "Our hero burnt breakfast, so our hero's tribe-mate is hungry." },
+    3: { dry: "Our hero's teammate hasn't had breakfast, because our hero burnt it.", calm: "Our hero burnt breakfast, so our hero's teammate is hungry." },
   },
   'nlx.f1': {
     0: { calm: "Where were you during all the drama this morning?", loud: "Wait, where were YOU during all the drama this morning?" },

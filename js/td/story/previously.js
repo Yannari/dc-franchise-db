@@ -139,7 +139,10 @@ export function writePreviously(ep) {
   const chosen = [...cand].sort((p, q) => q.score - p.score).slice(0, room).sort((p, q) => p.order - q.order);
   const sinceOf = c => (c.since && c.since < prev.num ? pick([` (and that's been going on since episode ${num(c.since)})`, `, ${c.steps >= 2 ? 'again' : 'and not for the first time'}`, `, which has been building since episode ${num(c.since)}`], `since-${c.type}`) : '');
   chosen.forEach((c, i) => {
-    const { a, b } = c;
+    // a loyalty test that got seen through: the scheme was the tester's (b in the scene), not the one tested ("Topher's
+    // little scheme blew up in his face" for Topher passing Jo's test, read 2026-10-14)
+    const flip = c.type === 'scheme' && c.step === 'caught' && /loyaltyTest|test\.caught/.test(`${c.x?.type || ''} ${c.x?.kind || ''} ${c.x?.scene?.kind || ''}`);
+    const { a, b } = flip ? { a: c.b, b: c.a } : c;
     const g = c.alliance;
     const lead = i === 0 ? '' : pick(['Meanwhile, ', 'Back at camp, ', 'And then ', 'Elsewhere, ', '', 'Oh, and ', 'Over at camp, '], `lead${i}`);
     // (a sentence that opens on a name keeps its capital after "Meanwhile, ")
@@ -245,7 +248,7 @@ export function writePreviously(ep) {
     // (an ending that adds the voters only after a clause whose subject is still the lead: "Heather broke ranks, and
     // Aubrey paid for it, and rounded up the votes" read 2026-10-14)
     const whyText = Cap(pick(why, `why-${reason}`)), tail = !/, and |least of all/.test(whyText);
-    H(`${idx ? (topTwo ? pick(['And the runner-up? ', 'As for the other one, ', 'And right behind them? '], 'second2') : pick(['And the second one? ', 'As for the other one, ', 'Then, round two. '], 'second')) : pick(['', 'At the vote, ', 'When it came time to vote, ', 'So here\'s what really happened. '], 'vlead')}${whyText}${!tail ? '' : g && !['flip', 'strike'].includes(reason) ? `, and ${g} fell in line` : plural && voters.length >= 3 ? pick([`, and ${num(voters.length - 1)} others went along with it`, `, and got the numbers`, `, and rounded up the votes`], 'numbers') : ''}.${feudWith && feudWith !== lead ? ` ${pick([`And ${boot}'s feud with ${feudWith}? That didn't help.`, `It didn't help that ${feudWith} had been feuding with ${boot} for weeks.`, `And ${feudWith}, still stewing over that feud with ${boot}, was happy to help.`], 'feud')}` : ''}`, tribalShot([lead, boot]));
+    H(`${idx ? (topTwo ? pick(['And the runner-up? ', 'As for the other one, ', 'And right behind them? '], 'second2') : pick(['And the second one? ', 'As for the other one, ', 'Then, round two. '], 'second')) : pick(['', 'At the vote, ', 'When it came time to vote, ', 'So here\'s what really happened. '], 'vlead')}${whyText}${!tail ? '' : g && !['flip', 'strike'].includes(reason) ? `, and ${g} fell in line` : plural && voters.length >= 3 ? pick([`, and ${num(voters.length - 1)} others went along with it`, `, and got the numbers`, `, and rounded up the votes`], 'numbers') : ''}.${feudWith && feudWith !== lead ? ` ${pick([`And ${boot}'s feud with ${feudWith}? That didn't help.`, `It didn't help that ${feudWith} and ${boot} could not stand each other.`, `And ${feudWith}, still stewing over that feud with ${boot}, was happy to help.`], 'feud')}` : ''}`, tribalShot([lead, boot]));
     // the spearhead, at the urn, in their own words
     const lb = booth.find(b => b.voter === lead && b.voted === boot);
     if (lb?.line && quotes < QUOTES) { Q(lead, lb.line, tribalShot([lead])); quotes++; }

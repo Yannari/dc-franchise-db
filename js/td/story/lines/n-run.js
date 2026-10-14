@@ -340,8 +340,8 @@ export default {
     { id: 'nrn.d1', turns: [
       { by: 'a', say: "And so, our hero wakes, alone, in a strange and terrible land." },
       { by: 'b', say: "You're narrating again." },
-      { by: 'a', say: "Our hero's tribe-mate is very rude before breakfast." },
-      { by: 'b', say: "Our hero's tribe-mate hasn't had breakfast, because our hero burnt it." },
+      { by: 'a', say: "Our hero's teammate is very rude before breakfast." },
+      { by: 'b', say: "Our hero's teammate hasn't had breakfast, because our hero burnt it." },
       { by: 'a', say: "A cruel blow. Our hero carries on." },
       { by: 'a', conf: "Everybody here thinks they're the main character. I'm just the only one honest enough to say it out loud." },
     ] },

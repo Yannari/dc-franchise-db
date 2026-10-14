@@ -5,10 +5,10 @@
 
 export default {
   'nl5.f2': {
-    1: { loud: "Are you SERIOUS right now?", calm: "Are you serious right now?", dry: "Are you serious right now? In the dark?" },
+    1: { loud: "Are you SERIOUS right now?", calm: "Are you serious right now?", dry: "Are you serious right now? Where everybody can see?" },
     5: { calm: "We're all starving. That's why they're called emergency crackers and not {a}'s crackers.", loud: "We're ALL starving! They're emergency crackers, not {a}'s crackers!" },
     7: { warm: "I'm telling everybody. Lovingly.", calm: "I'm going to tell everybody.", cruel: "Oh, I'm telling everybody." },
-    8: { calm: "I caught {a} eating the emergency crackers in the dark. I'm not even angry, I'm just never letting {a} near the food box again.", warm: "I caught {a} eating the emergency crackers in the dark, and I couldn't stop laughing. I'm still never letting {a} hold the food box." },
+    8: { calm: "I caught {a} eating the emergency crackers. I'm not even angry, I'm just never letting {a} near the food box again.", warm: "I caught {a} eating the emergency crackers, and I couldn't stop laughing. I'm still never letting {a} hold the food box." },
   },
   'nf.b1': {
     2: { warm: "Okay, because you've been acting a little weird. Are you okay?", calm: "You've been acting a little weird." },

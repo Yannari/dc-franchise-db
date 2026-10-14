@@ -237,6 +237,6 @@ export default {
   // long.friend.celebrate.any
   'nlx.c1': {
     2: { dry: "Somebody does have to cook tonight. It's going to be me.", kid: "But somebody has to cook." },
-    6: { quiet: "For one night, nobody talked about the vote. I needed that.", kid: "For one whole night, nobody talked about voting. That was the best.", emotional: "For one night nobody talked about the vote, and I didn't realise how much I needed that until I nearly cried laughing." },
+    6: { quiet: "For a while, nobody talked about the vote. I needed that.", kid: "For a whole hour, nobody talked about voting. That was the best.", emotional: "For a while nobody talked about the vote, and I didn't realise how much I needed that until I nearly cried laughing." },
   },
 };

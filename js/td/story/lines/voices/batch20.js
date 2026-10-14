@@ -46,7 +46,7 @@ export default {
     2: { warm: "Somebody does have to cook tonight, though.", anxious: "Somebody does have to cook tonight, though.", proud: "Somebody does have to cook tonight.", bossy: "Somebody does have to cook tonight, and it isn't going to do itself." },
     3: { warm: "Not with that attitude! Come and dance with me!", loud: "Not with THAT attitude! Dance with me!", food: "Not with that attitude! Dance with me, and then we'll eat!", calm: "Not with that attitude. Dance with me.", theatrical: "Not with that attitude, darling! Dance with me!" },
     4: { quiet: "Fine. One song.", warm: "Fine, one song!", nerdy: "Fine, one song.", anxious: "Fine, one song, but I'm bad at dancing." },
-    6: { warm: "For one whole night, nobody talked about the vote, and I didn't know how much I needed that.", dry: "For one night, nobody mentioned the vote, which I'd forgotten was possible.", anxious: "For one night, nobody talked about the vote, and I could finally breathe.", proud: "For one night, nobody talked about the vote, and it was good." },
+    6: { warm: "For a whole hour, nobody talked about the vote, and I didn't know how much I needed that.", dry: "For a while, nobody mentioned the vote, which I'd forgotten was possible.", anxious: "For a while, nobody talked about the vote, and I could finally breathe.", proud: "For a while, nobody talked about the vote, and it was good." },
   },
   'nly.u2': {
     1: { earnest: "Somebody had to, honestly. It was a mess.", calm: "Somebody had to, it was a mess.", warm: "Somebody had to, it was such a mess.", competitive: "Somebody had to. It was a mess." },

@@ -365,7 +365,7 @@ export default {
   ],
   'long.test.caught.any': [
     { id: 'nk.tc1', place: 'aside', turns: [
-      { by: 'b', say: "So, between us, I heard your name is coming up tonight.", v: { schemer: "Just so you know, your name came up. Between us.", anxious: "I probably shouldn't say this, but I heard your name's coming up tonight." } },
+      { by: 'b', say: "So, between us, I heard your name is coming up tonight.", v: { schemer: "Just so you know, I heard your name come up. Between us.", anxious: "I probably shouldn't say this, but I heard your name's coming up tonight." } },
       { by: 'a', say: "Did you?" },
       { by: 'b', say: "Yeah. Just thought you should know." },
       { by: 'a', say: "Who said it?" },

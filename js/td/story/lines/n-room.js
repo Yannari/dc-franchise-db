@@ -17,7 +17,7 @@ export default {
     { id: 'nx.rh2', turns: [{ beat: "{a} turns around on the bench and stares at the people behind." }, { by: 'a', say: "Which one of you did this?", v: { anxious: "Wait, who... which one of you? Why didn't anybody tell me?", warm: "Why would you do this? {b} never did anything to any of you." } }] },
     { id: 'nx.rh3', when: { voice: ['emotional', 'warm', 'earnest', 'anxious'] }, turns: [{ by: 'a', say: "{b}, I'm so sorry, I'm so sorry, I wrote somebody else, I had no idea." }] },
     { id: 'nx.rh4', when: { voice: ['loud', 'tough', 'blunt', 'competitive'] }, turns: [{ by: 'a', say: "Okay, that's how it is? Fine. Everybody here just made a really big mistake." }] },
-    { id: 'nx.rh5', when: { voice: ['schemer', 'calm', 'dry', 'quiet'] }, turns: [{ beat: "{a} doesn't say a word. {a} just looks down the row, one face at a time." }] },
+    { id: 'nx.rh5', when: { voice: ['schemer', 'calm', 'dry', 'quiet'] }, turns: [{ beat: "{a} doesn't say a word. {a.Sub} just looks down the row, one face at a time." }] },
     { id: 'nx.rh6', turns: [{ by: 'a', say: "{b}, I didn't... I didn't write your name, okay? I need you to know that.", v: { teen: "{b}, I didn't write your name, I swear, like, I didn't." } }] },
   ],
   'room.burned': [

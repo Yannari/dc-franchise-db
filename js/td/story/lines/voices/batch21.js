@@ -329,7 +329,7 @@ export default {
   'nd.fr1': { 2: { warm: "It wasn't funny, and it hasn't been funny for days.", anxious: "It wasn't funny. It hasn't been funny for days.", earnest: "It honestly wasn't funny, and it hasn't been for days.", blunt: "It wasn't funny. For days." } },
   'nrn.d1': {
     0: { loud: "AND SO, our hero wakes, alone, in a strange and terrible land!", theatrical: "And so, our hero awakens, alone, in a strange and terrible land." },
-    2: { loud: "Our hero's tribe-mate is VERY rude before breakfast!", theatrical: "Our hero's tribe-mate is dreadfully rude before breakfast." },
+    2: { loud: "Our hero's teammate is VERY rude before breakfast!", theatrical: "Our hero's teammate is dreadfully rude before breakfast." },
     4: { loud: "A CRUEL blow! Our hero carries on!", theatrical: "A cruel blow. Yet our hero carries on." },
     5: { loud: "Everybody here thinks they're the main character! I'm just honest enough to say it OUT LOUD!", theatrical: "Everybody here believes they're the main character. I simply have the courage to narrate it." },
   },

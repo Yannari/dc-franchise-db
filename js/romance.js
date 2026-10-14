@@ -1183,6 +1183,9 @@ export function checkLoveTriangleFormation(ep) {
   // ── Path 2: One-Sided Crush — C has high bond with B, B is in showmance with A ──
   for (const sh of activeShowmances) {
     const [pA, pB] = sh.players;
+    // not the week it started: a couple a day old has nothing to cheat on yet (read 2026-10-14: Zoey and Topher's first
+    // kiss and Zoey kissing Brick aired in the same episode)
+    if (epNum - (sh.firstMoveEp || sh.sparkEp || epNum) < 2) continue;
     // Check both directions: someone crushing on pA or pB
     for (const [inShowmance, partner] of [[pA, pB], [pB, pA]]) {
       for (const candidate of gs.activePlayers) {

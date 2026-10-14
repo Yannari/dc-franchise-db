@@ -183,6 +183,13 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     if (ctx.unique === 'soft' && fits.length && fits.every(e => uses[e.id])) {
       const least = Math.min(...fits.map(e => uses[e.id]));
       for (let i = fits.length - 1; i >= 0; i--) if (uses[fits[i].id] > least) fits.splice(i, 1);
+      // ...and of those, not one these people already said, nor one heard in the last two episodes, while anything else
+      // is left (read 2026-10-14: Jo's "Everybody listen up! We can't keep losing like that!" word for word two episodes
+      // running, the loud voice's own entry winning again once the pool had all aired once)
+      const lastDay = ledger().day || {}, now = (ctx.ep || 0) * 10;
+      const stale = e => speakers.some(sp => (saidBy[e.id] || []).includes(sp)) || (lastDay[e.id] != null && now - lastDay[e.id] <= 20);
+      const rest = fits.filter(e => !stale(e));
+      if (rest.length) fits.splice(0, fits.length, ...rest);
     } else if (ctx.unique !== false) for (let i = fits.length - 1; i >= 0; i--) if (uses[fits[i].id]) fits.splice(i, 1);
     // the speaker's own voice first: a scene written for one of a's strongest tags (their first three)
     // wins over one that only fits the archetype or the stats (the user: an underdog with a temper

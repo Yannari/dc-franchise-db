@@ -433,7 +433,8 @@ export default {
   'arc.coach.offer.any': [
     // (more of them: a season runs two or three of these arcs, and with two scenes a step the second arc replayed the
     // first one's lines, read 2026-10-14)
-    { id: 'nco.o3', turns: [
+    // ("I'm just shy" and "one of the nicest people out here" said of Scott, read 2026-10-14: a shy, nice b only)
+    { id: 'nco.o3', when: { notVoiceB: ['schemer', 'cruel', 'loud', 'bossy', 'proud', 'tough', 'chaotic'] }, turns: [
       { by: 'a', say: "You know half the camp thinks you're stuck up, right?" },
       { by: 'b', say: "What? I'm not stuck up. I'm just shy." },
       { by: 'a', say: "I know that. They don't. From over there, shy looks exactly like stuck up." },

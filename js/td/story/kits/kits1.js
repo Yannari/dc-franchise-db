@@ -137,7 +137,7 @@ export default {
     ],
     tease: [
       "You've apologised to a log twice today.",
-      "There are no exits, Mike. It's an island.",
+      "There are no exits, Mike. We're stuck here.",
       "Please don't do the raccoon at the vote.",
     ],
     reply: [

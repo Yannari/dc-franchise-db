@@ -114,19 +114,19 @@ export default {
       { by: 'c', conf: "I'm in, but I'm going to keep a close eye on {a}. Anybody who can pitch an alliance that smoothly can end one just as smoothly." },
     ] },
   ],
-  // a couple makes it official: more takes (two existed, and couples ally most seasons)
+  // a pair makes it official ('power-couple' in camp-events.js: two who are close, not two in love): more takes (two existed, and couples ally most seasons)
   'long.alliance.form.couple': [
     { id: 'nf4.c1', place: 'secret', when: { third: false }, turns: [
-      { beat: "{a} and {b} are sitting with their backs against the same tree, sharing the last of somebody's crackers." },
+      { beat: "{a} and {b} are sitting back to back, sharing the last of somebody's crackers." },
       { by: 'a', say: "Everybody already thinks we're voting together, you know." },
       { by: 'b', say: "Are we?" },
       { by: 'a', say: "I'd like to be. I'd hate to find out at a vote that we weren't." },
       { by: 'b', say: "So this is you asking me to be in an alliance." },
-      { by: 'a', say: "This is me asking you to be in an alliance, yes. Very romantically." },
+      { by: 'a', say: "This is me asking you to be in an alliance, yes. Very officially." },
       { by: 'b', say: "Okay. But if anybody asks, it's not because I like you." },
       { by: 'a', say: "Obviously. It's purely strategic." },
       { by: 'b', say: "{group}, then. Purely strategic." },
-      { by: 'b', conf: "Being a couple out here makes you a target, so we might as well be a couple with a plan. That's the most romantic thing I've ever said." },
+      { by: 'b', conf: "Two people this close out here are a target anyway, so we might as well be two people with a plan." },
     ] },
     { id: 'nf4.c2', place: 'secret', when: { third: false }, turns: [
       { by: 'b', say: "Can I ask you something serious for a second?" },
@@ -136,7 +136,7 @@ export default {
       { by: 'b', say: "Every time? Even when I'm wrong?" },
       { by: 'a', say: "Especially when you're wrong, because then at least we're wrong together." },
       { by: 'b', say: "...Okay. Then it's official. {group}." },
-      { by: 'a', conf: "Everybody's going to say we're the couple to split up. Fine. They'll have to get through both of us first." },
+      { by: 'a', conf: "Everybody's going to say we're the pair to split up. Fine. They'll have to get through both of us first." },
     ] },
   ],
 };

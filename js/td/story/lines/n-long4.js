@@ -293,7 +293,7 @@ export default {
     { id: 'nl4.d2', turns: [
       { by: 'b', say: "Do you want to go get water with me?" },
       { by: 'a', say: "Maybe later." },
-      { by: 'b', say: "That's what you said this morning." },
+      { by: 'b', say: "That's what you said last time." },
       { by: 'a', say: "Then I meant it this morning too." },
       { by: 'b', say: "Did I do something?" },
       { by: 'a', say: "No, you didn't do anything. That's not what this is." },

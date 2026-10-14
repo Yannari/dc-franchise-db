@@ -231,7 +231,7 @@ export default {
       { by: 'a', say: "I'd throw it away to win the next challenge." },
       { by: 'b', say: "And when it's you having the bad day?" },
       { by: 'a', say: "Then I hope I've been useful the rest of the time." },
-      { by: 'b', conf: "{a} wants to keep the strong ones. I want to keep the ones who'll actually vote with us. We can't both be right.", v: { competitive: "Strong or loyal? I want both, but we can't have both.", nerdy: "It's a classic trade-off: strength versus loyalty. {a} is weighting it wrong." } },
+      { by: 'b', conf: "{a} wants to keep the strong ones. I want to keep the ones who'll actually vote with us. We can't both be right.", v: { competitive: "Strong or loyal? I want both, but we can't have both.", nerdy: "{a} thinks the strong ones win challenges. Sure. They also don't vote with us." } },
     ] },
     // (it names who the plan is about: read 2026-10-14, "the strongest person here, whom we need" named nobody)
     { id: 'nd.dp3', place: 'aside', when: { voice: ['loud', 'blunt', 'tough'], carried: true }, turns: [

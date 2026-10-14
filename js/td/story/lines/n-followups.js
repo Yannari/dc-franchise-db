@@ -86,7 +86,7 @@ export default {
       {"by":"a","say":"Shut up, {c}."},
       {"by":"b","say":"For real, though. Truce?"},
       {"by":"a","say":"Truce."},
-      {"by":"c","conf":"I've been stuck in the middle of those two for days. If they're actually done, I might finally get some peace and quiet."},
+      {"by":"c","conf":"I've been stuck in the middle of those two since it started. If they're actually done, I might finally get some peace and quiet."},
     ] },
     { id: "nfu.cm2", place: "public", turns: [
       {"by":"a","say":"About the other day. I shouldn't have said what I said."},

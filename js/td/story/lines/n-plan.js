@@ -207,8 +207,8 @@ export default {
   // ── the button ──
   'vp.close.duo': [
     { id: 'npl.x1', when: { shaky: true }, turns: [
-      { by: 'a', say: "The one I'm worried about is {shaky}. Can you sit with {shaky} at dinner and make sure {shaky} is still with us?", v: { bossy: "You're on {shaky}. Stick to {shaky} until we sit down, I don't care how.", anxious: "I'm really worried about {shaky}. Could you maybe check on {shaky}? Casually?" } },
-      { by: 'b', say: "I'll talk to {shaky}. What if {shaky} is wobbling?" },
+      { by: 'a', say: "The one I'm worried about is {shaky}. Can you sit with {shaky.obj} at dinner and make sure we've still got {shaky.obj}?", v: { bossy: "You're on {shaky}. Stick to {shaky.obj} until we sit down, I don't care how.", anxious: "I'm really worried about {shaky}. Could you maybe check on {shaky.obj}? Casually?" } },
+      { by: 'b', say: "I'll talk to {shaky.obj}. What if we're losing {shaky.obj}?" },
       { by: 'a', say: "Then come and get me, and don't make a big deal of it in front of anybody." },
     ] },
     { id: 'npl.x2', when: { cover: true }, turns: [
@@ -233,7 +233,7 @@ export default {
       { by: 'c', say: "What do we say if {target} asks what's going on?" },
       { by: 'a', say: "{cover}. Every one of us says {cover}, and we all say it the same way." },
       { by: 'b', say: "{target} isn't stupid, though." },
-      { by: 'a', say: "No, but {target} wants to believe it isn't {target}. Everybody does." },
+      { by: 'a', say: "No, but nobody wants to believe it's them. {target} won't either." },
     ] },
     { id: 'npl.xg3', turns: [
       { beat: "The group splits up one at a time, a minute apart." },

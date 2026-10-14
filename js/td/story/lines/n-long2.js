@@ -91,7 +91,7 @@ export default {
       { by: 'a', say: "Not with that attitude! Dance with me!" },
       { by: 'c', say: "Fine. One song.", v: { goofy: "I've been waiting all week for somebody to ask!" } },
       { beat: "One song turns into five. Even the people pretending not to watch are tapping their feet." },
-      { by: 'b', conf: "For one night, nobody talked about the vote. I didn't know how much I needed that." },
+      { by: 'b', conf: "For a while, nobody talked about the vote. I didn't know how much I needed that." },
     ] },
   ],
   // a tells b something real about life outside
@@ -228,7 +228,7 @@ export default {
   // a defended b when b wasn't there; the camera hears it
   'long.loyal.defend.any': [
     { id: 'nlx.l1', turns: [
-      { by: 'a', conf: "They were talking about {b} this afternoon, and I shut it down. {b} has no idea, and I'm not going to tell {b.obj}." },
+      { by: 'a', conf: "They were talking about {b} earlier, and I shut it down. {b} has no idea, and I'm not going to tell {b.obj}." },
       { by: 'a', conf: "That's just what you do for your people. You don't do it so they owe you. You do it because it's right.", v: { schemer: "{b} doesn't know I did it. Yet. When the time is right, {b} will find out, and {b} will owe me." } },
     ] },
   ],

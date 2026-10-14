@@ -46,7 +46,7 @@ const pairKey = (x, y) => [x, y].sort().join('|');
 // what one person did for or to another, in the words of the one it happened to (camp-events.js and the
 // challenges: players[0] did it, players[1] had it done to them)
 const HELP = { comfort: 'sat with me when I was falling apart', phobiaComfort: 'talked me through it when I was terrified', phobiaSupport: 'cheered me on when I had to face my fear',
-  protectiveInstinct: 'stood up for me when people were having a go at me', teachingMoment: 'took the time to show me how to do it properly',
+  protectiveInstinct: 'stood up for me when people were having a go at me', teachingMoment: 'took the time to teach me something without making me feel stupid',
   mentorBond: 'started teaching me how to get by out here', loyaltyProof: 'kept a promise when it would have been easier to break it',
   silentSolidarity: 'stuck by me when nobody else would', sharedMeal: 'split a meal with me when food was short' };
 // (an apology is not help: "And that's why you came and apologised to me?" / "No, this is the apology" read as two)

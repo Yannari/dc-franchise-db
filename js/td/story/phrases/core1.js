@@ -77,7 +77,7 @@ export default {
     cruel: ["No. Ask someone who cares.", "Why would I do that for you?"],
     chaotic: ["No! Ha! Ask me tomorrow!", "Nope! Next question!"],
     nerdy: ["No. The risk is too high.", "Negative."],
-    earnest: ["I can't. It wouldn't be right.", "No. I gave my word to somebody else."],
+    earnest: ["I can't. Sorry.", "No. I gave my word to somebody else."],
     tough: ["No.", "Not doing it.", "Forget it."],
     bossy: ["No. And don't ask again.", "No. We're not doing that."],
     emotional: ["No! I can't! Don't make me!", "I can't. I just can't."],

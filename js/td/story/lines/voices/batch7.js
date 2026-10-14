@@ -15,7 +15,7 @@ export default {
     1: { warm: "Hey. Are you okay?", calm: "Hey. You okay?", loud: "Hey! You okay?" },
     2: { quiet: "No. I lost it for us.", loud: "No! I lost it for us, and everybody knows it!", tough: "No. I lost it for us, and I know it." },
     3: { warm: "It wasn't just you, I promise.", blunt: "It wasn't only you.", calm: "It wasn't just you." },
-    6: { warm: "I was nice to {b} just now, and I meant every word. I'm still going to think about that challenge at the vote, and I hate that.", competitive: "I was nice to {b}, and I meant it. I'm still thinking about that challenge when we vote, because we can't keep losing.", schemer: "I was kind to {b}, and I meant it. Kindness is free, but my vote isn't." },
+    6: { warm: "I was nice to {b} just now, and I meant every word. I'm still going to think about that challenge at the vote, and I hate that.", competitive: "I was nice to {b}, and I meant it. I'm still thinking about that challenge when we vote, because we can't keep losing.", schemer: "I was nice to {b}, and I meant it. That doesn't mean I'm not voting for {b.obj}." },
   },
   'nlx.u2': {
     1: { loud: "Wait, did YOU do that?", warm: "Wait, did you fix that? That's so nice.", dry: "Wait, you did that on purpose?" },
@@ -50,7 +50,7 @@ export default {
     8: { calm: "I came here to win a million dollars. I can now pick a crab out of a lineup.", loud: "I came here to play for a million dollars, and now I can pick a CRAB out of a LINEUP!", warm: "I came here to play a game, and now I know a crab well enough to recognise him. Weirdly, I'm kind of fond of him." },
   },
   'nlx.l1': {
-    0: { calm: "They were talking about {b} this afternoon, and I shut it down. {b} doesn't need to know.", loud: "They were talking about {b} this afternoon, and I shut it DOWN. {b} has no idea, and I'm not telling.", warm: "They were saying things about {b} this afternoon, and I stopped it. {b} doesn't need to know, I just wanted {b} safe." },
+    0: { calm: "They were talking about {b} earlier, and I shut it down. {b} doesn't need to know.", loud: "They were talking about {b} earlier, and I shut it DOWN. {b} has no idea, and I'm not telling.", warm: "They were saying things about {b} earlier, and I stopped it. {b} doesn't need to know, I just wanted {b} safe." },
     1: { earnest: "That's what you do for your people. Not so they owe you, just because it's the right thing to do.", competitive: "You protect your people. That's how you get to the end with them." },
   },
   'ndp.b3': {

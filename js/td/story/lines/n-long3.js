@@ -52,7 +52,7 @@ export default {
       { by: 'a', say: "The money's nice. But I've spent my whole life being the quiet one in the room, and I wanted to see if I could be something else." },
       { by: 'b', say: "And?" },
       { by: 'a', say: "And I'm still pretty quiet. But I'm louder than I was on day one." },
-      { by: 'b', conf: "I've known {a} for weeks and I just met {a.obj} for the first time." },
+      { by: 'b', conf: "I've known {a} since day one, and I feel like I just met {a.obj}." },
     ] },
     { id: 'nly.o2', turns: [
       { beat: "{a} and {b} sit up late on the dock, after the fire's died down." },

@@ -92,16 +92,20 @@ export function pickTone(cands, who) {
 }
 
 // ── 2. the stock replies, in this person's register ──
+// Each class holds only replies its substitutes MEAN the same as (the read of 2026-10-14: "And?",
+// a nudge to go on, came out as "I'm sorry, WHAT?"; "Oh no." came out as "Huh." and left the next
+// line, "Oh yes.", answering nothing). "Deal", "Exactly", "Don't", "Maybe", "What?" and "Really?"
+// are their own replies and stay as written.
 const FN = {
-  yes: /^(yes|yeah|sure|deal|exactly)[.!]?$/i,
-  ack: /^(okay|ok|fine|good|fair|that's fair|alright|all right|okay, okay)[.!]?$/i,
-  no: /^(no|nope|don't|no way)[.!]?$/i,
-  why: /^(why|what|and|about what|like what|really|seriously|what do you mean|how do you know|meaning)\?$/i,
+  yes: /^(yes|yeah|sure)[.!]?$/i,
+  ack: /^(okay|ok|fine|alright|all right|okay, okay)[.!]?$/i,
+  no: /^(no|nope|no way)[.!]?$/i,
+  why: /^why\?$/i,
   know: /^(i know)[.!]?$/i,
-  dunno: /^(i don't know|no idea|maybe|who knows)[.!]?$/i,
+  dunno: /^(i don't know|no idea|who knows)[.!]?$/i,
   sorry: /^(i'm sorry|sorry)[.!]?$/i,
   thanks: /^(thank you|thanks)[.!]?$/i,
-  wow: /^(wow|oh|oh no|great|huh)[.!]?$/i,
+  wow: /^wow[.!]?$/i,
   go: /^(go on|go on, then|go|i'm listening)[.!]?$/i,
 };
 const SAY = {
@@ -114,9 +118,9 @@ const SAY = {
   no: { terse: ['No.', 'Nope.'], sarcastic: ['Hard pass.', 'Yeah, no.', 'Not a chance.'], sweet: ['Oh, no, I can\'t.', 'No, I\'m sorry.'],
     theatrical: ['Absolutely not.', 'No. Never. Not in a million years.'], anxious: ['I— no. Sorry. No.', 'Um, no? No.'],
     smooth: ['I don\'t think so.', 'Let\'s not.'], tough: ['No.', 'Not happening.'], bubbly: ['Nooo. No way.', 'No! Stop.'], mean: ['No. Obviously.', 'Don\'t be ridiculous.'] },
-  why: { terse: ['Why.', 'And?'], sarcastic: ['Oh, this should be good.', 'Do tell.'], sweet: ['What do you mean?', 'Is everything okay?'],
-    theatrical: ['Excuse me?', 'I\'m sorry, WHAT?'], anxious: ['Wait, why? What happened?', 'Is it about me?'], smooth: ['Go on.', 'Interesting. Why?'],
-    tough: ['Spit it out.', 'Why?'], bubbly: ['Wait, what? Tell me everything.', 'What? What happened?'], mean: ['And I should care because?', 'So?'] },
+  why: { terse: ['Why.', 'Why?'], sarcastic: ['Oh? Why\'s that?', 'And why would that be?'], sweet: ['Why? What happened?', 'How come?'],
+    theatrical: ['Why?! Why?', 'Why on earth?'], anxious: ['Wait, why?', 'Why? Is something wrong?'], smooth: ['Interesting. Why?', 'Why\'s that?'],
+    tough: ['Why?', 'Why?'], bubbly: ['Why? Tell me!', 'Wait, why?'], mean: ['Why\'s that?', 'Why?'] },
   know: { terse: ['I know.'], sarcastic: ['Yeah, I\'m aware.', 'Believe me, I know.'], sweet: ['I know. I know.'], theatrical: ['Oh, I KNOW.'],
     anxious: ['I know, I know.'], smooth: ['I\'m well aware.'], tough: ['I know.'], bubbly: ['I know! Right?'], mean: ['Obviously I know.'] },
   dunno: { terse: ['No idea.'], sarcastic: ['Your guess is as good as mine.', 'Not a clue.'], sweet: ['I honestly don\'t know.'], theatrical: ['Who even knows any more?'],
@@ -125,8 +129,8 @@ const SAY = {
     anxious: ['Sorry. Sorry, sorry.'], smooth: ['My apologies.'], tough: ['Sorry.'], bubbly: ['Oh my god, I\'m so sorry.'], mean: ['Fine. Sorry.'] },
   thanks: { terse: ['Thanks.'], sarcastic: ['Wow. Thanks.'], sweet: ['Thank you. Really.'], theatrical: ['Thank you, thank you.'], anxious: ['Oh. Thank you.'],
     smooth: ['I appreciate that.'], tough: ['Thanks.'], bubbly: ['Thank you so much!'], mean: ['Took you long enough.'] },
-  wow: { terse: ['Huh.'], sarcastic: ['Wow. Great.', 'Oh, perfect.'], sweet: ['Oh no.'], theatrical: ['Oh my GOD.'], anxious: ['Oh no. Oh no.'], smooth: ['Well, well.'],
-    tough: ['Huh.'], bubbly: ['Oh my god!'], mean: ['Typical.'] },
+  wow: { terse: ['Wow.'], sarcastic: ['Wow. Great.'], sweet: ['Oh, wow.'], theatrical: ['WOW.'], anxious: ['Oh. Wow.'], smooth: ['Well, well.'],
+    tough: ['Wow.'], bubbly: ['Oh my god. Wow.'], mean: ['Wow.'] },
   go: { terse: ['Go.'], sarcastic: ['Go on. I\'m riveted.'], sweet: ['Go on, I\'m listening.'], theatrical: ['Tell me. Tell me everything.'], anxious: ['Okay. Go on.'],
     smooth: ['I\'m all ears.'], tough: ['Out with it.'], bubbly: ['Go, go, go!'], mean: ['Make it quick.'] },
 };

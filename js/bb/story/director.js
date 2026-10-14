@@ -131,7 +131,10 @@ export function airStorylines(week) {
     while (host.lines.length && host.lines.at(-1).kind === 'dr') tail.unshift(host.lines.pop());
     const hostSpoke = host.lines.some(l => l.kind === 'say');
     let h = 0; for (const c of String(salt)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-    const own = sc.lines.filter(l => l.kind !== 'dr');
+    // the moment's own opening ("Up at the lookout...") belongs to a scene of its own: inside somebody
+    // else's conversation it is a second location (the read of 2026-10-14: a lookout in a kitchen row)
+    const firstSay = sc.lines.findIndex(l => l.kind === 'say');
+    const own = sc.lines.filter((l, i) => l.kind !== 'dr' && !(l.kind === 'beat' && i < firstSay));
     const drs = sc.lines.filter(l => l.kind === 'dr');
     const joiners = [...new Set(own.map(l => l.by).filter(n => n && !host.cast.includes(n)))];
     const linkUsed = (gs.bb.linkUsed ||= {});
@@ -225,8 +228,11 @@ export function airStorylines(week) {
     const used = new Set();
     for (const a of loose) {
       if (used.has(a)) continue;
-      const sp = sc => new Set(sc.lines.filter(l => l.by).map(l => l.by));
-      const mate = loose.find(b => b !== a && !used.has(b) && !placed(b.sc) && [...sp(b.sc)].some(x => sp(a.sc).has(x)));
+      // the same people talking: one shared speaker was enough before, and two unrelated moments read
+      // as one conversation ("Beth voted against Ripper" / "Beth comes over" / "What's it like up here?")
+      const sp = sc => new Set(sc.lines.filter(l => l.kind === 'say' && l.by).map(l => l.by));
+      const same = (x, y) => x.size === y.size && [...x].every(n => y.has(n));
+      const mate = loose.find(b => b !== a && !used.has(b) && !placed(b.sc) && same(sp(b.sc), sp(a.sc)));
       if (mate) {
         used.add(a); used.add(mate);
         a.airs(); mate.airs();

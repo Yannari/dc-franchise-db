@@ -60,7 +60,7 @@ function historyOf(me, o, upTo) {
 }
 
 // the sentence, by the kind of scene, the voice, and the history
-const KIND = t => /feud|friction|argument|cold|snap|grudge|blow/.test(t) ? 'feud'
+const KIND = t => /feud|friction|argument|cold|snap|grudge|blow|provocateur|confront/.test(t) ? 'feud'
   : /alliance|deal|pact|bloc|checkin/.test(t) ? 'ally'
     : /showmance|romance|couple|flirt|spark/.test(t) ? 'heart'
       : /target|gossip|lobby|block|campaign|scheme|hohweek|plan|nom|veto|style.|power|phase|deals|jury|endgame|prejury|nexthoh|outside|bb./.test(t) ? 'game' : 'life';
@@ -154,7 +154,9 @@ function lines(kind, voice, o, h) {
   // a history fact first, when there is one: that is what makes the line about THIS person. A deal
   // being made is not the place for an old nomination (the read of 2026-10-14: a final three formed
   // on screen, closed by "I was on the block because of Bowie once. I also remember")
-  return { hist: kind === 'ally' ? hist.slice(sour) : hist, voiced };
+  // ...and an old nomination is brought up only where the two of them are at odds: in a scene where
+  // one is consoling the other it reads as a sentence from somewhere else
+  return { hist: kind === 'feud' ? hist : hist.slice(sour), voiced };
 }
 
 const NAMES_RE = () => new RegExp('(' + (players || []).map(p => p.name).filter(Boolean).map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'g');
@@ -193,7 +195,9 @@ export function addInsight(sc, kindText, weekNum) {
   // voice line is about the other person, so only where that person is talking too (the read of
   // 2026-10-13: "I voted with the group. Nobody believes me. Sure, why not. Yul seems fun" in a
   // confessional with no Yul in it)
-  const voiced = kind === 'life' || !spoke(o) || !spoke(me) ? [] : res.voiced;
+  // a game moment (a veto lobby, a vote count) keeps to its own point: the voice lines for it were
+  // about nobody in particular and read as another scene's ("I'm done whispering. If it's Chase...")
+  const voiced = kind === 'life' || kind === 'game' || !spoke(o) || !spoke(me) ? [] : res.voiced;
   const rng = stableRng(gs.bb?.seasonSalt || 0, 'voice', sc.id || '', me);
   const led = gs.bb ? (gs.bb.voiceUsed ||= {}) : {};
   const re = NAMES_RE();

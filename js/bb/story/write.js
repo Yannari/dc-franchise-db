@@ -250,7 +250,9 @@ function pick(keys, who, data, ctx, room, salt) {
   // the version of the scene that fits the person leading it (register.js): a blunt fighter gets
   // the heated row, an anxious player the awkward one
   const full = Object.fromEntries(keys.map(k => [k, pools[k]]));
-  for (const k of keys) if (pools[k]?.length > 1) pools[k] = pickTone(pools[k], who);
+  // ...but once a pool has all aired this season, the tone would narrow it to the same entry every time
+  // (the read of 2026-10-13: one campaign close eight times): a spent pool rotates whole, least-used first
+  for (const k of keys) if (pools[k]?.length > 1 && pools[k].some(e => !used[e.id])) pools[k] = pickTone(pools[k], who);
   // the tone is a preference: when the picker's own rules leave nothing in the fitted set, the
   // whole set is tried (a recap went missing when it was narrowed away)
   const got = pickEntry(ledger(), pools, key, facts, pairKey, rng, speakers, clock) || pickEntry(ledger(), full, key, facts, pairKey, rng, speakers, clock);
@@ -281,7 +283,7 @@ const ROOM_WORDS = [
   ['have-not-room', /^(the )?have-not room\b/i, /\b(have-not room|the slop|on slop)\b/i],
   ['diary-room', /^(the )?diary room\b/i, null],
   ['hoh-room', /^(the )?hoh room\b/i, /\b(up in the hoh room|on the hoh bed)\b/i],
-  ['bedroom', /^(the )?bedroom\b/i, /\b(after lights out|lights out|under the duvet|in bed)\b/i],
+  ['bedroom', /^(the )?bedroom\b/i, /\b(after lights out|lights out|under the duvet|in bed|on the bed|on (?:a|his|her|their|the next) bed|on the bunk)\b/i],
   ['backyard', /^(the )?(backyard|yard|pool)\b/i, /\b(the hammock|the pool|the loungers?|the grass|laps of the (?:backyard|yard))\b/i],
   ['kitchen', /^(the )?kitchen\b/i, /\b(breakfast|making (?:dinner|lunch|tea|coffee|toast)|the dishes|washing up|the fridge|the oven|the stove|cooking)\b/i],
   ['living-room', /^(the )?living room\b/i, null],
@@ -365,6 +367,34 @@ export function writeWitnessAfter(w, ctx, at) {
     fixedRoom: false, recap: false, lineId: entry.id,
     why: [w.stance === 'out' ? `${w.name} stayed out of ${letDown}'s row with ${other}.` : `${w.name} took ${other}'s side against ${letDown}.`] };
   sc.lines = sp ? lines : background(lines, sc, ctx, sc.id, false);
+  return staging(sc);
+}
+
+// ── the vote talk: the eviction, before it happens (bb/story/votetalk.js says who and why) ──
+const VT_MOOD = k => (k.startsWith('plan') ? 'plan' : k.startsWith('swing') ? 'deals' : 'drama');
+export function writeVoteTalk(t, ctx, at) {
+  const key = `vote.${t?.kind}`;
+  if (!STORY_POOLS[key]?.length || writing.muted) return null;
+  const who = t.who, data = t.data || {};
+  if (Object.values(who).some(n => !(ctx.present || []).includes(n))) return null;
+  const salt = `vt|${ctx.week?.num || 0}|${t.kind}|${Object.values(who).join('>')}`;
+  const entry = pick([key], who, data, ctx, null, salt);
+  if (!entry) return null;
+  const first = entry.turns.filter(x => x.beat).slice(0, 1).map(x => ({ kind: 'beat', text: x.beat }));
+  const named = entry.room || roomFromText(first);
+  const cast = Object.values(who).filter(Boolean);
+  const sp = named ? null : spotFor(t.kind.startsWith('read') ? 'target.count' : 'plan.vote', cast, ctx, salt, JSON.stringify(entry.turns));
+  let room = (named && named !== 'diary-room' ? named : null) || sp?.room || null;
+  if (!room) {
+    const ROTA = ['kitchen', 'living-room', 'backyard', 'bedroom'].filter(r => r !== ctx.avoidRoom);
+    room = ROTA[[...salt].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7) % ROTA.length];
+  }
+  const lines = render(entry, who, ctx, data);
+  const sc = { id: `vt:${ctx.week?.num || 0}:${t.kind}`, line: null, type: 'talk', step: `vote.${t.kind}`, outcome: 'any',
+    room, roomName: (sp && room === sp.room ? sp.label : null) || ROOM[room] || 'Living Room', ...(sp && room === sp.room ? { spot: sp.spot } : {}),
+    cast, mood: VT_MOOD(t.kind), at, fixedRoom: !!entry.room, recap: false, lineId: entry.id, why: t.why || [] };
+  const shut = /door|whisper|tap|leans in/i.test(JSON.stringify(entry.turns));
+  sc.lines = shut || sc.spot ? lines : background(lines, sc, ctx, sc.id, false);
   return staging(sc);
 }
 

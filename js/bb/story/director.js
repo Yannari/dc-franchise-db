@@ -15,7 +15,8 @@
 
 import { gs } from '../../core.js';
 import { classify, file, causeOf } from './storylines.js';
-import { writeStoryScene, writeSetPiece, writeGameTalk, writeCampaignScene, writeEngineScene, writeWitnessAfter, hasPool, roomName } from './write.js';
+import { writeStoryScene, writeSetPiece, writeGameTalk, writeCampaignScene, writeEngineScene, writeWitnessAfter, writeVoteTalk, hasPool, roomName } from './write.js';
+import { voteTalkFor } from './votetalk.js';
 import { gameTalkFor, bondTalkFor, styleTalkFor, phaseOf, hohWeekFor } from './gametalk.js';
 import { writeMilestone } from './milestone.js';
 
@@ -457,11 +458,26 @@ export function airStorylines(week) {
     });
   };
 
+  // ── the vote talk: the last thing before the live vote (bb/story/votetalk.js) ──
+  // the plan, the swing and the one going home, true of the ballots, on the act before the eviction
+  const airVoteTalk = evAct => {
+    const i = week.acts.indexOf(evAct);
+    const host = week.acts.slice(0, i).reverse().find(a => a && !CEREMONY.has(a.type)) || week.acts.slice(0, i).reverse().find(Boolean);
+    if (!host) return;
+    const ctx = ctxOf();
+    let n = 0;
+    for (const t of voteTalkFor(evAct, week, ctx.present)) {
+      const sc = writeVoteTalk(t, { ...ctx, avoidRoom: (host.scenes || []).at(-1)?.room }, at + 0.5 + n * 0.1);
+      if (sc) { (host.scenes ||= []).push(sc); n++; }
+    }
+  };
+
   for (const act of week.acts) {
     if (!act) continue;
     if (act.type === 'campaign') airCampaign(act);
     if (CEREMONY.has(act.type)) {
       choose();
+      if (act.type === 'eviction') { try { airVoteTalk(act); } catch { /* the vote airs without it */ } }
       stretch++;
       clock.hohJust = act.type === 'hoh';
       clock.nomsJust = act.type === 'nominations';

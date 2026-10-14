@@ -13,6 +13,8 @@
 // A spot is a plate id. `room` is the engine room it plays as (the stage set comes from it:
 // ROOM_SET in vp-bb-ep/steps.js), `label` what the slate says.
 
+import { gs } from '../../core.js';
+
 export const SPOTS = {
   'storage': { room: 'storage-room', label: 'Storage Room' },
   'storage-2': { room: 'storage-room', label: 'Storage Room' },
@@ -83,15 +85,23 @@ export function spotFor(kind, cast, ctx, salt, text = '') {
 // How a scene opens at a spot it was moved to, when its own lines do not set the scene ({a}, {b}: the
 // first two people in it). A walk to the volcano is a decision, and the opening says so.
 const OPENS = {
-  'storage': ['The storage room. {a} pulls the door to behind {b}.', 'Storage room, between the cereal and the paper towels. Nobody else is in here, which is the point.'],
-  'storage-2': ['The storage room. {a} checks the hallway once before the door closes.', 'Storage room. {a} and {b} pretend to look for something on the shelves.'],
-  'bathroom': ['The bathroom. {a} runs a tap, for the noise.', 'Bathroom. The door locks, which is the only door in the house that does.'],
+  'storage': ['The storage room. {a} pulls the door to behind {b}.', 'Storage room, between the cereal and the paper towels. Nobody else is in here, which is the point.',
+    'The storage room. {a} holds up a tin of beans as an alibi.', 'Storage room. {b} sits on a crate of water bottles; {a} leans on the shelf.'],
+  'storage-2': ['The storage room. {a} checks the hallway once before the door closes.', 'Storage room. {a} and {b} pretend to look for something on the shelves.',
+    'The storage room, by the drinks fridge, its hum covering most of it.', 'Storage room. {a} is restacking the cereal, which nobody asked {a} to do.'],
+  'bathroom': ['The bathroom. {a} runs a tap, for the noise.', 'Bathroom. The door locks, which is the only door in the house that does.',
+    'The bathroom. {a} and {b} talk to each other in the mirror instead of face to face.', 'Bathroom. {b} sits on the bench; {a} stands by the sinks.'],
   'havenot': ['The have-not room, empty for once.', 'Have-not room. Nobody sleeps in here by choice, so nobody comes in.'],
-  'pier-east': ['The far end of the pier, as far from the house as the island allows.', 'Out on the pier, legs over the edge, the boat bumping the posts.', '{a} and {b} walk the whole length of the pier before anybody says a word.'],
-  'pond-north': ['North Pond. Nobody comes up here unless they mean to.', 'The north pond, among the reeds. Even the cameras have to work for it.', '{a} found this pond in week one and has not told anybody else about it. {b} is the exception.'],
-  'pond-east': ['East Pond, under the rope swing.', 'The east pond. {a} skims a stone while {b} watches the path.', 'The little dock on the east pond. Quiet, except for the frogs.'],
-  'lagoon': ['The lagoon, by the waterfall. The water covers anything said under it.', 'Down at the lagoon, the falls loud enough to talk over.', '{a} and {b} climb down to the lagoon, where the noise of the falls does the hiding.'],
-  'volcano-lookout': ['The volcano lookout. The whole island is down there, and nobody from it is up here.', 'It is a long climb to the lookout. {a} has decided this is worth it.', 'Up at the lookout, the resort a little toy in the trees below.'],
+  'pier-east': ['The far end of the pier, as far from the house as the island allows.', 'Out on the pier, legs over the edge, the boat bumping the posts.', '{a} and {b} walk the whole length of the pier before anybody says a word.',
+    'The pier. {a} keeps one eye on the path back to the resort.', 'The end of the pier. Out here the microphones mostly get the wind.'],
+  'pond-north': ['North Pond. Nobody comes up here unless they mean to.', 'The north pond, among the reeds. Even the cameras have to work for it.', '{a} leads {b} up the overgrown path to the north pond.',
+    'North Pond. {a} sits on the fallen log; {b} stays standing.', 'Up at the north pond, the lily pads and the two of them.'],
+  'pond-east': ['East Pond, under the rope swing.', 'The east pond. {a} skims a stone while {b} watches the path.', 'The little dock on the east pond. Quiet, except for the frogs.',
+    'East Pond. {b} is dangling a foot off the dock; {a} sits down beside it.', 'The east pond, out of sight of every window in the resort.'],
+  'lagoon': ['The lagoon, by the waterfall. The water covers anything said under it.', 'Down at the lagoon, the falls loud enough to talk over.', '{a} and {b} climb down to the lagoon, where the noise of the falls does the hiding.',
+    'The lagoon. {a} sits on the warm rocks at the edge; {b} paddles.', 'The far side of the lagoon, behind the spray.'],
+  'volcano-lookout': ['The volcano lookout. The whole island is down there, and nobody from it is up here.', 'It is a long climb to the lookout. {a} has decided this is worth it.', 'Up at the lookout, the resort a little toy in the trees below.',
+    'The lookout bench. {a} and {b} are both out of breath, which buys a minute of silence.', 'The top of the volcano path, where nobody wanders past by accident.'],
   'beach-shoreline': ['The shoreline, where the waves are loud enough to keep a secret.', 'Down on the beach, walking the waterline.'],
   'beach-loungers': ['Two loungers on the beach, side by side, angled away from the house.', 'The beach loungers, under the striped umbrella.'],
   'dock': ['The west dock, with the sun going down behind it.', 'Out on the west dock, feet in the water.'],
@@ -102,7 +112,11 @@ export function openingAt(spot, who, salt) {
   const list = OPENS[spot];
   if (!list?.length) return null;
   const h = [...String(salt)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
-  return list[h % list.length].replace(/\{a\}/g, who[0] || 'Somebody').replace(/\{b\}/g, who[1] || who[0] || 'somebody');
+  // the least-heard opening of this spot this season (the read of 2026-10-13: the same pond, six times)
+  const heard = gs ? ((gs.bb ||= {}).spotOpens ||= {}) : {};
+  const pickd = list.map((t, i) => [t, i]).sort((x, y) => (heard[x[0]] || 0) - (heard[y[0]] || 0) || ((h + x[1]) % list.length) - ((h + y[1]) % list.length))[0][0];
+  heard[pickd] = (heard[pickd] || 0) + 1;
+  return pickd.replace(/\{a\}/g, who[0] || 'Somebody').replace(/\{b\}/g, who[1] || who[0] || 'somebody');
 }
 
 /** Whether a spot is out on the island (no house around it: no background from the kitchen). */

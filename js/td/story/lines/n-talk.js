@@ -66,7 +66,7 @@ export default {
       { by: 'b', say: "Okay. I'll think about it." },
       { by: 'a', conf: "I don't know how to do strategy. I just know how to ask people nicely. I hope that's enough." },
     ] },
-    { id: 'nk.sc5', place: 'secret', when: { merged: true }, turns: [
+    { id: 'nk.sc5', place: 'secret', when: { merged: true, orphan: true }, turns: [
       { by: 'a', say: "My old team's gone. It's basically just me now.", v: { dry: "My old team's gone, so I'm basically a team of one now.", anxious: "Everyone from my old team is gone. I'm all by myself now." } },
       { by: 'b', say: "I noticed." },
       { by: 'a', say: "So I'm a free agent. I'll vote with whoever keeps me around." },
@@ -340,7 +340,7 @@ export default {
     C('nk.so3', { voice: ['warm', 'anxious', 'earnest'] }, ["I tried to cheer as loud as I could from the side. It didn't help.", "Now I'm scared people think I'm the one they can do without."]),
   ],
   'long.blind.denial.any': [
-    { id: 'nk.bd1', place: 'aside', turns: [
+    { id: 'nk.bd1', place: 'aside', when: { gotVotes: true, bWroteA: true }, turns: [
       { beat: "{a} sits down next to {b} {here} like nothing has changed." },
       { by: 'a', say: "Can you believe someone voted for me last night?", v: { loud: "Somebody VOTED for me last night! Can you believe that?!", anxious: "Somebody wrote my name, and I can't stop thinking about it. Who would do that?" } },
       { by: 'b', say: "Crazy." },
@@ -378,7 +378,7 @@ export default {
   'long.throw.caught.bold': [
     { id: 'nk.tb1', place: 'aside', turns: [
       { by: 'a', say: "You threw it.", v: { loud: "You THREW it! I saw you!", blunt: "You threw that challenge.", quiet: "...You threw it." } },
-      { by: 'b', move: 'pushback' },
+      { by: 'b', move: 'deflect' },
       { by: 'a', say: "Today, you threw it, I watched you slow down right at the end." },
       { by: 'b', say: "I was tired." },
       { by: 'a', say: "You were fine until right when it mattered. Then you weren't." },

@@ -58,7 +58,7 @@ export default {
     { id: 'ntq.c1', turns: [
       { by: 'h', say: "{a}, how are you feeling tonight?" },
       { by: 'a', say: "Honestly? Pretty good, I think I know where I stand.", v: { anxious: "Better than I thought I would. I think I'm okay tonight.", loud: "Great, never better! Can we just vote?", dry: "Hungry, mostly. But safe, I think." } },
-      { by: 'h', say: "{b}, does {a} know where {a.sub} stands?" },
+      { by: 'h', say: "{b}, is {a} right about that?" },
       { beat: "{b} looks down at the fire for a second too long." },
       { by: 'b', say: "I think we all feel pretty good tonight.", v: { warm: "I hope everybody here feels okay tonight. I really do." } },
     ] },

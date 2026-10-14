@@ -290,6 +290,9 @@ function recordSlots(ep, a, b, camp, phase) {
   // b's own ballot is b's secret: a line may only rely on it when b says it (b's own words)
   const ltB = b ? lastTribalOf(b, ep.num) : null;
   if (ltB && ltB.gap === 1) facts.votedB = ltB.myVote ? (ltB.votedBoot ? 'boot' : 'other') : 'none';
+  // (read 2026-10-14: "Can you believe someone voted for me last night?" with no vote on Hannah, and Ivy's "I wrote
+  // Hannah's name last night", when Ivy had written Richard)
+  if (a && b && lt && lt.gap === 1) facts.bWroteA = ((gs.episodeHistory || []).find(h => h.num === ep.num - 1)?.votingLog || []).some(v => v.voter === b && v.voted === a);
   if (phase === 'post' && !ep.isMerge && !gs.isMerged) {
     const ch = challengeOf(ep, camp);
     if (ch) {
@@ -2395,7 +2398,7 @@ export function airTdEpisode(ep) {
         }
         return spentToo.reduce((it, x) => adopt(it, x), adopt(adopt({ story: true, kind: pool, storyType: line?.type || 'cut', step: step?.step || 'cut', ...(line ? { storyline: line.id } : { cut: true }), ref: i, type: ev.type,
           players: [...new Set([...Object.values(who).filter(Boolean), ...(ev.players || []), ...watched])],
-          lines, text: lines.map(l => l.text).join(' '), lineId: w.lineId, scene: { kind, who: castOnly(who, w), data, spot: w.spot ? { window: ev.scene?.spot?.window || ev.access?.windowId || null, ...w.spot } : (ev.scene?.spot || null) }, access: ev.access || null,
+          lines, text: lines.map(l => l.text).join(' '), lineId: w.lineId, ...(hushed ? { hushed: true } : {}), scene: { kind, who: castOnly(who, w), data, spot: w.spot ? { window: ev.scene?.spot?.window || ev.access?.windowId || null, ...w.spot } : (ev.scene?.spot || null) }, access: ev.access || null,
           alliance: ev.alliance, members: ev.members, advType: ev.advType, badgeText: ev.badgeText || '', badgeClass: ev.badgeClass || '',
           why: whyOf(kind, ending, line ? `${line.type}.${step.step}` : '', who, data, facts), bondDelta: ev.bondDelta || null, ...(w.fx?.length ? { fx: w.fx } : {}) }, w), w.lines));
       };

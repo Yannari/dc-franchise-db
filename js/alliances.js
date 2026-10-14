@@ -1599,7 +1599,7 @@ export function nameNewAlliance(size) {
       'The Blood Oath', 'The Switchblade', 'The Velvet Rope', 'The Tightrope',
       // Total Drama / Disventure Camp style
       'The Drama Duo', 'The Chaos Pact', 'The Ride or Die', 'The Plot Twist',
-      'The Power Couple', 'The Secret Weapon', 'The Wildcard Pact',
+      'The Power Play', 'The Secret Weapon', 'The Wildcard Pact',
       'The Confessional Crew', 'The Elimination Insurance', 'The Marshmallow Pact',
       'The Final Two Deal', 'The Campfire Compact', 'The Dock Deal',
     ],

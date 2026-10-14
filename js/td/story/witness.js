@@ -34,7 +34,9 @@ const CONFLICT_TYPE = new Set(['fight', 'dispute', 'hotheadExplosion', 'leadersh
 const ONE_SIDED = /^(long\.)?drama\.(dig|intimidate|prank|bomb)|^(passiveAggressive|intimidation|prank|socialBomb)$/;
 // (stirring sets two other people on each other: three parts already, and nobody watching is on anybody's side yet)
 // a moment the two had alone is nobody else's business
-const PRIVATE = /\b(pulls? .{1,30} (aside|away)|away from the others|out of earshot|nobody else (is|was) around|alone (with|together)|whisper|keeps? (his|her|their) voice down|lowers? (his|her|their) voice)/i;
+// (and the set-ups for a talk somewhere secret, td/story/setup.js SECRET: read 2026-10-14, "Spencer finds Hannah in the corn
+// maze, and checks that nobody followed", then "Everybody turns to look at Marissa")
+const PRIVATE = /\b(pulls? .{1,30} (aside|away)|away from the others|out of earshot|nobody else (is|was) around|alone (with|together)|whisper|keeps? (his|her|their) voice down|lowers? (his|her|their) voice|nobody followed|nobody can (over)?hear|out of sight|well away from everybody|checking over their shoulders|towards the quiet|catches .{1,30} alone|finds .{1,30} alone)/i;
 const ROLES = ['c', 'd', 'e', 'f'];
 const book = () => ((gs.tdStory ||= {}).witness ||= []);
 
@@ -101,7 +103,7 @@ export function witnessConflicts(ep, camp, out, members, write, factsForWho, liv
     // (a row that ended friendly has nothing to take sides in: "Even me?" "Not you, you're fine", then "Do you actually
     // enjoy this?" from somebody watching, read 2026-10-14)
     if (CALM_ENDS.has(item.lineId)) continue;
-    if (lines.some(l => l.kind === 'beat' && PRIVATE.test(l.text || ''))) continue;
+    if (item.hushed || lines.some(l => l.kind === 'beat' && PRIVATE.test(l.text || ''))) continue;
     item._witnessed = true;
     const inScene = new Set(Object.values(who).filter(Boolean));
     const spoke = new Set(lines.filter(l => l.by && l.kind !== 'beat').map(l => l.by));

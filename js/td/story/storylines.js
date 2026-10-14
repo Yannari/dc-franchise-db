@@ -61,7 +61,10 @@ function ruleOf(ev) {
   // ── the coaching twist (td/coach/scenes.js): a coach's season is one storyline, keyed on the coach ──
   if (/^coach[A-Z]/.test(t) && /^coach\./.test(kind)) return R('coach', kind.slice(6));
   // ── idols ──
-  if (/^(idolSearch|idolFound|idolShare|idolConfession|idolExposureRead|idolBetrayal|voteStealFound|voteStealSnooped|infoTrade)$/.test(t)) return R('idol', t === 'idolFound' || t === 'voteStealFound' ? 'found' : t === 'idolShare' || t === 'idolConfession' ? 'shared' : t === 'idolSearch' ? 'search' : 'known');
+  // (an information trade is a deal between two people: it was recapped as "figured out who's been hiding something" and
+  // "started asking very specific questions about very specific idols", read 2026-10-14)
+  if (t === 'infoTrade') return R('alliance', 'deal', 'made');
+  if (/^(idolSearch|idolFound|idolShare|idolConfession|idolExposureRead|idolBetrayal|voteStealFound|voteStealSnooped)$/.test(t)) return R('idol', t === 'idolFound' || t === 'voteStealFound' ? 'found' : t === 'idolShare' || t === 'idolConfession' ? 'shared' : t === 'idolSearch' ? 'search' : 'known');
   return null;
 }
 

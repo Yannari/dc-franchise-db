@@ -26,6 +26,9 @@ export const TD_FACT_KEYS = [
   // home?") and "not as old teams" are theirs alone (read 2026-10-14, carnival ep 7: two Gophers who had lived
   // together for six episodes asking about home at the merge; two Bass members talking about "our old teams")
   'strangers',
+  // everybody a started the game with on a's tribe has gone home: "my old team's gone" (read 2026-10-14: Richard said it
+  // to Hannah, his old teammate, with Ivy and Marissa from that tribe still there)
+  'orphan',
   // the scene names a target ({target}) who is not in it
   'known',
   // where the scene is: a line that stages the dock airs only on the dock
@@ -134,6 +137,8 @@ export function factsFor(scene, ctx = {}) {
     f.strong = (s.physical ?? 5) >= 7; f.brainy = (s.mental ?? 5) >= 7; f.tough = (s.endurance ?? 5) >= 7; f.bold = (s.boldness ?? 5) >= 7;
     f.charm = (s.social ?? 5) >= 7; f.sly = (s.strategic ?? 5) >= 7; f.loyal = (s.loyalty ?? 5) >= 7; f.sharp = (s.intuition ?? 5) >= 7;
     f.hot = (s.temperament ?? 5) <= 3; f.calm = (s.temperament ?? 5) >= 8;
+    const first = (gs.episodeHistory || []).find(e => e?.num === 1)?.tribesAtStart?.find(t => t.members?.includes(a));
+    f.orphan = !!first && !first.members.some(m => m !== a && (gs.activePlayers || []).includes(m));
   }
   if (a && b) {
     const bond = getBond(a, b);

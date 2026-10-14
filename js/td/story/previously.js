@@ -153,7 +153,9 @@ export function writePreviously(ep) {
     const g = c.alliance;
     const lead = i === 0 ? '' : pick(['Meanwhile, ', 'Back at camp, ', 'And then ', 'Elsewhere, ', '', 'Oh, and ', 'Over at camp, '], `lead${i}`);
     // (a sentence that opens on a name keeps its capital after "Meanwhile, ")
-    const T = (t) => (!lead ? t : [...NAMES].some(n => t.startsWith(n)) || /^I\b/.test(t) ? lead + t : lead + t.charAt(0).toLowerCase() + t.slice(1));
+    // (a line that opens on "And" drops it after a lead: "Meanwhile, and The Lock officially died", read 2026-10-14)
+    const T = (t0) => { const t = lead ? t0.replace(/^And /, '') : t0;
+      return !lead ? t : [...NAMES].some(n => t.startsWith(n)) || /^I\b/.test(t) ? lead + t : lead + t.charAt(0).toLowerCase() + t.slice(1); };
     const kb = `${c.type}:${c.step}`;
     // a couple targeted: the event's players are [the one plotting, the couple] (romance.js), so a and b are the plotter and
     // one of the couple (read 2026-10-14: "Lynda and Ivy's little romance put a target on both of them", Lynda plotting
@@ -179,7 +181,8 @@ export function writePreviously(ep) {
       'showmance:spark': [`Sparks flew between ${a} and ${b}, which is gross, but honestly great for ratings.`, `Is something going on between ${a} and ${b}? Everybody thinks so, except maybe ${a} and ${b}.`, `${a} and ${b} got a little closer than teammates usually do.`],
       'showmance:targeted': tg ? [`${tg[0]} decided ${tg[1]} and ${tg[2]} were a little too cozy, and that had to stop.`, `${tg[1]} and ${tg[2]}'s little romance put a target on both of them, and ${tg[0]} was the one aiming.`, `Being a couple out here is a liability, and ${tg[0]} made sure ${tg[1]} and ${tg[2]} found that out.`]
         : [`Somebody decided ${a} and ${b} were a little too cozy, and that had to stop.`, `${a} and ${b}'s little romance put a target on both of them.`, `Being a couple out here is a liability, and ${a} and ${b} found that out.`],
-      'scheme:caught': [`${a} got caught red-handed${b ? ` by ${b}` : ''}. Whoops.`, `${a}'s little scheme blew up in ${pr(a).posAdj} face.`, `${a} got caught. Everybody saw. Nobody forgot.`],
+      'scheme:caught': /test\.caught|loyaltyTest/.test(src) ? [`${a} tried a little loyalty test${b ? ` on ${b}` : ''}. ${b ? `${b} saw right through it.` : 'It did not go to plan.'}`, `${a} set a trap${b ? ` for ${b}` : ''}, and ${b ? `${b} walked right around it` : 'nobody fell in'}.`]
+        : [`${a} got caught red-handed${b ? ` by ${b}` : ''}. Whoops.`, `${a}'s little scheme blew up in ${pr(a).posAdj} face.`, `${a} got caught. Everybody saw. Nobody forgot.`],
       'scheme:move': [`${a} started pulling strings${b ? `, and ${b} was the puppet` : ''}.`, `${a} quietly went to work on ${b || 'the rest of camp'}.`, `${a} stirred the pot, and the pot stirred back.`],
       'idol:found': [`${a} found something hidden, and kept it very, very quiet.`, `${a} went digging, and came back with something shiny.`, `${a} got ${pr(a).posAdj} hands on an advantage. Sneaky.`],
       'idol:shared': [`${a} let ${b || 'someone'} in on a secret. A shiny, game-changing secret.`, `${a} told ${b || 'an ally'} about the idol. Trusting. Maybe too trusting.`, `${a} shared a secret with ${b || 'a friend'}. What could go wrong?`],
@@ -253,7 +256,9 @@ export function writePreviously(ep) {
     // a feud that fed it: a rivalry with someone who wrote the name
     const feud = lines.find(l => l.type === 'rivalry' && l.people.includes(boot) && l.people.some(p => voters.includes(p)) && l.steps.length >= 2);
     const feudWith = feud ? feud.people.find(p => p !== boot && voters.includes(p)) : null;
-    const g = plan?.label && !/bloc$/i.test(plan.label) ? plan.label : null;
+    // (only an alliance still going: "The Lock fell in line" two episodes after The Lock was finished, read 2026-10-14)
+    const live = n => (gs.namedAlliances || []).some(al => al.name === n && al.active !== false) || (prev.alliances || []).some(al => al.label === n && !(gs.namedAlliances || []).some(x => x.name === n));
+    const g = plan?.label && !/bloc$/i.test(plan.label) && live(plan.label) ? plan.label : null;
     const opener = total > 1 ? (idx === 0 ? (prev.announcedDoubleElim ? pick([`And then I dropped a bomb: a double elimination. One vote, and the top two were going home.`, `Then came the twist: the two people with the most votes were both going home.`, `And it was a double elimination, so the top two vote-getters were both done.`], 'dblA') : pick(['And then came the vote. Or should I say, the votes.', `And then, a double elimination. Two of them were going home.`, `And the night wasn't done with them, because two people were going home.`], 'dbl')) : '') : '';
     if (opener) H(opener, tribalShot([boot]));
     const lp = pr(lead);
@@ -292,7 +297,10 @@ export function writePreviously(ep) {
     const n = voters.length + (second ? 0 : extraFor(boot)), m = otherN || 0;
     // (an idol can leave the one who went home with fewer votes than the name it cancelled: "Three votes to four, and
     // Scott was out", read 2026-10-14)
-    const score = topTwo ? `${num(n)} ${n === 1 ? 'vote' : 'votes'}, the second-most` : m > n ? `${num(n)} votes that counted against ${num(m)} that didn't` : m ? `${num(n)} votes to ${num(m)}` : n === 1 ? 'one vote' : `${num(n)} votes`;
+    // (votes an idol cancelled are said as cancelled, whichever count is bigger: "Three votes to three" over three on Diego
+    // and three on Hannah that her idol threw out, read 2026-10-14)
+    const otherSaved = !!other && plays.some(p => (p.playedFor || p.player) === other && p.votesNegated > 0);
+    const score = topTwo ? `${num(n)} ${n === 1 ? 'vote' : 'votes'}, the second-most` : (m > n || (otherSaved && m)) ? `${num(n)} ${n === 1 ? 'vote' : 'votes'} that counted, and ${num(m)} on ${other} that didn't` : m ? `${num(n)} votes to ${num(m)}` : n === 1 ? 'one vote' : `${num(n)} votes`;
     const sent = prev.riChoice && idx === 0 && !second ? ` and sent to ${/RESCUE/i.test(prev.riChoice) ? 'Rescue Island' : 'Redemption Island'}` : '';
     const card = { boot };   // the boot's card: their portrait, crossed out
     if (coachSave && boot === coachSave.coach) {

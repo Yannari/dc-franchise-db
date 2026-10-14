@@ -152,6 +152,9 @@ function _tidySentence(sent, re, speech = false) {
         // can't know every verb, so the name stays (read 2026-10-14: "stretched out like her owns the place")
         const clause = ['like', 'as', 'than'].includes(prev) && /^(is|was|has|had|does|did|can|could|will|would|[a-z]+s)$/.test(next || '') && !trueVerb;
         if (clause) rep = null;
+        // "a week of Ivy being Ivy": a name after being/be/been is what somebody is, not who does it (read 2026-10-14,
+        // "a week of Ivy being she")
+        else if (['being', 'be', 'been'].includes(prev)) rep = null;
         // "Finn's going to be my favourite" is "Finn is", not Finn's thing: a word that can only follow "is" or "has" makes
         // it a contraction (read 2026-10-14: "I know his going to be my favourite", "because his the same")
         else if (h.poss && IS_AFTER.has(next)) rep = p.sub === 'they' ? (HAS_AFTER.has(next) ? "they've" : "they're") : `${p.sub}'s`;
@@ -206,10 +209,11 @@ const THEY_VERB = { is: 'are', was: 'were', has: 'have', does: 'do', says: 'say'
   makes: 'make', needs: 'need', likes: 'like', tries: 'try', gets: 'get', sounds: 'sound',
   finds: 'find', talks: 'talk', loves: 'love', hates: 'hate', takes: 'take', plays: 'play', lies: 'lie', feels: 'feel', comes: 'come',
   tells: 'tell', asks: 'ask', votes: 'vote', writes: 'write', trusts: 'trust', means: 'mean' };
-const THEY_RE = new RegExp('\\b(they|They)\\s+(' + Object.keys(THEY_VERB)
+// (one adverb may sit between: "and they just isn't there", read 2026-10-14 in a Total Drama season)
+const THEY_RE = new RegExp('\\b(they|They)\\s+((?:just|really|still|always|even|actually|also|only|probably|never)\\s+)?(' + Object.keys(THEY_VERB)
   .map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')(?![\\w’\'])', 'g');
 export function theyAgree(text) {
-  return String(text == null ? '' : text).replace(THEY_RE, (m, t, v) => t + ' ' + THEY_VERB[v]);
+  return String(text == null ? '' : text).replace(THEY_RE, (m, t, adv, v) => t + ' ' + (adv || '') + THEY_VERB[v]);
 }
 
 // A SPEECH LINE ENDS AT ITS CLOSING QUOTE. Several events append a sentence

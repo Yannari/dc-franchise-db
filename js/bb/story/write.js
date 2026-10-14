@@ -335,7 +335,8 @@ function addWitnesses(sc, ws, ctx) {
     const key = jab ? (w.a === w.doer ? 'witness.join' : 'witness.defend') : `witness.${w.stance}`;
     const who = { a: w.a, b: w.b, c: w.name };
     // a shouting match has its own lines too; a quiet row never hears "lower your voice"
-    const keys = !jab && w.kind === 'loud' && w.stance !== 'out' ? [key, `${key}.loud`] : [key];
+    const shouty = sc.lines.filter(l => l.kind === 'say' && /!/.test(String(l.text || ''))).length >= 2;
+    const keys = !jab && w.kind === 'loud' && shouty && w.stance !== 'out' ? [key, `${key}.loud`] : [key];
     const e = pick(keys, who, {}, ctx, sc.room, `${sc.id}|wit|${w.name}`);
     if (!e) continue;
     const r = render(e, who, ctx, {});

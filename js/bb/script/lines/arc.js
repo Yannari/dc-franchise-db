@@ -100,7 +100,7 @@ export default {
     { id: 'qd.c6', turns: [{ by: 'a', say: "I'm not shouting. I just want to know why you lied." }, { by: 'b', say: "I didn't..." }, { by: 'a', say: "You did." }, { by: 'b', say: "Okay. I did. I'm sorry." }, { by: 'a', say: "Sorry you did it, or sorry I found out?" }, { by: 'b', dr: "I didn't have an answer for that." }] },
   ],
   'arc.debt.deal': [
-    { id: 'qe.d1', turns: [{ by: 'c', say: "What about {b} this week?" }, { by: 'a', say: "No." }, { by: 'c', say: "Just like that?" }, { by: 'a', say: "Just like that." }] },
+    { id: 'qe.d1', turns: [{ by: 'c', say: "What about {b} this week?" }, { by: 'a', say: "No. Not {b}." }, { by: 'c', say: "Just like that?" }, { by: 'a', say: "{b} was there for me when nobody else was. Just like that." }] },
     { id: 'qe.d2', turns: [{ by: 'a', say: "{b} sat with me when nobody else would. Whatever the house does this week, it doesn't do it to {b}." }, { by: 'c', say: "Okay. Noted." }] },
     { id: 'qe.d3', turns: [{ by: 'a', say: "I owe you a week." }, { by: 'b', say: "You don't owe me anything." }, { by: 'a', say: "I do. And I'm paying it now." }, { beat: 'They shake on it before the lights go out.' }] },
     { id: 'qe.d4', turns: [{ by: 'c', dr: "I floated {b}'s name and {a} shut it down before I'd finished the sentence. I've never seen {a} so sure about anything." }] },
@@ -235,7 +235,7 @@ export default {
   ],
   'arc.jury.scene': [
     { id: 'qn.1', turns: [{ by: 'a', say: "Let's go through the jury. {jury}." }, { by: 'b', say: "And?" }, { by: 'a', say: "They all liked {target}. None of them owe me anything." }] },
-    { id: 'qn.2', turns: [{ by: 'a', say: "Go through them with me. One by one." }, { beat: 'They do. Every name comes back to {target}.' }] },
+    { id: 'qn.2', turns: [{ by: 'a', say: "Go through them with me. One by one." }, { beat: 'They do, name by name.' }, { by: 'b', say: "...Every one of them comes back to {target}." }] },
     { id: 'qn.3', turns: [{ by: 'a', dr: "I've been playing the house. {target} has been playing the people leaving it. Guess which one wins at the end." }] },
     { id: 'qn.4', turns: [{ by: 'a', say: "The game isn't the block any more. It's the jury." }, { by: 'b', say: "And the jury loves {target}." }, { by: 'a', say: "So that's the plan." }] },
     { id: 'qn.5', turns: [{ by: 'a', dr: "I can name what every juror thinks of {target}. I can't name what a single one of them thinks of me." }] },

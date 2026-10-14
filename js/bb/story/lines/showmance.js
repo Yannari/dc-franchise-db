@@ -615,6 +615,22 @@ export default {
     { id: 'rms.x2', turns: [{ beat: '{when}, {a} and {b} talked late into the night.' }, { by: 'b', dr: "We just get each other." }] },
     { id: 'rms.x3', turns: [{ beat: '{a} and {b} have been flirting since {when}. The house has noticed.' }, { by: 'a', dr: "Is it obvious? It's obvious." }] },
   ],
+  // a couple who walked in together (storylines.js outcome 'couple'): the recap is the secret, not a flirtation
+  'recap.showmance.spark.couple.a': [
+    { id: 'rmc.a1', turns: [{ by: 'a', dr: "{b} and I walked in here together, and nobody knows. {when}, we nearly gave it away at dinner." }] },
+    { id: 'rmc.a2', turns: [{ by: 'a', dr: "Everybody thinks {b} and I met on move-in day. We've been together a lot longer than that." }] },
+    { id: 'rmc.a3', turns: [{ by: 'a', dr: "{when}, {b} caught my eye across the kitchen and I forgot to look away. That's how you get caught in here." }] },
+  ],
+  'recap.showmance.spark.couple.b': [
+    { id: 'rmc.b1', turns: [{ by: 'b', dr: "{a} and I came in as a couple. In here we're pretending we've only just met. It's getting harder." }] },
+    { id: 'rmc.b2', turns: [{ by: 'b', dr: "{when}, {a} said goodnight to me like a stranger. It was perfect. It also broke my heart a bit." }] },
+    { id: 'rmc.b3', turns: [{ by: 'b', dr: "Nobody in this house knows {a} is my partner. Every day we keep it that way is a day neither of us goes home for it." }] },
+  ],
+  'recap.showmance.spark.couple.caption': [
+    { id: 'rmc.x1', turns: [{ beat: '{a} and {b} walked into the house together, and have told nobody.' }, { by: 'a', dr: "It's easier if nobody knows. It's not easy." }] },
+    { id: 'rmc.x2', turns: [{ beat: 'The house still thinks {a} and {b} met on move-in day.' }, { by: 'b', dr: "Let them think that." }] },
+    { id: 'rmc.x3', turns: [{ beat: '{a} and {b} are a couple outside this house. Inside it, they sit at opposite ends of the table.' }, { by: 'a', dr: "Opposite ends. Every meal." }] },
+  ],
   'recap.showmance.kiss.a': [
     { id: 'rmk.a1', turns: [{ by: 'a', dr: "{b} and I kissed {when}. So now that's a thing." }] },
     { id: 'rmk.a2', turns: [{ by: 'a', dr: "{when}, I kissed {b}. I don't regret it. Not even a little." }] },

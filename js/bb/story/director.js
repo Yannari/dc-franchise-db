@@ -135,7 +135,7 @@ export function airStorylines(week) {
     // else's conversation it is a second location (the read of 2026-10-14: a lookout in a kitchen row)
     // ...but only an opening that sets a PLACE: one that sets up the moment itself ("Caleb finds Chase on
     // the floor with the letter open") is kept, or "I'm fine. Happy tears." answers nothing (read 2026-10-14)
-    const PLACE = /\b(kitchen|backyard|bedroom|living room|storage|pantry|lookout|pier|pond|hot tub|pool|garden|deck|bathroom|HOH room|hammock|sofa|couch|stairs|fence|loungers?|grass)\b|^(Up|Out|Down|Over) (at|on|by|in)\b/i;
+    const PLACE = /\b(kitchen|backyard|bedroom|living room|storage|pantry|lookout|pier|pond|hot tub|pool|garden|deck|bathroom|HOH room|hammock|sofa|couch|stairs|fence|loungers?|grass|path|volcano|lagoon|waterfall|beach|dock|reeds|log|umbrella|spray|court|gym|memory wall)\b|^(Up|Out|Down|Over) (at|on|by|in)\b/i;
     const firstSay = sc.lines.findIndex(l => l.kind === 'say');
     const own = sc.lines.filter((l, i) => l.kind !== 'dr' && !l.bg && !(l.kind === 'beat' && i < firstSay && PLACE.test(String(l.text || ''))));
     const drs = sc.lines.filter(l => l.kind === 'dr');
@@ -202,7 +202,7 @@ export function airStorylines(week) {
       // a fragment that moves nothing (a single spoken line, no setup) does not air; the moments that
       // move the game (vote machinery, HOH, veto, house meetings) still do, however short
       if (sc.lines.filter(l => l.kind === 'say').length === 1 && !sc.lines.some(l => l.kind === 'dr') && WEIGHT(String(beat.eventId)) < 4) continue;
-      const confessional = sc.lines.length <= 2 && sc.lines.some(l => l.kind === 'dr') && !sc.lines.some(l => l.kind === 'say');
+      const confessional = sc.lines.some(l => l.kind === 'dr') && !sc.lines.some(l => l.kind === 'say' || (l.kind === 'beat' && !l.bg));
       const airs = () => {
         remember(sc);
         shown.add(key); shown.add(String(beat.eventId));
@@ -227,6 +227,10 @@ export function airStorylines(week) {
           // (named and IN it: a confessional about Emmah's visits to the HOH room closed a poach that only
           // mentioned Emmah, read 2026-10-14)
           if (x.type === 'showmance' && !/^(showmance|romance|couple)/.test(String(sc.step || ''))) return false;
+          if (/isolation|avoid|cold-war|silent/.test(String(sc.step || ''))) return false;
+          // a grudge is not the close of an apology the speaker just made (Hicks said sorry to Bowie, then:
+          // "I'm not looking for an apology from Bowie any more")
+          if (/apolog|makeup|reconcil|forgive/.test(String(x.step || '')) && /grudge|blame|feud|cold|paranoia/.test(String(sc.step || ''))) return false;
           return by && (x.cast || []).includes(by) && named.length > 0 && named.every(n => (x.cast || []).includes(n));
         };
         const into = hosts.filter(x => (x.folded || []).length < 3).find(fits);
@@ -248,7 +252,7 @@ export function airStorylines(week) {
         const publicMoment = sc.lines.some(l => l.kind === 'beat' && /\b(room|house|everyone|everybody|nobody|table|kitchen|half)\b/i.test(String(l.text || '')))
           || sc.lines.some(l => l.kind === 'dr' && l.by && !sayers.has(l.by));
         const host = placed(sc) || publicMoment ? null : hosts.filter(x => GAME_HOST.has(x.type) && x.mood !== 'secret' && (x.folded || []).length < 2
-          && speakers.every(s2 => talkers(x).has(s2)) && (sc.cast || []).every(n => (x.cast || []).includes(n)))
+          && speakers.every(s2 => talkers(x).has(s2)) && (sc.cast || []).every(n => (x.cast || []).includes(n)) && !/^texture-/.test(String(beat.eventId || '')))
           .sort((x, y) => (x.folded || []).length - (y.folded || []).length)[0];
         if (host) { airs(); fold(host, sc, `${week.num}|${stretch}|${beat.eventId}`); continue; }
         loose.push({ ea, sc, beat, key, wt, airs });

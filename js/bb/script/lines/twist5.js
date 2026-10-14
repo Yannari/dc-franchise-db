@@ -82,7 +82,7 @@ export default {
   'an.outside.scene': [
     { id: 'an5.o1', turns: [{ by: 'a', dr: "There's a whole audience voting on this game. They've never met us and they've already picked favourites." }] },
     { id: 'an5.o2', when: { intent: 'heard' }, turns: [{ by: 'a', say: "We're being watched by people with a vote." }, { by: 'b', say: "Don't say that." }, { by: 'a', say: "It's true, though." }] },
-    { id: 'an5.o3', turns: [{ by: 'a', dr: "Every argument in this house now has an audience with a vote. That changes what an argument is for." }] },
+    { id: 'an5.o3', turns: [{ by: 'a', dr: "Every argument in this house has an audience with a vote now. You can't just shout any more. You have to think about how it looks." }] },
     { id: 'an5.o4', turns: [{ by: 'a', dr: "I've stopped trying to find who picked the third nominee. I'm trying to work out what the people watching want." }] },
     { id: 'an5.o5', when: { intent: 'heard' }, turns: [{ by: 'b', say: "What do you think they want?" }, { by: 'a', say: "I wish I knew." }] },
     { id: 'an5.o6', when: { intent: 'heard' }, turns: [{ by: 'b', dr: "{a} keeps talking about the audience. It's making me paranoid." }] },

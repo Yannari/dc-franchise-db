@@ -22,7 +22,7 @@
 
 export default {
   'arc.lie.friend': [
-    { id: 'qa.f1', turns: [{ by: 'b', say: "{target} told me the same thing {target} told you. Except the dates were different." }, { by: 'a', say: "...Say that again." }] },
+    { id: 'qa.f1', turns: [{ by: 'b', say: "{target} told me something completely different from what {target} told you." }, { by: 'a', say: "...Say that again." }] },
     { id: 'qa.f2', turns: [{ by: 'b', say: "You already knew, right? About what {target} said?" }, { by: 'a', say: "No. Tell me." }, { beat: '{b} tells {a}. {a} goes very quiet.' }] },
     { id: 'qa.f3', turns: [{ by: 'a', dr: "I was going to let it go. Then {b} told me what {target} said to everyone else. I'm not letting it go." }] },
     { id: 'qa.f4', turns: [{ by: 'b', say: "I'm only telling you because you're my friend. {target} lied to you." }, { by: 'a', say: "I thought so. Now I know." }] },

@@ -140,7 +140,7 @@ export default {
     { id: 'tl2.a1', turns: [{ by: 'b', dr: "{a} became HOH by being fast with a stopwatch. I'm not saying it to {a}. I'm saying it to everyone else." }] },
     { id: 'tl2.a2', turns: [{ by: 'b', say: "So, how was winning HOH?" }, { by: 'a', say: "Great, thanks." }, { by: 'b', dr: "There was no competition. There was a stopwatch." }] },
     { id: 'tl2.a3', turns: [{ by: 'a', say: "When I won HOH..." }, { beat: '{b} does not correct {a}. Very loudly.' }] },
-    { id: 'tl2.a4', turns: [{ by: 'b', dr: "This reign is on loan. I've said so. {a} found out an hour before nominations." }] },
+    { id: 'tl2.a4', turns: [{ by: 'b', dr: "I've told everyone this HOH is borrowed. {a} heard about it an hour before nominations." }] },
     { id: 'tl2.a5', turns: [{ by: 'a', dr: "{b} keeps calling my HOH lucky. I don't care. I've still got the key." }] },
     { id: 'tl2.a6', turns: [{ by: 'b', say: "Enjoy it. It's borrowed." }, { by: 'a', say: "Everything in here is borrowed." }] },
   ],

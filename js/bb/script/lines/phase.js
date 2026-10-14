@@ -189,7 +189,7 @@ export default {
   ],
   'phase.sides.scene': [
     { id: 'pd2.1', turns: [{ by: 'a', dr: "Nobody's told me how they're voting. But I can tell. People are being nicer to {b} than to me." }] },
-    { id: 'pd2.2', turns: [{ by: 'b', dr: "The house has already split. Half of them are bringing {a} food. Half of them are avoiding me. Or the other way round. I can't tell which." }] },
+    { id: 'pd2.2', turns: [{ by: 'b', dr: "The house has already split. Half of them keep bringing {a} cups of tea. The other half keep finding reasons to sit with me." }] },
     { id: 'pd2.3', turns: [{ by: 'a', dr: "It's too early for anyone to say how they're voting. So I'm reading every look and every word." }] },
     { id: 'pd2.4', turns: [{ beat: 'At breakfast, the same people sit together as always. Nobody mentions the vote.' }, { by: 'b', dr: "Nobody has to say it. I can see who's sitting where." }] },
     { id: 'pd2.5', turns: [{ by: 'a', say: "{b}, can I ask you something?" }, { by: 'b', say: "Go on." }, { by: 'a', say: "Do you think it's me or you?" }, { by: 'b', say: "I honestly don't know." }] },

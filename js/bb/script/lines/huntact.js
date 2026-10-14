@@ -29,7 +29,7 @@ export default {
     { id: 'hq.s3', turns: [{ by: 'a', dr: "I checked {place}. Nothing there either, and I'm running out of places to look." }] },
     { id: 'hq.s4', turns: [{ by: 'a', dr: "I waited until everyone was asleep and went through {place}. Not a thing." }] },
     { id: 'hq.s5', turns: [{ by: 'a', dr: "Third time in {place} today. I've stopped pretending I have a reason." }] },
-    { id: 'hq.s6', turns: [{ by: 'a', say: "Where are you?" }, { by: 'a', dr: "I'm talking to a power now. That's where I'm at." }] },
+    { id: 'hq.s6', turns: [{ by: 'a', say: "Where are you?" }, { by: 'a', dr: "I just asked a hidden power where it was. Out loud. That's where I'm at." }] },
     { id: 'hq.s7', turns: [{ by: 'a', dr: "If I were hiding something, I'd put it in {place}. Apparently Big Brother wouldn't." }] },
     { id: 'hq.s8', turns: [{ by: 'a', dr: "I've looked in {place}. That's one place crossed off. Seven to go, probably." }] },
   ],

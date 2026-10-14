@@ -27,6 +27,7 @@ import { BBX_INTERRO_CSS } from './style-interro.js';
 import { BBX_WHACK_CSS } from './style-whack.js';
 import { bedFor, playStep } from './sound.js';
 import { intelHtml, INTEL_CSS } from './intel.js';
+import { BBX_COMP_CSS } from './comp-field.js';
 import { titleScreen } from './titles.js';
 import { seasonId } from '../shows.js';
 import { liveGL } from '../vp-td-ep/glplate.js';
@@ -221,7 +222,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     out.push({
       id: feed[0]?.id || ids[si],
       label: S.label || S.title,
-      html: `<div class="bbx" data-uid="${uid}" data-ambient="${bedFor(S)}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${BBX_PX_CSS}${BBX_DUO_CSS}${BBX_CAMP_CSS}${BBX_WILD_CSS}${BBX_SPOWER_CSS}${BBX_CAPSULE_CSS}${BBX_INTERRO_CSS}${BBX_WHACK_CSS}${HM_CSS}${SHELL_CSS}${INTEL_CSS}</style>
+      html: `<div class="bbx" data-uid="${uid}" data-ambient="${bedFor(S)}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${BBX_PX_CSS}${BBX_DUO_CSS}${BBX_CAMP_CSS}${BBX_WILD_CSS}${BBX_SPOWER_CSS}${BBX_CAPSULE_CSS}${BBX_INTERRO_CSS}${BBX_WHACK_CSS}${HM_CSS}${SHELL_CSS}${INTEL_CSS}${BBX_COMP_CSS}</style>
   <div class="bbx-stage stage" id="bbx-st-${uid}" onclick="bbxNext('${uid}')" title="Click for the next line">${R0.map ? mapHtml(uid, R0) : stageHtml(steps, si, -1, false, o).html}</div>
   <div class="bbi" id="bbi-${uid}" onclick="event.stopPropagation();bbxIntelClick('${uid}', event)"></div>
   <img alt="" hidden src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" onload="bbxLive('${uid}')">

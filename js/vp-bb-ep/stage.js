@@ -14,6 +14,7 @@
 import { playerAvatarUrl } from '../players.js';
 import { ANCH } from './anchors.js';
 import { plateHtml, plateAnchors, plateTv, plateFor } from './plates.js';
+import { compFieldHtml, KEY, MEDAL_SVG } from './comp-field.js';
 import { HUNT_SPOTS } from './steps.js';
 
 const ROOM_FILE = { kitchen: 'kitchen', ceremony: 'living', ceremony3: 'living3', bedroom: 'bedroom', hoh: 'hoh', dr: 'dr', yard: 'yard', dining: 'dining',
@@ -201,10 +202,10 @@ const DRRING = `<svg viewBox="-100 -100 200 200"><circle r="78" fill="none" stro
 
 function setDiv(set, season, S = null) {
   // a different room from the scene's (a Diary Room line in the middle of a library scene) is that room:
-  // the scene's own plate and spot stay with the scene (the read of 2026-10-14: confessionals were
-  // drawn on the library, not on the Diary Room couch)
+  // the scene's own plate, spot and seating stay with the scene (the read of 2026-10-14: confessionals
+  // were drawn on the library, and at every ceremony on the old Blender Diary Room, not the couch)
   const own = !S || set === S.set;
-  const plate = plateHtml(S ? { ...S, set, ...(own ? {} : { plate: null, spot: null }) } : { set }, season);
+  const plate = plateHtml(S ? { ...S, set, ...(own ? {} : { plate: null, spot: null, seated: null, arena: false, built: false }) } : { set }, season);
   if (plate) return plate;
   return `<div class="set set-${set} photo" style="background-image:url('${roomUrl(season, set)}')"><div class="floor"></div></div>`;
 }
@@ -254,8 +255,18 @@ function nomScreenHtml(S, L, st, fresh) {
     const now = fresh && st && st.reveal && i === L.revealed.length - 1;
     return `<span class="nkey ${turned ? 'turned' : ''} ${now ? 'now' : ''}"><b>BB</b></span>`;
   }).join('');
-  return `<div class="nomscreen" style="left:${r.x}%;bottom:${r.y}%;width:${r.w}%;height:${r.h}%"><div class="nhead">NOMINATIONS</div><div class="nslots">${slots}</div></div>
-    <div class="nkeys" style="left:${b.at[0]}%;bottom:${(b.at[1] * 0.5625).toFixed(2)}cqw;width:${(b.w * 1.15).toFixed(2)}cqw;z-index:${zOf(b) + 2}">${keys}</div>`;
+  // On the round-table plate the key box is in the picture: no drawn rack over the Head of Household's
+  // face. A turned key flies out of the box, up to its slot on the screen, and the face flips in under it.
+  const onPlate = !!anchOf(S)?.screen;
+  let fly = '';
+  if (fresh && st && st.reveal) {
+    const i = Math.max(0, L.revealed.indexOf(st.reveal));
+    const x1 = r.x + (r.w * (i + 0.5)) / Math.max(1, n), y1 = r.y + r.h * 0.42;
+    const dx = x1 - b.at[0], dy = -(y1 - b.at[1]) * 0.5625;
+    fly = `<div class="nfly" style="left:${b.at[0]}%;bottom:${(b.at[1] * 0.5625).toFixed(2)}cqw;--dx:${dx.toFixed(2)}cqw;--dy:${dy.toFixed(2)}cqw">${KEY}</div>`;
+  }
+  return `<div class="nomscreen" style="left:${r.x}%;bottom:${r.y}%;width:${r.w}%;height:${r.h}%"><div class="nhead">NOMINATIONS</div><div class="nslots">${slots}</div></div>${fly}
+    ${onPlate ? '' : `<div class="nkeys" style="left:${b.at[0]}%;bottom:${(b.at[1] * 0.5625).toFixed(2)}cqw;width:${(b.w * 1.15).toFixed(2)}cqw;z-index:${zOf(b) + 2}">${keys}</div>`}`;
 }
 
 // ── the Safety Suite's objects (Phase 7) ───────────────────────────────
@@ -867,6 +878,12 @@ function lineHtml(S, st, fresh, L) {
     <div class="body"><div class="tx" data-full="${esc(st.t)}" data-emph="${esc(emph(st.t, [...namesOf(S), st.by]))}">${fresh ? '' : emph(st.t, [...namesOf(S), st.by])}</div></div></div>`;
 }
 
+// The walk out (eviction night): the step cuts to the foyer, where the evictee crosses to the open doors.
+function exitCut(S, st) {
+  if (!st?.cut || !plateFor({ set: 'door', plate: st.cut.plate })) return S;
+  return { ...S, set: 'door', plate: st.cut.plate, spot: null, seated: null, arena: false, built: false, tvObj: false, cast: [[st.cut.who, 50]], exitPhase: st.cut.phase };
+}
+
 // Finale night on the user's studio plates: the stage holds the finalists' chairs, the host's mark and
 // the key box; the jury has its own tiered bench (a second camera), so a juror's line cuts to the bench.
 function juryCut(S, idx) {
@@ -883,7 +900,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   const S0 = screens[si];
   let sc = null;
   if (SCENE_KINDS.has(S0.kind)) for (let i = Math.max(0, idx); i >= 0; i--) { if (S0.steps[i]?.scene) { sc = S0.steps[i].scene; break; } }
-  const S = juryCut(sc ? { ...S0, ...sc } : S0, idx);
+  const S = exitCut(juryCut(sc ? { ...S0, ...sc } : S0, idx), S0.steps[idx]);
   const st = idx >= 0 ? S.steps[idx] : null;
   const prevSt = idx > 0 ? S.steps[idx - 1] : null;
   const L = ledgerAt(screens, si, idx);
@@ -912,6 +929,8 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.locust && !isDr && idx >= 0 && !(st && st.rule != null)) h += locustHtml(S, L, st, fresh, idx);
   if (S.movein && !isDr && idx >= 0) h += moveInHtml(S, L, st, fresh, idx);
   if (S.team && idx >= 0 && !(st && st.rule != null)) h += teamHtml(S, L, st, fresh, idx);
+  // a weekly competition on the comp field (vp-bb-ep/comp-field.js): the field, the board, the prize
+  if (S.comp && !isDr) h += compFieldHtml(S, L, st, fresh, Math.max(0, idx));
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   // the live vote: a count of ballots cast, never whose (the room does not know until the host says)
   const totalBallots = S.kind === 'evict' ? S.steps.filter(x => x.ballot).length : 0;
@@ -925,6 +944,8 @@ export function stageHtml(screens, si, idx, fresh, o) {
       : `<div class="bigrev ${fresh ? 'fresh' : ''}"><i>${esc(a)}</i><b>${esc(b)}</b></div>`;
   }
   if (fresh && st && st.door) h += '<div class="doorflood"></div>';
+  // the Power of Veto's moment: the medallion in front of the house, used (it swings and flashes) or not (it turns away)
+  if (st && st.medalHero) h += `<div class="vmedal ${st.medalHero} ${fresh ? 'fresh' : ''}">${MEDAL_SVG}<b>${st.medalHero === 'used' ? 'USED' : 'NOT USED'}</b></div>`;
   // the jury's keys: in the box (a count), then pulled one at a time onto the board
   if (S.kind === 'jury-vote' && (S.keysFor || []).length) {
     const keys = L.keys || [];
@@ -958,7 +979,8 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (fresh && st && st.scene && st.scene.slate && (S0.kind === 'houselife' || S0.kind === 'movein')) {
     h += `<div class="slate"><span>DAY ${esc(S.day)} · ${esc(st.scene.time || S.time || '')}</span><b>${esc(st.scene.room || S.room || '')}</b></div>`;
   }
-  if (L.votes && st && st.k === 'host' && !st.big) {
+  // (not at the front door: the count belongs to the living room)
+  if (L.votes && st && st.k === 'host' && !st.big && !S.exitPhase) {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;
   }
   h += hudHtml(S, st, prevSt, fresh);
@@ -969,5 +991,5 @@ export function stageHtml(screens, si, idx, fresh, o) {
     if (st.chip) h += `<div class="vchip">${st.chip.chip === 'choice' ? `<b>Houseguest's<br>choice</b>` : img(st.chip.chip)}<i>${esc(st.chip.drawer)} draws</i></div>`;
     if (cut) h += `<div class="flash"></div>`;
   }
-  return { html: h, cls: `stage ${S.lodge ? 'lodge' : ''} ${st && st.k === 'bb' ? 'bbspeaks' : ''} ${st && st.rule != null ? 'rulesup' : ''} ${S.bright && !(st && st.k === 'dr') ? 'lightset' : ''} ${S.nv && !(st && st.k === 'dr') ? 'nv' : ''} ${fresh && st && st.shake ? 'shake' : ''}`, cam: camNow, ledger: L };
+  return { html: h, cls: `stage ${S.exitPhase ? `exitcut ${S.exitPhase}` : ''} ${S.lodge ? 'lodge' : ''} ${st && st.k === 'bb' ? 'bbspeaks' : ''} ${st && st.rule != null ? 'rulesup' : ''} ${S.bright && !(st && st.k === 'dr') ? 'lightset' : ''} ${S.nv && !(st && st.k === 'dr') ? 'nv' : ''} ${fresh && st && st.shake ? 'shake' : ''}`, cam: camNow, ledger: L };
 }

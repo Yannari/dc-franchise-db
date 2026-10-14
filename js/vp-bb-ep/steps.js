@@ -172,6 +172,15 @@ function sceneMood(beat) {
 }
 
 // ── a competition, in its arena ────────────────────────────────────────
+// Overhaul part 5 (the user, 2026-10-13/14: "ceremonies with game feel, comps on the comp field"): a
+// weekly HOH or veto competition plays on the Reality Resort's comp field (vp-bb-ep/comp-field.js draws
+// it): everybody in it on the field, a leaderboard that fills as each result comes in, the badges the
+// engine gave (NO WORD, THREW IT, 5 PLACED), and the key or the medallion when it is won. Each arena
+// has its field; the Block Buster keeps its own set.
+const ARENA_PLATE = { 'arena-endurance': 'comp-stones', 'arena-course': 'comp-clearing', 'arena-puzzle': 'lawn-bleachers', 'arena-podiums': 'lawn-buttons',
+  'arena-stage': 'studio-arrival', 'arena-lanes': 'comp-target', 'arena-pool': 'pool-wide', 'arena-luck': 'lawn-bench' };
+// a competition's category, from its catalogue entry (the field animates by it)
+const CAT = c => String(c?.category || c?.type || 'physical').toLowerCase();
 function compScreen(act, ctx, kind) {
   const comp = act.competition || {};
   const arena = arenaFor(comp.id) || 'arena-course';
@@ -185,14 +194,19 @@ function compScreen(act, ctx, kind) {
   steps.push({ k: 'bb', t: isHoh ? `Houseguests, it is time for the Head of Household competition.` : `Houseguests, it is time for the Power of Veto competition.` });
   if (isHoh && act.outgoingHoh) steps.push({ k: 'beat', t: `${act.outgoingHoh}, the outgoing Head of Household, sits this one out.` });
   const desc = String(comp.desc || '').split(/(?<=\.)\s/)[0];
-  if (comp.name) steps.push({ k: 'beat', t: `${comp.name}. ${desc}` });
+  // the rules card opens on the competition's name: what they do, how it is lost, how it is won
+  if (comp.name) steps.push({ k: 'beat', t: `${comp.name}. ${desc}`, rules: true });
   // the competition's own play-by-play, as the engine wrote it
   // all of it when it is short; the opening and the ending when it is long (the ending is where
   // the winner is: cutting at ten left a winner who never appeared, and a leader who then lost)
-  const all = (comp.beats || []).map(b => stripTags(b.text)).filter(Boolean);
+  // each moment says who it is about: one person's result reveals their place on the board
+  const all = (comp.beats || []).map(b => ({ t: stripTags(b.text), b })).filter(x => x.t);
   const shown = all.length > 14 ? [...all.slice(0, 6), ...all.slice(-8)] : all;
-  for (const t of shown) steps.push({ k: 'beat', t });
-  const told = shown.slice(-4).some(t => t.includes(winner));
+  for (const { t, b } of shown) {
+    const who = (b.players || []).filter(Boolean);
+    steps.push(who.length === 1 ? { k: 'beat', t, reveal: who, badge: b.badgeText ? [b.badgeText, b.badgeClass || ''] : null } : { k: 'beat', t, ...(who.length ? { focus: who.slice(0, 4) } : {}) });
+  }
+  const told = shown.slice(-4).some(x => x.t.includes(winner));
   // what happened between them during it (a collision, a taunt, somebody helping a rival): the
   // engine wrote these and the screen never showed them (the user, 2026-10-06: "events related to comp")
   for (const e of (comp.events || []).slice(0, 4)) {
@@ -206,7 +220,7 @@ function compScreen(act, ctx, kind) {
   // standing" with one person left)
   if (!told && !(isHoh && act.secret) && !(!isHoh && act.orderOnly)) {
     const gone = [...early.slice().reverse(), ...finalists.slice(2).reverse()];
-    if (gone.length) steps.push({ k: 'beat', t: `${listOf(gone)} ${gone.length > 1 ? 'are' : 'is'} out of the running.` });
+    if (gone.length) steps.push({ k: 'beat', t: `${listOf(gone)} ${gone.length > 1 ? 'are' : 'is'} out of the running.`, reveal: gone });
     if (finalists.length >= 2) steps.push({ k: 'beat', t: `It comes down to ${finalists[0]} and ${finalists[1]}.`, tense: finalists.slice(0, 2) });
   }
   if (isHoh && act.secret) {
@@ -223,7 +237,7 @@ function compScreen(act, ctx, kind) {
     const threw = (act.results || []).filter(r => r.threw && r.name !== winner).map(r => r.name);
     const cwhy = [...(threw.length ? [`${listOf(threw)} threw it on purpose.`] : []),
       ...(!isHoh ? (ctx.nominees || []).filter(n => n !== winner).slice(0, 3).map(n => bondLine(winner, n, act)).filter(Boolean) : [])];
-    steps.push({ k: 'beat', t: isHoh ? `${winner} wins Head of Household!` : `${winner} wins the Power of Veto!`,
+    steps.push({ k: 'beat', t: isHoh ? `${winner} wins Head of Household!` : `${winner} wins the Power of Veto!`, win: winner, confetti: true,
       toast: [isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO', '#d99a10'], ...(isHoh ? { hoh: winner } : { veto: winner }), ...(cwhy.length ? { why: cwhy } : {}) });
   }
   const reaction = kind === 'final' ? null : isHoh ? act.script?.hoh : act.script?.veto;
@@ -235,10 +249,23 @@ function compScreen(act, ctx, kind) {
     id: isHoh ? 'bb-hoh-v' : 'bb-veto-v', kind: isHoh ? 'hoh' : 'veto', anchor: isHoh ? 'hoh' : 'veto', label: isHoh ? 'HOH' : 'Veto',
     // The competition's own themed board (js/vp-bb-sig: The Wall, Bowlerina, the final run...)
     // plays in this slot when the classic builder drew one; this screen is its record.
+    // The competition's own themed board (js/vp-bb-sig: The Wall, Bowlerina, the final run...) plays in
+    // this slot when the classic builder drew one (the user, 2026-10-14: "hoh stay classic, and veto, and
+    // blockbuster"); this screen is its record, and the comp-field version plays only when there is none
     legacy: isHoh ? /^bb-hoh(-\d+)?$/ : /^bb-veto(-\d+)?$/,
     set: arena, arena: true, room: comp.name || 'Competition', cam: 7,
     title: isHoh ? 'Head of Household' : 'Power of Veto', kicker: comp.name || 'Competition', sub: comp.name || '',
     day: ctx.day, time: ACT_TIME[kind] || '20:00', cast: finalists.map((p, i) => [p, xs[i]]), steps,
+    ...(kind !== 'final' && ARENA_PLATE[arena] ? {
+      set: 'comp', plate: ARENA_PLATE[arena], cast: [],
+      // endurance is a night out in the backyard; everything else is the afternoon
+      time: arena === 'arena-endurance' ? '9:40 PM' : '2:30 PM',
+      comp: { kind: isHoh ? 'hoh' : 'veto', name: comp.name || 'Competition', cat: CAT(comp), desc: String(comp.desc || ''), stats: comp.stats || null,
+        players: (comp.participants || act.participants || results).filter(Boolean), out: (comp.excluded || []).filter(Boolean),
+        scores: comp.scores || Object.fromEntries((act.results || []).map(r => [r.name, Number(r.score) || 0])),
+        placements: comp.placements || results, winner, secret: !!(isHoh && act.secret), orderOnly: !!(!isHoh && act.orderOnly),
+        threw: (act.results || []).filter(r => r.threw).map(r => r.name), outgoing: isHoh ? act.outgoingHoh || null : null },
+    } : {}),
   };
 }
 
@@ -430,7 +457,9 @@ function vetoMeetingScreen(act, ctx) {
   const after = (act.nominees || before).slice();
   if (act.used && act.saved) {
     steps.push({ k: 'say', by: holder, push: true, t: act.saved === holder ? `...to use the Power of Veto on myself.` : `...to use the Power of Veto on ${act.saved}.`,
-      toast: ['VETO USED', '#d99a10'], exit: null, why: vetoWhy({ ...act, replacementWhy: null }, holder, before, hoh) });
+      toast: ['VETO USED', '#d99a10'], exit: null, why: vetoWhy({ ...act, replacementWhy: null }, holder, before, hoh),
+      // the medallion swings, and the one it saves gets up out of the chair: it stays empty until the replacement
+      medalHero: 'used', ...(act.replacement && act.saved !== holder ? { seat: { [act.saved]: 'stand2' } } : {}) });
     const down = (act.duoDown || []).filter(Boolean);
     const up = (act.duoUp || []).filter(Boolean);
     if (down.length) {
@@ -452,7 +481,7 @@ function vetoMeetingScreen(act, ctx) {
       steps.push(...scriptSteps(act.script?.renom));
     }
   } else {
-    steps.push({ k: 'say', by: holder, push: true, t: `...not to use the Power of Veto, and to keep the nominations the same.`, toast: ['NOT USED', '#d99a10'], why: vetoWhy(act, holder, before, hoh) });
+    steps.push({ k: 'say', by: holder, push: true, t: `...not to use the Power of Veto, and to keep the nominations the same.`, toast: ['NOT USED', '#d99a10'], why: vetoWhy(act, holder, before, hoh), medalHero: 'not' });
   }
   // the room's reaction, at the meeting itself (the engine's moments: the replacement seated, a
   // nominee left up, a confrontation in front of everybody)
@@ -664,8 +693,9 @@ function evictionScreen(act, ctx, host) {
           steps.push(...op, ...proseSteps(cf.answer, [cf.accused, cf.challenger]), ...proseSteps(cf.close, [cf.challenger, cf.accused]));
         }
       }
-      steps.push({ k: 'beat', t: pickH([`The front door opens. The roar of the crowd floods into the house.`, `The door opens on lights and noise and cheering. ${evicted} doesn't look back.`, `${evicted} takes one last look at the house. The door opens. The crowd erupts.`], 'door'), door: true });
-      steps.push({ k: 'host', by: host, t: pickH([`${evicted}, come on out!`, `Come on out, ${evicted}!`], 'out') });
+      // the walk out is at the front door (the user's foyer): the doors open on the light and the noise
+      steps.push({ k: 'beat', t: pickH([`The front door opens. The roar of the crowd floods into the house.`, `The door opens on lights and noise and cheering. ${evicted} doesn't look back.`, `${evicted} takes one last look at the house. The door opens. The crowd erupts.`], 'door'), door: true, cut: { plate: 'foyer', who: evicted, phase: 'open' } });
+      steps.push({ k: 'host', by: host, t: pickH([`${evicted}, come on out!`, `Come on out, ${evicted}!`], 'out'), cut: { plate: 'foyer', who: evicted, phase: 'out' } });
       steps.push({ k: 'beat', t: `The front door closes. On the memory wall, ${evicted}'s portrait goes black and white.`, exit: evicted });
       // a final-two or final-three promise broken tonight, for the audience (the house cannot know)
       for (const d of ctx.row?.dealBreaks || []) {

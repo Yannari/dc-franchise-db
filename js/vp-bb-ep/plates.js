@@ -16,7 +16,7 @@ const hashOf = s => { let h = 7; for (const c of String(s)) h = (h * 31 + c.char
 const built = id => !!RESORT.have.default?.[id];
 /** Whether a plate has been built (the writer may name a spot before the user has made it). */
 export const plateBuilt = built;
-const STUDIO = new Set(['studio', 'studio-wide', 'finale', 'finale-jury']);
+const STUDIO = new Set(['studio', 'studio-wide', 'finale', 'finale-jury', 'comp']);
 const platesOf = set => Object.keys(RESORT.plates).filter(id => built(id) && (RESORT.plates[id].sets || []).includes(set));
 const WORDS = {};
 // how specifically the lines name a plate: the length of the longest of its words they say (0: not named)

@@ -57,6 +57,10 @@ export default {
       { competitive: "{group} has more votes than {other}. That's the whole decision. {target}." }),
     B('nb3.b4', "{group} wants you gone, {target}, and we're friends, and I'm still going with {group}, because {other} can't protect either of us.", { rel: FR, group: true, other: true },
       { warm: "I'm so sorry, {target}. {group} has the numbers tonight, and if I stand with you, we both go." }),
+    B('nb3.b5', "{group} and {other} both think they've got my vote tonight. {group} actually does, and {group} said {target}.", { rel: PL, group: true, other: true },
+      { anxious: "Somebody's going to be mad at me tomorrow no matter what I write. {group} said {target}, so it's {target}." }),
+    B('nb3.b6', "I've been nodding along with {other} all day. When it counts, I'm with {group}, and {group} wants {target}.", { rel: PL, group: true, other: true }),
+    B('nb3.b7', "Two groups pulling at me, {target}, and you're the one who ends up paying for it. I'm sorry.", { rel: FR, group: true, other: true }),
   ],
   'booth3.break': [
     B('nb3.x1', "{other} wants {wanted} gone tonight, and I'm not writing {wanted}. {target} is my name, and if they're angry, they're angry.", { rel: PL, other: true, wanted: true },
@@ -66,6 +70,10 @@ export default {
     B('nb3.x3', "{other} wanted {wanted}, but I've been waiting all game to write you, {target}, and I'm not wasting the chance.", { rel: ['enemy'], other: true, wanted: true },
       { cruel: "{other} can vote for whoever they want. I'm voting for the one I can't stand, so it's {target}." }),
     B('nb3.x4', "{other} wanted {wanted}, and I couldn't do it, so this goes to you, {target}, and I hate that it does because I like you.", { rel: FR, other: true, wanted: true }),
+    B('nb3.x5', "I know {other} is counting on me for {wanted}. They're going to count one short tonight, because I'm writing {target}.", { rel: PL, other: true, wanted: true },
+      { schemer: "{other} will find one vote missing from {wanted}, and they'll never work out whose it was. {target}." }),
+    B('nb3.x6', "I'm done doing what {other} tells me. Tonight I pick my own name, and it's {target}.", { rel: PL, other: true },
+      { tough: "{other} doesn't own my vote. {target}." }),
   ],
 
   // ── protecting somebody ──
@@ -78,6 +86,9 @@ export default {
       { cruel: "I get to save {keep} and send you home, {target}. That's my two favourite things." }),
     B('nb3.s4', "It's you or {keep} tonight, {target}, and you're my friend, but {keep} is more than that, so I'm sorry.", { rel: FR, keep: true },
       { emotional: "I've been dreading this all day, {target}. It's you or {keep}, and I can't lose {keep}." }),
+    B('nb3.s5', "If enough of us write {target}, nobody writes {keep}. That's the plan, and I'm sticking to it.", { rel: PL, keep: true },
+      { anxious: "Please let enough of us write {target}. Please. I can't lose {keep} tonight." }),
+    B('nb3.s6', "I'm doing this for {keep}, {target}. Nothing you did. I just can't let it be {keep}.", { rel: PL, keep: true }),
   ],
 
   // ── costing the team ──
@@ -112,6 +123,10 @@ export default {
       { warm: "I'll cheer for you from wherever I end up, {target}, but I can't let you win this, so I'm writing you down.", schemer: "The best friend I've got out here is also the biggest threat, {target}, and you know I'm not letting that slide." }),
     B('nb3.t8', "You're dangerous, {target}, and I can't stand you, so for once strategy and how I feel agree.", { rel: ['enemy'] },
       { dry: "Strategy says {target}, my gut says {target}, and for once they get along, so it's {target}." }),
+    B('nb3.t9', "{target} is the person I'd least like to see at the end with me. That's the whole reason, and it's a good one.", { rel: PL },
+      { blunt: "I don't beat {target} at the end. So {target} doesn't get to the end." }),
+    B('nb3.t10', "Everybody keeps saying they'll deal with {target} later. Later is how {target} wins, so I'm dealing with it now.", { rel: PL },
+      { anxious: "If we keep waiting on {target}, we're going to wait right up until {target} wins." }),
   ],
 
   // ── personal ──
@@ -152,6 +167,23 @@ export default {
       { warm: "I tried to talk {group} out of you, {target}. I'm still writing your name, and I'm sorry." }),
     B('nb3.p7', "You're one of the people I trust most out here, {target}, and I'm still writing your name, because I can't be the only one who doesn't.", { rel: FR, most: true },
       { emotional: "Everybody's voting for you, {target}, and if I don't, they'll come for me next. I'm sorry, I'm so sorry." }),
+    // (more of them: every voter on a plan says one of these every vote, and seven ran out in a season)
+    B('nb3.p8', "We all sat down after the challenge and {group} said {target}. Nobody argued, so I'm not going to start now.", { rel: PL, group: true },
+      { anxious: "{group} said {target}, and I'm sticking with {group}, because I really don't want to find out what happens if I don't.", dry: "{group} had a meeting. I went to the meeting. The meeting said {target}." }),
+    B('nb3.p9', "This is what {group} is for. One name, all of us, no surprises. Tonight the name is {target}.", { rel: PL, group: true },
+      { tough: "{group} votes together. That's the deal, and I keep my deals. {target}.", goofy: "Team {group}, reporting for duty. The duty is {target}." }),
+    B('nb3.p10', "{leader} told me the name before dinner. I asked one question, I got a good answer, and that was that. {target}.", { rel: PL, leader: true },
+      { schemer: "{leader} thinks this is {leader}'s plan. It works for me too, so I'm not going to argue. {target}." }),
+    B('nb3.p11', "I'm not the one running this vote. {leader} is, and I'm fine with that, so it's {target}.", { rel: PL, leader: true },
+      { dry: "{leader} does the planning. I do the writing. {target}.", earnest: "I told {leader} I'd be there tonight, and I'm there. {target}." }),
+    B('nb3.p12', "I heard {target} from about four different people today. I don't think this one's going to surprise anybody except {target}.", { rel: PL, most: true },
+      { anxious: "Everybody I talked to said {target}, so if I write anything else, I'm next. {target}." }),
+    B('nb3.p13', "The whole camp landed on {target}. I could be the one vote that sticks out, but I'd like to still be here tomorrow.", { rel: PL, most: true },
+      { calm: "Everybody's going one way tonight, and I'm going with them. {target}." }),
+    B('nb3.p14', "{group} wanted {target}, and I didn't have to be asked twice.", { rel: ['enemy'], group: true },
+      { loud: "{group} picked {target}! Best news I've had all week!" }),
+    B('nb3.p15', "{leader} picked you, {target}, and I said okay, and I wish I hadn't, and I'm still writing it.", { rel: FR, leader: true },
+      { emotional: "I said yes to {leader} before I really thought about it, {target}, and now I can't take it back. I'm sorry." }),
   ],
 
   // ── the strategy the engine played, in the voter's words ──
@@ -234,5 +266,17 @@ export default {
       { cruel: "Bye, {target}. I'm not going to miss a single thing about you.", loud: "I have waited SO long to write your name, {target}, and I am writing it BIG!" }),
     B('nb3.a7', "{target} is the name that makes the most sense tonight, and I've thought about it all day, so it's {target}.", { rel: PL },
       { dry: "I thought about this all day, and the answer was {target} the whole time.", anxious: "I've changed my mind four times today, and I'm landing on {target}, and I'm not changing it again." }),
+    B('nb3.a10', "I went back and forth all day, and every single time, I ended up at {target}. So it's {target}.", { rel: PL },
+      { goofy: "I tried to talk myself out of {target} three times today, and I lost every argument with myself." }),
+    B('nb3.a11', "I don't have a problem with you, {target}. It just has to be somebody tonight, and I'd rather it wasn't me.", { rel: PL },
+      { blunt: "It's you or me, {target}. I pick me." }),
+    B('nb3.a12', "This is the hardest name I've written out here, {target}. I'll tell you why when it's over.", { rel: FR },
+      { quiet: "Sorry, {target}." }),
+    B('nb3.a13', "Honestly, {target}, this one's just for me. I've earned it.", { rel: ['enemy'] },
+      { dry: "Some votes are strategy, {target}. This one's a hobby." }),
+    B('nb3.a14', "It's {target}. I'm not going to make a speech about it.", { rel: PL },
+      { loud: "{target}! Done! Next!", quiet: "{target}." }),
+    B('nb3.a15', "I like you fine, {target}. Fine isn't enough to keep you over me.", { rel: PL },
+      { warm: "You've been nice to me, {target}. Nice just doesn't win votes." }),
   ],
 };

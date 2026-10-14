@@ -51,6 +51,24 @@ export default {
       { by: 'c', say: "Well, for what it's worth, I'm on your side." },
       { by: 'd', opt: true, conf: "{c} ran straight to {b}, and {a} saw it. That's two sides now, whether anybody wanted them or not." },
     ] },
+    { id: 'npb.d7', when: { third: true }, turns: [
+      { by: 'c', say: "Okay, {a}, you've said it. Everybody heard. You can stop now." },
+      { by: 'a', say: "I'll stop when I'm done." },
+      { by: 'c', say: "You're done." },
+      { by: 'c', conf: "I don't usually get in the middle of things. {a} just kept going, and {b} was standing there taking it." },
+    ] },
+    { id: 'npb.d8', when: { third: true }, turns: [
+      { by: 'c', say: "Hey. {b}, come sit with me. Leave it." },
+      { by: 'a', say: "Oh, so you're on {b.posAdj} side now?" },
+      { by: 'c', say: "I'm on the side of everybody getting some peace and quiet. Come on, {b}." },
+      { by: 'b', conf: "{c} didn't make a speech. {c} just got me out of there, and that was exactly what I needed." },
+    ] },
+    { id: 'npb.d9', when: { third: true }, turns: [
+      { by: 'c', say: "Would you talk to me like that, {a}? No? Then don't talk to {b} like that." },
+      { by: 'a', say: "This isn't about you." },
+      { by: 'c', say: "It is now." },
+      { by: 'c', conf: "{a} picks the people who won't fight back. I fight back." },
+    ] },
   ],
   'public.react.excuse': [
     // (more of them, read 2026-10-14: one or two versions aired in five or six episodes of one season)

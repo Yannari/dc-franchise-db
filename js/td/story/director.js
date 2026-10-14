@@ -1776,6 +1776,16 @@ export function airTdEpisode(ep) {
       // shirt he left behind", word for word (read 2026-10-14)
       { let seen = false;
         for (const ev of events) if (ev && ev.aired == null && /^fallout\.mourn/.test(ev.scene?.kind || '')) { if (seen) ev.aired = 'covered'; seen = true; } }
+      // ...and two people who fought today do not also share a warm moment today (read 2026-10-14: Mike and Anne Maria
+      // had a grudge over the water, then "the only thing getting me through is Mike", then split the last bite "like a
+      // vow", then Mike voted her out for "what she said to me"): the warm one stays off the air. Making up is its own
+      // story (sorry, truce, thaw) and airs. Decided once, on the morning, over the whole day.
+      if (phase === 'pre') { const pk = (x, y) => [x, y].sort().join('|');
+        const day = ['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph)).filter(Boolean);
+        const HOT = /^(drama\.|blame|clash|cross\.rival|witness\.after|fallout\.found|deal\.(broken|double|end)|caught)/;
+        const WARM = /^friend\.(struggle|meal|bond|joke|secret|thanks|lift|comfort|teach|celebrate|open|rideordie|solidarity|mentor)/;
+        const fought = new Set(day.filter(ev => HOT.test(ev.scene?.kind || '') && ev.scene?.who?.a && ev.scene?.who?.b).map(ev => pk(ev.scene.who.a, ev.scene.who.b)));
+        for (const ev of day) if (ev.aired == null && WARM.test(ev.scene?.kind || '') && ev.scene?.who?.a && ev.scene?.who?.b && fought.has(pk(ev.scene.who.a, ev.scene.who.b))) ev.aired = 'covered'; }
       // ...and one romance a person a day: a flirt, a spark or a moment with one person, not three (read 2026-10-14: Mike
       // kissed Ella in secret, flirted with Sky and had a moment with Jasmine, all after one challenge). Decided once, on
       // the morning, over the whole day in its order; a couple's own scenes and an affair's steps are the story and stay

@@ -54,6 +54,29 @@ export default {
       { by: 'b', conf: "{a} doesn't trust anybody now, not even me, and I'm one of the only people actually writing {wrote}.", when: { bVoted: 'other', bWrote: true } },
       { by: 'b', conf: "{a} doesn't trust anybody now, not even me. And I'm not writing {a}, but I'm not writing {wrote} either.", when: { bVoted: 'other', bWrote: false } },
     ] },
+    { id: 'nvt.s4', turns: [
+      { by: 'a', say: "Be straight with me. Have you heard my name today?" },
+      { by: 'b', say: "Not from anybody I'd believe." },
+      { by: 'a', say: "That's not a no." },
+      { by: 'b', say: "It's not a yes, either." },
+      { by: 'a', say: "Right now I'll take anything that isn't a yes." },
+      { by: 'a', conf: "{b} wouldn't look at me for very long. I'm going to go ahead and assume the worst." },
+    ] },
+    { id: 'nvt.s5', turns: [
+      { by: 'a', say: "I need a number from you. How many people do you think are on me?" },
+      { by: 'b', say: "Why would you ask me that?" },
+      { by: 'a', say: "Because you'd know, and you'd tell me." },
+      { by: 'b', say: "I don't know a number. I really don't." },
+      { by: 'a', conf: "{b} said 'I don't know' way too fast. Everybody says it way too fast today." },
+    ] },
+    { id: 'nvt.s6', turns: [
+      { beat: "{a} has asked three people the same question in the last hour. {b} is the fourth." },
+      { by: 'a', say: "Am I in trouble tonight?" },
+      { by: 'b', say: "You know you've asked everybody that, right?" },
+      { by: 'a', say: "Because nobody's answered it." },
+      { by: 'b', say: "Maybe that's your answer, then." },
+      { by: 'a', conf: "Four people, four different ways of not answering. I'm going to spend the rest of the day finding a name that isn't mine." },
+    ] },
   ],
   'vt2.safe': [
     { id: 'nvt.f1', turns: [

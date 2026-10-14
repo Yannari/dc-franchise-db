@@ -79,6 +79,10 @@ export default {
     B('nb2.w4', "If {leader} is wrong about this, I'm going to hear about it all week, so it's {target}.", null, { dry: "If this goes wrong, I'm blaming {leader}. Loudly, so it's {target}." }),
     B('nb2.w5', "{target}, we've been in it together, and I'm writing your name because {leader} asked me to. I feel sick.", { ally: true }, { cruel: "We were in an alliance, {target}, and now we're really not." }),
     B('nb2.w6', "{target}. {leader} owes me for this one.", null, { schemer: "{target}. And now {leader} owes me, which is worth more than this vote." }),
+    B('nb2.w7', "{leader} told me the name at lunch, and I said fine. {target}.", null, { anxious: "{leader} told me the name at lunch, and I've been nervous ever since. {target}." }),
+    B('nb2.w8', "I'm with {leader} tonight, and {leader} wants {target} gone. So, {target}.", null, { loud: "I'm with {leader}! {leader} says {target}! Done!" }),
+    B('nb2.w9', "{leader} picked the name, {target}, not me. I'm just the one who has to write it down.", { band: ['friends'] }),
+    B('nb2.w10', "{leader} has been right more than wrong out here. {target}.", null, { dry: "{leader}'s track record is better than mine, so it's {target}." }),
   ],
   'booth2.with.coming': [
     B('nb2.wc1', "{leader} told me {target}'s side was coming for {mark}. That's enough for me, so it's {target}.", { markMe: false, markLeader: false }),
@@ -96,6 +100,10 @@ export default {
   'booth2.with.pair': [
     B('nb2.wp1', "{leader} said if we don't split up {target} and {partner} now, we never will. I believe it, so it's {target}."),
     B('nb2.wp2', "{target} and {partner} are cute together. They're also two votes, and I can only fix one tonight. {target}.", null, { goofy: "{target}, I'm sorry to be the one who breaks up the happy couple. Okay, I'm a little bit not sorry." }),
+    B('nb2.wp3', "{leader} wants {target} and {partner} split up before it's too late, and I've seen how they vote, so it's {target}."),
+    B('nb2.wp4', "{leader} picked {target} over {partner}, because {partner} on their own is just one vote. That makes sense to me. {target}."),
+    B('nb2.wp5', "Every time {target} votes, {partner} votes the same. {leader} wants that over tonight, so it's {target}.", null, { dry: "{target} and {partner} have voted the same way every single time. Tonight they don't get the chance." }),
+    B('nb2.wp6', "I actually like {target} and {partner} together. {leader} says that's exactly the problem, so it's {target}.", { band: ['friends', 'neutral'] }),
   ],
   'booth2.with.group': [
     B('nb2.wg1', "{leader} said {theirs} has the numbers if we don't act tonight. So we're acting tonight, and it's {target}."),
@@ -103,6 +111,10 @@ export default {
   'booth2.with.grudge': [
     B('nb2.wr1', "{leader} really doesn't like {target}. Honestly? Me neither, so it's {target}.", { band: ['cold', 'enemies'] }),
     B('nb2.wr2', "This is {leader}'s vendetta, not mine. But I'm in {leader}'s corner, so it's {target}.", { band: ['neutral', 'friends'] }),
+    B('nb2.wr3', "{leader} asked me if I'd write {target}, and I said I'd been waiting for somebody to ask.", { band: ['cold', 'enemies'] }),
+    B('nb2.wr4', "I don't have anything against {target}. {leader} does, and {leader} has always had my back, so it's {target}.", { band: ['neutral'] }),
+    B('nb2.wr5', "{leader} and {target} have been at each other for days. Tonight {leader} wins that one, and I'm helping. {target}."),
+    B('nb2.wr6', "{target}, I like you. {leader} doesn't, and {leader} is my person out here. I'm sorry.", { band: ['friends'] }),
   ],
   'booth2.with.threat': [
     B('nb2.wt1', "{leader} said if we don't get {target} now, {target} wins. I looked around, and {leader}'s right, so it's {target}."),
@@ -110,9 +122,12 @@ export default {
   ],
   'booth2.with.outsider': [
     B('nb2.wo1', "{leader} said nobody's going to fight for {target}. I hate that {leader} is right about that, so it's {target}."),
+    B('nb2.wo2', "{leader} pointed out that {target} doesn't really have anybody out here. Once {leader} said it, I couldn't stop seeing it. {target}."),
   ],
   'booth2.with.numbers': [
     B('nb2.wn1', "{leader} said it's the safest vote for all of us, and I like being safe, so it's {target}."),
+    B('nb2.wn2', "{leader} said {target} is the name nobody fights about. Nobody fought about it, so it's {target}."),
+    B('nb2.wn3', "{leader} counted, and {target} is where the votes are. I'm not going to be the one who throws it away. {target}."),
   ],
 
   // ── the swing ──

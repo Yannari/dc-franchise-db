@@ -16,6 +16,8 @@ export default {
     { id: 'npl.o1', turns: [{ beat: "{a} waits until {b} is alone {here}, then sits down right next to {b.obj}." }, { by: 'a', say: "Got a minute? It's about tonight.", v: { bossy: "Walk with me. We need to talk about tonight.", anxious: "Hey, um, can we talk about tonight really quickly?", loud: "Hey, you, come here, we need to talk about tonight!", dry: "So, tonight. Let's just get it over with." } }] },
     { id: 'npl.o2', turns: [{ by: 'a', say: "Okay, nobody's around. Let's figure out tonight.", v: { schemer: "Perfect, everybody's busy. Let's figure out tonight before they do.", goofy: "Okay, secret meeting, so act natural, and stop looking around like that!" } }] },
     { id: 'npl.o3', turns: [{ by: 'b', say: "You've been staring at me for like ten minutes. Just say it.", v: { calm: "You've got the look. Go on, who is it?" } }, { by: 'a', say: "Fine. But keep your voice down." }] },
+    { id: 'npl.o4', turns: [{ by: 'a', say: "You got a second? I want to talk about tonight before everybody else does.", v: { anxious: "Can I steal you for a second? It's about tonight, and I'm kind of stressing.", tough: "We need to talk about tonight. Now's good." } }] },
+    { id: 'npl.o5', turns: [{ by: 'b', say: "Okay, you've been weird all afternoon. What's going on?" }, { by: 'a', say: "Tonight's going on. Sit down." }] },
   ],
   'vp.open.group': [
     { id: 'npl.og1', turns: [{ beat: "{a} rounds up {b}, {c} and the others and walks them away from camp." }, { by: 'a', say: "Okay, everybody close. We don't have long.", v: { bossy: "Circle up. Five minutes, then we split up so nobody notices.", anxious: "Okay, okay, everybody come closer, I don't want anybody hearing this.", loud: "HUDDLE! I mean, huddle, but quietly." } }] },
@@ -65,6 +67,16 @@ export default {
       { by: 'a', say: "{target} and {partner} are basically one person at this point. Wherever one goes, the other one goes.", v: { dry: "Have you ever seen {target} without {partner}? Because I haven't, not once.", goofy: "{target} and {partner} are so attached I think they share a toothbrush." } },
       { by: 'b', say: "So you want to split them up." },
       { by: 'a', say: "I want to split them up before they're two votes we can't stop. {target} is the one we can get." },
+    ] },
+    { id: 'npl.cp2', turns: [
+      { by: 'a', say: "Every vote so far, {target} and {partner} have written the same name. Every single one.", v: { dry: "{target} and {partner} have voted the same way every time. I checked. Twice." } },
+      { by: 'b', say: "So which one?" },
+      { by: 'a', say: "{target}. {partner} on their own is just one more vote, and one vote we can handle." },
+    ] },
+    { id: 'npl.cp3', turns: [
+      { by: 'a', say: "If {target} and {partner} make it to the end together, we're done. One of them has to go, and soon." },
+      { by: 'b', say: "And it's {target}?" },
+      { by: 'a', say: "It's {target}. {partner} won't see it coming, and that's half the point." },
     ] },
   ],
   'vp.case.group': [
@@ -132,17 +144,24 @@ export default {
   'vp.push.alt': [
     { id: 'npl.pa1', turns: [{ by: 'b', say: "Why not {alt}? I'd honestly rather it was {alt}.", v: { blunt: "I want {alt} out. Not {target}.", goofy: "Counteroffer: {alt}. Final offer: also {alt}." } }] },
     { id: 'npl.pa2', turns: [{ by: 'b', say: "I'll do it, but just so you know, {alt} is the one I really don't trust." }] },
+    { id: 'npl.pa3', turns: [{ by: 'b', say: "Are we sure it shouldn't be {alt}? I keep thinking about {alt}." }] },
   ],
   'vp.answer.alt': [
     { id: 'npl.aa1', turns: [{ by: 'a', say: "{alt} is next, I promise you. But tonight we only have the votes for {target}.", v: { bossy: "{alt} can wait. {target} can't.", warm: "I hear you, and I'm not saying no to {alt}. I'm saying not tonight." } }] },
     { id: 'npl.aa2', turns: [{ by: 'a', say: "If we go after {alt} tonight, half of these people walk. {target} keeps everybody together." }] },
+    { id: 'npl.aa3', turns: [{ by: 'a', say: "I know. And we'll get to {alt}. But if we split tonight, neither of them goes." }] },
+    { id: 'npl.aa4', turns: [{ by: 'a', say: "{alt} doesn't have a plan against us yet. {target} does. That's the difference.", v: { blunt: "{target} first. {alt} after. That's the order." } }] },
   ],
   'vp.push.sure': [
     { id: 'npl.ps1', turns: [{ by: 'b', say: "Okay. Yeah, I can do {target}.", v: { quiet: "...Okay.", loud: "Done, easy, love it!", dry: "Sure. I didn't have plans tonight anyway." } }] },
     { id: 'npl.ps2', turns: [{ by: 'b', say: "Honestly, I was going to say {target} if you didn't." }] },
+    { id: 'npl.ps3', turns: [{ by: 'b', say: "{target}. Okay. Yeah, that makes sense." }] },
+    { id: 'npl.ps4', turns: [{ by: 'b', say: "Fine by me. {target} wasn't going to take me anywhere anyway." }] },
   ],
   'vp.answer.sure': [
     { id: 'npl.as1', turns: [{ by: 'a', say: "Good. Then keep it quiet and act normal.", v: { goofy: "Great, now act normal. No, not like that, less normal." } }] },
+    { id: 'npl.as2', turns: [{ by: 'a', say: "Good. Don't tell anybody else. I mean it.", v: { anxious: "Okay, good. Please don't tell anybody. Please." } }] },
+    { id: 'npl.as3', turns: [{ by: 'a', say: "Great. Then we never had this conversation.", v: { dry: "Wonderful. This conversation never happened." } }] },
   ],
 
   // ── the count ──

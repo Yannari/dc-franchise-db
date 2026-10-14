@@ -18,7 +18,7 @@ export default {
       { by: 'b', say: "I know. I thought of that the second your name came out of the urn.", v: { anxious: "I know. I've been thinking about it since the last vote was read and I feel sick." } },
       { by: 'a', say: "Then you have to be smarter than I was. Starting tomorrow morning." },
       { by: 'b', say: "I will. I'm going to find out who did this." },
-      { by: 'h', say: "Let's wrap it up, the boat is not getting any younger." },
+      { by: 'h', say: "Let's wrap it up, we're on a schedule here." },
     ] },
     { id: 'nx2.b2', when: { bVoted: 'other', blame: true }, turns: [
       { by: 'b', say: "{a}, I'm so sorry. I didn't see it coming." },
@@ -76,7 +76,7 @@ export default {
       { by: 'a', say: "I know you didn't. You were the only one I never worried about." },
       { by: 'b', say: "What do I do now?" },
       { by: 'a', say: "You find a new person, fast. Don't be alone in there, not even for one day." },
-      { by: 'h', say: "Five more seconds of feelings, and then the boat leaves with or without you." },
+      { by: 'h', say: "Five more seconds of feelings, and then you're leaving, goodbye or no goodbye." },
     ] },
     { id: 'nx2.e2', when: { blame: true }, turns: [
       { by: 'a', say: "Just so you know, it was {blame}. I heard about it this afternoon." },
@@ -116,7 +116,7 @@ export default {
       { by: 'b', say: "What I did was vote. That's the whole game." },
       { by: 'a', say: "What you did was lie to me for days." },
       { by: 'b', say: "Then I guess you should have caught me sooner.", v: { warm: "I know, and I'm sorry. I really am.", cruel: "And you fell for every single one of them." } },
-      { by: 'h', say: "Okay! That's enough of that. {a}, the boat. Now." },
+      { by: 'h', say: "Okay! That's enough of that. {a}, time to go. Now." },
     ] },
     { id: 'nx2.k2', turns: [
       { by: 'a', say: "Hey, {b}. One more thing." },

@@ -126,6 +126,18 @@ export default {
       { by: 'b', say: "Unbelievable." },
       { by: 'b', conf: "Fine. Now I know {c} is with {a}. Good to know before the vote." },
     ] },
+    { id: 'nwt.j4', turns: [
+      { by: 'c', say: "Sorry, {b}, but {a} kind of has a point." },
+      { by: 'b', say: "Wow. Thanks a lot, {c}, that really helps." },
+      { by: 'c', conf: "I'm not trying to pile on. {a} just said what half of us were thinking." },
+    ] },
+    { id: 'nwt.j5', turns: [
+      { beat: "{c} nods along while {a} talks." },
+      { by: 'b', say: "Are you seriously nodding right now, {c}?" },
+      { by: 'c', say: "I'm not saying anything, I'm just listening." },
+      { by: 'b', say: "You don't have to say anything, {c}. I can see you." },
+      { by: 'b', conf: "{c} didn't say a word. {c} didn't have to. I saw which way {c}'s head was going." },
+    ] },
   ],
   'witness.out.any': [
     { id: 'nwt.o1', turns: [
@@ -198,6 +210,20 @@ export default {
       { by: 'b', say: "I didn't pick anybody. I told you what I thought, because I care about you." },
       { by: 'a', say: "Funny way of showing it." },
       { by: 'a', conf: "{b} keeps saying it was because {b} cares. Maybe. But {other} heard every word of it, and that's what I can't get past." },
+    ] },
+    { id: 'nwa.t4', turns: [
+      { by: 'b', say: "You haven't said two words to me all morning." },
+      { by: 'a', say: "I'm just tired, that's all." },
+      { by: 'b', say: "This is about {other}, isn't it?" },
+      { by: 'a', say: "You stood there and agreed with {other}. In front of everybody. Yeah, it's about that." },
+      { by: 'b', conf: "I said what I thought, and now {a} is acting like I pushed {a.obj} off a cliff. I'm not taking it back." },
+    ] },
+    { id: 'nwa.t5', turns: [
+      { by: 'a', say: "Just so you know, I'm still annoyed about yesterday." },
+      { by: 'b', say: "I figured. You haven't looked at me since we woke up." },
+      { by: 'a', say: "I'm not asking you to say sorry. I just want you to know I noticed." },
+      { by: 'b', say: "Okay. That's fair, and I'm sorry it came out the way it did." },
+      { by: 'a', conf: "I'm not going to make a big thing of it. I'm just going to remember it, and that's worse." },
     ] },
   ],
   'witness.after.out.any': [

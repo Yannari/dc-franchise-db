@@ -34,6 +34,15 @@ export default {
       { beat: "{c} looks up from the other side of camp, watching {a}, and says nothing. Yet." },
       { by: 'a', conf: "Somebody had to say it. {b} cost us {chal}, and I'm not pretending otherwise to be nice." },
     ] },
+    { id: 'ndf.s3', place: 'public', turns: [
+      { by: 'a', say: "Can we be honest about {chal}? We lost it right where {b} was." },
+      { by: 'b', say: "Everybody had a bad round." },
+      { by: 'a', say: "Not everybody was the reason we lost." },
+      { by: 'd', opt: true, say: "It did look pretty bad." },
+      { by: 'b', say: "I know how it looked. I was there." },
+      { beat: "{c} is close enough to hear all of it." },
+      { by: 'b', conf: "Nobody needed to tell me I messed up at {chal}. {a} did it anyway, as loudly as possible." },
+    ] },
   ],
   'story.defend.setup.votes': [
     { id: 'ndf.v1', place: 'public', turns: [
@@ -96,6 +105,17 @@ export default {
       { by: 'b', say: "That's not true, and you know it isn't." },
       { beat: "{c} has stopped working to listen, and is looking at {a}." },
       { by: 'a', conf: "{b} should be doing more. If nobody else is going to say it, I will." },
+    ] },
+    { id: 'ndf.l3', place: 'public', turns: [
+      { beat: "{a} is handing out jobs {here}, and skips {b} completely." },
+      { by: 'b', say: "Do you want me to do something?" },
+      { by: 'a', say: "No, it's fine. We'll do it. Like always." },
+      { by: 'b', say: "What's that supposed to mean?" },
+      { by: 'a', say: "It means the rest of us keep doing your share, and we're tired of it." },
+      { by: 'd', opt: true, say: "It's kind of true." },
+      { by: 'b', say: "That's not fair, and you know it." },
+      { beat: "{c} looks over, then looks away." },
+      { by: 'b', conf: "I've done my share. {a} just doesn't count anything I do." },
     ] },
   ],
 };

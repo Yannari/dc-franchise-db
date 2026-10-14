@@ -35,5 +35,8 @@ export default {
     { id: 'nnt.f2', when: { voice: ['dry', 'calm', 'schemer'] }, turns: [{ by: 'a', conf: "Nothing tells you more about people than watching them fight. I learned more in two minutes than in all the small talk put together." }] },
     { id: 'nnt.f3', when: { voice: ['warm', 'anxious', 'earnest', 'emotional'] }, turns: [{ by: 'a', conf: "I hate it when it gets like that. My heart was going so fast. I just want everybody to be okay, and I know that's not how this game works." }] },
     { id: 'nnt.f4', when: { voice: ['goofy', 'chaotic', 'loud'] }, turns: [{ by: 'a', conf: "Honestly? Best entertainment we've had all week. I'm not proud of it. I'd watch it again, though." }] },
+    { id: 'nnt.f11', turns: [{ by: 'a', conf: "I'm staying out of it. Whoever wins that fight, I want to be friends with them after." }] },
+    { id: 'nnt.f12', when: { voice: ['warm', 'anxious', 'earnest', 'emotional'] }, turns: [{ by: 'a', conf: "I wanted to say something, I really did. I just froze. I hate that I froze." }] },
+    { id: 'nnt.f13', when: { voice: ['tough', 'competitive', 'blunt', 'bossy'] }, turns: [{ by: 'a', conf: "If they want to waste their energy on each other, fine. More for me at the challenge." }] },
   ],
 };

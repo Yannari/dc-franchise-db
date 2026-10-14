@@ -69,6 +69,23 @@ export default {
       { by: 'a', say: "I know I didn't. I wanted to." },
       { by: 'b', conf: "{a} went and stood up to {c} for me when I wasn't even there. Nobody's done that for me in this game, or honestly, out of it." },
     ] },
+    { id: 'nl7.q1', turns: [
+      { by: 'a', say: "Just so you know, {c} won't be saying that about you anymore." },
+      { by: 'b', say: "Saying what?" },
+      { by: 'a', say: "That you {charge}. I had a word with {c}." },
+      { by: 'b', say: "You had a word? With {c}?" },
+      { by: 'a', say: "A quiet one. It's handled." },
+      { by: 'b', conf: "I didn't even know {c} was saying it. {a} found out, sorted it, and then told me like it was nothing." },
+    ] },
+    { id: 'nl7.q2', turns: [
+      { by: 'b', say: "Why is {c} being so weird with me today?" },
+      { by: 'a', say: "Probably because I told {c} to stop saying you {charge}." },
+      { by: 'b', say: "{c} was saying that about me?" },
+      { by: 'a', say: "Not anymore, {c} isn't." },
+      { by: 'b', say: "You didn't have to do that for me." },
+      { by: 'a', say: "I know I didn't. I wanted to." },
+      { by: 'b', conf: "{a} has been looking out for me this whole time, and I didn't even notice. I'm noticing now." },
+    ] },
   ],
   // surprise: a and b barely talk, and a stood up to c anyway
   'long.friend.defend.surprise': [
@@ -80,6 +97,20 @@ export default {
       { by: 'b', say: "{c} is going to be mad at you now, you know that?" },
       { by: 'a', say: "{c} was already mad at somebody. Now it's me instead of you. I can handle it." },
       { by: 'b', conf: "Out of everybody, {a} was the last person I expected to stand up to {c} for me. Now I don't know what to do with that." },
+    ] },
+    { id: 'nl7.s1', turns: [
+      { by: 'b', say: "Can I ask why you did that? With {c}, earlier." },
+      { by: 'a', say: "Somebody had to say something." },
+      { by: 'b', say: "But why you? We've barely said ten words to each other." },
+      { by: 'a', say: "I didn't like how {c} was talking to you. That's all it was." },
+      { by: 'b', conf: "I didn't think {a} even knew my name. Now {a} has stood up to {c} for me. I owe {a} one, at least." },
+    ] },
+    { id: 'nl7.s2', turns: [
+      { by: 'b', say: "Thank you. For the thing with {c}." },
+      { by: 'a', say: "Don't make it weird." },
+      { by: 'b', say: "I'm not making it weird. I just didn't expect it, not from you." },
+      { by: 'a', say: "Yeah, well. {c} was being a jerk about it." },
+      { by: 'b', conf: "Out of everybody who heard {c} say I {charge}, the one who said something was {a}. I'm still figuring out what to do with that." },
     ] },
   ],
   // a starts a celebration; b and c join in

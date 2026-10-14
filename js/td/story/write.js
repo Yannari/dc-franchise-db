@@ -57,13 +57,14 @@ function storySeen() {
 
 // what each venue does not have (places.js PLACES): Wawanakwa sleeps in cabins on a lake, the survival
 // island has a beach and a shelter and no mess hall, the carnival camp has tents by a lake, the film
-// lot is trailers and sets, the jet is the jet (OUTDOOR below)
+// lot is trailers and sets, the jet is the jet (OUTDOOR below); only the camp and the island come and go by boat
+// (read 2026-10-14: "the boat is not getting any younger" on the film lot and the jet)
 const VENUE_NO = {
   'hosted-camp': /\b(shelter|jungle|coconuts?|ocean|the sea|seaweed|tide)\b/i,
   'survival-island': /\b(cabins?|mess hall|dock|boathouse|the lake|lake shore|bunks?)\b/i,
-  carnival: /\b(cabins?|mess hall|dock|boathouse|jungle|coconuts?|ocean|the sea|seaweed|tide)\b/i,
-  'film-lot': /\b(shelter|cabins?|mess hall|dock|boathouse|lake|beach|shore(line)?|ocean|the sea|sand|seaweed|tide|crabs?|shells?|jungle|coconuts?|fire( pit)?|campfire|firewood|fishing|tent|woods|forest|water pump|the well)\b/i,
-  'world-tour': /\b(mess hall|crabs?|shells?|seaweed|tide|coconuts?|water pump|the well|bunks?)\b/i,
+  carnival: /\b(boats?|cabins?|mess hall|dock|boathouse|jungle|coconuts?|ocean|the sea|seaweed|tide)\b/i,
+  'film-lot': /\b(boats?|shelter|cabins?|mess hall|dock|boathouse|lake|beach|shore(line)?|ocean|the sea|sand|seaweed|tide|crabs?|shells?|jungle|coconuts?|fire( pit)?|campfire|firewood|fishing|tent|woods|forest|water pump|the well)\b/i,
+  'world-tour': /\b(boats?|dock|mess hall|crabs?|shells?|seaweed|tide|coconuts?|water pump|the well|bunks?)\b/i,
 };
 const OUTDOOR = /\b(fire( pit)?|firewood|campfire|fishing|fish|lake|water's edge|the water|sand|beach|dock|log|shore|tent|shelter|woods?|forest|stones?|pebbles?|bush(es)?|sun|shade|rocks?|trees?|river|waterfall|trail|caves?|shoreline|across camp|around camp|side of camp)\b/i;
 // Time logic (the user, 2026-10-08: day one had "it's always a joke with you", a challenge brag

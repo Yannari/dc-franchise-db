@@ -91,7 +91,7 @@ export default {
     { id: 'npm.pa2', turns: [{ by: 'b', say: "I'm in, but if we're picking names, I'd have gone with {alt}.", v: { cruel: "Fine, but {alt} is the one I'd pay to watch leave." } }] },
   ],
   'vp.answer.alt': [
-    { id: 'npm.aa1', turns: [{ by: 'a', say: "{alt} isn't going anywhere. We'll get there. One at a time." }] },
+    { id: 'npm.aa1', turns: [{ by: 'a', say: "{alt} can wait. We'll get there, one at a time." }] },
   ],
   'vp.push.like': [
     { id: 'npm.pl1', turns: [{ by: 'b', say: "Ugh. {target} made me laugh so hard yesterday. This feels terrible." }] },

@@ -727,8 +727,12 @@ function arcBeats(ep, camp, members, phase, t, next, list, earlier = [], mode = 
   const warned = (ep.pitchIntel || []).filter(i => i.believed !== false && here(i.knower) && tribal.includes(i.knower) && i.target && tribal.includes(i.target) && i.pitcher && i.pitcher !== i.knower && wrote(i.pitcher) === i.target);
   const seen = new Set();
   const toldTargets = new Set();
+  // (the warning the pitch scene already stages, its own pitch.warn part (episode.js), is not told a second time: Sierra
+  // pulled Owen aside with "Courtney wants you gone", then came back that evening with "Watch out for Courtney", read
+  // 2026-10-14)
+  const staged = i => i.sourceType === 'direct-warning' && i.knower === i.target && (ep.votePitches || []).some(p => p.pitcher === i.pitcher && p.pitchTarget === i.target);
   for (const i of warned) {
-    if (seen.size >= 2 || seen.has(i.knower)) continue;
+    if (seen.size >= 2 || seen.has(i.knower) || staged(i)) continue;
     const told = i.sourceType !== 'overheard' && i.source && i.source !== i.pitcher && here(i.source) && i.source !== i.knower;
     const who = told ? { a: i.source, b: i.knower } : { a: i.knower };
     const data = { pitcher: i.pitcher, target: i.target };
@@ -1692,7 +1696,7 @@ function chainScenes(ep, camp, phase, items, next) {
     const beats = [];
     const pl = go.length > 1;
     const LEAVE = [`${list(go)} ${pl ? 'head' : 'heads'} off.`, `${list(go)} ${pl ? 'get up and leave' : 'gets up and leaves'} them to it.`, `${list(go)} ${pl ? 'wander' : 'wanders'} away.`,
-      `${list(go)} ${pl ? 'find' : 'finds'} something else to do.`, `${list(go)} ${pl ? 'go' : 'goes'} to get water.`, `${list(go)} ${pl ? 'leave' : 'leaves'} without another word.`];
+      `${list(go)} ${pl ? 'find' : 'finds'} something else to do.`, `${list(go)} ${pl ? 'head' : 'heads'} off.`, `${list(go)} ${pl ? 'leave' : 'leaves'} without another word.`];
     if (go.length) beats.push(LEAVE[h % LEAVE.length]);
     if (come.length) beats.push(come.length === 1
       ? [`${come[0]} comes over.`, `${come[0]} walks up.`, `${come[0]} sits down next to ${stay[0]}.`, `${come[0]} drifts over, pretending not to be curious.`, `${come[0]} wanders over to see what's going on.`, `${come[0]} drops down beside ${stay[0]}.`][(h >>> 3) % 6]

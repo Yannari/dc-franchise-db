@@ -50,7 +50,9 @@ const HELP = { comfort: 'sat with me when I was falling apart', phobiaComfort: '
   mentorBond: 'started teaching me how to get by out here', loyaltyProof: 'kept a promise when it would have been easier to break it',
   silentSolidarity: 'stuck by me when nobody else would', sharedMeal: 'split a meal with me when food was short' };
 // (an apology is not help: "And that's why you came and apologised to me?" / "No, this is the apology" read as two)
-const HARM = { prank: 'pranked me in front of everybody', lie: 'lied to my face', stolenCredit: 'took the credit for my work', blame: 'blamed me in front of everybody',
+// (not a lie: the one it was told to believes it, so it is nothing they can hold against anybody: Bridgette, told by
+// Duncan to watch Cody, came back that day with "you lied to my face, like I wasn't going to notice", read 2026-10-14)
+const HARM = { prank: 'pranked me in front of everybody', stolenCredit: 'took the credit for my work', blame: 'blamed me in front of everybody',
   phobiaBlame: 'blamed me for losing', intimidation: 'tried to scare me off', passiveAggressive: 'took little shots at me all day',
   dispute: 'got into it with me in front of everybody', fight: 'got into a fight with me', hotheadExplosion: 'blew up at me', leadershipClash: 'tried to boss me around',
   foodConflict: 'went after me over food' };
@@ -68,7 +70,7 @@ export function recordTurns(ep, camp, out) {
     let s = null;
     if (k === 'kit.clash') s = { kind: 'mock', by: b, to: a, thing: kitOf(a)?.thing || null, remark: said(item, b)[0] };
     else if (k === 'chm.taunt' || ['prank', 'passiveAggressive', 'intimidation'].includes(ty)) s = { kind: 'mock', by: a, to: b, remark: said(item, a)[0] };
-    else if (['lie', 'stolenCredit', 'blame', 'phobiaBlame'].includes(ty)) s = { kind: 'wronged', by: a, to: b, remark: said(item, a)[0] };
+    else if (['stolenCredit', 'blame', 'phobiaBlame'].includes(ty)) s = { kind: 'wronged', by: a, to: b, remark: said(item, a)[0] };
     else if (/friend\.defend|loyal\.defend/.test(sk) || ty === 'protectiveInstinct') s = { kind: 'defend', by: a, to: b, remark: said(item, a)[0] };
     else if (k === 'chm.saved' || /^arc\.mentor\./.test(k) || ['comfort', 'phobiaComfort', 'phobiaSupport', 'teachingMoment', 'mentorBond'].includes(ty))
       s = { kind: 'helped', by: a, to: b, remark: said(item, b)[0] || said(item, a)[0] };

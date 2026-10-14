@@ -7695,7 +7695,9 @@ function simulateJuryRoundtable(ep) {
       // people, each answering in their own reaction; the leak reaching the target; the target's
       // counter-move; the pitcher's own read. Nobody commits a ballot on screen.
       const _pPhase = { ep: ep.num, phase: 'post', tribal: true };
-      const _pData = { target: p.pitchTarget, claimed: numberWord(Math.max(2, p.claimedSupport || 0)) };
+      // (a claim that could be true in the room: "I've got eight already" with nine voting, read 2026-10-14)
+      const _pRoom = (ep.tribalPlayers || []).length || (gs.activePlayers || []).length || 8;
+      const _pData = { target: p.pitchTarget, claimed: numberWord(Math.max(2, Math.min(p.claimedSupport || 0, Math.ceil(_pRoom / 2)))) };
       // a coach has no ballot and lobbies as a coach (td/script/lines/pitch-coach.js): the eight reactions in three
       const _COACH_TONE = { receptive: 'yes', cold: 'no', skeptical: 'no', unreceptive: 'no' };
       const _parts = (p.responses || []).filter(r => r.voter && r.voter !== p.pitcher && r.voter !== p.pitchTarget).slice(0, 3)

@@ -33,7 +33,7 @@ import { pickVoice } from '../story/voice-family.js';
 // The episode being played. gs.episode still holds the last one until it ends.
 export const epOf = ctx => ctx.ep || (gs.episode || 0) + 1;
 const PHASE_CLOCK = { pre: 0, challenge: 1, post: 2, tribal: 3 };
-const JET_NO = /\b(fire( pit)?|outhouse|fix the roof|on the roof|before it rains|in the dirt|(carry(ing)?|fetch(ing)?|get(ting)?) (the )?water|water runs?|buckets?|outdoors|skylight|hole in the roof|berries|away from camp|firewood|campfire|fishing|lake|water's edge|sand|beach|dock|shore|tent|shelter|woods?|forest|stones?|pebbles?|rocks?|trees?|river|waterfall|trail|caves?|shade|shoreline|across camp|side of camp)\b/i;
+const JET_NO = /\b(fire( pit)?|grass|outhouse|fix the roof|on the roof|before it rains|in the dirt|(carry(ing)?|fetch(ing)?|get(ting)?) (the )?water|water runs?|buckets?|outdoors|skylight|hole in the roof|berries|away from camp|firewood|campfire|fishing|lake|water's edge|sand|beach|dock|shore|tent|shelter|woods?|forest|stones?|pebbles?|rocks?|trees?|river|waterfall|trail|caves?|shade|shoreline|across camp|side of camp)\b/i;
 
 export const clockOf = ctx => (epOf(ctx)) * 10 + (PHASE_CLOCK[ctx.phase] ?? 0);
 const ledger = () => (gs.tdLineLedger ||= newLedger());
@@ -265,7 +265,14 @@ export function scriptEventParts(event, scenes, ctx = {}) {
   const [first] = parts;
   event.scene = { kind: first.sc.kind, who: first.sc.who, data: first.sc.data, seenBy: first.sc.seenBy, spot: first.sc.spot,
     lineId: first.w.lineId, facts: keepFacts(first.w.facts), ...(parts.length > 1 ? { parts: parts.map(p => ({ kind: p.sc.kind, who: p.sc.who, data: p.sc.data, lineId: p.w.lineId })) } : {}) };
-  event.lines = parts.flatMap(p => p.w.lines);
+  // a pitch worked round several people is several conversations: say who the pitcher moves on to (read 2026-10-14:
+  // "I'm thinking Alejandro tonight" said to Sierra, then again to Geoff, then to Courtney, as if in one breath)
+  const PITCH = /^pitch\.(react|coach)$/;
+  event.lines = parts.flatMap((p, i) => {
+    const prev = parts[i - 1], a = p.sc.who?.a, b = p.sc.who?.b;
+    const moves = i > 0 && PITCH.test(p.sc.kind || '') && PITCH.test(prev.sc.kind || '') && a && b && prev.sc.who?.b !== b;
+    return moves ? [{ kind: 'beat', by: null, text: `${a} moves on to ${b}.` }, ...p.w.lines] : p.w.lines;
+  });
   event.text = transcript(event.lines);
   // what this moment did to the relationships of the people in it: the bond changes since the
   // last scene was written, between two of its people (the engine applies a scene's consequences

@@ -206,7 +206,7 @@ export default {
   // ── {target} cost them the challenge ──
   'vp2.sank': [
     { id: 'nvq.s1', turns: [
-      { beat: "On the walk back from the challenge, {a} hangs back until {b} catches up." },
+      { beat: "{a} hangs back from the others until {b} catches up." },
       { by: 'a', say: "We can't keep losing like that." },
       { by: 'b', say: "I know." },
       { by: 'a', say: "And we both know why we lost." },

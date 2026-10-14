@@ -66,7 +66,7 @@ const VENUE_NO = {
   'film-lot': /\b(boats?|shelter|cabins?|mess hall|dock|boathouse|lake|beach|shore(line)?|ocean|the sea|sand|seaweed|tide|crabs?|shells?|jungle|coconuts?|fire( pit)?|campfire|firewood|fishing|tent|woods|forest|water pump|the well)\b/i,
   'world-tour': /\b(boats?|dock|mess hall|crabs?|shells?|seaweed|tide|coconuts?|water pump|the well|bunks?)\b/i,
 };
-const OUTDOOR = /\b(fire( pit)?|outhouse|in the dirt|fix the roof|on the roof|before it rains|(carry(ing)?|fetch(ing)?|get(ting)?) (the )?water|water runs?|buckets?|outdoors|outside|skylight|hole in the roof|raining|rain|berries|away from camp|from camp|the path|firewood|campfire|fishing|fish|lake|water's edge|the water|sand|beach|dock|log|shore|tent|shelter|woods?|forest|stones?|pebbles?|bush(es)?|sun|shade|rocks?|trees?|river|waterfall|trail|caves?|shoreline|across camp|around camp|side of camp)\b/i;
+const OUTDOOR = /\b(fire( pit)?|grass|outhouse|in the dirt|fix the roof|on the roof|before it rains|(carry(ing)?|fetch(ing)?|get(ting)?) (the )?water|water runs?|buckets?|outdoors|outside|skylight|hole in the roof|raining|rain|berries|away from camp|from camp|the path|firewood|campfire|fishing|fish|lake|water's edge|the water|sand|beach|dock|log|shore|tent|shelter|woods?|forest|stones?|pebbles?|bush(es)?|sun|shade|rocks?|trees?|river|waterfall|trail|caves?|shoreline|across camp|around camp|side of camp)\b/i;
 // A line for a place the season has, by its words (also kits.js take: a character's own lines go through it)
 export function venueTextOk(venue, text) {
   if (venue === 'world-tour' && OUTDOOR.test(text)) return false;

@@ -54,6 +54,9 @@ export function stanceOf(c, a, b, key) {
  * After the final edit: every public conflict this camp aired today gets its witnesses. Mutates the aired scenes
  * (their lines and who), applies the bonds on the live episode, and records the stances.
  */
+// fight scenes that end with nobody hurt (director.js has the same list for the room's reaction)
+const CALM_ENDS = new Set(['ndo.hh4']);
+
 export function witnessConflicts(ep, camp, out, members, write, factsForWho, live) {
   let n = 7300;
   // the scenes themselves, not campFeed's view of them (it copies an engine moment that carries a storyline tag, and
@@ -68,6 +71,9 @@ export function witnessConflicts(ep, camp, out, members, write, factsForWho, liv
     const { a, b } = who;
     const lines = item.lines || [];
     if (!a || !b || a === b || !lines.length || item._witnessed) continue;
+    // (a row that ended friendly has nothing to take sides in: "Even me?" "Not you, you're fine", then "Do you actually
+    // enjoy this?" from somebody watching, read 2026-10-14)
+    if (CALM_ENDS.has(item.lineId)) continue;
     if (lines.some(l => l.kind === 'beat' && PRIVATE.test(l.text || ''))) continue;
     item._witnessed = true;
     const inScene = new Set(Object.values(who).filter(Boolean));

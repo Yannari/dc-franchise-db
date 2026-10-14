@@ -491,12 +491,12 @@ export default {
     ] },
     { id: 'ndo.hh4', place: 'public', when: { pair: true }, turns: [
       { by: 'a', say: "Okay, I'm going to say it. I'm sick of everybody here." },
-      { by: 'b', say: "We've been here one day." },
-      { by: 'a', say: "And I'm already sick of everybody! That's how bad it is!" },
+      { by: 'b', say: "Everybody? That's a lot of people." },
+      { by: 'a', say: "Everybody! That's how bad it is!" },
       { by: 'b', say: "Even me?" },
       { by: 'a', say: "...Not you, you're fine. Everybody except you." },
       { by: 'b', say: "That's actually really sweet, in a weird way." },
-      { by: 'b', conf: "{a} hates everybody here except me, and we've been here one day. I don't know if that's a compliment or a warning." },
+      { by: 'b', conf: "{a} hates everybody here except me. I don't know if that's a compliment or a warning." },
     ] },
   ],
 };

@@ -14,9 +14,9 @@ export default {
     1: { anxious: "But I keep thinking about what happens when the people I said no to work out it was me, and my stomach won't settle.", competitive: "The other part of me is already planning for when the people I turned down work out it was me." },
   },
   'nly.k2': {
-    0: { loud: "Never have I ever... had a crush on somebody in this game!", calm: "Never have I ever had a crush on somebody in this game." },
-    3: { loud: "Don't look at me like that!", calm: "Don't look at me like that.", flirty: "Don't look at me like that. Unless you mean it." },
-    8: { calm: "I wasn't going to tell anybody. Then {b} put a finger down at the same time, and now I can't stop thinking about it.", loud: "I wasn't going to tell ANYBODY! Then {b} put a finger down at the exact same time, and now it's all I can think about!", anxious: "I wasn't going to tell anyone, and then {b} put a finger down at the same moment, and now my heart won't slow down." },
+    1: { loud: "Never have I ever... had a crush on somebody in this game!", calm: "Never have I ever had a crush on somebody in this game." },
+    4: { loud: "Don't look at me like that!", calm: "Don't look at me like that.", flirty: "Don't look at me like that. Unless you mean it." },
+    9: { calm: "I wasn't going to tell anybody. Then {b} put a finger down at the same time, and now I can't stop thinking about it.", loud: "I wasn't going to tell ANYBODY! Then {b} put a finger down at the exact same time, and now it's all I can think about!", anxious: "I wasn't going to tell anyone, and then {b} put a finger down at the same moment, and now my heart won't slow down." },
   },
   'nv.a6': {
     0: { loud: "{wrote} is going home tonight! I can't WAIT to see the look on {wrote.posAdj} face!", tough: "{wrote} goes home tonight. I want a good look at {wrote.posAdj} face when it happens.", blunt: "{wrote} is going home. Good." },
@@ -182,7 +182,7 @@ export default {
   },
   'nl6.c1': {
     1: { dry: "With what? We've got water.", loud: "With WHAT? We've got water!" },
-    5: { quiet: "I cried a little at lunch.", warm: "I cried a little at lunch, actually." },
+    5: { quiet: "I cried a little earlier.", warm: "I cried a little earlier, actually." },
     8: { calm: "It was the dumbest toast I've ever heard, and it's the first time all week the whole team laughed at once.", warm: "That was the silliest toast ever, and it was the first time all week everybody laughed together. I needed it." },
   },
   'ng.p3': {

@@ -208,8 +208,8 @@ export default {
     0: { loud: "Okay, EVERYBODY! Toast!", warm: "Okay, everybody, toast!", dry: "Okay, everybody. Toast.", quiet: "Toast. Everyone." },
     2: { loud: "With the FINEST water money can't buy!", warm: "With the finest water money can't buy!", dry: "With the finest water money can't buy.", quiet: "With the finest water there is." },
     3: { anxious: "What are we toasting?", warm: "What are we toasting?", calm: "What are we toasting?", nerdy: "What are we toasting?", chaotic: "What are we toasting? I'm in either way!", blunt: "Toasting what?" },
-    4: { loud: "US, still being here! Nobody cried today!", warm: "Us, still being here! Nobody cried today!", dry: "Us, still being here, and nobody cried today.", quiet: "Us, still here, and nobody cried." },
-    6: { loud: "Then to ALMOST nobody crying today!", warm: "Then to almost nobody crying today!", dry: "Then to almost nobody crying today.", quiet: "Then to almost nobody crying." },
+    4: { loud: "US, still being here! Nobody's cried yet!", warm: "Us, still being here! Nobody's cried yet!", dry: "Us, still being here, and nobody cried today.", quiet: "Us, still here, and nobody cried." },
+    6: { loud: "Then to ALMOST nobody crying today!", warm: "Then to almost nobody crying!", dry: "Then to almost nobody crying.", quiet: "Then to almost nobody crying." },
   },
   'ncx.b1': {
     1: { dry: "{lastBoot} left this, and I can't throw it out. It's just a shirt. It isn't just a shirt.", competitive: "{lastBoot} left this. I can't throw it out, and I hate that I can't.", chaotic: "{lastBoot} left this shirt, and I can't throw it out, and I'm wearing it now, I think.", nerdy: "{lastBoot} left this, and I can't bring myself to throw it out. It's just a shirt. It isn't.", quiet: "{lastBoot} left this. I can't throw it out." },

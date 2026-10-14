@@ -154,7 +154,9 @@ export default {
     ] },
   ],
   'long.romance.night.never': [
+    // (with nobody else there to ask it, the scene opened on "Nobody moves": the game is said first, read 2026-10-14)
     { id: 'nly.k2', turns: [
+      { beat: "It's late, and a round of never have I ever has got down to the dangerous questions." },
       { by: 'c', opt: true, say: "Never have I ever... had a crush on somebody in this game." },
       { beat: "Nobody moves. Then {a} slowly puts a finger down. Then {b} does too." },
       { by: 'c', opt: true, say: "Oh. Oh, okay. Interesting." },

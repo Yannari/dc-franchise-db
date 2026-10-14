@@ -298,7 +298,7 @@ export default {
     5: { warm: "Good, because I won't either. {target}.", loud: "Good, because I won't EITHER! {target}!", food: "Good, because I won't either. {target}." },
     6: { warm: "{a} owes me now, and that's worth a lot more than one vote.", loud: "{a} owes me NOW, and that's worth more than one vote!", food: "{a} owes me now, and that's worth a lot more than one vote." },
   },
-  'nly.k2': { 4: { calm: "I'm not looking at you like anything.", quiet: "I'm not looking at you.", theatrical: "I am not looking at you like anything, darling.", anxious: "I'm not looking at you like anything!" } },
+  'nly.k2': { 5: { calm: "I'm not looking at you like anything.", quiet: "I'm not looking at you.", theatrical: "I am not looking at you like anything, darling.", anxious: "I'm not looking at you like anything!" } },
   'nl.h3': { 8: { calm: "{a} runs these meetings like a general, which is a little scary, but it keeps us alive.", dry: "{a} runs these meetings like a general, which is a little scary, but also why we're alive.", ditzy: "{a} runs these meetings like a general! It's scary, but it keeps us alive." } },
   'nps.e4': { 1: { nerdy: "I can't save everybody, and I'm finally accepting that. I just have to make sure I'm still standing.", anxious: "I can't save everybody, I'm learning that, and it scares me. I just have to stay standing.", quiet: "I can't save everyone. I just have to keep standing." } },
   'ny.st1': {

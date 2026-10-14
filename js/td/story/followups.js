@@ -1,5 +1,5 @@
 // Follow-ups are grounded in final aired speech, never inferred from unseen events.
-import { onCommit } from './commit.js';
+import { onCommit, adopt } from './commit.js';
 import { gs, seasonConfig } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { romanticCompat } from '../../players.js';
@@ -91,7 +91,9 @@ export function followupScene(ep, camp, members, phase, next, write, factsForWho
     // for me the other day" named nothing (the user, 2026-10-14: "wtf did he say stop with these conversation with 0
     // context")
     const recap = recapOf(t, chapter);
-    if (recap) { w.lines = [{ kind: 'beat', by: null, text: recap }, ...w.lines]; w.text = w.lines.map(l => l.text).join(' '); }
+    // (the line's use is waiting on the lines it was written as: it moves to the new list, or it is never spent and the same
+    // couple says the same scene again, read 2026-10-14, Tristan's "Were you serious, the other day?" in episodes 6 and 8)
+    if (recap) { const old = w.lines; w.lines = [{ kind: 'beat', by: null, text: recap }, ...w.lines]; adopt(w.lines, old); w.text = w.lines.map(l => l.text).join(' '); }
     const fx = t.kind !== 'clash' ? [[who.a,who.b,outcome === 'warm' ? 0.75 : -0.25]]
       : [[who.a,who.b,outcome === 'mend' ? 0.5 : -0.5], [who.a,who.c,0.25], [who.b,who.c,0.25]];
     return { at: 0.58, item: onCommit({ story: true, kind: 'follow.' + kind, storyType: 'arc', step: outcome,

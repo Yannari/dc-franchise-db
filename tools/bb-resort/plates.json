@@ -190,6 +190,8 @@
  "storage-2": {"room": "pantry", "sets": ["storage"], "use": ["house"], "indoor": true, "lights": [[808, 56, 140]]},
  "bathroom": {"room": "washroom", "sets": ["bathroom"], "use": ["house"], "indoor": true,
   "lights": [[424, 264, 60], [480, 136, 70], [672, 136, 70], [864, 136, 70], [1056, 136, 70], [1144, 264, 60]]},
+ "havenot": {"room": "bedroom", "sets": ["havenot"], "use": ["house"], "indoor": true, "words": "have-not|slop|cold shower",
+  "screens": [[687, 164, 917, 304]], "lights": [[800, 25, 160]]},
  "foyer": {"room": "living-room", "sets": ["door"], "use": ["house"], "indoor": true, "words": "foyer|front door|entrance", "lights": [[328, 190, 120]]},
 
  "beach-loungers": {"place": ["The Beach", 20], "room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach|sand|sunbath|umbrella|lounger|deck chair"},

@@ -63,11 +63,10 @@ export const ZONE_PLATE = {
   kitchen: 'kitchen-wide', living: 'living-sofas', dining: 'dining-wide', library: 'library-wide', front: 'front', dr: 'confessional',
   beach: 'beach-hut', westdock: 'dock', clearing: 'comp-clearing', resort: 'front',
   hoh: 'hoh-suite', pantry: 'storage', foyer: 'foyer', eastdock: 'pier-east', npond: 'pond-north', epond: 'pond-east',
-  lagoon: 'lagoon', volcano: 'volcano-lookout', jury: 'jury-cabins', villa: 'villa', studio: 'studio-arrival',
+  lagoon: 'lagoon', volcano: 'volcano-lookout', jury: 'jury-cabins', villa: 'villa', studio: 'studio-arrival', lounge: 'havenot',
 };
-export const ZONE_PENDING = {
-  lounge: 'B04-have-not-room (redo: it came out too comfortable)',
-};
+// a place whose picture the user is still making names its to-edit folder here (none left, 2026-10-13)
+export const ZONE_PENDING = {};
 /** A zone's place on the island: an island zone is itself; every room of the house is the resort. */
 export const islandOf = z => (ISLAND[z] ? z : 'resort');
 // where the house hangs out (idle people go here, never into a private conversation's room)
@@ -76,7 +75,7 @@ const PUBLIC = ['living', 'kitchen', 'pool', 'gym', 'wing', 'bar', 'library', 'd
 // a plate's room on the blueprint
 const ZONE_OF_PLATE = [[/^living-/, 'living'], [/^library-/, 'library'], [/^confessional$/, 'dr'], [/^(dining-|nom-table$)/, 'dining'],
   [/^kitchen-/, 'kitchen'], [/^bar-/, 'bar'], [/^bedroom-/, 'wing'], [/^(hallway|bathroom)$/, 'bathroom'], [/^purple-hall$/, 'hallway'],
-  [/^hoh-/, 'hoh'], [/^storage/, 'pantry'], [/^foyer$/, 'foyer'], [/^studio-/, 'studio'],
+  [/^hoh-/, 'hoh'], [/^storage/, 'pantry'], [/^havenot$/, 'lounge'], [/^foyer$/, 'foyer'], [/^studio-/, 'studio'],
   [/^gym-/, 'gym'], [/^(pool-|patio$|balcony$)/, 'pool'], [/^(lawn-|front)/, 'front'], [/^memory-wall$/, 'living'],
   [/^beach-/, 'beach'], [/^dock$/, 'westdock'], [/^pier/, 'eastdock'], [/^(comp-|forest-night$)/, 'clearing'],
   [/^pond-north/, 'npond'], [/^pond-east/, 'epond'], [/^lagoon/, 'lagoon'], [/^volcano/, 'volcano'], [/^jury-/, 'jury'], [/^villa/, 'villa']];

@@ -619,7 +619,7 @@ const FRONT = { 1: [50], 2: [36, 64], 3: [27, 50, 73] };
 const IDLE_OF = [[/^kitchen-/, ['cook', 'eat', 'drink']], [/^dining-/, ['eat', 'drink']], [/^(bar-|beach-bar)/, ['drink', 'eat']], [/^gym-/, ['lift', 'stretch']],
   [/^(pool-|patio$|balcony$|beach-|dock$)/, ['tan', 'drink', 'read']], [/^library-/, ['read']], [/^bedroom-/, ['rest', 'read', 'groom']], [/^hallway$/, ['groom']],
   [/^(comp-|lawn-)/, ['stretch']], [/^living-/, ['eat', 'read', 'drink', null]], [/^hoh-/, ['rest', 'snack', 'read']], [/^storage/, ['snack']],
-  [/^bathroom$/, ['groom']], [/^(pier-|pond-|lagoon$|volcano-)/, ['stretch', 'read', null]], [/^jury-/, ['read', 'drink', 'eat']], [/^villa$/, ['tan', 'drink', 'eat']]];
+  [/^bathroom$/, ['groom']], [/^havenot$/, ['rest', 'stretch']], [/^(pier-|pond-|lagoon$|volcano-)/, ['stretch', 'read', null]], [/^jury-/, ['read', 'drink', 'eat']], [/^villa$/, ['tan', 'drink', 'eat']]];
 const IDLE_SET = { kitchen: ['cook', 'eat'], dining: ['eat'], yard: ['tan', 'drink'], bedroom: ['rest', 'read'], havenot: ['rest'], storage: ['snack'], hoh: ['rest', 'snack'] };
 const IDLE_ICON = {
   cook: '<path d="M3 13h12a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" fill="#cfd8e3"/><path d="M15 14h6" stroke="#cfd8e3" stroke-width="2" stroke-linecap="round"/><path class="st" d="M7 10c0-2 2-2 2-4M11 10c0-2 2-2 2-4" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/>',

@@ -2860,7 +2860,7 @@ Each shipped, was read in a transcript, and has a test in
    measure what it does.
 
 
-## 18. The viewer: what four shows taught, and how to port a classic viewer
+## 18. The viewer: what five shows taught, how to port a classic viewer, and Total Drama's recipe
 
 §6.5 is the pinned stage and §17.2 is The Circle's one-click-per-line viewer. This section
 puts what The Traitors, Perfect Match, The Circle and Big Brother each learned in one place,
@@ -2963,9 +2963,324 @@ every new set was an approved static HTML page before any stage code.
    nominees, a houseguest beside the Diary Room chair instead of in it, a black room. Bust the
    module cache with `import('…?t=' + Date.now())`, or the browser shows the old code.
 
+### 18.4 Total Drama's stepped viewer, step by step (the recipe to copy)
+
+Total Drama was the first show to get a stepped viewer that covers the whole episode: camp, Tribal,
+the islands, twists, the merge, the Aftermath and the finale. It lives in `js/vp-td-ep/` and
+gets its words from `js/td/story/`. The designs are `docs/superpowers/specs/2026-10-06-td-stepped-viewer-design.md`
+and `docs/superpowers/specs/2026-10-07-td-storylines-design.md`. To build one for another show,
+follow these steps in this order. Each step names the TD file that does it.
+
+**Step 1 — Research and mockups, before any code.**
+- Look up the real show's ceremony for every setting on its wiki: what the ceremony is called,
+  whether votes are handed out (marshmallows) or read out, the exit place and the exit line.
+- Put the result in one table, so every screen reads it from there. TD's is `VENUES` in `steps.js`.
+- Make a static HTML mockup of the camp and of Tribal, and get the user's approval first.
+
+**Step 2 — Backdrops, then where people can stand.**
+- One painted plate for each place in each setting, by day and by night. TD gets them two ways:
+  - rendered in Blender: `tools/td-camp/camp.py` plus one `venues/<venue>.py` per setting;
+  - cleaned from source frames, then upscaled with ESRGAN (memory `project_td_clean_plates`).
+- Mark every plate with its seats, its standing spots and where the host stands (`marks.js`).
+- Make a water mask for each plate, generate `wet.js` from it with `tools/td-camp/wetgrid.py`,
+  and use `floorOf` / `keepDry` so nobody stands in the sea.
+- Re-run `wetgrid.py` after any change to a plate.
+
+**Step 3 — Every event is a scene with words, before the stage draws it.**
+- An engine event becomes `scriptEvent({type, players, badgeText, badgeClass},
+  makeScene(kind, {a, b, ...}, {ending, ...}, seenBy, spot), {ep, phase})` (`js/td/script/scene.js`).
+- Keep the engine's old random draw: replace the sentence pick with a bare `Math.random()` call,
+  or the whole season shifts.
+- The words come later, from a script keyed on the scene's kind (§19).
+- An event with no script yet airs as a cutaway with the engine's own sentence. The viewer never
+  makes up words.
+
+**Step 4 — `steps.js` is pure: the episode record goes in, a list of screens comes out.**
+- `tdCampScreen(ep, camp, phase, members)` and `tdTribalScreen(ep)` turn the episode into screens.
+- One step is one click: a line, a stage direction, a confessional, a title card, a marshmallow.
+- Decide where each person is once per scene, from the marks (`placeScene`), never once per click.
+  Otherwise somebody blinks out when they start talking.
+- The people in the background come from the record (`ep.campAccess`: who was at that spot in that
+  part of the day), each busy with something of their own.
+- `stageSpot` maps the engine's spot to one of the setting's TV places. It keeps the same privacy
+  level and never moves a scene away from a place its own lines name.
+- Two scenes in a row at the same place are chained: "X heads off. Y comes over."
+  (`director.js`, the run-on pass).
+
+**Step 5 — `stage.js` draws step N, and only the newest step animates.**
+- `ledgerAt` works out what is true at step N from the steps before it.
+- `castAt` says who is on stage.
+- `shotOf` aims the camera at the people talking, using the HD plate.
+- `hudHtml` and `dialogue` draw the picture and the line.
+- `intelHtml` is the side drawer, with what the viewer knows and camp does not:
+  - "In their heads" (each scene's `why`);
+  - Relationships (the bond changes, recorded when the event fired, never read live).
+
+**Step 6 — Tribal.**
+- **The booth:** every voter, each with the reason the engine recorded for their ballot
+  (`td/story/tribal.js truthOf`). The booth order is shuffled the same way every time, and the boot
+  never votes first.
+- **The reading:**
+  - the tally shows the count before the vote being read (`pending`), so the deciding vote is never
+    on screen early;
+  - the host never says "majority", because the most votes sends someone home even without one;
+  - the camera is wide from the first vote, pushes in once on the deciding vote, and holds until
+    the boot leaves (17.8 camera moves a Tribal became 2.8);
+  - a VOTED OUT stamp.
+- **After the reading:** the reveal, the room, the exit with a friend, and the after-confessionals,
+  all spliced in before the boot leaves the stage.
+- A setting in Intel hides the names in the booth (spoilers).
+- Votes on twist nights have their own screens: revote, rocks, Double Tribal, Multi-Tribal, Save Card
+  (played after the ballots are cast).
+
+**Step 7 — Camp as a map (`map.js`), the default camp view.**
+- One map per team.
+- Each zone shows the faces of who is there in each part of the day.
+- A speech bubble marks each conversation.
+- The viewer can watch a part of the day in any order. The clock moves on only when that part's
+  starred (plot-critical) conversations have been watched.
+- A Next button still walks the conversations in story order.
+
+**Step 8 — Twists, islands, the merge and the finale get their own stepped screens, in their classic slots.**
+- The files are `twist-screens.js`, `twists.js`, `twists-more.js`, `returns.js`, `finale.js`,
+  `aftermath.js` and `arrival.js`.
+- Anything not ported yet keeps its classic screen, one click away (§18.3).
+
+**Step 9 — Sound (`sound.js`).**
+- Ambience for each setting, with weather (`weatherOf`).
+- Stings for a shock, a drumroll or heartbeat under the reading.
+- Lines are voiced as written (`voicing.js`, Inworld). There is no delivery director: the user
+  removed it on 2026-10-14 because it slowed every voice down.
+
+**Step 10 — The transcript matches the screen.**
+- `tdStepTranscript` hands the host's calls to the text backlog.
+- The backlog prints camp through `td/story/feed.js campFeed`, the same list the viewer plays.
+- A scene that did not air shows as "Off camera" in the backlog.
+
+**Step 11 — Tests, then look at it in a browser.**
+- The tests: `td-vp-steps`, `td-camera-staging`, `td-stage-ground`, `td-camp-map`, `td-twist-screens`
+  and `td-double-tribal`.
+- Then take Playwright screenshots on a spare port. Hard-refresh, or the module cache shows the old
+  code.
+
+**Bugs this viewer shipped, and their fixes:**
+
+| Bug | Fix |
+|---|---|
+| People standing in the sea | water mask, then `wet.js` and `keepDry` |
+| Somebody vanishes when they start talking | one placement per scene, never per click |
+| The deciding vote on the tally before it is read | the tally counts only the votes already read (`pending`) |
+| 17 camera moves at every Tribal | wide shot, one push-in, held until the boot leaves |
+| A replayed episode shows today's bonds | bonds recorded when the event fired |
+| A Save Card played before anyone voted | played after the ballots |
+| Camp words from the wrong setting (outdoor words on the jet) | `placeOk` checks every line against the setting and the time of day (§19) |
+| The finale on classic screens | `finale.js`, one screen for each format |
+
 ---
 
-## 19. The shows still to build
+## 19. Dialogue: how to build it, and how to fix it
+
+This is the playbook for every show's spoken scenes: camp talk, house talk, chats, confessionals,
+ceremony words and the "previously on" recap. It comes from building Total Drama's dialogue
+(`js/td/script`, `js/td/story`), porting it to Big Brother (`js/bb/script`, `js/bb/story`), and
+reading whole played seasons line by line until they read like the real show. Work out your
+show's type, follow §19.2 to build, and use §19.3 and §19.4 to fix. The user's standard is
+simple: "I just really need to watch Total Drama / Disventure Camp." If one line makes them
+ask "what are they talking about?", it is a bug.
+
+### 19.1 Step 0: what type of show is it?
+
+| Type | Shows | Where the words come from | Read first |
+|---|---|---|---|
+| **A. Camp or house with a vote.** Events fire in the engine; a director picks what airs. | Total Drama, Big Brother, The Traitors | an engine event turns into a scene, and the scene is written from a pool keyed `long.<kind>.<ending>`; the director adds its own story scenes (vote talk, arcs, follow-ups, witnesses) | §19.2 all of it, then §19.3 |
+| **B. Conversation show.** A scene is decided, then written. | The Circle | the chat's intent, then its ending, then a line picked by facts | §17.1, then §19.2 steps 3, 5–6 and §19.3 |
+| **C. Panel or performance.** There is no vote. | Drag Race | the werk room events (each needs `effects`), then the panel, then the host | `docs/drag-race.md` (the three-step rule), then §19.3 |
+| **D. Couples.** | Perfect Match | couple beats on the type A director | §19.2, plus `td/story/couple.js` for the beats |
+
+Whatever the type, one rule holds: **the engine decides, the words describe what it decided.** A line
+that settles an outcome, or claims a fact the record does not have, is a bug every time.
+
+### 19.2 Building it, in order (type A; the others take the steps their row lists)
+
+**1. The engine records what happened, when it happens.**
+- Each event stores who was in it, what it decided (`scene.data`: the ending, the target, what was
+  written down, the plan, who fell) and the facts at that moment (`scene.facts`).
+- The words are written at the end of the episode, so they must never read live state. A replayed
+  episode would otherwise show later bonds and votes that came after.
+
+**2. Every event is a scene.**
+- Use `makeScene(kind, who, data, seenBy, spot)`.
+- The roles are `a` and `b` (`c` to `f` for group scenes, `h` for the host).
+- `seenBy` says who knows about it. Nobody refers to something they did not see.
+
+**3. Pools are scripts, not sentences.**
+- An entry looks like `{ id, when, place, turns: [{ by, say | conf | beat | move, opt, enter, v, when }] }`.
+- Pools are keyed `long.<kind>.<ending>`, with `.any` as the fallback.
+- `when` only uses fact names on the whitelist. For TD that is `TD_FACT_KEYS` plus `STORY_FACTS` in
+  `tests/td-story.test.js`, and a new fact goes there in the same commit.
+- `false` must match exactly, so a fact you gate with `false` must be a real boolean.
+- Write whole exchanges, where each line answers the one before it. Name the subject. A confessional
+  says the feeling and its reason, in plain spoken English (`docs/td-dialogue-style.md`).
+- Every pool has at least 2 entries with no `when`, and an ending pool that says a time of day
+  ("at breakfast") has at least 2 entries. Otherwise it quietly never airs at other times.
+
+**4. The director picks what airs** (`td/story/director.js airTdEpisode`).
+- Every system offers candidates: `offer(src, tier, entry)`, where the tier is `must` / `due` /
+  `story` / `colour`.
+- `selectScenes` picks against a day budget (`DAY_BUDGET`). Only the chosen ones are committed
+  (`commit.js`); a dropped candidate costs nothing.
+- The vote talk:
+  - every plan airs: ours, the other side's, the swing vote, the doubter and the target;
+  - the reason for a plan comes from the ballots;
+  - a callback to an earlier event ("that fight this afternoon") is used only when the event is
+    between the plan's leader and its target, and only if it aired before the plan.
+- The guards that run once a day, in the morning pass, over the whole day. Add to this list; don't
+  reinvent it:
+  - nobody who has left the game takes part in a scene (`goneBefore`);
+  - no warm scene for two people who fought that day;
+  - no apology on a day before the row it apologises for;
+  - no making up with somebody on the day you ask a third person to vote them out;
+  - the same moment between the same two people airs once a day;
+  - the same two people are alone together at most 3 times a day;
+  - one romance per person per day;
+  - one party, one pep talk and one blow-up per camp per day; no party on the way to a vote, and no
+    pep talk after a win;
+  - nobody "steals the credit" for a vote they actually led.
+- Places come from `places.js`: one scene per spot per part of the day, and an entry's `place:` wins.
+- The multi-episode systems: arcs (`arcs.js`), the mentor, follow-ups, threads, kits, runners,
+  witnesses (`witness.js`).
+  - Each one remembers what it has finished (for example, the mentor never teaches the same person
+    twice).
+
+**5. The writer** (`td/story/write.js writeStory`) picks one entry, then fills it in.
+- **Picking.** In order:
+  1. the facts;
+  2. the voice of the person speaking;
+  3. the repetition rules:
+     - nobody says the same scene twice in a season (`saidBy`);
+     - a scene airs once a season (`uses`, and `keyUses` by its words);
+     - no entry repeats within an episode (`epUsed`, `epDraft`);
+     - when a needed scene has run out (`unique: 'soft'`), the one aired least comes back, and never
+       one these people said or one from the last two episodes.
+- **Filling in.**
+  - `placeOk` refuses any line, voice variant or stage direction whose place or time words don't
+    match the setting or the time of day.
+  - **The set-up line** (`setup.js`): who finds whom, and what they were doing.
+    - It never lists someone the scene brings in later.
+    - It calls a quiet spot a secret meeting only when the talk is a secret one: votes, deals, plans
+      (`hushy`).
+  - **A late speaker.** An optional speaker who talks before the scene has put them in it gets a
+    line first ("X has been listening", or the turn's own `enter`).
+
+**6. The voice layer** goes on last.
+- Voice tags (`td/story/voice.js`: 22 tags, plus age; personality beats age).
+- A turn's own `v:` variants.
+- Overlays in `lines/voices/batch*.js`. These are keyed by the turn's position, so rewriting or
+  inserting a turn means re-keying them.
+- Phrasebook moves (`phrase.js`, `phrases/core*.js`) for pure attitude ("agree", "pushback",
+  "reassure"). A move's phrase has to make sense as a reply to anything. "Fear not!" and "what if
+  we did the exact opposite?" failed that test.
+
+**7. Ceremony words** (`td/story/tribal.js`).
+- Each booth reason comes from the engine's reason for that ballot.
+- Reveal, room, exit, then the last confessional, gated on what the boot did that day (`led`: they
+  ran a plan, so "nobody talked to me about the vote" is out).
+
+**8. The recap** (`td/story/previously.js`).
+- Each clause names its subject the right way round. The one still trusting a betrayer is the one
+  wronged.
+- A quote is from the same moment the clause describes.
+- "Coming for X" only when the boot really wrote X.
+
+### 19.3 Fixing it: the season read loop (do exactly this)
+
+1. **Dump a played season** on the real roster, to a file. Use a scratch `tests/zz-<show>-season-read.test.js`:
+   - a fixed seed, a fixed cast and one setting;
+   - `ONLY=<name>` to pick the season;
+   - vitest hides `console.log`, so write the file with `fs.appendFileSync`.
+   Each scene prints as `-- n. kind [Place · time of day]`, then its lines, so the place and time sit
+   next to the words.
+2. **Read one episode at a time**, as a viewer would. List every line that is wrong, with why. Don't
+   fix anything while you read.
+3. **Find where each line came from.** Search the repo for a distinctive phrase. It is either a pool
+   entry (`lines/n-*.js`, `script/lines/*.js`, a voice overlay, a phrase) or code that adds lines
+   to a scene:
+
+   | Code | What it adds |
+   |---|---|
+   | `setup.js` / `write.js setupLine` | the set-up line |
+   | `director.js` public reactions and crowd opener | the room's reaction to a public row |
+   | `witness.js` | a witness taking sides |
+   | the director's run-on pass | "X heads off. Y comes over." |
+   | `previously.js` | the recap |
+   | `tribal.js` | ceremony words |
+
+4. **Fix it where it belongs**, using §19.4. Rewrite the words only when the words are what's wrong.
+   When the scene contradicts the game, fix the casting, the facts or the guard.
+5. **Dump again** and check that the fix aired.
+   - Run `npx vitest run tests/td-*.test.js`. A single failure that passes when run alone is usually
+     a timeout under load; re-run it.
+   - Commit after each episode you read and push, staging only your own files.
+6. **An engine change reshuffles everything after it.** Read the new version of the later episodes;
+   don't trust notes taken from the old dump.
+
+### 19.4 The bug classes, and where each one is fixed
+
+Every row below shipped, was caught by reading, and has its fix in place. Before writing a new
+pool, check every scene in it against this table.
+
+| Class | Example | Where to fix it |
+|---|---|---|
+| **Something that never aired** | "you stayed up with me" about a night nobody saw; "I know what you did" (did what?) | Name the subject from `data`, or rewrite it as an everyday thing (`nly.t1`: "saving me a seat at dinner"), or say what it was ("you didn't vote with us"). |
+| **No subject** | "has just done something nobody thought she could do" | Say what: "got the fire going, first try, with wet wood". |
+| **Wrong day** | "day two was the worst" on day one; "after the merge" on merge day; "for days" | Facts `dayOne`, `merged: false`, `phase: 'post'`. |
+| **Wrong time** | "a long, miserable day" at 8 AM; "cooler in the morning" after the challenge; "this morning" for a fight at chore time | `when: { phase }`; reword to something that is always true; a callback's time comes from the event's own part of the day ("earlier today"). |
+| **Wrong place** | "crammed inside the shelter" staged on the beach; "washing up by the water" at the edge of the woods; a breakfast snub in the maze | Give the entry `place:` (`sleep`, `wash`, `eat`, `fire`...); `namedSpot` moves a scene its own lines place. |
+| **A secret meeting that isn't one** | "both checking over their shoulders", then "did you sort the firewood?" | `setup.js` only uses secret openings for secret talk; a tease said to the pair's faces gets `place: 'aside'`. |
+| **A speaker nobody put in the scene** | Lynda speaks in "Chris gives Anastasia, Alessio and Diego the tour" | `write.js` adds "X has been listening"; the set-up line skips anyone who arrives later. |
+| **Talking to someone who left** | "Logan walks off", then "Logan, come sit with me"; "Lynda heads off", then Lynda takes a side | The room's reaction goes in before the walk-off beat; a witness is never someone the scene just sent away (`leftNow`). |
+| **Lines out of order** | a bystander's confessional before the room's "oooh"; the crowd line before the scene's own opener | What a bystander says goes with the talking; what they tell the camera goes with the other confessionals. |
+| **A contradiction within one day** | an apology bracelet, then "I know you didn't vote with us"; making up with Natalia, then pitching to get rid of her; "everyone stops talking when I walk up", then "people say hi to me now"; two celebrations in one day | One of the morning-pass guards (§19.2 step 4); an arc waits a day (`arcs.js`). |
+| **The vote says otherwise** | the person who defends the scapegoat votes them out that night; "I thought I'd make it further" from someone who stayed; "you want Anastasia gone" to someone who wrote Alessio | Cast roles by bond (`camp-events.js crowd.lost` picks the blamed person's friend as defender); facts from `ep.votingLog` (`bWritesCarried`); the line belongs to the boot. |
+| **Knowing too much, or too little** | "Of course Tristan has an Extra Vote" from the friend Tristan told; a scared decoy who had just shown his two votes | The reaction comes from the target; someone playing an Extra Vote is never cast as a scared decoy. |
+| **Roles the wrong way round** | the vote's planner "steals the credit" from someone who only went along; "Tristan picked a side" when Richard voted Tristan | Skip it when `tribalStory.booth` shows the "stealer" led the vote; `previously.js` swaps the roles for the betrayal-denial scene. |
+| **Repeats** | the same pitch, word for word, two episodes running; the same pair five times a day; a mentor teaching fire twice | An engine cool-down (`turnPitches`, 2 days); the per-pair and per-day caps; systems remember what they finished; for volume, use a pool-repeat probe (`zz-td-pool-repeats`). |
+| **Breaking the behaviour rules** | nice archetypes running manipulation scenes | Gate on eligibility in the engine (`camp-events.js _mayScheme`), never in the words. |
+| **Too clever, or a reply that doesn't answer** | "a question-shaped request"; "Fear not!"; "I am being framed!" | Plain, blunt talk that answers the line before; a phrasebook phrase must fit after anything. |
+| **A pool too small for its use** | the one "took" pitch entry repeats every time it fires | Add versions with different words; until there are enough, the per-person season rule makes it repeat. |
+
+### 19.5 Mechanical traps when editing lines
+
+- **Overlays are keyed by a turn's position.**
+  - When you rewrite a turn, drop its overlays (a small script that deletes `id:turn` keys).
+  - When you insert a turn, shift that entry's keys.
+  - `tests/td-voice-overlay-align.test.js` catches an overlay sitting on the wrong line.
+- **Bash heredocs halve backslashes.** `\\b` in a Python heredoc became a backspace byte in the JS.
+  - Write edit scripts with the file tool, and build a backslash as `chr(92)`.
+  - Check with `grep -c $'\x08' <file>`.
+- **Line endings.** Many files are CRLF. Edit scripts must keep the file's line endings, and before
+  staging, drop any file whose only change is line endings (`git diff --ignore-cr-at-eol --quiet`).
+- **One replace per unique anchor**, never a splice at an index; assert the anchor appears exactly
+  once.
+
+### 19.6 Porting this to a new show (type A or D): the checklist
+
+1. `js/<show>/script/`: `makeScene`, `scriptEvent`, a facts whitelist, a stable random generator
+   keyed on the scene's content.
+2. Convert the engine's events one family at a time, keeping their random draws. After every batch,
+   check that the season's fingerprint is unchanged.
+3. `js/<show>/story/`: `director` (offer, select, commit), `write` (pick, fill, set-up line,
+   `placeOk`), `places`, `setup`, `witness`, `voice`, `phrase`, `previously`, the ceremony writer.
+   Big Brother's `js/bb/story/` is a working port to copy from.
+4. Pools in `lines/n-*.js`, written as whole exchanges, with the bug classes in §19.4 checked as you
+   write each one.
+5. A scratch season-read harness, then §19.3 for every episode of at least two seasons in different
+   settings, then the finale.
+6. The viewer (§18.4) only plays what the story wrote. Keep the backlog equal to it.
+
+---
+
+## 20. The shows still to build
 
 Ranked 2026-10-14, after six shows (Total Drama, Big Brother, The Traitors,
 Drag Race, Perfect Match, The Circle). Nothing on this list is started.
@@ -3020,5 +3335,6 @@ the prefix, name, emoji, `words` and `audience` overlay, while dispatch in
 (§9), `CONFIG_SCOPE`, ratings signals (§2.5) and export stamping (§5); you skip
 the engine. Use it when a format wants its own billing but not its own rules.
 
-Before building any of these, do §16.9 and §17.8, and check the real show's
-rules on its wiki before designing a mechanic.
+Before building any of these, do §16.9 and §17.8, build the dialogue by §19 and
+the viewer by §18.4, and check the real show's rules on its wiki before
+designing a mechanic.

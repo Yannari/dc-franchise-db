@@ -2962,3 +2962,63 @@ every new set was an approved static HTML page before any stage code.
    steps, served on a spare port and screenshotted, caught what no test did: a reveal behind the
    nominees, a houseguest beside the Diary Room chair instead of in it, a black room. Bust the
    module cache with `import('…?t=' + Date.now())`, or the browser shows the old code.
+
+---
+
+## 19. The shows still to build
+
+Ranked 2026-10-14, after six shows (Total Drama, Big Brother, The Traitors,
+Drag Race, Perfect Match, The Circle). Nothing on this list is started.
+
+**Every show here gets a stepped viewer** (§17.2, §18), mockups first. No new
+show ships on the classic column-of-cards viewer; count the viewer in the cost.
+
+**What sets the order:**
+1. **Engine fit.** Bonds, perceived bonds and a vote should DECIDE something.
+   A show where only a panel, a clock or the public decides scores low.
+2. **Casting.** An alumni format recasts the roster for nothing; a new cast pays
+   stats, archetype, avatar and voice per person.
+3. **Plays unlike the six.** A reskin of an engine we have is a mode (below),
+   not a show.
+4. **Popularity**, online and in France.
+
+The old blockers on a pairs show are gone: a show that plays in its own `gs`
+never touches the files that read `activePlayers` as individuals (§8.3), and
+Drag Race already paid for an export with no ballots.
+
+| # | Show | Why | Cost |
+|---|---|---|---|
+| 1 | **The Challenge** (*I Love Money* as a season flavour) | The franchise crossover: alumni of all six shows. A house vote sends players into an elimination duel; the vote picks who is at risk, the duel picks who leaves. Solo format first, pairs later on purpose. | Medium: its own comp library |
+| 2 | **The Bachelor / Bachelorette** | The decider is a character with hidden feelings, so perceived bonds are the whole game. Alumni lead; hometowns from family ties; the Tell All from the Aftermath show. *Bachelor in Paradise* later, as a mode. | Medium: the cast must pass `romanticCompat` with the lead; count the pool first |
+| 3 | **Escape the Night** | Costumed guests at a cursed dinner party; a group vote sends players into a death challenge; a mystery per season; about ten cast. | Medium: puzzle library, a plot per season |
+| 4 | **Secret Story** | A Big Brother mode with its own billing; the design exists. | Low |
+| 5 | **The Devil's Plan** | Logic and bluffing games, alliances, a death match; leans on `mental`, `strategic`, `intuition`. | Medium–high: a game library |
+| 6 | **Star Academy** | Teachers nominate, students vote to save one, the public decides. Reuses Drag Race's performance engine (singing, dance). | High: new cast, two kinds of vote |
+| 7 | **Love Is Blind / Too Hot to Handle / Single's Inferno** | Perfect Match modes: the pods; the rule-break that costs the pot; heaven and hell. | Low–medium per mode |
+| 8 | **The Amazing Race** (or *Race Across the World*) | Pairs, with family ties supplying the teams. | High: an invented world map (no real geography here); little social |
+| 9 | **Hell's Kitchen** | Drag Race's panel, plus a team that nominates two of its own. | Medium: cooking stats would break the nine-stat rule; decide that first |
+| 10 | **Claim to Fame** | New characters who are relatives of franchise stars; the game is guessing whose. | Medium: new cast; check the real rules |
+
+**Modes, not shows** (a registry entry on an engine we have, see below):
+*Moundir et les apprentis aventuriers* and Survivor/Koh-Lanta billing on the
+Total Drama engine; *The Mole* on The Traitors; *Are You The One* stays a
+Perfect Match twist.
+
+**Rejected, and why.** Pure physical or survival (Ninja Warrior, Physical: 100,
+Alone, Naked and Afraid, Special Forces): nothing for the social engine to
+decide. Judged talent (The Voice, Idol, AGT, Bake Off, Top Chef, Project Runway,
+Ink Master, Blown Away, Is It Cake): Drag Race already has the shape, without
+the drama; Mask Singer at most as a one-episode special. Docusoaps (the
+Kardashians, Housewives, Vanderpump Rules, Below Deck, Jersey Shore, Selling
+Sunset): life-layer material, not a game. No competition at all (Jury Duty,
+Queer Eye, Shark Tank, Pawn Stars, Couples Therapy, Love on the Spectrum,
+Clarkson's Farm, Terrace House, Catfish).
+
+**A registry entry does not need its own engine.** A `js/shows.js` entry buys
+the prefix, name, emoji, `words` and `audience` overlay, while dispatch in
+`run-ui.js` runs an existing engine in a mode. You still pay the identity maps
+(§9), `CONFIG_SCOPE`, ratings signals (§2.5) and export stamping (§5); you skip
+the engine. Use it when a format wants its own billing but not its own rules.
+
+Before building any of these, do §16.9 and §17.8, and check the real show's
+rules on its wiki before designing a mechanic.

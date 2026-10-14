@@ -7,7 +7,7 @@
 export default {
   'npl.o3': {
     0: { nerdy: "You've been staring at me for about ten minutes. Just say it.", theatrical: "You've been staring at me for ten whole minutes, darling. Just say it.", warm: "You've been staring at me for ten minutes. You can just say it, you know.", dry: "You've been staring at me for ten minutes, and it's getting awkward, so just say it." },
-    1: { calm: "Fine, but not here. Over there.", blunt: "Not here. Over there.", theatrical: "Fine, but not here. Somewhere more private.", dry: "Fine, but not here. Over there, where the trees can't hear.", nerdy: "Fine, but not here. Over there.", warm: "Okay, but not here. Over there." },
+    1: { calm: "Fine. But keep your voice down.", blunt: "Fine. Keep it down.", theatrical: "Fine, but lower your voice, darling. Walls have ears.", dry: "Fine. But quietly. Everybody out here has very good hearing.", nerdy: "Fine. But keep your voice down.", warm: "Okay, but keep your voice down, okay?" },
   },
   'nd.dp1': {
     2: { loud: "You're telling everybody different things, and people talk! They compare notes!", ditzy: "You're telling everybody different stuff, and people talk, you know? They compare notes.", warm: "You're telling everybody different things, and people talk. I'm worried for you.", earnest: "You're telling everybody different things, honestly, and people compare notes.", schemer: "You're telling everybody different things. People compare notes.", anxious: "You're telling everybody different things, and people talk, and it scares me.", competitive: "You're telling everybody different things. People compare notes." },

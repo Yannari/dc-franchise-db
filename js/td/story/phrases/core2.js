@@ -15,7 +15,7 @@ export default {
     calm: ["Take a breath. It's fine.", "One thing at a time."],
     competitive: ["Shake it off. We win the next one.", "Forget it. Focus on what's next."],
     schemer: ["You're safe. Trust me on this.", "Nobody's coming after you. I'd know."],
-    nerdy: ["Realistically, the odds are in your favour.", "Worrying doesn't change the outcome. Just so you know."],
+    nerdy: ["Realistically, the odds are in your favour.", "Worrying about it won't change anything, you know."],
     earnest: ["Whatever happens, I've got your back.", "You're not alone in this."],
     tough: ["You're fine. Toughen up.", "Get up. You're okay."],
     bossy: ["Nobody's panicking. We have a plan.", "Stop. We're handling it."],

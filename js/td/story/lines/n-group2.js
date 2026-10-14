@@ -155,7 +155,7 @@ export default {
       { by: 'a', say: "Let's be honest. Half the people here are only here because somebody's carrying them.", v: { cruel: "Let's be real. Half of you are dead weight and the rest of us are carrying you.", proud: "Some of us are carrying this team, and I won't name names, but it's me." } },
       { by: 'b', say: "Are you talking about me?" },
       { by: 'a', say: "If it fits." },
-      { by: 'c', say: "Then say what you mean. Do not make {b} guess whether that was aimed at {b.obj}." },
+      { by: 'c', say: "Then just say it. Don't make {b} guess if that was about {b.obj}." },
       { by: 'a', say: "I am allowed to have an opinion." },
       { by: 'c', say: "You want everybody to hear it, but nobody gets to answer?" },
       { beat: "Somebody actually goes 'oooh'." },

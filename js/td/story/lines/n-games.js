@@ -30,14 +30,14 @@ export default {
     ] },
     { id: 'ngm.3', turns: [
       { beat: "{a} has drawn a talent show stage in the dirt with a stick, and is standing on it." },
-      { by: 'a', say: "Welcome to the first ever camp talent night! The prize is my respect." },
+      { by: 'a', say: "Welcome to the first ever camp talent show! The prize is my respect." },
       { by: 'b', say: "What's the talent supposed to be?" },
       { by: 'a', say: "Anything at all. Sing, dance, do a magic trick." },
       { by: 'c', say: "I can touch my nose with my tongue." },
       { by: 'd', say: "Please don't." },
       { by: 'c', say: "Too late." },
       { by: 'b', say: "That's horrifying. I think you win." },
-      { by: 'a', conf: "We had no stage, no music, no talent, and it was still the best night we've had out here." },
+      { by: 'a', conf: "We had no stage, no music, no talent, and it was still the most fun we've had out here." },
     ] },
     { id: 'ngm.4', turns: [
       { by: 'a', say: "Would you rather fight one bear-sized squirrel, or a hundred squirrel-sized bears?" },

@@ -65,7 +65,7 @@ export default {
       { by: 'a', say: "I see it. See, that wasn't so hard, was it?" },
       { by: 'b', say: "It was very hard. Thank you, really, thank you." },
       { by: 'a', say: "You don't have to thank me. You did it." },
-      { by: 'b', conf: "Even though I've been out here the longest, I still wanted to prove I can do things on my own. Turns out I can. With a little help." },
+      { by: 'b', conf: "I really wanted to prove I could do something on my own out here. Turns out I can. With a little help." },
       { by: 'a', conf: "I didn't know {b} cared that much about it. I'm glad I helped. More than I expected to be." },
     ] },
     { id: 'nmt.d2', turns: [

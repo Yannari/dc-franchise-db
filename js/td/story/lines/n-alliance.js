@@ -740,7 +740,7 @@ export default {
       { by: 'a', say: "Have I ever lied to you?" },
       { by: 'b', say: "...Not that I know of." },
       { by: 'a', say: "Exactly." },
-      { by: 'a', conf: "\"Not that I know of.\" That's the best thing anyone can say about a liar." },
+      { by: 'a', conf: "\"Not that I know of.\" Perfect. That means I've been doing this right." },
     ] },
     { id: 'na.h3', place: 'aside', when: { voice: ['loud', 'blunt', 'competitive', 'tough'] }, turns: [
       { by: 'a', say: "Look, I'm not good at this stuff, so I'll just say it. Final {size}?" },

@@ -15,7 +15,7 @@ export default {
   'vp.open.duo': [
     { id: 'npl.o1', turns: [{ beat: "{a} waits until {b} is alone {here}, then sits down right next to {b.obj}." }, { by: 'a', say: "Got a minute? It's about tonight.", v: { bossy: "Walk with me. We need to talk about tonight.", anxious: "Hey, um, can we talk about tonight really quickly?", loud: "Hey, you, come here, we need to talk about tonight!", dry: "So, tonight. Let's just get it over with." } }] },
     { id: 'npl.o2', turns: [{ by: 'a', say: "Okay, nobody's around. Let's figure out tonight.", v: { schemer: "Perfect, everybody's busy. Let's figure out tonight before they do.", goofy: "Okay, secret meeting, so act natural, and stop looking around like that!" } }] },
-    { id: 'npl.o3', turns: [{ by: 'b', say: "You've been staring at me for like ten minutes. Just say it.", v: { calm: "You've got the look. Go on, who is it?" } }, { by: 'a', say: "Fine, but not here. Over there." }] },
+    { id: 'npl.o3', turns: [{ by: 'b', say: "You've been staring at me for like ten minutes. Just say it.", v: { calm: "You've got the look. Go on, who is it?" } }, { by: 'a', say: "Fine. But keep your voice down." }] },
   ],
   'vp.open.group': [
     { id: 'npl.og1', turns: [{ beat: "{a} rounds up {b}, {c} and the others and walks them away from camp." }, { by: 'a', say: "Okay, everybody close. We don't have long.", v: { bossy: "Circle up. Five minutes, then we split up so nobody notices.", anxious: "Okay, okay, everybody come closer, I don't want anybody hearing this.", loud: "HUDDLE! I mean, huddle, but quietly." } }] },

@@ -152,6 +152,31 @@ const BIT_AFTER = [
   ["Can you say that again, slower, so I can understand it?", "Absolutely not. It only works once."],
   ["Okay, I see why people like you now.", "Took you long enough."],
 ];
+// A kit's own confessional is the person's line to the camera about themselves; it closes a scene only when it is about
+// what the scene was about (the user, 2026-10-14: "make sure the confessional dont mismatch with the conversation";
+// read: Julia's Mother Earth bit closed on "The trick is, you smile while you say it", a chat about home on "I came here
+// to observe my generation's failures"). Otherwise the other one says what they make of it.
+const CONF_STOP = new Set('that this with what have just about really they them their there here your you going would could should because people everybody somebody nobody think know want said says like okay yeah from when then than were been being into only also even still much more some very time today tonight'.split(' '));
+const contentOf = t => new Set(String(t).toLowerCase().match(/[a-z']{5,}/g)?.filter(w => !CONF_STOP.has(w)) || []);
+function confFits(line, turns) {
+  const said = new Set(turns.filter(t => t.say).flatMap(t => [...contentOf(t.say)]));
+  return [...contentOf(line)].some(w => said.has(w));
+}
+const BIT_CONF = [
+  "{a} does this every single day. I've stopped trying to work out if it's a joke.",
+  "I came out here to play a game, and instead I get a daily show from {a}. I'm not complaining. Much.",
+  "Honestly? {a} is one of the funniest people out here, and I'm never telling {a.obj} that.",
+  "Some days {a} is a lot. Today {a} was the good kind of a lot.",
+  "I don't always get {a}. But I'd rather have {a} around than not.",
+  "Every time I think I've figured {a} out, {a} says something like that.",
+];
+const LIFE_CONF = [
+  "I didn't know any of that about {a}. It's weird how little you know about the people you sleep next to.",
+  "{a} has a whole life back home, and I never even asked until today. I'm glad I did.",
+  "Now I know who's watching back home for {a}. That's going to make it a lot harder to write {a.posAdj} name down someday.",
+  "It's easy to forget everybody here has people waiting for them. {a} reminded me.",
+  "I asked {a} one question and learned more than I have all week. I should ask more questions.",
+];
 /** a brings their thing up, b teases them about it, a answers, b comes back at it, a has the last word,
  *  and one of them reflects. */
 export function kitBitScene(a, b, facts, ctx) {
@@ -174,13 +199,17 @@ export function kitBitScene(a, b, facts, ctx) {
   if (!bit) return null;
   const tease = take(a, 'tease', (_, i) => i === bit.index), reply = take(a, 'reply', (_, i) => i === bit.index), conf = take(a, 'conf');
   if (!bit || !tease || !reply) return null;
-  const entry = { id: `kit:${a}:bit:${(used()[a] || []).length}`, place: 'aside', turns: [
+  const talk = [
     { by: 'a', say: bit.line }, { by: 'b', say: tease.line }, { by: 'a', say: reply.line },
     ...(([q, r]) => [{ by: 'b', say: q }, { by: 'a', say: r }])(pickOf(BIT_AFTER, a, b)),
-    ...(conf ? [{ by: 'a', conf: conf.line }] : []),
+  ];
+  const ownConf = conf && confFits(conf.line, talk) ? conf : null;
+  const entry = { id: `kit:${a}:bit:${(used()[a] || []).length}`, place: 'aside', turns: [
+    ...talk,
+    ...(ownConf ? [{ by: 'a', conf: ownConf.line }] : [{ by: 'b', conf: pickOf(BIT_CONF, b, a) }]),
   ] };
   const w = writeKitScene(entry, { a, b }, facts, ctx);
-  if (w) { onCommit(w, () => { bit.mark(); tease.mark(); reply.mark(); conf?.mark(); }); w.who = { a, b }; w.fx = []; }
+  if (w) { onCommit(w, () => { bit.mark(); tease.mark(); reply.mark(); ownConf?.mark(); }); w.who = { a, b }; w.fx = []; }
   return w;
 }
 
@@ -209,9 +238,12 @@ export function kitLifeScene(a, b, facts, ctx) {
   const ans2 = kb ? take(b, 'want') : plain('want', b, archOf(b));
   // the question has to be the one the answer answers: "what would you do with the money?" only when b's answer
   // is about the money (read: Gabby asked it, and Sami answered what he wanted from the game)
-  const MONEY = /\bmoney\b|\bbuy\b|\bpay\b/i;
+  // (an answer that says why they came isn't about spending it, money or not: read 2026-10-14, "What are you gonna do
+  // with the money?" answered "To be charming on television. And the money, I suppose")
+  const MONEY = /\b(buy|pay|spend|pay off|put it|give it|save it|for my|on my)\b/i;
   const fitsAns = q => !/money|buy|spend/i.test(q) || MONEY.test(ans2?.line || '');
-  const ask2 = ka ? (take(a, 'askWant', fitsAns) || null) : plain('askWant', a);
+  const ask2a = ka ? (take(a, 'askWant', fitsAns) || null) : plain('askWant', a);
+  const ask2 = ask2a && !fitsAns(ask2a.line) ? { line: 'What made you sign up for this, anyway?', mark: () => {} } : ask2a;
   if (!ask1 || !ans1 || !ask2 || !ans2) return null;
   const react = REACT[[...(a + b)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % REACT.length];
   const turns = [
@@ -221,9 +253,11 @@ export function kitLifeScene(a, b, facts, ctx) {
     { by: 'a', say: `What about you? ${ask2.line.replace(/^(And|So|Okay,) /, m => '').replace(/^./, c => c.toUpperCase())}` },
     { by: 'b', say: ans2.line },
   ];
-  const c = (ka && take(a, 'conf')) || (kb && take(b, 'conf'));
+  const c0 = (ka && take(a, 'conf', line => confFits(line, turns))) || (kb && take(b, 'conf', line => confFits(line, turns)));
+  const c = c0 || null;
   const byConf = c && ka && KITS[a].conf?.includes(c.line) ? 'a' : 'b';
   if (c) turns.push({ by: byConf, conf: c.line });
+  else turns.push({ by: 'b', conf: pickOf(LIFE_CONF, b, a) });
   const entry = { id: `kit:${a}:${b}:life:${(used()[a] || []).length}`, place: 'aside', turns };
   const w = writeKitScene(entry, { a, b }, facts, ctx);
   if (w) onCommit(w, () => { ask1.mark(); ans1.mark(); ask2.mark(); ans2.mark(); c?.mark(); });

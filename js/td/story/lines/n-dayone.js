@@ -17,7 +17,9 @@ const O = (by, say) => ({ by, opt: true, say });
 export default {
   // ── set pieces: a is whoever sets it off (the boldest), b c d the others ──
   'story.dayone.any': [
-    { id: 'ndo.tour1', place: 'public', when: { third: true }, turns: [
+    // (the arrival is the morning: read 2026-10-14, a second tour of camp aired in the evening, and the tour of
+    // "where you'll be sleeping" on the fishing rocks)
+    { id: 'ndo.tour1', place: 'sleep', when: { third: true, phase: 'pre' }, turns: [
       { beat: "{host} is giving {a}, {b} and {c} the official tour {here}, and it is not going well." },
       { by: 'h', say: "And over here is where you'll be sleeping, eating, and crying, possibly all at once." },
       { by: 'a', say: "Is that a hole in the roof?" },
@@ -29,7 +31,7 @@ export default {
       O('d', "I'm going home. I'm walking home, and I don't care how far it is."),
       { by: 'a', conf: "The tour lasted four minutes, and three of them were {host} laughing at us. I've never been so scared of a skylight." },
     ] },
-    { id: 'ndo.tour2', place: 'public', when: { third: true }, turns: [
+    { id: 'ndo.tour2', place: 'public', when: { third: true, phase: 'pre' }, turns: [
       { beat: "{host} leads {a}, {b} and {c} past a sign that has been nailed up very recently, and badly." },
       { by: 'b', say: "What does that sign say?" },
       { by: 'h', say: "Don't worry about the sign." },
@@ -40,7 +42,7 @@ export default {
       O('d', "It's a bucket. That's a bucket with a curtain round it."),
       { by: 'c', conf: "Nobody's told us what we're not supposed to feed, so I'm not sleeping. I'm never sleeping." },
     ] },
-    { id: 'ndo.luggage1', place: 'sleep', when: { third: true }, turns: [
+    { id: 'ndo.luggage1', place: 'sleep', when: { third: true, phase: 'pre' }, turns: [
       { beat: "{a} is unpacking {here}, and {b} and {c} have stopped to watch, because {a} has brought a full-sized blender." },
       { by: 'b', say: "Why do you have a blender?" },
       { by: 'a', say: "For smoothies. Obviously." },
@@ -51,7 +53,7 @@ export default {
       O('d', "I've got a spare toothbrush. Trade you for the blender, as a hat."),
       { by: 'a', conf: "I packed for a holiday, because nobody told me it wasn't a holiday. Okay, they told me, and I didn't listen." },
     ] },
-    { id: 'ndo.luggage2', place: 'sleep', when: { third: true }, turns: [
+    { id: 'ndo.luggage2', place: 'sleep', when: { third: true, phase: 'pre' }, turns: [
       { beat: "{a} opens a bag {here}, and {b} and {c} watch twelve identical shirts fall out." },
       { by: 'c', say: "You brought twelve of the same shirt?" },
       { by: 'a', say: "I know what I like." },
@@ -94,7 +96,7 @@ export default {
       { by: 'a', say: "Our first enemy, and it's a raccoon. Great start, team." },
       { by: 'c', conf: "We lost our food to a raccoon before we lost our first challenge. That's got to be some kind of record." },
     ] },
-    { id: 'ndo.raid2', place: 'eat', when: { third: true }, turns: [
+    { id: 'ndo.raid2', place: 'eat', when: { third: true, phase: 'pre' }, turns: [
       { beat: "{a}, {b} and {c} watch a seagull fly off with the last bread roll, very slowly, like it's enjoying itself." },
       { by: 'b', say: "Did that bird just steal our lunch?" },
       { by: 'a', say: "It didn't steal it, it took it right in front of us. That's worse." },
@@ -211,7 +213,7 @@ export default {
       { by: 'c', conf: "Our team's first conversation was four people saying 'hi'. It can only go up from here. I hope." },
     ] },
     { id: 'ndo.fd2', place: 'public', when: { fourth: true }, turns: [
-      { beat: "The {tribe}'s first job is to decide who's in charge of what. It takes a while." },
+      { beat: "Job one for the {tribe}: deciding who's in charge of what. It takes a while." },
       { by: 'a', say: "Okay, I'll be in charge." },
       { by: 'b', say: "Who decided that?" },
       { by: 'a', say: "I did, just now, out loud, so it counts." },

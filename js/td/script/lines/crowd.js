@@ -136,7 +136,7 @@ const MEAL = [
     { by: 'a', say: "Morning, sunshines." },
     { by: 'b', say: "It's too early for sunshine." },
     { by: 'c', say: "It's too early for {a}." },
-    { by: 'a', say: "Rude. Accurate, but rude." },
+    { by: 'a', say: "Wow. Rude. True, but rude." },
   ] },
   { id: 'cw.m7', when: { register: 'schemer' }, turns: [
     { by: 'a', say: "So. Who's everyone sitting with these days?" },

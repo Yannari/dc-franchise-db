@@ -94,9 +94,9 @@ export default {
       { by: 'a', conf: "I don't know anybody on this team yet, but I already know who can't put up a tent.", v: { warm: "I don't really know anybody yet, but they're all trying, and that's sweet.", dry: "I don't know anybody here yet, but I already know who's useless with a tent." } },
     ] },
     { id: 'fd.g1', place: 'public', when: { fourth: true }, turns: [
-      { beat: "The {tribe}'s first afternoon together. Everybody's being a little too polite." },
+      { beat: "First day, and the {tribe} are all being a little too polite with each other." },
       { by: 'a', say: "Okay, so what does everybody do? Like, back home?", v: { warm: "So what does everybody do back home? I want to know everybody!", teen: "Okay, so what do you guys do? Like, are you all in school or what?", grown: "So what does everybody do for a living? I'm curious." } },
-      { by: 'b', say: "Does it matter?", v: { warm: "Oh, I love this. Okay, you first.", dry: "I'm going to lie, so it doesn't really matter." } },
+      { by: 'b', say: "Does it matter?", v: { warm: "Oh, are we doing introductions already?", dry: "I'm going to lie, so it doesn't really matter." } },
       { by: 'a', say: "It's called getting to know each other." },
       { by: 'c', say: "Honestly? Nothing that interesting.", v: { goofy: "I'm a professional napper. It's unpaid, but it's my passion.", nerdy: "Ask me something specific. I know a lot of facts about a lot of things." } },
       { by: 'd', say: "Cool. I'm still figuring it out.", v: { tough: "I don't really do the sharing thing.", flirty: "I'll tell you later. Just you." } },

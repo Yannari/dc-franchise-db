@@ -15,7 +15,8 @@ export default {
       { by: 'c', say: "Hey. That was really out of line, {a}.", v: { tough: "Say that to me, {a}. Go on.", warm: "{a}, come on, that was so mean.", dry: "Wow. Great, {a}. Really mature." } },
       { by: 'd', opt: true, say: "{c}, stay out of it." },
       { by: 'c', say: "No, I'm not staying out of it. {b} didn't do anything." },
-      { by: 'c', conf: "Everybody sat there and let {a} say that to {b}, and I couldn't. If that makes me a target, fine." },
+      // (says only what c did: others in the scene may have spoken up too, read 2026-10-14)
+      { by: 'c', conf: "I wasn't going to just sit there and let {a} talk to {b} like that. If that makes me a target, fine." },
     ] },
     { id: 'npb.d2', turns: [
       { beat: "{c} goes after {b} and sits down beside {b.obj}." },

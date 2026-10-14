@@ -84,7 +84,10 @@ export function witnessConflicts(ep, camp, out, members, write, factsForWho, liv
     const torn = /explode|bomb|crowd|fight/.test(sk + k) ? pool0.filter(x => x !== first && Math.min(getBond(x, a), getBond(x, b)) >= 1)
       .sort((x, y) => Math.min(getBond(y, a), getBond(y, b)) - Math.min(getBond(x, a), getBond(x, b)) || x.localeCompare(y))[0] : null;
     // one more voice at most when somebody already in the scene took a side
-    const already = ROLES.some(r => who[r] && spoke.has(who[r]));
+    // (counting everybody who has spoken besides the two of them, the room's reaction included: read 2026-10-14, a fight
+    // with a defender, an 'Am I crazy?' and a 'Tell him' stacked on it, four voices piling in)
+    const others = [...spoke].filter(x => x !== a && x !== b).length;
+    const already = ROLES.some(r => who[r] && spoke.has(who[r])) || others > 0;
     const watchers = [first, torn].filter(Boolean).slice(0, already ? 1 : 2);
     const oneSided = ONE_SIDED.test(sk) || ONE_SIDED.test(ty);
     const added = [];

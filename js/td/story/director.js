@@ -1001,6 +1001,19 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
     beat('vp.close', shape === 'group' ? 'group' : 'duo');
   }
   recall(lines);
+  // somebody who speaks only in a later beat walks up when they first speak (read 2026-10-14: "Oliwia follows Nura into
+  // the cave", then Natasha asked what they'd say, never having arrived): the set-up is written for the opening beat only
+  { const seen = new Set();
+    for (let i = 0; i < lines.length; i++) {
+      const l = lines[i];
+      if (l.kind === 'beat') { for (const n of inScene) if ((l.text || '').includes(n)) seen.add(n); continue; }
+      if (l.kind !== 'say' || !l.by) continue;
+      if (seen.size >= 2 && !seen.has(l.by) && inScene.has(l.by)) {
+        lines.splice(i, 0, { kind: 'beat', by: null, text: `${l.by} joins them.`, arrive: [l.by] });
+        i++;
+      }
+      seen.add(l.by);
+    } }
   const players = [...inScene];
   return { story: true, kind: `story.vote.${as.step}.${caseOf}`, storyType: 'vote', step: as.step, players, lines, text: lines.map(l => l.text).join(' '), lineId,
     scene: { kind: 'story.vote', who, data, spot: spot ? { ...spot, window: 'scramble' } : null }, badgeText: as.badge[0], badgeClass: as.badge[1], why };
@@ -2643,6 +2656,24 @@ export function airTdEpisode(ep) {
       if (editOn0 && !globalThis.__tdNoRhythm) out[phase] = breathe(out[phase], evs0, winOf, chalTalk);
       // one stretch of the day, not a stack of cut-off scenes (the user: "do we have conversation when
       // people jump in"): scenes that share a person run on from each other at the same spot
+      // a confessional from somebody the scene never showed (a watcher's take, an onlooker's line): they are put in it,
+      // watching, before they speak to the camera (the user, 2026-10-14: "make sure the confessional dont mismatch with
+      // the conversation"; read: "Nothing tells you more about people than watching them fight" from somebody who was
+      // never on screen)
+      for (const it of out[phase]) {
+        if (!it?.story || !Array.isArray(it.lines)) continue;
+        const said = new Set(it.lines.filter(l => l.kind === 'say' && l.by).map(l => l.by));
+        if (!said.size) continue;
+        const beats = it.lines.filter(l => l.kind === 'beat').map(l => l.text || '').join(' ');
+        const unseen = [...new Set(it.lines.filter(l => l.kind === 'conf' && l.by && !said.has(l.by) && !beats.includes(l.by)).map(l => l.by))];
+        if (!unseen.length) continue;
+        const at = it.lines.findIndex(l => l.kind === 'conf' && unseen.includes(l.by));
+        const names = unseen.length === 1 ? unseen[0] : `${unseen.slice(0, -1).join(', ')} and ${unseen[unseen.length - 1]}`;
+        const beat = { kind: 'beat', by: null, text: `${names} ${unseen.length === 1 ? 'has' : 'have'} been watching the whole thing.` };
+        it.lines = [...it.lines.slice(0, at), beat, ...it.lines.slice(at)];
+        it.text = it.lines.map(l => l.text).join(' ');
+        if (Array.isArray(it.players)) for (const x of unseen) if (!it.players.includes(x)) it.players.push(x);
+      }
       out[phase] = chainScenes(ep, camp, phase, out[phase], () => n++);
       // A defence needs its setup (the user, 2026-10-10: "it needs a prior setup, that's how we know it's a good
       // show with continuation"): the critic needles b in front of people, and the one who'll defend b is

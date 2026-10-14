@@ -234,6 +234,26 @@ export default {
     { id: 'dl.3', turns: [
       { by: 'a', conf: "{b} and I made a deal. Neither of us votes for the other, neither of us calls the other out. Let's see how long a promise lasts in here.", v: { soft: ['I really hope {b} means it. I do.'] } },
     ] },
+    { id: 'dl.4', turns: [
+      { beat: '{a} catches {b} alone by the washing machine.' },
+      { by: 'a', say: "Quick question. If your name ever comes up, do you want my vote or not?", v: { sharp: ['You want to stay safe? I can help with that. For a price.'] } },
+      { by: 'b', say: "What's the catch?", v: { soft: ['Of course I do. What do you need from me?'] } },
+      { by: 'a', say: "Same thing back. And you never call me out.", v: { loud: ['Same deal for me! And NO calling me out!'] } },
+      { by: 'b', say: "Deal.", v: { odd: ['Deal. Should we spit-shake? We shouldn\'t spit-shake.'] } },
+    ] },
+    { id: 'dl.5', turns: [
+      { by: 'b', say: "I don't want to end up across from you in that Arena.", v: { sharp: ['I\'d rather not have to beat you.'] } },
+      { by: 'a', say: "Then let's make sure we never do.", v: { soft: ['Me neither. Let\'s look out for each other.'] } },
+      { by: 'b', conf: "{a} and I have a deal now. It's not an alliance. It's insurance.", v: { loud: ['Insurance! Best purchase I\'ve made all week!'] } },
+    ] },
+    { id: 'dl.6', turns: [
+      { by: 'a', say: "Let's keep each other off the ballot. Just us. Nobody else needs to know.", v: { sharp: ['A quiet deal. Just between us.'] } },
+      { by: 'b', say: "Fine by me.", v: { soft: ['I\'d like that a lot.'] } },
+      { by: 'a', conf: "A deal nobody knows about is the best kind. Nobody can use it against you.", v: { soft: ['It\'s nice to have one person I don\'t have to worry about.'] } },
+    ] },
+    { id: 'dl.7', turns: [
+      { by: 'b', conf: "{a} asked me for a deal, and I said yes. I'll keep it as long as it keeps me safe.", v: { soft: ['I\'ll keep it. I keep my promises.'], sharp: ['Every deal has an expiry date. Mine just isn\'t written down.'] } },
+    ] },
   ],
   'deal-broken.vote': [
     { id: 'db.v1', turns: [

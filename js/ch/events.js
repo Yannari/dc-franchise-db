@@ -29,7 +29,7 @@ import { stableRng } from '../script/rng.js';
 import { learn, factId } from '../knowledge.js';
 import { S, archetypeOf, mayScheme, addScene, clamp } from './state.js';
 import { nudge } from './mind.js';
-import { remember, grudgeOf, resentOf, trustOf, intimidated, sparked, respected, attractOf } from './rel.js';
+import { remember, grudgeOf, resentOf, trustOf, intimidated, sparked, respected, attractOf, memories } from './rel.js';
 import { allianceOf, activeAlliances } from './alliances.js';
 import { coupleOf } from './callout.js';
 import { arenaRead, freeRide } from './respect.js';
@@ -206,9 +206,11 @@ export const EVENTS = [
     } },
   { id: 'receipts', actorCooldown: 1, kind: 'drama', cooldown: 3, max: 9,
     // "You voted me in." The open vote's grudges, said to their face.
+    // Only between people where it is TRUE: b said a's name at a vote.
     cast: ctx => bestPair(ctx, 'receipts', 3, (a, b) => {
+      if (!memories(a, b).some(m => m.type === 'voted-for-me')) return 0;
       const m = ctx.state.receiptsFresh?.[a]?.includes(b) ? 1.5 : 0;
-      return m + grudgeOf(a, b) * 0.3 + S(a, 'boldness') * 0.05 - 1;
+      return m + grudgeOf(a, b) * 0.3 + S(a, 'boldness') * 0.05;
     }),
     weight: (ctx, p) => 0.9 + p.score * 0.2,
     fire(ctx, [a, b], rng) {

@@ -220,7 +220,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       const deal = dealBetween(state, votedIn, co.opponent);
       if (deal) breakDeal(state, deal, votedIn, 'callout');
       epRec.callouts.push({ by: votedIn, opponent: co.opponent, reason: co.reason, terms: co.terms, ranked: co.ranked || null });
-      addScene(state, 'callout', [votedIn, co.opponent], { reason: co.reason }, state.active, 'public');
+      addScene(state, 'callout', [votedIn, co.opponent], { reason: co.reason, volunteer,
+        votedMe: !!vote?.ballots.some(x => x.voter === co.opponent && x.target === votedIn) }, state.active, 'public');
       afterVote(state, R(`after${k}`), { ballots: vote?.ballots || [], votedIn, calledOut: co.opponent, by: votedIn });
       matches.push({ a: votedIn, b: co.opponent, volunteer, vote, callout: { by: votedIn, opponent: co.opponent, reason: co.reason },
         voters: (vote?.ballots || []).filter(x => x.target === votedIn).map(x => x.voter) });
@@ -249,7 +250,6 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       arenaWon(winner, loser, state.active, { margin: duel.upset ? 1.4 : 1 });
       removePlayer(state, loser, 'arena', { by: winner, game: duel.game });
       syncActive(state);
-      epRec.fallout = (epRec.fallout || []).concat(morningAfter(state, { duel, vote: m.vote, callout: m.callout, meetings: delib?.meetings || [] }));
       // A winner hurt in the Arena can still be pulled out.
       if (injuryRoll(state, R(`hurt${k}`), winner, 1.3) && R(`med${k}`)() < 0.2) {
         medical(state, winner); epRec.exits.push({ name: winner, how: 'medical' });
@@ -258,6 +258,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
         // comes back having sent the caller home, and a volunteer put themselves there.
         returnToHouse(state, winner, winner === m.a ? m.voters : [], { volunteered: m.volunteer && winner === m.a, calledOut: winner === m.b, beat: loser });
       }
+      // The morning after comes after the winner has walked back in.
+      epRec.fallout = (epRec.fallout || []).concat(morningAfter(state, { duel, vote: m.vote, callout: m.callout, meetings: delib?.meetings || [] }));
     }
     houseBeats(state, R('beats3'), { night: true, min: 1, max: 3 });
     psycheMoment(state, R('psyche'));

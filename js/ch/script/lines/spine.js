@@ -428,7 +428,7 @@ export default {
 
   // ── the call-out ────────────────────────────────────────────────────
   'callout.survive': [
-    { id: 'co.s1', turns: [
+    { id: 'co.s1', when: { volunteer: false }, turns: [
       { by: 'tj', say: "{a}, my friend, the house has spoken. Now it's your turn. Who are you calling out?" },
       { by: 'a', say: "I'm calling out {b}." },
       { by: 'b', say: "Seriously?" },
@@ -453,13 +453,13 @@ export default {
     ] },
   ],
   'callout.grudge': [
-    { id: 'co.g1', turns: [
+    { id: 'co.g1', when: { votedMe: true }, turns: [
       { by: 'tj', say: "{a}! Who's it gonna be?" },
       { by: 'a', say: "{b}. And {b} knows exactly why." },
       { by: 'b', say: "Here we go." },
       { by: 'a', conf: "This has been coming for a while. {b} put my name out there, so now {b} gets to fight me for it." },
     ] },
-    { id: 'co.g2', turns: [
+    { id: 'co.g2', when: { votedMe: true }, turns: [
       { by: 'a', say: "{b}. You voted me in. So guess what, you're coming with me." },
       { by: 'b', say: "That's fine. I'll see you in there." },
       { by: 'tj', say: "Oh, this is SPICY. I need a minute. I need a snack. Somebody get me a snack." },
@@ -473,6 +473,18 @@ export default {
       { by: 'b', say: "Bring it." },
       { by: 'a', say: "Oh, I'm bringing it. I've been waiting to bring it." },
       { by: 'a', conf: "I don't care if I win or lose. I care that {b} has to stand across from me and look me in the eye." },
+    ] },
+    // a grudge that is not about the vote: they just do not get along
+    { id: 'co.g5', turns: [
+      { by: 'tj', say: "{a}, the moment of truth. Who's going in with you?" },
+      { by: 'a', say: "{b}. We don't get along, and I'd rather settle it in there than keep pretending in the villa." },
+      { by: 'b', say: "Finally, something we agree on." },
+      { by: 'b', conf: "{a} and I were always going to end up here. At least now it's out in the open." },
+    ] },
+    { id: 'co.g6', turns: [
+      { by: 'a', say: "I'm calling out {b}. I'm not going to stand here and pretend I like you." },
+      { by: 'tj', say: "Honesty! Brutal, beautiful honesty! I love this job!" },
+      { by: 'a', conf: "If I'm going in, I'm taking the person I can't stand with me. At least I'll enjoy it." },
     ] },
   ],
   'callout.prove': [

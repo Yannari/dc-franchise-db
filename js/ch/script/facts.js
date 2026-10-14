@@ -35,6 +35,10 @@ export const CH_FACT_KEYS = [
   'division',
   // a is in an alliance at the scene (a line about feeling left out needs false)
   'allied',
+  // in a call-out: the one called out voted the caller in (a line may say so only then)
+  'votedMe',
+  // the caller volunteered rather than being voted in
+  'volunteer',
 ];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -76,6 +80,8 @@ export function factsFor(scene, roles, state) {
     third: !!c,
     reason: roles.slots?.reason || null,
     division: state.episodes.find(e => e.ep === scene.ep)?.division || null,
+    votedMe: !!scene.data?.votedMe,
+    volunteer: !!scene.data?.volunteer,
   };
   if (a) {
     f.register = registerOf(a);

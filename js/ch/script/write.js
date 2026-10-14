@@ -58,8 +58,11 @@ export function voicedLine(turn, speaker, { hush = false, rng = Math.random, led
       const start = Math.floor(rng() * got.length);
       const order = got.map((_, i) => got[(start + i) % got.length]);
       const vday = ledger ? (ledger.vday ||= {}) : {}, vby = ledger ? (ledger.vby ||= {}) : {};
+      // Every alternative already heard today: this voice is spent for the day,
+      // so the speaker's next tag speaks (or the line itself), never a repeat.
       const fresh = order.find(x => vday[x] !== day && !(vby[x] || []).includes(speaker))
-        ?? order.find(x => vday[x] !== day) ?? order[0];
+        ?? order.find(x => vday[x] !== day);
+      if (!fresh) continue;
       if (ledger) { vday[fresh] = day; (vby[fresh] ||= []).push(speaker); }
       return { text: fresh, tag: key };
     }

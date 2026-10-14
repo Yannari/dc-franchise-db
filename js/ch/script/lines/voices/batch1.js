@@ -16,16 +16,16 @@
 // speech, every line names {b}.
 
 const NEUTRAL = {
-  quiet: ['Just {b}.', '{b}. That\'s all.'],
-  dry: ['{b}. Try to act surprised.', '{b}. Shocking twist, I know.'],
-  loud: ['{b}! Let\'s go!', '{b}! Write it down, TJ!'],
-  warm: ['{b}. I\'m sorry, I really am.', '{b}. Please don\'t hate me.'],
-  blunt: ['{b}. Not complicated.', '{b}, and I\'m not going to pretend it\'s hard.'],
-  theatrical: ['With a very heavy heart... {b}.', '{b}. And... scene.'],
-  anxious: ['Oh gosh, okay. {b}. Sorry. {b}.', '{b}? Yeah. Yes. {b}.'],
-  calm: ['{b}. It just makes sense.', '{b}. Nothing more to it than that.'],
-  competitive: ['{b}. Go prove you deserve to stay.', '{b}. Win your way back if you want it.'],
-  schemer: ['{b}. It\'s best for everybody, really.', '{b}. It\'s just good strategy.'],
+  quiet: ['Just {b}.', '{b}. That\'s all.', '{b}. Sorry.', 'Mm. {b}.'],
+  dry: ['{b}. Try to act surprised.', '{b}. Shocking twist, I know.', '{b}. I know, I\'m as surprised as you are.', '{b}. Riveting stuff.'],
+  loud: ['{b}! Let\'s go!', '{b}! Write it down, TJ!', '{b}! Loud and clear!', 'It\'s {b}! Everybody heard me!', '{b}! No take-backs!'],
+  warm: ['{b}. I\'m sorry, I really am.', '{b}. Please don\'t hate me.', '{b}. I\'ll give you a hug after, I promise.', 'I\'m so sorry, {b}. It\'s you.'],
+  blunt: ['{b}. Not complicated.', '{b}, and I\'m not going to pretend it\'s hard.', '{b}. Next.', '{b}. Easy one.'],
+  theatrical: ['With a very heavy heart... {b}.', '{b}. And... scene.', 'And my vote goes to... {b}!', '{b}. Dramatic pause. Still {b}.'],
+  anxious: ['Oh gosh, okay. {b}. Sorry. {b}.', '{b}? Yeah. Yes. {b}.', 'I think... {b}. Yes. {b}.', '{b}. Please don\'t be mad.'],
+  calm: ['{b}. It just makes sense.', '{b}. Nothing more to it than that.', '{b}. It\'s the right move.', 'I\'ll say {b}, quietly.'],
+  competitive: ['{b}. Go prove you deserve to stay.', '{b}. Win your way back if you want it.', '{b}. Let\'s see what you\'re made of.'],
+  schemer: ['{b}. It\'s best for everybody, really.', '{b}. It\'s just good strategy.', '{b}. I\'m sure you understand.', '{b}. Purely business.'],
   cruel: ['{b}. Honestly, it\'s overdue.', '{b}. Don\'t take too long packing.'],
   chaotic: ['{b}! Let\'s make it interesting!', '{b}, because why not?'],
   food: ['{b}. Can we eat after this?', '{b}. Okay, who\'s cooking tonight?'],
@@ -104,7 +104,7 @@ const ENEMY = {
 
 const PLAN = {
   quiet: ['{b}. Same as everybody.'],
-  dry: ['{b}. As discussed, at length, on the balcony.'],
+  dry: ['{b}. As discussed. At length.', '{b}. As agreed, by people who agree on things.'],
   loud: ['{b}! Team stays together!'],
   warm: ['{b}. I\'m with my people.'],
   blunt: ['{b}. We decided, so that\'s it.'],

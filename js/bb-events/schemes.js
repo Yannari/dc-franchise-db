@@ -610,7 +610,7 @@ const kissTrap = {
   fire(house, ctx, api, rng) {
     const setup = _kissSetup(house);
     if (!setup) {
-      return _quietBeat(`Somebody in this house is looking for a couple to break, and cannot find the angle.`, []);
+      return _quietBeat(`Somebody in this house would love to split up a couple, and can't find a way in.`, []);
     }
     return _run(ctx, ep => _generateKissTrap(setup.schemer, { showmance: setup.showmance }, house, ep, _pick),
       'KISS TRAP', 'red',

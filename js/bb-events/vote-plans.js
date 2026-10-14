@@ -226,7 +226,7 @@ const recruitReport = {
   },
   fire(house, ctx, api) {
     const found = _reportable(ctx, house);
-    if (!found) return _fallback(`Nobody has anything worth carrying across the house.`, house.slice(0, 1), 'NOTHING TO TELL');
+    if (!found) return _fallback(`Nobody has any news to pass on today.`, house.slice(0, 1), 'NOTHING TO TELL');
     const { plan, approach, voter, listener } = found;
     const recruiter = approach.recruiter;
 
@@ -277,7 +277,7 @@ const falseCommitmentDoubt = {
   },
   fire(house, ctx, api) {
     const found = _softYes(ctx, house);
-    if (!found) return _fallback(`Everybody's word is good until the ballots prove otherwise.`, house.slice(0, 1), 'NO DOUBTS');
+    if (!found) return _fallback(`Everybody says they're sticking to the plan. Nobody can check until the votes are read.`, house.slice(0, 1), 'NO DOUBTS');
     const { plan, voter, doubter, outcome } = found;
 
     const scene = makeScene('plan.doubt', { a: doubter, b: voter }, { ending: outcome === 'lies' ? 'lies' : 'undecided', target: plan.target }, [], 'washroom');
@@ -321,7 +321,7 @@ const internalDissent = {
   },
   fire(house, ctx, api) {
     const found = _dissenter(ctx, house);
-    if (!found) return _fallback(`The room agrees with itself, which nobody trusts either.`, house.slice(0, 1), 'NO ARGUMENT');
+    if (!found) return _fallback(`Everybody agrees on the plan. Somehow that makes people more nervous, not less.`, house.slice(0, 1), 'NO ARGUMENT');
     const { plan, voter, stance } = found;
     const org = plan.organizer;
 
@@ -364,7 +364,7 @@ const swingCourtedTwice = {
   },
   fire(house, ctx, api) {
     const found = _swing(ctx, house);
-    if (!found) return _fallback(`Nobody is anybody's swing this week.`, house.slice(0, 1), 'NO SWING');
+    if (!found) return _fallback(`Nobody's vote is up for grabs this week.`, house.slice(0, 1), 'NO SWING');
     const { voter, plans, both } = found;
     const a = plans[0];
     const b = plans[1] || null;
@@ -442,7 +442,7 @@ const competingCounts = {
   },
   fire(house, ctx, api) {
     const found = _doubleCount(ctx, house);
-    if (!found) return _fallback(`There is only one room doing arithmetic this week.`, house.slice(0, 1), 'ONE ROOM');
+    if (!found) return _fallback(`Only one group in the house is counting votes this week.`, house.slice(0, 1), 'ONE ROOM');
     const { voter, a, b } = found;
     const split = a.target !== b.target;
 
@@ -513,7 +513,7 @@ const organizerOverconfident = {
   fire(house, ctx, api) {
     const plan = _plans(ctx, house).find(p => p.expected >= p.majority && p.locked < p.majority
       && _lieutenant(p, house));
-    if (!plan) return _fallback(`Nobody is relaxed enough about anything to be worth filming.`, house.slice(0, 1), 'NOBODY RELAXES');
+    if (!plan) return _fallback(`Nobody in the house is relaxed enough to get careless.`, house.slice(0, 1), 'NOBODY RELAXES');
     const org = plan.organizer;
     const lieutenant = _lieutenant(plan, house);
     const air = plan.expected - plan.locked;
@@ -547,7 +547,7 @@ const quietRefusalSpreads = {
   },
   fire(house, ctx, api) {
     const found = _refusalCarrier(ctx, house);
-    if (!found) return _fallback(`Everybody who said no this week said it and left it there.`, house.slice(0, 1), 'KEPT QUIET');
+    if (!found) return _fallback(`Everybody who turned a plan down this week kept it to themselves.`, house.slice(0, 1), 'KEPT QUIET');
     const { plan, voter, warned } = found;
     const org = plan.organizer;
 
@@ -650,7 +650,7 @@ const backdoorPlayedVeto = {
   },
   fire(house, ctx, api) {
     const found = _backdoorMiss(ctx, house);
-    if (!found) return _fallback(`Whatever this week was built on is still standing.`, house.slice(0, 1), 'PLAN INTACT');
+    if (!found) return _fallback(`The plan for the week is still on track.`, house.slice(0, 1), 'PLAN INTACT');
     _spend(this.id, ctx);
     const { target, hoh, won } = found;
     const confidant = closestTo(hoh, house.filter(n => n !== hoh && n !== target)) || null;
@@ -699,7 +699,7 @@ const pawnPanic = {
   },
   fire(house, ctx, api) {
     const found = _pawnTrouble(ctx, house);
-    if (!found) return _fallback(`Nobody sat down this week expecting to be safe.`, house.slice(0, 1), 'NO PAWN');
+    if (!found) return _fallback(`Nobody on the block this week was promised they'd be safe.`, house.slice(0, 1), 'NO PAWN');
     const { pawn, asker, other } = found;
     const guilt = isNice(asker) || pStats(asker).loyalty >= 6;
 
@@ -753,7 +753,7 @@ const blameForming = {
   },
   fire(house, ctx, api) {
     const found = _wrongRoom(ctx, house);
-    if (!found) return _fallback(`Nobody has anything to pre-blame anybody for.`, house.slice(0, 1), 'NO BLAME');
+    if (!found) return _fallback(`Nobody is lining up someone to blame yet.`, house.slice(0, 1), 'NO BLAME');
     _spend(this.id, ctx);
     const { blamer, weak, target } = found;
 

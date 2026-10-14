@@ -685,15 +685,15 @@ export function campaignCase(nominee, voter, opponent) {
 export function campaignArgument(nominee, voter, opponent) {
   const c = campaignCase(nominee, voter, opponent);
   switch (c.kind) {
-    case 'deal': return `"We shook on something. I have not forgotten it and I do not think you have. Keep me here and it is still a plan; send me out and you are doing the rest of this alone."`;
-    case 'hunted': return `"Every time you leave the room, ${opponent} brings up your name. I am not the one you need to worry about."`;
-    case 'pair': return `"${opponent} and ${c.partner} are a pair. Maybe you knew, maybe you didn't — but count it: keep ${opponent}, and you are the third person in a two-person plan. I am the only vote in this house that breaks that up."`;
-    case 'alliance': return `"${opponent} is in ${c.alliance} and you are not. Keep ${opponent} and you are voting for a group that has no seat for you."`;
-    case 'comps': return `"${opponent} has won ${c.theirComps} competitions. I have won ${c.myComps}. One of us becomes your problem when the numbers get smaller, and it is not me."`;
-    case 'beatable': return `"Look at who is left. ${opponent} beats you at the end. I do not, and I think we both know it. Take the one you can beat."`;
-    case 'clean': return `"I have never written your name down. Not once. ${opponent} cannot say the same, and I can."`;
-    case 'friend': return `"You do not owe me anything. But you need a number next week, and I will be one for you. ${opponent ? `${opponent} will not` : 'The other side will not'}."`;
-    default: return `"I am not asking you to like me. I am asking you to count. Without me you are one short of everything you want to do."`;
+    case 'deal': return `"We shook on something. I haven't forgotten it, and I don't think you have. Keep me, and it's still a plan. Send me home, and you're doing the rest of this on your own."`;
+    case 'hunted': return `"Every time you leave the room, ${opponent} brings up your name. I'm not the one you need to worry about."`;
+    case 'pair': return `"${opponent} and ${c.partner} are a pair. Keep ${opponent}, and you're the third person in a two-person plan. I'm the only vote in this house that breaks that up."`;
+    case 'alliance': return `"${opponent} is in ${c.alliance} and you're not. Keep ${opponent}, and you're voting for a group with no seat for you."`;
+    case 'comps': return `"${opponent} has won ${c.theirComps} competitions. I've won ${c.myComps}. One of us becomes your problem later on, and it isn't me."`;
+    case 'beatable': return `"Look at who's left. ${opponent} beats you at the end. I don't, and I think we both know it. Take the one you can beat."`;
+    case 'clean': return `"I've never written your name down. Not once. ${opponent} can't say that."`;
+    case 'friend': return `"You don't owe me anything. But you'll need a number next week, and I'll be one for you. ${opponent ? `${opponent} won't` : "The other side won't"}."`;
+    default: return `"I'm not asking you to like me. I'm asking you to count. Without me, you're one short of everything you want to do."`;
   }
 }
 

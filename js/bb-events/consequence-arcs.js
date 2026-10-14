@@ -591,7 +591,7 @@ const endgameSoleVoterCourt = {
     if (!scene) {
       const a = house[0], b = house[1];
       api.addBond(a, b, 0.3);
-      return result(`The last vote in the house has nobody to hear.`, [a, b], 'NO COURT', 'grey');
+      return result(`${a} and ${b} talk about the final vote. Neither of them has anyone left to pitch.`, [a, b], 'NO COURT', 'grey');
     }
     const { voter, noms } = scene;
     const score = n => pStats(n).social * 0.35 + bond(voter, n) * 0.5
@@ -640,7 +640,7 @@ const endgameCutCalculus = {
     if (!actor || !partner) {
       const a = house[0], b = house[1];
       api.addBond(a, b, 0.3);
-      return result(`Nobody in this house is holding anything that reaches the end.`,
+      return result(`${a} and ${b} talk about the end. Neither of them has a deal that gets them there.`,
         [a, b], 'NOTHING TO BREAK', 'grey');
     }
     const tier = tierOf(deal) === 'final-two' ? 'final two' : 'final three';
@@ -681,7 +681,7 @@ const endgameUnbeatable = {
     if (!actor || !unbeatable || actor === unbeatable) {
       const a = house[0], b = house[1];
       api.suspicion(a, b, 0.4);
-      return result(`Nobody wants to name the favourite.`, [a, b], 'UNSAID', 'grey');
+      return result(`${a} and ${b} both know who the jury favourite is. Neither of them says the name.`, [a, b], 'UNSAID', 'grey');
     }
     const strong = respectOf(actor, unbeatable) >= 4 || villain(actor);
 
@@ -729,7 +729,7 @@ const endgamePromisesCompared = {
     if (!found) {
       const a = house[0], b = house[1];
       api.addBond(a, b, 0.3);
-      return result(`Nobody compares anything tonight.`, [a, b], 'UNCOMPARED', 'grey');
+      return result(`${a} and ${b} have a quiet night. Neither of them brings up what anyone has promised.`, [a, b], 'UNCOMPARED', 'grey');
     }
     const { suspect } = found;
     const [one, two] = quiet(found.holders);

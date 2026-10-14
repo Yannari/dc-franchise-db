@@ -222,7 +222,7 @@ const REACT_COLD = [
     { by: 'b', say: "Well, it's not losing my vote either." },
   ] },
   { id: 'pt.c5', when: { register: 'fiery' }, turns: [
-    { by: 'a', say: "It's {target} tonight. {claimed} votes." },
+    { by: 'a', say: "It's {target} tonight. I've got {claimed} votes." },
     { by: 'b', say: "Over my dead body! Leave {target} out of this!" },
     { by: 'a', say: "Shh! Keep your voice down!" },
     { by: 'b', say: "No! Keep your plans to yourself!" },

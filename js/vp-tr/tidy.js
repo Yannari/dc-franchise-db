@@ -31,6 +31,8 @@ import { players } from '../core.js';
 const PREPOSITIONS = new Set(['to', 'with', 'at', 'for', 'about', 'on', 'of', 'from',
   'behind', 'beside', 'past', 'against', 'toward', 'towards', 'by', 'into', 'onto',
   'over', 'under', 'without', 'around', 'near', 'after', 'like']);
+// after "Name's", the words that leave it standing alone ("it was Misha's in the end")
+const STANDALONE_AFTER = new Set(['in', 'on', 'at', 'to', 'for', 'with', 'from', 'and', 'or', 'but', 'now', 'too', 'again', 'anymore', 'instead', 'either']);
 // after "Name's", the words that make it "Name is" / "Name has" rather than a possessive
 const HAS_AFTER = new Set(['been', 'got']);
 const IS_AFTER = new Set(['going', 'gonna', 'the', 'a', 'an', 'not', 'just', 'so', 'really', 'always', 'never', 'safe', 'fine', 'done',
@@ -152,6 +154,8 @@ function _tidySentence(sent, re, speech = false) {
         // "Finn's going to be my favourite" is "Finn is", not Finn's thing: a word that can only follow "is" or "has" makes
         // it a contraction (read 2026-10-14: "I know his going to be my favourite", "because his the same")
         else if (h.poss && IS_AFTER.has(next)) rep = p.sub === 'they' ? (HAS_AFTER.has(next) ? "they've" : "they're") : `${p.sub}'s`;
+        // "as Misha's in front of everyone": nothing owned after it, so it stands alone ("hers", not "her")
+        else if (h.poss && (!next || STANDALONE_AFTER.has(next))) rep = p.pos || p.posAdj;
         else if (h.poss) rep = p.posAdj;
         // "after Gerry said" is a clause, not an object: a real verb after
         // the name wins over the preposition before it.

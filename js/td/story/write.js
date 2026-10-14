@@ -297,7 +297,10 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     raw = raw.replace(/\{([ab])\.thing\}/g, (slot,role) => KITS[who[role]]?.thing || slot);
     const filled = fill(raw, who, data);
     const text = kind === 'beat' ? tidyNames(filled) : tidySpoken(filled);
-    const line = { kind, by: t.by ? who[t.by] : null, text: text.charAt(0).toUpperCase() + text.slice(1) };
+    // a sentence starts with a capital, a number word filled in included (read 2026-10-14: "Three votes. three people
+    // wrote Evie's name"); a trailing-off "..." is the same sentence going on ("Is that... it is")
+    const text1 = text.replace(/(^|[^.][.!?]["”]?\s+)([a-z])/g, (m, pre, c) => pre + c.toUpperCase());
+    const line = { kind, by: t.by ? who[t.by] : null, text: text1.charAt(0).toUpperCase() + text1.slice(1) };
     // the scene moves (goes: the people in the rest of it walk somewhere else) or somebody walks in (comes)
     if (t.goes) line.goes = true;
     if (t.comes && who[t.comes]) line.arrive = [who[t.comes]];

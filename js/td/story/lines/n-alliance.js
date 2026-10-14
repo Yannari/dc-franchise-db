@@ -123,7 +123,7 @@ export default {
       { by: 'a', say: "Then we're just friends. People will believe that." },
       { by: 'b', say: "...Okay. What's it called?" },
       { by: 'a', say: "{group}." },
-      { by: 'b', conf: "My old team thinks I'm theirs and {a} thinks I'm {a.posAdj}, and both of those are useful.", v: { warm: "I feel a little bad playing both sides, but not bad enough to stop." } },
+      { by: 'b', conf: "My old team thinks I'm theirs and {a} thinks I'm {a.pos}, and both of those are useful.", v: { warm: "I feel a little bad playing both sides, but not bad enough to stop." } },
     ] },
     { id: 'na.p8', place: 'secret', when: { third: true, members: 3 }, turns: [
       { beat: "{a} gets {b}, then {c}, and takes them out to {place}." },

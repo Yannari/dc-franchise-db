@@ -181,13 +181,13 @@ export default {
   'long.romance.night.kiss': [
     { id: "nrs.k1", place: "fire", turns: [
       {"beat":"The bottle stops on {a}, then {b}. The group waits for a reaction."},
-      {"by":"b","say":"Of course. The bottle has excellent comic timing."},
+      {"by":"b","say":"Of course it did. Of course."},
       {"by":"a","say":"Do you want to, or should we spin it again?"},
       {"by":"b","say":"I want to. I just needed a second to look cool about it."},
       {"by":"a","say":"Take your second. I need one too."},
       {"beat":"They lean toward each other and kiss. Cheers break the silence around them."},
       {"by":"b","say":"Okay. I'm definitely not looking cool now."},
-      {"by":"b","conf":"{a} gave me a way to say no without making it embarrassing. That made saying yes feel very different. Now I have to stop smiling long enough to rejoin the game."}
+      {"by":"b","conf":"{a} asked if I wanted to before we kissed, in front of everybody. That was really sweet. Now I can't stop smiling."}
     ] },
   ],
   'long.romance.night.never': [

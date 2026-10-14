@@ -284,7 +284,7 @@ export default {
     4: { warm: "It was all of us, and whoever goes tonight goes because of a vote, not one mistake.", food: "It was all of us, and whoever goes tonight goes because of a vote, not one mistake.", calm: "It was all of us. Whoever goes tonight goes because of a vote, not one mistake." },
     5: { earnest: "That's very wise, and I hate it.", warm: "That's very wise, and I hate it.", chaotic: "That's very wise, and I hate it!", blunt: "Wise. I hate it." },
   },
-  'nk.cs1': { 6: { earnest: "That was my move, mine, and {a} is just standing there telling everyone it was {a.posAdj}.", competitive: "That was my move, and {a} is telling everyone it was {a.posAdj}. I won't let that stand.", calm: "That was my move, and {a} is just standing there telling everyone it was {a.posAdj}.", nerdy: "That was my move, and {a} is claiming it as {a.posAdj} in front of everyone." } },
+  'nk.cs1': { 6: { earnest: "That was my move, mine, and {a} is just standing there telling everyone it was {a.pos}.", competitive: "That was my move, and {a} is telling everyone it was {a.pos}. I won't let that stand.", calm: "That was my move, and {a} is just standing there telling everyone it was {a.pos}.", nerdy: "That was my move, and {a} is claiming it as {a.pos} in front of everyone." } },
   'nps.b3': {
     0: { dry: "Can I ask you something weird? Do people here like me?", quiet: "Do people here like me?", warm: "Can I ask you something weird? Do people here like me?" },
     2: { dry: "Then why did my name come up last night?", quiet: "Then why did my name come up?", warm: "Then why did my name come up last night?" },

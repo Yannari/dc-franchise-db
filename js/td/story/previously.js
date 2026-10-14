@@ -180,7 +180,7 @@ export function writePreviously(ep) {
     if (!say) return;
     const shot = shotOf(c.x, [a, b].filter(Boolean));
     const said = T(pick(say, `sl-${kb}`));
-    H(said + (c.score >= 9 ? aside(`sl${i}`) : ''), shot);
+    H(said + (c.score >= 9 && !/(^|[.!?] )[A-Z][a-z]+[.!]$/.test(said) ? aside(`sl${i}`) : ''), shot);
     // the line that mattered, from the people in it: somebody the host just named (a clip from a person the sentence
     // never mentioned reads as a non sequitur, read 2026-10-14: "Leshawna knew she was in trouble" then Millie)
     if (quotes < QUOTES && (c.score >= 7 || roll(`q${i}`, .5))) { const q = quoteOf(c.x, [a, b].filter(n => n && said.includes(n))); if (q) { Q(q.by, q.text, shot); quotes++; } }

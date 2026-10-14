@@ -299,7 +299,9 @@ const CLASH_CONF = ["{a} takes everything so personally. Fine. Now I know exactl
 /** b, who doesn't like a, sneers at a's thing; a defends it (Nura and Dunia). */
 export function kitClashScene(a, b, facts, ctx) {
   const k = KITS[a];
-  const def = k && take(a, 'defend');
+  // (a defence that answers a particular insult, "Call me a meathead one more time", can't follow a generic sneer:
+  // read 2026-10-14, "Does it ever get old for you?" answered with it)
+  const def = k && take(a, 'defend', line => !/\bcall me\b|\bsay that again\b|\bone more time\b/i.test(line));
   if (!def) return null;
   const entry = { id: `kit:${a}:${b}:clash`, place: 'aside', turns: [
     { beat: `{a} is going on about ${k.thing} again, and {b} has had enough.` },

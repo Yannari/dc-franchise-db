@@ -365,7 +365,7 @@ export default {
   ],
   'long.test.caught.any': [
     { id: 'nk.tc1', place: 'aside', turns: [
-      { by: 'b', say: "So, between us, I heard your name is coming up tonight.", v: { schemer: "Just so you know, your name came up. Between us.", anxious: "I probably shouldn't say this, but I heard your name tonight." } },
+      { by: 'b', say: "So, between us, I heard your name is coming up tonight.", v: { schemer: "Just so you know, your name came up. Between us.", anxious: "I probably shouldn't say this, but I heard your name's coming up tonight." } },
       { by: 'a', say: "Did you?" },
       { by: 'b', say: "Yeah. Just thought you should know." },
       { by: 'a', say: "Who said it?" },
@@ -398,7 +398,7 @@ export default {
       { by: 'a', say: "Somebody had to get everyone on the same page." },
       { by: 'b', say: "I got everyone on the same page. I talked to every single person." },
       { by: 'a', say: "And I talked to you. So." },
-      { by: 'b', conf: "That was my move, mine, and {a} is just standing there telling everyone it was {a.posAdj}.", v: { loud: "That was MY move! MINE!", quiet: "It was my move. {a} knows it." } },
+      { by: 'b', conf: "That was my move, mine, and {a} is just standing there telling everyone it was {a.pos}.", v: { loud: "That was MY move! MINE!", quiet: "It was my move. {a} knows it." } },
       { by: 'a', conf: "If people think I made the big move, they'll think I'm in charge. That's worth more than who actually did it." },
     ] },
   ],

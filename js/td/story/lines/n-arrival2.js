@@ -243,7 +243,7 @@ export default {
       { by: 'a', say: "We're about to find out." },
     ] },
     { id: 'nx.n32', when: { strong: true, voice: ['tough', 'competitive', 'proud'] }, turns: [
-      { beat: "{a} hops off carrying two bags. One of them isn't {a.posAdj}." },
+      { beat: "{a} hops off carrying two bags. One of them isn't {a.pos}." },
       { by: 'h', say: "You know whose that is?" },
       { by: 'a', say: "No. It was in the way." },
     ] },

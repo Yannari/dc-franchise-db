@@ -35,8 +35,12 @@ export const ZONES = {
   lsofas: { label: 'Living Room', corner: 'Sofas', cam: 18, box: [45.6, 40.6, 51.4, 47.2] },
   lconsole: { label: 'Living Room', corner: 'Console', cam: 19, box: [39.4, 33.8, 51.4, 40.6] },
   foyer: { label: 'Foyer', cam: 13, box: [45.8, 47.4, 51.4, 57] },
-  dining: { label: 'Dining Room', corner: 'Windows', cam: 3, box: [52, 41.4, 60.2, 49.2] },
-  dtable: { label: 'Dining Room', corner: 'Table', cam: 28, box: [52, 49.2, 60.2, 57] },
+  dining: { label: 'Dining Room', corner: 'Windows', cam: 33, box: [52, 41.4, 60.2, 47] },
+  dtable: { label: 'Dining Room', corner: 'Table', cam: 28, box: [52, 47, 56.1, 57] },
+  // the nomination ceremony is held at the dining table on the real show (the user, 2026-10-14: "the
+  // dining rooms and the nomination ceremony room are different"): its own section of the dining room,
+  // on the ceremony's own camera
+  noms: { label: 'Dining Room', corner: 'Nomination Table', cam: 3, box: [56.1, 47, 60.2, 57] },
   library: { label: 'Library', cam: 15, box: [61, 41.4, 69.2, 57] },
   front: { label: 'Front Lawn', cam: 16, box: [15.5, 57.5, 84.2, 83] },
   hoh: { label: 'HOH Suite', cam: 14, box: [2.5, 5, 19, 25], tile: 'Upstairs' },
@@ -67,7 +71,7 @@ const ALL = { ...ZONES, ...ISLAND };
 // names its to-edit folder instead; tests/bb-housemap.test.js holds every zone to one or the other.
 export const ZONE_PLATE = {
   pool: 'pool-wide', bar: 'bar-lobby-wide', gym: 'gym-racks', hallway: 'purple-hall', bathroom: 'bathroom', wing: 'bedroom-wide',
-  kitchen: 'kitchen-room', ksink: 'kitchen-sink', living: 'living-screens', dining: 'dining-room', kstove: 'kitchen-stove', lsofas: 'living-sofas', lconsole: 'living-console', dtable: 'dining-meal', library: 'library-wide', front: 'front', dr: 'confessional',
+  kitchen: 'kitchen-room', ksink: 'kitchen-sink', living: 'living-screens', dining: 'dining-room', kstove: 'kitchen-stove', lsofas: 'living-sofas', lconsole: 'living-console', dtable: 'dining-meal', noms: 'nom-table', library: 'library-wide', front: 'front', dr: 'confessional',
   beach: 'beach-hut', westdock: 'dock', clearing: 'comp-clearing', resort: 'front',
   hoh: 'hoh-suite', pantry: 'storage', foyer: 'foyer', eastdock: 'pier-east', npond: 'pond-north', epond: 'pond-east',
   lagoon: 'lagoon', volcano: 'volcano-lookout', jury: 'jury-cabins', villa: 'villa', studio: 'studio-arrival', lounge: 'havenot',
@@ -80,7 +84,7 @@ export const islandOf = z => (ISLAND[z] ? z : 'resort');
 const PUBLIC = ['living', 'lsofas', 'kitchen', 'kstove', 'pool', 'gym', 'wing', 'bar', 'library', 'dining', 'dtable', 'beach'];
 
 // a plate's room on the blueprint
-const ZONE_OF_PLATE = [[/^living-/, 'living'], [/^library-/, 'library'], [/^confessional$/, 'dr'], [/^(dining-|nom-table$)/, 'dining'],
+const ZONE_OF_PLATE = [[/^living-/, 'living'], [/^library-/, 'library'], [/^confessional$/, 'dr'], [/^nom-table$/, 'noms'], [/^dining-/, 'dining'],
   [/^kitchen-/, 'kitchen'], [/^bar-/, 'bar'], [/^bedroom-/, 'wing'], [/^(hallway|bathroom)$/, 'bathroom'], [/^purple-hall$/, 'hallway'],
   [/^hoh-/, 'hoh'], [/^storage/, 'pantry'], [/^havenot$/, 'lounge'], [/^foyer$/, 'foyer'], [/^studio-/, 'studio'],
   [/^gym-/, 'gym'], [/^(pool-|patio$|balcony$)/, 'pool'], [/^(lawn-|front)/, 'front'], [/^memory-wall$/, 'living'],

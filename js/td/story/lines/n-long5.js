@@ -65,7 +65,7 @@ export default {
       { by: 'a', say: "That's really sweet." },
       { by: 'b', say: "You say that like it's a bad thing." },
       { by: 'a', say: "No, no, it's great. For you two." },
-      { by: 'a', conf: "If {b} and {c} both make it to the merge, nobody's ever going to split them. I think somebody needs to, before they get the chance." },
+      { by: 'a', conf: "If {b} and {c} both make it to the end, nobody's ever going to split them. I think somebody needs to, before they get the chance." },
     ] },
   ],
   'arc.spark.sank': [

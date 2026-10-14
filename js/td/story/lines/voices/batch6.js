@@ -124,7 +124,7 @@ export default {
   },
   // long.alliance.form.couple
   'na.c1': {
-    2: { warm: "We've been together since we got here. Of course they think that.", calm: "We've barely been apart since we got here. Of course they do." },
+    2: { warm: "We're always together. Of course they think that.", calm: "We're barely ever apart. Of course they do." },
     9: { warm: "That's a terrible name, and I love it.", loud: "That is the WORST name. I love it.", calm: "That's a terrible name. Let's keep it." },
   },
   // arc.adv.steal

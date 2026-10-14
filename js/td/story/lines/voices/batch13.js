@@ -206,7 +206,7 @@ export default {
   },
   'ncx.d5': {
     1: { earnest: "Do we actually know they're coming for you?" },
-    3: { warm: "That's not knowing, sweetie.", proud: "That's not knowing.", earnest: "That's not the same as knowing.", theatrical: "That is not knowing!" },
+    3: { warm: "That's not knowing, though.", proud: "That's not knowing.", earnest: "That's not the same as knowing.", theatrical: "That is not knowing!" },
     5: { earnest: "{a} is convinced it's {a} tonight, based on a feeling. I believe {a} believes it. I'm just not sure it's true." },
   },
   'nf.b2': {

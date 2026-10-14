@@ -192,7 +192,7 @@ export default {
     { id: 'na.c1', place: 'aside', when: { third: false }, turns: [
       { beat: "Late. {a} and {b} are still up after everybody else has gone to bed." },
       { by: 'b', say: "You know everybody thinks we're working together, right?", v: { dry: "So, fun fact, everybody thinks we're a couple. A couple of votes, I mean.", flirty: "You know everybody thinks we're working together, right? I can't imagine why, we're so subtle." } },
-      { by: 'a', say: "We've been together pretty much since we got here. Of course they do." },
+      { by: 'a', say: "We're never apart. Of course they do." },
       { by: 'b', say: "So should we actually be?" },
       { by: 'a', say: "Make it official, you mean." },
       { by: 'b', say: "If they're going to target us for it anyway, we might as well." },

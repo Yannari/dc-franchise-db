@@ -206,7 +206,7 @@ export default {
 
   'psy.belong': [
     { id: 'nl4.p1', when: { pair: true, moment: 'lost', lastBoot: true }, turns: [
-      { beat: "{a} hasn't touched breakfast. {b} slides along the log to sit next to {a.obj}." },
+      { beat: "{a} hasn't touched {a.posAdj} food. {b} slides along the log to sit next to {a.obj}." },
       { by: 'b', say: "You okay?" },
       { by: 'a', say: "I keep turning round to tell {lastBoot} things, and {lastBoot} isn't there." },
       { by: 'b', say: "Yeah. I noticed you doing that." },

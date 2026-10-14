@@ -590,7 +590,7 @@ export default {
       { by: 'a', conf: "I almost feel sorry for {b}. Almost. {b} promised the same thing to me and somebody else, and now I don't believe a word {b} says.", v: {"cruel":"{b} tried to play both of us. Now {b} gets neither. I'm loving it.","warm":"I'm disappointed in {b}. I really wanted to trust {b}."} },
     ] },
     { id: 'nk.dd2', place: 'aside', when: { other: true }, turns: [
-      { by: 'a', say: "You told {other} final two." },
+      { by: 'a', say: "You told {other} you'd take {other.obj} to the end." },
       { by: 'b', say: "I..." },
       { by: 'a', say: "Don't. {other} told me, and it was the exact same words you said to me." },
       { by: 'b', say: "I was going to tell you." },

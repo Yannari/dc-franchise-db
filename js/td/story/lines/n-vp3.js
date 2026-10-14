@@ -48,8 +48,8 @@ export default {
     { id: 'nvr.g1', when: { third: true }, turns: [
       { beat: "{a} sits down hard on the log next to {b} and {c}." },
       { by: 'a', say: "I'm writing {target} tonight. I'm telling you now so nobody acts surprised." },
-      { by: 'c', say: "Because of the thing at lunch?" },
-      { by: 'a', say: "Because of the thing at lunch, and the thing yesterday, and the thing every single day before that." },
+      { by: 'c', say: "Is this about the fighting?" },
+      { by: 'a', say: "It's about today, and yesterday, and every single day before that." },
       { by: 'b', say: "We can't vote somebody out just because you hate them." },
       { by: 'a', say: "I don't hate {target}. Okay, I do. But {target} also hates me, and that means {target} writes my name the second it's easy." },
       { by: 'c', say: "That's fair, actually." },
@@ -102,8 +102,8 @@ export default {
       { by: 'c', say: "...Okay, point taken." },
       { by: 'a', say: "Exactly. So the choice is {target} tonight, while we can, or {target} with a million dollars." },
       { by: 'b', say: "{target} is going to be so shocked." },
-      { by: 'a', say: "That's the only way it works. If {target} sees it coming, {target} talks their way out of it." },
-      { by: 'c', conf: "We're voting out the person most of us would pick to be stuck on a desert island with. Which, I guess, is exactly where we are." },
+      { by: 'a', say: "That's the only way it works. If {target} sees it coming, {target} talks {target.posAdj} way out of it." },
+      { by: 'c', conf: "We're voting out the person most of us would pick to be stuck anywhere with. That's how this game works, and I hate it." },
     ] },
   ],
   'vp2.group': [

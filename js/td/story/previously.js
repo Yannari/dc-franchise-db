@@ -141,7 +141,11 @@ export function writePreviously(ep) {
   chosen.forEach((c, i) => {
     // a loyalty test that got seen through: the scheme was the tester's (b in the scene), not the one tested ("Topher's
     // little scheme blew up in his face" for Topher passing Jo's test, read 2026-10-14)
-    const flip = c.type === 'scheme' && c.step === 'caught' && /loyaltyTest|test\.caught/.test(`${c.x?.type || ''} ${c.x?.kind || ''} ${c.x?.scene?.kind || ''}`);
+    const src = `${c.x?.type || ''} ${c.x?.kind || ''} ${c.x?.scene?.kind || ''}`;
+    // ...and somebody sizing up a threat names the threat as the target, not the one doing the sizing up ("Zoey's name
+    // started coming up, and Scott was the one saying it" over Zoey's own confessional about Scott, read 2026-10-14)
+    const flip = (c.type === 'scheme' && c.step === 'caught' && /loyaltyTest|test\.caught|challengeThrowCaught|throw\.caught/.test(src))
+      || (c.type === 'bottom' && c.step === 'targeted' && /threat\.notice|plan\.private\.target/.test(src));
     const { a, b } = flip ? { a: c.b, b: c.a } : c;
     const g = c.alliance;
     const lead = i === 0 ? '' : pick(['Meanwhile, ', 'Back at camp, ', 'And then ', 'Elsewhere, ', '', 'Oh, and ', 'Over at camp, '], `lead${i}`);
@@ -264,7 +268,9 @@ export function writePreviously(ep) {
     if (play && idx === 0) H(pick([`And then ${play.player} pulled out an idol, and the whole room did the math again.`, `${play.player} played an idol, and every plan in the room changed in a second.`], 'idol'), tribalShot([play.player]));
     // the result
     const n = voters.length, m = otherN || 0;
-    const score = topTwo ? `${num(n)} ${n === 1 ? 'vote' : 'votes'}, the second-most` : m ? `${num(n)} votes to ${num(m)}` : n === 1 ? 'one vote' : `${num(n)} votes`;
+    // (an idol can leave the one who went home with fewer votes than the name it cancelled: "Three votes to four, and
+    // Scott was out", read 2026-10-14)
+    const score = topTwo ? `${num(n)} ${n === 1 ? 'vote' : 'votes'}, the second-most` : m > n ? `${num(n)} votes that counted against ${num(m)} that didn't` : m ? `${num(n)} votes to ${num(m)}` : n === 1 ? 'one vote' : `${num(n)} votes`;
     const sent = prev.riChoice && idx === 0 && !second ? ` and sent to ${/RESCUE/i.test(prev.riChoice) ? 'Rescue Island' : 'Redemption Island'}` : '';
     const card = { boot };   // the boot's card: their portrait, crossed out
     if (coachSave && boot === coachSave.coach) {

@@ -112,7 +112,7 @@ export default {
     3: { warm: "That's really sweet.", cruel: "That's really sweet.", theatrical: "That's very sweet." },
     4: { warm: "You say that like it's a bad thing.", calm: "You say that like it's a bad thing.", goofy: "You say that like it's a bad thing. Is it a bad thing?", theatrical: "You say that like it's a terrible thing.", competitive: "You say that like it's bad." },
     5: { warm: "No, no, it's great. For you two.", tough: "No, it's great. For you two.", schemer: "No, no, it's great. For you two.", cruel: "No, it's lovely. For you two.", theatrical: "No, no, it's wonderful. For the two of you." },
-    6: { warm: "If {b} and {c} reach the merge together, nobody will ever split them. I like them both, and I still think somebody has to.", tough: "If {b} and {c} make the merge together, they're unbreakable. Somebody has to break them first.", cruel: "If {b} and {c} reach the merge, nobody splits them, so I'll do it before then.", theatrical: "If {b} and {c} reach the merge together, they're unstoppable. Somebody must split them before then." },
+    6: { warm: "If {b} and {c} reach the end together, nobody will ever split them. I like them both, and I still think somebody has to.", tough: "If {b} and {c} make it to the end together, they're unbreakable. Somebody has to break them first.", cruel: "If {b} and {c} reach the end, nobody splits them, so I'll do it before then.", theatrical: "If {b} and {c} reach the end together, they're unstoppable. Somebody must split them before then." },
   },
   'nv4.p5': {
     0: { ditzy: "Okay, let me show you something.", earnest: "Let me show you something important." },

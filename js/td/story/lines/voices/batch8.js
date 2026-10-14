@@ -19,7 +19,7 @@ export default {
     8: { calm: "I wasn't going to tell anybody. Then {b} put a finger down at the same time, and now I can't stop thinking about it.", loud: "I wasn't going to tell ANYBODY! Then {b} put a finger down at the exact same time, and now it's all I can think about!", anxious: "I wasn't going to tell anyone, and then {b} put a finger down at the same moment, and now my heart won't slow down." },
   },
   'nv.a6': {
-    0: { loud: "{wrote} is going home tonight! I can't WAIT to see {wrote}'s face!", tough: "{wrote} goes home tonight. I want a good look at {wrote}'s face when it happens.", blunt: "{wrote} is going home. Good." },
+    0: { loud: "{wrote} is going home tonight! I can't WAIT to see the look on {wrote.posAdj} face!", tough: "{wrote} goes home tonight. I want a good look at {wrote.posAdj} face when it happens.", blunt: "{wrote} is going home. Good." },
   },
   'ny.m4': {
     2: { warm: "Who was that, again?", loud: "Wait, who was that?" },

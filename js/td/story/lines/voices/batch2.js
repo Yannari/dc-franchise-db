@@ -142,7 +142,7 @@ export default {
   'nl5.p2': {
     0: { kid: "Have you two ever had a fight? Like, even one?", nerdy: "Have you two ever disagreed? About anything?" },
     3: { dry: "That's really sweet. Really, really sweet.", kid: "That's so cute." },
-    6: { kid: "If {b} and {c} both make it to the merge, they're going to stick together forever. Somebody has to split them up.", quiet: "If {b} and {c} reach the merge together, nobody splits them. I think it has to happen soon." },
+    6: { kid: "If {b} and {c} both make it to the end, they're going to stick together forever. Somebody has to split them up.", quiet: "If {b} and {c} reach the end together, nobody splits them. I think it has to happen soon." },
   },
   // vote.swing.no (secretive)
   'nw.n1': {

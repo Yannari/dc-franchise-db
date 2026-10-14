@@ -124,7 +124,7 @@ export default {
       { by: 'a', conf: "If I'm going home tonight, it won't be because I sat around waiting for it. I'm going down swinging, or not going down at all.", v: { anxious: "I can't stop shaking. If {teller} is right, this is my last night here." } },
     ] },
     { id: 'nvt.d2', turns: [
-      { beat: "{a} has been pacing by the water for twenty minutes. {b} finally comes down." },
+      { beat: "{a} has been pacing back and forth for twenty minutes. {b} finally goes over." },
       { by: 'b', say: "You're making everybody nervous." },
       { by: 'a', say: "Good, because I'm nervous. Somebody's getting votes together, and every time I walk into a conversation, it stops." },
       { by: 'b', say: "That could be about anybody." },

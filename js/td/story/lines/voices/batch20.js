@@ -329,8 +329,8 @@ export default {
   },
   'nvr.g1': {
     1: { nerdy: "I'm writing {target} tonight, and I'm telling you now so nobody acts surprised.", competitive: "I'm writing {target} tonight, so nobody act surprised.", loud: "I'm writing {target} TONIGHT, so nobody act surprised!", proud: "I'm writing {target} tonight. Consider yourselves informed." },
-    2: { warm: "Because of the thing at lunch?", quiet: "The thing at lunch?", loud: "Because of the thing at LUNCH?" },
-    3: { nerdy: "Because of lunch, and yesterday, and every single day before that.", competitive: "Because of lunch, yesterday, and every day before that.", loud: "Because of the thing at lunch, AND yesterday, AND every day before that!", proud: "Because of lunch, and yesterday, and every day before." },
+    2: { warm: "Is this about the fighting?", quiet: "The fighting?", loud: "Is this about the FIGHTING?" },
+    3: { nerdy: "Today, and yesterday, and every single day before that.", competitive: "Today. Yesterday. Every day before that.", loud: "TODAY! And YESTERDAY! And every day before that!" },
     4: { calm: "We can't vote somebody out just because you hate them.", warm: "We can't vote somebody out just because you don't like them.", blunt: "We can't vote someone out because you hate them." },
     5: { nerdy: "I don't hate {target}, okay, I do, but {target} hates me too, which means {target} writes my name the second it's easy.", competitive: "Fine, I hate {target}, but {target} hates me too, and writes my name the moment it's easy.", loud: "I don't HATE {target}! Okay, I do! But {target} hates me too, and writes my name the second it's easy!", proud: "I don't hate {target}, fine, I do, and {target} would write my name the moment it's easy." },
     6: { warm: "That's fair, actually.", quiet: "Fair.", loud: "That's FAIR, actually." },

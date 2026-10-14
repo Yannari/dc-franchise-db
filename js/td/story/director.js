@@ -917,7 +917,9 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   // what a can know: their own number, and roughly the other side's (never more than a winning plan faced)
   // (two or more short is behind, not tight: read 2026-10-14, "two against five" answered "That's basically even")
   const count = them >= 2 ? (them >= voters.length + 2 ? 'behind' : them >= voters.length ? 'tight' : 'close') : voters.length >= tribal.length - 1 ? 'all' : 'enough';
-  const inScene = new Set(Object.values(who).filter(Boolean));
+  // everybody on the plan but the two talking, so "{others} are on it as well. That's {votes}" adds up (read 2026-10-14:
+  // "Zoey and Max are on it as well. That's five" between Mike and Sky: a third in the cast was left out of the list)
+  const inScene = new Set([who.a, who.b].filter(Boolean));
   const rest = voters.filter(v => !inScene.has(v));
   const list = n => n.length <= 1 ? n.join('') : `${n.slice(0, -1).join(', ')} and ${n[n.length - 1]}`;
   // the close is work, not a quip: the shakiest vote (the plan's voter least close to a, someone who is
@@ -1770,6 +1772,10 @@ export function airTdEpisode(ep) {
         const sealed = new Set(['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph)).filter(ev => /^(alliance\.form|deal\.)/.test(ev?.scene?.kind || ''))
           .map(ev => pk(ev.scene.who?.a, ev.scene.who?.b)));
         for (const ev of events) if (ev && ev.aired == null && /^friend\.drift/.test(ev.scene?.kind || '') && sealed.has(pk(ev.scene.who?.a, ev.scene.who?.b))) ev.aired = 'covered'; }
+      // ...and one person sits with what the one who left forgot: two mourners in a row aired the same scene, "folding a
+      // shirt he left behind", word for word (read 2026-10-14)
+      { let seen = false;
+        for (const ev of events) if (ev && ev.aired == null && /^fallout\.mourn/.test(ev.scene?.kind || '')) { if (seen) ev.aired = 'covered'; seen = true; } }
       // ...and one romance a person a day: a flirt, a spark or a moment with one person, not three (read 2026-10-14: Mike
       // kissed Ella in secret, flirted with Sky and had a moment with Jasmine, all after one challenge). Decided once, on
       // the morning, over the whole day in its order; a couple's own scenes and an affair's steps are the story and stay
@@ -2718,6 +2724,17 @@ export function airTdEpisode(ep) {
       const at = it => afterSwing(it) ? VOTE_AT.swing + 1e4 : (/^(story\.(firstday|morning|chal)|long\.crowd\.(won|lost))/.test(it.kind || '') ? -1 : chalTalk(it) ? -0.5 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5)
         : it.storyType === 'vote' ? (VOTE_AT[it.step] ?? 1.5e6) : it.ref != null ? it.ref : 1e6);
       out[phase].sort((x, y) => rank(x) - rank(y) || at(x) - at(y));
+      // somebody spotted hiding an advantage is spotted after the scene where they found it (read 2026-10-14: Topher saw
+      // Dawn tuck "something deep into a bag" a scene before Dawn found her Vote Steal)
+      { const evsP = eventsOf(ep, camp, phase), kindOf = it => it.kind || it.scene?.kind || evsP[it.ref]?.scene?.kind || '';
+        const playersOf = it => it.players || evsP[it.ref]?.players || [], whoOf = it => it.scene?.who || evsP[it.ref]?.scene?.who || {};
+      for (const sp of out[phase].filter(it => /spot\.power/.test(kindOf(it)))) {
+        const who = whoOf(sp), isFind = it => it !== sp && /adv\.found/.test(kindOf(it));
+        const holder = [who.b, ...playersOf(sp).filter(n => n !== who.a)].find(n => n && out[phase].some(it => isFind(it) && playersOf(it).includes(n)));
+        const found = holder ? out[phase].findIndex(it => isFind(it) && playersOf(it).includes(holder)) : -1;
+        const at0 = out[phase].indexOf(sp);
+        if (found > at0) { out[phase].splice(at0, 1); out[phase].splice(found, 0, sp); }
+      } }
       // the rhythm of the stretch (stage 5): a run of five heavy scenes or more gets a light one from earlier the same
       // evening cut into it, at a thread's start (before a plan, another plan, the target's or a decoy's scene; never
       // between a plan and its swing or its doubt), staged in the window it now airs in and at a spot nobody else uses then

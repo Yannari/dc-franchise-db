@@ -495,7 +495,7 @@ export default {
     C('nv.a3', { why: 'threat' }, "{wrote} is the biggest threat here and everybody knows it, so tonight we finally do something about it."),
     C('nv.a4', { why: 'weak' }, "We need to start winning and {wrote} is the one holding us back, so it's a simple vote."),
     C('nv.a5', { voice: ['schemer', 'calm', 'proud', 'competitive'] }, "I've got this place figured out. It's {wrote} tonight, and I helped make that happen.", { schemer: "Everybody's going exactly where I pointed them, so it's {wrote}. Easy." }),
-    C('nv.a6', { voice: ['loud', 'tough', 'blunt', 'cruel'] }, "{wrote}'s going home. I can't wait to see {wrote}'s face.", { cruel: "I've been looking forward to this all day. Bye, {wrote}." }),
+    C('nv.a6', { voice: ['loud', 'tough', 'blunt', 'cruel'] }, "{wrote}'s going home. I can't wait to see the look on {wrote.posAdj} face.", { cruel: "I've been looking forward to this all day. Bye, {wrote}." }),
     C('nv.a7', { voice: ['warm', 'earnest', 'ditzy', 'goofy'] }, "I feel pretty good about tonight! I think it's {wrote}, and I hope {wrote} isn't too sad.", { goofy: "Tonight's going to be chill, it's {wrote}, and I'm basically already thinking about breakfast." }),
     C('nv.a8', null, "I talked to my people and they said {wrote}, and I believe them.", { anxious: "My people said {wrote}, and I believe them. I have to believe them." }),
   ],

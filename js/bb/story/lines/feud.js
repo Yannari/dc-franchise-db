@@ -155,7 +155,7 @@ export default {
       { by: 'a', say: "Lip's going." },
       { by: 'b', say: "My lip is not going." },
       { by: 'a', say: "It's a little bit going." },
-      { beat: '{b} gets up and goes to the bathroom.' },
+      { beat: '{b} gets up and leaves the room.' },
       { by: 'a', say: "What? It was a joke!" },
       { by: 'b', dr: "I cried once. Once. And now that's my whole personality to {a}." },
     ] },
@@ -335,7 +335,7 @@ export default {
       { by: 'a', say: "I want you to say you did it!" },
       { by: 'b', say: "Fine! I did it! Happy?" },
       { by: 'a', say: "...No. Actually. Not really." },
-      { by: 'b', dr: "{a} wanted an apology and a confession and a fight all at once. I can only do two of those before lunch." },
+      { by: 'b', dr: "{a} wanted an apology and a confession and a fight all at once. I can only do two of those at once." },
     ] },
     { id: 'sa.6', when: { register: 'fiery' }, turns: [
       { by: 'a', say: "No. No, we're doing this now." },

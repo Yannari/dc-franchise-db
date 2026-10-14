@@ -374,7 +374,7 @@ export default {
       { by: 'b', say: "Everybody's looking at me like it was." },
     ] },
     { id: 'ab.w2', turns: [
-      { by: 'b', say: "It wasn't me." },
+      { by: 'b', say: "It wasn't me. I voted with the group." },
       { by: 'a', say: "Okay." },
       { by: 'b', say: "It really wasn't me!" },
       { by: 'a', dr: "{b} said it once, calmly. Then again, louder. That sounds guilty to me." },
@@ -396,7 +396,7 @@ export default {
       { by: 'a', dr: "I haven't got proof it was {b}. I've got a feeling, and in here a feeling is usually enough." },
     ] },
     { id: 'ab.w7', turns: [
-      { by: 'b', say: "Why does everyone think it was me?" },
+      { by: 'b', say: "Why does everyone think I'm the one who voted the other way?" },
       { by: 'a', say: "Because you were never really with us." },
       { by: 'b', say: "I've been with you since week one!" },
       { by: 'a', say: "Then who was it?" },

@@ -19,6 +19,7 @@ import { pronouns } from '../../players.js';
 import { pickEntry, newLedger } from '../../script/pick.js';
 import { POOLS } from './lines/index.js';
 import { factsFor } from './facts.js';
+import { tidySpoken, tidyNames } from '../../vp-tr/tidy.js';
 
 const ACT_ORDER = ['hoh', 'nominations', 'veto', 'veto-ceremony', 'campaign', 'eviction'];
 export const clockOf = ctx => (ctx.week?.num || 0) * 10 + Math.max(0, ACT_ORDER.indexOf(ctx.act));
@@ -44,6 +45,19 @@ export function fill(text, who, ctx = {}, data = {}) {
     return p[part] ?? m;
   });
 }
+
+/**
+ * A name said twice in one sentence becomes a pronoun, and a "they" takes its verb (the user,
+ * 2026-10-14: "the writing is not good"; read: "does Hicks act like Hicks's already won",
+ * "Nichelle knows exactly what Nichelle did"). The pools write people as slots and cannot know who
+ * fills them, so the repeat is fixed once the names are in: spoken lines and confessionals by
+ * tidySpoken, beats by tidyNames, the same pass Total Drama's story lines and The Traitors use.
+ */
+// "Hicks's one of those": a name ending in s, contracted ("{a}'s gone", "{a}'s one of those"), reads as a
+// possessive. Said out in full instead: "Hicks is one of those", "Hicks has been".
+const S_IS = /\b([A-Z][a-z]*s)'s (been|got|one|going|gone|not|a|an|the|just|so|really|always|never|still|already|right|wrong|in|at|on|too|very|my|our|your|doing|counting|scared|safe|fine|leaving|staying|coming|lying|talking|playing|trying)\b/g;
+const sIs = t => t.replace(S_IS, (m, n, w) => `${n} ${w === 'been' || w === 'got' ? 'has' : 'is'} ${w}`);
+export const said = (kind, text) => sIs(kind === 'beat' ? tidyNames(text) : tidySpoken(text));
 
 /**
  * For tests only: muted, a scene is not written at all (no pick, no ledger).
@@ -77,7 +91,10 @@ export function writeScene(scene, ctx = {}, rng = Math.random) {
   // A family's '.any' pool fits every ending, so it is merged with the ending's own.
   const ending = scene.data?.ending || scene.data?.result || 'any';
   const own = `${scene.kind}.${ending}`, any = `${scene.kind}.any`;
-  const key = ending !== 'any' && POOLS[any] ? (POOLS[own] ? [own, any] : any) : own;
+  // a scene that knows what it is about takes the pool written for that, when there is one
+  // (lines/blowup.js: a blow-up over the washing-up says so in its first line)
+  const about = scene.data?.reason && POOLS[`${scene.kind}.about-${scene.data.reason}`] ? `${scene.kind}.about-${scene.data.reason}` : null;
+  const key = about || (ending !== 'any' && POOLS[any] ? (POOLS[own] ? [own, any] : any) : own);
   const who = scene.who || {};
   const pairKey = [who.a, who.b].filter(Boolean).sort().join('|');
   const speakers = Object.values(who).filter(Boolean);
@@ -86,7 +103,7 @@ export function writeScene(scene, ctx = {}, rng = Math.random) {
   const lines = entry.turns.map(t => {
     const kind = t.dr ? 'dr' : t.beat ? 'beat' : 'say';
     const by = t.by ? who[t.by] || (t.by === 'hoh' ? ctx.hoh : null) : null;
-    return { kind, by, text: fill(t.dr || t.beat || t.say, who, ctx, scene.data || {}) };
+    return { kind, by, text: said(kind, fill(t.dr || t.beat || t.say, who, ctx, scene.data || {})) };
   });
   return { lines, text: transcript(lines), lineId: entry.id };
 }

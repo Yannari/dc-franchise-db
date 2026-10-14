@@ -62,6 +62,16 @@ export default {
     { id: 'fb.c5', turns: [{ by: 'b', say: "Are we okay?" }, { by: 'a', say: "{gone} is gone. So no, we're not okay." }, { by: 'b', say: "That wasn't me." }, { by: 'a', say: "It was. And the sooner you stop pretending, the sooner we can both stop wasting time." }, { by: 'a', dr: "{gone} is gone, and {b} is the reason. {b} is my target now." }] },
     { id: 'fb.c6', turns: [{ by: 'a', say: "I know it was you." }, { by: 'b', say: "Okay." }, { by: 'a', say: "That's it? Okay?" }, { by: 'b', say: "What do you want me to say?" }, { by: 'a', say: "The truth." }, { by: 'b', say: "The truth is it's a game, and {gone} was in my way." }, { by: 'a', dr: "At least {b} finally said it. That's going to cost {b} more than {b} thinks." }] },
   ],
+  // the one blamed held the key last week: they did not vote, they nominated (read 2026-10-14: an HOH
+  // answering "I voted to keep Millie!"). bb/script/write.js takes this pool on data.reason 'hoh'.
+  'fallout.blame.about-hoh': [
+    { id: 'fb.h1', turns: [{ by: 'b', say: "Why are you looking at me like that?" }, { by: 'a', say: "You put {gone} on that block." }, { by: 'b', say: "And the house voted. I didn't even get a vote." }, { by: 'a', say: "You didn't need one. You'd already done it." }] },
+    { id: 'fb.h2', turns: [{ by: 'a', say: "Don't tell me it was the house. You picked {gone}. Out of everybody, you picked {gone}." }, { by: 'b', say: "Somebody had to sit there." }, { by: 'a', say: "And you decided it was {gone}." }, { by: 'a', dr: "{b} keeps saying the house voted. The house only got to vote because {b} sat {gone} in that chair." }] },
+    { id: 'fb.h3', turns: [{ by: 'b', say: "I know you're angry with me." }, { by: 'a', say: "{gone} would still be here if you'd picked anybody else." }, { by: 'b', say: "That's not fair." }, { by: 'a', say: "No. It isn't. Ask {gone}." }] },
+    { id: 'fb.h4', turns: [{ by: 'b', say: "You've been avoiding me." }, { by: 'a', say: "You nominated {gone}. What did you expect?" }, { by: 'b', say: "The house voted {gone} out. Not me." }, { by: 'a', say: "The house didn't put {gone} in that chair." }] },
+    { id: 'fb.h5', turns: [{ by: 'a', dr: "{b} keeps saying it was the house. They were {b}'s nominations. Without them, {gone} is still here." }] },
+    { id: 'fb.h6', turns: [{ by: 'a', say: "Out of everybody in this house, you put {gone} up." }, { by: 'b', say: "It was my HOH. Somebody had to go up." }, { by: 'a', say: "And you picked my friend." }] },
+  ],
   'fallout.blame.wrong': [
     { id: 'fb.w1', turns: [{ by: 'a', say: "Can we stop pretending?" }, { by: 'b', say: "Pretending what?" }, { by: 'a', say: "That you had nothing to do with {gone} going." }, { by: 'b', say: "I didn't!" }, { by: 'a', say: "Nobody else makes sense." }, { by: 'a', dr: "It was {b}. It has to be. Nobody else makes sense." }] },
     { id: 'fb.w2', turns: [{ by: 'a', say: "I know it was you." }, { by: 'b', say: "It wasn't. I swear." }, { by: 'a', say: "That's exactly what you would say." }, { by: 'b', say: "Ask anyone. Ask how I voted." }, { by: 'a', say: "Everybody in here lies about how they voted." }, { by: 'b', dr: "There's nothing I can say. Every answer sounds like a lie to {a} now." }] },

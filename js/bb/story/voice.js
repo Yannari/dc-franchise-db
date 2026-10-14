@@ -18,6 +18,7 @@ import { gs, players } from '../../core.js';
 import { pStats } from '../../players.js';
 import { getBond } from '../../bonds.js';
 import { stableRng } from '../knowledge.js';
+import { said } from '../script/write.js';
 
 const archOf = n => (players || []).find(p => p.name === n)?.archetype || 'floater';
 const W = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
@@ -74,39 +75,42 @@ const KIND = t => /(^|[^a-z])style\./.test(t) ? 'game'
 const ago = (w, h) => (h.lastWeek && h.lastWeek - w <= 1 ? (w === h.lastWeek ? 'last week' : `in week ${w}`) : null);
 function lines(kind, voice, o, h) {
   const hist = [];
-  const add = (...ways) => hist.push(ways.filter(Boolean));
-  if (h.theyNomMe) add(`${o} put me on the block in week ${h.theyNomMe}. I haven't forgotten that, and I don't think I'm supposed to.`,
+  // each fact is tagged, so the same one is not told about the same pair week after week
+  const add = (fact, ...ways) => hist.push(Object.assign(ways.filter(Boolean), { fact }));
+  if (h.theyNomMe) add('nomMe', `${o} put me on the block in week ${h.theyNomMe}. I haven't forgotten that, and I don't think I'm supposed to.`,
     `I was on the block because of ${o} once. I smile at ${o} every day. I also remember.`,
     `${o} nominated me. We've talked a hundred times since and never once about that.`);
-  if (h.iNomThem) add(`I put ${o} on the block in week ${h.iNomThem}. Every conversation with ${o} since then has had that sitting in the middle of it.`,
+  if (h.iNomThem) add('nomThem', `I put ${o} on the block in week ${h.iNomThem}. Every conversation with ${o} since then has had that sitting in the middle of it.`,
     `I nominated ${o}. ${o} says it's water under the bridge. Nobody in here means that.`,
     `I put ${o} up once. ${o} has never said a word to me about it. That's what worries me.`);
   const sour = hist.length;
-  if (h.theySavedMe) add(`${o} used the veto on me in week ${h.theySavedMe}. I owe ${o}, and we both know it.`,
+  if (h.theySavedMe) add('saved', `${o} used the veto on me in week ${h.theySavedMe}. I owe ${o}, and we both know it.`,
     `${o} pulled me off the block. Whatever ${o} asks me for, I'm going to have to think very hard before I say no.`,
     `I'm only still here because ${o} used that veto on me. That kind of thing doesn't wear off.`);
-  if (h.sameVotes >= 2) add(`${o} and I have voted the same way ${word(h.sameVotes)} times now. That's not an accident.`,
+  if (h.sameVotes >= 2) add('same', `${o} and I have voted the same way ${word(h.sameVotes)} times now. That's not an accident.`,
     `Every vote so far, ${o} and I have landed in the same place. We've never once planned it out loud.`,
     `${o} and I keep ending up on the same side of the vote. At some point that stops being luck.`);
   const split = h.splitVote && ago(h.splitVote, h);
-  if (split) add(`${o} and I didn't vote the same way ${split}. Neither of us has brought it up. We both know.`,
+  if (split) add('split', `${o} and I didn't vote the same way ${split}. Neither of us has brought it up. We both know.`,
     `${o} voted the other way ${split}. I saw the count. I've been very friendly about it.`,
     `We split ${split}, ${o} and me. I keep waiting for ${o} to explain, and ${o} keeps not explaining.`);
   // said about the alliance itself, not about "this" (the user, 2026-10-14: "super vague"): the tail
   // closes any kind of scene, so it cannot point at what the scene was
-  if (h.alliance && kind !== 'ally') add(`${o} and I are both in ${h.alliance}. Anything I say to ${o} gets back to the rest of them by dinner.`,
-    `${o} is in ${h.alliance} with me, and I need ${o}'s vote more than I need to win an argument.`,
-    `${o} and I are in ${h.alliance} together. With anybody else, I'd be a lot blunter.`);
-  if (h.deal && kind !== 'ally') add(`${o} and I have a deal. I keep reminding myself of that.`,
+  // (the two about arguing close a disagreement only: "I need her vote more than I need to win an
+  // argument" closed a flirtation at dinner, read 2026-10-14)
+  if (h.alliance && kind !== 'ally') add('alliance', `${o} and I are both in ${h.alliance}. Anything I say to ${o} gets back to the rest of them by dinner.`,
+    kind === 'feud' && `${o} is in ${h.alliance} with me, and I need ${o}'s vote more than I need to win an argument.`,
+    kind === 'feud' && `${o} and I are in ${h.alliance} together. With anybody else, I'd be a lot blunter.`);
+  if (h.deal && kind !== 'ally') add('deal', `${o} and I have a deal. I keep reminding myself of that.`,
     `There's a deal between ${o} and me. Days like this, I find out how much it's worth.`,
     `I shook on something with ${o}. I keep looking at my hand.`);
-  if (h.couple && kind !== 'heart') add(`It's different when it's ${o}. It's always different when it's ${o}.`,
+  if (h.couple && kind === 'feud') add('couple', `It's different when it's ${o}. It's always different when it's ${o}.`,
     `With anybody else I'd play this cold. With ${o}, I can't.`,
     `Everybody knows about ${o} and me, so everybody's watching how I handle this.`);
   const V = {
     feud: {
       fiery: [`And I'm not going to pretend I'm fine. ${o} knows exactly what ${o} did.`, `I've got a short fuse, and ${o} keeps finding it.`],
-      strategist: [`Every fight tells me something. ${o} just showed me exactly how ${o} handles pressure. I'll remember that.`, `I let ${o} think that won. I'd rather ${o} underestimate me.`],
+      strategist: [`Every fight tells me something. ${o} just showed me exactly how ${o} handles pressure. I'll remember that.`],
       warm: [`I hate this. I'll go and fix it with ${o} tomorrow, because I don't want to live like this.`, `I don't like being on anybody's bad side. Especially ${o}'s.`],
       loyal: [`I'll say it to ${o}'s face, not behind ${o}'s back. That's the only way I know how to do this.`, `If ${o} has a problem with me, ${o} can come and say it. I'll be right here.`],
       nervous: [`I shouldn't have said anything. Now I'm on ${o}'s bad side, and that's the worst place to be in here.`, `My heart is still pounding. I don't do confrontation. Ask anyone.`],
@@ -120,7 +124,7 @@ function lines(kind, voice, o, h) {
       warm: [`It's not just a deal for me. I actually like ${o}. That's either my strength or my problem.`, `I came in here wanting real friends. ${o} feels like one.`],
       loyal: [`Once I'm in, I'm in. ${o} will never have to wonder about me.`, `I don't make promises lightly. ${o} just got one.`],
       nervous: [`Finally. I'm not on my own in here any more. I didn't realise how much I needed that.`, `I keep waiting for ${o} to change ${o}'s mind about me.`],
-      carefree: [`I didn't plan on joining anything. But ${o} asked nicely, and I'm easy.`, `Sure, why not. ${o} seems fun, and I like fun people.`],
+      carefree: [`I didn't plan on joining anything. But ${o} asked nicely, and I'm easy.`, `${o} seems fun, and I like fun people. That's most of my strategy, honestly.`],
       competitor: [`Two people who can win competitions, working together? That's bad news for everyone else.`, `${o} can win. I can win. Good luck to the rest of them.`],
       villain: [`${o} thinks this is a partnership. It's a shield. I'll decide when to put it down.`, `I'll keep ${o} close. That's exactly where I want ${o}.`],
     },
@@ -202,7 +206,13 @@ export function addInsight(sc, kindText, weekNum) {
   // confessional with no Yul in it)
   // a game moment (a veto lobby, a vote count) keeps to its own point: the voice lines for it were
   // about nobody in particular and read as another scene's ("I'm done whispering. If it's Chase...")
-  const voiced = kind === 'life' || kind === 'game' || !spoke(o) || !spoke(me) ? [] : res.voiced;
+  // ...and an alliance's voice lines are about joining one ("Once I'm in, I'm in"): only where one is made, not
+  // closing a pep talk on the block (read 2026-10-14)
+  // (a group being made in a storyline scene: the engine's quick recruit sketches are business, and "Beth seems
+  // fun, and I like fun people" closed "I just have to hope Beth meant that")
+  const forming = /formed|forms|final-t|pact/.test(String(kindText || ''));
+  const mending = /apolog|makeup|make-up|reconcil|truce|repair|sorry|forgive/.test(String(kindText || ''));
+  const voiced = kind === 'life' || kind === 'game' || (kind === 'ally' && !forming) || (kind === 'feud' && mending) || !spoke(o) || !spoke(me) ? [] : res.voiced;
   const rng = stableRng(gs.bb?.seasonSalt || 0, 'voice', sc.id || '', me);
   const led = gs.bb ? (gs.bb.voiceUsed ||= {}) : {};
   const re = NAMES_RE();
@@ -214,15 +224,27 @@ export function addInsight(sc, kindText, weekNum) {
   const unnamed = t => groups.reduce((x, g) => x.split(g).join('G'), t);
   const way = t => 'h:' + unnamed(shape(t)).replace(/last week|in week \d+|week \d+/g, 'W').replace(/\b(two|three|four|five|six|seven|eight|nine|ten|\d+) times\b/g, 'N times');
   const usable = t => !led[t] && (led[way(t)] || 0) < 2;
-  const freshH = hist.map(ways => ways.filter(usable)).filter(w => w.length).map(w => w[Math.floor(rng() * w.length) % w.length]);
+  // one fact about one pair once in three weeks, and two history tails a week for one speaker (the read
+  // of 2026-10-14: "Axel voted the other way last week" closed four of Zee's confessionals in a week)
+  const wk = weekNum || 99;
+  const pairOf = fact => `f:${fact}|${[me, o].sort().join('|')}`;
+  const recent = fact => led[pairOf(fact)] != null && wk - led[pairOf(fact)] < 3;
+  const spent = (led[`s:${me}|${wk}`] || 0) >= 2;
+  const freshH = spent ? [] : hist.filter(ways => !recent(ways.fact)).map(ways => Object.assign(ways.filter(usable), { fact: ways.fact }))
+    .filter(w => w.length).map(w => ({ t: w[Math.floor(rng() * w.length) % w.length], fact: w.fact }));
   const freshV = voiced.filter(t => !led[keyOf(t, false)]);
   // history first (it is about this pair), then the voice; never a sentence this season has heard
   const useHist = freshH.length > 0 && rng() < 0.75;
-  const pool = useHist ? freshH : freshV;
+  const pool = useHist ? freshH : freshV.map(t => ({ t }));
   if (!pool.length) return sc;
-  const add = pool[Math.floor(rng() * pool.length) % pool.length];
+  const picked = pool[Math.floor(rng() * pool.length) % pool.length];
+  const add = picked.t;
   led[keyOf(add, useHist)] = 1;
-  if (useHist) led[way(add)] = (led[way(add)] || 0) + 1;
-  sc.lines[di] = { ...dl, text: `${String(dl.text).replace(/\s+$/, '')} ${add}` };
+  if (useHist) {
+    led[way(add)] = (led[way(add)] || 0) + 1;
+    led[pairOf(picked.fact)] = wk;
+    led[`s:${me}|${wk}`] = (led[`s:${me}|${wk}`] || 0) + 1;
+  }
+  sc.lines[di] = { ...dl, text: said('dr', `${String(dl.text).replace(/\s+$/, '')} ${add}`) };
   return sc;
 }

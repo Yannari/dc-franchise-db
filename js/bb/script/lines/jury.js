@@ -62,7 +62,7 @@ export default {
     { id: 'jp.3', turns: [{ by: 'a', say: "A few more weeks. That's what I can give you." }, { by: 'b', say: "And what do you want?" }, { by: 'a', say: "One vote, when I ask for it." }] },
     { id: 'jp.4', turns: [{ by: 'b', dr: "{a} offered me a jury seat for my vote. I'd like to be insulted. Mostly I'm relieved." }] },
     { id: 'jp.5', turns: [{ by: 'a', dr: "{b} wants to make jury. I want votes. It's a fair trade." }] },
-    { id: 'jp.6', turns: [{ beat: '{a} and {b} shake hands in the storage room.' }, { by: 'b', dr: "I think I got the better deal. {a} thinks the same." }] },
+    { id: 'jp.6', turns: [{ beat: '{a} and {b} shake hands in the storage room: {b} votes the way {a} needs, and {a} keeps {b} off the block until the jury.' }, { by: 'b', dr: "I think I got the better deal. {a} thinks the same." }] },
   ],
   'jury.bury.scene': [
     { id: 'jb.1', turns: [{ by: 'a', say: "{target} hates me. And {target} can't vote yet." }, { by: 'b', say: "So we get {target} out before {target} can." }] },

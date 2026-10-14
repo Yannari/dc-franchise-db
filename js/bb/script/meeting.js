@@ -9,6 +9,7 @@
 // as `beats` too.
 import { scriptBeat, joinScripts } from './inject.js';
 import { transcript } from './write.js';
+import { POOLS } from './lines/index.js';
 
 const CASE = { lie: 'lie', 'nothing-to-lose': 'desperate', power: 'power' };
 const OUTCOME = { lands: 'lands', backfires: 'backfires', 'nobody talks': 'silent', fizzles: 'fizzles' };
@@ -17,12 +18,14 @@ const OUTCOME = { lands: 'lands', backfires: 'backfires', 'nobody talks': 'silen
 const PARTS = ['call', 'gather', 'case', 'answer', 'verdict'];
 
 /** { text, lines, lineId, beats } — or null when any part has no words. */
-export function writeMeeting({ caller, about, witness = null, outcome, cause }, ctx = {}) {
+export function writeMeeting({ caller, about, witness = null, outcome, cause, reason = null }, ctx = {}) {
   if (!caller || !about) return null;
   const ending = OUTCOME[outcome];
   if (!ending) return null;
   const who = { a: caller, b: about, c: witness && witness !== caller && witness !== about ? witness : null };
-  const endings = { call: 'scene', gather: 'scene', case: CASE[cause] || 'grudge', answer: ending, verdict: ending };
+  // a grudge says what it is about, when its pool knows the family (lines/meeting.js, meeting.case.grudge-*)
+  const grudgeOf = reason && POOLS[`meeting.case.grudge-${reason}`] ? `grudge-${reason}` : 'grudge';
+  const endings = { call: 'scene', gather: 'scene', case: CASE[cause] || grudgeOf, answer: ending, verdict: ending };
   const opts = { week: ctx.week, act: ctx.act || 'house', hoh: ctx.hoh || null, room: 'living-room' };
   const parts = PARTS.map(part => scriptBeat(`meeting.${part}`, who, { ending: endings[part] },
     { ...opts, salt: `meeting|${part}|${caller}` }));

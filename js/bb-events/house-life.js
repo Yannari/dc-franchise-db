@@ -19,8 +19,9 @@ import {
   pStats, bond, band, bondFactor, closestTo, furthestFrom, trusts, dislikes,
   sharesAlliance, grudge, remembers, suspicionOf, targetOf, threat, willScheme,
   isNice, isVillainous, archetype, romanceOf, trustOf, resentmentOf,
-  beatsInvolving, spotlightOrder,
+  beatsInvolving, spotlightOrder, worstMemory,
 } from './_read.js';
+import { GRUDGE_KIND } from './social.js';
 import { makeScene } from '../bb/script/scene.js';
 import { writeMeeting } from '../bb/script/meeting.js';
 
@@ -347,7 +348,7 @@ const houseMeeting = {
       return { text: 'Somebody thinks about calling a house meeting and has the sense not to.',
         players: [], badgeText: 'THOUGHT BETTER OF IT', badgeClass: 'grey' };
     }
-    const { caller, about, cause } = call;
+    const { caller, about, cause, reason } = call;
     const room = _others(house, caller);
     const stats = pStats(caller);
 
@@ -409,7 +410,7 @@ const houseMeeting = {
     }
 
     // Written as one four-part script (bb/script/meeting.js).
-    const written = writeMeeting({ caller, about, witness: room.find(n => n !== about) || null, outcome, cause }, ctx);
+    const written = writeMeeting({ caller, about, witness: room.find(n => n !== about) || null, outcome, cause, reason }, ctx);
     return {
       text: written.text, players: [caller, about].filter(Boolean),
       lines: written.lines, lineId: written.lineId, location: 'living-room',
@@ -456,7 +457,9 @@ function _meetingCaller(house, ctx) {
     const worst = _others(house, name)
       .filter(other => grudge(name, other) >= 3)
       .sort((a, b) => grudge(name, b) - grudge(name, a))[0];
-    if (worst) return { caller: name, about: worst, cause: 'grudge' };
+    // ...and what it is about, so the meeting says it (read 2026-10-14: "Let me tell it from the start,
+    // Nichelle. Including the bit you keep leaving out." The bit was a bowl left by the sink.)
+    if (worst) return { caller: name, about: worst, cause: 'grudge', reason: GRUDGE_KIND[worstMemory(name, worst)?.type] || null };
   }
   return null;
 }

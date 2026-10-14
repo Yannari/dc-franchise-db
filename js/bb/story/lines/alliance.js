@@ -695,7 +695,7 @@ export default {
       { by: 'a', say: "Okay. Good talk." },
       { by: 'a', dr: "We said all the right words. And it still felt like a conversation between two people with something to hide." },
     ] },
-    { id: 'ak2.d3', presumes: ['hoh'], turns: [
+    { id: 'ak2.d3', presumes: ['hoh', 'guests'], turns: [
       { by: 'a', say: "I saw you up in the HOH room earlier." },
       { by: 'b', say: "Yeah, I was just saying hi." },
       { by: 'a', say: "For forty minutes?" },

@@ -44,7 +44,7 @@ export default {
     { id: 'fh2.a8', turns: [{ by: 'a', say: "So it's true?" }, { by: 'b', say: "It's true. I'm not going to insult you by lying." }] },
   ],
   'followup.overheard.denies': [
-    { id: 'fh2.d1', turns: [{ by: 'a', say: "I heard you in the storage room." }, { by: 'b', say: "I don't know what you think you heard." }, { by: 'a', say: "My name." }, { by: 'b', say: "That wasn't about you." }] },
+    { id: 'fh2.d1', turns: [{ by: 'a', say: "I heard you earlier. Through the door." }, { by: 'b', say: "I don't know what you think you heard." }, { by: 'a', say: "My name." }, { by: 'b', say: "That wasn't about you." }, { by: 'a', say: "Then who was it about?" }, { beat: '{b} doesn\'t have an answer ready, and {a} watches {b.obj} look for one.' }] },
     { id: 'fh2.d2', turns: [{ by: 'b', say: "It was a misunderstanding." }, { by: 'a', say: "Which word did I misunderstand?" }] },
     { id: 'fh2.d3', turns: [{ by: 'b', say: "You only heard half of it." }, { by: 'a', say: "Then tell me the other half." }, { beat: '{b} has nothing to say.' }] },
     { id: 'fh2.d4', turns: [{ by: 'b', say: "You can't hear properly through those doors." }, { by: 'a', say: "I heard properly." }] },

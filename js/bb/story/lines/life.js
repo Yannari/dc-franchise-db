@@ -275,7 +275,7 @@ export default {
       { by: 'a', say: "I'll take the mirror." },
       { by: 'a', dr: "Cleaning is how I keep my head straight in here. If my hands are busy, my brain shuts up." },
     ] },
-    { id: 'lc.4', turns: [
+    { id: 'lc.4', room: 'kitchen', turns: [
       { by: 'b', say: "What are you cooking?" },
       { by: 'a', say: "Dinner for everyone." },
       { by: 'b', say: "Everyone?" },

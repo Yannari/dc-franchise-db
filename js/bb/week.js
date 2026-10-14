@@ -6689,14 +6689,17 @@ export function simulateBBWeek(options = {}) {
           const who = { a: pitch.pitcher, b: response.voter };
           const sctx = { week, act: 'campaign', hoh: week.hoh || null, nominees: [...visibleBlock], room: 'bedroom', seenBy: [pitch.pitcher, response.voter] };
           const reply = scriptBeat('campaign.reply', who, { ending: worn ? 'worn' : response.accepted ? 'receptive' : 'unmoved' }, sctx);
-          if (worn) script = joinScripts(reply);
-          else {
-            const c = campaignCase(pitch.pitcher, response.voter, pitch.pitchTarget);
-            made = { kind: c.kind, target: c.opponent || null, partner: c.partner || null, alliance: c.alliance || null };
-            caseScript = scriptBeat('campaign.case', who, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance,
-              theirComps: numberWord(c.theirComps), myComps: numberWord(c.myComps) }, sctx);
-            script = joinScripts(caseScript, reply);
-          }
+          const c = campaignCase(pitch.pitcher, response.voter, pitch.pitchTarget);
+          made = { kind: c.kind, target: c.opponent || null, partner: c.partner || null, alliance: c.alliance || null };
+          caseScript = scriptBeat('campaign.case', who, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance,
+            theirComps: numberWord(c.theirComps), myComps: numberWord(c.myComps) }, sctx);
+          // a return visit that lands says its case again: the first visit is often not the one that aired
+          // (read 2026-10-14: "One more try" / "Okay. Round three went to Beth", and no argument at all).
+          // The nominee's opener ("Me again.") goes first, then the case, then the answer.
+          if (worn && reply && caseScript) {
+            const k = reply.lines[0]?.by === pitch.pitcher && reply.lines.length > 1 ? 1 : 0;
+            script = joinScripts({ ...reply, lines: reply.lines.slice(0, k) }, caseScript, { ...reply, lines: reply.lines.slice(k) });
+          } else script = worn ? joinScripts(reply) : joinScripts(caseScript, reply);
         } catch { script = null; }
         return {
           text: worn

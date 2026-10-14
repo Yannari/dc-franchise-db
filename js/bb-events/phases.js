@@ -182,7 +182,7 @@ const safeRelief = {
 const lobbyingTheVeto = {
   id: 'phase-lobby-veto',
   category: 'phases',
-  weight(house, ctx) { return ctx?.vetoWinner ? at('post-veto', ctx, 14) : 0; },
+  weight(house, ctx) { return ctx?.vetoWinner && !_noms(ctx).includes(ctx.vetoWinner) ? at('post-veto', ctx, 14) : 0; },
   fire(house, ctx, api) {
     const holder = ctx.vetoWinner;
     const nominee = _noms(ctx).filter(n => n !== holder)

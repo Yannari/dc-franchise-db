@@ -21,7 +21,7 @@ const D = (id, by, dr) => ({ id, turns: [{ by, dr }] });
 
 export default {
   'camp.open': [
-    { id: 'cpg.o1', turns: [{ beat: '{a} waits until the room clears, then sits down on the end of {b}’s bed.' }, { by: 'b', say: "I wondered when you'd come and find me." }, { by: 'a', say: "Have you got five minutes?" }, { by: 'b', say: "For you? Go on." }] },
+    { id: 'cpg.o1', room: 'bedroom', turns: [{ beat: '{a} waits until the room clears, then sits down on the end of {b}’s bed.' }, { by: 'b', say: "I wondered when you'd come and find me." }, { by: 'a', say: "Have you got five minutes?" }, { by: 'b', say: "For you? Go on." }] },
     { id: 'cpg.o2', room: 'storage-room', turns: [{ beat: 'The storage room. {a} follows {b} in and pulls the door to.' }, { by: 'b', say: "Very subtle. Everybody saw you follow me in here." }, { by: 'a', say: "I've got about two minutes before somebody needs cereal." }, { by: 'b', say: "Then talk fast." }] },
     { id: 'cpg.o3', room: 'backyard', turns: [{ beat: 'The backyard. {b} is on the hammock. {a} sits down on the grass beside it.' }, { by: 'a', say: "Can I steal you?" }, { by: 'b', say: "You've already sat down." }, { by: 'a', say: "Then I've already stolen you." }] },
     { id: 'cpg.o4', turns: [{ beat: '{a} catches {b} on the way out of the bathroom.' }, { by: 'a', say: "Hey. Can we talk? Properly?" }, { by: 'b', say: "Is this the talk?" }, { by: 'a', say: "This is the talk." }] },
@@ -145,7 +145,7 @@ export default {
     D('cpd.vw4', 'b', "Okay. {a} got to me. I don't love admitting that."),
     D('cpd.vw5', 'b', "You hear something once, you dismiss it. You hear it twice, you start checking."),
     { id: 'cpd.vw6', turns: [{ by: 'b', dr: "I kept saying no. {a} kept coming back. Eventually you start to wonder why you're saying no." }] },
-    { id: 'cpd.vw7', turns: [{ by: 'b', dr: "Okay. Round three went to {a}." }] },
+    { id: 'cpd.vw7', turns: [{ by: 'b', dr: "Okay. That round went to {a}." }] },
     { id: 'cpd.vw8', turns: [{ by: 'b', dr: "{a} wore me down. I'm not proud of it. I'm also not sure it's wrong." }] },
   ],
   'camp.pdr.receptive': [

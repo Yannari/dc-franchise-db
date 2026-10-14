@@ -22,7 +22,7 @@
 
 import { gs } from '../../core.js';
 import { pickEntry, newLedger } from '../../script/pick.js';
-import { fill, writing } from '../script/write.js';
+import { fill, said, writing } from '../script/write.js';
 import { factsFor } from '../script/facts.js';
 import { stableRng } from '../knowledge.js';
 import { causeOf } from './storylines.js';
@@ -181,8 +181,11 @@ function whenOf(prior, step) {
   return d <= 0 ? 'earlier' : d === 1 ? 'yesterday' : 'the other day';
 }
 
-function presumed(entry, ctx) {
+function presumed(entry, ctx, who = null) {
   for (const p of entry.presumes || []) {
+    // guests: neither of the two is the HOH (read 2026-10-14: the HOH asked "I saw you up in the HOH room
+    // earlier. For forty minutes?" about their own room)
+    if (p === 'guests' && who && ctx.hoh && [who.a, who.b].includes(ctx.hoh)) return false;
     if (p === 'hoh' && !ctx.hoh) return false;
     if (p === 'noms' && !(ctx.nominees || []).length) return false;
     if (p === 'vote' && !(gs.bb?.weeks || []).some(w => w !== ctx.week && w.evicted)) return false;
@@ -238,7 +241,7 @@ function pick(keys, who, data, ctx, room, salt, freshOnly = false) {
   const voters = e => !PLEDGE.test(JSON.stringify(e.turns)) || (e.turns || []).every(t => !t.by || t.by === 'a' || !noVote.has(who[t.by]));
   // a pact the engine named (a final two, a jury pact) is only told by a scene that makes that deal
   const sameDeal = e => !e.deal || !data.pact || e.deal === data.pact;
-  for (const k of keys) pools[k] = (STORY_POOLS[k] || []).filter(e => presumed(e, ctx) && can(e) && fits(e) && voters(e) && sameDeal(e));
+  for (const k of keys) pools[k] = (STORY_POOLS[k] || []).filter(e => presumed(e, ctx, who) && can(e) && fits(e) && voters(e) && sameDeal(e));
   // nothing airs twice in a season while something unused still fits
   const used = ledger().uses || {};
   // inside a set piece the room is the set's: a scene that stages its own room waits, unless nothing else
@@ -274,7 +277,7 @@ function pick(keys, who, data, ctx, room, salt, freshOnly = false) {
 const render = (entry, who, ctx, data) => entry.turns.map(t => {
   const kind = t.dr ? 'dr' : t.beat ? 'beat' : 'say';
   const by = t.by ? who[t.by] || null : null;
-  const text = fill(t.dr || t.beat || t.say, who, { hoh: ctx.hoh }, data);
+  const text = said(kind, fill(t.dr || t.beat || t.say, who, { hoh: ctx.hoh }, data));
   // a line may open on a slot ("{when}, {a} made a joke...") — a sentence starts with a capital
   return { kind, by, text: text.replace(/^(["'(…\.\s]*)([a-z])/, (m, p, ch) => p + ch.toUpperCase()) };
 });
@@ -335,8 +338,12 @@ function addWitnesses(sc, ws, ctx) {
     const keys = !jab && w.kind === 'loud' && w.stance !== 'out' ? [key, `${key}.loud`] : [key];
     const e = pick(keys, who, {}, ctx, sc.room, `${sc.id}|wit|${w.name}`);
     if (!e) continue;
-    add.push(...render(e, who, ctx, {}));
+    const r = render(e, who, ctx, {});
+    add.push(...r);
     cast.push(w.name);
+    // a witness who walks one of them out of the room ends it: nobody answers the next witness from the
+    // corridor (read 2026-10-14: "Emmah walks out with Owen", then Owen: "Wow. Okay. Good to know.")
+    if (r.some(l => l.kind === 'beat' && LEFT.test(String(l.text || '')) && (nameIn(w.a, l.text) || nameIn(w.b, l.text)))) break;
   }
   if (!add.length) return sc;
   let k = sc.lines.length; while (k > 0 && sc.lines[k - 1].kind === 'dr') k--;
@@ -622,7 +629,11 @@ function writeGameTalk0(talk, ctx, at) {
   const sp = staged ? null : spotFor(`talk.${kind}`, cast, ctx, salt, JSON.stringify(entry.turns));
   if (sp) room = sp.room;
   const lines = render(entry, who, ctx, data);
-  const used = cast.filter(n => lines.some(l => l.by === n || (l.kind === 'beat' && l.text.includes(n))));
+  // the one a conversation is about is not standing in it: named in a stage direction AND talked about in
+  // the third person, they are the subject (read 2026-10-14: "Scary is trying to talk Ripper into a move
+  // against Chase", with Chase in the cast while Ripper says "I told Chase I'd never come after him")
+  const spokenOf = n => lines.some(l => l.kind !== 'beat' && l.by !== n && nameIn(n, l.text));
+  const used = cast.filter(n => lines.some(l => l.by === n) || (lines.some(l => l.kind === 'beat' && nameIn(n, l.text)) && !spokenOf(n)));
   const sc = { ...base, room, roomName: sp?.label || ROOM[room] || 'Living Room', cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: false, lineId: entry.id,
     ...(sp ? { spot: sp.spot } : {}) };
   // private talk is private: the room around it only where people would be (never a shut door)
@@ -665,9 +676,14 @@ const OUTCOME_WHY = {
 export function writeCampaignScene(beat, ctx, at, salt) {
   // the nominee first, the voter last; anybody between came along to help make the case
   const ps = beat.players || [];
-  const a = ps[0], b = ps.length > 1 ? ps[ps.length - 1] : null;
+  // ...unless every one of them answers it: the same case taken round two or three voters (week.js,
+  // engine.samecase) opens on the first, who hears it first (read 2026-10-14: a pitch opened on Emmah
+  // and Caleb answered it)
+  const answers = n => (beat.lines || []).some(l => l && l.by === n && l.kind !== 'dr' && l.kind !== 'beat');
+  const round = ps.length > 2 && answers(ps[1]);
+  const a = ps[0], b = ps.length > 1 ? (round ? ps[1] : ps[ps.length - 1]) : null;
   if (!a || !b) return null;
-  const along = ps.slice(1, -1);
+  const along = round ? ps.slice(2) : ps.slice(1, -1);
   const outcome = beat.pitchOutcome || (beat.badgeClass === 'green' ? 'receptive' : 'unmoved');
   const who = { a, b };
   const data = {};
@@ -675,7 +691,9 @@ export function writeCampaignScene(beat, ctx, at, salt) {
   // the opening, the closing push and the Diary Room wrap the engine's own case and reply: a spent
   // pool leaves its piece out (the read of 2026-10-14: 31 pitch lines heard twice in one season)
   const open = pick(['camp.open'], who, data, sctx, 'bedroom', `${salt}|open`, true);
-  const close = pick([`camp.close.${outcome}`], who, data, sctx, 'bedroom', `${salt}|close`, true);
+  // (a case taken round several voters has its own ending, voter by voter: a closing push after it had the
+  // first voter say "I'll think about it" and then "You should save your energy")
+  const close = round ? null : pick([`camp.close.${outcome}`], who, data, sctx, 'bedroom', `${salt}|close`, true);
   // the voter knows their own mind; now and then the nominee reads the room instead
   const h = [...salt].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
   const pdr = outcome !== 'worn' && h % 10 < 3;
@@ -774,14 +792,19 @@ function writeEngineScene0(beat, ctx, at) {
   if (pact && !/compared|exposed|broken|collapse/.test(id)) sc.title = { kind: 'deal', name: pact, members: (beat.players || []).slice(0, pact === 'Final Three' ? 3 : 2) };
   if (meeting) sc.title = { kind: 'meeting', name: 'House Meeting', members: cast.slice(0, 1) };
   // the rest of the house is around for it, the way it is for any conversation in a shared room
-  if (!meeting && cast.length <= 3) sc.lines = background(sc.lines, sc, ctx, sc.id, /blow|fight|confront|grudge|snap/.test(id));
+  // (loud only when there is a row to hear: a grudge told to the Diary Room alone had the bedroom
+  // freezing and mouthing "What is happening?" at nobody, read 2026-10-14)
+  const row = new Set(sc.lines.filter(l => l.kind === 'say').map(l => l.by)).size >= 2;
+  if (!meeting && cast.length <= 3) sc.lines = background(sc.lines, sc, ctx, sc.id, row && /blow|fight|confront|grudge|snap/.test(id));
   return sc;
 }
 
 // ── set pieces: the whole house in one room ─────────────────────────────
 const SET_ROOM = { firstnight: 'kitchen', firstbed: 'bedroom', hohroom: 'hoh-room', afternoms: 'living-room',
   morningafter: 'kitchen', dinner: 'kitchen', backyard: 'backyard', gamenight: 'living-room' };
-const CUT = sc => (sc.type === 'feud' ? 'clash' : sc.type === 'showmance' ? 'flirt' : 'fun');
+// (a quiet aside for the game's two-person talk: "nods at the door" led into a group game of animals, read 2026-10-14)
+const CUT = sc => (sc.type === 'feud' ? 'clash' : sc.type === 'showmance' ? 'flirt'
+  : /^(alliance|target|scheme|deal)/.test(sc.type || '') && new Set(sc.lines.filter(l => l.kind === 'say').map(l => l.by)).size <= 2 ? 'aside' : 'fun');
 
 /**
  * A stretch's whole-house set piece (spec addendum, 2026-10-06): an ensemble opening with up
@@ -810,7 +833,8 @@ export function writeSetPiece(type, ctx, inside, { gone = null, at = 0 } = {}) {
   const speaking = new Set(lines.filter(l => l.by).map(l => l.by));
   for (const sc of inside) {
     const cw = { a: sc.cast[0], b: sc.cast[1] || sc.cast[0] };
-    const cut = pick([`set.cut.${CUT(sc)}`], cw, {}, sctx, room, `${salt}|cut|${sc.id}`);
+    // (one that opens on its own stage direction has its own way in: both put Millie in two places, read 2026-10-14)
+    const cut = sc.lines[0]?.kind === 'beat' ? null : pick([`set.cut.${CUT(sc)}`], cw, {}, sctx, room, `${salt}|cut|${sc.id}`);
     if (cut) lines.push(...render(cut, cw, ctx, {}));
     // the rest of the room is still there: a row at dinner gets a reaction from the table
     const body = sc.lines.slice();
@@ -850,7 +874,11 @@ export function writeSetPiece(type, ctx, inside, { gone = null, at = 0 } = {}) {
 const voiced = (sc, kind, ctx) => {
   if (!sc || writing.muted || !sc.lines?.length) return sc;
   // every line in the speaker's register (register.js), then the closing confessional in their voice
-  sc.lines = sc.lines.map(l => voiceLine(l, sc.id));
+  // (each with the line it answers: "No." to "Is it about me?" is a fact, not a refusal)
+  // ...and the line after it, which may quote it back ("Okay." "Just okay?")
+  // (the rest of the scene, the Diary Room too: "I know." voiced "I know! Right?", then "And 'I know' is even worse")
+  sc.lines = sc.lines.map((l, i) => voiceLine(l, sc.id, sc.lines.slice(0, i).reverse().find(x => x.kind === 'say'),
+    { text: sc.lines.slice(i + 1).filter(x => x.kind !== 'beat').map(x => x.text).join(' ') }));
   return addInsight(sc, kind, ctx?.week?.num);
 };
 export function writeStoryScene(line, step, ctx) {

@@ -200,7 +200,7 @@ const findingTheCulprit = {
     const { blamed, correct, why } = verdict;
 
     const scene = makeScene('fallout.blame', { a: mourner.name, b: blamed },
-      { ending: correct ? 'correct' : 'wrong', gone }, [], _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, mourner.name, blamed));
+      { ending: correct ? 'correct' : 'wrong', gone, ...(blamed === week.hoh ? { reason: 'hoh' } : {}) }, [], _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, mourner.name, blamed));
     api.setTarget(mourner.name, blamed, `holds ${blamed} responsible for ${gone} going home`);
     api.remember(mourner.name, blamed, 'took-my-ally', 3, { about: gone });
     api.suspicion(mourner.name, blamed, 2);

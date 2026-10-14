@@ -66,13 +66,14 @@ const houseMeeting = {
   location: 'living-room',
   weight(house, ctx) {
     const hoh = ctx?.hoh;
-    if (!hoh || house.length < 6 || _spent('reign-house-meeting', ctx)) return 0;
+    if (!hoh || house.length < 6 || _spent('reign-house-meeting', ctx) || ctx?.week?._houseMeetingCalled) return 0;
     const { ego, mode } = reignTemperament(hoh);
     return mode === 'hohitis' ? _reigning(ctx, 4.5 * ego) : 0;
   },
   fire(house, ctx, api) {
     const hoh = ctx.hoh;
     _spend(this.id, ctx);
+    if (ctx?.week) ctx.week._houseMeetingCalled = true;
     const room = _others(house, hoh);
     // Somebody says the quiet part in front of everybody, which is the entire
     // mechanism: the meeting does not fail because of the answer, it fails

@@ -38,6 +38,7 @@ export default {
       { by: 'b', say: "That's two people angry with you." },
       { by: 'a', say: "Two people who were already angry with me." },
       { by: 'b', say: "And {d}?" },
+      { by: 'a', say: "{d} knows. {d} said yes before I even finished asking." },
       { by: 'a', dr: "The Block Buster takes one of my nominees off whatever I do. So I'm putting up two people I'd evict, and one friend who should be safe whatever happens." },
     ] },
   ],

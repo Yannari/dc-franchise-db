@@ -99,7 +99,7 @@ export default {
     { id: 'ef.4', turns: [{ by: 'a', say: "Getting {target} out is better for all three of us." }, { by: 'b', say: "Agreed." }, { by: 'c', say: "That was quick, {b}." }] },
     { id: 'ef.5', turns: [{ by: 'c', dr: "{a} and {b} want to flip the vote onto {target}. I'm not committing until I know who else is in." }] },
     { id: 'ef.6', turns: [{ by: 'a', dr: "If the three of us flip, {target} goes home. Now I just need them to stick to it." }] },
-    { id: 'ef.7', turns: [{ by: 'b', say: "If this goes wrong, we're all next." }, { by: 'a', say: "It won't go wrong." }, { by: 'c', say: "That's what everyone says." }] },
+    { id: 'ef.7', turns: [{ by: 'b', say: "If we flip this onto {target} and it goes wrong, we're all next." }, { by: 'a', say: "It won't go wrong." }, { by: 'c', say: "That's what everyone says." }] },
   ],
   'editorial.roast.lands': [
     { id: 'er.l1', turns: [{ by: 'a', say: "This is {b} walking into a strategy talk." }, { beat: '{a} does the walk.' }, { by: 'c', say: "That's exactly it!" }, { by: 'b', say: "...Okay, that's fair." }] },

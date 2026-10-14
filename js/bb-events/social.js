@@ -201,6 +201,8 @@ const blowUp = {
     const aType = archetype(a);
     const volatile = aStats.temperament <= 3 || ['hothead', 'chaos-agent', 'villain'].includes(aType);
     const calculated = aStats.strategic >= 7 && aStats.temperament >= 4;
+    // what it is about: the worst thing a holds against b, before this fight adds its own
+    const reason = _GRUDGE_KIND[worstMemory(a, b)?.type] || null;
     api.addBond(a, b, -2.6);
     api.setTarget(a, b, 'screamed at me in front of the whole house');
     api.setTarget(b, a, 'started it');
@@ -216,7 +218,7 @@ const blowUp = {
       else if (bond(watcher, b) > bond(watcher, a)) api.addBond(watcher, a, -0.4);
     });
     // Public by definition: the whole house is in the room for it.
-    const scene = makeScene('talk.confront', { a, b }, { ending: volatile ? 'volatile' : calculated ? 'calculated' : 'general' }, pub,
+    const scene = makeScene('talk.confront', { a, b }, { ending: volatile ? 'volatile' : calculated ? 'calculated' : 'general', reason }, pub,
       ['kitchen', 'living-room', 'backyard'][(a.length + b.length + (ctx?.week?.num || 0)) % 3]);
     return { scene, players: [a, b], badgeText: 'BLOW-UP', badgeClass: 'red' };
   },
@@ -359,7 +361,12 @@ const _GRUDGE_KIND = {
   'left-me-out': 'left-out', 'decided-without-me': 'left-out',
   'kept-me-awake': 'house', 'never-cleans-up': 'house', 'ate-my-food': 'house',
   'coming-for-me': 'plan', 'planning-the-cut': 'plan', 'overheard-plot': 'plan',
+  // the everyday wearing-down (read 2026-10-14: these had no family, so the grudge aired "What {b} did,
+  // who helped, who knew" about two people with nothing between them on screen but a bicker)
+  petty: 'friction', irritation: 'friction', 'would-not-let-it-go': 'friction', 'cold-war': 'friction', 'saw-them-fight': 'friction',
+  'apology-refused': 'friction', 'talks-down-to-me': 'friction', 'made-me-the-joke': 'humiliation', 'robbed-me-of-the-veto': 'betrayal',
 };
+export const GRUDGE_KIND = _GRUDGE_KIND;
 
 const grudgeHardens = {
   id: 'social-grudge-hardens',
@@ -409,7 +416,7 @@ const grudgeHardens = {
     api.suspicion(a, enemy, 1.5);
     api.remember(a, enemy, 'resolve', 2, { about: kind });
     // What the enemy did, as a family the lines can speak to. The enemy is not in the room.
-    const scene = makeScene('social.grudge', { a, b: enemy }, { ending: 'hardens', reason: _GRUDGE_KIND[kind] || null }, [],
+    const scene = makeScene('social.grudge', { a, b: enemy }, { ending: 'hardens', reason: _GRUDGE_KIND[kind] || (kind ? null : 'instinct') }, [],
       _room(['backyard', 'kitchen', 'bedroom'], ctx, a));
     scene.seenBy = [a];
     return { scene, players: [a, enemy], badgeText: 'GRUDGE HARDENS', badgeClass: 'red' };

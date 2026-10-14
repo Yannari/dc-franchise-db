@@ -546,7 +546,7 @@ const hohRefusesEntry = {
     api.popDelta(hoh, -1);
     const scene = makeScene('power.refused', { a: hoh, b: turned }, { ending: 'shut' }, house, 'hoh-room');
     return {
-      scene, players: [...house],
+      scene, players: [hoh, turned],
       badgeText: 'DOOR STAYS SHUT', badgeClass: 'red',
     };
   },

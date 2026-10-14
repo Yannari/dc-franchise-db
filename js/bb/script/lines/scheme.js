@@ -60,7 +60,7 @@ export default {
     { id: 'sl.b3', turns: [{ by: 'a', say: "{target} called your alliance fake. Right in front of me." }, { by: 'b', say: "Who else heard it?" }, { by: 'a', say: "A couple of people." }] },
     { id: 'sl.b4', turns: [{ by: 'b', dr: "{a} told me what {target} has been saying about me. It fits. Everything fits." }] },
     { id: 'sl.b5', turns: [{ by: 'a', dr: "None of it was true. {b} believed every word." }] },
-    { id: 'sl.b6', turns: [{ by: 'a', say: "{target} told everyone your final-two deal." }, { by: 'b', say: "{target} did what?" }] },
+    { id: 'sl.b6', turns: [{ by: 'a', say: "{target} says you'd sell out anybody in this house for one week of safety. Those were the words." }, { by: 'b', say: "{target} said that? About me?" }, { by: 'a', say: "I'm only the messenger." }] },
     { id: 'sl.b7', turns: [{ by: 'a', say: "{target} laughed when your name came up." }, { by: 'b', say: "Laughed?" }, { by: 'a', say: "Like you weren't a threat at all." }] },
   ],
   'scheme.lie.rejected': [
@@ -143,7 +143,7 @@ export default {
   'scheme.rally.scene': [
     { id: 'sr.1', turns: [{ beat: "{a} gathers whoever is in the room." }, { by: 'a', say: "If we split our votes, {target} stays. Is that what we want?" }, { beat: "Nobody says yes." }, { by: 'a', say: "Then we vote together. All of us. No surprises." }, { beat: "A few people nod." }, { by: 'a', dr: "Nobody said no. In this house, that's as close to a yes as you get." }] },
     { id: 'sr.2', turns: [{ by: 'a', say: "Who here feels safe with {target} still in the house?" }, { beat: "Silence." }, { by: 'a', say: "That's what I thought." }, { by: 'a', say: "So why are we all pretending {target} isn't the problem?" }, { beat: "Somebody coughs. Nobody answers." }, { by: 'a', dr: "Nobody wanted to be the first to say it. So I said it for them." }] },
-    { id: 'sr.3', turns: [{ beat: "{a} goes from room to room, making the same case each time." }, { by: 'a', say: "I'm not asking you to like me. I'm asking you to think about {target}." }, { by: 'a', say: "Think about who {target} talks to. Think about who {target} would put up." }, { by: 'a', dr: "I went room to room making the case against {target}. A few people agreed straight away. The rest are counting." }] },
+    { id: 'sr.3', turns: [{ beat: "{a} makes the case quietly, looking at one face at a time." }, { by: 'a', say: "I'm not asking you to like me. I'm asking you to think about {target}." }, { by: 'a', say: "Think about who {target} talks to. Think about who {target} would put up." }, { by: 'a', dr: "I made the case against {target}. A few people agreed straight away. The rest are counting." }] },
     { id: 'sr.4', turns: [{ by: 'a', say: "This isn't a favour to me. This is about who gets to next week." }, { beat: "A couple of people exchange looks." }, { by: 'a', say: "{target} has the numbers if we let {target} keep them. We don't have to." }, { by: 'a', dr: "I said \"we\" a lot. People like being part of a \"we\"." }] },
     { id: 'sr.5', turns: [{ by: 'a', say: "{target} has a deal with someone in this room. Maybe more than one. Think about that." }, { beat: "Everyone looks at everyone else." }, { by: 'a', say: "I'm not saying who. I'm saying it's there." }, { by: 'a', dr: "I don't know exactly who. I don't need to. Everyone's wondering now." }] },
     { id: 'sr.6', turns: [{ beat: "{a} stands up in the middle of dinner." }, { by: 'a', say: "I'm done whispering. {target} has to go this week." }, { beat: "Forks stop halfway to mouths." }, { by: 'a', dr: "I stopped whispering and said it out loud. Now everyone has to pick a side." }] },
@@ -173,9 +173,9 @@ export default {
     { id: 'sv.s1', turns: [{ beat: '{partner} asks {c} for help with something in another room.' }, { by: 'a', say: "Mind if I sit here?" }, { by: 'b', say: "...Sure." }, { beat: '{c} comes back early.' }, { by: 'c', say: "What's going on?" }] },
     { id: 'sv.s2', turns: [{ beat: 'While {partner} keeps {c} busy, {a} moves very close to {b}.' }, { by: 'c', dr: "I walked back in and they were sitting so close. I don't know what I saw. But I saw it." }] },
     { id: 'sv.s3', turns: [{ by: 'a', say: "You know you're my favourite person in here, right?" }, { by: 'b', say: "Don't say that." }, { beat: '{c} is standing in the doorway.' }] },
-    { id: 'sv.s4', turns: [{ by: 'a', dr: "{partner} got {c} out of the room. I did the rest. I didn't need it to be real. I needed {c} to see it." }] },
+    { id: 'sv.s4', turns: [{ beat: 'While {partner} keeps {c} busy in the other room, {a} sits down very close to {b} and stays there.' }, { beat: '{c} walks back in.' }, { by: 'a', dr: "{partner} got {c} out of the room. I did the rest. I didn't need it to be real. I needed {c} to see it." }] },
     { id: 'sv.s5', turns: [{ beat: '{a} leans in to {b}. {b} doesn\'t move away fast enough.' }, { by: 'c', say: "Seriously?" }] },
-    { id: 'sv.s6', turns: [{ by: 'c', dr: "{partner} kept me outside for twenty minutes for no reason. When I came back, I worked out why." }] },
+    { id: 'sv.s6', turns: [{ beat: '{partner} asks {c} to help with something in another room. When {c} gets back, {a} is sitting very close to {b}.' }, { by: 'c', dr: "{partner} kept me outside for twenty minutes for no reason. When I came back, I worked out why." }] },
   ],
   'scheme.kiss.failed': [
     { id: 'sv.f1', turns: [{ by: 'a', say: "Want to go somewhere quiet?" }, { by: 'b', say: "No. Who put you up to this?" }] },

@@ -648,7 +648,7 @@ export default {
 
   // ── a grudge hardens: a decides about b (not in the room) ─────────
   'social.grudge.hardens': [
-    { id: 'sg.h1', turns: [
+    { id: 'sg.h1', when: { reason: ['betrayal', 'vote', 'lie', 'humiliation', 'promise', 'left-out', 'plan'] }, turns: [
       { by: 'a', dr: "I'm done giving {b} the benefit of the doubt. I'm not asking for an explanation any more. I'm asking if the votes are there." },
     ] },
     { id: 'sg.h2', turns: [
@@ -658,7 +658,7 @@ export default {
     { id: 'sg.h3', turns: [
       { by: 'a', dr: "\"I'm over it\", I keep telling people. I'm not over it. I'm making a list, and {b} is at the top." },
     ] },
-    { id: 'sg.h4', turns: [
+    { id: 'sg.h4', when: { reason: ['betrayal', 'vote', 'lie', 'humiliation', 'promise', 'left-out', 'plan'] }, turns: [
       { by: 'a', dr: "I've gone over it a hundred times. What {b} did, who helped, who knew. I know exactly when I'm taking the shot." },
     ] },
     { id: 'sg.h5', turns: [
@@ -668,13 +668,13 @@ export default {
     { id: 'sg.h6', turns: [
       { by: 'a', dr: "People think I've let it go because I've stopped talking about it. I haven't. I've made up my mind." },
     ] },
-    { id: 'sg.h7', turns: [
+    { id: 'sg.h7', when: { reason: ['betrayal', 'vote', 'lie', 'humiliation', 'promise', 'left-out', 'plan'] }, turns: [
       { by: 'a', dr: "{b} said sorry, sort of. That's not a real apology, and I'm not accepting it." },
     ] },
     { id: 'sg.h8', turns: [
       { by: 'a', dr: "I don't hate {b}. I just need {b} out of this house more than I need almost anything else." },
     ] },
-    { id: 'sg.h9', when: { room: ['backyard'] }, turns: [
+    { id: 'sg.h9', when: { room: ['backyard'], reason: ['betrayal', 'vote', 'lie', 'humiliation', 'promise', 'left-out', 'plan'] }, turns: [
       { beat: '{a} sits alone on the backyard steps, staring at nothing in particular.' },
       { by: 'a', dr: "Some things I can forgive. What {b} did isn't one of them." },
     ] },
@@ -708,6 +708,14 @@ export default {
     { id: 'sg.r18', when: { reason: 'house' }, turns: [{ by: 'a', dr: "Is it petty to want {b} out because of the mess? Maybe. Do I care? Not even a little." }] },
     { id: 'sg.r19', when: { reason: 'house' }, turns: [{ by: 'a', dr: "{b} has made living here miserable. Every single day. I want to live in this house without {b} in it." }] },
     { id: 'sg.r20', when: { reason: 'plan' }, turns: [{ by: 'a', dr: "{b} is planning to come after me. I know it. So I'm going to get there first." }] },
+    // the everyday wearing-down: no one deed, a hundred small ones
+    { id: 'sg.r22', when: { reason: 'friction' }, turns: [{ by: 'a', dr: "It started with little things. The snapping, the eye-rolling every time I open my mouth. With {b}, it isn't little any more." }] },
+    { id: 'sg.r23', when: { reason: 'friction' }, turns: [{ by: 'a', dr: "Every conversation with {b} turns into an argument. I've stopped having them. I'd rather just vote." }] },
+    { id: 'sg.r24', when: { reason: 'friction' }, turns: [{ by: 'a', dr: "{b} and I have been bickering since we walked in. Everybody thinks it's funny. It stopped being funny to me a while ago." }] },
+    // nothing anybody saw: a gut feeling, said as one
+    { id: 'sg.n1', when: { reason: 'instinct' }, turns: [{ by: 'a', dr: "I can't point to one thing {b} has done. I don't need to. {b} doesn't like me, and I've stopped pretending I like {b}." }] },
+    { id: 'sg.n2', when: { reason: 'instinct' }, turns: [{ by: 'a', dr: "Nobody else sees it yet. Something about {b} is off with me, and I trust my gut more than I trust {b}." }] },
+    { id: 'sg.n3', when: { reason: 'instinct' }, turns: [{ by: 'a', dr: "{b} has never done anything to me. That's what worries me. {b} smiles at me like somebody who's already decided." }] },
     { id: 'sg.r21', when: { reason: 'plan' }, turns: [{ by: 'a', dr: "I heard {b}'s plan, and I know I'm in it. So now I'm going after {b}." }] },
     { id: 'sg.h13', turns: [{ by: 'a', dr: "{b} thinks we're fine. We are not fine. We are very far from fine." }] },
     { id: 'sg.h14', turns: [{ by: 'a', dr: "I used to argue with {b}. I've stopped. There's no point. I've decided {b} has to go." }] },

@@ -46,6 +46,7 @@ export default {
       { by: 'b', say: "Then it's settled." },
       { by: 'a', say: "It's half settled. The other chair is the hard part. I'm going to ask {d} to sit in it." },
       { by: 'b', say: "And if {d} says no?" },
+      { by: 'a', say: "Then I find out what {d} really thinks of me. That's worth knowing too." },
       { by: 'a', dr: "This is the part nobody tells you about winning HOH. You don't just pick an enemy. You pick a friend to put in danger too." },
     ] },
   ],
@@ -389,6 +390,7 @@ export default {
       { by: 'b', say: "That's a strategy?" },
       { by: 'a', say: "That's my whole strategy." },
       { by: 'b', say: "And if {c} puts you up anyway?" },
+      { by: 'a', say: "Then at least I didn't waste a trip up the stairs." },
       { by: 'a', dr: "The HOH remembers who came up those stairs. Every visitor is somebody asking for something. I'd rather {c} forgot I exist this week." },
     ] },
     { id: 'hw.fo2', room: 'backyard', turns: [
@@ -398,6 +400,7 @@ export default {
       { by: 'b', say: "That won't keep you safe forever." },
       { by: 'a', say: "It doesn't have to be forever. It has to be this week." },
       { by: 'b', say: "And next week?" },
+      { by: 'a', say: "Next week is next week's problem." },
       { by: 'a', dr: "People call it floating like it's an insult. I call it still being here while the people who played hard pack their bags." },
     ] },
     { id: 'hw.fo3', room: 'living-room', turns: [
@@ -439,6 +442,7 @@ export default {
       { by: 'b', say: "{c} really didn't see it coming at the end." },
       { by: 'a', say: "{c} saw it. {c} just couldn't stop it." },
       { by: 'b', say: "So, good HOH?" },
+      { by: 'a', say: "Good enough. That's all anybody gets." },
       { by: 'a', dr: "I had one job this week: get {c} out of this house. Job done. Tomorrow I'm just another houseguest with a target on my back, but nobody can say I wasted my week." },
     ] },
   ],
@@ -451,6 +455,7 @@ export default {
       { by: 'b', say: "{c} is still here." },
       { by: 'a', say: "{c} is still here because the week fell apart. I had the target. I just didn't get the target out." },
       { by: 'b', say: "So what now?" },
+      { by: 'a', say: "Now I smile at {c} every day and wait for another key." },
       { by: 'a', dr: "My whole HOH was about getting {c} out, and {c} is in the next room laughing. I used my week and got nothing for it, and {c} knows I tried." },
     ] },
     { id: 'hw.vm2', room: 'bedroom', presumes: ['vote'], turns: [
@@ -499,6 +504,7 @@ export default {
       { by: 'b', say: "What would you change?" },
       { by: 'a', say: "Everything. I'd put up somebody who could take care of themselves." },
       { by: 'b', say: "And {c}?" },
+      { by: 'a', say: "{c} is still here. That's the part I can't stand." },
       { by: 'a', dr: "My plan was {c} out and {d} safe. I got the exact opposite. I didn't just fail as HOH, I sent home somebody who trusted me." },
     ] },
   ],

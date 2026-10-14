@@ -132,9 +132,17 @@ const SAY = {
     smooth: ['I appreciate that.'], tough: ['Thanks.'], bubbly: ['Thank you so much!'], mean: ['Took you long enough.'] },
   wow: { terse: ['Wow.'], sarcastic: ['Wow. Great.'], sweet: ['Oh, wow.'], theatrical: ['WOW.'], anxious: ['Oh. Wow.'], smooth: ['Well, well.'],
     tough: ['Wow.'], bubbly: ['Oh my god. Wow.'], mean: ['Wow.'] },
+  // a plain "yes"/"no" to a question of fact ("Is it about me?" "No."): the request flavours above are
+  // a refusal or an agreement ("Oh, no, I can't."), which answers a question nobody asked
+  noFact: { terse: ['No.', 'Nope.'], sarcastic: ['No. Why would it be?', 'Nope.'], sweet: ['No, no.', 'No, honestly.'],
+    theatrical: ['No! God, no.', 'Absolutely not.'], anxious: ['No? No.', 'Um, no.'], smooth: ['No.', 'Not at all.'], tough: ['No.', 'Nope.'],
+    bubbly: ['No! Nope.', 'Nooo.'], mean: ['No. Obviously.', 'No.'] },
+  yesFact: { terse: ['Yep.', 'Yeah.'], sarcastic: ['Oh, yes.', 'Yep. Really.'], sweet: ['Yes.', 'Yeah, I think so.'], theatrical: ['Yes! Yes.', 'Oh, yes.'],
+    anxious: ['Um. Yes.', 'Yeah. Yes.'], smooth: ['Yes.', 'Indeed.'], tough: ['Yeah.', 'Yep.'], bubbly: ['Yes! Totally.', 'Yes!'], mean: ['Yes. Obviously.', 'Yes.'] },
   go: { terse: ['Go.'], sarcastic: ['Go on. I\'m riveted.'], sweet: ['Go on, I\'m listening.'], theatrical: ['Tell me. Tell me everything.'], anxious: ['Okay. Go on.'],
     smooth: ['I\'m all ears.'], tough: ['Out with it.'], bubbly: ['Go, go, go!'], mean: ['Make it quick.'] },
 };
+const ASKS = /\b(can|could|will|would|won't) (you|we)\b|\bdo you want\b|\bwant to\b|\bshall (we|I)\b|\blet's\b|\bplease\b|\b(can|could|may) I\b|\bpromise\b|\bdeal\?|\bare you in\b|\bwith me\?|\bhelp me\b|\binterested\b|\bin or out\b/i;
 const SFX = ['*a long descending whistle*', '*a record scratch*', '*a soft drumroll on the table*', '*a tiny trumpet fanfare*', '*a cartoon gulp*'];
 const GEST = ['shakes his head', 'nods once', 'holds up a hand', 'shrugs', 'raises an eyebrow', 'points at the door', 'gives a thumbs up'];
 const h = s => { let x = 2166136261; for (const ch of String(s)) x = Math.imul(x ^ ch.charCodeAt(0), 16777619) >>> 0; return x; };
@@ -143,12 +151,18 @@ const h = s => { let x = 2166136261; for (const ch of String(s)) x = Math.imul(x
  * One spoken line in its speaker's register. Returns the line (possibly the same one), or a beat
  * for somebody who does not speak. `salt` keeps the choice stable for a scene.
  */
-export function voiceLine(line, salt) {
+export function voiceLine(line, salt, before = null, after = null) {
   if (!line || !line.by || (line.kind !== 'say' && line.kind !== 'dr')) return line;
   const r = registerOf(line.by);
   const text = String(line.text).trim();
   const k = h(`${salt}|${line.by}|${text}`);
-  const fn = Object.keys(FN).find(f => FN[f].test(text));
+  let fn = Object.keys(FN).find(f => FN[f].test(text));
+  // a reply the next line quotes back stays as said: "Okay." "Just okay?" is not "Whatever." "Just okay?"
+  const word = text.replace(/[.!?]+$/, '').toLowerCase();
+  if (fn && word && new RegExp(`(^|[^a-z'])${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z']|$)`).test(String(after?.text || '').toLowerCase())) fn = null;
+  // answering a question that asks for nothing (no "can you", "will you", "do you want"): a fact
+  const asked = String(before?.text || '').trim();
+  if ((fn === 'no' || fn === 'yes') && /\?!*$/.test(asked) && !ASKS.test(asked)) fn = fn === 'no' ? 'noFact' : 'yesFact';
   // somebody who never speaks: the gesture for a simple answer, and anything with content in it
   // written on the notepad they carry, so what they mean still reaches the room
   if (r.silent) {

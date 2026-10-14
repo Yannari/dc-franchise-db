@@ -375,6 +375,8 @@ export default {
       { by: 'b', dr: "I've never been so happy to owe somebody something." },
     ] },
     { id: 'ts.d6', turns: [
+      { beat: '{a} closes the door behind {b} and doesn\'t sit down.' },
+      { by: 'a', say: "I'll be quick. I want something from you, and you're going to want to hear the price." },
       { by: 'b', say: "What do you want from me?" },
       { by: 'a', say: "Next week. If you win, I'm not on your list." },
       { by: 'b', say: "That's it?" },
@@ -970,8 +972,8 @@ export default {
     { id: 'tx.v14', turns: [
       { beat: '{a} throws a cushion across the room. It misses {b} by a long way.' },
       { by: 'b', say: "Was that supposed to hit me?" },
-      { by: 'a', say: "It was supposed to make a point!" },
-      { by: 'b', say: "The point was the wall." },
+      { by: 'a', say: "It was supposed to make a point! You don't get to talk about me like I'm not in the room!" },
+      { by: 'b', say: "The point hit the wall." },
     ] },
   ],
   'talk.confront.calculated': [

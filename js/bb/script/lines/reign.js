@@ -27,8 +27,8 @@ export default {
     { id: 'rt.1', turns: [{ by: 'a', say: "I need to hear it from everyone. Are we still together?" }, { by: 'b', say: "...Yes." }, { by: 'a', say: "Why did you pause?" }] },
     { id: 'rt.2', turns: [{ by: 'b', say: "Did something happen?" }, { by: 'a', say: "No. I just need to know where everyone stands." }, { by: 'b', dr: "Nothing happened. And now I'm worried." }] },
     { id: 'rt.3', turns: [{ by: 'a', say: "Everyone in {alliance}. Hands up if you're still with me." }, { beat: 'Every hand goes up. {b}\'s goes up last.' }] },
-    { id: 'rt.4', turns: [{ by: 'b', dr: "{a} made us all promise we're still loyal. We were loyal before {a} asked. Now I'm not so sure." }] },
-    { id: 'rt.5', turns: [{ by: 'a', dr: "I watched every face when I asked. {b} took a second too long." }] },
+    { id: 'rt.4', turns: [{ by: 'a', say: "Before anything else this week: are we all still together?" }, { by: 'b', dr: "{a} made us all promise we're still loyal. We were loyal before {a} asked. Now I'm not so sure." }] },
+    { id: 'rt.5', turns: [{ by: 'a', say: "Everybody still with me? I need to hear it." }, { beat: 'One by one, they say yes. {b} takes a second longer than everybody else.' }, { by: 'a', dr: "I watched every face when I asked. {b} took a second too long." }] },
     { id: 'rt.6', turns: [{ by: 'b', say: "Why are you testing us?" }, { by: 'a', say: "I'm not testing you." }, { by: 'b', say: "It feels like a test." }] },
   ],
   'reign.decides.scene': [

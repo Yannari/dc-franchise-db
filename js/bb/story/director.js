@@ -133,12 +133,16 @@ export function airStorylines(week) {
     let h = 0; for (const c of String(salt)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
     // the moment's own opening ("Up at the lookout...") belongs to a scene of its own: inside somebody
     // else's conversation it is a second location (the read of 2026-10-14: a lookout in a kitchen row)
+    // ...but only an opening that sets a PLACE: one that sets up the moment itself ("Caleb finds Chase on
+    // the floor with the letter open") is kept, or "I'm fine. Happy tears." answers nothing (read 2026-10-14)
+    const PLACE = /\b(kitchen|backyard|bedroom|living room|storage|pantry|lookout|pier|pond|hot tub|pool|garden|deck|bathroom|HOH room|hammock|sofa|couch|stairs|fence|loungers?|grass)\b|^(Up|Out|Down|Over) (at|on|by|in)\b/i;
     const firstSay = sc.lines.findIndex(l => l.kind === 'say');
-    const own = sc.lines.filter((l, i) => l.kind !== 'dr' && !(l.kind === 'beat' && i < firstSay));
+    const own = sc.lines.filter((l, i) => l.kind !== 'dr' && !(l.kind === 'beat' && i < firstSay && PLACE.test(String(l.text || ''))));
     const drs = sc.lines.filter(l => l.kind === 'dr');
     const joiners = [...new Set(own.map(l => l.by).filter(n => n && !host.cast.includes(n)))];
     const linkUsed = (gs.bb.linkUsed ||= {});
-    const link = hostSpoke && h % 2 && !own.some(l => l.by && !host.cast.includes(l.by)) ? LINK.slice().sort((x, y) => (linkUsed[x] || 0) - (linkUsed[y] || 0) || ((h + LINK.indexOf(x)) % 7) - ((h + LINK.indexOf(y)) % 7))[0] : null;
+    const links = LINK.filter(t => !/to the vote/.test(t) || /bloc-|plan-|vote|campaign|deals-|scheme-|power-nom|phase-/.test(String(sc.step || '')));
+    const link = hostSpoke && h % 2 && !own.some(l => l.by && !host.cast.includes(l.by)) ? links.slice().sort((x, y) => (linkUsed[x] || 0) - (linkUsed[y] || 0) || ((h + LINK.indexOf(x)) % 7) - ((h + LINK.indexOf(y)) % 7))[0] : null;
     if (link) linkUsed[link] = (linkUsed[link] || 0) + 1;
     host.lines.push(...(link ? [{ kind: 'beat', by: null, text: link }] : []),
       ...joiners.map(n => ({ kind: 'beat', by: null, text: `${n} comes over.` })), ...own, ...tail, ...drs);
@@ -218,9 +222,11 @@ export function airStorylines(week) {
         const says = (n, t) => new RegExp(`\\b${esc(n)}\\b`).test(t);
         const named = (ctx.present || []).filter(n => n !== by && says(n, text));
         const fits = x => {
-          const t = x.lines.map(l => String(l.text || '')).join(' ');
+          const t = x.lines.filter(l => l.kind !== 'beat').map(l => String(l.text || '')).join(' ');
           const has = n => (x.cast || []).includes(n) || says(n, t);
-          return by && has(by) && (!named.length || named.some(has));
+          // (named and IN it: a confessional about Emmah's visits to the HOH room closed a poach that only
+          // mentioned Emmah, read 2026-10-14)
+          return by && (x.cast || []).includes(by) && named.length > 0 && named.every(n => (x.cast || []).includes(n));
         };
         const into = hosts.filter(x => (x.folded || []).length < 3).find(fits);
         if (into) { airs(); into.lines.push(...drs); (into.folded ||= []).push(sc.id || null); continue; }
@@ -241,7 +247,7 @@ export function airStorylines(week) {
         const publicMoment = sc.lines.some(l => l.kind === 'beat' && /\b(room|house|everyone|everybody|nobody|table|kitchen|half)\b/i.test(String(l.text || '')))
           || sc.lines.some(l => l.kind === 'dr' && l.by && !sayers.has(l.by));
         const host = placed(sc) || publicMoment ? null : hosts.filter(x => GAME_HOST.has(x.type) && x.mood !== 'secret' && (x.folded || []).length < 2
-          && speakers.every(s2 => talkers(x).has(s2)))
+          && speakers.every(s2 => talkers(x).has(s2)) && (sc.cast || []).every(n => (x.cast || []).includes(n)))
           .sort((x, y) => (x.folded || []).length - (y.folded || []).length)[0];
         if (host) { airs(); fold(host, sc, `${week.num}|${stretch}|${beat.eventId}`); continue; }
         loose.push({ ea, sc, beat, key, wt, airs });
@@ -371,6 +377,9 @@ export function airStorylines(week) {
       if (p.line.type !== 'life' && airedIn(p, s => s.step === p.step.step && (week.num || 0) - s.week < 2)) return false;
       // a first clash is a first clash: once a feud has aired, more friction is not news
       if (p.line.type === 'feud' && p.step.step === 'friction' && airedIn(p, s => (week.num || 0) - s.week < 2)) return false;
+      // the HOH's plan scene already laid the backdoor out to their closest person: telling it again
+      // ("Can you keep a secret? Hicks goes up after the veto") to the same person is a rerun (read 2026-10-14)
+      if (p.line.type === 'target' && p.step.step === 'backdoor' && [...talked].some(k => /^hohweek\.plan3?\.backdoor/.test(k))) { p.step.aired = true; return false; }
       return true;
     };
     const take = (p, into) => {

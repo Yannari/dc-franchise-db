@@ -220,6 +220,7 @@ export default {
       { by: 'b', say: "Aren't you worried about the nominations?" },
       { by: 'a', say: "I'm worried about the pasta. The nominations aren't my problem this week." },
       { by: 'b', say: "How can you be sure?" },
+      { by: 'a', say: "I can't. But I can make sure nobody wants to." },
       { by: 'a', dr: "Nobody nominates the person who feeds them. I'm not here to win competitions. I'm here to still be here when the big players knock each other out." },
     ] },
     { id: 'hw.fo6', room: 'backyard', turns: [
@@ -249,6 +250,7 @@ export default {
       { by: 'b', say: "That was a really good HOH." },
       { by: 'a', say: "{c} is gone, and I'm still friends with most of the house. I'll take it." },
       { by: 'b', say: "Most?" },
+      { by: 'a', say: "Most. You can't send somebody home and keep their friends." },
       { by: 'a', dr: "{c} walked out exactly the way I planned. It doesn't make me safe next week, but nobody can say my week was wasted." },
     ] },
     { id: 'hw.vd6', room: 'backyard', presumes: ['vote'], turns: [
@@ -258,6 +260,7 @@ export default {
       { by: 'b', say: "And now {c} can't." },
       { by: 'a', say: "And now {c} can't." },
       { by: 'b', say: "Who's next, then?" },
+      { by: 'a', say: "Ask me when I've got another key." },
       { by: 'a', dr: "I removed the person most likely to come after me. That's what you do with an HOH. Whatever happens next, I used it." },
     ] },
     { id: 'hw.vd7', room: 'bedroom', presumes: ['vote'], turns: [
@@ -267,6 +270,7 @@ export default {
       { by: 'b', say: "Because {c}'s gone?" },
       { by: 'a', say: "Because {c}'s gone, and it was my call." },
       { by: 'b', say: "Do you feel bad at all?" },
+      { by: 'a', say: "No. Should I?" },
       { by: 'a', dr: "I don't feel bad. I made a plan, I stuck to it, and {c} is gone. Most HOHs don't get the week they wanted. I did." },
     ] },
   ],

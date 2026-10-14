@@ -198,7 +198,7 @@ export default {
 
   // ── camera ──────────────────────────────────────────────────────────
   'run.camera.setup': [
-    { id: 'rn.ca1', turns: [
+    { id: 'rn.ca1', room: 'kitchen', turns: [
       { beat: '{a} is waving at the camera in the corner of the kitchen.' },
       { by: 'b', say: "Who are you waving at?" },
       { by: 'a', say: "Gary." },

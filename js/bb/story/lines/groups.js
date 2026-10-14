@@ -267,7 +267,7 @@ export default {
       { by: 'c', say: "Nobody's just nice on a show like this." },
       { by: 'a', say: "Exactly. So {target} is either a saint or a genius." },
       { by: 'b', say: "And there are no saints in here." },
-      { by: 'b', dr: "We've barely met {target} and we've already decided {target}'s a genius villain because of some tea. This place." },
+      { by: 'b', dr: "We've barely met {target}, and we've already decided {target} is a genius villain because {target} smiles too much. This place." },
     ] },
     { id: 'gg.4', turns: [
       { by: 'c', say: "Who's the biggest threat in this house? Go round. One name each." },
@@ -282,7 +282,7 @@ export default {
       { by: 'c', dr: "Four people, one name. That's how a target is born in here. Not in a ceremony. On a bed." },
     ] },
     { id: 'gg.5', turns: [
-      { by: 'a', say: "Is it just me, or does {target} act like {target}'s already won?" },
+      { by: 'a', say: "Is it just me, or does {target} act like the game's already over?" },
       { by: 'b', say: "What do you mean?" },
       { by: 'c', say: "No, I know exactly what you mean." },
       { by: 'a', say: "Like we're all just visiting {target}'s house." },

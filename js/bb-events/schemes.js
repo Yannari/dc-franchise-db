@@ -370,8 +370,17 @@ function _scriptOf(list, extra, ctx, room, salt) {
     if (!decided) return null;
     const [kind, who, data] = decided;
     if (Object.values(data).some(v => v === undefined)) return null;
-    return scriptBeat(kind, who, data, { week: ctx?.week, act: ctx?.act || 'house', hoh: ctx?.hoh || null,
+    const s = scriptBeat(kind, who, data, { week: ctx?.week, act: ctx?.act || 'house', hoh: ctx?.hoh || null,
       nominees: ctx?.nominees || [], room, salt: `${salt}|${i}` });
+    if (s && r.type === 'campaignRally' && extra.listeners?.length) {
+      const cut = { kind: 'beat', by: null, text: `${who.a} sits down with ${extra.listeners.join(' and ')} and lowers ${pronouns(who.a).posAdj} voice.` };
+      return { ...s, lines: [cut, ...s.lines] };
+    }
+    if (s && i > 0 && r.type === 'comfortVictim') {
+      const cut = { kind: 'beat', by: null, text: `Later, away from the others, ${who.a} finds ${who.b}.` };
+      return { ...s, lines: [cut, ...s.lines] };
+    }
+    return s;
   });
   return joinScripts(...parts);
 }
@@ -397,7 +406,7 @@ function _fold(results, badgeText, badgeClass, salt = '', extra = {}, ctx = null
     ...(script || {}),
     ...(script && room ? { location: room } : {}),
     text: script ? script.text : list.map((result, index) => _bbResultText(result, `${salt}|${index}`)).join(' '),
-    players: [...new Set(list.flatMap(r => r.players || []))].filter(Boolean),
+    players: [...new Set([...list.flatMap(r => r.players || []), ...(extra.listeners || [])])].filter(Boolean),
     badgeText: first.badgeText || badgeText,
     badgeClass: first.badgeClass || badgeClass,
   };
@@ -538,13 +547,18 @@ const campaignRally = {
   },
   fire(house, ctx, api, rng) {
     const rallier = _quiet(house).find(n => pStats(n).social >= 6) || house[0];
-    const target = furthestFrom(rallier, _others(house, rallier));
+    // once there is a block, the rally is against somebody on it (read 2026-10-14: a rally against a
+    // houseguest nobody could vote for), and it is made to people, not to an empty room
+    const noms = (ctx?.nominees || []).filter(n => house.includes(n) && n !== rallier);
+    const target = furthestFrom(rallier, noms.length ? noms : _others(house, rallier));
     if (!target) {
       return _quietBeat(`${rallier} works the room without ever naming anybody.`, [rallier]);
     }
+    const listeners = _others(house, rallier, target).filter(n => !noms.includes(n))
+      .sort((x, y) => getBond(rallier, y) - getBond(rallier, x)).slice(0, 2);
     return _run(ctx, ep => _generateCampaignRally(rallier, target, house, ep, _pick),
       'RALLY', 'red',
-      _quietBeat(`${rallier} tries to move the house against ${target} and cannot.`, [rallier, target]), rng, {}, 'living-room');
+      _quietBeat(`${rallier} tries to move the house against ${target} and cannot.`, [rallier, target]), rng, { listeners }, 'living-room');
   },
 };
 
@@ -568,8 +582,11 @@ const falseMajority = {
   fire(house, ctx, api, rng) {
     const schemer = _schemer(house);
     const rest = _others(house, schemer);
-    const victim = _quiet(rest)[0];
-    const decoy = furthestFrom(victim, _others(rest, victim)) || _others(rest, victim)[0];
+    const noms = (ctx?.nominees || []).filter(n => house.includes(n));
+    const voters = rest.filter(n => !noms.includes(n) && n !== ctx?.hoh);
+    const victim = _quiet(voters.length ? voters : rest)[0];
+    const pool = noms.length ? noms.filter(n => n !== victim && n !== schemer) : _others(rest, victim);
+    const decoy = furthestFrom(victim, pool) || pool[0];
     if (!victim || !decoy) {
       return _quietBeat(`${schemer} works out there is nobody left to sell a plan to.`, [schemer]);
     }

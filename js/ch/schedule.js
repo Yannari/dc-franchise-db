@@ -1,0 +1,69 @@
+// ══════════════════════════════════════════════════════════════════════
+// ch/schedule.js — the season's calendar
+// ══════════════════════════════════════════════════════════════════════
+//
+// Spec §3 "Length". 24 players, 8 into the final: 16 have to go, and the real
+// show does it in 16-18 episodes with a few late doubles. The plan is built up
+// front from the cast so the Season Timeline can show it (spec §6, manual
+// §17.4: the timeline is tested equal to this). What actually happens in an
+// episode then adapts: a quit or a disqualification is one fewer the Arena has
+// to take (`elimsFor`).
+//
+// Days, not episodes, are the unit for anything that is a risk per unit of
+// time (manual §16.3): each episode carries its days.
+
+export function buildSchedule({ total, finalists, daysPerEpisode = 3, gendered = true, counts = null, episodes = null }) {
+  const need = Math.max(0, total - finalists);
+  // Two late doubles on a full cast; none on a small one.
+  const doubles = need >= 12 ? 2 : need >= 8 ? 1 : 0;
+  const n = episodes ?? Math.max(1, need - doubles);
+  const out = [];
+  let day = 1;
+  for (let i = 1; i <= n; i++) {
+    // The doubles sit in the last third of the season.
+    const elims = i > n - doubles ? 2 : 1;
+    out.push({ ep: i, firstDay: day, days: daysPerEpisode, plannedElims: elims });
+    day += daysPerEpisode;
+  }
+  out.push({ ep: n + 1, firstDay: day, days: 2, final: true });
+  // Divisions: alternating from a coin toss is done at play time (it reads the
+  // season's dice); the plan only says how many weeks each side gets.
+  if (gendered && counts) {
+    for (const e of out) e.balance = counts;
+  }
+  return out;
+}
+
+// How many the Arena takes this episode. The plan says 1 or 2; exits outside
+// the vote (a quit, a disqualification) leave capacity over, and that comes off
+// the LAST planned doubles first, so the season keeps its shape. Only when no
+// double is left does tonight's elimination go ("no elimination tonight").
+// Short of capacity (never by construction, but a re-run may), tonight doubles.
+export function elimsFor(schedule, epIndex, need) {
+  if (need <= 0) return 0;
+  const left = schedule.slice(epIndex).filter(e => !e.final).map(e => e.plannedElims);
+  if (!left.length) return Math.min(2, need);
+  let surplus = left.reduce((a, b) => a + b, 0) - need;
+  for (let i = left.length - 1; i > 0 && surplus > 0; i--) {
+    if (left[i] === 2) { left[i] = 1; surplus--; }
+  }
+  let tonight = left[0];
+  if (surplus > 0) tonight = Math.max(0, tonight - surplus);
+  if (surplus < 0) tonight = Math.min(2, tonight - surplus);
+  return Math.min(tonight, need);
+}
+
+// Which division plays this week. Alternate, but when one side has more to
+// lose than the other (it is further above its share of the final), it goes
+// first, so the final stays balanced (spec §3).
+export function divisionFor(state, prev, finalists) {
+  if (!state.options.gendered) return 'all';
+  const m = state.active.filter(n => state.division[n] === 'm').length;
+  const f = state.active.filter(n => state.division[n] === 'f').length;
+  const half = finalists / 2;
+  const overM = m - half, overF = f - half;
+  if (overM <= 0 && overF > 0) return 'f';
+  if (overF <= 0 && overM > 0) return 'm';
+  if (Math.abs(overM - overF) >= 2) return overM > overF ? 'm' : 'f';
+  return prev === 'm' ? 'f' : 'm';
+}

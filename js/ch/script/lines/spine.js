@@ -601,15 +601,47 @@ export default {
   'return.quiet': [
     { id: 'rt.q1', turns: [
       { beat: '{a} comes back to the villa late. The house is half asleep.' },
-      { by: 'a', conf: "I won, and I'm back, and I'm exhausted. Tomorrow I figure out who put me there." },
+      { by: 'a', conf: "I won, and I'm back, and I'm exhausted. That's all I can think about right now.", v: { loud: ['I\'M BACK! Somebody wake up and congratulate me!'], soft: ['I just want to sleep for a week.'] } },
     ] },
     { id: 'rt.q2', turns: [
       { beat: '{a} walks in and drops onto the couch without a word.' },
-      { by: 'a', conf: "Volunteering, going in, winning... I chose all of that, and I'd do it again." },
+      { by: 'a', conf: "{gone} is gone and I'm still here. I don't feel like celebrating. I feel like sleeping.", v: { sharp: ['One less person in my way.'] } },
     ] },
     { id: 'rt.q3', turns: [
       { beat: '{a} is back. A couple of people clap, not very loudly.' },
       { by: 'a', conf: "I'm still here. That's all that matters." },
+    ] },
+  ],
+  // they put themselves in the Arena, and won
+  'return.volunteered': [
+    { id: 'rt.v1', turns: [
+      { beat: '{a} walks back into the villa with sand still stuck to {a.posAdj} arms.' },
+      { by: 'a', say: "Told you I wasn't scared.", v: { loud: ['TOLD YOU! I told ALL of you!'], soft: ['I did it. I actually did it.'] } },
+      { by: 'a', conf: "Volunteering, going in, winning. I chose all of that, and I'd do it again tomorrow.", v: { sharp: ['Nobody calls me a free ride now.'] } },
+    ] },
+    { id: 'rt.v2', turns: [
+      { by: 'a', say: "Anybody still think I'm scared of that place?", v: { sharp: ['Go on. Somebody tell me I don\'t belong here.'] } },
+      { beat: 'Nobody says anything. Somebody passes {a} a drink.' },
+      { by: 'a', conf: "I put myself in that Arena and took {gone} out with my own hands. That's a message to this whole house.", v: { soft: ['I\'m proud of myself. I don\'t say that a lot.'] } },
+    ] },
+    { id: 'rt.v3', turns: [
+      { beat: '{a} comes in, drops the bag, and grins at the whole room.' },
+      { by: 'a', conf: "I went in on my own terms and I'm back on my own terms. {gone} found out what happens when I volunteer.", v: { loud: ['Volunteered, won, and I\'d do it AGAIN!'] } },
+    ] },
+  ],
+  // called out, and sent the one who called them home
+  'return.calledout': [
+    { id: 'rt.c1', turns: [
+      { beat: '{a} walks back in. {gone} does not.' },
+      { by: 'a', say: "{gone} picked me because {gone} thought I was easy. How'd that work out?", v: { loud: ['{gone} called ME out?! {gone} is on a plane!'], soft: ['I didn\'t want it to come to that. I\'m just glad I\'m still here.'] } },
+      { by: 'a', conf: "Getting called out and sending the caller home is the best feeling in this game.", v: { sharp: ['Lesson for everybody. Pick your fights more carefully.'] } },
+    ] },
+    { id: 'rt.c2', turns: [
+      { by: 'a', conf: "{gone} picked the wrong person. Everybody in this villa just learned that.", v: { odd: ['{gone} picked me as the easy one. I\'m a lot of things. Easy isn\'t one of them.'] } },
+    ] },
+    { id: 'rt.c3', turns: [
+      { beat: 'The door opens and {a} walks in. A few people actually cheer.' },
+      { by: 'a', say: "I'm back. {gone} isn't.", v: { soft: ['I made it. I really made it.'] } },
     ] },
   ],
 

@@ -33,6 +33,8 @@ export const CH_FACT_KEYS = [
   'reason',
   // the division of the week, for lines that say "the guys" / "the girls"
   'division',
+  // a is in an alliance at the scene (a line about feeling left out needs false)
+  'allied',
 ];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -80,6 +82,7 @@ export function factsFor(scene, roles, state) {
     f.nice = NICE.has(archOf(a));
     f.villain = VILLAIN.has(archOf(a));
     f.rookieA = !!state.rookie[a];
+    f.allied = !!snap.allied;
   }
   if (a && b) {
     // The snapshot is about the scene's first two PEOPLE as recorded; the

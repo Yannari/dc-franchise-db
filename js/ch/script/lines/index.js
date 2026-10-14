@@ -3,9 +3,12 @@
 // { entryId: { turnIndex: { tag | family: line | [lines] } } }. A turn's own v wins over the overlay.
 import spine from './spine.js';
 import vote from './vote.js';
+import house from './house.js';
+import game from './game.js';
+import final from './final.js';
 import VOICES from './voices/index.js';
 
-export const POOLS = Object.assign({}, spine, vote);
+export const POOLS = Object.assign({}, spine, vote, house, game, final);
 
 for (const list of Object.values(POOLS)) {
   for (const e of list) {

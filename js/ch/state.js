@@ -68,10 +68,11 @@ export function addScene(state, kind, who, data = {}, seenBy = who, spot = null)
 // later bonds. The first two people's bond, a shared alliance, a couple.
 function snapOf(state, who) {
   const [a, b] = who;
-  if (!a || !b) return { house: state.active.length };
+  const allied = !!a && state.alliances.some(x => !x.ended && x.members.includes(a));
+  if (!a || !b) return { house: state.active.length, allied };
   const al = state.alliances.some(x => !x.ended && x.members.includes(a) && x.members.includes(b));
   const couple = state.couples.some(c => !c.ended && ((c.a === a && c.b === b) || (c.a === b && c.b === a)));
-  return { bond: +getBond(a, b).toFixed(2), alliance: al, couple, house: state.active.length };
+  return { bond: +getBond(a, b).toFixed(2), alliance: al, couple, house: state.active.length, allied };
 }
 
 // A feeling with a target, kept until it is settled.

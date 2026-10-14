@@ -4,7 +4,9 @@
 import { readFileSync } from 'node:fs';
 import { rngFor } from '../../js/dr/rng.js';
 
-const SHOWS = ['total-drama', 'big-brother', 'the-traitors', 'drag-race', 'perfect-match', 'the-circle'];
+// The registry's own slugs (js/shows.js), never a hand-typed guess.
+import { SHOWS as REGISTRY } from '../../js/shows.js';
+const SHOWS = Object.keys(REGISTRY);
 let _roster = null;
 const roster = () => (_roster ||= (() => {
   const r = JSON.parse(readFileSync('franchise_roster.json', 'utf8'));

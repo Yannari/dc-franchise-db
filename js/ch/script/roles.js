@@ -40,7 +40,8 @@ export const ROLES = {
   volunteer: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: yes(sc.who[1], 'targeted', 'open'), slots: { target: sc.who[1] } }),
   callout: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.reason }),
   arena: sc => ({ roles: { a: sc.data.winner, b: sc.data.loser }, ending: sc.data.tj, slots: { game: sc.data.gameName } }),
-  return: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: yes(sc.who[1], 'faced', 'quiet') }),
+  return: sc => ({ roles: { a: sc.who[0], b: sc.who[1] },
+    ending: sc.data.volunteered ? 'volunteered' : sc.data.calledOut ? 'calledout' : yes(sc.who[1], 'faced', 'quiet'), slots: { gone: sc.data.beat } }),
   'morning-after': sc => ({ roles: { a: sc.data.hurt?.[0] || sc.who[0], b: sc.data.hurt?.[1] || sc.data.relieved?.[0] },
     ending: sc.data.hurt?.length ? (sc.data.hurt.length > 1 ? 'mourning' : 'alone') : 'relief', slots: { gone: sc.data.gone } }),
   quit: sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
@@ -105,6 +106,16 @@ export const ROLES = {
   'arena-eve-alone': sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
   'arena-eve-confront': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.rattled === sc.who[1] ? 'rattled' : 'backfires' }),
   'vet-dismisses': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  // the night out: the two who drank most lead it
+  party: sc => {
+    const top = Object.entries(sc.data.drink || {}).sort((x, y) => y[1] - x[1]).map(([n]) => n);
+    return { roles: { a: top[0], b: top[1], c: top[2] }, ending: 'any' };
+  },
+  'partner-draw': sc => ({ roles: { a: sc.data.pairs?.[0]?.[0], b: sc.data.pairs?.[0]?.[1] }, ending: 'any' }),
+  'partner-pick': sc => ({ roles: { a: sc.data.pairs?.[0]?.[0], b: sc.data.pairs?.[0]?.[1] }, ending: 'any' }),
+  'meeting-spotted': (sc, st) => ({ roles: { a: sc.who[0], b: sc.data.present?.[0], c: sc.data.present?.[1] }, ending: 'any',
+    slots: { alliance: st.alliances.find(x => x.id === sc.data.alliance)?.name } }),
+  overnight: sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any' }),
   fight: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'fight-physical': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   // ── the vote, read out loud (ceremony.js builds these scenes) ──

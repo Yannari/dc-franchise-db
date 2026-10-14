@@ -254,7 +254,9 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       if (injuryRoll(state, R(`hurt${k}`), winner, 1.3) && R(`med${k}`)() < 0.2) {
         medical(state, winner); epRec.exits.push({ name: winner, how: 'medical' });
       } else {
-        returnToHouse(state, winner, m.voters);
+        // The voters only face the one THEY put in; a winner who was called out
+        // comes back having sent the caller home, and a volunteer put themselves there.
+        returnToHouse(state, winner, winner === m.a ? m.voters : [], { volunteered: m.volunteer && winner === m.a, calledOut: winner === m.b, beat: loser });
       }
     }
     houseBeats(state, R('beats3'), { night: true, min: 1, max: 3 });

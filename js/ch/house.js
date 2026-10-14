@@ -131,11 +131,11 @@ export function psycheMoment(state, rng) {
 }
 
 // The Arena winner walks back in: the ones who voted them in have to face it.
-export function returnToHouse(state, winner, voters) {
+export function returnToHouse(state, winner, voters, how = {}) {
   for (const v of voters) {
     if (!state.active.includes(v)) continue;
     addBond(winner, v, -0.6);
     nudge(state, v, 'paranoia', 0.6);
   }
-  addScene(state, 'return', [winner, ...voters.filter(v => state.active.includes(v))], {}, state.active, 'public');
+  addScene(state, 'return', [winner, ...voters.filter(v => state.active.includes(v))], { volunteered: !!how.volunteered, calledOut: !!how.calledOut, beat: how.beat || null }, state.active, 'public');
 }

@@ -111,6 +111,25 @@ const liveEp = ep => Array.isArray(ep?.bondChanges) && ep.num === gs.episode;
 const KIN_HEAVY = new Set(['lost-parent', 'widowed', 'lost-child', 'parent-left', 'estranged', 'hard-home', 'trauma', 'mental-health', 'came-out', 'sibling-bully', 'strict-parents', 'parents-split', 'divorced']);
 const KIN_HOME = new Set(['same-hometown', 'same-country']);
 export const kinTone = tag => (KIN_HEAVY.has(tag) ? 'heavy' : KIN_HOME.has(tag) ? 'home' : 'light');
+// What they found they share, said out loud ({about}): the check-in and the betrayal come days after the talk, and
+// "what you told me the other day" named nothing (the user, 2026-10-14: "wtf did he say stop with these conversation
+// with 0 context"). No "your" or "my": the same words work said by either of them.
+const KIN_ABOUT = {
+  'lost-parent': 'losing a parent', widowed: 'losing a partner', 'lost-child': 'losing a child', 'parent-left': 'a parent walking out',
+  estranged: 'being cut off from family', 'hard-home': "growing up in a house that wasn't safe", 'strict-parents': 'growing up with strict parents',
+  'golden-child': "being the one the whole family is counting on", 'family-doubts': "a family that thinks this is all a mistake",
+  'raised-siblings': 'helping raise the little ones at home', 'big-family': 'coming from a huge family', twin: 'being a twin',
+  'sibling-bully': 'getting picked on by a brother or sister', 'close-sibling': 'missing a brother or sister', grandma: 'grandmas',
+  'immigrant-family': 'a family that moved countries', 'moved-countries': 'moving countries', 'left-home-young': 'leaving home young',
+  'lonely-child': 'being a lonely kid', 'shy-child': 'being a shy kid', parent: 'having kids at home', grandparent: 'having grandkids',
+  divorced: 'a marriage ending', 'parents-split': 'parents splitting up', 'came-out': 'coming out', 'mental-health': 'the bad days, the ones nobody can see',
+  trauma: 'the stuff from before that still comes back', 'needs-money': 'really needing the money', 'supports-family': 'sending money home',
+  'online-fame': 'making a living online', performer: 'performing', drag: 'drag', athlete: 'sports', farm: 'growing up working in the family business',
+  'followed-parent': 'going into the same job as a parent', 'left-school': 'leaving school early', pets: 'pets', writer: 'writing', artist: 'making art',
+  'career-slipped': 'having it all and losing it', underestimated: 'being written off', stuck: 'feeling stuck back home',
+  wealthy: 'growing up with money', 'tight-money': 'growing up with no money', cook: 'cooking, and the family who taught it',
+};
+const kinAbout = r => (r.where ? `being from ${r.where}` : KIN_ABOUT[r.tag] || 'what we have in common');
 const kinKey = (x, y) => (x < y ? `${x}||${y}` : `${y}||${x}`);
 /** The kindred thread between x and y, if they found one and it hasn't been broken. */
 export function kindredOf(x, y) { const r = gs.tdStory?.kindred?.[kinKey(x, y)]; return r && !r.broken ? r : null; }
@@ -130,7 +149,7 @@ function kindredScenes(ep, members, camp, phase, nextN) {
       const r = v.voter && v.voted && v.voter !== v.voted ? kindredOf(v.voter, v.voted) : null;
       if (!r || !members.includes(v.voter) || !members.includes(v.voted)) continue;
       const who = { a: v.voted, b: v.voter };
-      const w = write('kindred.betray', r.tone, who, {});
+      const w = write('kindred.betray', r.tone, who, { about: kinAbout(r), ...(r.where ? { where: r.where } : {}) });
       if (!w) continue;
       put(0.3, 'kindred.betray', 'betray', who, w, `${who.b} voted for ${who.a}, after what they found they share.`, -2.5, () => { r.broken = ep.num; });
       return out;
@@ -141,7 +160,7 @@ function kindredScenes(ep, members, camp, phase, nextN) {
       const [x, y] = k.split('||');
       if (!members.includes(x) || !members.includes(y) || getBond(x, y) < 0) continue;
       const a = r.opener === y ? y : x, who = { a, b: a === x ? y : x };
-      const w = write('kindred.check', r.tone, who, r.where ? { where: r.where } : {});
+      const w = write('kindred.check', r.tone, who, { about: kinAbout(r), ...(r.where ? { where: r.where } : {}) });
       if (!w) continue;
       put(0.45, 'kindred.check', 'check', who, w, `${who.b} checks in on ${who.a}.`, 0.75, () => { r.checked = ep.num; });
       return out;

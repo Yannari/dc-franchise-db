@@ -50,6 +50,8 @@ const GUARANTEED = [
   [/^booth2\./, ['target']],
   [/^booth3\./, ['target']],
   [/^kindred\.(same-(hometown|country)|check\.home)$/, ['where']],
+  // (director.js kindredScenes: what they found they share, said out loud, on every check-in and betrayal)
+  [/^kindred\.(check|betray)\./, ['about']],
   [/^story\.morning\./, ['lastBoot', 'target', 'bootVotes']],
   [/^story\.chal\.(lost|regroup)/, ['sank', 'streak', 'tribe']],
   [/^story\.chal\.won/, ['carried', 'tribe']],

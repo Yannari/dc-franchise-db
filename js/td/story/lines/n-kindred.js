@@ -9,7 +9,10 @@
 //   kindred.<tag>        a lets it slip, b recognises it, they talk; a's or b's confessional. a = the
 //                        one who opens up.
 //   kindred.check.<heavy|light>  days later: b checks in on a about what a told them (heavy: grief, a
-//                        family wound, a struggle; light: a job, a hometown, a habit)
+//                        family wound, a struggle; light: a job, a hometown, a habit). {about} names it
+//                        (director.js KIN_ABOUT: "losing a parent"): it aired days ago, and "what you told me
+//                        the other day" named nothing (the user, 2026-10-14: "stop with these conversation
+//                        with 0 context")
 //   kindred.betray.<heavy|light> b voted for a last night and both are still here: a confronts b
 // Ids: 'nkd.'.
 
@@ -471,26 +474,26 @@ export default {
   // ── days later: the one who heard it checks in ──
   'kindred.check.heavy': [
     T('nkd.kh1', [beat("{b} sits down next to {a} without being asked."),
-      b("I've been thinking about what you told me the other day. How are you doing with it, really?"),
+      b("I keep thinking about what you told me the other day, about {about}. How are you doing with it, really?"),
       a("Some days are fine. Today's not one of them, if I'm honest."),
       b("Then we'll make it a quiet one. You don't have to talk."),
       a("Thanks for remembering. Most people forget the second you stop talking about it.", { tough: "You remembered. Most people don't." }),
-      ac("{b} remembered. Out here, where everybody's thinking about the vote, {b} remembered what I said. That's not nothing.")]),
+      ac("I told {b} something I don't tell people, and {b} remembered. Out here, where everybody's thinking about the vote, that's not nothing.")]),
     T('nkd.kh2', [beat("{b} hands {a} the better half of breakfast."),
       a("What's this for?"),
-      b("No reason. Just after what we talked about, I figured you could use a good morning."),
+      b("No reason. I've been thinking about what you told me, about {about}, and I figured you could use a good morning."),
       a("I didn't think anyone would remember that."),
-      b("I remember. It's the same thing for me, so it's hard to forget."),
-      bc("I'm keeping an eye on {a}. We've been through the same thing, and nobody should go through a day like that alone out here.")]),
+      b("I remember. I've been through it too, so it's hard to forget."),
+      bc("I'm keeping an eye on {a}. We've both been through {about}, and nobody should have a bad day about that alone out here.")]),
   ],
   'kindred.check.home': [
     T('nkd.kl1', [beat("{b} drops down next to {a} with a grin."),
-      b("I've got another one for you, from back home."),
+      b("Okay, here's one only somebody from {where} would get."),
       a("Go on."),
       b("You know that thing everyone back home says when it rains? I said it this morning and nobody here knew what I meant."),
       a("I would've known. Next time just say it to me."),
       ac("{b} and I have this thing now, our little bit of home out here. I didn't expect to find that on this show.")]),
-    T('nkd.kl2', [beat("{a} catches {b}'s eye across camp and they both laugh at the same moment."),
+    T('nkd.kl2', [beat("Somebody mispronounces a place in {where}, and {a} and {b} catch each other's eye and laugh at the same moment."),
       b("You were thinking the same thing, weren't you?"),
       a("Obviously. Nobody else here would get it."),
       b("We should start charging people for our opinions."),
@@ -498,14 +501,14 @@ export default {
   ],
   'kindred.check.light': [
     T('nkd.kl3', [beat("{b} sits down next to {a} with a grin."),
-      b("I keep thinking about that talk we had. I've never met anybody here who gets it like you do."),
+      b("I keep thinking about that talk we had, about {about}. I've never met anybody here who gets it like you do."),
       a("Same. It's easier being the odd one out when there's two of you."),
       b("Two odd ones out is basically a club."),
       a("Then it's the smallest, best club on this show."),
       ac("{b} and I found out we're the same in one way, and now I keep finding more. It's nice to have one person out here who makes sense.")]),
     T('nkd.kl4', [beat("{a} saves {b} a seat without being asked, and {b} takes it without asking."),
       b("You saved me a seat."),
-      a("Of course. After that talk, you're stuck with me."),
+      a("Of course. After that talk about {about}, you're stuck with me."),
       b("Good. I was going to say the same thing."),
       bc("Ever since {a} and I found out what we have in common, {a} has been my person here. I didn't plan on having a person.")]),
   ],
@@ -513,7 +516,7 @@ export default {
   // ── b voted for a, and they're both still here ──
   'kindred.betray.heavy': [
     T('nkd.bh1', [beat("{a} finds {b} alone and doesn't sit down."),
-      a("I told you something I don't tell anybody, and then you wrote my name down."),
+      a("I told you about {about}, something I don't tell anybody, and then you wrote my name down."),
       b("It wasn't about that. It was the numbers."),
       a("I know it was the numbers. That's what makes it worse.", { loud: "I KNOW it was the numbers! That's what makes it worse!" }),
       b("I'm sorry."),
@@ -531,7 +534,7 @@ export default {
   ],
   'kindred.betray.light': [
     T('nkd.bl2', [beat("{a} finds {b} by the water bottles and blocks the way."),
-      a("We had that whole talk, about how we're the same, and then last night you wrote my name."),
+      a("We had that whole talk about {about}, how we're the same, and then last night you wrote my name."),
       b("It was the vote. It wasn't about that."),
       a("Everything's about that out here. You knew I trusted you.", { dry: "Lovely talk, by the way. Right up until you wrote my name." }),
       b("If it helps, I'm sorry."),

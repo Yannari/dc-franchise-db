@@ -4,6 +4,8 @@ import { gs, seasonConfig } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { romanticCompat } from '../../players.js';
 import { campFeed } from './feed.js';
+import { pronouns } from '../../players.js';
+import { placeById } from './places.js';
 const romanticPair = (a,b) => seasonConfig.romance !== 'disabled' && romanticCompat(a,b)
   && (gs.showmances || []).some(sh => sh.phase !== 'broken-up' && [a,b].every(n => sh.players.includes(n)));
 const book = () => ((gs.tdStory ||= {}).followups ||= []);
@@ -39,11 +41,27 @@ export function recordFollowups(ep, camp, out) {
     if (romance && !romanticPair(a,b)) continue;
     // The latest incident replaces an older, unaddressed version of the same issue.
     for (const old of pending) if (!old.done && old.kind === topic && [old.a,old.b].every(n => [a,b].includes(n))) old.done = true;
-    pending.push({ id, kind: topic, a, b, c, ep: ep.num, camp, phase,
+    pending.push({ id, kind: topic, a, b, c, ep: ep.num, camp, phase, at: item.scene?.spot?.here || placeById(item.scene?.spot?.id)?.here || null, src: kind,
       remark: spoken.filter(l => l.by === a).sort((x,y) => y.text.length - x.text.length)[0].text, done: false });
   }
   // a callback the edit had no room for keeps one more episode, then it has gone stale (the pacing plan: two episodes)
   gs.tdStory.followups = pending.filter(t => ep.num - t.ep <= 2);
+}
+// The stage direction that opens a follow-up: who did what, and where, in the scene it follows.
+function recapOf(t, chapter) {
+  const at = t.at ? ` ${t.at}` : '';
+  if (t.kind === 'defense') {
+    // (t.a stood up for t.b; t.c, when the scene had one, was the one going after t.b)
+    const o = pronouns(t.b)?.obj || 'them';
+    return t.c ? `The other day${at}, ${t.a} stood up for ${t.b} when ${t.c} went after ${o}. They haven't talked about it since.`
+      : `The other day${at}, ${t.a} stood up for ${t.b}. They haven't talked about it since.`;
+  }
+  if (t.kind === 'romance') {
+    const what = /flirt|spark/.test(t.src || '') ? 'flirted' : 'got close';
+    return `${t.a} and ${t.b} haven't really talked since they ${what}${at} the other day.`;
+  }
+  if (chapter >= 2) return `${t.a} and ${t.b} still haven't settled their fight${t.c ? `, and ${t.c} is still stuck in the middle of it` : ''}.`;
+  return `${t.a} and ${t.b} haven't really talked since their fight${at} the other day, in front of ${t.c}.`;
 }
 // (skip: follow-ups already proposed this morning, so a second call proposes the next one)
 export function followupScene(ep, camp, members, phase, next, write, factsForWho, skip = new Set()) {
@@ -67,6 +85,11 @@ export function followupScene(ep, camp, members, phase, next, write, factsForWho
       { ...factsForWho(who), pair: true, third: !!who.c, prev: t.kind },
       { ep: ep.num, camp, phase, n: next(), place: t.kind === 'clash' ? 'public' : 'secret', unique: true });
     if (!w) continue;
+    // what it follows, said first: the scene it calls back to aired an episode or two ago, and "Thanks for sticking up
+    // for me the other day" named nothing (the user, 2026-10-14: "wtf did he say stop with these conversation with 0
+    // context")
+    const recap = recapOf(t, chapter);
+    if (recap) { w.lines = [{ kind: 'beat', by: null, text: recap }, ...w.lines]; w.text = w.lines.map(l => l.text).join(' '); }
     const fx = t.kind !== 'clash' ? [[who.a,who.b,outcome === 'warm' ? 0.75 : -0.25]]
       : [[who.a,who.b,outcome === 'mend' ? 0.5 : -0.5], [who.a,who.c,0.25], [who.b,who.c,0.25]];
     return { at: 0.58, item: onCommit({ story: true, kind: 'follow.' + kind, storyType: 'arc', step: outcome,

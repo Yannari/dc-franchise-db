@@ -2589,7 +2589,20 @@ export function airTdEpisode(ep) {
       if (moving.length) {
         out.pre = out.pre.filter(it => !moving.includes(it));
         out.post.push(...moving.map(it => ({ ...it, scene: { ...it.scene, spot: { ...it.scene.spot, window: 'evening' } } })));
-      } }
+      }
+      // ...and the other way: a scene that says it is first thing (sunrise, everybody else asleep, "Morning!") airs in the
+      // morning, moved back to before the challenge if it was written after it (read 2026-10-14: "Early. Everyone else is
+      // asleep" in the evening, a sunrise workout in the afternoon); a ghost story round the fire is night
+      const EARLY = /\bsunrise\b|^\(?early[.,]|\bfirst light\b|before (anyone|everybody|everyone)('s| is)? (up|awake)|every(one|body) else is (still )?asleep/i;
+      const morningOf = it => it?.story && Array.isArray(it.lines) && it.scene?.spot && it.scene.spot.id !== 'confessional' && it.storyType !== 'vote'
+        && (it.lines.some(l => l.kind === 'beat' && EARLY.test(l.text || '')) || it.lines.some(l => l.kind === 'say' && /^morning[!,.]/i.test(l.text || '')));
+      const ghost = it => it?.story && Array.isArray(it.lines) && it.lines.some(l => l.kind === 'say' && /ghost story|closer to the fire/i.test(l.text || ''));
+      for (const it of out.pre) if (morningOf(it)) it.scene = { ...it.scene, spot: { ...it.scene.spot, window: 'morning' } };
+      const early = out.post.filter(morningOf), spooky = out.pre.filter(ghost);
+      if (early.length) { out.post = out.post.filter(it => !early.includes(it)); out.pre.push(...early.map(it => ({ ...it, scene: { ...it.scene, spot: { ...it.scene.spot, window: 'morning' } } }))); }
+      if (spooky.length) { out.pre = out.pre.filter(it => !spooky.includes(it)); out.post.push(...spooky.map(it => ({ ...it, scene: { ...it.scene, spot: { ...it.scene.spot, window: 'evening' } } }))); }
+      for (const it of out.post) if (ghost(it)) it.scene = { ...it.scene, spot: { ...it.scene.spot, window: 'evening' } };
+    }
     // the refs that were added late go back into the camp's own order
     const editOn0 = (seasonConfig?.tdEdit || 'full') !== 'off';
     for (const phase of ['pre', 'post']) {

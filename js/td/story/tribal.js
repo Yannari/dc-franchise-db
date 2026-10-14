@@ -403,7 +403,7 @@ export function writeTribal(ep) {
   const camp = ep.tribalTribe || null;
   const ch = camp && !merged ? challengeOf(ep, camp) : null;
   const base = { venue, count, merged, late: merged && tribal.length <= 6 };
-  const ctx = (n, phase = 'tribal', unique = true) => ({ ep: ep.num, camp: camp || 'merge', phase, n, place: 'confessional', unique });
+  const ctx = (n, phase = 'tribal', unique = true) => ({ ep: ep.num, camp: camp || 'merge', phase, n, place: 'confessional', unique, noSetup: true });
   const data = { lastBoot: elim, item: ITEM[venue] || 'vote' };
   let n = 1000;
 

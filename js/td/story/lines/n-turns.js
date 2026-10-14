@@ -146,7 +146,7 @@ export default {
       { by: 'a', say: "I'm fine. Why do you care?" },
       { by: 'b', say: "Because I'm not a monster. We argued, so what? People argue all the time out here." },
       { by: 'a', say: "We did more than argue." },
-      { by: 'b', say: "And I still helped you. Maybe that tells you something.", v: { tough: "And I still helped you. Think about that before the next fight.", warm: "And I still helped. I don't want to keep fighting with you." } },
+      { by: 'b', say: "And I still helped you. Maybe that tells you something.", v: { tough: "And I still helped you. Think about that before the next fight.", warm: "And I still helped. That has to mean something, right?" } },
       { by: 'a', say: "Maybe it does." },
       { by: 'a', conf: "{b} {deed}, of everybody here, and I don't know what to do with that yet." },
     ] },

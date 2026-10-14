@@ -76,7 +76,7 @@ export default {
     { id: 'npb.e1', turns: [
       { by: 'c', say: "Okay, {a}'s just hungry and tired. We all are. Let's just drop it.", v: { anxious: "Okay, okay, everybody's tired, can we please, please just drop it?" } },
       { by: 'b', say: "That's not an excuse." },
-      { by: 'c', say: "I know it isn't. I'm just trying to get through dinner." },
+      { by: 'c', say: "I know it isn't. I'm just trying to get through today." },
       { by: 'c', conf: "I like {a}, I do, but {a} makes it really hard to defend {a.obj} sometimes." },
     ] },
   ],

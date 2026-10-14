@@ -483,7 +483,7 @@ const NEMESIS = [
 ];
 const PARANOIA_BOLD = [
   { id: 'd2.pb1', turns: [
-    { beat: '{a} pulls {b} aside after the challenge.' },
+    { beat: '{a} pulls {b} aside.' },
     { by: 'a', say: "I know what you're doing." },
     { by: 'b', say: "What am I doing?" },
     { by: 'a', say: "Don't play dumb. You've been talking to the others." },

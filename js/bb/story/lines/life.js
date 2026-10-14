@@ -194,6 +194,7 @@ export default {
       { by: 'a', dr: "{b} always goes to the bathroom at the same time. Every day. Like a clock." },
       { beat: 'The door opens. It is not {b}. Somebody else, soaked, looks up.' },
       { by: 'a', say: "...Oh no." },
+      { beat: '{b} arrives a second later and takes in the wet floor.' },
       { by: 'b', say: "Was that meant for me?" },
       { by: 'a', say: "It was meant for you." },
       { by: 'b', say: "Brilliant." },

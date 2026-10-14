@@ -122,8 +122,8 @@ const SAY = {
   why: { terse: ['Why.', 'Why?'], sarcastic: ['Oh? Why\'s that?', 'And why would that be?'], sweet: ['Why? What happened?', 'How come?'],
     theatrical: ['Why?! Why?', 'Why on earth?'], anxious: ['Wait, why?', 'Why? Is something wrong?'], smooth: ['Interesting. Why?', 'Why\'s that?'],
     tough: ['Why?', 'Why?'], bubbly: ['Why? Tell me!', 'Wait, why?'], mean: ['Why\'s that?', 'Why?'] },
-  know: { terse: ['I know.'], sarcastic: ['Yeah, I\'m aware.', 'Believe me, I know.'], sweet: ['I know. I know.'], theatrical: ['Oh, I KNOW.'],
-    anxious: ['I know, I know.'], smooth: ['I\'m well aware.'], tough: ['I know.'], bubbly: ['I know! Right?'], mean: ['Obviously I know.'] },
+  know: { terse: ['I know.'], sarcastic: ['Believe me, I know.'], sweet: ['I know. I know.'], theatrical: ['I know. Believe me, I know.'],
+    anxious: ['I know, I know.'], smooth: ['I\'m aware.'], tough: ['I know.'], bubbly: ['I know, I know.'], mean: ['I know.'] },
   dunno: { terse: ['No idea.'], sarcastic: ['Your guess is as good as mine.', 'Not a clue.'], sweet: ['I honestly don\'t know.'], theatrical: ['Who even knows any more?'],
     anxious: ['I don\'t know. I really don\'t.'], smooth: ['Hard to say.'], tough: ['Don\'t know.'], bubbly: ['No idea! None.'], mean: ['How would I know?'] },
   sorry: { terse: ['Sorry.'], sarcastic: ['Sorry. Genuinely.'], sweet: ['I\'m so sorry.', 'I\'m really sorry.'], theatrical: ['I am SO sorry.'],
@@ -138,11 +138,11 @@ const SAY = {
     theatrical: ['No! God, no.', 'Absolutely not.'], anxious: ['No? No.', 'Um, no.'], smooth: ['No.', 'Not at all.'], tough: ['No.', 'Nope.'],
     bubbly: ['No! Nope.', 'Nooo.'], mean: ['No. Obviously.', 'No.'] },
   yesFact: { terse: ['Yep.', 'Yeah.'], sarcastic: ['Oh, yes.', 'Yep. Really.'], sweet: ['Yes.', 'Yeah, I think so.'], theatrical: ['Yes! Yes.', 'Oh, yes.'],
-    anxious: ['Um. Yes.', 'Yeah. Yes.'], smooth: ['Yes.', 'Indeed.'], tough: ['Yeah.', 'Yep.'], bubbly: ['Yes! Totally.', 'Yes!'], mean: ['Yes. Obviously.', 'Yes.'] },
+    anxious: ['Um. Yes.', 'Yeah. Yes.'], smooth: ['Yes.', 'Yes, actually.'], tough: ['Yeah.', 'Yep.'], bubbly: ['Yes! Totally.', 'Yes!'], mean: ['Yes. Obviously.', 'Yes.'] },
   go: { terse: ['Go.'], sarcastic: ['Go on. I\'m riveted.'], sweet: ['Go on, I\'m listening.'], theatrical: ['Tell me. Tell me everything.'], anxious: ['Okay. Go on.'],
     smooth: ['I\'m all ears.'], tough: ['Out with it.'], bubbly: ['Go, go, go!'], mean: ['Make it quick.'] },
 };
-const ASKS = /\b(can|could|will|would|won't) (you|we)\b|\bdo you want\b|\bwant to\b|\bshall (we|I)\b|\blet's\b|\bplease\b|\b(can|could|may) I\b|\bpromise\b|\bdeal\?|\bare you in\b|\bwith me\?|\bhelp me\b|\binterested\b|\bin or out\b/i;
+const ASKS = /\b(can|could|will|would|won't) (you|we)\b|\bdo you want\b|\bwant to\b|\bshall (we|I)\b|\blet's\b|\bplease\b|\b(can|could|may) I\b|\bpromise\b|\bdeal\?|\bare you in\b|\bwith me\?|\bhelp me\b|\binterested\b|\bin or out\b|^(make|get|pass|grab|bring|give|come|tell|show|let|put|hand|save|keep)\b/i;
 const SFX = ['*a long descending whistle*', '*a record scratch*', '*a soft drumroll on the table*', '*a tiny trumpet fanfare*', '*a cartoon gulp*'];
 const GEST = ['shakes his head', 'nods once', 'holds up a hand', 'shrugs', 'raises an eyebrow', 'points at the door', 'gives a thumbs up'];
 const h = s => { let x = 2166136261; for (const ch of String(s)) x = Math.imul(x ^ ch.charCodeAt(0), 16777619) >>> 0; return x; };

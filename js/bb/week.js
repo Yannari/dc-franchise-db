@@ -6697,7 +6697,8 @@ export function simulateBBWeek(options = {}) {
           // (read 2026-10-14: "One more try" / "Okay. Round three went to Beth", and no argument at all).
           // The nominee's opener ("Me again.") goes first, then the case, then the answer.
           if (worn && reply && caseScript) {
-            const k = reply.lines[0]?.by === pitch.pitcher && reply.lines.length > 1 ? 1 : 0;
+            let k = reply.lines[0]?.by === pitch.pitcher && reply.lines.length > 1 ? 1 : 0;
+            if (k && reply.lines[1]?.by === response.voter && /^(go on|go\b|okay|fine|\.\.\.okay)/i.test(String(reply.lines[1].text || ''))) k = 2;
             script = joinScripts({ ...reply, lines: reply.lines.slice(0, k) }, caseScript, { ...reply, lines: reply.lines.slice(k) });
           } else script = worn ? joinScripts(reply) : joinScripts(caseScript, reply);
         } catch { script = null; }

@@ -137,12 +137,12 @@ export function airStorylines(week) {
     // the floor with the letter open") is kept, or "I'm fine. Happy tears." answers nothing (read 2026-10-14)
     const PLACE = /\b(kitchen|backyard|bedroom|living room|storage|pantry|lookout|pier|pond|hot tub|pool|garden|deck|bathroom|HOH room|hammock|sofa|couch|stairs|fence|loungers?|grass)\b|^(Up|Out|Down|Over) (at|on|by|in)\b/i;
     const firstSay = sc.lines.findIndex(l => l.kind === 'say');
-    const own = sc.lines.filter((l, i) => l.kind !== 'dr' && !(l.kind === 'beat' && i < firstSay && PLACE.test(String(l.text || ''))));
+    const own = sc.lines.filter((l, i) => l.kind !== 'dr' && !l.bg && !(l.kind === 'beat' && i < firstSay && PLACE.test(String(l.text || ''))));
     const drs = sc.lines.filter(l => l.kind === 'dr');
     const joiners = [...new Set(own.map(l => l.by).filter(n => n && !host.cast.includes(n)))];
     const linkUsed = (gs.bb.linkUsed ||= {});
     const links = LINK.filter(t => !/to the vote/.test(t) || /bloc-|plan-|vote|campaign|deals-|scheme-|power-nom|phase-/.test(String(sc.step || '')));
-    const link = hostSpoke && h % 2 && !own.some(l => l.by && !host.cast.includes(l.by)) ? links.slice().sort((x, y) => (linkUsed[x] || 0) - (linkUsed[y] || 0) || ((h + LINK.indexOf(x)) % 7) - ((h + LINK.indexOf(y)) % 7))[0] : null;
+    const link = hostSpoke && !own.some(l => l.by && !host.cast.includes(l.by)) ? links.slice().sort((x, y) => (linkUsed[x] || 0) - (linkUsed[y] || 0) || ((h + LINK.indexOf(x)) % 7) - ((h + LINK.indexOf(y)) % 7))[0] : null;
     if (link) linkUsed[link] = (linkUsed[link] || 0) + 1;
     host.lines.push(...(link ? [{ kind: 'beat', by: null, text: link }] : []),
       ...joiners.map(n => ({ kind: 'beat', by: null, text: `${n} comes over.` })), ...own, ...tail, ...drs);
@@ -226,6 +226,7 @@ export function airStorylines(week) {
           const has = n => (x.cast || []).includes(n) || says(n, t);
           // (named and IN it: a confessional about Emmah's visits to the HOH room closed a poach that only
           // mentioned Emmah, read 2026-10-14)
+          if (x.type === 'showmance' && !/^(showmance|romance|couple)/.test(String(sc.step || ''))) return false;
           return by && (x.cast || []).includes(by) && named.length > 0 && named.every(n => (x.cast || []).includes(n));
         };
         const into = hosts.filter(x => (x.folded || []).length < 3).find(fits);
@@ -265,7 +266,8 @@ export function airStorylines(week) {
       // as one conversation ("Beth voted against Ripper" / "Beth comes over" / "What's it like up here?")
       const sp = sc => new Set(sc.lines.filter(l => l.kind === 'say' && l.by).map(l => l.by));
       const same = (x, y) => x.size === y.size && [...x].every(n => y.has(n));
-      const mate = loose.find(b => b !== a && !used.has(b) && !placed(b.sc) && same(sp(b.sc), sp(a.sc)));
+      const castOf = sc => new Set(sc.cast || []);
+      const mate = loose.find(b => b !== a && !used.has(b) && !placed(b.sc) && same(sp(b.sc), sp(a.sc)) && sp(a.sc).size >= 2 && same(castOf(b.sc), castOf(a.sc)));
       if (mate) {
         used.add(a); used.add(mate);
         a.airs(); mate.airs();

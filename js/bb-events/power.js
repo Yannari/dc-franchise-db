@@ -226,7 +226,10 @@ const hohPromise = {
   },
   fire(house, ctx, api) {
     const hoh = _hoh(ctx);
-    const ally = closestTo(hoh, _others(house, hoh)) || _others(house, hoh)[0];
+    const planned = ctx?.week?.plan?.nominees || [];
+    const safe = _others(house, hoh).filter(n => !planned.includes(n));
+    const pool = safe.length ? safe : _others(house, hoh);
+    const ally = closestTo(hoh, pool) || pool[0];
     const honest = perceived(hoh, ally) >= 2 && !willScheme(hoh);
     api.sideDeal(hoh, ally, 'safety', { genuine: honest, about: 'a week of protection' });
     api.addBond(hoh, ally, honest ? 1.1 : 0.4);

@@ -116,7 +116,7 @@ function lines(kind, voice, o, h) {
       nervous: [`I shouldn't have said anything. Now I'm on ${o}'s bad side, and that's the worst place to be in here.`, `My heart is still pounding. I don't do confrontation. Ask anyone.`],
       carefree: [`By tomorrow I'll have forgotten what this was about. ${o} won't, though. ${o} never does.`, `Honestly? We'll be fine by dinner. ${o} just needs to cool off.`],
       competitor: [`Fine. I'll settle it the way I settle everything: I'll beat ${o} in the next competition.`, `${o} can talk all ${o} wants. I'll do my talking when the HOH is on the line.`],
-      villain: [`Let ${o} be angry. Angry people make mistakes, and I'll be right there when ${o} does.`, `${o} just made this a lot easier for me.`],
+      villain: [`Let ${o} be angry. Angry people make mistakes, and I'll be right there when ${o} does.`, `Fine. ${o} can be upset. I've got a game to play.`],
     },
     ally: {
       fiery: [`If ${o} ever turns on me, everybody in this house will hear about it. Loudly.`, `I'm all in with ${o}. I don't do halfway.`],
@@ -124,7 +124,7 @@ function lines(kind, voice, o, h) {
       warm: [`It's not just a deal for me. I actually like ${o}. That's either my strength or my problem.`, `I came in here wanting real friends. ${o} feels like one.`],
       loyal: [`Once I'm in, I'm in. ${o} will never have to wonder about me.`, `I don't make promises lightly. ${o} just got one.`],
       nervous: [`Finally. I'm not on my own in here any more. I didn't realise how much I needed that.`, `I keep waiting for ${o} to change ${o}'s mind about me.`],
-      carefree: [`I didn't plan on joining anything. But ${o} asked nicely, and I'm easy.`, `${o} seems fun, and I like fun people. That's most of my strategy, honestly.`],
+      carefree: [`I didn't plan on joining anything. But ${o} asked nicely, and I'm easy.`, `${o} makes it easy. I didn't have to think twice.`],
       competitor: [`Two people who can win competitions, working together? That's bad news for everyone else.`, `${o} can win. I can win. Good luck to the rest of them.`],
       villain: [`${o} thinks this is a partnership. It's a shield. I'll decide when to put it down.`, `I'll keep ${o} close. That's exactly where I want ${o}.`],
     },
@@ -132,7 +132,7 @@ function lines(kind, voice, o, h) {
       fiery: [`I don't do anything quietly, and that includes this.`, `If anyone has a problem with ${o} and me, they can say it to my face.`],
       strategist: [`I know how this looks to the house. I've thought about it. I'm doing it anyway, which isn't like me.`, `Everyone will say it's a strategy. It isn't. That's what scares me.`],
       warm: [`I didn't come here to fall for anybody. I'm not doing a very good job of that.`, `${o} makes this house a lot less lonely.`],
-      loyal: [`If I'm in, I'm in. That goes for ${o} too.`, `I'm not playing games with ${o}. Everything else in here, sure. Not that.`],
+      loyal: [`I don't do halfway. Not with ${o}.`, `I'm not playing games with ${o}. Everything else in here, sure. Not that.`],
       nervous: [`I keep thinking ${o} is going to realise I'm not that interesting.`, `I'm terrified, honestly. In a good way. Mostly.`],
       carefree: [`Is it a showmance? Who knows. It's fun, and I'm not overthinking it.`, `I'm just enjoying it. The game can wait an afternoon.`],
       competitor: [`It's a distraction. I know it is. I'm letting it be one anyway.`, `I'll still beat ${o} in a competition. I'll just feel bad about it now.`],
@@ -194,7 +194,9 @@ export function addInsight(sc, kindText, weekNum) {
   const hx = historyOf(me, o, weekNum || 99);
   // a flirtation is the couple's scene: somebody watching it gets no feelings of their own added
   const pair = sc.lines.filter(l => l.by && l.kind !== 'dr').map(l => l.by);
-  if (kind === 'heart' && !hx.couple && !(pair.includes(me) && pair.includes(o) && new Set(pair).size <= 2)) return sc;
+  // ...and an engine moment about a couple (showmance-two-votes) is not a flirtation: only the couple speak of
+  // feelings there (read 2026-10-14: Ripper, pitching Beth, closed on "I'm not playing games with Beth")
+  if (kind === 'heart' && !hx.couple && (/^showmance-|^couple-|^romance-/.test(String(kindText || '')) || !(pair.includes(me) && pair.includes(o) && new Set(pair).size <= 2))) return sc;
   const res = lines(kind, voice, o, hx);
   // history only when the scene is between these two: both of them speak in it (a bystander's
   // confessional brought up their own deal with somebody in the middle of another couple's scene)

@@ -109,7 +109,7 @@ export default {
   ],
   'talk.hohweek.fish.honest': [
     { id: 'hw.fh4', room: 'hoh-room', turns: [
-      { beat: 'HOH room. {b} comes up the stairs slowly, like {b} already knows.' },
+      { beat: 'HOH room. {b} comes up the stairs slowly, already sure of the answer.' },
       { by: 'b', say: "I'm not going to waste your time. Is it me?" },
       { by: 'a', say: "It's you." },
       { by: 'b', say: "Can I ask why?" },

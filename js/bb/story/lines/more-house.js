@@ -467,7 +467,7 @@ export default {
       { by: 'a', say: "Not that many. Not that much." },
       { by: 'b', dr: "{a} has a theory that someone is hoarding toilet paper. {a} has been checking bags. {a} might be losing it." },
     ] },
-    { id: 'lb2.6', presumes: ['hoh'], turns: [
+    { id: 'lb2.6', presumes: ['hoh'], room: 'living-room', turns: [
       { by: 'b', say: "Do you think the cameras get bored of us?" },
       { by: 'a', say: "Today? Definitely." },
       { by: 'b', say: "We've been lying on this floor for an hour." },

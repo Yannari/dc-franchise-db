@@ -519,7 +519,9 @@ function writeStoryScene0(line, step, ctx) {
   if (!ctx.inSet && keys[0] !== `story.alliance.${step.step}.group` && groupable && step.outcome !== 'couple') {
     const gk = `story.${line.type}.${step.step}.group`;
     const taken = new Set(Object.values(who).filter(Boolean));
-    const extras = (ctx.present || []).filter(n => !taken.has(n) && n !== data.target)
+    const votes = line.type === 'target' && /^(lobby|count|block)$/.test(step.step);
+    const extras = (ctx.present || []).filter(n => !taken.has(n) && n !== data.target
+      && !(votes && (n === ctx.hoh || (ctx.nominees || []).includes(n))))
       .map(n => [n, (who.a ? getBond(who.a, n) : 0) + (who.b ? getBond(who.b, n) : 0)])
       .sort((x, y) => y[1] - x[1]).map(x => x[0]);
     const roll = stableRng(gs.bb?.seasonSalt || 0, 'story-group', line.id, line.steps.indexOf(step))();
@@ -559,7 +561,7 @@ function writeStoryScene0(line, step, ctx) {
   // A scene that does not set its own room moves along if the last scene was in the same one
   // (five bedroom scenes in a row read as one long night). Decided here, BEFORE the background
   // is chosen, so "laps of the backyard" never plays in the living room.
-  else if (!ctx.inSet && ctx.avoidRoom && room === ctx.avoidRoom) {
+  else if (!ctx.inSet && ctx.avoidRoom && room === ctx.avoidRoom && !named) {
     const ROTA = ['kitchen', 'living-room', 'backyard', 'bedroom'].filter(r => r !== ctx.avoidRoom);
     const h = [...base.id].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
     room = ROTA[h % ROTA.length]; base.room = room; base.roomName = ROOM[room] || base.roomName;
@@ -581,6 +583,7 @@ function writeStoryScene0(line, step, ctx) {
   const used = cast.filter(n => lines.some(l => l.by === n || (l.kind === 'beat' && l.text.includes(n))));
   const sc = { ...base, cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: recap.length > 0, lineId: entry.id };
   if (!ctx.inSet || base.ownRoom) lines = background(lines, sc, ctx, sc.id, LOUD(line.type, step.step, step.outcome));
+  if (recap.length) lines = lines.filter(l => !(l.kind === 'beat' && /^(Earlier|Last week|Yesterday|The other day|Since)\b/.test(String(l.text || ''))));
   sc.lines = [...recap, ...lines];
   sc.why = whyOf(`${line.type}.${step.step}`, STEP_WHY, who, data, sc.cast);
   // an alliance with a name, formed on screen, gets its title (the user, 2026-10-06)
@@ -831,7 +834,9 @@ export function writeSetPiece(type, ctx, inside, { gone = null, at = 0 } = {}) {
   const close = STORY_POOLS[`set.${type}.close`] ? pick([`set.${type}.close`], who, data, sctx, room, `${salt}|close`) : null;
   const lines = [...render(open, who, ctx, data)];
   const speaking = new Set(lines.filter(l => l.by).map(l => l.by));
+  const out = new Set(lines.filter(l => l.kind === 'beat' && /\b(goes upstairs|goes back up|goes\.|leaves the room|walks out|heads upstairs)/.test(String(l.text || ''))).flatMap(l => order.filter(n => nameIn(n, l.text))));
   for (const sc of inside) {
+    for (const n of sc.cast.filter(n => out.has(n))) { lines.push({ kind: 'beat', by: null, text: `${n} comes back in.` }); out.delete(n); }
     const cw = { a: sc.cast[0], b: sc.cast[1] || sc.cast[0] };
     // (one that opens on its own stage direction has its own way in: both put Millie in two places, read 2026-10-14)
     const cut = sc.lines[0]?.kind === 'beat' ? null : pick([`set.cut.${CUT(sc)}`], cw, {}, sctx, room, `${salt}|cut|${sc.id}`);
@@ -877,6 +882,7 @@ const voiced = (sc, kind, ctx) => {
   // (each with the line it answers: "No." to "Is it about me?" is a fact, not a refusal)
   // ...and the line after it, which may quote it back ("Okay." "Just okay?")
   // (the rest of the scene, the Diary Room too: "I know." voiced "I know! Right?", then "And 'I know' is even worse")
+  if (/fight|feud|argument|apolog|makeup|breakup|declare|cold|grudge|snap|block|goodbye|backdoor|blame|confront|blow|betray|exposed/.test(String(kind || ''))) return addInsight(sc, kind, ctx?.week?.num);
   sc.lines = sc.lines.map((l, i) => voiceLine(l, sc.id, sc.lines.slice(0, i).reverse().find(x => x.kind === 'say'),
     { text: sc.lines.slice(i + 1).filter(x => x.kind !== 'beat').map(x => x.text).join(' ') }));
   return addInsight(sc, kind, ctx?.week?.num);

@@ -117,7 +117,7 @@ export default {
     { id: 'kg.m3', turns: [{ by: 'b', dr: "{a} just listed {swing} as one of {a.posAdj} votes. I said nothing. But I'm wondering what else our lists have in common." }] },
     { id: 'kg.m4', turns: [{ by: 'a', say: "We've got the numbers." }, { by: 'b', say: "So have we. The same numbers, I think." }] },
     { id: 'kg.m5', turns: [{ by: 'a', dr: "Our total looks right. So does {b}'s. I didn't ask how {b} got there." }] },
-    { id: 'kg.m6', turns: [{ by: 'b', dr: "We're all voting {targetA} out. But {a} and I are both taking credit for {swing}." }] },
+    { id: 'kg.m6', turns: [{ by: 'b', dr: "We're all voting {targetA} out. But {a} and I are both counting {swing} as our vote, and only one of us can be right." }] },
   ],
   'plan.cocky.scene': [
     { id: 'kh.1', turns: [{ by: 'a', say: "It's done. {target} is gone. We can stop talking about it." }, { by: 'b', say: "Have we actually counted?" }, { by: 'a', say: "Everyone we asked said yes." }, { by: 'b', say: "Saying yes isn't the same as voting." }, { by: 'a', say: "Relax." }, { by: 'b', dr: "Everybody we asked said yes. That's {expected}. I'd only bet on {locked}." }] },

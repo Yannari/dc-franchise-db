@@ -33,7 +33,7 @@ const HEARD = [
     { by: 'a', conf: "Now I do, and they don't know I know. That's the best kind of information there is." },
   ] },
   { id: 'lk.h5', when: { register: ['sweet', 'shy'] }, turns: [
-    { beat: '{a} was only fetching something. Now {a} wishes {a.sub} hadn\'t.' },
+    { beat: '{a} only came over to grab something, and now really wishes {a.sub} hadn\'t.' },
     { by: 'a', conf: "I wasn't trying to listen. I swear. But {b} and {c} were right there, and they were making a plan, and I'm not in it." },
     { by: 'a', conf: "I don't know what to do with that. I really don't." },
   ] },

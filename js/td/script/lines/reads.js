@@ -200,7 +200,7 @@ const ORCH_SETUP = [
   ] },
   { id: 'rd.s3', turns: [
     { by: 'a', conf: "{b} and I had a chat about nothing today. Except it wasn't nothing." },
-    { by: 'a', conf: "Every word was setting up something I'm doing next week." },
+    { by: 'a', conf: "Everything I said today was setting up something I'm doing next week. They'll see." },
   ] },
   { id: 'rd.s4', turns: [
     { by: 'a', say: "Who do you think is running things around here?" },

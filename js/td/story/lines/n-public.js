@@ -36,7 +36,7 @@ export default {
   ],
   'public.react.awkward': [
     { id: 'npb.a1', turns: [
-      { beat: "Nobody says anything. {c} stares very hard at the food." },
+      { beat: "Nobody says anything. {c} suddenly finds the ground very interesting." },
       { by: 'c', say: "So... great weather today.", v: { dry: "Well. This is fun.", goofy: "Who wants to hear a joke? Nobody? Great, perfect timing." } },
       { by: 'd', opt: true, say: "Read the room, {c}." },
       { by: 'c', conf: "I'm not getting in the middle of {a} and {b}. That's how you end up with both of them mad at you." },

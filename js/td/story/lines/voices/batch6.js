@@ -6,7 +6,7 @@
 export default {
   // vote.swing.no (b won't whisper)
   'nv.n4': {
-    6: { calm: "{b} won't play along, and that's fine. One less person I have to keep informed.", loud: "{b} said no to my face! Fine, that's one less person to worry about!", schemer: "{b} won't play along, and good. Somebody who refuses to whisper is somebody who won't hear anything either.", earnest: "{b} was honest with me, and I respect that, even if it costs me a vote." },
+    6: { calm: "{b} won't play along, and that's fine. One less person I have to keep informed.", loud: "{b} said no to my face! Fine, that's one less person to worry about!", schemer: "{b} won't play along. Fine. If {b} won't whisper with anybody, nobody's going to whisper anything to {b} either.", earnest: "{b} was honest with me, and I respect that, even if it costs me a vote." },
   },
   // long.crowd.chores.any
   'ny.c2': {

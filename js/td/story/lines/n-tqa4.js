@@ -296,7 +296,7 @@ export default {
     { id: 'nt4.b3', turns: [
       { by: 'h', say: "{a}, you were on the losing side when {lastBoot} went home. Did anybody explain it to you afterwards?" },
       { by: 'a', say: "A couple of people said sorry. Nobody explained anything.", v: { schemer: "I didn't need anybody to explain it. I worked it out myself." } },
-      { by: 'h', say: "And did you believe the sorries?" },
+      { by: 'h', say: "And did you believe the apologies?" },
       { by: 'a', say: "Some of them." },
     ] },
     { id: 'nt4.b4', turns: [
@@ -518,7 +518,7 @@ export default {
       { by: 'a', conf: "We all said {intended}. I wrote {actual}. I don't even know how. Nobody heard the votes, so nobody knows but me, and I'm keeping it that way." },
     ] },
     { id: 'nt4.mx5', when: { count: false }, turns: [
-      { by: 'a', conf: "I think I wrote {actual}. The plan was {intended}. If anybody ever finds out, I was confused. Which is true." },
+      { by: 'a', conf: "I think I wrote {actual}, and the plan was {intended}! If anybody ever asks, I got confused, which is honestly true." },
     ] },
   ],
   'after.split.idol': [

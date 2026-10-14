@@ -2669,7 +2669,11 @@ export function airTdEpisode(ep) {
         if (!unseen.length) continue;
         const at = it.lines.findIndex(l => l.kind === 'conf' && unseen.includes(l.by));
         const names = unseen.length === 1 ? unseen[0] : `${unseen.slice(0, -1).join(', ')} and ${unseen[unseen.length - 1]}`;
-        const beat = { kind: 'beat', by: null, text: `${names} ${unseen.length === 1 ? 'has' : 'have'} been watching the whole thing.` };
+        const one = unseen.length === 1, h = [...`${ep.num}${camp}${phase}${names}`].reduce((x, c) => (x * 31 + c.charCodeAt(0)) >>> 0, 7);
+        const WATCH = one
+          ? [`${names} has been watching the whole thing.`, `${names} is close enough to hear every word.`, `${names} saw all of it from a few steps away.`, `${names} heard every word of that.`, `${names} hasn't missed a second of it.`]
+          : [`${names} have been watching the whole thing.`, `${names} are close enough to hear every word.`, `${names} saw all of it from a few steps away.`, `${names} heard every word of that.`];
+        const beat = { kind: 'beat', by: null, text: WATCH[h % WATCH.length] };
         it.lines = [...it.lines.slice(0, at), beat, ...it.lines.slice(at)];
         it.text = it.lines.map(l => l.text).join(' ');
         if (Array.isArray(it.players)) for (const x of unseen) if (!it.players.includes(x)) it.players.push(x);

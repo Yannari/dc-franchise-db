@@ -31,6 +31,11 @@ import { players } from '../core.js';
 const PREPOSITIONS = new Set(['to', 'with', 'at', 'for', 'about', 'on', 'of', 'from',
   'behind', 'beside', 'past', 'against', 'toward', 'towards', 'by', 'into', 'onto',
   'over', 'under', 'without', 'around', 'near', 'after', 'like']);
+// after "Name's", the words that make it "Name is" / "Name has" rather than a possessive
+const HAS_AFTER = new Set(['been', 'got']);
+const IS_AFTER = new Set(['going', 'gonna', 'the', 'a', 'an', 'not', 'just', 'so', 'really', 'always', 'never', 'safe', 'fine', 'done',
+  'still', 'here', 'there', 'running', 'playing', 'trying', 'already', 'definitely', 'probably', 'totally', 'clearly', 'basically', 'been', 'got',
+  'scared', 'mad', 'angry', 'nervous', 'happy', 'gone', 'coming', 'leaving', 'staying', 'lying', 'telling', 'talking', 'doing', 'making']);
 const VERBS = new Set(['is', 'was', 'has', 'had', 'did', 'does', 'can', 'could', 'will',
   'would', 'should', 'might', 'must', 'says', 'said', 'knows', 'knew', 'thinks',
   'thought', 'went', 'got', 'gets', 'comes', 'came', 'wants', 'wanted', 'needs',
@@ -144,6 +149,9 @@ function _tidySentence(sent, re, speech = false) {
         // can't know every verb, so the name stays (read 2026-10-14: "stretched out like her owns the place")
         const clause = ['like', 'as', 'than'].includes(prev) && /^(is|was|has|had|does|did|can|could|will|would|[a-z]+s)$/.test(next || '') && !trueVerb;
         if (clause) rep = null;
+        // "Finn's going to be my favourite" is "Finn is", not Finn's thing: a word that can only follow "is" or "has" makes
+        // it a contraction (read 2026-10-14: "I know his going to be my favourite", "because his the same")
+        else if (h.poss && IS_AFTER.has(next)) rep = p.sub === 'they' ? (HAS_AFTER.has(next) ? "they've" : "they're") : `${p.sub}'s`;
         else if (h.poss) rep = p.posAdj;
         // "after Gerry said" is a clause, not an object: a real verb after
         // the name wins over the preposition before it.

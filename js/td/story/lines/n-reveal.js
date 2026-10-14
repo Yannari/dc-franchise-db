@@ -47,7 +47,7 @@ export default {
       { by: 'c', say: "You were never going to win this thing.", opt: true },
       { by: 'a', say: "Okay, rude, but I was at least going to last another week!" },
       { by: 'b', say: "We'll eat something in your honour." },
-      { by: 'a', conf: "I had a whole plan for tomorrow. It involved a coconut. Now nobody will ever know." },
+      { by: 'a', conf: "I had a whole plan for tomorrow, and it involved a coconut. Now nobody will ever know." },
     ] },
     { id: 'nrv.s7', when: { age: 'teen' }, turns: [
       { by: 'a', say: "Wait, what? That's literally so unfair." },

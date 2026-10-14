@@ -388,7 +388,7 @@ export default {
       { by: 'b', say: "Doing what?" },
       { by: 'a', say: "Walking past things, like you, sometimes." },
       { by: 'b', say: "...You could just stop and talk to me, you know." },
-      { by: 'a', conf: "I walked past {b} five times instead of saying hello once. I am not good at this. I am not good at this at all." },
+      { by: 'a', conf: "I walked past {b} five times instead of just saying hello. I'm so bad at this. I'm so, so bad at this." },
     ] },
     { id: 'ndo.cr2', place: 'aside', turns: [
       { by: 'a', say: "Hey, you've got a leaf in your hair." },

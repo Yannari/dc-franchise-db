@@ -52,7 +52,7 @@ export default {
     ] },
     { id: 'ndp.l4', when: { voice: ['schemer', 'calm', 'dry'] }, turns: [
       { by: 'a', conf: "I got played last night. I'll admit it. {leader} gave me {cover} and kept the real name for the people who mattered more." },
-      { by: 'a', conf: "The thing about being lied to is you learn exactly what the liar thinks of you. Now I know. That's useful." },
+      { by: 'a', conf: "When somebody lies to you that badly, they're telling you what they think of you. Now I know, and I'm not forgetting it." },
     ] },
   ],
   // nobody here is close to a, and hasn't been for days

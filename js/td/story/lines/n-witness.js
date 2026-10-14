@@ -182,7 +182,7 @@ export default {
       { by: 'b', say: "I am your friend. That's why I said it." },
       { by: 'a', say: "Friends don't side with {other} against me in front of everybody." },
       { by: 'b', say: "Friends tell you when you're wrong. I'm sorry it hurt.", v: { tough: "Friends tell you the truth. I'm not apologising for that.", emotional: "I know. I've felt sick about it all night. I just couldn't agree with you." } },
-      { by: 'a', conf: "Of everybody, it was {b}. I could take it from anyone else. Not from {b}." },
+      { by: 'a', conf: "Out of everybody here, it had to be {b}. I could take that from anyone else, but not from {b}." },
     ] },
     { id: 'nwa.t2', turns: [
       { beat: "{a} doesn't sit with {b} at breakfast. It's the first time all season." },

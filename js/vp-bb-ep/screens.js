@@ -454,10 +454,17 @@ export function bbxNext(uid) {
   R.idx++; paint(uid, true);
 }
 export function bbxBack(uid) {
-  const R = sync(uid); if (!R || R.idx < 0) return; stopAuto(R);
+  const R = sync(uid); if (!R) return;
+  // on the map, Back is the map before: a room's feed goes back to the plan, the house to the island
+  // (the user, 2026-10-14: "back button should get to the previous map too")
+  if (R.map && R.map.mode !== 'play') {
+    if (R.map.mode === 'feed') bbxMapBack(uid);
+    else if (R.map.level === 'house') bbxMapLevel(uid, 'island');
+    return;
+  }
+  if (R.idx < 0) return; stopAuto(R);
   // inside a conversation, Back never leaves it: from its first line it returns to the house
-  if (R.map?.mode === 'play' && R.map.cur != null && R.idx <= R.map.convs[R.map.cur].from) { Object.assign(R.map, { mode: 'map', cur: null, end: null }); paint(uid, false); return; }
-  if (R.map && R.map.mode !== 'play') return;
+  if (R.map?.mode === 'play' && R.map.cur != null && R.idx <= R.map.convs[R.map.cur].from) { bbxMapExit(uid); return; }
   R.idx--; paint(uid, false);
 }
 // Reveal all, Go to and a script line keep their linear meaning: they play from that step

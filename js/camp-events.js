@@ -1982,7 +1982,12 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       if (_groupScores.length < 2) continue;
       const target = _groupScores[0].name; // worst performer
       // Blamer: someone who performed better and is bold enough to say it
-      const blamers = group.filter(p => p !== target && (_lastChalScores[p] || 0) > (_lastChalScores[target] || 0) && pStats(p).boldness >= 5);
+      // ...and only somebody who was on the target's team for it (read 2026-10-14: the morning of the merge, Jasmine,
+      // whose team won, "still mad about the challenge" at Brick, whose team lost)
+      const _lastEp = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+      const _teamOf = n => (_lastEp?.tribesAtStart || []).find(t => (t.members || []).includes(n))?.name || null;
+      const _sameTeam = p => !(_lastEp?.tribesAtStart || []).length || _lastEp.isMerge || _teamOf(p) === _teamOf(target);
+      const blamers = group.filter(p => p !== target && _sameTeam(p) && (_lastChalScores[p] || 0) > (_lastChalScores[target] || 0) && pStats(p).boldness >= 5);
       if (!blamers.length) continue;
       const a = _pick(blamers, n => Math.max(0.1, pStats(n).boldness * 0.4 + (10 - pStats(n).loyalty) * 0.2 + 1));
       addBond(a, target, -0.7);
@@ -3605,10 +3610,12 @@ export function checkAllianceRecruitment(ep) {
   }
 
   // ── SCENARIO B: Just quit a named alliance, has bond >= 3 with a member of another ──
-  (ep.allianceQuits || []).forEach(({ player }) => {
+  (ep.allianceQuits || []).forEach(({ player, alliance: left }) => {
     if (!active.includes(player)) return;
     gs.namedAlliances.forEach(alliance => {
-      if (!alliance.active || alliance.members.includes(player)) return;
+      // (never back into the one they just walked out of: Scott, who named The Final Four Pact, quit it and was
+      // "recruited" into it the same day with "I've NEVER been asked to be in anything!", read 2026-10-14)
+      if (!alliance.active || alliance.members.includes(player) || alliance.name === left) return;
       const allianceActives = alliance.members.filter(m => active.includes(m));
       if (allianceActives.length < 2) return;
       const anchor = allianceActives.sort((a,b) => getBond(player,b) - getBond(player,a))[0];

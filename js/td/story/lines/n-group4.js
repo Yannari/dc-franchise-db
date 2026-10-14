@@ -183,7 +183,6 @@ export default {
       {"by":"a","say":"Well, I'm just going to say it. We lost that because of {b}.","v":{"cruel":"Let's not pretend, we lost because {b} was useless out there.","blunt":"We lost because of {b}, that's just what happened."}},
       {"by":"b","move":"deflect"},
       {"by":"c","move":"defend","to":"a"},
-      {"by":"c","say":"We all lost it."},
       {"by":"d","say":"{b} did come last, though.","opt":true},
       {"by":"c","say":"And blaming {b} in front of everyone is helping how?"},
       {"by":"e","say":"Can we not do this right now?","opt":true},

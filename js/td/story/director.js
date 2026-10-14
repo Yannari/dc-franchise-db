@@ -1770,6 +1770,17 @@ export function airTdEpisode(ep) {
         const sealed = new Set(['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph)).filter(ev => /^(alliance\.form|deal\.)/.test(ev?.scene?.kind || ''))
           .map(ev => pk(ev.scene.who?.a, ev.scene.who?.b)));
         for (const ev of events) if (ev && ev.aired == null && /^friend\.drift/.test(ev.scene?.kind || '') && sealed.has(pk(ev.scene.who?.a, ev.scene.who?.b))) ev.aired = 'covered'; }
+      // ...and one romance a person a day: a flirt, a spark or a moment with one person, not three (read 2026-10-14: Mike
+      // kissed Ella in secret, flirted with Sky and had a moment with Jasmine, all after one challenge). Decided once, on
+      // the morning, over the whole day in its order; a couple's own scenes and an affair's steps are the story and stay
+      if (phase === 'pre') { const had = new Map();
+        for (const ev of ['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph))) {
+          const k = ev?.scene?.kind || '';
+          if (!ev || ev.aired != null || !/^romance\.(spark|flirt|moment|first)/.test(k)) continue;
+          const pair = [ev.scene.who?.a, ev.scene.who?.b].filter(Boolean);
+          if (pair.some(n => had.has(n) && had.get(n) !== pair.find(x => x !== n))) { ev.aired = 'covered'; continue; }
+          for (const n of pair) had.set(n, pair.find(x => x !== n));
+        } }
       // file every moment of the phase into its storyline
       const filed = [];
       events.forEach((ev, i) => {
@@ -2639,6 +2650,9 @@ export function airTdEpisode(ep) {
       if (early.length) { out.post = out.post.filter(it => !early.includes(it)); out.pre.push(...early.map(it => ({ ...it, scene: { ...it.scene, spot: { ...it.scene.spot, window: 'morning' } } }))); }
       if (spooky.length) { out.pre = out.pre.filter(it => !spooky.includes(it)); out.post.push(...spooky.map(it => ({ ...it, scene: { ...it.scene, spot: { ...it.scene.spot, window: 'evening' } } }))); }
       for (const it of out.post) if (ghost(it)) it.scene = { ...it.scene, spot: { ...it.scene.spot, window: 'evening' } };
+      // ...and a night scene already after the challenge airs in the evening, not on the walk back (read 2026-10-14: "the
+      // last two awake" in the 'return' window)
+      for (const it of out.post) if (night(it) && it.scene.spot.window !== 'evening' && it.scene.spot.window !== 'scramble' && it.scene.spot.window !== 'before-tribal') it.scene = { ...it.scene, spot: { ...it.scene.spot, window: 'evening' } };
     }
     // the refs that were added late go back into the camp's own order
     const editOn0 = (seasonConfig?.tdEdit || 'full') !== 'off';

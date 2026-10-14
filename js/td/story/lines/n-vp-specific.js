@@ -126,7 +126,7 @@ const FORM = {
       { by: 'a', conf: "This early, and I've already got {votes} people. Later they'll all say they didn't want to play this fast. They'll be lying." },
     ] },
     { id: 'nvs.fg2', turns: [
-      { by: 'b', say: "Why did you drag us all the way out here?" },
+      { by: 'b', say: "Why did you drag me all the way out here?" },
       { by: 'a', say: "Because I didn't want {theirSide} to hear this." },
       { by: 'b', say: "Hear what?" },
       { by: 'a', say: "That they're already a group, and if we don't become one too, we're the ones going home." },

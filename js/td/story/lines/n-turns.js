@@ -16,7 +16,7 @@ export default {
       { by: 'a', say: "So. You {deed}." },
       { by: 'b', say: "I did, and you're allowed to say thank you, you know. It doesn't hurt.", v: { dry: "I did. The thank-you goes here, in case you were wondering.", warm: "I did. You don't have to make it a big thing." } },
       { by: 'a', say: "After what I said about you, I figured you'd let me struggle." },
-      { by: 'b', say: "“{remark}” Yeah, I remember that, and I did think about letting you struggle, but only for about a second." },
+      { by: 'b', say: "“{said}” Yeah, I remember that, and I did think about letting you struggle, but only for about a second." },
       { by: 'a', say: "Fine, thank you. You could have just stood there and watched, and you didn't." },
       { by: 'b', say: "You're welcome. And I'm still going to talk about it, by the way." },
       { by: 'a', say: "Of course you are." },
@@ -35,7 +35,7 @@ export default {
       { by: 'a', say: "Okay, I'll say this once: you {deed}, so thanks." },
       { by: 'b', say: "Once? I was hoping to hear it a few more times." },
       { by: 'a', say: "Don't get used to it. I didn't think you'd do that for me, after the way I've been." },
-      { by: 'b', say: "“{remark}” That's the way you've been. I remember it word for word." },
+      { by: 'b', say: "“{said}” That's the way you've been. I remember it word for word." },
       { by: 'a', say: "I know I said it, and I'm not proud of it.", v: { tough: "I said it and I'd probably say it again, but you still did it, so thanks.", schemer: "That was a bad day, and this is me saying thank you, so let's call it even." } },
       { by: 'b', say: "We're not even. But it's a start." },
       { by: 'a', conf: "{b} {deed}, after what I said to {b.obj}. I don't really know what to do with that, except say thank you and mean it." },
@@ -55,7 +55,7 @@ export default {
     { id: 'ntn.ma1', when: { remark: true }, turns: [
       { by: 'b', say: "You {deed}. Why?" },
       { by: 'a', say: "Because you needed it, and I was there." },
-      { by: 'b', say: "“{remark}” That was you too. I haven't forgotten." },
+      { by: 'b', say: "“{said}” That was you too. I haven't forgotten." },
       { by: 'a', say: "I know. This was me trying to be better than that.", v: { tough: "I'm not going to say sorry for everything. But I wasn't going to leave you on your own.", schemer: "People can say stupid things and still be useful. This time I was useful." } },
       { by: 'b', say: "It helps. It doesn't erase it." },
       { by: 'a', say: "I'm not asking it to." },
@@ -109,7 +109,7 @@ export default {
     { id: 'ntn.mg1', when: { remark: true }, turns: [
       { by: 'b', say: "Twice. You've done it twice now." },
       { by: 'a', say: "Done what?" },
-      { by: 'b', say: "“{remark}” First that. And now you {deed}." },
+      { by: 'b', say: "First it was “{remark}”, and now you {deed}." },
       { by: 'a', say: "It's a joke. You used to be able to take a joke.", v: { cruel: "If you didn't make it so easy, I wouldn't keep doing it.", anxious: "I didn't think you'd take it so seriously, honestly." } },
       { by: 'b', say: "I took the first one. I'm not taking any more." },
       { by: 'b', conf: "Once, I can let go, but then {a} {deed}, and that's not an accident any more, that's a choice." },
@@ -189,7 +189,7 @@ export default {
   // a stood up for b; now b has turned on a
   'turn.defendbetray.any': [
     { id: 'ntn.db1', when: { remark: true }, turns: [
-      { by: 'a', say: "“{remark}” Do you remember me saying that? For you, in front of everybody?" },
+      { by: 'a', say: "“{said}” Do you remember me saying that? For you, in front of everybody?" },
       { by: 'b', say: "I remember." },
       { by: 'a', say: "And then you {deed}." },
       { by: 'b', say: "It's a game. It wasn't personal.", v: { anxious: "I panicked, okay? It wasn't supposed to go like that.", schemer: "It was strategic. You'd have done the same." } },

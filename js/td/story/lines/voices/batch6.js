@@ -134,7 +134,7 @@ export default {
   // vp2.pair (trio, sharing a bowl)
   'nvr.p1': {
     1: { warm: "They share everything. It's really sweet.", cruel: "They share everything. It's revolting.", dry: "They share everything. Even germs." },
-    7: { warm: "We're splitting up the only happy couple on this island. I feel terrible, and I'm still going to do it.", cruel: "We're breaking up the island's only happy couple. I'm going to be the villain at the reunion, and I'll wear it well.", calm: "We're splitting up the only happy couple here. I'll be the bad guy at the reunion, and I've made my peace with it." },
+    7: { warm: "We're splitting up the two closest people here. I feel terrible, and I'm still going to do it.", cruel: "Two people that close are two votes. Not for long." },
   },
   // vote.swing.no (gave my word)
   'nv.n3': {

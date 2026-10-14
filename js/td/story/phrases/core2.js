@@ -150,7 +150,7 @@ export default {
     any: ["Whatever.", "Don't care.", "Okay. And?", "Sure. Moving on.", "That's nice.", "Noted."],
     dry: ["Fascinating. Truly.", "Thank you for sharing."],
     loud: ["Who CARES?!", "Ugh, whatever!"],
-    warm: ["Okay, sweetie. Let's not worry about it."],
+    warm: ["Okay. Let's not worry about it right now."],
     blunt: ["Don't care.", "Doesn't matter."],
     theatrical: ["Boring! Next!", "I simply cannot be bothered."],
     calm: ["Eh. Doesn't matter.", "Okay."],

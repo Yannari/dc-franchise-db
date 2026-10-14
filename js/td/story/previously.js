@@ -183,7 +183,8 @@ export function writePreviously(ep) {
     if (!say) return;
     const shot = shotOf(c.x, [a, b].filter(Boolean));
     const said = T(pick(say, `sl-${kb}`));
-    H(said + (c.score >= 9 && !/(^|[.!?] )[A-Z][a-z]+[.!]$/.test(said) ? aside(`sl${i}`) : ''), shot);
+    // (no quip after a line that already has its own: "It was loud. It was ugly. It was great. Brutal.", read 2026-10-14)
+    H(said + (c.score >= 9 && !/(^|[.!?] )[A-Z][a-z]+[.!]$/.test(said) && (said.match(/[.!?](\s|$)/g) || []).length < 3 ? aside(`sl${i}`) : ''), shot);
     // the line that mattered, from the people in it: somebody the host just named (a clip from a person the sentence
     // never mentioned reads as a non sequitur, read 2026-10-14: "Leshawna knew she was in trouble" then Millie)
     if (quotes < QUOTES && (c.score >= 7 || roll(`q${i}`, .5))) { const q = quoteOf(c.x, [a, b].filter(n => n && said.includes(n))); if (q) { Q(q.by, q.text, shot); quotes++; } }

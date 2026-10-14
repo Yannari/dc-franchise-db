@@ -38,7 +38,7 @@ export default {
       { by: 'c', conf: "I hate getting involved. But {a} was out of line, and everybody knew it." },
     ] },
     { id: 'npb.d1', turns: [
-      { by: 'c', say: "Hey. That was really out of line, {a}.", v: { tough: "Say that to me, {a}. Go on.", warm: "{a}, come on, that was so mean.", dry: "Wow. Great, {a}. Really mature." } },
+      { by: 'c', say: "Hey. That was really out of line, {a}.", v: { tough: "Say that to me, {a}. Go on.", warm: "{a}, come on. That wasn't fair.", dry: "Wow. Great, {a}. Really mature." } },
       { by: 'd', opt: true, say: "{c}, stay out of it." },
       { by: 'c', say: "No, I'm not staying out of it. {b} didn't do anything." },
       // (says only what c did: others in the scene may have spoken up too, read 2026-10-14)

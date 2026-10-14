@@ -294,7 +294,7 @@ export default {
       { by: 'b', say: "Do you want to go get water with me?" },
       { by: 'a', say: "Maybe later." },
       { by: 'b', say: "That's what you said last time." },
-      { by: 'a', say: "Then I meant it this morning too." },
+      { by: 'a', say: "And I meant it then, too." },
       { by: 'b', say: "Did I do something?" },
       { by: 'a', say: "No, you didn't do anything. That's not what this is." },
       { by: 'b', say: "Then what is it?" },

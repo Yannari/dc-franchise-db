@@ -63,7 +63,7 @@ export default {
       { by: 'a', say: "It's {wrote} tonight, everybody's said so. You're on {wrote}, right?" },
       { by: 'b', say: "Yeah. Of course." },
       { by: 'a', say: "I love that we never have to worry about each other." },
-      { beat: "{b} looks out at the water and doesn't say anything." },
+      { beat: "{b} looks away and doesn't say anything." },
       { by: 'b', conf: "{a} just told me how much {a} trusts me, and in about three hours I'm writing {a}'s name. I've never felt this bad about something I know is right." },
     ] },
     // (before the merge only: read 2026-10-13, Duncan sure he'd 'make the merge' on the merge episode itself)

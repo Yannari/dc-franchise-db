@@ -79,7 +79,7 @@ export default {
       { by: 'a', say: "{target}. {partner} without {target} is just somebody looking for a new best friend." },
       { by: 'b', say: "And who's that going to be?" },
       { by: 'a', say: "Whoever's nicest to {partner} tomorrow morning. So, all three of us, be really nice." },
-      { by: 'c', conf: "We're splitting up the only happy couple on this island. I'm going to be the bad guy at the reunion, and I'm okay with it." },
+      { by: 'c', conf: "We're splitting up the two closest people here. I'm going to be the bad guy at the reunion, and I'm okay with it." },
     ] },
     { id: 'nvr.p2', turns: [
       { by: 'b', say: "You keep looking over at {target} and {partner}." },

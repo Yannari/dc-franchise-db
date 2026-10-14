@@ -153,7 +153,9 @@ export function turnScene(ep, camp, members, chal, next, factsForWho, phase = 'p
       // the remembered line is quoted back only when it is the point (the sneer, the defence, the lie, the fight) and
       // short enough to say again; read in played seasons: "You told me “I'm fine.”. Remember?"
       const quote = QUOTED.has(s.kind) && s.remark && s.remark.length <= 70 ? s.remark.trim().replace(/\.$/, '') : null;
-      const data = { deed: d.deed, ...(quote ? { remark: quote } : {}), ...(s.thing ? { thing: s.thing } : {}) };
+      // {said}: the same line with its own ending, for a quote that stands alone as a sentence ("“Leave her alone” That
+      // was you too.", read 2026-10-14)
+      const data = { deed: d.deed, ...(quote ? { remark: quote, said: /[.!?…]$/.test(quote) ? quote : quote + '.' } : {}), ...(s.thing ? { thing: s.thing } : {}) };
       const w = write(`turn.${kase}`, 'any', who, data, { ...factsForWho(who), pair: true, thing: !!s.thing, remark: !!quote },
         { ep: ep.num, camp, phase, n: next(), place: 'aside', unique: 'soft' });
       if (!w) continue;

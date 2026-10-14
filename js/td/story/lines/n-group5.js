@@ -86,7 +86,7 @@ export default {
       { by: 'b', conf: "I didn't even have to defend myself. That's how you know who your friends are here." },
     ] },
     { id: 'no.f2', place: 'eat', when: { third: true, voice: ['loud', 'tough', 'blunt', 'cruel'] }, turns: [
-      { by: 'a', say: "Can you chew a little louder? I don't think the other team heard you." },
+      { by: 'a', say: "Can you chew a little louder? I don't think the whole camp heard you." },
       { by: 'b', say: "Seriously? Over food?" },
       { by: 'a', say: "Over everything. You're always too much." },
       { by: 'c', say: "You're the one who's too much. You've been picking on {b} since we got here." },

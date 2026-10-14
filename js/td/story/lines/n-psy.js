@@ -150,7 +150,7 @@ export default {
       { by: 'a', say: "They think they know how to beat the old me. That's the advantage." },
       { by: 'a', conf: "Coming back was the scariest thing I've ever done. Going home the same way twice would be worse." },
     ] },
-    { id: 'nps.e4', when: { moment: 'lost', lastBoot: true, past: ['final', 'early', 'blindsided', 'mid', 'none'] }, turns: [
+    { id: 'nps.e4', when: { moment: 'lost', lastBoot: true, voted: ['other', 'none'], past: ['final', 'early', 'blindsided', 'mid', 'none'] }, turns: [
       { by: 'a', conf: "{lastBoot} going home last night felt like watching my own boot all over again. Same feeling. Same stomach drop." },
       { by: 'a', conf: "I can't save everybody, I'm finally learning that. I just have to make sure I'm still standing." },
     ] },

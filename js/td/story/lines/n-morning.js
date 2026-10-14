@@ -157,7 +157,7 @@ export default {
       { by: 'a', say: "I've got a guess. I want to be sure first." },
       { by: 'a', conf: "I lost my closest ally last night. I'm not going to sit around feeling sorry for myself. I need a new one by tonight." },
     ] },
-    { id: 'nm.b13', place: 'sleep', when: { voice: ['ditzy', 'goofy', 'food'] }, turns: [
+    { id: 'nm.b13', place: 'sleep', when: { voice: ['ditzy', 'goofy', 'food'], voted: ['other', 'none'] }, turns: [
       { beat: "{a} wakes up and looks over at {lastBoot}'s {bed}. It's empty." },
       { by: 'a', say: "Has anybody seen {lastBoot}?" },
       { by: 'c', say: "{a}. {lastBoot} went home last night." },

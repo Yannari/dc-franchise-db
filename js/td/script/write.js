@@ -33,7 +33,7 @@ import { pickVoice } from '../story/voice-family.js';
 // The episode being played. gs.episode still holds the last one until it ends.
 export const epOf = ctx => ctx.ep || (gs.episode || 0) + 1;
 const PHASE_CLOCK = { pre: 0, challenge: 1, post: 2, tribal: 3 };
-const JET_NO = /\b(fire( pit)?|firewood|campfire|fishing|lake|water's edge|sand|beach|dock|shore|tent|shelter|woods?|forest|stones?|pebbles?|rocks?|trees?|river|waterfall|trail|caves?|shade|shoreline|across camp|side of camp)\b/i;
+const JET_NO = /\b(fire( pit)?|outhouse|fix the roof|on the roof|before it rains|in the dirt|(carry(ing)?|fetch(ing)?|get(ting)?) (the )?water|water runs?|buckets?|outdoors|skylight|hole in the roof|berries|away from camp|firewood|campfire|fishing|lake|water's edge|sand|beach|dock|shore|tent|shelter|woods?|forest|stones?|pebbles?|rocks?|trees?|river|waterfall|trail|caves?|shade|shoreline|across camp|side of camp)\b/i;
 
 export const clockOf = ctx => (epOf(ctx)) * 10 + (PHASE_CLOCK[ctx.phase] ?? 0);
 const ledger = () => (gs.tdLineLedger ||= newLedger());

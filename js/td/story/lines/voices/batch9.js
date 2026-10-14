@@ -155,7 +155,7 @@ export default {
     6: { dry: "You're less annoying when you're not talking.", calm: "You're less annoying when you're quiet." },
   },
   'nar.e2': {
-    1: { calm: "Yeah?", warm: "Yeah?" },
+    1: { calm: "Seriously?", warm: "Wait, seriously?" },
     3: { calm: "That's going to make it very obvious who wrote what.", anxious: "That's going to make it so obvious who wrote what. Are you sure?" },
     4: { calm: "I don't care who knows, as long as {target} goes home.", loud: "I don't CARE who knows, as long as {target} goes home!", competitive: "Let them know. {target} goes home, and that's all that matters." },
   },

@@ -72,7 +72,7 @@ export default {
   ],
   'long.friend.secret.any': [
     { id: 'nl6.x1', turns: [
-      { beat: "{a} and {b} are the last two awake." },
+      { beat: "{a} and {b} have found a quiet corner, away from everybody." },
       { by: 'a', say: "Can I tell you something I haven't said to anybody here?" },
       { by: 'b', say: "Of course." },
       { by: 'a', say: "I'm not doing this for the money. I mean, I want the money. But mostly I wanted to find out if I could." },

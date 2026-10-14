@@ -60,9 +60,9 @@ export default {
   ],
   'vp.case.grudge': [
     { id: 'npm.cr1', turns: [
-      { by: 'a', say: "Do you remember what {target} said to me yesterday? Because I do.", v: { tough: "{target} talked to me like I was nothing. That doesn't happen twice.", emotional: "{target} has been mean to me since we got here, and I'm tired of crying about it." } },
-      { by: 'b', say: "That was pretty bad." },
-      { by: 'a', say: "It was. And I'd rather vote with my gut than spend another week pretending it didn't happen." },
+      { by: 'a', say: "I can't stand the way {target} talks to me. I'm done pretending I can.", v: { tough: "{target} talks to me like I'm nothing. I'm done putting up with it.", emotional: "{target} has been mean to me since we got here, and I'm tired of crying about it." } },
+      { by: 'b', say: "Yeah. I've seen it." },
+      { by: 'a', say: "Then you get it. I'd rather vote with my gut than spend another week pretending it doesn't bother me." },
     ] },
   ],
   'vp.case.threat': [

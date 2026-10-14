@@ -298,7 +298,7 @@ export function writePreviously(ep) {
       if (rq) { Q(boot, rq.text, tribalShot([boot])); quotes++; }
       // and the one who's proud of it
       const smug = (ts.after || []).find(l => l.kind === 'conf' && voters.includes(l.by) && /made it happen|my plan|my idea|I did|I made|told you|easy/i.test(l.text) && l.text.length <= 140);
-      if (smug && quotes < QUOTES + 1) { H(pick([`Not everybody was sorry about it.`, `And somebody was very pleased with ${pr(smug.by).ref || 'themselves'}.`, `Some people took it harder than others.`], 'smug'), tribalShot([smug.by])); Q(smug.by, smug.text, tribalShot([smug.by])); quotes++; }
+      if (smug && quotes < QUOTES + 1) { H(pick([`Not everybody was sorry about it.`, `And somebody was very pleased with ${pr(smug.by).ref || 'themselves'}.`, `One person in that room was smiling.`], 'smug'), tribalShot([smug.by])); Q(smug.by, smug.text, tribalShot([smug.by])); quotes++; }
     }
     return true;
   };

@@ -69,7 +69,7 @@ export default {
       b("I was joking."), a("I'm telling you I didn't like it."),
       b("Okay. You don't have to make a whole thing of it."),
       a("I said one sentence. You're the one arguing."),
-      beat('{b} looks away. {a} stays where they are.'),
+      beat('{b} looks away. {a} doesn\'t move.'),
       b("Fine. I won't say it."), a("Good. That's all I asked."),
       conf('a',"I hate fighting, but I didn't want to laugh along and have {b} think I was fine with it."),
     ] },

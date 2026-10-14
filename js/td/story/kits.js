@@ -22,7 +22,7 @@
 // entry built here for these two people.
 import { gs } from '../../core.js';
 import { STORY_POOLS } from './lines/index.js';
-import { writeStory } from './write.js';
+import { writeStory, venueTextOk } from './write.js';
 import KITS from './kits/index.js';
 import { kitExchange, kitDigEntry, kitRomanceEntry } from './kit-exchanges.js';
 // a kit line is spent when its scene airs, not when it is proposed (commit.js): a scene cut for room keeps its lines
@@ -64,7 +64,8 @@ function take(name, part, fits = null) {
   const k = KITS[name]?.[part];
   if (!Array.isArray(k) || !k.length) return null;
   const u = (used()[name] ||= []);
-  const i = k.findIndex((line, j) => !u.includes(`${part}:${j}`) && (!fits || fits(line, j)));
+  // (and one the season's venue has: Alejandro "carrying water all morning" with a bucket on the jet, read 2026-10-14)
+  const i = k.findIndex((line, j) => !u.includes(`${part}:${j}`) && (!kitVenue || typeof line !== 'string' || venueTextOk(kitVenue, line)) && (!fits || fits(line, j)));
   if (i < 0) return null;
   return { line: k[i], index: i, mark: () => u.push(`${part}:${i}`) };
 }

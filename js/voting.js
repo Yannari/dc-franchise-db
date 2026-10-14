@@ -898,7 +898,11 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       const myAlliance = alliances.find(a => a.members.includes(pitcher));
       const myTarget = myAlliance?.target;
       // Pick who the pitcher wants out instead
-      const pitchVictims = votablePlayers.filter(p => p !== pitcher && !_immSet.has(p) && p !== myTarget);
+      // (never the pitcher's own showmance: Geoff and Gwen got together in the afternoon, and that evening Geoff went
+      // round three people asking them to vote Gwen out, read 2026-10-14; the weight's 0.1 floor let it happen)
+      const _myPartners = new Set((gs.showmances || []).filter(s => (s.players || []).includes(pitcher) && !s.breakupEp && s.phase !== 'broken-up')
+        .flatMap(s => s.players).filter(n => n !== pitcher));
+      const pitchVictims = votablePlayers.filter(p => p !== pitcher && !_immSet.has(p) && p !== myTarget && !_myPartners.has(p));
       if (!pitchVictims.length) return;
       const pitchTarget = wRandom(pitchVictims, v =>
         Math.max(0.1, threatScore(v) * 0.4 + (-getPerceivedBond(pitcher, v)) * 0.3

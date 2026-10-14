@@ -57,7 +57,7 @@ export default {
       { by: 'b', say: "I don't know who it is." },
       { by: 'a', conf: "{b} knows, everybody knows, and nobody's telling me, so fine, I'll figure it out myself." },
     ] },
-    { id: 'nk.sc4', place: 'aside', when: { voice: ['warm', 'anxious', 'earnest', 'emotional', 'ditzy'] }, turns: [
+    { id: 'nk.sc4', place: 'aside', when: { voice: ['warm', 'anxious', 'earnest', 'emotional', 'ditzy'], notVoice: ['schemer', 'cruel', 'proud', 'competitive'] }, turns: [
       { by: 'a', say: "Can I ask you for something? It's big." },
       { by: 'b', say: "What is it?" },
       { by: 'a', say: "Can you not vote for me? I know that's a weird thing to ask, I just... I really want to stay." },

@@ -66,7 +66,13 @@ const VENUE_NO = {
   'film-lot': /\b(boats?|shelter|cabins?|mess hall|dock|boathouse|lake|beach|shore(line)?|ocean|the sea|sand|seaweed|tide|crabs?|shells?|jungle|coconuts?|fire( pit)?|campfire|firewood|fishing|tent|woods|forest|water pump|the well)\b/i,
   'world-tour': /\b(boats?|dock|mess hall|crabs?|shells?|seaweed|tide|coconuts?|water pump|the well|bunks?)\b/i,
 };
-const OUTDOOR = /\b(fire( pit)?|firewood|campfire|fishing|fish|lake|water's edge|the water|sand|beach|dock|log|shore|tent|shelter|woods?|forest|stones?|pebbles?|bush(es)?|sun|shade|rocks?|trees?|river|waterfall|trail|caves?|shoreline|across camp|around camp|side of camp)\b/i;
+const OUTDOOR = /\b(fire( pit)?|outhouse|in the dirt|fix the roof|on the roof|before it rains|(carry(ing)?|fetch(ing)?|get(ting)?) (the )?water|water runs?|buckets?|outdoors|outside|skylight|hole in the roof|raining|rain|berries|away from camp|from camp|the path|firewood|campfire|fishing|fish|lake|water's edge|the water|sand|beach|dock|log|shore|tent|shelter|woods?|forest|stones?|pebbles?|bush(es)?|sun|shade|rocks?|trees?|river|waterfall|trail|caves?|shoreline|across camp|around camp|side of camp)\b/i;
+// A line for a place the season has, by its words (also kits.js take: a character's own lines go through it)
+export function venueTextOk(venue, text) {
+  if (venue === 'world-tour' && OUTDOOR.test(text)) return false;
+  if (VENUE_NO[venue]?.test(text)) return false;
+  return true;
+}
 // Time logic (the user, 2026-10-08: day one had "it's always a joke with you", a challenge brag
 // before the challenge, a five a.m. airhorn in the afternoon).
 // A line that leans on shared history, in the first two episodes, between two people with none.
@@ -119,7 +125,7 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   // World Tour jet, no coconuts anywhere but the survival island.
   const placeOk = e => {
     const text = (e.turns || []).map(t => t.beat || t.say || t.conf || '').join(' ');
-    if (facts.venue === 'world-tour' && OUTDOOR.test(text)) return false;
+    if (!venueTextOk(facts.venue, text)) return false;
     // ...and nothing that names a place this venue doesn't have (the user, 2026-10-08: "make sure the
     // events respect the venue always"): places.js says what each one has
     if (VENUE_NO[facts.venue]?.test(text)) return false;
@@ -150,7 +156,13 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   let entry = null;
   const fitsFor = k => {
     // `voice` / `voiceB` ask for one of a or b's voice tags (voice.js); everything else is a fact
-    const voiceFit = (want, name) => [].concat(want).some(t => voiceOf(name).includes(t));
+    // (a schemer's charm is 'warm' too, but a line written for the scared and the soft is not theirs: Alejandro, "My
+    // heart was going so fast. I just want everybody to be okay", read 2026-10-14)
+    const SOFT = ['anxious', 'emotional', 'earnest'];
+    const voiceFit = (want, name) => { const w = [].concat(want), v = voiceOf(name), hits = w.filter(t => v.includes(t));
+      if (!hits.length) return false;
+      if (w.some(t => SOFT.includes(t)) && hits.every(t => t === 'warm') && v.some(t => t === 'schemer' || t === 'cruel')) return false;
+      return true; };
     const fits = (STORY_POOLS[k] || []).filter(e => (!ctx.entryIds || ctx.entryIds.includes(e.id)) && placeOk(e) &&
       (!firstImpressions || e.turns.every(t => t.by && !who[t.by] || !firstLines().includes(lineKey(ownWords(e,t))))) && Object.entries(e.when || {}).every(([f, v]) =>
       f === 'voice' ? voiceFit(v, who.a) : f === 'voiceB' ? voiceFit(v, who.b) : f === 'voiceC' ? voiceFit(v, who.c)

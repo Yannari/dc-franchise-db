@@ -347,7 +347,7 @@ export default {
       { by: 'a', conf: "One vote is a hope. Two votes is a plan.", v: { warm: "I hate using it on {target}, but if it saves somebody I care about, it's worth it." } },
     ] },
     { id: 'nar.e2', when: { target: true, pair: true }, turns: [
-      { by: 'a', say: "Remember that thing I told you about? The extra vote?" },
+      { by: 'a', say: "Don't tell anybody, but I've got an extra vote." },
       { by: 'b', say: "Yeah?" },
       { by: 'a', say: "It's {target} tonight. Both of them." },
       { by: 'b', say: "That's going to make it really obvious who wrote what." },

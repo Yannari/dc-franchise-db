@@ -78,6 +78,22 @@ export default {
   ],
 
   'thr.debt.1': [
+    // (more of them, read 2026-10-14: one or two versions aired in five or six episodes of one season)
+    { id: 'nth.d7', when: { how: 'warned' }, turns: [
+      { by: 'a', say: "Hey. You didn't have to warn me, and you did. Thank you." },
+      { by: 'b', say: "Don't worry about it." },
+      { by: 'a', say: "I'm going to worry about it. I owe you." },
+      { by: 'b', say: "Fine. You owe me. I'll think of something." },
+      { by: 'a', conf: "I hate owing people. But I'd rather owe {b} than be the one going home." },
+    ] },
+    { id: 'nth.d8', when: { how: 'warned' }, turns: [
+      { by: 'b', say: "So. Are we going to talk about how I saved your game?" },
+      { by: 'a', say: "Do we have to?" },
+      { by: 'b', say: "No. I just like hearing you say thank you." },
+      { by: 'a', say: "...Thank you." },
+      { by: 'b', say: "There it is." },
+      { by: 'b', conf: "I'm not going to cash it in yet. But {a} knows, and {a} knows that I know." },
+    ] },
     { id: 'nth.d1', when: { how: 'warned' }, turns: [
       { by: 'a', say: "I never properly said thank you. For warning me." },
       { by: 'b', say: "You'd have done the same." },

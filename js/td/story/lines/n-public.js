@@ -11,6 +11,32 @@
 
 export default {
   'public.react.defend': [
+    // (more of them, read 2026-10-14: one or two versions aired in five or six episodes of one season)
+    { id: 'npb.d3', when: { third: true }, turns: [
+      { by: 'c', say: "Whoa, whoa. Where is this coming from, {a}?" },
+      { by: 'a', say: "Stay out of it." },
+      { by: 'c', say: "No. You don't get to talk to {b} like that and expect everybody to just sit here." },
+      { by: 'c', conf: "{a} can be mad at me now. I'd rather that than watch {b} take it alone." },
+    ] },
+    { id: 'npb.d4', when: { third: true }, turns: [
+      { by: 'c', say: "{a}, seriously? Back off." },
+      { by: 'b', say: "It's fine, {c}." },
+      { by: 'c', say: "It's not fine. Nobody gets to talk to you like that." },
+      { by: 'b', conf: "I didn't ask {c} to step in. I'm really glad {c} did, though." },
+    ] },
+    { id: 'npb.d5', when: { third: true }, turns: [
+      { beat: "{c} steps in between them." },
+      { by: 'c', say: "Okay, that's enough. Both of you, go cool off." },
+      { by: 'a', say: "I'm not the one who needs to cool off." },
+      { by: 'c', say: "Then go anyway." },
+      { by: 'c', conf: "Somebody had to break that up before it got worse, and apparently that somebody is me." },
+    ] },
+    { id: 'npb.d6', when: { third: true }, turns: [
+      { by: 'c', say: "Leave {b} alone, {a}. You've made your point." },
+      { by: 'a', say: "Have I?" },
+      { by: 'c', say: "Everybody heard it. Trust me." },
+      { by: 'c', conf: "I hate getting involved. But {a} was out of line, and everybody knew it." },
+    ] },
     { id: 'npb.d1', turns: [
       { by: 'c', say: "Hey. That was really out of line, {a}.", v: { tough: "Say that to me, {a}. Go on.", warm: "{a}, come on, that was so mean.", dry: "Wow. Great, {a}. Really mature." } },
       { by: 'd', opt: true, say: "{c}, stay out of it." },
@@ -27,6 +53,26 @@ export default {
     ] },
   ],
   'public.react.excuse': [
+    // (more of them, read 2026-10-14: one or two versions aired in five or six episodes of one season)
+    { id: 'npb.e2', when: { third: true }, turns: [
+      { by: 'c', say: "{a} didn't mean it like that. Right, {a}?" },
+      { by: 'a', say: "...Sure." },
+      { by: 'b', say: "That's not what it sounded like." },
+      { by: 'c', say: "I know. Let's just leave it, okay?" },
+      { by: 'c', conf: "I'm going to have a word with {a} later. Just not in front of everybody." },
+    ] },
+    { id: 'npb.e3', when: { third: true }, turns: [
+      { by: 'c', say: "Everybody calm down. It's been a long day." },
+      { by: 'b', say: "That doesn't make it okay." },
+      { by: 'c', say: "I didn't say it was okay. I said it's been a long day." },
+      { by: 'c', conf: "{a} is my friend, so I'm stuck sticking up for {a}, even when {a} makes it really hard." },
+    ] },
+    { id: 'npb.e4', when: { third: true }, turns: [
+      { by: 'c', say: "Okay, can we not? {a} is just stressed." },
+      { by: 'b', say: "We're all stressed." },
+      { by: 'c', say: "I know. I'm stressed too. Can we just move on?" },
+      { by: 'c', conf: "I covered for {a}, and I'm not sure {a} deserved it this time." },
+    ] },
     { id: 'npb.e1', turns: [
       { by: 'c', say: "Okay, {a}'s just hungry and tired. We all are. Let's just drop it.", v: { anxious: "Okay, okay, everybody's tired, can we please, please just drop it?" } },
       { by: 'b', say: "That's not an excuse." },
@@ -35,6 +81,17 @@ export default {
     ] },
   ],
   'public.react.awkward': [
+    // (more of them, read 2026-10-14: one or two versions aired in five or six episodes of one season)
+    { id: 'npb.a3', when: { third: true }, turns: [
+      { beat: "Everybody nearby suddenly gets very busy with something else." },
+      { by: 'c', conf: "I picked up the same stick three times so I wouldn't have to look at either of them." },
+    ] },
+    { id: 'npb.a4', when: { third: true }, turns: [
+      { by: 'c', say: "Should we... go?" },
+      { by: 'd', opt: true, say: "We should definitely go." },
+      { beat: "Nobody moves. Everybody wants to see how it ends." },
+      { by: 'c', conf: "I said we should go. I did not go. I wanted to see how it ended." },
+    ] },
     { id: 'npb.a1', turns: [
       { beat: "Nobody says anything. {c} suddenly finds the ground very interesting." },
       { by: 'c', say: "So... great weather today.", v: { dry: "Well. This is fun.", goofy: "Who wants to hear a joke? Nobody? Great, perfect timing." } },

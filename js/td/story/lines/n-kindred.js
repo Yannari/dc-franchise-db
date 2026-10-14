@@ -429,7 +429,7 @@ export default {
       ac("{b} gets written off too. I don't need everybody to believe in me. Just one person who knows what that's like.")]),
   ],
   'kindred.stuck': [
-    T('nkd.st1', [beat("{a} is talking about going home, and doesn't sound like they want to."),
+    T('nkd.st1', [beat("{a} is talking about going home, and doesn't sound happy about it."),
       a("Back home, every day is the same. I came here because I needed something to change."),
       b("That's why I came too. I've been stuck for so long that I couldn't remember wanting anything."),
       a("And now?"),

@@ -2582,7 +2582,7 @@ export function airTdEpisode(ep) {
       }); }
     // a night scene written before the challenge airs that evening (read 2026-10-14: spin the bottle "in a circle around
     // the fire" aired on the trail in the morning): only a written scene moves, an engine moment keeps its own phase
-    { const NIGHT_GAME = /spin the bottle|empty bottle|the bottle (wobbles|spins|stops)|truth or dare|never have I ever|^\(?late[,.]|\bit's late\b|gone to bed|as it gets dark|\bin the dark\b|under the stars|moonlight/i;
+    { const NIGHT_GAME = /spin the bottle|empty bottle|the bottle (wobbles|spins|stops)|truth or dare|never have I ever|^\(?late[,.]|\bit's late\b|gone to bed|as it gets dark|\bin the dark\b|under the stars|moonlight|last (two|ones) (awake|still up)|still awake|every(one|body) else is asleep/i;
       const night = it => it?.story && Array.isArray(it.lines) && it.scene?.spot && it.scene.spot.id !== 'confessional' && it.storyType !== 'vote'
         && it.lines.some(l => l.kind === 'beat' && NIGHT_GAME.test(l.text || ''));
       const moving = out.pre.filter(night);

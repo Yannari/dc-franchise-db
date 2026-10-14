@@ -79,9 +79,9 @@ export default {
       {"by":"a","say":"Do you want this to be a relationship? Because I do."},
       {"by":"b","say":"Yes. I wanted to hear you say it, though."},
       {"by":"a","say":"Was I that hard to read?"},
-      {"by":"b","say":"I wanted to be sure, not clever."},
+      {"by":"b","say":"No. I just wanted to hear it out loud."},
       {"beat":"{b} takes {a.posAdj} hand and kisses {a.obj}."},
-      {"by":"a","conf":"I wanted to say something impressive. {b} wanted something clear. I'm very glad I managed the second one."},
+      {"by":"a","conf":"I spent all day trying to think of something smooth to say. In the end I just asked. Turns out that works."},
       {"by":"b","conf":"There's going to be plenty of time for everyone else to have an opinion. For this minute, I just want to be happy with {a}."}
     ] },
     { id: "nrs.s2", place: "sleep", turns: [

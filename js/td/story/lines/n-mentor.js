@@ -20,7 +20,7 @@ export default {
       { by: 'b', conf: "I hate being taught things. I really hate it. But {a} didn't make me feel stupid, and that's rare." },
     ] },
     { id: 'nmt.o2', turns: [
-      { by: 'a', say: "Can I be honest? You're doing {skill} completely wrong." },
+      { by: 'a', say: "Can I be honest? You're going about {skill} all wrong." },
       { by: 'b', say: "Thanks. Really helpful." },
       { by: 'a', say: "I mean it nicely, you're close. You're just missing one thing, and I could show you." },
       { by: 'b', say: "Why would you help me? We're not even close." },
@@ -40,8 +40,26 @@ export default {
     ] },
   ],
   'arc.mentor.practice': [
+    // (more of them: a season runs two or three of these arcs, and with two scenes a step the second arc replayed the
+    // first one's lines, read 2026-10-14)
+    { id: 'nmt.p3', turns: [
+      { by: 'b', say: "This is the fifth time. I'm never going to get it." },
+      { by: 'a', say: "You said that the first time, and you're way better now. Again. Slower." },
+      { by: 'b', say: "If I get it wrong again, I'm quitting." },
+      { by: 'a', say: "You're not quitting. You're way too stubborn." },
+      { by: 'b', say: "...That's true." },
+      { by: 'b', conf: "{a} is weirdly patient with me. I don't know why, but I'm not going to question it." },
+    ] },
+    { id: 'nmt.p4', turns: [
+      { by: 'b', say: "I've been practising {skill} on my own, so prepare to be amazed." },
+      { beat: "{b} tries. It doesn't work." },
+      { by: 'a', say: "Okay. Prepare to be amazed later, then." },
+      { by: 'b', say: "Don't laugh." },
+      { by: 'a', say: "I'm not laughing. Okay, I'm laughing a little. Again." },
+      { by: 'a', conf: "{b} is trying so hard. I'm not letting {b} give up, even if {b} wants to." },
+    ] },
     { id: 'nmt.p1', turns: [
-      { beat: "{a} and {b} are up before everybody else, practising {skill} where nobody can see." },
+      { beat: "{a} and {b} sneak off to practise {skill} where nobody can see." },
       { by: 'a', say: "Slower, you're rushing it. It's not a race." },
       { by: 'b', say: "Everything here is a race." },
       { by: 'a', say: "Not this. Breathe, and do it again." },
@@ -59,6 +77,26 @@ export default {
     ] },
   ],
   'arc.mentor.done': [
+    // (more of them: a season runs two or three of these arcs, and with two scenes a step the second arc replayed the
+    // first one's lines, read 2026-10-14)
+    { id: 'nmt.d3', turns: [
+      { beat: "{b} is trying {skill} alone, and {a} is trying very hard not to help." },
+      { by: 'a', say: "Don't look at me. You know how to do this." },
+      { by: 'b', say: "I know. I know. Okay." },
+      { beat: "It works." },
+      { by: 'b', say: "It worked! It actually worked!" },
+      { by: 'a', say: "Told you. You didn't need me at all." },
+      { by: 'b', say: "I needed you a little." },
+      { by: 'b', conf: "I couldn't do that when I got here, and now I can. {a} gets some of the credit. Not all of it." },
+    ] },
+    { id: 'nmt.d4', turns: [
+      { by: 'b', say: "I did it on my own today. Nobody watching, first try." },
+      { by: 'a', say: "And you came straight over here to tell me." },
+      { by: 'b', say: "Obviously. Who else was I going to tell?" },
+      { by: 'a', say: "I'm really proud of you, you know." },
+      { by: 'b', say: "Okay, now you're making it weird." },
+      { by: 'a', conf: "{b} ran all the way over here to tell me. I'm going to act like I'm not proud, but I am." },
+    ] },
     { id: 'nmt.d1', turns: [
       { beat: "{b} works at {skill} alone, while {a} pretends not to watch." },
       { by: 'b', say: "I did it, I actually did it! {a}, look!" },

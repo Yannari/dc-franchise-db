@@ -183,7 +183,7 @@ export default {
     loud: ["Don't you DARE put that on me!", "Me?! What about you?!"],
     warm: ["I tried my best. I really did.", "I'm sorry. I didn't mean to let anybody down."],
     blunt: ["Wasn't me.", "You weren't great either."],
-    theatrical: ["I am being framed!", "Unbelievable. Scapegoated, on day one."],
+    theatrical: ["I am being framed!", "Unbelievable. I'm being scapegoated."],
     anxious: ["I know, I know, I'm sorry, I'm so sorry.", "Was it really that bad? It was that bad."],
     calm: ["It happens. We'll get the next one.", "Okay, it's done, let's move on."],
     competitive: ["I was doing fine until somebody slowed me down.", "Check the scores. I wasn't last."],

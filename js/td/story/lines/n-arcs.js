@@ -175,6 +175,28 @@ export default {
     ] },
   ],
   'arc.cling.smother.any': [
+    // (more of them: a season runs two or three of these arcs, and with two scenes a step the second arc replayed the
+    // first one's lines, read 2026-10-14)
+    { id: 'ncl.s3', when: { third: true }, turns: [
+      { beat: "{a} goes to get more water. {b} sits down next to {c} the second {a} is gone." },
+      { by: 'b', say: "Don't say anything. Just let me sit here for a minute." },
+      { by: 'c', say: "You okay?" },
+      { by: 'b', say: "{a} has asked me if I'm okay fourteen times today. I've been counting." },
+      { by: 'c', say: "That's... kind of a lot." },
+      { by: 'b', say: "It's so nice, and it's so much, and I don't know how to say that without hurting {a}." },
+      { beat: "{a} comes back, waving." },
+      { by: 'a', say: "{b}! I saved you a spot over there!" },
+      { by: 'c', conf: "{b} needs some space, and {a} doesn't see it at all. Somebody's going to have to say something." },
+    ] },
+    { id: 'ncl.s4', when: { third: true }, turns: [
+      { by: 'c', say: "Where's {a}?" },
+      { by: 'b', say: "Off getting something. I've got about two minutes." },
+      { by: 'c', say: "You make it sound like a jailbreak." },
+      { by: 'b', say: "It's not a jailbreak. I like {a}. I just haven't been alone in three days." },
+      { by: 'c', say: "Want me to keep {a} busy for a bit?" },
+      { by: 'b', say: "Would you? Please?" },
+      { by: 'c', conf: "I just agreed to keep {a} busy so {b} can breathe. This game is so weird." },
+    ] },
     { id: 'ncl.s1', turns: [
       { beat: "{a} heads off to refill the water, and {b} waits until {a} is out of earshot." },
       { by: 'b', say: "Can I tell you something, as long as it doesn't get back to {a}?" },
@@ -409,6 +431,27 @@ export default {
 
   // ── learning to talk to people ──
   'arc.coach.offer.any': [
+    // (more of them: a season runs two or three of these arcs, and with two scenes a step the second arc replayed the
+    // first one's lines, read 2026-10-14)
+    { id: 'nco.o3', turns: [
+      { by: 'a', say: "You know half the camp thinks you're stuck up, right?" },
+      { by: 'b', say: "What? I'm not stuck up. I'm just shy." },
+      { by: 'a', say: "I know that. They don't. From over there, shy looks exactly like stuck up." },
+      { by: 'b', say: "So what am I supposed to do about it?" },
+      { by: 'a', say: "Let me help. Give it a couple of days, and you'll be talking to people like it's nothing." },
+      { by: 'b', say: "...Fine. But if this gets embarrassing, I'm out." },
+      { by: 'a', conf: "{b} is one of the nicest people out here, and half the camp thinks the opposite. That's fixable." },
+      { by: 'b', conf: "I didn't know people thought that about me. I really don't want to go home for being quiet." },
+    ] },
+    { id: 'nco.o4', turns: [
+      { by: 'b', say: "Why are you looking at me like that?" },
+      { by: 'a', say: "Because I've watched you start four conversations today and finish none of them." },
+      { by: 'b', say: "I get nervous. I run out of things to say." },
+      { by: 'a', say: "Then you need a couple of things ready. I'll help you." },
+      { by: 'b', say: "You'd do that?" },
+      { by: 'a', say: "Sure. Lesson one is tomorrow. Bring questions." },
+      { by: 'b', conf: "Nobody's ever offered to help me with something like that. I said yes before I could talk myself out of it." },
+    ] },
     { id: 'nco.o1', turns: [
       { by: 'a', say: "Can I ask you something? Why do you always sit on your own at dinner?" },
       { by: 'b', say: "I don't know what to say to people. So I don't say anything." },
@@ -431,6 +474,32 @@ export default {
     ] },
   ],
   'arc.coach.practice.any': [
+    // (more of them: a season runs two or three of these arcs, and with two scenes a step the second arc replayed the
+    // first one's lines, read 2026-10-14)
+    { id: 'nco.p3', when: { third: true }, turns: [
+      { by: 'a', say: "Okay, {c} is alone over there. Go ask a question. Any question." },
+      { by: 'b', say: "What if it's a stupid question?" },
+      { by: 'a', say: "Then it's a stupid question, and {c} answers it anyway. Go." },
+      { beat: "{b} walks over and sits down next to {c}." },
+      { by: 'b', say: "Hey. How are you holding up?" },
+      { by: 'c', say: "Honestly? Not great. Thanks for asking, though." },
+      { by: 'b', say: "Me neither. Sleeping here is the worst." },
+      { by: 'c', say: "The worst! Okay, sit down, we can complain together." },
+      { by: 'a', conf: "{b} asked one question and got a whole conversation out of it. I didn't even have to help." },
+      { by: 'c', conf: "I don't really know {b}, but that was nice. More people out here should just ask how you're doing." },
+    ] },
+    { id: 'nco.p4', when: { third: true }, turns: [
+      { by: 'a', say: "Today we practise compliments. A real one. Go tell {c} something you actually like." },
+      { by: 'b', say: "That's so awkward." },
+      { by: 'a', say: "It's only awkward if you make it awkward." },
+      { beat: "{b} takes a deep breath and walks over to {c}." },
+      { by: 'b', say: "Hey, {c}. I just think you're really easy to talk to. That's it. That's the compliment." },
+      { by: 'c', say: "Oh. Wow. Thank you, that's really nice." },
+      { by: 'b', say: "Okay, bye." },
+      { beat: "{b} speed-walks straight back." },
+      { by: 'a', say: "You didn't have to run away, but that was great." },
+      { by: 'c', conf: "{b} came over, said something really nice, and then basically sprinted off. I've decided I like {b}." },
+    ] },
     { id: 'nco.p1', turns: [
       { by: 'a', say: "Okay, there's {c}. Go say something, anything at all." },
       { by: 'b', say: "What do I say?" },
@@ -455,6 +524,22 @@ export default {
     ] },
   ],
   'arc.coach.done.made': [
+    // (more of them: a season runs two or three of these arcs, and with two scenes a step the second arc replayed the
+    // first one's lines, read 2026-10-14)
+    { id: 'nco.m3', turns: [
+      { by: 'a', say: "I just watched you talk to somebody for ten minutes without looking over at me once." },
+      { by: 'b', say: "I forgot you were there, honestly." },
+      { by: 'a', say: "That's the nicest thing you've ever said to me." },
+      { by: 'b', say: "Seriously, though. Thank you. I wouldn't have done any of it without you." },
+      { by: 'a', conf: "{b} doesn't need lessons anymore. I'm a little bit proud and a little bit out of a job." },
+    ] },
+    { id: 'nco.m4', turns: [
+      { by: 'b', say: "So, I have news. I've got people now. Like, actual people I talk to." },
+      { by: 'a', say: "I know. I've seen it. I'm so proud of you." },
+      { by: 'b', say: "Don't make it a whole thing." },
+      { by: 'a', say: "It's a whole thing. I'm making it a whole thing." },
+      { by: 'b', conf: "When I got here I ate on my own. Now I have to fight for a seat. It's honestly the best problem I've ever had." },
+    ] },
     { id: 'nco.m1', turns: [
       { by: 'a', say: "Look at you, sitting with people by the fire like a normal person." },
       { by: 'b', say: "I know! I talked to three whole people today!" },

@@ -431,7 +431,7 @@ export default {
       { by: 'a', say: "I'm not doing the hair thing." },
       { by: 'c', say: "Do the hair thing!" },
       { beat: "{a} does the hair thing. Everyone loses it." },
-      { by: 'c', conf: "I laughed so hard tonight my stomach hurt. I forgot I was in a game for about ten whole minutes, and that's all {a}.", v: { warm: "That was the best night. Everybody laughing together.", schemer: "Being funny makes people like you, and {a} knows that. It's smart." } },
+      { by: 'c', conf: "I laughed so hard my stomach hurt. I forgot I was in a game for about ten whole minutes, and that's all {a}.", v: { warm: "That was the best night. Everybody laughing together.", schemer: "Being funny makes people like you, and {a} knows that. It's smart." } },
     ] },
     { id: 'ny.l2', place: 'eat', turns: [
       { beat: "{a} is telling a story at dinner. It starts normal. It does not end normal." },
@@ -488,7 +488,7 @@ export default {
       { by: 'a', conf: "{b} and I don't really get along, but nobody else stayed to finish, and that counts for something.", v: { blunt: "I don't like {b}, but {b} stayed, so respect." } },
     ] },
     { id: 'ny.st2', place: 'aside', when: { band: ['cold', 'enemies'] }, turns: [
-      { by: 'a', say: "Of all the people to get stuck with.", v: { cruel: "Great. Of course it's you.", dry: "Ah. The universe has a sense of humour." } },
+      { by: 'a', say: "Of all the people to get stuck doing chores with.", v: { cruel: "Great. They stuck me with you.", dry: "Of course they put me on chores with you. Of course they did." } },
       { by: 'b', say: "Trust me, I feel the same." },
       { by: 'a', say: "Let's just get it done. No talking." },
       { by: 'b', say: "Fine. No talking." },

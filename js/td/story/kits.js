@@ -149,7 +149,6 @@ const BIT_AFTER = [
   ["Who even talks like that?", "Me. Apparently only me. It's a lonely life."],
   ["You're kind of a lot, you know that?", "I've been told. Usually by people who end up liking me."],
   ["I'm not laughing. This is my serious face.", "Your serious face is laughing, though."],
-  ["Can you say that again, slower, so I can understand it?", "Absolutely not. It only works once."],
   ["Okay, I see why people like you now.", "Took you long enough."],
 ];
 // A kit's own confessional is the person's line to the camera about themselves; it closes a scene only when it is about
@@ -157,7 +156,7 @@ const BIT_AFTER = [
 // read: Julia's Mother Earth bit closed on "The trick is, you smile while you say it", a chat about home on "I came here
 // to observe my generation's failures"). Otherwise the other one says what they make of it.
 const CONF_STOP = new Set('that this with what have just about really they them their there here your you going would could should because people everybody somebody nobody think know want said says like okay yeah from when then than were been being into only also even still much more some very time today tonight'.split(' '));
-const contentOf = t => new Set(String(t).toLowerCase().match(/[a-z']{5,}/g)?.filter(w => !CONF_STOP.has(w)) || []);
+const contentOf = t => new Set(String(t).toLowerCase().match(/[a-z']{5,}/g)?.filter(w => !CONF_STOP.has(w) && !w.includes("'")) || []);
 function confFits(line, turns) {
   const said = new Set(turns.filter(t => t.say).flatMap(t => [...contentOf(t.say)]));
   return [...contentOf(line)].some(w => said.has(w));
@@ -169,6 +168,12 @@ const BIT_CONF = [
   "Some days {a} is a lot. Today {a} was the good kind of a lot.",
   "I don't always get {a}. But I'd rather have {a} around than not.",
   "Every time I think I've figured {a} out, {a} says something like that.",
+  "That's just {a}. You either get used to it, or you go home.",
+  "I keep telling myself I'm going to stop laughing at {a}. I keep failing.",
+  "Out here you need somebody like {a}. Otherwise it's just bugs and votes.",
+  "If {a} goes home, this place gets so much more boring. I'm not saying that to {a.obj}, though.",
+  "I didn't think I'd like {a}. I was wrong.",
+  "{a} is a lot. In a good way. Mostly.",
 ];
 const LIFE_CONF = [
   "I didn't know any of that about {a}. It's weird how little you know about the people you sleep next to.",
@@ -206,7 +211,8 @@ export function kitBitScene(a, b, facts, ctx) {
   const ownConf = conf && confFits(conf.line, talk) ? conf : null;
   const entry = { id: `kit:${a}:bit:${(used()[a] || []).length}`, place: 'aside', turns: [
     ...talk,
-    ...(ownConf ? [{ by: 'a', conf: ownConf.line }] : [{ by: 'b', conf: pickOf(BIT_CONF, b, a) }]),
+    // (a bit is a joke: about half of them end on the laugh, with nobody explaining it to the camera)
+    ...(ownConf ? [{ by: 'a', conf: ownConf.line }] : ((used()[a] || []).length + a.length + b.length) % 2 ? [{ by: 'b', conf: pickOf(BIT_CONF, b, a) }] : []),
   ] };
   const w = writeKitScene(entry, { a, b }, facts, ctx);
   if (w) { onCommit(w, () => { bit.mark(); tease.mark(); reply.mark(); ownConf?.mark(); }); w.who = { a, b }; w.fx = []; }

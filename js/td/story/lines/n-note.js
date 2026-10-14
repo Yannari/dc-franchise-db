@@ -24,6 +24,13 @@ export default {
     { id: 'nnt.p3', when: { voice: ['schemer', 'calm', 'dry'] }, turns: [{ by: 'a', conf: "That's the kind of thing you say when you think nobody can touch you. I've seen how that ends. I'd like to be there for it." }] },
   ],
   'public.note.fight.any': [
+    // (more of them, read 2026-10-14: one or two versions aired in five or six episodes of one season)
+    { id: 'nnt.f5', turns: [{ by: 'a', conf: "I've never seen {b} like that before. I'm going to remember it." }] },
+    { id: 'nnt.f6', turns: [{ by: 'a', conf: "{b} and {c} can't stand each other, and now the whole camp knows it. That changes things." }] },
+    { id: 'nnt.f7', when: { voice: ['dry', 'calm', 'schemer'] }, turns: [{ by: 'a', conf: "Two people fighting means two people too busy to look at me. I'll take it." }] },
+    { id: 'nnt.f8', when: { voice: ['warm', 'anxious', 'earnest', 'emotional'] }, turns: [{ by: 'a', conf: "I really hope they sort it out. Watching people you like go at each other is the worst." }] },
+    { id: 'nnt.f9', when: { voice: ['goofy', 'chaotic', 'loud'] }, turns: [{ by: 'a', conf: "I didn't move. I didn't blink. I barely breathed. Best thing I've seen all week." }] },
+    { id: 'nnt.f10', turns: [{ by: 'a', conf: "Everybody's going to pick a side after that. I just need to make sure I pick the right one." }] },
     { id: 'nnt.f1', turns: [{ by: 'a', conf: "I just stood there wishing I was literally anywhere else. And then I started thinking about which side I'd want to be on, and I didn't love the answer." }] },
     { id: 'nnt.f2', when: { voice: ['dry', 'calm', 'schemer'] }, turns: [{ by: 'a', conf: "Nothing tells you more about people than watching them fight. I learned more in two minutes than in a whole week of small talk." }] },
     { id: 'nnt.f3', when: { voice: ['warm', 'anxious', 'earnest', 'emotional'] }, turns: [{ by: 'a', conf: "I hate it when it gets like that. My heart was going so fast. I just want everybody to be okay, and I know that's not how this game works." }] },

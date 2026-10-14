@@ -280,11 +280,11 @@ export default {
 
   'long.friend.drift.any': [
     { id: 'nl4.d1', turns: [
-      { beat: "{b} saves {a} a spot at the fire, like always. {a} sits down on the other side." },
+      { beat: "{b} saves {a} a spot, like always. {a} sits down somewhere else." },
       { by: 'b', say: "Hey. I saved you a spot." },
       { by: 'a', say: "Oh. Sorry, I didn't see." },
       { by: 'b', say: "You walked right past it." },
-      { by: 'a', say: "I just wanted to sit over here tonight. It's not a big deal." },
+      { by: 'a', say: "I just wanted to sit over here for once. It's not a big deal." },
       { by: 'b', say: "It's the third time today something wasn't a big deal." },
       { by: 'a', say: "Can we not do this in front of everybody?" },
       { by: 'b', say: "Sure. Whenever you've got time for me again." },

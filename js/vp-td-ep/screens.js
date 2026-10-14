@@ -759,10 +759,7 @@ function mapPaint(uid, fresh) {
   // the strip scrolls with the mouse wheel too, but only when it runs past the frame
   const strip = layer.querySelector('.tdm-list');
   if (strip) strip.onwheel = e => { if (strip.scrollWidth > strip.clientWidth + 2 && Math.abs(e.deltaY) > Math.abs(e.deltaX)) { strip.scrollLeft += e.deltaY; e.preventDefault(); } };
-  // the whole day's count, and how many of those are still to come in later windows (the user, 2026-10-08:
-  // "it says 5 to watch but I only get key conversations": the rest open later in the day)
-  const later = M.convs.filter(c => M.windows.findIndex(w => w.id === c.window) > R.win && !R.seen.has(c.i)).length;
-  const cnt = document.getElementById(`tdm-count-${uid}`); if (cnt) cnt.textContent = `${R.seen.size} / ${M.convs.length} watched today${later ? ` · ${later} later in the day` : ''}`;
+  mapCount(uid, R);
   ambience(worldSound(scr0, L));
 }
 
@@ -862,6 +859,18 @@ function listHtml(uid, R, here) {
 function markSeen(uid, R, i) {
   R.seen.add(i);
   try { globalThis.localStorage?.setItem(R.seenKey, JSON.stringify([...R.seen])); } catch { /* per-viewer convenience */ }
+  // (the count moves as each one ends, not only when the map is drawn again: Next and Auto run one conversation
+  // straight into the next and never show the map, and the user, 2026-10-14, saw "0 / 5 watched today" all day)
+  mapCount(uid, R);
+}
+// the whole day's count, and how many of those are still to come in later windows (the user, 2026-10-08:
+// "it says 5 to watch but I only get key conversations": the rest open later in the day)
+function mapCount(uid, R) {
+  if (typeof document === 'undefined') return;
+  const M = R.map, cnt = document.getElementById(`tdm-count-${uid}`);
+  if (!cnt) return;
+  const later = M.convs.filter(c => M.windows.findIndex(w => w.id === c.window) > R.win && !R.seen.has(c.i)).length;
+  cnt.textContent = `${R.seen.size} / ${M.convs.length} watched today${later ? ` · ${later} later in the day` : ''}`;
 }
 
 export function tdmZone(uid, zone) {

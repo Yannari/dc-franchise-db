@@ -123,7 +123,7 @@ export default {
     { id: 'nth.d4', turns: [
       { by: 'a', say: "Hey. I'm with you. Whatever happens, you've got my vote." },
       { by: 'b', say: "You don't have to do that." },
-      { by: 'a', say: "You saved me. I'm not going to forget it." },
+      { by: 'a', say: "When my name was out there, you stuck your neck out for me. I'm not going to forget it." },
       { by: 'b', say: "I didn't do it so you'd owe me. I did it because it was the right thing to do." },
       { by: 'a', say: "I know you did. That's exactly why I'm not going to forget it." },
       { by: 'b', say: "Okay. Then I'll take it. Thank you." },

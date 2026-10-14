@@ -83,7 +83,8 @@ export default {
       { by: 'a', conf: "That's the third time today {b} and {c} have gone off on their own. They eat together, they sleep next to each other, and I'd bet they vote together." },
       { by: 'a', conf: "Two votes that always go the same way. That's not a friendship anymore, that's a problem.", v: { warm: "I'm happy for them, I really am. I'm just also counting." } },
     ] },
-    { id: 'nar.p2', turns: [
+    // (said to their faces, so not a secret huddle: "huddled together where nobody can hear", read 2026-10-14)
+    { id: 'nar.p2', place: 'aside', turns: [
       { by: 'a', say: "Have you noticed {b} and {c} finish each other's sentences now?" },
       { by: 'b', opt: true, say: "We do not." },
       { by: 'c', opt: true, say: "We kind of do." },

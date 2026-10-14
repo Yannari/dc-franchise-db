@@ -58,7 +58,7 @@ export default {
       { by: 'a', say: "Yeah. I'm noticing that." },
       { by: 'a', conf: "{b} and {c} do the chores together, eat together, and I'd bet anything they vote together. That's two votes walking around camp as one person." },
     ] },
-    { id: 'nl5.p2', turns: [
+    { id: 'nl5.p2', place: 'aside', turns: [
       { by: 'a', say: "Have you two ever had an argument? Even one?" },
       { by: 'b', say: "Not really. Why?" },
       { by: 'c', say: "We just get each other." },

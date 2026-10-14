@@ -462,7 +462,7 @@ export default {
   ],
   'long.drama.sorry.bomb': [
     { id: 'nd.sb1', place: 'aside', turns: [
-      { by: 'a', say: "Can I talk to you? I said some things yesterday.", v: { blunt: "I said some stuff yesterday. I was out of line.", proud: "I may have said some regrettable things yesterday." } },
+      { by: 'a', say: "Can I talk to you? I said some things yesterday.", v: { blunt: "I said some things yesterday. I was out of line.", proud: "I may have said some regrettable things yesterday." } },
       { by: 'b', say: "You did." },
       { by: 'a', say: "I didn't mean them. Well, I meant some of them, but not like that, and not in front of everyone." },
       { by: 'b', say: "That's a strange apology." },

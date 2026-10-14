@@ -334,7 +334,7 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   // (an entry that stages itself a line or two in is set already: "catches Bridgette alone" then "pulls Bridgette and
   // the others aside", read 2026-10-11)
   if (spot && !ctx.noSetup && spot.id !== 'confessional' && lines.length && !lines.slice(0, 3).some(l => l.kind === 'beat') && lines.some(l => l.kind === 'say')) {
-    const set = setupLine(entry, who, data, lines, spot, facts, ctx, rng, placeOk);
+    const set = setupLine(entry, who, data, lines, spot, facts, ctx, rng, placeOk, pool);
     if (set) lines.unshift(set);
   }
   // an optional part (opt: true) who speaks before the scene has put them in it is put in it first (read 2026-10-14:
@@ -368,7 +368,7 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
 }
 
 // The set-up line for a scene that opens on dialogue (td/story/setup.js).
-function setupLine(entry, who, data, lines, spot, facts, ctx, rng, placeOk) {
+function setupLine(entry, who, data, lines, spot, facts, ctx, rng, placeOk, pool = '') {
   const roleOf = n => Object.keys(who).find(r => who[r] === n);
   // (not somebody the scene brings in later with a line of their own: "Isabel, Jade and Natalia are huddled together",
   // then "Natalia wanders over", read 2026-10-14)
@@ -379,7 +379,13 @@ function setupLine(entry, who, data, lines, spot, facts, ctx, rng, placeOk) {
   if (!s2) s2 = Object.values(who).find(n => n && n !== s1);
   if (!s1 || !s2 || !roleOf(s1) || !roleOf(s2)) return null;
   // what the spot really is first (a dock is not the middle of camp), then what the scene asked for
-  const kind = kindOf(facts.venue, spot.id) || entry.place || ctx.place || 'public';
+  const kind0 = kindOf(facts.venue, spot.id) || entry.place || ctx.place || 'public';
+  // a quiet spot is only a secret meeting when the talk is one (read 2026-10-14: "Marissa and Logan meet in the corn maze,
+  // both checking over their shoulders first", then "Did you sort all the firewood by size?")
+  // (the entry's own place first: a tease said to the pair's faces is not a huddle; and a row in front of the camp never is)
+  const hushy = entry.place ? entry.place === 'secret' : !/^(long\.)?(drama|crowd)\./.test(pool) && (ctx.place === 'secret'
+    || /vote|plan|pitch|deal|alliance|scheme|plot|recruit|adv|warn|secret|spy|lie|test|blind|caught|turn|threat|swing|doubt|vt2|booth|fake|avenge|idol/.test(pool));
+  const kind = kind0 === 'secret' && !hushy ? 'aside' : kind0;
   const phase = ctx.phase === 'post' ? 'post' : 'pre';
   const of = o => Array.isArray(o) ? o : [...(o?.[phase] || []), ...(o?.any || [])];
   const tag = n => `{${roleOf(n)}}`;

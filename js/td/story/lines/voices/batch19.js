@@ -130,7 +130,6 @@ export default {
   },
   'nth.d4': {
     0: { earnest: "Hey, I'm with you. Whatever happens, you've got my vote.", calm: "I'm with you. Whatever happens, you've got my vote.", warm: "Hey, I'm with you, whatever happens. You've got my vote.", loud: "Hey, I'm WITH you! You've got my vote!", anxious: "Hey, I'm with you, whatever happens, okay? You've got my vote.", quiet: "I'm with you. My vote's yours." },
-    2: { earnest: "You saved me. I'm never going to forget it.", calm: "You saved me. I won't forget it.", warm: "You saved me, and I'm never going to forget it.", loud: "You SAVED me! I'm not forgetting that!", anxious: "You saved me. I'm never going to forget it.", quiet: "You saved me. I won't forget." },
   },
   'nl.p2': { 7: { warm: "I'll do rocks. Can we just get it done?", schemer: "I'll do rocks. Let's get it done.", blunt: "I'll do rocks.", dry: "I'll do rocks. Can we get it done before I age?", earnest: "I'll do rocks. Let's just get it done." } },
   'ny.j1': {

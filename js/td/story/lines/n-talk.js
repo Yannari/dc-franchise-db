@@ -230,7 +230,7 @@ export default {
       { by: 'a', say: "Then let's make sure that isn't us." },
       { by: 'b', conf: "{a} and I just talk, no deal, no name, and weirdly I trust that more than most of the deals here." },
     ] },
-    { id: 'nk.ga2', place: 'aside', when: { threat: true }, turns: [
+    { id: 'nk.ga2', place: 'aside', when: { threat: true, merged: false }, turns: [
       { by: 'a', say: "Have you noticed {threat} is winning everything?", v: { competitive: "Is it just me, or does {threat} win literally everything?", anxious: "Doesn't it worry you that {threat} keeps winning?" } },
       { by: 'b', say: "Everybody's noticed." },
       { by: 'a', say: "And nobody's doing anything about it." },
@@ -313,7 +313,8 @@ export default {
     ] },
   ],
   'long.threat.notice.any': [
-    C('nk.tn1', null, ["{b} keeps winning. Every challenge, it's {b} at the front.", "Right now that's great for the team. After the merge, {b} is the one person none of us can beat."]),
+    // ("after the merge" only before it: read 2026-10-14, said on the merge day)
+    C('nk.tn1', { merged: false }, ["{b} keeps winning. Every challenge, it's {b} at the front.", "Right now that's great for the team. After the merge, {b} is the one person none of us can beat."]),
     C('nk.tn2', { merged: true }, ["Now that it's every person for themselves, everyone is going to look at {b}.", "{b} has won more than anyone. I'd rather it was my idea to go after {b} than somebody else's."]),
     C('nk.tn3', { voice: ['competitive', 'proud', 'tough'] }, ["{b} beat me again today. I'm not used to being second.", "If I can't beat {b} in a challenge, I'll have to beat {b} at a vote."]),
     C('nk.tn4', { voice: ['warm', 'anxious', 'earnest'] }, ["I really like {b}. But {b} is winning everything, and people are starting to notice.", "If I stay close to {b}, maybe I'm safe. Or maybe I'm standing right next to the biggest target in the game."]),

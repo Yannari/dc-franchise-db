@@ -2282,7 +2282,11 @@ export function airTdEpisode(ep) {
           lines = [...lines.slice(0, o), { kind: 'beat', text: OPEN[(ep.num + i) % OPEN.length] }, ...lines.slice(o)];
         }
         // the reactions go in before the scene's closing confessional(s), not after them
-        const tailAt = (() => { let k = lines.length; while (k > 0 && lines[k - 1].kind === 'conf') k--; return k; })();
+        // ...and before anybody walks off: "Logan puts down his bowl and walks off", then "Logan, come sit with me" (read
+        // 2026-10-14)
+        const tailAt = (() => { let k = lines.length; while (k > 0 && lines[k - 1].kind === 'conf') k--;
+          const off = lines.findIndex((l, j) => j > 0 && j < k && l.kind === 'beat' && /\b(storms?|stomps?|walks?|marches?|stalks?) (off|away)\b|\bleaves\b/i.test(l.text || ''));
+          return off > 0 ? off : k; })();
         const insert = more => { const t = tailAt + (lines.length - tailAt === 0 ? 0 : 0); lines = [...lines.slice(0, t), ...more, ...lines.slice(t)]; };
         const fam = NOTE_FAM(kind);
         if (PUBLIC.test(kind) && who.a && who.b && !lines.some(l => l.by && l.by !== who.a && l.by !== who.b)) {

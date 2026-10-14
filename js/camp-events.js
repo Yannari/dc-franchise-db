@@ -3429,6 +3429,9 @@ export function checkTurnFriendPitches(ep) {
         if (c === a || getBond(a, c) > 0) continue;
         for (const b of g.members) {
           if (b === a || b === c || getBond(b, c) < 3 || getBond(a, b) < 0) continue;
+          // (not the same pitch to the same friend about the same person two days running: read 2026-10-14, Natalia's
+          // "has Anastasia ever told you who she'd take to the end?" to Jade, word for word, two episodes in a row)
+          if ((gs.turnPitches || []).some(t => t.a === a && t.b === b && t.c === c && ep.num - t.ep <= 2)) continue;
           const sc = getBond(b, c) - getBond(a, c);
           if (!best || sc > best.sc) best = { b, c, sc };
         }

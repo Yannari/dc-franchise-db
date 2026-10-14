@@ -47,7 +47,8 @@ export default {
     ] },
   ],
   'long.friend.struggle.any': [
-    { id: 'nl6.g1', turns: [
+    // (the end of a day: it aired at 8 AM, read 2026-10-14)
+    { id: 'nl6.g1', when: { phase: 'post' }, turns: [
       { beat: "It's been a long, miserable day. {a} and {b} sit slumped next to each other, too tired to move." },
       { by: 'a', say: "Remind me why we signed up for this." },
       { by: 'b', say: "The money." },

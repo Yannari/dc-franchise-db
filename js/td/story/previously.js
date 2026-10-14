@@ -145,7 +145,10 @@ export function writePreviously(ep) {
     // ...and somebody sizing up a threat names the threat as the target, not the one doing the sizing up ("Zoey's name
     // started coming up, and Scott was the one saying it" over Zoey's own confessional about Scott, read 2026-10-14)
     const flip = (c.type === 'scheme' && c.step === 'caught' && /loyaltyTest|test\.caught|challengeThrowCaught|throw\.caught/.test(src))
-      || (c.type === 'bottom' && c.step === 'targeted' && /threat\.notice|plan\.private\.target/.test(src));
+      || (c.type === 'bottom' && c.step === 'targeted' && /threat\.notice|plan\.private\.target/.test(src))
+      // ...and the one still trusting the friend who wrote their name is the one wronged ("Tristan picked a side, and it
+      // wasn't Richard's" over Richard voting for Tristan, read 2026-10-14)
+      || (c.type === 'alliance' && c.step === 'betrayal' && /betrayalDenial|blind\.denial/.test(src));
     const { a, b } = flip ? { a: c.b, b: c.a } : c;
     const g = c.alliance;
     const lead = i === 0 ? '' : pick(['Meanwhile, ', 'Back at camp, ', 'And then ', 'Elsewhere, ', '', 'Oh, and ', 'Over at camp, '], `lead${i}`);

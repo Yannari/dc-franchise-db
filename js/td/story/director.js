@@ -276,6 +276,9 @@ function recordSlots(ep, a, b, camp, phase) {
       if (ch.carried && ch.carried !== a && ch.carried !== b) { data.carried = ch.carried; facts.carried = true; }
       facts.sankA = ch.sank === a; facts.carriedA = ch.carried === a;
       facts.sankB = !!b && ch.sank === b; facts.carriedB = !!b && ch.carried === b;
+      // b's plan really is {carried}: b writes that name tonight (read 2026-10-14: "you want to get rid of Anastasia" to
+      // Lynda, who was after Natalia and wrote Alessio)
+      if (data.carried) facts.bWritesCarried = (ep.votingLog || []).some(v => v.voter === b && v.voted === ch.carried);
       const streak = ch.lost ? lossStreak(camp, ep.num, ep) : 0;
       facts.streak = streak >= 3 ? 'many' : streak === 2 ? 'two' : streak === 1 ? 'one' : 'none';
       data.streak = numberWord(streak);
@@ -1118,6 +1121,10 @@ function causeFor(ep, camp, leader, boot) {
         if (mourner !== leader && mourner !== boot) return null;
         return { i, k: -1, phase, kind: mourner === leader ? 'revenge' : 'fallout', moment: when, fallen };
       }
+      // (the two of them are the ones it happened between, not one of them and somebody who watched: read 2026-10-14,
+      // Diego "that fight this afternoon" against Spencer, who had only overheard Alessio and Natalia)
+      const ab = ev.scene?.who ? [ev.scene.who.a, ev.scene.who.b] : (ev.players || []).slice(0, 2);
+      if (!ab.includes(leader) || !ab.includes(boot)) return null;
       const k = CAUSE.findIndex(([, re, , by]) => re.test(s) && (!by || ev.players[0] === (by === 'boot' ? boot : leader)));
       if (k < 0) return null;
       const half = phase === 'pre' ? 'morning' : 'afternoon';
@@ -1802,6 +1809,15 @@ export function airTdEpisode(ep) {
       if (phase === 'pre') { const pk = (x, y) => [x, y].sort().join('|'), day = ['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph)).filter(Boolean);
         const against = new Set(day.filter(ev => ev.scene?.kind === 'pitch.turn' && ev.scene.data?.friend).map(ev => pk(ev.scene.who?.a, ev.scene.data.friend)));
         for (const ev of day) if (ev.aired == null && /^drama\.thaw/.test(ev.scene?.kind || '') && against.has(pk(ev.scene.who?.a, ev.scene.who?.b))) ev.aired = 'covered'; }
+      // ...and the camp has one party and one blow-up a day, and no party on the way to a vote (read 2026-10-14: two
+      // celebrations at the carousel, the second "We are CELEBRATING!" just before Tribal; two blow-ups back to back)
+      if (phase === 'pre') { const seenG = new Set(), lostToday = !!challengeOf(ep, camp)?.lost, post = eventsOf(ep, camp, 'post');
+        for (const ev of ['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph))) {
+          const g = /^(friend\.celebrate|drama\.bomb)/.exec(ev?.scene?.kind || '')?.[1];
+          if (!g || ev.aired != null) continue;
+          if (seenG.has(g) || (g === 'friend.celebrate' && lostToday && post.includes(ev))) { ev.aired = 'covered'; continue; }
+          seenG.add(g);
+        } }
       // ...and one person sits with what the one who left forgot: two mourners in a row aired the same scene, "folding a
       // shirt he left behind", word for word (read 2026-10-14)
       { let seen = false;

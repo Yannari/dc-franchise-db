@@ -133,11 +133,15 @@ export function witnessConflicts(ep, camp, out, members, write, factsForWho, liv
     // follow the confessionals, read 2026-10-14, and "Am I crazy, Anastasia?" aired after all of them)
     let at = lines.length;
     while (at > 0 && lines[at - 1].kind === 'conf') at--;
+    const confAt = at;
     const lastSay = lines.map(l => l.kind).lastIndexOf('say');
     if (lastSay >= 0 && lastSay + 1 < at) at = lastSay + 1;
     const exit = lines.findIndex((l, i) => i < at && l.kind === 'beat' && /\b(storms?|stomps?|walks?|marches?|stalks?) (off|away)\b|\bleaves\b|\bturns? (on (his|her|their) heel|and walks)/i.test(l.text || ''));
     if (exit > 0) at = exit;
-    item.lines = [...lines.slice(0, at), ...added, ...lines.slice(at)];
+    // (what they said goes in with the talking; what they told the camera goes with the other confessionals, after the
+    // scene's own reaction: Hannah's confessional, then "Somebody actually goes 'oooh'", read 2026-10-14)
+    const saidNow = added.filter(l => l.kind !== 'conf'), toldCam = added.filter(l => l.kind === 'conf');
+    item.lines = [...lines.slice(0, at), ...saidNow, ...lines.slice(at, confAt), ...toldCam, ...lines.slice(confAt)];
     item.text = item.lines.map(l => l.text).join(' ');
   }
 }

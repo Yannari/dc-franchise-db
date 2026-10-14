@@ -100,7 +100,7 @@ export default {
     competitive: ["That loses. Pick something that wins.", "You're thinking too small."],
     schemer: ["Interesting. And who does that help?", "Funny. That's not what you said yesterday."],
     cruel: ["That's the stupidest thing I've heard all day.", "Did you think about that before you said it?"],
-    chaotic: ["Counterpoint: no.", "Okay, but what if we did the exact opposite?"],
+    chaotic: ["Counterpoint: no.", "Bold thing to say out loud, but okay."],
     nerdy: ["Your logic has a hole in it.", "That's not actually how that works."],
     earnest: ["That doesn't seem fair to everybody.", "I don't think that's right."],
     tough: ["You don't get to decide that.", "Says who?"],

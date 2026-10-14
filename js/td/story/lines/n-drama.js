@@ -39,8 +39,8 @@ export default {
       { by: 'b', say: "Wow. Are we really doing this?" },
       { by: 'a', say: "Somebody has to. We lost, and everybody's acting like it just happened to us." },
       { by: 'b', say: "It did just happen to us, all of us, and that includes you." },
-      { by: 'a', say: "I didn't come in last!" },
-      { by: 'b', say: "No, you came in loud. Every single time." },
+      { by: 'a', say: "At least I care that we lost!" },
+      { by: 'b', say: "No, you care LOUDLY. Every single time." },
       { by: 'a', conf: "I'm angry because we lost, and I'm allowed to be angry when we lose, because somebody around here needs to care." },
       { by: 'b', conf: "We lose, and {a} blows up at whoever's closest. Tonight that was me. Tomorrow it'll be somebody else.", v: { schemer: "{a} explodes every time we lose. That's a vote waiting to happen.", dry: "{a} has two settings: angry and asleep." } },
     ] },
@@ -234,7 +234,7 @@ export default {
       { by: 'b', conf: "{a} wants to keep the strong ones. I want to keep the ones who'll actually vote with us. We can't both be right.", v: { competitive: "Strong or loyal? I want both, but we can't have both.", nerdy: "{a} thinks the strong ones win challenges. Sure. They also don't vote with us." } },
     ] },
     // (it names who the plan is about: read 2026-10-14, "the strongest person here, whom we need" named nobody)
-    { id: 'nd.dp3', place: 'aside', when: { voice: ['loud', 'blunt', 'tough'], carried: true }, turns: [
+    { id: 'nd.dp3', place: 'aside', when: { voice: ['loud', 'blunt', 'tough'], carried: true, bWritesCarried: true }, turns: [
       { by: 'a', say: "Your plan is bad." },
       { by: 'b', say: "Hi to you too." },
       { by: 'a', say: "I'm serious. You want to get rid of {carried}, and {carried} is the best we've got in challenges." },

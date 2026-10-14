@@ -49,7 +49,10 @@ async function season(kind, seed) {
 describe('the save card on a multi-tribal night', () => {
   it('seals for the tribe that is actually voting', async () => {
     let nights = 0, commits = 0;
-    for (const seed of [1, 3]) {
+    // six seeds, like the double-tribal guard below: whether a coach on a multi-tribal night reads the votes as coming
+    // for them is a chance, and two seeds put the guard on a couple of draws. 2026-10-14: fewer onlookers piling into
+    // camp fights (td/story/witness.js) moved bonds enough that seeds 1 and 3 sealed no card on their multi-tribal nights.
+    for (const seed of [1, 3, 5, 7, 9, 11]) {
       for (const e of (await season('multi-tribal', seed)).episodes) {
         const ep = e.ep || {};
         if (!ep.isMultiTribal) continue;
@@ -59,7 +62,7 @@ describe('the save card on a multi-tribal night', () => {
     }
     expect(nights, 'the twist never ran — the season did not reach three tribes').toBeGreaterThan(0);
     expect(commits, 'no card was sealed on any multi-tribal night').toBeGreaterThan(0);
-  }, 300000);
+  }, 600000);
 
   it('seals across a double-tribal council, where the label is not a tribe', async () => {
     let nights = 0, commits = 0, aimedAtCoach = 0;

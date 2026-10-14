@@ -62,7 +62,7 @@ export default {
       { by: 'b', say: "I will. I promise." },
       { by: 'a', move: 'parting', asConf: true },
     ] },
-    { id: 'nn.f2', turns: [
+    { id: 'nn.f2', when: { bVoted: 'other' }, turns: [
       { by: 'a', say: "Come here." },
       { beat: "{a} and {b} hug for a long time." },
       { by: 'a', move: 'goodbye' },

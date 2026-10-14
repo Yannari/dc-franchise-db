@@ -222,7 +222,7 @@ export default {
       { by: 'a', say: "I believe you. Now go win this for both of us, okay?" },
       { by: 'b', say: "I will. I promise." },
     ] },
-    { id: 'nx.f2', when: { voice: ['warm', 'emotional', 'anxious', 'earnest'] }, turns: [
+    { id: 'nx.f2', when: { voice: ['warm', 'emotional', 'anxious', 'earnest'], bVoted: 'other' }, turns: [
       { by: 'a', say: "Hug. Now. Before I cry." },
       { by: 'b', say: "You're already crying." },
       { by: 'a', say: "Then hug faster." },

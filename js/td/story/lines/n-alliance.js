@@ -517,7 +517,7 @@ export default {
   'long.alliance.end.any': [
     { id: 'na.n1', place: 'aside', turns: [
       { by: 'a', say: "So that's it.", v: { dry: "So. That's the end of that.", emotional: "So it's over. Just like that.", quiet: "...That's it, then." } },
-      { by: 'b', say: "What's it?" },
+      { by: 'b', say: "The end of what?" },
       { by: 'a', say: "{group} is done, and we both know it." },
       { by: 'b', say: "Nobody's said anything." },
       { by: 'a', say: "Nobody has to. When's the last time we actually planned something together?" },

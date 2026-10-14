@@ -87,7 +87,7 @@ export default {
     { id: 'npv.t2', when: { tease: 'power' }, turns: [{ by: 'h', say: "This time, somebody's been keeping a secret, and it's about to come out." }] },
     { id: 'npv.t3', when: { tease: 'power' }, turns: [{ by: 'h', say: "This time, somebody's pocket is a lot heavier than it looks." }] },
     { id: 'npv.t4', when: { tease: 'trust' }, turns: [{ by: 'h', say: "This time, somebody trusts the wrong person, and it costs them." }] },
-    { id: 'npv.t5', when: { tease: 'trust' }, turns: [{ by: 'h', say: "This time, a promise gets made by the fire and broken by midnight." }] },
+    { id: 'npv.t5', when: { tease: 'trust' }, turns: [{ by: 'h', say: "This time, a promise gets made in the morning and broken by midnight." }] },
     { id: 'npv.t6', when: { tease: 'any' }, turns: [{ by: 'h', say: "This time, the pressure's on, and somebody is going to crack." }] },
     { id: 'npv.t7', when: { tease: 'any' }, turns: [{ by: 'h', say: "This time, the alliances get tested, and not everybody passes." }] },
   ],

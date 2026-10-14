@@ -91,7 +91,7 @@ export default {
     5: { cruel: "From now on, every time somebody whispers my name, I get to smile, because they have no idea what's in my bag.", warm: "From now on, when somebody whispers my name, I'll know I'm safe. That's such a relief." },
   },
   'ncx.b5': {
-    0: { calm: "Everybody here has a person. I have six people I'm friendly with, and I'm starting to see that isn't the same thing.", loud: "Everybody here has a person! I have, like, six people I'm friendly with, and that's NOT the same thing, is it?", warm: "Everybody here has their person. I'm friendly with everybody, and I'm realising that isn't the same as having someone." },
+    0: { calm: "Everybody here has a person. I have a few people I'm friendly with, and I'm starting to see that isn't the same thing.", loud: "Everybody here has a person! I have, like, a bunch of people I'm friendly with, and that's NOT the same thing, is it?", warm: "Everybody here has their person. I'm friendly with everybody, and I'm realising that isn't the same as having someone." },
   },
   'na.d4': {
     1: { warm: "That's very direct.", loud: "Wow. That's direct!", dry: "That's very direct. Most people at least say hello first." },

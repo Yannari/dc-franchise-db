@@ -282,7 +282,7 @@ export default {
       { by: 'a', conf: "Getting votes didn't hurt as much as not knowing who'd be sad if I left. Now I know there's at least one." },
     ] },
     { id: 'ncx.b5', when: { moment: 'quiet' }, turns: [
-      { by: 'a', conf: "Everybody here has a person. I have, like, six people I'm friendly with. That's not the same thing, is it." },
+      { by: 'a', conf: "Everybody here has a person. I have, like, a bunch of people I'm friendly with. That's not the same thing, is it." },
     ] },
   ],
 };

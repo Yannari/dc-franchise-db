@@ -466,8 +466,8 @@ const NEMESIS = [
   { id: 'd2.n5', turns: [
     { by: 'a', say: "Hey, everybody. Big news. I'm still here." },
     { by: 'b', say: "Unfortunately." },
-    { by: 'a', say: "For you, sure. For me, it's a beautiful morning." },
-    { by: 'b', say: "Enjoy it. Mornings don't last forever." },
+    { by: 'a', say: "For you, sure. For me, it's a beautiful day." },
+    { by: 'b', say: "Enjoy it. Good days don't last forever." },
     { by: 'a', say: "Neither does your luck, but here we both are." },
     { by: 'b', say: "Can somebody please put something in {a}'s mouth?" },
     { by: 'a', conf: "Every day I'm here is a bad day for {b}. That's my favourite part of the game." },

@@ -1790,6 +1790,16 @@ export function airTdEpisode(ep) {
         const WARM = /^friend\.(struggle|meal|bond|joke|secret|thanks|lift|comfort|teach|celebrate|open|rideordie|solidarity|mentor)/;
         const fought = new Set(day.filter(ev => HOT.test(ev.scene?.kind || '') && ev.scene?.who?.a && ev.scene?.who?.b).map(ev => pk(ev.scene.who.a, ev.scene.who.b)));
         for (const ev of day) if (ev.aired == null && WARM.test(ev.scene?.kind || '') && ev.scene?.who?.a && ev.scene?.who?.b && fought.has(pk(ev.scene.who.a, ev.scene.who.b))) ev.aired = 'covered'; }
+      // ...and the same moment between the same two people airs once a day (read 2026-10-14: Gwen said Izzy should go
+      // next and Geoff told her off in the morning, then all of it again in the afternoon)
+      if (phase === 'pre') { const seenK = new Set();
+        for (const ev of ['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph))) {
+          const k = ev?.scene?.kind, w = ev?.scene?.who || {};
+          if (!ev || ev.aired != null || !k || !w.a || !w.b || /^(pitch|couple|vote|booth|tribal)/.test(k)) continue;
+          const key = `${k.split('.').slice(0, 2).join('.')}|${[w.a, w.b].sort().join('|')}`;
+          if (seenK.has(key)) { ev.aired = 'covered'; continue; }
+          seenK.add(key);
+        } }
       // ...and one romance a person a day: a flirt, a spark or a moment with one person, not three (read 2026-10-14: Mike
       // kissed Ella in secret, flirted with Sky and had a moment with Jasmine, all after one challenge). Decided once, on
       // the morning, over the whole day in its order; a couple's own scenes and an affair's steps are the story and stay

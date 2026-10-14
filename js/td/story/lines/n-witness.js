@@ -25,7 +25,7 @@ export default {
     ] },
     { id: 'nwt.s3', turns: [
       { by: 'c', say: "Can we stop pretending {a} started this? I watched the whole thing, {b}." },
-      { by: 'b', say: "Then you watched it wrong.", v: { anxious: "That's... not how I remember it." } },
+      { by: 'b', say: "Then you watched it wrong.", v: { anxious: "I... think you watched it wrong." } },
       { by: 'c', say: "I don't think I did." },
     ] },
     { id: 'nwt.s4', turns: [

@@ -185,7 +185,7 @@ export default {
   ],
   'long.drama.fight.rare': [
     { id: 'nd.fr1', place: 'public', turns: [
-      { beat: "{a} is the calmest person in camp. Until {here}, this afternoon." },
+      { beat: "{a} is usually the calmest person in camp. Usually." },
       { by: 'b', say: "Come on, it was a joke.", v: { goofy: "Come on, it was a joke! A funny one, I thought!", dry: "It was a joke. You know, comedy? You've heard of it." } },
       { by: 'a', say: "It wasn't funny. It hasn't been funny for days." },
       { by: 'b', say: "Whoa. Okay." },

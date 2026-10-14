@@ -42,7 +42,7 @@ export default {
       { beat: '{a} walks in, holding a mug, and stops.' },
       { by: 'a', say: "Telling me what?" },
       { by: 'b', say: "...Sit down." },
-      { by: 'a', dr: "I walked in on my own alliance deciding whether to tell me things. That's not an alliance. That's an alliance with me on the outside of it." },
+      { by: 'a', dr: "I walked in on my own alliance deciding whether to tell me things. If they have to ask that, I'm not really in it." },
     ] },
     { id: 'gl2.4', when: { register: ['fiery'] }, turns: [
       { by: 'a', say: "No, don't 'calm down' me. Everybody in {alliance} knew except me!" },

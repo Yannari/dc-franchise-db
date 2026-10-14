@@ -413,7 +413,7 @@ export default {
       { by: 'a', say: "Why didn't you back me up?" },
       { by: 'b', say: "Because the second I do, {x} has a reason to come after me. I'm not giving anybody a reason." },
       { by: 'a', say: "So I'm on my own." },
-      { by: 'b', say: "You're not on your own. You're just on your own in the kitchen." },
+      { by: 'b', say: "You're not on your own. I'll back you up. Just not in front of everybody." },
       { by: 'a', dr: "That is the most {b} sentence anybody has ever said." },
     ] },
   ],

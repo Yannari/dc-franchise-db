@@ -32,7 +32,7 @@ export default {
       { by: 'a', say: "Just… {target} doesn't think you're as smart as you think you are. That's the nice version." },
       { by: 'b', say: "Wow." },
       { by: 'a', say: "I'm sorry. I thought you should know." },
-      { by: 'b', dr: "I knew it. I knew {target} was two-faced. I just didn't know about which face." },
+      { by: 'b', dr: "I knew it. I always knew {target} was two-faced. I just didn't think {target} would do it to me." },
       { by: 'a', dr: "I didn't even have to make anything up. I just had to look sad and say 'I don't want to repeat it'." },
     ] },
     { id: 'sl.b3', turns: [
@@ -111,7 +111,7 @@ export default {
       { by: 'a', say: "People lie looking you in the eye." },
       { by: 'b', say: "Yeah. They do." },
       { beat: '{b} looks at {a} for a second too long.' },
-      { by: 'a', dr: "{b} looked at me like I was the liar. Which, to be fair." },
+      { by: 'a', dr: "{b} looked at me like I was the liar. Which, to be fair, I was." },
     ] },
     { id: 'sl.r4', presumes: ['vote'], turns: [
       { by: 'a', say: "I don't want to be dramatic, but {target} is coming for you." },
@@ -119,7 +119,7 @@ export default {
       { by: 'a', say: "And was I wrong?" },
       { by: 'b', say: "Yes! They're both still here, and neither of them came for me!" },
       { by: 'a', say: "Yet." },
-      { by: 'b', say: "Go tell someone else. I'm out of the market for warnings." },
+      { by: 'b', say: "Go and tell someone else. I'm done listening to warnings." },
       { by: 'b', dr: "{a} has been 'warning' me about somebody every week. Funny how it's never {a}." },
     ] },
     { id: 'sl.r5', when: { band: 'cold' }, turns: [

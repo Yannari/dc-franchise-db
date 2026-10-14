@@ -18,7 +18,7 @@ export default {
       { by: 'a', say: "You cheered for yourself the loudest." },
       { by: 'c', say: "I cheered for both of us!" },
       { beat: 'Everybody squeezes in anyway. The bouncer plan lasts four seconds.' },
-      { by: 'd', dr: "{a} tried to have a door policy. Power doesn't make you a bouncer. It makes you a host." },
+      { by: 'd', dr: "{a} tried to keep us out. It doesn't work. Win HOH and you end up hosting a party whether you like it or not." },
     ] },
     { id: 'xh.2', room: 'hoh-room', turns: [
       { beat: 'HOH room. {a} is reading the letter from home in silence. Everyone waits.' },
@@ -163,7 +163,7 @@ export default {
       { by: 'e', say: "This is unbearable." },
       { by: 'f', say: "Somebody say something." },
       { by: 'd', say: "...Nice weather today." },
-      { by: 'a', say: "You haven't seen the sky in a month." },
+      { by: 'a', say: "You haven't been outside all day." },
       { by: 'd', say: "...I'm guessing, okay?" },
       { beat: '{b} snorts. The tension breaks a little.' },
       { by: 'e', dr: "Nomination days are the worst days. Everybody's trying not to say the obvious thing." },
@@ -216,7 +216,7 @@ export default {
       { by: 'd', say: "Everyone has a feeling on Tuesday." },
       { by: 'e', say: "Did anyone actually go against the house?" },
       { beat: 'Everybody looks at everybody. Nobody says a word.' },
-      { by: 'a', dr: "The morning after a vote, everybody's a detective. Nobody's a witness." },
+      { by: 'a', dr: "The morning after a vote, everybody wants to know who voted which way. Nobody's saying." },
     ] },
     { id: 'xm.3', room: 'kitchen', turns: [
       { beat: 'Morning after. {gone}’s spot at the table is empty. Somebody sits in it, then stands straight back up.' },
@@ -237,7 +237,7 @@ export default {
       { by: 'c', say: "It's not stealing. It's something to remember {gone} by." },
       { by: 'e', say: "It's a very nice hoodie." },
       { beat: '{c} puts it on. It suits {c} better. Nobody says so.' },
-      { by: 'c', dr: "I'll give it back on finale night. If I'm still here. If I'm not, it's evidence." },
+      { by: 'c', dr: "I'll give it back to {gone} on finale night. Probably." },
     ] },
     { id: 'xm.5', room: 'kitchen', turns: [
       { beat: 'Morning after. The house is quiet. Somebody turns the kettle on and it is the loudest thing in the world.' },

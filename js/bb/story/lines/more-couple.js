@@ -167,7 +167,7 @@ export default {
       { by: 'b', say: "I'm saying I'd rather you win than we both lose." },
       { by: 'a', say: "...That's the most romantic thing anyone's ever said to me, and it's about getting evicted." },
       { by: 'b', say: "That's us." },
-      { by: 'a', dr: "We came in together. If it comes to it, one of us gets the other one to the end. That's the deal. That's love, in here." },
+      { by: 'a', dr: "We came in together. If it comes to it, one of us gets the other one to the end. That's the deal, and I'd make it again." },
     ] },
     { id: 'kc.d3', room: 'kitchen', turns: [
       { by: 'a', say: "Can I tell you something I haven't said since we got here?" },

@@ -41,7 +41,7 @@ export default {
       { by: 'a', say: "Nicest room in the house." },
       { by: 'c', say: "You'd be up here whoever had the key, wouldn't you?" },
       { by: 'a', say: "I like the room. Not the person in it." },
-      { by: 'a', dr: "Whoever has the key to this room is my best friend for seven days. It's not personal. It's real estate." },
+      { by: 'a', dr: "Whoever has the key to this room is my best friend for a week. It's not personal. I just like being near the power." },
     ] },
     { id: 'gy-sf.4', presumes: ['vote'], turns: [
       { beat: 'The backyard. {a} and {b} are on loungers, watching two groups talk at either end of the yard.' },
@@ -58,7 +58,7 @@ export default {
       { by: 'b', say: "Why? You haven't decided?" },
       { by: 'a', say: "I've decided. I've decided to go with everyone." },
       { by: 'b', say: "That's not deciding. That's waiting." },
-      { by: 'a', dr: "I'm not a sheep. Sheep don't know which way the field is going. I always know." },
+      { by: 'a', dr: "I'm not a sheep. Sheep just follow. I know where everybody's going before they go." },
     ] },
     { id: 'gy-sf.6', room: 'kitchen', turns: [
       { beat: 'The kitchen. Somebody asks {a} straight out who {a} is working with.' },
@@ -183,7 +183,7 @@ export default {
       { by: 'a', say: "In the middle. Which means nobody can count without us." },
       { by: 'b', say: "And {c}?" },
       { by: 'a', say: "{c} is the only one doing the same maths I am. That's the problem." },
-      { by: 'a', dr: "This game is numbers. Everyone else is playing feelings. I'm counting." },
+      { by: 'a', dr: "This game is numbers. Everyone else is going on feelings. I'm counting." },
     ] },
     { id: 'gy-st.2', presumes: ['vote'], room: 'kitchen', turns: [
       { beat: 'The kitchen. {a} and {b} are washing up, talking in short bursts whenever the room empties.' },
@@ -354,7 +354,7 @@ export default {
       { by: 'a', say: "Am I?" },
       { by: 'c', say: "Nobody thought you'd last this long." },
       { by: 'a', say: "Nobody's evicted me either." },
-      { by: 'a', dr: "Everyone thinks I'm lucky. Luck doesn't last this long. Something else does." },
+      { by: 'a', dr: "Everyone thinks I'm lucky. Luck doesn't last this long. I'm doing something right." },
     ] },
     { id: 'gy-su.4', room: 'living-room', turns: [
       { beat: 'Living room. {a} is quietly watching an argument, saying nothing.' },
@@ -444,7 +444,7 @@ export default {
       { by: 'b', say: "Why? Should I care?" },
       { by: 'a', say: "Just watch. It's never random." },
       { by: 'b', say: "Maybe they're friends." },
-      { by: 'a', say: "Maybe. Or maybe they're more than that, game-wise." },
+      { by: 'a', say: "Maybe. Or maybe they've got a deal." },
       { by: 'a', dr: "Nobody announces their alliances. But everybody sits with them." },
     ] },
     { id: 'gy-sr.3', room: 'bedroom', turns: [

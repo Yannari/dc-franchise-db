@@ -29,7 +29,7 @@ export default {
       { by: 'a', say: "{count}. I know where my vote went. So I'm in the small number." },
       { by: 'b', say: "You and a few others." },
       { by: 'a', say: "And I don't even know who they are. That's the worst part." },
-      { by: 'a', dr: "Being on the outside of a vote in here is like being the only one not told about the party. Except the party is the game." },
+      { by: 'a', dr: "Being on the wrong side of a vote is like finding out everyone went to a party and nobody invited you." },
     ] },
     { id: 'go.o3', presumes: ['vote'], turns: [
       { beat: 'The backyard. {a} is lying flat on the grass. {b} sits down beside {a}.' },
@@ -40,7 +40,7 @@ export default {
       { by: 'b', say: "Then don't tell anyone else. Let them think you were with them." },
       { by: 'a', say: "And just smile at {c} all day?" },
       { by: 'b', say: "And just smile at {c} all day." },
-      { by: 'b', dr: "{a} is on the outside now. Inside, outside, it changes every week in here. The trick is never letting anyone see which one you're on." },
+      { by: 'b', dr: "{a} is on the outside this week. That changes all the time in here. The trick is not letting anyone see it." },
     ] },
     { id: 'go.o4', presumes: ['vote'], room: 'living-room', turns: [
       { beat: 'Living room. {a} is sitting very still, watching {c} laugh in the kitchen. {b} notices.' },
@@ -50,7 +50,7 @@ export default {
       { by: 'a', say: "And most of them wrote {gone}'s. I wasn't told." },
       { by: 'b', say: "Maybe you weren't told on purpose." },
       { by: 'a', say: "That's what I'm afraid of." },
-      { by: 'a', dr: "If the house had a plan and nobody told me, I'm not part of the house's plans. I need to fix that before I'm the plan." },
+      { by: 'a', dr: "If the house made a plan and nobody told me, then I'm not in it. I need to fix that before the next plan is about me." },
     ] },
     { id: 'go.o5', presumes: ['vote'], room: 'bedroom', turns: [
       { beat: 'Bedroom, door shut. {a} pulls {b} in by the sleeve.' },
@@ -80,7 +80,7 @@ export default {
       { by: 'b', say: "Not yet." },
       { by: 'a', say: "So I need {c} to think it was somebody else." },
       { by: 'b', say: "Or you win HOH and it doesn't matter." },
-      { by: 'b', dr: "Every vote leaves a few people on the outside, guessing who saw them. This week it's {a}." },
+      { by: 'b', dr: "Every vote leaves a few people on the losing side, wondering who noticed. This week it's {a}." },
     ] },
     { id: 'go.o8', presumes: ['vote'], room: 'living-room', turns: [
       { beat: 'Living room, morning. The cushions are still where the house sat for the vote. {a} and {b} sit in the same seats.' },

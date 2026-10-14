@@ -73,7 +73,7 @@ export default {
       { by: 'a', say: "Leaning which way?" },
       { by: 'd', say: "...Towards keeping you." },
       { by: 'a', say: "Okay. Okay. I can work with leaning." },
-      { by: 'a', dr: "One lean and two maybes. On this block, that's practically a parade." },
+      { by: 'a', dr: "One leaning my way and two maybes. That's more than I had this morning." },
     ] },
     { id: 'gl3.10', presumes: ['noms'], turns: [
       { beat: 'The kitchen. {a} slides three plates of toast across the counter to {b}, {c} and {d}.' },
@@ -83,7 +83,7 @@ export default {
       { by: 'a', say: "It's a breakfast that also happens to come from somebody who'd like to still be here on Friday." },
       { by: 'd', say: "...It's good toast." },
       { by: 'a', say: "Thank you. Think about it." },
-      { by: 'c', dr: "I'm not saying toast decides votes in this house. I'm saying I'm thinking about it." },
+      { by: 'c', dr: "Will toast change anybody's vote? Probably not. But people remember who fed them." },
     ] },
   ],
 };

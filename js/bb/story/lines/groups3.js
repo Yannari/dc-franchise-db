@@ -209,7 +209,7 @@ export default {
       { by: 'a', say: "You did not." },
       { by: 'b', say: "Out loud. It had been a long day." },
       { beat: '{a} laughs for the first time all day.' },
-      { by: 'a', dr: "Three people embarrassed themselves on purpose to cheer me up. That's love, in here." },
+      { by: 'a', dr: "Three people embarrassed themselves on purpose just to cheer me up. I love these people." },
     ] },
   ],
   'story.life.prank.group': [

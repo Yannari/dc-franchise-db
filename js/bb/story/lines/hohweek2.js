@@ -81,7 +81,7 @@ export default {
       { by: 'b', say: "So who's left?" },
       { by: 'a', say: "{c} and {d}. Nobody's going to start a war over them." },
       { by: 'b', say: "Isn't that a bit of a waste?" },
-      { by: 'a', say: "Maybe. But it's a safe waste." },
+      { by: 'a', say: "Maybe. But it's safe, and safe is what I need this week." },
       { by: 'a', dr: "I'd love to make a big move. I'd also love to still be here in a month. This week I'm choosing the second one." },
     ] },
   ],

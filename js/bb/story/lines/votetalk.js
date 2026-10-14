@@ -63,7 +63,7 @@ export default {
       { by: 'b', say: "Even the ones who like {target}?" },
       { by: 'a', say: "Especially the ones who like {target}. That's what a group is." },
       { by: 'b', say: "...Okay. {target}." },
-      { by: 'a', dr: "If {group} can't vote the same way on a Thursday, {group} doesn't exist. So, Thursday, we exist." },
+      { by: 'a', dr: "If {group} can't all vote the same way on a Thursday, there's no point in {group}. So on Thursday, we all write {target}." },
     ] },
     { id: 'vt.pb2', turns: [
       { by: 'b', say: "Did {group} decide?" },
@@ -123,7 +123,7 @@ export default {
       { by: 'b', say: "Is {group} solid? Like actually solid?" },
       { by: 'a', say: "Everybody's on {target}. I asked every one of them to say the name out loud." },
       { by: 'b', say: "Out loud?" },
-      { by: 'a', say: "People lie with their heads. They don't lie as well with their mouths." },
+      { by: 'a', say: "It's harder to lie when you have to say the name out loud." },
       { by: 'b', say: "That's not true at all." },
       { by: 'a', say: "It's true enough for a Wednesday." },
       { by: 'a', dr: "{group} says {target}. If anybody in {group} says something else on Thursday, we'll all know by Friday." },
@@ -166,7 +166,7 @@ export default {
       { by: 'b', say: "You don't have to justify it to me. I can't stand {target} either." },
       { by: 'a', say: "Good. Then it's personal for both of us." },
       { by: 'b', say: "Personal and correct." },
-      { by: 'a', dr: "People say don't make it personal. Everything in here is personal. Some of it is also a vote." },
+      { by: 'a', dr: "People say don't make it personal. Everything in here is personal. This time it's also a vote." },
     ] },
     { id: 'vt.pg2', turns: [
       { by: 'b', say: "If it's close, I need you to not overthink it." },
@@ -244,7 +244,7 @@ export default {
       { by: 'a', say: "So decide for me." },
       { by: 'b', say: "{target}. Then nobody remembers you at all." },
       { by: 'a', say: "...That's actually really persuasive." },
-      { by: 'a', dr: "I was going to vote with my heart. {b} talked me into voting with everybody else. Safer. Worse. Safer." },
+      { by: 'a', dr: "I was going to vote with my heart. {b} talked me into voting with everybody else. It's safer. It feels worse. But it's safer." },
     ] },
     { id: 'vt.sy4', turns: [
       { by: 'a', say: "I keep going back and forth." },
@@ -273,7 +273,7 @@ export default {
       { by: 'a', say: "Because I don't make promises I don't know I can keep." },
       { by: 'b', say: "That's the first honest thing anybody's said to me all week." },
       { by: 'a', say: "Yeah. Sorry it's that one." },
-      { by: 'a', dr: "I couldn't lie to {b}. I also couldn't tell {b} the truth. So I said nothing, which in here is the truth." },
+      { by: 'a', dr: "I couldn't lie to {b}. I also couldn't tell {b} the truth. So I said nothing. In here, that says it all." },
     ] },
     { id: 'vt.sn3', turns: [
       { by: 'b', say: "I've got {other}'s people. I need one more. I need you." },
@@ -425,7 +425,7 @@ export default {
       { by: 'b', say: "...Me." },
       { by: 'a', say: "Okay. That's what I thought. Thank you for not lying." },
       { by: 'b', say: "I'd never lie to you." },
-      { by: 'a', dr: "One vote. One honest person. I'll take the honest person home with me in my head." },
+      { by: 'a', dr: "One vote, from one honest person. That's the bit of this week I'll remember." },
     ] },
     { id: 'vt.rk4', turns: [
       { by: 'a', say: "Help me pack?" },

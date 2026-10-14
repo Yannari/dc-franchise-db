@@ -59,7 +59,7 @@ export default {
       { by: 'a', say: "And people who put you on the block get really friendly when they think you might win HOH." },
       { by: 'b', say: "So you're not falling for it." },
       { by: 'a', say: "I smiled. I said all the right things. I'm not falling for it." },
-      { by: 'a', dr: "{rival} wants to be friends now. {rival} can be friends with the chair." },
+      { by: 'a', dr: "{rival} wants to be friends now. {rival} can try. I haven't forgotten that chair." },
     ] },
     { id: 'ar.pw3', presumes: ['vote'], turns: [
       { by: 'b', say: "Another comp, another loss." },
@@ -97,7 +97,7 @@ export default {
       { by: 'a', say: "You're going up. You know why." },
       { by: 'b', say: "We could have worked together." },
       { by: 'a', say: "We could have. Then you nominated me." },
-      { by: 'a', dr: "I've waited for this since the day {b} put me up. I thought it would feel better. It feels exactly as good as I thought." },
+      { by: 'a', dr: "I've waited for this since the day {b} put me up. I thought I'd feel bad about it. I don't." },
     ] },
   ],
   'arc.payback.end.gone': [
@@ -108,7 +108,7 @@ export default {
       { by: 'a', say: "I wanted it to be me. I wanted to be the one who did it." },
       { by: 'b', say: "Does it matter who did it?" },
       { by: 'a', say: "...No. It doesn't. It really doesn't. It still does." },
-      { by: 'a', dr: "Weeks I waited. Somebody else got there first. I'm relieved. I'm also a bit robbed." },
+      { by: 'a', dr: "I waited weeks for this, and somebody else got there first. I'm relieved. I'm also a bit annoyed." },
     ] },
     { id: 'ar.pg2', presumes: ['vote'], turns: [
       { by: 'a', say: "Did you see {rival}'s face when the vote got read out?" },
@@ -145,7 +145,7 @@ export default {
       { by: 'b', say: "You'd trust {rival}'s vote?" },
       { by: 'a', say: "I'd trust {rival} owing me. That's different." },
       { by: 'b', say: "That's cold." },
-      { by: 'a', say: "It's Thursday maths. Owed is better than gone." },
+      { by: 'a', say: "It's about the votes. Somebody who owes me is more use to me than somebody who's gone." },
       { by: 'a', dr: "{rival} owes me now. That's the most strategic thing I've done in here, and it felt terrible." },
     ] },
     { id: 'ar.pm3', presumes: ['vote'], turns: [
@@ -179,7 +179,7 @@ export default {
     ] },
     { id: 'ar.bp3', presumes: ['vote'], turns: [
       { by: 'b', say: "How many times now?" },
-      { by: 'a', say: "Don't count. Counting is for people who expect to stop." },
+      { by: 'a', say: "Don't count. I stopped counting." },
       { by: 'b', say: "And you're still here." },
       { by: 'a', say: "Still here. Like a cockroach. A charming cockroach." },
       { by: 'b', say: "That's the worst compliment you've ever given yourself." },
@@ -204,7 +204,7 @@ export default {
       { by: 'b', say: "What are you going to do with yourself?" },
       { by: 'a', say: "Sit on the couch at the ceremony. Like a normal person. With my legs crossed." },
       { by: 'b', say: "Living the dream." },
-      { by: 'a', dr: "Everybody in this house has had me on the block. This week, I hold something. Let's see how they like it." },
+      { by: 'a', dr: "Everybody in this house has had me on the block. This week I'm the one holding the power. Let's see how they like it." },
     ] },
     { id: 'ar.bw3', presumes: ['vote'], turns: [
       { beat: '{b} finds {a} holding {prize} like somebody might take it back.' },

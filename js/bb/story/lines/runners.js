@@ -31,7 +31,7 @@ export default {
       { by: 'c', say: "Who's on bathrooms?" },
       { by: 'a', say: "You are. Tuesdays." },
       { by: 'c', say: "I'm going home on a Tuesday, then." },
-      { by: 'a', dr: "Forty days of chaos or one chart. I chose the chart. History will thank me." },
+      { by: 'a', dr: "It was going to be chaos or a chart. I chose the chart. One day they'll thank me." },
     ] },
     { id: 'rn.ro3', turns: [
       { by: 'b', say: "Why does the bin have a name on it?" },
@@ -205,7 +205,7 @@ export default {
       { by: 'b', say: "Who's Gary?" },
       { by: 'a', say: "The camera. That one's Gary. The one in the bathroom's Steve, but we don't talk about Steve." },
       { by: 'b', say: "You named the cameras." },
-      { by: 'a', dr: "Forty days with the same people? You need friends who can't vote you out. Hi, Gary." },
+      { by: 'a', dr: "Months with the same people? You need friends who can't vote you out. Hi, Gary." },
     ] },
     { id: 'rn.ca2', turns: [
       { by: 'a', say: "Morning, cameras." },
@@ -264,7 +264,7 @@ export default {
       { by: 'a', say: "Did you just wave at Gary?" },
       { by: 'b', say: "I didn't." },
       { by: 'a', say: "You waved at Gary!" },
-      { by: 'b', say: "It's been a long summer, okay? Gary's been here for all of it." },
+      { by: 'b', say: "It's been a long season, okay? Gary's been here for all of it." },
       { by: 'a', dr: "{b} waved at Gary. Week one I was the weird one. Now I've got a following." },
     ] },
     { id: 'rn.cp2', presumes: ['vote'], turns: [
@@ -272,7 +272,7 @@ export default {
       { by: 'b', say: "The cameras." },
       { by: 'a', say: "They've seen everything. Every cry. Every lie. Every three a.m. snack." },
       { by: 'b', say: "That's... actually kind of beautiful." },
-      { by: 'a', say: "Gary's going to find somebody new next summer. I just have to let him go." },
+      { by: 'a', say: "Gary's going to find somebody new next season. I just have to let him go." },
       { by: 'b', dr: "I laughed at the camera thing for weeks. Now I kind of get it. They're the only ones who stayed." },
     ] },
     { id: 'rn.cp3', presumes: ['vote'], turns: [
@@ -309,7 +309,7 @@ export default {
       { by: 'b', say: "What?" },
       { by: 'a', say: "Nothing." },
       { by: 'b', say: "You've got both hands over your mouth." },
-      { by: 'a', say: "I've been told a secret, and my mouth doesn't know how to hold them." },
+      { by: 'a', say: "Somebody told me a secret, and my mouth can't hold it in." },
       { by: 'a', dr: "Some people keep secrets. My face tells them to everybody before I've even opened my mouth." },
     ] },
   ],
@@ -362,7 +362,7 @@ export default {
       { by: 'a', say: "I'm not." },
       { by: 'b', say: "Twenty." },
       { by: 'a', say: "I'm NOT." },
-      { by: 'b', dr: "{a} didn't tell me. I still don't know what it is. That's the scariest thing that's happened all summer." },
+      { by: 'b', dr: "{a} didn't tell me. I still don't know what it is. That's the scariest thing that's happened to me in this house." },
     ] },
     { id: 'rn.sp3', presumes: ['vote'], turns: [
       { by: 'b', say: "Remember when you told the whole kitchen about the vote plan?" },

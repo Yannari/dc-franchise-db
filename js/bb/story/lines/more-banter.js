@@ -22,7 +22,7 @@ export default {
       { by: 'a', dr: "I loosened that jar. I want that on the record. Nobody in this house will ever believe me." },
     ] },
     { id: 'bz.2', room: 'backyard', turns: [
-      { beat: 'Backyard. {a} and {b} are lying on the grass, looking up at the roof over the yard.' },
+      { beat: 'Backyard. {a} and {b} are lying on the grass, looking up at the sky.' },
       { by: 'a', say: "If you could have one thing from outside right now, what would it be?" },
       { by: 'b', say: "My own pillow. This one feels like it's full of crisps." },
       { by: 'a', say: "Mine's definitely full of something. I hear it every time I turn over." },
@@ -101,7 +101,7 @@ export default {
       { by: 'a', say: "That's depressing. That's exactly what it is." },
       { by: 'b', say: "Hold a pillow. It's the same thing, but it doesn't buzz." },
       { by: 'a', say: "...That's actually helping. Goodnight." },
-      { by: 'a', dr: "No phone, no music, no clock. You end up talking to people. Apparently that's what hands were for all along." },
+      { by: 'a', dr: "No phone, no music, no clock. So you end up just talking to people. I'd forgotten how much I like that." },
     ] },
     { id: 'bz.10', room: 'backyard', turns: [
       { beat: 'Backyard. {a} and {b} are on the hammock together, which keeps trying to tip them out.' },

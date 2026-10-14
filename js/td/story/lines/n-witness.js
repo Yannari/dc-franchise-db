@@ -197,7 +197,7 @@ export default {
       { by: 'a', conf: "Out of everybody here, it had to be {b}. I could take that from anyone else, but not from {b}." },
     ] },
     { id: 'nwa.t2', turns: [
-      { beat: "{a} doesn't sit with {b} at breakfast. It's the first time all season." },
+      { beat: "{a} doesn't sit with {b} at breakfast. {b} notices." },
       { by: 'b', say: "Are we okay?" },
       { by: 'a', say: "You took {other}'s side. So, no. Not really." },
       { by: 'b', say: "I wasn't taking a side. I just told you the truth." },

@@ -12,7 +12,7 @@
 
 export default {
   'story.vote.doubt.holds': [
-    { id: 'nf.h1', when: { pair: true }, turns: [
+    { id: 'nf.h1', when: { pair: true, likesT: true }, turns: [
       { beat: "{a} catches {b} on the way back {here}." },
       { by: 'a', say: "Can I be honest? I'm not totally sure about {target}.", v: { anxious: "Can I be honest for a second? I'm really not sure about {target}, and it's making me sick.", blunt: "I'm going to be honest, I don't love the {target} plan." } },
       { by: 'b', say: "What's wrong with it?" },

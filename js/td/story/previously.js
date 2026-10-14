@@ -246,7 +246,11 @@ export function writePreviously(ep) {
       threat: [`${lead} decided ${boot} was too dangerous to keep around`, `${lead} looked at ${boot} and saw a threat`, `${lead} figured ${boot} would win if nobody stopped ${pr(boot).obj}`],
       weak: [`${lead} wanted the weakest link gone, and ${lp.sub} decided that was ${boot}`, `${lead} decided ${boot} was dead weight${sankName === boot ? ` after that challenge` : ''}`, `${lead} needed a team that wins, and ${boot} wasn't helping`],
       grudge: [`${lead} wanted ${boot} gone, and honestly? It was personal`, `${lead} had been waiting for a chance to get rid of ${boot}`, `${lead} just could not stand ${boot} anymore`],
-      strike: [`${lead} found out ${boot} was coming for ${lp.obj}, and struck first`, `${lead} heard ${boot} had ${lp.posAdj} name, and decided to write ${boot}'s down first`, `${lead} caught wind of ${boot}'s plan, and turned it right back around`],
+      // (coming for whoever the boot really wrote: read 2026-10-14, "Ivy found out Amelie was coming for her" when Amelie
+      // had written Logan)
+      strike: bootVote === lead ? [`${lead} found out ${boot} was coming for ${lp.obj}, and struck first`, `${lead} heard ${boot} had ${lp.posAdj} name, and decided to write ${boot}'s down first`, `${lead} caught wind of ${boot}'s plan, and turned it right back around`]
+        : bootVote && bootVote !== boot ? [`${lead} found out ${boot} was coming for ${bootVote}, and struck first`, `${lead} heard ${boot} had ${bootVote}'s name, and got ${boot}'s written down first`, `${lead} caught wind of ${boot}'s plan, and turned it right back around`]
+        : [`${lead} caught wind of ${boot}'s plan, and turned it right back around`],
       flip: [`${lead} switched sides at the last second, and took ${boot} out`, `${lead} broke ranks, and ${boot} paid for it`, `${lead} flipped, and nobody saw it coming, least of all ${boot}`],
     }[reason] || [`${lead} put ${boot}'s name out there, and it stuck`, `${lead} needed a name, and ${boot}'s was the easiest to say`, `${lead} went to work on getting ${boot} out`];
     const plural = voters.length > 1;

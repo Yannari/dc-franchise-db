@@ -90,6 +90,10 @@ export function placeOf(venue, kind, roll = 0, avoid = null) {
   // every place of this kind is taken in this stretch of the day: a related kind, so two talks
   // never share a spot (chores move to another public spot, a private word to another quiet one)
   if (!id && avoid) for (const k of NEAR[kind] || []) { const alt = ((PLACES[venue] || PLACES['hosted-camp'])[k] || []).find(x => !avoid.has(x)); if (alt) { id = alt; break; } }
+  // ...and on a crowded night (the merge, eight vote talks before Tribal) anywhere at this venue still free, the meal
+  // table aside (it is the whole camp's)
+  if (!id && avoid) { const T = PLACES[venue] || PLACES['hosted-camp'], eat = new Set(T.eat || []);
+    id = Object.values(T).flat().find(x => !avoid.has(x) && !eat.has(x)); }
   id ||= order[0];
   const said = SAID[id] || id.replace(/-/g, ' ');
   return { id, label: LABEL(id), said, here: id === 'trailers' ? said : `${prep(id)} ${said}` };

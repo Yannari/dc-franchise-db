@@ -137,6 +137,9 @@ function _chimeIns(ep, campKey, phase, events) {
 // with strategic >= 6 and loyalty <= 4.
 const _NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 const _VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
+// who may scheme (CLAUDE.md): a villain archetype, or a neutral one with strategic >= 6 and loyalty <= 4; never a nice one
+const _mayScheme = n => { const a = players.find(p => p.name === n)?.archetype || '', s = pStats(n) || {};
+  return !_NICE.has(a) && (_VILLAIN.has(a) || ((s.strategic ?? 5) >= 6 && (s.loyalty ?? 5) <= 4)); };
 function _crossScenes(ep) {
   if (gs.isMerged || (gs.tribes || []).length < 2 || !campIsShared(seasonConfig?.setting)) return;
   const venue = seasonConfig?.setting || 'hosted-camp';
@@ -1719,7 +1722,11 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
 
     } else if (eventType === 'schemerManipulates') {
       // Schemer builds false trust — target bond rises (they're being played)
-      const a = _pick(group, n => Math.max(0.1, pStats(n).strategic * 0.5 + (10 - pStats(n).loyalty) * 0.4 + 1));
+      // (only somebody who may scheme: villain archetypes, or a neutral with strategic >= 6 and loyalty <= 4. Picked by
+      // stats from the whole camp, a goat and a hothead ran "it was Marissa talking" plays, read 2026-10-14)
+      const _schemers = group.filter(_mayScheme);
+      if (!_schemers.length) continue;
+      const a = _pick(_schemers, n => Math.max(0.1, pStats(n).strategic * 0.5 + (10 - pStats(n).loyalty) * 0.4 + 1));
       const others = group.filter(p => p !== a);
       if (!others.length) continue;
       const b = wRandom(others, n => Math.max(0.1, getBond(a, n) + pStats(n).social * 0.2 + 2));
@@ -1731,8 +1738,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         makeScene('read.played', { a, b }, { ending: (strA >= 9 && loA <= 3) ? 'deep' : 'plain' }, [], _spotNow(a, b))));
 
     } else if (eventType === 'mastermindOrchestrates') {
-      // Mastermind quietly engineers something without anyone knowing
-      const a = _pick(group, n => Math.max(0.1, pStats(n).strategic * 0.4 + pStats(n).mental * 0.3 + pStats(n).temperament * 0.1 + 1));
+      // Mastermind quietly engineers something without anyone knowing (only somebody who may scheme, as above)
+      const _schemers = group.filter(_mayScheme);
+      if (!_schemers.length) continue;
+      const a = _pick(_schemers, n => Math.max(0.1, pStats(n).strategic * 0.4 + pStats(n).mental * 0.3 + pStats(n).temperament * 0.1 + 1));
       const others = group.filter(p => p !== a);
       if (!others.length) continue;
       const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + pStats(n).social * 0.2 + 1));

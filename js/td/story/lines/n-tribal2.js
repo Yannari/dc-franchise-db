@@ -27,7 +27,7 @@ export default {
     ] },
     { id: 'nn.r3', turns: [
       { by: 'a', move: 'shocked' },
-      { by: 'c', say: "I really thought I'd make it further than this.", v: {tough: "Whatever. It's fine. I'm fine.",emotional: "I don't want to go. I really don't want to go.",dry: "Well. That's that, then.",teen: "This is so unfair. I was having so much fun."}, opt: true },
+      { by: 'a', say: "I really thought I'd make it further than this.", v: {tough: "Whatever. It's fine. I'm fine.",emotional: "I don't want to go. I really don't want to go.",dry: "Well. That's that, then.",teen: "This is so unfair. I was having so much fun."}, opt: true },
       { by: 'a', say: "Who? Who did this?" },
       { beat: "Nobody answers. {b} is staring at the ground." },
       { by: 'a', say: "{b}. Look at me." },

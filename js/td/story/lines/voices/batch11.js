@@ -55,7 +55,6 @@ export default {
   'ne.h2': {
     1: { warm: "What's wrong?", calm: "What's wrong?" },
     3: { calm: "That doesn't change the plan.", warm: "I know. It doesn't change the plan, though." },
-    6: { calm: "I'll write {target}. I'll be thinking about that first day the whole time.", earnest: "I'll keep my word and write {target}, but I'm going to be thinking about that first day the whole time." },
   },
   'nly.a2': {
     1: { calm: "Sure.", warm: "Of course." },

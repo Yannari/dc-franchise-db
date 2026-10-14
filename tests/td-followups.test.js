@@ -68,7 +68,9 @@ it('reaches defense, clash, and romance follow-ups in played seasons with valid 
  const names = ['Gwen','Leshawna','Heather','Duncan','Courtney','Owen','Lindsay','Trent','Julia','Millie','Aubrey','Lake','Gabby','Bowie','Yul','Bruno'];
  const cast = names.map((name,i)=>({...roster.find(p=>p.name===name),tribe:i%2?'Bass':'Gophers'}));
  const kinds = new Set();
- for (const seed of [1729,2026,81]) {
+ // (five seasons: a romance follow-up airs in about 60% of seasons, so three missed all three about 6% of the time; measured
+ // over eight seeds 2026-10-14 when a story change moved the RNG and seeds 1729, 2026 and 81 all came up empty)
+ for (const seed of [1729,2026,81,5,77]) {
   expect(seededRun(()=>runOneSeason({setting:'hosted-camp',romance:'enabled'},16,cast),seed).phase).toBe('complete');
   for (const ep of core.gs.episodeHistory) for (const [camp, blocks] of Object.entries(ep.campStory||{})) for (const scene of [...blocks.pre,...blocks.post].filter(s=>/^follow\./.test(s.kind||''))) {
    kinds.add(scene.kind); expect(scene.effects.length).toBeGreaterThan(0);

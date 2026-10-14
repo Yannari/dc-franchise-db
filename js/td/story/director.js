@@ -1290,6 +1290,10 @@ function voteTalk(ep, camp, t, next) {
     cand.sort((p, q) => (q.breaks ? 1 : 0) - (p.breaks ? 1 : 0) || p.m.localeCompare(q.m));
     const picked = cand.some(c => c.breaks) ? cand.filter(c => c.breaks).slice(0, 1) : cand.slice(0, next() % 2 ? 1 : 0);
     const seenDoubt = new Set();
+    // who fought today: "I just like Lynda" from the one who told Lynda "do better" after the loss (read 2026-10-14)
+    const pkD = (p, q) => [p, q].sort().join('|');
+    const hotD = new Set(['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph)).filter(ev => ev && /^(long\.)?(drama\.|blame|clash|crowd\.(lost|clash)|fallout\.blame|cross\.rival|witness\.after)/.test(ev.scene?.kind || '')
+      && ev.scene?.who?.a && ev.scene?.who?.b).map(ev => pkD(ev.scene.who.a, ev.scene.who.b)));
     for (const { al, m: x, breaks } of picked) {
       if (seenDoubt.has(x)) continue;
       const breaker = breaks ? x : null;
@@ -1301,7 +1305,8 @@ function voteTalk(ep, camp, t, next) {
       const shape = conf ? shapeFor(x, closeTo(x, mates)) : 'solo';
       const who = shape === 'solo' || !conf ? { a: x } : { a: x, b: conf };
       const data = { target: al.target, ...(breaker && ballotOf(x) !== al.target ? { wrote: ballotOf(x) } : {}) };
-      const it = item('doubt', 'story.vote.doubt', breaker ? 'breaks' : 'holds', who, data, base(who, { cast: who.b ? shape : 'solo', wrote: !!data.wrote }), who.b ? 'aside' : 'confessional', 'scramble',
+      const likesT = getBond(x, al.target) >= 2 && !hotD.has(pkD(x, al.target));
+      const it = item('doubt', 'story.vote.doubt', breaker ? 'breaks' : 'holds', who, data, base(who, { cast: who.b ? shape : 'solo', wrote: !!data.wrote, likesT }), who.b ? 'aside' : 'confessional', 'scramble',
         [breaker ? 'Second Thoughts' : 'Doubts', breaker ? 'red' : 'blue'],
         [`${x} isn't sure about the plan to vote ${al.target}.`, breaker ? `${x} is going to write ${ballotOf(x)} instead.` : `${x} goes along with it anyway.`]);
       if (it) out.push(it);
@@ -2742,7 +2747,10 @@ export function airTdEpisode(ep) {
           if (!sp?.id || sp.id === 'confessional' || eats.has(sp.id)) continue;
           let win = sp.window || winOf(it);
           if (held.has(`${win}|${sp.id}`)) {
-            const later = NEXT.slice(NEXT.indexOf(win) + 1).find(w => !held.has(`${w}|${sp.id}`));
+            // (the last stretch has no later one: an earlier free one, else two vote talks shared the cabins before Tribal)
+            const i0 = NEXT.indexOf(win);
+            const later = NEXT.slice(i0 + 1).find(w => !held.has(`${w}|${sp.id}`))
+              || (i0 > 0 ? NEXT.slice(0, i0).reverse().find(w => !held.has(`${w}|${sp.id}`)) : null);
             if (later) { win = later; it.scene = { ...it.scene, spot: { ...sp, window: later } }; }
           }
           held.add(`${win}|${sp.id}`);

@@ -432,7 +432,7 @@ export default {
       { by: 'a', say: "I'm not doing the hair thing." },
       { by: 'c', say: "Do the hair thing!" },
       { beat: "{a} does the hair thing. Everyone loses it." },
-      { by: 'c', conf: "I laughed so hard my stomach hurt. I forgot I was in a game for about ten whole minutes, and that's all {a}.", v: { warm: "That was the best night. Everybody laughing together.", schemer: "Being funny makes people like you, and {a} knows that. It's smart." } },
+      { by: 'c', conf: "I laughed so hard my stomach hurt. I forgot I was in a game for about ten whole minutes, and that's all {a}.", v: { warm: "That was the best time I've had out here. Everybody laughing together.", schemer: "Being funny makes people like you, and {a} knows that. It's smart." } },
     ] },
     { id: 'ny.l2', place: 'eat', turns: [
       { beat: "{a} is telling a story at dinner. It starts normal. It does not end normal." },
@@ -521,7 +521,7 @@ export default {
   ],
   'long.friend.solidarity.any': [
     { id: 'ny.so1', place: 'public', turns: [
-      { beat: "People are talking about {b} {here}. {a} walks over and sits right next to {b}." },
+      { beat: "{b} is sitting on {b.posAdj} own {here}, away from everybody. {a} walks over and sits right next to {b}." },
       { by: 'b', say: "You don't have to sit here." },
       { by: 'a', say: "I know." },
       { by: 'b', say: "People are going to think you're with me." },

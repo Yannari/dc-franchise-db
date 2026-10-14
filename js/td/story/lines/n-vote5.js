@@ -13,14 +13,14 @@ export default {
       { by: 'a', say: "Yeah, I guess you're right." },
       { by: 'a', conf: "I'm going along with it, because if I start asking questions now, I'm the one who looks shady." },
     ] },
-    { id: 'ne.h2', when: { pair: true }, turns: [
+    { id: 'ne.h2', when: { pair: true, likesT: true }, turns: [
       { beat: "{a} sits down next to {b} {here} and doesn't say anything for a minute." },
       { by: 'b', say: "What's wrong?" },
-      { by: 'a', say: "I keep thinking about {target}, about how {target} helped me on the first day." },
+      { by: 'a', say: "I keep thinking about {target}. {target} has been nothing but nice to me." },
       { by: 'b', say: "That doesn't change the plan." },
       { by: 'a', say: "I know it doesn't, I'm not saying it does, I just feel bad." },
       { by: 'b', move: 'reassure' },
-      { by: 'a', conf: "I'll do it, I'll write {target}, but I'm going to be thinking about that first day the whole time." },
+      { by: 'a', conf: "I'll do it, I'll write {target}, but I'm going to feel sick the whole time." },
     ] },
     { id: 'ne.h3', when: { pair: true, voice: ['schemer', 'calm', 'dry', 'competitive'] }, turns: [
       { by: 'a', say: "Just so we're clear, I think {target} is the wrong call, but I'm not going to fight it." },

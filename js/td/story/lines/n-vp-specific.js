@@ -82,7 +82,7 @@ const FORM = {
       { by: 'a', conf: "Everybody's going to say they didn't play this early. I'd rather be the one who did." },
     ] },
     { id: 'nvs.f2', when: { early: true, sideBig: true }, turns: [
-      { by: 'b', say: "You've been looking at {theirSide} all afternoon. What's going on?" },
+      { by: 'b', say: "Is that why you keep looking at {theirSide}?" },
       { by: 'a', say: "They're a group. A real one. They've stuck together from the start, and nobody else has noticed." },
       { by: 'b', say: "And?" },
       { by: 'a', say: "And if we don't do the same thing, they're going to vote us out one at a time, and they'll be nice about it.", v: { sharp: "And if we don't make our own, they'll pick us off one at a time and smile while they do it.", loud: "And if we don't do the same thing, we're toast! Both of us!", soft: "And if we don't look out for each other, nobody else is going to." } },

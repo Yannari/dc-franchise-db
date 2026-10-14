@@ -174,7 +174,7 @@ export function witnessAfter(ep, camp, members, next, write, factsForWho) {
     if (!w) continue;
     const d = ending === 'out' ? -0.25 : ending === 'turned' ? -0.75 : -0.5;
     return { at: 0.42, item: onCommit({ story: true, kind: `witness.after.${ending}`, storyType: 'arc', step: ending, players: [hurt, x.by], lines: w.lines, text: w.text, lineId: w.lineId,
-      scene: { kind: 'witness.after', who: { a: hurt, b: x.by }, data: other ? { other } : {}, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null },
+      scene: { kind: 'witness.after', who: { a: hurt, b: x.by }, data: other ? { other } : {}, spot: w.spot ? { ...w.spot, window: 'morning' } : null },
       badgeText: ending === 'out' ? 'You Said Nothing' : 'You Took a Side', badgeClass: 'red',
       why: [ending === 'out' ? `${x.by} watched ${x.a} and ${x.b} go at each other at episode ${x.ep} and stayed out of it.` : `${x.by} backed ${x.backs} against ${x.vs} at episode ${x.ep}${x.turned ? ', and they had been friends' : ''}.`],
       fx: [[hurt, x.by, d]] }, () => { x.done = true; }) };

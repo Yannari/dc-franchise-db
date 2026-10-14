@@ -27,7 +27,7 @@ export default {
   },
   'ns.n1': {
     3: { loud: "Shut UP. Everybody shut up!", calm: "Okay. Everybody stop.", flirty: "Shut up. Everybody, shut up, right now." },
-    6: { calm: "{b} looked right at me when {b} put that finger down. I'm almost sure.", loud: "{b} looked RIGHT at me when {b} put that finger down! I'm like ninety percent sure!", flirty: "{b} looked straight at me when that finger went down. I'm going to be smiling about that all week." },
+    6: { calm: "{b} looked right at me when {b.sub} put that finger down. I'm almost sure.", loud: "{b} looked RIGHT at me when {b.sub} put that finger down! I'm like ninety percent sure!", flirty: "{b} looked straight at me when that finger went down. I'm going to be smiling about that all week." },
   },
   'ns.f3': {
     1: { warm: "Are you going to help or just stand there?", tough: "You going to help, or just stand there looking at me?", dry: "Are you helping, or is this a performance?" },

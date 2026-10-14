@@ -58,7 +58,9 @@ function recapOf(t, chapter) {
   }
   if (t.kind === 'romance') {
     const what = /flirt|spark/.test(t.src || '') ? 'flirted' : 'got close';
-    return `${t.a} and ${t.b} haven't really talked since they ${what}${at} the other day.`;
+    // (not "haven't really talked since": a couple talks every day, and the scene before this one can be the two of them;
+    // read 2026-10-14, carnival ep 8, an argument at the edge of the woods and then "haven't really talked since")
+    return `${t.a} and ${t.b} ${what}${at} the other day, and neither of them has brought it up since.`;
   }
   if (chapter >= 2) return `${t.a} and ${t.b} still haven't settled their fight${t.c ? `, and ${t.c} is still stuck in the middle of it` : ''}.`;
   return `${t.a} and ${t.b} haven't really talked since their fight${at} the other day, in front of ${t.c}.`;

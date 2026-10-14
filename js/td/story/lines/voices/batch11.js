@@ -67,7 +67,7 @@ export default {
     4: { dry: "That's not relaxing, that's a job.", warm: "That's not relaxing, that's a job. Take a break." },
   },
   'nd.in1': {
-    3: { calm: "You've never said hi to me.", tough: "You've never said hi to me." },
+    3: { calm: "You don't usually say hi to me.", tough: "Since when do you say hi to me?" },
     5: { calm: "I wasn't...", tough: "I wasn't." },
     9: { calm: "I didn't say anything mean. I just wanted {b} to know I'm paying attention.", cruel: "I didn't say anything mean. I just let {b} know I'm watching, and that's enough." },
   },

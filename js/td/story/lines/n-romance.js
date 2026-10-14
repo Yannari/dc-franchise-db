@@ -198,7 +198,7 @@ export default {
       { by: 'b', say: "Shut up. Everybody shut up." },
       { by: 'a', say: "Who is it?" },
       { by: 'b', say: "It's not a question game, it's never-have-I-ever. Next!" },
-      { by: 'a', conf: "{b} looked right at me when {b} put that finger down, I'm almost sure, like ninety percent sure.", v: { nerdy: "I'm ninety percent sure {b} looked at me. Okay, eighty-five, but it's a strong eighty-five." } },
+      { by: 'a', conf: "{b} looked right at me when {b.sub} put that finger down, I'm almost sure, like ninety percent sure.", v: { nerdy: "I'm ninety percent sure {b} looked at me. Okay, eighty-five, but it's a strong eighty-five." } },
     ] },
   ],
   'long.romance.jealous.any': [

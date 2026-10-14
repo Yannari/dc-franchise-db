@@ -291,7 +291,9 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   if (spot && avoid && spot.id !== 'confessional') avoid.add(spot.id);
   data = { ...data, here: spot?.here || 'around camp', place: spot?.said || 'camp' };
   // a turn for a part nobody plays (no {c} in this scene) is dropped, never left blank
-  // an optional turn (opt: true) plays only when everyone it names is in the scene
+  // an optional turn (opt: true) plays only when everyone it names is in the scene; a turn that answers a part (with:
+  // 'd') only when that part is played (read 2026-10-14: "Somebody asked me... I said I didn't know." / "I will.", the
+  // "Good. Keep saying that." it answers left out with nobody to say it)
   // a talk somewhere secret is said quietly: nobody shouts after checking nobody followed
   const hush = !!spot && spot.id !== 'confessional' && (kindOf(facts.venue, spot.id) === 'secret' || entry.place === 'secret');
   const named = t => [...[t.say, t.conf, t.beat, ...Object.values(t.v || {})].join(' ').matchAll(/\{([a-f])(?:\.\w+)?\}/g)].map(m => m[1]);
@@ -300,7 +302,7 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
   // facts say so, so one whole scene carries the line that only some nights have
   const turnOk = t => !t.when || Object.entries(t.when).every(([k, v]) => v === true ? !!facts[k] : v === false ? !facts[k]
     : Array.isArray(v) ? v.includes(facts[k]) : facts[k] === v);
-  const lines = entry.turns.filter(t => (!t.by || who[t.by]) && !(t.opt && named(t).some(r => !who[r])) && turnOk(t)).map(t => {
+  const lines = entry.turns.filter(t => (!t.by || who[t.by]) && !(t.opt && named(t).some(r => !who[r])) && !(t.with && !who[t.with]) && turnOk(t)).map(t => {
     const kind = t.conf || t.asConf ? 'conf' : t.beat ? 'beat' : 'say';
     // A move (`move: 'pushback'`) is said in the speaker's own words, from the phrasebook
     // (td/story/phrase.js): their voice, their age. {to} is whoever they answer (the turn's `to`,

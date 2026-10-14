@@ -196,7 +196,9 @@ export default {
   // a keeps going against the odds; b sees it
   'long.life.underdog.driven': [
     { id: 'nly.u1', when: { dayOne: false }, turns: [
-      { by: 'b', say: "You're up early." },
+      // (its own set-up: a picked one read "shaking out a sleeping bag" over "I'm practising the rope climb", 2026-10-14)
+      { beat: "{a} is hanging off a rope tied to a branch {here}, trying to haul up it, when {b} comes over." },
+      { by: 'b', say: "You're still at it?" },
       { by: 'a', say: "I'm practising the rope climb. I was the slowest one up it yesterday." },
       { by: 'b', say: "You were also the only one who didn't quit." },
       { by: 'a', say: "Not quitting doesn't win challenges." },

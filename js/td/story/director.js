@@ -50,7 +50,7 @@ import { chalMoments } from './chalmoments.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf, kindOf, placeById } from './places.js';
 import { kitBitScene, kitDigScene, kitRomanceScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, hasKit, kitOf, sharedGround, setKitVenue } from './kits.js';
-import { runArcs, campGame } from './arcs.js';
+import { runArcs, campGame, leftThisEp } from './arcs.js';
 import { coupleScenes } from './couple.js';
 
 // Where the season lives decides a few words ({quarters}, {bed}) and what campers can know:
@@ -811,7 +811,9 @@ function sparkCase(ep, t) {
   const coming = (t.rivals || []).find(al => (al.members || []).includes(boot) && al.target && (al.target === leader || voters.includes(al.target)) && heardComing(ep, t, al));
   const partner = tribal.filter(x => x !== boot && x !== leader && !voters.includes(x)).sort((x, y) => getBond(boot, y) - getBond(boot, x) || x.localeCompare(y))[0];
   const pair = partner && getBond(boot, partner) >= 5 ? partner : null;
-  const theirs = (gs.namedAlliances || []).find(al => al.active !== false && (al.members || []).includes(boot) && !(al.members || []).includes(leader))?.name || null;
+  // (an alliance from before today: one formed this afternoon is not the reason anybody spent the morning watching it,
+  // read 2026-10-14, "The Blood Oath has been planning since we arrived" the day Diego and Isabel named it)
+  const theirs = (gs.namedAlliances || []).find(al => al.active !== false && (al.formed ?? 0) < ep.num && (al.members || []).includes(boot) && !(al.members || []).includes(leader))?.name || null;
   const ts = x => threatScore(x) || 0;
   const rank = [...tribal].sort((x, y) => ts(y) - ts(x) || x.localeCompare(y)).indexOf(boot);
   const best = Math.max(-10, ...tribal.filter(x => x !== boot).map(x => getBond(boot, x)));
@@ -950,7 +952,7 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const coming = (t.rivals || []).find(al => (al.members || []).includes(boot) && al.target && (al.target === leader || voters.includes(al.target)) && heardComing(ep, t, al));
   const partner = tribal.filter(x => x !== boot && x !== a && !voters.includes(x)).sort((x, y) => getBond(boot, y) - getBond(boot, x) || x.localeCompare(y))[0];
   const pair = partner && getBond(boot, partner) >= 5 ? partner : null;
-  const theirs = (gs.namedAlliances || []).find(al => al.active !== false && (al.members || []).includes(boot) && !(al.members || []).includes(a))?.name || null;
+  const theirs = (gs.namedAlliances || []).find(al => al.active !== false && (al.formed ?? 0) < ep.num && (al.members || []).includes(boot) && !(al.members || []).includes(a))?.name || null;
   const idol = has(gs.knownIdolHoldersPersistent) || has(gs.knownIdolHoldersThisEp);
   const best = Math.max(-10, ...tribal.filter(x => x !== boot).map(x => getBond(boot, x)));
   const ts = x => threatScore(x) || 0;
@@ -1018,6 +1020,10 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const fromTarget = em.warned.find(w => w.knower === a && w.teller === boot) || null;
   if (fromTarget) data.warnedAbout = fromTarget.pitcher;
   Object.assign(facts, { sparkSeen, told: !!tip, tally: count, alt: !!alt, fromTarget: !!fromTarget, sparkKind: sparkSeen ? em.spark.kind : 'none' });
+  // the pair is a couple (a showmance still on), not two allies who vote together: the scenes with a head on a shoulder
+  // and "it's cute" ask for it (read 2026-10-14, carnival ep 8: "Hannah rests her head on Tristan's shoulder by the
+  // fire", with Hannah's showmance being Marissa, and "they really like each other" about Anastasia and Diego)
+  facts.couple = !!pair && (gs.showmances || []).some(s => s.phase !== 'broken-up' && (s.players || []).includes(boot) && (s.players || []).includes(pair));
   // has the viewer ever SEEN this side come together? (the user, 2026-10-10: "four against five" on day one,
   // with no scene before it setting those sides). An alliance chapter with a and one of the people being
   // counted that aired before now, or a vote they planned together on an earlier night. If not, the scene
@@ -1160,6 +1166,9 @@ function causeFor(ep, camp, leader, boot) {
       // a loyalty test is the tester's move, not the tested one's ("what Topher pulled this morning": Topher passed Jo's
       // test, read 2026-10-14)
       if (/^test\./.test(ev.scene?.kind || '')) return null;
+      // ...and a lie told to somebody is the liar's move ("what Diego pulled this morning": Marissa lied to Diego about
+      // her vote, read 2026-10-14)
+      if (/^blind\./.test(ev.scene?.kind || '')) return null;
       // making up is not where a vote starts
       if (/thaw|amend|truce|forgiv|apolog|rekindle|celebrat|gratitude|bond/i.test(s)) return null;
       const kind = ev.scene?.kind || '';
@@ -1381,7 +1390,10 @@ function voteTalk(ep, camp, t, next) {
   const tipFor = x => em.warned.find(w => w.knower === x && w.teller) || null;
   // (somebody running a plan tonight isn't sitting there sure it's them: the plan's leader, a cover's leader)
   const leads = new Set([t.leader, ...out.filter(o => ['plan', 'other'].includes(o.step)).map(o => o.scene?.who?.a), ...(ep.coverPlans || []).map(p => p.leader)].filter(Boolean));
-  const rivalT = (t.rivals || []).map(al => al.target).find(x => x && x !== boot && tribal.includes(x) && !leads.has(x) && !out.some(o => o.step === 'decoy'));
+  // ...nor somebody on tonight's plan: they know the name, and it isn't theirs (read 2026-10-14, carnival ep 9: Ivy, counted
+  // in Hannah's six on Isabel, "Nobody told me anything... If I can get enough people onto Isabel, I'm fine")
+  const onPlan = new Set(t.voters || []);
+  const rivalT = (t.rivals || []).map(al => al.target).find(x => x && x !== boot && tribal.includes(x) && !leads.has(x) && !onPlan.has(x) && !out.some(o => o.step === 'decoy'));
   if (rivalT && boot === t.gone) {
     const dWrote = ballotOf(rivalT);
     const friend = closest(rivalT, tribal.filter(x => x !== rivalT && x !== boot && getBond(rivalT, x) >= 1));
@@ -1453,7 +1465,7 @@ function voteTalk(ep, camp, t, next) {
       if (pair.length < 2) {
         const scared = x => ['paranoid', 'desperate'].includes(gs.playerStates?.[x]?.emotional);
         const planned = new Set((ep.alliances || []).map(al => al.target));
-        const more = tribal.filter(x => x !== boot && !leads.has(x) && !imm.has(x) && !attacking.has(x) && (scared(x) || planned.has(x)) && ballotOf(x) && ballotOf(x) !== x)
+        const more = tribal.filter(x => x !== boot && !leads.has(x) && !onPlan.has(x) && !imm.has(x) && !attacking.has(x) && (scared(x) || planned.has(x)) && ballotOf(x) && ballotOf(x) !== x)
           .sort((p, q) => seen(p) - seen(q) || hs(p) - hs(q) || p.localeCompare(q));
         for (const x of more) {
           const friend = closest(x, tribal.filter(y => y !== x && y !== boot && getBond(x, y) >= 1));
@@ -2428,7 +2440,7 @@ export function airTdEpisode(ep) {
             })[venueNow] || { endurance: 'making fire', physical: 'climbing', mental: 'tying the shelter knots', intuition: 'fishing', social: 'fishing', strategic: 'tying the shelter knots' };
             const st = x => { try { return pStatsOf(x) || {}; } catch { return {}; } };
             // it ends when one of them has left the game, not when this camp is somebody else's
-            const alive = new Set(gs.activePlayers || []);
+            const alive = new Set([...(gs.activePlayers || []), ...leftThisEp(ep)]);
             if (M.cur && (!alive.has(M.cur.a) || !alive.has(M.cur.b))) M.cur = null;
             let cand = null;
             if (!M.cur && M.arcs < 2 && ep.num >= 2 && !merged) {

@@ -37,7 +37,15 @@ export function coupleScenes(ep, camp, members, phase, nextN, write, factsFor, {
   const out = [];
   const B = book();
   const ballotOf = x => (ep.votingLog || []).find(v => v.voter === x)?.voted || null;
+  // the day's engine moments here: a couple whose deal ends today, or one of whom writes the other's name tonight, gets no
+  // warm beat on top (read 2026-10-14, carnival ep 9: "I don't think our deal works anymore" and then, the same afternoon,
+  // "We fixed it. Not perfectly. But it's fixed", the night Hannah wrote Marissa's name)
+  const block = ep.campEvents?.[camp], day = Array.isArray(block) ? block : [...(block?.pre || []), ...(block?.post || [])];
+  const SOUR = /^(deal\.(end|double)|recruit\.poach|betray|caught\.)/;
+  const sour = (x, y) => ballotOf(x) === y || ballotOf(y) === x
+    || day.some(ev => SOUR.test(ev?.scene?.kind || '') && (ev.players || []).includes(x) && (ev.players || []).includes(y));
   for (const [x, y] of couplesIn(members)) {
+    if (sour(x, y)) continue;
     const rec = (B[key(x, y)] ||= { tension: null, opened: -99, daily: -99 });
     const tries = [];
     // a tribal night with different names (only after the challenge, when the camp knows it is voting)

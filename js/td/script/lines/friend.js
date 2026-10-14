@@ -545,7 +545,7 @@ const MEAL = [
     { beat: 'It is not quick. The food is awful. They both lose.' },
   ] },
   { id: 'fr.m5', turns: [
-    { by: 'a', say: "On a scale of one to ten?" },
+    { by: 'a', say: "On a scale of one to ten, how bad is dinner?" },
     { by: 'b', say: "Three." },
     { by: 'a', say: "Generous." },
     { by: 'b', say: "I'm in a good mood. You're here." },

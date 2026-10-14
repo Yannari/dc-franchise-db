@@ -37,6 +37,8 @@ const canScheme = x => VILLAIN.has(archOf(x)) || (!NICE.has(archOf(x)) && (st(x)
 const inShowmance = x => (gs.showmances || []).some(s => s.phase !== 'broken-up' && (s.players || []).includes(x));
 const together = (x, y) => (gs.showmances || []).some(s => s.phase !== 'broken-up' && (s.players || []).includes(x) && (s.players || []).includes(y));
 const pop = x => gs.popularity?.[x] || 0;
+/** Everybody this episode sends home: they were still in the game all day. */
+export const leftThisEp = ep => [ep.eliminated, ep.firstEliminated, ep.tiedDestinies?.eliminatedPartner, ep.ambassadorData?.ambassadorEliminated].filter(Boolean);
 const histOf = num => (gs.episodeHistory || []).find(h => h.num === num);
 // the closest friend of x here, not in `not`
 const friendOf = (x, members, not = [], min = 2) => members.filter(m => m !== x && !not.includes(m) && getBond(x, m) >= min)
@@ -222,7 +224,10 @@ const BADGE = { avenge: ['Revenge', 'red'], cling: ['Too Close', 'blue'], envy: 
 export function runArcs(ep, camp, members, phase, nextN, writeStory, max = 2) {
   const S = state();
   const out = [];
-  const alive = new Set(gs.activePlayers || members);
+  // in the game when the episode started: the story is written after the vote, when tonight's boot has already left
+  // gs.activePlayers (read 2026-10-14, carnival ep 8: "Is it terrible that I'm a little disappointed? / That Jade went
+  // home?" the morning of the day Jade went home, and Jade in the next scene)
+  const alive = new Set([...(gs.activePlayers || []), ...members, ...leftThisEp(ep)]);
   const merged = !!(ep.isMerge || gs.isMerged);
   const busy = () => new Set(S.list.filter(x => !x.done).flatMap(x => [x.a, x.b]));
   // a new arc: one a camp an episode, in the morning, the type least told so far first

@@ -83,7 +83,7 @@ export default {
     6: { calm: "I don't really know how to do strategy. I just ask people nicely, and I'm hoping that's enough.", loud: "I don't know how to do strategy! I just know how to ask nicely! Please let that be enough!" },
   },
   'nvu.d7': {
-    0: { warm: "Hey, you look like you've seen a ghost. What happened?", loud: "Whoa, why do you look like you've seen a ghost?", calm: "You look like you've seen a ghost." },
+    0: { warm: "Hey, why do you look like you've seen a ghost?", loud: "Whoa, why do you look like you've seen a ghost?", calm: "Why do you look like you've seen a ghost?" },
     2: { warm: "Maybe they were talking about something embarrassing?", dry: "Maybe they were talking about something embarrassing. Like your singing." },
     6: { warm: "I'm with you, okay? Let's go.", tough: "I'm with you. Let's go." },
   },

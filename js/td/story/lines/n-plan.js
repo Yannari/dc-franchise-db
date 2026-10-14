@@ -71,7 +71,7 @@ export default {
     { id: 'npl.cp2', turns: [
       { by: 'a', say: "Every vote so far, {target} and {partner} have written the same name. Every single one.", v: { dry: "{target} and {partner} have voted the same way every time. I checked. Twice." } },
       { by: 'b', say: "So which one?" },
-      { by: 'a', say: "{target}. {partner} on their own is just one more vote, and one vote we can handle." },
+      { by: 'a', say: "{target}. {partner} on {partner.posAdj} own is just one more vote, and one vote we can handle." },
     ] },
     { id: 'npl.cp3', turns: [
       { by: 'a', say: "If {target} and {partner} make it to the end together, we're done. One of them has to go, and soon." },

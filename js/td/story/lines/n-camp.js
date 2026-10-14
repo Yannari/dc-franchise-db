@@ -291,7 +291,7 @@ export default {
       { by: 'a', say: "Me neither." },
       { by: 'b', conf: "We caught nothing. I spent two hours with {a}, and it was the best two hours I've had here.", v: { tough: "No fish, but good company, so that's a fair trade.", emotional: "I didn't expect to have that much fun. I'm going to remember it." } },
     ] },
-    { id: 'ny.b2', place: 'work', turns: [
+    { id: 'ny.b2', place: 'work', when: { strangers: true }, turns: [
       { beat: "{a} and {b} are carrying firewood {here}." },
       { by: 'a', say: "So what do you do back home?", v: { warm: "Tell me about home! What do you do?", nerdy: "So what's your actual job? Back in the real world?", teen: "So what do you do back home? Like, school or...?" } },
       { by: 'b', say: "Not this." },
@@ -488,7 +488,7 @@ export default {
       { by: 'a', move: 'agree' },
       { by: 'a', conf: "{b} and I don't really get along, but nobody else stayed to finish, and that counts for something.", v: { blunt: "I don't like {b}, but {b} stayed, so respect." } },
     ] },
-    { id: 'ny.st2', place: 'aside', when: { band: ['cold', 'enemies'] }, turns: [
+    { id: 'ny.st2', place: 'work', when: { band: ['cold', 'enemies'] }, turns: [
       { by: 'a', say: "Of all the people to get stuck doing chores with.", v: { cruel: "Great. They stuck me with you.", dry: "Of course they put me on chores with you. Of course they did." } },
       { by: 'b', say: "Trust me, I feel the same." },
       { by: 'a', say: "Let's just get it done. No talking." },

@@ -134,7 +134,7 @@ export default {
     ] },
     { id: 'nk.pa2', place: 'secret', turns: [
       { by: 'a', say: "Where's your head at?", v: { calm: "So. Where are you at?", dry: "So, on a scale of fine to doomed, where are we?", teen: "Okay so where's your head at?" } },
-      { by: 'b', say: "Honestly? All over the place. What about yours?" },
+      { by: 'b', say: "Honestly? All over the place. You?" },
       { by: 'a', say: "Same. I just wanted to check I'm not the only one who doesn't know what's happening." },
       { by: 'b', say: "You're definitely not." },
       { by: 'a', say: "Good, then let's not know what's happening together. Quietly." },
@@ -173,7 +173,7 @@ export default {
       { by: 'a', say: "I've been doing a lot of checking." },
       { by: 'b', conf: "{a} is about to jump ship. Whether I'm the lifeboat is up to me." },
     ] },
-    { id: 'nk.ao3', place: 'secret', when: { merged: true }, turns: [
+    { id: 'nk.ao3', place: 'secret', when: { merged: true, strangers: true }, turns: [
       { by: 'a', say: "Can we talk? Not as old teams, just as us.", v: { warm: "Can we talk? Just you and me, not our old teams?", schemer: "Let's forget the old teams for a minute. Just you and me." } },
       { by: 'b', say: "My old team would kill me if they saw this." },
       { by: 'a', say: "Mine too. That's why we're out here." },
@@ -350,7 +350,7 @@ export default {
       { by: 'b', conf: "I wrote {a}'s name last night. {a} just thanked me for not writing {a}'s name. I don't know what to do with that.", v: { schemer: "{a} trusts me completely, which is going to be useful, and also a little sad.", warm: "I feel terrible. {a} thinks I'm the good one." } },
     ] },
     { id: 'nk.bd2', place: 'work', turns: [
-      { by: 'a', say: "I'm making a list of who I think voted for me.", v: { nerdy: "I'm compiling a list of suspects. Want to help?", tough: "I'm figuring out who voted for me. Then I'm dealing with them." } },
+      { by: 'a', say: "I'm making a list of who I think is coming for me.", v: { nerdy: "I'm compiling a list of suspects. Want to help?", tough: "I'm figuring out who's coming for me. Then I'm dealing with them." } },
       { by: 'b', say: "Oh yeah?" },
       { by: 'a', say: "Want to help? You know these people better than me." },
       { by: 'b', say: "Sure. Who's on it?" },

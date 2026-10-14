@@ -101,7 +101,7 @@ export default {
     B('nb2.wp1', "{leader} said if we don't split up {target} and {partner} now, we never will. I believe it, so it's {target}."),
     B('nb2.wp2', "{target} and {partner} are cute together. They're also two votes, and I can only fix one tonight. {target}.", null, { goofy: "{target}, I'm sorry to be the one who breaks up the happy couple. Okay, I'm a little bit not sorry." }),
     B('nb2.wp3', "{leader} wants {target} and {partner} split up before it's too late, and I've seen how they vote, so it's {target}."),
-    B('nb2.wp4', "{leader} picked {target} over {partner}, because {partner} on their own is just one vote. That makes sense to me. {target}."),
+    B('nb2.wp4', "{leader} picked {target} over {partner}, because {partner} on {partner.posAdj} own is just one vote. That makes sense to me. {target}."),
     B('nb2.wp5', "Every time {target} votes, {partner} votes the same. {leader} wants that over tonight, so it's {target}.", null, { dry: "{target} and {partner} have voted the same way every single time. Tonight they don't get the chance." }),
     B('nb2.wp6', "I actually like {target} and {partner} together. {leader} says that's exactly the problem, so it's {target}.", { band: ['friends', 'neutral'] }),
   ],

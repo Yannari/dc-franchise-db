@@ -87,7 +87,7 @@ export default {
   // ── protect: wants to look after people; scared of being betrayed by them ──
   'psy.protect': [
     { id: 'nps.r1', when: { moment: 'lost', lastBoot: true }, turns: [
-      { by: 'a', conf: "I promised {lastBoot} I'd keep {lastBoot} safe, back on the second day, and I meant it." },
+      { by: 'a', conf: "I promised {lastBoot} I'd keep {lastBoot} safe, and I meant it." },
       { by: 'a', conf: "And last night I couldn't. I keep running it back, every conversation, looking for the one I should have had.", v: { tough: "I failed. I'm not going to fail like that again, not for anybody I care about." } },
     ] },
     { id: 'nps.r2', when: { moment: 'quiet', pair: true }, turns: [

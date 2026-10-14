@@ -7,7 +7,7 @@
 
 export default {
   'nps.r1': {
-    0: { calm: "I told {lastBoot} on the second day that I'd keep {lastBoot} safe, and I meant it.", loud: "I PROMISED {lastBoot}! Day two, I promised I'd keep {lastBoot} safe, and I meant every word!", competitive: "I told {lastBoot} I'd keep {lastBoot} safe, and I don't make promises I don't plan on keeping.", schemer: "I promised {lastBoot} protection on day two. I meant it, which is rare for me." },
+    0: { calm: "I told {lastBoot} I'd keep {lastBoot} safe, and I meant it.", loud: "I PROMISED {lastBoot}! I promised I'd keep {lastBoot} safe, and I meant every word!", competitive: "I told {lastBoot} I'd keep {lastBoot} safe, and I don't make promises I don't plan on keeping.", schemer: "I promised {lastBoot} protection. I meant it, which is rare for me." },
     1: { loud: "And last night I couldn't do it, and I'm so angry I could scream. I keep going over every conversation.", earnest: "And last night I let {lastBoot} down. I keep going over every conversation, looking for the one I should have had.", competitive: "And last night I lost that one. I keep replaying it, looking for the move I missed." },
   },
   'nar.h2': {

@@ -137,12 +137,13 @@ function _tidySentence(sent, re, speech = false) {
     const h = hits[i];
     let rep = null;
     if (seen.has(h.name)) {
-      // Anybody else with the same pronoun between the last mention and this
-      // one makes the pronoun ambiguous: keep the name.
-      let lastIdx = -1;
-      for (let j = i - 1; j >= 0; j--) if (hits[j].name === h.name) { lastIdx = j; break; }
+      // Anybody else with the same pronoun earlier in the sentence makes the
+      // pronoun ambiguous: keep the name. (Not only between the two mentions:
+      // "Anastasia wants Jade out, and I'm going to tell Jade straight" became
+      // "tell her straight", and "her" reads as Anastasia, the subject. Read
+      // 2026-10-14, a Total Drama carnival season.)
       const p = pr(h.name);
-      const clash = hits.slice(lastIdx + 1, i).some(o => o.name !== h.name && pr(o.name).sub === p.sub);
+      const clash = hits.slice(0, i).some(o => o.name !== h.name && pr(o.name).sub === p.sub);
       if (!clash && p.sub) {
         const next = _nextWord(sent, h.end);
         const prev = _prevWord(sent, h.at);

@@ -44,7 +44,7 @@ export default {
       { by: 'a', say: "Nothing happened. That's the problem. Nobody's talked to me all day, and the last time that happened, the person it happened to went home." },
       { by: 'b', say: "So what are you thinking?" },
       { by: 'a', say: "{wrote}. If {wrote} goes, the people coming for me lose their loudest voice." },
-      { by: 'b', conf: "{a} has convinced {a.ref} it's {a} tonight. I've looked at the numbers, and honestly, {a} might not be wrong. Or {a} might be the only one who doesn't see that it's somebody else." },
+      { by: 'b', conf: "{a} has convinced {a.ref} it's {a.obj} tonight. I've looked at the numbers, and honestly, {a} might not be wrong. Or {a} might be the only one who doesn't see that it's somebody else." },
     ] },
     { id: 'nvu.d5', turns: [
       { by: 'a', say: "I'm going to be honest with you, I'm scared." },
@@ -74,7 +74,7 @@ export default {
     ] },
   ],
   'vp2.pair': [
-    { id: 'nvu.p1', turns: [
+    { id: 'nvu.p1', when: { couple: true }, turns: [
       { beat: "{target} rests {target.posAdj} head on {partner}'s shoulder by the fire. {a} looks away." },
       { by: 'a', say: "I can't watch that." },
       { by: 'b', say: "It's cute." },

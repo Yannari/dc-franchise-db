@@ -564,7 +564,11 @@ export function writeTribal(ep) {
   const rv = rb ? (writeStory('reveal', revealKind, { a: ra, b: rb, c: rc }, data, revealFacts, ctx(n++)) || (revealKind === 'surprised' ? writeStory('reveal', 'expected', { a: ra, b: rb, c: rc }, data, revealFacts, ctx(n++)) : null)) : null;
 
   // ── last words: their person, or the person they blame ──
-  const friend = closest.find(x => getBond(elim, x) >= 2) || null;
+  // a friend who didn't write the name first; never the one the reveal just caught (read 2026-10-14, carnival ep 9:
+  // "Richard? Did you write my name?" / "I'm sorry", and then Richard walked Marissa out, "I don't know what I'm going to
+  // do without you")
+  const friend = closest.find(x => getBond(elim, x) >= 2 && !forBoot.includes(x))
+    || closest.find(x => getBond(elim, x) >= 2 && !(blindside && x === rb)) || null;
   const enemy = [...others].filter(x => forBoot.includes(x)).sort((x, y) => getBond(elim, x) - getBond(elim, y))[0];
   const shot = !friend && enemy && getBond(elim, enemy) <= -2 ? enemy : null;
   let exitKind = friend ? 'friend' : shot ? 'shot' : 'alone';

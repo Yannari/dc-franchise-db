@@ -15,7 +15,7 @@ export default {
       { by: 'b', say: "Okay, that's a little creepy." },
       { by: 'a', say: "It's a lot creepy. Those two decide everything together, including how they vote." },
       { by: 'b', say: "So you want one of them gone." },
-      { by: 'a', say: "I want {target} gone. {partner} on their own is somebody we can work with. {partner} with {target} is a locked door." },
+      { by: 'a', say: "I want {target} gone. {partner} on {partner.posAdj} own is somebody we can work with. {partner} with {target} is a locked door." },
       { by: 'b', say: "And when {partner} finds out?" },
       { by: 'a', say: "{partner} will be sad for a day, and then {partner} will need new friends. We'll be very friendly." },
       { by: 'b', conf: "{a} isn't voting out {target}. {a} is recruiting {partner}, and {target} is just in the way." },

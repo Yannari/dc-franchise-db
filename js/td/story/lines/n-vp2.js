@@ -120,7 +120,7 @@ export default {
 
   // ── a pair ──
   'vp2.pair': [
-    { id: 'nvq.p1', turns: [
+    { id: 'nvq.p1', when: { couple: true }, turns: [
       { beat: "{target} and {partner} walk past, laughing, and disappear down the beach together. {a} waits until they're gone." },
       { by: 'a', say: "Have you ever seen one of them without the other?" },
       { by: 'b', say: "Not since about day two." },
@@ -130,7 +130,7 @@ export default {
       { by: 'b', say: "Which one?" },
       { by: 'a', say: "{target}. {partner} won't know what to do without {target}, and the other way round, I'm not so sure." },
       { by: 'b', say: "{partner} is going to be devastated." },
-      { by: 'a', say: "{partner} is going to be devastated and on their own, and somebody on their own needs friends. Guess who'll be right there." },
+      { by: 'a', say: "{partner} is going to be devastated and on {partner.posAdj} own, and somebody on their own needs friends. Guess who'll be right there." },
       { by: 'b', conf: "{a} already has a plan for {partner} after {target} goes. Sometimes I forget how far ahead {a} thinks, and then {a} says something like that." },
     ] },
   ],

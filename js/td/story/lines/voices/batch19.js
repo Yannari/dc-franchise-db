@@ -76,7 +76,7 @@ export default {
     7: { loud: "Yeah. I KNOW.", food: "Yeah. I know.", warm: "Yeah. I know.", theatrical: "Yes. I know.", dry: "Yeah. I know.", earnest: "Yeah. I know.", proud: "I know.", ditzy: "Yeah, I know." },
   },
   'nk.bd2': {
-    0: { warm: "I'm making a list of who I think voted for me.", loud: "I'm making a LIST of who I think voted for me!", anxious: "I'm making a list of who I think voted for me.", dry: "I'm making a list of who I think voted for me, and it's mostly everyone.", calm: "I'm making a list of who I think voted for me." },
+    0: { warm: "I'm making a list of who I think is coming for me.", loud: "I'm making a LIST of who I think is coming for me!", anxious: "I'm making a list of who I think is coming for me.", dry: "I'm making a list of who I think is coming for me, and it's mostly everyone.", calm: "I'm making a list of who I think is coming for me." },
     2: { warm: "Want to help? You know these people better than me.", earnest: "Will you help? You know these people better than me.", loud: "Want to HELP? You know these people better!", anxious: "Will you help? You know these people better than I do.", dry: "Want to help? You know these people better than me, unfortunately.", calm: "Want to help? You know these people better than me." },
     3: { quiet: "Sure. Who's on it?", warm: "Sure. Who's on it?", calm: "Sure. Who's on it?", loud: "Sure! Who's on it?", earnest: "Of course. Who's on it?", anxious: "Sure. Who's on it?" },
   },

@@ -37,8 +37,8 @@ export default {
       { by: 'h', say: "{a}, you've barely sat still since you got here. What's going on?" },
       { by: 'a', say: "What's going on is that people have been lying to me all day, and I know my name's being thrown around.", v: { emotional: "I'm scared, okay? I know my name is out there, and I don't know who to trust anymore." } },
       { by: 'h', say: "Do you have a name you'd rather see?" },
-      { by: 'a', say: "{target}, and I said that to {target.posAdj} face this afternoon, so I'm not saying anything new." },
-      { by: 'b', say: "You did, and I told you what I thought about it." },
+      { by: 'a', say: "{target}. I'm not going to pretend otherwise, not with {target.obj} sitting right there." },
+      { by: 'b', say: "I appreciate the honesty. I'll return it when I write mine." },
     ] },
     { id: 'ntr.s2', turns: [
       { by: 'a', say: "Can I say something before anyone asks me anything?" },

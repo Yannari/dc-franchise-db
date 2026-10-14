@@ -1453,7 +1453,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
     } else if (eventType === 'intimidation') {
       // Physical or social dominant player establishes presence — target is unnerved
       const a = _pick(group, n => Math.max(0.1, pStats(n).physical * 0.4 + pStats(n).boldness * 0.4 + 1));
-      const others = group.filter(p => p !== a);
+      // nobody leans on a friend (read 2026-10-14, carnival ep 8: Diego looming over Lynda, "you've never said hi to me",
+      // after six episodes on one tribe and an alliance together, and that night "you two have barely been apart")
+      const others = group.filter(p => p !== a && getBond(a, p) < 3);
       if (!others.length) continue;
       const b = wRandom(others, n => Math.max(0.1, (10 - pStats(n).boldness) * 0.4 + (10 - pStats(n).physical) * 0.2 + 1));
       addBond(b, a, -0.8);

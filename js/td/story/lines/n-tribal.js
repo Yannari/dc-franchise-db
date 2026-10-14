@@ -124,8 +124,8 @@ export default {
       { by: 'a', say: "What? No. No, that's not right.", v: { loud: "WHAT?! No way. No WAY!", dry: "Huh. Well. That's not how I thought that would go." } },
       { by: 'a', say: "{b}? Did you write my name?" },
       { by: 'b', say: "I hope you can respect a game move.", v: { cruel: "Did you really think you were safe?", warm: "I'm sorry. I'm really sorry." } },
-      { by: 'a', say: "A game move? I trusted you!" },
-      { by: 'b', say: "I know. That's why it worked." },
+      { by: 'a', say: "I trusted you!" },
+      { by: 'b', say: "I know. That's why it worked.", v: { warm: "I know. I'm so sorry." } },
     ] },
     { id: 'nr.b2', when: { count: true, voice: ['loud', 'tough', 'blunt'] }, turns: [
       { by: 'a', say: "Are you kidding me?!" },

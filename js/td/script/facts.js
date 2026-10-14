@@ -22,6 +22,10 @@ export const TD_FACT_KEYS = [
   'register', 'registerB', 'nice', 'villain', 'kitA', 'kitB', 'canFlirt',
   // where in the season and the episode
   'early', 'dayOne', 'late', 'merged', 'phase', 'tribal', 'immune',
+  // a and b have shared a camp for at most one earlier episode: getting-to-know-you talk ("so what do you do back
+  // home?") and "not as old teams" are theirs alone (read 2026-10-14, carnival ep 7: two Gophers who had lived
+  // together for six episodes asking about home at the merge; two Bass members talking about "our old teams")
+  'strangers',
   // the scene names a target ({target}) who is not in it
   'known',
   // where the scene is: a line that stages the dock airs only on the dock
@@ -83,6 +87,16 @@ export function registerOf(name) {
 
 const sharesAlliance = (a, b) => (gs.namedAlliances || []).some(al => al.active !== false
   && (al.members || []).includes(a) && (al.members || []).includes(b));
+// how many earlier episodes a and b spent in one camp: a tribe both started in, or the merge
+const sharedEps = (a, b, epNum) => {
+  let n = 0, merged = false;
+  for (const e of gs.episodeHistory || []) {
+    if (!(e?.num < epNum)) continue;
+    if (e.isMerge) merged = true;
+    if (merged || (e.tribesAtStart || []).some(t => t.members?.includes(a) && t.members?.includes(b))) n++;
+  }
+  return n;
+};
 const inShowmance = (a, b) => (gs.showmances || []).some(s => s.phase !== 'broken-up'
   && (s.players || []).includes(a) && (s.players || []).includes(b));
 
@@ -132,6 +146,7 @@ export function factsFor(scene, ctx = {}) {
     const ya = ageOf(a), yb = ageOf(b);
     if (ya != null && yb != null) f.gap = ya - yb >= 12 ? 'older' : yb - ya >= 12 ? 'younger' : 'same';
     f.showmance = inShowmance(a, b);
+    f.strangers = sharedEps(a, b, epNum) <= 1;
     try { f.kin = (REL_KINSHIP[kinshipBetween(a, b)]?.group || '').toLowerCase() || 'none'; } catch { f.kin = 'none'; }
   }
   const d = scene.data || {};

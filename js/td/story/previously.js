@@ -155,6 +155,10 @@ export function writePreviously(ep) {
     // (a sentence that opens on a name keeps its capital after "Meanwhile, ")
     const T = (t) => (!lead ? t : [...NAMES].some(n => t.startsWith(n)) || /^I\b/.test(t) ? lead + t : lead + t.charAt(0).toLowerCase() + t.slice(1));
     const kb = `${c.type}:${c.step}`;
+    // a couple targeted: the event's players are [the one plotting, the couple] (romance.js), so a and b are the plotter and
+    // one of the couple (read 2026-10-14: "Lynda and Ivy's little romance put a target on both of them", Lynda plotting
+    // against Ivy and Tristan)
+    const tg = kb === 'showmance:targeted' && (c.x?.players || []).length === 3 ? c.x.players : null;
     const say = {
       'rivalry:blowup': [`${a} and ${b} finally exploded at each other${sinceOf(c)}, and the whole camp had front-row seats.`, `${a} and ${b} had it out in front of everyone${sinceOf(c)}. It was loud. It was ugly. It was great.`, `${a} lost it at ${b}${sinceOf(c)}, and there was no taking it back.`],
       'rivalry:friction': [`${a} took a shot at ${b}${sinceOf(c)}, and ${b} did not let it go.`, `${a} and ${b} kept needling each other${sinceOf(c)}.`, `${a} made sure ${b} knew exactly what ${pr(a).sub} thought of ${pr(b).obj}${sinceOf(c)}.`],
@@ -173,7 +177,8 @@ export function writePreviously(ep) {
       'showmance:jealous': [`${a} did not love how close ${b} was getting to somebody else.`, `Jealousy reared its ugly head, and ${a} was not hiding it.`, `${a} caught ${b} getting cozy with somebody else, and fumed.`],
       'showmance:official': [`${a} and ${b} became the camp's newest couple. Everybody else threw up a little.`, `${a} and ${b}? Official. Gross. Great for ratings.`, `${a} and ${b} are a thing now. Try to act surprised.`],
       'showmance:spark': [`Sparks flew between ${a} and ${b}, which is gross, but honestly great for ratings.`, `Is something going on between ${a} and ${b}? Everybody thinks so, except maybe ${a} and ${b}.`, `${a} and ${b} got a little closer than teammates usually do.`],
-      'showmance:targeted': [`Somebody decided ${a} and ${b} were a little too cozy, and that had to stop.`, `${a} and ${b}'s little romance put a target on both of them.`, `Being a couple out here is a liability, and ${a} and ${b} found that out.`],
+      'showmance:targeted': tg ? [`${tg[0]} decided ${tg[1]} and ${tg[2]} were a little too cozy, and that had to stop.`, `${tg[1]} and ${tg[2]}'s little romance put a target on both of them, and ${tg[0]} was the one aiming.`, `Being a couple out here is a liability, and ${tg[0]} made sure ${tg[1]} and ${tg[2]} found that out.`]
+        : [`Somebody decided ${a} and ${b} were a little too cozy, and that had to stop.`, `${a} and ${b}'s little romance put a target on both of them.`, `Being a couple out here is a liability, and ${a} and ${b} found that out.`],
       'scheme:caught': [`${a} got caught red-handed${b ? ` by ${b}` : ''}. Whoops.`, `${a}'s little scheme blew up in ${pr(a).posAdj} face.`, `${a} got caught. Everybody saw. Nobody forgot.`],
       'scheme:move': [`${a} started pulling strings${b ? `, and ${b} was the puppet` : ''}.`, `${a} quietly went to work on ${b || 'the rest of camp'}.`, `${a} stirred the pot, and the pot stirred back.`],
       'idol:found': [`${a} found something hidden, and kept it very, very quiet.`, `${a} went digging, and came back with something shiny.`, `${a} got ${pr(a).posAdj} hands on an advantage. Sneaky.`],
@@ -201,7 +206,10 @@ export function writePreviously(ep) {
   const ts = prev.tribalStory || {};
   const plays = prev.idolPlays || [];
   // which ballot belongs to which boot: on a double tribal, the second vote has its own log
-  const votesFor = (log, n) => (log || []).filter(v => v.voted === n && v.voter !== n);
+  // (a stolen ballot was never cast, and the thief's second one is not in the log: read 2026-10-14, a Vote Steal night
+  // of four to two recapped as "three votes to three")
+  const votesFor = (log, n) => (log || []).filter(v => v.voted === n && v.voter !== n && !v.voteStolen);
+  const extraFor = n => plays.filter(p => ['voteSteal', 'extraVote'].includes(p.type) && !p.failed && p.target === n).length;
   const logOf = n => (votesFor(prev.votingLog2, n).length > votesFor(prev.votingLog, n).length ? { log: prev.votingLog2, votes: prev.votes2, alliances: prev.alliances2 || prev.alliances, second: true } : { log: prev.votingLog, votes: prev.votes, alliances: prev.alliances, second: false });
   const tribalShot = players => ({ tribal: true, players: players.filter(Boolean).slice(0, 4) });
   // a coach season's night (the user, 2026-10-10: the recap said Katie lost a revote; the votes were for
@@ -230,7 +238,8 @@ export function writePreviously(ep) {
       || [...voters].sort((p, q) => strat(q) - strat(p))[0];
     // the other side: the name the rest of them wrote
     const tally = {};
-    (log || []).filter(v => v.voted !== boot).forEach(v => { tally[v.voted] = (tally[v.voted] || 0) + 1; });
+    (log || []).filter(v => v.voted !== boot && !v.voteStolen).forEach(v => { tally[v.voted] = (tally[v.voted] || 0) + 1; });
+    if (!second) for (const k of Object.keys(tally)) tally[k] += extraFor(k);
     const [other, otherN] = Object.entries(tally).sort((p, q) => q[1] - p[1])[0] || [null, 0];
     const otherLead = other ? (booth.find(b => b.role === 'lead' && b.voted === other)?.voter || (log || []).filter(v => v.voted === other).map(v => v.voter).sort((p, q) => strat(q) - strat(p))[0]) : null;
     const otherPlan = other ? (alliances || []).find(al => al.target === other) : null;
@@ -271,10 +280,13 @@ export function writePreviously(ep) {
     const turned = topTwo ? [] : [...new Set([...flips, ...strikers])].filter(n => n !== lead);
     if (turned.length) H(pick([`And then ${list(turned)} switched, and that was that.`, `The swing vote${turned.length > 1 ? 's' : ''}? ${list(turned)}.`, `${list(turned)} decided it. Quietly. At the last second.`], 'flip'), tribalShot(turned.slice(0, 2)));
     // the idol that changed the math
-    const play = plays.find(p => p.player && (p.target === boot || p.player === boot || p.votesNegated));
+    // (an idol only: a Vote Steal carries a target too, and was recapped as "played an idol", read 2026-10-14)
+    const steal = idx === 0 && !second ? plays.find(p => p.type === 'voteSteal' && !p.failed && p.target === boot && p.stolenFrom) : null;
+    if (steal) H(pick([`And ${steal.player} took ${steal.stolenFrom}'s vote, right there at the vote, and used it on ${boot}.`, `${steal.player} played a Vote Steal: ${steal.stolenFrom} didn't get a vote, and ${steal.player} got two.`], 'steal'), tribalShot([steal.player, steal.stolenFrom]));
+    const play = plays.find(p => p.player && (!p.type || p.type === 'idol' || p.type === 'legacy') && !p.fake && (p.target === boot || p.player === boot || p.votesNegated));
     if (play && idx === 0) H(pick([`And then ${play.player} pulled out an idol, and the whole room did the math again.`, `${play.player} played an idol, and every plan in the room changed in a second.`], 'idol'), tribalShot([play.player]));
     // the result
-    const n = voters.length, m = otherN || 0;
+    const n = voters.length + (second ? 0 : extraFor(boot)), m = otherN || 0;
     // (an idol can leave the one who went home with fewer votes than the name it cancelled: "Three votes to four, and
     // Scott was out", read 2026-10-14)
     const score = topTwo ? `${num(n)} ${n === 1 ? 'vote' : 'votes'}, the second-most` : m > n ? `${num(n)} votes that counted against ${num(m)} that didn't` : m ? `${num(n)} votes to ${num(m)}` : n === 1 ? 'one vote' : `${num(n)} votes`;

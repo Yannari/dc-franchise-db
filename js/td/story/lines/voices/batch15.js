@@ -77,7 +77,7 @@ export default {
     4: { calm: "Nothing happened, and that's the problem. Nobody's talked to me all day, and last time that happened, that person went home.", food: "Nothing happened. Nobody's talked to me all day, not even at lunch, and the last time that happened, that person went home.", nerdy: "Nothing happened, which is the problem. Nobody's spoken to me all day, and the last person that happened to went home." },
     5: { competitive: "So what are you thinking?" },
     6: { calm: "{wrote}. If {wrote} goes, the people coming for me lose their loudest voice.", food: "{wrote}. If {wrote} goes, the people coming for me lose their loudest voice.", nerdy: "{wrote}. If {wrote} goes, whoever's coming for me loses their loudest voice." },
-    7: { anxious: "{a} has convinced {a.ref} it's {a} tonight, and I've looked at the numbers, and {a} might not be wrong. That scares me.", nerdy: "{a} thinks it's {a} tonight. I've run the numbers, and {a} might be right, or {a} might be about to make it true.", competitive: "{a} is convinced it's {a} tonight, and maybe so. Either way, I'm ready for whatever happens.", earnest: "{a} believes it's {a} tonight, and honestly, the numbers say {a} could be right.", quiet: "{a} thinks it's {a} tonight. {a} might be right." },
+    7: { anxious: "{a} has convinced {a.ref} it's {a.obj} tonight, and I've looked at the numbers, and {a} might not be wrong. That scares me.", nerdy: "{a} thinks it's {a} tonight. I've run the numbers, and {a} might be right, or {a} might be about to make it true.", competitive: "{a} is convinced it's {a} tonight, and maybe so. Either way, I'm ready for whatever happens.", earnest: "{a} believes it's {a} tonight, and honestly, the numbers say {a} could be right.", quiet: "{a} thinks it's {a} tonight. {a} might be right." },
   },
   'ny.r2': { 6: { schemer: "I don't hate {b}. I just want to beat {b}, every single time, and I want {b} to know I planned it." } },
   'ny.f2': {
@@ -200,7 +200,6 @@ export default {
     7: { warm: "That's {votes}. I'm not celebrating until the votes are read, but that's {votes}.", schemer: "That's {votes}. I won't celebrate until they're read, but that's {votes}.", quiet: "That's {votes}. Not celebrating yet.", earnest: "That's {votes}, and I won't celebrate until they're read, but that's {votes}." },
   },
   'nl5.t1': {
-    2: { nerdy: "I like {b}, and so does everybody else, and that's exactly what worries me.", ditzy: "I like {b}! Everybody likes {b}, which is bad, I think?", schemer: "I like {b}, and everybody does, and that's what worries me.", competitive: "I like {b}, and everybody else does too. That's what worries me." },
     3: { schemer: "If {b} gets to the end, I lose to {b}. I like {b}, and I still have to plan for that.", nerdy: "If {b} reaches the end, I lose to {b}. I hate thinking about somebody I like that way.", competitive: "If {b} gets to the end, I lose. I like {b}, but I like winning more." },
   },
   'nk.sc3': {

@@ -113,7 +113,7 @@ export default {
     { id: 'nl5.t1', turns: [
       { beat: "{a} watches {b} laughing with half the camp by the fire." },
       { by: 'a', conf: "I like {b}. Everybody likes {b}. That's the problem." },
-      { by: 'a', conf: "I like {b}, and that's exactly what worries me, because everybody else likes {b} too." },
+      { by: 'a', conf: "Nobody votes out the person they like most. That's how {b} wins this without even trying." },
       { by: 'a', conf: "If {b} gets to the end, I lose to {b}. I hate thinking like that about somebody I actually like.", v: {"cruel":"If {b} gets to the end, {b} wins, and I'm not going to let that happen.","warm":"I hate that I'm even thinking about voting {b} out. {b} has been nothing but kind to me."} },
       { by: 'a', conf: "So either somebody deals with {b} soon, or we're all just playing for second place." },
     ] },

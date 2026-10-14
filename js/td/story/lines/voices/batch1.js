@@ -9,7 +9,7 @@
 export default {
   // psy.protect: a promised to keep {lastBoot} safe, and couldn't
   'nps.r1': {
-    0: { quiet: "I told {lastBoot} I'd keep {lastBoot} safe. I don't say things like that much, so I meant it.", theatrical: "I swore it. Day two, I swore I'd keep {lastBoot} safe, like a knight, and I meant every word.", earnest: "I gave {lastBoot} my word on day two that I'd look out for {lastBoot}, and I don't break my word.", kid: "I promised {lastBoot} I'd look after {lastBoot}, like a real pinky promise, and I meant it.", warm: "I promised {lastBoot} I'd look after {lastBoot}, back on the second day, and I really, really meant it." },
+    0: { quiet: "I told {lastBoot} I'd keep {lastBoot} safe. I don't say things like that much, so I meant it.", theatrical: "I swore it. I swore I'd keep {lastBoot} safe, like a knight, and I meant every word.", earnest: "I gave {lastBoot} my word that I'd look out for {lastBoot}, and I don't break my word.", kid: "I promised {lastBoot} I'd look after {lastBoot}, like a real pinky promise, and I meant it.", warm: "I promised {lastBoot} I'd look after {lastBoot}, and I really, really meant it." },
     1: { quiet: "And last night I couldn't. I keep going over it in my head.", theatrical: "And last night I failed. I keep replaying it, every word, like a terrible movie I can't turn off.", nerdy: "And last night I couldn't. I've gone over every conversation from yesterday, and I still can't find where it went wrong.", kid: "And then last night I couldn't do it, and now {lastBoot}'s gone, and it's not fair.", calm: "And last night I couldn't. I'm trying to work out what I missed, so it doesn't happen again." },
   },
   // arc.warn.overheard: a overheard {pitcher} pushing {target}

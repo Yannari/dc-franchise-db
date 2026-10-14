@@ -25,8 +25,8 @@ export default {
       { by: 'b', conf: "I walked out there thinking it was a talk. It was a whole alliance. That was either a welcome or an ambush. I chose welcome." },
     ] },
     { id: 'no.j2', place: 'secret', when: { third: true, voice: ['bossy', 'schemer', 'calm', 'competitive'] }, turns: [
-      { by: 'a', say: "Sit down. Everybody, this is {b}, and {b}, this is everybody." },
-      { by: 'b', say: "Hi, everybody." },
+      { by: 'a', say: "Sit down. You know everybody here. Now it's official." },
+      { by: 'b', say: "Hi, everybody. Again." },
       { by: 'c', say: "Rules first: we vote together, every single time." },
       O('d', "And nobody talks about this meeting. To anyone."),
       O('e', "Not even to your showmance. If you get one."),

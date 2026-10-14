@@ -308,7 +308,7 @@ export default {
       { by: 'b', say: "People are nervous. Nobody's said a name to me." },
       { by: 'c', say: "Somebody asked me if we're all voting together. I said I didn't know." },
       O('d', "Good. Keep saying that."),
-      { by: 'c', say: "I will." },
+      { by: 'c', say: "I will.", with: 'd' },
       O('e', "Then nobody knows anything about us. Perfect."),
       O('f', "For now."),
       { by: 'a', say: "We'll pick the name together, just not here. Later, one at a time." },

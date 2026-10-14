@@ -318,7 +318,7 @@ export default {
       { beat: "{a} sits down right next to {b} {here}. Too close." },
       { by: 'b', say: "Can I help you?", v: { dry: "Can I help you? Or are you just here to loom?", anxious: "Um, hi... can I help you?" } },
       { by: 'a', say: "Just saying hi." },
-      { by: 'b', say: "You've never said hi to me." },
+      { by: 'b', say: "You don't usually say hi to me." },
       { by: 'a', say: "I'm saying it now. I'm also saying I know you were talking about me last night." },
       { by: 'b', say: "I wasn't..." },
       { by: 'a', say: "Sure. Have a nice day." },

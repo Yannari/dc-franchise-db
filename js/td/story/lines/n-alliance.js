@@ -683,7 +683,7 @@ export default {
       { by: 'b', say: "Yes. Obviously yes." },
       { by: 'b', conf: "{a} would fight anybody for the people on {a.posAdj} side. I'd much rather be one of those people." },
     ] },
-    { id: 'na.d6', place: 'water', turns: [
+    { id: 'na.d6', place: 'water', when: { showmance: false }, turns: [
       { beat: "{a} and {b} are {here}, throwing rocks into the water." },
       { by: 'b', say: "Okay, what's going on? You've been weird all morning.", v: { blunt: "Spit it out. You've been weird all day.", warm: "Hey, are you okay? You've been quiet all morning." } },
       { by: 'a', say: "Have I?" },

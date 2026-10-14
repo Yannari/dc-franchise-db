@@ -18,9 +18,11 @@
 //
 // Archetype appetite as in The Traitors: a social-butterfly or loyal-soldier is
 // always in somebody's circle; a floater or a chaos-agent drifts.
-import { getPerceivedBond, getBond, addBond } from '../bonds.js';
-import { S, archetypeOf, addScene, clamp } from './state.js';
-import { threatRead } from './respect.js';
+import { getPerceivedBond, addBond } from '../bonds.js';
+import { S, archetypeOf, addScene } from './state.js';
+import { betrayed } from './rel.js';
+import { noteAlliance } from './knowledge.js';
+import { isOutsider } from './blocs.js';
 
 const APPETITE = {
   'social-butterfly': 1.3, 'loyal-soldier': 1.3, showmancer: 1.1, hero: 1.1, mastermind: 1.2, schemer: 1.1,
@@ -43,6 +45,8 @@ export function pull(state, a, b) {
   if (!state.rookie[a] && state.rookie[b]) p += 0.6;      // a vet sees a number
   if (state.rookie[a] && !state.rookie[b]) p += 0.8;      // a rookie sees safety
   if (state.rookie[a] && state.rookie[b]) p += 0.5;
+  // Outsiders to the power find each other (blocs.js).
+  if (state.ep > 1 && isOutsider(state, a) && isOutsider(state, b)) p += 1.2;
   return p;
 }
 
@@ -77,6 +81,7 @@ export function formAlliances(state, rng, { max = 3 } = {}) {
       origin: members.every(m => state.origin[m] && state.origin[m] === state.origin[leader]) ? state.origin[leader] : null };
     state.alliances.push(al);
     for (const a of members) for (const b of members) if (a < b) addBond(a, b, 0.8);
+    noteAlliance(state, al);
     addScene(state, 'alliance-form', members, { alliance: al.id, name, leader, origin: al.origin }, members, 'private');
     made.push(al);
   }
@@ -89,17 +94,6 @@ export function powerAlliance(state) {
   return live.sort((a, b) => b.members.length - a.members.length)[0] || null;
 }
 
-// The leader picks this week's target among the eligible: the biggest threat
-// outside the group, weighed by the leader's own grudges.
-export function proposeTarget(state, al, eligible) {
-  const outside = eligible.filter(n => !al.members.includes(n));
-  if (!outside.length) return null;
-  const L = al.leader;
-  const score = n => threatRead(state, n) * S(L, 'strategic') / 10 - getPerceivedBond(L, n) * 0.4
-    + (state.revenge[L]?.[n] || 0) * 0.8;
-  return outside.sort((a, b) => score(b) - score(a))[0];
-}
-
 // After a vote and a call-out: did an ally turn on an ally? Did the target
 // fall on somebody's friend? Cracks end an alliance or push a member out.
 export function afterVote(state, rng, { ballots, votedIn, calledOut, by }) {
@@ -109,7 +103,9 @@ export function afterVote(state, rng, { ballots, votedIn, calledOut, by }) {
     for (const b of ballots) if (al.members.includes(b.voter) && al.members.includes(b.target)) betrayals.push({ a: b.voter, b: b.target, how: 'vote' });
     if (calledOut && al.members.includes(by) && al.members.includes(calledOut)) betrayals.push({ a: by, b: calledOut, how: 'callout' });
     for (const x of betrayals) {
-      addBond(x.a, x.b, x.how === 'callout' ? -3 : -2);
+      addBond(x.a, x.b, x.how === 'callout' ? -2 : -1.2);
+      betrayed(x.b, x.a, x.how === 'callout' ? 1.4 : 1);
+      for (const m of inside) if (m !== x.a && m !== x.b) addBond(m, x.a, -0.6);
       addScene(state, 'alliance-betrayal', [x.a, x.b], { alliance: al.id, how: x.how }, state.active, 'public');
     }
     if (betrayals.length) {
@@ -138,11 +134,4 @@ export function endAlliance(state, al, why) {
   if (al.ended) return;
   al.ended = true; al.endedEp = state.ep; al.why = why;
   addScene(state, 'alliance-end', al.members.filter(m => state.active.includes(m)), { alliance: al.id, why }, al.members, 'private');
-}
-
-// A member whose friend is the target, or who doubts the leader: the drift
-// that makes a power alliance crack on its own (spec §4.4).
-export function memberDoubt(state, al, member, target) {
-  if (!target) return 0;
-  return clamp(getBond(member, target) * 0.18 - S(member, 'loyalty') * 0.05 + (state.mind[member]?.paranoia || 0) * 0.03, 0, 1);
 }

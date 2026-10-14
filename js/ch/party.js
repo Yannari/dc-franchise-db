@@ -9,7 +9,8 @@
 // show's chaos engine, so it stays a real risk without becoming a weekly event:
 // a physical fight needs a bad grudge, a short fuse and a big night together.
 import { getBond, addBond } from '../bonds.js';
-import { S, archetypeOf, addScene, feel, clamp } from './state.js';
+import { S, archetypeOf, addScene, clamp } from './state.js';
+import { grudgeOf, intimidated, remember } from './rel.js';
 import { nudge } from './mind.js';
 import { romanceDay } from './romance.js';
 
@@ -24,7 +25,9 @@ export function partyNight(state, rng) {
   for (const a of state.active) {
     for (const b of state.active) {
       if (a >= b) continue;
-      const beef = Math.max(0, -getBond(a, b)) + feel(state.revenge, a, b) + feel(state.revenge, b, a);
+      const beef = Math.max(0, -getBond(a, b)) + grudgeOf(a, b) * 0.6 + grudgeOf(b, a) * 0.6;
+      // The same two do not fight every night: a fight within two episodes cools it.
+      if (state.lastFight?.[`${a}|${b}`] >= state.ep - 1) continue;
       if (beef < 2.5) continue;
       const fuse = ((10 - S(a, 'temperament')) + (10 - S(b, 'temperament'))) / 20;
       const hot = (archetypeOf(a) === 'hothead' || archetypeOf(b) === 'hothead') ? 1.4 : 1;
@@ -33,9 +36,12 @@ export function partyNight(state, rng) {
       if (seen.has(a) || seen.has(b)) continue;
       seen.add(a); seen.add(b);
       // Who started it: the shorter fuse and the bigger grudge.
-      const starter = (10 - S(a, 'temperament')) + feel(state.revenge, a, b) >= (10 - S(b, 'temperament')) + feel(state.revenge, b, a) ? a : b;
+      const starter = (10 - S(a, 'temperament')) + grudgeOf(a, b) >= (10 - S(b, 'temperament')) + grudgeOf(b, a) ? a : b;
+      (state.lastFight ||= {})[`${a}|${b}`] = state.ep;
       const other = starter === a ? b : a;
       addBond(a, b, -2);
+      intimidated(starter, other, 0.8);
+      remember(other, starter, 'started-a-fight', 1.4);
       state.rec[a].fights++; state.rec[b].fights++;
       nudge(state, a, 'morale', -0.6); nudge(state, b, 'morale', -0.6);
       // Physical: the starter's fuse, their boldness, how drunk.

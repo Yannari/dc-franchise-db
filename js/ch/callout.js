@@ -17,7 +17,9 @@
 // strongest reason is kept so the speech matches it (the dialogue layer reads
 // `reason`).
 import { getPerceivedBond } from '../bonds.js';
-import { S, mayScheme, feel, weighted, logistic } from './state.js';
+import { S, mayScheme, weighted, logistic } from './state.js';
+import { grudgeOf, oweOf, protectOf } from './rel.js';
+import { planOf } from './plans.js';
 import { arenaRead, freeRide } from './respect.js';
 import { allianceOf } from './alliances.js';
 
@@ -35,13 +37,15 @@ export function calloutTerms(state, x, y) {
   const bold = S(x, 'boldness') / 10, temper = S(x, 'temperament') / 10, loyal = S(x, 'loyalty') / 10;
   const pWin = logistic((mine - theirs) * 0.6);
   const survive = pWin * 4 * (1 - bold * 0.45);
-  const grudge = (Math.max(0, -getPerceivedBond(x, y)) * 0.35 + feel(state.revenge, x, y) * 0.9) * (1.25 - temper * 0.5);
+  // A grudge: resentment and the receipts (they voted me in, they called me out).
+  const grudge = (Math.max(0, -getPerceivedBond(x, y)) * 0.2 + grudgeOf(x, y) * 0.75
+    + (planOf(state, x)?.revenge?.includes(y) ? 0.8 : 0)) * (1.25 - temper * 0.5);
   const hunger = (state.rookie[x] ? 0.25 : 0) + (state.psyche[x] === 'prove' ? 0.35 : 0) + freeRide(state, x) * 0.4
     + (state.psyche[x] === 'redemption' ? 0.2 : 0);
   const prove = (theirs / 10) * bold * 3 * (1 + hunger);
   const avoid = -Math.max(0, theirs - 6.2) * 0.55 * (1 - bold * 0.8);
   // Friends, the alliance, a showmance, a deal, a debt.
-  const bond = getPerceivedBond(x, y);
+  const bond = protectOf(x, y);
   const schemer = mayScheme(x) && S(x, 'strategic') >= 7 && S(x, 'loyalty') <= 3;
   let protect = 0;
   if (bond > 2.5) protect -= (bond - 2.5) * 0.7 * (0.4 + loyal);
@@ -49,7 +53,8 @@ export function calloutTerms(state, x, y) {
   if (al && al.members.includes(y)) protect -= schemer ? 0.8 : 3 * (0.4 + loyal);
   if (coupleOf(state, x) === y) protect -= 9;
   if (dealBetween(state, x, y)) protect -= 2.5 * (0.3 + loyal);
-  protect -= feel(state.debts, x, y) * 0.8;
+  protect -= oweOf(x, y) * 0.6;
+  if (planOf(state, x)?.core?.includes(y)) protect -= 2.5 * (0.4 + loyal);
   return { survive, grudge, prove, avoid, protect, pWin };
 }
 

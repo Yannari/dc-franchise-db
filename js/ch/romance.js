@@ -8,7 +8,8 @@
 // breakup in the house becomes vote material (a grudge and a revenge entry).
 import { romanticCompat } from '../players.js';
 import { getBond, addBond } from '../bonds.js';
-import { S, archetypeOf, addScene, bumpMap } from './state.js';
+import { S, archetypeOf, addScene } from './state.js';
+import { sparked, remember } from './rel.js';
 import { nudge } from './mind.js';
 
 export const MAX_SHOWMANCES = 4;
@@ -26,13 +27,14 @@ export function romanceDay(state, rng, { boost = 1 } = {}) {
       const k = key(a, b);
       const flirt = (S(a, 'social') + S(b, 'social') + S(a, 'boldness') + S(b, 'boldness')) / 40
         + (archetypeOf(a) === 'showmancer' || archetypeOf(b) === 'showmancer' ? 0.25 : 0);
-      const p = 0.012 * flirt * boost * (1 + Math.max(0, getBond(a, b)) * 0.08);
+      const p = 0.03 * flirt * boost * (1 + Math.max(0, getBond(a, b)) * 0.1);
       if (rng() < p) {
         state.sparks[k] = (state.sparks[k] || 0) + 1 + rng();
         addBond(a, b, 0.7);
+        sparked(a, b, 0.6);
         addScene(state, 'spark', [a, b], { level: +state.sparks[k].toFixed(2) }, [a, b], boost > 1 ? 'party' : null);
       }
-      if ((state.sparks[k] || 0) >= 2.6 && live(state).length < MAX_SHOWMANCES && rng() < 0.35) {
+      if ((state.sparks[k] || 0) >= 2.2 && live(state).length < MAX_SHOWMANCES && rng() < 0.45) {
         state.couples.push({ a, b, since: state.ep, ended: false });
         delete state.sparks[k];
         addBond(a, b, 1.5);
@@ -55,7 +57,7 @@ export function breakupCheck(state, rng) {
     const left = ender === c.a ? c.b : c.a;
     c.endedBy = ender;
     addBond(c.a, c.b, -4);
-    bumpMap(state.revenge, left, ender, 1.2);
+    remember(left, ender, 'dumped-me', 2);
     nudge(state, left, 'morale', -2.5); nudge(state, left, 'homesick', 1);
     addScene(state, 'breakup', [ender, left], {}, state.active, 'public');
   }

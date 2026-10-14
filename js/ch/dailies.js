@@ -18,6 +18,9 @@ import { S, mayScheme, addScene, noise, shuffle, clamp, weighted } from './state
 import { performanceMod, nudge } from './mind.js';
 import { giveRespect, threatRead } from './respect.js';
 import { blendScore, injuryRoll } from './arena.js';
+import { remember, dailyWon, respected } from './rel.js';
+import { noteThrow, knowsThrow } from './knowledge.js';
+import { trustOf } from './rel.js';
 
 export const DAILIES = [
   { id: 'cliff-relay', name: 'Cliff Relay', physicality: 1.2, modes: ['pairs', 'teams', 'solo'],
@@ -92,6 +95,7 @@ export function makePairs(state, rng) {
         left.splice(left.indexOf(chosen), 1);
         out.push([p, chosen]);
         addBond(p, chosen, 0.6);
+        remember(chosen, p, 'worked-with-me', 0.8, { picked: true });
       }
       // Anyone left over (uneven divisions) joins a pair; the last pick is noticed.
       const last = out[out.length - 1]?.[1];
@@ -140,7 +144,10 @@ export function playDaily(state, rng, { division }) {
   for (const unit of units) {
     for (const n of unit) {
       const thr = throwIntent(state, rng, n, unit, division);
-      let s = blendScore(n, daily.blend) * performanceMod(state, n, 0.5) + noise(rng) * 0.9;
+      // A daily is long and messy (a slip, a wrong turn, a good line): the day's
+      // form is a bigger share of the result than in a one-on-one, where the
+      // better athlete usually wins. Spread measured by the audit's daily share.
+      let s = blendScore(n, daily.blend) * performanceMod(state, n, 0.5) + noise(rng) * 1.9;
       if (thr) { s *= 1 - thr * 0.45; throws.push({ name: n, size: +thr.toFixed(2) }); }
       indiv[n] = s;
     }
@@ -155,7 +162,9 @@ export function playDaily(state, rng, { division }) {
     winners = [...ranked[0]];
   }
   const last = [...ranked[ranked.length - 1]];
-  for (const w of winners) { state.rec[w].dailyWins++; giveRespect(state, w, 'dailyWin'); nudge(state, w, 'confidence', 0.8); }
+  for (const w of winners) { state.rec[w].dailyWins++; giveRespect(state, w, 'dailyWin'); nudge(state, w, 'confidence', 0.8); dailyWon(w, state.active, mode === 'solo' ? 0.6 : 0.25); }
+  // Partners who won together.
+  if (mode === 'pairs') for (const [a, b] of [winners]) if (a && b) { addBond(a, b, 0.8); remember(a, b, 'worked-with-me', 1); remember(b, a, 'worked-with-me', 1); }
   for (const l of last) { state.rec[l].dailyLast++; nudge(state, l, 'confidence', -0.5); }
   for (const n of state.active) nudge(state, n, 'energy', -1.2 * daily.physicality);
   // Throwing, and who catches it.
@@ -167,6 +176,7 @@ export function playDaily(state, rng, { division }) {
       if (rng() < t.size * S(o, 'intuition') / 10 * 0.12) {
         caught.push({ thrower: t.name, by: o });
         addBond(o, t.name, -1.2);
+        remember(o, t.name, 'threw-it', 1.6);
         break;
       }
     }
@@ -174,9 +184,11 @@ export function playDaily(state, rng, { division }) {
   for (const c of caught) {
     state.rec[c.thrower].caught++;
     giveRespect(state, c.thrower, 'caughtThrowing');
+    noteThrow(state, c.thrower, c.by);
     addScene(state, 'throw-caught', [c.by, c.thrower], { daily: daily.id }, state.active, 'public');
   }
   for (const t of throws.filter(x => !caught.some(c => c.thrower === x.name))) {
+    noteThrow(state, t.name);
     addScene(state, 'throw', [t.name], { daily: daily.id, size: t.size }, [t.name], 'private');
   }
   // Injuries in the physical ones.

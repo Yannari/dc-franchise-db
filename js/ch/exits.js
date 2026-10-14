@@ -20,8 +20,10 @@ export function quitRisk(state, name) {
   const low = Math.max(0, 5 - m.morale) / 5;
   const grit = (S(name, 'endurance') + S(name, 'temperament') + S(name, 'boldness')) / 30;
   const friends = state.active.filter(o => o !== name && getBond(name, o) >= 4).length;
-  return clamp(0.02 * home * home * (0.6 + low) * (1.4 - grit) * (friends ? 0.7 : 1.15)
-    * (state.psyche[name] === 'home' ? 1.5 : 1), 0, 0.12);
+  // Pride: respect earned is respect a quit throws away, and nobody wants TJ's speech.
+  const pride = 1 / (1 + Math.max(0, state.rec[name]?.respect || 0) * 0.25 + (state.rec[name]?.arenaW || 0) * 0.3);
+  return clamp(0.014 * home * home * (0.6 + low) * (1.4 - grit) * (friends ? 0.7 : 1.15) * pride
+    * (state.psyche[name] === 'home' ? 1.5 : 1), 0, 0.1);
 }
 
 export function removePlayer(state, name, how, extra = {}) {
@@ -31,8 +33,6 @@ export function removePlayer(state, name, how, extra = {}) {
   state.active = state.active.filter(n => n !== name);
   state.gone.push({ name, ep: state.ep, day: state.day, how, place, ...extra });
   partnerGone(state, name);
-  // Grudges against someone who has gone are settled.
-  for (const a of Object.keys(state.revenge)) delete state.revenge[a][name];
 }
 
 export function quit(state, name) {

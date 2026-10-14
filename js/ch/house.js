@@ -15,7 +15,9 @@
 //   psyche       one person's need gets a moment (the C-story)
 //   the return   the Arena winner walks back in and faces the ones who voted
 import { getBond, addBond, getPerceivedBond } from '../bonds.js';
-import { S, addScene, feel, bumpMap, shuffle, weighted, mayScheme } from './state.js';
+import { S, addScene, shuffle, weighted, mayScheme } from './state.js';
+import { remember, resentOf, intimidated } from './rel.js';
+import { noteDeal } from './knowledge.js';
 import { nudge } from './mind.js';
 import { allianceOf, activeAlliances, formAlliances, leave } from './alliances.js';
 import { dealBetween } from './callout.js';
@@ -49,6 +51,8 @@ function deals(state, rng) {
     if (rng() < 0.4 + S(b, 'strategic') * 0.04) {
       state.deals.push({ id: state.deals.length + 1, a, b, ep: state.ep, broken: null });
       addBond(a, b, 0.6);
+      noteDeal(state, a, b);
+      remember(a, b, 'promise', 1); remember(b, a, 'promise', 1);
       addScene(state, 'deal', [a, b], { kind: 'insurance' }, [a, b], 'private');
     }
   }
@@ -64,7 +68,8 @@ function vetsAndRookies(state, rng) {
     if (mayScheme(v) || S(v, 'boldness') >= 7) {
       const r = rookies[Math.floor(rng() * rookies.length)];
       addBond(v, r, -1);
-      bumpMap(state.revenge, r, v, 0.6);
+      intimidated(v, r, 0.5);
+      remember(r, v, 'talked-down-to', 1);
       addScene(state, 'vet-dismisses', [v, r], {}, state.active, 'public');
     }
   }
@@ -87,9 +92,9 @@ function apologies(state, rng) {
   for (const a of state.active) {
     for (const [b, g] of Object.entries(state.guilt[a] || {})) {
       if (!state.active.includes(b) || rng() > 0.3 * g) continue;
-      const accepted = rng() < 0.35 + S(b, 'temperament') * 0.05 - feel(state.revenge, b, a) * 0.1;
+      const accepted = rng() < 0.35 + S(b, 'temperament') * 0.05 - resentOf(b, a) * 0.08;
       addBond(a, b, accepted ? 1.2 : -0.3);
-      if (accepted) bumpMap(state.revenge, b, a, -1);
+      if (accepted) remember(b, a, 'made-amends', 1.2);
       delete state.guilt[a][b];
       addScene(state, 'apology', [a, b], { accepted }, [a, b], 'private');
     }

@@ -21,7 +21,7 @@ import { setGs, gs } from '../core.js';
 import { addBond } from '../bonds.js';
 import { romanticCompat } from '../players.js';
 import { streamFor } from '../dr/rng.js';
-import { newState, blankRecord, addScene, bumpMap, inDivision, noise } from './state.js';
+import { newState, blankRecord, addScene, inDivision, noise } from './state.js';
 import { DEFAULT_OPTIONS, formatOf } from './format.js';
 import { buildSchedule, elimsFor, divisionFor } from './schedule.js';
 import { initMind, driftDay, nudge } from './mind.js';
@@ -36,6 +36,10 @@ import { romanceDay, breakupCheck } from './romance.js';
 import { quitRisk, quit, medical, disqualify, removePlayer } from './exits.js';
 import { houseDay, psycheMoment, returnToHouse } from './house.js';
 import { playFinal } from './final.js';
+import { reviseAll } from './plans.js';
+import { spreadDay, syncActive } from './knowledge.js';
+import { morningAfter } from './fallout.js';
+import { calledOut, arenaWon, remember } from './rel.js';
 
 function pop(name, d) {
   if (!gs.popularity) gs.popularity = {};
@@ -92,7 +96,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
   for (const b of carried?.bonds || []) {
     if (!cast.includes(b.a) || !cast.includes(b.b) || !b.resent) continue;
     // The one it is about carries the grudge (franchise-carry: `resent`).
-    bumpMap(state.revenge, b.b, b.a, Math.min(2, Math.abs(b.delta) * 0.4));
+    remember(b.b, b.a, 'old-grudge', Math.min(2.5, Math.abs(b.delta) * 0.5), { why: b.why });
   }
   for (const k of carried?.kin || []) {
     if (!cast.includes(k.a) || !cast.includes(k.b)) continue;
@@ -112,6 +116,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     if (state.origin[a] && state.origin[a] === state.origin[b]) recog.push([a, b]);
   }
   state.day = 1;
+  state.plans = {};
+  syncActive(state);
   addScene(state, 'arrival', cast, { recognised: recog, kin: (carried?.kin || []).filter(k => cast.includes(k.a) && cast.includes(k.b)) }, cast, 'villa');
 
   const schedule = buildSchedule({ total: cast.length, finalists: opts.finalists, daysPerEpisode: opts.daysPerEpisode, gendered: opts.gendered });
@@ -133,6 +139,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     for (const n of state.active) driftDay(state, n);
     houseDay(state, R('house1'));
     romanceDay(state, R('romance1'));
+    reviseAll(state);
+    spreadDay(state);
     const division = divisionFor(state, prevDiv, opts.finalists);
     prevDiv = division;
     epRec.division = division;
@@ -154,6 +162,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     state.day = plan.firstDay + 1;
     for (const n of state.active) driftDay(state, n);
     houseDay(state, R('house2'));
+    spreadDay(state);
+    reviseAll(state);
     epRec.exits.push(...dayExits(state, R('exits2')));
     const immune = daily.winners.filter(w => state.active.includes(w));
     const need = state.active.length - opts.finalists;
@@ -171,8 +181,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
         votedIn = delib.volunteer.name; volunteer = true;
         state.rec[votedIn].volunteered++;
       } else {
-        vote = houseVote(state, R(`vote${k}`), { eligible, delib, immune, winners: immune });
-        voteFallout(state, vote);
+        vote = houseVote(state, R(`vote${k}`), { eligible, delib, winners: immune });
+        voteFallout(state, vote, delib);
         votedIn = vote.votedIn;
         epRec.votes.push(vote);
         for (const n of eligible) if (n !== votedIn) { state.rec[n].survivedVotes++; giveRespect(state, n, 'survivedVote'); }
@@ -195,13 +205,14 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       }
       used.add(co.opponent);
       state.rec[co.opponent].calledOut++;
-      bumpMap(state.revenge, co.opponent, votedIn, 1);
+      calledOut(votedIn, co.opponent, co.reason);
       const deal = dealBetween(state, votedIn, co.opponent);
       if (deal) breakDeal(state, deal, votedIn, 'callout');
       epRec.callouts.push({ by: votedIn, opponent: co.opponent, reason: co.reason, terms: co.terms, ranked: co.ranked || null });
       addScene(state, 'callout', [votedIn, co.opponent], { reason: co.reason }, state.active, 'public');
       afterVote(state, R(`after${k}`), { ballots: vote?.ballots || [], votedIn, calledOut: co.opponent, by: votedIn });
-      matches.push({ a: votedIn, b: co.opponent, volunteer, voters: (vote?.ballots || []).filter(x => x.target === votedIn).map(x => x.voter) });
+      matches.push({ a: votedIn, b: co.opponent, volunteer, vote, callout: { by: votedIn, opponent: co.opponent, reason: co.reason },
+        voters: (vote?.ballots || []).filter(x => x.target === votedIn).map(x => x.voter) });
     }
 
     // ── Day 3: the Arena ──
@@ -220,7 +231,10 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       nudge(state, winner, 'confidence', 1.6); nudge(state, winner, 'morale', 1);
       pop(winner, duel.comeback ? 2 : duel.upset ? 1.5 : 0.6);
       addScene(state, 'arena', [m.a, m.b], { game: duel.game, winner, loser, upset: duel.upset, comeback: duel.comeback }, state.active, 'arena');
+      arenaWon(winner, loser, state.active, { margin: duel.upset ? 1.4 : 1 });
       removePlayer(state, loser, 'arena', { by: winner, game: duel.game });
+      syncActive(state);
+      epRec.fallout = (epRec.fallout || []).concat(morningAfter(state, { duel, vote: m.vote, callout: m.callout, meetings: delib?.meetings || [] }));
       // A winner hurt in the Arena can still be pulled out.
       if (injuryRoll(state, R(`hurt${k}`), winner, 1.3) && R(`med${k}`)() < 0.2) {
         medical(state, winner); epRec.exits.push({ name: winner, how: 'medical' });
@@ -242,7 +256,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
 }
 
 function summarise(delib) {
-  return { targets: delib.targets, pitches: delib.pitches.length, threats: delib.threats,
-    volunteer: delib.volunteer, intents: delib.intents };
+  return { targets: delib.targets, meetings: delib.meetings, pitches: delib.pitches, campaigns: delib.campaigns,
+    threats: delib.threats, volunteer: delib.volunteer, intents: delib.intents, hunted: delib.hunted };
 }
 

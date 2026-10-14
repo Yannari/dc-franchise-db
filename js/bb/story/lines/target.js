@@ -47,7 +47,7 @@ export default {
       { by: 'b', say: "Now?" },
       { by: 'a', say: "Now. Before it's too late." },
       { by: 'b', say: "Too late for what?" },
-      { by: 'a', say: "Before {target} decides it on the jury. Or worse, before {target} wins the whole thing." },
+      { by: 'a', say: "Before {target} makes it to the jury. Or worse, before {target} wins the whole thing." },
       { by: 'b', say: "You really think {target} could win?" },
       { by: 'a', say: "Everybody likes {target}. Do you know how hard that is to beat at the end?" },
       { by: 'b', say: "...Yeah. Okay. Yeah." },

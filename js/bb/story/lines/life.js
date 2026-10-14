@@ -462,7 +462,7 @@ export default {
       { by: 'b', say: "Hey. Hey. Come here." },
       { by: 'a', say: "I'm fine. I'm fine. I'm just—" },
       { by: 'b', say: "You're not fine. That's okay." },
-      { by: 'a', say: "My meter's just… really low. I can't keep… being in here, I'm losing— I'm losing myself a bit." },
+      { by: 'a', say: "I'm just… so tired. I can't keep… being in here, I'm losing— I'm losing myself a bit." },
       { by: 'b', say: "I know." },
       { by: 'a', say: "Everyone's playing, all the time, and I just want one conversation that isn't a move." },
       { by: 'b', say: "This one isn't a move." },

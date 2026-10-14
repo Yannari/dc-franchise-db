@@ -188,7 +188,7 @@ export default {
       { by: 'a', say: "Better. I want to be third. Not left out. Third." },
       { by: 'b', say: "And if we say no?" },
       { by: 'a', say: "Then I tell everyone what I just told you." },
-      { by: 'b', dr: "I've just been talked into a final three over orange juice. It was so polite I didn't realise I'd said yes until it was done." },
+      { by: 'b', dr: "{a} knew about us, and now {a} wants in. I said yes, because the other choice was the whole house finding out." },
     ] },
     { id: 'ax3.4', turns: [
       { by: 'a', say: "Why did {c} know who I was voting for?" },
@@ -236,7 +236,7 @@ export default {
       { by: 'a', say: "Every single vote is not a coincidence. It's a pattern. It's a final two." },
       { by: 'b', say: "You've been watching me?" },
       { by: 'a', say: "I've been watching everybody. You're just the easiest." },
-      { by: 'b', dr: "I've been talking to the same three people all week. Before the next vote I need to talk to somebody new, or I'll be the one nobody knows." },
+      { by: 'b', dr: "{a} noticed I talk to {c} before every vote. If {a} noticed, other people have. I need to stop being so easy to read." },
     ] },
     { id: 'ax3.8', room: 'storage-room', when: { third: true }, turns: [
       { beat: '{a} walks into the storage room. {b} and {c} are inside, whispering. They stop.' },

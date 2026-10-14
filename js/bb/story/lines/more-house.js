@@ -24,7 +24,7 @@ export default {
       { beat: 'Somebody in the next room turns the music up. Neither of them notices.' },
       { by: 'a', say: "You know what? Forget it. You're not worth the energy." },
       { by: 'b', say: "Funny, you've used a lot of it." },
-      { by: 'a', dr: "I wanted to clear the air. Turns out the air was full of {b}." },
+      { by: 'a', dr: "I wanted to clear the air. It went the other way." },
       { by: 'b', dr: "Did I enjoy that? A bit. Should I have? Probably not." },
     ] },
     { id: 'sa2.2', when: { third: true }, turns: [

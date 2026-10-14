@@ -30,6 +30,7 @@ import { STORY_POOLS } from './lines/index.js';
 import { getBond } from '../../bonds.js';
 import { addInsight } from './voice.js';
 import { pickTone, voiceLine } from './register.js';
+import { spotFor, onIsland, openingAt } from './places.js';
 
 const ledger = () => ((gs.bb ||= {}).storyLedger ||= newLedger());
 const ROOM = { kitchen: 'Kitchen', 'living-room': 'Living Room', bedroom: 'Bedroom', 'hoh-room': 'HOH Room',
@@ -293,27 +294,13 @@ export function roomFromText(lines) {
   return null;
 }
 
-// The places people go so they are not overheard (the user, 2026-10-06: "the bathroom, the
-// storage room... the places where people are not easily bothered: the potential isn't used
-// enough, not that I want it everywhere"). A conversation that needs privacy goes to one of them
-// some of the time: a deal with the Head of Household in the HOH room, plotting and alliance talk
-// in the storage room, a quick whispered deal or somebody falling apart in the bathroom, a late
-// secret in the Have-Not room. Never a crowd, never every time, never twice in a row.
-const PRIVATE_SHARE = 4;   // in ten
-export function privateRoomFor(kind, cast, ctx, salt) {
-  const k = String(kind || '');
-  const n = (cast || []).length;
-  if (!n || n > 4) return null;
-  const h = [...String(salt)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
-  if (h % 10 >= PRIVATE_SHARE) return null;
-  const withHoh = ctx?.hoh && cast.includes(ctx.hoh);
-  let room = null;
-  if (/deal|pact|plan|bloc|target\.(pitch|lobby|count)|power-hoh|campaign/.test(k) && withHoh) room = 'hoh-room';
-  else if (/^(alliance|scheme)|bloc-|plan-|scheme-|deals-|target\.(gossip|pitch|lobby|count)|recruit|poach/.test(k)) room = (h >> 4) % 3 === 0 && n <= 2 ? 'bathroom' : 'storage-room';
-  else if (/homesick|breakdown|cry|apology|cold/.test(k) && n <= 2) room = 'bathroom';
-  else if (/showmance|couple|secret|latenight/.test(k) && n <= 2) room = (h >> 4) % 2 ? 'have-not-room' : 'storage-room';
-  if (!room || room === ctx?.avoidRoom) return null;
-  return room;
+// A scene moved to a spot (places.js) opens there, unless its own first line already sets the scene.
+function staging(sc) {
+  if (!sc?.spot || !Array.isArray(sc.lines) || sc.lines[0]?.kind === 'beat') return sc;
+  const talkers = [...new Set(sc.lines.filter(l => l.by && l.kind === 'say').map(l => l.by))];
+  const t = openingAt(sc.spot, talkers, sc.id);
+  if (t) sc.lines.unshift({ kind: 'beat', by: null, text: t });
+  return sc;
 }
 
 // Is this houseguest named in the text, as a whole name ("Raj's", not "Rajesh")?
@@ -328,7 +315,8 @@ function background(lines, sc, ctx, salt, loud) {
   // the table while somebody says Priya still needs to go)
   const spoken = lines.map(l => String(l.text || '')).join(' ');
   const others = shuffled((ctx.present || []).filter(n => !sc.cast.includes(n) && !nameIn(n, spoken)), salt);
-  if (others.length < 2 || !SHARED.has(sc.room)) return lines;
+  // out on the island (the pier, a pond) there is no house around: nobody splashing in the pool
+  if (others.length < 2 || !SHARED.has(sc.room) || onIsland(sc.spot)) return lines;
   const who = { x: others[0], y: others[1] };
   const rng = stableRng(gs.bb?.seasonSalt || 0, 'story-bg', salt);
   const out = lines.slice();
@@ -410,9 +398,13 @@ function writeStoryScene0(line, step, ctx) {
   // folded into the kitchen around it; it is marked, and the director airs it as its own scene
   // (the user, 2026-10-06: "it didn't switch scenes, we were still in the kitchen")
   const named = entry.room ? null : roomFromText(entry.turns.filter(t => t.beat).slice(0, 1).map(t => ({ kind: 'beat', text: t.beat })));
-  const hidden = !entry.room && !named && !ctx.inSet ? privateRoomFor(`${line.type}.${step.step}.${step.outcome}`, base.cast, ctx, base.id) : null;
+  // a conversation that wants privacy goes to one of the places for it (bb/story/places.js): the
+  // storage room, the bathroom, or out on the island
+  const sp = !entry.room && !named && !ctx.inSet ? spotFor(`${line.type}.${step.step}.${step.outcome}`, base.cast, ctx, base.id, JSON.stringify(entry.turns)) : null;
+  const hidden = sp?.room || null;
   if (entry.room || (named && named !== 'diary-room' && named !== room) || hidden) {
     room = entry.room || named || hidden; base.room = room; base.roomName = ROOM[room] || base.roomName; if (ctx.inSet) base.ownRoom = true;
+    if (sp && room === sp.room) { base.spot = sp.spot; base.roomName = sp.label; }
   }
   // A scene that does not set its own room moves along if the last scene was in the same one
   // (five bedroom scenes in a row read as one long night). Decided here, BEFORE the background
@@ -479,9 +471,15 @@ function writeGameTalk0(talk, ctx, at) {
   }
   // a scene staged outdoors ("the backyard", "the hammock", "by the pool") is in the backyard
   if (!entry.room && /backyard|hammock|pool|lounger|grass/i.test(entry.turns[0]?.beat || '')) room = 'backyard';
+  // ...and a private one that stages nowhere can go somewhere private (bb/story/places.js)
+  const staged = entry.room || /backyard|hammock|pool|lounger|grass/i.test(entry.turns[0]?.beat || '')
+    || roomFromText(entry.turns.filter(t => t.beat).slice(0, 1).map(t => ({ kind: 'beat', text: t.beat })));
+  const sp = staged ? null : spotFor(`talk.${kind}`, cast, ctx, salt, JSON.stringify(entry.turns));
+  if (sp) room = sp.room;
   const lines = render(entry, who, ctx, data);
   const used = cast.filter(n => lines.some(l => l.by === n || (l.kind === 'beat' && l.text.includes(n))));
-  const sc = { ...base, room, roomName: ROOM[room] || 'Living Room', cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: false, lineId: entry.id };
+  const sc = { ...base, room, roomName: sp?.label || ROOM[room] || 'Living Room', cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: false, lineId: entry.id,
+    ...(sp ? { spot: sp.spot } : {}) };
   // private talk is private: the room around it only where people would be (never a shut door)
   const shut = kind === 'bond.vent' || /door shut|closes the door|shuts the door|door,? shut|voices? (low|down)|whisper|quiet/i.test(JSON.stringify(entry.turns));
   sc.lines = shut ? lines : background(lines, sc, ctx, sc.id, false);
@@ -613,14 +611,15 @@ function writeEngineScene0(beat, ctx, at) {
   // what they are doing says where they are: breakfast is not made in the backyard, and a scene
   // that opens "Storage room." is in the storage room
   const textRoom = roomFromText(lines);
-  const hiddenRoom = !meeting && !textRoom ? privateRoomFor(id, cast, ctx, `${ctx.week?.num || 0}|${ctx.stretch}|${id}|${cast.join('>')}`) : null;
+  const sp = !meeting && !textRoom ? spotFor(id, cast, ctx, `${ctx.week?.num || 0}|${ctx.stretch}|${id}|${cast.join('>')}`, JSON.stringify(lines)) : null;
+  const hiddenRoom = sp?.room || null;
   const room = meeting ? 'living-room' : textRoom && textRoom !== 'diary-room' ? textRoom : hiddenRoom || (ROOM[beat.location] ? beat.location : 'living-room');
   if (meeting) for (const n of present) if (!cast.includes(n)) cast.push(n);
   const fam = FAMILY_WHY.find(([re]) => re.test(id))?.[1];
   const badge = beat.badgeText ? `${String(beat.badgeText).charAt(0)}${String(beat.badgeText).slice(1).toLowerCase()}.` : null;
   const why = [...(badge ? [badge] : []), ...(fam ? [fam] : []), ...standings(cast)];
   const sc = { id: `ev:${ctx.week?.num || 0}:${ctx.stretch}:${id}:${cast.join('>')}`, line: null, type: 'event', step: id, outcome: 'any',
-    room, roomName: ROOM[room] || 'Living Room', cast, mood: /blow|grudge|confront|fight/.test(id) ? 'drama' : /^scheme-/.test(id) ? 'scheming' : /^bloc-|^plan-/.test(id) ? 'plan' : 'deals', at, fixedRoom: true, recap: false,
+    room, roomName: (sp && room === sp.room ? sp.label : null) || ROOM[room] || 'Living Room', ...(sp && room === sp.room ? { spot: sp.spot } : {}), cast, mood: /blow|grudge|confront|fight/.test(id) ? 'drama' : /^scheme-/.test(id) ? 'scheming' : /^bloc-|^plan-/.test(id) ? 'plan' : 'deals', at, fixedRoom: true, recap: false,
     lineId: beat.lineId || null, why, lines };
   if (/alliance-formed|alliance-forms/.test(id) && beat.allianceName) sc.title = titleOf(beat.allianceName, cast);
   if (id === 'alliance-recruited' && beat.allianceName && beat.joined) sc.title = { kind: 'joined', name: beat.allianceName, members: [beat.joined] };
@@ -708,11 +707,11 @@ const voiced = (sc, kind, ctx) => {
   return addInsight(sc, kind, ctx?.week?.num);
 };
 export function writeStoryScene(line, step, ctx) {
-  return voiced(writeStoryScene0(line, step, ctx), `${line?.type}.${step?.step}`, ctx);
+  return staging(voiced(writeStoryScene0(line, step, ctx), `${line?.type}.${step?.step}`, ctx));
 }
 export function writeGameTalk(talk, ctx, at) {
-  return voiced(writeGameTalk0(talk, ctx, at), String(talk?.kind || ''), ctx);
+  return staging(voiced(writeGameTalk0(talk, ctx, at), String(talk?.kind || ''), ctx));
 }
 export function writeEngineScene(beat, ctx, at) {
-  return voiced(writeEngineScene0(beat, ctx, at), String(beat?.eventId || ''), ctx);
+  return staging(voiced(writeEngineScene0(beat, ctx, at), String(beat?.eventId || ''), ctx));
 }

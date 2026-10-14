@@ -25,7 +25,7 @@ import { arenaFor } from '../bb/comp-arenas.js';
 import { pronouns } from '../players.js';
 import { voiceLine } from '../bb/story/register.js';
 import { players as ROSTER } from '../core.js';
-import { pickPlate, placeOf } from './plates.js';
+import { pickPlate, placeOf, plateBuilt } from './plates.js';
 import { seatedJurors } from '../bb/jury.js';
 
 // The engine's own moments that happen AT a ceremony (the user, 2026-10-06: "most of the time the
@@ -2957,10 +2957,11 @@ function storyLifeScreen(scenes, ctx, n) {
     const meal = set === 'kitchen' && /\b(dinner|breakfast|lunch|at the table|eating)\b/i.test(said);
     // a private talk outside can slip off to one of the island's hidden spots
     const secret = /^(scheming|plan|deals|campaign)$/.test(sc.mood || '') && sc.cast.length <= 3;
-    const plate = meal ? pickPlate('dining', sc.id, said, 'meal') : pickPlate(set, sc.id, said, secret ? 'secret' : 'house');
+    // a scene the writer staged at a spot (bb/story/places.js: the storage room, the pier) plays on it
+    const plate = sc.spot && plateBuilt(sc.spot) ? sc.spot : meal ? pickPlate('dining', sc.id, said, 'meal') : pickPlate(set, sc.id, said, secret ? 'secret' : 'house');
     // the label is the room the scene is really in, or the island spot its plate is (a talk at the pier is not "Backyard")
     const place = placeOf(plate);
-    const label = place?.name || sc.roomName || ROOM_NAME[set];
+    const label = place?.name || (sc.spot ? sc.roomName : null) || sc.roomName || ROOM_NAME[set];
     const cam = place?.cam || CAM[set];
     const scene = { set: meal && plate ? 'dining' : set, room: label, cam, kicker: `Cam ${String(cam).padStart(2, '0')} · ${label}`,
       cast: sc.cast.map((p, i) => [p, xs[i]]), mood: sc.mood || 'house', time: sc._clock, slate: true, ...(plate ? { plate } : {}), ...(sc.why?.length ? { why: sc.why } : {}),

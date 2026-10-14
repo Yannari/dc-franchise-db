@@ -63,6 +63,9 @@ export function spotFor(kind, cast, ctx, salt, text = '') {
   const k = String(kind || '');
   const n = (cast || []).length;
   if (!n || n > 4) return null;
+  // a rally is a speech to whoever is in the room, not a secret (the read of 2026-10-14: "Who here
+  // feels safe?" asked of the reeds at the north pond)
+  if (/rally/.test(k)) return null;
   const h = [...String(salt)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
   if (h % 10 >= PRIVATE_SHARE) return null;
   const withHoh = ctx?.hoh && cast.includes(ctx.hoh);

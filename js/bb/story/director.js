@@ -187,7 +187,13 @@ export function airStorylines(week) {
       if (engAired >= 10 || (engAired >= 6 && wt < 4) || (engAired >= 4 && wt < 3)) { if (wt < 4) continue; break; }
       const key = [...beat.players].sort().join('|');
       if (shown.has(key) || shown.has(String(beat.eventId))) continue;
-      const sc = writeEngineScene(beat, { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) }, at);
+      // a nominee working a voter is a campaign pitch, and airs as one: found alone, the case and the
+      // reply, the last push and a Diary Room (the read of 2026-10-14: it aired as the case and a
+      // one-line reply, "You made a good point. It doesn't change anything.", and nothing else)
+      const ectx = { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) };
+      const pitch = beat.eventId === 'power-nom-campaign' && (beat.players || []).length === 2
+        ? writeCampaignScene(beat, ectx, at, `nom|${week.num || 0}|${beat.players.join('>')}`) : null;
+      const sc = pitch ? { ...pitch, step: beat.eventId } : writeEngineScene(beat, ectx, at);
       if (!sc || rejoins(sc)) continue;
       // a fragment that moves nothing (a single spoken line, no setup) does not air; the moments that
       // move the game (vote machinery, HOH, veto, house meetings) still do, however short

@@ -98,7 +98,8 @@ export function pickTone(cands, who) {
 // are their own replies and stay as written.
 const FN = {
   yes: /^(yes|yeah|sure)[.!]?$/i,
-  ack: /^(okay|ok|fine|alright|all right|okay, okay)[.!]?$/i,
+  // ("Fine." is also how somebody slept: "Sleep well?" "Fine." came out as "Right.")
+  ack: /^(okay|ok|alright|all right|okay, okay)[.!]?$/i,
   no: /^(no|nope|no way)[.!]?$/i,
   why: /^why\?$/i,
   know: /^(i know)[.!]?$/i,

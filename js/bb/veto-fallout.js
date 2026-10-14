@@ -194,7 +194,10 @@ export function applyVetoFallout({
       try { rememberBBStrategy(hoh, holder, 'crossed-me', damage * 2, { week: weekNum }); } catch { /* texture */ }
       draw(rng);
       beats.push(scene('veto-overruled', 'vfall.overruled', { a: hoh, b: holder },
-        { ending: 'scene', saved: saved || 'a nominee' }, `${holder}'s veto breaks up ${hoh}'s block.`,
+        // a holder who was on the block and saved themselves is not "{b} took {saved} off": the lines
+        // about somebody else being saved wait (the read of 2026-10-14: "Because Owen is my friend",
+        // said by Owen)
+        { ending: 'scene', saved: saved || 'a nominee', intent: saved && saved === holder ? 'self' : 'other' }, `${holder}'s veto breaks up ${hoh}'s block.`,
         [hoh, holder], 'THE PLAN, IN PIECES', 'red', { week, hoh }));
     } else if (saved && saved !== holder) {
       // Said out loud, because "the veto was used and the Head of Household did

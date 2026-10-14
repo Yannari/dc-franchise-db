@@ -60,7 +60,10 @@ function historyOf(me, o, upTo) {
 }
 
 // the sentence, by the kind of scene, the voice, and the history
-const KIND = t => /feud|friction|argument|cold|snap|grudge|blow|provocateur|confront/.test(t) ? 'feud'
+// (a style scene is a game scene, whatever the style: b in it is a's closest person, so a provocateur's
+// style scene closing on "we'll be fine by dinner, Hicks just needs to cool off" was a fight nobody had)
+const KIND = t => /(^|[^a-z])style\./.test(t) ? 'game'
+  : /feud|friction|argument|cold|snap|grudge|blow|provocateur|confront/.test(t) ? 'feud'
   : /alliance|deal|pact|bloc|checkin/.test(t) ? 'ally'
     : /showmance|romance|couple|flirt|spark/.test(t) ? 'heart'
       : /target|gossip|lobby|block|campaign|scheme|hohweek|plan|nom|veto|style.|power|phase|deals|jury|endgame|prejury|nexthoh|outside|bb./.test(t) ? 'game' : 'life';

@@ -33,6 +33,17 @@ export function removePlayer(state, name, how, extra = {}) {
   state.active = state.active.filter(n => n !== name);
   state.gone.push({ name, ep: state.ep, day: state.day, how, place, ...extra });
   partnerGone(state, name);
+  // Their alliances lose them. A group whose leader went home is led by the
+  // most strategic member still in the house, or it is over (manual §11.5:
+  // nobody who has left the game takes part in a scene).
+  for (const al of state.alliances) {
+    if (al.ended || !al.members.includes(name)) continue;
+    al.members = al.members.filter(m => m !== name);
+    (al.former ||= []).push(name);
+    const inside = al.members.filter(m => state.active.includes(m));
+    if (inside.length < 2) { al.ended = true; al.endedEp = state.ep; al.why = 'numbers'; continue; }
+    if (al.leader === name) al.leader = [...inside].sort((a, b) => S(b, 'strategic') - S(a, 'strategic'))[0];
+  }
 }
 
 export function quit(state, name) {

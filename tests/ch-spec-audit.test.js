@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 import { setPlayers, players } from '../js/core.js';
 import { playChallengeSeason } from '../js/ch/season.js';
 import { challengeCast } from './helpers/ch-cast.js';
+import { EVENTS } from '../js/ch/events.js';
 
 const SEASONS = Number(process.env.CH_SEASONS) || 100;
 const pct = (a, b) => (b ? (100 * a / b).toFixed(1) + '%' : 'n/a');
@@ -18,7 +19,7 @@ const inc = (o, k, d = 1) => { o[k] = (o[k] || 0) + d; };
 
 describe('The Challenge spec audit', () => {
   it('plays a hundred seasons and prints every rate', () => {
-    const m = { chanceDailyShare: [], eps: [], finalists: [], balanced: 0, topDailyShare: [], maxVotedIn: [], arenas: 0, votedInWins: 0,
+    const m = { castArch: {}, evFires: {}, evPairMax: 0, evPairRepeats: 0, evPairs: 0, unseen: [], minShare: [], chanceDailyShare: [], eps: [], finalists: [], balanced: 0, topDailyShare: [], maxVotedIn: [], arenas: 0, votedInWins: 0,
       upsets: 0, comebacks: 0, reasons: {}, quits: [], medicals: [], dqs: [], overnightQuits: [], instant: 0,
       fights: [], physical: [], showmances: [], breakups: [], volunteers: [], volunteerWins: 0, volunteerAll: 0,
       throws: [], caught: [], flips: [], ballots: 0, falseYes: [], outings: [], pleas: 0, pleasMoved: 0,
@@ -90,12 +91,27 @@ describe('The Challenge spec audit', () => {
       m.outings.push(sc('outing')); m.threats.push(sc('leverage-threat'));
       m.flips.push(r.episodes.flatMap(e => e.votes).flatMap(v => v.ballots).filter(b => b.flip).length);
       m.scenes.push(st.scenes.length);
+      // House events: fires per kind, the same event between the same people,
+      // and who never gets a beat of their own.
+      const evIds = new Set(EVENTS.map(e => e.id));
+      const pairCount = {};
+      const appear = Object.fromEntries(names.map(n => [n, 0]));
+      for (const x of st.scenes) {
+        if (!evIds.has(x.kind)) continue;
+        inc(m.evFires, x.kind);
+        const k = x.kind + '|' + [...x.who].slice(0, 2).sort().join('|');
+        pairCount[k] = (pairCount[k] || 0) + 1;
+        for (const w of x.who) if (w in appear) appear[w]++;
+      }
+      for (const n of Object.values(pairCount)) { m.evPairs++; if (n > 1) m.evPairRepeats++; m.evPairMax = Math.max(m.evPairMax, n); }
+      m.unseen.push(Object.values(appear).filter(v => v === 0).length);
       m.alliances.push(st.alliances.length);
       for (const a of st.alliances) {
         inc(m.allianceEnd, a.ended ? (a.why || 'ended') : 'lasted');
         const early = a.formedEp <= 2 ? 'sameOrigin' : 'lateSameOrigin';
         m[early][1]++; if (a.origin) m[early][0]++;
       }
+      for (const n of names) inc(m.castArch, players.find(p => p.name === n)?.archetype || '?');
       m.castAll += names.length; m.finalAll += r.final.finalists.length;
       m.rookieAll += names.filter(n => st.rookie[n]).length;
       m.rookieFinal += r.final.finalists.filter(n => st.rookie[n]).length;
@@ -136,8 +152,14 @@ describe('The Challenge spec audit', () => {
     line('mornings after with mourners; blames', `${(m.mornings / SEASONS).toFixed(2)} / ${(m.blamed / SEASONS).toFixed(1)}`);
     line('rookies: share of cast / of final', `${pct(m.rookieAll, m.castAll)} / ${pct(m.rookieFinal, m.finalAll)}`);
     line('champion stat rank in division', mean(m.champRank), 'of 12; 6.5 = stats do not matter');
-    line('champion archetypes', JSON.stringify(m.champArch));
+    const champs = Object.values(m.champArch).reduce((a, b) => a + b, 0);
+    line('champion archetypes: share of champions vs share of casts', Object.entries(m.castArch).sort((a, b) => b[1] - a[1])
+      .map(([k, v]) => `${k} ${pct(m.champArch[k] || 0, champs)} vs ${pct(v, m.castAll)}`).join(', '));
     line('scenes per season', mean(m.scenes));
+    line('house events per season', (Object.values(m.evFires).reduce((a, b) => a + b, 0) / SEASONS).toFixed(1));
+    line('same event, same pair, twice in a season', pct(m.evPairRepeats, m.evPairs), `worst ${m.evPairMax}x`);
+    line('cast with no house event at all', mean(m.unseen));
+    line('event fires per season', Object.entries(m.evFires).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${(v / SEASONS).toFixed(1)}`).join(', '));
     console.log('\n' + out.join('\n'));
     expect(m.finalists.every(n => n >= 4)).toBe(true);
   });

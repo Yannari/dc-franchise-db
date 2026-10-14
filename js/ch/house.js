@@ -19,7 +19,7 @@ import { S, addScene, shuffle, weighted, mayScheme } from './state.js';
 import { remember, resentOf, intimidated } from './rel.js';
 import { noteDeal } from './knowledge.js';
 import { nudge } from './mind.js';
-import { allianceOf, activeAlliances, formAlliances, leave } from './alliances.js';
+import { allianceOf, activeAlliances, formAlliances, growAlliances, leave } from './alliances.js';
 import { dealBetween } from './callout.js';
 
 export function houseDay(state, rng) {
@@ -38,6 +38,7 @@ export function houseDay(state, rng) {
   paranoidLeaders(state, rng);
   // New alliances where the house has drifted (and early, the first ones).
   formAlliances(state, rng, { max: state.ep <= 1 ? 3 : 4 });
+  growAlliances(state, rng);
 }
 
 function deals(state, rng) {

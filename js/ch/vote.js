@@ -32,7 +32,7 @@ import { arenaRead, freeRide, arenaBase } from './respect.js';
 import { allianceOf, activeAlliances, leave } from './alliances.js';
 import { coupleOf, dealBetween, calloutTerms } from './callout.js';
 import { nudge } from './mind.js';
-import { planOf, targetScore, stageOf } from './plans.js';
+import { planOf, targetScore } from './plans.js';
 import { trustOf, protectOf, grudgeOf, cooperateWith, believePitch, votedFor, betrayed, remember, intimidated, fearOf } from './rel.js';
 import { spotMeeting, noteFalseYes, outAlliance, believedAlliances, believedHunters } from './knowledge.js';
 import { breakThePower } from './blocs.js';
@@ -110,7 +110,9 @@ function recruit(state, rng, meeting, al, eligible, committed, ctx) {
     // Approached by whoever in the group they trust most.
     const by = al.members.filter(m => state.active.includes(m)).sort((a, b) => trustOf(n, b) - trustOf(n, a))[0];
     return { n, by, pull: believePitch(n, by) + cooperateWith(n, al.leader) * 0.5 };
-  }).sort((a, b) => b.pull - a.pull).slice(0, need + 2);
+  // A couple of targeted asks, not a canvass of the whole house: the swing
+  // votes this group can actually reach.
+  }).filter(r => r.pull > 0).sort((a, b) => b.pull - a.pull).slice(0, Math.min(need, 2 + (S(al.leader, 'social') >= 7 ? 1 : 0)));
   for (const r of ranked) {
     const own = targetScore(state, r.n, meeting.target, planOf(state, r.n), ctx).total;
     const friend = protectOf(r.n, meeting.target) > 2.5;
@@ -353,4 +355,3 @@ export function breakDeal(state, deal, by, how) {
   addScene(state, 'deal-broken', [by, other], { deal: deal.id, how }, state.active, 'public');
 }
 
-export { stageOf };

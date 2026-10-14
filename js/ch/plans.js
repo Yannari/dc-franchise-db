@@ -22,7 +22,6 @@
 //
 // The plan's skill is Total Drama's and Big Brother's weighting: a reactive
 // player carries a target and little else, an architect the whole structure.
-import { gs } from '../core.js';
 import { S, clamp } from './state.js';
 import { threatRead, arenaRead } from './respect.js';
 import { trustOf, respectOf, fearOf, grudgeOf, protectOf } from './rel.js';
@@ -114,7 +113,9 @@ export function targetScore(state, name, n, plan = null, ctx = null) {
     parts.loses = 0;
     parts.theyGo = pLose * valueGone(state, name, n) * strat;
     // Sending a beast in to take out somebody else, said as its own reason.
-    parts.use = opp && opp !== name ? (1 - pLose) * valueGone(state, name, opp) * strat : 0;
+    // Discounted: who they will actually call out is a guess, and you do not
+    // control it — the cold strategist's move, not the house's habit.
+    parts.use = opp && opp !== name ? (1 - pLose) * valueGone(state, name, opp) * strat * 0.45 : 0;
     if (opp === name) parts.risk = -(1 - pLose) * 5 * strat;
   }
   if (plan?.shield === n) parts.shield = -3 * strat;
@@ -201,4 +202,3 @@ export function betrayalReady(state, name, ally) {
   return top === ally;
 }
 
-export { gs };

@@ -26,8 +26,6 @@ import { stableRng } from '../script/rng.js';
 import { getBond } from '../bonds.js';
 import { S } from './state.js';
 
-const day = state => state.day;
-
 export function syncActive(state) {
   gs.activePlayers = [...state.active];
 }
@@ -71,8 +69,9 @@ export function spotMeeting(state, al, present) {
   const out = [];
   for (const o of state.active) {
     if (al.members.includes(o)) continue;
+    // A big group is harder to hide than three people by the pool.
     const r = stableRng(state.seed, 'spot', state.day, al.id, o)();
-    if (r > S(o, 'intuition') * 0.035) continue;
+    if (r > S(o, 'intuition') * 0.0045 * Math.max(1, present.length - 1)) continue;
     for (const m of present) learn(o, factId('alliance', m, String(al.id)), { sourceType: 'observed', source: 'saw them meeting', ep: state.ep, confidence: 0.75 });
     out.push(o);
   }
@@ -136,4 +135,3 @@ export function believedHunters(state, target) {
   return out;
 }
 
-export { day };

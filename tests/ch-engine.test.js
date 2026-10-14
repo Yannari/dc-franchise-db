@@ -83,3 +83,18 @@ describe('The Challenge engine', () => {
     }
   });
 });
+
+describe('nobody who has left takes part in a scene', () => {
+  it('every scene after an exit is free of the people already gone', () => {
+    for (const seed of [11, 12, 13]) {
+      const { cast, names, background } = challengeCast(24, seed);
+      setPlayers(cast);
+      const r = playChallengeSeason({ cast: names, background, seed });
+      const goneAt = Object.fromEntries(r.state.gone.map(g => [g.name, g.day]));
+      for (const sc of r.state.scenes) {
+        // A scene on the day of an exit may still hold the one leaving (their goodbye).
+        for (const w of sc.who) if (goneAt[w] != null) expect(sc.day <= goneAt[w], `${sc.kind} on day ${sc.day} has ${w}, gone day ${goneAt[w]}`).toBe(true);
+      }
+    }
+  });
+});

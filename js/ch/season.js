@@ -35,6 +35,7 @@ import { partyNight } from './party.js';
 import { romanceDay, breakupCheck } from './romance.js';
 import { quitRisk, quit, medical, disqualify, removePlayer } from './exits.js';
 import { houseDay, psycheMoment, returnToHouse } from './house.js';
+import { houseBeats } from './events.js';
 import { playFinal } from './final.js';
 import { reviseAll } from './plans.js';
 import { spreadDay, syncActive } from './knowledge.js';
@@ -97,7 +98,9 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     if (!cast.includes(b.a) || !cast.includes(b.b) || !b.resent) continue;
     // The one it is about carries the grudge (franchise-carry: `resent`).
     remember(b.b, b.a, 'old-grudge', Math.min(2.5, Math.abs(b.delta) * 0.5), { why: b.why });
+    (state.carriedGrudge ||= {})[`${b.b}>${b.a}`] = Math.min(3, Math.abs(b.delta) * 0.6);
   }
+  state.kin = (carried?.kin || []).filter(k => cast.includes(k.a) && cast.includes(k.b));
   for (const k of carried?.kin || []) {
     if (!cast.includes(k.a) || !cast.includes(k.b)) continue;
     if ((k.kin === 'dating' || k.kin === 'married' || k.kin === 'engaged') && romanticCompat(k.a, k.b)) {
@@ -140,6 +143,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     houseDay(state, R('house1'));
     romanceDay(state, R('romance1'));
     reviseAll(state);
+    houseBeats(state, R('beats1'), { min: 1, max: 4 });
     spreadDay(state);
     const division = divisionFor(state, prevDiv, opts.finalists);
     prevDiv = division;
@@ -156,12 +160,15 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
         epRec.exits.push({ name: d.name, how: 'disqualified', victim: d.victim });
       }
       for (const n of state.active) driftDay(state, n, { rested: false });
+    } else {
+      houseBeats(state, R('night1'), { night: true, min: 1, max: 2 });
     }
 
     // ── Day 2: deliberation, the vote, the call-out ──
     state.day = plan.firstDay + 1;
     for (const n of state.active) driftDay(state, n);
     houseDay(state, R('house2'));
+    houseBeats(state, R('beats2'), { min: 1, max: 3 });
     spreadDay(state);
     reviseAll(state);
     epRec.exits.push(...dayExits(state, R('exits2')));
@@ -183,6 +190,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       } else {
         vote = houseVote(state, R(`vote${k}`), { eligible, delib, winners: immune });
         voteFallout(state, vote, delib);
+        state.receiptsFresh = {};
+        for (const b of vote.ballots) (state.receiptsFresh[b.target] ||= []).push(b.voter);
         votedIn = vote.votedIn;
         epRec.votes.push(vote);
         for (const n of eligible) if (n !== votedIn) { state.rec[n].survivedVotes++; giveRespect(state, n, 'survivedVote'); }
@@ -242,6 +251,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
         returnToHouse(state, winner, m.voters);
       }
     }
+    houseBeats(state, R('beats3'), { night: true, min: 1, max: 3 });
     psycheMoment(state, R('psyche'));
     breakupCheck(state, R('breakup'));
     epRec.exits.push(...dayExits(state, R('exits3')));

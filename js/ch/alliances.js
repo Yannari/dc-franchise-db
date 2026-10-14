@@ -64,8 +64,9 @@ export function formAlliances(state, rng, { max = 3 } = {}) {
     if (allianceOf(state, leader)) continue;
     if (rng() > 0.35 + S(leader, 'strategic') * 0.05) continue;
     const pool = state.active.filter(n => n !== leader && !allianceOf(state, n));
-    // Size: a third of the house at most, a pair at least.
-    const cap = Math.max(3, Math.round(state.active.length / 3));
+    // Size: a core of three or four to start (a power alliance is GROWN, not
+    // founded at full size: growAlliances), a third of the house at most.
+    const cap = Math.min(4, Math.max(3, Math.round(state.active.length / 3)));
     const ranked = pool.map(n => ({ n, p: pull(state, leader, n) + pull(state, n, leader) * 0.5 }))
       .filter(x => x.p > 0.8).sort((x, y) => y.p - x.p);
     const members = [leader];
@@ -134,4 +135,23 @@ export function endAlliance(state, al, why) {
   if (al.ended) return;
   al.ended = true; al.endedEp = state.ep; al.why = why;
   addScene(state, 'alliance-end', al.members.filter(m => state.active.includes(m)), { alliance: al.id, why }, al.members, 'private');
+}
+
+// An alliance grows: once it has run a vote or two, it brings in the free agent
+// it trusts most (the swing votes it recruited are the obvious candidates).
+// This is how a power alliance becomes one, and its growth is a storyline.
+export function growAlliances(state, rng) {
+  const cap = Math.max(4, Math.round(state.active.length / 3));
+  for (const al of activeAlliances(state)) {
+    const inside = al.members.filter(m => state.active.includes(m));
+    if (inside.length >= cap || state.ep - al.formedEp < 1) continue;
+    const free = state.active.filter(n => !allianceOf(state, n));
+    const best = free.map(n => ({ n, p: inside.reduce((a, m) => a + pull(state, n, m), 0) / inside.length + pull(state, al.leader, n) * 0.5 }))
+      .sort((a, b) => b.p - a.p)[0];
+    if (!best || best.p < 1.6 || rng() > 0.35 + S(al.leader, 'strategic') * 0.03) continue;
+    al.members.push(best.n);
+    for (const m of inside) addBond(m, best.n, 0.5);
+    noteAlliance(state, al, [best.n]);
+    addScene(state, 'alliance-grow', [al.leader, best.n], { alliance: al.id, name: al.name, size: al.members.length }, al.members, 'private');
+  }
 }

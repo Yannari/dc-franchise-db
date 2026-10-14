@@ -243,7 +243,7 @@ export default {
   },
   'nvq.p1': {
     1: { cruel: "Have you ever seen one of them without the other?", bossy: "Have you ever seen those two apart?" },
-    3: { cruel: "Then you know what happens at the merge. Two votes that never split.", bossy: "Then you know what happens at the merge. Two votes that never split." },
+    3: { cruel: "Then you know what that means. Two votes that never split.", bossy: "Then you know what that means. Two votes that never split." },
     5: { cruel: "It's cute, and it's going to beat us, so tonight we split them up.", bossy: "It's cute, and it's going to beat us, so tonight we split them up." },
     7: { cruel: "{target}. {partner} without {target} is just a lost puppy.", bossy: "{target}. {partner} won't know what to do without {target}." },
     9: { cruel: "{partner} will be devastated and alone, and alone people need friends. Guess who'll be right there.", bossy: "{partner} will be devastated and on their own, and we'll be there. That's the plan." },

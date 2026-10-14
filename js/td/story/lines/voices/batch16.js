@@ -53,7 +53,7 @@ export default {
   'nv4.p3': {
     1: { blunt: "I've been thinking about {target} and {partner}." },
     3: { blunt: "They are, and that's what makes this awful. One of them has to go tonight." },
-    5: { blunt: "Because if they both reach the merge, they're two votes nobody splits, and one of us goes home every time they vote." },
+    5: { blunt: "Because if they both reach the end, they're two votes nobody splits, and one of us goes home every time they vote." },
     7: { blunt: "{target} is the one I'd lose to. I hate saying it." },
     9: { blunt: "I'm going to look {partner} in the eye tomorrow and feel sick. I'm doing it anyway." },
   },

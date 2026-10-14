@@ -65,7 +65,7 @@ export default {
     3: { calm: "That's really sweet.", loud: "That's SO sweet." },
     4: { earnest: "You say that like it's a bad thing.", loud: "You say that like it's a BAD thing!" },
     5: { nerdy: "No, no, it's great. For you two specifically." },
-    6: { nerdy: "If {b} and {c} both reach the merge, nobody will ever split two votes that close. It needs to happen before then.", calm: "If {b} and {c} make the merge together, they'll never be split. It has to happen soon.", loud: "If {b} and {c} BOTH make the merge, nobody's ever splitting them! It has to be soon!" },
+    6: { nerdy: "If {b} and {c} both reach the end, nobody will ever split two votes that close. It needs to happen before then.", calm: "If {b} and {c} make it to the end together, they'll never be split. It has to happen soon.", loud: "If {b} and {c} BOTH make it to the end, nobody's ever splitting them! It has to be soon!" },
   },
   'nv4.p5': {
     1: { competitive: "Is it another drawing in the sand?" },

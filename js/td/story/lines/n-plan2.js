@@ -46,7 +46,7 @@ export default {
   ],
   'vp.case.pair': [
     { id: 'npm.cp1', turns: [
-      { by: 'a', say: "If {target} and {partner} both make the merge together, we can't break them up. It has to be now.", v: { schemer: "{target} and {partner} are a voting bloc of two, and two is one too many." } },
+      { by: 'a', say: "If {target} and {partner} both make it to the end together, we can't break them up. It has to be now.", v: { schemer: "{target} and {partner} are a voting bloc of two, and two is one too many." } },
       { by: 'b', say: "Why {target} and not {partner}?" },
       { by: 'a', say: "Because {partner} will be lost without {target}. The other way around, I'm not so sure." },
     ] },

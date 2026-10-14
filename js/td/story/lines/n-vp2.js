@@ -124,7 +124,7 @@ export default {
       { beat: "{target} and {partner} walk past, laughing, and disappear down the beach together. {a} waits until they're gone." },
       { by: 'a', say: "Have you ever seen one of them without the other?" },
       { by: 'b', say: "Not since about day two." },
-      { by: 'a', say: "Then you know what happens at the merge. Two votes that never split." },
+      { by: 'a', say: "Then you know what that means. Two votes that never split." },
       { by: 'b', say: "It's kind of cute, though." },
       { by: 'a', say: "It's very cute, and it's also going to beat us, so tonight we split them up." },
       { by: 'b', say: "Which one?" },

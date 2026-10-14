@@ -74,7 +74,7 @@ export default {
     { id: 'nvr.p1', when: { third: true }, turns: [
       { by: 'c', say: "Did anyone else notice {target} and {partner} sharing a bowl again?" },
       { by: 'b', say: "They share everything. It's sweet." },
-      { by: 'a', say: "It's sweet until the merge, and then it's two votes that will never, ever split." },
+      { by: 'a', say: "It's sweet until the vote, and then it's two votes that will never, ever split." },
       { by: 'c', say: "So which one?" },
       { by: 'a', say: "{target}. {partner} without {target} is just somebody looking for a new best friend." },
       { by: 'b', say: "And who's that going to be?" },

@@ -55,7 +55,9 @@ describe('the second veto on the stepped stage', () => {
   it('names the replacement by whoever the rule gives the chair to', () => {
     for (const { ep, act } of WEEKS.filter(w => w.act.used)) {
       const chair = act.beats.find(b => b.part === 'chair');
-      expect(chair.byHoh).toBe(act.authority !== act.holder);
+      // the Head of Household names the replacement unless the medallion carries the holder's authority;
+      // an HOH who holds the second veto is both (a real season reached it, 2026-10-13)
+      expect(chair.byHoh).toBe(act.authority === ep.hoh);
       expect(screenOf(ep).steps.find(st => st.v2Rep).t).toContain(`${act.authority} names ${act.replacement}`);
     }
   });

@@ -808,6 +808,8 @@ function recruitmentOptions(house, weekNum = 99) {
   const joinAvg = weekNum <= 2 ? 0.55 : weekNum <= 4 ? 0.9 : JOIN_AVG;
   for (const alliance of allianceStore()) {
     if (alliance.active === false || alliance.dissolved) continue;
+    // the twins are two sisters, not a group anybody joins (a season grew The Twins to six and dropped one twin)
+    if (alliance.twins) continue;
     const members = (alliance.members || []).filter(name => house.includes(name));
     // Seven is the ceiling, not six. Past that an alliance is the house.
     if (members.length < 2 || members.length >= ceiling) continue;

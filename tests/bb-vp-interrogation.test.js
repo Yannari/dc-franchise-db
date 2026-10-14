@@ -18,7 +18,7 @@ const CAST = NAMES.map((name, i) => ({ name, gender: i % 2 ? 'm' : 'f', sexualit
 
 function intWeeks() {
   const out = [];
-  for (const seed of [4242, 77, 31337, 9001]) {
+  for (const seed of [4242, 77, 31337, 9001, 8080]) {
     seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
     Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
     Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7, bbHaveNots: 'off', bbSafetyMode: 'off' });

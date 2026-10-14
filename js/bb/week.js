@@ -105,7 +105,7 @@ import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, sabote
 import { sequesterHoh, leakDeliberation, sequesterRegret } from './instant-eviction.js';
 import { swapTwins, twinTells, twinDiscovery, checkTwinEntry, twinEvicted, twinState,
   openTwinTwist, offerTwinMission, resolveTwinMission, twinUnfinished,
-  twinExposure as twinExposureLevel } from './twin-twist.js';
+  twinExposure as twinExposureLevel, holdSisters } from './twin-twist.js';
 import { rivalsState, announceRivals, openRivals, seatRivals, rivalsSittingOut, rivalsImmune,
   rivalsChooseHoh, rivalWeekEvents, rivalEvicted } from './rivals.js';
 import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, spendPull, BB_POWER_DEFINITIONS } from './powers.js';
@@ -7195,6 +7195,8 @@ export function simulateBBWeek(options = {}) {
   }
 
   // Eviction act; HOH breaks a tie.
+  // a twin never votes her sister out, whatever moved her ballot last (twin-twist.js)
+  try { holdSisters(ballots, nominees); } catch { /* no twins */ }
   const votes = tally(ballots, nominees);
 
   // ── AMERICA'S EVICTION VOTE ──

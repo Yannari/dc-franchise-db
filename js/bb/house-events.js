@@ -10,6 +10,7 @@ import { scheduleWeightedEvents } from '../event-scheduler.js';
 import { writeScene } from './script/write.js';
 import { stableRng } from './knowledge.js';
 import { scoringPass } from './pass-memo.js';
+import { decideWitnesses, witnessFx, bookWitnesses } from './witness.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -521,6 +522,16 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
         const words = stableRng(gs.bb?.seasonSalt || 0, ctx.week?.num || 0, ctx.act || '', meta.index, event.id);
         const written = writeScene(raw.scene, beatCtx, words);
         raw = { ...raw, text: written.text, lines: written.lines, lineId: written.lineId, location: raw.location || raw.scene.room || undefined };
+      }
+      // A row in front of the house has witnesses who say where they stand (bb/witness.js): decided and
+      // paid for here, in the engine, from its own dice, so the words never move the game
+      if (raw && raw.scene) {
+        const ws = decideWitnesses(raw.scene, `${ctx.week?.num || 0}|${ctx.act || ''}|${meta.index}|${event.id}`);
+        if (ws.length) {
+          for (const w of ws) for (const [x, y, d] of witnessFx(w)) api.addBond(x, y, d);
+          bookWitnesses(ws, ctx.week);
+          raw = { ...raw, witnesses: ws };
+        }
       }
       const result = validateBeat(event, raw, beatCtx);
       result.effects = [...api._drainLedger(), ..._worldMoved(worldBefore)];

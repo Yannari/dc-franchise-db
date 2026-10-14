@@ -120,7 +120,7 @@ export default {
     { id: 'kg.m6', turns: [{ by: 'b', dr: "We're all voting {targetA} out. But {a} and I are both taking credit for {swing}." }] },
   ],
   'plan.cocky.scene': [
-    { id: 'kh.1', turns: [{ by: 'a', say: "It's done. {target} is gone. We can stop talking about it." }, { by: 'b', dr: "{expected} people said yes. I'd only bet on {locked} of them." }] },
+    { id: 'kh.1', turns: [{ by: 'a', say: "It's done. {target} is gone. We can stop talking about it." }, { by: 'b', dr: "Everybody we asked said yes. That's {expected}. I'd only bet on {locked}." }] },
     { id: 'kh.2', turns: [{ by: 'a', say: "Right, next week..." }, { by: 'b', say: "We haven't finished this week." }] },
     { id: 'kh.3', turns: [{ by: 'b', say: "You're counting the maybes as votes." }, { by: 'a', say: "The maybes are votes." }, { by: 'b', dr: "No, they're not." }] },
     { id: 'kh.4', turns: [{ by: 'b', dr: "{a} is relaxed and I can't work out why. We can prove {locked}. We're hoping for {expected}." }] },

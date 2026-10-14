@@ -156,6 +156,6 @@ export default {
     { id: 'dw7.m3', turns: [{ by: 'a', dr: "{b} lost the vote. I lost the week." }] },
     { id: 'dw7.m4', turns: [{ beat: '{a} stands up next to {b}.' }, { by: 'a', say: "Let's go." }] },
     { id: 'dw7.m5', turns: [{ by: 'a', say: "It wasn't my vote." }, { by: 'b', say: "I know. It's still your door." }] },
-    { id: 'dw7.m6', turns: [{ by: 'a', dr: "Only {votes} people wanted me out. That didn't matter in the end." }] },
+    { id: 'dw7.m6', turns: [{ by: 'a', dr: "Not many votes wanted me out. {votes}. That didn't matter in the end." }] },
   ],
 };

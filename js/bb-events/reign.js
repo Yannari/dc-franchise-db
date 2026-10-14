@@ -198,13 +198,13 @@ const apologisesForIt = {
     // this scene belongs to the quiet days afterwards — so it falls back to the
     // week, which is where the nominations actually live. Without that it fired
     // once in ten seasons.
-    const noms = _noms(ctx);
+    const noms = _noms(ctx).filter(n => n !== hoh);
     return mode === 'frightened' && noms.length ? _reigning(ctx, 8 * nerves) : 0;
   },
   fire(house, ctx, api) {
     const hoh = ctx.hoh;
     _spend(this.id, ctx);
-    const nom = _noms(ctx)[0];
+    const nom = _noms(ctx).find(n => n !== hoh);
     const scene = makeScene('reign.apology', { a: hoh, b: nom }, { ending: 'scene' }, [],
       _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, hoh, nom));
     api.addBond(hoh, nom, 0.6);

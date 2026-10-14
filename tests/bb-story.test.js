@@ -62,7 +62,8 @@ describe('the storyline pools', () => {
     for (const [key, pool] of all) {
       // recaps, cutaways, background lines and set-piece closes are one or two lines by design
       // ...and the campaign's pieces, which wrap the engine's own pitch into one scene (write.js)
-      if (/^(recap\.|bg\.|set\.cut\.|set\.\w+\.close|camp\.)/.test(key)) continue;
+      // ...and a witness's few lines, said inside somebody else's row (bb/story/lines/witness.js)
+      if (/^(recap\.|bg\.|set\.cut\.|set\.\w+\.close|camp\.|witness\.(side|turned|out|defend|join)(\.loud)?$)/.test(key)) continue;
       // one person alone (a monologue to the Diary Room) or the cold war's silence can be shorter
       const solo = e => !JSON.stringify(e.turns).includes('{b}');
       for (const e of pool) expect(e.turns.length, `${key} ${e.id}`).toBeGreaterThanOrEqual(solo(e) || /^story\.feud\.cold/.test(key) ? 3 : 6);

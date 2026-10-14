@@ -85,7 +85,7 @@ export default {
     { id: 'su6.h6', when: { intent: 'seen' }, turns: [{ by: 'b', say: "Why didn't you go in?" }, { by: 'a', say: "Please don't." }] },
   ],
   'suite.count.scene': [
-    { id: 'su6.c1', turns: [{ by: 'a', dr: "I keep the count in my head. {spent} people have nothing left. That's where next week's nominations come from." }] },
+    { id: 'su6.c1', turns: [{ by: 'a', dr: "I keep the count in my head. How many have nothing left: {spent}. That's where next week's nominations come from." }] },
     { id: 'su6.c2', turns: [{ by: 'a', dr: "I can name everyone who can't buy safety any more. Starting with {b}." }] },
     { id: 'su6.c3', turns: [{ by: 'b', say: "Who's still got one?" }, { by: 'a', say: "Not you." }] },
     { id: 'su6.c4', turns: [{ by: 'a', dr: "{b} is out of entries, and that's not going to change. I've built a plan on it." }] },

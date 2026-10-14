@@ -152,7 +152,8 @@ export function classify(beat) {
   else if (rule.type === 'scheme') key = `liar:${rule.step === 'caught' ? rb : ra}`;
   else if (rule.type === 'life') key = `life:${beat.eventId}:${ra}`;
   else key = [ra, rb].sort().join('|');
-  return { ...rule, key, roles, data, seenBy: beat.scene?.seenBy || beat.players || [], room: beat.scene?.room || beat.location || null };
+  return { ...rule, key, roles, data, seenBy: beat.scene?.seenBy || beat.players || [], room: beat.scene?.room || beat.location || null,
+    witnesses: Array.isArray(beat.witnesses) ? beat.witnesses : [] };
 }
 
 /** The season's storylines. Plain data: it saves with the season. */
@@ -174,7 +175,7 @@ export function file(c, { week, stretch, beatAt }) {
   // an alliance forms once; saying "final two" again is checking it still holds
   if (c.type === 'alliance' && c.step === 'formed' && line.steps.some(s => s.step === 'formed')) c = { ...c, step: 'checkin', outcome: 'solid' };
   const step = { step: c.step, outcome: c.outcome, week, stretch, at: beatAt, roles: c.roles, data: c.data,
-    seenBy: c.seenBy, room: c.room, aired: false };
+    seenBy: c.seenBy, room: c.room, witnesses: c.witnesses || [], aired: false };
   line.steps.push(step);
   // a feud that made up, or an alliance whose pair is gone, closes; the next clash starts a new one
   if (c.type === 'feud' && c.step === 'apology' && c.outcome === 'accepted') line.status = 'resolved';

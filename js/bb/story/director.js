@@ -15,7 +15,7 @@
 
 import { gs } from '../../core.js';
 import { classify, file, causeOf } from './storylines.js';
-import { writeStoryScene, writeSetPiece, writeGameTalk, writeCampaignScene, writeEngineScene, hasPool, roomName } from './write.js';
+import { writeStoryScene, writeSetPiece, writeGameTalk, writeCampaignScene, writeEngineScene, writeWitnessAfter, hasPool, roomName } from './write.js';
 import { gameTalkFor, bondTalkFor, styleTalkFor, phaseOf, hohWeekFor } from './gametalk.js';
 import { writeMilestone } from './milestone.js';
 
@@ -239,13 +239,37 @@ export function airStorylines(week) {
 
   };
 
+  // ── witnesses, later: a row the viewer saw, with somebody taking a side, comes back in the next
+  // stretch (or the next week's first, when it closed the week), between the witness and the one
+  // they went against. One a stretch; kept on gs.bb so a row on eviction night still gets its talk.
+  const afterQueue = (gs.bb.witnessAfter ||= []);
+  const airAfter = (act, ctx) => {
+    if (!act) return;
+    for (let i = 0; i < afterQueue.length; i++) {
+      const q = afterQueue[i];
+      if (q.week === (week.num || 0) && q.stretch >= stretch) continue;
+      afterQueue.splice(i, 1); i--;
+      const sc = writeWitnessAfter(q.w, ctx, at + 0.2);
+      if (sc) { (act.scenes ||= []).push(sc); break; }
+    }
+    // a row more than a week old is not "earlier" any more
+    for (let i = afterQueue.length - 1; i >= 0; i--) if ((week.num || 0) - afterQueue[i].week > 1) afterQueue.splice(i, 1);
+  };
+  const queueAfter = before => {
+    for (const sc of week.acts.flatMap(a => a?.scenes || [])) {
+      if (before.has(sc) || !sc.witnessed?.length) continue;
+      const w = sc.witnessed.find(x => x.stance !== 'side') || sc.witnessed[0];
+      if (w && !afterQueue.some(q => q.w.name === w.name && q.week === (week.num || 0))) afterQueue.push({ week: week.num || 0, stretch, w });
+    }
+  };
+
   let presentAtStart = null;
   const choose = () => {
     const ctx = ctxOf();
     const atStart = presentAtStart || ctx.present;
     presentAtStart = null;
     const sceneBefore = new Set(week.acts.flatMap(a => a?.scenes || []));
-    if (!pending.length) { airEngine(ctx, atStart, sceneBefore); stretchBeats = []; return; }
+    if (!pending.length) { airAfter(stretchBeats[0]?.act || week.acts.find(Boolean), ctx); airEngine(ctx, atStart, sceneBefore); queueAfter(sceneBefore); stretchBeats = []; return; }
     const cand = pending.filter(p => {
       const need = NEEDS_WEEK[`${p.line.type}.${p.step.step}`];
       if (need && !clock[need]) return false;
@@ -390,7 +414,9 @@ export function airStorylines(week) {
       note(p);
     });
     if (talks.length) airTalks((ordered.at(-1) || pending[0]).act);
+    airAfter((ordered.at(-1) || pending[0]).act, ctx);
     airEngine(ctx, atStart, sceneBefore);
+    queueAfter(sceneBefore);
 
     // The first night ends with the lights going out on a full house.
     if (ctx.firstNight) {

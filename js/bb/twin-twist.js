@@ -77,6 +77,27 @@ export function twinState() {
 }
 
 /**
+ * A twin never writes her sister's name down. The tie (the bond, The Twins, the final two) is
+ * what the vote weighs, but a late pitch or a bloc can still move a ballot after it, and in a
+ * season the witness rule reached (2026-10-13) one did: a campaign counterplay flipped the twin
+ * onto her sister. Run on the final ballots, just before the count. Returns what it put back.
+ */
+export function holdSisters(ballots, nominees) {
+  const st = twinState();
+  if (!st?.entered || !st.front || !st.other) return [];
+  const pair = [st.front, st.other];
+  const fixed = [];
+  for (const b of ballots || []) {
+    if (!pair.includes(b.voter) || !pair.includes(b.evict) || b.voter === b.evict) continue;
+    const other = (nominees || []).find(n => !pair.includes(n));
+    if (!other) continue;
+    fixed.push({ voter: b.voter, from: b.evict, to: other });
+    b.evict = other; b.changed = true; b.changeReason = 'sister';
+  }
+  return fixed;
+}
+
+/**
  * Repair a season that installed before the identity was given back.
  *
  * `statsA` is captured at install and frozen into the season, and the viewing
@@ -1487,6 +1508,9 @@ export function checkTwinEntry(week) {
     const already = gs.namedAlliances.find(a =>
       (a.members || []).length === 2
       && (a.members || []).includes(st.front) && (a.members || []).includes(st.other));
+    // a pair the two of them already made (in a season where the other twin played under the first's
+    // name) becomes the twins' own: permanent, and marked, rather than a second alliance or none
+    if (already) Object.assign(already, { permanence: 'permanent', twins: true, active: true });
     if (!already) {
       gs.namedAlliances.push({
         id: `twins-${String(st.front).toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,

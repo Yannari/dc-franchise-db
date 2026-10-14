@@ -31,6 +31,7 @@ import { getBond } from '../../bonds.js';
 import { addInsight } from './voice.js';
 import { pickTone, voiceLine } from './register.js';
 import { spotFor, onIsland, openingAt } from './places.js';
+import { pStats } from '../../players.js';
 
 const ledger = () => ((gs.bb ||= {}).storyLedger ||= newLedger());
 const ROOM = { kitchen: 'Kitchen', 'living-room': 'Living Room', bedroom: 'Bedroom', 'hoh-room': 'HOH Room',
@@ -292,6 +293,79 @@ export function roomFromText(lines) {
   const all = ls.filter(l => l.kind !== 'dr').map(l => l.text).join(' ');
   for (const [room, , doing] of ROOM_WORDS) if (doing && doing.test(all)) return room;
   return null;
+}
+
+// ── witnesses: the people watching a row say where they stand ─────────────
+// js/bb/witness.js decides who and which way, in the engine; this only says it. Their lines go in
+// before the scene's closing confessionals, and they join the scene. A witness who is not in the
+// house any more, or a row whose two people are not both on screen, gets nothing.
+// a row the scene's own words make private (a shut door, pulled aside, whispered) has nobody watching,
+// and a row one of them walked out of has nobody left to answer
+const PRIVATE_TEXT = /shuts? the door|closes? the door|door,? shut|pulls? .{1,30} aside|out of earshot|alone together|whisper|lowers? (?:his|her|their) voice|keeps? (?:his|her|their) voice down/i;
+const LEFT = /\b(gets up and goes|goes to the|walks out|walks off|storms (?:off|out)|leaves the room|and leaves)\b/i;
+function addWitnesses(sc, ws, ctx) {
+  if (!sc || !Array.isArray(sc.lines) || !Array.isArray(ws) || !ws.length) return sc;
+  if (sc.lines.some(l => PRIVATE_TEXT.test(String(l.text || '')))) return sc;
+  if (sc.lines.some(l => l.kind === 'beat' && LEFT.test(String(l.text || '')) && ws.some(w => nameIn(w.a, l.text) || nameIn(w.b, l.text)))) return sc;
+  const present = new Set(ctx.present || []);
+  const add = [];
+  const cast = [...sc.cast];
+  for (const w of ws.slice(0, 2)) {
+    if (!present.has(w.name) || !sc.cast.includes(w.a) || !sc.cast.includes(w.b) || sc.cast.includes(w.name)) continue;
+    // somebody the background already walked through the room is not standing in the middle of it
+    if (sc.lines.some(l => l.bg && nameIn(w.name, l.text))) continue;
+    // a jab: c stands up for the one on the receiving end, or goes along with the one doing it
+    const jab = w.kind === 'joke' && w.stance !== 'out';
+    const key = jab ? (w.a === w.doer ? 'witness.join' : 'witness.defend') : `witness.${w.stance}`;
+    const who = { a: w.a, b: w.b, c: w.name };
+    // a shouting match has its own lines too; a quiet row never hears "lower your voice"
+    const keys = !jab && w.kind === 'loud' && w.stance !== 'out' ? [key, `${key}.loud`] : [key];
+    const e = pick(keys, who, {}, ctx, sc.room, `${sc.id}|wit|${w.name}`);
+    if (!e) continue;
+    add.push(...render(e, who, ctx, {}));
+    cast.push(w.name);
+  }
+  if (!add.length) return sc;
+  let k = sc.lines.length; while (k > 0 && sc.lines[k - 1].kind === 'dr') k--;
+  sc.lines.splice(Math.max(1, k), 0, ...add);
+  sc.cast = [...new Set(cast)];
+  sc.witnessed = ws.filter(w => sc.cast.includes(w.name)).map(w => ({ ...w }));
+  return sc;
+}
+
+/**
+ * Later, the one a witness went against (or the friend a witness would not back) brings it up
+ * with them. Whether the witness apologises or stands by it is theirs: loyalty and a cool head
+ * say sorry, the bold and the hot-headed do not. Words only: the bonds already moved in the engine.
+ */
+export function writeWitnessAfter(w, ctx, at) {
+  const letDown = w.stance === 'out' ? w.a : w.b;
+  const other = w.stance === 'out' ? w.b : w.a;
+  const present = ctx.present || [];
+  if (![letDown, w.name, other].every(n => present.includes(n))) return null;
+  const s = pStats(w.name) || {};
+  const roll = stableRng(gs.bb?.seasonSalt || 0, 'witness-after', ctx.week?.num || 0, w.name, letDown)();
+  const lean = ((s.loyalty ?? 5) * 0.5 + (s.temperament ?? 5) * 0.4 - (s.boldness ?? 5) * 0.3) + (w.stance === 'turned' ? 1 : 0) + (roll - 0.5) * 2;
+  const outcome = lean >= 3.6 ? 'sorry' : 'stand';
+  const key = `witness.after.${w.stance}.${outcome}`;
+  if (writing.muted) return null;
+  const who = { a: letDown, b: w.name };
+  const salt = `wa|${ctx.week?.num || 0}|${ctx.stretch}|${w.name}|${letDown}`;
+  const entry = pick([key], who, { x: other }, ctx, null, salt);
+  if (!entry) return null;
+  const sp = spotFor('witness.after.apology', [letDown, w.name], ctx, salt, JSON.stringify(entry.turns));
+  let room = sp?.room || 'kitchen';
+  if (!sp && ctx.avoidRoom) {
+    const ROTA = ['kitchen', 'living-room', 'backyard', 'bedroom'].filter(r => r !== ctx.avoidRoom);
+    room = ROTA[[...salt].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7) % ROTA.length];
+  }
+  const lines = render(entry, who, ctx, { x: other });
+  const sc = { id: `wa:${ctx.week?.num || 0}:${ctx.stretch}:${letDown}>${w.name}`, line: null, type: 'feud', step: 'witness-after', outcome,
+    room, roomName: sp?.label || ROOM[room] || 'Kitchen', ...(sp ? { spot: sp.spot } : {}), cast: [letDown, w.name], mood: 'drama', at,
+    fixedRoom: false, recap: false, lineId: entry.id,
+    why: [w.stance === 'out' ? `${w.name} stayed out of ${letDown}'s row with ${other}.` : `${w.name} took ${other}'s side against ${letDown}.`] };
+  sc.lines = sp ? lines : background(lines, sc, ctx, sc.id, false);
+  return staging(sc);
 }
 
 // A scene moved to a spot (places.js) opens there, unless its own first line already sets the scene.
@@ -707,11 +781,11 @@ const voiced = (sc, kind, ctx) => {
   return addInsight(sc, kind, ctx?.week?.num);
 };
 export function writeStoryScene(line, step, ctx) {
-  return staging(voiced(writeStoryScene0(line, step, ctx), `${line?.type}.${step?.step}`, ctx));
+  return staging(addWitnesses(voiced(writeStoryScene0(line, step, ctx), `${line?.type}.${step?.step}`, ctx), step?.witnesses, ctx));
 }
 export function writeGameTalk(talk, ctx, at) {
   return staging(voiced(writeGameTalk0(talk, ctx, at), String(talk?.kind || ''), ctx));
 }
 export function writeEngineScene(beat, ctx, at) {
-  return staging(voiced(writeEngineScene0(beat, ctx, at), String(beat?.eventId || ''), ctx));
+  return staging(addWitnesses(voiced(writeEngineScene0(beat, ctx, at), String(beat?.eventId || ''), ctx), beat?.witnesses, ctx));
 }

@@ -317,7 +317,21 @@ function _crowdScenes(ep, campKey, present, phase, { tribal = false } = {}) {
       // the one who sticks up for b is b's friend, not just the friendliest person there (read 2026-10-14: Logan defended
       // Ivy, "I know which one I'd rather keep", then led the vote against her that night)
       const c = top(people.filter(n => n !== a && n !== b), n => getBond(n, b) + st(n, 'social') * 0.2 + st(n, 'loyalty') * 0.1)[0];
-      if (a && c) { scene('crowd.lost', { a, b, c }, {}, at(pub, 'return'), 'BLAME GAME', 'red', null, joiners(c, [a, b, c], people, 5)); addBond(a, b, -0.5); addBond(c, b, 0.25); addBond(c, a, 0.1); }
+      // ...unless nobody is in the mood: how hot a's head runs, against how much a likes b, decides whether a blames b
+      // or the team takes it on the chin ('own': b owns it, a lets it go). The user, 2026-10-14: "theres a lot of fight
+      // and people taking sides i mean this structure happens a lot" (every loss was a blame and a defence).
+      // (its own seeded draw, so the rest of this function draws what it always did)
+      const heat = a ? st(a, 'boldness') + (10 - st(a, 'temperament')) - getBond(a, b) : 0;
+      // (a hothead's team still gets a calm one now and then: half as likely again right after a loss that was a blame;
+      // measured on the carnival cast, Amelie and Anastasia blamed all six losses at the first calibration)
+      // (the last loss BEFORE this episode: the same episode run twice reads the same answer)
+      const book = (gs.tdLastBlame ||= {}), rec = book[campKey];
+      const lastBlame = rec && (rec.ep < ep.num ? rec.blame : rec.prev);
+      const pBlame = Math.min(0.75, Math.max(0.15, (heat - 6) * 0.05)) * (lastBlame ? 0.5 : 1);
+      const blames = stableRng('td-crowd-mood', String(ep.num), campKey)() < pBlame;
+      if (a && c) book[campKey] = { ep: ep.num, blame: blames, prev: !!lastBlame };
+      if (a && c && blames) { scene('crowd.lost', { a, b, c }, { ending: 'blame' }, at(pub, 'return'), 'BLAME GAME', 'red', null, joiners(c, [a, b, c], people, 5)); addBond(a, b, -0.5); addBond(c, b, 0.25); addBond(c, a, 0.1); }
+      else if (a && c) { scene('crowd.lost', { a, b, c }, { ending: 'own' }, at(pub, 'return'), 'LICKING WOUNDS', 'blue', null, joiners(c, [a, b, c], people, 5)); addBond(a, b, 0.15); addBond(c, b, 0.2); }
     } else {
       const a = top(scored, n => scores[n])[0];
       const [b, c] = closest(a, people);

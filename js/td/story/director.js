@@ -32,7 +32,7 @@ import { classify, file, prevAired } from './storylines.js';
 import { continuityScore, rememberMoment } from './continuity.js';
 import { recordFollowups, followupScene } from './followups.js';
 import { recordTurns, turnScene } from './turns.js';
-import { witnessConflicts, witnessAfter } from './witness.js';
+import { witnessConflicts, witnessAfter, sidedFight } from './witness.js';
 import { onCommit, onDiscard, adopt, commit, discard, pending } from './commit.js';
 import { writeStory as writeRaw, hasStoryPool } from './write.js';
 import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './record.js';
@@ -814,9 +814,42 @@ const PULL = [
   [/^talk\.(plan|game|checkin|scramble)/, 'shared', 2, true],
   [/^friend\.(bond|goof|joke|sunrise|struggle|laugh|rally|lift)/, 'shared', 3, false],
   [/^alliance\.crack/, 'shared', 1, true],
-  [/^drama\.(fight|bomb|dig|clash|explode)/, 'side', 2, false],
+  // (one friend at most, and a close one: every fight pulling in two friends made every fight a three-way, read
+  // 2026-10-14, the user: "theres a lot of fight and people taking sides")
+  [/^drama\.(fight|bomb|dig|clash|explode)/, 'side', 1, false],
   [/^recruit\.join/, 'members', 3, false],
 ];
+// One fight a camp a day with people taking sides (the user, 2026-10-14: "theres a lot of fight and people taking sides
+// i mean this structure happens a lot why"; measured on the carnival read: every fight with anybody else around had a
+// third person backing one of them, and the next morning a "you took their side"). The first fight of the day that has
+// somebody else speaking up keeps them, a fight whose own lines are written with a defender included; a later one loses
+// the room's reaction (marked sideTake) and is the two of them. witness.js adds nobody to a day that already has one.
+// The same for the one watching it who tells the camera what it showed them (watchNote, and the "X heard every word"
+// beat that brings them on, watch): one fight a day has one.
+function sidesOncePerDay(out, live) {
+  let sided = false, noted = false;
+  const drop = (it, mark) => {
+    const off = new Set(it.lines.filter(l => l[mark] && l.by).map(l => l.by));
+    it.lines = it.lines.filter(l => !l[mark]);
+    // (a "heard every word" beat for somebody who now says nothing goes with them)
+    it.lines = it.lines.filter(l => !(l.watch && l.watch.every(p => !it.lines.some(x => x.by === p))));
+    it.text = it.lines.map(l => l.text).join(' ');
+    // (somebody whose every line went is no longer in the scene)
+    if (Array.isArray(it.players)) it.players = it.players.filter(p => !off.has(p) || it.lines.some(l => l.by === p || (l.kind === 'beat' && (l.text || '').includes(p))));
+  };
+  for (const phase of ['pre', 'post']) for (const it of out[phase] || []) {
+    if (!it?.story || !Array.isArray(it.lines)) continue;
+    if (it.lines.some(l => l.watchNote)) {
+      if (!noted) {
+        noted = true;
+        if (live) { const nb = ((gs.tdStory ||= {}).noteBy ||= {}); for (const p of new Set(it.lines.filter(l => l.watchNote && l.by).map(l => l.by))) nb[p] = (nb[p] || 0) + 1; }
+      } else drop(it, 'watchNote');
+    }
+    if (!sidedFight(it)) continue;
+    if (!sided) { sided = true; continue; }
+    if (it.lines.some(l => l.sideTake)) drop(it, 'sideTake');
+  }
+}
 function votePlan(ep, camp, members) {
   const gone = ep.eliminated;
   const tribal = (ep.tribalPlayers || []).filter(p => members.includes(p));
@@ -2224,7 +2257,7 @@ export function airTdEpisode(ep) {
             // 'members': the rest of the alliance b is joining, there to welcome b
             const al = how === 'members' ? (gs.namedAlliances || []).find(x => x.name === ev.scene?.data?.group) : null;
             const mates = how === 'side'
-              ? rest.filter(m => getBond(who.b, m) >= 3).sort((x, y) => getBond(who.b, y) - getBond(who.b, x) || x.localeCompare(y))
+              ? rest.filter(m => getBond(who.b, m) >= 5).sort((x, y) => getBond(who.b, y) - getBond(who.b, x) || x.localeCompare(y))
               : how === 'members' ? rest.filter(m => al?.members?.includes(m)).sort((x, y) => getBond(who.a, y) - getBond(who.a, x) || x.localeCompare(y))
               : rest.filter(m => getBond(who.a, m) >= 1 && getBond(who.b, m) >= 1).sort((x, y) => both(y) - both(x) || x.localeCompare(y));
             const joins = mates.length > 0 && (!needsGroup || shapeFor(who.a, closeTo(who.a, rest)) === 'group');
@@ -2297,19 +2330,26 @@ export function airTdEpisode(ep) {
           // somebody steps in only when it was an attack: a brag or a boast just gets watched
           // (not after a scene that ended friendly: Topher called Max "so mean" for a line Zoey had just called sweet,
           // read 2026-10-14; those entries are in CALM_ENDS), nor in a dispute, an argument about somebody else)
-          if (forB && (fam === 'fight' || fam === 'credit') && !CALM_ENDS.has(w.lineId) && !/dispute/.test(kind)) {
+          // ...and only somebody who really cares: a close friend of b, or of a (the user, 2026-10-14: "theres a lot of
+          // fight and people taking sides i mean this structure happens a lot"; it was every public fight, a mortified
+          // 'awkward' line from whoever stood nearest when nobody cared). Most fights are the two of them, watched.
+          const tone = lean(forB) >= 2 ? 'defend' : getBond(forB, who.a) >= 4 ? 'excuse' : null;
+          if (forB && tone && (fam === 'fight' || fam === 'credit') && !CALM_ENDS.has(w.lineId) && !/dispute/.test(kind)) {
             const ww = { a: who.a, b: who.b, c: forB, ...(forA ? { d: forA } : {}) };
-            const tone = lean(forB) >= 1 ? 'defend' : getBond(forB, who.a) >= 3 ? 'excuse' : 'awkward';
             const r = writeStory('public.react', tone, ww, data, { ...facts, third: true, fourth: !!forA, registerC: registerOf(forB) },
               { ep: ep.num, camp, phase, n: n++, place: 'aside', unique: 'soft', draft: true, epFresh: true });
-            if (r) { spentToo.push(r.lines); insert(r.lines); watched.push(forB, ...(forA && r.lines.some(l => l.by === forA) ? [forA] : [])); }
+            // (marked: one fight a day keeps its side-takers, sidesOncePerDay below)
+            if (r) { for (const l of r.lines) l.sideTake = true; spentToo.push(r.lines); insert(r.lines); watched.push(forB, ...(forA && r.lines.some(l => l.by === forA) ? [forA] : [])); }
           }
           // ...and somebody watching takes it in: what everybody now knows about a
-          const sharp = around.filter(x => x !== forB && x !== forA).sort((x, y) => ((pStatsOf(y)?.intuition || 0) + (pStatsOf(y)?.strategic || 0)) - ((pStatsOf(x)?.intuition || 0) + (pStatsOf(x)?.strategic || 0)) || x.localeCompare(y))[0];
+          // (the sharpest, less each time they've been the one watching: read 2026-10-14, Jade "heard every word" of four
+          // fights in one season)
+          const sharpness = x => (pStatsOf(x)?.intuition || 0) + (pStatsOf(x)?.strategic || 0) - 3 * ((gs.tdStory?.noteBy || {})[x] || 0);
+          const sharp = around.filter(x => x !== forB && x !== forA).sort((x, y) => sharpness(y) - sharpness(x) || x.localeCompare(y))[0];
           if (sharp) {
             const wn = { a: sharp, b: who.a, c: who.b };
             const nt = writeStory(`public.note.${NOTE_FAM(kind)}`, 'any', wn, data, { ...factsFor({ who: wn, data: {} }, { ep: ep.num, phase }), third: true }, { ep: ep.num, camp, phase, n: n++, place: 'confessional', unique: 'soft', draft: true, epFresh: true });
-            if (nt) { spentToo.push(nt.lines); lines = [...lines, ...nt.lines]; watched.push(sharp); }
+            if (nt) { for (const l of nt.lines) l.watchNote = true; spentToo.push(nt.lines); lines = [...lines, ...nt.lines]; watched.push(sharp); }
           }
         }
         return spentToo.reduce((it, x) => adopt(it, x), adopt(adopt({ story: true, kind: pool, storyType: line?.type || 'cut', step: step?.step || 'cut', ...(line ? { storyline: line.id } : { cut: true }), ref: i, type: ev.type,
@@ -2873,7 +2913,7 @@ export function airTdEpisode(ep) {
         const WATCH = one
           ? [`${names} has been watching the whole thing.`, `${names} is close enough to hear every word.`, `${names} saw all of it from a few steps away.`, `${names} heard every word of that.`, `${names} hasn't missed a second of it.`]
           : [`${names} have been watching the whole thing.`, `${names} are close enough to hear every word.`, `${names} saw all of it from a few steps away.`, `${names} heard every word of that.`];
-        const beat = { kind: 'beat', by: null, text: WATCH[h % WATCH.length] };
+        const beat = { kind: 'beat', by: null, text: WATCH[h % WATCH.length], watch: unseen };
         it.lines = [...it.lines.slice(0, at), beat, ...it.lines.slice(at)];
         it.text = it.lines.map(l => l.text).join(' ');
         if (Array.isArray(it.players)) for (const x of unseen) if (!it.players.includes(x)) it.players.push(x);
@@ -2980,6 +3020,8 @@ export function airTdEpisode(ep) {
       if (!it?.story) continue;
       if (pending(it) || pending(it.lines)) { if (globalThis.__tdCommitLate) globalThis.__tdCommitLate.push({ ep: ep.num, camp, phase, kind: it.kind }); commit(it); commit(it.lines); }
     }
+    // one fight a day with people taking sides: the first that aired keeps its side-takers, a later one is the two of them
+    sidesOncePerDay(out, liveEp(ep));
     // the people watching a public fight take a side, and it lasts (witness.js): before the follow-ups and turns read
     // the day, so a stance can become their next chapter
     if ((seasonConfig?.tdEdit || 'full') !== 'off') witnessConflicts(ep, camp, out, members, writeStory,

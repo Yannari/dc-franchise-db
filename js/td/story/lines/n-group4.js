@@ -213,6 +213,72 @@ export default {
       {"by":"b","conf":"I can handle people being worried about my score. I'm just glad {c} let me say something before everybody decided what it meant."}
     ] },
   ],
+  // Back from a loss when nobody is in the mood to blame anybody (camp-events.js: a, the one most likely to, is calm
+  // enough or likes b enough to let it go): b owns it, the team jokes about it, or everyone is too tired to fight. The
+  // user, 2026-10-14: "theres a lot of fight and people taking sides i mean this structure happens a lot" (every loss
+  // was a blame and a defence). Nobody takes a side here, because there are no sides.
+  'long.crowd.lost.own': [
+    { id: 'nl.lo1', place: 'public', turns: [
+      { beat: "The team trudges back {here}. {b} gets there first and turns around to face everybody." },
+      { by: 'b', say: "Okay. That was me. I know it was me, so nobody has to say it." },
+      { by: 'a', say: "I wasn't going to say anything." },
+      { by: 'c', say: "You were a little bit going to." },
+      { by: 'a', say: "...Fine, I was a little bit going to. But you said it first, so we're good." },
+      O('d', "Can we eat something? I can't think about losing on an empty stomach."),
+      { by: 'b', say: "Next time I'm not finishing last. I mean it." },
+      { by: 'b', conf: "I'd rather say it myself than sit there and wait for somebody else to say it for me." },
+      { by: 'a', conf: "I had a whole speech ready, and {b} owned it before I even opened my mouth. It's really hard to stay mad at that." },
+    ] },
+    { id: 'nl.lo2', place: 'public', turns: [
+      { beat: "Back {here}, the whole team just sits down wherever they're standing." },
+      { by: 'a', say: "Does anybody want to talk about what just happened?" },
+      { by: 'b', say: "No." },
+      { by: 'c', say: "No." },
+      O('d', "Absolutely not."),
+      { by: 'a', say: "Good, because neither do I." },
+      O('e', "Is it weird that I'm too tired to even be upset?"),
+      { by: 'c', say: "It's not weird. We're all wiped out." },
+      { by: 'c', conf: "Nobody yelled and nobody cried. We just sat there not talking, and honestly, that was the nicest part of the day." },
+    ] },
+    { id: 'nl.lo3', place: 'public', turns: [
+      { by: 'a', say: "So, on a scale of one to ten, how bad was that?" },
+      { by: 'b', say: "Eleven, and most of that was me." },
+      { by: 'c', say: "Hey, I wasn't great either. Don't hog it." },
+      { by: 'a', say: "Fine. {b} gets the eleven and {c} gets an honourable mention." },
+      O('d', "What do I get?"),
+      { by: 'a', say: "Same as all of us. A really long night." },
+      O('d', "...Great."),
+      { by: 'b', conf: "I messed up and everybody knows it. But we laughed about it instead of yelling about it, and I'll take that." },
+    ] },
+    { id: 'nl.lo4', place: 'public', when: { voice: ['loud', 'tough', 'blunt', 'bossy', 'competitive', 'proud'] }, turns: [
+      { by: 'a', say: "Okay, I'm just going to say it, {b}..." },
+      { beat: "{a} looks at {b}, who already looks miserable, and stops." },
+      { by: 'a', say: "...Actually, never mind. It's not going to help." },
+      { by: 'b', say: "Thanks. I mean that." },
+      { by: 'c', say: "Look at that. Growth." },
+      { by: 'a', say: "Don't push it, {c}." },
+      { by: 'a', conf: "I was about to blame {b} for the whole thing, and then I saw {b}'s face. Yelling at somebody who already feels that bad is just mean." },
+    ] },
+    { id: 'nl.lo5', place: 'public', turns: [
+      { by: 'c', say: "Okay, we lost. So what do we do differently next time?" },
+      { by: 'b', say: "Don't put me on the part I'm worst at, for a start." },
+      { by: 'a', say: "Fair. Who's actually good at that stuff?" },
+      O('d', "Not me."),
+      O('e', "Definitely not me."),
+      { by: 'c', say: "So, nobody. Great. We'll figure it out." },
+      { by: 'a', conf: "Nobody pointed fingers, which was nice. But somebody's still going home tonight, and being nice doesn't change that." },
+    ] },
+    { id: 'nl.lo6', place: 'public', when: { voice: ['warm', 'earnest', 'anxious', 'emotional', 'quiet', 'calm'] }, turns: [
+      { beat: "{b} sits down a little way from the others {here}. {a} goes over." },
+      { by: 'a', say: "Hey. It was one challenge." },
+      { by: 'b', say: "It was one challenge I lost for all of us." },
+      { by: 'a', say: "Everybody was bad today. You just had the worst day of anybody." },
+      { by: 'b', say: "That's a really nice way of saying I was the worst." },
+      { by: 'a', say: "Yeah, it is. Take it." },
+      { by: 'c', say: "{a}'s right. Come on, come and eat with us." },
+      { by: 'b', conf: "I was waiting for somebody to yell at me, and instead {a} came over and was nice about it. I almost cried." },
+    ] },
+  ],
   'long.crowd.huddle.any': [
     { id: 'nl.h1', place: 'secret', turns: [
       { beat: "{group} meets at {place}. Everybody who's in it shows up." },

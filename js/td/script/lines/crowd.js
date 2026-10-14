@@ -9,7 +9,8 @@
 //   crowd.project.any a team job: a takes charge, b pushes back, c and d pitch in
 //   crowd.banter.any  a team safe tonight unwinds: a, b, c and d talk about nothing much
 //   crowd.won.any     back from a win: a scored the most for the team; b and c say so
-//   crowd.lost.any    back from a loss: a blames b, who scored the least; c tries to calm it down
+//   crowd.lost.blame  back from a loss: a blames b, who scored the least; c tries to calm it down
+//   crowd.lost.own    back from a loss, nobody in the mood to blame: b owns it, a lets it go, c is there
 //   crowd.immune.any  after the merge: a just won immunity; b is glad, c is not
 //   crowd.huddle.any  a, b and c, of the alliance {group}, close ranks before the vote
 //   crowd.nerves.any  the team going to the vote tonight: a, b and c at the fire
@@ -230,6 +231,46 @@ const LOST = [
     { by: 'b', say: "That's blaming." },
     { by: 'c', say: "That's definitely blaming." },
     { by: 'a', conf: "Plant the seed. Let everyone else water it." },
+  ] },
+];
+// (the user, 2026-10-14: "theres a lot of fight and people taking sides i mean this structure happens a lot": not every
+// loss is a blame; camp-events.js decides from how hot a's head runs and how much a likes b)
+const OWN = [
+  { id: 'cw.lo1', turns: [
+    { by: 'b', say: "Okay, that was me. I know it was me, so nobody has to say it." },
+    { by: 'a', say: "I wasn't going to." },
+    { by: 'c', say: "You were a little bit going to." },
+    { by: 'a', say: "...Fine. But you said it first, so we're good." },
+  ] },
+  { id: 'cw.lo2', turns: [
+    { beat: 'Back at camp, the whole team just sits down wherever they are standing.' },
+    { by: 'a', say: "Does anybody want to talk about it?" },
+    { by: 'b', say: "No." },
+    { by: 'c', say: "No." },
+    { by: 'a', say: "Good, because neither do I." },
+  ] },
+  { id: 'cw.lo3', turns: [
+    { by: 'a', say: "On a scale of one to ten, how bad was that?" },
+    { by: 'b', say: "Eleven, and most of that was me." },
+    { by: 'c', say: "Hey, I wasn't great either. Don't hog it." },
+  ] },
+  { id: 'cw.lo4', turns: [
+    { by: 'a', say: "I'm just going to say it, {b}..." },
+    { beat: '{a} looks at {b}, who already looks miserable, and stops.' },
+    { by: 'a', say: "...Actually, never mind. It won't help." },
+    { by: 'c', say: "Look at that. Growth." },
+  ] },
+  { id: 'cw.lo5', turns: [
+    { by: 'c', say: "Okay, we lost. What do we do differently next time?" },
+    { by: 'b', say: "Don't put me on the part I'm worst at, for a start." },
+    { by: 'a', say: "Fair. We'll figure it out." },
+  ] },
+  { id: 'cw.lo6', turns: [
+    { by: 'a', say: "Hey, {b}. It was one challenge." },
+    { by: 'b', say: "It was one challenge I lost for all of us." },
+    { by: 'a', say: "Everybody was bad today." },
+    { by: 'c', say: "Yeah. Come on, come and eat with us." },
+    { by: 'b', conf: "I was waiting for somebody to yell at me. Nobody did." },
   ] },
 ];
 
@@ -499,7 +540,7 @@ const CH_ROMANCE = [
 ];
 
 export default {
-  'crowd.meal.any': MEAL, 'crowd.won.any': WON, 'crowd.lost.any': LOST, 'crowd.immune.any': IMMUNE,
+  'crowd.meal.any': MEAL, 'crowd.won.any': WON, 'crowd.lost.blame': LOST, 'crowd.lost.own': OWN, 'crowd.immune.any': IMMUNE,
   'crowd.huddle.any': HUDDLE, 'crowd.nerves.any': NERVES, 'crowd.clash.any': CLASH,
   'crowd.chores.any': CHORES, 'crowd.dinner.any': DINNER,
   'crowd.project.any': PROJECT, 'crowd.banter.any': BANTER,

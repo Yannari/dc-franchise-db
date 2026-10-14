@@ -38,6 +38,20 @@ const PRIVATE = /\b(pulls? .{1,30} (aside|away)|away from the others|out of ears
 const ROLES = ['c', 'd', 'e', 'f'];
 const book = () => ((gs.tdStory ||= {}).witness ||= []);
 
+// A fight somebody else spoke up in (director.js sidesOncePerDay: one of those a camp a day): its room reaction, marked
+// sideTake, or a fight written with a defender in it (crowd.lost's c, a friend pulled in), not a loss the team took on
+// the chin (crowd.lost 'own')
+const SIDED_KIND = /^(long\.)?(drama\.(fight|bomb|dig|clash|explode|dispute|intimidate|stir)|crowd\.(lost|clash)|blame\.loss|credit\.callout)/;
+export function sidedFight(it) {
+  if (!it || !Array.isArray(it.lines)) return false;
+  if (it.lines.some(l => l.sideTake)) return true;
+  const k = it.scene?.kind || it.kind || '';
+  if (!SIDED_KIND.test(k) && !SIDED_KIND.test(it.kind || '')) return false;
+  if (it.scene?.data?.ending === 'own') return false;
+  const w = it.scene?.who || {};
+  return it.lines.some(l => l.kind === 'say' && l.by && l.by !== w.a && l.by !== w.b);
+}
+
 /** Where c stands between a and b: 'a' | 'b' | 'out', and whether it means going against a friend. */
 export function stanceOf(c, a, b, key) {
   const s = pStatsOf(c) || {};
@@ -73,6 +87,8 @@ export function witnessConflicts(ep, camp, out, members, write, factsForWho, liv
     const item = itemOf(phase, it), w = item?.scene?.who || {};
     if (item && isConflict(item) && w.a && w.b) fought.add(pk(w.a, w.b));
   }
+  // one fight a day with people taking sides (director.js sidesOncePerDay): a day that has one gets nobody added
+  let sided = ['pre', 'post'].some(phase => (out[phase] || []).some(it => sidedFight(itemOf(phase, it))));
   for (const phase of ['pre', 'post']) for (const it of out[phase] || []) {
     const item = itemOf(phase, it);
     if (!item) continue;
@@ -98,16 +114,15 @@ export function witnessConflicts(ep, camp, out, members, write, factsForWho, liv
     // (nor somebody the scene has just sent away: "Lynda heads off", then Lynda sides with Jade, read 2026-10-14)
     const leftNow = x => lines.some(l => l.kind === 'beat' && (l.text || '').includes(x) && /\b(heads? off|leaves?|wanders? away|finds? something else to do)\b/.test(l.text || ''));
     const pool0 = members.filter(x => !inScene.has(x) && !spoke.has(x) && !leftNow(x));
-    const first = pool0.filter(x => care(x) >= 2).sort((x, y) => care(y) - care(x) || x.localeCompare(y))[0];
-    // ...and on a big one, somebody who likes them both, caught in the middle
-    const torn = /explode|bomb|crowd|fight/.test(sk + k) ? pool0.filter(x => x !== first && Math.min(getBond(x, a), getBond(x, b)) >= 1)
-      .sort((x, y) => Math.min(getBond(y, a), getBond(y, b)) - Math.min(getBond(x, a), getBond(x, b)) || x.localeCompare(y))[0] : null;
-    // one more voice at most when somebody already in the scene took a side
-    // (counting everybody who has spoken besides the two of them, the room's reaction included: read 2026-10-14, a fight
-    // with a defender, an 'Am I crazy?' and a 'Tell him' stacked on it, four voices piling in)
+    // One person at most, who feels strongly about one of them, and only on a day where nobody has taken a side yet
+    // (the user, 2026-10-14: "theres a lot of fight and people taking sides i mean this structure happens a lot": it
+    // was one or two on every public fight, a second one "caught in the middle" on the big ones). Somebody already
+    // speaking in it besides the two of them is the side-taking that fight gets.
+    if (sided) continue;
     const others = [...spoke].filter(x => x !== a && x !== b).length;
-    const already = ROLES.some(r => who[r] && spoke.has(who[r])) || others > 0;
-    const watchers = [first, torn].filter(Boolean).slice(0, already ? 1 : 2);
+    if (others > 0) continue;
+    const first = pool0.filter(x => care(x) >= 4).sort((x, y) => care(y) - care(x) || x.localeCompare(y))[0];
+    const watchers = [first].filter(Boolean);
     const oneSided = ONE_SIDED.test(sk) || ONE_SIDED.test(ty);
     const added = [];
     for (const c of watchers) {
@@ -129,6 +144,7 @@ export function witnessConflicts(ep, camp, out, members, write, factsForWho, liv
       (item.effects ||= []).push(...fxOf(c, a, b, st).map(([x, y, d]) => ({ a: x, b: y, d })));
     }
     if (!added.length) continue;
+    sided = true;
     // in before the closing confessionals: the room reacts while it is still happening
     // ...and before either of them walks out: a line answered after "storms off" is somebody talking to an empty path
     // (right after the last thing said: the room's own reaction, "Jade saw all of it" and Jade's confessional, may already
@@ -170,8 +186,10 @@ function record(ep, camp, c, a, b, st, live, kind, remark) {
  * them. One a camp, from the last episode's stances, both still here. Returns the director's list item or null.
  */
 export function witnessAfter(ep, camp, members, next, write, factsForWho) {
-  const due = book().filter(x => !x.done && x.ep === ep.num - 1 && members.includes(x.by)
-    && (x.side === 'out' ? [x.a, x.b].some(p => members.includes(p)) : members.includes(x.vs)));
+  // only a friend who went against them: backing somebody you were never close to, or keeping out of it, is not worth
+  // a morning scene (the user, 2026-10-14, on fights and sides airing all the time: seven of these a season, now ~two)
+  const due = book().filter(x => !x.done && x.ep === ep.num - 1 && members.includes(x.by) && x.turned
+    && members.includes(x.vs));
   due.sort((p, q) => (q.turned ? 1 : 0) - (p.turned ? 1 : 0) || (p.side === 'out' ? 1 : 0) - (q.side === 'out' ? 1 : 0) || p.by.localeCompare(q.by));
   for (const x of due) {
     // staying out lets down whichever of the two was getting the worst of it: the one closer to the witness

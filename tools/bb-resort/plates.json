@@ -86,6 +86,7 @@
  },
  "dining-noms": {"room": "kitchen", "sets": ["dining"], "use": ["meal"], "indoor": true, "windows": [[0, 0, 242, 692]]},
  "dining-wide": {"room": "kitchen", "sets": ["dining"], "use": ["house"], "indoor": true, "windows": [[0, 0, 630, 790]]},
+ "dining-room": {"room": "kitchen", "sets": ["dining"], "use": ["house", "meal"], "indoor": true, "windows": [[0, 0, 292, 533]], "lights": [[846, 142, 90]]},
  "dining-breakfast": {"room": "kitchen", "sets": ["dining"], "use": ["meal"], "indoor": true, "words": "breakfast|eggs|bacon"},
  "dining-meal": {"room": "kitchen", "sets": ["dining"], "use": ["meal", "house"], "indoor": true},
  "dining-meal-2": {"room": "kitchen", "sets": ["dining"], "use": ["meal"], "indoor": true},
@@ -94,6 +95,8 @@
 
  "kitchen-wide": {"room": "kitchen", "sets": ["kitchen"], "use": ["house"], "indoor": true, "windows": [[950, 170, 1280, 560], [1380, 0, 1600, 560]]},
  "kitchen-stove": {"room": "kitchen", "sets": ["kitchen"], "use": ["house"], "indoor": true, "words": "stove|cooking|cook|oven|pan"},
+ "kitchen-room": {"room": "kitchen", "sets": ["kitchen"], "use": ["house"], "indoor": true, "windows": [[1017, 154, 1300, 458], [1454, 0, 1600, 567]]},
+ "kitchen-sink": {"room": "kitchen", "sets": ["kitchen"], "use": ["house"], "indoor": true, "words": "the sink|washing up|the dishes|the tap"},
  "bar-lobby-wide": {
   "room": "kitchen", "sets": ["kitchen"], "use": ["house"], "indoor": true, "words": "bar|coffee|smoothie|blender|drink",
   "lights": [[150, 140, 110], [350, 140, 110], [555, 140, 110], [760, 140, 110], [945, 140, 110], [1130, 140, 110]]

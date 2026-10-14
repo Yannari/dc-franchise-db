@@ -27,7 +27,8 @@ export const ZONES = {
   hallway: { label: 'Hallway', cam: 12, box: [52, 28, 60.6, 40.3] },
   bathroom: { label: 'Bathroom', cam: 8, box: [61, 33.6, 69.2, 40.6] },
   wing: { label: 'Bedroom', cam: 9, box: [69.8, 30.5, 80, 57] },
-  kitchen: { label: 'Kitchen', corner: 'Counter', cam: 2, box: [31.8, 33.8, 39.2, 57] },
+  kitchen: { label: 'Kitchen', corner: 'Counter', cam: 2, box: [31.8, 45.4, 39.2, 57] },
+  ksink: { label: 'Kitchen', corner: 'Sink', cam: 29, box: [31.8, 33.8, 39.2, 45.4] },
   kstove: { label: 'Kitchen', corner: 'Stove', cam: 17, box: [25.3, 33.8, 31.8, 48.4] },
   pantry: { label: 'Storage Room', cam: 10, box: [25.3, 48.6, 31.6, 57] },
   living: { label: 'Living Room', corner: 'Screens', cam: 4, box: [39.4, 40.6, 45.6, 57.1] },
@@ -66,7 +67,7 @@ const ALL = { ...ZONES, ...ISLAND };
 // names its to-edit folder instead; tests/bb-housemap.test.js holds every zone to one or the other.
 export const ZONE_PLATE = {
   pool: 'pool-wide', bar: 'bar-lobby-wide', gym: 'gym-racks', hallway: 'purple-hall', bathroom: 'bathroom', wing: 'bedroom-wide',
-  kitchen: 'kitchen-wide', living: 'living-screens', dining: 'dining-wide', kstove: 'kitchen-stove', lsofas: 'living-sofas', lconsole: 'living-console', dtable: 'dining-meal', library: 'library-wide', front: 'front', dr: 'confessional',
+  kitchen: 'kitchen-room', ksink: 'kitchen-sink', living: 'living-screens', dining: 'dining-room', kstove: 'kitchen-stove', lsofas: 'living-sofas', lconsole: 'living-console', dtable: 'dining-meal', library: 'library-wide', front: 'front', dr: 'confessional',
   beach: 'beach-hut', westdock: 'dock', clearing: 'comp-clearing', resort: 'front',
   hoh: 'hoh-suite', pantry: 'storage', foyer: 'foyer', eastdock: 'pier-east', npond: 'pond-north', epond: 'pond-east',
   lagoon: 'lagoon', volcano: 'volcano-lookout', jury: 'jury-cabins', villa: 'villa', studio: 'studio-arrival', lounge: 'havenot',

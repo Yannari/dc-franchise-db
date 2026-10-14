@@ -68,12 +68,12 @@ export function pickPlate(set, key, text = '', use = 'house') {
 export const CORNER = {
   'living-screens': 'living', 'living-screens-wide': 'living', 'living-screens-close': 'living',
   'living-sofas': 'lsofas', 'living-sofas-2': 'lsofas', 'living-reverse': 'lsofas', 'living-console': 'lconsole',
-  'kitchen-wide': 'kitchen', 'kitchen-stove': 'kstove',
-  'dining-wide': 'dining', 'dining-camera': 'dtable', 'dining-meal': 'dtable', 'dining-meal-2': 'dtable',
+  'kitchen-room': 'kitchen', 'kitchen-wide': 'kitchen', 'kitchen-stove': 'kstove', 'kitchen-sink': 'ksink',
+  'dining-room': 'dining', 'dining-wide': 'dining', 'dining-camera': 'dtable', 'dining-meal': 'dtable', 'dining-meal-2': 'dtable',
   'dining-breakfast': 'dtable', 'dining-noms': 'dtable', 'nom-table': 'dtable',
 };
 // each corner's camera (housemap.js ZONES carries the same numbers), so a scene at the stove is on its own feed
-export const CORNER_CAM = { living: 4, lsofas: 18, lconsole: 19, kitchen: 2, kstove: 17, dining: 3, dtable: 28 };
+export const CORNER_CAM = { living: 4, lsofas: 18, lconsole: 19, kitchen: 2, kstove: 17, ksink: 29, dining: 3, dtable: 28 };
 /** A house plate of the set in a corner nobody is using yet (`taken`: corner ids), by the key's hash; null if none. */
 export function cornerPlate(set, taken, key) {
   const free = platesOf(set).filter(id => CORNER[id] && !taken.has(CORNER[id]) && (RESORT.plates[id].use || []).includes('house'));

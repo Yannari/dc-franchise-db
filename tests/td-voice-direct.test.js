@@ -40,7 +40,7 @@ describe('localDirection', () => {
   it('always gives a delivery, and never a tender one in a confessional', () => {
     for (const tags of [[], ['warm'], ['dry'], ['loud', 'schemer']]) {
       const d = localDirection({ by: 'Gwen', text: 'I miss my friends. It is weird here.', k: 'conf' }, tags).d;
-      expect(d).toMatch(/to the camera$/);
+      expect(d).toMatch(/to camera$/);
       expect(d).not.toMatch(tender);
     }
     expect(localDirection({ by: 'Chris', text: 'Who goes tonight? Stay tuned!' }, [], true).d).toMatch(/TV host/);

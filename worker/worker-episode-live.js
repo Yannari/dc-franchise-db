@@ -4792,14 +4792,16 @@ async function generateVoiceDirection(body, env) {
     "everything at full volume, big readable emotions, comic timing. A FLAT READ IS THE FAILURE. Every line is",
     "spoken alone by a voice model that reads your direction in square brackets before it.",
     "",
-    "THE DIRECTION (d): 3 to 10 words. The FEELING first, then how it SOUNDS (pace, volume, pitch, breath):",
-    "  'furious, fast and loud, biting every word'   'hurt, quiet and slow, holding back tears'",
-    "  'smug and slow, savouring it'                 'panicked, fast and breathless'",
-    "  'fake-sweet, bright and sugary'               'bored and deadpan, flat, unhurried'",
-    "  'giddy, fast, about to laugh'                 'stunned, halting, barely getting the words out'",
-    "  'hushed and quick, checking nobody's listening'   'defensive, rising, talking over them'",
+    "THE DIRECTION (d): 2 to 5 words. The FEELING, and if it helps one word of how it sounds:",
+    "  'furious, loud'   'smug'   'panicked, fast'   'fake-sweet'   'bored, deadpan'   'giddy'",
+    "  'stunned'   'hushed, quick'   'defensive'   'annoyed, snappy'   'excited, fast'   'awkward'",
     "Never a manner with no feeling in it ('speak candidly', 'speak normally', 'speak casually', 'speak",
     "clearly', 'matter-of-fact'): those come out flat. Name what the speaker feels in that moment.",
+    "",
+    "KEEP IT BOUNCY. This is a cartoon: most lines are quick, punchy and energetic, even worried or awkward",
+    "ones. Sad, hurt or tearful only when the line is about a real loss or a real betrayal; nervous, awkward,",
+    "worried, annoyed or embarrassed are NOT sad. 'Slow', 'quiet', 'heavy' or 'tearful' at most once in a",
+    "scene, for its one heaviest line. A sad scene still has jokes and snaps in it.",
     "",
     "FINDING THE FEELING",
     "- Each line comes with its scene: the stage direction before it, the line before, and the REPLY after it.",
@@ -4810,10 +4812,10 @@ async function generateVoiceDirection(body, env) {
     "  confessional is smug or calculating. A sarcastic line is said sarcastically, not as its opposite.",
     "- Never a direction that fights the words (a happy direction on a sad line): the voice model gets worse.",
     "- A scene BUILDS: a fight gets angrier line by line, a confession gets more exposed. Don't hold one level.",
-    "- Confessionals (CONFESSIONAL) are the speaker alone with the camera saying what they really feel. Name it:",
-    "  'smug, leaning into the camera', 'still angry, low and fast', 'giddy, can't stop smiling', 'worried,",
-    "  quiet and quick'. Never softly, gently, tenderly, warmly, intimately or sensually unless the line is a",
-    "  love confession: the voice model makes those romantic.",
+    "- Confessionals (CONFESSIONAL) are the speaker alone with the camera saying what they really feel. Take the",
+    "  feeling from THAT line (proud, worried, fed up, excited, guilty, amused...). Smug only when they gloat.",
+    "- Never soft, softly, gentle, gently, tender, warmly, intimately or sensually: the voice model makes those",
+    "  sound romantic. Kind or reassuring lines are 'kind', 'reassuring', 'friendly'.",
     "- Whisper only for a real secret with others near. Shout only for a real shout (LOUD, CAPITALS, the peak",
     "  of a fight, a cheer); most exclamation marks are energy, not shouting.",
     "- The host (Chris) loves the pain: 'big TV-host voice, smug and punchy'; teasers 'dramatic, building'.",
@@ -4843,25 +4845,19 @@ async function generateVoiceDirection(body, env) {
       l.next ? `reply ${l.next.by}: ${q(l.next.text)}` : null].filter(Boolean).join("; ");
     return `${l.i}. ${l.by}${ctx ? ` (${ctx})` : ""}: "${String(l.text).slice(0, 400)}"`;
   }).join("\n");
-  let raw = "", provider = "";
-  try {
-    const out = await callShortModel(system, user, env, { maxTokens: 4000, model: claudeModel("creative", body, env) });
-    raw = out.text; provider = out.provider;
-  } catch (e) {
-    // both paid accounts refused (out of credit, 2026-10-14): Cloudflare's own model, free up to a daily allowance
-    try { raw = await callWorkersAI(system, user, env, 4000); provider = "workers-ai"; }
-    catch (e2) { return json({ ok: false, error: `model: ${e.message}; workers-ai: ${e2.message}` }, 502); }
-  }
+  // Cloudflare's own model ONLY: "remove openai", the user, 2026-10-14, on the paid director ("it cost too much"). The
+  // browser directs from the script itself (js/vp-td-ep/direct.js) when this does not answer.
+  let raw = "", provider = "workers-ai";
+  try { raw = await callWorkersAI(system, user, env, 3000); }
+  catch (e) { return json({ ok: false, error: `workers-ai: ${e.message}` }, 502); }
   let parsed;
   try { const m = raw.match(/\{[\s\S]*\}/); parsed = JSON.parse(m ? m[0] : raw); }
   catch { return json({ ok: false, error: "the model did not return usable JSON", provider }, 502); }
   // a tender word on a confessional that is not a love confession is the voice model's cue to go intimate
-  const banned = /\b(softly|gently|tenderly|warmly|sensual(?:ly)?|seductively|intimately)\b/gi;
-  const clean = (d, conf) => {
-    let s = String(d || "").replace(/[\[\]]/g, "").replace(/\s+/g, " ").trim().slice(0, 80);
-    if (conf) s = s.replace(banned, "openly");
-    return s;
-  };
+  // (any line, 2026-10-14: the free model wrote "reassuring, soft" and "concerned, gentle" on plain chat)
+  const banned = /\b(soft(?:ly)?|gentle|gently|tender(?:ly)?|warmly|sensual(?:ly)?|seductive(?:ly)?|intimate(?:ly)?)\b/gi;
+  const clean = (d, conf) => String(d || "").replace(/[\[\]]/g, "").replace(/\s+/g, " ").trim().slice(0, 80)
+    .replace(banned, conf ? "honest" : "kind").replace(/\b(kind|honest), (kind|honest)\b/, "$1");
   const NV = new Set(["laugh", "sigh", "breathe", "clear throat", "cough"]);
   const directions = (Array.isArray(parsed.directions) ? parsed.directions : []).map(x => {
     const i = Number(x.i), line = lines.find(l => l.i === i), conf = line?.kind === "conf";
@@ -4877,6 +4873,26 @@ async function generateVoiceDirection(body, env) {
     if (/^[A-Za-z'’-]{2,24}$/.test(w) && new RegExp(`\\b${w.replace(/['’-]/g, ".")}\\b`, "i").test(line.text)) o.stress = w;
     return o;
   }).filter(Boolean);
+  // the user: "it use sad and sad slow the voices too much". Whatever the model says, one slow/heavy read a scene
+  // (a request is one screen): later ones lose the slow word, and a sad word on a line with no loss in it goes too
+  const SLOW = /,?\s*\b(?:and )?(?:slow(?:ly)?|unhurried|heavy|tearful|holding back tears|voice (?:catching|breaking)|barely there)\b/gi;
+  const SAD = /\b(sad(?:ly)?|hurt|wounded|grieving|tearful|heartbroken|sorrowful|melancholy|mournful)\b/i;
+  const LOSS = /\b(miss|gone|lost|left|voted|home|lied|betray|trusted|cry|crying|tears|hurt|alone|sorry|goodbye)\b/i;
+  // smug is the free model's default confessional: only a villain's, or a line that gloats, keeps it ("Izzy has been
+  // a little lost since Noah left" from Sierra came back smug)
+  const VILLAIN = /\b(villain|mastermind|schemer|cruel|TV host)\b/i;
+  const GLOAT = /\b(easy|told you|obviously|genius|pathetic|my plan|right where|nobody knows|win|won|beat|crushed)\b/i;
+  let slowUsed = false;
+  for (const o of directions) {
+    const line = lines.find(l => l.i === o.i);
+    if (/\bsmug\b/i.test(o.d) && !VILLAIN.test(String(cast[line.by] || (line.by === "Chris" ? "TV host" : ""))) && !GLOAT.test(line.text))
+      o.d = o.d.replace(/\bsmug(?:ly)?\b/i, line.kind === "conf" ? "honest" : "confident");
+    if (SAD.test(o.d) && !LOSS.test(line.text)) o.d = o.d.replace(SAD, "uneasy");
+    if (new RegExp(SLOW.source, "i").test(o.d)) {
+      if (slowUsed) o.d = o.d.replace(SLOW, "").replace(/^[,\s]+|[,\s]+$/g, "") || "uneasy";
+      slowUsed = true;
+    }
+  }
   return json({ ok: true, directions, provider });
 }
 

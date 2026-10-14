@@ -1,9 +1,9 @@
 // ══════════════════════════════════════════════════════════════════════
 // vp-td-ep/direct.js — how a voiced line is SAID: the text Inworld TTS-2 reads, and a director of last resort
 // ══════════════════════════════════════════════════════════════════════
-// The voice director (dc-analytics, mode 'voice-direction') writes a delivery for every line: the feeling and how it
-// sounds ("hurt, quiet and slow, holding back tears"), and now and then a sound (a sigh before "Fine."), a turn half
-// way through the line, or the one word to hit. voiceText puts those into the line the way TTS-2 reads them: tags
+// The voice director (dc-analytics, mode 'voice-direction', on Cloudflare's free model since the user said "remove
+// openai", 2026-10-14) writes a short delivery for every line: the feeling ("annoyed, snappy"), and now and then a
+// sound (a sigh before "Fine."), a turn half way through the line, or the one word to hit. voiceText puts those into the line the way TTS-2 reads them: tags
 // in square brackets, a capitalised word for stress (Inworld's TTS-2 prompting guide).
 //
 // localDirection is for when the director cannot answer. The user, 2026-10-14: "the ai voice directing could be a
@@ -63,21 +63,23 @@ const FEEL = {
   secret: { line: /\b(don't tell|between us|keep (?:it|this) quiet|nobody can know|can i tell you something)\b/i,
     beat: /\b(leans? in|out of earshot|out of sight|whispers?|lowers? (?:her|his|their) voice|checks? nobody)\b/i },
 };
+// Short on purpose: every character of a direction is paid for on Inworld, and the user found the long, heavy ones
+// ("sad and sad slow") worse, 2026-10-14. A cartoon is quick: nothing here is slow.
 const SAY = {
-  angry: t => t.includes('dry') || t.includes('calm') ? 'cold and angry, low and clipped' : t.includes('loud') ? 'furious, loud and fast' : 'angry, sharp and fast',
-  hurt: () => 'hurt, quiet and slow, voice catching',
-  scared: () => 'nervous, quick and shaky',
-  happy: t => t.includes('dry') ? 'pleased despite yourself, dry' : 'excited, bright and fast',
-  smug: () => 'smug and slow, savouring it',
-  shocked: () => 'stunned, halting, in disbelief',
-  secret: () => 'hushed and quick, leaning in',
+  angry: t => t.includes('dry') || t.includes('calm') ? 'cold anger, clipped' : t.includes('loud') ? 'furious, loud' : 'angry, sharp',
+  hurt: () => 'hurt',
+  scared: () => 'nervous, quick',
+  happy: t => t.includes('dry') ? 'pleased, dry' : 'excited, bright',
+  smug: () => 'smug',
+  shocked: () => 'stunned',
+  secret: () => 'hushed, quick',
 };
 // the speaker's own manner, for a line with no clear feeling in it
 const MANNER = [
-  ['dry', 'dry and deadpan, unhurried'], ['cruel', 'cool and cutting, a little smug'], ['schemer', 'smooth and confident, a little sly'],
-  ['loud', 'big and energetic, quick'], ['anxious', 'a little nervous, quick'], ['bossy', 'brisk and bossy, clipped'],
-  ['tough', 'blunt and tough, low'], ['nerdy', 'quick and precise, a bit eager'], ['warm', 'friendly and open, easy pace'],
-  ['calm', 'calm and even, unhurried'],
+  ['dry', 'dry, deadpan'], ['cruel', 'cool, cutting'], ['schemer', 'smooth, sly'],
+  ['loud', 'big, energetic'], ['anxious', 'a bit nervous'], ['bossy', 'bossy, brisk'],
+  ['tough', 'blunt, tough'], ['nerdy', 'quick, eager'], ['warm', 'friendly, upbeat'],
+  ['calm', 'calm, even'],
 ];
 
 /**
@@ -88,16 +90,18 @@ export function localDirection(line, tags = [], host = false) {
   // a stage direction speaks for the person it names ("Geoff is sitting on Noah's empty seat" is not Sierra's mood)
   const t = String(line.text || ''), conf = line.k === 'conf';
   const beat = line.by && String(line.beat || '').includes(line.by) ? String(line.beat) : '';
-  if (host) return { d: /\?|stay tuned|right here|find out/i.test(t) ? 'dramatic TV host, building suspense' : 'big TV-host voice, smug and punchy' };
+  if (host) return { d: /\?|stay tuned|right here|find out/i.test(t) ? 'dramatic TV host' : 'smug TV host' };
   const score = {};
   for (const [k, re] of Object.entries(FEEL)) score[k] = (re.line.test(t) ? 1 : 0) + (beat && re.beat.test(beat) ? 1.5 : 0);
   if (line.shock) score.shocked += 1.5;
+  // hurt needs more than one sad word: "I miss Noah" over breakfast is not a crying line
+  if (score.hurt < 1.5) score.hurt = 0;
   const shout = line.loud || /\b[A-Z]{3,}\b/.test(t.replace(/\bTV\b/g, '')) || (t.match(/!/g) || []).length >= 2;
   const best = Object.entries(score).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1])[0]?.[0];
-  let d = best ? SAY[best](tags) : (MANNER.find(([tag]) => tags.includes(tag) && !(conf && tag === 'warm'))?.[1] || (conf ? 'open and sincere' : 'natural and lively'));
+  let d = best ? SAY[best](tags) : (MANNER.find(([tag]) => tags.includes(tag) && !(conf && tag === 'warm'))?.[1] || (conf ? 'honest' : 'lively'));
   if (!best && /\?\s*$/.test(t) && !conf) d = `${d.split(',')[0]}, curious`;
   if (shout && best !== 'hurt' && best !== 'secret' && !/loud/.test(d)) d = `${d.split(',')[0]}, loud`;
-  if (conf) d = `${d}, to the camera`;
+  if (conf) d = `${d}, to camera`;
   const out = { d };
   if (/\b(ha(?:ha)+|lol)\b/i.test(t) || (beat && /\blaughs?\b/i.test(beat))) Object.assign(out, { nv: 'laugh', nvAt: 'start' });
   else if (/^(?:\.\.\.|…)?(?:ugh|fine|whatever)\b/i.test(t) || (best === 'hurt' && /\.\.\.|…/.test(t))) Object.assign(out, { nv: 'sigh', nvAt: 'start' });

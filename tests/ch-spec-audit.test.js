@@ -19,7 +19,7 @@ const inc = (o, k, d = 1) => { o[k] = (o[k] || 0) + d; };
 
 describe('The Challenge spec audit', () => {
   it('plays a hundred seasons and prints every rate', () => {
-    const m = { castArch: {}, evFires: {}, evPairMax: 0, evPairRepeats: 0, evPairs: 0, unseen: [], minShare: [], chanceDailyShare: [], eps: [], finalists: [], balanced: 0, topDailyShare: [], maxVotedIn: [], arenas: 0, votedInWins: 0,
+    const m = { kinds: {}, castArch: {}, evFires: {}, evPairMax: 0, evPairRepeats: 0, evPairs: 0, unseen: [], minShare: [], chanceDailyShare: [], eps: [], finalists: [], balanced: 0, topDailyShare: [], maxVotedIn: [], arenas: 0, votedInWins: 0,
       upsets: 0, comebacks: 0, reasons: {}, quits: [], medicals: [], dqs: [], overnightQuits: [], instant: 0,
       fights: [], physical: [], showmances: [], breakups: [], volunteers: [], volunteerWins: 0, volunteerAll: 0,
       throws: [], caught: [], flips: [], ballots: 0, falseYes: [], outings: [], pleas: 0, pleasMoved: 0,
@@ -91,6 +91,7 @@ describe('The Challenge spec audit', () => {
       m.outings.push(sc('outing')); m.threats.push(sc('leverage-threat'));
       m.flips.push(r.episodes.flatMap(e => e.votes).flatMap(v => v.ballots).filter(b => b.flip).length);
       m.scenes.push(st.scenes.length);
+      for (const x of st.scenes) inc(m.kinds, x.kind);
       // House events: fires per kind, the same event between the same people,
       // and who never gets a beat of their own.
       const evIds = new Set(EVENTS.map(e => e.id));
@@ -156,6 +157,8 @@ describe('The Challenge spec audit', () => {
     line('champion archetypes: share of champions vs share of casts', Object.entries(m.castArch).sort((a, b) => b[1] - a[1])
       .map(([k, v]) => `${k} ${pct(m.champArch[k] || 0, champs)} vs ${pct(v, m.castAll)}`).join(', '));
     line('scenes per season', mean(m.scenes));
+    for (const k of ['partner-blame', 'partner-carried', 'team-blame', 'arena-eve-pep', 'arena-eve-alone', 'arena-eve-confront',
+      'tj-house-meeting', 'overnight-sabotage', 'final-pact-help', 'final-pact-broken']) line(`  ${k} per season`, (m.kinds[k] / SEASONS || 0).toFixed(2));
     line('house events per season', (Object.values(m.evFires).reduce((a, b) => a + b, 0) / SEASONS).toFixed(1));
     line('same event, same pair, twice in a season', pct(m.evPairRepeats, m.evPairs), `worst ${m.evPairMax}x`);
     line('cast with no house event at all', mean(m.unseen));

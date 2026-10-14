@@ -36,6 +36,7 @@ import { romanceDay, breakupCheck } from './romance.js';
 import { quitRisk, quit, medical, disqualify, removePlayer } from './exits.js';
 import { houseDay, psycheMoment, returnToHouse } from './house.js';
 import { houseBeats } from './events.js';
+import { arenaEve, tjLaysDownTheLaw, tjVerdict } from './tj.js';
 import { playFinal } from './final.js';
 import { reviseAll } from './plans.js';
 import { spreadDay, syncActive } from './knowledge.js';
@@ -158,6 +159,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
         if (!state.active.includes(d.name)) continue;
         disqualify(state, d.name, d.victim); pop(d.name, -3);
         epRec.exits.push({ name: d.name, how: 'disqualified', victim: d.victim });
+        tjLaysDownTheLaw(state, d.name, d.victim);
       }
       for (const n of state.active) driftDay(state, n, { rested: false });
     } else {
@@ -224,6 +226,9 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
         voters: (vote?.ballots || []).filter(x => x.target === votedIn).map(x => x.voter) });
     }
 
+    // ── The night before: the two who are going in, and the people around them ──
+    for (const m of matches) arenaEve(state, R(`eve${m.a}`), m);
+
     // ── Day 3: the Arena ──
     state.day = plan.firstDay + 2;
     for (const n of state.active) driftDay(state, n);
@@ -239,7 +244,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       if (m.volunteer && loser === m.a) giveRespect(state, loser, 'volunteerLoss');
       nudge(state, winner, 'confidence', 1.6); nudge(state, winner, 'morale', 1);
       pop(winner, duel.comeback ? 2 : duel.upset ? 1.5 : 0.6);
-      addScene(state, 'arena', [m.a, m.b], { game: duel.game, winner, loser, upset: duel.upset, comeback: duel.comeback }, state.active, 'arena');
+      duel.tj = tjVerdict(state, duel);
+      addScene(state, 'arena', [m.a, m.b], { game: duel.game, winner, loser, upset: duel.upset, comeback: duel.comeback, tj: duel.tj, beats: duel.beats }, state.active, 'arena');
       arenaWon(winner, loser, state.active, { margin: duel.upset ? 1.4 : 1 });
       removePlayer(state, loser, 'arena', { by: winner, game: duel.game });
       syncActive(state);

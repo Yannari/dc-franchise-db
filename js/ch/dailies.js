@@ -209,9 +209,61 @@ export function playDaily(state, rng, { division }) {
     for (const w of winners) { nudge(state, w, 'homesick', -3); nudge(state, w, 'morale', 1.2); }
     addScene(state, 'call-home', winners, {}, winners, 'private');
   }
+  const aftermath = mode === 'pairs' ? pairAftermath(state, rng, units, indiv, winners, ranked)
+    : mode === 'teams' ? teamAftermath(state, rng, units, indiv, winners) : [];
   addScene(state, 'daily', state.active, { daily: daily.id, mode, winners, last }, state.active, 'public');
   return { id: daily.id, name: daily.name, mode, units, winners, last,
     scores: Object.fromEntries(Object.entries(indiv).map(([k, v]) => [k, +v.toFixed(2)])),
-    throws, caught, injuries, moments, reward };
+    throws, caught, injuries, moments, reward, aftermath };
+}
+
+// ── what a partner week leaves behind ────────────────────────────────
+// A pair that lost blames, or holds together; a strong partner who carried a
+// weak one is owed; a pair that clicked is a pair that talks about the vote.
+function pairAftermath(state, rng, units, indiv, winners, ranked) {
+  const out = [];
+  const bottom = new Set(ranked.slice(Math.ceil(ranked.length / 2)).flat());
+  for (const u of units) {
+    if (u.length < 2) continue;
+    const [a, b] = [...u].sort((x, y) => indiv[y] - indiv[x]);   // a did better
+    const gap = indiv[a] - indiv[b];
+    if (winners.includes(a)) continue;
+    if (bottom.has(a) && gap > 1.2) {
+      // "You cost us": said, or swallowed.
+      const says = rng() < 0.3 + (10 - S(a, 'temperament')) * 0.05 - Math.max(0, getBond(a, b)) * 0.04;
+      if (says) {
+        addBond(a, b, -1); remember(b, a, 'blamed-me', 1.1);
+        nudge(state, b, 'confidence', -0.5);
+        out.push({ kind: 'partner-blame', a, b });
+        addScene(state, 'partner-blame', [a, b], { gap: +gap.toFixed(2) }, state.active, 'public');
+      }
+    } else if (gap > 2 && !bottom.has(a)) {
+      // Carried: the weaker one owes them.
+      remember(b, a, 'carried-me', 1); addBond(a, b, 0.4);
+      out.push({ kind: 'carried', a, b });
+      addScene(state, 'partner-carried', [a, b], { gap: +gap.toFixed(2) }, [a, b], 'private');
+    } else if (Math.abs(gap) < 0.8 && getBond(a, b) >= 0) {
+      addBond(a, b, 0.5);
+      out.push({ kind: 'clicked', a, b });
+    }
+  }
+  return out;
+}
+
+// ── a team that lost looks for somebody to blame ─────────────────────
+// Total Drama's losing-team scene, the Challenge's way: the weakest performer
+// on the losing side takes it, and their friends on the team take their side.
+function teamAftermath(state, rng, units, indiv, winners) {
+  const losing = units.find(u => !u.some(n => winners.includes(n)));
+  if (!losing || losing.length < 3) return [];
+  const weakest = [...losing].sort((x, y) => indiv[x] - indiv[y])[0];
+  const blamer = [...losing].filter(n => n !== weakest)
+    .sort((x, y) => (S(y, 'boldness') - getBond(y, weakest)) - (S(x, 'boldness') - getBond(x, weakest)))[0];
+  if (!blamer || rng() > 0.55) return [];
+  addBond(blamer, weakest, -0.8); remember(weakest, blamer, 'blamed-me', 1);
+  const defenders = losing.filter(n => n !== weakest && n !== blamer && getBond(n, weakest) >= 3);
+  for (const d of defenders) { addBond(d, blamer, -0.4); remember(weakest, d, 'stood-up-for-me', 1); }
+  addScene(state, 'team-blame', [blamer, weakest, ...defenders.slice(0, 2)], { defenders }, losing, 'villa');
+  return [{ kind: 'team-blame', blamer, weakest, defenders }];
 }
 

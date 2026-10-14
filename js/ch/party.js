@@ -45,7 +45,9 @@ export function partyNight(state, rng) {
       state.rec[a].fights++; state.rec[b].fights++;
       nudge(state, a, 'morale', -0.6); nudge(state, b, 'morale', -0.6);
       // Physical: the starter's fuse, their boldness, how drunk.
-      const pPhys = clamp((10 - S(starter, 'temperament')) / 10 * S(starter, 'boldness') / 10 * drink[starter] * 0.22 * hot, 0, 0.3);
+      // After TJ has had to send somebody home, nobody wants to be next (tj.js).
+      const warned = state.tjWarning != null && state.ep - state.tjWarning <= 2 ? 0.45 : 1;
+      const pPhys = clamp((10 - S(starter, 'temperament')) / 10 * S(starter, 'boldness') / 10 * drink[starter] * 0.22 * hot * warned, 0, 0.3);
       const physical = rng() < pPhys;
       fights.push({ a: starter, b: other, physical });
       // The house takes sides: friends of each.

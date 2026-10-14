@@ -24,6 +24,8 @@ import { blendScore, playDuel, ARENA_GAMES } from './arena.js';
 import { activeAlliances, endAlliance } from './alliances.js';
 import { removePlayer } from './exits.js';
 import { giveRespect } from './respect.js';
+import { grudgeOf, trustOf, remember, keptWord } from './rel.js';
+import { addBond } from '../bonds.js';
 
 const CHECKPOINTS = [
   { id: 'cp1', name: 'The Beach Haul', blend: { physical: 0.4, endurance: 0.4, boldness: 0.2 } },
@@ -61,10 +63,28 @@ export function playFinal(state, rng) {
     removePlayer(state, duel.loser, 'final-instant');
     delete total[duel.loser];
   }
+  // The overnight's box (Battle for a New Champion, Wikipedia: "players empty
+  // a tile-filled box for items (a blanket, pillow, or chair) and extra tiles
+  // for rivals"). The fastest at checkpoint 1 empty theirs first: they get the
+  // comfort, and the extra tiles go to whoever they most want to break.
+  const order = [...state.active].sort((a, b) => s1[b] - s1[a]);
+  const comfort = {};
+  order.forEach((n, i) => { comfort[n] = i < 3 ? ['chair', 'pillow', 'blanket'][i] : null; });
+  fin.sabotage = [];
+  for (const n of order.slice(0, Math.ceil(order.length / 2))) {
+    const rival = state.active.filter(x => x !== n).sort((x, y) => grudgeOf(n, y) - grudgeOf(n, x)
+      + (state.division[y] === state.division[n] ? 0.5 : 0) - (state.division[x] === state.division[n] ? 0.5 : 0))[0];
+    if (!rival || (grudgeOf(n, rival) < 0.5 && state.division[rival] !== state.division[n])) continue;
+    fin.sabotage.push({ from: n, to: rival });
+    remember(rival, n, 'sabotaged-me', 1.5);
+    addBond(n, rival, -0.6);
+    addScene(state, 'overnight-sabotage', [n, rival], {}, state.active, 'final');
+  }
+  const tiles = n => fin.sabotage.filter(x => x.to === n).length;
   // The overnight.
   for (const n of [...state.active]) {
     const m = state.mind[n];
-    const p = Math.max(0, 0.05 * (1 - (S(n, 'endurance') + S(n, 'temperament')) / 20) * (1 + m.homesick / 10) * (1.3 - m.morale / 12));
+    const p = Math.max(0, 0.05 * (1 - (S(n, 'endurance') + S(n, 'temperament')) / 20) * (1 + m.homesick / 10) * (1.3 - m.morale / 12) * (1 + tiles(n) * 0.5));
     if (rng() < p) {
       fin.overnight.push({ name: n, quit: true });
       giveRespect(state, n, 'quit');
@@ -74,15 +94,27 @@ export function playFinal(state, rng) {
       continue;
     }
     // Holding up through the night is worth time on day two.
-    const held = (S(n, 'endurance') * 0.6 + S(n, 'temperament') * 0.4) / 10;
+    const held = (S(n, 'endurance') * 0.6 + S(n, 'temperament') * 0.4) / 10 + (comfort[n] ? 0.15 : 0) - tiles(n) * 0.12;
     total[n] += held * 1.5;
     nudge(state, n, 'energy', -2.5);
-    fin.overnight.push({ name: n, held: +held.toFixed(2) });
+    fin.overnight.push({ name: n, held: +held.toFixed(2), comfort: comfort[n], tiles: tiles(n) });
   }
   addScene(state, 'overnight', state.active, {}, state.active, 'final');
   state.day += 1;
+  // A ride-to-the-final pact pays out on the puzzle: a man and a woman who are
+  // not competing with each other share the answer. Kept, it is loyalty proved;
+  // a partner in the same division owes nothing (they are racing each other).
+  fin.help = [];
+  for (const d of state.deals.filter(x => x.tier === 'final' && !x.broken)) {
+    if (!state.active.includes(d.a) || !state.active.includes(d.b) || state.division[d.a] === state.division[d.b]) continue;
+    const keeps = rng() < 0.6 + S(d.a, 'loyalty') * 0.03;
+    if (keeps) { fin.help.push({ a: d.a, b: d.b }); keptWord(d.a, d.b, 1); keptWord(d.b, d.a, 1); }
+    addScene(state, keeps ? 'final-pact-help' : 'final-pact-broken', [d.a, d.b], {}, [d.a, d.b], 'final');
+  }
+  const helped = n => fin.help.some(h => h.a === n || h.b === n);
   for (const cp of CHECKPOINTS.slice(1)) {
     const sc = runCheckpoint(state, rng, cp, state.active);
+    if (cp.id === 'cp2') for (const n of state.active) if (helped(n)) sc[n] += 0.6;
     for (const n of state.active) total[n] += sc[n];
     fin.checkpoints.push({ id: cp.id, scores: round(sc) });
   }

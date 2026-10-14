@@ -25,6 +25,7 @@ it('writes a season to read', () => {
     let day = null, n = 0;
     for (const a of e.aired || []) {
       if (a.day !== day) { day = a.day; out.push(`\n— Day ${day} —`); }
+      if (a.kind === 'previously') { out.push(`\n-- PREVIOUSLY ON THE CHALLENGE`); out.push(a.script.text); continue; }
       if (a.kind === 'ceremony') {
         out.push(`\n-- ${++n}. THE VOTE [Deliberation]`);
         for (const c of a.ceremony) out.push(c.script ? c.script.text : `   (${c.kind}: ${c.voter} -> ${c.target}, ${c.why} — no lines yet)`);
@@ -36,6 +37,13 @@ it('writes a season to read', () => {
     }
   }
   out.push(`\nCHAMPIONS: ${r.champions.join(' & ')}`);
+  // The season's stories: every storyline with three or more chapters on screen, chapter by chapter.
+  out.push('\nSTORYLINES ON SCREEN (3+ aired chapters):');
+  for (const l of (r.state.story?.lines || []).filter(l => !['life', 'spine'].includes(l.type))) {
+    const aired = l.steps.filter(s => s.aired);
+    if (aired.length < 3) continue;
+    out.push(`  ${l.type} ${l.key} [${l.status}]: ${aired.map(s => `ep${s.ep} ${s.step}${s.outcome !== 'any' ? '/' + s.outcome : ''}`).join(' → ')}`);
+  }
   out.push(`\nNo lines yet: ${Object.entries(missing).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', ')}`);
   mkdirSync('transcripts', { recursive: true });
   writeFileSync(`transcripts/ch-season-${seed}.txt`, out.join('\n'));

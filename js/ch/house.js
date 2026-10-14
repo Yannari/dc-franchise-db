@@ -21,6 +21,7 @@ import { noteDeal } from './knowledge.js';
 import { nudge } from './mind.js';
 import { allianceOf, activeAlliances, formAlliances, growAlliances, leave } from './alliances.js';
 import { dealBetween } from './callout.js';
+import { addRivalry } from './events.js';
 
 export function houseDay(state, rng) {
   // Hangs: each person spends the day with a few others, chosen by pull.
@@ -95,7 +96,7 @@ function apologies(state, rng) {
       if (!state.active.includes(b) || rng() > 0.3 * g) continue;
       const accepted = rng() < 0.35 + S(b, 'temperament') * 0.05 - resentOf(b, a) * 0.08;
       addBond(a, b, accepted ? 1.2 : -0.3);
-      if (accepted) remember(b, a, 'made-amends', 1.2);
+      if (accepted) { remember(b, a, 'made-amends', 1.2); addRivalry(state, a, b, -3); }
       delete state.guilt[a][b];
       addScene(state, 'apology', [a, b], { accepted }, [a, b], 'private');
     }

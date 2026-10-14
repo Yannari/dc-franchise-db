@@ -122,6 +122,18 @@ export const ROLES = {
   'cer-open': sc => ({ roles: { a: sc.who[0] }, ending: sc.data.division === 'all' ? 'all' : sc.data.division }),
   ballot: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.why }),
   'cer-result': sc => ({ roles: { a: sc.who[0] }, ending: sc.data.tie ? 'tie' : 'clear', slots: { count: sc.data.count } }),
+  // ── the arcs (story/arcs.js): words only, read from the record ──
+  'arc-payback': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  'arc-showdown': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  'arc-beast': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { target: sc.data.target } }),
+  'arc-beast-feared': sc => ({ roles: { a: sc.who[0] }, ending: 'any', slots: { target: sc.data.target } }),
+  'arc-giant-falls': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { gone: sc.data.gone } }),
+  'arc-underdog': sc => ({ roles: { a: sc.who[0] }, ending: sc.data.how }),
+  'run-name': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.stage }),
+  'run-snacks': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.stage }),
+  'run-protein': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.stage }),
+  'run-speech': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.stage }),
+  'run-mirror': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.stage }),
   // ── the final ──
   'final-start': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'instant-elimination': sc => ({ roles: { a: sc.data.winner, b: sc.who.find(x => x !== sc.data.winner) }, ending: 'any' }),

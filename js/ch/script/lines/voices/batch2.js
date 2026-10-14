@@ -311,6 +311,10 @@ const out = {
   'rc.f1': { 0: ASK, 1: FALSE_AGREE },
   'rc.f2': { 0: ASK, 1: FALSE_AGREE },
   'rc.f3': { 0: FALSE_AGREE },
+  'rc.a4': { 0: ASK, 1: ACCEPT }, 'rc.a5': { 0: ASK, 1: ACCEPT }, 'rc.a6': { 0: ASK },
+  'rc.r4': { 0: ASK, 1: REFUSED }, 'rc.r6': { 0: ASK, 1: REFUSED },
+  'rc.h4': { 0: ASK, 1: HANG }, 'rc.h5': { 0: ASK, 1: HANG }, 'rc.h6': { 1: HANG },
+  'rc.f4': { 0: ASK, 1: FALSE_AGREE }, 'rc.f5': { 0: ASK, 1: FALSE_AGREE },
 };
 for (const k of Object.keys(out)) if (!Object.keys(out[k]).length) delete out[k];
 export default out;

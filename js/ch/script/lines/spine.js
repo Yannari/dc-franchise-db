@@ -245,6 +245,23 @@ export default {
       { by: 'b', say: "Honestly? Yeah. {target} gets on my nerves anyway." },
       { by: 'a', conf: "{b} said yes way faster than I expected. Either {b} really can't stand {target}, or {b} is telling everybody yes." },
     ] },
+    // turn 0: the ask; turn 1: the answer (the voice overlay maps them by meaning)
+    { id: 'rc.a4', turns: [
+      { by: 'a', say: "You've been floating between groups, and I get it. But this week I need to know. {target}?" },
+      { by: 'b', say: "Yeah. I'll do {target}." },
+      { by: 'a', say: "Thank you. I mean it." },
+      { by: 'b', conf: "Floating only works until somebody makes you pick. {a} made me pick." },
+    ] },
+    { id: 'rc.a5', turns: [
+      { by: 'a', say: "One vote. That's all I'm asking. {target}." },
+      { by: 'b', say: "Fine. But I'm doing this once." },
+      { by: 'a', conf: "{b} is on board, for now. 'For now' is the most anybody in this house can promise." },
+    ] },
+    { id: 'rc.a6', turns: [
+      { by: 'a', say: "We're short one vote on {target}. You'd be doing us a big favour." },
+      { by: 'b', say: "And you'd owe me one. Deal." },
+      { by: 'b', conf: "A favour from a big group is worth more than money in this house. I'll collect later." },
+    ] },
   ],
   'recruit.refused': [
     { id: 'rc.r1', turns: [
@@ -262,6 +279,21 @@ export default {
       { by: 'b', say: "Let me guess. You want {target}." },
       { by: 'a', say: "Is that a no?" },
       { by: 'b', say: "It's a no. Not this week, and not for your group." },
+    ] },
+    { id: 'rc.r4', turns: [
+      { by: 'a', say: "Can we count on you for {target}?" },
+      { by: 'b', say: "No. I've got my own reasons, and they don't match yours." },
+      { by: 'a', conf: "That's two people who've said no to us this week. Something's shifting in this house." },
+    ] },
+    { id: 'rc.r5', turns: [
+      { by: 'a', say: "Last chance to get on the right side. {target}." },
+      { by: 'b', say: "Funny, I was about to say the same thing to you." },
+      { by: 'b', conf: "{a} thinks the big group gets to decide everything. Not with my vote." },
+    ] },
+    { id: 'rc.r6', turns: [
+      { by: 'a', say: "Hey. {target} this week. Are you in?" },
+      { by: 'b', say: "I'm out. Sorry." },
+      { by: 'a', say: "Okay. Remember you said that." },
     ] },
   ],
   'recruit.hanging': [
@@ -282,6 +314,21 @@ export default {
       { by: 'a', say: "Sure. Just don't take too long." },
       { by: 'a', conf: "I don't like maybes. A maybe at deliberation turns into a surprise at the vote." },
     ] },
+    { id: 'rc.h4', turns: [
+      { by: 'a', say: "Are you with us on {target}? I need a yes or a no." },
+      { by: 'b', say: "You'll get one. Just not right now." },
+      { by: 'a', conf: "Everybody in this house is holding out for a better offer. I just hope ours is the best one." },
+    ] },
+    { id: 'rc.h5', turns: [
+      { by: 'a', say: "Can I count on you for {target}?" },
+      { by: 'b', say: "Ask me again tonight." },
+      { by: 'b', conf: "Two different groups asked me today. I'm going to let them both sweat a little." },
+    ] },
+    { id: 'rc.h6', turns: [
+      { by: 'a', say: "So? {target}?" },
+      { by: 'b', say: "I'm still thinking." },
+      { by: 'a', say: "Think faster." },
+    ] },
   ],
   'recruit.false-yes': [
     { id: 'rc.f1', turns: [
@@ -298,6 +345,16 @@ export default {
       { by: 'b', say: "Say less. I'm with you." },
       { by: 'a', say: "Love that." },
       { by: 'b', conf: "{a} thinks I'm a sure vote. That's exactly what I want {a} to think." },
+    ] },
+    { id: 'rc.f4', turns: [
+      { by: 'a', say: "{target} this week. You're good with it?" },
+      { by: 'b', say: "Yep. Locked in." },
+      { by: 'b', conf: "Locked in. Just not where {a} thinks." },
+    ] },
+    { id: 'rc.f5', turns: [
+      { by: 'a', say: "I need you on {target}. Are you with me?" },
+      { by: 'b', say: "Of course I'm with you." },
+      { by: 'b', conf: "Saying yes was easier than explaining why it's a no. {a} will figure it out at the vote." },
     ] },
   ],
 

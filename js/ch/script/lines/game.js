@@ -709,7 +709,10 @@ export default {
       { by: 'a', conf: "I lost it. I know I lost it. I'm going to pay for it.", v: { soft: ['I\'m so ashamed. That\'s not who I am.'], sharp: ['{b} pushed me to it. I\'m not apologising.'] } },
     ] },
     { id: 'fp.3', turns: [
-      { by: 'b', conf: "Everybody saw what {a} did. Production saw it. TJ is going to see it. That's it for {a}.", v: { loud: ['Everybody SAW it!'] } },
+      { by: 'a', say: "Say one more word. One more.", v: { loud: ['SAY ONE MORE WORD!'] } },
+      { by: 'b', say: "Or what?", v: { soft: ['Please, just stop.'] } },
+      { beat: '{a} lunges at {b}. Security is between them in seconds, but everybody saw it.' },
+      { by: 'b', conf: "Everybody saw what {a} did. Production saw it. TJ is going to see it. That's it for {a}.", v: { loud: ['Everybody SAW it! EVERYBODY!'] } },
     ] },
   ],
   'partner-draw.any': [

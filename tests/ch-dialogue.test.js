@@ -69,6 +69,44 @@ describe('The Challenge, as aired', () => {
     for (const r of seasons) for (const l of linesOf(r)) expect(l.text, l.text).not.toMatch(/\{\w+(\.\w+)?\}/);
   });
 
+  it('a payback airs only when the one called out really voted the caller in, in an earlier episode', () => {
+    for (const r of seasons) {
+      for (const e of r.episodes) for (const a of e.aired || []) {
+        if (a.kind !== 'arc-payback') continue;
+        const [caller, opp] = a.scene.who;
+        const real = r.episodes.some(p => p.ep < e.ep && p.votes.some(v => v.votedIn === caller && v.ballots.some(b => b.voter === opp && b.target === caller)));
+        expect(real, `payback ${caller} > ${opp} in ep ${e.ep}`).toBe(true);
+      }
+    }
+  });
+
+  it('every chapter that answers an earlier one has its cause on screen, or says it', async () => {
+    const { causeOf } = await import('../js/ch/story/storylines.js');
+    for (const r of seasons) {
+      const lines = r.state.story.lines;
+      for (const e of r.episodes) for (const a of e.aired || []) {
+        if (!a.scene || !a.script) continue;
+        const line = lines.find(l => l.steps.some(s => s.scene === a.scene.id));
+        if (!line) continue;
+        const step = line.steps.find(s => s.scene === a.scene.id);
+        const cause = causeOf(line, step);
+        if (!cause) continue;
+        const recapped = a.script.lines.some(l => l.recap);
+        expect(cause.aired || recapped, `${a.kind} in ep ${e.ep} (${line.id}) airs without its cause`).toBe(true);
+      }
+    }
+  });
+
+  it('tells stories across episodes: every season has feuds or romances that run three chapters over two episodes', () => {
+    for (const r of seasons) {
+      const long = r.state.story.lines.filter(l => ['feud', 'showmance'].includes(l.type)).filter(l => {
+        const aired = l.steps.filter(s => s.aired);
+        return aired.length >= 3 && new Set(aired.map(s => s.ep)).size >= 2;
+      });
+      expect(long.length, `seed ${r.state.seed}`).toBeGreaterThanOrEqual(2);
+    }
+  });
+
   it('never has somebody gone speak', () => {
     for (const r of seasons) {
       const goneDay = Object.fromEntries(r.state.gone.map(g => [g.name, g.day]));

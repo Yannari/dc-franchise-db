@@ -13,6 +13,7 @@ import { S, archetypeOf, addScene, clamp } from './state.js';
 import { grudgeOf, intimidated, remember } from './rel.js';
 import { nudge } from './mind.js';
 import { romanceDay } from './romance.js';
+import { addRivalry } from './events.js';
 
 export function partyNight(state, rng) {
   const drink = Object.fromEntries(state.active.map(n => [n,
@@ -42,6 +43,7 @@ export function partyNight(state, rng) {
       addBond(a, b, -2);
       intimidated(starter, other, 0.8);
       remember(other, starter, 'started-a-fight', 1.4);
+      addRivalry(state, starter, other, 1.5);
       state.rec[a].fights++; state.rec[b].fights++;
       nudge(state, a, 'morale', -0.6); nudge(state, b, 'morale', -0.6);
       // Physical: the starter's fuse, their boldness, how drunk.

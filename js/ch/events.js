@@ -57,8 +57,23 @@ function cooled(ctx, id, who, cooldown) {
   const k = who.length >= 2 ? pairKey(id, who[0], who[1]) : `${id}|${who[0]}`;
   return (log.pairs[k] ?? -99) < ctx.state.ep - cooldown;
 }
+// ── rivalry: a feud escalates between the SAME two people ────────────
+// Without it every row was a new pair, and no feud ever reached a third
+// chapter (the storyline read, 2026-10-14). Two people who have clashed are
+// rivals; the house's next row prefers them, until an apology is accepted or
+// one of them goes home. Mutual, by pair. Fights (party.js) count too.
+const FEUD_IDS = new Set(['kitchen-blowup', 'receipts', 'trash-talk', 'floater-callout', 'gossip-backfire', 'bunk-war',
+  'show-banter', 'old-show-grudge', 'jealousy']);
+const rkey = (a, b) => (a < b ? `${a}|${b}` : `${b}|${a}`);
+export const rivalryOf = (state, a, b) => state.rivalry?.[rkey(a, b)] || 0;
+export function addRivalry(state, a, b, d) {
+  if (!a || !b || a === b) return;
+  const r = (state.rivalry ||= {});
+  r[rkey(a, b)] = Math.max(0, (r[rkey(a, b)] || 0) + d);
+}
 function used(ctx, id, who) {
   const log = ctx.state.eventLog;
+  if (FEUD_IDS.has(id) && who.length >= 2) addRivalry(ctx.state, who[0], who[1], 1);
   log.uses[id] = (log.uses[id] || 0) + 1;
   log.pairs[who.length >= 2 ? pairKey(id, who[0], who[1]) : `${id}|${who[0]}`] = ctx.state.ep;
   for (const n of who) log.screen[n] = (log.screen[n] || 0) + 1;
@@ -72,9 +87,13 @@ function used(ctx, id, who) {
 function bestPair(ctx, id, cooldown, score, { ordered = true } = {}) {
   const a = ctx.state.active;
   let best = null, top = 0;
+  const feud = FEUD_IDS.has(id);
   for (const x of a) for (const y of a) {
     if (x === y || (!ordered && x > y)) continue;
-    const s = score(x, y);
+    let s = score(x, y);
+    // rivals clash again: the next row of a feud prefers the same two
+    // (only where the event already fits: a rivalry never invents a vote to argue about)
+    if (feud && s > 0) s += Math.min(3, rivalryOf(ctx.state, x, y)) * 1.1;
     if (!(s > 0)) continue;
     const v = s + jitter(ctx, id, x + '>' + y);
     if (v > top && cooled(ctx, id, [x, y], cooldown)) { top = v; best = [x, y]; }
@@ -217,7 +236,7 @@ export const EVENTS = [
       const owns = rng() < 0.3 + S(b, 'boldness') * 0.03;     // "Yeah, I did. And?"
       const apology = !owns && rng() < 0.3 + S(b, 'social') * 0.04;
       addBond(a, b, apology ? 0.4 : owns ? -1.2 : -0.5);
-      if (apology) remember(a, b, 'made-amends', 0.8);
+      if (apology) { remember(a, b, 'made-amends', 0.8); addRivalry(ctx.state, a, b, -2); }
       if (owns) intimidated(b, a, 0.4);
       return addScene(ctx.state, 'receipts', [a, b], { owns, apology }, [a, b, ...witnesses(ctx, [a, b], 3)], 'villa');
     } },
@@ -227,7 +246,7 @@ export const EVENTS = [
     fire(ctx, [a, b], rng) {
       const settled = rng() < 0.25 + S(a, 'temperament') * 0.04;
       addBond(a, b, settled ? 1.2 : -1.2);
-      if (settled) remember(a, b, 'made-amends', 1.2); else remember(a, b, 'old-grudge', 1.4);
+      if (settled) { remember(a, b, 'made-amends', 1.2); addRivalry(ctx.state, a, b, -3); } else remember(a, b, 'old-grudge', 1.4);
       return addScene(ctx.state, 'old-show-grudge', [a, b], { settled }, ctx.state.active, 'villa');
     } },
   { id: 'trash-talk', actorCooldown: 1, kind: 'drama', cooldown: 3, max: 8,

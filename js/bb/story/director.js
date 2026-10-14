@@ -110,7 +110,39 @@ export function airStorylines(week) {
     return rota[((week.num || 0) * 3 + stretch) % rota.length];
   };
 
-  const airEngine = (ctx, atStart) => {
+  // A game moment of one to three spoken lines is a sketch, not a scene (the season read,
+  // 2026-10-13: 148 of 659 scenes; Total Drama drops them). It is folded into a conversation the same
+  // people are already having this stretch, before its closing confessionals, so the moment still
+  // airs and the scene grows. Two sketches that share a speaker become one conversation.
+  const spokenOf = sc => sc.lines.filter(l => l.kind === 'say').length;
+  const GAME_HOST = new Set(['alliance', 'target', 'talk', 'campaign', 'scheme']);
+  const ROOM_OPEN = /^(the )?(kitchen|backyard|bedroom|living room|hoh room|hoh suite|storage room|bathroom|diary room|pool|hot tub|have-not|dining room)\b/i;
+  const placed = sc => sc.lines.some(l => l.kind === 'beat' && ROOM_OPEN.test(String(l.text || '')));
+  // what carries one conversation into the next thing said in it: sometimes nothing (people just keep
+  // talking), otherwise the least-heard of these this season
+  const LINK = ['Then, quieter.', 'Neither of them gets up yet.', 'It turns, the way talk in here always does, to the vote.',
+    'A pause. Then the thing they actually came to say.', 'Somebody checks the doorway first.', 'The voices drop.',
+    'They lean in a little closer.', 'One more thing, before anybody leaves.', 'The jokes stop for a second.',
+    'A glance at the camera. They keep going anyway.', 'Nobody moves to leave.', 'And then, lower:'];
+  const fold = (host, sc, salt) => {
+    const tail = [];
+    while (host.lines.length && host.lines.at(-1).kind === 'dr') tail.unshift(host.lines.pop());
+    const hostSpoke = host.lines.some(l => l.kind === 'say');
+    let h = 0; for (const c of String(salt)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    const own = sc.lines.filter(l => l.kind !== 'dr');
+    const drs = sc.lines.filter(l => l.kind === 'dr');
+    const joiners = [...new Set(own.map(l => l.by).filter(n => n && !host.cast.includes(n)))];
+    const linkUsed = (gs.bb.linkUsed ||= {});
+    const link = hostSpoke && h % 2 && !own.some(l => l.by && !host.cast.includes(l.by)) ? LINK.slice().sort((x, y) => (linkUsed[x] || 0) - (linkUsed[y] || 0) || ((h + LINK.indexOf(x)) % 7) - ((h + LINK.indexOf(y)) % 7))[0] : null;
+    if (link) linkUsed[link] = (linkUsed[link] || 0) + 1;
+    host.lines.push(...(link ? [{ kind: 'beat', by: null, text: link }] : []),
+      ...joiners.map(n => ({ kind: 'beat', by: null, text: `${n} comes over.` })), ...own, ...tail, ...drs);
+    host.cast = [...new Set([...host.cast, ...joiners])];
+    host.why = [...new Set([...(host.why || []), ...(sc.why || [])])];
+    if (!host.title && sc.title) host.title = sc.title;
+    (host.folded ||= []).push(sc.id || null);
+  };
+  const airEngine = (ctx, atStart, before = new Set()) => {
     // ── the engine's own moments, so nothing that moves the game is lost ──
     // Ranked by what they do to the game; texture (chores, boredom, the weather) stays optional.
     // Up to three a stretch, one per set of people, never somebody not in the house yet.
@@ -140,6 +172,10 @@ export function airStorylines(week) {
     // cut together into one Diary Room run, the way the show strings confessionals between scenes
     // (2026-10-07: the airing audit unlocked dozens of game moments, many a single Diary Room line).
     const round = [];
+    // this stretch's own conversations, which a short game moment can fold into
+    const hosts = week.acts.flatMap(a => a?.scenes || []).filter(x => !before.has(x) && x.type !== 'set' && x.step !== 'dr-round'
+      && Array.isArray(x.lines) && Array.isArray(x.cast) && spokenOf(x) >= 4);
+    const loose = [];
     for (const { act: ea, beat } of eng) {
       // three a stretch; a busy stretch makes room for two more that move the game
       const wt = WEIGHT(String(beat.eventId));
@@ -151,13 +187,45 @@ export function airStorylines(week) {
       // a fragment that moves nothing (a single spoken line, no setup) does not air; the moments that
       // move the game (vote machinery, HOH, veto, house meetings) still do, however short
       if (sc.lines.filter(l => l.kind === 'say').length === 1 && !sc.lines.some(l => l.kind === 'dr') && WEIGHT(String(beat.eventId)) < 4) continue;
-      remember(sc);
-      shown.add(key); shown.add(String(beat.eventId));
-      beat.aired = true; engAired++;
-      seasonAired[`ev:${beat.eventId}`] = (seasonAired[`ev:${beat.eventId}`] || 0) + 1;
       const confessional = sc.lines.length <= 2 && sc.lines.some(l => l.kind === 'dr') && !sc.lines.some(l => l.kind === 'say');
-      if (confessional) round.push({ ea, sc });
-      else (ea.scenes ||= []).push(sc);
+      const airs = () => {
+        remember(sc);
+        shown.add(key); shown.add(String(beat.eventId));
+        beat.aired = true; engAired++;
+        seasonAired[`ev:${beat.eventId}`] = (seasonAired[`ev:${beat.eventId}`] || 0) + 1;
+      };
+      if (confessional) { airs(); round.push({ ea, sc }); continue; }
+      const n = spokenOf(sc);
+      if (n >= 1 && n <= 3) {
+        // into a conversation the speakers are already in (one newcomer at most, who comes over)
+        const speakers = [...new Set(sc.lines.filter(l => l.kind === 'say').map(l => l.by).filter(Boolean))];
+        // only a GAME conversation takes a game moment (never a couple's scene, a fight or a heart-to-heart),
+        // and only one where every speaker of the moment is already talking (not somebody in the background)
+        const talkers = x => new Set(x.lines.filter(l => l.kind === 'say' && l.by && !l.bg).map(l => l.by).filter(n => x.lines.filter(l => l.by === n && l.kind === 'say').length >= 2));
+        const host = placed(sc) ? null : hosts.filter(x => GAME_HOST.has(x.type) && x.mood !== 'secret' && (x.folded || []).length < 2
+          && speakers.every(s2 => talkers(x).has(s2)))
+          .sort((x, y) => (x.folded || []).length - (y.folded || []).length)[0];
+        if (host) { airs(); fold(host, sc, `${week.num}|${stretch}|${beat.eventId}`); continue; }
+        loose.push({ ea, sc, beat, key, wt, airs });
+        continue;
+      }
+      airs();
+      (ea.scenes ||= []).push(sc);
+    }
+    // the sketches left over: two that share a speaker are one conversation; a lone one airs only if
+    // it is the vote's own machinery, otherwise it stays off camera (the transcript still has it)
+    const used = new Set();
+    for (const a of loose) {
+      if (used.has(a)) continue;
+      const sp = sc => new Set(sc.lines.filter(l => l.by).map(l => l.by));
+      const mate = loose.find(b => b !== a && !used.has(b) && !placed(b.sc) && [...sp(b.sc)].some(x => sp(a.sc).has(x)));
+      if (mate) {
+        used.add(a); used.add(mate);
+        a.airs(); mate.airs();
+        const merged = { ...a.sc, cast: [...a.sc.cast], lines: [...a.sc.lines], why: [...(a.sc.why || [])] };
+        fold(merged, mate.sc, `${week.num}|${stretch}|${mate.beat.eventId}`);
+        (a.ea.scenes ||= []).push(merged);
+      } else if (a.wt >= 4) { used.add(a); a.airs(); (a.ea.scenes ||= []).push(a.sc); }
     }
     if (round.length === 1) (round[0].ea.scenes ||= []).push(round[0].sc);
     else if (round.length > 1) {
@@ -176,7 +244,8 @@ export function airStorylines(week) {
     const ctx = ctxOf();
     const atStart = presentAtStart || ctx.present;
     presentAtStart = null;
-    if (!pending.length) { airEngine(ctx, atStart); stretchBeats = []; return; }
+    const sceneBefore = new Set(week.acts.flatMap(a => a?.scenes || []));
+    if (!pending.length) { airEngine(ctx, atStart, sceneBefore); stretchBeats = []; return; }
     const cand = pending.filter(p => {
       const need = NEEDS_WEEK[`${p.line.type}.${p.step.step}`];
       if (need && !clock[need]) return false;
@@ -321,7 +390,7 @@ export function airStorylines(week) {
       note(p);
     });
     if (talks.length) airTalks((ordered.at(-1) || pending[0]).act);
-    airEngine(ctx, atStart);
+    airEngine(ctx, atStart, sceneBefore);
 
     // The first night ends with the lights going out on a full house.
     if (ctx.firstNight) {

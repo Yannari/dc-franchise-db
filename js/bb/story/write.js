@@ -228,11 +228,13 @@ function pick(keys, who, data, ctx, room, salt) {
   // a pact the engine named (a final two, a jury pact) is only told by a scene that makes that deal
   const sameDeal = e => !e.deal || !data.pact || e.deal === data.pact;
   for (const k of keys) pools[k] = (STORY_POOLS[k] || []).filter(e => presumed(e, ctx) && can(e) && fits(e) && voters(e) && sameDeal(e));
-  // inside a set piece the room is the set's: a scene that stages its own room waits, unless nothing else fits
-  if (ctx.inSet) for (const k of keys) { const free = pools[k].filter(e => !e.room); if (free.length) pools[k] = free; }
-  if (!keys.some(k => pools[k].length)) return null;
   // nothing airs twice in a season while something unused still fits
   const used = ledger().uses || {};
+  // inside a set piece the room is the set's: a scene that stages its own room waits, unless nothing else
+  // fits; and a moment inside a set piece is never a rerun (the season read, 2026-10-13: the one roomless
+  // banter scene played inside twelve set pieces). With nothing fresh, the set piece goes without it.
+  if (ctx.inSet) for (const k of keys) { const free = pools[k].filter(e => !e.room && !used[e.id]); pools[k] = free.length ? free : pools[k].filter(e => !used[e.id]); }
+  if (!keys.some(k => pools[k].length)) return null;
   for (const k of keys) { const unused = pools[k].filter(e => !used[e.id]); if (unused.length) pools[k] = unused; }
   // what this viewer saw in recent seasons waits while something new still fits
   const seen = seenAcross();

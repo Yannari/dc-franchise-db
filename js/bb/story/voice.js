@@ -49,6 +49,7 @@ function historyOf(me, o, upTo) {
     const bal = ev?.ballots || [];
     const mine = bal.find(b => b.voter === me)?.evict, theirs = bal.find(b => b.voter === o)?.evict;
     if (mine && theirs) { if (mine === theirs) h.sameVotes = (h.sameVotes || 0) + 1; else h.splitVote = w.num; }
+    h.lastWeek = w.num;
     if (w.vetoUsedOn === me && w.vetoWinner === o) h.theySavedMe = w.num;
   }
   h.alliance = (gs.namedAlliances || []).find(a => a.active !== false && (a.members || []).includes(me) && (a.members || []).includes(o))?.name || null;
@@ -64,16 +65,38 @@ const KIND = t => /feud|friction|argument|cold|snap|grudge|blow/.test(t) ? 'feud
     : /showmance|romance|couple|flirt|spark/.test(t) ? 'heart'
       : /target|gossip|lobby|block|campaign|scheme|hohweek|plan|nom|veto|style.|power|phase|deals|jury|endgame|prejury|nexthoh|outside|bb./.test(t) ? 'game' : 'life';
 
+// Each fact has several ways to be said, and each WAY is said at most twice a season (the season
+// read, 2026-10-13: one split-vote sentence closed 45 confessionals). A week is named only while it
+// is recent; after that the fact is told without the date.
+const ago = (w, h) => (h.lastWeek && h.lastWeek - w <= 1 ? (w === h.lastWeek ? 'last week' : `in week ${w}`) : null);
 function lines(kind, voice, o, h) {
   const hist = [];
-  if (h.theyNomMe) hist.push(`${o} put me on the block in week ${h.theyNomMe}. I haven't forgotten that, and I don't think I'm supposed to.`);
-  if (h.iNomThem) hist.push(`I put ${o} on the block in week ${h.iNomThem}. Every conversation with ${o} since then has had that sitting in the middle of it.`);
-  if (h.theySavedMe) hist.push(`${o} used the veto on me in week ${h.theySavedMe}. I owe ${o}, and we both know it.`);
-  if (h.sameVotes >= 2) hist.push(`${o} and I have voted the same way ${word(h.sameVotes)} times now. That's not an accident.`);
-  if (h.splitVote) hist.push(`${o} and I didn't vote the same way in week ${h.splitVote}. Neither of us has brought it up. We both know.`);
-  if (h.alliance && kind !== 'ally') hist.push(`${o} is in ${h.alliance} with me. That changes how I have to handle this.`);
-  if (h.deal && kind !== 'ally') hist.push(`${o} and I have a deal. I keep reminding myself of that.`);
-  if (h.couple && kind !== 'heart') hist.push(`It's different when it's ${o}. It's always different when it's ${o}.`);
+  const add = (...ways) => hist.push(ways.filter(Boolean));
+  if (h.theyNomMe) add(`${o} put me on the block in week ${h.theyNomMe}. I haven't forgotten that, and I don't think I'm supposed to.`,
+    `I was on the block because of ${o} once. I smile at ${o} every day. I also remember.`,
+    `${o} nominated me. We've talked a hundred times since and never once about that.`);
+  if (h.iNomThem) add(`I put ${o} on the block in week ${h.iNomThem}. Every conversation with ${o} since then has had that sitting in the middle of it.`,
+    `I nominated ${o}. ${o} says it's water under the bridge. Nobody in here means that.`,
+    `${o} still calls me "HOH" sometimes, as a joke. It isn't one.`);
+  if (h.theySavedMe) add(`${o} used the veto on me in week ${h.theySavedMe}. I owe ${o}, and we both know it.`,
+    `${o} pulled me off the block. Whatever ${o} asks me for, I'm going to have to think very hard before I say no.`,
+    `I'm only still here because ${o} used that veto on me. That kind of thing doesn't wear off.`);
+  if (h.sameVotes >= 2) add(`${o} and I have voted the same way ${word(h.sameVotes)} times now. That's not an accident.`,
+    `Every vote so far, ${o} and I have landed in the same place. We've never once planned it out loud.`,
+    `${o} and I keep ending up on the same side of the vote. At some point that stops being luck.`);
+  const split = h.splitVote && ago(h.splitVote, h);
+  if (split) add(`${o} and I didn't vote the same way ${split}. Neither of us has brought it up. We both know.`,
+    `${o} voted the other way ${split}. I saw the count. I've been very friendly about it.`,
+    `We split ${split}, ${o} and me. I keep waiting for ${o} to explain, and ${o} keeps not explaining.`);
+  if (h.alliance && kind !== 'ally') add(`${o} is in ${h.alliance} with me. That changes how I have to handle this.`,
+    `I can't treat ${o} like anybody else. We're both in ${h.alliance}, and the others will hear about this.`,
+    `If ${o} weren't in ${h.alliance} with me, this would be easy. ${o} is, so it isn't.`);
+  if (h.deal && kind !== 'ally') add(`${o} and I have a deal. I keep reminding myself of that.`,
+    `There's a deal between ${o} and me. Days like this, I find out how much it's worth.`,
+    `I shook on something with ${o}. I keep looking at my hand.`);
+  if (h.couple && kind !== 'heart') add(`It's different when it's ${o}. It's always different when it's ${o}.`,
+    `With anybody else I'd play this cold. With ${o}, I can't.`,
+    `Everybody knows about ${o} and me, so everybody's watching how I handle this.`);
   const V = {
     feud: {
       fiery: [`And I'm not going to pretend I'm fine. ${o} knows exactly what ${o} did.`, `I've got a short fuse, and ${o} keeps finding it.`],
@@ -166,15 +189,22 @@ export function addInsight(sc, kindText, weekNum) {
   const led = gs.bb ? (gs.bb.voiceUsed ||= {}) : {};
   const re = NAMES_RE();
   const shape = t => t.replace(re, 'X');
-  // a history line is remembered for THIS pair (names kept); a voice line for everybody (names blanked)
+  // a voice line is remembered for everybody (names blanked), once; a history WAY of saying a fact
+  // (names blanked too) twice a season, and never twice for the same pair
   const keyOf = (t, isHist) => (isHist ? t : shape(t));
-  const freshH = hist.filter(t => !led[keyOf(t, true)]), freshV = voiced.filter(t => !led[keyOf(t, false)]);
+  const groups = (gs.namedAlliances || []).map(a => a?.name).filter(Boolean);
+  const unnamed = t => groups.reduce((x, g) => x.split(g).join('G'), t);
+  const way = t => 'h:' + unnamed(shape(t)).replace(/last week|in week \d+|week \d+/g, 'W').replace(/\b(two|three|four|five|six|seven|eight|nine|ten|\d+) times\b/g, 'N times');
+  const usable = t => !led[t] && (led[way(t)] || 0) < 2;
+  const freshH = hist.map(ways => ways.filter(usable)).filter(w => w.length).map(w => w[Math.floor(rng() * w.length) % w.length]);
+  const freshV = voiced.filter(t => !led[keyOf(t, false)]);
   // history first (it is about this pair), then the voice; never a sentence this season has heard
   const useHist = freshH.length > 0 && rng() < 0.75;
   const pool = useHist ? freshH : freshV;
   if (!pool.length) return sc;
   const add = pool[Math.floor(rng() * pool.length) % pool.length];
   led[keyOf(add, useHist)] = 1;
+  if (useHist) led[way(add)] = (led[way(add)] || 0) + 1;
   sc.lines[di] = { ...dl, text: `${String(dl.text).replace(/\s+$/, '')} ${add}` };
   return sc;
 }

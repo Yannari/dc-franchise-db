@@ -326,7 +326,7 @@ export default {
       { by: 'b', conf: "{a} didn't threaten me, not exactly, but I'm not going to sleep tonight.", v: { tough: "{a} tried to scare me. Cute.", dry: "{a} sat way too close and said nothing, which is very scary... okay, I'm a little terrified." } },
       { by: 'a', conf: "I didn't say anything mean. I just wanted {b} to know I'm paying attention." },
     ] },
-    { id: 'nd.in2', place: 'work', when: { voice: ['tough', 'competitive', 'loud'] }, turns: [
+    { id: 'nd.in2', place: 'work', when: { voice: ['tough', 'competitive', 'loud'], phase: 'post' }, turns: [
       { beat: "{a} is chopping wood {here}. {b} is stacking it." },
       { by: 'a', say: "You know you were the slowest today, right?" },
       { by: 'b', say: "I know." },

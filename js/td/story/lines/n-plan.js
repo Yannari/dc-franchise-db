@@ -21,7 +21,7 @@ export default {
   ],
   'vp.open.group': [
     { id: 'npl.og1', turns: [{ beat: "{a} rounds up {b}, {c} and the others and walks them away from camp." }, { by: 'a', say: "Okay, everybody close. We don't have long.", v: { bossy: "Circle up. Five minutes, then we split up so nobody notices.", anxious: "Okay, okay, everybody come closer, I don't want anybody hearing this.", loud: "HUDDLE! I mean, huddle, but quietly." } }] },
-    { id: 'npl.og2', turns: [{ by: 'c', say: "Why are we all hiding behind the shed?", v: { dry: "Love that we're having our big secret meeting in the most obvious spot here." } }, { by: 'a', say: "Because we're picking a name, and I'd rather the name didn't hear it." }] },
+    { id: 'npl.og2', turns: [{ by: 'c', say: "Why are we all hiding {here}?", v: { dry: "Love that we're having our big secret meeting {here}, of all places." } }, { by: 'a', say: "Because we're picking a name, and I'd rather the name didn't hear it." }] },
     { id: 'npl.og3', turns: [{ by: 'a', say: "Is everybody here? Good, then nobody say anything until I'm done.", v: { warm: "Okay, thanks for coming. I'll be quick, I promise." } }, { by: 'b', say: "Okay, but make it quick, people are going to notice we're gone." }] },
   ],
 

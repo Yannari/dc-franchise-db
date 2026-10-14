@@ -45,8 +45,8 @@ const BOMB_ARROGANT = [
     { by: 'b', say: "And which one are you?" },
     { by: 'a', say: "Do you really need me to answer that?" },
     { by: 'b', say: "Yeah, I kind of do. Because from where I'm standing, you're mostly talking." },
-    { by: 'a', say: "Talking, and winning. Check the scoreboard sometime." },
-    { by: 'b', say: "The scoreboard doesn't vote. People do." },
+    { by: 'a', say: "Talking, and being right. Somebody has to be." },
+    { by: 'b', say: "Being right doesn't get you votes. People do." },
     { by: 'b', conf: "Everyone heard it. Everyone. And {a} walked off smiling like {a} told a great joke." },
   ] },
   { id: 'dr.ba4', when: { register: 'schemer' }, turns: [

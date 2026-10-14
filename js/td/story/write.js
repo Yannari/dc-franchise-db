@@ -337,6 +337,21 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     const set = setupLine(entry, who, data, lines, spot, facts, ctx, rng, placeOk);
     if (set) lines.unshift(set);
   }
+  // an optional part (opt: true) who speaks before the scene has put them in it is put in it first (read 2026-10-14:
+  // "Chris is giving Anastasia, Alessio and Diego the official tour", then Lynda: "I'm going home"). The turn's own
+  // `enter` says how, else they have been listening. (After the set-up line, which may name them already.) Only when
+  // the scene opened on a list of who is there: at Tribal, or "the team comes back cheering", everybody is.
+  const open = lines.find(x => x.kind === 'beat')?.text || '';
+  const castListed = Object.values(who).filter(n => n && open.includes(n)).length >= 2
+    && !/\b(team|everyone|everybody|the others|all of them|the whole|the rest|friends|group|crowd)\b/i.test(open);
+  for (let k = 0; castListed && k < lines.length; k++) {
+    const l = lines[k], t = entry.turns[l.turn];
+    if (!t?.opt || l.kind !== 'say' || !l.by) continue;
+    if (lines.slice(0, k).some(x => x.by === l.by || (x.kind === 'beat' && (x.text || '').includes(l.by)))) continue;
+    const enter = tidyNames(fill(t.enter || `{${t.by}} has been listening.`, who, data));
+    lines.splice(k, 0, { kind: 'beat', text: enter.charAt(0).toUpperCase() + enter.slice(1), arrive: [l.by] });
+    k++;
+  }
   if (lines.some(l => /\{\w+(\.\w+)?\}/.test(l.text))) throw new Error(`td story ${entry.id}: unfilled slot in "${lines.find(l => /\{\w+/.test(l.text)).text}"`);
   // breakfast is the morning; dinner is the evening (camp-access.js windows)
   const window = meal ? (ctx.phase === 'pre' ? 'morning' : 'before-tribal') : null;

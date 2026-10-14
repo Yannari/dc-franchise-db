@@ -192,7 +192,7 @@ export default {
   ],
   // a keeps going against the odds; b sees it
   'long.life.underdog.driven': [
-    { id: 'nly.u1', turns: [
+    { id: 'nly.u1', when: { dayOne: false }, turns: [
       { by: 'b', say: "You're up early." },
       { by: 'a', say: "I'm practising the rope climb. I was the slowest one up it yesterday." },
       { by: 'b', say: "You were also the only one who didn't quit." },
@@ -202,12 +202,12 @@ export default {
     ] },
   ],
   'long.life.underdog.unseen': [
-    { id: 'nly.u2', turns: [
+    { id: 'nly.u2', when: { dayOne: false }, turns: [
       { by: 'b', say: "Did you sort all the firewood by size?" },
       { by: 'a', say: "Somebody had to. It was a mess." },
       { by: 'b', say: "Nobody asked you to." },
       { by: 'a', say: "Nobody asks me to do anything. I just do it." },
-      { by: 'b', conf: "I feel a little guilty, honestly. I've been treating {a} like the weakest one here, and {a} has been doing my chores for a week.", v: {"cruel":"{a} doing everybody's chores is great. Keep {a} around, I say. Until the end.","warm":"I want to give {a} a hug. Nobody has said thank you once, and I'm starting with me."} },
+      { by: 'b', conf: "I feel a little guilty, honestly. I've been treating {a} like the weakest one here, and {a} has been doing my chores for days.", v: {"cruel":"{a} doing everybody's chores is great. Keep {a} around, I say. Until the end.","warm":"I want to give {a} a hug. Nobody has said thank you once, and I'm starting with me."} },
     ] },
   ],
 };

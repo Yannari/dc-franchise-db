@@ -950,7 +950,10 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const sideVoted = themNames.length >= 2 && (gs.episodeHistory || []).some(h => h.num < ep.num && (() => {
     const log = (h.votingLog || []).filter(v => themNames.includes(v.voter) && v.voted);
     return log.length >= 2 && new Set(log.map(v => v.voted)).size === 1; })());
-  const facts = { ...baseFacts, sideVoted, count, glue: !!gluePair, shaky: !!shaky, cover: !!cover, close: !!b && getBond(a, b) >= 4, others: !!rest.length, other: !!rival?.target, markMe: mark === a, markB: !!mark && mark === b, otherMe: rival?.target === a, otherB: !!b && rival?.target === b, cast: shape };
+  // there is a side to be afraid of: two or more of them, or three or more left off the plan (read 2026-10-14: "the rest
+  // of them already are one" with seven on the plan and the one left off it the target)
+  const sideBig = themNames.length >= 2 || tribal.filter(x => !voters.includes(x)).length >= 3;
+  const facts = { ...baseFacts, sideVoted, sideBig, count, glue: !!gluePair, shaky: !!shaky, cover: !!cover, close: !!b && getBond(a, b) >= 4, others: !!rest.length, other: !!rival?.target, markMe: mark === a, markB: !!mark && mark === b, otherMe: rival?.target === a, otherB: !!b && rival?.target === b, cast: shape };
   // what this camp's day has already shown (arcBeats, t.em): the plan can call back to it
   const em = t.em || { spark: null, warned: [] };
   const sparkSeen = !!em.spark && em.spark.by === a && em.spark.of === boot;
@@ -1010,7 +1013,11 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
     if (!r) return false;
     if (!spot && r.spot) spot = r.spot;
     lineId = lineId || r.lineId;
-    lines.push(...r.lines);
+    // a later beat's own pull-aside is said already: they are away from camp (read 2026-10-14, carnival: hiding in the
+    // corn maze, Marissa joins them, then "Ivy waits until everybody else is busy, then pulls Marissa and the others
+    // away from camp")
+    const own = lines.length && r.lines[0]?.kind === 'beat' && /\b(pulls?|walks?|gets|rounds? up|waits until|drags?|leads?)\b.*\b(away|aside|alone|out of)\b/i.test(r.lines[0].text || '') ? 1 : 0;
+    lines.push(...r.lines.slice(own));
     return true;
   };
   if (shape === 'solo' || !b) {
@@ -2740,11 +2747,13 @@ export function airTdEpisode(ep) {
           }
           held.add(`${win}|${sp.id}`);
         } }
+      // (the first two who click, learning names, air right after the first-day opener: read 2026-10-14, Jade comforted Diego
+      // by the lake, then "Confession. I've forgotten both your names")
       // the swing's confessional ("X wanted my vote, and I said no") airs right after the scene where it happened, not
       // before it (read 2026-10-14)
       const swingIt = out[phase].find(x => x.storyType === 'vote' && x.step === 'swing');
       const afterSwing = it => !!swingIt && it.kind === 'deep.swing';
-      const rank = it => (afterSwing(it) ? rank(swingIt) : at(it) === -1 ? -1 : chalTalk(it) ? 0 : WIN_RANK[winOf(it)] ?? 1);
+      const rank = it => (afterSwing(it) ? rank(swingIt) : at(it) === -1 ? -1 : (it.kind === 'story.firstpair' && it.step === 'clicked') ? -1 : chalTalk(it) ? 0 : WIN_RANK[winOf(it)] ?? 1);
       const at = it => afterSwing(it) ? VOTE_AT.swing + 1e4 : (/^(story\.(firstday|morning|chal)|long\.crowd\.(won|lost))/.test(it.kind || '') ? -1 : chalTalk(it) ? -0.5 : it.kind === 'story.firstpair' ? (it.step === 'clicked' ? 0.5 : 1e5)
         : it.storyType === 'vote' ? (VOTE_AT[it.step] ?? 1.5e6) : it.ref != null ? it.ref : 1e6);
       out[phase].sort((x, y) => rank(x) - rank(y) || at(x) - at(y));

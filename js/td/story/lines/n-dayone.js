@@ -28,7 +28,7 @@ export default {
       { by: 'h', say: "Free shower. You're welcome." },
       { by: 'c', say: "Is there an actual shower anywhere?" },
       { by: 'h', say: "Great question. Moving on!" },
-      O('d', "I'm going home. I'm walking home, and I don't care how far it is."),
+      { ...O('d', "I'm going home. I'm walking home, and I don't care how far it is."), enter: "{d} has been trailing along behind them." },
       { by: 'a', conf: "The tour lasted four minutes, and three of them were {host} laughing at us. I've never been so scared of a skylight." },
     ] },
     { id: 'ndo.tour2', place: 'public', when: { third: true, phase: 'pre' }, turns: [
@@ -39,7 +39,7 @@ export default {
       { by: 'h', say: "We ran out of paint, it's fine, it's nothing. Keep walking." },
       { by: 'c', say: "Feed the what, though?" },
       { by: 'h', say: "And here's the toilet! Isn't it lovely?" },
-      O('d', "It's a bucket. That's a bucket with a curtain round it."),
+      { ...O('d', "It's a bucket. That's a bucket with a curtain round it."), enter: "{d} has been trailing along behind them." },
       { by: 'c', conf: "Nobody's told us what we're not supposed to feed, so I'm not sleeping. I'm never sleeping." },
     ] },
     { id: 'ndo.luggage1', place: 'sleep', when: { third: true, phase: 'pre' }, turns: [
@@ -71,7 +71,7 @@ export default {
       { by: 'c', say: "We've passed that same weird tree three times." },
       { by: 'a', say: "Then we're exploring it very thoroughly." },
       { by: 'b', say: "Does anybody know which way is camp?" },
-      O('d', "That way. I can hear somebody arguing about a towel."),
+      { ...O('d', "Over here! Follow my voice! I'm standing next to somebody arguing about a towel!"), enter: "From somewhere close by, {d} shouts." },
       { by: 'a', say: "See? Exploring, and now we've found camp. You're welcome." },
       { by: 'c', conf: "{a} led us in a circle for an hour and then took credit for finding camp. I'm impressed, and I'm also never following {a} anywhere." },
     ] },
@@ -173,7 +173,7 @@ export default {
       { by: 'b', say: "I'm asleep. I'm answering in my sleep." },
       { by: 'c', say: "Is there something you need, {a}, or are we doing this until morning?" },
       { by: 'a', say: "I just can't sleep somewhere new. Can somebody tell me a story?" },
-      O('d', "Once upon a time, there was a person who went to sleep. The end, goodnight."),
+      { ...O('d', "Once upon a time, there was a person who went to sleep. The end, goodnight."), enter: "{d} rolls over in the dark." },
       { by: 'b', conf: "{a} kept us up for an hour on the first night. Then {a} fell asleep in the middle of a sentence, and snored, and I've never wanted to vote anybody out more." },
     ] },
     { id: 'ndo.homesick1', place: 'sleep', when: { third: true, phase: 'post' }, turns: [

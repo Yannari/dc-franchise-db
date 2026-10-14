@@ -41,11 +41,11 @@ export default {
       { beat: "Nobody sits there." },
       { by: 'c', conf: "Every time someone goes, there's a gap at the table. You notice it every meal for about two days. Then you stop noticing. That's the worst part.", v: { dry: "Empty seat at breakfast. By Thursday, nobody will remember it was ever full.", competitive: "One less person at the table. One less person between me and the end." } },
     ] },
-    { id: 'ny.m3', place: 'eat', when: { voice: ['goofy', 'food', 'chaotic', 'loud'] }, turns: [
+    { id: 'ny.m3', place: 'eat', when: { voice: ['goofy', 'food', 'chaotic', 'loud'], dayOne: false }, turns: [
       { by: 'a', say: "Okay, we're ranking the food here, worst to least worst. Go." },
       { by: 'b', say: "We are not doing this." },
       { by: 'c', say: "Today's is the worst. Easily." },
-      { by: 'a', say: "Wrong, day two was the worst, because day two moved." },
+      { by: 'a', say: "Wrong, yesterday's was the worst, because yesterday's moved." },
       { by: 'b', say: "It did not move." },
       { by: 'a', say: "It moved! I saw it!" },
       { by: 'b', conf: "{a} makes every meal into a whole thing. It's annoying. It's also the only reason anyone laughs before noon." },
@@ -302,7 +302,7 @@ export default {
       { by: 'a', say: "Obviously the money." },
       { by: 'a', conf: "{b} is really easy to be around, which is rare here, so I'm going to try to keep {b} close.", v: { schemer: "{b} trusts me already. That's very useful.", grown: "{b} reminds me of people I used to work with. The good ones." } },
     ] },
-    { id: 'ny.b3', place: 'fire', when: { voice: ['tough', 'blunt', 'competitive', 'loud'] }, turns: [
+    { id: 'ny.b3', place: 'fire', when: { voice: ['tough', 'blunt', 'competitive'] }, turns: [
       { by: 'b', say: "You were really good today." },
       { by: 'a', say: "Thanks. You weren't bad either." },
       { by: 'b', say: "Wow. From you, that's basically a hug." },
@@ -348,12 +348,13 @@ export default {
       { by: 'b', say: "I'm fine." },
       { by: 'a', say: "You've been sitting here for an hour." },
       { by: 'b', say: "...I just miss home, that's all. It's stupid." },
-      { by: 'a', say: "It's not stupid. I miss home too, every single day." },
+      { by: 'a', say: "It's not stupid. I miss home too." },
       { by: 'b', say: "You do?" },
-      { by: 'a', say: "Every single day. We just don't say it." },
+      { by: 'a', say: "Everybody does. We just don't say it." },
       { by: 'b', conf: "I didn't want anyone to see me like that. I'm glad it was {a}.", v: { proud: "Nobody sees me cry. Except {a}, apparently.", emotional: "I needed that so much. {a} is a good person." } },
     ] },
     { id: 'ny.co2', place: 'sleep', when: { voice: ['tough', 'blunt', 'competitive'] }, turns: [
+      { beat: "{b} is {here}, wiping {b.posAdj} eyes and hoping nobody notices. {a} notices." },
       { by: 'a', say: "Stop crying. Not because crying is bad, just because you'll get dehydrated." },
       { by: 'b', say: "That's the worst comfort I've ever heard." },
       { by: 'a', say: "I'm not good at this stuff. Here, have some water." },

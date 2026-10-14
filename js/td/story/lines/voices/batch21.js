@@ -103,8 +103,6 @@ export default {
   },
   'nl6.s3': {
     0: { dry: "Let's be honest, if I wasn't on this team, you'd all have lost every challenge by now.", nerdy: "Statistically, without me, this team loses every challenge.", schemer: "Let's be honest, without me, you'd all have lost every challenge by now." },
-    1: { schemer: "We won the one you sat out.", cruel: "We won the one you sat out.", blunt: "We won the one you missed.", competitive: "We won the one you sat out." },
-    3: { blunt: "It was the hardest one yet.", schemer: "It was the hardest one yet.", cruel: "It was the hardest one yet.", quiet: "It was the hardest.", competitive: "It was the hardest one yet." },
     5: { schemer: "I'm going to walk away now, before I say something I can't take back.", cruel: "I'm walking away before I say something I mean.", blunt: "I'm walking away.", competitive: "I'm walking away before I say something I regret." },
   },
   'nl6.g2': {
@@ -202,7 +200,6 @@ export default {
   },
   'ny.co1': {
     3: { ditzy: "You've been sitting here for an hour.", cruel: "You've been sitting here for an hour.", loud: "You've been sitting here for an HOUR.", dry: "You've been sitting here for an hour." },
-    7: { ditzy: "Every single day, we just don't say it.", cruel: "Every single day. We just don't say it.", loud: "EVERY single day! We just don't say it!", dry: "Every single day. We just don't say it." },
   },
   'npl.sc9': { 0: { ditzy: "I've been listening all day, and {target} is the name, so I'm just going to go with it.", earnest: "I've listened to everybody all day, and honestly, {target} is the name, so I'm going with it." } },
   'ny.mt1': {
@@ -378,7 +375,7 @@ export default {
   },
   'ny.m3': {
     0: { proud: "Okay, we're ranking the food, worst to least worst. Go.", calm: "Okay, we're ranking the food, worst to least worst." },
-    3: { proud: "Wrong, day two was the worst, because day two moved.", calm: "Wrong, day two was the worst, because day two moved." },
+    3: { proud: "Wrong, yesterday's was the worst, because yesterday's moved.", calm: "Wrong, yesterday's was the worst. Yesterday's moved." },
     4: { quiet: "It didn't move.", warm: "It did not move!" },
     5: { proud: "It moved! I saw it!", calm: "It moved. I saw it." },
   },

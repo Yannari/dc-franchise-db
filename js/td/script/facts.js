@@ -21,7 +21,7 @@ export const TD_FACT_KEYS = [
   // how a and b talk
   'register', 'registerB', 'nice', 'villain', 'kitA', 'kitB', 'canFlirt',
   // where in the season and the episode
-  'early', 'late', 'merged', 'phase', 'tribal', 'immune',
+  'early', 'dayOne', 'late', 'merged', 'phase', 'tribal', 'immune',
   // the scene names a target ({target}) who is not in it
   'known',
   // where the scene is: a line that stages the dock airs only on the dock
@@ -95,6 +95,8 @@ export function factsFor(scene, ctx = {}) {
   const epNum = epOf(ctx);
   const f = {
     early: epNum <= 2,
+    // the first day: no 'day two', no 'all night', no 'every single day' (read 2026-10-14, carnival ep 1)
+    dayOne: epNum === 1,
     late: (gs.activePlayers?.length || 0) > 0 && gs.activePlayers.length <= 6,
     merged: !!gs.isMerged,
     phase: ctx.phase || null,

@@ -133,7 +133,6 @@ export default {
   'ny.co1': {
     2: { quiet: "I'm fine.", tough: "I'm fine. Go away.", kid: "I'm okay." },
     4: { quiet: "...I miss home. It's stupid.", kid: "...I miss my family. It's dumb.", tough: "...I miss home, okay? It's stupid. Don't make it a thing." },
-    5: { tough: "It's not stupid. I miss home every day too.", kid: "It's not dumb. I miss home too, every day.", dry: "It's not stupid. I miss home every single day. I just complain about it less than you'd think." },
   },
   // vt2.decoy (people went quiet)
   'ncx.d1': {

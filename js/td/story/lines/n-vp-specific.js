@@ -70,7 +70,7 @@ const FORM = {
   'vp.form.duo': [
     // (the first two episodes only: these are about a camp splitting before anybody has a voting record. Read 2026-10-14:
     // "Everybody's going to say they didn't play the game on day one" aired in episode 6, 2.3 times a season)
-    { id: 'nvs.f1', when: { early: true }, turns: [
+    { id: 'nvs.f1', when: { early: true, sideBig: true }, turns: [
       { by: 'a', say: "Can I be honest with you? I think this camp is already splitting in two.", v: { sharp: "Let's not pretend. This camp is already picking sides.", loud: "Okay, real talk. There are two groups out here now, and I want to be in the right one.", soft: "Can I tell you something? I think people are already picking sides, and it scares me a little.", dry: "So, there are two groups now. Nobody announced it, but there are." } },
       { by: 'b', say: "Already? How can you tell?" },
       { by: 'a', say: "Because {theirSide} have barely left each other's side all day. Watch them. They eat together, they whisper together." },
@@ -81,7 +81,7 @@ const FORM = {
       { by: 'b', say: "Okay. I'm in." },
       { by: 'a', conf: "Everybody's going to say they didn't play this early. I'd rather be the one who did." },
     ] },
-    { id: 'nvs.f2', when: { early: true }, turns: [
+    { id: 'nvs.f2', when: { early: true, sideBig: true }, turns: [
       { by: 'b', say: "You've been looking at {theirSide} all afternoon. What's going on?" },
       { by: 'a', say: "They're a group. A real one. They've stuck together from the start, and nobody else has noticed." },
       { by: 'b', say: "And?" },
@@ -114,7 +114,7 @@ const FORM = {
     ] },
   ],
   'vp.form.group': [
-    { id: 'nvs.fg1', when: { early: true }, turns: [
+    { id: 'nvs.fg1', when: { early: true, sideBig: true }, turns: [
       { beat: "{a} waits until everybody else is busy, then pulls {b} and the others away from camp." },
       { by: 'a', say: "Okay, I'm just going to say it. I think we should stick together.", v: { sharp: "I'll keep this short. We're a group now, if you're smart.", loud: "Okay, huddle up. We're a team now. A real one.", soft: "I don't want to be weird about this, but I think we should look out for each other." } },
       { by: 'b', say: "Like an alliance? Already? It's way too early." },
@@ -125,7 +125,7 @@ const FORM = {
       { by: 'b', say: "...Okay. Yeah. I'm in.", v: { dry: "Fine. It's better than being the first one out.", loud: "I'm in! Let's go!", anxious: "Okay. Yes. I'm in. Please let this work." } },
       { by: 'a', conf: "This early, and I've already got {votes} people. Later they'll all say they didn't want to play this fast. They'll be lying." },
     ] },
-    { id: 'nvs.fg2', turns: [
+    { id: 'nvs.fg2', when: { sideBig: true }, turns: [
       { by: 'b', say: "Why did you drag me all the way out here?" },
       { by: 'a', say: "Because I didn't want {theirSide} to hear this." },
       { by: 'b', say: "Hear what?" },
@@ -135,7 +135,7 @@ const FORM = {
       { by: 'b', say: "We're doing this." },
       { by: 'b', conf: "{a} has a whole plan already. Honestly, I'm a little scared of {a}. But I'd rather be scared on the same side." },
     ] },
-    { id: 'nvs.fg3', when: { early: false }, turns: [
+    { id: 'nvs.fg3', when: { early: false, sideVoted: true }, turns: [
       { beat: "{a} gets {b} and the others away from camp for a minute." },
       { by: 'a', say: "Every vote so far, {theirSide} have stuck together, and we haven't. That's the whole difference." },
       { by: 'b', say: "So we stick together." },

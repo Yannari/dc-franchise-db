@@ -122,9 +122,7 @@ export default {
     2: { schemer: "I'm fine.", nerdy: "I'm fine.", competitive: "I'm fine.", earnest: "I'm fine." },
     3: { theatrical: "You've been sitting here for an hour, darling.", anxious: "You've been sitting here for an hour. I was worried.", earnest: "You've been sitting here for an hour.", warm: "You've been sitting here for an hour. I've been watching." },
     4: { schemer: "...I just miss home, that's all. It's stupid.", nerdy: "...I just miss home. It's irrational, I know.", competitive: "...I just miss home. It's stupid.", earnest: "...Honestly, I just miss home. It's stupid." },
-    5: { anxious: "It's not stupid. I miss home too, every single day.", earnest: "It's not stupid. I miss home too, every day.", warm: "It's not stupid at all. I miss home too, every single day.", theatrical: "It's not stupid. I miss home every single day." },
     6: { schemer: "You do?", nerdy: "You do?", competitive: "You do?", loud: "You DO?", earnest: "You do?" },
-    7: { theatrical: "Every single day. We just don't say it.", anxious: "Every single day. We just don't say it.", earnest: "Every single day. We just don't say it.", warm: "Every single day. We just don't say it out loud." },
     8: { schemer: "I didn't want anybody to see me like that. If somebody had to, I'm glad it was {a}.", nerdy: "I didn't want anyone to see me like that. I'm glad it was {a}.", competitive: "I hate that anybody saw me like that. I'm glad it was {a}.", earnest: "I didn't want anyone to see me like that, and I'm really glad it was {a}." },
   },
   'ny.c1': {

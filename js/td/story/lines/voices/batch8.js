@@ -211,7 +211,6 @@ export default {
     0: { competitive: "I've got this place figured out. It's {wrote} tonight, and I made that happen.", calm: "It's {wrote} tonight, and I helped make that happen. I feel very calm about it." },
   },
   'nl6.s3': {
-    1: { dry: "We won the one you sat out.", calm: "We won the one you sat out." },
     5: { calm: "I'm going to walk away now, before I say something I regret.", warm: "I'm going to walk away now, before I say something I can't take back." },
   },
   'na.k4': {
@@ -220,9 +219,9 @@ export default {
     10: { calm: "{a} is noticing things. I have to fix this before it gets worse.", cruel: "{a} is starting to notice. I'll need to get ahead of that." },
   },
   'ny.co2': {
-    1: { warm: "That's the worst comfort I've ever heard.", dry: "That is the worst comfort anyone has ever given anybody." },
-    3: { warm: "...Thank you.", calm: "...Thanks." },
-    5: { warm: "{a} is terrible at being nice, but {a} tried so hard, and it really helped.", dry: "{a} is terrible at being nice. {a} tried anyway, and that counts." },
+    2: { warm: "That's the worst comfort I've ever heard.", dry: "That is the worst comfort anyone has ever given anybody." },
+    4: { warm: "...Thank you.", calm: "...Thanks." },
+    6: { warm: "{a} is terrible at being nice, but {a} tried so hard, and it really helped.", dry: "{a} is terrible at being nice. {a} tried anyway, and that counts." },
   },
   'nk.bd1': {
     2: { calm: "Crazy.", dry: "Wild. Who'd do that?" },

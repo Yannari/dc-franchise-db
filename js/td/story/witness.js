@@ -62,11 +62,22 @@ export function witnessConflicts(ep, camp, out, members, write, factsForWho, liv
   // the scenes themselves, not campFeed's view of them (it copies an engine moment that carries a storyline tag, and
   // lines added to a copy would never air while the bonds they cost still moved)
   const block = ep.campEvents?.[camp] || {};
+  const itemOf = (phase, it) => it?.story ? it : it?.ref != null ? (Array.isArray(block) ? (phase === 'pre' ? block : []) : block[phase] || [])[it.ref] : null;
+  const isConflict = item => { const sk = item?.scene?.kind || '', k = item?.kind || '', ty = item?.type || ''; return CONFLICT.test(sk) || CONFLICT.test(k) || CONFLICT_TYPE.has(ty); };
+  // the pairs who fought today: nobody backs somebody who went after them that same day (read 2026-10-14, carnival:
+  // Logan told Benji he was the slowest and split a log at him in the morning, and in the afternoon Benji "walks over
+  // and stands next to Logan without being asked")
+  const pk = (x, y) => [x, y].sort().join('|');
+  const fought = new Set();
   for (const phase of ['pre', 'post']) for (const it of out[phase] || []) {
-    const item = it?.story ? it : it?.ref != null ? (Array.isArray(block) ? (phase === 'pre' ? block : []) : block[phase] || [])[it.ref] : null;
+    const item = itemOf(phase, it), w = item?.scene?.who || {};
+    if (item && isConflict(item) && w.a && w.b) fought.add(pk(w.a, w.b));
+  }
+  for (const phase of ['pre', 'post']) for (const it of out[phase] || []) {
+    const item = itemOf(phase, it);
     if (!item) continue;
     const sk = item?.scene?.kind || '', k = item?.kind || '', ty = item?.type || '';
-    if (!(CONFLICT.test(sk) || CONFLICT.test(k) || CONFLICT_TYPE.has(ty))) continue;
+    if (!isConflict(item)) continue;
     const who = item.scene?.who || {};
     const { a, b } = who;
     const lines = item.lines || [];
@@ -98,7 +109,8 @@ export function witnessConflicts(ep, camp, out, members, write, factsForWho, liv
     const oneSided = ONE_SIDED.test(sk) || ONE_SIDED.test(ty);
     const added = [];
     for (const c of watchers) {
-      const st = stanceOf(c, a, b, key);
+      let st = stanceOf(c, a, b, key);
+      if (st.side !== 'out' && fought.has(pk(c, st.side === 'a' ? a : b))) st = { side: 'out', turned: false };
       const backs = st.side === 'a' ? a : b, vs = st.side === 'a' ? b : a;
       const roles = st.side === 'out' ? { a, b, c } : { a: backs, b: vs, c };
       // a is the one doing it in a one-sided moment: backing a is joining in, backing b is standing up for b

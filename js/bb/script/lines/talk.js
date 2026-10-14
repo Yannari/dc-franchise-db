@@ -950,7 +950,7 @@ export default {
       { by: 'a', dr: "{b} confirmed it before I'd even accused {b.obj} of anything. Amateur." },
     ] },
     { id: 'tx.v11', turns: [
-      { by: 'a', say: "Don't walk away from me while I'm talking!" },
+      { beat: '{b} turns to leave halfway through the argument.' }, { by: 'a', say: "Don't walk away from me while I'm talking!" },
       { by: 'b', say: "Then stop shouting and I'll stay!" },
       { by: 'a', say: "I'm not shouting!" },
       { beat: 'Everyone else in the room looks at each other.' },

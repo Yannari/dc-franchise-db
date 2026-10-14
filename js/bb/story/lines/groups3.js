@@ -75,6 +75,7 @@ export default {
       { by: 'c', dr: "Three facts, no begging, no tears. I didn't think a campaign could be that persuasive and that loud at the same time." },
     ] },
     { id: 'gl3.6', presumes: ['noms'], turns: [
+      { beat: '{b}, {c} and {d} sit down around {a}, who has been on the block for three days and looks it.' },
       { by: 'b', say: "Okay, we've talked about it." },
       { by: 'a', say: "Who's 'we'?" },
       { by: 'c', say: "Us three." },

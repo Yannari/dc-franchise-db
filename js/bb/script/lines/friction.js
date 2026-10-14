@@ -347,7 +347,7 @@ export default {
   ],
   // ── being talked down to ── a talked down to, b doing it, c sees it
   'friction.condescend.scene': [
-    { id: 'fc.1', turns: [{ by: 'b', say: "No, listen. Let me explain it to you." }, { by: 'a', say: "I already know how it works." }, { by: 'b', say: "I don't think you do." }, { beat: '{a} gets up and leaves the room.' }] },
+    { id: 'fc.1', turns: [{ by: 'a', say: "I've got it, thanks." }, { by: 'b', say: "No, listen. Let me explain it to you." }, { by: 'a', say: "I already know how it works." }, { by: 'b', say: "I don't think you do." }, { beat: '{a} gets up and leaves the room.' }] },
     { id: 'fc.2', turns: [{ by: 'b', say: "You wouldn't get it." }, { by: 'a', say: "Try me." }, { by: 'b', say: "It's fine, honestly. Don't worry about it." }, { by: 'a', dr: "{b} talks to me like I'm a child. I'm not a child." }] },
     { id: 'fc.3', turns: [{ by: 'a', say: "Can I finish my sentence?" }, { by: 'b', say: "I knew what you were going to say." }, { by: 'a', say: "No, you didn't." }] },
     { id: 'fc.4', turns: [{ by: 'a', dr: "That's the third time today {b} has finished a sentence for me. Wrong, every time." }] },
@@ -378,7 +378,7 @@ export default {
     { id: 'fy.1', when: { third: true }, turns: [{ by: 'a', say: "Did I ever tell you about the time—" }, { by: 'b', say: "Yes." }, { by: 'c', say: "Yes." }, { by: 'a', say: "...Okay. Fine." }] },
     { id: 'fy.2', turns: [{ by: 'a', say: "So there I was, at the airport—" }, { beat: '{b} quietly says the next line along with {a}, and has to look at the floor.' }] },
     { id: 'fy.3', turns: [{ by: 'b', dr: "I've heard that story six times. It gets longer every time. Today there was a helicopter in it." }] },
-    { id: 'fy.4', turns: [{ by: 'a', say: "And that's when the police turned up." }, { by: 'b', say: "Last time it was a security guard." }, { by: 'a', say: "Was it?" }, { by: 'b', say: "It was." }] },
+    { id: 'fy.4', turns: [{ beat: '{a} is telling the kitchen the same story again.' }, { by: 'a', say: "And that's when the police turned up." }, { by: 'b', say: "Last time it was a security guard." }, { by: 'a', say: "Was it?" }, { by: 'b', say: "It was." }] },
     { id: 'fy.5', when: { third: true }, turns: [{ by: 'b', say: "We know how this ends." }, { by: 'a', say: "You don't know how it ends." }, { by: 'c', say: "You get on the plane, {a}. You always get on the plane." }] },
     { id: 'fy.6', when: { third: true }, turns: [{ beat: '{a} starts the story again. {b} and {c} look at each other.' }, { by: 'c', dr: "Same story. Third time this week. I've started timing it." }] },
     { id: 'fy.7', turns: [{ by: 'a', say: "Why is everyone laughing? I haven't got to the funny bit." }, { by: 'b', say: "We're laughing because we know the funny bit." }] },
@@ -407,7 +407,7 @@ export default {
     { id: 'fj.2', turns: [{ beat: '{a} gets a big laugh out of a story about {b}. It was a story {b} told {a} in private.' }, { by: 'b', say: "I told you that in private." }, { by: 'a', say: "It was just a joke." }, { by: 'b', say: "It was private." }] },
     { id: 'fj.3', turns: [{ by: 'a', say: "Oh, come on, {b} can't take a joke." }, { beat: '{b} has just walked out of the room.' }] },
     { id: 'fj.4', turns: [{ by: 'b', dr: "Everyone laughed. I didn't. It wasn't a joke to me." }] },
-    { id: 'fj.5', turns: [{ by: 'a', say: "And then {b} said—" }, { by: 'b', say: "Okay, that's enough." }, { by: 'a', say: "I'm not finished." }, { by: 'b', say: "Yes, you are." }] },
+    { id: 'fj.5', turns: [{ beat: '{a} is doing an impression of {b} for the whole room, and getting laughs.' }, { by: 'a', say: "And then {b} said—" }, { by: 'b', say: "Okay, that's enough." }, { by: 'a', say: "I'm not finished." }, { by: 'b', say: "Yes, you are." }] },
     { id: 'fj.6', turns: [{ by: 'a', say: "I'm only teasing." }, { by: 'b', say: "You've been teasing all day." }, { by: 'a', say: "Because it's funny." }, { by: 'b', say: "Not to me." }] },
     { id: 'fj.7', turns: [{ by: 'a', dr: "I took the joke too far. I could tell by {b}'s face. I didn't stop in time." }] },
     { id: 'fj.8', turns: [{ beat: '{a} keeps the joke going after the laughter stops. The room goes awkward.' }, { by: 'b', dr: "Everyone knew it had gone too far. Except {a}." }] },

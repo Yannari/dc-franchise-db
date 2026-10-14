@@ -250,7 +250,9 @@ export default {
   ],
   'talk.hohweek.pawn.refuse': [
     { id: 'hw.wf1', room: 'hoh-room', turns: [
-      { beat: 'HOH room. {b} stands up before {a} has finished the sentence.' },
+      { beat: 'HOH room. {a} pats the bed for {b} to sit down.' },
+      { by: 'a', say: "I need somebody to sit next to {c} on the block. As a pawn. Would you—" },
+      { beat: '{b} stands up before {a} has finished the sentence.' },
       { by: 'b', say: "No. Absolutely not." },
       { by: 'a', say: "You haven't heard the plan." },
       { by: 'b', say: "I've heard enough. Pawns go home. I'm not sitting in that chair for anybody." },
@@ -437,7 +439,7 @@ export default {
       { by: 'b', say: "{c} really didn't see it coming at the end." },
       { by: 'a', say: "{c} saw it. {c} just couldn't stop it." },
       { by: 'b', say: "So, good HOH?" },
-      { by: 'a', dr: "I came in with one name, and that name is gone. Some HOHs spend the whole week changing their minds. I didn't, and it paid off." },
+      { by: 'a', dr: "I had one job this week: get {c} out of this house. Job done. Tomorrow I'm just another houseguest with a target on my back, but nobody can say I wasted my week." },
     ] },
   ],
   // the target survived: the veto, or the house voted the other way

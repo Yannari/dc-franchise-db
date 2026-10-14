@@ -173,6 +173,8 @@ const blocTargetPicked = {
       reason: /nobody outside/.test(why || '') ? 'alone' : /keeps winning/.test(why || '') ? 'wins' : 'reach',
       intent: confidant ? 'told' : 'alone',
       target, partner: bloc.members.find(m => m !== target && m !== plotter && m !== confidant) || null,
+      // which group: the alliance's name, or "X and Y" for a pair nobody has named
+      group: bloc.label || null,
     }, [], _room(['bedroom', 'backyard'], ctx, plotter, confidant));
     api.setTarget(plotter, target, bloc.kind === 'couple'
       ? `to break up ${bloc.label}` : `to break up ${bloc.label}`);

@@ -335,7 +335,7 @@ function paint(uid, fresh) {
   const whyNow = (out.ledger?.why || []).join('|');
   if (fresh && whyNow && whyNow !== (R.lastL?.why || []).join('|') && !root?.classList.contains('intel-open')) document.getElementById(`bbi-btn-${uid}`)?.classList.add('new');
   R.lastL = out.ledger;
-  if (root?.classList.contains('intel-open')) { const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who); }
+  if (root?.classList.contains('intel-open')) { const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who, R.screens?.[R.si]?.snap || null); }
   const count = document.getElementById(`bbx-count-${uid}`);
   if (count) count.textContent = `${Math.max(0, R.idx + 1)} / ${S.steps.length}`;
   // the music turns and the stings land on a click, never on Reveal all or a repaint
@@ -570,7 +570,7 @@ export function bbxIntel(uid) {
   const open = root.classList.toggle('intel-open');
   document.getElementById(`bbi-btn-${uid}`)?.classList.remove('new');
   document.getElementById(`bbi-btn-${uid}`)?.classList.toggle('on', open);
-  if (open) { const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who); }
+  if (open) { const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who, R.screens?.[R.si]?.snap || null); }
 }
 export function bbxIntelClick(uid, e) {
   const R = reg()[uid]; if (!R) return;
@@ -580,7 +580,7 @@ export function bbxIntelClick(uid, e) {
   if (!tab && !who) return;
   if (tab) R.tab = tab;
   if (who) R.who = who;
-  const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who);
+  const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who, R.screens?.[R.si]?.snap || null);
 }
 if (typeof document !== 'undefined') document.addEventListener('keydown', e => {
   const root = document.querySelector('.bbx[data-uid]');

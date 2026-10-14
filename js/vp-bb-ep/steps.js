@@ -3190,7 +3190,13 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     stretch = [];
   };
   const ceremony = scr => { flush(); scr.hidden = new Set(ctx.hidden); out.push(scr); };
+  // Every screen knows the house as it stood when it aired: the last stretch's snapshot (act.state,
+  // bb/week.js houseAct) reached so far. The Intel drawer reads it, so it never shows the end of
+  // the week from its first screen (the user, 2026-10-14: "intel spoiled me who got evicted").
+  const stamp = () => { for (const s of out) if (!('snap' in s)) s.snap = ctx.snap || null; };
   for (const act of row.acts || []) {
+    stamp();
+    if (act.state) ctx.snap = act.state;
     // An act with no day of its own (most twists) happens where the week has got to:
     // the clock never runs backwards within a week.
     const dayOf = ((ctx.week - 1) * 7) + 1 + (ACT_DAY[act.type] ?? (row.isFinale ? 6 : 0));
@@ -3299,6 +3305,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   }
   if (ctx.reunion) { const r = reunionScreen(ctx.reunion, ctx); if (r) ceremony(r); }
   flush();
+  stamp();
   // The memory wall: this week's house plus everybody already evicted (black and white).
   const wall = [...house, ...priorEvicted.filter(n => !house.includes(n))];
   // slot markers become "this twist's classic screen goes after that screen"

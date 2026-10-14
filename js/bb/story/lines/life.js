@@ -200,6 +200,7 @@ export default {
       { by: 'a', dr: "The prank worked perfectly on the wrong person. Now I've got two people to apologise to and one towel." },
     ] },
     { id: 'lp.m2', turns: [
+      { beat: '{b} storms into the kitchen holding an armful of clothes, still dripping from the hot tub.' },
       { by: 'a', say: "Okay, that went further than I meant." },
       { by: 'b', say: "You hid my stuff. Before a comp." },
       { by: 'a', say: "I didn't know there was a comp!" },

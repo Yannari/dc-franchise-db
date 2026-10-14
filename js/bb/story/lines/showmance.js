@@ -493,7 +493,8 @@ export default {
       { by: 'a', dr: "I said that to hurt {b}. It worked. I wish it hadn't." },
     ] },
     { id: 'sg.3', room: 'bedroom', turns: [
-      { beat: 'Bedroom. {b} is lying facing the wall. {a} sits on the edge of the bed.' },
+      { beat: 'Earlier, in the kitchen, {a} found out {b} had made a deal without telling {a.obj}, and shouted about it in front of the whole house.' },
+      { beat: 'Bedroom, after lights out. {b} is lying facing the wall. {a} sits on the edge of the bed.' },
       { by: 'a', say: "Are you awake?" },
       { by: 'b', say: "No." },
       { by: 'a', say: "Are you still mad?" },
@@ -501,10 +502,10 @@ export default {
       { by: 'a', say: "Can I sit here anyway?" },
       { beat: 'A long pause.' },
       { by: 'b', say: "...Fine." },
-      { by: 'a', say: "I'm sorry I shouted." },
-      { by: 'b', say: "I'm sorry I made you shout." },
+      { by: 'a', say: "I'm sorry I shouted. In front of everybody." },
+      { by: 'b', say: "I'm sorry I made a deal without telling you." },
       { by: 'a', say: "Is that a real apology?" },
-      { by: 'b', say: "It's half a real apology. Go to sleep." },
+      { by: 'b', say: "It's half of one. The other half is that next time, you hear it first. Now go to sleep." },
       { by: 'a', dr: "It was only half an apology. But from {b}, in this house, half an apology means a lot." },
     ] },
     { id: 'sg.4', turns: [
@@ -635,7 +636,7 @@ export default {
     { id: 'rmd.a3', turns: [{ by: 'a', dr: "Since {when}, {b} and I are a proper couple." }] },
   ],
   'recap.showmance.declare.b': [
-    { id: 'rmd.b1', turns: [{ by: 'b', dr: "{a} told me {when} that it's not a game thing. I believe {a}." }] },
+    { id: 'rmd.b1', turns: [{ by: 'b', dr: "{when}, {a} told me that what we have is real, not a game move to get my vote. I believe {a}." }] },
     { id: 'rmd.b2', turns: [{ by: 'b', dr: "{when}, {a} and I decided we're together. Properly." }] },
     { id: 'rmd.b3', turns: [{ by: 'b', dr: "{a} and I are a thing. Since {when}. A real thing." }] },
   ],

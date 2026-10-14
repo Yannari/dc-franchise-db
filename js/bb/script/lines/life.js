@@ -257,7 +257,7 @@ export default {
     { id: 'lh.h10', turns: [{ by: 'b', say: "What do you miss most?" }, { by: 'a', say: "My own bed. And being able to go outside whenever I want." }, { by: 'b', say: "We've got a yard." }, { by: 'a', say: "It's not the same." }] },
     { id: 'lh.h11', turns: [{ by: 'b', dr: "I could see {a} was having a hard day. So I made {a.obj} a tea and sat with {a.obj}. That's all you can do in here." }] },
     { id: 'lh.h12', turns: [{ by: 'a', say: "Do you ever wonder what's happening outside?" }, { by: 'b', say: "All the time." }, { by: 'a', say: "It's strange, isn't it? Everyone's just living their lives." }] },
-    { id: 'lh.h13', turns: [{ by: 'b', say: "Not long now." }, { by: 'a', say: "You don't know that." }, { by: 'b', say: "Fine. Not long for one of us." }, { by: 'a', say: "...Thanks. That really helped." }] },
+    { id: 'lh.h13', turns: [{ by: 'a', say: "I miss my own bed. My own people. A door that shuts." }, { by: 'b', say: "Not long now." }, { by: 'a', say: "You don't know that." }, { by: 'b', say: "Fine. Not long for one of us." }, { by: 'a', say: "...Thanks. That really helped." }] },
   ],
   'life.homesick.alone': [
     { id: 'lh.a1', turns: [{ by: 'a', dr: "I tried to count how many days I've been in here. I stopped halfway. I didn't want to know." }] },

@@ -13,27 +13,44 @@ export const TABS = [['heads', 'In their heads'], ['people', 'Relationships'], [
 const BOND_WORD = v => (v >= 6 ? 'Close' : v >= 3 ? 'Friends' : v > -2 ? 'Neutral' : v > -5 ? 'Tension' : 'Enemies');
 const BOND_CLS = v => (v >= 6 ? 'close' : v >= 3 ? 'friend' : v > -2 ? 'neutral' : v > -5 ? 'tense' : 'enemy');
 
-/** The week's record as the week ends: who is in, every bond, the groups, the deals, the romances. */
-export function weekAt(num) {
+/**
+ * The house as it stands on the screen being watched (the user, 2026-10-14: "intel spoiled me who got
+ * evicted before the final results"). `snap` is the last stretch's snapshot the screen has reached
+ * (steps.js stamp); `shown` is who the stage has seen evicted so far (null: all of it). Until this
+ * week's evictee is among them, nobody is marked out,
+ * and the deals are the ones the week began with. Without a snapshot (an old save), the week's end.
+ */
+export function weekAt(num, snap = null, shown = null) {
   const E = (globalThis.gs?.episodeHistory || []).find(e => +e.num === +num);
   const S = E?.gsSnapshot;
   if (!S) return null;
-  const out = E.evicted || E.eliminated;
-  const players = [...new Set([...(S.activePlayers || []), ...(out && out !== 'No elimination' ? [out] : [])])];
-  const bond = (a, b) => S.bonds?.[a <= b ? `${a}||${b}` : `${b}||${a}`] ?? 0;
+  const evicted = E.evicted || E.eliminated;
+  const ended = !shown || !evicted || evicted === 'No elimination' || shown.includes(evicted);
+  const out = ended && evicted !== 'No elimination' ? evicted : null;
+  const live = snap && !ended ? snap : null;
+  const players = live && E.houseAtStart?.length ? [...E.houseAtStart]
+    : [...new Set([...(S.activePlayers || []), ...(evicted && evicted !== 'No elimination' ? [evicted] : [])])];
+  const bonds = live?.bonds || S.bonds;
+  const bond = (a, b) => bonds?.[a <= b ? `${a}||${b}` : `${b}||${a}`] ?? 0;
   const love = (a, b) => {
-    const sh = (S.showmances || []).find(x => x.players?.includes(a) && x.players?.includes(b));
+    const sh = ((live ? live.showmances : S.showmances) || []).find(x => x.players?.includes(a) && x.players?.includes(b));
     if (sh) return sh.breakupEp || sh.phase === 'broken-up' ? 'Broke up' : 'Showmance';
+    if (live) return null;
     const sp = (S.romanticSparks || []).find(x => x.players?.includes(a) && x.players?.includes(b));
     return sp ? 'Spark' : null;
   };
-  return { players, out, bond, love, alliances: S.namedAlliances || [], gone: S.dissolvedAlliances || [], deals: (S.sideDeals || []).filter(d => (d.players || []).every(n => players.includes(n))) };
+  const week = +num;
+  // before the eviction: the deals the week began with, standing as they stood then
+  const deals = (S.sideDeals || []).filter(d => (d.players || []).every(n => players.includes(n)))
+    .filter(d => !live || (Number(d.madeEp) || 0) < week)
+    .map(d => (live && d.broken && (Number(d.brokenEp) || 0) >= week ? { ...d, broken: false, active: true, brokenBy: null } : d));
+  return { players, out, bond, love, alliances: live ? (live.alliances || []) : (S.namedAlliances || []), gone: live ? [] : (S.dissolvedAlliances || []), deals, live: !!live };
 }
 
 /** The drawer for a screen at a step. `L` is the stage's ledger (L.why), `tab` and `who` the viewer's picks. */
-export function intelHtml(num, L, tab, who) {
+export function intelHtml(num, L, tab, who, snap = null) {
   if (!TABS.some(t => t[0] === tab)) tab = 'heads';
-  const W = weekAt(num);
+  const W = weekAt(num, snap, L?.out || []);
   let h = `<div class="bbi-head"><b>Intel</b><span>What the house doesn't know.</span><button type="button" class="bbi-x" data-close aria-label="Close Intel" title="Close (i)">&times;</button></div>
     <div class="bbi-tabs">${TABS.map(([k, l]) => `<button type="button" class="${k === tab ? 'on' : ''}" data-tab="${k}">${esc(l)}</button>`).join('')}</div><div class="bbi-body">`;
   const face = n => `<span class="bbi-f" style="--c:${col(n)}">${img(n)}</span>`;
@@ -61,7 +78,7 @@ export function intelHtml(num, L, tab, who) {
     const broken = W.deals.filter(d => d.broken).slice(-4);
     if (broken.length) h += `<div class="bbi-sub">Broken</div>${broken.map(d => `<div class="bbi-gone">${esc((d.players || []).join(' & '))} · ${esc(kind(d))}${d.brokenBy ? ` · broken by ${esc(d.brokenBy)}` : ''}</div>`).join('')}`;
   }
-  return `${h}${tab === 'heads' ? '' : '<div class="bbi-note">As the week ends.</div>'}</div>`;
+  return `${h}${tab === 'heads' ? '' : `<div class="bbi-note">${W?.live ? 'As the house stands right now.' : 'As the week ends.'}</div>`}</div>`;
 }
 
 export const INTEL_CSS = `

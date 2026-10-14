@@ -20,7 +20,9 @@ export default {
       { by: 'b', dr: "{a} drew a backdoor in lip liner. I've never been so scared of a piece of makeup." },
     ] },
     { id: 'hw.pb5', room: 'hoh-room', turns: [
-      { by: 'b', say: "So it's {c} and {d}?" },
+      { beat: 'HOH room. {a} hands {b} a drink and lowers {a.posAdj} voice.' },
+      { by: 'a', say: "{c} and {d}. That's who I'm putting up tomorrow." },
+      { by: 'b', say: "{c} and {d}? That's it?" },
       { by: 'a', say: "For now." },
       { by: 'b', say: "'For now.'" },
       { by: 'a', say: "For now. Then it isn't." },

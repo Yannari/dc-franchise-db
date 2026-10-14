@@ -623,7 +623,7 @@ export default {
     { id: 'bl.12', turns: [{ beat: '{x} has a book open on {x.posAdj} chest and has not turned a page in twenty minutes.' }] },
     { id: 'bl.13', turns: [{ beat: '{x} drifts in, sits down, realises what kind of conversation this is, and drifts out.' }] },
     { id: 'bl.14', turns: [{ beat: '{x} and {y} are playing a card game they have clearly made up, with rules that change every hand.' }] },
-    { id: 'bl.15', turns: [{ beat: 'Across the room, {x} is staring at the memory wall like it owes {x.obj} money.' }] },
+    { id: 'bl.15', turns: [{ beat: 'Across the room, {x} is standing at the memory wall, counting the faces that are still lit.' }] },
     { id: 'bl.16', turns: [{ beat: '{x} is lying across two armchairs and calling it a bed.' }] },
   ],
   'bg.backyard': [

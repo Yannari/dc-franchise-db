@@ -51,7 +51,7 @@ export default {
       { by: 'b', say: "An idea everyone agreed on. Except me, because nobody asked me." },
     ] },
     { id: 'am.l5', turns: [
-      { by: 'a', say: "Don't take it personally. It just happened fast." },
+      { by: 'b', say: "You had a meeting. Without me." }, { by: 'a', say: "Don't take it personally. It just happened fast." },
       { by: 'b', say: "It's an alliance. Nothing's supposed to happen without me." },
       { by: 'a', say: "Next time. I promise." },
       { by: 'b', dr: "\"Next time\". I'll be watching who leaves the room first from now on." },
@@ -168,7 +168,7 @@ export default {
       { beat: 'Across the room, {c} looks annoyed.' },
     ] },
     { id: 'ai.t9', turns: [
-      { by: 'b', say: "Don't worry, {c}, we'll talk it through with everyone." },
+      { beat: '{c} walks in on {a} and {b} deciding something. Again.' }, { by: 'b', say: "Don't worry, {c}, we'll talk it through with everyone." },
       { by: 'c', say: "After you've decided." },
       { by: 'b', say: "That's not fair." },
       { by: 'c', say: "Is it wrong, though?" },
@@ -215,7 +215,7 @@ export default {
       { by: 'a', dr: "In {alliance}, {target} going is a win. In {alliance2}, {target} going is a disaster. I'm in both. I have no idea what face to make." },
     ] },
     { id: 'ao.d5', turns: [
-      { by: 'a', say: "And {alliance2} thinks... I mean, I think..." },
+      { beat: '{a} is talking strategy with {b}, fast and very tired.' }, { by: 'a', say: "And {alliance2} thinks... I mean, I think..." },
       { by: 'b', say: "What did you just say?" },
       { by: 'a', say: "Nothing. Anyway. Who wants tea?" },
       { by: 'a', dr: "I nearly said the other group's name to the wrong group. I need to sleep more." },
@@ -845,7 +845,7 @@ export default {
       { by: 'a', dr: "{b} flipped. Against {alliance}. Against us. I'm not even angry yet. I'm just shocked." },
     ] },
     { id: 'ab.f7', turns: [
-      { by: 'a', say: "Just tell me why." },
+      { beat: '{a} corners {b} in the storage room the morning after the vote.' }, { by: 'a', say: "Just tell me why." },
       { by: 'b', say: "It was a game move." },
       { by: 'a', say: "Against your own alliance." },
       { by: 'b', say: "Especially against my own alliance. That's where the threats are." },

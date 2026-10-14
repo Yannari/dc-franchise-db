@@ -24,7 +24,7 @@ export default {
       { by: 'a', say: "I've covered it in sticky tape. It's basically laminated." },
       { by: 'b', dr: "{a} made a rota out of tape and hope. I give it a day." },
     ] },
-    { id: 'rn.ro2', turns: [
+    { id: 'rn.ro2', room: 'kitchen', turns: [
       { by: 'a', say: "Can everyone look at the fridge for one second?" },
       { by: 'b', say: "Is that a chart?" },
       { by: 'a', say: "It's a system. Everyone gets a day. Everyone gets a job." },
@@ -33,7 +33,7 @@ export default {
       { by: 'c', say: "I'm going home on a Tuesday, then." },
       { by: 'a', dr: "It was going to be chaos or a chart. I chose the chart. One day they'll thank me." },
     ] },
-    { id: 'rn.ro3', turns: [
+    { id: 'rn.ro3', room: 'kitchen', turns: [
       { by: 'b', say: "Why does the bin have a name on it?" },
       { by: 'a', say: "That's your name. It's your day." },
       { by: 'b', say: "Since when?" },
@@ -44,7 +44,7 @@ export default {
     ] },
   ],
   'run.rota.call': [
-    { id: 'rn.rc1', presumes: ['vote'], turns: [
+    { id: 'rn.rc1', room: 'kitchen', presumes: ['vote'], turns: [
       { beat: '{a} is standing at the fridge with a pen, crossing things out.' },
       { by: 'b', say: "Is that the rota?" },
       { by: 'a', say: "Version three. Somebody keeps evicting the people I put on bins." },
@@ -52,7 +52,7 @@ export default {
       { by: 'a', say: "Isn't it? Every week, the bins person goes home." },
       { by: 'b', dr: "{a} thinks the rota is cursed. I think the rota is just a piece of paper with tape on it." },
     ] },
-    { id: 'rn.rc2', turns: [
+    { id: 'rn.rc2', room: 'kitchen', turns: [
       { by: 'a', say: "Whose dishes are these?" },
       { by: 'b', say: "Check the rota." },
       { by: 'a', say: "...Did you just tell ME to check the rota?" },
@@ -68,7 +68,7 @@ export default {
       { by: 'b', say: "You're going to get nominated over a chore chart." },
       { by: 'a', dr: "If I go home over the rota, at least I go home for something I believe in." },
     ] },
-    { id: 'rn.rc4', turns: [
+    { id: 'rn.rc4', room: 'kitchen', turns: [
       { beat: 'Somebody has drawn a moustache on the rota. {a} is staring at it.' },
       { by: 'a', say: "Who did this." },
       { by: 'b', say: "Did what?" },
@@ -96,7 +96,7 @@ export default {
       { by: 'a', say: "I know. I know it is." },
       { by: 'a', dr: "Alliances break. Friends flip. The rota stayed on the fridge. Some things in here are loyal." },
     ] },
-    { id: 'rn.rp3', presumes: ['vote'], turns: [
+    { id: 'rn.rp3', room: 'kitchen', presumes: ['vote'], turns: [
       { beat: '{a} takes the rota down from the fridge, very carefully.' },
       { by: 'b', say: "You're retiring it?" },
       { by: 'a', say: "There's not enough of us left for a rota. It's just us." },

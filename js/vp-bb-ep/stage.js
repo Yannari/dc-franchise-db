@@ -750,10 +750,11 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   const isDr = st && st.k === 'dr';
   if (isDr) {
     const held = st.hold ? `<div class="drpass ${fresh ? 'fresh' : ''}">${passHtml(st.by, 'held')}<b>STILL IN MY POCKET</b></div>` : '';
-    // on the confessional couch (the user: "diary room we have confessional"), in the middle of it
+    // on the confessional couch (the user: "diary room we have confessional"), left of the quote card: in
+    // the middle of the couch the card (left: 53cqw) covered the face once the Diary Room zoom grew it
+    // (the user, 2026-10-14: "text hiding the icons")
     const room = setDiv('dr', o.season, S);
-    const onCouch = /data-plate=/.test(room);
-    return `${room}<div class="drring">${DRRING}</div>${tileHtml(st.by, onCouch ? 50 : 40, 'speak', L, '', 'width:15cqw;bottom:17cqw')}${held}`;
+    return `${room}<div class="drring">${DRRING}</div>${tileHtml(st.by, 40, 'speak', L, '', 'width:15cqw;bottom:17cqw')}${held}`;
   }
   const arena = S.arena;
   let h = arena ? plateHtml(S, o.season) || `<div class="set photo" style="background-image:url('assets/bb/house/${/^studio/.test(S.set) ? 'default' : o.season}/${S.set}-td-b.webp?v=${V}')"></div>`

@@ -122,7 +122,7 @@ export default {
     { id: 'cj.1', turns: [{ by: 'a', say: "What were you two laughing about?" }, { by: 'b', say: "I honestly can't remember." }, { by: 'a', say: "Right." }] },
     { id: 'cj.2', turns: [{ by: 'a', dr: "{b} and {c} talked for an hour in the kitchen. I walked past four times. Not that I was counting." }] },
     { id: 'cj.3', turns: [{ beat: '{c} touches {b}\'s arm while making a point.' }, { by: 'a', dr: "I didn't like that." }] },
-    { id: 'cj.4', turns: [{ by: 'a', say: "It's not about {c}." }, { by: 'b', say: "Okay." }, { by: 'a', say: "It's not." }, { by: 'b', say: "I said okay." }] },
+    { id: 'cj.4', turns: [{ by: 'b', say: "You've been quiet since {c} sat with me at dinner." }, { by: 'a', say: "It's not about {c}." }, { by: 'b', say: "Okay." }, { by: 'a', say: "It's not." }, { by: 'b', say: "I said okay." }] },
     { id: 'cj.5', turns: [{ by: 'b', say: "{c} is just easy to talk to." }, { by: 'a', say: "Is {c}?" }] },
     { id: 'cj.6', turns: [{ by: 'c', dr: "{a} has been really cold with me all evening. I have no idea what I did." }] },
     { id: 'cj.7', turns: [{ by: 'b', dr: "{a} is jealous of {c}. Of {c}! We were talking about a competition." }] },

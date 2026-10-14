@@ -500,7 +500,7 @@ export default {
 
   'story.alliance.poach.refused': [
     { id: 'ap3.r1', turns: [
-      { by: 'a', say: "You know you're the smartest one in your group, right?" },
+      { by: 'a', say: "You know you're smarter than {ally} and {ally2} put together, right?" },
       { by: 'b', say: "Thank you?" },
       { by: 'a', say: "And they treat you like the dumbest." },
       { by: 'b', say: "That's not true." },
@@ -517,7 +517,7 @@ export default {
       { by: 'a', say: "For you to work with me instead." },
       { by: 'b', say: "A time machine." },
       { by: 'a', say: "Seriously." },
-      { by: 'b', say: "Seriously. You'd have to have asked me first. Someone else did. I said yes." },
+      { by: 'b', say: "Seriously. You'd have to have asked me first. {ally} did. I said yes." },
       { by: 'a', say: "People change their minds." },
       { by: 'b', say: "Some people. Not me." },
       { by: 'a', dr: "{b} is loyal. Which is great for whoever has {b}. Which is not me." },
@@ -542,7 +542,7 @@ export default {
       { by: 'b', say: "I'm interested in staying in the house. Changing sides halfway is how you leave it." },
       { by: 'a', say: "Fair. Can't blame me for asking." },
       { by: 'b', say: "I can, a bit." },
-      { by: 'b', dr: "Now I have to tell my people that {a} is recruiting. Which means {a} just put a target on {a}'s own back. Thanks, {a}." },
+      { by: 'b', dr: "Now I have to tell {ally} and {ally2} that {a} is recruiting. Which means {a} just put a target on {a}'s own back. Thanks, {a}." },
     ] },
   ],
 };

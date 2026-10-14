@@ -354,7 +354,10 @@ const defectionOffer = {
       api.remember(mark, outsider, 'offer', 2, { offer: 'a better seat' });
       api.suspicion(mark, closestTo(mark, house) || outsider, 0.8);
     }
-    const scene = makeScene('deals.defection', { a: outsider, b: mark }, { ending: loyal ? 'refused' : 'tempted' }, [],
+    // the two the mark is closest to in their group, so the pitch can say WHO it means ("your group",
+    // said by nobody about nobody: the read of 2026-10-14)
+    const [ally, ally2] = allies.slice().sort((x, y) => bond(mark, y) - bond(mark, x));
+    const scene = makeScene('deals.defection', { a: outsider, b: mark }, { ending: loyal ? 'refused' : 'tempted', ally, ally2, group: alliance?.name || null }, [],
       _room(['backyard', 'bedroom', 'pantry'], ctx, outsider, mark));
     return {
       scene, players: [mark, outsider],

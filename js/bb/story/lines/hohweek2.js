@@ -130,7 +130,7 @@ export default {
     ] },
     { id: 'hw.fh6', room: 'hoh-room', turns: [
       { beat: 'HOH room. {b} has brought nothing, no snacks and no speech.' },
-      { by: 'b', say: "Just tell me straight." },
+      { by: 'b', say: "Just tell me straight. Am I going up?" },
       { by: 'a', say: "Straight: you're my target." },
       { by: 'b', say: "Okay. Thank you." },
       { by: 'a', say: "You're taking that well." },

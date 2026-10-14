@@ -64,12 +64,12 @@ export default {
     { id: 'ps2.r7', turns: [{ by: 'a', say: "Big week for you." }, { by: 'b', say: "Big week for all of us." }, { by: 'a', say: "Yeah, but you're the one making the decisions." }] },
   ],
   'phase.power.scene': [
-    { id: 'pw2.1', turns: [{ by: 'b', dr: "{a} has been HOH for four hours and already sounds different. I noticed. I don't think {a} has." }] },
+    { id: 'pw2.1', turns: [{ by: 'b', dr: "{a} has been HOH for four hours and already sounds different. I'll still go up there and ask for things, because that's the game. But I noticed, even if {a} hasn't." }] },
     { id: 'pw2.2', turns: [{ by: 'a', say: "As HOH, I think we should all clean the kitchen." }, { beat: 'The room goes quiet.' }, { by: 'b', dr: "\"As HOH\". That didn't take long." }] },
-    { id: 'pw2.3', turns: [{ by: 'b', dr: "Watching {a} today tells me a lot about how {a} would play with nothing. It's not good news." }] },
+    { id: 'pw2.3', turns: [{ by: 'b', dr: "I'll be nice to {a} this week, because {a} has the key. But watching how {a} acts with a bit of power tells me a lot, and it's not good news." }] },
     { id: 'pw2.4', when: { room: ['kitchen'] }, turns: [{ beat: '{a} holds court in the kitchen. {b} watches from the doorway.' }, { by: 'b', dr: "{a} loves this. Maybe a bit too much." }] },
     { id: 'pw2.5', turns: [{ by: 'a', say: "Everyone's being so nice to me today." }, { by: 'b', say: "Wonder why." }, { by: 'a', say: "Because I'm lovely?" }, { by: 'b', say: "Sure. That must be it." }] },
-    { id: 'pw2.6', turns: [{ by: 'b', dr: "Give some people a bit of power and they change straight away. {a} is one of those people." }] },
+    { id: 'pw2.6', turns: [{ by: 'b', dr: "Give some people a bit of power and they change straight away. {a} is one of those people. I'll still go up to that room and smile. That's the game. But I've noticed." }] },
     { id: 'pw2.7', turns: [{ by: 'a', dr: "I know people are watching how I act this week. I'm trying to stay the same. It's harder than it sounds." }] },
   ],
   'phase.isolation.scene': [

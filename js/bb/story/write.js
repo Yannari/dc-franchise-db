@@ -373,26 +373,39 @@ export function writeWitnessAfter(w, ctx, at) {
 // ── the vote talk: the eviction, before it happens (bb/story/votetalk.js says who and why) ──
 const VT_MOOD = k => (k.startsWith('plan') ? 'plan' : k.startsWith('swing') ? 'deals' : 'drama');
 export function writeVoteTalk(t, ctx, at) {
-  const key = `vote.${t?.kind}`;
-  if (!STORY_POOLS[key]?.length || writing.muted) return null;
+  return writeKeyed(`vote.${t?.kind}`, t, ctx, at, { id: `vt:${ctx.week?.num || 0}:${t?.kind}`, step: `vote.${t?.kind}`, mood: VT_MOOD(String(t?.kind || '')),
+    spotKind: String(t?.kind || '').startsWith('read') ? 'target.count' : 'plan.vote' });
+}
+
+/** A running gag or a week of an arc (bb/story/arcs.js): its own pool, its own people. */
+export function writeArcScene(t, ctx, at) {
+  return writeKeyed(t?.key, t, ctx, at, { id: `arc:${ctx.week?.num || 0}:${t?.key}:${t?.who?.a}`, step: t?.key,
+    mood: /run\./.test(t?.key) ? 'fun' : /payback\.end\.payback|payback\.vow/.test(t?.key) ? 'drama' : 'house', spotKind: 'arc' });
+}
+
+// one pool, one set of people, the room their words say or a place for them (vote talk, arcs)
+function writeKeyed(key, t, ctx, at, o) {
+  if (!key || !STORY_POOLS[key]?.length || writing.muted) return null;
   const who = t.who, data = t.data || {};
   if (Object.values(who).some(n => !(ctx.present || []).includes(n))) return null;
-  const salt = `vt|${ctx.week?.num || 0}|${t.kind}|${Object.values(who).join('>')}`;
+  const salt = `${o.id}|${Object.values(who).join('>')}`;
   const entry = pick([key], who, data, ctx, null, salt);
   if (!entry) return null;
   const first = entry.turns.filter(x => x.beat).slice(0, 1).map(x => ({ kind: 'beat', text: x.beat }));
   const named = entry.room || roomFromText(first);
   const cast = Object.values(who).filter(Boolean);
-  const sp = named ? null : spotFor(t.kind.startsWith('read') ? 'target.count' : 'plan.vote', cast, ctx, salt, JSON.stringify(entry.turns));
+  const sp = named ? null : spotFor(o.spotKind, cast, ctx, salt, JSON.stringify(entry.turns));
   let room = (named && named !== 'diary-room' ? named : null) || sp?.room || null;
   if (!room) {
     const ROTA = ['kitchen', 'living-room', 'backyard', 'bedroom'].filter(r => r !== ctx.avoidRoom);
     room = ROTA[[...salt].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7) % ROTA.length];
   }
   const lines = render(entry, who, ctx, data);
-  const sc = { id: `vt:${ctx.week?.num || 0}:${t.kind}`, line: null, type: 'talk', step: `vote.${t.kind}`, outcome: 'any',
+  // on stage: who speaks, or who a stage direction names (an optional third person who says nothing is not there)
+  const used = cast.filter(n => lines.some(l => l.by === n || (l.kind === 'beat' && l.text.includes(n))));
+  const sc = { id: o.id, line: null, type: 'talk', step: o.step, outcome: 'any',
     room, roomName: (sp && room === sp.room ? sp.label : null) || ROOM[room] || 'Living Room', ...(sp && room === sp.room ? { spot: sp.spot } : {}),
-    cast, mood: VT_MOOD(t.kind), at, fixedRoom: !!entry.room, recap: false, lineId: entry.id, why: t.why || [] };
+    cast: used.length ? used : cast, mood: o.mood, at, fixedRoom: !!entry.room, recap: false, lineId: entry.id, why: t.why || [] };
   const shut = /door|whisper|tap|leans in/i.test(JSON.stringify(entry.turns));
   sc.lines = shut || sc.spot ? lines : background(lines, sc, ctx, sc.id, false);
   return staging(sc);

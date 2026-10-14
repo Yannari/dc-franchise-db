@@ -15,8 +15,9 @@
 
 import { gs } from '../../core.js';
 import { classify, file, causeOf } from './storylines.js';
-import { writeStoryScene, writeSetPiece, writeGameTalk, writeCampaignScene, writeEngineScene, writeWitnessAfter, writeVoteTalk, hasPool, roomName } from './write.js';
+import { writeStoryScene, writeSetPiece, writeGameTalk, writeCampaignScene, writeEngineScene, writeWitnessAfter, writeVoteTalk, writeArcScene, hasPool, roomName } from './write.js';
 import { voteTalkFor } from './votetalk.js';
+import { runnerDue, arcDue } from './arcs.js';
 import { gameTalkFor, bondTalkFor, styleTalkFor, phaseOf, hohWeekFor } from './gametalk.js';
 import { writeMilestone } from './milestone.js';
 
@@ -264,6 +265,24 @@ export function airStorylines(week) {
     }
   };
 
+  // ── a running gag and a week of an arc (bb/story/arcs.js): one of each a week at most. An arc beat
+  // that belongs before the nominations airs in the stretch after the HOH; one that answers the
+  // nominations (payback, the block) in the stretch after them; a runner wherever a stretch has room
+  let arcAired = false, runAired = false;
+  const arcSpec = (() => { try { return arcDue(week, (week.houseAtStart || []).filter(n => !late.has(n))); } catch { return null; } })();
+  const airArcs = (act, ctx) => {
+    if (!act) return;
+    if (!arcAired && arcSpec && ((arcSpec.when === 'early' && clock.hoh && !clock.noms) || (arcSpec.when === 'late' && clock.noms))) {
+      const sc = writeArcScene(arcSpec, ctx, at + 0.3);
+      if (sc) { (act.scenes ||= []).push(sc); arcSpec.commit(); arcAired = true; }
+    }
+    if (!runAired && clock.hoh && stretch >= 1) {
+      const r = (() => { try { return runnerDue(week, ctx.present); } catch { return null; } })();
+      const sc = r && writeArcScene(r, ctx, at + 0.35);
+      if (sc) { (act.scenes ||= []).push(sc); r.commit(); runAired = true; }
+    }
+  };
+
   let presentAtStart = null;
   const choose = () => {
     const ctx = ctxOf();
@@ -416,6 +435,7 @@ export function airStorylines(week) {
     });
     if (talks.length) airTalks((ordered.at(-1) || pending[0]).act);
     airAfter((ordered.at(-1) || pending[0]).act, ctx);
+    airArcs((ordered.at(-1) || pending[0]).act, ctx);
     airEngine(ctx, atStart, sceneBefore);
     queueAfter(sceneBefore);
 

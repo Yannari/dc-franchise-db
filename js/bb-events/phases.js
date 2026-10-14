@@ -382,6 +382,20 @@ const hohPressuresVeto = {
   },
   fire(house, ctx, api) {
     const hoh = ctx.hoh, holder = ctx.vetoWinner;
+    // A backdoor needs the veto USED: the empty chair is where the real target goes. The HOH who
+    // "hopes it stays the same" on a backdoor week was arguing against their own plan (the read of
+    // 2026-10-14). They nudge the holder toward using it instead, and a holder who is not close
+    // hears only that the HOH does not mind, which is its own tell.
+    const plan = ctx.week?.hoh === hoh ? ctx.week.plan : null;
+    const bd = plan?.backdoorTarget;
+    if (bd && bd !== holder && !(ctx.nominees || []).includes(bd)) {
+      const told = perceived(hoh, holder) >= 2;
+      api.addBond(hoh, holder, 0.6);
+      api.remember(holder, hoh, told ? 'told-me-something-real' : 'suspicion', 1.5, { about: 'the veto' });
+      if (!told) api.suspicion(holder, hoh, 0.6);
+      const scene = makeScene('phase.leaned', { a: hoh, b: holder, c: told ? bd : null }, { ending: 'backdoor', intent: told ? 'told' : 'hint' }, [], 'hoh-room');
+      return { scene, players: [hoh, holder], badgeText: 'USE IT', badgeClass: 'gold' };
+    }
     const heavy = pStats(hoh).temperament <= 5 || isVillainous(hoh);
     api.addBond(hoh, holder, heavy ? -0.7 : 0.9);
     api.remember(holder, hoh, heavy ? 'pressure' : 'respect', 2, { about: 'the veto' });

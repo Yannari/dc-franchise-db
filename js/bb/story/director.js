@@ -416,7 +416,9 @@ export function airStorylines(week) {
     if (!ctx.firstNight) {
       // the HOH's week first (gametalk.js hohWeekFor): the plan, the pawn ask, the target
       // fishing, a floater, or the morning-after verdict on how the week went
-      const hw = hohWeekFor(week, tctx, clock, talked, lastGone).slice(0, 4);
+      // (a week whose target changed has one more: the switch is a beat of its own)
+      const hw0 = hohWeekFor(week, tctx, clock, talked, lastGone);
+      const hw = hw0.slice(0, hw0.some(t => t.kind.startsWith('hohweek.switch')) ? 5 : 4);
       talks.push(...hw);
       const game = hw.length >= 3 ? null : gameTalkFor(week, tctx, { ...clock, safety: clock.safety || pending.some(p => p.act.type === 'safety') }, talked, lastGone)[0];
       if (game) talks.push(game);
@@ -433,6 +435,8 @@ export function airStorylines(week) {
         const scene = writeGameTalk(t, { ...tctx, avoidRoom: lastRoom }, pending[0].step.at);
         if (!scene) continue;
         talked.add(t.kind);
+        // the engine moment this scene plays (a switch plays its pitch) does not air again on its own
+        for (const m of t.mute || []) m.aired = true;
         lastRoom = scene.room;
         (act.scenes ||= []).push(scene);
       }

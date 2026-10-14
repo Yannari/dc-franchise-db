@@ -176,6 +176,12 @@ const blocTargetPicked = {
     }, [], _room(['bedroom', 'backyard'], ctx, plotter, confidant));
     api.setTarget(plotter, target, bloc.kind === 'couple'
       ? `to break up ${bloc.label}` : `to break up ${bloc.label}`);
+    // the sitting Head of Household deciding a group has to be broken, before the ceremony, is the
+    // week changing: the plan takes the name (bb/week.js takeSwitch), and the story airs the switch
+    const w = ctx?.week;
+    const preNoms = !['post-noms', 'post-veto', 'campaign', 'eviction'].includes(ctx?.phase)
+      && !['nominations', 'veto', 'veto-ceremony', 'campaign', 'eviction', 'safety'].includes(ctx?.act);
+    if (w && !w.hohSecret && w.hoh === plotter && preNoms) (w.planSwitch ||= []).push({ to: target, why: 'bloc', by: null, bloc: bloc.label });
     api.remember(plotter, target, 'bloc-threat', 2, { about: bloc.label });
     api.suspicion(plotter, target, 0.8);
     if (confidant) api.addBond(plotter, confidant, 0.4);

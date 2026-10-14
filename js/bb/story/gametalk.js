@@ -296,9 +296,23 @@ export function hohWeekFor(week, ctx, clock, talked, lastGone) {
   const block = (nomAct?.nominees?.length ? nomAct.nominees : plan.nominees || []).filter(Boolean);
   const bd = plan.backdoorTarget && !block.includes(plan.backdoorTarget) ? plan.backdoorTarget : null;
   const real = bd || (block.includes(plan.backdoorTarget) ? plan.backdoorTarget : block.includes(plan.target) ? plan.target : block[0]);
-  const b = closest(hoh, [real, plan.pawn, bd, ...block].filter(Boolean));
+  // A change of mind in the days after the key (bb/week.js takeSwitch): the plan as it was first
+  // made airs, then the switch, then everything after it from the plan the ceremony used.
+  const sw = (week.targetSwitches || []).filter(c => c.at === 'post').at(-1);
+  const first = sw && week.planFirst;
+  const b = closest(hoh, [real, plan.pawn, bd, ...block, sw?.from, sw?.by, first?.pawn, ...(first?.nominees || [])].filter(Boolean));
   const [n0, n1] = block;
-  if (block.length >= 3) {
+  if (first && block.length < 3) {
+    const fb = first.backdoorTarget && !(first.nominees || []).includes(first.backdoorTarget) ? first.backdoorTarget : null;
+    const [f0, f1] = first.nominees || [];
+    if (fb) want('hohweek.plan.backdoor', { a: hoh, b, c: f0, d: f1, e: fb });
+    else {
+      const kind = PLAN_KIND[first.structure] || 'pawn';
+      const freal = first.target;
+      const other = (first.nominees || []).find(n => n !== freal);
+      want(`hohweek.plan.${kind}`, { a: hoh, b, c: freal, d: kind === 'pawn' ? (first.pawn || other) : other });
+    }
+  } else if (block.length >= 3) {
     if (bd) want('hohweek.plan3.backdoor', { a: hoh, b, c: block[0], d: block[1], f: block[2], e: bd });
     else {
       const pawn = plan.pawn && block.includes(plan.pawn) && plan.pawn !== real ? plan.pawn : null;
@@ -312,10 +326,30 @@ export function hohWeekFor(week, ctx, clock, talked, lastGone) {
     const other = block.find(n => n !== real);
     want(`hohweek.plan.${kind}`, { a: hoh, b, c: real, d: kind === 'pawn' ? (plan.pawn || other) : other });
   }
-  // every ask the engine made, in order: a refusal, then the one who said yes
+  // the plan scene IS the HOH saying the name to their closest person: the engine's moment of it
+  // (power-hoh-deciding) does not fold into it a second time ("It's Nichelle. Don't tell anyone",
+  // two lines after the whole backdoor was laid out)
+  const planned = out.find(t => /^hohweek\.plan/.test(t.kind));
+  if (planned) planned.mute = (week.acts || []).flatMap(x => x?.socialBeats || [])
+    .filter(x => x && !x.aired && x.eventId === 'power-hoh-deciding' && x.players?.[0] === hoh);
+  // the switch itself, with whoever brought the name up (a pitch); the pitch's own engine moment is
+  // played inside it (`mute`), so it does not air again afterwards as a scene the plan ignored
+  if (sw && house.includes(sw.from) && house.includes(sw.to)) {
+    const mute = (week.acts || []).flatMap(x => x?.socialBeats || []).filter(x => x && !x.aired
+      && ((sw.why === 'pitch' && x.eventId === 'power-hoh-pitch' && x.players?.[0] === sw.by && x.players?.[1] === hoh)
+        || (sw.why === 'bloc' && x.eventId === 'bloc-target-picked' && x.players?.[0] === hoh && x.players?.includes(sw.to))));
+    const who = sw.why === 'pitch' ? { a: hoh, b, c: sw.from, d: sw.to, e: sw.by } : { a: hoh, b, c: sw.from, d: sw.to };
+    const n = out.length;
+    want(`hohweek.switch.${sw.why}`, who);
+    if (out.length > n) out[out.length - 1].mute = mute;
+  }
+  // every ask the engine made, in order: a refusal, then the one who said yes (an ask of somebody
+  // the switch has since made the target is no longer a pawn ask)
   for (const ask of (week.pawnAsk?.asked || []).slice(0, 2)) {
-    // on a backdoor the pawn sits beside the decoy, and the HOH keeps the real target to themselves
-    want(ask.accepted ? 'hohweek.pawn.agree' : 'hohweek.pawn.refuse', { a: hoh, b: ask.name, c: bd ? n0 : real });
+    if (ask.name === real) continue;
+    // on a backdoor the pawn knows (or is told a story about) the empty chair: hohweek.pawn.decoy
+    if (bd && ask.accepted) want('hohweek.pawn.decoy', { a: hoh, b: ask.name, c: block.find(n => n !== ask.name) || n0, e: bd });
+    else want(ask.accepted ? 'hohweek.pawn.agree' : 'hohweek.pawn.refuse', { a: hoh, b: ask.name, c: bd ? (block.find(n => n !== ask.name) || n0) : real });
   }
   // the real target fishes. What the HOH says is who they are: a nice archetype never lies; a
   // backdoor target can never be told the truth.

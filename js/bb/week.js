@@ -63,7 +63,7 @@ import { updateEditLayer } from '../edit-layer.js';
 import { rememberBBStrategy, allyStake } from './shared-strategy.js';
 import { updateAdaptationFromEpisode } from '../adaptation.js';
 import {
-  chooseNominationPlan, chooseReplacement, explainReplacement, initialVotePreference,
+  chooseNominationPlan, switchPlanTarget, chooseReplacement, explainReplacement, initialVotePreference,
   nominationGrievance,
   shouldUseVeto, houseVoteCommitment, applyHouseBandwagon,
   buildHouseVotePlans,
@@ -2985,6 +2985,24 @@ export function simulateBBWeek(options = {}) {
   }
 
   let plan = chooseNominationPlan(hoh, house, rng);
+  // A name the Head of Household was talked into (power-hoh-pitch) or reached alone (the bloc
+  // read) before the ceremony: the plan follows it (strategy.js switchPlanTarget). A name from the
+  // HOH room's first hour shapes the plan as it is made; one from the days after is a change of
+  // mind, kept on the record (`planFirst`, `targetSwitches`) for the story to air as one
+  // (bb/story/gametalk.js, hohweek.switch) — the user, 2026-10-14: "make sure target switching is
+  // possible and dont get cut".
+  const takeSwitch = at => {
+    const asks = week.planSwitch || [];
+    const ask = asks.filter(s => !s.done && house.includes(s.to) && s.to !== hoh).at(-1);
+    asks.forEach(s => { s.done = true; });
+    const next = ask ? switchPlanTarget(plan, ask.to) : null;
+    if (!next) return;
+    if (at === 'post') week.planFirst ||= { ...plan, nominees: [...(plan.nominees || [])] };
+    (week.targetSwitches ||= []).push({ from: next.switchedFrom, to: ask.to, why: ask.why, by: ask.by || null, at });
+    plan = next;
+    week.plan = plan;
+  };
+  takeSwitch('pre');
   // The pawn ask only happens when the chosen structure actually seats a
   // pawn. Two real targets, a split pair, a couple of expendables — none of
   // those weeks involve asking anybody to volunteer, and a season where every
@@ -3394,6 +3412,7 @@ export function simulateBBWeek(options = {}) {
 
   // The house now knows who holds power, and reacts to it.
   if (!compressed) houseAct('post-hoh');
+  takeSwitch('post');
 
   // Nomination act — directed power: target, pawn, and an optional backdoor plan.
   plan = hook(hooks, 'nominationResult', plan, { week, house, hoh }) || plan;

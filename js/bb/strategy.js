@@ -435,6 +435,37 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
   };
 }
 
+/**
+ * The Head of Household changes their mind before the ceremony.
+ *
+ * A pitch that lands, or the HOH's own read of a group that has to be broken, used to set a
+ * target that nothing read: the plan was fixed the moment the key was won, so the scene said
+ * "the name lands" and the ceremony put up somebody else (the read of 2026-10-14: Beth plans a
+ * backdoor on Nichelle, Owen talks her into Axel, Axel is never nominated). The new name takes
+ * the real target's place in whatever the plan was: the target's chair, or the backdoor's empty
+ * one. A name already sitting in the plan's chairs makes them the target where they sit.
+ *
+ * @returns the new plan, or null when `to` already is the real target
+ */
+export function switchPlanTarget(plan, to) {
+  if (!plan || !to) return null;
+  const real = plan.backdoorTarget || plan.target;
+  if (!real || to === real) return null;
+  const nominees = [...(plan.nominees || [])];
+  const next = { ...plan, nominees, target: to, switchedFrom: real };
+  if (plan.backdoorTarget && !nominees.includes(to)) next.backdoorTarget = to;
+  else if (nominees.includes(to)) {
+    // already in a chair: no backdoor needed, and whoever sits beside them is the second name
+    next.backdoorTarget = null;
+    next.pawn = plan.pawn && plan.pawn !== to ? plan.pawn : null;
+    next.structure = next.pawn ? 'target-pawn' : 'two-targets';
+  } else {
+    next.nominees = nominees.includes(real) ? nominees.map(n => (n === real ? to : n)) : [to, ...nominees.slice(1)];
+    if (!['target-pawn', 'double-target', 'two-targets'].includes(plan.structure)) next.structure = next.pawn ? 'target-pawn' : 'two-targets';
+  }
+  return next;
+}
+
 export function chooseReplacement(hoh, house, protectedNames, plan, rng = Math.random) {
   const eligible = house.filter(name => !protectedNames.includes(name));
   if (!eligible.length) return null;

@@ -77,6 +77,13 @@ function _room(rooms, ctx, ...people) {
 /** Is the block known yet? Everything on this list depends on that. */
 const _blockKnown = ctx => ['post-noms', 'post-veto', 'campaign', 'eviction'].includes(ctx?.phase)
   || ['nominations', 'veto', 'veto-ceremony', 'campaign', 'eviction', 'safety'].includes(ctx?.act);
+// The name the Head of Household is really after this week, once the plan is made (bb/week.js
+// week.plan: the backdoor's empty chair, else the target's). Before it, nothing: the HOH's own
+// running list (targetOf) is all there is.
+const _aim = (ctx, hoh) => {
+  const plan = ctx?.week?.hoh === hoh ? ctx.week.plan : null;
+  return plan ? (plan.backdoorTarget || plan.target || null) : null;
+};
 
 // ══════════════════════════════════════════════════════════════════════
 // THE HOH ROOM
@@ -118,6 +125,8 @@ const hohPitch = {
 
     if (lands) {
       api.setTarget(hoh, mark, `${pitcher} put the name in the room`);
+      // and the week follows it: the plan takes the new name before the ceremony (bb/week.js takeSwitch)
+      if (ctx?.week && ctx.week.hoh === hoh) (ctx.week.planSwitch ||= []).push({ to: mark, why: 'pitch', by: pitcher });
       api.addBond(hoh, pitcher, 0.7);
       api.remember(hoh, pitcher, 'trust', 1, { about: 'came to me straight' });
       api.suspicion(mark, pitcher, 0.5);
@@ -401,8 +410,10 @@ const ceremonyConfrontation = {
   weight(house, ctx) {
     if (!['nominations', 'veto-ceremony', 'post-noms', 'post-veto'].includes(ctx?.act)
       && !['post-noms', 'post-veto'].includes(ctx?.phase)) return 0;
-    const noms = _noms(ctx);
     const hoh = _hoh(ctx);
+    // the Head of Household does not confront themselves (a Chain of Safety week can leave them
+    // on the block: "IN FRONT OF EVERYBODY — G + G")
+    const noms = _noms(ctx).filter(n => n !== hoh);
     if (!noms.length || !hoh) return 0;
     // Needs somebody with a temper and a reason.
     const hottest = Math.max(...noms.map(n => (10 - pStats(n).temperament) + (grudge(n, hoh) ? 3 : 0)));
@@ -410,7 +421,7 @@ const ceremonyConfrontation = {
   },
   fire(house, ctx, api) {
     const hoh = _hoh(ctx);
-    const noms = _noms(ctx);
+    const noms = _noms(ctx).filter(n => n !== hoh);
     const accuser = noms.slice().sort((a, b) =>
       (10 - pStats(a).temperament) - (10 - pStats(b).temperament))[noms.length - 1];
     const backs = _others(house, accuser, hoh).filter(n => bond(n, accuser) >= 2);
@@ -777,12 +788,16 @@ const hohDeciding = {
   weight(house, ctx) {
     const hoh = _hoh(ctx);
     if (!hoh || _blockKnown(ctx) || house.length < 5) return 0;
-    if (!targetOf(hoh)) return 0;
+    if (!(_aim(ctx, hoh) || targetOf(hoh))) return 0;
     return band(11);
   },
   fire(house, ctx, api) {
     const hoh = _hoh(ctx);
-    const mark = targetOf(hoh);
+    // the plan's name once there is a plan: the HOH saying a different name out loud than the one
+    // the week is built on was the muddle of the read of 2026-10-14 ("It's Axel", on a Nichelle week)
+    const mark = (house.includes(_aim(ctx, hoh)) && _aim(ctx, hoh)) || targetOf(hoh);
+    // said out loud before the plan is made, the name is the plan's (bb/week.js takeSwitch 'pre')
+    if (ctx?.week && ctx.week.hoh === hoh && !ctx.week.plan) (ctx.week.planSwitch ||= []).push({ to: mark, why: 'own', by: null });
     // Somebody they trust enough to say a name to. That is the whole risk.
     const confidant = closestTo(hoh, _others(house, hoh, mark)) || _others(house, hoh, mark)[0];
     api.addBond(hoh, confidant, 0.9);

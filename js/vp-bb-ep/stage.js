@@ -839,7 +839,9 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
     const sl = anchOf(S)?.slot || ANCH.finale.slot;
     h += `<div class="obj keydrop" style="left:${sl.at[0]}%;bottom:${(sl.at[1] * 0.5625).toFixed(2)}cqw;width:${(sl.w * 0.42).toFixed(2)}cqw">${KEY_SVG}</div><div class="obj boxglow" style="left:${sl.at[0]}%;bottom:${(sl.at[1] * 0.5625 - sl.w * 0.3).toFixed(2)}cqw;width:${(sl.w * 1.3).toFixed(2)}cqw"></div>`;
   }
-  if (S.set === 'dining') {
+  // the nomination screen is the ceremony's (and its curse and dead-last chairs'): a House Life talk at
+  // the dining table is lunch, not a ceremony (the user, 2026-10-14: a kitchen row under NOMINATIONS)
+  if (S.set === 'dining' && (S.kind === 'noms' || /^bb-(curse|deadlast)/.test(S.id || ''))) {
     // the Blender table's front edge, drawn over the keys; a plate's table is in the picture
     if (!plateAnchors(S)) h += `<img class="front" src="assets/bb/house/${o.season}/dining-td-b-nombox.webp?v=${V}" alt="" style="z-index:${zOf(ANCH.dining.box)}">`;
     h += nomScreenHtml(S, L, st, fresh);

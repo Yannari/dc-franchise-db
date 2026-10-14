@@ -2999,7 +2999,10 @@ function storyLifeScreen(scenes, ctx, n) {
     // the plate it plays on (plates.js): the place the lines name, else one of the room's by the scene's id;
     // a meal in the kitchen sits at the dining table
     const said = (sc.lines || []).map(l => l.text || '').join(' ');
-    const meal = set === 'kitchen' && /\b(dinner|breakfast|lunch|at the table|eating)\b/i.test(said);
+    // what they are doing, not what they mention: "at dinner, in the kitchen, in front of people" in an
+    // argument is not a meal (the user, 2026-10-14: a kitchen row played at the dining table)
+    const staged = (sc.lines || []).filter(l => l.kind === 'beat' && !l.bg).map(l => l.text || '').join(' ');
+    const meal = set === 'kitchen' && /\b(dinner|breakfast|lunch|at the table|eating)\b/i.test(staged);
     // a private talk outside can slip off to one of the island's hidden spots
     const secret = /^(scheming|plan|deals|campaign)$/.test(sc.mood || '') && sc.cast.length <= 3;
     // a scene the writer staged at a spot (bb/story/places.js: the storage room, the pier) plays on it
@@ -3016,7 +3019,7 @@ function storyLifeScreen(scenes, ctx, n) {
     }
     // the label is the room the scene is really in, or the island spot its plate is (a talk at the pier is not "Backyard")
     const place = placeOf(plate);
-    const label = place?.name || (sc.spot ? sc.roomName : null) || sc.roomName || ROOM_NAME[set];
+    const label = place?.name || (sc.spot ? sc.roomName : null) || (meal && plate ? ROOM_NAME.dining : null) || sc.roomName || ROOM_NAME[set];
     const cam = place?.cam || (plate && CORNER_CAM[CORNER[plate]]) || CAM[set];
     const scene = { set: meal && plate ? 'dining' : set, room: label, cam, kicker: `Cam ${String(cam).padStart(2, '0')} · ${label}`,
       cast: sc.cast.map((p, i) => [p, xs[i]]), mood: sc.mood || 'house', time: sc._clock, slate: true, ...(plate ? { plate } : {}), ...(sc.why?.length ? { why: sc.why } : {}),

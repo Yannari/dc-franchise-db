@@ -61,6 +61,25 @@ export function pickPlate(set, key, text = '', use = 'house') {
   return pool[hashOf(key) % pool.length];
 }
 
+// The corners of the big rooms (the user, 2026-10-14: "multiple people can talk in multiple sides of
+// the same room"): every view of the living room, kitchen and dining room is one corner of it, a place
+// of its own on the house map (housemap.js), and two conversations at the same time of day in the same
+// room take different corners.
+export const CORNER = {
+  'living-screens': 'living', 'living-screens-wide': 'living', 'living-screens-close': 'living',
+  'living-sofas': 'lsofas', 'living-sofas-2': 'lsofas', 'living-reverse': 'lsofas', 'living-console': 'lconsole',
+  'kitchen-wide': 'kitchen', 'kitchen-stove': 'kstove',
+  'dining-wide': 'dining', 'dining-camera': 'dtable', 'dining-meal': 'dtable', 'dining-meal-2': 'dtable',
+  'dining-breakfast': 'dtable', 'dining-noms': 'dtable', 'nom-table': 'dtable',
+};
+// each corner's camera (housemap.js ZONES carries the same numbers), so a scene at the stove is on its own feed
+export const CORNER_CAM = { living: 4, lsofas: 18, lconsole: 19, kitchen: 2, kstove: 17, dining: 3, dtable: 28 };
+/** A house plate of the set in a corner nobody is using yet (`taken`: corner ids), by the key's hash; null if none. */
+export function cornerPlate(set, taken, key) {
+  const free = platesOf(set).filter(id => CORNER[id] && !taken.has(CORNER[id]) && (RESORT.plates[id].use || []).includes('house'));
+  return free.length ? free[hashOf(key) % free.length] : null;
+}
+
 /** An island spot's own name and camera ({ name, cam }), or null for a room of the house. */
 export function placeOf(id) {
   const p = id && RESORT.plates[id]?.place;

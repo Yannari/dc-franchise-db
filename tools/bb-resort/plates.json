@@ -2,7 +2,7 @@
  "_doc": "Big Brother's house, the Reality Resort plates (tools/bb-resort/build.py). src: tools/bb-resort/src/<id>.webp. Marks are in Total Drama's 1600x900 reference pixels: windows/screens [x0,y0,x1,y1], lights [x,y,r] (lamps that glow at night), pool [x0,y0,x1,y1,fish,sample x,sample y] (sea: true = the sea, not a lit pool), sway/cloth as traced/places.json. room: the engine's room (BB_ROOMS). sets: the stage sets this plate plays (ROOM_SET in vp-bb-ep/steps.js). use: the moments it is chosen for (eviction, nominations, house, meal, quiet). words: a regex; a scene whose lines name it gets this plate. anchors: the ceremony seats, in the stage's units (anchors.js): at [x% centre, y% from the bottom, depth], w = tile width in %. indoor: night is a lit room. nonight: the same picture day and night (the Diary Room is always lit). nightonly: the source is a night frame. nightsrc: the user's own night frame of this place.",
 
  "living-screens": {
-  "room": "living-room", "sets": ["ceremony"], "use": ["eviction", "ceremony"], "indoor": true,
+  "room": "living-room", "sets": ["ceremony"], "use": ["eviction", "ceremony", "house"], "indoor": true,
   "screens": [[547, 0, 1113, 213], [213, 180, 438, 572], [1225, 180, 1447, 572]],
   "floor": [630, 900],
   "anchors": {
@@ -49,10 +49,10 @@
   "lights": [[595, 180, 90], [967, 180, 90]]
  },
  "living-reverse": {
-  "room": "living-room", "sets": ["ceremony"], "use": [], "words": "the doorway|in the doorway", "indoor": true,
+  "room": "living-room", "sets": ["ceremony"], "use": ["house"], "words": "the doorway|in the doorway", "indoor": true,
   "lights": [[562, 120, 90], [977, 120, 90]]
  },
- "living-console": {"room": "living-room", "sets": ["ceremony"], "use": [], "words": "the console|the flowers|the plants", "indoor": true},
+ "living-console": {"room": "living-room", "sets": ["ceremony"], "use": ["house"], "words": "the console|the flowers|the plants", "indoor": true},
  "library-wide": {
   "room": "living-room", "sets": ["ceremony"], "use": ["quiet"], "indoor": true,
   "words": "librar|bookshel|bookcase|fireplace|reading",
@@ -87,13 +87,13 @@
  "dining-noms": {"room": "kitchen", "sets": ["dining"], "use": ["meal"], "indoor": true, "windows": [[0, 0, 242, 692]]},
  "dining-wide": {"room": "kitchen", "sets": ["dining"], "use": ["house"], "indoor": true, "windows": [[0, 0, 630, 790]]},
  "dining-breakfast": {"room": "kitchen", "sets": ["dining"], "use": ["meal"], "indoor": true, "words": "breakfast|eggs|bacon"},
- "dining-meal": {"room": "kitchen", "sets": ["dining"], "use": ["meal"], "indoor": true},
+ "dining-meal": {"room": "kitchen", "sets": ["dining"], "use": ["meal", "house"], "indoor": true},
  "dining-meal-2": {"room": "kitchen", "sets": ["dining"], "use": ["meal"], "indoor": true},
- "dining-camera": {"room": "kitchen", "sets": ["dining"], "use": [], "indoor": true, "windows": [[0, 0, 390, 900]]},
+ "dining-camera": {"room": "kitchen", "sets": ["dining"], "use": ["house"], "indoor": true, "windows": [[0, 0, 390, 900]]},
  "dining-door": {"room": "living-room", "sets": ["door"], "use": ["house"], "indoor": true, "windows": [[390, 60, 1250, 900], [1500, 0, 1600, 900]]},
 
  "kitchen-wide": {"room": "kitchen", "sets": ["kitchen"], "use": ["house"], "indoor": true, "windows": [[950, 170, 1280, 560], [1380, 0, 1600, 560]]},
- "kitchen-stove": {"room": "kitchen", "sets": ["kitchen"], "use": [], "indoor": true, "words": "stove|cooking|cook|oven|pan"},
+ "kitchen-stove": {"room": "kitchen", "sets": ["kitchen"], "use": ["house"], "indoor": true, "words": "stove|cooking|cook|oven|pan"},
  "bar-lobby-wide": {
   "room": "kitchen", "sets": ["kitchen"], "use": ["house"], "indoor": true, "words": "bar|coffee|smoothie|blender|drink",
   "lights": [[150, 140, 110], [350, 140, 110], [555, 140, 110], [760, 140, 110], [945, 140, 110], [1130, 140, 110]]
@@ -179,7 +179,7 @@
 
  "map-island": {"room": "backyard", "sets": ["map"], "use": [], "nonight": true, "nosky": true, "sea": true, "wind": 0.6,
   "pool": [[0, 0, 1600, 900, 0, 60, 60]]},
- "map-house": {"room": "living-room", "sets": ["map"], "use": [], "nonight": true, "noleaf": true, "nosky": true, "box": [88, 84, 1600, 529]},
+ "map-house": {"room": "living-room", "sets": ["map"], "use": [], "nonight": true, "noleaf": true, "nosky": true},
  "front": {"room": "living-room", "sets": ["door", "premiere"], "use": [], "nightsrc": "front-night"},
  "memory-wall": {"room": "living-room", "sets": ["wall"], "use": [], "indoor": true},
 

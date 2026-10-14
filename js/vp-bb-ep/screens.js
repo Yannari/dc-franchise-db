@@ -37,7 +37,8 @@ import { conversationsOf, nextConv, houseMapHtml, houseFeedHtml, HM_CSS } from '
 // the linear segment is one click away and remembered per viewer
 const mapOn = () => { try { return localStorage.getItem('bb-map') !== 'linear'; } catch { return true; } };
 const newMap = S => {
-  const convs = S.kind === 'houselife' && mapOn() ? conversationsOf(S) : [];
+  // move-in night plays on the map too (the user, 2026-10-14: "arrival isn't in the map"): the stage, then each group's way in
+  const convs = (S.kind === 'houselife' || S.kind === 'movein') && mapOn() ? conversationsOf(S) : [];
   return convs.length > 1 ? { convs, watched: new Set(), mode: 'map', level: 'island', window: null, zone: null, cur: null, end: null } : null;
 };
 const mapHtml = (uid, R) => {
@@ -314,7 +315,9 @@ function paint(uid, fresh) {
     return;
   }
   const out = stageHtml(R.screens, R.si, R.idx, fresh, R.o);
-  el.innerHTML = out.html;
+  // out of a conversation and back to the map at any point (the user, 2026-10-14: "I can't easily get out
+  // of a conversation and go to the map")
+  el.innerHTML = out.html + (R.map ? `<button type="button" class="hm-exit" title="Back to the map (M)" onclick="event.stopPropagation();bbxMapExit('${uid}')">◀ Map</button>` : '');
   el.className = `bbx-stage ${out.cls}`;
   liveGL(el);       // a Reality Resort plate moves by its motion map (water, palms, lights)
   const cam = el.querySelector('.cam');
@@ -406,6 +409,16 @@ export function bbxMapPlay(uid, k) {
   const c = R.map.convs[k]; if (c) fly(uid, R, R.map.mode === 'map' ? c.zone : null, () => mapPlay(uid, R, c));
 }
 export function bbxMapRoom(uid, zone) { const R = sync(uid); if (!R?.map) return; fly(uid, R, zone, () => { Object.assign(R.map, { mode: 'feed', zone }); paint(uid, false); }); }
+/** Leave the conversation playing for the map; it counts as watched only if it was seen to its end. */
+export function bbxMapExit(uid) {
+  const R = sync(uid); if (!R?.map || R.map.mode !== 'play') return;
+  stopAuto(R);
+  if (R.map.cur != null && R.idx >= R.map.end) R.map.watched.add(R.map.cur);
+  Object.assign(R.map, { mode: 'map', cur: null, end: null, window: null });
+  paint(uid, false);
+  const el = typeof document !== 'undefined' && document.getElementById(`bbx-st-${uid}`);
+  if (el && !(typeof window !== 'undefined' && window._bbxFast)) land(el, 'leave');
+}
 export function bbxMapBack(uid) { const R = sync(uid); if (!R?.map) return; Object.assign(R.map, { mode: 'map', zone: null }); paint(uid, false); }
 export function bbxMapLevel(uid, level) {
   const R = sync(uid); if (!R?.map) return;
@@ -553,10 +566,11 @@ if (typeof document !== 'undefined') document.addEventListener('keydown', e => {
   const root = document.querySelector('.bbx[data-uid]');
   if (!root || e.ctrlKey || e.metaKey || e.altKey || /input|textarea|select/i.test(e.target?.tagName || '')) return;
   if (e.key === 'i' || e.key === 'I') bbxIntel(root.dataset.uid);
+  else if (e.key === 'm' || e.key === 'M') bbxMapExit(root.dataset.uid);
   else if (e.key === 'Escape' && root.classList.contains('intel-open')) { e.preventDefault(); e.stopImmediatePropagation(); bbxIntel(root.dataset.uid); }
 });
 
-if (typeof window !== 'undefined') Object.assign(window, { bbxIntel, bbxIntelClick, bbxLive, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
+if (typeof window !== 'undefined') Object.assign(window, { bbxIntel, bbxIntelClick, bbxLive, bbxMapExit, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
 // Closing the Viewing Party only hides it: stop every Auto run and the line typing out,
 // or Auto keeps clicking through the week (and its music) behind a closed window.
 if (typeof document !== 'undefined') document.addEventListener('vp:close', () => {

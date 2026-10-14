@@ -200,7 +200,11 @@ function tileHtml(n, x, cls, L, extra = '', more = '', fx = '') {
 const DRRING = `<svg viewBox="-100 -100 200 200"><circle r="78" fill="none" stroke="#22e1ff" stroke-width="2.2" opacity=".85"/><circle r="86" fill="none" stroke="#a593ff" stroke-width="1.2" stroke-dasharray="3 6" opacity=".7"/></svg>`;
 
 function setDiv(set, season, S = null) {
-  const plate = plateHtml(S ? { ...S, set } : { set }, season);
+  // a different room from the scene's (a Diary Room line in the middle of a library scene) is that room:
+  // the scene's own plate and spot stay with the scene (the read of 2026-10-14: confessionals were
+  // drawn on the library, not on the Diary Room couch)
+  const own = !S || set === S.set;
+  const plate = plateHtml(S ? { ...S, set, ...(own ? {} : { plate: null, spot: null }) } : { set }, season);
   if (plate) return plate;
   return `<div class="set set-${set} photo" style="background-image:url('${roomUrl(season, set)}')"><div class="floor"></div></div>`;
 }

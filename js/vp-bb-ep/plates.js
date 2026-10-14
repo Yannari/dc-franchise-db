@@ -113,8 +113,25 @@ export function depthAttr(id, theme = 'default') {
 }
 
 /** The stage's painted room: the plate under its moving copy (js/vp-td-ep/glplate.js reads the canvas). */
+/**
+ * In a themed season, the angle a scene picked may have no themed copy (the user decorated the room's
+ * main view, not every corner): a room the theme HAS plays in the theme, on one of its themed views,
+ * rather than cutting to the default house's colours. A room the theme does not have (the pool, the
+ * island, the gym) keeps its default plate, and a ceremony's seated plate is never swapped.
+ */
+export function themedFor(id, S, theme) {
+  if (!id || !theme || theme === 'default' || RESORT.have[theme]?.[id]) return id;
+  const P = RESORT.plates[id];
+  if (!P || P.anchors || P.place) return id;
+  const alts = Object.keys(RESORT.have[theme] || {}).filter(x => {
+    const Q = RESORT.plates[x];
+    return Q && !Q.anchors && (Q.sets || []).includes(S?.set) && (Q.use || []).some(u => u === 'house' || u === 'quiet' || (P.use || []).includes(u));
+  });
+  return alts.length ? alts[hashOf(S?.id || id) % alts.length] : id;
+}
+
 export function plateHtml(S, theme) {
-  const id = plateFor(S);
+  const id = themedFor(plateFor(S), S, theme);
   if (!id) return '';
   const base = plateBase(id, theme, isNight(S.time));
   return `<div class="set set-${S.set} photo plate" data-plate="${id}" style="background-image:url('${base}.webp?v=${RESORT.v}')">`

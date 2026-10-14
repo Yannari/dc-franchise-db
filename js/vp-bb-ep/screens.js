@@ -26,6 +26,7 @@ import { BBX_CAPSULE_CSS } from './style-capsule.js';
 import { BBX_INTERRO_CSS } from './style-interro.js';
 import { BBX_WHACK_CSS } from './style-whack.js';
 import { bedFor, playStep } from './sound.js';
+import { intelHtml, INTEL_CSS } from './intel.js';
 import { titleScreen } from './titles.js';
 import { seasonId } from '../shows.js';
 import { liveGL } from '../vp-td-ep/glplate.js';
@@ -209,7 +210,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
       return;
     }
     const uid = `bbx${esc(row.num)}-${si}`;
-    reg()[uid] = { screens: steps, si, idx: -1, o, auto: false, timer: null, map: newMap(S) };
+    reg()[uid] = { screens: steps, si, idx: -1, o, auto: false, timer: null, map: newMap(S), num: row.num, tab: 'heads', who: null, lastL: null };
     const R0 = reg()[uid];
     // a House Life segment holds its stretch's classic House Life screens (and takes the first one's id)
     const feed = S.kind === 'houselife' ? (houseOf[keyOf[si]] || []).splice(0) : [];
@@ -220,8 +221,9 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     out.push({
       id: feed[0]?.id || ids[si],
       label: S.label || S.title,
-      html: `<div class="bbx" data-uid="${uid}" data-ambient="${bedFor(S)}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${BBX_PX_CSS}${BBX_DUO_CSS}${BBX_CAMP_CSS}${BBX_WILD_CSS}${BBX_SPOWER_CSS}${BBX_CAPSULE_CSS}${BBX_INTERRO_CSS}${BBX_WHACK_CSS}${HM_CSS}${SHELL_CSS}</style>
+      html: `<div class="bbx" data-uid="${uid}" data-ambient="${bedFor(S)}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${BBX_PX_CSS}${BBX_DUO_CSS}${BBX_CAMP_CSS}${BBX_WILD_CSS}${BBX_SPOWER_CSS}${BBX_CAPSULE_CSS}${BBX_INTERRO_CSS}${BBX_WHACK_CSS}${HM_CSS}${SHELL_CSS}${INTEL_CSS}</style>
   <div class="bbx-stage stage" id="bbx-st-${uid}" onclick="bbxNext('${uid}')" title="Click for the next line">${R0.map ? mapHtml(uid, R0) : stageHtml(steps, si, -1, false, o).html}</div>
+  <div class="bbi" id="bbi-${uid}" onclick="event.stopPropagation();bbxIntelClick('${uid}', event)"></div>
   <img alt="" hidden src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" onload="bbxLive('${uid}')">
   <div class="bbx-ctrl">
     <button type="button" class="bbx-btn" onclick="bbxBack('${uid}')">◀ Back</button>
@@ -229,6 +231,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     <button type="button" class="bbx-btn" onclick="bbxAll('${uid}')">Reveal all</button>
     <button type="button" class="bbx-btn" onclick="bbxReset('${uid}')">Restart</button>
     <button type="button" class="bbx-btn" id="bbx-auto-${uid}" onclick="bbxAuto('${uid}')">Auto</button>
+    <button type="button" class="bbx-btn bbi-btn" id="bbi-btn-${uid}" onclick="bbxIntel('${uid}')" title="What the house doesn't know: bonds, alliances, deals, and what they're thinking (i)">Intel</button>
     <button type="button" class="bbx-btn" onclick="bbxTv()">TV mode</button>
     <button type="button" class="bbx-btn bbx-voices ${voicesOn() ? 'on' : ''}" onclick="bbxVoices()" title="The houseguests' voices, and the room sound when there is no music">Voices</button>
     <button type="button" class="bbx-btn" onclick="bbxSwitchViewer('classic')" title="Back to the classic screens">Classic</button>
@@ -324,6 +327,11 @@ function paint(uid, fresh) {
   if (fresh && script) { const ln = script.querySelector(`[data-s="${R.idx}"]`); if (ln) script.scrollTop = ln.offsetTop - script.offsetTop - 40; }
   const side = document.getElementById(`bbx-side-${uid}`);
   if (side) side.innerHTML = sideHtml(out.ledger, S);
+  // the Intel drawer follows the step; a new thought in their heads lights its button while it is shut
+  const whyNow = (out.ledger?.why || []).join('|');
+  if (fresh && whyNow && whyNow !== (R.lastL?.why || []).join('|') && !root?.classList.contains('intel-open')) document.getElementById(`bbi-btn-${uid}`)?.classList.add('new');
+  R.lastL = out.ledger;
+  if (root?.classList.contains('intel-open')) { const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who); }
   const count = document.getElementById(`bbx-count-${uid}`);
   if (count) count.textContent = `${Math.max(0, R.idx + 1)} / ${S.steps.length}`;
   // the music turns and the stings land on a click, never on Reveal all or a repaint
@@ -521,7 +529,33 @@ export function bbxSwitchViewer(which) {
     if (i > 0 && typeof window.vpGoTo === 'function') window.vpGoTo(i);
   } catch { location.reload(); }
 }
-if (typeof window !== 'undefined') Object.assign(window, { bbxLive, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
+// ── the Intel drawer (vp-bb-ep/intel.js) ──
+export function bbxIntel(uid) {
+  const R = reg()[uid]; if (!R || typeof document === 'undefined') return;
+  const root = document.querySelector(`.bbx[data-uid="${uid}"]`); if (!root) return;
+  const open = root.classList.toggle('intel-open');
+  document.getElementById(`bbi-btn-${uid}`)?.classList.remove('new');
+  document.getElementById(`bbi-btn-${uid}`)?.classList.toggle('on', open);
+  if (open) { const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who); }
+}
+export function bbxIntelClick(uid, e) {
+  const R = reg()[uid]; if (!R) return;
+  const t = e?.target;
+  if (t?.closest?.('[data-close]')) { bbxIntel(uid); return; }
+  const tab = t?.closest?.('[data-tab]')?.dataset.tab, who = t?.closest?.('[data-who]')?.dataset.who;
+  if (!tab && !who) return;
+  if (tab) R.tab = tab;
+  if (who) R.who = who;
+  const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who);
+}
+if (typeof document !== 'undefined') document.addEventListener('keydown', e => {
+  const root = document.querySelector('.bbx[data-uid]');
+  if (!root || e.ctrlKey || e.metaKey || e.altKey || /input|textarea|select/i.test(e.target?.tagName || '')) return;
+  if (e.key === 'i' || e.key === 'I') bbxIntel(root.dataset.uid);
+  else if (e.key === 'Escape' && root.classList.contains('intel-open')) { e.preventDefault(); e.stopImmediatePropagation(); bbxIntel(root.dataset.uid); }
+});
+
+if (typeof window !== 'undefined') Object.assign(window, { bbxIntel, bbxIntelClick, bbxLive, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
 // Closing the Viewing Party only hides it: stop every Auto run and the line typing out,
 // or Auto keeps clicking through the week (and its music) behind a closed window.
 if (typeof document !== 'undefined') document.addEventListener('vp:close', () => {

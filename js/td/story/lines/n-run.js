@@ -223,7 +223,7 @@ export default {
   ],
   'run.pet.2': [
     { id: 'nrn.p2', when: { call: 1 }, turns: [
-      { beat: "{b} wakes up to find a ring of shells built carefully around {a}'s sleeping spot." },
+      { beat: "{b} comes back to find a ring of shells built carefully around {a}'s sleeping spot." },
       { by: 'b', say: "What is that?" },
       { by: 'a', say: "Gerald's house." },
       { by: 'b', say: "Gerald has a house now?" },

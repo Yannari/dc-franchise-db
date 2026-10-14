@@ -30,12 +30,10 @@ export default {
   },
   'nl4.a1': {
     1: { schemer: "Honest question. Who do you actually trust here?", tough: "Who do you actually trust here?", loud: "Can I ask you something? Who do you ACTUALLY trust here?" },
-    2: { blunt: "You. Maybe only you.", goofy: "Honestly? You, and maybe only you, which is a short list." },
     3: { loud: "Same! I've watched who talks to who, and NOBODY's looking out for either of us!" },
     4: { blunt: "So let's look out for each other.", goofy: "So let's look out for each other. Like two raccoons." },
     5: { loud: "Officially?!" },
     6: { blunt: "Officially, and it needs a name, so {group}.", goofy: "Officially! And every great team needs a name, so let's call it {group}." },
-    7: { loud: "{group}, I love it! You and me, and nobody else unless we both say yes!" },
   },
   'nl4.u1': { 7: { cruel: "For what it's worth, I'm writing {other}. It's the smarter vote, and I'm not here to be loyal to bad ideas." } },
   'nar.l1': {

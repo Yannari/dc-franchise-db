@@ -2235,7 +2235,10 @@ export function airTdEpisode(ep) {
         // ...and the camp is there: the scene opens with them in earshot, so the stage brings them on
         if (PUBLIC.test(kind) && who.a && who.b && !lines.slice(0, 2).some(l => CROWD_WORDS.test(l.text || ''))) {
           const OPEN = ['The rest of the camp has stopped what they are doing to watch.', 'Everybody nearby can hear every word.', 'Half the camp is close enough to hear every word.'];
-          lines = [{ kind: 'beat', text: OPEN[(ep.num + i) % OPEN.length] }, ...lines];
+          // (after the scene's own opening beat, which says what is happening: read 2026-10-14, "The rest of the camp has
+          // stopped what they are doing to watch", then "Isabel walks past Natalia at the water pump")
+          const o = lines[0]?.kind === 'beat' ? 1 : 0;
+          lines = [...lines.slice(0, o), { kind: 'beat', text: OPEN[(ep.num + i) % OPEN.length] }, ...lines.slice(o)];
         }
         // the reactions go in before the scene's closing confessional(s), not after them
         const tailAt = (() => { let k = lines.length; while (k > 0 && lines[k - 1].kind === 'conf') k--; return k; })();
@@ -2776,6 +2779,29 @@ export function airTdEpisode(ep) {
         const at0 = out[phase].indexOf(sp);
         if (found > at0) { out[phase].splice(at0, 1); out[phase].splice(found, 0, sp); }
       } }
+      // the same two people, alone together, three times a day at most (read 2026-10-14, carnival ep 3: Logan and Richard had
+      // a solidarity moment, a final-two deal, a thank-you for sticking up, banter about the challenge and a ride-or-die
+      // promise, five scenes of the two of them in one day). Plans, couples and fights between them are their own story.
+      { const day = {};
+        const pairOf = (ph, it) => { const evs = eventsOf(ep, camp, ph);
+          const kind = it.kind || it.scene?.kind || evs[it.ref]?.scene?.kind || '';
+          const names = Object.values(it.scene?.who || evs[it.ref]?.scene?.who || {}).filter(Boolean);
+          return names.length !== 2 || /^(story\.(vote|first|morning|chal|dayone)|vt2|pitch|deep\.|booth|tribal|couple|(long\.)?romance|arc\.spark|witness|(long\.)?drama|follow\.clash)/.test(kind) ? null : [...names].sort().join('|'); };
+        // (the morning's are counted again from its finished list, so a rebuilt episode counts the same)
+        if (phase === 'post') for (const it of out.pre || []) { const k = it && pairOf('pre', it); if (k) day[k] = (day[k] || 0) + 1; }
+        const evsQ = eventsOf(ep, camp, phase);
+        out[phase] = out[phase].filter(it => { const k = it && pairOf(phase, it); if (!k) return true; day[k] = (day[k] || 0) + 1;
+          if (day[k] <= 3) return true;
+          // (an engine moment cut here never aired: nothing later may call back to it)
+          if (it.ref != null && evsQ[it.ref] && evsQ[it.ref].aired == null) evsQ[it.ref].aired = 'covered';
+          return false; }); }
+      // a plan's confessional that calls back to the moment it started ("I didn't say a word to Alessio after that fight
+      // this afternoon") is cut when that moment airs after the plan (read 2026-10-14: the fight was staged before Tribal)
+      for (const [k, it] of out[phase].entries()) {
+        if (!it?.story || !Array.isArray(it.lines) || !it.lines.some(l => l.recall)) continue;
+        const later = new Set(out[phase].slice(k + 1).filter(x => x?.ref != null).map(x => `${phase}:${x.ref}`));
+        if (it.lines.some(l => l.recall && later.has(l.recall))) { it.lines = it.lines.filter(l => !(l.recall && later.has(l.recall))); it.text = it.lines.map(l => l.text).join(' '); }
+      }
       // the rhythm of the stretch (stage 5): a run of five heavy scenes or more gets a light one from earlier the same
       // evening cut into it, at a thread's start (before a plan, another plan, the target's or a decoy's scene; never
       // between a plan and its swing or its doubt), staged in the window it now airs in and at a spot nobody else uses then

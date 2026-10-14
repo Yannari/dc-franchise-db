@@ -490,6 +490,7 @@ export default {
       { by: 'c', conf: "I don't really know {b}, but that was nice. More people out here should just ask how you're doing." },
     ] },
     { id: 'nco.p4', when: { third: true }, turns: [
+      { beat: "{a} and {b} are {here}, watching {c} on the other side of camp." },
       { by: 'a', say: "Today we practise compliments. A real one. Go tell {c} something you actually like." },
       { by: 'b', say: "That's so awkward." },
       { by: 'a', say: "It's only awkward if you make it awkward." },

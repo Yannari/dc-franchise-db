@@ -158,7 +158,6 @@ export default {
     8: { calm: "The food in here is terrible, but at least it's terrible together. That's the closest thing to team building we get.", warm: "The food is awful, but we're laughing about it together, and that's honestly the best team moment we've had." },
   },
   'nar.l2': {
-    1: { calm: "Honestly? You, and maybe only you.", warm: "Honestly? You, and maybe only you." },
     4: { calm: "It's not about numbers yet. It's about having one person in here who won't lie to me.", warm: "It's not about numbers yet. I just wanted one person here I know won't lie to me." },
   },
   'nar.l4': {

@@ -10,7 +10,6 @@ export default {
   },
   // vp2.pair (sand drawing)
   'nv4.p5': {
-    1: { goofy: "Is it another drawing in the sand? Because the last one looked like a duck.", kid: "Is it another sand drawing?", warm: "Another drawing in the sand? Okay, show me." },
     3: { ditzy: "So they talk to each other a lot? That's nice, right?", quiet: "So they talk a lot.", kid: "So they're best friends?" },
     7: { quiet: "That scared me a little. I'm in that drawing too.", kid: "That was kind of scary. I'm in that drawing too, and I don't want to be the next line {a} rubs out.", anxious: "Watching that made my stomach hurt, because I'm in that drawing too, and I'd really like to stay on the right side of it." },
   },

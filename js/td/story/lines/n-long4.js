@@ -319,12 +319,12 @@ export default {
     { id: 'nl4.a1', turns: [
       { beat: "{a} and {b} end up on firewood duty, far enough out that nobody can hear them." },
       { by: 'a', say: "Can I ask you something honest? Who do you actually trust here?" },
-      { by: 'b', say: "Honestly? Maybe you, and maybe only you." },
+      { by: 'b', say: "Honestly? You. More than most people here." },
       { by: 'a', say: "Same. I've been watching who talks to who, and nobody's looking out for either of us." },
       { by: 'b', say: "So let's look out for each other." },
       { by: 'a', say: "Officially?" },
       { by: 'b', say: "Officially. And if we're doing it, it needs a name, so let's call it {group}." },
-      { by: 'a', say: "{group}, I like that. You and me, and nobody else unless we both say yes." },
+      { by: 'a', say: "{group}, I like that. You and me look out for each other first." },
       { by: 'b', conf: "We just made {group} in the middle of a pile of firewood. Nobody knows. That's exactly how I want it." },
     ] },
     { id: 'nl4.a2', when: { third: true }, turns: [

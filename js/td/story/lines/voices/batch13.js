@@ -13,7 +13,6 @@ export default {
     5: { ditzy: "Careful what you wish for, though." },
   },
   'nv4.p5': {
-    2: { ditzy: "It's another drawing in the sand! Look, every line from {partner} goes to {target}, and every line from {target} goes back.", earnest: "It's another drawing in the sand, and I want you to see it honestly. Every line from {partner} goes to {target}, and back." },
     4: { ditzy: "They only talk to each other. That's not a friendship, it's, like, a secret alliance with a nice face.", earnest: "They talk to each other and nobody else. I like them both, but that's an alliance, not just a friendship." },
     6: { ditzy: "So tonight it's {target}, and then we see who {partner} goes to.", earnest: "Tonight it's {target}, and then we're there for {partner}. I mean that." },
   },

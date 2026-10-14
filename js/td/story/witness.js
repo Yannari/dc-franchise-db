@@ -129,8 +129,12 @@ export function witnessConflicts(ep, camp, out, members, write, factsForWho, liv
     if (!added.length) continue;
     // in before the closing confessionals: the room reacts while it is still happening
     // ...and before either of them walks out: a line answered after "storms off" is somebody talking to an empty path
+    // (right after the last thing said: the room's own reaction, "Jade saw all of it" and Jade's confessional, may already
+    // follow the confessionals, read 2026-10-14, and "Am I crazy, Anastasia?" aired after all of them)
     let at = lines.length;
     while (at > 0 && lines[at - 1].kind === 'conf') at--;
+    const lastSay = lines.map(l => l.kind).lastIndexOf('say');
+    if (lastSay >= 0 && lastSay + 1 < at) at = lastSay + 1;
     const exit = lines.findIndex((l, i) => i < at && l.kind === 'beat' && /\b(storms?|stomps?|walks?|marches?|stalks?) (off|away)\b|\bleaves\b|\bturns? (on (his|her|their) heel|and walks)/i.test(l.text || ''));
     if (exit > 0) at = exit;
     item.lines = [...lines.slice(0, at), ...added, ...lines.slice(at)];

@@ -43,7 +43,7 @@ export default {
   ],
   'room.pleased': [
     { id: 'nx.rp1', when: { nice: false }, turns: [{ beat: "{a} doesn't even try to hide the smile." }] },
-    { id: 'nx.rp2', when: { nice: false, voice: ['schemer', 'calm', 'dry', 'proud'] }, turns: [{ beat: "{a} watches the faces down the row, one at a time, and says nothing." }] },
+    { id: 'nx.rp2', when: { nice: false, voice: ['schemer', 'calm', 'dry', 'proud'] }, turns: [{ beat: "{a} stays very still, arms folded, and says nothing." }] },
     { id: 'nx.rp3', when: { nice: true }, turns: [{ beat: "{a} looks down at {a.posAdj} hands and can't look at {b}." }] },
     { id: 'nx.rp4', when: { nice: true }, turns: [{ by: 'a', say: "I'm sorry, {b}, I really am.", v: { quiet: "...Sorry, {b}.", emotional: "I'm so sorry, {b}, please don't hate me." } }] },
     { id: 'nx.rp5', when: { nice: false, voice: ['cruel', 'loud', 'tough', 'competitive'] }, turns: [{ by: 'a', say: "Bye, {b}. Nothing personal.", v: { cruel: "Bye, {b}. And yeah, it's a little personal." } }] },

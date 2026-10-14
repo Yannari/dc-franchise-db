@@ -21,8 +21,6 @@ export default {
   },
   'nv4.p5': {
     0: { cruel: "Let me show you something." },
-    1: { dry: "Is it another drawing in the sand? Your favourite medium." },
-    2: { cruel: "It's another drawing in the sand. Every line from {partner} goes to {target} and back, which is pathetic, really." },
     3: { dry: "So they talk to each other a lot. Riveting." },
     4: { cruel: "They talk to each other and nobody else. That's not a friendship, it's an alliance pretending to be sweet." },
     5: { dry: "And you want to break it." },
@@ -45,7 +43,6 @@ export default {
     1: { emotional: "Can I ask you something honest? Who do you actually trust here, because I'm struggling.", dry: "Honest question: who do you actually trust here? It's a short list, I assume." },
     3: { emotional: "Same. I've been watching who talks to who, and nobody's looking out for either of us, and it scares me.", dry: "Same. I've watched who talks to who, and nobody's looking out for either of us." },
     5: { emotional: "Officially?", dry: "Officially?" },
-    7: { emotional: "{group}, I love it. You and me, and nobody else unless we both say yes.", dry: "{group}, fine. You and me, and nobody else unless we both agree." },
   },
   'nvu.p1': {
     3: { emotional: "It's two votes holding hands. Every time one of them is in trouble, the other one saves them, and it's lovely, and it's a problem." },

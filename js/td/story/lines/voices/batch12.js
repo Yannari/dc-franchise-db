@@ -98,12 +98,10 @@ export default {
   },
   'nl4.a1': {
     1: { anxious: "Can I ask you something honest? Who do you actually trust here, because I don't know anymore.", ditzy: "Can I ask you something? Who do you actually trust here?", cruel: "Honest question. Who do you actually trust here?", warm: "Can I ask you something honest? Who do you actually trust here?" },
-    2: { warm: "Honestly? Maybe you, and maybe only you.", theatrical: "Honestly? You, and perhaps only you.", competitive: "Honestly? You, maybe only you.", earnest: "Honestly? You, and maybe only you." },
     3: { anxious: "Same. I've been watching who talks to who, and nobody's looking out for either of us. It scares me.", warm: "Same. I've been watching, and nobody's looking out for either of us.", ditzy: "Same! I've been watching who talks to who, and nobody's looking out for us.", cruel: "Same. Nobody here is looking out for either of us, I've checked.", schemer: "Same. I've watched who talks to who, and nobody's protecting either of us." },
     4: { warm: "So let's look out for each other.", theatrical: "Then let's look out for each other.", competitive: "So let's look out for each other.", earnest: "So let's look out for each other. Properly." },
     5: { anxious: "Officially?", warm: "Officially?", ditzy: "Like, officially?", cruel: "Officially?", schemer: "Officially?" },
     6: { warm: "Officially. And if we're doing it, it needs a name, so let's call it {group}.", theatrical: "Officially! And something this important needs a name, so it's {group}.", competitive: "Officially. It needs a name, so call it {group}.", earnest: "Officially. Let's give it a name and mean it, so it's {group}." },
-    7: { anxious: "{group}, I like that. You and me, and nobody else unless we both say yes, okay?", warm: "{group}, I love it. You and me, and nobody else unless we both say yes.", ditzy: "{group}, I like that! Just you and me, unless we both say yes.", cruel: "{group}, fine. You and me, and nobody else unless we both agree.", schemer: "{group}. You and me, and nobody else unless we both agree." },
   },
   'nl5.p2': {
     0: { warm: "Have you two ever had an argument? Even one?", tough: "You two ever argue? Even once?", theatrical: "Have you two ever had a single argument? Even one?" },
@@ -116,7 +114,6 @@ export default {
   },
   'nv4.p5': {
     0: { ditzy: "Okay, let me show you something.", earnest: "Let me show you something important." },
-    1: { calm: "Is it another drawing in the sand?", loud: "Is it ANOTHER drawing in the sand?", ditzy: "Is it another sand drawing?" },
     3: { anxious: "So they talk to each other a lot?", theatrical: "So they talk to each other a great deal.", calm: "So they talk to each other a lot.", loud: "So they talk a lot!" },
     5: { theatrical: "And you want to break it.", calm: "And you want to break it.", anxious: "And you want to break it?", loud: "And you want to BREAK it?", ditzy: "And you want to break it?" },
     7: { theatrical: "Watching that frightened me, honestly. I'm on the other half of that drawing, and I'd like to stay there.", loud: "That actually scared me! I'm on the other half of that drawing, and I want to STAY on it!", ditzy: "That was kind of scary. I'm in that drawing too, and I want to stay on the good side." },

@@ -34,7 +34,7 @@ export default {
       { by: 'b', say: "We're all starving. That's why they're called emergency crackers and not {a}'s crackers." },
       { by: 'a', say: "Okay, you can't tell anybody." },
       { by: 'b', say: "I'm going to tell everybody." },
-      { by: 'b', conf: "I caught {a} eating the emergency crackers in the dark. I'm not even angry. I'm just never letting {a} hold the food box again." },
+      { by: 'b', conf: "I caught {a} eating the emergency crackers. I'm not even angry. I'm just never letting {a} hold the food box again." },
     ] },
     { id: 'nl5.f3', when: { voice: ['loud', 'tough', 'blunt'] }, turns: [
       { by: 'b', say: "Hey! That's three fish. There are eight of us." },

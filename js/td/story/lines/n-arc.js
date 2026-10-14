@@ -398,7 +398,7 @@ export default {
     ] },
     { id: 'nar.l2', when: { third: false }, turns: [
       { by: 'b', say: "Can I ask you something? Who do you trust here?" },
-      { by: 'a', say: "Honestly? You. Maybe only you." },
+      { by: 'a', say: "Honestly? You. More than anybody." },
       { by: 'b', say: "Same. So let's make it official." },
       { by: 'a', say: "{group}. You and me, and whoever we decide to bring in." },
       { by: 'a', conf: "It's not about numbers yet. It's about having one person in here who won't lie to me." },

@@ -68,11 +68,9 @@ export default {
     6: { nerdy: "If {b} and {c} both reach the end, nobody will ever split two votes that close. It needs to happen before then.", calm: "If {b} and {c} make it to the end together, they'll never be split. It has to happen soon.", loud: "If {b} and {c} BOTH make it to the end, nobody's ever splitting them! It has to be soon!" },
   },
   'nv4.p5': {
-    1: { competitive: "Is it another drawing in the sand?" },
     7: { earnest: "Honestly, watching that scared me. I'm on the other half of that drawing, and I want to stay there." },
   },
   'nl4.a1': {
-    2: { dry: "Honestly? Maybe you, maybe only you, so don't let it go to your head.", loud: "Honestly? You, and maybe only you!" },
     4: { dry: "So let's look out for each other.", loud: "So let's look out for each other!" },
     6: { dry: "Officially. And apparently it needs a name, so let's call it {group}.", loud: "Officially! And it needs a name, so let's call it {group}!" },
     8: { loud: "We just made {group} in a pile of firewood, and NOBODY knows! That's exactly how I want it!" },
@@ -109,7 +107,6 @@ export default {
   },
   'nar.l2': {
     0: { dry: "Can I ask you something? Who do you trust here, and feel free to say nobody.", ditzy: "Can I ask you something? Who do you actually trust here?", warm: "Can I ask you something? Who do you trust here?", earnest: "Honest question. Who do you trust here?", blunt: "Who do you trust here?", flirty: "Can I ask you something? Who do you trust here, apart from me?" },
-    1: { loud: "Honestly? YOU, and maybe only you!", proud: "Honestly? You, and maybe only you." },
     2: { dry: "Same. So let's make it official, before we change our minds.", ditzy: "Same! So let's make it official.", warm: "Same. So let's make it official.", earnest: "Same. So let's make it official.", blunt: "Same. Let's make it official.", flirty: "Same. So let's make it official." },
     3: { loud: "{group}! You and me, and whoever we decide to bring in!", dry: "{group}. You and me, and whoever we decide to tolerate.", proud: "{group}. You and me, and whoever we choose to bring in.", warm: "{group}. You and me, and anybody we both want to bring in.", nerdy: "{group}. You and me, plus anybody we both approve." },
     4: { loud: "It's not about numbers yet! I just want ONE person in here who won't lie to me!", proud: "It's not about numbers yet. It's about having one person I can rely on." },

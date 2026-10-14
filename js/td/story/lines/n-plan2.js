@@ -94,7 +94,7 @@ export default {
     { id: 'npm.aa1', turns: [{ by: 'a', say: "{alt} can wait. We'll get there, one at a time." }] },
   ],
   'vp.push.like': [
-    { id: 'npm.pl1', turns: [{ by: 'b', say: "Ugh. {target} made me laugh so hard yesterday. This feels terrible." }] },
+    { id: 'npm.pl1', turns: [{ by: 'b', say: "Ugh. I really like {target}. This feels terrible." }] },
   ],
   'vp.answer.like': [
     { id: 'npm.al1', turns: [{ by: 'a', say: "It's supposed to feel terrible. If it didn't, I'd be worried about you." }] },

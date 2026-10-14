@@ -361,7 +361,7 @@ function duoNomScreen(act, ctx, hoh, noms, seated, duo) {
   const ORD = ['first two', 'next two', 'last two'];
   blocks.forEach((pair, bi) => {
     const [a, b] = pair;
-    steps.push({ k: 'beat', t: `${hoh} turns the ${ORD[bi] || 'next two'} keys together. ${a} and ${b} come up on the wall side by side, which is the only way either of them was ever going up.`, reveal: a });
+    steps.push({ k: 'beat', t: `${hoh} turns the ${ORD[bi] || 'next two'} keys together. ${a} and ${b} come up on the wall side by side. This week, nobody goes up alone.`, reveal: a });
     steps.push({ k: 'beat', t: `${b}.`, reveal: b, ...(bi === blocks.length - 1 ? { nom: noms.slice(), toast: [two ? 'TWO DUOS' : 'NOMINATED', '#ff3355'] } : {}) });
   });
   blocks.forEach((pair, bi) => {
@@ -517,8 +517,10 @@ const PLEA = {
 // says it in the Diary Room.
 function voteReason(b, c, noms, salt, used = new Set()) {
   const other = noms.find(n => n !== b.evict);
-  // two voters never give the same reason in the same words (four said the same line on one night)
-  const pick = list => { const fresh = list.filter(x => !used.has(x)); const t = pickBy(fresh.length ? fresh : list, `${salt}|${b.voter}`); used.add(t); return t; };
+  // two voters never give the same reason in the same words (four said the same line on one night).
+  // A bucket that has run dry says nothing more: the formula alone beats a line the room just heard
+  // (2026-10-14: five voters protecting the same nominee repeated "is with me. That's all there is to it").
+  const pick = list => { const fresh = list.filter(x => !used.has(x)); if (!fresh.length) return null; const t = pickBy(fresh, `${salt}|${b.voter}`); used.add(t); return t; };
   if (b.pleaMove && b.movedBy) return pick([
     `I walked in here ready to vote out ${b.movedBy}. Then ${b.movedBy} stood up and said that. I can't ignore it.`,
     `I'm changing my vote, and I didn't think I would. What ${b.movedBy} just said got to me.`,
@@ -541,16 +543,25 @@ function voteReason(b, c, noms, salt, used = new Set()) {
     `It's not completely my call. My people want ${b.evict} out, and I'm not breaking from them now.`,
     `${b.blocMove} needs every vote this week. Mine is one of them.`,
     `If I break from ${b.blocMove} now, I'm next. So, ${b.evict}.`,
+    `We all agreed on ${b.evict}. I'm not going to be the one who breaks it.`,
+    `My group said ${b.evict}. I'm sticking with my group.`,
   ]);
   if (c?.allied && other) return pick([
     `${other} is with me. That's all there is to it. Sorry, ${b.evict}.`,
     `I'm protecting ${other}. If that means ${b.evict} goes, ${b.evict} goes.`,
     `${other} would do the same for me. I know it.`,
+    `I'm keeping ${other}. I'd do it again tomorrow.`,
+    `${other} has looked after me in here. Tonight I look after ${other}.`,
+    `It was never going to be ${other}. Not from me.`,
+    `${other} and I are in this together. ${b.evict} knows that.`,
+    `Sorry, ${b.evict}. My vote was always going to keep ${other} here.`,
   ]);
   if (c?.promised) return pick([
     `I gave my word this week, and I keep my word. It's the only thing I've got in here.`,
     `I promised this vote. Nobody can check what I write in here, and I'm keeping it anyway.`,
     `My word is worth something in this house. I'm not going to waste it tonight.`,
+    `Somebody asked me for this vote, and I said yes. So it's ${b.evict}.`,
+    `I made a promise this week, and tonight I'm keeping it.`,
   ]);
   if (b.recruitedBy) return pick([
     `${b.recruitedBy} came to me this week and asked. I said yes, and I meant it.`,
@@ -559,6 +570,8 @@ function voteReason(b, c, noms, salt, used = new Set()) {
   if (b.bandwagon) return pick([
     `Everybody's voting ${b.evict}. I'm not going to be the one vote on the wrong side.`,
     `I'm not sticking my neck out tonight. The house wants ${b.evict} gone, so do I.`,
+    `The whole house is going one way tonight. I'm going with it.`,
+    `I'm not going to be the odd vote out. It's ${b.evict}.`,
   ]);
   if (b.assignment?.by && b.assignment.target === b.evict) return pick([
     `We counted the votes this afternoon. ${b.evict} is the plan, and I'm sticking to it.`,
@@ -2302,7 +2315,7 @@ function moveInScreen(act, ctx, host, row) {
       const [x, y] = kin.pair;
       steps.push({ k: 'host', by: host, tense: [x, y], t: pick([`Hold on. ${x} and ${y}, you walked out here together. Do you two know each other?`, `${x}, ${y}, I couldn't help noticing you came out side by side. Is there something the house should know?`], `kin${gi}`) });
       steps.push(...scriptSteps(kin.lines));
-      steps.push({ k: 'host', by: host, t: pick([`Well. The rest of the house is going to find that out very soon.`, `Then the two of you are in for a very interesting summer.`], `kin2${gi}`) });
+      steps.push({ k: 'host', by: host, t: pick([`Well. The rest of the house is going to find that out very soon.`, `Then the two of you are in for a very interesting season.`], `kin2${gi}`) });
     } else if (kin?.lines?.length) steps.push(...scriptSteps(kin.lines));
     steps.push({ k: 'host', by: host, t: pick([`${listOf(g)}... the Big Brother house is waiting. Go on in!`, `Alright, ${g.length === 2 ? 'you two' : 'all of you'}. Through those doors. Good luck!`, `That's it. ${listOf(g)}, the house is yours.`], `go${gi}`) });
     // through the front door, together
@@ -2536,7 +2549,7 @@ function duosScreens(act, ctx) {
     const steps = [{ k: 'bb', t: 'Houseguests, please gather in the living room. Some of you have lost your partner. You will not stay alone.', toast: ['RE-PAIRED', '#d99a10'] }];
     for (const [a, b] of act.pairs || []) {
       steps.push({ k: 'bb', t: `${a}. ${b}. From now on, you are a pair.`, big: [`${a} & ${b}`, 'Chained by Big Brother', 'out'] });
-      steps.push({ k: 'dr', by: a, t: pickBy([`I didn't choose ${b}. Nobody asked me. And now ${b} going up means I go up.`, `${b} and I barely speak. Now we're a pair. That's going to be a fun conversation.`, `Of all the people they could chain me to. Fine. ${b}, let's not get each other killed.`], `${ctx.week}|rep|${a}`) });
+      steps.push({ k: 'dr', by: a, t: pickBy([`I didn't choose ${b}. Nobody asked me. And now ${b} going up means I go up.`, `${b} and I barely speak. Now we're a pair. That's going to be a fun conversation.`, `Of all the people they could chain me to. Fine. ${b}, let's not get each other evicted.`], `${ctx.week}|rep|${a}`) });
     }
     steps.push(...prose(act.beats, [...(act.pairs || []).flat(), ...(act.waiting ? [act.waiting] : [])]));
     out.push(screen('bb-duos-repair-v', 'ceremony', 'Re-Paired', (act.pairs || []).map(p => p.join(' & ')).join(', '), (act.pairs || []).flat().slice(0, 6), steps));

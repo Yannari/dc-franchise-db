@@ -140,7 +140,7 @@ function lines(kind, voice, o, h) {
     },
     life: {
       fiery: [`That's me. Loud, all the time. The house can deal with it.`, `I'm a lot. I know I'm a lot. That's the fun part.`],
-      strategist: [`It looks like I'm relaxing. I'm watching who sits next to who.`, `Even downtime is information.`],
+      strategist: [`It looks like I'm relaxing. I'm watching who sits next to who.`, `Even sitting around tells me who's with who.`],
       warm: [`This is the part of the game I love: the people.`, `Days like this are why I came here.`],
       loyal: [`I take care of my people. That's how I was raised, and I'm not changing in here.`, `It's the small things. I notice who helps out, and I remember.`],
       nervous: [`For one afternoon I forgot to be scared. That felt nice.`, `I'm starting to feel like I belong here. Don't jinx it.`],

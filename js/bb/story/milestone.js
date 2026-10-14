@@ -95,7 +95,7 @@ export function writeMilestone(week, ctx, forced = null) {
     say(b, `This is the last veto of the season.`);
     say(a, `And whoever wins it decides who goes home. On their own. One vote.`);
     say(b, `So it all comes down to one competition.`);
-    dr(a, `At four, the veto holder casts the only vote. Winning it is the difference between deciding and being decided about.`);
+    dr(a, `At four, the veto holder casts the only vote. Win it, and you decide. Lose it, and somebody decides for you.`);
     if (pair && getBond(pair[0], pair[1]) >= 4) dr(pair[0], `${pair[1]} and I have been closest in this house the whole way. At four, that starts costing something. If I win the veto, I find out how loyal I really am.`);
     else dr(top, `I've won ${winSay(top)}. If I don't win this veto, I think the other three send me home.`);
   } else if (kind === 'f3') {

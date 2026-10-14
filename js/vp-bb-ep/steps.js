@@ -25,7 +25,7 @@ import { arenaFor } from '../bb/comp-arenas.js';
 import { pronouns } from '../players.js';
 import { voiceLine } from '../bb/story/register.js';
 import { players as ROSTER } from '../core.js';
-import { pickPlate } from './plates.js';
+import { pickPlate, placeOf } from './plates.js';
 import { seatedJurors } from '../bb/jury.js';
 
 // The engine's own moments that happen AT a ceremony (the user, 2026-10-06: "most of the time the
@@ -133,7 +133,9 @@ function scriptSteps(lines, extra = {}) {
 
 /** Seats a room has, in the order the viewer fills them. */
 const LIVING_SEATS = ['L0', 'R0', 'L1', 'R1', 'L2', 'R2', 'L3', 'R3'];
-const DINING_SEATS = ['S3', 'S4', 'S2', 'S5', 'S1', 'S6', 'S0', 'S7'];
+// the nomination table (the user's D03 round table): the far side first (faces to camera), then the
+// two ends, then the near side (backs to camera). The Blender dining room has only S0-S7.
+const DINING_SEATS = ['S2', 'S3', 'S1', 'S4', 'S0', 'S5', 'S6', 'S7', 'S9', 'S11', 'S8', 'S12', 'S10'];
 
 function seatLiving(nominees, others, standing = null) {
   const seated = {};
@@ -2949,13 +2951,18 @@ function storyLifeScreen(scenes, ctx, n) {
     const set = SET_OF_ROOM(sc.room);
     const xs = spread(sc.cast.length);
     // the set is the nearest one the stage has; the label is the room the scene is really in
-    const label = sc.roomName || ROOM_NAME[set];
     // the plate it plays on (plates.js): the place the lines name, else one of the room's by the scene's id;
     // a meal in the kitchen sits at the dining table
     const said = (sc.lines || []).map(l => l.text || '').join(' ');
     const meal = set === 'kitchen' && /\b(dinner|breakfast|lunch|at the table|eating)\b/i.test(said);
-    const plate = meal ? pickPlate('dining', sc.id, said, 'meal') : pickPlate(set, sc.id, said);
-    const scene = { set: meal && plate ? 'dining' : set, room: label, cam: CAM[set], kicker: `Cam ${String(CAM[set]).padStart(2, '0')} · ${label}`,
+    // a private talk outside can slip off to one of the island's hidden spots
+    const secret = /^(scheming|plan|deals|campaign)$/.test(sc.mood || '') && sc.cast.length <= 3;
+    const plate = meal ? pickPlate('dining', sc.id, said, 'meal') : pickPlate(set, sc.id, said, secret ? 'secret' : 'house');
+    // the label is the room the scene is really in, or the island spot its plate is (a talk at the pier is not "Backyard")
+    const place = placeOf(plate);
+    const label = place?.name || sc.roomName || ROOM_NAME[set];
+    const cam = place?.cam || CAM[set];
+    const scene = { set: meal && plate ? 'dining' : set, room: label, cam, kicker: `Cam ${String(cam).padStart(2, '0')} · ${label}`,
       cast: sc.cast.map((p, i) => [p, xs[i]]), mood: sc.mood || 'house', time: sc._clock, slate: true, ...(plate ? { plate } : {}), ...(sc.why?.length ? { why: sc.why } : {}),
       // what the house map (housemap.js) needs: which scene this is, and whether the week turns on it
       sid: sc.id, type: sc.type, step: sc.step };

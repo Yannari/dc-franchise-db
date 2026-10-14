@@ -142,7 +142,7 @@ function seatOf(S, seated, n) {
   if (id === 'stand2') { const t = a.seats.stand; return { at: [100 - t.at[0], t.at[1], t.at[2]], w: t.w }; }
   // a third nominee's chair (the Block Buster, a third seat): the render has two, so the third
   // stands between them, a step behind (the user, 2026-10-06: "only 2 chairs even when there's 3")
-  if (id === 'N0' && a.seats?.N1) { const t = a.seats.N1; return { at: [50, t.at[1] + 1.4, t.at[2] - 0.3], w: t.w * 0.96 }; }
+  if (id === 'N0' && !a.seats?.N0 && a.seats?.N1) { const t = a.seats.N1; return { at: [50, t.at[1] + 1.4, t.at[2] - 0.3], w: t.w * 0.96 }; }
   const t = a.seats[id];
   return t ? { at: t.at, w: t.w * (S.set === 'dining' ? 0.72 : 1.0) } : null;
 }
@@ -618,7 +618,8 @@ const FRONT = { 1: [50], 2: [36, 64], 3: [27, 50, 73] };
 // each room's things to do; each person picks one of them (by name, so they keep it all scene)
 const IDLE_OF = [[/^kitchen-/, ['cook', 'eat', 'drink']], [/^dining-/, ['eat', 'drink']], [/^(bar-|beach-bar)/, ['drink', 'eat']], [/^gym-/, ['lift', 'stretch']],
   [/^(pool-|patio$|balcony$|beach-|dock$)/, ['tan', 'drink', 'read']], [/^library-/, ['read']], [/^bedroom-/, ['rest', 'read', 'groom']], [/^hallway$/, ['groom']],
-  [/^(comp-|lawn-)/, ['stretch']], [/^living-/, ['eat', 'read', 'drink', null]]];
+  [/^(comp-|lawn-)/, ['stretch']], [/^living-/, ['eat', 'read', 'drink', null]], [/^hoh-/, ['rest', 'snack', 'read']], [/^storage/, ['snack']],
+  [/^bathroom$/, ['groom']], [/^(pier-|pond-|lagoon$|volcano-)/, ['stretch', 'read', null]], [/^jury-/, ['read', 'drink', 'eat']], [/^villa$/, ['tan', 'drink', 'eat']]];
 const IDLE_SET = { kitchen: ['cook', 'eat'], dining: ['eat'], yard: ['tan', 'drink'], bedroom: ['rest', 'read'], havenot: ['rest'], storage: ['snack'], hoh: ['rest', 'snack'] };
 const IDLE_ICON = {
   cook: '<path d="M3 13h12a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" fill="#cfd8e3"/><path d="M15 14h6" stroke="#cfd8e3" stroke-width="2" stroke-linecap="round"/><path class="st" d="M7 10c0-2 2-2 2-4M11 10c0-2 2-2 2-4" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/>',
@@ -740,7 +741,7 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
     return `${room}<div class="drring">${DRRING}</div>${tileHtml(st.by, onCouch ? 50 : 40, 'speak', L, '', 'width:15cqw;bottom:17cqw')}${held}`;
   }
   const arena = S.arena;
-  let h = arena ? `<div class="set photo" style="background-image:url('assets/bb/house/${/^studio/.test(S.set) ? 'default' : o.season}/${S.set}-td-b.webp?v=${V}')"></div>`
+  let h = arena ? plateHtml(S, o.season) || `<div class="set photo" style="background-image:url('assets/bb/house/${/^studio/.test(S.set) ? 'default' : o.season}/${S.set}-td-b.webp?v=${V}')"></div>`
     : S.built ? `<div class="set set-${S.set}"><div class="floor"></div></div>` : setDiv(S.set, o.season, S);
   h += suiteObjects(S, L, st, idx, fresh);
   h += wallHtml(S, L, st, fresh);
@@ -819,8 +820,8 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
     } else h += tileHtml(n, x, cls, L, '', '', a2.fx);
   }
   // the finale's key box: a key drops through the slot
-  if (S.set === 'finale' && fresh && st && st.drop && ANCH.finale?.slot) {
-    const sl = ANCH.finale.slot;
+  if (S.set === 'finale' && fresh && st && st.drop && (anchOf(S)?.slot || ANCH.finale?.slot)) {
+    const sl = anchOf(S)?.slot || ANCH.finale.slot;
     h += `<div class="obj keydrop" style="left:${sl.at[0]}%;bottom:${(sl.at[1] * 0.5625).toFixed(2)}cqw;width:${(sl.w * 0.42).toFixed(2)}cqw">${KEY_SVG}</div><div class="obj boxglow" style="left:${sl.at[0]}%;bottom:${(sl.at[1] * 0.5625 - sl.w * 0.3).toFixed(2)}cqw;width:${(sl.w * 1.3).toFixed(2)}cqw"></div>`;
   }
   if (S.set === 'dining') {
@@ -862,6 +863,15 @@ function lineHtml(S, st, fresh, L) {
     <div class="body"><div class="tx" data-full="${esc(st.t)}" data-emph="${esc(emph(st.t, [...namesOf(S), st.by]))}">${fresh ? '' : emph(st.t, [...namesOf(S), st.by])}</div></div></div>`;
 }
 
+// Finale night on the user's studio plates: the stage holds the finalists' chairs, the host's mark and
+// the key box; the jury has its own tiered bench (a second camera), so a juror's line cuts to the bench.
+function juryCut(S, idx) {
+  if (S.set !== 'finale' || !S.seated || idx < 0 || !plateFor({ set: 'finale-jury', arena: true, seated: {} })) return S;
+  const st = S.steps[idx];
+  const who = st && (st.k === 'say' ? st.by : st.stance?.[0]);
+  return who && /^J\d/.test(seatsAt(S, idx)[who] || '') ? { ...S, set: 'finale-jury' } : S;
+}
+
 /** The whole stage for step `idx` of screen `si`. `o` = { season, host }. */
 export function stageHtml(screens, si, idx, fresh, o) {
   // A House Life segment cuts room to room: the latest `scene` marker up to
@@ -869,7 +879,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   const S0 = screens[si];
   let sc = null;
   if (SCENE_KINDS.has(S0.kind)) for (let i = Math.max(0, idx); i >= 0; i--) { if (S0.steps[i]?.scene) { sc = S0.steps[i].scene; break; } }
-  const S = sc ? { ...S0, ...sc } : S0;
+  const S = juryCut(sc ? { ...S0, ...sc } : S0, idx);
   const st = idx >= 0 ? S.steps[idx] : null;
   const prevSt = idx > 0 ? S.steps[idx - 1] : null;
   const L = ledgerAt(screens, si, idx);

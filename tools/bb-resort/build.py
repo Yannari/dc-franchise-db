@@ -23,7 +23,8 @@ In both, small warm bright things (a bulb, a lit sign) keep their light.
 Marks are in Total Drama's reference pixels (1600x900), the same vocabulary as traced/places.json
 (sway, cloth, pool, fall, glow, still, wind) plus lights [x,y,r], windows/screens [x0,y0,x1,y1].
 Seats (`anchors`) are in the stage's own units, as js/vp-bb-ep/anchors.js: at [x% centre,
-y% from the bottom, depth], w = tile width in % of the stage.
+y% from the bottom, depth], w = tile width in % of the stage. place: [name, camera] of an island
+spot, so a talk there is captioned with the place ("The Pier"), not the room it stands in for ("Backyard").
 """
 import os, sys, json, glob, time
 import numpy as np
@@ -256,7 +257,7 @@ def write_js(plates):
     for pid, P in plates.items():
         if pid.startswith('_'):
             continue
-        out[pid] = {k: P[k] for k in ('room', 'sets', 'use', 'indoor', 'anchors', 'words', 'cut') if k in P}
+        out[pid] = {k: P[k] for k in ('room', 'sets', 'use', 'indoor', 'anchors', 'words', 'cut', 'place') if k in P}
         if P.get('pool'): out[pid]['water'] = 1
         if P.get('screens'): out[pid]['screens'] = [pct(b) for b in P['screens']]       # [x%, bottom%, w%, h%]
         if P.get('floor'): out[pid]['floor'] = [round(100 - P['floor'][1] / 9, 2), round(100 - P['floor'][0] / 9, 2)]

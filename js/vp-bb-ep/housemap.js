@@ -59,15 +59,14 @@ const ALL = { ...ZONES, ...ISLAND };
 // sure we're not missing any plate for all the zones"). A place whose plate the user is still making
 // names its to-edit folder instead; tests/bb-housemap.test.js holds every zone to one or the other.
 export const ZONE_PLATE = {
-  pool: 'pool-wide', bar: 'bar-lobby-wide', gym: 'gym-racks', hallway: 'purple-hall', bathroom: 'hallway', wing: 'bedroom-wide',
+  pool: 'pool-wide', bar: 'bar-lobby-wide', gym: 'gym-racks', hallway: 'purple-hall', bathroom: 'bathroom', wing: 'bedroom-wide',
   kitchen: 'kitchen-wide', living: 'living-sofas', dining: 'dining-wide', library: 'library-wide', front: 'front', dr: 'confessional',
   beach: 'beach-hut', westdock: 'dock', clearing: 'comp-clearing', resort: 'front',
+  hoh: 'hoh-suite', pantry: 'storage', foyer: 'foyer', eastdock: 'pier-east', npond: 'pond-north', epond: 'pond-east',
+  lagoon: 'lagoon', volcano: 'volcano-lookout', jury: 'jury-cabins', villa: 'villa', studio: 'studio-arrival',
 };
 export const ZONE_PENDING = {
-  hoh: 'B02-hoh-suite', pantry: 'B05-storage-room', lounge: 'B04-have-not-room (redo: it came out too comfortable)',
-  foyer: 'B07-foyer (made, not wired yet)', eastdock: 'B16-east-pier', npond: 'B17-north-pond', epond: 'B18-east-pond',
-  lagoon: 'B19-lagoon', volcano: 'B20-volcano-lookout', jury: 'B21-jury-cabins + B22-jury-house-inside', villa: 'B23-reward-villa',
-  studio: 'B08-B11 studio sets (made, not wired yet)',
+  lounge: 'B04-have-not-room (redo: it came out too comfortable)',
 };
 /** A zone's place on the island: an island zone is itself; every room of the house is the resort. */
 export const islandOf = z => (ISLAND[z] ? z : 'resort');
@@ -75,8 +74,9 @@ export const islandOf = z => (ISLAND[z] ? z : 'resort');
 const PUBLIC = ['living', 'kitchen', 'pool', 'gym', 'wing', 'bar', 'library', 'dining', 'beach'];
 
 // a plate's room on the blueprint
-const ZONE_OF_PLATE = [[/^living-/, 'living'], [/^library-/, 'library'], [/^confessional$/, 'dr'], [/^dining-/, 'dining'],
-  [/^kitchen-/, 'kitchen'], [/^bar-/, 'bar'], [/^bedroom-/, 'wing'], [/^hallway$/, 'bathroom'], [/^purple-hall$/, 'hallway'],
+const ZONE_OF_PLATE = [[/^living-/, 'living'], [/^library-/, 'library'], [/^confessional$/, 'dr'], [/^(dining-|nom-table$)/, 'dining'],
+  [/^kitchen-/, 'kitchen'], [/^bar-/, 'bar'], [/^bedroom-/, 'wing'], [/^(hallway|bathroom)$/, 'bathroom'], [/^purple-hall$/, 'hallway'],
+  [/^hoh-/, 'hoh'], [/^storage/, 'pantry'], [/^foyer$/, 'foyer'], [/^studio-/, 'studio'],
   [/^gym-/, 'gym'], [/^(pool-|patio$|balcony$)/, 'pool'], [/^(lawn-|front)/, 'front'], [/^memory-wall$/, 'living'],
   [/^beach-/, 'beach'], [/^dock$/, 'westdock'], [/^pier/, 'eastdock'], [/^(comp-|forest-night$)/, 'clearing'],
   [/^pond-north/, 'npond'], [/^pond-east/, 'epond'], [/^lagoon/, 'lagoon'], [/^volcano/, 'volcano'], [/^jury-/, 'jury'], [/^villa/, 'villa']];

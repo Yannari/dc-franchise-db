@@ -17,8 +17,8 @@ const ROOT = path.resolve(__dirname, '..');
 const PLATES = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/bb-resort/plates.json'), 'utf8'));
 const IDS = Object.keys(PLATES).filter(k => !k.startsWith('_'));
 const SETS = new Set(['ceremony', 'ceremony3', 'dining', 'kitchen', 'bedroom', 'hoh', 'yard', 'dr', 'storage', 'havenot',
-  'bathroom', 'juryhouse', 'door', 'premiere', 'comp', 'wall', 'cutaway', 'studio', 'finale', 'map']);
-const USES = new Set(['eviction', 'ceremony', 'nominations', 'house', 'meal', 'quiet', 'dr']);
+  'bathroom', 'juryhouse', 'door', 'premiere', 'comp', 'wall', 'cutaway', 'studio', 'studio-wide', 'finale', 'finale-jury', 'villa', 'map']);
+const USES = new Set(['eviction', 'ceremony', 'nominations', 'house', 'meal', 'quiet', 'secret', 'dr']);
 // the stage's sets for the engine's rooms (ROOM_SET in vp-bb-ep/steps.js) and their Blender rooms
 const ROOM_SETS = { kitchen: 'kitchen', ceremony: 'living', bedroom: 'bedroom', hoh: 'hoh', yard: 'yard', dr: 'dr',
   storage: 'storage', havenot: 'havenot', bathroom: 'bathroom', dining: 'dining' };
@@ -52,7 +52,11 @@ describe('the plate list', () => {
   it('a plate that seats a ceremony has every seat that ceremony reads', () => {
     const NEED = {
       ceremony: ['N-1', 'N1', 'L0', 'R0', 'L1', 'R1', 'L2', 'R2', 'L3', 'R3', 'stand'],
-      dining: ['S0', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7'],
+      ceremony3: ['N-1', 'N0', 'N1', 'L0', 'R0', 'L1', 'R1', 'L2', 'R2', 'L3', 'R3', 'stand'],
+      dining: ['S0', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'S11', 'S12'],
+      studio: ['G', 'H'],
+      finale: ['F0', 'F1', 'D0', 'D1', 'H', 'box'],
+      'finale-jury': ['J0', 'J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7', 'J8'],
     };
     for (const id of IDS) {
       const A = PLATES[id].anchors;
@@ -88,9 +92,16 @@ describe('the plate list', () => {
 describe('choosing a plate', () => {
   it('a ceremony plays on the plate with its seats', () => {
     expect(plateFor({ set: 'ceremony', seated: {} })).toBe('living-screens');
-    expect(plateFor({ set: 'dining', seated: {} })).toBe('dining-noms');
-    // an arena or a built set is never a plate
+    // the user's D02/D03: a third nominee has a third chair, and nominations are at the round table
+    expect(plateFor({ set: 'ceremony3', seated: {} })).toBe('living-screens-3');
+    expect(plateFor({ set: 'dining', seated: {} })).toBe('nom-table');
+    // the studio's sets (B08-B11) are plates; a competition's arena or a built set never is
+    expect(plateFor({ set: 'studio', arena: true, seated: {} })).toBe('studio-interview');
+    expect(plateFor({ set: 'finale', arena: true, seated: {} })).toBe('studio-finale');
+    expect(plateFor({ set: 'finale-jury', arena: true, seated: {} })).toBe('studio-jury');
+    expect(plateFor({ set: 'studio-wide', arena: true })).toBe('studio-arrival');
     expect(plateFor({ set: 'yard', arena: true })).toBe(null);
+    expect(plateFor({ set: 'ceremony', built: true })).toBe(null);
   });
 
   it('the place the lines name wins, and the pick is stable', () => {
@@ -102,6 +113,15 @@ describe('choosing a plate', () => {
       const q = pickPlate('yard', `scene-${i}`, 'They talk.');
       expect(PLATES[q].use.some(u => u === 'house' || u === 'quiet'), q).toBe(true);
     }
+  });
+
+  it("a private talk can slip off to the island's hidden spots; a house talk never lands there", () => {
+    const hidden = id => (PLATES[id].use || []).includes('secret');
+    const secret = Array.from({ length: 60 }, (_, i) => pickPlate('yard', `s-${i}`, 'They talk.', 'secret'));
+    expect(secret.some(hidden)).toBe(true);
+    for (let i = 0; i < 60; i++) expect(hidden(pickPlate('yard', `h-${i}`, 'They talk.')), `h-${i}`).toBe(false);
+    // a room with no hidden spot keeps its own plates
+    expect(PLATES[pickPlate('bedroom', 'x', 'They talk.', 'secret')].sets).toContain('bedroom');
   });
 
   it('reads the hour: night from eight in the evening, and the live show is at night', () => {

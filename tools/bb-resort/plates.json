@@ -2,16 +2,33 @@
  "_doc": "Big Brother's house, the Reality Resort plates (tools/bb-resort/build.py). src: tools/bb-resort/src/<id>.webp. Marks are in Total Drama's 1600x900 reference pixels: windows/screens [x0,y0,x1,y1], lights [x,y,r] (lamps that glow at night), pool [x0,y0,x1,y1,fish,sample x,sample y] (sea: true = the sea, not a lit pool), sway/cloth as traced/places.json. room: the engine's room (BB_ROOMS). sets: the stage sets this plate plays (ROOM_SET in vp-bb-ep/steps.js). use: the moments it is chosen for (eviction, nominations, house, meal, quiet). words: a regex; a scene whose lines name it gets this plate. anchors: the ceremony seats, in the stage's units (anchors.js): at [x% centre, y% from the bottom, depth], w = tile width in %. indoor: night is a lit room. nonight: the same picture day and night (the Diary Room is always lit). nightonly: the source is a night frame. nightsrc: the user's own night frame of this place.",
 
  "living-screens": {
-  "room": "living-room", "sets": ["ceremony", "ceremony3"], "use": ["eviction", "ceremony"], "indoor": true,
+  "room": "living-room", "sets": ["ceremony"], "use": ["eviction", "ceremony"], "indoor": true,
   "screens": [[547, 0, 1113, 213], [213, 180, 438, 572], [1225, 180, 1447, 572]],
   "floor": [630, 900],
   "anchors": {
    "seats": {
-    "N-1": {"at": [41, 27, 6.5], "w": 6.4}, "N1": {"at": [59, 27, 6.5], "w": 6.4},
+    "N-1": {"at": [40.6, 29, 6.5], "w": 8.5}, "N1": {"at": [59.7, 29, 6.5], "w": 8.5},
     "L0": {"at": [6, 3, 3.0], "w": 10.5}, "R0": {"at": [94, 3, 3.0], "w": 10.5},
     "L1": {"at": [17, 8, 3.6], "w": 9.0}, "R1": {"at": [83, 8, 3.6], "w": 9.0},
     "L2": {"at": [24, 17, 4.6], "w": 7.4}, "R2": {"at": [76, 17, 4.6], "w": 7.4},
     "L3": {"at": [31, 23, 5.4], "w": 6.4}, "R3": {"at": [69, 23, 5.4], "w": 6.4},
+    "stand": {"at": [50, 11, 2.5], "w": 8.6}
+   },
+   "panels": [{"x": 13.3, "y": 36.4, "w": 14.1, "h": 43.6}, {"x": 76.6, "y": 36.4, "w": 14.1, "h": 43.6}],
+   "tv": {"x": 34.2, "y": 76.3, "w": 35.4, "h": 23.7}
+  }
+ },
+ "living-screens-3": {
+  "room": "living-room", "sets": ["ceremony3"], "use": ["eviction", "ceremony"], "indoor": true,
+  "screens": [[547, 0, 1113, 213], [213, 180, 438, 572], [1225, 180, 1447, 572]],
+  "floor": [630, 900],
+  "anchors": {
+   "seats": {
+    "N-1": {"at": [35.3, 30, 6.5], "w": 8.0}, "N0": {"at": [50.75, 30, 6.5], "w": 8.0}, "N1": {"at": [66.3, 30, 6.5], "w": 8.0},
+    "L0": {"at": [6, 3, 3.0], "w": 10.5}, "R0": {"at": [94, 3, 3.0], "w": 10.5},
+    "L1": {"at": [17, 8, 3.6], "w": 9.0}, "R1": {"at": [83, 8, 3.6], "w": 9.0},
+    "L2": {"at": [24, 17, 4.6], "w": 7.4}, "R2": {"at": [76, 17, 4.6], "w": 7.4},
+    "L3": {"at": [27, 22, 5.4], "w": 6.4}, "R3": {"at": [73, 22, 5.4], "w": 6.4},
     "stand": {"at": [50, 11, 2.5], "w": 8.6}
    },
    "panels": [{"x": 13.3, "y": 36.4, "w": 14.1, "h": 43.6}, {"x": 76.6, "y": 36.4, "w": 14.1, "h": 43.6}],
@@ -50,21 +67,24 @@
 
  "confessional": {"room": "diary-room", "sets": ["dr"], "use": ["dr"], "indoor": true, "nonight": true},
 
- "dining-noms": {
+ "nom-table": {
   "room": "kitchen", "sets": ["dining"], "use": ["nominations"], "indoor": true,
-  "windows": [[0, 0, 242, 692]],
+  "windows": [[0, 0, 175, 520]],
+  "lights": [[427, 160, 120], [1169, 160, 120]],
   "anchors": {
    "seats": {
-    "S3": {"at": [50, 41, 6.6], "w": 6.3}, "S4": {"at": [61, 41, 6.6], "w": 6.3},
-    "S2": {"at": [72, 39, 6.2], "w": 6.7}, "S5": {"at": [39, 39, 6.2], "w": 6.7},
-    "S1": {"at": [63, 6, 2.0], "w": 11.0}, "S6": {"at": [37, 6, 2.0], "w": 11.0},
-    "S0": {"at": [93, 12, 3.0], "w": 10.5}, "S7": {"at": [13, 12, 3.0], "w": 10.5}
+    "S0": {"at": [15.4, 46.7, 6.0], "w": 9.5}, "S1": {"at": [25.8, 51, 6.4], "w": 9.5}, "S2": {"at": [36.1, 52, 6.6], "w": 9.5},
+    "S3": {"at": [63.8, 52, 6.6], "w": 9.5}, "S4": {"at": [74.4, 51, 6.4], "w": 9.5}, "S5": {"at": [84.4, 46.7, 6.0], "w": 9.5},
+    "S6": {"at": [8.3, 33, 5.0], "w": 11}, "S7": {"at": [91.3, 33, 5.0], "w": 11},
+    "S8": {"at": [17.5, 24.5, 2.6], "w": 15}, "S9": {"at": [30.8, 23, 2.4], "w": 15}, "S10": {"at": [49.75, 20, 2.0], "w": 15},
+    "S11": {"at": [69.2, 23, 2.4], "w": 15}, "S12": {"at": [82.5, 24.5, 2.6], "w": 15}
    },
-   "head": {"at": [85, 30, 4.6], "w": 8.6},
-   "box": {"at": [74, 36, 5.6], "w": 5.2},
-   "screen": {"x": 30, "y": 60, "w": 34, "h": 30}
+   "head": {"at": [50, 53, 6.8], "w": 5.6},
+   "box": {"at": [50, 48.5, 6.4], "w": 6.8},
+   "screen": {"x": 31.9, "y": 64.9, "w": 36.25, "h": 28}
   }
  },
+ "dining-noms": {"room": "kitchen", "sets": ["dining"], "use": ["meal"], "indoor": true, "windows": [[0, 0, 242, 692]]},
  "dining-wide": {"room": "kitchen", "sets": ["dining"], "use": ["house"], "indoor": true, "windows": [[0, 0, 630, 790]]},
  "dining-breakfast": {"room": "kitchen", "sets": ["dining"], "use": ["meal"], "indoor": true, "words": "breakfast|eggs|bacon"},
  "dining-meal": {"room": "kitchen", "sets": ["dining"], "use": ["meal"], "indoor": true},
@@ -132,7 +152,7 @@
  },
  "patio": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "patio|balcony|railing"},
  "balcony": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "balcony|view|railing|sea", "sea": true, "pool": [[430, 200, 830, 340, 0, 700, 280]]},
- "beach-bar": {
+ "beach-bar": {"place": ["The Beach Bar", 20], 
   "room": "backyard", "sets": ["yard"], "use": ["quiet"], "nosky": true, "words": "beach bar|tiki|cocktail|on the beach",
   "lights": [[120, 40, 50], [310, 40, 50], [470, 40, 50], [650, 40, 50], [900, 40, 50], [1180, 40, 50], [1450, 40, 50]],
   "glow": [[0, 0, 1600, 90]]
@@ -148,16 +168,66 @@
  "comp-cart": {"room": "backyard", "sets": ["comp"], "use": []},
  "forest-night": {"room": "backyard", "sets": ["comp"], "use": [], "nightonly": true},
 
- "dock": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "dock|pier|jetty|over the water", "sea": true, "pool": [[0, 300, 1600, 500, 0, 150, 420], [0, 640, 1600, 900, 0, 600, 800]]},
- "beach-hut": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach|sand|shore|waves|sunbath|umbrella|the water"},
- "beach-volcano": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach|sand|shore|waves|sunbath|umbrella|the water"},
- "beach-arch": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach|sand|shore|waves|sunbath|umbrella|the water"},
+ "beach-hutbar": {"place": ["The Beach Bar", 20], "room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach bar|tiki|hut bar|cocktail|bar stool",
+  "lights": [[430, 350, 60], [560, 360, 60], [700, 360, 60], [830, 360, 60], [960, 360, 60], [1080, 360, 60], [1175, 350, 60]]},
+ "beach-bonfire": {"place": ["The Beach", 20], "room": "backyard", "sets": ["yard"], "use": [], "nightonly": true, "words": "bonfire|campfire|fire pit|around the fire|by the fire",
+  "sea": true, "pool": [[380, 340, 1600, 420, 0, 1000, 380]]},
+ "dock": {"place": ["West Dock", 21], "room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "dock|pier|jetty|over the water", "sea": true, "pool": [[0, 300, 1600, 500, 0, 150, 420], [0, 640, 1600, 900, 0, 600, 800]]},
+ "beach-hut": {"place": ["The Beach", 20], "room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach|sand|shore|waves|sunbath|umbrella|the water"},
+ "beach-volcano": {"place": ["The Beach", 20], "room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach|sand|shore|waves|sunbath|umbrella|the water"},
+ "beach-arch": {"place": ["The Beach", 20], "room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach|sand|shore|waves|sunbath|umbrella|the water"},
 
  "map-island": {"room": "backyard", "sets": ["map"], "use": [], "nonight": true, "nosky": true, "sea": true, "wind": 0.6,
   "pool": [[0, 0, 1600, 900, 0, 60, 60]]},
  "map-house": {"room": "living-room", "sets": ["map"], "use": [], "nonight": true, "noleaf": true, "nosky": true, "box": [88, 84, 1600, 529]},
  "front": {"room": "living-room", "sets": ["door", "premiere"], "use": [], "nightsrc": "front-night"},
  "memory-wall": {"room": "living-room", "sets": ["wall"], "use": [], "indoor": true},
+
+ "hoh-suite": {"room": "hoh-room", "sets": ["hoh"], "use": ["house"], "indoor": true,
+  "screens": [[16, 48, 312, 344]], "lights": [[456, 296, 100], [864, 336, 90], [1459, 336, 90]]},
+ "bedroom-two": {"room": "bedroom", "sets": ["bedroom"], "use": ["house"], "indoor": true, "lights": [[248, 328, 100], [1352, 328, 100]]},
+ "storage": {"room": "pantry", "sets": ["storage"], "use": ["house"], "indoor": true, "lights": [[808, 56, 140]]},
+ "storage-2": {"room": "pantry", "sets": ["storage"], "use": ["house"], "indoor": true, "lights": [[808, 56, 140]]},
+ "bathroom": {"room": "washroom", "sets": ["bathroom"], "use": ["house"], "indoor": true,
+  "lights": [[424, 264, 60], [480, 136, 70], [672, 136, 70], [864, 136, 70], [1056, 136, 70], [1144, 264, 60]]},
+ "foyer": {"room": "living-room", "sets": ["door"], "use": ["house"], "indoor": true, "words": "foyer|front door|entrance", "lights": [[328, 190, 120]]},
+
+ "beach-loungers": {"place": ["The Beach", 20], "room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach|sand|sunbath|umbrella|lounger|deck chair"},
+ "beach-shoreline": {"place": ["The Beach", 20], "room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach|shore|waves|the water|walk along", "sea": true,
+  "pool": [[0, 290, 1600, 600, 0, 800, 400]]},
+ "pier-east": {"place": ["The Pier", 22], "room": "backyard", "sets": ["yard"], "use": ["secret"], "words": "pier|boat|jetty", "sea": true,
+  "pool": [[0, 290, 1600, 620, 0, 1375, 425]]},
+ "pond-north": {"place": ["North Pond", 24], "room": "backyard", "sets": ["yard"], "use": ["secret"], "words": "pond|lily|lilies|reeds", "sea": true,
+  "pool": [[100, 380, 1500, 620, 0, 800, 515]]},
+ "pond-east": {"place": ["East Pond", 25], "room": "backyard", "sets": ["yard"], "use": ["secret"], "words": "pond|rope swing", "sea": true,
+  "pool": [[0, 430, 1600, 720, 0, 750, 580]]},
+ "lagoon": {"place": ["The Lagoon", 26], "room": "backyard", "sets": ["yard"], "use": ["secret"], "words": "lagoon|waterfall", "sea": true,
+  "pool": [[0, 480, 1600, 680, 0, 875, 570]]},
+ "volcano-lookout": {"place": ["The Volcano", 27], "room": "backyard", "sets": ["yard"], "use": ["secret"], "words": "volcano|lookout|the view"},
+ "jury-cabins": {"room": "backyard", "sets": ["juryhouse"], "use": ["quiet"], "words": "cabin|campfire|fire pit|outside|porch", "lights": [[930, 562, 130]]},
+ "jury-house": {"room": "living-room", "sets": ["juryhouse"], "use": ["house"], "indoor": true,
+  "windows": [[496, 24, 784, 304], [1560, 136, 1600, 304]], "lights": [[128, 248, 110], [1192, 248, 110], [328, 384, 120]]},
+ "villa": {"room": "backyard", "sets": ["villa"], "use": [], "words": "villa|reward",
+  "pool": [[0, 500, 980, 640, 0, 375, 567]]},
+
+ "studio-arrival": {"room": "living-room", "sets": ["studio-wide"], "use": [], "indoor": true, "nonight": true},
+ "studio-interview": {"room": "living-room", "sets": ["studio"], "use": [], "indoor": true, "nonight": true,
+  "anchors": {"seats": {"G": {"at": [41.3, 34, 5.0], "w": 10}, "H": {"at": [58, 34, 5.0], "w": 10}}}},
+ "studio-finale": {"room": "living-room", "sets": ["finale"], "use": [], "indoor": true, "nonight": true,
+  "anchors": {
+   "seats": {
+    "F0": {"at": [41.3, 34, 5.0], "w": 10}, "F1": {"at": [58, 34, 5.0], "w": 10},
+    "D0": {"at": [44, 16, 3.5], "w": 11}, "D1": {"at": [56, 16, 3.5], "w": 11},
+    "H": {"at": [24, 22, 4.0], "w": 11}, "box": {"at": [82, 24, 4.2], "w": 10.5}
+   },
+   "slot": {"at": [71.4, 47, 4.8], "w": 6.8}
+  }},
+ "studio-jury": {"room": "living-room", "sets": ["finale-jury"], "use": [], "indoor": true, "nonight": true,
+  "anchors": {"seats": {
+   "J3": {"at": [32.7, 68.6, 7.0], "w": 6.4}, "J4": {"at": [50, 68.6, 7.0], "w": 6.4}, "J8": {"at": [67.3, 68.6, 7.0], "w": 6.4},
+   "J6": {"at": [30.7, 52.9, 6.0], "w": 7.0}, "J7": {"at": [50, 52.9, 6.0], "w": 7.0}, "J2": {"at": [69.4, 52.9, 6.0], "w": 7.0},
+   "J0": {"at": [28.2, 37, 5.0], "w": 7.6}, "J1": {"at": [50, 37, 5.0], "w": 7.6}, "J5": {"at": [72.8, 37, 5.0], "w": 7.6}
+  }}},
 
  "cam-eaves": {"room": "backyard", "sets": ["cutaway"], "use": [], "nosky": true},
  "cam-ceiling": {"room": "living-room", "sets": ["cutaway"], "use": [], "indoor": true},

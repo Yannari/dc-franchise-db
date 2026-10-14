@@ -14,6 +14,7 @@ import { RESORT } from './resort.js';
 export const PLATE_DIR = 'assets/sets/bb/resort';
 const hashOf = s => { let h = 7; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
 const built = id => !!RESORT.have.default?.[id];
+const STUDIO = new Set(['studio', 'studio-wide', 'finale', 'finale-jury']);
 const platesOf = set => Object.keys(RESORT.plates).filter(id => built(id) && (RESORT.plates[id].sets || []).includes(set));
 const WORDS = {};
 const named = (id, text) => {
@@ -31,18 +32,28 @@ export function pickPlate(set, key, text = '', use = 'house') {
   const all = platesOf(set);
   if (!all.length) return null;
   const said = all.filter(id => named(id, text));
-  // a plate that is only ever chosen by name (the gym is not where every backyard talk happens)
+  // a plate that is only ever chosen by name (the gym is not where every backyard talk happens);
+  // a private talk (`secret`) can also slip off to the island's hidden spots (pier, ponds, lagoon, volcano)
   const free = all.filter(id => {
     const u = RESORT.plates[id].use || [];
-    return u.includes(use) || (use === 'house' && u.includes('quiet'));
+    return u.includes(use) || ((use === 'house' || use === 'secret') && u.includes('quiet'));
   });
+  if (!said.length && !free.length && use === 'secret') return pickPlate(set, key, text, 'house');
   const pool = said.length ? said : free.length ? free : all;
   return pool[hashOf(key) % pool.length];
 }
 
+/** An island spot's own name and camera ({ name, cam }), or null for a room of the house. */
+export function placeOf(id) {
+  const p = id && RESORT.plates[id]?.place;
+  return p ? { name: p[0], cam: p[1] } : null;
+}
+
 /** The plate a screen plays on: a ceremony's plate has its seats; a scene keeps its own pick. */
 export function plateFor(S) {
-  if (!S || S.arena || S.built) return null;
+  // the studio (interview, arrivals, finale) plays on its plates once the user's sets are built;
+  // a competition's arena never does
+  if (!S || S.built || (S.arena && !(STUDIO.has(S.set) && platesOf(S.set).length))) return null;
   if (S.seated) {
     const id = platesOf(S.set).find(p => RESORT.plates[p].anchors);
     return id || null;

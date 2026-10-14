@@ -12,6 +12,7 @@
 //   3. the viewer plays them from then on, for anybody (sound.js speak).
 // A line already in the bucket is never paid for twice. A character with no voice of their name keeps the blips.
 import { recordEpisodeLines, voiceSeason, voicedLines, VOICE_API } from './sound.js';
+import { directionFor } from './direct.js';
 
 const PRICE = 25 / 1e6;   // Inworld TTS-2, dollars a character (their page, 2026-10-11)
 const token = () => { try { return localStorage.getItem('studio_api_token') || ''; } catch { return ''; } };
@@ -114,7 +115,8 @@ async function plan(ep, say = () => {}) {
   const missing = lines.filter(l => !have.has(l.id));
   return { all, voices, lines, missing, voicedCount: lines.length - missing.length };
 }
-const estimate = ls => (ls.reduce((a, l) => a + l.text.length, 0) * PRICE).toFixed(2);
+// (a directed line is voiced twice, plain and directed, and the worker keeps one: direct.js)
+const estimate = ls => (ls.reduce((a, l) => { const d = directionFor(l); return a + l.text.length + (d ? l.text.length + d.length + 3 : 0); }, 0) * PRICE).toFixed(2);
 
 export async function tdVoiceEpisode(ep, { force = false, ready = null } = {}) {
   if (!ep || busy || !askToken()) return;
@@ -127,23 +129,25 @@ export async function tdVoiceEpisode(ep, { force = false, ready = null } = {}) {
     const todo = force ? p.lines : p.missing;   // Revoice: every line again
     if (!todo.length) { P.say(`Episode ${ep} is already voiced`, `${p.lines.length} lines have a voice. Nothing to pay for.`, 1, true); return; }
 
-    // No director (the user, 2026-10-14: "just remove the director it slowed the voices too much its annoying"): every
-    // line goes to Inworld in its own words, with no delivery in brackets.
+    // No AI director (the user, 2026-10-14: "just remove the director it slowed the voices too much its annoying").
+    // A TRIAL since ("we can try it lets test it if i dont like it we removing it"): the few lines whose scene says
+    // how they come out (a shout, tears, a laugh, a whisper, a shock) get a short delivery from direct.js; the worker
+    // keeps it only if the take is not more than 20% longer than the plain one. Every other line: its own words.
 
     // the voices: ONE request at a time, the worker voicing four of its lines at once. The user's Inworld plan takes
     // five requests at a time; three requests of four (twelve) got 416 of 638 lines refused on the first episode.
     const batches = [];
     for (let k = 0; k < todo.length; k += 12) batches.push(todo.slice(k, k + 12));
-    let done = 0, chars = 0;
+    let done = 0, chars = 0, directed = 0, keptDirected = 0;
     const failed = [];
     await pool(batches, 1, async b => {
       const r = await fetch(`${VOICE_API()}/api/voice/render`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
-        body: JSON.stringify({ season, episode: ep, voices: p.voices, force, lines: b.map(l => ({ id: l.id, by: l.by, text: l.text, direction: '' })) }),
+        body: JSON.stringify({ season, episode: ep, voices: p.voices, force, lines: b.map(l => ({ id: l.id, by: l.by, text: l.text, direction: directionFor(l) })) }),
       });
       const j = await r.json().catch(() => ({ ok: false, error: `studio ${r.status}` }));
       if (!j.ok) { failed.push(...b.map(l => ({ id: l.id, error: j.error }))); return; }
-      done += j.done.length; chars += j.chars || 0; failed.push(...(j.failed || []));
+      done += j.done.length; chars += j.chars || 0; directed += j.directed || 0; keptDirected += j.keptDirected || 0; failed.push(...(j.failed || []));
       P.say(title, `Voicing: ${done} of ${todo.length} lines`, 0.2 + (done + failed.length) / todo.length * 0.8);
     });
 
@@ -151,9 +155,9 @@ export async function tdVoiceEpisode(ep, { force = false, ready = null } = {}) {
     hubVoiceLabel(ep);
     const secs = Math.round((Date.now() - t0) / 1000);
     const cost = (chars * PRICE).toFixed(2);
-    console.info(`[voicing] episode ${ep}: ${done} lines in ${secs}s, ${chars} characters (~$${cost})`, failed.length ? failed : '');
+    console.info(`[voicing] episode ${ep}: ${done} lines in ${secs}s, ${chars} characters (~$${cost}); directed ${keptDirected} of ${directed} tried`, failed.length ? failed : '');
     P.say(failed.length ? `Episode ${ep}: ${done} voiced, ${failed.length} failed` : `Episode ${ep} is voiced`,
-      `${done} lines in ${secs} s, about $${cost}.${failed.length ? ` Failed: ${failed[0].error}${failed.length > 1 ? ` (and ${failed.length - 1} more). Press the 🎙 button again to voice just those.` : ''}` : ' Watch it whenever you like.'}`, 1, true);
+      `${done} lines in ${secs} s, about $${cost}.${directed ? ` ${keptDirected} of ${directed} lines kept a delivery (the rest ran long and stayed plain).` : ''}${failed.length ? ` Failed: ${failed[0].error}${failed.length > 1 ? ` (and ${failed.length - 1} more). Press the 🎙 button again to voice just those.` : ''}` : ' Watch it whenever you like.'}`, 1, true);
   } catch (e) {
     P.say(`Voicing episode ${ep} stopped`, String(e.message || e), null, true);
   } finally {

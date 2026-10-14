@@ -2526,12 +2526,9 @@ async function voiceRoute(request, env, url, cors) {
   const lines = (Array.isArray(body.lines) ? body.lines : []).slice(0, 12)
     .filter(l => l && /^L[0-9a-f]{8}$/.test(l.id) && typeof l.text === 'string' && l.text.trim() && body.voices?.[l.by]);
   const done = [], failed = [];
-  let chars = 0, next = 0;
-  const one = async l => {
-    const key = `voice/${s}/e${ep}/${l.id}.mp3`;
-    if (!body.force && await env.AUDIO.head(key)) { done.push(l.id); return; }   // force: Revoice, a new take replaces it
-    const dir = String(l.direction || '').replace(/[\[\]]/g, '').trim().slice(0, 80);
-    const text = (dir ? `[${dir}] ` : '') + l.text.trim().slice(0, 1200);
+  let chars = 0, next = 0, directed = 0, keptDirected = 0;
+  // one take of a text in this line's voice, as MP3 bytes
+  const take = async (l, text) => {
     // The user's Inworld plan allows 5 requests at once (the first real episode: 416 of 638 lines refused with
     // 429 when the browser sent three batches of four). The browser now sends one batch at a time, this voices
     // four at a time, and a 429 waits and goes again rather than failing the line.
@@ -2550,8 +2547,25 @@ async function voiceRoute(request, env, url, cors) {
     const j = await r.json();
     const bin = Uint8Array.from(atob(j.audioContent || ''), c => c.charCodeAt(0));
     if (!bin.byteLength) throw new Error('inworld sent no audio');
-    await env.AUDIO.put(key, bin, { httpMetadata: { contentType: 'audio/mpeg' }, customMetadata: { by: String(l.by).slice(0, 60), direction: dir } });
-    chars += text.length; done.push(l.id);
+    chars += text.length;
+    return bin;
+  };
+  const one = async l => {
+    const key = `voice/${s}/e${ep}/${l.id}.mp3`;
+    if (!body.force && await env.AUDIO.head(key)) { done.push(l.id); return; }   // force: Revoice, a new take replaces it
+    const dir = String(l.direction || '').replace(/[\[\]]/g, '').trim().slice(0, 80);
+    const words = l.text.trim().slice(0, 1200);
+    // A directed line (a trial, 2026-10-14: js/vp-td-ep/direct.js) is voiced both ways, and the directed take is kept
+    // only if it is not more than 20% longer than the plain one: the user's complaint about the old director was that
+    // it slowed the voices down. Both are 64 kbps constant bit rate, so the byte count is the length.
+    let bin = await take(l, words), used = '';
+    if (dir) {
+      directed++;
+      const d = await take(l, `[${dir}] ${words}`);
+      if (d.byteLength <= bin.byteLength * 1.2) { bin = d; used = dir; keptDirected++; }
+    }
+    await env.AUDIO.put(key, bin, { httpMetadata: { contentType: 'audio/mpeg' }, customMetadata: { by: String(l.by).slice(0, 60), direction: used, tried: dir } });
+    done.push(l.id);
   };
   await Promise.all(Array.from({ length: 4 }, async () => {
     while (next < lines.length) {
@@ -2559,7 +2573,7 @@ async function voiceRoute(request, env, url, cors) {
       try { await one(l); } catch (e) { failed.push({ id: l.id, error: String(e.message || e).slice(0, 200) }); }
     }
   }));
-  return json({ ok: true, done, failed, chars }, 200, cors);
+  return json({ ok: true, done, failed, chars, directed, keptDirected }, 200, cors);
 }
 
 async function audioRoute(request, env, url, cors) {

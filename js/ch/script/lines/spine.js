@@ -200,7 +200,7 @@ export default {
       { by: 'b', conf: "Maybe that costs me with {alliance}. But if I break my word to {target}, nobody in here should ever trust me again." },
     ] },
     { id: 'mt.r3', turns: [
-      { by: 'a', say: "Can we get one week where everybody's on the same page?" },
+      { by: 'a', say: "Can we get one week where everybody's on the same page?", keep: ['page'] },
       { by: 'b', say: "Not if the page has {target} on it." },
       { by: 'a', say: "Unbelievable." },
       { by: 'a', conf: "If {b} won't vote with us when it matters, then I have to start asking what {b} is even doing in this group." },
@@ -361,13 +361,13 @@ export default {
   // ── campaigning in front of everybody ───────────────────────────────
   'plea.moved': [
     { id: 'pl.m1', turns: [
-      { by: 'a', say: "{b}, I need you. Please. I've never once put your name out there." },
+      { by: 'a', say: "{b}, I need you. Please. I've never once put your name out there.", keep: ['never'] },
       { by: 'b', say: "I know. I know you haven't." },
       { by: 'a', say: "Then don't do this to me." },
       { by: 'b', conf: "I was going to vote {a}. Then {a} looked at me like that, and I just couldn't. I'm going to have to explain that to some people." },
     ] },
     { id: 'pl.m2', turns: [
-      { by: 'a', say: "You and me have been good since the first night. That has to count for something." },
+      { by: 'a', say: "You and me have been good since the first night. That has to count for something.", keep: ['count'] },
       { by: 'b', say: "It does. It counts." },
       { by: 'a', conf: "I don't beg. But I talked to {b} like my life depended on it, because it kind of did." },
     ] },
@@ -440,7 +440,7 @@ export default {
     ] },
     { id: 'ou.2', turns: [
       { by: 'a', say: "I'm done keeping it quiet. {b} and the people in {alliance} have been running this house since the first week." },
-      { by: 'b', say: "You're desperate, {a}. Everybody can see it." },
+      { by: 'b', say: "You're desperate, {a}. Everybody can see it.", keep: ['desperat'] },
       { by: 'a', say: "I'm not desperate. I'm right." },
       { by: 'b', conf: "{a} just blew up our whole alliance in front of everybody. Now everybody's going to come for us, and I know exactly who to thank." },
     ] },
@@ -527,7 +527,7 @@ export default {
     ] },
     { id: 'co.g4', when: { register: 'fiery' }, turns: [
       { by: 'a', say: "{b}. It's you. It was always going to be you." },
-      { by: 'b', say: "Bring it." },
+      { by: 'b', say: "Bring it.", keep: ['bring it'] },
       { by: 'a', say: "Oh, I'm bringing it. I've been waiting to bring it." },
       { by: 'a', conf: "I don't care if I win or lose. I care that {b} has to stand across from me and look me in the eye." },
     ] },

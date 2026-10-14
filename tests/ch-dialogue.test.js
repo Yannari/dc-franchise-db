@@ -28,6 +28,34 @@ describe('The Challenge pools', () => {
       }
     }
   });
+
+  it('a turn whose reply picks up its word keeps that word in every voice (keep)', () => {
+    // "Your best lost us the daily" cannot follow a variant that never said "best".
+    const bad = [];
+    for (const list of Object.values(POOLS)) for (const e of list) e.turns.forEach((t, i) => {
+      for (const word of t.keep || []) {
+        for (const text of [t.say || t.conf, ...Object.values(t.v || {}).flat()]) {
+          if (!text.toLowerCase().includes(word)) bad.push(`${e.id}:${i} drops "${word}": ${text}`);
+        }
+      }
+    });
+    expect(bad, bad.join('\n')).toEqual([]);
+  });
+
+  it('voice overlays land only on spoken turns that exist (an overlay keyed by index drifts when a scene is rewritten)', async () => {
+    const { default: VOICES } = await import('../js/ch/script/lines/voices/index.js');
+    const byId = {};
+    for (const list of Object.values(POOLS)) for (const e of list) byId[e.id] = e;
+    const bad = [];
+    for (const [id, turns] of Object.entries(VOICES)) {
+      for (const i of Object.keys(turns)) {
+        const t = byId[id]?.turns[Number(i)];
+        if (!t) bad.push(`${id}:${i} has no such turn`);
+        else if (t.beat || t.by === 'tj') bad.push(`${id}:${i} is a ${t.beat ? 'beat' : 'TJ line'}`);
+      }
+    }
+    expect(bad, bad.join('\n')).toEqual([]);
+  });
 });
 
 describe('The Challenge, as aired', () => {

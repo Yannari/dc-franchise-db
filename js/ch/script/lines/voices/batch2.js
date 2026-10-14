@@ -74,7 +74,7 @@ const AGREE = {
 };
 
 const RELUCTANT = {
-  quiet: ['...Fine. I\'ll do it.'],
+  quiet: ['...Fine. I\'ll do it. I don\'t love it.'],
   dry: ['Sure. Love being consulted after the decision.', 'I\'ll do it. I\'ll just be quietly judging the whole time.'],
   loud: ['Fine! FINE! But I don\'t like it!'],
   warm: ['I\'ll do it, for you guys. I just feel bad about it.'],
@@ -93,7 +93,7 @@ const RELUCTANT = {
   emotional: ['Okay. I\'ll do it. I just don\'t feel good about it.'],
   proud: ['I\'ll go along with it, but I want it noted that I had a better idea.'],
   sharp: ['Fine. Your call. Your problem if it goes wrong.'],
-  soft: ['Okay. I\'ll do it.'],
+  soft: ['Okay. I\'ll do it. I\'m just not happy about it.'],
   odd: ['Fine. But I\'m pouting about it.'],
 };
 

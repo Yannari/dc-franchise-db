@@ -291,7 +291,7 @@ export default {
       { by: 'a', conf: "I'm not here for romance. But {b}... I don't know. There's something there.", v: { sharp: ['{b} is a distraction. A very good-looking distraction.'], loud: ['Okay, I\'m into {b}! I said it!'], soft: ['Every time {b} smiles at me, I forget where I am.'] } },
     ] },
     { id: 'sp.2', turns: [
-      { by: 'a', say: "You're kind of distracting, you know that?", v: { odd: ['Can you stop being cute? I\'m trying to strategise.'] } },
+      { by: 'a', say: "You're kind of distracting, you know that?", keep: ['distract'], v: { odd: ['Can you stop being so distracting? I\'m trying to strategise.'] } },
       { by: 'b', say: "I'll take that as a compliment.", v: { soft: ['That\'s... really sweet.'] } },
       { by: 'b', conf: "{a} said I was distracting. I'm going to be thinking about that for a while.", v: { sharp: ['{a} is interested. I can use that. I might also like it.'] } },
     ] },
@@ -531,7 +531,7 @@ export default {
   'partner-blame.any': [
     { id: 'pb.1', turns: [
       { by: 'a', say: "We lost because you couldn't keep up.", v: { loud: ['You cost us that whole daily!'], sharp: ['I carried us, and you still dropped it.'] } },
-      { by: 'b', say: "I was doing my best!", v: { sharp: ['Maybe if you weren\'t screaming at me the whole time.'] } },
+      { by: 'b', say: "I was doing my best!", keep: ['best'], v: { sharp: ['That was my best! Maybe if you weren\'t screaming at me the whole time.'] } },
       { by: 'a', say: "Your best lost us the daily.", v: { soft: ['I know. I\'m sorry. I\'m just frustrated.'] } },
       { by: 'b', conf: "{a} blamed me in front of everybody. Now the whole house thinks I'm the weak one.", v: { soft: ['I really tried. I really did.'] } },
     ] },
@@ -634,7 +634,7 @@ export default {
   ],
   'arena-eve-confront.backfires': [
     { id: 'ec.b1', turns: [
-      { by: 'a', say: "You made a big mistake picking me.", v: { loud: ['BIG mistake! Huge!'] } },
+      { by: 'a', say: "You made a big mistake picking me.", keep: ['mistake'], v: { loud: ['BIG mistake! Huge!'] } },
       { by: 'b', say: "We'll see who made the mistake.", v: { sharp: ['Did you come out here just to tell me that? Cute.'], dry: ['Thanks for stopping by. Close the door on your way out.'] } },
       { by: 'a', conf: "I went to rattle {b}. {b} didn't even blink. Now I'm the one who can't sleep.", v: { soft: ['That didn\'t go how I wanted at all.'] } },
     ] },

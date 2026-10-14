@@ -173,7 +173,6 @@ export default {
   },
   'nl.n1': { 4: { competitive: "I'm fine.", calm: "I'm fine.", loud: "I'm FINE.", chaotic: "I'm fine! Totally fine!", anxious: "I'm fine. I think.", theatrical: "I am perfectly fine." } },
   'nlx.k1': {
-    0: { warm: "We need to talk about what you did.", loud: "We need to TALK about what you did.", competitive: "We need to talk about what you did.", anxious: "We need to talk about what you did." },
     3: { competitive: "I don't have a good reason. I panicked and made a bad call, and you got hurt.", dry: "I don't have a good reason. I panicked, made a bad call, and you paid for it.", loud: "I don't have a good reason! I panicked, I made a bad call, and you got hurt!", calm: "I don't have a good reason. I panicked, I made a bad call, and you got hurt by it.", bossy: "There's no good reason. I panicked, made a bad call, and you got hurt." },
   },
   'nh.j1': {

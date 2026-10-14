@@ -160,7 +160,7 @@ export default {
       { beat: "Nobody stops {c.obj}. {a} and {b} both notice {c.sub} left without saying a word for either of them." },
     ] },
     { id: 'nwt.o5', turns: [
-      { by: 'c', conf: "I like {a} and I like {b}, so when they go at each other like that, the smartest thing I can do is keep my mouth shut. I just hope neither of them noticed how quiet I was." },
+      { by: 'c', conf: "When {a} and {b} go at each other like that, the smartest thing I can do is keep my mouth shut. I just hope neither of them noticed how quiet I was." },
     ] },
   ],
   // the morning after: a was let down by b
@@ -196,7 +196,7 @@ export default {
       { by: 'b', say: "Friends tell you when you're wrong. I'm sorry it hurt.", v: { tough: "Friends tell you the truth. I'm not apologising for that.", emotional: "I know. I've felt sick about it all night. I just couldn't agree with you." } },
       { by: 'a', conf: "Out of everybody here, it had to be {b}. I could take that from anyone else, but not from {b}." },
     ] },
-    { id: 'nwa.t2', turns: [
+    { id: 'nwa.t2', place: 'eat', turns: [
       { beat: "{a} doesn't sit with {b} at breakfast. {b} notices." },
       { by: 'b', say: "Are we okay?" },
       { by: 'a', say: "You took {other}'s side. So, no. Not really." },

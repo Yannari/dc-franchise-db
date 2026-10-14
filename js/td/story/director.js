@@ -1112,7 +1112,9 @@ function causeFor(ep, camp, leader, boot) {
       if (/thaw|amend|truce|forgiv|apolog|rekindle|celebrat|gratitude|bond/i.test(s)) return null;
       const kind = ev.scene?.kind || '';
       if (!(kind && hasStoryPool(`long.${kind}`)) && !rawFits(ev, ep, phase)) return null;
-      const when = phase === 'pre' ? 'this morning' : 'this afternoon';
+      // (by its own window: a fight at chore time is not "this morning", read 2026-10-14)
+      const win = ev.scene?.spot?.window || ev.access?.windowId || null;
+      const when = phase === 'pre' ? (win && win !== 'morning' ? 'earlier today' : 'this morning') : 'this afternoon';
       // the morning after a vote: a grieves the friend b helped vote out (camp-events.js fallout.mourn).
       // Revenge when a runs the plan; when b does, b is getting rid of the person who will want it
       const fallen = ev.scene?.data?.fallen;
@@ -1810,12 +1812,13 @@ export function airTdEpisode(ep) {
         const against = new Set(day.filter(ev => ev.scene?.kind === 'pitch.turn' && ev.scene.data?.friend).map(ev => pk(ev.scene.who?.a, ev.scene.data.friend)));
         for (const ev of day) if (ev.aired == null && /^drama\.thaw/.test(ev.scene?.kind || '') && against.has(pk(ev.scene.who?.a, ev.scene.who?.b))) ev.aired = 'covered'; }
       // ...and the camp has one party and one blow-up a day, and no party on the way to a vote (read 2026-10-14: two
-      // celebrations at the carousel, the second "We are CELEBRATING!" just before Tribal; two blow-ups back to back)
-      if (phase === 'pre') { const seenG = new Set(), lostToday = !!challengeOf(ep, camp)?.lost, post = eventsOf(ep, camp, 'post');
+      // celebrations at the carousel, the second "We are CELEBRATING!" just before Tribal; two blow-ups back to back) ...and no
+      // pep talk after a win ("Everybody say one good thing about today" the day they won)
+      if (phase === 'pre') { const seenG = new Set(), ch0 = challengeOf(ep, camp), lostToday = !!ch0?.lost, wonToday = !!ch0?.won, post = eventsOf(ep, camp, 'post');
         for (const ev of ['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph))) {
-          const g = /^(friend\.celebrate|drama\.bomb)/.exec(ev?.scene?.kind || '')?.[1];
+          const g = /^(friend\.celebrate|friend\.rally|drama\.bomb)/.exec(ev?.scene?.kind || '')?.[1];
           if (!g || ev.aired != null) continue;
-          if (seenG.has(g) || (g === 'friend.celebrate' && lostToday && post.includes(ev))) { ev.aired = 'covered'; continue; }
+          if (seenG.has(g) || (g === 'friend.celebrate' && lostToday && post.includes(ev)) || (g === 'friend.rally' && wonToday && post.includes(ev))) { ev.aired = 'covered'; continue; }
           seenG.add(g);
         } }
       // ...and one person sits with what the one who left forgot: two mourners in a row aired the same scene, "folding a
@@ -1832,6 +1835,14 @@ export function airTdEpisode(ep) {
         const WARM = /^friend\.(struggle|meal|bond|joke|secret|thanks|lift|comfort|teach|celebrate|open|rideordie|solidarity|mentor)/;
         const fought = new Set(day.filter(ev => HOT.test(ev.scene?.kind || '') && ev.scene?.who?.a && ev.scene?.who?.b).map(ev => pk(ev.scene.who.a, ev.scene.who.b)));
         for (const ev of day) if (ev.aired == null && WARM.test(ev.scene?.kind || '') && ev.scene?.who?.a && ev.scene?.who?.b && fought.has(pk(ev.scene.who.a, ev.scene.who.b))) ev.aired = 'covered'; }
+      // ...and nobody makes up with somebody before they have it out with them the same day (read 2026-10-14: Diego gave
+      // Anastasia an apology bracelet, then "I know you didn't vote with us")
+      if (phase === 'pre') { const pk = (x, y) => [x, y].sort().join('|');
+        const day = ['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph)).filter(Boolean);
+        const HOT = /^(drama\.(fight|explode|bomb|clash|dispute)|blame|clash|caught|witness\.after|deal\.(broken|double|end))/;
+        day.forEach((ev, i) => { const w = ev.scene?.who || {};
+          if (ev.aired != null || !/^drama\.(sorry|thaw)|truce/.test(ev.scene?.kind || '') || !w.a || !w.b) return;
+          if (day.slice(i + 1).some(x => HOT.test(x.scene?.kind || '') && pk(x.scene.who?.a, x.scene.who?.b) === pk(w.a, w.b))) ev.aired = 'covered'; }); }
       // ...and the same moment between the same two people airs once a day (read 2026-10-14: Gwen said Izzy should go
       // next and Geoff told her off in the morning, then all of it again in the afternoon)
       if (phase === 'pre') { const seenK = new Set();
@@ -2360,8 +2371,11 @@ export function airTdEpisode(ep) {
             if (!M.cur && M.arcs < 2 && ep.num >= 2 && !merged) {
               const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'underdog', 'goat', 'showmancer', 'perceptive-player', 'floater']);
               const archOf = x => (players.find(p => p.name === x) || {}).archetype;
+              // (nobody is taught twice: read 2026-10-14, Diego taught Jade fire, "I did it!", and offered to teach her fire
+              // the next day)
+              const taught = new Set(M.taught || []);
               for (const key of ['endurance', 'physical', 'mental']) {
-                const learner = [...members].sort((x, y) => (st(x)[key] ?? 5) - (st(y)[key] ?? 5) || x.localeCompare(y))[0];
+                const learner = [...members].filter(x => !taught.has(x)).sort((x, y) => (st(x)[key] ?? 5) - (st(y)[key] ?? 5) || x.localeCompare(y))[0];
                 const teacher = members.filter(x => x !== learner && NICE.has(archOf(x)) && getBond(x, learner) >= 0 && (st(x)[key] ?? 5) - (st(learner)[key] ?? 5) >= 3)
                   .sort((x, y) => (st(y)[key] ?? 5) - (st(x)[key] ?? 5) || x.localeCompare(y))[0];
                 // (proposed here; it starts when its first scene airs, below)
@@ -2376,7 +2390,7 @@ export function airTdEpisode(ep) {
               if (w) {
                 offer('mentor', 'due', { at: 0.33, item: onCommit({ story: true, kind: `arc.mentor.${step}`, storyType: 'arc', step, players: [who.a, who.b], lines: w.lines, text: w.text, lineId: w.lineId,
                   scene: { kind: 'arc', who, data: { skill: cur.skill }, spot: w.spot || null }, badgeText: '', badgeClass: '', why: [`${who.a} is teaching ${who.b} ${cur.skill}.`], fx: [[who.a, who.b, 1]] }, () => {
-                  if (!M.cur) { M.cur = cur; M.arcs++; }
+                  if (!M.cur) { M.cur = cur; M.arcs++; (M.taught ||= []).push(cur.b); }
                   M.cur.last = ep.num; M.cur.step++;
                   if (M.cur.step >= STEPS.length) M.cur = null;
                 }) });

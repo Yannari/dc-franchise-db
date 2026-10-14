@@ -95,7 +95,9 @@ export function witnessConflicts(ep, camp, out, members, write, factsForWho, liv
     // the others who care: the strongest feelings about either of them, one or two
     const care = x => Math.max(Math.abs(getBond(x, a)), Math.abs(getBond(x, b)));
     // (nobody who already has a line in it: they are in it already)
-    const pool0 = members.filter(x => !inScene.has(x) && !spoke.has(x));
+    // (nor somebody the scene has just sent away: "Lynda heads off", then Lynda sides with Jade, read 2026-10-14)
+    const leftNow = x => lines.some(l => l.kind === 'beat' && (l.text || '').includes(x) && /\b(heads? off|leaves?|wanders? away|finds? something else to do)\b/.test(l.text || ''));
+    const pool0 = members.filter(x => !inScene.has(x) && !spoke.has(x) && !leftNow(x));
     const first = pool0.filter(x => care(x) >= 2).sort((x, y) => care(y) - care(x) || x.localeCompare(y))[0];
     // ...and on a big one, somebody who likes them both, caught in the middle
     const torn = /explode|bomb|crowd|fight/.test(sk + k) ? pool0.filter(x => x !== first && Math.min(getBond(x, a), getBond(x, b)) >= 1)

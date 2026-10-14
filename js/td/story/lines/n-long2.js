@@ -167,7 +167,7 @@ export default {
   // b confronts a, who answers the engine's way
   'long.caught.face.apology': [
     { id: 'nlx.k1', turns: [
-      { by: 'b', say: "We need to talk about what you did." },
+      { by: 'b', say: "We need to talk about how you voted." },
       { by: 'a', say: "I know. I'm sorry. I really am." },
       { by: 'b', say: "That's it? Sorry?" },
       { by: 'a', say: "I don't have a good reason. I panicked, and I made a bad call, and you got hurt by it." },
@@ -176,7 +176,7 @@ export default {
   ],
   'long.caught.face.explain': [
     { id: 'nlx.k2', turns: [
-      { by: 'b', say: "Explain it to me. Why would you do that?" },
+      { by: 'b', say: "Explain it to me. Why would you write that name?" },
       { by: 'a', say: "Because if I hadn't, we'd both be in trouble right now, and I can show you why." },
       { by: 'b', say: "Go on, then." },
       { by: 'a', say: "Count the votes with me. Every way you count it, I did the only thing that kept us here." },
@@ -185,7 +185,7 @@ export default {
   ],
   'long.caught.face.refusal': [
     { id: 'nlx.k3', turns: [
-      { by: 'b', say: "Are you even going to apologise?" },
+      { by: 'b', say: "Are you even going to apologise for that vote?" },
       { by: 'a', say: "For playing the game? No." },
       { by: 'b', say: "Unbelievable." },
       { by: 'a', say: "You'd have done the same thing if you'd thought of it first." },
@@ -194,7 +194,7 @@ export default {
   ],
   'long.caught.face.denial': [
     { id: 'nlx.k4', turns: [
-      { by: 'b', say: "I know what you did." },
+      { by: 'b', say: "I know you didn't vote with us." },
       { by: 'a', say: "I don't know what you're talking about." },
       { by: 'b', say: "Don't. I know." },
       { by: 'a', say: "Then whoever told you is lying to you." },
@@ -205,7 +205,7 @@ export default {
     { id: 'nlx.k5', turns: [
       { by: 'b', say: "Nothing to say? Really?" },
       { beat: "{a} doesn't even look up." },
-      { by: 'b', say: "I know what you did. Everybody knows what you did." },
+      { by: 'b', say: "I know you didn't vote with us. Everybody knows." },
       { by: 'a', say: "Then you don't need me to tell you." },
       { by: 'b', say: "I need you to tell me why. That's all. Just why." },
       { by: 'a', say: "Because it was you or me, and I picked me. There's your why." },

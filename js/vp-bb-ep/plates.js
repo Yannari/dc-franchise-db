@@ -19,11 +19,14 @@ export const plateBuilt = built;
 const STUDIO = new Set(['studio', 'studio-wide', 'finale', 'finale-jury']);
 const platesOf = set => Object.keys(RESORT.plates).filter(id => built(id) && (RESORT.plates[id].sets || []).includes(set));
 const WORDS = {};
+// how specifically the lines name a plate: the length of the longest of its words they say (0: not named)
 const named = (id, text) => {
   const w = RESORT.plates[id].words;
-  if (!w || !text) return false;
-  WORDS[id] ||= new RegExp(String.raw`\b(?:${w})`, 'i');
-  return WORDS[id].test(text);
+  if (!w || !text) return 0;
+  WORDS[id] ||= new RegExp(String.raw`\b(?:${w})`, 'gi');
+  let best = 0;
+  for (const m of String(text).matchAll(WORDS[id])) best = Math.max(best, m[0].length);
+  return best;
 };
 
 /**
@@ -33,7 +36,13 @@ const named = (id, text) => {
 export function pickPlate(set, key, text = '', use = 'house') {
   const all = platesOf(set);
   if (!all.length) return null;
-  const said = all.filter(id => named(id, text));
+  // the place the lines name most specifically ("the edge of the pool" is the pool edge, not the beach's "the water")
+  const score = Object.fromEntries(all.map(id => [id, named(id, text)]));
+  const top = Math.max(0, ...Object.values(score));
+  const tied = top ? all.filter(id => score[id] === top) : [];
+  // two plates named as well as each other ("by the pool"): the wide one, the room at its best
+  const wide = tied.filter(id => (RESORT.plates[id].use || []).length);
+  const said = wide.length ? wide : tied;
   // a plate that is only ever chosen by name (the gym is not where every backyard talk happens);
   // a private talk (`secret`) can also slip off to the island's hidden spots (pier, ponds, lagoon, volcano)
   const free = all.filter(id => {
@@ -41,6 +50,13 @@ export function pickPlate(set, key, text = '', use = 'house') {
     return u.includes(use) || ((use === 'house' || use === 'secret') && u.includes('quiet'));
   });
   if (!said.length && !free.length && use === 'secret') return pickPlate(set, key, text, 'house');
+  // an ordinary house scene plays on the room's own wide plates most of the time, and on a quiet
+  // corner of the island (the beach, the dock) now and then (the user, 2026-10-14: show the house at its best)
+  if (!said.length && use === 'house') {
+    const own = free.filter(id => (RESORT.plates[id].use || []).includes('house'));
+    const quiet = free.filter(id => !own.includes(id));
+    if (own.length && quiet.length) return (hashOf(`${key}|room`) % 3 ? own : quiet)[hashOf(key) % (hashOf(`${key}|room`) % 3 ? own : quiet).length];
+  }
   const pool = said.length ? said : free.length ? free : all;
   return pool[hashOf(key) % pool.length];
 }

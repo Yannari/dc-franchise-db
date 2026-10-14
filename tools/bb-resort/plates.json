@@ -39,7 +39,7 @@
   "room": "living-room", "sets": ["ceremony"], "use": ["house"], "indoor": true,
   "screens": [[453, 0, 1130, 413], [58, 367, 325, 833], [1258, 367, 1525, 833]]
  },
- "living-screens-close": {"room": "living-room", "sets": ["ceremony"], "use": ["house"], "indoor": true},
+ "living-screens-close": {"room": "living-room", "sets": ["ceremony"], "use": [], "words": "the screens|the big screen", "indoor": true},
  "living-sofas": {
   "room": "living-room", "sets": ["ceremony"], "use": ["house"], "indoor": true,
   "lights": [[505, 110, 90], [935, 110, 90]]
@@ -49,21 +49,21 @@
   "lights": [[595, 180, 90], [967, 180, 90]]
  },
  "living-reverse": {
-  "room": "living-room", "sets": ["ceremony"], "use": ["house"], "indoor": true,
+  "room": "living-room", "sets": ["ceremony"], "use": [], "words": "the doorway|in the doorway", "indoor": true,
   "lights": [[562, 120, 90], [977, 120, 90]]
  },
- "living-console": {"room": "living-room", "sets": ["ceremony"], "use": ["house"], "indoor": true},
+ "living-console": {"room": "living-room", "sets": ["ceremony"], "use": [], "words": "the console|the flowers|the plants", "indoor": true},
  "library-wide": {
   "room": "living-room", "sets": ["ceremony"], "use": ["quiet"], "indoor": true,
   "words": "librar|bookshel|bookcase|fireplace|reading",
   "lights": [[630, 230, 170]]
  },
  "library-couch": {
-  "room": "living-room", "sets": ["ceremony"], "use": ["quiet"], "indoor": true,
+  "room": "living-room", "sets": ["ceremony"], "use": [], "indoor": true,
   "words": "librar|bookshel|bookcase|reading",
   "lights": [[450, 30, 200]]
  },
- "library-desk": {"room": "living-room", "sets": ["ceremony"], "use": ["quiet"], "indoor": true, "words": "librar|desk|bookshel"},
+ "library-desk": {"room": "living-room", "sets": ["ceremony"], "use": [], "indoor": true, "words": "librar|desk|bookshel"},
 
  "confessional": {"room": "diary-room", "sets": ["dr"], "use": ["dr"], "indoor": true, "nonight": true},
 
@@ -89,37 +89,37 @@
  "dining-breakfast": {"room": "kitchen", "sets": ["dining"], "use": ["meal"], "indoor": true, "words": "breakfast|eggs|bacon"},
  "dining-meal": {"room": "kitchen", "sets": ["dining"], "use": ["meal"], "indoor": true},
  "dining-meal-2": {"room": "kitchen", "sets": ["dining"], "use": ["meal"], "indoor": true},
- "dining-camera": {"room": "kitchen", "sets": ["dining"], "use": ["meal"], "indoor": true, "windows": [[0, 0, 390, 900]]},
+ "dining-camera": {"room": "kitchen", "sets": ["dining"], "use": [], "indoor": true, "windows": [[0, 0, 390, 900]]},
  "dining-door": {"room": "living-room", "sets": ["door"], "use": ["house"], "indoor": true, "windows": [[390, 60, 1250, 900], [1500, 0, 1600, 900]]},
 
  "kitchen-wide": {"room": "kitchen", "sets": ["kitchen"], "use": ["house"], "indoor": true, "windows": [[950, 170, 1280, 560], [1380, 0, 1600, 560]]},
- "kitchen-stove": {"room": "kitchen", "sets": ["kitchen"], "use": ["house"], "indoor": true, "words": "stove|cooking|cook|oven|pan"},
+ "kitchen-stove": {"room": "kitchen", "sets": ["kitchen"], "use": [], "indoor": true, "words": "stove|cooking|cook|oven|pan"},
  "bar-lobby-wide": {
   "room": "kitchen", "sets": ["kitchen"], "use": ["house"], "indoor": true, "words": "bar|coffee|smoothie|blender|drink",
   "lights": [[150, 140, 110], [350, 140, 110], [555, 140, 110], [760, 140, 110], [945, 140, 110], [1130, 140, 110]]
  },
  "bar-lobby": {
-  "room": "kitchen", "sets": ["kitchen"], "use": ["house"], "indoor": true, "words": "bar|coffee|smoothie|blender",
+  "room": "kitchen", "sets": ["kitchen"], "use": [], "indoor": true, "words": "bar|coffee|smoothie|blender",
   "lights": [[140, 75, 110], [390, 75, 110], [640, 75, 110], [885, 75, 110]]
  },
- "bar-lobby-close": {"room": "kitchen", "sets": ["kitchen"], "use": ["house"], "indoor": true, "words": "coffee|smoothie|blender"},
- "bar-stools": {"room": "kitchen", "sets": ["kitchen"], "use": ["house"], "indoor": true, "words": "bar stool|at the bar"},
+ "bar-lobby-close": {"room": "kitchen", "sets": ["kitchen"], "use": [], "indoor": true, "words": "coffee|smoothie|blender"},
+ "bar-stools": {"room": "kitchen", "sets": ["kitchen"], "use": [], "indoor": true, "words": "bar stool|at the bar"},
 
  "bedroom-wide": {
   "room": "bedroom", "sets": ["bedroom"], "use": ["house"], "indoor": true,
   "lights": [[165, 355, 90], [1420, 355, 90]]
  },
- "bedroom-beds": {"room": "bedroom", "sets": ["bedroom"], "use": ["house"], "indoor": true, "lights": [[565, 230, 170]]},
- "bedroom-sofa": {"room": "bedroom", "sets": ["bedroom"], "use": ["house"], "indoor": true, "lights": [[1570, 420, 110]]},
+ "bedroom-beds": {"room": "bedroom", "sets": ["bedroom"], "use": [], "words": "between the beds|nightstand|bedside|on (?:his|her|their|the) bed", "indoor": true, "lights": [[565, 230, 170]]},
+ "bedroom-sofa": {"room": "bedroom", "sets": ["bedroom"], "use": [], "words": "bedroom sofa|armchair|sofa in the bedroom", "indoor": true, "lights": [[1570, 420, 110]]},
 
  "hallway": {"room": "washroom", "sets": ["bathroom"], "use": ["house"], "indoor": true},
  "purple-hall": {"room": "hoh-room", "sets": [], "use": [], "indoor": true, "words": "hallway|corridor|upstairs"},
 
- "gym-racks": {"room": "backyard", "sets": ["yard"], "use": ["house"], "indoor": true, "words": "gym|weights|workout|lifting|dumbbell", "windows": [[20, 0, 1600, 640]]},
- "gym-kettlebells": {"room": "backyard", "sets": ["yard"], "use": ["house"], "indoor": true, "words": "gym|kettlebell|weights", "windows": [[90, 0, 1600, 710]]},
- "gym-treadmills": {"room": "backyard", "sets": ["yard"], "use": ["house"], "indoor": true, "words": "gym|treadmill|running|cardio", "windows": [[0, 0, 1600, 560]]},
- "gym-bench": {"room": "backyard", "sets": ["yard"], "use": ["house"], "indoor": true, "words": "gym|bench press|barbell|lifting", "windows": [[1100, 120, 1600, 700]]},
- "gym-row": {"room": "backyard", "sets": ["yard"], "use": ["house"], "indoor": true, "words": "gym|treadmill", "windows": [[110, 0, 1470, 170]]},
+ "gym-racks": {"room": "backyard", "sets": ["yard"], "use": [], "indoor": true, "words": "gym|weights|workout|lifting|dumbbell", "windows": [[20, 0, 1600, 640]]},
+ "gym-kettlebells": {"room": "backyard", "sets": ["yard"], "use": [], "indoor": true, "words": "gym|kettlebell|weights", "windows": [[90, 0, 1600, 710]]},
+ "gym-treadmills": {"room": "backyard", "sets": ["yard"], "use": [], "indoor": true, "words": "gym|treadmill|running|cardio", "windows": [[0, 0, 1600, 560]]},
+ "gym-bench": {"room": "backyard", "sets": ["yard"], "use": [], "indoor": true, "words": "gym|bench press|barbell|lifting", "windows": [[1100, 120, 1600, 700]]},
+ "gym-row": {"room": "backyard", "sets": ["yard"], "use": [], "indoor": true, "words": "gym|treadmill", "windows": [[110, 0, 1470, 170]]},
 
  "pool-wide": {
   "room": "backyard", "sets": ["yard"], "use": ["house"], "words": "pool|swim|lounger|backyard",
@@ -127,33 +127,33 @@
   "windows": [[0, 270, 70, 620], [133, 383, 325, 608], [575, 280, 650, 460]]
  },
  "pool-deck": {
-  "room": "backyard", "sets": ["yard"], "use": ["house"], "indoor": false, "nosky": true, "words": "pool|lounger|deck",
+  "room": "backyard", "sets": ["yard"], "use": [], "indoor": false, "nosky": true, "words": "pool|lounger|deck",
   "pool": [[817, 380, 1600, 670, 0, 1250, 600]],
   "windows": [[190, 25, 635, 410]]
  },
  "pool-loungers": {
-  "room": "backyard", "sets": ["yard"], "use": ["house"], "nosky": true, "words": "pool|lounger|deck|tan",
+  "room": "backyard", "sets": ["yard"], "use": [], "nosky": true, "words": "pool|lounger|deck|tan",
   "pool": [[860, 380, 1600, 660, 0, 1300, 500]],
   "windows": [[200, 40, 640, 420], [1200, 0, 1400, 215]]
  },
  "pool-door": {
-  "room": "backyard", "sets": ["yard"], "use": ["house"], "nosky": true, "words": "pool|lounger",
+  "room": "backyard", "sets": ["yard"], "use": [], "nosky": true, "words": "pool|lounger",
   "pool": [[1330, 690, 1600, 900, 0, 1500, 860]],
   "windows": [[0, 0, 200, 800], [270, 0, 1060, 700]]
  },
  "pool-edge": {
-  "room": "backyard", "sets": ["yard"], "use": ["house"], "nosky": true, "words": "pool|lounger|edge of the pool",
+  "room": "backyard", "sets": ["yard"], "use": [], "nosky": true, "words": "pool|lounger|edge of the pool",
   "pool": [[780, 680, 1600, 900, 0, 1300, 850]],
   "windows": [[60, 0, 900, 150]]
  },
  "pool-water": {
-  "room": "backyard", "sets": ["yard"], "use": ["house"], "nosky": true, "words": "pool|swim|in the water|float",
+  "room": "backyard", "sets": ["yard"], "use": [], "nosky": true, "words": "pool|swim|in the water|float",
   "pool": [[0, 370, 1600, 900, 0, 900, 650]]
  },
- "patio": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "patio|balcony|railing"},
- "balcony": {"room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "balcony|view|railing|sea", "sea": true, "pool": [[430, 200, 830, 340, 0, 700, 280]]},
+ "patio": {"room": "backyard", "sets": ["yard"], "use": [], "words": "patio|balcony|railing"},
+ "balcony": {"room": "backyard", "sets": ["yard"], "use": [], "words": "balcony|view|railing|sea", "sea": true, "pool": [[430, 200, 830, 340, 0, 700, 280]]},
  "beach-bar": {"place": ["The Beach Bar", 20], 
-  "room": "backyard", "sets": ["yard"], "use": ["quiet"], "nosky": true, "words": "beach bar|tiki|cocktail|on the beach",
+  "room": "backyard", "sets": ["yard"], "use": [], "nosky": true, "words": "beach bar|tiki|cocktail|on the beach",
   "lights": [[120, 40, 50], [310, 40, 50], [470, 40, 50], [650, 40, 50], [900, 40, 50], [1180, 40, 50], [1450, 40, 50]],
   "glow": [[0, 0, 1600, 90]]
  },
@@ -194,7 +194,7 @@
   "screens": [[687, 164, 917, 304]], "lights": [[800, 25, 160]]},
  "foyer": {"room": "living-room", "sets": ["door"], "use": ["house"], "indoor": true, "words": "foyer|front door|entrance", "lights": [[328, 190, 120]]},
 
- "beach-loungers": {"place": ["The Beach", 20], "room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach|sand|sunbath|umbrella|lounger|deck chair"},
+ "beach-loungers": {"place": ["The Beach", 20], "room": "backyard", "sets": ["yard"], "use": [], "words": "beach|sand|sunbath|umbrella|lounger|deck chair"},
  "beach-shoreline": {"place": ["The Beach", 20], "room": "backyard", "sets": ["yard"], "use": ["quiet"], "words": "beach|shore|waves|the water|walk along", "sea": true,
   "pool": [[0, 290, 1600, 600, 0, 800, 400]]},
  "pier-east": {"place": ["The Pier", 22], "room": "backyard", "sets": ["yard"], "use": ["secret"], "words": "pier|boat|jetty", "sea": true,

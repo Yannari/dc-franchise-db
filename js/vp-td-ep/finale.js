@@ -25,6 +25,11 @@ const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul
 const pickBy = (arr, ...k) => arr[hash(k.join('|')) % arr.length];
 const fam = n => { try { return familyOf(n); } catch { return 'plain'; } };
 const V = (n, o, ...k) => pickBy(o[fam(n)] || o.any, n, ...k);
+// ...and inside one screen, nobody says what somebody else just said: their own voice's line not yet used, else any
+// line not yet used (a local memory per screen, so a rebuilt screen says the same thing again)
+const VOnce = () => { const used = new Set(); return (n, o, ...k) => {
+  const own = (o[fam(n)] || []).filter(x => !used.has(x)), any = (o.any || []).filter(x => !used.has(x));
+  const t = pickBy(own.length ? own : any.length ? any : (o[fam(n)] || o.any), n, ...k); used.add(t); return t; }; };
 const listOf = a => (a.length > 1 ? `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}` : a.join(''));
 const bondOf = ep => { const s = ep.gsSnapshot?.bonds || {}; return (a, b) => s[a <= b ? `${a}||${b}` : `${b}||${a}`] ?? 0; };
 const unquote = t => cleanText(String(t || '').trim().replace(/^["“]+|["”]+$/g, '').replace(/…$/, '.'));
@@ -156,7 +161,7 @@ export function tdFinalTribalScreen(ep, o = {}) {
       loud: ["I knew who I was voting for before I sat down, and nothing up there changed my mind!", "That was a lot of talking. My vote didn't move an inch.", "I've been waiting all season to write this name, and I'm writing it big!"],
       sharp: ["Some of those answers were good. Some of them were rehearsed. I can tell the difference.", "I've had weeks on that bench to decide. Tonight just confirmed it.", "One of them answered the question. The others answered a question they wished I'd asked."],
       soft: ["This is the hardest vote I've had to write all season, and I don't even get to vote anybody out.", "I'm voting for the person I think played it best. I hope they know how much this means.", "My hand is shaking. It's a good shake, I think."],
-      dry: ["I've been ready to write this name for about three weeks.", "They all talked. One of them said something true.", "I wrote it neatly. They deserve neat."],
+      dry: ["I've been ready to write this name for about three weeks.", "They all talked. Only one of them actually answered me.", "I wrote the name nice and big, so there's no confusion."],
       any: ["I know exactly who I'm voting for. I knew before we even started.", "Tonight helped. Tonight made it clear.", "I listened to all of it. I'm voting for the game I'd want to have played.", "I came in with a name, and I'm leaving it in that urn.", "Whatever happens next, this vote is the one I'll stand by."],
     }, 'jv', ep.num, i), focus: [j] });
     if (i === Math.floor(jurors.length / 2)) steps.push({ k: 'beat', text: `One by one, the jurors walk up, write a name and drop it in the urn.`, focus: finalists });
@@ -242,14 +247,18 @@ function winnerMoment(steps, ep, o, winner, finalists, crowd, bond, toCrowd = nu
     dry: ['Huh. I won. That just happened.', 'Okay. I think I need to sit down.'],
     any: ["I can't believe it. I won!", 'I won. I actually won.'],
   }, 'win', ep.num) });
+  const VR = VOnce();
   finalists.filter(f => f !== winner).forEach((f, i) => {
     const b = bond(f, winner);
-    steps.push({ k: 'say', by: f, focus: [f, winner], text: b >= 3 ? V(f, {
-      loud: ["Get over here! I'm so happy for you, I could scream!"], soft: ["Come here. You deserve this. You really do."], any: ['Congratulations. Honestly, you earned it.'],
-    }, 'ru', ep.num, i) : b <= -2 ? V(f, {
-      loud: ['Unbelievable. Un-be-lievable.'], sharp: ['Congratulations. I hope the jury enjoys what they just did.'], dry: ['Great. Wonderful. Good for you.'], any: ["Congrats. I mean it. Mostly."],
-    }, 'rx', ep.num, i) : V(f, {
-      soft: ["I'm a little crushed, but I'm happy for you. I mean that."], dry: ['Second place. I can live with that. Probably.'], any: ['Well played. You got me.', "It hurts, but you earned it."],
+    steps.push({ k: 'say', by: f, focus: [f, winner], text: b >= 3 ? VR(f, {
+      loud: ["Get over here! I'm so happy for you, I could scream!", "YES! That's my friend! That's my friend right there!"], soft: ["Come here. You deserve this. You really do."],
+      any: ['Congratulations. Honestly, you earned it.', "I'm so happy for you. I really am."],
+    }, 'ru', ep.num, i) : b <= -2 ? VR(f, {
+      loud: ['Unbelievable. Un-be-lievable.', "Are you kidding me? Seriously?"], sharp: ['Congratulations. I hope the jury enjoys what they just did.'], dry: ['Great. Wonderful. Good for you.'],
+      any: ["Congrats. I mean it. Mostly.", "Fine. Congratulations. I'm going to go stand over there now."],
+    }, 'rx', ep.num, i) : VR(f, {
+      soft: ["I'm a little crushed, but I'm happy for you. I mean that."], dry: ['Second place. I can live with that. Probably.'],
+      any: ['Well played. You got me.', "It hurts, but you earned it.", "Okay. Okay. Good game. You played it better."],
     }, 'rn', ep.num, i) });
   });
   if (crowd?.length && toCrowd) toCrowd();
@@ -378,8 +387,9 @@ export function tdWinnerScreen(ep, o = {}) {
     dry: ["I won. I'm going to need someone to tell me that a few more times."],
     any: ["I won. After everything, I actually won. I don't know how to feel yet. Happy. Mostly happy."],
   }, 'wc', ep.num) });
-  runners.forEach((f, i) => steps.push({ k: 'conf', by: f, focus: [f], text: V(f, {
-    loud: ["So close! SO close! I'm going to think about that last moment for the rest of my life!"],
+  const VW = VOnce();
+  runners.forEach((f, i) => steps.push({ k: 'conf', by: f, focus: [f], text: VW(f, {
+    loud: ["So close! SO close! I'm going to think about that last moment for the rest of my life!", "I was RIGHT THERE! One more vote! That's going to haunt me forever!"],
     sharp: ["Second is first loser. I know that. I'll be fine. Eventually."],
     soft: ["I didn't win, and that hurts. But I got further than I ever thought I would."],
     dry: ["Runner-up. It has a nice ring to it. Not as nice as winner."],

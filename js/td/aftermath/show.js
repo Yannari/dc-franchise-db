@@ -304,6 +304,8 @@ export function buildAftermathShow(ep, a) {
   // the backstage camera, for at most two guests: whoever is hurting most, and one more
   const backstage = new Set(ivs.map(iv => iv.player).sort((x, y) => (facts.get(y).traitor ? 1 : 0) - (facts.get(x).traitor ? 1 : 0)).slice(0, Math.min(2, ivs.length)));
   let hammerShown = false, debateDone = false, revealed = 0, viewerAsked = false;
+  // who learned on air tonight who voted them out (the slip-up below): the fan call can't have them "see it coming"
+  const learnedTonight = new Set();
   const QKINDS = ['best', 'regret', 'rival', 'love', 'predict'];
 
   const debate = () => {
@@ -368,7 +370,7 @@ export function buildAftermathShow(ep, a) {
     const leanOf = n => { const d = bond(n, X) - bond(n, Y); if (Math.abs(d) >= .5) return d > 0 ? X : Y; const nd = niceness(n) * (niceness(X) - niceness(Y)); if (nd) return nd > 0 ? X : Y; return hash(`${key}|lean|${n}`) % 2 ? X : Y; };
     const voters = gallery.filter(n => n !== X && n !== Y);
     const forX = voters.filter(n => leanOf(n) === X), forY = voters.filter(n => leanOf(n) === Y);
-    const hands = arr => (arr.length ? `${arr.length > 4 ? `${arr.slice(0, 4).join(', ')} and ${num(arr.length - 4)} more` : list(arr)} put ${arr.length === 1 ? 'a hand' : 'their hands'} up.` : `Not one hand.`);
+    const hands = arr => (arr.length ? `${arr.length > 4 ? `${arr.slice(0, 4).join(', ')} and ${num(arr.length - 4)} more` : list(arr)} ${arr.length === 1 ? 'puts a hand' : 'put their hands'} up.` : `Not one hand.`);
     beat(hands(forX));
     say(HA, `And Team ${Y}?`);
     beat(hands(forY));
@@ -382,7 +384,7 @@ export function buildAftermathShow(ep, a) {
     // the side with more hands wins the room
     const won = forX.length > forY.length ? X : forY.length > forX.length ? Y : null;
     if (won) { const lost = won === X ? Y : X; gs.popularity[won] = (gs.popularity[won] || 0) + 1; gs.popularity[lost] = (gs.popularity[lost] || 0) - 0.5; }
-    beat(won ? `The room is with ${won}, ${Math.max(forX.length, forY.length)} to ${Math.min(forX.length, forY.length)}.` : `The gallery is split right down the middle.`);
+    beat(won ? `The room is with ${won}, ${num(Math.max(forX.length, forY.length))} to ${num(Math.min(forX.length, forY.length))}.` : `The gallery is split right down the middle.`);
     // the break, before anyone throws anything
     shot('stage-wide', wideSeats());
     if (heat) {
@@ -435,8 +437,8 @@ export function buildAftermathShow(ep, a) {
     // the clip package: the season as it happened to them
     const clip = [];
     const early = f.days != null && f.days <= 2;
-    clip.push({ by: leadHost, shot: f.firstShot || f.campShot || f.star, text: early ? pick([`${g}'s time on the show may have been short...`, `${g} wasn't out there for long...`, `${g} barely had time to unpack...`], 'c1e') : pick([`${g} made it ${num(f.days || 0)} episodes on the show.`, `${g} lasted ${num(f.days || 0)} episodes out there, and every one of them was eventful.`, `${num(f.days || 0)} episodes. That's how long ${g} survived.`, `From day one, ${g} was hard to miss.`], 'c1') });
-    if (f.wins >= 2) clip.push({ by: otherHost, shot: f.star || f.campShot, text: pick([`${g} won ${num(f.wins)} challenges, and made sure everybody knew it.`, `${num(f.wins)} challenge wins. Not bad at all.`, `In the challenges, ${g} was a monster. ${Cap(num(f.wins))} wins.`], 'c2w') });
+    clip.push({ by: leadHost, shot: f.firstShot || f.campShot || f.star, text: early ? pick([`${g}'s time on the show may have been short...`, `${g} wasn't out there for long...`, `${g} barely had time to unpack...`], 'c1e') : pick([`${g} made it ${num(f.days || 0)} episodes on the show.`, `${g} lasted ${num(f.days || 0)} episodes out there, and every one of them was eventful.`, `${Cap(num(f.days || 0))} episodes. That's how long ${g} survived.`, `From day one, ${g} was hard to miss.`], 'c1') });
+    if (f.wins >= 2) clip.push({ by: otherHost, shot: f.star || f.campShot, text: pick([`${g} won ${num(f.wins)} challenges, and made sure everybody knew it.`, `${Cap(num(f.wins))} challenge wins. Not bad at all.`, `In the challenges, ${g} was a monster. ${Cap(num(f.wins))} wins.`], 'c2w') });
     else if (f.partner) clip.push({ by: otherHost, shot: f.campShot, text: f.brokeUp ? pick([`${g} fell hard for ${f.partner}. And then it all fell apart.`, `${g} and ${f.partner}. It was cute, until it wasn't.`, `Then came ${f.partner}. And then, well, the breakup.`], 'c2b') : pick([`${g} fell hard for ${f.partner}. Look at those two.`, `And then there was ${f.partner}. Aw.`, `${g} and ${f.partner}. Everybody saw it coming except them.`], 'c2l') });
     else if (f.idol) clip.push({ by: otherHost, shot: f.bootShot, text: pick([`${g} found an idol and played it, and the whole vote went quiet.`, `${g} had an idol, and used it.`, `Remember the idol? ${g} does.`], 'c2i') });
     else if (f.alliance) clip.push({ by: otherHost, shot: f.campShot, text: pick([`${g} helped build ${f.alliance} and swore it would go all the way.`, `${f.alliance}. ${g}'s pride and joy.`, `${g} put everything into ${f.alliance}.`], 'c2a') });
@@ -486,7 +488,7 @@ export function buildAftermathShow(ep, a) {
       say(leadHost, V(leadHost, 'jabback', { any: [`Hey, I'm supposed to be asking the questions!`], sharp: [`Cute. I'm asking the questions, thank you.`], dry: [`Okay. That's fair. Moving on.`], soft: [`Ouch. Okay, that's fair.`] }));
     }
     say(g, V(g, `ans-${mood}`, ({
-      betrayed: { soft: [`Honestly? I'm still a little in shock. I thought I was safe.`, `It hurts. I really thought I had people out there.`, `Not great, honestly. I trusted the wrong people.`], sharp: [`Humiliating. Thanks for asking.`, `Like a mistake. Theirs, not mine.`, `Annoyed. Mostly at whoever lied to my face.`], loud: [`Terrible! I got played and I didn't even see it!`, `Bad! Real bad! Somebody lied to me!`, `How do you think?! I got blindsided!`], dry: [`Like getting hit by a bus I was told was a ride home.`, `Like finding out the floor was never there.`, `About as good as you'd expect.`], odd: [`Like a surprise party, except the surprise was that I'm going home.`, `Like losing at musical chairs, but with my life.`, `Weird! Mostly weird! A little betrayed!`] },
+      betrayed: { soft: [`Honestly? I'm still a little in shock. I thought I was safe.`, `It hurts. I really thought I had people out there.`, `Not great, honestly. I trusted the wrong people.`], sharp: [`Humiliating. Thanks for asking.`, `Like a mistake. Theirs, not mine.`, `Annoyed. Mostly at whoever lied to my face.`], loud: [`Terrible! I got played and I didn't even see it!`, `Bad! Real bad! Somebody lied to me!`, `How do you think?! I got blindsided!`], dry: [`Like an idiot, honestly. I didn't see it coming at all.`, `Not great. Not great at all.`, `About as good as you'd expect.`], odd: [`Like a surprise party, except the surprise was that I'm going home.`, `Like losing at musical chairs, but with my life.`, `Weird! Mostly weird! A little betrayed!`] },
       first: { soft: [`It hurt. Being first is the worst. But I'm okay, I promise.`, `Honestly, it stung. I barely got started.`], sharp: [`Being first is a statement. They were scared of me.`, `They knew I was a threat. Obviously.`], loud: [`Awful! I barely got to unpack!`, `First?! Me?! Still not over it!`], dry: [`It was efficient. I'll give them that.`, `Quick. Very quick.`], odd: [`I like to think I set the bar. Very low. On purpose.`, `Someone had to go first! I volunteered! I didn't, actually.`] },
       loved: { soft: [`Honestly? Kind of amazing, with all of you cheering like that.`, `With all of you here? Pretty great, honestly.`, `Better than I thought it would! Thank you all!`], sharp: [`Fine. The fans clearly know who the real winner is.`, `Better, now that people are being sensible.`, `The fans get it. The players didn't.`], loud: [`With a crowd like this? Pretty awesome!`, `Listen to them! Amazing!`, `I feel like a winner right now!`], dry: [`Better now that people are clapping.`, `Surprisingly okay.`, `I'll take the applause. Thank you.`], odd: [`Like being a celebrity, but poorer!`, `Like a rock star! A rock star who lost!`, `Like a superhero! A retired one!`] },
       booed: { soft: [`Um, the boos aren't helping, but I'm okay.`, `I know not everybody liked me out there. I get it.`], sharp: [`Boo all you want. I played the game.`, `Go ahead. I'll wait.`], loud: [`Boo me! I don't care! I'd do it all again!`, `Bring it on! I can take it!`], dry: [`The booing's a nice touch.`, `I've had warmer welcomes. Not many.`], odd: [`I'm choosing to hear those boos as cheers.`, `Thank you! I think!`] },
@@ -497,6 +499,7 @@ export function buildAftermathShow(ep, a) {
     if (f.traitor && !known[g] && revealed < 2) {
       revealed++;
       known[g] = f.traitor;
+      learnedTonight.add(g);
       say(otherHost, pick([`I mean, once ${f.traitor} voted with them, it was over anyway.`, `Well, sure, but with ${f.traitor} writing your name down, what were you going to do?`, `To be fair, ${f.traitor} switched on you, so it was over anyway.`], 'slip'));
       beat(`The audience gasps.`, { tense: true });
       say(g, V(g, 'reveal', {
@@ -514,7 +517,7 @@ export function buildAftermathShow(ep, a) {
       addBond(g, f.traitor, -2.5);
       gs.popularity[f.traitor] = (gs.popularity[f.traitor] || 0) - 1;
     } else if (f.how === 'vote') {
-      say(otherHost, pick([`${Cap(num(f.votes))} ${f.votes === 1 ? 'vote' : 'votes'}. Did you see it coming?`, `Walk us through the vote. Did you know?`, `When did you know it was you?`], 'q2'));
+      say(otherHost, pick([`${Cap(num(f.votes))} ${f.votes === 1 ? 'vote' : 'votes'}. Did you see it coming?`, `Walk us through the vote. Did you know?`, `Did you know it was going to be you?`], 'q2'));
       say(g, V(g, 'saw', {
         soft: [`Not at all. I thought ${f.friend || 'everyone'} had my back.`, `No. I really thought it was going to be someone else.`, `Kind of? I just hoped I was wrong.`],
         sharp: [`Of course I did. I just didn't think they'd have the nerve.`, `I knew. I was outnumbered, not outplayed.`, `The second I sat down. Everyone was too polite.`],
@@ -532,8 +535,8 @@ export function buildAftermathShow(ep, a) {
       say(cutIn, hate ? V(cutIn, 'cutin-', { sharp: [`Oh, please. You had it coming.`, `Some of us aren't surprised.`], loud: [`Boo! You were a nightmare out there!`, `Don't believe a word of it!`], dry: [`Should've seen it coming, honestly.`, `I was there. It wasn't like that.`], soft: [`I'm sorry, but you weren't always nice to people.`, `That's not exactly how I remember it.`], odd: [`I'm on Team Somebody Else!`, `Objection! I don't know what to, but objection!`] })
         : V(cutIn, 'cutin+', { sharp: [`For the record, ${g} deserved way better.`, `Whoever voted ${g} out made a mistake.`], loud: [`${g} got robbed!`, `Woo! ${g}!`], dry: [`For what it's worth, ${g} was one of the good ones.`, `${g} was the only one out there who made sense.`], soft: [`We love you, ${g}!`, `You did so great, ${g}!`], odd: [`${g}! You're my favorite! Don't tell anyone!`, `${g}! Wave at me! Please!`] }));
       shot('couch-front', { [HA]: 'hA', [g]: 'g', [HB]: 'hB' });
-      say(g, hate ? V(g, 'cutback-', { sharp: [`Says the person who's been on that couch longer than I was in the game.`, `Nobody asked the gallery.`], loud: [`Nobody asked you, ${cutIn}!`, `Oh, here we go!`], dry: [`Thank you, ${cutIn}. Very helpful.`, `Noted, ${cutIn}.`], soft: [`That's... fair, I guess.`, `I'm sorry you feel that way.`], odd: [`I love you too, ${cutIn}.`, `Thank you for your input, ${cutIn}!`] })
-        : V(g, 'cutback+', { any: [`Thank you, ${cutIn}!`, `${cutIn}! Love you!`], sharp: [`Finally, someone with sense.`, `See? ${cutIn} gets it.`], soft: [`Aw, thank you, ${cutIn}!`, `That means a lot, ${cutIn}.`] }));
+      say(g, hate ? V(g, 'cutback-', { sharp: [`Says the person sitting in the cheap seats.`, `Nobody asked the gallery.`], loud: [`Nobody asked you, ${cutIn}!`, `Oh, here we go!`], dry: [`Thank you, ${cutIn}. Very helpful.`, `Noted, ${cutIn}.`], soft: [`That's... fair, I guess.`, `I'm sorry you feel that way.`], odd: [`I love you too, ${cutIn}.`, `Thank you for your input, ${cutIn}!`] })
+        : V(g, 'cutback+', { any: [`Thank you, ${cutIn}!`, `${cutIn}! Love you!`], sharp: [`Finally, someone with sense.`, `See? ${cutIn} gets it.`], soft: [`Aw, thank you, ${cutIn}!`, `Thanks, ${cutIn}. Really.`] }));
       addBond(cutIn, g, hate ? -0.5 : 0.5);
     }
 
@@ -563,7 +566,7 @@ export function buildAftermathShow(ep, a) {
       dry: [`I'd pack more socks.`, `I'd have spent less time in the confessional and more time at camp.`, `I'd have read the room. The room was hostile.`],
       odd: [`I'd bring a lucky charm. A real one, not a rock.`, `I'd have hidden somewhere better during that one challenge.`, `I'd do it all exactly the same! Except the part where I lost!`],
     }));
-    else if (kind === 'rival') say(g, V(g, 'enemy', { soft: [`Mad? No. Hurt? A little. Okay, a lot.`], sharp: [`Mad implies I think about ${enemy}. I don't. Ever. At all.`], loud: [`YES! Next question!`], dry: [`Still? I haven't started being done with it.`], odd: [`I'm not mad. I'm writing a song about it. It's very mad.`] }));
+    else if (kind === 'rival') say(g, V(g, 'enemy', { soft: [`Mad? No. Hurt? A little. Okay, a lot.`], sharp: [`Mad implies I think about ${enemy}. I don't. Ever. At all.`], loud: [`YES! Next question!`], dry: [`Still mad? I haven't even started getting over it.`], odd: [`I'm not mad. I'm writing a song about it. It's very mad.`] }));
     else if (kind === 'love') say(g, V(g, 'together', { soft: [`We are! I miss ${pr(f.partner).obj} so much.`], sharp: [`Obviously. ${f.partner} has excellent taste.`], loud: [`You bet we are! ${f.partner}, I love you!`], dry: [`As far as I know. ${Cap(pr(f.partner).sub)} ${has(f.partner) === 'have' ? "haven't" : "hasn't"} said otherwise.`], odd: [`We're together! It's official! I made it official this morning!`] }));
     else say(g, V(g, 'win', { soft: [`${fave}, I really hope. ${Cap(pr(fave).sub)} deserve${pr(fave).sub === 'they' ? '' : 's'} it.`], sharp: [`${fave}, if ${pr(fave).sub} ${has(fave)} any sense. Which is a big if.`], loud: [`${fave}! Go, ${fave}!`], dry: [`${fave}. Mostly because everyone else is worse.`], odd: [`${fave}! I'm calling it now, on live TV!`] }));
 
@@ -648,7 +651,8 @@ export function buildAftermathShow(ep, a) {
       // (the engine's lines can carry a stage direction in brackets: never read aloud)
       const clean = t => String(t || '').replace(/\[[^\]]*\]\s*/g, '').replace(/^"|"$/g, '').trim();
       beat(`${fc.fanName || 'The fan'}: "${clean(x.q)}"`, { act: 'webcam' });
-      if (fc.target && clean(x.a)) say(fc.target, clean(x.a));
+      const fresh = x.cat === 'betrayal' && learnedTonight.has(fc.target);
+      if (fc.target && clean(x.a)) say(fc.target, fresh ? pick([`Like, twenty minutes ago? On live TV? Thanks for asking.`, `About two segments ago, in front of everybody. I'm still processing.`], 'fanfresh') : clean(x.a));
     }
     say(HB, pick([`Thanks, ${fc.fanName || 'buddy'}!`, `Love the fans! Thanks, ${fc.fanName || 'buddy'}!`, `Okay! Thank you, ${fc.fanName || 'buddy'}!`], 'webcambye'));
   }

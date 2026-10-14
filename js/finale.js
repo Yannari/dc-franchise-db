@@ -2793,11 +2793,15 @@ export function simulateJuryVote(finalists, adjustments = null) {
     const _jrPutMeUp = (gs.bb?.weeks || []).some(w => w?.evicted === juror
       && (w.hoh === pick || (w.hohs || []).includes(pick)));
     const _jrFp = pronouns(pick);
+    // (said, not printed: "Three immunity wins", never "3"; and a camp is not a house, read 2026-10-14)
+    const _jrN = n => ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'][n] || String(n);
+    const _jrNC = n => _jrN(n).replace(/^./, c => c.toUpperCase());
+    const _jrHere = gs.bb ? 'this house' : 'this game';
     const _jrCleanHands = (who, fp) => [
-      `${who} didn't vote me out. That matters more than people think. Loyalty deserves to be rewarded.`,
-      `I looked at who sent me home and who didn't. ${who} wasn't part of that vote. ${fp.Sub} ${fp.sub==='they'?'have':'has'} my respect.`,
+      `${who} didn't vote me out. People don't think that matters at the end, but it matters to me.`,
+      `I looked at who sent me home and who didn't, and ${who} had nothing to do with it. That earns my respect.`,
       `${who} kept ${fp.posAdj} hands clean when others didn't. That's the kind of game I want to reward.`,
-      `My name was never on ${who}'s ballot. I noticed, and I am saying so with this one.`,
+      `My name was never on ${who}'s ballot. I noticed, and this vote is me saying so.`,
     ];
     const _jrPick = arr => {
       const fresh = arr.filter(x => !spoken.has(_sigOf(x)));
@@ -2820,7 +2824,7 @@ export function simulateJuryVote(finalists, adjustments = null) {
     if (_jrShowmance) {
       _jrReason = _jrPick([
         `${pick} is my person. Out there and in here. There was never a question who I'm voting for.`,
-        `We went through this game together. ${pick} is the reason I survived as long as I did. My vote is for ${_jrFp.obj} — and it's not even close.`,
+        `We went through this game together. ${pick} is the reason I survived as long as I did. My vote is for ${_jrFp.obj}, and it's not even close.`,
         `I'm not going to pretend this is objective. ${pick} and I had something real. ${_jrFp.Sub} ${_jrFp.sub==='they'?'deserve':'deserves'} this. I believe that with everything I have.`,
       ]);
     // ── Strategy-layer reasons: substance from grudges, respect, broken/kept
@@ -2828,56 +2832,56 @@ export function simulateJuryVote(finalists, adjustments = null) {
     //    legacy resume lines when that history exists. ──
     } else if (_jrLayer.brokePromise && _jrLayer.respect >= 4) {
       _jrReason = _jrPick([
-        `${pick} looked me in the eye, said we were going to the end together — then wrote my name down. I hated ${_jrFp.obj} for it. But that is exactly the move that got ${_jrFp.obj} here, and I won't punish a winner for winning.`,
-        `The cut still stings. ${pick} broke our deal at the worst possible moment for me — and the best possible moment for ${_jrFp.posAdj} game. I came to reward the best player, not my feelings.`,
-        `I'm bitter and I'm honest about it: ${pick} played me, and ${_jrFp.sub} played me perfectly. That's a winner's résumé.`,
+        `${pick} looked me in the eye, said we were going to the end together, and then wrote my name down. I hated ${_jrFp.obj} for it. But that's exactly the move that got ${_jrFp.obj} here, and I'm not going to punish somebody for playing well.`,
+        `It still stings. ${pick} broke our deal at the worst possible moment for me, and the best possible moment for ${_jrFp.obj}. I'm here to vote for the best player, not for my feelings.`,
+        `I'm bitter, and I'll admit it. ${pick} played me, and played me perfectly. That's what a winner does.`,
       ]);
     } else if (_jrLayer.knewBetrayal && _jrLayer.respect >= 4) {
       _jrReason = _jrPick([
-        `I know exactly what ${pick} did to me — ${_jrFp.sub} set the whole thing up and let me look the other way. I figured it out on the bench. And I'm still voting for ${_jrFp.obj}, because that is how you win this game.`,
-        `${pick} orchestrated my exit and covered ${_jrFp.posAdj} tracks clean. I found out who was really behind it. Respect. My vote goes to the person who outplayed me.`,
+        `I know exactly what ${pick} did to me. The whole thing was set up while I was looking the other way, and I only figured it out on the bench. I'm still voting for ${_jrFp.obj}, because that's how you win this game.`,
+        `${pick} set up my exit and covered ${_jrFp.posAdj} tracks perfectly. I worked out who was really behind it, and honestly, good for ${_jrFp.obj}. My vote goes to the person who outplayed me.`,
       ]);
     } else if (_jrLayer.keptPromise && _jrLayer.trust >= 1) {
       _jrReason = _jrPick([
-        `${pick} kept ${_jrFp.posAdj} word to me when ${_jrFp.sub} had every reason to break it. In a game built on lies, that meant something real. ${_jrFp.Sub} earned my vote the honest way.`,
-        `Everyone else was willing to burn me. ${pick} wasn't — ${_jrFp.sub} told me where ${_jrFp.sub} stood and stuck to it. That's the loyalty I'm rewarding.`,
+        `${pick} kept ${_jrFp.posAdj} word to me when ${_jrFp.sub} had every reason to break it. Out here, where everybody lies, that means a lot. ${_jrFp.Sub} earned my vote the honest way.`,
+        `Everybody else was ready to throw me under the bus. ${pick} wasn't. I always knew where I stood, and that's what I'm voting for.`,
       ]);
     } else if (_jrLayer.respectedThreat && _jrLayer.strategicJuror) {
       _jrReason = _jrPick([
-        `${pick} scared me the entire game — and I mean that as a compliment. I never had control while ${_jrFp.sub} ${_jrFp.sub==='they'?'were':'was'} in the room. You reward the player you couldn't touch.`,
-        `I didn't like sitting across from ${pick} — ${_jrFp.sub} ${_jrFp.sub==='they'?'were':'was'} always two moves ahead and dangerous with it. That's exactly why ${_jrFp.sub} ${_jrFp.sub==='they'?'get':'gets'} my vote. Fear is just respect you haven't admitted yet.`,
+        `${pick} scared me the whole game, and I mean that as a compliment. I never had control of anything while ${_jrFp.sub} ${_jrFp.sub==='they'?'were':'was'} around. You vote for the player you couldn't beat.`,
+        `I hated sitting across from ${pick}, because ${_jrFp.sub} ${_jrFp.sub==='they'?'were':'was'} always two steps ahead of me. That's exactly why ${_jrFp.sub} ${_jrFp.sub==='they'?'get':'gets'} my vote.`,
       ]);
     } else if (_jrLayer.straightShooter && _jrLayer.trustReason) {
       _jrReason = _jrPick([
-        `${pick} was straight with me from the start — ${_jrLayer.trustReason}. In a game full of liars, ${_jrFp.sub} never made me feel like a mark. That earns it.`,
+        `${pick} was straight with me from the start: ${_jrLayer.trustReason}. Everybody lies to you out here, and ${_jrFp.sub} never made me feel like a fool. That earns my vote.`,
         `I always knew where I stood with ${pick}. ${_cap(_jrLayer.trustReason)}. ${_jrFp.Sub} played hard without playing me, and I respect that more than any blindside.`,
       ]);
     } else if (_jrLayer.credit >= 1.5 && _jrLayer.strategicJuror) {
       _jrReason = _jrPick([
-        `I watched ${pick} pull the strings on vote after vote. ${_jrFp.Sub} ran this game whether the others want to admit it or not — and I reward the person who actually controlled the room.`,
-        `Everybody up there wants the credit, but I know who was really behind the big moves: ${pick}. That's the résumé I'm voting for.`,
-        `${pick} was the architect. I sat on that jury and watched ${_jrFp.obj} engineer the votes that got us all here. You don't out-strategize that and then lose to it.`,
+        `I watched ${pick} pull the strings on vote after vote. ${_jrFp.Sub} ran this game, whether the others want to admit it or not, and I'm voting for whoever was really in control.`,
+        `Everybody up there wants the credit, but I know who was really behind the big moves, and it was ${pick}. That's who I'm voting for.`,
+        `${pick} was behind all of it. I sat on that bench and watched ${_jrFp.obj} set up the votes that got everybody here. How do you not vote for that?`,
       ]);
     } else if (_jrLayer.respect >= 5 && _jrLayer.respectReason) {
       _jrReason = _jrPick([
-        `I'm voting on gameplay. ${pick} made a read on this house I did not see coming, and ${_jrFp.sub} made it stick. Sharpest game sitting up there.`,
-        `There was a moment out there where ${pick} was three steps ahead of all of us. That is when ${_jrFp.sub} won my vote. Pure strategy, and I respect it.`,
+        `I'm voting on the game. ${pick} made a move I never saw coming, and made it work. That's the sharpest game sitting up there.`,
+        `There was a moment out there when ${pick} was three steps ahead of all of us, and that's the moment ${_jrFp.sub} won my vote.`,
       ]);
     } else if (_jrLayer.resentment >= 5) {
       _jrReason = _jrPick([
-        `Let me be clear — I don't like how ${pick} played me, and I am not going to stand here and pretend otherwise. But ${_jrFp.sub} played the better game of the two sitting up there, and I won't let a grudge hand the title to somebody who did less.`,
+        `I don't like how ${pick} played me, and I'm not going to pretend I do. But ${_jrFp.sub} played the best game up there, and I'm not letting a grudge hand it to somebody who did less.`,
         `This vote costs me something. ${pick} burned me and I haven't forgotten it. I'm voting for ${_jrFp.obj} anyway, because the game earned it even if my pride didn't.`,
-        `I have spent weeks on that bench being angry at ${pick}. I am still angry. I am also not stupid, and the vote is for the game.`,
-        `Ask me if I like ${pick} and you will get an honest answer you won't enjoy. Ask me who played this better and you get the same name.`,
+        `I've spent weeks on that bench being angry at ${pick}, and I'm still angry. But I'm not stupid, and this vote is about the game.`,
+        `Ask me if I like ${pick}, and you won't like the answer. Ask me who played the best game, and you'll get the same name.`,
         `${pick} did me dirty and did it well. I can hold both of those, and only one of them is what this vote is for.`,
       ]);
     } else if (_jrVotedOut && _jrBond >= 2) {
       _jrReason = _jrPick([
-        `${pick} voted me out — and I'm voting for ${_jrFp.obj} to win. That's how good ${_jrFp.posAdj} game was.`,
+        `${pick} voted me out, and I'm still voting for ${_jrFp.obj} to win. That's how good ${_jrFp.posAdj} game was.`,
         `${pick} ended my game. I hated it then. But watching from the bench, I see it was the right move. That's why ${_jrFp.sub} ${_jrFp.sub==='they'?'get':'gets'} my vote.`,
         `I was bitter. I'm not anymore. ${pick} played the best game and I can admit that now.`,
         `${pick} took my game from me and did it without insulting me on the way out. That matters more than people think.`,
-        `I have had a long time to be annoyed about this and all I have come up with is that ${_jrFp.sub} ${_jrFp.sub === 'they' ? 'were' : 'was'} right to do it.`,
+        `I've had a long time to be annoyed about this, and all I've come up with is that ${_jrFp.sub} ${_jrFp.sub === 'they' ? 'were' : 'was'} right to do it.`,
       ]);
     } else if (_jrVotedOut && _jrBond < 0) {
       // This branch used to print "${pick} didn't vote me out" — under the
@@ -2897,20 +2901,20 @@ export function simulateJuryVote(finalists, adjustments = null) {
       _jrReason = _jrPick(_jrCleanHands(pick, _jrFp));
     } else if (_jrBond >= 4) {
       _jrReason = _jrPick([
-        `${pick} and I had something real out there. I'm voting for ${_jrFp.obj} because ${_jrFp.sub} earned it — as a player and as a person.`,
-        `I trust ${pick}. I've trusted ${_jrFp.obj} since the beginning. My vote reflects that.`,
+        `${pick} and I had something real out there. I'm voting for ${_jrFp.obj} because ${_jrFp.sub} earned it, as a player and as a person.`,
+        `I've trusted ${pick} since the beginning, and I still do. Simple as that.`,
         `${pick} was my closest ally. ${_jrFp.Sub} played hard and ${_jrFp.sub} played honest. That's enough for me.`,
-        `${pick} never wrote my name down. Not once, all season. I know exactly what that was worth to ${_jrFp.obj} and I am paying it back.`,
-        `Everybody in this house lied to me at some point except ${pick}. That is not nothing. That is the whole thing, actually.`,
+        `${pick} never wrote my name down. Not once, all season. I know exactly what that cost ${_jrFp.obj}, and I'm paying it back.`,
+        `Everybody in ${_jrHere} lied to me at some point, except ${pick}. That might not sound like much, but to me it's everything.`,
         `I would have taken ${pick} to the end and ${_jrFp.sub} would have taken me. Neither of us got the chance. ${_jrFp.Sub} still gets my vote.`,
         `When I had nobody, ${pick} sat with me. You can call that a strategy if you like. It worked, and it was also true.`,
       ]);
     } else if (jS.strategic >= 7 && _jrRan(juror, pick)) {
       _jrReason = _jrPick([
-        `${pick} played the most complete game. Strategic, social, physical — ${_jrFp.sub} checked every box.`,
+        `${pick} played the most complete game. Strategy, people, challenges, ${_jrFp.sub} did all of it.`,
         `I'm voting for the best game, not the best person. ${pick} controlled more votes than anyone up there.`,
         `From the jury bench, it's clear: ${pick} made the moves that shaped this season. That deserves the win.`,
-        `I respected ${pick}'s game long before I liked ${_jrFp.obj}, and by the end I did both. That is a rare thing to manage in here.`,
+        `I respected ${pick}'s game long before I liked ${_jrFp.obj}, and by the end I did both. That's rare out here.`,
         `${pick} outplayed everyone sitting next to ${_jrFp.obj}. The jury should reward gameplay, not feelings.`,
       ]);
     } else if (jS.strategic >= 7) {
@@ -2924,34 +2928,34 @@ export function simulateJuryVote(finalists, adjustments = null) {
       ]);
     } else if (_jrImmWins >= 3) {
       _jrReason = _jrPick([
-        `${_jrImmWins} ${W.comps}. ${pick} won when it mattered. You can't argue with somebody who earned their own safety that many times.`,
-        `${pick} is a ${W.compBeast} — ${_jrImmWins} ${W.comps}. ${_jrFp.Sub} didn't need anybody's permission to survive. ${_jrFp.Sub} just kept winning.`,
-        `I respect dominance. ${pick} won ${_jrImmWins} ${W.compWon}. That's not luck — that's will. My vote goes to the competitor.`,
+        `${_jrNC(_jrImmWins)} ${W.comps}. ${pick} won when it mattered. You can't argue with somebody who saved ${_jrFp.ref} that many times.`,
+        `${pick} is a ${W.compBeast}. ${_jrNC(_jrImmWins)} ${W.comps}! ${_jrFp.Sub} didn't need anybody's help to stay. ${_jrFp.Sub} just kept winning.`,
+        `${pick} won ${_jrN(_jrImmWins)} ${W.compWon}. That's not luck. That's somebody who refused to go home, and that's who I'm voting for.`,
       ]);
     } else if (_jrPreMergeVotes >= 4) {
       _jrReason = _jrPick([
-        `${pick} was on the bottom from day one. ${_jrPreMergeVotes} votes before the merge — and ${_jrFp.sub} ${_jrFp.sub==='they'?'are':'is'} still here. That's the best underdog story I've seen.`,
+        `${pick} was on the bottom from day one. ${_jrNC(_jrPreMergeVotes)} votes before the merge, and ${_jrFp.sub} ${_jrFp.sub==='they'?'are':'is'} still here. That's the best underdog story I've ever seen.`,
         `Everyone tried to get rid of ${pick} early. It didn't work. ${_jrFp.Sub} clawed ${_jrFp.posAdj} way to the end and I respect that more than any blindside.`,
         `${pick} was targeted before most people even learned each other's names. The fact that ${_jrFp.sub} survived to the finale is ${_jrFp.posAdj} argument. I'm voting for the comeback.`,
       ]);
     } else if (_jrPosJurorBonds >= 5) {
       _jrReason = _jrPick([
-        `Everybody on this jury has something good to say about ${pick}. That's not an accident — ${_jrFp.sub} built real relationships with real people. My vote reflects that.`,
+        `Everybody on this jury has something good to say about ${pick}. That's not an accident. ${_jrFp.Sub} made real friends out here, and my vote is for that.`,
         `${pick} connected with more people on this jury than anyone else up there. That's social game. That's what this whole thing is about.`,
-        `I look at this jury and I see ${_jrPosJurorBonds} people who genuinely like ${pick}. You can't fake that over 30 days. ${_jrFp.Sub} earned every one of those relationships.`,
+        `I look at this jury and I see ${_jrN(_jrPosJurorBonds)} people who really like ${pick}. You can't fake that for a whole season. ${_jrFp.Sub} earned every one of them.`,
       ]);
     } else if ((gs.providerHistory?.[pick] || 0) >= 5) {
       _jrReason = _jrPick([
         `${pick} fed this tribe. While everyone else was scheming, ${_jrFp.sub} ${_jrFp.sub==='they'?'were':'was'} fishing, foraging, keeping the fire alive. That matters. That's real.`,
         `I watched ${pick} work every single day. Camp wasn't glamorous, but it kept us alive. The jury remembers who carried the weight.`,
-        `${pick} didn't just play the game — ${_jrFp.sub} kept us FED. Try thinking strategically on an empty stomach. ${pick} made that possible for all of us.`,
+        `${pick} didn't just play the game, ${_jrFp.sub} kept us fed. Try thinking about votes on an empty stomach. ${pick} made that possible for all of us.`,
       ]);
     } else if (_jrBond >= 1) {
       _jrReason = _jrPick([
-        `${pick} treated people well. In this game, that's rare. My vote is personal — and I'm okay with that.`,
+        `${pick} treated people well, and out here that's rare. My vote is personal, and I'm okay with that.`,
         `I like ${pick}. I think ${_jrFp.sub} played a good game. That combination gets my vote.`,
-        `${pick} was genuine out there. Not everyone can say that. My vote reflects who I connected with.`,
-        `Of everybody in that house, ${pick} is the one I felt closest to. I am not going to apologise for voting like it.`,
+        `${pick} was real out there, and not everybody can say that. I'm voting for the person I actually connected with.`,
+        `Out of everybody out there, ${pick} is the one I felt closest to, and I'm not going to apologise for voting like it.`,
       ]);
     } else {
       // No strong personal signal — the juror falls back on what they value most.
@@ -2965,10 +2969,10 @@ export function simulateJuryVote(finalists, adjustments = null) {
         honesty: [`${pick} played hard but ${_jrFp.sub} played honest. I'd rather reward a clean game than a ruthless one.`,
           `No dirty tricks with ${pick}. In a game that rewards lying, ${_jrFp.sub} stayed straight. That matters to me.`],
         challenge: [`${pick} won when it counted. ${_jrFp.Sub} earned ${_jrFp.posAdj} spot on the mat, not in a backroom deal.`,
-          `I respect someone who fights for it. ${pick} never coasted — ${_jrFp.sub} competed.`],
+          `I respect somebody who fights for it. ${pick} never coasted, not once.`],
       };
       _jrReason = _jrPick(_valueReasons[_jrLayer.topValue] || [
-        `${pick} is the least bad option up there. Not a ringing endorsement — but it's the truth.`,
+        `${pick} is the least bad option up there. Not exactly a glowing review, but it's the truth.`,
         `Process of elimination. The others gave me less reason to vote for them than ${pick} did.`,
         `${pick} survived. That's not nothing. In this game, making it to the end is its own argument.`,
       ]);
@@ -4987,8 +4991,11 @@ export function generateFTCData(finalists, juryResult) {
   // social finalists said the identical words in every season), and a claim is only made when it is true
   // ("Every big vote, I was behind it" had been said by whoever had the strategic stat).
   const finalistStatements = {};
+  // (by template, not by the finished words: two finalists with different names used to open with the same speech,
+  // "I made the moves in this game. X and Y didn't go home by accident", read 2026-10-14)
   const usedOpen = new Set();
-  const firstFree = (...opts) => { const o = opts.find(x => !usedOpen.has(x)) || opts[0]; usedOpen.add(o); return o; };
+  const firstFree = (slot, opts) => { const i = opts.findIndex((_, j) => !usedOpen.has(`${slot}:${j}`)); const k = i < 0 ? 0 : i; usedOpen.add(`${slot}:${k}`); return opts[k]; };
+  const num = n => ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'][n] || String(n);
   finalists.forEach(f => {
     const fs = pStats(f);
     const wins = gs.episodeHistory.filter(e => e.immunityWinner === f).length;
@@ -4998,32 +5005,48 @@ export function generateFTCData(finalists, juryResult) {
     const ally = [...finalists, ...jury].filter(p => p !== f).sort((a, b) => getBond(f, b) - getBond(f, a))[0];
     const broke = (gs.namedAlliances || []).reduce((n, a) => n + (a.betrayals || []).filter(b => b.player === f).length, 0);
     const lines = [];
-
+    // said the way a person stands up and says it: connected sentences, the reason in plain words (the user, 2026-10-14:
+    // the finale "I played this game with each of you in mind. I kept my word where I could. I built real relationships.")
     if (fs.strategic >= 8 && kills.length >= 3)
-      lines.push(firstFree(`I made the moves in this game. ${kills[0]} and ${kills[1]} didn't go home by accident. I'm not going to apologise for playing hard. I'm asking you to respect it.`,
-        `Look at the votes. ${kills[0]}, ${kills[1]}, ${kills[2]}. I was on the right side of every one of them, because I put myself there.`));
+      lines.push(firstFree('moves', [
+        `Look, I made the moves out here. ${kills[0]} and ${kills[1]} didn't go home by accident, that was me. I'm not going to say sorry for playing hard. I'm just asking you to respect it.`,
+        `Go back through the votes. ${kills[0]}, ${kills[1]}, ${kills[2]}. I was on the right side of every single one, and that wasn't luck. I put myself there.`,
+        `I know some of you are mad at me, and I get it. But ${kills[0]} going home? That was my call. So was ${kills[1]}. If you want to reward somebody who actually played, it's me.`]));
     else if (fs.strategic >= 8)
-      lines.push(firstFree(`I knew where every vote was going, even the ones I didn't run. Knowing is a skill, and it's the reason I'm sitting here.`,
-        `I didn't always make the big move, but I always saw it coming. That kept me alive when people with bigger games went home.`));
+      lines.push(firstFree('reads', [
+        `I didn't run every vote, but I always knew where it was going. That's why I'm sitting here, and a lot of bigger players aren't.`,
+        `I saw every big move coming before it happened. Maybe that doesn't look as flashy, but it kept me alive when it mattered.`,
+        `I always knew where the votes were going. Always. That's not luck, that's paying attention, and I think it counts.`]));
     else if (fs.social >= 8)
-      lines.push(firstFree(`I played this game with each of you in mind. I kept my word where I could. I built real relationships. I'm here because people trusted me.`,
-        `Every person on that bench, I really talked to. Not to work you, to know you. That's the game I played, and it's why I'm still here.`));
+      lines.push(firstFree('social', [
+        `I talked to every single one of you out there, and I meant it. I wasn't working you, I actually wanted to know you. That's the game I played, and it's why I'm still here.`,
+        `I didn't get here by being the loudest or the meanest. I won people over, one conversation at a time, and I think that's the hardest way to do it.`,
+        `People trusted me out there, and I'm proud of that. I didn't throw that trust away just to get to tonight.`]));
     else if (fs.loyalty >= 8 && ally && broke === 0)
-      lines.push(firstFree(`I made a promise to ${ally} early, and I kept it all the way here. In a game like this, that's rare, and I think it should count for something.`,
-        `I never turned on the people I was with. Not once. I'm asking you to decide if that's worth a million dollars.`));
+      lines.push(firstFree('loyal', [
+        `I made a promise to ${ally} early on, and I kept it all the way to the end. Out here, that almost never happens.`,
+        `I never turned on the people I was with. Not once. You have to decide if that's worth a million dollars, but I think it is.`,
+        `Everybody on that bench knew where they stood with me. I didn't lie to get here, and I'd do it all the same way again.`]));
     else if (wins >= 3 || fs.physical >= 8)
-      lines.push(firstFree(`I earned every single day out here. I won when I had to. I never hid. I competed, and I'm asking you to reward that.`,
-        `When my game was on the line, I didn't need anybody's permission to stay. I went out and won.`));
+      lines.push(firstFree('comp', [
+        `I earned every single day out here. When I had to win, I won. I never hid behind anybody, and I'm asking you to reward that.`,
+        `When my game was on the line, I didn't need anybody to save me. I went out and won.`,
+        `Every time somebody came for me, I won the next challenge. You don't get lucky that many times.`]));
     else
-      lines.push(firstFree(`I know I'm not the flashiest player up here. But I navigated this game on my own terms and I'm standing at the end. That took something real.`,
-        `Nobody thought I'd be sitting here. I let them think that, and every time they picked somebody else, I got one step closer to tonight.`));
+      lines.push(firstFree('quiet', [
+        `I know I'm not the flashiest player up here. But I got to the end my own way, and that took more than people think.`,
+        `Nobody thought I'd be sitting here. I let them think that, and every time they picked somebody else, I got a little closer to tonight.`,
+        `I wasn't the big threat, and that was the whole point. While everybody was busy going after each other, I was still here.`]));
 
     if (totalVotes >= 5)
-      lines.push(`My name came up ${totalVotes} times this season. Every single time, I found a way to stay.`);
+      lines.push(firstFree('votes', [`My name came up ${num(totalVotes)} times this season, and every single time, I found a way to stay.`,
+        `People wrote my name ${num(totalVotes)} times out there. And I'm still here.`,
+        `${num(totalVotes).replace(/^./, c => c.toUpperCase())} times, somebody wrote my name down. None of them stuck.`]));
     else if (wins >= 2)
-      lines.push(`${wins} individual wins, including the one that guaranteed my spot tonight. I was never just along for the ride.`);
+      lines.push(firstFree('wins', [`I won ${num(wins)} challenges on my own, including the one that got me into this seat. I was never just along for the ride.`,
+        `${num(wins).replace(/^./, c => c.toUpperCase())} wins on my own. I wasn't carried here, I earned it.`]));
     else if (broke === 0 && kills.length)
-      lines.push(`And I never broke a promise to an alliance to get here.`);
+      lines.push(`And I never broke a promise to get here.`);
 
     finalistStatements[f] = lines;
   });
@@ -5061,121 +5084,129 @@ export function generateFTCData(finalists, juryResult) {
     const bCount = _betrayalCount(target);
     const bigM = _bigMoves(target);
     const jPr = pronouns(juror);
+    // the answers said the way somebody answers a jury: plainly, the reason in their own words, numbers as words, and
+    // nothing claimed that the season didn't show (the user, 2026-10-14, reading the finale: the old answers were
+    // reality-show slogans, "One immunity win at the right time is worth more than three at the wrong time")
+    const W = n => num(n), Wcap = n => num(n).replace(/^./, c => c.toUpperCase());
+    const other = finalists.find(x => x !== target) || null;
     return {
     // ── Betrayal (voted them out, hostile) ──
     betrayalHostile: [
       { q:`You voted me out, ${target}. Give me one real reason I should vote for you tonight.`,
-        r: hi('strategic') ? `"Because voting you out, ${juror}, was the hardest call I made in this game — and I'm standing here because I had the guts to make it."` : `"${juror}, I had to make the move that kept me alive. I'm sorry it came at your expense — but I'd make that call again."` },
+        r: hi('strategic') ? `"Because voting you out was the hardest call I made out here, ${juror}, and I made it anyway. That's why I'm sitting here."` : `"${juror}, it was you or me, and I picked me. I'm sorry it was you. I'd still make the same call."` },
       { q:`You wrote my name down, ${target}. Look me in the eye and tell me why.`,
-        r: hi('strategic') ? `"Because you were the biggest threat left, ${juror}. I respected you enough to make the move myself instead of hiding behind someone else."` : `"Because the numbers told me it was you or me, ${juror}. I chose me. I'd do it again."` },
+        r: hi('strategic') ? `"Because you were the biggest threat left, ${juror}. I wasn't going to hide behind somebody else and let them do it for me."` : `"Because the numbers said it was you or me, ${juror}. I chose me. I'd do it again."` },
       { q:`I'm gone because of you, ${target}. What makes you think you deserve my vote?`,
-        r: hi('social') ? `"Because I owned what I did to you, ${juror}. I never hid behind excuses. You deserved honesty then, and I'm giving it to you now."` : `"I don't think I deserve it. I think I earned it. ${bigM > 0 ? `${bigM} big moves — including the one that sent you home.` : `Every day I survived was earned.`}"` },
+        r: hi('social') ? `"Because I never made excuses about it, ${juror}. You deserved the truth then, and you're getting it now."` : `"I don't think anybody deserves it. I think I earned it. ${bigM > 0 ? `I made the big moves out there, including the one that sent you home.` : `Every day I was out there, I earned.`}"` },
     ],
     // ── Betrayal (voted them out, neutral) ──
     betrayalNeutral: [
       { q:`You had a hand in getting me eliminated, ${target}. Was it personal, or purely the game?`,
-        r: hi('strategic') ? `"Purely game, ${juror}. You were too dangerous to keep around — everyone knew it. The decision wasn't easy but it was right."` : `"It wasn't personal, ${juror}. The alliance needed a name and yours came up. I followed the numbers."` },
+        r: hi('strategic') ? `"It was the game, ${juror}. You were too dangerous to keep, and everybody knew it. It wasn't easy, but it was right."` : `"It wasn't personal, ${juror}. The group needed a name, and yours came up. I went with the numbers."` },
       { q:`You were part of sending me home, ${target}. Tell me why.`,
-        r: hi('social') ? `"${ally} and I made that call together. I could've fought it, but breaking ranks would've ended my game."` : `"I went along with the group. I'm not going to pretend I drove that vote, ${juror}."` },
+        r: hi('social') ? `"${ally} and I made that call together. I could have fought it, but that would have ended my game."` : `"I went along with the group. I'm not going to pretend I was the one driving it, ${juror}."` },
       { q:`I thought we had something out there, ${target}. Then you voted me out. What happened?`,
-        r: hi('loyalty') ? `"We did, ${juror}. And losing that was one of the worst parts of this game. But the numbers left me no choice."` : `"The game moved faster than our relationship could keep up. I made a call — and I'm sorry."` },
+        r: hi('loyalty') ? `"We did, ${juror}. Losing that was one of the worst parts of this whole game. But the numbers didn't give me a choice."` : `"The game moved faster than we did. I made a call, and I'm sorry."` },
     ],
     // ── Belief-driven: the juror confronts whoever they BELIEVE ran their boot ──
     beliefConfront: [
       { q:`I've had a long time on that bench to think, ${target}. I believe it was you who ran the vote that sent me home. Tell me I'm wrong.`,
-        r: hi('strategic') ? `"You're not wrong, ${juror}. It was me. I let the room think it was someone else, but you were too sharp for that. That's exactly why I moved on you."` : `"...You're not wrong. It was me. I'm sorry you had to find out sitting over there."` },
+        r: hi('strategic') ? `"You're not wrong, ${juror}. It was me. I let everybody think it was somebody else, but you were too sharp for that, and that's exactly why I went after you."` : `"...You're not wrong. It was me. I'm sorry you had to work it out from over there."` },
       { q:`Everyone credited someone else for my elimination, ${target}. But I think the real architect is sitting right in front of me. Was it you?`,
-        r: hi('strategic') ? `"It was. Letting someone else take the credit was the whole point — it kept the target off me. You caught it anyway. Respect."` : `"It was my move, ${juror}. I didn't correct the record because it kept me safe. But I won't lie to your face now."` },
+        r: hi('strategic') ? `"It was. Letting somebody else take the credit was the whole point, because it kept the target off me. You figured it out anyway."` : `"It was my move, ${juror}. I didn't correct anybody, because it kept me safe. But I'm not going to lie to your face now."` },
       { q:`Own it or lose my vote, ${target}: did you engineer the blindside that ended my game?`,
-        r: hi('boldness') ? `"I did. No hiding behind the numbers — that was mine, start to finish. Vote how you want, but at least I'll tell you the truth."` : `"Yes. It was mine. I'd rather lose your vote being honest than win it on a lie."` },
+        r: hi('boldness') ? `"I did. No hiding behind the numbers. That was mine, start to finish. Vote how you want, but at least you're getting the truth."` : `"Yes. It was mine. I'd rather lose your vote telling the truth than win it with a lie."` },
     ],
     // ── Strategic ──
     strategic: [
-      { q:`What was your single biggest move, ${target} — and how do you know it was yours?`,
-        r: hi('strategic') ? `"${kill ? `Getting ${kill} out. That was my idea — I pulled the votes together and made it happen.` : `The merge vote. I set the direction and everyone followed.`} Ask anyone on this jury."` : wins >= 2 ? `"Winning immunity when I absolutely had to. ${wins} times I saved myself — including the one that got me this seat."` : `"Staying alive when everyone counted me out. That's not one move — that's a whole game."` },
+      { q:`What was your single biggest move, ${target}, and how do you know it was yours?`,
+        r: hi('strategic') ? `"${kill ? `Getting ${kill} out. That was my idea. I got the votes together and made it happen.` : `The merge vote. I picked the name, and everybody else followed.`} Ask anybody on that bench."` : wins >= 2 ? `"Winning immunity when I really had to. I saved myself ${W(wins)} times, including the one that got me into this seat."` : `"Staying alive when everybody counted me out. That's not one move, that's my whole game."` },
       { q:`Name one player you outplayed, ${target}. Tell me exactly how.`,
-        r: hi('strategic') ? `"${kill || jury[0]}. I saw ${pronouns(kill || jury[0]).posAdj} game before ${pronouns(kill || jury[0]).sub} did. I let ${pronouns(kill || jury[0]).obj} feel safe, then moved when ${pronouns(kill || jury[0]).sub} ${pronouns(kill || jury[0]).sub==='they'?'weren\'t':'wasn\'t'} looking."` : hi('social') ? `"${kill || jury[0]}. I built a relationship ${pronouns(kill || jury[0]).sub} trusted completely. When the vote came, ${pronouns(kill || jury[0]).sub} never saw it coming from me."` : `"${kill || jury[0]}. ${pronouns(kill || jury[0]).Sub} made a mistake at the wrong time and I was positioned to capitalize. That's how you win this game."` },
+        r: hi('strategic') ? `"${kill || jury[0]}. I saw what ${pronouns(kill || jury[0]).sub} ${pronouns(kill || jury[0]).sub === 'they' ? 'were' : 'was'} doing before anybody else did. I let ${pronouns(kill || jury[0]).obj} feel safe, and then I moved."` : hi('social') ? `"${kill || jury[0]}. ${pronouns(kill || jury[0]).Sub} trusted me completely, and when the vote came, ${pronouns(kill || jury[0]).sub} never saw it coming from me."` : `"${kill || jury[0]}. ${pronouns(kill || jury[0]).Sub} slipped up at the wrong time, and I was in the right spot when it happened."` },
       { q:`When did you realize you could actually win this game, ${target}?`,
-        r: hi('strategic') ? `"At the merge. I looked around and knew I could outmaneuver everyone left."` : wins >= 2 ? `"After my second immunity win. I realized nobody could stop me if I kept competing."` : `"Honestly? Not until I was sitting in this chair. I just kept surviving."` },
+        r: hi('strategic') ? `"At the merge. I looked around and thought, I can beat every single person here."` : wins >= 2 ? `"After my second immunity win. I realised nobody could get rid of me if I just kept winning."` : `"Honestly? Not until I sat down in this chair. I was just trying to get through each day."` },
       { q:`Walk me through your endgame, ${target}. When did you start building it?`,
-        r: hi('strategic') ? `"I started building it at the merge. ${ally} was my endgame partner — every vote after that was a step toward tonight."` : hi('social') ? `"I kept ${ally} close. My endgame was my relationships — they carried me here."` : `"I didn't have a master plan. I had a next-day plan, every day. And here I am."` },
+        r: hi('strategic') ? `"At the merge. ${ally} was always going to be in my final group, and every vote after that was about getting us here."` : hi('social') ? `"I kept ${ally} close. My endgame was the people I had, and they're the reason I'm here."` : `"I didn't have a big master plan. I had a plan for the next day, every day. And here I am."` },
       { q:`Who was your most dangerous opponent, ${target}, and how did you handle ${jPr.obj}?`,
-        r: hi('strategic') ? `"${kill || jury[jury.length-1]}. I identified ${pronouns(kill || jury[jury.length-1]).obj} as the biggest threat and made sure the votes went that way."` : hi('social') ? `"${kill || jury[jury.length-1]}. I kept ${pronouns(kill || jury[jury.length-1]).obj} close enough that ${pronouns(kill || jury[jury.length-1]).sub} never saw me as a threat. Until it was too late."` : `"${kill || jury[jury.length-1]}. I stayed out of ${pronouns(kill || jury[jury.length-1]).posAdj} crosshairs and let other people take the shot."` },
+        r: hi('strategic') ? `"${kill || jury[jury.length-1]}. I knew ${pronouns(kill || jury[jury.length-1]).sub} ${pronouns(kill || jury[jury.length-1]).sub === 'they' ? 'were' : 'was'} the biggest threat, so I made sure the votes went that way."` : hi('social') ? `"${kill || jury[jury.length-1]}. I stayed close enough that ${pronouns(kill || jury[jury.length-1]).sub} never saw me as a threat, until it was too late."` : `"${kill || jury[jury.length-1]}. I stayed out of ${pronouns(kill || jury[jury.length-1]).posAdj} way and let somebody else take the shot."` },
     ],
     // ── Social ──
     social: [
       { q:`I never felt like you were being straight with me, ${target}. Convince me I was wrong.`,
-        r: hi('social') ? `"${juror}, I was as real with you as this game allowed. I never lied to your face. I can look you in the eye on that."` : `"I played a game, ${juror}. Not everything I did was pretty. But I was never fake with you — I just couldn't show all my cards."` },
-      { q:`Who out here actually trusted you, ${target} — and did you deserve it?`,
-        r: hi('loyalty') ? `"${ally} trusted me completely, and I never broke that. ${pronouns(ally).Sub} deserved someone who had ${pronouns(ally).posAdj} back and I was that person."` : `"${ally} trusted me. Did I deserve it? ${bCount === 0 ? 'Yes — I never betrayed anyone.' : `Mostly. But I broke ${bCount} promise${bCount !== 1 ? 's' : ''} to get here.`}"` },
+        r: hi('social') ? `"${juror}, I was as real with you as this game let me be. I never lied to your face, and I can look you in the eye and say that."` : `"I was playing a game, ${juror}, and not everything I did was pretty. But I was never fake with you. I just couldn't tell you everything."` },
+      { q:`Who out here actually trusted you, ${target}, and did you deserve it?`,
+        r: hi('loyalty') ? `"${ally} trusted me completely, and I never let ${pronouns(ally).obj} down. ${pronouns(ally).Sub} deserved somebody who had ${pronouns(ally).posAdj} back, and that was me."` : `"${ally} trusted me. Did I deserve it? ${bCount === 0 ? `Yes. I never turned on anybody.` : `Mostly. I broke ${bCount === 1 ? 'one promise' : W(bCount) + ' promises'} to get here, and I know it.`}"` },
       { q:`What relationship in this game are you most proud of, ${target}?`,
-        r: hi('social') ? `"My relationship with ${ally}. It didn't always help my game, but it was the most real thing out here."` : `"${ally}. ${pronouns(ally).Sub} had no reason to trust me early on and ended up in my corner. That wasn't strategy — that was earned."` },
+        r: hi('social') ? `"${ally}. It didn't always help my game, but it was the most real thing out here."` : `"${ally}. ${pronouns(ally).Sub} had no reason to trust me at first, and ended up in my corner anyway. That wasn't strategy. I earned that."` },
       { q:`Did anyone here see the real you, ${target}, or were you performing the whole time?`,
-        r: hi('social') ? `"${ally} saw the real me. Late at night, away from the game. Those conversations were real."` : `"Honestly? I don't know where the performance ended and I began. This game does that to you."` },
+        r: hi('social') ? `"${ally} saw the real me. Away from the game, when it was just us talking. That was real."` : `"Honestly? I don't know anymore where the game stopped and I started. This place does that to you."` },
     ],
     // ── Loyalty ──
     loyalty: [
-      { q:`Did you keep your word out there, ${target}? If you broke it — when, and why?`,
-        r: hi('loyalty') ? `"I kept my word to ${ally}. When the game forced hard calls, I owned them instead of hiding."` : `"I broke ${bCount > 0 ? bCount + ' promise' + (bCount !== 1 ? 's' : '') : 'promises'}. I won't pretend otherwise. Every time I did, standing still meant going home."` },
-      { q:`Name one promise you made and kept, ${target} — even when it cost you.`,
-        r: hi('loyalty') ? `"I promised ${ally} I'd never write ${pronouns(ally).posAdj} name down. I didn't. Even when it would've been the easier play."` : `"I promised myself I'd play my own game. That cost me allies, but I'm sitting here."` },
+      { q:`Did you keep your word out there, ${target}? If you broke it, when, and why?`,
+        r: hi('loyalty') ? `"I kept my word to ${ally}. And when the game made me do something hard, I owned it. I didn't hide."` : `"I broke ${bCount === 1 ? 'a promise' : bCount > 1 ? W(bCount) + ' promises' : 'promises'}. I'm not going to pretend I didn't. Every time, it was that or go home."` },
+      { q:`Name one promise you made and kept, ${target}, even when it cost you.`,
+        r: hi('loyalty') ? `"I promised ${ally} I'd never write ${pronouns(ally).posAdj} name down, and I didn't. Even when it would have been easier."` : `"I promised myself I'd play my own game. It cost me some friends, but I'm sitting here."` },
       { q:`Who did you betray, ${target}, and would you do it again?`,
-        r: hi('loyalty') ? `"${bCount === 0 ? 'Nobody. I played clean and I\'m proud of that.' : 'I only moved against people who were already coming for me. And yes, I would.'}"` : lo('loyalty') ? `"${bCount} alliance${bCount !== 1 ? 's' : ''}. And yeah — I would. This game doesn't reward loyalty. It rewards results."` : `"${kill ? kill + '. ' + pronouns(kill).Sub + ' ' + (pronouns(kill).sub==='they'?'know':'knows') + ' why.' : 'One person. They know who they are.'} I'd do it differently if I could. But I'd still be here."` },
+        r: hi('loyalty') ? `"${bCount === 0 ? `Nobody. I played it clean, and I'm proud of that.` : `I only went after people who were already coming for me. And yes, I would.`}"` : lo('loyalty') ? `"${bCount === 1 ? 'One alliance' : Wcap(bCount) + ' alliances'}. And yeah, I would. This game doesn't reward loyalty. It rewards whoever's still here."` : `"${kill ? `${kill}. ${pronouns(kill).Sub} ${pronouns(kill).sub === 'they' ? 'know' : 'knows'} why.` : `One person, and they know who they are.`} I'd do it differently if I could. But I'd still be sitting here."` },
       { q:`Was there anyone you refused to write down, ${target}, no matter what?`,
-        r: hi('loyalty') ? `"${ally}. I never wrote ${pronouns(ally).posAdj} name and I never would have. That was a line I drew on day one."` : `"No. Everyone was on the table. That's not cold — that's honest."` },
+        r: hi('loyalty') ? `"${ally}. I never wrote ${pronouns(ally).posAdj} name, and I never would have."` : `"No. Everybody was on the table. That's not cold, that's just honest."` },
     ],
     // ── General ──
     general: [
       { q:`Tell me something real, ${target}. What do you think you did better than everyone up here?`,
-        r: hi('strategic') ? `"I read the room better. Every vote, I knew where it was going before anyone spoke. ${bigM >= 3 ? bigM + ' big moves — I shaped this season.' : ''}"` : hi('social') ? `"I connected with people. Not as a strategy — because I actually cared. Ask ${ally}."` : `"I survived. ${wins >= 2 ? wins + ' immunity wins. ' : ''}Every day someone could've taken me out and no one did. That's not luck."` },
+        r: hi('strategic') ? `"I read people better. Every vote, I knew where it was going before anybody said a name.${bigM >= 3 ? ` I shaped this whole season.` : ''}"` : hi('social') ? `"I connected with people. Not as a strategy, because I actually cared. Ask ${ally}, ${pronouns(ally).sub}'ll tell you."` : `"I survived. ${wins >= 2 ? `I won ${W(wins)} times when I had to. ` : ''}Every single day, somebody could have taken me out, and nobody did."` },
       { q:`What's the one thing you wish the jury knew about your game, ${target}?`,
-        r: hi('strategic') ? `"How much of what happened was my idea. ${kill ? 'The ' + kill + ' vote? Mine.' : 'You\'d be surprised how many votes I quietly shaped.'}"` : `"How hard it was. I made it look easy, but every day was a fight. ${wins >= 2 ? wins + ' immunity wins didn\'t fall from the sky.' : ''}"` },
+        r: hi('strategic') ? `"How much of it was my idea. ${kill ? `The ${kill} vote? That was mine.` : `You'd be surprised how many votes I quietly steered.`}"` : `"How hard it was. I made it look easy, but every day out there was a fight.${wins >= 2 ? ` Those ${W(wins)} wins didn't just fall out of the sky.` : ''}"` },
       { q:`If you were sitting where I am, ${target}, would you vote for yourself? Why?`,
-        r: hi('strategic') ? `"Absolutely. ${bigM >= 2 ? bigM + ' big moves, ' : ''}${wins >= 2 ? wins + ' immunity wins, ' : ''}I played the best game and I know it."` : hi('social') ? `"I'd vote for the person who played with the most heart. I think that's me. Ask ${ally}."` : `"Honestly? I'd probably struggle with it. But yeah — I'd vote for me. I earned this seat."` },
+        r: hi('strategic') ? `"Absolutely. I played the best game out here, and I think everybody on that bench knows it."` : hi('social') ? `"I'd vote for whoever played with the most heart, and I think that's me. Ask ${ally}, ${pronouns(ally).sub}'ll tell you."` : `"Honestly? I'd probably have a hard time with it. But yeah, I'd vote for me. I earned this seat."` },
       { q:`What moment in this game changed who you are, ${target}?`,
-        r: hi('social') ? `"The night ${ally} broke down at camp and I was the only one who stayed. That wasn't gameplay. That was just human."` : `"${kill ? 'The vote that took out ' + kill + '.' : 'The first time I survived a vote I shouldn\'t have.'} It changed how I saw the whole game."` },
+        r: hi('social') ? `"Getting close to ${ally}. I came out here to play a game, and I ended up with a real friend. That changed how I played everything after."` : `"${kill ? `The vote that took out ${kill}.` : `The first time I got through a vote I really shouldn't have.`} After that, I saw the whole game differently."` },
       { q:`Forget strategy, ${target}. Tell me who you actually are outside this game.`,
-        r: `"I'm someone who cares more than I let on out here. This game forces you to hide that. But I'm ready to stop hiding."` },
-      { q:`Why should I vote for you over ${finalists.find(x => x !== target) || 'them'}, ${target}?`,
-        r: hi('strategic') ? `"Because ${finalists.find(x => x !== target) || 'they'} rode coattails while I drove the bus. ${bigM >= 2 ? bigM + ' big moves to their... what, exactly?' : 'My game had direction. Theirs had survival.'}"` : hi('social') ? `"Because I treated people like people, not like chess pieces. ${finalists.find(x => x !== target) || 'They'} can't say that."` : `"Because I earned this seat the hard way. ${wins >= 2 ? wins + ' immunity wins.' : 'Every day was a fight.'} I never had it easy."` },
+        r: `"I'm somebody who cares a lot more than I let on out here. This game makes you hide that. I'm ready to stop hiding it."` },
+      { q:`Why should I vote for you over ${other || 'them'}, ${target}?`,
+        r: hi('strategic') ? `"Because ${other || 'they'} went along with the plans, and I made them. My game had a direction. Theirs was just getting through the week."` : hi('social') ? `"Because I treated people like people, not like votes. I don't think ${other || 'everybody up here'} can say that."` : `"Because I got to this seat the hard way. ${wins >= 2 ? `I won ${W(wins)} times when I had to.` : `Every day was a fight.`} Nothing about it was easy."` },
       { q:`${target}, what was the hardest day out here for you?`,
-        r: hi('social') ? `"The day ${kill || jury[0]} went home. I knew it was coming and I couldn't stop it. That stuck with me."` : `"Day ${Math.max(1, (gs.episodeHistory.length - 3) * 3)}. I was exhausted, paranoid, and completely alone. But I didn't quit."` },
+        r: hi('social') ? `"The day ${kill || jury[0]} went home. I knew it was coming, and I couldn't stop it. That one stuck with me."` : `"The night my name came up and I didn't know if I'd make it. I was exhausted and scared and I felt completely alone. But I didn't quit."` },
     ],
     // ── Challenge / Physical ──
     challenge: [
       { q:`${target}, you ${wins >= 3 ? 'dominated challenges' : wins >= 1 ? 'won some challenges' : 'barely won challenges'}. Is that enough to earn a vote?`,
-        r: wins >= 3 ? `"${wins} immunity wins. ${wins >= 4 ? 'Nobody in this game came close.' : 'When my life was on the line, I saved it myself.'} That's not just physical — that's mental toughness."` : wins >= 1 ? `"I won when it counted most. One immunity win at the right time is worth more than three at the wrong time."` : `"I didn't need immunity because I built relationships that kept me safe. That takes a different kind of strength."` },
+        r: wins >= 3 ? `"${Wcap(wins)} immunity wins. ${wins >= 4 ? 'Nobody out here came close.' : 'When my game was on the line, I saved myself.'} That's not just being strong, that's not cracking under pressure."` : wins >= 1 ? `"I won when it mattered. The one time I really needed immunity, I went out and got it."` : `"I didn't need immunity, because I had people keeping me safe. That's a different kind of strong."` },
       { q:`Did you ever throw a challenge, ${target}? Be honest.`,
-        r: hi('strategic') ? `"I played every challenge to win. But I also knew when winning would put a target on my back."` : `"Never. I gave everything every single time. Ask anyone who competed next to me."` },
+        r: hi('strategic') ? `"I went into every challenge trying to win. But I also knew when winning would put a target on my back."` : `"Never. I gave it everything, every single time. Ask anybody who competed next to me."` },
     ],
     // ── Respect / Acknowledgment ──
     respect: [
       { q:`Who sitting next to you deserves to be here, ${target}? And who doesn't?`,
-        r: hi('strategic') ? `"Everyone here earned their spot. But only one of us controlled how we got here. I'll let you figure out who."` : hi('social') ? `"I respect everyone sitting next to me. We all survived the same game. But our games were very different."` : `"We're all here. That means something. But my path was harder than ${finalists.find(x => x !== target) ? finalists.find(x => x !== target) + "'s" : 'theirs'}. And I think the jury knows it."` },
+        r: hi('strategic') ? `"We all earned our spot. But only one of us decided how we got here, and I think you know who."` : hi('social') ? `"I respect everybody up here. We all made it through the same game. We just played it really differently."` : `"We all made it, and that means something. But I had a harder road than ${other || 'they did'}, and I think the jury knows that."` },
       { q:`${target}, is there anyone on this jury you owe an apology to?`,
-        r: bCount >= 2 ? `"${kill || jury[0]}. I owe ${pronouns(kill || jury[0]).obj} that. What I did was game, but it was also personal, and I should have handled it better."` : bCount === 1 ? `"One person. ${pronouns(kill || jury[0]).Sub} ${pronouns(kill || jury[0]).sub==='they'?'know':'knows'} who ${pronouns(kill || jury[0]).sub} ${pronouns(kill || jury[0]).sub==='they'?'are':'is'}. I'm sorry for how it went down — not for the move, but for the way I did it."` : `"No. I played with integrity. I didn't always succeed, but I never did anything I need to apologize for."` },
+        r: bCount >= 2 ? `"${kill || jury[0]}. I owe ${pronouns(kill || jury[0]).obj} one. It was the game, but it got personal, and I should have handled it better."` : bCount === 1 ? `"One person, and ${pronouns(kill || jury[0]).sub} ${pronouns(kill || jury[0]).sub === 'they' ? 'know' : 'knows'} who ${pronouns(kill || jury[0]).sub} ${pronouns(kill || jury[0]).sub === 'they' ? 'are' : 'is'}. I'm not sorry for the move. I'm sorry for the way I did it."` : `"No. I tried to play this the right way. I didn't always manage it, but I never did anything I need to apologise for."` },
       { q:`What would you say to the person you hurt most in this game, ${target}?`,
-        r: hi('social') ? `"I'd say I'm sorry it happened in this context. Outside the game, it wouldn't have gone that way. But in here, I had to make choices I'm not proud of."` : `"I'd tell ${pronouns(kill || jury[0]).obj} I respected ${pronouns(kill || jury[0]).posAdj} game. The move wasn't about disrespect — it was about winning."` },
+        r: hi('social') ? `"I'd say I'm sorry it happened out here. Anywhere else, it never would have gone that way. But in here, I had to make choices I'm not proud of."` : `"I'd tell ${pronouns(kill || jury[0]).obj} I respected ${pronouns(kill || jury[0]).posAdj} game. It wasn't about disrespect. It was about winning."` },
     ],
     // ── Fire / Aggressive ──
     fire: [
       { q:`Be honest, ${target}. Did you ride coattails to get here?`,
-        r: hi('strategic') ? `"Name one vote I didn't have a hand in. I'll wait."` : wins >= 2 ? `"${wins} immunity wins and you think I rode coattails? I saved myself more than anyone out here."` : hi('social') ? `"I built every relationship that got me here. That's not riding coattails — that's a different kind of game."` : `"Maybe. But I'm sitting here and a lot of people who played 'their own game' aren't. Results matter."` },
+        r: hi('strategic') ? `"Name one vote I didn't have a hand in. Go on, I'll wait."` : wins >= 2 ? `"I won ${W(wins)} times and you think I rode coattails? I saved myself more than anybody out there."` : hi('social') ? `"I built every friendship that got me here. That's not riding coattails, that's just a different game."` : `"Maybe. But I'm sitting here, and a lot of people who played their own game aren't."` },
       { q:`${target}, why do you think half this jury is rolling their eyes right now?`,
-        r: hi('social') ? `"Because this game makes people bitter. I get it. But bitterness doesn't change who played the best game."` : hi('strategic') ? `"Because I beat them and they know it. I'd be rolling my eyes too."` : `"Because nobody wants to admit that the person who beat them deserved it. That's human nature."` },
+        r: hi('social') ? `"Because this game makes people bitter. I get it. But being bitter doesn't change who played the best game."` : hi('strategic') ? `"Because I beat them, and they know it. I'd be rolling my eyes too."` : `"Because nobody wants to admit the person who beat them deserved it. That's just people."` },
       { q:`Stop performing, ${target}. Who are you really?`,
-        r: hi('social') ? `"This IS who I am, ${juror}. The person you saw at camp, the one who listened, who cared — that's not an act. I brought myself to this game."` : `"I'm someone who wanted to win badly enough to do things I wouldn't do in real life. I'm not proud of all of it. But I'd do it again."` },
+        r: hi('social') ? `"This is who I am, ${juror}. The person who listened to you at camp and actually cared? That wasn't an act."` : `"I'm somebody who wanted to win badly enough to do things I'd never do back home. I'm not proud of all of it. But I'd do it again."` },
       { q:`${target}, you're sitting there acting humble. We both know that's not real. Drop the act.`,
-        r: hi('boldness') ? `"Fine. I played the best game out here. I know it. You know it. Everyone on that bench knows it. I'm not apologizing for winning."` : `"It's not an act, ${juror}. I'm genuinely grateful to be here. If that looks like performance to you, that says more about the game than about me."` },
+        r: hi('boldness') ? `"Fine. I played the best game out here. I know it, you know it, and everybody on that bench knows it. I'm not saying sorry for winning."` : `"It's not an act, ${juror}. I'm really grateful to be sitting here. If that looks fake to you, that's what this game does to people."` },
     ],
     };
   };
 
   function _pickUnusedQA(pool, seed) {
-    const unused = pool.filter(qa => !_usedQs.has(qa.q));
+    // (by the question's shape: the same question with two different names in it is still the same question, read
+    // 2026-10-14, two jurors asking "You had a hand in getting me eliminated... personal, or purely the game?")
+    const shape = qa => String(qa.q).replace(/[A-Z][a-z]+/g, 'X');
+    const unused = pool.filter(qa => !_usedQs.has(shape(qa)));
     const src = unused.length ? unused : pool;
     const qa = _pick(src, seed);
-    _usedQs.add(qa.q);
+    _usedQs.add(shape(qa));
     return qa;
   }
 

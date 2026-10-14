@@ -447,7 +447,7 @@ export function generateAftermathShow(ep) {
       const _other = _fakeDeal.players.find(p => p !== name);
       const _otherPr = _other ? pronouns(_other) : { sub: 'they', obj: 'them', pos: 'their' };
       _contradictions.push({
-        setup: `You made a ${_fakeDeal.type} deal with ${_other} in episode ${_fakeDeal.madeEp}. You shook on it. You looked ${_otherPr.obj} in the eye.`,
+        setup: `You made a ${({ f2: 'final two', f3: 'final three' })[_fakeDeal.type] || _fakeDeal.type} deal with ${_other} in episode ${_fakeDeal.madeEp}. You shook on it. You looked ${_otherPr.obj} in the eye.`,
         evidence: `Deal flagged as non-genuine at creation. ${name} never intended to honor the ${_fakeDeal.type} pact.`,
         affected: _other && gs.activePlayers.includes(_other) ? [_other] : [],
         type: 'fake-deal', drama: 7
@@ -947,7 +947,10 @@ export function generateAftermathShow(ep) {
   const _ftElimEp = gs.episodeHistory.find(h => h.eliminated === _fanTarget || h.firstEliminated === _fanTarget);
   const _ftVoters = (_ftElimEp?.votingLog || []).filter(v => v.voted === _fanTarget).map(v => v.voter);
   const _ftWorstEnemy = gs.activePlayers.filter(p => p !== _fanTarget).sort((a, b) => getBond(_fanTarget, a) - getBond(_fanTarget, b))[0];
-  const _ftBestAlly = [...gs.activePlayers, ...allEliminated].filter(p => p !== _fanTarget).sort((a, b) => getBond(_fanTarget, b) - getBond(_fanTarget, a))[0];
+  // (never the one who voted them out: read 2026-10-14, "Owen was the one person I could trust" a question after
+  // "Owen voted you out")
+  const _ftOutBy = new Set(((_ftElimEp => _ftElimEp ? (_ftElimEp.votingLog || []).filter(v => v.voted === _fanTarget).map(v => v.voter) : [])(gs.episodeHistory.find(h => h.eliminated === _fanTarget))));
+  const _ftBestAlly = [...gs.activePlayers, ...allEliminated].filter(p => p !== _fanTarget && !_ftOutBy.has(p)).sort((a, b) => getBond(_fanTarget, b) - getBond(_fanTarget, a))[0];
   const _ftShowmance = gs.showmances?.find(sh => sh.players.includes(_fanTarget));
   const _ftBetrayals = gs.episodeHistory.filter(h => (h.defections || []).some(d => d.player === _fanTarget)).length;
   const _ftBetrayedBy = _ftElimEp ? (_ftElimEp.votingLog || []).find(v => v.voted === _fanTarget && getBond(_fanTarget, v.voter) >= 3) : null;
@@ -965,12 +968,12 @@ export function generateAftermathShow(ep) {
   // Elimination-specific
   if (_ftBetrayedBy) {
     const _bPr = pronouns(_ftBetrayedBy.voter);
-    _allQs.push({ cat: 'betrayal', q: `"${_ftBetrayedBy.voter} voted you out. Your bond was strong — you trusted ${_bPr.obj}. When did you find out?"`,
+    _allQs.push({ cat: 'betrayal', q: `"${_ftBetrayedBy.voter} voted you out, and you really trusted ${_bPr.obj}. When did you find out?"`,
       a: _ftS.intuition >= 6 ? `"Part of me saw it coming. ${_ftBetrayedBy.voter} got quiet the day before. That's always a sign."` : `"I found out watching the show. I genuinely didn't know. That hurt more than losing."`,
       tone: ['superfan', 'drama'] });
   }
   if (_ftVoters.length >= 3) {
-    _allQs.push({ cat: 'elimination', q: `"You got ${_ftVoters.length} votes in episode ${_ftElimEp?.num}. That's not a close call — that's a consensus. What went wrong?"`,
+    _allQs.push({ cat: 'elimination', q: `"You got ${_ftVoters.length} votes in episode ${_ftElimEp?.num}. That wasn't even close. What went wrong?"`,
       a: _ftS.strategic >= 6 ? `"I misread the room. I thought I had the numbers and I was wrong. That's on me."` : `"I think people were scared. Easier to pile on one name than to make a real move."`,
       tone: ['hater', 'superfan'] });
   }
@@ -983,36 +986,36 @@ export function generateAftermathShow(ep) {
   // Relationship-specific
   if (_ftShowmance) {
     const _partner = _ftShowmance.players.find(p => p !== _fanTarget);
-    _allQs.push({ cat: 'showmance', q: _ftShowmance.phase === 'broken' ? `"You and ${_partner}. It was the romance of the season — and then it ended. What happened?"` : `"You and ${_partner}. The whole fanbase is invested. Is it real or was it the island?"`,
+    _allQs.push({ cat: 'showmance', q: _ftShowmance.phase === 'broken' ? `"You and ${_partner} were the romance of the season, and then it ended. What happened?"` : `"You and ${_partner}. The whole fanbase is invested. Is it real or was it the island?"`,
       a: _ftShowmance.phase === 'broken' ? `"It was real while it lasted. The game got between us. That's the honest answer."` : `"[smiles] It's real. The island made it intense, but what we have... yeah. It's real."`,
       tone: ['drama', 'supporter'] });
   }
   if (_ftWorstEnemy && getBond(_fanTarget, _ftWorstEnemy) <= -3) {
     const _ePr = pronouns(_ftWorstEnemy);
-    _allQs.push({ cat: 'rivalry', q: `"Your bond with ${_ftWorstEnemy} was ${getBond(_fanTarget, _ftWorstEnemy).toFixed(1)}. That's one of the lowest in the game. What did ${_ePr.sub} do to you?"`,
+    _allQs.push({ cat: 'rivalry', q: `"You and ${_ftWorstEnemy} could not stand each other. What did ${_ePr.sub} do to you?"`,
       a: _ftS.temperament <= 4 ? `"${_ftWorstEnemy} knows exactly what ${_ePr.sub} did. I don't need to explain it to the audience. ${_ePr.Sub}'ll get what's coming."` : `"We just clashed. Different play styles, different values. I tried to make it work and it didn't."`,
       tone: ['drama', 'hater'] });
   }
   if (_ftBestAlly && getBond(_fanTarget, _ftBestAlly) >= 4) {
-    _allQs.push({ cat: 'ally', q: `"You and ${_ftBestAlly} — bond of ${getBond(_fanTarget, _ftBestAlly).toFixed(1)}. Strongest in your game. Was that always the plan?"`,
-      a: `"${_ftBestAlly} was the one person I could trust out there. We didn't plan it — we just clicked from the start. ${pronouns(_ftBestAlly).Sub} ${pronouns(_ftBestAlly).sub === 'they' ? 'are' : 'is'} the real deal."`,
+    _allQs.push({ cat: 'ally', q: `"You and ${_ftBestAlly} were inseparable out there. Was that always the plan?"`,
+      a: `"${_ftBestAlly} was the one person I could trust out there. We didn't plan it. We just clicked from the start. ${pronouns(_ftBestAlly).Sub}${pronouns(_ftBestAlly).sub === 'they' ? "'re" : "'s"} the real deal."`,
       tone: ['supporter', 'superfan'] });
   }
 
   // Game-move-specific
   if (_ftBetrayals >= 2) {
     _allQs.push({ cat: 'betrayal', q: `"You flipped on your alliance ${_ftBetrayals} times. At what point is that just who you are?"`,
-      a: _ftS.loyalty <= 4 ? `"It's a game. Loyalty is a strategy, not a rule. I played to win, not to make friends."` : `"Every flip had a reason. I wasn't being disloyal — I was adapting. There's a difference."`,
+      a: _ftS.loyalty <= 4 ? `"It's a game. Loyalty is a strategy, not a rule. I played to win, not to make friends."` : `"Every flip had a reason. I wasn't being disloyal, I was adapting. There's a difference."`,
       tone: ['hater', 'superfan'] });
   }
   if (_ftIdolPlayed) {
     const _idolEp = gs.episodeHistory.find(h => (h.idolPlays || []).some(ip => ip.player === _fanTarget));
-    _allQs.push({ cat: 'idol', q: `"That idol play in episode ${_idolEp?.num || '?'}. Walk us through the decision — what made you play it?"`,
+    _allQs.push({ cat: 'idol', q: `"That idol play in episode ${_idolEp?.num || '?'}. What made you decide to play it?"`,
       a: _ftS.intuition >= 6 ? `"I felt the heat. Everyone was too friendly at camp. When people are nice to you before tribal, it means you're going home."` : `"Honestly, I was scared. I wasn't sure if I needed it, but I couldn't afford to be wrong."`,
       tone: ['superfan', 'supporter'] });
   }
   if (_ftChalWins >= 2) {
-    _allQs.push({ cat: 'challenge', q: `"${_ftChalWins} challenge wins. You dominated out there. Did the challenge reputation help or hurt you?"`,
+    _allQs.push({ cat: 'challenge', q: `"You won ${['zero','one','two','three','four','five','six','seven','eight'][_ftChalWins] || _ftChalWins} challenges. Did being that good at challenges help you or hurt you?"`,
       a: _ftS.strategic >= 6 ? `"It hurt me. Every win put a bigger target on my back. I wish I'd thrown a few."` : `"It kept me alive. I needed those necklaces. Without them, I'd have gone home way earlier."`,
       tone: ['superfan', 'supporter'] });
   }
@@ -1022,18 +1025,18 @@ export function generateAftermathShow(ep) {
       tone: ['hater'] });
   }
   if (_ftAlliances.length >= 2) {
-    _allQs.push({ cat: 'alliance', q: `"You were in ${_ftAlliances.length} alliances — ${_ftAlliances.map(a => a.name).join(', ')}. Which one was real?"`,
+    _allQs.push({ cat: 'alliance', q: `"You were in ${_ftAlliances.length} alliances: ${_ftAlliances.map(a => a.name).join(', ')}. Which one was real?"`,
       a: _ftAlliances.some(a => a.active) ? `"${_ftAlliances.find(a => a.active)?.name || 'One of them'} was real. The rest were survival."` : `"At the time, all of them felt real. Looking back... probably none of them."`,
       tone: ['superfan', 'hater'] });
   }
   if (_ftWasMole) {
     _allQs.push({ cat: 'mole', q: `"So... you were The Mole. This whole time. How does it feel watching everyone find out?"`,
-      a: `"[grins] This is the best part. Watching their faces when they realize it was me the whole time. Every 'accident,' every 'mistake' — that was all me."`,
+      a: `"[grins] This is the best part. Watching their faces when they realize it was me the whole time. Every 'accident', every 'mistake'? That was all me."`,
       tone: ['drama', 'superfan'] });
   }
   if (_ftSideDeals.length >= 2) {
     const _dealNames = _ftSideDeals.map(d => d.players.find(p => p !== _fanTarget)).filter(Boolean);
-    _allQs.push({ cat: 'deals', q: `"You had ${_ftSideDeals.length} side deals — with ${_dealNames.slice(0, 3).join(', ')}. Were any of them real?"`,
+    _allQs.push({ cat: 'deals', q: `"You had ${_ftSideDeals.length} side deals, with ${_dealNames.slice(0, 3).join(', ')}. Were any of them real?"`,
       a: _ftSideDeals.some(d => d.genuine) ? `"The one with ${_ftSideDeals.find(d => d.genuine)?.players.find(p => p !== _fanTarget) || 'someone'} was real. The rest were insurance."` : `"[laughs] I'll take the fifth on that one."`,
       tone: ['hater', 'drama'] });
   }
@@ -1056,11 +1059,11 @@ export function generateAftermathShow(ep) {
     if (_ftTriRole === 'center') {
       _allQs.push({ cat: 'triangle', q: `"The love triangle was THE storyline this season. When did you first realize you were in the middle of it?"`,
         a: _ftS.strategic >= 6 ? `"I knew what was happening. I just didn't know how to stop it without losing both of them."` : `"Honestly? I didn't see it until it was too late. I thought I could keep everyone happy. I was wrong."`, tone: ['superfan', 'drama'] });
-      _allQs.push({ cat: 'triangle', q: `"Be honest — did you enjoy having two people competing for your attention?"`,
+      _allQs.push({ cat: 'triangle', q: `"Be honest. Did you enjoy having two people fighting over you?"`,
         a: _ftS.social >= 6 ? `"It wasn't like that. These were real feelings. Real people. I hated every second of hurting someone."` : `"...Maybe at first. But it stopped being fun the moment I saw what it was doing to ${_ftTriangle.suitors[0]}."`, tone: ['drama', 'hater'] });
     } else if (_ftTriRole === 'rejected') {
       _allQs.push({ cat: 'triangle', q: `"The audience was rooting for you in that love triangle. How are you holding up?"`,
-        a: _ftS.loyalty >= 6 ? `"I'm not going to lie — it gutted me. I thought what we had was real. Turns out I was the backup plan."` : `"I'm fine. Honestly. The game taught me something about myself. Not everyone who says they care actually does."`, tone: ['supporter', 'drama'] });
+        a: _ftS.loyalty >= 6 ? `"I'm not going to lie, it gutted me. I thought what we had was real. Turns out I was the backup plan."` : `"I'm fine. Honestly. The game taught me something about myself. Not everyone who says they care actually does."`, tone: ['supporter', 'drama'] });
       _allQs.push({ cat: 'triangle', q: `"You got picked second. In love and in this game. How does that feel to hear out loud?"`,
         a: `"Terrible. Thanks for asking."`, tone: ['hater'] });
     } else {
@@ -1075,7 +1078,7 @@ export function generateAftermathShow(ep) {
     const _ftAfRole = _ftAffair.cheater === _fanTarget ? 'cheater'
       : _ftAffair.partner === _fanTarget ? 'betrayed' : 'secret';
     if (_ftAfRole === 'cheater') {
-      _allQs.push({ cat: 'affair', q: `"The secret affair was the biggest twist of the season — and it wasn't even planned by production. When did you decide to go behind ${_ftAffair.partner}'s back?"`,
+      _allQs.push({ cat: 'affair', q: `"The secret affair was the biggest twist of the season, and production didn't even plan it. When did you decide to go behind ${_ftAffair.partner}'s back?"`,
         a: _ftS.strategic >= 6 ? `"It wasn't a decision. It was a series of moments that added up."` : `"I didn't decide. It just happened."`, tone: ['superfan', 'drama'] });
       _allQs.push({ cat: 'affair', q: `"You had someone who trusted you and you threw it away. Was the game worth it?"`,
         a: `"The game? This wasn't about the game. That's what makes it worse."`, tone: ['hater'] });
@@ -1117,7 +1120,7 @@ export function generateAftermathShow(ep) {
     if (_fanExchanges.length >= 3) break;
     if (_usedCats.has(q.cat)) continue;
     _usedCats.add(q.cat);
-    _fanExchanges.push({ q: q.q, a: q.a });
+    _fanExchanges.push({ q: q.q, a: q.a, cat: q.cat });
   }
 
   // Host reactions tailored to fan type

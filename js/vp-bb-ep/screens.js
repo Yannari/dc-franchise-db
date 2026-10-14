@@ -436,9 +436,22 @@ export function bbxNext(uid) {
   const R = sync(uid); if (!R) return;
   const S = R.screens[R.si];
   if (R.map) {
-    // inside a conversation: its next line, and at its last line back to the house
+    // inside a conversation: its next line, and at its last line straight into the next conversation
+    // in story order (the user, 2026-10-14: "next button should just play the linear way so i dont
+    // have to return to the map everytimes"); after the last one, the next screen
     if (R.map.mode === 'play' && R.idx < R.map.end) { R.idx++; paint(uid, true); return; }
-    if (R.map.mode === 'play' && R.map.cur != null) { mapDone(uid, R); return; }
+    if (R.map.mode === 'play' && R.map.cur != null) {
+      R.map.watched.add(R.map.cur);
+      const nx = nextConv(R.map.convs, R.map.watched);
+      if (nx) { Object.assign(R.map, { window: null }); mapPlay(uid, R, nx); return; }
+      mapDone(uid, R);
+      const wasAuto = R.auto; stopAuto(R);
+      if (typeof window !== 'undefined' && typeof window.vpNext === 'function') {
+        window.vpNext();
+        if (wasAuto) setTimeout(() => { const el = document.querySelector('.bbx[data-uid]'); if (el && el.dataset.uid !== uid) bbxAuto(el.dataset.uid); }, 700);
+      }
+      return;
+    }
     // on the house: the next conversation in story order whose time has come
     const c = R.map.mode !== 'play' ? nextConv(R.map.convs, R.map.watched) : null;
     if (c) { if (R.flying) return; fly(uid, R, R.map.mode === 'map' ? c.zone : null, () => mapPlay(uid, R, c)); return; }

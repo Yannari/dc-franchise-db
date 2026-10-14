@@ -404,7 +404,7 @@ export default {
   // ── a joke at someone's expense ── a makes it, b is the joke
   'friction.joke.scene': [
     { id: 'fj.1', turns: [{ by: 'a', say: "Watch, this is {b}." }, { beat: '{a} does an impression of {b}. Everyone laughs except {b}.' }, { by: 'b', say: "Very funny." }] },
-    { id: 'fj.2', turns: [{ by: 'b', say: "I told you that in private." }, { by: 'a', say: "It was just a joke." }, { by: 'b', say: "It was private." }] },
+    { id: 'fj.2', turns: [{ beat: '{a} gets a big laugh out of a story about {b}. It was a story {b} told {a} in private.' }, { by: 'b', say: "I told you that in private." }, { by: 'a', say: "It was just a joke." }, { by: 'b', say: "It was private." }] },
     { id: 'fj.3', turns: [{ by: 'a', say: "Oh, come on, {b} can't take a joke." }, { beat: '{b} has just walked out of the room.' }] },
     { id: 'fj.4', turns: [{ by: 'b', dr: "Everyone laughed. I didn't. It wasn't a joke to me." }] },
     { id: 'fj.5', turns: [{ by: 'a', say: "And then {b} said—" }, { by: 'b', say: "Okay, that's enough." }, { by: 'a', say: "I'm not finished." }, { by: 'b', say: "Yes, you are." }] },

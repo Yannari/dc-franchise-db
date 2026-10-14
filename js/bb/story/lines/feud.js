@@ -128,6 +128,7 @@ export default {
       { by: 'b', dr: "I know what that was. That was {a} telling the whole room I'm the one always plotting. With a smile on." },
     ] },
     { id: 'sf.j3', turns: [
+      { beat: '{a} has just told the room a story about {b}, one {b} told {a} in confidence. Everybody laughed.' },
       { by: 'b', say: "I told you that in private." },
       { by: 'a', say: "It was a funny story!" },
       { by: 'b', say: "It was private. I told you because you asked." },

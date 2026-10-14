@@ -511,6 +511,9 @@ export function _checkShowmanceChalMoment(ep, phaseKey, phases, personalScores, 
       ? tribeMembers.flatMap(t => (typeof t === 'string' ? [t] : (t?.members || [])))
       : gs.activePlayers;
     if (!allMembers.includes(a) || !allMembers.includes(b)) return;
+    // a moment filed at camp is at one camp: a couple on two tribes is not at the same fire (read 2026-10-14: Sami on Blue
+    // and Spencer on Green "not being subtle" at Blue's camp)
+    if (toCamp && !gs.isMerged && _campOf(a) !== _campOf(b)) return;
 
     const prA = pronouns(a), prB = pronouns(b);
     const bond = getBond(a, b);
@@ -894,6 +897,9 @@ export function updateShowmancePhases(ep) {
       showmanceTarget: 'romance.target', showmanceJealousy: 'romance.jealous', friendshipJealousy: 'romance.sidelined' };
     const pushEvt = (type, text, players) => {
       if (!ep.campEvents?.[tribeName]) return;
+      // split up by a swap: their moment is not at either camp (read 2026-10-14: Gabby on Red and Ara on Green "sit by the
+      // fire with their foreheads together" at Red's)
+      if (!gs.isMerged && _campOf(a) !== _campOf(b)) return;
       const block = ep.campEvents[tribeName];
       const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
       const ps = players || [a, b];

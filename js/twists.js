@@ -1677,7 +1677,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         ep.twistNarrativeEvents[s.to + '_abductee'] = { type: 'dispute', players: [s.name], text: _pick([
           `${s.name} doesn't hide it — ${p.sub} didn't want to be here. The loyalty to ${s.from} is written on ${p.posAdj} face. ${s.to} watches and takes note.`,
           `${s.name} sits apart from the group. ${p.Sub} had a tribe, had a plan, and someone else's decision just burned it down. The resentment is visible.`,
-          `${s.name} barely speaks to anyone at ${s.to} camp. ${p.Pos} silence says everything — ${p.sub} ${p.sub==='they'?'were':'was'} taken from people ${p.sub} trusted and dropped with strangers.`,
+          `${s.name} barely speaks to anyone at ${s.to} camp. ${p.PosAdj} silence says everything — ${p.sub} ${p.sub==='they'?'were':'was'} taken from people ${p.sub} trusted and dropped with strangers.`,
         ]) };
       } else if (hatedOldTribe || (!likedOldTribe && isAdaptable)) {
         // Happy to leave — embraces new tribe

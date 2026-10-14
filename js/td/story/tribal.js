@@ -508,6 +508,41 @@ export function writeTribal(ep) {
     booth.push({ voter: v.voter, voted: v.voted, why, line: w ? w.lines.map(l => l.text).join(' ') : `${v.voted}.` });
   }
 
+  // ── a Save Card night (coach-episode.js maybeSaveCoach) ──
+  // The votes said a coach, the card kept the coach, and the coach named who goes instead. Nobody voted this one
+  // out, so none of the reading below fits it (read 2026-10-14: Dunia, named by Bowie with every vote on Bowie, "I
+  // thought I had friends in there. I just think they had other friends too", then "I knew exactly who was voting for
+  // me"). The pick and the first reaction are the viewer's (vp-td-ep/coach-tribal.js cardAfterRead); this writes the
+  // walk out, about the coach's choice, and what the coach and the boot's friend say after.
+  const cardSave = (ep.coachSaves || []).find(s => s.replacement === elim && s.coach);
+  if (cardSave) {
+    const coach = cardSave.coach;
+    const rest = tribal.filter(x => x !== elim);
+    const pal = [...rest].sort((x, y) => getBond(elim, y) - getBond(elim, x) || x.localeCompare(y)).find(x => getBond(elim, x) >= 2) || null;
+    // did anybody write the boot's name; did the coach ever train them (the card names the one the coach is coldest with)
+    const votedA = ballots.some(v => v.voted === elim && v.voter !== elim);
+    const coachedA = [ep, ...(gs.episodeHistory || [])].some(h => Object.values(h?.coachData || {})
+      .some(cd => (cd?.sessions || []).some(s => s.coach === coach && s.contestant === elim)));
+    const d = { ...data, coach };
+    const kind = pal ? 'friend' : 'alone';
+    const fx = { ...factsFor({ who: { a: elim, ...(pal ? { b: pal } : {}) }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base,
+      register: registerOf(elim), voted: votedA, coached: coachedA, pair: !!pal };
+    const ex = writeStory('exit2.card', kind, { a: elim, ...(pal ? { b: pal } : {}), h: seasonConfig?.host || 'Chris' }, d, fx, ctx(n++, 'tribal', 'soft'));
+    const after = [];
+    const say = (k, who, f2) => {
+      const f = { ...factsFor({ who: { a: who }, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(who), lastBoot: true, ...f2 };
+      const w = writeStory('after.card', k, { a: who }, d, f, ctx(n++, 'tribal', 'soft'));
+      if (w) after.push(...w.lines);
+    };
+    // the coach, on why that name: never trained them, and they wrote the coach's name too
+    say('coach', coach, { coached: coachedA, voted: ballots.some(v => v.voter === elim && v.voted === coach) });
+    if (pal) say('friend', pal, {});
+    const qa = tribalQA(ep, { tribal, ballots, elim, ch, camp: camp || gs.mergeName || 'merge', base, ctx, nextN: () => n++ });
+    const plays = playReactions(ep, { tribal, ballots, base, ctx, nextN: () => n++ });
+    return { qa, plays, booth, reveal: [], revealKind: 'card', exitBase: base, room: [], blindside: false, shocking: false,
+      exit: ex?.lines || [], exitWith: pal, exitKind: kind, after, card: { coach } };
+  }
+
   // ── the reading: how the one going home takes it ──
   const forBoot = ballots.filter(v => v.voted === elim && v.voter !== elim).map(v => v.voter);
   const others = tribal.filter(x => x !== elim);

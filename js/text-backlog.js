@@ -2,7 +2,7 @@
 import { bbStepTranscript } from './vp-bb-ep/steps.js';
 import { tdTribalStepped, tdTribalScreen, tdStepTranscript } from './vp-td-ep/steps.js';
 import { coachArrival } from './vp-td-ep/coach-arrive.js';
-import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, exileChooserReason } from './vp-td-ep/twists.js';
+import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, exileChooserReason, islandOrder } from './vp-td-ep/twists.js';
 import { tdJuryHouseScreen } from './vp-td-ep/jury-house.js';
 import { tdTwistBlocksScreen, tdMergeScreen } from './vp-td-ep/twist-screens.js';
 import { preTwistBlocks, mergeData, _buildPostTwistBlocks } from './vp-screens.js';
@@ -1701,15 +1701,27 @@ export function _textTdCeremony(ep, ln, sec) {
 
 // The island twists as the stepped viewer plays them (vp-td-ep/twists.js): the choice and Exile
 // Island in full, the island days' moments (their events are already listed above, word for word).
-export function _textTdIslands(ep, ln, sec) {
+// The crossroads alone: printed before the island's day and its duel (generateSummaryText)
+export function _textTdRiChoice(ep, ln, sec) {
+  if (ep.isBigBrother || (ep.format && ep.format !== 'total-drama') || !ep.riChoice) return;
+  const o = { host: seasonConfig.host || 'Chris', setting: seasonConfig.setting, pronouns, stats: pStats,
+    chooserReason: (c, x) => exileChooserReason(c, x, getBond, threatScore) };
+  const scr = tdRiChoiceScreen(ep, o);
+  if (!scr) return;
+  sec(ep.riChoice === 'RESCUE ISLAND' ? 'RESCUE ISLAND — THE ARRIVAL' : 'THE CROSSROADS — ONE FINAL CHOICE');
+  tdStepTranscript(scr).forEach(l => ln(l));
+}
+
+export function _textTdIslands(ep, ln, sec, { choice = true } = {}) {
   if (ep.isBigBrother || (ep.format && ep.format !== 'total-drama')) return;
   const o = { host: seasonConfig.host || 'Chris', setting: seasonConfig.setting, pronouns, stats: pStats,
     chooserReason: (c, x) => exileChooserReason(c, x, getBond, threatScore) };
   const full = (scr, title) => { if (!scr) return; sec(title); tdStepTranscript(scr).forEach(l => ln(l)); };
-  if (ep.riChoice) full(tdRiChoiceScreen(ep, o), ep.riChoice === 'RESCUE ISLAND' ? 'RESCUE ISLAND — THE ARRIVAL' : 'THE CROSSROADS — ONE FINAL CHOICE');
+  if (choice) _textTdRiChoice(ep, ln, sec);
   for (const rescue of [false, true]) {
     const scr = tdIslandLifeScreen(ep, rescue, o);
-    const extra = scr ? scr.steps.filter(s => s.k === 'title') : [];
+    // ("Next on Redemption Island: The Duel" says nothing once the arena above has been printed)
+    const extra = scr ? scr.steps.filter(s => s.k === 'title' && !(s.kicker === 'Next on Redemption Island' && ep.riDuel && !choice)) : [];
     if (extra.length) { sec(`${scr.label.toUpperCase()} — AS IT AIRS`); tdStepTranscript({ ...scr, steps: extra }).forEach(l => ln(l)); }
   }
   full(tdExileScreen(ep, exileOf(ep, false), o), 'EXILE ISLAND — AS IT AIRS');
@@ -2150,6 +2162,21 @@ export function _textWhyVote(ep, ln, sec) {
   // explainBoot — inner function for vote analysis
   function explainBoot(name, votelog, alliances2) {
     if (!name) return;
+    // a Save Card night (coach-episode.js maybeSaveCoach): nobody voted this one out. The votes were the coach's, and the
+    // card let the coach name who goes instead (read 2026-10-14: "Dunia was voted out because: personal tension... Bruno
+    // voted Bowie — tried to pull the numbers a different way", with all four votes on Bowie)
+    const _cs = (ep.coachSaves || []).find(s => s.replacement === name);
+    if (_cs) {
+      const _log = votelog || ep.votingLog || [];
+      const _theirs = _log.filter(v => v.voted === name).length;
+      const _own = _log.find(v => v.voter === name)?.voted;
+      const _coached = [ep, ...(gs.episodeHistory || [])].some(h => Object.values(h?.coachData || {})
+        .some(cd => (cd?.sessions || []).some(s => s.coach === _cs.coach && s.contestant === name)));
+      ln(`${name} was not voted out. The votes were for ${_cs.coach}; the Save Card kept ${_cs.coach} in the game, and ${_cs.coach} named ${name} to go instead.`);
+      ln(`- Votes against ${name}: ${_theirs || 'none'}.${_own ? ` ${name} voted ${_own}.` : ''}`);
+      ln(`- Why ${name}: the coach the card saves names the player they are least attached to.${_coached ? '' : ` ${_cs.coach} never ran a single session with ${name}.`}`);
+      return;
+    }
     if (ep.swapResult && !ep.eliminated) {
       const sr = ep.swapResult;
       ln(`${sr.swapper} received the most votes but was NOT eliminated — Elimination Swap redirected them to ${sr.toTribe}. ${sr.swapper} chose ${sr.pickedPlayer} in exchange.`);
@@ -2420,7 +2447,8 @@ export function _textWhyVote(ep, ln, sec) {
   }
 
   // Crashout (bold eliminated player's last words + reveals)
-  if (!ep.tribalBlowup) {
+  // (not for the one a Save Card named: nobody at that fire voted them out, td/story/tribal.js)
+  if (!ep.tribalBlowup && !(ep.coachSaves || []).some(s => s.replacement === elim)) {
     const crashout = buildCrashout(ep);
     if (crashout) {
       ln('');
@@ -2438,7 +2466,8 @@ export function _textWhyVote(ep, ln, sec) {
     const arch = elimP?.archetype || '';
     const archLabel = arch ? arch.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '';
     ln('');
-    ln(`${elim}${archLabel ? ` (${archLabel})` : ''} — the tribe has spoken.`);
+    const _cardBy = (ep.coachSaves || []).find(s => s.replacement === elim)?.coach;
+    ln(`${elim}${archLabel ? ` (${archLabel})` : ''} — ${_cardBy ? `named by ${_cardBy}, with the Save Card.` : 'the tribe has spoken.'}`);
     const exitQuote = vpGenerateQuote(elim, ep, 'eliminated');
     if (exitQuote) ln(`"${exitQuote}"`);
   }
@@ -2523,9 +2552,10 @@ export function _textAmbassadors(ep, ln, sec) {
 // ── RI DUEL / RESCUE ISLAND ──
 export function _textRIDuel(ep, ln, sec) {
   // Life events (training, mental arcs, pre-duel tension)
-  const lifeEvts = (ep.riLifeEvents || []).filter(e =>
+  // (in the order the island's day plays: whoever just arrived is met before anything else happens to them)
+  const lifeEvts = islandOrder((ep.riLifeEvents || []).filter(e =>
     !['winner-relief','winner-hardened','winner-streak','winner-obsessed',
-      'loser-graceful','loser-bitter','loser-emotional','loser-neutral'].includes(e.type));
+      'loser-graceful','loser-bitter','loser-emotional','loser-neutral'].includes(e.type)));
   if (lifeEvts.length) {
     sec('REDEMPTION ISLAND — LIFE ON THE ISLAND');
     lifeEvts.forEach(e => ln(`- ${e.text || e.type}`));
@@ -4306,8 +4336,11 @@ export function generateSummaryText(ep) {
   _textRatings(ep, ln, sec);
   _textSeasonThreads(ep, ln, sec); // tracked story threads — worker beat-sheet spine + reader recap
   _textAmbassadors(ep, ln, sec);
+  // the crossroads, then the island's day, then its duel: the order it airs (read 2026-10-14: the duel, then the boot
+  // choosing the torch, then "the next duel decides whether Mike gets back in")
+  _textTdRiChoice(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
-  _textTdIslands(ep, ln, sec);
+  _textTdIslands(ep, ln, sec, { choice: false });
   _textJuryLife(ep, ln, sec);
   _textCampOverview(ep, ln, sec);
   _textAftermath(ep, ln, sec);
@@ -4662,14 +4695,28 @@ export function buildNextEpQs(ep) {
   } else if (ep.tribeDissolve) {
     qs.push(`${ep.tribeDissolve.player} just joined ${ep.tribeDissolve.toTribe} with no allies — do they find a foothold, or are they the next boot?`);
   }
-  if (cfg.ri && ep.riChoice === 'REDEMPTION ISLAND' && elim) qs.push(`Can ${elim} survive their first RI duel?`);
+  if (cfg.ri && ep.riChoice === 'REDEMPTION ISLAND' && elim) {
+    // the duel runs the night they arrive (episode.js): "their first duel" is a question only before they have fought it
+    // (read 2026-10-14: "Can Mike survive their first RI duel?" under the duel Mike had just won)
+    const _d = ep.riDuel, _p = pronouns(elim);
+    if (!_d || !(_d.duelists || [_d.winner, _d.loser]).includes(elim)) qs.push(`Can ${elim} survive their first RI duel?`);
+    else if (_d.loser !== elim) qs.push(`${elim} won a duel the night ${_p.sub} landed on Redemption Island. How long can ${_p.sub} keep winning?`);
+  }
   if (gs.riPlayers.length >= 2) qs.push(`${gs.riPlayers.join(' vs ')} — who wins the duel?`);
 
   // Merge proximity
   if (!gs.isMerged && active.length <= (cfg.mergeAt || 12) + 2) qs.push('The merge is close. Who has the numbers to survive it?');
 
   // Dominant player — varied phrasing
-  const dom = ep.alliances?.find(a => a.members.length >= Math.ceil((ep.tribalPlayers?.length || 0) / 2))?.members?.[0];
+  // who ran the vote: the one whose plan the viewer watched land on tonight's boot (td/story/director.js vote scenes), else
+  // the strongest player of the bloc that wrote the boot's name. It was the first-listed member of any big bloc, whether or
+  // not its plan worked (read 2026-10-14: Grett pitched Mike all day, then "Gabby ran the vote tonight")
+  const _bloc = ep.alliances?.find(a => a.target && a.target === elim && a.members.length >= Math.ceil((ep.tribalPlayers?.length || 0) / 2));
+  const _led = Object.values(ep.campStory || {}).flatMap(c => [...(c?.pre || []), ...(c?.post || [])])
+    .find(x => x?.storyType === 'vote' && x.step === 'plan' && x.scene?.data?.target === elim)?.scene?.who?.a;
+  const _wrote = m => (ep.votingLog || []).some(v => v.voter === m && v.voted === elim);
+  const dom = !_bloc ? null : _led && _bloc.members.includes(_led) ? _led
+    : _bloc.members.filter(_wrote).sort((x, y) => (pStats(y).social + pStats(y).strategic) - (pStats(x).social + pStats(x).strategic))[0] || null;
   if (dom && active.includes(dom)) {
     qs.push(_rp([
       `${dom} ran the vote tonight. Can anyone break that grip before it's too late?`,

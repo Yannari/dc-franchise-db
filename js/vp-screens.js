@@ -328,6 +328,18 @@ export function vpGenerateQuote(name, ep, role) {
       const voteCount = votesAgainst.length;
       const unanimous = totalVoters > 0 && voteCount === totalVoters;
       const closeVote = totalVoters > 2 && voteCount <= Math.ceil(totalVoters / 2);
+      // named by a coach's Save Card, not voted out (coach-episode.js maybeSaveCoach): the words are about the pick
+      // (read 2026-10-14: Dunia, with no vote against her, "I knew exactly who was voting for me, why, and when")
+      const _card = (ep?.coachSaves || []).find(sv => sv.replacement === name);
+      if (_card) {
+        const c = _card.coach, pc = pronouns(c);
+        return [
+          voteCount ? `${c} got the votes. I got the walk. Explain to me how that's fair, because I've been trying to the whole way down the path.`
+            : `Nobody wrote my name tonight. Not one person. ${c} did, with a card, and somehow that's worse.`,
+          `I didn't get voted out. I got picked. ${c} looked down the row and decided I was the one ${pc.sub} could live without, and I'm going to remember that face.`,
+          `The tribe wanted ${c} gone. The tribe got me gone instead. If that doesn't tell everybody back there who's really running that camp, nothing will.`,
+        ];
+      }
       const landslide = totalVoters > 3 && voteCount >= totalVoters - 1;
       const voterNames = votesAgainst.map(v => v.voter);
       const alliances = ep?.alliances || [];

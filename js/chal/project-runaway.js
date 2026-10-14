@@ -2380,7 +2380,8 @@ export function rpBuildPRResults(ep) {
       content += `<div class="winner-sub">Total Score: ${bd.total} &mdash; IMMUNITY</div>`;
     } else {
       content += `<div class="loser-tribe">${tribe.name}</div>`;
-      content += `<div class="loser-sub">Total Score: ${bd.total} &mdash; Tribal Council</div>`;
+      // (three tribes: the middle one is safe; read 2026-10-14, both non-winners labelled "Tribal Council")
+      content += `<div class="loser-sub">Total Score: ${bd.total} &mdash; ${pr.loser && tribe.name !== pr.loser ? 'Safe' : 'Tribal Council'}</div>`;
     }
     content += `</div>`;
   });

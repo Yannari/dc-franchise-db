@@ -3076,7 +3076,7 @@ export function airTdEpisode(ep) {
   }
   // the classic screen's Crashout (vp-screens.js buildCrashout) reads the live game: taken now,
   // while the game is still at this episode, so a replay shows that night and not today
-  if (ep.tribalStory && !ep.tribalBlowup && ep.tribalStory.crashout === undefined) {
+  if (ep.tribalStory && !ep.tribalBlowup && !ep.tribalStory.card && ep.tribalStory.crashout === undefined) {
     try { ep.tribalStory.crashout = typeof window !== 'undefined' && typeof window.buildCrashout === 'function' ? (window.buildCrashout(ep) || null) : null; } catch { ep.tribalStory.crashout = null; }
   }
   // ...and whoever it names answers back (tribal.js writeCrashReplies)
@@ -3097,7 +3097,8 @@ export function airTdEpisode(ep) {
   }
   // the last confessional: their whole game, said on the way out (the user's Disventure Camp exits:
   // "After losing Seth and Kylie, I knew I had an uphill battle... I stayed true to myself")
-  if (ts && ep.eliminated && !ts.finalConf) {
+  // (a Save Card night's walk out carries its own: "I genuinely didn't hear my name once today" is a vote-out's line)
+  if (ts && ep.eliminated && !ts.finalConf && !ts.card) {
     const elim = ep.eliminated;
     const gone = (gs.episodeHistory || []).filter(h => h.num < ep.num && h.eliminated && h.eliminated !== elim && getBond(elim, h.eliminated) >= 3).map(h => h.eliminated);
     const lostAlly = gone[gone.length - 1] || null;

@@ -141,7 +141,8 @@ export function writeScene(scene, ctx = {}) {
   const pools = {};
   // ...and nothing outdoors on the jet (read 2026-10-14: "Same rock? ... Don't sit on our rock" on the World Tour plane)
   const indoorOk = e => venue !== 'world-tour' || !JET_NO.test(entryText(e));
-  for (const k of [].concat(key)) { const kept = (base[k] || []).filter(e => foodOk(venue, entryText(e)) && indoorOk(e)); pools[k] = kept.length ? kept : (base[k] || []); }
+  // (ctx.drop: a writer's own rule for lines that do not fit this moment, td/script/island.js; kept only while something is left)
+  for (const k of [].concat(key)) { const kept = (base[k] || []).filter(e => foodOk(venue, entryText(e)) && indoorOk(e) && !(ctx.drop && ctx.drop(e))); pools[k] = kept.length ? kept : (base[k] || []); }
   const entry = pickEntry(ledger(), pools, key, facts, pairKey, rng, speakers, clockOf(ctx));
   if (!entry) throw new Error(`no lines for ${[].concat(key).join(' + ')}`);
   const lines = entry.turns.map(t => {

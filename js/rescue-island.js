@@ -498,7 +498,7 @@ function _clampWB(w) { w.pw = Math.max(0, Math.min(100, w.pw)); w.mh = Math.max(
 // PHASE-BASED DUEL ENGINE
 // ══════════════════════════════════════════════════════════════════════
 
-function _runPhases(duelists, challenge, numPhases, riList) {
+function _runPhases(duelists, challenge, numPhases, riList, { majority = false } = {}) {
   const phaseDefs = challenge.phases;
   const phaseTags = ['opening', 'pivot', 'climax'];
   // For 5-phase reentry: opening, pivot, climax, pivot, climax
@@ -529,7 +529,15 @@ function _runPhases(duelists, challenge, numPhases, riList) {
       scores[name] = primaryVal * 0.6 + secondaryVal * 0.4 + _noise(2.5) + (momentum[name] || 0) + mentalBonus;
     });
 
-    const sorted = duelists.slice().sort((a, b) => scores[b] - scores[a]);
+    let sorted = duelists.slice().sort((a, b) => scores[b] - scores[a]);
+    // best of three between two: once somebody has two rounds the duel is theirs, and the last round is them finishing
+    // it (read 2026-10-14: Mike took the first two, then in "One Must Fall" Mike tipped into the water and still won).
+    // The result is the same either way; the last round's account now says it.
+    const decided = majority && duelists.find(n => winsPerPlayer[n] * 2 > numPhases);
+    if (decided && sorted[0] !== decided) {
+      scores[decided] = scores[sorted[0]] + 0.1 + Math.random() * 0.6;
+      sorted = duelists.slice().sort((a, b) => scores[b] - scores[a]);
+    }
     const winner = sorted[0];
     const runnerUp = sorted[1];
     const margin = scores[winner] - scores[runnerUp];
@@ -554,7 +562,9 @@ function _runPhases(duelists, challenge, numPhases, riList) {
 
     // Breathing moment between phases (not after the last)
     if (i < numPhases - 1) {
-      const moment = _pickBreathingMoment(duelists, riList || [], i, winsPerPlayer, challenge);
+      let moment = _pickBreathingMoment(duelists, riList || [], i, winsPerPlayer, challenge);
+      // (the same moment twice in one duel: "You done yet?" between both pairs of rounds)
+      if (moment && breathingMoments.some(m => m && m.text === moment.text)) moment = null;
       if (moment) {
         _applyBreathingMoment(moment, duelists, momentum);
         breathingMoments.push(moment);
@@ -658,7 +668,7 @@ export function simulateRIDuel(riPlayers) {
   });
 
   // Run 3-phase duel with breathing moments
-  const { phases, breathingMoments, winsPerPlayer } = _runPhases(duelists, challenge, 3, gs.riPlayers);
+  const { phases, breathingMoments, winsPerPlayer } = _runPhases(duelists, challenge, 3, gs.riPlayers, { majority: duelists.length === 2 });
   const { winner, loser, tiebreaker } = _resolvePhases(duelists, phases);
   const survivors = duelists.filter(n => n !== loser);
 
@@ -1305,7 +1315,7 @@ export function generateRIPostDuelEvents(ep) {
     } else if (mentalState === 'obsessed') {
       winPool = [
         { type: 'winner-obsessed', text: `${surv} wins, but there's no joy. Only the next duel. Only the return.` },
-        { type: 'winner-obsessed', text: `${surv} barely acknowledges the win. ${prS.Pos} eyes are already on the horizon. The return challenge. The revenge.` },
+        { type: 'winner-obsessed', text: `${surv} barely acknowledges the win. ${prS.PosAdj} eyes are already on the horizon. The return challenge. The revenge.` },
       ];
     } else {
       winPool = [

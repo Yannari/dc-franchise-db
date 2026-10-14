@@ -7528,7 +7528,7 @@ export function generateCampEvents(ep, phase = 'both') {
         // Target was eliminated — dictator fallout
         const _svLines = [
           `Nobody is talking to ${_svData.holder} this morning. ${_svPr.Sub} silenced every voice at tribal and sent ${_svData.target} home alone. That kind of power leaves a mark.`,
-          `${_svData.holder} made the call. One vote. ${_svPr.Pos} vote. ${_svData.target} is gone because ${_svData.holder} said so. The tribe hasn't forgotten.`,
+          `${_svData.holder} made the call. One vote. ${_svPr.PosAdj} vote. ${_svData.target} is gone because ${_svData.holder} said so. The tribe hasn't forgotten.`,
           `Camp is quiet. ${_svData.holder} played the Sole Vote and eliminated ${_svData.target} single-handedly. Some call it strategy. Others call it tyranny. Nobody calls it forgettable.`,
         ];
         _push({ type: 'soleVoteFallout', players: [_svData.holder],

@@ -85,6 +85,9 @@ const authored = (n, k) => { const v = players.find(p => p.name === n)?.[k]; ret
  * Write an island moment as a scene, in place: the event gains scene, lines and a `text`
  * that is now the transcript. ctx: { ep, residents, arrivals, rescue }.
  */
+// a line that says its speaker has been out here a while (a newcomer's scene drops it, scriptIsland)
+const STAY = /\b(weeks?|for days|days in a row|(two|three|four|five) days|a week ago|long week|all week|every day|yesterday|longer than|all this time|been out here)\b/i;
+
 export function scriptIsland(evt, ctx) {
   const base = islandKind(evt);
   if (!base || evt.lines) return evt;
@@ -124,6 +127,15 @@ export function scriptIsland(evt, ctx) {
     if (others.length && rng() < 0.45) { c = others[Math.floor(rng() * others.length)]; kind = `isle.trio.${base.split('.')[1]}`; }
   }
   if (base.startsWith('group.')) kind = `isle.${base}`;
+  // somebody who only got here tonight has no time out here to talk about (read 2026-10-14: Mike, voted out that night,
+  // "The first week out here I felt sorry for myself"): a line about a long stay is not theirs to say
+  const roles = { a, b, c };
+  const newHere = new Set([a, b, c].filter(n => n && (ctx.arrivals || []).includes(n)));
+  let drop = newHere.size ? e => (e.turns || []).some(t => {
+    const tx = t.say || t.conf || t.beat || '';
+    if (!STAY.test(tx)) return false;
+    return t.by ? newHere.has(roles[t.by]) : Object.entries(roles).some(([r, n]) => n && newHere.has(n) && tx.includes(`{${r}}`));
+  }) : null;
   // a long stay on the island runs a pool dry for the people in it: once everybody here has said every version of this
   // kind of scene, another kind of scene between them, rather than the same lines again (read: Geoff, nine episodes on
   // Redemption Island, said the same comedy exchange twice)
@@ -131,13 +143,15 @@ export function scriptIsland(evt, ctx) {
     const said = gs.tdLineLedger?.by || {}, cast = [a, b, c].filter(Boolean);
     // (counted the way the writer will see them: no condition, and food that fits this venue, food.js)
     const venue = seasonConfig?.setting || 'hosted-camp';
-    const fresh = k => (POOLS[k] || []).some(e => !e.when && foodOk(venue, entryText(e)) && !cast.some(p => (said[e.id] || []).includes(p)));
+    const fresh = (k, dr) => (POOLS[k] || []).some(e => !e.when && foodOk(venue, entryText(e)) && !(dr && dr(e)) && !cast.some(p => (said[e.id] || []).includes(p)));
     const ALT = c ? ['isle.trio.close', 'isle.trio.late', 'isle.trio.comedy'] : b ? ['isle.pair.lean', 'isle.pair.close', 'isle.pair.late', 'isle.pair.spar', 'isle.pair.comedy'] : [];
-    if ((POOLS[kind] || []).length && !fresh(kind)) { const alt = ALT.find(k => k !== kind && fresh(k)); if (alt) kind = alt; }
+    if ((POOLS[kind] || []).length && !fresh(kind, drop)) { const alt = ALT.find(k => k !== kind && fresh(k, drop)) || (!fresh(kind) && ALT.find(k => k !== kind && fresh(k))); if (alt) kind = alt; }
+    // ...and a line they have said before is worse than one about a stay they have not had: nothing new left, no filter
+    if (drop && !fresh(kind, drop)) drop = null;
   }
   const who = { a }; if (b) who.b = b; if (c) who.c = c;
   const [family, k, ending] = kind.split('.');
-  scriptEvent(evt, makeScene(`${family}.${k}`, who, { ending, ...data }, [...(ctx.residents || [])], null), { ep: ctx.ep, phase: 'post' });
+  scriptEvent(evt, makeScene(`${family}.${k}`, who, { ending, ...data }, [...(ctx.residents || [])], null), { ep: ctx.ep, phase: 'post', ...(drop ? { drop } : {}) });
   if (c && !evt.player3) evt.player3 = c;
   return evt;
 }

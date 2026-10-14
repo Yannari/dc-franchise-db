@@ -88,6 +88,8 @@ const isNight = e => (e.scene ? NIGHT_SCENES.has(`${e.scene.kind}:${e.scene.data
 // an arrival is met before anything else happens to the new arrival
 const isArrival = e => e.type === 'sizing-up' || (e.scene && e.scene.data?.ending === 'size');
 const rankOf = e => (isArrival(e) ? -1 : isNight(e) ? 2 : e.player2 ? 1 : 0);
+/** The island's day in the order it plays: the arrival first, then morning, afternoon, night (the backlog prints it so too). */
+export const islandOrder = all => all.map((e, i) => ({ e, i })).sort((a, b) => rankOf(a.e) - rankOf(b.e) || a.i - b.i).map(x => x.e);
 
 // The voted-out who are still out there, as the episode began: the record, never live state.
 function residentsOf(ep, rescue) {
@@ -111,6 +113,12 @@ export function tdRiChoiceScreen(ep, o = {}) {
   const rest = second.steps.map((x, i) => (i === 0 && x.k === 'scene' ? { ...x, card: false, cut: true } : x));
   return { ...second, label: 'Two Final Choices', steps: [...first.steps, { k: 'beat', text: `And ${ep.eliminated} is next.`, focus: [] }, ...rest] };
 }
+// what the island holds for them next: the duel runs the same episode (episode.js), after a day on the island, so it is
+// tomorrow's, and they are in it (read 2026-10-14: "The next duel decides whether Mike gets back in", the duel Mike had
+// already fought printed above it)
+const riNext = (ep, elim) => !ep.riDuel ? `The next duel decides whether ${elim} gets back in.`
+  : (ep.riDuel.duelists || [ep.riDuel.winner, ep.riDuel.loser]).includes(elim) ? `Tomorrow ${elim} duels for a way back in. Lose, and it's over for good.`
+    : `Tomorrow there's a duel, and ${elim} gets to watch it.`;
 function riChoiceOne(ep, o = {}) {
   const elim = ep.eliminated, choice = ep.riChoice;
   if (!elim || !choice) return null;
@@ -149,11 +157,11 @@ function riChoiceOne(ep, o = {}) {
       const key = riPlace(ep, o, 'night');
       const already = residentsOf(ep, false).filter(n => n !== elim);
       if (islandMapOn(ep, o) && landing(steps, elim, already, 'Redemption Island')) {
-        steps.push({ k: 'beat', text: `${elim} wades onto Skull Beach. The next duel decides whether ${elim} gets back in.`, focus: [elim], side: [{ tab: 'residents', text: `${elim} arrives (episode ${ep.num}).` }] });
+        steps.push({ k: 'beat', text: `${elim} wades onto Skull Beach. ${riNext(ep, elim)}`, focus: [elim], side: [{ tab: 'residents', text: `${elim} arrives (episode ${ep.num}).` }] });
       } else if (key) {
         const places = placeScene(key, [elim], []);
         steps.push({ k: 'scene', spot: 'redemption-camp', tod: 'night', plate: key, place: 'Redemption Island', time: 'That night', card: false, cut: true, focus: [elim], bg: [], places, act: { kind: 'arrive', who: [elim] } });
-        steps.push({ k: 'beat', text: `${elim} reaches Redemption Island. The next duel decides whether ${elim} gets back in.`, focus: [elim], side: [{ tab: 'residents', text: `${elim} arrives (episode ${ep.num}).` }] });
+        steps.push({ k: 'beat', text: `${elim} reaches Redemption Island. ${riNext(ep, elim)}`, focus: [elim], side: [{ tab: 'residents', text: `${elim} arrives (episode ${ep.num}).` }] });
       }
       return { id: 'ri-choice', kind: 'island', venue: ISL, ep: ep.num, label: 'One Final Choice', host, steps };
     }
@@ -227,7 +235,9 @@ export function tdIslandLifeScreen(ep, rescue, o = {}) {
   // each resident's own first activity this episode: what they are doing in the background
   const busy = {};
   for (const e of events) for (const n of [e.player, e.player2, e.player3].filter(Boolean)) if (!busy[n]) busy[n] = BUSY_FOR[actKind(e.type, e.text)] || 'whittle';
-  const TIME = { '-1': 'Day', 0: 'Day', 1: 'Later that day', 2: 'Night' };
+  // somebody took the torch tonight (the crossroads plays just before this): the island's day is the next one
+  const nextDay = /ISLAND/.test(ep.riChoice || '');
+  const TIME = { '-1': nextDay ? 'The next day' : 'Day', 0: nextDay ? 'The next day' : 'Day', 1: 'Later that day', 2: 'Night' };
   let rank = -9;
   const open = r => {
     const t = r === 2 ? 'night' : 'day';

@@ -969,8 +969,9 @@ export function tdTribalScreen(ep, o = {}) {
     return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps: forwardClock(steps), elim };
   }
   // the walk out: whoever actually leaves (elim, the card's replacement when the card decided it, above)
-  // (a night the card decided: the last words were written for somebody voted out the ordinary way)
-  const coachLeft = !!coachNight?.coachOut || cardDecided;
+  // (a night the card decided: the last words are the card's own when td/story/tribal.js wrote them for it, story.card;
+  // an older saved night's were written for somebody voted out the ordinary way, and stay off)
+  const coachLeft = !!coachNight?.coachOut || (cardDecided && !story?.card);
   // the host walks them out (the Dock of Shame, the red carpet, the hatch): both on screen
   const exitPlate = plateKey(venue, 'exit', 'night');
   const exitPlaces = { [elim]: { u: .6, v: .74, s: .24 } };

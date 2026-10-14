@@ -2879,7 +2879,7 @@ export function simulateEpisode() {
             `${_kidPick} opens up fast. ${_kidP.Sub} tell${_kidP.sub==='they'?'':'s'} the ${ep.winner.name} players things about ${ep.loser.name} that nobody was supposed to hear. The gratitude is real — and so is the information.`,
           ],
           frustrated: [
-            `${_kidPick} is polite but clearly somewhere else. ${_kidP.Pos} mind is at ${ep.loser.name}'s tribal. ${_kidP.Sub} ${_kidP.sub==='they'?'have':'has'} allies over there — and no idea what's happening to them.`,
+            `${_kidPick} is polite but clearly somewhere else. ${_kidP.PosAdj} mind is at ${ep.loser.name}'s tribal. ${_kidP.Sub} ${_kidP.sub==='they'?'have':'has'} allies over there — and no idea what's happening to them.`,
             `${_kidPick} keeps to ${_kidP.ref}. The ${ep.winner.name} players try to include ${_kidP.obj}, but ${_kidP.sub} ${_kidP.sub==='they'?'aren\'t':'isn\'t'} here to make friends. ${_kidP.Sub} ${_kidP.sub==='they'?'are':'is'} here because ${_kidP.sub} had no choice.`,
           ],
           open: [

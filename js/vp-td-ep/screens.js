@@ -41,9 +41,14 @@ export function tdEpisodeLines(epRecord) {
   const lines = [], have = new Set();
   const take = scr => {
     if (!scr?.steps) return;
+    // the stage directions since the last line ("Courtney storms off."): the voice director reads the feeling there
+    let beats = [];
     for (let i = 0; i < scr.steps.length; i++) {
       const L = ledgerAt(scr, i), s = L.step || {};
+      if (s.k === 'beat' && typeof s.text === 'string') { beats.push(s.text.replace(/<[^>]*>/g, '')); continue; }
       if (!((s.k === 'say' || s.k === 'conf') && s.by)) continue;
+      const beat = beats.join(' ').slice(-240) || null;
+      beats = [];
       const d0 = dialogue(scr, L);
       const d = s.writes && scr.kind === 'tribal' && hideBooth() ? { ...d0, text: maskName(d0.text, s.writes) } : d0;
       if (!d.text || String(d.cls || '').includes('dir')) continue;
@@ -51,7 +56,7 @@ export function tdEpisodeLines(epRecord) {
       if (have.has(id)) continue;
       have.add(id);
       lines.push({ by: s.by, text: d.text, id, k: s.k, stage: s.stage || null, loud: !!s.loud, shock: !!s.shock,
-        badge: d.badge?.text || null, screen: scr.id, ep: scr.ep ?? epRecord.num, why: L.scene?.why || null });
+        badge: d.badge?.text || null, screen: scr.id, ep: scr.ep ?? epRecord.num, why: L.scene?.why || null, beat });
     }
   };
   try {

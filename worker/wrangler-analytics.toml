@@ -40,3 +40,7 @@ compatibility_date = "2024-11-01"
 # and the other provider stays as the fallback either way.
 [vars]
 PREFER_MODEL = "openai"
+
+# Workers AI: the voice director's free last resort when both paid accounts refuse (generateVoiceDirection).
+[ai]
+binding = "AI"

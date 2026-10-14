@@ -14,6 +14,8 @@
 // A line already in the bucket is never paid for twice. A character with no voice of their name keeps the blips.
 import { recordEpisodeLines, voiceSeason, voicedLines, VOICE_API } from './sound.js';
 import { writerEndpoint } from '../social/writer.js';
+import { localDirection, voiceText } from './direct.js';
+import { voiceOf } from '../td/story/voice.js';
 
 const PRICE = 25 / 1e6;   // Inworld TTS-2, dollars a character (their page, 2026-10-11)
 const token = () => { try { return localStorage.getItem('studio_api_token') || ''; } catch { return ''; } };
@@ -116,32 +118,38 @@ async function plan(ep, say = () => {}) {
   const missing = lines.filter(l => !have.has(l.id));
   return { all, voices, lines, missing, voicedCount: lines.length - missing.length };
 }
-const estimate = ls => (ls.reduce((a, l) => a + l.text.length + 25, 0) * PRICE).toFixed(2);   // +25: the direction
+const estimate = ls => (ls.reduce((a, l) => a + l.text.length + 50, 0) * PRICE).toFixed(2);   // +50: the direction (feeling + how it sounds)
 
 export async function tdVoiceEpisode(ep, { force = false, ready = null } = {}) {
   if (!ep || busy || !askToken()) return;
   busy = true;
-  const P = panel(), t0 = Date.now(), season = voiceSeason(), title = `Voicing episode ${ep}`;
+  let P = panel();
+  const t0 = Date.now(), season = voiceSeason(), title = `Voicing episode ${ep}`;
   try {
     P.say(title, 'Reading the episode…', 0.02);
     const p = ready || await plan(ep, d => P.say(title, d, 0.05));
     const todo = force ? p.lines : p.missing;   // Revoice: every line again
     if (!todo.length) { P.say(`Episode ${ep} is already voiced`, `${p.lines.length} lines have a voice. Nothing to pay for.`, 1, true); return; }
 
-    // the director: each line in context, a stretch (one screen) at a time
+    // the director: each line in its scene (the stage direction before it, the line before, the reply after), a
+    // stretch (one screen) at a time
     const indexed = p.all.map((l, i) => ({ ...l, i }));
     const ctx = l => {
-      const prev = indexed[l.i - 1];
+      const prev = indexed[l.i - 1], next = indexed[l.i + 1];
       return { i: l.i, by: l.by, text: l.text, kind: l.k, scene: l.why || l.badge || null,
         to: prev && prev.by !== l.by && prev.screen === l.screen && l.k !== 'conf' ? prev.by : null,
-        prev: prev && prev.screen === l.screen ? { by: prev.by, text: prev.text } : null };
+        loud: l.loud || null, shock: l.shock || null, beat: [l.beat, l.stage].filter(Boolean).join(' ') || null,
+        prev: prev && prev.screen === l.screen ? { by: prev.by, text: prev.text } : null,
+        next: next && next.screen === l.screen ? { by: next.by, text: next.text } : null };
     };
     const want = new Set(todo.map(l => l.id));
     const screens = [...new Set(indexed.filter(l => want.has(l.id)).map(l => l.screen))];
-    const cast = Object.fromEntries((window.players || []).filter(x => p.voices[x.name]).map(x => [x.name, x.voice || x.archetype || '']));
+    const tagsOf = name => { try { return voiceOf(name); } catch { return []; } };
+    const cast = Object.fromEntries((window.players || []).filter(x => p.voices[x.name])
+      .map(x => [x.name, [x.archetype, tagsOf(x.name).join(' '), x.voice].filter(Boolean).join('; ')]));
     cast.Chris = cast.Chris || 'the smug reality-TV host';
     const dir = {};
-    let directed = 0;
+    let directed = 0, fault = '';
     await pool(screens, 3, async scr => {
       const part = indexed.filter(l => l.screen === scr && want.has(l.id));
       for (let k = 0; k < part.length; k += 60) {
@@ -150,12 +158,25 @@ export async function tdVoiceEpisode(ep, { force = false, ready = null } = {}) {
           const r = await fetch(writerEndpoint(), { method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ mode: 'voice-direction', lines: chunk.map(ctx), cast }) });
           const j = await r.json();
-          for (const d of (j.directions || [])) { const l = indexed[d.i]; if (l) dir[l.id] = d.d; }
-        } catch { /* no direction: the line is voiced in its own words */ }
+          if (!j.ok) fault = j.error || `director ${r.status}`;
+          for (const d of (j.directions || [])) { const l = indexed[d.i]; if (l && d.d) dir[l.id] = d; }
+        } catch (e) { fault = String(e.message || e); }
         directed += chunk.length;
         P.say(title, `Directing: ${directed} of ${todo.length} lines`, 0.05 + directed / todo.length * 0.15);
       }
     });
+    // A line the director did not answer gets a delivery from the script itself (direct.js). It used to go to the
+    // voice with none, and read flat: the user heard "the emotion isnt really there" the week both model accounts
+    // ran out of credit and every request failed without a word. When NOTHING came back, say so first.
+    const undirected = todo.filter(l => !dir[l.id]);
+    if (undirected.length === todo.length) {
+      const go = await panel().choose(`The voice director didn't answer`,
+        `${String(fault || 'no reply').slice(0, 220)}<br><br>The lines can still be voiced with simple directions read from the script, but the acting will be plainer.`,
+        [{ label: 'Voice with simple directions', value: true, main: true }]);
+      P = panel();   // the choice took the box away with it
+      if (!go) { P.say(`Episode ${ep} was not voiced`, 'Nothing was paid for. Press the 🎙 button again when the director is back.', null, true); return; }
+    }
+    for (const l of undirected) dir[l.id] = localDirection(l, tagsOf(l.by), /^Chris\b/.test(l.by));
 
     // the voices: ONE request at a time, the worker voicing four of its lines at once. The user's Inworld plan takes
     // five requests at a time; three requests of four (twelve) got 416 of 638 lines refused on the first episode.
@@ -166,7 +187,7 @@ export async function tdVoiceEpisode(ep, { force = false, ready = null } = {}) {
     await pool(batches, 1, async b => {
       const r = await fetch(`${VOICE_API()}/api/voice/render`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
-        body: JSON.stringify({ season, episode: ep, voices: p.voices, force, lines: b.map(l => ({ id: l.id, by: l.by, text: l.text, direction: dir[l.id] || '' })) }),
+        body: JSON.stringify({ season, episode: ep, voices: p.voices, force, lines: b.map(l => ({ id: l.id, by: l.by, text: voiceText(l.text, dir[l.id]), direction: dir[l.id]?.d || '' })) }),
       });
       const j = await r.json().catch(() => ({ ok: false, error: `studio ${r.status}` }));
       if (!j.ok) { failed.push(...b.map(l => ({ id: l.id, error: j.error }))); return; }
@@ -180,7 +201,7 @@ export async function tdVoiceEpisode(ep, { force = false, ready = null } = {}) {
     const cost = (chars * PRICE).toFixed(2);
     console.info(`[voicing] episode ${ep}: ${done} lines in ${secs}s, ${chars} characters (~$${cost}); directions:`, dir, failed.length ? failed : '');
     P.say(failed.length ? `Episode ${ep}: ${done} voiced, ${failed.length} failed` : `Episode ${ep} is voiced`,
-      `${done} lines in ${secs} s, about $${cost}.${failed.length ? ` Failed: ${failed[0].error}${failed.length > 1 ? ` (and ${failed.length - 1} more). Press the 🎙 button again to voice just those.` : ''}` : ' Watch it whenever you like.'}`, 1, true);
+      `${done} lines in ${secs} s, about $${cost}.${failed.length ? ` Failed: ${failed[0].error}${failed.length > 1 ? ` (and ${failed.length - 1} more). Press the 🎙 button again to voice just those.` : ''}` : ' Watch it whenever you like.'}${undirected.length ? ` ${undirected.length} line${undirected.length > 1 ? 's' : ''} had simple directions (the director did not answer: ${String(fault || 'no reply').slice(0, 80)}).` : ''}`, 1, true);
   } catch (e) {
     P.say(`Voicing episode ${ep} stopped`, String(e.message || e), null, true);
   } finally {

@@ -4770,8 +4770,15 @@ async function generateWikiProfile(body, env) {
  * line before, because tone is context: "Have I ever lied to you?" from Heather mid-scheme is fake sincerity.
  *
  * What the voice tests taught (2026-10-11): "softly" made confessionals sound like a love scene ("confessing love
- * in a sensual way", the user), so a confessional is candid; short directions are cheaper and land better; [pause],
- * [laugh] and [sigh] work. Returns { directions: [{ i, d }] }, one per line, d without brackets.
+ * in a sensual way", the user), so tender words stay off confessionals; [laugh] and [sigh] work.
+ *
+ * 2026-10-14, the user: "sometimes the emotion isnt really there". Three causes. Two-to-four-word manners ("speak
+ * candidly", which the prompt itself offered for every confessional) name no feeling, and TTS-2 reads a manner
+ * flat; its own guide asks for the feeling plus how it sounds (pace, volume, breath). The director saw the line
+ * before but not the stage direction ("Courtney storms off") or the reply ("Okay, what's wrong?"), which is where the
+ * feeling is written. And both model accounts had run out of credit, so nothing came back at all: Workers AI is
+ * now the free last resort, and the browser has a director of its own (js/vp-td-ep/direct.js) behind that.
+ * Returns { directions: [{ i, d, nv?, nvAt?, shift?, stress? }] }; the browser puts the extras into the line.
  */
 async function generateVoiceDirection(body, env) {
   const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
@@ -4781,51 +4788,109 @@ async function generateVoiceDirection(body, env) {
   const cast = body.cast && typeof body.cast === "object" ? body.cast : {};
   const who = Object.entries(cast).slice(0, 40).map(([n, v]) => `- ${n}: ${String(v).slice(0, 160)}`).join("\n");
   const system = [
-    "You are the voice director of a reality-TV cartoon. Each line below will be spoken by a voice actor model",
-    "that reads a short delivery in brackets before the line. For EVERY line, write that delivery.",
+    "You direct the voice acting of a cartoon reality show in the style of Total Drama: teenagers who feel",
+    "everything at full volume, big readable emotions, comic timing. A FLAT READ IS THE FAILURE. Every line is",
+    "spoken alone by a voice model that reads your direction in square brackets before it.",
     "",
-    "HOW",
-    "- 2 to 4 words, plain English, usually 'speak <how>': speak bitterly, speak with fake sweetness, speak",
-    "  nervously, speak smugly, speak in shock, speak through gritted teeth. Or a sound: laugh, sigh, scoff.",
-    "- Read the CONTEXT, not just the words: who says it, to whom, the scene, the line before. A question can be",
-    "  a threat; 'I'm fine' can be hurt. The speaker's personality colours it, but the moment decides it.",
-    "- Confessionals (kind conf) are the speaker alone, talking to the camera like an interview: 'speak candidly',",
-    "  'speak smugly to the camera', 'speak worried, candidly'. NEVER 'softly', 'gently', 'tenderly' or 'warmly'",
-    "  unless the line is truly tender: the voice model makes those sound intimate and romantic.",
-    "- 'whisper' only for a real secret said near others. 'shout' only for a real shout (an exclamation in a",
-    "  fight, a cheer); most exclamation marks are just energy: 'speak excitedly'.",
-    "- The host (Chris) is a TV host: 'speak like a TV host', 'speak smugly', 'speak dramatically, slowly'.",
-    "- You may add one of [pause], [laugh], [sigh] as part of the delivery when the line clearly has it: 'laugh,",
-    "  then speak smugly'.",
-    "- Vary it: the same character should not get the same delivery on every line unless every line is the same.",
+    "THE DIRECTION (d): 3 to 10 words. The FEELING first, then how it SOUNDS (pace, volume, pitch, breath):",
+    "  'furious, fast and loud, biting every word'   'hurt, quiet and slow, holding back tears'",
+    "  'smug and slow, savouring it'                 'panicked, fast and breathless'",
+    "  'fake-sweet, bright and sugary'               'bored and deadpan, flat, unhurried'",
+    "  'giddy, fast, about to laugh'                 'stunned, halting, barely getting the words out'",
+    "  'hushed and quick, checking nobody's listening'   'defensive, rising, talking over them'",
+    "Never a manner with no feeling in it ('speak candidly', 'speak normally', 'speak casually', 'speak",
+    "clearly', 'matter-of-fact'): those come out flat. Name what the speaker feels in that moment.",
+    "",
+    "FINDING THE FEELING",
+    "- Each line comes with its scene: the stage direction before it, the line before, and the REPLY after it.",
+    "  The reply tells you how the line landed: if the answer is 'Okay, what's wrong?', the line sounded upset;",
+    "  if it is 'Whoa, calm down', it was loud. Stage directions say it outright: storms off, grins, slams.",
+    "- The moment decides the feeling; the personality colours it. A dry character's anger is cold and clipped,",
+    "  a loud one's is a shout. A schemer being nice to someone they are using is fake-sweet; a schemer's",
+    "  confessional is smug or calculating. A sarcastic line is said sarcastically, not as its opposite.",
+    "- Never a direction that fights the words (a happy direction on a sad line): the voice model gets worse.",
+    "- A scene BUILDS: a fight gets angrier line by line, a confession gets more exposed. Don't hold one level.",
+    "- Confessionals (CONFESSIONAL) are the speaker alone with the camera saying what they really feel. Name it:",
+    "  'smug, leaning into the camera', 'still angry, low and fast', 'giddy, can't stop smiling', 'worried,",
+    "  quiet and quick'. Never softly, gently, tenderly, warmly, intimately or sensually unless the line is a",
+    "  love confession: the voice model makes those romantic.",
+    "- Whisper only for a real secret with others near. Shout only for a real shout (LOUD, CAPITALS, the peak",
+    "  of a fight, a cheer); most exclamation marks are energy, not shouting.",
+    "- The host (Chris) loves the pain: 'big TV-host voice, smug and punchy'; teasers 'dramatic, building'.",
+    "- The same character does not get the same direction twice in a row unless the lines are the same.",
+    "",
+    "EXTRAS (optional; leave them out unless the line really has it)",
+    '- "nv": a sound the speaker makes: "laugh", "sigh", "breathe", "clear throat" or "cough", with "nvAt":',
+    '  "start", "mid" (after the first sentence) or "end". Only where a person would: a sigh before "Fine.", a',
+    "  laugh at their own joke, a breath before saying something hard. At most one line in five.",
+    '- "shift": {"at": <sentence number, 2 or more>, "d": "<new direction>"} when the feeling really turns',
+    "  inside the line (Courtney: 'Okay, I tried.' then, bitter and low, 'Remember that I tried.'). Rare.",
+    '- "stress": the ONE word the actor should hit (it is capitalised). Only when one word carries the line,',
+    "  never when the line already has capitals.",
     "",
     "The cast:",
     who || "(not given)",
     "",
-    'Return JSON only: {"directions": [{"i": <line number>, "d": "<delivery, no brackets>"}]} with one entry per line.',
+    'Return JSON only: {"directions": [{"i": <line number>, "d": "<direction, no brackets>"}]}, one entry for',
+    'EVERY line, adding "nv", "nvAt", "shift" or "stress" to an entry only when used.',
   ].join("\n");
+  const q = (t, n = 160) => `"${String(t).replace(/\s+/g, " ").slice(0, n)}"`;
   const user = lines.map(l => {
-    const ctx = [l.kind === "conf" ? "CONFESSIONAL" : null, l.scene ? `scene: ${l.scene}` : null, l.to ? `to ${l.to}` : null,
-      l.prev ? `after ${l.prev.by}: "${String(l.prev.text).slice(0, 140)}"` : null].filter(Boolean).join("; ");
+    const ctx = [l.kind === "conf" ? "CONFESSIONAL" : null, l.scene ? `scene: ${String(l.scene).slice(0, 60)}` : null,
+      l.to ? `to ${l.to}` : null, l.loud ? "LOUD" : null, l.shock ? "a shock" : null,
+      l.beat ? `stage direction: ${q(l.beat, 200)}` : null,
+      l.prev ? `after ${l.prev.by}: ${q(l.prev.text)}` : null,
+      l.next ? `reply ${l.next.by}: ${q(l.next.text)}` : null].filter(Boolean).join("; ");
     return `${l.i}. ${l.by}${ctx ? ` (${ctx})` : ""}: "${String(l.text).slice(0, 400)}"`;
   }).join("\n");
   let raw = "", provider = "";
   try {
-    const out = await callShortModel(system, user, env, { maxTokens: 2600, model: claudeModel("fast", body, env) });
+    const out = await callShortModel(system, user, env, { maxTokens: 4000, model: claudeModel("creative", body, env) });
     raw = out.text; provider = out.provider;
   } catch (e) {
-    return json({ ok: false, error: `model: ${e.message}` }, 502);
+    // both paid accounts refused (out of credit, 2026-10-14): Cloudflare's own model, free up to a daily allowance
+    try { raw = await callWorkersAI(system, user, env, 4000); provider = "workers-ai"; }
+    catch (e2) { return json({ ok: false, error: `model: ${e.message}; workers-ai: ${e2.message}` }, 502); }
   }
   let parsed;
   try { const m = raw.match(/\{[\s\S]*\}/); parsed = JSON.parse(m ? m[0] : raw); }
-  catch { return json({ ok: false, error: "the model did not return usable JSON" }, 502); }
-  const banned = /\b(softly|gently|tenderly|sensual|seductively|intimately)\b/i;
-  const directions = (Array.isArray(parsed.directions) ? parsed.directions : [])
-    .map(x => ({ i: Number(x.i), d: String(x.d || "").replace(/[\[\]]/g, "").trim().slice(0, 60) }))
-    .filter(x => Number.isFinite(x.i) && x.d)
-    // a tender word on a line that is not a confession of love is the voice model's cue to go intimate: drop it
-    .map(x => (banned.test(x.d) && lines.find(l => l.i === x.i)?.kind === "conf" ? { ...x, d: "speak candidly" } : x));
+  catch { return json({ ok: false, error: "the model did not return usable JSON", provider }, 502); }
+  // a tender word on a confessional that is not a love confession is the voice model's cue to go intimate
+  const banned = /\b(softly|gently|tenderly|warmly|sensual(?:ly)?|seductively|intimately)\b/gi;
+  const clean = (d, conf) => {
+    let s = String(d || "").replace(/[\[\]]/g, "").replace(/\s+/g, " ").trim().slice(0, 80);
+    if (conf) s = s.replace(banned, "openly");
+    return s;
+  };
+  const NV = new Set(["laugh", "sigh", "breathe", "clear throat", "cough"]);
+  const directions = (Array.isArray(parsed.directions) ? parsed.directions : []).map(x => {
+    const i = Number(x.i), line = lines.find(l => l.i === i), conf = line?.kind === "conf";
+    if (!line) return null;
+    const o = { i, d: clean(x.d, conf) };
+    if (!o.d) return null;
+    const nv = String(x.nv || "").toLowerCase().trim();
+    if (NV.has(nv)) { o.nv = nv; o.nvAt = ["start", "mid", "end"].includes(x.nvAt) ? x.nvAt : "start"; }
+    const at = Number(x.shift?.at), d2 = clean(x.shift?.d, conf);
+    if (d2 && at >= 2 && at <= 8) o.shift = { at, d: d2.slice(0, 60) };
+    // the stressed word must be a word of the line
+    const w = String(x.stress || "").trim();
+    if (/^[A-Za-z'’-]{2,24}$/.test(w) && new RegExp(`\\b${w.replace(/['’-]/g, ".")}\\b`, "i").test(line.text)) o.stress = w;
+    return o;
+  }).filter(Boolean);
   return json({ ok: true, directions, provider });
+}
+
+/** Cloudflare Workers AI (the [ai] binding in wrangler-analytics.toml): the last resort when both paid accounts
+ *  refuse. Free up to the account's daily allowance; one episode's directing is well inside it. */
+async function callWorkersAI(system, userText, env, maxTokens = 2000) {
+  if (!env.AI) throw new Error("no AI binding");
+  const r = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
+    messages: [{ role: "system", content: system }, { role: "user", content: `${userText}\n\nAnswer with a single JSON object.` }],
+    max_tokens: maxTokens, temperature: 0.7,
+  });
+  const text = typeof r?.response === "string" ? r.response : r?.response ? JSON.stringify(r.response) : "";
+  if (!text) throw new Error("workers-ai returned nothing");
+  return text;
 }
 
 async function generateSpeakingVoice(body, env) {

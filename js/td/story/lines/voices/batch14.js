@@ -47,7 +47,7 @@ export default {
   },
   'nv4.p3': {
     0: { dry: "You've been quiet all afternoon. That's never good with you.", loud: "You've been SO quiet all afternoon. What's going on?", emotional: "You've been so quiet all afternoon. Are you okay? You can talk to me." },
-    2: { competitive: "They're sweet together.", earnest: "They're really sweet together.", loud: "They're SO sweet together!", emotional: "They're so sweet together. It makes me happy." },
+    2: { competitive: "They're tight, those two.", earnest: "They're really close.", loud: "They're SO close!", emotional: "They're so close. It's kind of lovely." },
     4: { dry: "Why?", loud: "Why?!", emotional: "Why? What happened?" },
     6: { dry: "And it has to be {target}?", loud: "And it has to be {target}?!", emotional: "It has to be {target}? Really?" },
     8: { competitive: "Then don't say it out loud again. Just write it.", loud: "Then don't SAY it! Just write it!", emotional: "Then please don't say it out loud again. Just write it, and we'll be okay." },

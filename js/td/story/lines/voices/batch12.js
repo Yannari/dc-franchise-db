@@ -64,7 +64,7 @@ export default {
   },
   'nv4.p3': {
     0: { warm: "You've been quiet all afternoon. Are you okay?", theatrical: "You've been so quiet all afternoon. What's going on in there?", anxious: "You've been quiet all afternoon. Is something wrong?", nerdy: "You've been quiet all afternoon. What are you thinking about?", ditzy: "You've been really quiet. What's going on?", quiet: "You've been quiet. What's up?" },
-    2: { warm: "They're so sweet together.", ditzy: "Aw, they're sweet together.", quiet: "They're sweet." },
+    2: { warm: "They're so close, those two.", ditzy: "Aw, they're like best friends.", quiet: "They're close." },
     4: { warm: "Why? What's wrong?", theatrical: "Why? What's happened?", anxious: "Why? What happened?", nerdy: "Why?", ditzy: "Wait, why?", quiet: "Why?" },
     6: { warm: "And it has to be {target}?", theatrical: "And it has to be {target}, of all people?", anxious: "It has to be {target}?", nerdy: "Why {target}, specifically?", ditzy: "Wait, it has to be {target}?", quiet: "{target}?" },
     8: { anxious: "Then please don't say it out loud again, just write it.", ditzy: "Then don't say it out loud again! Just write it down." },

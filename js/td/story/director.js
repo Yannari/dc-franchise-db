@@ -247,6 +247,9 @@ function goneBefore(ep) {
   return gone;
 }
 
+// x's partner in a showmance that is still on, or null
+const loverOf = x => (gs.showmances || []).find(s => s.phase !== 'broken-up' && (s.players || []).includes(x))?.players?.find(p => p !== x) || null;
+
 function membersOf(ep, camp) {
   // nobody voted out before this episode is in its camp, whatever list says so (the user, 2026-10-14: Finn, voted out in
   // episode one, was the one Manu "went and found" in episode two; measured: Max talking at camp the morning after his
@@ -1266,9 +1269,10 @@ function voteTalk(ep, camp, t, next) {
     // one person runs one plan on screen: a second plan with the same leader would contradict the first
     if (!a || out.some(o => o.step === 'other' && o.scene?.who?.a === a)) continue;
     // the same three ways of working as the plan below (shapeFor)
-    const oShape = shapeFor(a, closeTo(a, mem));
-    const b = oShape === 'solo' ? null : oShape === 'group' ? closeTo(a, mem)[0] : closest(a, mem.filter(m => m !== a));
-    const c = oShape === 'group' ? closeTo(a, mem)[1] || null : null;
+    const memT = mem.filter(m => m !== loverOf(rv.target));
+    const oShape = shapeFor(a, closeTo(a, memT));
+    const b = oShape === 'solo' ? null : oShape === 'group' ? closeTo(a, memT)[0] : closest(a, memT.filter(m => m !== a));
+    const c = oShape === 'group' ? closeTo(a, memT)[1] || null : null;
     if (a) {
       const g = b ? groupOf(a, b) : null;
       const data = { target: rv.target, ...(g ? { group: g } : {}) };
@@ -1296,7 +1300,9 @@ function voteTalk(ep, camp, t, next) {
   }
   // 2. the plan: the person running it and the people with them agree on the name and the reason
   {
-    const pool = voters.filter(v => v !== leader && v !== r?.voter);
+    // (the target's own partner writes the name off camera: the plan scene's cheer is not theirs; read 2026-10-14, Marissa
+    // "I like that case" to "Hannah doesn't even see it coming", Hannah being her girlfriend)
+    const pool = voters.filter(v => v !== leader && v !== r?.voter && v !== loverOf(boot));
     // how the person running it works (shapeFor): the trusted people together, one person aside,
     // or nobody (a solo decision, to the camera)
     const close = closeTo(leader, pool);
@@ -2338,7 +2344,11 @@ export function airTdEpisode(ep) {
         // twice in one episode)
         const spentToo = [];
         // ...and the camp is there: the scene opens with them in earshot, so the stage brings them on
-        if (PUBLIC.test(kind) && who.a && who.b && !lines.slice(0, 2).some(l => CROWD_WORDS.test(l.text || ''))) {
+        // (not a version written to happen in private: read 2026-10-14, "Spencer follows Diego, keeping a few steps behind until
+        // they are out of sight", then "The rest of the camp has stopped what they are doing to watch", then "I'm not going
+        // to fight you in front of everyone" and Marissa stepping in)
+        const hushed = w.place === 'secret';
+        if (PUBLIC.test(kind) && !hushed && who.a && who.b && !lines.slice(0, 2).some(l => CROWD_WORDS.test(l.text || ''))) {
           const OPEN = ['The rest of the camp has stopped what they are doing to watch.', 'Everybody nearby can hear every word.', 'Half the camp is close enough to hear every word.'];
           // (after the scene's own opening beat, which says what is happening: read 2026-10-14, "The rest of the camp has
           // stopped what they are doing to watch", then "Isabel walks past Natalia at the water pump")
@@ -2353,7 +2363,7 @@ export function airTdEpisode(ep) {
           return off > 0 ? off : k; })();
         const insert = more => { const t = tailAt + (lines.length - tailAt === 0 ? 0 : 0); lines = [...lines.slice(0, t), ...more, ...lines.slice(t)]; };
         const fam = NOTE_FAM(kind);
-        if (PUBLIC.test(kind) && who.a && who.b && !lines.some(l => l.by && l.by !== who.a && l.by !== who.b)) {
+        if (PUBLIC.test(kind) && !hushed && who.a && who.b && !lines.some(l => l.by && l.by !== who.a && l.by !== who.b)) {
           const lean = x => (getBond(x, who.b) - getBond(x, who.a));
           const around = members.filter(m => !Object.values(who).includes(m));
           const forB = [...around].sort((x, y) => lean(y) - lean(x) || x.localeCompare(y))[0] || null;

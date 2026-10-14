@@ -183,7 +183,10 @@ export function writePreviously(ep) {
       'scheme:move': [`${a} started pulling strings${b ? `, and ${b} was the puppet` : ''}.`, `${a} quietly went to work on ${b || 'the rest of camp'}.`, `${a} stirred the pot, and the pot stirred back.`],
       'idol:found': [`${a} found something hidden, and kept it very, very quiet.`, `${a} went digging, and came back with something shiny.`, `${a} got ${pr(a).posAdj} hands on an advantage. Sneaky.`],
       'idol:shared': [`${a} let ${b || 'someone'} in on a secret. A shiny, game-changing secret.`, `${a} told ${b || 'an ally'} about the idol. Trusting. Maybe too trusting.`, `${a} shared a secret with ${b || 'a friend'}. What could go wrong?`],
-      'idol:known': [`Word got around that somebody had an idol, and ${a} had a pretty good guess who.`, `${a} figured out who's been hiding something.`, `${a} started asking very specific questions about very specific idols.`],
+      // (the holder sure somebody knows, adv.exposed: not the one who found out; read 2026-10-14, "Richard figured out
+      // who's been hiding something" over Richard's own "I'm not good at secrets")
+      'idol:known': /adv\.exposed/.test(src) ? [`${a} has an idol, and ${pr(a).sub} ${pr(a).sub === 'they' ? 'are' : 'is'} pretty sure somebody knows.`, `${a} is sitting on an idol, and ${pr(a).sub} ${pr(a).sub === 'they' ? "aren't" : "isn't"} hiding it as well as ${pr(a).sub} ${pr(a).sub === 'they' ? 'think' : 'thinks'}.`]
+        : [`Word got around that somebody had an idol, and ${a} had a pretty good guess who.`, `${a} figured out who's been hiding something.`, `${a} started asking very specific questions about very specific idols.`],
       'idol:search': [`${a} went idol hunting. Again.`, `${a} spent the whole afternoon digging in the dirt. Hopefully for an idol.`, `${a} searched every inch of camp.`],
       'bottom:targeted': [`${a}'s name started coming up${b ? `, and ${b} was the one saying it` : ''}.`, `${a} was on the bottom, and didn't know it.`, `The target landed on ${a}${b ? `, courtesy of ${b}` : ''}.`],
       'bottom:scramble': [`${a} could feel it coming, and scrambled${b ? `, starting with ${b}` : ''}.`, `${a} went into full panic mode${b ? ` and begged ${b} for help` : ''}.`, `${a} knew ${pr(a).sub} ${pr(a).sub === 'they' ? 'were' : 'was'} in trouble, and started making calls.`],

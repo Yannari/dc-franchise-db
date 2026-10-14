@@ -32,7 +32,7 @@ export default {
   },
   // vp2.pair (warm)
   'nv4.p3': {
-    2: { dry: "They're sweet together. It's almost annoying.", goofy: "They're so cute together. I've seen them share a water bottle.", kid: "They're really cute together." },
+    2: { dry: "They're close. It's almost annoying.", goofy: "They're inseparable. I've seen them share a water bottle.", kid: "They're best friends." },
     8: { tough: "Then stop saying it and write it. That's how you get through this.", warm: "Then don't keep saying it, okay? Just write it down, and we'll get through tomorrow together.", dry: "Then stop saying it out loud. The trees have ears out here." },
   },
   // long.crowd.lost.any (loud blame)

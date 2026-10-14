@@ -53,7 +53,7 @@ export default {
     emotional: ["I love you, okay? I'll be watching every second.", "I can't believe I have to go without you."],
     goofy: ["Bring me back a souvenir. Like, the money."],
     flirty: ["Don't forget about me. I mean it."],
-    bossy: ["Stick to the plan. Don't improvise.", "You know what to do. Do it."],
+    bossy: ["Win it. And don't let any of them push you around.", "You know what to do. Do it."],
     proud: ["You're the only one here worth anything. Win."],
     quiet: ["...Win it.", "Bye."],
     teen: ["Okay, you have to win now. Like, actually.", "I'm gonna miss you so much.", "Win it for me, okay?"],

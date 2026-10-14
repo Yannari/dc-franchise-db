@@ -158,6 +158,10 @@ export function writeScene(scene, ctx = {}) {
     if (t.comes && who[t.comes]) line.arrive = [who[t.comes]];
     return line;
   });
+  // a night game drawn in the daytime is last night's, told the next day (read 2026-10-14: truth or dare "around the
+  // circle" at the forest edge, in the morning)
+  const win = scene.spot?.window || null;
+  if (scene.kind === 'romance.night' && win && !['evening', 'before-tribal'].includes(win)) lines.unshift({ kind: 'beat', by: null, text: 'Last night, around the fire, the games came out.' });
   return { lines, text: transcript(lines), lineId: entry.id, facts };
 }
 

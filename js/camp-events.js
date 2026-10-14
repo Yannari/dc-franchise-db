@@ -931,7 +931,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
     if (eventType === 'fight') {
       // Low temperament = more likely to snap. Low loyalty = doesn't suppress it for the group.
       const a = _pick(group, n => Math.max(0.1, (10 - pStats(n).temperament) * 0.5 + pStats(n).boldness * 0.3 + 1));
-      const others = group.filter(p => p !== a);
+      // not a close friend: the fight is written as two people who don't like each other (read 2026-10-14, carnival ep 10:
+      // Spencer "I don't like you. I'm not going to pretend I do" to Diego, the morning they were "doing everything together")
+      const others = group.filter(p => p !== a && getBond(a, p) < 4);
       if (!others.length) continue;
       const b = wRandom(others, n => Math.max(0.1, (5 - getBond(a, n)) * 0.4 + (10 - pStats(n).temperament) * 0.15 + 1));
       addBond(a, b, -1.5);

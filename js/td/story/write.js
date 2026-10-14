@@ -366,7 +366,7 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
     spend(() => firstLines().push(lineKey(ownWords(entry,t))));
   }
   if (later.length) onCommit(lines, () => later.forEach(fn => fn()));
-  return { lines, text: transcript(lines), lineId: entry.id, cast: usedRoles, spot: spot ? { id: spot.id, label: spot.label, fixed: true, ...(window ? { window } : {}) } : null };
+  return { lines, text: transcript(lines), lineId: entry.id, cast: usedRoles, place: entry.place || null, spot: spot ? { id: spot.id, label: spot.label, fixed: true, ...(window ? { window } : {}) } : null };
 }
 
 // The set-up line for a scene that opens on dialogue (td/story/setup.js).

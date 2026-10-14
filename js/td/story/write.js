@@ -370,7 +370,11 @@ export function writeStory(pool, outcome, who, data, facts, ctx) {
 // The set-up line for a scene that opens on dialogue (td/story/setup.js).
 function setupLine(entry, who, data, lines, spot, facts, ctx, rng, placeOk) {
   const roleOf = n => Object.keys(who).find(r => who[r] === n);
-  const said = [...new Set(lines.filter(l => l.kind === 'say' && l.by).map(l => l.by))];
+  // (not somebody the scene brings in later with a line of their own: "Isabel, Jade and Natalia are huddled together",
+  // then "Natalia wanders over", read 2026-10-14)
+  const arrives = n => { const k = lines.findIndex(l => l.kind === 'say' && l.by === n);
+    return lines.slice(0, k).some(l => l.kind === 'beat' && ((l.arrive || []).includes(n) || (l.text || '').includes(n))); };
+  const said = [...new Set(lines.filter(l => l.kind === 'say' && l.by).map(l => l.by))].filter(n => !arrives(n));
   let [s1, s2] = said;
   if (!s2) s2 = Object.values(who).find(n => n && n !== s1);
   if (!s1 || !s2 || !roleOf(s1) || !roleOf(s2)) return null;

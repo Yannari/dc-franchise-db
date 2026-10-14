@@ -40,7 +40,8 @@ export const GROUP = {
   sleep: { pre: ['slowly waking up'], post: ['lying around, nobody quite ready to sleep'] },
   wash: ['taking turns at the water'],
   aside: ['sitting a little apart from the others', 'taking a break together'],
-  public: ['standing around together', 'all talking over each other', 'hanging around with nothing much to do'],
+  // (not 'all talking over each other': it set a calm talk, read 2026-10-14)
+  public: ['standing around together', 'killing time together', 'hanging around with nothing much to do'],
   secret: ['huddled together where nobody can hear', 'well away from the others'],
 };
 

@@ -24,7 +24,6 @@ export default {
   },
   'ny.ls1': {
     2: { quiet: "Since always. Nobody asked.", proud: "Since always. You just never asked.", calm: "Since always, really. Nobody asked." },
-    3: { warm: "You could have said something! We've been struggling for days!", calm: "You could have mentioned it. We've been struggling for days." },
     5: { competitive: "I had {a} down as dead weight. I was wrong, and now I have to rethink a lot of things.", calm: "I had {a} down as dead weight. I'm going to quietly rethink that." },
   },
   'nm.a3': {
@@ -41,7 +40,6 @@ export default {
     5: { calm: "{a} is fishing. I can't tell yet whether I'm the fish or the one holding the rod.", warm: "{a} is fishing for something, and I want to trust {a}, but I'm not sure yet if I'm the fish.", competitive: "{a} is fishing. I'll find out what for before I give {a} anything back." },
   },
   'nf.h1': {
-    2: { warm: "What's wrong with it? You can tell me.", calm: "What's wrong with it?", blunt: "What's the problem?" },
     6: { calm: "I'm writing {target}, because that's the plan and I won't be the one who breaks it. I just don't feel good about it.", earnest: "I'm going to write {target}, because I gave my word to the plan. I just don't feel good about it at all." },
   },
   'nrn.p3': {

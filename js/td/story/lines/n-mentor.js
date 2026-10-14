@@ -11,7 +11,7 @@
 export default {
   'arc.mentor.offer': [
     { id: 'nmt.o1', turns: [
-      { beat: "{b} has been trying at {skill} for twenty minutes, and it is not going well." },
+      { beat: "{b} has been working at {skill} for twenty minutes, and it is not going well." },
       { by: 'a', say: "Here, let me show you how to do it." },
       { by: 'b', say: "I don't need to be shown. I know how." },
       { by: 'a', say: "You obviously don't know, and that's okay. Nobody's born knowing." },

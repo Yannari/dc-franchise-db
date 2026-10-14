@@ -152,8 +152,12 @@ const DEFS = {
         return { who: { a: arc.a, b: arc.b, c }, place: 'aside' };
       } },
       // b made a friend here besides the coach
-      { id: 'done', phase: 'any', cast: (arc, m) => {
+      { id: 'done', phase: 'any', cast: (arc, m, ep, camp) => {
         const made = m.some(x => x !== arc.a && x !== arc.b && getBond(arc.b, x) >= 2);
+        // (not on the day b tells the camera everybody stops talking when b walks up: read 2026-10-14, Alessio "I know
+        // what that means" in the morning, "now people actually say hi to me" that evening)
+        const block = ep.campEvents?.[camp], day = Array.isArray(block) ? block : [...(block?.pre || []), ...(block?.post || [])];
+        if (day.some(ev => ev?.scene?.kind === 'conf.excluded' && ev.scene.who?.a === arc.b && !['covered', 'gone'].includes(ev.aired))) return null;
         const c = arc.c && m.includes(arc.c) ? arc.c : null;
         if (!made && !c) return null;
         return { who: made ? { a: arc.a, b: arc.b } : { a: arc.a, b: arc.b, c }, outcome: made ? 'made' : 'awkward', place: 'aside' };

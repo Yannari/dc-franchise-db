@@ -332,8 +332,11 @@ function playReactions(ep, { tribal, ballots, base, ctx, nextN }) {
     } else pool = { extraVote: 'adv.extra', voteSteal: 'adv.steal', voteBlock: 'adv.block', soleVote: 'adv.sole', safetyNoPower: 'adv.safety', kip: 'adv.kip' }[p.type];
     if (!pool) return;
     const b = on && tribal.includes(on) && on !== a ? on : null;
-    const c = wasted[0] || (p.type === 'soleVote' ? (p.silencedPlayers || []).find(x => tribal.includes(x)) : null) || friendOf(b || a);
     const target = p.target && tribal.includes(p.target) ? p.target : null;
+    // an Extra Vote hits the one it's on hardest; a's closest friend may be who a told about it at camp (read 2026-10-14:
+    // Richard, told "it's Ivy tonight, both of them", said "Of course Tristan has an Extra Vote" at Tribal)
+    const c = wasted[0] || (p.type === 'soleVote' ? (p.silencedPlayers || []).find(x => tribal.includes(x)) : null)
+      || (p.type === 'extraVote' && target && target !== a ? target : null) || friendOf(b || a);
     const who = { a, ...(b ? { b } : {}), ...(c ? { c } : {}), h: host };
     const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'tribal' }), ...base, register: registerOf(a), third: !!c, pair: !!b, target: !!target, cWasted: !!wasted[0] };
     const w = writeStory(pool, ending, who, target ? { target } : {}, facts, ctx(nextN(), 'tribal', 'soft'));

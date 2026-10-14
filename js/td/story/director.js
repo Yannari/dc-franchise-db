@@ -1381,7 +1381,10 @@ function voteTalk(ep, camp, t, next) {
       const hs = x => { let h = 2166136261; for (const c of `${ep.num}|decoy|${x}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
       // (somebody not on screen yet first; then anybody, short of the people running plans)
       const seen = x => out.some(o => o.players.includes(x)) ? 1 : 0;
-      const cands = tribal.filter(x => x !== boot && !leads.has(x) && !imm.has(x) && ballots.some(v => v.voted === x && v.voter !== x))
+      // (not somebody about to play an Extra Vote or steal one: they have their own scene saying who it's on, and read
+      // 2026-10-14, Tristan told Richard "it's Ivy tonight, both of them", then was scared and asked him for votes on Ivy)
+      const attacking = new Set((ep.idolPlays || []).filter(p => ['extraVote', 'voteSteal'].includes(p.type)).map(p => p.player));
+      const cands = tribal.filter(x => x !== boot && !leads.has(x) && !imm.has(x) && !attacking.has(x) && ballots.some(v => v.voted === x && v.voter !== x))
         .sort((p, q) => seen(p) - seen(q) || hs(p) - hs(q) || p.localeCompare(q));
       for (const x of cands) { const d = targetScene(x, 'decoy'); if (d) { pair.push(d); break; } }
       // a unanimous night has nobody else with a vote on them: somebody scared, or a plan's name that came to
@@ -1389,7 +1392,7 @@ function voteTalk(ep, camp, t, next) {
       if (pair.length < 2) {
         const scared = x => ['paranoid', 'desperate'].includes(gs.playerStates?.[x]?.emotional);
         const planned = new Set((ep.alliances || []).map(al => al.target));
-        const more = tribal.filter(x => x !== boot && !leads.has(x) && !imm.has(x) && (scared(x) || planned.has(x)) && ballotOf(x) && ballotOf(x) !== x)
+        const more = tribal.filter(x => x !== boot && !leads.has(x) && !imm.has(x) && !attacking.has(x) && (scared(x) || planned.has(x)) && ballotOf(x) && ballotOf(x) !== x)
           .sort((p, q) => seen(p) - seen(q) || hs(p) - hs(q) || p.localeCompare(q));
         for (const x of more) {
           const friend = closest(x, tribal.filter(y => y !== x && y !== boot && getBond(x, y) >= 1));
@@ -1788,6 +1791,17 @@ export function airTdEpisode(ep) {
         const sealed = new Set(['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph)).filter(ev => /^(alliance\.form|deal\.)/.test(ev?.scene?.kind || ''))
           .map(ev => pk(ev.scene.who?.a, ev.scene.who?.b)));
         for (const ev of events) if (ev && ev.aired == null && /^friend\.drift/.test(ev.scene?.kind || '') && sealed.has(pk(ev.scene.who?.a, ev.scene.who?.b))) ev.aired = 'covered'; }
+      // ...and somebody who led last night's vote does not "steal the credit" for it from somebody who only went along
+      // (read 2026-10-14: Natalia drew up the Lynda plan, said "I made it happen" at Tribal, and the next morning was
+      // "stealing" it from Alessio, who flipped to join her)
+      if (phase === 'pre') { const prev = (gs.episodeHistory || []).find(h => h.num === ep.num - 1);
+        const led = new Set((prev?.tribalStory?.booth || []).filter(b => b.role === 'lead').map(b => b.voter));
+        for (const ev of ['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph))) if (ev && ev.aired == null && ev.scene?.kind === 'credit.steal' && led.has(ev.scene.who?.a)) ev.aired = 'covered'; }
+      // ...and two people do not make up on the day one of them asks a third to help vote the other out (read 2026-10-14:
+      // Isabel decided her problem with Natalia "was Lynda's doing", then offered Anastasia the end to get rid of Natalia)
+      if (phase === 'pre') { const pk = (x, y) => [x, y].sort().join('|'), day = ['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph)).filter(Boolean);
+        const against = new Set(day.filter(ev => ev.scene?.kind === 'pitch.turn' && ev.scene.data?.friend).map(ev => pk(ev.scene.who?.a, ev.scene.data.friend)));
+        for (const ev of day) if (ev.aired == null && /^drama\.thaw/.test(ev.scene?.kind || '') && against.has(pk(ev.scene.who?.a, ev.scene.who?.b))) ev.aired = 'covered'; }
       // ...and one person sits with what the one who left forgot: two mourners in a row aired the same scene, "folding a
       // shirt he left behind", word for word (read 2026-10-14)
       { let seen = false;
@@ -2997,7 +3011,10 @@ export function airTdEpisode(ep) {
     const flipped = (gs.namedAlliances || []).some(al => (al.betrayals || []).some(b0 => b0.player === elim));
     const wins = (gs.episodeHistory || []).filter(h => h.num <= ep.num && [].concat(h.immunityWinner || []).includes(elim)).length;
     const who = { a: elim };
-    const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'tribal' }), lostAlly: !!lostAlly, blame: !!blame, flipped, won: wins > 0, late: (gs.activePlayers || []).length <= 7 };
+    // led: they ran a plan of their own today, so nobody "never said a word to them about the vote" (read 2026-10-14: Ivy
+    // spent the day getting Hannah on Tristan, then "when nobody's talking to you about the vote, it's because the vote is you")
+    const led = (ts.booth || []).some(b0 => b0.voter === elim && b0.role === 'lead');
+    const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'tribal' }), lostAlly: !!lostAlly, blame: !!blame, flipped, won: wins > 0, late: (gs.activePlayers || []).length <= 7, led };
     const d0 = { ...(lostAlly ? { lostAlly } : {}), ...(blame ? { blame } : {}) };
     const c0 = u => ({ ep: ep.num, camp: 'tribal', phase: 'tribal', n: 2900, place: 'confessional', unique: u });
     // a fresh one from the night's own pool, then any fresh one, before one comes back

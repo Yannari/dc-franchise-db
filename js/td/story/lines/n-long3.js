@@ -6,14 +6,16 @@
 export default {
   // a thanks b for something b did
   'long.friend.thanks.any': [
-    { id: 'nly.t1', turns: [
-      { beat: "{a} finds {b} washing up by the water and crouches down next to {b.obj}." },
-      { by: 'a', say: "I never said thank you for the other day." },
+    // (staged where people wash, and thanks for an everyday thing: "washing up by the water" aired at the edge of the
+    // woods, and "you stayed up with me" thanked a night nobody saw, read 2026-10-14)
+    { id: 'nly.t1', place: 'wash', turns: [
+      { beat: "{a} finds {b} washing up {here} and crouches down next to {b.obj}." },
+      { by: 'a', say: "I never said thank you, by the way." },
       { by: 'b', say: "For what?" },
-      { by: 'a', say: "For not letting me fall apart. You didn't have to stay up with me." },
+      { by: 'a', say: "For always saving me a seat at dinner. You didn't have to do that." },
       { by: 'b', say: "That's what you do, isn't it?" },
-      { by: 'a', say: "Not out here. Out here most people would've let me." },
-      { by: 'a', conf: "I don't have a lot of people I'd trust with my life in here. I've got one now." },
+      { by: 'a', say: "Not out here. Out here most people would've let me eat on my own." },
+      { by: 'a', conf: "I don't have a lot of people I trust out here. I've got one now, and it's {b}." },
     ] },
     { id: 'nly.t2', turns: [
       { by: 'a', say: "Hey. This is for you." },
@@ -65,7 +67,8 @@ export default {
   ],
   // a lifts everyone's mood
   'long.friend.lift.any': [
-    { id: 'nly.l1', turns: [
+    // (in the shelter, where its own lines are: it aired on the rocky beach, read 2026-10-14)
+    { id: 'nly.l1', place: 'sleep', turns: [
       { beat: "It's raining, and everybody's crammed inside the {quarters}, miserable. {a} starts humming." },
       { by: 'b', say: "What are you doing?" },
       { by: 'a', say: "Singing. Join in. It's the only song I know all the words to." },

@@ -543,7 +543,7 @@ export default {
       { by: 'b', conf: "When I got here I ate on my own. Now I have to fight for a seat. It's honestly the best problem I've ever had." },
     ] },
     { id: 'nco.m1', turns: [
-      { by: 'a', say: "Look at you, sitting with people by the fire like a normal person." },
+      { by: 'a', say: "Look at you, hanging out with people like a normal person." },
       { by: 'b', say: "I know! I talked to three whole people today!" },
       { by: 'a', say: "And nobody died." },
       { by: 'b', say: "Nobody died. One person even laughed at a joke I made on purpose." },

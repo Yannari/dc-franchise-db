@@ -32,11 +32,11 @@ export default {
       { loud: "Three people looked me in the eye today and lied! THREE! I'm going to need a list, and a pen, and a long talk with all of them after this.", schemer: "Somebody out-played me tonight, and I'd love to know who, because whoever it is, they're good. Annoyingly good." }),
     C('nfn.b4', "I walked in there calm. I was sure. That's what I'm going to think about on the way home: how sure I was.", null,
       { emotional: "I was so sure tonight. I was even smiling. I can't believe I was smiling.", quiet: "I was sure. That's the part that hurts." }),
-    C('nfn.b5', "Nobody said my name to me once today, and now I know why. Everybody was saying it to everybody else.", null,
+    C('nfn.b5', "Nobody said my name to me once today, and now I know why. Everybody was saying it to everybody else.", { led: false },
       { dry: "Turns out when nobody's talking to you about the vote, it's because the vote is you. Good to know. A little late." }),
   ],
   'exit.final.surprised': [
-    C('nfn.s1', "I genuinely didn't hear my name once today. Either I wasn't paying attention, or they were really, really good. I'm going to spend the whole way home trying to work out which.", null),
+    C('nfn.s1', "I genuinely didn't hear my name once today. Either I wasn't paying attention, or they were really, really good. I'm going to spend the whole way home trying to work out which.", { led: false }),
     C('nfn.s2', "I walked into the vote worried about somebody else. That's the part that gets me. I was planning for tomorrow, and they'd already decided I wouldn't have one.", null,
       { warm: "I spent today worrying about everybody but me. I guess I should've saved a little of that worry for myself." }),
     C('nfn.s3', "I didn't see it coming, and I'm not sure I could have. I'll watch it back and look for the moment, but I don't think there was one.", null,

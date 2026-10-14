@@ -47,7 +47,6 @@ export default {
   },
   'ny.ls1': {
     1: { calm: "Wait. Since when can you do that?", theatrical: "Wait, since when can you do THAT?", quiet: "Since when can you do that?", earnest: "Wait, since when can you do that?" },
-    4: { warm: "You didn't ask me anything for days.", ditzy: "You didn't ask me anything for days!", food: "You didn't ask me anything for days.", competitive: "You didn't ask me anything for days.", quiet: "Nobody asked me anything for days.", cruel: "You didn't ask me anything for days.", calm: "You didn't ask me anything for days." },
   },
   'nk.sc4': {
     1: { quiet: "What is it?", anxious: "What is it?", loud: "What IS it?", flirty: "What is it?", earnest: "What is it?", warm: "What is it?", theatrical: "What is it?" },
@@ -352,8 +351,6 @@ export default {
   },
   'nly.t1': {
     1: { calm: "I never said thank you for the other day.", warm: "I never said thank you for the other day.", dry: "I never said thank you for the other day.", anxious: "I never said thank you for the other day, and I've felt bad about it.", ditzy: "I never said thank you for the other day!" },
-    3: { calm: "For not letting me fall apart. You didn't have to stay up with me.", warm: "For not letting me fall apart. You didn't have to stay up with me, and you did.", dry: "For not letting me fall apart. You didn't have to stay up with me.", anxious: "For not letting me fall apart. You didn't have to stay up with me.", ditzy: "For not letting me fall apart! You didn't have to stay up with me." },
-    5: { calm: "Not out here. Most people here would have let me.", warm: "Not out here. Most people out here would've let me.", dry: "Not out here. Out here most people would have sold tickets.", anxious: "Not out here. Out here most people would've let me fall apart.", ditzy: "Not out here! Out here most people would've let me." },
   },
   'nl.m2': {
     2: { nerdy: "It's quieter.", warm: "It's quieter.", anxious: "It's quieter.", calm: "It's quieter.", dry: "It's quieter." },

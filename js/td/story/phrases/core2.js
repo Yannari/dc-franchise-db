@@ -10,7 +10,7 @@ export default {
     loud: ["Hey, chin up, we're fine!", "Stop worrying! We've totally got this!"],
     warm: ["Come here. It's going to be okay, I promise.", "You're doing so much better than you think.", "I've got you. Okay?"],
     blunt: ["Stop panicking. It doesn't help.", "You're fine. Move on."],
-    theatrical: ["Darling, nothing bad will happen to you while I'm here.", "Fear not!"],
+    theatrical: ["Darling, nothing bad will happen to you while I'm here.", "Relax, darling. This ends with us fine. I've decided."],
     anxious: ["It's okay. I think. I think it's okay.", "We're both scared, and that's normal, right?"],
     calm: ["Take a breath. It's fine.", "One thing at a time."],
     competitive: ["Shake it off. We win the next one.", "Forget it. Focus on what's next."],

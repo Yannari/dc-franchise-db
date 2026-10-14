@@ -286,7 +286,9 @@ export default {
       { by: 'a', say: "I'm not acting it out. Okay, I'm acting it out." },
       { by: 'c', conf: "We've replayed the end of that challenge about thirty times now. It gets better every time. It's not even close to what happened anymore." },
     ] },
-    { id: 'ndo.w3', place: 'public', when: { third: true }, turns: [
+    // ("we won one, just one" / "one is more than the other team won" is only true on day one: read 2026-10-14, a team's
+    // first win in episode 4, after the other team had won three)
+    { id: 'ndo.w3', place: 'public', when: { third: true, dayOne: true }, turns: [
       { by: 'c', say: "Okay, nobody gets cocky. We won one, just one." },
       { by: 'a', say: "One is more than the other team won." },
       { by: 'b', say: "That's literally how winning works." },

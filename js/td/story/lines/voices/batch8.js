@@ -148,7 +148,6 @@ export default {
   'nly.t1': {
     2: { warm: "For what?", calm: "For what?" },
     4: { warm: "That's what you do, isn't it? Look after each other.", calm: "That's what you do." },
-    6: { calm: "I don't have many people I'd trust with my life in here. I've got one now.", warm: "I don't have a lot of people I'd trust with my life out here, but I've got one now, and I'm so grateful." },
   },
   'nvq.t2': {
     0: { warm: "Okay, you've got that look. Who is it?", loud: "Okay, I know that look! Who is it?" },

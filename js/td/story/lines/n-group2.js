@@ -180,7 +180,7 @@ export default {
       { by: 'a', say: "Okay, everybody. Water first, then wood.", v: { bossy: "Listen up, it's water first and then wood, so let's move.", loud: "Okay, people, water first and then wood! Go, go, go!" } },
       { by: 'b', say: "Actually, I already told people wood first." },
       { by: 'a', say: "Why would you do wood first?" },
-      { by: 'b', say: "Because it takes longer and it's cooler in the morning." },
+      { by: 'b', say: "Because it takes longer, so you start it first." },
       { by: 'c', say: "{b}'s right. I'm doing wood." },
       { by: 'a', say: "Great, fine, do whatever you want." },
       { by: 'a', conf: "{c} always sides with {b}, every single time, so now I've got two people to deal with instead of one.", v: { cruel: "Oh, {b} has a little sidekick now. Cute. I'll deal with both of them.", schemer: "{c} always backs {b} up, which is good to know. Very good to know." } },

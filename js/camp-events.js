@@ -314,7 +314,9 @@ function _crowdScenes(ep, campKey, present, phase, { tribal = false } = {}) {
     if (lost) {
       const b = top(scored, n => -scores[n])[0];
       const a = top(people.filter(n => n !== b), n => st(n, 'boldness') + (10 - st(n, 'temperament')) - getBond(n, b))[0];
-      const c = top(people.filter(n => n !== a && n !== b), n => st(n, 'social') + st(n, 'loyalty') * 0.5)[0];
+      // the one who sticks up for b is b's friend, not just the friendliest person there (read 2026-10-14: Logan defended
+      // Ivy, "I know which one I'd rather keep", then led the vote against her that night)
+      const c = top(people.filter(n => n !== a && n !== b), n => getBond(n, b) + st(n, 'social') * 0.2 + st(n, 'loyalty') * 0.1)[0];
       if (a && c) { scene('crowd.lost', { a, b, c }, {}, at(pub, 'return'), 'BLAME GAME', 'red', null, joiners(c, [a, b, c], people, 5)); addBond(a, b, -0.5); addBond(c, b, 0.25); addBond(c, a, 0.1); }
     } else {
       const a = top(scored, n => scores[n])[0];

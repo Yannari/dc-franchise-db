@@ -554,12 +554,13 @@ export default {
     ] },
   ],
   'long.life.surprise.any': [
-    { id: 'ny.ls1', place: 'work', turns: [
-      { beat: "{a} has just done something {here} that nobody thought {a} could do." },
+    // (says what it was: "has just done something that nobody thought she could do" never said what, read 2026-10-14)
+    { id: 'ny.ls1', place: 'fire', turns: [
+      { beat: "{a} has just got the fire going {here}, first try, with wet wood. Everybody else gave up on it an hour ago." },
       { by: 'b', say: "Wait. Since when can you do that?", v: { loud: "WAIT. You can do THAT?!", dry: "Oh, so you've been hiding talents. Good to know.", teen: "Wait, since when can you do that?!" } },
       { by: 'a', say: "Since always? Nobody asked." },
-      { by: 'b', say: "You could have said something! We've been struggling for days!" },
-      { by: 'a', say: "You didn't ask me anything for days." },
+      { by: 'b', say: "You could have said something! We've been blowing on that thing for an hour!" },
+      { by: 'a', say: "You were all too busy telling each other how to do it." },
       { by: 'b', conf: "I had {a} down as dead weight, so I'm going to have to rethink that, and so is everybody else.", v: { schemer: "{a} just got a lot more dangerous. And a lot more useful.", warm: "I'm so happy for {a}, because everybody underestimated {a}, me included." } },
     ] },
   ],

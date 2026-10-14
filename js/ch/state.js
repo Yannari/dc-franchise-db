@@ -10,6 +10,7 @@
 // write from (§5: an event is a scene, `seenBy` says who knows).
 import { pStats } from '../players.js';
 import { players } from '../core.js';
+import { getBond } from '../bonds.js';
 
 export const STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty',
   'boldness', 'intuition', 'temperament'];
@@ -57,9 +58,20 @@ export function blankRecord() {
 // the manual). `data` holds what it decided; the words are written later.
 export function addScene(state, kind, who, data = {}, seenBy = who, spot = null) {
   const sc = { id: state.scenes.length + 1, ep: state.ep, day: state.day, kind,
-    who: [...who], data, seenBy: [...new Set(seenBy)], spot };
+    who: [...who], data, seenBy: [...new Set(seenBy)], spot, snap: snapOf(state, who) };
   state.scenes.push(sc);
   return sc;
+}
+
+// How the scene's people stood with each other AT THE SCENE (manual §11.5 B):
+// the words are written after the episode, and a replayed week must not read
+// later bonds. The first two people's bond, a shared alliance, a couple.
+function snapOf(state, who) {
+  const [a, b] = who;
+  if (!a || !b) return { house: state.active.length };
+  const al = state.alliances.some(x => !x.ended && x.members.includes(a) && x.members.includes(b));
+  const couple = state.couples.some(c => !c.ended && ((c.a === a && c.b === b) || (c.a === b && c.b === a)));
+  return { bond: +getBond(a, b).toFixed(2), alliance: al, couple, house: state.active.length };
 }
 
 // A feeling with a target, kept until it is settled.

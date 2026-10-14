@@ -70,7 +70,8 @@ function meet(state, rng, al, eligible, ctx) {
   const name = Object.entries(tallies).sort((a, b) => b[1] - a[1])[0]?.[0];
   if (!name) return null;
   const leaderPlan = planOf(state, al.leader);
-  const reason = targetScore(state, al.leader, name, leaderPlan, ctx).why;
+  const reasonKey = targetScore(state, al.leader, name, leaderPlan, ctx).why;
+  const reason = reasonKey;
   const theirPick = ctx.predict(name);
   const responses = {};
   for (const m of present) {
@@ -93,7 +94,7 @@ function meet(state, rng, al, eligible, ctx) {
     if (responses[m] === 'refuses') addBond(m, al.leader, -0.6);
   }
   const spotted = spotMeeting(state, al, present);
-  const meeting = { alliance: al.id, name: al.name, organiser: al.leader, target: name, reason, expectedCallout: theirPick, responses, spotted };
+  const meeting = { alliance: al.id, name: al.name, organiser: al.leader, target: name, reason, reasonKey, expectedCallout: theirPick, responses, spotted };
   addScene(state, 'meeting', present, meeting, present, 'private');
   if (spotted.length) addScene(state, 'meeting-spotted', spotted, { alliance: al.id, present }, spotted, 'private');
   return meeting;
@@ -292,7 +293,7 @@ export function houseVote(state, rng, { eligible, delib, winners, exclude = [] }
     if (!target) continue;
     tally[target] = (tally[target] || 0) + 1;
     const flip = told != null && told !== target;
-    ballots.push({ voter: v, target, told, wanted: Object.keys(own.terms || {}).length ? own.target : null,
+    ballots.push({ voter: v, target, told, bond: +getBond(v, target).toFixed(2), wanted: Object.keys(own.terms || {}).length ? own.target : null,
       asked: c?.target || null, via: c?.via || null, flip, why: flip ? (why === 'own read' ? 'changed their mind' : why) : why,
       countBefore: Object.values(tally).reduce((a, b) => a + b, 0) - 1 });
   }

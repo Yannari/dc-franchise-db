@@ -245,7 +245,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       nudge(state, winner, 'confidence', 1.6); nudge(state, winner, 'morale', 1);
       pop(winner, duel.comeback ? 2 : duel.upset ? 1.5 : 0.6);
       duel.tj = tjVerdict(state, duel);
-      addScene(state, 'arena', [m.a, m.b], { game: duel.game, winner, loser, upset: duel.upset, comeback: duel.comeback, tj: duel.tj, beats: duel.beats }, state.active, 'arena');
+      addScene(state, 'arena', [m.a, m.b], { game: duel.game, winner, loser, upset: duel.upset, comeback: duel.comeback, tj: duel.tj, beats: duel.beats, gameName: duel.gameName }, state.active, 'arena');
       arenaWon(winner, loser, state.active, { margin: duel.upset ? 1.4 : 1 });
       removePlayer(state, loser, 'arena', { by: winner, game: duel.game });
       syncActive(state);
@@ -264,6 +264,10 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     state.cliqueStrength = Math.max(0.15, state.cliqueStrength * 0.84);
   }
 
+  // The final is its own episode.
+  state.ep = (state.episodes.at(-1)?.ep || 0) + 1;
+  gs.episode = state.ep;
+  state.finalEp = { ep: state.ep, final: true, votes: [], votedIn: [], callouts: [], arena: [], exits: [] };
   playFinal(state, streamFor(seed, 'final'));
   const placements = {};
   for (const g of state.gone) placements[g.name] = g.place;

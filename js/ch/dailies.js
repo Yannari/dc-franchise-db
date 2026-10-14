@@ -166,6 +166,7 @@ export function playDaily(state, rng, { division }) {
   // Partners who won together.
   if (mode === 'pairs') for (const [a, b] of [winners]) if (a && b) { addBond(a, b, 0.8); remember(a, b, 'worked-with-me', 1); remember(b, a, 'worked-with-me', 1); }
   for (const l of last) { state.rec[l].dailyLast++; nudge(state, l, 'confidence', -0.5); }
+  addScene(state, 'daily', state.active, { daily: daily.id, dailyName: daily.name, mode, winners, last }, state.active, 'challenge');
   for (const n of state.active) nudge(state, n, 'energy', -1.2 * daily.physicality);
   // Throwing, and who catches it.
   const caught = [];
@@ -211,7 +212,6 @@ export function playDaily(state, rng, { division }) {
   }
   const aftermath = mode === 'pairs' ? pairAftermath(state, rng, units, indiv, winners, ranked)
     : mode === 'teams' ? teamAftermath(state, rng, units, indiv, winners) : [];
-  addScene(state, 'daily', state.active, { daily: daily.id, mode, winners, last }, state.active, 'public');
   return { id: daily.id, name: daily.name, mode, units, winners, last,
     scores: Object.fromEntries(Object.entries(indiv).map(([k, v]) => [k, +v.toFixed(2)])),
     throws, caught, injuries, moments, reward, aftermath };

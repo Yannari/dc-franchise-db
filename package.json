@@ -25,6 +25,8 @@
     "audit:ci-spec": "vitest run --config vitest.audit.config.js tests/ci-spec-audit.test.js --reporter=verbose",
     "audit:ch-spec": "vitest run --config vitest.audit.config.js tests/ch-spec-audit.test.js --reporter=verbose",
     "ci:transcript": "vitest run --config vitest.audit.config.js tests/ci-transcript-audit.test.js --reporter=verbose",
+    "audit:ch-voice": "vitest run --config vitest.audit.config.js tests/ch-voice-audit.test.js --reporter=verbose",
+    "ch:transcript": "vitest run --config vitest.audit.config.js tests/ch-transcript-audit.test.js",
     "pm:transcript": "vitest run --config vitest.audit.config.js tests/pm-transcript-audit.test.js",
     "audit:dr-balance": "vitest run --config vitest.audit.config.js tests/dr-balance-audit.test.js --reporter=verbose",
     "audit:td-pacing": "node tools/td-pacing/run.mjs",

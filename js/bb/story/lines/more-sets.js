@@ -453,7 +453,7 @@ export default {
       { by: 'a', say: "Come out!" },
       { by: 'e', say: "...Fine." },
       { beat: 'Everyone ends up in the rain, soaked, laughing.' },
-      { by: 'c', dr: "It's just rain. But it's the first thing in weeks that nobody in this house planned." },
+      { by: 'c', dr: "It's just rain. But it's the first thing in here that nobody in this house planned." },
     ] },
   ],
   'set.backyard.close': [

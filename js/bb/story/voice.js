@@ -92,9 +92,11 @@ function lines(kind, voice, o, h) {
   if (split) add(`${o} and I didn't vote the same way ${split}. Neither of us has brought it up. We both know.`,
     `${o} voted the other way ${split}. I saw the count. I've been very friendly about it.`,
     `We split ${split}, ${o} and me. I keep waiting for ${o} to explain, and ${o} keeps not explaining.`);
-  if (h.alliance && kind !== 'ally') add(`${o} is in ${h.alliance} with me. That changes how I have to handle this.`,
-    `I can't treat ${o} like anybody else. We're both in ${h.alliance}, and the others will hear about this.`,
-    `If ${o} weren't in ${h.alliance} with me, this would be easy. ${o} is, so it isn't.`);
+  // said about the alliance itself, not about "this" (the user, 2026-10-14: "super vague"): the tail
+  // closes any kind of scene, so it cannot point at what the scene was
+  if (h.alliance && kind !== 'ally') add(`${o} and I are both in ${h.alliance}. Anything I say to ${o} gets back to the rest of them by dinner.`,
+    `${o} is in ${h.alliance} with me, and I need ${o}'s vote more than I need to win an argument.`,
+    `${o} and I are in ${h.alliance} together. With anybody else, I'd be a lot blunter.`);
   if (h.deal && kind !== 'ally') add(`${o} and I have a deal. I keep reminding myself of that.`,
     `There's a deal between ${o} and me. Days like this, I find out how much it's worth.`,
     `I shook on something with ${o}. I keep looking at my hand.`);

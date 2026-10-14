@@ -372,35 +372,36 @@ export default {
   // The real target is not on the block, and the HOH does not say so.
   'noms.speech.backdoor': [
     { id: 'ns.b1', turns: [
-      { by: 'a', say: "Neither of you is my target. I'll say it in front of everybody. Neither of you." },
+      { by: 'a', say: "This isn't personal. You're both sitting there because it's the best move for my game this week." },
       { by: 'a', dr: "My target is sitting on that couch, smiling, thinking they're safe. Let them think it." },
     ] },
     { id: 'ns.b2', turns: [
-      { by: 'a', say: "{b}, {c}, you're both pawns this week. Nobody is going home from those seats if I can help it." },
+      { by: 'a', say: "I'll keep this short." },
       { by: 'a', dr: 'Now I need somebody else to come off the couch and onto that block. The veto is everything.' },
     ] },
     { id: 'ns.b3', turns: [
-      { by: 'a', say: "I trust both of you. That's why you're the ones sitting there." },
+      { by: 'a', say: "I've thought about this a lot. I'm not going to pretend it was easy." },
       { beat: 'Across the room, somebody looks relieved. {a} notices.' },
     ] },
     { id: 'ns.b4', turns: [
-      { by: 'a', say: "This week isn't about either of you. I just need you to sit tight for a few days." },
+      { by: 'a', say: "It's a long week. A lot can happen before Thursday." },
       { by: 'c', dr: "Sit tight. On the block. Easy for {a.obj} to say from upstairs." },
     ] },
     { id: 'ns.b5', turns: [
-      { by: 'a', say: "{b}, {c}, we've talked about this. Play in the veto, and if either of you wins, use it." },
+      { by: 'a', say: "Play hard in the veto. Both of you. That's all I'm going to say." },
       { by: 'a', dr: 'If one of them comes down, I get to put up the person I actually want. That person has no idea.' },
     ] },
     { id: 'ns.b6', turns: [
-      { by: 'a', say: "You're both safe with me, and I mean it. This is about the bigger picture." },
-      { by: 'b', dr: "The bigger picture. {a} has a plan, and I'm part of it whether I like it or not. I hope it works, because I'm the one on the block." },
+      { by: 'a', say: "It's a game decision. I hope you both understand that." },
+      { by: 'b', dr: "{a} didn't look at the couch once during that speech. Not once. I don't know what that means yet, but I noticed." },
     ] },
     { id: 'ns.b7', turns: [
-      { by: 'a', say: "Nobody at this table should panic yet. Things change this week." },
+      { by: 'a', say: "That's my decision, and I'm standing by it." },
       { by: 'a', dr: "Nobody can know it's a backdoor. So I smile, and I wait for the veto." },
     ] },
     { id: 'ns.b8', turns: [
-      { by: 'a', say: "{b}, {c}, I'm sorry. It's a game move, and you both know where I really stand." },
+      { by: 'a', say: "{b}, {c}, I'm sorry. It's a game move." },
+      { by: 'a', dr: "Neither of them is the one I want gone. The one I want gone is sitting on that couch, clapping." },
     ] },
   ],
 

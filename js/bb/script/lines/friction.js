@@ -378,7 +378,7 @@ export default {
     { id: 'fy.1', when: { third: true }, turns: [{ by: 'a', say: "Did I ever tell you about the time—" }, { by: 'b', say: "Yes." }, { by: 'c', say: "Yes." }, { by: 'a', say: "...Okay. Fine." }] },
     { id: 'fy.2', turns: [{ by: 'a', say: "So there I was, at the airport—" }, { beat: '{b} quietly says the next line along with {a}, and has to look at the floor.' }] },
     { id: 'fy.3', turns: [{ by: 'b', dr: "I've heard that story six times. It gets longer every time. Today there was a helicopter in it." }] },
-    { id: 'fy.4', turns: [{ beat: '{a} is telling the kitchen the same story again.' }, { by: 'a', say: "And that's when the police turned up." }, { by: 'b', say: "Last time it was a security guard." }, { by: 'a', say: "Was it?" }, { by: 'b', say: "It was." }] },
+    { id: 'fy.4', turns: [{ beat: '{a} is telling everyone the same story again.' }, { by: 'a', say: "And that's when the police turned up." }, { by: 'b', say: "Last time it was a security guard." }, { by: 'a', say: "Was it?" }, { by: 'b', say: "It was." }] },
     { id: 'fy.5', when: { third: true }, turns: [{ by: 'b', say: "We know how this ends." }, { by: 'a', say: "You don't know how it ends." }, { by: 'c', say: "You get on the plane, {a}. You always get on the plane." }] },
     { id: 'fy.6', when: { third: true }, turns: [{ beat: '{a} starts the story again. {b} and {c} look at each other.' }, { by: 'c', dr: "Same story. Third time this week. I've started timing it." }] },
     { id: 'fy.7', turns: [{ by: 'a', say: "Why is everyone laughing? I haven't got to the funny bit." }, { by: 'b', say: "We're laughing because we know the funny bit." }] },

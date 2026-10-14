@@ -205,7 +205,28 @@ export function airStorylines(week) {
         beat.aired = true; engAired++;
         seasonAired[`ev:${beat.eventId}`] = (seasonAired[`ev:${beat.eventId}`] || 0) + 1;
       };
-      if (confessional) { airs(); round.push({ ea, sc }); continue; }
+      // A confessional airs beside the scene it is about (the user, 2026-10-14: "why is Spencer even in
+      // this conversation, what's the correlation with his DR"): a stretch's loose confessionals strung
+      // together after whatever scene came last read as that scene's, about nothing on screen. It goes
+      // after a conversation its speaker is in or is talked about in, and that has whoever it names; one
+      // with no such scene stays off camera unless it is the vote's own machinery.
+      if (confessional) {
+        const drs = sc.lines.filter(l => l.kind === 'dr');
+        const by = drs[0]?.by;
+        const text = drs.map(l => String(l.text || '')).join(' ');
+        const esc = n => String(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const says = (n, t) => new RegExp(`\\b${esc(n)}\\b`).test(t);
+        const named = (ctx.present || []).filter(n => n !== by && says(n, text));
+        const fits = x => {
+          const t = x.lines.map(l => String(l.text || '')).join(' ');
+          const has = n => (x.cast || []).includes(n) || says(n, t);
+          return by && has(by) && (!named.length || named.some(has));
+        };
+        const into = hosts.filter(x => (x.folded || []).length < 3).find(fits);
+        if (into) { airs(); into.lines.push(...drs); (into.folded ||= []).push(sc.id || null); continue; }
+        if (wt >= 4) { airs(); round.push({ ea, sc }); }
+        continue;
+      }
       const n = spokenOf(sc);
       if (n >= 1 && n <= 3) {
         // into a conversation the speakers are already in (one newcomer at most, who comes over)

@@ -283,6 +283,28 @@ export function hohWeekFor(week, ctx, clock, talked, lastGone) {
     return out.filter(t => t.kind.startsWith('hohweek.verdict'));
   }
 
+  // ── after the veto meeting: did the backdoor land? ──
+  // The user, 2026-10-14: "wasn't Spencer's whole plan to backdoor Lake? how is he not even talking about
+  // it anymore", and "the other nominee was barely mentioned even though a backdoor was planned, where's
+  // the strategy". The HOH's week does not stop at the ceremony: the empty chair either took the name
+  // the week was built for, or it did not, and both are scenes.
+  if (clock.hoh && clock.cer) {
+    const hoh = ctx.hoh;
+    const plan = week.plan;
+    const cer = (week.acts || []).find(x => x?.type === 'veto-ceremony');
+    const bd = plan?.backdoorTarget;
+    if (!hoh || !plan || !cer || !bd || !house.includes(hoh) || !house.includes(bd) || (week.initialNominees || []).includes(bd)) return [];
+    const b = closest(hoh, [bd, cer.holder, cer.saved, cer.replacement].filter(Boolean));
+    if (cer.replacement === bd) {
+      want('hohweek.backdoor.landed', { a: hoh, b, c: bd });
+      // the one it caught, face to face with the HOH: told they were safe, or simply never told
+      want(talked.has('hohweek.fish.lie') ? 'hohweek.backdoor.liedto' : 'hohweek.backdoor.confront', { a: bd, b: hoh });
+    } else if (cer.holder === bd) want('hohweek.backdoor.dodged', { a: hoh, b, c: bd });
+    else if (!cer.used && cer.holder && cer.holder !== hoh && cer.holder !== b) want('hohweek.backdoor.unused', { a: hoh, b, c: bd, d: cer.holder });
+    else if (cer.used && cer.replacement && cer.replacement !== b) want('hohweek.backdoor.missed', { a: hoh, b, c: bd, d: cer.replacement });
+    return out;
+  }
+
   // ── between the HOH and the ceremony ──
   if (!clock.hoh || clock.noms) return [];
   const hoh = ctx.hoh;

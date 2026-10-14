@@ -110,6 +110,30 @@ export function writeCeremony(act, week, house, extra = {}) {
       const b = ending === 'pawn' || ending === 'target' ? (target || noms[0]) : noms[0];
       const c = ending === 'pawn' ? act.pawn : noms.find(n => n !== b);
       script.noms = part('noms.speech', { a: hoh, b, c }, ending, { ...ctx, nominees: noms }, house, hoh);
+      // ...and the HOH turns to each of the two and says why (lines/nomwhy.js): the reason the game
+      // holds between them, out loud. On a backdoor week it is the cover story (the user, 2026-10-14:
+      // "the nomination ceremony is made really boring, short and vague")
+      const st = n => gs.bb?.stats?.[n] || {};
+      const agreed = n => (week.pawnAsk?.asked || []).some(x => x.name === n && x.accepted);
+      let paired = false;
+      const whyOf = (n, other) => {
+        const wins = (st(n).hohWins || 0) + (st(n).vetoWins || 0) + (st(n).blockBusterWins || 0);
+        if (n === act.pawn && agreed(n)) return 'pawn';
+        if (!paired && other && (getBond(n, other) >= 4 || allied(n, other))) { paired = true; return 'pair'; }
+        if (getBond(hoh, n) <= -2) return 'grudge';
+        if (wins >= 2) return 'threat';
+        if (getBond(hoh, n) < 1) return 'distance';
+        return 'game';
+      };
+      // a speech that already turned to a nominee by name ("Chase, I don't dislike you...") has given that
+      // nominee their reason
+      const addressed = n => (script.noms || []).some(l => l.by === hoh && l.kind !== 'dr' && String(l.text || '').startsWith(`${n},`));
+      const whys = [b, c].filter(n => n && !addressed(n)).flatMap(n => part('noms.why', { a: hoh, b: n }, whyOf(n, [b, c].find(x => x !== n)), { ...ctx, nominees: noms }, house, `why|${n}`) || []);
+      if (script.noms && whys.length) {
+        // after the HOH's own opening lines, before anybody answers or the Diary Room cuts in
+        let k = 0; while (k < script.noms.length && script.noms[k].by === hoh && script.noms[k].kind !== 'dr') k++;
+        script.noms.splice(k, 0, ...whys);
+      } else if (whys.length) script.noms = whys;
       script.nomDr = {};
       // A nominee the speech already cut to the Diary Room does not get a second one.
       const spoke = new Set((script.noms || []).filter(l => l.kind === 'dr').map(l => l.by));

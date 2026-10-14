@@ -845,7 +845,7 @@ export default {
       { by: 'a', dr: "{b} flipped. Against {alliance}. Against us. I'm not even angry yet. I'm just shocked." },
     ] },
     { id: 'ab.f7', turns: [
-      { beat: '{a} corners {b} in the storage room the morning after the vote.' }, { by: 'a', say: "Just tell me why." },
+      { beat: '{a} gets {b} alone, the morning after the vote.' }, { by: 'a', say: "Just tell me why." },
       { by: 'b', say: "It was a game move." },
       { by: 'a', say: "Against your own alliance." },
       { by: 'b', say: "Especially against my own alliance. That's where the threats are." },

@@ -210,7 +210,7 @@ function noteAcross(id) {
   } catch { /* storage is a convenience */ }
 }
 
-function pick(keys, who, data, ctx, room, salt) {
+function pick(keys, who, data, ctx, room, salt, freshOnly = false) {
   const pools = {};
   // an entry that names something the scene does not have ({alliance} on an unnamed pact,
   // {c} with no third person) is not a candidate: it would print the raw slot
@@ -237,6 +237,8 @@ function pick(keys, who, data, ctx, room, salt) {
   // banter scene played inside twelve set pieces). With nothing fresh, the set piece goes without it.
   if (ctx.inSet) for (const k of keys) { const free = pools[k].filter(e => !e.room && !used[e.id]); pools[k] = free.length ? free : pools[k].filter(e => !used[e.id]); }
   if (!keys.some(k => pools[k].length)) return null;
+  // a caller with another way to write the moment asks for something unaired, or nothing
+  if (freshOnly && !keys.some(k => pools[k].some(e => !used[e.id]))) return null;
   for (const k of keys) { const unused = pools[k].filter(e => !used[e.id]); if (unused.length) pools[k] = unused; }
   // what this viewer saw in recent seasons waits while something new still fits
   const seen = seenAcross();
@@ -438,13 +440,15 @@ function background(lines, sc, ctx, salt, loud) {
   const rng = stableRng(gs.bb?.seasonSalt || 0, 'story-bg', salt);
   const out = lines.slice();
   if (rng() < 0.7) {
+    // the people around a scene keep the house full, so the room's background rotates once spent;
+    // a spoken reaction (bg.react) is left out instead of heard twice
     const e = pick([`bg.${sc.room}`], who, {}, ctx, sc.room, `${salt}|bg`);
     // after the scene's own opening stage direction, or at the very top
     // marked, so the viewer still names the people talking before it shows who else is around
     if (e) out.splice(out[0]?.kind === 'beat' ? 1 : 0, 0, ...render(e, who, ctx, {}).map(l => ({ ...l, bg: true })));
   }
   if (loud) {
-    const e = pick(['bg.react'], who, {}, ctx, sc.room, `${salt}|react`);
+    const e = pick(['bg.react'], who, {}, ctx, sc.room, `${salt}|react`, true);
     if (e) {
       // before the Diary Room cuts that close the scene
       let k = out.length; while (k > 0 && out[k - 1].kind === 'dr') k--;
@@ -474,6 +478,11 @@ function writeStoryScene0(line, step, ctx) {
   let room = step.room || 'living-room';
   let keys = keysFor(line.type, step.step, step.outcome);
   if (!keys.length) return null;
+  // A group version is used while it has a scene this season has not aired: the group pools are
+  // small, and a spent one used to rotate (the read of 2026-10-14: the cold-tea nominee scene and the
+  // dinner campaign speech each aired twice). Spent, the moment stays a conversation for two.
+  const who0 = who, keys0 = keys;
+  let grouped = false;
   // An alliance of three or more meets as a group: everybody in it is in the room, talking.
   if (line.type === 'alliance' && ['formed', 'checkin', 'leftout'].includes(step.step) && data.alliance && !ctx.inSet) {
     const al = (gs.namedAlliances || []).find(x => x.name === data.alliance);
@@ -482,7 +491,7 @@ function writeStoryScene0(line, step, ctx) {
     if (members.length >= 3 && STORY_POOLS[gk]?.length) {
       const rest = members.filter(n => n !== who.a && n !== who.b);
       who = { a: who.a, b: who.b, c: rest[0], d: rest[1], e: rest[2] };
-      keys = [gk];
+      keys = [gk]; grouped = true;
     }
   }
   // Most house talk has more than two people in it, especially in the first weeks (the user,
@@ -501,14 +510,22 @@ function writeStoryScene0(line, step, ctx) {
     if (STORY_POOLS[gk]?.length && extras.length && roll < ((ctx.week?.num || 0) <= 2 ? 0.9 : 0.6)) {
       const more = extras.slice(0, 3);
       who = { a: who.a, b: who.b, c: who.c || more.shift(), d: more.shift(), e: more.shift() };
-      keys = [gk];
+      keys = [gk]; grouped = true;
     }
   }
   const cast = Object.values(who).filter(Boolean);
   const base = { id: `${line.id}#${line.steps.indexOf(step)}`, line: line.id, type: line.type, step: step.step,
     outcome: step.outcome, room, roomName: ROOM[room] || 'Living Room', cast, mood: moodOf(line.type, step.step), at: step.at };
   if (writing.muted) return { ...base, lines: [] };
-  const entry = pick(keys, who, data, ctx, room, `${line.id}|${line.steps.indexOf(step)}`);
+  // house life (banter, chores, a late night) carries no storyline: a spent pool lets the moment pass
+  // instead of airing a scene the season has already had. A feud or an apology still airs.
+  const optional = line.type === 'life';
+  let entry = pick(keys, who, data, ctx, room, `${line.id}|${line.steps.indexOf(step)}`, grouped || optional);
+  if (!entry && grouped) {
+    who = who0; keys = keys0;
+    entry = pick(keys, who, data, ctx, room, `${line.id}|${line.steps.indexOf(step)}`, optional);
+    base.cast = Object.values(who).filter(Boolean);
+  }
   if (!entry) return null;
   // A scene that is set somewhere ("the sink's right there") happens there.
   // Inside a set piece too: a scene that stages its own room ("Bedroom, after lights out") is not
@@ -579,7 +596,9 @@ function writeGameTalk0(talk, ctx, at) {
     room, roomName: ROOM[room], cast, mood: kind.startsWith('hohweek.') ? (/fish.lie|backdoor/.test(kind) ? 'scheming' : /verdict.(missed|pawn)|refuse/.test(kind) ? 'drama' : 'plan') : kind.startsWith('bond.vent') || kind === 'style.provocateur' ? 'drama' : kind === 'style.manipulator' ? 'scheming'
       : kind === 'style.strategist' || kind === 'prejury' || kind === 'jury.manage' || kind === 'bb.hoh' ? 'plan' : kind === 'style.social' ? 'fun' : 'deals', at };
   if (writing.muted) return { ...base, lines: [] };
-  const entry = pick([key], who, data, { ...ctx, phase: talk.phase }, room, salt);
+  // game talk is the director's choice of what else to air: a talk whose pool is spent this season
+  // does not air again (the read of 2026-10-14: the same style.social scene twice)
+  const entry = pick([key], who, data, { ...ctx, phase: talk.phase }, room, salt, true);
   if (!entry) return null;
   if (entry.room) room = entry.room;
   else if (ctx.avoidRoom) {
@@ -644,12 +663,14 @@ export function writeCampaignScene(beat, ctx, at, salt) {
   const who = { a, b };
   const data = {};
   const sctx = { ...ctx, inSet: false };
-  const open = pick(['camp.open'], who, data, sctx, 'bedroom', `${salt}|open`);
-  const close = pick([`camp.close.${outcome}`], who, data, sctx, 'bedroom', `${salt}|close`);
+  // the opening, the closing push and the Diary Room wrap the engine's own case and reply: a spent
+  // pool leaves its piece out (the read of 2026-10-14: 31 pitch lines heard twice in one season)
+  const open = pick(['camp.open'], who, data, sctx, 'bedroom', `${salt}|open`, true);
+  const close = pick([`camp.close.${outcome}`], who, data, sctx, 'bedroom', `${salt}|close`, true);
   // the voter knows their own mind; now and then the nominee reads the room instead
   const h = [...salt].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
   const pdr = outcome !== 'worn' && h % 10 < 3;
-  const dr = pick([pdr ? `camp.pdr.${outcome}` : `camp.vdr.${outcome}`], who, data, sctx, 'bedroom', `${salt}|dr`);
+  const dr = pick([pdr ? `camp.pdr.${outcome}` : `camp.vdr.${outcome}`], who, data, sctx, 'bedroom', `${salt}|dr`, true);
   // only the people in this conversation speak in it: the engine's beat can carry the other
   // voters' answers too ('Axel: No.' 'Hicks: No.' in a pitch to Brightly alone)
   const inScene = new Set(ps);

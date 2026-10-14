@@ -77,8 +77,8 @@ export default {
     { id: 'bt.g6', when: { reason: 'reach' }, turns: [{ by: 'a', dr: "I can't get to {partner}. But {target}? {target} I can get to." }] },
     { id: 'bt.g7', when: { intent: 'told' }, turns: [{ by: 'a', say: "{target}. That's who we go after." }, { by: 'b', say: "Why {target}?" }, { by: 'a', say: "Because if {target} goes, that group falls apart." }] },
     { id: 'bt.g8', when: { intent: 'told' }, turns: [{ by: 'a', say: "Have you noticed {target} and {partner} always vote the same way?" }, { by: 'b', say: "Now you mention it." }, { by: 'a', say: "That's why {target} has to go." }] },
-    { id: 'bt.g9', when: { intent: 'told', reason: 'alone' }, turns: [{ by: 'b', say: "Why not {partner}?" }, { by: 'a', say: "{partner} has friends everywhere. {target} only has that group." }] },
-    { id: 'bt.g10', when: { intent: 'told', reason: 'wins' }, turns: [{ by: 'b', say: "Why {target}?" }, { by: 'a', say: "Look at how many comps {target} has won. That group isn't going anywhere while {target} is here." }] },
+    { id: 'bt.g9', when: { intent: 'told', reason: 'alone' }, turns: [{ by: 'b', say: "If we're going after that group, why {target} and not {partner}?" }, { by: 'a', say: "{partner} has friends everywhere. {target} only has that group." }] },
+    { id: 'bt.g10', when: { intent: 'told', reason: 'wins' }, turns: [{ by: 'b', say: "You keep saying {target}. Why {target}?" }, { by: 'a', say: "Look at how many comps {target} has won. {target}'s group isn't going anywhere while {target} is here." }] },
   ],
   'bloc.recruit.joined': [
     { id: 'br.j1', turns: [{ by: 'a', say: "I'm not asking you to like me. I'm asking you to count." }, { by: 'b', say: "...Okay. I see it." }, { by: 'a', say: "So {target} goes first." }, { by: 'b', say: "{target} goes first." }] },

@@ -77,7 +77,8 @@ function lines(kind, voice, o, h) {
     `${o} nominated me. We've talked a hundred times since and never once about that.`);
   if (h.iNomThem) add(`I put ${o} on the block in week ${h.iNomThem}. Every conversation with ${o} since then has had that sitting in the middle of it.`,
     `I nominated ${o}. ${o} says it's water under the bridge. Nobody in here means that.`,
-    `${o} still calls me "HOH" sometimes, as a joke. It isn't one.`);
+    `I put ${o} up once. ${o} has never said a word to me about it. That's what worries me.`);
+  const sour = hist.length;
   if (h.theySavedMe) add(`${o} used the veto on me in week ${h.theySavedMe}. I owe ${o}, and we both know it.`,
     `${o} pulled me off the block. Whatever ${o} asks me for, I'm going to have to think very hard before I say no.`,
     `I'm only still here because ${o} used that veto on me. That kind of thing doesn't wear off.`);
@@ -121,7 +122,7 @@ function lines(kind, voice, o, h) {
     heart: {
       fiery: [`I don't do anything quietly, and that includes this.`, `If anyone has a problem with ${o} and me, they can say it to my face.`],
       strategist: [`I know how this looks to the house. I've thought about it. I'm doing it anyway, which isn't like me.`, `Everyone will say it's a strategy. It isn't. That's what scares me.`],
-      warm: [`I didn't come here to fall for anybody. I'm not doing a very good job of that.`, `${o} makes this house feel smaller, in a good way.`],
+      warm: [`I didn't come here to fall for anybody. I'm not doing a very good job of that.`, `${o} makes this house a lot less lonely.`],
       loyal: [`If I'm in, I'm in. That goes for ${o} too.`, `I'm not playing games with ${o}. Everything else in here, sure. Not that.`],
       nervous: [`I keep thinking ${o} is going to realise I'm not that interesting.`, `I'm terrified, honestly. In a good way. Mostly.`],
       carefree: [`Is it a showmance? Who knows. It's fun, and I'm not overthinking it.`, `I'm just enjoying it. The game can wait an afternoon.`],
@@ -150,8 +151,10 @@ function lines(kind, voice, o, h) {
     },
   };
   const voiced = V[kind]?.[voice] || [];
-  // a history fact first, when there is one: that is what makes the line about THIS person
-  return { hist, voiced };
+  // a history fact first, when there is one: that is what makes the line about THIS person. A deal
+  // being made is not the place for an old nomination (the read of 2026-10-14: a final three formed
+  // on screen, closed by "I was on the block because of Bowie once. I also remember")
+  return { hist: kind === 'ally' ? hist.slice(sour) : hist, voiced };
 }
 
 const NAMES_RE = () => new RegExp('(' + (players || []).map(p => p.name).filter(Boolean).map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'g');
@@ -173,6 +176,9 @@ export function addInsight(sc, kindText, weekNum) {
   const o = others.find(n => String(dl.text).includes(n))
     || others.slice().sort((a, b) => sc.lines.filter(l => l.by === b).length - sc.lines.filter(l => l.by === a).length)[0];
   const kind = KIND(String(kindText || ''));
+  // downtime (a camera called Gary, a water fight) keeps its own ending: an old nomination or a vote
+  // tacked onto it is a sentence from another scene (the read of 2026-10-14)
+  if (kind === 'life') return sc;
   const voice = voiceOf(me);
   const hx = historyOf(me, o, weekNum || 99);
   // a flirtation is the couple's scene: somebody watching it gets no feelings of their own added

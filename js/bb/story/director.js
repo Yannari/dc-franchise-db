@@ -204,7 +204,13 @@ export function airStorylines(week) {
         // only a GAME conversation takes a game moment (never a couple's scene, a fight or a heart-to-heart),
         // and only one where every speaker of the moment is already talking (not somebody in the background)
         const talkers = x => new Set(x.lines.filter(l => l.kind === 'say' && l.by && !l.bg).map(l => l.by).filter(n => x.lines.filter(l => l.by === n && l.kind === 'say').length >= 2));
-        const host = placed(sc) ? null : hosts.filter(x => GAME_HOST.has(x.type) && x.mood !== 'secret' && (x.folded || []).length < 2
+        // a public moment ("The room goes quiet", somebody watching it in the Diary Room) is not a
+        // line in two people's private talk (the read of 2026-10-14: the HOH's "as HOH, clean the kitchen"
+        // folded into the pawn plan in the HOH room, and Ripper, not there, commenting on it)
+        const sayers = new Set(sc.lines.filter(l => l.kind === 'say' && l.by).map(l => l.by));
+        const publicMoment = sc.lines.some(l => l.kind === 'beat' && /\b(room|house|everyone|everybody|nobody|table|kitchen|half)\b/i.test(String(l.text || '')))
+          || sc.lines.some(l => l.kind === 'dr' && l.by && !sayers.has(l.by));
+        const host = placed(sc) || publicMoment ? null : hosts.filter(x => GAME_HOST.has(x.type) && x.mood !== 'secret' && (x.folded || []).length < 2
           && speakers.every(s2 => talkers(x).has(s2)))
           .sort((x, y) => (x.folded || []).length - (y.folded || []).length)[0];
         if (host) { airs(); fold(host, sc, `${week.num}|${stretch}|${beat.eventId}`); continue; }

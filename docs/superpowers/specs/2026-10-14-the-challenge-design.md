@@ -274,7 +274,7 @@ base, plus Total Drama's psyche, witness, setup, previously, phrase and voice fa
 
 ## 7. The art
 
-**The setting** is an invented tropical island (the user names it): the villa on a cliff over the sea, the Arena
+**The setting** is an invented tropical island, **Blue Lagoon** (the user's name): the villa on a cliff over the sea, the Arena
 in a jungle clearing or an old quarry, the daily challenge sites around the coast, the final across the
 interior and a mountain.
 

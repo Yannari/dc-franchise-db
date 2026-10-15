@@ -125,8 +125,8 @@ function paintHud(R) { const b = R.root.querySelector('.ibtn2'); if (b) b.classL
 
 // ── the villa map as a hub (the user, 2026-10-15: "it doesn't let me choose where I want to go") ──
 // A map step offers the block's conversations; each runs from its first step to the step before the
-// next scene starts. Watching one brings you back to the map with it ticked; Next on the map plays the
-// first one not watched yet; when all are watched the screen carries on past the block.
+// next scene starts. Next runs on from one into the next one not watched; the map is only where the
+// viewer asks to go (its button). Watched ones are ticked; when all are watched the screen carries on.
 function hubs(R) {
   if (R.hubs) return R.hubs;
   const steps = R.scr.steps;
@@ -153,8 +153,12 @@ function hubNext(R) {
   const H = hubAt(R, R.idx); if (!H) return null;
   const seen = seenOf(R);
   if (H.conv && R.idx < H.conv.e) return null;
-  const left = H.h.convs.find(c => !seen.has(c.s));
-  if (left) return H.conv ? H.h.at : left.s;
+  // the user, 2026-10-15: "it goes to the map for no reason, I just wanted a button". A finished
+  // conversation runs straight on into the next one not watched (the ones after it first); the map is
+  // only ever where the viewer asks to go (the Villa map button, or Back from a conversation's start).
+  const after = H.conv ? H.h.convs.find(c => c.s > H.conv.s && !seen.has(c.s)) : null;
+  const left = after || H.h.convs.find(c => !seen.has(c.s));
+  if (left) return left.s;
   return H.h.end + 1 < R.scr.steps.length ? H.h.end + 1 : -1;
 }
 function paintHub(R) {
@@ -269,8 +273,6 @@ export function chxBack(el) {
   const R = runner(rootOf(el) || document.querySelector('.chx[data-ep]')); if (!R) return;
   stopAuto(R);
   if (R.idx <= 0) { if (typeof window.vpPrev === 'function') window.vpPrev(); return; }
-  const H = hubAt(R, R.idx);
-  if (H?.conv && R.idx === H.conv.s) { goTo(R, H.h.at, false); return; }
   goTo(R, R.idx - 1, false);
 }
 export function chxRestart(el) { const R = runner(rootOf(el)); if (!R) return; stopAuto(R); goTo(R, 0, false); }

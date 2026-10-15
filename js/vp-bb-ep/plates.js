@@ -140,13 +140,18 @@ export function depthAttr(id, theme = 'default') {
  */
 export function themedFor(id, S, theme) {
   if (!id || !theme || theme === 'default' || RESORT.have[theme]?.[id]) return id;
+  if (S == null) S = { set: (RESORT.plates[id]?.sets || [])[0], id };
   const P = RESORT.plates[id];
   if (!P || P.anchors || P.place) return id;
   const alts = Object.keys(RESORT.have[theme] || {}).filter(x => {
     const Q = RESORT.plates[x];
     return Q && !Q.anchors && (Q.sets || []).includes(S?.set) && (Q.use || []).some(u => u === 'house' || u === 'quiet' || (P.use || []).includes(u));
   });
-  return alts.length ? alts[hashOf(S?.id || id) % alts.length] : id;
+  // the same corner of the room first (the wide kitchen is the theme's wide kitchen, not its sink), so two
+  // conversations the house map put in different corners stay apart wherever the theme has both
+  const same = alts.filter(x => CORNER[x] && CORNER[x] === CORNER[id]);
+  const pool = same.length ? same : alts;
+  return pool.length ? pool[hashOf(S?.id || id) % pool.length] : id;
 }
 
 export function plateHtml(S, theme) {

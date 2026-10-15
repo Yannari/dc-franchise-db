@@ -11,7 +11,7 @@
 // is a run of the screen's own steps (a scene marker to the step before the next one), so a
 // conversation played from the map is exactly the conversation the linear segment plays.
 import { esc, img, col, eyeSvg } from './stage.js';
-import { plateBase, isNight, PLATE_DIR, CORNER } from './plates.js';
+import { plateBase, isNight, PLATE_DIR, CORNER, themedFor } from './plates.js';
 import { RESORT } from './resort.js';
 
 // The blueprint's rooms, as boxes in % of the map plate (map-house, the user's Resort_Blueprint_4K,
@@ -290,13 +290,15 @@ export function houseMapHtml(uid, S, st) {
 }
 
 /** One room's feed: its plate, the people in it, and its conversations as feed cards. */
-export function houseFeedHtml(uid, S, st, zone) {
+export function houseFeedHtml(uid, S, st, zone, theme = 'default') {
   const Z = ALL[zone];
   const convs = st.convs;
   const view = st.window ?? viewWindow(convs, st.watched);
   const here = convs.filter(c => c.zone === zone && c.window === view);
   const plate = here[0]?.scene?.plate || convs.find(c => c.zone === zone && c.scene?.plate)?.scene?.plate || ZONE_PLATE[zone];
-  const bg = plate ? `${plateBase(plate, 'default', isNight(here[0]?.time || (WINDOWS[view].id === 'night' ? '11:00 PM' : '2:00 PM')))}.webp?v=${RESORT.v}` : '';
+  // a themed season's room is the theme's room (it was the default house's colours behind every feed)
+  const shown = plate && themedFor(plate, null, theme);
+  const bg = plate ? `${plateBase(shown, theme, isNight(here[0]?.time || (WINDOWS[view].id === 'night' ? '11:00 PM' : '2:00 PM')))}.webp?v=${RESORT.v}` : '';
   // everyone in this room's conversations, then whoever is idling here
   const people = zone === 'jury' ? [...(S.jury || [])] : [...new Set([...here.flatMap(c => c.cast), ...(whereAt(convs, view, S.house || [])[zone] || [])])];
   const cards = here.map(c => {

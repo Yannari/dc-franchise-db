@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { RESORT } from '../js/vp-bb-ep/resort.js';
-import { pickPlate, plateFor, isNight, plateBase } from '../js/vp-bb-ep/plates.js';
+import { pickPlate, plateFor, isNight, plateBase, themedFor, CORNER } from '../js/vp-bb-ep/plates.js';
 import { BB_ROOMS } from '../js/bb/house-events.js';
 
 const ROOT = path.resolve(__dirname, '..');
@@ -136,5 +136,14 @@ describe('choosing a plate', () => {
   it('a night that does not exist falls back to the day, and a theme to the default house', () => {
     expect(plateBase('confessional', 'default', true)).toMatch(/default\/confessional-day$/);
     expect(plateBase('living-screens', 'mystery', true)).toMatch(/\/living-screens-night$/);
+  });
+
+  it('a themed season with no copy of a view takes the theme\'s view of the same corner of the room', () => {
+    // the house's wide kitchen is kitchen-room; Machine and Mystery decorated the older wide view, kitchen-wide
+    for (const theme of ['machine', 'mystery']) {
+      if (!RESORT.have[theme]?.['kitchen-wide'] || RESORT.have[theme]?.['kitchen-room']) continue;
+      for (let i = 0; i < 20; i++) expect(themedFor('kitchen-room', { set: 'kitchen', id: `s${i}` }, theme)).toBe('kitchen-wide');
+      expect(CORNER[themedFor('kitchen-room', null, theme)]).toBe('kitchen');
+    }
   });
 });

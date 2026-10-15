@@ -44,7 +44,7 @@ const newMap = S => {
 };
 const mapHtml = (uid, R) => {
   const S = R.screens[R.si];
-  return R.map.mode === 'feed' ? houseFeedHtml(uid, S, R.map, R.map.zone) : houseMapHtml(uid, S, R.map);
+  return R.map.mode === 'feed' ? houseFeedHtml(uid, S, R.map, R.map.zone, R.o?.season) : houseMapHtml(uid, S, R.map);
 };
 
 const reg = () => (typeof window !== 'undefined' ? (window._bbx ||= {}) : (globalThis._bbx ||= {}));

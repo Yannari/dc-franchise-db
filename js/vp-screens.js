@@ -15530,7 +15530,9 @@ function _buildVPScreensClassic(epRecord) {
     for (const _c of _mtChoices) {
       const _rcH = rpBuildRIChoice({ ...ep, eliminated: _c.name, riChoice: _c.choice });
       if (_rcH) vpScreens.push({ id:`ri-choice-${_c.name}`,
-        label: _mtChoices.length > 1 ? `${_c.name}'s Choice` : 'RI Choice', html: _rcH });
+        // (named for the team, not the person: "Ren's Choice" in the episode's page list said who went home before the
+        // vote was watched; the user, 2026-10-14)
+        label: _mtChoices.length > 1 ? `${(ep.multiTribalResults || []).find(r => r.eliminated === _c.name)?.tribe || 'Another'} RI Choice` : 'RI Choice', html: _rcH });
     }
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _mtRiLife = rpBuildRILife(ep);

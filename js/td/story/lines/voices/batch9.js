@@ -218,8 +218,8 @@ export default {
     6: { calm: "{b} has no idea what that's for, and that's the point. If it goes wrong, it was {b} talking.", cruel: "{b} has no idea what I'm using {b} for. If it goes wrong, it's {b}'s name on it, not mine." },
   },
   'nk.cc1': {
-    1: { dry: "Here we go.", calm: "Here we go." },
-    3: { calm: "Does it really matter who planned it?", warm: "Does it really matter who planned it?" },
+    2: { dry: "Here we go.", calm: "Here we go." },
+    4: { calm: "Does it really matter who planned it?", warm: "Does it really matter who planned it?" },
   },
   'nps.p2': {
     2: { warm: "You don't have to practise knots. Nobody practises knots.", dry: "Nobody practises knots. You're the first person in history." },

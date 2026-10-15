@@ -278,7 +278,7 @@ export default {
 
   // ── money ──
   'kindred.needs-money': [
-    T('nkd.nm1', [beat("Somebody jokes about what they'd buy with the prize. {a} doesn't laugh."),
+    T('nkd.nm1', [beat("Somebody jokes about what they'd buy with the prize. {a} doesn't laugh, and neither does {b}."),
       a("For some people the money's a joke. For me it's rent and the bills I've been ignoring."),
       b("Same. I'm not here for a fun summer. I'm here because I need the money."),
       a("Nobody here gets that."),

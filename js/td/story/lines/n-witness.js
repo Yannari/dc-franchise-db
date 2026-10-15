@@ -84,6 +84,7 @@ export default {
   // c stands up for a, on the receiving end, against b, who was doing it
   'witness.defend.any': [
     { id: 'nwt.d1', turns: [
+      { beat: "{c} has heard every word from a few feet away." },
       { by: 'c', say: "Okay, {b}, that's enough. Leave {a.obj} alone.", v: { anxious: "Hey, um, {b}? Maybe leave {a.obj} alone? Please?", loud: "{b}! Seriously! Leave {a.obj} alone!" } },
       { by: 'b', say: "Relax, I'm only joking around." },
       { by: 'c', say: "Nobody's laughing, though, are they?" },
@@ -95,6 +96,7 @@ export default {
       { by: 'c', say: "Good. {b}, find somebody else to pick on.", v: { warm: "Good. Come and sit with us, {a}. Forget about it." } },
     ] },
     { id: 'nwt.d3', turns: [
+      { beat: "{c} has been close enough to hear all of it." },
       { by: 'c', say: "Do you actually enjoy this, {b}? Because it's really not a good look." },
       { by: 'b', say: "Who asked you?" },
       { by: 'c', say: "Nobody. I'm saying it anyway, because somebody should." },

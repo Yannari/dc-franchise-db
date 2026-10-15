@@ -198,7 +198,7 @@ export default {
       { by: 'c', conf: "I just agreed to keep {a} busy so {b} can breathe. This game is so weird." },
     ] },
     { id: 'ncl.s1', turns: [
-      { beat: "{a} heads off to refill the water, and {b} waits until {a} is out of earshot." },
+      { beat: "{a} heads off to refill the water, and {b} waits until {a} is out of earshot, then turns to {c}." },
       { by: 'b', say: "Can I tell you something, as long as it doesn't get back to {a}?" },
       { by: 'c', say: "You need a break from {a}. I can tell from here." },
       { by: 'b', say: "I just need ten minutes where nobody's checking on me. That's all I want." },

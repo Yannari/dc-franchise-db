@@ -21,8 +21,10 @@ export default {
   ],
   'vp.open.group': [
     { id: 'npl.og1', turns: [{ beat: "{a} rounds up {b}, {c} and the others and walks them away from camp." }, { by: 'a', say: "Okay, everybody close. We don't have long.", v: { bossy: "Circle up. Five minutes, then we split up so nobody notices.", anxious: "Okay, okay, everybody come closer, I don't want anybody hearing this.", loud: "HUDDLE! I mean, huddle, but quietly." } }] },
-    { id: 'npl.og2', turns: [{ by: 'c', say: "Why are we all hiding {here}?", v: { dry: "Love that we're having our big secret meeting {here}, of all places." } }, { by: 'a', say: "Because we're picking a name, and I'd rather the name didn't hear it." }] },
-    { id: 'npl.og3', turns: [{ by: 'a', say: "Is everybody here? Good, then nobody say anything until I'm done.", v: { warm: "Okay, thanks for coming. I'll be quick, I promise." } }, { by: 'b', say: "Okay, but make it quick, people are going to notice we're gone." }] },
+    // (a group opener that starts on dialogue was set as a pair, "Anastasia finds Richard on the rocky beach", and then
+    // "Why are we all hiding?"; read 2026-10-15: these stage the group themselves)
+    { id: 'npl.og2', turns: [{ beat: "{a}, {b} and {c} are {here}, well away from everybody else." }, { by: 'c', say: "Why are we all hiding {here}?", v: { dry: "Love that we're having our big secret meeting {here}, of all places." } }, { by: 'a', say: "Because we're picking a name, and I'd rather the name didn't hear it." }] },
+    { id: 'npl.og3', turns: [{ beat: "{a} has got {b} and {c} together {here}, out of earshot of camp." }, { by: 'a', say: "Is everybody here? Good, then nobody say anything until I'm done.", v: { warm: "Okay, thanks for coming. I'll be quick, I promise." } }, { by: 'b', say: "Okay, but make it quick, people are going to notice we're gone." }] },
   ],
 
   // ── the case: the name and the real reason ──
@@ -107,7 +109,7 @@ export default {
   ],
   'vp.case.outsider': [
     { id: 'npl.co1', turns: [
-      { by: 'a', say: "Who here is actually close to {target}? Be honest.", v: { dry: "Quick poll: who would cry if {target} went home tonight? Hands up." } },
+      { by: 'a', say: "Who here is actually close to {target}? Be honest.", v: { dry: "Quick question: who would actually cry if {target} went home tonight? Anyone?" } },
       { by: 'b', say: "...Nobody, I guess." },
       { by: 'a', say: "Exactly. Nobody's going to be mad about {target}, so nobody's going to come after us for it." },
     ] },

@@ -53,8 +53,8 @@ export default {
     3: { quiet: "Who said I was going to vote for you?", anxious: "Who said I was going to vote for you?", loud: "Who SAID I was going to vote for you?", flirty: "Who said I was going to vote for you?", earnest: "Who said I was going to vote for you?", warm: "Who said I was going to vote for you?", theatrical: "Who said I was going to vote for you?" },
   },
   'nk.cc1': {
-    1: { theatrical: "Here we go.", competitive: "Here we go.", earnest: "Here we go.", bossy: "Here we go.", loud: "Here we GO.", warm: "Here we go.", proud: "Here we go." },
-    5: { warm: "Maybe that was a silly thing to say out loud. Now everyone knows I run votes. I just couldn't let {b} have it.", blunt: "Maybe that was dumb to say out loud. Now everyone knows I run votes. I'm not letting {b} have it.", theatrical: "Perhaps that was foolish to declare. Now everyone knows I run votes. But {b} doesn't get my moment.", calm: "Maybe that was a dumb thing to say out loud. Now everyone knows I run votes. I still wasn't letting {b} have it." },
+    2: { theatrical: "Here we go.", competitive: "Here we go.", earnest: "Here we go.", bossy: "Here we go.", loud: "Here we GO.", warm: "Here we go.", proud: "Here we go." },
+    6: { warm: "Maybe that was a silly thing to say out loud. Now everyone knows I run votes. I just couldn't let {b} have it.", blunt: "Maybe that was dumb to say out loud. Now everyone knows I run votes. I'm not letting {b} have it.", theatrical: "Perhaps that was foolish to declare. Now everyone knows I run votes. But {b} doesn't get my moment.", calm: "Maybe that was a dumb thing to say out loud. Now everyone knows I run votes. I still wasn't letting {b} have it." },
   },
   'no.b1': {
     1: { warm: "Okay, nobody move. This is perfect.", calm: "Okay, nobody move. This is perfect.", schemer: "Okay, nobody move. This is perfect.", emotional: "Okay, nobody move. This is perfect.", tough: "Nobody move. This is perfect.", blunt: "Nobody move." },

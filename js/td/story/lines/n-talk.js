@@ -404,7 +404,9 @@ export default {
     ] },
   ],
   'long.credit.callout.any': [
+    // (said to the whole camp: it had opened on "Hannah drops down next to Ivy at the campsite", read 2026-10-15)
     { id: 'nk.cc1', place: 'public', turns: [
+      { beat: "{a} stands up {here} and waits until everybody looks over." },
       { by: 'a', say: "Can everybody hear me? Good, because that vote last night was my plan.", v: { loud: "Hey, everybody, listen up, last night was MY plan!", proud: "Let's be clear about something. Last night was my plan." } },
       { by: 'b', say: "Here we go." },
       { by: 'a', say: "No, I'm not letting you take this. I talked to everyone, and you just showed up and wrote the name." },

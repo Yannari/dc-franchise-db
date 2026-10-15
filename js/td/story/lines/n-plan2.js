@@ -11,7 +11,7 @@ export default {
   ],
   'vp.open.group': [
     { id: 'npm.og1', turns: [{ beat: "One by one, the group finds an excuse to wander off: firewood, the bathroom, a walk. They all end up in the same place." }, { by: 'c', say: "Smooth, everybody. Really smooth.", v: { goofy: "I said I was looking for my sock. I'm wearing both of them." } }, { by: 'a', say: "Okay, let's be quick." }] },
-    { id: 'npm.og2', turns: [{ by: 'a', say: "Okay, we've got maybe five minutes before somebody comes looking. Let's do this.", v: { calm: "Alright. Let's keep this short and keep it quiet.", bossy: "Five minutes. I'll talk, you listen, then we vote." } }, { by: 'd', opt: true, say: "Can I just say I love that we have meetings now?" }] },
+    { id: 'npm.og2', turns: [{ beat: "{b} and {c} slip away one at a time, so nobody notices, and find {a} {here}." }, { by: 'a', say: "Okay, we've got maybe five minutes before somebody comes looking. Let's do this.", v: { calm: "Alright. Let's keep this short and keep it quiet.", bossy: "Five minutes. I'll talk, you listen, then we vote." } }, { by: 'd', opt: true, say: "Can I just say I love that we have meetings now?" }] },
   ],
   'vp.case.coming': [
     { id: 'npm.cc1', when: { markMe: true }, turns: [

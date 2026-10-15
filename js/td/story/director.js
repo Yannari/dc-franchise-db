@@ -1113,18 +1113,21 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   { const confs = lines.filter(l => l.kind === 'conf'); const talk = lines.filter(l => l.kind !== 'conf'); lines.length = 0; lines.push(...talk, ...confs); }
   // somebody who speaks only in a later beat walks up when they first speak (read 2026-10-14: "Oliwia follows Nura into
   // the cave", then Natasha asked what they'd say, never having arrived): the set-up is written for the opening beat only
+  // (everybody the plan's cast holds, not only the two it is between: a group's third, Tristan, asked "What do we say if
+  // Benji asks?" in a scene that had opened on "Ivy finds Marissa in the corn maze", read 2026-10-15)
+  const castAll = new Set(Object.values(who).filter(Boolean));
   { const seen = new Set();
     for (let i = 0; i < lines.length; i++) {
       const l = lines[i];
-      if (l.kind === 'beat') { for (const n of inScene) if ((l.text || '').includes(n)) seen.add(n); continue; }
+      if (l.kind === 'beat') { for (const n of castAll) if ((l.text || '').includes(n)) seen.add(n); continue; }
       if (l.kind !== 'say' || !l.by) continue;
-      if (seen.size >= 2 && !seen.has(l.by) && inScene.has(l.by)) {
+      if (seen.size >= 2 && !seen.has(l.by) && castAll.has(l.by)) {
         lines.splice(i, 0, { kind: 'beat', by: null, text: `${l.by} joins them.`, arrive: [l.by] });
         i++;
       }
       seen.add(l.by);
     } }
-  const players = [...inScene];
+  const players = [...new Set([...inScene, ...lines.filter(l => l.by && castAll.has(l.by)).map(l => l.by)])];
   return { story: true, kind: `story.vote.${as.step}.${caseOf}`, storyType: 'vote', step: as.step, players, lines, text: lines.map(l => l.text).join(' '), lineId,
     scene: { kind: 'story.vote', who, data, spot: spot ? { ...spot, window: 'scramble' } : null }, badgeText: as.badge[0], badgeClass: as.badge[1], why };
 }

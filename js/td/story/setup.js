@@ -60,7 +60,7 @@ export const SECRET = [
   '{s1} catches {s2} alone {here}.',
   '{s1} waits until the others are busy, then finds {s2} {here}.',
   '{s1} and {s2} meet {here}, both checking over their shoulders first.',
-  '{s1} follows {s2} {here}, keeping a few steps behind until they are out of sight.',
+  '{s1} keeps a few steps behind {s2} until they are both out of sight, {here}.',
   '{s1} taps {s2} on the shoulder and nods towards the quiet. They end up {here}.',
   '{s1} finds {s2} alone {here} and sits down without asking.',
   '{s1} and {s2} leave the camp one at a time, and meet up again {here}.',

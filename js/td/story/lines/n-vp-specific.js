@@ -126,9 +126,9 @@ const FORM = {
       { by: 'a', conf: "This early, and I've already got {votes} people. Later they'll all say they didn't want to play this fast. They'll be lying." },
     ] },
     { id: 'nvs.fg2', when: { sideBig: true }, turns: [
-      { by: 'b', say: "Why did you drag me all the way out here?" },
-      { by: 'a', say: "Because I didn't want {theirSide} to hear this." },
-      { by: 'b', say: "Hear what?" },
+      { by: 'b', say: "So what couldn't be said back at camp?" },
+      { by: 'a', say: "Something I didn't want {theirSide} to hear." },
+      { by: 'b', say: "Which is what?" },
       { by: 'a', say: "That they're already a group, and if we don't become one too, we're the ones going home." },
       { by: 'b', say: "That's a little paranoid, isn't it?" },
       { by: 'a', say: "Maybe. But I'd rather be paranoid with {votes} people than relaxed on my own. It's {us}. Are we doing this or not?", v: { sharp: "Paranoid is what people call you right before you win. It's {us}. Yes or no?", soft: "Maybe I am. But I'd feel so much safer if it was {us}. Please?" } },

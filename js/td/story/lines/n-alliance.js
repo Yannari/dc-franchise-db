@@ -732,7 +732,7 @@ export default {
       { by: 'b', conf: "Final two with {a}! I can finally stop stressing about every single vote.", v: { anxious: "A final two! I can actually sleep tonight!", ditzy: "Final two! That's like, the best number!" } },
     ] },
     { id: 'na.h2', place: 'secret', when: { voice: ['schemer', 'calm', 'cruel', 'proud'] }, turns: [
-      { beat: "{a} has made sure the two of them are alone {here}." },
+      { beat: "{a} has waited until {b} is alone {here}." },
       { by: 'a', say: "Can I be honest with you? You remind me of me." },
       { by: 'b', say: "Is that good?" },
       { by: 'a', say: "It's very good, it means I'd rather have you next to me than against me. Final {size}." },

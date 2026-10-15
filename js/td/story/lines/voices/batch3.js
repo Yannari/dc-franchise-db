@@ -16,7 +16,7 @@ export default {
   'ncx.d5': {
     1: { quiet: "Do we actually know they're coming for you?", warm: "Hey, slow down. Do we actually know they're coming for you?", dry: "Do we know they're coming for you, or do we just feel it very strongly?" },
     3: { quiet: "That's not knowing.", tough: "That's not knowing. That's guessing.", kid: "That's not the same as knowing." },
-    5: { quiet: "{a} is sure it's {a} tonight, from a feeling. I didn't argue.", warm: "{a} is so sure it's {a} tonight, and I didn't have the heart to argue with how scared {a} looked.", cruel: "{a} is convinced, based on absolutely nothing. I'm not going to be the one who explains that." },
+    5: { quiet: "{a} is sure it's {a.obj} tonight, from a feeling. I didn't argue.", warm: "{a} is so sure it's {a.obj} tonight, and I didn't have the heart to argue with how scared {a} looked.", cruel: "{a} is convinced, based on absolutely nothing. I'm not going to be the one who explains that." },
   },
   // long.friend.laugh.any: an impression of the host
   'ny.l1': {

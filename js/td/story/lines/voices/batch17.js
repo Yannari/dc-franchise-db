@@ -157,7 +157,7 @@ export default {
     4: { ditzy: "Nothing happened! That's the problem. Nobody's talked to me all day, and last time that happened, that person went home." },
     5: { earnest: "So what are you thinking?" },
     6: { ditzy: "{wrote}! If {wrote} goes, the people coming for me lose their loudest voice." },
-    7: { warm: "{a} is convinced it's {a} tonight, and I want to help {a}. The numbers say {a} might not be wrong." },
+    7: { warm: "{a} is convinced it's {a.obj} tonight, and I want to help {a}. The numbers say {a} might not be wrong." },
   },
   'nm.b3': {
     2: { ditzy: "Who was what?" },

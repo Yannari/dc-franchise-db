@@ -12,7 +12,7 @@ export default {
   },
   // vt2.sure (calm planner)
   'nl4.u4': {
-    1: { goofy: "You've walked me through it three times. I could draw you a map at this point.", warm: "You've already gone over it three times. It's going to be okay, I promise.", kid: "You've asked me that like three times already." },
+    1: { goofy: "We've been through it three times. I could draw you a map at this point.", warm: "You've already gone over it three times. It's going to be okay, I promise.", kid: "You've asked me that like three times already." },
     5: { quiet: "Not to me. People don't really tell me their plans.", ditzy: "Not to me, but honestly, people don't tell me stuff. I think they think I'll forget it.", theatrical: "Not to me, but let's be honest, I'm hardly the first stop on the gossip tour." },
   },
   // vt2.sure (loud, overconfident)

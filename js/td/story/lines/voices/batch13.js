@@ -206,7 +206,7 @@ export default {
   'ncx.d5': {
     1: { earnest: "Do we actually know they're coming for you?" },
     3: { warm: "That's not knowing, though.", proud: "That's not knowing.", earnest: "That's not the same as knowing.", theatrical: "That is not knowing!" },
-    5: { earnest: "{a} is convinced it's {a} tonight, based on a feeling. I believe {a} believes it. I'm just not sure it's true." },
+    5: { earnest: "{a} is convinced it's {a.obj} tonight, based on a feeling. I believe {a} believes it. I'm just not sure it's true." },
   },
   'nf.b2': {
     1: { anxious: "Do you ever think we're voting out the wrong person?", dry: "Do you ever think we're voting out the wrong person?", competitive: "Do you think we're voting out the wrong person?", warm: "Do you ever worry we're voting out the wrong person?", blunt: "Are we voting out the wrong person?", calm: "Do you ever think we're voting out the wrong person?" },

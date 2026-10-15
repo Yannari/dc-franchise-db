@@ -98,7 +98,7 @@ export default {
   'nvt.d2': {
     1: { calm: "You're making everybody nervous, walking around like that.", warm: "Hey, you're making everybody nervous. Are you okay?", dry: "You're making everybody nervous. Which, to be fair, is a talent." },
     3: { warm: "That could be about anybody, you know.", calm: "It could be about anybody." },
-    8: { warm: "{a} is so sure it's {a} tonight, and I'm scared {a} might be right.", calm: "{a} is convinced it's {a} tonight. I've looked at it, and I'm not sure {a} is wrong.", schemer: "{a} is convinced it's {a} tonight, and I'm not going to tell {a} whether that's right." },
+    8: { warm: "{a} is so sure it's {a.obj} tonight, and I'm scared {a} might be right.", calm: "{a} is convinced it's {a.obj} tonight. I've looked at it, and I'm not sure {a} is wrong.", schemer: "{a} is convinced it's {a.obj} tonight, and I'm not going to tell {a} whether that's right." },
   },
   // psy.belong (organiser with nothing to organise)
   'nps.b4': {

@@ -16,7 +16,7 @@ export default {
   },
   'nl4.u4': {
     0: { proud: "Walk me through it once more, because I like to be certain. Who's on {wrote}?" },
-    1: { earnest: "You've already walked me through it three times, honestly." },
+    1: { earnest: "We've already been through it three times, honestly." },
     2: { proud: "Then a fourth won't hurt." },
     3: { earnest: "Okay. You, me, and everybody you talked to after lunch." },
     4: { proud: "And nobody's mentioned anybody else to you?" },
@@ -228,7 +228,7 @@ export default {
     5: { loud: "So what's the plan?!", warm: "So what's the plan? I'll help.", nerdy: "So what's the plan?", anxious: "So what's the plan?", proud: "So what's the plan?", earnest: "So what's the plan?" },
     6: { dry: "{wrote}. If {wrote} goes, whoever's coming for me loses their best vote.", competitive: "{wrote}. If {wrote} goes, whoever's coming for me loses their best vote.", loud: "{wrote}! If {wrote} goes, whoever's coming for me loses their best vote!", blunt: "{wrote}. That takes away their best vote." },
     7: { dry: "{wrote}. I just need enough people to see what I see." },
-    8: { nerdy: "{a} is convinced it's {a} tonight. I've run the numbers, and honestly, {a} might be right." },
+    8: { nerdy: "{a} is convinced it's {a.obj} tonight. I've run the numbers, and honestly, {a} might be right." },
   },
   'nc.w3': {
     1: { dry: "Are you alive?", blunt: "You alive?" },

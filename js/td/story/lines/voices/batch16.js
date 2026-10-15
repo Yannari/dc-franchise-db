@@ -4,7 +4,7 @@
 // Gaps taken from seeds 5150, 6060, 7272, 8383, 9494, 1010 (53.8% before). Same meaning per line.
 
 export default {
-  'nl4.u4': { 1: { schemer: "You've already walked me through it three times. I'm keeping count." } },
+  'nl4.u4': { 1: { schemer: "We've already been through it three times. I'm keeping count." } },
   'nl4.u3': {
     0: { blunt: "I feel good about tonight. Actually good." },
     1: { loud: "That's NEW for you!" },

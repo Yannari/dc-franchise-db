@@ -155,7 +155,7 @@ export default {
       { by: 'b', say: "So what's the plan?" },
       { by: 'a', say: "{wrote}. If {wrote} goes, whoever's coming for me loses their best vote.", when: { wroteIsBoot: true } },
       { by: 'a', say: "{wrote}. I just need enough people to see what I see.", when: { wroteIsBoot: false } },
-      { by: 'b', conf: "{a} is completely convinced it's {a} tonight, and honestly, I'm not sure {a} is wrong." },
+      { by: 'b', conf: "{a} is completely convinced it's {a.obj} tonight, and honestly, I'm not sure {a} is wrong." },
     ] },
     { id: 'nvt.d3', turns: [
       { by: 'a', say: "If it's me tonight, I want you to know I'm not mad at you." },

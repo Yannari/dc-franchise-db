@@ -52,7 +52,7 @@ export default {
     ] },
     { id: 'nl4.u4', when: { voice: ['calm', 'dry', 'schemer'] }, turns: [
       { by: 'a', say: "Walk me through it one more time. Who's on {wrote}?" },
-      { by: 'b', say: "You've already walked me through it three times." },
+      { by: 'b', say: "We've already been through it three times." },
       { by: 'a', say: "Then a fourth won't hurt." },
       { by: 'b', say: "Okay. You, me, and everybody you talked to after lunch." },
       { by: 'a', say: "And nobody's mentioned anyone else to you?" },

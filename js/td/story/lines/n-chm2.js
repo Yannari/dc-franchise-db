@@ -222,11 +222,14 @@ export default {
       { by: 'a', conf: "Maybe {teller} is wrong. Maybe {teller} is messing with me. Either way, I'd rather look paranoid tonight than look stupid tomorrow." },
     ] },
     { id: 'ncx.d3', when: { voice: ['calm', 'dry', 'schemer'] }, turns: [
+      // (its own set-up: a picked one sat {a} down next to {b}, and then "Walk with me", read 2026-10-15)
+      { beat: "{a} finds {b} {here} and nods towards the trees." },
       { by: 'a', say: "Walk with me. Not too fast, not too slow, like we're just going for wood." },
       { by: 'b', say: "We are going for wood." },
       { by: 'a', say: "Good. Then nobody will wonder why. I think the numbers are on me, and I think {wrote} is the only way out." },
       { by: 'b', say: "That's a big swing." },
       { by: 'a', say: "It's the only swing I've got." },
+      { by: 'b', conf: "{a} thinks the votes are coming tonight and wants {wrote} out first. I said I'd help, and I meant it." },
     ] },
     { id: 'ncx.d4', when: { voice: ['anxious', 'emotional', 'warm'] }, turns: [
       { by: 'a', say: "I can't stop shaking. Can you see me shaking?" },
@@ -241,7 +244,7 @@ export default {
       { by: 'a', say: "I know. I can feel it." },
       { by: 'b', say: "That's not knowing." },
       { by: 'a', say: "It's knowing enough!" },
-      { by: 'b', conf: "{a} is convinced it's {a} tonight, based on a feeling. I've learned not to argue with {a}'s feelings. They're very loud." },
+      { by: 'b', conf: "{a} is convinced it's {a.obj} tonight, based on a feeling. I've learned not to argue with {a}'s feelings. They're very loud." },
     ] },
     { id: 'ncx.d6', when: { age: 'teen' }, turns: [
       { by: 'a', say: "Okay, don't freak out, but I think I'm going home." },

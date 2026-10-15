@@ -21,7 +21,7 @@ export default {
   },
   'nl4.u4': {
     0: { warm: "Can you walk me through it one more time? Who's on {wrote}?" },
-    1: { dry: "You've already walked me through it three times. I could recite it.", ditzy: "Haven't we done this, like, three times?", cruel: "You've walked me through it three times. I'm not slow.", competitive: "Three times already. We've got it." },
+    1: { dry: "We've already been through it three times. I could recite it.", ditzy: "Haven't we done this, like, three times?", cruel: "We've been through it three times. Neither of us is slow.", competitive: "Three times already. We've got it." },
     2: { warm: "Then a fourth won't hurt, right?" },
     3: { anxious: "Okay, okay. You, me, and everybody you talked to after lunch, I think.", theatrical: "Very well. You, me, and every single person you charmed after lunch.", dry: "You, me, and everybody you talked to after lunch. Riveting.", warm: "Okay. You, me, and everybody you talked to after lunch.", calm: "You, me, and everybody you talked to after lunch." },
     4: { warm: "And nobody's mentioned anybody else to you? You'd tell me?" },

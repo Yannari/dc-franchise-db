@@ -37,7 +37,7 @@ export default {
   ],
   'long.friend.bond.any': [
     { id: 'no.b1', place: 'water', when: { third: true }, turns: [
-      { beat: "{a}, {b} and the friends they share have taken over {here} for the afternoon." },
+      { beat: "{a}, {b} and the friends they share have claimed a spot {here} for the afternoon." },
       { by: 'a', say: "Okay, nobody move. This is perfect." },
       { by: 'b', say: "We're just sitting here." },
       { by: 'c', say: "That's what makes it perfect." },

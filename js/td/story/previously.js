@@ -241,7 +241,19 @@ export function writePreviously(ep) {
     const fake = { eliminated: boot };
     const whys = votesFor(log, boot).map(v => whyOf(v, fake));
     const count = k => whys.filter(w => w === k).length;
-    const reason = ['strike', 'threat', 'weak', 'grudge', 'flip'].sort((p, q) => count(q) - count(p))[0];
+    // "X caught wind of Y's plan" only when the episode SHOWED somebody on this vote finding out: a plan scene built on
+    // "they're coming for us" (story.vote.*.coming), an overheard pitch, a leak or a warning, with the boot in it. The
+    // ballot's own reason is the voter's private motive; recapping it as an event sends the viewer looking for a scene
+    // that never aired (the user, 2026-10-14: "Spencer caught wind of James's plan, and turned it right back around. i
+    // never got an event in a stepped viewer that show me this happened")
+    const airedHere = Object.values(prev.campStory || {}).flatMap(c => [...(c?.pre || []), ...(c?.post || [])]).filter(Boolean);
+    const namesBoot = x => (x.players || []).includes(boot) || Object.values(x.scene?.data || {}).includes(boot);
+    // (and the scene says it: a 'coming' plan can air as a different talk, read 2026-10-14, a plan tagged coming that was
+    // all about Gabby holding a group together)
+    const SAYS = /coming for|coming after|going after|after (me|us|you)\b|votes on (me|us|you)\b|my name|our name|heard|warned|told me|found out/i;
+    const strikeShown = airedHere.some(x => /\.coming$|warn|leak|overheard|heard|tip/.test(`${x.kind || ''} ${x.scene?.kind || ''}`)
+      && namesBoot(x) && (x.players || []).some(p => voters.includes(p)) && (x.lines || []).some(l => SAYS.test(l.text || '')));
+    const reason = ['strike', 'threat', 'weak', 'grudge', 'flip'].filter(k => k !== 'strike' || strikeShown).sort((p, q) => count(q) - count(p))[0];
     const booth = second ? [] : (ts.booth || []);
     const plan = (alliances || []).find(al => al.target === boot && (al.members || []).some(m => voters.includes(m)));
     const lead = booth.find(b => b.role === 'lead' && b.voted === boot)?.voter

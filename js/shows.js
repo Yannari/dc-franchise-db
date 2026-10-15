@@ -494,6 +494,63 @@ export const SHOWS = {
     polls: ['Who is the catfish?', 'Who gets blocked next?',
       'Who will the Influencers protect?', 'Who wins The Circle?'],
   },
+  // ── THE SEVENTH SHOW: THE CHALLENGE ──────────────────────────────────
+  //
+  // A crossover house of alumni and rookies on Blue Lagoon. Every episode the
+  // house votes someone into the Arena out loud, that player calls out an
+  // opponent, and the duel decides who leaves. Quits, medicals and
+  // disqualifications are doors too. A two-day final crowns a champion from
+  // each division (or one, gender-blind). Rounds are ballots.
+  //
+  // Spec: docs/superpowers/specs/2026-10-14-the-challenge-design.md
+  'the-challenge': {
+    prefix: 'ch', name: 'The Challenge', short: 'CH', emoji: '💪', accent: '#ff6a1a',
+    venue: { label: 'Blue Lagoon', icon: '💪' },
+    // Set at the bottom of js/ch-run.js. The setup screen refuses the show
+    // until that module is imported.
+    runnableFlag: '_chRunnable',
+    // A crossover: everybody's past on any show walks in with them.
+    historyFromLedger: true,
+    airNight: 2,
+    rosterPlace: 'VILLA',
+    hasJury: false,
+    roundsPath: 'episodeHistory',
+    roundShape: 'ballots',
+    words: { seasonComplete: 'The final is over. The champions are crowned.', noExitLine: 'Nobody went home',
+      openingStoryline: 'Alumni and rookies, one villa on Blue Lagoon, and every vote said out loud.',
+      // An episode with nothing scheduled: every episode still has a vote and an Arena.
+      quietRound: 'A normal episode',
+      player: 'player', players: 'players', round: 'Episode',
+      exit: 'eliminated', exitAction: 'eliminate',
+      // The other doors, read through exitVerbs(). A player who quits or is
+      // thrown out did not lose in the Arena.
+      exitDq: 'disqualified', exitWalk: 'quit',
+      challenge: 'daily challenge', comp: 'daily', comps: 'dailies won',
+      compBeast: 'elimination beast', compWon: 'dailies',
+      milestone: 'the final',
+      fanWords: ['the Arena', 'daily', 'call-out', 'elimination', 'house vote', 'power alliance',
+        'rookie', 'vet', 'the final', 'TJ'],
+      host: 'TJ Maxx',
+    },
+    // PROVISIONAL until a season has been played and the signals printed
+    // (ADDING-A-SHOW §2.5). The Challenge sells fights, open grudges and the
+    // elimination; a power alliance steamrolling the vote is its complaint.
+    audience: { strategy: 1.1, blindside: 0.9, mess: 1.3, predictable: 0.9,
+      steamroll: 1.2, showmance: 1.1, twist: 0.9 },
+    // Written by the export (sub-project 6). Declared now so the article rows exist.
+    careerStats: [
+      ['ch.dailyWins',  'totalDailyWins', 'dailies won'],
+      ['ch.arenaWins',  'totalArenaWins', 'Arena wins'],
+      ['ch.timesVotedIn', 'totalTimesVotedIn', 'times voted into the Arena'],
+    ],
+    articleStats: {
+      career: [['dailyWins', 'Dailies won'], ['arenaWins', 'Arena wins']],
+      season: [['ch.dailyWins', 'Dailies won'], ['ch.arenaWins', 'Arena wins']],
+      comps: [['ch.dailyWins', 'Dailies won'], ['ch.arenaWins', 'Arena wins']],
+    },
+    polls: ['Who gets voted into the Arena next?', 'Who gets called out?',
+      'Who wins the next elimination?', 'Who wins The Challenge?'],
+  },
 };
 
 /** The default for anything that predates formats — every old season is this. */
@@ -518,6 +575,7 @@ export const TRAITORS_FORMAT = 'traitors';
 export const BB_FORMAT = 'big-brother';
 export const PERFECT_MATCH_FORMAT = 'perfect-match';
 export const CIRCLE_FORMAT = 'the-circle';
+export const CHALLENGE_FORMAT = 'the-challenge';
 
 const BY_PREFIX = Object.fromEntries(
   Object.entries(SHOWS).map(([format, show]) => [show.prefix, format]));
@@ -806,5 +864,10 @@ export const HOSTS_BY_FORMAT = {
   // missing from this map gets Total Drama's hosts.
   'the-circle': [
     { value: '', label: 'No host chosen yet' },
+  ],
+  // One host, the user's: TJ Maxx, a wacky MTV-2000s host. Portrait
+  // assets/avatars/tj-maxx.png (a HOST literal). Every line he says is original.
+  'the-challenge': [
+    { value: 'TJ Maxx', label: 'TJ Maxx' },
   ],
 };

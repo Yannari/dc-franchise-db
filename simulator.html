@@ -136,6 +136,22 @@
           <div id="f-background-preview"></div>
         </div>
         <div class="form-group">
+          <label class="form-label">Billed as <span style="font-weight:400;color:var(--muted);font-size:10px">(The Challenge)</span></label>
+          <select id="f-ch-billing" class="form-select" title="A vet walks in with their past on every show: friends, grudges, exes. A rookie is somebody the franchise record has never seen. Auto reads the record.">
+            <option value="">Auto — from the franchise record</option>
+            <option value="vet">Vet — walks in with their past</option>
+            <option value="rookie">Rookie — first time in the house</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Division <span style="font-weight:400;color:var(--muted);font-size:10px">(The Challenge, non-binary players)</span></label>
+          <select id="f-ch-division" class="form-select" title="The Challenge plays men's and women's weeks. A non-binary player picks which division they play in; left alone, the season balances the two.">
+            <option value="">Balance it for me</option>
+            <option value="m">Men's division</option>
+            <option value="f">Women's division</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label style="display:flex;align-items:center;gap:6px;margin-top:8px;cursor:pointer" title="Trains their tribe from the sideline — never competes, never votes, cannot be eliminated by a challenge loss. Only takes effect when the Coaches setting (Season Twists) is set to Choose Coaches.">
             <input type="checkbox" id="f-coach" style="width:14px;height:14px">
             <span style="font-size:12px;color:var(--muted)">Coach</span>
@@ -305,6 +321,7 @@
                 <option value="drag-race">Drag Race — werk room, runway, lip sync for your life</option>
                 <option value="perfect-match">Perfect Match — a villa, recouplings, and the public decides</option>
                 <option value="the-circle">The Circle — separate apartments, one social network, and nobody knows who is real</option>
+                <option value="the-challenge">The Challenge — alumni and rookies, an open house vote, and the Arena</option>
               </select>
               <div id="cfg-format-note" class="hint" style="margin-top:6px"></div>
             </div>
@@ -933,6 +950,40 @@
               </div>
             </div>
             <!-- /ci-options -->
+            <!-- THE CHALLENGE'S OPTIONS (spec 2-3). Every control here is read by
+                 js/ch-run.js challengeOptions() and handed to the engine; all
+                 scoped to the-challenge in CONFIG_SCOPE. Each player's division
+                 and rookie billing are on the Cast tab. -->
+            <div class="divider" id="sec-ch-divider"></div>
+            <div class="setup-section-label" id="sec-ch-options">CHALLENGE OPTIONS</div>
+            <div id="ch-options-body">
+              <div class="form-group">
+                <label class="form-label"><input type="checkbox" id="cfg-ch-gender-blind" onchange="saveConfig()"> Gender-blind</label>
+                <div class="hint hint-tight">Off: men's and women's weeks, and a champion from each division. A non-binary player picks a division on the Cast tab. On: anyone can face anyone in the Arena, and one champion.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cfg-ch-finalists">The final</label>
+                <select id="cfg-ch-finalists" class="form-input" onchange="saveConfig()">
+                  <option value="6">Six finalists</option>
+                  <option value="8">Eight finalists</option>
+                  <option value="10">Ten finalists</option>
+                </select>
+                <div class="hint hint-tight">How many players run the two-day final. In a gendered season they are split evenly between the divisions.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label"><input type="checkbox" id="cfg-ch-party" onchange="saveConfig()"> Nights out</label>
+                <div class="hint hint-tight">Most episodes end at the bar: drinks, hookups, arguments, and a disqualification if somebody gets physical.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label"><input type="checkbox" id="cfg-ch-partner-weeks" onchange="saveConfig()"> Partner and team dailies</label>
+                <div class="hint hint-tight">Some dailies are played in pairs or teams, and the winners are safe together. Off: every daily is played solo.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label"><input type="checkbox" id="cfg-ch-romance" onchange="saveConfig()"> Showmances</label>
+                <div class="hint hint-tight">Sparks, couples and breakups in the villa, and couples that vote together. Off: a purely strategic season.</div>
+              </div>
+            </div>
+            <!-- /ch-options -->
             <div class="divider" id="sec-tr-divider"></div>
             <div class="setup-section-label" id="sec-tr-options">CASTLE OPTIONS</div>
             <div class="bbopt-fixed" id="sec-tr-fixed-ties">

@@ -97,11 +97,28 @@ function _ciPhaseForScreen(id) {
   return _CI_PHASE[_CI_KIND[kind] || 'day'];
 }
 
+// The Challenge's screens are `ch-<section>-<n>` (js/vp-ch/screens.js): the
+// episode's three days and the final, in the show's words. Without this they
+// fell through to Total Drama's "Camp".
+const _CH_PHASE = {
+  previously: { id:'ch-previously', label:'Previously', icon:'◀' },
+  daily: { id:'ch-daily', label:'Day 1 · The Daily', icon:'⚑' },
+  vote: { id:'ch-vote', label:'Day 2 · The Vote', icon:'✦' },
+  arena: { id:'ch-arena', label:'Day 3 · The Arena', icon:'▲' },
+  final: { id:'ch-final', label:'The Final', icon:'■' },
+};
+function _chPhaseForScreen(id) { return _CH_PHASE[id.split('-')[1]] || _CH_PHASE.daily; }
+
+// Each show's screens name their own sections, found by the screen id's
+// first word (a SCREEN id, never a season id). One table, so a new show adds
+// a row here instead of another prefix comparison (tests/show-list-duplication).
+const _PHASE_BY_SCREEN = { bb: id => _bbPhaseForScreen(id), villa: id => _pmPhaseForScreen(id),
+  ci: id => _ciPhaseForScreen(id), ch: id => _chPhaseForScreen(id) };
+
 export function _vpPhaseForScreen(id = '') {
   if (_TR_PHASES[id]) return _TR_PHASES[id];
-  if (id.startsWith('bb-')) return _bbPhaseForScreen(id);
-  if (id.startsWith('villa-')) return _pmPhaseForScreen(id);
-  if (id.startsWith('ci-')) return _ciPhaseForScreen(id);
+  const own = id.includes('-') ? _PHASE_BY_SCREEN[id.slice(0, id.indexOf('-'))] : null;
+  if (own) return own(id);
   if (id === 'debug') return { id:'debug', label:'Debug', icon:'⚙' };
   if (id === 'cold-open' || id.includes('previous') || id === 'first-impressions') return { id:'previously', label:'Previously On', icon:'◀' };
   if (id === 'votes' || id.startsWith('votes-') || id === 'jury-vote' || id === 'jury-votes' || id === 'ftc') return { id:'reveal', label:'Vote Reveal', icon:'✦' };

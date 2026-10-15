@@ -20,10 +20,11 @@
 
 import { TWIST_CATALOG, twistModeClashes, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
 import { SEASON_SETTINGS, settingsForFormat, defaultSettingFor } from './settings.js';
-import { SHOWS as SHOW_REGISTRY, showName, showIcon, showWords, HOSTS_BY_FORMAT, CIRCLE_FORMAT } from './shows.js';
+import { SHOWS as SHOW_REGISTRY, showName, showIcon, showWords, HOSTS_BY_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT } from './shows.js';
 import { houseStructure } from './bb-run.js';
 import { buildSchedule, defaultRoleSplit } from './pm/schedule.js';
 import { circleCastProblem, circleShapeOf } from './ci-run.js';
+import { challengeCastProblem, challengeSeasonShape, challengeOptions } from './ch-run.js';
 import { SEASON_OBJECTIVES } from './franchise-meta.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -83,6 +84,19 @@ export function blueprintFor(config = {}, castSize = 0) {
     const days = circleShapeOf({ cast: names, config }).length;
     segs.push({ label: `${days} days`, ok: days > 0 });
     segs.push({ label: `final ${finalists}, rated by the players`, ok: true });
+    return segs;
+  }
+
+  // ── THE CHALLENGE ─────────────────────────────────────────────────
+  // A cast, the episodes it makes, and the final: no tribes, no merge, no jury.
+  if (seasonFormat(config) === CHALLENGE_FORMAT) {
+    const opts = challengeOptions(config);
+    const castOk = N >= opts.finalists + 2;
+    segs.push({ label: `${N} ${N === 1 ? 'player' : 'players'}`, ok: castOk,
+      why: castOk ? undefined : `A season needs more players than finalists: ${opts.finalists} run the final` });
+    const eps = challengeSeasonShape(Array.from({ length: N }, (_, i) => `p${i}`), config).length;
+    segs.push({ label: `${eps} episodes`, ok: eps > 0 });
+    segs.push({ label: `final ${opts.finalists}, ${opts.gendered ? 'a champion from each division' : 'one champion'}`, ok: true });
     return segs;
   }
 
@@ -216,6 +230,19 @@ export function validateQuickSetup(config = {}, playerList = []) {
   const finaleSize = Number(config.finaleSize) || 0;
   const fmt = config.finaleFormat || 'traditional';
   const sched = (config.twistSchedule || []).filter(Boolean);
+
+  // ── THE CHALLENGE ──
+  // A cast split into divisions, the episodes it makes, and the final. Judged
+  // by the rule the run loop refuses by (js/ch-run.js), in its words.
+  if (seasonFormat(config) === CHALLENGE_FORMAT) {
+    const names = playerList.map(p => p.name);
+    const genderOf = n => playerList.find(p => p.name === n)?.gender;
+    const problem = challengeCastProblem(names, config.chSetup || {}, config, genderOf);
+    const opts = challengeOptions(config);
+    rows.push({ key: 'cast', ok: !problem,
+      msg: problem ? `This cast can't start a Challenge season: ${problem}.` : `${N} players cast, ${opts.finalists} into the final.` });
+    return rows;
+  }
 
   // ── THE CIRCLE ──
   // No tribes, no merge, no jury, no Final N: a cast, the days it makes and
@@ -551,6 +578,7 @@ const SHOW_TAGS = {
   'drag-race':   'Werk room, runway, lip sync for your life',
   'perfect-match': 'A villa, recouplings, and the public decides',
   'the-circle': 'Separate apartments, one social network, and nobody knows who is real',
+  'the-challenge': 'Alumni and rookies, an open house vote, and the Arena',
 };
 export const SHOWS = Object.keys(SHOW_REGISTRY).map(id => ({
   id, name: showName(id), icon: showIcon(id), tag: SHOW_TAGS[id] || '',
@@ -1313,6 +1341,10 @@ const CONFIG_SCOPE = {
     'sec-ci-cast':           ['the-circle'],
     'sec-ci-options':        ['the-circle'],
     'ci-options-body':       ['the-circle'],
+    // The Challenge's heading and container (the bb-options-body lesson).
+    'sec-ch-divider':        ['the-challenge'],
+    'sec-ch-options':        ['the-challenge'],
+    'ch-options-body':       ['the-challenge'],
     'sec-pm-divider':        ['perfect-match'],
     // The whole villa options block. Its selects were scoped and the cards
     // around them were not, so "Night one" and "The final" (headings and
@@ -1341,6 +1373,15 @@ const CONFIG_SCOPE = {
     'cfg-ci-pick-by':        ['the-circle'],
     'cfg-ci-ai':             ['the-circle'],
     'cfg-ci-surprises':      ['the-circle'],
+    // The Challenge's options, each read by js/ch-run.js challengeOptions().
+    'cfg-ch-gender-blind':   ['the-challenge'],
+    'cfg-ch-finalists':      ['the-challenge'],
+    'cfg-ch-party':          ['the-challenge'],
+    'cfg-ch-partner-weeks':  ['the-challenge'],
+    'cfg-ch-romance':        ['the-challenge'],
+    // The cast form's two Challenge fields (the castle's Background is the precedent).
+    'f-ch-billing':          ['the-challenge'],
+    'f-ch-division':         ['the-challenge'],
     'sec-tr-divider':        ['traitors'],
     'sec-dr-options':        ['drag-race'],
     'sec-dr-divider':        ['drag-race'],

@@ -112,6 +112,22 @@ export const VOCAB = {
       'catfished', 'the hangout', 'blocked from the circle', 'newsfeed',
     ],
   },
+  'the-challenge': {
+    // Its own nouns, as phrases where the bare word is ordinary English
+    // ("an arena", "a daily walk"). It also says the words of shows it shares
+    // a shape with: a daily CHALLENGE, a HOUSE that votes, a VILLA on an
+    // ISLAND, so it owns those too and they stay forbidden only where false.
+    // No jury and no camp: those stay forbidden here. Not "called out": the
+    // castle's players get called out on vibes, in ordinary English.
+    // Not "rookie" either: the castle has rookies too.
+    // Not bare "the arena": a drag stage beat says it.
+    own: [
+      'house vote', 'voted into the arena',
+      'power alliance', 'dailies', 'elimination beast',
+      'blue lagoon', 'tj maxx',
+      'challenge', 'challenges', 'house', 'villa', 'island', 'beach',
+    ],
+  },
 };
 
 /** Everything a given format is not allowed to say. */

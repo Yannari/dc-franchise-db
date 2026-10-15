@@ -6761,6 +6761,21 @@
 .ci-msg + .ci-msg { display: block; width: fit-content; }
 .ci-stage { margin: 4px 0; font-style: italic; color: var(--muted, #888); }
 
+/* ── The Challenge, until the stepped viewer (js/vp-ch/screens.js) ──
+   A readout: lines said aloud, confessionals, stage directions, TJ.
+   Colors from the page's tokens, so both themes work. */
+.ch-page .rp-title { margin-bottom: 12px; }
+.ch-place { font-size: .7em; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted, #888); margin-left: 8px; }
+.ch-block { line-height: 1.5; }
+.ch-say, .ch-conf { margin: 5px 0; }
+.ch-say.ch-host b { color: #ff6a1a; }
+.ch-conf { padding-left: 12px; border-left: 3px solid color-mix(in srgb, #ff6a1a 45%, transparent); }
+.ch-tag { font-size: .72em; text-transform: uppercase; letter-spacing: .05em; color: var(--muted, #888); margin-right: 4px; }
+.ch-stage { margin: 5px 0; font-style: italic; color: var(--muted, #888); }
+.ch-life { margin: 0 0 18px; padding-bottom: 12px; border-bottom: 1px solid color-mix(in srgb, var(--muted, #888) 25%, transparent); }
+.ch-life:last-child { border-bottom: 0; }
+.ch-life-head { font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: #ff6a1a; margin-bottom: 4px; }
+
 /* ── THE CIRCLE: Profile Plan + Catfish Pool (js/ci-cast-ui.js) ──────────
    Mockup v3 (approved 2026-09-30). The show's own screen palette, dark in
    both themes like the screens in the apartments. Light motion, off for

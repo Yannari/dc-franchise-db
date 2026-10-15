@@ -114,8 +114,9 @@ import { rpBuildCoachBoard } from './vp-coaches.js';
 import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish, rpBuildJuryVotes, rpBuildJuryLife } from './vp-finale.js';
 import { traitorsScreensRevealed, screenNarration } from './vp-tr/screens.js';
 import { generateDragSummaryText } from './vp-dr/summary.js';
-import { DRAG_FORMAT, CIRCLE_FORMAT } from './shows.js';
+import { DRAG_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT } from './shows.js';
 import { episodeText as circleEpisodeText } from './ci/transcript.js';
+import { episodeText as challengeEpisodeText } from './ch/transcript.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 // rpBuildAftermath is read off window (not statically imported) — aftermath.js already imports from
 // this module, so a static import here would create a circular dependency.
@@ -3989,6 +3990,8 @@ export function generateSummaryText(ep) {
   }
   // The Circle: the same transcript its screens draw (js/vp-ci/screens.js).
   if (ep.format === CIRCLE_FORMAT) return circleEpisodeText(ep);
+  // The Challenge: the same transcript its screens draw (js/vp-ch/screens.js).
+  if (ep.format === CHALLENGE_FORMAT) return challengeEpisodeText(ep);
 
   // Generate aftermath data before building text (aftermath is created in patchEpisodeHistory,
   // which runs AFTER this function — so we must generate it here to include it in the text backlog)

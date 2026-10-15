@@ -177,6 +177,8 @@ describe('the setup screen shows one show at a time', () => {
     'f-coach': 'total-drama',       // a coach trains a tribe from the sideline
     'f-background': 'traitors',     // Alumni / Celebrity / Civilian is the castle's question
     'f-drag-style': 'drag-race',    // only this show's judges score a drag style
+    'f-ch-billing': 'the-challenge',   // vet or rookie is the crossover house's question
+    'f-ch-division': 'the-challenge',  // men's and women's weeks are this show's
   };
 
   it('every cast-form field is classified, and none has appeared unclassified', () => {

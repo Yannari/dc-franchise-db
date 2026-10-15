@@ -309,6 +309,39 @@ const SHOW_WORDS = {
       { id: 'winner', text: 'Who wins The Circle?' },
     ],
   },
+  'the-challenge': {
+    name: 'The Challenge',
+    short: 'CH',
+    episode: 'episode',
+    Episode: 'Episode',
+    episodeShort: 'Ep',
+    elimination: 'elimination',
+    eliminated: 'eliminated',
+    challenge: 'daily',
+    home: 'the villa',
+    vote: 'house vote',
+    finalVote: 'the final',
+    comps: ['daily', 'elimination'],
+    // Voted into the Arena is the danger: the house says the name out loud.
+    danger: 'voted in',
+    Danger: 'Voted in',
+    onDanger: 'voted into the Arena',
+    nominated: 'was voted into the Arena',
+    Pawn: 'A called-out player',
+    Ceremony: 'The house vote',
+    nominee: 'a player voted in',
+    pawn: 'a called-out player',
+    ceremony: 'the house vote',
+    // No jury: the final is a race.
+    jury: 'the finalists',
+    safe: 'safe',
+    nominationLabel: 'Voted in',
+    polls: [
+      { id: 'votedin', text: 'Who gets voted into the Arena next?' },
+      { id: 'calledout', text: 'Who gets called out?' },
+      { id: 'winner', text: 'Who wins The Challenge?' },
+    ],
+  },
 };
 
 /** The words this show uses. Unknown formats get the generic set, never a crash. */

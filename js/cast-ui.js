@@ -305,6 +305,12 @@ export function submitPlayer() {
     // cast list where a later correction could never reach it.
     backgroundType: TR_BACKGROUND_TYPES.includes(document.getElementById('f-background')?.value)
       ? document.getElementById('f-background').value : undefined,
+    // The Challenge's billing and a non-binary player's division, stored only
+    // when the user set them (empty means "what the record says" / "balance it").
+    chBilling: ['vet', 'rookie'].includes(document.getElementById('f-ch-billing')?.value)
+      ? document.getElementById('f-ch-billing').value : undefined,
+    chDivision: ['m', 'f'].includes(document.getElementById('f-ch-division')?.value)
+      ? document.getElementById('f-ch-division').value : undefined,
   };
   ensurePortraitSelection(player); // fill in the portrait if the picker was never touched
   if (editingId) { const i = players.findIndex(p=>p.id===editingId); if(i!==-1) players[i]=player; cancelEdit(); }
@@ -324,6 +330,8 @@ export function editPlayer(id) {
   const retEl = document.getElementById('f-returnee'); if (retEl) retEl.checked = p.isReturnee || false;
   const coachEl = document.getElementById('f-coach'); if (coachEl) coachEl.checked = p.isCoach || false;
   const bgEl = document.getElementById('f-background'); if (bgEl) bgEl.value = p.backgroundType || '';
+  const chbEl = document.getElementById('f-ch-billing'); if (chbEl) chbEl.value = p.chBilling || '';
+  const chdEl = document.getElementById('f-ch-division'); if (chdEl) chdEl.value = p.chDivision || '';
   setFormPortrait(p.avatarId, p.avatarFile);
   renderPortraitPickerInto();
   updateBackgroundPreview();
@@ -358,6 +366,8 @@ export function resetForm() {
   const coachEl = document.getElementById('f-coach'); if (coachEl) coachEl.checked = false;
   const bgEl = document.getElementById('f-background'); if (bgEl) bgEl.value = '';
   const bgPrev = document.getElementById('f-background-preview'); if (bgPrev) bgPrev.innerHTML = '';
+  const chbEl = document.getElementById('f-ch-billing'); if (chbEl) chbEl.value = '';
+  const chdEl = document.getElementById('f-ch-division'); if (chdEl) chdEl.value = '';
   setFormPortrait(null, '');
   renderPortraitPickerInto();
   document.getElementById('archetype-desc').textContent='';
@@ -1120,6 +1130,7 @@ export function renderCard(p) {
           ${p.isReturnee ? '<span class="archetype-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Returning</span>' : ''}
           ${p.isCoach ? '<span class="archetype-tag" title="Trains this tribe — never competes, never votes" style="background:rgba(59,130,246,0.15);color:#3b82f6">Coach</span>' : ''}
           ${p.backgroundType ? `<span class="archetype-tag" title="Background type — how the castle recognises this contestant" style="background:rgba(148,163,184,0.15);color:#94a3b8">${p.backgroundType[0].toUpperCase()}${p.backgroundType.slice(1)}</span>` : ''}
+          ${window.challengeBilling?.(p) ? `<span class="archetype-tag" title="How The Challenge bills them" style="background:rgba(255,106,26,0.15);color:#ff6a1a">${window.challengeBilling(p)}</span>` : ''}
           ${portraitTag
     ? `<span class="archetype-tag" title="The portrait this season uses for ${p.name}" style="background:rgba(139,92,246,0.16);color:#a78bfa">${portraitTag}</span>`
     : ''}
@@ -1400,6 +1411,14 @@ export function saveConfig() {
     ciAI: g('cfg-ci-ai') ? g('cfg-ci-ai').checked : seasonConfig.ciAI === true,
     // On unless switched off (an older save has no setting: the draws it always had).
     ciSurprises: g('cfg-ci-surprises') ? g('cfg-ci-surprises').checked : seasonConfig.ciSurprises !== false,
+    // The Challenge's (js/ch-run.js challengeOptions reads each). Each
+    // player's division and rookie billing are carried, like ciSetup.
+    chSetup: seasonConfig.chSetup || {},
+    chGenderBlind: g('cfg-ch-gender-blind') ? g('cfg-ch-gender-blind').checked : seasonConfig.chGenderBlind === true,
+    chFinalists: g('cfg-ch-finalists') ? (parseInt(g('cfg-ch-finalists').value) || 8) : (Number(seasonConfig.chFinalists) || 8),
+    chPartyNights: g('cfg-ch-party') ? g('cfg-ch-party').checked : seasonConfig.chPartyNights !== false,
+    chPartnerWeeks: g('cfg-ch-partner-weeks') ? g('cfg-ch-partner-weeks').checked : seasonConfig.chPartnerWeeks !== false,
+    chRomance: g('cfg-ch-romance') ? g('cfg-ch-romance').checked : seasonConfig.chRomance !== false,
     trAutoDouble: g('cfg-tr-auto-double') ? g('cfg-tr-auto-double').checked : true,
     trEndgameReveal: g('cfg-tr-endgame-reveal') ? g('cfg-tr-endgame-reveal').checked : true,
     trSeer: g('cfg-tr-seer') ? g('cfg-tr-seer').value : (seasonConfig.trSeer || 'draw'),
@@ -1609,6 +1628,11 @@ export function renderConfig() {
   if (g('cfg-ci-pick-by')) g('cfg-ci-pick-by').value = seasonConfig.ciPickBy === 'random' ? 'random' : 'stats';
   if (g('cfg-ci-ai')) g('cfg-ci-ai').checked = seasonConfig.ciAI === true;
   if (g('cfg-ci-surprises')) g('cfg-ci-surprises').checked = seasonConfig.ciSurprises !== false;
+  if (g('cfg-ch-gender-blind')) g('cfg-ch-gender-blind').checked = seasonConfig.chGenderBlind === true;
+  if (g('cfg-ch-finalists')) g('cfg-ch-finalists').value = [6, 10].includes(Number(seasonConfig.chFinalists)) ? String(seasonConfig.chFinalists) : '8';
+  if (g('cfg-ch-party')) g('cfg-ch-party').checked = seasonConfig.chPartyNights !== false;
+  if (g('cfg-ch-partner-weeks')) g('cfg-ch-partner-weeks').checked = seasonConfig.chPartnerWeeks !== false;
+  if (g('cfg-ch-romance')) g('cfg-ch-romance').checked = seasonConfig.chRomance !== false;
   try { window.renderPerfectMatchCastSetup?.(); } catch { /* the panel is optional chrome */ }
   try { window.renderCircleCastSetup?.(); } catch { /* the panel is optional chrome */ }
   set('cfg-tr-traitor-mode', seasonConfig.trTraitorMode || 'random');

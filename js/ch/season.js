@@ -134,7 +134,10 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     if (plan.final || state.active.length <= opts.finalists) break;
     state.ep = plan.ep;
     gs.episode = plan.ep;
-    const R = name => streamFor(seed, `ep${plan.ep}:${name}`);
+    // A re-run turns this episode's dice once more (ch-run.js rerunChallengeEpisode):
+    // every stream the episode draws from is salted, every earlier one is untouched.
+    const roll = Number(opts.rerolls?.[plan.ep]) || 0;
+    const R = name => streamFor(seed, `ep${plan.ep}${roll ? `~${roll}` : ''}:${name}`);
     const epRec = { ep: plan.ep, division: null, exits: [], votedIn: [], arena: [], votes: [], callouts: [] };
     state.episodes.push(epRec);
 

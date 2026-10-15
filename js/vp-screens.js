@@ -35,12 +35,13 @@ import { rpBuildDragSummary } from './vp-dr/summary.js';
 import { dragScreens } from './vp-dr/screens.js';
 import { perfectMatchVpScreens } from './vp-pm/screens.js';
 import { circleVpScreens } from './vp-ci/screens.js';
+import { challengeVpScreens } from './vp-ch/screens.js';
 import { bbStepScreens } from './vp-bb-ep/screens.js';
 import { tdStepScreens, tdSteppedOn, TDX_SWITCH } from './vp-td-ep/screens.js';
 import { riChoiceQuote, exileChooserReason } from './vp-td-ep/twists.js';
 import { gs as _coreGs } from './core.js';
 import { momentTitle as pmMomentTitle } from './pm/transcript.js';
-import { DRAG_FORMAT, HOSTS_BY_FORMAT, CIRCLE_FORMAT } from './shows.js';
+import { DRAG_FORMAT, HOSTS_BY_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT } from './shows.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -14151,6 +14152,13 @@ function _buildVPScreensClassic(epRecord) {
   // ── THE CIRCLE ────────────────────────────────────────────────────
   // Until Plan 5's stages: every aired scene as a screen, its lines as the
   // transcript writes them (js/vp-ci/screens.js). Assigned AND returned.
+  // ── THE CHALLENGE ─────────────────────────────────────────────────
+  // Until the stepped viewer: every aired scene as a screen, its lines as
+  // the transcript writes them (js/vp-ch/screens.js). Assigned AND returned.
+  if (epRecord.format === CHALLENGE_FORMAT) {
+    vpScreens = challengeVpScreens(epRecord);
+    return vpScreens;
+  }
   if (epRecord.format === CIRCLE_FORMAT) {
     // The neighbours, for Previously and Next time: the next episode as it
     // played (a rewatch), or the one the season has built and not aired yet.

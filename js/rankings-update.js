@@ -883,6 +883,30 @@ export const RU_SHOW = {
       strategicScore: 0,
     }),
   },
+  // The Challenge: dailies won (immunity from the vote) and Arena wins (the
+  // elimination survived). Times voted into the Arena and survived is the
+  // house's verdict on you, shown and not scored, because surviving is
+  // placement again (§14.9). Written by the export (sub-project 6);
+  // provisional until a season has been ranked.
+  'the-challenge': {
+    comp1: { label: 'Dailies', weight: 0.3, title: '+0.3 per daily won (provisional)' },
+    comp2: { label: 'Arena', weight: 0.4, title: '+0.4 per Arena win (provisional)' },
+    comp3: null,
+    adv: null,
+    strat: { weight: 0, scale: 10 },
+    social: { kind: 'survived', label: 'Voted in', weight: 0, cap: 6,
+      title: 'Times voted into the Arena · shown, not scored (provisional)',
+      prose: { zero: 'never voted into the Arena', one: 'voted into the Arena once',
+        many: n => `voted into the Arena ${n} times` } },
+    read: (p) => ({
+      comp1: p.ch?.dailyWins ?? 0,
+      comp2: p.ch?.arenaWins ?? 0,
+      comp3: 0,
+      social: p.ch?.timesVotedIn ?? 0,
+      advFound: 0, advPlayed: 0, advWasted: 0, advHeld: 0,
+      strategicScore: 0,
+    }),
+  },
 };
 
 /**

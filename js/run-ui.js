@@ -28,6 +28,8 @@ import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonS
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { circleRandomDraw, isCircleSeason, simulateCircleEpisode, circleCanRerun, lastCircleRefusal, rerunCircleEpisode,
   circlePendingChange, circleSeasonShape, circleEpisodeMap, circleTimelineDays, circleBlockShape } from './ci-run.js';
+import { isChallengeSeason, simulateChallengeEpisode, challengeCanRerun, lastChallengeRefusal, rerunChallengeEpisode,
+  challengePendingChange, challengeEpisodeMap, challengeVoteShape } from './ch-run.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
 import { dragBadges } from './dr/badges.js';
@@ -42,7 +44,7 @@ import { JUDGES as DR_JUDGES } from './dr/data/judges.js';
 import { SONGS as DR_SONGS } from './dr/data/songs.js';
 import { GROUP_THEMES as DR_GG_THEMES } from './dr/chal/girl-group.js';
 import { roundExits, exitVerbs, SHOWS, showWords, showName, DEFAULT_FORMAT, DRAG_FORMAT, TRAITORS_FORMAT,
-  PERFECT_MATCH_FORMAT, CIRCLE_FORMAT } from './shows.js';
+  PERFECT_MATCH_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT } from './shows.js';
 import { seasonFormat } from './core.js';
 import { loadRankingBoards } from './ranking-boards.js';
 import { TRAITORS_SCREENS } from './vp-tr/screens.js';
@@ -141,7 +143,7 @@ function _freshTranscript(epRecord) {
        with the screens it retranscribes. It also self-heals a season played
        before any of this, which is the only way one gets a transcript now. */
     const _regen = epRecord && typeof window.generateSummaryText === 'function'
-      && (_isCastleRow(epRecord) || _isDragRow(epRecord) || _isCircleRow(epRecord)
+      && (_isCastleRow(epRecord) || _isDragRow(epRecord) || _isCircleRow(epRecord) || _isChallengeRow(epRecord)
         ? !epRecord.summaryText || (epRecord.textV || 0) < (window.TEXT_BACKLOG_V || 1)
         : false);
     if (_regen) {
@@ -278,6 +280,8 @@ const _isDragRow = ep => !!ep && ep.format === DRAG_FORMAT;
 // The Circle stores no text either: its transcript is derived from the aired
 // scenes (ci/transcript.js), so deriving it again is always safe.
 const _isCircleRow = ep => !!ep && ep.format === CIRCLE_FORMAT;
+// The Challenge too (ch/transcript.js reads the aired scenes the row carries).
+const _isChallengeRow = ep => !!ep && ep.format === CHALLENGE_FORMAT;
 // Same question for the main stage. A stored drag episode shares none of Total
 // Drama's eighty flags, so running them over it would be eighty reads of
 // fields that are not there; it gets its own card.
@@ -389,6 +393,7 @@ export function buildHubAftermath(ep) {
   const voteShape = ep.pm?.shares?.length
     ? [...ep.pm.shares].sort((x, y) => y.share - x.share).map(s => `${s.couple.join(" & ")} ${Math.round(s.share * 100)}%`).join(" · ")
     // The Circle has ratings, not ballots: the shape is who held the power.
+    : seasonFormat(ep) === CHALLENGE_FORMAT ? challengeVoteShape(ep)
     : seasonFormat(ep) === CIRCLE_FORMAT
       ? circleBlockShape(roundExits(ep, CIRCLE_FORMAT).map((x, i) => ({ ...x, ...(ep.exits?.[i] || {}) })))
       : voteEntries.map(([name, count]) => `${name} ${count}`).join(' · ') || 'No standard vote';
@@ -412,6 +417,20 @@ export function buildHubAftermath(ep) {
       : exits.length
         ? exits.map(x => `${x.name} ${x.verb}${DOOR[x.channel] ? ` ${DOOR[x.channel]}` : ''}.`).join(' ')
         : 'Nobody left the villa tonight.';
+  } else if (seasonFormat(ep) === CHALLENGE_FORMAT) {
+    // The house votes someone INTO the Arena, out loud; the duel decides who
+    // leaves. Quits, medicals and disqualifications are their own doors.
+    const exits = Array.isArray(ep.exits) ? ep.exits.filter(x => x && x.name) : [];
+    const champs = ep.ch?.final?.champions || [];
+    const duels = ep.ch?.arena || [];
+    why = champs.length
+      ? `${champs.join(' and ')} won the final.`
+      : exits.length
+        ? exits.map(x => {
+          const d = duels.find(a => a.loser === x.name);
+          return d ? `${x.name} was eliminated by ${d.winner} in the Arena${d.game ? ` (${d.game})` : ''}.` : `${x.name} ${x.verb}.`;
+        }).join(' ')
+        : `${showWords(CHALLENGE_FORMAT).noExitLine}.`;
   } else if (seasonFormat(ep) === CIRCLE_FORMAT) {
     // No vote: the players rate each other, and whoever the night's format
     // hands the power blocks (a secret night does not say who).
@@ -573,7 +592,10 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
   if ((displayState.riPlayers || []).length) storylines.push(`${displayState.riPlayers.length} eliminated contestant${displayState.riPlayers.length === 1 ? '' : 's'} remain in the second-chance game.`);
   const publicStatuses = [];
   const immunityHolder = latest?.individualImmunity || latest?.immunityWinner || latest?.challengeWinner;
-  if (immunityHolder && active.includes(immunityHolder)) publicStatuses.push(`${immunityHolder} is publicly safe after winning immunity.`);
+  // The Challenge's daily winners are safe from the house vote; "immunity" is Total Drama's word.
+  if (immunityHolder && active.includes(immunityHolder)) publicStatuses.push(seasonFormat(latest) === CHALLENGE_FORMAT
+    ? `${immunityHolder} won the daily and is safe from the house vote.`
+    : `${immunityHolder} is publicly safe after winning immunity.`);
   if (latest?.isMerge) publicStatuses.push('The cast is now competing as one merged group.');
   if ((displayState.riPlayers || []).length) publicStatuses.push('A public second-chance route remains active.');
   storylines.push(...publicStatuses);
@@ -607,7 +629,7 @@ export function renderSeasonHub() {
   const _bbSeason = isBigBrotherSeason();
   // A castle has no tribes and no merge either, so Total Drama's phase names
   // describe nothing about it. What it has is a number of people left.
-  const phaseLabel = (_bbSeason || isTraitorsSeason() || isPerfectMatchSeason() || isCircleSeason())
+  const phaseLabel = (_bbSeason || isTraitorsSeason() || isPerfectMatchSeason() || isCircleSeason() || isChallengeSeason())
     ? (model.phase === 'complete' ? 'Complete' : model.remaining ? 'Final ' + model.remaining : 'Setup')
     : model.phase === 'pre-merge' ? 'Pre-Merge' : model.phase === 'post-merge' ? 'Post-Merge' : model.phase === 'finale' ? 'Finale' : model.phase === 'complete' ? 'Complete' : 'Setup';
   // A castle's season ends with the reunion: until it has aired, the main
@@ -687,9 +709,9 @@ export function renderSeasonHub() {
   const latestVotes = Object.entries(model.latest?.votes || {}).sort(([,a],[,b]) => b-a).slice(0, 3).map(([name, count]) => `<span>${_hubEsc(name)} <b>${count}</b></span>`).join('');
   const headlineStatus = _spoilerFree && model.latest
     ? `Episode ${model.latest.num} is ready to watch · outcome hidden`
-    : model.isHistorical ? `Reviewing Episode ${model.latest.num} · ${model.remaining} contestants remained afterward`
+    : model.isHistorical ? `Reviewing Episode ${model.latest.num} · ${model.remaining} ${showWords(seasonFormat(seasonConfig)).players} remained afterward`
     // Each show says how its own season ends: a jury, a castle, a crown, the public.
-    : model.lifecycle === 'complete' ? (showWords(seasonFormat(seasonConfig)).seasonComplete || 'The season is complete.') : `Episode ${model.nextEpisode} is ready · ${model.remaining} of ${model.originalCount} contestants remain`;
+    : model.lifecycle === 'complete' ? (showWords(seasonFormat(seasonConfig)).seasonComplete || 'The season is complete.') : `Episode ${model.nextEpisode} is ready · ${model.remaining} of ${model.originalCount} ${showWords(seasonFormat(seasonConfig)).players} remain`;
   const publicStorylines = _spoilerFree && model.latest
     ? ['The game state will update here after you reveal the episode outcome.']
     : model.storylines;
@@ -1128,6 +1150,34 @@ export function renderEpisodeView(epRecord) {
     let _txt = '';
     try { _txt = _spoilerFree ? '' : (window.generateSummaryText?.(epRecord) || ''); } catch { _txt = ''; }
     _tEl.value = _txt;
+    _tEl.style.display = '';
+    return;
+  }
+  /* THE CHALLENGE'S CARD. Total Drama's says Immunity and Tribal; this show
+     has a daily, a house vote that puts someone INTO the Arena, and a duel. */
+  if (_isChallengeRow(epRecord)) {
+    const ch = epRecord.ch || {};
+    const hide = v => (_spoilerFree ? '???' : v);
+    const tally = Object.entries(epRecord.votes || {}).sort(([, a], [, b]) => b - a);
+    const left = (epRecord.exits || []).map(x => `${x.name} (${x.verb})`).join(' + ') || 'Nobody';
+    const facts = ch.final
+      ? `<div class="ep-fact ep-eliminated"><label>Champions</label><span>${hide((ch.final.champions || []).join(' & ') || '—')}</span></div>
+         <div class="ep-fact"><label>Out in the final</label><span>${hide(left)}</span></div>`
+      : `<div class="ep-fact"><label>Daily</label><span>${hide((ch.dailyWinners || []).join(' & ') || '—')}</span></div>
+         <div class="ep-fact"><label>Voted in</label><span>${hide((ch.votedIn || []).join(' & ') || '—')}</span></div>
+         <div class="ep-fact"><label>The Arena</label><span>${hide((ch.arena || []).map(d => `${d.winner} beat ${d.loser}`).join(' · ') || '—')}</span></div>
+         <div class="ep-fact ep-eliminated"><label>Left</label><span>${hide(left)}</span></div>`;
+    card.innerHTML = `<div class="ep-result">
+      <div class="ep-result-header">
+        <span class="ep-result-num">Episode ${epRecord.num}</span>
+        <span class="ep-result-phase" style="color:${SHOWS[CHALLENGE_FORMAT].accent}">${ch.final ? 'THE FINAL' : ch.division === 'm' ? "MEN'S WEEK" : ch.division === 'f' ? "WOMEN'S WEEK" : 'EPISODE'}</span>
+      </div>
+      <div class="ep-facts">${facts}</div>
+      ${_spoilerFree ? `<div style="margin-top:8px;font-size:11px;color:var(--muted);font-style:italic;text-align:center">Spoiler-free mode — open Visual Player to watch the episode</div>`
+        : tally.length ? `<div style="margin-top:4px"><div style="font-size:10px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px">The house vote</div><div class="ep-vote-list">${tally.map(([n, v], i) => `<span class="ep-vote-chip ${i === 0 ? 'top' : ''}">${n}: ${v}</span>`).join('')}</div></div>` : ''}
+    </div>`;
+    const _tEl = document.getElementById('ep-output-text');
+    _tEl.value = _spoilerFree ? '' : _freshTranscript(epRecord);
     _tEl.style.display = '';
     return;
   }
@@ -1749,6 +1799,30 @@ export function simulateNext() {
   // Sixth engine, sixth branch, on the FORMAT alone like the rest. The whole
   // season plays on the first press (js/ci-run.js) and the rows queue; the
   // audience is the engine's own ledger, so updatePopularity is skipped.
+  // ── THE CHALLENGE ────────────────────────────────────────────────────
+  //
+  // Seventh engine, seventh branch, on the FORMAT alone. The whole season
+  // plays and airs on the first press (js/ch-run.js) and the rows queue;
+  // popularity is the engine's own, so updatePopularity is skipped.
+  if (isChallengeSeason()) {
+    const chEp = simulateChallengeEpisode();
+    if (!chEp) {
+      const why = lastChallengeRefusal();
+      alert(why ? `This cast can't start a Challenge season yet: ${why}.`
+        : gs.activePlayers && gs.activePlayers.length ? 'This season is already complete.'
+          : 'Add players to Cast Builder first.');
+      return;
+    }
+    const pending = challengePendingChange();
+    if (pending && pending !== _chNoticeShown) { _chNoticeShown = pending; alert(pending); }
+    saveGameState();
+    _refreshFeed();
+    _autoRevealSpoiler(chEp.num);
+    viewingEpNum = chEp.num;
+    renderRunTab();
+    document.getElementById('run-main').scrollTop = 0;
+    return;
+  }
   if (isCircleSeason()) {
     const ciEp = simulateCircleEpisode();
     if (!ciEp) {
@@ -1980,6 +2054,8 @@ function _canReplay(epNum) {
   if (isPerfectMatchSeason()) return perfectMatchCanRerun();
   // The Circle re-deals a day off its stored seed, like the villa.
   if (isCircleSeason()) return circleCanRerun();
+  // The Challenge re-deals an episode off its stored seed, like the Circle.
+  if (isChallengeSeason()) return challengeCanRerun();
   /* THE MAIN STAGE ASKS THE SAME QUESTION THE CASTLE DOES. It used to ask
      "is there a checkpoint", which made the button a property of THIS BROWSER
      SESSION rather than of the season: it vanished on reload, and vanished
@@ -2000,6 +2076,7 @@ export function replayEpisode(epNum) {
   // stays exactly as it aired, and the later ones are simulated again.
   if (isPerfectMatchSeason()) { _replayVillaEpisode(epNum); return; }
   if (isCircleSeason()) { _replayCircleEpisode(epNum); return; }
+  if (isChallengeSeason()) { _replayChallengeEpisode(epNum); return; }
   /* THE MAIN STAGE, WHICH NO LONGER NEEDS ONE EITHER. `rerunDragEpisode`
      rolls the season back off the rows that aired, so a drag re-run survives
      a reload and a browser that never managed to write a checkpoint. The
@@ -2122,6 +2199,7 @@ export function replayEpisode(epNum) {
  */
 let _pmNoticeShown = null;
 let _ciNoticeShown = null;
+let _chNoticeShown = null;
 /**
  * THE VILLA'S PRESET. One press draws a season the way the real show would
  * for THIS cast and length — a format on every vote night, a rule on every
@@ -2294,6 +2372,34 @@ const DUMP_SLOT_OK = slot => slot === 'vote1' || slot === 'vote2' || slot === 'v
 
 // The Circle's re-run: the villa's pattern — this day's dice turn again, the
 // aired past stays, the later episodes are cleared to be simulated again.
+// The Challenge's re-run: the Circle's pattern. This episode's dice turn
+// again, the aired past stays, the later episodes are cleared.
+function _replayChallengeEpisode(epNum) {
+  const laterEps = (gs.episodeHistory || []).filter(e => e.num > epNum);
+  const msg = laterEps.length
+    ? `Re-run Episode ${epNum}?\n\nEpisode ${epNum} will be played again, and Episodes ${epNum + 1}–${epNum + laterEps.length} will be cleared — simulate them again from there. Every earlier episode stays exactly as it is.`
+    : `Re-run Episode ${epNum} into a different episode?`;
+  if (!confirm(msg)) return;
+  const before = snapshotGs();
+  let ep = null, failure = null, refused = null;
+  try {
+    if (rerunChallengeEpisode(epNum)) ep = simulateChallengeEpisode();
+    if (!ep) refused = lastChallengeRefusal();
+  } catch (e) { failure = e; }
+  if (!ep) {
+    gs = before;
+    repairGsSets(gs);
+    try { renderRunTab(); } catch { /* state is already back */ }
+    const why = failure ? (failure.message || String(failure)) : refused;
+    alert(`Episode ${epNum} could not be re-run, so nothing was changed.${why ? `\n\n${why}` : ''}`);
+    return;
+  }
+  saveGameState();
+  _refreshFeed();
+  viewingEpNum = ep.num;
+  renderRunTab();
+}
+
 function _replayCircleEpisode(epNum) {
   const laterEps = (gs.episodeHistory || []).filter(e => e.num > epNum);
   const msg = laterEps.length
@@ -2959,6 +3065,8 @@ export function buildEpisodeMap() {
      the rest carry the last count forward (the public decides the rest). */
   // The Circle is its schedule, counted from the season it played (js/ci-run.js).
   if (isCircleSeason()) return circleEpisodeMap();
+  // The Challenge is its schedule too (js/ch-run.js), counted from what it played.
+  if (isChallengeSeason()) return challengeEpisodeMap();
   if (isPerfectMatchSeason()) {
     const counts = perfectMatchVillaCounts();
     return perfectMatchSeasonShape().schedule.map(e => ({ ep: e.ep, active: counts.get(e.ep) ?? (players || []).length,
@@ -5478,6 +5586,8 @@ export function showRandomizerPanel() {
   if (isPerfectMatchSeason()) { _randomizeVilla(); return; }
   // The Circle draws its own nights; a card booked on the timeline pins one.
   if (isCircleSeason()) { _randomizeCircle(); return; }
+  // The Challenge draws its own dailies and Arena games; it has no twist cards yet.
+  if (isChallengeSeason()) { alert('The Challenge draws its own dailies and Arena games each episode. There are no twist cards to book yet.'); return; }
 
   // A house has no Island, no Action and no World Tour, and no slot for a
   // TWIST_CATALOG challenge twist. Offering the Total Drama panel here was

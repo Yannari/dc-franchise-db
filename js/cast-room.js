@@ -260,10 +260,14 @@ function _card(p, opts = {}) {
   const tc = tribeColor(p.tribe);
   const arch = ARCHETYPE_NAMES[p.archetype] || 'Custom';
   const th = parseFloat(threat(p.stats)), tier = threatTier(th);
-  const tribeChip = p.tribe
-    ? `<span class="cr-chip" style="background:${tc}22;color:${tc};border-color:${tc}55">${esc(p.tribe)}</span>`
-    : `<span class="cr-chip cr-chip-none">${_isCircle() ? 'Decide' : 'No tribe'}</span>`;
-  const ret = p.isReturnee ? `<span class="cr-badge-ret" title="Returning player">RETURNING</span>` : '';
+  const challenge = _isChallenge();
+  const tribeChip = challenge ? _divisionChip(p)
+    : p.tribe
+      ? `<span class="cr-chip" style="background:${tc}22;color:${tc};border-color:${tc}55">${esc(p.tribe)}</span>`
+      : `<span class="cr-chip cr-chip-none">${_isCircle() ? 'Decide' : 'No tribe'}</span>`;
+  const billing = challenge ? (window.challengeBilling?.(p) || '') : '';
+  const ret = billing ? `<span class="cr-badge-ret${billing === 'Rookie' ? ' cr-badge-rookie' : ''}" title="How The Challenge bills them">${billing.toUpperCase()}</span>`
+    : p.isReturnee ? `<span class="cr-badge-ret" title="Returning player">RETURNING</span>` : '';
   const tribeSelect = opts.withSelect ? _tribeSelect(p) : '';
   return `<div class="cr-card" tabindex="0" role="button" aria-label="Edit ${esc(p.name)}"
       data-pid="${esc(p.id)}" ${opts.draggable ? 'draggable="true" ondragstart="crDragStart(event)"' : ''}
@@ -278,6 +282,13 @@ function _card(p, opts = {}) {
     <div class="cr-threat"><span class="cr-dot" style="background:${tier.color}"></span>${tier.label} · ${th.toFixed(1)}</div>
     ${tribeSelect}
   </div>`;
+}
+
+// The Challenge's division, where a tribe would be: a non-binary player shows their pick.
+function _divisionChip(p) {
+  const d = p.gender === 'm' || p.gender === 'f' ? p.gender : p.chDivision;
+  const label = d === 'm' ? "Men's" : d === 'f' ? "Women's" : 'Balanced';
+  return `<span class="cr-chip${d ? '' : ' cr-chip-none'}" title="The division they play in">${label}</span>`;
 }
 
 function _tribeSelect(p) {
@@ -336,7 +347,7 @@ function _filterBarHTML() {
   return `<div class="cr-filters" id="cr-filters">
     <input id="cr-f-search" class="cr-input" type="text" placeholder="Search name…" aria-label="Search cast by name" value="${esc(f.search)}" oninput="crOnFilterInput()">
     <select id="cr-f-arch" class="cr-select" aria-label="Filter by archetype" onchange="crOnFilterInput()">${archOpts}</select>
-    <select id="cr-f-tribe" class="cr-select" aria-label="Filter by tribe" onchange="crOnFilterInput()">${tribeOpts}</select>
+    <select id="cr-f-tribe" class="cr-select" aria-label="Filter by tribe" onchange="crOnFilterInput()"${_isChallenge() ? ' hidden' : ''}>${tribeOpts}</select>
     <select id="cr-f-ret" class="cr-select" aria-label="Filter by returnee status" onchange="crOnFilterInput()">${retOpts}</select>
     <select id="cr-f-gender" class="cr-select" aria-label="Filter by gender" onchange="crOnFilterInput()">${genderOpts}</select>
     <select id="cr-f-seasons" class="cr-select" aria-label="Filter by seasons played" onchange="crOnFilterInput()">${seasonsOpts}</select>
@@ -672,17 +683,24 @@ function _isVilla() {
 function _isCircle() {
   try { return !!window.isCircleSeason?.(); } catch { return false; }
 }
+// The Challenge: no tribes. Each card shows the player's division and their
+// vet or rookie billing, set in the usual cast form.
+function _isChallenge() {
+  try { return !!window.isChallengeSeason?.(); } catch { return false; }
+}
 function _syncViewButtons(room) {
   const villa = _isVilla();
   const circle = _isCircle();
+  const challenge = _isChallenge();
   let view = window._crView || 'grid';
-  if ((view === 'villa' && !villa) || (view === 'circle' && !circle) || (view === 'tribes' && villa)) view = 'grid';
+  if ((view === 'villa' && !villa) || (view === 'circle' && !circle)
+    || (view === 'tribes' && (villa || challenge))) view = 'grid';
   room.dataset.view = view;
   room.querySelectorAll('.cr-viewbtn[data-view]').forEach(b => {
     b.classList.toggle('active', b.dataset.view === view);
     if (b.dataset.view === 'villa') b.hidden = !villa;
     if (b.dataset.view === 'circle') b.hidden = !circle;
-    if (b.dataset.view === 'tribes') { b.hidden = villa; b.textContent = circle ? 'Categories' : 'Tribes'; }
+    if (b.dataset.view === 'tribes') { b.hidden = villa || challenge; b.textContent = circle ? 'Categories' : 'Tribes'; }
   });
 }
 
@@ -852,6 +870,7 @@ const CR_CSS = `
 .cr-face { object-fit:cover; background:var(--surface2); z-index:1; }
 
 .cr-name { font-weight:600; font-size:14px; text-align:center; line-height:1.2; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cr-badge-rookie { color:#3fb7ff; border-color:rgba(63,183,255,.45); }
 .cr-badge-ret { display:inline-block; margin-left:5px; font-size:8px; font-weight:700; letter-spacing:.5px; color:var(--accent-gold,#f0c040); border:1px solid rgba(240,192,64,.4); border-radius:4px; padding:1px 4px; vertical-align:middle; }
 .cr-meta { display:flex; flex-wrap:wrap; gap:4px; justify-content:center; align-items:center; }
 .cr-arch { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }

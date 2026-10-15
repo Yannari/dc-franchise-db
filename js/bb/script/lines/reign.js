@@ -48,11 +48,11 @@ export default {
     { id: 'ry.6', turns: [{ by: 'b', say: "If you're that sorry, use the veto on me if you win it." }, { by: 'a', say: "...I'll think about it." }] },
   ],
   'reign.reckoning.bad': [
-    { id: 'rk.b1', turns: [{ by: 'b', dr: "Now that {a} isn't HOH, people are finally saying what they really think. It's not good." }] },
+    { id: 'rk.b1', turns: [{ by: 'b', dr: "Now that {a} isn't HOH, people are finally saying what they really thought of {a.posAdj} week. It's not good." }] },
     { id: 'rk.b2', turns: [{ by: 'b', say: "Who got promised safety by {a} last week?" }, { beat: 'A few people put their hands up.' }, { by: 'b', say: "Yeah. Me too." }] },
     { id: 'rk.b3', turns: [{ by: 'a', dr: "Last week, everyone wanted to talk to me. Now nobody comes near me." }] },
     { id: 'rk.b4', turns: [{ by: 'b', say: "Enjoying being one of us again?" }, { by: 'a', say: "Very funny." }] },
-    { id: 'rk.b5', turns: [{ beat: '{a} walks in. The conversation stops.' }, { by: 'a', dr: "I know exactly what they were talking about." }] },
+    { id: 'rk.b5', turns: [{ beat: '{a} walks in, and the talk about who {a} put up last week stops.' }, { by: 'a', dr: "They were picking apart my week as HOH. If they've got something to say about who I nominated, they can say it to my face." }] },
     { id: 'rk.b6', turns: [{ by: 'b', dr: "{a} spent last week annoying almost everyone in this house. That's going to cost {a.obj}." }] },
   ],
   'reign.reckoning.good': [

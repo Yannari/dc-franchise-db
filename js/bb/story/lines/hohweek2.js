@@ -256,7 +256,7 @@ export default {
     { id: 'hw.vd6', room: 'backyard', presumes: ['vote'], turns: [
       { beat: 'Backyard. {a} is sitting in the hot tub, alone, until {b} climbs in.' },
       { by: 'b', say: "Celebrating?" },
-      { by: 'a', say: "Quietly. {c} would have put me up the second they won anything." },
+      { by: 'a', say: "Quietly. {c} would have put me up the second {c.sub} won anything." },
       { by: 'b', say: "And now {c} can't." },
       { by: 'a', say: "And now {c} can't." },
       { by: 'b', say: "Who's next, then?" },

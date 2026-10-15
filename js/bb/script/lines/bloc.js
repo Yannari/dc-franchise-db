@@ -31,7 +31,7 @@ export default {
   ],
   'bloc.noticed.group': [
     { id: 'bn.g1', turns: [{ by: 'a', dr: "Every time I walk in, the same people stop talking. {b}, {c}... always the same faces." }] },
-    { id: 'bn.g2', turns: [{ beat: 'The conversation stops when {a} walks in.' }, { by: 'a', dr: "That's the third time today. Same people every time." }] },
+    { id: 'bn.g2', turns: [{ beat: '{b} and {c} stop talking when {a} walks in.' }, { by: 'a', dr: "That's the third time today. {b} and {c}, every time." }] },
     { id: 'bn.g3', turns: [{ by: 'a', dr: "{b} and {c} are working together. I can't prove it. I don't need to." }] },
     { id: 'bn.g4', turns: [{ by: 'a', dr: "I've been keeping track of who ends up in the same room. {b} and {c} are always there." }] },
     { id: 'bn.g5', turns: [{ by: 'a', dr: "If two people are that close in a house this small, the votes get decided before the rest of us even hear about them." }] },
@@ -39,7 +39,7 @@ export default {
     { id: 'bn.g7', when: { intent: 'big' }, turns: [{ by: 'a', dr: "{b}, {c} and at least one more. I'm nearly sure. That's a lot of votes." }] },
     { id: 'bn.g8', turns: [{ by: 'a', dr: "Something's going on with {b} and {c}. They act like people who've already agreed on everything." }] },
     { id: 'bn.g9', turns: [{ by: 'a', dr: "I used to think {b} and {c} just got on well. Now I think it's a lot more than that." }] },
-    { id: 'bn.g10', turns: [{ by: 'a', dr: "Nobody's told me anything. But you don't need to be told when you've got eyes." }] },
+    { id: 'bn.g10', turns: [{ by: 'a', dr: "Nobody's told me {b} and {c} are working together. You don't need to be told when you've got eyes." }] },
     { id: 'bn.g11', turns: [{ beat: '{b} catches {c}\'s eye across the room. {c} nods.' }, { by: 'a', dr: "What was that about?" }] },
   ],
   'bloc.votes.couple': [

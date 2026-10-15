@@ -380,7 +380,9 @@ function _scriptOf(list, extra, ctx, room, salt) {
     if (s) prevPair = pair;
     if (s && r.type === 'campaignRally' && extra.listeners?.length) {
       const cut = { kind: 'beat', by: null, text: `${who.a} sits down with ${extra.listeners.join(' and ')} and lowers ${pronouns(who.a).posAdj} voice.` };
-      return { ...s, lines: [cut, ...s.lines] };
+      // the pool's own staging ("gathers whoever is in the room") is replaced, not stacked under this one
+      const rest = s.lines[0]?.kind === 'beat' && !s.lines[0].by ? s.lines.slice(1) : s.lines;
+      return { ...s, lines: [cut, ...rest] };
     }
     if (s && i > 0 && who.b && (r.type === 'comfortVictim' || r.badgeText === 'WARNED' || moved)) {
       const cut = { kind: 'beat', by: null, text: `Later, away from the others, ${who.a} finds ${who.b}.` };

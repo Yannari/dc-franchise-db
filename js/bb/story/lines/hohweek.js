@@ -133,7 +133,7 @@ export default {
       { by: 'b', say: "Everybody thinks you're putting up {c} and a pawn." },
       { by: 'a', say: "Everybody's wrong. {c} goes up next to {d}." },
       { by: 'b', say: "{d}? I thought you didn't mind {d}." },
-      { by: 'a', say: "I don't. But {d} would burn the house down to save {c}. If {d} is on the block too, {d} has to save {d} first." },
+      { by: 'a', say: "I don't. But {d} would burn the house down to save {c}. If {d} is on the block too, {d} has to save {d.ref} first." },
       { by: 'b', say: "That's really mean. And really smart." },
       { by: 'a', say: "Mostly smart." },
       { by: 'b', dr: "{a} isn't just picking a target. {a} is breaking up the strongest pair in the house, and they're going to hate {a} for it." },

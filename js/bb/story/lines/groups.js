@@ -279,7 +279,7 @@ export default {
       { by: 'd', say: "...Doesn't matter. {target}." },
       { by: 'b', say: "That was very peer-pressured." },
       { by: 'd', say: "It was a hundred percent peer-pressured." },
-      { by: 'c', dr: "Four people, one name. That's how a target is born in here. Not in a ceremony. On a bed." },
+      { by: 'c', dr: "Four people, one name. That's how a target is born in here. Not in a ceremony. In a chat like that one." },
     ] },
     { id: 'gg.5', turns: [
       { by: 'a', say: "Is it just me, or does {target} act like the game's already over?" },

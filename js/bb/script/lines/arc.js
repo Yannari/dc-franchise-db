@@ -27,10 +27,10 @@ export default {
     { id: 'qa.f3', turns: [{ by: 'a', dr: "I was going to let it go. Then {b} told me what {target} said to everyone else. I'm not letting it go." }] },
     { id: 'qa.f4', turns: [{ by: 'b', say: "I'm only telling you because you're my friend. {target} lied to you." }, { by: 'a', say: "I thought so. Now I know." }] },
     { id: 'qa.f5', turns: [{ by: 'a', dr: "{target}'s story only works if nobody compares notes. {b} and I just compared notes." }] },
-    { id: 'qa.f6', turns: [{ by: 'b', say: "I thought you should hear it from me." }, { by: 'a', say: "Thank you. I'd want to know." }] },
+    { id: 'qa.f6', turns: [{ by: 'b', say: "I thought you should hear it from me. {target} lied to you." }, { by: 'a', say: "Thank you. I'd want to know." }] },
     { id: 'qa.f7', turns: [{ by: 'b', say: "I don't want to cause trouble. But {target} isn't being straight with you." }, { by: 'a', say: "How do you know?" }, { by: 'b', say: "Because {target} told me the opposite." }] },
     { id: 'qa.f8', turns: [{ by: 'a', dr: "I trust {b} more than I trust {target}. And {b} just told me {target} lied." }] },
-    { id: 'qa.f9', turns: [{ by: 'b', say: "Promise you won't go straight to {target}?" }, { by: 'a', say: "I won't. Not yet." }] },
+    { id: 'qa.f9', turns: [{ by: 'b', say: "{target} told me one thing and told you the opposite. Promise you won't go straight to {target}?" }, { by: 'a', say: "I won't. Not yet." }] },
     { id: 'qa.f10', turns: [{ by: 'a', say: "So {target} told everyone a different version." }, { by: 'b', say: "Everyone except you." }] },
   ],
   'arc.lie.outsider': [
@@ -165,7 +165,7 @@ export default {
     { id: 'qh.f5', turns: [{ by: 'a', dr: "{b} never took it back. I won't forget that." }] },
     { id: 'qh.f6', turns: [{ by: 'b', dr: "{a} won't let it go. I never said it was definitely {a}." }] },
     { id: 'qh.f7', turns: [{ by: 'a', say: "Just admit you got it wrong." }, { by: 'b', say: "I didn't get anything wrong. I just said what I thought." }] },
-    { id: 'qh.f8', turns: [{ by: 'a', dr: "I've been the suspect all week because of {b}. {b} won't even say sorry." }] },
+    { id: 'qh.f8', turns: [{ by: 'a', dr: "{b} told people I was the one who flipped. I've been the suspect all week because of it, and {b} won't even say sorry." }] },
   ],
   'arc.threat.exposed': [
     { id: 'qi.e1', turns: [{ by: 'a', say: "You put my private business in your speech." }, { beat: '{a} walks off before {b} can answer.' }] },
@@ -180,7 +180,7 @@ export default {
     { id: 'qi.t2', turns: [{ by: 'a', dr: "In {b.posAdj} speech, {b} said {b} would come after whoever voted to keep {b} here. I'm not waiting to find out if {b} meant it." }] },
     { id: 'qi.t3', turns: [{ by: 'b', say: "That speech was a plea, not a plan." }, { by: 'a', say: "I understand." }, { by: 'b', dr: "{a} said 'I understand' and nothing else. I've lost {a}." }] },
     { id: 'qi.t4', turns: [{ by: 'a', dr: "I've stopped telling {b} things. Short answers only." }] },
-    { id: 'qi.t5', turns: [{ by: 'b', say: "Why are you being weird with me?" }, { by: 'a', say: "I'm not." }, { by: 'b', say: "You are." }, { by: 'a', say: "Remember your speech?" }] },
+    { id: 'qi.t5', turns: [{ by: 'b', say: "Why are you being weird with me?" }, { by: 'a', say: "I'm not." }, { by: 'b', say: "You are." }, { by: 'a', say: "Remember your speech on eviction night? You told the room you'd come for whoever wrote your name down. I was in the room." }] },
     { id: 'qi.t6', turns: [{ by: 'b', dr: "My speech cost me a friend. I can see that now." }] },
   ],
   'arc.court.scene': [
@@ -195,7 +195,7 @@ export default {
   'arc.cut.cutting': [
     { id: 'qk.c1', turns: [{ by: 'a', dr: "{b} and I made our {deal} when there were lots of people to hide behind. Now there are {count} of us. The maths has changed." }] },
     { id: 'qk.c2', turns: [{ by: 'a', dr: "{b} beats me at the end. I've tried every way of arranging the final chairs. {b} wins every time." }] },
-    { id: 'qk.c3', turns: [{ by: 'a', dr: "I've kept every promise in here. This is the one I can't afford to keep." }] },
+    { id: 'qk.c3', turns: [{ by: 'a', dr: "I've kept every promise in here. The {deal} with {b} is the one I can't afford to keep." }] },
     { id: 'qk.c4', turns: [{ by: 'a', dr: "{b} would take me to the end. That's exactly the problem." }] },
     { id: 'qk.c5', turns: [{ by: 'a', dr: "I'm not saying I'm going to cut {b}. I'm just asking what next week looks like without {b}." }] },
     { id: 'qk.c6', turns: [{ by: 'a', dr: "I made a {deal} with {b} and I meant it. That's what's going to make this hard to explain later." }] },
@@ -214,7 +214,7 @@ export default {
     { id: 'ql.b3', turns: [{ by: 'a', say: "{target} beats me. {target} beats you. That's the whole conversation." }, { by: 'b', say: "So we do something about it." }] },
     { id: 'ql.b4', turns: [{ by: 'a', dr: "{target} wins from any chair. There's one week left to fix that." }] },
     { id: 'ql.b5', turns: [{ by: 'b', say: "So it has to be {target}." }, { by: 'a', say: "It has to be {target}." }] },
-    { id: 'ql.b6', turns: [{ by: 'a', dr: "I told {b} the truth about {target}. It's the first honest thing either of us has said all week." }] },
+    { id: 'ql.b6', turns: [{ by: 'a', dr: "I told {b} the truth: if {target} gets to the end, {target} wins. It's the first honest thing either of us has said all week." }] },
   ],
   'arc.favourite.worried': [
     { id: 'ql.w1', turns: [{ by: 'a', say: "I don't think I can beat {target}." }, { by: 'b', say: "...Neither can I." }] },

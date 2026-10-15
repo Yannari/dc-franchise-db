@@ -358,7 +358,7 @@ export default {
   ],
   'set.morningafter.close': [
     { id: 'sm.c1', turns: [{ beat: 'By lunchtime, the empty bed has been taken. Nobody admits to taking it.' }, { by: 'b', dr: "Four hours. That's how long it took somebody to move into the bed of the person we evicted last night." }] },
-    { id: 'sm.c2', turns: [{ beat: 'The house starts to split back into its little groups. Everybody counts heads.' }, { by: 'd', dr: "One fewer person means every vote counts more. Everybody's doing the maths. You can see their lips move." }] },
+    { id: 'sm.c2', turns: [{ beat: 'The house starts to split back into its little groups, and everybody checks which group is bigger now.' }, { by: 'd', dr: "One fewer person means every vote counts more. You can watch people working out whose side they're on." }] },
     { id: 'sm.c3', turns: [{ beat: 'Somebody puts on music. The house gets on with it.' }, { by: 'a', dr: "That's the thing about this house. Somebody leaves, everyone's sad for a morning, and then there's a new HOH to win." }] },
   ],
 

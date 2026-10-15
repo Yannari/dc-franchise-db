@@ -484,13 +484,16 @@ const rogueVoteDenial = {
     }
     const { denier, doubter, lying, losing, week } = scene;
     const gone = week?.evicted;
+    // the stray votes went against the nominee who stayed, which is a vote to KEEP the one who went: the pool
+    // asks "who voted to keep {target}?" (read 2026-10-14: Ripper, the survivor, asking "Who voted to keep Ripper?")
+    const kept = gone || losing;
 
-    const said = makeScene('arc.denial', { a: denier, b: doubter }, { ending: lying ? 'lying' : 'truthful', target: losing }, [], 'living-room');
+    const said = makeScene('arc.denial', { a: denier, b: doubter }, { ending: lying ? 'lying' : 'truthful', target: kept }, [], 'living-room');
 
     api.suspicion(doubter, denier, 1.3);
     api.addBond(doubter, denier, -0.5);
     api.remember(doubter, denier, 'denied-the-stray-vote', 2,
-      { about: `the vote to keep ${losing}`, believed: false, truthful: !lying });
+      { about: `the vote to keep ${kept}`, believed: false, truthful: !lying });
     return result(said, [denier, doubter], lying ? 'DENIES IT FLATLY' : 'TELLING THE TRUTH BADLY',
       lying ? 'red' : 'grey');
   },

@@ -145,10 +145,17 @@ function _juryPactPair(house, ctx) {
   for (const a of _leastSeen(house)) {
     const held = juryPactsOf(a).flatMap(d => d.players || []);
     const b = _others(house, a).find(n =>
-      bond(a, n) >= 3 && !held.includes(n) && trustOf(a, n) >= 0);
+      bond(a, n) >= 3 && !held.includes(n) && trustOf(a, n) >= 0 && !_after(a, n, ctx) && !_after(n, a, ctx));
     if (b) return { a, b };
   }
   return null;
+}
+
+/** x is going after y this week: x's own target, or x is the HOH and y is the plan's target. */
+function _after(x, y, ctx) {
+  if (targetOf(x) === y) return true;
+  const w = ctx?.week;
+  return !!w && w.hoh === x && [w.plan?.target, w.plan?.backdoor].includes(y);
 }
 
 function _defector(house, ctx) {

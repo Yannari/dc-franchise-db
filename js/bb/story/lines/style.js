@@ -308,7 +308,7 @@ export default {
       { by: 'a', dr: "Some people play this game with numbers. I play it with people. Mine are worth more." },
     ] },
     { id: 'gy-sl.4', room: 'living-room', turns: [
-      { beat: 'Living room. Someone is talking about {c} behind {c}’s back. {a} cuts in.' },
+      { beat: 'Living room. {b} is talking about {c} behind {c}’s back. {a} cuts in.' },
       { by: 'a', say: "Say that to {c}, then." },
       { by: 'b', say: "I'm just saying what everyone's thinking." },
       { by: 'a', say: "I'm not thinking it. So don't say everyone." },

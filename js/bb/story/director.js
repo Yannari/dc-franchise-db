@@ -257,6 +257,9 @@ export function airStorylines(week) {
           // a scheme told to the camera (a rumour started, a whisper campaign) is the close of a game talk,
           // not of a cushion fort or a heart-to-heart with the person it is aimed at
           if (/^(scheme-|social-rumou?r|deals-)/.test(String(sc.step || '')) && !GAME_HOST.has(x.type)) return false;
+          // a quiet night's confessional ("we talked about everything except the game") does not close a talk
+          // about the HOH's week (read 2026-10-14)
+          if (/^(bond-quiet|texture-|life-|venue-)/.test(String(sc.step || '')) && (GAME_HOST.has(x.type) || /hohweek|plan|vote|nom|veto|target|block|campaign/.test(`${x.step || ''} ${x.type || ''}`))) return false;
           if (/^(power-|phase-power|reign-|editorial-hoh)/.test(String(sc.step || '')) && !/hoh|reign|power|nom|veto|block/.test(`${x.step || ''} ${x.type || ''}`)) return false;
           // a grudge is not the close of an apology the speaker just made (Hicks said sorry to Bowie, then:
           // "I'm not looking for an apology from Bowie any more")

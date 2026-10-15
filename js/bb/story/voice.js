@@ -103,7 +103,7 @@ function lines(kind, voice, o, h) {
     kind === 'feud' && `${o} and I are in ${h.alliance} together. With anybody else, I'd be a lot blunter.`);
   if (h.deal && kind !== 'ally') add('deal', `${o} and I have a deal. I keep reminding myself of that.`,
     `There's a deal between ${o} and me. Days like this, I find out how much it's worth.`,
-    `I shook on something with ${o}. I keep looking at my hand.`);
+    `I shook on a deal with ${o}. I keep looking at my hand.`);
   if (h.couple && kind === 'feud') add('couple', `It's different when it's ${o}. It's always different when it's ${o}.`,
     `With anybody else I'd play this cold. With ${o}, I can't.`,
     `Everybody knows about ${o} and me, so everybody's watching how I handle this.`);

@@ -184,7 +184,7 @@ const findingTheCulprit = {
     if (!week) return 0;
     if (_spent('fallout-blame', ctx)) return 0;
     const mourner = chiefMourner(week);
-    if (!mourner) return 0;
+    if (!mourner || mourner.voted === true) return 0;
     const verdict = assignBlame(mourner.name, week);
     if (!verdict) return 0;
     // somebody blaming last week's HOH is every week's story: not two weeks running (the read of

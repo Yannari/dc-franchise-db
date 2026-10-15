@@ -1,5 +1,23 @@
 // js/chal/truth-or-shark.js — Truth or Shark game show challenge (pre-merge tribe vs tribe)
 import { gs, players, seasonConfig } from '../core.js';
+
+// A question ("Who has a private spreadsheet rating every person they've ever dated?") said as a confession: in the
+// first person, as a statement ("I have a private spreadsheet rating every person I've ever dated."). Swapping "Who" for
+// "I" alone printed "I has ... they've ever dated?" (read 2026-10-15).
+const asMe = q => {
+  let t = String(q).replace(/^Who\s+/, '').replace(/\?\s*$/, '');
+  t = t.replace(/^has\b/, 'have').replace(/^is\b/, 'am').replace(/^does\b/, 'do');
+  t = t.replace(/\bthey've\b/g, "I've").replace(/\bthey're\b/g, "I'm").replace(/\bthemselves\b|\bthemself\b/g, 'myself')
+    .replace(/\btheir\b/g, 'my').replace(/\bTHEM\b/g, 'ME').replace(/\bthem\b/g, 'me').replace(/\bthey\b/g, 'I');
+  return `I ${t}.`;
+};
+// ...and told about somebody, in their pronouns ("She has a private spreadsheet...")
+const asThem = (q, pr) => {
+  let t = String(q).replace(/^Who\s+/, '').replace(/\?\s*$/, '');
+  if (pr.sub === 'they') t = t.replace(/^has\b/, 'have').replace(/^is\b/, 'are').replace(/^was\b/, 'were').replace(/^does\b/, 'do');
+  t = t.replace(/\bthemselves\b|\bthemself\b/g, pr.ref || 'themselves').replace(/\btheir\b/g, pr.posAdj).replace(/\bthem\b/g, pr.obj);
+  return `${pr.Sub} ${t}.`;
+};
 import { pStats, pronouns, tribeColor, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { romanticCompat } from '../players.js';
@@ -353,45 +371,45 @@ const CONFESSION_NARRATION = {
   confess: {
     goat: [
       (n, pr, truth) => `${n} blurted it out before ${host()} even finished reading. "${truth}" ${pr.Sub} turned bright red. "I panicked! I ALWAYS panic!"`,
-      (n, pr, truth) => `${n}'s hand shot up. "IT WAS ME. ${truth.replace('Who ', 'I ')}" ${pr.Sub} covered ${pr.posAdj} face. "Can I take that back?" No.`,
+      (n, pr, truth) => `${n}'s hand shot up. "IT WAS ME. ${asMe(truth)}" ${pr.Sub} covered ${pr.posAdj} face. "Can I take that back?" No.`,
       (n, pr, truth) => `${n} fell off ${pr.posAdj} chair. "I know it's me. Everyone knows it's me." ${pr.Sub} confessed before the question mark landed. "${truth}" Pure panic-confession.`,
       (n, pr, truth) => `"Oh no. Oh no oh no oh no." ${n} recognized the question immediately. ${pr.Sub} raised ${pr.posAdj} hand with the energy of someone surrendering. "That's me. Obviously."`,
     ],
     hero: [
-      (n, pr, truth) => `${n} stood up straight. "Yes. That was me." ${truth.replace('Who ', pr.Sub + ' ')} Honest. Direct. Unapologetic.`,
-      (n, pr, truth) => `${n} looked ${pr.posAdj} tribemates in the eye. "I'm not ashamed. ${truth.replace('Who ', 'I ')}" The tribe nodded. Respect.`,
-      (n, pr, truth) => `"I'll own it," ${n} said calmly. "${truth.replace('Who ', 'I ')}" ${pr.Sub} sat back down. No drama. Just truth. The hero's way.`,
+      (n, pr, truth) => `${n} stood up straight. "Yes. That was me." ${asThem(truth, pr)} Honest. Direct. Unapologetic.`,
+      (n, pr, truth) => `${n} looked ${pr.posAdj} tribemates in the eye. "I'm not ashamed. ${asMe(truth)}" The tribe nodded. Respect.`,
+      (n, pr, truth) => `"I'll own it," ${n} said calmly. "${asMe(truth)}" ${pr.Sub} sat back down. No drama. Just truth. The hero's way.`,
       (n, pr, truth) => `${n} stepped forward without hesitation. "That's my story and I'm not hiding from it." ${pr.Sub} confessed with the quiet dignity of someone who's made peace with their past.`,
     ],
     'social-butterfly': [
-      (n, pr, truth) => `${n} laughed it off. "Okay FINE, yes. ${truth.replace('Who ', 'I ')}" ${pr.Sub} turned to ${pr.posAdj} tribe. "We've ALL done something weird, right? RIGHT?"`,
-      (n, pr, truth) => `${n} sighed dramatically. "You got me. ${truth.replace('Who ', 'I ')}" ${pr.Sub} immediately started damage control, chatting up the nearest three people.`,
-      (n, pr, truth) => `"Listen, it's not as bad as it sounds," ${n} began, already spinning the story. "${truth.replace('Who ', 'I ')}" By the end, half the tribe was laughing WITH ${pr.obj}. Social wizardry.`,
+      (n, pr, truth) => `${n} laughed it off. "Okay FINE, yes. ${asMe(truth)}" ${pr.Sub} turned to ${pr.posAdj} tribe. "We've ALL done something weird, right? RIGHT?"`,
+      (n, pr, truth) => `${n} sighed dramatically. "You got me. ${asMe(truth)}" ${pr.Sub} immediately started damage control, chatting up the nearest three people.`,
+      (n, pr, truth) => `"Listen, it's not as bad as it sounds," ${n} began, already spinning the story. "${asMe(truth)}" By the end, half the tribe was laughing WITH ${pr.obj}. Social wizardry.`,
       (n, pr, truth) => `${n} raised ${pr.posAdj} hand like answering attendance. "Present and guilty." ${pr.Sub} shared the truth with a charming smile that made everyone forget to judge. Classic.`,
     ],
     underdog: [
-      (n, pr, truth) => `${n} shrugged. "Yeah, so what? ${truth.replace('Who ', 'I ')}" The defiance in ${pr.posAdj} voice was electric. The tribe started clapping.`,
-      (n, pr, truth) => `"You wanna embarrass me? I've been embarrassed my whole life." ${n} confessed with a grin. "${truth.replace('Who ', 'I ')}" Defiant pride.`,
-      (n, pr, truth) => `${n} stood up slowly. "${truth.replace('Who ', 'I ')} And you know what? I'd do it again." The underdog owned it. The crowd loved it.`,
-      (n, pr, truth) => `"Yeah, that's me," ${n} said, chin raised. "${truth.replace('Who ', 'I ')}" ${pr.Sub} looked around the studio. "Anyone else want to share? No? Just me being brave? Cool."`,
+      (n, pr, truth) => `${n} shrugged. "Yeah, so what? ${asMe(truth)}" The defiance in ${pr.posAdj} voice was electric. The tribe started clapping.`,
+      (n, pr, truth) => `"You wanna embarrass me? I've been embarrassed my whole life." ${n} confessed with a grin. "${asMe(truth)}" Defiant pride.`,
+      (n, pr, truth) => `${n} stood up slowly. "${asMe(truth)} And you know what? I'd do it again." The underdog owned it. The crowd loved it.`,
+      (n, pr, truth) => `"Yeah, that's me," ${n} said, chin raised. "${asMe(truth)}" ${pr.Sub} looked around the studio. "Anyone else want to share? No? Just me being brave? Cool."`,
     ],
     'loyal-soldier': [
-      (n, pr, truth) => `${n} sighed. "For the team." ${pr.Sub} confessed. "${truth.replace('Who ', 'I ')}" Duty over pride. Always.`,
-      (n, pr, truth) => `"I'm not letting my tribe go down because of my ego." ${n} stepped forward. "${truth.replace('Who ', 'I ')}" The soldier's sacrifice.`,
-      (n, pr, truth) => `${n} looked at ${pr.posAdj} tribemates, squared ${pr.posAdj} shoulders, and spoke. "${truth.replace('Who ', 'I ')}" For the team. Everything for the team.`,
+      (n, pr, truth) => `${n} sighed. "For the team." ${pr.Sub} confessed. "${asMe(truth)}" Duty over pride. Always.`,
+      (n, pr, truth) => `"I'm not letting my tribe go down because of my ego." ${n} stepped forward. "${asMe(truth)}" The soldier's sacrifice.`,
+      (n, pr, truth) => `${n} looked at ${pr.posAdj} tribemates, squared ${pr.posAdj} shoulders, and spoke. "${asMe(truth)}" For the team. Everything for the team.`,
       (n, pr, truth) => `"If confessing keeps us in this," ${n} said quietly, "then here goes." ${pr.Sub} told the truth. Not for ${pr.ref}. For the tribe.`,
     ],
     showmancer: [
-      (n, pr, truth) => `${n} glanced at ${pr.posAdj} partner, took a deep breath, and confessed. "${truth.replace('Who ', 'I ')}" "I want you to know the real me." Vulnerability play. Devastating.`,
-      (n, pr, truth) => `"I'm doing this because I trust you all." ${n} squeezed ${pr.posAdj} partner's hand and confessed. "${truth.replace('Who ', 'I ')}" The audience melted.`,
-      (n, pr, truth) => `${n} locked eyes with ${pr.posAdj} showmance partner. "This is who I am." ${pr.Sub} confessed. "${truth.replace('Who ', 'I ')}" The vulnerability was real. So were the tears.`,
+      (n, pr, truth) => `${n} glanced at ${pr.posAdj} partner, took a deep breath, and confessed. "${asMe(truth)}" "I want you to know the real me." Vulnerability play. Devastating.`,
+      (n, pr, truth) => `"I'm doing this because I trust you all." ${n} squeezed ${pr.posAdj} partner's hand and confessed. "${asMe(truth)}" The audience melted.`,
+      (n, pr, truth) => `${n} locked eyes with ${pr.posAdj} showmance partner. "This is who I am." ${pr.Sub} confessed. "${asMe(truth)}" The vulnerability was real. So were the tears.`,
       (n, pr, truth) => `"I'd rather be honest with you than win any challenge." ${n} confessed the truth while looking at ${pr.posAdj} partner the entire time. Reality TV gold.`,
     ],
     _default: [
-      (n, pr, truth) => `${n} raised ${pr.posAdj} hand. "${truth.replace('Who ', 'I ')}" The studio went quiet. Then ${host()} grinned. "That's a confession, folks!"`,
-      (n, pr, truth) => `${n} stared at the floor for three seconds, then looked up. "${truth.replace('Who ', 'I ')}" Done. The truth is out.`,
-      (n, pr, truth) => `"Fine. Yes." ${n} confessed. "${truth.replace('Who ', 'I ')}" ${pr.Sub} sat back down with the energy of someone who just defused a bomb.`,
-      (n, pr, truth) => `${n} exhaled slowly. "${truth.replace('Who ', 'I ')}" The words hung in the studio air. ${host()}: "And THAT is what this show is about."`,
+      (n, pr, truth) => `${n} raised ${pr.posAdj} hand. "${asMe(truth)}" The studio went quiet. Then ${host()} grinned. "That's a confession, folks!"`,
+      (n, pr, truth) => `${n} stared at the floor for three seconds, then looked up. "${asMe(truth)}" Done. The truth is out.`,
+      (n, pr, truth) => `"Fine. Yes." ${n} confessed. "${asMe(truth)}" ${pr.Sub} sat back down with the energy of someone who just defused a bomb.`,
+      (n, pr, truth) => `${n} exhaled slowly. "${asMe(truth)}" The words hung in the studio air. ${host()}: "And THAT is what this show is about."`,
     ],
   },
   refuse: {

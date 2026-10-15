@@ -34,3 +34,21 @@ and each result comes back as `Result*.png` in its folder.
 Found through the user's links: MigueLLima1999's Total Drama backgrounds gallery, gaby-sunflower's
 backgrounds favourites, and the Total Drama Do-Over wiki's backgrounds page (DeviantArt read through
 `backend.deviantart.com/rss.xml`; fandom through `api.php` with a curl user agent).
+
+## More references (2026-10-14): the background masterpost and the first results
+
+The user pointed at jasmineshawn's Total Drama background masterpost
+(https://jasmineshawn.tumblr.com/post/91122443870/total-drama-background-masterpost): 124 frames, 500 px wide
+only (no `_1280` copies exist). They went into the open jobs as `3-more-*` references, and three as
+`edit-this-alt.png`, a second frame the job may edit instead (letterbox cropped, upscaled):
+
+| Job | Alternative frame | References (masterpost order) |
+|---|---|---|
+| `A06-cliff-jump` | 74, waterfall cliff over a lake | 48 |
+| `A09-overnight-camp` | 61, torch-lit clearing at night | 4 |
+| `A11-gym` | 115, gym with hoop and weights | 113 (caution stripes) |
+| others | | A03 3/10/100, A04 83/8, A05 107/74/38, A07 117/103, A08 76, A10 61/4, A12 48/2, A13 8/34, B01 43, B02 56/84, B03 95/12, B06 18/84/94, B07 22/24 |
+
+The finished plates (A01, A02, B05, B08, B09, B10, M01, M02) went back into the open jobs as `2-ours-*`, so
+the rest match them: the island opener and the villa map for the villa rooms, the hot tub for the pool deck
+(same deck), the Arena for the torch path.

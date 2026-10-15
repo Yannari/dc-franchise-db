@@ -8,5 +8,6 @@ import game from './game.js';
 import nights from './nights.js';
 import more from './more.js';
 import talk from './talk.js';
+import fallout from './fallout.js';
 
-export default Object.assign({}, meeting, recruit, aftermath, pairs, house, game, nights, more, talk);
+export default Object.assign({}, meeting, recruit, aftermath, pairs, house, game, nights, more, talk, fallout);

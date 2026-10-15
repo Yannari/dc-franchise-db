@@ -1,0 +1,242 @@
+// ══════════════════════════════════════════════════════════════════════
+// longer/fallout.js — betrayals, broken deals, break-ups, apologies, blame, couples, the rookies
+// ══════════════════════════════════════════════════════════════════════
+//
+// alliance-betrayal and deal-broken: a is the one betrayed, b broke it (roles.js
+// swaps them). team-blame: a blames b, c defends. pda: a is stuck watching b and
+// c. rookie-uprising: a rallies b and c, x and y are other rookies in the room.
+// meeting-spotted is somebody seeing a meeting from outside: a second word to the
+// camera, not a conversation. A new turn answers what a line means, never its words.
+export default {
+  // ── a couple, in everybody's way ──
+  'pd.1': [0, 1, 2,
+    { by: 'a', say: "I'm just trying to watch something." },
+    { by: 'c', say: "Then watch it. We're not stopping you." },
+    { by: 'x', opt: 1, say: "You kind of are, though." },
+    { beat: "{b} and {c} don't move an inch." },
+    3],
+  'pd.2': [0, 1,
+    { by: 'a', say: "I'm eating right here. That's all I'm saying." },
+    { by: 'b', say: "Then eat somewhere else." },
+    { by: 'a', say: "I was here first." },
+    2],
+  'pd.3': [0, 1,
+    { by: 'a', say: "I live here. I have to turn around sometimes." },
+    { by: 'c', say: "Then turn the other way." },
+    { by: 'a', conf: "Everybody laughs about {b} and {c}. Nobody's thinking about what two people who always vote together means at the vote." }],
+
+  // ── a ride to the final: a man and a woman who never fight each other ──
+  'rf.1': [0, 1, 2,
+    { by: 'b', say: "And if one of us gets voted in?" },
+    { by: 'a', say: "Then the other one is the loudest person in the stand, and after that we work on the votes together." },
+    { by: 'b', say: "Okay. And we don't tell anybody." },
+    { by: 'a', say: "Nobody. If people find out, they'll try to split us up." },
+    3],
+  'rf.2': [
+    { by: 'a', say: "Can I ask you something? Where do you see yourself at the end of this?" },
+    { by: 'b', say: "In the final. Where else?" },
+    { by: 'a', say: "Me too. And we're never going to be in the same elimination." },
+    0, 1,
+    { by: 'b', say: "Shaking on it." },
+    2],
+  'rf.3': [0, 1,
+    { by: 'a', say: "I'm serious. Not just this week. Every week." },
+    { by: 'b', say: "Every week. Even when it gets hard." },
+    { by: 'a', say: "Especially when it gets hard." },
+    { by: 'b', conf: "{a} and I can't take each other's place in the final. That's the only kind of trust that lasts in here." }],
+
+  // ── betrayed by your own alliance: at the vote ──
+  'ab.v1': [0, 1, 2,
+    { by: 'b', say: "I had my reasons. You'd have done the same if it was you." },
+    { by: 'a', say: "No. I wouldn't. That's the whole point of being in a group." },
+    { by: 'x', opt: 1, say: "Can we not do this in front of everybody?" },
+    { by: 'a', opt: 'x', say: "Everybody heard the vote. Everybody can hear this." },
+    3],
+  'ab.v2': [0, 1, 2,
+    { by: 'x', opt: 1, say: "Nobody made you do that." },
+    { by: 'b', say: "If I'd voted with you, I'd be next. I saw where it was going." },
+    { by: 'a', say: "So you went somewhere else before we could." },
+    { by: 'b', say: "Yes." },
+    3],
+  'ab.v3': [
+    { by: 'a', say: "I heard your vote." },
+    { by: 'b', say: "I know you did." },
+    { by: 'a', say: "That's all you've got to say?" },
+    { by: 'b', say: "What else is there?" },
+    0],
+  // ── betrayed by your own alliance: the call-out ──
+  'ab.c1': [0, 1,
+    { by: 'a', say: "So you think I'm the easy one." },
+    { by: 'b', say: "I think you're the one I can beat. That's not the same thing." },
+    { by: 'a', say: "It is tonight." },
+    2],
+  'ab.c2': [0, 1,
+    { by: 'a', say: "Save it. I hope it was worth it to you." },
+    { by: 'b', say: "So do I." },
+    { by: 'a', conf: "{b} looked at me across that floor and picked me. I'm not going to forget it, whichever way tonight goes." }],
+  'ab.c3': [
+    { by: 'a', say: "Of everybody here. Me." },
+    { by: 'b', say: "I'm sorry. It had to be somebody." },
+    0],
+
+  // ── the rookies stop lining up ──
+  'ru.1': [0, 1, 2, 3,
+    { by: 'x', opt: 1, say: "And if they come after one of us for it?" },
+    { by: 'a', opt: 'x', say: "Then they come after all of us. That's the point." },
+    { by: 'c', say: "Who's our name, then?" },
+    { by: 'a', say: "A vet. Any vet. They've had their turn." },
+    4],
+  'ru.2': [
+    { by: 'a', say: "Every rookie in this house, listen. There are more of us than them. We just haven't acted like it." },
+    { by: 'b', say: "So let's act like it." },
+    { by: 'c', opt: 1, say: "Starting tonight." },
+    0],
+  'ru.3': [0, 1,
+    { by: 'c', opt: 1, say: "Even when the vets start offering us deals?" },
+    { by: 'a', say: "Especially then. That's how they split us up." },
+    { by: 'b', say: "Okay. No deals with vets." },
+    { by: 'a', conf: "The vets think we're just happy to be here. We're not. We want to win too." }],
+
+  // ── a meeting, seen from outside ──
+  'ms.1': [0,
+    { by: 'a', conf: "I'm not going to say anything yet. I'm going to watch who they talk to next." }],
+  'ms.2': [0,
+    { by: 'a', conf: "Nobody asked me to that conversation. That tells me exactly where I stand with {b} and {c}." }],
+  'ms.3': [0,
+    { by: 'a', conf: "Knowing who's together is half this game. Now I just have to work out what they're planning." }],
+
+  // ── a broken deal: at the vote ──
+  'db.v1': [0, 1,
+    { by: 'b', say: "Then tell me why. One reason." },
+    { by: 'a', say: "The votes changed. If I'd said somebody else, I'd have been the only one." },
+    { by: 'b', say: "So you broke your word so you wouldn't stand out." },
+    { by: 'a', say: "I broke it so I'd still be here next week." },
+    2],
+  'db.v2': [
+    { by: 'b', say: "I heard you say my name." },
+    { by: 'a', say: "I know. I'm sorry." },
+    { by: 'b', say: "We shook on it." },
+    0],
+  'db.v3': [0, 1,
+    { by: 'b', say: "Then it's done. Don't come to me for anything." },
+    { by: 'a', say: "That's fair." },
+    { by: 'b', conf: "I'm not even angry. I'm just done with {a}. Next time {a}'s name comes up, I won't think twice." }],
+  // ── a broken deal: the call-out ──
+  'db.c1': [0, 1,
+    { by: 'b', say: "It didn't have to be me. You had a whole house to pick from." },
+    { by: 'a', say: "I picked the one I think I can beat. I'm sorry it was you." },
+    2],
+  'db.c2': [
+    { by: 'b', say: "Out of everybody, you picked me." },
+    { by: 'a', say: "I know what we said." },
+    { by: 'b', say: "Then why?" },
+    { by: 'a', say: "Because I want to go home with the money, not with a promise." },
+    0],
+  'db.c3': [0, 1,
+    { by: 'b', say: "Then go win. Because if you don't, you broke it for nothing." },
+    { by: 'a', conf: "I broke my deal with {b} in front of everybody. If I lose tonight, that's all anybody will remember about me." }],
+
+  // ── a break-up ──
+  'bu.1': [0, 1, 2,
+    { by: 'b', say: "That's not an answer." },
+    { by: 'a', say: "I can't play this game and worry about you at the same time. I've tried." },
+    { by: 'b', say: "Nobody asked you to worry about me." },
+    { by: 'a', say: "I know. I'm sorry." },
+    3],
+  'bu.2': [
+    { by: 'a', say: "Can we talk? Somewhere quiet?" },
+    { by: 'b', say: "If you're about to do what I think you're about to do, just do it here." },
+    { by: 'a', say: "I think we should stop. In here, anyway." },
+    { by: 'b', say: "Okay. Fine." },
+    0],
+  'bu.3': [0, 1,
+    { by: 'a', say: "I'm not trying to hurt you." },
+    { by: 'b', say: "Well, you did." },
+    { beat: '{b} walks away before {a} can say anything else.' },
+    { by: 'a', conf: "Ending it was the right thing for my game. It doesn't feel like the right thing." }],
+
+  // ── an apology: taken ──
+  'ap.a1': [0, 1,
+    { by: 'a', say: "I don't want it hanging over us. Not for the rest of the game." },
+    { by: 'b', say: "It's not. Not anymore." },
+    { by: 'a', say: "Okay. Thank you." },
+    2],
+  'ap.a2': [0, 1,
+    { by: 'a', say: "Really? You're not just saying that?" },
+    { by: 'b', say: "I'm not just saying it. I was angry. I'm not now." },
+    { by: 'a', say: "Okay. Good." },
+    { by: 'a', conf: "I needed to hear {b} say it. I've been carrying that vote around all week." }],
+  'ap.a3': [
+    { by: 'a', say: "I'm sorry. About the vote. I should have come to you first." },
+    { by: 'b', say: "Yeah. You should have." },
+    { by: 'a', say: "Can we move past it?" },
+    { by: 'b', say: "We can move past it." },
+    0],
+  // ── an apology: not taken ──
+  'ap.r1': [0, 1,
+    { by: 'a', say: "I'm saying it anyway." },
+    { by: 'b', say: "You're saying it because you want something." },
+    { by: 'a', say: "I'm saying it because I mean it." },
+    { by: 'b', say: "Then mean it from over there." },
+    2],
+  'ap.r2': [
+    { by: 'a', say: "I wanted to say I'm sorry. About the vote." },
+    { by: 'b', say: "Okay." },
+    { by: 'a', say: "That's it? Okay?" },
+    { by: 'b', say: "That's it." },
+    0],
+  'ap.r3': [
+    { by: 'a', say: "I'm sorry about the vote. I mean it." },
+    { by: 'b', say: "I heard you." },
+    0, 1,
+    { by: 'a', say: "Okay. I tried." },
+    { by: 'b', conf: "{a} wants me to forget it so {a} can stop feeling bad. I'm not going to forget it." }],
+
+  // ── a thrown daily, caught ──
+  'tc.1': [0, 1,
+    { by: 'a', say: "You were fine until the end. Then you slowed down." },
+    { by: 'b', say: "Because I was tired. That's what tired looks like." },
+    { by: 'a', say: "No. That's what giving up on purpose looks like." },
+    2],
+  'tc.2': [
+    { by: 'a', say: "You stopped. At the end. I saw it." },
+    { by: 'b', say: "I didn't stop." },
+    { by: 'a', say: "Everybody was watching. They'll have seen it too." },
+    0],
+  'tc.3': [0, 1, 2,
+    { by: 'b', say: "Why would I throw a daily? That makes no sense." },
+    { by: 'a', say: "It makes sense if you want to go into the Arena against somebody you know you can beat." },
+    { by: 'b', say: "You're making things up now." },
+    { by: 'a', conf: "{b} can say it all {b.sub} wants. I know what I saw, and I'm going to tell people." }],
+
+  // ── blamed for a team loss: somebody stands up ──
+  'tb.d1': [0, 1,
+    { by: 'a', say: "I'm not attacking anybody. I'm saying what happened." },
+    { by: 'c', say: "You're saying it in front of everybody so they'll remember it at the vote." },
+    { by: 'a', say: "That's not what this is." },
+    { by: 'c', say: "Then say it to {b}, not to the whole room." },
+    2],
+  'tb.d2': [0, 1,
+    { by: 'a', say: "I wasn't the one at the back." },
+    { by: 'c', say: "You weren't the one carrying anybody either." },
+    { by: 'b', say: "It's fine. I know I was bad today." },
+    { by: 'c', say: "It's not fine. We lost as a team." },
+    { by: 'b', conf: "{a} wanted a name for the loss, and {a} picked mine. {c} didn't let {a} have it. I won't forget that." }],
+  'tb.d3': [
+    { by: 'a', say: "We all know who lost it for us." },
+    { by: 'c', say: "Don't. Not now." },
+    { by: 'a', say: "Somebody has to say it." },
+    { by: 'c', say: "No, they don't." },
+    0],
+  // ── blamed, and nobody stands up ──
+  'tb.a1': [0, 1, 2,
+    { by: 'a', conf: "Somebody had to say it. Everybody was thinking it. I'm just the only one who said it out loud." }],
+  'tb.a2': [
+    { by: 'a', say: "Look, I'm not trying to be mean, but that loss was on {b}." },
+    { beat: 'A couple of people nod. Nobody looks at {b}.' },
+    0],
+  'tb.a3': [0, 1,
+    { by: 'a', say: "I'm not saying it to be cruel. I'm saying it so you can do better." },
+    { by: 'b', say: "I said I got it." },
+    { by: 'b', conf: "{a} said it in front of everybody. Now I'm the weak link, and that sticks in here." }],
+};

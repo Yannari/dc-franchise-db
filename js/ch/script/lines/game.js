@@ -83,6 +83,19 @@ export default {
     { id: 'ab.v3', turns: [
       { by: 'a', conf: "{b} voted against our own. I don't know how we come back from that.", v: { loud: ['How do we come back from that?! We don\'t!'] } },
     ] },
+    // written long from the start (the long cut, 2026-10-15)
+    { id: 'ab.v4', turns: [
+      { beat: 'After the vote, {a} waits for {b} outside. {b} sees {a} and stops.' },
+      { by: 'a', say: "Were you going to tell me first, or was I supposed to find out with everybody else?" },
+      { by: 'b', say: "I didn't decide until I was standing there." },
+      { by: 'a', say: "That's worse. That means nobody even had to talk you into it." },
+      { by: 'b', say: "I looked around that room and I could see where it was going. I didn't want to be the last one left." },
+      { by: 'a', say: "You weren't going to be the last one. You were going to be with us." },
+      { by: 'b', say: "Until you needed a name. Then it would have been me." },
+      { by: 'a', say: "You don't know that." },
+      { by: 'b', say: "Neither do you. That's the point." },
+      { by: 'a', conf: "{b} thinks we were going to turn on {b.obj}. Now we'll never find out, because {b} did it first." },
+    ] },
   ],
   'alliance-betrayal.callout': [
     { id: 'ab.c1', turns: [

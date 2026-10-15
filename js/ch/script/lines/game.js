@@ -700,6 +700,32 @@ export default {
       { by: 'b', say: "Watch me.", v: { soft: ['I\'m not doing this with you tonight.'] } },
       { beat: 'Half the bar watches {b} storm off into the night.' },
     ] },
+    // written long from the start (the long cut, 2026-10-15)
+    { id: 'fg.4', turns: [
+      { by: 'a', say: "Do you have a problem with me? Because you keep looking over here." },
+      { by: 'b', say: "I'm allowed to look wherever I want." },
+      { by: 'a', say: "Not like that, you're not." },
+      { by: 'b', say: "Like what? Go on, tell me what I'm doing." },
+      { by: 'a', say: "You've been rolling your eyes every time I talk. Everybody's noticed." },
+      { by: 'b', say: "Then maybe stop saying things that make me roll my eyes." },
+      { beat: '{a} stands up. Two people stand up with {a.obj}, just in case.' },
+      { by: 'a', say: "Say one more word." },
+      { by: 'b', say: "I'm not scared of you." },
+      { beat: 'Somebody pulls {a} back by the arm. {b} doesn\'t move.' },
+      { by: 'b', conf: "{a} wanted me to back down in front of everybody. I'm not backing down from anybody in this house." },
+    ] },
+    { id: 'fg.5', turns: [
+      { by: 'b', say: "If you've got something to say about me, say it here. Not behind my back." },
+      { by: 'a', say: "Fine. I think you're fake. I think you smile at everybody and then talk about them the second they leave." },
+      { by: 'b', say: "That's rich, coming from you." },
+      { by: 'a', say: "What's that supposed to mean?" },
+      { by: 'b', say: "It means you do exactly the same thing, you're just louder about it." },
+      { by: 'a', say: "At least I say it to people's faces." },
+      { by: 'b', say: "You're saying it now because you're angry. That's not the same thing." },
+      { beat: 'The room has gone completely quiet. Nobody is pretending not to listen any more.' },
+      { by: 'a', conf: "I said what everybody's been thinking about {b}. If that makes me the bad guy tonight, fine." },
+      { by: 'b', conf: "{a} wanted a fight, and {a} got one. I just hope everybody watching remembers who started it." },
+    ] },
   ],
   'fight-physical.any': [
     { id: 'fp.1', turns: [

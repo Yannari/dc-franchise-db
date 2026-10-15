@@ -277,6 +277,7 @@ export function challengeRows(result) {
         votes: (e.votes || []).map(v => ({ votedIn: v.votedIn, tally: { ...(v.tally || {}) }, tied: !!v.tied, tiebreak: v.tiebreak || null,
           ballots: (v.ballots || []).map(b => ({ voter: b.voter, target: b.target, wanted: b.wanted || null, asked: b.asked || null, told: b.told || null, why: b.why || null, flip: !!b.flip })) })),
         duels: (e.arena || []).map(duelOf),
+        ties: e.ties || {},
         meetings: (e.delib?.meetings || []).map(m => ({ name: m.name || null, organiser: m.organiser, target: m.target, responses: { ...(m.responses || {}) } })),
         // who they are, for the arrival's name plates: their show and whether they're a rookie
         ...(e.ep === 1 ? { castInfo: Object.fromEntries(cast.map(n => [n, introOf(n, state, cast)])) } : {}),
@@ -288,7 +289,7 @@ export function challengeRows(result) {
     rows.push({
       format: CHALLENGE_FORMAT, num: f.ep, day: f.aired?.[0]?.day ?? null, exits: exitsAt(f.ep), eliminated: null,
       votes: {}, votingLog: [], winner: (result.champions || [])[0] || null,
-      ch: { final: { champions: [...(result.champions || [])], placements: { ...(state.final?.placements || {}) },
+      ch: { ties: result.episodes[result.episodes.length - 1]?.ties || {}, final: { champions: [...(result.champions || [])], placements: { ...(state.final?.placements || {}) },
           ...finalOf(result.final) },
         people: [...(result.champions || [])], house: castAt(f.ep), aired: airedOf(f) },
     });

@@ -117,8 +117,8 @@ export const TJ_FIRST_DAILY = [
 ];
 export const TJ_GO = ['Go!', 'Three, two, one... GO!', 'Let\'s GO!', 'And GO!'];
 export const TJ_ARENA_ASK = [
-  '{a}, the house voted you in. Now you pick who goes in there with you. Who are you calling out?',
-  '{a}, you\'re in the Arena tonight. Who are you calling out?',
+  '{a}, it\'s your call now. Who are you bringing in here with you?',
+  '{a}, the floor is yours. Who are you calling out?',
 ];
 export const TJ_ARENA_RULES = [
   'Tonight you\'re playing {game}. Here\'s how it works.',

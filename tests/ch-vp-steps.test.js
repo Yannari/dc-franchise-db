@@ -72,7 +72,7 @@ describe('The Challenge stepped viewer: the steps', () => {
       const daily = screens.find(s => s.key === 'daily');
       if (daily) {
         const first = daily.steps.findIndex(st => st.win || st.power?.length);
-        const named = daily.steps.findIndex(st => (row.ch.dailyWinners || []).some(w => (st.tj || st.dir || st.say?.[1] || '').includes(w) && /win|safe|untouchable|wrap|done|it!/i.test(st.tj || st.dir || st.say?.[1] || '')));
+        const named = daily.steps.findIndex(st => (row.ch.dailyWinners || []).some(w => new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(st.tj || st.dir || st.say?.[1] || '') && /\b(wins?|won|safe|untouchable|wrap)\b/i.test(st.tj || st.dir || st.say?.[1] || '')));
         if (first >= 0 && named >= 0) expect(first, `ep ${row.num}: SAFE before the winners are called`).toBeLessThanOrEqual(named);
       }
       const vote = screens.find(s => s.key === 'vote');

@@ -22,6 +22,8 @@ import { marksOf, plateKey, lineup, hostSide, sizeAt } from './ground.js';
 import { episodeScenes } from '../ch/transcript.js';
 import { SHOWS } from '../shows.js';
 import { dailyPlay, ARENA_PLAY } from './play.js';
+import { DAILY_VOICE, ARENA_VOICE, speak, tjLine } from './voices.js';
+import { pronouns } from '../players.js';
 import { DAILY_STAGE, FINAL_STAGE, ARENA_STAGE, rulesOf, dailyDef, arenaDef, pickBy, nameList, fill,
   TJ_DAILY_OPEN, TJ_DAILY_NIGHT, TJ_GO, TJ_WELCOME, TJ_FIRST_DAILY, TJ_LANDING, TJ_SPEECH, TJ_ARENA_ASK, TJ_ARENA_RULES, TJ_ARENA_OUT, PLAY, DUEL } from './games.js';
 
@@ -270,15 +272,20 @@ export function chStepScreens(row, ctx = {}) {
   const names = [...new Set([...house, ...aired.flatMap(a => a.who || []), HOST])].sort((a, b) => b.length - a.length);
   const goneAt = goneBefore(row);
   const screens = [];
+  const pron = {};
+  for (const n of house) { try { pron[n] = pronouns(n); } catch { /* no record */ } }
+  const V = { used: new Set(), ties: ch.ties || {}, seed: `v${row.num}`, pron };
   let cur = null;
   const times = clockOf(aired, DAILY_STAGE[ch.daily?.id]?.hour === 'night');
   const S = {
     day: aired[0]?.day ?? row.day ?? 1, min: 8 * 60,
+    V: null,
     push(step) { cur.steps.push(step); return step; },
     last() { return cur.steps[cur.steps.length - 1]; },
     // the scene at airing index i: its day and time
     at(i) { const c = times[i]; if (c) { this.day = c.day; this.min = c.min; } },
   };
+  S.V = V;
   const open = (key, label) => { cur = { id: `${key}-${screens.length}`, key, label: label || LABEL[key] || 'The villa', steps: [] }; screens.push(cur); };
 
   // Group the aired scenes into chapters, in airing order.
@@ -456,7 +463,9 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   S.push({ tj: fill(pickBy(night ? TJ_DAILY_NIGHT : TJ_DAILY_OPEN, seed), { game: d.name }), focus: ['TJ'] });
   const mode = d.mode === 'pairs' ? 'In pairs. ' : d.mode === 'teams' ? 'Two teams. ' : '';
   const win = d.mode === 'solo' && (d.winners || []).length > 1 ? 'The best man and the best woman win, and they are safe at the vote.' : 'The winners are safe at the vote.';
-  S.push({ rules: { k: "TODAY'S DAILY", n: d.name, li: rulesOf(def?.desc), f: mode + win }, focus: ['TJ'] });
+  const card = { k: "TODAY'S DAILY", n: d.name, li: rulesOf(def?.desc), f: mode + win };
+  S.push({ rules: card, tj: tjLine('rules', {}, seed, S.V.used), focus: ['TJ'] });
+  for (const li of card.li) S.push({ rules: card, tj: toYou(li), focus: ['TJ'] });
   S.push({ tj: pickBy(TJ_GO, seed), focus: ['TJ'], gong: 1 });
   const unitName = u => nameList(u);
   const winners = d.winners || [];
@@ -470,7 +479,8 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
     const ch = (d.moments || []).find(m => m.kind === 'choke');
     if (ch) mid.push({ dir: fill(pickBy(PLAY.choke, seed), { who: ch.who }), focus: [ch.who], act: { [ch.who]: 'slump' } });
     played.steps.splice(Math.min(2, played.steps.length), 0, ...mid);
-    played.steps.forEach((x, k) => { if (k === 1 && know.length && !x.know) x.know = know.shift(); S.push(x); });
+    played.steps.forEach((x, k) => { if (k === 1 && know.length && !x.know) x.know = know.shift(); });
+    for (const x of weaveDaily(played.steps, d, st, S.V, people)) S.push(x);
   } else if (st.show === 'hang' || st.show === 'last') {
     // Out in reverse order; the winners never drop.
     const out = [...units].reverse().filter(u => !isWin(u));
@@ -480,6 +490,8 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
     const verb = st.verb;
     S.push({ hang: st.show === 'hang' ? 'start' : null, stand: st.show === 'last' ? 'start' : null, still: people,
       dir: st.show === 'hang' ? pickBy(PLAY.hang.start, seed) : pickBy(PLAY.last.start[verb] || PLAY.last.start.quiz, seed), focus: [] });
+    const hangSteps = [];
+    const pushHang = x => hangSteps.push(x);
     groups.forEach((g, k) => {
       const who = g.flat();
       const one = g.length === 1 && g[0].length === 1;
@@ -488,8 +500,9 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
         : fill(pickBy((one ? PLAY.last.drop1 : PLAY.last.dropN)[verb] || PLAY.last.drop1.quiz, seed + k), { who: nameList(g.map(unitName)) });
       const step = { drop: who, dir: (st.show === 'hang' && k > 0 ? pickBy(PLAY.hang.sag, seed + k) + ' ' : '') + line, sag: st.show === 'hang' ? k + 1 : 0, focus: who.slice(0, 2), shake: k === groups.length - 1 ? 1 : 0, splash: st.water ? 1 : 0 };
       if (k === 1 && know.length) step.know = know.shift();
-      S.push(step);
+      pushHang(step);
     });
+    for (const x of weaveDaily(hangSteps, d, st, S.V, people)) S.push(x);
   } else {
     // a race: three looks at the board, then the finish
     const R = units.length;
@@ -513,6 +526,11 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   const first = played ? (played.finish?.dir ? {} : { ...played.finish, win: winners, power: winners, slam: { winner: `${nameList(winners)} ${winners.length > 1 ? 'win' : 'wins'}` } }) : { win: winners, slam: { winner: `${nameList(winners)} ${winners.length > 1 ? 'win' : 'wins'}` }, power: winners, finish: st.show, race: st.show === 'race' ? units.slice(0, Math.min(6, units.length)).map(u => ({ who: u, p: isWin(u) ? 1 : .9 })) : null };
   linesToSteps(S, lines, { names, first, sceneWho: ['TJ', ...people] });
   for (const k of know) { const last = S.last(); if (last && !last.know) last.know = k; }
+  // TJ with everybody after: how it went, and what happens now
+  const week = row.ch?.division === 'm' ? "It's a men's week, so only a guy can be voted in." : row.ch?.division === 'f' ? "It's a women's week, so only a woman can be voted in." : '';
+  const wn = nameList(winners);
+  S.push({ tj: tjLine('debrief', { w: wn }, seed, S.V.used), focus: ['TJ'] });
+  if (!row.ch?.final) S.push({ tj: tjLine('next', { w: wn, week }, seed + 'n', S.V.used), focus: ['TJ', ...winners.slice(0, 1)], power: winners });
   // the daily's aftermath scenes, on the same plate
   for (const it of after) {
     S.at(it.i);
@@ -598,9 +616,15 @@ function buildArena(S, open, items, row, { names, house, goneAt }) {
   const key = plateKey(ARENA_STAGE.plate, true);
   const crowd = here.filter(n => n !== b);
   const cast = { TJ: ['host'], [a]: ['gate'], ...placeScene(key, [b, ...crowd], { group: 'house' }) };
+  S.arenaCrowd = crowd;
   S.push({ scene: { plate: key, place: 'The Arena', when: whenOf(S.day, S.min), icon: 'skull', island: 'arena', cast, hidden: [a], wipe: 1, embers: 1 },
     seg: ['Elimination', 'The Arena'], sceneIdx: at.i, title: 'The Arena' });
   S.push({ dir: 'The house is in the stand and the torches are lit. TJ hits the gong.', focus: ['TJ'], gong: 1 });
+  S.push({ tj: tjLine('arenaWelcome', {}, `${row.num}|${a}`, S.V.used), focus: ['TJ'] });
+  const vote = (row.ch?.votes || []).find(v => v.votedIn === a);
+  const recap = vote ? tjLine('arenaRecap', { a, n: vote.tally?.[a] || vote.ballots?.filter(b => b.target === a).length || '' }, `${row.num}|${a}r`, S.V.used)
+    : tjLine('arenaVolunteer', { a }, `${row.num}|${a}r`, S.V.used);
+  S.push({ tj: recap, focus: ['TJ'] });
   S.push({ enter: { [a]: ['podium', 0, 'L'] }, dir: `${a} walks out of the gate and takes the left podium.`, focus: [a] });
   if (co) {
     const lines = co.a.lines;
@@ -619,8 +643,8 @@ function buildArena(S, open, items, row, { names, house, goneAt }) {
   const { pre, post } = splitAtResult(ar.a.lines, duel);
   linesToSteps(S, pre, { names, sceneWho: [a, b, 'TJ'] });
   S.push({ rules: { k: "TONIGHT'S ELIMINATION", n: duel.name, li: rulesOf(g?.desc), f: 'The loser goes home' }, tj: pre.some(l => l.by === HOST) ? null : fill(pickBy(TJ_ARENA_RULES, `${row.num}|${duel.game}`), { game: duel.name }), focus: ['TJ'], props: ARENA_PLAY[duel.game]?.set({}) || [] });
-  playDuel(S, duel, `${row.num}|${duel.game}`);
-  finishDuel(S, duel, post, names, `${row.num}|${duel.game}`);
+  playDuel(S, duel, `${row.num}|${duel.game}`, S.arenaCrowd || []);
+  finishDuel(S, duel, post, names, `${row.num}|${duel.game}`, S.arenaCrowd || []);
 }
 
 // A game's lines: what is said before it is played, and the result with everything after. The result is
@@ -645,7 +669,7 @@ function setState(duel, prog, extra = {}) {
   const n = x => Math.round(Math.max(0, Math.min(12, prog[x] || 0)) / 12 * max);
   return { nL: n(a), nR: n(b), ...extra };
 }
-function playDuel(S, duel, seed) {
+function playDuel(S, duel, seed, crowd = []) {
   const { a, b } = duel;
   const AP = ARENA_PLAY[duel.game] || null;
   const format = duel.beats[0]?.kind || 'stage';
@@ -668,13 +692,29 @@ function playDuel(S, duel, seed) {
     prev = w;
     prog = { [w]: Math.min(11, Math.round((k + 1) * 3.2 + bt.margin * 1.5)), [l]: Math.min(10, Math.round((k + 1) * 3.2 - bt.margin * 2.5)) };
     const tilt = w === a ? -18 : 18, ball = w === a ? -.8 : .8, sag = w === a ? 18 : 42;
+    // somebody in the stand shouts to the one who needs it
+    const cheerFor = k % 2 ? w : l;
+    const by = fanOf(S.V, cheerFor, crowd);
+    if (by) { const t = speak(ARENA_VOICE.shout, by, { a: cheerFor }, `${seed}|sh${k}`, S.V.used); if (t) S.push({ say: [by, t], focus: [cheerFor], act: { [by]: 'shout' }, duel: { a, b, format: bt.kind, score: S._lastScore || null, prog: { ...S._prevProg || prog } } }); }
     S.push({ dir: text, focus: [w, l], act: { [w]: bt.kind === 'hold' ? 'look' : 'cheer', [l]: 'flinch' }, cam: [w === a ? .44 : .56, .6, 1.28],
       duel: { a, b, format: bt.kind, score: bt.score ? { ...bt.score } : null, prog: { ...prog }, ahead: w }, dig: bt.kind === 'stage' && duel.game === 'puzzle-pit' ? [a, b] : null,
       props: AP ? AP.set(setState(duel, prog, { tilt, ball, sag, low: k + 1 })) : null, shake: bt.kind === 'round' ? 1 : 0 });
+    S._lastScore = bt.score ? { ...bt.score } : null; S._prevProg = { ...prog };
+    // TJ calls the score between rounds; somebody in the stand talks to the camera halfway through
+    const last = duel.beats.filter(x => x.kind !== 'finish').length - 1;
+    if (bt.kind === 'round' && bt.score && k < last) {
+      const sw = bt.score[w], sl = bt.score[l];
+      const num = x => ['nothing', 'one', 'two', 'three', 'four'][x] || String(x);
+      S.push({ tj: sw === sl ? tjLine('scoreTie', { s: `${num(sw)}-${num(sl)}` }, `${seed}|t${k}`, S.V.used) : tjLine('score', { s: `${num(sw)}-${num(sl)}`, w, l: sw > sl ? l : w }, `${seed}|t${k}`, S.V.used), focus: ['TJ', w, l] });
+    }
+    if (k === Math.floor(last / 2)) {
+      const who = crowd.find(n => !(S.V.ties[n]?.friends || []).includes(a) && !(S.V.ties[n]?.friends || []).includes(b)) || crowd[0];
+      if (who) { const t = speak(ARENA_VOICE.stand, who, { a: w, b: l, pron: S.V.pron }, `${seed}|st${k}`, S.V.used); if (t) S.push({ conf: [who, t] }); }
+    }
   });
   S._lastProg = prog;
 }
-function finishDuel(S, duel, lines, names, seed) {
+function finishDuel(S, duel, lines, names, seed, crowd = []) {
   const { a, b, winner: w, loser: l } = duel;
   const fin = { a, b, format: duel.beats[0]?.kind || 'stage', score: duel.beats.filter(x => x.score).slice(-1)[0]?.score || null, prog: { [w]: 12, [l]: Math.max(6, (S._lastProg?.[l] || 8)) }, done: w };
   const beat = lines[0]?.kind === 'beat' ? 0 : -1;
@@ -694,8 +734,86 @@ function finishDuel(S, duel, lines, names, seed) {
       S.push({ tj: x.text, slam: { stamp: 'ELIMINATED' }, focus: [l], act: { [l]: 'slump' } });
     } else linesToSteps(S, [x], { names, sceneWho: [a, b, 'TJ'] });
   });
-  if (!stamped) S.push({ tj: fill(pickBy(TJ_ARENA_OUT, seed), { b: l }), slam: { stamp: 'ELIMINATED' }, focus: [l], act: { [l]: 'slump' } });
+  if (!stamped) S.push({ tj: tjLine('farewell', { l }, seed, S.V.used), slam: { stamp: 'ELIMINATED' }, focus: [l], act: { [l]: 'slump' } });
+  if (!lines.some(x => x.by === HOST && new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(x.text) && /stay|still|rejoin|back/i.test(x.text)))
+    S.push({ tj: tjLine('winner', { w }, seed + 'w', S.V.used), focus: [w, 'TJ'] });
+  const fan = fanOf(S.V, l, crowd);
+  if (fan) { const t = speak(ARENA_VOICE.bye, fan, { l }, `${seed}|bye`, S.V.used); if (t) S.push({ say: [fan, t], focus: [l], act: { [fan]: 'shout' } }); }
+  if (!lines.some(x => x.by === l && x.kind === 'conf')) { const t = speak(ARENA_VOICE.out, l, {}, `${seed}|out`, S.V.used); if (t) S.push({ conf: [l, t] }); }
   S.push({ exit: [l], dir: `${l} walks back out through the gate.`, focus: [w] });
+  if (crowd.length) S.push({ tj: tjLine('signoff', {}, seed + 's', S.V.used), focus: ['TJ'] });
+}
+
+// Somebody in the crowd who would shout for n: a friend first, else anyone there.
+function fanOf(V, n, crowd) {
+  const f = (V.ties[n]?.friends || []).find(x => crowd.includes(x));
+  return f || crowd.find(x => x !== n && V.ties[x]?.rival !== n) || null;
+}
+
+// A rule as TJ says it: the game's description in the second person ("Players swim out" -> "You swim out").
+export function toYou(t) {
+  // what belongs to somebody else stays theirs ("knock a rival off their platform")
+  const keep = [];
+  let x = String(t).replace(/\b(rival|opponent|other)(['’]s)?(\s+\w+){0,2}\s+their\b/g, m => { keep.push(m); return `\u0000${keep.length - 1}\u0000`; });
+  x = x
+    // TJ is the one talking
+    .replace(/\bTJ['’]s\b/g, 'my').replace(/\bTJ (\w+?)s\b/g, 'I $1').replace(/\bTJ\b/g, 'I')
+    .replace(/\bThe players\b/g, 'You').replace(/\bthe players\b/g, 'you').replace(/\bthat player\b/g, 'you').replace(/\bThe two players\b/g, 'You two').replace(/\bthe two players\b/g, 'you two').replace(/\bBoth players\b/g, 'Both of you')
+    .replace(/\bEach player\b/g, 'Each of you').replace(/\beach player\b/g, 'each of you').replace(/\bEvery player\b/g, 'Every one of you')
+    .replace(/\bPlayers\b/g, 'You').replace(/\bplayers\b/g, 'you').replace(/\bThey\b/g, 'You').replace(/\bthey\b/g, 'you')
+    .replace(/\bTheir\b/g, 'Your').replace(/\btheir\b/g, 'your').replace(/\bthemselves\b/g, 'yourselves').replace(/\bbehind them\b/g, 'behind you')
+    .replace(/(?<![Ee]ach of )\byou has\b/g, 'you have').replace(/\byou is\b/g, 'you are').replace(/\byou was\b/g, 'you were');
+  return x.replace(/\u0000(\d+)\u0000/g, (m, i) => keep[+i]);
+}
+
+// The house's voices woven through a daily (voices.js): nerves before it starts, the leader and somebody
+// watching them, a shout to the one falling behind, their own struggle, and a friend's or a rival's word.
+// At most nine voices a daily, two per person, each said once.
+function weaveDaily(steps, d, st, V, people) {
+  const out = [];
+  const said = {};
+  let n = 0;
+  const units = d.order || [];
+  const lead = (units.find(u => u.some(x => (d.winners || []).includes(x))) || units[0] || [])[0];
+  const back = (units[units.length - 1] || [])[0];
+  const nervous = (units[Math.floor(units.length * .7)] || [])[0];
+  const verb = st.verb;
+  const can = who => who && people.includes(who) && (said[who] || 0) < 2 && n < 9;
+  const add = x => { out.push(x); n++; const w = x.say?.[0] || x.conf?.[0]; if (w) said[w] = (said[w] || 0) + 1; };
+  const someone = not => people.find(p => !not.includes(p) && (said[p] || 0) === 0);
+  const shout = (to, pool, key) => {
+    if (!to) return;
+    const by = (V.ties[to]?.friends || []).find(f => people.includes(f) && can(f)) || someone([to, lead, back]);
+    if (!can(by)) return;
+    const t = speak(pool, by, { a: to }, `${V.seed}|${key}|${to}`, V.used);
+    if (t) add({ say: [by, t], focus: [by, to], act: { [by]: 'shout' } });
+  };
+  const conf = (who, pool, slots, key) => {
+    if (!can(who)) return;
+    const t = speak(pool, who, { ...slots, pron: V.pron }, `${V.seed}|${key}|${who}`, V.used);
+    if (t) add({ conf: [who, t] });
+  };
+  let didLead = false, didBack = false;
+  steps.forEach((x, k) => {
+    out.push(x);
+    const f = x.focus || [];
+    if (k === 0) { conf(nervous, DAILY_VOICE.nerves, {}, 'nerves'); shout(lead, DAILY_VOICE.verb[verb] || DAILY_VOICE.go, 'v0'); }
+    if (!didLead && lead && f.includes(lead)) {
+      didLead = true;
+      conf(lead, DAILY_VOICE.lead[verb] || DAILY_VOICE.lead.any, {}, 'lead');
+      conf(V.ties[lead]?.rival && people.includes(V.ties[lead].rival) ? V.ties[lead].rival : someone([lead]), DAILY_VOICE.watchLead, { a: lead }, 'wl');
+      shout(lead, DAILY_VOICE.go, 'go');
+    }
+    if (!didBack && back && (f.includes(back) || (x.drop || []).includes(back))) {
+      didBack = true;
+      shout(back, DAILY_VOICE.back, 'back');
+      conf(back, DAILY_VOICE.back[verb] || DAILY_VOICE.back.any, {}, 'struggle');
+      const r = V.ties[back]?.rival;
+      if (r && people.includes(r)) conf(r, DAILY_VOICE.watchBackRival, { a: back }, 'wbr');
+      else conf((V.ties[back]?.friends || []).find(p => people.includes(p)), DAILY_VOICE.watchBackFriend, { a: back }, 'wbf');
+    }
+  });
+  return out;
 }
 
 // ── the final ─────────────────────────────────────────────────────────

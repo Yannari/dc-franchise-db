@@ -152,6 +152,14 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     const R = name => streamFor(seed, `ep${plan.ep}${roll ? `~${roll}` : ''}:${name}`);
     const epRec = { ep: plan.ep, division: null, exits: [], votedIn: [], arena: [], votes: [], callouts: [] };
     state.episodes.push(epRec);
+    // Who is close to whom as the week begins, for the stepped viewer's crowd: a friend cheers you on in the
+    // daily and from the Arena's stand, a rival comments on your struggle. Read, never decided here.
+    epRec.ties = Object.fromEntries(state.active.map(n => {
+      const others = state.active.filter(x => x !== n).map(x => [x, getBond(n, x)]).sort((x, y) => y[1] - x[1]);
+      const friends = others.filter(([, b]) => b >= 2).slice(0, 3).map(([x]) => x);
+      const low = others[others.length - 1];
+      return [n, { friends, rival: low && low[1] <= -2 ? low[0] : null }];
+    }));
 
     // ── Day 1: house life, the daily, the night out ──
     // The premiere goes the modern show's way: off the plane, TJ, the first daily with the bags still in

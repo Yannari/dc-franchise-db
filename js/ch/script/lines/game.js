@@ -616,6 +616,29 @@ export default {
     { id: 'ep.3', turns: [
       { by: 'b', conf: "The night before the Arena is the worst. Having {a} there made it easier.", v: { loud: ['I\'m going in there with my whole heart tomorrow!'] } },
     ] },
+    // written long from the start (the long cut, 2026-10-15)
+    { id: 'ep.4', turns: [
+      { beat: '{a} knocks once and sits down on the end of {b}\'s bed without asking.' },
+      { by: 'a', say: "I'm not here to give you a speech. I just didn't want you sitting here on your own." },
+      { by: 'b', say: "I keep going over it. Who I pick, what the game is, everything." },
+      { by: 'a', say: "You won't know the game until TJ tells you. So stop trying to guess it." },
+      { by: 'b', say: "And the pick?" },
+      { by: 'a', say: "That one's yours. I'm not going to tell you who. I'll just tell you I'll be screaming either way." },
+      { by: 'b', say: "Okay." },
+      { by: 'a', say: "Okay. Now lie down. You need to sleep." },
+      { by: 'b', conf: "{a} didn't say anything clever. {a} just sat there until I stopped shaking, and that was enough." },
+    ] },
+    { id: 'ep.5', turns: [
+      { by: 'b', say: "Can I ask you something honestly?" },
+      { by: 'a', say: "Always." },
+      { by: 'b', say: "Do you think I can win tomorrow?" },
+      { by: 'a', say: "I've watched you in every daily. You don't give up when it hurts. That's what the Arena is." },
+      { by: 'b', say: "And if I lose?" },
+      { by: 'a', say: "Then you lose fighting, and everybody in that stand will know it." },
+      { by: 'b', say: "That's not a yes." },
+      { by: 'a', say: "It's a yes. I'm just not going to jinx it." },
+      { by: 'a', conf: "I want {b} to win tomorrow more than I've wanted anything in this game so far." },
+    ] },
   ],
   'arena-eve-alone.any': [
     { id: 'ea.1', turns: [

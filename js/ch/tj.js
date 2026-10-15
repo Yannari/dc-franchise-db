@@ -17,6 +17,34 @@ import { trustOf, grudgeOf, remember, intimidated } from './rel.js';
 import { allianceOf } from './alliances.js';
 
 // ── the night before ─────────────────────────────────────────────────
+// The day of the Arena, before it. The one going in talks the pick through with the friend they trust most
+// (never saying it: the call-out is said at the Arena), and the people who could be picked wait together.
+// A volunteer named their target at the vote, so there is nothing to guess.
+export function pickDay(state, rng, match) {
+  const { a, b, pool = [] } = match;
+  if (match.volunteer || !state.active.includes(a)) return;
+  const open = pool.filter(n => state.active.includes(n));
+  // the two names the friend hears: the real one and the one a would most like gone after it, in either order
+  const other = open.filter(n => n !== b).sort((x, y) => getBond(a, x) - getBond(a, y))[0];
+  if (other) {
+    const options = rng() < 0.5 ? [b, other] : [other, b];
+    const friend = state.active.filter(x => x !== a && !open.includes(x)).sort((x, y) => trustOf(y, a) - trustOf(x, a))[0];
+    if (friend) {
+      addBond(friend, a, 0.4);
+      addScene(state, 'pick-talk', [a, friend], { options }, [a, friend], 'private');
+    }
+  }
+  // the ones who might be picked, the ones who are closest to each other, waiting it out
+  const worried = [...open].sort((x, y) => getBond(a, x) - getBond(a, y)).slice(0, 4);
+  if (worried.length >= 2) {
+    const [p, ...rest] = worried;
+    const with_ = rest.sort((x, y) => getBond(p, y) - getBond(p, x)).slice(0, 2);
+    const who = [p, ...with_];
+    for (const x of who) for (const y of who) if (x < y) addBond(x, y, 0.3);
+    addScene(state, 'pick-guess', who, { by: a }, who, 'private');
+  }
+}
+
 export function arenaEve(state, rng, match) {
   // a was voted in (or volunteered); b is who a means to call out at the Arena tomorrow. Nobody but a
   // knows that yet (the call-out is said at the Arena), so only a gets the night before. A volunteer

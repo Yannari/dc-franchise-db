@@ -298,8 +298,9 @@ export function chStepScreens(row, ctx = {}) {
     if (a.kind === 'run-name' && chunks[chunks.length - 1]?.key === 'daily') k = 'daily';
     if (a.kind === 'daily') seenDaily = true;
     // the villa, a night out and the villa reveal are one screen, however they're interleaved
-    const LIFE = ['party', 'villa', 'reveal'];
+    const LIFE = ['party', 'villa', 'reveal', 'eve'];
     if (LIFE.includes(k) && LIFE.includes(chunks[chunks.length - 1]?.key)) { chunks[chunks.length - 1].items.push(i); return; }
+    if (k === 'eve') { chunks.push({ key: 'villa', items: [i] }); return; }   // the night before opens a villa screen, never its own
     const last = chunks[chunks.length - 1];
     if (last && last.key === k && k !== 'arena') last.items.push(i);
     else if (last && k === 'arena' && last.key === 'arena' && aired[last.items[last.items.length - 1]].kind === 'callout') last.items.push(i);
@@ -325,7 +326,7 @@ export function chStepScreens(row, ctx = {}) {
     if (['final-start', 'instant', 'overnight', 'final-day2', 'champions'].includes(c.key)) { buildFinal(S, open, c.key, items, row, { names, house, goneAt }); continue; }
     // villa, party, eve: scene after scene on their plates, the villa opening on its map
     open(c.key);
-    if (c.key !== 'eve' && items.filter(x => chapterOf(x.a) !== 'party').length >= 2) villaMap(S, items.filter(x => chapterOf(x.a) !== 'party'));
+    if (items.filter(x => chapterOf(x.a) !== 'party').length >= 2) villaMap(S, items.filter(x => chapterOf(x.a) !== 'party'));
     let partied = false;
     for (const it of items) {
       const k = chapterOf(it.a);

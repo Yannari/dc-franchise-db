@@ -32,7 +32,7 @@ import { file, causeOf, book } from './storylines.js';
 import { arcsFor } from './arcs.js';
 import { previouslyFor } from './previously.js';
 
-const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', 'daily', 'callout', 'arena', 'quit', 'medical', 'disqualified', 'tj-house-meeting', 'outing',
+const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', 'pick-talk', 'pick-guess', 'daily', 'callout', 'arena', 'quit', 'medical', 'disqualified', 'tj-house-meeting', 'outing',
   'volunteer', 'return', 'showmance', 'breakup', 'alliance-betrayal', 'deal-broken', 'fight-physical', 'final-start',
   'instant-elimination', 'overnight-sabotage', 'overnight-quit', 'final-pact-help', 'final-pact-broken', 'champions',
   'rookie-uprising']);
@@ -45,7 +45,9 @@ const STORY = new Set(['deal', 'alliance-grow', 'alliance-leave', 'alliance-end'
 const WARM = new Set(['flirt', 'beach-date', 'spark', 'vet-mentors-rookie', 'apology', 'hot-tub-truths', 'arena-eve-pep']);
 const ROW = new Set(['fight', 'fight-physical', 'kitchen-blowup', 'receipts', 'trash-talk', 'partner-blame', 'jealousy']);
 const CAPS = { meeting: 2, recruit: 2, 'alliance-form': 2, plea: 1, 'leverage-threat': 1, 'arena-eve-pep': 2, 'arena-eve-alone': 1 };
-const DAY_BUDGET = 7;   // non-must scenes per day
+const DAY_BUDGET = 7;   // non-must scenes per day, before the vote (or before the Arena)
+const AFTER_BUDGET = 7; // ...and after it: the night after the vote, the night after the Arena
+const ANCHOR = new Set(['voted-in', 'volunteer-in', 'arena']);
 
 const baseTier = k => (MUST.has(k) ? 0 : DUE.has(k) ? 1 : STORY.has(k) ? 2 : 3);
 
@@ -142,16 +144,18 @@ export function airEpisode(state, epRec, prevRec = null) {
       if (s.who.length === 2) pairs[k] = (pairs[k] || 0) + 1;
       if (ROW.has(s.kind)) { rowed.add(k); blewUp.add(s.who[0]); }
     };
-    let budget = DAY_BUDGET;
+    const firstAnchor = Math.min(...pool.filter(s => ANCHOR.has(s.kind)).map(s => s.id), Infinity);
+    const half = s => (s.id > firstAnchor ? 1 : 0);
+    const budget = [DAY_BUDGET, AFTER_BUDGET];
     for (const tier of [0, 1, 2, 3]) {
       // inside a tier: the stories already running first, then in time order
       const cands = pool.filter(s => !picked.has(s.id) && tierOf(s) === tier)
         .sort((x, y) => chapters(y) - chapters(x) || x.id - y.id);
       for (const s of cands) {
-        if (tier > 0 && budget <= 0) break;
+        if (tier > 0 && budget[half(s)] <= 0) continue;
         if (!ok(s, tier)) continue;
         take(s);
-        if (tier > 0) budget--;
+        if (tier > 0) budget[half(s)]--;
       }
     }
     const dayArcs = arcs.filter(a => a.day === day && a.who.every(n => !gone.has(n)));

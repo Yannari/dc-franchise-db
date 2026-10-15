@@ -36,7 +36,7 @@ import { romanceDay, breakupCheck } from './romance.js';
 import { quitRisk, quit, medical, disqualify, removePlayer } from './exits.js';
 import { houseDay, psycheMoment, returnToHouse } from './house.js';
 import { houseBeats } from './events.js';
-import { arenaEve, calloutCost, tjLaysDownTheLaw, tjVerdict } from './tj.js';
+import { arenaEve, pickDay, calloutCost, tjLaysDownTheLaw, tjVerdict } from './tj.js';
 import { playFinal } from './final.js';
 import { reviseAll } from './plans.js';
 import { spreadDay, syncActive } from './knowledge.js';
@@ -262,16 +262,24 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       // the same person, so the choice is made now.
       used.add(co.opponent);
       afterVote(state, R(`after${k}`), { ballots: vote?.ballots || [], votedIn, calledOut: null, by: votedIn });
-      matches.push({ a: votedIn, b: co.opponent, volunteer, vote, co, k, callout: { by: votedIn, opponent: co.opponent, reason: co.reason },
+      matches.push({ a: votedIn, b: co.opponent, volunteer, vote, co, k, pool, callout: { by: votedIn, opponent: co.opponent, reason: co.reason },
         voters: (vote?.ballots || []).filter(x => x.target === votedIn).map(x => x.voter) });
     }
 
     // ── The night before: the two who are going in, and the people around them ──
     for (const m of matches) arenaEve(state, R(`eve${m.a}`), m);
+    // the rest of the house that night (the user, 2026-10-15: the villa after the vote was "four events,
+    // short, boring and useless")
+    houseBeats(state, R('eveBeats'), { night: true, min: 2, max: 3 });
 
     // ── Day 3: the Arena ──
     state.day = plan.firstDay + 2;
     for (const n of state.active) driftDay(state, n);
+    // the day of the Arena, before it: house life, the one going in thinking it through with a friend,
+    // and the people who might be picked, waiting
+    houseDay(state, R('house3'));
+    houseBeats(state, R('beats3am'), { min: 2, max: 3 });
+    for (const m of matches) pickDay(state, R(`pick${m.a}`), m);
     for (const [k, m] of matches.entries()) {
       if (!state.active.includes(m.a) || !state.active.includes(m.b)) continue;
       // The call-out, at the Arena: everything it costs happens now, when the house hears it.
@@ -311,7 +319,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       // The morning after comes after the winner has walked back in.
       epRec.fallout = (epRec.fallout || []).concat(morningAfter(state, { duel, vote: m.vote, callout: m.callout, meetings: delib?.meetings || [] }));
     }
-    houseBeats(state, R('beats3'), { night: true, min: 1, max: 3 });
+    houseBeats(state, R('beats3'), { night: true, min: 3, max: 5 });
     psycheMoment(state, R('psyche'));
     breakupCheck(state, R('breakup'));
     epRec.exits.push(...dayExits(state, R('exits3')));

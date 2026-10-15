@@ -28,6 +28,10 @@ export const ROLES = {
   'villa-reveal': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   // a proposes, b is the name, c objects (with their own name when they have one), d backs a
   'house-debate': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.alt ? 'split' : 'one', slots: { alt: sc.data.alt } }),
+  // the day of the Arena: a (going in) thinks the pick through with b, naming two people it could be
+  'pick-talk': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { opt1: sc.data.options?.[0], opt2: sc.data.options?.[1] } }),
+  // the people who might be picked, waiting; {target} is the one picking
+  'pick-guess': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any', slots: { target: sc.data.by } }),
   'after-vote': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.stung || undefined }, ending: sc.data.stung ? 'stung' : 'any', slots: { count: COUNT_WORD[sc.data.count] || String(sc.data.count) } }),
   daily: sc => ({ roles: { a: sc.data.winners[0], b: sc.data.winners[1], c: sc.data.last?.[0] }, ending: sc.data.mode,
     slots: { game: sc.data.dailyName } }),

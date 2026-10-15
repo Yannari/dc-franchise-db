@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Challenge Stepped Viewer</title>
+<!-- mockup/mockup-ch-viewer.html — The Challenge's stepped viewer, as a clickable mockup on the real plates
+     (assets/sets/ch, made by tools/ch-art/plates.py, alive through js/vp-td-ep/glplate.js) and their marks
+     (js/vp-ch-ep/marks.js). Serve the repo root and open /mockup/mockup-ch-viewer.html.
+     Lines are the engine's own (transcripts/ch-season-1.txt episode 5, ch-season-2.txt day 34). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:ital,wght@0,500;0,700;1,500&family=Black+Ops+One&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #121010; --panel: #1c1918; --steel: #2a2725; --line: #3a3532; --ink: #f4eee8; --dim: #a39890;
+  --fire: #ff6a1a; --red: #e3262d; --caution: #ffd21a; --neon: #2de2ff; --tape: #b9b4ae;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --bg: #121010; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font: 500 16px/1.35 'Barlow Condensed', system-ui, sans-serif; }
+button { font: inherit; color: inherit; }
+
+/* ── the header: the show's own bar ─────────────────────────────── */
+.bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 10px 16px; border-bottom: 3px solid var(--fire);
+  background: repeating-linear-gradient(135deg, #191514 0 14px, #1d1817 14px 28px); }
+.logo { font: 400 28px/1 'Anton', sans-serif; letter-spacing: .02em; text-transform: uppercase; transform: skewX(-8deg);
+  color: var(--fire); text-shadow: 2px 2px 0 #000, -1px -1px 0 var(--caution); }
+.logo small { display: block; font: 400 12px 'Black Ops One'; color: var(--caution); letter-spacing: .3em; text-shadow: none; }
+.ep { font: 700 15px 'Barlow Condensed'; color: var(--dim); text-transform: uppercase; letter-spacing: .08em; }
+.ep b { color: var(--ink); }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+.tabs button { background: var(--steel); border: 1px solid var(--line); padding: 6px 12px; cursor: pointer; text-transform: uppercase;
+  letter-spacing: .06em; font-weight: 700; clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); }
+.tabs button.on { background: var(--fire); color: #140c08; border-color: var(--fire); }
+.classic { background: none; border: 1px dashed var(--line); padding: 5px 10px; color: var(--dim); cursor: pointer; }
+.note { padding: 6px 16px; color: var(--dim); font-size: 14px; }
+
+/* ── layout ─────────────────────────────────────────────────────── */
+.wrap { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; padding: 12px 16px 24px; max-width: 1500px; margin: 0 auto; }
+@media (max-width: 980px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+/* ── the stage ──────────────────────────────────────────────────── */
+.stage { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #000; container-type: size; cursor: pointer;
+  border: 2px solid #000; box-shadow: 0 0 0 1px var(--line), 0 18px 40px rgba(0, 0, 0, .5); user-select: none; }
+.cam { position: absolute; inset: 0; transform-origin: 50% 50%; transition: transform 1.3s cubic-bezier(.3, .7, .2, 1); }
+.cam > img, .cam > canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+canvas.tdx-gl { opacity: 0; transition: opacity .4s; }
+canvas.tdx-gl.on { opacity: 1; }
+.stage.shake .cam { animation: shake .45s; }
+@keyframes shake { 20% { translate: -1.2cqw .5cqh } 40% { translate: 1cqw -.6cqh } 60% { translate: -.7cqw .3cqh } 80% { translate: .4cqw 0 } }
+
+/* a person: a portrait card standing on their mark (the TD token, in the show's own frame) */
+.tok { position: absolute; width: var(--sz); height: var(--sz); transform: translate(-50%, -100%); z-index: 2;
+  transition: left 1s cubic-bezier(.3, .8, .25, 1), top 1s cubic-bezier(.3, .8, .25, 1), opacity .5s, filter .4s, scale .4s; transform-origin: 50% 100%; }
+.tok .body { position: absolute; inset: 0; transform-origin: 50% 100%; animation: breathe 3.6s ease-in-out infinite; }
+.tok .face { position: absolute; inset: 0; overflow: hidden; background: #222; border: .25cqw solid #0c0a0a;
+  clip-path: polygon(0 4%, 6% 0, 100% 0, 100% 94%, 94% 100%, 0 100%); box-shadow: 0 .6cqh 1.2cqh rgba(0, 0, 0, .5); }
+.tok .face img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tok .tag { position: absolute; left: 50%; bottom: -.9em; transform: translateX(-50%) rotate(-2deg); white-space: nowrap;
+  font: 400 clamp(9px, 1.15cqw, 18px)/1 'Anton', sans-serif; letter-spacing: .05em; text-transform: uppercase; color: #111;
+  background: var(--tape); padding: .28em .55em .22em; box-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+  clip-path: polygon(0 8%, 4% 0, 9% 10%, 15% 0, 100% 0, 97% 50%, 100% 100%, 8% 100%, 3% 88%, 0 100%); }
+.tok .shadow { position: absolute; left: 8%; right: 8%; bottom: -5%; height: 11%; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, .55), transparent 70%); z-index: -1; }
+.tok.dim { filter: saturate(.6) brightness(.62); scale: .9; }
+.tok.talk { z-index: 5; scale: 1.08; }
+.tok.talk .face { border-color: var(--caution); box-shadow: 0 0 0 .2cqw var(--caution), 0 0 2.4cqw rgba(255, 210, 26, .55); }
+.tok.talk .tag { background: var(--caution); }
+.tok.host .tag { background: var(--fire); color: #140c08; }
+.tok.gone { opacity: 0; }
+.tok.water .face::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 34%;
+  background: linear-gradient(180deg, rgba(110, 230, 230, .55), rgba(40, 170, 190, .85)); border-top: .25cqw solid rgba(220, 255, 255, .8); }
+.tok.chip-safe::before, .tok[data-chip]::before { content: attr(data-chip); position: absolute; left: 50%; top: -1.4em; transform: translateX(-50%);
+  font: 400 clamp(8px, 1cqw, 15px)/1 'Black Ops One'; color: #111; background: var(--caution); padding: .25em .5em; white-space: nowrap; z-index: 3; }
+@keyframes breathe { 50% { transform: scaleY(1.018) } }
+.act-shout .body { animation: shout .5s ease-out 2; }
+@keyframes shout { 30% { transform: translateY(-4%) scale(1.06) } 60% { transform: translateX(-2%) } }
+.act-shove .body { animation: shove .55s cubic-bezier(.2, .9, .2, 1); }
+@keyframes shove { 40% { transform: translateX(var(--dir, 40%)) rotate(6deg) } }
+.act-knock .body { animation: knock .7s .18s cubic-bezier(.2, .9, .3, 1) both; }
+@keyframes knock { 30% { transform: translateX(var(--dir, 30%)) rotate(-12deg) } 100% { transform: translateX(calc(var(--dir, 30%) * .5)) rotate(-4deg) } }
+.act-whisper .body { animation: whisper 1.6s ease-in-out; }
+@keyframes whisper { 50% { transform: translateX(var(--dir, 10%)) rotate(4deg) } }
+.dance .body { animation: dance .62s ease-in-out infinite alternate; }
+.dance:nth-child(2n) .body { animation-duration: .55s; animation-delay: -.2s; }
+.dance:nth-child(3n) .body { animation-duration: .7s; }
+@keyframes dance { 0% { transform: translateY(0) rotate(-3deg) } 100% { transform: translateY(-6%) rotate(3deg) } }
+.badge { position: absolute; left: 50%; top: -18%; transform: translateX(-50%); font: 400 2.2cqw/1 'Anton'; color: var(--red);
+  text-shadow: 0 0 6px #000; animation: pop .5s both; }
+@keyframes pop { 0% { scale: 0; } 70% { scale: 1.3; } 100% { scale: 1; } }
+
+/* overlays (not zoomed with the camera) */
+.fx { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+.tcard { position: absolute; left: 2.2cqw; top: 3cqh; padding: .9cqh 2.2cqw .7cqh 1.6cqw; background: var(--tape); color: #111;
+  transform: rotate(-2.5deg); box-shadow: 0 .4cqh 1cqh rgba(0, 0, 0, .45); animation: slap .35s cubic-bezier(.2, 1.4, .4, 1) both;
+  clip-path: polygon(0 6%, 3% 0, 7% 7%, 12% 0, 100% 3%, 98% 40%, 100% 100%, 6% 97%, 2% 100%, 0 70%); }
+.tcard b { display: block; font: 400 4.2cqw/1 'Anton'; letter-spacing: .02em; }
+.tcard span { font: 700 1.7cqw/1.1 'Barlow Condensed'; text-transform: uppercase; letter-spacing: .1em; }
+@keyframes slap { 0% { scale: 1.6; opacity: 0; rotate: -8deg } 100% { scale: 1; opacity: 1; rotate: 0deg } }
+
+/* the slams: CALLED OUT and VOTED IN are spray-stencilled, ELIMINATED is stamped, a DQ is caution tape */
+.spray { position: absolute; left: 50%; top: 50%; width: 70cqw; transform: translate(-50%, -50%) rotate(-5deg); }
+.spray svg { width: 100%; overflow: visible; }
+.spray .paint { clip-path: inset(0 100% 0 0); animation: sprayon .7s .05s steps(14) forwards; }
+@keyframes sprayon { to { clip-path: inset(0 0 0 0); } }
+.spray .drip { transform-box: fill-box; transform-origin: top; animation: drip 1.6s .7s ease-in both; }
+@keyframes drip { 0% { transform: scaleY(0) } 100% { transform: scaleY(1) } }
+.spray .can { animation: can .7s .05s linear both; }
+@keyframes can { 0% { transform: translateX(-60%); opacity: 1 } 95% { opacity: 1 } 100% { transform: translateX(60%); opacity: 0 } }
+.stamp { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%) rotate(-11deg); padding: 1.2cqh 2.6cqw .8cqh;
+  font: 400 7.6cqw/1 'Black Ops One'; color: var(--red); border: .8cqw solid var(--red); letter-spacing: .04em;
+  background: rgba(20, 0, 0, .25); animation: stamp .28s cubic-bezier(.3, 1.6, .5, 1) both;
+  -webkit-mask: var(--grunge); mask: var(--grunge); }
+@keyframes stamp { 0% { scale: 2.6; opacity: 0 } 100% { scale: 1; opacity: .95 } }
+.tape { position: absolute; left: -20%; width: 140%; height: 10cqh; display: flex; align-items: center; overflow: hidden;
+  background: var(--caution); border-block: 1.1cqh solid; border-image: repeating-linear-gradient(-45deg, #111 0 1.2cqh, var(--caution) 1.2cqh 2.4cqh) 1;
+  box-shadow: 0 .8cqh 1.6cqh rgba(0, 0, 0, .5); animation: tape .5s cubic-bezier(.2, .9, .2, 1) both; }
+.tape span { white-space: nowrap; font: 400 4.6cqw/1 'Black Ops One'; color: #111; letter-spacing: .06em; padding-left: 2cqw; }
+.tape.a { top: 38%; rotate: -7deg; }
+.tape.b { top: 52%; rotate: 5deg; animation-delay: .18s; animation-name: tape2; }
+@keyframes tape { 0% { translate: -110% 0 } 100% { translate: 0 0 } }
+@keyframes tape2 { 0% { translate: 110% 0 } 100% { translate: 0 0 } }
+.game { position: absolute; left: 50%; top: 50%; width: 56cqw; transform: translate(-50%, -50%); padding: 2.4cqh 2.6cqw 2.2cqh;
+  background: linear-gradient(180deg, #3b3836, #1f1c1b); border: .25cqw solid #000; color: var(--ink); animation: slap .4s cubic-bezier(.2, 1.3, .4, 1) both;
+  box-shadow: 0 0 0 .25cqw #57514c inset, 0 2cqh 4cqh rgba(0, 0, 0, .6);
+  background-image: radial-gradient(circle at 1.4cqw 1.4cqw, #8a837d .35cqw, transparent .45cqw), radial-gradient(circle at calc(100% - 1.4cqw) 1.4cqw, #8a837d .35cqw, transparent .45cqw),
+    radial-gradient(circle at 1.4cqw calc(100% - 1.4cqw), #8a837d .35cqw, transparent .45cqw), radial-gradient(circle at calc(100% - 1.4cqw) calc(100% - 1.4cqw), #8a837d .35cqw, transparent .45cqw),
+    linear-gradient(180deg, #3b3836, #1f1c1b); }
+.game .k { font: 400 1.4cqw/1 'Black Ops One'; color: var(--fire); letter-spacing: .25em; }
+.game .n { font: 400 6cqw/1 'Anton'; color: var(--caution); text-transform: uppercase; margin: .6cqh 0 1cqh; transform: skewX(-6deg); }
+.game p { margin: 0; font: 500 1.6cqw/1.3 'Barlow Condensed'; color: #ddd3ca; }
+.game .f { margin-top: 1.2cqh; font: 700 1.4cqw 'Barlow Condensed'; color: var(--fire); text-transform: uppercase; letter-spacing: .12em; }
+.win { position: absolute; left: 50%; top: 22%; transform: translate(-50%, -50%) rotate(-3deg); font: 400 6cqw/1 'Anton'; color: var(--caution);
+  text-transform: uppercase; text-shadow: .3cqw .3cqw 0 #000, 0 0 3cqw rgba(255, 106, 26, .8); animation: slap .4s cubic-bezier(.2, 1.4, .4, 1) both; white-space: nowrap; }
+
+/* confessional: the stage cuts to the interview */
+.conf { position: absolute; inset: 0; display: grid; grid-template-columns: 38% 1fr; align-items: center; gap: 3cqw; padding: 0 5cqw;
+  background: radial-gradient(circle at 25% 50%, #3a2a20, #0d0a09 70%); animation: fade .3s both; }
+.conf .pic { aspect-ratio: 1; overflow: hidden; border: .4cqw solid #000; box-shadow: 0 0 0 .3cqw var(--fire); rotate: -2deg; }
+.conf .pic img { width: 100%; height: 100%; object-fit: cover; }
+.conf .lab { font: 400 1.5cqw 'Black Ops One'; color: var(--fire); letter-spacing: .3em; }
+.conf .nm { font: 400 4.2cqw/1 'Anton'; text-transform: uppercase; margin: .5cqh 0 1.5cqh; }
+.conf q { display: block; font: 500 2.9cqw/1.25 'Barlow Condensed'; color: var(--ink); quotes: '\201C' '\201D'; }
+.conf q::before { color: var(--caution); font-family: 'Anton'; }
+@keyframes fade { from { opacity: 0 } }
+
+/* HUD: the race meter, the tally */
+.hud { position: absolute; left: 50%; bottom: 3cqh; transform: translateX(-50%); display: grid; gap: .8cqh; z-index: 9; }
+.race { display: grid; grid-template-columns: 4.2cqw auto; align-items: center; gap: 1cqw; background: rgba(12, 10, 10, .82); padding: .6cqh 1cqw;
+  border-left: .4cqw solid var(--fire); }
+.race img { width: 4.2cqw; height: 4.2cqw; object-fit: cover; border: .2cqw solid #000; }
+.race .slots { display: flex; gap: .35cqw; }
+.race .slots i { width: 2.1cqw; height: 2.1cqw; background: #3a3532; clip-path: polygon(20% 0, 80% 0, 100% 35%, 80% 100%, 20% 100%, 0 35%); transition: background .3s; }
+.race .slots i.on { background: var(--caution); }
+.race .slots i.lock { background: var(--fire); }
+
+/* the open vote: every voter on a board, the name said out loud written on their card */
+.board { position: absolute; inset: 0; background: rgba(10, 8, 8, .74); backdrop-filter: blur(3px); display: grid; grid-template-rows: auto 1fr; padding: 3cqh 3cqw; }
+.tally { display: flex; gap: 2cqw; justify-content: center; align-items: end; }
+.tally .row { display: grid; grid-template-columns: 4.6cqw auto; gap: .8cqw; align-items: center; }
+.tally .row img { width: 4.6cqw; height: 4.6cqw; object-fit: cover; border: .2cqw solid #000; }
+.tally .nm { font: 400 2cqw/1 'Anton'; text-transform: uppercase; }
+.tally .ct { font: 400 3.8cqw/1 'Anton'; color: var(--caution); min-width: 3.4cqw; }
+.tally .bar2 { height: 1.3cqh; background: var(--fire); transition: width .4s; }
+.voters { display: grid; grid-template-columns: repeat(10, 1fr); gap: 1.2cqh 1cqw; align-content: center; padding-top: 2cqh; }
+.vc { position: relative; aspect-ratio: .78; background: #221e1c; border: .2cqw solid #000; transition: opacity .3s, filter .3s, transform .3s; }
+.vc img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; filter: saturate(.65) brightness(.7); }
+.vc .n { font: 400 1.05cqw/1 'Anton'; text-transform: uppercase; text-align: center; padding: .4cqh 0; color: var(--dim); }
+.vc .said { position: absolute; left: -6%; right: -6%; top: 34%; text-align: center; font: 400 1.55cqw/1 'Permanent Marker'; color: #111;
+  background: var(--caution); rotate: -6deg; padding: .4cqh 0; animation: slap .3s both; }
+.vc.now { transform: scale(1.12); z-index: 2; box-shadow: 0 0 0 .25cqw var(--caution); }
+.vc.now img, .vc.done img { filter: none; }
+.vc.done .n { color: var(--ink); }
+
+/* the map */
+.pin { position: absolute; transform: translate(-50%, -100%); display: grid; justify-items: center; gap: .3cqh; z-index: 3; pointer-events: auto; }
+.pin .lab { font: 400 clamp(8px, 1.05cqw, 15px)/1 'Anton'; text-transform: uppercase; letter-spacing: .05em; color: #111; background: var(--tape); padding: .25em .5em; }
+.pin .lab.hot { background: var(--fire); }
+.faces { display: flex; }
+.faces img { width: 3.1cqw; height: 3.1cqw; border-radius: 50%; object-fit: cover; border: .18cqw solid #111; margin-left: -.8cqw; background: #333; }
+.faces img:first-child { margin-left: 0; }
+.bub { position: relative; font: 700 clamp(9px, 1.1cqw, 16px)/1.15 'Barlow Condensed'; background: #fff; color: #111; padding: .4em .7em; border-radius: .8em;
+  border: .15cqw solid #111; cursor: pointer; max-width: 16cqw; text-align: center; animation: pop .4s both; }
+.bub::after { content: ''; position: absolute; left: 50%; bottom: -.55em; border: .35em solid transparent; border-top-color: #111; translate: -50% 0; }
+.bub.star { background: var(--caution); }
+.bub.star::before { content: '★ '; color: var(--red); }
+.bub.seen { opacity: .5; }
+.clock { position: absolute; left: 50%; bottom: 2.4cqh; transform: translateX(-50%); display: flex; gap: .5cqw; z-index: 6; }
+.clock span { font: 400 clamp(9px, 1.2cqw, 17px)/1 'Anton'; text-transform: uppercase; padding: .5em 1em; background: rgba(12, 10, 10, .85); color: var(--dim);
+  clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%); }
+.clock span.done { color: var(--ink); }
+.clock span.now { background: var(--fire); color: #111; }
+.clock span.lock { color: #6d655f; }
+
+/* ── under the stage: the line ─────────────────────────────────── */
+.dlg { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; margin-top: 10px; padding: 12px 14px; min-height: 92px;
+  background: var(--panel); border-left: 5px solid var(--fire); }
+.dlg .who { display: grid; justify-items: center; gap: 4px; width: 84px; }
+.dlg .who img { width: 60px; height: 60px; object-fit: cover; border: 2px solid #000; }
+.dlg .who b { font: 400 15px/1 'Anton'; text-transform: uppercase; letter-spacing: .04em; text-align: center; }
+.dlg .who i { font: 700 11px 'Barlow Condensed'; color: var(--fire); letter-spacing: .12em; text-transform: uppercase; font-style: normal; }
+.dlg .line { font: 500 clamp(17px, 2.1vw, 24px)/1.3 'Barlow Condensed'; margin: 0; }
+.dlg .line.dir { font-style: italic; color: var(--dim); }
+.dlg .line .hl { color: var(--caution); }
+.ctl { display: flex; gap: 6px; align-items: center; }
+.ctl button { width: 40px; height: 40px; background: var(--steel); border: 1px solid var(--line); cursor: pointer; font: 400 18px 'Anton'; }
+.ctl button:hover { background: var(--fire); color: #111; }
+.ctl .ct { font: 700 13px 'Barlow Condensed'; color: var(--dim); min-width: 44px; text-align: center; }
+
+/* ── the side panel: what the house does not know ─────────────── */
+.intel { background: var(--panel); border-top: 4px solid var(--caution); padding: 12px 14px; align-self: start; max-height: 80vh; overflow: auto; }
+.intel h2 { margin: 0 0 8px; font: 400 18px/1 'Black Ops One'; color: var(--caution); letter-spacing: .08em; }
+.intel .sub { color: var(--dim); font-size: 13px; margin-bottom: 10px; }
+.intel section { border-top: 1px solid var(--line); padding: 8px 0; animation: fade .4s both; }
+.intel h3 { margin: 0 0 4px; font: 400 14px 'Anton'; text-transform: uppercase; letter-spacing: .06em; color: var(--fire); }
+.intel p { margin: 0 0 4px; font-size: 15px; }
+.intel .chain { display: flex; flex-wrap: wrap; gap: 4px; font-size: 13px; }
+.intel .chain span { background: var(--steel); padding: 1px 6px; }
+.intel .chain span.x { background: var(--red); color: #fff; }
+.intel .bond { display: flex; justify-content: space-between; font-size: 14px; }
+.intel .bond .d { font-weight: 700; }
+.intel .bond .d.up { color: #7fe07f; } .intel .bond .d.dn { color: #ff7a6e; }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="logo">The Challenge<small>BLUE LAGOON</small></div>
+  <div class="ep"><b>Ep 5</b> · men's week · <span id="sec"></span></div>
+  <nav class="tabs" id="tabs"></nav>
+  <button class="classic" title="The readout viewer, one click away on every screen">Readout ↗</button>
+</header>
+<div class="note">Mockup on the real plates. Click the stage, press Space or → to step, ← to go back. The lines are the engine's own (season 1 ep 5; season 2 day 34). The side panel's reasons are illustrative.</div>
+<div class="wrap">
+  <div>
+    <div class="stage" id="stage">
+      <div class="cam" id="cam"></div>
+      <div class="fx" id="fx"></div>
+    </div>
+    <div class="dlg" id="dlg">
+      <div class="who" id="who"></div>
+      <p class="line" id="line"></p>
+      <div class="ctl"><button id="back" title="Back">◀</button><span class="ct" id="ct"></span><button id="next" title="Next">▶</button></div>
+    </div>
+  </div>
+  <aside class="intel" id="intel"></aside>
+</div>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <filter id="spr" x="-10%" y="-20%" width="120%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+    </filter>
+    <filter id="mist" x="-20%" y="-40%" width="140%" height="180%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="1" seed="9" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="26" result="d"/>
+      <feGaussianBlur in="d" stdDeviation="5"/>
+    </filter>
+  </defs>
+</svg>
+<script type="module">
+import { CH_MARKS } from '../js/vp-ch-ep/marks.js';
+import { liveGL } from '../js/vp-td-ep/glplate.js';
+
+const AV = n => `../assets/avatars/${n === 'TJ' ? 'tj-maxx' : n.toLowerCase().replace(/ /g, '-')}.png`;
+const PLATE = k => `../assets/sets/ch/${k}`;
+const marks = k => CH_MARKS[k].m;
+const pick = (k, kind, f = {}) => marks(k).filter(m => m.kind === kind && Object.entries(f).every(([a, b]) => m[a] === b));
+document.documentElement.style.setProperty('--grunge', `url("data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='300' height='120'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' seed='4'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.7'/></filter><rect width='300' height='120' filter='url(#g)'/></svg>`)}")`);
+
+// ── the scenes: each step is one click ──────────────────────────────────────────────────────────
+const HANG_ON = 'Players hang from a net slung under the pier, high over the water, with nothing to stand on.';
+const PUZZLE_PIT = 'The players dig through a sand pit for twelve puzzle pieces, carry them up a ramp, and fit them into a board that shows the Blue Lagoon. Every piece has to be found and placed, and the board only locks when it is right. A wrong piece forces them back down to dig again, and the sand fills the holes they have already dug. The first to lock their board and hit the buzzer wins the elimination.';
+
+const VILLA_NIGHT = [
+  { at: 'hottub', who: ['Isabel', 'Lill', 'B', 'Brick'], bub: 'Shipwreck Crew meets', star: 1, go: 'tub' },
+  { at: 'loungers', who: ['Kitty', 'Jane', 'Dave'], bub: 'Lagoon Sharks on the balcony', star: 1 },
+  { at: 'common', who: ['Leshawna', 'Lynda'], bub: '“Why me?”' },
+  { at: 'gym', who: ['Jeremiah', 'Dwayne'] },
+  { at: 'kitchen', who: ['Sierra', 'Tom'] },
+  { at: 'bunk-a', who: ['Evie', 'Drew', 'Leonard'] },
+  { at: 'bunk-b', who: ['Sharon Needles', 'Ivy'] },
+  { at: 'confessional', who: ['Jay'] },
+];
+
+const SCENES = {
+  map: {
+    tab: 'The map', sec: 'Day 13–14',
+    steps: [
+      { view: 'island', card: ['DAY 13', '7:30 AM · BLUE LAGOON'],
+        pins: [{ at: 'beach-field', who: ['Tom', 'Lill', 'Leonard', 'Dave', 'B', 'Dwayne'], lab: 'The daily · Hang On', hot: 1 },
+          { at: 'villa', who: ['Jeremiah', 'Isabel', 'Kitty', 'Sierra', 'Jane', 'Brick'], lab: 'The villa' },
+          { at: 'club', who: [], lab: 'Beach club' }, { at: 'arena', who: [], lab: 'The Arena' }],
+        dir: 'Every day opens on the island. Faces show who is where; the daily is at the beach field.',
+        side: [['Day 13', `<p>The daily: <b>Hang On</b>. ${HANG_ON}</p>`]] },
+      { host: 'Tom and Lill, take a bow, you just won Hang On, and I am genuinely emotional about it.',
+        chipPins: { Tom: 'SAFE', Lill: 'SAFE' },
+        side: [['Safe this week', '<p><b>Tom</b> and <b>Lill</b> won the daily: nobody can say their names at the vote.</p>']] },
+      { view: 'villa', card: ['DAY 14', 'NIGHT · THE VILLA'], rooms: VILLA_NIGHT,
+        clock: [['Morning', 'done'], ['Afternoon', 'done'], ['Night', 'now'], ['The vote', 'lock']],
+        dir: 'Inside the villa: every room, who is in it, and a bubble for each conversation. ★ scenes move the game; the vote unlocks once they are watched. Click the hot tub.',
+        side: [['Two groups, one name', '<p><b>Shipwreck Crew</b> (Isabel, Lill, B, Brick) and <b>Lagoon Sharks</b> (Kitty, Jane, Dave) are meeting at the same hour, both about Jeremiah. Neither knows about the other.</p>']] },
+    ],
+  },
+  tub: {
+    tab: 'Hot tub', sec: 'Day 14 · Night', plate: 'hottub-night',
+    cast: { Isabel: ['seat', 0, 'tub'], Lill: ['seat', 1, 'tub'], B: ['seat', 3, 'tub'], Brick: ['seat', 4, 'tub'] }, water: 1, scale: .95,
+    steps: [
+      { card: ['DAY 14', '11:20 PM · HOT TUB'], dir: 'The Shipwreck Crew slides into the hot tub, away from the house.', focus: [] },
+      { say: ['Isabel', 'I hate doing this to anybody, but I really think it has to be Jeremiah.'], act: { Isabel: 'whisper' },
+        side: [['In their heads', '<p><b>Isabel</b> wants Jeremiah in the Arena: he is the one man outside both groups who could win his way back and come for them.</p>']] },
+      { say: ['Lill', "I'm in. Should we tell anybody outside the group?"] },
+      { say: ['Isabel', 'No. Let them find out at the vote.'], focus: ['Isabel'],
+        side: [['Secrets', '<p>Nobody outside the four knows. <b>Lill</b> will go and recruit anyway, starting with Leonard.</p>']] },
+      { conf: ['Lill', 'The Shipwreck Crew runs this house right now, and honestly it feels good to be on the inside of it.'],
+        side: [['Relationships', bonds([['Lill', 'Isabel', +1], ['B', 'Brick', +1]])]] },
+    ],
+  },
+  vote: {
+    tab: 'The vote', sec: 'Day 14 · The vote', plate: 'villa-map-night', board: 1,
+    steps: [
+      { card: ['DAY 14', 'THE VOTE · COMMON ROOM'], host: "Alright, it's a men's vote. Everybody's going to say a name, out loud, to my face. No take-backs, no whispering. Let's go.",
+        side: [['How it works', "<p>An open vote. Every player says a man's name to TJ's face. The most votes goes into the Arena, then calls out who goes with him. Tom won the daily, so nobody can say his name.</p>"]] },
+      ...[
+        ['Kitty', 'Jeremiah', 'Jeremiah. Sorry. Not that sorry, but sorry.'],
+        ['Isabel', 'Jeremiah', "Jeremiah. I'm sorry, I really am."],
+        ['Jane', 'Jeremiah', 'Jeremiah. Same as everybody.'],
+        ['Lill', 'Jeremiah', 'Jeremiah, and I think everybody should be doing the same.'],
+        ['Jay', 'Jeremiah', 'Jeremiah. I promised.'],
+        ['B', 'Jeremiah', "Jeremiah. That's all."],
+        ['Lynda', 'Jeremiah', 'Jeremiah! Write it down, TJ!'],
+        ['Brick', 'Jeremiah', 'Jeremiah. I made a commitment to my group.'],
+        ['Sierra', 'Jeremiah', "I really like you, Jeremiah, but I'm voting for you. I'm sorry."],
+        ['Ivy', 'Jeremiah', 'Jeremiah. The council has spoken.'],
+        ['Jeremiah', 'Dave', 'Dave. If you want to stay, go win.'],
+        ['Tom', 'Jeremiah', "Jeremiah. Please don't hate me."],
+        ['Sharon Needles', 'Dave', 'Dave. Sorry, gorgeous.'],
+        ['Dwayne', 'Jeremiah', 'Jeremiah. Win your way back if you want it.'],
+        ['Dave', 'Jeremiah', 'Um... Jeremiah.'],
+        ['Evie', 'Dave', 'Dave! Did I do that right?'],
+        ['Leshawna', 'Jeremiah', "Jeremiah! Let's go!"],
+        ['Leonard', 'Dave', 'Wait, is it my turn? Oh! Dave.'],
+        ['Drew', 'Dave', 'Just Dave.'],
+      ].map(([v, n, line], i) => ({ vote: [v, n], say: [v, line], side: i === 1 ? [['Ballots', chain('Isabel', ['wanted Jeremiah', 'told the Crew Jeremiah', 'said Jeremiah'])]]
+        : i === 12 ? [['Ballots', chain('Sharon Needles', ['Jeremiah is her only friend here', 'said Dave', 'the only vote against her group'], 2)]]
+        : i === 9 ? [['Ballots', '<p><b>Ivy</b>’s is the tenth vote for Jeremiah: more than the rest of the room could ever catch.</p>']] : null, push: i === 9 })),
+      { host: "With fourteen votes, Jeremiah, you're going into the Arena tonight. Now you get to pick who's coming with you.", slam: { spray: 'VOTED IN', color: '#ffd21a', y: 62, w: 44 }, callout: 1 },
+      { conf: ['Jeremiah', "I knew it was coming. Hearing it said out loud is still a punch in the stomach."] },
+      { host: 'Jeremiah, my friend, the house has spoken. Now it’s your turn. Who are you calling out?', callout: 1 },
+      { say: ['Jeremiah', "I'm calling out Dwayne."], callout: 2, slam: { spray: 'CALLED OUT', color: '#ff6a1a', x: 66, y: 46, w: 46 },
+        side: [['Why Dwayne', '<p>Not a grudge: Dwayne voted for him, but so did thirteen others. Jeremiah thinks Dwayne is the man he can beat.</p>']] },
+      { say: ['Dwayne', 'Seriously?'], callout: 2, act: { Dwayne: 'shout' } },
+      { conf: ['Jeremiah', "I'm not going to lie, I picked Dwayne because I think I can beat him. That's the whole reason. I want to stay."] },
+    ],
+  },
+  arena: {
+    tab: 'The Arena', sec: 'Day 15 · The Arena', plate: 'arena-night',
+    cast: { TJ: ['host'], Kitty: ['seat', 0, 'house'], Isabel: ['seat', 1, 'house'], Jane: ['seat', 2, 'house'], Lill: ['seat', 3, 'house'],
+      Jay: ['seat', 4, 'house'], B: ['seat', 5, 'house'], Lynda: ['seat', 6, 'house'], Brick: ['seat', 7, 'house'],
+      Sierra: ['stand', 0, 'house'], Ivy: ['stand', 1, 'house'], Tom: ['stand', 2, 'house'], 'Sharon Needles': ['stand', 3, 'house'],
+      Jeremiah: ['gate'], Dwayne: ['gate'] },
+    hidden: ['Jeremiah', 'Dwayne'],
+    steps: [
+      { card: ['DAY 15', '9:40 PM · THE ARENA'], dir: 'The torches are lit. The gong sounds. The house is in the stand.', focus: ['TJ'], gong: 1,
+        side: [['Tonight', '<p><b>Jeremiah</b> (voted in, 14 votes) against <b>Dwayne</b> (called out).</p>']] },
+      { enter: { Jeremiah: ['podium', 'L'] }, dir: 'Jeremiah walks out of the dark and takes the left podium.', focus: ['Jeremiah'] },
+      { enter: { Dwayne: ['podium', 'R'] }, dir: 'Dwayne takes the right.', focus: ['Dwayne'],
+        side: [['The house’s odds', '<p>Nobody in the stand has Dwayne. Respect: <b>Jeremiah</b> 2 wins in the Arena, <b>Dwayne</b> none.</p>']] },
+      { host: "Okay, nobody in the house thought Dwayne could win this. Tonight's game is Puzzle Pit. Prove 'em wrong or pack your bags!", slam: { game: ['Puzzle Pit', PUZZLE_PIT, 'A race · first board locked wins'] } },
+      { move: { Jeremiah: ['duel', 'L'], Dwayne: ['duel', 'R'] }, race: { Jeremiah: 5, Dwayne: 2 }, dir: 'Jeremiah starts strong.', focus: ['Jeremiah', 'Dwayne'], cam: [.5, .62, 1.18] },
+      { race: { Jeremiah: 9, Dwayne: 7 }, dir: 'A wrong piece. Jeremiah goes back down into the sand. Dwayne hangs in.', act: { Jeremiah: 'shout' }, focus: ['Jeremiah', 'Dwayne'], cam: [.5, .62, 1.18] },
+      { race: { Jeremiah: 11, Dwayne: 12 }, dir: '…and Dwayne takes it at the end.', focus: ['Dwayne'], cam: [.6, .62, 1.3], slam: { win: 'Dwayne wins' } },
+      { host: 'WHAT?! Dwayne! Did that just happen? Did everybody see that?!', cam: [.5, .55, 1], act: { Kitty: 'shout', Lynda: 'shout', Brick: 'shout' } },
+      { say: ['Dwayne', 'I told you! I told all of you!'], act: { Dwayne: 'shout' } },
+      { slam: { stamp: 'ELIMINATED' }, focus: ['Jeremiah'], dir: 'Jeremiah is out of the game.' },
+      { conf: ['Jeremiah', "I underestimated Dwayne. That's on me, and it's the worst mistake I've made in this game."] },
+      { exit: ['Jeremiah'], dir: 'Jeremiah walks out the way he came in.', focus: ['Dwayne'],
+        side: [['Relationships', bonds([['Dwayne', 'Jeremiah', -2], ['Sharon Needles', 'Jeremiah', -1]]) + '<p><b>Sharon Needles</b> just lost her only friend in the house.</p>']] },
+    ],
+  },
+  party: {
+    tab: 'Party', sec: 'Day 34 · Night out (season 2)', plate: 'club-night', scale: 1.05,
+    cast: { Natasha: ['stand', 1], Sami: ['stand', 3], Bridgette: ['stand', 4], Beardo: ['stand', 2], Jake: ['stand', 5], Jay: ['stand', 0],
+      Cupcakke: ['seat', 1, 'bar'], TJ: ['seat', 3, 'bar'] },
+    dance: ['Natasha', 'Beardo', 'Jake', 'Jay', 'Sami', 'Bridgette', 'TJ'],
+    steps: [
+      { card: ['DAY 34', '1:15 AM · BEACH CLUB'], dir: 'Shots line the bar. TJ is somehow there, dancing badly in the corner.', focus: ['TJ'] },
+      { say: ['Natasha', 'To being here! And not being in the Arena!'], act: { Natasha: 'shout' } },
+      { say: ['Sami', 'Speak for yourself.'] },
+      { say: ['Sami', 'Get out of my face!'], stop: ['Sami', 'Bridgette'], act: { Sami: 'shout' }, focus: ['Sami', 'Bridgette'], cam: [.45, .55, 1.25],
+        side: [['In their heads', '<p><b>Sami</b> is three drinks in and still sore about the vote: Bridgette said Sami's name.</p>']] },
+      { dir: 'Sami shoves Bridgette. Hard. Somebody screams and three people grab Sami.', act: { Sami: 'shove', Bridgette: 'knock' }, shake: 1, badge: { Bridgette: '!' },
+        stopAll: 1, focus: ['Sami', 'Bridgette'], cam: [.45, .55, 1.25] },
+      { say: ['Bridgette', 'Oh my God. Oh my God.'], focus: ['Bridgette'], stopAll: 1 },
+      { conf: ['Bridgette', "Sami crossed the line. There's no coming back from that in this game, and Sami knows it."], stopAll: 1 },
+      { host: 'I love chaos. I love drama. I do not love violence. Sami is out of this game, effective immediately.', slam: { tape: 'DISQUALIFIED' }, stopAll: 1, cam: [.5, .5, 1],
+        side: [['The one rule', '<p>Physical violence is the only thing that ends a game on the spot: no vote, no Arena.</p>']] },
+      { exit: ['Sami'], dir: 'Sami is walked off the beach.', stopAll: 1 },
+    ],
+  },
+};
+
+function bonds(list) {
+  return list.map(([a, b, d]) => `<div class="bond"><span>${a} → ${b}</span><span class="d ${d > 0 ? 'up' : 'dn'}">${d > 0 ? '+' : ''}${d}</span></div>`).join('');
+}
+function chain(who, parts, x = -1) {
+  return `<p><b>${who}</b></p><div class="chain">${parts.map((p, i) => `<span class="${i === x ? 'x' : ''}">${p}</span>`).join('→')}</div>`;
+}
+
+// ── the player ─────────────────────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const stage = $('stage'), cam = $('cam'), fx = $('fx');
+let scene = 'map', idx = 0, typing = 0;
+
+function markFor(plate, spec) {
+  if (spec[0] === 'host' || spec[0] === 'gate') return pick(plate, spec[0])[0];
+  if (spec[0] === 'podium' || spec[0] === 'duel') return pick(plate, spec[0], { side: spec[1] })[0];
+  const f = spec[2] ? { group: spec[2] } : {};
+  const all = pick(plate, spec[0], f).filter(m => spec[2] || !m.group);
+  return all[spec[1] || 0];
+}
+function tokHtml(name, m, cls = '', k = 1.5) {
+  const sz = (m.s || .07) * k * 100;
+  return `<div class="tok ${cls}${name === 'TJ' ? ' host' : ''}" data-n="${name}" style="left:${m.u * 100}%;top:${m.v * 100}%;--sz:${sz.toFixed(2)}cqh">
+    <div class="body"><div class="face"><img src="${AV(name)}" alt=""></div><span class="tag">${name === 'TJ' ? 'TJ Maxx' : name}</span></div><div class="shadow"></div></div>`;
+}
+const tok = n => cam.querySelector(`.tok[data-n="${CSS.escape(n)}"]`);
+
+function plateHtml(key) {
+  return `<img src="${PLATE(key)}.webp" alt=""><canvas class="tdx-gl" data-src="${PLATE(key)}" data-hd="1" width="1920" height="1080"></canvas>`;
+}
+
+function build(sc) {
+  const S = SCENES[sc];
+  fx.innerHTML = '';
+  cam.style.transform = '';
+  let html = '';
+  if (sc === 'map') html = '';
+  else {
+    html = plateHtml(S.plate);
+    if (S.cast) for (const [n, spec] of Object.entries(S.cast)) {
+      const m = markFor(S.plate, spec);
+      // the house in the stand watches from further back: smaller cards, so a bench of eight fits
+      html += tokHtml(n, m, (S.hidden || []).includes(n) ? 'gone' : '', spec[2] === 'house' ? 1.02 : S.scale || 1.5);
+    }
+  }
+  cam.innerHTML = html;
+  if (S.water) cam.querySelectorAll('.tok').forEach(t => { t.classList.add('water'); t.style.top = `calc(${t.style.top} + 7cqh)`; });
+  if (S.board) buildBoard();
+  liveGL(cam);
+}
+
+function buildBoard() {
+  const voters = SCENES.vote.steps.filter(s => s.vote).map(s => s.vote[0]);
+  const b = document.createElement('div');
+  b.className = 'board';
+  b.innerHTML = `<div class="tally" id="tally"></div><div class="voters">${voters.map(v =>
+    `<div class="vc" data-v="${v}"><img src="${AV(v)}" alt=""><div class="n">${v}</div></div>`).join('')}</div>`;
+  cam.append(b);
+}
+
+function setMap(view, s) {
+  const key = view === 'island' ? 'map-day' : 'villa-map-night';
+  if (cam.dataset.view !== view) { cam.innerHTML = plateHtml(key); cam.dataset.view = view; liveGL(cam); }
+  cam.querySelectorAll('.pin,.clock').forEach(e => e.remove());
+  const list = view === 'island' ? s.pins : s.rooms;
+  for (const p of list || []) {
+    const m = pick(key, 'spot', { id: p.at })[0];
+    const el = document.createElement('div');
+    el.className = 'pin';
+    el.style.left = m.u * 100 + '%'; el.style.top = m.v * 100 + '%';
+    el.innerHTML = `${p.bub ? `<div class="bub ${p.star ? 'star' : ''}">${p.bub}</div>` : ''}<div class="faces">${p.who.map(n => `<img src="${AV(n)}" title="${n}" alt="">`).join('')}</div>${p.lab ? `<div class="lab ${p.hot ? 'hot' : ''}">${p.lab}</div>` : ''}`;
+    if (p.go) el.querySelector('.bub').onclick = e => { e.stopPropagation(); go(p.go, 0); };
+    cam.append(el);
+  }
+  if (s.clock) {
+    const c = document.createElement('div'); c.className = 'clock';
+    c.innerHTML = s.clock.map(([t, k]) => `<span class="${k}">${k === 'done' ? '✓ ' : k === 'lock' ? '🔒 ' : ''}${t}</span>`).join('');
+    cam.append(c);
+  }
+}
+
+function speak(who, text, kind) {
+  const w = $('who'), l = $('line');
+  w.innerHTML = who ? `<img src="${AV(who)}" alt=""><b>${who === 'TJ' ? 'TJ Maxx' : who}</b>${kind ? `<i>${kind}</i>` : ''}` : '';
+  l.className = 'line' + (who ? '' : ' dir');
+  clearInterval(typing);
+  const full = text.replace(/\b(Arena|Jeremiah|Dwayne|Puzzle Pit|Hang On|Sami|vote)\b/g, '<span class="hl">$1</span>');
+  if (!who || text.length < 28) { l.innerHTML = full; return; }
+  // a long line types at speaking pace, then lights up the names and the game's words
+  let i = 0; l.textContent = '';
+  typing = setInterval(() => { i += 2; l.textContent = text.slice(0, i); if (i >= text.length) { clearInterval(typing); l.innerHTML = full; } }, 22);
+}
+
+function slam(s) {
+  const d = document.createElement('div');
+  if (s.spray) {
+    d.className = 'spray';
+    if (s.x) d.style.left = s.x + '%';
+    if (s.y) d.style.top = s.y + '%';
+    if (s.w) d.style.width = s.w + 'cqw';
+    const drips = [140, 300, 470, 610, 760, 880].map((x, i) => `<rect class="drip" x="${x}" y="150" width="${5 + i % 3 * 2}" height="${40 + (i * 37) % 70}" rx="3" fill="${s.color}" style="animation-delay:${.7 + i * .12}s"/>`).join('');
+    d.innerHTML = `<svg viewBox="0 0 1000 260">
+      <g filter="url(#mist)" opacity=".55"><text x="500" y="170" text-anchor="middle" font-family="Black Ops One" font-size="168" fill="${s.color}" class="paint">${s.spray}</text></g>
+      <g class="paint"><text x="500" y="170" text-anchor="middle" font-family="Black Ops One" font-size="168" fill="${s.color}" filter="url(#spr)" stroke="#000" stroke-width="7" paint-order="stroke">${s.spray}</text>${drips}</g>
+      <circle class="can" cx="500" cy="120" r="60" fill="${s.color}" opacity=".25" filter="url(#mist)"/></svg>`;
+  } else if (s.stamp) {
+    d.className = 'stamp'; d.textContent = s.stamp;
+    setTimeout(() => shake(), 120);
+  } else if (s.tape) {
+    d.innerHTML = `<div class="tape a"><span>${(s.tape + ' ✕ ').repeat(8)}</span></div><div class="tape b"><span>${('✕ ' + s.tape + ' ').repeat(8)}</span></div>`;
+  } else if (s.game) {
+    d.className = 'game';
+    d.innerHTML = `<div class="k">TONIGHT IN THE ARENA</div><div class="n">${s.game[0]}</div><p>${s.game[1]}</p><div class="f">${s.game[2]}</div>`;
+  } else if (s.win) {
+    d.className = 'win'; d.textContent = s.win;
+  }
+  fx.append(d);
+}
+function shake() { stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake'); }
+
+function render(n, animate = true) {
+  const S = SCENES[scene];
+  idx = n;
+  build(scene);
+  delete cam.dataset.view;
+  const side = [];
+  const state = { focus: null, race: null, callout: 0, said: {}, tallies: {}, chips: {} };
+  for (let i = 0; i <= n; i++) {
+    const s = S.steps[i], last = i === n;
+    if (s.side) side.push(...s.side);
+    if (s.view) state.view = s;
+    if (s.chipPins) Object.assign(state.chips, s.chipPins);
+    if (s.enter) for (const [nm, spec] of Object.entries(s.enter)) {
+      const t = tok(nm), m = markFor(S.plate, spec);
+      t.classList.remove('gone');
+      if (last && animate) { requestAnimationFrame(() => requestAnimationFrame(() => { t.style.left = m.u * 100 + '%'; t.style.top = m.v * 100 + '%'; t.style.setProperty('--sz', (m.s * 150).toFixed(2) + 'cqh'); })); }
+      else { t.style.left = m.u * 100 + '%'; t.style.top = m.v * 100 + '%'; t.style.setProperty('--sz', (m.s * 150).toFixed(2) + 'cqh'); }
+    }
+    if (s.move) for (const [nm, spec] of Object.entries(s.move)) {
+      const t = tok(nm), m = markFor(S.plate, spec);
+      t.style.left = m.u * 100 + '%'; t.style.top = m.v * 100 + '%'; t.style.setProperty('--sz', (m.s * 150).toFixed(2) + 'cqh');
+    }
+    if (s.exit) for (const nm of s.exit) {
+      const t = tok(nm), g = pick(S.plate, 'gate')[0];
+      if (g) { t.style.left = g.u * 100 + '%'; t.style.top = g.v * 100 + '%'; } else t.style.left = '110%';
+      t.classList.add('gone');
+    }
+    if (s.race) state.race = s.race;
+    if (s.vote) { state.said[s.vote[0]] = s.vote[1]; if (!last) state.tallies[s.vote[1]] = (state.tallies[s.vote[1]] || 0) + 1; state.now = last ? s.vote : null; }
+    else if (last) state.now = null;
+    if (s.callout) state.callout = s.callout;
+    if (s.vote && last) state.pending = s.vote[1];
+    state.focus = s.focus || (s.say ? [s.say[0]] : s.host ? ['TJ'] : state.focus);
+    state.cam = s.cam || (s.cam === undefined ? state.cam : null);
+    if (s.stop) state.stopped = s.stop;
+    if (s.stopAll) state.stopAll = 1;
+  }
+  const s = S.steps[n];
+
+  // the map
+  if (scene === 'map') {
+    setMap(state.view.view, state.view);
+    for (const [nm, chip] of Object.entries(state.chips)) {
+      cam.querySelectorAll(`.faces img[title="${nm}"]`).forEach(im => { im.style.boxShadow = '0 0 0 .3cqw var(--caution)'; });
+    }
+  }
+  // who is lit, who dances
+  const toks = [...cam.querySelectorAll('.tok')];
+  for (const t of toks) {
+    const nm = t.dataset.n;
+    t.classList.toggle('talk', !!state.focus && state.focus.includes(nm));
+    t.classList.toggle('dim', !!state.focus && state.focus.length > 0 && !state.focus.includes(nm) && !t.classList.contains('gone'));
+    const dancing = (S.dance || []).includes(nm) && !state.stopAll && !(state.stopped || []).includes(nm);
+    t.classList.toggle('dance', dancing);
+  }
+  // the camera
+  const c = state.cam;
+  cam.style.transform = c ? `scale(${c[2]}) translate(${(.5 - c[0]) * 100 / c[2]}%, ${(.5 - c[1]) * 100 / c[2]}%)` : '';
+  if (s.push) cam.style.transform = 'scale(1.06)';
+
+  // the board
+  if (S.board) {
+    const tally = {};
+    for (const [v, nm] of Object.entries(state.said)) if (!(state.now && state.now[0] === v)) tally[nm] = (tally[nm] || 0) + 1;
+    const names = ['Jeremiah', 'Dave'];
+    $('tally').innerHTML = names.map(nm => `<div class="row"><img src="${AV(nm)}" alt=""><div><div class="nm">${nm}</div><div class="bar2" style="width:${(tally[nm] || 0) * 1.2}cqw"></div></div><div class="ct">${tally[nm] || 0}</div></div>`).join('');
+    for (const vc of cam.querySelectorAll('.vc')) {
+      const v = vc.dataset.v, said = state.said[v];
+      vc.classList.toggle('now', !!state.now && state.now[0] === v);
+      vc.classList.toggle('done', !!said);
+      if (said) vc.insertAdjacentHTML('beforeend', `<div class="said">${said}</div>`);
+    }
+    if (state.callout) {
+      cam.querySelector('.voters').style.opacity = '.18';
+      const pair = state.callout >= 2 ? ['Jeremiah', 'Dwayne'] : ['Jeremiah'];
+      const box = document.createElement('div');
+      box.style.cssText = 'position:absolute;inset:18% 0 6%;display:flex;justify-content:center;align-items:center;gap:8cqw';
+      box.innerHTML = pair.map(nm => `<div style="width:24cqw;text-align:center"><img src="${AV(nm)}" style="width:100%;aspect-ratio:1;object-fit:cover;border:.4cqw solid #000;box-shadow:0 0 0 .3cqw ${nm === 'Jeremiah' ? 'var(--caution)' : 'var(--fire)'}"><div style="font:400 2.6cqw 'Anton';text-transform:uppercase;margin-top:1cqh">${nm}</div></div>`).join('');
+      cam.append(box);
+    }
+  }
+  // the race
+  if (state.race && scene === 'arena') {
+    const h = document.createElement('div'); h.className = 'hud';
+    h.innerHTML = Object.entries(state.race).map(([nm, k]) => `<div class="race"><img src="${AV(nm)}" alt=""><div class="slots">${Array.from({ length: 12 }, (_, i) => `<i class="${i < k ? (k === 12 ? 'lock' : 'on') : ''}"></i>`).join('')}</div></div>`).join('');
+    fx.append(h);
+  }
+  // this step's one-shot effects
+  if (s.card) { const d = document.createElement('div'); d.className = 'tcard'; d.innerHTML = `<b>${s.card[0]}</b><span>${s.card[1]}</span>`; fx.append(d); }
+  if (s.slam && animate) slam(s.slam);
+  else if (s.slam) slam(s.slam);
+  if (s.act) for (const [nm, a] of Object.entries(s.act)) {
+    const t = tok(nm); if (!t) continue;
+    const other = state.focus?.find(x => x !== nm);
+    const dir = other && tok(other) ? (parseFloat(tok(other).style.left) > parseFloat(t.style.left) ? '1' : '-1') : '1';
+    t.style.setProperty('--dir', `${dir * (a === 'whisper' ? 10 : 40)}%`);
+    t.classList.add('act-' + a);
+  }
+  if (s.badge) for (const [nm, b] of Object.entries(s.badge)) tok(nm)?.insertAdjacentHTML('beforeend', `<div class="badge">${b}</div>`);
+  if (s.shake) setTimeout(shake, 200);
+  if (s.gong) { const g = pick(SCENES.arena.plate, 'gong')[0]; const r = document.createElement('div');
+    r.style.cssText = `position:absolute;left:${g.u * 100}%;top:${g.v * 100}%;width:14cqw;height:14cqw;translate:-50% -50%;border-radius:50%;border:.5cqw solid var(--caution);animation:gong 1.4s ease-out both`; fx.append(r); }
+  if (s.conf) {
+    const d = document.createElement('div'); d.className = 'conf';
+    d.innerHTML = `<div class="pic"><img src="${AV(s.conf[0])}" alt=""></div><div><div class="lab">CONFESSIONAL</div><div class="nm">${s.conf[0]}</div><q>${s.conf[1]}</q></div>`;
+    fx.append(d);
+  }
+  if (s.say) speak(s.say[0], s.say[1]);
+  else if (s.host) speak('TJ', s.host, 'host');
+  else if (s.conf) speak(s.conf[0], s.conf[1], 'confessional');
+  else speak(null, s.dir || '');
+  if (!animate) { clearInterval(typing); }
+
+  $('ct').textContent = `${n + 1} / ${S.steps.length}`;
+  $('sec').textContent = S.sec;
+  $('intel').innerHTML = `<h2>WHAT THE HOUSE DOESN'T KNOW</h2><div class="sub">Only what has happened by this step.</div>` +
+    side.map(([h, b]) => `<section><h3>${h}</h3>${b}</section>`).reverse().join('');
+}
+
+const gongCss = document.createElement('style');
+gongCss.textContent = '@keyframes gong{0%{scale:.3;opacity:1}100%{scale:2.4;opacity:0}}';
+document.head.append(gongCss);
+
+function go(sc, n) {
+  scene = sc;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.s === sc));
+  render(n);
+}
+$('tabs').innerHTML = Object.entries(SCENES).map(([k, s]) => `<button data-s="${k}">${s.tab}</button>`).join('');
+$('tabs').onclick = e => { const b = e.target.closest('button'); if (b) go(b.dataset.s, 0); };
+const next = () => { const S = SCENES[scene]; if (idx < S.steps.length - 1) render(idx + 1); else { const ks = Object.keys(SCENES); const i = ks.indexOf(scene); if (i < ks.length - 1) go(ks[i + 1], 0); } };
+const back = () => { if (idx > 0) render(idx - 1, false); };
+stage.onclick = next;
+$('next').onclick = next;
+$('back').onclick = back;
+addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); next(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); back(); }
+});
+const want = new URLSearchParams(location.search);
+go(want.get('s') && SCENES[want.get('s')] ? want.get('s') : 'map', +(want.get('n') || 0));
+window.__go = go;
+</script>
+</body>
+</html>

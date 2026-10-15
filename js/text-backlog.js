@@ -2489,7 +2489,9 @@ export function _textWhyVote(ep, ln, sec) {
   ln('VOTED OUT THIS EPISODE:');
   if (ep.multiTribalElims?.length) ln(ep.multiTribalElims.join(', '));
   else if (ep.emissaryEliminated) {
-    ln(`1. ${elim || '???'} — Tribal Vote`);
+    // (a coach voted out leaves no contestant boot: name the coach, never "???")
+    const _evCoach = (ep.coachElimination || [])[0]?.coach;
+    ln(`1. ${elim || (_evCoach ? `${_evCoach} (coach)` : '???')} — Tribal Vote`);
     ln(`2. ${ep.emissaryEliminated} — Emissary Pick (${ep.emissary?.name || 'emissary'})`);
   } else if (ep.firstEliminated) {
     ln(`1. ${ep.firstEliminated}${cfg.ri && ep.firstRIChoice ? ` — ${ep.firstRIChoice}` : ''}`);

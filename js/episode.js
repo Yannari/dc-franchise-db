@@ -6924,7 +6924,11 @@ function simulateJuryRoundtable(ep) {
     ep.eliminated = null; // in exile — not permanently out yet
 
   // ── RI CHOICE (standard elimination) — only if RI is still accepting players ──
-  } else if (ep.eliminated) {
+  // (also a night the vote sent home a COACH, applyCoachElimination: there is no contestant boot, but the emissary still
+  // picks. The user, 2026-10-14: "coach elimination block the emissary elimination". The contestant-only routing below
+  // runs only when somebody was voted out.)
+  } else if (ep.eliminated || (ep.emissary && !ep.eliminationSwap && (ep.coachElimination || []).length)) {
+    if (ep.eliminated) {
     if (isRIStillActive()) {
       if (cfg.riFormat === 'rescue') {
         ep.riChoice = 'RESCUE ISLAND';
@@ -6991,6 +6995,8 @@ function simulateJuryRoundtable(ep) {
       // Clean up pair-aware state
       delete gs._tiedDestiniesActive;
     }
+
+    } // (the contestant boot's routing)
 
     // ── EMISSARY VOTE: second elimination by emissary pick ──
     if (ep.emissary && !ep.eliminationSwap) {

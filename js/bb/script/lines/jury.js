@@ -25,8 +25,17 @@ export default {
     { id: 'jc.8', turns: [{ by: 'a', dr: "Jury is close. People are being very nice to each other all of a sudden." }] },
   ],
   'jury.writeoff.scene': [
-    { id: 'jw.1', turns: [{ by: 'a', say: "{target} isn't making jury." }, { by: 'b', say: "You sound very sure." }, { by: 'a', say: "I am." }, { by: 'b', say: "There's still time." }, { by: 'a', say: "Not for {target}. Count the people who'd vote to keep {target}." }, { by: 'b', say: "...That's not many." }] },
-    { id: 'jw.2', turns: [{ by: 'a', say: "Don't get attached to {target}." }, { by: 'b', say: "...Why not?" }, { by: 'a', say: "You know why." }, { by: 'b', say: "Because {target} isn't making jury." }, { by: 'a', say: "Now you're getting it." }, { by: 'b', dr: "I like {target}. I didn't realise I'd already been told to stop." }] },
+    { id: 'jw.1', turns: [
+      { by: 'a', say: "{target} isn't making jury." },
+      { by: 'b', say: "You sound very sure about that." },
+      { by: 'a', say: "Count the people who'd vote to keep {target}. Go on." },
+      { by: 'b', say: "Okay. It's not many.", v: { hard: "Fine. Nobody. You're right." } }] },
+    { id: 'jw.2', turns: [
+      { by: 'a', say: "Don't get too attached to {target}." },
+      { by: 'b', say: "Why not?" },
+      { by: 'a', say: "Because {target} isn't making it to jury. You know that." },
+      { by: 'b', say: "Yeah. I know.", v: { soft: "I know. I just really like {target}." } },
+      { by: 'b', dr: "I like {target}. I didn't realise everybody had already decided {target} was going." }] },
     { id: 'jw.3', turns: [{ by: 'b', say: "You've gone quiet about {target}." }, { by: 'a', say: "There's nothing to say about {target}." }, { by: 'b', say: "Meaning?" }, { by: 'a', say: "Meaning {target} isn't going to be around long enough to matter." }, { by: 'a', dr: "I've already worked out when {target} goes home. And how." }] },
     { id: 'jw.4', turns: [{ by: 'a', say: "Once {target} is gone, it gets easier." }, { by: 'b', say: "If {target} goes." }, { by: 'a', say: "When." }, { by: 'b', say: "You really think {target} won't make jury?" }, { by: 'a', say: "I know {target} won't." }, { by: 'b', dr: "{a} has {target} going home before jury. {a} didn't even say \"if\"." }] },
     { id: 'jw.5', turns: [{ by: 'a', say: "Here's who makes jury." }, { beat: "{a} counts the names off on {a.posAdj} fingers." }, { by: 'a', say: "And not {target}. That's the list." }, { by: 'b', say: "...Okay. That's cold." }, { by: 'a', say: "That's the game." }] },

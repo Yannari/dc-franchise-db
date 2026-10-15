@@ -310,14 +310,12 @@ export default {
   'set.backyard.open': [
     { id: 'xy.1', room: 'backyard', turns: [
       { beat: 'Backyard. Somebody has started a game of tag. Grown adults are running in circles round the pool.' },
-      { by: 'a', say: "You're it!" },
-      { by: 'b', say: "I was not touching base!" },
-      { by: 'c', say: "There's no base!" },
-      { by: 'b', say: "The hammock is base!" },
-      { by: 'd', say: "Since when?" },
-      { by: 'b', say: "Since now!" },
-      { beat: 'Somebody falls in the pool. Tag is cancelled.' },
-      { by: 'e', dr: "We played tag for ten minutes. It ended in the pool and an argument about base. Like every game in this house." },
+      { by: 'a', say: "Got you! You're it!" },
+      { by: 'b', say: "No, I was on base! The hammock is base!" },
+      { by: 'c', say: "Since when is the hammock base?" },
+      { by: 'b', say: "Since right now." },
+      { beat: 'Somebody falls in the pool, and the game is over.' },
+      { by: 'e', dr: "We played tag for ten minutes, and it ended with somebody in the pool and an argument about base. Like every game in this house." },
     ] },
     { id: 'xy.2', room: 'backyard', turns: [
       { beat: 'Backyard. The house is lying in the sun, trying to guess what the next comp will be.' },

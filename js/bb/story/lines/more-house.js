@@ -551,14 +551,12 @@ export default {
     ] },
     { id: 'lh2.2', turns: [
       { by: 'a', say: "Do you ever forget what it's like outside?" },
-      { by: 'b', say: "All the time." },
-      { by: 'a', say: "I tried to remember what rain sounds like." },
-      { by: 'b', say: "And?" },
-      { by: 'a', say: "I couldn't." },
+      { by: 'b', say: "All the time. Why?" },
+      { by: 'a', say: "I tried to remember what rain sounds like today, and I couldn't.", v: { anxious: "I tried to remember what rain sounds like and I couldn't, and it really scared me." } },
       { by: 'b', say: "Close your eyes." },
       { beat: '{b} drums very gently on the table with {b.posAdj} fingertips.' },
-      { by: 'a', say: "...That's really bad rain." },
-      { by: 'b', say: "It's the best I've got." },
+      { by: 'a', say: "That's really bad rain." },
+      { by: 'b', say: "It's the best I can do in here." },
       { by: 'a', dr: "It sounded nothing like rain. It was perfect." },
     ] },
     { id: 'lh2.3', room: 'living-room', turns: [

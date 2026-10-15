@@ -213,7 +213,13 @@ export default {
     { id: 'pd2.6', turns: [{ by: 'b', say: "No hard feelings, whatever happens." }, { by: 'a', say: "No hard feelings." }, { by: 'b', say: "I mean it. I'm not going to trash you to anybody." }, { by: 'a', say: "Same." }, { by: 'a', dr: "That's easy to say this early in the week. Ask us again the night before the vote." }] },
     { id: 'pd2.7', turns: [{ by: 'a', say: "Mind if I sit here?" }, { by: 'b', say: "Go ahead." }, { by: 'a', say: "Thanks." }, { by: 'b', say: "This is weird, isn't it?" }, { by: 'a', say: "Being nice to each other?" }, { by: 'b', say: "Being nice to each other when only one of us is staying." }, { by: 'a', dr: "{b} and I are on the block together. We're being polite. We both know only one of us is staying." }] },
     { id: 'pd2.8', turns: [{ by: 'a', say: "You're going to be fine. People like you." }, { by: 'b', say: "People like you more." }, { by: 'a', say: "That's not true." }, { by: 'b', say: "It is. I've been watching who people sit with at dinner." }, { by: 'b', dr: "{a} has more friends in here than me. I'm going to have to work really hard this week." }] },
-    { id: 'pd2.9', turns: [{ by: 'a', say: "Good luck this week." }, { by: 'b', say: "You too. I mean it." }, { by: 'a', say: "Do you?" }, { by: 'b', say: "...Mostly." }, { by: 'a', say: "Mostly is fine. Mostly is more than I'd get from anyone else." }, { by: 'a', dr: "\"Mostly.\" That's about as honest as it gets on the block." }] },
+    { id: 'pd2.9', turns: [
+      { by: 'a', say: "Good luck this week." },
+      { by: 'b', say: "You too. I mean it." },
+      { by: 'a', say: "Do you really?" },
+      { by: 'b', say: "Mostly. I'd be lying if I said all the way." },
+      { by: 'a', say: "Mostly is more than I'd get from most people in here." },
+      { by: 'a', dr: "'Mostly.' That's about as honest as it gets on the block." }] },
   ],
   'phase.leaned.heavy': [
     { id: 'pk2.h1', turns: [{ by: 'a', say: "It's your veto. Obviously." }, { by: 'b', say: "Obviously." }, { by: 'a', say: "I'm just saying, think about next week." }, { by: 'b', say: "What about next week?" }, { by: 'a', say: "Next week you'll want friends. That's all." }, { by: 'b', dr: "That wasn't advice. That was a warning." }] },

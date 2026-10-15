@@ -16,14 +16,13 @@
 export default {
   'arc.payback.vow': [
     { id: 'ar.pv1', presumes: ['vote'], turns: [
-      { by: 'a', say: "I'm still here." },
-      { by: 'b', say: "You're still here." },
-      { by: 'a', say: "{rival} put me on that block and I'm still here." },
+      { by: 'b', say: "You made it. You're still here." },
+      { by: 'a', say: "{rival} put me on that block, and I'm still here." },
       { by: 'b', say: "So what now?" },
-      { by: 'a', say: "Now I win something. And when I do, {rival} gets to sit in the chair I sat in." },
-      { by: 'b', say: "That's a promise?" },
-      { by: 'a', say: "That's a promise." },
-      { by: 'a', dr: "{rival} thought I'd be gone by now. I'm going to be the last face {rival} sees in this house." },
+      { by: 'a', say: "Now I win something. And when I do, {rival} gets to sit in that chair.", v: { anxious: "Now I have to win something. And if I do, {rival} gets to sit in that chair." } },
+      { by: 'b', say: "Is that a promise?" },
+      { by: 'a', say: "It's a promise." },
+      { by: 'a', dr: "{rival} thought I'd be gone by now. I want to be the last face {rival} sees in this house." },
     ] },
     { id: 'ar.pv2', presumes: ['vote'], turns: [
       { by: 'b', say: "Are you okay? You've been quiet since the vote." },

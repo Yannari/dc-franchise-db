@@ -103,7 +103,12 @@ export default {
     { id: 'br.r1', turns: [{ beat: "{a} watches the house carry on as if nothing is wrong." }, { by: 'a', dr: "I told people about {target}'s group. Everybody nodded. Nobody's going to do anything." }] },
     { id: 'br.r2', turns: [{ by: 'a', dr: "The plan's good. I'm just the wrong person to be pitching it." }] },
     { id: 'br.r3', turns: [{ by: 'a', dr: "I keep saying {target}'s name and nobody wants to hear it." }] },
-    { id: 'br.r4', when: { intent: 'asked' }, turns: [{ by: 'a', say: "{target} is working with a group. We need to get {target} out." }, { by: 'b', say: "Says who?" }, { by: 'a', say: "Says me." }, { by: 'b', say: "That's what worries me." }, { by: 'a', say: "Why?" }, { by: 'b', say: "Because you've never once told me anything that didn't help you." }, { by: 'a', dr: "I came to {b} with the truth. {b} heard a pitch." }] },
+    { id: 'br.r4', when: { intent: 'asked' }, turns: [
+      { by: 'a', say: "{target} is working with a group. We need to get {target} out." },
+      { by: 'b', say: "Says who?" },
+      { by: 'a', say: "Says me. I've seen it." },
+      { by: 'b', say: "That's what worries me. Everything you've ever told me has helped you.", v: { hard: "No. Every time you tell me something, it helps you." } },
+      { by: 'a', dr: "I came to {b} with the truth, and {b} heard a pitch." }] },
     { id: 'br.r5', when: { intent: 'asked' }, turns: [{ by: 'a', say: "Everybody who isn't with {target} should be worried." }, { by: 'b', say: "Think about who gains if I believe you." }, { by: 'a', say: "Everyone who isn't in that group." }, { by: 'b', say: "Or just you." }, { by: 'a', say: "That's not fair." }, { by: 'b', say: "Maybe not. But I'm still not doing it." }, { by: 'b', dr: "{a} might be right about {target}. I'm just not going to be {a}'s extra vote." }] },
     { id: 'br.r6', when: { intent: 'asked' }, turns: [{ by: 'a', say: "Please just hear me out about {target}." }, { by: 'b', say: "I've heard you out." }, { by: 'a', say: "And?" }, { by: 'b', say: "I'm not saying you're wrong about {target}. I'm saying I don't trust you." }, { by: 'a', say: "Then trust the votes." }, { by: 'b', say: "I'll trust my own count, thanks." }, { by: 'a', dr: "Right idea. Wrong person to hear it from, apparently." }] },
     { id: 'br.r7', when: { intent: 'asked' }, turns: [{ by: 'a', say: "You and me, against {target}. That's all I'm asking." }, { by: 'b', say: "Why are you so keen on {target} all of a sudden?" }, { by: 'a', say: "It's not sudden." }, { by: 'b', say: "It is to me." }, { by: 'a', say: "I've been watching for a while." }, { by: 'b', say: "Then you can keep watching." }, { by: 'b', dr: "{a} wants me to go after {target}. I want to know why {a} is so keen." }] },

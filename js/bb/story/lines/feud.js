@@ -46,11 +46,11 @@ export default {
     { id: 'sf.c3', room: 'bedroom', turns: [
       { beat: 'Bedroom, after lights out. {a} is talking, loudly.' },
       { by: 'b', say: "Can you keep it down? People are trying to sleep." },
-      { by: 'a', say: "It's only like eleven." },
-      { by: 'b', say: "It's half one." },
-      { by: 'a', say: "Oh. Sorry.", v: { hard: "Okay, okay. Relax." } },
+      { by: 'a', say: "It's only like eleven, relax." },
+      { by: 'b', say: "It's half one. Some of us have been up since seven." },
+      { by: 'a', say: "Oh. Sorry, I didn't realise.", v: { hard: "Okay, okay. You could have just said." } },
       { beat: 'Two minutes later {a} laughs at something, just as loud as before.' },
-      { by: 'b', say: "Seriously?", v: { hard: "I'm not asking again." } },
+      { by: 'b', say: "Seriously? I literally just asked you.", v: { hard: "I'm not asking again." } },
       { by: 'b', dr: "I've had about four hours of sleep since I got here, and most of the missing ones are {a}'s fault." },
     ] },
     { id: 'sf.c4', room: 'bathroom', turns: [

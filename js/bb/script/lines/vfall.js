@@ -12,7 +12,12 @@
 
 export default {
   'vfall.debt.scene': [
-    { id: 'vf.d1', turns: [{ by: 'a', say: "Thank you. I mean it." }, { by: 'b', say: "I know you do." }, { by: 'a', say: "Seriously. If there's ever anything..." }, { by: 'b', say: "There will be." }, { by: 'a', say: "...Okay." }, { by: 'b', dr: "I didn't save {a} to be thanked. I saved {a} because I'm going to need {a} later." }] },
+    { id: 'vf.d1', turns: [
+      { by: 'a', say: "Thank you for using it on me. I mean that." },
+      { by: 'b', say: "I know you do." },
+      { by: 'a', say: "If there's ever anything I can do for you, just say." },
+      { by: 'b', say: "There will be. Don't worry." },
+      { by: 'b', dr: "I didn't save {a} to be thanked. I saved {a} because I'm going to need {a} later." }] },
     { id: 'vf.d2', turns: [{ beat: "After the ceremony, {a} catches {b} on the way out." }, { by: 'a', say: "Can I say thank you properly? Without everyone watching?" }, { by: 'b', say: "You don't have to." }, { by: 'a', say: "I do. You didn't have to do that." }, { by: 'b', say: "No. I didn't." }, { by: 'a', dr: "{b} took me off the block. That's not a favour. That's a debt, and {b} will want it paid." }] },
     { id: 'vf.d3', turns: [{ by: 'a', say: "Everyone's looking at us." }, { by: 'b', say: "Let them look." }, { by: 'a', say: "They think we're working together now." }, { by: 'b', say: "Aren't we?" }, { by: 'a', say: "...I suppose we are now." }, { by: 'b', dr: "I used the veto on {a}. Everyone saw. Now they all think we're working together, and they're right." }] },
     { id: 'vf.d4', turns: [{ by: 'a', say: "I owe you." }, { by: 'b', say: "You do." }, { by: 'a', say: "I wasn't expecting you to say it like that." }, { by: 'b', say: "How else would I say it? You owe me. That's fine. That's how it works." }, { by: 'a', say: "What do you want?" }, { by: 'b', say: "Nothing yet." }, { by: 'a', dr: "\"Nothing yet.\" That's the scariest thing anyone's said to me all week." }] },
@@ -25,8 +30,18 @@ export default {
     { id: 'vf.f1', turns: [{ by: 'a', say: "I really thought you'd use it." }, { by: 'b', say: "I know." }, { by: 'a', say: "We've been close since the start. I thought that meant something." }, { by: 'b', say: "It does mean something. It just didn't mean that." }, { by: 'a', say: "Then what does it mean?" }, { by: 'a', dr: "{b} had the one thing that could have saved me and kept it. I thought we were in this together." }] },
     { id: 'vf.f2', when: { hohB: false }, turns: [{ by: 'a', say: "You could have used it." }, { by: 'b', say: "I know." }, { by: 'a', say: "You just didn't." }, { by: 'b', say: "If I'd used it, the HOH would have put up someone I can't lose." }, { by: 'a', say: "Someone you can't lose. So I'm someone you can." }, { beat: "{b} doesn't have an answer." }, { by: 'a', dr: "{b} keeps telling me it was about the game. It was about who {b} would rather keep." }] },
     { id: 'vf.f3', turns: [{ by: 'a', say: "All week you told me this was handled." }, { by: 'b', say: "I thought it was." }, { by: 'a', say: "So what happened?" }, { by: 'b', say: "Things changed. I'm sorry." }, { by: 'a', say: "Sorry doesn't get me off the block." }, { by: 'a', dr: "All week I was told this was handled. I'm still sitting on the block." }] },
-    { id: 'vf.f4', turns: [{ by: 'b', say: "Can we talk?" }, { by: 'a', say: "Now you want to talk." }, { by: 'b', say: "I had my reasons." }, { by: 'a', say: "I'm sure you did." }, { by: 'b', say: "Do you want to hear them?" }, { by: 'a', say: "Not today." }, { by: 'b', dr: "I left {a} up there. I had my reasons. {a} doesn't want to hear them." }] },
-    { id: 'vf.f5', turns: [{ by: 'b', say: "Are you okay?" }, { by: 'a', say: "Thanks for nothing." }, { beat: "{a} says it quietly, on the way out of the room. It is not a joke." }, { by: 'b', say: "That's not fair." }, { by: 'a', say: "Neither is this." }, { by: 'b', dr: "I expected {a} to be upset. I didn't expect it to hurt this much." }] },
+    { id: 'vf.f4', turns: [
+      { by: 'b', say: "Can we talk?" },
+      { by: 'a', say: "Now you want to talk? After you left me up there?" },
+      { by: 'b', say: "I had my reasons. Will you at least let me explain?" },
+      { by: 'a', say: "Not today. I can't today.", v: { hard: "No. I don't care about your reasons." } },
+      { by: 'b', dr: "I left {a} on the block, and I had reasons. {a} doesn't want to hear them. I don't blame {a}." }] },
+    { id: 'vf.f5', turns: [
+      { by: 'b', say: "Are you okay?" },
+      { by: 'a', say: "Thanks for nothing.", v: { soft: "I really thought you'd use it on me." } },
+      { beat: '{a} says it quietly, on the way out of the room.' },
+      { by: 'b', say: "That's not fair. You don't know what I was dealing with." },
+      { by: 'b', dr: "I knew {a} would be upset. I didn't think it would hurt this much." }] },
     { id: 'vf.f6', when: { hohB: false }, turns: [{ by: 'b', say: "I'm still with you on eviction night. You know that." }, { by: 'a', say: "You were with me this morning, too." }, { by: 'b', say: "That's not fair." }, { by: 'a', say: "You've still got your vote. Use that one, at least." }, { by: 'a', dr: "If I survive eviction night, {b} is going to find out what that cost." }] },
     { id: 'vf.f7', when: { hohB: false }, turns: [{ by: 'a', say: "Were you ever going to use it on me?" }, { by: 'b', say: "It wasn't that simple." }, { by: 'a', say: "It was, though." }, { by: 'b', say: "It wasn't. You don't know what the HOH said to me." }, { by: 'a', say: "Then tell me." }, { by: 'b', say: "I can't." }, { by: 'a', dr: "{b} can't tell me. That tells me plenty." }] },
     { id: 'vf.f8', turns: [{ by: 'b', say: "Can I get you anything?" }, { beat: "{a} doesn't look up." }, { by: 'b', say: "Okay. I'll leave you alone." }, { by: 'a', say: "Good idea." }, { by: 'b', dr: "{a} won't look at me. I don't blame {a}. I'd be the same." }] },
@@ -78,7 +93,11 @@ export default {
       { by: 'a', say: "I didn't think you'd actually do it. Not to me." },
       { by: 'b', say: "It wasn't about you. I couldn't leave {saved} up there.", v: { hard: "It was my veto. I didn't need your permission." } },
       { by: 'a', dr: "{b} took {saved} off my block in front of the whole house. I won't forget that.", v: { anxious: "Now the whole house knows {b} doesn't care what I want. I don't know who's with me any more." } }] },
-    { id: 'vf.o3', when: { intent: 'other' }, turns: [{ by: 'b', say: "Are we okay?" }, { by: 'a', say: "Ask me next week." }, { by: 'b', say: "That's not a no." }, { by: 'a', say: "It's not a yes either." }, { by: 'a', dr: "My whole week was pointed at {saved}. Not any more. And {b} is on my list now." }] },
+    { id: 'vf.o3', when: { intent: 'other' }, turns: [
+      { by: 'b', say: "Are we okay? I know you're upset about the veto." },
+      { by: 'a', say: "Honestly? I don't know yet. Ask me next week.", v: { hard: "No. Not right now." } },
+      { by: 'b', say: "That's fair." },
+      { by: 'a', dr: "My whole week was about getting {saved} out. Not any more. And now {b} is on my list." }] },
     { id: 'vf.o4', turns: [{ by: 'b', say: "You took that well." }, { by: 'a', say: "Did I?" }, { by: 'b', say: "You didn't say anything at the ceremony." }, { by: 'a', say: "I didn't want to give anyone the satisfaction." }, { by: 'b', dr: "{a} didn't react at the ceremony. Forty minutes later, I heard {a} reacting in the next room." }] },
     { id: 'vf.o5', when: { intent: 'other' }, turns: [{ by: 'a', say: "You didn't have to do that." }, { by: 'b', say: "I did, actually." }, { by: 'a', say: "Why?" }, { by: 'b', say: "Because {saved} is my friend. You knew that when you made the nominations." }, { by: 'a', say: "I thought you cared about your game more than your friends." }, { by: 'b', say: "Not this week." }, { by: 'a', dr: "Not this week. Fine. Next week, {b} can find out what I care about." }] },
     { id: 'vf.o6', turns: [{ by: 'b', say: "No hard feelings?" }, { by: 'a', say: "None at all." }, { by: 'b', say: "Really?" }, { by: 'a', say: "Really. You've made next week very easy for me." }, { by: 'a', dr: "I can't play in the next HOH. But I can talk to whoever wins it, and I know exactly whose name I'll give them." }] },

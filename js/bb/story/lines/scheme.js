@@ -11,16 +11,12 @@
 export default {
   'story.scheme.lie.believed': [
     { id: 'sl.b1', presumes: ['hoh'], turns: [
-      { by: 'a', say: "I wasn't going to say anything." },
-      { by: 'b', say: "But?" },
-      { by: 'a', say: "But you'd want to know. {target} said your name. To the HOH. Yesterday." },
-      { by: 'b', say: "My name? For what?" },
-      { by: 'a', say: "For the block." },
-      { by: 'b', say: "You're joking." },
-      { by: 'a', say: "I wish I was." },
-      { by: 'b', say: "{target} told me we were good. Like, this morning." },
+      { by: 'a', say: "I wasn't going to say anything, but I think you'd want to know." },
+      { by: 'b', say: "Know what?" },
+      { by: 'a', say: "{target} said your name to the HOH. For the block." },
+      { by: 'b', say: "My name? {target} told me this morning we were good.", v: { hard: "Are you serious? {target} told me this morning we were good." } },
       { by: 'a', say: "{target} tells everybody they're good." },
-      { by: 'a', dr: "Did {target} say it? No idea. Does {b} believe it? Completely. That's all that matters." },
+      { by: 'a', dr: "{target} never said that. But {b} believes it, and that's all I need." },
     ] },
     { id: 'sl.b2', turns: [
       { by: 'a', say: "Can I be honest with you about something?" },

@@ -686,8 +686,8 @@ export default {
     ] },
     { id: 'ak2.d2', turns: [
       { by: 'a', say: "If something changed, you'd tell me, right? Before the vote, not after." },
-      { by: 'b', say: "Of course I would." },
-      { by: 'a', say: "Because I would tell you." },
+      { by: 'b', say: "Of course I would. Why, has something changed for you?" },
+      { by: 'a', say: "No. I'm just saying, I would tell you." },
       { by: 'b', say: "I know you would." },
       { beat: 'Neither of them says anything for a moment.' },
       { by: 'a', say: "Okay. Good." },

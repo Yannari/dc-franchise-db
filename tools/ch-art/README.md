@@ -88,7 +88,7 @@ What the first build taught:
 
 ## Which plate each challenge plays on (2026-10-15)
 
-25 places, 44 plate keys. The challenge's props that are not painted (buoys, tokens, crates on a ring) are drawn
+31 places, 55 plate keys. The challenge's props that are not painted (buoys, tokens, crates on a ring) are drawn
 over the plate by the viewer.
 
 | Event | Plate |
@@ -99,12 +99,19 @@ over the plate by the viewer.
 | Hang On | `dock` |
 | Night Swim | `beach-night` / `cliff-night` |
 | Gauntlet Run | `field` (the bell is the `gong` mark) |
-| Truck Tug, Jungle Maze, Demolition Derby, Balance Beam | jobs C01-C04 (waiting on art) |
+| Truck Tug | `truck` (finish arch = `gate`) |
+| Jungle Maze | `maze` (the entrance = `gate`) |
+| Demolition Derby | `derby` (TJ on the judge's stand) |
+| Balance Beam | `beam` (stand groups `start`, `beam`, `finish`) |
 | every Arena game | `arena` (house + walk-in) and `ring` (the duel) |
 | Final: start, Beach Haul | `field` / `beach` |
-| Final: Ridge Puzzle | job C05 (waiting on art); `lookout` until then |
+| Final: Ridge Puzzle | `ridge` (stand group `tables`, one table each) |
 | Final: Summit Run, finish | `trail`, then `summit` (finish arch = `gate`, gong) |
 | Final: overnight | `camp` (night only) |
 | Final: instant elimination | `tiki` |
 | Gym scenes | `gym` |
-| Quiet talks at sunset | `lookout` |
+| Quiet talks at sunset | `lookout`, `sunset` (a beach at sunset, day only: the night before the Arena, the champions) |
+
+C03 (derby) is built from `Result-fixed.png`: the AI result had a pale square pasted behind the sun, repainted
+with each row's own sky (the colour the sky does not have, and not darker than it: the trees stay). The truck's
+arch closes a patch of sky off from the top edge, so it is marked `nightsky` for the night pass.

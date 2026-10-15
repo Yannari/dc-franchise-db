@@ -232,7 +232,8 @@ export function addInsight(sc, kindText, weekNum) {
   const pairOf = fact => `f:${fact}|${[me, o].sort().join('|')}`;
   const recent = fact => led[pairOf(fact)] != null && wk - led[pairOf(fact)] < 3;
   const spent = (led[`s:${me}|${wk}`] || 0) >= 2;
-  const freshH = spent ? [] : hist.filter(ways => !recent(ways.fact)).map(ways => Object.assign(ways.filter(usable), { fact: ways.fact }))
+  const toldThisWeek = fact => (led[`hw:${fact}|${wk}`] || 0) >= 1;
+  const freshH = spent ? [] : hist.filter(ways => !recent(ways.fact) && !toldThisWeek(ways.fact)).map(ways => Object.assign(ways.filter(usable), { fact: ways.fact }))
     .filter(w => w.length).map(w => ({ t: w[Math.floor(rng() * w.length) % w.length], fact: w.fact }));
   const freshV = voiced.filter(t => !led[keyOf(t, false)]);
   // history first (it is about this pair), then the voice; never a sentence this season has heard
@@ -246,6 +247,7 @@ export function addInsight(sc, kindText, weekNum) {
     led[way(add)] = (led[way(add)] || 0) + 1;
     led[pairOf(picked.fact)] = wk;
     led[`s:${me}|${wk}`] = (led[`s:${me}|${wk}`] || 0) + 1;
+    led[`hw:${picked.fact}|${wk}`] = (led[`hw:${picked.fact}|${wk}`] || 0) + 1;
   }
   sc.lines[di] = { ...dl, text: said('dr', `${String(dl.text).replace(/\s+$/, '')} ${add}`) };
   return sc;

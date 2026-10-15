@@ -494,7 +494,9 @@ function writeStoryScene0(line, step, ctx) {
   const data = { ...step.data, when: whenOf(prior, step) };
   for (const k of Object.keys(data)) if (data[k] != null && typeof data[k] !== 'string') delete data[k];
   let room = step.room || 'living-room';
-  let keys = keysFor(line.type, step.step, step.outcome);
+  const preShow = step.outcome === 'couple' && line.type === 'showmance'
+    && factsFor({ who, data: {}, room }, { week: ctx.week, act: 'house' }).kin === 'together';
+  let keys = keysFor(line.type, step.step, step.outcome === 'couple' && line.type === 'showmance' && !preShow ? 'any' : step.outcome);
   if (!keys.length) return null;
   // A group version is used while it has a scene this season has not aired: the group pools are
   // small, and a spent one used to rotate (the read of 2026-10-14: the cold-tea nominee scene and the

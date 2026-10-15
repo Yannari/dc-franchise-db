@@ -568,7 +568,7 @@ export default {
     { id: 'sc.c1', turns: [{ beat: 'At the other end, something has started between {a} and {b}.' }] },
     { id: 'sc.c2', turns: [{ beat: 'Across the room, {b} has gone very quiet. {a} has not noticed. Yet.' }] },
     { id: 'sc.c3', turns: [{ beat: 'In the middle of it all, {a} and {b} are no longer laughing.' }] },
-    { id: 'sc.c4', turns: [{ beat: 'Not everyone is having a good time. Over by the counter, {a} and {b} have got into something.' }] },
+    { id: 'sc.c4', turns: [{ beat: 'Not everyone is having a good time. Off to one side, {a} and {b} have got into something.' }] },
   ],
   'set.cut.fun': [
     { id: 'sc.f1', turns: [{ beat: 'Off to one side, {a} and {b} are having a conversation of their own.' }] },

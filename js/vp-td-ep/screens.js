@@ -198,7 +198,11 @@ function islandScreen(ep, S, o) {
   // a Multi-Tribal night: one choice per person who left (vp-screens.js ri-choice-<name>), each its own stepped choice
   // (the user, 2026-10-14: "2 Ri choices" still on the classic pages)
   const rc = /^ri-choice-(.+)$/.exec(id);
-  if (rc) { const c = (ep.multiTribalRIChoices || []).find(x => x.name === rc[1]); if (c) return tdRiChoiceScreen({ ...ep, eliminated: c.name, riChoice: c.choice, ...(c.name !== ep.eliminated ? { riArrival: null, firstEliminated: null } : {}) }, o); }
+  // (its own id: the viewer keys a screen by episode and id, and two choices both called 'ri-choice' were one screen, the
+  // last one built; the user, 2026-10-14: "ren's choice screen still shows dunia")
+  if (rc) { const c = (ep.multiTribalRIChoices || []).find(x => x.name === rc[1]);
+    const scr = c ? tdRiChoiceScreen({ ...ep, eliminated: c.name, riChoice: c.choice, ...(c.name !== ep.eliminated ? { riArrival: null, firstEliminated: null } : {}) }, o) : null;
+    if (scr) return { ...scr, id: `ri-choice-${String(c.name).replace(/[^\w-]/g, '')}` }; }
   if (id === 'ri-life') return tdIslandLifeScreen(ep, false, o);
   if (id === 'ri-duel') return tdRiDuelScreen(ep, o);
   // the way back in, the emissary, Tied Destinies (returns.js)

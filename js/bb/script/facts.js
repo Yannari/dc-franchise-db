@@ -20,6 +20,8 @@ export const BB_FACT_KEYS = ['ending', 'result', 'intent', 'reason', 'act', 'ear
   'register',
   // how b talks, for a scene whose feeling sits with b (the one left out, the one blamed)
   'registerB',
+  // finished near the bottom of this week's HOH competition (bb/story/write.js compOf): only then is a scene about it
+  'lowA', 'lowB', 'lowC',
   // the scene names the week's target ({target} in its data): only then may a line say it
   'known',
   // what a and b were to each other before the show (the cast's kinship): together | family | friends | history

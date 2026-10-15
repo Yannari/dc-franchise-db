@@ -30,7 +30,7 @@ import { causeOf } from './storylines.js';
 import { STORY_POOLS } from './lines/index.js';
 import { getBond } from '../../bonds.js';
 import { addInsight } from './voice.js';
-import { pickTone, voiceLine } from './register.js';
+import { pickTone, voiceLine, registerOf } from './register.js';
 import { spotFor, onIsland, openingAt } from './places.js';
 import { pStats } from '../../players.js';
 
@@ -226,11 +226,38 @@ function noteAcross(id) {
   } catch { /* storage is a convenience */ }
 }
 
+// A line can come in the speaker's own register (the user, 2026-10-15, on a comp joke nobody would say: "well I
+// don't know what happened... what do you want me to say (if she's on the mean side) or I really don't know
+// what's going on with me (if she's on the anxious side)"): `v: { mean, anxious, ... }` keyed by register.js's
+// registers, or by a family of them; the speaker's own register first, then its family, then the line itself.
+const FAMILY = { mean: 'hard', tough: 'hard', sarcastic: 'hard', terse: 'hard', anxious: 'soft', sweet: 'soft', bubbly: 'soft', theatrical: 'loud' };
+export function variantOf(t, by) {
+  if (!t?.v || !by) return null;
+  const r = registerOf(by).reg;
+  return t.v[r] ?? t.v[FAMILY[r]] ?? null;
+}
+const textsOf = t => [t.say || t.dr || t.beat || '', ...Object.values(t.v || {})].join(' ');
+
+// The week's Head of Household competition, once it has been played: its name ({comp}) and who finished
+// near the bottom, so a scene about doing badly in a comp is only about somebody who did (the user,
+// 2026-10-15: "are we sure there was a Pressure Cooker comp where Ara did bad?")
+function compOf(ctx) {
+  const c = ctx?.hoh && ctx.week?.hohCompetition;
+  const order = (c?.placements || []).filter(Boolean);
+  if (!c?.name || order.length < 4) return null;
+  return { name: c.name, low: order.slice(-Math.max(2, Math.floor(order.length / 3))) };
+}
+const withComp = (data, ctx) => {
+  const c = compOf(ctx);
+  return c && data.comp === undefined ? { ...data, comp: c.name } : data;
+};
+
 function pick(keys, who, data, ctx, room, salt, freshOnly = false) {
   const pools = {};
+  data = withComp(data, ctx);
   // an entry that names something the scene does not have ({alliance} on an unnamed pact,
   // {c} with no third person) is not a candidate: it would print the raw slot
-  const can = e => (e.turns || []).every(t => (!t.by || !!who[t.by]) && [...String(t.say || t.dr || t.beat || '').matchAll(/\{(\w+)(?:\.\w+)?\}/g)]
+  const can = e => (e.turns || []).every(t => (!t.by || !!who[t.by]) && [...textsOf(t).matchAll(/\{(\w+)(?:\.\w+)?\}/g)]
     .every(([, r]) => r === 'hoh' ? !!ctx.hoh : r === 'count' || !!who[r] || typeof data[r] === 'string'));
   // a couple or family who came in together are not "friends": a line that calls them that is wrong
   const facts0 = factsFor({ who, data, room }, { week: ctx.week, act: 'house', hoh: ctx.hoh, nominees: ctx.nominees });
@@ -260,6 +287,8 @@ function pick(keys, who, data, ctx, room, salt, freshOnly = false) {
   const seen = seenAcross();
   if (seen.size) for (const k of keys) { const fresh = pools[k].filter(e => !seen.has(e.id)); if (fresh.length) pools[k] = fresh; }
   const facts = factsFor({ who, data, room }, { week: ctx.week, act: 'house', hoh: ctx.hoh, nominees: ctx.nominees });
+  const comp = compOf(ctx);
+  for (const r of ['a', 'b', 'c']) facts[`low${r.toUpperCase()}`] = !!(comp && who[r] && comp.low.includes(who[r]));
   const rng = stableRng(gs.bb?.seasonSalt || 0, ctx.week?.num || 0, 'story', salt);
   const speakers = Object.values(who).filter(Boolean);
   const pairKey = [who.a, who.b].filter(Boolean).sort().join('|');
@@ -281,7 +310,8 @@ function pick(keys, who, data, ctx, room, salt, freshOnly = false) {
 const render = (entry, who, ctx, data) => entry.turns.map(t => {
   const kind = t.dr ? 'dr' : t.beat ? 'beat' : 'say';
   const by = t.by ? who[t.by] || null : null;
-  const text = said(kind, fill(t.dr || t.beat || t.say, who, { hoh: ctx.hoh }, data));
+  data = withComp(data, ctx);
+  const text = said(kind, fill(variantOf(t, by) ?? (t.dr || t.beat || t.say), who, { hoh: ctx.hoh }, data));
   // a line may open on a slot ("{when}, {a} made a joke...") — a sentence starts with a capital
   return { kind, by, text: text.replace(/^(["'(…\.\s]*)([a-z])/, (m, p, ch) => p + ch.toUpperCase()) };
 });

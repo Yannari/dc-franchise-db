@@ -73,7 +73,8 @@ export function writePreviously(ep) {
   // a clip: a player's own line, inside the throwback of where they said it
   const Q = (by, text, shot = null) => { if (by && text) out.push({ kind: 'say', by, text, clip: true, ...(shot ? { shot: { ...shot, players: [...new Set([by, ...(shot.players || [])])].slice(0, 4) } } : {}) }); };
   // the host's aside after a big moment, now and then
-  const aside = (slot, p = .35) => (roll(slot, p) ? ` ${pick(['Brutal.', 'Classic.', 'I love this game.', 'Ouch.', 'Television gold.', 'Honestly? Beautiful.', 'I could watch that all day.', 'And that is why I love my job.'], 'aside')}` : '');
+  // the quip fits what happened: "Zee traded secrets with Dunia. Brutal." was a deal, not a wound (read 2026-10-15)
+  const aside = (slot, sore, p = .35) => (roll(slot, p) ? ` ${pick(sore ? ['Brutal.', 'Ouch.', 'Television gold.', 'I could watch that all day.', 'Classic.'] : ['Classic.', 'I love this game.', 'Television gold.', 'Honestly? Beautiful.', 'And that is why I love my job.'], sore ? 'asideSore' : 'aside')}` : '');
 
   // what aired last time, with the camp it aired at (a throwback shot is that place, those people)
   const aired = Object.entries(prev.campStory || {}).flatMap(([camp, c]) => [...(c.pre || []), ...(c.post || [])].map(x => (x && x.kind ? { ...x, camp } : null))).filter(Boolean);
@@ -156,8 +157,9 @@ export function writePreviously(ep) {
     const lead = i === 0 ? '' : pick(['Meanwhile, ', 'Back at camp, ', 'And then ', 'Elsewhere, ', '', 'Oh, and ', 'Over at camp, '], `lead${i}`);
     // (a sentence that opens on a name keeps its capital after "Meanwhile, ")
     // (a line that opens on "And" drops it after a lead: "Meanwhile, and The Lock officially died", read 2026-10-14)
+    // (and none before a sentence that opens on a gerund: "Over at camp, being a couple out here is a liability", read 2026-10-15)
     const T = (t0) => { const t = lead ? t0.replace(/^And /, '') : t0;
-      return !lead ? t : [...NAMES].some(n => t.startsWith(n)) || /^I\b/.test(t) ? lead + t : lead + t.charAt(0).toLowerCase() + t.slice(1); };
+      return !lead || /^[A-Z][a-z]+ing\b/.test(t) && ![...NAMES].some(n => t.startsWith(n)) ? t : [...NAMES].some(n => t.startsWith(n)) || /^I\b/.test(t) ? lead + t : lead + t.charAt(0).toLowerCase() + t.slice(1); };
     const kb = `${c.type}:${c.step}`;
     // a couple targeted: the event's players are [the one plotting, the couple] (romance.js), so a and b are the plotter and
     // one of the couple (read 2026-10-14: "Lynda and Ivy's little romance put a target on both of them", Lynda plotting
@@ -209,7 +211,7 @@ export function writePreviously(ep) {
     const shot = shotOf(c.x, [a, b].filter(Boolean));
     const said = T(pick(say, `sl-${kb}`));
     // (no quip after a line that already has its own: "It was loud. It was ugly. It was great. Brutal.", read 2026-10-14)
-    H(said + (c.score >= 9 && !/(^|[.!?] )[A-Z][a-z]+[.!]$/.test(said) && (said.match(/[.!?](\s|$)/g) || []).length < 3 ? aside(`sl${i}`) : ''), shot);
+    H(said + (c.score >= 9 && !/(^|[.!?] )[A-Z][a-z]+[.!]$/.test(said) && (said.match(/[.!?](\s|$)/g) || []).length < 3 ? aside(`sl${i}`, /betray|drift|fight|feud|clash|target|caught|expos|broke|ended|crack|lie|blind|rival|grudge|snap|bully|sour|split/.test(kb)) : ''), shot);
     // the line that mattered, from the people in it: somebody the host just named (a clip from a person the sentence
     // never mentioned reads as a non sequitur, read 2026-10-14: "Leshawna knew she was in trouble" then Millie)
     if (quotes < QUOTES && (c.score >= 7 || roll(`q${i}`, .5))) { const q = quoteOf(c.x, [a, b].filter(n => n && said.includes(n))); if (q) { Q(q.by, q.text, shot); quotes++; } }
@@ -301,7 +303,7 @@ export function writePreviously(ep) {
     const lb = booth.find(b => b.voter === lead && b.voted === boot);
     if (lb?.line && quotes < QUOTES) { Q(lead, lb.line, tribalShot([lead])); quotes++; }
     // the other side's plan
-    if (!topTwo && other && otherN >= 2 && otherLead === boot) H(pick([`${boot} had a target of ${pr(boot).posAdj} own, ${other}, and only got ${num(otherN)} votes on it.`, `${boot}'s own plan? Get rid of ${other}. It came up short.`, `${boot} was busy plotting against ${other}. Wrong target.`], 'otherSelf'), tribalShot([boot, other]));
+    if (!topTwo && other && otherN >= 2 && otherLead === boot) H(pick([`${boot} had a target of ${pr(boot).posAdj} own, ${other}. ${Cap(num(otherN))} votes went that way. Not enough.`, `${boot}'s own plan? Get rid of ${other}. It came up short.`, `${boot} was busy plotting against ${other}. Wrong target.`], 'otherSelf'), tribalShot([boot, other]));
     else if (!topTwo && other && otherN >= 2 && otherLead) H(pick([`But ${otherLead} had other plans, and ${otherPlan?.label && !/bloc$/i.test(otherPlan.label) ? otherPlan.label : `${pr(otherLead).posAdj} side`} went after ${other} instead.`, `Meanwhile, ${otherLead} was rounding up votes against ${other}.`, `${otherLead}, though, was gunning for ${other}.`], 'other'), tribalShot([otherLead, other]));
     // the flips that decided it
     const turned = topTwo ? [] : [...new Set([...flips, ...strikers])].filter(n => n !== lead);

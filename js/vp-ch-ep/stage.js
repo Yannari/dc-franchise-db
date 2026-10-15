@@ -112,7 +112,9 @@ export class ChxStage {
     const xs = ts.map(t => t._m.u), ys = ts.map(t => t._m.v - (this.sizeOf(t._m) / 100) * .45);
     const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
     const spread = Math.max(...xs) - Math.min(...xs);
-    const z = Math.max(1, Math.min(1.28, .7 / (spread + .42)));
+    // people already drawn large (a close plate: the gym, the ridge) get no zoom; small ones a little
+    const big = Math.max(...ts.map(t => t._m.s || .1));
+    const z = big >= .13 ? 1 : Math.max(1, Math.min(big >= .1 ? 1.1 : 1.2, .7 / (spread + .42)));
     W.style.transform = tf(cx, cy + .07, z);
   }
 

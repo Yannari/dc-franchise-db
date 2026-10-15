@@ -45,6 +45,7 @@ const PLACE = {
   party: { plate: 'club', place: 'The Beach Club', room: null, island: 'club', icon: 'music', hour: 'night', lasers: 1 },
   deliberation: { plate: 'common', place: 'The Common Room', room: 'common', icon: 'fire', hour: 'night' },
   arena: { plate: 'arena', place: 'The Arena', room: null, island: 'arena', icon: 'skull', hour: 'night' },
+  lookout: { plate: 'lookout', place: 'The Lookout', room: null, island: 'lookout', icon: 'island' },
 };
 // Somewhere quiet: by day the lookout or the bedroom, by night the pool or the beach.
 const QUIET_DAY = [{ plate: 'lookout', place: 'The Lookout', island: 'lookout', icon: 'island' }, { plate: 'bunks', place: 'The Bedroom', room: 'bunk-b', icon: 'house' }];
@@ -129,7 +130,18 @@ const LABEL = { arrival: 'The arrival', reveal: 'The villa', open: 'Previously',
 
 // ── placing people on a plate ─────────────────────────────────────────
 // Extra places when a plate has fewer marks than people: between and just behind its own.
-function crowdSlots(base, n) {
+function crowdSlots(base, n, { seated = false } = {}) {
+  if (seated) {
+    // a full sofa: people squeeze in between the ones already sitting, on the same cushions
+    const src = [...base].sort((x, y) => x.u - y.u);
+    const out = [];
+    for (let i = 0; i + 1 < src.length && out.length < n; i++) {
+      const a = src[i], b = src[i + 1];
+      if (Math.abs(a.v - b.v) < .06 && Math.abs(a.u - b.u) < .16) out.push({ u: (a.u + b.u) / 2, v: (a.v + b.v) / 2 + .004, s: Math.min(a.s || .08, b.s || .08) * .96 });
+    }
+    if (out.length >= n) return out.slice(0, n);
+    return [...out, ...crowdSlots(base, n - out.length)];
+  }
   const out = [];
   const src = [...base].sort((a, b) => a.u - b.u);
   for (let row = 0; out.length < n && row < 4; row++) {
@@ -153,10 +165,33 @@ export function placeScene(key, people, { group = null, crowd = [] } = {}) {
   const spec = {};
   // a group (the sofa, the Arena's stand) keeps to its own seats and stands; the plate's open spots are for others
   const gStands = group ? ms.filter(m => m.kind === 'stand' && m.group === group) : [];
-  const pool = group ? [...seats.map((m, i) => ({ m, sp: ['seat', i, m.group] })), ...gStands.map((m, i) => ({ m, sp: ['stand', i, group] })), ...(gStands.length ? [] : stands.map((m, i) => ({ m, sp: ['stand', i] })))]
+  const pool = group ? [...seats.map((m, i) => ({ m, sp: ['seat', i, m.group] })), ...gStands.map((m, i) => ({ m, sp: ['stand', i, group] })), ...(gStands.length || seats.length ? [] : stands.map((m, i) => ({ m, sp: ['stand', i] })))]
     : [...stands.map((m, i) => ({ m, sp: ['stand', i] })), ...ms.filter(m => m.kind === 'seat').map(m => ({ m, sp: ['seat', ms.filter(x => x.kind === 'seat' && x.group === m.group).indexOf(m), m.group] }))];
   const central = [...pool].sort((a, b) => (Math.abs(a.m.u - .5) - a.m.v * .6) - (Math.abs(b.m.u - .5) - b.m.v * .6));
-  const front = central.slice(0, people.length).sort((a, b) => a.m.u - b.m.u);
+  // a few people take one row of the plate, the most central marks of it, so nobody stands half behind
+  // somebody else (the gym, the pool deck: two of three on top of each other)
+  const rows = [];
+  // a group with seats (the sofa) sits: its rows are its seats, never the open floor
+  const rowPool = group && seats.length ? pool.filter(x => x.sp[0] === 'seat') : pool;
+  for (const x of [...rowPool].sort((a, b) => b.m.v - a.m.v)) { const r = rows.find(r => Math.abs(r[0].m.v - x.m.v) < .05); if (r) r.push(x); else rows.push([x]); }
+  const row = people.length <= 6 ? rows.filter(r => r[0].m.v <= .9).find(r => r.length >= people.length) : null;
+  // seats: the longest row, and neighbours on it (a conversation sits together, not at both ends of the sofa)
+  let seated = null;
+  if (group && seats.length && people.length <= 6) {
+    const best = [...rows].sort((x, y) => y.length - x.length)[0];
+    if (best && best.length >= people.length) {
+      const line = [...best].sort((x, y) => x.m.u - y.m.u);
+      let pick = null, score = Infinity;
+      for (let i = 0; i + people.length <= line.length; i++) {
+        const w = line.slice(i, i + people.length);
+        const span = w[w.length - 1].m.u - w[0].m.u, mid = (w[0].m.u + w[w.length - 1].m.u) / 2;
+        const sc = span + Math.abs(mid - .5) * .5;
+        if (sc < score) { score = sc; pick = w; }
+      }
+      seated = pick;
+    }
+  }
+  const front = (seated || (row ? [...row].sort((a, b) => Math.abs(a.m.u - .5) - Math.abs(b.m.u - .5)).slice(0, people.length) : central.slice(0, people.length))).sort((a, b) => a.m.u - b.m.u);
   people.forEach((n, i) => { if (front[i]) spec[n] = front[i].sp; });
   const used = new Set(front.map(x => x.m));
   const rest = central.filter(x => !used.has(x.m));
@@ -168,7 +203,7 @@ export function placeScene(key, people, { group = null, crowd = [] } = {}) {
   }
   const extra = people.filter(n => !spec[n]).concat(crowd);
   const base = group ? [...seats, ...gStands] : stands.length ? stands : seats;
-  const slots = [...rest.map(x => x.sp), ...crowdSlots(base.length ? base : [{ u: .5, v: .75, s: .1 }], Math.max(0, extra.length - rest.length))];
+  const slots = [...rest.map(x => x.sp), ...crowdSlots(base.length ? base : [{ u: .5, v: .75, s: .1 }], Math.max(0, extra.length - rest.length), { seated: !!group && seats.length > 0 })];
   extra.forEach((n, i) => { if (slots[i]) spec[n] = slots[i]; });
   return spec;
 }
@@ -244,6 +279,8 @@ function linesToSteps(S, lines, { names, first = null, sceneWho = [], host = fal
 // A scene's people on its plate, as the scene step's cast.
 function sceneStep(S, a, place, { night, extraCast = [], hidden = [], group = null, crowd = [] } = {}) {
   const key = plateKey(place.plate, night);
+  // in the common room people sit on the sofa (the user, 2026-10-15: "they don't sit")
+  if (!group && place.plate === 'common') group = 'sofa';
   const who = (a?.who || []).filter(n => n && n !== HOST);
   const cast = placeScene(key, [...new Set([...who, ...extraCast])], { group, crowd: crowd.filter(n => !who.includes(n)) });
   return { scene: { plate: key, place: place.place, when: whenOf(S.day, S.min), icon: place.icon || 'house', room: place.room || null,

@@ -384,6 +384,8 @@ export function chxBack(el) {
   if (R.idx <= 0) { if (typeof window.vpPrev === 'function') window.vpPrev(); return; }
   goTo(R, R.idx - 1, false);
 }
+/** Go straight to a step of the screen showing (the art harness and the debug tab). */
+export function chxGo(i) { const R = runner(document.querySelector('.chx[data-ep]')); if (R) { stopAuto(R); goTo(R, i, false); } }
 export function chxRestart(el) { const R = runner(rootOf(el)); if (!R) return; stopAuto(R); goTo(R, 0, false); }
 export function chxAuto(el) {
   const R = runner(rootOf(el) || document.querySelector('.chx[data-ep]')); if (!R) return;
@@ -413,7 +415,7 @@ export function chxSwitchViewer(which) {
 /** The readout's way back to the stepped viewer. */
 export const CHX_SWITCH = `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" onclick="chxSwitchViewer('stepped')" style="border:1px solid #ff6a1a;background:#1a1716;color:#ff6a1a;padding:7px 12px;font:700 12px 'Barlow Condensed',system-ui,sans-serif;letter-spacing:1px;text-transform:uppercase;cursor:pointer">&#9654; Stepped viewer</button></div>`;
 
-if (typeof window !== 'undefined') Object.assign(window, { chxFrame, chxNext, chxBack, chxRestart, chxAuto, chxIntel, chxTv, chxSwitchViewer, chxSpeed, chxChapters });
+if (typeof window !== 'undefined') Object.assign(window, { chxGo, chxFrame, chxNext, chxBack, chxRestart, chxAuto, chxIntel, chxTv, chxSwitchViewer, chxSpeed, chxChapters });
 if (typeof document !== 'undefined') {
   // a screen opens on its first step; leaving it stops its Auto
   document.addEventListener('vp:screen', () => {

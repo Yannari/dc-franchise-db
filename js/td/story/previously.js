@@ -137,7 +137,9 @@ export function writePreviously(ep) {
   const strong = cand.filter(c => c.score >= 7).length;
   const room = Math.max(1, Math.min(4, strong + (cand.length > 3 ? 1 : 0)));
   const chosen = [...cand].sort((p, q) => q.score - p.score).slice(0, room).sort((p, q) => p.order - q.order);
-  const sinceOf = c => (c.since && c.since < prev.num ? pick([` (and that's been going on since episode ${num(c.since)})`, `, ${c.steps >= 2 ? 'again' : 'and not for the first time'}`, `, which has been building since episode ${num(c.since)}`], `since-${c.type}`) : '');
+  // (no parenthesis: "Evie took a shot at Misha (and that's been going on since episode four), and Misha did not let it go"
+  // reads as written, not said, read 2026-10-15)
+  const sinceOf = c => (c.since && c.since < prev.num ? pick([`, ${c.steps >= 2 ? 'again' : 'and not for the first time'}`, `, which has been building since episode ${num(c.since)}`], `since-${c.type}`) : '');
   chosen.forEach((c, i) => {
     // a loyalty test that got seen through: the scheme was the tester's (b in the scene), not the one tested ("Topher's
     // little scheme blew up in his face" for Topher passing Jo's test, read 2026-10-14)

@@ -997,8 +997,10 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const list = n => n.length <= 1 ? n.join('') : `${n.slice(0, -1).join(', ')} and ${n[n.length - 1]}`;
   // the close is work, not a quip: the shakiest vote (the plan's voter least close to a, someone who is
   // not here if possible), the name they tell camp, and why b is really in
-  const shaky = [...rest].sort((x, y) => getBond(a, x) - getBond(a, y) || x.localeCompare(y))[0] || null;
-  const cover = alt || (rival?.target && rival.target !== a ? rival.target : null) || outside.find(x => x !== a) || null;
+  // (never somebody standing in the scene: "Trent, you go find Trent", read 2026-10-15)
+  const shaky = rest.filter(x => !Object.values(who).includes(x)).sort((x, y) => getBond(a, x) - getBond(a, y) || x.localeCompare(y))[0] || null;
+  // (never one of us: the other side's name was Bowie, their own ally, and "then we've got Bowie as the backup", read 2026-10-15)
+  const cover = alt || (rival?.target && rival.target !== a && rival.target !== b && rival.target !== mark && !voters.includes(rival.target) ? rival.target : null) || outside.find(x => x !== a) || null;
   // the sides, by name (the user, 2026-10-10: "four against five" on day one, and nobody had ever been
   // shown who the four and the five were): who a is counting on, said from a's side ("you, me, Sky and
   // Riot"), and who the other side is
@@ -1006,7 +1008,9 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const us = list([...(b && usNames.includes(b) ? ['you'] : []), 'me', ...usNames.filter(v => v !== b)]);
   const themNames = rival ? (rival.members || []).filter(m => tribal.includes(m) && m !== rival.target && !voters.includes(m)) : [];
   const theirSide = themNames.length ? list(themNames) : 'the rest of them';
-  const data = { target: boot, us, theirSide, votes: numberWord(voters.length), ...(relCase === 'isolate' ? { keep: rel.partner } : {}), ...(relCase === 'pledge' ? { protects: rel.protects } : {}), ...(shaky ? { shaky } : {}), ...(cover ? { cover } : {}), them: numberWord(them || 1), ...(mark ? { mark } : {}), ...(pair ? { partner: pair } : {}),
+  // an alliance meeting (voteTalk): its name is said, it has formed already, and it opens as that alliance getting together
+  const group = as.group || null;
+  const data = { target: boot, us, theirSide, votes: numberWord(voters.length), ...(group ? { group } : {}), ...(relCase === 'isolate' ? { keep: rel.partner } : {}), ...(relCase === 'pledge' ? { protects: rel.protects } : {}), ...(shaky ? { shaky } : {}), ...(cover ? { cover } : {}), them: numberWord(them || 1), ...(mark ? { mark } : {}), ...(pair ? { partner: pair } : {}),
     ...(theirs ? { theirs } : {}), ...(alt ? { alt } : {}), ...(rest.length ? { others: list(rest) } : {}), ...(rival?.target ? { other: rival.target } : {}) };
   // the glue (the user's Disventure Camp read: "Aiden connects Gabby and Tom to Lake and Rosa. Cut him out, and
   // that group is toast"): the target is close to two people here who aren't close to each other
@@ -1022,7 +1026,7 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   // there is a side to be afraid of: two or more of them, or three or more left off the plan (read 2026-10-14: "the rest
   // of them already are one" with seven on the plan and the one left off it the target)
   const sideBig = themNames.length >= 2 || tribal.filter(x => !voters.includes(x)).length >= 3;
-  const facts = { ...baseFacts, sideVoted, sideBig, count, glue: !!gluePair, shaky: !!shaky, cover: !!cover, close: !!b && getBond(a, b) >= 4, others: !!rest.length, other: !!rival?.target, markMe: mark === a, markB: !!mark && mark === b, otherMe: rival?.target === a, otherB: !!b && rival?.target === b, cast: shape };
+  const facts = { ...baseFacts, ...(group ? { group: true } : {}), alliance: !!group, sideVoted, sideBig, count, glue: !!gluePair, shaky: !!shaky, cover: !!cover, close: !!b && getBond(a, b) >= 4, others: !!rest.length, other: !!rival?.target, markMe: mark === a, markB: !!mark && mark === b, otherMe: rival?.target === a, otherB: !!b && rival?.target === b, cast: shape };
   // what this camp's day has already shown (arcBeats, t.em): the plan can call back to it
   const em = t.em || { spark: null, warned: [] };
   const sparkSeen = !!em.spark && em.spark.by === a && em.spark.of === boot;
@@ -1041,7 +1045,7 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   // counted that aired before now, or a vote they planned together on an earlier night. If not, the scene
   // shows the side forming instead of counting it (vp.form), and the counting lines stay out (fact sides).
   const sideNames = [...new Set([...voters.filter(v => v !== a), ...(b ? [b] : [])])];
-  const sides = (() => {
+  const sides = !!group || (() => {
     const shown = (gs.tdStory?.lines || []).some(l => l.type === 'alliance' && (l.people || []).includes(a) && l.people.some(p => sideNames.includes(p))
       && l.steps.some(s => s.aired && (s.ep < ep.num || (s.ep === ep.num && s.phase === 'pre'))));
     if (shown) return true;
@@ -1061,7 +1065,8 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   // a whole scene, written start to finish (the user: "they're not talking to each other, it's cut
   // short"); the beats below only when no whole scene fits this cast
   // (a side nobody has seen form plays beat by beat, so it can form on camera: vp.form below)
-  if (b && sides) {
+  // (not an alliance meeting: a whole scene has no place for the alliance's name)
+  if (b && sides && !group) {
     // a scene nobody has seen this season first, then the least-aired one
     // (never a whole plan scene this episode has already aired for another plan: then it plays beat by beat, below)
     const ws = u => writeStory('vp2', caseOf, who, data, facts, { ep: ep.num, camp, phase: 'post', n: next(), place: 'secret', avoid: ctxAvoid('scramble'), unique: u, epFresh: true });
@@ -1097,7 +1102,7 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
     if (!beat('vp.solo.case', caseOf)) return null;
     if (sides) beat('vp.solo.count', count);
   } else {
-    beat('vp.open', shape === 'group' ? 'group' : 'duo');
+    if (!(group && beat('vp.open', shape === 'group' ? 'alliance' : 'allianceDuo'))) beat('vp.open', shape === 'group' ? 'group' : 'duo');
     // when nobody has seen this side form, it forms first and then picks its name: formed after the name was agreed it
     // read as a second conversation (the user, 2026-10-14: "go ahead with the english rewrite"; read: "Good. Then keep it
     // quiet and act normal." / "Okay, real talk. There are two groups out here now")
@@ -1298,7 +1303,7 @@ function voteTalk(ep, camp, t, next) {
       // the same strategy talk as the plan that happens, from their side: their name, their reason,
       // their count; the one going home may be the one running it
       const theirT = { ...t, boot: rv.target, voters: mem, leader: a, why: 'plan', ch, rivals: [{ members: voters, target: boot }] };
-      const it = planTalk(ep, camp, theirT, who, oShape, base(who, { group: !!g, cast: oShape }), next, whyO, { step: 'other', badge: ['Other Plan', 'blue'] })
+      const it = planTalk(ep, camp, theirT, who, oShape, base(who, { group: !!g, cast: oShape }), next, whyO, { step: 'other', badge: ['Other Plan', 'blue'], group: g })
         || item('other', 'story.vote.other', a === boot ? 'boot' : 'losing', who, data, base(who, { group: !!g, cast: oShape }), 'secret', 'scramble', ['Other Plan', 'blue'], whyO);
       if (it) out.push(it);
     }
@@ -1322,9 +1327,17 @@ function voteTalk(ep, camp, t, next) {
     const pool = voters.filter(v => v !== leader && v !== r?.voter && v !== loverOf(boot));
     // how the person running it works (shapeFor): the trusted people together, one person aside,
     // or nobody (a solo decision, to the camera)
-    const close = closeTo(leader, pool);
-    const shape = pool.length ? shapeFor(leader, close) : 'solo';
-    const b = shape === 'group' ? close[0] : shape === 'duo' ? closest(leader, pool) : null;
+    // a named alliance the leader is in, with more of it on the plan: tonight's plan is that alliance's meeting, said by
+    // its name (the user, 2026-10-15: "Ernesto: The Network wanted Julia, and I didn't have to be asked twice. we never
+    // see the network do that ... especially before a tribal". Measured over four seasons: 39 of 45 named blocs had
+    // their plan on screen, but no plan line could say the alliance's name, so the booth was the first to say it)
+    const ally = (gs.namedAlliances || []).filter(al => named.has(al.name) && al.members?.includes(leader))
+      .map(al => ({ name: al.name, on: pool.filter(m => al.members.includes(m)) })).filter(x => x.on.length)
+      .sort((x, y) => (y.name === t.bloc?.label) - (x.name === t.bloc?.label) || y.on.length - x.on.length || x.name.localeCompare(y.name))[0] || null;
+    const mates = ally ? [...ally.on].sort((x, y) => getBond(leader, y) - getBond(leader, x) || x.localeCompare(y)) : null;
+    const close = mates || closeTo(leader, pool);
+    const shape = mates ? (mates.length >= 2 ? 'group' : 'duo') : pool.length ? shapeFor(leader, close) : 'solo';
+    const b = shape === 'group' ? close[0] : shape === 'duo' ? (mates ? mates[0] : closest(leader, pool)) : null;
     const c = shape === 'group' ? close[1] || null : null;
     const d = shape === 'group' ? close[2] || null : null;
     const e = shape === 'group' ? close[3] || null : null;
@@ -1344,7 +1357,7 @@ function voteTalk(ep, camp, t, next) {
       // is the leader's confessional after the vote (tribal.js).
       const cv = (ep.coverPlans || []).find(p => p.real === boot && tribal.includes(p.leader) && voters.includes(p.leader) && (p.misled || p.told || []).some(m => tribal.includes(m)));
       const coverScenes = cv ? coverTalk(ep, camp, t, cv, item, base, closest) : [];
-      const it = coverScenes.length ? null : planTalk(ep, camp, t, who, shape, facts, next, whyLine)
+      const it = coverScenes.length ? null : planTalk(ep, camp, t, who, shape, facts, next, whyLine, { step: 'plan', badge: ['The Plan', 'gold'], group: ally?.name || null })
         || item('plan', 'story.vote.plan', why, who, data, facts, 'secret', 'scramble', ['The Plan', 'gold'], whyLine);
       if (coverScenes.length) out.push(...coverScenes);
       else if (it) out.push(it);

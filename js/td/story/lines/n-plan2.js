@@ -9,6 +9,17 @@ export default {
     { id: 'npm.o2', turns: [{ by: 'a', say: "Hey. Before everybody starts asking everybody, I want us to be on the same page.", v: { warm: "Hey, can we talk before tonight? I don't want us going in blind.", competitive: "We need a plan before they make one for us." } }] },
     { id: 'npm.o3', turns: [{ by: 'b', say: "Please tell me you have a name, because I've been going in circles all day." }, { by: 'a', say: "I've got a name." }] },
   ],
+  // a named alliance getting together (director.js voteTalk: the leader's alliance, with more of it on tonight's plan).
+  // {group} is its name; the booth says "{group} wanted {target}", so the camp has to have shown them deciding it
+  'vp.open.alliance': [
+    { id: 'npm.ga1', when: { group: true }, turns: [{ beat: "{group} gets together {here}: {a}, {b}, {c} and nobody else." }, { by: 'a', say: "Okay, everybody. We need one name for tonight, and all of us write it.", v: { bossy: "{group}, listen up. One name tonight, all of us, and then we split up before anybody notices.", anxious: "Okay, so, {group}... we kind of need a name for tonight. Like, right now.", goofy: "I hereby call this meeting of {group} to order. Can somebody say 'seconded'?", warm: "Thanks for coming, guys. {group} sticks together tonight, so let's pick a name we can all live with." } }, { by: 'b', say: "Finally. I've been waiting all day for this.", v: { dry: "Okay. Who is it?" } }] },
+    { id: 'npm.ga2', when: { group: true }, turns: [{ beat: "{b} and {c} drift away from camp one at a time and find {a} {here}. It's the first time all day that {group} has been in one place." }, { by: 'c', say: "So is this an official meeting, or are we just standing around?" }, { by: 'a', say: "It's official. Tonight's name, and nobody leaves until we agree on it." }] },
+    { id: 'npm.ga3', when: { group: true }, turns: [{ beat: "{a} pulls {b} and {c} aside {here}. If {group} is going to vote as one tonight, they have to agree on who." }, { by: 'a', say: "This is exactly what {group} is for. One name, all of us, no surprises.", v: { schemer: "This is what {group} is for. Tonight, we use it." } }, { by: 'b', say: "So who is it?" }] },
+  ],
+  'vp.open.allianceDuo': [
+    { id: 'npm.gd1', when: { group: true }, turns: [{ beat: "{a} catches {b} alone {here}." }, { by: 'a', say: "Quick meeting of {group}. It's a short one, there's only two of us.", v: { dry: "Emergency meeting of {group}. Attendance: you and me.", warm: "Hey, partner. {group} needs to talk about tonight." } }, { by: 'b', say: "Ha. Okay. Go on." }] },
+    { id: 'npm.gd2', when: { group: true }, turns: [{ by: 'a', say: "Got a minute? It's about {group}, and it's about tonight.", v: { anxious: "Can we talk? It's about {group}. Well, about tonight." } }, { by: 'b', say: "Okay. I'm listening." }] },
+  ],
   'vp.open.group': [
     { id: 'npm.og1', turns: [{ beat: "One by one, the group finds an excuse to wander off: firewood, the bathroom, a walk. They all end up in the same place." }, { by: 'c', say: "Smooth, everybody. Really smooth.", v: { goofy: "I said I was looking for my sock. I'm wearing both of them." } }, { by: 'a', say: "Okay, let's be quick." }] },
     { id: 'npm.og2', turns: [{ beat: "{b} and {c} slip away one at a time, so nobody notices, and find {a} {here}." }, { by: 'a', say: "Okay, we've got maybe five minutes before somebody comes looking. Let's do this.", v: { calm: "Alright. Let's keep this short and keep it quiet.", bossy: "Five minutes. I'll talk, you listen, then we vote." } }, { by: 'd', opt: true, say: "Can I just say I love that we have meetings now?" }] },
@@ -121,7 +132,7 @@ export default {
       { by: 'b', say: "So everybody thinks it's {cover}." },
       { by: 'a', say: "So {target} thinks it's {cover}." },
     ] },
-    { id: 'npm.x3', turns: [
+    { id: 'npm.x3', when: { alliance: false }, turns: [
       { by: 'b', say: "And after tonight? What happens with us?" },
       { by: 'a', say: "After tonight we're two people who did this together. That counts for something." },
       { by: 'b', conf: "{a} talks about us like we're a team, and maybe we are. But I noticed {a} didn't promise me anything." },

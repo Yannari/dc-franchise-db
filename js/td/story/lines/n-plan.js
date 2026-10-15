@@ -256,7 +256,7 @@ export default {
       { by: 'b', say: "{target} isn't stupid, though." },
       { by: 'a', say: "No, but nobody wants to believe it's them. {target} won't either." },
     ] },
-    { id: 'npl.xg3', turns: [
+    { id: 'npl.xg3', when: { alliance: false }, turns: [
       { beat: "The group splits up one at a time, a minute apart." },
       { by: 'c', conf: "That was the first time the {votes} of us actually sat down together and planned something. If it works tonight, we're a real group. If it doesn't, we're just people who got caught behind a shed." },
     ] },

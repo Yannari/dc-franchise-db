@@ -224,7 +224,7 @@ export class ChxStage {
   // ── what this click shows ──────────────────────────────────────────
   present(s, anim, ctx) {
     const ST = this.ST, O = this.el.over;
-    O.querySelectorAll('.seg,.spray,.stamp,.winner,.open').forEach(e => e.remove());
+    O.querySelectorAll('.seg,.spray,.stamp,.winner,.open,.tcard').forEach(e => e.remove());
     const focus = s.focus !== undefined ? s.focus : s.say ? [s.say[0]] : s.tj ? ['TJ'] : [];
     for (const [n, t] of Object.entries(ST.toks)) {
       t.classList.toggle('speak', !!(s.say && s.say[0] === n) || (!!s.tj && n === 'TJ'));
@@ -279,7 +279,8 @@ export class ChxStage {
     if (ST.map) h += mapHtml(ST.map, ST.plate);
     this.el.hud.innerHTML = h;
 
-    if (s.seg) O.insertAdjacentHTML('beforeend', `<div class='seg'><div class='band'></div><div class='in'><div class='k'>${esc(s.seg[0].toUpperCase())}</div><div class='big'>${esc(s.seg[1])}</div></div></div>`);
+    if (s.card) O.insertAdjacentHTML('beforeend', titleCard(s.card));
+    if (s.seg && !s.card) O.insertAdjacentHTML('beforeend', `<div class='seg'><div class='band'></div><div class='in'><div class='k'>${esc(s.seg[0].toUpperCase())}</div><div class='big'>${esc(s.seg[1])}</div></div></div>`);
     if (s.open && anim) this.openSeq(s.open);
     if (s.slam) this.slam(s.slam, anim);
     if (anim && s.shake) setTimeout(() => this.shake(), 250);
@@ -411,6 +412,18 @@ function duelHtml(d) {
     return `<div class='r ${d.ahead === n || d.done === n ? 'ahead' : ''}'><img src='${esc(AV(n))}' alt=''><div class='slots'>${Array.from({ length: 12 }, (_, i) => `<i class='${i < k ? (k >= 12 ? 'lock' : 'on') : ''}'></i>`).join('')}</div><div class='n'>${d.format === 'hold' ? (d.done && d.done !== n ? 'OUT' : '&#9650;') : k}</div></div>`;
   };
   return `<div class='duelhud'>${row(d.a)}${row(d.b)}</div>`;
+}
+
+// A title card for a decision (the user, 2026-10-15: "title screens for important decisions, like in
+// Big Brother"): it holds the screen until Next, the plate dimmed behind it, the faces of who it is about.
+function titleCard(c) {
+  const faces = c.faces || [];
+  const face = (n, k) => `<div class='tf' style='animation-delay:${(.35 + k * .12).toFixed(2)}s'><img src='${esc(AV(n))}' alt=''><b>${esc(n)}</b></div>`;
+  const row = c.vs && faces.length === 2 ? `${face(faces[0], 0)}<div class='tvs'>VS</div>${face(faces[1], 1)}` : faces.slice(0, 8).map(face).join('');
+  return `<div class='tcard ${c.vs ? 'isvs' : ''}'><div class='ttape t1'></div><div class='ttape t2'></div><div class='tin'>`
+    + `<div class='tk'>${esc(c.k)}</div><div class='tt'>${esc(c.t)}</div>${c.sub ? `<div class='ts'>${esc(c.sub)}</div>` : ''}`
+    + (faces.length ? `${c.facesLabel ? `<div class='tl'>${esc(c.facesLabel)}</div>` : ''}<div class='tfaces'>${row}</div>` : '')
+    + `<div class='tgo'>&#9654; Play on</div></div></div>`;
 }
 
 function mapHtml(m, plate) {

@@ -134,7 +134,7 @@ function hubs(R) {
   steps.forEach((st, i) => {
     if (!st.map) return;
     const starts = [...new Set([...st.map.rooms.flatMap(r => r.bubs || []), ...st.map.later].map(b => b.go))].filter(g => g > i).sort((a, b) => a - b);
-    const convs = starts.map(s => { let e = s + 1; while (e < steps.length && steps[e].sceneIdx == null && !steps[e].map && !steps[e].seg) e++; return { s, e: e - 1 }; });
+    const convs = starts.map(s => { let e = s + 1; while (e < steps.length && steps[e].sceneIdx == null && !steps[e].map && !steps[e].seg && !steps[e].card) e++; return { s, e: e - 1 }; });
     R.hubs.push({ at: i, convs, end: convs.length ? Math.max(...convs.map(c => c.e)) : i });
   });
   return R.hubs;
@@ -233,7 +233,7 @@ function script(R) {
     if (s.tj) return `<div class="ln${c}" data-i="${i}"><span class="n">TJ:</span> ${esc(s.tj)}</div>`;
     if (s.conf) return `<div class="ln${c}" data-i="${i}"><span class="n">${esc(s.conf[0])} [confessional]:</span> ${esc(s.conf[1])}</div>`;
     if (s.dir) return `<div class="ln d${c}" data-i="${i}">(${esc(s.dir)})</div>`;
-    const t = s.rules ? `${s.rules.n}: the rules` : s.seg ? s.seg[1] : s.scene ? s.scene.place : '';
+    const t = s.rules ? `${s.rules.n}: the rules` : s.card ? `${s.card.k}: ${s.card.t}` : s.seg ? s.seg[1] : s.scene ? s.scene.place : '';
     return t ? `<div class="ln sc${c}" data-i="${i}">${esc(t)}</div>` : '';
   }).join('');
   L.querySelectorAll('.ln').forEach(l => { l.onclick = () => goTo(R, Number(l.dataset.i), false); });
@@ -242,7 +242,7 @@ function script(R) {
 
 // ── controls ──────────────────────────────────────────────────────────
 const holdFor = s => Math.min(9000, 1700 + String(s?.say?.[1] || s?.tj || s?.conf?.[1] || s?.dir || '').length * 38)
-  + (s?.rules ? 5200 : 0) + (s?.seg ? 1600 : 0) + (s?.open ? 4200 : 0) + (s?.slam ? 1400 : 0) + (s?.map ? 2400 : 0);
+  + (s?.rules ? 5200 : 0) + (s?.seg ? 1600 : 0) + (s?.card ? 3600 : 0) + (s?.open ? 4200 : 0) + (s?.slam ? 1400 : 0) + (s?.map ? 2400 : 0);
 // x1 or x2, for the whole episode (and the next ones): a per-viewer convenience
 const speed = () => { try { return Number(localStorage.getItem('ch-vp-speed')) === 2 ? 2 : 1; } catch { return 1; } };
 export function chxSpeed(el) {

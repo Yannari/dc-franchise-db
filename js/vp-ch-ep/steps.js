@@ -456,7 +456,8 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   const key = plateKey(st.plate, night);
   const cast = { TJ: hostSide(key), ...placeScene(key, people) };
   S.push({ scene: { plate: key, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast, wipe: 1, water: 0 },
-    seg: ["Today's daily", d.name], sceneIdx: main.i, title: main.title });
+    card: { k: "Today's daily", t: d.name, sub: d.mode === 'solo' && (d.winners || []).length > 1 ? 'The best man and the best woman are safe at the vote' : 'Win it, and you are safe at the vote', icon: 'daily' },
+    sceneIdx: main.i, title: main.title });
   // scenes that aired before the game (picking partners, picking teams) play first, on the same sand
   const before = items.filter(x => x.i < main.i), after = items.filter(x => x.i > main.i);
   for (const it of before) linesToSteps(S, it.a.lines, { names, sceneWho: it.a.who, first: { sceneIdx: it.i, title: it.title, focus: it.a.who.slice(0, 2) } });
@@ -549,7 +550,9 @@ function buildVote(S, open, items, row, { names, house, goneAt }) {
   const here = house.filter(n => !goneAt[at.i]?.has(n));
   const key = plateKey('common', true);
   const cast = { TJ: ['host'], ...placeScene(key, here, { group: 'sofa' }) };
-  S.push({ scene: { plate: key, place: 'The Common Room', when: whenOf(S.day, S.min), icon: 'fire', room: 'common', cast, wipe: 1 }, seg: ['Tonight', 'The Vote'], sceneIdx: at.i, title: 'The house vote', power: row.ch?.dailyWinners || [] });
+  S.push({ scene: { plate: key, place: 'The Common Room', when: whenOf(S.day, S.min), icon: 'fire', room: 'common', cast, wipe: 1 },
+    card: { k: 'Tonight', t: 'The Vote', sub: row.ch?.division === 'm' ? "Men's week: one guy goes into the Arena" : row.ch?.division === 'f' ? "Women's week: one woman goes into the Arena" : 'One of them goes into the Arena', faces: row.ch?.dailyWinners || [], facesLabel: 'Safe', icon: 'vote' },
+    sceneIdx: at.i, title: 'The house vote', power: row.ch?.dailyWinners || [] });
   let ruled = false;
   for (const it of items) {
     if (it.a.kind !== 'ceremony') { linesToSteps(S, it.a.lines, { names, sceneWho: it.a.who, first: { sceneIdx: it.i, title: it.title } }); continue; }
@@ -619,7 +622,7 @@ function buildArena(S, open, items, row, { names, house, goneAt }) {
   const cast = { TJ: ['host'], [a]: ['gate'], ...placeScene(key, [b, ...crowd], { group: 'house' }) };
   S.arenaCrowd = crowd;
   S.push({ scene: { plate: key, place: 'The Arena', when: whenOf(S.day, S.min), icon: 'skull', island: 'arena', cast, hidden: [a], wipe: 1, embers: 1 },
-    seg: ['Elimination', 'The Arena'], sceneIdx: at.i, title: 'The Arena' });
+    card: { k: 'Elimination', t: 'The Arena', sub: `${a} is going in`, faces: [a], icon: 'arena' }, sceneIdx: at.i, title: 'The Arena' });
   S.push({ dir: 'The house is in the stand and the torches are lit. TJ hits the gong.', focus: ['TJ'], gong: 1 });
   S.push({ tj: tjLine('arenaWelcome', {}, `${row.num}|${a}`, S.V.used), focus: ['TJ'] });
   const vote = (row.ch?.votes || []).find(v => v.votedIn === a);
@@ -628,6 +631,7 @@ function buildArena(S, open, items, row, { names, house, goneAt }) {
   S.push({ tj: recap, focus: ['TJ'] });
   S.push({ enter: { [a]: ['podium', 0, 'L'] }, dir: `${a} walks out of the gate and takes the left podium.`, focus: [a] });
   if (co) {
+    S.push({ card: { k: 'The call-out', t: `${a} picks`, sub: `Who goes into the Arena with ${S.V.pron[a]?.obj || 'them'}?`, faces: [a], icon: 'callout' }, focus: [a] });
     const lines = co.a.lines;
     if (!lines.some(l => l.by === HOST)) S.push({ tj: fill(pickBy(TJ_ARENA_ASK, `${row.num}|${a}`), { a }), focus: [a, 'TJ'] });
     const named = lines.findIndex(l => l.by === a && l.kind === 'say' && new RegExp(`\\b${b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(l.text));
@@ -640,6 +644,7 @@ function buildArena(S, open, items, row, { names, house, goneAt }) {
     S.push({ enter: { [b]: ['podium', 0, 'R'] }, dir: `${b} comes down from the stand and takes the right podium.`, focus: [b] });
   }
   if (!ar || !duel) return;
+  S.push({ card: { k: duel.name, t: `${a} vs ${b}`, sub: 'The loser goes home', faces: [a, b], vs: 1, icon: 'arena' }, focus: [a, b] });
   const g = arenaDef(duel.game);
   const { pre, post } = splitAtResult(ar.a.lines, duel);
   linesToSteps(S, pre, { names, sceneWho: [a, b, 'TJ'] });
@@ -830,7 +835,7 @@ function buildFinal(S, open, key, items, row, { names, house }) {
     const sc = scoreOf(id); const order = Object.keys(sc).sort((x, y) => sc[y] - sc[x]);
     if (!order.length) return;
     const pk = plateKey(st.plate, night);
-    S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: placeScene(pk, order), wipe: 1 }, seg: ['The final', st.name] });
+    S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: placeScene(pk, order), wipe: 1 }, card: { k: 'The final', t: st.name, sub: st.place, icon: 'final' } });
     S.push({ rules: { k: 'THE FINAL', n: st.name, li: st.rules, f: 'Every second counts toward the total' } });
     S.push({ race: board(id, .4), dir: `${order[0]} is out in front.`, focus: [order[0]] });
     S.push({ race: board(id, .75), dir: `${order[order.length - 1]} is falling behind.`, focus: [order[order.length - 1]], act: { [order[order.length - 1]]: 'slump' } });
@@ -841,7 +846,7 @@ function buildFinal(S, open, key, items, row, { names, house }) {
     S.at(it.i);
     if (a.kind === 'final-start') {
       const st = FINAL_STAGE.start, pk = plateKey(st.plate, false);
-      S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { TJ: hostSide(pk), ...placeScene(pk, finalists) }, wipe: 1 }, seg: ['The final', 'The Final'], sceneIdx: it.i, title: it.title });
+      S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { TJ: hostSide(pk), ...placeScene(pk, finalists) }, wipe: 1 }, card: { k: 'The final', t: 'The Final', sub: 'The last ones standing race for the title', faces: finalists, icon: 'final' }, sceneIdx: it.i, title: it.title });
       linesToSteps(S, a.lines, { names, sceneWho: ['TJ', ...finalists] });
       checkpoint('cp1');
       continue;
@@ -850,7 +855,7 @@ function buildFinal(S, open, key, items, row, { names, house }) {
       const st = FINAL_STAGE.instant, pk = plateKey(st.plate, false);
       const [x, y] = a.who;
       const duel = (f.instant || []).find(d => [d.a, d.b].includes(x) && [d.a, d.b].includes(y));
-      S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { TJ: hostSide(pk), ...placeScene(pk, [x, y]) }, wipe: 1 }, seg: ['Surprise', 'Instant Elimination'], sceneIdx: it.i, title: it.title });
+      S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { TJ: hostSide(pk), ...placeScene(pk, [x, y]) }, wipe: 1 }, card: { k: 'Surprise', t: 'Instant Elimination', sub: `${x} or ${y}: one of them goes home right now`, faces: [x, y], vs: 1, icon: 'arena' }, sceneIdx: it.i, title: it.title });
       const def = duel ? arenaDef(duel.game) : null;
       if (duel) {
         const { pre, post } = splitAtResult(a.lines, duel);
@@ -867,7 +872,7 @@ function buildFinal(S, open, key, items, row, { names, house }) {
         S._night = 1; S.min = Math.max(S.min, 21 * 60 + 30);
         S.nightDay = S.day;
         const still = finalists.filter(n => !(f.instant || []).some(d => d.loser === n));
-        S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'fire', island: st.spot, cast: placeScene(pk, still, { group: 'stumps' }), wipe: 1, embers: 1 }, seg: ['The final', 'The Overnight'], sceneIdx: it.i, title: it.title });
+        S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'fire', island: st.spot, cast: placeScene(pk, still, { group: 'stumps' }), wipe: 1, embers: 1 }, card: { k: 'The final', t: 'The Overnight', sub: 'A night outside, on a stump, with no sleep', faces: still, icon: 'final' }, sceneIdx: it.i, title: it.title });
         S.push({ rules: { k: 'THE OVERNIGHT', n: 'The Box', li: ['Each finalist has a box full of tiles to empty, and the fastest at checkpoint one go first.',
           'Emptying it first wins a chair, a pillow or a blanket for the night.', 'The first ones out also get to dump extra tiles into somebody else\'s box.',
           'Then nobody sleeps. Anybody who quits in the night is out of the final.'], f: 'The night counts toward the total' } });
@@ -909,6 +914,7 @@ export function chStepText(row) {
     for (const s of scr.steps) {
       if (s.scene && s.scene.place && !s.map) out.push(`[${s.scene.place}${s.scene.when ? ' — ' + s.scene.when.replace(/<[^>]+>/g, '') : ''}]`);
       if (s.seg) out.push(`${s.seg[0]}: ${s.seg[1]}`);
+      if (s.card) out.push(`${s.card.k}: ${s.card.t}${s.card.sub ? ` (${s.card.sub})` : ''}`);
       if (s.rules) { out.push(`${s.rules.n}:`); for (const li of s.rules.li) out.push(`  - ${li.replace(/<[^>]+>/g, '')}`); out.push(`  (${s.rules.f})`); }
       if (s.tj) out.push(`TJ: ${s.tj}`);
       if (s.say) out.push(`${s.say[0]}: ${s.say[1]}`);

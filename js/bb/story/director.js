@@ -233,7 +233,7 @@ export function airStorylines(week) {
           if (/apolog|makeup|reconcil|forgive/.test(String(x.step || '')) && /grudge|blame|feud|cold|paranoia/.test(String(sc.step || ''))) return false;
           return by && (x.cast || []).includes(by) && named.length > 0 && named.every(n => (x.cast || []).includes(n));
         };
-        const into = hosts.filter(x => (x.folded || []).length < 3).find(fits);
+        const into = hosts.filter(x => (x.folded || []).length < 2).find(fits);
         if (into) { airs(); into.lines.push(...drs); (into.folded ||= []).push(sc.id || null); continue; }
         if (wt >= 4) { airs(); round.push({ ea, sc }); }
         continue;

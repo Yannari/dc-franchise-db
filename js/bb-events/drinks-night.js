@@ -27,9 +27,10 @@
 import { gs } from '../core.js';
 import {
   pStats, bond, band, closestTo, trusts, dislikes, sharesAlliance,
-  grudge, resentmentOf, isVillainous, spotlightOrder,
+  grudge, resentmentOf, isVillainous, spotlightOrder, worstMemory,
 } from './_read.js';
 import { makeScene } from '../bb/script/scene.js';
+import { GRUDGE_KIND } from './social.js';
 
 
 /**
@@ -249,7 +250,10 @@ const drunkGrievance = {
     const { angry, at, heat } = _grievancePair(house, ctx);
     const witnesses = _live(house, ctx).filter(n => n !== angry && n !== at).slice(0, 3);
 
-    const scene = makeScene('drinks.grievance', { a: angry, b: at, c: witnesses[0] || null }, { ending: 'scene' }, house, 'kitchen');
+    const reason = GRUDGE_KIND[worstMemory(angry, at)?.type] || null;
+    const scene = reason
+      ? makeScene('talk.confront', { a: angry, b: at }, { ending: 'general', reason }, house, 'kitchen')
+      : makeScene('drinks.grievance', { a: angry, b: at, c: witnesses[0] || null }, { ending: 'scene' }, house, 'kitchen');
 
     api.addBond(angry, at, -(1.4 + heat * 0.2));
     api.remember(at, angry, 'came-at-me-in-public', 3, { about: 'the night the house drank' });

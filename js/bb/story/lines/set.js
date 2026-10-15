@@ -430,7 +430,7 @@ export default {
       { by: 'd', say: "Then you clean it!" },
       { by: 'f', say: "I'm eating it." },
       { beat: '{f} eats a bit of it off the floor. The house screams.' },
-      { by: 'a', dr: "We had cereal for dinner in the end. Seven people eating cereal around a lasagne nobody would clean up." },
+      { by: 'a', dr: "We had cereal for dinner in the end. A whole table eating cereal around a lasagne nobody would clean up." },
     ] },
   ],
   'set.dinner.close': [
@@ -541,7 +541,7 @@ export default {
       { by: 'd', say: "Snacks." },
       { by: 'a', say: "It's changed. It's now 'I bring snacks'." },
       { by: 'e', say: "Oh, that's an alliance. That's literally an alliance with a door." },
-      { by: 'f', dr: "Six adults in a blanket fort, at night, arguing about a password. Best night in this house." },
+      { by: 'f', dr: "Grown adults in a blanket fort, at night, arguing about a password. Best night in this house." },
     ] },
     { id: 'sg.o4', room: 'living-room', turns: [
       { beat: 'Living room. Charades. Somebody has been acting out the same word for two straight minutes.' },

@@ -376,7 +376,7 @@ function _scriptOf(list, extra, ctx, room, salt) {
       const cut = { kind: 'beat', by: null, text: `${who.a} sits down with ${extra.listeners.join(' and ')} and lowers ${pronouns(who.a).posAdj} voice.` };
       return { ...s, lines: [cut, ...s.lines] };
     }
-    if (s && i > 0 && r.type === 'comfortVictim') {
+    if (s && i > 0 && (r.type === 'comfortVictim' || r.badgeText === 'WARNED')) {
       const cut = { kind: 'beat', by: null, text: `Later, away from the others, ${who.a} finds ${who.b}.` };
       return { ...s, lines: [cut, ...s.lines] };
     }

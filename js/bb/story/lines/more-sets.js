@@ -18,7 +18,7 @@ export default {
       { by: 'd', say: "There's cake in the mini fridge." },
       { by: 'a', say: "How do you know there's— did you open it?" },
       { by: 'd', say: "It was very slightly open." },
-      { beat: 'Six people stand round a fridge looking at a cake that belongs to one of them.' },
+      { beat: 'Everybody stands round a fridge looking at a cake that belongs to one of them.' },
       { by: 'c', dr: "Nobody ate the cake. We all wanted to, but nobody wanted to be the person who ate the new HOH's cake. Not the week they're picking nominations." },
     ] },
     { id: 'msh.2', room: 'hoh-room', turns: [
@@ -103,7 +103,7 @@ export default {
       { by: 'a', say: "It speeds up." },
       { by: 'd', say: "When?" },
       { by: 'a', say: "In about four minutes." },
-      { beat: 'Six people sway awkwardly to a song nobody knows, waiting for it to speed up. It never does.' },
+      { beat: 'Everybody sways awkwardly to a song nobody knows, waiting for it to speed up. It never does.' },
       { by: 'b', dr: "We all danced to {a}'s song because {a} is HOH. That's the only reason. Nobody says no to the HOH this week." },
     ] },
   ],
@@ -483,7 +483,7 @@ export default {
       { by: 'a', say: "Your turn, then." },
       { by: 'd', say: "Absolutely not." },
       { by: 'e', say: "Group song! Everyone!" },
-      { by: 'f', dr: "Six people singing different songs at the same time. That's what this house sounds like on a good night." },
+      { by: 'f', dr: "Everybody singing different songs at the same time. That's what this house sounds like on a good night." },
     ] },
     { id: 'msg.3', room: 'living-room', turns: [
       { beat: 'Living room. A game of truth or dare has been going for an hour. Nobody has picked dare.' },

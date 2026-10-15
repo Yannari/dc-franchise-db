@@ -35,8 +35,8 @@ export default {
     { id: 'dk.w6', turns: [{ by: 'a', dr: "Why did I tell {b} that? Why did I tell {b} that?" }] },
   ],
   'drinks.grievance.scene': [
-    { id: 'dk.g1', turns: [{ by: 'a', say: "You want to know what I really think of you, {b}?" }, { by: 'b', say: "Not really." }, { by: 'a', say: "Too bad." }] },
-    { id: 'dk.g2', turns: [{ by: 'a', say: "No, I'm not joking." }, { beat: 'The room goes quiet.' }, { by: 'a', say: "I mean it." }] },
+    { id: 'dk.g1', turns: [{ by: 'a', say: "You want to know what I really think of you, {b}?" }, { by: 'b', say: "Not really." }, { by: 'a', say: "Too bad. I think you're fake. Nice to everybody's face, and nothing behind it." }] },
+    { id: 'dk.g2', turns: [{ by: 'a', say: "{b}, you've been talking down to me since the day we walked in." }, { by: 'b', say: "You're joking." }, { by: 'a', say: "No, I'm not joking." }, { beat: 'The room goes quiet.' }, { by: 'a', say: "I mean it." }] },
     { id: 'dk.g3', turns: [{ by: 'a', say: "Just say it. You wanted me gone." }, { by: 'b', say: "You're drunk." }, { by: 'a', say: "That's not a denial." }] },
     { id: 'dk.g4', turns: [{ by: 'a', say: "I've been fine about it for days. I'm not fine about it now." }, { by: 'b', say: "Clearly." }] },
     { id: 'dk.g5', turns: [{ by: 'a', say: "Just answer the question." }, { by: 'b', say: "Not like this." }, { by: 'a', say: "Like what?" }] },

@@ -94,7 +94,7 @@ export default {
     { id: 'fz.b3', turns: [{ by: 'b', say: "I didn't vote against {gone}." }, { by: 'a', say: "Sorry I even asked." }, { by: 'b', say: "It's fine. I'd ask too." }] },
     { id: 'fz.b4', turns: [{ by: 'b', dr: "Lying to {a} made me feel sick. But {a} believed me." }] },
     { id: 'fz.b5', turns: [{ by: 'a', dr: "{b} swore {b.sub} voted to keep {gone}. I believe {b.obj}. I have to believe somebody." }] },
-    { id: 'fz.b6', turns: [{ by: 'b', say: "I'd never vote against {gone}." }, { by: 'a', say: "I know. I'm sorry. I'm just upset." }] },
+    { id: 'fz.b6', turns: [{ by: 'a', say: "Did you vote {gone} out? Just tell me." }, { by: 'b', say: "I'd never vote against {gone}." }, { by: 'a', say: "I know. I'm sorry. I'm just upset." }] },
   ],
   'fallout.denial.doubted': [
     { id: 'fz.d1', turns: [{ by: 'b', say: "It wasn't me." }, { beat: '{a} waits a second too long.' }, { by: 'a', say: "Okay." }] },

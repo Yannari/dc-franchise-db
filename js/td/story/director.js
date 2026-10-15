@@ -2414,7 +2414,9 @@ export function airTdEpisode(ep) {
           // fights in one season)
           const sharpness = x => (pStatsOf(x)?.intuition || 0) + (pStatsOf(x)?.strategic || 0) - 3 * ((gs.tdStory?.noteBy || {})[x] || 0);
           const sharp = around.filter(x => x !== forB && x !== forA).sort((x, y) => sharpness(y) - sharpness(x) || x.localeCompare(y))[0];
-          if (sharp) {
+          // (not after a row that ended friendly: "Not you, you're fine", then "Watching people you like go at each other is
+          // the worst", read 2026-10-15)
+          if (sharp && !CALM_ENDS.has(w.lineId)) {
             const wn = { a: sharp, b: who.a, c: who.b };
             const nt = writeStory(`public.note.${NOTE_FAM(kind)}`, 'any', wn, data, { ...factsFor({ who: wn, data: {} }, { ep: ep.num, phase }), third: true }, { ep: ep.num, camp, phase, n: n++, place: 'confessional', unique: 'soft', draft: true, epFresh: true });
             if (nt) { for (const l of nt.lines) l.watchNote = true; spentToo.push(nt.lines); lines = [...lines, ...nt.lines]; watched.push(sharp); }

@@ -91,7 +91,9 @@ const DEFS = {
       { id: 'cling', phase: 'pre', cast: arc => ({ who: { a: arc.a, b: arc.b }, place: 'aside' }) },
       { id: 'smother', phase: 'any', cast: (arc, m) => { const c = friendOf(arc.b, m, [arc.a], 1); return c ? { who: { a: arc.a, b: arc.b, c }, place: 'aside' } : null; } },
       // b keeps it kind when the friendship is strong and b's temper holds (narrative threshold only)
-      { id: 'talk', phase: 'pre', cast: arc => ({ who: { a: arc.a, b: arc.b }, outcome: getBond(arc.a, arc.b) >= 2 && (st(arc.b).temperament ?? 5) >= 4 ? 'kind' : 'snap', place: 'secret' }) },
+      // (an ordinary moment, not a secret meeting: "both checking over their shoulders first", then "I saved you a--", read
+      // 2026-10-15)
+      { id: 'talk', phase: 'pre', cast: arc => ({ who: { a: arc.a, b: arc.b }, outcome: getBond(arc.a, arc.b) >= 2 && (st(arc.b).temperament ?? 5) >= 4 ? 'kind' : 'snap', place: 'aside' }) },
     ],
   },
   envy: {

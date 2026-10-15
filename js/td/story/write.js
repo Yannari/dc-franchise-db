@@ -375,7 +375,10 @@ function setupLine(entry, who, data, lines, spot, facts, ctx, rng, placeOk, pool
   // (not somebody the scene brings in later with a line of their own: "Isabel, Jade and Natalia are huddled together",
   // then "Natalia wanders over", read 2026-10-14)
   const arrives = n => { const k = lines.findIndex(l => l.kind === 'say' && l.by === n);
-    return lines.slice(0, k).some(l => l.kind === 'beat' && ((l.arrive || []).includes(n) || (l.text || '').includes(n))); };
+    // (an arrival, not any beat that names them: "Hannah slowly raises one eyebrow at Ivy" left Ivy out of "Hannah, Marissa
+    // and Amelie are killing time together", and then Ivy spoke, read 2026-10-15)
+    return lines.slice(0, k).some(l => l.kind === 'beat' && ((l.arrive || []).includes(n) || ((l.text || '').includes(n)
+      && /\b(comes? over|walks? up|joins?|wanders? over|arrives?|shows? up|turns? up|comes? back|walks? in|runs? over|drifts? over)\b/i.test(l.text || '')))); };
   const said = [...new Set(lines.filter(l => l.kind === 'say' && l.by).map(l => l.by))].filter(n => !arrives(n));
   let [s1, s2] = said;
   if (!s2) s2 = Object.values(who).find(n => n && n !== s1);

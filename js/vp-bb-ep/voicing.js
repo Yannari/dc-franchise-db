@@ -150,13 +150,50 @@ function askToken() {
   return !!token();
 }
 
+/** Delete clips from the bucket: one week (but the line ids in `keep`), every week from `from` on, or the whole
+ *  season. For a re-run week and a reset season, as Total Drama's (vp-td-ep/voicing.js clearVoices), in
+ *  Big Brother's own folder. Quietly nothing without the studio token. */
+export async function bbClearVoices({ season = bbVoiceSeason(), episode, from, keep } = {}) {
+  if (!token() || offline()) return 0;
+  try {
+    const r = await fetch(`${VOICE_API()}/api/voice/clear`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+      body: JSON.stringify({ season, episode, from, keep }) });
+    const j = await r.json();
+    if (episode) await bbVoicedLines(episode, true);
+    return j.deleted || 0;
+  } catch { return 0; }
+}
+
+const bbRecs = () => (window.gs?.episodeHistory || []).filter(e => e && e.format === 'big-brother');
+
+/** After a re-run from week `fromEp`: each week from there keeps the clips of the lines it still has word for word
+ *  (same speaker, same words: the same clip) and loses the rest; weeks past the season's new last one go. */
+export async function bbVoicesAfterRerun(fromEp) {
+  if (!token()) return;
+  let last = +fromEp - 1;
+  try {
+    for (const rec of bbRecs().filter(e => +e.num >= +fromEp)) {
+      last = Math.max(last, +rec.num);
+      let keep = [];
+      try { keep = (await bbEpisodeLines(rec)).map(l => l.id); } catch { /* cannot build it: a new week, keep nothing */ }
+      await bbClearVoices({ episode: +rec.num, keep });
+    }
+  } finally {
+    await bbClearVoices({ from: last + 1 });
+  }
+}
+
 /** What a week needs: its lines, the voices, which lines have one, which are missing, and who has no voice. */
 async function plan(ep) {
-  const rec = (window.gs?.episodeHistory || []).find(e => +e.num === +ep && e.format === 'big-brother');
+  const rec = bbRecs().find(e => +e.num === +ep);
   const all = await bbEpisodeLines(rec);
   let voices = {};
   try { const j = await (await fetch(`${VOICE_API()}/api/voice/voices`, { headers: { Authorization: `Bearer ${token()}` } })).json(); if (j.ok) voices = j.voices || {}; } catch { /* none */ }
-  const have = (await bbVoicedLines(ep, true)) || new Set();
+  let have = (await bbVoicedLines(ep, true)) || new Set();
+  // a clip that is none of this week's lines belongs to a version of it that is gone (a re-run): it goes, so
+  // "already voiced" never counts a dead week's lines
+  const ids = new Set(all.map(l => l.id));
+  if (all.length && [...have].some(id => !ids.has(id))) { await bbClearVoices({ episode: ep, keep: [...ids] }); have = new Set([...have].filter(id => ids.has(id))); }
   const lines = all.filter(l => voices[l.by]);
   const missing = lines.filter(l => !have.has(l.id));
   const voiceless = [...new Set(all.filter(l => !voices[l.by]).map(l => l.by))];
@@ -178,22 +215,38 @@ export async function bbVoiceEpisode(ep, { force = false, ready = null } = {}) {
     }
     const todo = force ? p.lines : p.missing;
     if (!todo.length) { P.say(`Week ${ep} is already voiced`, `${p.lines.length} lines have a voice. Nothing to pay for.`, 1, true); return; }
-    // one request at a time, the worker voicing four of its lines at once (the Inworld plan takes five at a time)
+    // one request at a time, the worker voicing four of its lines at once (the Inworld plan takes five at a time).
+    // Six lines a request: one the worker cannot finish inside its limits is cut off by Cloudflare with no CORS
+    // header, a bare "NetworkError" in the browser (Total Drama's episode 9, 2026-10-15, at twelve)
     const batches = [];
-    for (let k = 0; k < todo.length; k += 12) batches.push(todo.slice(k, k + 12));
+    for (let k = 0; k < todo.length; k += 6) batches.push(todo.slice(k, k + 6));
     let done = 0, chars = 0;
     const failed = [];
     for (const b of batches) {
-      const r = await fetch(`${VOICE_API()}/api/voice/render`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
-        body: JSON.stringify({ season, episode: ep, voices: p.voices, force, lines: b.map(l => ({ id: l.id, by: l.by, text: l.text })) }),
-      });
+      // a request that dies on the way is tried twice more after a pause; then its lines count as failed and the
+      // week goes on (a second press voices just the missing ones)
+      let r, lost = null;
+      for (let tries = 0; tries < 3; tries++) {
+        try {
+          r = await fetch(`${VOICE_API()}/api/voice/render`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+            body: JSON.stringify({ season, episode: ep, voices: p.voices, force, lines: b.map(l => ({ id: l.id, by: l.by, text: l.text })) }),
+          });
+          lost = null;
+          break;
+        } catch (e) {
+          lost = String(e.message || e);
+          await new Promise(res => setTimeout(res, 2000 * (tries + 1)));
+        }
+      }
+      if (lost) { failed.push(...b.map(l => ({ id: l.id, error: `the studio did not answer (${lost})` }))); continue; }
       const j = await r.json().catch(() => ({ ok: false, error: `studio ${r.status}` }));
       if (!j.ok) failed.push(...b.map(l => ({ id: l.id, error: j.error })));
       else { done += j.done.length; chars += j.chars || 0; failed.push(...(j.failed || [])); }
       P.say(title, `Voicing: ${done} of ${todo.length} lines`, 0.05 + (done + failed.length) / todo.length * 0.95);
     }
     await bbVoicedLines(ep, true);
+    bbHubVoiceLabel(ep);
     const secs = Math.round((Date.now() - t0) / 1000), cost = (chars * PRICE).toFixed(2);
     const without = p.voiceless.length ? ` No voice yet for ${p.voiceless.join(', ')}: they keep the blips.` : '';
     P.say(failed.length ? `Week ${ep}: ${done} voiced, ${failed.length} failed` : `Week ${ep} is voiced`,
@@ -205,7 +258,16 @@ export async function bbVoiceEpisode(ep, { force = false, ready = null } = {}) {
   }
 }
 
-/** The viewer's 🎙 button: a week with voices asks first (missing lines, or every line again), each with its price. */
+/** The Run tab's 🎙 button (run-ui.js, id hub-bb-voice) on the week the hub is showing: 'Voice' or 'Revoice' once
+ *  it has clips, asked of the bucket on every render. */
+export function bbHubVoiceLabel(ep) {
+  const btn = typeof document !== 'undefined' && document.getElementById('hub-bb-voice');
+  if (!btn || !ep) return;
+  const n = String(ep).padStart(2, '0');
+  bbVoicedLines(ep).then(ids => { if (btn.isConnected && +btn.dataset.ep === +ep) btn.textContent = ids && ids.size ? `🎙 Revoice WK ${n}` : `🎙 Voice WK ${n}`; });
+}
+
+/** The 🎙 buttons (the Run tab's and the viewer's): a week with voices asks first (missing lines, or every line again), each with its price. */
 export async function bbVoiceSelected(ep) {
   if (busy) return alert('A week is already being voiced. Wait for it to finish.');
   if (!askToken()) return;
@@ -220,6 +282,7 @@ export async function bbVoiceSelected(ep) {
   const pick = await P.choose(`Week ${ep}`, p.missing.length ? `${p.voicedCount} lines have a voice, ${p.missing.length} don't yet.` : `All ${p.lines.length} lines have a voice.`, opts);
   if (pick === 'missing') return bbVoiceEpisode(ep, { ready: p });
   if (pick === 'all') return bbVoiceEpisode(ep, { force: true, ready: p });
+  bbHubVoiceLabel(ep);
 }
 
-if (typeof window !== 'undefined') Object.assign(window, { bbVoiceEpisode, bbVoiceSelected, bbEpisodeLines, bbVoiceSeason });
+if (typeof window !== 'undefined') Object.assign(window, { bbVoiceEpisode, bbVoiceSelected, bbEpisodeLines, bbVoiceSeason, bbClearVoices, bbVoicesAfterRerun, bbHubVoiceLabel });

@@ -1172,7 +1172,10 @@ export function resetSeason() {
   if (!confirm('Reset season? This clears all episode history. Your cast and setup are kept.')) return;
   // every episode is gone, so are their voices (js/vp-td-ep/voicing.js): the season's key is read now, before the
   // state it comes from is cleared
-  window.tdClearVoices?.({});
+  // (each show its own folder: a Big Brother reset never empties the Total Drama season of the same number)
+  const _fmt = seasonFormat(seasonConfig);
+  if (_fmt === 'big-brother') window.bbClearVoices?.({});
+  else if (_fmt === 'total-drama') window.tdClearVoices?.({});
   setGs(null);
   _idbDelete('gs');
   // Also clean up any leftover localStorage keys from before the migration

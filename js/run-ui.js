@@ -739,6 +739,7 @@ export function renderSeasonHub() {
     <button type="button" onclick="openVisualPlayer(${_watchArg(model.latest?.num || model.liveEpisode)})" ${model.latest ? '' : 'disabled'}>Watch latest</button>
     <button type="button" onclick="simulateMultipleEpisodes(5)" ${canBatch ? '' : 'disabled'}>Sim 5</button>
     ${seasonFormat(seasonConfig) === 'total-drama' && model.latest ? `<button type="button" id="hub-voice" data-ep="${Number(model.latest.num)}" onclick="voiceSelectedEpisode(${Number(model.latest.num)})" title="Voice every line of the episode selected above with each character's Inworld voice">🎙 Voice EP ${String(model.latest.num).padStart(2, '0')}</button>` : ''}
+    ${seasonFormat(seasonConfig) === 'big-brother' && model.latest && Number(model.latest.num) ? `<button type="button" id="hub-bb-voice" data-ep="${Number(model.latest.num)}" onclick="bbVoiceSelected(${Number(model.latest.num)})" title="Voice every line of the week selected above with each houseguest's Inworld voice">🎙 Voice WK ${String(model.latest.num).padStart(2, '0')}</button>` : ''}
     <button type="button" onclick="simulateMultipleEpisodes()" ${canBatch ? '' : 'disabled'}>Sim to finale</button>
     <button type="button" onclick="replayEpisode(${Number(model.latest?.num || 0)})" ${canReplay ? '' : 'disabled'}>Replay viewed</button>
     <button type="button" onclick="saveSeasonToStorage()">Save</button>
@@ -754,6 +755,7 @@ export function renderSeasonHub() {
   </section>`;
   // 🎙 Voice or Revoice, from the audio bucket (js/vp-td-ep/voicing.js)
   window.hubVoiceLabel?.(model.latest?.num);
+  window.bbHubVoiceLabel?.(model.latest?.num);   // Big Brother's (js/vp-bb-ep/voicing.js)
 }
 
 // Two villa cards are ALTERNATIVES when they answer the same question for the
@@ -2185,7 +2187,9 @@ export function replayEpisode(epNum) {
   _refreshFeed({ rebuild: true });
   // ...and so do their voices (the user, 2026-10-12: "when an episode gets deleted it should delete the voicing too"):
   // each episode from here keeps the clips of the lines it still has word for word, loses the rest; later ones go
-  window.tdVoicesAfterRerun?.(ep.num);
+  // (each show in its own folder: Total Drama's clean-up on a house week would empty td-<n>'s episode of that number)
+  if (ep.format === 'big-brother') window.bbVoicesAfterRerun?.(ep.num);
+  else if (seasonFormat(seasonConfig) === 'total-drama') window.tdVoicesAfterRerun?.(ep.num);
   _autoRevealSpoiler(ep.num);
   viewingEpNum = ep.num;
   renderRunTab();

@@ -184,6 +184,21 @@ describe('The Challenge, as aired', () => {
     }
   });
 
+  it('the call-out is said at the Arena, and nobody hears it the night before', () => {
+    // The show's call-out: the voted-in player names their opponent at the Arena, in front of the house.
+    for (const r of seasons) for (const e of r.episodes) {
+      const scenes = r.state.scenes.filter(s => s.ep === e.ep);
+      for (const co of scenes.filter(s => s.kind === 'callout')) {
+        const arena = scenes.find(s => s.kind === 'arena' && s.who.includes(co.who[0]));
+        if (!arena) continue;
+        expect(co.day, `ep ${e.ep}: ${co.who[0]} calls out ${co.who[1]} on day ${co.day}, the Arena is day ${arena.day}`).toBe(arena.day);
+        if (co.data.volunteer) continue;
+        const told = scenes.filter(s => s.kind === 'arena-eve-pep' && s.who[1] === co.who[1]);
+        expect(told.length, `ep ${e.ep}: ${co.who[1]} gets a pep talk before anybody called them out`).toBe(0);
+      }
+    }
+  });
+
   it('the day\'s daily winner is never caught throwing it', () => {
     for (const r of seasons) for (const e of r.episodes) {
       const scenes = (e.aired || []).map(a => a.scene).filter(Boolean);

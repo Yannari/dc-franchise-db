@@ -36,7 +36,7 @@ import { romanceDay, breakupCheck } from './romance.js';
 import { quitRisk, quit, medical, disqualify, removePlayer } from './exits.js';
 import { houseDay, psycheMoment, returnToHouse } from './house.js';
 import { houseBeats } from './events.js';
-import { arenaEve, tjLaysDownTheLaw, tjVerdict } from './tj.js';
+import { arenaEve, calloutCost, tjLaysDownTheLaw, tjVerdict } from './tj.js';
 import { playFinal } from './final.js';
 import { reviseAll } from './plans.js';
 import { spreadDay, syncActive } from './knowledge.js';
@@ -217,16 +217,12 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       } else {
         co = chooseOpponent(state, R(`callout${k}`), votedIn, pool);
       }
+      // Decided tonight, in their own head; said out loud tomorrow, at the Arena, in front of the house
+      // (the show's call-out: the user's mockup, 2026-10-15). A second elimination this week cannot pick
+      // the same person, so the choice is made now.
       used.add(co.opponent);
-      state.rec[co.opponent].calledOut++;
-      calledOut(votedIn, co.opponent, co.reason);
-      const deal = dealBetween(state, votedIn, co.opponent);
-      if (deal) breakDeal(state, deal, votedIn, 'callout');
-      epRec.callouts.push({ by: votedIn, opponent: co.opponent, reason: co.reason, terms: co.terms, ranked: co.ranked || null });
-      addScene(state, 'callout', [votedIn, co.opponent], { reason: co.reason, volunteer,
-        votedMe: !!vote?.ballots.some(x => x.voter === co.opponent && x.target === votedIn) }, state.active, 'public');
-      afterVote(state, R(`after${k}`), { ballots: vote?.ballots || [], votedIn, calledOut: co.opponent, by: votedIn });
-      matches.push({ a: votedIn, b: co.opponent, volunteer, vote, callout: { by: votedIn, opponent: co.opponent, reason: co.reason },
+      afterVote(state, R(`after${k}`), { ballots: vote?.ballots || [], votedIn, calledOut: null, by: votedIn });
+      matches.push({ a: votedIn, b: co.opponent, volunteer, vote, co, k, callout: { by: votedIn, opponent: co.opponent, reason: co.reason },
         voters: (vote?.ballots || []).filter(x => x.target === votedIn).map(x => x.voter) });
     }
 
@@ -238,6 +234,17 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     for (const n of state.active) driftDay(state, n);
     for (const [k, m] of matches.entries()) {
       if (!state.active.includes(m.a) || !state.active.includes(m.b)) continue;
+      // The call-out, at the Arena: everything it costs happens now, when the house hears it.
+      const { a: votedIn, b: opp, co, vote } = m;
+      state.rec[opp].calledOut++;
+      calledOut(votedIn, opp, co.reason);
+      const deal = dealBetween(state, votedIn, opp);
+      if (deal) breakDeal(state, deal, votedIn, 'callout');
+      epRec.callouts.push({ by: votedIn, opponent: opp, reason: co.reason, terms: co.terms, ranked: co.ranked || null });
+      addScene(state, 'callout', [votedIn, opp], { reason: co.reason, volunteer: m.volunteer,
+        votedMe: !!vote?.ballots.some(x => x.voter === opp && x.target === votedIn) }, state.active, 'arena');
+      afterVote(state, R(`afterco${k}`), { ballots: [], votedIn, calledOut: opp, by: votedIn });
+      calloutCost(state, votedIn, opp);
       const duel = playDuel(state, R(`arena${k}`), m.a, m.b);
       duel.volunteer = m.volunteer;
       epRec.arena.push(duel);

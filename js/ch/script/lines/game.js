@@ -616,31 +616,34 @@ export default {
     ] },
   ],
   'arena-eve-confront.rattled': [
+    // The night before the Arena, the one who thinks it'll be them goes to find the one who was voted in.
+    // Nobody has been called out yet: that happens at the Arena, in front of the house.
     { id: 'ec.r1', turns: [
-      { by: 'a', say: "You picked me because you think I'm easy. You're about to find out how wrong you are.", v: { loud: ['You think I\'m EASY?! You have no idea!'], sharp: ['Enjoy your last night in that bed.'] } },
-      { by: 'b', say: "We'll see tomorrow.", v: { soft: ['I\'m not trying to fight with you, okay?'] } },
-      { by: 'a', say: "Yeah. We will." },
-      { by: 'b', conf: "I didn't expect {a} to come at me like that. I'm not going to lie, it got in my head.", v: { sharp: ['{a} rattled me. I hate that {a} rattled me.'] } },
+      { by: 'a', say: "If you're thinking about calling me out tomorrow, go ahead. I'm not easy.", v: { loud: ['Call me out tomorrow. I DARE you.'], sharp: ['Pick me tomorrow and you go home. Think about it.'], soft: ['I just want you to know, if it\'s me tomorrow, I\'m not going to make it easy.'] } },
+      { by: 'b', say: "I haven't decided anything.", v: { soft: ['I\'m not trying to fight with you, okay?'], dry: ['I haven\'t picked anybody. Goodnight.'] } },
+      { by: 'a', say: "Yeah, you have. I can see it on your face." },
+      { by: 'b', conf: "{a} came straight at me tonight. I'm not going to lie, it got in my head.", v: { sharp: ['{a} rattled me. I hate that {a} rattled me.'], loud: ['Now I can\'t sleep! Thanks, {a}!'] } },
     ] },
     { id: 'ec.r2', turns: [
-      { by: 'a', say: "Sleep well. If you can.", v: { odd: ['Sweet dreams! Of losing!'] } },
+      { by: 'a', say: "Sleep well. And think really hard about tomorrow.", v: { odd: ['Sweet dreams! Choose wisely!'], sharp: ['Think hard before you say a name tomorrow.'] } },
       { by: 'b', conf: "{a} knows exactly how to get under my skin. I can't let it follow me into the Arena.", v: { soft: ['I just want to sleep. Now I can\'t.'] } },
     ] },
     { id: 'ec.r3', turns: [
-      { by: 'a', say: "Just so you know, I'm not going home tomorrow." },
+      { by: 'a', say: "Just so you know, if it's me tomorrow, I'm not the one going home." },
       { by: 'b', say: "Neither am I." },
       { by: 'b', conf: "I said it, but I didn't believe it.", v: { loud: ['I\'m going to be up all night now!'] } },
     ] },
   ],
   'arena-eve-confront.backfires': [
     { id: 'ec.b1', turns: [
-      { by: 'a', say: "You made a big mistake picking me.", keep: ['mistake'], v: { loud: ['BIG mistake! Huge!'] } },
+      { by: 'a', say: "If you pick me tomorrow, it's a big mistake.", keep: ['mistake'], v: { loud: ['Pick me and it\'s a BIG mistake! Huge!'], sharp: ['Calling me out would be a mistake. Just so you know.'], soft: ['I really think picking me tomorrow would be a mistake.'] } },
       { by: 'b', say: "We'll see who made the mistake.", v: { sharp: ['Did you come out here just to tell me that? Cute.'], dry: ['Thanks for stopping by. Close the door on your way out.'] } },
-      { by: 'a', conf: "I went to rattle {b}. {b} didn't even blink. Now I'm the one who can't sleep.", v: { soft: ['That didn\'t go how I wanted at all.'] } },
+      { by: 'a', conf: "I went out there to rattle {b}. {b} didn't even blink. Now I'm the one who can't sleep.", v: { soft: ['That didn\'t go how I wanted at all.'] } },
     ] },
     { id: 'ec.b2', turns: [
-      { by: 'a', say: "Hope you're ready for tomorrow." },
-      { by: 'b', say: "I've been ready since TJ said my name.", v: { soft: ['I\'m ready. Are you?'] } },
+      { by: 'a', say: "Is it me tomorrow? Just tell me.", v: { loud: ['Is it ME?! Just tell me!'], soft: ['Can you just tell me if it\'s me tomorrow?'], dry: ['So. Is it me?'] } },
+      { by: 'b', say: "You'll find out at the Arena, same as everybody.", v: { soft: ['I\'m not telling anybody tonight. Sorry.'], sharp: ['You\'ll hear it when TJ asks me.'] } },
+      { by: 'a', conf: "{b} wouldn't tell me. That's a yes. That's definitely a yes.", v: { sharp: ['No answer is an answer.'] } },
     ] },
     { id: 'ec.b3', turns: [
       { by: 'a', conf: "I tried to get in {b}'s head. {b} didn't react at all, and I can't tell if that's good or bad.", v: { sharp: ['{b} is calmer than I thought. Noted.'] } },

@@ -103,15 +103,6 @@ export default {
       odd: ["{show_b} people think they're tough. They're really not.", "{show_b}: home of people who think they're tough."],
     },
   },
-  'ec.r1': {
-    2: {
-      sharp: ["We will.", "Yes. We will."],
-      dry: ["Yep. We will.", "Tomorrow, then."],
-      loud: ["Yeah! We WILL!", "We sure will!"],
-      soft: ["Yeah. I guess we will.", "We will. Good luck."],
-      odd: ["We will. Tomorrow.", "Yeah. Bring snacks."],
-    },
-  },
   'py.t2': {
     0: {
       sharp: ["Breathe. Don't give them the satisfaction.", "Calm down. Breathe."],
@@ -896,14 +887,6 @@ export default {
       odd: ["{b} is the perfect partner. I trust {b}, and {b} isn't after my spot.", "I trust {b}, and {b} can't steal my spot. A match made in Challenge heaven."],
     },
   },
-  'ec.b1': {
-    0: {
-      sharp: ["Picking me was a mistake.", "You picked wrong. Big mistake."],
-      dry: ["You made a mistake picking me.", "Picking me was a mistake. You'll see."],
-      soft: ["I think you made a big mistake picking me.", "Picking me was a mistake, you know."],
-      odd: ["You picked me. Big mistake. Huge.", "Picking me? Bold. Also a mistake."],
-    },
-  },
   'dl.1': {
     0: {
       dry: ["I won't vote for you if you won't vote for me. And if either of us goes in, no call-outs.", "Simple deal. No votes for each other. No call-outs either."],
@@ -1125,15 +1108,6 @@ export default {
       loud: ["I volunteered! I went in! I WON! And I'd do it again tomorrow!", "My choice, my fight, my win!"],
       soft: ["I chose to go in, and I won. I'm so proud of myself.", "I volunteered, and I came back. I'd do it again."],
       odd: ["Volunteered, went in, won. Easy.", "I chose the fight, won the fight, and got sand in places sand shouldn't be."],
-    },
-  },
-  'ec.b2': {
-    0: {
-      sharp: ["Tomorrow's going to hurt. For you.", "Enjoy tonight. Tomorrow's mine."],
-      dry: ["I hope you're ready for tomorrow.", "Ready for tomorrow?"],
-      loud: ["Hope you're READY for tomorrow!", "Tomorrow! You ready?!"],
-      soft: ["I hope you're ready for tomorrow. I mean that.", "Are you ready for tomorrow?"],
-      odd: ["Hope you're ready for tomorrow. I'm not, but I hope you are.", "Tomorrow! Big day! Are you hydrated?"],
     },
   },
   'fg.3': {

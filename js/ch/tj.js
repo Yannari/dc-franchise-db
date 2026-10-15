@@ -18,9 +18,12 @@ import { allianceOf } from './alliances.js';
 
 // ── the night before ─────────────────────────────────────────────────
 export function arenaEve(state, rng, match) {
-  const { a, b } = match;   // a was voted in (or volunteered), b was called out
+  // a was voted in (or volunteered); b is who a means to call out at the Arena tomorrow. Nobody but a
+  // knows that yet (the call-out is said at the Arena), so only a gets the night before. A volunteer
+  // named a target at the vote, so that target already knows.
+  const { a, b } = match;
   const out = { pep: [], alone: [], confront: null };
-  for (const who of [a, b]) {
+  for (const who of match.volunteer ? [a, b] : [a]) {
     // The friend who sits up with them.
     const friend = state.active.filter(x => x !== a && x !== b)
       .sort((x, y) => trustOf(y, who) - trustOf(x, who))[0];
@@ -38,7 +41,7 @@ export function arenaEve(state, rng, match) {
       addScene(state, 'arena-eve-alone', [who], {}, [who], 'confessional');
     }
   }
-  // The one called out goes to find the one who called them.
+  // The one who has the bad feeling it is them goes to ask (b can tell from how a looks at them).
   const heat = grudgeOf(b, a) + S(b, 'boldness') * 0.2 - S(b, 'temperament') * 0.1;
   if (rng() < Math.min(0.75, Math.max(0.05, heat * 0.12))) {
     const won = S(b, 'boldness') + rng() * 4 > S(a, 'temperament') + rng() * 4;
@@ -48,13 +51,16 @@ export function arenaEve(state, rng, match) {
     out.confront = { from: b, at: a, rattled: won ? a : b };
     addScene(state, 'arena-eve-confront', [b, a], { rattled: won ? a : b }, state.active, 'pool');
   }
-  // Calling out an ally's friend costs inside the alliance.
+  return out;
+}
+
+// Calling out an ally's friend costs inside the alliance: when the house hears it, at the Arena.
+export function calloutCost(state, a, b) {
   const al = allianceOf(state, a);
   if (al) for (const m of al.members) {
     if (m === a || m === b || !state.active.includes(m)) continue;
     if (getBond(m, b) >= 4) { addBond(m, a, -0.8); remember(m, a, 'went-after-my-friend', 1.2); }
   }
-  return out;
 }
 
 // ── TJ comes into the villa ──────────────────────────────────────────

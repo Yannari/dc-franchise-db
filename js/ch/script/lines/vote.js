@@ -133,7 +133,7 @@ export default {
   // ── the result ──────────────────────────────────────────────────────
   'cer-result.clear': [
     { id: 'cr.c1', turns: [
-      { by: 'tj', say: "With {count} votes, {a}, you're going into the Arena tomorrow night. Now you get to pick who's coming with you." },
+      { by: 'tj', say: "With {count} votes, {a}, you're going into the Arena tomorrow night. And when you get there, you pick who goes in with you." },
       { by: 'a', conf: "I knew it was coming. Hearing it said out loud is still a punch in the stomach." },
     ] },
     { id: 'cr.c2', turns: [
@@ -141,7 +141,7 @@ export default {
       { by: 'a', say: "Yeah. I figured." },
     ] },
     { id: 'cr.c3', turns: [
-      { by: 'tj', say: "And that's {count} for {a}! You're going in, my friend. Time to choose your fighter." },
+      { by: 'tj', say: "And that's {count} for {a}! You're going in, my friend. Tomorrow night, at the Arena, you choose your fighter." },
       { by: 'a', conf: "I'm not going to cry about it. I'm going to go in there and win." },
     ] },
   ],

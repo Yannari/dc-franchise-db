@@ -118,6 +118,11 @@ export function classify(beat) {
   if (kind === 'deals.final-three') data.pact = 'Final Three';
   if (kind === 'deals.jury-pact') data.pact = 'To the Jury, Together';
   if (beat.against && !data.target) data.target = beat.against;
+  // what a clash was ABOUT, so a recap of it can say so (the user, 2026-10-15: "what did Evie do to Ernesto? I
+  // haven't seen anything, be less vague")
+  if (FRICTION_KINDS.test(kind)) data.about = kind.split('.')[1];
+  else if (kind === 'bond.petty' || kind === 'slop.argument') data.about = 'dishes';
+  else if (rule.type === 'feud' && rule.step === 'friction') data.about = rule.outcome === 'joke' ? 'joke' : 'snap';
   let roles = { a, b, c };
   // In a friction step a is always the one who DID it and b the one it was done to. The
   // old pools disagree (in a dishes row a is the one who has had enough; in a joke a is

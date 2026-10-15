@@ -438,18 +438,13 @@ export default {
       { by: 'b', dr: "I can stay mad for days. With {a} I lasted about a day and a half. That's how I know I actually like {a}." },
     ] },
     { id: 'sp.a5', turns: [
-      { by: 'a', say: "Hey, um. I made you a coffee." },
-      { by: 'b', say: "...Why?" },
-      { by: 'a', say: "Because I'm sorry about {when}, and I'm better at coffee than I am at saying sorry." },
-      { by: 'b', say: "This is a peace coffee." },
-      { by: 'a', say: "It's a peace coffee." },
+      { by: 'a', say: "Hey. I made you a coffee." },
+      { by: 'b', say: "Why?", v: { hard: "What's this for?" } },
+      { by: 'a', say: "Because I'm sorry about {when}. I'm better at making coffee than I am at saying sorry." },
       { by: 'b', say: "Did you put sugar in it?" },
       { by: 'a', say: "Two." },
-      { by: 'b', say: "I take one." },
-      { by: 'a', say: "Then it's an extra-sorry coffee." },
-      { beat: '{b} laughs despite everything.' },
-      { by: 'b', say: "Fine. Apology accepted. Coffee mostly accepted." },
-      { by: 'b', dr: "Two sugars. Disgusting. But I drank it, because I knew what it meant." },
+      { by: 'b', say: "I take one. But thank you. Really.", v: { hard: "I take one. Fine. Apology accepted." } },
+      { by: 'b', dr: "Two sugars. Way too sweet. I drank all of it anyway, because I knew what it meant." },
     ] },
     { id: 'sp.a6', room: 'kitchen', when: { third: true }, turns: [
       { beat: 'Kitchen. {c} is there too. {a} comes in and clears their throat.' },
@@ -626,24 +621,112 @@ export default {
     { id: 'rf.sa2', turns: [{ by: 'a', dr: "{when}, I was short with {b}. Shorter than I meant to be." }] },
     { id: 'rf.sa3', turns: [{ by: 'a', dr: "{b} caught me at a bad moment {when}, and I let it show. A lot." }] },
   ],
+  // ── a clash the viewer never saw, said plainly by who did it (a) or who it was done to (b) ──
+  // The user, 2026-10-15: "what did Evie do to Ernesto? I haven't seen anything, be less vague." An apology
+  // over an unaired clash opens on the apologiser owning what they did (bb/story/write.js `told`).
+  'recap.feud.friction.about-dishes.a': [
+    { id: 'rfa.d1', turns: [{ by: 'a', dr: "{when}, I left my dishes in the sink again, and {b} was the one who had to deal with it. I know. That's on me." }] },
+    { id: 'rfa.d2', turns: [{ by: 'a', dr: "I didn't do my dishes {when}, and {b} noticed. Honestly, I'd be annoyed too." }] },
+    { id: 'rfa.d3', turns: [{ by: 'a', dr: "{when}, {b} asked me to clean up after myself, and I said something I shouldn't have. It was my mess." }] },
+  ],
+  'recap.feud.friction.about-dishes.b': [
+    { id: 'rfb.d1', turns: [{ by: 'b', dr: "{when}, {a} left dirty dishes in the sink again, and I was the one who washed them. Again." }] },
+    { id: 'rfb.d2', turns: [{ by: 'b', dr: "All I did {when} was ask {a} to wash {a.posAdj} own plate. That's it. That's the whole thing." }] },
+    { id: 'rfb.d3', turns: [{ by: 'b', dr: "{when}, I came into the kitchen and {a}'s mess was everywhere. I said something. It didn't go well." }] },
+  ],
+  'recap.feud.friction.about-food.a': [
+    { id: 'rfa.f1', turns: [{ by: 'a', dr: "{when}, I ate something of {b}'s from the fridge. I thought it was for everybody. It wasn't." }] },
+    { id: 'rfa.f2', turns: [{ by: 'a', dr: "I finished the food {b} was saving {when}. I didn't know. {b} didn't believe that." }] },
+    { id: 'rfa.f3', turns: [{ by: 'a', dr: "{when}, I took the last of something {b} wanted. I know how that sounds in here." }] },
+  ],
+  'recap.feud.friction.about-food.b': [
+    { id: 'rfb.f1', turns: [{ by: 'b', dr: "{when}, {a} ate the food I was saving. In here, food is everything, and {a} knows that." }] },
+    { id: 'rfb.f2', turns: [{ by: 'b', dr: "I was saving that for later. {when}, {a} ate it. Didn't ask, didn't say sorry." }] },
+    { id: 'rfb.f3', turns: [{ by: 'b', dr: "{when}, I went to get my food and {a} had already eaten it. That's all. That's what started it." }] },
+  ],
+  'recap.feud.friction.about-noise.a': [
+    { id: 'rfa.n1', turns: [{ by: 'a', dr: "{when}, I was talking and laughing after lights out, and I kept {b} awake. I didn't realise how late it was." }] },
+    { id: 'rfa.n2', turns: [{ by: 'a', dr: "I was loud in the bedroom {when}, and {b} asked me to stop. Twice. I didn't, really." }] },
+    { id: 'rfa.n3', turns: [{ by: 'a', dr: "{when}, I woke {b} up being loud in the bedroom. Not on purpose. {b} didn't care that it wasn't on purpose." }] },
+  ],
+  'recap.feud.friction.about-noise.b': [
+    { id: 'rfb.n1', turns: [{ by: 'b', dr: "{a} kept me up half the night {when}, talking and laughing after lights out. I asked twice." }] },
+    { id: 'rfb.n2', turns: [{ by: 'b', dr: "{when}, I asked {a} to keep it down so I could sleep. {a} didn't." }] },
+    { id: 'rfb.n3', turns: [{ by: 'b', dr: "{when}, I got about three hours of sleep because {a} would not stop talking. I said something in the morning." }] },
+  ],
+  'recap.feud.friction.about-space.a': [
+    { id: 'rfa.s1', turns: [{ by: 'a', dr: "{when}, I took something of {b}'s without asking. A small thing. {b} didn't think it was small." }] },
+    { id: 'rfa.s2', turns: [{ by: 'a', dr: "I sat in {b}'s spot {when} and wouldn't move. It was petty. I know it was petty." }] },
+    { id: 'rfa.s3', turns: [{ by: 'a', dr: "{when}, I borrowed something of {b}'s without asking. I'd be annoyed too." }] },
+  ],
+  'recap.feud.friction.about-space.b': [
+    { id: 'rfb.s1', turns: [{ by: 'b', dr: "{when}, {a} just took my stuff without asking. In a house this small, your stuff is all you've got." }] },
+    { id: 'rfb.s2', turns: [{ by: 'b', dr: "{when}, {a} took my spot and wouldn't move. It sounds small. In here, nothing's small." }] },
+    { id: 'rfb.s3', turns: [{ by: 'b', dr: "{when}, {a} helped {a.ref} to my things. I don't care what it was. Ask first." }] },
+  ],
+  'recap.feud.friction.about-condescend.a': [
+    { id: 'rfa.c1', turns: [{ by: 'a', dr: "{when}, I explained something to {b} that {b} already knew. Apparently I do that. A lot." }] },
+    { id: 'rfa.c2', turns: [{ by: 'a', dr: "I talked down to {b} {when}. I didn't mean it like that, but that's how it came out." }] },
+    { id: 'rfa.c3', turns: [{ by: 'a', dr: "{when}, {b} told me I talk down to people. Maybe I do. I didn't like hearing it." }] },
+  ],
+  'recap.feud.friction.about-condescend.b': [
+    { id: 'rfb.c1', turns: [{ by: 'b', dr: "{when}, {a} talked to me like I was a child, in front of people. I'm not a child." }] },
+    { id: 'rfb.c2', turns: [{ by: 'b', dr: "{when}, {a} kept explaining things to me that I already knew. Like I'm stupid. I'm not stupid." }] },
+    { id: 'rfb.c3', turns: [{ by: 'b', dr: "{when}, {a} finished my sentence for me, again, in front of everybody. I'm done being talked over." }] },
+  ],
+  'recap.feud.friction.about-story.a': [
+    { id: 'rfa.t1', turns: [{ by: 'a', dr: "I told one of my stories again {when}, and {b} made it really clear {b.sub} had heard it before. In front of everybody." }] },
+    { id: 'rfa.t2', turns: [{ by: 'a', dr: "{when}, I started a story and {b} cut me off. I know I tell it a lot. It still stung." }] },
+    { id: 'rfa.t3', turns: [{ by: 'a', dr: "{when}, {b} made a face while I was telling a story. I noticed. I'm not letting it go." }] },
+  ],
+  'recap.feud.friction.about-story.b': [
+    { id: 'rfb.t1', turns: [{ by: 'b', dr: "{when}, {a} told the same story for about the sixth time, and I finally said something. Now it's a whole thing." }] },
+    { id: 'rfb.t2', turns: [{ by: 'b', dr: "{when}, I told {a} I'd heard that story before. That's all I said. Apparently that was a lot." }] },
+    { id: 'rfb.t3', turns: [{ by: 'b', dr: "{when}, {a} told that same story again, and I couldn't sit through it one more time." }] },
+  ],
+  'recap.feud.friction.about-snap.a': [
+    { id: 'rfa.p1', turns: [{ by: 'a', dr: "{when}, I snapped at {b} over nothing. I was stressed, and {b} was the one standing there." }] },
+    { id: 'rfa.p2', turns: [{ by: 'a', dr: "I was really short with {b} {when}. {b} didn't do anything to deserve it." }] },
+    { id: 'rfa.p3', turns: [{ by: 'a', dr: "{when}, I lost my temper with {b}. It wasn't about {b}. {b} just got all of it." }] },
+  ],
+  'recap.feud.friction.about-snap.b': [
+    { id: 'rfb.p1', turns: [{ by: 'b', dr: "{when}, {a} snapped at me over nothing. I was just asking a question." }] },
+    { id: 'rfb.p2', turns: [{ by: 'b', dr: "{a} bit my head off {when}. For nothing. I'm still thinking about it." }] },
+    { id: 'rfb.p3', turns: [{ by: 'b', dr: "{when}, I asked {a} a normal question, and {a} shouted at me. I don't know what I did." }] },
+  ],
+  'recap.feud.friction.about-joke.a': [
+    { id: 'rfa.j1', turns: [{ by: 'a', dr: "{when}, I made a joke about {b} in front of everybody. Everybody laughed except {b}. I went too far." }] },
+    { id: 'rfa.j2', turns: [{ by: 'a', dr: "I did an impression of {b} {when}. I thought it was funny. {b} didn't." }] },
+    { id: 'rfa.j3', turns: [{ by: 'a', dr: "{when}, I made fun of {b} in front of the house. It was meant to be funny. It wasn't, to {b}." }] },
+  ],
+  'recap.feud.friction.about-joke.b': [
+    { id: 'rfb.j1', turns: [{ by: 'b', dr: "{when}, {a} made a joke about me in front of the whole room. Everybody laughed. I didn't." }] },
+    { id: 'rfb.j2', turns: [{ by: 'b', dr: "{a} did an impression of me {when}, and the whole room thought it was hilarious. I didn't." }] },
+    { id: 'rfb.j3', turns: [{ by: 'b', dr: "{when}, {a} made me the punchline in front of everybody. I laughed along. I wasn't laughing." }] },
+  ],
   'recap.feud.friction.caption': [
     { id: 'rf.x1', turns: [{ beat: '{when}, {a} and {b} clashed in the kitchen. Neither of them has let it go.' }, { by: 'a', dr: "It's fine. It's whatever." }] },
     { id: 'rf.x2', turns: [{ beat: '{when}, {a} and {b} had words. It was small. It has not stayed small.' }, { by: 'b', dr: "I'm not going to pretend it didn't happen." }] },
     { id: 'rf.x3', turns: [{ beat: 'Since {when}, {a} and {b} have barely spoken.' }, { by: 'a', dr: "We just don't click." }] },
   ],
+  // In an argument, a is the one who was wronged and started it, b the one who did the thing (write.js feudWho);
+  // {over} is what the clash was about, when the storyline knows it
   'recap.feud.argument.a': [
-    { id: 'rg.a1', turns: [{ by: 'a', dr: "{b} and I had it out {when}. Properly. It got loud." }] },
-    { id: 'rg.a2', turns: [{ by: 'a', dr: "{when} I finally said everything I'd been holding in to {b}. Everything." }] },
-    { id: 'rg.a3', turns: [{ by: 'a', dr: "You might've heard {b} and me {when}. The whole house heard us." }] },
+    { id: 'rg.a1', turns: [{ by: 'a', dr: "{b} and I had it out {when} about {over}. Properly. It got loud." }] },
+    { id: 'rg.a2', turns: [{ by: 'a', dr: "{when}, I finally told {b} what I think about {over}. All of it, in front of everybody." }] },
+    { id: 'rg.a3', turns: [{ by: 'a', dr: "You might have heard {b} and me {when}. It was about {over}, and the whole house heard it." }] },
+    { id: 'rg.a4', turns: [{ by: 'a', dr: "{b} and I had a proper fight {when}. I said everything I'd been holding in." }] },
   ],
   'recap.feud.argument.b': [
-    { id: 'rg.b1', turns: [{ by: 'b', dr: "{a} came at me {when}, screaming, in front of everyone. I'm still shaking, and I don't even know what I did." }] },
-    { id: 'rg.b2', turns: [{ by: 'b', dr: "{when}, {a} decided to tell me exactly what {a.sub} thinks of me. Loudly." }] },
-    { id: 'rg.b3', turns: [{ by: 'b', dr: "We had a fight {when}. A big one. I'm still not over it." }] },
+    { id: 'rg.b1', turns: [{ by: 'b', dr: "{when}, {a} came at me about {over}, shouting, in front of everyone. I know I'm not perfect. I still didn't deserve that." }] },
+    { id: 'rg.b2', turns: [{ by: 'b', dr: "{when}, {a} had a go at me about {over}. Loudly. In front of the whole house." }] },
+    { id: 'rg.b3', turns: [{ by: 'b', dr: "{a} and I had a big fight {when}, about {over}. I'm still not over it." }] },
+    { id: 'rg.b4', turns: [{ by: 'b', dr: "{when}, {a} and I had a screaming match in front of the whole house. It's been building for a while." }] },
+    { id: 'rg.b5', turns: [{ by: 'b', dr: "{a} shouted at me {when}, in front of everyone. Whatever I did, that wasn't the way to tell me." }] },
   ],
   'recap.feud.argument.caption': [
-    { id: 'rg.x1', turns: [{ beat: '{when}, {a} and {b} had a shouting match the whole house heard.' }, { by: 'a', dr: "Yeah. That happened." }] },
-    { id: 'rg.x2', turns: [{ beat: '{when}, a fight between {a} and {b} cleared the kitchen.' }, { by: 'b', dr: "I'm not proud of it." }] },
+    { id: 'rg.x1', turns: [{ beat: '{when}, {a} and {b} had a shouting match about {over}. The whole house heard it.' }, { by: 'a', dr: "Yeah. That happened." }] },
+    { id: 'rg.x2', turns: [{ beat: '{when}, a fight between {a} and {b} about {over} cleared the kitchen.' }, { by: 'b', dr: "I'm not proud of it." }] },
     { id: 'rg.x3', turns: [{ beat: "{when}, {a} and {b} finally said it all to each other's faces." }, { by: 'a', dr: "It had to happen." }] },
   ],
   'recap.feud.cold.a': [

@@ -504,20 +504,37 @@ function background(lines, sc, ctx, salt, loud) {
 const LOUD = (type, step, outcome) => (type === 'feud' && (step === 'argument' || outcome === 'snap'))
   || (type === 'showmance' && step === 'fight') || (type === 'scheme' && step === 'caught');
 
-/** The scene for one step of a storyline, or null when nothing fits. */
-function writeStoryScene0(line, step, ctx) {
-  const prior = causeOf(line, step) || null;
+// The clash a feud started with (its first friction before this step), or null.
+const clashOf = (line, step) => line.type === 'feud' ? line.steps.slice(0, line.steps.indexOf(step)).find(s => s.step === 'friction') || null : null;
+// The roles follow the cause. In a feud, the one who starts the argument is the one who was wronged, and the
+// one who apologises is the one who did it: the event that fired may have them the other way round, which aired
+// a joker yelling about their own joke. A recap of an earlier step reads its roles the same way (read
+// 2026-10-15: the recap had Ernesto shouting at Evie, then Evie said sorry).
+function feudWho(line, step) {
   let who = { a: step.roles.a, b: step.roles.b, c: step.roles.c };
-  // The roles follow the cause. In a feud, the one who starts the argument is the one who
-  // was wronged, and the one who apologises is the one who did it: the event that fired
-  // may have them the other way round, which aired a joker yelling about their own joke.
-  const clash = line.type === 'feud' ? (prior?.step === 'friction' ? prior : line.steps.slice(0, line.steps.indexOf(step)).find(s => s.step === 'friction')) : null;
+  const clash = clashOf(line, step);
   if (clash) {
     const offender = clash.roles.a;
     if (step.step === 'argument' && who.a === offender) who = { a: who.b, b: who.a, c: who.c };
     if (step.step === 'apology' && who.b === offender) who = { a: who.b, b: who.a, c: who.c };
   }
-  const data = { ...step.data, when: whenOf(prior, step) };
+  return who;
+}
+// What a clash was about, as a few words a recap can say ("a fight about {over}")
+const OVER = { dishes: 'the dishes', food: 'food', noise: 'the noise at night', space: 'space', condescend: 'the way we talk to each other',
+  story: 'a story that kept getting told', snap: 'the way we spoke to each other', joke: 'a joke that went too far' };
+
+/** The scene for one step of a storyline, or null when nothing fits. */
+function writeStoryScene0(line, step, ctx) {
+  const prior = causeOf(line, step) || null;
+  let who = feudWho(line, step);
+  // The step the viewer needs told, when they never saw it: its cause, and for an apology or a cold war over a
+  // clash that never aired, the clash itself, so "I'm sorry about yesterday" follows what was done yesterday
+  const root = clashOf(line, step);
+  const told = prior && !prior.aired ? (root && !root.aired && ['apology', 'cold'].includes(step.step) ? root : prior) : null;
+  const data = { ...step.data, when: whenOf(told === root && root ? root : prior, step) };
+  const about = (root || (prior?.step === 'friction' ? prior : null))?.data?.about;
+  if (about && OVER[about]) data.over = OVER[about];
   for (const k of Object.keys(data)) if (data[k] != null && typeof data[k] !== 'string') delete data[k];
   let room = step.room || 'living-room';
   const preShow = step.outcome === 'couple' && line.type === 'showmance'
@@ -601,18 +618,23 @@ function writeStoryScene0(line, step, ctx) {
   let lines = render(entry, who, ctx, data);
   // The cause, said plainly, when the viewer never saw it.
   let recap = [];
-  if (prior && !prior.aired) {
-    const pw = { a: prior.roles.a, b: prior.roles.b, c: prior.roles.c };
-    const saw = n => n && (prior.seenBy || []).includes(n) && cast.includes(n);
-    const by = saw(pw.b) ? 'b' : saw(pw.a) ? 'a' : null;
+  if (told) {
+    const pw = line.type === 'feud' ? feudWho(line, told) : { a: told.roles.a, b: told.roles.b, c: told.roles.c };
+    const saw = n => n && (told.seenBy || []).includes(n) && cast.includes(n);
+    // an apology's recap is the apologiser owning what they did (a, in a clash), so the sorry that follows has
+    // something to be for
+    const by = told === root && step.step === 'apology' && cast.includes(pw.a) ? 'a' : saw(pw.b) ? 'b' : saw(pw.a) ? 'a' : null;
     const who2 = by || 'caption';
     // a couple who walked in together did not start flirting "since last week" (read 2026-10-14: that recap,
     // then "We came in together" in the same scene): theirs is the couple's recap, whatever the step's outcome
     const together = factsFor({ who: pw, data: {}, room }, { week: ctx.week, act: 'house' }).kin === 'together';
-    const rk = [...(together ? [`recap.${line.type}.${prior.step}.couple.${who2}`] : []),
-      `recap.${line.type}.${prior.step}.${prior.outcome}.${who2}`, `recap.${line.type}.${prior.step}.${who2}`].filter(k => STORY_POOLS[k]?.length).slice(0, 1);
-    const re = rk.length ? pick(rk, pw, { ...prior.data, when: data.when }, ctx, room, `${line.id}|recap|${line.steps.indexOf(step)}`) : null;
-    if (re) recap = render(re, pw, ctx, { ...Object.fromEntries(Object.entries(prior.data || {}).filter(([, v]) => typeof v === 'string')), when: data.when });
+    const tAbout = told.data?.about;
+    const rk = [...(together ? [`recap.${line.type}.${told.step}.couple.${who2}`] : []),
+      ...(tAbout ? [`recap.${line.type}.${told.step}.about-${tAbout}.${who2}`] : []),
+      `recap.${line.type}.${told.step}.${told.outcome}.${who2}`, `recap.${line.type}.${told.step}.${who2}`].filter(k => STORY_POOLS[k]?.length).slice(0, 1);
+    const rdata = { ...Object.fromEntries(Object.entries(told.data || {}).filter(([, v]) => typeof v === 'string')), when: data.when, ...(data.over ? { over: data.over } : {}) };
+    const re = rk.length ? pick(rk, pw, rdata, ctx, room, `${line.id}|recap|${line.steps.indexOf(step)}`) : null;
+    if (re) recap = render(re, pw, ctx, rdata);
   }
   // On stage: the people the scene actually uses — who speaks, or who a stage direction names.
   // (The event's third person is often only somebody the scene never needed.)

@@ -9,5 +9,6 @@ import nights from './nights.js';
 import more from './more.js';
 import talk from './talk.js';
 import fallout from './fallout.js';
+import arcs from './arcs.js';
 
-export default Object.assign({}, meeting, recruit, aftermath, pairs, house, game, nights, more, talk, fallout);
+export default Object.assign({}, meeting, recruit, aftermath, pairs, house, game, nights, more, talk, fallout, arcs);

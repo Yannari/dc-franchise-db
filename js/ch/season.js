@@ -180,7 +180,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       for (const [a, b] of state.arrivalPairs || []) addScene(state, 'arrival', [a, b], { recognised: [[a, b]] }, cast, 'airstrip');
       runDaily();
       const looking = [...state.active].sort((x, y) => S(y, 'boldness') - S(x, 'boldness'));
-      addScene(state, 'villa-reveal', looking.slice(0, 2), {}, state.active, 'villa');
+      addScene(state, 'villa-reveal', looking.slice(0, 5), {}, state.active, 'villa');   // the first two, and three more behind them (x, y, z)
     }
     houseDay(state, R('house1'));
     romanceDay(state, R('romance1'));

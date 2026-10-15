@@ -280,6 +280,7 @@ function pick(keys, who, data, ctx, room, salt, freshOnly = false) {
   const facts = factsFor({ who, data, room }, { week: ctx.week, act: 'house', hoh: ctx.hoh, nominees: ctx.nominees });
   const comp = compOf(ctx);
   for (const r of ['a', 'b', 'c']) facts[`low${r.toUpperCase()}`] = !!(comp && who[r] && comp.low.includes(who[r]));
+  facts.words = !data.about || ['joke', 'snap', 'condescend', 'story'].includes(data.about);
   const rng = stableRng(gs.bb?.seasonSalt || 0, ctx.week?.num || 0, 'story', salt);
   const speakers = Object.values(who).filter(Boolean);
   const pairKey = [who.a, who.b].filter(Boolean).sort().join('|');
@@ -535,6 +536,7 @@ function writeStoryScene0(line, step, ctx) {
   const data = { ...step.data, when: whenOf(told === root && root ? root : prior, step) };
   const about = (root || (prior?.step === 'friction' ? prior : null))?.data?.about;
   if (about && OVER[about]) data.over = OVER[about];
+  if (about) data.about = about;
   for (const k of Object.keys(data)) if (data[k] != null && typeof data[k] !== 'string') delete data[k];
   let room = step.room || 'living-room';
   const preShow = step.outcome === 'couple' && line.type === 'showmance'

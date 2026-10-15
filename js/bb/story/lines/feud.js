@@ -427,7 +427,7 @@ export default {
       { by: 'b', say: "You said sorry and you meant it. We're good. Just think before you say stuff next time.", v: { hard: "I was angry. Now I'm not. Just don't do it again." } },
       { by: 'a', dr: "I had a whole speech ready, and I didn't need any of it. I'm kind of annoyed about that, honestly." },
     ] },
-    { id: 'sp.a4', room: 'backyard', when: { band: ['friends', 'neutral'] }, turns: [
+    { id: 'sp.a4', room: 'backyard', when: { band: ['friends', 'neutral'], words: true }, turns: [
       { beat: 'Backyard. {b} is lying on a lounger. {a} sits down on the next one.' },
       { by: 'a', say: "Can we talk about {when}?" },
       { by: 'b', say: "Okay." },
@@ -446,7 +446,7 @@ export default {
       { by: 'b', say: "I take one. But thank you. Really.", v: { hard: "I take one. Fine. Apology accepted." } },
       { by: 'b', dr: "Two sugars. Way too sweet. I drank all of it anyway, because I knew what it meant." },
     ] },
-    { id: 'sp.a6', room: 'kitchen', when: { third: true }, turns: [
+    { id: 'sp.a6', room: 'kitchen', when: { third: true, words: true }, turns: [
       { beat: 'Kitchen. {c} is there too. {a} comes in and clears their throat.' },
       { by: 'a', say: "Can I say something? In front of {c}, since {c} was there." },
       { by: 'c', say: "Oh no." },
@@ -505,7 +505,7 @@ export default {
       { by: 'a', say: "Then how does it work with you?" },
       { by: 'b', say: "It works like this. You stay over there, I stay over here, and we see who's still in the house in a month." },
       { by: 'a', say: "That's really how you want to play it." },
-      { by: 'b', say: "That's really how I want to play it." },
+      { by: 'b', say: "Yes. That's exactly how I want to play it." },
       { by: 'a', dr: "I tried to make peace and {b} said no to my face. Whatever happens now, I want people to remember that I tried." },
     ] },
     { id: 'sp.r5', room: 'living-room', turns: [
@@ -520,7 +520,7 @@ export default {
       { by: 'b', say: "I'll let you know." },
       { by: 'b', dr: "I'm not trying to be cruel. I'm just not there yet, and I'm not going to pretend I am." },
     ] },
-    { id: 'sp.r6', turns: [
+    { id: 'sp.r6', when: { words: true }, turns: [
       { by: 'a', say: "So I wanted to clear the air about {when}." },
       { by: 'b', say: "The air's clear. I know exactly what you think of me." },
       { by: 'a', say: "That's not what I think of you." },

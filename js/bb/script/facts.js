@@ -22,6 +22,10 @@ export const BB_FACT_KEYS = ['ending', 'result', 'intent', 'reason', 'act', 'ear
   'registerB',
   // finished near the bottom of this week's HOH competition (bb/story/write.js compOf): only then is a scene about it
   'lowA', 'lowB', 'lowC',
+  // the feud's clash was something somebody SAID (a joke, snapping, talking down, a story), or its cause is not
+  // known: only then may an apology say "I said something stupid" (read 2026-10-15: a sorry for "what you think of
+  // me" after a clash about noise at night)
+  'words',
   // the scene names the week's target ({target} in its data): only then may a line say it
   'known',
   // what a and b were to each other before the show (the cast's kinship): together | family | friends | history

@@ -12,6 +12,7 @@
 // Switch back to the old screens: localStorage 'bb-classic-vp' = '1'.
 import { bbWeekSteps, REPLACED, ANCHOR_OF, houseLifeMode } from './steps.js';
 import { voiceTick, voiceSay, voicesOn, bbxVoices } from './voices.js';
+import { bbVoiceLine, bbVoiceStop, bbVoicedLines, bbCanVoice } from './voicing.js';
 import { stageHtml, camStyle, esc, escT, col, img, eyeSvg, SEASON_DIR } from './stage.js';
 import { BBX_CSS, BBX_FONTS } from './style.js';
 import { BBX_SUITE_CSS } from './style-suite.js';
@@ -214,6 +215,8 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     const uid = `bbx${esc(row.num)}-${si}`;
     reg()[uid] = { screens: steps, si, idx: -1, o, auto: false, timer: null, map: newMap(S), num: row.num, tab: 'heads', who: null, lastL: null };
     const R0 = reg()[uid];
+    // which of the week's lines have a voice actor's clip (vp-bb-ep/voicing.js), asked before the first line
+    if (si === 0) bbVoicedLines(row.num);
     // a House Life segment holds its stretch's classic House Life screens (and takes the first one's id)
     const feed = S.kind === 'houselife' ? (houseOf[keyOf[si]] || []).splice(0) : [];
     // the stepped screen sets the music, not the record underneath it
@@ -236,6 +239,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     <button type="button" class="bbx-btn bbi-btn" id="bbi-btn-${uid}" onclick="bbxIntel('${uid}')" title="What the house doesn't know: bonds, alliances, deals, and what they're thinking (i)">Intel</button>
     <button type="button" class="bbx-btn" onclick="bbxTv()">TV mode</button>
     <button type="button" class="bbx-btn bbx-voices ${voicesOn() ? 'on' : ''}" onclick="bbxVoices()" title="The houseguests' voices, and the room sound when there is no music">Voices</button>
+    ${bbCanVoice() ? `<button type="button" class="bbx-btn" onclick="bbVoiceSelected(${Number(row.num) || 0})" title="Voice this week's lines on Inworld, in each houseguest's own voice (part 6)">🎙 Voice week ${Number(row.num) || ''}</button>` : ''}
     <button type="button" class="bbx-btn" onclick="bbxSwitchViewer('classic')" title="Back to the classic screens">Classic</button>
     ${S.kind === 'houselife' ? `<button type="button" class="bbx-btn ${mapOn() ? 'on' : ''}" onclick="bbxMapMode()" title="House Life as the house map you explore, or as one segment in story order">${mapOn() ? 'Linear view' : 'House map'}</button>` : ''}
     <button type="button" class="bbx-btn" onclick="bbxHouseLife()" title="House life as one segment per stretch, or one scene per screen">${houseLifeMode() === 'scenes' ? 'House Life view' : 'Scenes view'}</button>
@@ -345,19 +349,22 @@ function paint(uid, fresh) {
   // breathes at its commas and full stops. When it is all there, the names and the words of
   // the game light up (stage.js emph).
   const tx = el.querySelector('.tx[data-full]');
+  if (fresh && !tx) bbVoiceStop();
   if (fresh && tx && !tx.textContent) {
     const un = v => v.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
     const full = un(tx.dataset.full);
     const done = () => { tx.innerHTML = un(tx.dataset.emph || '') || tx.textContent; tx.classList.add('lit'); };
     const cur = R.screens[R.si]?.steps?.[R.idx] || {};
-    if (full.length <= 34) { el.querySelector('.l3')?.classList.add('snap'); done(); voiceSay(cur.by, cur.k, full); }
+    // the voice actor's clip when this line has one (vp-bb-ep/voicing.js), else the blips
+    const acted = voicesOn() && bbVoiceLine(R.num, cur);
+    if (full.length <= 34) { el.querySelector('.l3')?.classList.add('snap'); done(); if (!acted) voiceSay(cur.by, cur.k, full); }
     else {
       let n = 0, wait = 0;
       R.typing = setInterval(() => {
         if (wait > 0) { wait--; return; }
         n += full.length > 160 ? 3 : 2;
         tx.textContent = full.slice(0, n);
-        voiceTick(cur.by, cur.k, full, n - (n % 3 === 0 ? 0 : n % 3));
+        if (!acted) voiceTick(cur.by, cur.k, full, n - (n % 3 === 0 ? 0 : n % 3));
         const ch = full[Math.min(n, full.length) - 1];
         if (/[.!?…]/.test(ch) && n < full.length) wait = 9;
         else if (/[,;:—]/.test(ch) && n < full.length) wait = 4;

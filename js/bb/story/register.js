@@ -65,6 +65,19 @@ export function registerOf(name) {
   return out;
 }
 
+// ── 0. a line in the speaker's own register ──
+// The user, 2026-10-15, on a comp joke nobody would say: "well I don't know what happened... what do you want
+// me to say (if she's on the mean side) or I really don't know what's going on with me (if she's on the anxious
+// side)". A turn can carry `v: { mean, anxious, ... }` keyed by the registers above, or by a family of them
+// (hard, soft, loud); the speaker's own register first, then its family, then the line as written.
+export const REG_FAMILY = { mean: 'hard', tough: 'hard', sarcastic: 'hard', terse: 'hard', anxious: 'soft', sweet: 'soft', bubbly: 'soft', theatrical: 'loud' };
+export const VARIANT_KEYS = ['terse', 'sarcastic', 'theatrical', 'anxious', 'mean', 'smooth', 'tough', 'bubbly', 'sweet', 'hard', 'soft', 'loud'];
+export function variantOf(t, by) {
+  if (!t?.v || !by) return null;
+  const r = registerOf(by).reg;
+  return t.v[r] ?? t.v[REG_FAMILY[r]] ?? null;
+}
+
 // ── 1. the scene that fits the person leading it ──
 const TONE = {
   heated: /!.*!|shout|yell|slams|furious|snaps|screams|throws/i,

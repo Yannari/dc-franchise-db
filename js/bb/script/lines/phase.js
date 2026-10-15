@@ -46,7 +46,12 @@ export default {
     { id: 'pp2.7', turns: [{ by: 'a', say: "Promise me. If you win, {c} goes up." }, { by: 'b', say: "I promise. Does it work both ways?" }, { by: 'a', say: "It works both ways." }] },
   ],
   'phase.scramble.desperate': [
-    { id: 'ps2.d1', turns: [{ by: 'a', say: "Congratulations! Seriously, well done." }, { by: 'b', say: "Thanks." }, { by: 'a', say: "So... are we good?" }, { by: 'b', say: "We're good." }, { by: 'a', dr: "{b} said we're good. I don't believe a word of it." }] },
+    { id: 'ps2.d1', turns: [
+      { by: 'a', say: "Congratulations. You really earned that." },
+      { by: 'b', say: "Thank you." },
+      { by: 'a', say: "I just want to make sure we're okay. We haven't really talked.", v: { anxious: "Sorry, I have to ask. Are we okay? I've been worried about it all day.", hard: "I'll be straight with you. I want to know where I stand." } },
+      { by: 'b', say: "We're fine. Don't worry about it." },
+      { by: 'a', dr: "{b} says we're fine. People say that right before they put you up.", v: { anxious: "{b} said we're fine, and I still can't relax. I don't believe it." } }] },
     { id: 'ps2.d2', when: { early: false }, turns: [{ by: 'b', dr: "{a} has barely spoken to me in weeks. Now I've won, {a} wants to talk for forty minutes. Funny, that." }] },
     { id: 'ps2.d3', turns: [{ by: 'a', say: "I just want you to know, I've never once said your name." }, { by: 'b', say: "Okay." }, { by: 'a', say: "I mean it." }, { by: 'b', say: "I said okay." }] },
     { id: 'ps2.d4', turns: [{ by: 'a', dr: "I was up those stairs before {b} had even stopped celebrating. I'm not proud of it. I'm scared." }] },
@@ -169,12 +174,23 @@ export default {
   ],
   'phase.targets.new': [
     { id: 'pt2.n1', turns: [{ by: 'a', say: "{c} would put you up next week. I'd bet on it." }, { by: 'b', say: "How do you know?" }, { by: 'a', say: "{c} has been asking about you all week." }, { by: 'b', say: "Asking what?" }, { by: 'a', say: "Who you're close to. Who you'd put up. The things you ask when you're planning something." }, { by: 'b', dr: "I can't tell if {a} is looking out for me or pointing me somewhere convenient." }] },
-    { id: 'pt2.n2', turns: [{ by: 'a', say: "Several people are worried about {c}." }, { by: 'b', say: "Who's several people?" }, { by: 'a', say: "Just... people." }, { by: 'b', say: "Name one." }, { by: 'a', say: "I'd rather not. They told me in confidence." }, { by: 'b', say: "So it's you." }, { by: 'a', say: "It's not just me. I've got to go." }, { by: 'b', dr: "It's {a}. It's always the person who says \"several people\". I'm still going to think about {c}, though." }] },
+    { id: 'pt2.n2', turns: [
+      { by: 'a', say: "A few people have told me they're worried about {c}." },
+      { by: 'b', say: "Who?" },
+      { by: 'a', say: "I can't say. They told me in private." },
+      { by: 'b', say: "So it's you.", v: { soft: "Is it really other people, or is it you?", hard: "It's you. Just say it's you." } },
+      { by: 'a', say: "It's not just me. Just think about it." },
+      { by: 'b', dr: "When somebody says 'a few people', it usually means them. I'll still think about {c}, though." }] },
     { id: 'pt2.n3', turns: [{ by: 'a', say: "If you're thinking about {c}, I'm with you." }, { by: 'b', say: "I didn't say I was." }, { by: 'a', say: "I'm just saying. If you are." }, { by: 'b', say: "And if I'm not?" }, { by: 'a', say: "Then forget I said anything." }, { by: 'b', say: "I can't forget it now. That's the point, isn't it?" }, { by: 'a', dr: "I didn't need {b} to agree out loud. I just needed the name in {b}'s head." }] },
     { id: 'pt2.n4', turns: [{ by: 'a', say: "Has {c} said anything to you this week?" }, { by: 'b', say: "Not much. Why?" }, { by: 'a', say: "That's what worries me. {c} has gone very quiet." }, { by: 'b', say: "Quiet isn't a crime." }, { by: 'a', say: "In here it usually means a plan." }, { by: 'a', dr: "I only started worrying about {c} this week. But now I've started, I can't stop." }] },
     { id: 'pt2.n6', turns: [{ by: 'a', say: "Can I give you a name to think about?" }, { by: 'b', say: "Go on." }, { by: 'a', say: "{c}. Just think about it. That's all." }, { by: 'b', say: "Why {c}?" }, { by: 'a', say: "Because nobody's thinking about {c}. That's exactly how people get to the end." }, { by: 'b', dr: "It's not a bad argument. I just wish I knew why {a} came up here to make it." }] },
     { id: 'pt2.n7', turns: [{ by: 'a', say: "I don't want to tell you who to put up." }, { by: 'b', say: "But you're going to." }, { by: 'a', say: "I'm going to tell you who I'd worry about. {c}." }, { by: 'b', say: "Okay. Noted." }, { by: 'a', say: "That's it? Noted?" }, { by: 'b', say: "That's what you get today." }, { by: 'a', dr: "I don't know if {b} will listen. But {c} is a problem, and somebody had to say it to the HOH." }] },
-    { id: 'pt2.n5', turns: [{ by: 'a', say: "Have you thought about {c}?" }, { by: 'b', say: "I've thought about everybody." }, { by: 'a', say: "Think about {c} a bit more." }, { by: 'b', say: "Why?" }, { by: 'a', say: "Because {c} wins things. And {c} doesn't owe you anything." }, { by: 'b', dr: "{a} came up here to tell me about {c}. I'm going to think about it. I'm also going to think about why {a} wants {c} gone." }] },
+    { id: 'pt2.n5', turns: [
+      { by: 'a', say: "Can I say something about {c}? I think {c} is dangerous.", v: { hard: "You need to look at {c}. I'm serious.", soft: "I don't want to tell you what to do. I'm just worried about {c}." } },
+      { by: 'b', say: "Why {c}? {c} hasn't done anything to me." },
+      { by: 'a', say: "Not yet. {c} talks to everybody, and {c} doesn't owe you anything." },
+      { by: 'b', say: "Okay. I'll think about it." },
+      { by: 'b', dr: "{a} came up here just to talk about {c}. Maybe {a} is right. But I want to know why {a} wants {c} gone so badly." }] },
   ],
   'phase.reckons.scene': [
     { id: 'pr2.1', turns: [{ by: 'a', dr: "I've counted the votes twice. I don't like the number either time. I need {b}." }] },
@@ -233,7 +249,13 @@ export default {
     { id: 'pc2.6', turns: [{ by: 'a', say: "If you need a replacement, it's not going to be me, is it?" }, { by: 'b', say: "I haven't decided anything." }, { by: 'a', say: "That's not a no." }, { by: 'b', say: "It's not a yes either." }, { by: 'a', say: "So I should be worried." }, { by: 'b', say: "Everybody off the block should be a bit worried. That's how it works." }, { by: 'a', dr: "A bit worried. I'm a lot worried." }] },
     { id: 'pc2.7', turns: [{ by: 'a', say: "Who's the replacement going to be? If it happens?" }, { by: 'b', say: "Why does everyone keep asking me that?" }, { by: 'a', say: "Because there's an empty chair, and everyone's scared it's theirs." }, { by: 'b', say: "It might not get used." }, { by: 'a', say: "It might." }, { by: 'a', dr: "There's an empty chair waiting if the veto gets used. I've got a horrible feeling it's got my name on it." }] },
     { id: 'pc2.8', turns: [{ by: 'a', say: "Do you need help with anything? Cleaning? Anything?" }, { by: 'b', say: "I'm fine, thanks." }, { by: 'a', say: "Laundry? I'm good at laundry." }, { by: 'b', say: "You're the third person to offer me laundry today." }, { by: 'a', say: "...Oh." }, { by: 'b', dr: "Everyone who's scared of being the replacement is suddenly very helpful." }] },
-    { id: 'pc2.9', turns: [{ by: 'a', say: "Has anyone mentioned me? For the chair?" }, { by: 'b', say: "No." }, { by: 'a', say: "Nobody at all?" }, { by: 'b', say: "Nobody. Why?" }, { by: 'a', say: "No reason." }, { by: 'a', dr: "Nobody's said my name. That's what scares me. Nobody would, until it's too late." }] },
+    { id: 'pc2.9', turns: [
+      { by: 'a', say: "Has anyone said my name? For the block?" },
+      { by: 'b', say: "No. Nobody's said anything about you." },
+      { by: 'a', say: "Nobody at all?" },
+      { by: 'b', say: "Nobody. Are you worried?" },
+      { by: 'a', say: "A little.", v: { anxious: "Yes. I can't stop thinking about it." } },
+      { by: 'a', dr: "Nobody has said my name, and that scares me more. Nobody would, until it was too late." }] },
     { id: 'pc2.10', turns: [{ by: 'a', say: "Whatever happens with the veto, we're good, right?" }, { by: 'b', say: "We'll see what happens." }, { by: 'a', say: "That's not very reassuring." }, { by: 'b', say: "It's not meant to be anything. I just don't know yet." }, { by: 'a', dr: "\"We'll see what happens.\" That's what you say to somebody right before you put them up." }] },
   ],
 };

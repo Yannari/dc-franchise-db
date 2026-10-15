@@ -20,6 +20,7 @@ import { pickEntry, newLedger } from '../../script/pick.js';
 import { POOLS } from './lines/index.js';
 import { factsFor } from './facts.js';
 import { tidySpoken, tidyNames } from '../../vp-tr/tidy.js';
+import { variantOf } from '../story/register.js';
 
 const ACT_ORDER = ['hoh', 'nominations', 'veto', 'veto-ceremony', 'campaign', 'eviction'];
 export const clockOf = ctx => (ctx.week?.num || 0) * 10 + Math.max(0, ACT_ORDER.indexOf(ctx.act));
@@ -133,7 +134,7 @@ export function writeScene(scene, ctx = {}, rng = Math.random) {
   const lines = entry.turns.map(t => {
     const kind = t.dr ? 'dr' : t.beat ? 'beat' : 'say';
     const by = t.by ? who[t.by] || (t.by === 'hoh' ? ctx.hoh : null) : null;
-    return { kind, by, text: said(kind, fill(t.dr || t.beat || t.say, who, ctx, scene.data || {})) };
+    return { kind, by, text: said(kind, fill(variantOf(t, by) ?? (t.dr || t.beat || t.say), who, ctx, scene.data || {})) };
   });
   return { lines, text: transcript(lines), lineId: entry.id };
 }

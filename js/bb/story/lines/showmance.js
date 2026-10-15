@@ -11,18 +11,13 @@ export default {
   // ── spark: flirting ─────────────────────────────────────────────────
   'story.showmance.spark.any': [
     { id: 'sm.s1', room: 'kitchen', turns: [
-      { beat: 'Kitchen. {a} is trying to open a jar and losing.' },
-      { by: 'b', say: "Do you want help with that?" },
-      { by: 'a', say: "No. I've got it." },
-      { beat: 'The jar does not open.' },
-      { by: 'a', say: "I've loosened it for you." },
-      { by: 'b', say: "Oh, have you?" },
-      { beat: '{b} opens it first try.' },
-      { by: 'a', say: "Because I loosened it." },
-      { by: 'b', say: "Sure. Thank you for your service." },
-      { by: 'a', say: "You're welcome." },
-      { beat: 'Neither of them moves to leave.' },
-      { by: 'a', dr: "I did not loosen it. But {b} let me pretend, and that's… actually really cute?" },
+      { beat: '{a} is trying to open a jar in the kitchen and cannot do it.' },
+      { by: 'b', say: "Here, let me try." },
+      { beat: '{b} opens it on the first try.' },
+      { by: 'a', say: "I loosened it for you.", v: { soft: "I think I loosened it for you. A bit.", hard: "Okay, I definitely loosened that." } },
+      { by: 'b', say: "Sure you did." },
+      { beat: 'The jar is put away, and they stay at the counter talking for a long time.' },
+      { by: 'a', dr: "We talked for an hour about nothing. I didn't want to leave the kitchen.", v: { anxious: "I don't know what that was. We talked for an hour and I didn't want it to stop." } },
     ] },
     { id: 'sm.s2', turns: [
       { by: 'a', say: "Can I ask you something random?" },

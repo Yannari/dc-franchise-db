@@ -30,7 +30,7 @@ import { causeOf } from './storylines.js';
 import { STORY_POOLS } from './lines/index.js';
 import { getBond } from '../../bonds.js';
 import { addInsight } from './voice.js';
-import { pickTone, voiceLine, registerOf } from './register.js';
+import { pickTone, voiceLine, variantOf } from './register.js';
 import { spotFor, onIsland, openingAt } from './places.js';
 import { pStats } from '../../players.js';
 
@@ -226,16 +226,7 @@ function noteAcross(id) {
   } catch { /* storage is a convenience */ }
 }
 
-// A line can come in the speaker's own register (the user, 2026-10-15, on a comp joke nobody would say: "well I
-// don't know what happened... what do you want me to say (if she's on the mean side) or I really don't know
-// what's going on with me (if she's on the anxious side)"): `v: { mean, anxious, ... }` keyed by register.js's
-// registers, or by a family of them; the speaker's own register first, then its family, then the line itself.
-const FAMILY = { mean: 'hard', tough: 'hard', sarcastic: 'hard', terse: 'hard', anxious: 'soft', sweet: 'soft', bubbly: 'soft', theatrical: 'loud' };
-export function variantOf(t, by) {
-  if (!t?.v || !by) return null;
-  const r = registerOf(by).reg;
-  return t.v[r] ?? t.v[FAMILY[r]] ?? null;
-}
+// a line's text and its versions in each register (register.js variantOf): a slot any of them names must be filled
 const textsOf = t => [t.say || t.dr || t.beat || '', ...Object.values(t.v || {})].join(' ');
 
 // The week's Head of Household competition, once it has been played: its name ({comp}) and who finished

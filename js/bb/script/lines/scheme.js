@@ -215,7 +215,11 @@ export default {
     { id: 'sz.f3', turns: [{ by: 'b', dr: "{a} said {target} is double-dealing. {a} couldn't name a single deal." }] },
     { id: 'sz.f4', turns: [{ by: 'a', dr: "Nobody believed me about {target}. I should have had a better story ready." }] },
     { id: 'sz.f5', turns: [{ by: 'b', say: "Where's this coming from?" }, { by: 'a', say: "I just think people should know." }, { by: 'b', say: "Know what? You haven't said anything." }] },
-    { id: 'sz.f6', when: { third: true }, turns: [{ by: 'a', say: "{target} is working everyone." }, { by: 'c', say: "Has {target} promised you anything?" }, { by: 'a', say: "...No." }, { by: 'c', say: "Then how do you know?" }] },
+    { id: 'sz.f6', when: { third: true }, turns: [
+      { by: 'a', say: "{target} is working everybody in this house." },
+      { by: 'c', say: "Has {target} ever lied to you?" },
+      { by: 'a', say: "Not to me. But I've seen how {target} talks to people." },
+      { by: 'c', say: "That's not much to go on.", v: { hard: "So no. That's nothing." } }] },
   ],
   'scheme.collapse.scene': [
     { id: 'sp.1', turns: [{ by: 'a', say: "I asked around. {b} hasn't got a single final-two deal with anyone." }, { by: 'b', say: "I told you." }, { by: 'a', say: "{c}, where did that story come from?" }] },

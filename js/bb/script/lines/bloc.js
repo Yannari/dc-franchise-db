@@ -91,7 +91,13 @@ export default {
     { id: 'br.j6', when: { intent: 'many' }, turns: [{ by: 'a', say: "I've made this pitch to a few people today." }, { by: 'b', say: "And?" }, { by: 'a', say: "More than one of them said yes." }, { by: 'b', say: "Then why do you need me?" }, { by: 'a', say: "Because \"more than one\" isn't enough yet." }, { by: 'b', say: "Fine. Count me in." }, { by: 'a', dr: "I made the same pitch to a few people today. More than one of them said yes. {target} is in trouble." }] },
     { id: 'br.j7', turns: [{ by: 'a', say: "You don't have to trust me. Just look at the votes." }, { by: 'b', say: "I've looked at the votes." }, { by: 'a', say: "And?" }, { by: 'b', say: "And {target} has never once voted with us." }, { by: 'a', say: "So." }, { by: 'b', say: "So I'm in. For this. Not for anything else." }, { by: 'b', dr: "{a} made a good point about {target}. I don't totally trust {a}, but the numbers are the numbers." }] },
     { id: 'br.j8', turns: [{ by: 'a', say: "You see it too, right? {target} and those people always vote together." }, { by: 'b', say: "I see it." }, { by: 'a', say: "Then we're on the same page." }, { by: 'b', say: "We're on the same page about {target}. That doesn't make us an alliance." }, { by: 'a', say: "I'm not asking for an alliance. I'm asking for one vote." }, { by: 'b', say: "That I can do." }, { by: 'a', dr: "One vote today. We can talk about the rest later." }] },
-    { id: 'br.j9', turns: [{ by: 'b', say: "If I go after {target}, you've got my back?" }, { by: 'a', say: "Completely." }, { by: 'b', say: "Because if this goes wrong, {target} is going to know it was me." }, { by: 'a', say: "It won't go wrong." }, { by: 'b', say: "Promise me." }, { by: 'a', say: "I promise." }, { by: 'b', say: "Then I'm in." }, { by: 'b', dr: "I've said yes. Now I just have to hope {a} meant that." }] },
+    { id: 'br.j9', turns: [
+      { by: 'b', say: "If I go after {target}, will you back me up?" },
+      { by: 'a', say: "Yes. Completely." },
+      { by: 'b', say: "Because if this goes wrong, {target} will know it was me.", v: { anxious: "I'm scared, honestly. If this goes wrong, {target} will know it was me." } },
+      { by: 'a', say: "It won't go wrong. I'll be right there with you." },
+      { by: 'b', say: "Okay. I'm in." },
+      { by: 'b', dr: "I said yes. Now I just have to hope {a} meant it." }] },
   ],
   'bloc.recruit.refused': [
     { id: 'br.r1', turns: [{ beat: "{a} watches the house carry on as if nothing is wrong." }, { by: 'a', dr: "I told people about {target}'s group. Everybody nodded. Nobody's going to do anything." }] },

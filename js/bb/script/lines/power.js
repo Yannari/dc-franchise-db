@@ -524,9 +524,19 @@ export default {
     { id: 'pfb.s1', turns: [{ by: 'a', say: "Interesting nominations." }, { by: 'b', say: "Thanks. I think." }, { by: 'a', say: "I didn't expect those two." }, { by: 'b', say: "Nobody did. That's sort of the point." }, { by: 'a', dr: "Two names on the block, and neither of them is the real target. I think the real target is me." }] },
     { id: 'pfb.s2', turns: [{ by: 'a', say: "I just want to play in the veto. That's all." }, { by: 'b', say: "Everybody wants to play in the veto." }, { by: 'a', say: "I want it more." }, { by: 'b', say: "Why?" }, { by: 'a', say: "No reason. I'm just competitive." }, { by: 'a', dr: "I've given that answer all week. Nobody has believed it yet." }] },
     { id: 'pfb.s3', turns: [{ by: 'b', say: "You're up early." }, { by: 'a', say: "Couldn't sleep." }, { by: 'b', say: "Big day?" }, { by: 'a', say: "Veto draw. It's always a big day." }, { by: 'a', dr: "If I win the veto, nobody can put me up. That's all I need to do this week." }] },
-    { id: 'pfb.s4', turns: [{ by: 'a', say: "Am I safe this week?" }, { by: 'b', say: "Of course you're safe." }, { by: 'a', say: "Good. Thanks." }, { by: 'b', say: "Why do you ask?" }, { by: 'a', say: "No reason." }, { by: 'a', dr: "\"Of course.\" So I'm lobbying for a veto chip anyway." }] },
+    { id: 'pfb.s4', turns: [
+      { by: 'a', say: "Can I ask you something straight? Am I safe this week?" },
+      { by: 'b', say: "Of course you're safe." },
+      { by: 'a', say: "Okay. Thank you. I needed to hear that." },
+      { by: 'b', say: "Why? Has somebody said something?" },
+      { by: 'a', say: "No. I just wanted to ask.", v: { anxious: "No. I just get in my head sometimes." } },
+      { by: 'a', dr: "{b} said 'of course' too fast. I'm going to fight for the veto anyway." }] },
     { id: 'pfb.s5', turns: [{ by: 'a', say: "If you pull houseguest's choice, think of me." }, { by: 'b', say: "Why you?" }, { by: 'a', say: "I'm good at comps. You'd want someone good." }, { by: 'b', say: "I'll see." }, { by: 'a', dr: "I'm not asking to play for {b}. I'm asking to survive." }] },
-    { id: 'pfb.s6', turns: [{ by: 'b', say: "Morning!" }, { by: 'a', say: "Morning." }, { by: 'b', say: "Sleep well?" }, { by: 'a', say: "Fine. You?" }, { by: 'b', say: "Like a baby." }, { by: 'a', dr: "{b} keeps smiling at me. I don't trust it. Nobody smiles that much at someone they're keeping." }] },
+    { id: 'pfb.s6', turns: [
+      { by: 'b', say: "Morning. Did you sleep okay?" },
+      { by: 'a', say: "Not really. You?" },
+      { by: 'b', say: "Like a baby." },
+      { by: 'a', dr: "{b} is being really nice to me this week, and that's what worries me. You don't have to be that nice to somebody you're keeping.", v: { anxious: "{b} keeps smiling at me and I can't sleep. If {b} was keeping me, {b} wouldn't have to try this hard." } }] },
     { id: 'pfb.s7', when: { register: 'cool' }, turns: [{ beat: "{a} watches {b} go back upstairs, and works out how many visits that makes today." }, { by: 'a', dr: "The nominations don't make sense unless the real target isn't on the block. I'm not on the block. I think it's me." }] },
   ],
   // ── "pick me and I'll save you" ── a the seller, b the nominee

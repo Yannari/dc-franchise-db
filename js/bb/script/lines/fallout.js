@@ -58,7 +58,12 @@ export default {
     { id: 'fb.c1', turns: [{ by: 'a', say: "You were awfully quiet last night." }, { by: 'b', say: "It was an eviction. Everyone was quiet." }, { by: 'a', say: "Not like you." }, { by: 'b', say: "What are you getting at?" }, { by: 'a', say: "Nothing. Yet." }, { by: 'a', dr: "I worked it out. It was {b}. I can't prove it yet, but I know." }] },
     { id: 'fb.c2', turns: [{ by: 'a', say: "Who wanted {gone} gone the most? Honestly?" }, { by: 'b', say: "I don't know. Lots of people?" }, { by: 'a', say: "I keep coming back to one name." }, { by: 'b', say: "Is it mine?" }, { by: 'a', say: "You tell me." }, { by: 'a', dr: "I asked myself who wanted {gone} gone the most. Every time, I get the same answer. {b}." }] },
     { id: 'fb.c3', turns: [{ by: 'a', say: "It was you, wasn't it?" }, { by: 'b', say: "What was?" }, { by: 'a', say: "{gone}. You did that." }, { by: 'b', say: "I don't know what you're talking about." }, { by: 'a', say: "Yes, you do." }, { by: 'b', dr: "{a} knows. I don't know how, but {a} knows." }] },
-    { id: 'fb.c4', turns: [{ by: 'a', say: "Good morning." }, { by: 'b', say: "Morning! Coffee?" }, { by: 'a', say: "You're very cheerful today." }, { by: 'b', say: "I slept well." }, { by: 'a', say: "I bet you did." }, { by: 'a', dr: "{b} has been smiling all morning. Now I know why." }] },
+    { id: 'fb.c4', turns: [
+      { by: 'b', say: "Morning! Do you want a coffee?" },
+      { by: 'a', say: "No, I'm okay." },
+      { by: 'a', say: "You're in a good mood today.", v: { hard: "You're very happy this morning." } },
+      { by: 'b', say: "I slept well." },
+      { by: 'a', dr: "{b} has been smiling all morning. After last night, I know exactly why." }] },
     { id: 'fb.c5', turns: [{ by: 'b', say: "Are we okay?" }, { by: 'a', say: "{gone} is gone. So no, we're not okay." }, { by: 'b', say: "That wasn't me." }, { by: 'a', say: "It was. And the sooner you stop pretending, the sooner we can both stop wasting time." }, { by: 'a', dr: "{gone} is gone, and {b} is the reason. {b} is my target now." }] },
     { id: 'fb.c6', turns: [{ by: 'a', say: "I know it was you." }, { by: 'b', say: "Okay." }, { by: 'a', say: "That's it? Okay?" }, { by: 'b', say: "What do you want me to say?" }, { by: 'a', say: "The truth." }, { by: 'b', say: "The truth is it's a game, and {gone} was in my way." }, { by: 'a', dr: "At least {b} finally said it. That's going to cost {b} more than {b} thinks." }] },
   ],
@@ -151,7 +156,13 @@ export default {
   ],
   'fallout.word.seen': [
     { id: 'fw.s1', turns: [{ by: 'a', say: "{target} voted {gone} out." }, { by: 'b', say: "Are you sure?" }, { by: 'a', say: "I watched {target} all night. {target} didn't even pretend to be sad." }, { by: 'b', say: "That's not proof." }, { by: 'a', say: "Then ask {target} about it and watch {target}'s face." }, { by: 'b', dr: "Not proof, maybe. But now I'm going to be watching too." }] },
-    { id: 'fw.s2', turns: [{ by: 'a', say: "{target} wrote {gone}'s name down." }, { by: 'b', say: "How do you know?" }, { by: 'a', say: "Trust me. I know." }, { by: 'b', say: "That's not good enough." }, { by: 'a', say: "{target} came out of the Diary Room smiling. Who smiles on eviction night?" }, { by: 'b', say: "...Someone who got what they wanted." }, { by: 'b', dr: "{a} doesn't have proof. {a} has a smile. Weirdly, I believe the smile." }] },
+    { id: 'fw.s2', turns: [
+      { by: 'a', say: "{target} voted {gone} out. I'm sure of it." },
+      { by: 'b', say: "How do you know?" },
+      { by: 'a', say: "{target} came out of the Diary Room smiling. Nobody smiles on eviction night unless they got what they wanted." },
+      { by: 'b', say: "That's not proof.", v: { hard: "That's it? A smile?" } },
+      { by: 'a', say: "I know. But you didn't see it." },
+      { by: 'b', dr: "{a} has no proof, just a smile. But honestly, I believe it." }] },
     { id: 'fw.s3', turns: [{ by: 'b', say: "Do you know how {target} voted?" }, { by: 'a', say: "{gone} out. I'm sure of it." }, { by: 'b', say: "Huh. I'd have bet the other way." }, { by: 'a', say: "So would {gone}." }] },
     { id: 'fw.s4', turns: [{ by: 'a', say: "I think {target} voted {gone} out." }, { by: 'b', say: "No way. {target} loved {gone}." }, { by: 'a', say: "{target} loved {gone} in public." }, { by: 'b', say: "...Who else knows?" }, { by: 'a', dr: "{b} didn't believe it at first. Then {b} wanted to know who else knew. That's when I knew it had landed." }] },
     { id: 'fw.s5', turns: [{ by: 'a', say: "{target} voted against {gone}." }, { by: 'b', say: "I really thought {target} was with {gone}." }, { by: 'a', say: "So did {gone}." }, { by: 'b', say: "Does anyone else know?" }, { by: 'a', say: "Not yet." }, { by: 'b', dr: "{target} hugged {gone} goodbye. I watched {target} do it." }] },

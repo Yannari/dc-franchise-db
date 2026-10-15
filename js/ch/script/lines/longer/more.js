@@ -197,7 +197,7 @@ export default {
     { by: 'b', say: "Why? What happened?" },
     { by: 'a', say: "Nothing happened. That's the problem. Nothing ever goes my way in that group." },
     { by: 'b', say: "You could have said something." },
-    { by: 'a', say: "I'm saying it now." }],
+    { by: 'a', say: "Well, I'm saying it now." }],
   'al.p1': [0,
     { by: 'a', say: "After one vote? One?" },
     { by: 'b', say: "One vote that went against all of us." },

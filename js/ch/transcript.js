@@ -17,7 +17,7 @@ const SPOT = { airstrip: 'The airstrip', villa: 'The villa', kitchen: 'The kitch
 // the scene is watched, so it never says how the scene ends: no "Quit", no
 // "Breakup", no "Champions" (manual §18: nothing before its step).
 const TITLE = {
-  previously: 'Previously on The Challenge', arrival: 'The arrival', 'villa-reveal': 'The villa', 'house-debate': 'The house talks', 'after-vote': 'After the vote', 'pick-talk': 'The pick', 'pick-guess': 'Who goes in', ceremony: 'The house vote', callout: 'The call-out', volunteer: 'A volunteer',
+  previously: 'Previously on The Challenge', arrival: 'The arrival', 'villa-reveal': 'The villa', 'house-debate': 'The house talks', 'after-vote': 'After the vote', 'pick-talk': 'The pick', 'pick-guess': 'Who goes in', 'gym-training': 'Training', 'pool-games': 'Chicken fight', 'house-dinner': 'Dinner', 'beach-run': 'The run', 'sunset-talk': 'Sunset', 'bunk-whisper': 'Lights out', ceremony: 'The house vote', callout: 'The call-out', volunteer: 'A volunteer',
   meeting: 'A meeting', 'meeting-spotted': 'Somebody noticed', recruit: 'Asking for a vote', plea: 'A plea', deal: 'A deal',
   'deal-broken': 'A deal', outing: 'Out loud', 'leverage-threat': 'A warning', 'ride-to-the-final': 'All the way',
   daily: 'The daily challenge', 'daily-clutch': 'After the daily', 'daily-choke': 'After the daily', 'partner-draw': 'Partners',

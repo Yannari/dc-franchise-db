@@ -20,7 +20,7 @@ export default {
     { beat: 'Nobody says anything. {a} looks around the circle.' },
     3,
     { by: 'b', say: "And nobody tells {target} tonight. If {target} finds out, we spend the whole day fixing it." },
-    { by: 'y', opt: 1, say: "I won't say a word." },
+    { by: 'y', opt: 1, say: "Not a word from me." },
     4],
   'mt.u2': [
     { beat: '{a} waits until everybody is there before saying a word.' },

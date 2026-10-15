@@ -89,7 +89,7 @@ export default {
   'rc.r5': [0, 1,
     { by: 'a', say: "Meaning what?" },
     { by: 'b', say: "Meaning your group isn't as big as you think it is." },
-    { by: 'a', say: "Who told you that?" },
+    { by: 'a', say: "Says who?" },
     { by: 'b', say: "Nobody had to. You're not the only one in here who can count." },
     { by: 'a', say: "Okay. We'll see at the vote." },
     2],

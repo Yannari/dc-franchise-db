@@ -164,6 +164,31 @@ export default {
       { by: 'b', say: "That's... actually kind of evil. I like it." },
       { by: 'a', conf: "We don't have to beat everybody ourselves. If {target} goes in, the call-out might send home somebody we want gone anyway." },
     ] },
+    // written long from the start (the long cut, 2026-10-15)
+    { id: 'mt.u7', turns: [
+      { by: 'a', say: "Before anybody else gets here, I want to say it out loud. {target}." },
+      { by: 'b', say: "I was going to say the same thing." },
+      { by: 'c', opt: 1, say: "Same. I've been thinking it since the daily." },
+      { by: 'a', say: "Good. Then it's easy. We just need everybody to stay quiet until the vote." },
+      { by: 'b', say: "What about the people outside the group? Do we tell anyone?" },
+      { by: 'a', say: "Only the ones who'd vote {target} anyway. Nobody who'd run to {target} with it." },
+      { by: 'x', opt: 1, say: "I know two who would. I'll talk to them." },
+      { by: 'a', opt: 'x', say: "Carefully. Don't say it's us. Say it's what everybody's saying." },
+      { by: 'b', say: "And if {target} asks us straight out?" },
+      { by: 'a', say: "Then we haven't decided yet. Same as always." },
+      { by: 'a', conf: "Everybody agreeing this fast is the easy part. Keeping it quiet for a whole day in this house is the hard part." },
+    ] },
+    { id: 'mt.u8', turns: [
+      { beat: 'The group gets together one at a time, so nobody notices them all leave at once.' },
+      { by: 'b', say: "Okay, we're all here. Who is it?" },
+      { by: 'a', say: "I think it's {target}. But I want to hear everybody first." },
+      { by: 'c', opt: 1, say: "{target}. It makes sense." },
+      { by: 'x', opt: 1, say: "{target} for me too." },
+      { by: 'b', say: "Then it's {target}." },
+      { by: 'a', say: "Then it's {target}. Nobody changes their mind tomorrow, okay? If you've got a problem, say it now." },
+      { by: 'b', say: "Nobody's got a problem." },
+      { by: 'b', conf: "I like that {a} asked everybody. Most people in here just tell you who you're voting for." },
+    ] },
   ],
   'meeting.pushback': [
     { id: 'mt.p1', turns: [
@@ -302,7 +327,7 @@ export default {
     ] },
     { id: 'rc.a10', turns: [
       { by: 'a', say: "I'm not going to dress this up. I need your vote on {target}." },
-      { by: 'b', say: "At least you're honest about it." },
+      { by: 'b', say: "Well, at least you're honest." },
       { by: 'a', say: "Would you rather I pretended I wanted to hang out?" },
       { by: 'b', say: "No. Why {target}?" },
       { by: 'a', say: "Because {target} can win this whole thing if we keep waiting. I'd rather do it now, while {target} is still beatable in the Arena." },

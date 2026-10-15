@@ -18,7 +18,7 @@ export default {
   'pd.2': [0, 1,
     { by: 'a', say: "I'm eating right here. That's all I'm saying." },
     { by: 'b', say: "Then eat somewhere else." },
-    { by: 'a', say: "I was here first." },
+    { by: 'a', say: "I got here first." },
     2],
   'pd.3': [0, 1,
     { by: 'a', say: "I live here. I have to turn around sometimes." },
@@ -113,7 +113,7 @@ export default {
     { by: 'a', say: "I broke it so I'd still be here next week." },
     2],
   'db.v2': [
-    { by: 'b', say: "I heard you say my name." },
+    { by: 'b', say: "I heard you say my name tonight." },
     { by: 'a', say: "I know. I'm sorry." },
     { by: 'b', say: "We shook on it." },
     0],
@@ -138,10 +138,10 @@ export default {
 
   // ── a break-up ──
   'bu.1': [0, 1, 2,
-    { by: 'b', say: "That's not an answer." },
+    { by: 'b', say: "That's not a reason." },
     { by: 'a', say: "I can't play this game and worry about you at the same time. I've tried." },
     { by: 'b', say: "Nobody asked you to worry about me." },
-    { by: 'a', say: "I know. I'm sorry." },
+    { by: 'a', say: "I know. I'm so sorry." },
     3],
   'bu.2': [
     { by: 'a', say: "Can we talk? Somewhere quiet?" },
@@ -159,7 +159,7 @@ export default {
   'ap.a1': [0, 1,
     { by: 'a', say: "I don't want it hanging over us. Not for the rest of the game." },
     { by: 'b', say: "It's not. Not anymore." },
-    { by: 'a', say: "Okay. Thank you." },
+    { by: 'a', say: "Okay. Thanks for that." },
     2],
   'ap.a2': [0, 1,
     { by: 'a', say: "Really? You're not just saying that?" },
@@ -182,7 +182,7 @@ export default {
   'ap.r2': [
     { by: 'a', say: "I wanted to say I'm sorry. About the vote." },
     { by: 'b', say: "Okay." },
-    { by: 'a', say: "That's it? Okay?" },
+    { by: 'a', say: "That's all? Okay?" },
     { by: 'b', say: "That's it." },
     0],
   'ap.r3': [
@@ -200,7 +200,7 @@ export default {
     2],
   'tc.2': [
     { by: 'a', say: "You stopped. At the end. I saw it." },
-    { by: 'b', say: "I didn't stop." },
+    { by: 'b', say: "I didn't slow down." },
     { by: 'a', say: "Everybody was watching. They'll have seen it too." },
     0],
   'tc.3': [0, 1, 2,

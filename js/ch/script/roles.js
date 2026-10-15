@@ -32,6 +32,13 @@ export const ROLES = {
   'pick-talk': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { opt1: sc.data.options?.[0], opt2: sc.data.options?.[1] } }),
   // the people who might be picked, waiting; {target} is the one picking
   'pick-guess': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any', slots: { target: sc.data.by } }),
+  // the places
+  'gym-training': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  'pool-games': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.sore ? 'sore' : 'fun' }),
+  'house-dinner': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.burnt ? 'burnt' : 'good' }),
+  'beach-run': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.friendly ? 'friendly' : 'rivals' }),
+  'sunset-talk': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.endgame ? 'endgame' : 'home' }),
+  'bunk-whisper': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.heard || undefined }, ending: sc.data.heard ? 'heard' : 'safe' }),
   'after-vote': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.stung || undefined }, ending: sc.data.stung ? 'stung' : 'any', slots: { count: COUNT_WORD[sc.data.count] || String(sc.data.count) } }),
   daily: sc => ({ roles: { a: sc.data.winners[0], b: sc.data.winners[1], c: sc.data.last?.[0] }, ending: sc.data.mode,
     slots: { game: sc.data.dailyName } }),

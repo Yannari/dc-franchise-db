@@ -116,6 +116,80 @@ const witnesses = (ctx, who, n = 3) => ctx.state.active.filter(x => !who.include
 // ── the catalogue ────────────────────────────────────────────────────
 // { id, kind, cooldown, max, cast(ctx) → {who, score} | null, weight(ctx, pick), fire(ctx, who, rng) → scene }
 export const EVENTS = [
+  // ── the places (the user, 2026-10-15: "create also events in specific locations") ──
+  // The gym: two friends train for the Arena one of them is afraid of.
+  { id: 'gym-training', kind: 'game', cooldown: 4, max: 4,
+    cast: ctx => bestPair(ctx, 'gym-training', 4, (a, b) => (getBond(a, b) >= 1 ? (S(a, 'physical') + S(b, 'endurance') + (10 - S(a, 'temperament')) * 0.3 - 11) * 0.3 + getBond(a, b) * 0.1 : 0)),
+    weight: (ctx, p) => (ctx.night ? 0 : 0.2 + p.score * 0.3),
+    fire(ctx, [a, b], rng) {
+      addBond(a, b, 0.6);
+      nudge(ctx.state, a, 'confidence', 0.4);
+      remember(a, b, 'was-there', 1);
+      return addScene(ctx.state, 'gym-training', [a, b], { pushed: rng() < 0.5 }, [a, b, ...witnesses(ctx, [a, b], 1)], 'gym');
+    } },
+  // The pool: a chicken fight, two on two; the winners are louder about it than they should be.
+  { id: 'pool-games', kind: 'comedy', cooldown: 5, max: 3,
+    cast: ctx => bestPair(ctx, 'pool-games', 5, (a, b) => (getBond(a, b) >= 2 ? (S(a, 'boldness') + S(b, 'physical') - 9) * 0.3 : 0)),
+    weight: (ctx, p) => (ctx.night ? 0.1 : 0.25 + p.score * 0.25),
+    fire(ctx, [a, b], rng) {
+      const rest = ctx.state.active.filter(n => n !== a && n !== b && !busy(ctx, n));
+      const c = rest.sort((x, y) => S(y, 'boldness') - S(x, 'boldness'))[0];
+      if (!c) return null;
+      const d = rest.filter(n => n !== c).sort((x, y) => getBond(c, y) - getBond(c, x))[0];
+      if (!d) return null;
+      const us = S(a, 'physical') + S(b, 'physical') + rng() * 4, them = S(c, 'physical') + S(d, 'physical') + rng() * 4;
+      const [w1, w2, l1, l2] = us >= them ? [a, b, c, d] : [c, d, a, b];
+      addBond(w1, w2, 0.4); addBond(l1, l2, 0.3);
+      addBond(w1, l1, S(l1, 'temperament') >= 5 ? 0.2 : -0.3);
+      pop(w1, 0.5); pop(w2, 0.5);
+      return addScene(ctx.state, 'pool-games', [w1, w2, l1, l2], { sore: S(l1, 'temperament') < 5 }, [w1, w2, l1, l2, ...witnesses(ctx, [w1, w2, l1, l2], 2)], 'pool');
+    } },
+  // The kitchen: somebody cooks for the whole house, with a helper; everybody eats.
+  { id: 'house-dinner', kind: 'comedy', cooldown: 6, max: 3,
+    // a person cooks for the whole house once a season (the same dinner, by the same cook, aired twice in five days)
+    cast: ctx => bestPair(ctx, 'house-dinner', 6, (a, b) => (getBond(a, b) >= 1 && !ctx.state.cooked?.[a] ? (S(a, 'social') + S(a, 'loyalty') - 11) * 0.3 : 0)),
+    weight: (ctx, p) => 0.2 + p.score * 0.25,
+    fire(ctx, [a, b], rng) {
+      (ctx.state.cooked ||= {})[a] = true;
+      const eaters = witnesses(ctx, [a, b], 3);
+      for (const n of eaters) { addBond(a, n, 0.25); addBond(b, n, 0.15); }
+      addBond(a, b, 0.5);
+      pop(a, 0.8);
+      return addScene(ctx.state, 'house-dinner', [a, b, ...eaters], { burnt: rng() < 0.3 }, [a, b, ...eaters], 'kitchen');
+    } },
+  // The beach: a morning run turns into a race.
+  { id: 'beach-run', kind: 'game', cooldown: 5, max: 3,
+    cast: ctx => bestPair(ctx, 'beach-run', 5, (a, b) => (ctx.state.division[a] === ctx.state.division[b] ? (S(a, 'endurance') + S(b, 'endurance') + S(a, 'boldness') - 19) * 0.3 : 0), { ordered: false }),
+    weight: (ctx, p) => (ctx.night ? 0 : 0.15 + p.score * 0.3),
+    fire(ctx, [a, b], rng) {
+      const winner = S(a, 'endurance') + rng() * 3 >= S(b, 'endurance') + rng() * 3 ? a : b;
+      const loser = winner === a ? b : a;
+      respected(loser, winner, 0.4, `${winner} beat ${loser} running on the beach`);
+      const friendly = getBond(a, b) >= 1;
+      addBond(a, b, friendly ? 0.4 : -0.3);
+      nudge(ctx.state, winner, 'confidence', 0.3);
+      return addScene(ctx.state, 'beach-run', [winner, loser], { friendly }, [winner, loser], 'beach');
+    } },
+  // The lookout: two friends at sunset, about home and about the end of this.
+  { id: 'sunset-talk', kind: 'romance', cooldown: 5, max: 4,
+    cast: ctx => bestPair(ctx, 'sunset-talk', 5, (a, b) => (getBond(a, b) >= 3 ? (S(a, 'social') + S(b, 'loyalty') - 10) * 0.3 + getBond(a, b) * 0.1 : 0), { ordered: false }),
+    weight: (ctx, p) => (ctx.night ? 0 : 0.2 + p.score * 0.3),
+    fire(ctx, [a, b], rng) {
+      addBond(a, b, 0.8);
+      remember(a, b, 'opened-up', 1); remember(b, a, 'opened-up', 1);
+      return addScene(ctx.state, 'sunset-talk', [a, b], { endgame: rng() < 0.5 }, [a, b], 'lookout');
+    } },
+  // The bedroom, at night: two allies whisper about the vote; sometimes somebody in the next bunk is awake.
+  { id: 'bunk-whisper', kind: 'game', cooldown: 4, max: 4,
+    cast: ctx => bestPair(ctx, 'bunk-whisper', 4, (a, b) => (allianceOf(ctx.state, a) && allianceOf(ctx.state, a) === allianceOf(ctx.state, b) ? (S(a, 'strategic') + S(b, 'strategic') - 9) * 0.3 : 0), { ordered: false }),
+    weight: (ctx, p) => (ctx.night ? 0.3 + p.score * 0.3 : 0),
+    fire(ctx, [a, b], rng) {
+      addBond(a, b, 0.4);
+      const awake = rng() < 0.35 ? ctx.state.active.filter(n => n !== a && n !== b && allianceOf(ctx.state, n) !== allianceOf(ctx.state, a))
+        .sort((x, y) => S(y, 'intuition') - S(x, 'intuition'))[0] : null;
+      if (awake) { remember(awake, a, 'overheard-plan', 1.5); remember(awake, b, 'overheard-plan', 1); addBond(awake, a, -0.5); }
+      return addScene(ctx.state, 'bunk-whisper', awake ? [a, b, awake] : [a, b], { heard: awake || null }, awake ? [a, b, awake] : [a, b], 'bedroom');
+    } },
   // ── COMEDY / LIFE ──
   { id: 'prank', actorCooldown: 1, kind: 'comedy', cooldown: 3, max: 6,
     cast: ctx => bestPair(ctx, 'prank', 3, (a, b) => (S(a, 'boldness') + (is(a, 'chaos-agent', 'wildcard', 'hothead') ? 4 : 0) - 8) * 0.4 + Math.max(0, getBond(a, b)) * 0.15),

@@ -329,7 +329,7 @@ export default {
   'after-vote.any': [
     { id: 'av.1', turns: [
       { beat: '{b} finds {a} sitting outside by the pool, alone.' },
-      { by: 'b', say: "Hey. You okay?" },
+      { by: 'b', say: "Hey. Are you okay?" },
       { by: 'a', say: "No. I really thought I was safe this week." },
       { by: 'b', say: "You're going to win in there. I mean it." },
       { by: 'a', conf: "I really thought I had more friends in this house than that." },

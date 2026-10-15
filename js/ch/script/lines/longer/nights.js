@@ -46,7 +46,7 @@ export default {
 
   // ── calling out a floater ──
   'fc.f1': [0, 1, 2,
-    { by: 'x', opt: 1, say: "Can we not do this right now?" },
+    { by: 'x', opt: 1, say: "Can we not do this now? Please?" },
     { by: 'b', say: "No, let's do it. {a} has been wanting to say this for days." },
     { by: 'a', say: "I'm saying what everybody else is thinking." },
     { by: 'b', say: "Then let everybody else say it. You don't speak for them." },
@@ -112,7 +112,7 @@ export default {
     { by: 'a', say: "Honestly? I think {b} is going to turn on all of us." },
     { by: 'c', say: "That's a big thing to say. Why?" },
     { by: 'a', say: "Because {b} is nice to everybody, and nobody is nice to everybody in here unless they want something." },
-    { by: 'c', say: "Okay. I hear you." },
+    { by: 'c', say: "Okay. Noted." },
     0, 1,
     { by: 'c', conf: "I'm not going to tell {b}. But I'm going to remember that {a} said it, and who {a.sub} said it to." }],
 
@@ -121,7 +121,7 @@ export default {
     { by: 'a', say: "Really? Not about the money?" },
     { by: 'b', say: "A little about the money. Mostly about you." },
     { by: 'a', say: "Okay. That's a good answer." },
-    { by: 'b', say: "What about you?" },
+    { by: 'b', say: "And you?" },
     { by: 'a', say: "I think about whether we'd still talk every day if we weren't stuck in a house together." },
     { by: 'b', say: "We would." },
     3],

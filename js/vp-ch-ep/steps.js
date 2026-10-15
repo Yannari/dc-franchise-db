@@ -466,7 +466,7 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   const mode = d.mode === 'pairs' ? 'In pairs. ' : d.mode === 'teams' ? 'Two teams. ' : '';
   const win = d.mode === 'solo' && (d.winners || []).length > 1 ? 'The best man and the best woman win, and they are safe at the vote.' : 'The winners are safe at the vote.';
   const card = { k: "TODAY'S DAILY", n: d.name, li: rulesOf(def?.desc), f: mode + win };
-  S.push({ rules: card, tj: tjLine('rules', {}, seed, S.V.used), focus: ['TJ'] });
+  S.push({ rules: card, tj: S.last()?.tj ? null : tjLine('rules', {}, seed, S.V.used), focus: ['TJ'] });
   for (const li of card.li) S.push({ rules: card, tj: toYou(li), focus: ['TJ'] });
   S.push({ tj: pickBy(TJ_GO, seed), focus: ['TJ'], gong: 1 });
   const unitName = u => nameList(u);
@@ -784,7 +784,7 @@ function weaveDaily(steps, d, st, V, people) {
   const back = (units[units.length - 1] || [])[0];
   const nervous = (units[Math.floor(units.length * .7)] || [])[0];
   const verb = st.verb;
-  const can = who => who && people.includes(who) && (said[who] || 0) < 2 && n < 9;
+  const can = who => who && people.includes(who) && (said[who] || 0) < 2 && n < 14;
   const add = x => { out.push(x); n++; const w = x.say?.[0] || x.conf?.[0]; if (w) said[w] = (said[w] || 0) + 1; };
   const someone = not => people.find(p => !not.includes(p) && (said[p] || 0) === 0);
   const shout = (to, pool, key) => {
@@ -801,8 +801,10 @@ function weaveDaily(steps, d, st, V, people) {
   };
   let didLead = false, didBack = false;
   steps.forEach((x, k) => {
+    if (x.tjCall) { const t = tjLine('call', x.tjCall, `${V.seed}|call${k}`, V.used); if (t) out.push({ tj: t, focus: x.focus }); return; }
     out.push(x);
     const f = x.focus || [];
+    if (x.mid) conf(x.mid, DAILY_VOICE.mid, {}, `mid${k}`);
     if (k === 0) { conf(nervous, DAILY_VOICE.nerves, {}, 'nerves'); shout(lead, DAILY_VOICE.verb[verb] || DAILY_VOICE.go, 'v0'); }
     if (!didLead && lead && f.includes(lead)) {
       didLead = true;

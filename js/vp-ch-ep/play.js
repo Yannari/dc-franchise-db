@@ -40,7 +40,58 @@ export function dailyPlay(d, ctx) {
     pick: (arr, k = '') => pickBy(arr, `${ctx.seed}|${d.id}|${k}`),
     rank: u => units.indexOf(u),
   };
-  return P(g);
+  const res = P(g);
+  if (res) res.steps = widen(g, res.steps);
+  return res;
+}
+
+// The user, 2026-10-15: "the challenges are too quick to finish". Between the game's own beats, the
+// middle of the pack (three more players doing the game in its own words), TJ shouting from the side,
+// and somebody pulling level with the leader before the finish. {u} is the one doing it, {v} another.
+const MID = {
+  'night-swim': ['{u} swims past the third buoy and stops to read the lantern.', '{u} treads water and says the numbers out loud to keep them straight.',
+    '{u} loses count halfway round and swims back to the first buoy.', '{u} and {v} are stroke for stroke out at the far buoy.'],
+  'reef-dash': ['{u} comes up with the fourteen and swims straight back out.', '{u} goes under three times before finding a token.',
+    '{u} drops onto the sand, gasping, then goes back in.', '{u} and {v} reach the same buoy at once and both dive.'],
+  'cliff-relay': ['{u} gets halfway up the ladder and has to stop and breathe.', '{u} jumps feet first and comes up laughing.',
+    '{u} stands shaking at the top for a long time, then jumps anyway.', '{u} and {v} race up the ladder side by side.'],
+  'truck-tug': ['{u} digs in, and the truck lurches forward a metre.', '{u} is rubbed raw by the harness and keeps pulling.',
+    '{u} shouts the count so everybody pulls at the same time.', '{u} and {v} are level with half the track to go.'],
+  'jungle-maze': ['{u} finds a letter behind a wall of bamboo.', '{u} runs past the same station twice without seeing it.',
+    '{u} shouts for {v} through the bamboo. Nobody answers.', '{u} scratches the letters into the dirt so as not to forget them.'],
+  'balance-beam': ['{u} gets all the way across without spilling a drop.', '{u} crawls the last metre with the bucket held up high.',
+    '{u} spills half the bucket on the way and keeps going anyway.', '{u} and {v} are on the beam at the same time, and nobody can pass.'],
+  'gauntlet-run': ['{u} flies through the tyres.', '{u} gets stuck in the mud crawl and has to wriggle free.',
+    '{u} needs three tries to get over the wall.', '{u} drags the sandbag the last few metres to the bell.'],
+  any: ['{u} keeps going, slower than before.', '{u} and {v} are neck and neck.'],
+};
+const NO_MID = new Set(['lagoon-quiz', 'demolition', 'hang-on']);
+function widen(g, steps) {
+  if (steps.length < 2) return steps;
+  const used = new Set([g.lead, g.back, g.second, g.thrower, ...g.winners]);
+  const mids = NO_MID.has(g.d.id) ? [] : g.units.filter(u => !used.has(u)).slice(0, 3);
+  const pool = MID[g.d.id] || MID.any;
+  const off = hashOf(`${g.seed}|mid`);
+  const extra = mids.map((u, k) => {
+    const v = mids[(k + 1) % mids.length] !== u ? mids[(k + 1) % mids.length] : g.lead;
+    const t = pool[(off + k) % pool.length];
+    return { dir: t.replace(/\{u\}/g, first(u)).replace(/\{v\}/g, first(v)), focus: [first(u), ...(t.includes('{v}') ? [first(v)] : [])], mid: first(u) };
+  });
+  extra.splice(Math.min(1, extra.length), 0, { tjCall: { a: first(g.lead), b: first(g.back) }, focus: ['TJ', first(g.lead)] });
+  // somebody catches the leader; when a man and a woman both win, the two of them are the ones out in front
+  if (g.winners.length > 1 && !NO_MID.has(g.d.id)) extra.push({ dir: `${unitName(g.winners[1])} ${g.winners[1].length > 1 ? 'are' : 'is'} keeping pace with ${unitName(g.lead)}. Those two are the ones to beat today.`, focus: [first(g.winners[1]), first(g.lead)], act: { [first(g.winners[1])]: 'cheer' } });
+  else if (g.second !== g.lead && !NO_MID.has(g.d.id)) extra.push({ dir: `${unitName(g.second)} ${g.second.length > 1 ? 'pull' : 'pulls'} level with ${unitName(g.lead)}. For a moment it could go either way.`, focus: [first(g.second), first(g.lead)], act: { [first(g.second)]: 'cheer' } });
+  extra.push({ tjCall: { a: first(g.lead), b: first(g.second) }, close: 1, focus: ['TJ'] });
+  const out = [];
+  let e = 0;
+  const from = steps.length > 2 ? 1 : 0, last = steps.length - 1;
+  steps.forEach((s, i) => {
+    out.push(s);
+    if (i < from || i >= last) return;
+    const n = Math.ceil((extra.length - e) / (last - i));
+    for (let j = 0; j < n && e < extra.length; j++) out.push(extra[e++]);
+  });
+  return out;
 }
 
 // The board along the top: the best six units, and anyone the step names.

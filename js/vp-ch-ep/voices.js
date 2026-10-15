@@ -71,11 +71,18 @@ export const DAILY_VOICE = {
   // a rival watching the one falling behind
   watchBackRival: [V('{a} is falling apart out there. I\'m not going to pretend I\'m sad about it.'), V('Look at {a}. That\'s the person who\'s been talking about me all week.')],
   // before it starts
+  // somebody in the middle of the pack, to the camera
+  mid: [V('I\'m not winning this, but I\'m not last either. Today that\'s enough.'), V('I just keep telling myself, don\'t be the one at the bottom.'),
+    V('My arms are gone. I\'m running on nothing but spite right now.', { soft: ['My arms are gone. I just don\'t want to let anybody down.'] }),
+    V('I looked over and saw who was behind me, and I found another gear.'), V('This is the part where you find out if you really want to be here.')],
   nerves: [V('I\'ve been dreading this all morning. I just don\'t want to be last.'), V('If I lose this, I\'m in danger at the vote. I can\'t lose this.'),
     V('My hands are already shaking, and TJ hasn\'t even said go.')],
 };
 
 export const TJ_VOICE = {
+  // TJ from the side during a daily: {a} is in front, {b} is the one he is calling to
+  call: ['{a} is out in front! {b}, you have to move!', 'Look at {a} go! Everybody else, this is not over yet!', '{b}, you\'re running out of time!',
+    'This is close! {a}, don\'t slow down now!', 'Come on, people! {a} is pulling away from you!'],
   rules: ['Alright, listen up. Here\'s how it works.', 'Okay, everybody. Here\'s the deal.'],
   debrief: ['Good job, everybody. That was a tough one. {w}, that was a dominating performance.', 'Alright, everybody, bring it in. Some of you looked like you were born for that. {w}, that was all you.'],
   next: ['{w}, you\'re safe at the vote. Everybody else, go back to the villa and figure out who\'s going into the Arena. {week}', '{w}, nobody can vote for you this week. As for the rest of you, go home and decide who\'s going in. {week}'],

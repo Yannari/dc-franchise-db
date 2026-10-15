@@ -51,6 +51,21 @@ const CHX_CSS = `
 .chx canvas.tdx-gl.on{opacity:1}
 .chx .chx-live,.chx .chx-cast,.chx .chx-wfx{position:absolute;inset:0;pointer-events:none}
 .chx .chx-cast{z-index:3}.chx .chx-wfx{z-index:5}
+.chx .chx-props{position:absolute;inset:0;pointer-events:none;z-index:2}
+.chx .prop{position:absolute;transform:translate(-50%,-100%);transition:left .9s,top .9s}
+.chx .prop svg{width:100%;height:auto;display:block;overflow:visible;filter:drop-shadow(0 .4cqh .5cqh rgba(0,0,0,.45))}
+.chx .prop.bob svg{animation:chxBuoy 2.4s ease-in-out infinite alternate}
+@keyframes chxBuoy{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-6%) rotate(3deg)}}
+.chx .prop.pop-in{animation:chxChip .45s cubic-bezier(.3,1.7,.5,1)}
+.chx .prop.fallen svg{animation:chxFallen .6s ease-out}
+@keyframes chxFallen{from{transform:translateY(-40%) rotate(-25deg);opacity:.2}}
+.chx .tok.swim .face::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;background:linear-gradient(180deg,rgba(120,235,240,.55),rgba(30,140,180,.92));border-top:.2cqw solid rgba(230,255,255,.85)}
+.chx .tok.swim .body{animation:chxBob 1.6s ease-in-out infinite;animation-delay:var(--bd,0s)}
+.chx .tok.swim .tag{display:none}
+.chx .tok.climb .body{animation:chxClimb .7s ease-in-out infinite alternate}
+@keyframes chxClimb{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-8%) rotate(4deg)}}
+.chx .tok.pull .body{animation:chxPull .9s ease-in-out infinite alternate;transform-origin:50% 100%}
+@keyframes chxPull{from{transform:rotate(-8deg) translateX(-2%)}to{transform:rotate(-14deg) translateX(-5%)}}
 .chx .chx-frame.shake .chx-drift{animation:chxShake .5s linear,chxDrift 30s ease-in-out infinite alternate}
 @keyframes chxShake{0%,100%{translate:0 0}15%{translate:-1.4cqw .6cqh}35%{translate:1.2cqw -.8cqh}55%{translate:-.8cqw .4cqh}75%{translate:.5cqw 0}}
 .chx .ember{position:absolute;width:.32cqw;aspect-ratio:1;border-radius:50%;background:#ffd08a;box-shadow:0 0 .5cqw .15cqw #ff8a2a;opacity:0;animation:chxEmber var(--d,2.6s) linear infinite;animation-delay:var(--dl,0s)}
@@ -175,7 +190,11 @@ const CHX_CSS = `
 .chx .race .fs img:first-child{margin-left:0}
 .chx .race .bar{height:1.1cqw;background:#3a3532;position:relative;overflow:hidden;clip-path:polygon(0 0,100% 0,98% 100%,0 100%)}
 .chx .race .bar b{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--fire),var(--caution));transition:width .9s cubic-bezier(.3,.8,.3,1)}
-.chx .race .n{font:400 1.4cqw/1 'Anton';color:var(--caution);text-align:right}
+.chx .race .n{font:400 1.4cqw/1 'Anton';color:var(--caution);text-align:right;white-space:nowrap}
+.chx .race.tally .th{font:400 1cqw/1 'Black Ops One';color:var(--caution);letter-spacing:.2em;text-align:center;background:rgba(14,12,11,.88);padding:.45cqh 0}
+.chx .race.tally .r{grid-template-columns:auto 16cqw 7cqw}
+.chx .race.tally .r.bad{border-left-color:var(--red)}
+.chx .race.tally .r.bad .n{color:#ff7a6e}
 .chx .duelhud{position:absolute;left:50%;top:3.6%;translate:-50% 0;display:grid;gap:.6cqh}
 .chx .duelhud .r{display:grid;grid-template-columns:3.4cqw auto 2.4cqw;gap:.7cqw;align-items:center;background:rgba(14,12,11,.88);padding:.5cqh .7cqw;border-left:.35cqw solid var(--fire)}
 .chx .duelhud .r.ahead{border-left-color:var(--caution)}
@@ -189,6 +208,8 @@ const CHX_CSS = `
 .chx .left-hud b{font:400 1cqw/1 'Black Ops One';color:var(--neon);letter-spacing:.14em;margin-right:.4cqw}
 .chx .left-hud img{width:2.2cqw;height:2.2cqw;object-fit:cover;border:.12cqw solid #000;transition:opacity .3s,filter .3s}
 .chx .left-hud img.out{opacity:.25;filter:grayscale(1)}
+.chx .left-hud .lt{font:400 2.2cqw/1 'Black Ops One';color:var(--caution);background:#2a201a;border:.15cqw solid #000;padding:.2cqw .6cqw;margin:0 .15cqw}
+.chx .prop.sprite img{width:100%;height:auto;display:block;filter:drop-shadow(0 .4cqh .5cqh rgba(0,0,0,.45))}
 .chx .rules{position:absolute;left:50%;top:42%;width:58cqw;translate:-50% -50%;padding:2.2cqh 2.4cqw 2cqh;color:var(--hud);background:linear-gradient(180deg,#3d3936,#1d1a19);border:.25cqw solid #000;box-shadow:0 0 0 .25cqw #5a534d inset,0 2.4cqh 5cqh rgba(0,0,0,.65);animation:chxRulesin .45s cubic-bezier(.2,1.3,.4,1) both}
 .chx .rules::before,.chx .rules::after{content:"";position:absolute;width:.8cqw;height:.8cqw;border-radius:50%;background:var(--rivet);top:.8cqw;box-shadow:inset 0 -.1cqw .1cqw #000}
 .chx .rules::before{left:.8cqw}.chx .rules::after{right:.8cqw}

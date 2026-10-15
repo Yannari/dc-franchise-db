@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<base href="../../">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Challenge Viewer Harness</title>
+<!-- tools/ch-art/viewer.html: plays one episode of a saved season through the stepped viewer (js/vp-ch-ep)
+     without the simulator around it, for screenshots. The rows come from the scratch test that writes
+     tools/ch-art/cuts/rows.json (challengeRows of a played season). ?ep=4&s=2 opens episode 4, chapter 2;
+     window.__step(n) clicks Next n times. -->
+<style>:root{color-scheme:dark}body{background:#0f0d0c;margin:0;padding:16px}#host{max-width:1400px;margin:0 auto}</style>
+</head>
+<body>
+<div id="host"></div>
+<script type="module">
+import { chStepVpScreens } from './js/vp-ch-ep/screens.js';
+const q = new URLSearchParams(location.search);
+const rows = await (await fetch(q.get('rows') || 'tools/ch-art/cuts/rows.json')).json();
+const row = rows.find(r => r.num === Number(q.get('ep') || 1)) || rows[0];
+const vp = chStepVpScreens(row, { history: rows, season: 1 });
+let cur = Math.min(vp.length - 1, Number(q.get('s') || 0));
+window.vpScreens = vp;
+const render = () => { document.getElementById('host').innerHTML = vp[cur].html; window.vpCurrentScreen = cur; document.dispatchEvent(new Event('vp:screen')); };
+window.vpGoTo = i => { cur = i; render(); };
+window.vpNext = () => { if (cur < vp.length - 1) { cur++; render(); } };
+window.vpPrev = () => { if (cur > 0) { cur--; render(); } };
+window.__step = n => { for (let i = 0; i < n; i++) window.chxNext(document.querySelector('.chx')); };
+window.__screens = vp.map(s => s.label);
+render();
+</script>
+</body>
+</html>

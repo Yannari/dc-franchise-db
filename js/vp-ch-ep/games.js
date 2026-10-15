@@ -130,6 +130,7 @@ export const PLAY = {
   },
   thrown: ['{who} isn\'t really trying.'],
   hurt: ['{who} goes down hard and gets up slowly.'],
+  hurtWet: ['{who} gets a cramp and has to stop for a minute.', '{who} swallows a mouthful of water and stops to cough.'],
   clutch: ['{who} finds another gear right at the end.'],
   choke: ['{who} can\'t get going today.', 'This isn\'t {who}\'s day.'],
 };

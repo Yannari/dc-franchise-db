@@ -12,6 +12,7 @@
 import { CH_MARKS } from './marks.js';
 import { liveGL } from '../vp-td-ep/glplate.js';
 import { playerAvatarUrl } from '../players.js';
+import { propsHtml } from './props.js';
 
 export const AV = n => (n === 'TJ' ? 'assets/avatars/tj-maxx.png' : playerAvatarUrl(n));
 const PLATE = k => `assets/sets/ch/${k}`;
@@ -30,14 +31,14 @@ const HEART = "<svg viewBox='0 0 24 22'><path d='M12 21s-9-5.6-9-12A5 5 0 0 1 12
 // ── the stage's state ─────────────────────────────────────────────────
 function newState() {
   return { plate: null, toks: {}, home: {}, hidden: new Set(), out: new Set(), hangers: null, standers: null, sag: 0, board: {}, voters: 0, of: 0,
-    duel: null, race: null, power: [], chips: {}, scale: 1.5, scene: null, map: null, dance: [], bgAct: {}, speaker: null, water: 0 };
+    duel: null, race: null, tally: null, props: [], poses: {}, power: [], chips: {}, scale: 1.5, scene: null, map: null, dance: [], bgAct: {}, speaker: null, water: 0 };
 }
 
 export class ChxStage {
   constructor(root, R) {
     this.root = root; this.R = R;
     const q = c => root.querySelector(c);
-    this.el = { frame: q('.chx-frame'), world: q('.chx-world'), plate: q('.chx-platebox'), live: q('.chx-live'), cast: q('.chx-cast'), wfx: q('.chx-wfx'),
+    this.el = { frame: q('.chx-frame'), world: q('.chx-world'), plate: q('.chx-platebox'), live: q('.chx-live'), props: q('.chx-props'), cast: q('.chx-cast'), wfx: q('.chx-wfx'),
       hud: q('.chx-hud'), conf: q('.chx-confbox'), dlg: q('.dlg'), cut: q('.cutin'), name: q('.dlg .name'), say: q('.dlg .say'), over: q('.over'), intel: q('.intel'), stat: q('.static') };
     this.ST = newState();
     this.typing = 0;
@@ -80,7 +81,7 @@ export class ChxStage {
     const ST = this.ST;
     Object.assign(ST, { plate: sc.plate, scale: sc.scale || 1.5, scene: sc, water: sc.water || 0 });
     this.el.plate.innerHTML = `<img class='chx-plate' src='${PLATE(sc.plate)}.webp' alt=''><canvas class='chx-glc tdx-gl' data-src='${PLATE(sc.plate)}' data-hd='1' width='1920' height='1080'></canvas>`;
-    this.el.cast.innerHTML = ''; this.el.wfx.innerHTML = ''; this.el.live.innerHTML = '';
+    this.el.cast.innerHTML = ''; this.el.wfx.innerHTML = ''; this.el.live.innerHTML = ''; if (this.el.props) this.el.props.innerHTML = '';
     for (const [n, spec] of Object.entries(sc.cast || {})) { ST.home[n] = spec; this.put(n, spec, false); }
     for (const n of sc.hidden || []) { ST.hidden.add(n); ST.toks[n]?.classList.add('gone'); }
     if (sc.water) for (const t of Object.values(ST.toks)) { t.style.top = `calc(${t.style.top} + 7cqh)`; t.querySelector('.face').style.boxShadow = 'inset 0 -5cqh 0 rgba(60,200,220,.55)'; }
@@ -161,6 +162,12 @@ export class ChxStage {
       if (anim) { const t = ST.toks[n]; t.classList.add('walkin'); setTimeout(() => t.classList.remove('walkin'), 1000); }
     }
     if (s.move) for (const [n, spec] of Object.entries(s.move)) { ST.home[n] = spec; this.put(n, spec, anim); }
+    if (s.shift) for (const [n, t] of Object.entries(ST.toks)) if (t._m && ST.poses[n] === 'swim') this.put(n, { ...t._m, u: Math.max(.03, t._m.u + s.shift.du) }, anim);
+    if (s.pose) for (const [n, p] of Object.entries(s.pose)) { if (p) ST.poses[n] = p; else delete ST.poses[n]; }
+    if (s.hide) for (const n of s.hide) { ST.hidden.add(n); ST.toks[n]?.classList.add('gone'); }
+    if (s.show) for (const n of s.show) { ST.hidden.delete(n); ST.toks[n]?.classList.remove('gone'); }
+    if (s.props) { ST.props = s.props; if (this.el.props) this.el.props.innerHTML = propsHtml(s.props); }
+    if (s.tally) ST.tally = s.tally;
     if (s.exit) for (const n of s.exit) {
       const t = ST.toks[n]; if (!t) continue;
       const gate = marks(ST.plate).find(m => m.kind === 'gate');
@@ -227,7 +234,8 @@ export class ChxStage {
       if (ST.chips[n]) t.insertAdjacentHTML('beforeend', `<div class='chip'>${esc(ST.chips[n])}</div>`);
       t.classList.remove('talkpop', 'shout', 'laugh', 'flinch', 'lean', 'cheer', 'cry');
       t.classList.toggle('dig', !!(s.dig && s.dig.includes(n)));
-      t.classList.toggle('run', !!(ST.race && !s.finish && ST.race.some(r => r.who.includes(n)) && !s.say));
+      t.classList.toggle('run', ST.poses[n] === 'run' || !!(ST.race && !s.finish && ST.race.some(r => r.who.includes(n)) && !s.say));
+      for (const p of ['swim', 'climb', 'pull']) t.classList.toggle(p, ST.poses[n] === p);
     }
     if (anim && s.act) for (const [n, a] of Object.entries(s.act)) {
       const t = ST.toks[n]; if (!t) continue;
@@ -257,6 +265,11 @@ export class ChxStage {
       h += `<div class='board'><h5>THE VOTE</h5>${rows.map(([n, c]) => `<div class='row ${anim && s.vote && s.vote[1] === n ? 'hit' : ''}'><img src='${esc(AV(n))}' alt=''><div><div class='nm'>${esc(n)}</div><div class='ticks'>${'||||| '.repeat(Math.floor(c / 5)) + '|'.repeat(c % 5)}</div></div><div class='ct'>${c}</div></div>`).join('')}<div class='left'>${ST.voters} of ${ST.of || ST.voters} have voted</div></div>`;
     }
     if (ST.duel) h += duelHtml(ST.duel);
+    else if (ST.tally) h += tallyHtml(ST.tally);
+    const wb = (ST.props || []).find(p => p.k === 'board');
+    if (wb) h += `<div class='board'><h5>${esc(wb.title || 'TOTALS')}</h5>${(wb.rows || []).map(r => `<div class='row'><img src='${esc(AV(r.full || r.n))}' alt=''><div><div class='nm'>${esc(r.n)}</div></div><div class='ct' style='${r.ok === false ? 'color:#ff7a6e;text-decoration:line-through' : ''}'>${esc(r.t)}${r.ok === true ? ' &#10003;' : ''}</div></div>`).join('')}</div>`;
+    const word = (ST.props || []).filter(p => p.k === 'letter');
+    if (word.length) h += `<div class='left-hud'><b>THE WORD</b>${word.map(p => `<span class='lt'>${esc(p.ch)}</span>`).join('')}</div>`;
     else if (ST.race) h += `<div class='race'>${ST.race.map(r => `<div class='r ${r.p >= 1 ? 'win' : ''}'><div class='fs'>${r.who.slice(0, 3).map(n => `<img src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div><div class='bar'><b style='width:${Math.round(r.p * 100)}%'></b></div><div class='n'>${r.p >= 1 ? '&#10003;' : Math.round(r.p * 100) + '%'}</div></div>`).join('')}</div>`;
     const still = ST.hangers || ST.standers;
     if (still && !ST.duel) h += `<div class='left-hud'><b>${ST.hangers ? 'STILL HANGING' : 'STILL IN'}</b>${still.map(n => `<img class='${ST.out.has(n) ? 'out' : ''}' src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div>`;
@@ -353,6 +366,11 @@ function light(t, ctx) {
   const re = new RegExp(`\\b(${words.map(w => w[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s')).join('|')})\\b`, 'g');
   const game = new Set((ctx.game || []));
   return esc(t).replace(re, m => `<span class='${game.has(m) ? 'hg' : 'hn'}'>${m}</span>`);
+}
+
+// The game's own count along the top: a face per side, a bar, the number the game is won on.
+function tallyHtml(t) {
+  return `<div class='race tally'><div class='th'>${esc(t.title)}</div>${t.rows.map(r => `<div class='r ${r.win ? 'win' : ''} ${r.mark === 'x' ? 'bad' : ''}'><div class='fs'>${r.who.slice(0, 3).map(n => `<img src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div><div class='bar'><b style='width:${Math.round(Math.max(0, Math.min(1, r.v || 0)) * 100)}%'></b></div><div class='n'>${r.win ? '&#10003; ' : ''}${esc(r.txt)}</div></div>`).join('')}</div>`;
 }
 
 function duelHtml(d) {

@@ -18,7 +18,9 @@
 // adds only what the camera sees (games.js pools, picked by a seeded hash) and
 // the rules cards (the engine's own game descriptions).
 import { CH_MARKS } from './marks.js';
+import { marksOf, plateKey, lineup, hostSide, sizeAt } from './ground.js';
 import { episodeScenes } from '../ch/transcript.js';
+import { dailyPlay, ARENA_PLAY } from './play.js';
 import { DAILY_STAGE, FINAL_STAGE, ARENA_STAGE, rulesOf, dailyDef, arenaDef, pickBy, nameList, fill,
   TJ_DAILY_OPEN, TJ_DAILY_NIGHT, TJ_GO, TJ_ARENA_ASK, TJ_ARENA_RULES, TJ_ARENA_OUT, PLAY, DUEL } from './games.js';
 
@@ -110,12 +112,6 @@ const LABEL = { open: 'Previously', daily: 'The daily', villa: 'The villa', part
   champions: 'The finish line' };
 
 // ── placing people on a plate ─────────────────────────────────────────
-export const marksOf = key => (CH_MARKS[key] || { m: [] }).m;
-export const plateKey = (plate, night) => {
-  const want = `${plate}-${night ? 'night' : 'day'}`;
-  if (CH_MARKS[want]) return want;
-  return CH_MARKS[`${plate}-day`] ? `${plate}-day` : `${plate}-night`;
-};
 // Extra places when a plate has fewer marks than people: between and just behind its own.
 function crowdSlots(base, n) {
   const out = [];
@@ -131,19 +127,32 @@ function crowdSlots(base, n) {
 }
 // A conversation of a few: the stand marks nearest the middle, left to right; a crowd fills every mark.
 export function placeScene(key, people, { group = null, crowd = [] } = {}) {
+  if (!group && people.length > 6) {
+    const slots = lineup(key, people.length);
+    return Object.fromEntries(people.map((n, i) => [n, slots[i]]));
+  }
   const ms = marksOf(key);
   const stands = ms.filter(m => m.kind === 'stand' && !m.group);
   const seats = ms.filter(m => m.kind === 'seat' && (!group || m.group === group));
   const spec = {};
-  const pool = group ? [...seats.map((m, i) => ({ m, sp: ['seat', i, m.group] })), ...stands.map((m, i) => ({ m, sp: ['stand', i] }))]
+  // a group (the sofa, the Arena's stand) keeps to its own seats and stands; the plate's open spots are for others
+  const gStands = group ? ms.filter(m => m.kind === 'stand' && m.group === group) : [];
+  const pool = group ? [...seats.map((m, i) => ({ m, sp: ['seat', i, m.group] })), ...gStands.map((m, i) => ({ m, sp: ['stand', i, group] })), ...(gStands.length ? [] : stands.map((m, i) => ({ m, sp: ['stand', i] })))]
     : [...stands.map((m, i) => ({ m, sp: ['stand', i] })), ...ms.filter(m => m.kind === 'seat').map(m => ({ m, sp: ['seat', ms.filter(x => x.kind === 'seat' && x.group === m.group).indexOf(m), m.group] }))];
   const central = [...pool].sort((a, b) => (Math.abs(a.m.u - .5) - a.m.v * .6) - (Math.abs(b.m.u - .5) - b.m.v * .6));
   const front = central.slice(0, people.length).sort((a, b) => a.m.u - b.m.u);
   people.forEach((n, i) => { if (front[i]) spec[n] = front[i].sp; });
   const used = new Set(front.map(x => x.m));
   const rest = central.filter(x => !used.has(x.m));
+  if (!group && crowd.length) {
+    // the ones talking stay on their marks; the crowd stands in rows behind them
+    const slots = lineup(key, crowd.length, { back: true });
+    crowd.forEach((n, i) => { spec[n] = slots[i]; });
+    return spec;
+  }
   const extra = people.filter(n => !spec[n]).concat(crowd);
-  const slots = [...rest.map(x => x.sp), ...crowdSlots(stands.length ? stands : seats.length ? seats : [{ u: .5, v: .75, s: .1 }], Math.max(0, extra.length - rest.length))];
+  const base = group ? [...seats, ...gStands] : stands.length ? stands : seats;
+  const slots = [...rest.map(x => x.sp), ...crowdSlots(base.length ? base : [{ u: .5, v: .75, s: .1 }], Math.max(0, extra.length - rest.length))];
   extra.forEach((n, i) => { if (slots[i]) spec[n] = slots[i]; });
   return spec;
 }
@@ -365,8 +374,7 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   const units = d.order || [];
   const people = units.flat();
   const key = plateKey(st.plate, night);
-  const cast = { TJ: ['host'], ...placeScene(key, people) };
-  if (!marksOf(key).some(m => m.kind === 'host')) cast.TJ = placeScene(key, ['TJ'], {}).TJ || { u: .9, v: .78, s: .1 };
+  const cast = { TJ: hostSide(key), ...placeScene(key, people) };
   S.push({ scene: { plate: key, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast, wipe: 1, water: 0 },
     seg: ["Today's daily", d.name], sceneIdx: main.i, title: main.title });
   // scenes that aired before the game (picking partners, picking teams) play first, on the same sand
@@ -383,7 +391,15 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   const isWin = u => u.some(n => winners.includes(n));
   const know = [];
   if ((d.throws || []).length) know.push(['Thrown', `${esc(nameList(d.throws))} ${d.throws.length > 1 ? 'are' : 'is'} losing on purpose. ${(d.caught || []).length ? `${esc(nameList(d.caught.map(c => c.by)))} saw it.` : 'Nobody in the house has noticed.'}`]);
-  if (st.show === 'hang' || st.show === 'last') {
+  const played = st.show === 'hang' ? null : dailyPlay(d, { key, seed: row.num });
+  if (played) {
+    const mid = [];
+    for (const h of d.injuries || []) mid.push({ dir: fill(pickBy(st.water && st.verb === 'swim' ? PLAY.hurtWet : PLAY.hurt, seed + h), { who: h }), focus: [h], act: { [h]: 'slump' }, shake: st.verb === 'swim' ? 0 : 1 });
+    const ch = (d.moments || []).find(m => m.kind === 'choke');
+    if (ch) mid.push({ dir: fill(pickBy(PLAY.choke, seed), { who: ch.who }), focus: [ch.who], act: { [ch.who]: 'slump' } });
+    played.steps.splice(Math.min(2, played.steps.length), 0, ...mid);
+    played.steps.forEach((x, k) => { if (k === 1 && know.length && !x.know) x.know = know.shift(); S.push(x); });
+  } else if (st.show === 'hang' || st.show === 'last') {
     // Out in reverse order; the winners never drop.
     const out = [...units].reverse().filter(u => !isWin(u));
     const groups = [];
@@ -414,12 +430,15 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
     const clutch = (d.moments || []).find(m => m.kind === 'clutch');
     if (clutch) S.push({ race: board(3.5), dir: fill(pickBy(PLAY.clutch, seed), { who: clutch.who }), focus: [clutch.who], act: { [clutch.who]: 'cheer' } });
   }
-  for (const h of d.injuries || []) S.push({ dir: fill(pickBy(PLAY.hurt, seed + h), { who: h }), focus: [h], act: { [h]: 'slump' }, shake: 1 });
-  const choke = (d.moments || []).find(m => m.kind === 'choke');
-  if (choke) S.push({ dir: fill(pickBy(PLAY.choke, seed), { who: choke.who }), focus: [choke.who], act: { [choke.who]: 'slump' } });
+  if (!played) {
+    for (const h of d.injuries || []) S.push({ dir: fill(pickBy(PLAY.hurt, seed + h), { who: h }), focus: [h], act: { [h]: 'slump' }, shake: 1 });
+    const choke = (d.moments || []).find(m => m.kind === 'choke');
+    if (choke) S.push({ dir: fill(pickBy(PLAY.choke, seed), { who: choke.who }), focus: [choke.who], act: { [choke.who]: 'slump' } });
+  }
   // The finish: TJ calls it (the engine's own daily lines).
   const lines = main.a.lines;
-  const first = { win: winners, slam: { winner: `${nameList(winners)} ${winners.length > 1 ? 'win' : 'wins'}` }, power: winners, finish: st.show, race: st.show === 'race' ? units.slice(0, Math.min(6, units.length)).map(u => ({ who: u, p: isWin(u) ? 1 : .9 })) : null };
+  if (played?.finish?.dir) { S.push({ ...played.finish, win: winners, power: winners, slam: { winner: `${nameList(winners)} ${winners.length > 1 ? 'win' : 'wins'}` }, focus: winners.slice(0, 2) }); }
+  const first = played ? (played.finish?.dir ? {} : { ...played.finish, win: winners, power: winners, slam: { winner: `${nameList(winners)} ${winners.length > 1 ? 'win' : 'wins'}` } }) : { win: winners, slam: { winner: `${nameList(winners)} ${winners.length > 1 ? 'win' : 'wins'}` }, power: winners, finish: st.show, race: st.show === 'race' ? units.slice(0, Math.min(6, units.length)).map(u => ({ who: u, p: isWin(u) ? 1 : .9 })) : null };
   linesToSteps(S, lines, { names, first, sceneWho: ['TJ', ...people] });
   for (const k of know) { const last = S.last(); if (last && !last.know) last.know = k; }
   // the daily's aftermath scenes, on the same plate
@@ -527,7 +546,7 @@ function buildArena(S, open, items, row, { names, house, goneAt }) {
   const g = arenaDef(duel.game);
   const { pre, post } = splitAtResult(ar.a.lines, duel);
   linesToSteps(S, pre, { names, sceneWho: [a, b, 'TJ'] });
-  S.push({ rules: { k: "TONIGHT'S ELIMINATION", n: duel.name, li: rulesOf(g?.desc), f: 'The loser goes home' }, tj: pre.some(l => l.by === HOST) ? null : fill(pickBy(TJ_ARENA_RULES, `${row.num}|${duel.game}`), { game: duel.name }), focus: ['TJ'] });
+  S.push({ rules: { k: "TONIGHT'S ELIMINATION", n: duel.name, li: rulesOf(g?.desc), f: 'The loser goes home' }, tj: pre.some(l => l.by === HOST) ? null : fill(pickBy(TJ_ARENA_RULES, `${row.num}|${duel.game}`), { game: duel.name }), focus: ['TJ'], props: ARENA_PLAY[duel.game]?.set({}) || [] });
   playDuel(S, duel, `${row.num}|${duel.game}`);
   finishDuel(S, duel, post, names, `${row.num}|${duel.game}`);
 }
@@ -544,26 +563,42 @@ function splitAtResult(lines, duel) {
   return { pre: lines.slice(0, at), post: lines.slice(at) };
 }
 
-// A duel's play, from its beats: rounds, stages of a race, or holding on.
+// A duel's play, from its beats: rounds, stages of a race, or holding on, each in the game's own terms
+// (play.js ARENA_PLAY), with its set on the floor changing as it goes (the pole tilts, crates break, tiles
+// are laid, barrels go up the ramp).
+const POSE = { 'pole-grapple': 'pull', 'tug-pit': 'pull', 'hallway-hustle': 'run', 'ball-brawl': 'run', 'barrel-ramp': 'pull', 'memory-swim': 'swim' };
+const SET_MAX = { 'puzzle-pit': 12, 'ram-wall': 6, 'memory-swim': 8, 'barrel-ramp': 10, 'spin-stack': 10, 'knot-bomb': 12 };
+function setState(duel, prog, extra = {}) {
+  const { a, b } = duel, max = SET_MAX[duel.game] || 12;
+  const n = x => Math.round(Math.max(0, Math.min(12, prog[x] || 0)) / 12 * max);
+  return { nL: n(a), nR: n(b), ...extra };
+}
 function playDuel(S, duel, seed) {
   const { a, b } = duel;
+  const AP = ARENA_PLAY[duel.game] || null;
   const format = duel.beats[0]?.kind || 'stage';
+  const pose = POSE[duel.game];
   S.push({ move: { [a]: ['duel', 0, 'L'], [b]: ['duel', 0, 'R'] }, tj: pickBy(TJ_GO, seed), gong: 1, focus: [a, b], cam: [.5, .6, 1.2],
     duel: { a, b, format, score: { [a]: 0, [b]: 0 }, prog: { [a]: 0, [b]: 0 }, max: format === 'round' ? Math.max(...duel.beats.map(x => Math.max(...Object.values(x.score || { x: 0 })))) : 12 },
-    hang: format === 'hold' ? 'duel' : null });
+    hang: format === 'hold' ? 'duel' : null, pose: pose ? { [a]: pose, [b]: pose } : null, props: AP ? AP.set(setState(duel, {})) : null });
   let prev = null, prog = { [a]: 0, [b]: 0 };
   duel.beats.forEach((bt, k) => {
     if (bt.kind === 'finish') return;
     const w = bt.winner || bt.ahead;
     const l = w === a ? b : a;
     let text;
-    if (bt.kind === 'round') text = fill(pickBy(bt.margin < .3 ? DUEL.rounds.close : DUEL.rounds.win, seed + k), { w, n: bt.n });
+    if (AP && bt.kind === 'round' && AP.round) text = fill(pickBy(AP.round, seed + k), { w, l, n: bt.n });
+    else if (AP && bt.kind === 'stage' && AP.stage) text = fill(pickBy(AP.stage[Math.min(k, AP.stage.length - 1)], seed + k), { w, l });
+    else if (AP && bt.kind === 'hold' && AP.hold) text = fill(AP.hold[Math.min(k, AP.hold.length - 1)], { w, l });
+    else if (bt.kind === 'round') text = fill(pickBy(bt.margin < .3 ? DUEL.rounds.close : DUEL.rounds.win, seed + k), { w, n: bt.n });
     else if (bt.kind === 'hold') text = fill(pickBy(bt.margin < .3 ? DUEL.hold.close : DUEL.hold.hold, seed + k), { w });
     else text = fill(pickBy(prev && prev !== w ? DUEL.stage.swap : bt.margin < .2 ? DUEL.stage.close : DUEL.stage.ahead, seed + k), { w });
     prev = w;
     prog = { [w]: Math.min(11, Math.round((k + 1) * 3.2 + bt.margin * 1.5)), [l]: Math.min(10, Math.round((k + 1) * 3.2 - bt.margin * 2.5)) };
-    S.push({ dir: text, focus: [w, l], act: { [w]: bt.kind === 'hold' ? 'look' : 'cheer', [l]: bt.kind === 'hold' ? 'flinch' : 'flinch' }, cam: [w === a ? .44 : .56, .6, 1.28],
-      duel: { a, b, format: bt.kind, score: bt.score ? { ...bt.score } : null, prog: { ...prog }, ahead: w }, dig: bt.kind === 'stage' ? [a, b] : null });
+    const tilt = w === a ? -18 : 18, ball = w === a ? -.8 : .8, sag = w === a ? 18 : 42;
+    S.push({ dir: text, focus: [w, l], act: { [w]: bt.kind === 'hold' ? 'look' : 'cheer', [l]: 'flinch' }, cam: [w === a ? .44 : .56, .6, 1.28],
+      duel: { a, b, format: bt.kind, score: bt.score ? { ...bt.score } : null, prog: { ...prog }, ahead: w }, dig: bt.kind === 'stage' && duel.game === 'puzzle-pit' ? [a, b] : null,
+      props: AP ? AP.set(setState(duel, prog, { tilt, ball, sag, low: k + 1 })) : null, shake: bt.kind === 'round' ? 1 : 0 });
   });
   S._lastProg = prog;
 }
@@ -571,8 +606,13 @@ function finishDuel(S, duel, lines, names, seed) {
   const { a, b, winner: w, loser: l } = duel;
   const fin = { a, b, format: duel.beats[0]?.kind || 'stage', score: duel.beats.filter(x => x.score).slice(-1)[0]?.score || null, prog: { [w]: 12, [l]: Math.max(6, (S._lastProg?.[l] || 8)) }, done: w };
   const beat = lines[0]?.kind === 'beat' ? 0 : -1;
-  const first = { slam: { winner: `${w} wins` }, focus: [w], act: { [w]: 'cheer' }, shake: 1, duel: fin, cam: [w === a ? .44 : .56, .58, 1.3], drop: fin.format === 'hold' ? [l] : null };
-  if (beat >= 0) { first.dir = lines[beat].text; S.push(first); }
+  const AP = ARENA_PLAY[duel.game] || null;
+  const done = { [w === a ? 'done' : 'doneR']: 1, done: w === a ? 'L' : 'R' };
+  const first = { slam: { winner: `${w} wins` }, focus: [w], act: { [w]: 'cheer' }, shake: 1, duel: fin, cam: [w === a ? .44 : .56, .58, 1.3], drop: fin.format === 'hold' ? [l] : null,
+    props: AP ? AP.set(setState(duel, fin.prog, { ...done, tilt: w === a ? -30 : 30, ball: w === a ? -1 : 1, sag: w === a ? 10 : 50, low: 4 })) : null };
+  // the game's own finish ("locks the board and hits the buzzer"), then the engine's word on how it went
+  if (AP?.finish) { S.push({ ...first, dir: fill(AP.finish, { w, l }) }); if (beat >= 0) S.push({ dir: lines[beat].text, focus: [w] }); }
+  else if (beat >= 0) { first.dir = lines[beat].text; S.push(first); }
   else S.push({ ...first, dir: `${w} wins it.` });
   let stamped = false;
   lines.forEach((x, k) => {
@@ -610,7 +650,7 @@ function buildFinal(S, open, key, items, row, { names, house }) {
     S.at(it.i);
     if (a.kind === 'final-start') {
       const st = FINAL_STAGE.start, pk = plateKey(st.plate, false);
-      S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { TJ: ['host'], ...placeScene(pk, finalists) }, wipe: 1 }, seg: ['The final', 'The Final'], sceneIdx: it.i, title: it.title });
+      S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { TJ: hostSide(pk), ...placeScene(pk, finalists) }, wipe: 1 }, seg: ['The final', 'The Final'], sceneIdx: it.i, title: it.title });
       linesToSteps(S, a.lines, { names, sceneWho: ['TJ', ...finalists] });
       checkpoint('cp1');
       continue;
@@ -619,12 +659,12 @@ function buildFinal(S, open, key, items, row, { names, house }) {
       const st = FINAL_STAGE.instant, pk = plateKey(st.plate, false);
       const [x, y] = a.who;
       const duel = (f.instant || []).find(d => [d.a, d.b].includes(x) && [d.a, d.b].includes(y));
-      S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { TJ: placeScene(pk, ['TJ']).TJ, ...placeScene(pk, [x, y]) }, wipe: 1 }, seg: ['Surprise', 'Instant Elimination'], sceneIdx: it.i, title: it.title });
+      S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { TJ: hostSide(pk), ...placeScene(pk, [x, y]) }, wipe: 1 }, seg: ['Surprise', 'Instant Elimination'], sceneIdx: it.i, title: it.title });
       const def = duel ? arenaDef(duel.game) : null;
       if (duel) {
         const { pre, post } = splitAtResult(a.lines, duel);
         linesToSteps(S, pre, { names, sceneWho: [x, y, 'TJ'] });
-        S.push({ rules: { k: 'INSTANT ELIMINATION', n: duel.name, li: rulesOf(def?.desc), f: 'The loser leaves the final now' } });
+        S.push({ rules: { k: 'INSTANT ELIMINATION', n: duel.name, li: rulesOf(def?.desc), f: 'The loser leaves the final now' }, props: ARENA_PLAY[duel.game]?.set({}) || [] });
         playDuel(S, duel, seed + x);
         finishDuel(S, duel, post, names, seed + x);
       } else linesToSteps(S, a.lines, { names, sceneWho: [x, y, 'TJ'] });
@@ -657,7 +697,7 @@ function buildFinal(S, open, key, items, row, { names, house }) {
       checkpoint('cp3');
       const st = FINAL_STAGE.finish, pk = plateKey(st.plate, false);
       const champs = f.champions || a.who;
-      S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, Math.max(S.min, 14 * 60)), icon: 'island', island: st.spot, cast: { TJ: ['host'], ...placeScene(pk, champs) }, wipe: 1 }, sceneIdx: it.i, title: it.title });
+      S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, Math.max(S.min, 14 * 60)), icon: 'island', island: st.spot, cast: { TJ: hostSide(pk), ...placeScene(pk, champs) }, wipe: 1 }, sceneIdx: it.i, title: it.title });
       const lines = a.lines;
       const call = lines.findIndex(l => l.by === HOST);
       lines.forEach((l, k) => {

@@ -22,12 +22,21 @@ export default {
     { id: 'xk.4', turns: [{ by: 'a', say: "This is the only thing I can actually cook. I'll teach you." }, { by: 'b', say: "Is it hard?" }, { by: 'a', say: "Not if you stop talking game while you stir." }] },
     { id: 'xk.5', turns: [{ by: 'a', dr: "{b} can't cook at all. It was the most fun I've had in here all week." }] },
     { id: 'xk.6', turns: [{ by: 'b', dr: "{a} taught me to make pasta. We didn't talk about the game once." }] },
-    { id: 'xk.7', turns: [{ by: 'a', say: "Taste this." }, { by: 'b', say: "That's actually good." }, { by: 'a', say: "You sound surprised." }, { by: 'b', say: "I am." }] },
-    { id: 'xk.8', turns: [{ by: 'b', say: "How much salt?" }, { by: 'a', say: "A pinch." }, { by: 'b', say: "How much is a pinch?" }, { by: 'a', say: "Less than that." }] },
+    { id: 'xk.7', turns: [
+      { by: 'a', say: "Taste this and tell me the truth." },
+      { by: 'b', say: "Oh, that's actually really good." },
+      { by: 'a', say: "Why do you sound so surprised?" }] },
+    { id: 'xk.8', turns: [
+      { by: 'b', say: "How much salt goes in this?" },
+      { by: 'a', say: "Just a pinch. No, less than that. That's a handful." },
+      { by: 'b', say: "Okay, you do it, then." }] },
   ],
   'texture.backyard.scene': [
     { id: 'xy.1', turns: [{ by: 'a', say: "New game. Get the ball in the basket. The rules change when I say." }, { by: 'b', say: "That's not a game, that's cheating." }, { by: 'c', say: "I'm keeping score anyway." }] },
-    { id: 'xy.2', turns: [{ by: 'b', say: "That didn't count!" }, { by: 'a', say: "It totally counted." }, { by: 'c', say: "What are the rules again?" }, { by: 'a', say: "...Different rules." }] },
+    { id: 'xy.2', turns: [
+      { by: 'b', say: "That didn't count! It bounced out!" },
+      { by: 'a', say: "It went in first. It counts." },
+      { by: 'c', say: "Can somebody just tell me what the rules are?" }] },
     { id: 'xy.3', turns: [{ by: 'c', say: "Winner gets the last clean towel." }, { by: 'b', say: "Then I'm not losing." }] },
     { id: 'xy.4', turns: [{ beat: '{c} wins and stands on a patio chair to give a speech.' }, { by: 'c', say: "I'd like to thank..." }, { by: 'a', say: "Get down!" }, { beat: '{a} and {b} throw cushions.' }] },
     { id: 'xy.5', turns: [{ by: 'a', say: "Best of three?" }, { by: 'b', say: "Best of five." }, { by: 'c', say: "Best of whatever it takes for me to win." }] },

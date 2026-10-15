@@ -304,8 +304,8 @@ export default {
     { id: 'pf.s3', turns: [{ by: 'a', dr: "It's the only door in this house that locks. Today I used it on {b}." }] },
     { id: 'pf.s4', turns: [{ beat: '{b} goes up to the HOH room to make a pitch. {a} answers the door, says something short, and does not open it any wider. The house watches {b} come back down the stairs. Nobody asks how it went.' }, { by: 'b', dr: "Everybody saw. That's the part that hurts." }] },
     { id: 'pf.s5', turns: [
-      { by: 'b', say: "Can I have five minutes?" },
-      { by: 'a', say: "Maybe tomorrow. I'm tired." },
+      { by: 'b', say: "Can I have five minutes? I just want to talk." },
+      { by: 'a', say: "Maybe tomorrow. I'm really tired." },
       { by: 'b', say: "Tomorrow's nominations." },
       { by: 'a', say: "I know it is.", v: { soft: "I know. I'm sorry. I just can't tonight." } }] },
     { id: 'pf.s6', turns: [{ by: 'a', dr: "I didn't open the door for {b}. I didn't need to. I already know what I'm doing with {b}." }] },

@@ -365,13 +365,11 @@ export default {
   ],
   'witness.after.out.sorry': [
     { id: 'wa.os1', turns: [
-      { by: 'a', say: "You just stood there." },
-      { by: 'b', say: "I know." },
-      { by: 'a', say: "{x} was going off at me and you stood there and said nothing." },
-      { by: 'b', say: "I know. I panicked. I'm sorry. Next time I'll say something." },
-      { by: 'a', say: "Next time." },
-      { by: 'b', say: "Next time. Promise." },
-      { by: 'a', dr: "'Next time.' There'd better not be a next time." },
+      { by: 'a', say: "{x} was going off at me, and you just stood there and said nothing." },
+      { by: 'b', say: "I know. I panicked. I'm sorry.", v: { hard: "I know. I didn't want to get dragged into it." } },
+      { by: 'a', say: "I'd have stood up for you." },
+      { by: 'b', say: "I know you would. Next time I'll say something. I promise." },
+      { by: 'a', dr: "'Next time.' There had better not be a next time." },
     ] },
     { id: 'wa.os2', turns: [
       { by: 'b', say: "I should have backed you up." },

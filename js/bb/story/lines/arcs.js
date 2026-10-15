@@ -82,12 +82,10 @@ export default {
       { by: 'a', dr: "I told myself if I ever got the keys, {b} would sit where I sat. I got the keys. Have a seat, {b}." },
     ] },
     { id: 'ar.pe2', presumes: ['vote'], turns: [
-      { by: 'b', say: "You put me up." },
-      { by: 'a', say: "I put you up." },
-      { by: 'b', say: "Because I nominated you." },
-      { by: 'a', say: "Because you nominated me, and I'm still here, and you didn't think I would be." },
-      { by: 'b', say: "That's petty." },
-      { by: 'a', say: "It's Big Brother. Petty is a strategy." },
+      { by: 'b', say: "So you put me up." },
+      { by: 'a', say: "I did. You nominated me, and I'm still here, and you didn't think I would be." },
+      { by: 'b', say: "That's petty.", v: { anxious: "I knew you'd come for me. I just hoped you wouldn't." } },
+      { by: 'a', say: "Maybe. You'd have done the same.", v: { hard: "It's Big Brother. Petty is a strategy." } },
       { by: 'b', dr: "I knew it the second {a}'s name came out of that comp. I've been waiting for this all week." },
     ] },
     { id: 'ar.pe3', presumes: ['vote'], turns: [
@@ -190,13 +188,12 @@ export default {
   ],
   'arc.block.end.win': [
     { id: 'ar.bw1', presumes: ['vote'], turns: [
-      { by: 'b', say: "You won." },
-      { by: 'a', say: "I won." },
-      { by: 'b', say: "You actually won something." },
-      { by: 'a', say: "Say it again. Slower." },
-      { by: 'b', say: "You. Actually. Won." },
+      { by: 'b', say: "You won! You actually won something!" },
+      { by: 'a', say: "I won. I can't believe it.", v: { hard: "Yeah. Took long enough." } },
+      { by: 'b', say: "How does it feel?" },
+      { by: 'a', say: "Like I can finally breathe." },
       { beat: '{a} lies down on the floor and stays there.' },
-      { by: 'a', dr: "All that time in the chair. All those weeks. I'm not sitting in it this week. Somebody else gets to know what it's like." },
+      { by: 'a', dr: "All those weeks in that chair. I'm not sitting in it this week. Somebody else gets to find out what it's like." },
     ] },
     { id: 'ar.bw2', presumes: ['vote'], turns: [
       { by: 'a', say: "Do you know what this means?" },

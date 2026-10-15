@@ -137,15 +137,15 @@ export default {
     { id: 'ncp.o3', turns: [
       { by: 'a', say: "I'm not good at this. The relationship stuff. Back home I give everybody advice, and I've never taken any of it." },
       { by: 'b', say: "You're doing fine." },
-      { by: 'a', say: "I'm doing terribly. But I'm doing it with you, so." },
+      { by: 'a', say: "I'm doing terribly. But at least I'm doing it with you." },
       { by: 'b', conf: "Nobody's good at this out here. I'd still pick {a}." },
     ] },
     { id: 'ncp.o4', turns: [
-      { by: 'a', say: "Everybody looks at us like we're a vote. Two votes." },
-      { by: 'b', say: "We are two votes." },
-      { by: 'a', say: "I know. I just want one thing out here that isn't about the vote." },
-      { by: 'b', say: "This isn't about the vote. Not for me." },
-      { by: 'a', conf: "I believe {b}. I think. That's the scary part of this game: you can never be completely sure." },
+      { by: 'a', say: "Have you noticed how everybody looks at us now? Like we're just two votes walking around together." },
+      { by: 'b', say: "I mean... we kind of are two votes." },
+      { by: 'a', say: "I know, I know. I just want one thing out here that isn't about the game, you know?" },
+      { by: 'b', say: "Hey. This isn't about the game. Not for me, anyway." },
+      { by: 'a', conf: "I believe {b}. I'm like ninety percent sure I believe {b}. And out here, ninety percent is pretty good." },
     ] },
   ],
   'couple.daily.any': [

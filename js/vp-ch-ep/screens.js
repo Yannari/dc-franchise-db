@@ -274,6 +274,7 @@ function goTo(R, idx, forward) {
   R.root.dataset.idx = String(idx);
   st.present(steps[idx], true, ctxOf(R));
   paintHub(R);
+  R.root.classList.remove('map-clear');
   if (!steps[idx]?.map) { R.mview = 'villa'; R.root.classList.remove('mview-isle'); }
   else if (R.mview === 'isle') R.root.querySelectorAll('[data-mview]').forEach(b => b.classList.toggle('on', b.dataset.mview === 'isle'));
   if (steps[idx]?.know && !R.intelOpen) R.root.querySelector('.intelbtn')?.classList.add('new');
@@ -361,7 +362,10 @@ function stopAuto(R) { R.auto = false; clearTimeout(R.timer); R.root.querySelect
 /** A click on the picture: the next step, except on a map, where only a bubble or the Forward button moves on. */
 export function chxFrame(el) {
   const R = runner(rootOf(el)); if (!R) return;
-  if (R.scr.steps[R.idx]?.map) return;
+  // on a map, a click on the picture puts the instructions away so the whole map shows (the user,
+  // 2026-10-15: "this bubble doesn't go away when I click, it hides part of the map"); a second click
+  // brings them back
+  if (R.scr.steps[R.idx]?.map) { R.root.classList.toggle('map-clear'); return; }
   chxNext(el);
 }
 export function chxNext(el) {

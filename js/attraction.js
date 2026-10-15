@@ -43,8 +43,31 @@ export function romanticallyCompatible(a, b) {
   // nobody under 18 is ever part of a romance, with anybody: an authored age (or birthdate) under 18
   // is a hard no. No age set is no information, and the rest of the rule decides.
   if (isMinor(a) || isMinor(b)) return false;
+  if (tooFarApart(a, b)) return false;
   return attracted(a?.sexuality, a?.gender, b?.gender)
     && attracted(b?.sexuality, b?.gender, a?.gender);
+}
+
+/** An authored age, from `age` or `birthdate`; null when no age is set. */
+export function ageOfRecord(p) {
+  if (!p) return null;
+  if (Number.isFinite(p.age)) return p.age;
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(p.birthdate || '');
+  if (!m) return null;
+  const now = new Date();
+  const age = now.getFullYear() - +m[1] - ((now.getMonth() + 1 < +m[2] || (now.getMonth() + 1 === +m[2] && now.getDate() < +m[3])) ? 1 : 0);
+  return age >= 0 && age < 120 ? age : null;
+}
+
+/**
+ * Too far apart in age for a romance: somebody 60 or older with somebody 25 or younger, either way round (the user,
+ * 2026-10-14: "i dont want 60+ people falling for 18-25 yo and vice versa"). Both ages must be set; no age set is no
+ * information, and the rest of the rule decides.
+ */
+export function tooFarApart(a, b) {
+  const x = ageOfRecord(a), y = ageOfRecord(b);
+  if (x == null || y == null) return false;
+  return (x >= 60 && y <= 25) || (y >= 60 && x <= 25);
 }
 
 /** An authored age under 18, from `age` or `birthdate`; false when no age is set. */
@@ -68,6 +91,7 @@ export function isMinor(p) {
  */
 export function couldBeInterested(a, b) {
   if (isMinor(a) || isMinor(b)) return false;
+  if (tooFarApart(a, b)) return false;
   if (!a?.gender || !b?.gender) return true;
   return romanticallyCompatible(a, b);
 }

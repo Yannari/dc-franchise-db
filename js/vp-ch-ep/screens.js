@@ -82,17 +82,27 @@ function runner(root) {
   R.stage = new ChxStage(root, R);
   root._chx = R;
   root.querySelector('.chx-hud').addEventListener('click', e => {
+    // the map: a bubble, a place, the villa, the way back out, an empty place
     const go = e.target.closest('[data-go]');
-    if (go) { e.stopPropagation(); const i = Number(go.dataset.go); if (i >= 0) goTo(R, i, false); return; }
+    const inMap = e.target.closest('.mview');
+    if (go && !inMap) { e.stopPropagation(); const i = Number(go.dataset.go); if (i >= 0) goTo(R, i, false); return; }
+    if (go) { e.stopPropagation(); const i = Number(go.dataset.go); if (i >= 0) flyTo(R, go.closest('.mpin') || go, () => goTo(R, i, false)); return; }
+    const enter = e.target.closest('[data-enter]');
+    if (enter) { e.stopPropagation(); flyTo(R, enter, () => setView(R, 'villa', true)); return; }
+    const zone = e.target.closest('.mpin[data-gos]');
+    if (zone) {
+      e.stopPropagation();
+      const gos = zone.dataset.gos.split(',').filter(Boolean).map(Number);
+      if (!gos.length) { hint(R, `Nobody is at ${zone.dataset.label} right now.`); return; }
+      const seen = seenOf(R);
+      const i = gos.find(g => !seen.has(g)) ?? gos[0];
+      flyTo(R, zone, () => goTo(R, i, false));
+      return;
+    }
     if (e.target.closest('[data-intel]')) { e.stopPropagation(); R.intelOpen = !R.intelOpen; intel(R); paintHud(R); }
     if (e.target.closest('[data-isle]')) { e.stopPropagation(); stopAuto(R); isle(R, true); }
     const mv = e.target.closest('[data-mview]');
-    if (mv) {
-      e.stopPropagation();
-      R.mview = mv.dataset.mview;
-      R.root.classList.toggle('mview-isle', R.mview === 'isle');
-      R.root.querySelectorAll('[data-mview]').forEach(b => b.classList.toggle('on', b.dataset.mview === R.mview));
-    }
+    if (mv) { e.stopPropagation(); setView(R, mv.dataset.mview, false); }
   });
   root.querySelector('.isle').addEventListener('click', e => {
     e.stopPropagation();
@@ -227,10 +237,38 @@ function hubNext(R) {
   if (left) return left.s;
   return H.h.end + 1 < R.scr.steps.length ? H.h.end + 1 : -1;
 }
+// ── going somewhere on the map, like a game: the map flies into the point clicked, then the scene arrives ──
+function flyTo(R, el, then) {
+  const fr = R.root.querySelector('.chx-frame').getBoundingClientRect();
+  const r = el.getBoundingClientRect();
+  const x = ((r.left + r.width / 2 - fr.left) / fr.width) * 100, y = ((r.top + r.height - fr.top) / fr.height) * 100;
+  R.root.style.setProperty('--zx', `${x.toFixed(1)}%`); R.root.style.setProperty('--zy', `${y.toFixed(1)}%`);
+  stopAuto(R);
+  R.root.classList.add('mzoom');
+  setTimeout(() => {
+    R.root.classList.remove('mzoom');
+    then();
+    R.root.classList.add('marrive');
+    setTimeout(() => R.root.classList.remove('marrive'), 600);
+  }, 520);
+}
+function setView(R, view, arrive, quiet = false) {
+  const was = R.mview;
+  R.mview = view;
+  R.root.classList.toggle('mview-villa', view === 'villa');
+  if (!quiet && was === 'villa' && view === 'isle') { R.root.classList.add('mleave'); setTimeout(() => R.root.classList.remove('mleave'), 600); }
+  if (arrive) { R.root.classList.add('marrive'); setTimeout(() => R.root.classList.remove('marrive'), 600); }
+}
+function hint(R, text) {
+  // a fresh element each time, so the fade plays again on every click
+  R.root.querySelectorAll('.mhint').forEach(x => x.remove());
+  const d = document.createElement('div'); d.className = 'mhint again'; d.textContent = text;
+  R.root.querySelector('.chx-hud').append(d);
+}
 function paintHub(R) {
   const H = hubAt(R, R.idx); if (!H) return;
   const hud = R.root.querySelector('.chx-hud'); const seen = seenOf(R);
-  if (H.conv) { seen.add(H.conv.s); hud.insertAdjacentHTML('beforeend', `<button type='button' class='tomap' data-go='${H.h.at}'>&#9664; Villa map</button>`); return; }
+  if (H.conv) { seen.add(H.conv.s); hud.insertAdjacentHTML('beforeend', `<button type='button' class='tomap' data-go='${H.h.at}'>&#9664; Map</button>`); return; }
   hud.querySelectorAll('[data-go]').forEach(b => b.classList.toggle('seen', seen.has(Number(b.dataset.go))));
   const n = H.h.convs.filter(c => seen.has(c.s)).length;
   hud.insertAdjacentHTML('beforeend', `<div class='mcount'>${n} / ${H.h.convs.length} watched</div>`);
@@ -274,9 +312,9 @@ function goTo(R, idx, forward) {
   R.root.dataset.idx = String(idx);
   st.present(steps[idx], true, ctxOf(R));
   paintHub(R);
-  R.root.classList.remove('map-clear');
-  if (!steps[idx]?.map) { R.mview = 'villa'; R.root.classList.remove('mview-isle'); }
-  else if (R.mview === 'isle') R.root.querySelectorAll('[data-mview]').forEach(b => b.classList.toggle('on', b.dataset.mview === 'isle'));
+  // on a map the dialogue box is not there; the map opens on the island, or where the viewer last was
+  R.root.classList.toggle('on-map', !!steps[idx]?.map);
+  if (steps[idx]?.map) setView(R, R.mview || 'isle', false, true); else R.root.classList.remove('mview-villa');
   if (steps[idx]?.know && !R.intelOpen) R.root.querySelector('.intelbtn')?.classList.add('new');
   intel(R); chapters(R); script(R);
 }
@@ -362,10 +400,8 @@ function stopAuto(R) { R.auto = false; clearTimeout(R.timer); R.root.querySelect
 /** A click on the picture: the next step, except on a map, where only a bubble or the Forward button moves on. */
 export function chxFrame(el) {
   const R = runner(rootOf(el)); if (!R) return;
-  // on a map, a click on the picture puts the instructions away so the whole map shows (the user,
-  // 2026-10-15: "this bubble doesn't go away when I click, it hides part of the map"); a second click
-  // brings them back
-  if (R.scr.steps[R.idx]?.map) { R.root.classList.toggle('map-clear'); return; }
+  // on a map the picture is the map: only its places, bubbles and buttons do anything
+  if (R.scr.steps[R.idx]?.map) return;
   chxNext(el);
 }
 export function chxNext(el) {

@@ -366,17 +366,36 @@ const CHX_CSS = `
 .chx .mpin .bubs{display:grid;gap:.3cqw;justify-items:center}
 .chx .mpin .mlbl{font:400 .8cqw/1 'Black Ops One';letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(14,12,11,.85);padding:.25cqw .5cqw;border-bottom:.15cqw solid var(--fire);white-space:nowrap}
 .chx .mpin .bub{max-width:13cqw;font-size:.95cqw}
-.chx.map-clear .dlg{opacity:0;transform:translateY(30%);pointer-events:none}
 .chx .dlg{transition:opacity .25s,transform .25s}
-.chx.map-clear .later{bottom:4%}
-.chx .mtabs{position:absolute;left:2%;top:3.6%;z-index:7;display:flex;pointer-events:auto}
+.chx .mtabs-unused{position:absolute;left:2%;top:3.6%;z-index:7;display:flex;pointer-events:auto}
 .chx .mtabs button{border:0;background:rgba(14,12,11,.88);color:var(--hud-dim);font:400 1cqw/1 'Black Ops One';letter-spacing:.08em;text-transform:uppercase;padding:.6cqw 1cqw;cursor:pointer}
 .chx .mtabs button.on{background:var(--fire);color:#140c08}
 .chx .mview{position:absolute;inset:0;pointer-events:none}
-.chx .mview .mpin{pointer-events:auto}
-.chx .mview.isle{display:none;background:#000 center/cover no-repeat;z-index:3}
-.chx.mview-isle .mview.isle{display:block}
-.chx.mview-isle .mview.villa{display:none}
+.chx .mview .mpin{pointer-events:auto;cursor:pointer}
+.chx .mview.isle{display:block;background:#000 center/cover no-repeat;z-index:3}
+.chx .mview.villa{display:none}
+.chx.mview-villa .mview.isle{display:none}
+.chx.mview-villa .mview.villa{display:block}
+.chx.on-map .dlg{display:none}
+.chx .mpin.quiet .mlbl{opacity:0;transition:opacity .2s}
+.chx .mpin.quiet:hover .mlbl{opacity:1}
+.chx .mpin .mdot{width:1.1cqw;height:1.1cqw;border-radius:50%;background:rgba(255,255,255,.75);box-shadow:0 0 0 .2cqw rgba(14,12,11,.6);display:block}
+.chx .mpin.quiet:hover .mdot{background:var(--fire)}
+.chx .mpin.live:hover .faces img{transform:translateY(-.3cqh)}
+.chx .bub.enter{background:var(--fire);color:#140c08}
+.chx .bub.more{background:#2a2420;color:var(--hud)}
+.chx .villa-pin .faces img{width:2.6cqw;height:2.6cqw}
+.chx .mback{position:absolute;left:2%;top:3.6%;z-index:7;pointer-events:auto;border:0;background:var(--fire);color:#140c08;font:400 1.05cqw/1 'Black Ops One';letter-spacing:.08em;text-transform:uppercase;padding:.6cqw 1cqw;cursor:pointer}
+.chx .mhint{position:absolute;left:50%;bottom:4%;translate:-50% 0;z-index:8;pointer-events:none;background:rgba(14,12,11,.88);color:var(--hud);font:600 1.15cqw 'Barlow Condensed';letter-spacing:.04em;padding:.5cqw 1.2cqw;border-left:.3cqw solid var(--fire);animation:chxHint 4.5s ease both}
+.chx .mhint.again{animation:chxHint 3s ease both}
+@keyframes chxHint{0%{opacity:0;translate:-50% 30%}10%,75%{opacity:1;translate:-50% 0}100%{opacity:0}}
+.chx.mzoom .chx-world,.chx.mzoom .mview{transform-origin:var(--zx,50%) var(--zy,50%);scale:2.8;filter:brightness(1.15) saturate(1.1);transition:scale .5s cubic-bezier(.65,0,.25,1),filter .5s}
+.chx.mzoom .chx-hud > :not(.mview){opacity:0;transition:opacity .2s}
+.chx.mzoom .mpin,.chx.mzoom .mhint,.chx.mzoom .mback{opacity:0;transition:opacity .2s}
+.chx.marrive .chx-world,.chx.marrive .mview{animation:chxArrive .55s cubic-bezier(.2,.8,.2,1)}
+@keyframes chxArrive{from{scale:1.25;filter:blur(.35cqw) brightness(1.25);opacity:.25}to{scale:1;filter:none;opacity:1}}
+.chx.mleave .mview.isle{animation:chxLeave .55s cubic-bezier(.2,.8,.2,1)}
+@keyframes chxLeave{from{scale:2.4;filter:blur(.3cqw);opacity:.3}to{scale:1;filter:none;opacity:1}}
 .chx.flashback .chx-world{filter:sepia(.5) saturate(.7) contrast(1.05) brightness(.95)}
 .chx.flashback .chx-frame::after{content:'';position:absolute;inset:0;z-index:9;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 2px,transparent 2px 4px),radial-gradient(ellipse at center,transparent 55%,rgba(30,15,0,.55));animation:chxFlick .18s steps(2) infinite}
 @keyframes chxFlick{0%{opacity:.85}100%{opacity:1}}

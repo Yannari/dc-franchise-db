@@ -456,12 +456,11 @@ function villaMap(S, items) {
     else later.push(bub);
   }
   S.at(items[0].i);
-  for (const r of [...Object.values(rooms), ...Object.values(isle)]) if (r.bubs.length > 2) later.push(...r.bubs.splice(2));
   const list = Object.values(rooms).map(r => ({ at: r.at, who: r.who.slice(0, 5), bubs: r.bubs }));
   const out = Object.values(isle).map(r => ({ at: r.at, place: r.place, who: r.who.slice(0, 5), bubs: r.bubs }));
   S.push({ scene: { plate: plateKey('villa-map', false), place: 'The Villa', when: whenOf(items[0].a.day, S.min), icon: 'house', cast: {}, wipe: 1 },
-    map: { rooms: list, isle: out, later, clock: [['Morning', S.min < 12 * 60 ? 'now' : 'done'], ['Afternoon', S.min < 12 * 60 ? 'lock' : S.min < 18 * 60 ? 'now' : 'done'], ['Night', S.min >= 18 * 60 ? 'now' : 'lock']] },
-    dir: out.length ? 'Back at the villa. Each bubble is a conversation, in the room where it happens; the ones away from the villa are on The island. Click one to watch it, or press Forward to watch them in order.' : 'Back at the villa. Each bubble is a conversation, in the room where it happens. Click one to watch it, or press Forward to watch them in order.' });
+    map: { rooms: list, isle: out, later, hint: true, clock: [['Morning', S.min < 12 * 60 ? 'now' : 'done'], ['Afternoon', S.min < 12 * 60 ? 'lock' : S.min < 18 * 60 ? 'now' : 'done'], ['Night', S.min >= 18 * 60 ? 'now' : 'lock']] },
+    hint: 'Click a place to go there. Forward plays them in order.' });
 }
 
 // ── the arrival (episode 1) ───────────────────────────────────────────

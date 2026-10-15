@@ -442,24 +442,45 @@ function spread(pins) {
   }
   return out;
 }
-function pinHtml(p, label) {
-  return `<div class='mpin' style='left:${p.u * 100}%;top:${p.v * 100}%'><div class='bubs'>${p.r.bubs.map(b => `<div class='bub ${b.star ? 'star' : ''}' data-go='${b.go}'>${esc(b.bub)}</div>`).join('')}</div>`
-    + `<div class='faces'>${p.r.who.map(n => `<img src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div><div class='mlbl'>${esc(label)}</div></div>`;
+function pinHtml(p, label, { zone = '', extra = '' } = {}) {
+  const bubs = p.r.bubs || [];
+  const gos = bubs.map(x => x.go).join(',');
+  const shown = bubs.slice(0, 3);
+  return `<div class='mpin ${bubs.length ? 'live' : 'quiet'} ${extra}' style='left:${p.u * 100}%;top:${p.v * 100}%' data-zone='${esc(zone)}' data-gos='${gos}' data-label='${esc(label)}'>`
+    + `<div class='bubs'>${shown.map(x => `<div class='bub ${x.star ? 'star' : ''}' data-go='${x.go}'>${esc(x.bub)}</div>`).join('')}${bubs.length > 3 ? `<div class='bub more'>+${bubs.length - 3} more</div>` : ''}</div>`
+    + `${(p.r.who || []).length ? `<div class='faces'>${p.r.who.slice(0, 5).map(n => `<img src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div>` : `<i class='mdot'></i>`}<div class='mlbl'>${esc(label)}</div></div>`;
 }
+// The island is the map: every place on it is a pin; the villa is one of them, and clicking it goes inside to
+// its rooms (the user, 2026-10-15: "the island map should be the default map, with events all over the possible
+// locations, like a video game"; "click a part of the map and go there, with a zoom, like Big Brother").
 function mapHtml(m, plate) {
   let h = '';
   const isle = m.isle || [];
-  if (isle.length) h += `<div class='mtabs'><button type='button' data-mview='villa' class='on'>The villa</button><button type='button' data-mview='isle'>The island &middot; ${isle.reduce((n, r) => n + r.bubs.length, 0)}</button></div>`;
-  const pins = spread(m.rooms.map(r => { const at = marks(plate).find(x => x.kind === 'spot' && x.id === r.at); return at ? { u: at.u, v: at.v, r } : null; }).filter(Boolean)
-    .sort((a, b) => a.v - b.v));
-  h += `<div class='mview villa'>${pins.map(p => pinHtml(p, ROOM_NAME[p.r.at] || p.r.at)).join('')}</div>`;
-  if (isle.length) {
-    const night = /night/.test(plate);
-    const ipins = spread(isle.map(r => { const at = marks('map-day').find(x => x.kind === 'spot' && x.id === r.at); return at ? { u: at.u, v: at.v, r } : null; }).filter(Boolean)
-      .sort((a, b) => a.v - b.v));
-    h += `<div class='mview isle' style="background-image:url('${PLATE(night ? 'map-night' : 'map-day')}.webp')">${ipins.map(p => pinHtml(p, p.r.place || p.r.at)).join('')}</div>`;
-  }
+  const night = /night/.test(plate);
+  const spots = marks('map-day').filter(x => x.kind === 'spot');
+  const NAMES = { villa: 'The Villa', arena: 'The Arena', summit: 'The Summit', 'overnight-camp': 'The Camp', airstrip: 'The Airstrip', gorge: 'The Gorge',
+    bridge: 'The Bridge', 'tiki-path': 'The Tiki Path', 'beach-field': 'The Field', lookout: 'The Lookout', club: 'The Beach Club', lagoon: 'The Lagoon',
+    dock: 'The Dock', beach: 'The Beach', 'cliff-jump': 'The Cliff', gazebo: 'The Gazebo' };
+  // inside the villa: who is in it, and how many conversations
+  const inVilla = { who: [...new Set(m.rooms.flatMap(r => r.who || []))].slice(0, 5), bubs: [] };
+  const nVilla = m.rooms.reduce((n, r) => n + r.bubs.length, 0);
+  const ipins = spread(spots.map(sp => {
+    if (sp.id === 'villa') return { u: sp.u, v: sp.v, r: inVilla, villa: true };
+    const r = isle.find(x => x.at === sp.id) || { at: sp.id, who: [], bubs: [] };
+    return { u: sp.u, v: sp.v, r };
+  }).sort((x, y) => x.v - y.v));
+  h += `<div class='mview isle' style="background-image:url('${PLATE(night ? 'map-night' : 'map-day')}.webp')">`
+    + ipins.map(p => (p.villa
+      ? `<div class='mpin villa-pin live' style='left:${p.u * 100}%;top:${p.v * 100}%' data-enter='villa' data-label='The Villa'><div class='bubs'><div class='bub enter'>${nVilla ? `${nVilla} conversation${nVilla > 1 ? 's' : ''} inside` : 'Go inside'}</div></div>`
+        + `${inVilla.who.length ? `<div class='faces'>${inVilla.who.map(n => `<img src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div>` : `<i class='mdot'></i>`}<div class='mlbl'>The Villa</div></div>`
+      : pinHtml(p, p.r.place || NAMES[p.r.at] || p.r.at, { zone: p.r.at }))).join('') + '</div>';
+  // the villa's rooms: every room on the plan, the ones with somebody in them lit
+  const rooms = marks(plate).filter(x => x.kind === 'spot');
+  const vpins = spread(rooms.map(sp => ({ u: sp.u, v: sp.v, r: m.rooms.find(x => x.at === sp.id) || { at: sp.id, who: [], bubs: [] } })).sort((x, y) => x.v - y.v));
+  h += `<div class='mview villa'>${vpins.map(p => pinHtml(p, ROOM_NAME[p.r.at] || p.r.at, { zone: p.r.at })).join('')}`
+    + `<button type='button' class='mback' data-mview='isle'>&#9664; The island</button></div>`;
   if (m.later.length) h += `<div class='later'>${m.later.map(l => `<div class='bub ${l.star ? 'star' : ''}' data-go='${l.go}'>${esc(l.bub)}</div>`).join('')}</div>`;
+  if (m.hint) h += `<div class='mhint'>Click a place to go there. Forward plays them in order.</div>`;
   h += `<div class='clock'>${m.clock.map(([t, k]) => `<span class='${k}'>${k === 'done' ? '&#10003; ' : k === 'lock' ? '&#128274; ' : ''}${esc(t)}</span>`).join('')}</div>`;
   return h;
 }

@@ -125,7 +125,8 @@ export function tdFinalTribalScreen(ep, o = {}) {
   finalists.forEach((f, i) => {
     const lines = (ftc.finalistStatements?.[f] || []).map(unquote).filter(Boolean);
     if (!lines.length) return;
-    say(pickBy([`${f}.`, `${f}, you first.`, `${f}, your turn.`, `${f}, why you?`], ep.num, f, i), { focus: [f] });
+    // ("you first" only for the first: read 2026-10-14, "Hannah, you first." and "Richard, you first." after Diego had spoken)
+    say(pickBy(i === 0 ? [`${f}.`, `${f}, you first.`, `${f}, why you?`] : [`${f}.`, `${f}, your turn.`, `${f}, why you?`], ep.num, f, i), { focus: [f] });
     steps.push({ k: 'say', by: f, focus: [f], text: lines.join(' ') });
   });
 

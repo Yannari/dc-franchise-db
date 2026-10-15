@@ -226,7 +226,8 @@ describe('The Challenge, as aired', () => {
   it('never has somebody gone speak', () => {
     for (const r of seasons) {
       const goneDay = Object.fromEntries(r.state.gone.map(g => [g.name, g.day]));
-      for (const l of linesOf(r)) if (l.by && goneDay[l.by] != null) expect(l.day <= goneDay[l.by], `${l.by} speaks on day ${l.day}, gone day ${goneDay[l.by]}`).toBe(true);
+      // a clip in "Previously on" is last episode's line, replayed: it was said before they went
+      for (const l of linesOf(r)) if (l.by && !l.clip && goneDay[l.by] != null) expect(l.day <= goneDay[l.by], `${l.by} speaks on day ${l.day}, gone day ${goneDay[l.by]}`).toBe(true);
     }
   });
 });

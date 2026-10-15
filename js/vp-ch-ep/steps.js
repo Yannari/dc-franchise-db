@@ -364,7 +364,17 @@ export function chStepScreens(row, ctx = {}) {
   for (const c of chunks) {
     const items = c.items.map(i => ({ a: aired[i], i, title: titles[i]?.title || '' }));
     if (c.key === 'open') {
-      for (const { a } of items) linesToSteps(S, a.lines, { names, sceneWho: ['TJ'] });
+      const lines = items.flatMap(x => x.a.lines || []);
+      if (!lines.some(l => l.shot || l.roster)) { for (const { a } of items) linesToSteps(S, a.lines, { names, sceneWho: ['TJ'] }); continue; }
+      // "Previously on": a title, then each beat cut back to where it happened, the clip in its speaker's voice,
+      // and the board of who is left (the user, 2026-10-15: "too quick; get inspired from Total Drama's")
+      S.push({ card: { k: `Episode ${row.num}`, t: 'Previously on The Challenge', sub: 'Last time, on the Blue Lagoon' } });
+      let sig = null;
+      for (const l of lines) {
+        if (l.shot) { const g = JSON.stringify(l.shot); if (g !== sig) { sig = g; S.push(throwback(l.shot)); } }
+        if (l.roster) { sig = null; S.push({ scene: { plate: plateKey('opener', false), place: 'Still in the game', when: `Episode ${row.num}`, icon: 'island', cast: {}, wipe: 1 }, roster: house.map(n => ({ n })) }); }
+        linesToSteps(S, [l], { names, sceneWho: ['TJ', ...(l.shot?.who || [])] });
+      }
       continue;
     }
     if (c.key === 'daily') { buildDaily(S, open, items, row, { names, house, goneAt, dailyDone }); dailyDone = true; continue; }
@@ -401,6 +411,17 @@ const BIG = {
   showmance: a => ({ card: { k: 'Showmance', t: `${a.who[0]} & ${a.who[1]}`, sub: 'It is official, and the whole house knows', faces: a.who.slice(0, 2) } }),
   breakup: a => ({ slam: { spray: "IT'S OVER", color: '#ff8fc7' } }),
 };
+
+// A cut back to last episode: the place a recap beat happened, its people on it, tinted as a flashback.
+function throwback(shot) {
+  let place;
+  if (shot.daily) { const st = DAILY_STAGE[shot.daily] || DAILY_STAGE['gauntlet-run']; place = { plate: st.plate, place: st.place, hour: st.hour }; }
+  else if (shot.spot === 'arena' || shot.kind === 'arena') place = { plate: ARENA_STAGE.plate, place: 'The Arena', hour: 'night' };
+  else place = PLACE[shot.spot] || PLACE.villa;
+  const key = plateKey(place.plate, place.hour === 'night');
+  const who = (shot.who || []).filter(n => n && n !== HOST);
+  return { scene: { plate: key, place: place.place, when: 'Last time', icon: place.icon || 'house', cast: placeScene(key, who), wipe: 1, flash: 1 }, focus: who };
+}
 
 // One villa/party/eve scene.
 function scene(S, { a, i, title }, { names, house, goneAt, key }) {

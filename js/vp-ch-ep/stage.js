@@ -80,6 +80,7 @@ export class ChxStage {
     this.ST = newState();
     const ST = this.ST;
     Object.assign(ST, { plate: sc.plate, scale: sc.scale || 1.5, scene: sc, water: sc.water || 0 });
+    this.root?.classList?.toggle('flashback', !!sc.flash);
     this.el.plate.innerHTML = `<img class='chx-plate' src='${PLATE(sc.plate)}.webp' alt=''><canvas class='chx-glc tdx-gl' data-src='${PLATE(sc.plate)}' data-hd='1' width='1920' height='1080'></canvas>`;
     this.el.cast.innerHTML = ''; this.el.wfx.innerHTML = ''; this.el.live.innerHTML = ''; if (this.el.props) this.el.props.innerHTML = '';
     for (const [n, spec] of Object.entries(sc.cast || {})) { ST.home[n] = spec; this.put(n, spec, false); }

@@ -374,6 +374,9 @@ const CHX_CSS = `
 .chx .mview.isle{display:none;background:#000 center/cover no-repeat;z-index:3}
 .chx.mview-isle .mview.isle{display:block}
 .chx.mview-isle .mview.villa{display:none}
+.chx.flashback .chx-world{filter:sepia(.5) saturate(.7) contrast(1.05) brightness(.95)}
+.chx.flashback .chx-frame::after{content:'';position:absolute;inset:0;z-index:9;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 2px,transparent 2px 4px),radial-gradient(ellipse at center,transparent 55%,rgba(30,15,0,.55));animation:chxFlick .18s steps(2) infinite}
+@keyframes chxFlick{0%{opacity:.85}100%{opacity:1}}
 .chx .tcard{position:absolute;inset:0;z-index:22;display:grid;place-items:center;text-align:center;background:radial-gradient(ellipse at 50% 45%,rgba(20,12,8,.55),rgba(5,3,2,.94) 75%);backdrop-filter:blur(3px) saturate(.8);animation:chxCardIn .45s cubic-bezier(.2,.9,.3,1) both}
 .chx .tcard .ttape{position:absolute;left:-5%;right:-5%;height:4.2%;background:repeating-linear-gradient(-45deg,#ffd21a 0 2.2cqw,#141010 2.2cqw 4.4cqw);box-shadow:0 .4cqh 1cqh rgba(0,0,0,.6)}
 .chx .tcard .t1{top:7%;rotate:-2deg;animation:chxTape .6s .1s both}

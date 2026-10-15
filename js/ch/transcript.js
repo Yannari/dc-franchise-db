@@ -51,7 +51,8 @@ export function sectionOf(row, scene) {
   return d <= 0 ? 'daily' : d === 1 ? 'vote' : 'arena';
 }
 
-const compact = lines => (lines || []).map(l => ({ kind: l.kind, by: l.by || null, text: l.text }));
+const compact = lines => (lines || []).map(l => ({ kind: l.kind, by: l.by || null, text: l.text,
+  ...(l.shot ? { shot: plain(l.shot) } : {}), ...(l.clip ? { clip: true } : {}), ...(l.roster ? { roster: true } : {}) }));
 // A scene's facts, JSON-safe, for the stepped viewer (js/vp-ch-ep): who won, what the call-out was for.
 const plain = d => { try { return d ? JSON.parse(JSON.stringify(d)) : null; } catch { return null; } };
 

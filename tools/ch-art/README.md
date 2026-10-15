@@ -85,3 +85,26 @@ What the first build taught:
   (`noclouds`).
 - **The airstrip has no night.** Its yellow haze has no sky edge to grow from, so the repaint came out grey
   with lit leaves; arrivals are by day.
+
+## Which plate each challenge plays on (2026-10-15)
+
+25 places, 44 plate keys. The challenge's props that are not painted (buoys, tokens, crates on a ring) are drawn
+over the plate by the viewer.
+
+| Event | Plate |
+|---|---|
+| Cliff Relay | `cliff` (climbers on the `top` stand group, the house on the beach) |
+| Reef Dash | `beach` |
+| Lagoon Quiz | `gorge` (the floating platforms) |
+| Hang On | `dock` |
+| Night Swim | `beach-night` / `cliff-night` |
+| Gauntlet Run | `field` (the bell is the `gong` mark) |
+| Truck Tug, Jungle Maze, Demolition Derby, Balance Beam | jobs C01-C04 (waiting on art) |
+| every Arena game | `arena` (house + walk-in) and `ring` (the duel) |
+| Final: start, Beach Haul | `field` / `beach` |
+| Final: Ridge Puzzle | job C05 (waiting on art); `lookout` until then |
+| Final: Summit Run, finish | `trail`, then `summit` (finish arch = `gate`, gong) |
+| Final: overnight | `camp` (night only) |
+| Final: instant elimination | `tiki` |
+| Gym scenes | `gym` |
+| Quiet talks at sunset | `lookout` |

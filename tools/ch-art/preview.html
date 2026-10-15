@@ -34,7 +34,9 @@
 import { CH_MARKS } from '../../js/vp-ch-ep/marks.js';
 import { liveGL } from '../../js/vp-td-ep/glplate.js';
 const g = document.getElementById('g');
-const keys = Object.keys(CH_MARKS);
+// ?only=field,gorge shows some plates: a browser keeps about 16 WebGL views alive at once.
+const only = new URLSearchParams(location.search).get('only');
+const keys = Object.keys(CH_MARKS).filter(k => !only || only.split(',').some(o => k.startsWith(o)));
 document.getElementById('n').textContent = keys.length + ' plates';
 for (const k of keys) {
   const src = `../../assets/sets/ch/${k}`;

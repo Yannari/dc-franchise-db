@@ -20,14 +20,34 @@ const BOND_CLS = v => (v >= 6 ? 'close' : v >= 3 ? 'friend' : v > -2 ? 'neutral'
  * week's evictee is among them, nobody is marked out,
  * and the deals are the ones the week began with. Without a snapshot (an old save), the week's end.
  */
-export function weekAt(num, snap = null, shown = null) {
+export function weekAt(num, snap = null, shown = null, at = null) {
   const E = (globalThis.gs?.episodeHistory || []).find(e => +e.num === +num);
   const S = E?.gsSnapshot;
   if (!S) return null;
   const evicted = E.evicted || E.eliminated;
   const ended = !shown || !evicted || evicted === 'No elimination' || shown.includes(evicted);
   const out = ended && evicted !== 'No elimination' ? evicted : null;
-  const live = snap && !ended ? snap : null;
+  // Mid-screen, the house as it stood before this stretch (the screen's snapStart, or for the week's first
+  // stretch the last week's end), with the stretch's alliances added only once a line has said their name.
+  // At the screen's last step, the stretch's end (snap).
+  const prevEnd = () => {
+    const P = (globalThis.gs?.episodeHistory || []).find(e => +e.num === +num - 1)?.gsSnapshot;
+    return P ? { bonds: P.bonds, showmances: P.showmances, alliances: (P.namedAlliances || []).filter(a => a.active !== false && !a.dissolved) } : null;
+  };
+  let base = snap;
+  if (snap && at && !at.atEnd) {
+    // the first stretch of the first week starts from an empty house: nobody has made a pact yet
+    const start = at.start || prevEnd() || { alliances: [] };
+    if (start) {
+      const said = (at.said || []).join(' \n ');
+      const named = a => a?.name && said.includes(a.name);
+      const end = snap.alliances || [];
+      const before = (start.alliances || []).map(a => (named(a) && end.find(x => x.name === a.name)) || a);
+      base = { ...snap, bonds: start.bonds || snap.bonds, showmances: start.showmances || snap.showmances,
+        alliances: [...before, ...end.filter(a => named(a) && !before.some(x => x.name === a.name))] };
+    }
+  }
+  const live = base && !ended ? base : null;
   const players = live && E.houseAtStart?.length ? [...E.houseAtStart]
     : [...new Set([...(S.activePlayers || []), ...(evicted && evicted !== 'No elimination' ? [evicted] : [])])];
   const bonds = live?.bonds || S.bonds;
@@ -48,9 +68,9 @@ export function weekAt(num, snap = null, shown = null) {
 }
 
 /** The drawer for a screen at a step. `L` is the stage's ledger (L.why), `tab` and `who` the viewer's picks. */
-export function intelHtml(num, L, tab, who, snap = null) {
+export function intelHtml(num, L, tab, who, snap = null, at = null) {
   if (!TABS.some(t => t[0] === tab)) tab = 'heads';
-  const W = weekAt(num, snap, L?.out || []);
+  const W = weekAt(num, snap, L?.out || [], at && { ...at, said: L?.said || [] });
   let h = `<div class="bbi-head"><b>Intel</b><span>What the house doesn't know.</span><button type="button" class="bbi-x" data-close aria-label="Close Intel" title="Close (i)">&times;</button></div>
     <div class="bbi-tabs">${TABS.map(([k, l]) => `<button type="button" class="${k === tab ? 'on' : ''}" data-tab="${k}">${esc(l)}</button>`).join('')}</div><div class="bbi-body">`;
   const face = n => `<span class="bbi-f" style="--c:${col(n)}">${img(n)}</span>`;

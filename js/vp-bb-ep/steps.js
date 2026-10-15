@@ -3165,12 +3165,19 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   // saves fall back to choosing among the snippets.
   const storied = (row.acts || []).some(a => Array.isArray(a?.scenes));
   let storyStretch = [];
-  const beatsOf = act => { stretch.push(...(act.socialBeats || [])); storyStretch.push(...(act.scenes || [])); };
+  // a stretch's House Life screen reads the house from the stretch's own start and end (it is pushed later, at
+  // the next ceremony, when the loop's snapshot has already moved on)
+  const beatsOf = act => {
+    if (!stretch.length && !storyStretch.length) ctx.houseStart = ctx.snapStart || null;
+    ctx.houseEnd = act.state || ctx.snap || null;
+    stretch.push(...(act.socialBeats || [])); storyStretch.push(...(act.scenes || []));
+  };
+  const stretchSnap = sc => { if (ctx.houseEnd) { sc.snap = ctx.houseEnd; sc.snapStart = ctx.houseStart || null; } return sc; };
   // a stretch of house life airs before the next ceremony
   const flush = () => {
     if (houseLife === 'segments' && storied) {
       const scs = storyStretch.filter(sc => !(sc.cast || []).some(n => ctx.hidden.has(n)) && (sc.lines || []).length);
-      if (scs.length) { const sc = storyLifeScreen(scs, ctx, ++scenes); sc.hidden = new Set(ctx.hidden); out.push(sc); }
+      if (scs.length) { const sc = stretchSnap(storyLifeScreen(scs, ctx, ++scenes)); sc.hidden = new Set(ctx.hidden); out.push(sc); }
       stretch = []; storyStretch = [];
       return;
     }
@@ -3179,13 +3186,13 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       // the whole stretch as one House Life screen
       const beats = withSetups(chooseAired(stretch, HOUSE_LIFE_CAP[ctx.anchor] ?? 7, aired), stretch, aired)
         .filter(b => !(b.players || []).some(n => ctx.hidden.has(n)));
-      if (beats.length) { const sc = houseLifeScreen(beats, ctx, ++scenes); sc.hidden = new Set(ctx.hidden); out.push(sc); }
+      if (beats.length) { const sc = stretchSnap(houseLifeScreen(beats, ctx, ++scenes)); sc.hidden = new Set(ctx.hidden); out.push(sc); }
       stretch = [];
       return;
     }
     for (const b of chooseAired(stretch, AIRS_PER_STRETCH[ctx.anchor] ?? 3, aired)) {
       if ((b.players || []).some(n => ctx.hidden.has(n))) continue;
-      const sc = sceneScreen(b, ctx, ++scenes); sc.hidden = new Set(ctx.hidden); out.push(sc);
+      const sc = stretchSnap(sceneScreen(b, ctx, ++scenes)); sc.hidden = new Set(ctx.hidden); out.push(sc);
     }
     stretch = [];
   };
@@ -3193,9 +3200,13 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   // Every screen knows the house as it stood when it aired: the last stretch's snapshot (act.state,
   // bb/week.js houseAct) reached so far. The Intel drawer reads it, so it never shows the end of
   // the week from its first screen (the user, 2026-10-14: "intel spoiled me who got evicted").
-  const stamp = () => { for (const s of out) if (!('snap' in s)) s.snap = ctx.snap || null; };
+  // ...and the snapshot from before its stretch (snapStart): a screen in the middle of a stretch has not yet
+  // seen what the stretch did (the user, 2026-10-15: "I got an alliance in the intel before the alliance
+  // actually formed"), so the drawer shows the house from before it until the screen has played out
+  const stamp = () => { for (const s of out) if (!('snap' in s)) { s.snap = ctx.snap || null; s.snapStart = ctx.snapStart || null; } };
   for (const act of row.acts || []) {
     stamp();
+    ctx.snapStart = ctx.snap || null;
     if (act.state) ctx.snap = act.state;
     // An act with no day of its own (most twists) happens where the week has got to:
     // the clock never runs backwards within a week.

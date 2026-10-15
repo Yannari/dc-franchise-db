@@ -47,6 +47,8 @@ const mapHtml = (uid, R) => {
   return R.map.mode === 'feed' ? houseFeedHtml(uid, S, R.map, R.map.zone, R.o?.season) : houseMapHtml(uid, S, R.map);
 };
 
+// where the Intel drawer is in the week: the screen's stretch start, and whether the screen has played out
+const intelAt = R => { const S = R.screens?.[R.si]; return S ? { start: S.snapStart || null, atEnd: R.idx >= (S.steps?.length || 0) - 1 } : null; };
 const reg = () => (typeof window !== 'undefined' ? (window._bbx ||= {}) : (globalThis._bbx ||= {}));
 const SHELL_CSS = `
 .bbx .bbx-feed{margin-top:14px;border-top:1px solid rgba(34,225,255,.25);padding-top:10px}
@@ -339,7 +341,7 @@ function paint(uid, fresh) {
   const whyNow = (out.ledger?.why || []).join('|');
   if (fresh && whyNow && whyNow !== (R.lastL?.why || []).join('|') && !root?.classList.contains('intel-open')) document.getElementById(`bbi-btn-${uid}`)?.classList.add('new');
   R.lastL = out.ledger;
-  if (root?.classList.contains('intel-open')) { const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who, R.screens?.[R.si]?.snap || null); }
+  if (root?.classList.contains('intel-open')) { const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who, R.screens?.[R.si]?.snap || null, intelAt(R)); }
   const count = document.getElementById(`bbx-count-${uid}`);
   if (count) count.textContent = `${Math.max(0, R.idx + 1)} / ${S.steps.length}`;
   // the music turns and the stings land on a click, never on Reveal all or a repaint
@@ -577,7 +579,7 @@ export function bbxIntel(uid) {
   const open = root.classList.toggle('intel-open');
   document.getElementById(`bbi-btn-${uid}`)?.classList.remove('new');
   document.getElementById(`bbi-btn-${uid}`)?.classList.toggle('on', open);
-  if (open) { const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who, R.screens?.[R.si]?.snap || null); }
+  if (open) { const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who, R.screens?.[R.si]?.snap || null, intelAt(R)); }
 }
 export function bbxIntelClick(uid, e) {
   const R = reg()[uid]; if (!R) return;
@@ -587,7 +589,7 @@ export function bbxIntelClick(uid, e) {
   if (!tab && !who) return;
   if (tab) R.tab = tab;
   if (who) R.who = who;
-  const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who, R.screens?.[R.si]?.snap || null);
+  const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who, R.screens?.[R.si]?.snap || null, intelAt(R));
 }
 if (typeof document !== 'undefined') document.addEventListener('keydown', e => {
   const root = document.querySelector('.bbx[data-uid]');

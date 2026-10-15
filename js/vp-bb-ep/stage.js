@@ -72,7 +72,7 @@ const SCENE_KINDS = new Set(['houselife', 'movein', 'final-cut', 'jury-q', 'clos
 export function ledgerAt(screens, si, idx) {
   const S0 = screens[si] || screens[0] || {};
   const L = { status: {}, nom: [], veto: null, out: [], votes: null, vetoPlay: [], ballots: [], revealed: [], hoh: null, moves: [], stances: {},
-    spent: [], held: [], runs: {}, stamps: {}, safe: [], plus: null, bill: null, passed: null, shut: false,
+    spent: [], held: [], runs: {}, stamps: {}, safe: [], plus: null, bill: null, passed: null, shut: false, said: [],
     chain: [], snubs: [], leftover: [], looks: {}, heat: 0, found: null, secret: false, boxes: {} };
   for (const n of S0.priorOut || []) { L.status[n] = 'out'; L.out.push(n); }
   for (let s = 0; s <= si; s++) {
@@ -81,6 +81,8 @@ export function ledgerAt(screens, si, idx) {
     if (s === si && screens[s].hunt) L.heat = screens[s].hunt.heat || 0;
     for (let i = 0; i <= upto; i++) {
       const st = steps[i];
+      // everything the viewer has been told so far this week (the Intel drawer shows an alliance once its name is said)
+      if (st.t) L.said.push(String(st.t));
       for (const n of st.swipe || []) if (!L.spent.includes(n)) L.spent.push(n);
       if (st.hold && !L.held.includes(st.hold)) L.held.push(st.hold);
       if (st.shut) L.shut = true;

@@ -17,8 +17,8 @@ export default {
       { by: 'a', say: "Can I be honest? I'm not totally sure about {target}.", v: { anxious: "Can I be honest for a second? I'm really not sure about {target}, and it's making me sick.", blunt: "I'm going to be honest, I don't love the {target} plan." } },
       { by: 'b', say: "Why not?" },
       { by: 'a', say: "Nothing, really, I just like {target}, and it feels like we're picking the easy name instead of the right one." },
-      { by: 'b', move: 'reassure' },
-      { by: 'a', move: 'agree.reluctant' },
+      { by: 'b', say: "I get it. But {target} going is better than one of us going." },
+      { by: 'a', say: "I know. I'm not going to break the plan. I just needed to say it out loud." },
       { by: 'a', conf: "I'm going to write {target}, because that's the plan and I'm not going to be the one who breaks it, but I don't feel good about it.", v: { warm: "I'll write {target}, but I'm going to feel bad about it all night, because {target} has been so nice to me." } },
     ] },
     { id: 'nf.h2', when: { pair: true }, turns: [
@@ -39,7 +39,7 @@ export default {
       { by: 'a', say: "Yeah. Yeah, of course.", v: { anxious: "Yeah! I mean, yeah. Of course. Why wouldn't I be?", calm: "Yeah, of course I am." } },
       { by: 'b', say: "Okay, because you've been acting a little weird." },
       { by: 'a', say: "I'm just tired, I promise, it's been a long day." },
-      { by: 'b', move: 'suspicious' },
+      { by: 'b', say: "Okay. You'd tell me if something changed, though. Right?" },
       { by: 'a', conf: "I just lied to {b}'s face. I'm not voting {target} tonight, and nobody in my group knows it yet." },
     ] },
     { id: 'nf.b2', when: { pair: true, wrote: true }, turns: [

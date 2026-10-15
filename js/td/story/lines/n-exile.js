@@ -36,7 +36,7 @@ export default {
     ] },
     { id: 'nex.s3', when: { voice: ['schemer', 'calm', 'dry'] }, turns: [
       { by: 'a', say: "Thanks for the vacation, everybody. I'll see one of you soon." },
-      { by: 'b', move: 'dismiss' },
+      { by: 'b', say: "Enjoy the island." },
       { by: 'a', say: "Don't look so relieved, {b}. You wrote my name, and I can count." },
       { by: 'b', say: "Lots of people wrote your name." },
       { by: 'a', say: "And I'll remember every one of them. You're just the one I'm looking at." },

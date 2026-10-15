@@ -19,7 +19,7 @@ export default {
     { id: 'nfe.t1', turns: [
       { beat: "The whole cast sits down at one long table, piled with more food than any of them have seen in days." },
       { by: 'a', say: "Oh my god. Real food. Actual real food.", v: { loud: "REAL FOOD! Everybody, look at this!", dry: "Well, it's not rice, so it's already the best meal of my life.", food: "I'm going to eat everything on this table, and I'm not even sorry." } },
-      { by: 'b', say: "Nobody talk to me for ten minutes, I'm busy.", v: { warm: "This is so nice, we should all be eating together like this every night.", schemer: "Everybody's going to be relaxed tonight, so I'm going to listen a lot more than I talk." } },
+      { by: 'b', say: "Nobody talk to me for ten minutes, I'm busy.", v: { warm: "This is so nice, we should all be eating together like this every night.", schemer: "Eat up, everybody. Nobody talks strategy tonight. I insist." } },
       { by: 'c', say: "Pass the bread before {a} eats all of it." },
       { by: 'a', say: "Too late." },
       { by: 'd', opt: true, say: "I forgot what it feels like to be full. I think I'm going to cry.", v: { tough: "Okay, this is good. I'll admit it, this is really good.", teen: "This is literally the best day of my life, no joke." } },

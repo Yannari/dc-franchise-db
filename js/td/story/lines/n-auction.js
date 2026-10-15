@@ -17,7 +17,7 @@ export default {
       { by: 'a', say: "So, about the auction. I asked you for twenty bucks, {b}. Twenty.", v: { loud: "Twenty bucks, {b}! I asked you for TWENTY BUCKS!", quiet: "...You could've just said yes, you know.", dry: "I asked for twenty dollars, {b}. Not a kidney." } },
       { by: 'b', say: "It was my money. I didn't owe you anything.", v: { cruel: "And I said no. That's how money works.", warm: "I'm sorry, I just... I was saving it, okay?" } },
       { by: 'a', say: "No, you didn't owe me, but now I know exactly where I stand with you." },
-      { by: 'b', move: 'deflect' },
+      { by: 'b', say: "Don't make this a big thing. It was twenty bucks." },
       { by: 'a', conf: "Everybody at that table saw {b} say no to me, and I'm not going to forget it, because that told me everything." },
     ] },
     { id: 'nau.r2', when: { voice: ['emotional', 'anxious', 'warm', 'earnest'] }, turns: [
@@ -140,7 +140,7 @@ export default {
       { by: 'a', say: "Can I read you a bit? I don't want to read it alone.", v: { tough: "Don't make it weird, but I want somebody to hear this.", quiet: "...Can you stay while I read it?" } },
       { by: 'b', say: "Of course." },
       { by: 'a', say: "They say they're proud of me. They say everybody back home is watching." },
-      { by: 'b', move: 'reassure' },
+      { by: 'b', say: "Of course they are. Look how far you've got." },
       { by: 'a', conf: "Everybody else bought food or power, and I spent my money on this, and I'd do it again every single time." },
     ] },
     { id: 'nau.e2', turns: [

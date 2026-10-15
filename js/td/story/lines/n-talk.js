@@ -378,8 +378,8 @@ export default {
   'long.throw.caught.bold': [
     { id: 'nk.tb1', place: 'aside', turns: [
       { by: 'a', say: "You threw it.", v: { loud: "You THREW it! I saw you!", blunt: "You threw that challenge.", quiet: "...You threw it." } },
-      { by: 'b', move: 'deflect' },
-      { by: 'a', say: "Today, you threw it, I watched you slow down right at the end." },
+      { by: 'b', say: "What? No, I didn't. I slipped." },
+      { by: 'a', say: "You didn't slip. I watched you slow down right at the end." },
       { by: 'b', say: "I was tired." },
       { by: 'a', say: "You were fine until right when it mattered. Then you weren't." },
       { by: 'b', say: "That's a big thing to accuse somebody of." },

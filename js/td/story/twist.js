@@ -45,7 +45,7 @@ function summit(ep, tw) {
   const venue = seasonConfig?.setting || 'hosted-camp';
   const base = who => ({ ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'pre' }), venue, voteYet: (gs.episodeHistory || []).some(h => h.num < ep.num && h.eliminated) });
   let n = 500;
-  const write = (pool, ending, who, data = {}) => writeStory(pool, ending, who, data, base(who), { ep: ep.num, camp: 'twist', phase: 'pre', n: n++, place: 'secret', unique: 'soft' });
+  const write = (pool, ending, who, data = {}, extra = {}) => writeStory(pool, ending, who, data, base(who), { ep: ep.num, camp: 'twist', phase: 'pre', n: n++, place: 'secret', unique: 'soft', ...extra });
   const nominees = tw.giftResults.map(r => r.player);
 
   // the nominees meet, far from both camps
@@ -70,7 +70,10 @@ function summit(ep, tw) {
       : r.gift === 2 ? (r.searchOutcome === 'found' ? 'found' : 'empty')
         : drama ? ((s.boldness ?? 5) >= 8 ? 'totem-brag' : (s.loyalty ?? 5) <= 3 ? 'totem-cold' : 'totem-slip') : 'totem';
     const who = { a: r.player, b: mates[0], c: mates[1], ...(mates[2] ? { d: mates[2] } : {}) };
-    const w = write('twist.summit.back', ending, who, { tribe: team?.name || 'the team' });
+    // (the team meets them as they get back: it had opened as a huddle, "In the caves, Aubrey, Gabby, Julia and Courtney are
+    // huddled together where nobody can hear", then "Hey! How'd it go?"; read 2026-10-15)
+    const w = write('twist.summit.back', ending, who, { tribe: team?.name || 'the team' }, { place: 'public', noSetup: true });
+    if (w && w.lines[0]?.kind !== 'beat') w.lines.unshift({ kind: 'beat', by: null, text: `${r.player} gets back to camp, and ${mates[0]} is the first one over.` });
     if (w) scenes.push({ at: 'camp', camp: team?.name || null, lines: w.lines, players: Object.values(who) });
   }
   return scenes;
@@ -82,8 +85,10 @@ function writer(ep, opts = {}) {
   const venue = seasonConfig?.setting || 'hosted-camp';
   const voteYet = opts.voteYet || (gs.episodeHistory || []).some(h => h.num < ep.num && h.eliminated);
   let n = 700;
-  return (pool, ending, who, data = {}, unique = 'soft') => writeStory(pool, ending, who, data,
-    { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'pre' }), venue, voteYet, thing: !!data.thing, lot: !!data.lot }, { ep: ep.num, camp: 'twist', phase: 'pre', n: n++, place: 'secret', unique });
+  // (extra: where it happens; a twist is not always a secret meeting: a loved ones talk opened on "Owen keeps a few steps
+  // behind Millie until they are both out of sight", read 2026-10-15)
+  return (pool, ending, who, data = {}, unique = 'soft', extra = {}) => writeStory(pool, ending, who, data,
+    { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'pre' }), venue, voteYet, thing: !!data.thing, lot: !!data.lot }, { ep: ep.num, camp: 'twist', phase: 'pre', n: n++, place: 'secret', unique, ...extra });
 }
 const sceneOf = (w, at, players, camp = null) => (w ? { at, camp, lines: w.lines, players } : null);
 
@@ -117,7 +122,7 @@ function returning(ep, tw) {
     const foe = voters.sort((x, y) => getBond(name, x) - getBond(name, y) || x.localeCompare(y))[0] || null;
     if (!friend) continue;
     const who = { a: name, b: friend, ...(foe ? { c: foe } : {}) };
-    out.push(sceneOf(write('twist.return.arrive', foe ? 'foe' : 'any', who), 'camp', Object.values(who)));
+    out.push(sceneOf(write('twist.return.arrive', foe ? 'foe' : 'any', who, {}, 'soft', { place: 'public' }), 'camp', Object.values(who)));
   }
   return out.filter(Boolean);
 }
@@ -140,7 +145,10 @@ function split(ep, tw) {
   for (const [x, y] of pairs) {
     if (used.has(x) || used.has(y) || out.length >= 2) continue;
     used.add(x); used.add(y);
-    out.push(sceneOf(write('twist.swap.split', 'any', { a: x, b: y }, { mine: teamAfter(x), theirs: teamAfter(y) }), 'set', [x, y]));
+    // (said where the new teams were called, the moment they were: not "Heather catches Lindsay alone on the trail")
+    const w = write('twist.swap.split', 'any', { a: x, b: y }, { mine: teamAfter(x), theirs: teamAfter(y) }, 'soft', { noSetup: true });
+    if (w && w.lines[0]?.kind !== 'beat') w.lines.unshift({ kind: 'beat', by: null, text: `${y} finds ${x} the second the new teams are called.` });
+    out.push(sceneOf(w, 'set', [x, y]));
   }
   return out.filter(Boolean);
 }
@@ -204,7 +212,7 @@ function feast(ep, tw) {
     const [a, b] = e.players;
     if (seen.has(a) || seen.has(b)) continue;
     const thing = e.type === 'intel-leak' && / Exposed$/.test(e.badgeText || '') ? e.badgeText.replace(/ Exposed$/, '') : null;
-    const sc = sceneOf(write('twist.feast', FEAST[e.type], { a, b }, thing ? { thing } : {}), 'set', [a, b]);
+    const sc = sceneOf(write('twist.feast', FEAST[e.type], { a, b }, thing ? { thing } : {}, 'soft', { place: 'aside' }), 'set', [a, b]);
     if (sc) { out.push(sc); seen.add(a); seen.add(b); }
   }
   return out.filter(Boolean);
@@ -216,7 +224,7 @@ function loved(ep, tw) {
   const write = writer(ep);
   const a = tw.lovedOnesStandout;
   const b = closestOf(a, (gs.activePlayers || []).filter(x => x !== a))[0] || null;
-  return [sceneOf(write('twist.loved', 'standout', { a, ...(b ? { b } : {}) }), 'set', [a, b].filter(Boolean))].filter(Boolean);
+  return [sceneOf(write('twist.loved', 'standout', { a, ...(b ? { b } : {}) }, {}, 'soft', { place: 'aside' }), 'set', [a, b].filter(Boolean))].filter(Boolean);
 }
 
 // ── First Impressions (twists.js executeFirstImpressions) ────────────────────────────────────

@@ -58,7 +58,7 @@ export default {
     { id: 'nn.f1', turns: [
       { beat: "{a} stops at {b} on the way out." },
       { by: 'a', say: "I really thought I'd make it further than this.", v: {tough: "Whatever. It's fine. I'm fine.",emotional: "I don't want to go. I really don't want to go.",dry: "Well. That's that, then.",teen: "This is so unfair. I was having so much fun."} },
-      { by: 'a', move: 'goodbye' },
+      { by: 'a', say: "Go all the way for me, okay?", v: { tough: "Win it. Don't make me watch somebody else win it.", warm: "Win this for both of us, okay?", dry: "Win it, or at least make it entertaining." } },
       { by: 'b', say: "I will. I promise." },
       { by: 'a', move: 'parting', asConf: true },
     ] },
@@ -94,7 +94,7 @@ export default {
     { id: 'nn.s2', turns: [
       { by: 'a', say: "Oh, and {b}?" },
       { by: 'a', move: 'shot' },
-      { by: 'b', say: "Don't call it a game move. You looked me in the eye this morning.", v: {tough: "A game move. Sure. Remember that when it's your turn.",warm: "I know it's a game. It still hurts, okay?"} },
+      { by: 'b', say: "You'd have done the same thing in my shoes.", v: {cruel: "Bye, {a}.",warm: "I'm sorry it had to be you. I really am."} },
       { by: 'a', move: 'parting', asConf: true },
     ] },
   ],

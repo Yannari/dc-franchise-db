@@ -137,15 +137,14 @@ export default {
     // more trios: three entries for every three-person pact a season makes aired "Us three. To the end." twice
     // in one season (read 2026-10-14)
     { id: 'af3.f12', deal: 'Final Three', when: { third: true }, turns: [
-      { by: 'a', say: "Count with me. How many people in here would actually keep any of us?" },
+      { by: 'a', say: "Be honest. How many people in here would actually keep any of us?" },
       { by: 'b', say: "Each other. That's about it." },
-      { by: 'c', say: "That's three." },
+      { by: 'c', say: "So it's just the three of us." },
       { by: 'a', say: "Then that's the deal. The three of us, to the final three. Whoever wins anything uses it for the other two." },
       { by: 'b', say: "Even the veto?" },
       { by: 'a', say: "Especially the veto." },
-      { by: 'c', say: "Okay. In." },
-      { by: 'b', say: "In." },
-      { by: 'b', dr: "{a} did the maths out loud and it came to three. Me, {a} and {c}. I'll take those numbers." },
+      { by: 'c', say: "Okay. I'm in.", v: { hard: "Fine. In. Don't make me regret it." } },
+      { by: 'b', dr: "{a} did the maths out loud, and it came to three. Me, {a} and {c}. I'll take that." },
     ] },
     { id: 'af3.f13', deal: 'Final Three', when: { third: true }, turns: [
       { by: 'b', say: "I want to say something before somebody else gets to either of you." },
@@ -500,14 +499,12 @@ export default {
       { by: 'a', dr: "'I'll come and find you more.' People only promise that when they've stopped wanting to." },
     ] },
     { id: 'ak3.d4', turns: [
-      { by: 'a', say: "Who do you trust more. Me or {c}?" },
-      { by: 'b', say: "That's not fair." },
-      { by: 'a', say: "It's a simple question." },
-      { by: 'b', say: "It's an impossible question." },
-      { by: 'a', say: "Then it's {c}." },
+      { by: 'a', say: "Who do you trust more, me or {c}?" },
+      { by: 'b', say: "That's not fair. You can't ask me that." },
+      { by: 'a', say: "Then it's {c}.", v: { anxious: "Okay. So it's {c}. I knew it." } },
       { by: 'b', say: "I didn't say that!" },
       { by: 'a', say: "You didn't say me, either." },
-      { by: 'b', dr: "There's no right answer to that question. There's only the speed you answer it. I was slow." },
+      { by: 'b', dr: "There's no right answer to that question. There's only how fast you answer it, and I was too slow." },
     ] },
   ],
 

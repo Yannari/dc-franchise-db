@@ -14,7 +14,10 @@ const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul
 
 /** The coaches sitting at this vote (the tribe's, from the episode's own record). */
 export function coachesAt(ep) {
-  const t = ep?.tribalTribe;
+  // (an episode saved without its council's tribe, a challenge that stored the loser by name: the tribe is the one a coach
+  // event at this vote names, or the one the people at the vote started the episode in)
+  const t = ep?.tribalTribe || (ep?.coachElimination || [])[0]?.tribe || (ep?.coachSaves || [])[0]?.tribe || (ep?.coachCardCommits || [])[0]?.tribe
+    || (ep?.tribesAtStart || []).find(x => (x.members || []).includes((ep.tribalPlayers || [])[0]))?.name;
   return (t && ep.coachData?.[t]?.coaches) || [];
 }
 /** Who the votes sent home before the card had its say: the coach saved, or the coach voted out. */

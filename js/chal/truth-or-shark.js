@@ -1104,8 +1104,11 @@ export function simulateTruthOrShark(ep) {
   ep.challengeCategory = 'social';
 
   // Winning tribe gets immunity
-  ep.winner = winningTribe.name;
-  ep.loser = loser.name;
+  // (the tribes themselves, as every other challenge stores them: episode.js reads ep.loser.name for the council's tribe,
+  // and with a name here a coach voted out at this Tribal was nobody's coach, so the stepped Tribal fell back to the classic
+  // pages; the user, 2026-10-15, a Truth or Shark night that voted out Zoey)
+  ep.winner = gs.tribes.find(t => t.name === winningTribe.name) || winningTribe;
+  ep.loser = gs.tribes.find(t => t.name === loser.name) || loser;
   ep.tribalPlayers = loser.members;
   ep.immunityWinner = null; // tribe immunity, not individual
 

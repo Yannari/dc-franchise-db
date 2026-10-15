@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" font-family="Arial, Helvetica, sans-serif">
+  <!-- THE ARENA, wide camera: an old jungle quarry at night, a sand ring, the house watching from a stand. -->
+  <rect width="1920" height="1080" fill="#14141c"/>
+  <!-- quarry walls: carved rock terraces, jungle on top -->
+  <path d="M0 120 L 1920 120 L 1920 520 L 0 520 Z" fill="#6b5446"/>
+  <path d="M0 120 C 300 60, 700 90, 960 70 C 1250 50, 1650 90, 1920 60 L 1920 160 L 0 160 Z" fill="#1f4a2a"/>
+  <g stroke="#3e2f26" stroke-width="6"><line x1="0" y1="260" x2="1920" y2="260"/><line x1="0" y1="390" x2="1920" y2="390"/></g>
+  <!-- the gate in the back wall where players walk in -->
+  <rect x="860" y="260" width="200" height="260" fill="#0b0b0b" stroke="#2a201a" stroke-width="12"/>
+  <text x="960" y="245" font-size="22" font-weight="800" fill="#ffcc66" text-anchor="middle">GATE (players walk in)</text>
+  <!-- torches round the ring -->
+  <g fill="#ff8a1a"><circle cx="300" cy="560" r="20"/><circle cx="620" cy="520" r="20"/><circle cx="1300" cy="520" r="20"/><circle cx="1620" cy="560" r="20"/>
+    <circle cx="160" cy="760" r="22"/><circle cx="1760" cy="760" r="22"/></g>
+  <g stroke="#3e2f26" stroke-width="8"><line x1="300" y1="580" x2="300" y2="660"/><line x1="620" y1="540" x2="620" y2="610"/><line x1="1300" y1="540" x2="1300" y2="610"/><line x1="1620" y1="580" x2="1620" y2="660"/>
+    <line x1="160" y1="782" x2="160" y2="880"/><line x1="1760" y1="782" x2="1760" y2="880"/></g>
+  <!-- floor and the sand ring -->
+  <rect x="0" y="520" width="1920" height="560" fill="#7a5e44"/>
+  <ellipse cx="960" cy="800" rx="640" ry="220" fill="#e7cf98" stroke="#2a201a" stroke-width="10"/>
+  <!-- start podiums: one each side -->
+  <rect x="440" y="740" width="150" height="70" fill="#1b1b1b" stroke="#ff6a1a" stroke-width="6"/><text x="515" y="725" font-size="22" font-weight="800" fill="#fff" text-anchor="middle">START A</text>
+  <rect x="1330" y="740" width="150" height="70" fill="#1b1b1b" stroke="#ff6a1a" stroke-width="6"/><text x="1405" y="725" font-size="22" font-weight="800" fill="#fff" text-anchor="middle">START B</text>
+  <!-- the empty middle where each night's game is set up -->
+  <rect x="760" y="700" width="400" height="180" fill="none" stroke="#ffffff" stroke-width="4" stroke-dasharray="14 10"/>
+  <text x="960" y="800" font-size="22" font-weight="800" fill="#333" text-anchor="middle">GAME SPACE (keep empty)</text>
+  <!-- TJ at the back of the ring, on a stone step -->
+  <rect x="900" y="560" width="120" height="40" fill="#4a3a30"/><circle cx="960" cy="545" r="16" fill="#fff"/><text x="960" y="625" font-size="20" font-weight="800" fill="#fff" text-anchor="middle">TJ</text>
+  <!-- the house watching from a raised wooden stand, left -->
+  <path d="M0 560 L 260 560 L 330 1080 L 0 1080 Z" fill="#5a3a24"/>
+  <g stroke="#2a1a10" stroke-width="5"><line x1="0" y1="660" x2="275" y2="660"/><line x1="0" y1="780" x2="290" y2="780"/><line x1="0" y1="900" x2="305" y2="900"/></g>
+  <text x="140" y="620" font-size="22" font-weight="800" fill="#ffcc66" text-anchor="middle">THE HOUSE</text><text x="140" y="645" font-size="16" fill="#ffcc66" text-anchor="middle">watches from here</text>
+  <!-- right: the scoreboard / brazier stack -->
+  <rect x="1680" y="560" width="200" height="140" fill="#222" stroke="#ff3b1a" stroke-width="6"/><text x="1780" y="640" font-size="18" fill="#ff8a3d" text-anchor="middle" font-weight="800">BRAZIER / GONG</text>
+  <text x="40" y="1060" font-size="20" fill="#ddd">Night is the main look. The middle stays empty: a different game is built in it each episode.</text>
+</svg>

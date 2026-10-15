@@ -117,6 +117,7 @@ import { generateDragSummaryText } from './vp-dr/summary.js';
 import { DRAG_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT } from './shows.js';
 import { episodeText as circleEpisodeText } from './ci/transcript.js';
 import { episodeText as challengeEpisodeText } from './ch/transcript.js';
+import { chStepText } from './vp-ch-ep/steps.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 // rpBuildAftermath is read off window (not statically imported) — aftermath.js already imports from
 // this module, so a static import here would create a circular dependency.
@@ -3993,7 +3994,13 @@ export function generateSummaryText(ep) {
   // The Circle: the same transcript its screens draw (js/vp-ci/screens.js).
   if (ep.format === CIRCLE_FORMAT) return circleEpisodeText(ep);
   // The Challenge: the same transcript its screens draw (js/vp-ch/screens.js).
-  if (ep.format === CHALLENGE_FORMAT) return challengeEpisodeText(ep);
+  // The Challenge: the stepped viewer's own steps, so the backlog says what the screen shows (the rules
+  // cards, the play-by-play, TJ at the Arena); a row from before the stepped viewer falls back.
+  if (ep.format === CHALLENGE_FORMAT) {
+    try { if (ep.ch?.house) return `EPISODE ${ep.num}${ep.ch.final ? ' — THE FINAL' : ''}
+${chStepText(ep)}`; } catch (e) { console.warn('Challenge step text failed:', e); }
+    return challengeEpisodeText(ep);
+  }
 
   // Generate aftermath data before building text (aftermath is created in patchEpisodeHistory,
   // which runs AFTER this function — so we must generate it here to include it in the text backlog)

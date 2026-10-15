@@ -36,6 +36,7 @@ import { dragScreens } from './vp-dr/screens.js';
 import { perfectMatchVpScreens } from './vp-pm/screens.js';
 import { circleVpScreens } from './vp-ci/screens.js';
 import { challengeVpScreens } from './vp-ch/screens.js';
+import { chStepVpScreens, CHX_SWITCH } from './vp-ch-ep/screens.js';
 import { bbStepScreens } from './vp-bb-ep/screens.js';
 import { tdStepScreens, tdSteppedOn, TDX_SWITCH } from './vp-td-ep/screens.js';
 import { riChoiceQuote, exileChooserReason } from './vp-td-ep/twists.js';
@@ -14153,10 +14154,21 @@ function _buildVPScreensClassic(epRecord) {
   // Until Plan 5's stages: every aired scene as a screen, its lines as the
   // transcript writes them (js/vp-ci/screens.js). Assigned AND returned.
   // ── THE CHALLENGE ─────────────────────────────────────────────────
-  // Until the stepped viewer: every aired scene as a screen, its lines as
-  // the transcript writes them (js/vp-ch/screens.js). Assigned AND returned.
+  // The stepped viewer (js/vp-ch-ep: the show open, the daily played out, the
+  // villa map, the vote out loud, the call-out at the Arena). The readout
+  // (js/vp-ch/screens.js) is one click away on every screen, and is what an
+  // episode falls back to if the stepped build throws. Assigned AND returned.
   if (epRecord.format === CHALLENGE_FORMAT) {
-    vpScreens = challengeVpScreens(epRecord);
+    let stepped = true;
+    try { stepped = window.localStorage?.getItem('ch-vp') !== 'classic'; } catch { /* storage can throw */ }
+    if (stepped) {
+      try {
+        const _g = _coreGs || (typeof window !== 'undefined' ? window.gs : null);
+        vpScreens = chStepVpScreens(epRecord, { history: _g?.episodeHistory || [], season: seasonConfig?.seasonNumber || null });
+        return vpScreens;
+      } catch (err) { console.warn('Challenge stepped viewer fell back to the readout:', err); }
+    }
+    vpScreens = challengeVpScreens(epRecord).map(s => ({ ...s, html: CHX_SWITCH + s.html }));
     return vpScreens;
   }
   if (epRecord.format === CIRCLE_FORMAT) {

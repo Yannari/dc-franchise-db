@@ -152,6 +152,27 @@ export function challengeSeasonShape(cast = _cast(), config = seasonConfig) {
 
 const VERB = { arena: 'eliminated', quit: 'quit', medical: 'left on a medical', disqualified: 'disqualified', instant: 'eliminated' };
 
+// The daily as it was played, for the stepped viewer: the units in finishing order (best first).
+function dailyOf(d) {
+  if (!d) return null;
+  const sc = d.scores || {};
+  const unit = u => u.reduce((a, n) => a + (sc[n] || 0), 0) / Math.max(1, u.length);
+  const order = [...(d.units || [])].sort((a, b) => unit(b) - unit(a)).map(u => [...u]);
+  return { id: d.id, name: d.name, mode: d.mode, order, winners: [...(d.winners || [])], last: [...(d.last || [])],
+    throws: (d.throws || []).map(t => t.name || t), caught: (d.caught || []).map(c => ({ thrower: c.thrower, by: c.by })),
+    moments: (d.moments || []).map(m => ({ kind: m.kind, who: m.who })), injuries: [...(d.injuries || [])] };
+}
+// An Arena game (or a final's instant elimination) as it was played.
+const duelOf = d => ({ game: d.game, name: d.gameName || d.game, kind: d.kind || null, a: d.a, b: d.b, winner: d.winner, loser: d.loser,
+  upset: !!d.upset, comeback: !!d.comeback, volunteer: !!d.volunteer, beats: (d.beats || []).map(b => ({ ...b, score: b.score ? { ...b.score } : undefined })) });
+// The final as it was run: checkpoints, the instant eliminations, the overnight.
+function finalOf(f) {
+  if (!f) return {};
+  return { finalists: [...(f.finalists || [])], checkpoints: (f.checkpoints || []).map(c => ({ id: c.id, scores: { ...c.scores } })),
+    instant: (f.instant || []).map(duelOf), overnight: (f.overnight || []).map(o => ({ ...o })),
+    sabotage: (f.sabotage || []).map(x => ({ ...x })), help: (f.help || []).map(x => ({ ...x })), totals: { ...(f.totals || {}) } };
+}
+
 /** The run tab's rows, one per episode and one for the final, from a played and aired season. */
 export function challengeRows(result) {
   const { state } = result;
@@ -159,6 +180,8 @@ export function challengeRows(result) {
   const goneEp = Object.fromEntries(state.gone.map(g => [g.name, g.ep]));
   const peopleAfter = ep => cast.filter(n => !(goneEp[n] <= ep));
   const exitsAt = ep => state.gone.filter(g => g.ep === ep).map(g => ({ name: g.name, verb: VERB[g.how] || 'eliminated', channel: g.how, by: g.by || null }));
+  // Who was in the house when episode `ep` began.
+  const castAt = ep => cast.filter(n => !(goneEp[n] < ep));
   const rows = [];
   for (const e of result.episodes) {
     const ballots = (e.votes || []).flatMap(v => v.ballots || []);
@@ -176,6 +199,14 @@ export function challengeRows(result) {
         callouts: (e.callouts || []).map(c => ({ by: c.by, opponent: c.opponent, reason: c.reason })),
         arena: (e.arena || []).map(d => ({ winner: d.winner, loser: d.loser, game: d.gameName || d.game || null })),
         aired: airedOf(e),
+        // What the stepped viewer stages (js/vp-ch-ep): the house at the start, the daily as it was
+        // played, every ballot with what the voter wanted, was asked and told, and each Arena game.
+        house: castAt(e.ep),
+        daily: dailyOf(e.daily),
+        votes: (e.votes || []).map(v => ({ votedIn: v.votedIn, tally: { ...(v.tally || {}) }, tied: !!v.tied, tiebreak: v.tiebreak || null,
+          ballots: (v.ballots || []).map(b => ({ voter: b.voter, target: b.target, wanted: b.wanted || null, asked: b.asked || null, told: b.told || null, why: b.why || null, flip: !!b.flip })) })),
+        duels: (e.arena || []).map(duelOf),
+        meetings: (e.delib?.meetings || []).map(m => ({ name: m.name || null, organiser: m.organiser, target: m.target, responses: { ...(m.responses || {}) } })),
       },
     });
   }
@@ -184,8 +215,9 @@ export function challengeRows(result) {
     rows.push({
       format: CHALLENGE_FORMAT, num: f.ep, day: f.aired?.[0]?.day ?? null, exits: exitsAt(f.ep), eliminated: null,
       votes: {}, votingLog: [], winner: (result.champions || [])[0] || null,
-      ch: { final: { champions: [...(result.champions || [])], placements: { ...(state.final?.placements || {}) } },
-        people: [...(result.champions || [])], aired: airedOf(f) },
+      ch: { final: { champions: [...(result.champions || [])], placements: { ...(state.final?.placements || {}) },
+          ...finalOf(result.final) },
+        people: [...(result.champions || [])], house: castAt(f.ep), aired: airedOf(f) },
     });
   }
   return rows;

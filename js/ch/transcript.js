@@ -52,18 +52,24 @@ export function sectionOf(row, scene) {
 }
 
 const compact = lines => (lines || []).map(l => ({ kind: l.kind, by: l.by || null, text: l.text }));
+// A scene's facts, JSON-safe, for the stepped viewer (js/vp-ch-ep): who won, what the call-out was for.
+const plain = d => { try { return d ? JSON.parse(JSON.stringify(d)) : null; } catch { return null; } };
 
 /** One episode's aired scenes, as a row carries them. */
 export function airedOf(epRec) {
   const out = [];
   for (const a of epRec?.aired || []) {
     if (a.kind === 'ceremony') {
-      out.push({ kind: 'ceremony', day: a.day, spot: 'deliberation', who: [],
-        lines: (a.ceremony || []).flatMap(c => compact(c.script?.lines)) });
+      // `cer`: the ceremony in its parts (TJ's open, each ballot with its own lines, the result), so the
+      // stepped viewer can stand each voter up as they speak. `lines` is the same words, flat.
+      const cer = (a.ceremony || []).map(c => ({ kind: c.kind, voter: c.voter || null, target: c.target || null, why: c.why || null, lines: compact(c.script?.lines) }));
+      out.push({ kind: 'ceremony', day: a.day, spot: 'deliberation', who: [], data: plain(a.scene?.data),
+        votedIn: a.scene?.who?.[0] || null, cer, lines: cer.flatMap(c => c.lines) });
       continue;
     }
     if (!a.script) continue;
-    out.push({ kind: a.kind, day: a.day, spot: a.scene?.spot || null, who: [...(a.scene?.who || [])], lines: compact(a.script.lines) });
+    out.push({ kind: a.kind, day: a.day, spot: a.scene?.spot || null, who: [...(a.scene?.who || [])], data: plain(a.scene?.data), snap: plain(a.scene?.snap),
+      lines: compact(a.script.lines) });
   }
   return out;
 }

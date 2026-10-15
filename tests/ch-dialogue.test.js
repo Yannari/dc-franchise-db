@@ -174,6 +174,15 @@ describe('The Challenge, as aired', () => {
     }
   });
 
+  it('no scene casts the same person in two parts', () => {
+    // "Ireland: I'm sorry, I don't feel safe in this group. / Ireland: That's it? You're out?": the leader
+    // leaving their own alliance was cast as both the one leaving and the one left.
+    for (const r of seasons) for (const sc of r.state.scenes) {
+      if ((sc.who || []).length < 2) continue;
+      expect(sc.who[0] === sc.who[1], `${sc.kind} ep ${sc.ep}: ${sc.who[0]} twice`).toBe(false);
+    }
+  });
+
   it('nobody plays both parts of an exchange', () => {
     // A morning-after with one relieved player had them say "I slept better" and answer "Don't say that out loud".
     for (const r of seasons) for (const e of r.episodes) for (const a of e.aired || []) {

@@ -56,8 +56,13 @@ export const ROLES = {
   prank: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: yes(sc.data.laughs, 'laughs', 'war') }),
   'kitchen-disaster': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: yes(sc.data.saved, 'saved', 'alone') }),
   'gym-flex': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
-  'hot-tub-truths': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.slip?.kind || 'none',
-    slots: { target: sc.data.slip?.on } }),
+  'hot-tub-truths': sc => {
+    // the one who answers a confession is a friend in the tub, never the person it's about
+    const on = sc.data.slip?.on;
+    const [a, ...rest] = sc.who;
+    const others = rest.filter(n => n !== on);
+    return { roles: { a, b: others[0], c: others[1] }, ending: sc.data.slip?.kind || 'none', slots: { target: on } };
+  },
   'tj-at-breakfast': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'bunk-war': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: yes(sc.data.moved, 'moved', 'stuck') }),
   'show-banter': (sc, st) => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: yes(sc.data.ok, 'ok', 'sour'),

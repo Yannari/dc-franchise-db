@@ -13,7 +13,7 @@ export default {
     1: {
       sharp: ["{b} was the group's call. I just happened to be the one saying it.", "Don't put {b} on me. That name came from the group. I'm just the mouth."],
       dry: ["For the record, {b} was a group decision. I was just the first to say it.", "My alliance picked {b}. I read the name out. That's the whole story."],
-      loud: ["That wasn't my call! The group said {b}, so I said {b}!", "Look, I'm with my people. My people said {b}. Done."],
+      loud: ["That wasn't my call! The group said {b}, so that's what I said!", "Look, I'm with my people. My people said {b}. Done."],
       soft: ["I feel bad saying {b}. But it was the group's name, not mine.", "I didn't want it to be {b}. The group did, and I owe them."],
       odd: ["I'm basically a messenger. Don't shoot the messenger. It was the alliance.", "I just said what the group told me to say, like a very sweaty parrot."],
       schemer: ["Let the house think it was me. It was the group, and the group owes me for taking the heat."],
@@ -44,10 +44,10 @@ export default {
   },
   'mt.u4': {
     0: {
-      sharp: ["{target} puts on a show in the dailies. The Arena is one on one, and {target} folds one on one.", "Everybody's afraid of {target}. I'm not. Put {target} in and {target} goes home."],
+      sharp: ["{target} puts on a show in the dailies. The Arena is one on one, and {target} folds one on one.", "Everybody's afraid of {target}. I'm not. Put {target.obj} in the Arena and I think that's the end of it."],
       dry: ["{target}'s daily record looks good, but the Arena's different. I think {target} loses in there.", "{target} looks good in the dailies, but the Arena is different. I think {target} goes home."],
-      loud: ["Forget the dailies! {target} in the Arena? {target} loses. I'd bet on it.", "{target} talks big, but put {target} in that Arena and {target} is done."],
-      soft: ["I know {target} looks strong, but I really don't think {target} wins in the Arena.", "I've watched {target} under pressure. If we put {target} in, I think {target} loses."],
+      loud: ["Forget the dailies! {target} in the Arena? {target} loses. I'd bet on it.", "{target} talks big, but put {target.obj} in that Arena and it's over."],
+      soft: ["I know {target} looks strong, but I really don't see {target.obj} winning in the Arena.", "I've watched {target} under pressure. If we put {target.obj} in, I think {target.sub} loses."],
       odd: ["{target} is great at dailies. The Arena is a different game, and I don't think {target} can do it.", "Hear me out: {target} in the Arena? {target} has no chance."],
     },
     1: {
@@ -62,7 +62,7 @@ export default {
       dry: ["Then we deal with it. I'd still take those odds.", "Then we've got a problem. I don't think we will."],
       loud: ["Then we deal with it! But {target} won't win!", "Then we fight. But I'm telling you, I like this."],
       soft: ["Then we deal with it together. But I really think it works.", "Then we figure it out. I trust this one, though."],
-      odd: ["Then we panic, as a team. But I like our chances.", "Then we hide. Kidding. Mostly. I like the odds."],
+      odd: ["Then we panic, as a team. But I like our chances.", "Then we keep our heads down. I like the odds."],
     },
   },
   'rc.a2': {
@@ -78,7 +78,7 @@ export default {
       dry: ["And what do I owe you for it?", "And the catch is?"],
       loud: ["Okay. What's the catch?", "What do you want? Just say it."],
       soft: ["That's nice. What do you need from me, though?", "Okay. What would you want back?"],
-      odd: ["What's the price? I have three granola bars and a good attitude.", "And what do I have to give you? Please say not my snacks."],
+      odd: ["What's the price? I have three granola bars and a good attitude.", "And what do I have to give you?"],
     },
     2: {
       sharp: ["One vote. {target}.", "{target}. Your vote. That's all."],
@@ -90,9 +90,9 @@ export default {
   },
   'rc.a3': {
     2: {
-      sharp: ["{b} said yes before I finished asking. Either {b} hates {target}, or {b} says yes to everybody. I'll find out which.", "That yes came way too fast. {b} is either with me on {target}, or {b} is with everybody."],
-      dry: ["That was a very quick yes from {b}. Quick yeses make me nervous.", "{b} agreed instantly. Either {b} really wants {target} out, or {b} gives that answer to everyone."],
-      loud: ["{b} said yes in like two seconds! That's either great or really bad!", "Too easy. {b} either hates {target} or {b} is lying to my face."],
+      sharp: ["{b} said yes before I finished asking. Either that's a real grudge against {target}, or everybody gets that yes. I'll find out which.", "That yes came way too fast. Either {b} is with me on {target}, or {b} says yes to everybody."],
+      dry: ["That was a very quick yes from {b}. Quick yeses make me nervous.", "{b} agreed instantly. Either that's how badly {b} wants {target} out, or that's the answer everybody gets."],
+      loud: ["{b} said yes in like two seconds! That's either great or really bad!", "Too easy. Either {b} really hates {target}, or that was a lie to my face."],
       soft: ["I want to believe {b}. But that yes came really fast, and I've been burned before.", "{b} said yes so fast. I hope it's because of {target}, and not because {b} says yes to everybody."],
       odd: ["{b} said yes faster than I say yes to pizza. Nobody's that fast.", "I asked, {b} said yes, I blinked. Either {b} really doesn't like {target}, or something is up."],
     },
@@ -182,21 +182,21 @@ export default {
       dry: ["Tough crowd. No welcome back?", "So... no welcome back, then."],
       loud: ["HELLO? I'm back! Somebody say something!", "Nobody's going to say welcome back? Really?"],
       soft: ["I'm back. Is anybody... glad?", "Hey. I'm back. Anyone?"],
-      odd: ["I'm back! Hold your applause. Seriously, you're holding it a lot.", "Ta-da! That was the part where you clap."],
+      odd: ["I'm back. Nobody's going to say anything?", "I'm back! You can all stop staring now."],
     },
     2: {
       sharp: ["Don't, {b}. You said my name. You don't get to smile at me now.", "Cute, {b}. You voted me in. Save the welcome."],
       dry: ["You voted me in, {b}. Skip the welcome.", "Thanks, {b}. You were also the one trying to send me home."],
-      loud: ["Don't even, {b}! You tried to send me home!", "Welcome back? You put me in there, {b}!"],
+      loud: ["Don't even, {b}! You tried to send me home!", "Don't even, {b}! You put me in there!"],
       soft: ["That's hard to hear from you, {b}. You tried to send me home.", "I wish I could believe you, {b}. But you voted me in."],
-      odd: ["That's sweet, {b}. Also, you tried to send me home. Two things can be true.", "Welcome back, says the person who voted me in. Love that, {b}."],
+      odd: ["That's nice of you, {b}. You also tried to send me home.", "You voted me in, {b}. You don't get to welcome me back."],
     },
     3: {
-      sharp: ["I voted {a} in and {a} won. Now {a} sleeps ten feet from me with a grudge. I need a new plan.", "Worst case. {a} is back, {a} knows, and I'm the obvious target now."],
+      sharp: ["I voted {a} in, and {a.sub} won. Now I'm sleeping ten feet from somebody with a grudge against me. I need a new plan.", "This is the worst case. {a} is back, knows who did it, and I'm the obvious target now."],
       dry: ["Voting somebody in only works if they lose. {a} didn't. Now I have a problem across the room.", "{a} came back. I voted for {a}. Those two facts don't go well together."],
-      loud: ["{a} came back! I voted for {a}! This is the worst thing that could've happened!", "{a} is back and {a} is coming for me. Great. Love it."],
-      soft: ["I keep looking over at {a}. {a} wants revenge, and honestly I don't blame {a}.", "I voted {a} in and {a} came back. I'm not going to sleep tonight."],
-      odd: ["I voted {a} into a fight and {a} won it. I'm sleeping with one eye open.", "{a} came back. I'm officially scared."],
+      loud: ["{a} came back! I voted for {a}! This is the worst thing that could've happened!", "{a} is back, and I'm the first one {a.sub}'ll come after. I knew this could happen."],
+      soft: ["I keep looking over at {a}. Wanting revenge makes sense, and honestly I don't blame {a.obj}.", "I voted {a} in, and now {a.sub} came back. I'm not going to sleep tonight."],
+      odd: ["I voted {a} into the Arena and {a.sub} won. I'm not going to sleep much tonight.", "{a} came back. I'm officially scared."],
     },
   },
   'rt.f1': {
@@ -221,7 +221,7 @@ export default {
       dry: ["Stop. You were great.", "That's not true. You were really good."],
       loud: ["Shut UP, you were awesome!", "Are you kidding? You crushed it!"],
       soft: ["No way. You were amazing. I mean it.", "Stop it, you were incredible."],
-      odd: ["Shut up. You were a machine. A beautiful, sweaty machine.", "You were amazing. I'm putting it in my diary."],
+      odd: ["Shut up. You were a machine. A beautiful, sweaty machine.", "You were amazing. We did that together."],
     },
   },
   'kb.1': {
@@ -244,7 +244,7 @@ export default {
       sharp: ["You're very distracting. I'm trying to play a game here.", "Do you know how distracting you are? Because I think you do."],
       dry: ["You're a little distracting, you know.", "You're distracting. I keep losing my train of thought."],
       loud: ["You're SO distracting! It's a problem!", "Can you stop being so distracting? I'm trying to focus!"],
-      soft: ["You're kind of distracting. In a good way.", "You're distracting, you know. I can't focus when you're around."],
+      soft: ["You're kind of distracting, you know that?", "You're distracting, you know. I can't focus when you're around."],
     },
     1: {
       sharp: ["Good. It was meant as one.", "I know. It's on purpose."],
@@ -282,7 +282,7 @@ export default {
       dry: ["Yep. That's it.", "That's all it takes."],
       loud: ["Just like that! Welcome in!", "Yep! You're in!"],
       soft: ["Just like that. We're glad you're here.", "Yes. You've earned it."],
-      odd: ["Just like that. No paperwork.", "Boom. You're in. There's no ceremony. I wanted a ceremony."],
+      odd: ["Just like that. You're in.", "That's it. You're one of us now."],
     },
   },
   'hs.c2': {
@@ -297,13 +297,13 @@ export default {
       dry: ["You're not being stupid. Everybody cries in here eventually.", "It's not stupid. This place gets to everybody."],
       loud: ["Stop! You're not stupid! Everybody cries in this house!", "Hey! Not stupid! I cried yesterday!"],
       soft: ["You're not being stupid at all. Everybody cries in here.", "Hey, don't say that. We all cry in here."],
-      odd: ["You're not stupid. I cried over a sandwich on day two.", "Crying is allowed. I cried at a pool noodle once."],
+      odd: ["You're not stupid. I cried on day two.", "Crying is allowed. Everybody cries in here."],
     },
     3: {
       dry: ["{a} is having a hard time. Somebody should look out for {a}. Might as well be me.", "Nobody else noticed {a} was struggling. I did."],
       loud: ["{a} is hurting and nobody in this house even noticed! So I'm on it.", "I'm looking after {a}. Somebody has to."],
       soft: ["{a} is really struggling. I'm going to make sure {a} isn't alone.", "My heart hurts for {a}. I'll look after {a}."],
-      odd: ["{a} needs a buddy, and I'm volunteering. I'm a great buddy. Ask my plants.", "I'm {a}'s emotional support person now. Unqualified, but here."],
+      odd: ["{a} needs somebody right now, and I'm going to be there.", "I'm {a}'s emotional support person now. Unqualified, but here."],
     },
   },
   'hs.c3': {
@@ -312,14 +312,14 @@ export default {
       dry: ["Want to take a walk? Get some air?", "Walk? It's quieter out there."],
       loud: ["Come on, let's get out of here for a bit! Walk!", "Let's go for a walk! Fresh air!"],
       soft: ["Do you want to go for a walk? Just us, away from everybody?", "Come walk with me? Just for a bit."],
-      odd: ["Walk? I know where the good rock is. Best rock on the beach.", "Let's go for a walk. I'll show you where I hide my snacks."],
+      odd: ["Want to go for a walk? It helps to get out of the house.", "Let's go for a walk. I'll show you where I hide my snacks."],
     },
   },
   'pb.3': {
     0: {
       sharp: ["Go on. Say it to my face.", "Just say it."],
       dry: ["Go ahead. I know what you're going to say.", "Say it. Get it over with."],
-      loud: ["Go on! Say it!", "Just SAY it already!"],
+      loud: ["Go on, say it. You think I cost us the daily.", "Just SAY it already!"],
       soft: ["Go ahead. I know. Just say it.", "You can say it. I already know."],
       odd: ["Go ahead. Say it. I've prepared a face.", "Let me guess. Go on. Hit me."],
     },
@@ -327,8 +327,8 @@ export default {
   'rt.c1': {
     2: {
       dry: ["{gone} called me out and went home. That's the best way to win one of these.", "Called out, and the caller goes home. Hard to beat that."],
-      loud: ["Called out and sent the caller home! There's no better feeling!", "{gone} called me out and {gone} is gone! Best feeling ever!"],
-      soft: ["I won't lie, sending {gone} home after {gone} picked me feels good. I feel a little bad saying that.", "I'm proud of myself. {gone} picked me, and I proved {gone} wrong."],
+      loud: ["Called out and sent the caller home! There's no better feeling!", "{gone} called me out, and {gone} is the one who went home! That's the best feeling there is!"],
+      soft: ["I won't lie, sending {gone} home after being picked feels good. I feel a little bad saying that.", "I'm proud of myself. {gone} picked me, and I proved {gone.obj} wrong."],
       odd: ["Getting called out and winning is the best. {gone} picked me and lost.", "{gone} picked me and lost. That's karma."],
     },
   },
@@ -352,7 +352,7 @@ export default {
       sharp: ["You're a threat. Be flattered.", "Because you're dangerous. That's a compliment, by the way."],
       dry: ["You're a threat. That's really all it was.", "Because you'd beat me later. Take it as a compliment."],
       loud: ["Because you're a threat! That's a compliment!", "You're dangerous! That's why!"],
-      odd: ["You're a threat. Honestly, that's a compliment.", "You're scary. In a good way."],
+      odd: ["You're a threat. Honestly, that's a compliment.", "You're scary. I mean that as a compliment."],
     },
   },
   'mt.p1': {
@@ -367,7 +367,7 @@ export default {
       sharp: ["Then what's your plan? Go on.", "Okay. Got a better idea?"],
       dry: ["So what would you do instead?", "What's the alternative?"],
       loud: ["Then what do you want to do?!", "Okay, so what's your idea?"],
-      soft: ["What would you rather do? I'm listening.", "Okay. What feels right to you?"],
+      soft: ["What would you rather do? I'm listening.", "Okay. Who would you rather?"],
       odd: ["Okay, pitch me. I'm very open-minded, for the next minute.", "Okay, so what would you do? Lay it on me."],
     },
     3: {
@@ -422,7 +422,7 @@ export default {
       dry: ["{alliance}. And that stays in this room.", "We're {alliance}. Nobody else hears it."],
       loud: ["{alliance}! But nobody else hears it!", "{alliance}. Keep it in this room!"],
       soft: ["How about {alliance}? Just for us. Nobody else.", "{alliance}. That's ours. Nobody else gets it."],
-      odd: ["{alliance}. It's a secret. Like a secret handshake, but a name.", "{alliance}! Whisper it. Actually, don't say it at all."],
+      odd: ["{alliance}. It's a secret. Like a secret handshake, but a name.", "{alliance}. And nobody outside this room hears that name."],
     },
   },
   'rq.o1': {
@@ -469,7 +469,7 @@ export default {
       odd: ["Is that the plan, or the plan you made in the shower?", "Is that a group plan or a you plan? Asking for the group."],
     },
     2: {
-      sharp: ["It's the plan that keeps us safe. You're welcome.", "It's the one that keeps you safe. So yes, it's the plan."],
+      sharp: ["It's the plan that keeps us safe. Trust me.", "It's the one that keeps you safe. So yes, it's the plan."],
       dry: ["It's the plan that keeps everybody here safe.", "It's the one that protects all of us."],
       loud: ["It's the plan that keeps us alive!", "It's the plan that keeps all of us here!"],
       soft: ["It's the plan that keeps all of us safe. I promise.", "I'm just trying to protect all of us."],
@@ -509,7 +509,7 @@ export default {
     3: {
       sharp: ["They'd want you to stay and win. You know that.", "They didn't send you here to quit."],
       dry: ["They'd tell you to stay. You know they would.", "Your family would tell you to keep going."],
-      loud: ["They'd want you to keep fighting! You know that!", "They'd be yelling at the TV for you to stay!"],
+      loud: ["They'd want you to keep fighting! You know that!", "Your family's watching! They'd want you to stay!"],
       soft: ["They'd want you to keep going. They're so proud of you.", "They'd want you to stay. I know they would."],
     },
   },
@@ -557,11 +557,11 @@ export default {
   },
   'ov.2': {
     1: {
-      sharp: ["We get {a} in before {a} catches on. That's it.", "{a} goes in before {a} knows what hit {a.obj}."],
-      dry: ["We need {a} in before {a} works it out.", "The timing matters. {a} goes in before {a} figures it out."],
-      loud: ["We get {a} in before {a} figures it out, done!", "Just get {a} in! Fast!"],
-      soft: ["I feel bad, but we have to get {a} in before {a} figures it out.", "It has to be {a}, before {a} notices."],
-      odd: ["{a} goes in before {a} figures it out. Like a surprise party, but bad.", "Get {a} in quick. {a} has headphones in, {a} can't hear a thing."],
+      sharp: ["We get {a} in before anybody warns {a.obj}. That's it.", "{a} goes in before anybody warns {a.obj}."],
+      dry: ["We need {a} in before anybody warns {a.obj}.", "The timing matters. {a} goes in before anybody tells {a.obj}."],
+      loud: ["We get {a} in before anybody warns {a.obj}, done!", "Just get {a} in! Fast!"],
+      soft: ["I feel bad, but we have to get {a} in before anybody tells {a.obj}.", "It has to be {a}, before anybody warns {a.obj}."],
+      odd: ["{a} goes in before anybody tells {a.obj}. That's the plan.", "Get {a} in quick. Headphones in, can't hear a thing."],
     },
   },
   'dk.2': {
@@ -626,7 +626,7 @@ export default {
       sharp: ["Deal.", "Done. Don't make me regret it."],
       dry: ["Fine. Done.", "Agreed."],
       loud: ["Done! Deal!", "Yes! Done!"],
-      soft: ["I promise. Done.", "Done. Thank you."],
+      soft: ["I promise. Done.", "You can. So we have a deal?"],
     },
   },
   'mt.r3': {
@@ -635,21 +635,21 @@ export default {
       dry: ["It's {target}. Can we get one week where we're all on the same page?", "It's {target}. Just once, can we be on the same page?"],
       loud: ["It's {target}! Can we have ONE week where everybody's on the same PAGE?!", "It's {target}! One week! Same page! Please!"],
       soft: ["It's {target}. Can we please have one week where we're all on the same page?", "It's {target}. I just want one week where we're all on the same page."],
-      odd: ["It's {target}. Can we get one week where we're all on the same page? Same book, even?", "It's {target}. One week. Same page. I'll bring the page."],
+      odd: ["It's {target}. Can we get one week where we're all on the same page? Same book, even?", "It's {target}. Can we all just be on the same page this week?"],
     },
     2: {
       sharp: ["Unreal.", "You're kidding me."],
       dry: ["Great. Wonderful.", "Of course."],
       loud: ["UNBELIEVABLE!", "Are you serious?!"],
       soft: ["I can't believe this.", "Really? Really?"],
-      odd: ["Wow. Incredible. Applause.", "Cool. Cool cool cool."],
+      odd: ["Wow. Incredible. Applause.", "Okay. That's fine."],
     },
     3: {
-      sharp: ["If {b} won't vote with us when it counts, {b} isn't one of us.", "{b} is either with us or in the way. Right now {b} is in the way."],
-      dry: ["If {b} won't vote with us when it matters, I'm not sure what {b} is doing in this group.", "If {b} won't vote with us, then what are we even doing? {b} needs to decide."],
-      loud: ["{b} won't vote with us?! Then why is {b} even here?!", "If {b} can't vote with us, {b} can get out!"],
+      sharp: ["If {b} won't vote with us when it counts, then we're not really a group.", "{b} is either with us or in the way. Right now {b} is in the way."],
+      dry: ["If {b} won't vote with us when it matters, I don't know why we keep {b.obj} in this group.", "If {b} won't vote with us, then what are we even doing? {b} needs to decide."],
+      loud: ["{b} won't vote with us?! Then why is {b} even here?!", "If {b} can't vote with us, then get out of the group!"],
       soft: ["It hurts that {b} won't vote with us. I'm starting to wonder if {b} was ever really with us.", "I want {b} in this group. But {b} has to show up when it matters."],
-      odd: ["If {b} won't vote with us, {b} is only in this group on paper.", "{b} keeps not voting with us. I'm starting to think {b} is a spy. A bad spy."],
+      odd: ["If {b} won't vote with us, then the group is just a name.", "{b} keeps not voting with us. I'm starting to think {b} is a spy. A bad spy."],
     },
   },
   'pb.1': {

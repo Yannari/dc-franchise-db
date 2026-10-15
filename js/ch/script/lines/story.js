@@ -48,12 +48,12 @@ export default {
       { by: 'a', say: "{target} is two for two in that Arena now.", v: { loud: ['Two for two! {target} is TWO for TWO!'], dry: ['So {target} has won twice. Great. Very relaxing for the rest of us.'], soft: ['Two wins. I\'m kind of scared of {target} now.'] } },
       { by: 'b', say: "So we stop sending {target} in.", v: { sharp: ['Then we stop feeding {target} people.'], soft: ['Maybe we just leave {target} alone for a while.'] } },
       { by: 'a', say: "Every time we send {target} in, somebody else goes home instead.", v: { odd: ['It\'s like we keep handing {target} people to beat.'] } },
-      { by: 'b', conf: "Everybody keeps voting {target} in, and {target} keeps sending one of us home instead.", v: { sharp: ['{target} is the most dangerous person in this game, and the house keeps giving {target} people to beat.'] } },
+      { by: 'b', conf: "Everybody keeps voting {target} in, and one of us keeps going home instead.", v: { sharp: ['{target} is the most dangerous person in this game, and the house keeps handing {target.obj} people to beat.'] } },
     ] },
     { id: 'abs.2', turns: [
-      { by: 'a', say: "Did you see {target} in there? {target} just won again.", v: { loud: ['{target} won AGAIN!'] } },
-      { by: 'b', say: "I saw. I'm not calling {target} out. Ever.", v: { soft: ['I\'d go home crying.'], sharp: ['Nobody sane calls {target} out now.'] } },
-      { by: 'a', conf: "Two eliminations, two wins. {target} isn't a player anymore. {target} is a problem.", v: { odd: ['I\'m going to start being very nice to {target}. Very, very nice.'] } },
+      { by: 'a', say: "Did you see {target} in there? Another win.", v: { loud: ['{target} won AGAIN!'] } },
+      { by: 'b', say: "I saw. I'm not calling {target} out. Ever.", v: { soft: ['Nobody wants to be the next one in there against that.'], sharp: ['Nobody sane calls {target} out now.'] } },
+      { by: 'a', conf: "Two eliminations, two wins. {target} isn't a player anymore. {target} is a problem.", v: { odd: ['I\'m going to start being really nice to {target}, and {target} won\'t know why.'] } },
     ] },
     { id: 'abs.3', turns: [
       { by: 'b', conf: "{target} has won twice in the Arena. The house is scared, and I don't blame them.", v: { loud: ['TWICE! {target} has won TWICE!'] } },
@@ -61,13 +61,13 @@ export default {
   ],
   'arc-beast-feared.any': [
     { id: 'abf.1', turns: [
-      { by: 'a', conf: "Three wins in the Arena. If the house puts {target} in, I'm the kind of person {target} calls out. I'm not voting {target} in. Nobody in my division is.", v: { soft: ['I\'m genuinely scared of {target}. That\'s the truth.'], sharp: ['{target} is untouchable now. Smart people stop trying.'], loud: ['THREE WINS! I\'m not going anywhere near {target}!'] } },
+      { by: 'a', conf: "Three wins in the Arena. If the house puts {target} in, I'm exactly the kind of person who gets called out. I'm not voting {target} in, and nobody in my division should either.", v: { soft: ['I\'m genuinely scared of {target}. That\'s the truth.'], sharp: ['{target} is untouchable now. Smart people stop trying.'], loud: ['THREE WINS! I\'m not going anywhere near {target}!'] } },
     ] },
     { id: 'abf.2', turns: [
       { by: 'a', conf: "{target} is three for three. At this point, voting {target} in just means picking which one of us goes home.", v: { odd: ['I\'ve started saying good morning to {target} very respectfully.'] } },
     ] },
     { id: 'abf.3', turns: [
-      { by: 'a', conf: "The only way {target} leaves this game is if {target} loses an elimination, and nobody in this house can make that happen.", v: { sharp: ['Somebody has to stop {target}. It won\'t be in the Arena.'] } },
+      { by: 'a', conf: "The only way {target} leaves this game is by losing an elimination, and nobody in this house can make that happen.", v: { sharp: ['Somebody has to stop {target}. It won\'t be in the Arena.'] } },
     ] },
   ],
   'arc-giant-falls.any': [
@@ -115,7 +115,7 @@ export default {
       { by: 'tj', say: "Nice work out there, uh... Jordan!" },
       { by: 'a', say: "It's {a}.", v: { loud: ['It\'s {a}, TJ! {a}!'], soft: ['Um, it\'s {a}, actually. That\'s okay!'], dry: ['Close. Different name, but close.'] } },
       { by: 'tj', say: "That's what I said!" },
-      { by: 'b', conf: "TJ just called {a} the wrong name to {a}'s face. I'm going to bring this up every day." },
+      { by: 'b', conf: "TJ just called {a} the wrong name to {a.posAdj} face. I'm going to bring this up every day." },
     ] },
     { id: 'rn.s2', turns: [
       { by: 'tj', say: "Taylor! Love the hustle, Taylor!" },
@@ -151,7 +151,7 @@ export default {
     { id: 'rs.s1', turns: [
       { beat: '{b} opens a drawer in the bunk room and finds it packed with crackers, chocolate and a whole jar of peanut butter.' },
       { by: 'b', say: "{a}. What is this?", v: { loud: ['{a}! WHAT IS THIS?!'] } },
-      { by: 'a', say: "Emergency supplies.", v: { odd: ['That\'s my retirement plan.'], soft: ['Please don\'t tell anyone. Please.'] } },
+      { by: 'a', say: "Emergency supplies.", v: { odd: ['That\'s mine. Don\'t touch it.'], soft: ['Please don\'t tell anyone. Please.'] } },
       { by: 'a', conf: "Everybody stresses differently. I stress with snacks." },
     ] },
     { id: 'rs.s2', turns: [
@@ -172,7 +172,7 @@ export default {
     { id: 'rs.p1', turns: [
       { beat: '{a} pulls a bag out from under the mattress and dumps it on the table: chips, candy, crackers, the lot.' },
       { by: 'a', say: "Okay. It's time. The stash belongs to everybody now.", v: { loud: ['THE STASH IS OPEN! EAT, MY FRIENDS!'], soft: ['I want to share it with you guys. You\'re my people.'] } },
-      { by: 'b', say: "You've had this the WHOLE time?!", v: { odd: ['Is this a dream? Am I dreaming?'] } },
+      { by: 'b', say: "You've had this the WHOLE time?!", v: { odd: ['Wait, you\'re sharing? Thank you!'] } },
     ] },
     { id: 'rs.p2', turns: [
       { by: 'a', conf: "I carried that stash through this whole season. Opening it for everybody felt bigger than any daily I won.", v: { odd: ['Best investment I ever made. Peanut butter never lets you down.'] } },

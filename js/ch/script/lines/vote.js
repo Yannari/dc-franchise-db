@@ -80,7 +80,7 @@ export default {
   'ballot.own': [
     { id: 'bo.1', turns: [{ by: 'a', say: "{b}. Nobody told me to. This one's all me." }] },
     { id: 'bo.2', turns: [{ by: 'a', say: "{b}. I'm voting with my gut." }] },
-    { id: 'bo.3', turns: [{ by: 'a', say: "{b}, because I think {b} is the biggest threat to me personally." }] },
+    { id: 'bo.3', turns: [{ by: 'a', say: "{b}, because I think that's the biggest threat to me in this house." }] },
     { id: 'bo.4', turns: [{ by: 'a', say: "I'm not in anybody's group, so I'll just say it. {b}." }] },
     { id: 'bo.5', turns: [{ by: 'a', say: "{b}. I make my own decisions." }] },
   ],

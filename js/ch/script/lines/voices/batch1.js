@@ -17,11 +17,11 @@
 
 const NEUTRAL = {
   quiet: ['Just {b}.', '{b}. That\'s all.', '{b}. Sorry.', 'Mm. {b}.'],
-  dry: ['{b}. Try to act surprised.', '{b}. Shocking twist, I know.', '{b}. I know, I\'m as surprised as you are.', '{b}. Moving on.'],
-  loud: ['{b}! Let\'s go!', '{b}! Write it down, TJ!', '{b}! Loud and clear!', 'It\'s {b}! Everybody heard me!', '{b}! No take-backs!'],
+  dry: ['{b}. You knew it was coming.', '{b}. Nobody\'s surprised.', '{b}. I know, I\'m as surprised as you are.', '{b}. Moving on.'],
+  loud: ['{b}! Let\'s go!', '{b}! That\'s my vote, TJ!', '{b}! Loud and clear!', 'It\'s {b}! Everybody heard me!', '{b}! That\'s my vote!'],
   warm: ['{b}. I\'m sorry, I really am.', '{b}. Please don\'t hate me.', '{b}. I\'ll give you a hug after, I promise.', 'I\'m so sorry, {b}. It\'s you.'],
   blunt: ['{b}. Not complicated.', '{b}, and I\'m not going to pretend it\'s hard.', '{b}. Next.', '{b}. Easy one.'],
-  theatrical: ['With a very heavy heart... {b}.', '{b}. And... scene.', 'And my vote goes to... {b}!', '{b}. Dramatic pause. Still {b}.'],
+  theatrical: ['With a very heavy heart... {b}.', '{b}. And... scene.', 'And my vote goes to... {b}!', '{b}. I thought about it, and it\'s still {b}.'],
   anxious: ['Oh gosh, okay. {b}. Sorry. {b}.', '{b}? Yeah. Yes. {b}.', 'I think... {b}. Yes. {b}.', '{b}. Please don\'t be mad.'],
   calm: ['{b}. It just makes sense.', '{b}. Nothing more to it than that.', '{b}. It\'s the right move.', 'I\'ll say {b}, quietly.'],
   competitive: ['{b}. Go prove you deserve to stay.', '{b}. Win your way back if you want it.', '{b}. Let\'s see what you\'re made of.'],
@@ -41,9 +41,9 @@ const NEUTRAL = {
   teen: ['{b}, I guess.', 'Um, {b}? Yeah. {b}.'],
   adult: ['I\'m going with {b}.', '{b}. Simple as that.'],
   grown: ['{b}. I\'ve been around long enough to know when it\'s time.', 'I\'ll say {b}, and I\'ll sleep fine.'],
-  sharp: ['{b}. No hard feelings. Well, some.'],
+  sharp: ['{b}. There\'s some history there.'],
   soft: ['{b}. I\'m sorry.'],
-  odd: ['{b}! Wait, can I change it? No? {b}.'],
+  odd: ['{b}. Yeah. {b}.'],
 };
 
 const FRIEND = {
@@ -80,11 +80,11 @@ const ENEMY = {
   quiet: ['{b}.'],
   dry: ['{b}. Imagine my surprise.', '{b}. Wow, what a hard decision.'],
   loud: ['{b}! Bye!', '{b}! And I\'d say it twice if they let me!'],
-  warm: ['{b}. Sorry. Not that sorry, but sorry.'],
+  warm: ['{b}. Sorry.'],
   blunt: ['{b}. We don\'t get along, and everybody knows it.'],
   theatrical: ['Oh, this one I\'ve been waiting for. {b}.'],
   anxious: ['{b}. Please don\'t come back angry.'],
-  calm: ['{b}. Nothing personal. Okay, a little personal.'],
+  calm: ['{b}. It\'s a little personal.'],
   competitive: ['{b}. Let\'s see what you\'ve got in there.'],
   schemer: ['{b}. Happily.'],
   cruel: ['{b}. Happily.', '{b}. Enjoy the flight home.'],
@@ -104,7 +104,7 @@ const ENEMY = {
 
 const PLAN = {
   quiet: ['{b}. Same as everybody.'],
-  dry: ['{b}. As discussed. At length.', '{b}. Like we agreed.'],
+  dry: ['{b}. Like we talked about.', '{b}. Like we agreed.'],
   loud: ['{b}! Team stays together!'],
   warm: ['{b}. I\'m with my people.'],
   blunt: ['{b}. We decided, so that\'s it.'],
@@ -113,9 +113,9 @@ const PLAN = {
   calm: ['{b}. We\'re all on the same page.'],
   competitive: ['{b}. We play as a team, we win as a team.'],
   schemer: ['{b}. Exactly as planned.'],
-  cruel: ['{b}. Nothing personal, it\'s just a group project.'],
+  cruel: ['{b}. It\'s not personal. It\'s the group\'s vote.'],
   chaotic: ['{b}! For the squad!'],
-  food: ['{b}. Can I go back to my sandwich now?'],
+  food: ['{b}. That\'s it from me.'],
   ditzy: ['{b}. That\'s what we said, right? I wrote it on my hand.'],
   nerdy: ['{b}. We ran the numbers as a group.'],
   earnest: ['{b}. I made a commitment to my group.'],
@@ -123,7 +123,7 @@ const PLAN = {
   tough: ['{b}. I back my people.'],
   bossy: ['{b}. Like we planned. Everybody.'],
   emotional: ['{b}. I don\'t love it, but I\'m sticking with them.'],
-  goofy: ['{b}. Team meeting, team vote, team snack after.'],
+  goofy: ['{b}. That\'s the group\'s vote.'],
   proud: ['{b}. We don\'t lose votes.'],
   teen: ['{b}. That\'s, like, the plan.'],
   adult: ['{b}. I\'m sticking with the people I came in with.'],
@@ -132,7 +132,7 @@ const PLAN = {
 
 const WORD = {
   quiet: ['{b}. I said I would.'],
-  dry: ['{b}. I made a promise, apparently I keep those.'],
+  dry: ['{b}. I made a promise, and I\'m keeping it.'],
   loud: ['{b}! I promised and I deliver!'],
   warm: ['{b}. I promised someone, and I keep my promises.'],
   blunt: ['{b}. I gave my word.'],
@@ -190,7 +190,7 @@ const FALSE_CONF = {
   bossy: ['If they wanted my vote, they should\'ve made a plan I agreed with.'],
   emotional: ['I almost cried when I said yes to them. I was that nervous.'],
   goofy: ['Plot twist. The plot twist was me.'],
-  proud: ['They really thought they had me. Cute.'],
+  proud: ['They really thought they had me.'],
   sharp: ['Saying yes cost me nothing, and they believed it.'],
   soft: ['I didn\'t want to lie. I just wanted to stay.'],
 };

@@ -224,7 +224,7 @@ export class ChxStage {
   // ── what this click shows ──────────────────────────────────────────
   present(s, anim, ctx) {
     const ST = this.ST, O = this.el.over;
-    O.querySelectorAll('.seg,.spray,.stamp,.winner,.open,.intro').forEach(e => e.remove());
+    O.querySelectorAll('.seg,.spray,.stamp,.winner,.open').forEach(e => e.remove());
     const focus = s.focus !== undefined ? s.focus : s.say ? [s.say[0]] : s.tj ? ['TJ'] : [];
     for (const [n, t] of Object.entries(ST.toks)) {
       t.classList.toggle('speak', !!(s.say && s.say[0] === n) || (!!s.tj && n === 'TJ'));
@@ -281,7 +281,6 @@ export class ChxStage {
 
     if (s.seg) O.insertAdjacentHTML('beforeend', `<div class='seg'><div class='band'></div><div class='in'><div class='k'>${esc(s.seg[0].toUpperCase())}</div><div class='big'>${esc(s.seg[1])}</div></div></div>`);
     if (s.open && anim) this.openSeq(s.open);
-    if (s.intro) O.insertAdjacentHTML('beforeend', introHtml(s.intro, anim));
     if (s.slam) this.slam(s.slam, anim);
     if (anim && s.shake) setTimeout(() => this.shake(), 250);
     if (anim && s.confetti) this.confetti();
@@ -294,7 +293,14 @@ export class ChxStage {
 
     // the confessional cut
     const C = this.el.conf;
-    if (s.conf) {
+    // a player's introduction fills the frame under the dialogue box (their words show over it)
+    this.el.frame.classList.toggle('introing', !!s.intro);
+    if (s.intro) {
+      const key = `intro:${s.intro.n}`;
+      if (C.dataset.who !== key || !anim) { C.innerHTML = introHtml(s.intro, anim && !s.intro.still && C.dataset.who !== key); C.dataset.who = key; }
+    } else if (C.dataset.who?.startsWith('intro:')) { C.innerHTML = ''; C.dataset.who = ''; }
+    if (s.intro) { /* the introduction is the picture */ }
+    else if (s.conf) {
       if (C.dataset.who !== s.conf[0]) {
         C.dataset.who = s.conf[0];
         const seat = marks('conf-day').find(m => m.kind === 'seat') || { u: .5 };

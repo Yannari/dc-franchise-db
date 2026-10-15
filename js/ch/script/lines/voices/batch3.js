@@ -42,18 +42,18 @@ const CALL = {   // naming the opponent, no reason given
 };
 const CALLED_REACT = {   // the one called, out loud
   quiet: ['Okay.', 'Fine.'],
-  dry: ['Wow. Shocking. I\'m shocked.', 'Great. Love that for me.'],
+  dry: ['Wow. Shocking. I\'m shocked.', 'Great. That\'s just what I needed.'],
   loud: ['ME?! Are you SERIOUS?!', 'Bring it! Let\'s go!'],
   warm: ['Okay. I understand. Good luck.', 'That\'s okay. May the best person win.'],
   blunt: ['Fine. Your mistake.', 'Good. I wanted this.'],
-  theatrical: ['Me? Me?! The betrayal!', 'Well. I hope you enjoyed your time here.'],
+  theatrical: ['Me? Seriously?', 'Well. I hope you enjoyed your time here.'],
   anxious: ['Oh no. Oh no, okay. Okay.', 'Me? Why me?'],
   calm: ['Alright. See you in there.', 'Okay. Let\'s do it.'],
   competitive: ['Good. I was hoping it\'d be me.', 'You just made the biggest mistake of your game.'],
   schemer: ['Interesting choice. We\'ll see how it works out for you.'],
   cruel: ['Cute. Enjoy your last night.', 'Big mistake.'],
   chaotic: ['Ooh! A fight! I\'m in!'],
-  food: ['Can I at least finish my sandwich first?'],
+  food: ['Okay. Let\'s go.'],
   ditzy: ['Wait, me? Like, me me?'],
   nerdy: ['Statistically, you just made a mistake.'],
   earnest: ['Okay. I respect that you said it to my face.'],
@@ -69,18 +69,18 @@ const CALLED_REACT = {   // the one called, out loud
 };
 const CALLED_CONF = {   // the one called, to the camera
   quiet: ['{a} picked me. Fine. I\'ll handle it.'],
-  dry: ['{a} picked the person {a} thinks is the easiest. Bold of {a} to say it out loud.'],
+  dry: ['{a} picked the easiest person, and said so out loud in front of everybody.'],
   loud: ['{a} thinks I\'m EASY?! {a} is going to find out!'],
   warm: ['It hurts that {a} picked me. I\'m still going to fight with everything I have.'],
   blunt: ['{a} picked me. {a} will regret it.'],
-  theatrical: ['Of all the people in this house, {a} chose ME. The drama. The audacity.'],
+  theatrical: ['Of all the people in this house, {a} picked me. I\'m going to make {a.obj} sorry for that.'],
   anxious: ['I can\'t breathe. I\'m going into the Arena. I\'m actually going in.'],
   calm: ['It is what it is. I\'ll go in there and do my best.'],
   competitive: ['Good. I want to beat {a}. Now I get to.'],
   schemer: ['{a} thinks I\'m the safe pick. {a} is about to find out I\'m not.'],
   cruel: ['{a} picked me. That\'s the last mistake {a} gets to make here.'],
   chaotic: ['I don\'t know if I\'m scared or excited. Both! Definitely both!'],
-  nerdy: ['{a} chose the matchup {a} thinks is best. I\'ve already thought of three reasons it isn\'t.'],
+  nerdy: ['{a} chose the matchup that looks best on paper. I\'ve already thought of three reasons it isn\'t.'],
   earnest: ['I\'m going to go in there and give it everything. That\'s all I can do.'],
   tough: ['{a} wants a fight. Good. I\'m a fighter.'],
   bossy: ['{a} made a bad call, and I\'m going to prove it.'],
@@ -106,7 +106,7 @@ const CALLER_CONF = {   // the caller, to the camera
   chaotic: ['I didn\'t even plan that. It just came out. Wild.'],
   nerdy: ['I matched myself against everyone eligible. {b} was the best odds.'],
   earnest: ['I owed it to myself to pick the fight I could win.'],
-  flirty: ['I picked {b}. Nothing personal. Okay, a little personal.'],
+  flirty: ['I picked {b} because I think I can win that one.'],
   tough: ['{b} is going home tomorrow. Simple.'],
   bossy: ['I made the call. That\'s what you do in this game.'],
   emotional: ['I feel terrible. But I want to stay so badly.'],
@@ -120,7 +120,7 @@ const CALLER_CONF = {   // the caller, to the camera
 // ── the Arena ───────────────────────────────────────────────────────
 const WIN_SHOUT = {
   quiet: ['Yes.', 'I did it.'],
-  dry: ['Well. That went nicely.', 'And that\'s how it\'s done, apparently.'],
+  dry: ['Well. That went nicely.', 'So that\'s how it\'s done.'],
   loud: ['LET\'S GOOOO!', 'WHO\'S NEXT?! WHO\'S NEXT?!'],
   warm: ['Oh my gosh! I did it! Thank you, everyone!', 'Yes! I can\'t believe it!'],
   blunt: ['Told you.', 'That\'s what happens.'],
@@ -175,7 +175,7 @@ const LOSER_SAY = {   // the loser, out loud, still in the Arena
   proud: ['That doesn\'t mean you\'re better than me.'],
   sharp: ['Luck.'],
   soft: ['Congratulations. Really.'],
-  odd: ['I\'m going to lie down in this sand forever now.'],
+  odd: ['I had it. I had it, and I let it go.'],
 };
 const LOSER_CONF = {
   quiet: ['I lost. That\'s the game.'],
@@ -199,7 +199,7 @@ const LOSER_CONF = {
   proud: ['I\'ll be back. And they\'ll regret it.'],
   sharp: ['This isn\'t the last they\'ll see of me.'],
   soft: ['I\'m okay. I really am. I\'m just sad.'],
-  odd: ['Goodbye, villa. Goodbye, hot tub. I\'ll miss you most, hot tub.'],
+  odd: ['I\'m going home. I really thought I had that one.'],
 };
 const WINNER_CONF = {
   quiet: ['I\'m still here. That\'s enough.'],
@@ -224,7 +224,7 @@ const WINNER_CONF = {
   proud: ['They\'ll think twice before they come for me again.'],
   sharp: ['Come for me again. I dare you.'],
   soft: ['I\'m just so happy I get to stay.'],
-  odd: ['I won in there! Somebody make me a sandwich!'],
+  odd: ['I won in there! I\'m starving, and I\'m still here!'],
 };
 
 // ── the vote's result, from the one going in ────────────────────────
@@ -275,11 +275,11 @@ const LAST_CONF = {
   loud: ['LAST?! I came LAST?!'],
   warm: ['I tried my best. It just wasn\'t my day.'],
   blunt: ['I was bad today. I know it.'],
-  theatrical: ['Last place. The indignity. The absolute shame of it.'],
+  theatrical: ['Last place. Now I\'m worried about the vote.'],
   anxious: ['Last place means everybody\'s looking at me now. I hate this.'],
   calm: ['Bad day. Tomorrow\'s another one.'],
   competitive: ['I hate losing. I hate it more than anything.'],
-  schemer: ['Last place makes me look weak. Weak can be useful. Can be.'],
+  schemer: ['Last place makes me look weak, and that\'s dangerous right before a vote.'],
   cruel: ['Whatever. Dailies don\'t decide anything.'],
   chaotic: ['Last place! Somebody had to be!'],
   nerdy: ['I misread the whole challenge. My own fault.'],
@@ -299,7 +299,7 @@ const DAILY_WIN_CONF = {
   loud: ['SAFE! I\'m SAFE! Nobody can touch me!'],
   warm: ['I\'m so happy! I get to protect my friends at the vote.'],
   blunt: ['I won. I\'m safe. That\'s all I needed.'],
-  theatrical: ['A star is born. Again.'],
+  theatrical: ['I won again. I\'m not going to pretend that doesn\'t feel good.'],
   anxious: ['I\'m safe. I can breathe for one whole day.'],
   calm: ['I\'m safe this week. Now I can think.'],
   competitive: ['That\'s how it\'s done. I want every single daily.'],
@@ -340,7 +340,7 @@ const RETURN_ENTRANCE = {
 };
 const VOTER_CONGRATS = {
   quiet: ['Congrats.'],
-  dry: ['Congratulations. Genuinely. Mostly.'],
+  dry: ['Congratulations. I mean it.'],
   loud: ['YOU MADE IT! Congrats!'],
   warm: ['Oh my gosh, congratulations! You did so well!'],
   blunt: ['Good job.'],
@@ -350,7 +350,7 @@ const VOTER_CONGRATS = {
   cruel: ['Congrats, I guess.'],
   sharp: ['Nice work.'],
   soft: ['Congratulations.'],
-  odd: ['You\'re back! Hooray! Awkward!'],
+  odd: ['You\'re back. Um. Congratulations.'],
 };
 const RETURN_CONF = {
   quiet: ['I looked at every person who voted for me. They noticed.'],
@@ -392,7 +392,7 @@ const MOURN_SAY = {
 };
 const MOURN_CONF = {
   quiet: ['{gone} is gone. I\'ll remember who did it.'],
-  dry: ['Lovely morning. My friend is gone, and the people who did it are eating cereal.'],
+  dry: ['My friend is gone, and the people who did it are sitting at breakfast like nothing happened.'],
   loud: ['Whoever sent {gone} home, I\'m coming for you!'],
   warm: ['{gone} was my person in here. I don\'t know who I\'ll talk to now.'],
   blunt: ['They took {gone}. Now I take one of theirs.'],
@@ -419,7 +419,7 @@ const RELIEF_CONF = {
   calm: ['It\'s quieter. That\'s all I\'ll say.'],
   schemer: ['One less problem. I\'ll pretend to be sad at breakfast.'],
   cruel: ['Good riddance.', 'Best sleep I\'ve had in weeks.'],
-  chaotic: ['{gone} is gone! Party! Kidding. Mostly.'],
+  chaotic: ['{gone} is gone. I\'m not going to pretend I\'m sad.'],
   sharp: ['One down.'],
   soft: ['I know I should be sad. I\'m just not.'],
   odd: ['I\'m doing a little happy dance. In my head.'],
@@ -464,7 +464,7 @@ const ASKWHO = {   // "who are we thinking?"
   schemer: ['And who are we sacrificing this week?'],
   sharp: ['Who?'],
   soft: ['Who are we thinking?'],
-  odd: ['Ooh, who? Who? Who?'],
+  odd: ['Okay. Who are we thinking?'],
 };
 const GATHER = {
   quiet: ['Everybody, in here. Quick.'],
@@ -491,11 +491,11 @@ const WHO_WE = {
   schemer: ['Who else is in? I like to know who I\'m standing with.'],
   sharp: ['Names.'],
   soft: ['Who else is in?'],
-  odd: ['Is it a secret club? Is there a password?'],
+  odd: ['Who\'s asking? You, or a group?'],
 };
 const NUMBERS = {
   quiet: ['Enough.'],
-  dry: ['Enough people that your vote is a courtesy.'],
+  dry: ['Enough that we don\'t need you, but we\'d like you.'],
   loud: ['Enough people! That\'s who! So are you in?'],
   warm: ['Enough people that I\'d love you to be part of it.'],
   blunt: ['Enough to do it without you. I\'d rather do it with you.'],

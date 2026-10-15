@@ -295,8 +295,8 @@ export function chStepScreens(row, ctx = {}) {
     else chunks.push({ key: k, items: [i] });
   });
 
-  // The show open runs at the top of every episode, before "previously".
-  open('open', 'Previously');
+  // The show open runs at the top of every episode, before "previously" (the premiere has none).
+  open('open', aired.some(a => a.kind === 'previously') ? 'Previously' : 'Season premiere');
   S.push({ scene: { plate: plateKey('opener', false), place: 'Blue Lagoon', when: `<b>Episode ${esc(row.num)}</b>`, icon: 'island', island: 'villa', cast: {}, wipe: 0 },
     open: { cast: house.slice(0, 20), season: ctx.season || null, title: ctx.title || 'Blue Lagoon' } });
   let dailyDone = false;
@@ -387,7 +387,12 @@ function buildArrival(S, open, items, row, { names, house }) {
     S.push({ enter: Object.fromEntries(g.map(n => [n, spots[n]])), from: door, dir: `${nameList(g)} come down the steps.`, focus: g.slice(0, 2),
       roster: g.map(n => ({ n, show: showOf(n), rookie: !!info[n]?.rookie })) });
     // the introductions: one package per player, the way the show opens a season
-    for (const n of g) S.push({ intro: introCard(n, info[n] || {}), focus: [n] });
+    for (const n of g) {
+      const card = introCard(n, info[n] || {});
+      const lines = info[n]?.lines || [];
+      if (!lines.length) { S.push({ intro: card, focus: [n] }); continue; }
+      lines.forEach((t, k) => S.push({ intro: k ? { ...card, still: true } : card, conf: [n, t], focus: [n] }));
+    }
   }
   for (const it of items) linesToSteps(S, it.a.lines, { names, sceneWho: it.a.who, first: { sceneIdx: it.i, title: it.title, focus: it.a.who.slice(0, 2) } });
   const gendered = !!row.ch?.division;

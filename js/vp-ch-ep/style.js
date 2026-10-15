@@ -321,7 +321,9 @@ const CHX_CSS = `
 .chx .open .logo2 .c{margin-top:1.4cqh;display:inline-block;font:400 2.2cqw/1 'Black Ops One';color:#111;background:var(--caution);padding:.4em 1em;letter-spacing:.3em}
 .chx .open .scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.25) 0 2px,transparent 2px 4px);pointer-events:none}
 /* a player's introduction */
-.chx .intro{position:absolute;inset:0;z-index:21;overflow:hidden;background:#070505}
+.chx .intro{position:absolute;inset:0;z-index:9;overflow:hidden;background:#070505}
+.chx .chx-frame.introing .chx-hud{display:none}
+.chx .chx-frame.introing .intro .itext{bottom:24%}
 .chx .intro .ibg{position:absolute;inset:-4%;width:108%;height:108%;object-fit:cover;filter:saturate(1.25) contrast(1.05);animation:chxIbg 9s ease-out both}
 .chx .intro.multi .ibg{opacity:0;animation:chxIbgCycle calc(var(--n) * 2.2s) linear infinite,chxIbg 9s ease-out both}
 @keyframes chxIbg{from{transform:scale(1.12) translateX(2%)}to{transform:scale(1) translateX(-1%)}}

@@ -12,7 +12,7 @@ export default {
       dry: ["Yes. I did. I'd do it again.", "I did. I'd make the same call."],
       loud: ["Yeah, I did! And I'd do it again!", "I did it! I'm not sorry!"],
       soft: ["I did. I'm sorry it hurt, but I'd do it again.", "Yeah. I did. I'd probably do it again."],
-      odd: ["Yep. Guilty. I'd do it again. Sorry. Not sorry. A little sorry.", "I did. I'd do it again. I've thought about it in the shower."],
+      odd: ["Yep. I did. I'm sorry it hurt.", "I did. I'd do it again. I've thought about it in the shower."],
     },
     3: {
       sharp: ["{b} said it to my face. I respect that. I'm still coming for {b}.", "Honesty doesn't buy {b} anything. I'm still coming."],
@@ -26,7 +26,7 @@ export default {
       sharp: ["Room for one more?", "Mind if I sit?"],
       dry: ["Is there room for me?", "Can I join you?"],
       soft: ["Is it okay if I sit with you guys?", "Can I sit here? Only if that's okay."],
-      odd: ["Can I sit with you? I bring good vibes and half a sandwich.", "Is this seat taken? By anyone? Or a ghost?"],
+      odd: ["Can I sit with you? I don't really know anybody yet.", "Is this seat taken? By anyone? Or a ghost?"],
     },
   },
   'dl.4': {
@@ -53,7 +53,7 @@ export default {
     1: {
       dry: ["So. Is this a thing now?", "Are we a thing now?"],
       soft: ["So... is this a thing? I kind of hope it's a thing.", "Is this a thing now? Please say yes."],
-      odd: ["So... is this a thing? Are we a thing? Should we tell the pool?", "So that happened. Is this a thing now?"],
+      odd: ["So... is this a thing? Are we a thing?", "So that happened. Is this a thing now?"],
     },
   },
   'dl.5': {
@@ -66,7 +66,7 @@ export default {
   },
   'os.1': {
     2: {
-      sharp: ["Naturally.", "Of course. Cute."],
+      sharp: ["Naturally.", "Of course."],
       dry: ["Sure. Why not.", "Shocking."],
       soft: ["Oh, come on. Really?", "Of course. Why me?"],
       odd: ["Of course they do. The tiles love me.", "Great. More tiles. My favourite."],
@@ -75,7 +75,7 @@ export default {
   'ae.n1': {
     1: {
       sharp: ["Then we're friends who vote together. Same thing.", "Fine. Friends who vote the same way."],
-      dry: ["Then we're friends who vote together.", "So we're friends who vote the same. Fine by me."],
+      dry: ["Me too. Whatever happens now, I'm glad it's you.", "So we're friends who vote the same. Fine by me."],
       soft: ["Then let's be friends who still have each other's backs.", "Then let's be friends who vote together. I'd like that."],
       odd: ["Then we're voting friends. Vote buddies. Ballot pals.", "Friends who vote together. It's an alliance with fewer meetings."],
     },
@@ -173,7 +173,7 @@ export default {
       dry: ["{target} has talked for days. I'd rather settle it than listen to more.", "One more word from {target} and I'd lose it. So, the Arena."],
       loud: ["{target} would NOT shut up! So now we settle it!", "I'm sick of {target}'s mouth! Arena! Now!"],
       soft: ["{target} has been saying things for days, and it's been eating at me. I want it settled.", "I couldn't take one more day of {target}. I'd rather fight than keep listening."],
-      odd: ["{target} talks so much I hear {target} in my sleep. The Arena is cheaper than earplugs.", "{target} has been talking for days. Now we'll see what {target} can do in the Arena."],
+      odd: ["{target} never stops talking. I'd like a week of quiet, and the Arena would give me one.", "{target} has been talking for days. Now we'll see what {target} can do in the Arena."],
     },
   },
   'rh.p3': {
@@ -279,7 +279,7 @@ export default {
       sharp: ["Secret deals are the only safe deals. Nobody can turn them against you.", "Nobody knows about it. That's what makes it worth something."],
       dry: ["A secret deal can't be used against you. That's the point.", "Nobody knows about this deal. That's what makes it useful."],
       loud: ["Nobody knows about it! That's the best kind of deal!", "Secret deal! Can't be used against me!"],
-      odd: ["A secret deal is like a secret snack. Nobody can take it from you.", "Nobody knows. Not even the cameras. Well. The cameras know."],
+      odd: ["Nobody knows about the deal, and that's how I want it.", "Nobody knows. Not even the cameras. Well. The cameras know."],
     },
   },
   'bb.1': {
@@ -310,7 +310,7 @@ export default {
   },
   'abs.2': {
     0: {
-      sharp: ["You saw {target} in there. {target} won again.", "{target} just keeps winning."],
+      sharp: ["You saw {target} in there. Another win.", "{target} just keeps winning."],
       dry: ["Did you see {target}? Another win.", "{target} won again."],
       soft: ["Did you see {target} in there? That was scary.", "{target} won again. That's scary."],
       odd: ["Did you see {target}? {target} just doesn't lose.", "{target} in the Arena is terrifying. Nobody stands a chance."],
@@ -399,7 +399,7 @@ export default {
     3: {
       dry: ["{a} and I argue about our old shows all day. Honestly, it's the best part.", "Arguing with {a} about our old shows is the most fun I have here."],
       loud: ["{a} and I argue about our shows ALL day! I love it!", "Best part of this place? Arguing with {a}!"],
-      soft: ["{a} and I argue about our old shows all day. I kind of love it.", "It's silly, but arguing with {a} about our shows is my favourite thing here."],
+      soft: ["{a} and I argue about our old shows all day. I actually like it.", "It's silly, but arguing with {a} about our shows is my favourite thing here."],
       odd: ["{a} and I argue about our old shows all day. It's like a sports rivalry, but with crying.", "{a} and I have the same argument every day. It never gets old."],
     },
   },
@@ -424,7 +424,7 @@ export default {
       dry: ["Fine. Bring it.", "Okay. Bring it, then."],
       loud: ["BRING IT!", "Bring it! Let's GO!"],
       soft: ["Okay. Bring it.", "I'm ready. Bring it."],
-      odd: ["Bring it! Bring all of it! Bring a snack too!", "Bring it. I've been stretching."],
+      odd: ["Bring it! Bring everything you've got!", "Bring it. I've been stretching."],
     },
     2: {
       sharp: ["Oh, I'm bringing it.", "Don't worry. I've been waiting for this."],
@@ -508,7 +508,7 @@ export default {
     1: {
       dry: ["And you've been drinking all night. So we're even.", "You've been drinking all night. Call it even."],
       loud: ["And you've been DRINKING all night! So we're even!", "Says the one who's been drinking all night!"],
-      soft: ["You've had a lot to drink tonight. Maybe we're even.", "Well, you've been drinking all night, so we're both a mess."],
+      soft: ["You've been drinking all night, and now you're yelling at me?", "Well, you've been drinking all night, so we're both a mess."],
       odd: ["And you've been drinking all night. So we're both very loud people right now.", "You've been drinking all night. I've been talking all night. We're even."],
     },
   },
@@ -525,14 +525,14 @@ export default {
       sharp: ["You have.", "Have too. I watched you."],
       dry: ["You have, though.", "Have too. I noticed."],
       soft: ["Have too! It's cute!", "You totally have."],
-      odd: ["Have too. Times infinity.", "Have too. I counted. Fourteen times."],
+      odd: ["You have. Everybody's noticed.", "Have too. I counted. Fourteen times."],
     },
     3: {
       sharp: ["Fine. Maybe a little.", "So what if I have?"],
       dry: ["Maybe. Slightly.", "Possibly. A bit."],
-      loud: ["OKAY, maybe a little!", "Fine! A little!"],
+      loud: ["OKAY, maybe a little bit!", "Fine! A little!"],
       soft: ["Okay... maybe a little.", "Maybe a little. Don't tell anybody."],
-      odd: ["Okay, maybe a little. A medium amount. A lot.", "Maybe a little. My eyes have a mind of their own."],
+      odd: ["Okay, maybe a little. Okay, a lot.", "Maybe a little. My eyes have a mind of their own."],
     },
   },
   'tm.1': {
@@ -593,7 +593,7 @@ export default {
   'kb.2': {
     3: {
       sharp: ["Why is my mess your business?", "Mind your own business."],
-      dry: ["And do you ever mind your own?", "Is my mess really your concern?"],
+      dry: ["And do you ever mind your own?", "Why do you care so much about my mess?"],
       loud: ["Mind your OWN business!", "Do YOU ever mind your own business?!"],
       odd: ["Do you ever mind your own business? It's a nice business. Very quiet.", "Who made you the kitchen police?"],
     },
@@ -630,7 +630,7 @@ export default {
       odd: ["Is it bad that I slept better last night? Like a baby. A guilty baby.", "Is it bad I slept like a log? A log with no regrets?"],
     },
     1: {
-      sharp: ["Keep that to yourself.", "Never say that again. Cameras."],
+      sharp: ["Keep that to yourself.", "Don't say that out loud. Everybody can hear you."],
       dry: ["Maybe don't say that out loud.", "Probably keep that one in your head."],
       loud: ["Don't say that OUT LOUD!", "Not out loud!"],
       soft: ["Oh no, don't say that out loud.", "Shh. Don't let anybody hear that."],
@@ -639,9 +639,9 @@ export default {
     2: {
       sharp: ["I'm not going to pretend. {gone} was a problem, and now the problem is gone.", "{gone} was in my way. Now {gone} isn't. I slept great."],
       dry: ["I'm just being honest. {gone} was a problem for me. Now {gone} isn't here.", "{gone} made my life harder. {gone} is gone. I slept better."],
-      loud: ["I'm being honest! {gone} was a problem, and now {gone} is gone!", "I'm not going to fake it! {gone} was a problem!"],
+      loud: ["I'm being honest! {gone} was a problem for me, and that problem just went home!", "I'm not going to fake it! {gone} was a problem!"],
       soft: ["I feel guilty saying it, but {gone} made things hard for me. It's easier now.", "I know it sounds bad. But {gone} was a problem for me."],
-      odd: ["I'm being honest. {gone} made things harder for me. Now it's easier.", "{gone} was a problem for me, and now {gone} is gone."],
+      odd: ["I'm being honest. {gone} made things harder for me. Now it's easier.", "{gone} was a problem for me, and now that problem is gone."],
     },
   },
   'fc.f1': {
@@ -677,7 +677,7 @@ export default {
   },
   'sl.b2': {
     2: {
-      sharp: ["One sentence about {c}, and now {b} doubts {c}. That's all it takes.", "One comment, and now {b} is doing the rest."],
+      sharp: ["One sentence about {c}, and now {b} doubts {c.obj}. That's all it takes.", "One comment, and now {b} is doing the rest."],
       dry: ["One comment was all it took. Now {b} doesn't trust {c}.", "One comment, and {b} won't look at {c} the same way."],
       loud: ["One little comment and BOOM! {b} doesn't trust {c}!", "One comment! That's all it took!"],
       soft: ["I feel a little bad. One comment, and now {b} doesn't trust {c}.", "I didn't say much. I didn't have to."],
@@ -697,7 +697,7 @@ export default {
       dry: ["{a} doesn't know {b} is one of my closest friends here. {b} is about to hear all of this.", "{a} picked the wrong person to vent to. {b} is my friend."],
       loud: ["{a} has NO idea {b} is my best friend in here! I'm telling {b} everything!", "{a} just told the wrong person! {b} is hearing all of it!"],
       soft: ["{a} doesn't know how close I am with {b}. I have to tell {b}. I'd want to know.", "I feel awkward, but {b} is my friend. {b} deserves to know."],
-      odd: ["{a} just complained about {b} to {b}'s best friend. That's me. I'm the best friend.", "{a} told the wrong person. I'm a direct line to {b}."],
+      odd: ["{a} just complained about {b} to me, and {b} is my best friend in here.", "{a} told the wrong person. I'm a direct line to {b}."],
     },
   },
   'gf.2': {
@@ -844,7 +844,7 @@ export default {
     },
     1: {
       sharp: ["Then let's give them something to be scared of.", "Good. Let's make them right to be scared."],
-      dry: ["Then let's give them a reason.", "Then they might as well have a good reason."],
+      dry: ["Then let's give them a reason.", "Then let's give them a reason to worry."],
       loud: ["Then let's give them a REASON to be scared!", "Then let's scare them!"],
       odd: ["Then let's be scary. I'll practise my scary face.", "Then let's be the threat they think we are."],
     },
@@ -868,9 +868,9 @@ export default {
   'ag.1': {
     1: {
       sharp: ["{alliance}? You want me?", "With {alliance}? Interesting."],
-      dry: ["With {alliance}? Really?", "{alliance}? Seriously?"],
+      dry: ["With {alliance}? Really?", "Me? Seriously?"],
       loud: ["With {alliance}?! Seriously?!", "Wait, {alliance}? Me?"],
-      odd: ["With {alliance}? The {alliance}? Me?", "{alliance}? Do I get a jacket?"],
+      odd: ["With you guys? Me?", "{alliance}? Do I get a jacket?"],
     },
   },
   'rf.2': {
@@ -881,10 +881,10 @@ export default {
       odd: ["Final. Shake on it. Firm shake. Business shake.", "Final! Secret handshake. I'll make one up."],
     },
     2: {
-      dry: ["I trust {b} more than anybody here, and {b} can't take my spot in the final. Ideal partner.", "{b} is trustworthy, and {b} isn't competing for my spot. That's perfect."],
+      dry: ["I trust {b} more than anybody here, and we're not racing for the same spot in the final. That's the partner I want.", "I trust {b}, and we're not competing for the same spot. That's what I need."],
       loud: ["I trust {b} more than anybody! And {b} can't take my spot! Perfect!", "{b} is my perfect partner! Can't take my spot!"],
       soft: ["I trust {b} more than anybody here. And we're not even competing for the same spot. It's perfect.", "{b} is my person in here. And {b} can't take my place. I feel so lucky."],
-      odd: ["{b} is the perfect partner. I trust {b}, and {b} isn't after my spot.", "I trust {b}, and {b} can't steal my spot. A match made in Challenge heaven."],
+      odd: ["{b} is the right partner for me. I trust {b.obj}, and we're not after the same spot.", "I trust {b}, and we're not after the same spot. That's why it works."],
     },
   },
   'dl.1': {
@@ -919,16 +919,16 @@ export default {
     },
     2: {
       sharp: ["{a} thinks being a vet is a personality. I'm going to enjoy beating {a}.", "Vet or not, {a} can be beaten. I'll be the one to do it."],
-      dry: ["{a} thinks experience makes {a} better than me. We'll find out.", "{a} keeps reminding me {a} is a vet. I'm going to keep reminding {a} I'm still here."],
-      loud: ["{a} thinks being a vet makes {a} better than me?! Watch me!", "{a} is going to learn rookies bite!"],
-      odd: ["{a} thinks being a vet makes {a} better. I think it makes {a} older.", "{a} is a vet. I'm a rookie. Rookies have something to prove."],
+      dry: ["{a} thinks experience makes {a.obj} better than me. We'll find out.", "{a} keeps reminding me who the vet is here. I'm going to keep reminding {a.obj} I'm still here."],
+      loud: ["{a} thinks being a vet makes {a.obj} better than me?! Watch me!", "{a} is going to learn rookies bite!"],
+      odd: ["{a} thinks being a vet makes {a.obj} better than me. It just means more time on TV.", "{a} is a vet. I'm a rookie. Rookies have something to prove."],
     },
   },
   'apb.2': {
     2: {
       sharp: ["Then so is this.", "And this is the game too."],
       dry: ["So is this.", "Right. So is this."],
-      soft: ["I know. So is this.", "It was. And so is this."],
+      soft: ["I know. So is this.", "Sorry doesn't change the vote. Neither does this."],
       odd: ["Yeah. So is this. Game on. Literally.", "So is this. That's the game."],
     },
   },
@@ -1068,7 +1068,7 @@ export default {
       dry: ["Thanks. I appreciate you telling me.", "Good to know. Thank you."],
       loud: ["Thank you! Seriously! Thanks for telling me!", "Wow. Thank you for telling me!"],
       soft: ["Thank you for telling me. I mean it.", "Thank you. That means a lot."],
-      odd: ["Thank you. You're my favourite snitch.", "Thank you. I owe you. I owe you a snack."],
+      odd: ["Thank you. You're my favourite snitch.", "Thank you. I owe you one."],
     },
   },
   'rn.c1': {
@@ -1136,7 +1136,7 @@ export default {
     0: {
       dry: ["I tried to get in {b}'s head. Nothing worked.", "I tried to rattle {b}. Nothing. I'm the one rattled."],
       loud: ["I tried to get in {b}'s head! {b} didn't even react!", "{b} didn't even flinch! What is {b}?!"],
-      soft: ["I tried to get into {b}'s head, and {b} didn't react at all. Now I'm the nervous one.", "I wanted to shake {b}. It didn't work."],
+      soft: ["I tried to get into {b}'s head, and got nothing back. Now I'm the nervous one.", "I wanted to shake {b}. It didn't work."],
       odd: ["I tried to get in {b}'s head. I couldn't.", "Getting in {b}'s head is impossible. {b} is so calm."],
     },
   },
@@ -1150,7 +1150,7 @@ export default {
   },
   'db.v3': {
     0: {
-      sharp: ["So the deal was worthless.", "Our deal. Worth nothing, apparently."],
+      sharp: ["So the deal was worthless.", "So our deal meant nothing."],
       dry: ["So the deal meant nothing.", "I guess our deal didn't mean much."],
       loud: ["So our deal meant NOTHING?!", "What about our deal?!"],
       soft: ["So our deal meant nothing to you?", "I thought our deal meant something."],
@@ -1237,7 +1237,7 @@ export default {
       odd: ["{a}, this is desperate. Desperate with a capital D.", "{a}, you're desperate. You're throwing spaghetti at the wall."],
     },
     2: {
-      sharp: ["Not desperate. Right.", "Desperate? No. Right? Yes."],
+      sharp: ["Not desperate. Right.", "I'm not desperate. I'm right."],
       dry: ["I'm not desperate. I'm correct.", "It's not desperation if it's true."],
       loud: ["I'm not desperate! I'm RIGHT!", "I'm right, and you know it!"],
       soft: ["I'm not desperate. I'm telling the truth.", "I'm not desperate. I'm right, and you know it."],
@@ -1273,7 +1273,7 @@ export default {
       dry: ["You and {b} spend a lot of time together.", "I've noticed you and {b}."],
       loud: ["You and {b} seem SUPER close!", "So you and {b} are close, huh?"],
       soft: ["You and {b} seem really close.", "I've noticed you and {b} are close."],
-      odd: ["You and {b} seem close. Like, magnet close.", "You and {b} are always together."],
+      odd: ["You and {b} seem really close lately.", "You and {b} are always together."],
     },
   },
   'dk.3': {
@@ -1354,7 +1354,7 @@ export default {
       sharp: ["Like what? Specifics.", "What exactly? Be specific."],
       dry: ["Like what, exactly?", "Can you be specific?"],
       soft: ["Like what? What did {c} say?", "What kind of stuff? I need to know."],
-      odd: ["Like what? Details. I love details.", "Be specific. Use your words. All of them."],
+      odd: ["Like what? What did {c} say?", "Be specific. Use your words. All of them."],
     },
   },
   'py.b4': {

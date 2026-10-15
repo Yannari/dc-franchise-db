@@ -15,9 +15,9 @@ export default {
       { by: 'a', conf: "Every alliance is over now. Everybody I worked with is somebody I have to beat.", v: { soft: ['I\'ve made real friends here. Now I have to try to beat them.'], sharp: ['No more friends now. I\'m here to win.'] } },
     ] },
     { id: 'fs.2', turns: [
-      { by: 'tj', say: "This is it, champs! The final! No votes, no call-outs, no drama. Okay, a LITTLE drama. Mostly just pain!" },
+      { by: 'tj', say: "This is it, champs! The final! No more votes, no more call-outs. Just you, the course and the clock!" },
       { by: 'b', say: "Let's go!", v: { loud: ['LET\'S GO!'], soft: ['Good luck, everybody. I mean it.'] } },
-      { by: 'b', conf: "Every elimination, every vote, every night I couldn't sleep was for this.", v: { odd: ['I\'ve trained for this my whole life. Okay, my whole season.'] } },
+      { by: 'b', conf: "Every elimination, every vote, every night I couldn't sleep was for this.", v: { odd: ['I\'ve been waiting for this all season.'] } },
     ] },
     { id: 'fs.3', turns: [
       { by: 'tj', say: "Here's the deal, people. You race, you suffer, you race some more. First across the line wins it all. Any questions? Don't care! GO!" },
@@ -46,7 +46,7 @@ export default {
     { id: 'on.1', turns: [
       { by: 'tj', say: "Okay, champs! Tonight you don't sleep. You stay out here, on this mountain, until morning. Get comfy. Or don't. You can't." },
       { by: 'a', say: "It's freezing.", v: { loud: ['IT\'S FREEZING!'], soft: ['I can\'t feel my hands.'] } },
-      { by: 'b', say: "Just talk to me. Keep each other awake.", v: { sharp: ['Stop complaining. Complaining makes it colder.'] } },
+      { by: 'b', say: "Just talk to me. Keep each other awake.", v: { sharp: ['Stop thinking about it. It only makes it worse.'] } },
       { by: 'a', conf: "This is the part nobody sees on TV. Hours of nothing, in the cold, trying not to quit.", v: { odd: ['I\'ve been talking to a rock for an hour. I think I\'m losing it.'] } },
     ] },
     { id: 'on.2', turns: [
@@ -93,7 +93,7 @@ export default {
       { by: 'b', conf: "{a} promised we'd get each other to the end. {a} meant it. I won't forget that.", v: { sharp: ['{a} actually kept the deal. Nobody does that in this game.'], soft: ['I almost cried at the puzzle station.'] } },
     ] },
     { id: 'ph.2', turns: [
-      { by: 'a', conf: "{b} and I aren't racing each other, so helping {b} costs me nothing. Keeping my word costs me nothing either.", v: { soft: ['I\'d help {b} even if it did cost me.'] } },
+      { by: 'a', conf: "{b} and I aren't racing each other, so helping {b.obj} costs me nothing, and I keep my word.", v: { soft: ['I\'d help {b} even if it did cost me.'] } },
     ] },
     { id: 'ph.3', turns: [
       { by: 'b', say: "Thank you. Seriously." },

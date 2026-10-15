@@ -28,6 +28,9 @@ import { DEFAULT_OPTIONS } from './ch/format.js';
 import { airedOf } from './ch/transcript.js';
 import { chLedgerRecord } from './ch/ledger-record.js';
 import { carriedFor } from './franchise-carry.js';
+import { INTRO } from './ch/script/lines/intro.js';
+import { voicedLine } from './ch/script/write.js';
+import { stableRng } from './script/rng.js';
 import { recordBuiltSeason, activeSeasons, seasonKeyParts, hasFranchiseHistory, careerOf, careerFor } from './franchise-meta.js';
 
 export const isChallengeSeason = () => seasonFormat(seasonConfig) === CHALLENGE_FORMAT;
@@ -164,7 +167,8 @@ function introOf(n, state, cast) {
     const pick = good[0] || all[0]?.trim() || '';
     return pick ? (pick.length > 260 ? pick.slice(0, 257).replace(/\s+\S*$/, '') + '...' : pick) : null;
   };
-  const tagOf = v => { const m = String(v || '').match(/^[^.!?]{3,60}[.!?]/); return m ? m[0].replace(/[.!?]$/, '') : null; };
+  // a tagline from their authored character, never demographics ("23, Latino, straight")
+  const tagOf = v => { const m = String(v || '').match(/^[^.!?]{3,60}[.!?]/); const t = m ? m[0].replace(/[.!?]$/, '') : null; return t && !/\d|\b(straight|gay|bi|latino|latina|black|white|asian)\b/i.test(t) ? t : null; };
   let career = [], badges = [], rival = null;
   try {
     career = careerOf(n).slice(-5).map(c => ({ where: c.where, format: c.format || 'total-drama', place: c.rec?.placement || 0, total: c.total || null,
@@ -173,8 +177,50 @@ function introOf(n, state, cast) {
     badges = (cf?.badges || []).slice(0, 3);
     rival = Object.entries(cf?.rivals || {}).filter(([r]) => r !== n && cast.includes(r)).sort((x, y) => y[1] - x[1])[0]?.[0] || null;
   } catch { /* no ledger yet */ }
-  return { origin: state.origin?.[n] || null, rookie: !!state.rookie?.[n], age: p.age || null, hometown: p.hometown || null,
+  const info = { origin: state.origin?.[n] || null, rookie: !!state.rookie?.[n], age: p.age || null, hometown: p.hometown || null,
     occupation: p.occupation && p.occupation !== 'None' ? p.occupation : null, story: first(p.backstory || p.descriptor), tag: tagOf(p.voice), career, badges, rival };
+  info.lines = introLines(n, info, state);
+  return info;
+}
+
+// What they say to the camera as they arrive (ch/script/lines/intro.js): who they are and their show,
+// what happened there, a word about home, and a rival in the house. In their own voice.
+const _ord = k => { const s = ['th', 'st', 'nd', 'rd'], v = k % 100; return k + (s[(v - 20) % 10] || s[v] || s[0]); };
+function introLines(n, info, state) {
+  const ledger = (state._introLedger ||= { vday: {}, vby: {} });
+  const rng = stableRng(state.seed || 1, 'intro', n);
+  const show = SHOWS[info.origin]?.name || null;
+  const best = [...info.career].sort((x, y) => (y.winner - x.winner) || (y.finalist - x.finalist) || ((x.place || 99) - (y.place || 99)))[0] || null;
+  const last = info.career[info.career.length - 1] || null;
+  let key, slots = { show, rival: info.rival, job: info.occupation ? info.occupation.toLowerCase() : null, home: info.hometown };
+  if (best?.winner) { key = 'champ'; slots.where = best.where; }
+  else if (best?.finalist) { key = 'finalist'; slots.where = best.where; }
+  else if (last?.place) { key = last.total && last.place > last.total * .66 ? 'early' : 'placed'; slots.where = last.where; slots.place = _ord(last.place); }
+  else if (info.origin === 'the-challenge') key = info.rookie ? 'rookie' : 'vetHome';
+  else if (!info.rookie && show) key = 'vet';
+  else if (show) key = 'rookieShow';
+  else key = 'rookie';
+  // nobody says the same introduction twice: each line is said once across the cast
+  const used = (state._introUsed ||= new Set());
+  const say = k => {
+    const list = [...(INTRO[k] || [])];
+    const start = Math.floor(rng() * Math.max(1, list.length));
+    for (let i = 0; i < list.length; i++) {
+      const turn = list[(start + i) % list.length];
+      const text = voicedLine(turn, n, { rng, ledger, day: 0 }).text;
+      if (/\{(\w+)\}/.test(text.replace(/\{(\w+)\}/g, (m, s) => (slots[s] ? '' : m)))) continue;
+      const out = text.replace(/\{(\w+)\}/g, (m, s) => slots[s] ?? m);
+      if (used.has(text)) continue;   // the line itself, before the names go in
+      used.add(text);
+      return out;
+    }
+    return null;
+  };
+  const out = [say(key)];
+  if (info.rookie && slots.job) out.push(say('job'));
+  else if (info.rookie && slots.home) out.push(say('home'));
+  if (info.rival) out.push(say('rival'));
+  return out.filter(Boolean);
 }
 
 // The daily as it was played, for the stepped viewer: the units in finishing order (best first).

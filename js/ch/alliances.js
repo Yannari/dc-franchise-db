@@ -125,7 +125,10 @@ export function afterVote(state, rng, { ballots, votedIn, calledOut, by }) {
 export function leave(state, al, name, why) {
   if (!al.members.includes(name)) return;
   al.members = al.members.filter(m => m !== name);
-  addScene(state, 'alliance-leave', [name, al.leader], { alliance: al.id, why }, al.members.concat(name), 'private');
+  // when the one leaving is the leader, the other part is somebody still in the group (a scene with the
+  // same person on both sides read "Ireland: I'm sorry. / Ireland: That's it? You're out?")
+  const other = al.leader !== name ? al.leader : al.members.find(m => state.active.includes(m)) || al.members[0];
+  if (other) addScene(state, 'alliance-leave', [name, other], { alliance: al.id, why }, al.members.concat(name), 'private');
   if (al.leader === name && al.members.length) {
     al.leader = [...al.members].sort((a, b) => S(b, 'strategic') - S(a, 'strategic'))[0];
   }

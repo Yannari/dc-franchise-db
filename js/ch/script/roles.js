@@ -23,6 +23,7 @@ export const ROLES = {
     return r ? { roles: { a: r[0], b: r[1] }, ending: 'reunion', slots: { show_a: showName(st.origin[r[0]]) } }
       : { roles: { a: sc.who[0], b: sc.who[1] }, ending: 'strangers' };
   },
+  'villa-reveal': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   daily: sc => ({ roles: { a: sc.data.winners[0], b: sc.data.winners[1], c: sc.data.last?.[0] }, ending: sc.data.mode,
     slots: { game: sc.data.dailyName } }),
   meeting: sc => {

@@ -87,6 +87,16 @@ export const TJ_DAILY_NIGHT = [
   'Surprise! Today\'s daily is tonight. It\'s {game}, and it\'s dark out there.',
   'Good evening, everybody! Tonight\'s daily is {game}. Let me tell you how it works.',
 ];
+export const TJ_WELCOME = [
+  'Welcome to Blue Lagoon, everybody! I\'m TJ Maxx, and for the next few weeks this island is your home.',
+  'What\'s up, everybody! Welcome to Blue Lagoon. Look around, because some of you won\'t be here very long.',
+  'Welcome to Blue Lagoon! Vets, welcome back. Rookies, welcome to the hardest show on television.',
+];
+export const TJ_FIRST_DAILY = [
+  'Bags down. Your first daily starts right now, right here.',
+  'Don\'t get comfortable. Your first daily starts right now.',
+  'You didn\'t think you were going to the villa first, did you? Your first daily starts now.',
+];
 export const TJ_GO = ['Go!', 'Three, two, one... GO!', 'Let\'s GO!', 'And GO!'];
 export const TJ_ARENA_ASK = [
   '{a}, the house voted you in. Now you pick who goes in there with you. Who are you calling out?',

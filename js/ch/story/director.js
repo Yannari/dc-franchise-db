@@ -32,7 +32,7 @@ import { file, causeOf, book } from './storylines.js';
 import { arcsFor } from './arcs.js';
 import { previouslyFor } from './previously.js';
 
-const MUST = new Set(['arrival', 'daily', 'callout', 'arena', 'quit', 'medical', 'disqualified', 'tj-house-meeting', 'outing',
+const MUST = new Set(['arrival', 'villa-reveal', 'daily', 'callout', 'arena', 'quit', 'medical', 'disqualified', 'tj-house-meeting', 'outing',
   'volunteer', 'return', 'showmance', 'breakup', 'alliance-betrayal', 'deal-broken', 'fight-physical', 'final-start',
   'instant-elimination', 'overnight-sabotage', 'overnight-quit', 'final-pact-help', 'final-pact-broken', 'champions',
   'rookie-uprising']);

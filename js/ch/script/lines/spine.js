@@ -21,7 +21,7 @@ export default {
   // ── move-in day ─────────────────────────────────────────────────────
   'arrival.reunion': [
     { id: 'ar.r1', turns: [
-      { beat: '{a} drags a suitcase up the villa steps and stops dead at the sight of {b} by the pool.' },
+      { beat: '{a} comes down the plane steps and stops dead at the sight of {b} on the tarmac.' },
       { by: 'a', say: 'No way. No way! {b}!' },
       { by: 'b', say: 'Get over here!' },
       { by: 'a', conf: "Seeing {b} walk in was a relief, honestly. We came from {show_a} together, so I've got at least one person in here who knows me." },
@@ -33,7 +33,7 @@ export default {
       { by: 'a', conf: "{b} and I go back. In a house full of strangers that matters, but I'm not going to pretend it guarantees anything." },
     ] },
     { id: 'ar.r3', turns: [
-      { beat: '{a} and {b} spot each other across the deck and both start laughing.' },
+      { beat: '{a} and {b} spot each other across the airstrip and both start laughing.' },
       { by: 'a', say: "Okay, so the {show_a} people are sticking together, right? Tell me we're sticking together." },
       { by: 'b', say: "Obviously. Look around. Nobody here knows us." },
       { by: 'b', conf: "Everybody's going to see {a} and me hugging and think we're a team. And they'd be right, for now." },
@@ -44,7 +44,8 @@ export default {
       { by: 'a', conf: "Of all the people from {show_a} they could have brought, they brought {b}. We didn't exactly leave things on a good note." },
     ] },
   ],
-  'arrival.strangers': [
+  // The villa, seen for the first time (after the first daily): the doors open, the bed grab.
+  'villa-reveal.any': [
     { id: 'ar.s1', turns: [
       { beat: 'The villa doors open and the cast floods in, bags everywhere, everyone talking at once.' },
       { by: 'a', say: "Okay, this place is insane. Is that a hot tub on the balcony?" },

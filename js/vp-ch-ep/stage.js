@@ -157,7 +157,8 @@ export class ChxStage {
     if (s.enter) for (const [n, spec] of Object.entries(s.enter)) {
       ST.hidden.delete(n); ST.toks[n]?.classList.remove('gone');
       const home = spec || ST.home[n] || null;
-      if (!ST.toks[n] && anim) { this.put(n, { u: (this.mk(home, n)?.u ?? .5) < .5 ? -.08 : 1.08, v: (this.mk(home, n)?.v ?? .78), s: this.mk(home, n)?.s || .1 }, false); }
+      if (!ST.toks[n] && anim && s.from) this.put(n, s.from, false);
+      else if (!ST.toks[n] && anim) { this.put(n, { u: (this.mk(home, n)?.u ?? .5) < .5 ? -.08 : 1.08, v: (this.mk(home, n)?.v ?? .78), s: this.mk(home, n)?.s || .1 }, false); }
       ST.home[n] = home; this.put(n, home, anim);
       if (anim) { const t = ST.toks[n]; t.classList.add('walkin'); setTimeout(() => t.classList.remove('walkin'), 1000); }
     }
@@ -223,7 +224,7 @@ export class ChxStage {
   // ── what this click shows ──────────────────────────────────────────
   present(s, anim, ctx) {
     const ST = this.ST, O = this.el.over;
-    O.querySelectorAll('.seg,.spray,.stamp,.winner,.open').forEach(e => e.remove());
+    O.querySelectorAll('.seg,.spray,.stamp,.winner,.open,.intro').forEach(e => e.remove());
     const focus = s.focus !== undefined ? s.focus : s.say ? [s.say[0]] : s.tj ? ['TJ'] : [];
     for (const [n, t] of Object.entries(ST.toks)) {
       t.classList.toggle('speak', !!(s.say && s.say[0] === n) || (!!s.tj && n === 'TJ'));
@@ -273,12 +274,14 @@ export class ChxStage {
     else if (ST.race) h += `<div class='race'>${ST.race.map(r => `<div class='r ${r.p >= 1 ? 'win' : ''}'><div class='fs'>${r.who.slice(0, 3).map(n => `<img src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div><div class='bar'><b style='width:${Math.round(r.p * 100)}%'></b></div><div class='n'>${r.p >= 1 ? '&#10003;' : Math.round(r.p * 100) + '%'}</div></div>`).join('')}</div>`;
     const still = ST.hangers || ST.standers;
     if (still && !ST.duel) h += `<div class='left-hud'><b>${ST.hangers ? 'STILL HANGING' : 'STILL IN'}</b>${still.map(n => `<img class='${ST.out.has(n) ? 'out' : ''}' src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div>`;
+    if (s.roster) h += `<div class='roster'>${s.roster.map(r => `<div class='rc'><img src='${esc(AV(r.n))}' alt=''><div><div class='rn'>${esc(r.n)}</div>${r.show ? `<div class='rs'>${esc(r.show)}</div>` : ''}</div><span class='${r.rookie ? 'rk' : 'vt'}'>${r.rookie ? 'ROOKIE' : 'VET'}</span></div>`).join('')}</div>`;
     if (s.rules) h += `<div class='rules'><div class='k'>${esc(s.rules.k)}</div><div class='n'>${esc(s.rules.n)}</div><ol>${s.rules.li.map(x => `<li>${x}</li>`).join('')}</ol><div class='f'>${esc(s.rules.f)}</div></div>`;
     if (ST.map) h += mapHtml(ST.map, ST.plate);
     this.el.hud.innerHTML = h;
 
     if (s.seg) O.insertAdjacentHTML('beforeend', `<div class='seg'><div class='band'></div><div class='in'><div class='k'>${esc(s.seg[0].toUpperCase())}</div><div class='big'>${esc(s.seg[1])}</div></div></div>`);
     if (s.open && anim) this.openSeq(s.open);
+    if (s.intro) O.insertAdjacentHTML('beforeend', introHtml(s.intro, anim));
     if (s.slam) this.slam(s.slam, anim);
     if (anim && s.shake) setTimeout(() => this.shake(), 250);
     if (anim && s.confetti) this.confetti();
@@ -371,6 +374,24 @@ function light(t, ctx) {
 // The game's own count along the top: a face per side, a bar, the number the game is won on.
 function tallyHtml(t) {
   return `<div class='race tally'><div class='th'>${esc(t.title)}</div>${t.rows.map(r => `<div class='r ${r.win ? 'win' : ''} ${r.mark === 'x' ? 'bad' : ''}'><div class='fs'>${r.who.slice(0, 3).map(n => `<img src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div><div class='bar'><b style='width:${Math.round(Math.max(0, Math.min(1, r.v || 0)) * 100)}%'></b></div><div class='n'>${r.win ? '&#10003; ' : ''}${esc(r.txt)}</div></div>`).join('')}</div>`;
+}
+
+// A player's introduction package: their old show behind them (a veteran's whole career cycling through),
+// the portrait sliding in, the name slammed, the facts, the seasons one by one, the badges, the rival.
+function introHtml(t, anim) {
+  const bgs = t.plates.map((p, i) => `<img class='ibg' src='${esc(p)}' style='animation-delay:${(i * 2.2).toFixed(1)}s;--n:${t.plates.length}' alt=''>`).join('');
+  const seasons = t.career.map((c, i) => `<div class='iseason ${c.winner ? 'won' : ''}' style='animation-delay:${(.9 + i * .28).toFixed(2)}s'><b>${esc(c.where)}</b><span>${esc(c.result)}${c.wins ? ` · ${c.wins} wins` : ''}</span></div>`).join('');
+  return `<div class='intro ${anim ? '' : 'still'} ${t.plates.length > 1 ? 'multi' : ''}'>${bgs}<div class='igrade'></div><div class='iscan'></div>
+    <div class='iface'><img src='${esc(AV(t.n))}' alt=''></div>
+    <div class='itext'><div class='ikick'>${t.rookie ? 'ROOKIE' : 'VETERAN'}${t.show ? ` · ${esc(t.show.toUpperCase())}` : ''}</div>
+      <div class='iname'>${esc(t.n)}</div>
+      ${t.facts.length ? `<div class='ifacts'>${t.facts.map(f => `<span>${esc(f)}</span>`).join('')}</div>` : ''}
+      ${seasons ? `<div class='iseasons'>${seasons}</div>` : ''}
+      ${t.badges.length ? `<div class='ibadges'>${t.badges.map((b, i) => `<span style='animation-delay:${(1.6 + i * .2).toFixed(1)}s'>${esc(b)}</span>`).join('')}</div>` : ''}
+      ${t.rival ? `<div class='irival'><img src='${esc(AV(t.rival))}' alt=''><span>RIVAL IN THE HOUSE</span><b>${esc(t.rival)}</b></div>` : ''}
+      ${t.story ? `<div class='istory'>${esc(t.story)}</div>` : ''}
+      ${t.tag ? `<div class='itag'>${esc(t.tag)}</div>` : ''}
+    </div></div>`;
 }
 
 function duelHtml(d) {

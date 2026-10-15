@@ -9,7 +9,7 @@
 // same lines, so the two can never say different things. The stepped viewer
 // (js/vp-ch-ep/, sub-project 5) replaces the readout, not this.
 
-const SPOT = { villa: 'The villa', kitchen: 'The kitchen', gym: 'The gym', 'hot-tub': 'The hot tub', bedroom: 'The bedroom',
+const SPOT = { airstrip: 'The airstrip', villa: 'The villa', kitchen: 'The kitchen', gym: 'The gym', 'hot-tub': 'The hot tub', bedroom: 'The bedroom',
   beach: 'The beach', pool: 'The pool deck', confessional: 'Confessional', arena: 'The Arena', final: 'The final',
   party: 'Night out', private: 'Somewhere quiet', public: 'The villa', challenge: 'The daily', deliberation: 'Deliberation' };
 
@@ -17,7 +17,7 @@ const SPOT = { villa: 'The villa', kitchen: 'The kitchen', gym: 'The gym', 'hot-
 // the scene is watched, so it never says how the scene ends: no "Quit", no
 // "Breakup", no "Champions" (manual §18: nothing before its step).
 const TITLE = {
-  previously: 'Previously on The Challenge', ceremony: 'The house vote', callout: 'The call-out', volunteer: 'A volunteer',
+  previously: 'Previously on The Challenge', arrival: 'The arrival', 'villa-reveal': 'The villa', ceremony: 'The house vote', callout: 'The call-out', volunteer: 'A volunteer',
   meeting: 'A meeting', 'meeting-spotted': 'Somebody noticed', recruit: 'Asking for a vote', plea: 'A plea', deal: 'A deal',
   'deal-broken': 'A deal', outing: 'Out loud', 'leverage-threat': 'A warning', 'ride-to-the-final': 'All the way',
   daily: 'The daily challenge', 'daily-clutch': 'After the daily', 'daily-choke': 'After the daily', 'partner-draw': 'Partners',

@@ -18,10 +18,10 @@
 // Every random draw comes from a named stream (dr/rng.js streamFor), so one
 // episode's change moves that episode and nothing before it.
 import { setGs, gs } from '../core.js';
-import { addBond } from '../bonds.js';
+import { addBond, getBond } from '../bonds.js';
 import { romanticCompat } from '../players.js';
 import { streamFor } from '../dr/rng.js';
-import { newState, blankRecord, addScene, inDivision, noise } from './state.js';
+import { newState, blankRecord, addScene, inDivision, noise, S } from './state.js';
 import { DEFAULT_OPTIONS, formatOf } from './format.js';
 import { buildSchedule, elimsFor, divisionFor } from './schedule.js';
 import { initMind, driftDay, nudge } from './mind.js';
@@ -122,7 +122,19 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
   state.day = 1;
   state.plans = {};
   syncActive(state);
-  addScene(state, 'arrival', cast, { recognised: recog, kin: (carried?.kin || []).filter(k => cast.includes(k.a) && cast.includes(k.b)) }, cast, 'villa');
+  // The arrival airs in episode 1 (it used to be filed before any episode began, so it never aired):
+  // the reunions at the airstrip, the sharpest old grudge first, then the closest old friends.
+  const reunions = [...recog].sort((x, y) => Math.abs(getBond(y[0], y[1])) - Math.abs(getBond(x[0], x[1]))
+    + ((state.carriedGrudge?.[`${y[0]}>${y[1]}`] || state.carriedGrudge?.[`${y[1]}>${y[0]}`]) ? 2 : 0)
+    - ((state.carriedGrudge?.[`${x[0]}>${x[1]}`] || state.carriedGrudge?.[`${x[1]}>${x[0]}`]) ? 2 : 0));
+  const usedArrival = new Set();
+  state.arrivalPairs = [];
+  for (const [a, b] of reunions) {
+    if (state.arrivalPairs.length >= 3) break;
+    if (usedArrival.has(a) || usedArrival.has(b)) continue;
+    usedArrival.add(a); usedArrival.add(b);
+    state.arrivalPairs.push([a, b]);
+  }
 
   const schedule = buildSchedule({ total: cast.length, finalists: opts.finalists, daysPerEpisode: opts.daysPerEpisode, gendered: opts.gendered });
   state.schedule = schedule;
@@ -142,19 +154,32 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     state.episodes.push(epRec);
 
     // ── Day 1: house life, the daily, the night out ──
+    // The premiere goes the modern show's way: off the plane, TJ, the first daily with the bags still in
+    // hand, and only then the villa (the user, 2026-10-15: "challenge on arrival").
     state.day = plan.firstDay;
     for (const n of state.active) driftDay(state, n);
+    const premiere = idx === 0;
+    let division, daily;
+    const runDaily = () => {
+      division = divisionFor(state, prevDiv, opts.finalists);
+      prevDiv = division;
+      epRec.division = division;
+      daily = playDaily(state, R('daily'), { division });
+      epRec.daily = daily;
+      epRec.exits.push(...dayExits(state, R('exits1'), daily.injuries));
+    };
+    if (premiere) {
+      for (const [a, b] of state.arrivalPairs || []) addScene(state, 'arrival', [a, b], { recognised: [[a, b]] }, cast, 'airstrip');
+      runDaily();
+      const looking = [...state.active].sort((x, y) => S(y, 'boldness') - S(x, 'boldness'));
+      addScene(state, 'villa-reveal', looking.slice(0, 2), {}, state.active, 'villa');
+    }
     houseDay(state, R('house1'));
     romanceDay(state, R('romance1'));
     reviseAll(state);
     houseBeats(state, R('beats1'), { min: 1, max: 4 });
     spreadDay(state);
-    const division = divisionFor(state, prevDiv, opts.finalists);
-    prevDiv = division;
-    epRec.division = division;
-    const daily = playDaily(state, R('daily'), { division });
-    epRec.daily = daily;
-    epRec.exits.push(...dayExits(state, R('exits1'), daily.injuries));
+    if (!premiere) runDaily();
     if (opts.partyNights && R('party?')() < 0.75) {
       const party = partyNight(state, R('party'));
       epRec.party = { fights: party.fights };

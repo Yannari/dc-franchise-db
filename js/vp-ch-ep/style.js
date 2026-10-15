@@ -220,6 +220,13 @@ const CHX_CSS = `
 .chx .rules li{margin-bottom:.45cqh}
 .chx .rules li b{color:var(--caution)}
 .chx .rules .f{margin-top:1.1cqh;font:700 1.25cqw 'Barlow Condensed';color:var(--fire);text-transform:uppercase;letter-spacing:.14em}
+.chx .roster{position:absolute;left:2%;right:2%;bottom:23%;display:flex;justify-content:center;gap:1cqw;animation:chxLowin .5s cubic-bezier(.2,.9,.3,1.1) both}
+.chx .roster .rc{display:flex;align-items:center;gap:.7cqw;background:rgba(14,12,11,.92);padding:.5cqw .9cqw .5cqw .5cqw;border-left:.4cqw solid var(--fire);transform:skewX(-6deg)}
+.chx .roster .rc img{width:3.8cqw;height:3.8cqw;object-fit:cover;border:.15cqw solid #000}
+.chx .roster .rn{font:400 1.6cqw/1 'Anton';text-transform:uppercase;color:#fff}
+.chx .roster .rs{font:700 .95cqw/1.2 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;color:var(--hud-dim)}
+.chx .roster span{font:400 .85cqw/1 'Black Ops One';padding:.35em .6em;letter-spacing:.12em}
+.chx .roster .vt{background:var(--caution);color:#111}.chx .roster .rk{background:var(--neon);color:#111}
 /* dialogue, inside the stage */
 .chx .dlg{position:absolute;left:1.8%;right:1.8%;bottom:2.4%;height:19%;z-index:12;pointer-events:none}
 .chx .dlg .panel{position:absolute;inset:0;background:linear-gradient(180deg,rgba(30,27,25,.95),rgba(16,14,13,.96));clip-path:polygon(1.2% 0,100% 0,98.8% 100%,0 100%);box-shadow:0 1cqh 3cqh rgba(0,0,0,.5)}
@@ -313,6 +320,38 @@ const CHX_CSS = `
 .chx .open .logo2 .b{font:400 14cqw/.9 'Anton';color:var(--fire);text-transform:uppercase;transform:skewX(-10deg);-webkit-text-stroke:.3cqw #000;paint-order:stroke fill;text-shadow:.6cqw .6cqw 0 #000,0 0 6cqw rgba(255,106,26,.6)}
 .chx .open .logo2 .c{margin-top:1.4cqh;display:inline-block;font:400 2.2cqw/1 'Black Ops One';color:#111;background:var(--caution);padding:.4em 1em;letter-spacing:.3em}
 .chx .open .scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.25) 0 2px,transparent 2px 4px);pointer-events:none}
+/* a player's introduction */
+.chx .intro{position:absolute;inset:0;z-index:21;overflow:hidden;background:#070505}
+.chx .intro .ibg{position:absolute;inset:-4%;width:108%;height:108%;object-fit:cover;filter:saturate(1.25) contrast(1.05);animation:chxIbg 9s ease-out both}
+.chx .intro.multi .ibg{opacity:0;animation:chxIbgCycle calc(var(--n) * 2.2s) linear infinite,chxIbg 9s ease-out both}
+@keyframes chxIbg{from{transform:scale(1.12) translateX(2%)}to{transform:scale(1) translateX(-1%)}}
+@keyframes chxIbgCycle{0%{opacity:0}6%{opacity:1}30%{opacity:1}38%{opacity:0}100%{opacity:0}}
+.chx .intro .igrade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,6,6,.15) 0%,rgba(8,6,6,.55) 45%,rgba(14,8,4,.92) 70%),linear-gradient(0deg,rgba(255,106,26,.28),transparent 40%);mix-blend-mode:normal}
+.chx .intro .iscan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 2px,transparent 2px 4px);pointer-events:none}
+.chx .intro .iface{position:absolute;left:6%;bottom:0;width:38cqw;aspect-ratio:1;overflow:hidden;clip-path:polygon(0 0,92% 0,100% 100%,0 100%);box-shadow:0 0 0 .4cqw #000;animation:chxIface .6s cubic-bezier(.2,.9,.3,1.1) both;border-right:.6cqw solid var(--fire)}
+.chx .intro .iface img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+@keyframes chxIface{from{transform:translateX(-70%);opacity:0}}
+.chx .intro .itext{position:absolute;left:47%;right:4%;top:8%;bottom:6%;display:flex;flex-direction:column;gap:1.2cqh;justify-content:center}
+.chx .intro .ikick{font:400 1.5cqw/1 'Black Ops One';letter-spacing:.3em;color:var(--caution);animation:chxFadeup .4s .2s both}
+.chx .intro .iname{font:400 8cqw/.9 'Anton';text-transform:uppercase;color:#fff;-webkit-text-stroke:.2cqw #000;paint-order:stroke fill;text-shadow:.5cqw .5cqw 0 var(--fire);transform:skewX(-8deg);animation:chxSlam .5s .25s cubic-bezier(.3,1.6,.5,1) both;line-height:.9;word-break:break-word}
+.chx .intro .ifacts{display:flex;gap:.6cqw;flex-wrap:wrap;animation:chxFadeup .4s .55s both}
+.chx .intro .ifacts span{font:700 1.3cqw/1 'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase;color:#111;background:var(--tape);padding:.45em .8em;clip-path:polygon(0 8%,4% 0,100% 0,96% 100%,0 100%)}
+.chx .intro .iseasons{display:grid;gap:.6cqh;margin-top:.6cqh}
+.chx .intro .iseason{display:flex;justify-content:space-between;gap:1cqw;background:rgba(14,12,11,.85);border-left:.4cqw solid var(--fire);padding:.6cqh 1cqw;animation:chxLowin .45s cubic-bezier(.2,.9,.3,1.1) both}
+.chx .intro .iseason b{font:400 1.5cqw/1 'Anton';text-transform:uppercase;color:#fff}
+.chx .intro .iseason span{font:700 1.35cqw/1 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase;color:var(--hud-dim)}
+.chx .intro .iseason.won{border-left-color:var(--caution);background:rgba(60,48,8,.9)}
+.chx .intro .iseason.won span{color:var(--caution)}
+.chx .intro .ibadges{display:flex;gap:.6cqw;flex-wrap:wrap}
+.chx .intro .ibadges span{font:400 1.1cqw/1 'Black Ops One';letter-spacing:.14em;color:#111;background:var(--caution);padding:.5em .8em;animation:chxChip .4s cubic-bezier(.3,1.7,.5,1) both}
+.chx .intro .irival{display:flex;align-items:center;gap:.8cqw;animation:chxFadeup .4s 1.9s both}
+.chx .intro .irival img{width:4.4cqw;height:4.4cqw;object-fit:cover;border:.2cqw solid var(--red)}
+.chx .intro .irival span{font:400 1cqw/1 'Black Ops One';letter-spacing:.2em;color:var(--red)}
+.chx .intro .irival b{font:400 2cqw/1 'Anton';text-transform:uppercase;color:#fff}
+.chx .intro .istory{font:600 italic 1.75cqw/1.35 'Barlow Condensed';color:#efe6dc;border-left:.35cqw solid var(--caution);padding-left:1cqw;animation:chxFadeup .5s .8s both;max-width:46cqw}
+.chx .intro .itag{font:400 2.4cqw/1.1 'Permanent Marker';color:var(--caution);transform:rotate(-2deg);animation:chxFadeup .5s .8s both}
+.chx .intro.still *{animation-duration:0s!important;animation-delay:0s!important}
+.chx .intro.still.multi .ibg{opacity:0}.chx .intro.still.multi .ibg:first-child{opacity:1}
 /* the villa map */
 .chx .mpin{position:absolute;translate:-50% -100%;display:grid;justify-items:center;gap:.35cqh;z-index:4;pointer-events:auto}
 .chx .mpin .faces{display:flex}

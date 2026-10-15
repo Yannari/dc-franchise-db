@@ -20,9 +20,10 @@
 import { CH_MARKS } from './marks.js';
 import { marksOf, plateKey, lineup, hostSide, sizeAt } from './ground.js';
 import { episodeScenes } from '../ch/transcript.js';
+import { SHOWS } from '../shows.js';
 import { dailyPlay, ARENA_PLAY } from './play.js';
 import { DAILY_STAGE, FINAL_STAGE, ARENA_STAGE, rulesOf, dailyDef, arenaDef, pickBy, nameList, fill,
-  TJ_DAILY_OPEN, TJ_DAILY_NIGHT, TJ_GO, TJ_ARENA_ASK, TJ_ARENA_RULES, TJ_ARENA_OUT, PLAY, DUEL } from './games.js';
+  TJ_DAILY_OPEN, TJ_DAILY_NIGHT, TJ_GO, TJ_WELCOME, TJ_FIRST_DAILY, TJ_ARENA_ASK, TJ_ARENA_RULES, TJ_ARENA_OUT, PLAY, DUEL } from './games.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 export const HOST = 'TJ';
@@ -95,6 +96,8 @@ const DAILY_KINDS = new Set(['daily', 'daily-clutch', 'daily-choke', 'partner-dr
 const FINAL_KINDS = new Set(['final-start', 'instant-elimination', 'overnight', 'overnight-sabotage', 'overnight-quit', 'final-pact-help', 'final-pact-broken', 'champions']);
 function chapterOf(a) {
   if (a.kind === 'previously') return 'open';
+  if (a.kind === 'arrival') return 'arrival';
+  if (a.kind === 'villa-reveal') return 'reveal';
   if (DAILY_KINDS.has(a.kind)) return 'daily';
   if (a.spot === 'party' || a.kind === 'party' || a.kind === 'fight' || a.kind === 'fight-physical') return 'party';
   if (a.kind === 'ceremony' || a.kind === 'volunteer') return 'vote';
@@ -107,7 +110,7 @@ function chapterOf(a) {
   if (a.kind === 'champions') return 'champions';
   return 'villa';
 }
-const LABEL = { open: 'Previously', daily: 'The daily', villa: 'The villa', party: 'Night out', vote: 'The vote', eve: 'The night before',
+const LABEL = { arrival: 'The arrival', reveal: 'The villa', open: 'Previously', daily: 'The daily', villa: 'The villa', party: 'Night out', vote: 'The vote', eve: 'The night before',
   arena: 'The Arena', 'final-start': 'The final', instant: 'Instant elimination', overnight: 'The overnight', 'final-day2': 'The last day',
   champions: 'The finish line' };
 
@@ -306,17 +309,20 @@ export function chStepScreens(row, ctx = {}) {
     }
     if (c.key === 'daily') { buildDaily(S, open, items, row, { names, house, goneAt, dailyDone }); dailyDone = true; continue; }
     if (c.key === 'vote') { buildVote(S, open, items, row, { names, house, goneAt }); continue; }
+    if (c.key === 'arrival') { buildArrival(S, open, items, row, { names, house }); continue; }
     if (c.key === 'arena') { buildArena(S, open, items, row, { names, house, goneAt }); continue; }
     if (['final-start', 'instant', 'overnight', 'final-day2', 'champions'].includes(c.key)) { buildFinal(S, open, c.key, items, row, { names, house, goneAt }); continue; }
     // villa, party, eve: scene after scene on their plates, the villa opening on its map
     open(c.key);
     if (c.key !== 'eve' && items.filter(x => chapterOf(x.a) !== 'party').length >= 2) villaMap(S, items.filter(x => chapterOf(x.a) !== 'party'));
     let partied = false;
+    const atReveal = cur.steps.length;
     for (const it of items) {
       const k = chapterOf(it.a);
       if (k === 'party' && !partied) { partied = true; S.at(it.i); S.push({ seg: ['Night out', 'Party'] }); }
       scene(S, it, { names, house, goneAt, key: k });
     }
+    if (c.key === 'reveal' && cur.steps[atReveal]) cur.steps[atReveal].seg = ['Home for the season', 'The Villa'];
   }
   // the opening screen only had the open itself when there was no "previously"
   for (const s of screens) if (!s.steps.length) s.steps.push({ dir: '' });
@@ -359,6 +365,58 @@ function villaMap(S, items) {
   S.push({ scene: { plate: plateKey('villa-map', false), place: 'The Villa', when: whenOf(items[0].a.day, S.min), icon: 'house', cast: {}, wipe: 1 },
     map: { rooms: list, later: later.slice(0, 4), clock: [['Morning', S.min < 12 * 60 ? 'now' : 'done'], ['Afternoon', S.min < 12 * 60 ? 'lock' : S.min < 18 * 60 ? 'now' : 'done'], ['Night', S.min >= 18 * 60 ? 'now' : 'lock']] },
     dir: 'Back at the villa. The faces show who is in each room; a bubble is a conversation. Click one, or press Next to watch them in order.' });
+}
+
+// ── the arrival (episode 1) ───────────────────────────────────────────
+// Off the plane in groups, each with a name plate (their show, vet or rookie); the old faces find each
+// other (the engine's reunions); TJ welcomes them, the season's rules, and the first daily starts on the
+// spot (the modern show's premiere; the user chose "challenge on arrival").
+function buildArrival(S, open, items, row, { names, house }) {
+  open('arrival');
+  const key = plateKey('airstrip', false);
+  const info = row.ch?.castInfo || {};
+  S.at(items[0].i);
+  const spots = placeScene(key, house);
+  const plane = marksOf(key).find(m => m.kind === 'plane') || { u: .3, v: .76 };
+  const door = { u: plane.u + .03, v: Math.min(.8, plane.v + .02), s: (spots[house[0]]?.s || .08) * .9 };
+  S.push({ scene: { plate: key, place: 'The Airstrip', when: whenOf(S.day, S.min), icon: 'island', island: 'airstrip', cast: {}, wipe: 1 },
+    seg: ['Season premiere', 'The Arrival'], dir: "A plane comes in low over the lagoon and lands on the island's airstrip.", shake: 1, focus: [] });
+  const showOf = n => SHOWS[info[n]?.origin]?.name || null;
+  for (let i = 0; i < house.length; i += 4) {
+    const g = house.slice(i, i + 4);
+    S.push({ enter: Object.fromEntries(g.map(n => [n, spots[n]])), from: door, dir: `${nameList(g)} come down the steps.`, focus: g.slice(0, 2),
+      roster: g.map(n => ({ n, show: showOf(n), rookie: !!info[n]?.rookie })) });
+    // the introductions: one package per player, the way the show opens a season
+    for (const n of g) S.push({ intro: introCard(n, info[n] || {}), focus: [n] });
+  }
+  for (const it of items) linesToSteps(S, it.a.lines, { names, sceneWho: it.a.who, first: { sceneIdx: it.i, title: it.title, focus: it.a.who.slice(0, 2) } });
+  const gendered = !!row.ch?.division;
+  const seed = `arrive|${row.num}`;
+  S.push({ enter: { TJ: hostSide(key) }, tj: pickBy(TJ_WELCOME, seed), focus: ['TJ'] });
+  S.push({ rules: { k: 'THIS SEASON', n: 'How it works', li: [
+    'Every week starts with a <b>daily</b>. Win it and you are <b>safe</b> at the vote.',
+    ...(gendered ? ["The weeks go <b>men's</b>, then <b>women's</b>: only that week's division can be voted in."] : []),
+    'The house votes <b>out loud</b>, one at a time. The one with the most votes goes into the <b>Arena</b>.',
+    'At the Arena they <b>call out</b> who goes in with them. Lose in there, and you go home.',
+    `The ones still standing at the end run the <b>final</b>${gendered ? ': the first man and the first woman are the champions' : ''}.`,
+  ], f: 'Win dailies. Make friends. Stay out of the Arena.' }, focus: ['TJ'] });
+  S.push({ tj: pickBy(TJ_FIRST_DAILY, seed), focus: ['TJ'], act: { TJ: 'shout' } });
+}
+
+// A player's introduction: who they are, where they come from, and (a veteran) what they've done.
+// The facts are the row's (ch-run.js introOf: the roster's authored fields, the franchise ledger).
+const SHOW_PLATE = { 'total-drama': 'assets/sets/td/survival-island/campfire-night.webp', 'big-brother': 'assets/sets/bb/resort/default/bar-lobby-wide-night.webp',
+  traitors: 'assets/sets/traitors/roundtable.webp', 'drag-race': 'assets/sets/dr/mainstage.webp', 'perfect-match': 'assets/sets/pm/firepit-night.webp',
+  'the-circle': 'assets/sets/circle/studio.webp', 'the-challenge': 'assets/sets/ch/arena-night.webp' };
+const ord = n => { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+function introCard(n, i) {
+  const career = (i.career || []).map(c => ({ where: c.where, show: SHOWS[c.format]?.name || null, plate: SHOW_PLATE[c.format] || null,
+    result: c.winner ? 'WON' : c.finalist ? `Finalist${c.place ? `, ${ord(c.place)}` : ''}` : c.place ? `${ord(c.place)}${c.total ? ` of ${c.total}` : ''}` : 'Played',
+    winner: !!c.winner, wins: c.wins || 0 }));
+  const plates = [...new Set([SHOW_PLATE[i.origin], ...career.map(c => c.plate)].filter(Boolean))];
+  const facts = [i.age ? `${i.age}` : null, i.hometown, i.occupation].filter(Boolean);
+  return { n, show: SHOWS[i.origin]?.name || null, rookie: !!i.rookie, facts, story: career.length ? null : i.story || null, tag: !career.length && !i.story ? i.tag || null : null,
+    career, badges: i.badges || [], rival: i.rival || null, plates: plates.length ? plates : [SHOW_PLATE['the-challenge']] };
 }
 
 // ── the daily ─────────────────────────────────────────────────────────
@@ -430,7 +488,7 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
     const clutch = (d.moments || []).find(m => m.kind === 'clutch');
     if (clutch) S.push({ race: board(3.5), dir: fill(pickBy(PLAY.clutch, seed), { who: clutch.who }), focus: [clutch.who], act: { [clutch.who]: 'cheer' } });
   }
-  if (!played) {
+  if (!played && st.show !== 'hang') {
     for (const h of d.injuries || []) S.push({ dir: fill(pickBy(PLAY.hurt, seed + h), { who: h }), focus: [h], act: { [h]: 'slump' }, shake: 1 });
     const choke = (d.moments || []).find(m => m.kind === 'choke');
     if (choke) S.push({ dir: fill(pickBy(PLAY.choke, seed), { who: choke.who }), focus: [choke.who], act: { [choke.who]: 'slump' } });
@@ -723,6 +781,15 @@ export function chStepText(row) {
       if (s.say) out.push(`${s.say[0]}: ${s.say[1]}`);
       if (s.conf) out.push(`${s.conf[0]} [confessional]: ${s.conf[1]}`);
       if (s.dir) out.push(`(${s.dir})`);
+      if (s.intro) {
+        const t = s.intro;
+        out.push(`${t.n.toUpperCase()}${t.show ? ` — ${t.show}` : ''} · ${t.rookie ? 'ROOKIE' : 'VET'}${t.facts.length ? ` · ${t.facts.join(' · ')}` : ''}`);
+        for (const c of t.career) out.push(`  ${c.where}: ${c.result}${c.wins ? ` · ${c.wins} challenge wins` : ''}`);
+        if (t.badges.length) out.push(`  ${t.badges.join(' · ')}`);
+        if (t.rival) out.push(`  Rival in the house: ${t.rival}`);
+        if (t.story) out.push(`  "${t.story}"`);
+        if (t.tag) out.push(`  ${t.tag}`);
+      }
     }
   }
   return out.join('\n').trim();

@@ -28,7 +28,7 @@ import { DEFAULT_OPTIONS } from './ch/format.js';
 import { airedOf } from './ch/transcript.js';
 import { chLedgerRecord } from './ch/ledger-record.js';
 import { carriedFor } from './franchise-carry.js';
-import { recordBuiltSeason, activeSeasons, seasonKeyParts, hasFranchiseHistory } from './franchise-meta.js';
+import { recordBuiltSeason, activeSeasons, seasonKeyParts, hasFranchiseHistory, careerOf, careerFor } from './franchise-meta.js';
 
 export const isChallengeSeason = () => seasonFormat(seasonConfig) === CHALLENGE_FORMAT;
 
@@ -152,6 +152,31 @@ export function challengeSeasonShape(cast = _cast(), config = seasonConfig) {
 
 const VERB = { arena: 'eliminated', quit: 'quit', medical: 'left on a medical', disqualified: 'disqualified', instant: 'eliminated' };
 
+// Who they are, for the premiere's introductions (js/vp-ch-ep: a package per player as they come off the
+// plane): their show, vet or rookie, the authored facts, and for a veteran the career the franchise
+// ledger holds. Recorded when the season is built, so a rewatch shows the career as it stood then.
+function introOf(n, state, cast) {
+  const p = _player(n) || {};
+  // the first sentence that says something about them (not the date they were born), at most two
+  const first = t => {
+    const all = String(t || '').match(/[^.!?]+[.!?]+/g) || [];
+    const good = all.map(x => x.trim()).filter(x => x.length > 30 && !/\bborn (on|in)\b|\bwas born\b/i.test(x));
+    const pick = good[0] || all[0]?.trim() || '';
+    return pick ? (pick.length > 260 ? pick.slice(0, 257).replace(/\s+\S*$/, '') + '...' : pick) : null;
+  };
+  const tagOf = v => { const m = String(v || '').match(/^[^.!?]{3,60}[.!?]/); return m ? m[0].replace(/[.!?]$/, '') : null; };
+  let career = [], badges = [], rival = null;
+  try {
+    career = careerOf(n).slice(-5).map(c => ({ where: c.where, format: c.format || 'total-drama', place: c.rec?.placement || 0, total: c.total || null,
+      winner: !!c.rec?.winner, finalist: !!c.rec?.finalist, wins: c.rec?.chalWins || c.rec?.dailyWins || 0 }));
+    const cf = careerFor(n);
+    badges = (cf?.badges || []).slice(0, 3);
+    rival = Object.entries(cf?.rivals || {}).filter(([r]) => r !== n && cast.includes(r)).sort((x, y) => y[1] - x[1])[0]?.[0] || null;
+  } catch { /* no ledger yet */ }
+  return { origin: state.origin?.[n] || null, rookie: !!state.rookie?.[n], age: p.age || null, hometown: p.hometown || null,
+    occupation: p.occupation && p.occupation !== 'None' ? p.occupation : null, story: first(p.backstory || p.descriptor), tag: tagOf(p.voice), career, badges, rival };
+}
+
 // The daily as it was played, for the stepped viewer: the units in finishing order (best first).
 function dailyOf(d) {
   if (!d) return null;
@@ -207,6 +232,8 @@ export function challengeRows(result) {
           ballots: (v.ballots || []).map(b => ({ voter: b.voter, target: b.target, wanted: b.wanted || null, asked: b.asked || null, told: b.told || null, why: b.why || null, flip: !!b.flip })) })),
         duels: (e.arena || []).map(duelOf),
         meetings: (e.delib?.meetings || []).map(m => ({ name: m.name || null, organiser: m.organiser, target: m.target, responses: { ...(m.responses || {}) } })),
+        // who they are, for the arrival's name plates: their show and whether they're a rookie
+        ...(e.ep === 1 ? { castInfo: Object.fromEntries(cast.map(n => [n, introOf(n, state, cast)])) } : {}),
       },
     });
   }

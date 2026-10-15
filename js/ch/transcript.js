@@ -68,7 +68,7 @@ export function airedOf(epRec) {
       continue;
     }
     if (!a.script) continue;
-    out.push({ kind: a.kind, day: a.day, spot: a.scene?.spot || null, who: [...(a.scene?.who || [])], data: plain(a.scene?.data), snap: plain(a.scene?.snap),
+    out.push({ kind: a.kind, day: a.day, spot: a.script?.at || a.scene?.spot || null, who: [...(a.scene?.who || [])], data: plain(a.scene?.data), snap: plain(a.scene?.snap),
       lines: compact(a.script.lines) });
   }
   return out;

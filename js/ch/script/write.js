@@ -139,7 +139,36 @@ export function writeScene(state, scene) {
     Object.defineProperty(line, 'turn', { value: `${entry.id}:${i}`, enumerable: false });
     return line;
   });
-  return { lines, text: transcript(lines), lineId: entry.id };
+  return { lines, text: transcript(lines), lineId: entry.id, at: entry.at || placeOfWords(scene.spot, lines, scene.kind) };
+}
+
+// Where the words put a scene (the user, 2026-10-15: "they said things like door shut when they're
+// outside", "make sure events match location"). A scene whose spot is not fixed (a private talk, the villa,
+// the common room) is staged where its own lines say it is: a door or a bunk is the bedroom, the couch the
+// common room, the sand the beach. A scene with a fixed place (the kitchen, the gym, the hot tub, the
+// Arena, the daily, the party) keeps it. The first place the lines name wins.
+const FLEXIBLE = new Set(['private', 'villa', 'public', null, undefined]);
+const PLACE_WORDS = [
+  ['bedroom', /\b(bunk|bunks|bedroom|mattress|pillow|pillows|blanket|alarm|(shut|shuts|close|closes|closed|slams?|pushes) the door|doors? shut|door clicks)\b/i],
+  ['kitchen', /\b(kitchen|fridge|stove|counter|cupboard|sink|dishes|eggs|breakfast table|cooking)\b/i],
+  ['public', /\b(couch|sofa|the TV|common room)\b/i],
+  ['pool', /\b(pool|poolside|lounger|loungers|pool deck)\b/i],
+  ['hot-tub', /\b(hot tub|the tub)\b/i],
+  ['beach', /\b(beach|sand|ocean|waves|shore|the water's edge)\b/i],
+  ['gym', /\b(gym|weights|bench press|treadmill)\b/i],
+  ['lookout', /\b(lookout)\b/i],
+];
+// The villa reveal is a tour: it names every room and stays at the villa. A confessional is the chair,
+// unless a stage direction puts the person somewhere ("lies awake on a lounger by the pool").
+const TOURS = new Set(['villa-reveal', 'arrival']);
+function placeOfWords(spot, lines, kind) {
+  if (TOURS.has(kind)) return null;
+  if (spot === 'confessional') lines = lines.filter(l => l.kind === 'beat');
+  else if (!FLEXIBLE.has(spot)) return null;
+  for (const l of lines) {
+    for (const [place, re] of PLACE_WORDS) if (re.test(l.text)) return place;
+  }
+  return null;
 }
 
 export function transcript(lines) {

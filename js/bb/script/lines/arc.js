@@ -145,7 +145,13 @@ export default {
     { id: 'qg.t3', turns: [{ by: 'a', say: "Before anyone says anything, that stray vote wasn't me." }, { by: 'b', say: "I wasn't going to say anything." }, { by: 'a', say: "I know. I just wanted it out there." }, { by: 'b', say: "Okay." }, { by: 'b', dr: "{a} brought up the stray vote before anyone asked. That's what a guilty person does." }] },
     { id: 'qg.t4', turns: [{ by: 'b', say: "You keep saying it wasn't you." }, { by: 'a', say: "Because it wasn't." }, { by: 'b', say: "The more you say it..." }, { by: 'a', say: "I know. I know." }, { by: 'a', dr: "I didn't vote to keep {target}. But the more I say it, the guiltier I sound." }] },
     { id: 'qg.t5', turns: [{ by: 'b', say: "Funny how you're the one bringing it up." }, { by: 'a', say: "Because I want people to know it wasn't me!" }, { by: 'b', say: "Then let them work it out." }, { by: 'a', say: "They won't. They've already decided." }] },
-    { id: 'qg.t6', turns: [{ by: 'a', say: "You think it was me." }, { by: 'b', say: "I didn't say that." }, { by: 'a', say: "You don't have to." }, { by: 'b', say: "Then prove it wasn't." }, { by: 'a', say: "How? It's a secret vote." }, { by: 'a', dr: "{b} has decided it was me. It wasn't. I don't know how to prove a secret vote." }] },
+    { id: 'qg.t6', turns: [
+      { by: 'a', say: "You think it was me." },
+      { by: 'b', say: "I didn't say that." },
+      { by: 'a', say: "You don't have to. I can see it." },
+      { by: 'b', say: "Then prove it wasn't you." },
+      { by: 'a', say: "How? It's a secret vote." },
+      { by: 'a', dr: "{b} has decided it was me. It wasn't. I don't know how to prove a secret vote." }] },
   ],
   'arc.wronged.retracts': [
     { id: 'qh.r1', turns: [{ by: 'a', say: "Just say it once. It wasn't me." }, { by: 'b', say: "It wasn't you. I should have said that a week ago." }] },

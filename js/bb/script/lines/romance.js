@@ -24,7 +24,11 @@
 
 export default {
   'romance.firstMove.scene': [
-    { id: 'wa.1', turns: [{ by: 'a', say: "Can I say something awkward?" }, { by: 'b', say: "Go on." }, { by: 'a', say: "I like you. Properly." }, { by: 'b', say: "...Good. Me too." }] },
+    { id: 'wa.1', turns: [
+      { by: 'a', say: "Can I say something a bit awkward?" },
+      { by: 'b', say: "Go on." },
+      { by: 'a', say: "I like you. Properly. Not just as a friend.", v: { anxious: "I like you. Like, really like you. Sorry. That's it. That's the awkward thing." } },
+      { by: 'b', say: "Good. Because I like you too." }] },
     { id: 'wa.2', turns: [{ by: 'a', say: "Stay behind a minute?" }, { beat: 'Everyone else leaves.' }, { by: 'a', say: "I've been wanting to say this for days." }, { by: 'b', say: "Then say it." }] },
     { id: 'wa.3', turns: [{ by: 'a', say: "Pretending there's nothing going on is harder than just saying it." }, { by: 'b', say: "So say it." }, { by: 'a', say: "There's something going on." }, { by: 'b', say: "I know." }] },
     { id: 'wa.4', turns: [{ by: 'a', say: "Do you feel it too? Or is it just me?" }, { by: 'b', say: "It's not just you." }, { beat: '{a} laughs with relief.' }] },
@@ -196,7 +200,11 @@ export default {
   'romance.triangleCut.centre': [
     { id: 'wq.c1', turns: [{ by: 'a', dr: "{b} and I fought over {c} for weeks. Now {c} is gone, and there's nothing left to fight about." }] },
     { id: 'wq.c2', turns: [{ by: 'b', dr: "The vote sorted it out. {c} left. {a} and I are still here, stuck with a rivalry." }] },
-    { id: 'wq.c3', turns: [{ by: 'a', say: "So." }, { by: 'b', say: "So." }, { by: 'a', say: "Truce?" }, { by: 'b', say: "Truce." }] },
+    { id: 'wq.c3', turns: [
+      { by: 'a', say: "So. That was a lot." },
+      { by: 'b', say: "Yeah. It was." },
+      { by: 'a', say: "Can we call a truce? I don't want to fight about this any more." },
+      { by: 'b', say: "Okay. Truce.", v: { hard: "Fine. Truce. For now." } }] },
     { id: 'wq.c4', turns: [{ by: 'b', dr: "An hour after {c} left, {a} and I were in the same kitchen. Neither of us could remember why we were angry." }] },
     { id: 'wq.c5', turns: [{ by: 'a', dr: "I thought I'd feel like I won. I don't." }] },
     { id: 'wq.c6', turns: [{ by: 'b', say: "We don't have to be friends." }, { by: 'a', say: "No. But we don't have to be enemies either." }] },

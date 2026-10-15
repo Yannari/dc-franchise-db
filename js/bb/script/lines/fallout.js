@@ -86,7 +86,12 @@ export default {
     { id: 'fb.w1', turns: [{ by: 'a', say: "Can we stop pretending?" }, { by: 'b', say: "Pretending what?" }, { by: 'a', say: "That you had nothing to do with {gone} going." }, { by: 'b', say: "I didn't!" }, { by: 'a', say: "Nobody else makes sense." }, { by: 'a', dr: "It was {b}. It has to be. Nobody else makes sense." }] },
     { id: 'fb.w2', turns: [{ by: 'a', say: "I know it was you." }, { by: 'b', say: "It wasn't. I swear." }, { by: 'a', say: "That's exactly what you would say." }, { by: 'b', say: "Ask anyone. Ask how I voted." }, { by: 'a', say: "Everybody in here lies about how they voted." }, { by: 'b', dr: "There's nothing I can say. Every answer sounds like a lie to {a} now." }] },
     { id: 'fb.w3', turns: [{ by: 'b', say: "You haven't said a word to me all day." }, { by: 'a', say: "I don't have anything to say to you." }, { by: 'b', say: "What did I do?" }, { by: 'a', say: "You know what you did." }, { by: 'b', say: "I genuinely don't." }, { by: 'a', dr: "I can't prove it was {b}. I don't need to. I just know." }] },
-    { id: 'fb.w4', turns: [{ by: 'b', say: "Why are you looking at me like that?" }, { by: 'a', say: "You know why." }, { by: 'b', say: "I really don't." }, { by: 'a', say: "{gone}." }, { by: 'b', say: "I voted to keep {gone}!" }, { by: 'a', say: "Of course you did." }, { by: 'b', dr: "How do you prove how you voted? You can't. That's the whole problem." }] },
+    { id: 'fb.w4', turns: [
+      { by: 'b', say: "Why are you looking at me like that?" },
+      { by: 'a', say: "You know why. {gone}." },
+      { by: 'b', say: "I voted to keep {gone}! I swear I did.", v: { hard: "I voted to keep {gone}. Believe what you want." } },
+      { by: 'a', say: "Sure you did." },
+      { by: 'b', dr: "How do you prove how you voted? You can't. That's the whole problem with this house." }] },
     { id: 'fb.w5', turns: [{ by: 'b', say: "Why are you being so cold with me?" }, { by: 'a', say: "You know what you did to {gone}." }, { by: 'b', say: "I didn't do anything!" }, { by: 'a', say: "Didn't you? Then who did?" }, { by: 'b', say: "I don't know! Not me!" }, { by: 'b', dr: "Now I've got a target on my back for something I didn't do." }] },
     { id: 'fb.w6', turns: [{ by: 'b', say: "People are saying you think it was me." }, { by: 'a', say: "People are right." }, { by: 'b', say: "It wasn't. Ask anyone." }, { by: 'a', say: "I've asked. They all say the same thing you do." }, { by: 'b', say: "Because it's true!" }, { by: 'a', dr: "People keep telling me I'm wrong about {b}. I don't care. {b} goes next." }] },
   ],
@@ -108,7 +113,11 @@ export default {
   ],
   'fallout.denial.doubted': [
     { id: 'fz.d1', turns: [{ by: 'b', say: "It wasn't me." }, { beat: '{a} waits a second too long.' }, { by: 'a', say: "Okay." }] },
-    { id: 'fz.d2', turns: [{ by: 'a', say: "Did you vote {gone} out?" }, { by: 'b', say: "No." }, { by: 'a', say: "Are you sure?" }, { by: 'b', say: "...Yes." }] },
+    { id: 'fz.d2', turns: [
+      { by: 'a', say: "Did you vote {gone} out? Tell me the truth." },
+      { by: 'b', say: "No. I didn't." },
+      { by: 'a', say: "Are you sure?" },
+      { by: 'b', say: "Yes, I'm sure. Why do you keep asking?", v: { anxious: "Yes. I promise. Please stop looking at me like that." } }] },
     { id: 'fz.d3', turns: [{ by: 'b', say: "I voted to keep {gone}." }, { by: 'a', say: "Thanks for being honest." }, { by: 'a', dr: "{b} wasn't being honest. I could tell." }] },
     { id: 'fz.d4', turns: [{ by: 'a', dr: "{b} says {b.sub} voted to keep {gone}. I don't believe a word of it." }] },
     { id: 'fz.d5', turns: [{ by: 'b', dr: "{a} didn't believe me. I could see it on {a.posAdj} face." }] },
@@ -151,7 +160,12 @@ export default {
     { id: 'fw.h2', turns: [{ by: 'a', say: "I didn't see it myself. {source} told me." }, { by: 'b', say: "Told you what?" }, { by: 'a', say: "{target} voted against {gone}." }, { by: 'b', say: "And how would {source} know that?" }, { by: 'a', say: "{target} said so. To {source}'s face." }, { by: 'b', say: "Then either {target} is careless, or {source} is lying." }, { by: 'a', dr: "I can't tell which, either. But I wanted {b} to hear it." }] },
     { id: 'fw.h3', turns: [{ by: 'a', say: "You didn't hear this from me." }, { by: 'b', say: "Then who did I hear it from?" }, { by: 'a', say: "{source}. {source} says {target} voted {gone} out." }, { by: 'b', say: "Second-hand, then." }, { by: 'a', say: "Second-hand. But {source} has no reason to lie about it." }, { by: 'b', dr: "{a} heard it from {source}. That's second-hand. But I believe it." }] },
     { id: 'fw.h4', turns: [{ by: 'a', say: "This came from {source}, not me. But {target} voted {gone} out." }, { by: 'b', say: "Good to know." }, { by: 'a', say: "Just be careful what you tell {target} now." }, { by: 'b', say: "I'm always careful." }, { by: 'a', say: "Be more careful." }, { by: 'a', dr: "If this gets back to {target}, it's got {source}'s name on it. Not mine." }] },
-    { id: 'fw.h5', turns: [{ by: 'a', say: "{target} voted {gone} out." }, { by: 'b', say: "How do you know?" }, { by: 'a', say: "{source}." }, { by: 'b', say: "Then it's probably true." }, { by: 'a', say: "Probably." }, { by: 'b', say: "That's not the same as definitely." }, { by: 'b', dr: "I'm going to watch {target} at breakfast tomorrow. If {source} is right, {target} won't be able to look at me." }] },
+    { id: 'fw.h5', turns: [
+      { by: 'a', say: "{target} voted {gone} out." },
+      { by: 'b', say: "How do you know?" },
+      { by: 'a', say: "{source} told me." },
+      { by: 'b', say: "Then it's probably true. Probably isn't definitely, though." },
+      { by: 'b', dr: "I'm going to watch {target} at breakfast tomorrow. If {source} is right, {target} won't be able to look at me." }] },
     { id: 'fw.h6', turns: [{ by: 'a', say: "I'm only passing on what {source} told me." }, { by: 'b', say: "Which is?" }, { by: 'a', say: "That {target} voted {gone} out." }, { by: 'b', say: "Why are you telling me?" }, { by: 'a', say: "Because you were close to {gone}. You'd want to know." }, { by: 'a', dr: "I passed on what {source} told me about {target}. I made sure {b} knew where it came from." }] },
   ],
   'fallout.word.seen': [

@@ -65,7 +65,11 @@ export default {
   ],
   'scheme.lie.rejected': [
     { id: 'sl.r1', turns: [{ by: 'a', say: "{target} has been going after you." }, { by: 'b', say: "That doesn't sound like {target}." }, { by: 'a', say: "Well, it's true." }, { by: 'b', say: "Is it?" }] },
-    { id: 'sl.r2', turns: [{ by: 'a', say: "{target} is coming for you." }, { by: 'b', say: "Who told you that?" }, { by: 'a', say: "I just heard it." }, { by: 'b', say: "From who?" }] },
+    { id: 'sl.r2', turns: [
+      { by: 'a', say: "{target} is coming for you. I thought you should know." },
+      { by: 'b', say: "Who told you that?" },
+      { by: 'a', say: "I just heard it around." },
+      { by: 'b', say: "From who? If you can't say who, I'm not buying it.", v: { anxious: "From who? Please tell me who." } }] },
     { id: 'sl.r3', turns: [{ by: 'b', dr: "Everything {a} told me helps {a}. That's not a coincidence." }] },
     { id: 'sl.r4', turns: [{ by: 'a', say: "You need to watch {target}." }, { by: 'b', say: "Why are you the only person saying this?" }] },
     { id: 'sl.r5', turns: [{ by: 'b', dr: "{a} tried to turn me against {target}. I'm more worried about {a} now." }] },

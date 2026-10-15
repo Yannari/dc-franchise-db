@@ -309,10 +309,10 @@ export default {
     ] },
     { id: 'ff.m5', turns: [
       { beat: '{a} is halfway through a speech about the missing leftovers when {c} walks in carrying a fresh pot of mac and cheese.' },
-      { by: 'c', say: "Who's hungry?" },
-      { by: 'b', say: 'Me!' },
-      { by: 'a', say: "This isn't over, {b}." },
-      { by: 'b', say: 'It kind of is, though.' },
+      { by: 'c', say: "I made a whole pot. Who's hungry?" },
+      { by: 'b', say: "Me. Thank you." },
+      { by: 'a', say: "This isn't over, {b}. I mean it.", v: { soft: "Fine. But next time, just ask me." } },
+      { by: 'b', say: "It kind of is, though. There's mac and cheese." },
     ] },
     { id: 'ff.m6', turns: [
       { by: 'a', say: 'Who ate my leftovers?' },
@@ -338,7 +338,11 @@ export default {
     { id: 'fn.4', turns: [{ by: 'a', say: "Do you have to sing right now?" }, { by: 'b', say: "I'm bored." }, { by: 'a', say: "Be bored quietly." }] },
     { id: 'fn.5', turns: [{ beat: '{a} puts a pillow over {a.posAdj} head. It doesn\'t help.' }, { by: 'a', dr: "I've had about three hours of sleep, and it's because of {b}." }] },
     { id: 'fn.6', turns: [{ by: 'a', say: "I'm asking nicely for the last time." }, { by: 'b', say: "Okay! We'll stop." }, { by: 'a', dr: "They didn't stop." }] },
-    { id: 'fn.7', turns: [{ by: 'b', say: "Morning!" }, { by: 'a', say: "Is it? It's still dark." }, { by: 'b', say: "Early start." }, { by: 'a', say: "For you." }] },
+    { id: 'fn.7', turns: [
+      { by: 'b', say: "Morning! Rise and shine!" },
+      { by: 'a', say: "It's still dark outside. Why are you so loud?" },
+      { by: 'b', say: "I like an early start." },
+      { by: 'a', say: "Then start it quietly." }] },
     { id: 'fn.8', turns: [{ by: 'a', dr: "{b} snores like a motorbike. I've tried everything. I'm going to sleep in the bathroom tonight." }] },
     { id: 'fn.9', turns: [{ by: 'a', say: "Could you take the conversation to the kitchen?" }, { by: 'b', say: "We're nearly done." }, { by: 'a', say: "You said that an hour ago." }] },
     { id: 'fn.10', turns: [{ by: 'a', dr: "I'm not a morning person. {b} is very much a morning person. This is a problem." }] },
@@ -364,7 +368,11 @@ export default {
   'friction.space.scene': [
     { id: 'fs.1', turns: [{ by: 'a', say: "You've been in the bathroom for fifty minutes." }, { by: 'b', say: "I'm doing my hair!" }, { by: 'a', say: "Some of us need the mirror too!" }] },
     { id: 'fs.2', when: { early: false }, turns: [{ by: 'a', say: "That's my chair." }, { by: 'b', say: "There's no name on it." }, { by: 'a', say: "I've sat there every day since the first week." }, { by: 'b', say: "And now I'm sitting here." }] },
-    { id: 'fs.3', turns: [{ by: 'a', say: "Is that my jumper?" }, { by: 'b', say: "I was cold." }, { by: 'a', say: "You could have asked." }, { by: 'b', say: "You were asleep." }] },
+    { id: 'fs.3', turns: [
+      { by: 'a', say: "Is that my jumper you're wearing?" },
+      { by: 'b', say: "I was cold, and it was just lying there." },
+      { by: 'a', say: "You could have asked me.", v: { hard: "Take it off. Ask next time." } },
+      { by: 'b', say: "You were asleep. I wasn't going to wake you up for a jumper." }] },
     { id: 'fs.4', turns: [{ by: 'a', say: "Who moved my stuff off my bed?" }, { by: 'b', say: "I needed somewhere to sit." }, { by: 'a', say: "There are twenty other places to sit!" }] },
     { id: 'fs.5', turns: [{ by: 'a', dr: "{b} keeps borrowing my things without asking. I'm not going to make a big deal of it. Yet." }] },
     { id: 'fs.6', turns: [{ by: 'a', say: "You've used all the hot water again." }, { by: 'b', say: "There's more coming." }, { by: 'a', say: "In an hour!" }] },
@@ -398,7 +406,11 @@ export default {
     { id: 'fp.8', turns: [{ by: 'b', say: "Did I do something?" }, { by: 'a', say: "No. You didn't. I'm sorry." }, { by: 'b', say: "It's okay. We're all going a bit mad." }] },
     { id: 'fp.9', turns: [{ by: 'a', say: "Why are you always so loud?" }, { by: 'b', say: "I'm literally just talking." }, { by: 'a', say: "...Yeah. Sorry. Ignore me." }] },
     { id: 'fp.10', turns: [{ by: 'a', dr: "I've been fine for weeks. Today I wasn't, and {b} got the worst of it." }] },
-    { id: 'fp.11', turns: [{ by: 'b', say: "Want to play cards?" }, { by: 'a', say: "No." }, { by: 'b', say: "Okay." }, { by: 'a', say: "...Sorry. Maybe later." }] },
+    { id: 'fp.11', turns: [
+      { by: 'b', say: "Do you want to play cards with us?" },
+      { by: 'a', say: "No. Leave me alone." },
+      { by: 'b', say: "Okay. Sorry I asked." },
+      { by: 'a', say: "Sorry. I didn't mean it like that. Maybe later.", v: { hard: "I said no." } }] },
     { id: 'fp.12', turns: [{ by: 'b', dr: "{a} bit my head off for nothing. I'm not taking it personally. Everyone's on edge." }] },
   ],
   // ── a joke at someone's expense ── a makes it, b is the joke
@@ -407,8 +419,17 @@ export default {
     { id: 'fj.2', turns: [{ beat: '{a} gets a big laugh out of a story about {b}. It was a story {b} told {a} in private.' }, { by: 'b', say: "I told you that in private." }, { by: 'a', say: "It was just a joke." }, { by: 'b', say: "It was private." }] },
     { id: 'fj.3', turns: [{ by: 'a', say: "Oh, come on, {b} can't take a joke." }, { beat: '{b} has just walked out of the room.' }] },
     { id: 'fj.4', turns: [{ by: 'b', dr: "Everyone laughed. I didn't. It wasn't a joke to me." }] },
-    { id: 'fj.5', turns: [{ beat: '{a} is doing an impression of {b} for the whole room, and getting laughs.' }, { by: 'a', say: "And then {b} said—" }, { by: 'b', say: "Okay, that's enough." }, { by: 'a', say: "I'm not finished." }, { by: 'b', say: "Yes, you are." }] },
-    { id: 'fj.6', turns: [{ by: 'a', say: "I'm only teasing." }, { by: 'b', say: "You've been teasing all day." }, { by: 'a', say: "Because it's funny." }, { by: 'b', say: "Not to me." }] },
+    { id: 'fj.5', turns: [
+      { beat: '{a} is doing an impression of {b} for the whole room, and getting laughs.' },
+      { by: 'a', say: "And then {b} goes, 'I'm not being dramatic, I'm being honest.'" },
+      { by: 'b', say: "Okay, that's enough. I'm standing right here.", v: { soft: "Haha. Okay. You can stop now, please." } },
+      { by: 'a', say: "I'm not finished!" },
+      { by: 'b', say: "Yes, you are." }] },
+    { id: 'fj.6', turns: [
+      { by: 'a', say: "Relax. I'm only teasing you." },
+      { by: 'b', say: "You've been teasing me all day." },
+      { by: 'a', say: "Because it's funny." },
+      { by: 'b', say: "It's not funny to me. It stopped being funny this morning.", v: { anxious: "It's not funny to me. I don't know how to tell you that without making it weird." } }] },
     { id: 'fj.7', turns: [{ by: 'a', dr: "I took the joke too far. I could tell by {b}'s face. I didn't stop in time." }] },
     { id: 'fj.8', turns: [{ beat: '{a} keeps the joke going after the laughter stops. The room goes awkward.' }, { by: 'b', dr: "Everyone knew it had gone too far. Except {a}." }] },
     { id: 'fj.9', turns: [{ by: 'b', say: "Can you not make fun of me in front of everyone?" }, { by: 'a', say: "Sorry. I didn't mean anything by it." }, { by: 'b', say: "I know. Just don't." }] },

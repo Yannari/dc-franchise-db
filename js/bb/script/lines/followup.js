@@ -14,7 +14,12 @@ export default {
   'followup.isolation.honest': [
     { id: 'fi.h1', turns: [{ by: 'b', say: "I owe you an apology. I kept my distance this week." }, { by: 'a', say: "Was it personal, or the game?" }, { by: 'b', say: "The game. But that doesn't make it okay." }] },
     { id: 'fi.h2', turns: [{ by: 'a', say: "Why did you stop talking to me after nominations?" }, { by: 'b', say: "Because I was scared." }, { by: 'a', say: "Of what?" }, { by: 'b', say: "Of being next." }] },
-    { id: 'fi.h3', turns: [{ beat: '{b} brings {a} a coffee.' }, { by: 'b', say: "I handled this badly." }, { by: 'a', say: "Yes, you did." }, { by: 'b', say: "Can I sit down?" }, { by: 'a', say: "...Go on." }] },
+    { id: 'fi.h3', turns: [
+      { beat: '{b} brings {a} a coffee.' },
+      { by: 'b', say: "I handled this badly. I know I did." },
+      { by: 'a', say: "Yes, you did." },
+      { by: 'b', say: "Can I sit down?" },
+      { by: 'a', say: "Go on, then.", v: { hard: "Five minutes." } }] },
     { id: 'fi.h4', turns: [{ by: 'a', say: "Being ignored was worse than being nominated." }, { by: 'b', say: "I'm sorry. I really am." }] },
     { id: 'fi.h5', turns: [{ by: 'b', dr: "I avoided {a} all week. I finally said sorry. {a} didn't have to accept it, but {a} did listen." }] },
     { id: 'fi.h6', turns: [{ by: 'a', dr: "{b} actually owned it. That's more than anyone else has done." }] },

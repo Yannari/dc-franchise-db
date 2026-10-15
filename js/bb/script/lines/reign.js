@@ -64,7 +64,11 @@ export default {
     { id: 'rk.g6', turns: [{ by: 'a', dr: "Nobody's angry about my week as HOH. In this house, that's a win." }] },
   ],
   'reign.carve.agree': [
-    { id: 'rc.a1', turns: [{ by: 'a', say: "I want {target} up." }, { by: 'b', say: "Fine by me." }, { by: 'a', say: "That was easy." }, { by: 'b', say: "Too easy." }] },
+    { id: 'rc.a1', turns: [
+      { by: 'a', say: "I want {target} on the block." },
+      { by: 'b', say: "Fine by me." },
+      { by: 'a', say: "That was easy." },
+      { by: 'b', say: "Maybe too easy. Let's not tell anyone yet." }] },
     { id: 'rc.a2', turns: [{ by: 'b', say: "If your nominees win the Battle of the Block, you lose your HOH and I keep mine. You know that." }, { by: 'a', say: "I know." }, { by: 'b', say: "Still want to do this?" }, { by: 'a', say: "Still want to do this." }] },
     { id: 'rc.a3', turns: [{ by: 'a', dr: "{b} and I sat down and split the house between us. It took four minutes." }] },
     { id: 'rc.a4', turns: [{ by: 'b', dr: "Two HOHs, one plan. {a} and I agreed on everything. That never happens in here." }] },
@@ -72,7 +76,11 @@ export default {
     { id: 'rc.a6', turns: [{ by: 'a', say: "We're on the same side this week, right?" }, { by: 'b', say: "This week, yes." }] },
   ],
   'reign.carve.split': [
-    { id: 'rc.s1', turns: [{ by: 'a', say: "Just put {partner} up." }, { by: 'b', say: "No." }, { by: 'a', say: "Why not?" }, { by: 'b', say: "Because I don't want to." }] },
+    { id: 'rc.s1', turns: [
+      { by: 'a', say: "Just put {partner} up. It's the obvious move." },
+      { by: 'b', say: "No. I'm not doing that." },
+      { by: 'a', say: "Why not?" },
+      { by: 'b', say: "Because I don't want to, and it's my decision.", v: { soft: "Because I like {partner}. I'm sorry. I can't." } }] },
     { id: 'rc.s2', turns: [{ by: 'a', dr: "{b} and I can't agree on a single name. We're two HOHs working against each other." }] },
     { id: 'rc.s3', turns: [{ by: 'b', say: "Fine." }, { by: 'a', say: "Fine." }, { by: 'b', dr: "It's not fine." }] },
     { id: 'rc.s4', turns: [{ by: 'a', say: "Want to split it?" }, { by: 'b', say: "I'll think about it." }, { by: 'a', dr: "That's a no." }] },

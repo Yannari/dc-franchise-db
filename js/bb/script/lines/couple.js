@@ -76,7 +76,11 @@ export default {
   'couple.vote.scene': [
     { id: 'cv.1', turns: [{ by: 'a', say: "Who are you voting for?" }, { by: 'b', say: "Same as you." }, { by: 'a', say: "You don't even know who I'm voting for." }, { by: 'b', say: "I know it's the same." }, { by: 'a', say: "That's either really sweet or really dangerous." }, { by: 'b', say: "Can't it be both?" }] },
     { id: 'cv.2', when: { third: true }, turns: [{ by: 'c', say: "I'm asking for your vote." }, { by: 'a', say: "Have you asked {b}?" }, { by: 'c', say: "Yes." }, { by: 'a', say: "Then you know my answer." }, { by: 'c', dr: "I made my case to {a}. Then to {b}. I got the same answer, almost word for word." }] },
-    { id: 'cv.3', turns: [{ by: 'b', say: "I'll vote however you're voting." }, { by: 'a', say: "Are you sure?" }, { by: 'b', say: "Completely." }, { by: 'a', say: "What if I'm wrong?" }, { by: 'b', say: "Then we're wrong together." }, { by: 'a', dr: "That's the nicest and scariest thing anyone's said to me in here." }] },
+    { id: 'cv.3', turns: [
+      { by: 'b', say: "I'll vote however you're voting." },
+      { by: 'a', say: "Are you sure? What if I'm wrong?" },
+      { by: 'b', say: "Then we're wrong together." },
+      { by: 'a', dr: "That's the nicest and scariest thing anyone's said to me in here." }] },
     { id: 'cv.4', when: { third: true }, turns: [{ beat: "{c} pitches {a}. Before answering, {a} looks across the room at {b}." }, { by: 'a', say: "Let me talk to {b}." }, { by: 'c', say: "Of course you will." }, { by: 'c', dr: "That conversation had three people in it." }] },
     { id: 'cv.5', when: { third: true }, turns: [{ by: 'c', say: "Where's your vote?" }, { by: 'b', say: "Talk to {a}." }, { by: 'c', say: "I'm asking you." }, { by: 'b', say: "And I'm telling you. Talk to {a}." }, { by: 'c', dr: "So I'm pitching one vote, twice." }] },
     { id: 'cv.8', when: { known: true, third: true }, turns: [{ by: 'b', say: "So? Who are we voting for?" }, { by: 'a', say: "Not here." }, { beat: "{c} is close enough to hear. They wait until {c} drifts off, then talk it through, quietly." }, { by: 'b', say: "So it's {target}." }, { by: 'a', say: "It's {target}." }, { by: 'c', dr: "Two minutes. That's how long it took {a} and {b} to settle a vote. I've been working on mine for three days." }] },
@@ -123,7 +127,11 @@ export default {
     { id: 'cj.1', turns: [{ by: 'a', say: "What were you two laughing about?" }, { by: 'b', say: "I honestly can't remember." }, { by: 'a', say: "Right." }] },
     { id: 'cj.2', turns: [{ by: 'a', dr: "{b} and {c} talked for an hour in the kitchen. I walked past four times. Not that I was counting." }] },
     { id: 'cj.3', turns: [{ beat: '{c} touches {b}\'s arm while making a point.' }, { by: 'a', dr: "I didn't like that." }] },
-    { id: 'cj.4', turns: [{ by: 'b', say: "You've been quiet since {c} sat with me at dinner." }, { by: 'a', say: "It's not about {c}." }, { by: 'b', say: "Okay." }, { by: 'a', say: "It's not." }, { by: 'b', say: "I said okay." }] },
+    { id: 'cj.4', turns: [
+      { by: 'b', say: "You've been quiet since {c} sat with me at dinner." },
+      { by: 'a', say: "It's not about {c}." },
+      { by: 'b', say: "Then what is it about?" },
+      { by: 'a', say: "Nothing. I'm just tired.", v: { hard: "I said it's not about {c}. Drop it.", anxious: "Okay, it's a bit about {c}. Sorry. I know it's stupid." } }] },
     { id: 'cj.5', turns: [{ by: 'b', say: "{c} is just easy to talk to." }, { by: 'a', say: "Is {c}?" }] },
     { id: 'cj.6', turns: [{ by: 'c', dr: "{a} has been really cold with me all evening. I have no idea what I did." }] },
     { id: 'cj.7', turns: [{ by: 'b', dr: "{a} is jealous of {c}. Of {c}! We were talking about a competition." }] },

@@ -66,7 +66,11 @@ export default {
     { id: 'ta7.x2', turns: [{ by: 'a', dr: "{b} and {c} promised each other the end. Now I know." }] },
   ],
   'teamact.effect.deal': [
-    { id: 'ta7.l1', turns: [{ by: 'a', say: "Final two?" }, { by: 'b', say: "Final two." }, { by: 'a', say: "Say it again." }, { by: 'b', say: "Final two." }] },
+    { id: 'ta7.l1', turns: [
+      { by: 'a', say: "You and me, final two?" },
+      { by: 'b', say: "Final two." },
+      { by: 'a', say: "Say it like you mean it." },
+      { by: 'b', say: "I mean it. You and me at the end.", v: { hard: "I said final two. I meant it." } }] },
     { id: 'ta7.l2', turns: [{ by: 'b', dr: "{a} and I shook on the end. I don't even remember whose idea it was." }] },
   ],
 };

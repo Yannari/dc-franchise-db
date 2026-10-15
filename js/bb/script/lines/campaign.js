@@ -164,7 +164,11 @@ export default {
     { id: 'cr.w5', turns: [{ by: 'a', say: "One more try, and then I'll leave you alone." }, { by: 'b', say: "Go on. I think you might have got me." }] },
     { id: 'cr.w6', turns: [{ by: 'b', say: "You're persistent, I'll give you that." }, { by: 'a', say: "Is persistent working?" }, { by: 'b', say: "...Maybe." }] },
     { id: 'cr.w7', turns: [{ by: 'b', say: "I've been thinking about what you said." }, { by: 'a', say: "And?" }, { by: 'b', say: "And I think you were right." }] },
-    { id: 'cr.w8', turns: [{ by: 'a', say: "Last chance. I promise." }, { by: 'b', say: "You promised that yesterday." }, { by: 'a', say: "And yet you're still listening." }, { by: 'b', say: "...I am." }] },
+    { id: 'cr.w8', turns: [
+      { by: 'a', say: "This is the last time I'll ask. I promise." },
+      { by: 'b', say: "You said that yesterday." },
+      { by: 'a', say: "And you're still listening to me." },
+      { by: 'b', say: "I am. I don't know why, but I am." }] },
     { id: 'cr.w9', turns: [{ by: 'b', dr: "{a} wore me down. I'm not proud of it. But the argument got better every time I heard it." }] },
     { id: 'cr.w10', turns: [{ by: 'b', say: "Stop. You've convinced me. Just stop talking before you un-convince me." }] },
   ],

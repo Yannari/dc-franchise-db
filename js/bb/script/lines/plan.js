@@ -32,8 +32,16 @@ export default {
     { id: 'ka.6', turns: [{ by: 'a', dr: "I've stopped watching who talks. I'm watching who leaves. {b} and {c} leave a lot." }] },
   ],
   'plan.count.short': [
-    { id: 'kb.s1', turns: [{ by: 'a', say: "Let's count." }, { beat: '{a} counts on {a.posAdj} fingers.' }, { by: 'a', say: "That's {expected}. We need {majority}." }, { by: 'b', say: "Count again." }, { by: 'a', say: "I have. Twice." }] },
-    { id: 'kb.s2', turns: [{ by: 'b', say: "How many have we got?" }, { by: 'a', say: "We've got {expected}." }, { by: 'b', say: "And we need?" }, { by: 'a', say: "We need {majority}." }, { by: 'b', say: "...Right." }] },
+    { id: 'kb.s1', turns: [
+      { by: 'a', say: "Let's count it." },
+      { beat: '{a} counts the names on {a.posAdj} fingers.' },
+      { by: 'a', say: "That's {expected}. We need {majority}." },
+      { by: 'b', say: "Count again. Maybe you missed somebody." },
+      { by: 'a', say: "I've counted twice. We're short." }] },
+    { id: 'kb.s2', turns: [
+      { by: 'b', say: "How many votes have we actually got?" },
+      { by: 'a', say: "{expected}. And we need {majority}." },
+      { by: 'b', say: "Right. So we need to talk to people tonight.", v: { anxious: "Okay. Okay. So we're short. What do we do?" } }] },
     { id: 'kb.s3', when: { intent: 'one' }, turns: [{ by: 'a', dr: "We're one vote short of getting {target} out. One. I need to find it." }] },
     { id: 'kb.s4', when: { intent: 'many' }, turns: [{ by: 'a', dr: "We're {gap} votes short on {target}. That's not a small gap." }] },
     { id: 'kb.s5', turns: [{ by: 'a', say: "We're fine." }, { beat: '{a} keeps counting votes.' }, { by: 'b', dr: "If we were fine, {a} would stop counting votes." }] },
@@ -219,7 +227,11 @@ export default {
     { id: 'ko.r1', turns: [{ beat: "{a} makes toast for two and gives the second slice to {b}." }, { by: 'a', say: "Morning!" }, { by: 'b', say: "Morning. Thanks." }, { by: 'a', say: "Eat up. Big week." }, { by: 'b', dr: "{a} knows. {a} definitely knows." }] },
     { id: 'ko.r2', turns: [{ by: 'a', say: "Close one last night, wasn't it?" }, { by: 'b', say: "What do you mean?" }, { by: 'a', say: "Coffee?" }, { by: 'b', say: "...Sure." }, { by: 'a', say: "How do you take it? I never asked. I should get to know you better." }, { by: 'b', dr: "{a} knows. That was a threat with a coffee in it." }] },
     { id: 'ko.r3', turns: [{ by: 'b', say: "Congratulations on staying." }, { by: 'a', say: "Thank you. It was close, wasn't it?" }, { by: 'b', say: "Was it? I wasn't really counting." }, { by: 'a', say: "Funny. I heard you were." }, { by: 'a', dr: "{b} tried to send me home and couldn't. Now I get to decide what happens next. I'm going to enjoy that." }] },
-    { id: 'ko.r4', turns: [{ by: 'a', say: "Sleep well?" }, { by: 'b', say: "Fine." }, { by: 'a', say: "I slept great. Funny, that." }, { by: 'b', say: "Good for you." }, { by: 'a', say: "It is, isn't it?" }] },
+    { id: 'ko.r4', turns: [
+      { by: 'a', say: "Sleep well?" },
+      { by: 'b', say: "Fine." },
+      { by: 'a', say: "I slept great. Funny, that." },
+      { by: 'b', say: "Good for you. Enjoy it while it lasts.", v: { soft: "Good. I'm glad one of us did." } }] },
     { id: 'ko.r5', turns: [{ by: 'a', say: "Pass the butter?" }, { by: 'b', say: "Here." }, { by: 'a', say: "Thanks. You're very kind." }, { beat: "{a} smiles at {b} a little too long." }, { by: 'b', dr: "{a} hasn't stopped smiling at me since the eviction. I'd prefer shouting." }] },
     { id: 'ko.r6', turns: [{ by: 'a', say: "Can I ask you something?" }, { by: 'b', say: "Sure." }, { by: 'a', say: "If I'd gone home last night, who would you be having breakfast with?" }, { by: 'b', say: "I don't know what you mean." }, { by: 'a', say: "Course you don't." }, { by: 'a', dr: "{b} counted the votes to evict me. {b} came up short. Now {b} is my target." }] },
   ],

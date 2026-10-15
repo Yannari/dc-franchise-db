@@ -231,11 +231,19 @@ export default {
     { id: 'ls.a10', turns: [{ by: 'a', dr: "I haven't slept properly in three days. I'm starting to forget what day it is." }] },
   ],
   'life.sleepless.company': [
-    { id: 'ls.c1', turns: [{ by: 'b', say: "You can't sleep either?" }, { by: 'a', say: "Not a chance." }, { by: 'b', say: "Tea?" }, { by: 'a', say: "Tea." }] },
+    { id: 'ls.c1', turns: [
+      { by: 'b', say: "You can't sleep either?" },
+      { by: 'a', say: "No chance. My head won't switch off." },
+      { by: 'b', say: "Want a cup of tea?" },
+      { by: 'a', say: "Yes, please." }] },
     { id: 'ls.c2', when: { room: ['kitchen'] }, turns: [{ beat: '{a} finds {b} sitting at the kitchen table in the dark.' }, { by: 'a', say: "What are you doing up?" }, { by: 'b', say: "Same as you. Thinking too much." }] },
     { id: 'ls.c3', turns: [{ by: 'a', say: "Is it bad that I'm scared?" }, { by: 'b', say: "No. Everyone's scared. They just don't say it." }] },
     { id: 'ls.c4', turns: [{ by: 'b', say: "Want to talk about it?" }, { by: 'a', say: "Not really." }, { by: 'b', say: "Okay. I'll just sit here, then." }, { beat: 'They sit together until it starts to get light.' }] },
-    { id: 'ls.c5', turns: [{ by: 'a', say: "What time is it?" }, { by: 'b', say: "Nearly four." }, { by: 'a', say: "We should sleep." }, { by: 'b', say: "We should." }, { beat: 'Neither of them moves.' }] },
+    { id: 'ls.c5', turns: [
+      { by: 'a', say: "What time is it?" },
+      { by: 'b', say: "Nearly four in the morning." },
+      { by: 'a', say: "We really should go to sleep." },
+      { beat: 'Neither of them moves. They keep talking until the birds start.' }] },
     { id: 'ls.c6', turns: [{ by: 'a', dr: "I couldn't sleep, and neither could {b}. We talked until it got light. I feel a lot better." }] },
     { id: 'ls.c7', turns: [{ by: 'b', say: "Are you awake?" }, { by: 'a', say: "Yeah." }, { by: 'b', say: "Me too. This house is too quiet at night." }, { by: 'a', say: "Or too loud. Someone's snoring." }] },
     { id: 'ls.c8', turns: [{ by: 'a', say: "I can't stop thinking about the vote." }, { by: 'b', say: "Then don't think about it. Tell me something else." }, { by: 'a', say: "Like what?" }, { by: 'b', say: "Anything. Tell me about your first job." }] },
@@ -357,7 +365,10 @@ export default {
     { id: 'lg.2', turns: [{ by: 'b', say: "That's not in the rules!" }, { by: 'a', say: "It is now." }, { by: 'b', say: "You can't just make up rules when you're losing!" }] },
     { id: 'lg.3', turns: [{ by: 'a', say: "I'm winning. Just so everyone knows." }, { by: 'b', say: "We know. You've told us four times." }] },
     { id: 'lg.4', turns: [{ beat: 'The card game has a scoreboard now. It is stuck to the fridge.' }, { by: 'a', dr: "I've won six games in a row. I'm not letting anyone forget it." }] },
-    { id: 'lg.5', when: { third: true }, turns: [{ by: 'c', say: "Who invented this game?" }, { by: 'b', say: "Nobody remembers." }, { by: 'a', say: "Me. I invented it." }, { by: 'c', say: "You definitely didn't." }] },
+    { id: 'lg.5', when: { third: true }, turns: [
+      { by: 'c', say: "Who even made up this game?" },
+      { by: 'a', say: "Me. I invented it." },
+      { by: 'b', say: "You definitely did not. It's been going since before you got here." }] },
     { id: 'lg.6', turns: [{ by: 'b', say: "How are you so good at pool?" }, { by: 'a', say: "Years of practice." }, { by: 'b', say: "You told me you'd never played!" }] },
     { id: 'lg.7', when: { third: true }, turns: [{ by: 'a', say: "Best of five?" }, { by: 'c', say: "We said that an hour ago." }, { by: 'b', say: "Best of nine, then." }] },
     { id: 'lg.8', turns: [{ by: 'b', dr: "We've been playing the same silly game for two hours. It's the most fun I've had in this house." }] },
@@ -384,7 +395,11 @@ export default {
   // ── grooming ── a and b
   'life.grooming.scene': [
     { id: 'lm.1', turns: [{ by: 'b', say: "Sit still. I'm nearly done." }, { by: 'a', say: "You said that twenty minutes ago." }, { by: 'b', say: "Braids take time." }] },
-    { id: 'lm.2', turns: [{ by: 'a', say: "How does it look?" }, { by: 'b', say: "...Good. It looks good." }, { by: 'a', say: "You paused." }, { by: 'b', say: "It'll grow back." }] },
+    { id: 'lm.2', turns: [
+      { by: 'a', say: "Be honest. How does my hair look?" },
+      { by: 'b', say: "It looks good. It looks really good." },
+      { by: 'a', say: "You paused before you said that." },
+      { by: 'b', say: "It'll grow back. That's all I'm saying.", v: { soft: "No, it's nice! It's just different. You'll get used to it." } }] },
     { id: 'lm.3', turns: [{ by: 'b', dr: "I've never done anyone's nails before. {a} doesn't need to know that." }] },
     { id: 'lm.4', turns: [{ by: 'a', say: "Can you do my hair tomorrow too?" }, { by: 'b', say: "Only if you stop moving your head." }] },
     { id: 'lm.5', turns: [{ beat: '{b} braids {a}\'s hair for an hour. They talk the whole time.' }, { by: 'a', dr: "It's the longest I've sat still since I got here. It was really nice." }] },
@@ -407,7 +422,11 @@ export default {
   ],
   // ── boredom ── a and b
   'life.boredom.scene': [
-    { id: 'lb.1', turns: [{ by: 'a', say: "I'm so bored." }, { by: 'b', say: "Me too." }, { by: 'a', say: "Want to do something?" }, { by: 'b', say: "Like what?" }, { by: 'a', say: "...Nothing. There's nothing." }] },
+    { id: 'lb.1', turns: [
+      { by: 'a', say: "I am so bored." },
+      { by: 'b', say: "Me too. Do you want to do something?" },
+      { by: 'a', say: "Like what? There's nothing to do in here." },
+      { by: 'b', say: "We could clean the kitchen.", v: { hard: "Then stop complaining about it." } }] },
     { id: 'lb.2', turns: [{ by: 'a', say: "There are 412 tiles in the bathroom." }, { by: 'b', say: "You counted them?" }, { by: 'a', say: "Twice." }] },
     { id: 'lb.3', turns: [{ beat: '{a} and {b} lie in the sun all afternoon, saying almost nothing.' }, { by: 'b', dr: "Best day I've had in two weeks. Nothing happened. That's why." }] },
     { id: 'lb.4', turns: [{ by: 'a', say: "Let's read the back of the washing-up liquid." }, { by: 'b', say: "We did that yesterday." }, { by: 'a', say: "Let's do it again." }] },

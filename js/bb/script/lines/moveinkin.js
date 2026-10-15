@@ -43,7 +43,12 @@ export default {
   // ── inside: an open pair walks in together, and somebody already in the house notices ──
   'moveinact.kinhouse.together': [
     { id: 'mkH.t1', turns: [{ beat: '{a} and {b} walk in holding hands. The room clocks it immediately.' }, { by: 'c', say: "Hang on. Are you two... together?" }, { by: 'a', say: "Since before the show." }, { by: 'c', say: "In this house? Oh, that's going to be a problem for somebody." }, { by: 'c', dr: "A couple on night one. That's two votes walking around as one, and everybody saw it." }] },
-    { id: 'mkH.t2', turns: [{ beat: '{a} walks in, then turns round and waits for {b} at the door.' }, { by: 'c', say: "You two came in together?" }, { by: 'b', say: "We came in together." }, { by: 'c', say: "Like, together together?" }, { by: 'b', say: "Like, together together." }, { by: 'c', dr: "I've been in this house ten minutes and I already know two people I'm never putting in the same alliance." }] },
+    { id: 'mkH.t2', turns: [
+      { beat: '{a} walks in, then turns round and waits for {b} at the door.' },
+      { by: 'c', say: "Wait, did you two come in together?" },
+      { by: 'b', say: "Yeah. We're together. As in, a couple." },
+      { by: 'c', say: "Oh. Okay. Wow." },
+      { by: 'c', dr: "I've been in this house ten minutes, and I already know two people I'm never putting in the same alliance." }] },
   ],
   'moveinact.kinhouse.family': [
     { id: 'mkH.f1', turns: [{ beat: '{a} and {b} walk in side by side, already arguing about who gets which bed.' }, { by: 'c', say: "Do you two know each other?" }, { by: 'b', say: "We're family." }, { by: 'c', say: "Family. In here. Okay." }, { by: 'c', dr: "Two people who will never vote for each other to go. That's the first number I wrote down in my head." }] },

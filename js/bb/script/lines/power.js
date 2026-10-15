@@ -256,7 +256,12 @@ export default {
     { id: 'pp.c1', turns: [{ by: 'b', say: "Am I safe?" }, { by: 'a', say: "You're fine." }, { by: 'b', say: "Fine as in safe?" }, { by: 'a', say: "Fine as in fine. Stop worrying." }, { by: 'a', dr: "I've said \"you're fine\" to two people today. Only one of them is going to stay fine." }] },
     { id: 'pp.c2', turns: [{ by: 'a', say: "You've got nothing to worry about." }, { by: 'b', say: "Really?" }, { by: 'a', say: "Really." }, { by: 'b', say: "Okay. Thank you. That means a lot." }, { by: 'a', dr: "I haven't decided yet. But it buys me a quiet afternoon." }] },
     { id: 'pp.c3', turns: [{ by: 'b', say: "Can I ask where I stand?" }, { by: 'a', say: "With me? Right here. Have a snack." }, { by: 'b', say: "That's not really an answer." }, { by: 'a', say: "It's a very good snack, though." }, { by: 'b', dr: "I left the HOH room feeling completely safe. I'm not sure {a} has actually decided that." }] },
-    { id: 'pp.c4', turns: [{ by: 'b', say: "Is my name being considered?" }, { by: 'a', say: "No. Absolutely not." }, { by: 'b', say: "Promise?" }, { by: 'a', say: "Promise." }, { by: 'a', dr: "It was, about ten minutes ago. It might be again." }] },
+    { id: 'pp.c4', turns: [
+      { by: 'b', say: "Be honest. Is my name being thought about for the block?" },
+      { by: 'a', say: "No. Absolutely not." },
+      { by: 'b', say: "Do you promise?" },
+      { by: 'a', say: "I promise." },
+      { by: 'a', dr: "It was, about ten minutes ago. It might be again." }] },
     { id: 'pp.c5', turns: [{ by: 'b', say: "Am I safe this week? Honestly?" }, { by: 'a', say: "Don't worry about it." }, { by: 'b', say: "That's not a no." }, { by: 'a', say: "It's a \"don't worry about it\"." }, { by: 'b', say: "What does that even mean?" }, { by: 'a', say: "It means don't worry about it." }, { by: 'b', dr: "Well, now I'm worried about it." }] },
     { id: 'pp.c6', turns: [{ by: 'b', say: "I just want to hear you say it. Am I safe?" }, { by: 'a', say: "You're safe." }, { by: 'b', say: "Okay. Okay. Thank you." }, { beat: "{b} leaves. {a} reaches for the snack basket." }, { by: 'a', dr: "Promises are cheap up here. I hand them out like snacks. Some of them I'll even keep." }] },
   ],
@@ -559,7 +564,12 @@ export default {
     { id: 'pm.r3', turns: [{ beat: "{a} spends ten minutes making the case for being the safest pair of hands in the veto." }, { by: 'a', say: "So? What do you think?" }, { by: 'b', say: "I think you talk a lot." }, { by: 'a', say: "Is that a no?" }, { by: 'b', say: "It's a \"we'll see\"." }, { by: 'b', dr: "{a} talked for ten minutes. I'm picking somebody I've known longer than ten minutes." }] },
     { id: 'pm.r4', turns: [{ by: 'a', say: "You can trust me." }, { by: 'b', say: "That's exactly what someone I can't trust would say." }, { by: 'a', say: "Then who can you trust?" }, { by: 'b', say: "Not someone who walks in and says \"you can trust me\"." }, { by: 'a', dr: "Fine. I'll find somebody else to save. Somebody grateful." }] },
     { id: 'pm.r5', turns: [{ by: 'a', say: "I'd use it on you. I swear." }, { by: 'b', say: "Why?" }, { by: 'a', say: "...Because I'm nice?" }, { by: 'b', say: "Try again." }, { by: 'a', say: "Because I'd want somebody to do it for me." }, { by: 'b', say: "Better. Still no." }] },
-    { id: 'pm.r6', turns: [{ by: 'a', say: "I'd play for you. If you want." }, { by: 'b', say: "I didn't ask." }, { by: 'a', say: "I know. I'm offering." }, { by: 'b', say: "Why?" }, { by: 'a', say: "Because you need it." }, { by: 'b', dr: "When somebody offers to save you before you've even asked, you have to wonder what they're really after." }] },
+    { id: 'pm.r6', turns: [
+      { by: 'a', say: "If I get picked for the veto, I'd play for you. If you want." },
+      { by: 'b', say: "I didn't ask you to." },
+      { by: 'a', say: "I know. I'm offering anyway. You need it." },
+      { by: 'b', say: "Why would you do that for me?", v: { hard: "What do you want for it?" } },
+      { by: 'b', dr: "When somebody offers to save you before you've even asked, you have to wonder what they're really after." }] },
     { id: 'pm.r7', turns: [{ by: 'a', say: "I'm your best shot." }, { by: 'b', say: "You're a shot. I don't know about best." }, { by: 'a', say: "I'm the best you've got." }, { by: 'b', say: "Then I'm in more trouble than I thought." }, { by: 'a', dr: "Charming. Good luck with the veto." }] },
   ],
 };

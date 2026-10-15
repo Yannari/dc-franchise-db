@@ -91,13 +91,11 @@ export default {
     ] },
     { id: 'sl.r2', turns: [
       { by: 'a', say: "Be careful with {target}. That's all I'm saying." },
-      { by: 'b', say: "Why?" },
-      { by: 'a', say: "{target}'s not who you think." },
-      { by: 'b', say: "{target} has been nothing but straight with me." },
-      { by: 'a', say: "That's what {target} wants you to think." },
-      { by: 'b', say: "Or that's what you want me to think." },
-      { by: 'a', say: "Wow. Okay." },
-      { by: 'b', dr: "{a} wants me away from {target}. Which tells me {target} is worth staying close to." },
+      { by: 'b', say: "Why? What's {target} done?" },
+      { by: 'a', say: "{target} isn't who you think." },
+      { by: 'b', say: "{target} has been nothing but straight with me. Maybe you're the one I should be careful with.", v: { soft: "{target} has always been nice to me. I don't think that's true." } },
+      { by: 'a', say: "Wow. Okay. Forget I said anything." },
+      { by: 'b', dr: "{a} wants me away from {target}, which tells me {target} is worth staying close to." },
     ] },
     { id: 'sl.r3', presumes: ['hoh'], turns: [
       { by: 'a', say: "Did you know {target} wants you out?" },

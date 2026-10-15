@@ -16,18 +16,13 @@
 export default {
   'story.life.banter.any': [
     { id: 'lb.1', presumes: ['hoh'], when: { third: true }, turns: [
-      { by: 'a', say: "Okay, settle this. Cereal. Is it a soup?" },
-      { by: 'b', say: "No." },
-      { by: 'c', say: "Yes." },
-      { by: 'a', say: "Thank you, {c}." },
-      { by: 'b', say: "It's not a soup! Soup is hot!" },
-      { by: 'c', say: "Gazpacho." },
-      { by: 'b', say: "Gazpacho is a cry for help." },
-      { by: 'a', say: "So cereal's a cold soup. Like gazpacho." },
-      { by: 'b', say: "I'm going to bed." },
+      { by: 'a', say: "Okay, settle this for us. Is cereal a soup?" },
+      { by: 'b', say: "No. Soup is hot. Cereal is not a soup." },
+      { by: 'c', say: "Gazpacho is a cold soup, though." },
+      { by: 'a', say: "Thank you! So cereal is a cold soup, like gazpacho." },
+      { by: 'b', say: "I'm going to bed.", v: { loud: "I'm not doing this! I'm going to bed!" } },
       { by: 'c', say: "It's two in the afternoon." },
-      { by: 'b', say: "I'm going to bed forever." },
-      { by: 'a', dr: "That's the fourth time this week we've had the cereal argument. Nobody has ever changed their mind." },
+      { by: 'a', dr: "We have the cereal argument at least once a week, and nobody has ever changed their mind." },
     ] },
     { id: 'lb.2', turns: [
       { by: 'a', say: "What would you do right now if you were home?" },

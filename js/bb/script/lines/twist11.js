@@ -53,7 +53,11 @@ export default {
     { id: 'pb11.o3', turns: [{ by: 'a', say: "Would you open it?" }, { by: 'b', say: "Never." }, { by: 'a', say: "Boring." }] },
     { id: 'pb11.o4', turns: [{ by: 'b', dr: "{a} would open anything. That's good to know." }] },
     { id: 'pb11.o5', turns: [{ by: 'a', dr: "{b} is too careful. Careful people don't win this game." }] },
-    { id: 'pb11.o6', turns: [{ by: 'a', say: "For anything?" }, { by: 'b', say: "For anything." }, { by: 'a', say: "Not even money?" }, { by: 'b', say: "Not even money." }] },
+    { id: 'pb11.o6', turns: [
+      { by: 'a', say: "You'd really never open that door? Not for anything?" },
+      { by: 'b', say: "Not for anything. You don't know what's behind it." },
+      { by: 'a', say: "What if it was money?" },
+      { by: 'b', say: "Not even for money." }] },
   ],
   'pan.debate.shut': [
     { id: 'pb11.s1', turns: [{ by: 'a', say: "I'd have opened it in about four seconds." }, { by: 'b', say: "{holder} left it shut. I'd have done the same." }] },

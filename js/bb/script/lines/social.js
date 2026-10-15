@@ -117,11 +117,10 @@ export default {
       { by: 'a', dr: "That's the best offer I've had in this house. I'm taking it." },
     ] },
     { id: 'sa.f16', turns: [
-      { by: 'a', say: "Pinky swear it's just us." },
-      { by: 'b', say: "We're adults." },
-      { by: 'a', say: "Pinky swear." },
-      { by: 'b', say: "...Fine. Pinky swear." },
-    ] },
+      { by: 'a', say: "Promise me this stays between us. Nobody else." },
+      { by: 'b', say: "I promise." },
+      { by: 'a', say: "Pinky swear?" },
+      { by: 'b', say: "We're adults. Fine. Pinky swear.", v: { soft: "Pinky swear." } }] },
   ],
 
   // ── a late-night confidence ────────────────────────────────────────
@@ -580,12 +579,11 @@ export default {
       { beat: 'Out in the backyard, {a} is braiding {b}\'s hair on the couch.' },
     ] },
     { id: 'sk.s9', turns: [
-      { by: 'b', say: "People are starting to talk about us." },
+      { by: 'b', say: "People are starting to talk about us, you know." },
       { by: 'a', say: "What are they saying?" },
-      { by: 'b', say: "That there's an \"us\"." },
+      { by: 'b', say: "That there's something going on between us." },
       { by: 'a', say: "Is there?" },
-      { by: 'b', say: "...Maybe." },
-    ] },
+      { by: 'b', say: "Maybe. I don't know yet.", v: { anxious: "I don't know. Maybe. Is that okay?", hard: "Maybe. Don't make it weird." } }] },
     { id: 'sk.s10', turns: [
       { by: 'a', say: "I saved you the last pancake." },
       { by: 'b', say: "You saved me the last pancake?" },

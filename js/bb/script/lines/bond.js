@@ -33,7 +33,11 @@ export default {
   ],
   'bond.quiet.scene': [
     { id: 'bq2.1', turns: [{ by: 'b', say: "What's the first thing you'll do when this is over?" }, { by: 'a', say: "Sleep in a bed without a camera over it." }, { by: 'b', say: "And then?" }, { by: 'a', say: "Then I'll call you." }] },
-    { id: 'bq2.2', turns: [{ by: 'a', say: "Are you asleep?" }, { by: 'b', say: "Nearly." }, { by: 'a', say: "Okay. Night." }, { by: 'b', say: "Night." }, { beat: 'Neither of them falls asleep for another hour.' }] },
+    { id: 'bq2.2', turns: [
+      { by: 'a', say: "Are you asleep?" },
+      { by: 'b', say: "Nearly. Are you okay?" },
+      { by: 'a', say: "Yeah. I just wanted to say goodnight." },
+      { beat: 'Neither of them falls asleep for another hour.' }] },
     { id: 'bq2.3', turns: [{ by: 'a', say: "Tell me about home." }, { by: 'b', say: "What about it?" }, { by: 'a', say: "Anything. I just like hearing you talk." }] },
     { id: 'bq2.4', turns: [{ by: 'b', dr: "For an hour last night, it wasn't a game. It was just me and {a}, talking." }] },
     { id: 'bq2.5', turns: [{ by: 'a', say: "I haven't thought about the game once tonight." }, { by: 'b', say: "Me neither. Don't start now." }] },
@@ -64,7 +68,11 @@ export default {
     { id: 'bf.14', when: { third: true }, turns: [{ by: 'c', dr: "{a} and {b} are always together. If I go after one of them, I have to deal with both." }] },
   ],
   'bond.bad-day.scene': [
-    { id: 'bd.1', turns: [{ by: 'b', say: "Are you okay?" }, { by: 'a', say: "Not really." }, { by: 'b', say: "Want to talk about it?" }, { by: 'a', say: "Not really." }, { by: 'b', say: "Okay. I'll just sit here, then." }] },
+    { id: 'bd.1', turns: [
+      { by: 'b', say: "Are you okay?" },
+      { by: 'a', say: "Not really. I don't want to talk about it, though.", v: { hard: "I'm fine. Leave it." } },
+      { by: 'b', say: "That's fine. I'll just sit here with you, then." },
+      { beat: '{b} sits down next to {a} and does not say anything else.' }] },
     { id: 'bd.2', turns: [{ by: 'b', say: "This isn't about the game, is it?" }, { by: 'a', say: "No. I just miss home." }, { by: 'b', say: "Yeah. Me too." }] },
     { id: 'bd.3', turns: [{ beat: '{b} finds {a} sitting alone and sits down without a word.' }, { by: 'a', dr: "{b} didn't ask what was wrong. {b} just sat with me. It helped." }] },
     { id: 'bd.4', turns: [{ by: 'a', say: "Sorry. I'm terrible company today." }, { by: 'b', say: "You're fine. Everyone has bad days in here." }] },
@@ -116,7 +124,11 @@ export default {
     { id: 'ba.a2', turns: [{ by: 'a', say: "I want to say sorry. Properly." }, { by: 'b', say: "I didn't expect that." }, { by: 'a', say: "I mean it." }, { by: 'b', say: "Okay. Let's start again." }] },
     { id: 'ba.a3', turns: [{ by: 'b', dr: "{a} actually apologised. No 'but'. That's why I accepted it." }] },
     { id: 'ba.a4', turns: [{ by: 'a', say: "I'm sorry. I know it doesn't fix everything." }, { by: 'b', say: "No. But it helps." }] },
-    { id: 'ba.a5', turns: [{ by: 'a', say: "You had every right to be upset." }, { by: 'b', say: "I did." }, { by: 'a', say: "I'm sorry." }, { by: 'b', say: "Thank you. Truce?" }, { by: 'a', say: "Truce." }] },
+    { id: 'ba.a5', turns: [
+      { by: 'a', say: "You had every right to be upset with me." },
+      { by: 'b', say: "I did." },
+      { by: 'a', say: "I'm sorry. I mean it." },
+      { by: 'b', say: "Thank you. Okay. We're good.", v: { hard: "Okay. Truce. Don't do it again." } }] },
     { id: 'ba.a6', turns: [{ by: 'a', dr: "I said sorry to {b}. It was easier than staying angry." }] },
     { id: 'ba.a7', turns: [{ by: 'a', say: "I'm sorry for how I acted." }, { by: 'b', say: "Okay. I accept it." }, { by: 'a', say: "Really?" }, { by: 'b', say: "Don't make me change my mind." }] },
     { id: 'ba.a8', turns: [{ by: 'a', say: "I'm sorry. I mean it." }, { by: 'b', say: "I can tell. Thank you." }] },
@@ -126,7 +138,11 @@ export default {
     { id: 'ba.r1', turns: [{ by: 'a', say: "I'm sorry." }, { by: 'b', say: "Okay." }, { by: 'a', dr: "{b} said okay. {b} didn't mean it." }] },
     { id: 'ba.r2', turns: [{ by: 'a', say: "Can we talk?" }, { by: 'b', say: "I'd rather we didn't." }, { by: 'a', say: "I just want to apologise." }, { by: 'b', say: "I'd still rather we didn't." }] },
     { id: 'ba.r3', turns: [{ by: 'a', say: "Can we put the fight behind us?" }, { by: 'b', say: "You still think the problem was the fight." }] },
-    { id: 'ba.r4', turns: [{ by: 'a', say: "I'm sorry about the argument." }, { by: 'b', say: "Just the argument?" }, { by: 'a', say: "...What else?" }, { by: 'b', say: "That's what I thought." }] },
+    { id: 'ba.r4', turns: [
+      { by: 'a', say: "I'm sorry about the argument." },
+      { by: 'b', say: "Just the argument?" },
+      { by: 'a', say: "What else is there?" },
+      { by: 'b', say: "That's what I thought. Forget it.", v: { soft: "If you don't know, I'm not going to explain it." } }] },
     { id: 'ba.r5', turns: [{ by: 'b', dr: "{a} apologised. For the wrong thing. That made it worse." }] },
     { id: 'ba.r6', turns: [{ by: 'a', dr: "I tried to say sorry to {b}. It didn't work. Now it's worse than before." }] },
     { id: 'ba.r7', turns: [{ by: 'a', say: "I'm sorry." }, { by: 'b', say: "You're only sorry because people saw." }, { by: 'a', say: "That's not true." }, { by: 'b', say: "Then why now?" }] },

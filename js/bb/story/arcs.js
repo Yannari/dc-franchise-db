@@ -85,7 +85,10 @@ export function arcDue(week, present) {
       }
       if (week.hoh === arc.a) {
         const nominated = [...(week.initialNominees || []), ...(week.finalNominees || [])].includes(arc.rival);
-        if (nominated) return spec(arc, 'arc.payback.end.payback', { a: arc.a, b: arc.rival }, { rival: arc.rival }, 'late',
+        // a rival who only went up as the veto's replacement hears it after the veto meeting, not before
+        // (read 2026-10-15: "You're putting me up" two days before the veto put Beth there)
+        const replaced = !(week.initialNominees || []).includes(arc.rival);
+        if (nominated) return spec(arc, 'arc.payback.end.payback', { a: arc.a, b: arc.rival }, { rival: arc.rival }, replaced ? 'cer' : 'late',
           [`${arc.rival} nominated ${arc.a} in week ${arc.from}.`, `${arc.a} is Head of Household now, and put ${arc.rival} up.`]);
         if (friend) return spec(arc, 'arc.payback.end.mercy', { a: arc.a, b: friend }, { rival: arc.rival }, 'late',
           [`${arc.rival} nominated ${arc.a} in week ${arc.from}.`, `${arc.a} won Head of Household and did not nominate ${arc.rival}.`]);

@@ -119,7 +119,7 @@ const SAY = {
   no: { terse: ['No.', 'Nope.'], sarcastic: ['Hard pass.', 'Yeah, no.', 'Not a chance.'], sweet: ['Oh, no, I can\'t.', 'No, I\'m sorry.'],
     theatrical: ['Absolutely not.', 'No. Never. Not in a million years.'], anxious: ['I— no. Sorry. No.', 'Um, no? No.'],
     smooth: ['I don\'t think so.', 'Let\'s not.'], tough: ['No.', 'Not happening.'], bubbly: ['Nooo. No way.', 'No! Stop.'], mean: ['No. Obviously.', 'Don\'t be ridiculous.'] },
-  why: { terse: ['Why.', 'Why?'], sarcastic: ['Oh? Why\'s that?', 'And why would that be?'], sweet: ['Why? What happened?', 'How come?'],
+  why: { terse: ['Why.', 'Why?'], sarcastic: ['Oh? Why\'s that?', 'And why would that be?'], sweet: ['How come?', 'Why, though?'],
     theatrical: ['Why?! Why?', 'Why on earth?'], anxious: ['Wait, why?', 'Why? Is something wrong?'], smooth: ['Interesting. Why?', 'Why\'s that?'],
     tough: ['Why?', 'Why?'], bubbly: ['Why? Tell me!', 'Wait, why?'], mean: ['Why\'s that?', 'Why?'] },
   know: { terse: ['I know.'], sarcastic: ['Believe me, I know.'], sweet: ['I know. I know.'], theatrical: ['I know. Believe me, I know.'],

@@ -20,7 +20,11 @@ import { evictionSeatsAJuror } from '../jury.js';
 const W = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen'];
 const word = n => W[n] || String(n);
 const Cap = t => t.charAt(0).toUpperCase() + t.slice(1);
-const winsOf = n => { const s = gs.bb?.stats?.[n] || {}; return (s.hohWins || 0) + (s.vetoWins || 0) + (s.blockBusterWins || 0); };
+// as the week opens: the stats already hold this week's wins (read 2026-10-15: "I've won three competitions",
+// on the morning before the third)
+let THIS = null;
+const winsOf = n => { const s = gs.bb?.stats?.[n] || {}; const now = THIS ? (THIS.hoh === n) + (THIS.vetoWinner === n) : 0;
+  return Math.max(0, (s.hohWins || 0) + (s.vetoWins || 0) + (s.blockBusterWins || 0) - now); };
 const winSay = n => { const k = winsOf(n); return k === 0 ? 'nothing' : k === 1 ? 'one competition' : `${word(k)} competitions`; };
 
 /** Which corner this week turns, or null: 'jury' (the first week after a juror left), 'f5', 'f4', 'f3'. */
@@ -41,6 +45,8 @@ const CARD = { jury: ['THE JURY BEGINS', 'Jury Phase'], f5: ['FIVE REMAIN', 'Fin
 /** The scene, or null: { type:'set', step:'milestone', room, cast, lines, title, mood, why }. */
 export function writeMilestone(week, ctx, forced = null) {
   const kind = forced || milestoneOf(week);
+  // (the last three's corner airs after the week's last eviction: its wins all count)
+  THIS = kind === 'f3' && forced ? null : (week || null);
   const house = (ctx.present || []).slice();
   if (!kind || house.length < 3) return null;
   const rng = stableRng(gs.bb?.seasonSalt || 0, 'milestone', week.num || 0);

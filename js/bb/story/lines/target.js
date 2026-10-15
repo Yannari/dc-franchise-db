@@ -218,7 +218,7 @@ export default {
       { by: 'a', dr: "Tonight I'm going to ask {target} straight out for a name. I'm nervous, because whatever the answer is, I'll know where I stand." },
     ] },
     { id: 'tg.7', turns: [
-      { beat: 'Dinner. At the far end of the table, {target} is barely eating, just watching everybody.' },
+      { beat: 'Across the room, {target} is barely eating, just watching everybody.' },
       { by: 'a', say: "Look at {target}. Don't make it obvious." },
       { by: 'b', say: "What about {target}?" },
       { by: 'a', say: "{target} hasn't touched that plate. Just watching everyone." },

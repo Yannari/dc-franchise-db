@@ -50,7 +50,7 @@ export default {
       { by: 'b', say: "We were just..." },
       { by: 'a', say: "Talking about me. It's fine. Can I talk about me too?" },
       { by: 'c', say: "...Sure." },
-      { by: 'a', say: "Here's the thing nobody's saying. {target} has a group in this house. I don't. So whoever keeps {target} is keeping a group. Whoever keeps me is keeping one person who owes them." },
+      { by: 'a', say: "Here's the thing nobody's saying. {target} has a group in this house. So whoever keeps {target} is keeping a group. Whoever keeps me is keeping one person who owes them." },
       { by: 'd', say: "Owes them what?" },
       { by: 'a', say: "Whatever they want. Name it." },
       { by: 'b', dr: "{a} walked into a conversation about {a} and turned it into a pitch. I've got to respect that." },
@@ -64,7 +64,7 @@ export default {
       { by: 'd', say: "Okay, that's actually the best one I've heard today." },
       { by: 'c', say: "It's the shortest one I've heard today." },
       { by: 'a', say: "Same thing." },
-      { by: 'd', dr: "Five people have pitched me today, and the one who said eleven words is the one I remember." },
+      { by: 'd', dr: "I've heard a lot of speeches today. The one I remember was six words long." },
     ] },
     { id: 'gl3.9', presumes: ['noms'], turns: [
       { by: 'b', say: "We should probably tell you where we're at." },

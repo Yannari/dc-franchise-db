@@ -10,12 +10,12 @@
 export default {
   // ── feud ────────────────────────────────────────────────────────────
   'story.feud.argument.any': [
-    { id: 'sa2.1', turns: [
+    { id: 'sa2.1', presumes: ['days'], turns: [
       { by: 'a', say: "Are we going to talk about it, or are we just going to keep doing this?" },
       { by: 'b', say: "Doing what?" },
       { by: 'a', say: "This. The looks. The little comments. Since {when}." },
       { by: 'b', say: "I haven't made any comments." },
-      { by: 'a', say: "'Oh, look who's up.' 'Nice of you to help.' Every morning." },
+      { by: 'a', say: "'Oh, look who's up.' 'Nice of you to help.' Every time I walk in." },
       { by: 'b', say: "That's just banter." },
       { by: 'a', say: "Banter is when both people laugh!" },
       { by: 'b', say: "Then laugh!" },
@@ -47,7 +47,7 @@ export default {
       { by: 'b', say: "If you've got something to say, say it to my face." },
       { by: 'a', say: "Fine. Here's my face." },
       { by: 'b', say: "Go on, then." },
-      { by: 'a', say: "You're fake. You're nice to everyone's face and then you go and do whatever you want. {when} was the proof." },
+      { by: 'a', say: "You're fake. You're nice to everyone's face and then you go and do whatever you want." },
       { by: 'b', say: "That's rich, coming from you." },
       { by: 'a', say: "What's that supposed to mean?" },
       { by: 'b', say: "It means you're the fakest person in this house and everyone knows it but you." },
@@ -97,14 +97,14 @@ export default {
       { by: 'b', dr: "I'm laughing on the outside. On the inside, I'm doing push-ups out of spite, and {a} will never see them." },
     ] },
     { id: 'sf2.j2', turns: [
-      { by: 'a', say: "Morning, sunshine." },
-      { by: 'b', say: "Morning." },
-      { by: 'a', say: "Wow. Rough night? You look like you slept in a hedge." },
+      { by: 'a', say: "Hey, sunshine." },
+      { by: 'b', say: "Hey." },
+      { by: 'a', say: "Wow. Rough day? You look like you slept in a hedge." },
       { by: 'b', say: "Thanks." },
       { by: 'a', say: "I mean it nicely. A nice hedge." },
       { by: 'b', say: "There's no nice way to say hedge." },
       { by: 'a', say: "A designer hedge." },
-      { by: 'b', say: "Please stop talking to me until I've had coffee." },
+      { by: 'b', say: "Please stop talking to me." },
       { by: 'b', dr: "{a} is convinced nobody in this house is funnier. {a} is just the loudest. That's not the same thing." },
     ] },
     { id: 'sf2.j3', turns: [

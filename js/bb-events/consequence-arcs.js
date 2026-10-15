@@ -571,6 +571,9 @@ const threatenedRemembers = {
 /** At four, exactly one person votes. Find them. */
 function soleVoter(house, ctx) {
   if (!Array.isArray(house) || house.length !== 4) return null;
+  // only once the veto meeting has set the block: before it, the one left over may be the next nominee
+  // (read 2026-10-15: Scary courted as "the one vote", two days before the veto put Scary up)
+  if (!(ctx?.week?.acts || []).some(a => a && a.type === 'veto-ceremony')) return null;
   const noms = (ctx?.nominees || []).filter(n => house.includes(n));
   if (noms.length !== 2) return null;
   const hoh = ctx?.hoh;

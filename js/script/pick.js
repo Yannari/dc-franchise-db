@@ -64,7 +64,7 @@ export function chooseEntry(...args) {
   return r && r[1] ? { entry: r[1], note: () => note(...r) } : null;
 }
 
-function choose(ledger, pools, key, facts, pairKey, rng, speaker = null, clock = 0) {
+function choose(ledger, pools, key, facts, pairKey, rng, speaker = null, clock = 0, opts = {}) {
   // A list of keys merges pools: a game's own lines (weighted up) with its
   // family's, so a game never runs out and repeats itself.
   const pool = Array.isArray(key) ? key.flatMap(k => pools[k] || []) : pools[key];
@@ -96,6 +96,10 @@ function choose(ledger, pools, key, facts, pairKey, rng, speaker = null, clock =
   // the one line Trent had already said won again on Rescue Island. With nothing weighted left, the fallback
   // below takes the least-used line nobody here has said.)
   if (fits.some(e => !saidBy(e))) for (const x of scored) if (saidBy(x[0])) x[1] = 0;
+  // A show can ask for every line that fits to air once before any comes back this season (opts.fresh; off by
+  // default). Big Brother asks: at USED_DECAY a register line used once still beat a fresh plain one often
+  // enough that whole three-line exchanges aired twice in a season (read 2026-10-15: 33 repeats in seed 500).
+  if (opts && opts.fresh && fits.some(e => !u.uses[e.id])) for (const x of scored) if (u.uses[x[0].id]) x[1] = 0;
   let total = scored.reduce((s, [, w]) => s + w, 0);
   // Everything that fits has been used on this pair: take the least-used fit.
   if (!total) {

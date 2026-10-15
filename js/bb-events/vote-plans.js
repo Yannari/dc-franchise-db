@@ -230,7 +230,8 @@ const recruitReport = {
     const { plan, approach, voter, listener } = found;
     const recruiter = approach.recruiter;
 
-    const scene = makeScene('plan.report', { a: voter, b: listener }, { ending: 'scene', target: plan.target, source: recruiter }, [], 'kitchen');
+    // told to the one the plan is for, it is a warning, in the second person
+    const scene = makeScene('plan.report', { a: voter, b: listener }, { ending: listener === plan.target ? 'warned' : 'scene', target: plan.target, source: recruiter }, [], 'kitchen');
 
     // The recruiter's discretion is the thing that just died.
     api.suspicion(listener, recruiter, 1.2);

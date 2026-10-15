@@ -554,11 +554,17 @@ const campaignRally = {
     return house.length >= 5 && _quiet(house).some(n => pStats(n).social >= 6) ? _w(4, ctx) : 0;
   },
   fire(house, ctx, api, rng) {
-    const rallier = _quiet(house).find(n => pStats(n).social >= 6) || house[0];
+    // the HOH's rally is the HOH's plan: against its target once that is on the block, and never against the
+    // pawn of a backdoor not yet sprung (read 2026-10-15: Beth rallying the house against Zee, her own pawn)
+    const plan = ctx?.week?.plan || {};
+    const block = (ctx?.nominees || []).filter(n => house.includes(n));
+    const aim = [plan.backdoorTarget, plan.backdoor, plan.target].find(n => n && house.includes(n)) || null;
+    const waiting = n => n === ctx?.hoh && aim && block.length && !block.includes(aim);
+    const rallier = _quiet(house).find(n => pStats(n).social >= 6 && !waiting(n)) || house.find(n => !waiting(n)) || house[0];
     // once there is a block, the rally is against somebody on it (read 2026-10-14: a rally against a
     // houseguest nobody could vote for), and it is made to people, not to an empty room
-    const noms = (ctx?.nominees || []).filter(n => house.includes(n) && n !== rallier);
-    const target = furthestFrom(rallier, noms.length ? noms : _others(house, rallier));
+    const noms = block.filter(n => n !== rallier);
+    const target = rallier === ctx?.hoh && aim && noms.includes(aim) ? aim : furthestFrom(rallier, noms.length ? noms : _others(house, rallier));
     if (!target) {
       return _quietBeat(`${rallier} works the room without ever naming anybody.`, [rallier]);
     }

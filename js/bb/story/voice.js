@@ -53,8 +53,13 @@ function historyOf(me, o, upTo) {
     h.lastWeek = w.num;
     if (w.vetoUsedOn === me && w.vetoWinner === o) h.theySavedMe = w.num;
   }
-  h.alliance = (gs.namedAlliances || []).find(a => a.active !== false && (a.members || []).includes(me) && (a.members || []).includes(o))?.name || null;
-  h.deal = (gs.sideDeals || []).some(d => d.active !== false && !d.broken && (d.players || []).includes(me) && (d.players || []).includes(o));
+  // a group or deal from before this week: one made this week may not have aired yet when the confessional
+  // does (read 2026-10-15: "Ripper and I are both in The Plot Twist" two scenes before Scary was asked in)
+  const snap = (gs.bb?.weeks || []).find(w => (w.num || 0) === upTo)?.alliancesAtStart;
+  const before = a => !snap || ((snap[a.name] || []).includes(me) && (snap[a.name] || []).includes(o));
+  h.alliance = (gs.namedAlliances || []).find(a => a.active !== false && (a.members || []).includes(me) && (a.members || []).includes(o) && before(a))?.name || null;
+  h.deal = (gs.sideDeals || []).some(d => d.active !== false && !d.broken && (d.players || []).includes(me) && (d.players || []).includes(o)
+    && !(Number(d.madeEp) >= upTo));
   h.couple = (gs.showmances || []).some(s => !s.broken && (s.players || []).includes(me) && (s.players || []).includes(o));
   h.bond = getBond(me, o);
   return h;
@@ -92,7 +97,7 @@ function lines(kind, voice, o, h) {
     `${o} and I keep ending up on the same side of the vote. At some point that stops being luck.`);
   const split = h.splitVote && ago(h.splitVote, h);
   if (split) add('split', `${o} and I didn't vote the same way ${split}. Neither of us has brought it up. We both know.`,
-    `${o} voted the other way ${split}. I saw the count. I've been very friendly about it.`,
+    `${o} voted the other way ${split}. Nobody had to tell me. I've been very friendly about it.`,
     `We split ${split}, ${o} and me. I keep waiting for ${o} to explain, and ${o} keeps not explaining.`);
   // said about the alliance itself, not about "this" (the user, 2026-10-14: "super vague"): the tail
   // closes any kind of scene, so it cannot point at what the scene was
@@ -116,7 +121,7 @@ function lines(kind, voice, o, h) {
       nervous: [`I shouldn't have said anything. Now I'm on ${o}'s bad side, and that's the worst place to be in here.`, `My heart is still pounding. I don't do confrontation. Ask anyone.`],
       carefree: [`By tomorrow I'll have forgotten what this was about. ${o} won't, though. ${o} never does.`, `Honestly? We'll be fine by dinner. ${o} just needs to cool off.`],
       competitor: [`Fine. I'll settle it the way I settle everything: I'll beat ${o} in the next competition.`, `${o} can talk all ${o} wants. I'll do my talking when the HOH is on the line.`],
-      villain: [`Let ${o} be angry. Angry people make mistakes, and I'll be right there when ${o} does.`, `Fine. ${o} can be upset. I've got a game to play.`],
+      villain: [`Let ${o} be angry. Angry people make mistakes, and I'll be right there when ${o} does.`, `Fine. ${o} and I don't get on. I've got a game to play.`],
     },
     ally: {
       fiery: [`If ${o} ever turns on me, everybody in this house will hear about it. Loudly.`, `I'm all in with ${o}. I don't do halfway.`],

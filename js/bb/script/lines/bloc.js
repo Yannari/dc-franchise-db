@@ -36,7 +36,7 @@ export default {
     { id: 'bn.g4', turns: [{ by: 'a', dr: "I've been keeping track of who ends up in the same room. {b} and {c} are always there." }] },
     { id: 'bn.g5', turns: [{ by: 'a', dr: "If two people are that close in a house this small, the votes get decided before the rest of us even hear about them." }] },
     { id: 'bn.g6', turns: [{ by: 'a', dr: "{b} and {c} never disagree about anything. In this house, that's not normal." }] },
-    { id: 'bn.g7', when: { intent: 'big' }, turns: [{ by: 'a', dr: "{b}, {c} and at least one more. I'm nearly sure. That's a lot of votes." }] },
+    { id: 'bn.g7', when: { intent: 'big' }, turns: [{ by: 'a', dr: "{b} and {c} vote together, and somebody else votes with them. I'd bet my bed on it." }] },
     { id: 'bn.g8', turns: [{ by: 'a', dr: "Something's going on with {b} and {c}. They act like people who've already agreed on everything." }] },
     { id: 'bn.g9', turns: [{ by: 'a', dr: "I used to think {b} and {c} just got on well. Now I think it's a lot more than that." }] },
     { id: 'bn.g10', turns: [{ by: 'a', dr: "Nobody's told me {b} and {c} are working together. You don't need to be told when you've got eyes." }] },

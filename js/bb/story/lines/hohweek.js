@@ -26,7 +26,7 @@ export default {
       { by: 'a', say: "{d}, as a pawn. {d} isn't the one I want gone." },
       { by: 'b', say: "Pawns go home in this game. You know that, right?" },
       { by: 'a', say: "Only if the veto goes wrong. If it goes right, {c} leaves and {d} never even packs a bag." },
-      { by: 'a', dr: "I need {c} out this week. Putting {d} up next to them is a risk, but somebody has to sit in that other chair, and {d} is the one the house would never vote out." },
+      { by: 'a', dr: "I need {c} out this week. Putting {d} up next to {c} is a risk, but somebody has to sit in that other chair, and {d} is the one the house would never vote out." },
     ] },
     { id: 'hw.pp2', room: 'hoh-room', turns: [
       { beat: 'HOH room. {a} has the nomination keys on the bed and keeps moving them around like chess pieces.' },

@@ -48,8 +48,8 @@ export default {
       { by: 'b', say: "Which one are you going to?" },
       { by: 'a', say: "Neither. I'll wait and see which one gets bigger." },
       { by: 'b', say: "That's a strategy?" },
-      { by: 'a', say: "It's my strategy. I've never been on the block. Have you?" },
-      { by: 'b', say: "...Once." },
+      { by: 'a', say: "It's my strategy. Nobody blames the person who waited." },
+      { by: 'b', say: "...Huh." },
       { by: 'a', say: "Exactly." },
     ] },
     { id: 'gy-sf.5', room: 'bedroom', turns: [
@@ -318,9 +318,9 @@ export default {
     { id: 'gy-sl.5', room: 'bedroom', turns: [
       { beat: 'Bedroom, late. {a} is lying awake.' },
       { by: 'b', say: "What's wrong?" },
-      { by: 'a', say: "Somebody asked me to turn on {c} today." },
+      { by: 'a', say: "I keep doing the maths, and every time it says turn on {c}." },
       { by: 'b', say: "And?" },
-      { by: 'a', say: "And I said no. And now I'm wondering how long I can keep saying no." },
+      { by: 'a', say: "And I keep saying no. I'm wondering how long I can keep saying it." },
       { by: 'a', dr: "Loyalty is easy in week one. It gets heavier every week after that." },
     ] },
     { id: 'gy-sl.6', room: 'kitchen', turns: [

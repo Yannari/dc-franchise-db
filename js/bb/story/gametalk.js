@@ -373,6 +373,11 @@ export function hohWeekFor(week, ctx, clock, talked, lastGone) {
     if (bd && ask.accepted) want('hohweek.pawn.decoy', { a: hoh, b: ask.name, c: block.find(n => n !== ask.name) || n0, e: bd });
     else want(ask.accepted ? 'hohweek.pawn.agree' : 'hohweek.pawn.refuse', { a: hoh, b: ask.name, c: bd ? (block.find(n => n !== ask.name) || n0) : real });
   }
+  // the plan that names the pawn comes after the people who said no to the chair (read 2026-10-15: "Brightly,
+  // and Hicks as a pawn", then Beth asked Emmah, then Caleb, to be that pawn)
+  const pi = out.findIndex(t => /^hohweek\.plan3?\.pawn$/.test(t.kind));
+  const lastNo = out.map(t => t.kind).lastIndexOf('hohweek.pawn.refuse');
+  if (pi >= 0 && lastNo > pi) out.splice(lastNo, 0, ...out.splice(pi, 1));
   // the real target fishes. What the HOH says is who they are: a nice archetype never lies; a
   // backdoor target can never be told the truth.
   const fisher = real;

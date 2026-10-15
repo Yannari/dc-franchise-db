@@ -24,7 +24,7 @@ export default {
   'power.block.anger': [
     { id: 'pb.a1', when: { room: ['kitchen'] }, turns: [
       { by: 'a', say: "\"We'll see.\" Everyone keeps saying \"we'll see\". I know what \"we'll see\" means!" },
-      { beat: 'A cupboard door bangs shut. The kitchen goes very quiet.' },
+      { beat: 'A door bangs shut. The room goes very quiet.' },
     ] },
     { id: 'pb.a2', when: { hohB: true }, turns: [
       { by: 'a', say: "Say it to me, then. If I'm going home, say it to my face." },
@@ -52,7 +52,7 @@ export default {
       { by: 'a', say: "Good, because I'm not going to." },
     ] },
     { id: 'pb.a8', when: { register: 'fiery' }, turns: [
-      { by: 'a', say: "You want a show? Fine! Here's your show!" },
+      { by: 'a', say: "You want a show? Fine! Here's your show! I'm on the block, and I'm done smiling about it!" },
       { beat: 'Nobody wants a scene, but they get one.' },
     ] },
     { id: 'pb.a9', turns: [{ by: 'a', dr: "Everybody wants me to be gracious about it. I'm not gracious. I'm on the block, and I'm furious." }] },
@@ -468,7 +468,7 @@ export default {
     { id: 'pz.s1', turns: [{ by: 'a', dr: "I took myself off the block. Nobody in this house can take that away from me. {b} had to find another name, and {b} knows I made that happen." }] },
     { id: 'pz.s2', turns: [{ by: 'a', dr: "I don't feel like celebrating. Hearing my name at that ceremony once was enough to show me how easily they'll say it again." }] },
     { id: 'pz.s3', turns: [{ by: 'a', say: "I didn't have a choice." }, { by: 'b', say: "Nobody said you did." }, { by: 'a', say: "I know. I just keep saying it." }] },
-    { id: 'pz.s4', turns: [{ beat: 'The room goes quiet after the ceremony. Everyone knows somebody else has to go up now.' }, { by: 'a', dr: "Everyone's wondering who goes up now. At least it isn't me." }] },
+    { id: 'pz.s4', turns: [{ beat: 'The room goes quiet after the ceremony. Somebody else went up in {a}\'s place, and everybody knows it.' }, { by: 'a', dr: "I took myself off the block. Somebody else had to go up instead. At least it isn't me." }] },
     { id: 'pz.s5', turns: [{ by: 'a', dr: "Safe this week. Target next week. That's what saving yourself buys you. It's still worth it." }] },
     { id: 'pz.s6', turns: [{ by: 'b', dr: "{a} cost me a week. I won't forget it." }] },
   ],
@@ -522,7 +522,7 @@ export default {
   // ── seeing the backdoor coming ── a the target, b HOH
   'power.fears-backdoor.sees': [
     { id: 'pfb.s1', turns: [{ by: 'a', say: "Interesting nominations." }, { by: 'b', say: "Thanks. I think." }, { by: 'a', say: "I didn't expect those two." }, { by: 'b', say: "Nobody did. That's sort of the point." }, { by: 'a', dr: "Two names on the block, and neither of them is the real target. I think the real target is me." }] },
-    { id: 'pfb.s2', turns: [{ by: 'a', say: "I just want to play in the veto. That's all." }, { by: 'b', say: "Everybody wants to play in the veto." }, { by: 'a', say: "I want it more." }, { by: 'b', say: "Why?" }, { by: 'a', say: "No reason. I'm just competitive." }, { by: 'a', dr: "I've said that to four people now. Nobody believed the fourth one." }] },
+    { id: 'pfb.s2', turns: [{ by: 'a', say: "I just want to play in the veto. That's all." }, { by: 'b', say: "Everybody wants to play in the veto." }, { by: 'a', say: "I want it more." }, { by: 'b', say: "Why?" }, { by: 'a', say: "No reason. I'm just competitive." }, { by: 'a', dr: "I've given that answer all week. Nobody has believed it yet." }] },
     { id: 'pfb.s3', turns: [{ by: 'b', say: "You're up early." }, { by: 'a', say: "Couldn't sleep." }, { by: 'b', say: "Big day?" }, { by: 'a', say: "Veto draw. It's always a big day." }, { by: 'a', dr: "If I win the veto, nobody can put me up. That's all I need to do this week." }] },
     { id: 'pfb.s4', turns: [{ by: 'a', say: "Am I safe this week?" }, { by: 'b', say: "Of course you're safe." }, { by: 'a', say: "Good. Thanks." }, { by: 'b', say: "Why do you ask?" }, { by: 'a', say: "No reason." }, { by: 'a', dr: "\"Of course.\" So I'm lobbying for a veto chip anyway." }] },
     { id: 'pfb.s5', turns: [{ by: 'a', say: "If you pull houseguest's choice, think of me." }, { by: 'b', say: "Why you?" }, { by: 'a', say: "I'm good at comps. You'd want someone good." }, { by: 'b', say: "I'll see." }, { by: 'a', dr: "I'm not asking to play for {b}. I'm asking to survive." }] },

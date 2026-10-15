@@ -458,7 +458,7 @@ export default {
       { by: 'a', say: "Then I definitely won't tell anyone." },
     ] },
     { id: 'an.n12', turns: [
-      { by: 'b', say: "Where did you hear that name?" },
+      { by: 'b', say: "Where did you hear the name {alliance}?" },
       { by: 'a', say: "Around." },
       { by: 'b', say: "Around where?" },
       { by: 'a', say: "Around the house. You lot aren't as quiet as you think." },

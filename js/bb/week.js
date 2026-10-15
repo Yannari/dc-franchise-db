@@ -1635,7 +1635,11 @@ export function simulateBBWeek(options = {}) {
   // replayed seed reads everybody identically and two different seasons do
   // not. See bbThreatProfile's quirk term.
   if (!gs.bb.seasonSalt) gs.bb.seasonSalt = Math.floor(rng() * 2147483647) || 1;
-  const week = { num: gs.bb.weeks.length + 1, format: 'big-brother', acts: [], houseAtStart: house };
+  const week = { num: gs.bb.weeks.length + 1, format: 'big-brother', acts: [], houseAtStart: house,
+    // who was in which alliance as the week began: a confessional says "we're both in it" only of a
+    // membership the viewer could know about (bb/story/voice.js; read 2026-10-15)
+    alliancesAtStart: Object.fromEntries((gs.namedAlliances || []).filter(a => a && a.name && a.active !== false && !a.dissolved)
+      .map(a => [a.name, [...(a.members || [])]])) };
   // ── MOVE-IN: always first ──
   // Week one opens on the house filling up, before any scene, alliance or
   // competition — nobody can form an alliance with somebody who has not walked
@@ -6715,6 +6719,8 @@ export function simulateBBWeek(options = {}) {
           eventId: 'campaign-pitch', category: 'deals', location: 'bedroom',
           // which case the nominee made, for House Life (bb/story) and the viewer's panel
           ...(made ? { pitchCase: made } : {}), pitchOutcome: worn ? 'worn' : response.accepted ? 'receptive' : 'unmoved',
+          // the case alone, for House Life to air a return visit whose first visit never aired as a first visit
+          ...(worn && caseScript?.lines ? { caseLines: caseScript.lines } : {}),
           _fold: !response.accepted && !worn && words
             ? { pitcher: pitch.pitcher, voter: response.voter, words, caseScript } : null,
           ...(script || {}),

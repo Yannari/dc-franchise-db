@@ -343,7 +343,7 @@ export default {
     ] },
     { id: 'sp.w9', turns: [
       { by: 'a', dr: "Everyone says I'm overthinking it. Maybe I am. I'd rather that than get blindsided." },
-      { beat: 'Meanwhile {b} is telling somebody else how much {b} trusts {a}.' },
+      { beat: 'Meanwhile, in the next room, {b} is telling anyone who will listen how much {b} trusts {a}.' },
     ] },
     { id: 'sp.w10', turns: [
       { by: 'a', say: "Why did you stop talking when I walked in?" },
@@ -388,8 +388,8 @@ export default {
       { by: 'a', dr: "{b} is hiding something. I can tell." },
     ] },
     { id: 'sp.f5', turns: [
-      { beat: '{a} watches {b} leave the HOH room for the third time today.' },
-      { by: 'a', dr: "Third visit. Third. Either {b} is very fond of that bed, or {b} is making a deal I'm not in." },
+      { beat: '{a} watches {b} slip off somewhere with somebody, for the third time today.' },
+      { by: 'a', dr: "Third time. Either {b} really loves a quiet word, or {b} is making a deal I'm not in." },
     ] },
     { id: 'sp.f6', turns: [
       { by: 'a', say: "Just tell me if something's changed between us." },

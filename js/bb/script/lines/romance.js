@@ -142,7 +142,7 @@ export default {
     { id: 'wm.2', turns: [{ by: 'a', say: "Snake." }, { by: 'c', say: "Delusional." }, { by: 'b', say: "Can you both just..." }, { beat: 'Both of them shout {b} down.' }] },
     { id: 'wm.3', turns: [{ by: 'a', say: "You don't deserve {b}." }, { beat: '{c} laughs. The next thirty seconds are worse.' }] },
     { id: 'wm.4', turns: [{ by: 'b', dr: "{a} and {c} had it out in front of everyone. And I'm the reason. This is my fault." }] },
-    { id: 'wm.5', turns: [{ beat: 'The argument moves from room to room for twenty minutes.' }, { by: 'c', dr: "Nothing got settled. Except which side everyone is on." }] },
+    { id: 'wm.5', turns: [{ by: 'a', say: "Stay away from {b}." }, { by: 'c', say: "Or what?" }, { beat: 'The argument moves from room to room for twenty minutes.' }, { by: 'c', dr: "Nothing got settled. Except which side everyone is on." }] },
     { id: 'wm.6', turns: [{ by: 'c', say: "Say it to my face." }, { by: 'a', say: "I just did." }] },
   ],
   'romance.triangleConfrontation.scene': [

@@ -49,7 +49,7 @@ export default {
       { by: 'b', say: "You've still got that look." },
       { by: 'a', say: "What look?" },
       { by: 'b', say: "The {rival} look." },
-      { by: 'a', say: "I don't have a {rival} look." },
+      { by: 'a', say: "I don't have a look." },
       { by: 'b', say: "You've had it since the block. Every comp, you watch {rival}, not the comp." },
       { by: 'a', say: "...I'll win one eventually." },
       { by: 'a', dr: "It's not that I can't let it go. It's that I don't want to. Not until the keys are mine." },
@@ -83,8 +83,8 @@ export default {
       { by: 'a', dr: "I told myself if I ever got the keys, {b} would sit where I sat. I got the keys. Have a seat, {b}." },
     ] },
     { id: 'ar.pe2', presumes: ['vote'], turns: [
-      { by: 'b', say: "You're putting me up." },
-      { by: 'a', say: "I'm putting you up." },
+      { by: 'b', say: "You put me up." },
+      { by: 'a', say: "I put you up." },
       { by: 'b', say: "Because I nominated you." },
       { by: 'a', say: "Because you nominated me, and I'm still here, and you didn't think I would be." },
       { by: 'b', say: "That's petty." },
@@ -171,7 +171,7 @@ export default {
       { by: 'a', dr: "If they gave out a key for surviving the block, I'd have a keyring by now." },
     ] },
     { id: 'ar.bp2', presumes: ['vote'], turns: [
-      { by: 'a', say: "You know what I've never done in this house? Sat on the couch for a nomination ceremony." },
+      { by: 'a', say: "You know where I sit at every nomination ceremony now? I don't even look at the couch any more." },
       { by: 'b', say: "That's so sad." },
       { by: 'a', say: "It's not sad. It's a career." },
       { by: 'b', say: "Do you want a hug?" },

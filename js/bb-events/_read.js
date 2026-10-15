@@ -657,8 +657,11 @@ export function campaignCase(nominee, voter, opponent) {
     && believesDeal(nominee, opponent, n)) : null;
 
   // Is the person they would keep instead aligned with people this voter is not?
-  const theirAllies = opponent ? (gs.namedAlliances || []).filter(a => a.active !== false
-    && (a.members || []).includes(opponent) && !(a.members || []).includes(voter)) : [];
+  // (not one the nominee is in too: "The Outwit Club needs Axel to stay", said by a member of The Outwit
+  // Club, read 2026-10-15; and one with somebody besides the opponent still in the house)
+  const theirAllies = opponent ? (gs.namedAlliances || []).filter(a => a.active !== false && !a.dissolved
+    && (a.members || []).includes(opponent) && !(a.members || []).includes(voter) && !(a.members || []).includes(nominee)
+    && (a.members || []).some(m => m !== opponent && house.includes(m))) : [];
   // Is that person already coming for this voter?
   const huntsVoter = !!opponent && targetsOf(opponent).includes(voter);
   // Has the nominee ever written this voter's name down?

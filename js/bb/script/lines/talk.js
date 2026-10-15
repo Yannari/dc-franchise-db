@@ -357,7 +357,7 @@ export default {
       { by: 'b', say: "Done. Done, before you change your mind." },
     ] },
     { id: 'ts.d3', turns: [
-      { by: 'a', say: "You keep my name out of next week, and I keep yours off that screen." },
+      { by: 'a', say: "You keep my name out of next week, and I keep yours off the block this week." },
       { by: 'b', say: "Does that include if the veto gets used?" },
       { by: 'a', say: "It includes the replacement. You're safe with me." },
       { beat: 'They shake on it.' },
@@ -897,7 +897,7 @@ export default {
       { by: 'b', dr: "And that, right there, is exactly what I meant." },
     ] },
     { id: 'tx.v3', turns: [
-      { by: 'a', say: "Do you think I can't hear you whispering about me?" },
+      { by: 'a', say: "Do you think I can't hear you telling people I can't be trusted?" },
       { by: 'b', say: "Not everything is about you." },
       { by: 'a', say: "In this house? Right now? It is!" },
       { by: 'b', say: "You're unbelievable." },
@@ -1549,7 +1549,7 @@ export default {
     { id: 'tp.l7', turns: [
       { by: 'a', say: "What did {c} say to you when you won?" },
       { by: 'b', say: "Congratulations, I think." },
-      { by: 'a', say: "Funny. That's not what {c} said downstairs." },
+      { by: 'a', say: "Funny. Downstairs {c} said you'd be gone before jury." },
       { by: 'b', dr: "I don't know if {a} is telling me the truth. But I believe it, and that's what counts this week." },
     ] },
     { id: 'tp.l8', turns: [
@@ -1585,8 +1585,8 @@ export default {
       { by: 'b', dr: "I'm writing a name down tonight. It might not be the one {a} wanted." },
     ] },
     { id: 'tp.o5', turns: [
-      { by: 'a', say: "Can I say something about {c}?" },
-      { by: 'b', say: "Everyone's said something about {c} today." },
+      { by: 'a', say: "Can I say something about {c}? {c} is coming for you." },
+      { by: 'b', say: "Everyone's said that about {c} today." },
       { by: 'a', say: "Well, mine's the true one." },
       { by: 'b', say: "That's what they all said." },
     ] },

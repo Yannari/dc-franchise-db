@@ -62,6 +62,7 @@ const sIs = t => t.replace(S_IS, (m, n, w) => `${n} ${w === 'been' || w === 'got
 // somebody else in the sentence would take the same one, or it is a "they" that would need its verb changed
 const escRe = n => String(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const VERBISH = /^(?!(this|his|its|us|always|plus|yes|towards|afterwards|across|less|perhaps|sometimes|besides|anyways)$)(is|was|has|had|does|did|can|could|will|would|should|might|must|isn't|wasn't|hasn't|doesn't|didn't|can't|won't|[a-z]+ed|[a-z]{2,}[^s']s)$/;
+const SUBJ_AFTER = /^(how|who|what|when|where|why|because|if|while|until|unless|whether|that)$/;
 function beatRepeats(text) {
   const cast = [...new Set((players || []).map(p => p?.name).filter(Boolean))];
   return String(text).split(/(?<=[.!?])\s+/).map(sent => {
@@ -76,7 +77,10 @@ function beatRepeats(text) {
         if (!seen) { seen = true; return m; }
         if (poss) return p.posAdj || m;
         const next = (whole.slice(at + m.length).match(/^\s+([a-z']+)/) || [])[1] || '';
-        if (VERBISH.test(next)) return p.sub === 'they' ? m : p.sub;
+        // after "how" or "who" the name starts a clause, so it is the subject whatever follows (read
+        // 2026-10-15: "asks Beth how her always seems to know", "the talk about who her put up")
+        const prev = ((whole.slice(0, at).match(/([A-Za-z']+)\s+$/) || [])[1] || '').toLowerCase();
+        if (SUBJ_AFTER.test(prev) || VERBISH.test(next)) return p.sub === 'they' ? m : p.sub;
         return p.obj || m;
       });
     }
@@ -124,7 +128,7 @@ export function writeScene(scene, ctx = {}, rng = Math.random) {
   const who = scene.who || {};
   const pairKey = [who.a, who.b].filter(Boolean).sort().join('|');
   const speakers = Object.values(who).filter(Boolean);
-  const entry = pickEntry(ledger(), firstNight(ctx) ? noPast(key) : POOLS, key, facts, pairKey, rng, speakers, clockOf(ctx));
+  const entry = pickEntry(ledger(), firstNight(ctx) ? noPast(key) : POOLS, key, facts, pairKey, rng, speakers, clockOf(ctx), { fresh: true });
   if (!entry) throw new Error(`no lines for ${key}`);
   const lines = entry.turns.map(t => {
     const kind = t.dr ? 'dr' : t.beat ? 'beat' : 'say';

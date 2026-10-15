@@ -18,7 +18,7 @@ export default {
     { id: 'ea2.2', turns: [{ by: 'a', say: "We had the numbers. Somebody lied." }, { beat: 'Everyone looks at everyone else.' }] },
     { id: 'ea2.3', turns: [{ by: 'a', dr: "{group} came out of that vote one short. I know exactly which chair it came from. Nobody else does." }] },
     { id: 'ea2.4', turns: [{ by: 'a', say: "Let's count it again." }, { beat: 'The count still does not work.' }] },
-    { id: 'ea2.5', turns: [{ by: 'a', dr: "That was the best move I've made all season, and nobody can ever know it was me." }] },
+    { id: 'ea2.5', turns: [{ by: 'a', dr: "Voting against {group} was the best move I've made all season, and nobody can ever know it was me." }] },
     { id: 'ea2.6', turns: [{ by: 'a', say: "Somebody in this room is a liar." }, { by: 'a', dr: "Somebody in this room is a liar, and it's me. Saying it first is the best cover I've got." }] },
   ],
   'engine.blame.blamed': [
@@ -113,7 +113,7 @@ export default {
     { id: 'ef2.1', turns: [{ by: 'b', dr: "Every member of {group} is off the block. {a} looked after us. Everyone noticed." }] },
     { id: 'ef2.2', turns: [{ by: 'a', dr: "I didn't put anyone from {group} up. People will notice. I don't care." }] },
     { id: 'ef2.3', turns: [{ beat: 'Nobody says it out loud, but the block has a shape.' }, { by: 'b', dr: "None of {group} is up there. That's not an accident." }] },
-    { id: 'ef2.4', turns: [{ by: 'b', say: "Thanks." }, { by: 'a', say: "For what?" }, { by: 'b', say: "You know what." }] },
+    { id: 'ef2.4', turns: [{ by: 'b', say: "Thanks for keeping us off the block." }, { by: 'a', say: "Don't thank me where people can hear." }] },
     { id: 'ef2.5', turns: [{ by: 'a', dr: "Protecting {group} this week was the plan. Now everyone can see the plan." }] },
     { id: 'ef2.6', turns: [{ by: 'b', dr: "We're safe. But everyone outside {group} just watched {a} protect us. That's a target." }] },
   ],

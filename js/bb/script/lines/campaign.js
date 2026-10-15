@@ -15,7 +15,7 @@
 export default {
   // ── the case ──────────────────────────────────────────────────────
   'campaign.case.deal': [
-    { id: 'cc.d1', turns: [{ by: 'a', say: "We shook on something. I haven't forgotten it, and I don't think you have either." }, { by: 'a', say: "Keep me, and it's still a plan. Send me home, and you're doing the rest of this on your own." }] },
+    { id: 'cc.d1', turns: [{ by: 'a', say: "We made a deal, you and me. I haven't forgotten it, and I don't think you have either." }, { by: 'a', say: "Keep me, and it's still a plan. Send me home, and you're doing the rest of this on your own." }] },
     { id: 'cc.d2', turns: [{ by: 'a', say: "You and me had a deal. That deal doesn't work with me in the jury house." }] },
     { id: 'cc.d3', turns: [{ by: 'a', say: "I'm not going to remind you what we promised each other. I'm just going to ask if it still counts." }] },
     { id: 'cc.d4', turns: [{ by: 'a', say: "If I go, our deal goes with me. Is that what you want?" }] },
@@ -67,7 +67,7 @@ export default {
     { id: 'cc.b2', turns: [{ by: 'a', say: "Take the one you can beat. That's me. I'm being honest with you." }] },
     { id: 'cc.b3', turns: [{ by: 'a', say: "If it's you and {target} at the end, {target} wins. If it's you and me, you might." }] },
     { id: 'cc.b4', turns: [{ by: 'a', say: "Everyone likes {target}. That's exactly why {target} is dangerous at the end." }] },
-    { id: 'cc.b5', turns: [{ by: 'a', say: "Keep the threat and you'll regret it. Keep me and you've still got a shot." }] },
+    { id: 'cc.b5', turns: [{ by: 'a', say: "Keep {target} and you'll regret it. Keep me and you've still got a shot." }] },
     { id: 'cc.b6', turns: [{ by: 'a', say: "Juries love {target}. Juries won't love me. Which one do you want next to you?" }] },
   ],
   'campaign.case.clean': [

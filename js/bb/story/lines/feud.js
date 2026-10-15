@@ -135,7 +135,7 @@ export default {
       { by: 'a', say: "Nobody cares, it's a cute story." },
       { by: 'b', say: "I care. That's the whole point. I care." },
       { by: 'a', say: "Okay. Sorry. Jeez." },
-      { by: 'b', dr: "I've known {a} for like a week. I'm never telling {a} anything again." },
+      { by: 'b', dr: "Lesson learned. I'm never telling {a} anything again." },
     ] },
     { id: 'sf.j4', room: 'kitchen', when: { third: true }, turns: [
       { beat: 'Somebody puts music on. {b} starts dancing by the counter.' },

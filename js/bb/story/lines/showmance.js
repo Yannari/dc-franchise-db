@@ -430,7 +430,7 @@ export default {
       { by: 'b', say: "You've said four words to me today." },
       { by: 'a', say: "Maybe I've got nothing to say." },
       { by: 'b', say: "You always have something to say." },
-      { by: 'a', say: "Fine. I saw you laughing with somebody earlier. Really laughing. You don't laugh like that with me any more." },
+      { by: 'a', say: "Fine. I saw you laughing in the kitchen earlier. Really laughing. You don't laugh like that with me any more." },
       { by: 'b', say: "That's not true." },
       { by: 'a', say: "It's a little bit true." },
       { by: 'b', say: "Come here. You're being an idiot." },

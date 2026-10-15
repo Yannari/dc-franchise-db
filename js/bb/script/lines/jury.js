@@ -41,12 +41,12 @@ export default {
     { id: 'jf.6', turns: [{ by: 'b', say: "I'm making jury. Just to spite you." }, { by: 'a', say: "We'll see." }, { by: 'b', say: "Watch me." }, { by: 'a', say: "Oh, I will." }, { by: 'b', dr: "Nothing makes me work harder than somebody telling me I can't." }] },
   ],
   'jury.nerves.quiet': [
-    { id: 'jn.q1', turns: [{ by: 'a', dr: "I've stopped arguing with anyone. With jury this close, boring is safe." }] },
+    { id: 'jn.q1', when: { nomA: false }, turns: [{ by: 'a', dr: "I've stopped arguing with anyone. With jury this close, boring is safe." }] },
     { id: 'jn.q2', turns: [{ beat: '{a} does the dishes for the second time today.' }, { by: 'a', dr: "If I'm helpful, I'm harder to vote out." }] },
     { id: 'jn.q3', turns: [{ by: 'a', dr: "I'm agreeing with everyone right now. It's not a strategy. Okay, it's a strategy." }] },
     { id: 'jn.q4', turns: [{ by: 'a', dr: "I laughed at a joke that wasn't funny. That's how nervous I am. I'm going to bed." }] },
-    { id: 'jn.q5', turns: [{ by: 'a', dr: "So close to jury. I just need to keep my head down a bit longer." }] },
-    { id: 'jn.q6', turns: [{ by: 'a', dr: "Nobody nominates the person who keeps the kitchen clean. I hope." }] },
+    { id: 'jn.q5', when: { nomA: false }, turns: [{ by: 'a', dr: "So close to jury. I just need to keep my head down a bit longer." }] },
+    { id: 'jn.q6', when: { nomA: false }, turns: [{ by: 'a', dr: "Nobody nominates the person who keeps the kitchen clean. I hope." }] },
   ],
   'jury.nerves.bold': [
     { id: 'jn.b1', turns: [{ by: 'a', dr: "Sitting quietly is how people go home one week before jury. Not me." }] },
@@ -75,7 +75,7 @@ export default {
   'jury.crossed.scene': [
     { id: 'jx.1', turns: [{ by: 'a', dr: "From tonight, everyone who leaves gets a vote. I've said a lot of things I can't take back." }] },
     { id: 'jx.2', turns: [{ by: 'a', dr: "Jury's open. I've been rude to a lot of people. That's a problem now." }] },
-    { id: 'jx.3', turns: [{ beat: 'Somebody says, "Careful what you say now."' }, { by: 'a', dr: "Everyone laughed. I laughed a second too late." }] },
+    { id: 'jx.3', turns: [{ by: 'a', dr: "Jury's open. At dinner somebody joked that we'd all better be careful what we say now. Everyone laughed. I laughed a second too late." }] },
     { id: 'jx.4', turns: [{ by: 'a', dr: "I've started being nice to people I haven't been nice to in weeks. I know how it looks." }] },
     { id: 'jx.5', turns: [{ by: 'a', dr: "Every eviction now hands someone a vote. I need to start fixing some friendships." }] },
     { id: 'jx.6', turns: [{ by: 'a', dr: "The jury's open. Everyone I've annoyed could be deciding my game. That's a lot of people." }] },

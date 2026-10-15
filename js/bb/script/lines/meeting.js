@@ -35,11 +35,11 @@ export default {
   ],
   'meeting.case.lie': [
     { id: 'mt.l1', turns: [{ by: 'a', say: "Somebody in this room has been telling people I made deals I never made." }, { beat: '{a} turns to {b}.' }] },
-    { id: 'mt.l2', turns: [{ by: 'a', say: "{b}, tell everyone what you've been saying about me. Go on. Say it again, here." }] },
-    { id: 'mt.l3', turns: [{ by: 'a', say: "I've heard the same story from three different people. Every one of them got it from {b}." }] },
+    { id: 'mt.l2', turns: [{ by: 'a', say: "{b}, tell everyone what you've been saying about me. That I've got deals with half this house. Go on. Say it again, here." }] },
+    { id: 'mt.l3', turns: [{ by: 'a', say: "Three different people have told me I've got a secret deal. Every one of them got it from {b}." }] },
     { id: 'mt.l4', turns: [{ by: 'a', say: "Where did you hear that I offered a deal, {b}? Because I never did." }] },
-    { id: 'mt.l5', turns: [{ by: 'a', say: "I'm not angry. I just want the truth. {b}, where did that story come from?" }] },
-    { id: 'mt.l6', turns: [{ by: 'a', say: "Let's clear this up. {b} has been telling people something about me that isn't true." }] },
+    { id: 'mt.l5', turns: [{ by: 'a', say: "I'm not angry. I just want the truth. {b}, where did you get the idea I've got a secret deal?" }] },
+    { id: 'mt.l6', turns: [{ by: 'a', say: "Let's clear this up. {b} has been telling people I've got a secret deal. I haven't." }] },
   ],
   'meeting.case.desperate': [
     { id: 'mt.d1', turns: [{ by: 'a', say: "I'm on the block. I've got nothing to lose. So let's talk about the promises people made me." }] },
@@ -51,7 +51,7 @@ export default {
   ],
   'meeting.case.grudge': [
     { id: 'mt.g1', turns: [{ by: 'a', say: "I tried to keep this private. {b} didn't. So now we're doing it in front of everyone." }] },
-    { id: 'mt.g2', turns: [{ by: 'a', say: "This is about respect. And it's about {b}." }] },
+    { id: 'mt.g2', turns: [{ by: 'a', say: "This is about respect. And it's about {b} talking about me behind my back." }] },
     { id: 'mt.g3', turns: [{ by: 'a', say: "{b}, I'm saying this in front of everybody, because in private you just talk over me." }] },
     { id: 'mt.g4', turns: [{ by: 'a', say: "I'm not attacking anyone. But {b} needs to hear this." }] },
     { id: 'mt.g5', turns: [{ by: 'a', say: "{b}, you've been talking about this all over the house. So let's talk about it here." }] },
@@ -156,9 +156,9 @@ export default {
   ],
   'meeting.answer.backfires': [
     { id: 'mt.b1', turns: [{ by: 'b', say: "Are you finished?" }, { beat: 'Someone on the sofa mutters, "Let {b} answer."' }] },
-    { id: 'mt.b2', turns: [{ by: 'b', say: "Can I answer now?" }, { beat: 'It gets the biggest reaction of the meeting.' }] },
-    { id: 'mt.b3', turns: [{ by: 'b', say: "I wasn't even in the room when you say I said that. Ask anyone." }, { beat: 'People start checking {a}\'s story instead.' }] },
-    { id: 'mt.b4', turns: [{ by: 'a', say: "And another thing. You've been doing this since day one." }, { by: 'b', say: "Now it's since day one? Five minutes ago it was this week." }, { beat: 'The room turns on {a}.' }] },
+    { id: 'mt.b2', turns: [{ by: 'b', say: "Is this a meeting, or is this a speech?" }, { beat: 'It gets the biggest reaction of the meeting.' }] },
+    { id: 'mt.b3', turns: [{ by: 'b', say: "Say what you actually mean, {a}. Nobody in this room knows what I'm supposed to have done." }, { beat: 'People start looking at {a} instead.' }] },
+    { id: 'mt.b4', turns: [{ by: 'a', say: "And another thing. You've been doing this since day one." }, { by: 'b', say: "Since day one? Then why is this the first I'm hearing about it?" }, { beat: 'The room turns on {a}.' }] },
     { id: 'mt.b5', when: { third: true }, turns: [{ by: 'c', say: "Let {b} speak, {a}." }, { by: 'a', say: "I'm just saying..." }, { by: 'c', say: "We know what you're saying." }] },
     { id: 'mt.b6', turns: [{ by: 'b', dr: "I barely had to defend myself. {a} did all the damage alone." }] },
   ],

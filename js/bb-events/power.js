@@ -384,7 +384,10 @@ const pawnResentment = {
     } else if (hoh) {
       api.remember(pawn, hoh, 'obligation', 1, { about: 'owes me for sitting there' });
     }
-    const scene = makeScene('power.pawn', { a: pawn, b: hoh || null, c: target || null }, { ending: takesIt ? 'takes' : 'resents' }, [],
+    // who the pawn is sitting next to NOW: on a backdoor the target is not on the block yet (read
+    // 2026-10-15: "I'm sitting next to Hicks", said beside Zee, before the veto put Hicks up)
+    const beside = _noms(ctx).includes(target) ? target : (_noms(ctx).find(n => n !== pawn) || null);
+    const scene = makeScene('power.pawn', { a: pawn, b: hoh || null, c: beside }, { ending: takesIt ? 'takes' : 'resents' }, [],
       _room(['bedroom', 'backyard', 'kitchen'], ctx, pawn));
     scene.seenBy = [pawn, hoh].filter(Boolean);
     return {

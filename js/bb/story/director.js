@@ -260,10 +260,16 @@ export function airStorylines(week) {
           // a quiet night's confessional ("we talked about everything except the game") does not close a talk
           // about the HOH's week (read 2026-10-14)
           if (/^(bond-quiet|texture-|life-|venue-)/.test(String(sc.step || '')) && (GAME_HOST.has(x.type) || /hohweek|plan|vote|nom|veto|target|block|campaign/.test(`${x.step || ''} ${x.type || ''}`))) return false;
-          if (/^(power-|phase-power|reign-|editorial-hoh)/.test(String(sc.step || '')) && !/hoh|reign|power|nom|veto|block/.test(`${x.step || ''} ${x.type || ''}`)) return false;
+          if (/^(power-|phase-power|phase-scramble|reign-|editorial-hoh)/.test(String(sc.step || '')) && !/hoh|reign|power|nom|veto|block/.test(`${x.step || ''} ${x.type || ''}`)) return false;
+          // somebody's suspicion is not the close of a laugh about food (read 2026-10-15: "Chase keeps ending
+          // conversations the second I walk into the room", closing a banter about pizza)
+          if (/paranoia|grudge/.test(String(sc.step || '')) && !GAME_HOST.has(x.type)) return false;
+          // the guest who will not leave is a joke, not the close of a talk about who goes up (read 2026-10-15:
+          // "It's three in the morning. I've stopped answering in sentences", after a pawn said no)
+          if (/overstay/.test(String(sc.step || '')) && /pawn|plan|nom|target|block|fish|veto/.test(`${x.step || ''} ${x.type || ''}`)) return false;
           // a grudge is not the close of an apology the speaker just made (Hicks said sorry to Bowie, then:
           // "I'm not looking for an apology from Bowie any more")
-          if (/apolog|makeup|reconcil|forgive/.test(String(x.step || '')) && /grudge|blame|feud|cold|paranoia/.test(String(sc.step || ''))) return false;
+          if (/apolog|makeup|reconcil|forgive/.test(String(x.step || '')) && /grudge|blame|feud|cold|paranoia|rant/.test(String(sc.step || ''))) return false;
           return by && (x.cast || []).includes(by) && named.length > 0 && named.every(n => (x.cast || []).includes(n));
         };
         const into = hosts.filter(x => (x.folded || []).length < 2).find(fits);
@@ -282,10 +288,13 @@ export function airStorylines(week) {
         // line in two people's private talk (the read of 2026-10-14: the HOH's "as HOH, clean the kitchen"
         // folded into the pawn plan in the HOH room, and Ripper, not there, commenting on it)
         const sayers = new Set(sc.lines.filter(l => l.kind === 'say' && l.by).map(l => l.by));
-        const publicMoment = sc.lines.some(l => l.kind === 'beat' && /\b(room|house|everyone|everybody|nobody|table|kitchen|half)\b/i.test(String(l.text || '')))
+        const publicMoment = sc.lines.some(l => l.kind === 'beat' && /\b(room|house|everyone|everybody|nobody|table|kitchen|half|people|hands)\b/i.test(String(l.text || '')))
           || sc.lines.some(l => l.kind === 'dr' && l.by && !sayers.has(l.by));
         const confront = CONFRONT.test(String(beat.eventId || ''));
+        // (nor a row: "Wow." / "No, I wouldn't. That's the difference between us." / "They lean in a little closer."
+        // / "What would you want from someone sitting in the final two?", read 2026-10-15)
         const host = placed(sc) || publicMoment || confront ? null : hosts.filter(x => GAME_HOST.has(x.type) && x.mood !== 'secret' && (x.folded || []).length < 2
+          && !/betrayal|fight|argument|blow|confront|exposed|leftout/.test(String(x.step || ''))
           && speakers.every(s2 => talkers(x).has(s2)) && (sc.cast || []).every(n => (x.cast || []).includes(n)) && !/^texture-/.test(String(beat.eventId || ''))
           && !clashes(x, sc))
           .sort((x, y) => (x.folded || []).length - (y.folded || []).length)[0];
@@ -358,7 +367,8 @@ export function airStorylines(week) {
   const arcSpec = (() => { try { return arcDue(week, (week.houseAtStart || []).filter(n => !late.has(n))); } catch { return null; } })();
   const airArcs = (act, ctx) => {
     if (!act) return;
-    if (!arcAired && arcSpec && ((arcSpec.when === 'early' && clock.hoh && !clock.noms) || (arcSpec.when === 'late' && clock.noms))) {
+    if (!arcAired && arcSpec && ((arcSpec.when === 'early' && clock.hoh && !clock.noms) || (arcSpec.when === 'late' && clock.noms)
+      || (arcSpec.when === 'cer' && clock.cer))) {
       const sc = writeArcScene(arcSpec, ctx, at + 0.3);
       if (sc) { (act.scenes ||= []).push(sc); arcSpec.commit(); arcAired = true; }
     }
@@ -412,12 +422,18 @@ export function airStorylines(week) {
       // stopped sitting together
       const ending = p.line.type === 'showmance' && p.step.step === 'breakup';
       if (!ending && [...picked, ...embedded].some(q => q.line === p.line)) return false;   // one step per storyline a stretch
+      // ...and one of a kind per person: two storylines can both be "Caleb is homesick" (read 2026-10-15: the
+      // same four cheered Caleb up twice in a row, a blanket then a dinner)
+      if ([...picked, ...embedded].some(q => q.line.type === p.line.type && q.step.step === p.step.step && q.step.roles.a === p.step.roles.a)) return false;
       if (!ending && airedIn(p, s => s.week === (week.num || 0)) >= 2) return false;
       // the same kind of scene in the same storyline rests a fortnight: being left out of a
       // meeting every single week stops being news the second time
       if (p.line.type !== 'life' && airedIn(p, s => s.step === p.step.step && (week.num || 0) - s.week < 2)) return false;
       // a first clash is a first clash: once a feud has aired, more friction is not news
       if (p.line.type === 'feud' && p.step.step === 'friction' && airedIn(p, s => (week.num || 0) - s.week < 2)) return false;
+      // move-in night has room for a first clash, not a row about how somebody has been "since earlier,
+      // at dinner, in the kitchen" (read 2026-10-15): the rest of a feud waits for the next stretch
+      if (ctx.firstNight && p.line.type === 'feud' && p.step.step !== 'friction') return false;
       // the HOH's plan scene already laid the backdoor out to their closest person: telling it again
       // ("Can you keep a secret? Hicks goes up after the veto") to the same person is a rerun (read 2026-10-14)
       if (p.line.type === 'target' && p.step.step === 'backdoor' && [...talked].some(k => /^hohweek\.plan3?\.backdoor/.test(k))) { p.step.aired = true; return false; }
@@ -550,7 +566,8 @@ export function airStorylines(week) {
   const airCampaign = act => {
     const ctx = ctxOf();
     const pitches = (act.socialBeats || []).filter(b => b && b.eventId === 'campaign-pitch' && (b.players || []).length >= 2
-      && b.players.every(n => ctx.present.includes(n)) && !pitchedPairs.has(b.players.join('>')));
+      // (a return visit that wore the voter down airs after its first visit did: the second time, on screen)
+      && b.players.every(n => ctx.present.includes(n)) && (!pitchedPairs.has(b.players.join('>')) || b.pitchOutcome === 'worn'));
     const rank = b => (b.pitchOutcome === 'worn' ? 3 : b.pitchOutcome === 'receptive' ? 2 : 1);
     const chosen = [];
     const voter = b => b.players[b.players.length - 1];
@@ -563,6 +580,7 @@ export function airStorylines(week) {
       if (!chosen.includes(b) && !chosen.some(c => voter(c) === voter(b))) chosen.push(b);
     }
     chosen.slice(0, 4).forEach((b, i) => {
+      b.firstAired = pitchedPairs.has(b.players.join('>'));
       const sc = writeCampaignScene(b, ctx, at + i * 0.1, `${week.num || 0}|${act.campaignIndex ?? 0}|${i}|${b.players.join('>')}`);
       if (!sc) return;
       pitchedPairs.add(b.players.join('>'));
@@ -614,4 +632,12 @@ export function airStorylines(week) {
     }
   }
   choose();
+  // a nominee the engine has sitting the campaign out does not say so in a week where House Life shows
+  // them working the house (read 2026-10-15: "I'm not going round begging", from somebody who lobbied
+  // three rooms that week)
+  const lobbied = new Set(week.acts.flatMap(a => a?.scenes || [])
+    .filter(x => /^(pitch|lobby|power-nom-campaign)$/.test(String(x.step || '')) && (x.cast || []).length).map(x => x.cast[0]));
+  for (const act of week.acts) {
+    if (act?.scenes) act.scenes = act.scenes.filter(x => !(x.step === 'campaign-declined' && lobbied.has((x.cast || [])[0])));
+  }
 }

@@ -15,6 +15,7 @@
 // 'b' of the EARLIER step. An entry may carry `presumes: [...]`:
 //   hoh   an HOH has been crowned this week
 //   noms  nominations have happened this week
+//   days  not move-in day (week one before the first HOH)
 //   vote  an eviction vote has happened this season
 // The writer skips an entry whose presumptions are false.
 //
@@ -178,7 +179,7 @@ function whenOf(prior, step) {
   if (!prior) return 'earlier';
   if (prior.week < step.week) return 'last week';
   const d = step.stretch - prior.stretch;
-  return d <= 0 ? 'earlier' : d === 1 ? 'yesterday' : 'the other day';
+  return d <= 0 ? 'earlier today' : d === 1 ? 'yesterday' : 'the other day';
 }
 
 function presumed(entry, ctx, who = null) {
@@ -187,6 +188,9 @@ function presumed(entry, ctx, who = null) {
     // earlier. For forty minutes?" about their own room)
     if (p === 'guests' && who && ctx.hoh && [who.a, who.b].includes(ctx.hoh)) return false;
     if (p === 'hoh' && !ctx.hoh) return false;
+    // days: the house has lived together for more than an afternoon (a row about "every morning" aired on
+    // move-in night, read 2026-10-15)
+    if (p === 'days' && (ctx.week?.num || 0) <= 1 && !ctx.hoh) return false;
     if (p === 'noms' && !(ctx.nominees || []).length) return false;
     if (p === 'vote' && !(gs.bb?.weeks || []).some(w => w !== ctx.week && w.evicted)) return false;
     if (p === 'jurors' && !(ctx.jurors > 0)) return false;
@@ -269,7 +273,7 @@ function pick(keys, who, data, ctx, room, salt, freshOnly = false) {
   for (const k of keys) if (pools[k]?.length > 1 && pools[k].some(e => !used[e.id])) pools[k] = pickTone(pools[k], who);
   // the tone is a preference: when the picker's own rules leave nothing in the fitted set, the
   // whole set is tried (a recap went missing when it was narrowed away)
-  const got = pickEntry(ledger(), pools, key, facts, pairKey, rng, speakers, clock) || pickEntry(ledger(), full, key, facts, pairKey, rng, speakers, clock);
+  const got = pickEntry(ledger(), pools, key, facts, pairKey, rng, speakers, clock, { fresh: true }) || pickEntry(ledger(), full, key, facts, pairKey, rng, speakers, clock, { fresh: true });
   if (got) noteAcross(got.id);
   return got;
 }
@@ -486,8 +490,9 @@ function writeStoryScene0(line, step, ctx) {
   // The roles follow the cause. In a feud, the one who starts the argument is the one who
   // was wronged, and the one who apologises is the one who did it: the event that fired
   // may have them the other way round, which aired a joker yelling about their own joke.
-  if (line.type === 'feud' && prior?.step === 'friction') {
-    const offender = prior.roles.a;
+  const clash = line.type === 'feud' ? (prior?.step === 'friction' ? prior : line.steps.slice(0, line.steps.indexOf(step)).find(s => s.step === 'friction')) : null;
+  if (clash) {
+    const offender = clash.roles.a;
     if (step.step === 'argument' && who.a === offender) who = { a: who.b, b: who.a, c: who.c };
     if (step.step === 'apology' && who.b === offender) who = { a: who.b, b: who.a, c: who.c };
   }
@@ -697,7 +702,11 @@ export function writeCampaignScene(beat, ctx, at, salt) {
   const a = ps[0], b = ps.length > 1 ? (round ? ps[1] : ps[ps.length - 1]) : null;
   if (!a || !b) return null;
   const along = round ? ps.slice(2) : ps.slice(1, -1);
-  const outcome = beat.pitchOutcome || (beat.badgeClass === 'green' ? 'receptive' : 'unmoved');
+  let outcome = beat.pitchOutcome || (beat.badgeClass === 'green' ? 'receptive' : 'unmoved');
+  // a return visit whose first visit never aired is a first visit to the viewer: the case and a yes, not
+  // "I know you said no yesterday" (read 2026-10-15, three times a season)
+  let said = beat.lines || [];
+  if (outcome === 'worn' && !beat.firstAired && Array.isArray(beat.caseLines) && beat.caseLines.length) { outcome = 'receptive'; said = beat.caseLines; }
   const who = { a, b };
   const data = {};
   const sctx = { ...ctx, inSet: false };
@@ -714,7 +723,7 @@ export function writeCampaignScene(beat, ctx, at, salt) {
   // only the people in this conversation speak in it: the engine's beat can carry the other
   // voters' answers too ('Axel: No.' 'Hicks: No.' in a pitch to Brightly alone)
   const inScene = new Set(ps);
-  const body = (beat.lines || []).filter(l => l && l.text && (!l.by || inScene.has(l.by))).map(l => ({ kind: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, text: l.text }));
+  const body = said.filter(l => l && l.text && (!l.by || inScene.has(l.by))).map(l => ({ kind: l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say', by: l.by || null, text: l.text }));
   if (!body.length && beat.text) body.push({ kind: 'beat', by: null, text: String(beat.text).replace(/<[^>]+>/g, '') });
   const room = open?.room || ['bedroom', 'backyard', 'kitchen', 'living-room'][h % 4];
   // the engine's own Diary Room (if it wrote one) closes the scene in place of ours: a Diary

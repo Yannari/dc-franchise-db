@@ -22,7 +22,7 @@
 
 export default {
   'arc.lie.friend': [
-    { id: 'qa.f1', turns: [{ by: 'b', say: "{target} told me something completely different from what {target} told you." }, { by: 'a', say: "...Say that again." }] },
+    { id: 'qa.f1', turns: [{ by: 'b', say: "{target} told me one thing about the vote and told you the opposite." }, { by: 'a', say: "...Say that again." }] },
     { id: 'qa.f2', turns: [{ by: 'b', say: "You already knew, right? About what {target} said?" }, { by: 'a', say: "No. Tell me." }, { beat: '{b} tells {a}. {a} goes very quiet.' }] },
     { id: 'qa.f3', turns: [{ by: 'a', dr: "I was going to let it go. Then {b} told me what {target} said to everyone else. I'm not letting it go." }] },
     { id: 'qa.f4', turns: [{ by: 'b', say: "I'm only telling you because you're my friend. {target} lied to you." }, { by: 'a', say: "I thought so. Now I know." }] },
@@ -37,7 +37,7 @@ export default {
     { id: 'qa.o1', turns: [{ by: 'b', say: "Funny thing. {target} told the whole room something different from what {target} told you." }, { by: 'a', say: "Did {target}?" }] },
     { id: 'qa.o2', turns: [{ by: 'b', say: "...and that's what {target} said. Anyway, what does everyone want for dinner?" }, { by: 'a', dr: "{b} just told me {target} lied to me. Then asked about dinner." }] },
     { id: 'qa.o3', turns: [{ by: 'a', dr: "I wasn't sure about {target}. Now I've heard it from someone with no reason to lie. I'm sure." }] },
-    { id: 'qa.o4', turns: [{ by: 'b', say: "Didn't {target} tell you something else?" }, { by: 'a', say: "Yes. Why?" }, { by: 'b', say: "No reason." }] },
+    { id: 'qa.o4', turns: [{ by: 'b', say: "Didn't {target} tell you a different name for Thursday?" }, { by: 'a', say: "Yes. Why?" }, { by: 'b', say: "No reason." }] },
     { id: 'qa.o5', turns: [{ by: 'a', dr: "{b} has no reason to protect me or {target}. That's why I believe {b}." }] },
     { id: 'qa.o6', turns: [{ by: 'a', say: "Are you sure that's what {target} said?" }, { by: 'b', say: "Word for word." }] },
     { id: 'qa.o7', turns: [{ by: 'b', say: "Wasn't {target} telling everyone the opposite yesterday?" }, { by: 'a', say: "Was {target}?" }, { by: 'b', say: "I assumed you knew." }] },
@@ -97,7 +97,7 @@ export default {
     { id: 'qd.c3', turns: [{ by: 'a', say: "Funny thing about that vote." }, { by: 'b', say: "What about it?" }, { by: 'a', say: "You said one thing all week. Somebody did something else." }, { by: 'b', say: "It wasn't me." }, { by: 'a', say: "I didn't say it was." }, { by: 'a', dr: "{b} said one name all week, and somebody wrote another. I watched {b}'s face do the maths too slowly." }] },
     { id: 'qd.c4', when: { intent: 'named' }, turns: [{ by: 'a', say: "Before the vote you said you were voting {target} out. Why did that change overnight?" }, { by: 'b', say: "It didn't change." }, { by: 'a', say: "Then the numbers are wrong." }, { by: 'b', say: "Maybe somebody else flipped." }, { by: 'a', say: "Maybe. But I'm asking you." }] },
     { id: 'qd.c5', turns: [{ by: 'a', say: "How did you vote?" }, { by: 'b', say: "The way I said I would." }, { by: 'a', say: "Then who flipped?" }, { by: 'b', say: "I don't... I mean, I don't know. Lots of people were talking." }, { by: 'a', say: "Lots of people weren't. You were." }, { by: 'b', dr: "{a} worked out my vote. I couldn't get a sentence out." }] },
-    { id: 'qd.c6', turns: [{ by: 'a', say: "I'm not shouting. I just want to know why you lied." }, { by: 'b', say: "I didn't..." }, { by: 'a', say: "You did." }, { by: 'b', say: "Okay. I did. I'm sorry." }, { by: 'a', say: "Sorry you did it, or sorry I found out?" }, { by: 'b', dr: "I didn't have an answer for that." }] },
+    { id: 'qd.c6', turns: [{ by: 'a', say: "I'm not shouting. I just want to know why you lied about your vote." }, { by: 'b', say: "I didn't..." }, { by: 'a', say: "You did." }, { by: 'b', say: "Okay. I did. I'm sorry." }, { by: 'a', say: "Sorry you did it, or sorry I found out?" }, { by: 'b', dr: "I didn't have an answer for that." }] },
   ],
   'arc.debt.deal': [
     { id: 'qe.d1', turns: [{ by: 'c', say: "What about {b} this week?" }, { by: 'a', say: "No. Not {b}." }, { by: 'c', say: "Just like that?" }, { by: 'a', say: "{b} was there for me when nobody else was. Just like that." }] },

@@ -148,7 +148,7 @@ export default {
       { by: 'a', say: "I haven't decided anything yet." },
       { by: 'b', say: "You're just going to keep saying that." },
       { by: 'a', say: "Because it keeps being true." },
-      { by: 'b', dr: "If I were safe, {a} would have said so. {a} said nothing, three times. I can count." },
+      { by: 'b', dr: "If I were safe, {a} would have said so. I asked twice and got the same nothing twice." },
     ] },
     { id: 'hw.fd5', room: 'hoh-room', turns: [
       { beat: 'HOH room. {b} is sitting on the floor. {a} is talking about the HOH letter, the snacks, anything else.' },
@@ -282,7 +282,7 @@ export default {
       { by: 'b', say: "You can't hide from {c} forever." },
       { by: 'a', say: "I know. I tried to get rid of {c}, it didn't work, and now we live together." },
       { by: 'b', say: "Awkward." },
-      { by: 'a', dr: "The worst result for an HOH is putting somebody up and watching them stay. {c} knows I came for them, and {c} is still here." },
+      { by: 'a', dr: "The worst result for an HOH is putting somebody up and watching them stay. {c} knows I came for {c.obj}, and {c} is still here." },
     ] },
     { id: 'hw.vm5', room: 'kitchen', presumes: ['vote'], turns: [
       { beat: 'Kitchen. {a} is making coffee and not looking at anybody.' },

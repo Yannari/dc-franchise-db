@@ -123,7 +123,7 @@ export default {
       { by: 'b', say: "Does it matter?" },
       { by: 'a', say: "It matters to the one who goes up." },
       { by: 'b', say: "Fair. Then let's make sure {c} doesn't win." },
-      { by: 'a', dr: "{c} has won enough to know nobody's coming after {c} with a plan. Somebody has to change that." },
+      { by: 'a', dr: "{c} keeps winning, and nobody has a plan for {c}. Somebody has to change that." },
     ] },
     { id: 'gt2.nh5', room: 'living-room', turns: [
       { beat: 'Living room. {a} is trying to guess the next HOH competition from the shape of the backyard door. {b} is unconvinced.' },

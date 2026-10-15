@@ -55,12 +55,40 @@ const P = {
 // put on a plate any more: an object appears in the world only as the user's painted cut-out
 // (assets/sets/ch/props/<kind>.webp, listed in SPRITES once it is processed), and what a drawing used to
 // say (a total, a letter, a tank level) is on the HUD instead (stage.js: the count board, the totals panel).
-export const SPRITES = {};
-const spriteHtml = p => `<div class="prop sprite ${p.k === 'buoy' ? 'bob' : ''}" style="${at(p, p.w || SPRITES[p.k].w)}"><img src="assets/sets/ch/props/${esc(p.k)}${p.lit && SPRITES[`${p.k}-lit`] ? '-lit' : ''}.webp" alt=""></div>`;
+// The cut-outs (art job F01, 2026-10-15), with their default width on the stage (cqw).
+export const SPRITES = {
+  ball: 3, barrel: 1.7, blocks: 4, bucket: 2.2, buoy: 4, 'buoy-lit': 4, 'crates-fallen': 7, flag: 2, key: 3,
+  lockbox: 3.4, 'mud-splash': 7, pole: 16, 'puzzle-frame': 6, 'puzzle-pieces': 8, ram: 6, sandbag: 3.6,
+  'sign-blank': 4, smoke: 5, splash: 8, 'tank-empty': 4.4, 'tank-full': 4.4, tiles: 7, token: 1.4,
+};
+const sprite = (file, p, w, cls = '', turn = 0) => ({ file, p, w: w || SPRITES[file], cls, turn });
+const sides = [.4, .6];
+
+// What a game's prop looks like as cut-outs: one prop can be several (a lockbox and its smoke), and the
+// count a drawing used to show is the number of cut-outs (barrels up the ramp, tiles laid).
+function spritesOf(p) {
+  switch (p.k) {
+    case 'buoy': return [sprite(p.lit ? 'buoy-lit' : 'buoy', p, p.w, 'bob')];
+    case 'token': case 'flag': case 'bucket': case 'sandbag': return [sprite(p.k, p, p.w, p.k === 'token' ? 'pop-in' : '')];
+    case 'tank': return [sprite((p.fill || 0) >= .5 ? 'tank-full' : 'tank-empty', p)];
+    case 'tower': return p.down ? [sprite('crates-fallen', p, p.w, 'fallen')] : [];
+    case 'puzzle': return [sprite('puzzle-frame', p, p.w || SPRITES['puzzle-frame'], p.locked ? 'pop-in' : '')];
+    case 'pit': return p.pieces ? [sprite('puzzle-pieces', p)] : p.mud ? [sprite('mud-splash', { ...p, v: p.v + .02 }, 9)] : [];
+    case 'pole': return [sprite('pole', p, 16, '', p.tilt || 0)];
+    case 'ballring': return [sprite('ball', { ...p, u: p.u + (p.ball || 0) * .4 }, 3.2)];
+    case 'lockbox': return [sprite('lockbox', p), ...(p.smoke ? [sprite('smoke', { ...p, v: p.v - .07 }, 6, 'pop-in')] : [])];
+    case 'crates': return (p.smashed || []).flatMap((n, k) => (n > 0 ? [sprite('crates-fallen', { ...p, u: sides[k], v: p.v + .14 }, 6, 'fallen')] : []));
+    case 'rafts': return (p.laid || []).flatMap((n, k) => (n > 0 ? [sprite('tiles', { ...p, u: sides[k], v: p.v }, 7 * Math.min(1, n / 8))] : []));
+    case 'ramps': return (p.up || []).flatMap((n, k) => Array.from({ length: Math.min(5, n) }, (_, i) => sprite('barrel', { ...p, u: (k ? .74 : .26) + (k ? 1 : -1) * i * .022, v: p.v }, 2)));
+    case 'bats': return (p.stack || []).flatMap((n, k) => (n > 0 ? [sprite('blocks', { ...p, u: sides[k], v: p.v + .08 }, 2 + Math.min(4, n * .4))] : []));
+    default: return [];
+  }
+}
+const spriteHtml = s => `<div class="prop sprite ${s.cls}" style="${at(s.p, s.w)}"><img src="assets/sets/ch/props/${esc(s.file)}.webp" alt=""${s.turn ? ` style="transform:rotate(${s.turn}deg)"` : ''}></div>`;
 
 /** A step's props as HTML for the stage's prop layer: the painted cut-outs only. */
 export function propsHtml(list = []) {
-  return list.map(p => (SPRITES[p.k] ? spriteHtml(p) : '')).join('');
+  return list.flatMap(spritesOf).map(spriteHtml).join('');
 }
 /** The drawn versions, kept for the art jobs' reference sheet and tests; never on a plate. */
 export function drawnHtml(list = []) {

@@ -54,10 +54,10 @@ const CHX_CSS = `
 .chx .chx-props{position:absolute;inset:0;pointer-events:none;z-index:2}
 .chx .prop{position:absolute;transform:translate(-50%,-100%);transition:left .9s,top .9s}
 .chx .prop svg{width:100%;height:auto;display:block;overflow:visible;filter:drop-shadow(0 .4cqh .5cqh rgba(0,0,0,.45))}
-.chx .prop.bob svg{animation:chxBuoy 2.4s ease-in-out infinite alternate}
+.chx .prop.bob svg,.chx .prop.bob img{animation:chxBuoy 2.4s ease-in-out infinite alternate}
 @keyframes chxBuoy{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-6%) rotate(3deg)}}
 .chx .prop.pop-in{animation:chxChip .45s cubic-bezier(.3,1.7,.5,1)}
-.chx .prop.fallen svg{animation:chxFallen .6s ease-out}
+.chx .prop.fallen svg,.chx .prop.fallen img{animation:chxFallen .6s ease-out}
 @keyframes chxFallen{from{transform:translateY(-40%) rotate(-25deg);opacity:.2}}
 .chx .tok.swim .face::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;background:linear-gradient(180deg,rgba(120,235,240,.55),rgba(30,140,180,.92));border-top:.2cqw solid rgba(230,255,255,.85)}
 .chx .tok.swim .body{animation:chxBob 1.6s ease-in-out infinite;animation-delay:var(--bd,0s)}

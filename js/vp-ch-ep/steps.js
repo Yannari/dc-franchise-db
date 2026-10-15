@@ -540,7 +540,8 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   const people = units.flat();
   const key = plateKey(st.plate, night);
   const cast = { TJ: hostSide(key), ...placeScene(key, people) };
-  S.push({ scene: { plate: key, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast, wipe: 1, water: 0 },
+  const wide = { plate: key, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast, wipe: 1, water: 0 };
+  S.push({ scene: wide,
     card: { k: "Today's daily", t: d.name, sub: d.mode === 'solo' && (d.winners || []).length > 1 ? 'The best man and the best woman are safe at the vote' : 'Win it, and you are safe at the vote', icon: 'daily' },
     sceneIdx: main.i, title: main.title });
   // scenes that aired before the game (picking partners, picking teams) play first, on the same sand
@@ -567,7 +568,17 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
     if (ch) mid.push({ dir: fill(pickBy(PLAY.choke, seed), { who: ch.who }), focus: [ch.who], act: { [ch.who]: 'slump' } });
     played.steps.splice(Math.min(2, played.steps.length), 0, ...mid);
     played.steps.forEach((x, k) => { if (k === 1 && know.length && !x.know) x.know = know.shift(); });
-    for (const x of weaveDaily(played.steps, d, st, S.V, people)) S.push(x);
+    for (const x of weaveDaily(played.steps, d, st, S.V, people)) {
+      if (!x.cut) { S.push(x); continue; }
+      // a close-up (art jobs E01-E06): the beat on its own set with the people in it, then back to the wide
+      const ck = plateKey(x.cut.plate, night);
+      if (!CH_MARKS[ck]) { S.push(x); continue; }
+      const who = (x.cut.who || []).filter(Boolean);
+      const hasGroup = x.cut.group && marksOf(ck).some(m => m.group === x.cut.group);
+      const { move, pose, cut, props, ...beat } = x;
+      S.push({ ...beat, scene: { ...wide, plate: ck, place: wide.place, cast: placeScene(ck, who, hasGroup ? { group: x.cut.group } : {}), wipe: 1, close: 1 }, focus: who });
+      S.push({ scene: { ...wide, wipe: 1 }, focus: [] });
+    }
   } else if (st.show === 'hang' || st.show === 'last') {
     // Out in reverse order; the winners never drop.
     const out = [...units].reverse().filter(u => !isWin(u));

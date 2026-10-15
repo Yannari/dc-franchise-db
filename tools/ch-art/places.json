@@ -5819,5 +5819,414 @@
       }
     ],
     "_doc": "The Arena dressed for spin-stack (art job D11, an edit of the Arena at night): the Arena's own marks."
+  },
+  "board": {
+    "_doc": "The totals board on the beach (Night Swim, Reef Dash): the end of a swim. A close-up the daily cuts to (art job E01).",
+    "from": "E01-totals-board/Blank Beach Whiteboard and Lagoon Buoys.png",
+    "spot": "board",
+    "night": "auto",
+    "horizon": 0.38,
+    "wind": 0.5,
+    "noleaf": true,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 330,
+        "y": 650,
+        "h": 108
+      },
+      {
+        "kind": "stand",
+        "x": 500,
+        "y": 660,
+        "h": 110
+      },
+      {
+        "kind": "stand",
+        "x": 660,
+        "y": 668,
+        "h": 112
+      },
+      {
+        "kind": "stand",
+        "x": 820,
+        "y": 670,
+        "h": 112
+      },
+      {
+        "kind": "stand",
+        "x": 980,
+        "y": 665,
+        "h": 111
+      },
+      {
+        "kind": "stand",
+        "x": 1140,
+        "y": 655,
+        "h": 109
+      },
+      {
+        "kind": "stand",
+        "x": 1300,
+        "y": 645,
+        "h": 107
+      }
+    ]
+  },
+  "maze-in": {
+    "_doc": "Inside the jungle maze: a station. A close-up the daily cuts to (art job E02).",
+    "from": "E02-maze-inside/Bamboo Maze Corner with Blank Sign.png",
+    "spot": "maze-in",
+    "night": "auto",
+    "horizon": 0.38,
+    "wind": 0.5,
+    "noleaf": true,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 560,
+        "y": 720,
+        "h": 112
+      },
+      {
+        "kind": "stand",
+        "x": 760,
+        "y": 735,
+        "h": 116
+      },
+      {
+        "kind": "stand",
+        "x": 960,
+        "y": 715,
+        "h": 112
+      },
+      {
+        "kind": "stand",
+        "x": 1150,
+        "y": 690,
+        "h": 106
+      }
+    ]
+  },
+  "cliff-top": {
+    "_doc": "The top of the sea cliff: the jump. A close-up the daily cuts to (art job E03).",
+    "from": "E03-cliff-top/Clifftop Jump Platform Over Turquoise Lagoon.png",
+    "spot": "cliff-top",
+    "night": "auto",
+    "horizon": 0.38,
+    "wind": 0.5,
+    "noleaf": true,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 500,
+        "y": 690,
+        "h": 112
+      },
+      {
+        "kind": "stand",
+        "x": 760,
+        "y": 700,
+        "h": 114
+      },
+      {
+        "kind": "stand",
+        "x": 1020,
+        "y": 700,
+        "h": 114
+      },
+      {
+        "kind": "stand",
+        "x": 1240,
+        "y": 690,
+        "h": 112
+      }
+    ]
+  },
+  "truck-pull": {
+    "_doc": "The truck tug, close: the harnesses. A close-up the daily cuts to (art job E04).",
+    "from": "E04-truck-pull/Flame Truck and Three Harnesses.png",
+    "spot": "truck-pull",
+    "night": "auto",
+    "horizon": 0.38,
+    "wind": 0.5,
+    "noleaf": true,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 1330,
+        "y": 700,
+        "h": 112,
+        "group": "pull"
+      },
+      {
+        "kind": "stand",
+        "x": 1450,
+        "y": 708,
+        "h": 114,
+        "group": "pull"
+      },
+      {
+        "kind": "stand",
+        "x": 1555,
+        "y": 714,
+        "h": 116,
+        "group": "pull"
+      },
+      {
+        "kind": "stand",
+        "x": 380,
+        "y": 700,
+        "h": 116
+      },
+      {
+        "kind": "stand",
+        "x": 620,
+        "y": 705,
+        "h": 117
+      },
+      {
+        "kind": "stand",
+        "x": 860,
+        "y": 708,
+        "h": 117
+      }
+    ]
+  },
+  "beam-close": {
+    "_doc": "The balance beam, close: the crossing. A close-up the daily cuts to (art job E05).",
+    "from": "E05-beam-close/Closer Tropical Balance Beam Challenge.png",
+    "spot": "beam-close",
+    "night": "auto",
+    "horizon": 0.3,
+    "wind": 0.5,
+    "noleaf": true,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 1180,
+        "y": 285,
+        "h": 82,
+        "group": "beam"
+      },
+      {
+        "kind": "stand",
+        "x": 240,
+        "y": 285,
+        "h": 82,
+        "group": "beam"
+      },
+      {
+        "kind": "stand",
+        "x": 360,
+        "y": 700,
+        "h": 118
+      },
+      {
+        "kind": "stand",
+        "x": 760,
+        "y": 705,
+        "h": 118
+      },
+      {
+        "kind": "stand",
+        "x": 1150,
+        "y": 700,
+        "h": 118
+      }
+    ]
+  },
+  "gauntlet-tyres": {
+    "_doc": "The gauntlet: the tyre run. A close-up the daily cuts to (art job E06).",
+    "from": "E06-gauntlet-course/Tire Run on Ochre Sands-1.png",
+    "spot": "gauntlet-tyres",
+    "night": "auto",
+    "horizon": 0.38,
+    "wind": 0.5,
+    "noleaf": true,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 520,
+        "y": 575,
+        "h": 104,
+        "group": "run"
+      },
+      {
+        "kind": "stand",
+        "x": 900,
+        "y": 540,
+        "h": 100,
+        "group": "run"
+      },
+      {
+        "kind": "stand",
+        "x": 600,
+        "y": 790,
+        "h": 122
+      },
+      {
+        "kind": "stand",
+        "x": 1000,
+        "y": 805,
+        "h": 124
+      },
+      {
+        "kind": "stand",
+        "x": 1350,
+        "y": 790,
+        "h": 122
+      }
+    ]
+  },
+  "gauntlet-mud": {
+    "_doc": "The gauntlet: the mud crawl. A close-up the daily cuts to (art job E06).",
+    "from": "E06-gauntlet-course/Mud crawl beneath the rope net-2.png",
+    "spot": "gauntlet-mud",
+    "night": "auto",
+    "horizon": 0.38,
+    "wind": 0.5,
+    "noleaf": true,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 500,
+        "y": 690,
+        "h": 106,
+        "group": "run"
+      },
+      {
+        "kind": "stand",
+        "x": 820,
+        "y": 700,
+        "h": 108,
+        "group": "run"
+      },
+      {
+        "kind": "stand",
+        "x": 380,
+        "y": 810,
+        "h": 124
+      },
+      {
+        "kind": "stand",
+        "x": 900,
+        "y": 825,
+        "h": 126
+      },
+      {
+        "kind": "stand",
+        "x": 1320,
+        "y": 810,
+        "h": 124
+      }
+    ]
+  },
+  "gauntlet-wall": {
+    "_doc": "The gauntlet: the wall. A close-up the daily cuts to (art job E06).",
+    "from": "E06-gauntlet-course/Sandy island climbing wall-3.png",
+    "spot": "gauntlet-wall",
+    "night": "auto",
+    "horizon": 0.38,
+    "wind": 0.5,
+    "noleaf": true,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 1230,
+        "y": 650,
+        "h": 110,
+        "group": "run"
+      },
+      {
+        "kind": "stand",
+        "x": 330,
+        "y": 700,
+        "h": 118
+      },
+      {
+        "kind": "stand",
+        "x": 1430,
+        "y": 700,
+        "h": 118
+      }
+    ]
+  },
+  "gauntlet-bags": {
+    "_doc": "The gauntlet: the sandbag carry. A close-up the daily cuts to (art job E06).",
+    "from": "E06-gauntlet-course/Island course sandbag station-4.png",
+    "spot": "gauntlet-bags",
+    "night": "auto",
+    "horizon": 0.38,
+    "wind": 0.5,
+    "noleaf": true,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 1380,
+        "y": 650,
+        "h": 110,
+        "group": "run"
+      },
+      {
+        "kind": "stand",
+        "x": 560,
+        "y": 770,
+        "h": 120
+      },
+      {
+        "kind": "stand",
+        "x": 960,
+        "y": 790,
+        "h": 122
+      },
+      {
+        "kind": "stand",
+        "x": 1250,
+        "y": 800,
+        "h": 124
+      }
+    ]
+  },
+  "gauntlet-bell": {
+    "_doc": "The gauntlet: the bell. A close-up the daily cuts to (art job E06).",
+    "from": "E06-gauntlet-course/Finish Bell on Crooked Timber-5.png",
+    "spot": "gauntlet-bell",
+    "night": "auto",
+    "horizon": 0.38,
+    "wind": 0.5,
+    "noleaf": true,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 620,
+        "y": 735,
+        "h": 118,
+        "group": "run"
+      },
+      {
+        "kind": "stand",
+        "x": 1080,
+        "y": 765,
+        "h": 120
+      },
+      {
+        "kind": "stand",
+        "x": 320,
+        "y": 790,
+        "h": 124
+      },
+      {
+        "kind": "stand",
+        "x": 1400,
+        "y": 780,
+        "h": 122
+      },
+      {
+        "kind": "gong",
+        "x": 700,
+        "y": 330
+      }
+    ]
   }
 }

@@ -126,7 +126,7 @@ const PLAYS = {
         tally: tally(g, 'BUOYS REACHED', u => ({ txt: `${reached(u, .7)}/6`, v: reached(u, .7) / 6 })) },
       { dir: `${unitName(g.back)} ${g.back.length > 1 ? 'turn' : 'turns'} back with only ${Math.max(2, reached(g.back, .7))} numbers.`, focus: g.back.slice(0, 2), act: { [first(g.back)]: 'slump' }, props: buoys(true),
         tally: tally(g, 'BUOYS REACHED', u => ({ txt: `${reached(u, .9)}/6`, v: reached(u, .9) / 6 }), { names: g.back }) },
-      { dir: `${unitName(x)} ${x.length > 1 ? 'run' : 'runs'} up the beach and ${x.length > 1 ? 'write' : 'writes'} ${wrong} on the board. That's wrong. Back out to check.`, focus: x.slice(0, 2), act: { [first(x)]: 'flinch' },
+      { dir: `${unitName(x)} ${x.length > 1 ? 'run' : 'runs'} up the beach and ${x.length > 1 ? 'write' : 'writes'} ${wrong} on the board. That's wrong. Back out to check.`, focus: x.slice(0, 2), act: { [first(x)]: 'flinch' }, cut: { plate: 'board', who: x.slice(0, 2) },
         move: { [first(x)]: spotAt(g.key, .72, .7, .8) }, pose: { [first(x)]: 'swim' },
         props: [...buoys(true), { k: 'board', ...boardAt, title: 'TOTALS', rows: [{ n: first(x), t: wrong, ok: false }] }] },
     ], finish: {
@@ -150,7 +150,7 @@ const PLAYS = {
         tally: tally(g, 'TOKEN TOTAL', u => ({ txt: String(tot(u, .6)), v: tot(u, .6) / top })) },
       { dir: `${unitName(x)} ${x.length > 1 ? 'bring' : 'brings'} back a token from the wrong buoy. It's worth nothing.`, focus: x.slice(0, 2), act: { [first(x)]: 'slump' }, props: buoys,
         tally: tally(g, 'TOKEN TOTAL', u => ({ txt: String(tot(u, .8)), v: tot(u, .8) / top }), { names: x, mark: { [first(x)]: 'x' } }) },
-      { dir: 'The horn goes. Time is up, and everybody swims in.', move: bandMove(g, all(g), { u0: .2, u1: .95, v0: .76, v1: .79, k: .9 }), pose: pose(all(g), null), props: buoys, focus: [],
+      { dir: 'The horn goes. Time is up, and everybody swims in.', cut: { plate: 'board', who: g.units.slice(0, 5).map(first) }, move: bandMove(g, all(g), { u0: .2, u1: .95, v0: .76, v1: .79, k: .9 }), pose: pose(all(g), null), props: buoys, focus: [],
         tally: tally(g, 'TOKEN TOTAL', u => ({ txt: String(tot(u, 1)), v: tot(u, 1) / top })) },
     ], finish: { props: buoys, tally: tally(g, 'TOKEN TOTAL', u => ({ txt: String(tot(u, 1)), v: tot(u, 1) / top, win: g.isWin(u) })) } };
   },
@@ -166,7 +166,7 @@ const PLAYS = {
     return { steps: [
       { dir: 'A rope ladder hangs down the cliff face, with a flag clipped every ten metres. The first climbers start up.', focus: climbers.slice(0, 1), props: flagRow,
         move: Object.fromEntries(climbers.map((n, i) => [n, spotAt(g.key, L.u, .62 - i * .14, .55)])), pose: pose(climbers, 'climb') },
-      { dir: `${first(g.lead)} unclips a flag at the top, steps to the edge and jumps.`, focus: [first(g.lead)], props: flagRow.slice(1),
+      { dir: `${first(g.lead)} unclips a flag at the top, steps to the edge and jumps.`, focus: [first(g.lead)], props: flagRow.slice(1), cut: { plate: 'cliff-top', who: [first(g.lead)] },
         move: { [first(g.lead)]: spotAt(g.key, .7, .16, .6) }, pose: { [first(g.lead)]: null },
         tally: tally(g, 'FLAGS', u => ({ txt: String(at(u, .2)), v: at(u, .2) / 6 })) },
       { dir: `${first(g.lead)} hits the lagoon, swims back to the ladder and starts up again.`, focus: [first(g.lead)], drop: [first(g.lead)], splash: 1,
@@ -188,7 +188,7 @@ const PLAYS = {
     const pullers = (u, side) => Object.fromEntries(u.slice(0, 3).map((n, i) => [n, spotAt(g.key, (side ? .62 : .32) + i * .035, .47 - i * .012, .7)]));
     const heat = two ? 'Both sides' : `${unitName(A)} and ${unitName(B)} go in the last heat. Each side`;
     return { steps: [
-      { dir: `${heat} straps into the harnesses in front of a truck.`, focus: [first(A), first(B)], move: { ...pullers(A, 0), ...pullers(B, 1) }, pose: pose([...A.slice(0, 3), ...B.slice(0, 3)], 'pull') },
+      { dir: `${heat} straps into the harnesses in front of a truck.`, focus: [first(A), first(B)], cut: { plate: 'truck-pull', who: A.slice(0, 3), group: 'pull' }, move: { ...pullers(A, 0), ...pullers(B, 1) }, pose: pose([...A.slice(0, 3), ...B.slice(0, 3)], 'pull') },
       { dir: 'The trucks start to roll. Sand piles up under the wheels whenever they slow down.', focus: [], tally: tally(g, 'METRES DRAGGED', u => ({ txt: `${dist(u, .35)}m`, v: dist(u, .35) / 100 })) },
       { dir: `${unitName(g.back)} ${g.back.length > 1 ? 'stop' : 'stops'} for a rest, and getting the truck moving again takes everything.`, focus: g.back.slice(0, 2), act: { [first(g.back)]: 'slump' },
         tally: tally(g, 'METRES DRAGGED', u => ({ txt: `${dist(u, .7)}m`, v: dist(u, .7) / 100 }), { names: g.back }) },
@@ -231,7 +231,7 @@ const PLAYS = {
     const gate = spotAt(g.key, .49, .69, 1);
     return { steps: [
       { dir: 'Everybody runs into the maze. Somewhere inside there are five stations, each with one letter.', hide: all(g), move: Object.fromEntries(all(g).map(n => [n, gate])), focus: [] },
-      { dir: `${unitName(g.lead)} ${g.lead.length > 1 ? 'find' : 'finds'} the first station. It's a ${word[0]}.`, focus: [], props: [{ k: 'letter', u: .5, v: .4, ch: word[0] }],
+      { dir: `${unitName(g.lead)} ${g.lead.length > 1 ? 'find' : 'finds'} the first station. It's a ${word[0]}.`, focus: [], cut: { plate: 'maze-in', who: g.lead.slice(0, 2) }, props: [{ k: 'letter', u: .5, v: .4, ch: word[0] }],
         tally: tally(g, 'LETTERS', u => ({ txt: shown(u, .25), v: found(u, .25) / 5 })) },
       { dir: `${unitName(x)} ${x.length > 1 ? 'hit' : 'hits'} a dead end. Then another one.`, focus: [], tally: tally(g, 'LETTERS', u => ({ txt: shown(u, .6), v: found(u, .6) / 5 }), { names: x }) },
       { dir: `${unitName(y)} ${y.length > 1 ? 'come' : 'comes'} out of the maze and ${y.length > 1 ? 'shout' : 'shouts'} "${wrong}!" That's not the word. Back in for a letter they missed.`,
@@ -275,7 +275,7 @@ const PLAYS = {
     return { steps: [
       { dir: 'The first ones step onto the beam with full buckets. The tank waits on the far platform.', focus: [first(g.lead), first(y)],
         move: { [first(g.lead)]: spotAt(g.key, .32, .335, .9), [first(y)]: spotAt(g.key, .22, .335, .9) }, props: [...tanks(.05), { k: 'bucket', u: .33, v: .31 }, { k: 'bucket', u: .23, v: .31 }] },
-      { dir: `${first(x)} slips and goes into the pool. Back to the start with an empty bucket.`, focus: [first(x)], move: { [first(x)]: spotAt(g.key, .45, .4, .9) }, drop: [first(x)], splash: 1, props: tanks(.3),
+      { dir: `${first(x)} slips and goes into the pool. Back to the start with an empty bucket.`, focus: [first(x)], cut: { plate: 'beam-close', who: [first(x)], group: 'beam' }, move: { [first(x)]: spotAt(g.key, .45, .4, .9) }, drop: [first(x)], splash: 1, props: tanks(.3),
         tally: tally(g, 'TANK', u => ({ txt: `${Math.round(fill(u, .3) * 100)}%`, v: fill(u, .3) }), { names: x }) },
       { dir: 'The beam gets more slippery with every crossing. Most of them are crawling now.', focus: [], props: tanks(.6), tally: tally(g, 'TANK', u => ({ txt: `${Math.round(fill(u, .6) * 100)}%`, v: fill(u, .6) })) },
       { dir: `${first(g.lead)} pours in another bucket. That tank is nearly full.`, focus: [first(g.lead)], move: { [first(g.lead)]: spotAt(g.key, .86, .33, .9) }, props: tanks(.9),
@@ -293,9 +293,9 @@ const PLAYS = {
     const board = (done, mark = {}) => tally(g, 'TIMES', u => (done.includes(u) ? { txt: fmt(secs(u)), v: 1 - (secs(u) - 140) / 200 } : { txt: '–', v: 0 }), { mark });
     return { steps: [
       { dir: 'They run it one heat at a time: the tyres, the mud crawl under the rope, the wall, the sandbag carry, and the bell.', focus: [first(x)], move: run(first(x), 'tyres'), pose: { [first(x)]: 'run' }, props: [{ k: 'sandbag', u: .6, v: .73 }] },
-      { dir: `${first(x)} misses a tyre. That's a minute on the clock.`, focus: [first(x)], act: { [first(x)]: 'slump' }, move: run(first(x), 'mud'), board: 1, tally: board([x], { [first(x)]: 'x' }) },
-      { dir: `${first(y)} drops a sandbag halfway. It goes back to the pile, and so does ${first(y)}.`, focus: [first(y)], move: run(first(y), 'bags'), pose: { [first(y)]: 'run', [first(x)]: null }, act: { [first(y)]: 'flinch' }, tally: board([x, y]) },
-      { dir: `${first(g.lead)} goes over the wall clean and grabs the sandbags.`, focus: [first(g.lead)], move: run(first(g.lead), 'wall'), pose: { [first(g.lead)]: 'run', [first(y)]: null }, tally: board([x, y]) },
+      { dir: `${first(x)} misses a tyre. That's a minute on the clock.`, focus: [first(x)], cut: { plate: 'gauntlet-tyres', who: [first(x)], group: 'run' }, act: { [first(x)]: 'slump' }, move: run(first(x), 'mud'), board: 1, tally: board([x], { [first(x)]: 'x' }) },
+      { dir: `${first(y)} drops a sandbag halfway. It goes back to the pile, and so does ${first(y)}.`, focus: [first(y)], cut: { plate: 'gauntlet-bags', who: [first(y)], group: 'run' }, move: run(first(y), 'bags'), pose: { [first(y)]: 'run', [first(x)]: null }, act: { [first(y)]: 'flinch' }, tally: board([x, y]) },
+      { dir: `${first(g.lead)} goes over the wall clean and grabs the sandbags.`, focus: [first(g.lead)], cut: { plate: 'gauntlet-wall', who: [first(g.lead)], group: 'run' }, move: run(first(g.lead), 'wall'), pose: { [first(g.lead)]: 'run', [first(y)]: null }, tally: board([x, y]) },
     ], finish: { move: run(first(g.lead), 'bell'), pose: { [first(g.lead)]: null }, gong: 1, tally: tally(g, 'TIMES', u => ({ txt: fmt(secs(u)), v: 1 - (secs(u) - 140) / 200, win: g.isWin(u) })),
       dir: g.winners.length > 1
         ? `${first(g.lead)} rings the bell in ${fmt(secs(g.lead))}. ${g.winners.slice(1).map(u => `${first(u)}'s ${fmt(secs(u))}`).join(' and ')} is the best time in the other division.`

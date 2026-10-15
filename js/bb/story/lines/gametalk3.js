@@ -39,7 +39,7 @@ export default {
       { by: 'a', say: "...Yes." },
       { by: 'b', say: "Then don't tell anyone else. Let them think you were with them." },
       { by: 'a', say: "And just smile at {c} all day?" },
-      { by: 'b', say: "And just smile at {c} all day." },
+      { by: 'b', say: "Yes. Smile, and say nothing." },
       { by: 'b', dr: "{a} is on the outside this week. That changes all the time in here. The trick is not letting anyone see it." },
     ] },
     { id: 'go.o4', presumes: ['vote'], room: 'living-room', turns: [

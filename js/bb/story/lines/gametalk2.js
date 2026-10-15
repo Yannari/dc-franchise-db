@@ -189,7 +189,7 @@ export default {
       { by: 'b', say: "Do the three of them know who the real target is?" },
       { by: 'a', say: "I told each of them they're not." },
       { by: 'b', say: "All three?" },
-      { by: 'a', say: "All three." },
+      { by: 'a', say: "Every single one of them." },
       { by: 'b', say: "That's going to come out." },
       { by: 'a', say: "After Thursday it won't matter." },
       { by: 'b', dr: "{a} told three people they're safe. One of them is lying to themselves, and {a} is lying to all of them." },

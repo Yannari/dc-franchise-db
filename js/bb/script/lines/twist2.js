@@ -97,7 +97,7 @@ export default {
     { id: 'tq.f6', turns: [{ by: 'b', say: "You picked them, though." }, { by: 'a', say: "...I picked them." }] },
   ],
   'director.survivor.settled': [
-    { id: 'tq.s1', turns: [{ by: 'a', say: "You did what the job made you do. I ran fast enough. We're fine." }, { by: 'b', say: "Really?" }, { by: 'a', say: "Really." }] },
+    { id: 'tq.s1', turns: [{ by: 'a', say: "You did what the job made you do. I ran fast enough. We're fine." }, { by: 'b', say: "Really?" }, { by: 'a', say: "Really. We're fine." }] },
     { id: 'tq.s2', turns: [{ beat: '{a} sits next to {b} at breakfast, where everyone can see.' }, { by: 'a', dr: "That's settled. Everyone should know it." }] },
     { id: 'tq.s3', turns: [{ by: 'a', say: "If I'd won that vote, I'd have named four people too." }, { by: 'b', dr: "I could have hugged {a}." }] },
     { id: 'tq.s4', turns: [{ by: 'b', dr: "{a} told me we're fine. I breathed properly for the first time all day." }] },

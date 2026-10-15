@@ -82,7 +82,7 @@ export default {
     { id: 'hk12.k6', turns: [{ by: 'b', say: "You okay?" }, { by: 'a', say: "Fine. Why?" }, { by: 'b', say: "No reason." }] },
   ],
   'hack.table.scene': [
-    { id: 'hk12.r1', turns: [{ by: 'a', say: "Motive, opportunity, who was quiet at breakfast." }, { by: 'b', say: "{c}." }, { by: 'a', say: "{c}." }] },
+    { id: 'hk12.r1', turns: [{ by: 'a', say: "Motive, opportunity, who was quiet at breakfast." }, { by: 'b', say: "{c}." }, { by: 'a', say: "Yes. {c}. It has to be." }] },
     { id: 'hk12.r2', turns: [{ by: 'a', say: "The block changed. The draw changed. Who's been relaxed about both?" }, { by: 'b', say: "{c}." }] },
     { id: 'hk12.r3', turns: [{ by: 'b', say: "I'm not accusing anyone." }, { by: 'a', say: "But?" }, { by: 'b', say: "But it's {c}." }] },
     { id: 'hk12.r4', turns: [{ by: 'a', dr: "We put three theories together and got one answer. {c}. We don't have one fact." }] },

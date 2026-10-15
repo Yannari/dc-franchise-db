@@ -202,7 +202,7 @@ export default {
     ] },
     { id: 'ao.d2', turns: [
       { by: 'b', say: "Same page?" },
-      { by: 'a', say: "Same page." },
+      { by: 'a', say: "Same page. Nothing's changed." },
       { by: 'a', dr: "I've been in both groups since they started. Today I found out they want different things." },
     ] },
     { id: 'ao.d3', turns: [
@@ -513,7 +513,7 @@ export default {
     { id: 'af.f7', turns: [
       { by: 'b', say: "Hands in. For {alliance}." },
       { by: 'a', say: "We're doing hands in?" },
-      { by: 'b', say: "We're doing hands in." },
+      { by: 'b', say: "Yes, we're doing hands in. Come on." },
       { beat: 'Hands go in. Somebody whispers "{alliance}", far too loudly.' },
     ] },
     { id: 'af.f8', when: { early: true }, turns: [
@@ -777,7 +777,7 @@ export default {
       { by: 'a', say: "So what happens now?" },
       { by: 'b', say: "Now you tell us everything you hear. And we do the same." },
       { by: 'a', say: "Everything?" },
-      { by: 'b', say: "Everything." },
+      { by: 'b', say: "Every conversation. Every name." },
     ] },
     { id: 'ar.j8', turns: [
       { by: 'a', dr: "Being asked to join feels amazing. Then I started wondering who they asked before me." },

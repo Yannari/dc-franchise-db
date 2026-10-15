@@ -32,7 +32,7 @@ export default {
     { id: 'rt.6', turns: [{ by: 'b', say: "Why are you testing us?" }, { by: 'a', say: "I'm not testing you." }, { by: 'b', say: "It feels like a test." }] },
   ],
   'reign.decides.scene': [
-    { id: 'rd.1', turns: [{ by: 'a', say: "Who would you put up?" }, { by: 'b', say: "Honestly?" }, { by: 'a', say: "Honestly." }, { by: 'b', dr: "{a} asked me for names. I gave two. I think I just made the nominations." }] },
+    { id: 'rd.1', turns: [{ by: 'a', say: "Who would you put up?" }, { by: 'b', say: "Honestly?" }, { by: 'a', say: "Yes. Honestly." }, { by: 'b', dr: "{a} asked me for names. I gave two. I think I just made the nominations." }] },
     { id: 'rd.2', turns: [{ by: 'a', say: "I don't want to make enemies." }, { by: 'b', say: "Then pick people nobody will fight for." }, { by: 'a', say: "Who's that?" }] },
     { id: 'rd.3', turns: [{ by: 'b', dr: "{a} has asked everyone for nomination names. Whatever names come up most, that's what {a} will do." }] },
     { id: 'rd.4', turns: [{ by: 'a', dr: "Every name I think of, someone in this house will be upset. I just want the least upset." }] },
@@ -69,7 +69,7 @@ export default {
       { by: 'b', say: "Fine by me." },
       { by: 'a', say: "That was easy." },
       { by: 'b', say: "Maybe too easy. Let's not tell anyone yet." }] },
-    { id: 'rc.a2', turns: [{ by: 'b', say: "If your nominees win the Battle of the Block, you lose your HOH and I keep mine. You know that." }, { by: 'a', say: "I know." }, { by: 'b', say: "Still want to do this?" }, { by: 'a', say: "Still want to do this." }] },
+    { id: 'rc.a2', turns: [{ by: 'b', say: "If your nominees win the Battle of the Block, you lose your HOH and I keep mine. You know that." }, { by: 'a', say: "I know." }, { by: 'b', say: "Still want to do this?" }, { by: 'a', say: "Yes. I still want to." }] },
     { id: 'rc.a3', turns: [{ by: 'a', dr: "{b} and I sat down and split the house between us. It took four minutes." }] },
     { id: 'rc.a4', turns: [{ by: 'b', dr: "Two HOHs, one plan. {a} and I agreed on everything. That never happens in here." }] },
     { id: 'rc.a5', turns: [{ by: 'b', say: "Who are you putting up?" }, { by: 'a', say: "{target}, for a start." }, { by: 'b', say: "Then I'll pick around that." }] },

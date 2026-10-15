@@ -462,7 +462,7 @@ export default {
       { by: 'b', say: "...Oh. Oh no. Who?" },
       { by: 'a', say: "Who's been in my room every single night this week, telling me how loyal they are?" },
       { by: 'b', say: "{target}." },
-      { by: 'a', say: "{target}." },
+      { by: 'a', say: "Exactly. {target}." },
       { by: 'b', dr: "That's the scariest thing I've heard in this house. Mostly because I've also been in that room every night this week." },
     ] },
     { id: 'td.4', presumes: ['hoh'], turns: [

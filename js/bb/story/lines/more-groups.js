@@ -42,7 +42,7 @@ export default {
       { by: 'c', say: "Whispering about what?" },
       { by: 'a', say: "Couldn't hear. But {target} looked over here twice." },
       { by: 'b', say: "At us?" },
-      { by: 'a', say: "At us." },
+      { by: 'a', say: "Right at us. Twice." },
       { beat: 'The shower turns off. All three of them start talking about the weather.' },
       { by: 'b', dr: "Three people talking about the weather, very loudly, at the exact second a shower stops. Subtle." },
     ] },

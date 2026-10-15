@@ -362,7 +362,7 @@ export default {
     { id: 'tg2.2', turns: [
       { by: 'b', say: "Who do you think's running this house right now?" },
       { by: 'a', say: "Honestly?" },
-      { by: 'b', say: "Honestly." },
+      { by: 'b', say: "Yes. Honestly." },
       { by: 'a', say: "{target}. Quietly. Nobody sees it." },
       { by: 'b', say: "{target}? Really?" },
       { by: 'a', say: "Every plan this week ended up exactly where {target} wanted. Every one." },

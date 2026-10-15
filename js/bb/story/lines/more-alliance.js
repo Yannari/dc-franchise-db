@@ -16,7 +16,7 @@ export default {
       { by: 'a', say: "That's not weird. That's everyone's nightmare." },
       { by: 'b', say: "So… I was thinking, maybe, you and me. To the end." },
       { by: 'a', say: "Like a final two?" },
-      { by: 'b', say: "Like a final two." },
+      { by: 'b', say: "Yeah. Exactly that." },
       { by: 'a', say: "Are you asking me out? Game-wise?" },
       { by: 'b', say: "Game-wise, yes. Don't make it weird." },
       { by: 'a', say: "...Yes. Okay. Final two." },
@@ -170,7 +170,7 @@ export default {
     { id: 'af3.f11', deal: 'Final Two', turns: [
       { by: 'b', say: "If it comes down to it, who are you taking to the end?" },
       { by: 'a', say: "Honestly?" },
-      { by: 'b', say: "Honestly." },
+      { by: 'b', say: "Yes. Honestly." },
       { by: 'a', say: "Someone I could beat. Like everybody says." },
       { by: 'b', say: "Oh." },
       { by: 'a', say: "And then I think about who I'd actually want to sit next to. And that's you. So I'm ignoring my own advice." },

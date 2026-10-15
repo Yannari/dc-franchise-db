@@ -258,7 +258,7 @@ export default {
       { by: 'b', say: "Celebrating?" },
       { by: 'a', say: "Quietly. {c} would have put me up the second {c.sub} won anything." },
       { by: 'b', say: "And now {c} can't." },
-      { by: 'a', say: "And now {c} can't." },
+      { by: 'a', say: "Exactly. That's the whole point." },
       { by: 'b', say: "Who's next, then?" },
       { by: 'a', say: "Ask me when I've got another key." },
       { by: 'a', dr: "I removed the person most likely to come after me. That's what you do with an HOH. Whatever happens next, I used it." },

@@ -430,7 +430,7 @@ export default {
     { id: 'ts.l7', turns: [
       { by: 'a', say: "Deal. One week each way." },
       { by: 'b', say: "Shake on it?" },
-      { by: 'a', say: "Shake on it." },
+      { by: 'a', say: "Deal." },
       { by: 'a', dr: "Shaking hands costs me nothing. I can still put {b} up." },
     ] },
   ],
@@ -640,7 +640,7 @@ export default {
     ] },
     { id: 'tr.s14', turns: [
       { by: 'a', say: "Same plan as yesterday?" },
-      { by: 'b', say: "Same plan as yesterday." },
+      { by: 'b', say: "Same plan. Nothing's changed." },
       { by: 'a', say: "Good. I love a boring plan." },
     ] },
     { id: 'tr.s15', turns: [

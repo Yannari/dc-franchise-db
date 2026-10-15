@@ -455,7 +455,7 @@ export default {
       { by: 'b', say: "How many more evictions before jury?" },
       { by: 'a', say: "Not many. We can survive not many." },
       { by: 'b', say: "Together?" },
-      { by: 'a', say: "Together." },
+      { by: 'a', say: "Together. That's the whole plan." },
     ] },
     { id: 'dp.m4', turns: [
       { by: 'a', say: "Whatever else happens, neither of us writes the other's name down before jury." },
@@ -469,7 +469,7 @@ export default {
       { by: 'b', say: "I'd hate to go home just before jury." },
       { by: 'a', say: "So would I. So let's make sure neither of us does." },
       { by: 'b', say: "Shake on it?" },
-      { by: 'a', say: "Shake on it." },
+      { by: 'a', say: "Deal." },
     ] },
   ],
 

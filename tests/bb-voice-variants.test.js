@@ -68,6 +68,19 @@ describe('no sitcom ping-pong', () => {
     expect(left.length, left.slice(0, 20).map(([k, e]) => `${k} ${e.id}`).join('\n')).toBeLessThanOrEqual(CEILING);
   });
 
+  // A reply that says the line before it back, word for word ("Honestly?" / "Honestly.", "Shake on it?" / "Shake
+  // on it.", "And {c} is still here." twice). Greetings, a room answering in chorus and the echoes a scene remarks
+  // on stay: 39 on 2026-10-15, after the rest were rewritten. A ratchet, like the one above.
+  const ECHOES = 39;
+  it(`at most ${ECHOES} replies say the line before them back`, () => {
+    const norm = t => String(t || '').toLowerCase().replace(/[^a-z' ]/g, '').trim();
+    const echo = entries().filter(([, e]) => {
+      const says = (e.turns || []).filter(t => t.say);
+      return says.some((t, i) => i && norm(t.say) && norm(t.say) === norm(says[i - 1].say) && t.by !== says[i - 1].by);
+    });
+    expect(echo.length, echo.slice(0, 20).map(([k, e]) => `${k} ${e.id}`).join('\n')).toBeLessThanOrEqual(ECHOES);
+  });
+
   it('the scene the user quoted is gone', () => {
     const all = JSON.stringify(ALL);
     expect(all).not.toMatch(/fell off the thing/);

@@ -313,7 +313,7 @@ export default {
       { by: 'b', say: "Funny, I was going to say the exact same thing!" },
       { beat: 'They both reach for the same mug. Neither lets go.' },
       { by: 'a', say: "Seriously?" },
-      { by: 'b', say: "Seriously." },
+      { by: 'b', say: "Yes, seriously." },
       { beat: '{a} lets go. {b} pours coffee into it, slowly, and walks out.' },
       { by: 'a', dr: "That was my mug. Everybody knows that's my mug. That was a declaration of war with a mug." },
     ] },
@@ -511,7 +511,7 @@ export default {
     { id: 'sp.r5', room: 'living-room', turns: [
       { beat: '{a} sits down next to {b} on the sofa. {b} moves along to the end.' },
       { by: 'a', say: "Really?" },
-      { by: 'b', say: "Really." },
+      { by: 'b', say: "Yes. Really." },
       { by: 'a', say: "I came to say sorry." },
       { by: 'b', say: "I know. I can tell. You've got your sorry face on." },
       { by: 'a', say: "I don't have a sorry face." },

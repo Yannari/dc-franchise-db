@@ -130,7 +130,7 @@ export default {
     { id: 'lc.b4', turns: [
       { beat: 'The same dirty pan is back in the sink. {a} puts it, still dirty, on {b}\'s pillow.' },
       { by: 'b', say: "Really?" },
-      { by: 'a', say: "Really." },
+      { by: 'a', say: "Yes, really." },
     ] },
     { id: 'lc.b5', turns: [
       { by: 'a', say: "Do you know how many times I've cleaned that counter today?" },

@@ -39,7 +39,7 @@ export default {
       { by: 'b', say: "Since when?" },
       { by: 'a', say: "Since the rota. On the fridge. Which I made." },
       { by: 'b', say: "There's a rota?" },
-      { by: 'a', say: "There's a rota." },
+      { by: 'a', say: "Yes. It's been on the fridge the whole time." },
       { by: 'a', dr: "Nobody reads the rota. That's fine. The rota is patient." },
     ] },
   ],

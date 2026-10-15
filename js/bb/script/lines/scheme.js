@@ -89,7 +89,7 @@ export default {
     { id: 'sl.w3', turns: [{ by: 'b', dr: "{a} came straight to me about what {source} said. That's the kind of person I want on my side." }] },
     { id: 'sl.w4', turns: [{ by: 'a', say: "Don't react yet. {source} is spreading stories about you." }, { by: 'b', say: "Then I'll wait and see who repeats them." }] },
     { id: 'sl.w5', turns: [{ by: 'a', dr: "{source} tried to turn me against {b}. I went and told {b} instead." }] },
-    { id: 'sl.w6', turns: [{ by: 'b', say: "What exactly did {source} say?" }, { by: 'a', say: "Word for word?" }, { by: 'b', say: "Word for word." }] },
+    { id: 'sl.w6', turns: [{ by: 'b', say: "What exactly did {source} say?" }, { by: 'a', say: "Word for word?" }, { by: 'b', say: "Yes. Exactly what {source} said." }] },
   ],
   'scheme.comfort.aware': [
     { id: 'sc.1', turns: [{ by: 'a', say: "Are you okay?" }, { by: 'b', say: "Not really." }, { by: 'a', say: "Tell me what happened. From the start." }] },

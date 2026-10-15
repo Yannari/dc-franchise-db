@@ -471,7 +471,7 @@ export default {
       { beat: 'Backyard. {a} is pacing by the pool. {b} is trying to keep up.' },
       { by: 'a', say: "I put {c} up. I did everything right." },
       { by: 'b', say: "And {c} is still here." },
-      { by: 'a', say: "And {c} is still here." },
+      { by: 'a', say: "I know. I don't understand how." },
       { by: 'b', say: "You know what that makes you, right?" },
       { by: 'a', say: "A target. Yeah. I know." },
       { by: 'a', dr: "A failed HOH is the worst thing in this game. You make an enemy, you don't get rid of them, and then you have no power left. That's my week." },

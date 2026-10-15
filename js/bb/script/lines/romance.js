@@ -159,7 +159,7 @@ export default {
   ],
   'romance.triangleUltimatum.scene': [
     { id: 'wo.1', turns: [{ by: 'a', say: "I can't keep doing this to both of you." }, { beat: '{b} and {c} look at each other.' }] },
-    { id: 'wo.2', turns: [{ by: 'a', say: "It's you. It's been you for a while." }, { by: 'b', say: "Really?" }, { by: 'a', say: "Really." }, { beat: '{a} goes to find {c}. That conversation takes much longer.' }] },
+    { id: 'wo.2', turns: [{ by: 'a', say: "It's you. It's been you for a while." }, { by: 'b', say: "Really?" }, { by: 'a', say: "Really. I mean it." }, { beat: '{a} goes to find {c}. That conversation takes much longer.' }] },
     { id: 'wo.3', turns: [{ by: 'a', say: "I've made up my mind." }, { beat: '{a} says it to both of them at once.' }, { by: 'c', dr: "Brave or cruel. I haven't decided which." }] },
     { id: 'wo.4', turns: [{ by: 'b', dr: "{a} chose me. I feel happy and terrible at the same time." }] },
     { id: 'wo.5', turns: [{ by: 'c', dr: "{a} chose {b}. I went outside and stayed there most of the night." }] },
@@ -186,7 +186,7 @@ export default {
     { id: 'wp.c2', turns: [{ by: 'c', say: "Game respects game." }, { beat: '{c} goes off to have a very different conversation with someone else.' }] },
     { id: 'wp.c3', turns: [{ beat: '{c} shakes {a}\'s hand.' }, { by: 'a', dr: "That was the most strategic handshake I've ever had." }] },
     { id: 'wp.c4', turns: [{ by: 'c', dr: "{a} chose {b}. Okay. Now I'm free to play." }] },
-    { id: 'wp.c5', turns: [{ by: 'c', say: "No hard feelings." }, { by: 'a', say: "Really?" }, { by: 'c', say: "Really." }, { by: 'c', dr: "I said no hard feelings. Honestly, I'm hurt. I'm just not going to let anybody in this house see it." }] },
+    { id: 'wp.c5', turns: [{ by: 'c', say: "No hard feelings." }, { by: 'a', say: "Really?" }, { by: 'c', say: "Really. It's fine." }, { by: 'c', dr: "I said no hard feelings. Honestly, I'm hurt. I'm just not going to let anybody in this house see it." }] },
     { id: 'wp.c6', turns: [{ by: 'c', dr: "Feelings later. Votes now." }] },
   ],
   'romance.triangleResolved.hurt': [

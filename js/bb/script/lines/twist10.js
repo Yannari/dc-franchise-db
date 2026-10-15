@@ -65,7 +65,7 @@ export default {
     { id: 'sp10.o6', turns: [{ by: 'b', dr: "{a} and I aren't friends. It works like we are, for now." }] },
     { id: 'sp10.o7', turns: [{ by: 'b', say: "I didn't think you liked me." }, { by: 'a', say: "I don't know you. That's different." }] },
     { id: 'sp10.o8', turns: [{ by: 'a', dr: "With half the house gone, I need numbers. {b} is a number." }] },
-    { id: 'sp10.o9', turns: [{ by: 'a', say: "Truce for the week?" }, { by: 'b', say: "Truce for the week." }] },
+    { id: 'sp10.o9', turns: [{ by: 'a', say: "Truce for the week?" }, { by: 'b', say: "Fine. One week." }] },
     { id: 'sp10.o10', turns: [{ by: 'b', dr: "{a} came to me because there was nobody else. I'll take it. I'd have done the same." }] },
   ],
   'split.reunion.scene': [
@@ -81,7 +81,7 @@ export default {
     { id: 'sp10.n2', turns: [{ by: 'b', dr: "Everything I told {a} was true. I just told it in the right order." }] },
     { id: 'sp10.n3', turns: [{ by: 'a', say: "And then what?" }, { by: 'b', say: "You had to be there." }, { by: 'a', dr: "{b} keeps saying that." }] },
     { id: 'sp10.n4', turns: [{ by: 'a', dr: "{b} told me everything about the other side. It all made sense. I believe it." }] },
-    { id: 'sp10.n5', turns: [{ by: 'b', say: "It was all very boring, honestly." }, { by: 'a', say: "Really?" }, { by: 'b', say: "Really." }] },
+    { id: 'sp10.n5', turns: [{ by: 'b', say: "It was all very boring, honestly." }, { by: 'a', say: "Really?" }, { by: 'b', say: "Really. Nothing happened." }] },
     { id: 'sp10.n6', turns: [{ by: 'b', dr: "{a} asked about last week. I gave {a} the official version." }] },
   ],
   'split.compare.caught': [

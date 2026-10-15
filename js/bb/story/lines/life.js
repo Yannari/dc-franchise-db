@@ -288,7 +288,7 @@ export default {
     { id: 'll.1', room: 'kitchen', turns: [
       { beat: 'Kitchen, past midnight. {a} is eating cereal in the dark. {b} wanders in.' },
       { by: 'b', say: "Can't sleep?" },
-      { by: 'a', say: "Can't sleep." },
+      { by: 'a', say: "No. Not a chance." },
       { by: 'b', say: "Same." },
       { beat: '{b} gets a bowl. They eat in silence for a minute.' },
       { by: 'b', say: "Do you ever forget what normal life feels like?" },

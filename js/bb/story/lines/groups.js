@@ -47,7 +47,7 @@ export default {
       { by: 'c', say: "Because you're the only normal people in here." },
       { by: 'a', say: "Exactly. So everyone else has already decided we're a group. They're going to treat us like one." },
       { by: 'b', say: "So we might as well be one." },
-      { by: 'a', say: "So we might as well be one." },
+      { by: 'a', say: "Exactly. So let's make it real." },
       { by: 'c', say: "Is this you recruiting us? In the kitchen? While I'm holding a spoon?" },
       { by: 'a', say: "Yes." },
       { by: 'c', say: "...Fine. Yes. Spoon and all." },

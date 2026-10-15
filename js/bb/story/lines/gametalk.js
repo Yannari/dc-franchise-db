@@ -291,7 +291,7 @@ export default {
       { beat: 'Kitchen, late night. {a} and {b} are sharing a bag of crisps on the floor.' },
       { by: 'b', say: "If we make the end together, who wins?" },
       { by: 'a', say: "Honestly?" },
-      { by: 'b', say: "Honestly." },
+      { by: 'b', say: "Yes. Honestly." },
       { by: 'a', say: "Depends who's on the jury. Right now? Probably you." },
       { by: 'b', say: "Why me?" },
       { by: 'a', say: "Because I've been the one doing the dirty work." },

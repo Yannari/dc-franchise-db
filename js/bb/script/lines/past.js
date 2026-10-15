@@ -74,7 +74,7 @@ export default {
     { id: 'ph.n3', turns: [{ by: 'b', say: "It's not personal." }, { by: 'a', say: "It was personal last time too." }] },
     { id: 'ph.n4', turns: [{ by: 'a', dr: "That's the second time {b} has put me in this chair. There won't be a third." }] },
     { id: 'ph.n5', turns: [{ by: 'b', dr: "I've done this to {a} before. I'm doing it again. I can live with that." }] },
-    { id: 'ph.n6', turns: [{ by: 'a', say: "Again?" }, { by: 'b', say: "Again." }] },
+    { id: 'ph.n6', turns: [{ by: 'a', say: "Again?" }, { by: 'b', say: "Yes. Again." }] },
   ],
   'past.nominated.revenge': [
     { id: 'ph.v1', turns: [{ by: 'b', dr: "{a} did this to me in {when}. I've had a long time to think about doing it back." }] },

@@ -66,7 +66,7 @@ export default {
   ],
   'returned.morning.gracious': [
     { id: 'tr3.g1', turns: [{ beat: '{a} makes coffee for the people who voted {a.obj} out, and hands the first cup to {b}.' }, { by: 'a', say: "Relax. If I held grudges, I'd have unpacked angrier." }] },
-    { id: 'tr3.g2', turns: [{ by: 'a', say: "Clean slate." }, { by: 'b', say: "Really?" }, { by: 'a', say: "Really." }, { by: 'b', dr: "{a} means it. I think. I'm still watching." }] },
+    { id: 'tr3.g2', turns: [{ by: 'a', say: "Clean slate." }, { by: 'b', say: "Really?" }, { by: 'a', say: "Really. A clean slate." }, { by: 'b', dr: "{a} means it. I think. I'm still watching." }] },
     { id: 'tr3.g3', turns: [{ by: 'a', dr: "I told the story of my eviction like it happened to someone else. Everyone laughed. Everyone's still watching me." }] },
     { id: 'tr3.g4', turns: [{ by: 'a', say: "Morning, {b}! Sleep well?" }, { by: 'b', say: "...Yes." }, { by: 'a', say: "Good." }] },
     { id: 'tr3.g5', turns: [{ by: 'b', dr: "{a} came back being so nice. Nobody is relaxing." }] },

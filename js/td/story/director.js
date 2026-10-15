@@ -39,7 +39,7 @@ import { lastTribalOf, challengeOf, lossStreak, bootsBefore, dayOf } from './rec
 import { numberWord } from '../script/write.js';
 import { registerOf, factsFor } from '../script/facts.js';
 import { writeTribal, multiTribalView, firstVoteView, secondVoteView, isTwoVoteNight, whyOf as ballotWhy, writeCrashReplies, writeExit } from './tribal.js';
-import { relationalReason } from '../../alliances.js';
+import { relationalReason, nameNewAlliance } from '../../alliances.js';
 import { dressConfessionals } from './captions.js';
 import { writeTwistStory, writeExile, writeFirstImpressions, writeAuctionScript } from './twist.js';
 import { needOf, psycheCast } from './psyche.js';
@@ -2413,11 +2413,34 @@ export function airTdEpisode(ep) {
             if (nt) { for (const l of nt.lines) l.watchNote = true; spentToo.push(nt.lines); lines = [...lines, ...nt.lines]; watched.push(sharp); }
           }
         }
-        return spentToo.reduce((it, x) => adopt(it, x), adopt(adopt({ story: true, kind: pool, storyType: line?.type || 'cut', step: step?.step || 'cut', ...(line ? { storyline: line.id } : { cut: true }), ref: i, type: ev.type,
+        // A group strategy talk among people who share no alliance is the alliance forming (the user, 2026-10-14, over four
+        // people promising "no side deals": "why this doesnt create an alliance?"; measured, every one of the seven group
+        // talks in three seasons had no alliance behind it). It is named on screen, and it is one from the next vote. The
+        // name is drawn from the story's own hash, never the season's dice.
+        let formAl = null;
+        if (/^talk\.(plan|checkin|game)/.test(kind)) {
+          const crew = [...new Set(Object.values(castOnly(who, w)).filter(Boolean))];
+          if (crew.length >= 3 && !(gs.namedAlliances || []).some(al => al.active !== false && crew.every(m => (al.members || []).includes(m)))) {
+            let h = 2166136261; for (const ch of `${ep.num}|${[...crew].sort().join('|')}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+            const name = nameNewAlliance(crew.length, () => (h >>> 0) / 4294967296);
+            const NAME_IT = [`Then it's official. If we're doing this, we need a name. ${name}.`, `If we're doing this, we're doing it properly. We're ${name} now.`, `Okay. From now on, we're ${name}. Nobody says that outside this group.`];
+            // (somebody other than whoever just spoke: "Ren: ...becomes the next name." / "Ren: Then it's official.")
+            const spoke = lines.slice(0, tailAt).filter(l => l.kind === 'say' && l.by).map(l => l.by);
+            const namer = crew.find(m => m !== spoke[spoke.length - 1] && spoke.includes(m)) || who.a;
+            insert([{ kind: 'say', by: namer, text: NAME_IT[(h >>> 3) % NAME_IT.length] }]);
+            formAl = () => {
+              if ((gs.namedAlliances || []).some(al => al.name === name || (al.active !== false && crew.every(m => (al.members || []).includes(m))))) return;
+              (gs.namedAlliances ||= []).push({ id: `alliance_story_${ep.num}_${h >>> 0}`, name, members: [...crew], formed: ep.num, betrayals: [], active: true, origin: 'story' });
+            };
+          }
+        }
+        const made = spentToo.reduce((it, x) => adopt(it, x), adopt(adopt({ story: true, kind: pool, storyType: line?.type || 'cut', step: step?.step || 'cut', ...(line ? { storyline: line.id } : { cut: true }), ref: i, type: ev.type,
           players: [...new Set([...Object.values(who).filter(Boolean), ...(ev.players || []), ...watched])],
           lines, text: lines.map(l => l.text).join(' '), lineId: w.lineId, ...(hushed ? { hushed: true } : {}), scene: { kind, who: castOnly(who, w), data, spot: w.spot ? { window: ev.scene?.spot?.window || ev.access?.windowId || null, ...w.spot } : (ev.scene?.spot || null) }, access: ev.access || null,
           alliance: ev.alliance, members: ev.members, advType: ev.advType, badgeText: ev.badgeText || '', badgeClass: ev.badgeClass || '',
           why: whyOf(kind, ending, line ? `${line.type}.${step.step}` : '', who, data, facts), bondDelta: ev.bondDelta || null, ...(w.fx?.length ? { fx: w.fx } : {}) }, w), w.lines));
+        if (formAl) onCommit(made, formAl);
+        return made;
       };
       for (const f of chosen) {
         const { ev, i, line, step } = f;

@@ -1589,7 +1589,8 @@ export function pickTarget(attackers, victims, challengeLabel) {
   });
 }
 
-export function nameNewAlliance(size) {
+// (rand: a caller that must not move the season's dice passes its own, td/story/director.js)
+export function nameNewAlliance(size, rand = Math.random) {
   const namesBySize = {
     2: [
       'The Pact', 'The Deal', 'The Bond', 'The Handshake', 'The Oath',
@@ -1643,6 +1644,6 @@ export function nameNewAlliance(size) {
   const pool = [...(namesBySize[size] || []), ...general];
   const used = new Set((gs.namedAlliances || []).map(a => a.name));
   const available = pool.filter(n => !used.has(n));
-  return available[Math.floor(Math.random() * available.length)] || `Alliance ${(gs.namedAlliances?.length || 0) + 1}`;
+  return available[Math.floor(rand() * available.length)] || `Alliance ${(gs.namedAlliances?.length || 0) + 1}`;
 }
 

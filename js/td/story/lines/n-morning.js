@@ -87,7 +87,7 @@ export default {
       { by: 'c', say: "Wow." },
       { by: 'a', conf: "You don't make jokes like that unless the vote went exactly how you wanted it to." },
     ] },
-    { id: 'nm.b7', place: 'eat', when: { merged: true }, turns: [
+    { id: 'nm.b7', place: 'eat', when: { merged: true, bPlayed: false }, turns: [
       { beat: "Breakfast {here}. People are eating in little groups. Nobody's sitting with {a}." },
       { by: 'a', say: "Wow, okay, so that's how it is now." },
       { by: 'c', say: "It's not like anything. Sit down." },

@@ -744,7 +744,9 @@ export function detectBetrayals(ep) {
     // ── who actually deviated this round (drives lone-vs-bloc detection + who can read it) ──
     const _deviators = voters.filter(v => {
       const e = ep.votingLog.find(l => l.voter === v);
-      if (!e || e.voted === consensusVote) return false;
+      // (a stolen ballot was never cast: nobody reads it, and nobody is "caught" for it; read 2026-10-14, Anastasia "We need
+      // to talk about how you voted" to Diego, whose vote she had taken)
+      if (!e || e.voteStolen || e.voted === consensusVote) return false;
       const sp = (ep.splitVotePlans || []).find(s => s.alliance === alliance.name);
       if (sp && e.voted === sp.secondary && sp.secondaryVoters.includes(v)) return false;
       const cp = (ep.coverPlans || []).find(c => c.alliance === alliance.name);
@@ -764,7 +766,7 @@ export function detectBetrayals(ep) {
 
     voters.forEach(voter => {
       const entry = ep.votingLog.find(l => l.voter === voter);
-      if (!entry || entry.voted === consensusVote) return;
+      if (!entry || entry.voteStolen || entry.voted === consensusVote) return;
       // Split vote exemption: if voter was assigned to vote the split target, that's the plan, not betrayal
       const _splitPlan = (ep.splitVotePlans || []).find(sp => sp.alliance === alliance.name);
       if (_splitPlan && entry.voted === _splitPlan.secondary && _splitPlan.secondaryVoters.includes(voter)) return;

@@ -171,7 +171,12 @@ export function writePreviously(ep) {
       'alliance:exposed': [`Somebody overheard ${a} making a deal, and suddenly everybody knew about ${g || 'it'}.`, `${a}'s secret deal got out. Oops.`, `${g || `${a}'s alliance`} got exposed, in public, at the worst possible time.`],
       'alliance:crack': [`${g ? `Cracks started showing in ${g}` : `${a} and ${b}'s alliance started to wobble`}, and ${a} was the first to say it out loud.`, `${a} started doubting ${g || b}. Out loud. To the wrong people.`, `${g || 'The alliance'} was supposed to be rock solid, but ${a} wasn't so sure anymore.`],
       'alliance:formed': [`A brand-new alliance was born${g ? `, and they call themselves ${g}` : ` between ${a} and ${b}`}. Adorable.`, `${a} and ${b} shook on a deal${g ? ` and called it ${g}` : ''}. We'll see how long that lasts.`, `${a} pulled ${b} into ${g || 'an alliance'}, and swore it would go all the way.`],
-      'alliance:deal': [`${a} cut a side deal with ${b}. Then possibly another one. With someone else.`, `${a} and ${b} made a deal, and only one of them meant it.`, `${a} promised ${b} the world. Allegedly.`],
+      // (the double-dealing lines only for a double deal: "Then possibly another one. With someone else." over Isabel's one
+      // honest final three with Spencer, read 2026-10-14)
+      'alliance:deal': /conflictingDeals|deal\.double/.test(src) ? [`${a} cut a side deal with ${b}. Then another one. With someone else.`, `${a} promised the end to ${b}, and to somebody else too.`, `${a} and ${b} had a deal, and only one of them meant it.`]
+        : /endgameDeal(Broken|Dissolved)|deal\.end/.test(src) ? [`${a} called off ${pr(a).posAdj} deal with ${b}.`, `The deal between ${a} and ${b}? ${a} ended it.`]
+        : /infoTrade|trade\.info/.test(src) ? [`${a} and ${b} swapped what they'd heard. Some of it was even true.`, `${a} traded secrets with ${b}.`]
+        : [`${a} cut a side deal with ${b}.`, `${a} and ${b} shook on going to the end together.`, `${a} promised ${b} the world.`],
       'alliance:recruit': [`${a} tried to recruit ${b}.`, `${a} went shopping for votes, and ${b} was first on the list.`, `${a} made ${b} an offer.`],
       'alliance:refused': [`${a} asked ${b} to join up, and ${b} said no. Awkward.`, `${b} turned down ${a}'s offer. Bold.`, `${a} got rejected by ${b}. Ouch.`],
       'showmance:breakup': [`${a} and ${b} broke up${sinceOf(c)}. In public. With witnesses.`, `It's over between ${a} and ${b}. The camp is still recovering.`, `${a} ended things with ${b}, and nobody handled it well.`],

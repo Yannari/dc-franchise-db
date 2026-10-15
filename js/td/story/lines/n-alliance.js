@@ -343,7 +343,7 @@ export default {
       { by: 'b', say: "...I'll take it." },
       { by: 'b', conf: "I don't like being pushed into things. I like the idea of being the next {lastBoot} even less." },
     ] },
-    { id: 'na.j3', place: 'aside', when: { bOther: false, voice: ['warm', 'anxious', 'earnest', 'ditzy'] }, turns: [
+    { id: 'na.j3', place: 'aside', when: { bOther: false, bNew: true, voice: ['warm', 'anxious', 'earnest', 'ditzy'] }, turns: [
       { by: 'a', say: "Hey, so a few of us have a group, like a voting group, and we really like you." },
       { by: 'b', say: "Me?" },
       { by: 'a', say: "You! You always help with the chores and you never complain, and that matters." },

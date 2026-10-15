@@ -2091,11 +2091,16 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const targets = [...new Set([..._multiAlliancePlayers, ..._contradictors])].filter(n => detectors.some(d => d !== n));
       if (!targets.length) continue;
       const b = targets[Math.floor(Math.random() * targets.length)];
-      const detectPool = detectors.filter(d => d !== b);
-      if (!detectPool.length) continue;
+      const detectPool0 = detectors.filter(d => d !== b);
+      if (!detectPool0.length) continue;
+      // the one who noticed a vote against the alliance's name is somebody in that alliance, when one of them is here: the
+      // scene is "{group} wrote {plan}. All of us." (read 2026-10-14: Hannah, of The Lock, saying it for The Iron Grip)
+      const _ciAl = _contradictorInfo[b] ? (gs.namedAlliances || []).find(al => al.name === _contradictorInfo[b].alliance) : null;
+      const _inAl = _ciAl ? detectPool0.filter(d => _ciAl.members.includes(d)) : [];
+      const detectPool = _inAl.length ? _inAl : detectPool0;
       const a = _pick(detectPool, n => Math.max(0.1, pStats(n).intuition * 0.5 + 1));
       addBond(a, b, -0.8);
-      const _ci = _contradictorInfo[b];   // concrete vote contradiction (preferred — most specific)
+      const _ci = _contradictorInfo[b] && (!_ciAl || _ciAl.members.includes(a)) ? _contradictorInfo[b] : null;   // concrete vote contradiction (preferred — most specific)
       const _mi = _multiInfo[b];          // two-timing across named alliances
       Math.random(); // the draw that picked the sentence
       events.push(scriptEvent({ type: 'trustCrack', players: [a, b], badgeText: 'TRUST CRACKED', badgeClass: 'red' },

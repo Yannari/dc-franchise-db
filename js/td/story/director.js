@@ -319,7 +319,10 @@ function allianceFacts(ev, who, data) {
   const al = name ? (gs.namedAlliances || []).find(x => x.name === name) : null;
   const size = (ev.members || al?.members || []).length;
   const others = n => (gs.namedAlliances || []).some(x => x.active !== false && x.name !== name && (x.members || []).includes(n));
-  return { members: size >= 4 ? 'many' : size || null, aOther: !!who.a && others(who.a), bOther: !!who.b && others(who.b) };
+  // b has never been in another alliance, finished ones included: "I've never been asked to be in anything before" (read
+  // 2026-10-14: Anastasia saying it the day after The Iron Grip, hers for six episodes, fell apart)
+  const bNew = !!who.b && !(gs.namedAlliances || []).some(x => x.name !== name && (x.members || []).includes(who.b));
+  return { members: size >= 4 ? 'many' : size || null, aOther: !!who.a && others(who.a), bOther: !!who.b && others(who.b), bNew };
 }
 
 
@@ -509,7 +512,10 @@ function morningAfter(ep, camp, members, n) {
   const who = { a, b, c };
   const data = { lastBoot: boot, bootVotes: numberWord(ltA.bootVotes), target: boot };
   const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase: 'pre' }), outcome, lastBoot: true,
-    voted: ltA.votedBoot ? 'boot' : 'other', unanimous: !!ltA.unanimous, bVoted: lts.find(([m]) => m === b)?.[1]?.votedBoot ? 'boot' : 'other', third: !!c };
+    voted: ltA.votedBoot ? 'boot' : 'other', unanimous: !!ltA.unanimous, bVoted: lts.find(([m]) => m === b)?.[1]?.votedBoot ? 'boot' : 'other', third: !!c,
+    // b played something at that vote in front of everybody (an idol, a Vote Steal): b can't say "it wasn't about you" as
+    // somebody "who wasn't involved" (read 2026-10-14: Anastasia to Diego, the morning after she took his vote)
+    bPlayed: ((gs.episodeHistory || []).find(h => h.num === ep.num - 1)?.idolPlays || []).some(p => p.player === b) };
   const w = writeStory('story.morning', outcome, who, data, facts, { ep: ep.num, camp, phase: 'pre', n, place: 'sleep', avoid: ctxAvoid('morning') });
   return w ? { story: true, kind: 'story.morning', storyType: 'morning', step: outcome, players: [a, b, c].filter(Boolean), lines: w.lines, text: w.text, lineId: w.lineId,
     scene: { kind: 'story.morning', who, data, spot: w.spot ? { ...w.spot, window: 'morning' } : null }, badgeText: 'The Morning After', badgeClass: outcome === 'blindside' ? 'red' : '', why: [`${boot} went home last night, ${data.bootVotes} votes.`] } : null;
@@ -1575,6 +1581,13 @@ export function toneOf(item, events) {
  * stretch's share ({ target, ceiling }); `look` the season's airtime ({ ratio(name), pair(key) }, stage 4: without it
  * every tier keeps proposal order). Returns { keep, drop, log }, keep in proposal order.
  */
+// What a two-person scene takes their relationship to be today: 'warm' (friends, a couple, a compliment) or 'sore' (a scene
+// that only makes sense between people at odds: a fight, a grudge, a truce, being caught). One day does not show the same
+// two both ways (read 2026-10-14, carnival ep 9: Richard "Turns out Isabel is a really good person", then Isabel "Truce?
+// For one afternoon?" and Richard "You've lied to me", the same morning).
+const SORE_KIND = /(^|\.)(drama|clash|fight|nemesis|thaw|truce|rival|grudge|caught|dispute|intimidat|blame|paranoia|explode|bomb|jealous|envy|snipe|confront|throw)\b/;
+const WARM_KIND = /(^|\.)(friend|read\.played|bond|rideordie|solidarity|celebrate|teach|lift|sunrise|gratitude|rekindle|helpback|couple|flirt)\b/;
+const toneOfItem = it => { const k = `${it?.kind || ''} ${it?.scene?.kind || ''}`; return SORE_KIND.test(k) ? 'sore' : WARM_KIND.test(k) ? 'warm' : null; };
 export function selectScenes(entries, events, used, limit, turns = DAY_BUDGET, look = null, rhythm = false) {
   const cost = e => spokenIn(e.item?.lines || events?.[e.item?.ref]?.lines);
   // A colour scene about somebody the last two episodes barely heard from (under 60% of the camp's average) competes
@@ -1584,7 +1597,7 @@ export function selectScenes(entries, events, used, limit, turns = DAY_BUDGET, l
   const rank = e => (underheard(e) ? TIER_RANK.story : (TIER_RANK[e.tier] ?? 2)) + (e.extra ? 1.5 : 0);
   const kept = new Set(), lineIds = new Set(), claims = new Set(), reasons = new Map();
   let scenes = used.scenes || 0, said = used.turns || 0;
-  const today = { people: { ...(used.people || {}) }, pairs: { ...(used.pairs || {}) } };
+  const today = { people: { ...(used.people || {}) }, pairs: { ...(used.pairs || {}) }, tones: { ...(used.tones || {}) } };
   const claimOf = e => {
     const it = e.item || {};
     // one of a person's own bits a day, and one payoff a day between the same two people
@@ -1598,7 +1611,9 @@ export function selectScenes(entries, events, used, limit, turns = DAY_BUDGET, l
     const claim = claimOf(e);
     let why = null;
     if (e.tier !== 'must') {
+      const tk = (it.players || []).length === 2 ? [...it.players].sort().join('|') : null, tone = tk ? toneOfItem(it) : null;
       if (it.lineId && lineIds.has(it.lineId)) why = 'same-scene';
+      else if (tone && today.tones[tk] && today.tones[tk] !== tone) why = 'pair-tone';
       else if (claim && claims.has(claim)) why = 'claimed';
       else if (scenes >= (e.tier === 'due' ? limit.ceiling : limit.target)) why = e.tier === 'due' ? 'deferred' : 'budget';
       else if (said + c > ((e.tier === 'colour' && !underheard(e)) || e.extra ? turns.turnTarget : turns.turnCeiling)) why = e.tier === 'due' ? 'deferred-dialogue' : 'dialogue-budget';
@@ -1612,6 +1627,8 @@ export function selectScenes(entries, events, used, limit, turns = DAY_BUDGET, l
     for (const p of cc) today.people[p] = (today.people[p] || 0) + 1;
     const k = pairKey(cc);
     if (k) today.pairs[k] = (today.pairs[k] || 0) + 1;
+    const tk2 = (it.players || []).length === 2 ? [...it.players].sort().join('|') : null, tone2 = tk2 ? toneOfItem(it) : null;
+    if (tone2 && !today.tones[tk2]) today.tones[tk2] = tone2;
   };
   // tier by tier; inside the story and the colour, the best last-place candidate each time (the day changes as it fills)
   const groups = new Map();
@@ -1646,7 +1663,7 @@ export function selectScenes(entries, events, used, limit, turns = DAY_BUDGET, l
     const who = (it.players || ev?.players || []).slice(0, 4).join(',');
     return `${kept.has(e) ? '+' : '-'}${reasons.get(e)}|${e.src || '?'}|${e.tier || '?'}${e.extra ? '+' : ''}|${kind}|${who}|${cost(e)}`;
   });
-  return { keep, drop, log, scenes, turns: said, people: today.people, pairs: today.pairs };
+  return { keep, drop, log, scenes, turns: said, people: today.people, pairs: today.pairs, tones: today.tones };
 }
 
 // The partner in a colour scene (stage 4, the proposal side): somebody close to a, and among the people nearly as close
@@ -1834,7 +1851,7 @@ export function airTdEpisode(ep) {
     const spoke = new Set();
     const out = { pre: [], post: [] };
     // the day's budget, spent across its two stretches, and the director's reason for every proposal (selectScenes)
-    const dayUsed = { scenes: 0, turns: 0, people: {}, pairs: {} };
+    const dayUsed = { scenes: 0, turns: 0, people: {}, pairs: {}, tones: {} };
     // who the last episodes heard from, and which pairs they kept cutting back to (stage 4: who gets the last places)
     // (globalThis.__tdNoAirtime: the pacing audit's control arm, stage 4 off; nothing in the app sets it)
     const look = globalThis.__tdNoAirtime ? null : airtimeLook(ep, members);
@@ -2730,7 +2747,7 @@ export function airTdEpisode(ep) {
         for (const e of sel.drop) { discard(e.item); discard(e.item.lines); }
         for (const e of sel.keep) { commit(e.item); commit(e.item.lines); }
         list.splice(0, list.length, ...sel.keep);
-        dayUsed.scenes = sel.scenes; dayUsed.turns = sel.turns; dayUsed.people = sel.people; dayUsed.pairs = sel.pairs;
+        dayUsed.scenes = sel.scenes; dayUsed.turns = sel.turns; dayUsed.people = sel.people; dayUsed.pairs = sel.pairs; dayUsed.tones = sel.tones;
         dayLog[phase] = sel.log;
       }
       // what the director's own scenes did to the people in them (fx: kits, banter, mentor, arcs, games, reactions)

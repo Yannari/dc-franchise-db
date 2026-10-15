@@ -17,14 +17,14 @@
 
 export default {
   'cer-open.m': [
-    { id: 'co.m1', turns: [{ by: 'tj', say: "Guys' week, people! One of you fellas is going into the Arena tonight, and the house decides who. Let's hear it." }] },
+    { id: 'co.m1', turns: [{ by: 'tj', say: "Guys' week, people! One of you fellas is going into the Arena, and the house decides who. Let's hear it." }] },
     { id: 'co.m2', turns: [{ by: 'tj', say: "Alright, it's a men's vote. Everybody's going to say a name, out loud, to my face. No take-backs, no whispering. Let's go." }] },
-    { id: 'co.m3', turns: [{ by: 'tj', say: "Fellas, look around. One of you is about to have a very bad night. Ladies, you're voting too, so don't get comfortable." }] },
+    { id: 'co.m3', turns: [{ by: 'tj', say: "Fellas, look around. One of you is about to have a very bad week. Ladies, you're voting too, so don't get comfortable." }] },
   ],
   'cer-open.f': [
-    { id: 'co.f1', turns: [{ by: 'tj', say: "Ladies' week! One of you queens is going into the Arena tonight, and the whole house gets a say. Who's it gonna be?" }] },
+    { id: 'co.f1', turns: [{ by: 'tj', say: "Ladies' week! One of you queens is going into the Arena, and the whole house gets a say. Who's it gonna be?" }] },
     { id: 'co.f2', turns: [{ by: 'tj', say: "It's a women's vote, people. One name each, said nice and loud. I love this part. I'm not supposed to love this part, but I love this part." }] },
-    { id: 'co.f3', turns: [{ by: 'tj', say: "Ladies, one of you is going in tonight. Fellas, you're voting, so think hard. Let's go around the room." }] },
+    { id: 'co.f3', turns: [{ by: 'tj', say: "Ladies, one of you is going into the Arena. Fellas, you're voting, so think hard. Let's go around the room." }] },
   ],
   'cer-open.all': [
     { id: 'co.a1', turns: [{ by: 'tj', say: "Here we go, people. One name each, out loud. Whoever gets the most is going into the Arena." }] },
@@ -44,7 +44,7 @@ export default {
     { id: 'bl.8', turns: [{ by: 'a', say: "{b}. I think everybody saw this coming." }] },
     { id: 'bl.9', turns: [{ by: 'a', say: "I'm going {b}. Let's see what {b.sub} can do in there." }] },
     { id: 'bl.10', turns: [{ by: 'tj', say: '{a}?' }, { by: 'a', say: '{b}.' }] },
-    { id: 'bl.11', turns: [{ by: 'tj', say: "{a}, my guy, who you got?" }, { by: 'a', say: "{b}, TJ." }] },
+    { id: 'bl.11', turns: [{ by: 'tj', say: "{a}, my friend, who you got?" }, { by: 'a', say: "{b}, TJ." }] },
     { id: 'bl.12', turns: [{ by: 'tj', say: "{a}, your turn." }, { by: 'a', say: "I'm voting {b}." }] },
     { id: 'bl.13', turns: [{ by: 'a', say: "{b}. Sorry." }] },
     { id: 'bl.14', turns: [{ by: 'a', say: "I'll say {b}." }] },
@@ -118,11 +118,11 @@ export default {
   'ballot.changed': [
     { id: 'bc.1', turns: [
       { by: 'a', say: "I... {b}. I'm going {b}." },
-      { by: 'a', conf: "I walked in with one name and walked out with another. The room shifted, and I shifted with it." },
+      { by: 'a', conf: "I came in planning to vote for somebody else. Then I heard where everybody was going, and I changed my mind." },
     ] },
     { id: 'bc.2', turns: [
       { by: 'a', say: "{b}." },
-      { by: 'tj', say: "Wait, I could've sworn I heard different things at deliberation. Love it. Chaos. Keep going." },
+      { by: 'tj', say: "Ooh, I did not see that one coming. Keep going." },
     ] },
     { id: 'bc.3', turns: [
       { by: 'a', say: "I changed my mind. {b}." },
@@ -133,7 +133,7 @@ export default {
   // ── the result ──────────────────────────────────────────────────────
   'cer-result.clear': [
     { id: 'cr.c1', turns: [
-      { by: 'tj', say: "With {count} votes, {a}, you're going into the Arena tonight. Now you get to pick who's coming with you." },
+      { by: 'tj', say: "With {count} votes, {a}, you're going into the Arena tomorrow night. Now you get to pick who's coming with you." },
       { by: 'a', conf: "I knew it was coming. Hearing it said out loud is still a punch in the stomach." },
     ] },
     { id: 'cr.c2', turns: [

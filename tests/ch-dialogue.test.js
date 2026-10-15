@@ -42,6 +42,45 @@ describe('The Challenge pools', () => {
     expect(bad, bad.join('\n')).toEqual([]);
   });
 
+  // Every line a pool can say: the turn's own and every voice's.
+  const allTexts = key => Object.entries(POOLS).filter(([k]) => !key || key(k)).flatMap(([k, list]) => list.flatMap(e =>
+    e.turns.flatMap(t => [t.say, t.conf, t.beat, ...Object.values(t.v || {}).flat()].filter(Boolean).map(text => ({ id: e.id, k, text })))));
+
+  it('the vote is out loud: nobody writes a name, nothing is read out', () => {
+    // Season 777's read: "Don't write my name", "I know what you wrote", "They find out when TJ reads it".
+    const bad = allTexts().filter(({ text }) =>
+      /\b(write|wrote|written|writing)\b[^.!?]*\bnames?\b|\bnames?\b[^.!?]*\b(wrote|written)\b|\bpen\b|TJ reads|reads? (it|the votes|the names)/i.test(text));
+    expect(bad.map(b => `${b.id}: ${b.text}`), bad.map(b => `${b.id}: ${b.text}`).join('\n')).toEqual([]);
+  });
+
+  it('a new alliance has three or four members: its lines never count them', () => {
+    // "Can I trust you two?" and "It's us three" aired in an alliance of four.
+    const bad = allTexts(k => /^alliance-(form|grow)\./.test(k)).filter(({ text }) =>
+      /\b(you two|us three|three of us|two of us|us two|you both|both of you|just you and me|party of two|two members)\b/i.test(text));
+    expect(bad.map(b => `${b.id}: ${b.text}`), bad.map(b => `${b.id}: ${b.text}`).join('\n')).toEqual([]);
+  });
+
+  it('the vote is the day before the Arena: no vote line sends anybody in "tonight"', () => {
+    const bad = allTexts(k => /^(cer-open|cer-result|daily)\./.test(k)).filter(({ text }) => /\b(Arena|in|untouchable|safe) tonight\b/i.test(text));
+    expect(bad.map(b => `${b.id}: ${b.text}`), bad.map(b => `${b.id}: ${b.text}`).join('\n')).toEqual([]);
+  });
+
+  it('nobody says the same voiced line twice in a season', async () => {
+    // "Wait, did I win? I won? I WON!" aired three times from one player in four episodes.
+    const { voicedLine } = await import('../js/ch/script/write.js');
+    const { voiceOf } = await import('../js/td/story/voice.js');
+    const { challengeCast } = await import('./helpers/ch-cast.js');
+    const { cast, names } = challengeCast(24, 3);
+    setPlayers(cast);
+    const who = names.find(n => voiceOf(n).length);
+    const tags = voiceOf(who);
+    const turn = { say: 'BASE', v: Object.fromEntries(tags.map(t => [t, [`only ${t}`]])) };
+    const ledger = {};
+    const said = [1, 2, 3, 4, 5].map(day => voicedLine(turn, who, { rng: () => 0, ledger, day }).text);
+    const voiced = said.filter(x => x !== 'BASE');
+    expect(new Set(voiced).size, said.join(' / ')).toBe(voiced.length);
+  });
+
   it('voice overlays land only on spoken turns that exist (an overlay keyed by index drifts when a scene is rewritten)', async () => {
     const { default: VOICES } = await import('../js/ch/script/lines/voices/index.js');
     const byId = {};
@@ -132,6 +171,28 @@ describe('The Challenge, as aired', () => {
         return aired.length >= 3 && new Set(aired.map(s => s.ep)).size >= 2;
       });
       expect(long.length, `seed ${r.state.seed}`).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('nobody plays both parts of an exchange', () => {
+    // A morning-after with one relieved player had them say "I slept better" and answer "Don't say that out loud".
+    for (const r of seasons) for (const e of r.episodes) for (const a of e.aired || []) {
+      const ls = (a.script?.lines || []).filter(l => l.kind === 'say' && l.by && l.by !== 'TJ');
+      for (let i = 1; i < ls.length; i++) {
+        expect(ls[i].by === ls[i - 1].by && /^(oh no|don'?t|shh|maybe don'?t|probably keep|never say)/i.test(ls[i].text), `${a.kind} ep ${e.ep}: ${ls[i - 1].by} answers ${ls[i].by}`).toBe(false);
+      }
+    }
+  });
+
+  it('the day\'s daily winner is never caught throwing it', () => {
+    for (const r of seasons) for (const e of r.episodes) {
+      const scenes = (e.aired || []).map(a => a.scene).filter(Boolean);
+      const daily = scenes.find(s => s.kind === 'daily');
+      if (!daily) continue;
+      for (const s of scenes.filter(s => s.kind === 'throw-caught' || s.kind === 'throw')) {
+        const thrower = s.kind === 'throw' ? s.who[0] : s.who[1];
+        expect(daily.data.winners, `ep ${e.ep}: ${thrower} won and threw`).not.toContain(thrower);
+      }
     }
   });
 

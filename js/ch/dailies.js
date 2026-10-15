@@ -168,16 +168,21 @@ export function playDaily(state, rng, { division }) {
   for (const l of last) { state.rec[l].dailyLast++; nudge(state, l, 'confidence', -0.5); }
   addScene(state, 'daily', state.active, { daily: daily.id, dailyName: daily.name, mode, winners, last }, state.active, 'challenge');
   for (const n of state.active) nudge(state, n, 'energy', -1.2 * daily.physicality);
-  // Throwing, and who catches it.
+  // Throwing, and who catches it. A thrower who won anyway did not throw it: no record, nobody
+  // catches it (season 777 aired "I saw Jacques stop and smell the flowers" about the day's winner).
+  // The dice are still rolled, so the season after this is unchanged.
+  const won = new Set(winners);
   const caught = [];
   for (const t of throws) {
-    state.rec[t.name].throws++;
+    if (!won.has(t.name)) state.rec[t.name].throws++;
     for (const o of state.active) {
       if (o === t.name) continue;
       if (rng() < t.size * S(o, 'intuition') / 10 * 0.12) {
-        caught.push({ thrower: t.name, by: o });
-        addBond(o, t.name, -1.2);
-        remember(o, t.name, 'threw-it', 1.6);
+        if (!won.has(t.name)) {
+          caught.push({ thrower: t.name, by: o });
+          addBond(o, t.name, -1.2);
+          remember(o, t.name, 'threw-it', 1.6);
+        }
         break;
       }
     }
@@ -188,7 +193,7 @@ export function playDaily(state, rng, { division }) {
     noteThrow(state, c.thrower, c.by);
     addScene(state, 'throw-caught', [c.by, c.thrower], { daily: daily.id }, state.active, 'public');
   }
-  for (const t of throws.filter(x => !caught.some(c => c.thrower === x.name))) {
+  for (const t of throws.filter(x => !won.has(x.name) && !caught.some(c => c.thrower === x.name))) {
     noteThrow(state, t.name);
     addScene(state, 'throw', [t.name], { daily: daily.id, size: t.size }, [t.name], 'private');
   }

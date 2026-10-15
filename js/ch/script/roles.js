@@ -42,8 +42,11 @@ export const ROLES = {
   arena: sc => ({ roles: { a: sc.data.winner, b: sc.data.loser }, ending: sc.data.tj, slots: { game: sc.data.gameName } }),
   return: sc => ({ roles: { a: sc.who[0], b: sc.who[1] },
     ending: sc.data.volunteered ? 'volunteered' : sc.data.calledOut ? 'calledout' : yes(sc.who[1], 'faced', 'quiet'), slots: { gone: sc.data.beat } }),
-  'morning-after': sc => ({ roles: { a: sc.data.hurt?.[0] || sc.who[0], b: sc.data.hurt?.[1] || sc.data.relieved?.[0] },
-    ending: sc.data.hurt?.length ? (sc.data.hurt.length > 1 ? 'mourning' : 'alone') : 'relief', slots: { gone: sc.data.gone } }),
+  // b is never a again: one relieved player alone gets the one-person scripts, not both halves of a
+  // two-person exchange (season 777: "I slept better last night" / "Don't say that out loud", both Jake).
+  'morning-after': sc => { const a = sc.data.hurt?.[0] || sc.who[0];
+    return { roles: { a, b: [sc.data.hurt?.[1], ...(sc.data.relieved || [])].find(x => x && x !== a) },
+    ending: sc.data.hurt?.length ? (sc.data.hurt.length > 1 ? 'mourning' : 'alone') : 'relief', slots: { gone: sc.data.gone } }; },
   quit: sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
   medical: sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
   disqualified: sc => ({ roles: { a: sc.who[1] }, ending: 'any', slots: { gone: sc.who[0] } }),

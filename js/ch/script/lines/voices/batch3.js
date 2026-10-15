@@ -77,7 +77,7 @@ const CALLED_CONF = {   // the one called, to the camera
   anxious: ['I can\'t breathe. I\'m going into the Arena. I\'m actually going in.'],
   calm: ['It is what it is. I\'ll go in there and do my best.'],
   competitive: ['Good. I want to beat {a}. Now I get to.'],
-  schemer: ['{a} thinks this is the safe pick. I\'m going to make {a} learn otherwise.'],
+  schemer: ['{a} thinks I\'m the safe pick. {a} is about to find out I\'m not.'],
   cruel: ['{a} picked me. That\'s the last mistake {a} gets to make here.'],
   chaotic: ['I don\'t know if I\'m scared or excited. Both! Definitely both!'],
   nerdy: ['{a} chose the matchup {a} thinks is best. I\'ve already thought of three reasons it isn\'t.'],
@@ -151,7 +151,7 @@ const DAILY_SHOUT = {
   theatrical: ['VICTORY! I would like to thank the academy!'],
   cruel: ['Everybody else, enjoy the vote.', 'Try to keep up next time.'],
   goofy: ['I\'m the daily champion! Daily champ! Champ of the day!'],
-  schemer: ['Safe tonight. Let the others fight it out.'],
+  schemer: ['Safe at the vote. Let the others fight it out.'],
 };
 
 const LOSER_SAY = {   // the loser, out loud, still in the Arena
@@ -179,7 +179,7 @@ const LOSER_SAY = {   // the loser, out loud, still in the Arena
 };
 const LOSER_CONF = {
   quiet: ['I lost. That\'s the game.'],
-  dry: ['I had a plan. The plan did not survive contact with the Arena.'],
+  dry: ['I had a plan. It didn\'t work.'],
   loud: ['I\'m SO mad! I was right there!'],
   warm: ['I\'m sad, but I\'m proud of what I did here. I met amazing people.'],
   blunt: ['{a} beat me. I don\'t have excuses.'],
@@ -204,25 +204,25 @@ const LOSER_CONF = {
 const WINNER_CONF = {
   quiet: ['I\'m still here. That\'s enough.'],
   dry: ['I went in, I won, I came back. Thrilling stuff.'],
-  loud: ['I\'M STILL HERE! Everybody who voted for me, I\'M STILL HERE!'],
+  loud: ['I\'M STILL HERE! Everybody who wanted me gone, I\'M STILL HERE!'],
   warm: ['I\'m so relieved. I just wanted to stay with my friends.'],
-  blunt: ['I won. Now everybody knows what happens when you send me in.'],
-  theatrical: ['They sent me into the lion\'s den. I came out wearing the lion.'],
+  blunt: ['I won. Now everybody knows what happens when I go in there.'],
+  theatrical: ['Everybody thought I was going home. I sent somebody else home instead.'],
   anxious: ['I can\'t believe I won. My hands are still shaking.'],
   calm: ['I knew what I had to do, and I did it.'],
   competitive: ['Every time I win in there, the house gets a little more scared of me. Good.'],
   schemer: ['Winning in there buys me time, and time is everything.'],
-  cruel: ['Everybody who wrote my name down is going to pay for it.'],
+  cruel: ['Everybody who wanted me gone is going to pay for it.'],
   chaotic: ['I don\'t know how I did that! I\'m not even mad about it!'],
   nerdy: ['I went in with a plan for that game, and the plan worked.'],
   earnest: ['I fought for my spot. I\'m going to keep fighting for it.'],
   flirty: ['I came back looking good, too. That matters.'],
   tough: ['They tried. It didn\'t work. Next.'],
-  bossy: ['Next time, the house should think harder before voting me in.'],
+  bossy: ['Next time, people should think harder before they come for me.'],
   emotional: ['I cried the whole way back. Happy tears.'],
   goofy: ['I\'m alive! Well, I was always alive. But game alive!'],
   proud: ['They\'ll think twice before they come for me again.'],
-  sharp: ['Send me in again. I dare you.'],
+  sharp: ['Come for me again. I dare you.'],
   soft: ['I\'m just so happy I get to stay.'],
   odd: ['I won in there! Somebody make me a sandwich!'],
 };
@@ -297,11 +297,11 @@ const DAILY_WIN_CONF = {
   quiet: ['I\'m safe. Good.'],
   dry: ['Winning. Turns out I\'m good at it.'],
   loud: ['SAFE! I\'m SAFE! Nobody can touch me!'],
-  warm: ['I\'m so happy! I get to protect my friends tonight.'],
+  warm: ['I\'m so happy! I get to protect my friends at the vote.'],
   blunt: ['I won. I\'m safe. That\'s all I needed.'],
   theatrical: ['A star is born. Again.'],
   anxious: ['I\'m safe. I can breathe for one whole day.'],
-  calm: ['I\'m safe tonight. Now I can think.'],
+  calm: ['I\'m safe this week. Now I can think.'],
   competitive: ['That\'s how it\'s done. I want every single daily.'],
   schemer: ['Immunity means I get to watch the vote from the best seat in the house.'],
   cruel: ['Everyone else is panicking. I\'m going to enjoy watching it.'],
@@ -533,7 +533,7 @@ const EVE_COMFORT = {
   bossy: ['Listen to me. You go in there and you don\'t stop. Got it?'],
   sharp: ['Fear is fine. Use it.'],
   soft: ['I\'ll be right there cheering. Okay?'],
-  odd: ['Scared is just excited in a raincoat.'],
+  odd: ['Being scared just means you care. You\'ve got this.'],
 };
 const CANT_SLEEP = {
   quiet: ['I can\'t sleep.'],
@@ -558,18 +558,12 @@ const SIT = {
 };
 
 export default {
-  // call-out
+  // call-out. The shared groups say the survive call-out's meaning ("I picked who I can beat",
+  // "me? why me?"): never on a grudge call-out (they both know why), a prove call-out (the strongest,
+  // on purpose) or an upset's winner and loser. Those turns keep their own lines.
   'co.s1': { 1: CALL, 2: CALLED_REACT, 3: CALLER_CONF },
   'co.s2': { 1: CALL, 2: CALLED_REACT, 3: CALLED_CONF },
   'co.s3': { 2: CALLER_CONF },
-  'co.g1': { 2: CALLED_REACT, 3: CALLER_CONF },
-  'co.g2': { 1: CALLED_REACT },
-  'co.g3': { 1: CALLED_CONF },
-  'co.g5': { 2: CALLED_REACT, 3: CALLED_CONF },
-  'co.g6': { 2: CALLER_CONF },
-  'co.p1': { 1: CALL, 3: CALLER_CONF },
-  'co.p2': { 2: CALLED_CONF },
-  'co.p3': { 1: CALLED_REACT },
   'co.b1': { 1: CALL, 2: CALLER_CONF },
   'co.b2': { 1: CALLED_REACT, 2: CALLED_CONF },
   'co.b3': { 0: CALL, 2: CALLER_CONF },
@@ -577,7 +571,6 @@ export default {
   'an.w1': { 3: LOSER_SAY, 4: WINNER_CONF },
   'an.w2': { 3: LOSER_CONF },
   'an.w3': { 2: WIN_SHOUT },
-  'an.u1': { 3: WIN_SHOUT, 4: LOSER_CONF },
   'an.u2': { 3: WINNER_CONF },
   'an.u3': { 2: LOSER_SAY },
   'an.c1': { 3: WINNER_CONF },

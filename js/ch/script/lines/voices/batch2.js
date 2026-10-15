@@ -120,7 +120,7 @@ const REFUSE = {
   proud: ['No. I don\'t take orders on who my friends are.'],
   sharp: ['No.'],
   soft: ['I can\'t. I\'m sorry.'],
-  odd: ['That\'s gonna be a no from me, dawg.'],
+  odd: ['That\'s a no from me.'],
 };
 
 const FALSE_AGREE = {
@@ -129,7 +129,7 @@ const FALSE_AGREE = {
   loud: ['YES! Let\'s go! {target}!'],
   warm: ['Of course! Whatever you need.'],
   blunt: ['Yep. Done.'],
-  theatrical: ['A hundred percent. I\'m practically writing the name already.'],
+  theatrical: ['A hundred percent. I\'m practically saying the name already.'],
   anxious: ['Yes! Totally! Yes.'],
   calm: ['Sounds good to me.'],
   competitive: ['Love it. Let\'s do it.'],
@@ -148,9 +148,9 @@ const FALSE_AGREE = {
 // The one who lied, alone with the camera.
 const FALSE_CONF = {
   quiet: ['I said yes. I\'m not voting {target}.'],
-  dry: ['I agreed with {a}. I\'m also not going to do what I agreed to. Busy day.'],
+  dry: ['I told {a} yes. I\'m not going to do it.'],
   loud: ['Did I just say yes? I did! Am I voting {target}? Absolutely not!'],
-  warm: ['I feel terrible lying to {a}. But {target} is my friend, and I\'m not writing that name.'],
+  warm: ['I feel terrible lying to {a}. But {target} is my friend, and I\'m not saying that name.'],
   blunt: ['I lied to {a}. I\'m not voting {target}.'],
   theatrical: ['And the award for best performance in a supporting lie goes to... me.'],
   anxious: ['Oh no. I said yes. I have to vote {target} now. I\'m not going to. Oh no.'],

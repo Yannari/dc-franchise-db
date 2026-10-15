@@ -12,7 +12,7 @@ export default {
     { id: 'fs.1', turns: [
       { by: 'tj', say: "Look at you! The last ones standing! Welcome to the final, my friends! Two days, no sleep, and somebody walks away a champion! LET'S GET WEIRD!" },
       { by: 'a', say: "I can't believe I'm actually here.", v: { loud: ['WE MADE IT! WE ACTUALLY MADE IT!'], sharp: ['Finally. Let\'s finish this.'], soft: ['I\'m shaking. I can\'t believe it.'] } },
-      { by: 'a', conf: "Every alliance is over now. Everybody I worked with is somebody I have to beat.", v: { soft: ['I\'ve made real friends here. Now I have to try to beat them.'], sharp: ['No more friends. Just a finish line.'] } },
+      { by: 'a', conf: "Every alliance is over now. Everybody I worked with is somebody I have to beat.", v: { soft: ['I\'ve made real friends here. Now I have to try to beat them.'], sharp: ['No more friends now. I\'m here to win.'] } },
     ] },
     { id: 'fs.2', turns: [
       { by: 'tj', say: "This is it, champs! The final! No votes, no call-outs, no drama. Okay, a LITTLE drama. Mostly just pain!" },
@@ -47,15 +47,15 @@ export default {
       { by: 'tj', say: "Okay, champs! Tonight you don't sleep. You stay out here, on this mountain, until morning. Get comfy. Or don't. You can't." },
       { by: 'a', say: "It's freezing.", v: { loud: ['IT\'S FREEZING!'], soft: ['I can\'t feel my hands.'] } },
       { by: 'b', say: "Just talk to me. Keep each other awake.", v: { sharp: ['Stop complaining. Complaining makes it colder.'] } },
-      { by: 'a', conf: "This is the part nobody sees on TV. Hours of nothing, in the cold, trying not to quit.", v: { odd: ['I\'m friends with a rock now. The rock gets it.'] } },
+      { by: 'a', conf: "This is the part nobody sees on TV. Hours of nothing, in the cold, trying not to quit.", v: { odd: ['I\'ve been talking to a rock for an hour. I think I\'m losing it.'] } },
     ] },
     { id: 'on.2', turns: [
-      { beat: 'Darkness, wind, and a small fire that nobody is allowed near.' },
+      { beat: 'It\'s dark and windy, and nobody has slept.' },
       { by: 'a', conf: "Everything in my body is telling me to stop. I'm not stopping. Not now.", v: { soft: ['I keep thinking of home. That\'s what keeps me going.'] } },
     ] },
     { id: 'on.3', turns: [
       { by: 'c', say: "What time do you think it is?" },
-      { by: 'a', say: "Don't ask that. Never ask that.", v: { odd: ['It\'s cold o\'clock.'] } },
+      { by: 'a', say: "Don't ask that. Never ask that.", v: { odd: ['It\'s late and it\'s cold. That\'s all I know.'] } },
     ] },
   ],
   'overnight-sabotage.any': [
@@ -66,10 +66,10 @@ export default {
       { by: 'b', conf: "{a} made my night harder on purpose. I'm going to remember that at the finish line.", v: { soft: ['I didn\'t expect {a} to do that to me.'] } },
     ] },
     { id: 'os.2', turns: [
-      { by: 'a', conf: "Giving {b} extra tiles wasn't personal. It was the final. Okay, it was a little personal.", v: { soft: ['I felt bad. For about a second.'] } },
+      { by: 'a', conf: "Giving {b} extra tiles wasn't personal. It was the final. Okay, it was a little personal.", v: { soft: ['I gave {b} the extra tiles, and I felt bad. For about a second.'] } },
     ] },
     { id: 'os.3', turns: [
-      { by: 'b', conf: "{a} could have picked anyone and picked me. Fine. I'll empty every last tile and still beat {a}.", v: { loud: ['I\'ll empty EVERY tile!'] } },
+      { by: 'b', conf: "{a} could have picked anyone and picked me. Fine. I'll empty every last tile and still beat {a}.", v: { loud: ['{a} dumped the tiles on ME?! Fine! I\'ll empty EVERY tile!'] } },
     ] },
   ],
   'overnight-quit.any': [
@@ -83,14 +83,14 @@ export default {
       { by: 'a', conf: "I'm done. I gave this game everything I had, and tonight I ran out.", v: { soft: ['I\'m so sorry to everybody who believed in me.'] } },
     ] },
     { id: 'oq.3', turns: [
-      { by: 'tj', say: "And we've lost one. {a} has called it. One fewer champion-in-waiting, people!" },
+      { by: 'tj', say: "And we've lost one. {a} is out of the final." },
     ] },
   ],
   'final-pact-help.any': [
     { id: 'ph.1', turns: [
       { beat: 'At the puzzle station, {a} leans over and points at one piece.' },
       { by: 'a', say: "That one. Go.", v: { soft: ['There, that one! You\'ve got it!'], loud: ['THAT ONE! GO GO GO!'] } },
-      { by: 'b', conf: "{a} promised we'd get each other to the end. {a} meant it. I won't forget that.", v: { sharp: ['A deal kept. Rarest thing in this game.'], soft: ['I almost cried at the puzzle station.'] } },
+      { by: 'b', conf: "{a} promised we'd get each other to the end. {a} meant it. I won't forget that.", v: { sharp: ['{a} actually kept the deal. Nobody does that in this game.'], soft: ['I almost cried at the puzzle station.'] } },
     ] },
     { id: 'ph.2', turns: [
       { by: 'a', conf: "{b} and I aren't racing each other, so helping {b} costs me nothing. Keeping my word costs me nothing either.", v: { soft: ['I\'d help {b} even if it did cost me.'] } },
@@ -104,10 +104,10 @@ export default {
     { id: 'pb2.1', turns: [
       { by: 'b', say: "Are you going to help me or not?", v: { loud: ['HELLO?! A little help?!'] } },
       { by: 'a', say: "Sorry. Not today.", v: { sharp: ['Every person for themselves now.'], soft: ['I\'m sorry. I can\'t right now.'] } },
-      { by: 'b', conf: "We had a deal. All the way to the end. Turns out the end was where {a} stopped caring.", v: { soft: ['I trusted {a} with everything. Even at the end.'] } },
+      { by: 'b', conf: "We had a deal to help each other all the way. {a} dropped it as soon as it counted.", v: { soft: ['I trusted {a} with everything. Even at the end.'] } },
     ] },
     { id: 'pb2.2', turns: [
-      { by: 'a', conf: "I know we said we'd help each other. But at the final, I'm racing the clock, and the clock doesn't care about promises.", v: { soft: ['I feel awful. I\'m still doing it.'] } },
+      { by: 'a', conf: "I know we said we'd help each other. But this is the final, and I have to look out for myself.", v: { soft: ['I feel awful. I\'m still doing it.'] } },
     ] },
     { id: 'pb2.3', turns: [
       { by: 'b', conf: "{a} walked right past me at the puzzle. I saw it. I'll always remember it.", v: { loud: ['{a} walked RIGHT PAST me!'] } },

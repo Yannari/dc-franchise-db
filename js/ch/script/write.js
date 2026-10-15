@@ -52,16 +52,15 @@ export function voicedLine(turn, speaker, { hush = false, rng = Math.random, led
     if (hard && AGE.has(t)) continue;
     for (const key of [...new Set([t, FAMILY[t]].filter(Boolean))]) {
       if (hush && key === 'loud') continue;
-      const got = v[key];
-      if (!got || (Array.isArray(got) && !got.length)) continue;
-      if (!Array.isArray(got)) return { text: got, tag: key };
+      const got = [v[key]].flat().filter(Boolean);
+      if (!got.length) continue;
       const start = Math.floor(rng() * got.length);
       const order = got.map((_, i) => got[(start + i) % got.length]);
       const vday = ledger ? (ledger.vday ||= {}) : {}, vby = ledger ? (ledger.vby ||= {}) : {};
-      // Every alternative already heard today: this voice is spent for the day,
-      // so the speaker's next tag speaks (or the line itself), never a repeat.
-      const fresh = order.find(x => vday[x] !== day && !(vby[x] || []).includes(speaker))
-        ?? order.find(x => vday[x] !== day);
+      // An alternative heard today, or one this speaker has already said this season, is spent: the
+      // speaker's next tag speaks (or the line itself). A voiced quirk ("Wait, did I win? I won? I
+      // WON!") is funny once; season 777 had one player say it three times in four episodes.
+      const fresh = order.find(x => vday[x] !== day && !(vby[x] || []).includes(speaker));
       if (!fresh) continue;
       if (ledger) { vday[fresh] = day; (vby[fresh] ||= []).push(speaker); }
       return { text: fresh, tag: key };

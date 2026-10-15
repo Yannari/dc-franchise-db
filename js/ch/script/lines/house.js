@@ -89,7 +89,7 @@ export default {
     ] },
     { id: 'kd.a3', turns: [
       { by: 'a', say: "Why is the rice crunchy? Is rice crunchy?", v: { odd: ['Is rice supposed to crunch? I feel like rice should not crunch.'] } },
-      { by: 'a', conf: "I'm here for the challenges. Nobody said anything about cooking.", v: { sharp: ['Cooking is beneath me. I just proved it.'] } },
+      { by: 'a', conf: "I'm here for the challenges. Nobody said anything about cooking.", v: { sharp: ['I can\'t cook. I\'ve never been able to cook.'] } },
     ] },
   ],
   'gym-flex.any': [
@@ -123,13 +123,13 @@ export default {
       { by: 'a', say: "Okay, truth or dare. I pick truth." },
       { by: 'b', say: "Who's in your alliance?", v: { odd: ['Ooh. Who\'s in your secret club?'] } },
       { by: 'a', say: "Pass. Okay, fine. You can probably guess.", v: { sharp: ['Nice try.'] } },
-      { by: 'c', conf: "{a} said way more than {a} meant to. You can guess a lot from who somebody doesn't name.", v: { odd: ['Truth or dare is a terrible game to play in this house. For them. Great for me.'] } },
+      { by: 'c', conf: "{a} didn't name names, but I could tell who {a} meant.", v: { odd: ['Truth or dare is a terrible game to play in this house. For them. Great for me.'] } },
     ] },
     { id: 'ht.a3', turns: [
       { beat: 'Steam rises off the hot tub. {a} is talking too loudly.' },
       { by: 'a', say: "We've got the numbers this week. Nobody can touch us.", v: { soft: ['I just feel safe with my group, you know?'] } },
       { by: 'b', say: "Maybe say that a little quieter.", v: { sharp: ['Lower your voice.'] } },
-      { by: 'c', conf: "{a} was bragging, and I was right there. Thanks, {a}.", v: { sharp: ['Free information is the best kind.'] } },
+      { by: 'c', conf: "{a} was bragging, and I was right there. Thanks, {a}.", v: { sharp: ['I didn\'t even have to ask. {a} just told me.'] } },
     ] },
   ],
   'hot-tub-truths.crush': [
@@ -148,7 +148,7 @@ export default {
     { id: 'ht.c3', turns: [
       { by: 'a', say: "Can I tell you something embarrassing? I think I like {target}.", v: { loud: ['Okay, I\'m just going to say it! I like {target}!'] } },
       { by: 'b', say: "That's not embarrassing. That's cute.", v: { sharp: ['That\'s a terrible idea. I love it.'] } },
-      { by: 'c', conf: "Everybody in that hot tub heard {a} say {target}'s name. By breakfast the whole villa will know.", v: { odd: ['Hot tub gossip travels faster than anything in this house.'] } },
+      { by: 'c', conf: "Everybody in that hot tub heard {a} say {target}'s name. By breakfast the whole villa will know.", v: { odd: ['Everybody heard. The whole villa\'s going to know by tomorrow.'] } },
     ] },
   ],
   'hot-tub-truths.none': [
@@ -166,7 +166,7 @@ export default {
     { id: 'ht.n3', turns: [
       { beat: '{a} and {b} float in silence for a while.' },
       { by: 'a', say: "Is it weird that I'm having fun?", v: { soft: ['I didn\'t think I\'d actually like it here.'] } },
-      { by: 'b', say: "No. It's weird that anybody is.", v: { dry: ['Yes. Deeply weird.'] } },
+      { by: 'b', say: "No. I'm having fun too, and I didn't expect to.", v: { dry: ['Yes. Deeply weird.'] } },
     ] },
   ],
   'tj-at-breakfast.any': [
@@ -209,8 +209,8 @@ export default {
   ],
   'bunk-war.stuck': [
     { id: 'bw.s1', turns: [
-      { beat: '{b} is on the phone with the lamp on, at one in the morning, talking strategy to nobody in particular.' },
-      { by: 'a', say: "Some of us have a daily tomorrow.", v: { loud: ['SOME OF US ARE TRYING TO SLEEP!'], dry: ['Fascinating monologue. Can it be a podcast? One I can turn off?'] } },
+      { beat: 'It\'s one in the morning. {b} has the lamp on and is talking strategy out loud to anybody who\'s awake.' },
+      { by: 'a', say: "Some of us have a daily tomorrow.", v: { loud: ['SOME OF US ARE TRYING TO SLEEP!'], dry: ['Can you please stop talking? Some of us want to sleep.'] } },
       { by: 'b', say: "Then sleep.", v: { sharp: ['Not my problem.'] } },
       { by: 'a', conf: "I'm stuck in a room with {b} for who knows how long. One of us isn't making it out of this alive.", v: { soft: ['I\'m so tired. I just want one night of sleep.'] } },
     ] },
@@ -272,13 +272,13 @@ export default {
     { id: 'rh.p2', turns: [
       { by: 'a', say: "First-timer, huh? Welcome. You're making breakfast tomorrow." },
       { by: 'b', say: "Pancakes or eggs?", v: { soft: ['Happy to! Any requests?'] } },
-      { by: 'a', conf: "{b} didn't complain once. That's how you survive as a rookie in here.", v: { sharp: ['{b} is playing nice. Rookies who play nice are the ones to watch.'] } },
+      { by: 'a', conf: "{b} didn't complain once. That's how you survive as a rookie in here.", v: { sharp: ['{b} is playing nice. I don\'t trust it.'] } },
     ] },
     { id: 'rh.p3', turns: [
       { by: 'a', say: "Rookie, sing us a song. It's tradition." },
       { by: 'b', say: "It is not a tradition." },
       { by: 'a', say: "It is now." },
-      { beat: '{b} sings something terrible, loudly, to applause.' },
+      { beat: '{b} sings, badly and loudly, and the whole room claps.' },
     ] },
   ],
   'rookie-hazing.refuses': [
@@ -347,7 +347,7 @@ export default {
       { by: 'a', say: "Why'd you vote for me?" },
       { by: 'b', say: "Honestly? I panicked. I'm sorry.", v: { sharp: ['It was strategy. But I\'m sorry it was you.'] } },
       { by: 'a', say: "Okay. Thanks for saying it.", v: { sharp: ['Fine. Don\'t do it again.'] } },
-      { by: 'a', conf: "An apology doesn't erase a vote. But it's more than most people in here would give me.", v: { soft: ['I believe {b} meant it. I think.'] } },
+      { by: 'a', conf: "Saying sorry doesn't change how {b} voted. But it's more than most people in here would give me.", v: { soft: ['I believe {b} meant it. I think.'] } },
     ] },
     { id: 'rq.a2', turns: [
       { by: 'b', say: "Before you say anything, I know. I'm sorry about the vote.", v: { loud: ['I\'m sorry! I know! I\'m sorry!'] } },
@@ -430,7 +430,7 @@ export default {
     ] },
     { id: 'tt.b3', turns: [
       { by: 'a', say: "I'd call you out in a heartbeat. You know that, right?" },
-      { by: 'b', say: "Then do it.", v: { soft: ['Why are you always like this with me?'] } },
+      { by: 'b', say: "Then do it.", v: { soft: ['Then do it. Why are you always like this with me?'] } },
       { by: 'a', say: "Maybe I will." },
     ] },
   ],
@@ -441,7 +441,7 @@ export default {
       { by: 'b', conf: "{a} talks a lot. I'll start listening when {a} starts winning.", v: { soft: ['I don\'t let that stuff get to me. It\'s just noise.'] } },
     ] },
     { id: 'tt.s2', turns: [
-      { by: 'a', say: "I'm coming for you. Just so you know.", v: { sharp: ['Enjoy it while it lasts.'] } },
+      { by: 'a', say: "I'm coming for you. Just so you know.", v: { sharp: ['I\'m coming for you. Enjoy it while it lasts.'] } },
       { by: 'b', say: "Cool. Can you pass the salt?", v: { dry: ['Noted. Salt, please.'] } },
       { by: 'a', conf: "{b} didn't even flinch. That's annoying.", v: { loud: ['{b} ignored me! Nobody ignores me!'] } },
     ] },
@@ -454,14 +454,14 @@ export default {
   'floater-callout.firesback': [
     { id: 'fc.f1', turns: [
       { by: 'a', say: "Some people haven't been in the Arena once. Just saying.", v: { loud: ['Some people are getting a free ride! I\'m looking at you, {b}!'] } },
-      { by: 'b', say: "Then put me in. I'm not scared of you.", v: { sharp: ['Funny, coming from somebody who barely won their own.'] } },
+      { by: 'b', say: "Then put me in. I'm not scared of you.", v: { sharp: ['That\'s funny, coming from you. You barely survived yours.'] } },
       { by: 'a', say: "Maybe I will.", v: { sharp: ['Careful what you wish for.'] } },
       { by: 'b', conf: "{a} wants to make me a target. Fine. Then {a} gets to be one too.", v: { soft: ['That was so embarrassing. Why does everyone have to do this in public?'] } },
     ] },
     { id: 'fc.f2', turns: [
       { by: 'a', say: "{b}, when are you actually going to play this game?" },
       { by: 'b', say: "When are you going to stop talking about me?", v: { loud: ['When are you going to SHUT UP about me?!'] } },
-      { beat: 'Everyone on the couch suddenly finds their drinks very interesting.' },
+      { beat: 'Everyone on the couch looks down at their drinks.' },
     ] },
     { id: 'fc.f3', turns: [
       { by: 'a', say: "You've been coasting. Everybody sees it.", keep: ['coast'] },
@@ -478,7 +478,7 @@ export default {
     { id: 'fc.t2', turns: [
       { by: 'a', say: "{b}, no offence, but what's your game? What have you actually done?" },
       { by: 'b', say: "I... I'm working on it.", v: { sharp: ['I\'m playing my game. You\'ll see.'] } },
-      { by: 'a', conf: "{b} didn't have an answer. Neither will the house, when it's {b}'s name on the ballot.", v: { soft: ['I didn\'t want to embarrass {b}. Somebody had to say it, though.'] } },
+      { by: 'a', conf: "{b} didn't have an answer. That's going to come up at the vote.", v: { soft: ['I didn\'t want to embarrass {b}. Somebody had to say it, though.'] } },
     ] },
     { id: 'fc.t3', turns: [
       { by: 'a', say: "It must be nice, never being in danger." },
@@ -531,7 +531,7 @@ export default {
       { by: 'a', conf: "{b} sat with me for an hour and didn't say much. That was exactly what I needed.", v: { soft: ['I don\'t know what I\'d do in here without {b}.'] } },
     ] },
     { id: 'hs.c2', turns: [
-      { by: 'a', say: "Sorry. I'm being stupid." },
+      { by: 'a', say: "Sorry. I'm being stupid.", keep: ['stupid'] },
       { by: 'b', say: "You're not being stupid. Everybody cries in here.", v: { sharp: ['Crying\'s allowed. Quitting isn\'t.'] } },
       { by: 'a', say: "I just want to hear my mom's voice.", v: { soft: ['I just want one hug from my mom.'] } },
       { by: 'b', conf: "{a} is struggling, and if I don't look after {a}, nobody in this house will.", v: { sharp: ['Somebody has to keep {a} from quitting. Might as well be me.'] } },
@@ -544,7 +544,7 @@ export default {
   ],
   'homesick.alone': [
     { id: 'hs.a1', turns: [
-      { by: 'a', conf: "I miss home so much it hurts. Some nights I lie in that bunk and just think about leaving.", v: { loud: ['I\'m losing it in here! I miss everything about home!'], sharp: ['I don\'t get homesick. Except I am. Very.'], soft: ['I cried in the shower again today. I just miss my family so much.'] } },
+      { by: 'a', conf: "I miss home so much it hurts. Some nights I lie in that bunk and just think about leaving.", v: { loud: ['I\'m losing it in here! I miss everything about home!'], sharp: ['I never get homesick, but I really miss home right now.'], soft: ['I cried in the shower again today. I just miss my family so much.'] } },
     ] },
     { id: 'hs.a2', turns: [
       { beat: '{a} stares at a photo from home taped to the bunk.' },
@@ -570,7 +570,7 @@ export default {
     ] },
     { id: 'jl.b3', turns: [
       { by: 'a', say: "Seriously, {c}? In front of me?", v: { soft: ['That really hurt, {c}.'] } },
-      { by: 'c', say: "It's not what you think!", v: { odd: ['It\'s exactly not what it looks like!'] } },
+      { by: 'c', say: "It's not what you think!", v: { odd: ['It\'s not what it looks like! I swear!'] } },
       { by: 'b', say: "Relax. It was nothing.", v: { sharp: ['Somebody\'s insecure.'] } },
       { by: 'a', conf: "If it was nothing, why did it look like something?", v: { loud: ['Nothing?! It didn\'t look like nothing!'] } },
     ] },
@@ -594,7 +594,7 @@ export default {
   'flirt.back': [
     { id: 'fl.b1', turns: [
       { by: 'a', say: "Has anybody told you you look really good today?", v: { odd: ['Is it hot out here, or is it just you? It\'s both. It\'s really hot out here.'], sharp: ['You clean up nice. Don\'t let it go to your head.'] } },
-      { by: 'b', say: "Maybe. Not as nicely as you just did.", v: { soft: ['Stop it. You\'re going to make me blush.'] } },
+      { by: 'b', say: "Maybe. It's nicer coming from you, though.", v: { soft: ['Stop it. You\'re going to make me blush.'] } },
       { by: 'a', conf: "{b} smiled. {b} actually smiled. I'm going to be thinking about that all night.", v: { sharp: ['{b} is interested. Good. Very good.'] } },
     ] },
     { id: 'fl.b2', turns: [
@@ -617,7 +617,7 @@ export default {
     { id: 'fl.r2', turns: [
       { by: 'a', say: "You've got a really great laugh, you know that?" },
       { by: 'b', say: "Thanks. Anyway, I should go.", v: { soft: ['Aw, that\'s sweet. I\'ve got to go help with dinner, though.'] } },
-      { by: 'a', conf: "Shot down. On camera. In front of the pool. Great.", v: { soft: ['Okay. That hurt a little.'] } },
+      { by: 'a', conf: "I just got shot down on camera, right in front of the pool. Great.", v: { soft: ['Okay. That hurt a little.'] } },
     ] },
     { id: 'fl.r3', turns: [
       { by: 'a', say: "Want to share my blanket? It's cold out here." },
@@ -627,19 +627,19 @@ export default {
   ],
   'beach-date.any': [
     { id: 'bd.1', turns: [
-      { beat: '{a} and {b} walk along the beach, away from the cameras on the deck, as far as the mic packs allow.' },
+      { beat: '{a} and {b} walk along the beach, away from everybody.' },
       { by: 'a', say: "Do you ever think about what happens when we get out of here?", v: { sharp: ['Can I tell you something I won\'t say in the villa?'] } },
       { by: 'b', say: "All the time. Mostly about you.", v: { odd: ['Mostly about pizza. And you. Pizza and you.'] } },
-      { by: 'a', conf: "{b} is the one real thing I've got in this game. That's scary, and I don't care.", v: { sharp: ['Everybody in that house wants to split us up. Let them try.'] } },
+      { by: 'a', conf: "{b} is the only person in here I really trust. That's scary, and I don't care.", v: { sharp: ['Everybody in that house wants to split us up. Let them try.'] } },
     ] },
     { id: 'bd.2', turns: [
       { by: 'b', say: "We should be careful. People are starting to see us as a pair.", v: { soft: ['I don\'t want them to come after you because of me.'] } },
       { by: 'a', say: "Let them. I'm not hiding it.", v: { soft: ['I don\'t care what they see.'] } },
-      { by: 'b', conf: "Being a couple in here puts a target on both of us. I'd still rather have {a} than not.", v: { sharp: ['A couple is two votes. That\'s power. It\'s also a target.'] } },
+      { by: 'b', conf: "Being a couple in here puts a target on both of us. I'd still rather have {a} than not.", v: { sharp: ['Being a couple means two votes, which is power, but it also makes us a target.'] } },
     ] },
     { id: 'bd.3', turns: [
       { beat: '{a} and {b} sit on the sand watching the sun go down.' },
-      { by: 'a', say: "This is the first time today I've breathed.", v: { odd: ['If TJ shows up right now, I\'m throwing a coconut at him.'] } },
+      { by: 'a', say: "This is the first time all day I've been able to relax.", v: { odd: ['If TJ shows up right now, I\'m throwing a coconut at him.'] } },
       { by: 'b', say: "Me too." },
     ] },
   ],
@@ -668,19 +668,19 @@ export default {
     ] },
     { id: 'ex.r2', turns: [
       { by: 'b', say: "I didn't think I'd ever see you again." },
-      { by: 'a', say: "And yet here we are. Again.", v: { soft: ['I thought about you a lot, after.'] } },
-      { by: 'b', conf: "Everybody's going to think we're a couple again. Maybe they're right.", v: { sharp: ['A history with {a} is a weakness. I don\'t care.'] } },
+      { by: 'a', say: "Well, here we are.", v: { soft: ['I thought about you a lot, after.'] } },
+      { by: 'b', conf: "Everybody's going to think we're a couple again. Maybe they're right.", v: { sharp: ['Having history with {a} could hurt my game. I don\'t care.'] } },
     ] },
     { id: 'ex.r3', turns: [
       { beat: '{a} and {b} talk late into the night by the pool.' },
-      { by: 'a', conf: "I came here to win. I did not come here to fall for {b} all over again.", v: { odd: ['Plot twist: my ex is cute. I knew that. I forgot.'] } },
+      { by: 'a', conf: "I came here to win. I did not come here to fall for {b} all over again.", v: { odd: ['Okay, my ex is still really cute. I forgot about that.'] } },
     ] },
   ],
   'ex-in-the-house.cold': [
     { id: 'ex.c1', turns: [
       { by: 'a', say: "Of all the people. You.", v: { loud: ['YOU?! Of course it\'s you!'] } },
       { by: 'b', say: "Nice to see you too.", v: { soft: ['Hi. I hoped we could be okay.'] } },
-      { by: 'a', conf: "My ex is in this house. I'm going to have to see {b} every single day. Fantastic.", v: { soft: ['I thought I was over it. Seeing {b} again says otherwise.'] } },
+      { by: 'a', conf: "My ex is in this house. I'm going to have to see {b} every single day. Fantastic.", v: { soft: ['I thought I was over it. Seeing {b} again, I\'m not so sure.'] } },
     ] },
     { id: 'ex.c2', turns: [
       { by: 'b', say: "Can we at least be civil?" },
@@ -697,10 +697,10 @@ export default {
     { id: 'ov.1', turns: [
       { beat: '{a} comes up the stairs and stops outside a half-open door. {b} is talking inside.' },
       { by: 'b', say: "...it has to be {a} this week. {a} is too dangerous." },
-      { by: 'a', conf: "I heard my name come out of {b}'s mouth. Now I know exactly where I stand.", v: { loud: ['I HEARD THAT! I heard every word!'], soft: ['My heart dropped. I thought {b} liked me.'], sharp: ['Good. Now I know. Knowing is everything.'] } },
+      { by: 'a', conf: "I heard my name come out of {b}'s mouth. Now I know exactly where I stand.", v: { loud: ['I HEARD THAT! I heard every word!'], soft: ['My heart dropped. I thought {b} liked me.'], sharp: ['Good. At least now I know.'] } },
     ] },
     { id: 'ov.2', turns: [
-      { beat: '{a} is lying on a bunk with headphones in. The headphones are not plugged into anything.' },
+      { beat: '{a} is lying on a bunk with headphones in, pretending to listen to music.' },
       { by: 'b', say: "We just have to get {a} in before {a} figures it out." },
       { by: 'a', conf: "Too late, {b}. I already figured it out.", v: { odd: ['Fake headphones. Oldest trick in the book. They fell for it.'], soft: ['I lay there pretending to sleep, and I wanted to cry.'] } },
     ] },
@@ -747,7 +747,7 @@ export default {
     { id: 'lt.h2', turns: [
       { by: 'a', say: "Did you tell anybody what I told you?" },
       { by: 'b', say: "No. Why would I?", v: { sharp: ['Of course not. I don\'t gossip.'] } },
-      { by: 'a', conf: "{b} didn't say a word to anyone. Good. {b} just moved up my list.", v: { sharp: ['Tested and trusted. For now.'] } },
+      { by: 'a', conf: "{b} didn't say a word to anyone. Good. {b} just moved up my list.", v: { sharp: ['{b} passed. I trust {b}, for now.'] } },
     ] },
     { id: 'lt.h3', turns: [
       { by: 'a', conf: "Every alliance has a leak. Turns out it isn't {b}.", v: { odd: ['{b} is a vault. A very quiet vault.'] } },
@@ -779,10 +779,10 @@ export default {
     { id: 'sl.b2', turns: [
       { by: 'a', say: "Watch out for {c}. I'm just saying.", v: { sharp: ['{c} is coming for you. I\'d move first.'] } },
       { by: 'b', say: "Thanks for telling me. I owe you.", v: { soft: ['I had no idea. Thank you.'] } },
-      { by: 'a', conf: "Planting a seed is easy. Watching it grow is the fun part.", v: { odd: ['I\'m a gardener now. A very evil gardener.'] } },
+      { by: 'a', conf: "Now {b} doesn't trust {c}. That's all I wanted.", v: { odd: ['I\'m kind of evil, and I\'m okay with that.'] } },
     ] },
     { id: 'sl.b3', turns: [
-      { by: 'a', say: "Don't say I told you, but {c} isn't who you think." },
+      { by: 'a', say: "Don't say I told you, but {c} has been talking about you." },
       { by: 'b', conf: "I didn't want to believe it. But why would {a} lie to me?", v: { sharp: ['{c} is on my list now.'] } },
     ] },
   ],

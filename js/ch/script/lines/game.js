@@ -16,23 +16,23 @@ export default {
   'alliance-form.any': [
     { id: 'af.1', turns: [
       { beat: '{a} waves {b} and {c} into the gym and shuts the door behind them.' },
-      { by: 'a', say: "I'll be quick. I think the three of us could run this place.", v: { loud: ['Okay, I\'m just going to say it! You, me, and {c}! Let\'s run this house!'], soft: ['I really trust you two. I think we should stick together.'], sharp: ['I\'ve looked at everybody. You two are the only ones worth working with.'] } },
+      { by: 'a', say: "I'll be quick. I think we could run this place.", v: { loud: ['Okay, I\'m just going to say it! All of us, together! Let\'s run this house!'], soft: ['I really trust you guys. I think we should stick together.'], sharp: ['I\'ve looked at everybody. You\'re the only ones worth working with.'] } },
       { by: 'b', say: "I've been thinking the same thing.", v: { sharp: ['Okay. What\'s in it for me?'], soft: ['Really? Me? Yes. Yes, absolutely.'] } },
       { by: 'c', say: "So what do we call ourselves?", v: { odd: ['Do we get a secret handshake?'] } },
       { by: 'a', say: "{alliance}. And nobody outside this room hears that name." },
-      { by: 'a', conf: "Day one, and I've already got a group. In this game, the first alliance is usually the one that decides the first vote.", v: { sharp: ['Three votes on day one. Everybody else is still unpacking.'], soft: ['I feel so much better knowing I\'ve got people.'] } },
+      { by: 'a', conf: "I've already got a group. In this game, the first alliance is usually the one that decides the first vote.", v: { sharp: ['We\'ve got the votes already. Everybody else is still figuring things out.'], soft: ['I feel so much better knowing I\'ve got people.'] } },
     ] },
     { id: 'af.2', turns: [
-      { by: 'a', say: "Can I trust you two? Like, really trust you?", v: { sharp: ['Before I say anything, I need to know you can keep your mouths shut.'] } },
+      { by: 'a', say: "Can I trust you guys? Like, really trust you?", v: { sharp: ['Before I say anything, I need to know you can keep your mouths shut.'] } },
       { by: 'b', say: "Yeah. Of course.", v: { odd: ['I have never told a secret in my life. Okay, once.'] } },
-      { by: 'a', say: "Then let's make it official. Us three, and we see who else we can bring in.", v: { loud: ['Then we\'re a team! Starting right now!'] } },
-      { by: 'c', conf: "{a} moved fast. I like that in an ally. I'd hate it in an enemy.", v: { soft: ['It\'s nice to have people to lean on in here.'] } },
+      { by: 'a', say: "Then let's make it official. Us, and we see who else we can bring in.", v: { loud: ['Then we\'re a team! Starting right now!'] } },
+      { by: 'c', conf: "{a} moved fast. That's good, as long as {a} is on my side.", v: { soft: ['It\'s nice to have people to lean on in here.'] } },
     ] },
     { id: 'af.3', turns: [
       { beat: 'A quiet corner of the pool deck. {a}, {b} and {c} talk with their backs to the villa.' },
       { by: 'a', say: "We vote together, we protect each other, and we don't tell anybody.", v: { soft: ['I just want us to look after each other, okay?'] } },
       { by: 'b', say: "Deal.", v: { loud: ['DEAL!'] } },
-      { by: 'b', conf: "{alliance} is born. Let's see how long it lasts.", v: { soft: ['I really hope this lasts.'], sharp: ['Every alliance ends. The trick is being there when it does.'] } },
+      { by: 'b', conf: "So that's {alliance}. Let's see how long it lasts.", v: { soft: ['I really hope this lasts.'], sharp: ['This won\'t last forever. I just have to make sure I\'m still here when it ends.'] } },
     ] },
   ],
   'alliance-form.sameshow': [
@@ -47,7 +47,7 @@ export default {
       { by: 'a', say: "{alliance}. Just us." },
     ] },
     { id: 'af.s3', turns: [
-      { by: 'a', conf: "The people from my old show found each other in about five minutes. {alliance} was decided before anyone else even noticed.", v: { sharp: ['Old friends make the best first alliance. And the easiest to cut, later.'] } },
+      { by: 'a', conf: "The people from my old show found each other in about five minutes. {alliance} was decided before anyone else even noticed.", v: { sharp: ['I trust them for now. When I need to cut somebody, they\'ll be the easiest.'] } },
     ] },
   ],
   'alliance-grow.any': [
@@ -58,7 +58,7 @@ export default {
       { by: 'b', conf: "I went from being a swing vote to being in the biggest group in the house. That's a good week.", v: { sharp: ['Being in the big alliance is safe. It\'s also crowded. I\'ll keep both eyes open.'] } },
     ] },
     { id: 'ag.2', turns: [
-      { by: 'a', conf: "{alliance} needs numbers, and {b} has been loyal to us all week. Bringing {b} in is easy.", v: { sharp: ['More numbers means more control. {b} is a number.'] } },
+      { by: 'a', conf: "{alliance} needs numbers, and {b} has been loyal to us all week. Bringing {b} in is easy.", v: { sharp: ['We need more votes, and {b} is one more.'] } },
       { by: 'b', say: "So I'm in? Just like that?", v: { odd: ['Do I get a jacket? Tell me there\'s a jacket.'] } },
       { by: 'a', say: "Just like that." },
     ] },
@@ -86,8 +86,8 @@ export default {
   'alliance-betrayal.callout': [
     { id: 'ab.c1', turns: [
       { by: 'a', say: "You called me out. Me. After everything.", v: { loud: ['You called ME out?! After EVERYTHING?!'], soft: ['Out of everybody, you picked me.'] } },
-      { by: 'b', say: "I picked the fight I could win.", v: { soft: ['I\'m sorry. I had to survive.'], sharp: ['It\'s the Arena. Friendship stops at the sand.'] } },
-      { by: 'a', conf: "{b} looked at a whole house of people and picked an ally. That says everything.", v: { soft: ['I keep thinking about the look on {b}\'s face when {b} said my name.'] } },
+      { by: 'b', say: "I picked the fight I could win.", v: { soft: ['I\'m sorry. I had to survive.'], sharp: ['It\'s the Arena. I had to pick somebody I could beat.'] } },
+      { by: 'a', conf: "{b} could have picked anybody in this house, and {b} picked an ally.", v: { soft: ['I keep thinking about the look on {b}\'s face when {b} said my name.'] } },
     ] },
     { id: 'ab.c2', turns: [
       { by: 'a', say: "I thought we were in this together.", v: { sharp: ['So that\'s what our alliance was worth.'] } },
@@ -104,11 +104,11 @@ export default {
       { by: 'a', say: "I'm walking away before you all push me out.", v: { soft: ['I have to do what\'s right for me.'] } },
     ] },
     { id: 'al.2', turns: [
-      { by: 'a', conf: "I'm not in that alliance anymore. Honestly, I'm not sure I ever really was.", v: { sharp: ['Free agent. Best thing that\'s happened to my game.'], soft: ['I feel lonely now. But I feel honest.'] } },
+      { by: 'a', conf: "I'm not in that alliance anymore. Honestly, I'm not sure I ever really was.", v: { sharp: ['Free agent. Best thing that\'s happened to my game.'], soft: ['I feel lonely now, but at least I\'m not pretending anymore.'] } },
     ] },
     { id: 'al.3', turns: [
       { by: 'b', say: "We need to talk about where your head's at." },
-      { by: 'a', say: "My head's somewhere else. Let's leave it there.", v: { loud: ['My head\'s OUT! I\'m out!'] } },
+      { by: 'a', say: "I'm not in it anymore. Let's leave it at that.", v: { loud: ['My head\'s OUT! I\'m out!'] } },
     ] },
   ],
   'alliance-leave.pushed-out': [
@@ -132,7 +132,7 @@ export default {
       { by: 'b', conf: "Maybe {a} didn't do anything. I can't take the chance.", v: { soft: ['I hope I\'m wrong about {a}. I\'m not willing to find out.'] } },
     ] },
     { id: 'al.c2', turns: [
-      { by: 'a', conf: "{b} cut me out of the alliance for no reason. Paranoid people make bad leaders.", v: { soft: ['I didn\'t do anything wrong. I really didn\'t.'] } },
+      { by: 'a', conf: "{b} cut me out of the alliance for no reason. {b} is getting paranoid.", v: { soft: ['I didn\'t do anything wrong. I really didn\'t.'] } },
     ] },
     { id: 'al.c3', turns: [
       { by: 'b', say: "It's not working with you. That's all I'm going to say." },
@@ -163,19 +163,19 @@ export default {
     ] },
     { id: 'ae.b3', turns: [
       { by: 'b', say: "So what now?" },
-      { by: 'a', say: "Now we find out who we really are in this game.", v: { odd: ['Now? Now we panic. Professionally.'] } },
+      { by: 'a', say: "Now everybody's on their own.", v: { odd: ['Now? Now we panic.'] } },
     ] },
   ],
   'alliance-end.numbers': [
     { id: 'ae.n1', turns: [
-      { by: 'a', say: "There's only two of us left. We're not an alliance anymore, we're just friends.", v: { soft: ['It\'s just you and me now. I\'m glad it\'s you.'], sharp: ['Two people isn\'t an alliance. It\'s a target.'] } },
+      { by: 'a', say: "There's only two of us left. We're not an alliance anymore, we're just friends.", v: { soft: ['It\'s just you and me now. I\'m glad it\'s you.'], sharp: ['Two people isn\'t enough. We\'re a target now.'] } },
       { by: 'b', say: "Then let's be friends who vote together.", v: { loud: ['Then we\'re a duo! A deadly duo!'] } },
     ] },
     { id: 'ae.n2', turns: [
       { by: 'a', conf: "Everybody else in our group got picked off one by one. Now there's nobody to protect.", v: { soft: ['I miss them. All of them.'] } },
     ] },
     { id: 'ae.n3', turns: [
-      { by: 'a', conf: "Alliances in this game don't break. They just get smaller until there's nothing left.", v: { sharp: ['Our numbers are gone. Time to find new ones.'] } },
+      { by: 'a', conf: "We didn't fall apart. They just picked us off one at a time until there was nobody left.", v: { sharp: ['Our numbers are gone. Time to find new ones.'] } },
     ] },
   ],
   'alliance-end.final': [
@@ -197,11 +197,11 @@ export default {
       { beat: '{a} gathers {b} and {c} in the bedroom, door closed.' },
       { by: 'a', say: "They've voted in a rookie two weeks running. We're next. Every single one of us.", v: { loud: ['Two rookies in a row! We are NEXT!'], sharp: ['The vets are picking us off. Time to make them pay for it.'] } },
       { by: 'b', say: "So what do we do?", v: { soft: ['What can we even do? There\'s so few of us.'] } },
-      { by: 'a', say: "We stop being numbers for them. We vote together.", v: { loud: ['We fight back! Together!'] } },
+      { by: 'a', say: "We stop letting them use us. We vote together.", v: { loud: ['We fight back! Together!'] } },
       { by: 'c', conf: "The vets thought the rookies would just line up and go home one at a time. Not anymore.", v: { soft: ['For the first time in here, I don\'t feel alone.'] } },
     ] },
     { id: 'ru.2', turns: [
-      { by: 'a', conf: "We're the new threats. The vets forgot that a threat is something you're supposed to be scared of.", v: { odd: ['Rookie revolution! I made us a chant. We\'re not using it. Yet.'] } },
+      { by: 'a', conf: "The vets keep calling us threats. Good. They should be scared of us.", v: { odd: ['Rookie revolution! I made us a chant. We\'re not using it. Yet.'] } },
     ] },
     { id: 'ru.3', turns: [
       { by: 'b', say: "If we stick together, they can't get us all." },
@@ -213,7 +213,7 @@ export default {
       { by: 'a', conf: "I walked past the gym and saw {b} and {c} in there with the door shut. Nobody shuts a door in this house unless they're making a plan.", v: { loud: ['Doors shut in the middle of the day?! They\'re up to something!'], soft: ['I wish I hadn\'t seen it. Now I can\'t stop thinking about it.'] } },
     ] },
     { id: 'ms.2', turns: [
-      { by: 'a', conf: "{b} and {c} went quiet the second I walked in. That's not a coincidence. That's an alliance.", v: { sharp: ['Silence when you walk in tells you more than any conversation.'] } },
+      { by: 'a', conf: "{b} and {c} went quiet the second I walked in. That's not a coincidence. That's an alliance.", v: { sharp: ['They stopped talking the second I walked in. They\'re working together.'] } },
     ] },
     { id: 'ms.3', turns: [
       { by: 'a', conf: "I counted who was missing from the kitchen. {b}, {c}, and a couple of others. Now I know who's working together.", v: { odd: ['I did a headcount. I\'m basically a detective now.'] } },
@@ -224,7 +224,7 @@ export default {
     { id: 'dl.1', turns: [
       { by: 'a', say: "I won't put your name down if you don't put mine. And if either of us goes in, we don't call each other out.", v: { loud: ['Deal time! You don\'t vote me, I don\'t vote you!'], sharp: ['Simple trade. Safety for safety.'] } },
       { by: 'b', say: "Deal. Shake on it.", v: { soft: ['Okay. Deal. I\'d never vote for you anyway.'] } },
-      { by: 'a', conf: "A deal with {b} is insurance. Insurance only matters if somebody keeps paying it.", v: { soft: ['It\'s nice knowing there\'s one person in here who won\'t come for me.'] } },
+      { by: 'a', conf: "The deal with {b} keeps me safe, but only as long as {b} sticks to it.", v: { soft: ['It\'s nice knowing there\'s one person in here who won\'t come for me.'] } },
     ] },
     { id: 'dl.2', turns: [
       { by: 'b', say: "Can I trust you not to come after me?" },
@@ -244,7 +244,7 @@ export default {
     { id: 'dl.5', turns: [
       { by: 'b', say: "I don't want to end up across from you in that Arena.", v: { sharp: ['I\'d rather not have to beat you.'] } },
       { by: 'a', say: "Then let's make sure we never do.", v: { soft: ['Me neither. Let\'s look out for each other.'] } },
-      { by: 'b', conf: "{a} and I have a deal now. It's not an alliance. It's insurance.", v: { loud: ['Insurance! Best purchase I\'ve made all week!'] } },
+      { by: 'b', conf: "{a} and I have a deal now. It's not an alliance. It's insurance.", v: { loud: ['A deal! I love a deal!'] } },
     ] },
     { id: 'dl.6', turns: [
       { by: 'a', say: "Let's keep each other off the ballot. Just us. Nobody else needs to know.", v: { sharp: ['A quiet deal. Just between us.'] } },
@@ -252,13 +252,13 @@ export default {
       { by: 'a', conf: "A deal nobody knows about is the best kind. Nobody can use it against you.", v: { soft: ['It\'s nice to have one person I don\'t have to worry about.'] } },
     ] },
     { id: 'dl.7', turns: [
-      { by: 'b', conf: "{a} asked me for a deal, and I said yes. I'll keep it as long as it keeps me safe.", v: { soft: ['I\'ll keep it. I keep my promises.'], sharp: ['Every deal has an expiry date. Mine just isn\'t written down.'] } },
+      { by: 'b', conf: "{a} asked me for a deal, and I said yes. I'll keep it as long as it keeps me safe.", v: { soft: ['{a} asked me for a deal, and I said yes. I\'ll keep it. I keep my promises.'], sharp: ['I\'ll keep the deal as long as it works for me.'] } },
     ] },
   ],
   'deal-broken.vote': [
     { id: 'db.v1', turns: [
       { by: 'b', say: "We had a deal. You said my name anyway.", v: { loud: ['WE HAD A DEAL!'], soft: ['I trusted you. We shook on it.'] } },
-      { by: 'a', say: "Things changed.", v: { soft: ['I know. I\'m sorry. I didn\'t have a choice.'], sharp: ['Deals expire.'] } },
+      { by: 'a', say: "Things changed.", v: { soft: ['I know. I\'m sorry. I didn\'t have a choice.'], sharp: ['The deal stopped working for me.'] } },
       { by: 'b', conf: "A deal only means something if you keep it. {a} didn't. Now I know what {a}'s word is worth.", v: { sharp: ['Noted. {a} is on my list now. Right at the top.'] } },
     ] },
     { id: 'db.v2', turns: [
@@ -266,13 +266,13 @@ export default {
     ] },
     { id: 'db.v3', turns: [
       { by: 'b', say: "So our deal meant nothing?" },
-      { by: 'a', say: "It meant something. Just not enough.", v: { sharp: ['It meant exactly what I needed it to mean.'] } },
+      { by: 'a', say: "It meant something. Just not enough.", v: { sharp: ['It kept me safe while I needed it to.'] } },
     ] },
   ],
   'deal-broken.callout': [
     { id: 'db.c1', turns: [
       { by: 'b', say: "You promised you'd never call me out. You promised!", v: { loud: ['You PROMISED!'], soft: ['You promised me.'] } },
-      { by: 'a', say: "I'm sorry. It's me or you now.", v: { sharp: ['Promises don\'t count in the Arena.'] } },
+      { by: 'a', say: "I'm sorry. It's me or you now.", v: { sharp: ['I\'m sorry, but I had to pick somebody I can beat.'] } },
       { by: 'b', conf: "{a} broke our deal to save {a.ref}. I'm going to make {a} regret that in there.", v: { soft: ['That hurt more than being voted in.'] } },
     ] },
     { id: 'db.c2', turns: [
@@ -280,7 +280,7 @@ export default {
     ] },
     { id: 'db.c3', turns: [
       { by: 'b', say: "We had a deal, {a}." },
-      { by: 'a', say: "We did. Now we have an elimination.", v: { soft: ['I know. I\'m so sorry.'] } },
+      { by: 'a', say: "I know. I'm sorry. I had to.", v: { soft: ['I know. I\'m so sorry.'] } },
     ] },
   ],
 
@@ -310,7 +310,7 @@ export default {
       { by: 'b', conf: "{a} and I are official. Everybody is going to see us as a pair, and a pair is a target. I don't care.", v: { sharp: ['A couple is two votes. That\'s power, and I know it.'] } },
     ] },
     { id: 'sh.3', turns: [
-      { by: 'a', say: "I like you. Like, really like you.", v: { sharp: ['I don\'t do this. I\'m doing this.'] } },
+      { by: 'a', say: "I like you. Like, really like you.", v: { sharp: ['I don\'t usually do this. But I really like you.'] } },
       { by: 'b', say: "Good. Because I really like you too.", v: { odd: ['Oh thank God, I was about to say it first and it was going to be so awkward.'] } },
     ] },
   ],
@@ -340,7 +340,7 @@ export default {
       { by: 'b', say: "We're okay.", v: { odd: ['We\'re okay. Hug it out? Hug it out.'] } },
     ] },
     { id: 'ap.a3', turns: [
-      { by: 'b', conf: "{a} apologised. I believed it. Maybe I'm soft. Or maybe {a} meant it.", v: { sharp: ['An apology is a move too. I\'ll accept it and keep watching.'] } },
+      { by: 'b', conf: "{a} apologised. I believed it. Maybe I'm soft. Or maybe {a} meant it.", v: { sharp: ['I\'ll accept it, but I\'m still watching {a}.'] } },
     ] },
   ],
   'apology.rejected': [
@@ -360,12 +360,12 @@ export default {
   // what each person wants from this season, said to a friend or to the camera
   'psyche.prove': [
     { id: 'py.p1', turns: [
-      { by: 'a', conf: "People back home think I'm just here for the camera. I want to win something real, so nobody can say that again.", v: { loud: ['I\'m going to prove EVERYBODY wrong!'], soft: ['I want my family to be proud of me. That\'s all.'], sharp: ['Every doubter is fuel. I have a lot of fuel.'] } },
+      { by: 'a', conf: "People back home think I'm just here for the camera. I want to win something real, so nobody can say that again.", v: { loud: ['I\'m going to prove EVERYBODY wrong!'], soft: ['I want my family to be proud of me. That\'s all.'], sharp: ['Everybody doubting me just makes me want it more.'] } },
     ] },
     { id: 'py.p2', turns: [
       { by: 'a', say: "Do you think I can actually win this?" },
       { by: 'b', say: "I think you can do anything you decide to do.", v: { sharp: ['If you stop doubting yourself, yeah.'] } },
-      { by: 'a', conf: "I don't need everybody to believe in me. I need to believe in me.", v: { odd: ['I believe in me. Mostly. Sometimes. Today, yes.'] } },
+      { by: 'a', conf: "I don't need everybody to believe in me. I just need to stop doubting myself.", v: { odd: ['I believe in me. Mostly. Sometimes. Today, yes.'] } },
     ] },
     { id: 'py.p3', turns: [
       { by: 'a', conf: "I didn't come here to be a number. I came here to be somebody people are scared to call out.", v: { soft: ['I just want to show I belong here.'] } },
@@ -374,7 +374,7 @@ export default {
   'psyche.belong': [
     // in a group, and still feeling outside it
     { id: 'py.b4', when: { allied: true }, turns: [
-      { by: 'a', conf: "I'm in an alliance, and I still feel like the one they'd cut first. Being in a group isn't the same as belonging to it.", v: { soft: ['I have people. I just don\'t always feel like I\'m really one of them.'], sharp: ['An alliance isn\'t a family. I keep forgetting that.'] } },
+      { by: 'a', conf: "I'm in an alliance, but I still feel like the one they'd cut first.", v: { soft: ['I have people. I just don\'t always feel like I\'m really one of them.'], sharp: ['An alliance isn\'t a family. I keep forgetting that.'] } },
     ] },
     { id: 'py.b5', when: { allied: true }, turns: [
       { by: 'a', conf: "My group is great, but I always feel one bad week away from being on the outside.", v: { loud: ['I love my people! I\'m also terrified of them!'] } },
@@ -393,7 +393,7 @@ export default {
   ],
   'psyche.control': [
     { id: 'py.c1', turns: [
-      { by: 'a', conf: "I can't stand not knowing what's going on in this house. If there's a plan, I want to be the one who made it.", v: { sharp: ['I don\'t play to survive. I play to decide.'], soft: ['I just feel safer when I know what\'s happening.'] } },
+      { by: 'a', conf: "I can't stand not knowing what's going on in this house. If there's a plan, I want to be the one who made it.", v: { sharp: ['I don\'t want to just get by. I want to be the one making the calls.'], soft: ['I just feel safer when I know what\'s happening.'] } },
     ] },
     { id: 'py.c2', turns: [
       { by: 'b', say: "You don't have to run everything, you know." },
@@ -436,12 +436,12 @@ export default {
       { by: 'b', say: "So make this time count.", v: { sharp: ['Then stop talking about last time.'] } },
     ] },
     { id: 'py.d3', turns: [
-      { by: 'a', conf: "Everybody remembers how I went out last time. I'm here to give them something else to remember.", v: { sharp: ['Redemption is the best revenge.'] } },
+      { by: 'a', conf: "Everybody remembers how I went out last time. I'm here to give them something else to remember.", v: { sharp: ['I want to make up for last time.'] } },
     ] },
   ],
   'psyche.home': [
     { id: 'py.h1', turns: [
-      { by: 'a', conf: "I think about home every day. I'm doing this for my family. I just wish they were closer.", v: { soft: ['I sleep with my mom\'s shirt under my pillow. Don\'t tell anyone.'], sharp: ['Home is the reason I\'m here. Home is also the reason I want to leave.'] } },
+      { by: 'a', conf: "I think about home every day. I'm doing this for my family. I just wish they were closer.", v: { soft: ['I sleep with my mom\'s shirt under my pillow. Don\'t tell anyone.'], sharp: ['I\'m doing this for my family, but missing them makes me want to leave.'] } },
     ] },
     { id: 'py.h2', turns: [
       { by: 'a', say: "What do you miss most?" },
@@ -484,7 +484,7 @@ export default {
       { by: 'a', conf: "Nobody can know I took my foot off the gas. If they find out, I'm done.", v: { soft: ['I feel a little bad. A little.'] } },
     ] },
     { id: 'th.3', turns: [
-      { by: 'a', conf: "Let somebody else look strong this week. Strong people go home in this game.", v: { sharp: ['Let them think I\'m weak. Weak people get called out last.'] } },
+      { by: 'a', conf: "Let somebody else look strong this week. Strong people go home in this game.", v: { sharp: ['Let them think I\'m weak. The house doesn\'t vote in people it isn\'t scared of.'] } },
     ] },
   ],
   'throw-caught.any': [
@@ -522,7 +522,7 @@ export default {
     { id: 'pk.2', turns: [
       { by: 'b', say: "Looks like it's you and me." },
       { by: 'a', say: "Lucky me.", v: { soft: ['Yeah. Okay. Let\'s do our best.'] } },
-      { by: 'a', conf: "Nobody chose me. {b} got stuck with me. Great way to start a daily.", v: { odd: ['I\'m the free toy at the bottom of the cereal box.'] } },
+      { by: 'a', conf: "Nobody chose me. {b} got stuck with me. Great way to start a daily.", v: { odd: ['I\'m the leftover. Great.'] } },
     ] },
     { id: 'pk.3', turns: [
       { by: 'a', conf: "Every single person got picked before me. I'm going to use that in the daily.", v: { sharp: ['Fine. Underestimate me.'] } },
@@ -564,7 +564,7 @@ export default {
     ] },
     { id: 'tb.d2', turns: [
       { by: 'a', say: "Somebody has to take responsibility for that." },
-      { by: 'c', say: "Then take it yourself. You were slow too.", v: { sharp: ['Start with the mirror.'] } },
+      { by: 'c', say: "Then take it yourself. You were slow too.", v: { sharp: ['Then start with yourself.'] } },
     ] },
     { id: 'tb.d3', turns: [
       { by: 'c', conf: "I wasn't going to let {a} pin the loss on {b}. Not while I'm standing right there.", v: { soft: ['{b} is my friend. Of course I said something.'] } },
@@ -590,9 +590,9 @@ export default {
     { id: 'ep.1', turns: [
       { beat: '{a} finds {b} sitting by the water, staring at nothing.' },
       { by: 'a', say: "You've got this. You know that, right?", v: { loud: ['You are going to DESTROY in there tomorrow!'], soft: ['Hey. Whatever happens tomorrow, I\'m proud of you.'], sharp: ['Stop worrying. Worrying loses eliminations.'] } },
-      { by: 'b', say: "I don't know. I'm scared.", v: { sharp: ['I\'m not scared. I\'m angry.'], loud: ['I\'m ready! I\'m so ready!'] } },
-      { by: 'a', say: "Scared's fine. Scared means you care. Just don't let it slow you down.", v: { odd: ['Scared is just excited wearing a hoodie.'] } },
-      { by: 'b', conf: "{a} sat up with me until I could breathe again. I'm going in there for both of us.", v: { sharp: ['{a} believes in me. That\'s one more person than I needed.'] } },
+      { by: 'b', say: "I don't know. I'm scared.", v: { sharp: ['I\'m not scared. I\'m angry. Okay, maybe a little scared.'], loud: ['I\'m ready! I\'m so ready! ...Okay, I\'m scared.'] } },
+      { by: 'a', say: "Scared's fine. Scared means you care. Just don't let it slow you down.", v: { odd: ['Being scared is fine. Just use it.'] } },
+      { by: 'b', conf: "{a} sat up with me until I could breathe again. I'm going in there for both of us.", v: { sharp: ['{a} believes in me. That\'s enough.'] } },
     ] },
     { id: 'ep.2', turns: [
       { by: 'a', say: "Get some sleep. You're going to need it.", v: { soft: ['Try to rest, okay? I\'ll be cheering for you.'] } },
@@ -600,12 +600,12 @@ export default {
       { by: 'a', say: "Then let's just sit here for a while." },
     ] },
     { id: 'ep.3', turns: [
-      { by: 'b', conf: "The night before the Arena is the longest night in this game. Having {a} there made it a little shorter.", v: { loud: ['I\'m going in there with my whole heart tomorrow!'] } },
+      { by: 'b', conf: "The night before the Arena is the worst. Having {a} there made it easier.", v: { loud: ['I\'m going in there with my whole heart tomorrow!'] } },
     ] },
   ],
   'arena-eve-alone.any': [
     { id: 'ea.1', turns: [
-      { by: 'a', conf: "Nobody came to check on me tonight. Not one person. I guess that tells me everything.", v: { sharp: ['Fine. I don\'t need anybody. I just need to win.'], soft: ['I didn\'t think I\'d feel this alone in a house full of people.'], loud: ['Nobody?! NOBODY?!'] } },
+      { by: 'a', conf: "Nobody came to check on me tonight. Not one person. I guess I know where I stand now.", v: { sharp: ['Fine. I don\'t need anybody. I just need to win.'], soft: ['I didn\'t think I\'d feel this alone in a house full of people.'], loud: ['Nobody?! NOBODY?!'] } },
     ] },
     { id: 'ea.2', turns: [
       { beat: '{a} lies awake on a lounger by the pool, long after everyone else has gone to bed.' },
@@ -629,7 +629,7 @@ export default {
     { id: 'ec.r3', turns: [
       { by: 'a', say: "Just so you know, I'm not going home tomorrow." },
       { by: 'b', say: "Neither am I." },
-      { by: 'b', conf: "I said it. I didn't feel it.", v: { loud: ['I\'m going to be up all night now!'] } },
+      { by: 'b', conf: "I said it, but I didn't believe it.", v: { loud: ['I\'m going to be up all night now!'] } },
     ] },
   ],
   'arena-eve-confront.backfires': [
@@ -643,7 +643,7 @@ export default {
       { by: 'b', say: "I've been ready since TJ said my name.", v: { soft: ['I\'m ready. Are you?'] } },
     ] },
     { id: 'ec.b3', turns: [
-      { by: 'a', conf: "I tried to get in {b}'s head. Turns out there's nothing in there to get into. Or there's a wall.", v: { sharp: ['{b} is calmer than I thought. Noted.'] } },
+      { by: 'a', conf: "I tried to get in {b}'s head. {b} didn't react at all, and I can't tell if that's good or bad.", v: { sharp: ['{b} is calmer than I thought. Noted.'] } },
     ] },
   ],
   'vet-dismisses.any': [
@@ -653,7 +653,7 @@ export default {
       { by: 'b', conf: "{a} thinks being a vet makes {a} better than me. I'm going to enjoy proving otherwise.", v: { soft: ['I didn\'t come here to be talked down to.'] } },
     ] },
     { id: 'vd.2', turns: [
-      { by: 'a', say: "Let the vets handle the strategy, okay? You just do your dailies.", v: { sharp: ['You\'re a number. Be a good number.'] } },
+      { by: 'a', say: "Let the vets handle the strategy, okay? You just do your dailies.", v: { sharp: ['You\'re a vote for us. Just vote how we tell you.'] } },
       { by: 'b', say: "I can think for myself.", v: { loud: ['I can THINK, thank you!'] } },
     ] },
     { id: 'vd.3', turns: [
@@ -664,13 +664,13 @@ export default {
   // ── fights and the night out ────────────────────────────────────────
   'party.any': [
     { id: 'pt.1', turns: [
-      { beat: 'Music is pounding out of the beach bar. {a} is on a table.' },
+      { beat: 'The music is loud at the beach bar, and {a} is dancing on a table.' },
       { by: 'a', say: "This is the best night of my life!", v: { loud: ['THIS IS THE BEST NIGHT OF MY LIFE!'], sharp: ['Enjoy it, everyone. Tomorrow somebody\'s going home.'], soft: ['I love everybody here. I love all of you.'] } },
       { by: 'b', say: "Get down from there before you fall!", v: { odd: ['Can I come up? I\'m coming up.'] } },
       { by: 'c', conf: "Nights out in this game are where alliances get made and broken. Also where people fall off tables.", v: { soft: ['Everyone was so happy for once. It was really nice.'] } },
     ] },
     { id: 'pt.2', turns: [
-      { beat: 'Shots line the bar. TJ is somehow there, dancing badly in the corner.' },
+      { beat: 'Everybody\'s at the bar doing shots.' },
       { by: 'a', say: "To being here! And not being in the Arena!", v: { loud: ['TO NOT BEING IN THE ARENA!'] } },
       { by: 'b', say: "I'll drink to that.", v: { sharp: ['Speak for yourself.'] } },
     ] },
@@ -680,7 +680,7 @@ export default {
   ],
   'fight.any': [
     { id: 'fg.1', turns: [
-      { by: 'a', say: "Say it again. Say it to my face.", v: { loud: ['SAY IT AGAIN! SAY IT TO MY FACE!'], sharp: ['Go on. Repeat that. I dare you.'] } },
+      { by: 'a', say: "What did you just say about me? Say it to my face.", v: { loud: ['WHAT DID YOU SAY ABOUT ME? SAY IT TO MY FACE!'], sharp: ['I heard what you said about me. Go on. Repeat it. I dare you.'] } },
       { by: 'b', say: "I said what I said.", v: { soft: ['I didn\'t mean it like that!'], loud: ['I SAID WHAT I SAID!'] } },
       { beat: 'People pull them apart before it goes any further.' },
       { by: 'a', conf: "{b} has been asking for that all season. Tonight {b} got it.", when: { early: false }, v: { soft: ['I hate that I lost it. I just couldn\'t hold it in anymore.'] } },

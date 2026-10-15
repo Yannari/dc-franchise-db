@@ -67,7 +67,7 @@ export default {
   // ── the daily ───────────────────────────────────────────────────────
   'daily.solo': [
     { id: 'dy.s1', turns: [
-      { by: 'tj', say: "And THAT, my beautiful maniacs, is a wrap on {game}! {a}! {b}! You two are untouchable tonight!" },
+      { by: 'tj', say: "And THAT, my beautiful maniacs, is a wrap on {game}! {a}! {b}! You two are untouchable at the vote!" },
       { by: 'a', say: "Let's go! Let's go!" },
       { by: 'b', conf: "Winning means I'm safe, and in this house safe is worth more than any money they could hand me." },
       { by: 'c', conf: "Last place. Of course it was me. Now I have to go back to that villa and hope nobody's counting." },
@@ -75,7 +75,7 @@ export default {
     { id: 'dy.s2', turns: [
       { by: 'tj', say: "{a} and {b}, take a bow, you just won {game}, and I am genuinely emotional about it." },
       { by: 'b', say: "Thank you, TJ. Seriously, thank you." },
-      { by: 'c', say: "That was brutal. I couldn't feel my arms halfway through." },
+      { by: 'c', say: "That was brutal. I'm completely wiped out." },
       { by: 'a', conf: "I had to win today. I've been feeling the heat in that house since day one, and now nobody can touch me." },
     ] },
     { id: 'dy.s3', turns: [
@@ -110,7 +110,7 @@ export default {
   ],
   'daily.teams': [
     { id: 'dy.t1', turns: [
-      { by: 'tj', say: "Team effort, team win! {a}, {b}, and the rest of you lovely lunatics on that side, you're all safe tonight!" },
+      { by: 'tj', say: "Team effort, team win! {a}, {b}, and the rest of you lovely lunatics on that side, you're all safe at the vote!" },
       { by: 'a', say: "That's what happens when everybody actually pulls!" },
       { by: 'c', conf: "Half the house is safe and my team lost. That means the vote comes down to the people standing next to me, and I don't love those numbers." },
     ] },
@@ -161,7 +161,7 @@ export default {
     { id: 'mt.u6', when: { reason: 'use' }, turns: [
       { by: 'a', say: "Hear me out. We put {target} in, and {target} calls out somebody we want gone anyway." },
       { by: 'b', say: "That's... actually kind of evil. I like it." },
-      { by: 'a', conf: "You don't always have to send in the person you want gone. Sometimes you send in the person who'll do it for you." },
+      { by: 'a', conf: "We don't have to beat everybody ourselves. If {target} goes in, {target} might send home somebody we want gone anyway." },
     ] },
   ],
   'meeting.pushback': [
@@ -182,7 +182,7 @@ export default {
       { by: 'b', say: "{target}? Really? I thought we were going bigger this week." },
       { by: 'a', say: "Bigger gets us into a fight we can't win. {target} we can win." },
       { by: 'b', say: "Okay. I hear you. I just hope it doesn't come back to bite us." },
-      { by: 'a', conf: "{b} is starting to question everything. I need {b.obj} to stay with us, because one person peeling off is how alliances die." },
+      { by: 'a', conf: "{b} is starting to question everything. I need {b.obj} to stay with us, because if one person starts voting on their own, the whole group falls apart." },
     ] },
   ],
   'meeting.refusal': [
@@ -194,13 +194,13 @@ export default {
       { by: 'a', conf: "{b} just told the whole group {b.sub}'d rather protect {target} than us. I heard it. Everybody heard it." },
     ] },
     { id: 'mt.r2', turns: [
-      { by: 'b', say: "Before you say it, I know where you're going, and I can't write {target}'s name." },
+      { by: 'b', say: "Before you say it, I know where you're going, and I can't vote for {target}." },
       { by: 'a', say: "You can't, or you won't?" },
       { by: 'b', say: "Both. I made {target} a promise." },
       { by: 'b', conf: "Maybe that costs me with {alliance}. But if I break my word to {target}, nobody in here should ever trust me again." },
     ] },
     { id: 'mt.r3', turns: [
-      { by: 'a', say: "Can we get one week where everybody's on the same page?", keep: ['page'] },
+      { by: 'a', say: "It's {target}. Can we get one week where everybody's on the same page?", keep: ['page'] },
       { by: 'b', say: "Not if the page has {target} on it." },
       { by: 'a', say: "Unbelievable." },
       { by: 'a', conf: "If {b} won't vote with us when it matters, then I have to start asking what {b} is even doing in this group." },
@@ -221,7 +221,7 @@ export default {
     { id: 'mt.f3', turns: [
       { by: 'b', say: "I'm with you. {target}. Whatever you need." },
       { by: 'a', say: "That's what I like to hear." },
-      { by: 'b', conf: "I'd love to vote with {alliance}. I'd love it even more to still be here in three weeks, so I'm doing what's right for me." },
+      { by: 'b', conf: "I'd like to vote with {alliance}, but I want to still be here in three weeks, so I'm doing what's best for me." },
     ] },
   ],
 
@@ -238,7 +238,7 @@ export default {
       { by: 'b', say: "And what do you want for that?" },
       { by: 'a', say: "Your vote on {target}." },
       { by: 'b', say: "Deal. But you remember this." },
-      { by: 'b', conf: "I'm a free agent, and free agents get approached. I'll take a deal when it keeps me safe." },
+      { by: 'b', conf: "I'm not in any group, so everybody comes to me for votes. If a deal keeps me safe, I'll take it." },
     ] },
     { id: 'rc.a3', turns: [
       { by: 'a', say: "I need one more vote on {target}. Can I count on you?" },
@@ -250,17 +250,17 @@ export default {
       { by: 'a', say: "You've been floating between groups, and I get it. But this week I need to know. {target}?" },
       { by: 'b', say: "Yeah. I'll do {target}." },
       { by: 'a', say: "Thank you. I mean it." },
-      { by: 'b', conf: "Floating only works until somebody makes you pick. {a} made me pick." },
+      { by: 'b', conf: "I've been staying out of both groups, but {a} just made me pick a side." },
     ] },
     { id: 'rc.a5', turns: [
       { by: 'a', say: "One vote. That's all I'm asking. {target}." },
       { by: 'b', say: "Fine. But I'm doing this once." },
-      { by: 'a', conf: "{b} is on board, for now. 'For now' is the most anybody in this house can promise." },
+      { by: 'a', conf: "{b} said yes, but I'm not counting on it until I hear {b} say it at the vote." },
     ] },
     { id: 'rc.a6', turns: [
       { by: 'a', say: "We're short one vote on {target}. You'd be doing us a big favour." },
       { by: 'b', say: "And you'd owe me one. Deal." },
-      { by: 'b', conf: "A favour from a big group is worth more than money in this house. I'll collect later." },
+      { by: 'b', conf: "Now the biggest group in the house owes me one, and I'm going to use that later." },
     ] },
   ],
   'recruit.refused': [
@@ -302,7 +302,7 @@ export default {
       { by: 'b', say: "Let me think about it." },
       { by: 'a', say: "There isn't a lot of time to think." },
       { by: 'b', say: "Then I guess you'll find out at the vote." },
-      { by: 'a', conf: "'Let me think about it' in this house means no. Or it means yes to somebody else." },
+      { by: 'a', conf: "When somebody says they'll think about it, it usually means no, or they already told somebody else yes." },
     ] },
     { id: 'rc.h2', turns: [
       { by: 'a', say: "We could really use your vote on {target}." },
@@ -312,7 +312,7 @@ export default {
     { id: 'rc.h3', turns: [
       { by: 'b', say: "Can I get back to you?" },
       { by: 'a', say: "Sure. Just don't take too long." },
-      { by: 'a', conf: "I don't like maybes. A maybe at deliberation turns into a surprise at the vote." },
+      { by: 'a', conf: "I hate a maybe. It means I won't know where that vote is going until it's too late." },
     ] },
     { id: 'rc.h4', turns: [
       { by: 'a', say: "Are you with us on {target}? I need a yes or a no." },
@@ -339,7 +339,7 @@ export default {
     { id: 'rc.f2', turns: [
       { by: 'a', say: "{target}, this week. Are you good with that?" },
       { by: 'b', say: "Totally. Whatever you guys need." },
-      { by: 'b', conf: "{target} is one of my people in here. I just smiled and said yes to the group trying to send {target} home. That's the game." },
+      { by: 'b', conf: "{target} is one of my people in here, and I just smiled and said yes to the group trying to send {target} home." },
     ] },
     { id: 'rc.f3', turns: [
       { by: 'b', say: "Say less. I'm with you." },
@@ -349,7 +349,7 @@ export default {
     { id: 'rc.f4', turns: [
       { by: 'a', say: "{target} this week. You're good with it?" },
       { by: 'b', say: "Yep. Locked in." },
-      { by: 'b', conf: "Locked in. Just not where {a} thinks." },
+      { by: 'b', conf: "I told {a} yes, but I'm voting for somebody else." },
     ] },
     { id: 'rc.f5', turns: [
       { by: 'a', say: "I need you on {target}. Are you with me?" },
@@ -382,7 +382,7 @@ export default {
       { by: 'a', say: "{b}, come on. After everything, you're really going to vote for me?" },
       { by: 'b', say: "It's nothing personal. It's just how the numbers are this week." },
       { by: 'a', say: "It feels pretty personal from here." },
-      { by: 'a', conf: "I thought {b} had my back. I found out today what {b}'s back is worth." },
+      { by: 'a', conf: "I thought {b} had my back. I was wrong." },
     ] },
     { id: 'pl.h2', turns: [
       { by: 'a', say: "Can you at least tell me why?" },
@@ -390,7 +390,7 @@ export default {
       { by: 'b', conf: "Saying no to {a}'s face was horrible. I still did it, because I want to be here next week." },
     ] },
     { id: 'pl.h3', turns: [
-      { by: 'a', say: "I'm asking you as a friend. Don't write my name down." },
+      { by: 'a', say: "I'm asking you as a friend. Don't say my name at the vote." },
       { by: 'b', say: "I wish I could help you. I can't this time." },
       { by: 'a', say: "Okay. I'll remember that." },
     ] },
@@ -463,7 +463,7 @@ export default {
     ] },
     { id: 'vo.t3', turns: [
       { by: 'a', say: "I've been waiting all week to say this. I'm volunteering, and {target}, you're coming with me." },
-      { by: 'a', conf: "{target} has been running {target}'s mouth for days. I'd rather settle it in the Arena than listen to one more word." },
+      { by: 'a', conf: "{target} has been talking about me for days. I'd rather settle it in the Arena than listen to one more word." },
     ] },
   ],
   'volunteer.open': [
@@ -494,7 +494,7 @@ export default {
     { id: 'co.s2', turns: [
       { by: 'tj', say: "Okay, {a}. Big moment. Who's coming with you?" },
       { by: 'a', say: "{b}. Sorry. It's nothing personal." },
-      { by: 'b', say: "It always feels personal when it's you." },
+      { by: 'b', say: "It feels pretty personal to me." },
       { by: 'b', conf: "{a} picked me because {a} thinks I'm the easiest fight. I'm going to make {a} regret that." },
     ] },
     { id: 'co.s3', turns: [
@@ -587,11 +587,11 @@ export default {
       { beat: '{a} takes control almost right away and never gives it back.' },
       { by: 'tj', say: "And that's it! {a}, you are staying in this game! {b}, buddy, I'm sorry, but you're done." },
       { by: 'b', say: "{a} was better tonight. I can't argue with that." },
-      { by: 'a', conf: "I came in there and I took care of business. Now everybody who put my name in can watch me walk back through that door." },
+      { by: 'a', conf: "I came in there and I took care of business. Now everybody who wanted me gone can watch me walk back through that door." },
     ] },
     { id: 'an.w2', turns: [
       { by: 'tj', say: "Two players, one game, zero mercy. It's {game} time!" },
-      { beat: 'It is over quickly. {b} never finds a way back in.' },
+      { beat: 'It\'s over fast. {b} never finds a way back in.' },
       { by: 'tj', say: "Clean, fast, and kind of beautiful. {a} wins it!" },
       { by: 'b', conf: "I gave it everything. It wasn't enough tonight, and that's going to hurt for a long time." },
     ] },
@@ -632,7 +632,7 @@ export default {
     ] },
     { id: 'an.c2', turns: [
       { by: 'tj', say: "Tonight's game is {game}, and somebody's dream ends right here!" },
-      { beat: '{a} is behind, way behind, and then not.' },
+      { beat: '{a} falls way behind, then fights back and wins.' },
       { by: 'tj', say: "Oh, that was a COMEBACK, baby! {b}, you had it, and you let it slip. I'm sorry, you're done." },
       { by: 'b', say: "I had it. I had it in my hands." },
       { by: 'b', conf: "Losing like that is the worst way to go. I'm going to be replaying it for the rest of my life." },
@@ -652,7 +652,7 @@ export default {
       { by: 'a', say: "Surprise. I'm still here." },
       { by: 'b', say: "{a}! Congrats... seriously." },
       { by: 'a', say: "Save it, {b}. I know you voted for me." },
-      { by: 'a', conf: "I walked in, and the first thing I did was look at every single person who wrote my name down. They know I know." },
+      { by: 'a', conf: "I walked in, and the first thing I did was look at every single person who said my name. They know I know." },
     ] },
     { id: 'rt.f2', turns: [
       { by: 'a', say: "Well? Nobody's going to say welcome back?" },
@@ -706,7 +706,7 @@ export default {
       { by: 'a', conf: "Getting called out and sending the caller home is the best feeling in this game.", v: { sharp: ['Lesson for everybody. Pick your fights more carefully.'] } },
     ] },
     { id: 'rt.c2', turns: [
-      { by: 'a', conf: "{gone} picked the wrong person. Everybody in this villa just learned that.", v: { odd: ['{gone} picked me as the easy one. I\'m a lot of things. Easy isn\'t one of them.'] } },
+      { by: 'a', conf: "{gone} picked the wrong person. Everybody in this villa just learned that.", v: { odd: ['{gone} thought I\'d be easy. I wasn\'t.'] } },
     ] },
     { id: 'rt.c3', turns: [
       { beat: 'The door opens and {a} walks in. A few people actually cheer.' },
@@ -735,7 +735,7 @@ export default {
   ],
   'morning-after.alone': [
     { id: 'ma.a1', turns: [
-      { beat: '{a} sits alone on the beach with a coffee nobody else made.' },
+      { beat: '{a} sits alone on the beach with a coffee.' },
       { by: 'a', conf: "{gone} going home leaves me with nobody. Everybody else had their friend come back last night. Mine didn't." },
     ] },
     { id: 'ma.a2', turns: [
@@ -779,7 +779,7 @@ export default {
       { by: 'a', say: "I want to go home." },
       { by: 'tj', say: "You know what we call that around here? We call that quitting. And I hate quitting. I hate it more than I hate cold pizza." },
       { by: 'a', say: "I know." },
-      { by: 'tj', say: "Pack your stuff, champ. You were never going to be one." },
+      { by: 'tj', say: "Pack your stuff. You're done." },
     ] },
   ],
   'medical.any': [

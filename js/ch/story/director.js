@@ -57,7 +57,7 @@ const RECAP = {
   'bunk-war': 'Since the fight over the bunk room, {0} and {1} have been sleeping with one eye open.',
   'trash-talk': '{0} and {1} have been needling each other every chance they get.',
   prank: 'The prank war between {0} and {1} is still going.',
-  receipts: '{0} still hasn\'t let go of {1} saying that name at the vote.',
+  receipts: '{0} still hasn\'t let go of {1} saying {0.posAdj} name at the vote.',
   'old-show-grudge': '{0} and {1} brought their history from their old show in here with them.',
   'floater-callout': '{1} hasn\'t forgotten {0} calling {1.obj} a free ride in front of the whole house.',
   'partner-blame': '{1} is still stinging from {0} blaming {1.obj} for losing the daily.',

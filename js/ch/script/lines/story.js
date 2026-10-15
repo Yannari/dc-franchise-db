@@ -30,11 +30,11 @@ export default {
   // ── the showdown: a feud the viewer followed, ending in a call-out ──
   'arc-showdown.any': [
     { id: 'asd.1', turns: [
-      { by: 'a', conf: "{b} and I have been at each other every chance we get. Tonight it stops being talk.", v: { loud: ['This has been building and building! Tonight it ENDS!'], soft: ['I never wanted it to come to this. But it was always going to.'], sharp: ['Every argument with {b} was leading here.'], dry: ['We\'ve skipped the polite part of this relationship entirely.'] } },
+      { by: 'a', conf: "{b} and I have been at each other every chance we get. Tonight it stops being talk.", v: { loud: ['This has been building and building! Tonight it ENDS!'], soft: ['I never wanted it to come to this. But it was always going to.'], sharp: ['Every argument with {b} was leading here.'], dry: ['{b} and I never even tried to be nice to each other.'] } },
       { by: 'b', conf: "Of course it's me. It was always going to be me and {a}.", v: { loud: ['FINALLY! Me and {a}! Let\'s GO!'], soft: ['I knew this was coming. I still feel sick.'], sharp: ['Good. I want {a} across from me.'] } },
     ] },
     { id: 'asd.2', turns: [
-      { by: 'a', conf: "Everybody in this house knew {b} and I would end up here. Now we get to settle it.", v: { odd: ['Our feud has a sequel now. It\'s called the Arena.'], sharp: ['No more kitchen arguments. Just the sand.'] } },
+      { by: 'a', conf: "Everybody in this house knew {b} and I would end up here. Now we get to settle it.", v: { odd: ['We\'ve been fighting for weeks. Now we finally get to settle it in the Arena.'], sharp: ['No more arguing in the kitchen. Now we settle it in the Arena.'] } },
       { by: 'b', say: "About time.", v: { loud: ['ABOUT TIME!'], soft: ['I guess this is it.'] } },
     ] },
     { id: 'asd.3', turns: [
@@ -47,11 +47,11 @@ export default {
     { id: 'abs.1', turns: [
       { by: 'a', say: "{target} is two for two in that Arena now.", v: { loud: ['Two for two! {target} is TWO for TWO!'], dry: ['So {target} has won twice. Great. Very relaxing for the rest of us.'], soft: ['Two wins. I\'m kind of scared of {target} now.'] } },
       { by: 'b', say: "So we stop sending {target} in.", v: { sharp: ['Then we stop feeding {target} people.'], soft: ['Maybe we just leave {target} alone for a while.'] } },
-      { by: 'a', say: "Every time we do, somebody else goes home instead.", v: { odd: ['It\'s like throwing people into a blender.'] } },
-      { by: 'b', conf: "Everybody keeps voting {target} in and {target} keeps coming back. At some point you have to ask who's really losing.", v: { sharp: ['{target} is the most dangerous person in this game, and the house keeps handing over the weapon.'] } },
+      { by: 'a', say: "Every time we send {target} in, somebody else goes home instead.", v: { odd: ['It\'s like we keep handing {target} people to beat.'] } },
+      { by: 'b', conf: "Everybody keeps voting {target} in, and {target} keeps sending one of us home instead.", v: { sharp: ['{target} is the most dangerous person in this game, and the house keeps giving {target} people to beat.'] } },
     ] },
     { id: 'abs.2', turns: [
-      { by: 'a', say: "Did you see {target} in there? That wasn't even close.", v: { loud: ['{target} DESTROYED that person!'] } },
+      { by: 'a', say: "Did you see {target} in there? {target} just won again.", v: { loud: ['{target} won AGAIN!'] } },
       { by: 'b', say: "I saw. I'm not calling {target} out. Ever.", v: { soft: ['I\'d go home crying.'], sharp: ['Nobody sane calls {target} out now.'] } },
       { by: 'a', conf: "Two eliminations, two wins. {target} isn't a player anymore. {target} is a problem.", v: { odd: ['I\'m going to start being very nice to {target}. Very, very nice.'] } },
     ] },
@@ -64,7 +64,7 @@ export default {
       { by: 'a', conf: "Three wins in the Arena. If the house puts {target} in, I'm the kind of person {target} calls out. I'm not voting {target} in. Nobody in my division is.", v: { soft: ['I\'m genuinely scared of {target}. That\'s the truth.'], sharp: ['{target} is untouchable now. Smart people stop trying.'], loud: ['THREE WINS! I\'m not going anywhere near {target}!'] } },
     ] },
     { id: 'abf.2', turns: [
-      { by: 'a', conf: "{target} is three for three. At this point voting {target} in is just picking who goes home with extra steps.", v: { odd: ['I\'ve started saying good morning to {target} very respectfully.'] } },
+      { by: 'a', conf: "{target} is three for three. At this point, voting {target} in just means picking which one of us goes home.", v: { odd: ['I\'ve started saying good morning to {target} very respectfully.'] } },
     ] },
     { id: 'abf.3', turns: [
       { by: 'a', conf: "The only way {target} leaves this game is if {target} loses an elimination, and nobody in this house can make that happen.", v: { sharp: ['Somebody has to stop {target}. It won\'t be in the Arena.'] } },
@@ -72,12 +72,12 @@ export default {
   ],
   'arc-giant-falls.any': [
     { id: 'agf.1', turns: [
-      { by: 'a', say: "Wait. {gone} lost? {gone} actually lost?", v: { loud: ['{gone} LOST?! Are you KIDDING me?!'], dry: ['Well. I did not have that on my bingo card.'], soft: ['Oh my gosh. I didn\'t think anyone could beat {gone}.'] } },
-      { by: 'a', conf: "{b} just beat {gone} in the Arena. The house is never going to look at {b} the same way.", v: { sharp: ['{gone} was the wall. {b} just knocked it down. Now {b} is the wall.'] } },
+      { by: 'a', say: "Wait. {gone} lost? {gone} actually lost?", v: { loud: ['{gone} LOST?! Are you KIDDING me?!'], dry: ['Well. I did not see that coming.'], soft: ['Oh my gosh. I didn\'t think anyone could beat {gone}.'] } },
+      { by: 'a', conf: "{b} just beat {gone} in the Arena. The house is never going to look at {b} the same way.", v: { sharp: ['Everybody was scared of {gone}. Now they\'re going to be scared of {b}.'] } },
     ] },
     { id: 'agf.2', turns: [
       { by: 'b', say: "I did it. I beat {gone}.", v: { loud: ['I BEAT {gone}! Me!'], soft: ['I can\'t believe it. I really did it.'] } },
-      { by: 'a', conf: "Everybody thought {gone} was going to win this whole thing. {b} sent {gone} home. Everything just changed.", v: { odd: ['The king is dead! Long live... {b}? I need to rethink everything.'] } },
+      { by: 'a', conf: "Everybody thought {gone} was going to win this whole thing. {b} sent {gone} home. Everything just changed.", v: { odd: ['So {b} is the one to beat now? I need to rethink everything.'] } },
     ] },
     { id: 'agf.3', turns: [
       { by: 'a', conf: "{gone} had won that Arena over and over. One bad night, and {gone} is gone. That's this game.", v: { soft: ['I feel bad for {gone}. Nobody is safe in here. Nobody.'] } },
@@ -90,7 +90,7 @@ export default {
       { by: 'a', conf: "Not long ago I was the one everybody thought was dead weight. Now I've won an elimination nobody gave me a chance in.", v: { loud: ['Who\'s dead weight NOW?!'], soft: ['I\'m proving it to myself more than anybody.'], sharp: ['Remember when they laughed at me? I do.'] } },
     ] },
     { id: 'aud.a2', turns: [
-      { by: 'a', conf: "I've been picked last, I've come last, and I've choked in front of everybody. Tonight none of that mattered.", v: { odd: ['Underdog? More like... a dog that won. I\'m working on it.'] } },
+      { by: 'a', conf: "I've been picked last, I've come last, and I've choked in front of everybody. Tonight none of that mattered.", v: { odd: ['Everybody called me the underdog. Well, the underdog just won.'] } },
     ] },
     { id: 'aud.a3', turns: [
       { by: 'a', conf: "Everybody had me written off. I kept a list of every person who did. Every single one of them just watched me win.", v: { soft: ['I just wanted one moment where I felt like I belonged here. That was it.'] } },
@@ -161,7 +161,7 @@ export default {
   'run-snacks.call': [
     { id: 'rs.c1', turns: [
       { by: 'b', say: "Why is there a box of granola bars inside your pillowcase?", v: { dry: ['Your pillow crunches. Explain.'] } },
-      { by: 'a', say: "The stash had to move. People were getting close.", v: { odd: ['The stash relocates. It\'s a nomadic stash.'] } },
+      { by: 'a', say: "The stash had to move. People were getting close.", v: { odd: ['The stash moves around. It has to.'] } },
       { by: 'b', conf: "{a} has more food hidden in this villa than the kitchen does." },
     ] },
     { id: 'rs.c2', turns: [
@@ -183,7 +183,7 @@ export default {
     { id: 'rp.s1', turns: [
       { beat: 'Five in the morning. The blender roars in the kitchen. Half the villa groans.' },
       { by: 'b', say: "It's FIVE A.M., {a}!", v: { soft: ['Please... it\'s so early...'] } },
-      { by: 'a', say: "Gains don't sleep.", v: { loud: ['GAINS DON\'T SLEEP!'], dry: ['Muscles have no alarm clock.'] } },
+      { by: 'a', say: "Gains don't sleep.", v: { loud: ['GAINS DON\'T SLEEP!'], dry: ['I\'m up, my muscles are up. Deal with it.'] } },
     ] },
     { id: 'rp.s2', turns: [
       { by: 'a', conf: "Two shakes in the morning, one after the daily, one before bed. That's how you win an Arena.", v: { odd: ['I\'m maybe forty percent protein powder at this point.'] } },
@@ -196,14 +196,14 @@ export default {
       { by: 'b', conf: "{a} has turned this entire villa into a gym. I'm scared to open the fridge." },
     ] },
     { id: 'rp.c2', turns: [
-      { by: 'a', conf: "They make fun of the shakes. They don't make fun of the shakes when they're across from me in the Arena.", v: { sharp: ['Laugh all you want. Shake-powered muscles hurt the same.'] } },
+      { by: 'a', conf: "They make fun of the shakes. They don't make fun of the shakes when they're across from me in the Arena.", v: { sharp: ['Laugh all you want. You won\'t be laughing in the Arena.'] } },
     ] },
   ],
   'run-protein.payoff': [
     { id: 'rp.p1', turns: [
       { beat: '{a} lines up a row of shakes on the counter, one for everybody left.' },
       { by: 'a', say: "To the final. Drink up.", v: { loud: ['TO THE FINAL! DRINK!'], soft: ['I made one for everybody. You all earned it.'] } },
-      { by: 'b', say: "This is disgusting. I love you.", v: { odd: ['It tastes like chalk and friendship.'] } },
+      { by: 'b', say: "This is disgusting. I love you.", v: { odd: ['It tastes like chalk. I love it anyway.'] } },
     ] },
     { id: 'rp.p2', turns: [
       { by: 'a', conf: "Everybody laughed at the shakes. Now everybody's drinking them before the final. I win.", v: { sharp: ['Told you. Shakes win games.'] } },

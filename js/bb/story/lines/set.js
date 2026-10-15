@@ -277,7 +277,7 @@ export default {
     ] },
   ],
   'set.afternoms.close': [
-    { id: 'sa.c1', turns: [{ beat: 'By the evening, the house has split: one group in the kitchen, one in the backyard, the nominees in the middle of both.' }, { by: 'b', dr: "Four days. I've got four days to change seven minds." }] },
+    { id: 'sa.c1', turns: [{ beat: 'By the evening, the house has split: one group in the kitchen, one in the backyard, the nominees in the middle of both.' }, { by: 'b', dr: "Four days. I've got four days to change enough minds to stay." }] },
     { id: 'sa.c2', turns: [{ beat: 'The house starts to break into little pairs, all of them talking quietly, all of them looking at the nominees.' }, { by: 'a', dr: "Everyone's whispering. Everyone. I've never been so aware of a whisper in my life." }] },
     { id: 'sa.c3', turns: [{ beat: 'One by one, people drift off to have private conversations. The nominees end up alone together at the table.' }, { by: 'a', dr: "Sitting next to the person you're up against. Both pretending it's fine. It's not fine." }] },
     { id: 'sa.c4', turns: [{ beat: 'Somebody puts music on. Nobody dances. The music plays anyway.' }, { by: 'b', dr: "Music on, nobody talking. That's what a house sounds like the day the block goes up." }] },

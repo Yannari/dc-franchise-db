@@ -79,7 +79,8 @@ export default {
     { id: 'cv.3', turns: [{ by: 'b', say: "I'll vote however you're voting." }, { by: 'a', say: "Are you sure?" }, { by: 'b', say: "Completely." }, { by: 'a', say: "What if I'm wrong?" }, { by: 'b', say: "Then we're wrong together." }, { by: 'a', dr: "That's the nicest and scariest thing anyone's said to me in here." }] },
     { id: 'cv.4', when: { third: true }, turns: [{ beat: "{c} pitches {a}. Before answering, {a} looks across the room at {b}." }, { by: 'a', say: "Let me talk to {b}." }, { by: 'c', say: "Of course you will." }, { by: 'c', dr: "That conversation had three people in it." }] },
     { id: 'cv.5', when: { third: true }, turns: [{ by: 'c', say: "Where's your vote?" }, { by: 'b', say: "Talk to {a}." }, { by: 'c', say: "I'm asking you." }, { by: 'b', say: "And I'm telling you. Talk to {a}." }, { by: 'c', dr: "So I'm pitching one vote, twice." }] },
-    { id: 'cv.6', turns: [{ by: 'b', say: "So? Who are we voting for?" }, { by: 'a', say: "I was going to ask you." }, { by: 'b', say: "Let's talk it through." }, { beat: "They talk it through, quietly, for an hour." }, { by: 'a', dr: "{b} and I talked it through and picked together. That's how we do it." }] },
+    { id: 'cv.8', when: { known: true, third: true }, turns: [{ by: 'b', say: "So? Who are we voting for?" }, { by: 'a', say: "Not here." }, { beat: "{c} is close enough to hear. They wait until {c} drifts off, then talk it through, quietly." }, { by: 'b', say: "So it's {target}." }, { by: 'a', say: "It's {target}." }, { by: 'c', dr: "Two minutes. That's how long it took {a} and {b} to settle a vote. I've been working on mine for three days." }] },
+    { id: 'cv.6', when: { known: true, third: false }, turns: [{ by: 'b', say: "So? Who are we voting for?" }, { by: 'a', say: "I was going to ask you." }, { by: 'b', say: "Then let's talk it through." }, { beat: "They talk it through, quietly, for an hour." }, { by: 'b', say: "So it's {target}." }, { by: 'a', say: "It's {target}." }, { by: 'a', dr: "{b} and I talked it through and picked {target} together. That's how we do it." }] },
     { id: 'cv.7', turns: [{ by: 'a', say: "People keep coming to me for your vote." }, { by: 'b', say: "They keep coming to me for yours." }, { by: 'a', say: "Do they think we haven't noticed?" }, { by: 'b', say: "I think they're hoping one of us cracks." }, { by: 'b', dr: "{a} and I vote as one. If you want one of us, you have to convince both." }] },
   ],
   'couple.defined.scene': [
@@ -128,7 +129,7 @@ export default {
     { id: 'cj.7', turns: [{ by: 'b', dr: "{a} is jealous of {c}. Of {c}! We were talking about a competition." }] },
   ],
   'couple.pressure.scene': [
-    { id: 'cq.1', turns: [{ by: 'a', dr: "{b} is on the block and I can't eat. I can't sit down. I just keep counting." }] },
+    { id: 'cq.1', turns: [{ by: 'a', dr: "{b} is on the block and I can't eat. I can't sit down. I just keep counting votes, and I get a different number every time." }] },
     { id: 'cq.2', turns: [{ by: 'b', say: "Breathe. I'm the one on the block." }, { by: 'a', say: "I know. That's why I can't breathe." }] },
     { id: 'cq.3', turns: [{ by: 'a', say: "I'm fine." }, { by: 'b', say: "You've been crying." }, { by: 'a', say: "I'm fine." }] },
     { id: 'cq.4', turns: [{ by: 'b', dr: "I'm handling this better than {a} is. And {a} isn't even nominated." }] },

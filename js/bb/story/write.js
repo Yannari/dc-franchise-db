@@ -539,7 +539,9 @@ function writeStoryScene0(line, step, ctx) {
   if (writing.muted) return { ...base, lines: [] };
   // house life (banter, chores, a late night) carries no storyline: a spent pool lets the moment pass
   // instead of airing a scene the season has already had. A feud or an apology still airs.
-  const optional = line.type === 'life';
+  // ...and so does the small change of a storyline, a row over a joke or an alliance's check-in: a rerun of
+  // the snoring row, word for word, is worse than one fewer (read 2026-10-14)
+  const optional = line.type === 'life' || /^(friction|checkin)$/.test(String(step.step || ''));
   let entry = pick(keys, who, data, ctx, room, `${line.id}|${line.steps.indexOf(step)}`, grouped || optional);
   if (!entry && grouped) {
     who = who0; keys = keys0;
@@ -576,7 +578,11 @@ function writeStoryScene0(line, step, ctx) {
     const saw = n => n && (prior.seenBy || []).includes(n) && cast.includes(n);
     const by = saw(pw.b) ? 'b' : saw(pw.a) ? 'a' : null;
     const who2 = by || 'caption';
-    const rk = [`recap.${line.type}.${prior.step}.${prior.outcome}.${who2}`, `recap.${line.type}.${prior.step}.${who2}`].filter(k => STORY_POOLS[k]?.length).slice(0, 1);
+    // a couple who walked in together did not start flirting "since last week" (read 2026-10-14: that recap,
+    // then "We came in together" in the same scene): theirs is the couple's recap, whatever the step's outcome
+    const together = factsFor({ who: pw, data: {}, room }, { week: ctx.week, act: 'house' }).kin === 'together';
+    const rk = [...(together ? [`recap.${line.type}.${prior.step}.couple.${who2}`] : []),
+      `recap.${line.type}.${prior.step}.${prior.outcome}.${who2}`, `recap.${line.type}.${prior.step}.${who2}`].filter(k => STORY_POOLS[k]?.length).slice(0, 1);
     const re = rk.length ? pick(rk, pw, { ...prior.data, when: data.when }, ctx, room, `${line.id}|recap|${line.steps.indexOf(step)}`) : null;
     if (re) recap = render(re, pw, ctx, { ...Object.fromEntries(Object.entries(prior.data || {}).filter(([, v]) => typeof v === 'string')), when: data.when });
   }
@@ -770,8 +776,12 @@ function writeEngineScene0(beat, ctx, at) {
   // against Damien in the HOH room with Damien sitting in it)
   const said = new Set(lines.filter(l => l.by).map(l => l.by));
   const named = (n, ls) => ls.some(l => nameIn(n, l.text));
+  // on screen in a stage direction means doing something in it ("Bowie walks in", "Caleb and Bowie..."):
+  // a beat that only mentions them ("Bowie's key", "the look they give Bowie") is talking about them too
+  const esc = n => String(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const acts = (n, ls) => ls.some(l => new RegExp(`(^|[.!?]\\s+|\\band\\s+|,\\s+)${esc(n)}\\b(?!'s)`).test(String(l.text || '')));
   for (const n of [...cast]) {
-    if (said.has(n) || named(n, lines.filter(l => l.kind === 'beat'))) continue;
+    if (said.has(n) || acts(n, lines.filter(l => l.kind === 'beat'))) continue;
     if (named(n, lines.filter(l => l.kind !== 'beat'))) cast.splice(cast.indexOf(n), 1);
   }
   if (!cast.length) return null;

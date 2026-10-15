@@ -723,7 +723,7 @@ export default {
       { beat: '{a} passes {b} in the hallway and says good morning, warmly.' },
       { by: 'a', dr: "Enjoy your mornings in here, {b}. You won't have many more." },
     ] },
-    { id: 'sg.h16', turns: [{ by: 'a', dr: "I'm not looking for an apology from {b} any more. I'm looking for four votes." }] },
+    { id: 'sg.h16', turns: [{ by: 'a', dr: "I'm not looking for an apology from {b} any more. I'm looking for enough votes to send {b} home." }] },
     { id: 'sg.rs1', when: { register: 'schemer' }, turns: [{ by: 'a', dr: "I don't get angry. I make plans. And {b} is at the centre of my next one." }] },
     { id: 'sg.rs2', when: { register: 'schemer' }, turns: [{ by: 'a', dr: "I'll smile at {b}, I'll help {b} with the dishes, and I'll write {b}'s name down the first chance I get." }] },
     { id: 'sg.rf1', when: { register: 'fiery' }, turns: [{ by: 'a', dr: "Every time I see {b}'s face I want to scream. So I'm going to do the next best thing. Vote." }] },

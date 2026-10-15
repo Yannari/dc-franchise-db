@@ -354,7 +354,7 @@ export default {
     { id: 'vt.rs7', turns: [
       { by: 'a', say: "{other} looks terrified. Have you seen {other}'s face today?" },
       { by: 'b', say: "I've seen it." },
-      { by: 'a', say: "That's the face of somebody who's counted and come up short." },
+      { by: 'a', say: "That's the face of somebody who's counted the votes and come up short." },
       { by: 'b', say: "Or the face of somebody who's nervous." },
       { by: 'a', say: "No. That's the counted face. I know the counted face." },
       { by: 'b', say: "If you say so." },

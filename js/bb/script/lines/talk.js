@@ -485,7 +485,7 @@ export default {
       { by: 'b', say: "Five is enough." },
     ] },
     { id: 'tn.s2', turns: [
-      { by: 'a', say: "Count it again." },
+      { by: 'a', say: "Count the votes again." },
       { by: 'b', say: "We've counted it four times." },
       { by: 'a', say: "Then a fifth won't hurt." },
       { beat: 'They count on their fingers. Same answer.' },

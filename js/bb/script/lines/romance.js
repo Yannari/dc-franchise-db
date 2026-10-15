@@ -115,7 +115,7 @@ export default {
   ],
   'romance.triangleTension.onesided': [
     { id: 'wk.o1', turns: [{ by: 'b', dr: "{c} keeps turning up wherever {a} is. I've noticed every single time." }] },
-    { id: 'wk.o2', turns: [{ by: 'b', dr: "{c} laughs a bit too long at {a}'s jokes. Nothing's happened. I'm still counting." }] },
+    { id: 'wk.o2', turns: [{ by: 'b', dr: "{c} laughs a bit too long at {a}'s jokes. Nothing's happened. I'm still keeping track of every one." }] },
     { id: 'wk.o3', turns: [{ beat: '{b} finds {a} and {c} talking quietly in a doorway.' }, { by: 'b', dr: "I turned around before they saw me." }] },
     { id: 'wk.o4', turns: [{ by: 'b', dr: "{a} told {c} something I thought was just ours. I heard it from someone else." }] },
     { id: 'wk.o5', turns: [{ by: 'c', say: "You two seem close." }, { by: 'a', say: "We are." }, { by: 'c', dr: "Close for now. In this house that never lasts, and I'll be right there when it breaks." }] },

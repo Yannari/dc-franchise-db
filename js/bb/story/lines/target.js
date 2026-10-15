@@ -514,7 +514,7 @@ export default {
       { by: 'b', say: "You're sure?" },
       { by: 'a', say: "I'm sure." },
       { by: 'b', say: "Like, sure sure?" },
-      { by: 'a', say: "I've counted it four times. It's not going to change by counting it a fifth." },
+      { by: 'a', say: "I've counted the votes four times. They're not going to change on the fifth." },
       { by: 'b', say: "Count it a fifth." },
       { by: 'a', say: "...Fine. One, two, three, four, five. Five votes. {target} goes." },
       { by: 'b', say: "Okay. Now I'm sure." },

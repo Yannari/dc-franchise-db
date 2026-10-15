@@ -99,7 +99,7 @@ export default {
   'cer.replace.scene': [
     { id: 'zr.1', turns: [{ by: 'a', say: "Was this always the plan?" }, { by: 'b', say: "No." }, { by: 'a', dr: "I don't believe that." }] },
     { id: 'zr.2', turns: [{ by: 'a', dr: "Once the veto was used, there was only ever one name that made the numbers work. Mine." }] },
-    { id: 'zr.3', turns: [{ by: 'a', dr: "I'm not even angry. Just tired. I sat down, and the house started counting." }] },
+    { id: 'zr.3', turns: [{ by: 'a', dr: "I'm not even angry. Just tired. I sat down, and the house started counting votes." }] },
     { id: 'zr.4', turns: [{ by: 'a', say: "Me? Really?" }, { by: 'b', say: "I'm sorry. It had to be someone." }] },
     { id: 'zr.5', turns: [{ by: 'a', dr: "I thought the veto would change somebody else's week. It changed mine." }] },
     { id: 'zr.6', turns: [{ by: 'b', dr: "Putting {a} up wasn't personal. {a} won't see it that way." }] },

@@ -34,7 +34,7 @@ export default {
   ],
   'wild.refusal.suspects': [
     { id: 'tw3.s1', turns: [{ by: 'a', say: "Nobody turns down safety unless they've already got it. So who's protecting {b}?" }, { beat: 'The question goes round the house by evening.' }] },
-    { id: 'tw3.s2', turns: [{ by: 'a', dr: "The punishment was survivable. The block isn't. {b} said no anyway. That's not brave. That's someone who has counted." }] },
+    { id: 'tw3.s2', turns: [{ by: 'a', dr: "The punishment was survivable. The block isn't. {b} said no anyway. That's not brave. That's someone who has counted the votes." }] },
     { id: 'tw3.s3', turns: [{ by: 'a', dr: "I'm watching who {b} eats with. Somewhere in there is the reason {b} could afford to say no." }] },
     { id: 'tw3.s4', turns: [{ by: 'a', say: "Why did you turn it down?" }, { by: 'b', say: "Didn't need it." }, { by: 'a', dr: "Nobody turns down something free unless they've already got something better. Now I want to know what {b} has." }] },
     { id: 'tw3.s5', turns: [{ by: 'b', dr: "I said no to the deal. Now everyone wants to know why." }] },
@@ -78,7 +78,7 @@ export default {
     { id: 'tr3.l3', turns: [{ by: 'b', dr: "{a} is perfectly polite and doesn't blink. {a} hasn't forgiven anything." }] },
     { id: 'tr3.l4', turns: [{ by: 'a', say: "Funny to be back, isn't it, {b}?" }, { by: 'b', say: "...Yeah." }] },
     { id: 'tr3.l5', turns: [{ by: 'a', dr: "The eviction isn't forgiven. It's written down." }] },
-    { id: 'tr3.l6', turns: [{ by: 'b', dr: "{a} came back counting. I'm on the list." }] },
+    { id: 'tr3.l6', turns: [{ by: 'b', dr: "{a} came back counting who to get rid of. I'm on the list." }] },
   ],
   'returned.repriced.urgent': [
     { id: 'tr3.u1', turns: [{ by: 'a', dr: "We beat {b} once, and it didn't stick. What's the plan for someone an eviction doesn't work on?" }] },

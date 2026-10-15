@@ -154,7 +154,7 @@ export default {
     { id: 'gc3.2', presumes: ['noms'], turns: [
       { by: 'b', say: "Somebody's lying to us." },
       { by: 'a', say: "Why?" },
-      { by: 'b', say: "Because I counted, and it doesn't add up." },
+      { by: 'b', say: "Because I counted the votes, and they don't add up." },
       { by: 'c', say: "Count again." },
       { by: 'b', say: "I've counted four times!" },
       { by: 'd', say: "Count with us, then." },

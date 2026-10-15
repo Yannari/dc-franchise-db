@@ -55,7 +55,7 @@ export default {
     { id: 'tp9.d6', turns: [{ by: 'a', dr: "{b} says no. Easy to say no to something you were never offered." }] },
   ],
   'tempt.perform.overplayed': [
-    { id: 'tp9.o1', turns: [{ by: 'b', dr: "{a} wasn't nominated, wasn't involved, and is the most upset person in the house about {cursed}. I'm counting." }] },
+    { id: 'tp9.o1', turns: [{ by: 'b', dr: "{a} wasn't nominated, wasn't involved, and is the most upset person in the house about {cursed}. I'm noticing." }] },
     { id: 'tp9.o2', turns: [{ by: 'b', dr: "{a} has brought {cursed} tea twice and told three people how unfair it is. That's a lot." }] },
     { id: 'tp9.o3', turns: [{ by: 'a', say: "Whoever did this to {cursed}, it's horrible." }, { by: 'b', dr: "People who did nothing just say 'weird week'." }] },
     { id: 'tp9.o4', turns: [{ by: 'a', say: "Poor {cursed}." }, { by: 'b', say: "Mm." }, { by: 'b', dr: "{a} keeps saying that." }] },

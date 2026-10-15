@@ -191,7 +191,7 @@ export default {
       { by: 'a', say: "Of {alliance}. Which I'm in." },
       { by: 'c', say: "You were asleep!" },
       { by: 'a', say: "Then wake me up! That's literally what alliances do!" },
-      { by: 'a', dr: "Left out of my own alliance. In my own bedroom. I'm not paranoid. I'm counting." },
+      { by: 'a', dr: "Left out of my own alliance. In my own bedroom. I'm not paranoid. I can see who's in that room, and I'm not." },
     ] },
     { id: 'gl.2', turns: [
       { by: 'a', say: "So when was somebody going to tell me the plan?" },
@@ -463,7 +463,7 @@ export default {
       { beat: 'Everybody laughs, quietly. Then nobody says anything for a long time.' },
       { by: 'b', say: "I'm going to miss this, weirdly." },
       { by: 'c', say: "Don't. Don't make it sad." },
-      { by: 'c', dr: "Moments like that, you forget it's a game. Then you remember. Then you feel bad for forgetting." },
+      { by: 'c', dr: "For about ten minutes there, nobody was playing. I'd forgotten what that felt like in here." },
     ] },
     { id: 'gn.3', turns: [
       { by: 'a', say: "Is everyone awake?" },

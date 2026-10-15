@@ -36,13 +36,13 @@ export default {
     { id: 'kb.s2', turns: [{ by: 'b', say: "How many have we got?" }, { by: 'a', say: "We've got {expected}." }, { by: 'b', say: "And we need?" }, { by: 'a', say: "We need {majority}." }, { by: 'b', say: "...Right." }] },
     { id: 'kb.s3', when: { intent: 'one' }, turns: [{ by: 'a', dr: "We're one vote short of getting {target} out. One. I need to find it." }] },
     { id: 'kb.s4', when: { intent: 'many' }, turns: [{ by: 'a', dr: "We're {gap} votes short on {target}. That's not a small gap." }] },
-    { id: 'kb.s5', turns: [{ by: 'a', say: "We're fine." }, { beat: '{a} keeps counting.' }, { by: 'b', dr: "If we were fine, {a} would stop counting." }] },
+    { id: 'kb.s5', turns: [{ by: 'a', say: "We're fine." }, { beat: '{a} keeps counting votes.' }, { by: 'b', dr: "If we were fine, {a} would stop counting votes." }] },
     { id: 'kb.s6', turns: [{ by: 'a', say: "Who haven't we asked yet?" }, { by: 'b', say: "Nobody you'd trust." }, { by: 'a', say: "Then let's start with them." }] },
   ],
   'plan.count.holds': [
     { id: 'kb.h1', turns: [{ by: 'b', say: "Say them out loud. The names." }, { by: 'a', say: "Fine." }, { beat: '{a} goes through them, one by one.' }, { by: 'b', say: "Okay. That's enough." }] },
     { id: 'kb.h2', turns: [{ by: 'a', say: "We need {majority} votes to get {target} out, and we've got {expected}." }, { by: 'b', say: "Say it again." }, { by: 'a', say: "We've got {expected}." }] },
-    { id: 'kb.h3', turns: [{ by: 'b', dr: "{a} has counted this so many times. So I counted it back. It holds. I still keep looking at the door." }] },
+    { id: 'kb.h3', turns: [{ by: 'b', dr: "{a} has counted our votes so many times. So I counted them myself. They hold. I still keep looking at the door." }] },
     { id: 'kb.h4', turns: [{ by: 'a', dr: "We've got the votes to send {target} home. I'm trying to believe it." }] },
     { id: 'kb.h5', turns: [{ by: 'b', say: "Are we sure?" }, { by: 'a', say: "As sure as anyone can be in here." }] },
     { id: 'kb.h6', turns: [{ by: 'a', say: "It's done. {target} goes." }, { by: 'b', say: "Don't say that until it's done." }] },
@@ -120,7 +120,7 @@ export default {
     { id: 'kg.m6', turns: [{ by: 'b', dr: "We're all voting {targetA} out. But {a} and I are both counting {swing} as our vote, and only one of us can be right." }] },
   ],
   'plan.cocky.scene': [
-    { id: 'kh.1', turns: [{ by: 'a', say: "It's done. {target} is gone. We can stop talking about it." }, { by: 'b', say: "Have we actually counted?" }, { by: 'a', say: "Everyone we asked said yes." }, { by: 'b', say: "Saying yes isn't the same as voting." }, { by: 'a', say: "Relax." }, { by: 'b', dr: "Everybody we asked said yes. That's {expected}. I'd only bet on {locked}." }] },
+    { id: 'kh.1', turns: [{ by: 'a', say: "It's done. {target} is gone. We can stop talking about it." }, { by: 'b', say: "Have we actually counted the votes?" }, { by: 'a', say: "Everyone we asked said yes." }, { by: 'b', say: "Saying yes isn't the same as voting." }, { by: 'a', say: "Relax." }, { by: 'b', dr: "Everybody we asked said yes. That's {expected}. I'd only bet on {locked}." }] },
     { id: 'kh.2', turns: [{ by: 'a', say: "Right, next week..." }, { by: 'b', say: "We haven't finished this week." }, { by: 'a', say: "This week's done. {target} is gone." }, { by: 'b', say: "Not until the votes are read out." }, { by: 'a', say: "You worry too much." }, { by: 'b', dr: "Somebody in this alliance has to worry. It's not going to be {a}." }] },
     { id: 'kh.3', turns: [{ by: 'b', say: "You're counting the maybes as votes." }, { by: 'a', say: "The maybes are votes." }, { by: 'b', say: "Since when?" }, { by: 'a', say: "Since I asked them nicely." }, { by: 'b', dr: "No, they're not." }] },
     { id: 'kh.4', turns: [{ by: 'a', say: "You look stressed." }, { by: 'b', say: "I'm fine." }, { by: 'a', say: "You're not. Stop it. We've got this." }, { by: 'b', say: "Have we?" }, { by: 'b', dr: "{a} is relaxed and I can't work out why. We can prove {locked}. We're hoping for {expected}." }] },
@@ -170,7 +170,7 @@ export default {
   'plan.pawn.guilt': [
     { id: 'kl.g1', turns: [{ by: 'a', say: "You're fine." }, { by: 'b', say: "You said that before the ceremony." }, { by: 'a', say: "And it's still true." }, { by: 'a', dr: "I'm not sure it's still true." }] },
     { id: 'kl.g2', turns: [{ by: 'a', dr: "I asked {b} to be a pawn. I said it was a formality. Now nobody can tell me the votes are on {target}." }] },
-    { id: 'kl.g3', turns: [{ by: 'a', dr: "I counted the room for {b}'s sake. Twice. I got a different answer each time." }] },
+    { id: 'kl.g3', turns: [{ by: 'a', dr: "I counted the votes for {b}'s sake. Twice. I got a different answer each time." }] },
     { id: 'kl.g4', turns: [{ by: 'b', dr: "I've stopped asking {a} if I'm safe. I don't think {a} knows either." }] },
     { id: 'kl.g5', turns: [{ by: 'a', say: "I'll fix this." }, { by: 'b', say: "Can you?" }, { by: 'a', say: "...I'll try." }] },
     { id: 'kl.g6', turns: [{ by: 'a', dr: "I put {b} up as a pawn. If {b} goes home, that's on me." }] },

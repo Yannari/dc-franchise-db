@@ -66,7 +66,7 @@ export default {
     { id: 'ed2.p2', turns: [{ by: 'a', dr: "From now on, nobody in here gets believed about anything. Including me." }] },
     { id: 'ed2.p3', turns: [{ by: 'a', dr: "Who flinched when the rule was read? I saw two people." }] },
     { id: 'ed2.p4', turns: [{ by: 'a', dr: "Paranoia is going to do half the work for whoever this is." }] },
-    { id: 'ed2.p5', turns: [{ beat: '{a} says nothing at all.' }, { by: 'a', dr: "I'm counting the room." }] },
+    { id: 'ed2.p5', turns: [{ beat: '{a} says nothing at all.' }, { by: 'a', dr: "I'm counting who in this room would keep me." }] },
     { id: 'ed2.p6', turns: [{ by: 'a', dr: "If I find out who it is, that's my biggest move of the season." }] },
   ],
   'engine.recalc.dread': [
@@ -120,7 +120,7 @@ export default {
   'engine.declined.misread': [
     { id: 'eg2.m1', turns: [{ by: 'a', dr: "I've counted. The votes are with me. I don't need to campaign." }, { beat: 'Nobody corrects {a}.' }] },
     { id: 'eg2.m2', turns: [{ by: 'a', dr: "Campaigning would only make me look worried. I'm not worried." }] },
-    { id: 'eg2.m3', turns: [{ by: 'a', dr: "I've done the maths. I'm staying. No need to beg." }] },
+    { id: 'eg2.m3', turns: [{ by: 'a', dr: "I've counted the votes. I'm staying. No need to beg." }] },
     { id: 'eg2.m4', turns: [{ beat: '{a} spends the day relaxing instead of campaigning.' }, { by: 'a', dr: "Why would I campaign? I'm fine." }] },
     { id: 'eg2.m5', turns: [{ by: 'a', dr: "Everyone's been nice to me all week. That's my answer." }] },
     { id: 'eg2.m6', turns: [{ by: 'a', dr: "I'm not chasing votes I've already got." }] },

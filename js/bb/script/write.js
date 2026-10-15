@@ -14,7 +14,7 @@
 //
 // A script is a list of lines: { kind: 'say' | 'dr' | 'beat', by, text }.
 // `dr` is a Diary Room confessional: the viewer cuts to the chair and back.
-import { gs } from '../../core.js';
+import { gs, players } from '../../core.js';
 import { pronouns } from '../../players.js';
 import { pickEntry, newLedger } from '../../script/pick.js';
 import { POOLS } from './lines/index.js';
@@ -57,7 +57,33 @@ export function fill(text, who, ctx = {}, data = {}) {
 // possessive. Said out in full instead: "Hicks is one of those", "Hicks has been".
 const S_IS = /\b([A-Z][a-z]*s)'s (been|got|one|going|gone|not|a|an|the|just|so|really|always|never|still|already|right|wrong|in|at|on|too|very|my|our|your|doing|counting|scared|safe|fine|leaving|staying|coming|lying|talking|playing|trying)\b/g;
 const sIs = t => t.replace(S_IS, (m, n, w) => `${n} ${w === 'been' || w === 'got' ? 'has' : 'is'} ${w}`);
-export const said = (kind, text) => sIs(kind === 'beat' ? tidyNames(text) : tidySpoken(text));
+// ...and what tidyNames leaves in a stage direction ("Bowie has made up a game: Bowie reads out...", "Owen
+// goes back to what Owen was doing", read 2026-10-14): the second time in a sentence is a pronoun, unless
+// somebody else in the sentence would take the same one, or it is a "they" that would need its verb changed
+const escRe = n => String(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const VERBISH = /^(?!(this|his|its|us|always|plus|yes|towards|afterwards|across|less|perhaps|sometimes|besides|anyways)$)(is|was|has|had|does|did|can|could|will|would|should|might|must|isn't|wasn't|hasn't|doesn't|didn't|can't|won't|[a-z]+ed|[a-z]{2,}[^s']s)$/;
+function beatRepeats(text) {
+  const cast = [...new Set((players || []).map(p => p?.name).filter(Boolean))];
+  return String(text).split(/(?<=[.!?])\s+/).map(sent => {
+    for (const n of cast) {
+      const re = new RegExp(`\\b${escRe(n)}\\b('s)?`, 'g');
+      if ((sent.match(re) || []).length < 2) continue;
+      const p = pronouns(n) || {};
+      if (!p.sub) continue;
+      if (cast.some(o => o !== n && new RegExp(`\\b${escRe(o)}\\b`).test(sent) && (pronouns(o) || {}).sub === p.sub)) continue;
+      let seen = false;
+      sent = sent.replace(re, (m, poss, at, whole) => {
+        if (!seen) { seen = true; return m; }
+        if (poss) return p.posAdj || m;
+        const next = (whole.slice(at + m.length).match(/^\s+([a-z']+)/) || [])[1] || '';
+        if (VERBISH.test(next)) return p.sub === 'they' ? m : p.sub;
+        return p.obj || m;
+      });
+    }
+    return sent;
+  }).join(' ');
+}
+export const said = (kind, text) => sIs(kind === 'beat' ? beatRepeats(tidyNames(text)) : tidySpoken(text));
 
 /**
  * For tests only: muted, a scene is not written at all (no pick, no ledger).

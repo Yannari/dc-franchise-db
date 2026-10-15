@@ -90,7 +90,7 @@ export default {
     { id: 'su6.c3', turns: [{ by: 'b', say: "Who's still got one?" }, { by: 'a', say: "Not you." }] },
     { id: 'su6.c4', turns: [{ by: 'a', dr: "{b} is out of entries, and that's not going to change. I've built a plan on it." }] },
     { id: 'su6.c5', when: { intent: 'many' }, turns: [{ by: 'a', dr: "There are {left} people who can still use the suite. The rest of us are fair game." }] },
-    { id: 'su6.c6', turns: [{ by: 'b', dr: "{a} knows I've got no entry left. I can feel {a} counting." }] },
+    { id: 'su6.c6', turns: [{ by: 'b', dr: "{a} knows I've got no entry left. I can feel {a} counting the days until I'm fair game." }] },
   ],
   'suite.when.scene': [
     { id: 'su6.n1', turns: [{ by: 'a', say: "When are you going to use yours?" }, { by: 'b', say: "When are you?" }, { beat: 'Neither of them says a number.' }] },

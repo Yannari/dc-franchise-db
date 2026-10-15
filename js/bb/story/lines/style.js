@@ -183,7 +183,7 @@ export default {
       { by: 'a', say: "In the middle. Which means nobody can count without us." },
       { by: 'b', say: "And {c}?" },
       { by: 'a', say: "{c} is the only one doing the same maths I am. That's the problem." },
-      { by: 'a', dr: "This game is numbers. Everyone else is going on feelings. I'm counting." },
+      { by: 'a', dr: "This game is numbers. Everyone else is going on feelings. I'm counting votes." },
     ] },
     { id: 'gy-st.2', presumes: ['vote'], room: 'kitchen', turns: [
       { beat: 'The kitchen. {a} and {b} are washing up, talking in short bursts whenever the room empties.' },
@@ -201,7 +201,7 @@ export default {
       { by: 'b', say: "Are you even listening?" },
       { by: 'a', say: "To you? Yes. To everyone else? Also yes." },
       { by: 'b', say: "What have you heard?" },
-      { by: 'a', say: "{c} has had four private conversations today. Four. Nobody has four conversations unless they're counting." },
+      { by: 'a', say: "{c} has had four private conversations today. Four. Nobody has four conversations unless they're counting votes." },
       { by: 'a', dr: "I watch who talks to who. It tells me more than anything anybody says to me." },
     ] },
     { id: 'gy-st.4', presumes: ['vote'], turns: [
@@ -338,7 +338,7 @@ export default {
       { by: 'a', say: "It used to." },
       { by: 'b', say: "And now?" },
       { by: 'a', say: "Now I think it's the reason I'm still here." },
-      { by: 'a', dr: "Nobody's counting me. That's fine. I'm counting all of them." },
+      { by: 'a', dr: "Nobody's counting on my vote. That's fine. I'm counting all of theirs." },
     ] },
     { id: 'gy-su.2', presumes: ['vote'], turns: [
       { beat: 'The backyard. {a} is on their own on the steps. {b} sits down.' },

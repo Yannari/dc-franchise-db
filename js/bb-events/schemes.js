@@ -365,6 +365,9 @@ function _scriptOf(list, extra, ctx, room, salt) {
   // them: a confrontation, an exposure, a whisper traced back.
   const aware = list.some(r => r.badgeText === 'CONFRONTATION' || r.type === 'exposeSchemer'
     || r.type === 'whisperCampaignExposed' || r.badgeText === 'EXPOSED');
+  // who the previous part was between: a part between two other people is a second moment, later
+  // (read 2026-10-14: Zee warning Owen, then straight on, Owen accusing Millie, as one conversation)
+  let prevPair = null;
   const parts = list.map((r, i) => {
     const decided = _sceneOf(r, { ...extra, aware });
     if (!decided) return null;
@@ -372,11 +375,14 @@ function _scriptOf(list, extra, ctx, room, salt) {
     if (Object.values(data).some(v => v === undefined)) return null;
     const s = scriptBeat(kind, who, data, { week: ctx?.week, act: ctx?.act || 'house', hoh: ctx?.hoh || null,
       nominees: ctx?.nominees || [], room, salt: `${salt}|${i}` });
+    const pair = [who.a, who.b].filter(Boolean).sort().join('|');
+    const moved = prevPair !== null && pair !== prevPair;
+    if (s) prevPair = pair;
     if (s && r.type === 'campaignRally' && extra.listeners?.length) {
       const cut = { kind: 'beat', by: null, text: `${who.a} sits down with ${extra.listeners.join(' and ')} and lowers ${pronouns(who.a).posAdj} voice.` };
       return { ...s, lines: [cut, ...s.lines] };
     }
-    if (s && i > 0 && (r.type === 'comfortVictim' || r.badgeText === 'WARNED')) {
+    if (s && i > 0 && who.b && (r.type === 'comfortVictim' || r.badgeText === 'WARNED' || moved)) {
       const cut = { kind: 'beat', by: null, text: `Later, away from the others, ${who.a} finds ${who.b}.` };
       return { ...s, lines: [cut, ...s.lines] };
     }

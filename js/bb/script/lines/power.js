@@ -65,7 +65,7 @@ export default {
     ] },
     { id: 'pb.d2', when: { room: ['backyard'] }, turns: [
       { beat: '{a} sits alone in the backyard for most of an hour. Two people see. Neither of them goes out.' },
-      { by: 'a', dr: "I don't need company. I need four votes." },
+      { by: 'a', dr: "I don't need company. I need votes." },
     ] },
     { id: 'pb.d3', turns: [
       { by: 'a', dr: "I keep saying thank you to people like it's goodbye. I don't mean to. It just comes out." },
@@ -89,7 +89,7 @@ export default {
   ],
   'power.block.focus': [
     { id: 'pb.f1', turns: [
-      { by: 'a', dr: "I need four votes. I know exactly whose. I'm starting at the top of the list." },
+      { by: 'a', dr: "I need enough votes to stay, and I know exactly whose. I'm starting at the top of the list." },
     ] },
     { id: 'pb.f2', when: { room: ['bedroom'] }, turns: [
       { beat: '{a} sits on the bed going through every name in the house, one at a time, quietly.' },
@@ -112,6 +112,24 @@ export default {
     ] },
     { id: 'pb.f8', when: { register: 'competitor' }, turns: [
       { by: 'a', dr: "The veto is the only vote I need. Win that, and none of this matters." },
+    ] },
+    // most weeks have two nominees and this fires for one of them: eight lines aired pb.f2 and pb.f6 twice in one
+    // season (read 2026-10-14)
+    { id: 'pb.f9', turns: [
+      { by: 'a', dr: "I made a list of everyone in here who owes me a favour. It's shorter than I'd like. I'm asking every one of them for their vote anyway." },
+    ] },
+    { id: 'pb.f10', turns: [
+      { by: 'a', dr: "You find out who your friends are when you're nominated. Some of them came straight over. Some of them found something to do in the kitchen." },
+    ] },
+    { id: 'pb.f11', when: { hohB: true }, turns: [
+      { by: 'a', dr: "{b} nominated me and then smiled at me at dinner. I smiled back. Two can do that." },
+    ] },
+    { id: 'pb.f12', turns: [
+      { by: 'a', dr: "I've stopped thinking about why I'm up here. It doesn't matter why. It only matters who's voting." },
+    ] },
+    { id: 'pb.f13', when: { room: ['bedroom'] }, turns: [
+      { beat: '{a} lies on the bed, staring at the ceiling, counting votes on {a.posAdj} fingers.' },
+      { by: 'a', dr: "I went through everybody who has a vote and who they'd keep, four times. Twice I stayed. Twice I went home. That's not great." },
     ] },
   ],
 
@@ -284,7 +302,7 @@ export default {
     { id: 'pf.s1', turns: [{ beat: '{b} knocks on the HOH door.' }, { by: 'a', say: "Now's not a good time." }, { beat: '{b} walks back down the stairs alone.' }] },
     { id: 'pf.s2', turns: [{ by: 'b', say: "Can I come in?" }, { by: 'a', say: "I'm sleeping." }, { by: 'b', dr: "{a} wasn't sleeping. We both knew it. {a} just didn't want to talk to me." }] },
     { id: 'pf.s3', turns: [{ by: 'a', dr: "It's the only door in this house that locks. Today I used it on {b}." }] },
-    { id: 'pf.s4', turns: [{ beat: 'The house watches {b} come back down without having gone in. Nobody asks how it went.' }, { by: 'b', dr: "Everybody saw. That's the part that hurts." }] },
+    { id: 'pf.s4', turns: [{ beat: '{b} goes up to the HOH room to make a pitch. {a} answers the door, says something short, and does not open it any wider. The house watches {b} come back down the stairs. Nobody asks how it went.' }, { by: 'b', dr: "Everybody saw. That's the part that hurts." }] },
     { id: 'pf.s5', turns: [{ by: 'b', say: "Five minutes?" }, { by: 'a', say: "Maybe tomorrow." }, { by: 'b', say: "Tomorrow's nominations." }, { by: 'a', say: "...I know." }] },
     { id: 'pf.s6', turns: [{ by: 'a', dr: "I didn't open the door for {b}. I didn't need to. I already know what I'm doing with {b}." }] },
   ],
@@ -509,7 +527,7 @@ export default {
     { id: 'pfb.s4', turns: [{ by: 'a', say: "Am I safe this week?" }, { by: 'b', say: "Of course you're safe." }, { by: 'a', say: "Good. Thanks." }, { by: 'b', say: "Why do you ask?" }, { by: 'a', say: "No reason." }, { by: 'a', dr: "\"Of course.\" So I'm lobbying for a veto chip anyway." }] },
     { id: 'pfb.s5', turns: [{ by: 'a', say: "If you pull houseguest's choice, think of me." }, { by: 'b', say: "Why you?" }, { by: 'a', say: "I'm good at comps. You'd want someone good." }, { by: 'b', say: "I'll see." }, { by: 'a', dr: "I'm not asking to play for {b}. I'm asking to survive." }] },
     { id: 'pfb.s6', turns: [{ by: 'b', say: "Morning!" }, { by: 'a', say: "Morning." }, { by: 'b', say: "Sleep well?" }, { by: 'a', say: "Fine. You?" }, { by: 'b', say: "Like a baby." }, { by: 'a', dr: "{b} keeps smiling at me. I don't trust it. Nobody smiles that much at someone they're keeping." }] },
-    { id: 'pfb.s7', when: { register: 'cool' }, turns: [{ beat: "{a} watches {b} go back upstairs, and does the maths." }, { by: 'a', dr: "The nominations don't make sense unless the real target isn't on the block. I'm not on the block. I think it's me." }] },
+    { id: 'pfb.s7', when: { register: 'cool' }, turns: [{ beat: "{a} watches {b} go back upstairs, and works out how many visits that makes today." }, { by: 'a', dr: "The nominations don't make sense unless the real target isn't on the block. I'm not on the block. I think it's me." }] },
   ],
   // ── "pick me and I'll save you" ── a the seller, b the nominee
   'power.pick-me.bought': [
@@ -517,7 +535,7 @@ export default {
     { id: 'pm.b2', turns: [{ by: 'a', say: "You need somebody in that veto who wants you to stay. That's me." }, { by: 'b', say: "And what do you want for it?" }, { by: 'a', say: "We'll talk about that later." }, { by: 'b', say: "That's not reassuring." }, { by: 'a', say: "It's not meant to be. It's meant to be a deal." }, { by: 'b', dr: "I'm going to pick {a}. And then I'm going to find out what \"later\" means." }] },
     { id: 'pm.b3', turns: [{ by: 'a', say: "Have you thought about who you'd pick for the veto?" }, { by: 'b', say: "I haven't even thought about lunch." }, { by: 'a', say: "Pick me. I'll play for you." }, { by: 'b', say: "You'd do that?" }, { by: 'a', say: "Nobody else has offered, have they?" }, { by: 'b', dr: "{a} offered to play for me before anybody else thought of it. I've got no better offer, so I'm taking it." }] },
     { id: 'pm.b4', turns: [{ by: 'a', say: "Pick me. I'll take you down. Simple." }, { by: 'b', say: "Nothing's simple in here." }, { by: 'a', say: "This is. Me, the veto, you off the block." }, { by: 'b', say: "Okay. If I get the chance, it's you." }, { by: 'b', dr: "I hope it's that simple. It never is." }] },
-    { id: 'pm.b5', turns: [{ by: 'a', say: "I'm not going to pretend it's a favour. There's a price, later. But I'll get you off that block." }, { by: 'b', say: "What kind of price?" }, { by: 'a', say: "The kind we talk about once you're safe." }, { by: 'b', say: "...Deal." }] },
+    { id: 'pm.b5', turns: [{ by: 'a', say: "If you get to pick a player for the veto, pick me. I'm not going to pretend it's a favour. There's a price, later. But I'll get you off that block." }, { by: 'b', say: "What kind of price?" }, { by: 'a', say: "The kind we talk about once you're safe." }, { by: 'b', say: "...Deal." }] },
     { id: 'pm.b6', turns: [{ by: 'a', say: "You look like you need a friend in that veto." }, { by: 'b', say: "I need a lot of things." }, { by: 'a', say: "Start with me. Pick me, and I'll use it on you." }, { by: 'b', say: "You promise?" }, { by: 'a', say: "I promise." }, { by: 'b', dr: "I'm going to pick {a} if I can. And then spend the rest of the week hoping {a} meant it." }] },
     { id: 'pm.b7', turns: [{ by: 'a', say: "Who else are you going to pick? Seriously. Who else is offering?" }, { by: 'b', say: "...Nobody." }, { by: 'a', say: "Exactly." }, { by: 'b', say: "Fine. If I pull houseguest's choice, it's you." }, { by: 'a', say: "You won't regret it." }, { by: 'b', dr: "I might. But I'll regret it less than going home." }] },
   ],

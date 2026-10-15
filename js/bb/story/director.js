@@ -118,6 +118,9 @@ export function airStorylines(week) {
   // airs and the scene grows. Two sketches that share a speaker become one conversation.
   const spokenOf = sc => sc.lines.filter(l => l.kind === 'say').length;
   const GAME_HOST = new Set(['alliance', 'target', 'talk', 'campaign', 'scheme']);
+  // a confrontation is its own scene: folded into somebody's friendly talk it turns it ("Another comp, another
+  // loss", then Beth to her own showmance: "You told everybody you were voting Axel out", read 2026-10-14)
+  const CONFRONT = /^(arc-promise-exposed|fallout-(blame|denial|hypocrisy)|arc-lie|followup-lie|social-blow|deals-exposed|arc-rogue-vote-denial|deals-broken-promise)/;
   const ROOM_OPEN = /^(the )?(kitchen|backyard|bedroom|living room|hoh room|hoh suite|storage room|bathroom|diary room|pool|hot tub|have-not|dining room)\b/i;
   const placed = sc => sc.lines.some(l => l.kind === 'beat' && ROOM_OPEN.test(String(l.text || '')));
   // what carries one conversation into the next thing said in it: sometimes nothing (people just keep
@@ -126,6 +129,29 @@ export function airStorylines(week) {
     'A pause. Then the thing they actually came to say.', 'Somebody checks the doorway first.', 'The voices drop.',
     'They lean in a little closer.', 'One more thing, before anybody leaves.', 'The jokes stop for a second.',
     'A glance at the camera. They keep going anyway.', 'Nobody moves to leave.', 'And then, lower:'];
+  // what a speaker has already said in a conversation about a vote: a moment folded into it cannot have
+  // them say the opposite (read 2026-10-14: "I hugged Chase that morning and wrote his name down that
+  // night", then, folded in, "I'd never vote against Chase")
+  const VOTE_DENY = /\b(never|didn't|did not|wouldn't|would never) (vote|write|put)\b|\bwasn't me\b|\bnot my vote\b/i;
+  const VOTE_ADMIT = /\b(wrote|write) (his|her|their|[A-Z]\w*'s) name\b|\bI voted (against|him|her|them|[A-Z]\w*) ?(out)?\b(?! to keep)/;
+  const stanceOf = lines => {
+    const m = new Map();
+    for (const l of lines) {
+      if (l.kind !== 'say' || !l.by) continue;
+      const t = String(l.text || '');
+      if (VOTE_DENY.test(t)) m.set(l.by, (m.get(l.by) || '') + 'd');
+      if (VOTE_ADMIT.test(t)) m.set(l.by, (m.get(l.by) || '') + 'a');
+    }
+    return m;
+  };
+  const clashes = (host, sc) => {
+    const h = stanceOf(host.lines);
+    for (const [n, s] of stanceOf(sc.lines)) {
+      const was = h.get(n) || '';
+      if ((s.includes('d') && was.includes('a')) || (s.includes('a') && was.includes('d'))) return true;
+    }
+    return false;
+  };
   const fold = (host, sc, salt) => {
     const tail = [];
     while (host.lines.length && host.lines.at(-1).kind === 'dr') tail.unshift(host.lines.pop());
@@ -228,6 +254,9 @@ export function airStorylines(week) {
           // mentioned Emmah, read 2026-10-14)
           if (x.type === 'showmance' && !/^(showmance|romance|couple)/.test(String(sc.step || ''))) return false;
           if (/isolation|avoid|cold-war|silent/.test(String(sc.step || ''))) return false;
+          // a scheme told to the camera (a rumour started, a whisper campaign) is the close of a game talk,
+          // not of a cushion fort or a heart-to-heart with the person it is aimed at
+          if (/^(scheme-|social-rumou?r|deals-)/.test(String(sc.step || '')) && !GAME_HOST.has(x.type)) return false;
           // a grudge is not the close of an apology the speaker just made (Hicks said sorry to Bowie, then:
           // "I'm not looking for an apology from Bowie any more")
           if (/apolog|makeup|reconcil|forgive/.test(String(x.step || '')) && /grudge|blame|feud|cold|paranoia/.test(String(sc.step || ''))) return false;
@@ -251,11 +280,13 @@ export function airStorylines(week) {
         const sayers = new Set(sc.lines.filter(l => l.kind === 'say' && l.by).map(l => l.by));
         const publicMoment = sc.lines.some(l => l.kind === 'beat' && /\b(room|house|everyone|everybody|nobody|table|kitchen|half)\b/i.test(String(l.text || '')))
           || sc.lines.some(l => l.kind === 'dr' && l.by && !sayers.has(l.by));
-        const host = placed(sc) || publicMoment ? null : hosts.filter(x => GAME_HOST.has(x.type) && x.mood !== 'secret' && (x.folded || []).length < 2
-          && speakers.every(s2 => talkers(x).has(s2)) && (sc.cast || []).every(n => (x.cast || []).includes(n)) && !/^texture-/.test(String(beat.eventId || '')))
+        const confront = CONFRONT.test(String(beat.eventId || ''));
+        const host = placed(sc) || publicMoment || confront ? null : hosts.filter(x => GAME_HOST.has(x.type) && x.mood !== 'secret' && (x.folded || []).length < 2
+          && speakers.every(s2 => talkers(x).has(s2)) && (sc.cast || []).every(n => (x.cast || []).includes(n)) && !/^texture-/.test(String(beat.eventId || ''))
+          && !clashes(x, sc))
           .sort((x, y) => (x.folded || []).length - (y.folded || []).length)[0];
         if (host) { airs(); fold(host, sc, `${week.num}|${stretch}|${beat.eventId}`); continue; }
-        loose.push({ ea, sc, beat, key, wt, airs });
+        loose.push({ ea, sc, beat, key, wt: confront ? Math.max(wt, 4) : wt, airs, confront });
         continue;
       }
       airs();
@@ -271,7 +302,7 @@ export function airStorylines(week) {
       const sp = sc => new Set(sc.lines.filter(l => l.kind === 'say' && l.by).map(l => l.by));
       const same = (x, y) => x.size === y.size && [...x].every(n => y.has(n));
       const castOf = sc => new Set(sc.cast || []);
-      const mate = loose.find(b => b !== a && !used.has(b) && !placed(b.sc) && same(sp(b.sc), sp(a.sc)) && sp(a.sc).size >= 2 && same(castOf(b.sc), castOf(a.sc)));
+      const mate = a.confront ? null : loose.find(b => b !== a && !used.has(b) && !b.confront && !placed(b.sc) && same(sp(b.sc), sp(a.sc)) && sp(a.sc).size >= 2 && same(castOf(b.sc), castOf(a.sc)) && !clashes(a.sc, b.sc));
       if (mate) {
         used.add(a); used.add(mate);
         a.airs(); mate.airs();

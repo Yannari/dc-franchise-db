@@ -261,6 +261,8 @@ const votingTogether = {
   weight(house, ctx) {
     const pair = _couple(house);
     if (!pair || _once('showmance-two-votes', ctx)) return 0;
+    // a nominee has no vote to share
+    if (_noms(ctx).some(n => n === pair.a || n === pair.b)) return 0;
     // The week's business, when there is business.
     return ['campaign', 'eviction', 'veto'].includes(ctx?.act) || ctx?.phase === 'post-veto'
       ? _fit(ctx, 8) : 0;
@@ -269,8 +271,12 @@ const votingTogether = {
     const { a, b } = _couple(house);
     _spend(this.id, ctx);
     const observer = _quiet(_others(house, a, b))[0];
+    // who the two of them settle on, when the block is set: the nominee they like least between them
+    // (read 2026-10-14: "we talked it through and picked together", and never a name)
+    const target = _noms(ctx).filter(n => n !== a && n !== b)
+      .sort((x, y) => (bond(a, x) + bond(b, x)) - (bond(a, y) + bond(b, y)))[0] || null;
 
-    const scene = makeScene('couple.vote', { a, b, c: observer || null }, { ending: 'scene' }, [], _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, a, b));
+    const scene = makeScene('couple.vote', { a, b, c: observer || null }, { ending: 'scene', target }, [], _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, a, b));
 
     api.addBond(a, b, 0.6);
     // The point of a couple, to everybody else: it is not two people.

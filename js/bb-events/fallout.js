@@ -185,7 +185,13 @@ const findingTheCulprit = {
     if (_spent('fallout-blame', ctx)) return 0;
     const mourner = chiefMourner(week);
     if (!mourner) return 0;
-    return assignBlame(mourner.name, week) ? _morning(ctx, 12) : 0;
+    const verdict = assignBlame(mourner.name, week);
+    if (!verdict) return 0;
+    // somebody blaming last week's HOH is every week's story: not two weeks running (the read of
+    // 2026-10-14: eight a season, the same exchange three times)
+    const prev = (gs.bb?.weeks || []).find(w => w && w !== ctx.week && (w.num || 0) === (ctx.week?.num || 0) - 1);
+    if (verdict.blamed === week.hoh && prev?._falloutFired?.['blame-hoh']) return 0;
+    return _morning(ctx, 12);
   },
   fire(house, ctx, api) {
     const week = _fresh(ctx);
@@ -198,6 +204,7 @@ const findingTheCulprit = {
         location: 'diary-room', players: [mourner.name], badgeText: 'NO ANSWER', badgeClass: 'grey' };
     }
     const { blamed, correct, why } = verdict;
+    if (blamed === week.hoh) _spend('blame-hoh', ctx);
 
     const scene = makeScene('fallout.blame', { a: mourner.name, b: blamed },
       { ending: correct ? 'correct' : 'wrong', gone, ...(blamed === week.hoh ? { reason: 'hoh' } : {}) }, [], _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, mourner.name, blamed));

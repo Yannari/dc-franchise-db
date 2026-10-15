@@ -27,6 +27,7 @@
 //   DAMAGE — how much the use actually cost the Head of Household. A veto can
 //   be used and the HOH not care at all, because the person who came down was
 //   never the point. Anger belongs to the week where the TARGET walked.
+import { gs } from '../core.js';
 import { addBond, getPerceivedBond } from '../bonds.js';
 import { allyStake, rememberBBStrategy, setBBTarget } from './shared-strategy.js';
 import { recordProtection, recordStrategicRespect } from '../relationship-events.js';
@@ -144,12 +145,18 @@ export function applyVetoFallout({
   // ── 2. LEFT UP ──
   //
   // The biggest social moment of the week and it did nothing at all.
-  for (const n of nominees) {
+  // A nominee the holder swore it to this week ("Are you going to use it?" "On you. Yes.") was counting on
+  // it most of all, and theirs is the scene that airs (read 2026-10-14: the promise aired, the ceremony
+  // kept it, and the left-up scene went to the other nominee)
+  const promised = n => (gs.sideDeals || []).some(d => d && d.active !== false && d.type === 'veto' && d.about === 'promised the veto'
+    && d.players?.includes(holder) && d.players?.includes(n));
+  for (const n of [...nominees].sort((x, y) => promised(y) - promised(x))) {
     if (n === saved || n === holder) continue;
     // Only people who were already sitting there before the ceremony. The
     // replacement has their own grievance and it is not this one.
     if (!priorBlock.includes(n)) continue;
-    const expectation = saveExpectation({ nominee: n, holder, decision, replacementPool });
+    const sworn = promised(n);
+    const expectation = Math.max(sworn ? 0.9 : 0, saveExpectation({ nominee: n, holder, decision, replacementPool }));
     if (expectation < 0.12) continue;
     resented.push(n);
     addBond(n, holder, -(1.1 + expectation * 2.6));
@@ -159,8 +166,8 @@ export function applyVetoFallout({
     }
     draw(rng);
     beats.push(scene('veto-left-up', 'vfall.leftup', { a: n, b: holder },
-      { ending: expectation >= 0.5 ? 'friend' : 'plain' }, `${holder} leaves ${n} on the block.`,
-      [n, holder], expectation >= 0.5 ? 'LEFT UP BY A FRIEND' : 'LEFT UP', 'red', { week, hoh }));
+      { ending: sworn ? 'promised' : expectation >= 0.5 ? 'friend' : 'plain' }, `${holder} leaves ${n} on the block.`,
+      [n, holder], sworn ? 'PROMISE BROKEN' : expectation >= 0.5 ? 'LEFT UP BY A FRIEND' : 'LEFT UP', 'red', { week, hoh }));
   }
 
   // ── 3. THE CHAIR NOBODY VOLUNTEERED FOR ──

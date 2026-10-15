@@ -423,7 +423,7 @@ export default {
     { id: 'nd.a14', when: { early: true }, turns: [{ by: 'a', dr: "Nominated in the first days. Nobody even knows me yet. I'm going to have to make them, fast." }] },
     { id: 'nd.a15', turns: [{ by: 'a', dr: "I keep looking at that screen and thinking it's a mistake. It's not a mistake. It's my face." }] },
     { id: 'nd.a16', turns: [{ by: 'a', dr: "The worst part isn't the block. It's the hug from {b} afterwards. Don't hug me. Just don't." }] },
-    { id: 'nd.a17', turns: [{ by: 'a', dr: "I've got four days to change about six minds. I've done harder things. I think." }] },
+    { id: 'nd.a17', turns: [{ by: 'a', dr: "I've got four days to change enough minds to stay. I've done harder things. I think." }] },
     { id: 'nd.a18', turns: [{ by: 'a', dr: "Okay. Deep breath. Nobody wins this game without sitting in that chair at least once." }] },
     { id: 'nd.a19', turns: [{ by: 'a', dr: "{b} looked at everybody at that table except me. That told me everything." }] },
     { id: 'nd.a20', turns: [{ by: 'a', dr: "I'm going to be the nicest, most helpful, most charming person in this house for the next four days. And then I'm getting revenge." }] },

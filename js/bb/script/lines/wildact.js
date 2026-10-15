@@ -91,7 +91,7 @@ export default {
   ],
   'wildact.blocked.scene': [
     { id: 'wc7.k1', turns: [{ by: 'a', dr: "I'm on the block and I said no to safety. Either I have the votes, or I just made the worst choice of my life." }] },
-    { id: 'wc7.k2', turns: [{ by: 'a', dr: "People think I'm crazy for saying no. I've counted. I'm fine." }] },
+    { id: 'wc7.k2', turns: [{ by: 'a', dr: "People think I'm crazy for saying no. I've counted the votes. I'm fine." }] },
     { id: 'wc7.k3', turns: [{ by: 'a', dr: "Yes, I'm nominated. Yes, I turned it down. I'm not paying for something I don't need." }] },
   ],
 };

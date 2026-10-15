@@ -66,10 +66,21 @@ const _fit = ctx => (ctx?.act === 'nominations' || ctx?.act === 'veto-ceremony' 
   : ctx?.act === 'campaign' ? 0.7 : 1);
 
 /** The first person in the house who has worked something out and not acted. */
-function _firstReader(house, minRead = 0.9) {
+// Once the block is set the week has one vote, and a group plotted against now is plotted against on
+// it (read 2026-10-14: Chase recruiting against Caleb, then "Start with Beth", then making the case
+// against Axel, the nominee, all the same afternoon).
+function _onTheVote(target, ctx) {
+  const set = ['post-noms', 'post-veto', 'campaign', 'eviction'].includes(ctx?.phase)
+    || ['nominations', 'veto', 'veto-ceremony', 'campaign', 'eviction'].includes(ctx?.act);
+  if (!set) return true;
+  const noms = ctx?.nominees?.length ? ctx.nominees : (ctx?.week?.finalNominees || ctx?.week?.initialNominees || []);
+  return noms.includes(target);
+}
+
+function _firstReader(house, minRead = 0.9, ctx = null) {
   for (const name of _quiet(house)) {
     const read = chooseBlocTarget(name, { minPower: minRead });
-    if (read && !hasPlanAgainst(name, read.bloc.id)) return { name, ...read };
+    if (read && !hasPlanAgainst(name, read.bloc.id) && _onTheVote(read.target, ctx)) return { name, ...read };
   }
   return null;
 }
@@ -157,10 +168,10 @@ const blocTargetPicked = {
   category: 'deals',
   weight(house, ctx) {
     if (house.length < 5) return 0;
-    return _firstReader(house) ? band(11 * _fit(ctx)) : 0;
+    return _firstReader(house, 0.9, ctx) ? band(11 * _fit(ctx)) : 0;
   },
   fire(house, ctx, api) {
-    const read = _firstReader(house);
+    const read = _firstReader(house, 0.9, ctx);
     if (!read) {
       const who = house[0];
       return { scene: makeScene('bloc.quiet', { a: who }, { ending: 'scene' }, [], _room(['bedroom', 'backyard'], ctx, who)),
@@ -201,7 +212,7 @@ const blocRecruit = {
     // Somebody who has already decided, looking for the numbers to do it.
     const plotter = house.find(name => {
       const t = targetOf(name);
-      return t && listBlocs().some(b => b.members.includes(t) && !b.members.includes(name)
+      return t && _onTheVote(t, ctx) && listBlocs().some(b => b.members.includes(t) && !b.members.includes(name)
         && knowledgeOf(name, b.id) >= 0.5);
     });
     return plotter ? band(9 * _fit(ctx)) : 0;
@@ -209,7 +220,7 @@ const blocRecruit = {
   fire(house, ctx, api) {
     const plotter = _quiet(house).find(name => {
       const t = targetOf(name);
-      return t && listBlocs().some(b => b.members.includes(t) && !b.members.includes(name)
+      return t && _onTheVote(t, ctx) && listBlocs().some(b => b.members.includes(t) && !b.members.includes(name)
         && knowledgeOf(name, b.id) >= 0.5);
     }) || house[0];
     const target = targetOf(plotter);

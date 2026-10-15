@@ -74,6 +74,9 @@ function rule(sc) {
     case 'scheme-lie': return F('hunt', 'lie', d.believed ? 'believed' : 'seen');
     case 'volunteer': return F('hunt', 'volunteer');
     case 'plea': return F('hunt', 'plea', d.moved ? 'moved' : 'held');
+    case 'counter-pitch': return F('hunt', 'counter', d.moved?.length ? 'moved' : 'held');
+    case 'spare-deal': return F('hunt', 'spare', d.answer);
+    case 'empty-threat': return F('hunt', 'empty');
     // ── rookies ──
     case 'vet-dismisses': return F('rookies', 'dismissed');
     case 'vet-mentors-rookie': return F('rookies', 'mentor');

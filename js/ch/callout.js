@@ -55,13 +55,17 @@ export function calloutTerms(state, x, y) {
   if (dealBetween(state, x, y)) protect -= 2.5 * (0.3 + loyal);
   protect -= oweOf(x, y) * 0.6;
   if (planOf(state, x)?.core?.includes(y)) protect -= 2.5 * (0.4 + loyal);
-  return { survive, grudge, prove, avoid, protect, pWin };
+  // A threat made at the vote is a promise the whole house heard: going back on it costs your word, so the
+  // bold and the proud keep it (state.promises, vote.js campaign).
+  const pr = state.promises?.[x];
+  const promise = pr && pr.at === y && pr.ep >= state.ep - 1 ? 0.5 + bold * 1.3 + (1 - temper) * 0.4 + (state.word?.[x] || 0) * 0.3 : 0;
+  return { survive, grudge, prove, avoid, protect, promise, pWin };
 }
 
 export function chooseOpponent(state, rng, x, eligible) {
   const rows = eligible.filter(y => y !== x).map(y => {
     const t = calloutTerms(state, x, y);
-    const total = t.survive + t.grudge + t.prove + t.avoid + t.protect;
+    const total = t.survive + t.grudge + t.prove + t.avoid + t.protect + t.promise;
     return { y, t, total };
   });
   if (!rows.length) return null;
@@ -74,6 +78,8 @@ export function chooseOpponent(state, rng, x, eligible) {
   let reason = Object.entries(parts).sort((a, b) => b[1] - a[1])[0][0];
   const strongest = [...rows].sort((a, b) => arenaRead(state, b.y) - arenaRead(state, a.y))[0];
   if (reason === 'survive' && strongest.y !== pick.y && arenaRead(state, strongest.y) >= 7 && strongest.t.avoid < -0.4) reason = 'avoid-beast';
+  // they said they would, in front of everybody
+  if (t.promise > 0) reason = 'promise';
   // A broken deal is a betrayal on the record.
   const deal = dealBetween(state, x, pick.y);
   return { opponent: pick.y, reason, terms: rounded(t), deal: deal ? deal.id : null,

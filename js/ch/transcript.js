@@ -19,7 +19,7 @@ const SPOT = { airstrip: 'The airstrip', villa: 'The villa', kitchen: 'The kitch
 const TITLE = {
   previously: 'Previously on The Challenge', arrival: 'The arrival', 'villa-reveal': 'The villa', 'house-debate': 'The house talks', 'after-vote': 'After the vote', 'pick-talk': 'The pick', 'pick-guess': 'Who goes in', 'gym-training': 'Training', 'pool-games': 'Chicken fight', 'house-dinner': 'Dinner', 'beach-run': 'The run', 'sunset-talk': 'Sunset', 'bunk-whisper': 'Lights out', ceremony: 'The house vote', callout: 'The call-out', volunteer: 'A volunteer',
   meeting: 'A meeting', 'meeting-spotted': 'Somebody noticed', recruit: 'Asking for a vote', plea: 'A plea', deal: 'A deal',
-  'deal-broken': 'A deal', outing: 'Out loud', 'leverage-threat': 'A warning', 'ride-to-the-final': 'All the way',
+  'deal-broken': 'A deal', outing: 'Out loud', 'leverage-threat': 'A warning', 'counter-pitch': 'Not me, them', 'spare-deal': 'A quiet offer', 'empty-threat': 'An empty threat', 'ride-to-the-final': 'All the way',
   daily: 'The daily challenge', 'daily-clutch': 'After the daily', 'daily-choke': 'After the daily', 'partner-draw': 'Partners',
   'partner-pick': 'Partners', 'partner-blame': 'After the daily', 'partner-carried': 'After the daily', 'team-blame': 'After the daily',
   'picked-last': 'Picking teams', throw: 'The daily', 'throw-caught': 'Suspicion', 'gym-flex': 'The gym',

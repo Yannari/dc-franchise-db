@@ -241,7 +241,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     for (let k = 0; k < elims; k++) {
       const eligible = inDivision(state, division).filter(n => !immune.includes(n) && !used.has(n));
       if (eligible.length < 2) break;
-      if (!delib) { delib = deliberate(state, R('delib'), { division, eligible, immune }); epRec.delib = summarise(delib); if (!delib.volunteer) houseDebate(state, delib, eligible); }
+      if (!delib) { state.promises = {}; delib = deliberate(state, R('delib'), { division, eligible, immune }); epRec.delib = summarise(delib); if (!delib.volunteer) houseDebate(state, delib, eligible); }
       let votedIn, vote = null, volunteer = false;
       if (k === 0 && delib.volunteer && eligible.includes(delib.volunteer.name)) {
         votedIn = delib.volunteer.name; volunteer = true;
@@ -309,9 +309,22 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       calledOut(votedIn, opp, co.reason);
       const deal = dealBetween(state, votedIn, opp);
       if (deal) breakDeal(state, deal, votedIn, 'callout');
-      epRec.callouts.push({ by: votedIn, opponent: opp, reason: co.reason, terms: co.terms, ranked: co.ranked || null });
-      addScene(state, 'callout', [votedIn, opp], { reason: co.reason, volunteer: m.volunteer,
+      // A threat made at the vote: kept, or broken in front of the person it was made to.
+      const pr = state.promises?.[votedIn];
+      const promise = pr && !m.volunteer ? (pr.at === opp ? 'kept' : state.active.includes(pr.at) ? 'broken' : null) : null;
+      epRec.callouts.push({ by: votedIn, opponent: opp, reason: co.reason, terms: co.terms, ranked: co.ranked || null, promise, promisedAt: promise ? pr.at : null });
+      addScene(state, 'callout', [votedIn, opp], { reason: co.reason, volunteer: m.volunteer, promise,
         votedMe: !!vote?.ballots.some(x => x.voter === opp && x.target === votedIn) }, state.active, 'arena');
+      if (promise) {
+        state.word ||= {};
+        if (promise === 'kept') { state.word[votedIn] = Math.min(3, (state.word[votedIn] || 0) + 1); pop(votedIn, 0.5); }
+        else {
+          state.word[votedIn] = Math.max(-3, (state.word[votedIn] || 0) - 1.5);
+          remember(pr.at, votedIn, 'empty-threat', 0.6);
+          addScene(state, 'empty-threat', [pr.at, votedIn], { opponent: opp }, state.active, 'arena');
+        }
+        delete state.promises[votedIn];
+      }
       afterVote(state, R(`afterco${k}`), { ballots: [], votedIn, calledOut: opp, by: votedIn });
       calloutCost(state, votedIn, opp);
       const duel = playDuel(state, R(`arena${k}`), m.a, m.b);

@@ -191,6 +191,25 @@ export default {
     { id: 'ae.n3', turns: [
       { by: 'a', conf: "We didn't fall apart. They just picked us off one at a time until there was nobody left.", v: { sharp: ['Our numbers are gone. Time to find new ones.'] } },
     ] },
+    { id: 'ae.n4', turns: [
+      { by: 'a', say: "Do you think we can still call it an alliance?" },
+      { by: 'b', opt: 1, say: "With who? It's us." },
+      { by: 'a', say: "That's what I mean. There's nobody left to count on." },
+      { by: 'b', opt: 1, say: "We can count on each other. That's not nothing." },
+      { by: 'a', conf: "An alliance is supposed to give you votes. Ours doesn't have enough people left to give anybody anything." },
+    ] },
+    { id: 'ae.n5', turns: [
+      { by: 'a', conf: "Every week another one of us went into the Arena, and not one of them came back." },
+      { by: 'a', conf: "I can't walk into a vote and tell people we have the numbers. Everybody can count." },
+      { by: 'a', conf: "So that's it. I'm playing my own game now, whether I like it or not." },
+    ] },
+    { id: 'ae.n6', turns: [
+      { by: 'b', opt: 1, say: "You're quiet." },
+      { by: 'a', say: "I'm just thinking about who's left. It's a short list." },
+      { by: 'b', opt: 1, say: "We're still here." },
+      { by: 'a', say: "We are. But two people don't decide a vote in this house." },
+      { by: 'a', conf: "We started this thing to protect each other. There's almost nobody left to protect." },
+    ] },
   ],
   'alliance-end.final': [
     { id: 'ae.f1', turns: [

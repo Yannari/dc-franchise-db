@@ -32,11 +32,11 @@ import { file, causeOf, book } from './storylines.js';
 import { arcsFor } from './arcs.js';
 import { previouslyFor } from './previously.js';
 
-const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', 'pick-talk', 'pick-guess', 'daily', 'callout', 'arena', 'quit', 'medical', 'disqualified', 'tj-house-meeting', 'outing',
+const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', 'pick-talk', 'pick-guess', 'daily', 'callout', 'arena', 'quit', 'medical', 'disqualified', 'tj-house-meeting', 'outing', 'empty-threat',
   'volunteer', 'return', 'showmance', 'breakup', 'alliance-betrayal', 'deal-broken', 'fight-physical', 'final-start',
   'instant-elimination', 'overnight-sabotage', 'overnight-quit', 'final-pact-help', 'final-pact-broken', 'champions',
   'rookie-uprising']);
-const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'recruit', 'alliance-form', 'arena-eve-confront', 'arena-eve-pep',
+const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'alliance-form', 'arena-eve-confront', 'arena-eve-pep',
   'arena-eve-alone', 'morning-after', 'fight', 'team-blame', 'partner-blame', 'throw-caught', 'jealousy', 'receipts',
   'old-show-grudge', 'overheard', 'kitchen-blowup', 'floater-callout']);
 const STORY = new Set(['gym-training', 'pool-games', 'house-dinner', 'beach-run', 'sunset-talk', 'bunk-whisper', 'deal', 'alliance-grow', 'alliance-leave', 'alliance-end', 'apology', 'scheme-lie', 'loyalty-test',
@@ -44,7 +44,7 @@ const STORY = new Set(['gym-training', 'pool-games', 'house-dinner', 'beach-run'
   'vet-dismisses', 'vet-mentors-rookie', 'beach-date', 'hot-tub-truths', 'show-banter', 'rookie-hazing', 'throw']);
 const WARM = new Set(['flirt', 'beach-date', 'spark', 'vet-mentors-rookie', 'apology', 'hot-tub-truths', 'arena-eve-pep']);
 const ROW = new Set(['fight', 'fight-physical', 'kitchen-blowup', 'receipts', 'trash-talk', 'partner-blame', 'jealousy']);
-const CAPS = { meeting: 2, recruit: 2, 'alliance-form': 2, plea: 1, 'leverage-threat': 1, 'arena-eve-pep': 2, 'arena-eve-alone': 1 };
+const CAPS = { meeting: 2, recruit: 2, 'alliance-form': 2, plea: 2, 'leverage-threat': 1, 'counter-pitch': 1, 'spare-deal': 1, 'arena-eve-pep': 2, 'arena-eve-alone': 1 };
 const DAY_BUDGET = 7;   // non-must scenes per day, before the vote (or before the Arena)
 const AFTER_BUDGET = 7; // ...and after it: the night after the vote, the night after the Arena
 const ANCHOR = new Set(['voted-in', 'volunteer-in', 'arena']);

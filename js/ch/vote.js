@@ -27,7 +27,7 @@
 // uncommitted vote their own read with the count so far pulling the timid.
 // Each ballot carries its chain: wanted → asked → told → cast, and why.
 import { getBond, addBond } from '../bonds.js';
-import { S, mayScheme, addScene, noise, shuffle, logistic, clamp } from './state.js';
+import { S, mayScheme, addScene, noise, shuffle, logistic, clamp, weighted } from './state.js';
 import { arenaRead, freeRide, arenaBase } from './respect.js';
 import { allianceOf, activeAlliances, leave } from './alliances.js';
 import { coupleOf, dealBetween, calloutTerms } from './callout.js';
@@ -132,51 +132,127 @@ function recruit(state, rng, meeting, al, eligible, committed, ctx) {
 }
 
 // ── 3. campaigns ─────────────────────────────────────────────────────
-function campaign(state, rng, { eligible, immune, meetings, committed }) {
+// The people in danger work the room. The one most in danger makes two or three moves, the others one or
+// two (a social player gets an extra one); each move is chosen by who they are:
+//   outing        name the alliance coming for them, in front of everybody (bold, and they know it exists)
+//   threat        "put me in and I'm calling YOU out" — a PROMISE, held against them at the call-out
+//                 (callout.js); a broken one costs their word, and the next threat is doubted (state.word)
+//   counter       "not me, them": name somebody else and make the case to the soft votes (strategic)
+//   spare         a quiet offer to one voter they could call out: "don't vote me, and I won't pick you"
+//                 (a deal; voting them anyway, or calling the voter out, breaks it in public)
+//   plea          ask a friend who is voting for them to stop (social; one per friend)
+//   quiet         keep their head down
+const wordOf = (state, n) => state.word?.[n] || 0;
+
+// The name a player in danger would put up instead: somebody the soft votes could accept, who is not their friend.
+function altFor(state, n, eligible, soft, ctx) {
+  const rows = eligible.filter(x => x !== n && protectOf(n, x) < 2.5 && coupleOf(state, n) !== x).map(x => ({ x,
+    s: soft.reduce((t, v) => t + (v === x ? 0 : targetScore(state, v, x, planOf(state, v), ctx).total), 0) / Math.max(1, soft.length)
+      + grudgeOf(n, x) * 0.5 - protectOf(n, x) * 0.2 }));
+  return rows.sort((a, b) => b.s - a.s)[0]?.x || null;
+}
+
+function campaign(state, rng, { eligible, immune, meetings, committed, ctx }) {
   const out = [];
   // Expected votes against each eligible from what the room has committed.
   const against = {};
   for (const [v, c] of Object.entries(committed)) if (c.target) against[c.target] = (against[c.target] || 0) + 1;
   const danger = eligible.filter(n => (against[n] || 0) > 0).sort((a, b) => (against[b] || 0) - (against[a] || 0)).slice(0, 3);
-  for (const n of danger) {
-    const bold = S(n, 'boldness') / 10;
-    // a) Out the alliance coming for them, if they know it exists.
-    const hunting = meetings.find(m => m.target === n);
-    const knownBloc = hunting && believedAlliances(state, n)[hunting.alliance];
-    const huntingAl = hunting && state.alliances.find(a => a.id === hunting.alliance);
-    if (hunting && knownBloc && !huntingAl.outed && rng() < 0.04 + bold * 0.16) {
-      const al = huntingAl;
-      al.outed = state.ep;
-      outAlliance(state, al, n);
-      for (const m of al.members) nudge(state, m, 'paranoia', 0.8);
-      out.push({ kind: 'outing', from: n, alliance: al.id });
-      addScene(state, 'outing', [n, al.leader], { alliance: al.id, name: al.name }, state.active, 'public');
-      continue;
-    }
-    // b) A leverage threat.
-    // A threat is worth making when you would actually win the fight, or you
-    // are bold enough to bluff; and it loses force if you made one last time.
-    const lastThreat = state.lastThreat?.[n] ?? -9;
-    if (state.ep - lastThreat > 1 && rng() < (0.05 + bold * 0.2) * (0.6 + arenaRead(state, n) / 15)) {
-      (state.lastThreat ||= {})[n] = state.ep;
+  for (const [i, n] of danger.entries()) {
+    const bold = S(n, 'boldness') / 10, strat = S(n, 'strategic') / 10, social = S(n, 'social') / 10;
+    const done = new Set();
+    const moves = 1 + (i === 0 ? 1 : 0) + (rng() < social * 0.6 ? 1 : 0);
+    for (let k = 0; k < moves; k++) {
+      const opts = [];
+      // a) the outing
+      const hunting = meetings.find(m => m.target === n);
+      const huntingAl = hunting && state.alliances.find(a => a.id === hunting.alliance);
+      if (hunting && believedAlliances(state, n)[hunting.alliance] && !huntingAl?.outed && !done.has('outing'))
+        opts.push({ kind: 'outing', w: 0.06 + bold * 0.3 });
+      // b) the threat: worth making when you would win the fight, or you are bold enough to bluff; not two weeks running
+      const lastThreat = state.lastThreat?.[n] ?? -9;
       const pool = state.active.filter(x => state.division[x] === state.division[n] && !immune.includes(x) && x !== n);
-      const at = expectedCallout(state, n, pool);
-      if (at) {
-        const credible = clamp(arenaRead(state, n) / 10 * 0.7 + bold * 0.3, 0, 1);
-        out.push({ kind: 'threat', from: n, at, credible: +credible.toFixed(2), bluff: arenaBase(n) < 5.5 });
+      if (state.ep - lastThreat > 1 && !done.has('threat') && pool.length)
+        opts.push({ kind: 'threat', w: (0.08 + bold * 0.4) * (0.6 + arenaRead(state, n) / 15) * (wordOf(state, n) < 0 ? 0.5 : 1) });
+      // c) the counter-pitch: a name instead of theirs, to the votes that are not locked in
+      const soft = state.active.filter(v => v !== n && (!committed[v]?.target || (committed[v].target === n && committed[v].response === 'reluctant')));
+      if (!done.has('counter') && soft.length) opts.push({ kind: 'counter', w: 0.04 + strat * 0.3, soft });
+      // d) the quiet offer: to a voter on them who they could call out
+      const spareTo = Object.keys(committed).filter(v => committed[v].target === n && pool.includes(v) && !dealBetween(state, n, v))
+        .sort((x, y) => (trustOf(y, n) + fearOf(y, n)) - (trustOf(x, n) + fearOf(x, n)))[0];
+      if (!done.has('spare') && spareTo) opts.push({ kind: 'spare', w: 0.04 + strat * 0.16 + social * 0.08, to: spareTo });
+      // e) a plea, to each friend still voting for them
+      for (const f of Object.keys(committed).filter(v => committed[v].target === n && v !== n && !done.has(`plea:${v}`) && trustOf(v, n) > 1))
+        opts.push({ kind: 'plea', w: (0.2 + social * 0.5) * Math.min(1.5, trustOf(f, n) / 2), to: f });
+      opts.push({ kind: 'quiet', w: 0.12 + (1 - bold) * 0.2 + k * 0.15 });
+      const pick = weighted(rng, opts.map(o => ({ item: o, w: o.w })));
+      if (pick.kind === 'quiet') break;
+      done.add(pick.kind === 'plea' ? `plea:${pick.to}` : pick.kind);
+      if (pick.kind === 'outing') {
+        const al = huntingAl;
+        al.outed = state.ep;
+        outAlliance(state, al, n);
+        for (const m of al.members) nudge(state, m, 'paranoia', 0.8);
+        out.push({ kind: 'outing', from: n, alliance: al.id });
+        addScene(state, 'outing', [n, al.leader], { alliance: al.id, name: al.name }, state.active, 'public');
+        break;
+      }
+      if (pick.kind === 'threat') {
+        const at = expectedCallout(state, n, pool);
+        if (!at) continue;
+        (state.lastThreat ||= {})[n] = state.ep;
+        // An empty threat last time is remembered: the word is part of the credibility.
+        const word = wordOf(state, n);
+        const credible = clamp(arenaRead(state, n) / 10 * 0.7 + bold * 0.3 + word * 0.12, 0, 1);
+        const bluff = arenaBase(n) < 5.5;
+        (state.promises ||= {})[n] = { at, ep: state.ep, credible: +credible.toFixed(2), bluff };
+        out.push({ kind: 'threat', from: n, at, credible: +credible.toFixed(2), bluff, doubted: word < 0 });
         intimidated(n, at, credible);
-        addScene(state, 'leverage-threat', [n, at], { credible, bluff: arenaBase(n) < 5.5 }, state.active, 'public');
+        addScene(state, 'leverage-threat', [n, at], { credible, bluff, doubted: word < 0, word }, state.active, 'public');
         continue;
       }
-    }
-    // c) A plea to the closest friend among the committed.
-    const friend = Object.keys(committed).filter(v => committed[v].target === n && v !== n)
-      .sort((a, b) => trustOf(b, n) - trustOf(a, n))[0];
-    if (friend && trustOf(friend, n) > 1) {
-      const moved = rng() < logistic(trustOf(friend, n) * 0.4 + S(n, 'social') * 0.15 - S(friend, 'loyalty') * 0.2 - 1);
-      out.push({ kind: 'plea', from: n, to: friend, moved });
-      if (moved) committed[friend] = { ...committed[friend], target: null, movedBy: n };
-      addScene(state, 'plea', [n, friend], { moved }, state.active, 'public');
+      if (pick.kind === 'counter') {
+        const alt = altFor(state, n, eligible, pick.soft, ctx);
+        if (!alt) continue;
+        // The case is made to the room, and three of the soft votes take it in.
+        const heard = [...pick.soft].filter(v => v !== alt).sort((x, y) => trustOf(y, n) - trustOf(x, n)).slice(0, 3);
+        const moved = [], held = [];
+        for (const v of heard) {
+          const own = targetScore(state, v, alt, planOf(state, v), ctx).total;
+          const p = logistic(trustOf(v, n) * 0.3 + S(n, 'social') * 0.12 + S(n, 'strategic') * 0.08 + own * 0.25 - protectOf(v, alt) * 0.4 - 1.6);
+          if (rng() < p) { moved.push(v); committed[v] = { target: alt, via: `counter:${n}`, response: 'yes' }; } else held.push(v);
+        }
+        // The name said out loud is somebody who now knows who said it.
+        addBond(alt, n, -1);
+        remember(alt, n, 'named-me', moved.length ? 1.4 : 0.8);
+        nudge(state, alt, 'paranoia', 0.6);
+        out.push({ kind: 'counter', from: n, alt, moved, held });
+        addScene(state, 'counter-pitch', [n, alt, ...(moved[0] ? [moved[0]] : held[0] ? [held[0]] : [])], { alt, moved, held }, state.active, 'public');
+        continue;
+      }
+      if (pick.kind === 'spare') {
+        const v = pick.to;
+        // The offer is worth what n's Arena record is worth to v, and what v owes the plan.
+        const al = allianceOf(state, v);
+        const fearsIt = arenaRead(state, n) / 10;
+        const p = logistic(fearsIt * 2.4 + trustOf(v, n) * 0.25 + fearOf(v, n) * 0.3 - (al ? S(v, 'loyalty') * 0.18 : 0) - 1);
+        let answer = rng() < p ? 'accepted' : 'refused';
+        // A schemer says yes and votes them anyway (the audience knows; the open vote will show it).
+        if (answer === 'refused' && mayScheme(v) && S(v, 'strategic') >= 6 && rng() < 0.45) answer = 'false';
+        if (answer !== 'refused') state.deals.push({ id: state.deals.length + 1, a: n, b: v, ep: state.ep, broken: null, tier: 'spare' });
+        if (answer === 'accepted') committed[v] = { target: null, via: `spare:${n}`, response: 'spared' };
+        if (answer === 'false') noteFalseYes(state, v, `spare:${n}`);
+        out.push({ kind: 'spare', from: n, to: v, answer });
+        addScene(state, 'spare-deal', [n, v], { answer }, answer === 'false' ? [n, v] : [n, v], 'private');
+        continue;
+      }
+      if (pick.kind === 'plea') {
+        const friend = pick.to;
+        const moved = rng() < logistic(trustOf(friend, n) * 0.4 + S(n, 'social') * 0.15 - S(friend, 'loyalty') * 0.2 - 1);
+        out.push({ kind: 'plea', from: n, to: friend, moved });
+        if (moved) committed[friend] = { ...committed[friend], target: null, movedBy: n };
+        addScene(state, 'plea', [n, friend], { moved }, state.active, 'public');
+      }
     }
   }
   return out;
@@ -241,7 +317,7 @@ export function deliberate(state, rng, { division, eligible, immune }) {
       if (p.answer === 'accepted' || p.answer === 'false-yes') committed[p.to] = { target: p.target, via: `recruited:${al.id}`, response: p.answer === 'false-yes' ? 'false-yes' : 'yes' };
     }
   }
-  const campaigns = campaign(state, rng, { eligible, immune, meetings, committed });
+  const campaigns = campaign(state, rng, { eligible, immune, meetings, committed, ctx });
   const vol = volunteer(state, rng, eligible);
   // Everybody's position: their commitment, or their own read.
   const intents = {};
@@ -310,6 +386,8 @@ export function houseVote(state, rng, { eligible, delib, winners, exclude = [] }
       else why = 'broke from the plan';
     } else if (c?.response === 'false-yes') {
       why = 'false yes';
+    } else if (c?.response === 'spared') {
+      why = 'kept the deal';
     }
     if (!target) continue;
     tally[target] = (tally[target] || 0) + 1;

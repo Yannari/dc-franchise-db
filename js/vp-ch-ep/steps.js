@@ -293,6 +293,7 @@ const REASON = {
   grudge: (a, b) => `It's personal. <b>${esc(a)}</b> has a problem with <b>${esc(b)}</b>.`,
   prove: (a, b) => `<b>${esc(a)}</b> wants to beat somebody strong, to prove a point. That's <b>${esc(b)}</b>.`,
   'avoid-beast': (a, b) => `<b>${esc(a)}</b> picked <b>${esc(b)}</b> to stay away from the strongest players.`,
+  promise: (a, b) => `<b>${esc(a)}</b> told the house at the vote it would be <b>${esc(b)}</b>, and kept that promise.`,
 };
 const ANSWER = { yes: 'said yes', no: 'said no', organiser: 'organised it' };
 function meetingKnow(d) {

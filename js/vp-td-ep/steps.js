@@ -875,12 +875,15 @@ export function tdTribalScreen(ep, o = {}) {
   if (V.style === 'handout' && !coaches.length) handout(steps, say, V, { tribal, elim, counts, immune: [].concat(ep.immunityWinner || []).filter(n => tribal.includes(n)), tie, revote, rocks: !!ep.isRockDraw, host, alsoOut: ep._alsoOut || null, hold: !!ep._holdPlate, rv });
   else {
     // who has gone before this one: the boot is the nth voted out of the game
-    const gone = (window.gs?.episodeHistory || []).filter(e => e.num < ep.num && e.eliminated).length;
+    // (and, on a Multi-Tribal night, whoever the councils before this one sent home: o.before, tdMultiTribalScreen)
+    const gone = (window.gs?.episodeHistory || []).filter(e => e.num < ep.num && e.eliminated).length + (o.before?.people || 0);
     const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth'];
     // a coach read out is the season's nth coach voted out, not its nth player
-    const coachGone = (window.gs?.episodeHistory || []).filter(e => e.num < ep.num).reduce((t, e) => t + (e.coachElimination || []).length, 0);
+    const coachGone = (window.gs?.episodeHistory || []).filter(e => e.num < ep.num).reduce((t, e) => t + (e.coachElimination || []).length, 0) + (o.before?.coaches || 0);
     const isCoach = coaches.includes(elim);
-    readVotes(steps, say, { ...V, _host: host, _nth: isCoach ? ORD[coachGone] || null : ORD[gone] || null, _who: isCoach ? 'coach' : 'person', _of: isCoach ? 'this season' : 'of the game', _ep: ep },
+    // (a coach read after another coach's read the same night is "the next": the first was saved by the card, and "the
+    // first coach voted out" said twice in one night read as a mistake)
+    readVotes(steps, say, { ...V, _host: host, _nth: isCoach ? (o.before?.coachRead ? null : ORD[coachGone] || null) : ORD[gone] || null, _who: isCoach ? 'coach' : 'person', _of: isCoach ? 'this season' : 'of the game', _ep: ep },
       { tribal: seatedAll, elim, ballots, protectedSet, tie, revote, rocks: !!ep.isRockDraw, rv });
   }
   // the card's verdict, and a coach's goodbye (coach-tribal.js)
@@ -1147,7 +1150,9 @@ function voteReaction(steps, V, { v, tally, deciding, tribal, elim, ballots, i, 
   const hash = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
   // the same face is never pulled twice in one reading
   const used = (V._used ||= new Set());
-  const pick = (k, salt) => { const L = RX[k], h = hash(`${ep.num}|${X}|${salt}|${k}`); for (let j = 0; j < L.length; j++) { const t = L[(h + j) % L.length]; if (!used.has(X + t)) { used.add(X + t); return t; } } return L[h % L.length]; };
+  // (a template that names somebody else only when there is somebody: "Gwen looks at , then at the urn, then back at ."
+  // in a tribe of two, read 2026-10-14)
+  const pick = (k, salt, hasY = true) => { const L0 = RX[k], L1 = hasY ? L0 : L0.filter(t => !/\{y/.test(t)), L = L1.length ? L1 : L0, h = hash(`${ep.num}|${X}|${salt}|${k}`); for (let j = 0; j < L.length; j++) { const t = L[(h + j) % L.length]; if (!used.has(X + t)) { used.add(X + t); return t; } } return L[h % L.length]; };
   const P = n0 => (typeof globalThis.pronouns === 'function' && globalThis.pronouns(n0)) || { posAdj: 'their', sub: 'they' };
   const fill = (t, y) => t.replace(/\{x\}/g, X).replace(/\{y\}/g, y || '').replace(/\{pos\}/g, P(X).posAdj).replace(/\{ypos\}/g, y ? P(y).posAdj : '').replace(/\{ysub\}/g, y ? P(y).sub : '');
   const bond = (p, q) => (typeof globalThis.getBond === 'function' ? globalThis.getBond(p, q) : 0) || 0;
@@ -1166,7 +1171,7 @@ function voteReaction(steps, V, { v, tally, deciding, tribal, elim, ballots, i, 
   const could = tribal.filter(y => y !== X && !side.includes(y)).length;
   const cnt = tally[X] || 0;
   const temper = (typeof globalThis.pStats === 'function' && globalThis.pStats(X)?.temperament) || 5;
-  const push = (k, y, feel, extra = {}) => steps.push({ k: 'beat', text: fill(pick(k, i), y), focus: [X, y].filter(z => z && tribal.includes(z)), feel, ...extra });
+  const push = (k, y, feel, extra = {}) => steps.push({ k: 'beat', text: fill(pick(k, i, !!y), y), focus: [X, y].filter(z => z && tribal.includes(z)), feel, ...extra });
   if (deciding) {
     // the last name: a blindside, or the end they saw coming
     if (!knew) push('blind', ally, { [X]: 'shock' }, { tense: true });
@@ -1371,11 +1376,19 @@ const later90 = (t, k) => {
   return `${((H + 11) % 12) + 1}:${String(M).padStart(2, '0')} ${H >= 12 ? 'PM' : 'AM'}`;
 };
 export function tdMultiTribalScreen(ep, o = {}) {
-  const results = (ep?.multiTribalResults || []).filter(r => r.eliminated && (r.log || []).length);
+  // a council that sent a COACH home has no contestant boot (applyCoachElimination): it is still a council, and it
+  // plays (the user, 2026-10-14: "multi tribal still doesnt have a stepped viewer", a coach season; measured, one coach
+  // boot dropped the council and the whole night fell back to the classic pages)
+  const coachOut = r => (ep.coachElimination || []).find(c => c.tribe === r.tribe)?.coach || null;
+  const results = (ep?.multiTribalResults || []).filter(r => (r.eliminated || coachOut(r)) && (r.log || []).length);
   if (results.length < 2) return null;
   const views = results.map(r => multiTribalView(ep, r));
   if (!views.every(v => tdTribalStepped(v))) return null;
-  const scrs = views.map((v, i) => tdTribalScreen(v, i ? { ...o, qa: [] } : o));
+  // (each council knows who the ones before it sent home tonight: "the first coach voted out" is said once)
+  const coachRead = r => coachOut(r) || (ep.coachSaves || []).some(c => c.tribe === r.tribe);
+  const before = i => ({ people: results.slice(0, i).filter(r => r.eliminated).length, coaches: results.slice(0, i).filter(r => !r.eliminated && coachOut(r)).length,
+    coachRead: results.slice(0, i).some(coachRead) });
+  const scrs = views.map((v, i) => tdTribalScreen(v, i ? { ...o, qa: [], before: before(i) } : o));
   if (scrs.some(x => !x)) return null;
   const host = scrs[0].host;
   const names = results.map(r => r.tribe);
@@ -1390,7 +1403,7 @@ export function tdMultiTribalScreen(ep, o = {}) {
       ? [{ k: 'title', kicker: 'Twist', name: `${NUM[names.length] ? NUM[names.length][0].toUpperCase() + NUM[names.length].slice(1) : names.length} Tribals tonight`, faces: views.flatMap(v => v.tribalPlayers).slice(0, 8), tone: 'fire' },
         { k: 'say', by: host, host: true, text: `${winner ? `${winner} won immunity today, and they're the only ones safe.` : 'Only the winners are safe tonight.'} ${both}, you all lost, so you're all coming to Tribal tonight, one tribe at a time.` },
         { k: 'say', by: host, host: true, text: `${names[0]}, you're up first. By the end of the night, ${NUM[names.length] || names.length} people are going home.` }]
-      : [{ k: 'say', by: host, host: true, text: `That's one Tribal done, and ${results[i - 1].eliminated} is gone. ${names[i]}, you're up.` }];
+      : [{ k: 'say', by: host, host: true, text: `That's one Tribal done, and ${results[i - 1].eliminated || coachOut(results[i - 1])} is gone. ${names[i]}, you're up.` }];
     // a later council: its own clock (an hour and a half after the one before), and the handover in place
     // of a second welcome
     if (i > 0) S.steps.forEach(s => { if (s.time && /^\d{1,2}:\d\d [AP]M$/.test(s.time)) s.time = later90(s.time, i); });
@@ -1400,7 +1413,7 @@ export function tdMultiTribalScreen(ep, o = {}) {
     steps.push(...keep); later.push(...away);
   });
   const last = scrs[scrs.length - 1];
-  return { ...last, id: 'tribal', label: `${names.length} Tribals`, steps: [...steps, ...later], elim: ep.eliminated, first: results.slice(0, -1).map(r => r.eliminated) };
+  return { ...last, id: 'tribal', label: `${names.length} Tribals`, steps: [...steps, ...later], elim: ep.eliminated, first: results.slice(0, -1).map(r => r.eliminated).filter(Boolean) };
 }
 
 // the first boot of a double night arrives at Playa / the Motel after the second, not in the middle of the ceremony

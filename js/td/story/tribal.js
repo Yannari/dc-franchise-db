@@ -386,7 +386,8 @@ export function multiTribalView(ep, r) {
     tribalBlowup: ep.tribalBlowup && mine(ep.tribalBlowup.player) ? ep.tribalBlowup : null,
     coachCardCommits: (ep.coachCardCommits || []).filter(c => c.tribe === r.tribe), coachCardCalls: (ep.coachCardCalls || []).filter(c => c.tribe === r.tribe), coachSaves: (ep.coachSaves || []).filter(c => c.tribe === r.tribe),
     coachCardNotPlayed: (ep.coachCardNotPlayed || []).filter(c => c.tribe === r.tribe), coachSaveRefusals: (ep.coachSaveRefusals || []).filter(c => c.tribe === r.tribe),
-    coachElimination: (ep.coachElimination || []).filter(c => mine(c.name || c.coach || c)) };
+    // (by tribe: a coach has no seat at the council, so filtering by tribalPlayers dropped every coach boot, read 2026-10-14)
+    coachElimination: (ep.coachElimination || []).filter(c => c.tribe ? c.tribe === r.tribe : mine(c.name || c.coach || c)) };
 }
 
 /** The words of the night (see the header). */

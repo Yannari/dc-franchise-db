@@ -23107,7 +23107,10 @@ export function _bbFinalPleaSpeech(ep, name) {
     // Nominees always play for the veto, so "kept away from the veto" is only
     // sayable by somebody who went up AFTER it — the replacement nominee.
     const playedVeto = (ep.acts || []).some(a => a.type === 'veto' && (a.participants || []).includes(name));
-    const notPlayed = line => !(playedVeto && /kept away from the veto/.test(line));
+    // ...and only somebody who went up after it was backdoored (the user, 2026-10-15: Oliwia, on the block from the
+    // nominations, said "If this backdoor works"): a nominee from the start is a target, not a backdoor
+    const notPlayed = line => !(playedVeto && /kept away from the veto/.test(line))
+      && !(/backdoor/i.test(line) && (playedVeto || argType !== 'backdoor-warning'));
     if (argType === 'target-warning' || argType === 'backdoor-warning') return speech([
       `I know I am the target. That does not mean I am your target, and the person who planned this week cannot cast a vote tonight.`,
       `This entire week was built to remove me. Before you finish that plan, ask whether it improves your position or only the Head of Household's.`,

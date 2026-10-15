@@ -107,7 +107,7 @@ export function afterVote(state, rng, { ballots, votedIn, calledOut, by }) {
       addBond(x.a, x.b, x.how === 'callout' ? -2 : -1.2);
       betrayed(x.b, x.a, x.how === 'callout' ? 1.4 : 1);
       for (const m of inside) if (m !== x.a && m !== x.b) addBond(m, x.a, -0.6);
-      addScene(state, 'alliance-betrayal', [x.a, x.b], { alliance: al.id, how: x.how }, state.active, 'public');
+      addScene(state, 'alliance-betrayal', [x.a, x.b], { alliance: al.id, name: al.name, how: x.how }, state.active, 'public');
     }
     if (betrayals.length) {
       // The betrayer goes, or the alliance does: by how many it angered.
@@ -137,7 +137,7 @@ export function leave(state, al, name, why) {
 export function endAlliance(state, al, why) {
   if (al.ended) return;
   al.ended = true; al.endedEp = state.ep; al.why = why;
-  addScene(state, 'alliance-end', al.members.filter(m => state.active.includes(m)), { alliance: al.id, why }, al.members, 'private');
+  addScene(state, 'alliance-end', al.members.filter(m => state.active.includes(m)), { alliance: al.id, name: al.name, why }, al.members, 'private');
 }
 
 // An alliance grows: once it has run a vote or two, it brings in the free agent

@@ -354,6 +354,17 @@ export function chStepScreens(row, ctx = {}) {
   return screens;
 }
 
+// The moments that change the game get their own slam at the end of the scene (the user, 2026-10-15: "an
+// alliance was created but we got no screen slam, no wow effect").
+const BIG = {
+  'alliance-form': a => ({ card: { k: 'New alliance', t: a.data?.name || 'An alliance', sub: 'They vote together, and nobody outside knows', faces: a.who.slice(0, 8) } }),
+  'alliance-grow': a => ({ slam: { spray: 'NEW MEMBER', color: '#ffd21a' }, chip: [a.who[1], a.data?.name ? `IN ${String(a.data.name).toUpperCase()}` : 'NEW MEMBER'] }),
+  'alliance-end': a => ({ card: { k: 'Alliance over', t: a.data?.name || 'The alliance', sub: a.data?.why === 'final' ? 'The final: from here it is every one for themselves' : 'Every one of them is on their own now', faces: a.who.slice(0, 8) } }),
+  'alliance-betrayal': a => ({ slam: { spray: 'BETRAYED', color: '#e3262d' } }),
+  showmance: a => ({ card: { k: 'Showmance', t: `${a.who[0]} & ${a.who[1]}`, sub: 'It is official, and the whole house knows', faces: a.who.slice(0, 2) } }),
+  breakup: a => ({ slam: { spray: "IT'S OVER", color: '#ff8fc7' } }),
+};
+
 // One villa/party/eve scene.
 function scene(S, { a, i, title }, { names, house, goneAt, key }) {
   S.at(i);
@@ -372,6 +383,7 @@ function scene(S, { a, i, title }, { names, house, goneAt, key }) {
   const k = a.kind === 'meeting' ? meetingKnow(a.data) : bondKnow(a);
   if (k) first.know = k;
   linesToSteps(S, a.lines, { names, first, sceneWho: a.who });
+  if (BIG[a.kind]) S.push({ ...BIG[a.kind](a), focus: a.who.slice(0, 4) });
 }
 
 function villaMap(S, items) {

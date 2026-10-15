@@ -37,6 +37,7 @@ import { perfectMatchVpScreens } from './vp-pm/screens.js';
 import { circleVpScreens } from './vp-ci/screens.js';
 import { challengeVpScreens } from './vp-ch/screens.js';
 import { chStepVpScreens, CHX_SWITCH } from './vp-ch-ep/screens.js';
+import { chDebugHtml } from './vp-ch-ep/debug.js';
 import { bbStepScreens } from './vp-bb-ep/screens.js';
 import { tdStepScreens, tdSteppedOn, TDX_SWITCH } from './vp-td-ep/screens.js';
 import { riChoiceQuote, exileChooserReason } from './vp-td-ep/twists.js';
@@ -14165,6 +14166,7 @@ function _buildVPScreensClassic(epRecord) {
       try {
         const _g = _coreGs || (typeof window !== 'undefined' ? window.gs : null);
         vpScreens = chStepVpScreens(epRecord, { history: _g?.episodeHistory || [], season: seasonConfig?.seasonNumber || null });
+        vpScreens.push({ id: 'ch-debug', label: 'Debug', html: chDebugHtml(epRecord) });
         return vpScreens;
       } catch (err) { console.warn('Challenge stepped viewer fell back to the readout:', err); }
     }

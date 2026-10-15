@@ -406,8 +406,8 @@ function speechFor(reveal, speaker, register, rng) {
   }
   if (reveal.type === 'flipper') {
     return register === 'explosion' ? pick(rng, [
-      `"${a}! You looked me in the face and SAID it! And you wrote my name anyway!"`,
-      `"I want everyone to watch ${a}'s face right now. Go on. Watch it."`,
+      `"${a}! You looked me in the face and promised me your vote! And you wrote my name anyway!"`,
+      `"${a} promised me ${P(a).posAdj} vote. Everybody look at ${P(a).obj} right now, because ${P(a).sub} voted me out anyway."`,
     ]) : pick(rng, [
       `"${a} promised me that vote to my face. Remember that the next time ${P(a).sub} promises you one."`,
       `"I'm not angry about the vote. I'm telling you what ${a}'s word is worth, because you'll need to know."`,
@@ -454,12 +454,14 @@ function speechFor(reveal, speaker, register, rng) {
       `"Before the door — ${a} and ${reveal.partner} are going to the end together. Do what you like with it."`,
     ]);
   }
+  // a personal goodbye accuses nobody of anything (the game has nothing to check it against): it is hurt, or
+  // it is love, and it says which
   return register === 'explosion' ? pick(rng, [
     `"${a}, I actually cared about you in here. That's the part I'm taking with me."`,
-    `"I don't care about the game. I care that it was ${a}."`,
+    `"I don't care about the game. ${a}, you were the best part of this house, and I'm walking out without you."`,
   ]) : pick(rng, [
-    `"${a} — I hope it was worth it. I really do."`,
-    `"No speech. I just want ${a} to know that I know."`,
+    `"${a}, I'm going to miss you the most. Look after yourself in here."`,
+    `"No speech. ${a}, thank you. You made this place bearable."`,
   ]);
 }
 
@@ -627,10 +629,23 @@ function voiceLines(voice, label, listener, speaker, a) {
  * anybody else.
  */
 function reactionText(listener, speaker, reveal, reaction, draw) {
+  // a personal goodbye is not a claim, so nobody believes or doubts it: the room watches two friends part
+  if (reveal.type === 'personal') return draw('personal', personalReaction(listener, speaker, reveal.accused));
   const voice = VOICE[archetypeOf(listener)];
   const own = voice ? voiceLines(voice, reaction.label, listener, speaker, reveal.accused) : [];
   const general = generalReaction(listener, speaker, reveal, reaction);
   return draw(`${voice || 'plain'}-${reaction.label}`, [...own, ...general]);
+}
+
+function personalReaction(L, speaker, a) {
+  return [
+    `${L} looks at ${a}, then away. That one was between the two of them.`,
+    `${L} goes quiet. ${speaker} and ${a} were close, and everybody knew it.`,
+    `${L} puts a hand on ${a}'s back for a second and says nothing.`,
+    `${L} watches ${a}'s face, and has to look at the floor.`,
+    `${L} claps, a bit late, because nobody knows what else to do.`,
+    `${L} glances at ${a} to see if ${P(a).sub} is okay. ${P(a).Sub} is not.`,
+  ];
 }
 
 function generalReaction(listener, speaker, reveal, reaction) {

@@ -1098,14 +1098,19 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
     if (sides) beat('vp.solo.count', count);
   } else {
     beat('vp.open', shape === 'group' ? 'group' : 'duo');
+    // when nobody has seen this side form, it forms first and then picks its name: formed after the name was agreed it
+    // read as a second conversation (the user, 2026-10-14: "go ahead with the english rewrite"; read: "Good. Then keep it
+    // quiet and act normal." / "Okay, real talk. There are two groups out here now")
+    if (!sides) beat('vp.form', shape === 'group' ? 'group' : 'duo');
     if (!beat('vp.case', caseOf)) return null;
     if (push && beat('vp.push', push)) beat('vp.answer', push);
-    // the count, or, when nobody has seen this side form, the side forming right here
     if (sides) beat('vp.count', count);
-    else beat('vp.form', shape === 'group' ? 'group' : 'duo');
     beat('vp.close', shape === 'group' ? 'group' : 'duo');
   }
   recall(lines);
+  // the confessionals close the scene: a beat's own confessional said in the middle had the two of them talk on after it
+  // ("Aubrey [conf]: ...I'd rather be the one who did." / "Gwen: What about Yul?")
+  { const confs = lines.filter(l => l.kind === 'conf'); const talk = lines.filter(l => l.kind !== 'conf'); lines.length = 0; lines.push(...talk, ...confs); }
   // somebody who speaks only in a later beat walks up when they first speak (read 2026-10-14: "Oliwia follows Nura into
   // the cave", then Natasha asked what they'd say, never having arrived): the set-up is written for the opening beat only
   { const seen = new Set();
@@ -2126,7 +2131,9 @@ export function airTdEpisode(ep) {
           const conf = foilFor(pc.name, members.filter(m => getBond(pc.name, m) >= 3), look, castToday()) || null;
           const who = { a: pc.name, ...(conf ? { b: conf } : {}) };
           const facts = { ...factsFor({ who, data: {} }, { ep: ep.num, phase }), moment: pc.moment, lastBoot: !!pc.lastBoot, pair: !!conf };
-          const w = writeStory('psy', need, who, pc.lastBoot ? { lastBoot: pc.lastBoot } : {}, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('afternoon'), unique: 'soft', draft: true });
+          // (strictly once a season: a confession is somebody's own, and read 2026-10-14 Ernesto and then Evie both said "My
+          // name came up last night, and all I could think about was explaining it at home" word for word)
+          const w = writeStory('psy', need, who, pc.lastBoot ? { lastBoot: pc.lastBoot } : {}, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', avoid: ctxAvoid('afternoon'), unique: true, draft: true });
           if (w) {
             offer('psyche', 'colour', { at: 0.6, item: onCommit({ story: true, kind: `psy.${need}`, storyType: 'psyche', step: pc.moment, players: Object.values(who), lines: w.lines, text: w.text, lineId: w.lineId,
               scene: { kind: 'psy', who, data: {}, spot: w.spot ? { ...w.spot, window: 'afternoon' } : null }, badgeText: 'In Their Head', badgeClass: 'teal', why: [`${pc.name}: ${need}.`] }, () => { ((gs.tdStory ||= {}).psySeen ||= {})[pc.name] = ep.num; }) });

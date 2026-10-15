@@ -260,7 +260,6 @@ export class ChxStage {
       const pin = marks('map-day').find(m => m.kind === 'spot' && m.id === pinId);
       h += `<div class='mini' data-isle title='Open the island map'><div class='lbl'><span>Blue Lagoon</span><b>&#9679;</b></div><div class='m' style="background-image:url('${PLATE('map-day')}.webp')">${pin ? `<i class='pin' style='left:${pin.u * 100}%;top:${pin.v * 100}%'></i>` : ''}</div></div>`;
     }
-    h += `<button type='button' class='ibtn2 ${ctx.freshKnow && !ctx.intelOpen ? 'new' : ''}' data-intel>INTEL <i></i></button>`;
     if (ST.voters) {
       const rows = Object.entries(ST.board).sort((a, b) => b[1] - a[1]);
       h += `<div class='board'><h5>THE VOTE</h5>${rows.map(([n, c]) => `<div class='row ${anim && s.vote && s.vote[1] === n ? 'hit' : ''}'><img src='${esc(AV(n))}' alt=''><div><div class='nm'>${esc(n)}</div><div class='ticks'>${'||||| '.repeat(Math.floor(c / 5)) + '|'.repeat(c % 5)}</div></div><div class='ct'>${c}</div></div>`).join('')}<div class='left'>${ST.voters} of ${ST.of || ST.voters} have voted</div></div>`;
@@ -426,12 +425,36 @@ function titleCard(c) {
     + `<div class='tgo'>&#9654; Play on</div></div></div>`;
 }
 
+// The villa's rooms by name, under each pin, so a bubble says where it is (the user, 2026-10-15: "many
+// overlap, so I don't know which room it is in").
+const ROOM_NAME = { common: 'Common room', kitchen: 'Kitchen', gym: 'Gym', hottub: 'Hot tub', pool: 'Pool', loungers: 'Loungers',
+  'bunk-a': 'Bedroom', 'bunk-b': 'Bedroom', confessional: 'Confessional', dining: 'Dining', bathroom: 'Bathroom', entrance: 'Entrance' };
+// Pins far enough apart to read: a pin that would sit on one already placed moves down below it.
+function spread(pins) {
+  const out = [];
+  for (const p of pins) {
+    let u = Math.min(0.88, Math.max(0.12, p.u)), v = Math.max(0.26, p.v);   // inside the frame, below the clock and the tabs
+    for (let k = 0; k < 6 && out.some(q => Math.abs(q.u - u) < 0.14 && Math.abs(q.v - v) < 0.16); k++) v += 0.1;
+    out.push({ ...p, u, v: Math.min(v, 0.82) });
+  }
+  return out;
+}
+function pinHtml(p, label) {
+  return `<div class='mpin' style='left:${p.u * 100}%;top:${p.v * 100}%'><div class='bubs'>${p.r.bubs.map(b => `<div class='bub ${b.star ? 'star' : ''}' data-go='${b.go}'>${esc(b.bub)}</div>`).join('')}</div>`
+    + `<div class='faces'>${p.r.who.map(n => `<img src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div><div class='mlbl'>${esc(label)}</div></div>`;
+}
 function mapHtml(m, plate) {
   let h = '';
-  for (const r of m.rooms) {
-    const at = marks(plate).find(x => x.kind === 'spot' && x.id === r.at); if (!at) continue;
-    h += `<div class='mpin' style='left:${at.u * 100}%;top:${at.v * 100}%'><div class='bubs'>${r.bubs.map(b => `<div class='bub ${b.star ? 'star' : ''}' data-go='${b.go}'>${esc(b.bub)}</div>`).join('')}</div>`
-      + `<div class='faces'>${r.who.map(n => `<img src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div></div>`;
+  const isle = m.isle || [];
+  if (isle.length) h += `<div class='mtabs'><button type='button' data-mview='villa' class='on'>The villa</button><button type='button' data-mview='isle'>The island &middot; ${isle.reduce((n, r) => n + r.bubs.length, 0)}</button></div>`;
+  const pins = spread(m.rooms.map(r => { const at = marks(plate).find(x => x.kind === 'spot' && x.id === r.at); return at ? { u: at.u, v: at.v, r } : null; }).filter(Boolean)
+    .sort((a, b) => a.v - b.v));
+  h += `<div class='mview villa'>${pins.map(p => pinHtml(p, ROOM_NAME[p.r.at] || p.r.at)).join('')}</div>`;
+  if (isle.length) {
+    const night = /night/.test(plate);
+    const ipins = spread(isle.map(r => { const at = marks('map-day').find(x => x.kind === 'spot' && x.id === r.at); return at ? { u: at.u, v: at.v, r } : null; }).filter(Boolean)
+      .sort((a, b) => a.v - b.v));
+    h += `<div class='mview isle' style="background-image:url('${PLATE(night ? 'map-night' : 'map-day')}.webp')">${ipins.map(p => pinHtml(p, p.r.place || p.r.at)).join('')}</div>`;
   }
   if (m.later.length) h += `<div class='later'>${m.later.map(l => `<div class='bub ${l.star ? 'star' : ''}' data-go='${l.go}'>${esc(l.bub)}</div>`).join('')}</div>`;
   h += `<div class='clock'>${m.clock.map(([t, k]) => `<span class='${k}'>${k === 'done' ? '&#10003; ' : k === 'lock' ? '&#128274; ' : ''}${esc(t)}</span>`).join('')}</div>`;

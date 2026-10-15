@@ -60,6 +60,26 @@ function dayExits(state, rng, injured = []) {
   return out;
 }
 
+// The house as it stands, for the viewer's Intel drawer (the user, 2026-10-15: "intel doesn't show anything
+// like it does in Big Brother and Total Drama"): the bonds between everybody still in, the alliances, the
+// deals, the couples, and each player's record. Taken as an episode starts and as it ends, so the drawer
+// never shows a screen something it hasn't reached.
+function intelSnap(state) {
+  const act = [...state.active];
+  const bonds = {};
+  for (const a of act) for (const b of act) if (a < b) { const v = Math.round(getBond(a, b) * 10) / 10; if (v) bonds[`${a}||${b}`] = v; }
+  const R = n => state.rec[n] || {};
+  return {
+    players: act, bonds,
+    alliances: state.alliances.filter(x => !x.ended).map(x => ({ name: x.name, leader: x.leader, members: x.members.filter(n => act.includes(n)) })).filter(x => x.members.length >= 2),
+    gone: state.alliances.filter(x => x.ended).map(x => x.name).slice(-4),
+    deals: state.deals.filter(d => !d.broken && act.includes(d.a) && act.includes(d.b)).map(d => ({ a: d.a, b: d.b, tier: d.tier || 'protect' })),
+    broken: state.deals.filter(d => d.broken).slice(-4).map(d => ({ a: d.a, b: d.b })),
+    couples: state.couples.filter(c => !c.ended && act.includes(c.a) && act.includes(c.b)).map(c => [c.a, c.b]),
+    rec: Object.fromEntries(act.map(n => [n, { daily: R(n).dailyWins || 0, arenaW: R(n).arenaW || 0, arenaL: R(n).arenaL || 0, votedIn: R(n).votedIn || 0, calledOut: R(n).calledOut || 0, votes: R(n).votesReceived || 0 }])),
+  };
+}
+
 export function playChallengeSeason({ cast, background = {}, divisions = {}, options = {}, seed = 1, carried = null }) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [...cast],
     episodeHistory: [], popularity: {}, episode: 0 });
@@ -151,6 +171,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     const roll = Number(opts.rerolls?.[plan.ep]) || 0;
     const R = name => streamFor(seed, `ep${plan.ep}${roll ? `~${roll}` : ''}:${name}`);
     const epRec = { ep: plan.ep, division: null, exits: [], votedIn: [], arena: [], votes: [], callouts: [] };
+    epRec.intel = { start: intelSnap(state) };
     state.episodes.push(epRec);
     // Who is close to whom as the week begins, for the stepped viewer's crowd: a friend cheers you on in the
     // daily and from the Arena's stand, a rival comments on your struggle. Read, never decided here.
@@ -324,6 +345,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     breakupCheck(state, R('breakup'));
     epRec.exits.push(...dayExits(state, R('exits3')));
     state.cliqueStrength = Math.max(0.15, state.cliqueStrength * 0.84);
+    epRec.intel.end = intelSnap(state);
   }
 
   // The final is its own episode.

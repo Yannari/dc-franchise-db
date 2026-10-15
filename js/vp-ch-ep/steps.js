@@ -93,6 +93,17 @@ const clock = min => { const h = Math.floor(min / 60) % 24, m = min % 60; return
 const whenOf = (day, min) => `<b>Day ${esc(day)}</b> · ${clock(min)}`;
 const isNight = min => min >= 19 * 60 + 30 || min < 6 * 60;
 
+// Where a scene is staged, one answer for the map's bubble and for the stage (the user, 2026-10-15: "I
+// clicked a bubble in the pool but I'm finding myself in the lookout"). A private talk goes somewhere quiet
+// for the hour; a pep talk before the Arena is on the beach.
+function stageOf(a, min) {
+  const night = isNight(min);
+  let place = PLACE[a.spot] || null;
+  if (a.kind === 'arena-eve-pep') place = { plate: night ? 'beach' : 'sunset', place: 'The Beach', island: 'beach', icon: 'island' };
+  if (!place || a.spot === 'private') place = pickBy(night ? QUIET_NIGHT : QUIET_DAY, `${a.kind}|${a.day}|${a.who.join()}`);
+  return place;
+}
+
 // Which chapter of the episode a scene belongs to (one VP screen per run of them).
 const DAILY_KINDS = new Set(['daily', 'daily-clutch', 'daily-choke', 'partner-draw', 'partner-pick', 'partner-blame', 'partner-carried', 'team-blame', 'picked-last', 'throw', 'throw-caught']);
 const FINAL_KINDS = new Set(['final-start', 'instant-elimination', 'overnight', 'overnight-sabotage', 'overnight-quit', 'final-pact-help', 'final-pact-broken', 'champions']);
@@ -339,7 +350,7 @@ export function chStepScreens(row, ctx = {}) {
   // the opening screen only had the open itself when there was no "previously"
   for (const s of screens) if (!s.steps.length) s.steps.push({ dir: '' });
   // map bubbles jump to the first step of their scene
-  for (const s of screens) for (const st of s.steps) if (st.map) for (const r of [...st.map.rooms.flatMap(x => x.bubs), ...st.map.later]) r.go = s.steps.findIndex(x => x.sceneIdx === r.scene);
+  for (const s of screens) for (const st of s.steps) if (st.map) for (const r of [...st.map.rooms.flatMap(x => x.bubs), ...(st.map.isle || []).flatMap(x => x.bubs), ...st.map.later]) r.go = s.steps.findIndex(x => x.sceneIdx === r.scene);
   return screens;
 }
 
@@ -353,9 +364,7 @@ function scene(S, { a, i, title }, { names, house, goneAt, key }) {
     linesToSteps(S, a.lines, { names, first, sceneWho: a.who });
     return;
   }
-  let place = PLACE[a.spot] || null;
-  if (a.kind === 'arena-eve-pep') place = { plate: night ? 'beach' : 'sunset', place: 'The Beach', island: 'beach', icon: 'island' };
-  if (!place || a.spot === 'private') place = pickBy(night ? QUIET_NIGHT : QUIET_DAY, `${a.kind}|${a.day}|${a.who.join()}`);
+  const place = stageOf(a, S.min);
   const crowd = key === 'party' ? house.filter(n => !goneAt[i]?.has(n) && !a.who.includes(n)).filter((n, k) => (k * 7 + a.day) % 3 === 0).slice(0, 7) : [];
   const first = sceneStep(S, a, place, { night: night || place.hour === 'night', crowd });
   first.sceneIdx = i; first.title = title;
@@ -366,18 +375,23 @@ function scene(S, { a, i, title }, { names, house, goneAt, key }) {
 }
 
 function villaMap(S, items) {
-  const rooms = {}, later = [];
+  const rooms = {}, isle = {}, later = [];
   for (const { a, i, title } of items) {
-    const p = PLACE[a.spot];
+    S.at(i);
+    const p = a.spot === 'confessional' || (a.lines.length && a.lines.every(l => l.kind === 'conf')) ? { room: 'confessional' } : stageOf(a, S.min);
     const star = ['meeting', 'recruit', 'plea', 'deal', 'alliance-form', 'outing', 'fight', 'showmance', 'leverage-threat', 'receipts', 'morning-after', 'return'].includes(a.kind);
-    if (p?.room) { const r = (rooms[p.room] ||= { at: p.room, who: [], bubs: [] }); a.who.forEach(n => !r.who.includes(n) && r.who.push(n)); r.bubs.push({ bub: title, scene: i, star }); }
-    else later.push({ bub: title, scene: i, star });
+    const bub = { bub: title, scene: i, star };
+    if (p?.room) { const r = (rooms[p.room] ||= { at: p.room, who: [], bubs: [] }); a.who.forEach(n => !r.who.includes(n) && r.who.push(n)); r.bubs.push(bub); }
+    else if (p?.island) { const r = (isle[p.island] ||= { at: p.island, place: p.place, who: [], bubs: [] }); a.who.forEach(n => !r.who.includes(n) && r.who.push(n)); r.bubs.push(bub); }
+    else later.push(bub);
   }
-  for (const r of Object.values(rooms)) if (r.bubs.length > 3) later.push(...r.bubs.splice(3));
+  S.at(items[0].i);
+  for (const r of [...Object.values(rooms), ...Object.values(isle)]) if (r.bubs.length > 2) later.push(...r.bubs.splice(2));
   const list = Object.values(rooms).map(r => ({ at: r.at, who: r.who.slice(0, 5), bubs: r.bubs }));
+  const out = Object.values(isle).map(r => ({ at: r.at, place: r.place, who: r.who.slice(0, 5), bubs: r.bubs }));
   S.push({ scene: { plate: plateKey('villa-map', false), place: 'The Villa', when: whenOf(items[0].a.day, S.min), icon: 'house', cast: {}, wipe: 1 },
-    map: { rooms: list, later, clock: [['Morning', S.min < 12 * 60 ? 'now' : 'done'], ['Afternoon', S.min < 12 * 60 ? 'lock' : S.min < 18 * 60 ? 'now' : 'done'], ['Night', S.min >= 18 * 60 ? 'now' : 'lock']] },
-    dir: 'Back at the villa. The faces show who is in each room, and each bubble is a conversation. Click one to watch it, or press play.' });
+    map: { rooms: list, isle: out, later, clock: [['Morning', S.min < 12 * 60 ? 'now' : 'done'], ['Afternoon', S.min < 12 * 60 ? 'lock' : S.min < 18 * 60 ? 'now' : 'done'], ['Night', S.min >= 18 * 60 ? 'now' : 'lock']] },
+    dir: out.length ? 'Back at the villa. Each bubble is a conversation, in the room where it happens; the ones away from the villa are on The island. Click one to watch it, or press Forward to watch them in order.' : 'Back at the villa. Each bubble is a conversation, in the room where it happens. Click one to watch it, or press Forward to watch them in order.' });
 }
 
 // ── the arrival (episode 1) ───────────────────────────────────────────

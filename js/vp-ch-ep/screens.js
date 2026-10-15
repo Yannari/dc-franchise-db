@@ -13,7 +13,7 @@
 // root and paints step 0. A registry on `window` holds each episode's steps, so
 // a repaint never loses them (the _tvState wipe class, manual §11.5).
 import { chStepScreens } from './steps.js';
-import { ChxStage } from './stage.js';
+import { ChxStage, AV } from './stage.js';
 import { ensureChxStyle } from './style.js';
 import { CH_MARKS } from './marks.js';
 
@@ -37,7 +37,7 @@ function shell(key, si, s, row, week, ctx) {
     <div class="chx-chapmenu"><button type="button" class="chx-ibtn" onclick="chxChapters(this)">Chapters &#9662;</button><div class="chapters"></div></div><div class="chx-spacer"></div>
     <button type="button" class="chx-ibtn" onclick="chxTv()">TV</button>
     <button type="button" class="chx-ibtn" onclick="chxSwitchViewer('classic')" title="The readout: every line of the episode, one screen per moment">Readout view</button></div>
-  <div class="chx-frame" onclick="chxNext(this)">
+  <div class="chx-frame" onclick="chxFrame(this)">
     <div class="chx-world"><div class="chx-drift"><div class="chx-platebox"></div><div class="chx-live"></div><div class="chx-props"></div><div class="chx-cast"></div><div class="chx-wfx"></div></div></div>
     <div class="chx-hud"></div><div class="chx-confbox"></div>
     <div class="dlg"><div class="panel"></div><div class="cutin"></div><div class="name"></div><div class="say"></div><div class="next"></div></div>
@@ -49,7 +49,8 @@ function shell(key, si, s, row, week, ctx) {
     <button type="button" class="pbtn big chx-auto" onclick="chxAuto(this)" title="Play / pause (P)"><svg class='i-play' viewBox='0 0 24 24'><path d='M6 3.5v17L21 12z'/></svg><svg class='i-pause' viewBox='0 0 24 24'><path d='M5 4h5v16H5zM14 4h5v16h-5z'/></svg></button>
     <button type="button" class="pbtn" onclick="chxNext(this)" title="Forward one (Space or Right arrow)"><svg viewBox='0 0 24 24'><path d='M1 4v16l10.5-8zM12.5 4v16L23 12z'/></svg></button>
     <button type="button" class="pbtn speed" onclick="chxSpeed(this)" title="Playback speed">x1</button>
-    <div class="pbar" title="Jump to any moment of this part"><i><b></b></i><span class="pt"></span></div>
+    <button type="button" class="pbtn intelbtn" onclick="chxIntel(this)" title="Intel: what the house doesn't know (I)">INTEL<i></i></button>
+    <div class="pbar"><div class="segs"></div><span class="pt"></span></div>
   </div>
   <details class="script"><summary>Script</summary><div class="lines"></div></details>
 </div>`;
@@ -85,6 +86,13 @@ function runner(root) {
     if (go) { e.stopPropagation(); const i = Number(go.dataset.go); if (i >= 0) goTo(R, i, false); return; }
     if (e.target.closest('[data-intel]')) { e.stopPropagation(); R.intelOpen = !R.intelOpen; intel(R); paintHud(R); }
     if (e.target.closest('[data-isle]')) { e.stopPropagation(); stopAuto(R); isle(R, true); }
+    const mv = e.target.closest('[data-mview]');
+    if (mv) {
+      e.stopPropagation();
+      R.mview = mv.dataset.mview;
+      R.root.classList.toggle('mview-isle', R.mview === 'isle');
+      R.root.querySelectorAll('[data-mview]').forEach(b => b.classList.toggle('on', b.dataset.mview === R.mview));
+    }
   });
   root.querySelector('.isle').addEventListener('click', e => {
     e.stopPropagation();
@@ -92,12 +100,19 @@ function runner(root) {
     if (e.target.closest('[data-close]') || p) isle(R, false);
     if (p) { const i = Number(p.dataset.si); if (i === R.si) goTo(R, 0, false); else if (typeof window.vpGoTo === 'function') window.vpGoTo(vpIndexOf(R, i)); }
   });
-  root.querySelector('.pbar').addEventListener('click', e => {
-    const r = e.currentTarget.getBoundingClientRect();
-    const f = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
-    stopAuto(R); goTo(R, Math.round(f * (R.scr.steps.length - 1)), false);
+  root.querySelector('.pbar .segs').addEventListener('click', e => {
+    const el = e.target.closest('i'); if (!el) return;
+    const g = segsOf(R)[Number(el.dataset.k)]; if (!g) return;
+    const r = el.getBoundingClientRect();
+    const f = Math.max(0, Math.min(0.999, (e.clientX - r.left) / Math.max(1, r.width)));
+    stopAuto(R); goTo(R, Math.min(g.z - 1, g.a + Math.floor(f * (g.z - g.a))), false);
   });
-  root.querySelector('.intel').addEventListener('click', e => { e.stopPropagation(); if (e.target.closest('[data-close]')) { R.intelOpen = false; intel(R); } });
+  root.querySelector('.intel').addEventListener('click', e => {
+    e.stopPropagation();
+    if (e.target.closest('[data-close]')) { R.intelOpen = false; intel(R); return; }
+    const t = e.target.closest('[data-itab]'); if (t) { istate().tab = t.dataset.itab; intel(R); return; }
+    const w = e.target.closest('[data-who]'); if (w) { istate().who = w.dataset.who; intel(R); }
+  });
   return R;
 }
 // The intel cards so far: every earlier screen of the episode, and this one up to the step.
@@ -113,15 +128,63 @@ function ctxOf(R) {
   const step = R.scr.steps[R.idx] || {};
   return { names: R.E.ctx.names, game: R.E.ctx.game, roleOf: n => R.E.ctx.team?.[n] || null, intelOpen: R.intelOpen, freshKnow: !!step.know };
 }
+// ── Intel: what the house doesn't know (the user, 2026-10-15: "intel doesn't show anything like it does in
+// Big Brother and Total Drama") ──
+// Tabs: in their heads (what this episode has shown so far), relationships (pick anybody: how everybody
+// stands with them), alliances, deals and couples, the record. The house as the episode began until its
+// last screen, then as it ends, so the drawer never gets ahead of the screen.
+const ITABS = [['heads', 'In their heads'], ['people', 'Relationships'], ['allies', 'Alliances'], ['deals', 'Deals'], ['rec', 'Record']];
+const BOND_WORD = v => (v >= 6 ? 'Close' : v >= 3 ? 'Friends' : v > -2 ? 'Neutral' : v > -5 ? 'Tension' : 'Enemies');
+const BOND_CLS = v => (v >= 6 ? 'close' : v >= 3 ? 'friend' : v > -2 ? 'neutral' : v > -5 ? 'tense' : 'enemy');
+const istate = () => (typeof window !== 'undefined' ? (window._chxIntel ||= { tab: 'heads', who: null }) : { tab: 'heads', who: null });
+function houseNow(R) {
+  const I = R.E.row?.ch?.intel;
+  if (!I) return null;
+  const last = R.si === R.E.screens.length - 1;
+  return (last && I.end) || I.start || null;
+}
 function intel(R) {
   const I = R.root.querySelector('.intel');
   I.classList.toggle('open', R.intelOpen);
-  const cur = `${R.si}:${R.idx}`;
-  const know = knowAt(R);
-  I.innerHTML = `<h4>INTEL <button type="button" data-close>&times;</button></h4><div class="sub">What the house doesn't know. Only what has happened by this step.</div><div class="list">${
-    know.length ? [...know].reverse().map(k => `<div class="icard ${k.at === cur ? 'fresh' : ''}"><h6>${esc(k.h)}</h6>${k.b}</div>`).join('') : '<div class="icard">Nothing yet. Keep watching.</div>'}</div>`;
+  R.root.querySelector('.intelbtn')?.classList.toggle('on', R.intelOpen);
+  if (!R.intelOpen) return;
+  const st = istate();
+  const tab = ITABS.some(t => t[0] === st.tab) ? st.tab : 'heads';
+  const H = houseNow(R);
+  const face = n => `<img class='if' src='${esc(AV(n))}' alt='' title='${esc(n)}'>`;
+  let body = '';
+  if (tab === 'heads') {
+    const cur = `${R.si}:${R.idx}`;
+    const know = knowAt(R);
+    body = know.length ? [...know].reverse().map(k => `<div class="icard ${k.at === cur ? 'fresh' : ''}"><h6>${esc(k.h)}</h6>${k.b}</div>`).join('') : '<div class="inone">Nothing hidden yet this episode. Keep watching.</div>';
+  } else if (!H) {
+    body = '<div class="inone">This episode was saved without its record.</div>';
+  } else if (tab === 'people') {
+    const me = H.players.includes(st.who) ? st.who : H.players[0];
+    const bond = (a, b) => H.bonds[a <= b ? `${a}||${b}` : `${b}||${a}`] || 0;
+    const couple = n => H.couples.some(c => c.includes(me) && c.includes(n));
+    body = `<div class="ipick">${H.players.map(n => `<button type="button" data-who="${esc(n)}" class="${n === me ? 'on' : ''}">${face(n)}</button>`).join('')}</div><div class="isub">${esc(me)}</div>`
+      + H.players.filter(n => n !== me).map(n => [n, bond(me, n)]).sort((x, y) => y[1] - x[1])
+        .map(([n, v]) => `<div class="irow">${face(n)}<b>${esc(n)}</b><span class="ibond ${BOND_CLS(v)}">${BOND_WORD(v)}</span>${couple(n) ? '<span class="ilove">Showmance</span>' : ''}</div>`).join('');
+  } else if (tab === 'allies') {
+    body = H.alliances.length ? H.alliances.map(a => `<div class="ial"><div class="ialn">${esc(a.name)}</div><div class="ialm">${a.members.map(n => `<span>${face(n)}${esc(n)}${n === a.leader ? ' <em>leads</em>' : ''}</span>`).join('')}</div></div>`).join('')
+      : '<div class="inone">No alliance in the house.</div>';
+    if (H.gone.length) body += `<div class="isub">Broken up</div>${H.gone.map(n => `<div class="igone">${esc(n)}</div>`).join('')}`;
+  } else if (tab === 'deals') {
+    body = (H.deals.length ? H.deals.map(d => `<div class="irow">${face(d.a)}${face(d.b)}<b>${esc(d.a)} &amp; ${esc(d.b)}</b><span class="ibond friend">${d.tier === 'final' ? 'Ride to the final' : 'No votes, no call-outs'}</span></div>`).join('')
+      : '<div class="inone">No deal standing.</div>')
+      + (H.couples.length ? `<div class="isub">Couples</div>${H.couples.map(([a, b]) => `<div class="irow">${face(a)}${face(b)}<b>${esc(a)} &amp; ${esc(b)}</b><span class="ilove">Showmance</span></div>`).join('')}` : '')
+      + (H.broken.length ? `<div class="isub">Broken</div>${H.broken.map(d => `<div class="igone">${esc(d.a)} &amp; ${esc(d.b)}</div>`).join('')}` : '');
+  } else if (tab === 'rec') {
+    const rows = H.players.map(n => [n, H.rec[n] || {}]).sort((x, y) => (y[1].daily + y[1].arenaW * 2) - (x[1].daily + x[1].arenaW * 2));
+    body = `<div class="irec ihead"><span></span><b>Player</b><i>Dailies</i><i>Arena</i><i>Voted in</i><i>Votes</i></div>`
+      + rows.map(([n, r]) => `<div class="irec">${face(n)}<b>${esc(n)}</b><i>${r.daily}</i><i>${r.arenaW}-${r.arenaL}</i><i>${r.votedIn}</i><i>${r.votes}</i></div>`).join('');
+  }
+  const note = tab === 'heads' ? '' : `<div class="inote">${R.si === R.E.screens.length - 1 ? 'As the episode ends.' : 'As the episode began.'}</div>`;
+  I.innerHTML = `<h4>INTEL <button type="button" data-close>&times;</button></h4><div class="sub">What the house doesn't know.</div>`
+    + `<div class="itabs">${ITABS.map(([k, l]) => `<button type="button" data-itab="${k}" class="${k === tab ? 'on' : ''}">${esc(l)}</button>`).join('')}</div><div class="list">${body}${note}</div>`;
 }
-function paintHud(R) { const b = R.root.querySelector('.ibtn2'); if (b) b.classList.toggle('new', false); }
+function paintHud(R) { R.root.querySelector('.intelbtn')?.classList.remove('new'); }
 
 // ── the villa map as a hub (the user, 2026-10-15: "it doesn't let me choose where I want to go") ──
 // A map step offers the block's conversations; each runs from its first step to the step before the
@@ -133,13 +196,16 @@ function hubs(R) {
   R.hubs = [];
   steps.forEach((st, i) => {
     if (!st.map) return;
-    const starts = [...new Set([...st.map.rooms.flatMap(r => r.bubs || []), ...st.map.later].map(b => b.go))].filter(g => g > i).sort((a, b) => a - b);
+    const starts = [...new Set([...st.map.rooms.flatMap(r => r.bubs || []), ...(st.map.isle || []).flatMap(r => r.bubs || []), ...st.map.later].map(b => b.go))].filter(g => g > i).sort((a, b) => a - b);
     const convs = starts.map(s => { let e = s + 1; while (e < steps.length && steps[e].sceneIdx == null && !steps[e].map && !steps[e].seg && !steps[e].card) e++; return { s, e: e - 1 }; });
     R.hubs.push({ at: i, convs, end: convs.length ? Math.max(...convs.map(c => c.e)) : i });
   });
   return R.hubs;
 }
-const seenOf = R => ((R.E.seen ||= {})[R.si] ||= new Set());
+// What the viewer has watched, by episode and screen, on the page (a screen rebuilt by the pane is a new
+// runner; the ticks must survive it: the user, 2026-10-15, "it doesn't say read when I read an event").
+const seenStore = () => (typeof window !== 'undefined' ? (window._chxSeen ||= {}) : (globalThis._chxSeen ||= {}));
+const seenOf = R => (seenStore()[`${R.root.dataset.ep}|${R.scr.id}`] ||= new Set());
 function hubAt(R, idx) {
   for (const h of hubs(R)) {
     if (idx === h.at) return { h, conv: null };
@@ -208,11 +274,48 @@ function goTo(R, idx, forward) {
   R.root.dataset.idx = String(idx);
   st.present(steps[idx], true, ctxOf(R));
   paintHub(R);
+  if (!steps[idx]?.map) { R.mview = 'villa'; R.root.classList.remove('mview-isle'); }
+  else if (R.mview === 'isle') R.root.querySelectorAll('[data-mview]').forEach(b => b.classList.toggle('on', b.dataset.mview === 'isle'));
+  if (steps[idx]?.know && !R.intelOpen) R.root.querySelector('.intelbtn')?.classList.add('new');
   intel(R); chapters(R); script(R);
+}
+// The bar is one segment per scene (the user, 2026-10-15: "like in Total Drama, a bubble each time a scene
+// switches"): as long as its scene, filling as it plays, ticked once watched, named on hover.
+function segsOf(R) {
+  if (R.segs) return R.segs;
+  const steps = R.scr.steps;
+  const starts = steps.map((x, i) => (i === 0 || x.scene || x.card ? i : -1)).filter(i => i >= 0);
+  R.segs = starts.map((a, k) => {
+    const z = starts[k + 1] ?? steps.length;
+    const st = steps[a];
+    const name = st.card ? `${st.card.k}: ${st.card.t}` : st.title || st.scene?.place || st.seg?.[1] || '';
+    return { a, z, name };
+  });
+  return R.segs;
 }
 function progress(R) {
   const n = R.scr.steps.length;
-  const b = R.root.querySelector('.pbar b'); if (b) b.style.width = `${n > 1 ? (R.idx / (n - 1)) * 100 : 100}%`;
+  const box = R.root.querySelector('.pbar .segs');
+  if (box) {
+    const segs = segsOf(R);
+    if (box.dataset.for !== R.scr.id) {
+      box.dataset.for = R.scr.id;
+      box.innerHTML = segs.map((g, k) => `<i data-k="${k}" style="flex:${g.z - g.a}" title="${esc(g.name)}"><b></b></i>`).join('') + '<span class="head"></span>';
+    }
+    const seen = seenOf(R);
+    for (const g of segs) if (R.idx >= g.a && R.idx < g.z) seen.add(g.a);   // a scene you have been in is a scene you have seen
+    box.querySelectorAll('i').forEach((el, k) => {
+      const g = segs[k];
+      const f = R.idx >= g.z ? 1 : R.idx < g.a ? 0 : (R.idx - g.a + 1) / (g.z - g.a);
+      el.querySelector('b').style.width = `${f * 100}%`;
+      el.classList.toggle('on', R.idx >= g.a && R.idx < g.z);
+      el.classList.toggle('seen', seen.has(g.a));
+    });
+    const cur = segs.findIndex(g => R.idx >= g.a && R.idx < g.z);
+    const el = box.querySelectorAll('i')[cur];
+    const head = box.querySelector('.head');
+    if (el && head) head.style.left = `${el.offsetLeft + el.offsetWidth * Math.min(1, (R.idx - segs[cur].a + 1) / (segs[cur].z - segs[cur].a))}px`;
+  }
   const t = R.root.querySelector('.pbar .pt'); if (t) t.textContent = `${R.scr.label} · ${R.idx + 1} / ${n}`;
   const sp = R.root.querySelector('.pbtn.speed'); if (sp) sp.textContent = `x${speed()}`;
 }
@@ -255,6 +358,12 @@ export function chxSpeed(el) {
 }
 export function chxChapters(el) { rootOf(el)?.querySelector('.chx-chapmenu')?.classList.toggle('open'); }
 function stopAuto(R) { R.auto = false; clearTimeout(R.timer); R.root.querySelector('.chx-auto')?.classList.remove('on'); }
+/** A click on the picture: the next step, except on a map, where only a bubble or the Forward button moves on. */
+export function chxFrame(el) {
+  const R = runner(rootOf(el)); if (!R) return;
+  if (R.scr.steps[R.idx]?.map) return;
+  chxNext(el);
+}
 export function chxNext(el) {
   const R = runner(rootOf(el) || document.querySelector('.chx[data-ep]')); if (!R) return;
   const hn = R.idx >= 0 ? hubNext(R) : null;
@@ -280,7 +389,8 @@ export function chxAuto(el) {
   const R = runner(rootOf(el) || document.querySelector('.chx[data-ep]')); if (!R) return;
   R.auto = !R.auto;
   R.root.querySelector('.chx-auto')?.classList.toggle('on', R.auto);
-  const tick = () => { if (!R.auto) return; chxNext(R.root); if (R.auto) R.timer = setTimeout(tick, holdFor(R.scr.steps[R.idx]) / speed()); };
+  // play stops at a map: the viewer picks (the user, 2026-10-15: "let me pick, then it chooses for me")
+  const tick = () => { if (!R.auto) return; if (R.scr.steps[R.idx]?.map) { stopAuto(R); return; } chxNext(R.root); if (R.auto) R.timer = setTimeout(tick, holdFor(R.scr.steps[R.idx]) / speed()); };
   if (R.auto) R.timer = setTimeout(tick, holdFor(R.scr.steps[R.idx]) / speed()); else clearTimeout(R.timer);
 }
 export function chxIntel(el) { const R = runner(rootOf(el) || document.querySelector('.chx[data-ep]')); if (!R) return; R.intelOpen = !R.intelOpen; intel(R); }
@@ -303,7 +413,7 @@ export function chxSwitchViewer(which) {
 /** The readout's way back to the stepped viewer. */
 export const CHX_SWITCH = `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" onclick="chxSwitchViewer('stepped')" style="border:1px solid #ff6a1a;background:#1a1716;color:#ff6a1a;padding:7px 12px;font:700 12px 'Barlow Condensed',system-ui,sans-serif;letter-spacing:1px;text-transform:uppercase;cursor:pointer">&#9654; Stepped viewer</button></div>`;
 
-if (typeof window !== 'undefined') Object.assign(window, { chxNext, chxBack, chxRestart, chxAuto, chxIntel, chxTv, chxSwitchViewer, chxSpeed, chxChapters });
+if (typeof window !== 'undefined') Object.assign(window, { chxFrame, chxNext, chxBack, chxRestart, chxAuto, chxIntel, chxTv, chxSwitchViewer, chxSpeed, chxChapters });
 if (typeof document !== 'undefined') {
   // a screen opens on its first step; leaving it stops its Auto
   document.addEventListener('vp:screen', () => {

@@ -170,7 +170,7 @@ const CHX_CSS = `
 .chx .mini .m{position:relative;aspect-ratio:16/9;background-size:cover}
 .chx .mini .pin{position:absolute;width:1.2cqw;height:1.2cqw;translate:-50% -50%;border-radius:50%;background:var(--fire);box-shadow:0 0 0 .2cqw #fff;animation:chxPin 1.2s ease-in-out infinite}
 @keyframes chxPin{50%{scale:1.5}}
-.chx .ibtn2{position:absolute;right:2%;top:calc(3.6% + 10.6cqw);pointer-events:auto;border:0;background:rgba(14,12,11,.88);color:var(--hud);cursor:pointer;font:400 1cqw/1 'Black Ops One';letter-spacing:.18em;padding:.7cqh .9cqw;display:flex;gap:.5cqw;align-items:center}
+.chx .ibtn2-unused{position:absolute;right:2%;top:calc(3.6% + 10.6cqw);pointer-events:auto;border:0;background:rgba(14,12,11,.88);color:var(--hud);cursor:pointer;font:400 1cqw/1 'Black Ops One';letter-spacing:.18em;padding:.7cqh .9cqw;display:flex;gap:.5cqw;align-items:center}
 .chx .ibtn2 i{width:.8cqw;height:.8cqw;border-radius:50%;background:var(--fire);display:none}
 .chx .ibtn2.new i{display:block;animation:chxPin 1s ease-in-out infinite}
 .chx .board{position:absolute;right:2%;top:calc(3.6% + 13.4cqw);width:17cqw;background:rgba(14,12,11,.9);padding:.8cqw;border-top:.35cqh solid var(--red);max-height:calc(100% - 3.6% - 13.4cqw - 22%);overflow:hidden}
@@ -363,7 +363,17 @@ const CHX_CSS = `
 .chx .mpin .faces img:first-child{margin-left:0}
 .chx .bub{position:relative;font:400 1.05cqw/1.2 'Black Ops One';letter-spacing:.03em;text-transform:uppercase;background:#f5efe8;color:#140c08;padding:.45em .8em;border-radius:.8em;border:.15cqw solid #111;max-width:17cqw;text-align:center;cursor:pointer;animation:chxChip .4s both;box-shadow:0 .3cqh .6cqh rgba(0,0,0,.45)}
 .chx .bub::after{content:"";position:absolute;left:50%;bottom:-.6em;border:.35em solid transparent;border-top-color:#111;translate:-50% 0}
-.chx .mpin .bubs{display:grid;gap:.35cqw;justify-items:center}
+.chx .mpin .bubs{display:grid;gap:.3cqw;justify-items:center}
+.chx .mpin .mlbl{font:400 .8cqw/1 'Black Ops One';letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(14,12,11,.85);padding:.25cqw .5cqw;border-bottom:.15cqw solid var(--fire);white-space:nowrap}
+.chx .mpin .bub{max-width:13cqw;font-size:.95cqw}
+.chx .mtabs{position:absolute;left:2%;top:3.6%;z-index:7;display:flex;pointer-events:auto}
+.chx .mtabs button{border:0;background:rgba(14,12,11,.88);color:var(--hud-dim);font:400 1cqw/1 'Black Ops One';letter-spacing:.08em;text-transform:uppercase;padding:.6cqw 1cqw;cursor:pointer}
+.chx .mtabs button.on{background:var(--fire);color:#140c08}
+.chx .mview{position:absolute;inset:0;pointer-events:none}
+.chx .mview .mpin{pointer-events:auto}
+.chx .mview.isle{display:none;background:#000 center/cover no-repeat;z-index:3}
+.chx.mview-isle .mview.isle{display:block}
+.chx.mview-isle .mview.villa{display:none}
 .chx .tcard{position:absolute;inset:0;z-index:22;display:grid;place-items:center;text-align:center;background:radial-gradient(ellipse at 50% 45%,rgba(20,12,8,.55),rgba(5,3,2,.94) 75%);backdrop-filter:blur(3px) saturate(.8);animation:chxCardIn .45s cubic-bezier(.2,.9,.3,1) both}
 .chx .tcard .ttape{position:absolute;left:-5%;right:-5%;height:4.2%;background:repeating-linear-gradient(-45deg,#ffd21a 0 2.2cqw,#141010 2.2cqw 4.4cqw);box-shadow:0 .4cqh 1cqh rgba(0,0,0,.6)}
 .chx .tcard .t1{top:7%;rotate:-2deg;animation:chxTape .6s .1s both}
@@ -413,12 +423,42 @@ const CHX_CSS = `
 .chx .clock span.now{background:var(--fire);color:#111}
 .chx .clock span.lock{color:#6d655f}
 /* intel */
-.chx .intel{position:absolute;top:0;right:0;bottom:0;width:min(32%,380px);z-index:18;pointer-events:auto;transform:translateX(100%);transition:transform .35s cubic-bezier(.3,.8,.3,1);background:rgba(16,14,13,.95);border-left:.35cqw solid var(--caution);padding:2.4cqh 1.4cqw;display:flex;flex-direction:column;color:var(--hud);cursor:default}
+.chx .intel{position:absolute;top:0;right:0;bottom:0;width:min(32%,380px);z-index:28;pointer-events:auto;transform:translateX(100%);transition:transform .35s cubic-bezier(.3,.8,.3,1);background:rgba(16,14,13,.95);border-left:.35cqw solid var(--caution);padding:2.4cqh 1.4cqw;display:flex;flex-direction:column;color:var(--hud);cursor:default}
 .chx .intel.open{transform:none}
 .chx .intel h4{margin:0;font:400 1.5cqw/1 'Black Ops One';color:var(--caution);letter-spacing:.1em;display:flex;justify-content:space-between}
 .chx .intel h4 button{border:0;background:none;color:var(--hud-dim);cursor:pointer;font:400 1.4cqw 'Anton'}
 .chx .intel .sub{font:600 1cqw 'Barlow Condensed';color:var(--hud-dim);margin:.5cqh 0 1.2cqh}
 .chx .intel .list{overflow:auto;flex:1}
+.chx .pbtn.intelbtn{width:auto;padding:0 12px;font:400 13px/1 'Black Ops One';letter-spacing:.12em;position:relative}
+.chx .pbtn.intelbtn.on{background:var(--caution);color:#111}
+.chx .pbtn.intelbtn i{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--fire);display:none}
+.chx .pbtn.intelbtn.new i{display:block;animation:chxPin 1s ease-in-out infinite}
+.chx .intel .itabs{display:flex;flex-wrap:wrap;gap:.3cqw;margin:0 0 1cqh}
+.chx .intel .itabs button{border:1px solid #3a332e;background:#1d1917;color:var(--hud-dim);font:600 .95cqw 'Barlow Condensed';letter-spacing:.06em;text-transform:uppercase;padding:.3cqw .6cqw;cursor:pointer}
+.chx .intel .itabs button.on{background:var(--fire);color:#140c08;border-color:var(--fire)}
+.chx .intel .if{width:2.2cqw;height:2.2cqw;border-radius:50%;object-fit:cover;background:#2a2420;vertical-align:middle;flex:none;border:.12cqw solid #111}
+.chx .intel .ipick{display:flex;flex-wrap:wrap;gap:.25cqw;margin-bottom:.6cqh}
+.chx .intel .ipick button{border:.15cqw solid transparent;border-radius:50%;padding:0;background:none;cursor:pointer;opacity:.7}
+.chx .intel .ipick button.on{border-color:var(--caution);opacity:1}
+.chx .intel .isub{font:400 .95cqw 'Black Ops One';letter-spacing:.14em;color:var(--hud-dim);text-transform:uppercase;margin:1cqh 0 .5cqh}
+.chx .intel .irow{display:flex;align-items:center;gap:.5cqw;padding:.35cqh 0;font:600 1.1cqw 'Barlow Condensed';color:var(--hud)}
+.chx .intel .irow b{flex:1}
+.chx .intel .ibond{font:400 .85cqw 'Anton';letter-spacing:.06em;text-transform:uppercase;padding:.15cqw .5cqw;background:#2a2420;color:var(--hud-dim)}
+.chx .intel .ibond.close{background:#173a22;color:#7fe07f}.chx .intel .ibond.friend{background:#17323a;color:#6fd8ff}
+.chx .intel .ibond.tense{background:#3a2d12;color:#ffc94a}.chx .intel .ibond.enemy{background:#3a1215;color:#ff7a6e}
+.chx .intel .ilove{font:600 .85cqw 'Barlow Condensed';color:#ff8fc7}
+.chx .intel .ial{border:1px solid #3a332e;background:rgba(255,255,255,.04);padding:.6cqw;margin-bottom:.8cqh}
+.chx .intel .ialn{font:400 1.2cqw 'Anton';color:var(--caution);letter-spacing:.05em;margin-bottom:.4cqh}
+.chx .intel .ialm{display:flex;flex-wrap:wrap;gap:.4cqw .8cqw;font:600 1.05cqw 'Barlow Condensed';color:var(--hud)}
+.chx .intel .ialm span{display:inline-flex;align-items:center;gap:.3cqw}
+.chx .intel .ialm em{font-style:normal;color:var(--fire);font-size:.85cqw}
+.chx .intel .igone{font:600 1cqw 'Barlow Condensed';color:var(--hud-dim);text-decoration:line-through}
+.chx .intel .irec{display:grid;grid-template-columns:2.4cqw 1fr repeat(4,3.2cqw);align-items:center;gap:.3cqw;padding:.25cqh 0;font:600 1.05cqw 'Barlow Condensed';color:var(--hud)}
+.chx .intel .irec i{font-style:normal;text-align:center;color:var(--caution)}
+.chx .intel .irec.ihead{font:400 .8cqw 'Black Ops One';color:var(--hud-dim);letter-spacing:.06em;text-transform:uppercase}
+.chx .intel .irec.ihead i{color:var(--hud-dim)}
+.chx .intel .inone{color:var(--hud-dim);font:600 1.1cqw 'Barlow Condensed';padding:.6cqh 0}
+.chx .intel .inote{color:#6d655f;font:600 .85cqw 'Barlow Condensed';margin-top:1cqh}
 .chx .icard{background:rgba(255,255,255,.05);padding:.9cqh .8cqw;margin-bottom:.8cqh;border-left:.3cqw solid var(--fire);font:600 1.2cqw/1.35 'Barlow Condensed'}
 .chx .icard h6{margin:0 0 .3cqh;font:400 1.05cqw 'Anton';letter-spacing:.08em;text-transform:uppercase;color:var(--fire)}
 .chx .icard.fresh{animation:chxIfresh 1.2s ease-out}
@@ -440,10 +480,15 @@ const CHX_CSS = `
 .chx .pbtn.big.on .i-play{display:none}
 .chx .pbtn.big.on .i-pause{display:block}
 .chx .pbtn.speed{font:400 16px/1 'Anton';letter-spacing:.04em}
-.chx .pbar{flex:1;min-width:200px;display:grid;gap:5px;cursor:pointer;padding:4px 0}
-.chx .pbar i{display:block;height:8px;background:var(--cline);position:relative;overflow:hidden}
-.chx .pbar i b{position:absolute;inset:0 auto 0 0;background:var(--fire);transition:width .25s}
-.chx .pbar:hover i{height:10px}
+.chx .pbar{flex:1;min-width:200px;display:grid;gap:5px;padding:4px 0}
+.chx .pbar .segs{display:flex;gap:3px;position:relative;padding:6px 0;cursor:pointer}
+.chx .pbar .segs i{flex:1;height:8px;border-radius:4px;background:var(--cline);position:relative;overflow:hidden;transition:height .15s,background .15s}
+.chx .pbar .segs:hover i{height:11px}
+.chx .pbar .segs i:hover{background:#4a433d}
+.chx .pbar .segs i.seen{background:#3d5a3a}
+.chx .pbar .segs i b{position:absolute;inset:0 auto 0 0;width:0;background:var(--fire);transition:width .25s}
+.chx .pbar .segs i.on b{background:var(--caution)}
+.chx .pbar .segs .head{position:absolute;top:50%;left:0;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--fire);transform:translate(-50%,-50%);box-shadow:0 1px 4px rgba(0,0,0,.5);pointer-events:none;transition:left .25s}
 .chx .pbar .pt{font:700 12px 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;color:var(--cmuted)}
 .chx .chx-chapmenu{position:relative}
 .chx .chx-chapmenu .chapters{display:none;position:absolute;left:0;top:calc(100% + 6px);z-index:40;width:260px;flex-direction:column;gap:2px;background:var(--cpanel);border:1px solid var(--cline);padding:8px;box-shadow:0 12px 30px rgba(0,0,0,.55)}

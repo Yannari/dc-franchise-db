@@ -278,6 +278,7 @@ export function challengeRows(result) {
           ballots: (v.ballots || []).map(b => ({ voter: b.voter, target: b.target, wanted: b.wanted || null, asked: b.asked || null, told: b.told || null, why: b.why || null, flip: !!b.flip })) })),
         duels: (e.arena || []).map(duelOf),
         ties: e.ties || {},
+        intel: e.intel || null,
         meetings: (e.delib?.meetings || []).map(m => ({ name: m.name || null, organiser: m.organiser, target: m.target, responses: { ...(m.responses || {}) } })),
         // who they are, for the arrival's name plates: their show and whether they're a rookie
         ...(e.ep === 1 ? { castInfo: Object.fromEntries(cast.map(n => [n, introOf(n, state, cast)])) } : {}),

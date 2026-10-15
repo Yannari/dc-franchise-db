@@ -49,12 +49,11 @@ export default {
   ],
   'story.life.friends.any': [
     { id: 'kc.f1', when: { kin: 'together' }, turns: [
-      { by: 'a', say: "Pass the salt?" },
+      { by: 'a', say: "Can you pass the salt?" },
       { by: 'b', say: "Here you go." },
       { beat: 'Their fingers touch for a second longer than they should. Neither of them looks up.' },
       { by: 'a', say: "Thanks." },
-      { by: 'b', say: "No problem." },
-      { by: 'a', dr: "That's the most we've touched all day. Over salt. That's my love life now." },
+      { by: 'a', dr: "That's the most {b} and I have touched all day. Over a salt shaker. That's my love life now.", v: { soft: "That's the closest {b} and I have been all day. I miss {b} so much, and {b} is right there." } },
       { by: 'b', dr: "Nobody saw. I checked. I always check." },
     ] },
     { id: 'kc.f2', when: { kin: 'together' }, turns: [
@@ -69,14 +68,12 @@ export default {
       { by: 'b', dr: "Every lie I tell about {a} gets a little bit harder. The 'seems nice' one nearly killed me." },
     ] },
     { id: 'kc.f3', when: { kin: 'together' }, room: 'backyard', turns: [
-      { beat: 'Backyard. {a} and {b} are on opposite ends of the pool, pretending to sunbathe.' },
+      { beat: 'Backyard. {a} and {b} are at opposite ends of the pool, pretending to sunbathe.' },
       { by: 'a', say: "Can you hear me?" },
       { by: 'b', say: "Barely. Why are we talking across a pool?" },
-      { by: 'a', say: "Because it's the only place nobody sits between us." },
-      { by: 'b', say: "This is ridiculous." },
-      { by: 'a', say: "I miss you." },
-      { by: 'b', say: "I'm literally right there." },
-      { by: 'a', say: "Across a pool. It counts." },
+      { by: 'a', say: "Because it's the only place nobody sits between us. I miss you." },
+      { by: 'b', say: "I'm right there.", v: { soft: "I miss you too. This is so stupid." } },
+      { by: 'a', say: "Across a pool. It still counts." },
       { by: 'b', dr: "We're in the same house, and I've never missed {a} more. I didn't know that was possible." },
     ] },
   ],

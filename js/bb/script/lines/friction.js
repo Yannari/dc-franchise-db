@@ -238,10 +238,10 @@ export default {
 
   'friction.food.snipe': [
     { id: 'ff.s1', turns: [
-      { by: 'a', say: 'Enjoying that?' },
-      { by: 'b', say: 'Very much, thanks.' },
-      { by: 'a', say: 'Good. It was mine.' },
-      { by: 'b', say: 'Oh. Well. It was delicious.' },
+      { by: 'a', say: 'Are you enjoying that?' },
+      { by: 'b', say: 'Yeah, it\'s really good. Why?' },
+      { by: 'a', say: 'Because it was mine. I was saving it.', v: { hard: 'Because it was mine. Next time, ask.' } },
+      { by: 'b', say: 'Oh. Sorry. I didn\'t know.' },
     ] },
     { id: 'ff.s2', turns: [
       { beat: '{a} goes through the fridge with a marker and writes a name on every single thing that belongs to {a.obj}.' },

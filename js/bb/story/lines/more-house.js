@@ -529,15 +529,11 @@ export default {
   'story.life.homesick.helped': [
     { id: 'lh2.1', turns: [
       { by: 'b', say: "What's wrong?" },
-      { by: 'a', say: "Nothing. I just miss normal." },
-      { by: 'b', say: "What's normal?" },
-      { by: 'a', say: "Opening the fridge and it being my fridge. Going to bed when I want. Not being watched." },
-      { by: 'b', say: "We've got a fridge." },
-      { by: 'a', say: "It's not my fridge." },
-      { by: 'b', say: "Then we'll make it your fridge. You get the whole top shelf." },
-      { by: 'a', say: "...The whole top shelf?" },
-      { by: 'b', say: "The whole top shelf. Don't tell anyone." },
-      { by: 'a', dr: "{b} gave me a shelf. A whole shelf. I put three things on it. I've never felt more at home." },
+      { by: 'a', say: "Nothing. I just miss normal stuff. Opening the fridge and it being my fridge. Going to bed when I want. Not being watched." },
+      { by: 'b', say: "Okay. Then you get the top shelf of the fridge. The whole thing. It's yours." },
+      { by: 'a', say: "The whole top shelf?", v: { anxious: "Are you sure? People will get annoyed." } },
+      { by: 'b', say: "The whole top shelf. Just don't tell anyone." },
+      { by: 'a', dr: "{b} gave me a whole shelf. I put three things on it, and I've never felt more at home in here." },
     ] },
     { id: 'lh2.2', turns: [
       { by: 'a', say: "Do you ever forget what it's like outside?" },

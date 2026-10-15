@@ -60,9 +60,9 @@ describe('lines in the speaker\'s own voice', () => {
 });
 
 describe('no sitcom ping-pong', () => {
-  // A ratchet: the count only goes down as the rewrite goes on (206 on 2026-10-15 by the first count, 74 after the sixth). A new pool
+  // A ratchet: the count only goes down as the rewrite goes on (206 on 2026-10-15 by the first count, 49 after the seventh). A new pool
   // entry written in the old register fails here.
-  const CEILING = 74;
+  const CEILING = 49;
   it(`at most ${CEILING} scenes still trade quips`, () => {
     const left = entries().filter(([, e]) => pingPong(e));
     expect(left.length, left.slice(0, 20).map(([k, e]) => `${k} ${e.id}`).join('\n')).toBeLessThanOrEqual(CEILING);

@@ -32,7 +32,7 @@ test('the player bar drives a House Life screen, and TV mode fills the window', 
   await page.waitForSelector('.bbx .bbx-bar', { state: 'attached' });
   await page.waitForTimeout(800);
   const uid = await page.evaluate(() => document.querySelector('.bbx[data-uid]').dataset.uid);
-  const state = () => page.evaluate(u => ({ idx: window._bbx[u].idx, mode: window._bbx[u].map?.mode, count: document.getElementById(`bbx-count-${u}`)?.textContent, seek: document.getElementById(`bbx-seek-${u}`)?.value, play: document.getElementById(`bbx-auto-${u}`)?.textContent, speed: document.getElementById(`bbx-speed-${u}`)?.textContent }), uid);
+  const state = () => page.evaluate(u => ({ idx: window._bbx[u].idx, mode: window._bbx[u].map?.mode, count: document.getElementById(`bbx-count-${u}`)?.textContent, seek: document.getElementById(`bbx-seek-${u}`)?.value, play: document.getElementById(`bbx-auto-${u}`)?.dataset.st || 'play', speed: document.getElementById(`bbx-speed-${u}`)?.textContent }), uid);
   console.log('start', JSON.stringify(await state()));
   await page.screenshot({ path: `${SHOTS}/bbp-0-map.png` });
 
@@ -55,20 +55,45 @@ test('the player bar drives a House Life screen, and TV mode fills the window', 
   const s4 = await state(); console.log('back across', JSON.stringify(s4));
   expect(s4.idx).toBe(s3.idx - 1);
   expect(s4.mode).toBe('play');
-  // the seek bar
-  await page.evaluate(u => { const el = document.getElementById(`bbx-seek-${u}`); el.value = '3'; el.dispatchEvent(new Event('input')); }, uid);
+  // the seek bar, pulled with the mouse: the bubble says the line, the stage follows, and letting go keeps it
+  const box = await page.locator(`#bbx-seek-${uid}`).boundingBox();
+  const xAt = f => box.x + 7 + f * (box.width - 14);
+  await page.mouse.move(xAt(0.1), box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(xAt(0.3), box.y + box.height / 2, { steps: 8 });
+  const mid = await page.evaluate(u => ({ idx: window._bbx[u].idx, tip: document.getElementById(`bbx-tip-${u}`)?.textContent, on: document.getElementById(`bbx-tip-${u}`)?.classList.contains('on') }), uid);
+  console.log('dragging', JSON.stringify(mid));
+  expect(mid.on).toBe(true);
+  expect(mid.tip.startsWith(`${mid.idx + 1} / `)).toBe(true);
+  await page.screenshot({ path: `${SHOTS}/bbp-1b-drag.png` });
+  await page.mouse.move(xAt(0.5), box.y + box.height / 2, { steps: 8 });
+  await page.mouse.up();
   await page.waitForTimeout(300);
-  expect((await state()).idx).toBe(2);
+  const after = await state(); console.log('released', JSON.stringify(after));
+  expect(Math.abs((after.idx + 1) / Number(after.count.split('/')[1]) - 0.5)).toBeLessThan(0.05);
+  // a click on the bar jumps there
+  const box2 = await page.locator(`#bbx-seek-${uid}`).boundingBox();
+  await page.mouse.click(box2.x + 7 + 0.2 * (box2.width - 14), box2.y + box2.height / 2); await page.waitForTimeout(300);
+  const clicked = await state(); console.log('clicked', JSON.stringify(clicked));
+  expect(Math.abs((clicked.idx + 1) / Number(clicked.count.split('/')[1]) - 0.2)).toBeLessThan(0.05);
   // speed and play
   await page.click(`#bbx-speed-${uid}`);
   const s5 = await state(); console.log('speed', s5.speed);
   expect(s5.speed).not.toBe('1×');
   await page.keyboard.press(' '); await page.waitForTimeout(2500);
   const s6 = await state(); console.log('playing', JSON.stringify(s6));
-  expect(s6.play).toBe('❚❚');
+  expect(s6.play).toBe('pause');
   expect(s6.idx).toBeGreaterThan(2);
   await page.keyboard.press(' '); await page.waitForTimeout(200);
-  expect((await state()).play).toBe('▶');
+  expect((await state()).play).toBe('play');
+  await page.keyboard.press(' '); await page.waitForTimeout(300);
+  await page.screenshot({ path: `${SHOTS}/bbp-1-bar-playing.png` });
+  // the pause icon is visible: its colour is not the button's (it was cyan on cyan, the user: "there's no pause icon")
+  const ink = await page.evaluate(u => { const b = document.getElementById(`bbx-auto-${u}`); const cs = getComputedStyle(b); return { fg: cs.color, bg: cs.backgroundColor, svg: !!b.querySelector('svg rect') }; }, uid);
+  console.log('pause button', JSON.stringify(ink));
+  expect(ink.svg).toBe(true);
+  expect(ink.fg).not.toBe(ink.bg);
+  await page.keyboard.press(' '); await page.waitForTimeout(200);
   await page.screenshot({ path: `${SHOTS}/bbp-1-bar.png` });
 
   // TV mode: the screen block covers the window, the bar overlays the picture, Intel still opens

@@ -101,11 +101,18 @@ const SHELL_CSS = `
 .bbx .bbx-bar button.on{color:#22e1ff}
 .bbx .bbx-bar .bbx-play{width:38px;height:32px;font-size:15px;background:#22e1ff;color:#001018}
 .bbx .bbx-bar .bbx-play:hover{background:#5ee9ff}
+.bbx .bbx-bar .bbx-play.on{color:#001018;background:#ffd166}
 .bbx .bbx-bar .bbx-ico{font-size:18px;min-width:30px}
 .bbx .bbx-track{position:relative;flex:1;min-width:80px;height:22px;display:flex;align-items:center}
 .bbx .bbx-seek{width:100%;margin:0;accent-color:#22e1ff;cursor:pointer;position:relative;z-index:1;background:transparent}
 .bbx .bbx-ticks{position:absolute;left:7px;right:7px;top:50%;height:10px;transform:translateY(-50%);pointer-events:none}
 .bbx .bbx-ticks i{position:absolute;top:0;width:2px;height:10px;margin-left:-1px;background:rgba(255,209,102,.75);border-radius:1px}
+.bbx .bbx-bar .bbx-play svg,.bbx .bbx-bar .bbx-ico svg{display:block;margin:0 auto}
+.bbx .bbx-seek{height:22px}
+.bbx .bbx-tip{position:absolute;bottom:26px;transform:translateX(-50%);background:#0b101c;border:1px solid #2b3a58;border-radius:8px;padding:5px 9px;white-space:nowrap;font:600 11px Archivo,sans-serif;color:#dbe6f7;pointer-events:none;opacity:0;transition:opacity .12s;z-index:4;box-shadow:0 8px 20px rgba(0,0,0,.45)}
+.bbx .bbx-tip.on{opacity:1}
+.bbx .bbx-tip b{font:700 11.5px 'Chakra Petch',monospace;color:#22e1ff;margin-right:7px}
+.bbx .bbx-tip span{color:#c7d0e4}
 .bbx .bbx-bar .bbx-count{font:600 11px 'Chakra Petch',monospace;color:#9fb0c6;min-width:64px;text-align:center}
 .bbx .bbx-bar .bbx-voices:not(.on){opacity:.5;text-decoration:line-through}
 .bbx .bbx-bar .bbi-btn.on{color:#22e1ff}
@@ -133,23 +140,35 @@ const SPEEDS = [0.75, 1, 1.5, 2];
 const speedOf = () => { try { const v = Number(localStorage.getItem('bb-speed')); return SPEEDS.includes(v) ? v : 1; } catch { return 1; } };
 const speedLabel = v => `${v}×`;
 // a press on the bar never takes the keyboard's focus (Space must stay play/pause, not "press that button again")
+const svg = (d, w = 16) => `<svg viewBox="0 0 24 24" width="${w}" height="${w}" aria-hidden="true" fill="currentColor">${d}</svg>`;
+const ICON = {
+  play: svg('<path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"/>', 18),
+  pause: svg('<rect x="5.5" y="4" width="4.5" height="16" rx="1.2"/><rect x="14" y="4" width="4.5" height="16" rx="1.2"/>', 18),
+  prevScene: svg('<rect x="4" y="5" width="2.6" height="14" rx="1"/><path d="M20 5.6v12.8a.9.9 0 0 1-1.4.75L8.9 12.75a.9.9 0 0 1 0-1.5l9.7-6.4a.9.9 0 0 1 1.4.75z"/>'),
+  nextScene: svg('<rect x="17.4" y="5" width="2.6" height="14" rx="1"/><path d="M4 5.6v12.8a.9.9 0 0 0 1.4.75l9.7-6.4a.9.9 0 0 0 0-1.5L5.4 4.85A.9.9 0 0 0 4 5.6z"/>'),
+  back: svg('<path d="M15.5 5.5 8.5 12l7 6.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>'),
+  next: svg('<path d="M8.5 5.5 15.5 12l-7 6.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>'),
+  full: svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'),
+};
 function barHtml(uid, S, R) {
   const n = S.steps.length;
   const ticks = sceneStarts(S).map(i => `<i style="left:${n > 1 ? (i / (n - 1)) * 100 : 0}%"></i>`).join('');
   const b = (cls, act, title, label, id = '') => `<button type="button" class="${cls}"${id ? ` id="${id}"` : ''} onclick="${act}" title="${title}">${label}</button>`;
-  return `<div class="bbx-bar" onclick="event.stopPropagation()" onmousedown="event.preventDefault()">
-    ${b('bbx-ico', `bbxScene('${uid}',-1)`, 'Previous scene (Shift+←)', '⏮')}
-    ${b('bbx-ico', `bbxBack('${uid}')`, 'Back one line (←)', '◂')}
-    ${b('bbx-play', `bbxAuto('${uid}')`, 'Play / pause (Space)', '▶', `bbx-auto-${uid}`)}
-    ${b('bbx-ico', `bbxNext('${uid}')`, 'Next line (→)', '▸')}
-    ${b('bbx-ico', `bbxScene('${uid}',1)`, 'Next scene (Shift+→)', '⏭')}
-    <div class="bbx-track"><input type="range" class="bbx-seek" id="bbx-seek-${uid}" min="0" max="${n}" value="0" step="1" title="Drag to any line of this screen" oninput="bbxJump('${uid}', this.value)"><div class="bbx-ticks">${ticks}</div></div>
+  // a press on a button never takes the keyboard's focus (Space stays play/pause); the seek bar keeps its own
+  // press, or it cannot be dragged (the user, 2026-10-15: "I can't click or pull it to a specific frame")
+  return `<div class="bbx-bar" onclick="event.stopPropagation()" onmousedown="if(!event.target.closest('.bbx-track'))event.preventDefault()">
+    ${b('bbx-ico', `bbxScene('${uid}',-1)`, 'Previous scene (Shift+←)', ICON.prevScene)}
+    ${b('bbx-ico', `bbxBack('${uid}')`, 'Back one line (←)', ICON.back)}
+    ${b('bbx-play', `bbxAuto('${uid}')`, 'Play / pause (Space)', ICON.play, `bbx-auto-${uid}`)}
+    ${b('bbx-ico', `bbxNext('${uid}')`, 'Next line (→)', ICON.next)}
+    ${b('bbx-ico', `bbxScene('${uid}',1)`, 'Next scene (Shift+→)', ICON.nextScene)}
+    <div class="bbx-track" onmousemove="bbxSeekHover('${uid}', event)" onmouseleave="bbxSeekTip('${uid}', null)"><input type="range" class="bbx-seek" id="bbx-seek-${uid}" min="0" max="${n}" value="0" step="1" aria-label="Line of this screen" oninput="bbxSeek('${uid}', this.value, false)" onpointerup="bbxSeek('${uid}', this.value, true)" onchange="bbxSeek('${uid}', this.value, true)" onkeydown="event.stopPropagation()"><div class="bbx-ticks">${ticks}</div><div class="bbx-tip" id="bbx-tip-${uid}"></div></div>
     <span class="bbx-count" id="bbx-count-${uid}">0 / ${n}</span>
     ${b('', `bbxSpeed('${uid}')`, 'Auto speed', speedLabel(R?.speed || speedOf()), `bbx-speed-${uid}`)}
     ${b(`bbx-voices ${voicesOn() ? 'on' : ''}`, 'bbxVoices()', "The houseguests' voices, and the room sound when there is no music", '🔊 Voices')}
     ${b('bbi-btn', `bbxIntel('${uid}')`, "What the house doesn't know: bonds, alliances, deals, and what they're thinking (i)", 'Intel', `bbi-btn-${uid}`)}
     ${R?.map ? b('', `bbxMapExit('${uid}')`, 'The house map (M)', 'Map') : ''}
-    ${b('bbx-ico', 'bbxTv()', 'Fullscreen TV (F)', '⛶')}
+    ${b('bbx-ico', 'bbxTv()', 'Fullscreen TV (F)', ICON.full)}
   </div>`;
 }
 // the bar follows the step: the play button, the seek bar, the count
@@ -157,9 +176,9 @@ function barSync(uid, R) {
   if (typeof document === 'undefined' || !R) return;
   const S = R.screens[R.si];
   const play = document.getElementById(`bbx-auto-${uid}`);
-  if (play) { play.textContent = R.auto ? '❚❚' : '▶'; play.classList.toggle('on', !!R.auto); }
+  if (play && play.dataset.st !== (R.auto ? 'pause' : 'play')) { play.innerHTML = R.auto ? ICON.pause : ICON.play; play.dataset.st = R.auto ? 'pause' : 'play'; play.classList.toggle('on', !!R.auto); play.title = R.auto ? 'Pause (Space)' : 'Play (Space)'; }
   const seek = document.getElementById(`bbx-seek-${uid}`);
-  if (seek) seek.value = String(Math.max(0, R.idx + 1));
+  if (seek && !R.seeking) seek.value = String(Math.max(0, R.idx + 1));
   const sp = document.getElementById(`bbx-speed-${uid}`);
   if (sp) sp.textContent = speedLabel(R.speed || 1);
   void S;
@@ -581,6 +600,46 @@ export function bbxJump(uid, n) {
   if (R.map) { if (k > 0) mapLinear(R, R.idx); else Object.assign(R.map, { mode: 'map', cur: null, end: null }); }
   paint(uid, k > 0);
 }
+/** The seek bar: while it is dragged the stage follows without typing or sound; let go, the line plays. */
+export function bbxSeek(uid, v, done) {
+  const R = sync(uid); if (!R) return;
+  const S = R.screens[R.si];
+  const k = Math.max(0, Math.min(S.steps.length, Math.round(Number(v) || 0)));
+  // let go is said twice (the pointer, then the change): the second time there is nothing left to do
+  if (done && !R.seeking && R.idx === k - 1) { bbxSeekTip(uid, null); return; }
+  // seeking is said BEFORE Auto stops: stopping redraws the bar, and it would put the handle back where it was
+  R.seeking = !done;
+  stopAuto(R);
+  R.idx = k - 1;
+  if (R.map) { if (k > 0) mapLinear(R, R.idx); else Object.assign(R.map, { mode: 'map', cur: null, end: null }); }
+  paint(uid, !!done && k > 0);
+  bbxSeekTip(uid, done ? null : k);
+  // let go, the keyboard is the viewer's again (Space plays, the arrows step)
+  if (done && typeof document !== 'undefined') document.getElementById(`bbx-seek-${uid}`)?.blur();
+}
+/** The line at the pointer over the seek bar, said in its bubble. */
+export function bbxSeekHover(uid, e) {
+  const R = reg()[uid]; if (!R || R.seeking) { if (R?.seeking) bbxSeekTip(uid, R.idx + 1); return; }
+  const seek = document.getElementById(`bbx-seek-${uid}`); if (!seek) return;
+  const r = seek.getBoundingClientRect();
+  const n = R.screens[R.si].steps.length;
+  bbxSeekTip(uid, Math.max(0, Math.min(n, Math.round(((e.clientX - r.left - 7) / Math.max(1, r.width - 14)) * n))));
+}
+export function bbxSeekTip(uid, k) {
+  const tip = typeof document !== 'undefined' && document.getElementById(`bbx-tip-${uid}`);
+  if (!tip) return;
+  const R = reg()[uid];
+  if (k == null || !R) { tip.classList.remove('on'); return; }
+  const S = R.screens[R.si], n = S.steps.length;
+  const st = k > 0 ? S.steps[k - 1] : null;
+  const who = !st ? 'Start' : st.k === 'beat' ? '' : st.k === 'bb' ? 'Big Brother' : st.k === 'dr' ? `${st.by} · DR` : (st.by || '');
+  const text = String(st?.t || '').replace(/\s+/g, ' ');
+  tip.innerHTML = `<b>${k} / ${n}</b>${st ? `<span>${who ? `${esc(who)}: ` : ''}${esc(text.length > 46 ? `${text.slice(0, 44)}…` : text)}</span>` : ''}`;
+  const seek = document.getElementById(`bbx-seek-${uid}`);
+  const w = seek ? seek.getBoundingClientRect().width : 0;
+  tip.style.left = `${7 + (n ? k / n : 0) * Math.max(0, w - 14)}px`;
+  tip.classList.add('on');
+}
 /** A line of the script, clicked: jump to it. */
 export function bbxJumpFromLine(el, i) {
   const root = el.closest('.bbx[data-uid]');
@@ -723,7 +782,7 @@ if (typeof document !== 'undefined') document.addEventListener('keydown', e => {
   else if (e.key === 'Escape' && root.classList.contains('intel-open')) { e.preventDefault(); e.stopImmediatePropagation(); bbxIntel(root.dataset.uid); }
 });
 
-if (typeof window !== 'undefined') Object.assign(window, { bbxSpeed, bbxScene, bbxIntel, bbxIntelClick, bbxLive, bbxMapExit, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
+if (typeof window !== 'undefined') Object.assign(window, { bbxSeek, bbxSeekHover, bbxSeekTip, bbxSpeed, bbxScene, bbxIntel, bbxIntelClick, bbxLive, bbxMapExit, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
 // Closing the Viewing Party only hides it: stop every Auto run and the line typing out,
 // or Auto keeps clicking through the week (and its music) behind a closed window.
 if (typeof document !== 'undefined') document.addEventListener('vp:close', () => {

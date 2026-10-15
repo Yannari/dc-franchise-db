@@ -434,6 +434,7 @@ function writeKeyed(key, t, ctx, at, o) {
 function staging(sc) {
   if (!sc?.spot || !Array.isArray(sc.lines) || sc.lines[0]?.kind === 'beat') return sc;
   const talkers = [...new Set(sc.lines.filter(l => l.by && l.kind === 'say').map(l => l.by))];
+  if (talkers.length < 2) return sc;
   const t = openingAt(sc.spot, talkers, sc.id);
   if (t) sc.lines.unshift({ kind: 'beat', by: null, text: t });
   return sc;

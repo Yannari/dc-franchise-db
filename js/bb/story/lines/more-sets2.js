@@ -259,7 +259,7 @@ export default {
       { by: 'd', say: "I need a nap." },
       { by: 'e', say: "Ten more squats for {gone}!" },
       { beat: 'Ten more squats, for {gone}. Nobody actually finishes them.' },
-      { by: 'c', dr: "Somebody leaves, and this house deals with it by doing squats in the backyard. Badly. It helped, a bit." },
+      { by: 'c', dr: "Somebody leaves, and this house deals with it by doing squats in the living room. Badly. It helped, a bit." },
     ] },
   ],
   'set.morningafter.close': [

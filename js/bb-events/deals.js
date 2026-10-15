@@ -155,7 +155,7 @@ function _defector(house, ctx) {
   for (const mark of _leastSeen(house)) {
     // A formal alliance if one exists, otherwise the people this houseguest is
     // aligned with in practice — Big Brother creates no named alliances yet.
-    const allies = deFactoAllies(mark, house);
+    const allies = [...new Set(deFactoAllies(mark, house))];
     if (allies.length < 2) continue;
     const outsider = _others(house, mark, ...allies).find(n =>
       willScheme(n) && bond(n, mark) > -2);

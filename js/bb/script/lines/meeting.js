@@ -52,7 +52,7 @@ export default {
   'meeting.case.grudge': [
     { id: 'mt.g1', turns: [{ by: 'a', say: "I tried to keep this private. {b} didn't. So now we're doing it in front of everyone." }] },
     { id: 'mt.g2', turns: [{ by: 'a', say: "This is about respect. And it's about {b}." }] },
-    { id: 'mt.g3', turns: [{ by: 'a', say: "Let me tell it from the start, {b}. Including the bit you keep leaving out." }] },
+    { id: 'mt.g3', turns: [{ by: 'a', say: "{b}, I'm saying this in front of everybody, because in private you just talk over me." }] },
     { id: 'mt.g4', turns: [{ by: 'a', say: "I'm not attacking anyone. But {b} needs to hear this." }] },
     { id: 'mt.g5', turns: [{ by: 'a', say: "{b}, you've been talking about this all over the house. So let's talk about it here." }] },
     { id: 'mt.g6', turns: [{ by: 'a', say: "I've let it go for days. I'm not letting it go any more." }] },

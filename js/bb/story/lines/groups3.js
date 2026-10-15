@@ -177,7 +177,7 @@ export default {
     ] },
   ],
   'story.life.homesick.group': [
-    { id: 'gh3.1', presumes: ['hoh'], turns: [
+    { id: 'gh3.1', presumes: ['hoh'], room: 'kitchen', turns: [
       { beat: '{a} has been quiet all day. At dinner, {b}, {c} and {d} finally say something.' },
       { by: 'b', say: "You okay? You've barely eaten." },
       { by: 'a', say: "Just missing home a bit." },

@@ -577,7 +577,7 @@ export default {
     { id: 'sc.f4', turns: [{ beat: 'Somebody turns up the music. {a} and {b} take that as permission.' }] },
     { id: 'sc.f5', turns: [{ beat: 'Somebody starts a singalong. {a} and {b} use the noise.' }] },
     { id: 'sc.f7', turns: [{ beat: '{a} and {b} have ended up on the same patch of floor, laughing at the same jokes.' }] },
-    { id: 'sc.f9', turns: [{ beat: 'Under the noise, {a} and {b} are having a much quieter evening.' }] },
+    { id: 'sc.f9', turns: [{ beat: 'Under the noise, {a} and {b} are having a much quieter conversation.' }] },
     { id: 'sc.f10', turns: [{ beat: 'The room splits into little groups. {a} and {b} make one of their own.' }] },
   ],
   // two people talking low inside the noise (write.js CUT: the game's quiet conversations)

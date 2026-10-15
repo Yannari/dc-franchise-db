@@ -78,7 +78,7 @@ export default {
     { id: 'qc.8', turns: [{ by: 'a', say: "Whose side are you on?" }, { by: 'b', say: "I'm not on a side." }, { by: 'a', say: "You've sat with {partner} all day." }] },
     { id: 'qc.9', turns: [{ by: 'b', dr: "I didn't mean to pick {partner}. But {target} said some things I can't get past." }] },
     { id: 'qc.10', turns: [{ by: 'a', say: "{target} needs people around {target} right now." }, { by: 'b', say: "So does {partner}." }] },
-    { id: 'qc.11', turns: [{ beat: '{a} sits down next to {target}\'s empty chair. {b} sits on the other side of the room.' }, { by: 'a', dr: "Nobody said a word. Everybody knew." }] },
+    { id: 'qc.11', turns: [{ beat: '{a} sits down next to {target}. {b} sits on the other side of the room, next to {partner}.' }, { by: 'a', dr: "Nobody said a word. Everybody knew." }] },
     { id: 'qc.12', turns: [{ by: 'b', say: "Are we really going to fall out over {target} and {partner}?" }, { by: 'a', say: "Looks like it." }] },
     { id: 'qc.13', turns: [{ by: 'a', dr: "After that fight, I have to stand with {target}. If {b} stands with {partner}, that's {b}'s choice." }] },
     { id: 'qc.14', turns: [{ by: 'b', dr: "The house split down the middle after {target} and {partner} went at it. I'm on {partner}'s side, and {a} knows it." }] },

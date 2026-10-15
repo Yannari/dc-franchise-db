@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Challenge plates</title>
+<!-- tools/ch-art/preview.html — every plate tools/ch-art/plates.py built, alive (the TD motion shader),
+     with its marks drawn over it. Serve the repo root (python -m http.server) and open
+     /tools/ch-art/preview.html. Click a plate to see it big; M toggles the marks. -->
+<style>
+  :root { --bg: #141110; --ink: #f2ece6; --dim: #9a8f86; --fire: #ff6a1a; --caution: #ffd21a; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.4 system-ui, sans-serif; }
+  header { padding: 12px 16px; display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+  h1 { font-size: 18px; margin: 0; color: var(--fire); letter-spacing: .04em; text-transform: uppercase; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 12px; padding: 0 16px 24px; }
+  figure { margin: 0; cursor: zoom-in; }
+  figure.big { grid-column: 1 / -1; cursor: zoom-out; }
+  .stage { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #000; border-radius: 6px; }
+  .stage img, .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  canvas.tdx-gl { opacity: 0; transition: opacity .3s; }
+  canvas.tdx-gl.on { opacity: 1; }
+  figcaption { color: var(--dim); padding: 4px 2px; }
+  .mk { position: absolute; transform: translate(-50%, -100%); pointer-events: none; display: none; }
+  body.marks .mk { display: block; }
+  .mk i { display: block; width: 3px; margin: 0 auto; background: var(--caution); opacity: .85; }
+  .mk b { display: block; font: 600 10px system-ui; color: #000; background: var(--caution); padding: 0 3px; border-radius: 2px; white-space: nowrap; }
+  .mk.dot i { width: 10px; height: 10px; border-radius: 50%; }
+</style>
+</head>
+<body class="marks">
+<header><h1>The Challenge · plates</h1><span id="n"></span><label><input type="checkbox" id="mk" checked> marks (M)</label></header>
+<div class="grid" id="g"></div>
+<script type="module">
+import { CH_MARKS } from '../../js/vp-ch-ep/marks.js';
+import { liveGL } from '../../js/vp-td-ep/glplate.js';
+const g = document.getElementById('g');
+const keys = Object.keys(CH_MARKS);
+document.getElementById('n').textContent = keys.length + ' plates';
+for (const k of keys) {
+  const src = `../../assets/sets/ch/${k}`;
+  const f = document.createElement('figure');
+  const marks = CH_MARKS[k].m.filter(m => !['motion', 'cloud', 'pool', 'fall', 'critter'].includes(m.kind));
+  f.innerHTML = `<div class="stage"><img src="${src}.webp" alt=""><canvas class="tdx-gl" data-src="${src}" data-hd="1" width="1920" height="1080"></canvas>${
+    marks.map(m => {
+      const label = m.kind === 'fire' ? '' : m.id || [m.kind, m.side, m.group].filter(Boolean).join(' ');
+      // a person's height where they stand (1.75 m), as a share of the frame height
+      const tall = m.s ? `height:${(m.s * 1.75 * 100).toFixed(2)}cqh` : 'height:10px';
+      return `<div class="mk ${m.s ? '' : 'dot'}" style="left:${m.u * 100}%;top:${m.v * 100}%"><b>${label}</b><i style="${tall}"></i></div>`;
+    }).join('')}</div><figcaption>${k}</figcaption>`;
+  f.querySelector('.stage').style.containerType = 'size';
+  f.onclick = () => f.classList.toggle('big');
+  g.append(f);
+}
+liveGL(g);
+const t = document.getElementById('mk');
+const set = on => { document.body.classList.toggle('marks', on); t.checked = on; };
+t.onchange = () => set(t.checked);
+addEventListener('keydown', e => { if (e.key === 'm' || e.key === 'M') set(!document.body.classList.contains('marks')); });
+</script>
+</body>
+</html>

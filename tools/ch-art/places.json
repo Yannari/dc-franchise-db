@@ -1,0 +1,1091 @@
+{
+  "_doc": "The Challenge's places (tools/ch-art/plates.py). from / from_night: the user's painting in Downloads/Challenge-art/to-edit. spot: the plate's name in assets/sets/ch. hours: which hours exist. night: 'auto' (nightify repaints the day) or 'painted' (the user painted the night). Coordinates are 1600x900 reference px of the imported src. marks: {kind, x, y, h?, hour?, ...} where h = the px one metre takes there (a person is 1.75 h); kinds: stand, seat (group says whose), podium / duel (side L|R), host, gate, gong, dj, plane, spot (a map pin: id names the place). fire [x, foot y, flame h] painted flames (heat shimmer, glow at night). pool [x0,y0,x1,y1, fish, sample x, sample y] still water. fall [x0,y0,x1,y1] falling water. sway / cloth / still / glow / wind / noleaf / nosky / critters as in tools/td-camp/traced/places.json.",
+  "airstrip": {
+    "from": "A01-arrival-airstrip/Arrival-airstrip-day.png",
+    "spot": "airstrip",
+    "night": "auto",
+    "horizon": 0.62,
+    "wind": 0.8,
+    "sway": [
+      [
+        0,
+        0,
+        460,
+        280,
+        0.35
+      ],
+      [
+        0,
+        520,
+        460,
+        900,
+        0.6
+      ],
+      [
+        1300,
+        600,
+        1600,
+        900,
+        0.6
+      ],
+      [
+        1060,
+        0,
+        1160,
+        100,
+        0.5
+      ]
+    ],
+    "still": [
+      [
+        1440,
+        0,
+        1600,
+        640
+      ]
+    ],
+    "critters": [
+      [
+        "parrot",
+        0,
+        60,
+        1600,
+        220
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "plane",
+        "x": 500,
+        "y": 690
+      },
+      {
+        "kind": "gate",
+        "x": 845,
+        "y": 690,
+        "h": 36
+      },
+      {
+        "kind": "host",
+        "x": 1130,
+        "y": 745,
+        "h": 52
+      },
+      {
+        "kind": "stand",
+        "x": 430,
+        "y": 770,
+        "h": 56
+      },
+      {
+        "kind": "stand",
+        "x": 560,
+        "y": 775,
+        "h": 57
+      },
+      {
+        "kind": "stand",
+        "x": 690,
+        "y": 775,
+        "h": 57
+      },
+      {
+        "kind": "stand",
+        "x": 820,
+        "y": 778,
+        "h": 58
+      },
+      {
+        "kind": "stand",
+        "x": 950,
+        "y": 775,
+        "h": 57
+      },
+      {
+        "kind": "stand",
+        "x": 500,
+        "y": 830,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "x": 650,
+        "y": 835,
+        "h": 63
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 835,
+        "h": 63
+      },
+      {
+        "kind": "stand",
+        "x": 950,
+        "y": 830,
+        "h": 62
+      }
+    ],
+    "hours": [
+      "day"
+    ]
+  },
+  "opener": {
+    "from": "A02-island-opener/Blue-Lagoon-opening-day.png",
+    "spot": "opener",
+    "night": "auto",
+    "horizon": 0.66,
+    "wind": 0.5,
+    "sun": [
+      1100,
+      180,
+      75
+    ],
+    "pool": [
+      [
+        0,
+        640,
+        1600,
+        900,
+        false,
+        800,
+        820
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        0,
+        120,
+        1600,
+        300
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "spot",
+        "id": "villa",
+        "x": 420,
+        "y": 445
+      },
+      {
+        "kind": "spot",
+        "id": "volcano",
+        "x": 800,
+        "y": 270
+      }
+    ]
+  },
+  "hottub": {
+    "from": "B05-hot-tub/Hot-tub-no-steam.png",
+    "spot": "hottub",
+    "night": "auto",
+    "horizon": 0.38,
+    "wind": 0.7,
+    "pool": [
+      [
+        140,
+        520,
+        1530,
+        790,
+        false,
+        900,
+        650
+      ],
+      [
+        320,
+        300,
+        1420,
+        392,
+        false,
+        900,
+        345
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        300,
+        400,
+        0.5
+      ],
+      [
+        1250,
+        60,
+        1600,
+        390,
+        0.5
+      ]
+    ],
+    "still": [
+      [
+        300,
+        0,
+        345,
+        400
+      ],
+      [
+        1360,
+        0,
+        1400,
+        400
+      ],
+      [
+        0,
+        370,
+        200,
+        520
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "seat",
+        "group": "tub",
+        "x": 430,
+        "y": 560,
+        "h": 190
+      },
+      {
+        "kind": "seat",
+        "group": "tub",
+        "x": 660,
+        "y": 540,
+        "h": 185
+      },
+      {
+        "kind": "seat",
+        "group": "tub",
+        "x": 900,
+        "y": 535,
+        "h": 185
+      },
+      {
+        "kind": "seat",
+        "group": "tub",
+        "x": 1140,
+        "y": 545,
+        "h": 185
+      },
+      {
+        "kind": "seat",
+        "group": "tub",
+        "x": 1360,
+        "y": 570,
+        "h": 190
+      }
+    ]
+  },
+  "club": {
+    "from_night": "B08-beach-club/Beach-club-night.png",
+    "spot": "club",
+    "night": "painted",
+    "hours": [
+      "night"
+    ],
+    "horizon": 0.4,
+    "wind": 0.8,
+    "fire": [
+      [
+        50,
+        300,
+        75
+      ],
+      [
+        232,
+        348,
+        50
+      ],
+      [
+        1105,
+        322,
+        70
+      ],
+      [
+        1165,
+        372,
+        42
+      ]
+    ],
+    "pool": [
+      [
+        0,
+        320,
+        1250,
+        470,
+        false,
+        300,
+        380
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        260,
+        330,
+        0.5
+      ],
+      [
+        1230,
+        0,
+        1600,
+        110,
+        0.5
+      ],
+      [
+        0,
+        360,
+        400,
+        520,
+        0.4
+      ],
+      [
+        920,
+        360,
+        1100,
+        510,
+        0.4
+      ],
+      [
+        0,
+        640,
+        340,
+        900,
+        0.6
+      ],
+      [
+        1330,
+        690,
+        1600,
+        900,
+        0.6
+      ]
+    ],
+    "cloth": [
+      [
+        1160,
+        100,
+        1600,
+        300,
+        0.2
+      ]
+    ],
+    "glow": [
+      [
+        0,
+        140,
+        1300,
+        260
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "dj",
+        "x": 680,
+        "y": 470,
+        "h": 105
+      },
+      {
+        "kind": "stand",
+        "x": 330,
+        "y": 565,
+        "h": 110
+      },
+      {
+        "kind": "stand",
+        "x": 480,
+        "y": 565,
+        "h": 110
+      },
+      {
+        "kind": "stand",
+        "x": 630,
+        "y": 570,
+        "h": 110
+      },
+      {
+        "kind": "stand",
+        "x": 780,
+        "y": 570,
+        "h": 110
+      },
+      {
+        "kind": "stand",
+        "x": 930,
+        "y": 565,
+        "h": 110
+      },
+      {
+        "kind": "stand",
+        "x": 1080,
+        "y": 565,
+        "h": 110
+      },
+      {
+        "kind": "stand",
+        "x": 300,
+        "y": 720,
+        "h": 135
+      },
+      {
+        "kind": "stand",
+        "x": 550,
+        "y": 725,
+        "h": 136
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 725,
+        "h": 136
+      },
+      {
+        "kind": "stand",
+        "x": 1050,
+        "y": 725,
+        "h": 136
+      },
+      {
+        "kind": "stand",
+        "x": 1250,
+        "y": 720,
+        "h": 135
+      },
+      {
+        "kind": "seat",
+        "group": "bar",
+        "x": 1262,
+        "y": 482,
+        "h": 108
+      },
+      {
+        "kind": "seat",
+        "group": "bar",
+        "x": 1330,
+        "y": 488,
+        "h": 108
+      },
+      {
+        "kind": "seat",
+        "group": "bar",
+        "x": 1408,
+        "y": 492,
+        "h": 110
+      },
+      {
+        "kind": "seat",
+        "group": "bar",
+        "x": 1497,
+        "y": 497,
+        "h": 110
+      }
+    ]
+  },
+  "arena": {
+    "from_night": "B09-arena-wide/Arena-night-v3.png",
+    "spot": "arena",
+    "night": "painted",
+    "hours": [
+      "night"
+    ],
+    "horizon": 0.5,
+    "wind": 0.5,
+    "noleaf": true,
+    "fire": [
+      [
+        40,
+        382,
+        50
+      ],
+      [
+        403,
+        378,
+        46
+      ],
+      [
+        684,
+        378,
+        46
+      ],
+      [
+        1022,
+        378,
+        46
+      ],
+      [
+        1565,
+        382,
+        50
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        1600,
+        180,
+        0.35
+      ],
+      [
+        0,
+        560,
+        240,
+        900,
+        0.5
+      ],
+      [
+        1280,
+        620,
+        1600,
+        900,
+        0.5
+      ]
+    ],
+    "cloth": [
+      [
+        70,
+        215,
+        330,
+        300,
+        0.35
+      ],
+      [
+        980,
+        245,
+        1290,
+        320,
+        0.2
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "gate",
+        "x": 857,
+        "y": 430,
+        "h": 60
+      },
+      {
+        "kind": "host",
+        "x": 857,
+        "y": 452,
+        "h": 60
+      },
+      {
+        "kind": "gong",
+        "x": 1447,
+        "y": 400
+      },
+      {
+        "kind": "podium",
+        "side": "L",
+        "x": 380,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "podium",
+        "side": "R",
+        "x": 1240,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "duel",
+        "side": "L",
+        "x": 650,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "duel",
+        "side": "R",
+        "x": 960,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 600,
+        "h": 73
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 105,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 165,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 225,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 285,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 140,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 200,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 260,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 320,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 230,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 300,
+        "y": 478,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1330,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1400,
+        "y": 492,
+        "h": 63
+      }
+    ]
+  },
+  "ring": {
+    "from_night": "B10-arena-ring/Arena-close-night.png",
+    "spot": "ring",
+    "night": "painted",
+    "hours": [
+      "night"
+    ],
+    "horizon": 0.52,
+    "wind": 0.5,
+    "noleaf": true,
+    "fire": [
+      [
+        342,
+        362,
+        46
+      ],
+      [
+        656,
+        362,
+        46
+      ],
+      [
+        1030,
+        362,
+        46
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        1600,
+        160,
+        0.35
+      ]
+    ],
+    "cloth": [
+      [
+        0,
+        210,
+        250,
+        280,
+        0.35
+      ],
+      [
+        980,
+        235,
+        1300,
+        300,
+        0.2
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "gate",
+        "x": 845,
+        "y": 420,
+        "h": 66
+      },
+      {
+        "kind": "host",
+        "x": 845,
+        "y": 442,
+        "h": 64
+      },
+      {
+        "kind": "gong",
+        "x": 1550,
+        "y": 385
+      },
+      {
+        "kind": "podium",
+        "side": "L",
+        "x": 130,
+        "y": 545,
+        "h": 88
+      },
+      {
+        "kind": "podium",
+        "side": "R",
+        "x": 1470,
+        "y": 545,
+        "h": 88
+      },
+      {
+        "kind": "duel",
+        "side": "L",
+        "x": 560,
+        "y": 650,
+        "h": 100
+      },
+      {
+        "kind": "duel",
+        "side": "R",
+        "x": 1040,
+        "y": 650,
+        "h": 100
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 640,
+        "h": 98
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 70,
+        "y": 390,
+        "h": 60
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 160,
+        "y": 390,
+        "h": 60
+      }
+    ]
+  },
+  "map": {
+    "from": "M01-island-map/Result4.png",
+    "from_night": "M01-island-map/Result-night.png",
+    "spot": "map",
+    "night": "painted",
+    "horizon": 0.2,
+    "wind": 0.3,
+    "pool": [
+      [
+        0,
+        170,
+        1600,
+        900,
+        false,
+        100,
+        300
+      ],
+      [
+        690,
+        640,
+        1120,
+        740,
+        false,
+        950,
+        690
+      ]
+    ],
+    "fall": [
+      [
+        880,
+        90,
+        915,
+        160
+      ],
+      [
+        1005,
+        190,
+        1040,
+        350
+      ],
+      [
+        1040,
+        345,
+        1085,
+        430
+      ],
+      [
+        900,
+        520,
+        960,
+        615
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "spot",
+        "id": "villa",
+        "x": 465,
+        "y": 525
+      },
+      {
+        "kind": "spot",
+        "id": "arena",
+        "x": 620,
+        "y": 380
+      },
+      {
+        "kind": "spot",
+        "id": "summit",
+        "x": 945,
+        "y": 140
+      },
+      {
+        "kind": "spot",
+        "id": "overnight-camp",
+        "x": 855,
+        "y": 255
+      },
+      {
+        "kind": "spot",
+        "id": "airstrip",
+        "x": 1300,
+        "y": 310
+      },
+      {
+        "kind": "spot",
+        "id": "gorge",
+        "x": 1040,
+        "y": 360
+      },
+      {
+        "kind": "spot",
+        "id": "bridge",
+        "x": 970,
+        "y": 482
+      },
+      {
+        "kind": "spot",
+        "id": "tiki-path",
+        "x": 1180,
+        "y": 465
+      },
+      {
+        "kind": "spot",
+        "id": "beach-field",
+        "x": 1420,
+        "y": 565
+      },
+      {
+        "kind": "spot",
+        "id": "lookout",
+        "x": 1500,
+        "y": 525
+      },
+      {
+        "kind": "spot",
+        "id": "club",
+        "x": 1230,
+        "y": 645
+      },
+      {
+        "kind": "spot",
+        "id": "lagoon",
+        "x": 900,
+        "y": 690
+      },
+      {
+        "kind": "spot",
+        "id": "dock",
+        "x": 680,
+        "y": 760
+      },
+      {
+        "kind": "spot",
+        "id": "beach",
+        "x": 1050,
+        "y": 765
+      },
+      {
+        "kind": "spot",
+        "id": "cliff-jump",
+        "x": 230,
+        "y": 330
+      },
+      {
+        "kind": "spot",
+        "id": "gazebo",
+        "x": 360,
+        "y": 665
+      }
+    ],
+    "noclouds": true
+  },
+  "villa-map": {
+    "from": "M02-villa-map/Result2(1).png",
+    "spot": "villa-map",
+    "night": "auto",
+    "nosky": true,
+    "horizon": 0.0,
+    "wind": 0.4,
+    "pool": [
+      [
+        360,
+        630,
+        1025,
+        720,
+        false,
+        700,
+        680
+      ],
+      [
+        1115,
+        620,
+        1225,
+        715,
+        false,
+        1170,
+        665
+      ],
+      [
+        0,
+        600,
+        1600,
+        900,
+        false,
+        900,
+        850
+      ]
+    ],
+    "still": [
+      [
+        290,
+        95,
+        1310,
+        745
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "spot",
+        "id": "bunk-a",
+        "x": 440,
+        "y": 195
+      },
+      {
+        "kind": "spot",
+        "id": "bunk-b",
+        "x": 440,
+        "y": 395
+      },
+      {
+        "kind": "spot",
+        "id": "confessional",
+        "x": 655,
+        "y": 165
+      },
+      {
+        "kind": "spot",
+        "id": "entrance",
+        "x": 798,
+        "y": 140
+      },
+      {
+        "kind": "spot",
+        "id": "bathroom",
+        "x": 935,
+        "y": 160
+      },
+      {
+        "kind": "spot",
+        "id": "common",
+        "x": 798,
+        "y": 395
+      },
+      {
+        "kind": "spot",
+        "id": "gym",
+        "x": 1160,
+        "y": 195
+      },
+      {
+        "kind": "spot",
+        "id": "kitchen",
+        "x": 1160,
+        "y": 400
+      },
+      {
+        "kind": "spot",
+        "id": "loungers",
+        "x": 495,
+        "y": 580
+      },
+      {
+        "kind": "spot",
+        "id": "dining",
+        "x": 1100,
+        "y": 578
+      },
+      {
+        "kind": "spot",
+        "id": "pool",
+        "x": 690,
+        "y": 675
+      },
+      {
+        "kind": "spot",
+        "id": "hottub",
+        "x": 1170,
+        "y": 665
+      }
+    ]
+  }
+}

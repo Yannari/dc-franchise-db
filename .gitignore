@@ -66,3 +66,5 @@ tools/td-camp/traced/cuts/*-sky.png
 
 # tools/bb-resort/build.py --marks: the plates with their marks drawn on, for reading by eye
 tools/bb-resort/marks/
+# tools/ch-art/plates.py scratch (grids to read marks from)
+tools/ch-art/cuts/

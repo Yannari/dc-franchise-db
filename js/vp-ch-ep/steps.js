@@ -338,7 +338,7 @@ export function chStepScreens(row, ctx = {}) {
   // the opening screen only had the open itself when there was no "previously"
   for (const s of screens) if (!s.steps.length) s.steps.push({ dir: '' });
   // map bubbles jump to the first step of their scene
-  for (const s of screens) for (const st of s.steps) if (st.map) for (const r of [...st.map.rooms, ...st.map.later]) r.go = s.steps.findIndex(x => x.sceneIdx === r.scene);
+  for (const s of screens) for (const st of s.steps) if (st.map) for (const r of [...st.map.rooms.flatMap(x => x.bubs), ...st.map.later]) r.go = s.steps.findIndex(x => x.sceneIdx === r.scene);
   return screens;
 }
 
@@ -372,10 +372,11 @@ function villaMap(S, items) {
     if (p?.room) { const r = (rooms[p.room] ||= { at: p.room, who: [], bubs: [] }); a.who.forEach(n => !r.who.includes(n) && r.who.push(n)); r.bubs.push({ bub: title, scene: i, star }); }
     else later.push({ bub: title, scene: i, star });
   }
-  const list = Object.values(rooms).map(r => ({ at: r.at, who: r.who.slice(0, 5), bub: r.bubs[0].bub, scene: r.bubs[0].scene, star: r.bubs.some(b => b.star), more: r.bubs.length - 1 }));
+  for (const r of Object.values(rooms)) if (r.bubs.length > 3) later.push(...r.bubs.splice(3));
+  const list = Object.values(rooms).map(r => ({ at: r.at, who: r.who.slice(0, 5), bubs: r.bubs }));
   S.push({ scene: { plate: plateKey('villa-map', false), place: 'The Villa', when: whenOf(items[0].a.day, S.min), icon: 'house', cast: {}, wipe: 1 },
-    map: { rooms: list, later: later.slice(0, 4), clock: [['Morning', S.min < 12 * 60 ? 'now' : 'done'], ['Afternoon', S.min < 12 * 60 ? 'lock' : S.min < 18 * 60 ? 'now' : 'done'], ['Night', S.min >= 18 * 60 ? 'now' : 'lock']] },
-    dir: 'Back at the villa. The faces show who is in each room; a bubble is a conversation. Click one, or press Next to watch them in order.' });
+    map: { rooms: list, later, clock: [['Morning', S.min < 12 * 60 ? 'now' : 'done'], ['Afternoon', S.min < 12 * 60 ? 'lock' : S.min < 18 * 60 ? 'now' : 'done'], ['Night', S.min >= 18 * 60 ? 'now' : 'lock']] },
+    dir: 'Back at the villa. The faces show who is in each room, and each bubble is a conversation. Click one to watch it, or press play.' });
 }
 
 // ── the arrival (episode 1) ───────────────────────────────────────────

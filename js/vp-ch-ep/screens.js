@@ -15,6 +15,7 @@
 import { chStepScreens } from './steps.js';
 import { ChxStage } from './stage.js';
 import { ensureChxStyle } from './style.js';
+import { CH_MARKS } from './marks.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const reg = () => (typeof window !== 'undefined' ? (window._chx ||= {}) : (globalThis._chx ||= {}));
@@ -32,21 +33,23 @@ export function chStepVpScreens(row, ctx = {}) {
 function shell(key, si, s, row, week, ctx) {
   return `<div class="chx" data-ep="${esc(key)}" data-si="${si}">
   <div class="chx-top"><div class="chx-logo">The Challenge<small>${esc((ctx.title || 'Blue Lagoon').toUpperCase())}</small></div>
-    <div class="chx-eps"><b>Episode ${esc(row.num)}</b>${week ? ` · ${esc(week)}` : ''} · ${esc(s.label)}</div><div class="chx-spacer"></div>
+    <div class="chx-eps"><b>Episode ${esc(row.num)}</b>${week ? ` · ${esc(week)}` : ''} · ${esc(s.label)}</div>
+    <div class="chx-chapmenu"><button type="button" class="chx-ibtn" onclick="chxChapters(this)">Chapters &#9662;</button><div class="chapters"></div></div><div class="chx-spacer"></div>
     <button type="button" class="chx-ibtn" onclick="chxTv()">TV</button>
     <button type="button" class="chx-ibtn" onclick="chxSwitchViewer('classic')" title="The readout: every line of the episode, one screen per moment">Readout view</button></div>
   <div class="chx-frame" onclick="chxNext(this)">
     <div class="chx-world"><div class="chx-drift"><div class="chx-platebox"></div><div class="chx-live"></div><div class="chx-props"></div><div class="chx-cast"></div><div class="chx-wfx"></div></div></div>
     <div class="chx-hud"></div><div class="chx-confbox"></div>
     <div class="dlg"><div class="panel"></div><div class="cutin"></div><div class="name"></div><div class="say"></div><div class="next"></div></div>
-    <div class="over"></div><div class="intel"></div><div class="static"></div>
+    <div class="over"></div><div class="intel"></div><div class="isle"></div><div class="static"></div>
   </div>
   <div class="chx-ctl">
-    <button type="button" class="cbtn" onclick="chxRestart(this)">Restart</button>
-    <button type="button" class="cbtn" onclick="chxBack(this)">Back <span class="key">&larr;</span></button>
-    <button type="button" class="cbtn go" onclick="chxNext(this)">Next <span class="key">Space</span></button>
-    <button type="button" class="cbtn chx-auto" onclick="chxAuto(this)">Auto</button>
-    <div class="chapters"></div>
+    <button type="button" class="pbtn" onclick="chxRestart(this)" title="Back to the start of this part"><svg viewBox='0 0 24 24'><path d='M5 4h2.5v16H5zM20 4v16L8.5 12z'/></svg></button>
+    <button type="button" class="pbtn" onclick="chxBack(this)" title="Back one (Left arrow)"><svg viewBox='0 0 24 24'><path d='M11.5 4v16L1 12zM23 4v16L12.5 12z'/></svg></button>
+    <button type="button" class="pbtn big chx-auto" onclick="chxAuto(this)" title="Play / pause (P)"><svg class='i-play' viewBox='0 0 24 24'><path d='M6 3.5v17L21 12z'/></svg><svg class='i-pause' viewBox='0 0 24 24'><path d='M5 4h5v16H5zM14 4h5v16h-5z'/></svg></button>
+    <button type="button" class="pbtn" onclick="chxNext(this)" title="Forward one (Space or Right arrow)"><svg viewBox='0 0 24 24'><path d='M1 4v16l10.5-8zM12.5 4v16L23 12z'/></svg></button>
+    <button type="button" class="pbtn speed" onclick="chxSpeed(this)" title="Playback speed">x1</button>
+    <div class="pbar" title="Jump to any moment of this part"><i><b></b></i><span class="pt"></span></div>
   </div>
   <details class="script"><summary>Script</summary><div class="lines"></div></details>
 </div>`;
@@ -81,6 +84,18 @@ function runner(root) {
     const go = e.target.closest('[data-go]');
     if (go) { e.stopPropagation(); const i = Number(go.dataset.go); if (i >= 0) goTo(R, i, false); return; }
     if (e.target.closest('[data-intel]')) { e.stopPropagation(); R.intelOpen = !R.intelOpen; intel(R); paintHud(R); }
+    if (e.target.closest('[data-isle]')) { e.stopPropagation(); stopAuto(R); isle(R, true); }
+  });
+  root.querySelector('.isle').addEventListener('click', e => {
+    e.stopPropagation();
+    const p = e.target.closest('[data-si]');
+    if (e.target.closest('[data-close]') || p) isle(R, false);
+    if (p) { const i = Number(p.dataset.si); if (i === R.si) goTo(R, 0, false); else if (typeof window.vpGoTo === 'function') window.vpGoTo(vpIndexOf(R, i)); }
+  });
+  root.querySelector('.pbar').addEventListener('click', e => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const f = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    stopAuto(R); goTo(R, Math.round(f * (R.scr.steps.length - 1)), false);
   });
   root.querySelector('.intel').addEventListener('click', e => { e.stopPropagation(); if (e.target.closest('[data-close]')) { R.intelOpen = false; intel(R); } });
   return R;
@@ -108,6 +123,70 @@ function intel(R) {
 }
 function paintHud(R) { const b = R.root.querySelector('.ibtn2'); if (b) b.classList.toggle('new', false); }
 
+// ── the villa map as a hub (the user, 2026-10-15: "it doesn't let me choose where I want to go") ──
+// A map step offers the block's conversations; each runs from its first step to the step before the
+// next scene starts. Watching one brings you back to the map with it ticked; Next on the map plays the
+// first one not watched yet; when all are watched the screen carries on past the block.
+function hubs(R) {
+  if (R.hubs) return R.hubs;
+  const steps = R.scr.steps;
+  R.hubs = [];
+  steps.forEach((st, i) => {
+    if (!st.map) return;
+    const starts = [...new Set([...st.map.rooms.flatMap(r => r.bubs || []), ...st.map.later].map(b => b.go))].filter(g => g > i).sort((a, b) => a - b);
+    const convs = starts.map(s => { let e = s + 1; while (e < steps.length && steps[e].sceneIdx == null && !steps[e].map && !steps[e].seg) e++; return { s, e: e - 1 }; });
+    R.hubs.push({ at: i, convs, end: convs.length ? Math.max(...convs.map(c => c.e)) : i });
+  });
+  return R.hubs;
+}
+const seenOf = R => ((R.E.seen ||= {})[R.si] ||= new Set());
+function hubAt(R, idx) {
+  for (const h of hubs(R)) {
+    if (idx === h.at) return { h, conv: null };
+    const c = h.convs.find(x => idx >= x.s && idx <= x.e);
+    if (c) return { h, conv: c };
+  }
+  return null;
+}
+// where Next goes from here inside a hub, or null to step on as usual
+function hubNext(R) {
+  const H = hubAt(R, R.idx); if (!H) return null;
+  const seen = seenOf(R);
+  if (H.conv && R.idx < H.conv.e) return null;
+  const left = H.h.convs.find(c => !seen.has(c.s));
+  if (left) return H.conv ? H.h.at : left.s;
+  return H.h.end + 1 < R.scr.steps.length ? H.h.end + 1 : -1;
+}
+function paintHub(R) {
+  const H = hubAt(R, R.idx); if (!H) return;
+  const hud = R.root.querySelector('.chx-hud'); const seen = seenOf(R);
+  if (H.conv) { seen.add(H.conv.s); hud.insertAdjacentHTML('beforeend', `<button type='button' class='tomap' data-go='${H.h.at}'>&#9664; Villa map</button>`); return; }
+  hud.querySelectorAll('[data-go]').forEach(b => b.classList.toggle('seen', seen.has(Number(b.dataset.go))));
+  const n = H.h.convs.filter(c => seen.has(c.s)).length;
+  hud.insertAdjacentHTML('beforeend', `<div class='mcount'>${n} / ${H.h.convs.length} watched</div>`);
+}
+// The island: every part of this episode at the place it happens; a pin takes you there.
+function isle(R, open) {
+  const I = R.root.querySelector('.isle');
+  if (!open) { I.classList.remove('open'); return; }
+  const night = (R.scr.steps[R.idx]?.scene?.plate || R.stage.ST?.plate || '').includes('night');
+  const MAP = CH_MARKS['map-day']?.m || [];
+  const at = {};
+  R.E.screens.forEach((s, si) => {
+    const sc = s.steps.find(st => st.scene && (st.scene.island || st.scene.room))?.scene;
+    const id = sc ? (sc.island || 'villa') : null;
+    if (id && !/previously/i.test(s.label)) (at[id] ||= []).push({ si, label: s.label });
+  });
+  const here = Object.keys(at).find(id => at[id].some(x => x.si === R.si));
+  I.style.backgroundImage = `url('assets/sets/ch/${night ? 'map-night' : 'map-day'}.webp')`;
+  I.innerHTML = `<div class='ihead'>Blue Lagoon<small>Episode ${esc(R.E.row.num)} · where it happens</small></div><button type='button' class='iclose' data-close>Close &times;</button>`
+    + Object.entries(at).map(([id, list]) => {
+      const m = MAP.find(x => x.kind === 'spot' && x.id === id); if (!m) return '';
+      return `<div class='ipin ${id === here ? 'here' : ''}' style='left:${m.u * 100}%;top:${m.v * 100}%'><i></i><div class='chips'>${list.map(x => `<span data-si='${x.si}' class='${x.si === R.si ? 'cur' : ''}'>${esc(x.label)}</span>`).join('')}</div></div>`;
+    }).join('');
+  I.classList.add('open');
+}
+
 function goTo(R, idx, forward) {
   const steps = R.scr.steps;
   idx = Math.max(0, Math.min(steps.length - 1, idx));
@@ -124,12 +203,20 @@ function goTo(R, idx, forward) {
   R.idx = idx;
   R.root.dataset.idx = String(idx);
   st.present(steps[idx], true, ctxOf(R));
+  paintHub(R);
   intel(R); chapters(R); script(R);
 }
+function progress(R) {
+  const n = R.scr.steps.length;
+  const b = R.root.querySelector('.pbar b'); if (b) b.style.width = `${n > 1 ? (R.idx / (n - 1)) * 100 : 100}%`;
+  const t = R.root.querySelector('.pbar .pt'); if (t) t.textContent = `${R.scr.label} · ${R.idx + 1} / ${n}`;
+  const sp = R.root.querySelector('.pbtn.speed'); if (sp) sp.textContent = `x${speed()}`;
+}
 function chapters(R) {
+  progress(R);
   const C = R.root.querySelector('.chapters');
   C.innerHTML = R.E.screens.map((s, i) => `<div class="chap ${i === R.si ? 'on' : ''}" data-i="${i}" title="${esc(s.label)}"><span>${esc(s.label)}</span><i><b style="width:${i < R.si ? 100 : i > R.si ? 0 : ((R.idx + 1) / s.steps.length * 100)}%"></b></i></div>`).join('');
-  C.querySelectorAll('.chap').forEach(c => { c.onclick = () => { const i = Number(c.dataset.i); if (i !== R.si && typeof window.vpGoTo === 'function') window.vpGoTo(vpIndexOf(R, i)); }; });
+  C.querySelectorAll('.chap').forEach(c => { c.onclick = e => { e.stopPropagation(); R.root.querySelector('.chx-chapmenu')?.classList.remove('open'); const i = Number(c.dataset.i); if (i !== R.si && typeof window.vpGoTo === 'function') window.vpGoTo(vpIndexOf(R, i)); }; });
 }
 // The VP screen holding chapter i of this episode (the pane's list is exactly these screens).
 function vpIndexOf(R, i) {
@@ -156,10 +243,19 @@ function script(R) {
 // ── controls ──────────────────────────────────────────────────────────
 const holdFor = s => Math.min(9000, 1700 + String(s?.say?.[1] || s?.tj || s?.conf?.[1] || s?.dir || '').length * 38)
   + (s?.rules ? 5200 : 0) + (s?.seg ? 1600 : 0) + (s?.open ? 4200 : 0) + (s?.slam ? 1400 : 0) + (s?.map ? 2400 : 0);
+// x1 or x2, for the whole episode (and the next ones): a per-viewer convenience
+const speed = () => { try { return Number(localStorage.getItem('ch-vp-speed')) === 2 ? 2 : 1; } catch { return 1; } };
+export function chxSpeed(el) {
+  try { localStorage.setItem('ch-vp-speed', speed() === 2 ? '1' : '2'); } catch { /* per viewer */ }
+  const R = runner(rootOf(el) || document.querySelector('.chx[data-ep]')); if (R) progress(R);
+}
+export function chxChapters(el) { rootOf(el)?.querySelector('.chx-chapmenu')?.classList.toggle('open'); }
 function stopAuto(R) { R.auto = false; clearTimeout(R.timer); R.root.querySelector('.chx-auto')?.classList.remove('on'); }
 export function chxNext(el) {
   const R = runner(rootOf(el) || document.querySelector('.chx[data-ep]')); if (!R) return;
-  if (R.idx >= R.scr.steps.length - 1) {
+  const hn = R.idx >= 0 ? hubNext(R) : null;
+  if (hn != null && hn >= 0) { goTo(R, hn, hn === R.idx + 1); return; }
+  if (hn === -1 || R.idx >= R.scr.steps.length - 1) {
     const wasAuto = R.auto; stopAuto(R);
     if (typeof window.vpNext === 'function') {
       window.vpNext();
@@ -173,6 +269,8 @@ export function chxBack(el) {
   const R = runner(rootOf(el) || document.querySelector('.chx[data-ep]')); if (!R) return;
   stopAuto(R);
   if (R.idx <= 0) { if (typeof window.vpPrev === 'function') window.vpPrev(); return; }
+  const H = hubAt(R, R.idx);
+  if (H?.conv && R.idx === H.conv.s) { goTo(R, H.h.at, false); return; }
   goTo(R, R.idx - 1, false);
 }
 export function chxRestart(el) { const R = runner(rootOf(el)); if (!R) return; stopAuto(R); goTo(R, 0, false); }
@@ -180,8 +278,8 @@ export function chxAuto(el) {
   const R = runner(rootOf(el) || document.querySelector('.chx[data-ep]')); if (!R) return;
   R.auto = !R.auto;
   R.root.querySelector('.chx-auto')?.classList.toggle('on', R.auto);
-  const tick = () => { if (!R.auto) return; chxNext(R.root); if (R.auto) R.timer = setTimeout(tick, holdFor(R.scr.steps[R.idx])); };
-  if (R.auto) R.timer = setTimeout(tick, holdFor(R.scr.steps[R.idx])); else clearTimeout(R.timer);
+  const tick = () => { if (!R.auto) return; chxNext(R.root); if (R.auto) R.timer = setTimeout(tick, holdFor(R.scr.steps[R.idx]) / speed()); };
+  if (R.auto) R.timer = setTimeout(tick, holdFor(R.scr.steps[R.idx]) / speed()); else clearTimeout(R.timer);
 }
 export function chxIntel(el) { const R = runner(rootOf(el) || document.querySelector('.chx[data-ep]')); if (!R) return; R.intelOpen = !R.intelOpen; intel(R); }
 export function chxTv() { if (typeof window.tdxTv === 'function') window.tdxTv(); }
@@ -203,7 +301,7 @@ export function chxSwitchViewer(which) {
 /** The readout's way back to the stepped viewer. */
 export const CHX_SWITCH = `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" onclick="chxSwitchViewer('stepped')" style="border:1px solid #ff6a1a;background:#1a1716;color:#ff6a1a;padding:7px 12px;font:700 12px 'Barlow Condensed',system-ui,sans-serif;letter-spacing:1px;text-transform:uppercase;cursor:pointer">&#9654; Stepped viewer</button></div>`;
 
-if (typeof window !== 'undefined') Object.assign(window, { chxNext, chxBack, chxRestart, chxAuto, chxIntel, chxTv, chxSwitchViewer });
+if (typeof window !== 'undefined') Object.assign(window, { chxNext, chxBack, chxRestart, chxAuto, chxIntel, chxTv, chxSwitchViewer, chxSpeed, chxChapters });
 if (typeof document !== 'undefined') {
   // a screen opens on its first step; leaving it stops its Auto
   document.addEventListener('vp:screen', () => {
@@ -220,5 +318,6 @@ if (typeof document !== 'undefined') {
     if (e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); e.stopImmediatePropagation(); chxNext(root); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); e.stopImmediatePropagation(); chxBack(root); }
     else if (e.key === 'i' || e.key === 'I') chxIntel(root);
+    else if (e.key === 'p' || e.key === 'P') chxAuto(root);
   }, true);
 }

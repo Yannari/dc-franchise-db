@@ -258,7 +258,7 @@ export class ChxStage {
     const pinId = P.island || (P.room ? 'villa' : null);
     if (pinId && !ST.map && !P.conf) {
       const pin = marks('map-day').find(m => m.kind === 'spot' && m.id === pinId);
-      h += `<div class='mini'><div class='lbl'><span>Blue Lagoon</span><b>&#9679;</b></div><div class='m' style="background-image:url('${PLATE('map-day')}.webp')">${pin ? `<i class='pin' style='left:${pin.u * 100}%;top:${pin.v * 100}%'></i>` : ''}</div></div>`;
+      h += `<div class='mini' data-isle title='Open the island map'><div class='lbl'><span>Blue Lagoon</span><b>&#9679;</b></div><div class='m' style="background-image:url('${PLATE('map-day')}.webp')">${pin ? `<i class='pin' style='left:${pin.u * 100}%;top:${pin.v * 100}%'></i>` : ''}</div></div>`;
     }
     h += `<button type='button' class='ibtn2 ${ctx.freshKnow && !ctx.intelOpen ? 'new' : ''}' data-intel>INTEL <i></i></button>`;
     if (ST.voters) {
@@ -417,7 +417,7 @@ function mapHtml(m, plate) {
   let h = '';
   for (const r of m.rooms) {
     const at = marks(plate).find(x => x.kind === 'spot' && x.id === r.at); if (!at) continue;
-    h += `<div class='mpin' style='left:${at.u * 100}%;top:${at.v * 100}%'><div class='bub ${r.star ? 'star' : ''}' data-go='${r.go}'>${esc(r.bub)}${r.more ? `<em>+${r.more}</em>` : ''}</div>`
+    h += `<div class='mpin' style='left:${at.u * 100}%;top:${at.v * 100}%'><div class='bubs'>${r.bubs.map(b => `<div class='bub ${b.star ? 'star' : ''}' data-go='${b.go}'>${esc(b.bub)}</div>`).join('')}</div>`
       + `<div class='faces'>${r.who.map(n => `<img src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div></div>`;
   }
   if (m.later.length) h += `<div class='later'>${m.later.map(l => `<div class='bub ${l.star ? 'star' : ''}' data-go='${l.go}'>${esc(l.bub)}</div>`).join('')}</div>`;

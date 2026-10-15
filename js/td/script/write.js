@@ -276,7 +276,11 @@ export function scriptEventParts(event, scenes, ctx = {}) {
   event.lines = parts.flatMap((p, i) => {
     const prev = parts[i - 1], a = p.sc.who?.a, b = p.sc.who?.b;
     const moves = i > 0 && PITCH.test(p.sc.kind || '') && PITCH.test(prev.sc.kind || '') && a && b && prev.sc.who?.b !== b;
-    return moves ? [{ kind: 'beat', by: null, text: `${a} moves on to ${b}.` }, ...p.w.lines] : p.w.lines;
+    if (moves) return [{ kind: 'beat', by: null, text: `${a} moves on to ${b}.` }, ...p.w.lines];
+    // ...and the word reaching the target is somebody else's conversation, later (read 2026-10-15: Courtney pitching Geoff,
+    // then at once "Gwen: Courtney asked me to vote you out" to Izzy, with nobody having gone anywhere)
+    if (i > 0 && /^pitch\.warn$/.test(p.sc.kind || '') && a && b && p.w.lines[0]?.kind !== 'beat') return [{ kind: 'beat', by: null, text: `Later, ${a} finds ${b}.` }, ...p.w.lines];
+    return p.w.lines;
   });
   event.text = transcript(event.lines);
   // what this moment did to the relationships of the people in it: the bond changes since the

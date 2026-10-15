@@ -314,16 +314,31 @@ export function kitClashScene(a, b, facts, ctx) {
   if (w) onCommit(w, () => def.mark());
   return w;
 }
-const OPEN = ["You okay? You've been quiet all day.", "Can I ask you something real?", "You don't have to be on all the time, you know. Not with me.", "Hey. What's going on with you? For real.", "You looked far away just now. Where'd you go?", "Can we just talk? No game stuff.", "You've been off all day. Want to walk?", "Sit with me for a minute. Everybody else is asleep.", "I feel like I don't actually know you yet. Not the real you.", "Is this game getting to you? Because it's getting to me."];
-const HEARD = ["Thank you for telling me. Really.", "I had no idea. I'm glad you told me.", "That stays between us. I promise.", "That's a lot to carry around. I'm sorry.", "I'm really glad it was me you told.", "Hey. You're not on your own with that out here.", "I'd never have guessed that. Not in a million years.", "That explains a lot about you, in a good way.", "I'm not going anywhere. You can say anything you want to me.", "Thank you for trusting me with that. I won't make you regret it."];
-const CLOSE = ["Okay. Don't make it weird.", "Okay. That's enough feelings for one day.", "I don't usually say that stuff out loud.", "Anyway. Don't tell anybody I got soft.", "Thanks. I mean it. Now, back to the game.", "Okay, I'm done. That was a lot.", "Okay, I'm going to go splash some water on my face now.", "Can we go back to talking about nothing? I'm good at nothing.", "Anyway. I would like to hear about you now.", "If you make a big thing of this, I am changing the subject."];
 const DEEP_CONF = ["{a} told me something real today. I'm not going to use it. I just want {a.obj} to know I heard it.", "Everybody here sees one side of {a}. Today I got to see the other one.", "I came here to play a game. I didn't expect to actually care about anybody. Then {a} said that.", "You spend so long out here working out who to trust. Then somebody tells you something like that, and you just know.", "I'll remember what {a} told me today long after I forget who won this season.", "I used to think {a} was all front. Now I know what's behind it, and I like {a} a lot more.", "{a} doesn't really open up to anybody, but today {a} opened up to me, and I'm not taking that lightly.", "It's easy to forget there are real people under all this. {a} reminded me today."];
+const DEEP_FRAMES = [
+  { before: [{ by: 'b', say: "You've been quiet all day. You okay?" }, { by: 'a', say: "Yeah. Just thinking." }, { by: 'b', say: "About what? You can tell me." }],
+    after: [{ by: 'b', say: "I had no idea. Thank you for telling me." }, { by: 'a', say: "Don't make it weird, okay?" }, { by: 'b', say: "Too late. It's a little bit weird. In a nice way." }] },
+  { before: [{ by: 'b', say: "Can I ask you something real? You don't have to answer." }, { by: 'a', say: "...Go on." }, { by: 'b', say: "What's the thing nobody here knows about you?" }],
+    after: [{ by: 'b', say: "That stays between us. I promise." }, { by: 'a', say: "Thanks. I don't say that stuff out loud very often." }] },
+  { before: [{ by: 'b', say: "You looked really far away just now. Where'd you go?" }, { by: 'a', say: "Somewhere I don't usually talk about." }, { by: 'b', say: "You can talk about it with me, if you want." }],
+    after: [{ by: 'b', say: "I'm really glad it was me you told." }, { by: 'a', say: "Me too, weirdly. Okay. That's enough of that for one day." }] },
+  { before: [{ by: 'b', say: "Can we just talk for a minute? No game stuff." }, { by: 'a', say: "No game stuff. Okay." }, { beat: "{a} is quiet for a while before saying anything." }],
+    after: [{ by: 'b', say: "I'd never have guessed that. Not in a million years." }, { by: 'a', say: "Most people wouldn't. That's kind of the point." }] },
+  { before: [{ by: 'b', say: "I feel like I don't actually know you yet. The real you, I mean." }], lead: "The real me? Okay. ",
+    after: [{ by: 'b', say: "That explains a lot about you. In a good way." }, { by: 'a', say: "Anyway. Your turn next time. I mean it." }] },
+];
 /** a, with a friend, says the true thing under the bit. */
 export function kitDeepScene(a, b, facts, ctx) {
   const deep = KITS[a] && take(a, 'deep');
   if (!deep) return null;
+  // one whole conversation: b opens the door, a decides to walk through it, says the true thing, b answers what was
+  // said, a closes it. (Picked as four separate lines, it read like four people, the user, 2026-10-14: "Sit with me for a
+  // minute. Everybody else is asleep." at 3 PM, a grandfather's adventure, then "I'm not going anywhere. You can say
+  // anything you want to me." after he already had, then "That's enough feelings for one day.") The replies fit any true
+  // thing, a sad one or a proud one; nothing names a time of day.
+  const frame = pickOf(DEEP_FRAMES, a, b);
   const entry = { id: `kit:${a}:${b}:deep`, place: 'secret', turns: [
-    { by: 'b', say: pickOf(OPEN, b, a) }, { by: 'a', say: deep.line }, { by: 'b', say: pickOf(HEARD, a, b) }, { by: 'a', say: pickOf(CLOSE, a) },
+    ...frame.before, { by: 'a', say: (frame.lead || '') + deep.line }, ...frame.after,
     { by: 'b', conf: pickOf(DEEP_CONF, b, a) },
   ] };
   const w = writeKitScene(entry, { a, b }, facts, ctx);
@@ -373,6 +388,16 @@ const CALL_ARRIVE = [
   ["Are you talking about me?", "Maybe a little. It was nice stuff, I swear."],
   ["Okay, what's going on? You're both being weird.", "We're not being weird. You're being weird."],
 ];
+// How a callback ends (the user, 2026-10-14, on "(Lake wanders over.) Why did you both just stop talking?": "this
+// structure is too common, learn to use kits a different way"). In turn: the walk-up and its question; the person
+// walking up already doing the thing they were just being teased about (their own next bit, so the joke lands on them,
+// not on a line about them); or no walk-up, and the one who started it says what the bit means for the game.
+const CALL_GAME = [
+  "Everybody jokes about {c} and {thing}. Nobody is scared of {c}. If I were {c}, I'd keep it exactly like that.",
+  "Laughing about {c} is the one thing this whole camp agrees on. That's the closest we've come to an alliance.",
+  "Laugh all you want, but while {c} is talking about {thing}, nobody is asking {c} about the vote. That's either really smart or really lucky.",
+  "Nobody votes out the person who makes them laugh. I'm starting to think {c} knows that.",
+];
 /** c and d joke about `about`'s thing, once it has aired as a bit at least once; then `about` turns up. */
 export function kitCallbackScene(c, d, about, facts, ctx) {
   const k = KITS[about];
@@ -391,17 +416,69 @@ export function kitCallbackScene(c, d, about, facts, ctx) {
   const callFacts = { ...(kitVenue ? { venue: kitVenue } : {}), ...facts };
   // the first pair the writer can stage here (a pair that names a time of day doesn't air at the wrong one)
   let w = null, pick = null;
+  const endKind = ['arrive', 'proof', 'game'][(n + start) % 3];
+  const proof = endKind === 'proof' ? take(about, 'bit') : null;
+  const endTurns = proof ? [{ beat: '{c} walks up, already halfway into it.', comes: 'c' }, { by: 'c', say: proof.line }, { beat: '{a} and {b} look at each other, and neither of them says a word.' }]
+    : endKind === 'game' ? [{ by: 'a', conf: pickOf(CALL_GAME, c, about).split('{thing}').join(k.thing) }]
+    : [{ beat: '{c} wanders over.', comes: 'c' }, { by: 'c', say: q }, { by: 'a', say: r }];
   for (const i of picks) {
     const entry = { id: `kit:${about}:call:${n}`, place: 'aside', turns: [
       ...CALL_PAIRS[i].map((t, j) => ({ by: j % 2 ? 'b' : 'a', say: t.split('{thing}').join(k.thing) })),
-      { beat: '{c} wanders over.', comes: 'c' }, { by: 'c', say: q }, { by: 'a', say: r },
+      ...endTurns,
     ] };
     w = (() => { const key = `kit.${entry.id.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`; STORY_POOLS[`${key}.any`] = [entry];
       try { return writeStory(key, 'any', { a: c, b: d, c: about }, STORE, { ...callFacts, third: true }, { ...ctx, unique: false }); } finally { delete STORY_POOLS[`${key}.any`]; } })();
     if (w) { pick = i; break; }
   }
   // (the episode holds the pair at once, like a draft; the person's own record moves only if the scene airs, commit.js)
-  if (w) { book.used.push(pick); onCommit(w, () => u.push(`call:${n}`, `pair:${pick}`)); }
+  if (w) { book.used.push(pick); onCommit(w, () => { u.push(`call:${n}`, `pair:${pick}`); proof?.mark(); }); w.endKind = proof ? 'proof' : endKind === 'game' ? 'game' : 'arrive'; }
+  return w;
+}
+
+// ── the angle: somebody who schemes asks about b's thing to get b's vote ──
+// A kit used in the game instead of beside it: Disventure Camp's schemers do this to the oddballs (ask about the hobby
+// nobody asks about, listen, collect the vote). b lights up, says one of their own bits, and the two confessionals
+// say what each of them got out of it. b warms to a (fx in director.js); a is somebody the franchise lets scheme.
+const ANGLE_ASK = [
+  "Okay, I've been meaning to ask. What's the deal with {thing}?",
+  "Can I ask you about {thing}? Everybody jokes about it, and nobody's actually asked you.",
+  "So. {thing}. Tell me about it, properly, I mean. I want to know.",
+];
+const ANGLE_SURE = [["Wait, you actually want to know?", "I actually want to know."], ["Are you making fun of me?", "No! I'm asking. Go."], ["Nobody ever asks about that.", "Well, I'm asking."]];
+const ANGLE_CONF_A = [
+  "I don't care about {thing}. I care about {b}'s vote, and I think I just got a lot closer to it.",
+  "Twenty minutes of {thing}. Worth every second. {b} is going to remember who actually listened.",
+  "Everybody else laughs at {b}. I listened. Guess who {b} trusts now.",
+];
+const ANGLE_CONF_B = [
+  "Nobody out here has ever asked me about {thing}. {a} did. I'm not going to forget that.",
+  "{a} actually listened. Like, really listened. I didn't expect that from {a}.",
+  "I talked about {thing} for ages, and {a} didn't roll {a.posAdj} eyes once. I think I have a new friend.",
+];
+// a kit's thing is how other people put it ("his job as a personal assistant"): said to b, it's b's own ("your job")
+const toYou = t => t.replace(/\b(his|her|their)\b/g, 'your').replace(/\b(himself|herself|themselves)\b/g, 'yourself');
+const toMe = t => t.replace(/\b(his|her|their)\b/g, 'my').replace(/\b(himself|herself|themselves)\b/g, 'myself');
+// (not a thing you can ask somebody to tell you about: "Tell me about being beautiful")
+const ANGLE_SKIP = /beautiful|old enough/;
+/** a (a schemer) gets b talking about b's thing, for b's vote. */
+export function kitAngleScene(a, b, facts, ctx) {
+  const k = KITS[b];
+  if (!k?.thing || CALL_TRAIT.test(k.thing) || ANGLE_SKIP.test(k.thing)) return null;
+  const [sure, go] = pickOf(ANGLE_SURE, a, b);
+  // (asked to b's face, "your"; told to the camera, as everybody says it)
+  const Y = s => s.split('{thing}').join(toYou(k.thing)), T = s => s.split('{thing}').join(k.thing), M = s => s.split('{thing}').join(toMe(k.thing));
+  // (no bit of b's in the middle: a bit is its own joke, and read 2026-10-14 it landed as "Great. Sunshine. My
+  // favourite." after "lights up and talks for a long time")
+  const entry = { id: `kit:${b}:angle:${a}`, place: 'aside', turns: [
+    { by: 'a', say: Y(pickOf(ANGLE_ASK, a, b)) }, { by: 'b', say: sure }, { by: 'a', say: go },
+    { beat: '{b} lights up and talks for a long time. {a} nods in all the right places.' },
+    { by: 'a', say: "Huh. That's actually really interesting." },
+    { by: 'b', say: "You're the first person out here who's said that." },
+    { by: 'a', conf: T(pickOf(ANGLE_CONF_A, a, b)) },
+    { by: 'b', conf: M(pickOf(ANGLE_CONF_B, b, a)) },
+  ] };
+  const w = writeKitScene(entry, { a, b }, facts, ctx);
+  if (w) w.who = { a, b };
   return w;
 }
 

@@ -49,7 +49,7 @@ import { writePreviously } from './previously.js';
 import { chalMoments } from './chalmoments.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf, kindOf, placeById } from './places.js';
-import { kitBitScene, kitDigScene, kitRomanceScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, hasKit, kitOf, sharedGround, setKitVenue } from './kits.js';
+import { kitBitScene, kitDigScene, kitRomanceScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, kitAngleScene, hasKit, kitOf, sharedGround, setKitVenue } from './kits.js';
 import { runArcs, campGame, leftThisEp } from './arcs.js';
 import { coupleScenes } from './couple.js';
 
@@ -2523,6 +2523,34 @@ export function airTdEpisode(ep) {
             if (!w) continue;
             kitItem('kit.call', 'callback', [c, d, about], w, { ...who, c: about }, `${about}'s running bit, as the camp sees it.`, [[c, d, 0.5]]);
             break;
+          }
+          // the angle (kits.js kitAngleScene): somebody who schemes gets a kitted person talking about their thing, for
+          // their vote. Every third day, one a camp, a pair once a season; the schemer is somebody the franchise lets
+          // scheme (villains; neutrals with strategic 6+ and loyalty 4-), the mark isn't already in an alliance with them
+          if (ep.num % 3 === 1) {
+            const ARCH = x => (players.find(p => p.name === x) || {}).archetype || '';
+            const st = x => { try { return pStatsOf(x) || {}; } catch { return {}; } };
+            const NICE_A = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+            const schemes = x => ['villain', 'mastermind', 'schemer'].includes(ARCH(x)) || (!NICE_A.has(ARCH(x)) && (st(x).strategic ?? 5) >= 6 && (st(x).loyalty ?? 5) <= 4);
+            const allied = (x, y) => (gs.namedAlliances || []).some(al => al.active !== false && al.members.includes(x) && al.members.includes(y));
+            const angled = ((gs.tdStory ||= {}).kitAngle ||= []);
+            const cands = [];
+            for (const a of members.filter(schemes)) for (const b of kitted) {
+              // (one a schemer a season: read 2026-10-14, Heather's "Everybody else laughs at Gwen. I listened." twice)
+              // (and one a mark: "Nobody out here has ever asked me" is only true once)
+              if (a === b || angled.some(x => x.startsWith(`${a}|`) || x.endsWith(`|${b}`)) || allied(a, b)) continue;
+              const bd = getBond(a, b);
+              if (bd < -1 || bd > 3) continue;
+              cands.push([a, b, Math.abs(bd - 1)]);
+            }
+            cands.sort((x, y) => x[2] - y[2] || x[0].localeCompare(y[0]) || x[1].localeCompare(y[1]));
+            for (const [a, b] of cands) {
+              const who = { a, b };
+              const w = kitAngleScene(a, b, factsFor({ who, data: {} }, { ep: ep.num, phase }), { ep: ep.num, camp, phase, n: n++, place: 'aside', draft: true, avoid: ctxAvoid(phase === 'pre' ? 'afternoon' : 'evening') });
+              if (!w) continue;
+              kitItem('kit.angle', 'angle', [a, b], w, who, `${a} is working on ${b}, through the thing nobody else asks ${b} about.`, [[b, a, 1]], () => { angled.push(`${a}|${b}`); });
+              break;
+            }
           }
         } else {
           // a friend hears the true thing under the bit (every other day)

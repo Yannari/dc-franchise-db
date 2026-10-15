@@ -1107,7 +1107,9 @@ export function generateRILifeEvents(ep) {
         }
 
         // ── ALLIANCE PLOTTING ──
-        if (sA.strategic >= 6 && sB.strategic >= 6) {
+        // (three or more out here: two people on the island duel each other tomorrow and one of them is gone for good, so
+        // "whoever goes back in has a partner waiting" was a pact with nobody; read 2026-10-15, Ara and Sami)
+        if (sA.strategic >= 6 && sB.strategic >= 6 && riList.length >= 3) {
           socialPool.push(
             { type: 'alliance-plot', text: `${a} and ${b} whisper by the well. If one of them makes it back... they'd have numbers. A new alliance forms in the ashes.`, player: a, player2: b, bondDelta: 1.0 },
             { type: 'alliance-plot', text: `"When we get back in," ${a} says, "we go after the same target. Agreed?" ${b} nods. Plans bloom in exile.`, player: a, player2: b, bondDelta: 1.0 },

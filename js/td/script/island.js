@@ -129,13 +129,21 @@ export function scriptIsland(evt, ctx) {
   if (base.startsWith('group.')) kind = `isle.${base}`;
   // somebody who only got here tonight has no time out here to talk about (read 2026-10-14: Mike, voted out that night,
   // "The first week out here I felt sorry for myself"): a line about a long stay is not theirs to say
+  // (...nor somebody who got here the episode before: "That's a week without missing one" a day after Sami arrived, read
+  // 2026-10-15)
   const roles = { a, b, c };
-  const newHere = new Set([a, b, c].filter(n => n && (ctx.arrivals || []).includes(n)));
-  let drop = newHere.size ? e => (e.turns || []).some(t => {
+  const firstEp = n => Math.min(ctx.ep, ...(gs.riLifeEvents?.[n] || []).map(e => e.ep).filter(x => x < ctx.ep));
+  const newHere = new Set([a, b, c].filter(n => n && ((ctx.arrivals || []).includes(n) || firstEp(n) >= ctx.ep - 1)));
+  const longStay = newHere.size ? e => (e.turns || []).some(t => {
     const tx = t.say || t.conf || t.beat || '';
     if (!STAY.test(tx)) return false;
     return t.by ? newHere.has(roles[t.by]) : Object.entries(roles).some(([r, n]) => n && newHere.has(n) && tx.includes(`{${r}}`));
   }) : null;
+  // somebody alone on the island has nobody to step on their foot ("Somebody steps on Ara's foot", "long after everyone
+  // else has stopped", with Ara the only one out there; read 2026-10-15): the set-up lines that need company
+  const alone = (ctx.residents || []).length <= 1;
+  const company = alone ? e => (e.turns || []).some(t => t.beat && /\b(somebody|someone|everyone else|everybody else|the others|anyone else)\b/i.test(t.beat)) : null;
+  let drop = longStay || company ? e => !!(longStay && longStay(e)) || !!(company && company(e)) : null;
   // a long stay on the island runs a pool dry for the people in it: once everybody here has said every version of this
   // kind of scene, another kind of scene between them, rather than the same lines again (read: Geoff, nine episodes on
   // Redemption Island, said the same comedy exchange twice)

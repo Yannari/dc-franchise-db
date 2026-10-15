@@ -12,7 +12,7 @@
 // Switch back to the old screens: localStorage 'bb-classic-vp' = '1'.
 import { bbWeekSteps, REPLACED, ANCHOR_OF, houseLifeMode } from './steps.js';
 import { voiceTick, voiceSay, voicesOn, bbxVoices } from './voices.js';
-import { bbVoiceLine, bbVoiceStop, bbVoicedLines, bbCanVoice } from './voicing.js';
+import { bbVoiceLine, bbVoiceStop, bbVoicedLines } from './voicing.js';
 import { stageHtml, camStyle, esc, escT, col, img, eyeSvg, SEASON_DIR } from './stage.js';
 import { BBX_CSS, BBX_FONTS } from './style.js';
 import { BBX_SUITE_CSS } from './style-suite.js';
@@ -91,9 +91,79 @@ const SHELL_CSS = `
 .bbx .bbx-why .bbx-wl:first-of-type{color:#fff;font-weight:600}
 .bbx .bbx-why .bbx-wl:last-child{border-bottom:0}
 #visual-player.bbx-tv .bbx .bbx-under{display:none}
+
+/* ── the player (the user, 2026-10-15: "a media player for the screen we're in... auto mode with speed... don't
+   remove the important buttons like Intel") ── */
+.bbx .bbx-screen{position:relative}
+.bbx .bbx-bar{display:flex;align-items:center;gap:6px;margin:8px 0 0;padding:6px 8px;border-radius:10px;background:#0b101c;border:1px solid var(--bbx-line)}
+.bbx .bbx-bar button{flex:none;border:0;background:none;color:#dbe6f7;font:600 12px 'Chakra Petch',monospace;letter-spacing:1px;padding:6px 8px;border-radius:7px;cursor:pointer;line-height:1}
+.bbx .bbx-bar button:hover{background:rgba(255,255,255,.08)}
+.bbx .bbx-bar button.on{color:#22e1ff}
+.bbx .bbx-bar .bbx-play{width:38px;height:32px;font-size:15px;background:#22e1ff;color:#001018}
+.bbx .bbx-bar .bbx-play:hover{background:#5ee9ff}
+.bbx .bbx-bar .bbx-ico{font-size:18px;min-width:30px}
+.bbx .bbx-track{position:relative;flex:1;min-width:80px;height:22px;display:flex;align-items:center}
+.bbx .bbx-seek{width:100%;margin:0;accent-color:#22e1ff;cursor:pointer;position:relative;z-index:1;background:transparent}
+.bbx .bbx-ticks{position:absolute;left:7px;right:7px;top:50%;height:10px;transform:translateY(-50%);pointer-events:none}
+.bbx .bbx-ticks i{position:absolute;top:0;width:2px;height:10px;margin-left:-1px;background:rgba(255,209,102,.75);border-radius:1px}
+.bbx .bbx-bar .bbx-count{font:600 11px 'Chakra Petch',monospace;color:#9fb0c6;min-width:64px;text-align:center}
+.bbx .bbx-bar .bbx-voices:not(.on){opacity:.5;text-decoration:line-through}
+.bbx .bbx-bar .bbi-btn.on{color:#22e1ff}
+#visual-player.bbx-tv .bbx .bbx-screen{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;align-items:center;justify-content:center}
+#visual-player.bbx-tv .bbx .bbx-stage{width:min(100vw,calc(100vh * 16 / 9));border-radius:0;box-shadow:none}
+#visual-player.bbx-tv .bbx .bbx-bar{position:absolute;left:0;right:0;bottom:0;margin:0;border:0;border-radius:0;padding:34px 22px 16px;background:linear-gradient(transparent,rgba(0,0,0,.88));transition:opacity .35s}
+#visual-player.bbx-tv .bbx .bbi{top:14px;right:14px;z-index:5}
+#visual-player.bbx-tv.bbx-idle .bbx .bbx-bar{opacity:0;pointer-events:none}
+#visual-player.bbx-tv.bbx-idle .bbx .bbx-screen{cursor:none}
+#visual-player.bbx-tv.bbx-idle .bbx .bbx-stage{cursor:none}
 `;
 
 const mini = n => `<span class="bbx-mini" style="--c:${col(n)}">${img(n)}</span>`;
+
+// ── the player bar ──
+// Where each scene of the screen starts: a House Life screen's conversations, else its scene markers.
+function sceneStarts(S) {
+  const steps = S?.steps || [];
+  let at = [];
+  try { at = (S.kind === 'houselife' || S.kind === 'movein') ? conversationsOf(S).map(c => c.from) : []; } catch { at = []; }
+  if (!at.length) at = steps.map((st, i) => (st.scene ? i : -1)).filter(i => i > 0);
+  return [...new Set(at)].filter(i => i >= 0 && i < steps.length).sort((a, b) => a - b);
+}
+const SPEEDS = [0.75, 1, 1.5, 2];
+const speedOf = () => { try { const v = Number(localStorage.getItem('bb-speed')); return SPEEDS.includes(v) ? v : 1; } catch { return 1; } };
+const speedLabel = v => `${v}×`;
+// a press on the bar never takes the keyboard's focus (Space must stay play/pause, not "press that button again")
+function barHtml(uid, S, R) {
+  const n = S.steps.length;
+  const ticks = sceneStarts(S).map(i => `<i style="left:${n > 1 ? (i / (n - 1)) * 100 : 0}%"></i>`).join('');
+  const b = (cls, act, title, label, id = '') => `<button type="button" class="${cls}"${id ? ` id="${id}"` : ''} onclick="${act}" title="${title}">${label}</button>`;
+  return `<div class="bbx-bar" onclick="event.stopPropagation()" onmousedown="event.preventDefault()">
+    ${b('bbx-ico', `bbxScene('${uid}',-1)`, 'Previous scene (Shift+←)', '⏮')}
+    ${b('bbx-ico', `bbxBack('${uid}')`, 'Back one line (←)', '◂')}
+    ${b('bbx-play', `bbxAuto('${uid}')`, 'Play / pause (Space)', '▶', `bbx-auto-${uid}`)}
+    ${b('bbx-ico', `bbxNext('${uid}')`, 'Next line (→)', '▸')}
+    ${b('bbx-ico', `bbxScene('${uid}',1)`, 'Next scene (Shift+→)', '⏭')}
+    <div class="bbx-track"><input type="range" class="bbx-seek" id="bbx-seek-${uid}" min="0" max="${n}" value="0" step="1" title="Drag to any line of this screen" oninput="bbxJump('${uid}', this.value)"><div class="bbx-ticks">${ticks}</div></div>
+    <span class="bbx-count" id="bbx-count-${uid}">0 / ${n}</span>
+    ${b('', `bbxSpeed('${uid}')`, 'Auto speed', speedLabel(R?.speed || speedOf()), `bbx-speed-${uid}`)}
+    ${b(`bbx-voices ${voicesOn() ? 'on' : ''}`, 'bbxVoices()', "The houseguests' voices, and the room sound when there is no music", '🔊 Voices')}
+    ${b('bbi-btn', `bbxIntel('${uid}')`, "What the house doesn't know: bonds, alliances, deals, and what they're thinking (i)", 'Intel', `bbi-btn-${uid}`)}
+    ${R?.map ? b('', `bbxMapExit('${uid}')`, 'The house map (M)', 'Map') : ''}
+    ${b('bbx-ico', 'bbxTv()', 'Fullscreen TV (F)', '⛶')}
+  </div>`;
+}
+// the bar follows the step: the play button, the seek bar, the count
+function barSync(uid, R) {
+  if (typeof document === 'undefined' || !R) return;
+  const S = R.screens[R.si];
+  const play = document.getElementById(`bbx-auto-${uid}`);
+  if (play) { play.textContent = R.auto ? '❚❚' : '▶'; play.classList.toggle('on', !!R.auto); }
+  const seek = document.getElementById(`bbx-seek-${uid}`);
+  if (seek) seek.value = String(Math.max(0, R.idx + 1));
+  const sp = document.getElementById(`bbx-speed-${uid}`);
+  if (sp) sp.textContent = speedLabel(R.speed || 1);
+  void S;
+}
 
 function scriptHtml(S) {
   return S.steps.map((st, i) => {
@@ -215,7 +285,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
       return;
     }
     const uid = `bbx${esc(row.num)}-${si}`;
-    reg()[uid] = { screens: steps, si, idx: -1, o, auto: false, timer: null, map: newMap(S), num: row.num, tab: 'heads', who: null, lastL: null };
+    reg()[uid] = { uid, screens: steps, si, idx: -1, o, auto: false, timer: null, map: newMap(S), num: row.num, tab: 'heads', who: null, lastL: null, speed: speedOf() };
     const R0 = reg()[uid];
     // which of the week's lines have a voice actor's clip (vp-bb-ep/voicing.js), asked before the first line
     if (si === 0) bbVoicedLines(row.num);
@@ -229,23 +299,18 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
       id: feed[0]?.id || ids[si],
       label: S.label || S.title,
       html: `<div class="bbx" data-uid="${uid}" data-ambient="${bedFor(S)}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${BBX_PX_CSS}${BBX_DUO_CSS}${BBX_CAMP_CSS}${BBX_WILD_CSS}${BBX_SPOWER_CSS}${BBX_CAPSULE_CSS}${BBX_INTERRO_CSS}${BBX_WHACK_CSS}${HM_CSS}${SHELL_CSS}${INTEL_CSS}${BBX_COMP_CSS}</style>
+  <div class="bbx-screen" id="bbx-scr-${uid}">
   <div class="bbx-stage stage" id="bbx-st-${uid}" onclick="bbxNext('${uid}')" title="Click for the next line">${R0.map ? mapHtml(uid, R0) : stageHtml(steps, si, -1, false, o).html}</div>
   <div class="bbi" id="bbi-${uid}" onclick="event.stopPropagation();bbxIntelClick('${uid}', event)"></div>
+  ${barHtml(uid, S, R0)}
+  </div>
   <img alt="" hidden src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" onload="bbxLive('${uid}')">
   <div class="bbx-ctrl">
-    <button type="button" class="bbx-btn" onclick="bbxBack('${uid}')">◀ Back</button>
-    <button type="button" class="bbx-btn main" onclick="bbxNext('${uid}')">Next ▶</button>
     <button type="button" class="bbx-btn" onclick="bbxAll('${uid}')">Reveal all</button>
     <button type="button" class="bbx-btn" onclick="bbxReset('${uid}')">Restart</button>
-    <button type="button" class="bbx-btn" id="bbx-auto-${uid}" onclick="bbxAuto('${uid}')">Auto</button>
-    <button type="button" class="bbx-btn bbi-btn" id="bbi-btn-${uid}" onclick="bbxIntel('${uid}')" title="What the house doesn't know: bonds, alliances, deals, and what they're thinking (i)">Intel</button>
-    <button type="button" class="bbx-btn" onclick="bbxTv()">TV mode</button>
-    <button type="button" class="bbx-btn bbx-voices ${voicesOn() ? 'on' : ''}" onclick="bbxVoices()" title="The houseguests' voices, and the room sound when there is no music">Voices</button>
-    ${bbCanVoice() ? `<button type="button" class="bbx-btn" onclick="bbVoiceSelected(${Number(row.num) || 0})" title="Voice this week's lines on Inworld, in each houseguest's own voice (part 6)">🎙 Voice week ${Number(row.num) || ''}</button>` : ''}
     <button type="button" class="bbx-btn" onclick="bbxSwitchViewer('classic')" title="Back to the classic screens">Classic</button>
     ${S.kind === 'houselife' ? `<button type="button" class="bbx-btn ${mapOn() ? 'on' : ''}" onclick="bbxMapMode()" title="House Life as the house map you explore, or as one segment in story order">${mapOn() ? 'Linear view' : 'House map'}</button>` : ''}
     <button type="button" class="bbx-btn" onclick="bbxHouseLife()" title="House life as one segment per stretch, or one scene per screen">${houseLifeMode() === 'scenes' ? 'House Life view' : 'Scenes view'}</button>
-    <span class="bbx-count" id="bbx-count-${uid}">0 / ${S.steps.length}</span>
     <input class="bbx-jump" type="number" min="1" max="${S.steps.length}" placeholder="Go to" title="Jump to a step: type its number and press Enter" onkeydown="if(event.key==='Enter')bbxJump('${uid}', this.value)">
   </div>
   <div class="bbx-under"><div class="bbx-script" id="bbx-script-${uid}">${scriptHtml(S)}</div>
@@ -318,6 +383,7 @@ function paint(uid, fresh) {
     liveGL(el);       // the island's sea and palms
     const count = document.getElementById(`bbx-count-${uid}`);
     if (count) count.textContent = `${R.map.watched.size} / ${R.map.convs.length} feeds`;
+    barSync(uid, R);
     return;
   }
   const out = stageHtml(R.screens, R.si, R.idx, fresh, R.o);
@@ -344,6 +410,7 @@ function paint(uid, fresh) {
   if (root?.classList.contains('intel-open')) { const ib = document.getElementById(`bbi-${uid}`); if (ib) ib.innerHTML = intelHtml(R.num, R.lastL, R.tab, R.who, R.screens?.[R.si]?.snap || null, intelAt(R)); }
   const count = document.getElementById(`bbx-count-${uid}`);
   if (count) count.textContent = `${Math.max(0, R.idx + 1)} / ${S.steps.length}`;
+  barSync(uid, R);
   // the music turns and the stings land on a click, never on Reveal all or a repaint
   if (fresh && R.idx >= 0) playStep(S, R.idx);
   // The line arrives at the pace it is said (the user, 2026-10-06: "not stimulating enough with
@@ -364,7 +431,7 @@ function paint(uid, fresh) {
       let n = 0, wait = 0;
       R.typing = setInterval(() => {
         if (wait > 0) { wait--; return; }
-        n += full.length > 160 ? 3 : 2;
+        n += Math.max(1, Math.round((full.length > 160 ? 3 : 2) * (R.speed || 1)));
         tx.textContent = full.slice(0, n);
         if (!acted) voiceTick(cur.by, cur.k, full, n - (n % 3 === 0 ? 0 : n % 3));
         const ch = full[Math.min(n, full.length) - 1];
@@ -485,8 +552,12 @@ export function bbxBack(uid) {
     return;
   }
   if (R.idx < 0) return; stopAuto(R);
-  // inside a conversation, Back never leaves it: from its first line it returns to the house
-  if (R.map?.mode === 'play' && R.map.cur != null && R.idx <= R.map.convs[R.map.cur].from) { bbxMapExit(uid); return; }
+  // inside a conversation, from its first line Back plays on backwards into the conversation before (the user,
+  // 2026-10-15: "in house life I can't advance forward, backward"); the Map button and M leave for the map
+  if (R.map?.mode === 'play' && R.map.cur != null && R.idx <= R.map.convs[R.map.cur].from) {
+    if (R.idx <= 0) { bbxMapExit(uid); return; }
+    R.idx--; mapLinear(R, R.idx); paint(uid, false); return;
+  }
   R.idx--; paint(uid, false);
 }
 // Reveal all, Go to and a script line keep their linear meaning: they play from that step
@@ -518,18 +589,44 @@ export function bbxJumpFromLine(el, i) {
 export function bbxReset(uid) { const R = sync(uid); if (!R) return; stopAuto(R); R.idx = -1; if (R.map) R.map = newMap(R.screens[R.si]); paint(uid, false); }
 // a reveal holds the screen longer: the room needs a beat with the name
 const holdFor = st => Math.min(9000, 1600 + String(st?.t || '').length * 40) + (st?.big ? 2600 : 0) + (st?.tense ? 1200 : 0) + (st?.scene?.slate ? 600 : 0);
-function stopAuto(R) { R.auto = false; clearTimeout(R.timer); }
+function stopAuto(R) { R.auto = false; clearTimeout(R.timer); if (R.uid) barSync(R.uid, R); }
 export function bbxAuto(uid) {
   const R = sync(uid); if (!R) return;
   R.auto = !R.auto;
-  document.getElementById(`bbx-auto-${uid}`)?.classList.toggle('on', R.auto);
+  barSync(uid, R);
   const tick = () => {
     if (!R.auto) return;
     bbxNext(uid);
     const st = R.screens[R.si].steps[R.idx];
-    if (R.auto) R.timer = setTimeout(tick, holdFor(st));
+    if (R.auto) R.timer = setTimeout(tick, holdFor(st) / (R.speed || 1));
   };
   if (R.auto) R.timer = setTimeout(tick, 400); else clearTimeout(R.timer);
+}
+/** Auto's pace: 0.75×, 1×, 1.5×, 2×, remembered for the viewer. */
+export function bbxSpeed(uid) {
+  const R = reg()[uid]; if (!R) return;
+  R.speed = SPEEDS[(SPEEDS.indexOf(R.speed || 1) + 1) % SPEEDS.length];
+  try { localStorage.setItem('bb-speed', String(R.speed)); } catch { /* per-viewer convenience */ }
+  barSync(uid, R);
+}
+/** The previous or next scene of this screen (a conversation, in House Life), never another screen. */
+export function bbxScene(uid, dir) {
+  const R = sync(uid); if (!R) return;
+  const S = R.screens[R.si];
+  const at = sceneStarts(S);
+  // on the map nothing has played yet (idx -1): the next scene is the first one
+  const cur = R.map && R.map.mode !== 'play' ? -1 : Math.max(0, R.idx);
+  let to;
+  if (dir < 0) {
+    // from the middle of a scene, back to its start; from its start, the one before
+    const before = at.filter(i => i < cur);
+    const start = [...at].reverse().find(i => i <= cur);
+    to = start != null && start < cur && cur - start > 1 ? start : before.length ? before[before.length - 1] : 0;
+  } else {
+    to = cur < 0 ? (at[0] ?? 0) : at.find(i => i > cur);
+    if (to == null) to = S.steps.length - 1;
+  }
+  bbxJump(uid, to + 1);
 }
 export function bbxTv() {
   const p = typeof document !== 'undefined' ? document.getElementById('visual-player') : null;
@@ -539,6 +636,24 @@ export function bbxTv() {
     if (on && p.requestFullscreen && !document.fullscreenElement) p.requestFullscreen().catch(() => {});
     if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {});
   } catch { /* fullscreen refused: the bigger stage still applies */ }
+  p.classList.remove('bbx-idle');
+  if (on) tvWake();
+  // leaving fullscreen (Esc) leaves TV mode too
+  if (!p._bbxTvExit) {
+    p._bbxTvExit = true;
+    document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) p.classList.remove('bbx-tv', 'bbx-idle'); });
+    document.addEventListener('mousemove', tvWake, { passive: true });
+  }
+}
+// In TV mode the bar and the cursor go after two and a half seconds of a still mouse, and come back on a move
+let tvTimer = null;
+function tvWake() {
+  const p = typeof document !== 'undefined' ? document.getElementById('visual-player') : null;
+  if (!p || !p.classList.contains('bbx-tv')) return;
+  p.classList.remove('bbx-idle');
+  clearTimeout(tvTimer);
+  // (with Intel open the bar stays, and the count starts again once it is shut)
+  tvTimer = setTimeout(() => { if (!p.classList.contains('bbx-tv')) return; if (p.querySelector('.bbx.intel-open')) tvWake(); else p.classList.add('bbx-idle'); }, 2500);
 }
 /** Switch between the stepped viewer and the classic screens, and redraw this week. */
 /** Flip house life between one segment per stretch and one scene per screen, and redraw. */
@@ -594,12 +709,21 @@ export function bbxIntelClick(uid, e) {
 if (typeof document !== 'undefined') document.addEventListener('keydown', e => {
   const root = document.querySelector('.bbx[data-uid]');
   if (!root || e.ctrlKey || e.metaKey || e.altKey || /input|textarea|select/i.test(e.target?.tagName || '')) return;
-  if (e.key === 'i' || e.key === 'I') bbxIntel(root.dataset.uid);
-  else if (e.key === 'm' || e.key === 'M') bbxMapExit(root.dataset.uid);
+  const vp = document.getElementById('visual-player');
+  const shown = !vp || vp.style.display !== 'none';
+  const uid = root.dataset.uid;
+  if (shown && e.key === ' ') { e.preventDefault(); bbxAuto(uid); tvWake(); return; }
+  if (shown && e.key === 'ArrowRight') { e.preventDefault(); if (e.shiftKey) bbxScene(uid, 1); else bbxNext(uid); tvWake(); return; }
+  if (shown && e.key === 'ArrowLeft') { e.preventDefault(); if (e.shiftKey) bbxScene(uid, -1); else bbxBack(uid); tvWake(); return; }
+  if (shown && (e.key === 'l' || e.key === 'L')) { bbxScene(uid, 1); return; }
+  if (shown && (e.key === 'j' || e.key === 'J')) { bbxScene(uid, -1); return; }
+  if (shown && (e.key === 'f' || e.key === 'F')) { bbxTv(); return; }
+  if (e.key === 'i' || e.key === 'I') { bbxIntel(root.dataset.uid); tvWake(); }
+  else if (e.key === 'm' || e.key === 'M') { bbxMapExit(root.dataset.uid); tvWake(); }
   else if (e.key === 'Escape' && root.classList.contains('intel-open')) { e.preventDefault(); e.stopImmediatePropagation(); bbxIntel(root.dataset.uid); }
 });
 
-if (typeof window !== 'undefined') Object.assign(window, { bbxIntel, bbxIntelClick, bbxLive, bbxMapExit, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
+if (typeof window !== 'undefined') Object.assign(window, { bbxSpeed, bbxScene, bbxIntel, bbxIntelClick, bbxLive, bbxMapExit, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
 // Closing the Viewing Party only hides it: stop every Auto run and the line typing out,
 // or Auto keeps clicking through the week (and its music) behind a closed window.
 if (typeof document !== 'undefined') document.addEventListener('vp:close', () => {

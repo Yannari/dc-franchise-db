@@ -132,7 +132,8 @@ export function airEpisode(state, epRec, prevRec = null) {
       // An alliance being spotted is news once; after that the house knows.
       if (s.kind === 'meeting-spotted' && filed[s.id]?.line.steps.some(x => x.step === 'spotted' && x.aired)) return false;
       const k = [...s.who].slice(0, 2).sort().join('|');
-      if (s.who.length === 2 && (pairs[k] || 0) >= 3) return false;
+      // (never for a scene that must air: the Arena itself was dropped for a pair who had already had three)
+      if (tier > 0 && s.who.length === 2 && (pairs[k] || 0) >= 3) return false;
       if (WARM.has(s.kind) && rowed.has(k)) return false;
       if (ROW.has(s.kind) && tier > 0 && blewUp.has(s.who[0])) return false;
       if (CAPS[s.kind] && (counts[s.kind] || 0) >= CAPS[s.kind]) return false;

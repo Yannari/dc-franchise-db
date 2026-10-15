@@ -297,7 +297,7 @@ const DAILY_WIN_CONF = {
   quiet: ['I\'m safe. Good.'],
   dry: ['Winning. Turns out I\'m good at it.'],
   loud: ['SAFE! I\'m SAFE! Nobody can touch me!'],
-  warm: ['I\'m so happy! I get to protect my friends at the vote.'],
+  warm: ['I\'m so happy! I get to protect my friends at the vote.', 'I\'m safe, and now I can look after the people I care about this week.', 'I won! Now I just want to make sure my friends are okay too.'],
   blunt: ['I won. I\'m safe. That\'s all I needed.'],
   theatrical: ['I won again. I\'m not going to pretend that doesn\'t feel good.'],
   anxious: ['I\'m safe. I can breathe for one whole day.'],

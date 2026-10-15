@@ -126,7 +126,8 @@ describe('The Challenge, as aired', () => {
       const seen = {};
       const dupes = [];
       for (const l of linesOf(r)) {
-        if (l.kind === 'beat' || l.by === 'TJ' || l.text.length < 16) continue;
+        // a "Previously on" clip is last episode's line, replayed on purpose
+        if (l.kind === 'beat' || l.by === 'TJ' || l.clip || l.text.length < 16) continue;
         const k = `${l.day}|${l.text}`;
         if (seen[k]) dupes.push(`day ${l.day}: "${l.text}" (${seen[k]} and ${l.by})`);
         seen[k] = l.by;

@@ -191,9 +191,9 @@ export const EVENTS = [
       return addScene(ctx.state, 'bunk-whisper', awake ? [a, b, awake] : [a, b], { heard: awake || null }, awake ? [a, b, awake] : [a, b], 'bedroom');
     } },
   // ── COMEDY / LIFE ──
-  { id: 'prank', actorCooldown: 1, kind: 'comedy', cooldown: 3, max: 6,
+  { id: 'prank', actorCooldown: 1, kind: 'comedy', cooldown: 3, max: 2,
     cast: ctx => bestPair(ctx, 'prank', 3, (a, b) => (S(a, 'boldness') + (is(a, 'chaos-agent', 'wildcard', 'hothead') ? 4 : 0) - 8) * 0.4 + Math.max(0, getBond(a, b)) * 0.15),
-    weight: (ctx, p) => 0.25 + p.score * 0.05,
+    weight: (ctx, p) => 0.1 + p.score * 0.03,   // a prank now and then; the house is its stories
     fire(ctx, [a, b], rng) {
       // Taken as a joke, or as war: temperament and the bond decide.
       const laughs = rng() < clamp(0.35 + S(b, 'temperament') * 0.05 + getBond(a, b) * 0.05, 0.1, 0.9);
@@ -206,7 +206,7 @@ export const EVENTS = [
     } },
   { id: 'kitchen-disaster', kind: 'comedy', cooldown: 4, max: 4,
     cast: ctx => bestOne(ctx, 'kitchen-disaster', 4, a => (S(a, 'social') + (10 - S(a, 'mental')) - 9) * 0.3),
-    weight: (ctx, p) => 0.2 + p.score * 0.5,
+    weight: (ctx, p) => 0.1 + p.score * 0.25,   // a gag: now and then (the house is its stories)
     fire(ctx, [a], rng) {
       const saved = rng() < 0.4;
       const helper = saved ? ctx.state.active.filter(x => x !== a).sort((x, y) => getBond(a, y) - getBond(a, x))[0] : null;
@@ -218,7 +218,7 @@ export const EVENTS = [
   { id: 'gym-flex', kind: 'comedy', cooldown: 4, max: 4,
     cast: ctx => bestPair(ctx, 'gym-flex', 4, (a, b) => (ctx.state.division[a] === ctx.state.division[b])
       ? (S(a, 'physical') + S(b, 'physical') + S(a, 'boldness') - 20) * 0.3 : 0, { ordered: false }),
-    weight: (ctx, p) => 0.15 + p.score * 0.3,
+    weight: (ctx, p) => 0.08 + p.score * 0.15,   // the gym's story is the training now; the contest is the odd one out
     fire(ctx, [a, b], rng) {
       const winner = S(a, 'physical') + rng() * 3 > S(b, 'physical') + rng() * 3 ? a : b;
       const loser = winner === a ? b : a;

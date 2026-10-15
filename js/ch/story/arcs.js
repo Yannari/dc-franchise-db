@@ -96,11 +96,12 @@ export function arcsFor(state, epRec) {
     if (sc) out.push({ kind: 'arc-underdog', who: [n], data: { how: upsets.includes(n) ? 'arena' : 'daily' }, day: sc.day, after: sc.id });
   }
   // ── runners ──
-  // One running gag an episode, the two taking turns: the one aired longest ago goes first.
+  // A running gag now and then, the two taking turns: the one aired longest ago goes first. Every third
+  // episode at most (the user, 2026-10-15: the house was gags; the house is its stories now).
   const rs = runnersOf(state);
   const order = Object.entries(rs).sort((x, y) => x[1].last - y[1].last || (x[0] < y[0] ? -1 : 1));
   for (const [name, r] of order) {
-    if (!present.has(name) || r.stage >= 3 || epRec.ep - r.last < 2) continue;
+    if (!present.has(name) || r.stage >= 3 || epRec.ep - r.last < 3) continue;
     if (out.some(x => x.kind.startsWith('run-'))) break;
     const small = present.size <= (state.options.finalists || 8) + 4;
     const stage = r.stage === 0 ? 'setup' : small && r.calls >= 1 ? 'payoff' : r.calls < 2 ? 'call' : null;

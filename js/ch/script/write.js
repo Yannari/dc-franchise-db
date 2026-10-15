@@ -133,7 +133,7 @@ export function writeScene(state, scene) {
     const kind = t.conf ? 'conf' : t.beat ? 'beat' : 'say';
     const by = t.by === 'tj' ? HOST : t.by ? r.roles[t.by] : null;
     // TJ is the host, not a cast member: his voice is written into his lines.
-    const said = kind === 'beat' || t.by === 'tj' ? { text: t.beat || t.say, tag: null } : voicedLine(t, by, { hush, rng, ledger: state.lineLedger, day: scene.day });
+    const said = kind === 'beat' || t.by === 'tj' ? { text: t.beat || t.say, tag: null } : voicedOnce(state, t, by, { hush, rng, ledger: state.lineLedger, day: scene.day });
     const line = { kind, by, text: fill(said.text, r.roles, r.slots), voice: said.tag };
     // The turn's place in its entry, for the voice-coverage measurement (not enumerable: never serialised).
     Object.defineProperty(line, 'turn', { value: `${entry.id}:${i}`, enumerable: false });
@@ -169,6 +169,18 @@ function placeOfWords(spot, lines, kind) {
     for (const [place, re] of PLACE_WORDS) if (re.test(l.text)) return place;
   }
   return null;
+}
+
+// A voice's version of a line, never one already said that day by somebody else (two loud winners of the
+// same daily both shouted "WHO'S NEXT?! WHO'S NEXT?!"): draw again, then fall back to the line as written.
+function voicedOnce(state, t, by, opts) {
+  const used = (state.lineLedger.vday ||= {});
+  const fresh = r => r && r.text && used[r.text] !== opts.day;
+  let r = null;
+  for (let k = 0; k < 4; k++) { r = voicedLine(t, by, opts); if (fresh(r)) break; }
+  if (!fresh(r) && (t.say || t.conf) && used[t.say || t.conf] !== opts.day) r = { text: t.say || t.conf, tag: null };
+  if (r?.text && r.text.length > 4) used[r.text] = opts.day;   // a template is short before its name fills in
+  return r;
 }
 
 export function transcript(lines) {

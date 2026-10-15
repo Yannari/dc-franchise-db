@@ -168,7 +168,7 @@ export default {
     { by: 'b', conf: "{a} wants me scared of the Arena. I'm not scared of the Arena. I'm scared of the people in this house, and {a} is one of them." }],
   // ── trash talk: it doesn't ──
   'tt.s1': [0, 1,
-    { by: 'a', say: "Laugh now. It's going to be different when it's your name." },
+    { by: 'a', say: "Fine. It's going to be different when it's your name." },
     { by: 'b', say: "Maybe. But it isn't my name. Have a good night." },
     2],
   'tt.s2': [0, 1,
@@ -183,8 +183,8 @@ export default {
 
   // ── a fight ──
   'fg.1': [0, 1,
-    { by: 'a', say: "Then say it again. Go on." },
-    { by: 'b', say: "I'm not saying it again. You heard me the first time." },
+    { by: 'a', say: "Go on, then. Say the rest of it." },
+    { by: 'b', say: "There's nothing else to say. You heard me." },
     { by: 'x', opt: 1, say: "Okay, okay. Both of you. Stop." },
     { by: 'a', say: "No. If {b} wants to talk about me, {b} can do it to my face." },
     2, 3, 4],

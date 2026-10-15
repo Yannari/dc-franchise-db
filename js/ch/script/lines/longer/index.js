@@ -6,5 +6,6 @@ import pairs from './pairs.js';
 import house from './house.js';
 import game from './game.js';
 import nights from './nights.js';
+import more from './more.js';
 
-export default Object.assign({}, meeting, recruit, aftermath, pairs, house, game, nights);
+export default Object.assign({}, meeting, recruit, aftermath, pairs, house, game, nights, more);

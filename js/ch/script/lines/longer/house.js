@@ -9,7 +9,7 @@
 export default {
   // ── a kitchen blow-up ──
   'kb.1': [0, 1, 2, 3,
-    { by: 'a', say: "Don't tell me to calm down. You do this all the time." },
+    { by: 'a', say: "Don't tell me how to feel about it. You do this all the time." },
     { by: 'b', say: "All the time? Name one other time." },
     { by: 'a', say: "You leave your plates in the sink, you finish things and never say anything, and you never ask." },
     { by: 'b', say: "Then say something the first time instead of saving it all up for one big speech." },
@@ -95,7 +95,7 @@ export default {
     { by: 'b', say: "Then we'll see who's still here at the end." },
     2],
   'vd.2': [0, 1,
-    { by: 'a', say: "Sure you can. Thinking for yourself is how rookies end up in the Arena." },
+    { by: 'a', say: "Okay. Thinking for yourself is how rookies end up in the Arena." },
     { by: 'b', say: "Or it's how a vet ends up getting blindsided by a rookie." },
     { by: 'a', say: "Good luck with that." },
     { by: 'b', conf: "{a} wants the rookies to sit quietly and vote however the vets tell us. That's not happening." },

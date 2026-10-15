@@ -69,12 +69,12 @@ export default {
       { by: 'a', dr: "If I go home over the rota, at least I go home for something I believe in." },
     ] },
     { id: 'rn.rc4', room: 'kitchen', turns: [
-      { beat: 'Somebody has drawn a moustache on the rota. {a} is staring at it.' },
-      { by: 'a', say: "Who did this." },
-      { by: 'b', say: "Did what?" },
-      { by: 'a', say: "The rota has a moustache." },
-      { by: 'b', say: "...It suits it, honestly." },
-      { by: 'a', dr: "They can draw on it. They can ignore it. The rota will still be on that fridge when they've gone home." },
+      { beat: 'Somebody has drawn a moustache on the chore rota. {a} is staring at it.' },
+      { by: 'a', say: "Who drew on the rota?" },
+      { by: 'b', say: "No idea. I think it looks better, honestly." },
+      { by: 'a', say: "It's not funny. Nobody does their jobs as it is.", v: { hard: "Whoever did it is doing the dishes tonight." } },
+      { by: 'b', say: "Okay, okay. I'll do the dishes." },
+      { by: 'a', dr: "They can draw on it and ignore it all they want. That rota will still be on the fridge after they've gone home." },
     ] },
   ],
   'run.rota.payoff': [

@@ -45,9 +45,9 @@ describe('lines in the speaker\'s own voice', () => {
     }
   });
 
-  it('a variant names nobody and nothing its line does not (the scene was picked for the line\'s slots)', () => {
+  it('a variant names nobody and nothing its scene does not (the scene was picked for its slots)', () => {
     for (const [key, e] of entries()) for (const t of e.turns || []) {
-      const base = slots(t.say || t.dr || t.beat);
+      const base = slots((e.turns || []).map(x => x.say || x.dr || x.beat || '').join(' '));
       for (const [k, line] of Object.entries(t.v || {})) for (const s of slots(line)) {
         expect(base.has(s) || s === 'comp', `${key} ${e.id} v.${k} names {${s}}`).toBe(true);
       }
@@ -60,9 +60,9 @@ describe('lines in the speaker\'s own voice', () => {
 });
 
 describe('no sitcom ping-pong', () => {
-  // A ratchet: the count only goes down as the rewrite goes on (206 on 2026-10-15 by the first count, 177 after the first batch). A new pool
+  // A ratchet: the count only goes down as the rewrite goes on (206 on 2026-10-15 by the first count, 155 after the second). A new pool
   // entry written in the old register fails here.
-  const CEILING = 177;
+  const CEILING = 155;
   it(`at most ${CEILING} scenes still trade quips`, () => {
     const left = entries().filter(([, e]) => pingPong(e));
     expect(left.length, left.slice(0, 20).map(([k, e]) => `${k} ${e.id}`).join('\n')).toBeLessThanOrEqual(CEILING);

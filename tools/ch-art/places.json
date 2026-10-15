@@ -3884,5 +3884,1940 @@
       520,
       60
     ]
+  },
+  "arena-hallway-hustle": {
+    "from_night": "D02-arena-hallway-hustle/Twin-Bell Padded Hallway in Night Arena.png",
+    "spot": "arena-hallway-hustle",
+    "night": "painted",
+    "hours": [
+      "night"
+    ],
+    "horizon": 0.5,
+    "wind": 0.5,
+    "noleaf": true,
+    "fire": [
+      [
+        40,
+        382,
+        50
+      ],
+      [
+        403,
+        378,
+        46
+      ],
+      [
+        684,
+        378,
+        46
+      ],
+      [
+        1022,
+        378,
+        46
+      ],
+      [
+        1565,
+        382,
+        50
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        1600,
+        180,
+        0.35
+      ],
+      [
+        0,
+        560,
+        240,
+        900,
+        0.5
+      ],
+      [
+        1280,
+        620,
+        1600,
+        900,
+        0.5
+      ]
+    ],
+    "cloth": [
+      [
+        70,
+        215,
+        330,
+        300,
+        0.35
+      ],
+      [
+        980,
+        245,
+        1290,
+        320,
+        0.2
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "gate",
+        "x": 857,
+        "y": 430,
+        "h": 60
+      },
+      {
+        "kind": "host",
+        "x": 1110,
+        "y": 655,
+        "h": 78
+      },
+      {
+        "kind": "gong",
+        "x": 1447,
+        "y": 400
+      },
+      {
+        "kind": "podium",
+        "side": "L",
+        "x": 380,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "podium",
+        "side": "R",
+        "x": 1240,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "duel",
+        "side": "L",
+        "x": 650,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "duel",
+        "side": "R",
+        "x": 960,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 600,
+        "h": 73
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 105,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 165,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 225,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 285,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 140,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 200,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 260,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 320,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 230,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 300,
+        "y": 478,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1330,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1400,
+        "y": 492,
+        "h": 63
+      }
+    ],
+    "_doc": "The Arena dressed for hallway-hustle (art job D02, an edit of the Arena at night): the Arena's own marks."
+  },
+  "arena-knot-bomb": {
+    "from_night": "D03-arena-knot-bomb/Knot bomb arena challenge.png",
+    "spot": "arena-knot-bomb",
+    "night": "painted",
+    "hours": [
+      "night"
+    ],
+    "horizon": 0.5,
+    "wind": 0.5,
+    "noleaf": true,
+    "fire": [
+      [
+        40,
+        382,
+        50
+      ],
+      [
+        403,
+        378,
+        46
+      ],
+      [
+        684,
+        378,
+        46
+      ],
+      [
+        1022,
+        378,
+        46
+      ],
+      [
+        1565,
+        382,
+        50
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        1600,
+        180,
+        0.35
+      ],
+      [
+        0,
+        560,
+        240,
+        900,
+        0.5
+      ],
+      [
+        1280,
+        620,
+        1600,
+        900,
+        0.5
+      ]
+    ],
+    "cloth": [
+      [
+        70,
+        215,
+        330,
+        300,
+        0.35
+      ],
+      [
+        980,
+        245,
+        1290,
+        320,
+        0.2
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "gate",
+        "x": 857,
+        "y": 430,
+        "h": 60
+      },
+      {
+        "kind": "host",
+        "x": 857,
+        "y": 452,
+        "h": 60
+      },
+      {
+        "kind": "gong",
+        "x": 1447,
+        "y": 400
+      },
+      {
+        "kind": "podium",
+        "side": "L",
+        "x": 380,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "podium",
+        "side": "R",
+        "x": 1240,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "duel",
+        "side": "L",
+        "x": 650,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "duel",
+        "side": "R",
+        "x": 960,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 600,
+        "h": 73
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 105,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 165,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 225,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 285,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 140,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 200,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 260,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 320,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 230,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 300,
+        "y": 478,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1330,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1400,
+        "y": 492,
+        "h": 63
+      }
+    ],
+    "_doc": "The Arena dressed for knot-bomb (art job D03, an edit of the Arena at night): the Arena's own marks."
+  },
+  "arena-hang-time": {
+    "from_night": "D05-arena-hang-time/Hang Time Mud Pit Challenge.png",
+    "spot": "arena-hang-time",
+    "night": "painted",
+    "hours": [
+      "night"
+    ],
+    "horizon": 0.5,
+    "wind": 0.5,
+    "noleaf": true,
+    "fire": [
+      [
+        40,
+        382,
+        50
+      ],
+      [
+        403,
+        378,
+        46
+      ],
+      [
+        684,
+        378,
+        46
+      ],
+      [
+        1022,
+        378,
+        46
+      ],
+      [
+        1565,
+        382,
+        50
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        1600,
+        180,
+        0.35
+      ],
+      [
+        0,
+        560,
+        240,
+        900,
+        0.5
+      ],
+      [
+        1280,
+        620,
+        1600,
+        900,
+        0.5
+      ]
+    ],
+    "cloth": [
+      [
+        70,
+        215,
+        330,
+        300,
+        0.35
+      ],
+      [
+        980,
+        245,
+        1290,
+        320,
+        0.2
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "gate",
+        "x": 857,
+        "y": 430,
+        "h": 60
+      },
+      {
+        "kind": "host",
+        "x": 857,
+        "y": 452,
+        "h": 60
+      },
+      {
+        "kind": "gong",
+        "x": 1447,
+        "y": 400
+      },
+      {
+        "kind": "podium",
+        "side": "L",
+        "x": 380,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "podium",
+        "side": "R",
+        "x": 1240,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "duel",
+        "side": "L",
+        "x": 650,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "duel",
+        "side": "R",
+        "x": 960,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 600,
+        "h": 73
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 105,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 165,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 225,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 285,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 140,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 200,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 260,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 320,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 230,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 300,
+        "y": 478,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1330,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1400,
+        "y": 492,
+        "h": 63
+      }
+    ],
+    "_doc": "The Arena dressed for hang-time (art job D05, an edit of the Arena at night): the Arena's own marks."
+  },
+  "arena-ram-wall": {
+    "from_night": "D06-arena-ram-wall/Night Arena Crate Wall Challenge.png",
+    "spot": "arena-ram-wall",
+    "night": "painted",
+    "hours": [
+      "night"
+    ],
+    "horizon": 0.5,
+    "wind": 0.5,
+    "noleaf": true,
+    "fire": [
+      [
+        40,
+        382,
+        50
+      ],
+      [
+        403,
+        378,
+        46
+      ],
+      [
+        684,
+        378,
+        46
+      ],
+      [
+        1022,
+        378,
+        46
+      ],
+      [
+        1565,
+        382,
+        50
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        1600,
+        180,
+        0.35
+      ],
+      [
+        0,
+        560,
+        240,
+        900,
+        0.5
+      ],
+      [
+        1280,
+        620,
+        1600,
+        900,
+        0.5
+      ]
+    ],
+    "cloth": [
+      [
+        70,
+        215,
+        330,
+        300,
+        0.35
+      ],
+      [
+        980,
+        245,
+        1290,
+        320,
+        0.2
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "gate",
+        "x": 857,
+        "y": 430,
+        "h": 60
+      },
+      {
+        "kind": "host",
+        "x": 857,
+        "y": 452,
+        "h": 60
+      },
+      {
+        "kind": "gong",
+        "x": 1447,
+        "y": 400
+      },
+      {
+        "kind": "podium",
+        "side": "L",
+        "x": 380,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "podium",
+        "side": "R",
+        "x": 1240,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "duel",
+        "side": "L",
+        "x": 650,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "duel",
+        "side": "R",
+        "x": 960,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 600,
+        "h": 73
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 105,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 165,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 225,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 285,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 140,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 200,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 260,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 320,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 230,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 300,
+        "y": 478,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1330,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1400,
+        "y": 492,
+        "h": 63
+      }
+    ],
+    "_doc": "The Arena dressed for ram-wall (art job D06, an edit of the Arena at night): the Arena's own marks."
+  },
+  "arena-tug-pit": {
+    "from_night": "D07-arena-tug-pit/Night arena tug-of-war pit.png",
+    "spot": "arena-tug-pit",
+    "night": "painted",
+    "hours": [
+      "night"
+    ],
+    "horizon": 0.5,
+    "wind": 0.5,
+    "noleaf": true,
+    "fire": [
+      [
+        40,
+        382,
+        50
+      ],
+      [
+        403,
+        378,
+        46
+      ],
+      [
+        684,
+        378,
+        46
+      ],
+      [
+        1022,
+        378,
+        46
+      ],
+      [
+        1565,
+        382,
+        50
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        1600,
+        180,
+        0.35
+      ],
+      [
+        0,
+        560,
+        240,
+        900,
+        0.5
+      ],
+      [
+        1280,
+        620,
+        1600,
+        900,
+        0.5
+      ]
+    ],
+    "cloth": [
+      [
+        70,
+        215,
+        330,
+        300,
+        0.35
+      ],
+      [
+        980,
+        245,
+        1290,
+        320,
+        0.2
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "gate",
+        "x": 857,
+        "y": 430,
+        "h": 60
+      },
+      {
+        "kind": "host",
+        "x": 857,
+        "y": 452,
+        "h": 60
+      },
+      {
+        "kind": "gong",
+        "x": 1447,
+        "y": 400
+      },
+      {
+        "kind": "podium",
+        "side": "L",
+        "x": 380,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "podium",
+        "side": "R",
+        "x": 1240,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "duel",
+        "side": "L",
+        "x": 650,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "duel",
+        "side": "R",
+        "x": 960,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 600,
+        "h": 73
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 105,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 165,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 225,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 285,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 140,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 200,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 260,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 320,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 230,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 300,
+        "y": 478,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1330,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1400,
+        "y": 492,
+        "h": 63
+      }
+    ],
+    "_doc": "The Arena dressed for tug-pit (art job D07, an edit of the Arena at night): the Arena's own marks."
+  },
+  "arena-ball-brawl": {
+    "from_night": "D08-arena-ball-brawl/Night Arena Ball Brawl.png",
+    "spot": "arena-ball-brawl",
+    "night": "painted",
+    "hours": [
+      "night"
+    ],
+    "horizon": 0.5,
+    "wind": 0.5,
+    "noleaf": true,
+    "fire": [
+      [
+        40,
+        382,
+        50
+      ],
+      [
+        403,
+        378,
+        46
+      ],
+      [
+        684,
+        378,
+        46
+      ],
+      [
+        1022,
+        378,
+        46
+      ],
+      [
+        1565,
+        382,
+        50
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        1600,
+        180,
+        0.35
+      ],
+      [
+        0,
+        560,
+        240,
+        900,
+        0.5
+      ],
+      [
+        1280,
+        620,
+        1600,
+        900,
+        0.5
+      ]
+    ],
+    "cloth": [
+      [
+        70,
+        215,
+        330,
+        300,
+        0.35
+      ],
+      [
+        980,
+        245,
+        1290,
+        320,
+        0.2
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "gate",
+        "x": 857,
+        "y": 430,
+        "h": 60
+      },
+      {
+        "kind": "host",
+        "x": 857,
+        "y": 452,
+        "h": 60
+      },
+      {
+        "kind": "gong",
+        "x": 1447,
+        "y": 400
+      },
+      {
+        "kind": "podium",
+        "side": "L",
+        "x": 380,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "podium",
+        "side": "R",
+        "x": 1240,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "duel",
+        "side": "L",
+        "x": 650,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "duel",
+        "side": "R",
+        "x": 960,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 600,
+        "h": 73
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 105,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 165,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 225,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 285,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 140,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 200,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 260,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 320,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 230,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 300,
+        "y": 478,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1330,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1400,
+        "y": 492,
+        "h": 63
+      }
+    ],
+    "_doc": "The Arena dressed for ball-brawl (art job D08, an edit of the Arena at night): the Arena's own marks."
+  },
+  "arena-memory-swim": {
+    "from_night": "D09-arena-memory-swim/Sandy night lagoon challenge arena.png",
+    "spot": "arena-memory-swim",
+    "night": "painted",
+    "hours": [
+      "night"
+    ],
+    "horizon": 0.5,
+    "wind": 0.5,
+    "noleaf": true,
+    "fire": [
+      [
+        40,
+        382,
+        50
+      ],
+      [
+        403,
+        378,
+        46
+      ],
+      [
+        684,
+        378,
+        46
+      ],
+      [
+        1022,
+        378,
+        46
+      ],
+      [
+        1565,
+        382,
+        50
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        1600,
+        180,
+        0.35
+      ],
+      [
+        0,
+        560,
+        240,
+        900,
+        0.5
+      ],
+      [
+        1280,
+        620,
+        1600,
+        900,
+        0.5
+      ]
+    ],
+    "cloth": [
+      [
+        70,
+        215,
+        330,
+        300,
+        0.35
+      ],
+      [
+        980,
+        245,
+        1290,
+        320,
+        0.2
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "gate",
+        "x": 857,
+        "y": 430,
+        "h": 60
+      },
+      {
+        "kind": "host",
+        "x": 857,
+        "y": 452,
+        "h": 60
+      },
+      {
+        "kind": "gong",
+        "x": 1447,
+        "y": 400
+      },
+      {
+        "kind": "podium",
+        "side": "L",
+        "x": 380,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "podium",
+        "side": "R",
+        "x": 1240,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "duel",
+        "side": "L",
+        "x": 650,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "duel",
+        "side": "R",
+        "x": 960,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 600,
+        "h": 73
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 105,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 165,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 225,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 285,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 140,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 200,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 260,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 320,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 230,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 300,
+        "y": 478,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1330,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1400,
+        "y": 492,
+        "h": 63
+      }
+    ],
+    "_doc": "The Arena dressed for memory-swim (art job D09, an edit of the Arena at night): the Arena's own marks."
+  },
+  "arena-barrel-ramp": {
+    "from_night": "D10-arena-barrel-ramp/Twin sand ramps and blue barrels.png",
+    "spot": "arena-barrel-ramp",
+    "night": "painted",
+    "hours": [
+      "night"
+    ],
+    "horizon": 0.5,
+    "wind": 0.5,
+    "noleaf": true,
+    "fire": [
+      [
+        40,
+        382,
+        50
+      ],
+      [
+        403,
+        378,
+        46
+      ],
+      [
+        684,
+        378,
+        46
+      ],
+      [
+        1022,
+        378,
+        46
+      ],
+      [
+        1565,
+        382,
+        50
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        1600,
+        180,
+        0.35
+      ],
+      [
+        0,
+        560,
+        240,
+        900,
+        0.5
+      ],
+      [
+        1280,
+        620,
+        1600,
+        900,
+        0.5
+      ]
+    ],
+    "cloth": [
+      [
+        70,
+        215,
+        330,
+        300,
+        0.35
+      ],
+      [
+        980,
+        245,
+        1290,
+        320,
+        0.2
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "gate",
+        "x": 857,
+        "y": 430,
+        "h": 60
+      },
+      {
+        "kind": "host",
+        "x": 857,
+        "y": 452,
+        "h": 60
+      },
+      {
+        "kind": "gong",
+        "x": 1447,
+        "y": 400
+      },
+      {
+        "kind": "podium",
+        "side": "L",
+        "x": 380,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "podium",
+        "side": "R",
+        "x": 1240,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "duel",
+        "side": "L",
+        "x": 650,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "duel",
+        "side": "R",
+        "x": 960,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 600,
+        "h": 73
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 105,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 165,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 225,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 285,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 140,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 200,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 260,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 320,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 230,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 300,
+        "y": 478,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1330,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1400,
+        "y": 492,
+        "h": 63
+      }
+    ],
+    "_doc": "The Arena dressed for barrel-ramp (art job D10, an edit of the Arena at night): the Arena's own marks."
+  },
+  "arena-spin-stack": {
+    "from_night": "D11-arena-spin-stack/Night arena spin stack setup.png",
+    "spot": "arena-spin-stack",
+    "night": "painted",
+    "hours": [
+      "night"
+    ],
+    "horizon": 0.5,
+    "wind": 0.5,
+    "noleaf": true,
+    "fire": [
+      [
+        40,
+        382,
+        50
+      ],
+      [
+        403,
+        378,
+        46
+      ],
+      [
+        684,
+        378,
+        46
+      ],
+      [
+        1022,
+        378,
+        46
+      ],
+      [
+        1565,
+        382,
+        50
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        1600,
+        180,
+        0.35
+      ],
+      [
+        0,
+        560,
+        240,
+        900,
+        0.5
+      ],
+      [
+        1280,
+        620,
+        1600,
+        900,
+        0.5
+      ]
+    ],
+    "cloth": [
+      [
+        70,
+        215,
+        330,
+        300,
+        0.35
+      ],
+      [
+        980,
+        245,
+        1290,
+        320,
+        0.2
+      ]
+    ],
+    "marks": [
+      {
+        "kind": "gate",
+        "x": 857,
+        "y": 430,
+        "h": 60
+      },
+      {
+        "kind": "host",
+        "x": 857,
+        "y": 452,
+        "h": 60
+      },
+      {
+        "kind": "gong",
+        "x": 1447,
+        "y": 400
+      },
+      {
+        "kind": "podium",
+        "side": "L",
+        "x": 380,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "podium",
+        "side": "R",
+        "x": 1240,
+        "y": 575,
+        "h": 70
+      },
+      {
+        "kind": "duel",
+        "side": "L",
+        "x": 650,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "duel",
+        "side": "R",
+        "x": 960,
+        "y": 610,
+        "h": 74
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 600,
+        "h": 73
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 105,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 165,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 225,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 285,
+        "y": 345,
+        "h": 55
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 140,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 200,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 260,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "seat",
+        "group": "house",
+        "x": 320,
+        "y": 408,
+        "h": 57
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 230,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 300,
+        "y": 478,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1330,
+        "y": 485,
+        "h": 62
+      },
+      {
+        "kind": "stand",
+        "group": "house",
+        "x": 1400,
+        "y": 492,
+        "h": 63
+      }
+    ],
+    "_doc": "The Arena dressed for spin-stack (art job D11, an edit of the Arena at night): the Arena's own marks."
   }
 }

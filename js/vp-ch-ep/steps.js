@@ -702,7 +702,10 @@ function buildArena(S, open, items, row, { names, house, goneAt }) {
   const a = co?.a.who[0] || ar?.a.who[0], b = co?.a.who[1] || ar?.a.who[1];
   const duel = (row.ch?.duels || []).find(d => (d.a === a && d.b === b) || (d.a === b && d.b === a)) || null;
   const here = house.filter(n => !goneAt[at.i]?.has(n) && n !== a);
-  const key = plateKey(ARENA_STAGE.plate, true);
+  // the Arena dressed for tonight's game, where the user painted it (art jobs D02-D11)
+  const dressed = duel && CH_MARKS[`arena-${duel.game}-night`] ? `arena-${duel.game}` : ARENA_STAGE.plate;
+  const key = plateKey(dressed, true);
+  S.painted = dressed !== ARENA_STAGE.plate;
   const crowd = here.filter(n => n !== b);
   const cast = { TJ: ['host'], [a]: ['gate'], ...placeScene(key, [b, ...crowd], { group: 'house' }) };
   S.arenaCrowd = crowd;
@@ -760,6 +763,11 @@ function setState(duel, prog, extra = {}) {
   const n = x => Math.round(Math.max(0, Math.min(12, prog[x] || 0)) / 12 * max);
   return { nL: n(a), nR: n(b), ...extra };
 }
+// On a painted set the set itself is in the painting: only what moves is drawn over it (the ball, the
+// pole turning, a lockbox going off), never a second ramp of barrels or a second wall of crates.
+const MOVING = new Set(['ballring', 'pole', 'lockbox']);
+const onSet = (S, props) => (S.painted ? (props || []).filter(p => MOVING.has(p.k)) : props);
+
 function playDuel(S, duel, seed, crowd = []) {
   const { a, b } = duel;
   const AP = ARENA_PLAY[duel.game] || null;
@@ -767,7 +775,7 @@ function playDuel(S, duel, seed, crowd = []) {
   const pose = POSE[duel.game];
   S.push({ move: { [a]: ['duel', 0, 'L'], [b]: ['duel', 0, 'R'] }, tj: pickBy(TJ_GO, seed), gong: 1, focus: [a, b], cam: [.5, .6, 1.2],
     duel: { a, b, format, score: { [a]: 0, [b]: 0 }, prog: { [a]: 0, [b]: 0 }, max: format === 'round' ? Math.max(...duel.beats.map(x => Math.max(...Object.values(x.score || { x: 0 })))) : 12 },
-    hang: format === 'hold' ? 'duel' : null, pose: pose ? { [a]: pose, [b]: pose } : null, props: AP ? AP.set(setState(duel, {})) : null });
+    hang: format === 'hold' ? 'duel' : null, pose: pose ? { [a]: pose, [b]: pose } : null, props: AP ? onSet(S, AP.set(setState(duel, {}))) : null });
   let prev = null, prog = { [a]: 0, [b]: 0 };
   duel.beats.forEach((bt, k) => {
     if (bt.kind === 'finish') return;
@@ -789,7 +797,7 @@ function playDuel(S, duel, seed, crowd = []) {
     if (by) { const t = speak(ARENA_VOICE.shout, by, { a: cheerFor }, `${seed}|sh${k}`, S.V.used); if (t) S.push({ say: [by, t], focus: [cheerFor], act: { [by]: 'shout' }, duel: { a, b, format: bt.kind, score: S._lastScore || null, prog: { ...S._prevProg || prog } } }); }
     S.push({ dir: text, focus: [w, l], act: { [w]: bt.kind === 'hold' ? 'look' : 'cheer', [l]: 'flinch' }, cam: [w === a ? .44 : .56, .6, 1.28],
       duel: { a, b, format: bt.kind, score: bt.score ? { ...bt.score } : null, prog: { ...prog }, ahead: w }, dig: bt.kind === 'stage' && duel.game === 'puzzle-pit' ? [a, b] : null,
-      props: AP ? AP.set(setState(duel, prog, { tilt, ball, sag, low: k + 1 })) : null, shake: bt.kind === 'round' ? 1 : 0 });
+      props: AP ? onSet(S, AP.set(setState(duel, prog, { tilt, ball, sag, low: k + 1 }))) : null, shake: bt.kind === 'round' ? 1 : 0 });
     S._lastScore = bt.score ? { ...bt.score } : null; S._prevProg = { ...prog };
     // TJ calls the score between rounds; somebody in the stand talks to the camera halfway through
     const last = duel.beats.filter(x => x.kind !== 'finish').length - 1;
@@ -812,7 +820,7 @@ function finishDuel(S, duel, lines, names, seed, crowd = []) {
   const AP = ARENA_PLAY[duel.game] || null;
   const done = { [w === a ? 'done' : 'doneR']: 1, done: w === a ? 'L' : 'R' };
   const first = { slam: { winner: `${w} wins` }, focus: [w], act: { [w]: 'cheer' }, shake: 1, duel: fin, cam: [w === a ? .44 : .56, .58, 1.3], drop: fin.format === 'hold' ? [l] : null,
-    props: AP ? AP.set(setState(duel, fin.prog, { ...done, tilt: w === a ? -30 : 30, ball: w === a ? -1 : 1, sag: w === a ? 10 : 50, low: 4 })) : null };
+    props: AP ? onSet(S, AP.set(setState(duel, fin.prog, { ...done, tilt: w === a ? -30 : 30, ball: w === a ? -1 : 1, sag: w === a ? 10 : 50, low: 4 }))) : null };
   // the game's own finish ("locks the board and hits the buzzer"), then the engine's word on how it went
   if (AP?.finish) { S.push({ ...first, dir: fill(AP.finish, { w, l }) }); if (beat >= 0) S.push({ dir: lines[beat].text, focus: [w] }); }
   else if (beat >= 0) { first.dir = lines[beat].text; S.push(first); }

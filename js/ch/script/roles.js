@@ -164,6 +164,12 @@ export function rolesOf(scene, state) {
   const r = f(scene, state);
   // Drop empty parts, so a line for c is never picked for a two-person scene.
   for (const k of Object.keys(r.roles)) if (!r.roles[k]) delete r.roles[k];
+  // Everybody else in the conversation, in order, as x, y and z (the user, 2026-10-15: "we have group
+  // conversations, trio, duo, quatuor and more"). A turn marked { opt: 1 } is theirs to say when they are
+  // there and is dropped when they are not, so one conversation plays as a duo, a trio or a four.
+  const taken = new Set(Object.values(r.roles));
+  const rest = (scene.who || []).filter(n => n && n !== 'TJ' && !taken.has(n));
+  ['x', 'y', 'z'].forEach((k, i) => { if (rest[i] && !r.roles[k]) r.roles[k] = rest[i]; });
   r.slots ||= {};
   for (const k of Object.keys(r.slots)) if (r.slots[k] == null) delete r.slots[k];
   return r;

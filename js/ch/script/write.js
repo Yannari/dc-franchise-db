@@ -77,6 +77,7 @@ function needs(entry) {
   if (needCache.has(entry)) return needCache.get(entry);
   const n = new Set();
   for (const t of entry.turns || []) {
+    if (t.opt) continue;   // an optional turn is said when its people are there, never required
     if (t.by && t.by !== 'tj') n.add(t.by);
     for (const m of String(t.say || t.conf || t.beat || '').matchAll(TOKEN)) if (m[1] !== 'tj') n.add(m[1]);
   }
@@ -126,7 +127,9 @@ export function writeScene(state, scene) {
   const entry = pickEntry(state.lineLedger, pools, key, facts, pairKey, rng, speakers, scene.day);
   if (!entry) return null;
   const hush = SECRET.has(scene.spot);
-  const lines = entry.turns.map((t, i) => [t, i]).filter(([t]) => !t.when || Object.entries(t.when).every(([k, v]) => facts[k] === v)).map(([t, i]) => {
+  const here = t => !t.opt || [t.by, ...[].concat(typeof t.opt === 'string' || Array.isArray(t.opt) ? t.opt : []),
+    ...[...String(t.say || t.conf || t.beat || '').matchAll(TOKEN)].map(m => m[1])].every(k => !k || k === 'tj' || have.has(k));
+  const lines = entry.turns.map((t, i) => [t, i]).filter(([t]) => here(t) && (!t.when || Object.entries(t.when).every(([k, v]) => facts[k] === v))).map(([t, i]) => {
     const kind = t.conf ? 'conf' : t.beat ? 'beat' : 'say';
     const by = t.by === 'tj' ? HOST : t.by ? r.roles[t.by] : null;
     // TJ is the host, not a cast member: his voice is written into his lines.

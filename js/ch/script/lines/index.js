@@ -8,6 +8,7 @@ import game from './game.js';
 import final from './final.js';
 import story from './story.js';
 import VOICES, { joinVariants } from './voices/index.js';
+import LONGER from './longer/index.js';
 
 export const POOLS = Object.assign({}, spine, vote, house, game, final, story);
 
@@ -24,3 +25,18 @@ for (const list of Object.values(POOLS)) {
     }
   }
 }
+
+// The long cut (the user, 2026-10-15: the conversations are "too expeditive... two seconds they talk, then
+// they switch"). An entry with a spec in longer/ is rebuilt AFTER the voices join it: a number is the
+// original turn, its voice variants with it; an object is a new turn. So a conversation grows in the
+// middle as well as at the end, and nothing the overlay wrote moves to the wrong line.
+for (const list of Object.values(POOLS)) {
+  for (const e of list) {
+    const spec = LONGER[e.id];
+    if (!spec) continue;
+    const old = e.turns;
+    e.turns = spec.map(x => (typeof x === 'number' ? old[x] : x));
+    Object.defineProperty(e, 'origTurns', { value: old.length });   // for the guard: every original turn is kept
+  }
+}
+export { LONGER };

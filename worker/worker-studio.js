@@ -2545,7 +2545,9 @@ async function voiceRoute(request, env, url, cors) {
     }
     if (!r.ok) throw new Error(`inworld ${r.status}: ${(await r.text()).slice(0, 160)}`);
     const j = await r.json();
-    const bin = Uint8Array.from(atob(j.audioContent || ''), c => c.charCodeAt(0));
+    // a plain loop: Uint8Array.from with a callback per byte cost the most CPU in the whole request
+    const raw = atob(j.audioContent || ''), bin = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) bin[i] = raw.charCodeAt(i);
     if (!bin.byteLength) throw new Error('inworld sent no audio');
     chars += text.length;
     return bin;

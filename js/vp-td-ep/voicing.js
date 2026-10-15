@@ -136,15 +136,31 @@ export async function tdVoiceEpisode(ep, { force = false, ready = null } = {}) {
 
     // the voices: ONE request at a time, the worker voicing four of its lines at once. The user's Inworld plan takes
     // five requests at a time; three requests of four (twelve) got 416 of 638 lines refused on the first episode.
+    // Six lines a request (it was twelve): a request the worker cannot finish inside its limits is cut off by
+    // Cloudflare with no CORS header, which the browser only reports as "NetworkError when attempting to fetch
+    // resource", and that one batch used to stop the whole episode (episode 9, 2026-10-15).
     const batches = [];
-    for (let k = 0; k < todo.length; k += 12) batches.push(todo.slice(k, k + 12));
+    for (let k = 0; k < todo.length; k += 6) batches.push(todo.slice(k, k + 6));
     let done = 0, chars = 0, directed = 0, keptDirected = 0;
     const failed = [];
     await pool(batches, 1, async b => {
-      const r = await fetch(`${VOICE_API()}/api/voice/render`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
-        body: JSON.stringify({ season, episode: ep, voices: p.voices, force, lines: b.map(l => ({ id: l.id, by: l.by, text: l.text, direction: directionFor(l) })) }),
-      });
+      // a request that dies on the way is tried twice more after a pause, then its lines count as failed and the
+      // rest of the episode goes on (a second press voices just the missing ones)
+      let r, lost = null;
+      for (let tries = 0; tries < 3; tries++) {
+        try {
+          r = await fetch(`${VOICE_API()}/api/voice/render`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+            body: JSON.stringify({ season, episode: ep, voices: p.voices, force, lines: b.map(l => ({ id: l.id, by: l.by, text: l.text, direction: directionFor(l) })) }),
+          });
+          lost = null;
+          break;
+        } catch (e) {
+          lost = String(e.message || e);
+          await new Promise(res => setTimeout(res, 2000 * (tries + 1)));
+        }
+      }
+      if (lost) { failed.push(...b.map(l => ({ id: l.id, error: `the studio did not answer (${lost})` }))); return; }
       const j = await r.json().catch(() => ({ ok: false, error: `studio ${r.status}` }));
       if (!j.ok) { failed.push(...b.map(l => ({ id: l.id, error: j.error }))); return; }
       done += j.done.length; chars += j.chars || 0; directed += j.directed || 0; keptDirected += j.keptDirected || 0; failed.push(...(j.failed || []));

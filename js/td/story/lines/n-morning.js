@@ -180,14 +180,16 @@ export default {
       { by: 'a', conf: "I wrote {lastBoot}'s name and I keep thinking about it, and I just hope it was worth it." },
     ] },
     { id: 'nm.a2', place: 'aside', when: { voice: ['warm', 'anxious', 'earnest', 'emotional'] }, turns: [
-      { beat: "{a} is {here}, twisting a piece of string into a bracelet." },
-      { by: 'c', say: "Who's that for?" },
+      // (b, who is always in the scene, sits down and asks: c is sometimes absent, and the questions were c's; read 2026-10-15,
+      // "Cody is in the aisle, twisting a piece of string", then Trent asking without ever having come over)
+      { beat: "{a} is {here}, twisting a piece of string into a bracelet, when {b} sits down." },
+      { by: 'b', say: "Who's that for?" },
       { by: 'a', say: "It was going to be for {lastBoot}." },
-      { by: 'c', say: "You could still give it to {lastBoot.obj}. After the show." },
+      { by: 'b', say: "You could still give it to {lastBoot.obj}. After the show." },
       { by: 'a', say: "I don't think {lastBoot.sub}'d want it from me." },
-      { by: 'c', say: "Why not?" },
+      { by: 'b', say: "Why not?" },
       { by: 'a', say: "Because I voted for {lastBoot.obj}. Everyone said it had to be {lastBoot}, so I went along with it." },
-      { by: 'c', say: "Oh." },
+      { by: 'b', say: "Oh." },
       { by: 'a', conf: "I'm going to finish it anyway. I'll give it to {lastBoot} at the end and say sorry. If {lastBoot} even talks to me." },
     ] },
     { id: 'nm.a3', place: 'aside', when: { voice: ['schemer', 'calm', 'dry', 'cruel'] }, turns: [

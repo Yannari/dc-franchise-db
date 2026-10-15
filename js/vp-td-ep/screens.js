@@ -143,7 +143,11 @@ export function tdStepScreens(ep, classic = [], o = {}) {
     // a Multi-Tribal night: the classic viewer has Plans, Tribal, Signatures and Votes per tribe; the stepped
     // night plays them all, in the first tribe's Tribal slot
     if (tribal && (ep.multiTribalResults || []).length && /^(voting-plans|tribal|cb-sigs|votes)-/.test(S?.id || '')) {
-      if (!tribalDone && /^tribal-/.test(S.id)) { tribalDone = true; out.push(shell(tribal, { ...S, id: 'tribal', label: tribal.label }, ep, o)); }
+      // one screen per council, each in its own Tribal slot, in the night's order
+      if (/^tribal-/.test(S.id)) {
+        if (tribal.parts?.length) { const p = tribal.parts.find(x => x.id === S.id); if (p) out.push(shell(p, { ...S, id: p.id, label: p.label }, ep, o)); }
+        else if (!tribalDone) { tribalDone = true; out.push(shell(tribal, { ...S, id: 'tribal', label: tribal.label }, ep, o)); }
+      }
       continue;
     }
     // the jury elimination twist: its three classic pages are one screen at the ceremony (twists-more.js)

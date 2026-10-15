@@ -1395,7 +1395,7 @@ export function tdMultiTribalScreen(ep, o = {}) {
   const both = names.length === 2 ? `${names[0]} and ${names[1]}` : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
   const NUM = ['', 'one', 'two', 'three', 'four', 'five'];
   const winner = (ep.tribesAtStart || []).map(t => t.name).find(t => !names.includes(t)) || null;
-  const steps = [], later = [];
+  const steps = [], later = [], parts = [];
   scrs.forEach((S, i) => {
     S.steps.forEach(s => { if (s.side) s.side = s.side.map(x => (['tally', 'why', 'plans'].includes(x.tab) ? { ...x, round: i + 1 } : x)); });
     const opener = S.steps.findIndex((s, j) => j > 0 && s.k === 'say' && s.host);
@@ -1411,9 +1411,13 @@ export function tdMultiTribalScreen(ep, o = {}) {
     if (opener > 0) S.steps.splice(opener + (i > 0 ? 0 : 1), i > 0 ? 1 : 0, ...springs); else S.steps.splice(1, 0, ...springs);
     const { keep, later: away } = afterlife(S.steps);
     steps.push(...keep); later.push(...away);
+    parts.push({ ...S, id: `tribal-${names[i]}`, label: `${names[i]} Tribal`, steps: keep, elim: results[i].eliminated || coachOut(results[i]) });
   });
+  // each council is its own screen too (the user, 2026-10-14: "separate the screens of the tribal"), in its own classic
+  // slot; the Playa or Motel arrivals wait for the end of the last one
+  if (parts.length) parts[parts.length - 1] = { ...parts[parts.length - 1], steps: [...parts[parts.length - 1].steps, ...later] };
   const last = scrs[scrs.length - 1];
-  return { ...last, id: 'tribal', label: `${names.length} Tribals`, steps: [...steps, ...later], elim: ep.eliminated, first: results.slice(0, -1).map(r => r.eliminated).filter(Boolean) };
+  return { ...last, id: 'tribal', label: `${names.length} Tribals`, steps: [...steps, ...later], elim: ep.eliminated, first: results.slice(0, -1).map(r => r.eliminated).filter(Boolean), parts };
 }
 
 // the first boot of a double night arrives at Playa / the Motel after the second, not in the middle of the ceremony

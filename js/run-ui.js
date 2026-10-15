@@ -301,7 +301,9 @@ function _isDragSeason() {
 
 export function getEpisodeEliminations(ep) {
   if (!ep) return [];
-  if (ep.multiTribalElims?.length) return [...new Set(ep.multiTribalElims.filter(Boolean))];
+  // (a coach a council voted out is one of the night's eliminations too: a coach and a player on one Multi-Tribal night
+  // is a double, the user, 2026-10-14)
+  if (ep.multiTribalElims?.length) return [...new Set([...ep.multiTribalElims, ...(ep.coachElimination || []).map(ce => ce.coach)].filter(Boolean))];
   const names = [
     ep.firstEliminated,
     ep.ambassadorData?.ambassadorEliminated,

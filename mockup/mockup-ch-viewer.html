@@ -1,667 +1,945 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Challenge Stepped Viewer</title>
-<!-- mockup/mockup-ch-viewer.html — The Challenge's stepped viewer, as a clickable mockup on the real plates
-     (assets/sets/ch, made by tools/ch-art/plates.py, alive through js/vp-td-ep/glplate.js) and their marks
-     (js/vp-ch-ep/marks.js). Serve the repo root and open /mockup/mockup-ch-viewer.html.
-     Lines are the engine's own (transcripts/ch-season-1.txt episode 5, ch-season-2.txt day 34). -->
+<!-- mockup/mockup-ch-viewer.html (v2) — The Challenge's stepped viewer as a clickable mockup: one whole episode
+     (season 1, episode 5 of a played season, the lines rewritten in plain speech) on the real plates
+     (assets/sets/ch, tools/ch-art/plates.py), alive through js/vp-td-ep/glplate.js, people standing on the
+     plates' marks (js/vp-ch-ep/marks.js). Serve the repo root and open /mockup/mockup-ch-viewer.html.
+     Every text string here is double-quoted: an apostrophe in a single-quoted string blanked v1. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:ital,wght@0,500;0,700;1,500&family=Black+Ops+One&family=Permanent+Marker&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,600&family=Black+Ops+One&family=Permanent+Marker&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #121010; --panel: #1c1918; --steel: #2a2725; --line: #3a3532; --ink: #f4eee8; --dim: #a39890;
-  --fire: #ff6a1a; --red: #e3262d; --caution: #ffd21a; --neon: #2de2ff; --tape: #b9b4ae;
+  --fire: #ff6a1a; --fire2: #ff9a2a; --red: #e3262d; --caution: #ffd21a; --neon: #2de2ff; --tape: #c9c4bd;
+  --rivet: #7d756e; --hud: #f5efe8; --hud-dim: #b7ab9f;
+  --bg: #0f0d0c; --panel: #1a1716; --line: #34302c; --text: #f2ece6; --muted: #9c9188;
 }
-@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --bg: #121010; } }
+:root[data-theme="light"] { --bg: #ece6df; --panel: #fbf8f4; --line: #d6cec5; --text: #1c1714; --muted: #6b6159; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --bg: #ece6df; --panel: #fbf8f4; --line: #d6cec5; --text: #1c1714; --muted: #6b6159; } }
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg); color: var(--ink); font: 500 16px/1.35 'Barlow Condensed', system-ui, sans-serif; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font: 600 15px/1.35 'Barlow Condensed', system-ui, sans-serif; }
 button { font: inherit; color: inherit; }
+.app { max-width: 1560px; margin: 0 auto; padding: 10px 16px 28px; display: grid; gap: 10px; }
 
-/* ── the header: the show's own bar ─────────────────────────────── */
-.bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 10px 16px; border-bottom: 3px solid var(--fire);
-  background: repeating-linear-gradient(135deg, #191514 0 14px, #1d1817 14px 28px); }
-.logo { font: 400 28px/1 'Anton', sans-serif; letter-spacing: .02em; text-transform: uppercase; transform: skewX(-8deg);
-  color: var(--fire); text-shadow: 2px 2px 0 #000, -1px -1px 0 var(--caution); }
-.logo small { display: block; font: 400 12px 'Black Ops One'; color: var(--caution); letter-spacing: .3em; text-shadow: none; }
-.ep { font: 700 15px 'Barlow Condensed'; color: var(--dim); text-transform: uppercase; letter-spacing: .08em; }
-.ep b { color: var(--ink); }
-.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
-.tabs button { background: var(--steel); border: 1px solid var(--line); padding: 6px 12px; cursor: pointer; text-transform: uppercase;
-  letter-spacing: .06em; font-weight: 700; clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); }
-.tabs button.on { background: var(--fire); color: #140c08; border-color: var(--fire); }
-.classic { background: none; border: 1px dashed var(--line); padding: 5px 10px; color: var(--dim); cursor: pointer; }
-.note { padding: 6px 16px; color: var(--dim); font-size: 14px; }
+/* ── top bar ───────────────────────────────────────────────────── */
+.top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.logo { font: 400 26px/.9 'Anton', sans-serif; text-transform: uppercase; color: var(--fire); transform: skewX(-9deg); text-shadow: 2px 2px 0 #000, -1px -1px 0 var(--caution); }
+.logo small { display: block; font: 400 11px 'Black Ops One'; letter-spacing: .34em; color: var(--caution); text-shadow: 1px 1px 0 #000; }
+.eps { font: 700 13px 'Barlow Condensed'; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.eps b { color: var(--text); }
+.spacer { flex: 1; }
+.ibtn { border: 1px solid var(--line); background: var(--panel); padding: 6px 12px; cursor: pointer; font: 700 13px 'Barlow Condensed'; letter-spacing: .06em; text-transform: uppercase;
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); }
 
-/* ── layout ─────────────────────────────────────────────────────── */
-.wrap { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; padding: 12px 16px 24px; max-width: 1500px; margin: 0 auto; }
-@media (max-width: 980px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
-
-/* ── the stage ──────────────────────────────────────────────────── */
-.stage { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #000; container-type: size; cursor: pointer;
-  border: 2px solid #000; box-shadow: 0 0 0 1px var(--line), 0 18px 40px rgba(0, 0, 0, .5); user-select: none; }
-.cam { position: absolute; inset: 0; transform-origin: 50% 50%; transition: transform 1.3s cubic-bezier(.3, .7, .2, 1); }
-.cam > img, .cam > canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* ── the stage ─────────────────────────────────────────────────── */
+.frame { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #000; container-type: size; isolation: isolate; cursor: pointer; user-select: none;
+  box-shadow: 0 0 0 2px #000, 0 0 0 4px #2b2622, 0 24px 60px rgba(0,0,0,.55); }
+.world { position: absolute; inset: 0; transform-origin: 50% 50%; transition: transform 1.25s cubic-bezier(.3,.7,.2,1); will-change: transform; }
+.drift { position: absolute; inset: 0; animation: drift 30s ease-in-out infinite alternate; }
+@keyframes drift { from { transform: scale(1.015) translate(-.4%, .2%); } to { transform: scale(1.04) translate(.5%, -.3%); } }
+.plate, .glc { position: absolute; inset: 0; width: 100%; height: 100%; }
 canvas.tdx-gl { opacity: 0; transition: opacity .4s; }
 canvas.tdx-gl.on { opacity: 1; }
-.stage.shake .cam { animation: shake .45s; }
-@keyframes shake { 20% { translate: -1.2cqw .5cqh } 40% { translate: 1cqw -.6cqh } 60% { translate: -.7cqw .3cqh } 80% { translate: .4cqw 0 } }
+.live, .cast, .wfx { position: absolute; inset: 0; pointer-events: none; }
+.cast { z-index: 3; }
+.wfx { z-index: 5; }
+.frame.shake .drift { animation: fshake .5s linear, drift 30s ease-in-out infinite alternate; }
+@keyframes fshake { 0%,100% { translate: 0 0; } 15% { translate: -1.4cqw .6cqh; } 35% { translate: 1.2cqw -.8cqh; } 55% { translate: -.8cqw .4cqh; } 75% { translate: .5cqw 0; } }
 
-/* a person: a portrait card standing on their mark (the TD token, in the show's own frame) */
-.tok { position: absolute; width: var(--sz); height: var(--sz); transform: translate(-50%, -100%); z-index: 2;
-  transition: left 1s cubic-bezier(.3, .8, .25, 1), top 1s cubic-bezier(.3, .8, .25, 1), opacity .5s, filter .4s, scale .4s; transform-origin: 50% 100%; }
-.tok .body { position: absolute; inset: 0; transform-origin: 50% 100%; animation: breathe 3.6s ease-in-out infinite; }
-.tok .face { position: absolute; inset: 0; overflow: hidden; background: #222; border: .25cqw solid #0c0a0a;
-  clip-path: polygon(0 4%, 6% 0, 100% 0, 100% 94%, 94% 100%, 0 100%); box-shadow: 0 .6cqh 1.2cqh rgba(0, 0, 0, .5); }
+/* living things the shader can't do */
+.ember { position: absolute; width: .32cqw; aspect-ratio: 1; border-radius: 50%; background: #ffd08a; box-shadow: 0 0 .5cqw .15cqw #ff8a2a; opacity: 0;
+  animation: ember var(--d, 2.6s) linear infinite; animation-delay: var(--dl, 0s); }
+@keyframes ember { 0% { transform: translate(0, 0); opacity: 0; } 12% { opacity: 1; } 100% { transform: translate(var(--dx, 1cqw), -14cqh); opacity: 0; } }
+.glow { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); mix-blend-mode: screen; pointer-events: none;
+  background: radial-gradient(circle, rgba(255,170,70,.55), rgba(255,120,30,.18) 40%, transparent 70%); animation: glow 1.4s ease-in-out infinite alternate; }
+@keyframes glow { from { opacity: .7; scale: .94; } to { opacity: 1; scale: 1.06; } }
+.fly { position: absolute; width: .35cqw; aspect-ratio: 1; border-radius: 50%; background: #e8ff9a; box-shadow: 0 0 .7cqw .25cqw rgba(220,255,140,.75);
+  animation: fly var(--d, 7s) ease-in-out infinite alternate, blinkf 2.4s ease-in-out infinite; animation-delay: var(--dl, 0s); }
+@keyframes fly { from { transform: translate(0, 0); } to { transform: translate(var(--dx, 4cqw), var(--dy, -3cqh)); } }
+@keyframes blinkf { 0%,100% { opacity: .15; } 50% { opacity: 1; } }
+.mote { position: absolute; width: .22cqw; aspect-ratio: 1; border-radius: 50%; background: rgba(255,245,220,.75); animation: fly var(--d, 12s) ease-in-out infinite alternate; animation-delay: var(--dl, 0s); }
+.laser { position: absolute; width: .25cqw; height: 70cqh; transform-origin: 50% 0; mix-blend-mode: screen; opacity: .5;
+  background: linear-gradient(var(--c, #ff3df2), transparent); animation: laser var(--d, 3s) ease-in-out infinite alternate; }
+@keyframes laser { from { rotate: -28deg; } to { rotate: 28deg; } }
+
+/* ── people: a portrait card on their mark ─────────────────────── */
+.tok { position: absolute; width: var(--sz); height: var(--sz); transform: translate(-50%, -100%); transform-origin: 50% 100%;
+  transition: left .9s cubic-bezier(.3,.8,.25,1.04), top .9s cubic-bezier(.3,.8,.25,1.04), width .9s, height .9s, opacity .45s, filter .45s, scale .45s; }
+.tok .body { position: absolute; inset: 0; transform-origin: 50% 100%; animation: breathe 3.6s ease-in-out infinite; animation-delay: var(--bd, 0s); }
+@keyframes breathe { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.02); } }
+.tok .face { position: absolute; inset: 0; overflow: hidden; background: #222; border: max(2px, .22cqw) solid #0c0a0a;
+  clip-path: polygon(0 5%, 5% 0, 100% 0, 100% 95%, 95% 100%, 0 100%); box-shadow: 0 .8cqh 1.6cqh rgba(0,0,0,.5); }
 .tok .face img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.tok .tag { position: absolute; left: 50%; bottom: -.9em; transform: translateX(-50%) rotate(-2deg); white-space: nowrap;
-  font: 400 clamp(9px, 1.15cqw, 18px)/1 'Anton', sans-serif; letter-spacing: .05em; text-transform: uppercase; color: #111;
-  background: var(--tape); padding: .28em .55em .22em; box-shadow: 0 1px 2px rgba(0, 0, 0, .5);
-  clip-path: polygon(0 8%, 4% 0, 9% 10%, 15% 0, 100% 0, 97% 50%, 100% 100%, 8% 100%, 3% 88%, 0 100%); }
-.tok .shadow { position: absolute; left: 8%; right: 8%; bottom: -5%; height: 11%; border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(0, 0, 0, .55), transparent 70%); z-index: -1; }
-.tok.dim { filter: saturate(.6) brightness(.62); scale: .9; }
-.tok.talk { z-index: 5; scale: 1.08; }
-.tok.talk .face { border-color: var(--caution); box-shadow: 0 0 0 .2cqw var(--caution), 0 0 2.4cqw rgba(255, 210, 26, .55); }
-.tok.talk .tag { background: var(--caution); }
-.tok.host .tag { background: var(--fire); color: #140c08; }
-.tok.gone { opacity: 0; }
-.tok.water .face::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 34%;
-  background: linear-gradient(180deg, rgba(110, 230, 230, .55), rgba(40, 170, 190, .85)); border-top: .25cqw solid rgba(220, 255, 255, .8); }
-.tok.chip-safe::before, .tok[data-chip]::before { content: attr(data-chip); position: absolute; left: 50%; top: -1.4em; transform: translateX(-50%);
-  font: 400 clamp(8px, 1cqw, 15px)/1 'Black Ops One'; color: #111; background: var(--caution); padding: .25em .5em; white-space: nowrap; z-index: 3; }
-@keyframes breathe { 50% { transform: scaleY(1.018) } }
-.act-shout .body { animation: shout .5s ease-out 2; }
-@keyframes shout { 30% { transform: translateY(-4%) scale(1.06) } 60% { transform: translateX(-2%) } }
-.act-shove .body { animation: shove .55s cubic-bezier(.2, .9, .2, 1); }
-@keyframes shove { 40% { transform: translateX(var(--dir, 40%)) rotate(6deg) } }
-.act-knock .body { animation: knock .7s .18s cubic-bezier(.2, .9, .3, 1) both; }
-@keyframes knock { 30% { transform: translateX(var(--dir, 30%)) rotate(-12deg) } 100% { transform: translateX(calc(var(--dir, 30%) * .5)) rotate(-4deg) } }
-.act-whisper .body { animation: whisper 1.6s ease-in-out; }
-@keyframes whisper { 50% { transform: translateX(var(--dir, 10%)) rotate(4deg) } }
-.dance .body { animation: dance .62s ease-in-out infinite alternate; }
-.dance:nth-child(2n) .body { animation-duration: .55s; animation-delay: -.2s; }
-.dance:nth-child(3n) .body { animation-duration: .7s; }
-@keyframes dance { 0% { transform: translateY(0) rotate(-3deg) } 100% { transform: translateY(-6%) rotate(3deg) } }
-.badge { position: absolute; left: 50%; top: -18%; transform: translateX(-50%); font: 400 2.2cqw/1 'Anton'; color: var(--red);
-  text-shadow: 0 0 6px #000; animation: pop .5s both; }
-@keyframes pop { 0% { scale: 0; } 70% { scale: 1.3; } 100% { scale: 1; } }
+.tok .shadow { position: absolute; left: 6%; right: 6%; bottom: -5%; height: 12%; border-radius: 50%; background: radial-gradient(ellipse, rgba(0,0,0,.55), transparent 70%); z-index: -1; }
+.tok .tag { position: absolute; left: 50%; bottom: -.95em; transform: translateX(-50%) rotate(-2deg); white-space: nowrap; z-index: 2;
+  font: 400 clamp(8px, 1.05cqw, 16px)/1 'Anton', sans-serif; letter-spacing: .05em; text-transform: uppercase; color: #141110; background: var(--tape);
+  padding: .28em .55em .22em; box-shadow: 0 1px 2px rgba(0,0,0,.6);
+  clip-path: polygon(0 10%, 4% 0, 9% 12%, 15% 0, 100% 0, 97% 50%, 100% 100%, 8% 100%, 3% 86%, 0 100%); }
+.tok.bg { filter: saturate(.75) brightness(.72); scale: .93; }
+.tok.bg .tag { opacity: .7; }
+.tok.speak { z-index: 60 !important; scale: 1.06; }
+.tok.speak .face { border-color: var(--caution); box-shadow: 0 0 0 .2cqw var(--caution), 0 0 2.6cqw rgba(255,210,26,.5); }
+.tok.speak .tag { background: var(--caution); }
+.tok.host .tag { background: var(--fire); }
+.tok.gone { opacity: 0; scale: .6; }
+.tok.safe .face::after { content: "SAFE"; position: absolute; right: -2%; top: 4%; font: 400 clamp(7px, 1cqw, 15px)/1 'Black Ops One'; color: #111; background: var(--caution);
+  padding: .25em .45em; rotate: 12deg; box-shadow: 0 0 0 .12cqw #111; }
+.tok .chip { position: absolute; left: 50%; top: -1.7em; translate: -50% 0; font: 400 clamp(8px, 1.1cqw, 16px)/1 'Anton'; background: var(--red); color: #fff; letter-spacing: .06em;
+  padding: .25em .5em; white-space: nowrap; z-index: 3; animation: chipin .35s cubic-bezier(.3,1.7,.5,1); }
+@keyframes chipin { from { scale: 0; } }
+/* what they're doing */
+.tok.talkpop .body { animation: talkpop .5s cubic-bezier(.3,1.6,.5,1), breathe 3.6s ease-in-out .5s infinite; }
+@keyframes talkpop { 0% { transform: scale(.88, 1.1); } 50% { transform: scale(1.06, .95); } 100% { transform: scale(1); } }
+.tok.shout .body { animation: shout .45s ease-out 2; }
+@keyframes shout { 30% { transform: translateY(-5%) scale(1.07); } 65% { transform: translateX(-2%) rotate(-2deg); } }
+.tok.laugh .body { animation: laugh .5s ease-in-out 3; }
+@keyframes laugh { 25% { transform: translateY(-6%) rotate(-4deg); } 75% { transform: translateY(-4%) rotate(4deg); } }
+.tok.flinch .body { animation: flinch .5s ease-out; }
+@keyframes flinch { 30% { transform: translateX(var(--away, -6%)) rotate(-5deg) scale(.96); } }
+.tok.lean .body { animation: lean 1.8s ease-in-out; }
+@keyframes lean { 50% { transform: translateX(var(--to, 8%)) rotate(var(--rot, 5deg)); } }
+.tok.slump .body { animation: slump .9s ease-out forwards; }
+@keyframes slump { to { transform: translateY(6%) rotate(-3deg) scaleY(.94); } }
+.tok.cheer .body { animation: cheer .42s ease-in-out 4; }
+@keyframes cheer { 50% { transform: translateY(-11%); } }
+.tok.dance .body { animation: dance .6s ease-in-out infinite alternate; animation-delay: var(--bd, 0s); }
+@keyframes dance { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(-6%) rotate(3deg); } }
+.tok.sip .body { animation: sip 4.5s ease-in-out infinite; animation-delay: var(--bd, 0s); }
+@keyframes sip { 0%,70%,100% { transform: none; } 78% { transform: rotate(-4deg) translateY(-2%); } 90% { transform: rotate(-1deg); } }
+.tok.look .body { animation: look 6s ease-in-out infinite; animation-delay: var(--bd, 0s); }
+@keyframes look { 0%,40%,100% { transform: none; } 50% { transform: rotate(-3deg); } 65% { transform: rotate(3deg); } }
+.tok.walkin .body { animation: step .32s ease-in-out 3 alternate; }
+@keyframes step { from { transform: rotate(-4deg); } to { transform: rotate(4deg) translateY(-4%); } }
+/* the daily: hanging under the pier, then in the water */
+.tok.hang .body { animation: hangsway 2.6s ease-in-out infinite alternate; animation-delay: var(--bd, 0s); transform-origin: 50% -40%; }
+@keyframes hangsway { from { transform: rotate(-3.5deg); } to { transform: rotate(3.5deg); } }
+.tok.hang .body::before { content: ""; position: absolute; left: 22%; right: 22%; bottom: 100%; height: var(--rope, 3cqh);
+  border-left: .2cqw solid #2a1d12; border-right: .2cqw solid #2a1d12; }
+.tok.fall { transition: top .5s cubic-bezier(.5,0,.9,.5), scale .4s; scale: .85; }
+.tok.fall .body { animation: bobw 2.2s ease-in-out infinite; animation-delay: var(--bd, 0s); }
+.tok.fall .face::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 42%; background: linear-gradient(180deg, rgba(120,235,240,.6), rgba(30,160,190,.9)); border-top: .2cqw solid rgba(230,255,255,.85); }
+@keyframes bobw { 50% { transform: translateY(5%) rotate(2deg); } }
+.tok.dig .body { animation: dig .5s ease-in-out infinite alternate; }
+@keyframes dig { from { transform: rotate(-6deg) translateY(2%); } to { transform: rotate(6deg) translateY(-3%); } }
 
-/* overlays (not zoomed with the camera) */
-.fx { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
-.tcard { position: absolute; left: 2.2cqw; top: 3cqh; padding: .9cqh 2.2cqw .7cqh 1.6cqw; background: var(--tape); color: #111;
-  transform: rotate(-2.5deg); box-shadow: 0 .4cqh 1cqh rgba(0, 0, 0, .45); animation: slap .35s cubic-bezier(.2, 1.4, .4, 1) both;
-  clip-path: polygon(0 6%, 3% 0, 7% 7%, 12% 0, 100% 3%, 98% 40%, 100% 100%, 6% 97%, 2% 100%, 0 70%); }
-.tcard b { display: block; font: 400 4.2cqw/1 'Anton'; letter-spacing: .02em; }
-.tcard span { font: 700 1.7cqw/1.1 'Barlow Condensed'; text-transform: uppercase; letter-spacing: .1em; }
-@keyframes slap { 0% { scale: 1.6; opacity: 0; rotate: -8deg } 100% { scale: 1; opacity: 1; rotate: 0deg } }
+/* world fx */
+.ring { position: absolute; border: .3cqw solid var(--caution); border-radius: 50%; translate: -50% -50%; animation: ring .9s ease-out forwards; }
+@keyframes ring { from { width: 2cqw; height: 2cqw; opacity: 1; } to { width: 22cqw; height: 22cqw; opacity: 0; } }
+.pop { position: absolute; translate: -50% -50%; font: 400 clamp(14px, 3cqw, 46px)/1 'Anton'; color: var(--caution); text-transform: uppercase;
+  -webkit-text-stroke: .12cqw #120c08; paint-order: stroke fill; text-shadow: 0 .35cqw 0 #120c08; animation: popw 1.2s cubic-bezier(.3,1.7,.5,1) forwards; white-space: nowrap; }
+@keyframes popw { 0% { transform: scale(0) rotate(-18deg); } 30% { transform: scale(1.2) rotate(-6deg); } 80% { opacity: 1; } 100% { transform: translateY(-60%) rotate(-6deg); opacity: 0; } }
+.excl { position: absolute; translate: -50% -50%; width: 2.4cqw; aspect-ratio: 1; display: grid; place-items: center; font: 400 1.8cqw/1 'Anton'; color: #fff;
+  background: var(--red); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); animation: excl 1s cubic-bezier(.3,1.8,.5,1) forwards; }
+@keyframes excl { 0% { transform: translateY(40%) scale(0); } 40% { transform: translateY(-30%) scale(1.15); } 85% { opacity: 1; } 100% { transform: translateY(-50%); opacity: 0; } }
+.drop { position: absolute; width: .5cqw; aspect-ratio: .7; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #dff8ff; box-shadow: 0 0 .3cqw #fff;
+  animation: drop .9s cubic-bezier(.2,.7,.4,1) forwards; }
+@keyframes drop { 0% { transform: translate(0, 0); opacity: 1; } 50% { transform: translate(calc(var(--dx) * .6), -7cqh); } 100% { transform: translate(var(--dx), 2cqh); opacity: 0; } }
+.splashring { position: absolute; translate: -50% -50%; border: .25cqw solid rgba(230,250,255,.9); border-radius: 50%; animation: splr 1.1s ease-out forwards; }
+@keyframes splr { from { width: 1cqw; height: .4cqw; opacity: 1; } to { width: 12cqw; height: 2.6cqw; opacity: 0; } }
+.puff { position: absolute; translate: -50% -50%; width: 4cqw; aspect-ratio: 1.6; border-radius: 50%; background: radial-gradient(ellipse, rgba(230,180,120,.75), transparent 70%);
+  animation: puff 1s ease-out forwards; }
+@keyframes puff { from { scale: .3; opacity: 1; } to { scale: 2.4; opacity: 0; translate: -50% -110%; } }
 
-/* the slams: CALLED OUT and VOTED IN are spray-stencilled, ELIMINATED is stamped, a DQ is caution tape */
-.spray { position: absolute; left: 50%; top: 50%; width: 70cqw; transform: translate(-50%, -50%) rotate(-5deg); }
+/* ── HUD ───────────────────────────────────────────────────────── */
+.hud { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+.loc { position: absolute; left: 2%; top: 3.6%; display: flex; align-items: stretch; filter: drop-shadow(0 .5cqh 1cqh rgba(0,0,0,.45)); }
+.loc .ic { width: 4.2cqw; background: var(--fire); display: grid; place-items: center; clip-path: polygon(0 0, 100% 0, 84% 100%, 0 100%); padding-right: .5cqw; }
+.loc .ic svg { width: 56%; }
+.loc .txt { background: rgba(14,12,11,.88); color: var(--hud); padding: .55cqh 2.2cqw .6cqh 1.4cqw; margin-left: -.5cqw; clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%);
+  border-bottom: .3cqh solid var(--caution); }
+.loc .place { font: 400 2.2cqw/1 'Anton'; letter-spacing: .04em; text-transform: uppercase; }
+.loc .when { font: 700 1cqw/1.2 'Barlow Condensed'; letter-spacing: .14em; text-transform: uppercase; color: var(--hud-dim); margin-top: .35cqh; }
+.loc .when b { color: var(--caution); }
+.loc.fresh { animation: locin .6s cubic-bezier(.2,.9,.3,1.1); }
+@keyframes locin { from { transform: translateX(-120%); } }
+.power { position: absolute; left: 2%; top: calc(3.6% + 7.4cqh); display: flex; align-items: center; gap: .5cqw; background: rgba(14,12,11,.85); padding: .4cqh .7cqw .4cqh .5cqw;
+  border-left: .35cqw solid var(--caution); }
+.power b { font: 400 .95cqw/1 'Black Ops One'; color: var(--caution); letter-spacing: .12em; margin-right: .2cqw; }
+.power img { width: 2.6cqw; height: 2.6cqw; object-fit: cover; border: .15cqw solid var(--caution); }
+.mini { position: absolute; right: 2%; top: 3.6%; width: 15cqw; background: rgba(14,12,11,.88); padding: .45cqw; border-bottom: .3cqh solid var(--fire); }
+.mini .lbl { display: flex; justify-content: space-between; font: 700 .85cqw/1 'Barlow Condensed'; letter-spacing: .14em; color: var(--hud-dim); text-transform: uppercase; margin: .1cqw .1cqw .35cqw; }
+.mini .lbl b { color: var(--fire); }
+.mini .m { position: relative; aspect-ratio: 16 / 9; background-size: cover; }
+.mini .pin { position: absolute; width: 1.2cqw; height: 1.2cqw; translate: -50% -50%; border-radius: 50%; background: var(--fire); box-shadow: 0 0 0 .2cqw #fff; animation: pin 1.2s ease-in-out infinite; }
+@keyframes pin { 50% { scale: 1.5; } }
+.ibtn2 { position: absolute; right: 2%; top: calc(3.6% + 10.6cqw); pointer-events: auto; border: 0; background: rgba(14,12,11,.88); color: var(--hud); cursor: pointer;
+  font: 400 1cqw/1 'Black Ops One'; letter-spacing: .18em; padding: .7cqh .9cqw; display: flex; gap: .5cqw; align-items: center; }
+.ibtn2 i { width: .8cqw; height: .8cqw; border-radius: 50%; background: var(--fire); display: none; }
+.ibtn2.new i { display: block; animation: pin 1s ease-in-out infinite; }
+/* the open vote's board */
+.board { position: absolute; right: 2%; top: calc(3.6% + 13.4cqw); width: 17cqw; background: rgba(14,12,11,.9); padding: .8cqw; border-top: .35cqh solid var(--red); }
+.board h5 { margin: 0 0 .5cqw; font: 400 1.05cqw/1 'Black Ops One'; color: var(--red); letter-spacing: .16em; }
+.board .row { display: grid; grid-template-columns: 2.8cqw 1fr auto; gap: .6cqw; align-items: center; margin-bottom: .5cqw; }
+.board .row img { width: 2.8cqw; height: 2.8cqw; object-fit: cover; border: .15cqw solid #000; }
+.board .nm { font: 400 1.25cqw/1 'Anton'; text-transform: uppercase; color: var(--hud); }
+.board .ticks { font: 400 1.2cqw/1 'Permanent Marker'; color: var(--caution); margin-top: .2cqw; min-height: 1.2cqw; word-break: break-all; }
+.board .ct { font: 400 2.4cqw/1 'Anton'; color: var(--caution); }
+.board .row.hit { animation: hit .5s; }
+@keyframes hit { 30% { transform: translateX(-4%); background: rgba(227,38,45,.35); } }
+.board .left { font: 700 .95cqw/1.2 'Barlow Condensed'; color: var(--hud-dim); letter-spacing: .08em; text-transform: uppercase; margin-top: .4cqw; }
+/* race meter */
+.race { position: absolute; left: 50%; top: 3.6%; translate: -50% 0; display: grid; gap: .6cqh; }
+.race .r { display: grid; grid-template-columns: 3.4cqw auto 2.4cqw; gap: .7cqw; align-items: center; background: rgba(14,12,11,.88); padding: .5cqh .7cqw; border-left: .35cqw solid var(--fire); }
+.race img { width: 3.4cqw; height: 3.4cqw; object-fit: cover; border: .15cqw solid #000; }
+.race .slots { display: flex; gap: .3cqw; }
+.race .slots i { width: 1.8cqw; height: 1.8cqw; background: #3a3532; clip-path: polygon(20% 0, 80% 0, 100% 35%, 80% 100%, 20% 100%, 0 35%); transition: background .3s; }
+.race .slots i.on { background: var(--caution); }
+.race .slots i.lock { background: var(--fire); }
+.race .n { font: 400 1.8cqw/1 'Anton'; color: var(--caution); text-align: right; }
+/* daily: who's still hanging */
+.left-hud { position: absolute; left: 50%; top: 3.6%; translate: -50% 0; display: flex; gap: .3cqw; background: rgba(14,12,11,.88); padding: .5cqw .7cqw; border-bottom: .3cqh solid var(--neon); align-items: center; }
+.left-hud b { font: 400 1cqw/1 'Black Ops One'; color: var(--neon); letter-spacing: .14em; margin-right: .4cqw; }
+.left-hud img { width: 2.4cqw; height: 2.4cqw; object-fit: cover; border: .12cqw solid #000; transition: opacity .3s, filter .3s; }
+.left-hud img.out { opacity: .25; filter: grayscale(1); }
+/* rules card */
+.rules { position: absolute; left: 50%; top: 42%; width: 54cqw; translate: -50% -50%; padding: 2.2cqh 2.4cqw 2cqh; color: var(--hud);
+  background: linear-gradient(180deg, #3d3936, #1d1a19); border: .25cqw solid #000; box-shadow: 0 0 0 .25cqw #5a534d inset, 0 2.4cqh 5cqh rgba(0,0,0,.65);
+  animation: rulesin .45s cubic-bezier(.2,1.3,.4,1) both; }
+.rules::before, .rules::after { content: ""; position: absolute; width: .8cqw; height: .8cqw; border-radius: 50%; background: var(--rivet); top: .8cqw; box-shadow: inset 0 -.1cqw .1cqw #000; }
+.rules::before { left: .8cqw; } .rules::after { right: .8cqw; }
+@keyframes rulesin { from { scale: .6; opacity: 0; rotate: -4deg; } }
+.rules .k { font: 400 1.25cqw 'Black Ops One'; color: var(--fire); letter-spacing: .26em; }
+.rules .n { font: 400 5cqw/1 'Anton'; color: var(--caution); text-transform: uppercase; margin: .6cqh 0 1cqh; transform: skewX(-7deg); }
+.rules ol { margin: 0; padding-left: 1.4em; font: 600 1.5cqw/1.3 'Barlow Condensed'; color: #e6ddd4; }
+.rules li { margin-bottom: .45cqh; }
+.rules li b { color: var(--caution); }
+.rules .f { margin-top: 1.1cqh; font: 700 1.3cqw 'Barlow Condensed'; color: var(--fire); text-transform: uppercase; letter-spacing: .14em; }
+
+/* ── dialogue (inside the stage) ───────────────────────────────── */
+.dlg { position: absolute; left: 1.8%; right: 1.8%; bottom: 2.4%; height: 19%; z-index: 12; pointer-events: none; }
+.dlg .panel { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(30,27,25,.95), rgba(16,14,13,.96));
+  clip-path: polygon(1.2% 0, 100% 0, 98.8% 100%, 0 100%); box-shadow: 0 1cqh 3cqh rgba(0,0,0,.5); }
+.dlg .panel::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: .9cqh;
+  background: repeating-linear-gradient(-45deg, var(--caution) 0 1.2cqw, #111 1.2cqw 2.4cqw); }
+.dlg .panel::after { content: ""; position: absolute; right: 1.6%; bottom: 12%; width: .7cqw; height: .7cqw; border-radius: 50%; background: var(--rivet); }
+.dlg.host .panel::before { background: repeating-linear-gradient(-45deg, var(--fire) 0 1.2cqw, #111 1.2cqw 2.4cqw); }
+.dlg.conf .panel::before { background: linear-gradient(90deg, var(--red), var(--fire)); }
+.cutin { position: absolute; left: 1.2%; bottom: 0; width: 13.5%; aspect-ratio: .86; overflow: hidden; background: #222; z-index: 2;
+  clip-path: polygon(0 0, 100% 4%, 92% 100%, 0 100%); }
+.cutin img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
+.cutin.fresh { animation: cutin .45s cubic-bezier(.2,.9,.3,1.1); }
+@keyframes cutin { from { transform: translateX(-50%); opacity: 0; } }
+.dlg .name { position: absolute; left: calc(var(--cut, 0%) + 2.6%); top: -2.6cqh; z-index: 3; font: 400 2.1cqw/1 'Anton'; letter-spacing: .05em; text-transform: uppercase;
+  color: #141110; background: var(--tape); padding: .35em 1.1em .3em .8em; rotate: -1.5deg; box-shadow: 0 .3cqh .6cqh rgba(0,0,0,.5);
+  clip-path: polygon(0 8%, 3% 0, 7% 9%, 11% 0, 100% 0, 97% 45%, 100% 100%, 6% 100%, 2% 86%, 0 100%); }
+.dlg .name small { font: 700 .95cqw 'Barlow Condensed'; letter-spacing: .14em; margin-left: .7em; opacity: .75; }
+.dlg.host .name { background: var(--fire); }
+.dlg.conf .name { background: var(--red); color: #fff; }
+.dlg.dir .name { display: none; }
+.dlg .say { position: absolute; left: calc(var(--cut, 0%) + 2.6%); right: 5%; top: 16%; bottom: 8%; color: var(--hud); display: flex; align-items: center;
+  font: 600 2.15cqw/1.32 'Barlow Condensed'; }
+.dlg.dir .say { font: 600 italic 1.95cqw/1.35 'Barlow Condensed'; color: #d9cfc5; }
+.dlg .say span.hn { color: var(--caution); }
+.dlg .say span.hg { color: var(--fire2); }
+.dlg .say.punch { animation: punch .3s cubic-bezier(.3,1.7,.5,1); transform-origin: 0 50%; }
+@keyframes punch { from { transform: scale(.86); opacity: 0; } }
+.dlg .next { position: absolute; right: 2.2%; bottom: 14%; width: 1.4cqw; aspect-ratio: 1; background: var(--caution); clip-path: polygon(0 0, 100% 50%, 0 100%); animation: nx .8s ease-in-out infinite alternate; }
+@keyframes nx { to { transform: translateX(.5cqw); } }
+.dlg.loud .panel { animation: dshake .35s linear; }
+@keyframes dshake { 25% { transform: translateX(-.6cqw); } 50% { transform: translateX(.5cqw); } 75% { transform: translateX(-.3cqw); } }
+.caret { display: inline-block; width: .45em; height: 1em; background: var(--caution); vertical-align: -.12em; margin-left: .1em; animation: blink .7s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ── the confessional cut ──────────────────────────────────────── */
+.confcut { position: absolute; inset: 0; z-index: 8; overflow: hidden; }
+.confcut > .plate { position: absolute; inset: 0; width: 100%; height: 100%; animation: cpush 9s ease-out forwards; }
+@keyframes cpush { from { transform: scale(1.02); } to { transform: scale(1.09); } }
+.confcut .who { position: absolute; top: 70%; width: 30cqw; aspect-ratio: 1; translate: -50% -100%; animation: cpush2 9s ease-out forwards; }
+@keyframes cpush2 { from { scale: 1; } to { scale: 1.05; } }
+.confcut .who .face { position: absolute; inset: 0; overflow: hidden; border: .4cqw solid #0c0a0a; clip-path: polygon(0 4%, 4% 0, 100% 0, 100% 96%, 96% 100%, 0 100%);
+  box-shadow: 0 2cqh 4cqh rgba(0,0,0,.6); }
+.confcut .who img { width: 100%; height: 100%; object-fit: cover; }
+.confcut .lower { position: absolute; left: 4%; top: 8%; display: grid; gap: .5cqh; animation: lowin .5s .15s cubic-bezier(.2,.9,.3,1.1) both; }
+@keyframes lowin { from { transform: translateX(-120%); } }
+.confcut .lower .n { font: 400 4cqw/1 'Anton'; text-transform: uppercase; color: #fff; background: #111; padding: .2em .45em .12em; border-left: .6cqw solid var(--fire); transform: skewX(-7deg); }
+.confcut .lower .s { justify-self: start; font: 400 1.2cqw/1 'Black Ops One'; color: #111; background: var(--caution); padding: .45em .7em; letter-spacing: .14em; transform: skewX(-7deg); }
+.confcut .rec { position: absolute; right: 3%; top: 6%; display: flex; gap: .6cqw; align-items: center; font: 400 1.3cqw/1 'Black Ops One'; color: #fff; letter-spacing: .16em; }
+.confcut .rec i { width: 1cqw; height: 1cqw; border-radius: 50%; background: var(--red); animation: blink 1s steps(2) infinite; }
+.vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 70% 75% at 50% 45%, transparent 55%, rgba(0,0,0,.6)); }
+.grain { position: absolute; inset: -40%; pointer-events: none; opacity: .12; mix-blend-mode: overlay; animation: grain .5s steps(4) infinite;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+@keyframes grain { 25% { transform: translate(-5%, 3%); } 50% { transform: translate(4%, -2%); } 75% { transform: translate(-2%, -5%); } }
+.static { position: absolute; inset: -20%; z-index: 30; pointer-events: none; opacity: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+.static.burst { animation: burst .42s steps(5) forwards; }
+@keyframes burst { 0% { opacity: 1; } 25% { transform: translate(-5%, 3%); } 50% { opacity: .9; transform: translate(4%, -2%); } 100% { opacity: 0; } }
+
+/* ── overlays: title slams, wipes, the show open ───────────────── */
+.over { position: absolute; inset: 0; z-index: 20; pointer-events: none; overflow: hidden; }
+.seg { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(8,6,6,.35); }
+.seg .band { position: absolute; left: -10%; right: -10%; top: 33%; height: 28%; background: #111; rotate: -5deg; box-shadow: 0 0 0 .5cqw var(--caution), 0 0 0 1cqw #111;
+  animation: band .45s cubic-bezier(.2,.9,.3,1) both; }
+.seg .band::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 4cqw, rgba(255,255,255,.04) 4cqw 8cqw); }
+@keyframes band { from { translate: -110% 0; } }
+.seg .in { position: relative; text-align: center; rotate: -5deg; margin-top: -8cqh; }
+.seg .k { font: 400 1.6cqw 'Black Ops One'; color: var(--caution); letter-spacing: .4em; animation: fadeup .4s .3s both; }
+.seg .big { font: 400 9cqw/1 'Anton'; text-transform: uppercase; color: #fff; -webkit-text-stroke: .2cqw #000; paint-order: stroke fill; text-shadow: .5cqw .5cqw 0 var(--fire);
+  animation: slam .5s .15s cubic-bezier(.3,1.6,.5,1) both; }
+@keyframes slam { from { scale: 2.6; opacity: 0; } }
+@keyframes fadeup { from { opacity: 0; translate: 0 40%; } }
+.wipe { position: absolute; inset: 0; z-index: 25; }
+.wipe i { position: absolute; left: -30%; width: 160%; height: 26%; background: var(--caution); rotate: -8deg;
+  border-block: 1.2cqh solid; border-image: repeating-linear-gradient(-45deg, #111 0 1.3cqh, var(--caution) 1.3cqh 2.6cqh) 1; animation: wipe .9s cubic-bezier(.6,0,.4,1) both; }
+.wipe i:nth-child(1) { top: -6%; } .wipe i:nth-child(2) { top: 18%; animation-delay: .05s; } .wipe i:nth-child(3) { top: 42%; animation-delay: .1s; }
+.wipe i:nth-child(4) { top: 66%; animation-delay: .15s; } .wipe i:nth-child(5) { top: 90%; animation-delay: .2s; }
+@keyframes wipe { 0% { translate: -110% 0; } 45%, 55% { translate: 0 0; } 100% { translate: 110% 0; } }
+.spray { position: absolute; left: 50%; top: 40%; width: 66cqw; translate: -50% -50%; rotate: -5deg; }
 .spray svg { width: 100%; overflow: visible; }
 .spray .paint { clip-path: inset(0 100% 0 0); animation: sprayon .7s .05s steps(14) forwards; }
 @keyframes sprayon { to { clip-path: inset(0 0 0 0); } }
 .spray .drip { transform-box: fill-box; transform-origin: top; animation: drip 1.6s .7s ease-in both; }
-@keyframes drip { 0% { transform: scaleY(0) } 100% { transform: scaleY(1) } }
-.spray .can { animation: can .7s .05s linear both; }
-@keyframes can { 0% { transform: translateX(-60%); opacity: 1 } 95% { opacity: 1 } 100% { transform: translateX(60%); opacity: 0 } }
-.stamp { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%) rotate(-11deg); padding: 1.2cqh 2.6cqw .8cqh;
-  font: 400 7.6cqw/1 'Black Ops One'; color: var(--red); border: .8cqw solid var(--red); letter-spacing: .04em;
-  background: rgba(20, 0, 0, .25); animation: stamp .28s cubic-bezier(.3, 1.6, .5, 1) both;
-  -webkit-mask: var(--grunge); mask: var(--grunge); }
-@keyframes stamp { 0% { scale: 2.6; opacity: 0 } 100% { scale: 1; opacity: .95 } }
-.tape { position: absolute; left: -20%; width: 140%; height: 10cqh; display: flex; align-items: center; overflow: hidden;
-  background: var(--caution); border-block: 1.1cqh solid; border-image: repeating-linear-gradient(-45deg, #111 0 1.2cqh, var(--caution) 1.2cqh 2.4cqh) 1;
-  box-shadow: 0 .8cqh 1.6cqh rgba(0, 0, 0, .5); animation: tape .5s cubic-bezier(.2, .9, .2, 1) both; }
-.tape span { white-space: nowrap; font: 400 4.6cqw/1 'Black Ops One'; color: #111; letter-spacing: .06em; padding-left: 2cqw; }
-.tape.a { top: 38%; rotate: -7deg; }
-.tape.b { top: 52%; rotate: 5deg; animation-delay: .18s; animation-name: tape2; }
-@keyframes tape { 0% { translate: -110% 0 } 100% { translate: 0 0 } }
-@keyframes tape2 { 0% { translate: 110% 0 } 100% { translate: 0 0 } }
-.game { position: absolute; left: 50%; top: 50%; width: 56cqw; transform: translate(-50%, -50%); padding: 2.4cqh 2.6cqw 2.2cqh;
-  background: linear-gradient(180deg, #3b3836, #1f1c1b); border: .25cqw solid #000; color: var(--ink); animation: slap .4s cubic-bezier(.2, 1.3, .4, 1) both;
-  box-shadow: 0 0 0 .25cqw #57514c inset, 0 2cqh 4cqh rgba(0, 0, 0, .6);
-  background-image: radial-gradient(circle at 1.4cqw 1.4cqw, #8a837d .35cqw, transparent .45cqw), radial-gradient(circle at calc(100% - 1.4cqw) 1.4cqw, #8a837d .35cqw, transparent .45cqw),
-    radial-gradient(circle at 1.4cqw calc(100% - 1.4cqw), #8a837d .35cqw, transparent .45cqw), radial-gradient(circle at calc(100% - 1.4cqw) calc(100% - 1.4cqw), #8a837d .35cqw, transparent .45cqw),
-    linear-gradient(180deg, #3b3836, #1f1c1b); }
-.game .k { font: 400 1.4cqw/1 'Black Ops One'; color: var(--fire); letter-spacing: .25em; }
-.game .n { font: 400 6cqw/1 'Anton'; color: var(--caution); text-transform: uppercase; margin: .6cqh 0 1cqh; transform: skewX(-6deg); }
-.game p { margin: 0; font: 500 1.6cqw/1.3 'Barlow Condensed'; color: #ddd3ca; }
-.game .f { margin-top: 1.2cqh; font: 700 1.4cqw 'Barlow Condensed'; color: var(--fire); text-transform: uppercase; letter-spacing: .12em; }
-.win { position: absolute; left: 50%; top: 22%; transform: translate(-50%, -50%) rotate(-3deg); font: 400 6cqw/1 'Anton'; color: var(--caution);
-  text-transform: uppercase; text-shadow: .3cqw .3cqw 0 #000, 0 0 3cqw rgba(255, 106, 26, .8); animation: slap .4s cubic-bezier(.2, 1.4, .4, 1) both; white-space: nowrap; }
+@keyframes drip { from { transform: scaleY(0); } }
+.stamp { position: absolute; left: 50%; top: 40%; translate: -50% -50%; rotate: -11deg; padding: 1.2cqh 2.6cqw .8cqh; font: 400 7.4cqw/1 'Black Ops One'; color: var(--red);
+  border: .8cqw solid var(--red); letter-spacing: .04em; background: rgba(30,0,0,.25); animation: stamp .28s cubic-bezier(.3,1.6,.5,1) both; -webkit-mask: var(--grunge); mask: var(--grunge); }
+@keyframes stamp { from { scale: 2.6; opacity: 0; } to { opacity: .95; } }
+.winner { position: absolute; left: 50%; top: 24%; translate: -50% -50%; rotate: -3deg; font: 400 6.4cqw/1 'Anton'; color: var(--caution); text-transform: uppercase; white-space: nowrap;
+  -webkit-text-stroke: .18cqw #000; paint-order: stroke fill; text-shadow: .4cqw .4cqw 0 #000, 0 0 4cqw rgba(255,106,26,.85); animation: slam .45s cubic-bezier(.3,1.6,.5,1) both; }
+.spark { position: absolute; width: .5cqw; height: 1.6cqw; background: var(--caution); border-radius: .2cqw; animation: spark 1.1s cubic-bezier(.2,.8,.3,1) forwards; }
+@keyframes spark { from { transform: translate(0, 0) rotate(var(--r)); opacity: 1; } to { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); opacity: 0; } }
+/* the show open */
+.open { position: absolute; inset: 0; background: #070505; overflow: hidden; }
+.open .flash { position: absolute; inset: 0; opacity: 0; animation: oflash .26s steps(1) both; background: #070505; }
+@keyframes oflash { 0% { opacity: 1; } 100% { opacity: 0; } }
+.open .flash img { position: absolute; left: 50%; top: 50%; width: 52cqw; height: 52cqw; translate: -50% -50%; object-fit: cover; filter: contrast(1.15) saturate(1.3); }
+.open .flash img + img { translate: calc(-50% + 1.2cqw) -50%; mix-blend-mode: screen; filter: hue-rotate(160deg) saturate(2.5); opacity: .55; }
+.open .flash b { position: absolute; bottom: 12%; left: 6%; font: 400 9cqw/1 'Anton'; color: #fff; text-transform: uppercase; -webkit-text-stroke: .2cqw #000; paint-order: stroke fill;
+  text-shadow: .5cqw .5cqw 0 var(--fire); transform: skewX(-8deg); }
+.open .grid { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(2, 1fr); gap: .3cqw; padding: .3cqw; animation: gridin .4s both; }
+.open .grid img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(.4) brightness(.5); animation: gpop .3s both; }
+@keyframes gridin { from { opacity: 0; } }
+@keyframes gpop { from { scale: 0; } }
+.open .logo2 { position: absolute; left: 50%; top: 50%; translate: -50% -50%; text-align: center; animation: slam .5s cubic-bezier(.3,1.6,.5,1) both; white-space: nowrap; }
+.open .logo2 .a { font: 400 2.6cqw/1 'Black Ops One'; color: var(--caution); letter-spacing: .4em; text-shadow: .3cqw .3cqw 0 #000; }
+.open .logo2 .b { font: 400 14cqw/.9 'Anton'; color: var(--fire); text-transform: uppercase; transform: skewX(-10deg); -webkit-text-stroke: .3cqw #000; paint-order: stroke fill;
+  text-shadow: .6cqw .6cqw 0 #000, 0 0 6cqw rgba(255,106,26,.6); }
+.open .logo2 .c { margin-top: 1.4cqh; display: inline-block; font: 400 2.2cqw/1 'Black Ops One'; color: #111; background: var(--caution); padding: .4em 1em; letter-spacing: .3em; }
+.open .scan { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,.25) 0 2px, transparent 2px 4px); pointer-events: none; }
 
-/* confessional: the stage cuts to the interview */
-.conf { position: absolute; inset: 0; display: grid; grid-template-columns: 38% 1fr; align-items: center; gap: 3cqw; padding: 0 5cqw;
-  background: radial-gradient(circle at 25% 50%, #3a2a20, #0d0a09 70%); animation: fade .3s both; }
-.conf .pic { aspect-ratio: 1; overflow: hidden; border: .4cqw solid #000; box-shadow: 0 0 0 .3cqw var(--fire); rotate: -2deg; }
-.conf .pic img { width: 100%; height: 100%; object-fit: cover; }
-.conf .lab { font: 400 1.5cqw 'Black Ops One'; color: var(--fire); letter-spacing: .3em; }
-.conf .nm { font: 400 4.2cqw/1 'Anton'; text-transform: uppercase; margin: .5cqh 0 1.5cqh; }
-.conf q { display: block; font: 500 2.9cqw/1.25 'Barlow Condensed'; color: var(--ink); quotes: '\201C' '\201D'; }
-.conf q::before { color: var(--caution); font-family: 'Anton'; }
-@keyframes fade { from { opacity: 0 } }
-
-/* HUD: the race meter, the tally */
-.hud { position: absolute; left: 50%; bottom: 3cqh; transform: translateX(-50%); display: grid; gap: .8cqh; z-index: 9; }
-.race { display: grid; grid-template-columns: 4.2cqw auto; align-items: center; gap: 1cqw; background: rgba(12, 10, 10, .82); padding: .6cqh 1cqw;
-  border-left: .4cqw solid var(--fire); }
-.race img { width: 4.2cqw; height: 4.2cqw; object-fit: cover; border: .2cqw solid #000; }
-.race .slots { display: flex; gap: .35cqw; }
-.race .slots i { width: 2.1cqw; height: 2.1cqw; background: #3a3532; clip-path: polygon(20% 0, 80% 0, 100% 35%, 80% 100%, 20% 100%, 0 35%); transition: background .3s; }
-.race .slots i.on { background: var(--caution); }
-.race .slots i.lock { background: var(--fire); }
-
-/* the open vote: every voter on a board, the name said out loud written on their card */
-.board { position: absolute; inset: 0; background: rgba(10, 8, 8, .74); backdrop-filter: blur(3px); display: grid; grid-template-rows: auto 1fr; padding: 3cqh 3cqw; }
-.tally { display: flex; gap: 2cqw; justify-content: center; align-items: end; }
-.tally .row { display: grid; grid-template-columns: 4.6cqw auto; gap: .8cqw; align-items: center; }
-.tally .row img { width: 4.6cqw; height: 4.6cqw; object-fit: cover; border: .2cqw solid #000; }
-.tally .nm { font: 400 2cqw/1 'Anton'; text-transform: uppercase; }
-.tally .ct { font: 400 3.8cqw/1 'Anton'; color: var(--caution); min-width: 3.4cqw; }
-.tally .bar2 { height: 1.3cqh; background: var(--fire); transition: width .4s; }
-.voters { display: grid; grid-template-columns: repeat(10, 1fr); gap: 1.2cqh 1cqw; align-content: center; padding-top: 2cqh; }
-.vc { position: relative; aspect-ratio: .78; background: #221e1c; border: .2cqw solid #000; transition: opacity .3s, filter .3s, transform .3s; }
-.vc img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; filter: saturate(.65) brightness(.7); }
-.vc .n { font: 400 1.05cqw/1 'Anton'; text-transform: uppercase; text-align: center; padding: .4cqh 0; color: var(--dim); }
-.vc .said { position: absolute; left: -6%; right: -6%; top: 34%; text-align: center; font: 400 1.55cqw/1 'Permanent Marker'; color: #111;
-  background: var(--caution); rotate: -6deg; padding: .4cqh 0; animation: slap .3s both; }
-.vc.now { transform: scale(1.12); z-index: 2; box-shadow: 0 0 0 .25cqw var(--caution); }
-.vc.now img, .vc.done img { filter: none; }
-.vc.done .n { color: var(--ink); }
-
-/* the map */
-.pin { position: absolute; transform: translate(-50%, -100%); display: grid; justify-items: center; gap: .3cqh; z-index: 3; pointer-events: auto; }
-.pin .lab { font: 400 clamp(8px, 1.05cqw, 15px)/1 'Anton'; text-transform: uppercase; letter-spacing: .05em; color: #111; background: var(--tape); padding: .25em .5em; }
-.pin .lab.hot { background: var(--fire); }
-.faces { display: flex; }
-.faces img { width: 3.1cqw; height: 3.1cqw; border-radius: 50%; object-fit: cover; border: .18cqw solid #111; margin-left: -.8cqw; background: #333; }
-.faces img:first-child { margin-left: 0; }
-.bub { position: relative; font: 700 clamp(9px, 1.1cqw, 16px)/1.15 'Barlow Condensed'; background: #fff; color: #111; padding: .4em .7em; border-radius: .8em;
-  border: .15cqw solid #111; cursor: pointer; max-width: 16cqw; text-align: center; animation: pop .4s both; }
-.bub::after { content: ''; position: absolute; left: 50%; bottom: -.55em; border: .35em solid transparent; border-top-color: #111; translate: -50% 0; }
+/* ── the map screens ───────────────────────────────────────────── */
+.mpin { position: absolute; translate: -50% -100%; display: grid; justify-items: center; gap: .35cqh; z-index: 4; pointer-events: auto; }
+.mpin .faces { display: flex; }
+.mpin .faces img { width: 3.2cqw; height: 3.2cqw; border-radius: 50%; object-fit: cover; border: .18cqw solid #111; margin-left: -.9cqw; background: #333; box-shadow: 0 .2cqh .4cqh rgba(0,0,0,.5); }
+.mpin .faces img:first-child { margin-left: 0; }
+.bub { position: relative; font: 700 1.15cqw/1.15 'Barlow Condensed'; background: #fff; color: #111; padding: .45em .8em; border-radius: .8em; border: .15cqw solid #111;
+  max-width: 17cqw; text-align: center; cursor: pointer; animation: chipin .4s both; box-shadow: 0 .3cqh .6cqh rgba(0,0,0,.45); }
+.bub::after { content: ""; position: absolute; left: 50%; bottom: -.6em; border: .35em solid transparent; border-top-color: #111; translate: -50% 0; }
 .bub.star { background: var(--caution); }
-.bub.star::before { content: '★ '; color: var(--red); }
-.bub.seen { opacity: .5; }
-.clock { position: absolute; left: 50%; bottom: 2.4cqh; transform: translateX(-50%); display: flex; gap: .5cqw; z-index: 6; }
-.clock span { font: 400 clamp(9px, 1.2cqw, 17px)/1 'Anton'; text-transform: uppercase; padding: .5em 1em; background: rgba(12, 10, 10, .85); color: var(--dim);
-  clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%); }
-.clock span.done { color: var(--ink); }
+.bub.star::before { content: "\2605  "; color: var(--red); }
+.bub:hover { scale: 1.06; }
+.clock { position: absolute; left: 50%; top: 3.6%; translate: -50% 0; display: flex; gap: .4cqw; z-index: 6; }
+.clock span { font: 400 1.15cqw/1 'Anton'; text-transform: uppercase; padding: .55em 1.1em; background: rgba(14,12,11,.88); color: var(--hud-dim); clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%); }
+.clock span.done { color: var(--hud); }
 .clock span.now { background: var(--fire); color: #111; }
 .clock span.lock { color: #6d655f; }
 
-/* ── under the stage: the line ─────────────────────────────────── */
-.dlg { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; margin-top: 10px; padding: 12px 14px; min-height: 92px;
-  background: var(--panel); border-left: 5px solid var(--fire); }
-.dlg .who { display: grid; justify-items: center; gap: 4px; width: 84px; }
-.dlg .who img { width: 60px; height: 60px; object-fit: cover; border: 2px solid #000; }
-.dlg .who b { font: 400 15px/1 'Anton'; text-transform: uppercase; letter-spacing: .04em; text-align: center; }
-.dlg .who i { font: 700 11px 'Barlow Condensed'; color: var(--fire); letter-spacing: .12em; text-transform: uppercase; font-style: normal; }
-.dlg .line { font: 500 clamp(17px, 2.1vw, 24px)/1.3 'Barlow Condensed'; margin: 0; }
-.dlg .line.dir { font-style: italic; color: var(--dim); }
-.dlg .line .hl { color: var(--caution); }
-.ctl { display: flex; gap: 6px; align-items: center; }
-.ctl button { width: 40px; height: 40px; background: var(--steel); border: 1px solid var(--line); cursor: pointer; font: 400 18px 'Anton'; }
-.ctl button:hover { background: var(--fire); color: #111; }
-.ctl .ct { font: 700 13px 'Barlow Condensed'; color: var(--dim); min-width: 44px; text-align: center; }
+/* ── intel drawer ──────────────────────────────────────────────── */
+.intel { position: absolute; top: 0; right: 0; bottom: 0; width: min(32%, 380px); z-index: 18; pointer-events: auto; transform: translateX(100%); transition: transform .35s cubic-bezier(.3,.8,.3,1);
+  background: rgba(16,14,13,.95); border-left: .35cqw solid var(--caution); padding: 2.4cqh 1.4cqw; display: flex; flex-direction: column; color: var(--hud); cursor: default; }
+.intel.open { transform: none; }
+.intel h4 { margin: 0; font: 400 1.5cqw/1 'Black Ops One'; color: var(--caution); letter-spacing: .1em; }
+.intel .sub { font: 600 1cqw 'Barlow Condensed'; color: var(--hud-dim); margin: .5cqh 0 1.2cqh; }
+.intel .list { overflow: auto; flex: 1; }
+.icard { background: rgba(255,255,255,.05); padding: .9cqh .8cqw; margin-bottom: .8cqh; border-left: .3cqw solid var(--fire); font: 600 1.2cqw/1.35 'Barlow Condensed'; }
+.icard h6 { margin: 0 0 .3cqh; font: 400 1.05cqw 'Anton'; letter-spacing: .08em; text-transform: uppercase; color: var(--fire); }
+.icard.fresh { animation: ifresh 1.2s ease-out; }
+@keyframes ifresh { from { background: rgba(255,210,26,.25); } }
+.icard .b { display: flex; justify-content: space-between; }
+.icard .up { color: #7fe07f; } .icard .dn { color: #ff7a6e; }
 
-/* ── the side panel: what the house does not know ─────────────── */
-.intel { background: var(--panel); border-top: 4px solid var(--caution); padding: 12px 14px; align-self: start; max-height: 80vh; overflow: auto; }
-.intel h2 { margin: 0 0 8px; font: 400 18px/1 'Black Ops One'; color: var(--caution); letter-spacing: .08em; }
-.intel .sub { color: var(--dim); font-size: 13px; margin-bottom: 10px; }
-.intel section { border-top: 1px solid var(--line); padding: 8px 0; animation: fade .4s both; }
-.intel h3 { margin: 0 0 4px; font: 400 14px 'Anton'; text-transform: uppercase; letter-spacing: .06em; color: var(--fire); }
-.intel p { margin: 0 0 4px; font-size: 15px; }
-.intel .chain { display: flex; flex-wrap: wrap; gap: 4px; font-size: 13px; }
-.intel .chain span { background: var(--steel); padding: 1px 6px; }
-.intel .chain span.x { background: var(--red); color: #fff; }
-.intel .bond { display: flex; justify-content: space-between; font-size: 14px; }
-.intel .bond .d { font-weight: 700; }
-.intel .bond .d.up { color: #7fe07f; } .intel .bond .d.dn { color: #ff7a6e; }
+/* ── controls under the stage ──────────────────────────────────── */
+.ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cbtn { border: 1px solid var(--line); background: var(--panel); padding: 9px 14px; cursor: pointer; display: inline-flex; gap: 8px; align-items: center;
+  font: 700 15px 'Barlow Condensed'; letter-spacing: .06em; text-transform: uppercase; clip-path: polygon(7px 0, 100% 0, calc(100% - 7px) 100%, 0 100%); }
+.cbtn.go { background: var(--fire); color: #140c08; border-color: var(--fire); }
+.cbtn.on { background: var(--caution); color: #111; }
+.key { font: 700 11px 'Barlow Condensed'; padding: 1px 6px; background: rgba(0,0,0,.18); }
+.chapters { flex: 1; min-width: 260px; display: flex; gap: 4px; }
+.chap { flex: 1; cursor: pointer; display: grid; gap: 4px; }
+.chap span { font: 700 12px 'Barlow Condensed'; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chap.on span { color: var(--fire); }
+.chap i { display: block; height: 6px; background: var(--line); position: relative; overflow: hidden; }
+.chap i b { position: absolute; inset: 0 auto 0 0; background: var(--fire); }
+details.script { background: var(--panel); border: 1px solid var(--line); }
+details.script summary { cursor: pointer; padding: 10px 14px; font: 700 13px 'Barlow Condensed'; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.lines { max-height: 260px; overflow: auto; padding: 0 14px 12px; font-size: 16px; }
+.ln { padding: 3px 8px; cursor: pointer; }
+.ln.cur { background: rgba(255,106,26,.18); }
+.ln .n { font-weight: 800; color: var(--fire); }
+.ln.d { font-style: italic; color: var(--muted); }
+.ln.sc { font: 400 13px 'Black Ops One'; letter-spacing: .1em; color: var(--muted); margin-top: 8px; }
+.note { font-size: 14px; color: var(--muted); }
+@media (max-width: 760px) { .chapters { order: 9; flex-basis: 100%; } }
 </style>
 </head>
 <body>
-<header class="bar">
-  <div class="logo">The Challenge<small>BLUE LAGOON</small></div>
-  <div class="ep"><b>Ep 5</b> · men's week · <span id="sec"></span></div>
-  <nav class="tabs" id="tabs"></nav>
-  <button class="classic" title="The readout viewer, one click away on every screen">Readout ↗</button>
-</header>
-<div class="note">Mockup on the real plates. Click the stage, press Space or → to step, ← to go back. The lines are the engine's own (season 1 ep 5; season 2 day 34). The side panel's reasons are illustrative.</div>
-<div class="wrap">
-  <div>
-    <div class="stage" id="stage">
-      <div class="cam" id="cam"></div>
-      <div class="fx" id="fx"></div>
-    </div>
-    <div class="dlg" id="dlg">
-      <div class="who" id="who"></div>
-      <p class="line" id="line"></p>
-      <div class="ctl"><button id="back" title="Back">◀</button><span class="ct" id="ct"></span><button id="next" title="Next">▶</button></div>
-    </div>
+<div class="app">
+  <div class="top">
+    <div class="logo">The Challenge<small>BLUE LAGOON</small></div>
+    <div class="eps"><b>Episode 5</b> · men's week</div>
+    <div class="spacer"></div>
+    <button class="ibtn" id="theme">Light / dark</button>
+    <button class="ibtn" title="The readout viewer, one click away on every screen">Readout view</button>
   </div>
-  <aside class="intel" id="intel"></aside>
+  <div class="frame" id="frame">
+    <div class="world" id="world"><div class="drift" id="drift">
+      <div id="platebox"></div>
+      <div class="live" id="live"></div>
+      <div class="cast" id="cast"></div>
+      <div class="wfx" id="wfx"></div>
+    </div></div>
+    <div class="hud" id="hud"></div>
+    <div id="confbox"></div>
+    <div class="dlg" id="dlg"><div class="panel"></div><div class="cutin" id="cutin"></div><div class="name" id="name"></div><div class="say" id="say"></div><div class="next"></div></div>
+    <div class="over" id="over"></div>
+    <div class="intel" id="intel"></div>
+    <div class="static" id="static"></div>
+  </div>
+  <div class="ctl">
+    <button class="cbtn" id="restart">Restart</button>
+    <button class="cbtn" id="back">Back <span class="key">&larr;</span></button>
+    <button class="cbtn go" id="next">Next <span class="key">Space</span></button>
+    <button class="cbtn" id="auto">Auto</button>
+    <div class="chapters" id="chapters"></div>
+  </div>
+  <div class="note">Mockup. The episode, its votes and its results come from a season the engine played (season 1, episode 5); every line is rewritten the way people talk. INTEL (top right of the picture, or the I key) is what the house doesn't know. No sound yet: it waits for your recordings.</div>
+  <details class="script"><summary>Script</summary><div class="lines" id="lines"></div></details>
 </div>
-<svg width="0" height="0" style="position:absolute">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <filter id="spr" x="-10%" y="-20%" width="120%" height="140%">
       <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="3" result="n"/>
       <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
     </filter>
-    <filter id="mist" x="-20%" y="-40%" width="140%" height="180%">
-      <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="1" seed="9" result="n"/>
-      <feDisplacementMap in="SourceGraphic" in2="n" scale="26" result="d"/>
-      <feGaussianBlur in="d" stdDeviation="5"/>
-    </filter>
   </defs>
 </svg>
 <script type="module">
-import { CH_MARKS } from '../js/vp-ch-ep/marks.js';
-import { liveGL } from '../js/vp-td-ep/glplate.js';
+import { CH_MARKS } from "../js/vp-ch-ep/marks.js";
+import { liveGL } from "../js/vp-td-ep/glplate.js";
 
-const AV = n => `../assets/avatars/${n === 'TJ' ? 'tj-maxx' : n.toLowerCase().replace(/ /g, '-')}.png`;
-const PLATE = k => `../assets/sets/ch/${k}`;
-const marks = k => CH_MARKS[k].m;
-const pick = (k, kind, f = {}) => marks(k).filter(m => m.kind === kind && Object.entries(f).every(([a, b]) => m[a] === b));
-document.documentElement.style.setProperty('--grunge', `url("data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns='http://www.w3.org/2000/svg' width='300' height='120'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' seed='4'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.7'/></filter><rect width='300' height='120' filter='url(#g)'/></svg>`)}")`);
+const $ = id => document.getElementById(id);
+const AV = n => "../assets/avatars/" + (n === "TJ" ? "tj-maxx" : n.toLowerCase().replace(/ /g, "-")) + ".png";
+const PLATE = k => "../assets/sets/ch/" + k;
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const marks = k => (CH_MARKS[k] || { m: [] }).m;
+const rnd = (a, b) => a + Math.random() * (b - a);
+document.documentElement.style.setProperty("--grunge", "url(\"data:image/svg+xml," + encodeURIComponent(
+  "<svg xmlns='http://www.w3.org/2000/svg' width='300' height='120'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' seed='4'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.7'/></filter><rect width='300' height='120' filter='url(#g)'/></svg>") + "\")");
 
-// ── the scenes: each step is one click ──────────────────────────────────────────────────────────
-const HANG_ON = 'Players hang from a net slung under the pier, high over the water, with nothing to stand on.';
-const PUZZLE_PIT = 'The players dig through a sand pit for twelve puzzle pieces, carry them up a ramp, and fit them into a board that shows the Blue Lagoon. Every piece has to be found and placed, and the board only locks when it is right. A wrong piece forces them back down to dig again, and the sand fills the holes they have already dug. The first to lock their board and hit the buzzer wins the elimination.';
+// A mark: [kind, index, group] read off the plate, or a raw {u, v, s}.
+function mk(plate, spec) {
+  if (!Array.isArray(spec)) return spec;
+  const [kind, i = 0, group] = spec;
+  const all = marks(plate).filter(m => m.kind === kind && (kind === "podium" || kind === "duel" ? m.side === group : group ? m.group === group : !m.group));
+  return all[i] || all[0];
+}
 
-const VILLA_NIGHT = [
-  { at: 'hottub', who: ['Isabel', 'Lill', 'B', 'Brick'], bub: 'Shipwreck Crew meets', star: 1, go: 'tub' },
-  { at: 'loungers', who: ['Kitty', 'Jane', 'Dave'], bub: 'Lagoon Sharks on the balcony', star: 1 },
-  { at: 'common', who: ['Leshawna', 'Lynda'], bub: '“Why me?”' },
-  { at: 'gym', who: ['Jeremiah', 'Dwayne'] },
-  { at: 'kitchen', who: ['Sierra', 'Tom'] },
-  { at: 'bunk-a', who: ['Evie', 'Drew', 'Leonard'] },
-  { at: 'bunk-b', who: ['Sharon Needles', 'Ivy'] },
-  { at: 'confessional', who: ['Jay'] },
-];
-
-const SCENES = {
-  map: {
-    tab: 'The map', sec: 'Day 13–14',
-    steps: [
-      { view: 'island', card: ['DAY 13', '7:30 AM · BLUE LAGOON'],
-        pins: [{ at: 'beach-field', who: ['Tom', 'Lill', 'Leonard', 'Dave', 'B', 'Dwayne'], lab: 'The daily · Hang On', hot: 1 },
-          { at: 'villa', who: ['Jeremiah', 'Isabel', 'Kitty', 'Sierra', 'Jane', 'Brick'], lab: 'The villa' },
-          { at: 'club', who: [], lab: 'Beach club' }, { at: 'arena', who: [], lab: 'The Arena' }],
-        dir: 'Every day opens on the island. Faces show who is where; the daily is at the beach field.',
-        side: [['Day 13', `<p>The daily: <b>Hang On</b>. ${HANG_ON}</p>`]] },
-      { host: 'Tom and Lill, take a bow, you just won Hang On, and I am genuinely emotional about it.',
-        chipPins: { Tom: 'SAFE', Lill: 'SAFE' },
-        side: [['Safe this week', '<p><b>Tom</b> and <b>Lill</b> won the daily: nobody can say their names at the vote.</p>']] },
-      { view: 'villa', card: ['DAY 14', 'NIGHT · THE VILLA'], rooms: VILLA_NIGHT,
-        clock: [['Morning', 'done'], ['Afternoon', 'done'], ['Night', 'now'], ['The vote', 'lock']],
-        dir: 'Inside the villa: every room, who is in it, and a bubble for each conversation. ★ scenes move the game; the vote unlocks once they are watched. Click the hot tub.',
-        side: [['Two groups, one name', '<p><b>Shipwreck Crew</b> (Isabel, Lill, B, Brick) and <b>Lagoon Sharks</b> (Kitty, Jane, Dave) are meeting at the same hour, both about Jeremiah. Neither knows about the other.</p>']] },
-    ],
-  },
-  tub: {
-    tab: 'Hot tub', sec: 'Day 14 · Night', plate: 'hottub-night',
-    cast: { Isabel: ['seat', 0, 'tub'], Lill: ['seat', 1, 'tub'], B: ['seat', 3, 'tub'], Brick: ['seat', 4, 'tub'] }, water: 1, scale: .95,
-    steps: [
-      { card: ['DAY 14', '11:20 PM · HOT TUB'], dir: 'The Shipwreck Crew slides into the hot tub, away from the house.', focus: [] },
-      { say: ['Isabel', 'I hate doing this to anybody, but I really think it has to be Jeremiah.'], act: { Isabel: 'whisper' },
-        side: [['In their heads', '<p><b>Isabel</b> wants Jeremiah in the Arena: he is the one man outside both groups who could win his way back and come for them.</p>']] },
-      { say: ['Lill', "I'm in. Should we tell anybody outside the group?"] },
-      { say: ['Isabel', 'No. Let them find out at the vote.'], focus: ['Isabel'],
-        side: [['Secrets', '<p>Nobody outside the four knows. <b>Lill</b> will go and recruit anyway, starting with Leonard.</p>']] },
-      { conf: ['Lill', 'The Shipwreck Crew runs this house right now, and honestly it feels good to be on the inside of it.'],
-        side: [['Relationships', bonds([['Lill', 'Isabel', +1], ['B', 'Brick', +1]])]] },
-    ],
-  },
-  vote: {
-    tab: 'The vote', sec: 'Day 14 · The vote', plate: 'villa-map-night', board: 1,
-    steps: [
-      { card: ['DAY 14', 'THE VOTE · COMMON ROOM'], host: "Alright, it's a men's vote. Everybody's going to say a name, out loud, to my face. No take-backs, no whispering. Let's go.",
-        side: [['How it works', "<p>An open vote. Every player says a man's name to TJ's face. The most votes goes into the Arena, then calls out who goes with him. Tom won the daily, so nobody can say his name.</p>"]] },
-      ...[
-        ['Kitty', 'Jeremiah', 'Jeremiah. Sorry. Not that sorry, but sorry.'],
-        ['Isabel', 'Jeremiah', "Jeremiah. I'm sorry, I really am."],
-        ['Jane', 'Jeremiah', 'Jeremiah. Same as everybody.'],
-        ['Lill', 'Jeremiah', 'Jeremiah, and I think everybody should be doing the same.'],
-        ['Jay', 'Jeremiah', 'Jeremiah. I promised.'],
-        ['B', 'Jeremiah', "Jeremiah. That's all."],
-        ['Lynda', 'Jeremiah', 'Jeremiah! Write it down, TJ!'],
-        ['Brick', 'Jeremiah', 'Jeremiah. I made a commitment to my group.'],
-        ['Sierra', 'Jeremiah', "I really like you, Jeremiah, but I'm voting for you. I'm sorry."],
-        ['Ivy', 'Jeremiah', 'Jeremiah. The council has spoken.'],
-        ['Jeremiah', 'Dave', 'Dave. If you want to stay, go win.'],
-        ['Tom', 'Jeremiah', "Jeremiah. Please don't hate me."],
-        ['Sharon Needles', 'Dave', 'Dave. Sorry, gorgeous.'],
-        ['Dwayne', 'Jeremiah', 'Jeremiah. Win your way back if you want it.'],
-        ['Dave', 'Jeremiah', 'Um... Jeremiah.'],
-        ['Evie', 'Dave', 'Dave! Did I do that right?'],
-        ['Leshawna', 'Jeremiah', "Jeremiah! Let's go!"],
-        ['Leonard', 'Dave', 'Wait, is it my turn? Oh! Dave.'],
-        ['Drew', 'Dave', 'Just Dave.'],
-      ].map(([v, n, line], i) => ({ vote: [v, n], say: [v, line], side: i === 1 ? [['Ballots', chain('Isabel', ['wanted Jeremiah', 'told the Crew Jeremiah', 'said Jeremiah'])]]
-        : i === 12 ? [['Ballots', chain('Sharon Needles', ['Jeremiah is her only friend here', 'said Dave', 'the only vote against her group'], 2)]]
-        : i === 9 ? [['Ballots', '<p><b>Ivy</b>’s is the tenth vote for Jeremiah: more than the rest of the room could ever catch.</p>']] : null, push: i === 9 })),
-      { host: "With fourteen votes, Jeremiah, you're going into the Arena tonight. Now you get to pick who's coming with you.", slam: { spray: 'VOTED IN', color: '#ffd21a', y: 62, w: 44 }, callout: 1 },
-      { conf: ['Jeremiah', "I knew it was coming. Hearing it said out loud is still a punch in the stomach."] },
-      { host: 'Jeremiah, my friend, the house has spoken. Now it’s your turn. Who are you calling out?', callout: 1 },
-      { say: ['Jeremiah', "I'm calling out Dwayne."], callout: 2, slam: { spray: 'CALLED OUT', color: '#ff6a1a', x: 66, y: 46, w: 46 },
-        side: [['Why Dwayne', '<p>Not a grudge: Dwayne voted for him, but so did thirteen others. Jeremiah thinks Dwayne is the man he can beat.</p>']] },
-      { say: ['Dwayne', 'Seriously?'], callout: 2, act: { Dwayne: 'shout' } },
-      { conf: ['Jeremiah', "I'm not going to lie, I picked Dwayne because I think I can beat him. That's the whole reason. I want to stay."] },
-    ],
-  },
-  arena: {
-    tab: 'The Arena', sec: 'Day 15 · The Arena', plate: 'arena-night',
-    cast: { TJ: ['host'], Kitty: ['seat', 0, 'house'], Isabel: ['seat', 1, 'house'], Jane: ['seat', 2, 'house'], Lill: ['seat', 3, 'house'],
-      Jay: ['seat', 4, 'house'], B: ['seat', 5, 'house'], Lynda: ['seat', 6, 'house'], Brick: ['seat', 7, 'house'],
-      Sierra: ['stand', 0, 'house'], Ivy: ['stand', 1, 'house'], Tom: ['stand', 2, 'house'], 'Sharon Needles': ['stand', 3, 'house'],
-      Jeremiah: ['gate'], Dwayne: ['gate'] },
-    hidden: ['Jeremiah', 'Dwayne'],
-    steps: [
-      { card: ['DAY 15', '9:40 PM · THE ARENA'], dir: 'The torches are lit. The gong sounds. The house is in the stand.', focus: ['TJ'], gong: 1,
-        side: [['Tonight', '<p><b>Jeremiah</b> (voted in, 14 votes) against <b>Dwayne</b> (called out).</p>']] },
-      { enter: { Jeremiah: ['podium', 'L'] }, dir: 'Jeremiah walks out of the dark and takes the left podium.', focus: ['Jeremiah'] },
-      { enter: { Dwayne: ['podium', 'R'] }, dir: 'Dwayne takes the right.', focus: ['Dwayne'],
-        side: [['The house’s odds', '<p>Nobody in the stand has Dwayne. Respect: <b>Jeremiah</b> 2 wins in the Arena, <b>Dwayne</b> none.</p>']] },
-      { host: "Okay, nobody in the house thought Dwayne could win this. Tonight's game is Puzzle Pit. Prove 'em wrong or pack your bags!", slam: { game: ['Puzzle Pit', PUZZLE_PIT, 'A race · first board locked wins'] } },
-      { move: { Jeremiah: ['duel', 'L'], Dwayne: ['duel', 'R'] }, race: { Jeremiah: 5, Dwayne: 2 }, dir: 'Jeremiah starts strong.', focus: ['Jeremiah', 'Dwayne'], cam: [.5, .62, 1.18] },
-      { race: { Jeremiah: 9, Dwayne: 7 }, dir: 'A wrong piece. Jeremiah goes back down into the sand. Dwayne hangs in.', act: { Jeremiah: 'shout' }, focus: ['Jeremiah', 'Dwayne'], cam: [.5, .62, 1.18] },
-      { race: { Jeremiah: 11, Dwayne: 12 }, dir: '…and Dwayne takes it at the end.', focus: ['Dwayne'], cam: [.6, .62, 1.3], slam: { win: 'Dwayne wins' } },
-      { host: 'WHAT?! Dwayne! Did that just happen? Did everybody see that?!', cam: [.5, .55, 1], act: { Kitty: 'shout', Lynda: 'shout', Brick: 'shout' } },
-      { say: ['Dwayne', 'I told you! I told all of you!'], act: { Dwayne: 'shout' } },
-      { slam: { stamp: 'ELIMINATED' }, focus: ['Jeremiah'], dir: 'Jeremiah is out of the game.' },
-      { conf: ['Jeremiah', "I underestimated Dwayne. That's on me, and it's the worst mistake I've made in this game."] },
-      { exit: ['Jeremiah'], dir: 'Jeremiah walks out the way he came in.', focus: ['Dwayne'],
-        side: [['Relationships', bonds([['Dwayne', 'Jeremiah', -2], ['Sharon Needles', 'Jeremiah', -1]]) + '<p><b>Sharon Needles</b> just lost her only friend in the house.</p>']] },
-    ],
-  },
-  party: {
-    tab: 'Party', sec: 'Day 34 · Night out (season 2)', plate: 'club-night', scale: 1.05,
-    cast: { Natasha: ['stand', 1], Sami: ['stand', 3], Bridgette: ['stand', 4], Beardo: ['stand', 2], Jake: ['stand', 5], Jay: ['stand', 0],
-      Cupcakke: ['seat', 1, 'bar'], TJ: ['seat', 3, 'bar'] },
-    dance: ['Natasha', 'Beardo', 'Jake', 'Jay', 'Sami', 'Bridgette', 'TJ'],
-    steps: [
-      { card: ['DAY 34', '1:15 AM · BEACH CLUB'], dir: 'Shots line the bar. TJ is somehow there, dancing badly in the corner.', focus: ['TJ'] },
-      { say: ['Natasha', 'To being here! And not being in the Arena!'], act: { Natasha: 'shout' } },
-      { say: ['Sami', 'Speak for yourself.'] },
-      { say: ['Sami', 'Get out of my face!'], stop: ['Sami', 'Bridgette'], act: { Sami: 'shout' }, focus: ['Sami', 'Bridgette'], cam: [.45, .55, 1.25],
-        side: [['In their heads', '<p><b>Sami</b> is three drinks in and still sore about the vote: Bridgette said Sami’s name.</p>']] },
-      { dir: 'Sami shoves Bridgette. Hard. Somebody screams and three people grab Sami.', act: { Sami: 'shove', Bridgette: 'knock' }, shake: 1, badge: { Bridgette: '!' },
-        stopAll: 1, focus: ['Sami', 'Bridgette'], cam: [.45, .55, 1.25] },
-      { say: ['Bridgette', 'Oh my God. Oh my God.'], focus: ['Bridgette'], stopAll: 1 },
-      { conf: ['Bridgette', "Sami crossed the line. There's no coming back from that in this game, and Sami knows it."], stopAll: 1 },
-      { host: 'I love chaos. I love drama. I do not love violence. Sami is out of this game, effective immediately.', slam: { tape: 'DISQUALIFIED' }, stopAll: 1, cam: [.5, .5, 1],
-        side: [['The one rule', '<p>Physical violence is the only thing that ends a game on the spot: no vote, no Arena.</p>']] },
-      { exit: ['Sami'], dir: 'Sami is walked off the beach.', stopAll: 1 },
-    ],
-  },
+// ── the episode ────────────────────────────────────────────────────────────────────────────────────
+const HOUSE = ["Kitty", "Isabel", "Jane", "Lill", "Jay", "B", "Lynda", "Brick", "Sierra", "Ivy", "Jeremiah", "Tom", "Sharon Needles", "Dwayne", "Dave", "Evie", "Leshawna", "Leonard", "Drew"];
+const ROLE = { Isabel: "Shipwreck Crew", Lill: "Shipwreck Crew", B: "Shipwreck Crew", Brick: "Shipwreck Crew", Kitty: "Lagoon Sharks", Jane: "Lagoon Sharks", Dave: "Lagoon Sharks" };
+const ICON = {
+  island: "<path d='M3 18c3-2 6-2 9 0s6 2 9 0' stroke='#111' stroke-width='2.2' fill='none'/><path d='M12 16V7m0 0c-2-3-6-3-7-1m7 1c2-3 6-3 7-1m-7 1c-1-2-1-4 1-5' stroke='#111' stroke-width='2' fill='none' stroke-linecap='round'/>",
+  dock: "<path d='M2 12h20M5 12v8M10 12v8M15 12v8M20 12v8' stroke='#111' stroke-width='2.2' stroke-linecap='round'/><path d='M2 20c2 1 4 1 6 0s4-1 6 0 4 1 6 0' stroke='#111' stroke-width='1.6' fill='none'/>",
+  house: "<path d='M3 11l9-7 9 7v9H3z' fill='none' stroke='#111' stroke-width='2.2' stroke-linejoin='round'/><path d='M9 20v-6h6v6' stroke='#111' stroke-width='2'/>",
+  fire: "<path d='M12 3c1 4 6 5 6 11a6 6 0 0 1-12 0c0-3 2-4 2-7 2 1 3 2 3 4 1-2 1-5 1-8z' fill='#111'/>",
+  music: "<path d='M9 17V5l11-2v12' stroke='#111' stroke-width='2.2' fill='none'/><circle cx='6.5' cy='17.5' r='2.8' fill='#111'/><circle cx='17.5' cy='15' r='2.8' fill='#111'/>",
+  skull: "<path d='M12 3a8 8 0 0 0-8 8c0 3 2 5 3 6v3h10v-3c1-1 3-3 3-6a8 8 0 0 0-8-8z' fill='#111'/><circle cx='9' cy='11' r='2' fill='#ff6a1a'/><circle cx='15' cy='11' r='2' fill='#ff6a1a'/>",
 };
 
-function bonds(list) {
-  return list.map(([a, b, d]) => `<div class="bond"><span>${a} → ${b}</span><span class="d ${d > 0 ? 'up' : 'dn'}">${d > 0 ? '+' : ''}${d}</span></div>`).join('');
-}
-function chain(who, parts, x = -1) {
-  return `<p><b>${who}</b></p><div class="chain">${parts.map((p, i) => `<span class="${i === x ? 'x' : ''}">${p}</span>`).join('→')}</div>`;
-}
+// Deliberation: twelve on the sofas, the rest on the floor round the fire pit.
+const FLOOR = [{ u: .06, v: .755, s: .1 }, { u: .175, v: .74, s: .1 }, { u: .29, v: .73, s: .098 }, { u: .71, v: .73, s: .098 }, { u: .825, v: .74, s: .1 }, { u: .94, v: .755, s: .1 }, { u: .385, v: .745, s: .1 }];
+const SPEAK = { u: .5, v: .735, s: .118 };
+const DELIB = {};
+["Kitty", "Isabel", "Jane", "Lill", "B", "Brick", "Lynda", "Sierra", "Ivy", "Jay", "Evie", "Leshawna"].forEach((n, i) => DELIB[n] = ["seat", i, "sofa"]);
+["Jeremiah", "Tom", "Sharon Needles", "Dwayne", "Dave", "Leonard", "Drew"].forEach((n, i) => DELIB[n] = FLOOR[i]);
+DELIB.TJ = { u: .615, v: .76, s: .108 };
 
-// ── the player ─────────────────────────────────────────────────────────────────────────────────
-const $ = id => document.getElementById(id);
-const stage = $('stage'), cam = $('cam'), fx = $('fx');
-let scene = 'map', idx = 0, typing = 0;
+// The daily: twelve hanging under the pier.
+const HANGERS = ["Kitty", "Dave", "Isabel", "Leonard", "Jane", "Tom", "Lill", "Dwayne", "Sierra", "Jeremiah", "Lynda", "B"];
+const hangAt = (i, sag = 0) => ({ u: .055 + i * .046, v: .655 + sag * .028, s: .056 });
+const pierAt = i => ({ u: .06 + i * .045, v: .505, s: .06 });
 
-function markFor(plate, spec) {
-  if (spec[0] === 'host' || spec[0] === 'gate') return pick(plate, spec[0])[0];
-  if (spec[0] === 'podium' || spec[0] === 'duel') return pick(plate, spec[0], { side: spec[1] })[0];
-  const f = spec[2] ? { group: spec[2] } : {};
-  const all = pick(plate, spec[0], f).filter(m => spec[2] || !m.group);
-  return all[spec[1] || 0];
-}
-function tokHtml(name, m, cls = '', k = 1.5) {
-  const sz = (m.s || .07) * k * 100;
-  return `<div class="tok ${cls}${name === 'TJ' ? ' host' : ''}" data-n="${name}" style="left:${m.u * 100}%;top:${m.v * 100}%;--sz:${sz.toFixed(2)}cqh">
-    <div class="body"><div class="face"><img src="${AV(name)}" alt=""></div><span class="tag">${name === 'TJ' ? 'TJ Maxx' : name}</span></div><div class="shadow"></div></div>`;
-}
-const tok = n => cam.querySelector(`.tok[data-n="${CSS.escape(n)}"]`);
+const SCREENS = [
+  { id: "open", label: "Open", steps: [
+    { scene: { plate: "opener-day", place: "Blue Lagoon", when: "<b>Episode 5</b>", icon: "island", spot: "villa", cast: {} }, open: 1 },
+    { dir: "Previously on The Challenge: Tom has had a target on his back since day one. Jeremiah has won two eliminations, and the house is scared of him. Sharon Needles has one real friend here, and it's Jeremiah." },
+  ] },
+  { id: "daily", label: "The daily", steps: [
+    { scene: { plate: "dock-day", place: "The Dock", when: "<b>Day 13</b> · 9:10 AM", icon: "dock", spot: "dock", wipe: 1,
+      cast: Object.assign({ TJ: { u: .62, v: .505, s: .072 } }, Object.fromEntries(HANGERS.map((n, i) => [n, pierAt(i)]))) }, seg: ["Today's daily", "Hang On"] },
+    { tj: "Morning, everybody! See that cargo net under the pier? That's where you're spending your morning.", focus: ["TJ"] },
+    { rules: { k: "The daily", n: "Hang On", li: ["Everybody hangs from the <b>net under the pier</b>, with nothing to stand on.", "Every few minutes the crew <b>lets the net down</b> a little, and the tide is coming in.", "<b>Let go</b> or <b>touch the water</b> and you're out.", "The <b>last man and the last woman</b> still hanging win."], f: "Win it and you're safe from tonight's vote" },
+      tj: "The last guy and the last girl still hanging are safe tonight. Everybody else could end up in the Arena. Climb down there!", focus: ["TJ"] },
+    { hang: "start", dir: "Twelve of them climb down and grab the net under the pier.", focus: [] },
+    { say: ["Jeremiah", "Easy. I could hang here all day."], focus: ["Jeremiah"] },
+    { sag: 1, dir: "The crew lets the net down. Their feet are just above the water now." },
+    { drop: ["Jane", "Lynda"], dir: "Jane and Lynda let go at the same time and drop into the water.", shake: 1 },
+    { sag: 2, drop: ["Jeremiah"], dir: "The net drops again, and Jeremiah's foot dips in. He's out." },
+    { say: ["Jeremiah", "Are you serious? That was a toe!"], act: { Jeremiah: "shout" }, focus: ["Jeremiah"] },
+    { drop: ["Isabel", "Kitty", "B", "Sierra"], dir: "Four more go in, one after another." },
+    { say: ["Leonard", "My arms are shaking. Is that normal? That can't be normal."], focus: ["Leonard"], act: { Leonard: "flinch" } },
+    { sag: 3, drop: ["Leonard"], dir: "Leonard can't hold on any longer and lets go.", shake: 1 },
+    { drop: ["Dwayne", "Dave"], dir: "Dwayne slips. Dave hangs on a little longer, then he goes in too." },
+    { win: ["Tom", "Lill"], tj: "And that's it! Tom and Lill are the last two hanging. You're both safe tonight!", slam: { winner: "Tom & Lill win" }, focus: ["Tom", "Lill"] },
+    { say: ["Lill", "Thank you, TJ! I can't feel my hands."], act: { Lill: "cheer" }, focus: ["Lill"] },
+    { say: ["Leonard", "That was brutal. I couldn't feel my arms halfway through."], focus: ["Leonard"] },
+    { conf: ["Tom", "I needed that win. People have been coming after me since day one, and this week they can't touch me."],
+      know: ["Safe tonight", "<b>Tom</b> and <b>Lill</b> won the daily. Nobody can vote for them tonight."] },
+    { conf: ["Dave", "I didn't win, but I lasted longer than most of the guys. I just didn't want to let anybody down."] },
+  ] },
+  { id: "villa", label: "The villa", steps: [
+    { map: 1, scene: { plate: "villa-map-day", place: "The Villa", when: "<b>Day 13</b> · Afternoon", icon: "house", spot: "villa", wipe: 1, cast: {} },
+      rooms: [
+        { at: "kitchen", who: ["Jeremiah", "Lill", "Sierra", "Tom"], bub: "Whose cup is that?", go: 1 },
+        { at: "pool", who: ["Kitty", "Jane", "Dave", "Evie"] },
+        { at: "gym", who: ["Brick", "Dwayne", "Drew"] },
+        { at: "bunk-a", who: ["Leonard", "Jay"] },
+        { at: "loungers", who: ["Isabel", "B", "Lynda", "Ivy"] },
+        { at: "common", who: ["Leshawna", "Sharon Needles"] },
+      ],
+      later: [{ x: .3, bub: "Tonight: the Crew meets in the hot tub", go: 6 }, { x: .7, bub: "Tonight: Lill finds Leonard at the pool", go: 13 }],
+      clock: [["Morning", "done"], ["Afternoon", "now"], ["Night", "lock"], ["The vote", "lock"]],
+      dir: "Back at the villa. The faces show who's in each room, and a bubble marks a conversation. The vote unlocks once the starred ones have been watched." },
+    { scene: { plate: "kitchen-day", place: "The Kitchen", when: "<b>Day 13</b> · 3:40 PM", icon: "house", spot: "villa", wipe: 1,
+      cast: { Lill: ["stand", 1], Sierra: ["seat", 0, "stools"], Tom: ["seat", 2, "stools"], Jeremiah: { u: 1.1, v: .72, s: .16 } } },
+      dir: "Lill grabs a cup off the counter and fills it with juice.", focus: ["Lill"], bg: { Sierra: "sip", Tom: "look" } },
+    { enter: { Jeremiah: ["stand", 2] }, say: ["Jeremiah", "Hey. That's my cup. It has my name on it."], focus: ["Jeremiah", "Lill"] },
+    { say: ["Lill", "There are like forty cups in here."], act: { Lill: "laugh" }, focus: ["Lill", "Jeremiah"] },
+    { say: ["Jeremiah", "Then use one of the other thirty-nine!"], act: { Jeremiah: "shout" }, loud: 1, focus: ["Jeremiah"], fx: { pop: ["Sierra", "Yikes"] } },
+    { conf: ["Lill", "I honestly didn't know it mattered that much to him. Now I feel kind of bad."] },
+    { scene: { plate: "hottub-night", place: "The Hot Tub", when: "<b>Day 13</b> · 11:20 PM", icon: "house", spot: "villa", wipe: 1, water: 1, scale: .95,
+      cast: { Isabel: ["seat", 0, "tub"], Lill: ["seat", 1, "tub"], B: ["seat", 3, "tub"], Brick: ["seat", 4, "tub"] } },
+      dir: "Late at night, the Shipwreck Crew gets in the hot tub, away from the rest of the house.", focus: [],
+      know: ["The Shipwreck Crew", "<b>Isabel</b>, <b>Lill</b>, <b>B</b> and <b>Brick</b>. They've voted together every week."] },
+    { say: ["Isabel", "I hate doing this to anybody, but I really think it has to be Jeremiah."], act: { Isabel: "lean" }, focus: ["Isabel"] },
+    { say: ["B", "Why him?"], focus: ["B"] },
+    { say: ["Isabel", "He's already won two eliminations. If one of us ends up in the Arena with him, we're going home."], focus: ["Isabel"],
+      know: ["In their heads", "<b>Isabel</b> wants Jeremiah gone before he can pick one of them in the Arena."] },
+    { say: ["Lill", "I'm in. Do we tell anybody else?"], focus: ["Lill"] },
+    { say: ["Isabel", "No. They can find out at the vote."], focus: ["Isabel"] },
+    { conf: ["Lill", "Our group runs this house right now, and honestly, it feels good to be on the inside for once."] },
+    { scene: { plate: "pooldeck-night", place: "The Pool", when: "<b>Day 13</b> · 11:50 PM", icon: "house", spot: "villa", wipe: 1,
+      cast: { Leonard: ["stand", 0], Lill: { u: .6, v: .74, s: .12 } } }, dir: "Lill finds Leonard alone by the pool.", focus: ["Lill", "Leonard"] },
+    { say: ["Lill", "We're voting Jeremiah in tomorrow. Are you with us?"], focus: ["Lill"] },
+    { say: ["Leonard", "Nope! But thanks for asking."], focus: ["Leonard"], act: { Leonard: "laugh" } },
+    { say: ["Lill", "You might want to think about which side you're on."], focus: ["Lill"] },
+    { say: ["Leonard", "I did think about it. That's why I said no."], focus: ["Leonard"],
+      know: ["Leonard said no", "He likes Jeremiah, and he isn't scared of the Crew. That could cost him later."] },
+  ] },
+  { id: "party", label: "Party", steps: [
+    { scene: { plate: "club-night", place: "The Beach Club", when: "<b>Day 13</b> · 1:15 AM", icon: "music", spot: "club", wipe: 1, scale: 1.02, lasers: 1,
+      cast: { Lynda: ["seat", 0, "bar"], Ivy: ["seat", 1, "bar"], Jay: ["stand", 1], Evie: ["stand", 2], Dave: ["stand", 3], Kitty: ["stand", 4], Leshawna: ["stand", 5], Drew: ["stand", 0], Jeremiah: { u: .62, v: .74, s: .13 }, Sierra: { u: 1.1, v: .74, s: .13 } } },
+      seg: ["Night out", "Party"], dance: ["Jay", "Evie", "Dave", "Kitty", "Leshawna", "Drew"], bg: { Lynda: "sip", Ivy: "sip" } },
+    { dir: "The whole house is at the beach club. Some of them are doing shots at the bar, the rest are dancing.", focus: [] },
+    { say: ["Kitty", "To not being in the Arena!"], act: { Kitty: "cheer" }, focus: ["Kitty"] },
+    { say: ["Jeremiah", "Speak for yourself."], focus: ["Jeremiah"],
+      know: ["Jeremiah", "He doesn't know about the Crew's plan. It's a men's week, so every guy in the house is nervous."] },
+    { say: ["Lynda", "Between us? I don't trust Sierra at all."], act: { Lynda: "lean" }, focus: ["Lynda", "Ivy"], cam: [.84, .5, 1.3] },
+    { conf: ["Ivy", "Lynda has no idea Sierra is one of my closest friends in here. I'm telling her everything."] },
+    { enter: { Sierra: { u: .72, v: .62, s: .122 } }, dir: "Ten minutes later, Sierra walks straight up to the bar.", focus: ["Sierra", "Lynda"], cam: [.8, .48, 1.25] },
+    { say: ["Sierra", "So I hear you've got opinions about me."], focus: ["Sierra"], act: { Sierra: "shout" }, loud: 1, stopdance: 1, fx: { excl: "Lynda" } },
+    { say: ["Lynda", "Who told you that?"], focus: ["Lynda"], act: { Lynda: "flinch" } },
+    { say: ["Sierra", "It doesn't matter who told me. Say it to my face."], focus: ["Sierra", "Lynda"], cam: [.8, .48, 1.25] },
+    { say: ["Lynda", "Fine. I don't trust you. Happy?"], focus: ["Lynda"], loud: 1 },
+    { conf: ["Sierra", "I'm not mad that she said it. I'm mad that she said it behind my back."],
+      know: ["Relationships", "<div class='b'><span>Sierra and Lynda</span><span class='dn'>−3</span></div><div class='b'><span>Sierra and Ivy</span><span class='up'>+2</span></div>"] },
+  ] },
+  { id: "vote", label: "The vote", steps: [
+    { scene: { plate: "common-night", place: "The Common Room", when: "<b>Day 14</b> · 8:00 PM", icon: "fire", spot: "villa", wipe: 1, cast: DELIB }, seg: ["Tonight", "The Vote"] },
+    { tj: "What's up, everybody! Tom, Lill, congrats again on winning the daily. You two are safe.", focus: ["TJ"], power: ["Tom", "Lill"] },
+    { rules: { k: "How tonight works", n: "Out loud", li: ["It's a <b>men's week</b>, so only a guy can be voted in.", "One at a time, you <b>stand up and say a name</b>, out loud, in front of everybody.", "Tom won the daily, so <b>nobody can vote for him</b>.", "The guy with <b>the most votes</b> goes into the Arena, and he picks who goes in with him."], f: "No secret ballots: everybody hears what you say" },
+      tj: "No secret ballots tonight. You stand up, look at me, and say who you're voting into the Arena. Everybody hears it.", focus: ["TJ"] },
+    ...[
+      ["Kitty", "Jeremiah", "Jeremiah. Sorry. Okay, not that sorry."],
+      ["Isabel", "Jeremiah", "Jeremiah. I'm sorry, I really am."],
+      ["Jane", "Jeremiah", "Jeremiah. Same as everybody else."],
+      ["Lill", "Jeremiah", "Jeremiah. I hope you're all saying the same."],
+      ["Jay", "Jeremiah", "Jeremiah. I gave my word."],
+      ["B", "Jeremiah", "Jeremiah."],
+      ["Lynda", "Jeremiah", "Jeremiah! Write it down, TJ!"],
+      ["Brick", "Jeremiah", "Jeremiah. I made a promise to my group."],
+      ["Sierra", "Jeremiah", "I really like you, Jeremiah, but I'm voting for you. I'm sorry."],
+      ["Ivy", "Jeremiah", "Jeremiah."],
+      ["Jeremiah", "Dave", "Dave. If you want to stay, go win."],
+      ["Tom", "Jeremiah", "Jeremiah. Please don't hate me."],
+      ["Sharon Needles", "Dave", "Dave. Sorry, gorgeous."],
+      ["Dwayne", "Jeremiah", "Jeremiah. Win your way back if you want it."],
+      ["Dave", "Jeremiah", "Um... Jeremiah."],
+      ["Evie", "Dave", "Dave! Wait, did I do that right?"],
+      ["Leshawna", "Jeremiah", "Jeremiah."],
+      ["Leonard", "Dave", "Wait, is it my turn? Oh! Dave."],
+      ["Drew", "Dave", "Dave."],
+    ].map(([v, n, line], i) => Object.assign({ vote: [v, n], say: [v, line] },
+      i === 1 ? { know: ["Ballots", "<b>Isabel</b> wanted Jeremiah, told the Crew Jeremiah, and said Jeremiah."] } :
+      i === 9 ? { know: ["It's decided", "That's ten votes for Jeremiah. Nine people are left, so nobody can catch him now."] } :
+      i === 12 ? { know: ["Sharon Needles", "Jeremiah is her only real friend here, so she votes for Dave."] } : {})),
+    { tj: "That's fourteen votes. Jeremiah, you're going into the Arena tomorrow night, and you'll pick the guy who goes in with you.", focus: ["Jeremiah", "TJ"], slam: { spray: "VOTED IN", color: "#ffd21a" }, chip: ["Jeremiah", "VOTED IN"] },
+    { conf: ["Jeremiah", "I knew it was coming. Hearing it said out loud is still a punch in the stomach."] },
+    { conf: ["Sharon Needles", "Everybody looked at the floor except me. If they want him gone, they can watch him go."] },
+  ] },
+  { id: "arena", label: "The Arena", steps: [
+    { scene: { plate: "arena-night", place: "The Arena", when: "<b>Day 15</b> · 9:40 PM", icon: "skull", spot: "arena", wipe: 1, embers: 1, houseScale: 1.02,
+      cast: { TJ: ["host"], Kitty: ["seat", 0, "house"], Isabel: ["seat", 1, "house"], Jane: ["seat", 2, "house"], Lill: ["seat", 3, "house"], Jay: ["seat", 4, "house"], B: ["seat", 5, "house"],
+        Lynda: ["seat", 6, "house"], Brick: ["seat", 7, "house"], Sierra: ["stand", 0, "house"], Ivy: ["stand", 1, "house"], Dwayne: ["stand", 2, "house"], Tom: ["stand", 3, "house"],
+        Jeremiah: ["gate"] }, hidden: ["Jeremiah"] },
+      seg: ["Elimination", "The Arena"] },
+    { dir: "The house is in the stand and the torches are lit. TJ hits the gong.", focus: ["TJ"], gong: 1 },
+    { enter: { Jeremiah: ["podium", 0, "L"] }, dir: "Jeremiah walks out of the gate and takes the left podium.", focus: ["Jeremiah"] },
+    { tj: "Jeremiah, the house voted you in. Now you pick who goes in there with you. Who are you calling out?", focus: ["Jeremiah", "TJ"] },
+    { say: ["Jeremiah", "I'm calling out Dwayne."], focus: ["Jeremiah"], slam: { spray: "CALLED OUT", color: "#ff6a1a" }, act: { Dwayne: "flinch" } },
+    { say: ["Dwayne", "Seriously? Me?"], focus: ["Dwayne"], act: { Dwayne: "shout" } },
+    { conf: ["Jeremiah", "I picked Dwayne because I think I can beat him. That's it. I want to stay."],
+      know: ["Why Dwayne", "It's not payback: thirteen other people voted for Jeremiah too. He picked the guy he thinks is the easiest win."] },
+    { enter: { Dwayne: ["podium", 0, "R"] }, dir: "Dwayne comes down from the stand and takes the right podium.", focus: ["Dwayne"],
+      know: ["The house's bet", "Almost nobody in the stand thinks Dwayne can win. Jeremiah has won two eliminations, and Dwayne has never been in one."] },
+    { rules: { k: "Tonight's elimination", n: "Puzzle Pit", li: ["Twelve puzzle pieces are <b>buried in the sand</b>.", "Dig them up, run them <b>up the ramp</b> and fit them into your board.", "A <b>wrong piece</b> sends you back down to dig again.", "The first to <b>lock the board and hit the buzzer</b> stays in the game."], f: "The loser goes home" },
+      tj: "Tonight you're playing Puzzle Pit. Find your pieces in the sand, build the puzzle, hit the buzzer. Simple. Everybody ready?", focus: ["TJ"] },
+    { move: { Jeremiah: ["duel", 0, "L"], Dwayne: ["duel", 0, "R"] }, tj: "Go!", gong: 1, duel: { Jeremiah: 4, Dwayne: 1 }, dig: ["Jeremiah", "Dwayne"], focus: ["Jeremiah", "Dwayne"], cam: [.5, .6, 1.2] },
+    { duel: { Jeremiah: 4, Dwayne: 1 }, dig: ["Jeremiah", "Dwayne"], dir: "Jeremiah finds four pieces before Dwayne has one.", focus: ["Jeremiah", "Dwayne"], cam: [.5, .6, 1.2] },
+    { duel: { Jeremiah: 9, Dwayne: 6 }, dig: ["Jeremiah", "Dwayne"], dir: "Jeremiah runs up the ramp with a full board, but it won't lock. One piece is in the wrong spot.", act: { Jeremiah: "shout" }, focus: ["Jeremiah"], cam: [.42, .6, 1.3] },
+    { duel: { Jeremiah: 9, Dwayne: 10 }, dig: ["Jeremiah", "Dwayne"], dir: "While Jeremiah digs again, Dwayne slows down and checks every piece before he puts it in.", focus: ["Dwayne"], cam: [.6, .6, 1.3] },
+    { duel: { Jeremiah: 11, Dwayne: 12 }, dir: "Dwayne locks his board and slams the buzzer.", focus: ["Dwayne"], cam: [.6, .58, 1.3], slam: { winner: "Dwayne wins" }, act: { Dwayne: "cheer" }, shake: 1 },
+    { tj: "WHAT?! Dwayne! Did that just happen?", focus: ["TJ", "Dwayne"], act: { Kitty: "cheer", Lynda: "shout", Brick: "cheer", Tom: "cheer" } },
+    { say: ["Dwayne", "I told you! I told all of you!"], act: { Dwayne: "shout" }, focus: ["Dwayne"] },
+    { tj: "Jeremiah, you've been eliminated. You can head out.", slam: { stamp: "ELIMINATED" }, focus: ["Jeremiah"], act: { Jeremiah: "slump" } },
+    { conf: ["Jeremiah", "I picked the guy I thought I could beat, and he beat me. That's on me."] },
+    { exit: ["Jeremiah"], dir: "Jeremiah walks back out through the gate.", focus: ["Dwayne"],
+      know: ["Relationships", "<div class='b'><span>Dwayne and Jeremiah</span><span class='dn'>−2</span></div><b>Sharon Needles</b> just lost her only real friend in the house."] },
+  ] },
+  { id: "after", label: "After", steps: [
+    { scene: { plate: "pooldeck-day", place: "The Pool", when: "<b>Day 16</b> · 8:30 AM", icon: "house", spot: "villa", wipe: 1,
+      cast: { "Sharon Needles": ["seat", 0, "loungers"], Kitty: ["seat", 0, "bar"], Jane: ["seat", 1, "bar"], Leonard: ["stand", 0], Dwayne: { u: 1.1, v: .74, s: .12 } } },
+      dir: "The next morning. Sharon Needles sits on a lounger by herself.", focus: ["Sharon Needles"], bg: { Kitty: "sip", Jane: "look" } },
+    { conf: ["Sharon Needles", "Jeremiah was my only real friend in here. Everybody else got their friend back last night. I didn't."] },
+    { enter: { Dwayne: { u: .58, v: .74, s: .12 } }, dir: "Dwayne walks out onto the deck, and Leonard runs over to him.", focus: ["Dwayne", "Leonard"], act: { Leonard: "cheer" } },
+    { say: ["Dwayne", "Jeremiah called me out, and now he's the one on a plane!"], act: { Dwayne: "shout" }, focus: ["Dwayne"] },
+    { conf: ["Dwayne", "Getting called out and sending the guy home is the best feeling in this game."] },
+    { seg: ["Next time", "On The Challenge"], dir: "Next time: the Shipwreck Crew finds out how Leonard voted." },
+  ] },
+];
 
-function plateHtml(key) {
-  return `<img src="${PLATE(key)}.webp" alt=""><canvas class="tdx-gl" data-src="${PLATE(key)}" data-hd="1" width="1920" height="1080"></canvas>`;
-}
+// ── the player ─────────────────────────────────────────────────────────────────────────────────────
+const NAMES = [...HOUSE, "TJ"].sort((a, b) => b.length - a.length);
+const GAME = ["Arena", "Hang On", "Puzzle Pit", "daily", "Shipwreck Crew"];
+let SI = 0, IDX = 0, typing = 0, AUTO = 0, intelOpen = false;
+let ST = null;
 
-function build(sc) {
-  const S = SCENES[sc];
-  fx.innerHTML = '';
-  cam.style.transform = '';
-  let html = '';
-  if (sc === 'map') html = '';
-  else {
-    html = plateHtml(S.plate);
-    if (S.cast) for (const [n, spec] of Object.entries(S.cast)) {
-      const m = markFor(S.plate, spec);
-      // the house in the stand watches from further back: smaller cards, so a bench of eight fits
-      html += tokHtml(n, m, (S.hidden || []).includes(n) ? 'gone' : '', spec[2] === 'house' ? 1.02 : S.scale || 1.5);
-    }
+function newState(know) { return { plate: null, toks: {}, home: {}, hidden: new Set(), hang: false, out: new Set(), board: {}, voters: 0, duel: null, power: [], chips: {}, scale: 1.5, houseScale: 0, map: null, place: null, dance: [], bgAct: {}, speaker: null, know: know || [] }; }
+
+function sizeOf(n, m) { const h = ST.home[n]; const k = ST.houseScale && Array.isArray(h) && h[2] === "house" ? ST.houseScale : ST.scale; return (m.s || .07) * k * 100; }
+function put(n, spec, anim) {
+  const m = mk(ST.plate, spec); if (!m) return;
+  let t = ST.toks[n];
+  if (!t) {
+    t = document.createElement("div"); t.className = "tok" + (n === "TJ" ? " host" : ""); t.dataset.n = n;
+    t.style.setProperty("--bd", (-Math.random() * 3).toFixed(2) + "s");
+    t.innerHTML = "<div class='body'><div class='face'><img src='" + AV(n) + "' alt=''></div><span class='tag'>" + (n === "TJ" ? "TJ Maxx" : esc(n)) + "</span></div><div class='shadow'></div>";
+    $("cast").append(t); ST.toks[n] = t;
   }
-  cam.innerHTML = html;
-  if (S.water) cam.querySelectorAll('.tok').forEach(t => { t.classList.add('water'); t.style.top = `calc(${t.style.top} + 7cqh)`; });
-  if (S.board) buildBoard();
-  liveGL(cam);
+  if (!anim) t.style.transition = "none";
+  t.style.left = m.u * 100 + "%"; t.style.top = m.v * 100 + "%"; t.style.setProperty("--sz", sizeOf(n, m).toFixed(2) + "cqh");
+  t.style.zIndex = Math.round(m.v * 50);
+  if (!anim) { void t.offsetWidth; t.style.transition = ""; }
+  t._m = m;
 }
 
-function buildBoard() {
-  const voters = SCENES.vote.steps.filter(s => s.vote).map(s => s.vote[0]);
-  const b = document.createElement('div');
-  b.className = 'board';
-  b.innerHTML = `<div class="tally" id="tally"></div><div class="voters">${voters.map(v =>
-    `<div class="vc" data-v="${v}"><img src="${AV(v)}" alt=""><div class="n">${v}</div></div>`).join('')}</div>`;
-  cam.append(b);
+function setScene(sc) {
+  const know = ST ? ST.know : [];
+  ST = newState(know);
+  Object.assign(ST, { plate: sc.plate, scale: sc.scale || 1.5, houseScale: sc.houseScale || 0, place: sc });
+  $("platebox").innerHTML = "<img class='plate' src='" + PLATE(sc.plate) + ".webp' alt=''><canvas class='glc tdx-gl' data-src='" + PLATE(sc.plate) + "' data-hd='1' width='1920' height='1080'></canvas>";
+  $("cast").innerHTML = ""; $("wfx").innerHTML = ""; $("live").innerHTML = "";
+  for (const [n, spec] of Object.entries(sc.cast || {})) { ST.home[n] = spec; put(n, spec, false); }
+  for (const n of sc.hidden || []) { ST.hidden.add(n); ST.toks[n]?.classList.add("gone"); }
+  if (sc.water) Object.values(ST.toks).forEach(t => { t.style.top = "calc(" + t.style.top + " + 7cqh)"; t.querySelector(".face").style.boxShadow = "inset 0 -5cqh 0 rgba(60,200,220,.55)"; });
+  living(sc);
+  liveGL($("platebox"));
 }
 
-function setMap(view, s) {
-  const key = view === 'island' ? 'map-day' : 'villa-map-night';
-  if (cam.dataset.view !== view) { cam.innerHTML = plateHtml(key); cam.dataset.view = view; liveGL(cam); }
-  cam.querySelectorAll('.pin,.clock').forEach(e => e.remove());
-  const list = view === 'island' ? s.pins : s.rooms;
-  for (const p of list || []) {
-    const m = pick(key, 'spot', { id: p.at })[0];
-    const el = document.createElement('div');
-    el.className = 'pin';
-    el.style.left = m.u * 100 + '%'; el.style.top = m.v * 100 + '%';
-    el.innerHTML = `${p.bub ? `<div class="bub ${p.star ? 'star' : ''}">${p.bub}</div>` : ''}<div class="faces">${p.who.map(n => `<img src="${AV(n)}" title="${n}" alt="">`).join('')}</div>${p.lab ? `<div class="lab ${p.hot ? 'hot' : ''}">${p.lab}</div>` : ''}`;
-    if (p.go) el.querySelector('.bub').onclick = e => { e.stopPropagation(); go(p.go, 0); };
-    cam.append(el);
+function living(sc) {
+  let h = "";
+  const night = sc.plate.endsWith("-night");
+  for (const f of marks(sc.plate).filter(m => m.kind === "fire")) {
+    const fh = (f.fh || .05) * 100;
+    h += "<div class='glow' style='left:" + f.u * 100 + "%;top:" + (f.v * 100 - fh * .6) + "%;width:" + fh * 2.8 + "cqh;height:" + fh * 2.8 + "cqh'></div>";
+    for (let i = 0; i < (sc.embers ? 7 : 4); i++) h += "<div class='ember' style='left:" + (f.u * 100 + rnd(-.7, .7)) + "%;top:" + (f.v * 100 - fh * .9) + "%;--d:" + rnd(1.8, 3.6).toFixed(2) + "s;--dl:" + (-rnd(0, 3)).toFixed(2) + "s;--dx:" + rnd(-2, 2).toFixed(2) + "cqw'></div>";
   }
-  if (s.clock) {
-    const c = document.createElement('div'); c.className = 'clock';
-    c.innerHTML = s.clock.map(([t, k]) => `<span class="${k}">${k === 'done' ? '✓ ' : k === 'lock' ? '🔒 ' : ''}${t}</span>`).join('');
-    cam.append(c);
-  }
+  if (night && !sc.plate.startsWith("common")) for (let i = 0; i < 16; i++) h += "<div class='fly' style='left:" + rnd(2, 96) + "%;top:" + rnd(25, 70) + "%;--d:" + rnd(5, 11).toFixed(1) + "s;--dl:" + (-rnd(0, 6)).toFixed(1) + "s;--dx:" + rnd(-5, 5).toFixed(1) + "cqw;--dy:" + rnd(-4, 4).toFixed(1) + "cqh'></div>";
+  if (!night) for (let i = 0; i < 12; i++) h += "<div class='mote' style='left:" + rnd(2, 96) + "%;top:" + rnd(10, 70) + "%;--d:" + rnd(8, 16).toFixed(1) + "s;--dl:" + (-rnd(0, 8)).toFixed(1) + "s;--dx:" + rnd(-4, 4).toFixed(1) + "cqw;--dy:" + rnd(-3, 3).toFixed(1) + "cqh'></div>";
+  if (sc.lasers) ["#ff3df2", "#2de2ff", "#ffd21a", "#ff6a1a"].forEach((c, i) => h += "<div class='laser' style='left:" + (36 + i * 4) + "%;top:46%;--c:" + c + ";--d:" + (2.4 + i * .5) + "s'></div>");
+  $("live").innerHTML = h;
 }
 
-function speak(who, text, kind) {
-  const w = $('who'), l = $('line');
-  w.innerHTML = who ? `<img src="${AV(who)}" alt=""><b>${who === 'TJ' ? 'TJ Maxx' : who}</b>${kind ? `<i>${kind}</i>` : ''}` : '';
-  l.className = 'line' + (who ? '' : ' dir');
-  clearInterval(typing);
-  const full = text.replace(/\b(Arena|Jeremiah|Dwayne|Puzzle Pit|Hang On|Sami|vote)\b/g, '<span class="hl">$1</span>');
-  if (!who || text.length < 28) { l.innerHTML = full; return; }
-  // a long line types at speaking pace, then lights up the names and the game's words
-  let i = 0; l.textContent = '';
-  typing = setInterval(() => { i += 2; l.textContent = text.slice(0, i); if (i >= text.length) { clearInterval(typing); l.innerHTML = full; } }, 22);
+function camera(focus, cam) {
+  const W = $("world");
+  if (cam) { W.style.transform = tf(cam[0], cam[1], cam[2]); return; }
+  const ts = (focus || []).map(n => ST.toks[n]).filter(t => t && t._m && !t.classList.contains("gone"));
+  if (!ts.length) { W.style.transform = "scale(1)"; return; }
+  const xs = ts.map(t => t._m.u), ys = ts.map(t => t._m.v - (sizeOf(t.dataset.n, t._m) / 100) * .45);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const spread = Math.max(...xs) - Math.min(...xs);
+  const z = Math.max(1, Math.min(1.28, .7 / (spread + .42)));
+  W.style.transform = tf(cx, cy + .07, z);
+}
+function tf(x, y, z) {
+  const lim = (1 - 1 / z) / 2;
+  const tx = Math.max(-lim, Math.min(lim, .5 - x)), ty = Math.max(-lim, Math.min(lim, .5 - y));
+  return "scale(" + z + ") translate(" + (tx * 100).toFixed(2) + "%," + (ty * 100).toFixed(2) + "%)";
 }
 
-function slam(s) {
-  const d = document.createElement('div');
-  if (s.spray) {
-    d.className = 'spray';
-    if (s.x) d.style.left = s.x + '%';
-    if (s.y) d.style.top = s.y + '%';
-    if (s.w) d.style.width = s.w + 'cqw';
-    const drips = [140, 300, 470, 610, 760, 880].map((x, i) => `<rect class="drip" x="${x}" y="150" width="${5 + i % 3 * 2}" height="${40 + (i * 37) % 70}" rx="3" fill="${s.color}" style="animation-delay:${.7 + i * .12}s"/>`).join('');
-    d.innerHTML = `<svg viewBox="0 0 1000 260">
-      <g filter="url(#mist)" opacity=".55"><text x="500" y="170" text-anchor="middle" font-family="Black Ops One" font-size="168" fill="${s.color}" class="paint">${s.spray}</text></g>
-      <g class="paint"><text x="500" y="170" text-anchor="middle" font-family="Black Ops One" font-size="168" fill="${s.color}" filter="url(#spr)" stroke="#000" stroke-width="7" paint-order="stroke">${s.spray}</text>${drips}</g>
-      <circle class="can" cx="500" cy="120" r="60" fill="${s.color}" opacity=".25" filter="url(#mist)"/></svg>`;
-  } else if (s.stamp) {
-    d.className = 'stamp'; d.textContent = s.stamp;
-    setTimeout(() => shake(), 120);
-  } else if (s.tape) {
-    d.innerHTML = `<div class="tape a"><span>${(s.tape + ' ✕ ').repeat(8)}</span></div><div class="tape b"><span>${('✕ ' + s.tape + ' ').repeat(8)}</span></div>`;
-  } else if (s.game) {
-    d.className = 'game';
-    d.innerHTML = `<div class="k">TONIGHT IN THE ARENA</div><div class="n">${s.game[0]}</div><p>${s.game[1]}</p><div class="f">${s.game[2]}</div>`;
-  } else if (s.win) {
-    d.className = 'win'; d.textContent = s.win;
-  }
-  fx.append(d);
+function fxAt(cls, n, html, css) {
+  const t = ST.toks[n]; if (!t || !t._m) return;
+  const d = document.createElement("div"); d.className = cls;
+  d.style.left = t._m.u * 100 + "%"; d.style.top = (parseFloat(t.style.top) - sizeOf(n, t._m) * 1.05) + "%";
+  if (css) Object.assign(d.style, css);
+  d.innerHTML = html || ""; $("wfx").append(d); setTimeout(() => d.remove(), 2600);
 }
-function shake() { stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake'); }
+function splash(u, v) {
+  const W = $("wfx");
+  for (let i = 0; i < 12; i++) { const d = document.createElement("div"); d.className = "drop"; d.style.left = u * 100 + "%"; d.style.top = v * 100 + "%"; d.style.setProperty("--dx", rnd(-4, 4).toFixed(1) + "cqw"); d.style.animationDelay = rnd(0, .1) + "s"; W.append(d); setTimeout(() => d.remove(), 1200); }
+  const r = document.createElement("div"); r.className = "splashring"; r.style.left = u * 100 + "%"; r.style.top = v * 100 + "%"; W.append(r); setTimeout(() => r.remove(), 1200);
+}
+function sparks() {
+  const O = $("over");
+  for (let i = 0; i < 26; i++) { const s = document.createElement("div"); s.className = "spark"; s.style.left = "50%"; s.style.top = "26%";
+    s.style.setProperty("--dx", rnd(-35, 35).toFixed(1) + "cqw"); s.style.setProperty("--dy", rnd(-15, 35).toFixed(1) + "cqh"); s.style.setProperty("--r", rnd(0, 360).toFixed(0) + "deg");
+    s.style.background = Math.random() < .5 ? "var(--caution)" : "var(--fire)"; O.append(s); setTimeout(() => s.remove(), 1300); }
+}
+function shake() { const f = $("frame"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); }
+function wipe() { const w = document.createElement("div"); w.className = "wipe"; w.innerHTML = "<i></i><i></i><i></i><i></i><i></i>"; $("over").append(w); setTimeout(() => w.remove(), 1100); }
 
-function render(n, animate = true) {
-  const S = SCENES[scene];
-  idx = n;
-  build(scene);
-  delete cam.dataset.view;
-  const side = [];
-  const state = { focus: null, race: null, callout: 0, said: {}, tallies: {}, chips: {} };
-  for (let i = 0; i <= n; i++) {
-    const s = S.steps[i], last = i === n;
-    if (s.side) side.push(...s.side);
-    if (s.view) state.view = s;
-    if (s.chipPins) Object.assign(state.chips, s.chipPins);
-    if (s.enter) for (const [nm, spec] of Object.entries(s.enter)) {
-      const t = tok(nm), m = markFor(S.plate, spec);
-      t.classList.remove('gone');
-      if (last && animate) { requestAnimationFrame(() => requestAnimationFrame(() => { t.style.left = m.u * 100 + '%'; t.style.top = m.v * 100 + '%'; t.style.setProperty('--sz', (m.s * 150).toFixed(2) + 'cqh'); })); }
-      else { t.style.left = m.u * 100 + '%'; t.style.top = m.v * 100 + '%'; t.style.setProperty('--sz', (m.s * 150).toFixed(2) + 'cqh'); }
-    }
-    if (s.move) for (const [nm, spec] of Object.entries(s.move)) {
-      const t = tok(nm), m = markFor(S.plate, spec);
-      t.style.left = m.u * 100 + '%'; t.style.top = m.v * 100 + '%'; t.style.setProperty('--sz', (m.s * 150).toFixed(2) + 'cqh');
-    }
-    if (s.exit) for (const nm of s.exit) {
-      const t = tok(nm), g = pick(S.plate, 'gate')[0];
-      if (g) { t.style.left = g.u * 100 + '%'; t.style.top = g.v * 100 + '%'; } else t.style.left = '110%';
-      t.classList.add('gone');
-    }
-    if (s.race) state.race = s.race;
-    if (s.vote) { state.said[s.vote[0]] = s.vote[1]; if (!last) state.tallies[s.vote[1]] = (state.tallies[s.vote[1]] || 0) + 1; state.now = last ? s.vote : null; }
-    else if (last) state.now = null;
-    if (s.callout) state.callout = s.callout;
-    if (s.vote && last) state.pending = s.vote[1];
-    state.focus = s.focus || (s.say ? [s.say[0]] : s.host ? ['TJ'] : state.focus);
-    state.cam = s.cam || (s.cam === undefined ? state.cam : null);
-    if (s.stop) state.stopped = s.stop;
-    if (s.stopAll) state.stopAll = 1;
+// One step's lasting effect on the stage. `anim` false = rebuilding the past quietly.
+function apply(s, si, i, anim) {
+  if (s.scene) { setScene(s.scene); if (anim && s.scene.wipe) wipe(); }
+  ST.map = s.map ? s : null;
+  if (s.enter) for (const [n, spec] of Object.entries(s.enter)) { ST.hidden.delete(n); ST.toks[n]?.classList.remove("gone"); ST.home[n] = spec; put(n, spec, anim);
+    if (anim) { const t = ST.toks[n]; t.classList.add("walkin"); setTimeout(() => t.classList.remove("walkin"), 1000); } }
+  if (s.move) for (const [n, spec] of Object.entries(s.move)) { ST.home[n] = spec; put(n, spec, anim); }
+  if (s.exit) for (const n of s.exit) { put(n, ["gate"], anim); ST.toks[n]?.classList.add("gone"); ST.hidden.add(n); }
+  if (s.hang === "start") { ST.hang = true; HANGERS.forEach((n, k) => { put(n, hangAt(k), anim); ST.toks[n].classList.add("hang"); ST.toks[n].style.setProperty("--rope", "3cqh"); }); }
+  if (s.sag) HANGERS.forEach((n, k) => { if (!ST.out.has(n)) { put(n, hangAt(k, s.sag), anim); ST.toks[n].style.setProperty("--rope", (3 + s.sag * 2.6) + "cqh"); } });
+  if (s.drop) for (const n of s.drop) {
+    ST.out.add(n); const t = ST.toks[n], k = HANGERS.indexOf(n);
+    t.classList.remove("hang"); t.classList.add("fall");
+    if (!anim) t.style.transition = "none";
+    t.style.top = "80%"; t._m = Object.assign({}, t._m, { v: .8 });
+    if (anim) setTimeout(() => splash(hangAt(k).u, .77), 330); else { void t.offsetWidth; t.style.transition = ""; }
   }
-  const s = S.steps[n];
+  if (s.win) {
+    ST.hang = false; ST.power = s.win;
+    HANGERS.forEach((n, k) => { const t = ST.toks[n]; t.classList.remove("hang", "fall"); put(n, pierAt(k), anim); });
+    s.win.forEach(n => ST.toks[n].classList.add("safe"));
+  }
+  if (s.power) ST.power = s.power;
+  if (s.vote) { const [v, n] = s.vote; if (ST.speaker && ST.speaker !== v) put(ST.speaker, ST.home[ST.speaker], anim); put(v, SPEAK, anim); ST.speaker = v; ST.board[n] = (ST.board[n] || 0) + 1; ST.voters++; }
+  else if (ST.speaker) { put(ST.speaker, ST.home[ST.speaker], anim); ST.speaker = null; }
+  if (s.chip) ST.chips[s.chip[0]] = s.chip[1];
+  if (s.duel) ST.duel = s.duel;
+  if (s.dance) ST.dance = s.dance;
+  if (s.stopdance) ST.dance = [];
+  if (s.bg) ST.bgAct = s.bg;
+  if (s.know) ST.know.push({ h: s.know[0], b: s.know[1], at: si + ":" + i });
+}
 
-  // the map
-  if (scene === 'map') {
-    setMap(state.view.view, state.view);
-    for (const [nm, chip] of Object.entries(state.chips)) {
-      cam.querySelectorAll(`.faces img[title="${nm}"]`).forEach(im => { im.style.boxShadow = '0 0 0 .3cqw var(--caution)'; });
-    }
+// What this step shows: who's lit, the camera, the HUD, the one-shot effects, the line.
+function present(s, anim) {
+  const O = $("over"); O.querySelectorAll(".seg,.spray,.stamp,.winner,.open").forEach(e => e.remove());
+  const focus = s.focus !== undefined ? s.focus : s.say ? [s.say[0]] : s.tj ? ["TJ"] : [];
+  for (const [n, t] of Object.entries(ST.toks)) {
+    t.classList.toggle("speak", !!(s.say && s.say[0] === n) || (!!s.tj && n === "TJ"));
+    t.classList.toggle("bg", focus.length > 0 && !focus.includes(n) && !(s.vote && n === s.vote[1]));
+    t.classList.toggle("dance", ST.dance.includes(n));
+    for (const a of ["sip", "look"]) t.classList.toggle(a, ST.bgAct[n] === a && !focus.includes(n));
+    t.querySelector(".chip")?.remove();
+    if (ST.chips[n]) t.insertAdjacentHTML("beforeend", "<div class='chip'>" + esc(ST.chips[n]) + "</div>");
+    t.classList.remove("talkpop", "shout", "laugh", "flinch", "lean", "cheer");
+    t.classList.toggle("dig", !!(s.dig && s.dig.includes(n)));
   }
-  // who is lit, who dances
-  const toks = [...cam.querySelectorAll('.tok')];
-  for (const t of toks) {
-    const nm = t.dataset.n;
-    t.classList.toggle('talk', !!state.focus && state.focus.includes(nm));
-    t.classList.toggle('dim', !!state.focus && state.focus.length > 0 && !state.focus.includes(nm) && !t.classList.contains('gone'));
-    const dancing = (S.dance || []).includes(nm) && !state.stopAll && !(state.stopped || []).includes(nm);
-    t.classList.toggle('dance', dancing);
+  if (anim && s.act) for (const [n, a] of Object.entries(s.act)) {
+    const t = ST.toks[n]; if (!t) continue;
+    const other = focus.find(x => x !== n);
+    if (other && ST.toks[other]) { const dir = ST.toks[other]._m.u > t._m.u ? 1 : -1; t.style.setProperty("--to", dir * 8 + "%"); t.style.setProperty("--rot", dir * 5 + "deg"); t.style.setProperty("--away", -dir * 6 + "%"); }
+    void t.offsetWidth; t.classList.add(a);
   }
-  // the camera
-  const c = state.cam;
-  cam.style.transform = c ? `scale(${c[2]}) translate(${(.5 - c[0]) * 100 / c[2]}%, ${(.5 - c[1]) * 100 / c[2]}%)` : '';
-  if (s.push) cam.style.transform = 'scale(1.06)';
+  if (!anim && s.act) for (const [n, a] of Object.entries(s.act)) if (a === "slump") ST.toks[n]?.classList.add("slump");
+  if (anim && s.say && !(s.act && s.act[s.say[0]])) { const t = ST.toks[s.say[0]]; if (t) { void t.offsetWidth; t.classList.add("talkpop"); } }
+  if (anim && s.vote) { const t = ST.toks[s.vote[1]]; if (t) { void t.offsetWidth; t.classList.add("flinch"); fxAt("pop", s.vote[1], String(ST.board[s.vote[1]]), { fontSize: "2.6cqw" }); } }
+  camera(focus, s.cam);
 
-  // the board
-  if (S.board) {
-    const tally = {};
-    for (const [v, nm] of Object.entries(state.said)) if (!(state.now && state.now[0] === v)) tally[nm] = (tally[nm] || 0) + 1;
-    const names = ['Jeremiah', 'Dave'];
-    $('tally').innerHTML = names.map(nm => `<div class="row"><img src="${AV(nm)}" alt=""><div><div class="nm">${nm}</div><div class="bar2" style="width:${(tally[nm] || 0) * 1.2}cqw"></div></div><div class="ct">${tally[nm] || 0}</div></div>`).join('');
-    for (const vc of cam.querySelectorAll('.vc')) {
-      const v = vc.dataset.v, said = state.said[v];
-      vc.classList.toggle('now', !!state.now && state.now[0] === v);
-      vc.classList.toggle('done', !!said);
-      if (said) vc.insertAdjacentHTML('beforeend', `<div class="said">${said}</div>`);
-    }
-    if (state.callout) {
-      cam.querySelector('.voters').style.opacity = '.18';
-      const pair = state.callout >= 2 ? ['Jeremiah', 'Dwayne'] : ['Jeremiah'];
-      const box = document.createElement('div');
-      box.style.cssText = 'position:absolute;inset:18% 0 6%;display:flex;justify-content:center;align-items:center;gap:8cqw';
-      box.innerHTML = pair.map(nm => `<div style="width:24cqw;text-align:center"><img src="${AV(nm)}" style="width:100%;aspect-ratio:1;object-fit:cover;border:.4cqw solid #000;box-shadow:0 0 0 .3cqw ${nm === 'Jeremiah' ? 'var(--caution)' : 'var(--fire)'}"><div style="font:400 2.6cqw 'Anton';text-transform:uppercase;margin-top:1cqh">${nm}</div></div>`).join('');
-      cam.append(box);
-    }
+  const P = ST.place || {};
+  let h = "";
+  if (!ST.map) h += "<div class='loc " + (anim && s.scene ? "fresh" : "") + "'><div class='ic'><svg viewBox='0 0 24 24'>" + (ICON[P.icon] || ICON.house) + "</svg></div><div class='txt'><div class='place'>" + esc(P.place || "") + "</div><div class='when'>" + (P.when || "") + "</div></div></div>";
+  if (ST.power.length) h += "<div class='power'><b>SAFE</b>" + ST.power.map(n => "<img src='" + AV(n) + "' title='" + esc(n) + "'>").join("") + "</div>";
+  if (P.spot && !ST.map) { const pin = marks("map-day").find(m => m.kind === "spot" && m.id === P.spot); h += "<div class='mini'><div class='lbl'><span>Blue Lagoon</span><b>&#9679;</b></div><div class='m' style='background-image:url(" + PLATE("map-day") + ".webp)'>" + (pin ? "<i class='pin' style='left:" + pin.u * 100 + "%;top:" + pin.v * 100 + "%'></i>" : "") + "</div></div>"; }
+  const fresh = ST.know.some(k => k.at === SI + ":" + IDX);
+  h += "<button class='ibtn2 " + (fresh && !intelOpen ? "new" : "") + "' id='ib'>INTEL <i></i></button>";
+  if (SCREENS[SI].id === "vote" && ST.voters) {
+    const rows = Object.entries(ST.board).sort((a, b) => b[1] - a[1]);
+    h += "<div class='board'><h5>THE VOTE</h5>" + rows.map(([n, c]) => "<div class='row " + (anim && s.vote && s.vote[1] === n ? "hit" : "") + "'><img src='" + AV(n) + "'><div><div class='nm'>" + esc(n) + "</div><div class='ticks'>" + "||||| ".repeat(Math.floor(c / 5)) + "|".repeat(c % 5) + "</div></div><div class='ct'>" + c + "</div></div>").join("") +
+      "<div class='left'>" + ST.voters + " of 19 have voted</div></div>";
   }
-  // the race
-  if (state.race && scene === 'arena') {
-    const h = document.createElement('div'); h.className = 'hud';
-    h.innerHTML = Object.entries(state.race).map(([nm, k]) => `<div class="race"><img src="${AV(nm)}" alt=""><div class="slots">${Array.from({ length: 12 }, (_, i) => `<i class="${i < k ? (k === 12 ? 'lock' : 'on') : ''}"></i>`).join('')}</div></div>`).join('');
-    fx.append(h);
-  }
-  // this step's one-shot effects
-  if (s.card) { const d = document.createElement('div'); d.className = 'tcard'; d.innerHTML = `<b>${s.card[0]}</b><span>${s.card[1]}</span>`; fx.append(d); }
-  if (s.slam && animate) slam(s.slam);
-  else if (s.slam) slam(s.slam);
-  if (s.act) for (const [nm, a] of Object.entries(s.act)) {
-    const t = tok(nm); if (!t) continue;
-    const other = state.focus?.find(x => x !== nm);
-    const dir = other && tok(other) ? (parseFloat(tok(other).style.left) > parseFloat(t.style.left) ? '1' : '-1') : '1';
-    t.style.setProperty('--dir', `${dir * (a === 'whisper' ? 10 : 40)}%`);
-    t.classList.add('act-' + a);
-  }
-  if (s.badge) for (const [nm, b] of Object.entries(s.badge)) tok(nm)?.insertAdjacentHTML('beforeend', `<div class="badge">${b}</div>`);
-  if (s.shake) setTimeout(shake, 200);
-  if (s.gong) { const g = pick(SCENES.arena.plate, 'gong')[0]; const r = document.createElement('div');
-    r.style.cssText = `position:absolute;left:${g.u * 100}%;top:${g.v * 100}%;width:14cqw;height:14cqw;translate:-50% -50%;border-radius:50%;border:.5cqw solid var(--caution);animation:gong 1.4s ease-out both`; fx.append(r); }
+  if (ST.duel) h += "<div class='race'>" + Object.entries(ST.duel).map(([n, k]) => "<div class='r'><img src='" + AV(n) + "'><div class='slots'>" + Array.from({ length: 12 }, (_, i) => "<i class='" + (i < k ? (k === 12 ? "lock" : "on") : "") + "'></i>").join("") + "</div><div class='n'>" + k + "</div></div>").join("") + "</div>";
+  if (ST.hang) h += "<div class='left-hud'><b>STILL HANGING</b>" + HANGERS.map(n => "<img class='" + (ST.out.has(n) ? "out" : "") + "' src='" + AV(n) + "' title='" + esc(n) + "'>").join("") + "</div>";
+  if (s.rules) h += "<div class='rules'><div class='k'>" + esc(s.rules.k.toUpperCase()) + "</div><div class='n'>" + esc(s.rules.n) + "</div><ol>" + s.rules.li.map(x => "<li>" + x + "</li>").join("") + "</ol><div class='f'>" + esc(s.rules.f) + "</div></div>";
+  if (ST.map) h += mapHtml(ST.map);
+  $("hud").innerHTML = h;
+  $("ib").onclick = e => { e.stopPropagation(); intelOpen = !intelOpen; intel(); $("ib").classList.remove("new"); };
+  $("hud").querySelectorAll("[data-go]").forEach(b => b.onclick = e => { e.stopPropagation(); go(SI, +b.dataset.go); });
+
+  if (s.seg) O.insertAdjacentHTML("beforeend", "<div class='seg'><div class='band'></div><div class='in'><div class='k'>" + esc(s.seg[0].toUpperCase()) + "</div><div class='big'>" + esc(s.seg[1]) + "</div></div></div>");
+  if (s.open && anim) openSeq();
+  if (s.slam) slam(s.slam, anim);
+  if (anim && s.shake) setTimeout(shake, 250);
+  if (anim && s.fx) { if (s.fx.pop) fxAt("pop", s.fx.pop[0], esc(s.fx.pop[1])); if (s.fx.excl) fxAt("excl", s.fx.excl, "!"); }
+  if (anim && s.gong) { const g = marks(ST.plate).find(m => m.kind === "gong"); if (g) for (let i = 0; i < 3; i++) setTimeout(() => { const r = document.createElement("div"); r.className = "ring"; r.style.left = g.u * 100 + "%"; r.style.top = g.v * 100 + "%"; $("wfx").append(r); setTimeout(() => r.remove(), 1000); }, i * 220); shake(); }
+  if (anim && s.dig) for (const n of s.dig) { const t = ST.toks[n]; if (!t) continue; for (let i = 0; i < 3; i++) setTimeout(() => { const d = document.createElement("div"); d.className = "puff"; d.style.left = t._m.u * 100 + "%"; d.style.top = t._m.v * 100 + "%"; $("wfx").append(d); setTimeout(() => d.remove(), 1100); }, i * 320); }
+
+  const C = $("confbox");
   if (s.conf) {
-    const d = document.createElement('div'); d.className = 'conf';
-    d.innerHTML = `<div class="pic"><img src="${AV(s.conf[0])}" alt=""></div><div><div class="lab">CONFESSIONAL</div><div class="nm">${s.conf[0]}</div><q>${s.conf[1]}</q></div>`;
-    fx.append(d);
+    if (C.dataset.who !== s.conf[0]) {
+      C.dataset.who = s.conf[0];
+      const seat = marks("conf-day").find(m => m.kind === "seat");
+      C.innerHTML = "<div class='confcut'><img class='plate' src='" + PLATE("conf-day") + ".webp' alt=''><div class='who' style='left:" + seat.u * 100 + "%'><div class='face'><img src='" + AV(s.conf[0]) + "' alt=''></div></div>" +
+        "<div class='lower'><div class='n'>" + esc(s.conf[0]) + "</div>" + (ROLE[s.conf[0]] ? "<div class='s'>" + esc(ROLE[s.conf[0]].toUpperCase()) + "</div>" : "") + "</div><div class='rec'><i></i>CONFESSIONAL</div><div class='vig'></div><div class='grain'></div></div>";
+      if (anim) burst();
+    }
+  } else if (C.dataset.who) { C.innerHTML = ""; C.dataset.who = ""; if (anim) burst(); }
+
+  dialogue(s, anim);
+  intel();
+}
+function burst() { const st = $("static"); st.classList.remove("burst"); void st.offsetWidth; st.classList.add("burst"); }
+
+function mapHtml(s) {
+  let h = "";
+  for (const r of s.rooms) {
+    const m = marks(ST.plate).find(x => x.kind === "spot" && x.id === r.at); if (!m) continue;
+    h += "<div class='mpin' style='left:" + m.u * 100 + "%;top:" + m.v * 100 + "%'>" + (r.bub ? "<div class='bub star' data-go='" + r.go + "'>" + esc(r.bub) + "</div>" : "") +
+      "<div class='faces'>" + r.who.map(n => "<img src='" + AV(n) + "' title='" + esc(n) + "'>").join("") + "</div></div>";
   }
-  if (s.say) speak(s.say[0], s.say[1]);
-  else if (s.host) speak('TJ', s.host, 'host');
-  else if (s.conf) speak(s.conf[0], s.conf[1], 'confessional');
-  else speak(null, s.dir || '');
-  if (!animate) { clearInterval(typing); }
-
-  $('ct').textContent = `${n + 1} / ${S.steps.length}`;
-  $('sec').textContent = S.sec;
-  $('intel').innerHTML = `<h2>WHAT THE HOUSE DOESN'T KNOW</h2><div class="sub">Only what has happened by this step.</div>` +
-    side.map(([h, b]) => `<section><h3>${h}</h3>${b}</section>`).reverse().join('');
+  for (const l of s.later) h += "<div class='mpin' style='left:" + l.x * 100 + "%;top:76%'><div class='bub star' data-go='" + l.go + "'>" + esc(l.bub) + "</div></div>";
+  h += "<div class='clock'>" + s.clock.map(([t, k]) => "<span class='" + k + "'>" + (k === "done" ? "&#10003; " : k === "lock" ? "&#128274; " : "") + t + "</span>").join("") + "</div>";
+  return h;
 }
 
-const gongCss = document.createElement('style');
-gongCss.textContent = '@keyframes gong{0%{scale:.3;opacity:1}100%{scale:2.4;opacity:0}}';
-document.head.append(gongCss);
-
-function go(sc, n) {
-  scene = sc;
-  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.s === sc));
-  render(n);
+function slam(sl, anim) {
+  const O = $("over");
+  if (sl.spray) {
+    const drips = [140, 300, 470, 610, 760, 880].map((x, i) => "<rect class='drip' x='" + x + "' y='150' width='" + (5 + i % 3 * 2) + "' height='" + (40 + (i * 37) % 70) + "' rx='3' fill='" + sl.color + "' style='animation-delay:" + (.7 + i * .12) + "s'/>").join("");
+    O.insertAdjacentHTML("beforeend", "<div class='spray'><svg viewBox='0 0 1000 260'><g class='paint'><text x='500' y='170' text-anchor='middle' font-family='Black Ops One' font-size='168' fill='" + sl.color + "' stroke='#000' stroke-width='9' paint-order='stroke' filter='url(#spr)'>" + sl.spray + "</text>" + drips + "</g></svg></div>");
+  }
+  if (sl.stamp) { O.insertAdjacentHTML("beforeend", "<div class='stamp'>" + sl.stamp + "</div>"); if (anim) setTimeout(shake, 120); }
+  if (sl.winner) { O.insertAdjacentHTML("beforeend", "<div class='winner'>" + esc(sl.winner) + "</div>"); if (anim) sparks(); }
 }
-$('tabs').innerHTML = Object.entries(SCENES).map(([k, s]) => `<button data-s="${k}">${s.tab}</button>`).join('');
-$('tabs').onclick = e => { const b = e.target.closest('button'); if (b) go(b.dataset.s, 0); };
-const next = () => { const S = SCENES[scene]; if (idx < S.steps.length - 1) render(idx + 1); else { const ks = Object.keys(SCENES); const i = ks.indexOf(scene); if (i < ks.length - 1) go(ks[i + 1], 0); } };
-const back = () => { if (idx > 0) render(idx - 1, false); };
-stage.onclick = next;
-$('next').onclick = next;
-$('back').onclick = back;
-addEventListener('keydown', e => {
-  if (e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); next(); }
-  if (e.key === 'ArrowLeft') { e.preventDefault(); back(); }
+
+function openSeq() {
+  const O = $("over");
+  let h = "<div class='open'>";
+  HOUSE.slice(0, 10).forEach((n, i) => h += "<div class='flash' style='animation-delay:" + (i * .26).toFixed(2) + "s'><img src='" + AV(n) + "'><img src='" + AV(n) + "'><b>" + esc(n) + "</b></div>");
+  const t0 = 10 * .26;
+  h += "<div class='grid' style='animation-delay:" + t0 + "s'>" + HOUSE.concat(["TJ"]).slice(0, 20).map((n, i) => "<img src='" + AV(n) + "' style='animation-delay:" + (t0 + i * .03).toFixed(2) + "s'>").join("") + "</div>";
+  h += "<div class='logo2' style='animation-delay:" + (t0 + .7) + "s'><div class='a'>SEASON 1</div><div class='b'>The Challenge</div><div class='c'>BLUE LAGOON</div></div><div class='scan'></div></div>";
+  O.insertAdjacentHTML("beforeend", h);
+  const me = O.querySelector(".open");
+  setTimeout(() => { if (me.isConnected) { me.remove(); sparks(); shake(); } }, (t0 + 3.4) * 1000);
+}
+
+function dialogue(s, anim) {
+  const D = $("dlg"), nm = $("name"), say = $("say"), cut = $("cutin");
+  clearInterval(typing);
+  let who = null, text = "", kind = "";
+  if (s.say) { who = s.say[0]; text = s.say[1]; }
+  else if (s.tj) { who = "TJ"; text = s.tj; kind = "host"; }
+  else if (s.conf) { who = s.conf[0]; text = s.conf[1]; kind = "conf"; }
+  else { text = s.dir || ""; kind = "dir"; }
+  D.className = "dlg " + kind + (anim && s.loud ? " loud" : "");
+  D.style.display = text ? "" : "none";
+  if (who) {
+    D.style.setProperty("--cut", "13%");
+    if (cut.dataset.who !== who) { cut.innerHTML = "<img src='" + AV(who) + "' alt=''>"; cut.dataset.who = who; if (anim) { cut.classList.remove("fresh"); void cut.offsetWidth; cut.classList.add("fresh"); } }
+    cut.style.display = "";
+    nm.innerHTML = who === "TJ" ? "TJ Maxx<small>HOST</small>" : esc(who) + (kind === "conf" ? "<small>CONFESSIONAL</small>" : "");
+  } else { D.style.setProperty("--cut", "0%"); cut.style.display = "none"; cut.dataset.who = ""; nm.innerHTML = ""; }
+  const done = () => { say.innerHTML = "<span>" + light(text) + "</span>"; };
+  if (!anim || !who || text.length < 30) { done(); if (anim) { say.classList.remove("punch"); void say.offsetWidth; say.classList.add("punch"); } return; }
+  let i = 0; say.classList.remove("punch");
+  typing = setInterval(() => { i += 2; say.innerHTML = "<span>" + esc(text.slice(0, i)) + "<span class='caret'></span></span>"; if (i >= text.length) { clearInterval(typing); done(); } }, 20);
+}
+// Names and the game's words light up once a line is complete.
+function light(t) {
+  const words = NAMES.map(n => [n, "hn"]).concat(GAME.map(g => [g, "hg"]));
+  const re = new RegExp("\\b(" + words.map(w => w[0].replace(/ /g, "\\s")).join("|") + ")\\b", "g");
+  return esc(t).replace(re, m => "<span class='" + (GAME.includes(m) ? "hg" : "hn") + "'>" + m + "</span>");
+}
+
+function intel() {
+  const I = $("intel");
+  I.classList.toggle("open", intelOpen);
+  const cur = SI + ":" + IDX;
+  I.innerHTML = "<h4>INTEL</h4><div class='sub'>What the house doesn't know. Only what has happened by this step.</div><div class='list'>" +
+    (ST.know.length ? [...ST.know].reverse().map(k => "<div class='icard " + (k.at === cur ? "fresh" : "") + "'><h6>" + esc(k.h) + "</h6>" + k.b + "</div>").join("") : "<div class='icard'>Nothing yet. Keep watching.</div>") + "</div>";
+  I.onclick = e => e.stopPropagation();
+}
+
+// Rebuild the stage from the start of this screen (the intel drawer keeps every earlier screen).
+function rebuild() {
+  const know = [];
+  for (let si = 0; si < SI; si++) SCREENS[si].steps.forEach((s, i) => { if (s.know) know.push({ h: s.know[0], b: s.know[1], at: si + ":" + i }); });
+  ST = newState(know);
+  for (let i = 0; i <= IDX; i++) apply(SCREENS[SI].steps[i], SI, i, false);
+}
+function go(si, idx, forward) {
+  SI = si; IDX = idx;
+  if (forward) apply(SCREENS[SI].steps[IDX], SI, IDX, true); else rebuild();
+  present(SCREENS[SI].steps[IDX], true);
+  chapters(); script();
+}
+function next() {
+  if (IDX < SCREENS[SI].steps.length - 1) go(SI, IDX + 1, true);
+  else if (SI < SCREENS.length - 1) go(SI + 1, 0, true);
+}
+function back() { if (IDX > 0) go(SI, IDX - 1); else if (SI > 0) go(SI - 1, SCREENS[SI - 1].steps.length - 1); }
+function chapters() {
+  $("chapters").innerHTML = SCREENS.map((s, i) => "<div class='chap " + (i === SI ? "on" : "") + "' data-i='" + i + "'><span>" + s.label + "</span><i><b style='width:" + (i < SI ? 100 : i > SI ? 0 : ((IDX + 1) / s.steps.length * 100)) + "%'></b></i></div>").join("");
+  $("chapters").querySelectorAll(".chap").forEach(c => c.onclick = () => go(+c.dataset.i, 0));
+}
+function script() {
+  const L = $("lines");
+  L.innerHTML = SCREENS[SI].steps.map((s, i) => {
+    const c = i === IDX ? " cur" : "";
+    if (s.say) return "<div class='ln" + c + "' data-i='" + i + "'><span class='n'>" + esc(s.say[0]) + ":</span> " + esc(s.say[1]) + "</div>";
+    if (s.tj) return "<div class='ln" + c + "' data-i='" + i + "'><span class='n'>TJ:</span> " + esc(s.tj) + "</div>";
+    if (s.conf) return "<div class='ln" + c + "' data-i='" + i + "'><span class='n'>" + esc(s.conf[0]) + " [confessional]:</span> " + esc(s.conf[1]) + "</div>";
+    if (s.dir) return "<div class='ln d" + c + "' data-i='" + i + "'>(" + esc(s.dir) + ")</div>";
+    return "<div class='ln sc" + c + "' data-i='" + i + "'>" + esc(s.seg ? s.seg[1] : s.scene ? s.scene.place : "") + "</div>";
+  }).join("");
+  L.querySelectorAll(".ln").forEach(l => l.onclick = () => go(SI, +l.dataset.i));
+}
+function setAuto(on) {
+  clearTimeout(AUTO); AUTO = 0; $("auto").classList.toggle("on", on);
+  if (!on) return;
+  const loop = () => { const s = SCREENS[SI].steps[IDX]; next(); const t = (s.say || [])[1] || s.tj || (s.conf || [])[1] || s.dir || ""; AUTO = setTimeout(loop, 1800 + t.length * 38); };
+  AUTO = setTimeout(loop, 1200);
+}
+
+$("frame").onclick = next;
+$("next").onclick = next;
+$("back").onclick = back;
+$("restart").onclick = () => go(0, 0);
+$("auto").onclick = () => setAuto(!AUTO);
+$("theme").onclick = () => { const r = document.documentElement; r.dataset.theme = r.dataset.theme === "light" ? "dark" : "light"; };
+addEventListener("keydown", e => {
+  if (e.key === " " || e.key === "ArrowRight") { e.preventDefault(); next(); }
+  if (e.key === "ArrowLeft") { e.preventDefault(); back(); }
+  if (e.key === "i" || e.key === "I") { intelOpen = !intelOpen; intel(); }
 });
-const want = new URLSearchParams(location.search);
-go(want.get('s') && SCENES[want.get('s')] ? want.get('s') : 'map', +(want.get('n') || 0));
-window.__go = go;
+window.__go = (id, i) => go(typeof id === "string" ? SCREENS.findIndex(s => s.id === id) : id, i);
+window.__next = next;
+const q = new URLSearchParams(location.search);
+go(Math.max(0, SCREENS.findIndex(s => s.id === q.get("s"))), +(q.get("n") || 0));
 </script>
 </body>
 </html>

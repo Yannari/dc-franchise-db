@@ -108,6 +108,18 @@ describe('The Challenge stepped viewer: the steps', () => {
       for (const d of row.ch.duels) expect(steps.some(st => st.slam?.winner === `${d.winner} wins`), `ep ${row.num}: ${d.winner} wins`).toBe(true);
     }
   });
+
+  it('the house argues before the vote and somebody finds the one voted in after it, and both air', () => {
+    for (const { r, rows } of seasons) {
+      const voted = rows.filter(row => !row.ch.final && row.ch.votes.some(v => !v.volunteer));
+      const kinds = row => new Set(row.ch.aired.map(x => x.kind));
+      const debates = voted.filter(row => kinds(row).has('house-debate')).length;
+      const after = voted.filter(row => kinds(row).has('after-vote')).length;
+      expect(r.state.scenes.some(s => s.kind === 'house-debate'), 'the engine files a debate').toBe(true);
+      expect(debates, `debates aired on ${debates} of ${voted.length} vote nights`).toBeGreaterThanOrEqual(voted.length / 2);
+      expect(after, `after-vote aired on ${after} of ${voted.length} vote nights`).toBeGreaterThanOrEqual(voted.length / 2);
+    }
+  });
 });
 
 describe('The Challenge stepped viewer: painting', () => {

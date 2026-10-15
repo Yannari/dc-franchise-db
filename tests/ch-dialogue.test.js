@@ -9,7 +9,7 @@ import { VOICE_TAGS } from '../js/td/story/voice.js';
 import { challengeCast } from './helpers/ch-cast.js';
 
 const FAMILIES = ['sharp', 'dry', 'loud', 'soft', 'odd'];
-const SLOTS = new Set(['a', 'b', 'c', 'd', 'tj', 'target', 'alliance', 'game', 'gone', 'show_a', 'show_b', 'count', 'need', 'reason']);
+const SLOTS = new Set(['a', 'b', 'c', 'd', 'tj', 'target', 'alliance', 'game', 'gone', 'show_a', 'show_b', 'count', 'need', 'reason', 'alt']);
 
 describe('The Challenge pools', () => {
   it('gate only on known facts, key variants only on real voices, and name only real slots', () => {

@@ -27,7 +27,7 @@ import { buildSchedule, elimsFor, divisionFor } from './schedule.js';
 import { initMind, driftDay, nudge } from './mind.js';
 import { giveRespect } from './respect.js';
 import { afterVote } from './alliances.js';
-import { deliberate, houseVote, voteFallout, breakDeal } from './vote.js';
+import { deliberate, houseVote, voteFallout, breakDeal, houseDebate } from './vote.js';
 import { chooseOpponent, dealBetween } from './callout.js';
 import { playDaily } from './dailies.js';
 import { playDuel, injuryRoll } from './arena.js';
@@ -220,7 +220,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     for (let k = 0; k < elims; k++) {
       const eligible = inDivision(state, division).filter(n => !immune.includes(n) && !used.has(n));
       if (eligible.length < 2) break;
-      if (!delib) { delib = deliberate(state, R('delib'), { division, eligible, immune }); epRec.delib = summarise(delib); }
+      if (!delib) { delib = deliberate(state, R('delib'), { division, eligible, immune }); epRec.delib = summarise(delib); if (!delib.volunteer) houseDebate(state, delib, eligible); }
       let votedIn, vote = null, volunteer = false;
       if (k === 0 && delib.volunteer && eligible.includes(delib.volunteer.name)) {
         votedIn = delib.volunteer.name; volunteer = true;
@@ -241,6 +241,13 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       nudge(state, votedIn, 'morale', volunteer ? 0 : -1);
       epRec.votedIn.push(votedIn);
       addScene(state, volunteer ? 'volunteer-in' : 'voted-in', [votedIn], { volunteer }, state.active, 'public');
+      // after the vote: the one going in, with the friend who comes to find them, and a friend who said their name
+      if (!volunteer && vote) {
+        const friend = state.active.filter(n => n !== votedIn && !vote.ballots.some(x => x.voter === n && x.target === votedIn))
+          .sort((x, y) => getBond(votedIn, y) - getBond(votedIn, x))[0];
+        const stung = vote.ballots.filter(x => x.target === votedIn && getBond(votedIn, x.voter) >= 2).sort((x, y) => getBond(votedIn, y.voter) - getBond(votedIn, x.voter))[0]?.voter || null;
+        if (friend) addScene(state, 'after-vote', [votedIn, friend, ...(stung ? [stung] : [])], { count: vote.tally?.[votedIn] || 0, stung }, [votedIn, friend], 'villa');
+      }
       // The call-out.
       const pool = eligible.filter(n => n !== votedIn && !used.has(n));
       if (!pool.length) break;

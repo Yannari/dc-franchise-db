@@ -251,7 +251,7 @@ export default {
       dry: ["{b}, when exactly are you going to play this game?", "{b}, are you planning to play at some point?"],
       loud: ["{b}! When are you going to PLAY?!", "When are you actually going to do something, {b}?"],
       soft: ["{b}, I'm just wondering. When are you going to start playing?", "{b}, do you ever plan on making a move?"],
-      odd: ["{b}, when does your game start? I've been waiting. I bought popcorn.", "{b}, is your strategy to be furniture? Because it's working."],
+      odd: ["{b}, when does your game start? I've been waiting all season.", "{b}, you haven't made one move in here. Not one."],
     },
   },
   'pt.1': {
@@ -417,7 +417,7 @@ export default {
       dry: ["{b}. No surprise. It's you.", "{b}. We both knew."],
       loud: ["{b}! It's YOU! It was always going to be you!", "{b}! Who else?!"],
       soft: ["{b}. I think we both knew it would be you.", "{b}. I'm sorry. It was always going to be you."],
-      odd: ["{b}. It's you. It was always going to be you.", "{b}! Destiny! It's you!"],
+      odd: ["{b}. It's you. It was always going to be you.", "{b}! It was always going to be you!"],
     },
     1: {
       sharp: ["Finally. Bring it.", "Good. Bring it."],
@@ -478,7 +478,7 @@ export default {
       dry: ["My vote is {b}.", "{b}. That's my vote."],
       loud: ["{b}!", "I'm voting {b}!"],
       soft: ["I'm sorry. {b}.", "{b}. I'm so sorry."],
-      odd: ["{b}! Surprise!", "My vote goes to... {b}. Plot twist."],
+      odd: ["{b}! I've been waiting to say that!", "My vote goes to {b}. I changed my mind tonight."],
     },
   },
   'bf.2': {
@@ -487,7 +487,7 @@ export default {
       dry: ["I vote {b}.", "{b}, for me."],
       loud: ["{b}! That's my vote!", "I'm going {b}!"],
       soft: ["{b}. I'm sorry, I had to.", "I... I vote {b}."],
-      odd: ["{b}! Ta-da!", "Drumroll... {b}."],
+      odd: ["{b}. That's where my head's been all week.", "Drumroll... {b}."],
     },
   },
   'vd.2': {
@@ -962,7 +962,7 @@ export default {
       dry: ["Is everyone okay with {target}?", "So, {target}?"],
       loud: ["Everybody good with {target}?!", "{target}! We all good?"],
       soft: ["Is everybody okay with {target}?", "Are we all good with {target}?"],
-      odd: ["{target}. Thumbs up? Thumbs up. Great.", "Everybody good with {target}? Nod if yes. Okay, everybody nodded."],
+      odd: ["{target}. Are we all good with that?", "Everybody good with {target}? Nod if yes. Okay, everybody nodded."],
     },
     2: {
       sharp: ["Good. Done.", "Perfect. That's settled."],
@@ -1012,7 +1012,7 @@ export default {
       dry: ["{b}. It's {b}.", "I'm calling out {b}. That's my pick."],
       loud: ["{b}! I'm calling out {b}!", "I'M CALLING OUT {b}!"],
       soft: ["{b}. I'm calling out {b}. Sorry.", "It's {b}. I'm calling out {b}."],
-      odd: ["{b}! Louder: {b}! Is that loud enough?", "{b}. I'm calling out {b}. With my outside voice."],
+      odd: ["{b}! I'll say it as loud as you want!", "{b}. I'm calling out {b}, and I want everybody to hear it."],
     },
     3: {
       sharp: ["I hated saying it. But staying matters more than being liked.", "Being liked doesn't win this game. Staying does."],

@@ -361,7 +361,7 @@ export default {
       dry: ["So, {target}. Everybody okay with that?", "We're agreed on {target}?"],
       loud: ["So it's {target}! Everybody in?", "{target}, right? We good?"],
       soft: ["So is everybody okay with {target}?", "Are we all comfortable with {target}?"],
-      odd: ["So... {target}? Raise your hand if yes. Not literally. Somebody might see.", "{target}. All in favour, say nothing suspicious."],
+      odd: ["So... {target}? Raise your hand if yes. Not literally. Somebody might see.", "{target}. Everybody keep it quiet until the vote."],
     },
     2: {
       sharp: ["Then what's your plan? Go on.", "Okay. Got a better idea?"],
@@ -457,7 +457,7 @@ export default {
       dry: ["I'm calling out {b}. It's the fight I think I win.", "{b}. I like my chances against {b}."],
       loud: ["{b}! I'm calling out {b}, and I'm not going home!", "I'm calling out {b}! I'm staying!"],
       soft: ["I'm calling out {b}. I'm sorry. I want to stay, and this is how I stay.", "{b}. I'm sorry. I just want to be here next week."],
-      odd: ["{b}! I've thought about it for at least four minutes. I'm calling out {b}.", "I'm calling out {b}, and I'm going to win, and I'm going to be humble about it."],
+      odd: ["{b}! I've thought about it all night. I'm calling out {b}.", "I'm calling out {b}, and I'm going to win, and I'm going to be humble about it."],
     },
   },
   'mt.p2': {
@@ -544,7 +544,7 @@ export default {
       dry: ["{b}. We don't get along. Let's just settle it in the Arena.", "{b}. We both know why. Might as well settle it."],
       loud: ["{b}! We don't get along, so let's settle it!", "{b}! No more pretending! Let's go!"],
       soft: ["{b}. We've never gotten along, and I'm tired of pretending.", "I'm calling out {b}. I'd rather settle this than keep faking it."],
-      odd: ["{b}! We don't get along, so let's not get along in the Arena.", "{b}. We've been fake-smiling for weeks. My face hurts."],
+      odd: ["{b}! We don't get along, so let's not get along in the Arena.", "{b}. We've been faking it for weeks. I'm done."],
     },
   },
   'dc.2': {
@@ -672,7 +672,7 @@ export default {
       dry: ["{b}. I'm not going to pretend I like you.", "I'm calling out {b}. We both know I can't stand {b}."],
       loud: ["{b}! I don't like you! Never have!", "I'm calling out {b}, and I'm not faking a smile about it!"],
       soft: ["{b}. I'm sorry, but I'm not going to pretend we're friends.", "I'm calling out {b}. I can't keep pretending I like you."],
-      odd: ["{b}. I don't like you, and I've been very brave about hiding it.", "{b}! I've been pretending to like you for weeks. Pretending is exhausting."],
+      odd: ["{b}. I don't like you, and I'm done hiding it.", "{b}! I've been pretending to like you for weeks. Pretending is exhausting."],
     },
   },
 };

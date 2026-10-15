@@ -102,7 +102,7 @@ function chapterOf(a) {
   if (a.kind === 'villa-reveal') return 'reveal';
   if (DAILY_KINDS.has(a.kind)) return 'daily';
   if (a.spot === 'party' || a.kind === 'party' || a.kind === 'fight' || a.kind === 'fight-physical') return 'party';
-  if (a.kind === 'ceremony' || a.kind === 'volunteer') return 'vote';
+  if (a.kind === 'ceremony' || a.kind === 'volunteer' || a.kind === 'house-debate') return 'vote';
   if (a.kind.startsWith('arena-eve')) return 'eve';
   if (a.kind === 'callout' || a.kind === 'arena') return 'arena';
   if (a.kind === 'final-start') return 'final-start';

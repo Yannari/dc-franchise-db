@@ -130,6 +130,153 @@ export default {
     ] },
   ],
 
+  // ── the house talks it out, in front of everybody, before the vote ──────
+  // a proposes the name, b is the name, c objects, d backs a. Said to each other's faces, the way the real
+  // show's deliberation goes ("You guys are monsters." "This is the game.").
+  'house-debate.one': [
+    { id: 'hd.o1', turns: [
+      { beat: 'After dinner everybody ends up in the common room. Nobody says why, but they all know.' },
+      { by: 'a', say: "Okay. Somebody has to say it. I think it should be {b}." },
+      { by: 'b', say: "Me? Why me? What did I do?" },
+      { by: 'a', say: "It's nothing you did. You're the biggest threat in this division, and you know it." },
+      { by: 'c', say: "That's not fair. {b} hasn't done anything to anybody." },
+      { by: 'd', say: "It's not about fair. It's about who we can beat." },
+      { by: 'b', say: "Then say it to my face at the vote. All of you." },
+      { by: 'b', conf: "I walked into that room thinking I was one of them, and I walked out as the name." },
+    ] },
+    { id: 'hd.o2', turns: [
+      { by: 'a', say: "I'll just say what everybody's thinking. It's {b}." },
+      { by: 'b', say: "Everybody? Or just you?" },
+      { by: 'd', say: "It's not just {a}. I'm saying {b} too." },
+      { by: 'c', say: "I'm not. I think this is a mistake." },
+      { by: 'a', say: "Then vote how you want. The numbers are already there." },
+      { by: 'c', conf: "Nobody wants to rock the boat this early, so everybody picks the easy name." },
+    ] },
+    { id: 'hd.o3', turns: [
+      { by: 'c', say: "Can we at least talk about it before everybody just says {b}?" },
+      { by: 'a', say: "We did talk about it. It's {b}." },
+      { by: 'b', say: "Nobody talked to me about it." },
+      { by: 'd', say: "Because it's not a conversation. It's a vote." },
+      { by: 'b', conf: "Everybody in that room had already decided before I sat down." },
+    ] },
+    { id: 'hd.o4', turns: [
+      { beat: 'Everybody drifts into the common room after dinner. {a} stays standing.' },
+      { by: 'a', say: "I'm just going to be honest with everybody. I'm voting {b}." },
+      { by: 'b', say: "You could have told me that this morning." },
+      { by: 'a', say: "I'm telling you now. To your face." },
+      { by: 'c', say: "You guys are cold. {b} has been good to every single person in here." },
+      { by: 'd', say: "This is the game. Being nice doesn't keep you safe." },
+      { by: 'c', conf: "I hate this part. You live with these people, and then you say their name." },
+    ] },
+    { id: 'hd.o5', turns: [
+      { by: 'b', say: "So is anybody going to say it, or do I have to find out at the vote?" },
+      { by: 'a', say: "Fine. It's you. I'm sorry." },
+      { by: 'b', say: "Who else?" },
+      { by: 'd', say: "Me. It's not personal." },
+      { by: 'c', say: "Not me. I want that on the record." },
+      { by: 'b', conf: "At least {a} said it to my face. Half this house won't even look at me." },
+    ] },
+    { id: 'hd.o6', turns: [
+      { beat: 'The kitchen goes quiet when {a} sits down at the table.' },
+      { by: 'a', say: "We all know how tonight goes. I think it's {b}." },
+      { by: 'c', say: "Why does it have to be decided at dinner? Let people think." },
+      { by: 'd', say: "People have been thinking all day. It's {b}." },
+      { by: 'b', say: "Okay. Then I'll see you all in the Arena." },
+      { by: 'a', conf: "Somebody has to say the name first. It might as well be me." },
+    ] },
+  ],
+  'house-debate.split': [
+    { id: 'hd.s1', turns: [
+      { by: 'a', say: "Let's not pretend. It's {b} this week." },
+      { by: 'c', say: "Why {b}? {alt} is the bigger threat, and everybody knows it." },
+      { by: 'a', say: "Because {b} can lose in there. {alt} doesn't lose." },
+      { by: 'b', say: "So I'm going in because you think I'm easy? Thanks." },
+      { by: 'd', say: "It's not personal. It's the numbers." },
+      { by: 'c', conf: "If we keep sending in the easy names, {alt} is going to walk all over us in the final." },
+    ] },
+    { id: 'hd.s2', turns: [
+      { by: 'c', say: "Before anybody says {b}, I want to talk about {alt}." },
+      { by: 'a', say: "We already talked about it. It's {b}." },
+      { by: 'c', say: "You talked about it. I didn't." },
+      { by: 'b', say: "Thank you. Somebody's finally saying it." },
+      { by: 'd', say: "We're not doing this right now. It's {b}." },
+      { by: 'b', conf: "There was a real argument in that room, and I still lost it." },
+    ] },
+    { id: 'hd.s3', turns: [
+      { beat: 'The whole house is in the common room. The TV is off.' },
+      { by: 'a', say: "I think it has to be {b}. I'm sorry." },
+      { by: 'c', say: "It should be {alt}. If {alt} gets to the final, none of us win." },
+      { by: 'd', say: "{alt} wins in the Arena. {b} might not. That's the whole reason." },
+      { by: 'b', say: "Wow. Okay. Good to know where everybody stands." },
+      { by: 'c', conf: "I said {alt} out loud in front of everybody. If {alt} hears about it, I'm next." },
+    ] },
+    { id: 'hd.s4', turns: [
+      { beat: 'Everybody is out on the deck after dinner. {c} stands up.' },
+      { by: 'c', say: "I'm not voting {b}. I'm voting {alt}, and I think some of you should too." },
+      { by: 'a', say: "And split the vote? Then nobody knows who's going in." },
+      { by: 'c', say: "Good. I'd rather it be close than easy." },
+      { by: 'd', say: "Do what you want. We've got the numbers." },
+      { by: 'b', conf: "{c} tried. I'll remember that. I'll remember who didn't, too." },
+    ] },
+    { id: 'hd.s5', turns: [
+      { by: 'a', say: "So we're all saying {b}, right?" },
+      { by: 'c', say: "Not all of us. {alt} has won two dailies in a row. Why is nobody talking about that?" },
+      { by: 'd', say: "Because {alt} isn't eligible to lose in there. {b} is." },
+      { by: 'c', say: "That's not a reason. That's being scared." },
+      { by: 'a', say: "Call it what you want. It's {b}." },
+      { by: 'a', conf: "{c} is going to start a fight with the wrong people if {c} keeps that up." },
+    ] },
+    { id: 'hd.s6', turns: [
+      { beat: 'Half the house is in the kitchen. {b} walks in, and everybody stops talking.' },
+      { by: 'b', say: "Just say it. Who is it?" },
+      { by: 'a', say: "It's you. Sorry." },
+      { by: 'c', say: "It shouldn't be. It should be {alt}." },
+      { by: 'b', say: "At least one person in here has a brain." },
+      { by: 'd', say: "Say what you want. Tonight it's {b}." },
+      { by: 'c', conf: "I'm one vote. One vote doesn't send anybody anywhere." },
+    ] },
+  ],
+
+  // ── after the vote: the one going in, and the friend who comes to find them ──
+  'after-vote.any': [
+    { id: 'av.1', turns: [
+      { beat: '{b} finds {a} sitting outside by the pool, alone.' },
+      { by: 'b', say: "Hey. You okay?" },
+      { by: 'a', say: "No. I really thought I was safe this week." },
+      { by: 'b', say: "You're going to win in there. I mean it." },
+      { by: 'a', conf: "I really thought I had more friends in this house than that." },
+    ] },
+    { id: 'av.2', turns: [
+      { by: 'b', say: "I didn't say your name. I want you to know that." },
+      { by: 'a', say: "I know. I heard. Thank you." },
+      { by: 'b', say: "Go in there and come back. Then we deal with the rest of them." },
+      { by: 'a', conf: "I know exactly who's still with me. It's a shorter list than I thought." },
+    ] },
+    { id: 'av.3', turns: [
+      { beat: '{a} goes straight to the bedroom. {b} follows a minute later.' },
+      { by: 'b', say: "Can I sit?" },
+      { by: 'a', say: "Yeah. I just didn't want to be in there with all of them." },
+      { by: 'b', say: "You've been in the Arena before. You know what to do." },
+      { by: 'a', say: "I know. I just hate that it was this easy for them." },
+      { by: 'a', conf: "{count} votes. They didn't even have to argue about it." },
+    ] },
+  ],
+  'after-vote.stung': [
+    { id: 'av.s1', turns: [
+      { by: 'a', say: "{c} said my name. Did you hear that? {c}!" },
+      { by: 'b', say: "I heard. I don't get it either." },
+      { by: 'a', say: "I would have never said {c}'s name. Never." },
+      { by: 'a', conf: "Of everybody in that room, {c} is the one I didn't see coming." },
+    ] },
+    { id: 'av.s2', turns: [
+      { beat: '{a} walks out of the common room without looking at anybody.' },
+      { by: 'b', say: "Hey, wait. Talk to me." },
+      { by: 'a', say: "{c} looked me in the eye and said my name. After everything." },
+      { by: 'b', say: "I know. I'm so sorry." },
+      { by: 'a', conf: "I'll beat whoever I call out. Then I'm coming back for {c}." },
+    ] },
+  ],
+
   // ── the result ──────────────────────────────────────────────────────
   'cer-result.clear': [
     { id: 'cr.c1', turns: [

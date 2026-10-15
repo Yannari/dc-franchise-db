@@ -119,7 +119,7 @@ export const EVENTS = [
   // ── COMEDY / LIFE ──
   { id: 'prank', actorCooldown: 1, kind: 'comedy', cooldown: 3, max: 6,
     cast: ctx => bestPair(ctx, 'prank', 3, (a, b) => (S(a, 'boldness') + (is(a, 'chaos-agent', 'wildcard', 'hothead') ? 4 : 0) - 8) * 0.4 + Math.max(0, getBond(a, b)) * 0.15),
-    weight: (ctx, p) => 0.9 + p.score * 0.1,
+    weight: (ctx, p) => 0.25 + p.score * 0.05,
     fire(ctx, [a, b], rng) {
       // Taken as a joke, or as war: temperament and the bond decide.
       const laughs = rng() < clamp(0.35 + S(b, 'temperament') * 0.05 + getBond(a, b) * 0.05, 0.1, 0.9);
@@ -173,7 +173,7 @@ export const EVENTS = [
     } },
   { id: 'tj-at-breakfast', kind: 'comedy', cooldown: 99, max: 3,
     cast: ctx => ({ who: [ctx.state.active[Math.floor(hash(ctx.state.seed, ctx.state.ep, 'tj') * ctx.state.active.length)]], score: 1 }),
-    weight: ctx => (ctx.state.ep >= 3 && !ctx.night ? 0.35 : 0),
+    weight: () => 0,   // TJ never comes into the villa on this show: the trivia breakfast is off
     fire(ctx, [lucky], rng) {
       // TJ turns up with a terrible idea: breakfast trivia, prize a call home.
       const winner = [...ctx.state.active].sort((x, y) => (S(y, 'mental') + rng() * 4) - (S(x, 'mental') + rng() * 4))[0];

@@ -254,7 +254,7 @@ export default {
       dry: ["{b}. You voted me in. Seems fair you come along.", "{b}. You put me here. You can join me."],
       loud: ["{b}! You voted me in! So you're coming with me!", "{b}! You put me here! Let's go!"],
       soft: ["{b}. You voted me in. I'm sorry, but you're coming with me.", "{b}. You put my name down. So it's you."],
-      odd: ["{b}. You voted me in, so I'm inviting you. It's a party. A terrible party.", "{b}! You voted me in! Surprise! You're my plus-one."],
+      odd: ["{b}. You voted me in, so you're coming in there with me.", "{b}! You voted me in! So you're coming with me!"],
     },
   },
   'fl.r3': {
@@ -574,7 +574,7 @@ export default {
       dry: ["{b}, honest question. What's your game?", "{b}, what have you done so far? Genuinely asking."],
       loud: ["{b}! What's your game?! What have you DONE?", "No offence, {b}, but what have you actually done?"],
       soft: ["{b}, I don't mean this badly, but what's your game?", "I'm just curious, {b}. What have you actually done?"],
-      odd: ["{b}, what's your game? Show me the game. I can't see it.", "{b}, if your game were a movie, what would happen in it?"],
+      odd: ["{b}, what's your game? Show me the game. I can't see it.", "{b}, tell me one thing you've done in this game."],
     },
   },
   'pl.h2': {

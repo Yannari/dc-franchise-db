@@ -17,6 +17,8 @@ const showName = slug => (slug && SHOWS[slug]?.name) || null;
 const yes = (v, a, b) => (v ? a : b);
 
 // kind → (scene, state) → { roles: {a,b,c,d}, ending, slots }
+const COUNT_WORD = ['None', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen', 'Twenty'];
+
 export const ROLES = {
   arrival: (sc, st) => {
     const r = sc.data.recognised?.[0];
@@ -24,6 +26,9 @@ export const ROLES = {
       : { roles: { a: sc.who[0], b: sc.who[1] }, ending: 'strangers' };
   },
   'villa-reveal': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  // a proposes, b is the name, c objects (with their own name when they have one), d backs a
+  'house-debate': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.alt ? 'split' : 'one', slots: { alt: sc.data.alt } }),
+  'after-vote': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.stung || undefined }, ending: sc.data.stung ? 'stung' : 'any', slots: { count: COUNT_WORD[sc.data.count] || String(sc.data.count) } }),
   daily: sc => ({ roles: { a: sc.data.winners[0], b: sc.data.winners[1], c: sc.data.last?.[0] }, ending: sc.data.mode,
     slots: { game: sc.data.dailyName } }),
   meeting: sc => {

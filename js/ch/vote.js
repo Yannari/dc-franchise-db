@@ -199,6 +199,27 @@ function volunteer(state, rng, eligible) {
   return { name: top.c, target: top.target };
 }
 
+// The house talks it out before the vote, in front of everybody (the real show's deliberation: a name said
+// out loud, the target answering, somebody objecting, "this is the game"). Built from what deliberation
+// decided: the biggest group's organiser proposes, one of their yeses backs it, the target answers, and a
+// friend of the target (or somebody who wanted another name) objects.
+export function houseDebate(state, delib, eligible) {
+  const big = [...(delib.meetings || [])].filter(m => m.target && eligible.includes(m.target) && state.active.includes(m.organiser))
+    .sort((x, y) => Object.keys(y.responses || {}).length - Object.keys(x.responses || {}).length)[0];
+  if (!big) return null;
+  const target = big.target, a = big.organiser;
+  const yes = Object.entries(big.responses || {}).filter(([n, v]) => v === 'yes' && n !== a && n !== target && state.active.includes(n)).map(([n]) => n);
+  const d = yes.sort((x, y) => getBond(a, y) - getBond(a, x))[0] || null;
+  const intents = delib.intents || {};
+  const objectors = state.active.filter(n => n !== a && n !== target && n !== d && intents[n] && intents[n] !== target)
+    .sort((x, y) => getBond(target, y) - getBond(target, x));
+  const c = objectors[0] || null;
+  if (!c) return null;
+  const alt = intents[c] && intents[c] !== target && eligible.includes(intents[c]) && intents[c] !== c ? intents[c] : null;
+  const who = [a, target, c, ...(d ? [d] : [])];
+  return addScene(state, 'house-debate', who, { target, alt, organiser: a }, state.active, 'deliberation');
+}
+
 export function deliberate(state, rng, { division, eligible, immune }) {
   const meetings = [];
   const committed = {};

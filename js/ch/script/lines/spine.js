@@ -601,7 +601,7 @@ export default {
       { by: 'tj', say: "{a}, {b}, this is {game}, and only one of you is coming out of here with your bags still unpacked." },
       { beat: '{a} wins it without much of a fight.' },
       { by: 'a', say: "Let's go! That's what happens!" },
-      { by: 'tj', say: "{b}, you were brave tonight. Brave and also, unfortunately, eliminated." },
+      { by: 'tj', say: "{b}, you were brave tonight. It just wasn't enough." },
     ] },
   ],
   'arena.upset': [

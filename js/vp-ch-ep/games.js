@@ -92,6 +92,24 @@ export const TJ_WELCOME = [
   'What\'s up, everybody! Welcome to Blue Lagoon. Look around, because some of you won\'t be here very long.',
   'Welcome to Blue Lagoon! Vets, welcome back. Rookies, welcome to the hardest show on television.',
 ];
+// TJ meets the plane, then the welcome speech (the real premiere: "Welcome back to The Challenge... you have
+// no idea what's in store for you... only one person is walking out of here... go get moved in").
+export const TJ_LANDING = [
+  'There they are! Come on down, everybody! Welcome to Blue Lagoon!',
+  'Welcome, welcome, welcome! Watch your step, that last one is a big one!',
+];
+export const TJ_SPEECH = [
+  ['Alright, everybody, gather round.',
+   '{vets} of you have done this before. {rookies} of you have never seen a daily in your life. Out here, none of that matters. Everybody starts at zero.',
+   'Some of you came with friends. Some of you came with enemies. Those relationships could help you, or they could take you out.',
+   'Every week, the house decides who goes into the Arena. Win in there, you come back. Lose, and you go home.',
+   "Only the champions walk out of here with the money. So make your friends, make your enemies, and don't get comfortable."],
+  ['Okay, look at me, everybody. Welcome to The Challenge.',
+   "You're on an island in the middle of nowhere, and for the next few weeks this is your whole world.",
+   "{vets} vets, {rookies} rookies. The vets think they know what's coming. They don't.",
+   'You win dailies, you stay safe. You lose friends, you go to the Arena. You lose in the Arena, you go home.',
+   'Last ones standing run the final. Everybody else watches from home. Got it?'],
+];
 export const TJ_FIRST_DAILY = [
   'Bags down. Your first daily starts right now, right here.',
   'Don\'t get comfortable. Your first daily starts right now.',

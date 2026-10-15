@@ -321,27 +321,28 @@ const CHX_CSS = `
 .chx .open .logo2 .c{margin-top:1.4cqh;display:inline-block;font:400 2.2cqw/1 'Black Ops One';color:#111;background:var(--caution);padding:.4em 1em;letter-spacing:.3em}
 .chx .open .scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.25) 0 2px,transparent 2px 4px);pointer-events:none}
 /* a player's introduction */
-.chx .intro{position:absolute;inset:0;z-index:9;overflow:hidden;background:#070505}
-.chx .chx-frame.introing .chx-hud{display:none}
-.chx .chx-frame.introing .intro .itext{bottom:24%}
+.chx .intro{position:absolute;left:3%;top:5%;width:64%;height:70%;z-index:9;overflow:hidden;background:#070505;box-shadow:0 0 0 .35cqw #000,0 0 0 .7cqw var(--fire),0 2cqh 5cqh rgba(0,0,0,.6);clip-path:polygon(0 0,100% 0,97% 100%,0 100%);animation:chxIcard .45s cubic-bezier(.2,.9,.3,1.1) both}
+@keyframes chxIcard{from{transform:translateX(-40%);opacity:0}}
+.chx .intro.still{animation:none}
+.chx .chx-frame.introing .chx-hud .loc,.chx .chx-frame.introing .chx-hud .roster{display:none}
 .chx .intro .ibg{position:absolute;inset:-4%;width:108%;height:108%;object-fit:cover;filter:saturate(1.25) contrast(1.05);animation:chxIbg 9s ease-out both}
 .chx .intro.multi .ibg{opacity:0;animation:chxIbgCycle calc(var(--n) * 2.2s) linear infinite,chxIbg 9s ease-out both}
 @keyframes chxIbg{from{transform:scale(1.12) translateX(2%)}to{transform:scale(1) translateX(-1%)}}
 @keyframes chxIbgCycle{0%{opacity:0}6%{opacity:1}30%{opacity:1}38%{opacity:0}100%{opacity:0}}
 .chx .intro .igrade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,6,6,.15) 0%,rgba(8,6,6,.55) 45%,rgba(14,8,4,.92) 70%),linear-gradient(0deg,rgba(255,106,26,.28),transparent 40%);mix-blend-mode:normal}
 .chx .intro .iscan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 2px,transparent 2px 4px);pointer-events:none}
-.chx .intro .iface{position:absolute;left:6%;bottom:0;width:38cqw;aspect-ratio:1;overflow:hidden;clip-path:polygon(0 0,92% 0,100% 100%,0 100%);box-shadow:0 0 0 .4cqw #000;animation:chxIface .6s cubic-bezier(.2,.9,.3,1.1) both;border-right:.6cqw solid var(--fire)}
+.chx .intro .iface{position:absolute;left:3%;bottom:0;width:25cqw;aspect-ratio:1;overflow:hidden;clip-path:polygon(0 0,92% 0,100% 100%,0 100%);box-shadow:0 0 0 .4cqw #000;animation:chxIface .6s cubic-bezier(.2,.9,.3,1.1) both;border-right:.6cqw solid var(--fire)}
 .chx .intro .iface img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
 @keyframes chxIface{from{transform:translateX(-70%);opacity:0}}
-.chx .intro .itext{position:absolute;left:47%;right:4%;top:8%;bottom:6%;display:flex;flex-direction:column;gap:1.2cqh;justify-content:center}
-.chx .intro .ikick{font:400 1.5cqw/1 'Black Ops One';letter-spacing:.3em;color:var(--caution);animation:chxFadeup .4s .2s both}
-.chx .intro .iname{font:400 8cqw/.9 'Anton';text-transform:uppercase;color:#fff;-webkit-text-stroke:.2cqw #000;paint-order:stroke fill;text-shadow:.5cqw .5cqw 0 var(--fire);transform:skewX(-8deg);animation:chxSlam .5s .25s cubic-bezier(.3,1.6,.5,1) both;line-height:.9;word-break:break-word}
+.chx .intro .itext{position:absolute;left:44%;right:5%;top:7%;bottom:6%;display:flex;flex-direction:column;gap:1.2cqh;justify-content:center}
+.chx .intro .ikick{font:400 1.1cqw/1 'Black Ops One';letter-spacing:.3em;color:var(--caution);animation:chxFadeup .4s .2s both}
+.chx .intro .iname{font:400 5.2cqw/.9 'Anton';text-transform:uppercase;color:#fff;-webkit-text-stroke:.2cqw #000;paint-order:stroke fill;text-shadow:.5cqw .5cqw 0 var(--fire);transform:skewX(-8deg);animation:chxSlam .5s .25s cubic-bezier(.3,1.6,.5,1) both;line-height:.9;word-break:break-word}
 .chx .intro .ifacts{display:flex;gap:.6cqw;flex-wrap:wrap;animation:chxFadeup .4s .55s both}
-.chx .intro .ifacts span{font:700 1.3cqw/1 'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase;color:#111;background:var(--tape);padding:.45em .8em;clip-path:polygon(0 8%,4% 0,100% 0,96% 100%,0 100%)}
+.chx .intro .ifacts span{font:700 1cqw/1 'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase;color:#111;background:var(--tape);padding:.45em .8em;clip-path:polygon(0 8%,4% 0,100% 0,96% 100%,0 100%)}
 .chx .intro .iseasons{display:grid;gap:.6cqh;margin-top:.6cqh}
 .chx .intro .iseason{display:flex;justify-content:space-between;gap:1cqw;background:rgba(14,12,11,.85);border-left:.4cqw solid var(--fire);padding:.6cqh 1cqw;animation:chxLowin .45s cubic-bezier(.2,.9,.3,1.1) both}
-.chx .intro .iseason b{font:400 1.5cqw/1 'Anton';text-transform:uppercase;color:#fff}
-.chx .intro .iseason span{font:700 1.35cqw/1 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase;color:var(--hud-dim)}
+.chx .intro .iseason b{font:400 1.15cqw/1 'Anton';text-transform:uppercase;color:#fff}
+.chx .intro .iseason span{font:700 1.05cqw/1 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase;color:var(--hud-dim)}
 .chx .intro .iseason.won{border-left-color:var(--caution);background:rgba(60,48,8,.9)}
 .chx .intro .iseason.won span{color:var(--caution)}
 .chx .intro .ibadges{display:flex;gap:.6cqw;flex-wrap:wrap}
@@ -350,8 +351,8 @@ const CHX_CSS = `
 .chx .intro .irival img{width:4.4cqw;height:4.4cqw;object-fit:cover;border:.2cqw solid var(--red)}
 .chx .intro .irival span{font:400 1cqw/1 'Black Ops One';letter-spacing:.2em;color:var(--red)}
 .chx .intro .irival b{font:400 2cqw/1 'Anton';text-transform:uppercase;color:#fff}
-.chx .intro .istory{font:600 italic 1.75cqw/1.35 'Barlow Condensed';color:#efe6dc;border-left:.35cqw solid var(--caution);padding-left:1cqw;animation:chxFadeup .5s .8s both;max-width:46cqw}
-.chx .intro .itag{font:400 2.4cqw/1.1 'Permanent Marker';color:var(--caution);transform:rotate(-2deg);animation:chxFadeup .5s .8s both}
+.chx .intro .istory{font:600 italic 1.3cqw/1.35 'Barlow Condensed';color:#efe6dc;border-left:.35cqw solid var(--caution);padding-left:1cqw;animation:chxFadeup .5s .8s both;max-width:46cqw}
+.chx .intro .itag{font:400 1.7cqw/1.1 'Permanent Marker';color:var(--caution);transform:rotate(-2deg);animation:chxFadeup .5s .8s both}
 .chx .intro.still *{animation-duration:0s!important;animation-delay:0s!important}
 .chx .intro.still.multi .ibg{opacity:0}.chx .intro.still.multi .ibg:first-child{opacity:1}
 /* the villa map */

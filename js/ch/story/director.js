@@ -204,8 +204,24 @@ export function airEpisode(state, epRec, prevRec = null) {
       for (const arc of dayArcs.filter(a => a.after === s.id)) pushArc(arc);
     }
   }
-  epRec.aired = aired;
-  return aired;
+  epRec.aired = keepWithTheDaily(aired);
+  return epRec.aired;
+}
+
+// What happened at the daily airs with the daily: a "that was the best I've ever done" confessional aired hours
+// later at the villa, with nothing around it (the user, 2026-10-15: "this conversation makes no sense"). TJ's
+// name gag is his line to somebody at the daily, so it goes there too.
+const AT_THE_DAILY = new Set(['daily-clutch', 'daily-choke', 'partner-blame', 'partner-carried', 'team-blame', 'throw', 'throw-caught', 'run-name']);
+function keepWithTheDaily(aired) {
+  const out = [];
+  const days = new Set(aired.filter(a => a.kind === 'daily').map(a => a.day));
+  const held = aired.filter(a => AT_THE_DAILY.has(a.kind) && days.has(a.day));
+  for (const a of aired) {
+    if (held.includes(a)) continue;
+    out.push(a);
+    if (a.kind === 'daily') out.push(...held.filter(h => h.day === a.day));
+  }
+  return out;
 }
 
 export function airSeason(state) {

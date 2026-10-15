@@ -216,7 +216,7 @@ function introLines(n, info, state) {
     }
     return null;
   };
-  const out = [say(key)];
+  const out = [say(key) || say('any')];
   if (info.rookie && slots.job) out.push(say('job'));
   else if (info.rookie && slots.home) out.push(say('home'));
   if (info.rival) out.push(say('rival'));

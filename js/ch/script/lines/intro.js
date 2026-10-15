@@ -71,6 +71,13 @@ export const INTRO = {
         loud: ["First time EVER! Let's GO!"], soft: ["I've never done anything like this. I'm terrified, honestly. I'm still going to try my hardest."],
         odd: ["First time on a show like this. I've watched a lot of it. That has to count for something."] } },
   ],
+  // when every line for their situation is already said: something only they can say
+  any: [
+    { say: "I'm here to win. I'll do whatever that takes, and I'll still be able to look at myself after.",
+      v: { sharp: ["I'm not here to be liked. I'm here to win."], loud: ["I came here to WIN! That's it!"], soft: ["I want to make the people at home proud. That's why I'm here."], dry: ["I came for the money. Everybody says that. I mean it."], odd: ["I packed for three weeks. I'm planning to need more clothes."] } },
+    { say: "Everybody here wants the same thing. I just want it more.",
+      v: { sharp: ["Everybody wants it. Most of them won't do what it takes."], soft: ["I know everybody wants this. I really, really want it too."], loud: ["Everybody wants it! I want it MORE!"] } },
+  ],
   // about their life at home, when the roster knows it
   job: [
     { say: "Back home I'm a {job}. Out here none of that matters.",

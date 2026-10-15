@@ -23,7 +23,7 @@ import { episodeScenes } from '../ch/transcript.js';
 import { SHOWS } from '../shows.js';
 import { dailyPlay, ARENA_PLAY } from './play.js';
 import { DAILY_STAGE, FINAL_STAGE, ARENA_STAGE, rulesOf, dailyDef, arenaDef, pickBy, nameList, fill,
-  TJ_DAILY_OPEN, TJ_DAILY_NIGHT, TJ_GO, TJ_WELCOME, TJ_FIRST_DAILY, TJ_ARENA_ASK, TJ_ARENA_RULES, TJ_ARENA_OUT, PLAY, DUEL } from './games.js';
+  TJ_DAILY_OPEN, TJ_DAILY_NIGHT, TJ_GO, TJ_WELCOME, TJ_FIRST_DAILY, TJ_LANDING, TJ_SPEECH, TJ_ARENA_ASK, TJ_ARENA_RULES, TJ_ARENA_OUT, PLAY, DUEL } from './games.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 export const HOST = 'TJ';
@@ -287,8 +287,12 @@ export function chStepScreens(row, ctx = {}) {
   aired.forEach((a, i) => {
     let k = chapterOf(a);
     if (k === 'daily' && a.kind !== 'daily' && seenDaily && chunks[chunks.length - 1]?.key !== 'daily') k = 'villa';
+    // TJ's name gag right after the daily is at the daily
+    if (a.kind === 'run-name' && chunks[chunks.length - 1]?.key === 'daily') k = 'daily';
     if (a.kind === 'daily') seenDaily = true;
-    if ((k === 'party' || k === 'villa') && ['party', 'villa'].includes(chunks[chunks.length - 1]?.key)) { chunks[chunks.length - 1].items.push(i); return; }
+    // the villa, a night out and the villa reveal are one screen, however they're interleaved
+    const LIFE = ['party', 'villa', 'reveal'];
+    if (LIFE.includes(k) && LIFE.includes(chunks[chunks.length - 1]?.key)) { chunks[chunks.length - 1].items.push(i); return; }
     const last = chunks[chunks.length - 1];
     if (last && last.key === k && k !== 'arena') last.items.push(i);
     else if (last && k === 'arena' && last.key === 'arena' && aired[last.items[last.items.length - 1]].kind === 'callout') last.items.push(i);
@@ -316,13 +320,13 @@ export function chStepScreens(row, ctx = {}) {
     open(c.key);
     if (c.key !== 'eve' && items.filter(x => chapterOf(x.a) !== 'party').length >= 2) villaMap(S, items.filter(x => chapterOf(x.a) !== 'party'));
     let partied = false;
-    const atReveal = cur.steps.length;
     for (const it of items) {
       const k = chapterOf(it.a);
       if (k === 'party' && !partied) { partied = true; S.at(it.i); S.push({ seg: ['Night out', 'Party'] }); }
+      const at = cur.steps.length;
       scene(S, it, { names, house, goneAt, key: k });
+      if (it.a.kind === 'villa-reveal' && cur.steps[at]) cur.steps[at].seg = ['Home for the season', 'The Villa'];
     }
-    if (c.key === 'reveal' && cur.steps[atReveal]) cur.steps[atReveal].seg = ['Home for the season', 'The Villa'];
   }
   // the opening screen only had the open itself when there was no "previously"
   for (const s of screens) if (!s.steps.length) s.steps.push({ dir: '' });
@@ -379,8 +383,10 @@ function buildArrival(S, open, items, row, { names, house }) {
   const spots = placeScene(key, house);
   const plane = marksOf(key).find(m => m.kind === 'plane') || { u: .3, v: .76 };
   const door = { u: plane.u + .03, v: Math.min(.8, plane.v + .02), s: (spots[house[0]]?.s || .08) * .9 };
-  S.push({ scene: { plate: key, place: 'The Airstrip', when: whenOf(S.day, S.min), icon: 'island', island: 'airstrip', cast: {}, wipe: 1 },
-    seg: ['Season premiere', 'The Arrival'], dir: "A plane comes in low over the lagoon and lands on the island's airstrip.", shake: 1, focus: [] });
+  const seed = `arrive|${row.num}`;
+  S.push({ scene: { plate: key, place: 'The Airstrip', when: whenOf(S.day, S.min), icon: 'island', island: 'airstrip', cast: { TJ: hostSide(key) }, wipe: 1 },
+    seg: ['Season premiere', 'The Arrival'], dir: "A plane comes in low over the lagoon and lands on the island's airstrip. TJ is waiting on the tarmac.", shake: 1, focus: [] });
+  S.push({ tj: pickBy(TJ_LANDING, seed), focus: ['TJ'], act: { TJ: 'cheer' } });
   const showOf = n => SHOWS[info[n]?.origin]?.name || null;
   for (let i = 0; i < house.length; i += 4) {
     const g = house.slice(i, i + 4);
@@ -396,8 +402,11 @@ function buildArrival(S, open, items, row, { names, house }) {
   }
   for (const it of items) linesToSteps(S, it.a.lines, { names, sceneWho: it.a.who, first: { sceneIdx: it.i, title: it.title, focus: it.a.who.slice(0, 2) } });
   const gendered = !!row.ch?.division;
-  const seed = `arrive|${row.num}`;
-  S.push({ enter: { TJ: hostSide(key) }, tj: pickBy(TJ_WELCOME, seed), focus: ['TJ'] });
+  const vets = house.filter(n => !info[n]?.rookie).length, rookies = house.length - vets;
+  // the welcome speech, in full, before the rules card
+  const WORD = ['None', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen', 'Twenty', 'Twenty-one', 'Twenty-two', 'Twenty-three', 'Twenty-four', 'Twenty-five', 'Twenty-six', 'Twenty-seven', 'Twenty-eight', 'Twenty-nine', 'Thirty'];
+  const said = n => WORD[n] || String(n);
+  for (const line of pickBy(TJ_SPEECH, seed)) S.push({ tj: fill(line, { vets: said(vets), rookies: said(rookies) }).replace(/, ([A-Z])([a-z-]*) rookies/, (m, a, b) => `, ${a.toLowerCase()}${b} rookies`), focus: ['TJ'] });
   S.push({ rules: { k: 'THIS SEASON', n: 'How it works', li: [
     'Every week starts with a <b>daily</b>. Win it and you are <b>safe</b> at the vote.',
     ...(gendered ? ["The weeks go <b>men's</b>, then <b>women's</b>: only that week's division can be voted in."] : []),

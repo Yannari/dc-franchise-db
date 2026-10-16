@@ -18,6 +18,7 @@
 // An entry that needs a part or a slot the scene does not have is never
 // picked: a line for three people does not air in a scene of two, and
 // "{target}" never prints as a brace.
+import { players } from '../../core.js';
 import { pronouns } from '../../players.js';
 import { pickEntry, newLedger } from '../../script/pick.js';
 import { stableRng } from '../../script/rng.js';
@@ -43,11 +44,21 @@ const HARD = ['cruel', 'schemer', 'proud', 'tough', 'blunt', 'dry', 'bossy'];
 const SECRET = new Set(['private', 'confessional']);
 // `ledger` + `day`: an alternative heard today, or already said by this speaker this season, is passed
 // over while another fits (the picker's own rules, pick.js, applied to the variants).
+// The archetype's own voice speaks first (the user, 2026-10-16: "their archetype and voice could play more ... yul is
+// not sweet is cruel and mean"; "even nice archetype sometimes u dont feel it"). The authored words still come
+// next, so a villain written as anxious is a cruel villain first and an anxious one when the line has no cruel take.
+const LEAD = { villain: ['cruel', 'schemer'], mastermind: ['schemer', 'calm'], schemer: ['schemer'], hothead: ['loud', 'blunt'],
+  'challenge-beast': ['competitive'], hero: ['earnest', 'warm'], 'loyal-soldier': ['earnest'], 'social-butterfly': ['warm'],
+  showmancer: ['flirty', 'warm'], underdog: ['earnest'], goat: ['ditzy'], 'chaos-agent': ['chaotic'], wildcard: ['chaotic'] };
+function byArchetype(tags, name) {
+  const lead = (LEAD[players.find(p => p.name === name)?.archetype] || []).filter(t => tags.includes(t));
+  return lead.length ? [...lead, ...tags.filter(t => !lead.includes(t))] : tags;
+}
 export function voicedLine(turn, speaker, { hush = false, rng = Math.random, ledger = null, day = 0 } = {}) {
   const base = turn.say || turn.conf;
   const v = turn.v;
   if (!v || !speaker) return { text: base, tag: null };
-  const tags = voiceOf(speaker);
+  const tags = byArchetype(voiceOf(speaker), speaker);
   const hard = tags.some(t => HARD.includes(t));
   for (const t of tags) {
     if (hard && AGE.has(t)) continue;
@@ -184,14 +195,17 @@ function placeOfWords(spot, lines, kind) {
 
 // A voice's version of a line, never one already said that day by somebody else (two loud winners of the
 // same daily both shouted "WHO'S NEXT?! WHO'S NEXT?!"): draw again, then fall back to the line as written.
+// voicedLine already passes over a variant heard today and marks the one it gives (the same ledger.vday). This
+// used to check the variant against that mark again, AFTER voicedLine had set it, so every variant looked heard
+// and the plain line won: 8 voiced lines in 10,000 over three seasons (2026-10-16, the user: "yul is not sweet
+// is cruel and mean").
 function voicedOnce(state, t, by, opts) {
   const used = (state.lineLedger.vday ||= {});
-  const fresh = r => r && r.text && used[r.text] !== opts.day;
-  let r = null;
-  for (let k = 0; k < 4; k++) { r = voicedLine(t, by, opts); if (fresh(r)) break; }
-  if (!fresh(r) && (t.say || t.conf) && used[t.say || t.conf] !== opts.day) r = { text: t.say || t.conf, tag: null };
-  if (r?.text && r.text.length > 4) used[r.text] = opts.day;   // a template is short before its name fills in
-  return r;
+  const r = voicedLine(t, by, opts);
+  if (r?.tag) return r;
+  const base = t.say || t.conf;
+  if (base && base.length > 4) used[base] = opts.day;   // a template is short before its name fills in
+  return { text: base, tag: null };
 }
 
 export function transcript(lines) {

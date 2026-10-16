@@ -119,7 +119,7 @@ export default {
       { by: 'a', say: "Okay, let's be smart about it. Who's {target} afraid of?" },
       { by: 'b', say: "Nobody, if you ask {target}." },
       { by: 'a', say: "I'm not asking {target}. I'm asking you." },
-      { by: 'b', say: "Then probably you. You've won more dailies than the rest of us." },
+      { by: 'b', say: "Then probably you. You're the one nobody wants to face in there." },
       { by: 'a', say: "So I'm safe." },
       { by: 'b', say: "Or you're exactly who {target} wants out before the final." },
       { by: 'a', say: "Great. So either way it's me." },

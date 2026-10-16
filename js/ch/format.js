@@ -23,6 +23,22 @@ export const FORMATS = {
     volunteers: true,            // a player may volunteer instead of the vote
     arenaDraw: 'after-callout',  // the game is revealed at the Arena
   },
+  // Total Madness / War of the Worlds (Wikipedia, read 2026-10-15): the daily's winners are the TRIBUNAL. The
+  // rest of the house nominates out loud; the three with the most votes go before the Tribunal and plead their
+  // case, and the Tribunal, in private, chooses who goes in. Winning a daily is power, not just safety: the
+  // Tribunal is courted, and whoever it sends in remembers who did it.
+  tribunal: {
+    id: 'tribunal',
+    name: 'The Tribunal',
+    immune: 'daily-winners',
+    vote: 'nominate',            // the house (not the Tribunal) nominates, out loud
+    nominees: 3,                 // the top three go before the Tribunal
+    tribunal: 3,                 // at most three judges: the daily's winners, or its three best on a team
+    tiebreak: 'daily-winners',
+    opponent: 'callout',
+    volunteers: true,
+    arenaDraw: 'after-callout',
+  },
 };
 
 export const DEFAULT_OPTIONS = {

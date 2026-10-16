@@ -370,9 +370,9 @@ function topChoice(state, rng, v, eligible, delib, tally) {
 }
 
 // ── the vote ─────────────────────────────────────────────────────────
-export function houseVote(state, rng, { eligible, delib, winners, exclude = [] }) {
+export function houseVote(state, rng, { eligible, delib, winners, exclude = [], voters = null }) {
   const pool = eligible.filter(n => !exclude.includes(n));
-  const order = shuffle(rng, state.active);
+  const order = shuffle(rng, voters || state.active);
   const tally = {};
   const ballots = [];
   for (const v of order) {
@@ -416,6 +416,71 @@ export function houseVote(state, rng, { eligible, delib, winners, exclude = [] }
     }
   }
   return { order, ballots, tally, votedIn, tied: tied.length > 1, tiebreak };
+}
+
+// ── the Tribunal ─────────────────────────────────────────────────────
+// The nominees plead their case to the Tribunal, in front of each other: a plea to a friend on it, a threat
+// ("send me in and I'm coming back for you"), a deal ("save me and I'm with you"), or the case against
+// another nominee. Then the Tribunal decides in private, each judge by their own read plus what they heard,
+// and says the name in front of everybody. The one sent in remembers every judge who agreed; the ones spared
+// owe them.
+export function tribunalDecide(state, rng, { tribunal, nominees, delib }) {
+  const pitches = [];
+  // the scenes, in the order they air (the season adds them after the nominations are read)
+  const scenes = [];
+  const pull = {};   // pull[nominee][judge]: how much that judge now wants to spare them
+  for (const n of nominees) {
+    pull[n] = {};
+    const bold = S(n, 'boldness') / 10, strat = S(n, 'strategic') / 10, social = S(n, 'social') / 10;
+    // who they talk to: the judge they are closest to, or the one they can scare
+    const judge = [...tribunal].sort((a, b) => trustOf(b, n) - trustOf(a, n))[0];
+    const others = nominees.filter(x => x !== n);
+    const opts = [
+      { mode: 'plea', w: 0.2 + social * 0.6 + Math.max(0, trustOf(judge, n)) * 0.1 },
+      { mode: 'threat', w: (0.1 + bold * 0.5) * (0.6 + arenaRead(state, n) / 15) },
+      { mode: 'deal', w: 0.1 + strat * 0.5 },
+      { mode: 'case', w: 0.1 + strat * 0.4 + bold * 0.2 },
+    ];
+    let r = rng() * opts.reduce((a, o) => a + o.w, 0), mode = 'plea';
+    for (const o of opts) { r -= o.w; if (r <= 0) { mode = o.mode; break; } }
+    const against = mode === 'case' ? [...others].sort((a, b) => grudgeOf(n, b) - grudgeOf(n, a))[0] : null;
+    for (const j of tribunal) {
+      let p = 0;
+      if (mode === 'plea') p = logistic(trustOf(j, n) * 0.4 + S(n, 'social') * 0.12 - 1.2) * (j === judge ? 2.2 : 0.8);
+      if (mode === 'threat') { const credible = arenaRead(state, n) / 10; p = credible * 1.6 * (1.1 - S(j, 'boldness') / 10); intimidated(n, j, credible); }
+      if (mode === 'deal') p = believePitch(j, n) * 0.5 + S(j, 'strategic') * 0.08;
+      if (mode === 'case') { p = 0.6 + S(n, 'strategic') * 0.08; pull[against] ||= {}; pull[against][j] = (pull[against][j] || 0) - p * 0.8; }
+      pull[n][j] = (pull[n][j] || 0) + p;
+    }
+    if (mode === 'deal') state.deals.push({ id: state.deals.length + 1, a: n, b: judge, ep: state.ep, broken: null, tier: 'tribunal' });
+    if (against) { addBond(against, n, -0.8); remember(against, n, 'named-me', 1); }
+    pitches.push({ from: n, to: judge, mode, against });
+    scenes.push(['tribunal-pitch', [n, judge, ...(against ? [against] : [])], { mode, against, tribunal }, state.active, 'deliberation']);
+  }
+  // each judge's choice: their own read of the nominee, less what the nominee got through to them
+  const picks = {};
+  for (const j of tribunal) {
+    const rows = nominees.map(n => ({ n, s: Object.values(voteTerms(state, j, n, nominees, delib, null)).reduce((a, b) => a + b, 0) - (pull[n]?.[j] || 0) * 2 + noise(rng) * 0.3 }));
+    picks[j] = rows.sort((a, b) => b.s - a.s)[0].n;
+  }
+  const count = {};
+  for (const n of Object.values(picks)) count[n] = (count[n] || 0) + 1;
+  const top = Math.max(...Object.values(count));
+  const tied = Object.keys(count).filter(n => count[n] === top);
+  // a split Tribunal: the boldest, most strategic judge talks the others round
+  const lead = [...tribunal].sort((a, b) => (S(b, 'boldness') + S(b, 'strategic')) - (S(a, 'boldness') + S(a, 'strategic')))[0];
+  const chosen = tied.length === 1 ? tied[0] : (tied.includes(picks[lead]) ? picks[lead] : tied[0]);
+  const split = tied.length > 1 || Object.values(picks).some(p => p !== chosen);
+  scenes.push(['tribunal-room', [lead, ...tribunal.filter(j => j !== lead)], { chosen, picks, split, lead, nominees }, tribunal, 'deliberation']);
+  // the verdict, said out loud; the sent-in remembers the judges, the spared owe them
+  for (const j of tribunal) {
+    addBond(chosen, j, picks[j] === chosen ? -1.4 : -0.4);
+    remember(chosen, j, 'sent-me-in', picks[j] === chosen ? 2 : 0.8);
+    for (const n of nominees) if (n !== chosen) { addBond(n, j, 0.4); remember(n, j, 'saved-me', 0.8); }
+  }
+  for (const d of state.deals) if (d.tier === 'tribunal' && d.ep === state.ep && d.a === chosen && !d.broken) breakDeal(state, d, d.b, 'tribunal');
+  scenes.push(['tribunal-verdict', [lead, chosen, ...nominees.filter(n => n !== chosen)], { chosen, nominees, picks, tribunal }, state.active, 'deliberation']);
+  return { tribunal: [...tribunal], nominees: [...nominees], pitches, picks, chosen, split, lead, scenes };
 }
 
 // ── what every ballot costs, out loud ────────────────────────────────

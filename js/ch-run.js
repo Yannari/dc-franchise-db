@@ -75,6 +75,8 @@ export function challengeOptions(config = seasonConfig) {
     // Its own switch: the season-wide Romance select is Total Drama's.
     romance: config?.chRomance !== false,
     partnerWeeks: config?.chPartnerWeeks !== false,
+    // the season's rules: the open house vote, or the Tribunal (format.js)
+    format: config?.chFormat === 'tribunal' ? 'tribunal' : 'vote-callout',
   };
 }
 
@@ -283,6 +285,7 @@ export function challengeRows(result) {
         ties: e.ties || {},
         intel: e.intel || null,
         meetings: (e.delib?.meetings || []).map(m => ({ name: m.name || null, organiser: m.organiser, target: m.target, responses: { ...(m.responses || {}) } })),
+        tribunal: (() => { const t = (e.votes || []).find(v => v.tribunal)?.tribunal; return t ? { tribunal: [...t.tribunal], nominees: [...t.nominees], picks: { ...t.picks }, chosen: t.chosen, split: !!t.split, lead: t.lead, pitches: t.pitches.map(p => ({ ...p })) } : null; })(),
         // the room worked before the vote (vote.js campaign), the recruiting, and a volunteer
         campaigns: (e.delib?.campaigns || []).map(c => ({ ...c })),
         pitches: (e.delib?.pitches || []).map(p => ({ by: p.by, to: p.to, target: p.target, answer: p.answer })),

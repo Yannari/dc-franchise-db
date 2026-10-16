@@ -962,6 +962,14 @@
                 <div class="hint hint-tight">Off: men's and women's weeks, and a champion from each division. A non-binary player picks a division on the Cast tab. On: anyone can face anyone in the Arena, and one champion.</div>
               </div>
               <div class="form-group">
+                <label class="form-label" for="cfg-ch-format">The vote</label>
+                <select id="cfg-ch-format" class="form-input" onchange="saveConfig()">
+                  <option value="vote-callout">The house votes one in</option>
+                  <option value="tribunal">The Tribunal</option>
+                </select>
+                <div class="hint hint-tight">The house vote: everybody says a name out loud, and the most votes goes into the Arena. The Tribunal: the daily's winners are the Tribunal; the house nominates three, they plead their case, and the Tribunal sends one in.</div>
+              </div>
+              <div class="form-group">
                 <label class="form-label" for="cfg-ch-finalists">The final</label>
                 <select id="cfg-ch-finalists" class="form-input" onchange="saveConfig()">
                   <option value="6">Six finalists</option>

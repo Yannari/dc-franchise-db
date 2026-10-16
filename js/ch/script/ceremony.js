@@ -36,8 +36,10 @@ export function writeVote(state, epRec, vote, day) {
   const tally = Object.entries(vote.tally).sort((x, y) => y[1] - x[1]);
   const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
     'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty', 'twenty-one', 'twenty-two', 'twenty-three'];
-  const res = writeScene(state, synthetic(state, epRec.ep, day, 'cer-result', [vote.votedIn],
-    { count: WORDS[tally[0][1]] || String(tally[0][1]), tie: !!vote.tiebreak, house }, 0));
+  const res = vote.tribunal
+    ? writeScene(state, synthetic(state, epRec.ep, day, 'cer-nominees', vote.tribunal.nominees, { house, tribunal: vote.tribunal.tribunal }, 0))
+    : writeScene(state, synthetic(state, epRec.ep, day, 'cer-result', [vote.votedIn],
+      { count: WORDS[tally[0][1]] || String(tally[0][1]), tie: !!vote.tiebreak, house }, 0));
   if (res) out.push({ kind: 'cer-result', script: res });
   return out;
 }

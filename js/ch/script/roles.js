@@ -150,6 +150,11 @@ export const ROLES = {
   'cer-open': sc => ({ roles: { a: sc.who[0] }, ending: sc.data.division === 'all' ? 'all' : sc.data.division }),
   ballot: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.why }),
   'cer-result': sc => ({ roles: { a: sc.who[0] }, ending: sc.data.tie ? 'tie' : 'clear', slots: { count: sc.data.count } }),
+  // the Tribunal (format.js tribunal)
+  'cer-nominees': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any' }),
+  'tribunal-pitch': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.mode }),
+  'tribunal-room': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.split ? 'split' : 'agree', slots: { target: sc.data.chosen } }),
+  'tribunal-verdict': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any' }),
   // ── the arcs (story/arcs.js): words only, read from the record ──
   'arc-payback': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'arc-showdown': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),

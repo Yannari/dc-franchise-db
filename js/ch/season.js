@@ -25,9 +25,9 @@ import { newState, blankRecord, addScene, inDivision, noise, S } from './state.j
 import { DEFAULT_OPTIONS, formatOf } from './format.js';
 import { buildSchedule, elimsFor, divisionFor } from './schedule.js';
 import { initMind, driftDay, nudge } from './mind.js';
-import { giveRespect } from './respect.js';
+import { giveRespect, threatRead } from './respect.js';
 import { afterVote } from './alliances.js';
-import { deliberate, houseVote, voteFallout, breakDeal, houseDebate } from './vote.js';
+import { deliberate, houseVote, voteFallout, breakDeal, houseDebate, tribunalDecide } from './vote.js';
 import { chooseOpponent, dealBetween } from './callout.js';
 import { playDaily } from './dailies.js';
 import { playDuel, injuryRoll } from './arena.js';
@@ -42,6 +42,12 @@ import { reviseAll } from './plans.js';
 import { spreadDay, syncActive } from './knowledge.js';
 import { morningAfter } from './fallout.js';
 import { calledOut, arenaWon, remember } from './rel.js';
+
+// The Tribunal: the daily's winners, or the three who did best on a winning team.
+function tribunalOf(state, daily, immune) {
+  const sc = daily?.scores || {};
+  return [...immune].sort((a, b) => (sc[b] || 0) - (sc[a] || 0)).slice(0, state.fmt.tribunal || 3);
+}
 
 function pop(name, d) {
   if (!gs.popularity) gs.popularity = {};
@@ -253,7 +259,17 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
         votedIn = delib.volunteer.name; volunteer = true;
         state.rec[votedIn].volunteered++;
       } else {
-        vote = houseVote(state, R(`vote${k}`), { eligible, delib, winners: immune });
+        // the Tribunal format: the house (not the Tribunal) nominates, the three top names plead their case,
+        // and the Tribunal sends one in (format.js tribunal)
+        const tribunal = state.fmt.tribunal ? tribunalOf(state, daily, immune) : null;
+        vote = houseVote(state, R(`vote${k}`), { eligible, delib, winners: immune, voters: tribunal ? state.active.filter(n => !tribunal.includes(n)) : null });
+        if (tribunal && vote.votedIn) {
+          const nominees = Object.keys(vote.tally).sort((x, y) => vote.tally[y] - vote.tally[x] || threatRead(state, y) - threatRead(state, x)).slice(0, state.fmt.nominees);
+          for (const n of [...eligible].sort((x, y) => threatRead(state, y) - threatRead(state, x))) if (nominees.length < Math.min(state.fmt.nominees, eligible.length) && !nominees.includes(n)) nominees.push(n);
+          vote.nominated = vote.votedIn;
+          vote.tribunal = tribunalDecide(state, R(`trib${k}`), { tribunal, nominees, delib });
+          vote.votedIn = vote.tribunal.chosen;
+        }
         voteFallout(state, vote, delib);
         state.receiptsFresh = {};
         for (const b of vote.ballots) (state.receiptsFresh[b.target] ||= []).push(b.voter);
@@ -268,6 +284,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       nudge(state, votedIn, 'morale', volunteer ? 0 : -1);
       epRec.votedIn.push(votedIn);
       addScene(state, volunteer ? 'volunteer-in' : 'voted-in', [votedIn], { volunteer }, state.active, 'public');
+      // the Tribunal: the nominees' pitches, the room, the verdict, after the nominations are read
+      for (const sc of vote?.tribunal?.scenes || []) addScene(state, ...sc);
       // after the vote: the one going in, with the friend who comes to find them, and a friend who said their name
       if (!volunteer && vote) {
         const friend = state.active.filter(n => n !== votedIn && !vote.ballots.some(x => x.voter === n && x.target === votedIn))

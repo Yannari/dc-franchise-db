@@ -265,4 +265,149 @@ export default {
       { by: 'b', conf: "Call it a bluff. It almost worked. I'd do it again." },
     ] },
   ],
+  // ── the Tribunal (format.js tribunal; vote.js tribunalDecide) ───────
+  // a, b, c: the three nominees as TJ reads them
+  'cer-nominees.any': [
+    { id: 'tn.1', turns: [
+      { by: 'tj', say: "The votes are in. {a}, {b}, {c}. You three got the most. Tomorrow you go before the Tribunal, and they decide which one of you goes into the Arena." },
+      { by: 'a', conf: "Being nominated is one thing. Now I have to convince a few people who don't owe me anything." },
+    ] },
+    { id: 'tn.2', turns: [
+      { by: 'tj', say: "Here are your nominees, people: {a}, {b} and {c}. Tribunal, you've got a big decision to make." },
+      { by: 'b', conf: "Three of us, one spot in the Arena. I need to be the one they don't pick." },
+    ] },
+    { id: 'tn.3', turns: [
+      { by: 'tj', say: "{a}. {b}. {c}. That's your top three. One of you is going in, and the Tribunal gets to choose who." },
+      { by: 'c', conf: "Now I'm begging the people who won the daily. Great. Love that." },
+    ] },
+  ],
+  // a: the nominee; b: the judge they talk to; c: the nominee they argue against (case)
+  'tribunal-pitch.plea': [
+    { id: 'tp.p1', turns: [
+      { by: 'a', say: "{b}, I'm not going to make a speech. You know me. You know I've always been straight with you." },
+      { by: 'b', say: "I know." },
+      { by: 'a', say: "Then don't send me in. That's all I'm asking." },
+      { by: 'b', say: "I hear you. I can't promise anything yet." },
+      { by: 'a', say: "I'm not asking for a promise. I'm asking you to remember who's been on your side." },
+      { by: 'b', conf: "{a} didn't beg, and that made it harder. I actually like {a.obj}." },
+      { by: 'a', conf: "I put it all on {b}. If {b} doesn't have my back now, nobody in this house does." },
+    ] },
+    { id: 'tp.p2', turns: [
+      { by: 'a', say: "Can I just talk to you as a person for a second, not as the Tribunal?" },
+      { by: 'b', say: "Go ahead." },
+      { by: 'a', say: "I'm tired, I'm sore, and I don't think I'd come back from the Arena this week. I need one more week." },
+      { by: 'b', say: "That's honest." },
+      { by: 'a', say: "It's all I've got." },
+      { by: 'b', conf: "Everybody else came in with a pitch. {a} just told me the truth. That counts for something." },
+    ] },
+  ],
+  'tribunal-pitch.threat': [
+    { id: 'tp.t1', turns: [
+      { by: 'a', say: "I'll keep this short. Send me in, and I'll win. And I'll remember who sent me." },
+      { by: 'b', say: "Is that a threat?" },
+      { by: 'a', say: "It's a fact. You won't be on the Tribunal forever." },
+      { by: 'b', say: "Noted." },
+      { by: 'b', conf: "{a} has won in that Arena before. When {a} says it'll come back for us, I believe it." },
+      { by: 'a', conf: "I don't need them to like me. I need them to be scared of what happens if they get it wrong." },
+    ] },
+    { id: 'tp.t2', turns: [
+      { by: 'a', say: "Think about next week, {b}. You won't have the daily every time." },
+      { by: 'b', say: "Meaning what?" },
+      { by: 'a', say: "Meaning the people you send in have long memories. I have a very long memory." },
+      { by: 'b', conf: "{a} just told the Tribunal to be careful. I'm going to have to think about that." },
+    ] },
+  ],
+  'tribunal-pitch.deal': [
+    { id: 'tp.d1', turns: [
+      { by: 'a', say: "Here's what I'm offering. Save me, and I'm with you. Every vote, until the final." },
+      { by: 'b', say: "That's a big promise." },
+      { by: 'a', say: "And I keep my promises. Ask anybody." },
+      { by: 'b', say: "I'll think about it." },
+      { by: 'b', conf: "A guaranteed vote for the rest of the season is worth a lot. If {a} means it." },
+      { by: 'a', conf: "If I'm still here next week, {b} has a friend for life. If I'm not, it doesn't matter anyway." },
+    ] },
+    { id: 'tp.d2', turns: [
+      { by: 'a', say: "You need numbers, {b}. I'm numbers. Keep me, and you'll never see my name next to yours at a vote." },
+      { by: 'b', say: "And if I don't?" },
+      { by: 'a', say: "Then you're giving somebody else a reason to come after you." },
+      { by: 'b', conf: "{a} made a good case for keeping {a.obj} around. Everybody makes a good case. That's the problem." },
+    ] },
+  ],
+  'tribunal-pitch.case': [
+    { id: 'tp.c1', turns: [
+      { by: 'a', say: "I'm not going to talk about me. I'm going to talk about {c}." },
+      { by: 'c', say: "Here we go." },
+      { by: 'a', say: "{c} has been playing both sides, and everybody in this room knows it." },
+      { by: 'c', say: "That's not true, and you know it." },
+      { by: 'a', say: "Then tell them who you voted for." },
+      { by: 'b', conf: "{a} came in swinging at {c}. Either {a} is right, or {a} is desperate. Maybe both." },
+      { by: 'c', conf: "{a} threw me under the bus to save {a.ref}. I'm not going to forget it." },
+    ] },
+    { id: 'tp.c2', turns: [
+      { by: 'a', say: "If you send me in, the biggest threat in this house is still sitting right there. {c}." },
+      { by: 'c', say: "Wow." },
+      { by: 'a', say: "I'm not saying it to be mean. I'm saying it because it's the right call for you." },
+      { by: 'b', say: "We'll take that into account." },
+      { by: 'c', conf: "I came in to defend myself. I didn't expect to have to defend myself from {a}." },
+    ] },
+  ],
+  // a, b, c: the judges, a the one who leads; {target}: the one they send in
+  'tribunal-room.agree': [
+    { id: 'tr.a1', turns: [
+      { by: 'a', say: "Okay. I think we all know who it is." },
+      { by: 'b', say: "{target}?" },
+      { by: 'a', say: "{target}." },
+      { by: 'b', say: "Yeah. I'm there." },
+      { by: 'c', opt: 1, say: "Me too. It's the only one that makes sense." },
+      { by: 'a', conf: "It's never fun sending somebody in. But {target} is the one who helps us least by staying." },
+    ] },
+    { id: 'tr.a2', turns: [
+      { by: 'b', say: "Did anybody actually change your mind out there?" },
+      { by: 'a', say: "Not really. It's {target} for me." },
+      { by: 'b', say: "Same." },
+      { by: 'a', say: "Then let's not drag it out." },
+      { by: 'b', conf: "We agreed fast. That either means it was the right call, or none of us wanted to argue." },
+    ] },
+  ],
+  'tribunal-room.split': [
+    { id: 'tr.s1', turns: [
+      { by: 'b', say: "I don't want {target}. I think we're making a mistake." },
+      { by: 'a', say: "Then give me a better name." },
+      { by: 'b', say: "I've been giving you a better name this whole time." },
+      { by: 'a', say: "And I'm telling you it's {target}. We can't sit here all night." },
+      { by: 'b', say: "Fine. But this is on you." },
+      { by: 'a', conf: "Somebody has to make the call. If it blows up, it blows up on me, and I'm okay with that." },
+      { by: 'b', conf: "I got outvoted. When {target} asks me, I'm going to tell the truth about who wanted it." },
+    ] },
+    { id: 'tr.s2', turns: [
+      { by: 'a', say: "We're not leaving this room until we agree." },
+      { by: 'b', say: "Then we're going to be here a while." },
+      { by: 'a', say: "Look at it this way. If {target} comes back, {target} comes for one of us next week. If {target} doesn't, we're fine." },
+      { by: 'b', say: "That's a gamble." },
+      { by: 'a', say: "Everything in this game is a gamble." },
+      { by: 'b', conf: "{a} talked me into it. I'm still not sure I agree." },
+    ] },
+  ],
+  // a: the judge who says it; b: the one sent in; c: a nominee who was spared
+  'tribunal-verdict.any': [
+    { id: 'tv.1', turns: [
+      { by: 'tj', say: "Tribunal, you've made your decision. Who's going into the Arena?" },
+      { by: 'a', say: "{b}." },
+      { by: 'b', say: "Of course." },
+      { by: 'c', opt: 1, conf: "I've never been so relieved to hear somebody else's name." },
+      { by: 'b', conf: "I'll remember every single person on that Tribunal. Every one." },
+    ] },
+    { id: 'tv.2', turns: [
+      { by: 'tj', say: "The moment of truth. Tribunal, who are you sending in?" },
+      { by: 'a', say: "We're sending in {b}. I'm sorry. It was the best move for us." },
+      { by: 'b', say: "Best move for you. Got it." },
+      { by: 'b', conf: "They think they made a safe choice. I'm going to make sure it's the worst choice they ever made." },
+    ] },
+    { id: 'tv.3', turns: [
+      { by: 'tj', say: "Tribunal! It's time. Give me a name." },
+      { by: 'a', say: "{b}." },
+      { by: 'tj', say: "{b}, you're going into the Arena. Tomorrow, you call out who goes in with you." },
+      { by: 'b', conf: "Fine. The Tribunal picked me. Now I get to pick somebody, and they can watch." },
+    ] },
+  ],
 };

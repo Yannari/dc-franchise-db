@@ -77,6 +77,8 @@ function rule(sc) {
     case 'counter-pitch': return F('hunt', 'counter', d.moved?.length ? 'moved' : 'held');
     case 'spare-deal': return F('hunt', 'spare', d.answer);
     case 'empty-threat': return F('hunt', 'empty');
+    case 'tribunal-pitch': return F('hunt', 'tribunal', d.mode);
+    case 'tribunal-verdict': return F('hunt', 'sent-in');
     // ── rookies ──
     case 'vet-dismisses': return F('rookies', 'dismissed');
     case 'vet-mentors-rookie': return F('rookies', 'mentor');

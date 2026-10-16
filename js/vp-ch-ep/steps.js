@@ -115,7 +115,7 @@ function chapterOf(a) {
   if (a.kind === 'villa-reveal') return 'reveal';
   if (DAILY_KINDS.has(a.kind)) return 'daily';
   if (a.spot === 'party' || a.kind === 'party' || a.kind === 'fight' || a.kind === 'fight-physical') return 'party';
-  if (a.kind === 'ceremony' || a.kind === 'volunteer' || a.kind === 'house-debate') return 'vote';
+  if (a.kind === 'ceremony' || a.kind === 'volunteer' || a.kind === 'house-debate' || a.kind.startsWith('tribunal-')) return 'vote';
   if (a.kind.startsWith('arena-eve')) return 'eve';
   if (a.kind === 'callout' || a.kind === 'arena') return 'arena';
   if (a.kind === 'final-start') return 'final-start';
@@ -419,6 +419,7 @@ const BIG = {
   'alliance-grow': a => ({ slam: { spray: 'NEW MEMBER', color: '#ffd21a' }, chip: [a.who[1], a.data?.name ? `IN ${String(a.data.name).toUpperCase()}` : 'NEW MEMBER'] }),
   'alliance-end': a => ({ card: { k: 'Alliance over', t: a.data?.name || 'The alliance', sub: a.data?.why === 'final' ? 'The final: from here it is every one for themselves' : 'Every one of them is on their own now', faces: a.who.slice(0, 8) } }),
   'alliance-betrayal': a => ({ slam: { spray: 'BETRAYED', color: '#e3262d' } }),
+  'tribunal-verdict': a => ({ slam: { spray: 'SENT IN', color: '#e3262d' }, chip: [a.data?.chosen || a.who[1], 'SENT IN'] }),
   showmance: a => ({ card: { k: 'Showmance', t: `${a.who[0]} & ${a.who[1]}`, sub: 'It is official, and the whole house knows', faces: a.who.slice(0, 2) } }),
   breakup: a => ({ slam: { spray: "IT'S OVER", color: '#ff8fc7' } }),
 };
@@ -692,7 +693,11 @@ function ceremony(S, cer, row, { names, rules, again }) {
   for (const part of cer.a.cer || []) {
     if (part.kind === 'cer-open') {
       linesToSteps(S, part.lines, { names, sceneWho: ['TJ'] });
-      if (rules) S.push({ rules: { k: 'HOW TONIGHT WORKS', n: 'Out loud', li: [div, 'One at a time, you <b>stand up and say a name</b>, out loud, in front of everybody.',
+      const trib = row.ch?.tribunal;
+      if (rules && trib) S.push({ rules: { k: 'HOW TONIGHT WORKS', n: 'The Tribunal', li: [div, `${esc(nameList(trib.tribunal))} won the daily, so ${trib.tribunal.length > 1 ? 'they are' : 'is'} <b>the Tribunal</b>, and cannot be voted for.`,
+        'Everybody else <b>says a name out loud</b>. The <b>three with the most votes</b> are nominated.',
+        'The nominees <b>plead their case</b> to the Tribunal, and the Tribunal decides <b>in private</b> who goes into the Arena.'], f: 'Win the daily, and you decide' }, focus: ['TJ'] });
+      else if (rules) S.push({ rules: { k: 'HOW TONIGHT WORKS', n: 'Out loud', li: [div, 'One at a time, you <b>stand up and say a name</b>, out loud, in front of everybody.',
         safe.length ? `${esc(nameList(safe))} won the daily, so <b>nobody can vote for ${safe.length > 1 ? 'them' : 'them'}</b>.` : 'Nobody won safety this week.',
         'The one with <b>the most votes</b> goes into the Arena, and at the Arena <b>picks who goes in with them</b>.'], f: 'No secret ballots: everybody hears what you say' }, focus: ['TJ'] });
       continue;
@@ -713,6 +718,16 @@ function ceremony(S, cer, row, { names, rules, again }) {
         if (k === said) { const st = { vote: [part.voter, part.target], say: [l.by, l.text], focus: [part.voter], of: total }; if (know) st.know = know; if (shouted(l.text)) { st.act = { [l.by]: 'shout' }; st.loud = 1; } S.push(st); }
         else linesToSteps(S, [l], { names, sceneWho: [part.voter, 'TJ'] });
       });
+      continue;
+    }
+    if (part.kind === 'cer-result' && row.ch?.tribunal) {
+      // a Tribunal week: the three nominees, not the one going in
+      const noms = row.ch.tribunal.nominees;
+      part.lines.forEach((l, k) => {
+        if (k === 0) S.push({ tj: l.text, focus: [...noms, 'TJ'], slam: { spray: 'NOMINATED', color: '#ffd21a' }, ...(noms[0] ? { chip: [noms[0], 'NOMINATED'] } : {}) });
+        else linesToSteps(S, [l], { names, sceneWho: [...noms, 'TJ'] });
+      });
+      for (const n of noms.slice(1)) S.push({ chip: [n, 'NOMINATED'], focus: noms });
       continue;
     }
     if (part.kind === 'cer-result') {

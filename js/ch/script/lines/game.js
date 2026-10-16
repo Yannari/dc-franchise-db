@@ -360,7 +360,7 @@ export default {
       { by: 'b', say: "Was any of it real? The deal? Any of it?" },
       { by: 'a', say: "It was real when we made it." },
       { by: 'b', say: "And tonight?" },
-      { by: 'a', say: "Tonight the numbers were against you. I wasn't going to go down with you." },
+      { by: 'a', say: "Tonight I voted the way I had to. I'm not going to apologize for it." },
       { by: 'b', say: "You didn't even warn me." },
       { by: 'a', say: "If I'd warned you, you'd have told everybody, and then it'd be my name." },
       { by: 'b', say: "So you protected yourself. Got it." },
@@ -369,7 +369,7 @@ export default {
     { id: 'db.v5', turns: [
       { by: 'a', say: "Before you say anything, I know." },
       { by: 'b', say: "You know? Great. That fixes everything." },
-      { by: 'a', say: "Everybody else was voting the same way. Mine didn't change anything." },
+      { by: 'a', say: "It was one vote. Mine. That's all it was." },
       { by: 'b', say: "It changed something for me." },
       { by: 'a', say: "What do you want me to say?" },
       { by: 'b', say: "Nothing. I don't want anything from you any more." },

@@ -149,7 +149,10 @@ const wordOf = (state, n) => state.word?.[n] || 0;
 function altFor(state, n, eligible, soft, ctx) {
   const rows = eligible.filter(x => x !== n && protectOf(n, x) < 2.5 && coupleOf(state, n) !== x).map(x => ({ x,
     s: soft.reduce((t, v) => t + (v === x ? 0 : targetScore(state, v, x, planOf(state, v), ctx).total), 0) / Math.max(1, soft.length)
-      + grudgeOf(n, x) * 0.5 - protectOf(n, x) * 0.2 }));
+      + grudgeOf(n, x) * 0.5 - protectOf(n, x) * 0.2
+      // throwing your own alliance under the bus is the last resort, not the first (read 2026-10-16: Leshawna
+      // pitched Beth, the one person left in her alliance)
+      - (state.alliances.some(al => !al.ended && al.members.includes(n) && al.members.includes(x)) ? 3 : 0) }));
   return rows.sort((a, b) => b.s - a.s)[0]?.x || null;
 }
 

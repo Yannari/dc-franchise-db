@@ -186,7 +186,7 @@ export default {
     { by: 'a', say: "Go on, then. Say the rest of it." },
     { by: 'b', say: "There's nothing else to say. You heard me." },
     { by: 'x', opt: 1, say: "Okay, okay. Both of you. Stop." },
-    { by: 'a', say: "No. If {b} wants to talk about me, {b} can do it to my face." },
+    { by: 'a', say: "No. If you want to talk about me, you do it to my face." },
     2, 3, 4],
   'fg.2': [0, 1,
     { by: 'a', say: "What's that supposed to mean?" },

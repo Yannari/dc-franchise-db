@@ -112,7 +112,7 @@ export default {
   ],
   'injury-healed.any': [
     { id: 'st.ih1', turns: [
-      { by: 'a', conf: "My {part} finally feels normal again. I can run, I can jump, I can fight. Anybody who was counting on me being hurt just ran out of time." },
+      { by: 'a', conf: "Finally, nothing hurts. I can run, I can jump, I can fight. Anybody who was counting on me being hurt just ran out of time." },
     ] },
     { id: 'st.ih2', turns: [
       { by: 'a', conf: "For a week I've been the injured one, the easy one, the one everybody looked at like I was already gone. The tape's off. I'm back." },

@@ -66,7 +66,7 @@ export function richest(state) {
 }
 
 // ── injuries ─────────────────────────────────────────────────────────
-const PARTS = ['ankle', 'knee', 'shoulder', 'wrist', 'ribs', 'back', 'hamstring'];
+const PARTS = ['ankle', 'knee', 'shoulder', 'wrist', 'rib', 'back', 'hamstring'];   // singular: every line says "the {part} is"
 
 /**
  * A player hurt in a daily or the Arena: how bad (1 a knock, 2 a sprain, 3 a tear), what, and for how long.

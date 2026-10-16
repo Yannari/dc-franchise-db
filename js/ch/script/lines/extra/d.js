@@ -271,11 +271,11 @@ export default {
     { id: 'cp.mx1', turns: [
       { by: 'a', say: "Can I say something before we vote?" },
       { by: 'c', opt: 1, say: "Quickly." },
-      { by: 'a', say: "Everybody's lining up behind my name because it's easy. But {b} has won more than I have, and nobody's saying it." },
+      { by: 'a', say: "Everybody's lining up behind my name because it's easy. But {b} is the bigger problem, and nobody's saying it." },
       { by: 'b', say: "Really? This is your play?" },
       { by: 'a', say: "It's not a play. It's math." },
       { by: 'b', say: "It's a scared person trying to swap places." },
-      { by: 'c', opt: 1, say: "No, hang on. {a} has a point about the dailies." },
+      { by: 'c', opt: 1, say: "No, hang on. {a} has a point." },
       { by: 'b', opt: 'c', say: "Oh, come on." },
       { by: 'a', conf: "I didn't need the whole house. I needed one or two people to look at {b} for the first time." },
       { by: 'b', conf: "{a} pointed at me to save {a.ref}. Fine. I'll remember who nodded." },

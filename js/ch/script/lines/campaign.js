@@ -111,7 +111,7 @@ export default {
       { by: 'b', say: "That's not much of a choice." },
       { by: 'a', say: "It's a fair one." },
       { by: 'b', say: "Fine. I won't say your name." },
-      { by: 'b', conf: "{a} knows how to win in that Arena. I'd rather not find out what {a.sub} could do to me in there." },
+      { by: 'b', conf: "{a} looked very sure about what would happen in that Arena. I'd rather not find out what {a.sub} could do to me in there." },
       { by: 'a', conf: "One less vote. That might be all I need." },
     ] },
     { id: 'sd.a2', turns: [

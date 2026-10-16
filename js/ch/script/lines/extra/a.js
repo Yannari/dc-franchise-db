@@ -326,7 +326,7 @@ export default {
     { id: 'st.prx6', turns: [
       { by: 'd', opt: 1, say: "I'm sorry, did anybody else hear TJ say I went up?" },
       { by: 'x', opt: 'd', say: "We heard." },
-      { by: 'd', opt: 1, say: "I just want to make sure." },
+      { by: 'd', opt: 'x', say: "I just want to make sure." },
       { by: 'c', opt: 1, say: "And I went down. Nobody needs to remind me." },
       { by: 'b', say: "At least you were on it somewhere near the middle." },
       { by: 'a', say: "Honestly, I'd take the middle. Top is too loud." },

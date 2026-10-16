@@ -37,7 +37,7 @@ export default {
       { by: 'c', opt: 1, say: "Too easy. Doesn't that worry anybody?" },
       { by: 'a', opt: 'c', say: "It worries me a bit. But I'd rather easy than a fight." },
       { by: 'y', opt: 1, say: "Can we go back now? I'm getting sunburnt." },
-      { by: 'a', say: "Go. Walk back in twos. Not all at once." },
+      { by: 'a', opt: 'y', say: "Go. Walk back in twos. Not all at once." },
       { by: 'a', conf: "If six of us walk back from the beach together, the whole house knows we've got a plan. So we don't." },
     ] },
     { id: 'mt.ux4', turns: [
@@ -46,8 +46,7 @@ export default {
       { by: 'a', say: "It's a little bit a promise." },
       { by: 'b', say: "It's a promise to think. I thought. I'm voting {target}." },
       { by: 'c', opt: 1, say: "I said I'd look out for {target}. I didn't say how long." },
-      { by: 'a', opt: 'c', say: "Okay. That's two of us who are going to have an awkward breakfast." },
-      { by: 'a', say: "Anybody else? Now's the time." },
+      { by: 'a', opt: 'c', say: "Okay. That's two awkward breakfasts. Anybody else? Now's the time." },
       { beat: 'Nobody else says anything.' },
       { by: 'a', say: "Then it's {target}. And we're nice to {target} until the vote." },
       { by: 'a', conf: "Everybody in this game promises everybody something. The trick is knowing which promises somebody is going to keep." },

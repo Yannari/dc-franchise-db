@@ -9,5 +9,6 @@ import f from './f.js';
 import g from './g.js';
 import h from './h.js';
 import returns from '../returns.js';
+import crowd from './crowd.js';
 
-export default [a, b, c, d, e, f, g, h, returns];
+export default [a, b, c, d, e, f, g, h, returns, crowd];

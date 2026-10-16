@@ -202,7 +202,7 @@ export const ROLES = {
   'alliance-end': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.why }),
   'rookie-uprising': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any' }),
   deal: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
-  'deal-broken': sc => ({ roles: { a: sc.who[1], b: sc.who[0] }, ending: sc.data.how }),
+  'deal-broken': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.how }),
   spark: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   showmance: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   breakup: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
@@ -292,7 +292,7 @@ export function rolesOf(scene, state) {
   // conversations, trio, duo, quatuor and more"). A turn marked { opt: 1 } is theirs to say when they are
   // there and is dropped when they are not, so one conversation plays as a duo, a trio or a four.
   const taken = new Set(Object.values(r.roles));
-  const rest = (scene.who || []).filter(n => n && n !== 'TJ' && !taken.has(n));
+  const rest = [...(scene.who || []), ...(scene.data?.crowd || [])].filter(n => n && n !== 'TJ' && !taken.has(n));
   ['x', 'y', 'z'].forEach((k, i) => { if (rest[i] && !r.roles[k]) r.roles[k] = rest[i]; });
   r.slots ||= {};
   for (const k of Object.keys(r.slots)) if (r.slots[k] == null) delete r.slots[k];

@@ -10,7 +10,7 @@
 // write from (§5: an event is a scene, `seenBy` says who knows).
 import { pStats } from '../players.js';
 import { players } from '../core.js';
-import { getBond } from '../bonds.js';
+import { getBond, addBond } from '../bonds.js';
 
 export const STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty',
   'boldness', 'intuition', 'temperament'];
@@ -63,7 +63,27 @@ export function blankRecord() {
 
 // One scene: what happened, who was in it, who knows (§5 of the spec, §19.2 of
 // the manual). `data` holds what it decided; the words are written later.
+// The scenes that happen in front of people (the user, 2026-10-16, of a payback "in front of everybody" that
+// played as two people talking: "we need more 3+ people conversation"). Two of the people in the room join it:
+// the ones with the most riding on the two at its centre, a friend or an enemy of either. They are x and y in the
+// lines (roles.js), seated from the start, and having watched it they lean a little toward the one they like.
+export const CROWD_KINDS = new Set(['payback', 'receipts', 'kitchen-blowup', 'party-callout', 'fight', 'fight-physical',
+  'trash-talk', 'outing', 'floater-callout', 'deal-broken', 'leverage-threat', 'vet-dismisses', 'bank-brag', 'rookie-hazing',
+  'show-banter', 'bunk-war', 'prank', 'ranking-beef', 'gym-flex', 'wishlist-leak']);
+function crowdOf(state, kind, who, seenBy) {
+  if (!CROWD_KINDS.has(kind) || who.length !== 2) return [];
+  const [a, b] = who;
+  const hash = n => [...`${state.seed}|${state.scenes.length}|${n}`].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) / 4294967296;
+  const room = [...new Set(seenBy)].filter(n => n !== a && n !== b && state.active.includes(n));
+  const stake = n => Math.abs(getBond(n, a)) + Math.abs(getBond(n, b)) + hash(n) * 1.5;
+  return room.sort((x, y) => stake(y) - stake(x)).slice(0, 2);
+}
 export function addScene(state, kind, who, data = {}, seenBy = who, spot = null) {
+  const crowd = crowdOf(state, kind, who, seenBy);
+  if (crowd.length) {
+    data = { ...data, crowd };
+    for (const w of crowd) { const [near, far] = getBond(w, who[0]) >= getBond(w, who[1]) ? who : [who[1], who[0]]; addBond(w, near, 0.15); addBond(w, far, -0.15); }
+  }
   const sc = { id: state.scenes.length + 1, ep: state.ep, day: state.day, kind,
     who: [...who], data, seenBy: [...new Set(seenBy)], spot, snap: snapOf(state, who) };
   state.scenes.push(sc);

@@ -765,11 +765,11 @@ export default {
       odd: ["Because you're my favorite person to fight. It's a compliment, kind of.", "Because you're the one I'd rather fight. You should be honored."],
     },
     3: {
-      sharp: ["{a} has won in there before. I'm taking that threat seriously.", "{a} doesn't bluff. {a} has won in the Arena."],
-      dry: ["{a} has won an elimination before. That makes it a serious threat.", "If {a} says it, it's meant. {a} has won in there before."],
-      loud: ["{a} has WON in that Arena! I have to take that seriously!", "{a} isn't bluffing! {a} has won in there!"],
-      soft: ["{a} has won in the Arena before. That really scares me.", "When {a} says that, I believe it. {a} has done it."],
-      odd: ["{a} has won in the Arena before. If {a} says it, I believe it.", "{a} has won in the Arena. When {a} talks, I listen. Scared listening."],
+      sharp: ["{a} meant every word. I could see it. I'm taking that seriously.", "{a} doesn't bluff. I've watched {a} long enough to know that."],
+      dry: ["{a} said it like a fact, not a threat. That's what worries me.", "If {a} says it, it's meant. I'd be stupid to ignore it."],
+      loud: ["{a} MEANT that! I have to take that seriously!", "{a} isn't bluffing! You could see it on {a}'s face!"],
+      soft: ["The way {a} said it really scared me. I believe it.", "When {a} says something like that, I believe it."],
+      odd: ["{a} looked me dead in the eye. If {a} says it, I believe it.", "When {a} talks like that, I listen. Scared listening."],
     },
   },
 };

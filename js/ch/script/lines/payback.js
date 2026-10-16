@@ -103,14 +103,16 @@ export default {
       { by: 'a', say: "Done being nice to you. Done covering for you. Done." },
       { by: 'b', conf: "{a} is the sweetest person here, and {a} just looked at me like I was a stranger. That one actually got to me." },
     ] },
-    { id: 'pb.c6', turns: [
+    // said to the whole table: only with a table there (state.js crowdOf), and the table answers
+    { id: 'pb.c6', when: { crowd: true }, turns: [
       { beat: 'The house is eating dinner when {a} puts down a fork and looks across the table at {b}.' },
       { by: 'a', say: "I just want to say, in front of everybody, so there's no confusion." },
       { by: 'b', say: "Here we go." },
       { by: 'a', say: "{b} called out {gone}. {gone} wasn't even voted in. {b} chose that." },
       { by: 'b', say: "We all know what happened. We were all there." },
       { by: 'a', say: "Good. Then you all know who I'm voting for the next time {b} is up." },
-      { by: 'x', opt: 1, say: "Can we just eat?" },
+      { by: 'x', say: "Can we just eat? Please?" },
+      { by: 'y', opt: 1, say: "No, I want to hear this." },
       { by: 'b', conf: "{a} wants a war at the dinner table. Fine. But I've won an Arena this week. What has {a} won?" },
     ] },
   ],

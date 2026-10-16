@@ -71,25 +71,28 @@ const QUIT_CARRY = 4;
 // A medevac on the day of the injury, and later from one the medic cleared (per check, three a episode). Kept to
 // the season's rate before the split (30 seasons: 11 medevacs).
 const MED_NOW = 0.6, MED_LATER = 0.12;
-// A day's quits and medicals. At most one quit a day.
-function dayExits(state, rng, injured = []) {
+// A day's quits and medicals. At most one quit a day. floor: the house this can not go below (after the last
+// regular Arena, the finalists: a quit there came after the schedule had counted to the final, and the final
+// started with seven, seed 23, 2026-10-16); a quit or a medevac that would cross it does not happen that day.
+function dayExits(state, rng, injured = [], floor = 0) {
   const out = [];
+  const room = () => state.active.length > floor;
   // a knock is played through; a sprain sometimes, a tear often, ends it (stakes.js)
   // (medevac.js: the exam, TJ, the goodbye; a bad injury the medic clears is a scare the viewer sees, and it can
   // still end things on a later day, so a medevac often grows out of an injury that has been on screen)
   for (const n of injured) {
     if (!state.active.includes(n)) continue;
-    if (rng() < medicalRisk(state.injury[n]) * MED_NOW) { medevac(state, n); out.push({ name: n, how: 'medical' }); }
+    if (rng() < medicalRisk(state.injury[n]) * MED_NOW && room()) { medevac(state, n); out.push({ name: n, how: 'medical' }); }
     else if (state.injury[n]?.sev >= 2) medicalScare(state, n);
   }
   for (const n of [...state.active]) {
     const inj = state.injury?.[n];
     if (!inj?.scared || inj.scared === state.ep || inj.heal <= state.ep) continue;
-    if (rng() < medicalRisk(inj) * MED_LATER) { medevac(state, n); out.push({ name: n, how: 'medical' }); }
+    if (rng() < medicalRisk(inj) * MED_LATER && room()) { medevac(state, n); out.push({ name: n, how: 'medical' }); }
   }
   // a quit comes after signs the viewer saw on an earlier day (quit.js), and the risk carries the days it waited
   for (const n of [...state.active]) {
-    if (!hasWavered(state, n)) continue;
+    if (!hasWavered(state, n) || !room()) continue;
     if (rng() < quitRisk(state, n) * QUIT_CARRY) {
       if (quitMoment(state, rng, n) === 'stays') break;
       quit(state, n); pop(n, -2); out.push({ name: n, how: 'quit' }); break;
@@ -499,7 +502,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     houseBeats(state, R('beats3'), { night: true, min: 3, max: 5 });
     psycheMoment(state, R('psyche'));
     breakupCheck(state, R('breakup'));
-    epRec.exits.push(...dayExits(state, R('exits3')));
+    epRec.exits.push(...dayExits(state, R('exits3'), [], schedule[idx + 1]?.final || idx === schedule.length - 1 ? opts.finalists : 0));
     state.cliqueStrength = Math.max(0.15, state.cliqueStrength * 0.84);
     epRec.intel.end = intelSnap(state);
   }

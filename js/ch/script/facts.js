@@ -53,6 +53,9 @@ export const CH_FACT_KEYS = [
   'path', 'pathB',
   // the daily a scene comes out of was a physical one (dailies.js physicality): "the end of the course" needs it
   'physical',
+  // somebody besides the scene's own people is in it (state.js crowdOf: x is there). A line said to the room
+  // ("in front of everybody", "you all") needs it, and a crowd version of a scene wins when there is a crowd.
+  'crowd',
 ];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -104,6 +107,7 @@ export function factsFor(scene, roles, state) {
     path: scene.data?.path || null,
     pathB: scene.data?.pathB || null,
     physical: scene.data?.physical ?? null,
+    crowd: !!roles.roles.x,
   };
   if (a) {
     f.register = registerOf(a);

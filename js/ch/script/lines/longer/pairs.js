@@ -161,7 +161,7 @@ export default {
     { by: 'a', say: "That's not a reason. That's an excuse." },
     3],
   'rq.d2': [0, 1, 2,
-    { by: 'b', say: "Not in front of everybody. Not like this." },
+    { by: 'b', say: "Not here. Not like this." },
     { by: 'a', say: "You said my name in front of everybody. That was fine." },
     { by: 'b', say: "That was the vote. This is different." },
     { by: 'a', say: "It's not different to me." },

@@ -259,9 +259,9 @@ export default {
       { by: 'a', say: "Then hear this too. If I go in, I'm picking you." },
       { by: 'b', say: "Why would you tell me that?" },
       { by: 'a', say: "So you can make sure I don't go in." },
-      { by: 'b', say: "That sounds like a threat." },
-      { by: 'a', say: "It sounds like information. I've won in there. You haven't." },
-      { by: 'b', conf: "{a} has walked out of that Arena before. If {a} says it's me, I believe it's me." },
+      { by: 'b', say: "Is that supposed to scare me?" },
+      { by: 'a', say: "It's supposed to help you decide. I'm not scared of the Arena. Are you?" },
+      { by: 'b', conf: "{a} said it like it was already decided. If {a} says it's me, I believe it's me." },
     ] },
     { id: 'lt.cx2', turns: [
       { beat: '{a} sits down across from {b} at breakfast and pours a coffee very slowly.' },

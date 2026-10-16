@@ -23,9 +23,10 @@ const pop = (name, d) => { gs.popularity ||= {}; gs.popularity[name] = (gs.popul
 export const redemptionOn = state => !!state.options?.redemption;
 const house = state => (state.redemption ||= { open: true, residents: [], out: [], returned: [], pending: null });
 
-/** Is the house taking people tonight? It closes when three regular episodes are left. */
+/** Is the house taking people tonight? It opens on the episode it was booked on, and closes when three
+ *  regular episodes are left. */
 export function houseTakes(state, idx) {
-  if (!redemptionOn(state)) return false;
+  if (!redemptionOn(state) || idx + 1 < (state.options.redemptionFrom || 1)) return false;
   const H = house(state);
   return H.open && (state.plannedEpisodes || 14) - idx > 3;
 }

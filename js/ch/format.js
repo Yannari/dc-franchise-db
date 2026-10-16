@@ -51,6 +51,7 @@ export const DEFAULT_OPTIONS = {
   partnerWeeks: true,
   finalPass: null,    // 'skull' | 'ring': nobody runs the final without one (stakes.js)
   redemption: false,  // Redemption House (redemption.js)
+  redemptionFrom: 1,  // the episode it opens on (a card booked on the Season Timeline)
 };
 
 export function formatOf(options) {

@@ -19,7 +19,7 @@
 //
 // IMPORTING THIS MODULE IS THE WIRING: it sets `window._chRunnable`, which
 // `formatIsRunnable()` reads.
-import { gs, setGs, players, seasonConfig, seasonFormat } from './core.js';
+import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG } from './core.js';
 import { CHALLENGE_FORMAT, SHOWS } from './shows.js';
 import { playChallengeSeason } from './ch/season.js';
 import { airSeason } from './ch/story/director.js';
@@ -68,6 +68,15 @@ export function challengeSetup() {
 }
 
 export function challengeOptions(config = seasonConfig) {
+  // the cards booked on the Season Timeline (core.js, THE CHALLENGE'S TWISTS): a rule for the whole season,
+  // beside the same switches on the setup panel; Redemption House opens on the episode it is booked on
+  const booked = {};
+  for (const b of config?.twistSchedule || []) {
+    const card = TWIST_CATALOG.find(t => t.id === (b?.type || b?.id) && t.format === CHALLENGE_FORMAT);
+    if (!card?.chApply) continue;
+    Object.assign(booked, card.chApply);
+    if (card.chApply.redemption) booked.redemptionFrom = Math.min(booked.redemptionFrom || Infinity, Number(b.episode) || 1);
+  }
   return {
     gendered: config?.chGenderBlind !== true,
     finalists: [6, 8, 10].includes(Number(config?.chFinalists)) ? Number(config.chFinalists) : DEFAULT_OPTIONS.finalists,
@@ -76,10 +85,12 @@ export function challengeOptions(config = seasonConfig) {
     romance: config?.chRomance !== false,
     partnerWeeks: config?.chPartnerWeeks !== false,
     // the season's rules: the open house vote, or the Tribunal (format.js)
-    format: config?.chFormat === 'tribunal' ? 'tribunal' : 'vote-callout',
+    format: config?.chFormat === 'tribunal' || booked.format === 'tribunal' ? 'tribunal' : 'vote-callout',
     // the twists (stakes.js, redemption.js): a skull or ring to run the final, Redemption House
-    finalPass: ['skull', 'ring'].includes(config?.chPass) ? config.chPass : null,
-    redemption: config?.chRedemption === true,
+    finalPass: ['skull', 'ring'].includes(config?.chPass) ? config.chPass : booked.finalPass || null,
+    redemption: config?.chRedemption === true || !!booked.redemption,
+    // the setup panel's switch opens it from the start
+    redemptionFrom: config?.chRedemption === true ? 1 : booked.redemptionFrom || 1,
   };
 }
 

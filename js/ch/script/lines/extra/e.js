@@ -36,8 +36,8 @@ export default {
   'ballot-why.strategy': [
     { id: 'bwy.s5', turns: [{ by: 'a', say: "{b}. I've got a plan, and you're the first part of it." }] },
     { id: 'bwy.s6', turns: [{ by: 'a', say: "{b}. It's not about you. It's about who you'd pick." }] },
-    { id: 'bwy.s7', when: { register: 'schemer' }, turns: [{ by: 'a', say: "{b}. Three moves from now, you'll understand. Probably not before." }] },
-    { id: 'bwy.s8', when: { register: 'schemer' }, turns: [{ by: 'a', say: "{b}. A pawn has to move first. Sorry, that's you." }] },
+    { id: 'bwy.s7', when: { register: 'schemer' }, turns: [{ by: 'a', say: "{b}. You won't understand why yet. You will in a couple of weeks." }] },
+    { id: 'bwy.s8', when: { register: 'schemer' }, turns: [{ by: 'a', say: "{b}. Somebody has to go first. Sorry, that's you." }] },
     { id: 'bwy.s9', when: { register: 'cool' }, turns: [{ by: 'a', say: "{b}. I've run every version of this week. This is the best one." }] },
     { id: 'bwy.s10', when: { register: 'sweet' }, turns: [{ by: 'a', say: "{b}. It's a game decision, and I feel awful about it." }] },
     { id: 'bwy.s11', when: { register: 'fiery' }, turns: [{ by: 'a', say: "{b}. Don't look at me like that. It's the move, and everybody knows it." }] },

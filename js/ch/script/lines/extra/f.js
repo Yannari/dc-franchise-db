@@ -77,7 +77,7 @@ export default {
       { by: 'b', conf: "{alliance} isn't a group. It's {a} and some people who are scared of {a}. I'm one of them." },
     ] },
     { id: 'rg.mt2', when: { register: 'schemer' }, turns: [
-      { by: 'a', say: "Let's be efficient. Who here would genuinely miss {target}?" },
+      { by: 'a', say: "Let's keep this quick. Would anybody here actually miss {target}?" },
       { by: 'b', say: "That's a dark way to start a meeting." },
       { by: 'a', say: "It's an honest one. Nobody? Good. Then that's settled." },
       { by: 'c', opt: 1, say: "I like {target}, actually." },
@@ -125,7 +125,7 @@ export default {
       { by: 'b', say: "Then why are we even talking?" },
       { by: 'a', say: "So you can all feel like you had a say. I'm generous like that." },
       { by: 'c', say: "Well, I'm saying {alt}. {altcase}." },
-      { by: 'a', say: "Noted. Ignored, but noted." },
+      { by: 'a', say: "I heard you. It doesn't change anything." },
       { by: 'c', say: "You don't get to ignore a vote, {a}." },
       { by: 'b', conf: "{a} talks about me like I'm already gone. I'd love to make {a} eat that." },
     ] },
@@ -147,7 +147,7 @@ export default {
       { by: 'b', say: "And how long does this deal last?" },
       { by: 'a', say: "Until one of us doesn't need it. I'll let you know." },
       { by: 'b', say: "You'll let me know." },
-      { by: 'a', say: "Courtesy is free." },
+      { by: 'a', say: "I'm a polite person. When it doesn't cost me anything." },
       { by: 'b', conf: "Shaking hands with {a} feels like signing something without reading it." },
     ] },
     { id: 'rg.dl2', when: { register: 'schemer' }, turns: [
@@ -188,7 +188,7 @@ export default {
       { by: 'b', say: "You don't know you're not on the list." },
       { by: 'a', say: "I know exactly who's on it. I helped write it." },
       { by: 'c', opt: 1, say: "Can you two please talk about something else?" },
-      { by: 'a', conf: "The best seat in this house is the one next to the panic. I just sit there and watch." },
+      { by: 'a', conf: "I love sitting next to people who are panicking. It's the best show in the villa." },
     ] },
     { id: 'rg.pg2', when: { register: 'schemer' }, turns: [
       { by: 'a', say: "Bet you breakfast it's you." },
@@ -197,7 +197,7 @@ export default {
       { by: 'b', say: "Why would {target} pick me?" },
       { by: 'a', say: "Why wouldn't {target}? I'd pick you." },
       { by: 'b', say: "Thanks, {a}. Really." },
-      { by: 'a', conf: "If {b} is busy worrying about {target}, {b} isn't worrying about me. Everybody wins. Mostly me." },
+      { by: 'a', conf: "If {b} is busy worrying about {target}, {b} isn't worrying about me. That works out very nicely for me." },
     ] },
   ],
   'alliance-grow.any': [
@@ -383,7 +383,7 @@ export default {
       { by: 'b', say: "You know that just made you everybody's target." },
       { by: 'a', say: "Everybody's already afraid of me. Now it's official." },
       { by: 'b', say: "And you think that helps?" },
-      { by: 'a', say: "Fear is a vote I don't have to ask for." },
+      { by: 'a', say: "When people are scared of you, they vote the way you want. I don't even have to ask." },
       { by: 'b', say: "Enjoy it while it lasts." },
       { by: 'a', conf: "TJ put me on top. The rest of the house will spend all week trying to drag me down. And while they're busy, I'll be busy too." },
     ] },

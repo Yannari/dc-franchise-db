@@ -167,7 +167,7 @@ export default {
       { by: 'b', say: "Did you." },
       { by: 'a', say: "No. But it sounded nice, didn't it?" },
       { by: 'b', say: "You're unbelievable." },
-      { by: 'a', say: "I get that a lot. Good luck tomorrow. Truly. Mostly." },
+      { by: 'a', say: "I get that a lot. Good luck tomorrow. I almost mean it." },
       { by: 'a', conf: "If {b} wins, I've made an enemy. If {b} loses, I've made a point. I'm happy either way." },
     ] },
     { id: 'gl.7', when: { register: 'fiery' }, turns: [

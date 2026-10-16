@@ -30,10 +30,16 @@ const FEUD_BEEF = { vote: 'you stood up and said my name at the vote', callout: 
 const BEEF = { vote: 'you stood up and said my name at the vote', floater: "you've never been in the Arena once", feud: "you've been talking about me since day one" };
 
 // The reason a name is said at the deliberation, true to the record (vote.js whyName): a sentence, the name in it.
+// f: the record ({ arenaW, daily, topWeeks }), so a threat is argued with what the threat has actually done
+const NUM = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+const num = k => NUM[k] || String(k);
 const CASE = {
   easy: n => `${n} is the one any of us could beat in the Arena`,
-  threat: n => `${n} keeps winning, and nobody else in this division has`,
-  ranked: n => `TJ put ${n} at the top of his list this morning, and he's right`,
+  threat: (n, f = {}) => (f.arenaW >= 2 ? `${n} has won ${num(f.arenaW)} eliminations already, and nobody wants to be standing next to ${n} in the final`
+    : f.daily >= 2 ? `${n} has won ${num(f.daily)} dailies, and if we don't stop ${n} now, we never will`
+    : `${n} keeps winning, and nobody else in this division has`),
+  ranked: (n, f = {}) => (f.topWeeks >= 2 ? `TJ has had ${n} at the top of his list ${num(f.topWeeks)} weeks running, and he's right`
+    : `TJ put ${n} at the top of his list this morning, and he's right`),
   grudge: n => `${n} has been coming after people in this house since day one`,
   floater: n => `${n} hasn't done a single thing in this game except hide`,
   schemer: n => `${n} has been playing every side of this house`,
@@ -49,7 +55,7 @@ export const ROLES = {
   'villa-reveal': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   // a proposes, b is the name, c objects (with their own name when they have one), d backs a
   'house-debate': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.alt ? 'split' : 'one',
-    slots: { alt: sc.data.alt, case: CASE[sc.data.why || 'trust'](sc.who[1]), altcase: sc.data.alt ? CASE[sc.data.altWhy || 'trust'](sc.data.alt) : undefined } }),
+    slots: { alt: sc.data.alt, case: CASE[sc.data.why || 'trust'](sc.who[1], sc.data.whyFacts || {}), altcase: sc.data.alt ? CASE[sc.data.altWhy || 'trust'](sc.data.alt, sc.data.altFacts || {}) : undefined } }),
   // the day of the Arena: a (going in) thinks the pick through with b, naming two people it could be
   'pick-talk': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { opt1: sc.data.options?.[0], opt2: sc.data.options?.[1] } }),
   // the people who might be picked, waiting; {target} is the one picking

@@ -163,6 +163,10 @@ export function writeScene(state, scene) {
       lines.unshift({ kind: 'beat', by: null, text: fill(t, r.roles, r.slots), voice: null });
     }
   }
+  // what the speaker really thinks, after the scene (vote.js houseDebate: a reason pitched that is not their own)
+  if (scene.data?.afterConf?.text && Object.values(r.roles).includes(scene.data.afterConf.by)) {
+    lines.push({ kind: 'conf', by: scene.data.afterConf.by, text: scene.data.afterConf.text, voice: null });
+  }
   // what it is about, said before anybody speaks (cause.js: a fight never starts in a feud nobody saw)
   if (scene.data?.causeLine) {
     const at = lines.findIndex(l => l.kind !== 'beat');

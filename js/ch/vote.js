@@ -301,26 +301,49 @@ export function houseDebate(state, delib, eligible) {
   const alt = intents[c] && intents[c] !== target && eligible.includes(intents[c]) && intents[c] !== c ? intents[c] : null;
   // the reasons said out loud are the real ones (the user, 2026-10-16: "why is everyone so scared of Evie, she
   // was last in TJ's rankings and bad at challenges"): read off the record, never a stock "bigger threat"
-  const why = whyName(state, a, target, eligible);
-  const altWhy = alt ? whyName(state, c, alt, eligible) : null;
+  // the reason PITCHED is the one the room will buy (a threat beats a grudge in public); when the speaker's own
+  // reason is different, the confessional says it (the user, 2026-10-16: "hes a threat and thats the actual
+  // reasoning right? they should verbalize that or lie and tell us in the confessional")
+  const said = whyName(state, a, target, eligible), saidAlt = alt ? whyName(state, c, alt, eligible) : null;
+  const why = said.said, altWhy = saidAlt?.said || null;
+  const facts = n => ({ arenaW: state.rec[n]?.arenaW || 0, daily: state.rec[n]?.dailyWins || 0,
+    topWeeks: state.episodes.filter(e => e.rankings?.[0]?.n === n).length });
+  const truth = said.real !== said.said ? TRUTH[said.real]?.(a, target, said.said, state.ep + a.length + target.length) : null;
   // a couple more voices from the room: someone who agreed at the meeting, someone close to the name
   const more = state.active.filter(n => ![a, target, c, d].includes(n)).sort((x, y) => Math.abs(getBond(target, y)) - Math.abs(getBond(target, x))).slice(0, 2);
   const who = [a, target, c, ...(d ? [d] : []), ...more];
-  return addScene(state, 'house-debate', who, { target, alt, organiser: a, why, altWhy }, state.active, 'deliberation');
+  return addScene(state, 'house-debate', who, { target, alt, organiser: a, why, altWhy, whyFacts: facts(target), altFacts: alt ? facts(alt) : null,
+    ...(truth ? { afterConf: { by: a, text: truth } } : {}) }, state.active, 'deliberation');
 }
 
-// Why `by` wants `n` in, in the words of the game: the strongest true reason.
+// What the speaker really thinks, when it is not what they pitched: one confessional line.
+const PITCHED = { threat: 'a threat', ranked: 'the one at the top of the list', floater: 'a floater', easy: 'the easy one', schemer: 'a schemer', trust: 'somebody nobody can trust' };
+const TRUTH = {
+  grudge: (a, n, said, k = 0) => [
+    `Everything I said about ${n} being ${PITCHED[said] || 'a problem'} is true. But if I'm honest, that's not why I want ${n} out. ${n} came after me, and I don't forget.`,
+    `I gave the house the reason it wanted. The real one is simpler: ${n} crossed me, and this is what that costs.`,
+    `Did I believe what I said about ${n}? Sure. But I'd have found a reason either way. This one's personal.`,
+    `Calling ${n} ${PITCHED[said] || 'a problem'} gets votes. Saying ${n} hurt me doesn't. So I said the one that gets votes.`,
+  ][k % 4],
+  threat: (a, n, said) => `I made it sound like ${n} is ${PITCHED[said] || 'a problem'}. Really, ${n} is the one I'm scared of in the Arena, and I'm not saying that out loud.`,
+};
+
+// Why `by` wants `n` in: { said, real }. Said is the strongest true reason the ROOM will accept (a threat, the
+// top of TJ's list, a floater, the easy win...); real is a personal grudge when there is one, which people keep
+// for the confessional unless it is all they have.
 function whyName(state, by, n, eligible) {
   const r = state.rec[n] || {};
   const pool = eligible.filter(x => x !== by);
   const rank = (f, x) => pool.filter(y => f(y) > f(x)).length / Math.max(1, pool.length);
-  if (grudgeOf(by, n) >= 1.2) return 'grudge';
-  if (state.rankTop?.name === n && state.rankTop.ep === state.ep) return 'ranked';
-  if ((r.dailyWins || 0) + (r.arenaW || 0) >= 2 && rank(x => threatRead(state, x), n) <= 0.25) return 'threat';
-  if (freeRide(state, n) > 0.4) return 'floater';
-  if (mayScheme(n) && S(n, 'strategic') >= 6 && S(n, 'social') >= 5) return 'schemer';
-  if (rank(x => arenaRead(state, x), n) >= 0.6) return 'easy';
-  return 'trust';
+  const grudge = grudgeOf(by, n) >= 1.2;
+  let said = null;
+  if ((r.dailyWins || 0) + (r.arenaW || 0) >= 2 && rank(x => threatRead(state, x), n) <= 0.25) said = 'threat';
+  else if (state.rankTop?.name === n && state.rankTop.ep === state.ep) said = 'ranked';
+  else if (freeRide(state, n) > 0.4) said = 'floater';
+  else if (mayScheme(n) && S(n, 'strategic') >= 6 && S(n, 'social') >= 5) said = 'schemer';
+  else if (rank(x => arenaRead(state, x), n) >= 0.6) said = 'easy';
+  if (!said) return { said: grudge ? 'grudge' : 'trust', real: grudge ? 'grudge' : 'trust' };
+  return { said, real: grudge ? 'grudge' : said };
 }
 
 export function deliberate(state, rng, { division, eligible, immune }) {

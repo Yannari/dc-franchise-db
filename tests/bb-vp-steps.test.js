@@ -199,10 +199,13 @@ describe('finale night is in the viewer too', () => {
     for (const k of ['brief', 'final-cut', 'jury-q', 'closing', 'jury-vote', 'afp']) expect(kinds, k).toContain(k);
   });
   it('crowns the winner the record crowned, after every juror has voted', () => {
-    const S = screens.find(s => s.kind === 'jury-vote');
+    // the keys go in on one screen, the reunion airs, then the finalists come out for the reveal on the next
+    const at = screens.findIndex(s => s.steps.some(st => st.winner));
+    const S = screens[at];
     const crown = S.steps.findIndex(s => s.winner);
     expect(S.steps[crown].winner).toBe(fin.winner);
-    expect(S.steps.slice(0, crown).filter(s => s.juryVote).length).toBe((fin.acts.find(a => a.type === 'jury-vote').reasoning || []).length);
+    const cast = screens.slice(0, at).flatMap(x => x.steps.filter(s => s.juryVote));
+    expect(cast.length).toBe((fin.acts.find(a => a.type === 'jury-vote').reasoning || []).length);
   });
   it('evicts the one the final HOH cut', () => {
     const S = screens.find(s => s.kind === 'final-cut');

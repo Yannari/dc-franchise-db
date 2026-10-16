@@ -689,6 +689,9 @@ export function simulateBBFinale(rng = Math.random) {
 
   // ── the jury ──
   const jury = seatBBJury(cut ? [cut] : []);
+  // the third-place finisher is the LAST juror, not the first: gs.jury is not the panel here (a finale interview
+  // said "the first member of the jury" and "juror number one" about the seventh)
+  if (interview?.joinsJury && cut) interview.juryNumber = (jury.indexOf(cut) + 1) || jury.length;
   recordBigMoves(finalTwo);
   // Ponderosa. Seven people with nothing to do but compare notes about the one
   // thing none of them could see from inside: who actually wrote their name

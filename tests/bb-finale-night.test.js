@@ -373,8 +373,11 @@ describe('the whole night', () => {
     // that are full of material.
     expect(screen.html).not.toContain('Nobody says anything they would repeat on camera');
     const act = ep.acts.find(a => a.type === 'finale-house');
+    // a memory with words in it airs as the line said (vp-bb-ep/finale-house.js), the rest as written (the start of
+    // it: a count in it airs as a word, "week 8" as "week eight")
     for (const beat of act.beats) {
-      expect(screen.html, `a ${beat.tag} beat never rendered`).toContain(beat.text.slice(0, 40));
+      const said = (beat.text.match(/["“]([^"”]+)["”]/) || [])[1];
+      expect(screen.html, `a ${beat.tag} beat never rendered`).toContain((said || beat.text).replace(/,$/, '').slice(0, 18));
     }
   });
 

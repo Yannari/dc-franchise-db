@@ -153,9 +153,14 @@ const zOf = a => Math.round(100 - a.at[2] * 10);
 // where a seated person was on the step before, as the offset a walk starts from
 function walkFrom(S, seated, n, idx) {
   const before = seatsAt(S, idx - 1);
-  if (!before[n] || before[n] === seated[n]) return '';
-  const a = seatOf(S, seated, n), b = seatOf(S, before, n);
-  if (!a || !b) return '';
+  if (before[n] === seated[n]) return '';
+  const a = seatOf(S, seated, n);
+  if (!a) return '';
+  // on the finale stage, somebody whose last place is not on this plate (the jury bench is its own camera; the
+  // finalists come out of the house) walks on from the side of the stage nearest them
+  let b = before[n] ? seatOf(S, before, n) : null;
+  if (!b && S.set === 'finale') b = { at: [a.at[0] < 50 ? -6 : 106, a.at[1], a.at[2]], w: a.w };
+  if (!b) return '';
   return `--wx:${(b.at[0] - a.at[0]).toFixed(2)}cqw;--wy:${(-(b.at[1] - a.at[1]) * 0.5625).toFixed(2)}cqw;`;
 }
 // finale night: nobody wears a week's badge (an Evicted chip on one juror of nine is noise)
@@ -804,14 +809,14 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
       const badge = r ? `<i class="rb">${react === 'laugh' ? REACT_LAUGH : REACT_WOW}</i>` : '';
       // a reaction interrupts what they were doing; otherwise they go on doing it
       const doing = r || !idle ? '' : `doing do-${idle}`;
-      h += tileHtml(n, x, `bgp ${r} ${doing}`, L, badge, `z-index:1;bottom:${(21.5 + (i % 2) * 0.8).toFixed(1)}cqw;--d:${(-(i * 0.9 + idx * 0.13) % 4).toFixed(2)}s`, doing ? idleFx(idle) : '');
+      h += tileHtml(n, x, `bgp ${r} ${doing}`, S.set === 'finale' ? NOCHIPS : L, badge, `z-index:1;bottom:${(21.5 + (i % 2) * 0.8).toFixed(1)}cqw;--d:${(-(i * 0.9 + idx * 0.13) % 4).toFixed(2)}s`, doing ? idleFx(idle) : '');
     });
     const A = fresh ? actionOf(st, cast.map(([n]) => n)) : null;
     const at = Object.fromEntries(focus.slice(0, 3).map((n, i) => [n, xs[i]]));
     focus.slice(0, 3).forEach((n, i) => {
       const a = actOn(A, n, xs[i], at);
       const cls = [n === speaker ? 'speak' : '', fresh && !before.includes(n) ? 'step' : '', L.plus === n ? 'plus' : '', a.cls].join(' ');
-      h += tileHtml(n, xs[i], cls, L, '', '', a.fx);
+      h += tileHtml(n, xs[i], cls, S.set === 'finale' ? NOCHIPS : L, '', '', a.fx);
     });
     if (A && A.kind === 'slam') h += '<div class="fx-impact"></div>';
     if (A && A.kind === 'shout') h += `<div class="speedl" style="--sx:${at[A.who[0]] ?? 50}%"></div>`;
@@ -835,7 +840,7 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
     if (seated) {
       const a = seatOf(S, seated, n);
       h += tileHtml(n, x, `${cls} ${walk ? 'walk' : ''}`, S.set === 'finale' ? NOCHIPS : L, '', `${walk}bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}`, a2.fx);
-    } else h += tileHtml(n, x, cls, L, '', '', a2.fx);
+    } else h += tileHtml(n, x, cls, S.set === 'finale' ? NOCHIPS : L, '', '', a2.fx);
   }
   // the finale's key box: a key drops through the slot
   if (S.set === 'finale' && fresh && st && st.drop && (anchOf(S)?.slot || ANCH.finale?.slot)) {

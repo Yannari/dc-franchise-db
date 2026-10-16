@@ -171,7 +171,7 @@ export default {
     { id: 'gy-sm.6', presumes: ['vote'], room: 'bedroom', turns: [
       { beat: 'Bedroom, door shut. {a} is talking very quietly, almost to the camera.' },
       { by: 'a', dr: "Every person in this house thinks I'm on their side. That's not an accident. That's weeks of work." },
-      { by: 'a', dr: "{c} is next. {c} just doesn't know it, and {c} won't until the votes are read." },
+      { by: 'a', dr: "{c} is the one I'm working on now. {c} just doesn't know it yet, and won't until it's too late." },
     ] },
   ],
   // ── the strategist: the house, mapped ──

@@ -179,7 +179,7 @@ export default {
       { by: 'a', dr: "Left out of my own alliance, in my own bedroom. I'm not being paranoid. I can see who was in that room, and I wasn't." },
     ] },
     { id: 'gl.2', turns: [
-      { by: 'a', say: "So when was somebody going to tell me the plan?" },
+      { by: 'a', say: "So when was somebody going to tell me who we're voting for?" },
       { by: 'b', say: "Tonight. We were going to tell you tonight." },
       { by: 'c', say: "We literally decided it an hour ago." },
       { by: 'a', say: "Without me." },
@@ -321,7 +321,7 @@ export default {
       { by: 'c', dr: "Going to the HOH as a group, so nobody gets the blame. That's {a}'s whole game. And I'm in it now." },
     ] },
     { id: 'gp.3', presumes: ['hoh'], turns: [
-      { by: 'b', say: "So what's the plan? Somebody tell me the plan." },
+      { by: 'b', say: "So who are we going after? Somebody tell me." },
       { by: 'a', say: "The plan is {target}." },
       { by: 'c', say: "Since when?" },
       { by: 'a', say: "Since this morning. Since {target} went straight upstairs after the comp." },

@@ -56,7 +56,7 @@ export default {
     { id: 'bv.g3', turns: [{ by: 'a', dr: "Nobody had to tell me. I just counted. {b}, {c}, and whoever else they've got." }] },
     { id: 'bv.g4', when: { again: true }, turns: [{ by: 'a', dr: "That's not the first time {b} and {c} have voted together. It's a pattern now." }] },
     { id: 'bv.g5', turns: [{ by: 'a', dr: "I spent all last week watching the wrong people. The vote showed me who's really working together." }] },
-    { id: 'bv.g6', turns: [{ by: 'a', dr: "A {tally} vote. Somebody organised that. My money's on {b} and {c}." }] },
+    { id: 'bv.g6', turns: [{ by: 'a', dr: "That vote wasn't close, and it wasn't an accident. Somebody organised it. My money's on {b} and {c}." }] },
   ],
   'bloc.target.couple': [
     { id: 'bt.c1', turns: [{ beat: "{a} has been quiet all afternoon, watching {target} and {partner}." }, { by: 'a', dr: "You can't take out {target} and {partner} at the same time. So you split them up. {target} goes first. Then {partner} has to find new friends in a house that's already picked sides." }] },

@@ -21,8 +21,8 @@ export default {
       { by: 'a', dr: "With three on the block, one of them always saves themselves. If it's {c}, I still want somebody worth evicting sitting next to {d}. That's {f}." },
     ] },
     { id: 'hw3.p2', room: 'hoh-room', turns: [
-      { beat: 'HOH room, door shut. {b} is counting the chairs on one hand.' },
-      { by: 'b', say: "Three chairs. That's a lot of enemies." },
+      { beat: 'HOH room, door shut. {b} has the three names written on a napkin.' },
+      { by: 'b', say: "Three names on the block. That's a lot of enemies." },
       { by: 'a', say: "Two enemies and a friend. {c} and {f} are the real names. {d} is a pawn." },
       { by: 'b', say: "And if {d} wins the Block Buster?" },
       { by: 'a', say: "Then {d} is safe and I've lost nothing. That's the best version." },

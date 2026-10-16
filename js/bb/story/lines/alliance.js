@@ -724,9 +724,9 @@ export default {
       { by: 'a', dr: "'Next time.' There's always a next time when it's not you that got left out." },
     ] },
     { id: 'al2.2', turns: [
-      { by: 'a', say: "I heard the plan." },
-      { by: 'b', say: "What plan?" },
-      { by: 'a', say: "The plan. From somebody who isn't even in {alliance}. Do you know how that felt?" },
+      { by: 'a', say: "I heard who we're going after this week." },
+      { by: 'b', say: "What are you talking about?" },
+      { by: 'a', say: "I heard it from somebody who isn't even in {alliance}. Do you know how that felt?" },
       { by: 'b', say: "That's— who told you?" },
       { by: 'a', say: "That's your question? Not 'sorry'? 'Who told you'?" },
       { by: 'b', say: "I'm sorry. I'm sorry. It all happened really fast." },

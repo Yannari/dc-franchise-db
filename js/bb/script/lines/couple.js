@@ -31,7 +31,7 @@ export default {
   ],
   'couple.blind.scene': [
     { id: 'cb.1', turns: [{ by: 'b', say: "I'm not asking you to break up with {partner}. I'm asking you to count." }, { by: 'a', say: "I heard the first part." }] },
-    { id: 'cb.2', turns: [{ by: 'b', say: "{partner} has been saying things about you in other rooms." }, { by: 'a', say: "Like what?" }, { by: 'b', say: "Like..." }, { by: 'a', say: "No. I don't believe it." }] },
+    { id: 'cb.2', turns: [{ by: 'b', say: "{partner} has been telling people you'd be the first one {partner} cuts." }, { by: 'a', say: "That doesn't sound like {partner}." }, { by: 'b', say: "I'm only telling you what I heard." }, { by: 'a', say: "No. I don't believe it.", v: { anxious: "No. I can't believe that. I won't." } }] },
     { id: 'cb.3', turns: [{ by: 'a', dr: "{b} came to me with stories about {partner}. I know {partner}. I don't need {b}'s help." }] },
     { id: 'cb.4', turns: [{ by: 'b', say: "Just imagine making this decision without {partner}." }, { by: 'a', say: "There's no reason to imagine that." }, { beat: '{a} gets up and leaves.' }] },
     { id: 'cb.5', turns: [{ by: 'b', dr: "I tried to warn {a} about {partner}. {a} went straight to {partner} and said it was me." }] },
@@ -120,7 +120,7 @@ export default {
     { id: 'cl.3', turns: [{ by: 'c', say: "So you think the vote's going to flip?" }, { by: 'a', say: "...Who told you that?" }, { by: 'a', dr: "Only {b} knew that." }] },
     { id: 'cl.4', turns: [{ by: 'a', dr: "Anything I tell {b}, {c} hears. I should have known." }] },
     { id: 'cl.5', turns: [{ by: 'a', dr: "I tested it. One wrong detail, told only to {b}. It came out of {c}'s mouth, wrong in the same way." }] },
-    { id: 'cl.6', turns: [{ by: 'b', say: "I didn't tell anyone!" }, { by: 'a', say: "You told {c}." }, { by: 'b', say: "...That doesn't count." }] },
+    { id: 'cl.6', turns: [{ by: 'b', say: "I didn't tell anyone about us!" }, { by: 'a', say: "You told {c}." }, { by: 'b', say: "{c} doesn't count. {c} had already guessed.", v: { anxious: "I'm sorry. {c} asked me straight out and I panicked." } }] },
     { id: 'cl.7', turns: [{ by: 'a', dr: "Nothing I say to {b} stays with {b}. It goes straight to {c}." }] },
   ],
   'couple.jealous.scene': [
@@ -139,11 +139,11 @@ export default {
   'couple.pressure.scene': [
     { id: 'cq.1', turns: [{ by: 'a', dr: "{b} is on the block and I can't eat. I can't sit down. I just keep counting votes, and I get a different number every time." }] },
     { id: 'cq.2', turns: [{ by: 'b', say: "Breathe. I'm the one on the block." }, { by: 'a', say: "I know. That's why I can't breathe." }] },
-    { id: 'cq.3', turns: [{ by: 'a', say: "I'm fine." }, { by: 'b', say: "You've been crying." }, { by: 'a', say: "I'm fine." }] },
+    { id: 'cq.3', turns: [{ by: 'a', say: "I'm fine." }, { by: 'b', say: "You've been crying." }, { by: 'a', say: "Because you're on the block and I can't do anything about it." }] },
     { id: 'cq.4', turns: [{ by: 'b', dr: "I'm handling this better than {a} is. And {a} isn't even nominated." }] },
     { id: 'cq.5', when: { third: true }, turns: [{ by: 'c', dr: "{a} is falling apart over {b}'s nomination. People are noticing. Not in a good way." }] },
     { id: 'cq.6', turns: [{ by: 'a', dr: "I've been up since four running the numbers. On somebody else's eviction." }] },
-    { id: 'cq.7', when: { third: true }, turns: [{ by: 'a', say: "Where's the vote? Have you heard anything?" }, { by: 'c', say: "Nothing new." }, { by: 'a', say: "You'd tell me, right?" }] },
+    { id: 'cq.7', when: { third: true }, turns: [{ by: 'a', say: "Have you heard anything about the vote? Is {b} staying?" }, { by: 'c', say: "Nothing new since this morning." }, { by: 'a', say: "You'd tell me if it changed, right?" }] },
     { id: 'cq.8', turns: [{ by: 'b', say: "You need to stop campaigning for me. You're scaring people." }, { by: 'a', say: "I can't stop." }] },
   ],
 };

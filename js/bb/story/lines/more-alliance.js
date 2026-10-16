@@ -352,7 +352,7 @@ export default {
     { id: 'al3.5', turns: [
       { by: 'a', say: "Am I still in this thing or not?" },
       { by: 'b', say: "Of course you are." },
-      { by: 'a', say: "Then why does everybody already know the plan?" },
+      { by: 'a', say: "Then why does everybody already know who we're voting for?" },
       { by: 'b', say: "Everybody doesn't—" },
       { by: 'a', say: "I just heard it from someone who's not even in the group." },
       { by: 'b', say: "...Okay, that's bad." },

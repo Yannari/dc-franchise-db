@@ -659,6 +659,20 @@ const isOvercommitted = name =>
 const alreadyPaired = (a, b) => allianceStore()
   .some(al => al.active !== false && !al.dissolved && (al.members || []).includes(a) && al.members.includes(b));
 
+// A group that is mostly an alliance that already exists is that alliance again, not a new one (read 2026-10-15:
+// The Majority [Ripper, Chase, Caleb, Scary, Zee] formed with three of The Lifeline's five inside it, and both
+// went on recruiting each other's members). Two or more shared AND at least half of the smaller group is the
+// same room twice. The alliance inside an alliance is its own path (innerCircleOptions) and is not asked.
+function tooClose(members, except = null) {
+  const set = new Set(members);
+  return allianceStore().some(al => {
+    if (al.active === false || al.dissolved || al === except || (except && (al.parent === except.id || except.parent === al.id))) return false;
+    const live = (al.members || []).filter(n => (gs.activePlayers || [n]).includes(n));
+    const shared = live.filter(n => set.has(n)).length;
+    return shared >= 2 && shared * 2 >= Math.min(live.length, set.size);
+  });
+}
+
 /**
  * The alliance inside the alliance.
  *
@@ -856,7 +870,7 @@ function formationTriggers(house, week, rng) {
     const reach = founding
       ? Math.min(5, 2 + Math.floor((hubStats.social + hubStats.strategic) / 7) + (rng() < 0.45 ? 1 : 0))
       : (rng() < 0.45 ? 2 : 1);
-    const partners = free.filter(n => n !== hub)
+    const partners = free.filter(n => n !== hub && !alreadyPaired(hub, n))
       .map(n => ({ n, score: getBond(hub, n) + bbAllianceAppeal(n, week) + rng() * 0.5 }))
       .sort((a, b) => b.score - a.score)
       .slice(0, reach)
@@ -955,6 +969,7 @@ export function updateBBAllianceLifecycle({ phase = 'opening', house = gs.active
   for (const option of recruitmentOptions(house, weekNum).slice(0, 4)) {
     if (isOvercommitted(option.candidate)) continue;
     if ((weekNum > 3 && changedThisWeek(option.alliance)) || joinedThisWeek(option.candidate)) continue;
+    if (tooClose(option.members, option.alliance)) continue;
     // The first fortnight favors growing the alliance you have over founding
     // another duo — a small thumb on the scale, not a guarantee, per the
     // audit: creation volume is healthy, founding-shape is what was thin.
@@ -987,7 +1002,7 @@ export function updateBBAllianceLifecycle({ phase = 'opening', house = gs.active
     return { formed: sub, alliances: allianceStore() };
   }
 
-  const triggers = formationTriggers(house, week, rng);
+  const triggers = formationTriggers(house, week, rng).filter(t => !tooClose(t.members));
   if (!triggers.length) return { formed:null, alliances:allianceStore() };
 
   // Weighted pick between the reasons rather than always taking the strongest,

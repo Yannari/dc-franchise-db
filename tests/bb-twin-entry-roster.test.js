@@ -152,8 +152,12 @@ describe('the twins are bound to each other, not just to the house', () => {
       (d.players || []).includes(a) && (d.players || []).includes(b)
       && (d.tier === 'final-two' || d.type === 'final-two'));
     expect(deal, 'the twins had no endgame deal at all').toBeTruthy();
-    expect(deal.active).not.toBe(false);
     expect(deal.broken).toBeFalsy();
+    // standing while both of them are in the house; if one was evicted it lapsed for that and nothing else
+    // (a change to who forms alliances changed this season's evictions, and the deal correctly lapsed)
+    const both = [a, b].every(n => (gs.activePlayers || []).includes(n));
+    if (both) expect(deal.active).not.toBe(false);
+    else expect(deal.lapsedBecause).toMatch(/left the house/);
   });
 
   it('does not create a second one on a later week', () => {

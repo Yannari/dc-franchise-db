@@ -273,7 +273,7 @@ export default {
       { by: 'b', say: "Basically. But the house is different. People are scared now." },
       { by: 'a', say: "Scared of what?" },
       { by: 'b', say: "Of you, now. Nobody comes back. You came back." },
-      { by: 'b', conf: "{a} doesn't realise it yet, but walking back through that door made {a} the biggest name in the house." },
+      { by: 'b', conf: "{a} doesn't realize it yet, but walking back through that door made {a} the biggest name in the house." },
     ] },
   ],
 };

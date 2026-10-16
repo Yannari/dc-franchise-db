@@ -262,7 +262,7 @@ export default {
       { by: 'd', say: "Why would we change now?" },
       { by: 'c', say: "Because {altcase}. Ask yourself who you'd rather see in the final." },
       { by: 'a', say: "{b}, honestly. {case}." },
-      { by: 'b', say: "You realise I can hear every word of this." },
+      { by: 'b', say: "You realize I can hear every word of this." },
       { by: 'a', say: "It's better you hear it now than at the vote." },
       { by: 'b', say: "Is it? Is it really?" },
       { by: 'd', conf: "{c} made more sense than I wanted. I'm still voting {b}. I think." },
@@ -493,7 +493,7 @@ export default {
       { by: 'b', say: "Thank you, everybody. Really." },
       { by: 'a', say: "They don't mean it." },
       { by: 'b', say: "I know. I don't care." },
-      { by: 'b', conf: "Half the house just lost their favourite target. I could hear them doing the maths while they were clapping." },
+      { by: 'b', conf: "Half the house just lost their favorite target. I could hear them doing the maths while they were clapping." },
     ] },
     { id: 'dy.sx5', turns: [
       { by: 'tj', say: "That's time! That's the game! {a}, {b}, you're the champions of {game}, and you are SAFE!" },

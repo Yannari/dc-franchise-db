@@ -55,7 +55,7 @@ export default {
       { beat: '{a} is waiting on the steps when {b} gets back from {game}.' },
       { by: 'a', say: "I saved you a seat. I figured you'd want to sit down after all that." },
       { by: 'b', say: "What do you want, {a}?" },
-      { by: 'a', say: "Nothing. I just like watching people realise they're out of their depth. It's my favorite part of the show." },
+      { by: 'a', say: "Nothing. I just like watching people realize they're out of their depth. It's my favorite part of the show." },
       { by: 'b', say: "One bad daily doesn't make me out of my depth." },
       { by: 'a', say: "No. But it's a very good start." },
       { by: 'b', conf: "I'm not going to cry in front of {a}. That's what {a} wants. I'll do it in the shower like a normal person." },

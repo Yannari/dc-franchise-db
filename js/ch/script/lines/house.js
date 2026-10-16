@@ -175,7 +175,7 @@ export default {
       { by: 'tj', say: "Rise and grind, my beautiful insomniacs! Breakfast trivia! Winner gets a phone call home!" },
       { by: 'a', say: "Wait, seriously? Call home?", v: { soft: ['Oh my gosh. Oh my gosh, I have to win this.'], loud: ['I\'M WINNING THIS!'] } },
       { by: 'tj', say: "{a}, that's three right answers! Somebody get this genius a phone!" },
-      { by: 'a', conf: "Hearing my family's voice was everything. I didn't know how much I needed it.", v: { sharp: ['Winning trivia at breakfast. Not my proudest win. My favourite one, though.'] } },
+      { by: 'a', conf: "Hearing my family's voice was everything. I didn't know how much I needed it.", v: { sharp: ['Winning trivia at breakfast. Not my proudest win. My favorite one, though.'] } },
     ] },
     { id: 'tb.2', turns: [
       { by: 'tj', say: "Pop quiz, people! I've got questions, you've got pajamas, and the winner calls home! Let's get WEIRD!" },

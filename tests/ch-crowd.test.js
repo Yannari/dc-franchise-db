@@ -29,6 +29,11 @@ describe('crowd scenes', () => {
     expect(bad).toEqual([]);
   });
 
+  it('brings in people who are not already in the scene', () => {
+    const twice = aired().filter(a => (a.scene?.data?.crowd || []).some(n => a.scene.who.includes(n)));
+    expect(twice.map(a => `${a.kind}: ${a.scene.who} + ${a.scene.data.crowd}`)).toEqual([]);
+  });
+
   it('gives the people in the room something to say', () => {
     const pub = aired().filter(a => CROWD_KINDS.has(a.kind) && a.scene?.data?.crowd?.length);
     expect(pub.length).toBeGreaterThan(30);

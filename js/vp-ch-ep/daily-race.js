@@ -57,18 +57,34 @@ function line(ctx, pool, slots, key) {
 }
 const voice = (ctx, pool, by, slots, key) => speak(pool, by, { ...slots, pron: ctx.V.pron }, `${ctx.seed}|${key}|${by}`, ctx.V.used);
 const posOf = (ctx, n) => ctx.V.pron?.[n]?.posAdj || 'their';
-const un = u => nameList(u);
-const are = u => (u.length > 1 ? 'are' : 'is');
-const s_ = u => (u.length > 1 ? '' : 's');
+// A unit is one player, a pair or trio (named, plural), or a team: a whole team is "Spencer's team", singular
+// (the user, 2026-10-16: a dozen names read out before "hit the water wrong").
+const many = u => u.length > 1 && u.length <= 3;
+const un = u => (u.length > 3 ? `${u[0]}'s team` : nameList(u));
+const are = u => (many(u) ? 'are' : 'is');
+const s_ = u => (many(u) ? '' : 's');
+const posU = (ctx, u) => (u.length > 1 ? 'their' : posOf(ctx, u[0]));
+// A team race is a relay: one climber (swimmer, runner) at a time, in team order, the next tagged in at each
+// leg. The one on the course is the one the line is about.
+const relay = u => u.length > 3;
+const legOf = (u, p) => Math.min(u.length - 1, Math.max(0, Math.floor((p ?? 0) * u.length)));
+const RELAY_GO = ["It's a relay! One at a time from each team, and nobody goes until the one before them is back. {a} and {b} go first. GO!",
+  'Teams, line up! {a} and {b}, you are first. When your teammate finishes the leg, you go. Not before. GO!'];
+const RELAY_TAG = ['{x} finishes the leg and slaps hands with {y}. {y} is off.', '{x} is done. {y} goes next for {t}.', '{x} tags {y}, and {y} goes flying.',
+  '{x} comes off the course gasping and tags in {y}.', 'In goes {y} for {t}, after a solid leg from {x}.', '{x} hands over to {y}.'];
+const RELAY_RUN = ['{list} each climb a clean leg, and {x} tags {y}.', '{list} get through their legs without a slip. {y} is up next for {t}.'];
+const RELAY_WIN = ['{c} brings it home! {t} wins!', '{c} finishes the last leg, and {t} piles on. They win!'];
+const RELAY_LAST = ['{c} finishes the last leg for {t}. Too late.', '{c} brings {t} home, a long way behind.'];
+const RELAY_STAGE = ['{c} gets {t} to {name}.', '{c} reaches {name} for {t}.', '{t} reaches {name}, thanks to {c}.'];
 
 // what goes wrong, in each course's own words ({u} the unit, {s} the verb ending, {pos} their)
 const HAZARD = {
   'drop-flag': ['{u} fumble{s} a flag on the jump. It sinks before anybody can grab it.', '{u} lose{s} the flag halfway down. That climb was for nothing.',
-    '{u} hit{s} the water wrong and the flag is gone.', '{u} drop{s} {pos} flag into the lagoon.'],
+    "{u} come{s} up from the jump without the flag. It's somewhere at the bottom of the lagoon.", '{u} drop{s} {pos} flag into the lagoon.'],
   'wrong-buoy': ['{u} bring{s} back a token from the wrong buoy. It counts for nothing.', '{u} swim{s} all the way to a buoy somebody already emptied.',
     '{u} get{s} turned around in the current and come{s} up at the wrong buoy.', '{u} grab{s} a token, check{s} it, and throw{s} it back. Wrong number.'],
-  stall: ['The truck sinks into the soft sand. {u} have to dig the wheels out.', '{u} stop to breathe, and the truck rolls back a metre.',
-    "{u} pull out of time with each other and the truck doesn't budge.", 'A harness slips. {u} lose the rhythm and have to start again.'],
+  stall: ['The truck sinks into the soft sand, and {u} dig{s} the wheels out by hand.', '{u} stop{s} to breathe, and the truck rolls back a metre.',
+    "{u} fall{s} out of rhythm, and the truck doesn't budge.", 'A harness slips, and {u} lose{s} the rhythm.'],
   'dead-end': ['{u} run{s} straight into a dead end.', '{u} take{s} a wrong turn and end{s} up back at the entrance.',
     '{u} go{es} round the same corner twice.', '{u} hit{s} a wall of bamboo where {pos} path should be.'],
   'missed-buoy': ['{u} swim{s} past a buoy without reading the lantern.', "{u} lose{s} count in the dark and can't remember the last number.",
@@ -266,7 +282,7 @@ export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = 
       lastPart[k] = part;
       if (id === 'gauntlet-run' && was === null) continue;
       throughs++;
-      const sl = { u: un(x), s: s_(x), es: x.length > 1 ? '' : 'es', pos: posOf(ctx, x[0]), obj: x.length > 1 ? 'them' : ctx.V.pron?.[x[0]]?.obj || 'them' };
+      const sl = { u: un(x), s: s_(x), es: many(x) ? '' : 'es', pos: posU(ctx, x), obj: many(x) ? 'them' : ctx.V.pron?.[x[0]]?.obj || 'them' };
       const pool = id === 'gauntlet-run' ? THROUGH[was] : THROUGH.bucket;
       about = { b: { kind: 'through', data: { part: id === 'gauntlet-run' ? was : null, snap: b.data.snap } }, u: x, p };
       const st = { race: board(b.data.snap), dir: line(ctx, pool, sl, `th${i}${k}`), focus: x.slice(0, 2), act: { [x[0]]: hashOf(`${k}${i}`) % 3 ? 'strain' : 'cheer' } };
@@ -274,22 +290,55 @@ export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = 
       push(st);
     }
   };
+  const legNow = {};
+  const relaySteps = (snap, key) => {
+    if (!snap) return;
+    const parts = [];
+    for (const x of runners) {
+      if (!relay(x)) continue;
+      const k = x.join('+'), leg = legOf(x, snap[k]);
+      if (legNow[k] === undefined) { legNow[k] = leg; continue; }
+      if (leg <= legNow[k]) continue;
+      const from = x[leg - 1], to = x[leg], ran = x.slice(legNow[k], leg);
+      legNow[k] = leg;
+      parts.push({ x, from, to, ran });
+    }
+    if (!parts.length) return;
+    // more than one leg since the last look: say who climbed them, then the tag
+    const dir = parts.map((p, j) => (p.ran.length > 1 ? line(ctx, RELAY_RUN, { list: nameList(p.ran), x: p.from, y: p.to, t: un(p.x) }, `${key}r${j}`)
+      : line(ctx, RELAY_TAG, { x: p.from, y: p.to, t: un(p.x) }, `${key}t${j}`))).join(' ');
+    push({ race: board(snap), dir, focus: parts.flatMap(p => [p.to, p.from]).slice(0, 2), act: Object.fromEntries(parts.map(p => [p.to, 'strain'])) });
+  };
   for (const [i, b] of beats.entries()) {
     if (stop && b.kind === stop) break;
     if (i > 0) progressSteps(beats[i - 1], i - 1);
+    if (b.kind !== 'race-start') relaySteps(b.data?.snap, `rl${i}`);
     const key = `rc${i}`;
     const u = b.who.length ? unitOf(b.who) : [];
     about = u.length ? { b, u, p: b.data?.snap?.[u.join('+')] ?? null } : null;
-    const slots = { u: un(u), s: s_(u), es: u.length > 1 ? '' : 'es', are: are(u), pos: posOf(ctx, u[0]), obj: ctx.V.pron?.[u[0]]?.obj || 'them' };
+    let slots = { u: un(u), s: s_(u), es: many(u) ? '' : 'es', are: are(u), pos: posU(ctx, u), obj: ctx.V.pron?.[u[0]]?.obj || 'them' };
+    const onLeg = u.length && relay(u) ? u[legOf(u, about?.p)] : null;
+    if (onLeg) slots = { u: onLeg, s: 's', es: 'es', are: 'is', pos: posOf(ctx, onLeg), obj: ctx.V.pron?.[onLeg]?.obj || 'them' };
     const race = board(b.data?.snap);
     if (b.kind === 'race-start') {
       const set = ctx.legacy?.()?.steps?.[0] || {};
       const { dir, tally, tjCall, cut: _c, ...stage } = set;
       const st0 = { ...stage, race, dir: set.dir || 'And they are off.', focus: [] };
       if (CV?.props) st0.props = CV.props(null);
+      const teams = runners.filter(relay);
+      if (teams.length >= 2) {
+        push(st0);
+        push({ tj: line(ctx, RELAY_GO, { a: teams[0][0], ta: un(teams[0]), b: teams[1][0], tb: un(teams[1]) }, key + 'go'), focus: ['TJ', teams[0][0], teams[1][0]] });
+        for (const t of teams) legNow[t.join('+')] = 0;
+        continue;
+      }
       if (CV?.hidden) { st0.hide = units.flat(); }
       else if (CV && plateK) { st0.move = { ...(st0.move || {}), ...Object.fromEntries(runners.flatMap(u => u.slice(0, 3).map((n, i) => [n, spot(u, i, CV.start)]))) }; }
       push(st0);
+      continue;
+    }
+    if (b.kind === 'stage' && onLeg) {
+      push({ race, dir: line(ctx, RELAY_STAGE, { c: onLeg, t: un(u), name: b.data.name }, key), focus: [onLeg], act: { [onLeg]: 'cheer' } });
       continue;
     }
     if (b.kind === 'stage') {
@@ -301,16 +350,16 @@ export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = 
     if (b.kind === 'overtake') {
       const lead = unitOf(b.who), was = units.find(x => x.includes(b.who[lead.length])) || [];
       if (!was.length) continue;
-      push({ race, dir: line(ctx, OVERTAKE, { a: un(lead), b: un(was), aare: are(lead), aes: lead.length > 1 ? '' : 'es', as: lead.length > 1 ? '' : 's' }, key), focus: [lead[0], was[0]] });
+      push({ race, dir: line(ctx, OVERTAKE, { a: un(lead), b: un(was), aare: are(lead), aes: many(lead) ? '' : 'es', as: many(lead) ? '' : 's' }, key), focus: [lead[0], was[0]] });
       if (b.data.needle) { const t = voice(ctx, NEEDLE, b.data.by, { b: b.data.to }, key + 'n'); if (t) push({ say: [b.data.by, t], focus: [b.data.by, b.data.to], act: { [b.data.by]: 'shout', [b.data.to]: 'flinch' } }); }
       continue;
     }
     if (b.kind === 'hazard') {
       // the story's people, a few times each; and never the same unit twice in a row
-      if (!u.some(n => follow.has(n)) || shownHazard.has(u[0]) || hazards >= 9) continue;
-      shownHazard.add(u[0]); hazards++;
+      if (!u.some(n => follow.has(n)) || shownHazard.has(onLeg || u[0]) || hazards >= (onLeg ? 12 : 9)) continue;
+      shownHazard.add(onLeg || u[0]); hazards++;
       const pool = b.data.kind === 'obstacle' ? HAZARD.obstacle[b.data.part] || HAZARD.obstacle.tyres : HAZARD[b.data.kind] || HAZARD.stall;
-      const s = { race, dir: line(ctx, pool, slots, `${key}h${i}`), focus: u.slice(0, 2), act: { [u[0]]: 'flinch' } };
+      const s = { race, dir: line(ctx, pool, slots, `${key}h${i}`), focus: onLeg ? [onLeg] : u.slice(0, 2), act: { [onLeg || u[0]]: 'flinch' } };
       // a slip off the beam: into the pool with a splash, and back to the start
       if (b.data.kind === 'slip') { s.drop = u.slice(0, 1); s.splash = 1; if (CV && plateK) pendingMove[u[0]] = spot(u, 0, CV.start); }
       push(s);
@@ -336,6 +385,12 @@ export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = 
       push(s);
       if (b.kind === 'fear-helped') { const h = b.who[1]; const t = voice(ctx, FEAR.helped, h, {}, key + 'h'); if (t) push({ say: [h, t], focus: [h, n] }); }
       else { const t = voice(ctx, FEAR.frozeConf, n, { fear }, key + 'c'); if (t) push({ conf: [n, t] }); }
+      continue;
+    }
+    if (b.kind === 'finish' && onLeg && !toBoard) {
+      // a relay: the last leg brings the team home
+      if (b.data.first) { safe.push(...u); push({ race, tj: line(ctx, RELAY_WIN, { c: onLeg, t: un(u) }, `${key}f${i}`), focus: ['TJ', onLeg], act: { [onLeg]: 'cheer' }, power: [...safe] }); }
+      else if (b.data.last || b.data.place <= 3) push({ race, dir: line(ctx, RELAY_LAST, { c: onLeg, t: un(u) }, key), focus: [onLeg], act: { [onLeg]: 'slump' } });
       continue;
     }
     if (b.kind === 'finish') {
@@ -367,11 +422,11 @@ const DB = {
   smash: ['{a} slam{as} into {b} tower. A crate goes flying.', "{a} hit{as} {b} tower dead centre.", '{a} charge{as} {b} tower and knock{as} the top crate off.',
     "{a} get{as} a good hit on {b} tower. It wobbles."],
   miss: ['{a} swing{as} at {b} tower and miss{aes}.', '{a} charge{as} at {b} tower and bounce{as} off.'],
-  down: ["{b} tower comes down! {b} {bare} out.", "Crash. {b} tower is in pieces. {b} {bare} done.", "{b} tower topples into the sand. That's it for {b}."],
+  down: ["{bw} tower comes down! {b} {bare} out.", "Crash. {bw} tower is in pieces. {b} {bare} done.", "{bw} tower topples into the sand. That's it for {b}."],
   betray: ['{a} turn{as} around and hit{as} {b} tower. They had a deal.', "Nobody expected that. {a} just went after {bn}, the side {a} promised to leave alone."],
   win: ["{u} {are} the last tower standing! {u} win{s} the Derby!", "And that's the Derby! {u} take{s} it!"],
 };
-const whose = u => (u.length > 1 ? `${un(u)}'s` : `${u[0]}'s`);
+const whose = u => (u.length > 3 ? `${u[0]}'s team's` : many(u) ? `${un(u)}'s` : `${u[0]}'s`);
 export function derbySteps(d, ctx) {
   const out = [];
   const units = d.order || [];
@@ -396,7 +451,7 @@ export function derbySteps(d, ctx) {
       continue;
     }
     const by = b.data?.by || [], on = b.data?.on || [];
-    const sl = { a: un(by), as: by.length > 1 ? '' : 's', aes: by.length > 1 ? '' : 'es', b: whose(on), bare: on.length > 1 ? 'are' : 'is' };
+    const sl = { a: un(by), as: many(by) ? '' : 's', aes: many(by) ? '' : 'es', b: whose(on), bare: many(on) ? 'are' : 'is' };
     if (b.kind === 'smash' || b.kind === 'miss') {
       if (++smashes > 12 && b.data.hp !== 1) continue;
       const st = { tally: tally(b.data.snap), dir: line(ctx, b.kind === 'smash' ? DB.smash : DB.miss, sl, key), focus: [by[0], on[0]], act: { [by[0]]: 'shout', [on[0]]: b.kind === 'smash' ? 'flinch' : 'cheer' }, shake: b.kind === 'smash' ? 1 : 0 };
@@ -409,7 +464,7 @@ export function derbySteps(d, ctx) {
     }
     if (b.kind === 'tower-down') {
       const u = b.who;
-      out.push(backWide({ tally: tally(b.data.snap), dir: line(ctx, DB.down, { b: un(u), bare: u.length > 1 ? 'are' : 'is' }, key), focus: u.slice(0, 2), act: { [u[0]]: 'slump' } }));
+      out.push(backWide({ tally: tally(b.data.snap), dir: line(ctx, DB.down, { b: un(u), bw: whose(u), bare: many(u) ? 'are' : 'is' }, key), focus: u.slice(0, 2), act: { [u[0]]: 'slump' } }));
       continue;
     }
     if (b.kind === 'last-tower') {

@@ -667,13 +667,15 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   }
   // The finish: TJ calls it (the engine's own daily lines).
   const lines = main.a.lines;
-  if (played?.finish?.dir) { S.push({ ...played.finish, win: winners, power: winners, slam: { winner: `${nameList(winners)} ${winners.length > 1 ? 'win' : 'wins'}` }, focus: winners.slice(0, 2) }); }
-  const first = played ? (played.finish?.dir ? {} : { ...played.finish, win: winners, power: winners, slam: { winner: `${nameList(winners)} ${winners.length > 1 ? 'win' : 'wins'}` } }) : { win: winners, slam: { winner: `${nameList(winners)} ${winners.length > 1 ? 'win' : 'wins'}` }, power: winners, finish: st.show, race: st.show === 'race' ? units.slice(0, Math.min(6, units.length)).map(u => ({ who: u, p: isWin(u) ? 1 : .9 })) : null };
+  // a whole team is "Zoey's team", never twelve names (the user, 2026-10-16)
+  const wTeam = winners.length > 3, wName = wTeam ? `${winners[0]}'s team` : nameList(winners), wVerb = winners.length > 1 && !wTeam ? 'win' : 'wins';
+  if (played?.finish?.dir) { S.push({ ...played.finish, win: winners, power: winners, slam: { winner: `${wName} ${wVerb}` }, focus: winners.slice(0, 2) }); }
+  const first = played ? (played.finish?.dir ? {} : { ...played.finish, win: winners, power: winners, slam: { winner: `${wName} ${wVerb}` } }) : { win: winners, slam: { winner: `${nameList(winners)} ${winners.length > 1 ? 'win' : 'wins'}` }, power: winners, finish: st.show, race: st.show === 'race' ? units.slice(0, Math.min(6, units.length)).map(u => ({ who: u, p: isWin(u) ? 1 : .9 })) : null };
   linesToSteps(S, lines, { names, first, sceneWho: ['TJ', ...people] });
   for (const k of know) { const last = S.last(); if (last && !last.know) last.know = k; }
   // TJ with everybody after: how it went, and what happens now
   const week = row.ch?.division === 'm' ? "It's a men's week, so only a guy can be voted in." : row.ch?.division === 'f' ? "It's a women's week, so only a woman can be voted in." : '';
-  const wn = nameList(winners);
+  const wn = wName;
   S.push({ tj: tjLine('debrief', { w: wn }, seed, S.V.used), focus: ['TJ'] });
   if (!row.ch?.final) S.push({ tj: tjLine('next', { w: wn, week }, seed + 'n', S.V.used), focus: ['TJ', ...winners.slice(0, 1)], power: winners });
   // the daily's aftermath scenes, on the same plate

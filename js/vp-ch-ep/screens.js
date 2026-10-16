@@ -273,6 +273,13 @@ function paintHub(R) {
   const hud = R.root.querySelector('.chx-hud'); const seen = seenOf(R);
   if (H.conv) { seen.add(H.conv.s); hud.insertAdjacentHTML('beforeend', `<button type='button' class='tomap' data-go='${H.h.at}'>&#9664; Map</button>`); return; }
   hud.querySelectorAll('[data-go]').forEach(b => b.classList.toggle('seen', seen.has(Number(b.dataset.go))));
+  // the villa's pin on the island says how many inside are still new
+  const inside = [...hud.querySelectorAll('.mview.villa .bub[data-go]')], left = inside.filter(b => !b.classList.contains('seen')).length;
+  const door = hud.querySelector('.villa-pin .bub.enter');
+  if (door && inside.length) {
+    door.textContent = left ? `${left} new inside${left < inside.length ? ` \u00b7 ${inside.length - left} watched` : ''}` : '\u2713 All watched';
+    door.classList.toggle('done', !left);
+  }
   const n = H.h.convs.filter(c => seen.has(c.s)).length;
   hud.insertAdjacentHTML('beforeend', `<div class='mcount'>${n} / ${H.h.convs.length} watched</div>`);
 }

@@ -20,8 +20,12 @@
 import { BED_CATALOG, CUE_CATALOG } from '../audio.js';
 
 const dir = 'assets/audio/ch/';
-const MUSIC_VOL = 0.4;
-const AMB_VOL = 0.26;
+// Headroom for voice acting (the user, 2026-10-16: "make sure the sound is not too loud for a future voice
+// acting"): beds sit about 11 dB under a voice at -16 dB RMS, and the stings, mastered at -14 dB, are played
+// 4.4 dB down (STING_VOL), so a sting never covers a line.
+const MUSIC_VOL = 0.28;
+const AMB_VOL = 0.18;
+const STING_VOL = 0.6;
 
 // `lift` is the dB a file could not be raised by without clipping (tools/ch-make-audio.py
 // prints it), given back on playback.
@@ -143,7 +147,7 @@ for (const [name, s] of Object.entries(CH_STINGS)) {
     if (!got.length) { loadSting(ctx, name); return; }
     const src = ctx.createBufferSource();
     src.buffer = got[(turn[name] = ((turn[name] ?? -1) + 1)) % got.length];
-    const g = ctx.createGain(); g.gain.value = 10 ** ((s.lift || 0) / 20);
+    const g = ctx.createGain(); g.gain.value = STING_VOL * 10 ** ((s.lift || 0) / 20);
     src.connect(g); g.connect(dest); src.start(now);
     const item = { name, src, g, at: now };
     live.push(item);

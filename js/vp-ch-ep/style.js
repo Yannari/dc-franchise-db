@@ -463,6 +463,11 @@ const CHX_CSS = `
 .chx .isle .ihead small{display:block;font:700 .95cqw 'Barlow Condensed';letter-spacing:.14em;color:var(--hud-dim)}
 .chx .isle .iclose{position:absolute;right:2%;top:3.6%;border:0;background:rgba(14,12,11,.9);color:#fff;font:400 1.2cqw/1 'Black Ops One';padding:.6cqw 1cqw;cursor:pointer}
 .chx .bub.star::before{content:"\\2605  ";color:var(--red)}
+/* watched: greyed, and the tick wins over the star (the user, 2026-10-16: "the conversations don't show
+   they've been read") */
+.chx .bub.seen,.chx .bub.star.seen{background:#2b2724;color:#9d948b;border-color:#000;opacity:.82}
+.chx .bub.seen::before,.chx .bub.star.seen::before{content:"\\2713  ";color:#5fe06a;font-size:1.15em}
+.chx .bub.enter.done{background:#2b2724;color:#5fe06a}
 .chx .bub:hover{scale:1.06}
 .chx .bub em{font-style:normal;opacity:.6;margin-left:.3em}
 .chx .later{position:absolute;left:50%;bottom:24%;translate:-50% 0;display:flex;gap:1cqw;pointer-events:auto}

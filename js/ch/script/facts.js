@@ -48,6 +48,9 @@ export const CH_FACT_KEYS = [
   // the mood an Arena winner walks back in with (house.js returnMood): sad | house | alliance | revenge | mock |
   // strategy | comedy | happy
   'mood',
+  // how a champion won (final.js pathOf), and the second champion's: showmance | survival | challenge | strategy |
+  // drama | friendship | social | grind
+  'path', 'pathB',
 ];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -96,6 +99,8 @@ export function factsFor(scene, roles, state) {
     gracious: !!scene.data?.gracious,
     cause: scene.data?.causeType || null,
     mood: scene.data?.mood || null,
+    path: scene.data?.path || null,
+    pathB: scene.data?.pathB || null,
   };
   if (a) {
     f.register = registerOf(a);

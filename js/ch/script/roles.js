@@ -265,6 +265,9 @@ export const ROLES = {
   'final-pact-help': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'final-pact-broken': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   champions: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.who.length > 1 ? 'two' : 'one' }),
+  // the champions looking back (final.js pathOf); {target}/{alt}: who a's/b's path was about (a partner, a friend)
+  'champion-reflect': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.who.length > 1 ? 'two' : 'one',
+    slots: { target: sc.data.ref || undefined, alt: sc.data.refB || undefined } }),
   // the final's moments (final.js): a checkpoint's first and last; talk at the fire; the podium; the runner-up and the champion; last words
   'final-cp': sc => ({ roles: { a: sc.data.first, b: sc.data.last }, ending: sc.data.id }),
   'overnight-talk': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.mood }),

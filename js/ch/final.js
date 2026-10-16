@@ -254,8 +254,30 @@ export function playFinal(state, rng) {
     fin.lastWords.push(n);
   });
   for (const c of fin.champions) pop(c, 3);
+  // the season's last words are the champions', looking back at how they won (the user, 2026-10-16: "with a
+  // lot of variants based on how they manage to win ... and a double confessional if theres 2 winners")
+  const paths = fin.champions.map(c => pathOf(state, c));
+  addScene(state, 'champion-reflect', [...fin.champions], { path: paths[0]?.path || 'grind', pathB: paths[1]?.path || null,
+    ref: paths[0]?.ref || null, refB: paths[1]?.ref || null }, state.active, 'confessional');
   state.final = fin;
   return fin;
+}
+
+// How a champion won, read off the season: the thing they would talk about first. `ref` is the person it was
+// about (the partner, the friend), when there is one.
+function pathOf(state, n) {
+  const r = state.rec[n] || {};
+  const couple = (state.couples || []).find(c => !c.ended && (c.a === n || c.b === n));
+  if (couple) return { path: 'showmance', ref: couple.a === n ? couple.b : couple.a };
+  if ((r.arenaW || 0) >= 3) return { path: 'survival' };
+  if ((r.dailyWins || 0) >= 3) return { path: 'challenge' };
+  const allied = (state.alliances || []).some(a => (a.members || []).includes(n) || (a.former || []).includes(n));
+  if (!(r.votedIn || 0) && allied) return { path: 'strategy' };
+  if ((r.fights || 0) >= 2) return { path: 'drama' };
+  const friend = state.cast.filter(o => o !== n).sort((x, y) => getBond(n, y) - getBond(n, x))[0];
+  if (friend && getBond(n, friend) >= 5) return { path: 'friendship', ref: friend };
+  if ((gs.popularity?.[n] || 0) >= 4) return { path: 'social' };
+  return { path: 'grind' };
 }
 
 const round = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, +(+v).toFixed(2)]));

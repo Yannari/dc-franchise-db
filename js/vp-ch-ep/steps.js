@@ -118,7 +118,7 @@ function stageOf(a, min) {
 
 // Which chapter of the episode a scene belongs to (one VP screen per run of them).
 const DAILY_KINDS = new Set(['purge', 'daily', 'daily-clutch', 'daily-choke', 'partner-draw', 'partner-pick', 'partner-blame', 'partner-carried', 'team-blame', 'picked-last', 'throw', 'throw-caught']);
-const FINAL_KINDS = new Set(['final-start', 'final-cp', 'instant-elimination', 'final-lastword', 'overnight', 'overnight-sabotage', 'overnight-quit', 'overnight-talk', 'final-pact-help', 'final-pact-broken', 'final-podium', 'champions', 'final-congrats']);
+const FINAL_KINDS = new Set(['champion-reflect', 'final-start', 'final-cp', 'instant-elimination', 'final-lastword', 'overnight', 'overnight-sabotage', 'overnight-quit', 'overnight-talk', 'final-pact-help', 'final-pact-broken', 'final-podium', 'champions', 'final-congrats']);
 function chapterOf(a) {
   if (a.kind === 'previously') return 'open';
   if (a.kind === 'arrival') return 'arrival';
@@ -132,7 +132,7 @@ function chapterOf(a) {
   if (a.kind === 'final-start' || a.kind === 'pass-cut') return 'final-start';
   if (a.kind === 'final-cp') return a.data?.day === 2 ? 'final-day2' : 'final-start';
   if (a.kind === 'final-lastword') return a.data?.when === 'instant' ? 'instant' : 'champions';
-  if (a.kind === 'final-podium' || a.kind === 'final-congrats') return 'champions';
+  if (a.kind === 'final-podium' || a.kind === 'final-congrats' || a.kind === 'champion-reflect') return 'champions';
   if (a.kind.startsWith('redemption-') && a.kind !== 'redemption-return') return 'redemption';
   if (a.kind === 'instant-elimination') return 'instant';
   if (a.kind.startsWith('overnight')) return 'overnight';
@@ -1221,6 +1221,12 @@ function buildFinal(S, open, key, items, row, { names, house }) {
         else linesToSteps(S, [l], { names, sceneWho: [...champs, 'TJ'] });
       });
       if (call < 0) S.push({ slam: { winner: `${nameList(champs)} ${champs.length > 1 ? 'are' : 'is'} the champion${champs.length > 1 ? 's' : ''}` }, focus: champs, confetti: 1, power: champs, powerLabel: champs.length > 1 ? 'CHAMPIONS' : 'CHAMPION' });
+      continue;
+    }
+    // the season's last words: the champions looking back (ch/final.js pathOf)
+    if (a.kind === 'champion-reflect') {
+      S.push({ card: { k: a.who.length > 1 ? 'The champions' : 'The champion', t: 'Looking back', sub: 'The season, in their own words', faces: a.who.slice(0, 2) }, focus: a.who.slice(0, 2), sceneIdx: it.i, title: 'Looking back' });
+      linesToSteps(S, a.lines || [], { names, sceneWho: a.who });
       continue;
     }
     if (a.kind === 'final-congrats') { linesToSteps(S, a.lines, { names, sceneWho: a.who, first: { sceneIdx: it.i, title: 'Congratulations', focus: a.who.slice(0, 2), act: { [a.who[0]]: 'lean' } } }); continue; }
